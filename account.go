@@ -86,7 +86,7 @@ func (a *Account) GetRegistration() *acme.RegistrationResource {
 
 // Save the account to disk
 func (a *Account) Save() error {
-	jsonBytes, err := json.Marshal(a)
+	jsonBytes, err := json.MarshalIndent(a, "", "\t")
 	if err != nil {
 		return err
 	}

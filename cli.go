@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/codegangsta/cli"
-	"github.com/xenolf/lego/acme"
 )
 
 // Logger is used to log errors; if nil, the default log.Logger is used.
@@ -137,56 +136,4 @@ func main() {
 	}
 
 	app.Run(os.Args)
-}
-
-func checkFolder(path string) error {
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		return os.MkdirAll(path, 0700)
-	}
-	return nil
-}
-
-func run(c *cli.Context) {
-	err := checkFolder(c.GlobalString("config-dir"))
-	if err != nil {
-		logger().Fatalf("Cound not check/create path: %v", err)
-	}
-
-	conf := NewConfiguration(c)
-
-	//TODO: move to account struct? Currently MUST pass email.
-	if !c.GlobalIsSet("email") {
-		logger().Fatal("You have to pass an account (email address) to the program using --email or -m")
-	}
-
-	acc := NewAccount(c.GlobalString("email"), conf)
-	client := acme.NewClient(c.GlobalString("server"), acc)
-	if acc.Registration == nil {
-		reg, err := client.Register()
-		if err != nil {
-			logger().Fatalf("Could not complete registration -> %v", err)
-		}
-
-		acc.Registration = reg
-		acc.Save()
-
-		logger().Print("!!!! HEADS UP !!!!")
-		logger().Printf(`
-			Your account credentials have been saved in your Let's Encrypt
-			configuration directory at "%s".
-			You should make a secure backup	of this folder now. This
-			configuration directory will also contain certificates and
-			private keys obtained from Let's Encrypt so making regular
-			backups of this folder is ideal.
-
-			If you lose your account credentials, you can recover
-			them using the token
-			"%s".
-			You must write that down and put it in a safe place.`, c.GlobalString("config-dir"), reg.Body.Recoverytoken)
-	}
-
-	if !c.GlobalIsSet("domains") {
-		logger().Fatal("Please specify --domains")
-	}
-
 }

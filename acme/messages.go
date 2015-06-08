@@ -1,5 +1,7 @@
 package acme
 
+import "time"
+
 type registrationMessage struct {
 	Contact []string `json:"contact"`
 }
@@ -15,6 +17,7 @@ type Registration struct {
 	} `json:"key"`
 	Recoverytoken string   `json:"recoveryToken"`
 	Contact       []string `json:"contact"`
+	Agreement     string   `json:"agreement,omitempty"`
 }
 
 // RegistrationResource represents all important informations about a registration
@@ -24,4 +27,30 @@ type RegistrationResource struct {
 	URI         string
 	NewAuthzURL string
 	TosURL      string
+}
+
+type authorizationResource struct {
+	Body       authorization
+	Domain     string
+	NewCertURL string
+}
+
+type authorization struct {
+	Identifier   identifier  `json:"identifier"`
+	Status       string      `json:"status,omitempty"`
+	Expires      time.Time   `json:"expires,omitempty"`
+	Challenges   []challenge `json:"challenges,omitempty"`
+	Combinations [][]int     `json:"combinations,omitempty"`
+}
+
+type identifier struct {
+	Type  string `json:"type"`
+	Value string `json:"value"`
+}
+
+type challenge struct {
+	Type   string `json:"type"`
+	Status string `json:"status"`
+	URI    string `json:"uri"`
+	Token  string `json:"token"`
 }

@@ -5,6 +5,7 @@ import (
 	"crypto/rsa"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -110,6 +111,92 @@ func (c *Client) Register() (*RegistrationResource, error) {
 	}
 
 	return reg, nil
+}
+
+// AgreeToTos updates the Client registration and sends the agreement to
+// the server.
+func (c *Client) AgreeToTos() error {
+	c.user.GetRegistration().Body.Agreement = c.user.GetRegistration().TosURL
+	jsonBytes, err := json.Marshal(&c.user.GetRegistration().Body)
+	if err != nil {
+		return err
+	}
+
+	logger().Printf("Agreement: %s", string(jsonBytes))
+
+	resp, err := c.jwsPost(c.user.GetRegistration().URI, jsonBytes)
+	if err != nil {
+		return err
+	}
+
+	logResponseBody(resp)
+
+	if resp.StatusCode != http.StatusAccepted {
+		return fmt.Errorf("The server returned %d but we expected %d", resp.StatusCode, http.StatusAccepted)
+	}
+
+	logResponseHeaders(resp)
+	logResponseBody(resp)
+
+	return nil
+}
+
+// ObtainCertificates tries to obtain certificates from the CA server
+// using the challenges it has configured. It also tries to do multiple
+// certificate processings at the same time in parallel.
+func (c *Client) ObtainCertificates(domains []string) error {
+
+	resc, errc := make(chan *authorizationResource), make(chan error)
+	for _, domain := range domains {
+		go func(domain string) {
+			jsonBytes, err := json.Marshal(authorization{Identifier: identifier{Type: "dns", Value: domain}})
+			if err != nil {
+				errc <- err
+				return
+			}
+
+			resp, err := c.jwsPost(c.user.GetRegistration().NewAuthzURL, jsonBytes)
+			if err != nil {
+				errc <- err
+				return
+			}
+
+			if resp.StatusCode != http.StatusCreated {
+				errc <- fmt.Errorf("Getting challenges for %s failed. Got status %d but expected %d",
+					domain, resp.StatusCode, http.StatusCreated)
+			}
+
+			links := parseLinks(resp.Header["Link"])
+			if links["next"] == "" {
+				logger().Fatalln("The server did not provide enough information to proceed.")
+			}
+
+			var authz authorization
+			decoder := json.NewDecoder(resp.Body)
+			err = decoder.Decode(&authz)
+			if err != nil {
+				errc <- err
+			}
+
+			resc <- &authorizationResource{Body: authz, NewCertURL: links["next"], Domain: domain}
+
+		}(domain)
+	}
+
+	var responses []*authorizationResource
+	for i := 0; i < len(domains); i++ {
+		select {
+		case res := <-resc:
+			responses = append(responses, res)
+		case err := <-errc:
+			logger().Printf("%v", err)
+		}
+	}
+
+	close(resc)
+	close(errc)
+
+	return nil
 }
 
 func logResponseHeaders(resp *http.Response) {

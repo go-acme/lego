@@ -42,8 +42,9 @@ type challengeHandler interface {
 
 // Client is the user-friendy way to ACME
 type Client struct {
-	regURL string
-	user   User
+	regURL  string
+	user    User
+	Solvers map[string]challengeHandler
 }
 
 // NewClient creates a new client for the set user.
@@ -51,6 +52,11 @@ func NewClient(caURL string, usr User) *Client {
 	if err := usr.GetPrivateKey().Validate(); err != nil {
 		logger().Fatalf("Could not validate the private account key of %s -> %v", usr.GetEmail(), err)
 	}
+
+	// REVIEW: best possibility?
+	solvers := make(map[string]challengeHandler)
+	solvers["simpleHttp"] = &simpleHTTPChallenge{}
+	solvers["dvsni"] = &dvsniChallenge{}
 
 	return &Client{regURL: caURL, user: usr}
 }
@@ -152,15 +158,20 @@ func (c *Client) AgreeToTos() error {
 func (c *Client) ObtainCertificates(domains []string) error {
 
 	challenges := c.getChallenges(domains)
-	c.doChallenges(challenges)
+	c.solveChallenges(challenges)
 	return nil
 }
 
-func (c *Client) doChallenges(challenges []*authorizationResource) {
-	for _, auth := range challenges {
+// Looks through the challenge combinations to find a solvable match.
+// Then solves the challenges in series and returns.
+func (c *Client) solveChallenges(challenges []*authorizationResource) {
+	// loop through the resources, basically through the domains.
+	for _, authz := challenges {
+		
 	}
 }
 
+// Get the challenges needed to proof our identifier to the ACME server.
 func (c *Client) getChallenges(domains []string) []*authorizationResource {
 	resc, errc := make(chan *authorizationResource), make(chan error)
 

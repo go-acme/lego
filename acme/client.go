@@ -35,6 +35,11 @@ type User interface {
 	GetPrivateKey() *rsa.PrivateKey
 }
 
+type challengeHandler interface {
+	CanSolve() bool
+	Solve()
+}
+
 // Client is the user-friendy way to ACME
 type Client struct {
 	regURL string
@@ -146,7 +151,19 @@ func (c *Client) AgreeToTos() error {
 // certificate processings at the same time in parallel.
 func (c *Client) ObtainCertificates(domains []string) error {
 
+	challenges := c.getChallenges(domains)
+	c.doChallenges(challenges)
+	return nil
+}
+
+func (c *Client) doChallenges(challenges []*authorizationResource) {
+	for _, auth := range challenges {
+	}
+}
+
+func (c *Client) getChallenges(domains []string) []*authorizationResource {
 	resc, errc := make(chan *authorizationResource), make(chan error)
+
 	for _, domain := range domains {
 		go func(domain string) {
 			jsonBytes, err := json.Marshal(authorization{Identifier: identifier{Type: "dns", Value: domain}})
@@ -196,7 +213,7 @@ func (c *Client) ObtainCertificates(domains []string) error {
 	close(resc)
 	close(errc)
 
-	return nil
+	return responses
 }
 
 func logResponseHeaders(resp *http.Response) {

@@ -35,7 +35,7 @@ type User interface {
 	GetPrivateKey() *rsa.PrivateKey
 }
 
-type challengeHandler interface {
+type solver interface {
 	CanSolve() bool
 	Solve()
 }
@@ -44,7 +44,7 @@ type challengeHandler interface {
 type Client struct {
 	regURL  string
 	user    User
-	Solvers map[string]challengeHandler
+	Solvers map[string]solver
 }
 
 // NewClient creates a new client for the set user.
@@ -54,7 +54,7 @@ func NewClient(caURL string, usr User) *Client {
 	}
 
 	// REVIEW: best possibility?
-	solvers := make(map[string]challengeHandler)
+	solvers := make(map[string]solver)
 	solvers["simpleHttp"] = &simpleHTTPChallenge{}
 	solvers["dvsni"] = &dvsniChallenge{}
 

@@ -1,7 +1,6 @@
 package acme
 
 import (
-	"bytes"
 	"crypto/rsa"
 	"encoding/json"
 	"errors"
@@ -12,8 +11,6 @@ import (
 	"os"
 	"regexp"
 	"strings"
-
-	"github.com/square/go-jose"
 )
 
 // Logger is used to log errors; if nil, the default log.Logger is used.
@@ -44,6 +41,7 @@ type solver interface {
 type Client struct {
 	regURL  string
 	user    User
+	jws     *jws
 	Solvers map[string]solver
 }
 
@@ -53,33 +51,14 @@ func NewClient(caURL string, usr User) *Client {
 		logger().Fatalf("Could not validate the private account key of %s -> %v", usr.GetEmail(), err)
 	}
 
+	jws := &jws{privKey: usr.GetPrivateKey()}
+
 	// REVIEW: best possibility?
 	solvers := make(map[string]solver)
-	solvers["simpleHttp"] = &simpleHTTPChallenge{}
+	solvers["simpleHttp"] = &simpleHTTPChallenge{jws: jws}
 	solvers["dvsni"] = &dvsniChallenge{}
 
-	return &Client{regURL: caURL, user: usr}
-}
-
-// Posts a JWS signed message to the specified URL
-func (c *Client) jwsPost(url string, content []byte) (*http.Response, error) {
-	signer, err := jose.NewSigner(jose.RS256, c.user.GetPrivateKey())
-	if err != nil {
-		return nil, err
-	}
-
-	signed, err := signer.Sign(content)
-	if err != nil {
-		return nil, err
-	}
-	signedContent := signed.FullSerialize()
-
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer([]byte(signedContent)))
-	if err != nil {
-		return nil, err
-	}
-
-	return resp, err
+	return &Client{regURL: caURL, user: usr, jws: jws}
 }
 
 // Register the current account to the ACME server.
@@ -90,7 +69,7 @@ func (c *Client) Register() (*RegistrationResource, error) {
 		return nil, err
 	}
 
-	resp, err := c.jwsPost(c.regURL, jsonBytes)
+	resp, err := c.jws.post(c.regURL, jsonBytes)
 	if err != nil {
 		return nil, err
 	}
@@ -135,7 +114,7 @@ func (c *Client) AgreeToTos() error {
 
 	logger().Printf("Agreement: %s", string(jsonBytes))
 
-	resp, err := c.jwsPost(c.user.GetRegistration().URI, jsonBytes)
+	resp, err := c.jws.post(c.user.GetRegistration().URI, jsonBytes)
 	if err != nil {
 		return err
 	}
@@ -183,7 +162,7 @@ func (c *Client) getChallenges(domains []string) []*authorizationResource {
 				return
 			}
 
-			resp, err := c.jwsPost(c.user.GetRegistration().NewAuthzURL, jsonBytes)
+			resp, err := c.jws.post(c.user.GetRegistration().NewAuthzURL, jsonBytes)
 			if err != nil {
 				errc <- err
 				return

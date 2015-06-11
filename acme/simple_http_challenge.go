@@ -6,6 +6,6 @@ func (s *simpleHTTPChallenge) CanSolve() bool {
 	return true
 }
 
-func (s *simpleHTTPChallenge) Solve() {
+func (s *simpleHTTPChallenge) Solve(challenge challenge) {
 
 }

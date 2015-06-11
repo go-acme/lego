@@ -143,11 +143,39 @@ func (c *Client) ObtainCertificates(domains []string) error {
 
 // Looks through the challenge combinations to find a solvable match.
 // Then solves the challenges in series and returns.
-func (c *Client) solveChallenges(challenges []*authorizationResource) {
+func (c *Client) solveChallenges(challenges []*authorizationResource) error {
 	// loop through the resources, basically through the domains.
-	for _, authz := challenges {
-		
+	for _, authz := range challenges {
+		// no solvers - no solving
+		if solvers := c.chooseSolvers(authz.Body); solvers != nil {
+			for i, solver := range solvers {
+				solver.Solve(authz.Body.Challenges[i], authz.Domain)
+			}
+		} else {
+			return fmt.Errorf("Could not determine solvers for %s", authz.Domain)
+		}
 	}
+
+	return nil
+}
+
+// Checks all combinations from the server and returns an array of
+// solvers which should get executed in series.
+func (c *Client) chooseSolvers(auth authorization) map[int]solver {
+	for _, combination := range auth.Combinations {
+		solvers := make(map[int]solver)
+		for i := range combination {
+			if solver, ok := c.Solvers[auth.Challenges[i].Type]; ok {
+				solvers[i] = solver
+			}
+		}
+
+		// If we can solve the whole combination, return the solvers
+		if len(solvers) == len(combination) {
+			return solvers
+		}
+	}
+	return nil
 }
 
 // Get the challenges needed to proof our identifier to the ACME server.

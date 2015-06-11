@@ -34,7 +34,7 @@ type User interface {
 
 type solver interface {
 	CanSolve() bool
-	Solve(challenge)
+	Solve(challenge challenge, domain string)
 }
 
 // Client is the user-friendy way to ACME

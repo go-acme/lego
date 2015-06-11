@@ -7,5 +7,6 @@ func (s *simpleHTTPChallenge) CanSolve() bool {
 }
 
 func (s *simpleHTTPChallenge) Solve(challenge challenge) {
+func (s *simpleHTTPChallenge) Solve(chlng challenge, domain string) {
 
 }

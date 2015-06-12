@@ -46,7 +46,7 @@ type Client struct {
 }
 
 // NewClient creates a new client for the set user.
-func NewClient(caURL string, usr User) *Client {
+func NewClient(caURL string, usr User, optPort string) *Client {
 	if err := usr.GetPrivateKey().Validate(); err != nil {
 		logger().Fatalf("Could not validate the private account key of %s -> %v", usr.GetEmail(), err)
 	}

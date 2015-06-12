@@ -24,6 +24,10 @@ func (c *Configuration) RsaBits() int {
 	return c.context.GlobalInt("rsa-key-size")
 }
 
+func (c *Configuration) OptPort() string {
+	return c.context.GlobalString("port")
+}
+
 // ServerPath returns the OS dependent path to the data for a specific CA
 func (c *Configuration) ServerPath() string {
 	srv, _ := url.Parse(c.context.GlobalString("server"))

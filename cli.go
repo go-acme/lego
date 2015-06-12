@@ -95,10 +95,6 @@ func main() {
 			Usage: "CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client.",
 		},
 		cli.StringFlag{
-			Name:  "authkey, k",
-			Usage: "Path to the authorized key file",
-		},
-		cli.StringFlag{
 			Name:  "email, m",
 			Usage: "Email used for registration and recovery contact.",
 		},
@@ -119,6 +115,10 @@ func main() {
 			Name:  "path",
 			Usage: "Directory to use for storing the data",
 			Value: defaultPath,
+		},
+		cli.StringFlag{
+			Name:  "port",
+			Usage: "Challenges will use this port to listen on. Please make sure to forward port 443 to this port on your machine. Otherwise use setcap on the binary",
 		},
 	}
 

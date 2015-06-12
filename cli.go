@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"path"
 
 	"github.com/codegangsta/cli"
 )
@@ -24,6 +25,12 @@ func main() {
 	app.Name = "lego"
 	app.Usage = "Let's encrypt client to go!"
 	app.Version = "0.0.1"
+
+	cwd, err := os.Getwd()
+	if err != nil {
+		logger().Fatal("Could not determine current working directory. Please pass --path.")
+	}
+	defaultPath := path.Join(cwd, ".lego")
 
 	app.Commands = []cli.Command{
 		{
@@ -109,29 +116,9 @@ func main() {
 			Usage: "Skip the end user license agreement screen.",
 		},
 		cli.StringFlag{
-			Name:  "config-dir",
-			Value: configDir,
-			Usage: "Configuration directory.",
-		},
-		cli.StringFlag{
-			Name:  "work-dir",
-			Value: workDir,
-			Usage: "Working directory.",
-		},
-		cli.StringFlag{
-			Name:  "backup-dir",
-			Value: backupDir,
-			Usage: "Configuration backups directory.",
-		},
-		cli.StringFlag{
-			Name:  "key-dir",
-			Value: keyDir,
-			Usage: "Keys storage.",
-		},
-		cli.StringFlag{
-			Name:  "cert-dir",
-			Value: certDir,
-			Usage: "Certificates storage.",
+			Name:  "path",
+			Usage: "Directory to use for storing the data",
+			Value: defaultPath,
 		},
 	}
 

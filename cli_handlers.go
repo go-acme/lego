@@ -17,7 +17,7 @@ func checkFolder(path string) error {
 }
 
 func run(c *cli.Context) {
-	err := checkFolder(c.GlobalString("config-dir"))
+	err := checkFolder(c.GlobalString("path"))
 	if err != nil {
 		logger().Fatalf("Cound not check/create path: %v", err)
 	}

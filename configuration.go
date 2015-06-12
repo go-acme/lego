@@ -34,7 +34,7 @@ func (c *Configuration) ServerPath() string {
 // AccountsPath returns the OS dependent path to the
 // local accounts for a specific CA
 func (c *Configuration) AccountsPath() string {
-	return path.Join(c.context.GlobalString("config-dir"), "accounts", c.ServerPath())
+	return path.Join(c.context.GlobalString("path"), "accounts", c.ServerPath())
 }
 
 // AccountPath returns the OS dependent path to a particular account

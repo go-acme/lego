@@ -14,6 +14,7 @@ type jws struct {
 
 // Posts a JWS signed message to the specified URL
 func (j *jws) post(url string, content []byte) (*http.Response, error) {
+	// TODO: support other algorithms - RS512
 	signer, err := jose.NewSigner(jose.RS256, j.privKey)
 	if err != nil {
 		return nil, err

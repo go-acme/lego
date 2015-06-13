@@ -29,12 +29,15 @@ func (s *simpleHTTPChallenge) Solve(chlng challenge, domain string) error {
 
 	logger().Print("Trying to solve SimpleHTTPS")
 
+	// Generate random string for the path. The acme server will
+	// access this path on the server in order to validate the request
 	responseToken := getRandomString(15)
 	listener, err := s.startHTTPSServer(domain, chlng.Token, responseToken)
 	if err != nil {
 		return fmt.Errorf("Could not start HTTPS server for challenge -> %v", err)
 	}
 
+	// Tell the server about the generated random path
 	jsonBytes, err := json.Marshal(challenge{Type: chlng.Type, Path: responseToken})
 	if err != nil {
 		return errors.New("Failed to marshal network message...")
@@ -45,6 +48,8 @@ func (s *simpleHTTPChallenge) Solve(chlng challenge, domain string) error {
 		return fmt.Errorf("Failed to post JWS message. -> %v", err)
 	}
 
+	// After the path is sent, the ACME server will access our server.
+	// Repeatedly check the server for an updated status on our request.
 	var challengeResponse challenge
 loop:
 	for {
@@ -74,6 +79,8 @@ loop:
 // Starts a temporary HTTPS server on port 443. As soon as the challenge passed validation,
 // this server will get shut down. The certificate generated here is only held in memory.
 func (s *simpleHTTPChallenge) startHTTPSServer(domain string, token string, responseToken string) (net.Listener, error) {
+
+	// Generate a new RSA key and a self-signed certificate.
 	tempPrivKey, err := generatePrivateKey(2048)
 	if err != nil {
 		return nil, err
@@ -96,15 +103,19 @@ func (s *simpleHTTPChallenge) startHTTPSServer(domain string, token string, resp
 
 	path := "/.well-known/acme-challenge/" + responseToken
 
+	// Allow for CLI override
 	port := ":443"
 	if s.optPort != "" {
 		port = ":" + s.optPort
 	}
+
 	tlsListener, err := tls.Listen("tcp", port, tlsConf)
 	if err != nil {
 		logger().Fatalf("Could not start HTTP listener! -> %v", err)
 	}
 
+	// The handler validates the HOST header and request type.
+	// For validation it then writes the token the server returned with the challenge
 	http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 		if r.Host == domain && r.Method == "GET" {
 			w.Write([]byte(token))

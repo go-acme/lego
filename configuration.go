@@ -35,6 +35,10 @@ func (c *Configuration) ServerPath() string {
 	return strings.Replace(srvStr, "/", string(os.PathSeparator), -1)
 }
 
+func (c *Configuration) CertPath() string {
+	return path.Join(c.context.GlobalString("path"), "certificates")
+}
+
 // AccountsPath returns the OS dependent path to the
 // local accounts for a specific CA
 func (c *Configuration) AccountsPath() string {

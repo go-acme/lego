@@ -2,7 +2,9 @@ package main
 
 import (
 	"bufio"
+	"io/ioutil"
 	"os"
+	"path"
 	"strings"
 
 	"github.com/codegangsta/cli"
@@ -92,5 +94,29 @@ func run(c *cli.Context) {
 		logger().Fatal("Please specify --domains")
 	}
 
-	client.ObtainCertificates(c.GlobalStringSlice("domains"))
+	certs, err := client.ObtainCertificates(c.GlobalStringSlice("domains"))
+	if err != nil {
+		logger().Fatalf("Could not obtain certificates -> %v", err)
+	}
+
+	err = checkFolder(conf.CertPath())
+	if err != nil {
+		logger().Fatalf("Cound not check/create path: %v", err)
+	}
+
+	for _, certRes := range certs {
+		certOut := path.Join(conf.CertPath(), certRes.Domain+".crt")
+		privOut := path.Join(conf.CertPath(), certRes.Domain+".key")
+
+		err = ioutil.WriteFile(certOut, certRes.Certificate, 0700)
+		if err != nil {
+			logger().Printf("Unable to save Certificate for domain %s -> %v", certRes.Domain, err)
+		}
+
+		err = ioutil.WriteFile(privOut, certRes.PrivateKey, 0700)
+		if err != nil {
+			logger().Printf("Unable to save PrivateKey for domain %s -> %v", certRes.Domain, err)
+		}
+
+	}
 }

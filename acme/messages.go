@@ -33,6 +33,7 @@ type authorizationResource struct {
 	Body       authorization
 	Domain     string
 	NewCertURL string
+	AuthURL    string
 }
 
 type authorization struct {

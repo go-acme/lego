@@ -97,8 +97,10 @@ loop:
 		case "pending":
 			break
 		case "invalid":
+			listener.Close()
 			return errors.New("The server could not validate our request.")
 		default:
+			listener.Close()
 			return errors.New("The server returned an unexpected state.")
 		}
 

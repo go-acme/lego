@@ -14,6 +14,7 @@ import (
 	"math/big"
 	"net"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -37,6 +38,7 @@ func (s *simpleHTTPChallenge) CanSolve(domain string) bool {
 		return false
 	}
 	ipStr := string(ip)
+	ipStr = strings.Replace(ipStr, "\n", "", -1)
 
 	// resolve domain we should solve for
 	resolvedIPs, err := net.LookupHost(domain)

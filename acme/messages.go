@@ -49,8 +49,23 @@ type identifier struct {
 }
 
 type challenge struct {
-	Type   string `json:"type"`
-	Status string `json:"status"`
-	URI    string `json:"uri"`
-	Token  string `json:"token"`
+	Type   string `json:"type,omitempty"`
+	Status string `json:"status,omitempty"`
+	URI    string `json:"uri,omitempty"`
+	Token  string `json:"token,omitempty"`
+	Path   string `json:"path,omitempty"`
+}
+
+type csrMessage struct {
+	Csr string `json:"csr"`
+}
+
+// CertificateResource represents a CA issued certificate.
+// PrivateKey and Certificate are both already PEM encoded
+// and can be directly written to disk.
+type CertificateResource struct {
+	Domain      string
+	CertURL     string
+	PrivateKey  []byte
+	Certificate []byte
 }

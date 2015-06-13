@@ -2,6 +2,7 @@ package acme
 
 import (
 	"crypto/rsa"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -34,7 +35,7 @@ type User interface {
 
 type solver interface {
 	CanSolve() bool
-	Solve(challenge challenge, domain string)
+	Solve(challenge challenge, domain string) error
 }
 
 // Client is the user-friendy way to ACME
@@ -42,11 +43,12 @@ type Client struct {
 	regURL  string
 	user    User
 	jws     *jws
+	keyBits int
 	Solvers map[string]solver
 }
 
 // NewClient creates a new client for the set user.
-func NewClient(caURL string, usr User, optPort string) *Client {
+func NewClient(caURL string, usr User, keyBits int, optPort string) *Client {
 	if err := usr.GetPrivateKey().Validate(); err != nil {
 		logger().Fatalf("Could not validate the private account key of %s -> %v", usr.GetEmail(), err)
 	}
@@ -55,10 +57,9 @@ func NewClient(caURL string, usr User, optPort string) *Client {
 
 	// REVIEW: best possibility?
 	solvers := make(map[string]solver)
-	solvers["simpleHttp"] = &simpleHTTPChallenge{jws: jws}
-	solvers["dvsni"] = &dvsniChallenge{}
+	solvers["simpleHttps"] = &simpleHTTPChallenge{jws: jws, optPort: optPort}
 
-	return &Client{regURL: caURL, user: usr, jws: jws}
+	return &Client{regURL: caURL, user: usr, jws: jws, keyBits: keyBits, Solvers: solvers}
 }
 
 // Register the current account to the ACME server.
@@ -112,33 +113,32 @@ func (c *Client) AgreeToTos() error {
 		return err
 	}
 
-	logger().Printf("Agreement: %s", string(jsonBytes))
-
 	resp, err := c.jws.post(c.user.GetRegistration().URI, jsonBytes)
 	if err != nil {
 		return err
 	}
 
-	logResponseBody(resp)
-
 	if resp.StatusCode != http.StatusAccepted {
 		return fmt.Errorf("The server returned %d but we expected %d", resp.StatusCode, http.StatusAccepted)
 	}
-
-	logResponseHeaders(resp)
-	logResponseBody(resp)
 
 	return nil
 }
 
 // ObtainCertificates tries to obtain certificates from the CA server
-// using the challenges it has configured. It also tries to do multiple
-// certificate processings at the same time in parallel.
-func (c *Client) ObtainCertificates(domains []string) error {
-
+// using the challenges it has configured. The returned certificates are
+// DER encoded byte slices.
+func (c *Client) ObtainCertificates(domains []string) ([]CertificateResource, error) {
+	logger().Print("Obtaining certificates...")
 	challenges := c.getChallenges(domains)
-	c.solveChallenges(challenges)
-	return nil
+	err := c.solveChallenges(challenges)
+	if err != nil {
+		return nil, err
+	}
+
+	logger().Print("Validations succeeded. Getting certificates")
+
+	return c.requestCertificates(challenges)
 }
 
 // Looks through the challenge combinations to find a solvable match.
@@ -149,7 +149,11 @@ func (c *Client) solveChallenges(challenges []*authorizationResource) error {
 		// no solvers - no solving
 		if solvers := c.chooseSolvers(authz.Body); solvers != nil {
 			for i, solver := range solvers {
-				solver.Solve(authz.Body.Challenges[i], authz.Domain)
+				// TODO: do not immediately fail if one domain fails to validate.
+				err := solver.Solve(authz.Body.Challenges[i], authz.Domain)
+				if err != nil {
+					return err
+				}
 			}
 		} else {
 			return fmt.Errorf("Could not determine solvers for %s", authz.Domain)
@@ -164,9 +168,11 @@ func (c *Client) solveChallenges(challenges []*authorizationResource) error {
 func (c *Client) chooseSolvers(auth authorization) map[int]solver {
 	for _, combination := range auth.Combinations {
 		solvers := make(map[int]solver)
-		for i := range combination {
-			if solver, ok := c.Solvers[auth.Challenges[i].Type]; ok {
-				solvers[i] = solver
+		for _, idx := range combination {
+			if solver, ok := c.Solvers[auth.Challenges[idx].Type]; ok {
+				solvers[idx] = solver
+			} else {
+				logger().Printf("Could not find solver for: %s", auth.Challenges[idx].Type)
 			}
 		}
 
@@ -213,7 +219,7 @@ func (c *Client) getChallenges(domains []string) []*authorizationResource {
 				errc <- err
 			}
 
-			resc <- &authorizationResource{Body: authz, NewCertURL: links["next"], Domain: domain}
+			resc <- &authorizationResource{Body: authz, NewCertURL: links["next"], AuthURL: resp.Header.Get("Location"), Domain: domain}
 
 		}(domain)
 	}
@@ -232,6 +238,47 @@ func (c *Client) getChallenges(domains []string) []*authorizationResource {
 	close(errc)
 
 	return responses
+}
+
+func (c *Client) requestCertificates(challenges []*authorizationResource) ([]CertificateResource, error) {
+	var certs []CertificateResource
+	for _, authz := range challenges {
+		privKey, err := generatePrivateKey(c.keyBits)
+		if err != nil {
+			return nil, err
+		}
+
+		csr, err := generateCsr(privKey, authz.Domain)
+		if err != nil {
+			return nil, err
+		}
+		csrString := base64.URLEncoding.EncodeToString(csr)
+		jsonBytes, err := json.Marshal(csrMessage{Csr: csrString})
+		if err != nil {
+			return nil, err
+		}
+
+		resp, err := c.jws.post(authz.NewCertURL, jsonBytes)
+		if err != nil {
+			return nil, err
+		}
+
+		logResponseHeaders(resp)
+
+		if resp.Header.Get("Content-Type") != "application/pkix-cert" {
+			return nil, fmt.Errorf("The server returned an unexpected content-type header: %s - expected %s", resp.Header.Get("Content-Type"), "application/pkix-cert")
+		}
+
+		cert, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		privateKeyPem := pemEncode(privKey)
+
+		certs = append(certs, CertificateResource{Domain: authz.Domain, CertURL: resp.Header.Get("Location"), PrivateKey: privateKeyPem, Certificate: cert})
+	}
+	return certs, nil
 }
 
 func logResponseHeaders(resp *http.Response) {

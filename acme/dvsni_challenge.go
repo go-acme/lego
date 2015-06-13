@@ -6,6 +6,6 @@ func (s *dvsniChallenge) CanSolve() bool {
 	return false
 }
 
-func (s *dvsniChallenge) Solve(challenge challenge, domain string) {
-
+func (s *dvsniChallenge) Solve(challenge challenge, domain string) error {
+	return nil
 }

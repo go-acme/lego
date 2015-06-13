@@ -1,6 +1,8 @@
 # lego
 Let's Encrypt client and library in go!
 
+[![Build Status](https://travis-ci.org/xenolf/lego.svg?branch=master)](https://travis-ci.org/xenolf/lego)
+
 This is a work in progress. Please do *NOT* run this on a production server. 
 
 ####Current Status

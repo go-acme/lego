@@ -35,7 +35,7 @@ type User interface {
 
 // Interface for all challenge solvers to implement.
 type solver interface {
-	CanSolve() bool
+	CanSolve(domain string) bool
 	Solve(challenge challenge, domain string) error
 }
 
@@ -150,7 +150,7 @@ func (c *Client) solveChallenges(challenges []*authorizationResource) error {
 	// loop through the resources, basically through the domains.
 	for _, authz := range challenges {
 		// no solvers - no solving
-		if solvers := c.chooseSolvers(authz.Body); solvers != nil {
+		if solvers := c.chooseSolvers(authz.Body, authz.Domain); solvers != nil {
 			for i, solver := range solvers {
 				// TODO: do not immediately fail if one domain fails to validate.
 				err := solver.Solve(authz.Body.Challenges[i], authz.Domain)
@@ -168,11 +168,11 @@ func (c *Client) solveChallenges(challenges []*authorizationResource) error {
 
 // Checks all combinations from the server and returns an array of
 // solvers which should get executed in series.
-func (c *Client) chooseSolvers(auth authorization) map[int]solver {
+func (c *Client) chooseSolvers(auth authorization, domain string) map[int]solver {
 	for _, combination := range auth.Combinations {
 		solvers := make(map[int]solver)
 		for _, idx := range combination {
-			if solver, ok := c.Solvers[auth.Challenges[idx].Type]; ok {
+			if solver, ok := c.Solvers[auth.Challenges[idx].Type]; ok && solver.CanSolve(domain) {
 				solvers[idx] = solver
 			} else {
 				logger().Printf("Could not find solver for: %s", auth.Challenges[idx].Type)

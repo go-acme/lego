@@ -10,9 +10,11 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"math/big"
 	"net"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -21,8 +23,39 @@ type simpleHTTPChallenge struct {
 	optPort string
 }
 
-func (s *simpleHTTPChallenge) CanSolve() bool {
-	return true
+// SimpleHTTPS checks for DNS, public IP and port bindings
+func (s *simpleHTTPChallenge) CanSolve(domain string) bool {
+	// determine public ip
+	resp, err := http.Get("https://icanhazip.com/")
+	if err != nil {
+		logger().Printf("Could not get public IP -> %v", err)
+		return false
+	}
+
+	ip, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		logger().Printf("Could not get public IP -> %v", err)
+		return false
+	}
+	ipStr := string(ip)
+	ipStr = strings.Replace(ipStr, "\n", "", -1)
+
+	// resolve domain we should solve for
+	resolvedIPs, err := net.LookupHost(domain)
+	if err != nil {
+		logger().Printf("Could not lookup DNS A record for %s", domain)
+		return false
+	}
+
+	// if the resolve does not resolve to our public ip, we can't solve.
+	for _, resolvedIP := range resolvedIPs {
+		if resolvedIP == ipStr {
+			return true
+		}
+	}
+
+	logger().Printf("SimpleHTTPS: Domain %s does not resolve to the public ip of this server. Determined ip: %s", domain, ipStr)
+	return false
 }
 
 func (s *simpleHTTPChallenge) Solve(chlng challenge, domain string) error {
@@ -64,8 +97,10 @@ loop:
 		case "pending":
 			break
 		case "invalid":
+			listener.Close()
 			return errors.New("The server could not validate our request.")
 		default:
+			listener.Close()
 			return errors.New("The server returned an unexpected state.")
 		}
 
@@ -94,7 +129,6 @@ func (s *simpleHTTPChallenge) startHTTPSServer(domain string, token string, resp
 		tempCertPEM,
 		pemBytes)
 	if err != nil {
-		logger().Print("error here!")
 		return nil, err
 	}
 
@@ -111,7 +145,7 @@ func (s *simpleHTTPChallenge) startHTTPSServer(domain string, token string, resp
 
 	tlsListener, err := tls.Listen("tcp", port, tlsConf)
 	if err != nil {
-		logger().Fatalf("Could not start HTTP listener! -> %v", err)
+		return nil, fmt.Errorf("Could not start HTTP listener! -> %v", err)
 	}
 
 	// The handler validates the HOST header and request type.

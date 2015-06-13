@@ -33,6 +33,7 @@ type User interface {
 	GetPrivateKey() *rsa.PrivateKey
 }
 
+// Interface for all challenge solvers to implement.
 type solver interface {
 	CanSolve() bool
 	Solve(challenge challenge, domain string) error
@@ -56,6 +57,8 @@ func NewClient(caURL string, usr User, keyBits int, optPort string) *Client {
 	jws := &jws{privKey: usr.GetPrivateKey()}
 
 	// REVIEW: best possibility?
+	// Add all available solvers with the right index as per ACME
+	// spec to this map. Otherwise they won`t be found.
 	solvers := make(map[string]solver)
 	solvers["simpleHttps"] = &simpleHTTPChallenge{jws: jws, optPort: optPort}
 
@@ -240,6 +243,9 @@ func (c *Client) getChallenges(domains []string) []*authorizationResource {
 	return responses
 }
 
+// requestCertificates iterates all granted authorizations, creates RSA private keys and CSRs.
+// It then uses these to request a certificate from the CA and returns the list of successfully
+// granted certificates.
 func (c *Client) requestCertificates(challenges []*authorizationResource) ([]CertificateResource, error) {
 	var certs []CertificateResource
 	for _, authz := range challenges {

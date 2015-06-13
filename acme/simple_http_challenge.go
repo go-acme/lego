@@ -129,7 +129,6 @@ func (s *simpleHTTPChallenge) startHTTPSServer(domain string, token string, resp
 		tempCertPEM,
 		pemBytes)
 	if err != nil {
-		logger().Print("error here!")
 		return nil, err
 	}
 
@@ -146,7 +145,7 @@ func (s *simpleHTTPChallenge) startHTTPSServer(domain string, token string, resp
 
 	tlsListener, err := tls.Listen("tcp", port, tlsConf)
 	if err != nil {
-		logger().Fatalf("Could not start HTTP listener! -> %v", err)
+		return nil, fmt.Errorf("Could not start HTTP listener! -> %v", err)
 	}
 
 	// The handler validates the HOST header and request type.

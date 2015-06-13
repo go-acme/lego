@@ -2,7 +2,7 @@ package acme
 
 type dvsniChallenge struct{}
 
-func (s *dvsniChallenge) CanSolve() bool {
+func (s *dvsniChallenge) CanSolve(domain string) bool {
 	return false
 }
 

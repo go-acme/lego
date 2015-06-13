@@ -253,7 +253,7 @@ func (c *Client) requestCertificates(challenges []*authorizationResource) ([]Cer
 			return nil, err
 		}
 		csrString := base64.URLEncoding.EncodeToString(csr)
-		jsonBytes, err := json.Marshal(csrMessage{Csr: csrString})
+		jsonBytes, err := json.Marshal(csrMessage{Csr: csrString, Authorizations: []string{authz.AuthURL}})
 		if err != nil {
 			return nil, err
 		}

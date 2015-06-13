@@ -58,7 +58,8 @@ type challenge struct {
 }
 
 type csrMessage struct {
-	Csr string `json:"csr"`
+	Csr            string   `json:"csr"`
+	Authorizations []string `json:"authorizations"`
 }
 
 // CertificateResource represents a CA issued certificate.

@@ -45,7 +45,7 @@ type Client struct {
 	user    User
 	jws     *jws
 	keyBits int
-	Solvers map[string]solver
+	solvers map[string]solver
 }
 
 // NewClient creates a new client for the set user.
@@ -62,7 +62,7 @@ func NewClient(caURL string, usr User, keyBits int, optPort string) *Client {
 	solvers := make(map[string]solver)
 	solvers["simpleHttps"] = &simpleHTTPChallenge{jws: jws, optPort: optPort}
 
-	return &Client{regURL: caURL, user: usr, jws: jws, keyBits: keyBits, Solvers: solvers}
+	return &Client{regURL: caURL, user: usr, jws: jws, keyBits: keyBits, solvers: solvers}
 }
 
 // Register the current account to the ACME server.
@@ -172,7 +172,7 @@ func (c *Client) chooseSolvers(auth authorization, domain string) map[int]solver
 	for _, combination := range auth.Combinations {
 		solvers := make(map[int]solver)
 		for _, idx := range combination {
-			if solver, ok := c.Solvers[auth.Challenges[idx].Type]; ok && solver.CanSolve(domain) {
+			if solver, ok := c.solvers[auth.Challenges[idx].Type]; ok && solver.CanSolve(domain) {
 				solvers[idx] = solver
 			} else {
 				logger().Printf("Could not find solver for: %s", auth.Challenges[idx].Type)

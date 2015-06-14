@@ -1,7 +1,7 @@
 package acme
 
 import (
-	"crypto/rand"
+	"bytes"
 	"crypto/rsa"
 	"testing"
 )
@@ -32,7 +32,10 @@ func TestGenerateCSR(t *testing.T) {
 }
 
 func TestPEMEncode(t *testing.T) {
-	key, err := rsa.GenerateKey(rand.Reader, 32)
+	buf := bytes.NewBufferString("TestingRSAIsSoMuchFun")
+
+	reader := MockRandReader{b: buf}
+	key, err := rsa.GenerateKey(reader, 32)
 	if err != nil {
 		t.Fatal("Error generating private key:", err)
 	}
@@ -45,4 +48,12 @@ func TestPEMEncode(t *testing.T) {
 	if len(data) != 127 {
 		t.Errorf("Expected PEM encoding to be length 127, but it was %d", len(data))
 	}
+}
+
+type MockRandReader struct {
+	b *bytes.Buffer
+}
+
+func (r MockRandReader) Read(p []byte) (int, error) {
+	return r.b.Read(p)
 }

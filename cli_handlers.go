@@ -101,12 +101,12 @@ func run(c *cli.Context) {
 		certOut := path.Join(conf.CertPath(), certRes.Domain+".crt")
 		privOut := path.Join(conf.CertPath(), certRes.Domain+".key")
 
-		err = ioutil.WriteFile(certOut, certRes.Certificate, 0700)
+		err = ioutil.WriteFile(certOut, certRes.Certificate, 0600)
 		if err != nil {
 			logger().Printf("Unable to save Certificate for domain %s\n\t%v", certRes.Domain, err)
 		}
 
-		err = ioutil.WriteFile(privOut, certRes.PrivateKey, 0700)
+		err = ioutil.WriteFile(privOut, certRes.PrivateKey, 0600)
 		if err != nil {
 			logger().Printf("Unable to save PrivateKey for domain %s\n\t%v", certRes.Domain, err)
 		}

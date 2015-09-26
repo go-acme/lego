@@ -51,7 +51,7 @@ type Client struct {
 // NewClient creates a new client for the set user.
 func NewClient(caURL string, usr User, keyBits int, optPort string) *Client {
 	if err := usr.GetPrivateKey().Validate(); err != nil {
-		logger().Fatalf("Could not validate the private account key of %s -> %v", usr.GetEmail(), err)
+		logger().Fatalf("Could not validate the private account key of %s\n\t%v", usr.GetEmail(), err)
 	}
 
 	jws := &jws{privKey: usr.GetPrivateKey()}
@@ -60,7 +60,7 @@ func NewClient(caURL string, usr User, keyBits int, optPort string) *Client {
 	// Add all available solvers with the right index as per ACME
 	// spec to this map. Otherwise they won`t be found.
 	solvers := make(map[string]solver)
-	solvers["simpleHttps"] = &simpleHTTPChallenge{jws: jws, optPort: optPort}
+	solvers["simpleHttp"] = &simpleHTTPChallenge{jws: jws, optPort: optPort}
 
 	return &Client{regURL: caURL, user: usr, jws: jws, keyBits: keyBits, solvers: solvers}
 }
@@ -68,7 +68,7 @@ func NewClient(caURL string, usr User, keyBits int, optPort string) *Client {
 // Register the current account to the ACME server.
 func (c *Client) Register() (*RegistrationResource, error) {
 	logger().Print("Registering account ... ")
-	jsonBytes, err := json.Marshal(registrationMessage{Contact: []string{"mailto:" + c.user.GetEmail()}})
+	jsonBytes, err := json.Marshal(registrationMessage{Resource: "new-reg", Contact: []string{"mailto:" + c.user.GetEmail()}})
 	if err != nil {
 		return nil, err
 	}
@@ -111,6 +111,7 @@ func (c *Client) Register() (*RegistrationResource, error) {
 // the server.
 func (c *Client) AgreeToTos() error {
 	c.user.GetRegistration().Body.Agreement = c.user.GetRegistration().TosURL
+	c.user.GetRegistration().Body.Resource = "reg"
 	jsonBytes, err := json.Marshal(&c.user.GetRegistration().Body)
 	if err != nil {
 		return err
@@ -193,7 +194,7 @@ func (c *Client) getChallenges(domains []string) []*authorizationResource {
 
 	for _, domain := range domains {
 		go func(domain string) {
-			jsonBytes, err := json.Marshal(authorization{Identifier: identifier{Type: "dns", Value: domain}})
+			jsonBytes, err := json.Marshal(authorization{Resource: "new-authz", Identifier: identifier{Type: "dns", Value: domain}})
 			if err != nil {
 				errc <- err
 				return
@@ -259,7 +260,7 @@ func (c *Client) requestCertificates(challenges []*authorizationResource) ([]Cer
 			return nil, err
 		}
 		csrString := base64.URLEncoding.EncodeToString(csr)
-		jsonBytes, err := json.Marshal(csrMessage{Csr: csrString, Authorizations: []string{authz.AuthURL}})
+		jsonBytes, err := json.Marshal(csrMessage{Resource: "new-cert", Csr: csrString, Authorizations: []string{authz.AuthURL}})
 		if err != nil {
 			return nil, err
 		}
@@ -268,8 +269,6 @@ func (c *Client) requestCertificates(challenges []*authorizationResource) ([]Cer
 		if err != nil {
 			return nil, err
 		}
-
-		logResponseHeaders(resp)
 
 		if resp.Header.Get("Content-Type") != "application/pkix-cert" {
 			return nil, fmt.Errorf("The server returned an unexpected content-type header: %s - expected %s", resp.Header.Get("Content-Type"), "application/pkix-cert")

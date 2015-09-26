@@ -45,10 +45,11 @@ func TestSimpleHTTP(t *testing.T) {
 	jws := &jws{privKey: privKey}
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Replay-Nonce", "12345")
 	}))
 
 	solver := &simpleHTTPChallenge{jws: jws}
-	clientChallenge := challenge{Type: "simpleHttps", Status: "pending", URI: ts.URL, Token: "123456789"}
+	clientChallenge := challenge{Type: "simpleHttp", Status: "pending", URI: ts.URL, Token: "123456789"}
 
 	// validate error on non-root bind to 443
 	if err = solver.Solve(clientChallenge, "test.domain"); err == nil {
@@ -63,32 +64,43 @@ func TestSimpleHTTP(t *testing.T) {
 
 	// Validate error on invalid status
 	ts.Config.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		failed := challenge{Type: "simpleHttps", Status: "invalid", URI: ts.URL, Token: "123456789"}
+		w.Header().Add("Replay-Nonce", "12345")
+		failed := challenge{Type: "simpleHttp", Status: "invalid", URI: ts.URL, Token: "1234567810"}
 		jsonBytes, _ := json.Marshal(&failed)
 		w.Write(jsonBytes)
 	})
+	clientChallenge.Token = "1234567810"
 	if err = solver.Solve(clientChallenge, "test.domain"); err == nil {
 		t.Error("FAILED: Expected Solve to return an error but the error was nil.")
 	}
 
 	// Validate no error on valid response
 	ts.Config.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		valid := challenge{Type: "simpleHttps", Status: "valid", URI: ts.URL, Token: "123456789"}
+		w.Header().Add("Replay-Nonce", "12345")
+		valid := challenge{Type: "simpleHttp", Status: "valid", URI: ts.URL, Token: "1234567811"}
 		jsonBytes, _ := json.Marshal(&valid)
 		w.Write(jsonBytes)
 	})
+	clientChallenge.Token = "1234567811"
 	if err = solver.Solve(clientChallenge, "test.domain"); err != nil {
 		t.Errorf("VALID: Expected Solve to return no error but the error was -> %v", err)
 	}
 
 	// Validate server on port 8080 which responds appropriately
+	clientChallenge.Token = "1234567812"
 	ts.Config.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var request challenge
+		w.Header().Add("Replay-Nonce", "12345")
+
+		if r.Method == "HEAD" {
+			return
+		}
 
 		clientJws, _ := ioutil.ReadAll(r.Body)
 		j, err := jose.ParseSigned(string(clientJws))
 		if err != nil {
-			t.Errorf("Client sent invalid JWS to the server. -> %v", err)
+			t.Errorf("Client sent invalid JWS to the server.\n\t%v", err)
+			return
 		}
 		output, err := j.Verify(&privKey.PublicKey)
 		if err != nil {
@@ -99,7 +111,7 @@ func TestSimpleHTTP(t *testing.T) {
 		transport := &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}
 		client := &http.Client{Transport: transport}
 
-		reqURL := "https://localhost:8080/.well-known/acme-challenge/" + request.Path
+		reqURL := "https://localhost:8080/.well-known/acme-challenge/" + clientChallenge.Token
 		t.Logf("Request URL is: %s", reqURL)
 		req, _ := http.NewRequest("GET", reqURL, nil)
 		req.Host = "test.domain"
@@ -110,11 +122,17 @@ func TestSimpleHTTP(t *testing.T) {
 
 		body, _ := ioutil.ReadAll(resp.Body)
 		bodyStr := string(body)
-		if bodyStr != "123456789" {
-			t.Errorf("Expected the solver to return the token %s but instead returned '%s'", "123456789", bodyStr)
+		clientResponse, err := jose.ParseSigned(bodyStr)
+		if err != nil {
+			t.Errorf("Client answered with invalid JWS.\n\t%v", err)
+			return
+		}
+		_, err = clientResponse.Verify(&privKey.PublicKey)
+		if err != nil {
+			t.Errorf("Unable to verify client data -> %v", err)
 		}
 
-		valid := challenge{Type: "simpleHttps", Status: "valid", URI: ts.URL, Token: "123456789"}
+		valid := challenge{Type: "simpleHttp", Status: "valid", URI: ts.URL, Token: "1234567812"}
 		jsonBytes, _ := json.Marshal(&valid)
 		w.Write(jsonBytes)
 	})

@@ -38,7 +38,7 @@ func TestNewClient(t *testing.T) {
 		t.Fatal("Expected %d solver(s), got %d", expected, actual)
 	}
 
-	simphttp, ok := client.solvers["simpleHttps"].(*simpleHTTPChallenge)
+	simphttp, ok := client.solvers["simpleHttp"].(*simpleHTTPChallenge)
 	if !ok {
 		t.Fatal("Expected simpleHttps solver to be simpleHTTPChallenge type")
 	}

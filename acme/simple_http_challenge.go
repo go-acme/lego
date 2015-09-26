@@ -25,6 +25,7 @@ type simpleHTTPChallenge struct {
 
 // SimpleHTTPS checks for DNS, public IP and port bindings
 func (s *simpleHTTPChallenge) CanSolve(domain string) bool {
+
 	// determine public ip
 	resp, err := http.Get("https://icanhazip.com/")
 	if err != nil {
@@ -54,24 +55,23 @@ func (s *simpleHTTPChallenge) CanSolve(domain string) bool {
 		}
 	}
 
-	logger().Printf("SimpleHTTPS: Domain %s does not resolve to the public ip of this server. Determined ip: %s", domain, ipStr)
+	logger().Printf("SimpleHTTP: Domain %s does not resolve to the public ip of this server. Determined IP: %s Resolved IP: %s", domain, ipStr, resolvedIPs[0])
 	return false
 }
 
 func (s *simpleHTTPChallenge) Solve(chlng challenge, domain string) error {
 
-	logger().Print("Trying to solve SimpleHTTPS")
+	logger().Print("Trying to solve SimpleHTTP")
 
 	// Generate random string for the path. The acme server will
 	// access this path on the server in order to validate the request
-	responseToken := getRandomString(15)
-	listener, err := s.startHTTPSServer(domain, chlng.Token, responseToken)
+	listener, err := s.startHTTPSServer(domain, chlng.Token)
 	if err != nil {
 		return fmt.Errorf("Could not start HTTPS server for challenge -> %v", err)
 	}
 
 	// Tell the server about the generated random path
-	jsonBytes, err := json.Marshal(challenge{Type: chlng.Type, Path: responseToken})
+	jsonBytes, err := json.Marshal(challenge{Resource: "challenge", Type: chlng.Type, Token: chlng.Token})
 	if err != nil {
 		return errors.New("Failed to marshal network message...")
 	}
@@ -98,9 +98,11 @@ loop:
 			break
 		case "invalid":
 			listener.Close()
+			logger().Print("The server could not validate our request.")
 			return errors.New("The server could not validate our request.")
 		default:
 			listener.Close()
+			logger().Print("The server returned an unexpected state.")
 			return errors.New("The server returned an unexpected state.")
 		}
 
@@ -113,7 +115,7 @@ loop:
 
 // Starts a temporary HTTPS server on port 443. As soon as the challenge passed validation,
 // this server will get shut down. The certificate generated here is only held in memory.
-func (s *simpleHTTPChallenge) startHTTPSServer(domain string, token string, responseToken string) (net.Listener, error) {
+func (s *simpleHTTPChallenge) startHTTPSServer(domain string, token string) (net.Listener, error) {
 
 	// Generate a new RSA key and a self-signed certificate.
 	tempPrivKey, err := generatePrivateKey(2048)
@@ -135,7 +137,7 @@ func (s *simpleHTTPChallenge) startHTTPSServer(domain string, token string, resp
 	tlsConf := new(tls.Config)
 	tlsConf.Certificates = []tls.Certificate{tempKeyPair}
 
-	path := "/.well-known/acme-challenge/" + responseToken
+	path := "/.well-known/acme-challenge/" + token
 
 	// Allow for CLI override
 	port := ":443"
@@ -148,11 +150,29 @@ func (s *simpleHTTPChallenge) startHTTPSServer(domain string, token string, resp
 		return nil, fmt.Errorf("Could not start HTTP listener! -> %v", err)
 	}
 
+	jsonBytes, err := json.Marshal(challenge{Type: "simpleHttp", Token: token, Tls: true})
+	if err != nil {
+		return nil, errors.New("startHTTPSServer: Failed to marshal network message...")
+	}
+	signed, err := s.jws.signContent(jsonBytes)
+	if err != nil {
+		return nil, errors.New("startHTTPSServer: Failed to sign message...")
+	}
+	signedCompact := signed.FullSerialize()
+	if err != nil {
+		return nil, errors.New("startHTTPSServer: Failed to serialize message...")
+	}
+
 	// The handler validates the HOST header and request type.
 	// For validation it then writes the token the server returned with the challenge
 	http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-		if r.Host == domain && r.Method == "GET" {
-			w.Write([]byte(token))
+		if strings.HasPrefix(r.Host, domain) && r.Method == "GET" {
+			w.Header().Add("Content-Type", "application/jose+json")
+			w.Write([]byte(signedCompact))
+			logger().Print("Served JWS payload...")
+		} else {
+			logger().Printf("Received request for domain %s with method %s", r.Host, r.Method)
+			w.Write([]byte("TEST"))
 		}
 	})
 

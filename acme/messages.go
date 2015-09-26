@@ -3,21 +3,24 @@ package acme
 import "time"
 
 type registrationMessage struct {
-	Contact []string `json:"contact"`
+	Resource string   `json:"resource"`
+	Contact  []string `json:"contact"`
 }
 
 // Registration is returned by the ACME server after the registration
 // The client implementation should save this registration somewhere.
 type Registration struct {
-	ID  int `json:"id"`
-	Key struct {
+	Resource string `json:"resource,omitempty"`
+	ID       int    `json:"id"`
+	Key      struct {
 		Kty string `json:"kty"`
 		N   string `json:"n"`
 		E   string `json:"e"`
 	} `json:"key"`
-	Recoverytoken string   `json:"recoveryToken"`
-	Contact       []string `json:"contact"`
-	Agreement     string   `json:"agreement,omitempty"`
+	Contact        []string `json:"contact"`
+	Agreement      string   `json:"agreement,omitempty"`
+	Authorizations string   `json:"authorizations,omitempty"`
+	Certificates   string   `json:"certificates,omitempty"`
 }
 
 // RegistrationResource represents all important informations about a registration
@@ -37,6 +40,7 @@ type authorizationResource struct {
 }
 
 type authorization struct {
+	Resource     string      `json:"resource,omitempty"`
 	Identifier   identifier  `json:"identifier"`
 	Status       string      `json:"status,omitempty"`
 	Expires      time.Time   `json:"expires,omitempty"`
@@ -50,14 +54,16 @@ type identifier struct {
 }
 
 type challenge struct {
-	Type   string `json:"type,omitempty"`
-	Status string `json:"status,omitempty"`
-	URI    string `json:"uri,omitempty"`
-	Token  string `json:"token,omitempty"`
-	Path   string `json:"path,omitempty"`
+	Resource string `json:"resource,omitempty"`
+	Type     string `json:"type,omitempty"`
+	Status   string `json:"status,omitempty"`
+	URI      string `json:"uri,omitempty"`
+	Token    string `json:"token,omitempty"`
+	Tls      bool   `json:"tls,omitempty"`
 }
 
 type csrMessage struct {
+	Resource       string   `json:"resource,omitempty"`
 	Csr            string   `json:"csr"`
 	Authorizations []string `json:"authorizations"`
 }

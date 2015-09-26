@@ -36,7 +36,7 @@ func run(c *cli.Context) {
 	if acc.Registration == nil {
 		reg, err := client.Register()
 		if err != nil {
-			logger().Fatalf("Could not complete registration -> %v", err)
+			logger().Fatalf("Could not complete registration\n\t%v", err)
 		}
 
 		acc.Registration = reg
@@ -49,12 +49,7 @@ func run(c *cli.Context) {
 			You should make a secure backup	of this folder now. This
 			configuration directory will also contain certificates and
 			private keys obtained from Let's Encrypt so making regular
-			backups of this folder is ideal.
-
-			If you lose your account credentials, you can recover
-			them using the token
-			"%s".
-			You must write that down and put it in a safe place.`, c.GlobalString("config-dir"), reg.Body.Recoverytoken)
+			backups of this folder is ideal.`, c.GlobalString("config-dir"))
 
 	}
 
@@ -96,7 +91,7 @@ func run(c *cli.Context) {
 
 	certs, err := client.ObtainCertificates(c.GlobalStringSlice("domains"))
 	if err != nil {
-		logger().Fatalf("Could not obtain certificates -> %v", err)
+		logger().Fatalf("Could not obtain certificates\n\t%v", err)
 	}
 
 	err = checkFolder(conf.CertPath())
@@ -110,12 +105,12 @@ func run(c *cli.Context) {
 
 		err = ioutil.WriteFile(certOut, certRes.Certificate, 0700)
 		if err != nil {
-			logger().Printf("Unable to save Certificate for domain %s -> %v", certRes.Domain, err)
+			logger().Printf("Unable to save Certificate for domain %s\n\t%v", certRes.Domain, err)
 		}
 
 		err = ioutil.WriteFile(privOut, certRes.PrivateKey, 0700)
 		if err != nil {
-			logger().Printf("Unable to save PrivateKey for domain %s -> %v", certRes.Domain, err)
+			logger().Printf("Unable to save PrivateKey for domain %s\n\t%v", certRes.Domain, err)
 		}
 
 	}

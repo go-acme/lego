@@ -44,44 +44,42 @@ func run(c *cli.Context) {
 
 		logger().Print("!!!! HEADS UP !!!!")
 		logger().Printf(`
-			Your account credentials have been saved in your Let's Encrypt
-			configuration directory at "%s".
-			You should make a secure backup	of this folder now. This
-			configuration directory will also contain certificates and
-			private keys obtained from Let's Encrypt so making regular
-			backups of this folder is ideal.`, c.GlobalString("config-dir"))
+		Your account credentials have been saved in your Let's Encrypt
+		configuration directory at "%s".
+		You should make a secure backup	of this folder now. This
+		configuration directory will also contain certificates and
+		private keys obtained from Let's Encrypt so making regular
+		backups of this folder is ideal.`, conf.AccountPath(c.GlobalString("email")))
 
 	}
 
 	if acc.Registration.Body.Agreement == "" {
-		if !c.GlobalBool("agree-tos") {
-			reader := bufio.NewReader(os.Stdin)
-			logger().Printf("Please review the TOS at %s", acc.Registration.TosURL)
+		reader := bufio.NewReader(os.Stdin)
+		logger().Printf("Please review the TOS at %s", acc.Registration.TosURL)
 
-			for {
-				logger().Println("Do you accept the TOS? Y/n")
-				text, err := reader.ReadString('\n')
-				if err != nil {
-					logger().Fatalf("Could not read from console -> %v", err)
-				}
-
-				text = strings.Trim(text, "\r\n")
-
-				if text == "n" {
-					logger().Fatal("You did not accept the TOS. Unable to proceed.")
-				}
-
-				if text == "Y" || text == "y" || text == "" {
-					err = client.AgreeToTos()
-					if err != nil {
-						logger().Fatalf("Could not agree to tos -> %v", err)
-					}
-					acc.Save()
-					break
-				}
-
-				logger().Println("Your input was invalid. Please answer with one of Y/y, n or by pressing enter.")
+		for {
+			logger().Println("Do you accept the TOS? Y/n")
+			text, err := reader.ReadString('\n')
+			if err != nil {
+				logger().Fatalf("Could not read from console -> %v", err)
 			}
+
+			text = strings.Trim(text, "\r\n")
+
+			if text == "n" {
+				logger().Fatal("You did not accept the TOS. Unable to proceed.")
+			}
+
+			if text == "Y" || text == "y" || text == "" {
+				err = client.AgreeToTos()
+				if err != nil {
+					logger().Fatalf("Could not agree to tos -> %v", err)
+				}
+				acc.Save()
+				break
+			}
+
+			logger().Println("Your input was invalid. Please answer with one of Y/y, n or by pressing enter.")
 		}
 	}
 

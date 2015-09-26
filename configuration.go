@@ -31,7 +31,7 @@ func (c *Configuration) OptPort() string {
 // ServerPath returns the OS dependent path to the data for a specific CA
 func (c *Configuration) ServerPath() string {
 	srv, _ := url.Parse(c.context.GlobalString("server"))
-	srvStr := strings.Replace(srv.Host, ":", "_", -1) + srv.Path
+	srvStr := strings.Replace(srv.Host, ":", "_", -1)
 	return strings.Replace(srvStr, "/", string(os.PathSeparator), -1)
 }
 

@@ -24,7 +24,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "lego"
 	app.Usage = "Let's encrypt client to go!"
-	app.Version = "0.0.1"
+	app.Version = "0.0.2"
 
 	cwd, err := os.Getwd()
 	if err != nil {
@@ -102,14 +102,6 @@ func main() {
 			Name:  "rsa-key-size, B",
 			Value: 2048,
 			Usage: "Size of the RSA key.",
-		},
-		cli.BoolFlag{
-			Name:  "no-confirm",
-			Usage: "Turn off confirmation screens.",
-		},
-		cli.BoolFlag{
-			Name:  "agree-tos, e",
-			Usage: "Skip the end user license agreement screen.",
 		},
 		cli.StringFlag{
 			Name:  "path",

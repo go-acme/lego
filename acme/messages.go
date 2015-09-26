@@ -2,6 +2,13 @@ package acme
 
 import "time"
 
+type directory struct {
+	NewAuthzURL   string `json:"new-authz"`
+	NewCertURL    string `json:"new-cert"`
+	NewRegURL     string `json:"new-reg"`
+	RevokeCertURL string `json:"revoke-cert"`
+}
+
 type registrationMessage struct {
 	Resource string   `json:"resource"`
 	Contact  []string `json:"contact"`

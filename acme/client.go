@@ -41,11 +41,11 @@ type solver interface {
 
 // Client is the user-friendy way to ACME
 type Client struct {
-	regURL  string
-	user    User
-	jws     *jws
-	keyBits int
-	solvers map[string]solver
+	directory directory
+	user      User
+	jws       *jws
+	keyBits   int
+	solvers   map[string]solver
 }
 
 // NewClient creates a new client for the set user.
@@ -53,7 +53,6 @@ func NewClient(caURL string, usr User, keyBits int, optPort string) *Client {
 	if err := usr.GetPrivateKey().Validate(); err != nil {
 		logger().Fatalf("Could not validate the private account key of %s\n\t%v", usr.GetEmail(), err)
 	}
-
 	jws := &jws{privKey: usr.GetPrivateKey()}
 
 	// REVIEW: best possibility?
@@ -62,7 +61,21 @@ func NewClient(caURL string, usr User, keyBits int, optPort string) *Client {
 	solvers := make(map[string]solver)
 	solvers["simpleHttp"] = &simpleHTTPChallenge{jws: jws, optPort: optPort}
 
-	return &Client{regURL: caURL, user: usr, jws: jws, keyBits: keyBits, solvers: solvers}
+	dirResp, err := http.Get(caURL + "/directory")
+	if err != nil {
+		logger().Fatalf("Could not get directory from CA URL. Please check the URL.\n\t%v", err)
+	}
+	var dir directory
+	decoder := json.NewDecoder(dirResp.Body)
+	err = decoder.Decode(&dir)
+	if err != nil {
+		logger().Fatalf("Could not parse directory response from CA URL.\n\t%v", err)
+	}
+	if dir.NewRegURL == "" || dir.NewAuthzURL == "" || dir.NewCertURL == "" || dir.RevokeCertURL == "" {
+		logger().Fatal("The directory returned by the server was invalid.")
+	}
+
+	return &Client{directory: dir, user: usr, jws: jws, keyBits: keyBits, solvers: solvers}
 }
 
 // Register the current account to the ACME server.
@@ -73,7 +86,7 @@ func (c *Client) Register() (*RegistrationResource, error) {
 		return nil, err
 	}
 
-	resp, err := c.jws.post(c.regURL, jsonBytes)
+	resp, err := c.jws.post(c.directory.NewRegURL, jsonBytes)
 	if err != nil {
 		return nil, err
 	}

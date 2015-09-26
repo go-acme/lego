@@ -91,7 +91,7 @@ func main() {
 		},
 		cli.StringFlag{
 			Name:  "server, s",
-			Value: "https://acme-staging.api.letsencrypt.org/acme/new-reg",
+			Value: "https://acme-staging.api.letsencrypt.org/",
 			Usage: "CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client.",
 		},
 		cli.StringFlag{

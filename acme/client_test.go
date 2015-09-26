@@ -3,6 +3,9 @@ package acme
 import (
 	"crypto/rand"
 	"crypto/rsa"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 )
 
@@ -17,7 +20,13 @@ func TestNewClient(t *testing.T) {
 		regres:     new(RegistrationResource),
 		privatekey: key,
 	}
-	caURL, optPort := "https://foobar", "1234"
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		data, _ := json.Marshal(directory{NewAuthzURL: "http://test", NewCertURL: "http://test", NewRegURL: "http://test", RevokeCertURL: "http://test"})
+		w.Write(data)
+	}))
+
+	caURL, optPort := ts.URL, "1234"
 	client := NewClient(caURL, user, keyBits, optPort)
 
 	if client.jws == nil {
@@ -27,9 +36,6 @@ func TestNewClient(t *testing.T) {
 		t.Errorf("Expected jws.privKey to be %p but was %p", expected, actual)
 	}
 
-	if client.regURL != caURL {
-		t.Errorf("Expected regURL to be '%s' but was '%s'", caURL, client.regURL)
-	}
 	if client.keyBits != keyBits {
 		t.Errorf("Expected keyBits to be %d but was %d", keyBits, client.keyBits)
 	}

@@ -158,6 +158,27 @@ func (c *Client) ObtainCertificates(domains []string) ([]CertificateResource, er
 	return c.requestCertificates(challenges)
 }
 
+func (c *Client) RevokeCertificate(certificate []byte) error {
+	encodedCert := base64.URLEncoding.EncodeToString(certificate)
+
+	jsonBytes, err := json.Marshal(revokeCertMessage{Resource: "revoke-cert", Certificate: encodedCert})
+	if err != nil {
+		return err
+	}
+
+	resp, err := c.jws.post(c.directory.RevokeCertURL, jsonBytes)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != 200 {
+		body, _ := ioutil.ReadAll(resp.Body)
+		return fmt.Errorf("The server returned an error while trying to revoke the certificate.\n%s", body)
+	}
+
+	return nil
+}
+
 // Looks through the challenge combinations to find a solvable match.
 // Then solves the challenges in series and returns.
 func (c *Client) solveChallenges(challenges []*authorizationResource) error {

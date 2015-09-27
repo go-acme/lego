@@ -75,6 +75,11 @@ type csrMessage struct {
 	Authorizations []string `json:"authorizations"`
 }
 
+type revokeCertMessage struct {
+	Resource    string `json:"resource"`
+	Certificate string `json:"certificate"`
+}
+
 // CertificateResource represents a CA issued certificate.
 // PrivateKey and Certificate are both already PEM encoded
 // and can be directly written to disk.

@@ -113,3 +113,37 @@ func run(c *cli.Context) {
 
 	}
 }
+
+func revoke(c *cli.Context) {
+	err := checkFolder(c.GlobalString("path"))
+	if err != nil {
+		logger().Fatalf("Cound not check/create path: %v", err)
+	}
+
+	conf := NewConfiguration(c)
+	if !c.GlobalIsSet("email") {
+		logger().Fatal("You have to pass an account (email address) to the program using --email or -m")
+	}
+
+	acc := NewAccount(c.GlobalString("email"), conf)
+	client := acme.NewClient(c.GlobalString("server"), acc, conf.RsaBits(), conf.OptPort())
+
+	err = checkFolder(conf.CertPath())
+	if err != nil {
+		logger().Fatalf("Cound not check/create path: %v", err)
+	}
+
+	for _, domain := range c.GlobalStringSlice("domains") {
+		logger().Printf("Trying to revoke certificate for domain %s", domain)
+
+		certPath := path.Join(conf.CertPath(), domain+".crt")
+		certBytes, err := ioutil.ReadFile(certPath)
+
+		err = client.RevokeCertificate(certBytes)
+		if err != nil {
+			logger().Printf("Error while revoking the certificate for domain %s\n\t%v", domain, err)
+		} else {
+			logger().Print("Certificate was revoked.")
+		}
+	}
+}

@@ -2,16 +2,13 @@ package acme
 
 import (
 	"crypto/rand"
-	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
-	"crypto/x509/pkix"
 	"encoding/json"
 	"encoding/pem"
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"math/big"
 	"net"
 	"net/http"
 	"strings"
@@ -122,7 +119,7 @@ func (s *simpleHTTPChallenge) startHTTPSServer(domain string, token string) (net
 	if err != nil {
 		return nil, err
 	}
-	tempCertPEM, err := generateCert(tempPrivKey, domain)
+	tempCertPEM, err := generatePemCert(tempPrivKey, domain)
 	if err != nil {
 		return nil, err
 	}
@@ -189,32 +186,4 @@ func getRandomString(length int) string {
 		bytes[i] = alphanum[b%byte(len(alphanum))]
 	}
 	return string(bytes)
-}
-
-func generateCert(privKey *rsa.PrivateKey, domain string) ([]byte, error) {
-	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
-	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
-	if err != nil {
-		return nil, err
-	}
-
-	template := x509.Certificate{
-		SerialNumber: serialNumber,
-		Subject: pkix.Name{
-			CommonName: "ACME Challenge TEMP",
-		},
-		NotBefore: time.Now(),
-		NotAfter:  time.Now().Add(365),
-
-		KeyUsage:              x509.KeyUsageKeyEncipherment,
-		BasicConstraintsValid: true,
-		DNSNames:              []string{domain},
-	}
-
-	derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, &privKey.PublicKey, privKey)
-	if err != nil {
-		return nil, err
-	}
-
-	return pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: derBytes}), nil
 }

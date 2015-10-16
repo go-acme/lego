@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/rsa"
 	"testing"
+	"time"
 )
 
 func TestGeneratePrivateKey(t *testing.T) {
@@ -47,6 +48,30 @@ func TestPEMEncode(t *testing.T) {
 	}
 	if len(data) != 127 {
 		t.Errorf("Expected PEM encoding to be length 127, but it was %d", len(data))
+	}
+}
+
+func TestCertExpiration(t *testing.T) {
+	privKey, err := generatePrivateKey(2048)
+	if err != nil {
+		t.Fatal("Error generating private key:", err)
+	}
+
+	expiration := time.Now().Add(365)
+	expiration = expiration.Round(time.Second)
+	certBytes, err := generateDerCert(privKey, expiration, "test.com")
+	if err != nil {
+		t.Fatal("Error generating cert:", err)
+	}
+
+	buf := bytes.NewBufferString("TestingRSAIsSoMuchFun")
+
+	if ctime, err := GetCertExpiration(buf.Bytes()); err == nil {
+		t.Errorf("Expected getCertExpiration to return an error for garbage string but returned %v", ctime)
+	}
+
+	if ctime, err := GetCertExpiration(certBytes); err != nil || ctime != expiration.UTC() {
+		t.Errorf("Expected getCertExpiration to return %v but returned: %v, err: %v", expiration.UTC(), ctime, err)
 	}
 }
 

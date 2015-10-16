@@ -6,6 +6,8 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
+	"math/big"
+	"time"
 )
 
 func generatePrivateKey(keyLength int) (*rsa.PrivateKey, error) {
@@ -30,4 +32,50 @@ func pemEncode(data interface{}) []byte {
 	}
 
 	return pem.EncodeToMemory(pemBlock)
+}
+
+func GetCertExpiration(cert []byte) (time.Time, error) {
+	pCert, err := x509.ParseCertificate(cert)
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	return pCert.NotAfter, nil
+}
+
+func generatePemCert(privKey *rsa.PrivateKey, domain string) ([]byte, error) {
+	derBytes, err := generateDerCert(privKey, time.Time{}, domain)
+	if err != nil {
+		return nil, err
+	}
+
+	return pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: derBytes}), nil
+}
+
+func generateDerCert(privKey *rsa.PrivateKey, expiration time.Time, domain string) ([]byte, error) {
+	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
+	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
+	if err != nil {
+		return nil, err
+	}
+
+	zero := time.Time{}
+	if expiration == zero {
+		expiration = time.Now().Add(365)
+	}
+
+	template := x509.Certificate{
+		SerialNumber: serialNumber,
+		Subject: pkix.Name{
+			CommonName: "ACME Challenge TEMP",
+		},
+		NotBefore: time.Now(),
+		NotAfter:  expiration,
+
+		KeyUsage:              x509.KeyUsageKeyEncipherment,
+		BasicConstraintsValid: true,
+		DNSNames:              []string{domain},
+	}
+
+	return x509.CreateCertificate(rand.Reader, &template, &template, &privKey.PublicKey, privKey)
 }

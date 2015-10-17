@@ -34,6 +34,7 @@ func pemEncode(data interface{}) []byte {
 	return pem.EncodeToMemory(pemBlock)
 }
 
+// GetCertExpiration returns the "NotAfter" date of a DER encoded certificate.
 func GetCertExpiration(cert []byte) (time.Time, error) {
 	pCert, err := x509.ParseCertificate(cert)
 	if err != nil {

@@ -60,8 +60,7 @@ func generateDerCert(privKey *rsa.PrivateKey, expiration time.Time, domain strin
 		return nil, err
 	}
 
-	zero := time.Time{}
-	if expiration == zero {
+	if expiration.IsZero() {
 		expiration = time.Now().Add(365)
 	}
 

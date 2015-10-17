@@ -71,6 +71,7 @@ func (u MyUser) GetPrivateKey() *rsa.PrivateKey {
 }
 
 // Create a user. New accounts need an email and private key to start.
+const rsaKeySize = 2048
 privateKey, err := rsa.GenerateKey(rand.Reader, rsaKeySize)
 if err != nil {
 	log.Fatal(err)
@@ -84,7 +85,7 @@ myUser := MyUser{
 // configured for a local dev instance of Boulder running in Docker in a VM.
 // We specify an optPort of 5001 because we aren't running as root and can't
 // bind a listener to port 443 (used later when we attempt to pass challenge).
-client := acme.NewClient("http://192.168.99.100:4000", &myUser, 2048, "5001")
+client := acme.NewClient("http://192.168.99.100:4000", &myUser, rsaKeySize, "5001")
 
 // New users will need to register; be sure to save it
 reg, err := client.Register()

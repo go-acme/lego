@@ -45,11 +45,16 @@ type Client struct {
 	user      User
 	jws       *jws
 	keyBits   int
+	devMode   bool
 	solvers   map[string]solver
 }
 
 // NewClient creates a new client for the set user.
-func NewClient(caURL string, usr User, keyBits int, optPort string) *Client {
+// caURL - The root url to the boulder instance you want certificates from
+// usr - A filled in user struct
+// optPort - The alternative port to listen on for challenges.
+// devMode - If set to true, all CanSolve() checks are skipped.
+func NewClient(caURL string, usr User, keyBits int, optPort string, devMode bool) *Client {
 	if err := usr.GetPrivateKey().Validate(); err != nil {
 		logger().Fatalf("Could not validate the private account key of %s\n\t%v", usr.GetEmail(), err)
 	}
@@ -75,7 +80,7 @@ func NewClient(caURL string, usr User, keyBits int, optPort string) *Client {
 		logger().Fatal("The directory returned by the server was invalid.")
 	}
 
-	return &Client{directory: dir, user: usr, jws: jws, keyBits: keyBits, solvers: solvers}
+	return &Client{directory: dir, user: usr, jws: jws, keyBits: keyBits, devMode: devMode, solvers: solvers}
 }
 
 // Register the current account to the ACME server.
@@ -207,7 +212,7 @@ func (c *Client) chooseSolvers(auth authorization, domain string) map[int]solver
 	for _, combination := range auth.Combinations {
 		solvers := make(map[int]solver)
 		for _, idx := range combination {
-			if solver, ok := c.solvers[auth.Challenges[idx].Type]; ok && solver.CanSolve(domain) {
+			if solver, ok := c.solvers[auth.Challenges[idx].Type]; ok && (c.devMode || solver.CanSolve(domain)) {
 				solvers[idx] = solver
 			} else {
 				logger().Printf("Could not find solver for: %s", auth.Challenges[idx].Type)

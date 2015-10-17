@@ -80,6 +80,10 @@ func main() {
 			Name:  "port",
 			Usage: "Challenges will use this port to listen on. Please make sure to forward port 443 to this port on your machine. Otherwise use setcap on the binary",
 		},
+		cli.BoolFlag{
+			Name:  "devMode",
+			Usage: "If set to true, all client side challenge pre-tests are skipped.",
+		},
 	}
 
 	app.Run(os.Args)

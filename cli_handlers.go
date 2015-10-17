@@ -32,7 +32,7 @@ func run(c *cli.Context) {
 	}
 
 	acc := NewAccount(c.GlobalString("email"), conf)
-	client := acme.NewClient(c.GlobalString("server"), acc, conf.RsaBits(), conf.OptPort())
+	client := acme.NewClient(c.GlobalString("server"), acc, conf.RsaBits(), conf.OptPort(), c.GlobalBool("devMode"))
 	if acc.Registration == nil {
 		reg, err := client.Register()
 		if err != nil {
@@ -126,7 +126,7 @@ func revoke(c *cli.Context) {
 	}
 
 	acc := NewAccount(c.GlobalString("email"), conf)
-	client := acme.NewClient(c.GlobalString("server"), acc, conf.RsaBits(), conf.OptPort())
+	client := acme.NewClient(c.GlobalString("server"), acc, conf.RsaBits(), conf.OptPort(), c.GlobalBool("devMode"))
 
 	err = checkFolder(conf.CertPath())
 	if err != nil {

@@ -6,6 +6,7 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
+	"fmt"
 	"math/big"
 	"time"
 )
@@ -39,8 +40,37 @@ func pemEncode(data interface{}) []byte {
 	return pem.EncodeToMemory(pemBlock)
 }
 
-// GetCertExpiration returns the "NotAfter" date of a DER encoded certificate.
-func GetCertExpiration(cert []byte) (time.Time, error) {
+func pemDecode(data []byte) (*pem.Block, error) {
+	pemBlock, _ := pem.Decode(data)
+	if pemBlock == nil {
+		return nil, fmt.Errorf("Pem decode did not yield a valid block. Is the certificate in the right format?")
+	}
+
+	return pemBlock, nil
+}
+
+func pemDecodeTox509(pem []byte) (*x509.Certificate, error) {
+	pemBlock, err := pemDecode(pem)
+	if pemBlock == nil {
+		return nil, err
+	}
+
+	return x509.ParseCertificate(pemBlock.Bytes)
+}
+
+// GetPEMCertExpiration returns the "NotAfter" date of a PEM encoded certificate.
+// The certificate has to be PEM encoded. Any other encodings like DER will fail.
+func GetPEMCertExpiration(cert []byte) (time.Time, error) {
+	pemBlock, err := pemDecode(cert)
+	if pemBlock == nil {
+		return time.Time{}, err
+	}
+
+	return getCertExpiration(pemBlock.Bytes)
+}
+
+// getCertExpiration returns the "NotAfter" date of a DER encoded certificate.
+func getCertExpiration(cert []byte) (time.Time, error) {
 	pCert, err := x509.ParseCertificate(cert)
 	if err != nil {
 		return time.Time{}, err

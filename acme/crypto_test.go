@@ -51,7 +51,7 @@ func TestPEMEncode(t *testing.T) {
 	}
 }
 
-func TestCertExpiration(t *testing.T) {
+func TestPEMCertExpiration(t *testing.T) {
 	privKey, err := generatePrivateKey(2048)
 	if err != nil {
 		t.Fatal("Error generating private key:", err)
@@ -66,12 +66,20 @@ func TestCertExpiration(t *testing.T) {
 
 	buf := bytes.NewBufferString("TestingRSAIsSoMuchFun")
 
-	if ctime, err := GetCertExpiration(buf.Bytes()); err == nil {
+	// Some random string should return an error.
+	if ctime, err := GetPEMCertExpiration(buf.Bytes()); err == nil {
 		t.Errorf("Expected getCertExpiration to return an error for garbage string but returned %v", ctime)
 	}
 
-	if ctime, err := GetCertExpiration(certBytes); err != nil || ctime != expiration.UTC() {
-		t.Errorf("Expected getCertExpiration to return %v but returned: %v, err: %v", expiration.UTC(), ctime, err)
+	// A DER encoded certificate should return an error.
+	if _, err := GetPEMCertExpiration(certBytes); err == nil {
+		t.Errorf("Expected getCertExpiration to return an error for DER certificates but returned none.")
+	}
+
+	// A PEM encoded certificate should work ok.
+	pemCert := pemEncode(derCertificateBytes(certBytes))
+	if ctime, err := GetPEMCertExpiration(pemCert); err != nil || !ctime.Equal(expiration.UTC()) {
+		t.Errorf("Expected getCertExpiration to return %v but returned %v. Error: %v", expiration, ctime, err)
 	}
 }
 

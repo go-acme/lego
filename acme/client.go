@@ -305,6 +305,9 @@ func (c *Client) requestCertificates(challenges []*authorizationResource) ([]Cer
 		}
 	}
 
+	close(resc)
+	close(errc)
+
 	return certs, nil
 }
 
@@ -358,20 +361,23 @@ func (c *Client) requestCertificate(authz *authorizationResource, result chan Ce
 			if len(cert) > 0 {
 				cerRes.CertStableURL = resp.Header.Get("Content-Location")
 				cerRes.Certificate = pemEncode(derCertificateBytes(cert))
+				logger().Printf("[%s] Server responded with a certificate.", authz.Domain)
 				result <- cerRes
-			} else {
-				// The certificate was granted but is not yet issued.
-				// Check retry-after and loop.
-				ra := resp.Header.Get("Retry-After")
-				retryAfter, err := strconv.Atoi(ra)
-				if err != nil {
-					errc <- err
-					return
-				}
-
-				logger().Printf("[%s] Server responded with status 202. Respecting retry-after of: %d", authz.Domain, retryAfter)
-				time.Sleep(time.Duration(retryAfter) * time.Millisecond)
+				return
 			}
+
+			// The certificate was granted but is not yet issued.
+			// Check retry-after and loop.
+			ra := resp.Header.Get("Retry-After")
+			retryAfter, err := strconv.Atoi(ra)
+			if err != nil {
+				errc <- err
+				return
+			}
+
+			logger().Printf("[%s] Server responded with status 202. Respecting retry-after of: %d", authz.Domain, retryAfter)
+			time.Sleep(time.Duration(retryAfter) * time.Second)
+
 			break
 		default:
 			logger().Fatalf("[%s] The server returned an unexpected status code %d.", authz.Domain, resp.StatusCode)

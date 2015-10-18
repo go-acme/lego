@@ -158,3 +158,52 @@ func revoke(c *cli.Context) {
 		}
 	}
 }
+
+func renew(c *cli.Context) {
+	conf, _, client := setup(c)
+
+	for _, domain := range c.GlobalStringSlice("domains") {
+		// load the cert resource from files.
+		// We store the certificate, private key and metadata in different files
+		// as web servers would not be able to work with a combined file.
+		certPath := path.Join(conf.CertPath(), domain+".crt")
+		privPath := path.Join(conf.CertPath(), domain+".key")
+		metaPath := path.Join(conf.CertPath(), domain+".json")
+
+		certBytes, err := ioutil.ReadFile(certPath)
+		if err != nil {
+			logger().Printf("Error while loading the certificate for domain %s\n\t%v", domain, err)
+			return
+		}
+
+		keyBytes, err := ioutil.ReadFile(privPath)
+		if err != nil {
+			logger().Printf("Error while loading the private key for domain %s\n\t%v", domain, err)
+			return
+		}
+
+		metaBytes, err := ioutil.ReadFile(metaPath)
+		if err != nil {
+			logger().Printf("Error while loading the meta data for domain %s\n\t%v", domain, err)
+			return
+		}
+
+		var certRes acme.CertificateResource
+		err = json.Unmarshal(metaBytes, &certRes)
+		if err != nil {
+			logger().Printf("Error while marshalling the meta data for domain %s\n\t%v", domain, err)
+			return
+		}
+
+		certRes.PrivateKey = keyBytes
+		certRes.Certificate = certBytes
+
+		newCert, err := client.RenewCertificate(&certRes)
+		if err != nil {
+			logger().Printf("%v", err)
+			return
+		}
+
+		saveCertRes(newCert, conf)
+	}
+}

@@ -50,6 +50,11 @@ func main() {
 			Usage:  "Revoke a certificate",
 			Action: revoke,
 		},
+		{
+			Name:   "renew",
+			Usage:  "Renew a certificate",
+			Action: renew,
+		},
 	}
 
 	app.Flags = []cli.Flag{

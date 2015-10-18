@@ -84,9 +84,9 @@ type revokeCertMessage struct {
 // PrivateKey and Certificate are both already PEM encoded
 // and can be directly written to disk.
 type CertificateResource struct {
-	Domain        string
-	CertURL       string
-	CertStableURL string
-	PrivateKey    []byte
-	Certificate   []byte
+	Domain        string `json:"domain"`
+	CertURL       string `json:"certUrl"`
+	CertStableURL string `json:"certStableUrl"`
+	PrivateKey    []byte `json:"-"`
+	Certificate   []byte `json:"-"`
 }

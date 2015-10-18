@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"io/ioutil"
 	"os"
 	"path"
@@ -18,21 +19,53 @@ func checkFolder(path string) error {
 	return nil
 }
 
-func run(c *cli.Context) {
+func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 	err := checkFolder(c.GlobalString("path"))
 	if err != nil {
 		logger().Fatalf("Cound not check/create path: %v", err)
 	}
 
 	conf := NewConfiguration(c)
-
-	//TODO: move to account struct? Currently MUST pass email.
 	if !c.GlobalIsSet("email") {
 		logger().Fatal("You have to pass an account (email address) to the program using --email or -m")
 	}
 
+	//TODO: move to account struct? Currently MUST pass email.
 	acc := NewAccount(c.GlobalString("email"), conf)
-	client := acme.NewClient(c.GlobalString("server"), acc, conf.RsaBits(), conf.OptPort(), c.GlobalBool("devMode"))
+	return conf, acc, acme.NewClient(c.GlobalString("server"), acc, conf.RsaBits(), conf.OptPort(), c.GlobalBool("devMode"))
+}
+
+func saveCertRes(certRes *acme.CertificateResource, conf *Configuration) {
+	// We store the certificate, private key and metadata in different files
+	// as web servers would not be able to work with a combined file.
+	certOut := path.Join(conf.CertPath(), certRes.Domain+".crt")
+	privOut := path.Join(conf.CertPath(), certRes.Domain+".key")
+	metaOut := path.Join(conf.CertPath(), certRes.Domain+".json")
+
+	err := ioutil.WriteFile(certOut, certRes.Certificate, 0600)
+	if err != nil {
+		logger().Printf("Unable to save Certificate for domain %s\n\t%v", certRes.Domain, err)
+	}
+
+	err = ioutil.WriteFile(privOut, certRes.PrivateKey, 0600)
+	if err != nil {
+		logger().Printf("Unable to save PrivateKey for domain %s\n\t%v", certRes.Domain, err)
+	}
+
+	jsonBytes, err := json.MarshalIndent(certRes, "", "\t")
+	if err != nil {
+		logger().Printf("Unable to marshal CertResource for domain %s\n\t%v", certRes.Domain, err)
+	}
+
+	err = ioutil.WriteFile(metaOut, jsonBytes, 0600)
+	if err != nil {
+		logger().Printf("Unable to save CertResource for domain %s\n\t%v", certRes.Domain, err)
+	}
+}
+
+func run(c *cli.Context) {
+
+	conf, acc, client := setup(c)
 	if acc.Registration == nil {
 		reg, err := client.Register()
 		if err != nil {
@@ -98,37 +131,15 @@ func run(c *cli.Context) {
 	}
 
 	for _, certRes := range certs {
-		certOut := path.Join(conf.CertPath(), certRes.Domain+".crt")
-		privOut := path.Join(conf.CertPath(), certRes.Domain+".key")
-
-		err = ioutil.WriteFile(certOut, certRes.Certificate, 0600)
-		if err != nil {
-			logger().Printf("Unable to save Certificate for domain %s\n\t%v", certRes.Domain, err)
-		}
-
-		err = ioutil.WriteFile(privOut, certRes.PrivateKey, 0600)
-		if err != nil {
-			logger().Printf("Unable to save PrivateKey for domain %s\n\t%v", certRes.Domain, err)
-		}
-
+		saveCertRes(&certRes, conf)
 	}
 }
 
 func revoke(c *cli.Context) {
-	err := checkFolder(c.GlobalString("path"))
-	if err != nil {
-		logger().Fatalf("Cound not check/create path: %v", err)
-	}
 
-	conf := NewConfiguration(c)
-	if !c.GlobalIsSet("email") {
-		logger().Fatal("You have to pass an account (email address) to the program using --email or -m")
-	}
+	conf, _, client := setup(c)
 
-	acc := NewAccount(c.GlobalString("email"), conf)
-	client := acme.NewClient(c.GlobalString("server"), acc, conf.RsaBits(), conf.OptPort(), c.GlobalBool("devMode"))
-
-	err = checkFolder(conf.CertPath())
+	err := checkFolder(conf.CertPath())
 	if err != nil {
 		logger().Fatalf("Cound not check/create path: %v", err)
 	}

@@ -47,3 +47,70 @@ GLOBAL OPTIONS:
    --help, -h                    show help
    --version, -v                 print the version
 ```
+
+
+#### ACME Library Usage
+
+A valid, but bare-bones example use of the acme package:
+
+```go
+// You'll need a user or account type that implements acme.User
+type MyUser struct {
+	Email        string
+	Registration *acme.RegistrationResource
+	key          *rsa.PrivateKey
+}
+func (u MyUser) GetEmail() string {
+	return u.Email
+}
+func (u MyUser) GetRegistration() *acme.RegistrationResource {
+	return u.Registration
+}
+func (u MyUser) GetPrivateKey() *rsa.PrivateKey {
+	return u.key
+}
+
+// Create a user. New accounts need an email and private key to start.
+const rsaKeySize = 2048
+privateKey, err := rsa.GenerateKey(rand.Reader, rsaKeySize)
+if err != nil {
+	log.Fatal(err)
+}
+myUser := MyUser{
+	Email: "you@yours.com",
+	key: privateKey,
+}
+
+// A client facilitates communication with the CA server. This CA URL is
+// configured for a local dev instance of Boulder running in Docker in a VM.
+// We specify an optPort of 5001 because we aren't running as root and can't
+// bind a listener to port 443 (used later when we attempt to pass challenge).
+client := acme.NewClient("http://192.168.99.100:4000", &myUser, rsaKeySize, "5001")
+
+// New users will need to register; be sure to save it
+reg, err := client.Register()
+if err != nil {
+	log.Fatal(err)
+}
+myUser.Registration = reg
+
+// The client has a URL to the current Let's Encrypt Subscriber
+// Agreement. The user will need to agree to it.
+err = client.AgreeToTos()
+if err != nil {
+	log.Fatal(err)
+}
+
+// The acme library takes care of completing the challenges to obtain the certificate(s).
+// Of course, the hostnames must resolve to this machine or it will fail.
+certificates, err := client.ObtainCertificates([]string{"mydomain.com"})
+if err != nil {
+	log.Fatal(err)
+}
+
+// Each certificate comes back with the cert bytes, the bytes of the server's
+// private key, and a certificate URL. This is where you should save them to files!
+fmt.Printf("%#v\n", certificates)
+
+// ... all done.
+```

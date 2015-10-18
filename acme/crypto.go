@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+type derCertificateBytes []byte
+
 func generatePrivateKey(keyLength int) (*rsa.PrivateKey, error) {
 	return rsa.GenerateKey(rand.Reader, keyLength)
 }
@@ -30,7 +32,7 @@ func pemEncode(data interface{}) []byte {
 	case *rsa.PrivateKey:
 		pemBlock = &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(key)}
 		break
-	case []byte:
+	case derCertificateBytes:
 		pemBlock = &pem.Block{Type: "CERTIFICATE", Bytes: data.([]byte)}
 	}
 

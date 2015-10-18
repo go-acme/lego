@@ -357,7 +357,7 @@ func (c *Client) requestCertificate(authz *authorizationResource, result chan Ce
 			// Otherwise the body is the certificate.
 			if len(cert) > 0 {
 				cerRes.CertStableURL = resp.Header.Get("Content-Location")
-				cerRes.Certificate = pemEncode(cert)
+				cerRes.Certificate = pemEncode(derCertificateBytes(cert))
 				result <- cerRes
 			} else {
 				// The certificate was granted but is not yet issued.

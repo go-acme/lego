@@ -29,6 +29,9 @@ func pemEncode(data interface{}) []byte {
 	switch key := data.(type) {
 	case *rsa.PrivateKey:
 		pemBlock = &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(key)}
+		break
+	case []byte:
+		pemBlock = &pem.Block{Type: "CERTIFICATE", Bytes: data.([]byte)}
 	}
 
 	return pem.EncodeToMemory(pemBlock)

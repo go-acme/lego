@@ -151,7 +151,7 @@ func (c *Client) AgreeToTos() error {
 
 // ObtainCertificates tries to obtain certificates from the CA server
 // using the challenges it has configured. The returned certificates are
-// DER encoded byte slices.
+// PEM encoded byte slices.
 func (c *Client) ObtainCertificates(domains []string) ([]CertificateResource, error) {
 	logger().Print("Obtaining certificates...")
 	challenges := c.getChallenges(domains)
@@ -165,7 +165,7 @@ func (c *Client) ObtainCertificates(domains []string) ([]CertificateResource, er
 	return c.requestCertificates(challenges)
 }
 
-// RevokeCertificate takes a DER encoded certificate and tries to revoke it at the CA.
+// RevokeCertificate takes a PEM encoded certificate and tries to revoke it at the CA.
 func (c *Client) RevokeCertificate(certificate []byte) error {
 	encodedCert := base64.URLEncoding.EncodeToString(certificate)
 
@@ -357,7 +357,7 @@ func (c *Client) requestCertificate(authz *authorizationResource, result chan Ce
 			// Otherwise the body is the certificate.
 			if len(cert) > 0 {
 				cerRes.CertStableURL = resp.Header.Get("Content-Location")
-				cerRes.Certificate = cert
+				cerRes.Certificate = pemEncode(cert)
 				result <- cerRes
 			} else {
 				// The certificate was granted but is not yet issued.

@@ -1,11 +1,12 @@
 # lego
 Let's Encrypt client and library in go!
 
+[![GoDoc](https://godoc.org/github.com/xenolf/lego/acme?status.svg)](https://godoc.org/github.com/xenolf/lego/acme)
 [![Build Status](https://travis-ci.org/xenolf/lego.svg?branch=master)](https://travis-ci.org/xenolf/lego)
 
-This is a work in progress. Please do *NOT* run this on a production server. 
+This is a work in progress. Please do *NOT* run this on a production server.
 
-####Current Status
+#### Current Status
 The code in this repository is currently quite raw.
 You are currently able to register an account with the ACME server as well as request certificates through the CLI.
 
@@ -13,7 +14,7 @@ Please keep in mind that CLI switches and APIs are still subject to change.
 
 When using the standard --path option, all certificates and account configurations are saved to a folder *.lego* in the current working directory.
 
-####Sudo
+#### Sudo
 I tried to not need sudo apart from challenges where binding to a privileged port is necessary.
 To run the CLI without sudo, you have two options:
 - Use ```setcap 'cap_net_bind_service=+ep' /path/to/program```
@@ -108,7 +109,7 @@ if err != nil {
 	log.Fatal(err)
 }
 
-// Each certificate comes back with the cert bytes, the bytes of the server's
+// Each certificate comes back with the cert bytes, the bytes of the client's
 // private key, and a certificate URL. This is where you should save them to files!
 fmt.Printf("%#v\n", certificates)
 

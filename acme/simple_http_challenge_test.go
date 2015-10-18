@@ -57,7 +57,7 @@ func TestSimpleHTTP(t *testing.T) {
 	}
 
 	// Validate error on unexpected state
-	solver.optPort = "8080"
+	solver.optPort = "23456"
 	if err = solver.Solve(clientChallenge, "test.domain"); err == nil {
 		t.Error("UNEXPECTED: Expected Solve to return an error but the error was nil.")
 	}
@@ -86,7 +86,7 @@ func TestSimpleHTTP(t *testing.T) {
 		t.Errorf("VALID: Expected Solve to return no error but the error was -> %v", err)
 	}
 
-	// Validate server on port 8080 which responds appropriately
+	// Validate server on port 23456 which responds appropriately
 	clientChallenge.Token = "1234567812"
 	ts.Config.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var request challenge
@@ -111,13 +111,13 @@ func TestSimpleHTTP(t *testing.T) {
 		transport := &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}
 		client := &http.Client{Transport: transport}
 
-		reqURL := "https://localhost:8080/.well-known/acme-challenge/" + clientChallenge.Token
+		reqURL := "https://localhost:23456/.well-known/acme-challenge/" + clientChallenge.Token
 		t.Logf("Request URL is: %s", reqURL)
 		req, _ := http.NewRequest("GET", reqURL, nil)
 		req.Host = "test.domain"
 		resp, err := client.Do(req)
 		if err != nil {
-			t.Errorf("Expected the solver to listen on port 8080 -> %v", err)
+			t.Errorf("Expected the solver to listen on port 23456 -> %v", err)
 		}
 
 		body, _ := ioutil.ReadAll(resp.Body)

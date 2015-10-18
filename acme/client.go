@@ -11,7 +11,9 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
+	"time"
 )
 
 // Logger is used to log errors; if nil, the default log.Logger is used.
@@ -163,6 +165,7 @@ func (c *Client) ObtainCertificates(domains []string) ([]CertificateResource, er
 	return c.requestCertificates(challenges)
 }
 
+// RevokeCertificate takes a DER encoded certificate and tries to revoke it at the CA.
 func (c *Client) RevokeCertificate(certificate []byte) error {
 	encodedCert := base64.URLEncoding.EncodeToString(certificate)
 
@@ -287,42 +290,100 @@ func (c *Client) getChallenges(domains []string) []*authorizationResource {
 // It then uses these to request a certificate from the CA and returns the list of successfully
 // granted certificates.
 func (c *Client) requestCertificates(challenges []*authorizationResource) ([]CertificateResource, error) {
-	var certs []CertificateResource
+	resc, errc := make(chan CertificateResource), make(chan error)
 	for _, authz := range challenges {
-		privKey, err := generatePrivateKey(c.keyBits)
-		if err != nil {
-			return nil, err
-		}
-
-		csr, err := generateCsr(privKey, authz.Domain)
-		if err != nil {
-			return nil, err
-		}
-		csrString := base64.URLEncoding.EncodeToString(csr)
-		jsonBytes, err := json.Marshal(csrMessage{Resource: "new-cert", Csr: csrString, Authorizations: []string{authz.AuthURL}})
-		if err != nil {
-			return nil, err
-		}
-
-		resp, err := c.jws.post(authz.NewCertURL, jsonBytes)
-		if err != nil {
-			return nil, err
-		}
-
-		if resp.Header.Get("Content-Type") != "application/pkix-cert" {
-			return nil, fmt.Errorf("The server returned an unexpected content-type header: %s - expected %s", resp.Header.Get("Content-Type"), "application/pkix-cert")
-		}
-
-		cert, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-
-		privateKeyPem := pemEncode(privKey)
-
-		certs = append(certs, CertificateResource{Domain: authz.Domain, CertURL: resp.Header.Get("Location"), PrivateKey: privateKeyPem, Certificate: cert})
+		go c.requestCertificate(authz, resc, errc)
 	}
+
+	var certs []CertificateResource
+	for i := 0; i < len(challenges); i++ {
+		select {
+		case res := <-resc:
+			certs = append(certs, res)
+		case err := <-errc:
+			logger().Printf("%v", err)
+		}
+	}
+
 	return certs, nil
+}
+
+func (c *Client) requestCertificate(authz *authorizationResource, result chan CertificateResource, errc chan error) {
+	privKey, err := generatePrivateKey(c.keyBits)
+	if err != nil {
+		errc <- err
+		return
+	}
+
+	csr, err := generateCsr(privKey, authz.Domain)
+	if err != nil {
+		errc <- err
+		return
+	}
+
+	csrString := base64.URLEncoding.EncodeToString(csr)
+	jsonBytes, err := json.Marshal(csrMessage{Resource: "new-cert", Csr: csrString, Authorizations: []string{authz.AuthURL}})
+	if err != nil {
+		errc <- err
+		return
+	}
+
+	resp, err := c.jws.post(authz.NewCertURL, jsonBytes)
+	if err != nil {
+		errc <- err
+		return
+	}
+
+	privateKeyPem := pemEncode(privKey)
+	cerRes := CertificateResource{
+		Domain:     authz.Domain,
+		CertURL:    resp.Header.Get("Location"),
+		PrivateKey: privateKeyPem}
+
+	for {
+
+		switch resp.StatusCode {
+		case 202:
+		case 201:
+
+			cert, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				errc <- err
+				return
+			}
+
+			// The server returns a body with a length of zero if the
+			// certificate was not ready at the time this request completed.
+			// Otherwise the body is the certificate.
+			if len(cert) > 0 {
+				cerRes.CertStableURL = resp.Header.Get("Content-Location")
+				cerRes.Certificate = cert
+				result <- cerRes
+			} else {
+				// The certificate was granted but is not yet issued.
+				// Check retry-after and loop.
+				ra := resp.Header.Get("Retry-After")
+				retryAfter, err := strconv.Atoi(ra)
+				if err != nil {
+					errc <- err
+					return
+				}
+
+				logger().Printf("[%s] Server responded with status 202. Respecting retry-after of: %d", authz.Domain, retryAfter)
+				time.Sleep(time.Duration(retryAfter) * time.Millisecond)
+			}
+			break
+		default:
+			logger().Fatalf("[%s] The server returned an unexpected status code %d.", authz.Domain, resp.StatusCode)
+			return
+		}
+
+		resp, err = http.Get(cerRes.CertURL)
+		if err != nil {
+			errc <- err
+			return
+		}
+	}
 }
 
 func logResponseHeaders(resp *http.Response) {

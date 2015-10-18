@@ -66,7 +66,7 @@ type challenge struct {
 	Status   string `json:"status,omitempty"`
 	URI      string `json:"uri,omitempty"`
 	Token    string `json:"token,omitempty"`
-	Tls      bool   `json:"tls,omitempty"`
+	TLS      bool   `json:"tls,omitempty"`
 }
 
 type csrMessage struct {
@@ -84,8 +84,9 @@ type revokeCertMessage struct {
 // PrivateKey and Certificate are both already PEM encoded
 // and can be directly written to disk.
 type CertificateResource struct {
-	Domain      string
-	CertURL     string
-	PrivateKey  []byte
-	Certificate []byte
+	Domain        string
+	CertURL       string
+	CertStableURL string
+	PrivateKey    []byte
+	Certificate   []byte
 }

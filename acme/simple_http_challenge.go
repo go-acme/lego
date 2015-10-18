@@ -147,17 +147,17 @@ func (s *simpleHTTPChallenge) startHTTPSServer(domain string, token string) (net
 		return nil, fmt.Errorf("Could not start HTTP listener! -> %v", err)
 	}
 
-	jsonBytes, err := json.Marshal(challenge{Type: "simpleHttp", Token: token, Tls: true})
+	jsonBytes, err := json.Marshal(challenge{Type: "simpleHttp", Token: token, TLS: true})
 	if err != nil {
-		return nil, errors.New("startHTTPSServer: Failed to marshal network message...")
+		return nil, errors.New("startHTTPSServer: Failed to marshal network message")
 	}
 	signed, err := s.jws.signContent(jsonBytes)
 	if err != nil {
-		return nil, errors.New("startHTTPSServer: Failed to sign message...")
+		return nil, errors.New("startHTTPSServer: Failed to sign message")
 	}
 	signedCompact := signed.FullSerialize()
 	if err != nil {
-		return nil, errors.New("startHTTPSServer: Failed to serialize message...")
+		return nil, errors.New("startHTTPSServer: Failed to serialize message")
 	}
 
 	// The handler validates the HOST header and request type.

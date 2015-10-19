@@ -1,5 +1,5 @@
 # lego
-Let's Encrypt client and library in go!
+Let's Encrypt client and ACME library written in Go
 
 [![GoDoc](https://godoc.org/github.com/xenolf/lego/acme?status.svg)](https://godoc.org/github.com/xenolf/lego/acme)
 [![Build Status](https://travis-ci.org/xenolf/lego.svg?branch=master)](https://travis-ci.org/xenolf/lego)
@@ -7,8 +7,19 @@ Let's Encrypt client and library in go!
 This is a work in progress. Please do *NOT* run this on a production server.
 
 #### Current Status
-The code in this repository is currently quite raw.
-You are currently able to register an account with the ACME server as well as request certificates through the CLI.
+The code in this repository is under development.
+
+Current features:
+- [x] Registering with a CA
+- [x] Requesting Certificates
+- [x] Renewing Certificates
+- [x] Revoking Certificates
+- [ ] Initiating account recovery
+- Identifier validation challenges
+  - [x] SimpleHTTP Challenge
+  - [ ] DVSNI Challenge
+  - [ ] Proof of Possession of a Prior Key
+  - [ ] DNS Challenge
 
 Please keep in mind that CLI switches and APIs are still subject to change.
 
@@ -27,26 +38,28 @@ NAME:
    lego - Let's encrypt client to go!
 
 USAGE:
-   lego [global options] command [command options] [arguments...]
-
+   ./lego [global options] command [command options] [arguments...]
+   
 VERSION:
    0.0.2
-
+   
 COMMANDS:
-   run      Register an account, then create and install a certificate
-   auth     Create a certificate - must already have an account
-   revoke   Revoke a certificate
-   help, h  Shows a list of commands or help for one command
-
+   run		Register an account, then create and install a certificate
+   auth		Create a certificate - must already have an account
+   revoke	Revoke a certificate
+   renew	Renew a certificate
+   help, h	Shows a list of commands or help for one command
+   
 GLOBAL OPTIONS:
-   --domains, -d [--domains option --domains option]     Add domains to the process
-   --server, -s "https://acme-staging.api.letsencrypt.org/" CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client.
-   --email, -m                      Email used for registration and recovery contact.
-   --rsa-key-size, -B "2048"              Size of the RSA key.
-   --path "CWD"       Directory to use for storing the data
-   --port                     Challenges will use this port to listen on. Please make sure to forward port 443 to this port on your machine. Otherwise use setcap on the binary
-   --help, -h                    show help
-   --version, -v                 print the version
+   --domains, -d [--domains option --domains option]			Add domains to the process
+   --server, -s "https://acme-staging.api.letsencrypt.org/"		CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client.
+   --email, -m 								Email used for registration and recovery contact.
+   --rsa-key-size, -B "2048"						Size of the RSA key.
+   --path "/home/azhwkd/Projects/go/src/github.com/xenolf/lego/.lego"	Directory to use for storing the data
+   --port 								Challenges will use this port to listen on. Please make sure to forward port 443 to this port on your machine. Otherwise use setcap on the binary
+   --devMode								If set to true, all client side challenge pre-tests are skipped.
+   --help, -h								show help
+   --version, -v							print the version
 ```
 
 

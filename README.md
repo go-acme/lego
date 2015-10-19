@@ -55,7 +55,7 @@ GLOBAL OPTIONS:
    --server, -s "https://acme-staging.api.letsencrypt.org/"		CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client.
    --email, -m 								Email used for registration and recovery contact.
    --rsa-key-size, -B "2048"						Size of the RSA key.
-   --path "/home/azhwkd/Projects/go/src/github.com/xenolf/lego/.lego"	Directory to use for storing the data
+   --path "CWD"	Directory to use for storing the data
    --port 								Challenges will use this port to listen on. Please make sure to forward port 443 to this port on your machine. Otherwise use setcap on the binary
    --devMode								If set to true, all client side challenge pre-tests are skipped.
    --help, -h								show help

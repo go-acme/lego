@@ -168,7 +168,12 @@ func (c *Client) ObtainCertificates(domains []string) ([]CertificateResource, er
 
 // RevokeCertificate takes a PEM encoded certificate and tries to revoke it at the CA.
 func (c *Client) RevokeCertificate(certificate []byte) error {
-	encodedCert := base64.URLEncoding.EncodeToString(certificate)
+	certBlock, err := pemDecode(certificate)
+	if err != nil {
+		return err
+	}
+
+	encodedCert := base64.URLEncoding.EncodeToString(certBlock.Bytes)
 
 	jsonBytes, err := json.Marshal(revokeCertMessage{Resource: "revoke-cert", Certificate: encodedCert})
 	if err != nil {
@@ -192,14 +197,13 @@ func (c *Client) RevokeCertificate(certificate []byte) error {
 // If the renewal process succeeds, the new certificate will replace the old one in the CertResource.
 // Please be aware that this function will return a new certificate in ANY case that is not an error.
 // If the server does not provide us with a new cert on a GET request to the CertURL
-// this function will start a new-cert flow where the old (provided) cert will get REVOKED
-// and a new certificate gets generated.
-func (c *Client) RenewCertificate(cert *CertificateResource) (*CertificateResource, error) {
+// this function will start a new-cert flow where a new certificate gets generated.
+func (c *Client) RenewCertificate(cert CertificateResource, revokeOld bool) (CertificateResource, error) {
 	// Input certificate is PEM encoded. Decode it here as we may need the decoded
 	// cert later on in the renewal process.
 	x509Cert, err := pemDecodeTox509(cert.Certificate)
 	if err != nil {
-		return nil, err
+		return CertificateResource{}, err
 	}
 
 	// This is just meant to be informal for the user.
@@ -211,28 +215,35 @@ func (c *Client) RenewCertificate(cert *CertificateResource) (*CertificateResour
 	resp, err := http.Get(cert.CertURL)
 	serverCertBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return CertificateResource{}, err
 	}
 
 	serverCert, err := x509.ParseCertificate(serverCertBytes)
 	if err != nil {
-		return nil, err
+		return CertificateResource{}, err
 	}
 
 	// If the server responds with a different certificate we are effectively renewed.
 	// TODO: Further test if we can actually use the new certificate (Our private key works)
 	if !x509Cert.Equal(serverCert) {
 		logger().Printf("[%s] The server responded with a renewed certificate.", cert.Domain)
+		if revokeOld {
+			c.RevokeCertificate(cert.Certificate)
+		}
 		cert.Certificate = pemEncode(derCertificateBytes(serverCertBytes))
 		return cert, nil
 	}
 
 	newCerts, err := c.ObtainCertificates([]string{cert.Domain})
 	if err != nil {
-		return nil, err
+		return CertificateResource{}, err
 	}
 
-	return &newCerts[0], nil
+	if revokeOld {
+		c.RevokeCertificate(cert.Certificate)
+	}
+
+	return newCerts[0], nil
 }
 
 // Looks through the challenge combinations to find a solvable match.

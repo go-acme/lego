@@ -35,7 +35,7 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 	return conf, acc, acme.NewClient(c.GlobalString("server"), acc, conf.RsaBits(), conf.OptPort(), c.GlobalBool("devMode"))
 }
 
-func saveCertRes(certRes *acme.CertificateResource, conf *Configuration) {
+func saveCertRes(certRes acme.CertificateResource, conf *Configuration) {
 	// We store the certificate, private key and metadata in different files
 	// as web servers would not be able to work with a combined file.
 	certOut := path.Join(conf.CertPath(), certRes.Domain+".crt")
@@ -131,7 +131,7 @@ func run(c *cli.Context) {
 	}
 
 	for _, certRes := range certs {
-		saveCertRes(&certRes, conf)
+		saveCertRes(certRes, conf)
 	}
 }
 
@@ -198,7 +198,7 @@ func renew(c *cli.Context) {
 		certRes.PrivateKey = keyBytes
 		certRes.Certificate = certBytes
 
-		newCert, err := client.RenewCertificate(&certRes)
+		newCert, err := client.RenewCertificate(certRes, true)
 		if err != nil {
 			logger().Printf("%v", err)
 			return

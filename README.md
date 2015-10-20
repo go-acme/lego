@@ -6,6 +6,8 @@ Let's Encrypt client and ACME library written in Go
 
 This is a work in progress. Please do *NOT* run this on a production server.
 
+Please report any bugs you find!
+
 #### Current Status
 The code in this repository is under development.
 

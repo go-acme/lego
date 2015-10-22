@@ -73,6 +73,8 @@ func NewClient(caURL string, usr User, keyBits int, optPort string, devMode bool
 	if err != nil {
 		logger().Fatalf("Could not get directory from CA URL. Please check the URL.\n\t%v", err)
 	}
+	defer dirResp.Body.Close()
+
 	var dir directory
 	decoder := json.NewDecoder(dirResp.Body)
 	err = decoder.Decode(&dir)
@@ -98,6 +100,7 @@ func (c *Client) Register() (*RegistrationResource, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusConflict {
 		// REVIEW: should this return an error?
@@ -142,6 +145,7 @@ func (c *Client) AgreeToTos() error {
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusAccepted {
 		return fmt.Errorf("The server returned %d but we expected %d", resp.StatusCode, http.StatusAccepted)
@@ -184,6 +188,7 @@ func (c *Client) RevokeCertificate(certificate []byte) error {
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
 		body, _ := ioutil.ReadAll(resp.Body)
@@ -213,6 +218,10 @@ func (c *Client) RenewCertificate(cert CertificateResource, revokeOld bool) (Cer
 	// The first step of renewal is to check if we get a renewed cert
 	// directly from the cert URL.
 	resp, err := http.Get(cert.CertURL)
+	if err != nil {
+		return CertificateResource{}, err
+	}
+	defer resp.Body.Close()
 	serverCertBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return CertificateResource{}, err
@@ -323,9 +332,9 @@ func (c *Client) getChallenges(domains []string) []*authorizationResource {
 			if err != nil {
 				errc <- err
 			}
+			resp.Body.Close()
 
 			resc <- &authorizationResource{Body: authz, NewCertURL: links["next"], AuthURL: resp.Header.Get("Location"), Domain: domain}
-
 		}(domain)
 	}
 
@@ -409,6 +418,7 @@ func (c *Client) requestCertificate(authz *authorizationResource, result chan Ce
 		case 201:
 
 			cert, err := ioutil.ReadAll(resp.Body)
+			resp.Body.Close()
 			if err != nil {
 				errc <- err
 				return

@@ -29,6 +29,7 @@ func (s *simpleHTTPChallenge) CanSolve(domain string) bool {
 		logger().Printf("Could not get public IP -> %v", err)
 		return false
 	}
+	defer resp.Body.Close()
 
 	ip, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -66,6 +67,7 @@ func (s *simpleHTTPChallenge) Solve(chlng challenge, domain string) error {
 	if err != nil {
 		return fmt.Errorf("Could not start HTTPS server for challenge -> %v", err)
 	}
+	defer listener.Close()
 
 	// Tell the server about the generated random path
 	jsonBytes, err := json.Marshal(challenge{Resource: "challenge", Type: chlng.Type, Token: chlng.Token})
@@ -81,24 +83,24 @@ func (s *simpleHTTPChallenge) Solve(chlng challenge, domain string) error {
 	// After the path is sent, the ACME server will access our server.
 	// Repeatedly check the server for an updated status on our request.
 	var challengeResponse challenge
-loop:
+Loop:
 	for {
-		decoder := json.NewDecoder(resp.Body)
-		decoder.Decode(&challengeResponse)
+		err = json.NewDecoder(resp.Body).Decode(&challengeResponse)
+		resp.Body.Close()
+		if err != nil {
+			return err
+		}
 
 		switch challengeResponse.Status {
 		case "valid":
 			logger().Print("The server validated our request")
-			listener.Close()
-			break loop
+			break Loop
 		case "pending":
 			break
 		case "invalid":
-			listener.Close()
 			logger().Print("The server could not validate our request.")
 			return errors.New("The server could not validate our request.")
 		default:
-			listener.Close()
 			logger().Print("The server returned an unexpected state.")
 			return errors.New("The server returned an unexpected state.")
 		}

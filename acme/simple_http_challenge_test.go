@@ -20,6 +20,7 @@ func TestSimpleHTTPCanSolve(t *testing.T) {
 	if err != nil {
 		t.Errorf("Could not get public IP -> %v", err)
 	}
+	defer resp.Body.Close()
 
 	ip, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -119,6 +120,7 @@ func TestSimpleHTTP(t *testing.T) {
 		if err != nil {
 			t.Errorf("Expected the solver to listen on port 23456 -> %v", err)
 		}
+		defer resp.Body.Close()
 
 		body, _ := ioutil.ReadAll(resp.Body)
 		bodyStr := string(body)

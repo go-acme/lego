@@ -91,7 +91,11 @@ func NewClient(caURL string, usr User, keyBits int, optPort string, devMode bool
 // Register the current account to the ACME server.
 func (c *Client) Register() (*RegistrationResource, error) {
 	logger().Print("Registering account ... ")
-	jsonBytes, err := json.Marshal(registrationMessage{Resource: "new-reg", Contact: []string{"mailto:" + c.user.GetEmail()}})
+
+	jsonBytes, err := json.Marshal(registrationMessage{
+		Resource: "new-reg",
+		Contact:  []string{"mailto:" + c.user.GetEmail()},
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -380,13 +384,13 @@ func (c *Client) requestCertificates(challenges []*authorizationResource) ([]Cer
 }
 
 func (c *Client) requestCertificate(authz *authorizationResource, result chan CertificateResource, errc chan error) {
-	privKey, err := generatePrivateKey(c.keyBits)
+	privKey, err := generatePrivateKey(rsakey, c.keyBits)
 	if err != nil {
 		errc <- err
 		return
 	}
 
-	csr, err := generateCsr(privKey, authz.Domain)
+	csr, err := generateCsr(privKey.(*rsa.PrivateKey), authz.Domain)
 	if err != nil {
 		errc <- err
 		return

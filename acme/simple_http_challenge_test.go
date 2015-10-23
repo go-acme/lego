@@ -1,6 +1,7 @@
 package acme
 
 import (
+	"crypto/rsa"
 	"crypto/tls"
 	"encoding/json"
 	"io/ioutil"
@@ -39,11 +40,11 @@ func TestSimpleHTTPCanSolve(t *testing.T) {
 }
 
 func TestSimpleHTTP(t *testing.T) {
-	privKey, err := generatePrivateKey(512)
+	privKey, err := generatePrivateKey(rsakey, 512)
 	if err != nil {
 		t.Errorf("Could not generate public key -> %v", err)
 	}
-	jws := &jws{privKey: privKey}
+	jws := &jws{privKey: privKey.(*rsa.PrivateKey)}
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Replay-Nonce", "12345")
@@ -103,7 +104,7 @@ func TestSimpleHTTP(t *testing.T) {
 			t.Errorf("Client sent invalid JWS to the server.\n\t%v", err)
 			return
 		}
-		output, err := j.Verify(&privKey.PublicKey)
+		output, err := j.Verify(&privKey.(*rsa.PrivateKey).PublicKey)
 		if err != nil {
 			t.Errorf("Unable to verify client data -> %v", err)
 		}
@@ -129,7 +130,7 @@ func TestSimpleHTTP(t *testing.T) {
 			t.Errorf("Client answered with invalid JWS.\n\t%v", err)
 			return
 		}
-		_, err = clientResponse.Verify(&privKey.PublicKey)
+		_, err = clientResponse.Verify(&privKey.(*rsa.PrivateKey).PublicKey)
 		if err != nil {
 			t.Errorf("Unable to verify client data -> %v", err)
 		}

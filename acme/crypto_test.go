@@ -8,7 +8,7 @@ import (
 )
 
 func TestGeneratePrivateKey(t *testing.T) {
-	key, err := generatePrivateKey(32)
+	key, err := generatePrivateKey(rsakey, 32)
 	if err != nil {
 		t.Error("Error generating private key:", err)
 	}
@@ -18,12 +18,12 @@ func TestGeneratePrivateKey(t *testing.T) {
 }
 
 func TestGenerateCSR(t *testing.T) {
-	key, err := generatePrivateKey(512)
+	key, err := generatePrivateKey(rsakey, 512)
 	if err != nil {
 		t.Fatal("Error generating private key:", err)
 	}
 
-	csr, err := generateCsr(key, "fizz.buzz")
+	csr, err := generateCsr(key.(*rsa.PrivateKey), "fizz.buzz")
 	if err != nil {
 		t.Error("Error generating CSR:", err)
 	}
@@ -52,14 +52,14 @@ func TestPEMEncode(t *testing.T) {
 }
 
 func TestPEMCertExpiration(t *testing.T) {
-	privKey, err := generatePrivateKey(2048)
+	privKey, err := generatePrivateKey(rsakey, 2048)
 	if err != nil {
 		t.Fatal("Error generating private key:", err)
 	}
 
 	expiration := time.Now().Add(365)
 	expiration = expiration.Round(time.Second)
-	certBytes, err := generateDerCert(privKey, expiration, "test.com")
+	certBytes, err := generateDerCert(privKey.(*rsa.PrivateKey), expiration, "test.com")
 	if err != nil {
 		t.Fatal("Error generating cert:", err)
 	}

@@ -2,6 +2,7 @@ package acme
 
 import (
 	"bytes"
+	"crypto/ecdsa"
 	"crypto/rsa"
 	"fmt"
 	"net/http"
@@ -12,6 +13,13 @@ import (
 type jws struct {
 	privKey *rsa.PrivateKey
 	nonces  []string
+}
+
+func keyAsJWK(key *ecdsa.PublicKey) jose.JsonWebKey {
+	return jose.JsonWebKey{
+		Key:       key,
+		Algorithm: "EC",
+	}
 }
 
 // Posts a JWS signed message to the specified URL

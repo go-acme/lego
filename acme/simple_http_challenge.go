@@ -2,6 +2,7 @@ package acme
 
 import (
 	"crypto/rand"
+	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
@@ -117,15 +118,16 @@ Loop:
 func (s *simpleHTTPChallenge) startHTTPSServer(domain string, token string) (net.Listener, error) {
 
 	// Generate a new RSA key and a self-signed certificate.
-	tempPrivKey, err := generatePrivateKey(2048)
+	tempPrivKey, err := generatePrivateKey(rsakey, 2048)
+	rsaPrivKey := tempPrivKey.(*rsa.PrivateKey)
 	if err != nil {
 		return nil, err
 	}
-	tempCertPEM, err := generatePemCert(tempPrivKey, domain)
+	tempCertPEM, err := generatePemCert(rsaPrivKey, domain)
 	if err != nil {
 		return nil, err
 	}
-	pemBytes := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(tempPrivKey)})
+	pemBytes := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(rsaPrivKey)})
 	tempKeyPair, err := tls.X509KeyPair(
 		tempCertPEM,
 		pemBytes)

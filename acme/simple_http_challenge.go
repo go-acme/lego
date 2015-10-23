@@ -24,6 +24,8 @@ type simpleHTTPChallenge struct {
 func (s *simpleHTTPChallenge) CanSolve(domain string) bool {
 
 	// determine public ip
+	// CAVEAT: assumes one public IP, breaks badly if have both IPv4 and IPv6,
+	// let alone multiple IPv6 addresses
 	resp, err := http.Get("https://icanhazip.com/")
 	if err != nil {
 		logger().Printf("Could not get public IP -> %v", err)
@@ -39,6 +41,24 @@ func (s *simpleHTTPChallenge) CanSolve(domain string) bool {
 	ipStr := string(ip)
 	ipStr = strings.Replace(ipStr, "\n", "", -1)
 
+	knownLocalIPs := make([]string, 1, 20)
+	knownLocalIPs[0] = ipStr
+
+	// find local IP addresses which are global unicast addresses
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		logger().Printf("Could not get local interface addresses -> %v", err)
+		// don't return, continue with the address which we have
+	} else {
+		for _, a := range addrs {
+			if n, ok := a.(*net.IPNet); ok {
+				if n.IP.IsGlobalUnicast() {
+					knownLocalIPs = append(knownLocalIPs, n.IP.String())
+				}
+			}
+		}
+	}
+
 	// resolve domain we should solve for
 	resolvedIPs, err := net.LookupHost(domain)
 	if err != nil {
@@ -48,8 +68,10 @@ func (s *simpleHTTPChallenge) CanSolve(domain string) bool {
 
 	// if the resolve does not resolve to our public ip, we can't solve.
 	for _, resolvedIP := range resolvedIPs {
-		if resolvedIP == ipStr {
-			return true
+		for _, localIP := range knownLocalIPs {
+			if resolvedIP == localIP {
+				return true
+			}
 		}
 	}
 

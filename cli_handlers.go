@@ -104,7 +104,7 @@ func run(c *cli.Context) {
 			}
 
 			if text == "Y" || text == "y" || text == "" {
-				err = client.AgreeToTos()
+				err = client.AgreeToTOS()
 				if err != nil {
 					logger().Fatalf("Could not agree to tos -> %v", err)
 				}

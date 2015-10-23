@@ -1,6 +1,7 @@
 package acme
 
 import (
+	"bytes"
 	"crypto"
 	"crypto/ecdsa"
 	"crypto/elliptic"
@@ -10,10 +11,15 @@ import (
 	"crypto/x509/pkix"
 	"encoding/binary"
 	"encoding/pem"
+	"errors"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"math/big"
+	"net/http"
 	"time"
 
+	"golang.org/x/crypto/ocsp"
 	"golang.org/x/crypto/sha3"
 )
 
@@ -24,6 +30,69 @@ const (
 	eckey keyType = iota
 	rsakey
 )
+
+// GetOCSPForCert takes a PEM encoded cert or cert bundle and returns a OCSP
+// response from the OCSP endpoint in the certificate.
+// This []byte can be passed directly  into the OCSPStaple property of a tls.Certificate.
+// If the bundle only contains the issued certificate, this function will try
+// to get the issuer certificate from the IssuingCertificateURL in the certificate.
+func GetOCSPForCert(bundle []byte) ([]byte, error) {
+	certificates, err := parsePEMBundle(bundle)
+	if err != nil {
+		return nil, err
+	}
+
+	// We only got one certificate, means we have no issuer certificate - get it.
+	if len(certificates) == 1 {
+		// TODO: build fallback. If this fails, check the remaining array entries.
+		resp, err := http.Get(certificates[0].IssuingCertificateURL[0])
+		if err != nil {
+			return nil, err
+		}
+
+		issuerBytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		issuerCert, err := x509.ParseCertificate(issuerBytes)
+		if err != nil {
+			return nil, err
+		}
+
+		// Insert it into the slice on position 0
+		certificates = append(certificates, nil)
+		copy(certificates[1:], certificates[0:])
+		certificates[0] = issuerCert
+	}
+
+	// We expect the certificate slice to be ordered downwards the chain.
+	// CA -> CRT. We need to pull the cert and issuer cert out of it, which should
+	// always be the last two certificates.
+	issuedCert := certificates[len(certificates)-1]
+	issuerCert := certificates[len(certificates)-2]
+
+	// Finally kick off the OCSP request.
+	ocspReq, err := ocsp.CreateRequest(issuedCert, issuerCert, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	reader := bytes.NewReader(ocspReq)
+	req, err := http.Post(issuedCert.OCSPServer[0], "application/ocsp-request", reader)
+	if err != nil {
+		return nil, err
+	}
+
+	ocspResBytes, err := ioutil.ReadAll(req.Body)
+	_, err = ocsp.ParseResponse(ocspResBytes, nil)
+	if err != nil {
+		log.Printf("OCSPParse Error: %v", err)
+		return nil, err
+	}
+
+	return ocspResBytes, nil
+}
 
 // Derive the shared secret according to acme spec 5.6
 func performECDH(priv *ecdsa.PrivateKey, pub *ecdsa.PublicKey, outLen int, label string) []byte {
@@ -56,6 +125,33 @@ func performECDH(priv *ecdsa.PrivateKey, pub *ecdsa.PublicKey, outLen int, label
 	}
 
 	return buffer
+}
+
+func parsePEMBundle(bundle []byte) ([]*x509.Certificate, error) {
+	var certificates []*x509.Certificate
+
+	remaining := bundle
+	for len(remaining) != 0 {
+		certBlock, rem := pem.Decode(remaining)
+		// Thanks golang for having me do this :[
+		remaining = rem
+		if certBlock == nil {
+			return nil, errors.New("Could not decode certificate.")
+		}
+
+		cert, err := x509.ParseCertificate(certBlock.Bytes)
+		if err != nil {
+			return nil, err
+		}
+
+		certificates = append(certificates, cert)
+	}
+
+	if len(certificates) == 0 {
+		return nil, errors.New("No certificates were found while parsing the bundle.")
+	}
+
+	return certificates, nil
 }
 
 func generatePrivateKey(t keyType, keyLength int) (crypto.PrivateKey, error) {

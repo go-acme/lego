@@ -131,9 +131,9 @@ func (c *Client) Register() (*RegistrationResource, error) {
 	return reg, nil
 }
 
-// AgreeToTos updates the Client registration and sends the agreement to
+// AgreeToTOS updates the Client registration and sends the agreement to
 // the server.
-func (c *Client) AgreeToTos() error {
+func (c *Client) AgreeToTOS() error {
 	c.user.GetRegistration().Body.Agreement = c.user.GetRegistration().TosURL
 	c.user.GetRegistration().Body.Resource = "reg"
 	jsonBytes, err := json.Marshal(&c.user.GetRegistration().Body)

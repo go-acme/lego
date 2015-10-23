@@ -41,17 +41,17 @@ NAME:
 
 USAGE:
    ./lego [global options] command [command options] [arguments...]
-   
+
 VERSION:
    0.0.2
-   
+
 COMMANDS:
    run		Register an account, then create and install a certificate
    auth		Create a certificate - must already have an account
    revoke	Revoke a certificate
    renew	Renew a certificate
    help, h	Shows a list of commands or help for one command
-   
+
 GLOBAL OPTIONS:
    --domains, -d [--domains option --domains option]			Add domains to the process
    --server, -s "https://acme-staging.api.letsencrypt.org/"		CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client.
@@ -112,7 +112,7 @@ myUser.Registration = reg
 
 // The client has a URL to the current Let's Encrypt Subscriber
 // Agreement. The user will need to agree to it.
-err = client.AgreeToTos()
+err = client.AgreeToTOS()
 if err != nil {
 	log.Fatal(err)
 }

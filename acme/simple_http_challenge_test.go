@@ -16,7 +16,13 @@ func TestSimpleHTTPCanSolve(t *testing.T) {
 	challenge := &simpleHTTPChallenge{}
 
 	// determine public ip
-	resp, err := http.Get("https://icanhazip.com/")
+	// Want to constrain to IPv4 for compatibility with xip.io below;
+	// but HTTPS uses a cert not valid for ipv4. hostname.
+	// So drop to HTTP  :(
+	// No privacy leak: an eavesdropper knows the src and target IPs already
+	// from the outer layer.  Risk of in-flight tampering, which is acceptable
+	// for tests.
+	resp, err := http.Get("http://ipv4.icanhazip.com/")
 	if err != nil {
 		t.Errorf("Could not get public IP -> %v", err)
 	}

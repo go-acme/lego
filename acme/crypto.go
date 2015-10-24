@@ -61,6 +61,7 @@ func GetOCSPForCert(bundle []byte) ([]byte, error) {
 		}
 
 		// Insert it into the slice on position 0
+		// We want it ordered right CA -> CRT
 		certificates = append(certificates, nil)
 		copy(certificates[1:], certificates[0:])
 		certificates[0] = issuerCert
@@ -127,6 +128,8 @@ func performECDH(priv *ecdsa.PrivateKey, pub *ecdsa.PublicKey, outLen int, label
 	return buffer
 }
 
+// parsePEMBundle parses a certificate bundle from top to bottom and returns
+// a slice of x509 certificates. This function will error if no certificates are found.
 func parsePEMBundle(bundle []byte) ([]*x509.Certificate, error) {
 	var certificates []*x509.Certificate
 

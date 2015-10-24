@@ -94,7 +94,9 @@ type revokeCertMessage struct {
 
 // CertificateResource represents a CA issued certificate.
 // PrivateKey and Certificate are both already PEM encoded
-// and can be directly written to disk.
+// and can be directly written to disk. Certificate may
+// be a certificate bundle, depending on the options supplied
+// to create it.
 type CertificateResource struct {
 	Domain        string `json:"domain"`
 	CertURL       string `json:"certUrl"`

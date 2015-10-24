@@ -44,12 +44,13 @@ type solver interface {
 
 // Client is the user-friendy way to ACME
 type Client struct {
-	directory directory
-	user      User
-	jws       *jws
-	keyBits   int
-	devMode   bool
-	solvers   map[string]solver
+	directory  directory
+	user       User
+	jws        *jws
+	keyBits    int
+	devMode    bool
+	issuerCert []byte
+	solvers    map[string]solver
 }
 
 // NewClient creates a new client for the set user.
@@ -161,7 +162,9 @@ func (c *Client) AgreeToTOS() error {
 // ObtainCertificates tries to obtain certificates from the CA server
 // using the challenges it has configured. The returned certificates are
 // PEM encoded byte slices.
-func (c *Client) ObtainCertificates(domains []string) ([]CertificateResource, error) {
+// If bundle is true, the []byte contains both the issuer certificate and
+// your issued certificate as a bundle.
+func (c *Client) ObtainCertificates(domains []string, bundle bool) ([]CertificateResource, error) {
 	logger().Print("Obtaining certificates...")
 	challenges := c.getChallenges(domains)
 	err := c.solveChallenges(challenges)
@@ -171,17 +174,22 @@ func (c *Client) ObtainCertificates(domains []string) ([]CertificateResource, er
 
 	logger().Print("Validations succeeded. Getting certificates")
 
-	return c.requestCertificates(challenges)
+	return c.requestCertificates(challenges, bundle)
 }
 
-// RevokeCertificate takes a PEM encoded certificate and tries to revoke it at the CA.
+// RevokeCertificate takes a PEM encoded certificate or bundle and tries to revoke it at the CA.
 func (c *Client) RevokeCertificate(certificate []byte) error {
-	certBlock, err := pemDecode(certificate)
+	certificates, err := parsePEMBundle(certificate)
 	if err != nil {
 		return err
 	}
 
-	encodedCert := base64.URLEncoding.EncodeToString(certBlock.Bytes)
+	x509Cert := certificates[len(certificates)-1]
+	if x509Cert.IsCA {
+		return fmt.Errorf("Certificate bundle ends with a CA certificate")
+	}
+
+	encodedCert := base64.URLEncoding.EncodeToString(x509Cert.Raw)
 
 	jsonBytes, err := json.Marshal(revokeCertMessage{Resource: "revoke-cert", Certificate: encodedCert})
 	if err != nil {
@@ -207,12 +215,19 @@ func (c *Client) RevokeCertificate(certificate []byte) error {
 // Please be aware that this function will return a new certificate in ANY case that is not an error.
 // If the server does not provide us with a new cert on a GET request to the CertURL
 // this function will start a new-cert flow where a new certificate gets generated.
-func (c *Client) RenewCertificate(cert CertificateResource, revokeOld bool) (CertificateResource, error) {
+// If bundle is true, the []byte contains both the issuer certificate and
+// your issued certificate as a bundle.
+func (c *Client) RenewCertificate(cert CertificateResource, revokeOld bool, bundle bool) (CertificateResource, error) {
 	// Input certificate is PEM encoded. Decode it here as we may need the decoded
-	// cert later on in the renewal process.
-	x509Cert, err := pemDecodeTox509(cert.Certificate)
+	// cert later on in the renewal process. The input may be a bundle or a single certificate.
+	certificates, err := parsePEMBundle(cert.Certificate)
 	if err != nil {
 		return CertificateResource{}, err
+	}
+
+	x509Cert := certificates[len(certificates)-1]
+	if x509Cert.IsCA {
+		return CertificateResource{}, fmt.Errorf("[%s] Certificate bundle ends with a CA certificate", cert.Domain)
 	}
 
 	// This is just meant to be informal for the user.
@@ -243,11 +258,31 @@ func (c *Client) RenewCertificate(cert CertificateResource, revokeOld bool) (Cer
 		if revokeOld {
 			c.RevokeCertificate(cert.Certificate)
 		}
-		cert.Certificate = pemEncode(derCertificateBytes(serverCertBytes))
+		issuedCert := pemEncode(derCertificateBytes(serverCertBytes))
+		// If bundle is true, we want to return a certificate bundle.
+		// To do this, we need the issuer certificate.
+		if bundle {
+			// The issuer certificate link is always supplied via an "up" link
+			// in the response headers of a new certificate.
+			links := parseLinks(resp.Header["Link"])
+			issuerCert, err := c.getIssuerCertificate(links["up"])
+			if err != nil {
+				// If we fail to aquire the issuer cert, return the issued certificate - do not fail.
+				logger().Printf("[%s] Could not bundle issuer certificate.\n%v", cert.Domain, err)
+				cert.Certificate = issuedCert
+			} else {
+				// Success - prepend the issuer cert to the issued cert.
+				issuerCert = pemEncode(derCertificateBytes(issuerCert))
+				issuerCert = append(issuerCert, issuedCert...)
+				cert.Certificate = issuerCert
+			}
+		} else {
+			cert.Certificate = issuedCert
+		}
 		return cert, nil
 	}
 
-	newCerts, err := c.ObtainCertificates([]string{cert.Domain})
+	newCerts, err := c.ObtainCertificates([]string{cert.Domain}, bundle)
 	if err != nil {
 		return CertificateResource{}, err
 	}
@@ -361,10 +396,10 @@ func (c *Client) getChallenges(domains []string) []*authorizationResource {
 // requestCertificates iterates all granted authorizations, creates RSA private keys and CSRs.
 // It then uses these to request a certificate from the CA and returns the list of successfully
 // granted certificates.
-func (c *Client) requestCertificates(challenges []*authorizationResource) ([]CertificateResource, error) {
+func (c *Client) requestCertificates(challenges []*authorizationResource, bundle bool) ([]CertificateResource, error) {
 	resc, errc := make(chan CertificateResource), make(chan error)
 	for _, authz := range challenges {
-		go c.requestCertificate(authz, resc, errc)
+		go c.requestCertificate(authz, resc, errc, bundle)
 	}
 
 	var certs []CertificateResource
@@ -383,13 +418,14 @@ func (c *Client) requestCertificates(challenges []*authorizationResource) ([]Cer
 	return certs, nil
 }
 
-func (c *Client) requestCertificate(authz *authorizationResource, result chan CertificateResource, errc chan error) {
+func (c *Client) requestCertificate(authz *authorizationResource, result chan CertificateResource, errc chan error, bundle bool) {
 	privKey, err := generatePrivateKey(rsakey, c.keyBits)
 	if err != nil {
 		errc <- err
 		return
 	}
 
+	// TODO: should the CSR be customizable?
 	csr, err := generateCsr(privKey.(*rsa.PrivateKey), authz.Domain)
 	if err != nil {
 		errc <- err
@@ -432,8 +468,30 @@ func (c *Client) requestCertificate(authz *authorizationResource, result chan Ce
 			// certificate was not ready at the time this request completed.
 			// Otherwise the body is the certificate.
 			if len(cert) > 0 {
+
 				cerRes.CertStableURL = resp.Header.Get("Content-Location")
-				cerRes.Certificate = pemEncode(derCertificateBytes(cert))
+
+				issuedCert := pemEncode(derCertificateBytes(cert))
+				// If bundle is true, we want to return a certificate bundle.
+				// To do this, we need the issuer certificate.
+				if bundle {
+					// The issuer certificate link is always supplied via an "up" link
+					// in the response headers of a new certificate.
+					links := parseLinks(resp.Header["Link"])
+					issuerCert, err := c.getIssuerCertificate(links["up"])
+					if err != nil {
+						// If we fail to aquire the issuer cert, return the issued certificate - do not fail.
+						logger().Printf("[%s] Could not bundle issuer certificate.\n%v", authz.Domain, err)
+						cerRes.Certificate = issuedCert
+					} else {
+						// Success - prepend the issuer cert to the issued cert.
+						issuerCert = pemEncode(derCertificateBytes(issuerCert))
+						issuerCert = append(issuerCert, issuedCert...)
+						cerRes.Certificate = issuerCert
+					}
+				} else {
+					cerRes.Certificate = issuedCert
+				}
 				logger().Printf("[%s] Server responded with a certificate.", authz.Domain)
 				result <- cerRes
 				return
@@ -463,6 +521,33 @@ func (c *Client) requestCertificate(authz *authorizationResource, result chan Ce
 			return
 		}
 	}
+}
+
+// getIssuerCertificate requests the issuer certificate and caches it for
+// subsequent requests.
+func (c *Client) getIssuerCertificate(url string) ([]byte, error) {
+	logger().Printf("Requesting issuer cert from: %s", url)
+	if c.issuerCert != nil {
+		return c.issuerCert, nil
+	}
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+
+	issuerBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = x509.ParseCertificate(issuerBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	c.issuerCert = issuerBytes
+	return issuerBytes, err
 }
 
 func logResponseHeaders(resp *http.Response) {

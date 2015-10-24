@@ -120,7 +120,7 @@ func run(c *cli.Context) {
 		logger().Fatal("Please specify --domains")
 	}
 
-	certs, err := client.ObtainCertificates(c.GlobalStringSlice("domains"))
+	certs, err := client.ObtainCertificates(c.GlobalStringSlice("domains"), true)
 	if err != nil {
 		logger().Fatalf("Could not obtain certificates\n\t%v", err)
 	}
@@ -198,7 +198,7 @@ func renew(c *cli.Context) {
 		certRes.PrivateKey = keyBytes
 		certRes.Certificate = certBytes
 
-		newCert, err := client.RenewCertificate(certRes, true)
+		newCert, err := client.RenewCertificate(certRes, true, true)
 		if err != nil {
 			logger().Printf("%v", err)
 			return

@@ -184,9 +184,9 @@ func (c *Client) RevokeCertificate(certificate []byte) error {
 		return err
 	}
 
-	x509Cert := certificates[len(certificates)-1]
+	x509Cert := certificates[0]
 	if x509Cert.IsCA {
-		return fmt.Errorf("Certificate bundle ends with a CA certificate")
+		return fmt.Errorf("Certificate bundle starts with a CA certificate")
 	}
 
 	encodedCert := base64.URLEncoding.EncodeToString(x509Cert.Raw)
@@ -225,9 +225,9 @@ func (c *Client) RenewCertificate(cert CertificateResource, revokeOld bool, bund
 		return CertificateResource{}, err
 	}
 
-	x509Cert := certificates[len(certificates)-1]
+	x509Cert := certificates[0]
 	if x509Cert.IsCA {
-		return CertificateResource{}, fmt.Errorf("[%s] Certificate bundle ends with a CA certificate", cert.Domain)
+		return CertificateResource{}, fmt.Errorf("[%s] Certificate bundle starts with a CA certificate", cert.Domain)
 	}
 
 	// This is just meant to be informal for the user.
@@ -269,16 +269,15 @@ func (c *Client) RenewCertificate(cert CertificateResource, revokeOld bool, bund
 			if err != nil {
 				// If we fail to aquire the issuer cert, return the issued certificate - do not fail.
 				logger().Printf("[%s] Could not bundle issuer certificate.\n%v", cert.Domain, err)
-				cert.Certificate = issuedCert
 			} else {
-				// Success - prepend the issuer cert to the issued cert.
+				// Success - append the issuer cert to the issued cert.
 				issuerCert = pemEncode(derCertificateBytes(issuerCert))
-				issuerCert = append(issuerCert, issuedCert...)
-				cert.Certificate = issuerCert
+				issuedCert = append(issuedCert, issuerCert...)
+				cert.Certificate = issuedCert
 			}
-		} else {
-			cert.Certificate = issuedCert
 		}
+
+		cert.Certificate = issuedCert
 		return cert, nil
 	}
 
@@ -482,16 +481,14 @@ func (c *Client) requestCertificate(authz *authorizationResource, result chan Ce
 					if err != nil {
 						// If we fail to aquire the issuer cert, return the issued certificate - do not fail.
 						logger().Printf("[%s] Could not bundle issuer certificate.\n%v", authz.Domain, err)
-						cerRes.Certificate = issuedCert
 					} else {
-						// Success - prepend the issuer cert to the issued cert.
+						// Success - append the issuer cert to the issued cert.
 						issuerCert = pemEncode(derCertificateBytes(issuerCert))
-						issuerCert = append(issuerCert, issuedCert...)
-						cerRes.Certificate = issuerCert
+						issuedCert = append(issuedCert, issuerCert...)
 					}
-				} else {
-					cerRes.Certificate = issuedCert
 				}
+
+				cerRes.Certificate = issuedCert
 				logger().Printf("[%s] Server responded with a certificate.", authz.Domain)
 				result <- cerRes
 				return

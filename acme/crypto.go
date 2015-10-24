@@ -61,17 +61,15 @@ func GetOCSPForCert(bundle []byte) ([]byte, error) {
 		}
 
 		// Insert it into the slice on position 0
-		// We want it ordered right CA -> CRT
-		certificates = append(certificates, nil)
-		copy(certificates[1:], certificates[0:])
-		certificates[0] = issuerCert
+		// We want it ordered right SRV CRT -> CA
+		certificates = append(certificates, issuerCert)
 	}
 
 	// We expect the certificate slice to be ordered downwards the chain.
-	// CA -> CRT. We need to pull the cert and issuer cert out of it, which should
-	// always be the last two certificates.
-	issuedCert := certificates[len(certificates)-1]
-	issuerCert := certificates[len(certificates)-2]
+	// SRV CRT -> CA. We need to pull the cert and issuer cert out of it,
+	// which should always be the last two certificates.
+	issuedCert := certificates[0]
+	issuerCert := certificates[1]
 
 	// Finally kick off the OCSP request.
 	ocspReq, err := ocsp.CreateRequest(issuedCert, issuerCert, nil)

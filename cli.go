@@ -61,6 +61,7 @@ func main() {
 		cli.StringSliceFlag{
 			Name:  "domains, d",
 			Usage: "Add domains to the process",
+			Value: &cli.StringSlice{},
 		},
 		cli.StringFlag{
 			Name:  "server, s",

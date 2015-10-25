@@ -38,7 +38,6 @@ type User interface {
 
 // Interface for all challenge solvers to implement.
 type solver interface {
-	CanSolve(domain string) bool
 	Solve(challenge challenge, domain string) error
 }
 
@@ -321,7 +320,7 @@ func (c *Client) chooseSolvers(auth authorization, domain string) map[int]solver
 	for _, combination := range auth.Combinations {
 		solvers := make(map[int]solver)
 		for _, idx := range combination {
-			if solver, ok := c.solvers[auth.Challenges[idx].Type]; ok && (c.devMode || solver.CanSolve(domain)) {
+			if solver, ok := c.solvers[auth.Challenges[idx].Type]; ok {
 				solvers[idx] = solver
 			} else {
 				logger().Printf("Could not find solver for: %s", auth.Challenges[idx].Type)

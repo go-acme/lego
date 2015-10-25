@@ -9,7 +9,6 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"strings"
@@ -19,43 +18,6 @@ import (
 type simpleHTTPChallenge struct {
 	jws     *jws
 	optPort string
-}
-
-// SimpleHTTPS checks for DNS, public IP and port bindings
-func (s *simpleHTTPChallenge) CanSolve(domain string) bool {
-
-	// determine public ip
-	resp, err := http.Get("https://icanhazip.com/")
-	if err != nil {
-		logger().Printf("Could not get public IP -> %v", err)
-		return false
-	}
-	defer resp.Body.Close()
-
-	ip, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		logger().Printf("Could not get public IP -> %v", err)
-		return false
-	}
-	ipStr := string(ip)
-	ipStr = strings.Replace(ipStr, "\n", "", -1)
-
-	// resolve domain we should solve for
-	resolvedIPs, err := net.LookupHost(domain)
-	if err != nil {
-		logger().Printf("Could not lookup DNS A record for %s", domain)
-		return false
-	}
-
-	// if the resolve does not resolve to our public ip, we can't solve.
-	for _, resolvedIP := range resolvedIPs {
-		if resolvedIP == ipStr {
-			return true
-		}
-	}
-
-	logger().Printf("SimpleHTTP: Domain %s does not resolve to the public ip of this server. Determined IP: %s Resolved IP: %s", domain, ipStr, resolvedIPs[0])
-	return false
 }
 
 func (s *simpleHTTPChallenge) Solve(chlng challenge, domain string) error {

@@ -22,6 +22,8 @@ Current features:
   - [ ] DVSNI Challenge
   - [ ] Proof of Possession of a Prior Key
   - [ ] DNS Challenge
+- [x] Certificate bundling
+- [x] Library support for OCSP
 
 Please keep in mind that CLI switches and APIs are still subject to change.
 

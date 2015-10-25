@@ -211,7 +211,7 @@ func (c *Client) RevokeCertificate(certificate []byte) error {
 }
 
 // RenewCertificate takes a CertificateResource and tries to renew the certificate.
-// If the renewal process succeeds, the new certificate will replace the old one in the CertResource.
+// If the renewal process succeeds, the new certificate will ge returned in a new CertResource.
 // Please be aware that this function will return a new certificate in ANY case that is not an error.
 // If the server does not provide us with a new cert on a GET request to the CertURL
 // this function will start a new-cert flow where a new certificate gets generated.

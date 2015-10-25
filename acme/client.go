@@ -47,7 +47,6 @@ type Client struct {
 	user       User
 	jws        *jws
 	keyBits    int
-	devMode    bool
 	issuerCert []byte
 	solvers    map[string]solver
 }
@@ -57,7 +56,7 @@ type Client struct {
 // usr - A filled in user struct
 // optPort - The alternative port to listen on for challenges.
 // devMode - If set to true, all CanSolve() checks are skipped.
-func NewClient(caURL string, usr User, keyBits int, optPort string, devMode bool) *Client {
+func NewClient(caURL string, usr User, keyBits int, optPort string) *Client {
 	if err := usr.GetPrivateKey().Validate(); err != nil {
 		logger().Fatalf("Could not validate the private account key of %s\n\t%v", usr.GetEmail(), err)
 	}
@@ -85,7 +84,7 @@ func NewClient(caURL string, usr User, keyBits int, optPort string, devMode bool
 		logger().Fatal("The directory returned by the server was invalid.")
 	}
 
-	return &Client{directory: dir, user: usr, jws: jws, keyBits: keyBits, devMode: devMode, solvers: solvers}
+	return &Client{directory: dir, user: usr, jws: jws, keyBits: keyBits, solvers: solvers}
 }
 
 // Register the current account to the ACME server.

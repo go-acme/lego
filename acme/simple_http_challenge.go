@@ -11,13 +11,20 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"net/url"
+	"os"
 	"strings"
 	"time"
+
+	"github.com/pkg/sftp"
+	"golang.org/x/crypto/ssh"
+	"golang.org/x/crypto/ssh/agent"
 )
 
 type simpleHTTPChallenge struct {
 	jws     *jws
 	optPort string
+	webRoot string
 }
 
 func (s *simpleHTTPChallenge) Solve(chlng challenge, domain string) error {
@@ -26,11 +33,20 @@ func (s *simpleHTTPChallenge) Solve(chlng challenge, domain string) error {
 
 	// Generate random string for the path. The acme server will
 	// access this path on the server in order to validate the request
-	listener, err := s.startHTTPSServer(domain, chlng.Token)
-	if err != nil {
-		return fmt.Errorf("Could not start HTTPS server for challenge -> %v", err)
+
+	if s.webRoot == "" {
+		listener, err := s.startHTTPSServer(domain, chlng.Token)
+		if err != nil {
+			return fmt.Errorf("Could not start HTTPS server for challenge -> %v", err)
+		}
+		defer listener.Close()
+	} else {
+		//fmt.Println("aa")
+		err := s.sendToken(chlng.Token)
+		if err != nil {
+			return err
+		}
 	}
-	defer listener.Close()
 
 	// Tell the server about the generated random path
 	jsonBytes, err := json.Marshal(challenge{Resource: "challenge", Type: chlng.Type, Token: chlng.Token})
@@ -75,6 +91,81 @@ Loop:
 	return nil
 }
 
+func (s *simpleHTTPChallenge) sendToken(token string) error {
+	content, err := s.getTokenContent(token)
+	if err != nil {
+		return err
+	}
+	u, err := url.Parse("//" + s.webRoot)
+	if err != nil {
+		return fmt.Errorf("Could not parse the webRoot: %v", s.webRoot)
+	}
+	var auths []ssh.AuthMethod
+	if aconn, err := net.Dial("unix", os.Getenv("SSH_AUTH_SOCK")); err == nil {
+		auths = append(auths, ssh.PublicKeysCallback(agent.NewClient(aconn).Signers))
+	}
+	username := os.Getenv("USER")
+	if u.User != nil {
+		p, b := u.User.Password()
+		if b {
+			auths = append(auths, ssh.Password(p))
+		}
+		username = u.User.Username()
+	}
+
+	config := ssh.ClientConfig{
+		User: username,
+		Auth: auths,
+	}
+	host := u.Host
+	if !strings.ContainsRune(host, ':') {
+		host = host + ":22"
+	}
+	conn, err := ssh.Dial("tcp", host, &config)
+	if err != nil {
+		return fmt.Errorf("unable to connect to [%s]: %v", host, err)
+	}
+	defer conn.Close()
+
+	c, err := sftp.NewClient(conn, sftp.MaxPacket(1<<15))
+	if err != nil {
+		return fmt.Errorf("unable to start sftp subsytem: %v", err)
+	}
+	defer c.Close()
+	bContent := []byte(content)
+	w, err := c.Create(u.Path + "/.well-known/acme-challenge/" + token)
+	if err != nil {
+		return err
+	}
+	defer w.Close()
+
+	n, err := w.Write(bContent)
+	if err != nil {
+		return err
+	}
+	if n != len(bContent) {
+		return fmt.Errorf("copy: expected %v bytes, got %d", len(bContent), n)
+	}
+	return nil
+}
+
+func (s *simpleHTTPChallenge) getTokenContent(token string) (string, error) {
+	jsonBytes, err := json.Marshal(challenge{Type: "simpleHttp", Token: token, TLS: true})
+	if err != nil {
+		return "", errors.New("startHTTPSServer: Failed to marshal network message")
+	}
+	signed, err := s.jws.signContent(jsonBytes)
+	if err != nil {
+		return "", errors.New("startHTTPSServer: Failed to sign message")
+	}
+	signedCompact := signed.FullSerialize()
+	if err != nil {
+		return "", errors.New("startHTTPSServer: Failed to serialize message")
+	}
+
+	return signedCompact, nil
+}
+
 // Starts a temporary HTTPS server on port 443. As soon as the challenge passed validation,
 // this server will get shut down. The certificate generated here is only held in memory.
 func (s *simpleHTTPChallenge) startHTTPSServer(domain string, token string) (net.Listener, error) {
@@ -113,17 +204,9 @@ func (s *simpleHTTPChallenge) startHTTPSServer(domain string, token string) (net
 		return nil, fmt.Errorf("Could not start HTTP listener! -> %v", err)
 	}
 
-	jsonBytes, err := json.Marshal(challenge{Type: "simpleHttp", Token: token, TLS: true})
+	signedCompact, err := s.getTokenContent(token)
 	if err != nil {
-		return nil, errors.New("startHTTPSServer: Failed to marshal network message")
-	}
-	signed, err := s.jws.signContent(jsonBytes)
-	if err != nil {
-		return nil, errors.New("startHTTPSServer: Failed to sign message")
-	}
-	signedCompact := signed.FullSerialize()
-	if err != nil {
-		return nil, errors.New("startHTTPSServer: Failed to serialize message")
+		return nil, err
 	}
 
 	// The handler validates the HOST header and request type.

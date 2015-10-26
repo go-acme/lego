@@ -56,7 +56,7 @@ type Client struct {
 // usr - A filled in user struct
 // optPort - The alternative port to listen on for challenges.
 // devMode - If set to true, all CanSolve() checks are skipped.
-func NewClient(caURL string, usr User, keyBits int, optPort string) *Client {
+func NewClient(caURL string, usr User, keyBits int, optPort string, webRoot string) *Client {
 	if err := usr.GetPrivateKey().Validate(); err != nil {
 		logger().Fatalf("Could not validate the private account key of %s\n\t%v", usr.GetEmail(), err)
 	}
@@ -66,7 +66,7 @@ func NewClient(caURL string, usr User, keyBits int, optPort string) *Client {
 	// Add all available solvers with the right index as per ACME
 	// spec to this map. Otherwise they won`t be found.
 	solvers := make(map[string]solver)
-	solvers["simpleHttp"] = &simpleHTTPChallenge{jws: jws, optPort: optPort}
+	solvers["simpleHttp"] = &simpleHTTPChallenge{jws: jws, optPort: optPort, webRoot: webRoot}
 
 	dirResp, err := http.Get(caURL + "/directory")
 	if err != nil {

@@ -32,7 +32,13 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 
 	//TODO: move to account struct? Currently MUST pass email.
 	acc := NewAccount(c.GlobalString("email"), conf)
-	return conf, acc, acme.NewClient(c.GlobalString("server"), acc, conf.RsaBits(), conf.OptPort())
+
+	client, err := acme.NewClient(c.GlobalString("server"), acc, conf.RsaBits(), conf.OptPort())
+	if err != nil {
+		logger().Fatal("Could not create client:", err)
+	}
+
+	return conf, acc, client
 }
 
 func saveCertRes(certRes acme.CertificateResource, conf *Configuration) {

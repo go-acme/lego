@@ -14,7 +14,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"math/big"
 	"net/http"
 	"time"
@@ -84,10 +83,16 @@ func GetOCSPForCert(bundle []byte) ([]byte, error) {
 	}
 
 	ocspResBytes, err := ioutil.ReadAll(req.Body)
-	_, err = ocsp.ParseResponse(ocspResBytes, nil)
+	ocspRes, err := ocsp.ParseResponse(ocspResBytes, issuerCert)
 	if err != nil {
-		log.Printf("OCSPParse Error: %v", err)
 		return nil, err
+	}
+
+	if ocspRes.Certificate == nil {
+		err = ocspRes.CheckSignatureFrom(issuerCert)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return ocspResBytes, nil

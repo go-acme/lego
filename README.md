@@ -103,7 +103,10 @@ myUser := MyUser{
 // configured for a local dev instance of Boulder running in Docker in a VM.
 // We specify an optPort of 5001 because we aren't running as root and can't
 // bind a listener to port 443 (used later when we attempt to pass challenge).
-client := acme.NewClient("http://192.168.99.100:4000", &myUser, rsaKeySize, "5001")
+client, err := acme.NewClient("http://192.168.99.100:4000", &myUser, rsaKeySize, "5001")
+if err != inl {
+  log.Fatal(err)
+}
 
 // New users will need to register; be sure to save it
 reg, err := client.Register()

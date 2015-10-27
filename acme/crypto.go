@@ -30,15 +30,26 @@ const (
 	rsakey
 )
 
-// GetOCSPForCert takes a PEM encoded cert or cert bundle and returns a OCSP
-// response from the OCSP endpoint in the certificate.
-// This []byte can be passed directly  into the OCSPStaple property of a tls.Certificate.
+const (
+	// OCSPGood means that the certificate is valid.
+	OCSPGood = ocsp.Good
+	// OCSPRevoked means that the certificate has been deliberately revoked.
+	OCSPRevoked = ocsp.Revoked
+	// OCSPUnknown means that the OCSP responder doesn't know about the certificate.
+	OCSPUnknown = ocsp.Unknown
+	// OCSPServerFailed means that the OCSP responder failed to process the request.
+	OCSPServerFailed = ocsp.ServerFailed
+)
+
+// GetOCSPForCert takes a PEM encoded cert or cert bundle returning the raw OCSP response,
+// the status code of the response and an error, if any.
+// This []byte can be passed directly into the OCSPStaple property of a tls.Certificate.
 // If the bundle only contains the issued certificate, this function will try
 // to get the issuer certificate from the IssuingCertificateURL in the certificate.
-func GetOCSPForCert(bundle []byte) ([]byte, error) {
+func GetOCSPForCert(bundle []byte) ([]byte, int, error) {
 	certificates, err := parsePEMBundle(bundle)
 	if err != nil {
-		return nil, err
+		return nil, OCSPUnknown, err
 	}
 
 	// We only got one certificate, means we have no issuer certificate - get it.
@@ -46,17 +57,17 @@ func GetOCSPForCert(bundle []byte) ([]byte, error) {
 		// TODO: build fallback. If this fails, check the remaining array entries.
 		resp, err := http.Get(certificates[0].IssuingCertificateURL[0])
 		if err != nil {
-			return nil, err
+			return nil, OCSPUnknown, err
 		}
 
 		issuerBytes, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			return nil, err
+			return nil, OCSPUnknown, err
 		}
 
 		issuerCert, err := x509.ParseCertificate(issuerBytes)
 		if err != nil {
-			return nil, err
+			return nil, OCSPUnknown, err
 		}
 
 		// Insert it into the slice on position 0
@@ -73,29 +84,29 @@ func GetOCSPForCert(bundle []byte) ([]byte, error) {
 	// Finally kick off the OCSP request.
 	ocspReq, err := ocsp.CreateRequest(issuedCert, issuerCert, nil)
 	if err != nil {
-		return nil, err
+		return nil, OCSPUnknown, err
 	}
 
 	reader := bytes.NewReader(ocspReq)
 	req, err := http.Post(issuedCert.OCSPServer[0], "application/ocsp-request", reader)
 	if err != nil {
-		return nil, err
+		return nil, OCSPUnknown, err
 	}
 
 	ocspResBytes, err := ioutil.ReadAll(req.Body)
 	ocspRes, err := ocsp.ParseResponse(ocspResBytes, issuerCert)
 	if err != nil {
-		return nil, err
+		return nil, OCSPUnknown, err
 	}
 
 	if ocspRes.Certificate == nil {
 		err = ocspRes.CheckSignatureFrom(issuerCert)
 		if err != nil {
-			return nil, err
+			return nil, OCSPUnknown, err
 		}
 	}
 
-	return ocspResBytes, nil
+	return ocspResBytes, ocspRes.Status, nil
 }
 
 // Derive the shared secret according to acme spec 5.6

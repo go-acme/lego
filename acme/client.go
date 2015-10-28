@@ -54,13 +54,19 @@ type Client struct {
 // NewClient creates a new client for the set user.
 // caURL - The root url to the boulder instance you want certificates from
 // usr - A filled in user struct
+// keyBits - Size of the key in bits
 // optPort - The alternative port to listen on for challenges.
-// devMode - If set to true, all CanSolve() checks are skipped.
-func NewClient(caURL string, usr User, keyBits int, optPort string) *Client {
-	if err := usr.GetPrivateKey().Validate(); err != nil {
-		logger().Fatalf("Could not validate the private account key of %s\n\t%v", usr.GetEmail(), err)
+func NewClient(caURL string, usr User, keyBits int, optPort string) (*Client, error) {
+	privKey := usr.GetPrivateKey()
+	if privKey == nil {
+		return nil, errors.New("private key was nil")
 	}
-	jws := &jws{privKey: usr.GetPrivateKey()}
+
+	if err := privKey.Validate(); err != nil {
+		return nil, fmt.Errorf("invalid private key: %v", err)
+	}
+
+	jws := &jws{privKey: privKey}
 
 	// REVIEW: best possibility?
 	// Add all available solvers with the right index as per ACME
@@ -68,23 +74,33 @@ func NewClient(caURL string, usr User, keyBits int, optPort string) *Client {
 	solvers := make(map[string]solver)
 	solvers["simpleHttp"] = &simpleHTTPChallenge{jws: jws, optPort: optPort}
 
-	dirResp, err := http.Get(caURL + "/directory")
+	dirURL := caURL + "/directory"
+	dirResp, err := http.Get(dirURL)
 	if err != nil {
-		logger().Fatalf("Could not get directory from CA URL. Please check the URL.\n\t%v", err)
+		return nil, fmt.Errorf("get directory at '%s': %v", dirURL, err)
 	}
 	defer dirResp.Body.Close()
 
 	var dir directory
-	decoder := json.NewDecoder(dirResp.Body)
-	err = decoder.Decode(&dir)
+	err = json.NewDecoder(dirResp.Body).Decode(&dir)
 	if err != nil {
-		logger().Fatalf("Could not parse directory response from CA URL.\n\t%v", err)
-	}
-	if dir.NewRegURL == "" || dir.NewAuthzURL == "" || dir.NewCertURL == "" || dir.RevokeCertURL == "" {
-		logger().Fatal("The directory returned by the server was invalid.")
+		return nil, fmt.Errorf("decode directory: %v", err)
 	}
 
-	return &Client{directory: dir, user: usr, jws: jws, keyBits: keyBits, solvers: solvers}
+	if dir.NewRegURL == "" {
+		return nil, errors.New("directory missing new registration URL")
+	}
+	if dir.NewAuthzURL == "" {
+		return nil, errors.New("directory missing new authz URL")
+	}
+	if dir.NewCertURL == "" {
+		return nil, errors.New("directory missing new certificate URL")
+	}
+	if dir.RevokeCertURL == "" {
+		return nil, errors.New("directory missing revoke certificate URL")
+	}
+
+	return &Client{directory: dir, user: usr, jws: jws, keyBits: keyBits, solvers: solvers}, nil
 }
 
 // Register the current account to the ACME server.
@@ -359,7 +375,8 @@ func (c *Client) getChallenges(domains []string) []*authorizationResource {
 
 			links := parseLinks(resp.Header["Link"])
 			if links["next"] == "" {
-				logger().Fatalln("The server did not provide enough information to proceed.")
+				logger().Println("The server did not provide enough information to proceed.")
+				return
 			}
 
 			var authz authorization
@@ -506,7 +523,7 @@ func (c *Client) requestCertificate(authz *authorizationResource, result chan Ce
 
 			break
 		default:
-			logger().Fatalf("[%s] The server returned an unexpected status code %d.", authz.Domain, resp.StatusCode)
+			logger().Printf("[%s] The server returned an unexpected status code %d.", authz.Domain, resp.StatusCode)
 			return
 		}
 

@@ -55,6 +55,10 @@ func GetOCSPForCert(bundle []byte) ([]byte, int, error) {
 	// We only got one certificate, means we have no issuer certificate - get it.
 	if len(certificates) == 1 {
 		// TODO: build fallback. If this fails, check the remaining array entries.
+		if len(certificates[0].IssuingCertificateURL) == 0 {
+			return nil, OCSPUnknown, errors.New("no issuing certificate URL")
+		}
+
 		resp, err := http.Get(certificates[0].IssuingCertificateURL[0])
 		if err != nil {
 			return nil, OCSPUnknown, err

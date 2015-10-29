@@ -48,6 +48,10 @@ func (s *simpleHTTPChallenge) Solve(chlng challenge, domain string) error {
 	var challengeResponse challenge
 Loop:
 	for {
+		if resp.StatusCode >= http.StatusBadRequest {
+			return handleHTTPError(resp)
+		}
+
 		err = json.NewDecoder(resp.Body).Decode(&challengeResponse)
 		resp.Body.Close()
 		if err != nil {
@@ -61,10 +65,8 @@ Loop:
 		case "pending":
 			break
 		case "invalid":
-			logger().Print("The server could not validate our request.")
 			return errors.New("The server could not validate our request.")
 		default:
-			logger().Print("The server returned an unexpected state.")
 			return errors.New("The server returned an unexpected state.")
 		}
 

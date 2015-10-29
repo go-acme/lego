@@ -121,9 +121,8 @@ func (c *Client) Register() (*RegistrationResource, error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode == http.StatusConflict {
-		// REVIEW: should this return an error?
-		return nil, errors.New("This account is already registered with this CA.")
+	if resp.StatusCode >= http.StatusBadRequest {
+		return nil, handleHTTPError(resp)
 	}
 
 	var serverReg Registration
@@ -167,7 +166,7 @@ func (c *Client) AgreeToTOS() error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusAccepted {
-		return fmt.Errorf("The server returned %d but we expected %d", resp.StatusCode, http.StatusAccepted)
+		return handleHTTPError(resp)
 	}
 
 	return nil
@@ -216,9 +215,8 @@ func (c *Client) RevokeCertificate(certificate []byte) error {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 {
-		body, _ := ioutil.ReadAll(resp.Body)
-		return fmt.Errorf("The server returned an error while trying to revoke the certificate.\n%s", body)
+	if resp.StatusCode != http.StatusOK {
+		return handleHTTPError(resp)
 	}
 
 	return nil
@@ -369,8 +367,7 @@ func (c *Client) getChallenges(domains []string) []*authorizationResource {
 			}
 
 			if resp.StatusCode != http.StatusCreated {
-				errc <- fmt.Errorf("Getting challenges for %s failed. Got status %d but expected %d",
-					domain, resp.StatusCode, http.StatusCreated)
+				errc <- handleHTTPError(resp)
 			}
 
 			links := parseLinks(resp.Header["Link"])
@@ -523,7 +520,7 @@ func (c *Client) requestCertificate(authz *authorizationResource, result chan Ce
 
 			break
 		default:
-			logger().Printf("[%s] The server returned an unexpected status code %d.", authz.Domain, resp.StatusCode)
+			errc <- handleHTTPError(resp)
 			return
 		}
 

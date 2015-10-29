@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-// Error asdf
+// Error is the base type for all errors specific to the ACME protocol.
 type Error struct {
 	StatusCode int    `json:"status,omitempty"`
 	Type       string `json:"type"`

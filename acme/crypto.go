@@ -63,6 +63,7 @@ func GetOCSPForCert(bundle []byte) ([]byte, int, error) {
 		if err != nil {
 			return nil, OCSPUnknown, err
 		}
+		defer resp.Body.Close()
 
 		issuerBytes, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
@@ -96,6 +97,7 @@ func GetOCSPForCert(bundle []byte) ([]byte, int, error) {
 	if err != nil {
 		return nil, OCSPUnknown, err
 	}
+	defer req.Body.Close()
 
 	ocspResBytes, err := ioutil.ReadAll(req.Body)
 	ocspRes, err := ocsp.ParseResponse(ocspResBytes, issuerCert)

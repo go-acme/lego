@@ -107,10 +107,16 @@ func NewClient(caURL string, usr User, keyBits int, optPort string) (*Client, er
 func (c *Client) Register() (*RegistrationResource, error) {
 	logger().Print("Registering account ... ")
 
-	jsonBytes, err := json.Marshal(registrationMessage{
+	regMsg := registrationMessage{
 		Resource: "new-reg",
-		Contact:  []string{"mailto:" + c.user.GetEmail()},
-	})
+	}
+	if c.user.GetEmail() != "" {
+		regMsg.Contact = []string{"mailto:" + c.user.GetEmail()}
+	} else {
+		regMsg.Contact = []string{}
+	}
+
+	jsonBytes, err := json.Marshal(regMsg)
 	if err != nil {
 		return nil, err
 	}

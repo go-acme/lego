@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"regexp"
 	"testing"
 
 	"github.com/square/go-jose"
@@ -57,9 +58,10 @@ func TestSimpleHTTPConnectionRefusal(t *testing.T) {
 	if err := solver.Solve(clientChallenge, "test.domain"); err == nil {
 		t.Error("UNEXPECTED: Expected Solve to return an error but the error was nil.")
 	} else {
-		expectedError := "Failed to post JWS message. -> Post http://localhost:4000: dial tcp 127.0.0.1:4000: getsockopt: connection refused"
-		if err.Error() != expectedError {
-			t.Errorf("Expected error %s but instead got %s", expectedError, err.Error())
+		reg := "Failed to post JWS message\\. -> Post http:\\/\\/localhost:4000: dial tcp 127\\.0\\.0\\.1:4000: (getsockopt: )?connection refused"
+		r, _ := regexp.Compile(reg)
+		if r.MatchString(err.Error()) {
+			t.Errorf("Expected error to match %s but instead got %s", reg, err.Error())
 		}
 	}
 }

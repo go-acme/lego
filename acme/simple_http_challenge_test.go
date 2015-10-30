@@ -58,10 +58,11 @@ func TestSimpleHTTPConnectionRefusal(t *testing.T) {
 	if err := solver.Solve(clientChallenge, "test.domain"); err == nil {
 		t.Error("UNEXPECTED: Expected Solve to return an error but the error was nil.")
 	} else {
-		reg := "Failed to post JWS message\\. -> Post http:\\/\\/localhost:4000: dial tcp 127\\.0\\.0\\.1:4000: (getsockopt: )?connection refused"
+		reg := "/Failed to post JWS message\\. -> Post http:\\/\\/localhost:4000: dial tcp 127\\.0\\.0\\.1:4000: (getsockopt: )?connection refused/g"
+		test2 := "Failed to post JWS message. -> Post http://localhost:4000: dial tcp 127.0.0.1:4000: connection refused"
 		r, _ := regexp.Compile(reg)
-		if r.MatchString(err.Error()) {
-			t.Errorf("Expected error to match %s but instead got %s", reg, err.Error())
+		if r.MatchString(err.Error()) && r.MatchString(test2) {
+			t.Errorf("Expected \"%s\" to match %s", err.Error(), reg)
 		}
 	}
 }

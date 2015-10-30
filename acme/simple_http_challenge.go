@@ -1,7 +1,6 @@
 package acme
 
 import (
-	"crypto/rand"
 	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
@@ -112,7 +111,7 @@ func (s *simpleHTTPChallenge) startHTTPSServer(domain string, token string) (net
 
 	tlsListener, err := tls.Listen("tcp", port, tlsConf)
 	if err != nil {
-		return nil, fmt.Errorf("Could not start HTTP listener! -> %v", err)
+		return nil, err
 	}
 
 	jsonBytes, err := json.Marshal(challenge{Type: "simpleHttp", Token: token, TLS: true})
@@ -121,7 +120,7 @@ func (s *simpleHTTPChallenge) startHTTPSServer(domain string, token string) (net
 	}
 	signed, err := s.jws.signContent(jsonBytes)
 	if err != nil {
-		return nil, errors.New("startHTTPSServer: Failed to sign message")
+		return nil, fmt.Errorf("startHTTPSServer: Failed to sign message. %s", err)
 	}
 	signedCompact := signed.FullSerialize()
 	if err != nil {
@@ -144,14 +143,4 @@ func (s *simpleHTTPChallenge) startHTTPSServer(domain string, token string) (net
 	go http.Serve(tlsListener, nil)
 
 	return tlsListener, nil
-}
-
-func getRandomString(length int) string {
-	const alphanum = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-	var bytes = make([]byte, length)
-	rand.Read(bytes)
-	for i, b := range bytes {
-		bytes[i] = alphanum[b%byte(len(alphanum))]
-	}
-	return string(bytes)
 }

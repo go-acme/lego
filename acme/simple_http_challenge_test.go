@@ -12,54 +12,183 @@ import (
 	"github.com/square/go-jose"
 )
 
-func TestSimpleHTTP(t *testing.T) {
-	privKey, err := generatePrivateKey(rsakey, 512)
-	if err != nil {
-		t.Errorf("Could not generate public key -> %v", err)
+func TestSimpleHTTPNonRootBind(t *testing.T) {
+	privKey, _ := generatePrivateKey(rsakey, 128)
+	jws := &jws{privKey: privKey.(*rsa.PrivateKey)}
+
+	solver := &simpleHTTPChallenge{jws: jws}
+	clientChallenge := challenge{Type: "simpleHttp", Status: "pending", URI: "localhost:4000", Token: "1"}
+
+	// validate error on non-root bind to 443
+	if err := solver.Solve(clientChallenge, "test.domain"); err == nil {
+		t.Error("BIND: Expected Solve to return an error but the error was nil.")
+	} else {
+		expectedError := "Could not start HTTPS server for challenge -> listen tcp :443: bind: permission denied"
+		if err.Error() != expectedError {
+			t.Errorf("Expected error %s but instead got %s", expectedError, err.Error())
+		}
 	}
+}
+
+func TestSimpleHTTPShortRSA(t *testing.T) {
+	privKey, _ := generatePrivateKey(rsakey, 128)
+	jws := &jws{privKey: privKey.(*rsa.PrivateKey), nonces: []string{"test1", "test2"}}
+
+	solver := &simpleHTTPChallenge{jws: jws, optPort: "23456"}
+	clientChallenge := challenge{Type: "simpleHttp", Status: "pending", URI: "http://localhost:4000", Token: "2"}
+
+	if err := solver.Solve(clientChallenge, "test.domain"); err == nil {
+		t.Error("UNEXPECTED: Expected Solve to return an error but the error was nil.")
+	} else {
+		expectedError := "Could not start HTTPS server for challenge -> startHTTPSServer: Failed to sign message. crypto/rsa: message too long for RSA public key size"
+		if err.Error() != expectedError {
+			t.Errorf("Expected error %s but instead got %s", expectedError, err.Error())
+		}
+	}
+}
+
+func TestSimpleHTTPConnectionRefusal(t *testing.T) {
+	privKey, _ := generatePrivateKey(rsakey, 512)
+	jws := &jws{privKey: privKey.(*rsa.PrivateKey), nonces: []string{"test1", "test2"}}
+
+	solver := &simpleHTTPChallenge{jws: jws, optPort: "23456"}
+	clientChallenge := challenge{Type: "simpleHttp", Status: "pending", URI: "http://localhost:4000", Token: "3"}
+
+	if err := solver.Solve(clientChallenge, "test.domain"); err == nil {
+		t.Error("UNEXPECTED: Expected Solve to return an error but the error was nil.")
+	} else {
+		expectedError := "Failed to post JWS message. -> Post http://localhost:4000: dial tcp 127.0.0.1:4000: getsockopt: connection refused"
+		if err.Error() != expectedError {
+			t.Errorf("Expected error %s but instead got %s", expectedError, err.Error())
+		}
+	}
+}
+
+func TestSimpleHTTPUnexpectedServerState(t *testing.T) {
+	privKey, _ := generatePrivateKey(rsakey, 512)
 	jws := &jws{privKey: privKey.(*rsa.PrivateKey)}
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Replay-Nonce", "12345")
+		w.Write([]byte("{\"type\":\"simpleHttp\",\"status\":\"what\",\"uri\":\"http://some.url\",\"token\":\"4\"}"))
 	}))
 
-	solver := &simpleHTTPChallenge{jws: jws}
-	clientChallenge := challenge{Type: "simpleHttp", Status: "pending", URI: ts.URL, Token: "123456789"}
+	solver := &simpleHTTPChallenge{jws: jws, optPort: "23456"}
+	clientChallenge := challenge{Type: "simpleHttp", Status: "pending", URI: ts.URL, Token: "4"}
 
-	// validate error on non-root bind to 443
-	if err = solver.Solve(clientChallenge, "test.domain"); err == nil {
-		t.Error("BIND: Expected Solve to return an error but the error was nil.")
+	if err := solver.Solve(clientChallenge, "test.domain"); err == nil {
+		t.Error("UNEXPECTED: Expected Solve to return an error but the error was nil.")
+	} else {
+		expectedError := "The server returned an unexpected state."
+		if err.Error() != expectedError {
+			t.Errorf("Expected error %s but instead got %s", expectedError, err.Error())
+		}
 	}
+}
 
-	// Validate error on unexpected state
-	solver.optPort = "23456"
-	if err = solver.Solve(clientChallenge, "test.domain"); err == nil {
+func TestSimpleHTTPChallengeServerUnexpectedDomain(t *testing.T) {
+	privKey, _ := generatePrivateKey(rsakey, 512)
+	jws := &jws{privKey: privKey.(*rsa.PrivateKey)}
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "POST" {
+			tr := &http.Transport{
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			}
+			client := &http.Client{Transport: tr}
+			req, _ := client.Get("https://localhost:23456/.well-known/acme-challenge/" + "5")
+			reqBytes, _ := ioutil.ReadAll(req.Body)
+			if string(reqBytes) != "TEST" {
+				t.Error("Expected simpleHTTP server to return string TEST on unexpected domain.")
+			}
+		}
+
+		w.Header().Add("Replay-Nonce", "12345")
+		w.Write([]byte("{\"type\":\"simpleHttp\",\"status\":\"invalid\",\"uri\":\"http://some.url\",\"token\":\"5\"}"))
+	}))
+
+	solver := &simpleHTTPChallenge{jws: jws, optPort: "23456"}
+	clientChallenge := challenge{Type: "simpleHttp", Status: "pending", URI: ts.URL, Token: "5"}
+
+	if err := solver.Solve(clientChallenge, "test.domain"); err == nil {
 		t.Error("UNEXPECTED: Expected Solve to return an error but the error was nil.")
 	}
+}
 
-	// Validate error on invalid status
-	ts.Config.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add("Replay-Nonce", "12345")
-		failed := challenge{Type: "simpleHttp", Status: "invalid", URI: ts.URL, Token: "1234567810"}
-		jsonBytes, _ := json.Marshal(&failed)
-		w.Write(jsonBytes)
-	})
-	clientChallenge.Token = "1234567810"
-	if err = solver.Solve(clientChallenge, "test.domain"); err == nil {
-		t.Error("FAILED: Expected Solve to return an error but the error was nil.")
+func TestSimpleHTTPServerError(t *testing.T) {
+	privKey, _ := generatePrivateKey(rsakey, 512)
+	jws := &jws{privKey: privKey.(*rsa.PrivateKey)}
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "HEAD" {
+			w.Header().Add("Replay-Nonce", "12345")
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Header().Add("Replay-Nonce", "12345")
+			w.Write([]byte("{\"type\":\"urn:acme:error:unauthorized\",\"detail\":\"Error creating new authz :: Syntax error\"}"))
+		}
+	}))
+
+	solver := &simpleHTTPChallenge{jws: jws, optPort: "23456"}
+	clientChallenge := challenge{Type: "simpleHttp", Status: "pending", URI: ts.URL, Token: "6"}
+
+	if err := solver.Solve(clientChallenge, "test.domain"); err == nil {
+		t.Error("UNEXPECTED: Expected Solve to return an error but the error was nil.")
+	} else {
+		expectedError := "[500] Type: urn:acme:error:unauthorized Detail: Error creating new authz :: Syntax error"
+		if err.Error() != expectedError {
+			t.Errorf("Expected error |%s| but instead got |%s|", expectedError, err.Error())
+		}
 	}
+}
 
-	// Validate no error on valid response
-	ts.Config.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func TestSimpleHTTPInvalidServerState(t *testing.T) {
+	privKey, _ := generatePrivateKey(rsakey, 512)
+	jws := &jws{privKey: privKey.(*rsa.PrivateKey)}
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Replay-Nonce", "12345")
-		valid := challenge{Type: "simpleHttp", Status: "valid", URI: ts.URL, Token: "1234567811"}
-		jsonBytes, _ := json.Marshal(&valid)
-		w.Write(jsonBytes)
-	})
-	clientChallenge.Token = "1234567811"
-	if err = solver.Solve(clientChallenge, "test.domain"); err != nil {
+		w.Write([]byte("{\"type\":\"simpleHttp\",\"status\":\"invalid\",\"uri\":\"http://some.url\",\"token\":\"7\"}"))
+	}))
+
+	solver := &simpleHTTPChallenge{jws: jws, optPort: "23456"}
+	clientChallenge := challenge{Type: "simpleHttp", Status: "pending", URI: ts.URL, Token: "7"}
+
+	if err := solver.Solve(clientChallenge, "test.domain"); err == nil {
+		t.Error("UNEXPECTED: Expected Solve to return an error but the error was nil.")
+	} else {
+		expectedError := "The server could not validate our request."
+		if err.Error() != expectedError {
+			t.Errorf("Expected error |%s| but instead got |%s|", expectedError, err.Error())
+		}
+	}
+}
+
+func TestSimpleHTTPValidServerResponse(t *testing.T) {
+	privKey, _ := generatePrivateKey(rsakey, 512)
+	jws := &jws{privKey: privKey.(*rsa.PrivateKey)}
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Replay-Nonce", "12345")
+		w.Write([]byte("{\"type\":\"simpleHttp\",\"status\":\"valid\",\"uri\":\"http://some.url\",\"token\":\"8\"}"))
+	}))
+
+	solver := &simpleHTTPChallenge{jws: jws, optPort: "23456"}
+	clientChallenge := challenge{Type: "simpleHttp", Status: "pending", URI: ts.URL, Token: "8"}
+
+	if err := solver.Solve(clientChallenge, "test.domain"); err != nil {
 		t.Errorf("VALID: Expected Solve to return no error but the error was -> %v", err)
 	}
+}
+
+func TestSimpleHTTPValidFull(t *testing.T) {
+	privKey, _ := generatePrivateKey(rsakey, 512)
+	jws := &jws{privKey: privKey.(*rsa.PrivateKey)}
+
+	ts := httptest.NewServer(nil)
+
+	solver := &simpleHTTPChallenge{jws: jws, optPort: "23456"}
+	clientChallenge := challenge{Type: "simpleHttp", Status: "pending", URI: ts.URL, Token: "9"}
 
 	// Validate server on port 23456 which responds appropriately
 	clientChallenge.Token = "1234567812"
@@ -112,7 +241,8 @@ func TestSimpleHTTP(t *testing.T) {
 		jsonBytes, _ := json.Marshal(&valid)
 		w.Write(jsonBytes)
 	})
-	if err = solver.Solve(clientChallenge, "test.domain"); err != nil {
+
+	if err := solver.Solve(clientChallenge, "test.domain"); err != nil {
 		t.Errorf("VALID: Expected Solve to return no error but the error was -> %v", err)
 	}
 }

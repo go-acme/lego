@@ -39,13 +39,6 @@ func main() {
 			Action: run,
 		},
 		{
-			Name:  "auth",
-			Usage: "Create a certificate - must already have an account",
-			Action: func(c *cli.Context) {
-				logger().Fatal("Not implemented")
-			},
-		},
-		{
 			Name:   "revoke",
 			Usage:  "Revoke a certificate",
 			Action: revoke,

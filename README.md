@@ -49,7 +49,6 @@ VERSION:
 
 COMMANDS:
    run		Register an account, then create and install a certificate
-   auth		Create a certificate - must already have an account
    revoke	Revoke a certificate
    renew	Renew a certificate
    help, h	Shows a list of commands or help for one command
@@ -59,11 +58,11 @@ GLOBAL OPTIONS:
    --server, -s "https://acme-staging.api.letsencrypt.org/"		CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client.
    --email, -m 								Email used for registration and recovery contact.
    --rsa-key-size, -B "2048"						Size of the RSA key.
-   --path "CWD"	Directory to use for storing the data
+   --path "CWD/.lego"	Directory to use for storing the data
    --port 								Challenges will use this port to listen on. Please make sure to forward port 443 to this port on your machine. Otherwise use setcap on the binary
-   --devMode								If set to true, all client side challenge pre-tests are skipped.
    --help, -h								show help
    --version, -v							print the version
+
 ```
 
 

@@ -70,7 +70,6 @@ func saveCertRes(certRes acme.CertificateResource, conf *Configuration) {
 }
 
 func run(c *cli.Context) {
-
 	conf, acc, client := setup(c)
 	if acc.Registration == nil {
 		reg, err := client.Register()
@@ -126,12 +125,14 @@ func run(c *cli.Context) {
 		logger().Fatal("Please specify --domains")
 	}
 
-	certs, err := client.ObtainCertificates(c.GlobalStringSlice("domains"), true)
-	if err != nil {
-		logger().Fatalf("Could not obtain certificates\n\t%v", err)
+	certs, failures := client.ObtainCertificates(c.GlobalStringSlice("domains"), true)
+	if len(failures) > 0 {
+		for k, v := range failures {
+			logger().Fatalf("[%s] Could not obtain certificates\n\t%v", k, v)
+		}
 	}
 
-	err = checkFolder(conf.CertPath())
+	err := checkFolder(conf.CertPath())
 	if err != nil {
 		logger().Fatalf("Cound not check/create path: %v", err)
 	}

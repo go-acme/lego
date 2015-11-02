@@ -183,17 +183,30 @@ func (c *Client) AgreeToTOS() error {
 // PEM encoded byte slices.
 // If bundle is true, the []byte contains both the issuer certificate and
 // your issued certificate as a bundle.
-func (c *Client) ObtainCertificates(domains []string, bundle bool) ([]CertificateResource, error) {
+func (c *Client) ObtainCertificates(domains []string, bundle bool) ([]CertificateResource, map[string]error) {
 	logger().Print("Obtaining certificates...")
-	challenges := c.getChallenges(domains)
+	challenges, failures := c.getChallenges(domains)
+	if len(challenges) == 0 {
+		return nil, failures
+	}
+
 	err := c.solveChallenges(challenges)
-	if err != nil {
-		return nil, err
+	for k, v := range err {
+		failures[k] = v
+	}
+
+	if len(failures) == len(domains) {
+		return nil, failures
 	}
 
 	logger().Print("Validations succeeded. Getting certificates")
 
-	return c.requestCertificates(challenges, bundle)
+	certs, err := c.requestCertificates(challenges, bundle)
+	for k, v := range err {
+		failures[k] = v
+	}
+
+	return certs, failures
 }
 
 // RevokeCertificate takes a PEM encoded certificate or bundle and tries to revoke it at the CA.
@@ -299,9 +312,9 @@ func (c *Client) RenewCertificate(cert CertificateResource, revokeOld bool, bund
 		return cert, nil
 	}
 
-	newCerts, err := c.ObtainCertificates([]string{cert.Domain}, bundle)
-	if err != nil {
-		return CertificateResource{}, err
+	newCerts, failures := c.ObtainCertificates([]string{cert.Domain}, bundle)
+	if len(failures) > 0 {
+		return CertificateResource{}, failures[cert.Domain]
 	}
 
 	if revokeOld {
@@ -313,8 +326,9 @@ func (c *Client) RenewCertificate(cert CertificateResource, revokeOld bool, bund
 
 // Looks through the challenge combinations to find a solvable match.
 // Then solves the challenges in series and returns.
-func (c *Client) solveChallenges(challenges []*authorizationResource) error {
+func (c *Client) solveChallenges(challenges []*authorizationResource) map[string]error {
 	// loop through the resources, basically through the domains.
+	failures := make(map[string]error)
 	for _, authz := range challenges {
 		// no solvers - no solving
 		if solvers := c.chooseSolvers(authz.Body, authz.Domain); solvers != nil {
@@ -322,15 +336,15 @@ func (c *Client) solveChallenges(challenges []*authorizationResource) error {
 				// TODO: do not immediately fail if one domain fails to validate.
 				err := solver.Solve(authz.Body.Challenges[i], authz.Domain)
 				if err != nil {
-					return err
+					failures[authz.Domain] = err
 				}
 			}
 		} else {
-			return fmt.Errorf("Could not determine solvers for %s", authz.Domain)
+			failures[authz.Domain] = fmt.Errorf("Could not determine solvers for %s", authz.Domain)
 		}
 	}
 
-	return nil
+	return failures
 }
 
 // Checks all combinations from the server and returns an array of
@@ -355,25 +369,25 @@ func (c *Client) chooseSolvers(auth authorization, domain string) map[int]solver
 }
 
 // Get the challenges needed to proof our identifier to the ACME server.
-func (c *Client) getChallenges(domains []string) []*authorizationResource {
-	resc, errc := make(chan *authorizationResource), make(chan error)
+func (c *Client) getChallenges(domains []string) ([]*authorizationResource, map[string]error) {
+	resc, errc := make(chan *authorizationResource), make(chan domainError)
 
 	for _, domain := range domains {
 		go func(domain string) {
 			jsonBytes, err := json.Marshal(authorization{Resource: "new-authz", Identifier: identifier{Type: "dns", Value: domain}})
 			if err != nil {
-				errc <- err
+				errc <- domainError{Domain: domain, Error: err}
 				return
 			}
 
 			resp, err := c.jws.post(c.user.GetRegistration().NewAuthzURL, jsonBytes)
 			if err != nil {
-				errc <- err
+				errc <- domainError{Domain: domain, Error: err}
 				return
 			}
 
 			if resp.StatusCode != http.StatusCreated {
-				errc <- handleHTTPError(resp)
+				errc <- domainError{Domain: domain, Error: handleHTTPError(resp)}
 			}
 
 			links := parseLinks(resp.Header["Link"])
@@ -386,7 +400,7 @@ func (c *Client) getChallenges(domains []string) []*authorizationResource {
 			decoder := json.NewDecoder(resp.Body)
 			err = decoder.Decode(&authz)
 			if err != nil {
-				errc <- err
+				errc <- domainError{Domain: domain, Error: err}
 			}
 			resp.Body.Close()
 
@@ -395,37 +409,39 @@ func (c *Client) getChallenges(domains []string) []*authorizationResource {
 	}
 
 	var responses []*authorizationResource
+	failures := make(map[string]error)
 	for i := 0; i < len(domains); i++ {
 		select {
 		case res := <-resc:
 			responses = append(responses, res)
 		case err := <-errc:
-			logger().Printf("%v", err)
+			failures[err.Domain] = err.Error
 		}
 	}
 
 	close(resc)
 	close(errc)
 
-	return responses
+	return responses, failures
 }
 
 // requestCertificates iterates all granted authorizations, creates RSA private keys and CSRs.
 // It then uses these to request a certificate from the CA and returns the list of successfully
 // granted certificates.
-func (c *Client) requestCertificates(challenges []*authorizationResource, bundle bool) ([]CertificateResource, error) {
-	resc, errc := make(chan CertificateResource), make(chan error)
+func (c *Client) requestCertificates(challenges []*authorizationResource, bundle bool) ([]CertificateResource, map[string]error) {
+	resc, errc := make(chan CertificateResource), make(chan domainError)
 	for _, authz := range challenges {
 		go c.requestCertificate(authz, resc, errc, bundle)
 	}
 
 	var certs []CertificateResource
+	failures := make(map[string]error)
 	for i := 0; i < len(challenges); i++ {
 		select {
 		case res := <-resc:
 			certs = append(certs, res)
 		case err := <-errc:
-			logger().Printf("%v", err)
+			failures[err.Domain] = err.Error
 		}
 	}
 
@@ -435,30 +451,30 @@ func (c *Client) requestCertificates(challenges []*authorizationResource, bundle
 	return certs, nil
 }
 
-func (c *Client) requestCertificate(authz *authorizationResource, result chan CertificateResource, errc chan error, bundle bool) {
+func (c *Client) requestCertificate(authz *authorizationResource, result chan CertificateResource, errc chan domainError, bundle bool) {
 	privKey, err := generatePrivateKey(rsakey, c.keyBits)
 	if err != nil {
-		errc <- err
+		errc <- domainError{Domain: authz.Domain, Error: err}
 		return
 	}
 
 	// TODO: should the CSR be customizable?
 	csr, err := generateCsr(privKey.(*rsa.PrivateKey), authz.Domain)
 	if err != nil {
-		errc <- err
+		errc <- domainError{Domain: authz.Domain, Error: err}
 		return
 	}
 
 	csrString := base64.URLEncoding.EncodeToString(csr)
 	jsonBytes, err := json.Marshal(csrMessage{Resource: "new-cert", Csr: csrString, Authorizations: []string{authz.AuthURL}})
 	if err != nil {
-		errc <- err
+		errc <- domainError{Domain: authz.Domain, Error: err}
 		return
 	}
 
 	resp, err := c.jws.post(authz.NewCertURL, jsonBytes)
 	if err != nil {
-		errc <- err
+		errc <- domainError{Domain: authz.Domain, Error: err}
 		return
 	}
 
@@ -477,7 +493,7 @@ func (c *Client) requestCertificate(authz *authorizationResource, result chan Ce
 			cert, err := ioutil.ReadAll(resp.Body)
 			resp.Body.Close()
 			if err != nil {
-				errc <- err
+				errc <- domainError{Domain: authz.Domain, Error: err}
 				return
 			}
 
@@ -517,7 +533,7 @@ func (c *Client) requestCertificate(authz *authorizationResource, result chan Ce
 			ra := resp.Header.Get("Retry-After")
 			retryAfter, err := strconv.Atoi(ra)
 			if err != nil {
-				errc <- err
+				errc <- domainError{Domain: authz.Domain, Error: err}
 				return
 			}
 
@@ -526,13 +542,13 @@ func (c *Client) requestCertificate(authz *authorizationResource, result chan Ce
 
 			break
 		default:
-			errc <- handleHTTPError(resp)
+			errc <- domainError{Domain: authz.Domain, Error: handleHTTPError(resp)}
 			return
 		}
 
 		resp, err = http.Get(cerRes.CertURL)
 		if err != nil {
-			errc <- err
+			errc <- domainError{Domain: authz.Domain, Error: err}
 			return
 		}
 	}

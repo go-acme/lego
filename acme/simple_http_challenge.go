@@ -14,6 +14,12 @@ import (
 	"time"
 )
 
+// OnSimpleHTTPStart hook will get called BEFORE SimpleHTTP starts to listen on a port.
+var OnSimpleHTTPStart func(string)
+
+// OnSimpleHTTPEnd hook will get called AFTER SimpleHTTP determined the status of the domain.
+var OnSimpleHTTPEnd func(bool)
+
 type simpleHTTPChallenge struct {
 	jws     *jws
 	optPort string
@@ -59,11 +65,17 @@ Loop:
 
 		switch challengeResponse.Status {
 		case "valid":
+			if OnSimpleHTTPEnd != nil {
+				OnSimpleHTTPEnd(true)
+			}
 			logger().Print("The server validated our request")
 			break Loop
 		case "pending":
 			break
 		case "invalid":
+			if OnSimpleHTTPEnd != nil {
+				OnSimpleHTTPEnd(true)
+			}
 			return errors.New("The server could not validate our request.")
 		default:
 			return errors.New("The server returned an unexpected state.")
@@ -102,6 +114,9 @@ func (s *simpleHTTPChallenge) startHTTPSServer(domain string, token string) (net
 	tlsConf.Certificates = []tls.Certificate{tempKeyPair}
 
 	path := "/.well-known/acme-challenge/" + token
+	if OnSimpleHTTPStart != nil {
+		OnSimpleHTTPStart(path)
+	}
 
 	// Allow for CLI override
 	port := ":443"

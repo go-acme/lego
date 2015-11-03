@@ -21,10 +21,10 @@ func TestSimpleHTTPNonRootBind(t *testing.T) {
 	clientChallenge := challenge{Type: "simpleHttp", Status: "pending", URI: "localhost:4000", Token: "1"}
 
 	// validate error on non-root bind to 443
-	if err := solver.Solve(clientChallenge, "test.domain"); err == nil {
+	if err := solver.Solve(clientChallenge, "127.0.0.1"); err == nil {
 		t.Error("BIND: Expected Solve to return an error but the error was nil.")
 	} else {
-		expectedError := "Could not start HTTPS server for challenge -> listen tcp :443: bind: permission denied"
+		expectedError := "Could not start HTTPS server for challenge -> listen tcp 127.0.0.1:443: bind: permission denied"
 		if err.Error() != expectedError {
 			t.Errorf("Expected error %s but instead got %s", expectedError, err.Error())
 		}
@@ -38,7 +38,7 @@ func TestSimpleHTTPShortRSA(t *testing.T) {
 	solver := &simpleHTTPChallenge{jws: jws, optPort: "23456"}
 	clientChallenge := challenge{Type: "simpleHttp", Status: "pending", URI: "http://localhost:4000", Token: "2"}
 
-	if err := solver.Solve(clientChallenge, "test.domain"); err == nil {
+	if err := solver.Solve(clientChallenge, "127.0.0.1"); err == nil {
 		t.Error("UNEXPECTED: Expected Solve to return an error but the error was nil.")
 	} else {
 		expectedError := "Could not start HTTPS server for challenge -> startHTTPSServer: Failed to sign message. crypto/rsa: message too long for RSA public key size"
@@ -55,7 +55,7 @@ func TestSimpleHTTPConnectionRefusal(t *testing.T) {
 	solver := &simpleHTTPChallenge{jws: jws, optPort: "23456"}
 	clientChallenge := challenge{Type: "simpleHttp", Status: "pending", URI: "http://localhost:4000", Token: "3"}
 
-	if err := solver.Solve(clientChallenge, "test.domain"); err == nil {
+	if err := solver.Solve(clientChallenge, "127.0.0.1"); err == nil {
 		t.Error("UNEXPECTED: Expected Solve to return an error but the error was nil.")
 	} else {
 		reg := "/Failed to post JWS message\\. -> Post http:\\/\\/localhost:4000: dial tcp 127\\.0\\.0\\.1:4000: (getsockopt: )?connection refused/g"
@@ -79,7 +79,7 @@ func TestSimpleHTTPUnexpectedServerState(t *testing.T) {
 	solver := &simpleHTTPChallenge{jws: jws, optPort: "23456"}
 	clientChallenge := challenge{Type: "simpleHttp", Status: "pending", URI: ts.URL, Token: "4"}
 
-	if err := solver.Solve(clientChallenge, "test.domain"); err == nil {
+	if err := solver.Solve(clientChallenge, "127.0.0.1"); err == nil {
 		t.Error("UNEXPECTED: Expected Solve to return an error but the error was nil.")
 	} else {
 		expectedError := "The server returned an unexpected state."
@@ -113,7 +113,7 @@ func TestSimpleHTTPChallengeServerUnexpectedDomain(t *testing.T) {
 	solver := &simpleHTTPChallenge{jws: jws, optPort: "23456"}
 	clientChallenge := challenge{Type: "simpleHttp", Status: "pending", URI: ts.URL, Token: "5"}
 
-	if err := solver.Solve(clientChallenge, "test.domain"); err == nil {
+	if err := solver.Solve(clientChallenge, "127.0.0.1"); err == nil {
 		t.Error("UNEXPECTED: Expected Solve to return an error but the error was nil.")
 	}
 }
@@ -135,7 +135,7 @@ func TestSimpleHTTPServerError(t *testing.T) {
 	solver := &simpleHTTPChallenge{jws: jws, optPort: "23456"}
 	clientChallenge := challenge{Type: "simpleHttp", Status: "pending", URI: ts.URL, Token: "6"}
 
-	if err := solver.Solve(clientChallenge, "test.domain"); err == nil {
+	if err := solver.Solve(clientChallenge, "127.0.0.1"); err == nil {
 		t.Error("UNEXPECTED: Expected Solve to return an error but the error was nil.")
 	} else {
 		expectedError := "[500] Type: urn:acme:error:unauthorized Detail: Error creating new authz :: Syntax error"
@@ -157,7 +157,7 @@ func TestSimpleHTTPInvalidServerState(t *testing.T) {
 	solver := &simpleHTTPChallenge{jws: jws, optPort: "23456"}
 	clientChallenge := challenge{Type: "simpleHttp", Status: "pending", URI: ts.URL, Token: "7"}
 
-	if err := solver.Solve(clientChallenge, "test.domain"); err == nil {
+	if err := solver.Solve(clientChallenge, "127.0.0.1"); err == nil {
 		t.Error("UNEXPECTED: Expected Solve to return an error but the error was nil.")
 	} else {
 		expectedError := "The server could not validate our request."
@@ -179,7 +179,7 @@ func TestSimpleHTTPValidServerResponse(t *testing.T) {
 	solver := &simpleHTTPChallenge{jws: jws, optPort: "23456"}
 	clientChallenge := challenge{Type: "simpleHttp", Status: "pending", URI: ts.URL, Token: "8"}
 
-	if err := solver.Solve(clientChallenge, "test.domain"); err != nil {
+	if err := solver.Solve(clientChallenge, "127.0.0.1"); err != nil {
 		t.Errorf("VALID: Expected Solve to return no error but the error was -> %v", err)
 	}
 }
@@ -221,7 +221,7 @@ func TestSimpleHTTPValidFull(t *testing.T) {
 		reqURL := "https://localhost:23456/.well-known/acme-challenge/" + clientChallenge.Token
 		t.Logf("Request URL is: %s", reqURL)
 		req, _ := http.NewRequest("GET", reqURL, nil)
-		req.Host = "test.domain"
+		req.Host = "127.0.0.1"
 		resp, err := client.Do(req)
 		if err != nil {
 			t.Errorf("Expected the solver to listen on port 23456 -> %v", err)
@@ -245,7 +245,7 @@ func TestSimpleHTTPValidFull(t *testing.T) {
 		w.Write(jsonBytes)
 	})
 
-	if err := solver.Solve(clientChallenge, "test.domain"); err != nil {
+	if err := solver.Solve(clientChallenge, "127.0.0.1"); err != nil {
 		t.Errorf("VALID: Expected Solve to return no error but the error was -> %v", err)
 	}
 }

@@ -74,7 +74,7 @@ Loop:
 			break
 		case "invalid":
 			if OnSimpleHTTPEnd != nil {
-				OnSimpleHTTPEnd(true)
+				OnSimpleHTTPEnd(false)
 			}
 			return errors.New("The server could not validate our request.")
 		default:
@@ -124,7 +124,7 @@ func (s *simpleHTTPChallenge) startHTTPSServer(domain string, token string) (net
 		port = ":" + s.optPort
 	}
 
-	tlsListener, err := tls.Listen("tcp", port, tlsConf)
+	tlsListener, err := tls.Listen("tcp", domain+port, tlsConf)
 	if err != nil {
 		return nil, err
 	}

@@ -18,7 +18,7 @@ type RemoteError struct {
 }
 
 func (e RemoteError) Error() string {
-	return fmt.Sprintf("[%d] Type: %s Detail: %s", e.StatusCode, e.Type, e.Detail)
+	return fmt.Sprintf("acme: Error %d - %s - %s", e.StatusCode, e.Type, e.Detail)
 }
 
 // TOSError represents the error which is returned if the user needs to

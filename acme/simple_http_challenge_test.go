@@ -138,7 +138,7 @@ func TestSimpleHTTPServerError(t *testing.T) {
 	if err := solver.Solve(clientChallenge, "127.0.0.1"); err == nil {
 		t.Error("UNEXPECTED: Expected Solve to return an error but the error was nil.")
 	} else {
-		expectedError := "[500] Type: urn:acme:error:unauthorized Detail: Error creating new authz :: Syntax error"
+		expectedError := "acme: Error 500 - urn:acme:error:unauthorized - Error creating new authz :: Syntax error"
 		if err.Error() != expectedError {
 			t.Errorf("Expected error |%s| but instead got |%s|", expectedError, err.Error())
 		}

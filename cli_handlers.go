@@ -32,7 +32,13 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 
 	//TODO: move to account struct? Currently MUST pass email.
 	acc := NewAccount(c.GlobalString("email"), conf)
-	return conf, acc, acme.NewClient(c.GlobalString("server"), acc, conf.RsaBits(), conf.OptPort(), conf.WebRoot())
+
+	client, err := acme.NewClient(c.GlobalString("server"), acc, conf.RsaBits(), conf.OptPort(), conf.WebRoot())
+	if err != nil {
+		logger().Fatal("Could not create client:", err)
+	}
+
+	return conf, acc, client
 }
 
 func saveCertRes(certRes acme.CertificateResource, conf *Configuration) {
@@ -64,7 +70,6 @@ func saveCertRes(certRes acme.CertificateResource, conf *Configuration) {
 }
 
 func run(c *cli.Context) {
-
 	conf, acc, client := setup(c)
 	if acc.Registration == nil {
 		reg, err := client.Register()
@@ -120,12 +125,14 @@ func run(c *cli.Context) {
 		logger().Fatal("Please specify --domains")
 	}
 
-	certs, err := client.ObtainCertificates(c.GlobalStringSlice("domains"), true)
-	if err != nil {
-		logger().Fatalf("Could not obtain certificates\n\t%v", err)
+	certs, failures := client.ObtainCertificates(c.GlobalStringSlice("domains"), true)
+	if len(failures) > 0 {
+		for k, v := range failures {
+			logger().Fatalf("[%s] Could not obtain certificates\n\t%v", k, v)
+		}
 	}
 
-	err = checkFolder(conf.CertPath())
+	err := checkFolder(conf.CertPath())
 	if err != nil {
 		logger().Fatalf("Cound not check/create path: %v", err)
 	}

@@ -1,7 +1,6 @@
 package acme
 
 import (
-	"crypto/rand"
 	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
@@ -20,6 +19,12 @@ import (
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
 )
+
+// OnSimpleHTTPStart hook will get called BEFORE SimpleHTTP starts to listen on a port.
+var OnSimpleHTTPStart func(string)
+
+// OnSimpleHTTPEnd hook will get called AFTER SimpleHTTP determined the status of the domain.
+var OnSimpleHTTPEnd func(bool)
 
 type simpleHTTPChallenge struct {
 	jws     *jws
@@ -64,6 +69,10 @@ func (s *simpleHTTPChallenge) Solve(chlng challenge, domain string) error {
 	var challengeResponse challenge
 Loop:
 	for {
+		if resp.StatusCode >= http.StatusBadRequest {
+			return handleHTTPError(resp)
+		}
+
 		err = json.NewDecoder(resp.Body).Decode(&challengeResponse)
 		resp.Body.Close()
 		if err != nil {
@@ -72,15 +81,19 @@ Loop:
 
 		switch challengeResponse.Status {
 		case "valid":
+			if OnSimpleHTTPEnd != nil {
+				OnSimpleHTTPEnd(true)
+			}
 			logger().Print("The server validated our request")
 			break Loop
 		case "pending":
 			break
 		case "invalid":
-			logger().Print("The server could not validate our request.")
+			if OnSimpleHTTPEnd != nil {
+				OnSimpleHTTPEnd(false)
+			}
 			return errors.New("The server could not validate our request.")
 		default:
-			logger().Print("The server returned an unexpected state.")
 			return errors.New("The server returned an unexpected state.")
 		}
 
@@ -156,13 +169,12 @@ func (s *simpleHTTPChallenge) getTokenContent(token string) (string, error) {
 	}
 	signed, err := s.jws.signContent(jsonBytes)
 	if err != nil {
-		return "", errors.New("startHTTPSServer: Failed to sign message")
+		return "", fmt.Errorf("startHTTPSServer: Failed to sign message. %s", err)
 	}
 	signedCompact := signed.FullSerialize()
 	if err != nil {
 		return "", errors.New("startHTTPSServer: Failed to serialize message")
 	}
-
 	return signedCompact, nil
 }
 
@@ -192,6 +204,9 @@ func (s *simpleHTTPChallenge) startHTTPSServer(domain string, token string) (net
 	tlsConf.Certificates = []tls.Certificate{tempKeyPair}
 
 	path := "/.well-known/acme-challenge/" + token
+	if OnSimpleHTTPStart != nil {
+		OnSimpleHTTPStart(path)
+	}
 
 	// Allow for CLI override
 	port := ":443"
@@ -199,9 +214,9 @@ func (s *simpleHTTPChallenge) startHTTPSServer(domain string, token string) (net
 		port = ":" + s.optPort
 	}
 
-	tlsListener, err := tls.Listen("tcp", port, tlsConf)
+	tlsListener, err := tls.Listen("tcp", domain+port, tlsConf)
 	if err != nil {
-		return nil, fmt.Errorf("Could not start HTTP listener! -> %v", err)
+		return nil, err
 	}
 
 	signedCompact, err := s.getTokenContent(token)
@@ -225,14 +240,4 @@ func (s *simpleHTTPChallenge) startHTTPSServer(domain string, token string) (net
 	go http.Serve(tlsListener, nil)
 
 	return tlsListener, nil
-}
-
-func getRandomString(length int) string {
-	const alphanum = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-	var bytes = make([]byte, length)
-	rand.Read(bytes)
-	for i, b := range bytes {
-		bytes[i] = alphanum[b%byte(len(alphanum))]
-	}
-	return string(bytes)
 }

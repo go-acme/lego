@@ -27,7 +27,10 @@ func TestNewClient(t *testing.T) {
 	}))
 
 	caURL, optPort := ts.URL, "1234"
-	client := NewClient(caURL, user, keyBits, optPort)
+	client, err := NewClient(caURL, user, keyBits, optPort)
+	if err != nil {
+		t.Fatalf("Could not create client: %v", err)
+	}
 
 	if client.jws == nil {
 		t.Fatalf("Expected client.jws to not be nil")

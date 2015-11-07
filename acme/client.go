@@ -54,13 +54,20 @@ type Client struct {
 // NewClient creates a new client for the set user.
 // caURL - The root url to the boulder instance you want certificates from
 // usr - A filled in user struct
+// keyBits - Size of the key in bits
 // optPort - The alternative port to listen on for challenges.
-// devMode - If set to true, all CanSolve() checks are skipped.
-func NewClient(caURL string, usr User, keyBits int, optPort string, webRoot string) *Client {
-	if err := usr.GetPrivateKey().Validate(); err != nil {
-		logger().Fatalf("Could not validate the private account key of %s\n\t%v", usr.GetEmail(), err)
+// webPort - The url of a remote webroot
+func NewClient(caURL string, usr User, keyBits int, optPort string, webRoot string) (*Client, error) {
+	privKey := usr.GetPrivateKey()
+	if privKey == nil {
+		return nil, errors.New("private key was nil")
 	}
-	jws := &jws{privKey: usr.GetPrivateKey()}
+
+	if err := privKey.Validate(); err != nil {
+		return nil, fmt.Errorf("invalid private key: %v", err)
+	}
+
+	jws := &jws{privKey: privKey}
 
 	// REVIEW: best possibility?
 	// Add all available solvers with the right index as per ACME
@@ -68,33 +75,49 @@ func NewClient(caURL string, usr User, keyBits int, optPort string, webRoot stri
 	solvers := make(map[string]solver)
 	solvers["simpleHttp"] = &simpleHTTPChallenge{jws: jws, optPort: optPort, webRoot: webRoot}
 
-	dirResp, err := http.Get(caURL + "/directory")
+	dirURL := caURL + "/directory"
+	dirResp, err := http.Get(dirURL)
 	if err != nil {
-		logger().Fatalf("Could not get directory from CA URL. Please check the URL.\n\t%v", err)
+		return nil, fmt.Errorf("get directory at '%s': %v", dirURL, err)
 	}
 	defer dirResp.Body.Close()
 
 	var dir directory
-	decoder := json.NewDecoder(dirResp.Body)
-	err = decoder.Decode(&dir)
+	err = json.NewDecoder(dirResp.Body).Decode(&dir)
 	if err != nil {
-		logger().Fatalf("Could not parse directory response from CA URL.\n\t%v", err)
-	}
-	if dir.NewRegURL == "" || dir.NewAuthzURL == "" || dir.NewCertURL == "" || dir.RevokeCertURL == "" {
-		logger().Fatal("The directory returned by the server was invalid.")
+		return nil, fmt.Errorf("decode directory: %v", err)
 	}
 
-	return &Client{directory: dir, user: usr, jws: jws, keyBits: keyBits, solvers: solvers}
+	if dir.NewRegURL == "" {
+		return nil, errors.New("directory missing new registration URL")
+	}
+	if dir.NewAuthzURL == "" {
+		return nil, errors.New("directory missing new authz URL")
+	}
+	if dir.NewCertURL == "" {
+		return nil, errors.New("directory missing new certificate URL")
+	}
+	if dir.RevokeCertURL == "" {
+		return nil, errors.New("directory missing revoke certificate URL")
+	}
+
+	return &Client{directory: dir, user: usr, jws: jws, keyBits: keyBits, solvers: solvers}, nil
 }
 
 // Register the current account to the ACME server.
 func (c *Client) Register() (*RegistrationResource, error) {
 	logger().Print("Registering account ... ")
 
-	jsonBytes, err := json.Marshal(registrationMessage{
+	regMsg := registrationMessage{
 		Resource: "new-reg",
-		Contact:  []string{"mailto:" + c.user.GetEmail()},
-	})
+	}
+	if c.user.GetEmail() != "" {
+		regMsg.Contact = []string{"mailto:" + c.user.GetEmail()}
+	} else {
+		regMsg.Contact = []string{}
+	}
+
+	jsonBytes, err := json.Marshal(regMsg)
 	if err != nil {
 		return nil, err
 	}
@@ -105,9 +128,8 @@ func (c *Client) Register() (*RegistrationResource, error) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode == http.StatusConflict {
-		// REVIEW: should this return an error?
-		return nil, errors.New("This account is already registered with this CA.")
+	if resp.StatusCode >= http.StatusBadRequest {
+		return nil, handleHTTPError(resp)
 	}
 
 	var serverReg Registration
@@ -151,7 +173,7 @@ func (c *Client) AgreeToTOS() error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusAccepted {
-		return fmt.Errorf("The server returned %d but we expected %d", resp.StatusCode, http.StatusAccepted)
+		return handleHTTPError(resp)
 	}
 
 	return nil
@@ -162,17 +184,30 @@ func (c *Client) AgreeToTOS() error {
 // PEM encoded byte slices.
 // If bundle is true, the []byte contains both the issuer certificate and
 // your issued certificate as a bundle.
-func (c *Client) ObtainCertificates(domains []string, bundle bool) ([]CertificateResource, error) {
+func (c *Client) ObtainCertificates(domains []string, bundle bool) ([]CertificateResource, map[string]error) {
 	logger().Print("Obtaining certificates...")
-	challenges := c.getChallenges(domains)
+	challenges, failures := c.getChallenges(domains)
+	if len(challenges) == 0 {
+		return nil, failures
+	}
+
 	err := c.solveChallenges(challenges)
-	if err != nil {
-		return nil, err
+	for k, v := range err {
+		failures[k] = v
+	}
+
+	if len(failures) == len(domains) {
+		return nil, failures
 	}
 
 	logger().Print("Validations succeeded. Getting certificates")
 
-	return c.requestCertificates(challenges, bundle)
+	certs, err := c.requestCertificates(challenges, bundle)
+	for k, v := range err {
+		failures[k] = v
+	}
+
+	return certs, failures
 }
 
 // RevokeCertificate takes a PEM encoded certificate or bundle and tries to revoke it at the CA.
@@ -200,9 +235,8 @@ func (c *Client) RevokeCertificate(certificate []byte) error {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 {
-		body, _ := ioutil.ReadAll(resp.Body)
-		return fmt.Errorf("The server returned an error while trying to revoke the certificate.\n%s", body)
+	if resp.StatusCode != http.StatusOK {
+		return handleHTTPError(resp)
 	}
 
 	return nil
@@ -279,9 +313,9 @@ func (c *Client) RenewCertificate(cert CertificateResource, revokeOld bool, bund
 		return cert, nil
 	}
 
-	newCerts, err := c.ObtainCertificates([]string{cert.Domain}, bundle)
-	if err != nil {
-		return CertificateResource{}, err
+	newCerts, failures := c.ObtainCertificates([]string{cert.Domain}, bundle)
+	if len(failures) > 0 {
+		return CertificateResource{}, failures[cert.Domain]
 	}
 
 	if revokeOld {
@@ -293,8 +327,9 @@ func (c *Client) RenewCertificate(cert CertificateResource, revokeOld bool, bund
 
 // Looks through the challenge combinations to find a solvable match.
 // Then solves the challenges in series and returns.
-func (c *Client) solveChallenges(challenges []*authorizationResource) error {
+func (c *Client) solveChallenges(challenges []*authorizationResource) map[string]error {
 	// loop through the resources, basically through the domains.
+	failures := make(map[string]error)
 	for _, authz := range challenges {
 		// no solvers - no solving
 		if solvers := c.chooseSolvers(authz.Body, authz.Domain); solvers != nil {
@@ -302,15 +337,15 @@ func (c *Client) solveChallenges(challenges []*authorizationResource) error {
 				// TODO: do not immediately fail if one domain fails to validate.
 				err := solver.Solve(authz.Body.Challenges[i], authz.Domain)
 				if err != nil {
-					return err
+					failures[authz.Domain] = err
 				}
 			}
 		} else {
-			return fmt.Errorf("Could not determine solvers for %s", authz.Domain)
+			failures[authz.Domain] = fmt.Errorf("Could not determine solvers for %s", authz.Domain)
 		}
 	}
 
-	return nil
+	return failures
 }
 
 // Checks all combinations from the server and returns an array of
@@ -335,38 +370,38 @@ func (c *Client) chooseSolvers(auth authorization, domain string) map[int]solver
 }
 
 // Get the challenges needed to proof our identifier to the ACME server.
-func (c *Client) getChallenges(domains []string) []*authorizationResource {
-	resc, errc := make(chan *authorizationResource), make(chan error)
+func (c *Client) getChallenges(domains []string) ([]*authorizationResource, map[string]error) {
+	resc, errc := make(chan *authorizationResource), make(chan domainError)
 
 	for _, domain := range domains {
 		go func(domain string) {
 			jsonBytes, err := json.Marshal(authorization{Resource: "new-authz", Identifier: identifier{Type: "dns", Value: domain}})
 			if err != nil {
-				errc <- err
+				errc <- domainError{Domain: domain, Error: err}
 				return
 			}
 
 			resp, err := c.jws.post(c.user.GetRegistration().NewAuthzURL, jsonBytes)
 			if err != nil {
-				errc <- err
+				errc <- domainError{Domain: domain, Error: err}
 				return
 			}
 
 			if resp.StatusCode != http.StatusCreated {
-				errc <- fmt.Errorf("Getting challenges for %s failed. Got status %d but expected %d",
-					domain, resp.StatusCode, http.StatusCreated)
+				errc <- domainError{Domain: domain, Error: handleHTTPError(resp)}
 			}
 
 			links := parseLinks(resp.Header["Link"])
 			if links["next"] == "" {
-				logger().Fatalln("The server did not provide enough information to proceed.")
+				logger().Println("The server did not provide enough information to proceed.")
+				return
 			}
 
 			var authz authorization
 			decoder := json.NewDecoder(resp.Body)
 			err = decoder.Decode(&authz)
 			if err != nil {
-				errc <- err
+				errc <- domainError{Domain: domain, Error: err}
 			}
 			resp.Body.Close()
 
@@ -375,37 +410,39 @@ func (c *Client) getChallenges(domains []string) []*authorizationResource {
 	}
 
 	var responses []*authorizationResource
+	failures := make(map[string]error)
 	for i := 0; i < len(domains); i++ {
 		select {
 		case res := <-resc:
 			responses = append(responses, res)
 		case err := <-errc:
-			logger().Printf("%v", err)
+			failures[err.Domain] = err.Error
 		}
 	}
 
 	close(resc)
 	close(errc)
 
-	return responses
+	return responses, failures
 }
 
 // requestCertificates iterates all granted authorizations, creates RSA private keys and CSRs.
 // It then uses these to request a certificate from the CA and returns the list of successfully
 // granted certificates.
-func (c *Client) requestCertificates(challenges []*authorizationResource, bundle bool) ([]CertificateResource, error) {
-	resc, errc := make(chan CertificateResource), make(chan error)
+func (c *Client) requestCertificates(challenges []*authorizationResource, bundle bool) ([]CertificateResource, map[string]error) {
+	resc, errc := make(chan CertificateResource), make(chan domainError)
 	for _, authz := range challenges {
 		go c.requestCertificate(authz, resc, errc, bundle)
 	}
 
 	var certs []CertificateResource
+	failures := make(map[string]error)
 	for i := 0; i < len(challenges); i++ {
 		select {
 		case res := <-resc:
 			certs = append(certs, res)
 		case err := <-errc:
-			logger().Printf("%v", err)
+			failures[err.Domain] = err.Error
 		}
 	}
 
@@ -415,30 +452,30 @@ func (c *Client) requestCertificates(challenges []*authorizationResource, bundle
 	return certs, nil
 }
 
-func (c *Client) requestCertificate(authz *authorizationResource, result chan CertificateResource, errc chan error, bundle bool) {
+func (c *Client) requestCertificate(authz *authorizationResource, result chan CertificateResource, errc chan domainError, bundle bool) {
 	privKey, err := generatePrivateKey(rsakey, c.keyBits)
 	if err != nil {
-		errc <- err
+		errc <- domainError{Domain: authz.Domain, Error: err}
 		return
 	}
 
 	// TODO: should the CSR be customizable?
 	csr, err := generateCsr(privKey.(*rsa.PrivateKey), authz.Domain)
 	if err != nil {
-		errc <- err
+		errc <- domainError{Domain: authz.Domain, Error: err}
 		return
 	}
 
 	csrString := base64.URLEncoding.EncodeToString(csr)
 	jsonBytes, err := json.Marshal(csrMessage{Resource: "new-cert", Csr: csrString, Authorizations: []string{authz.AuthURL}})
 	if err != nil {
-		errc <- err
+		errc <- domainError{Domain: authz.Domain, Error: err}
 		return
 	}
 
 	resp, err := c.jws.post(authz.NewCertURL, jsonBytes)
 	if err != nil {
-		errc <- err
+		errc <- domainError{Domain: authz.Domain, Error: err}
 		return
 	}
 
@@ -457,7 +494,7 @@ func (c *Client) requestCertificate(authz *authorizationResource, result chan Ce
 			cert, err := ioutil.ReadAll(resp.Body)
 			resp.Body.Close()
 			if err != nil {
-				errc <- err
+				errc <- domainError{Domain: authz.Domain, Error: err}
 				return
 			}
 
@@ -497,7 +534,7 @@ func (c *Client) requestCertificate(authz *authorizationResource, result chan Ce
 			ra := resp.Header.Get("Retry-After")
 			retryAfter, err := strconv.Atoi(ra)
 			if err != nil {
-				errc <- err
+				errc <- domainError{Domain: authz.Domain, Error: err}
 				return
 			}
 
@@ -506,13 +543,13 @@ func (c *Client) requestCertificate(authz *authorizationResource, result chan Ce
 
 			break
 		default:
-			logger().Fatalf("[%s] The server returned an unexpected status code %d.", authz.Domain, resp.StatusCode)
+			errc <- domainError{Domain: authz.Domain, Error: handleHTTPError(resp)}
 			return
 		}
 
 		resp, err = http.Get(cerRes.CertURL)
 		if err != nil {
-			errc <- err
+			errc <- domainError{Domain: authz.Domain, Error: err}
 			return
 		}
 	}

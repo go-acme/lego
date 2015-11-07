@@ -36,7 +36,7 @@ func (j *jws) post(url string, content []byte) (*http.Response, error) {
 		return nil, err
 	}
 
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer([]byte(signedContent.FullSerialize())))
+	resp, err := http.Post(url, "application/jose+json", bytes.NewBuffer([]byte(signedContent.FullSerialize())))
 	if err != nil {
 		return nil, err
 	}

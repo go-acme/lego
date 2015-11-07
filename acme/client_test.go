@@ -44,7 +44,7 @@ func TestNewClient(t *testing.T) {
 	}
 
 	if expected, actual := 1, len(client.solvers); actual != expected {
-		t.Fatal("Expected %d solver(s), got %d", expected, actual)
+		t.Fatalf("Expected %d solver(s), got %d", expected, actual)
 	}
 
 	simphttp, ok := client.solvers["simpleHttp"].(*simpleHTTPChallenge)

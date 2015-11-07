@@ -10,22 +10,23 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 )
 
-// Logger is used to log errors; if nil, the default log.Logger is used.
+// Logger is an optional custom logger.
 var Logger *log.Logger
 
-// logger is an helper function to retrieve the available logger
-func logger() *log.Logger {
-	if Logger == nil {
-		Logger = log.New(os.Stderr, "", log.LstdFlags)
+// logf writes a log entry. It uses Logger if not
+// nil, otherwise it uses the default log.Logger.
+func logf(format string, args ...interface{}) {
+	if Logger != nil {
+		Logger.Printf(format, args...)
+	} else {
+		log.Printf(format, args...)
 	}
-	return Logger
 }
 
 // User interface is to be implemented by users of this library.
@@ -105,7 +106,10 @@ func NewClient(caURL string, usr User, keyBits int, optPort string) (*Client, er
 
 // Register the current account to the ACME server.
 func (c *Client) Register() (*RegistrationResource, error) {
-	logger().Print("Registering account ... ")
+	if c == nil || c.user == nil {
+		return nil, errors.New("acme: cannot register a nil client or user")
+	}
+	logf("[INFO] acme: Registering account for %s", c.user.GetEmail())
 
 	regMsg := registrationMessage{
 		Resource: "new-reg",
@@ -149,7 +153,7 @@ func (c *Client) Register() (*RegistrationResource, error) {
 	if links["next"] != "" {
 		reg.NewAuthzURL = links["next"]
 	} else {
-		return nil, errors.New("The server did not return enough information to proceed...")
+		return nil, errors.New("acme: The server did not return 'next' link to proceed")
 	}
 
 	return reg, nil
@@ -184,7 +188,12 @@ func (c *Client) AgreeToTOS() error {
 // If bundle is true, the []byte contains both the issuer certificate and
 // your issued certificate as a bundle.
 func (c *Client) ObtainCertificates(domains []string, bundle bool) ([]CertificateResource, map[string]error) {
-	logger().Print("Obtaining certificates...")
+	if bundle {
+		logf("[INFO] acme: Obtaining bundled certificates for %v", strings.Join(domains, ", "))
+	} else {
+		logf("[INFO] acme: Obtaining certificates for %v", strings.Join(domains, ", "))
+	}
+
 	challenges, failures := c.getChallenges(domains)
 	if len(challenges) == 0 {
 		return nil, failures
@@ -199,7 +208,7 @@ func (c *Client) ObtainCertificates(domains []string, bundle bool) ([]Certificat
 		return nil, failures
 	}
 
-	logger().Print("Validations succeeded. Getting certificates")
+	logf("[INFO] acme: Validations succeeded; requesting certificates")
 
 	certs, err := c.requestCertificates(challenges, bundle)
 	for k, v := range err {
@@ -263,7 +272,7 @@ func (c *Client) RenewCertificate(cert CertificateResource, revokeOld bool, bund
 
 	// This is just meant to be informal for the user.
 	timeLeft := x509Cert.NotAfter.Sub(time.Now().UTC())
-	logger().Printf("[%s] Trying to renew certificate with %d hours remaining.", cert.Domain, int(timeLeft.Hours()))
+	logf("[INFO] acme: [%s] Trying renewal with %d hours remaining", cert.Domain, int(timeLeft.Hours()))
 
 	// The first step of renewal is to check if we get a renewed cert
 	// directly from the cert URL.
@@ -285,7 +294,7 @@ func (c *Client) RenewCertificate(cert CertificateResource, revokeOld bool, bund
 	// If the server responds with a different certificate we are effectively renewed.
 	// TODO: Further test if we can actually use the new certificate (Our private key works)
 	if !x509Cert.Equal(serverCert) {
-		logger().Printf("[%s] The server responded with a renewed certificate.", cert.Domain)
+		logf("[INFO] acme: [%s] Server responded with renewed certificate", cert.Domain)
 		if revokeOld {
 			c.RevokeCertificate(cert.Certificate)
 		}
@@ -299,7 +308,7 @@ func (c *Client) RenewCertificate(cert CertificateResource, revokeOld bool, bund
 			issuerCert, err := c.getIssuerCertificate(links["up"])
 			if err != nil {
 				// If we fail to aquire the issuer cert, return the issued certificate - do not fail.
-				logger().Printf("[%s] Could not bundle issuer certificate.\n%v", cert.Domain, err)
+				logf("[ERROR] acme: [%s] Could not bundle issuer certificate: %v", cert.Domain, err)
 			} else {
 				// Success - append the issuer cert to the issued cert.
 				issuerCert = pemEncode(derCertificateBytes(issuerCert))
@@ -340,7 +349,7 @@ func (c *Client) solveChallenges(challenges []*authorizationResource) map[string
 				}
 			}
 		} else {
-			failures[authz.Domain] = fmt.Errorf("Could not determine solvers for %s", authz.Domain)
+			failures[authz.Domain] = fmt.Errorf("acme: Could not determine solvers for %s", authz.Domain)
 		}
 	}
 
@@ -356,7 +365,7 @@ func (c *Client) chooseSolvers(auth authorization, domain string) map[int]solver
 			if solver, ok := c.solvers[auth.Challenges[idx].Type]; ok {
 				solvers[idx] = solver
 			} else {
-				logger().Printf("Could not find solver for: %s", auth.Challenges[idx].Type)
+				logf("[ERROR] acme: Could not find solver for: %s", auth.Challenges[idx].Type)
 			}
 		}
 
@@ -392,7 +401,7 @@ func (c *Client) getChallenges(domains []string) ([]*authorizationResource, map[
 
 			links := parseLinks(resp.Header["Link"])
 			if links["next"] == "" {
-				logger().Println("The server did not provide enough information to proceed.")
+				logf("[ERROR] acme: Server did not provide next link to proceed")
 				return
 			}
 
@@ -514,7 +523,7 @@ func (c *Client) requestCertificate(authz *authorizationResource, result chan Ce
 					issuerCert, err := c.getIssuerCertificate(links["up"])
 					if err != nil {
 						// If we fail to aquire the issuer cert, return the issued certificate - do not fail.
-						logger().Printf("[%s] Could not bundle issuer certificate.\n%v", authz.Domain, err)
+						logf("[WARNING] acme: [%s] Could not bundle issuer certificate: %v", authz.Domain, err)
 					} else {
 						// Success - append the issuer cert to the issued cert.
 						issuerCert = pemEncode(derCertificateBytes(issuerCert))
@@ -523,7 +532,7 @@ func (c *Client) requestCertificate(authz *authorizationResource, result chan Ce
 				}
 
 				cerRes.Certificate = issuedCert
-				logger().Printf("[%s] Server responded with a certificate.", authz.Domain)
+				logf("[%s] Server responded with a certificate.", authz.Domain)
 				result <- cerRes
 				return
 			}
@@ -537,7 +546,7 @@ func (c *Client) requestCertificate(authz *authorizationResource, result chan Ce
 				return
 			}
 
-			logger().Printf("[%s] Server responded with status 202. Respecting retry-after of: %d", authz.Domain, retryAfter)
+			logf("[INFO] acme: [%s] Server responded with status 202; retrying after %ds", authz.Domain, retryAfter)
 			time.Sleep(time.Duration(retryAfter) * time.Second)
 
 			break
@@ -557,7 +566,7 @@ func (c *Client) requestCertificate(authz *authorizationResource, result chan Ce
 // getIssuerCertificate requests the issuer certificate and caches it for
 // subsequent requests.
 func (c *Client) getIssuerCertificate(url string) ([]byte, error) {
-	logger().Printf("Requesting issuer cert from: %s", url)
+	logf("[INFO] acme: Requesting issuer cert from %s", url)
 	if c.issuerCert != nil {
 		return c.issuerCert, nil
 	}
@@ -579,18 +588,6 @@ func (c *Client) getIssuerCertificate(url string) ([]byte, error) {
 
 	c.issuerCert = issuerBytes
 	return issuerBytes, err
-}
-
-func logResponseHeaders(resp *http.Response) {
-	logger().Println(resp.Status)
-	for k, v := range resp.Header {
-		logger().Printf("-- %s: %s", k, v)
-	}
-}
-
-func logResponseBody(resp *http.Response) {
-	body, _ := ioutil.ReadAll(resp.Body)
-	logger().Printf("Returned json data: \n%s", body)
 }
 
 func parseLinks(links []string) map[string]string {

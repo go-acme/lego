@@ -27,7 +27,7 @@ type simpleHTTPChallenge struct {
 
 func (s *simpleHTTPChallenge) Solve(chlng challenge, domain string) error {
 
-	logger().Print("Trying to solve SimpleHTTP")
+	logf("Trying to solve SimpleHTTP")
 
 	// Generate random string for the path. The acme server will
 	// access this path on the server in order to validate the request
@@ -68,7 +68,7 @@ Loop:
 			if OnSimpleHTTPEnd != nil {
 				OnSimpleHTTPEnd(true)
 			}
-			logger().Print("The server validated our request")
+			logf("The server validated our request")
 			break Loop
 		case "pending":
 			break
@@ -148,9 +148,9 @@ func (s *simpleHTTPChallenge) startHTTPSServer(domain string, token string) (net
 		if strings.HasPrefix(r.Host, domain) && r.Method == "GET" {
 			w.Header().Add("Content-Type", "application/jose+json")
 			w.Write([]byte(signedCompact))
-			logger().Print("Served JWS payload...")
+			logf("Served JWS payload...")
 		} else {
-			logger().Printf("Received request for domain %s with method %s", r.Host, r.Method)
+			logf("Received request for domain %s with method %s", r.Host, r.Method)
 			w.Write([]byte("TEST"))
 		}
 	})

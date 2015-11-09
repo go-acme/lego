@@ -24,9 +24,9 @@ func TestSimpleHTTPNonRootBind(t *testing.T) {
 	if err := solver.Solve(clientChallenge, "127.0.0.1"); err == nil {
 		t.Error("BIND: Expected Solve to return an error but the error was nil.")
 	} else {
-		expectedError := "Could not start HTTPS server for challenge -> listen tcp 127.0.0.1:443: bind: permission denied"
+		expectedError := "Could not start HTTPS server for challenge -> listen tcp :443: bind: permission denied"
 		if err.Error() != expectedError {
-			t.Errorf("Expected error %s but instead got %s", expectedError, err.Error())
+			t.Errorf("Expected error \"%s\" but instead got \"%s\"", expectedError, err.Error())
 		}
 	}
 }

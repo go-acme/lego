@@ -126,7 +126,11 @@ func (s *simpleHTTPChallenge) startHTTPSServer(domain string, token string) (net
 
 	tlsListener, err := tls.Listen("tcp", domain+port, tlsConf)
 	if err != nil {
-		return nil, err
+		// if the domain:port bind failed, fall back to :port bind and try that instead.
+		tlsListener, err = tls.Listen("tcp", port, tlsConf)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	jsonBytes, err := json.Marshal(challenge{Type: "simpleHttp", Token: token, TLS: true})

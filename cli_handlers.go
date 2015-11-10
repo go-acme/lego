@@ -128,7 +128,7 @@ func run(c *cli.Context) {
 	certs, failures := client.ObtainCertificates(c.GlobalStringSlice("domains"), true)
 	if len(failures) > 0 {
 		for k, v := range failures {
-			logger().Fatalf("[%s] Could not obtain certificates\n\t%v", k, v)
+			logger().Printf("[%s] Could not obtain certificates\n\t%v", k, v)
 		}
 	}
 

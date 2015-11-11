@@ -6,13 +6,15 @@ import (
 	"crypto/rsa"
 	"fmt"
 	"net/http"
+	"sync"
 
 	"github.com/letsencrypt/go-jose"
 )
 
 type jws struct {
-	privKey *rsa.PrivateKey
-	nonces  []string
+	privKey    *rsa.PrivateKey
+	nonces     []string
+	nonceMutex sync.Mutex
 }
 
 func keyAsJWK(key *ecdsa.PublicKey) jose.JsonWebKey {
@@ -24,11 +26,9 @@ func keyAsJWK(key *ecdsa.PublicKey) jose.JsonWebKey {
 
 // Posts a JWS signed message to the specified URL
 func (j *jws) post(url string, content []byte) (*http.Response, error) {
-	if len(j.nonces) == 0 {
-		err := j.getNonce(url)
-		if err != nil {
-			return nil, fmt.Errorf("Could not get a nonce for request: %s\n\t\tError: %v", url, err)
-		}
+	err := j.getNonce(url)
+	if err != nil {
+		return nil, fmt.Errorf("Could not get a nonce for request: %s\n\t\tError: %v", url, err)
 	}
 
 	signedContent, err := j.signContent(content)
@@ -66,11 +66,20 @@ func (j *jws) getNonceFromResponse(resp *http.Response) error {
 		return fmt.Errorf("Server did not respond with a proper nonce header.")
 	}
 
+	j.nonceMutex.Lock()
 	j.nonces = append(j.nonces, nonce)
+	j.nonceMutex.Unlock()
 	return nil
 }
 
 func (j *jws) getNonce(url string) error {
+	j.nonceMutex.Lock()
+	if len(j.nonces) > 0 {
+		j.nonceMutex.Unlock()
+		return nil
+	}
+	j.nonceMutex.Unlock()
+
 	resp, err := http.Head(url)
 	if err != nil {
 		return err
@@ -80,6 +89,9 @@ func (j *jws) getNonce(url string) error {
 }
 
 func (j *jws) consumeNonce() string {
+	j.nonceMutex.Lock()
+	defer j.nonceMutex.Unlock()
+
 	nonce := ""
 	if len(j.nonces) == 0 {
 		return nonce

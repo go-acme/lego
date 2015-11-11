@@ -188,11 +188,15 @@ func generatePrivateKey(t keyType, keyLength int) (crypto.PrivateKey, error) {
 	return nil, fmt.Errorf("Invalid keytype: %d", t)
 }
 
-func generateCsr(privateKey *rsa.PrivateKey, domain string) ([]byte, error) {
+func generateCsr(privateKey *rsa.PrivateKey, domain string, san []string) ([]byte, error) {
 	template := x509.CertificateRequest{
 		Subject: pkix.Name{
 			CommonName: domain,
 		},
+	}
+
+	if len(san) > 0 {
+		template.DNSNames = san
 	}
 
 	return x509.CreateCertificateRequest(rand.Reader, &template, privateKey)

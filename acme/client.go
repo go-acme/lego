@@ -75,10 +75,12 @@ func NewClient(caURL string, usr User, keyBits int, optPort string) (*Client, er
 	solvers := make(map[string]solver)
 	solvers["simpleHttp"] = &simpleHTTPChallenge{jws: jws, optPort: optPort}
 
-	dirURL := caURL + "/directory"
-	dirResp, err := http.Get(dirURL)
+	if !strings.HasSuffix(caURL, "/directory") {
+		caURL = caURL + "/directory"
+	}
+	dirResp, err := http.Get(caURL)
 	if err != nil {
-		return nil, fmt.Errorf("get directory at '%s': %v", dirURL, err)
+		return nil, fmt.Errorf("get directory at '%s': %v", caURL, err)
 	}
 	defer dirResp.Body.Close()
 

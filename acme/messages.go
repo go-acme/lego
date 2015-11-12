@@ -73,12 +73,13 @@ type identifier struct {
 }
 
 type challenge struct {
-	Resource string `json:"resource,omitempty"`
-	Type     string `json:"type,omitempty"`
-	Status   string `json:"status,omitempty"`
-	URI      string `json:"uri,omitempty"`
-	Token    string `json:"token,omitempty"`
-	TLS      bool   `json:"tls,omitempty"`
+	Resource         string `json:"resource,omitempty"`
+	Type             string `json:"type,omitempty"`
+	Status           string `json:"status,omitempty"`
+	URI              string `json:"uri,omitempty"`
+	Token            string `json:"token,omitempty"`
+	KeyAuthorization string `json:"keyAuthorization,omitempty"`
+	TLS              bool   `json:"tls,omitempty"`
 }
 
 type csrMessage struct {

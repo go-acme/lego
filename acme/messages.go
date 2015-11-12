@@ -3,7 +3,7 @@ package acme
 import (
 	"time"
 
-	"github.com/letsencrypt/go-jose"
+	"github.com/square/go-jose"
 )
 
 type directory struct {

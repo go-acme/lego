@@ -67,14 +67,6 @@ func NewClient(caURL string, usr User, keyBits int, optPort string) (*Client, er
 		return nil, fmt.Errorf("invalid private key: %v", err)
 	}
 
-	jws := &jws{privKey: privKey}
-
-	// REVIEW: best possibility?
-	// Add all available solvers with the right index as per ACME
-	// spec to this map. Otherwise they won`t be found.
-	solvers := make(map[string]solver)
-	solvers["simpleHttp"] = &simpleHTTPChallenge{jws: jws, optPort: optPort}
-
 	if !strings.HasSuffix(caURL, "/directory") {
 		caURL = caURL + "/directory"
 	}
@@ -102,6 +94,14 @@ func NewClient(caURL string, usr User, keyBits int, optPort string) (*Client, er
 	if dir.RevokeCertURL == "" {
 		return nil, errors.New("directory missing revoke certificate URL")
 	}
+
+	jws := &jws{privKey: privKey, directoryURL: caURL}
+
+	// REVIEW: best possibility?
+	// Add all available solvers with the right index as per ACME
+	// spec to this map. Otherwise they won`t be found.
+	solvers := make(map[string]solver)
+	solvers["simpleHttp"] = &simpleHTTPChallenge{jws: jws, optPort: optPort}
 
 	return &Client{directory: dir, user: usr, jws: jws, keyBits: keyBits, solvers: solvers}, nil
 }

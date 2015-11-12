@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/ecdsa"
 	"crypto/rsa"
-	"errors"
 	"fmt"
 	"net/http"
 
@@ -12,8 +11,9 @@ import (
 )
 
 type jws struct {
-	privKey *rsa.PrivateKey
-	nonces  []string
+	directoryURL string
+	privKey      *rsa.PrivateKey
+	nonces       []string
 }
 
 func keyAsJWK(key interface{}) *jose.JsonWebKey {
@@ -30,13 +30,6 @@ func keyAsJWK(key interface{}) *jose.JsonWebKey {
 
 // Posts a JWS signed message to the specified URL
 func (j *jws) post(url string, content []byte) (*http.Response, error) {
-	if len(j.nonces) == 0 {
-		err := j.getNonce(url)
-		if err != nil {
-			return nil, fmt.Errorf("Could not get a nonce for request: %s\n\t\tError: %v", url, err)
-		}
-	}
-
 	signedContent, err := j.signContent(content)
 	if err != nil {
 		return nil, err
@@ -77,8 +70,8 @@ func (j *jws) getNonceFromResponse(resp *http.Response) error {
 	return nil
 }
 
-func (j *jws) getNonce(url string) error {
-	resp, err := http.Head(url)
+func (j *jws) getNonce() error {
+	resp, err := http.Head(j.directoryURL)
 	if err != nil {
 		return err
 	}
@@ -89,7 +82,10 @@ func (j *jws) getNonce(url string) error {
 func (j *jws) Nonce() (string, error) {
 	nonce := ""
 	if len(j.nonces) == 0 {
-		return nonce, errors.New("No nonce available.")
+		err := j.getNonce()
+		if err != nil {
+			return nonce, err
+		}
 	}
 
 	nonce, j.nonces = j.nonces[len(j.nonces)-1], j.nonces[:len(j.nonces)-1]

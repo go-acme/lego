@@ -69,13 +69,13 @@ func TestSimpleHTTPConnectionRefusal(t *testing.T) {
 
 func TestSimpleHTTPUnexpectedServerState(t *testing.T) {
 	privKey, _ := generatePrivateKey(rsakey, 512)
-	jws := &jws{privKey: privKey.(*rsa.PrivateKey)}
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Replay-Nonce", "12345")
 		w.Write([]byte("{\"type\":\"simpleHttp\",\"status\":\"what\",\"uri\":\"http://some.url\",\"token\":\"4\"}"))
 	}))
 
+	jws := &jws{privKey: privKey.(*rsa.PrivateKey), directoryURL: ts.URL}
 	solver := &simpleHTTPChallenge{jws: jws, optPort: "23456"}
 	clientChallenge := challenge{Type: "simpleHttp", Status: "pending", URI: ts.URL, Token: "4"}
 
@@ -120,7 +120,6 @@ func TestSimpleHTTPChallengeServerUnexpectedDomain(t *testing.T) {
 
 func TestSimpleHTTPServerError(t *testing.T) {
 	privKey, _ := generatePrivateKey(rsakey, 512)
-	jws := &jws{privKey: privKey.(*rsa.PrivateKey)}
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "HEAD" {
@@ -132,6 +131,7 @@ func TestSimpleHTTPServerError(t *testing.T) {
 		}
 	}))
 
+	jws := &jws{privKey: privKey.(*rsa.PrivateKey), directoryURL: ts.URL}
 	solver := &simpleHTTPChallenge{jws: jws, optPort: "23456"}
 	clientChallenge := challenge{Type: "simpleHttp", Status: "pending", URI: ts.URL, Token: "6"}
 
@@ -147,13 +147,13 @@ func TestSimpleHTTPServerError(t *testing.T) {
 
 func TestSimpleHTTPInvalidServerState(t *testing.T) {
 	privKey, _ := generatePrivateKey(rsakey, 512)
-	jws := &jws{privKey: privKey.(*rsa.PrivateKey)}
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Replay-Nonce", "12345")
 		w.Write([]byte("{\"type\":\"simpleHttp\",\"status\":\"invalid\",\"uri\":\"http://some.url\",\"token\":\"7\"}"))
 	}))
 
+	jws := &jws{privKey: privKey.(*rsa.PrivateKey), directoryURL: ts.URL}
 	solver := &simpleHTTPChallenge{jws: jws, optPort: "23456"}
 	clientChallenge := challenge{Type: "simpleHttp", Status: "pending", URI: ts.URL, Token: "7"}
 
@@ -169,13 +169,13 @@ func TestSimpleHTTPInvalidServerState(t *testing.T) {
 
 func TestSimpleHTTPValidServerResponse(t *testing.T) {
 	privKey, _ := generatePrivateKey(rsakey, 512)
-	jws := &jws{privKey: privKey.(*rsa.PrivateKey)}
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Replay-Nonce", "12345")
 		w.Write([]byte("{\"type\":\"simpleHttp\",\"status\":\"valid\",\"uri\":\"http://some.url\",\"token\":\"8\"}"))
 	}))
 
+	jws := &jws{privKey: privKey.(*rsa.PrivateKey), directoryURL: ts.URL}
 	solver := &simpleHTTPChallenge{jws: jws, optPort: "23456"}
 	clientChallenge := challenge{Type: "simpleHttp", Status: "pending", URI: ts.URL, Token: "8"}
 
@@ -186,10 +186,10 @@ func TestSimpleHTTPValidServerResponse(t *testing.T) {
 
 func TestSimpleHTTPValidFull(t *testing.T) {
 	privKey, _ := generatePrivateKey(rsakey, 512)
-	jws := &jws{privKey: privKey.(*rsa.PrivateKey)}
 
 	ts := httptest.NewServer(nil)
 
+	jws := &jws{privKey: privKey.(*rsa.PrivateKey), directoryURL: ts.URL}
 	solver := &simpleHTTPChallenge{jws: jws, optPort: "23456"}
 	clientChallenge := challenge{Type: "simpleHttp", Status: "pending", URI: ts.URL, Token: "9"}
 

@@ -33,7 +33,8 @@ func (s *httpChallenge) Solve(chlng challenge, domain string) error {
 		return err
 	}
 
-	keyAuth := chlng.Token + "." + base64.RawURLEncoding.EncodeToString(thumbBytes)
+	keyThumb := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(thumbBytes)
+	keyAuth := chlng.Token + "." + keyThumb
 
 	go s.startHTTPServer(domain, chlng.Token, keyAuth)
 	var listener net.Listener

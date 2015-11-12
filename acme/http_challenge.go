@@ -33,7 +33,11 @@ func (s *httpChallenge) Solve(chlng challenge, domain string) error {
 		return err
 	}
 
-	keyThumb := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(thumbBytes)
+	keyThumb := base64.URLEncoding.EncodeToString(thumbBytes)
+	index := strings.Index(keyThumb, "=")
+	if index != -1 {
+		keyThumb = keyThumb[:index]
+	}
 	keyAuth := chlng.Token + "." + keyThumb
 
 	go s.startHTTPServer(domain, chlng.Token, keyAuth)

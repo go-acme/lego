@@ -45,10 +45,10 @@ type Registration struct {
 // RegistrationResource represents all important informations about a registration
 // of which the client needs to keep track itself.
 type RegistrationResource struct {
-	Body        Registration
-	URI         string
-	NewAuthzURL string
-	TosURL      string
+	Body        Registration `json:"body,omitempty"`
+	URI         string       `json:"uri,omitempty"`
+	NewAuthzURL string       `json:"new_authzr_uri,omitempty"`
+	TosURL      string       `json:"terms_of_service,omitempty"`
 }
 
 type authorizationResource struct {

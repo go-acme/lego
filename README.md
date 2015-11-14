@@ -19,9 +19,10 @@ Current features:
 - [ ] Initiating account recovery
 - Identifier validation challenges
   - [x] SimpleHTTP Challenge
-  - [ ] DVSNI Challenge
-  - [ ] Proof of Possession of a Prior Key
-  - [ ] DNS Challenge
+  - [x] HTTP (http-01)
+  - [ ] TLS with Server Name Indication (tls-sni-01)
+  - [ ] Proof of Possession of a Prior Key (proofOfPossession-01)
+  - [ ] DNS (dns-01)
 - [x] Certificate bundling
 - [x] Library support for OCSP
 

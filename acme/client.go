@@ -368,7 +368,7 @@ func (c *Client) chooseSolvers(auth authorization, domain string) map[int]solver
 			if solver, ok := c.solvers[auth.Challenges[idx].Type]; ok {
 				solvers[idx] = solver
 			} else {
-				logf("[ERROR] acme: Could not find solver for: %s", auth.Challenges[idx].Type)
+				logf("[INFO] acme: Could not find solver for: %s", auth.Challenges[idx].Type)
 			}
 		}
 

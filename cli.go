@@ -78,6 +78,10 @@ func main() {
 			Name:  "port",
 			Usage: "Challenges will use this port to listen on. Please make sure to forward port 443 to this port on your machine. Otherwise use setcap on the binary",
 		},
+		cli.StringFlag{
+			Name:  "webroot",
+			Usage: "The webroot where to copy the token. The format is user:password@hostname/path",
+		},
 	}
 
 	app.Run(os.Args)

@@ -28,6 +28,10 @@ func (c *Configuration) OptPort() string {
 	return c.context.GlobalString("port")
 }
 
+func (c *Configuration) WebRoot() string {
+	return c.context.GlobalString("webroot")
+}
+
 // ServerPath returns the OS dependent path to the data for a specific CA
 func (c *Configuration) ServerPath() string {
 	srv, _ := url.Parse(c.context.GlobalString("server"))

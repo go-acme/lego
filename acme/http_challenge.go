@@ -8,13 +8,20 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"net/url"
+	"os"
 	"strings"
 	"time"
+
+	"github.com/pkg/sftp"
+	"golang.org/x/crypto/ssh"
+	"golang.org/x/crypto/ssh/agent"
 )
 
 type httpChallenge struct {
 	jws     *jws
 	optPort string
+	webRoot string
 	start   chan net.Listener
 	end     chan error
 }
@@ -40,23 +47,30 @@ func (s *httpChallenge) Solve(chlng challenge, domain string) error {
 	}
 	keyAuth := chlng.Token + "." + keyThumb
 
-	go s.startHTTPServer(domain, chlng.Token, keyAuth)
-	var listener net.Listener
-	select {
-	case listener = <-s.start:
-		break
-	case err := <-s.end:
-		return fmt.Errorf("Could not start HTTP server for challenge -> %v", err)
+	if s.webRoot == "" {
+		go s.startHTTPServer(domain, chlng.Token, keyAuth)
+		var listener net.Listener
+		select {
+		case listener = <-s.start:
+			break
+		case err := <-s.end:
+			return fmt.Errorf("Could not start HTTP server for challenge -> %v", err)
+		}
+
+		// Make sure we properly close the HTTP server before we return
+		defer func() {
+			listener.Close()
+			err = <-s.end
+			close(s.start)
+			close(s.end)
+		}()
+	} else {
+		err := s.sendToken(chlng.Token, keyAuth)
+		if err != nil {
+			return err
+		}
+
 	}
-
-	// Make sure we properly close the HTTP server before we return
-	defer func() {
-		listener.Close()
-		err = <-s.end
-		close(s.start)
-		close(s.end)
-	}()
-
 	jsonBytes, err := json.Marshal(challenge{Resource: "challenge", Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
 	if err != nil {
 		return errors.New("Failed to marshal network message...")
@@ -140,4 +154,58 @@ func (s *httpChallenge) startHTTPServer(domain string, token string, keyAuth str
 
 	// Signal that the server was shut down
 	s.end <- nil
+}
+
+func (s *httpChallenge) sendToken(token, keyAuth string) error {
+	u, err := url.Parse("//" + s.webRoot)
+	if err != nil {
+		return fmt.Errorf("Could not parse the webRoot: %v", s.webRoot)
+	}
+	var auths []ssh.AuthMethod
+	if aconn, err := net.Dial("unix", os.Getenv("SSH_AUTH_SOCK")); err == nil {
+		auths = append(auths, ssh.PublicKeysCallback(agent.NewClient(aconn).Signers))
+	}
+	username := os.Getenv("USER")
+	if u.User != nil {
+		p, b := u.User.Password()
+		if b {
+			auths = append(auths, ssh.Password(p))
+		}
+		username = u.User.Username()
+	}
+
+	config := ssh.ClientConfig{
+		User: username,
+		Auth: auths,
+	}
+	host := u.Host
+	if !strings.ContainsRune(host, ':') {
+		host = host + ":22"
+	}
+	conn, err := ssh.Dial("tcp", host, &config)
+	if err != nil {
+		return fmt.Errorf("unable to connect to [%s]: %v", host, err)
+	}
+	defer conn.Close()
+
+	c, err := sftp.NewClient(conn, sftp.MaxPacket(1<<15))
+	if err != nil {
+		return fmt.Errorf("unable to start sftp subsytem: %v", err)
+	}
+	defer c.Close()
+	bContent := []byte(keyAuth)
+	w, err := c.Create(u.Path + "/.well-known/acme-challenge/" + token)
+	if err != nil {
+		return err
+	}
+	defer w.Close()
+
+	n, err := w.Write(bContent)
+	if err != nil {
+		return err
+	}
+	if n != len(bContent) {
+		return fmt.Errorf("copy: expected %v bytes, got %d", len(bContent), n)
+	}
+	return nil
 }

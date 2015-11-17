@@ -239,20 +239,9 @@ func (c *Client) ObtainSANCertificate(domains []string, bundle bool) (Certificat
 	}
 
 	errs := c.solveChallenges(challenges)
-	for k, v := range errs {
-		failures[k] = v
-	}
-
-	if len(failures) == len(domains) {
+	// If any challenge fails - return. Do not generate partial SAN certificates.
+	if len(errs) > 0 {
 		return CertificateResource{}, failures
-	}
-
-	// remove failed challenges from slice
-	var succeededChallenges []authorizationResource
-	for _, chln := range challenges {
-		if failures[chln.Domain] == nil {
-			succeededChallenges = append(succeededChallenges, chln)
-		}
 	}
 
 	logf("[INFO] acme: Validations succeeded; requesting certificates")

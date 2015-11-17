@@ -9,6 +9,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
+	"encoding/base64"
 	"encoding/binary"
 	"encoding/pem"
 	"errors"
@@ -16,6 +17,7 @@ import (
 	"io/ioutil"
 	"math/big"
 	"net/http"
+	"strings"
 	"time"
 
 	"golang.org/x/crypto/ocsp"
@@ -113,6 +115,27 @@ func GetOCSPForCert(bundle []byte) ([]byte, int, error) {
 	}
 
 	return ocspResBytes, ocspRes.Status, nil
+}
+
+func getKeyAuthorization(token string, key interface{}) (string, error) {
+	// Generate the Key Authorization for the challenge
+	jwk := keyAsJWK(key)
+	if jwk == nil {
+		return "", errors.New("Could not generate JWK from key.")
+	}
+	thumbBytes, err := jwk.Thumbprint(crypto.SHA256)
+	if err != nil {
+		return "", err
+	}
+
+	// unpad the base64URL
+	keyThumb := base64.URLEncoding.EncodeToString(thumbBytes)
+	index := strings.Index(keyThumb, "=")
+	if index != -1 {
+		keyThumb = keyThumb[:index]
+	}
+
+	return token + "." + keyThumb, nil
 }
 
 // Derive the shared secret according to acme spec 5.6

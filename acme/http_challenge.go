@@ -1,8 +1,6 @@
 package acme
 
 import (
-	"crypto"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -34,18 +32,10 @@ func (s *httpChallenge) Solve(chlng challenge, domain string) error {
 	s.end = make(chan error)
 
 	// Generate the Key Authorization for the challenge
-	key := keyAsJWK(&s.jws.privKey.PublicKey)
-	thumbBytes, err := key.Thumbprint(crypto.SHA256)
+	keyAuth, err := getKeyAuthorization(chlng.Token, &s.jws.privKey.PublicKey)
 	if err != nil {
 		return err
 	}
-
-	keyThumb := base64.URLEncoding.EncodeToString(thumbBytes)
-	index := strings.Index(keyThumb, "=")
-	if index != -1 {
-		keyThumb = keyThumb[:index]
-	}
-	keyAuth := chlng.Token + "." + keyThumb
 
 	if s.webRoot == "" {
 		go s.startHTTPServer(domain, chlng.Token, keyAuth)

@@ -18,7 +18,7 @@ Current features:
 - [x] Revoking Certificates
 - [ ] Initiating account recovery
 - Identifier validation challenges
-  - [x] SimpleHTTP Challenge
+  - [x] SimpleHTTP Challenge (Scheduled for removal on Nov 19th)
   - [x] HTTP (http-01)
   - [ ] TLS with Server Name Indication (tls-sni-01)
   - [ ] Proof of Possession of a Prior Key (proofOfPossession-01)

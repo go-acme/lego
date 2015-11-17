@@ -234,9 +234,12 @@ func (c *Client) ObtainSANCertificate(domains []string, bundle bool) (Certificat
 	}
 
 	challenges, failures := c.getChallenges(domains)
-	if len(challenges) == 0 {
+	// If any challenge fails - return. Do not generate partial SAN certificates.
+	if len(failures) > 0 {
 		return CertificateResource{}, failures
 	}
+
+	challenges = reorderAuthorizations(domains, challenges)
 
 	errs := c.solveChallenges(challenges)
 	// If any challenge fails - return. Do not generate partial SAN certificates.
@@ -246,9 +249,9 @@ func (c *Client) ObtainSANCertificate(domains []string, bundle bool) (Certificat
 
 	logf("[INFO] acme: Validations succeeded; requesting certificates")
 
-	cert, err := c.requestCertificate(succeededChallenges, bundle)
+	cert, err := c.requestCertificate(challenges, bundle)
 	if err != nil {
-		for _, chln := range succeededChallenges {
+		for _, chln := range challenges {
 			failures[chln.Domain] = err
 		}
 	}
@@ -659,4 +662,21 @@ func parseLinks(links []string) map[string]string {
 	}
 
 	return linkMap
+}
+
+func reorderAuthorizations(domains []string, challenges []authorizationResource) []authorizationResource {
+	// restore order of challenges
+	for i, domain := range domains {
+		if domain == challenges[i].Domain {
+			continue
+		}
+
+		for j, chlng := range challenges {
+			if chlng.Domain == domain {
+				challenges[i], challenges[j] = challenges[j], challenges[i]
+			}
+		}
+	}
+
+	return challenges
 }

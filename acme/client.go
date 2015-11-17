@@ -244,7 +244,7 @@ func (c *Client) ObtainSANCertificate(domains []string, bundle bool) (Certificat
 	errs := c.solveChallenges(challenges)
 	// If any challenge fails - return. Do not generate partial SAN certificates.
 	if len(errs) > 0 {
-		return CertificateResource{}, failures
+		return CertificateResource{}, errs
 	}
 
 	logf("[INFO] acme: Validations succeeded; requesting certificates")

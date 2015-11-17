@@ -137,9 +137,6 @@ func run(c *cli.Context) {
 		logger().Fatalf("Cound not check/create path: %v", err)
 	}
 
-	//for _, certRes := range certs {
-	//		saveCertRes(certRes, conf)
-	//}
 	saveCertRes(cert, conf)
 }
 

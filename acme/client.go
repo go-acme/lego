@@ -460,7 +460,7 @@ func (c *Client) requestCertificates(challenges []*authorizationResource, bundle
 	close(resc)
 	close(errc)
 
-	return certs, nil
+	return certs, failures
 }
 
 func (c *Client) requestCertificate(authz *authorizationResource, result chan CertificateResource, errc chan domainError, bundle bool) {

@@ -57,7 +57,7 @@ type Client struct {
 // usr - A filled in user struct
 // keyBits - Size of the key in bits
 // optPort - The alternative port to listen on for challenges.
-func NewClient(caURL string, usr User, keyBits int, optPort string) (*Client, error) {
+func NewClient(caURL string, usr User, keyBits int, optPort string, webRoot string) (*Client, error) {
 	privKey := usr.GetPrivateKey()
 	if privKey == nil {
 		return nil, errors.New("private key was nil")
@@ -102,7 +102,7 @@ func NewClient(caURL string, usr User, keyBits int, optPort string) (*Client, er
 	// spec to this map. Otherwise they won`t be found.
 	solvers := make(map[string]solver)
 	solvers["simpleHttp"] = &simpleHTTPChallenge{jws: jws, optPort: optPort}
-	solvers["http-01"] = &httpChallenge{jws: jws, optPort: optPort}
+	solvers["http-01"] = &httpChallenge{jws: jws, optPort: optPort, webRoot: webRoot}
 
 	return &Client{directory: dir, user: usr, jws: jws, keyBits: keyBits, solvers: solvers}, nil
 }

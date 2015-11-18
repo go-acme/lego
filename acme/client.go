@@ -518,10 +518,6 @@ func (c *Client) requestCertificates(challenges []authorizationResource, bundle 
 	return certs, failures
 }
 
-func (c *Client) requestSANCertificate() {
-
-}
-
 func (c *Client) requestCertificate(authz []authorizationResource, bundle bool) (CertificateResource, error) {
 	if len(authz) == 0 {
 		return CertificateResource{}, errors.New("Passed no authorizations to requestCertificate!")

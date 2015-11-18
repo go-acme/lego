@@ -125,7 +125,7 @@ func run(c *cli.Context) {
 		logger().Fatal("Please specify --domains")
 	}
 
-	certs, failures := client.ObtainCertificates(c.GlobalStringSlice("domains"), true)
+	cert, failures := client.ObtainSANCertificate(c.GlobalStringSlice("domains"), true)
 	if len(failures) > 0 {
 		for k, v := range failures {
 			logger().Printf("[%s] Could not obtain certificates\n\t%v", k, v)
@@ -137,9 +137,7 @@ func run(c *cli.Context) {
 		logger().Fatalf("Cound not check/create path: %v", err)
 	}
 
-	for _, certRes := range certs {
-		saveCertRes(certRes, conf)
-	}
+	saveCertRes(cert, conf)
 }
 
 func revoke(c *cli.Context) {

@@ -211,14 +211,58 @@ func (c *Client) ObtainCertificates(domains []string, bundle bool) ([]Certificat
 		return nil, failures
 	}
 
+	// remove failed challenges from slice
+	var succeededChallenges []authorizationResource
+	for _, chln := range challenges {
+		if failures[chln.Domain] == nil {
+			succeededChallenges = append(succeededChallenges, chln)
+		}
+	}
+
 	logf("[INFO] acme: Validations succeeded; requesting certificates")
 
-	certs, err := c.requestCertificates(challenges, bundle)
+	certs, err := c.requestCertificates(succeededChallenges, bundle)
 	for k, v := range err {
 		failures[k] = v
 	}
 
 	return certs, failures
+}
+
+// ObtainSANCertificate tries to obtain a single certificate using all domains passed into it.
+// The first domain in domains is used for the CommonName field of the certificate, all other
+// domains are added using the Subject Alternate Names extension.
+// If bundle is true, the []byte contains both the issuer certificate and
+// your issued certificate as a bundle.
+func (c *Client) ObtainSANCertificate(domains []string, bundle bool) (CertificateResource, map[string]error) {
+	if bundle {
+		logf("[INFO] acme: Obtaining bundled SAN certificate for %v", strings.Join(domains, ", "))
+	} else {
+		logf("[INFO] acme: Obtaining SAN certificate for %v", strings.Join(domains, ", "))
+	}
+
+	challenges, failures := c.getChallenges(domains)
+	// If any challenge fails - return. Do not generate partial SAN certificates.
+	if len(failures) > 0 {
+		return CertificateResource{}, failures
+	}
+
+	errs := c.solveChallenges(challenges)
+	// If any challenge fails - return. Do not generate partial SAN certificates.
+	if len(errs) > 0 {
+		return CertificateResource{}, errs
+	}
+
+	logf("[INFO] acme: Validations succeeded; requesting certificates")
+
+	cert, err := c.requestCertificate(challenges, bundle)
+	if err != nil {
+		for _, chln := range challenges {
+			failures[chln.Domain] = err
+		}
+	}
+
+	return cert, failures
 }
 
 // RevokeCertificate takes a PEM encoded certificate or bundle and tries to revoke it at the CA.
@@ -338,7 +382,7 @@ func (c *Client) RenewCertificate(cert CertificateResource, revokeOld bool, bund
 
 // Looks through the challenge combinations to find a solvable match.
 // Then solves the challenges in series and returns.
-func (c *Client) solveChallenges(challenges []*authorizationResource) map[string]error {
+func (c *Client) solveChallenges(challenges []authorizationResource) map[string]error {
 	// loop through the resources, basically through the domains.
 	failures := make(map[string]error)
 	for _, authz := range challenges {
@@ -381,8 +425,8 @@ func (c *Client) chooseSolvers(auth authorization, domain string) map[int]solver
 }
 
 // Get the challenges needed to proof our identifier to the ACME server.
-func (c *Client) getChallenges(domains []string) ([]*authorizationResource, map[string]error) {
-	resc, errc := make(chan *authorizationResource), make(chan domainError)
+func (c *Client) getChallenges(domains []string) ([]authorizationResource, map[string]error) {
+	resc, errc := make(chan authorizationResource), make(chan domainError)
 
 	for _, domain := range domains {
 		go func(domain string) {
@@ -416,34 +460,48 @@ func (c *Client) getChallenges(domains []string) ([]*authorizationResource, map[
 			}
 			resp.Body.Close()
 
-			resc <- &authorizationResource{Body: authz, NewCertURL: links["next"], AuthURL: resp.Header.Get("Location"), Domain: domain}
+			resc <- authorizationResource{Body: authz, NewCertURL: links["next"], AuthURL: resp.Header.Get("Location"), Domain: domain}
 		}(domain)
 	}
 
-	var responses []*authorizationResource
+	responses := make(map[string]authorizationResource)
 	failures := make(map[string]error)
 	for i := 0; i < len(domains); i++ {
 		select {
 		case res := <-resc:
-			responses = append(responses, res)
+			responses[res.Domain] = res
 		case err := <-errc:
 			failures[err.Domain] = err.Error
+		}
+	}
+
+	challenges := make([]authorizationResource, 0, len(responses))
+	for _, domain := range domains {
+		if challenge, ok := responses[domain]; ok {
+			challenges = append(challenges, challenge)
 		}
 	}
 
 	close(resc)
 	close(errc)
 
-	return responses, failures
+	return challenges, failures
 }
 
 // requestCertificates iterates all granted authorizations, creates RSA private keys and CSRs.
 // It then uses these to request a certificate from the CA and returns the list of successfully
 // granted certificates.
-func (c *Client) requestCertificates(challenges []*authorizationResource, bundle bool) ([]CertificateResource, map[string]error) {
+func (c *Client) requestCertificates(challenges []authorizationResource, bundle bool) ([]CertificateResource, map[string]error) {
 	resc, errc := make(chan CertificateResource), make(chan domainError)
 	for _, authz := range challenges {
-		go c.requestCertificate(authz, resc, errc, bundle)
+		go func(authz authorizationResource, resc chan CertificateResource, errc chan domainError) {
+			certRes, err := c.requestCertificate([]authorizationResource{authz}, bundle)
+			if err != nil {
+				errc <- domainError{Domain: authz.Domain, Error: err}
+			} else {
+				resc <- certRes
+			}
+		}(authz, resc, errc)
 	}
 
 	var certs []CertificateResource
@@ -460,39 +518,47 @@ func (c *Client) requestCertificates(challenges []*authorizationResource, bundle
 	close(resc)
 	close(errc)
 
-	return certs, nil
+	return certs, failures
 }
 
-func (c *Client) requestCertificate(authz *authorizationResource, result chan CertificateResource, errc chan domainError, bundle bool) {
+func (c *Client) requestCertificate(authz []authorizationResource, bundle bool) (CertificateResource, error) {
+	if len(authz) == 0 {
+		return CertificateResource{}, errors.New("Passed no authorizations to requestCertificate!")
+	}
+
+	commonName := authz[0]
 	privKey, err := generatePrivateKey(rsakey, c.keyBits)
 	if err != nil {
-		errc <- domainError{Domain: authz.Domain, Error: err}
-		return
+		return CertificateResource{}, err
+	}
+
+	var san []string
+	var authURLs []string
+	for _, auth := range authz[1:] {
+		san = append(san, auth.Domain)
+		authURLs = append(authURLs, auth.AuthURL)
 	}
 
 	// TODO: should the CSR be customizable?
-	csr, err := generateCsr(privKey.(*rsa.PrivateKey), authz.Domain)
+	csr, err := generateCsr(privKey.(*rsa.PrivateKey), commonName.Domain, san)
 	if err != nil {
-		errc <- domainError{Domain: authz.Domain, Error: err}
-		return
+		return CertificateResource{}, err
 	}
 
 	csrString := base64.URLEncoding.EncodeToString(csr)
-	jsonBytes, err := json.Marshal(csrMessage{Resource: "new-cert", Csr: csrString, Authorizations: []string{authz.AuthURL}})
+	jsonBytes, err := json.Marshal(csrMessage{Resource: "new-cert", Csr: csrString, Authorizations: authURLs})
 	if err != nil {
-		errc <- domainError{Domain: authz.Domain, Error: err}
-		return
+		return CertificateResource{}, err
 	}
 
-	resp, err := c.jws.post(authz.NewCertURL, jsonBytes)
+	resp, err := c.jws.post(commonName.NewCertURL, jsonBytes)
 	if err != nil {
-		errc <- domainError{Domain: authz.Domain, Error: err}
-		return
+		return CertificateResource{}, err
 	}
 
 	privateKeyPem := pemEncode(privKey)
 	cerRes := CertificateResource{
-		Domain:     authz.Domain,
+		Domain:     commonName.Domain,
 		CertURL:    resp.Header.Get("Location"),
 		PrivateKey: privateKeyPem}
 
@@ -505,8 +571,7 @@ func (c *Client) requestCertificate(authz *authorizationResource, result chan Ce
 			cert, err := ioutil.ReadAll(resp.Body)
 			resp.Body.Close()
 			if err != nil {
-				errc <- domainError{Domain: authz.Domain, Error: err}
-				return
+				return CertificateResource{}, err
 			}
 
 			// The server returns a body with a length of zero if the
@@ -526,7 +591,7 @@ func (c *Client) requestCertificate(authz *authorizationResource, result chan Ce
 					issuerCert, err := c.getIssuerCertificate(links["up"])
 					if err != nil {
 						// If we fail to aquire the issuer cert, return the issued certificate - do not fail.
-						logf("[WARNING] acme: [%s] Could not bundle issuer certificate: %v", authz.Domain, err)
+						logf("[WARNING] acme: [%s] Could not bundle issuer certificate: %v", commonName.Domain, err)
 					} else {
 						// Success - append the issuer cert to the issued cert.
 						issuerCert = pemEncode(derCertificateBytes(issuerCert))
@@ -535,9 +600,8 @@ func (c *Client) requestCertificate(authz *authorizationResource, result chan Ce
 				}
 
 				cerRes.Certificate = issuedCert
-				logf("[%s] Server responded with a certificate.", authz.Domain)
-				result <- cerRes
-				return
+				logf("[%s] Server responded with a certificate.", commonName.Domain)
+				return cerRes, nil
 			}
 
 			// The certificate was granted but is not yet issued.
@@ -545,23 +609,20 @@ func (c *Client) requestCertificate(authz *authorizationResource, result chan Ce
 			ra := resp.Header.Get("Retry-After")
 			retryAfter, err := strconv.Atoi(ra)
 			if err != nil {
-				errc <- domainError{Domain: authz.Domain, Error: err}
-				return
+				return CertificateResource{}, err
 			}
 
-			logf("[INFO] acme: [%s] Server responded with status 202; retrying after %ds", authz.Domain, retryAfter)
+			logf("[INFO] acme: [%s] Server responded with status 202; retrying after %ds", commonName.Domain, retryAfter)
 			time.Sleep(time.Duration(retryAfter) * time.Second)
 
 			break
 		default:
-			errc <- domainError{Domain: authz.Domain, Error: handleHTTPError(resp)}
-			return
+			return CertificateResource{}, handleHTTPError(resp)
 		}
 
 		resp, err = http.Get(cerRes.CertURL)
 		if err != nil {
-			errc <- domainError{Domain: authz.Domain, Error: err}
-			return
+			return CertificateResource{}, err
 		}
 	}
 }

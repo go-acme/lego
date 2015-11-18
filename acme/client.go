@@ -226,6 +226,11 @@ func (c *Client) ObtainCertificates(domains []string, bundle bool) ([]Certificat
 	return certs, failures
 }
 
+// ObtainSANCertificate tries to obtain a single certificate using all domains passed into it.
+// The first domain in domains is used for the CommonName field of the certificate, all other
+// domains are added using the Subject Alternate Names extension.
+// If bundle is true, the []byte contains both the issuer certificate and
+// your issued certificate as a bundle.
 func (c *Client) ObtainSANCertificate(domains []string, bundle bool) (CertificateResource, map[string]error) {
 	if bundle {
 		logf("[INFO] acme: Obtaining bundled SAN certificate for %v", strings.Join(domains, ", "))

@@ -239,8 +239,6 @@ func (c *Client) ObtainSANCertificate(domains []string, bundle bool) (Certificat
 		return CertificateResource{}, failures
 	}
 
-	challenges = reorderAuthorizations(domains, challenges)
-
 	errs := c.solveChallenges(challenges)
 	// If any challenge fails - return. Do not generate partial SAN certificates.
 	if len(errs) > 0 {
@@ -458,21 +456,28 @@ func (c *Client) getChallenges(domains []string) ([]authorizationResource, map[s
 		}(domain)
 	}
 
-	var responses []authorizationResource
+	responses := make(map[string]authorizationResource)
 	failures := make(map[string]error)
 	for i := 0; i < len(domains); i++ {
 		select {
 		case res := <-resc:
-			responses = append(responses, res)
+			responses[res.Domain] = res
 		case err := <-errc:
 			failures[err.Domain] = err.Error
+		}
+	}
+
+	challenges := make([]authorizationResource, 0, len(responses))
+	for _, domain := range domains {
+		if challenge, ok := responses[domain]; ok {
+			challenges = append(challenges, challenge)
 		}
 	}
 
 	close(resc)
 	close(errc)
 
-	return responses, failures
+	return challenges, failures
 }
 
 // requestCertificates iterates all granted authorizations, creates RSA private keys and CSRs.
@@ -662,21 +667,4 @@ func parseLinks(links []string) map[string]string {
 	}
 
 	return linkMap
-}
-
-func reorderAuthorizations(domains []string, challenges []authorizationResource) []authorizationResource {
-	// restore order of challenges
-	for i, domain := range domains {
-		if domain == challenges[i].Domain {
-			continue
-		}
-
-		for j, chlng := range challenges {
-			if chlng.Domain == domain {
-				challenges[i], challenges[j] = challenges[j], challenges[i]
-			}
-		}
-	}
-
-	return challenges
 }

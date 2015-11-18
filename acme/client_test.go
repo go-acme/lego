@@ -4,8 +4,6 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"encoding/json"
-	"fmt"
-	mrand "math/rand"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -70,33 +68,3 @@ type mockUser struct {
 func (u mockUser) GetEmail() string                       { return u.email }
 func (u mockUser) GetRegistration() *RegistrationResource { return u.regres }
 func (u mockUser) GetPrivateKey() *rsa.PrivateKey         { return u.privatekey }
-
-func TestReorderAuthorizations(t *testing.T) {
-	// generate fake domains
-	var domains []string
-	for i := 0; i < 30; i++ {
-		domains = append(domains, fmt.Sprintf("example%d.com", i))
-	}
-
-	// generate authorizationResources from the domains
-	var challenges []authorizationResource
-	for _, domain := range domains {
-		challenges = append(challenges, authorizationResource{Domain: domain})
-	}
-
-	// shuffle the challenges slice
-	for i := len(challenges) - 1; i > 0; i-- {
-		j := mrand.Intn(i + 1)
-		challenges[i], challenges[j] = challenges[j], challenges[i]
-	}
-
-	// reorder the challenges
-	reordered := reorderAuthorizations(domains, challenges)
-
-	// test if reordering was successfull
-	for i, domain := range domains {
-		if domain != reordered[i].Domain {
-			t.Errorf("Expected reordered[%d] to equal %s but was %s", i, domain, reordered[i].Domain)
-		}
-	}
-}

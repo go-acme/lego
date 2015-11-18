@@ -101,7 +101,6 @@ func NewClient(caURL string, usr User, keyBits int, optPort string) (*Client, er
 	// Add all available solvers with the right index as per ACME
 	// spec to this map. Otherwise they won`t be found.
 	solvers := make(map[string]solver)
-	solvers["simpleHttp"] = &simpleHTTPChallenge{jws: jws, optPort: optPort}
 	solvers["http-01"] = &httpChallenge{jws: jws, optPort: optPort}
 
 	return &Client{directory: dir, user: usr, jws: jws, keyBits: keyBits, solvers: solvers}, nil

@@ -47,15 +47,15 @@ func TestNewClient(t *testing.T) {
 		t.Fatalf("Expected %d solver(s), got %d", expected, actual)
 	}
 
-	simphttp, ok := client.solvers["simpleHttp"].(*simpleHTTPChallenge)
+	httpSolver, ok := client.solvers["http-01"].(*httpChallenge)
 	if !ok {
 		t.Fatal("Expected simpleHttps solver to be simpleHTTPChallenge type")
 	}
-	if simphttp.jws != client.jws {
+	if httpSolver.jws != client.jws {
 		t.Error("Expected simpleHTTPChallenge to have same jws as client")
 	}
-	if simphttp.optPort != optPort {
-		t.Errorf("Expected simpleHTTPChallenge to have optPort %s but was %s", optPort, simphttp.optPort)
+	if httpSolver.optPort != optPort {
+		t.Errorf("Expected simpleHTTPChallenge to have optPort %s but was %s", optPort, httpSolver.optPort)
 	}
 }
 

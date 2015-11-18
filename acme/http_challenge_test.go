@@ -19,7 +19,7 @@ func TestHTTPNonRootBind(t *testing.T) {
 	jws := &jws{privKey: privKey.(*rsa.PrivateKey)}
 
 	solver := &httpChallenge{jws: jws}
-	clientChallenge := challenge{Type: "simpleHttp", Status: "pending", URI: "localhost:4000", Token: "http1"}
+	clientChallenge := challenge{Type: "http01", Status: "pending", URI: "localhost:4000", Token: "http1"}
 
 	// validate error on non-root bind to 443
 	if err := solver.Solve(clientChallenge, "127.0.0.1"); err == nil {
@@ -37,7 +37,7 @@ func TestHTTPShortRSA(t *testing.T) {
 	jws := &jws{privKey: privKey.(*rsa.PrivateKey), nonces: []string{"test1", "test2"}}
 
 	solver := &httpChallenge{jws: jws, optPort: "23456"}
-	clientChallenge := challenge{Type: "simpleHttp", Status: "pending", URI: "http://localhost:4000", Token: "http2"}
+	clientChallenge := challenge{Type: "http01", Status: "pending", URI: "http://localhost:4000", Token: "http2"}
 
 	if err := solver.Solve(clientChallenge, "127.0.0.1"); err == nil {
 		t.Error("UNEXPECTED: Expected Solve to return an error but the error was nil.")
@@ -54,7 +54,7 @@ func TestHTTPConnectionRefusal(t *testing.T) {
 	jws := &jws{privKey: privKey.(*rsa.PrivateKey), nonces: []string{"test1", "test2"}}
 
 	solver := &httpChallenge{jws: jws, optPort: "23456"}
-	clientChallenge := challenge{Type: "simpleHttp", Status: "pending", URI: "http://localhost:4000", Token: "http3"}
+	clientChallenge := challenge{Type: "http01", Status: "pending", URI: "http://localhost:4000", Token: "http3"}
 
 	if err := solver.Solve(clientChallenge, "127.0.0.1"); err == nil {
 		t.Error("UNEXPECTED: Expected Solve to return an error but the error was nil.")
@@ -73,12 +73,12 @@ func TestHTTPUnexpectedServerState(t *testing.T) {
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Replay-Nonce", "12345")
-		w.Write([]byte("{\"type\":\"simpleHttp\",\"status\":\"what\",\"uri\":\"http://some.url\",\"token\":\"http4\"}"))
+		w.Write([]byte("{\"type\":\"http01\",\"status\":\"what\",\"uri\":\"http://some.url\",\"token\":\"http4\"}"))
 	}))
 
 	jws := &jws{privKey: privKey.(*rsa.PrivateKey), directoryURL: ts.URL}
 	solver := &httpChallenge{jws: jws, optPort: "23456"}
-	clientChallenge := challenge{Type: "simpleHttp", Status: "pending", URI: ts.URL, Token: "http4"}
+	clientChallenge := challenge{Type: "http01", Status: "pending", URI: ts.URL, Token: "http4"}
 
 	if err := solver.Solve(clientChallenge, "127.0.0.1"); err == nil {
 		t.Error("UNEXPECTED: Expected Solve to return an error but the error was nil.")
@@ -103,16 +103,16 @@ func TestHTTPChallengeServerUnexpectedDomain(t *testing.T) {
 			req, _ := client.Get("https://localhost:23456/.well-known/acme-challenge/" + "htto5")
 			reqBytes, _ := ioutil.ReadAll(req.Body)
 			if string(reqBytes) != "TEST" {
-				t.Error("Expected simpleHTTP server to return string TEST on unexpected domain.")
+				t.Error("Expected http01 server to return string TEST on unexpected domain.")
 			}
 		}
 
 		w.Header().Add("Replay-Nonce", "12345")
-		w.Write([]byte("{\"type\":\"simpleHttp\",\"status\":\"invalid\",\"uri\":\"http://some.url\",\"token\":\"http5\"}"))
+		w.Write([]byte("{\"type\":\"http01\",\"status\":\"invalid\",\"uri\":\"http://some.url\",\"token\":\"http5\"}"))
 	}))
 
 	solver := &httpChallenge{jws: jws, optPort: "23456"}
-	clientChallenge := challenge{Type: "simpleHttp", Status: "pending", URI: ts.URL, Token: "http5"}
+	clientChallenge := challenge{Type: "http01", Status: "pending", URI: ts.URL, Token: "http5"}
 
 	if err := solver.Solve(clientChallenge, "127.0.0.1"); err == nil {
 		t.Error("UNEXPECTED: Expected Solve to return an error but the error was nil.")
@@ -134,7 +134,7 @@ func TestHTTPServerError(t *testing.T) {
 
 	jws := &jws{privKey: privKey.(*rsa.PrivateKey), directoryURL: ts.URL}
 	solver := &httpChallenge{jws: jws, optPort: "23456"}
-	clientChallenge := challenge{Type: "simpleHttp", Status: "pending", URI: ts.URL, Token: "http6"}
+	clientChallenge := challenge{Type: "http01", Status: "pending", URI: ts.URL, Token: "http6"}
 
 	if err := solver.Solve(clientChallenge, "127.0.0.1"); err == nil {
 		t.Error("UNEXPECTED: Expected Solve to return an error but the error was nil.")
@@ -151,12 +151,12 @@ func TestHTTPInvalidServerState(t *testing.T) {
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Replay-Nonce", "12345")
-		w.Write([]byte("{\"type\":\"simpleHttp\",\"status\":\"invalid\",\"uri\":\"http://some.url\",\"token\":\"http7\"}"))
+		w.Write([]byte("{\"type\":\"http01\",\"status\":\"invalid\",\"uri\":\"http://some.url\",\"token\":\"http7\"}"))
 	}))
 
 	jws := &jws{privKey: privKey.(*rsa.PrivateKey), directoryURL: ts.URL}
 	solver := &httpChallenge{jws: jws, optPort: "23456"}
-	clientChallenge := challenge{Type: "simpleHttp", Status: "pending", URI: ts.URL, Token: "http7"}
+	clientChallenge := challenge{Type: "http01", Status: "pending", URI: ts.URL, Token: "http7"}
 
 	if err := solver.Solve(clientChallenge, "127.0.0.1"); err == nil {
 		t.Error("UNEXPECTED: Expected Solve to return an error but the error was nil.")
@@ -173,12 +173,12 @@ func TestHTTPValidServerResponse(t *testing.T) {
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Replay-Nonce", "12345")
-		w.Write([]byte("{\"type\":\"simpleHttp\",\"status\":\"valid\",\"uri\":\"http://some.url\",\"token\":\"http8\"}"))
+		w.Write([]byte("{\"type\":\"http01\",\"status\":\"valid\",\"uri\":\"http://some.url\",\"token\":\"http8\"}"))
 	}))
 
 	jws := &jws{privKey: privKey.(*rsa.PrivateKey), directoryURL: ts.URL}
 	solver := &httpChallenge{jws: jws, optPort: "23456"}
-	clientChallenge := challenge{Type: "simpleHttp", Status: "pending", URI: ts.URL, Token: "http8"}
+	clientChallenge := challenge{Type: "http01", Status: "pending", URI: ts.URL, Token: "http8"}
 
 	if err := solver.Solve(clientChallenge, "127.0.0.1"); err != nil {
 		t.Errorf("VALID: Expected Solve to return no error but the error was -> %v", err)
@@ -192,7 +192,7 @@ func TestHTTPValidFull(t *testing.T) {
 
 	jws := &jws{privKey: privKey.(*rsa.PrivateKey), directoryURL: ts.URL}
 	solver := &httpChallenge{jws: jws, optPort: "23457"}
-	clientChallenge := challenge{Type: "simpleHttp", Status: "pending", URI: ts.URL, Token: "http9"}
+	clientChallenge := challenge{Type: "http01", Status: "pending", URI: ts.URL, Token: "http9"}
 
 	// Validate server on port 23456 which responds appropriately
 	ts.Config.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -253,7 +253,7 @@ func TestHTTPValidFull(t *testing.T) {
 			t.Errorf("Expected the second part of the server token to be a properly formatted key authorization")
 		}
 
-		valid := challenge{Type: "simpleHttp", Status: "valid", URI: ts.URL, Token: "1234567812"}
+		valid := challenge{Type: "http01", Status: "valid", URI: ts.URL, Token: "1234567812"}
 		jsonBytes, _ := json.Marshal(&valid)
 		w.Write(jsonBytes)
 	})

@@ -18,11 +18,10 @@ Current features:
 - [x] Revoking Certificates
 - [ ] Initiating account recovery
 - Identifier validation challenges
-  - [x] SimpleHTTP Challenge (Scheduled for removal on Nov 19th)
   - [x] HTTP (http-01)
   - [ ] TLS with Server Name Indication (tls-sni-01)
   - [ ] Proof of Possession of a Prior Key (proofOfPossession-01)
-  - [ ] DNS (dns-01)
+  - [ ] DNS (dns-01) - Implemented in branch, blocked by upstream.
 - [x] Certificate bundling
 - [x] Library support for OCSP
 

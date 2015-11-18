@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"crypto/ecdsa"
 	"crypto/rsa"
+	"errors"
 	"fmt"
 	"net/http"
 
-	"github.com/letsencrypt/go-jose"
+	"github.com/square/go-jose"
 )
 
 type jws struct {
@@ -15,10 +16,15 @@ type jws struct {
 	nonces  []string
 }
 
-func keyAsJWK(key *ecdsa.PublicKey) jose.JsonWebKey {
-	return jose.JsonWebKey{
-		Key:       key,
-		Algorithm: "EC",
+func keyAsJWK(key interface{}) *jose.JsonWebKey {
+	switch k := key.(type) {
+	case *ecdsa.PublicKey:
+		return &jose.JsonWebKey{Key: k, Algorithm: "EC"}
+	case *rsa.PublicKey:
+		return &jose.JsonWebKey{Key: k, Algorithm: "RSA"}
+
+	default:
+		return nil
 	}
 }
 
@@ -52,8 +58,9 @@ func (j *jws) signContent(content []byte) (*jose.JsonWebSignature, error) {
 	if err != nil {
 		return nil, err
 	}
+	signer.SetNonceSource(j)
 
-	signed, err := signer.Sign(content, j.consumeNonce())
+	signed, err := signer.Sign(content)
 	if err != nil {
 		return nil, err
 	}
@@ -79,12 +86,12 @@ func (j *jws) getNonce(url string) error {
 	return j.getNonceFromResponse(resp)
 }
 
-func (j *jws) consumeNonce() string {
+func (j *jws) Nonce() (string, error) {
 	nonce := ""
 	if len(j.nonces) == 0 {
-		return nonce
+		return nonce, errors.New("No nonce available.")
 	}
 
 	nonce, j.nonces = j.nonces[len(j.nonces)-1], j.nonces[:len(j.nonces)-1]
-	return nonce
+	return nonce, nil
 }

@@ -54,8 +54,12 @@ func TestNewClient(t *testing.T) {
 	if httpSolver.jws != client.jws {
 		t.Error("Expected simpleHTTPChallenge to have same jws as client")
 	}
-	if httpSolver.optPort != optPort {
-		t.Errorf("Expected simpleHTTPChallenge to have optPort %s but was %s", optPort, httpSolver.optPort)
+	httpSolverMethod, ok := httpSolver.method.(*httpChallengeWebserver)
+	if !ok {
+		t.Fatal("Expected httpSolverMethod solver method to be httpChallengeWebserver type")
+	}
+	if httpSolverMethod.optPort != optPort {
+		t.Errorf("Expected simpleHTTPChallenge to have optPort %s but was %s", optPort, httpSolverMethod.optPort)
 	}
 }
 

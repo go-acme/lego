@@ -27,7 +27,7 @@ func TestNewClient(t *testing.T) {
 	}))
 
 	caURL, optPort := ts.URL, "1234"
-	client, err := NewClient(caURL, user, keyBits, optPort)
+	client, err := NewClient(caURL, user, keyBits, NewHttpChallengeWebserver(optPort))
 	if err != nil {
 		t.Fatalf("Could not create client: %v", err)
 	}
@@ -43,7 +43,7 @@ func TestNewClient(t *testing.T) {
 		t.Errorf("Expected keyBits to be %d but was %d", keyBits, client.keyBits)
 	}
 
-	if expected, actual := 2, len(client.solvers); actual != expected {
+	if expected, actual := 1, len(client.solvers); actual != expected {
 		t.Fatalf("Expected %d solver(s), got %d", expected, actual)
 	}
 
@@ -54,8 +54,12 @@ func TestNewClient(t *testing.T) {
 	if httpSolver.jws != client.jws {
 		t.Error("Expected simpleHTTPChallenge to have same jws as client")
 	}
-	if httpSolver.optPort != optPort {
-		t.Errorf("Expected simpleHTTPChallenge to have optPort %s but was %s", optPort, httpSolver.optPort)
+	httpSolverMethod, ok := httpSolver.method.(*HttpChallengeWebserver)
+	if !ok {
+		t.Fatal("Expected httpSolverMethod solver method to be httpChallengeWebserver type")
+	}
+	if httpSolverMethod.optPort != optPort {
+		t.Errorf("Expected simpleHTTPChallenge to have optPort %s but was %s", optPort, httpSolverMethod.optPort)
 	}
 }
 

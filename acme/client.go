@@ -56,8 +56,8 @@ type Client struct {
 // caURL - The root url to the boulder instance you want certificates from
 // usr - A filled in user struct
 // keyBits - Size of the key in bits
-// optPort - The alternative port to listen on for challenges.
-func NewClient(caURL string, usr User, keyBits int, optPort string) (*Client, error) {
+// method - The http challenge solver method if applicable
+func NewClient(caURL string, usr User, keyBits int, method HttpChallengeMethod) (*Client, error) {
 	privKey := usr.GetPrivateKey()
 	if privKey == nil {
 		return nil, errors.New("private key was nil")
@@ -101,7 +101,7 @@ func NewClient(caURL string, usr User, keyBits int, optPort string) (*Client, er
 	// Add all available solvers with the right index as per ACME
 	// spec to this map. Otherwise they won`t be found.
 	solvers := make(map[string]solver)
-	solvers["http-01"] = &httpChallenge{jws: jws, optPort: optPort}
+	solvers["http-01"] = &httpChallenge{jws: jws, method: method}
 
 	return &Client{directory: dir, user: usr, jws: jws, keyBits: keyBits, solvers: solvers}, nil
 }

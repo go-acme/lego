@@ -80,6 +80,7 @@ type challenge struct {
 	Token            string `json:"token,omitempty"`
 	KeyAuthorization string `json:"keyAuthorization,omitempty"`
 	TLS              bool   `json:"tls,omitempty"`
+	Iterations       int    `json:"n,omitempty"`
 }
 
 type csrMessage struct {

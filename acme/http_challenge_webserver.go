@@ -29,7 +29,9 @@ func (s *httpChallengeWebserver) PresentToken(domain, token, keyAuth string, che
 	// Make sure we properly close the HTTP server before we return
 	defer func() {
 		listener.Close()
-		err = <-s.end
+		if err2 := <-s.end; err2 != nil {
+			err = err2
+		}
 		close(s.start)
 		close(s.end)
 	}()

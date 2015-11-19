@@ -7,13 +7,17 @@ import (
 	"strings"
 )
 
-type httpChallengeWebserver struct {
+type HttpChallengeWebserver struct {
 	optPort string
 	start   chan net.Listener
 	end     chan error
 }
 
-func (s *httpChallengeWebserver) PresentToken(domain, token, keyAuth string, checkSolvedFunc func() error) (err error) {
+func NewHttpChallengeWebserver(optPort string) HttpChallengeMethod {
+	return &HttpChallengeWebserver{optPort: optPort}
+}
+
+func (s *HttpChallengeWebserver) PresentToken(domain, token, keyAuth string, checkSolvedFunc func() error) (err error) {
 	s.start = make(chan net.Listener)
 	s.end = make(chan error)
 
@@ -40,7 +44,7 @@ func (s *httpChallengeWebserver) PresentToken(domain, token, keyAuth string, che
 	return
 }
 
-func (s *httpChallengeWebserver) startHTTPServer(domain string, token string, keyAuth string) {
+func (s *HttpChallengeWebserver) startHTTPServer(domain string, token string, keyAuth string) {
 
 	// Allow for CLI port override
 	port := ":80"

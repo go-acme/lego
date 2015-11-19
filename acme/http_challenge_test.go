@@ -18,7 +18,7 @@ func TestHTTPNonRootBind(t *testing.T) {
 	privKey, _ := generatePrivateKey(rsakey, 128)
 	jws := &jws{privKey: privKey.(*rsa.PrivateKey)}
 
-	solver := &httpChallenge{jws: jws, method: &httpChallengeWebserver{}}
+	solver := &httpChallenge{jws: jws, method: NewHttpChallengeWebserver("")}
 	clientChallenge := challenge{Type: "http01", Status: "pending", URI: "localhost:4000", Token: "http1"}
 
 	// validate error on non-root bind to 443
@@ -36,7 +36,7 @@ func TestHTTPShortRSA(t *testing.T) {
 	privKey, _ := generatePrivateKey(rsakey, 128)
 	jws := &jws{privKey: privKey.(*rsa.PrivateKey), nonces: []string{"test1", "test2"}}
 
-	solver := &httpChallenge{jws: jws, method: &httpChallengeWebserver{optPort: "23456"}}
+	solver := &httpChallenge{jws: jws, method: NewHttpChallengeWebserver("23456")}
 	clientChallenge := challenge{Type: "http01", Status: "pending", URI: "http://localhost:4000", Token: "http2"}
 
 	if err := solver.Solve(clientChallenge, "127.0.0.1"); err == nil {
@@ -53,7 +53,7 @@ func TestHTTPConnectionRefusal(t *testing.T) {
 	privKey, _ := generatePrivateKey(rsakey, 512)
 	jws := &jws{privKey: privKey.(*rsa.PrivateKey), nonces: []string{"test1", "test2"}}
 
-	solver := &httpChallenge{jws: jws, method: &httpChallengeWebserver{optPort: "23456"}}
+	solver := &httpChallenge{jws: jws, method: NewHttpChallengeWebserver("23456")}
 	clientChallenge := challenge{Type: "http01", Status: "pending", URI: "http://localhost:4000", Token: "http3"}
 
 	if err := solver.Solve(clientChallenge, "127.0.0.1"); err == nil {
@@ -77,7 +77,7 @@ func TestHTTPUnexpectedServerState(t *testing.T) {
 	}))
 
 	jws := &jws{privKey: privKey.(*rsa.PrivateKey), directoryURL: ts.URL}
-	solver := &httpChallenge{jws: jws, method: &httpChallengeWebserver{optPort: "23456"}}
+	solver := &httpChallenge{jws: jws, method: NewHttpChallengeWebserver("23456")}
 	clientChallenge := challenge{Type: "http01", Status: "pending", URI: ts.URL, Token: "http4"}
 
 	if err := solver.Solve(clientChallenge, "127.0.0.1"); err == nil {
@@ -111,7 +111,7 @@ func TestHTTPChallengeServerUnexpectedDomain(t *testing.T) {
 		w.Write([]byte("{\"type\":\"http01\",\"status\":\"invalid\",\"uri\":\"http://some.url\",\"token\":\"http5\"}"))
 	}))
 
-	solver := &httpChallenge{jws: jws, method: &httpChallengeWebserver{optPort: "23456"}}
+	solver := &httpChallenge{jws: jws, method: NewHttpChallengeWebserver("23456")}
 	clientChallenge := challenge{Type: "http01", Status: "pending", URI: ts.URL, Token: "http5"}
 
 	if err := solver.Solve(clientChallenge, "127.0.0.1"); err == nil {
@@ -133,7 +133,7 @@ func TestHTTPServerError(t *testing.T) {
 	}))
 
 	jws := &jws{privKey: privKey.(*rsa.PrivateKey), directoryURL: ts.URL}
-	solver := &httpChallenge{jws: jws, method: &httpChallengeWebserver{optPort: "23456"}}
+	solver := &httpChallenge{jws: jws, method: NewHttpChallengeWebserver("23456")}
 	clientChallenge := challenge{Type: "http01", Status: "pending", URI: ts.URL, Token: "http6"}
 
 	if err := solver.Solve(clientChallenge, "127.0.0.1"); err == nil {
@@ -155,7 +155,7 @@ func TestHTTPInvalidServerState(t *testing.T) {
 	}))
 
 	jws := &jws{privKey: privKey.(*rsa.PrivateKey), directoryURL: ts.URL}
-	solver := &httpChallenge{jws: jws, method: &httpChallengeWebserver{optPort: "23456"}}
+	solver := &httpChallenge{jws: jws, method: NewHttpChallengeWebserver("23456")}
 	clientChallenge := challenge{Type: "http01", Status: "pending", URI: ts.URL, Token: "http7"}
 
 	if err := solver.Solve(clientChallenge, "127.0.0.1"); err == nil {
@@ -177,7 +177,7 @@ func TestHTTPValidServerResponse(t *testing.T) {
 	}))
 
 	jws := &jws{privKey: privKey.(*rsa.PrivateKey), directoryURL: ts.URL}
-	solver := &httpChallenge{jws: jws, method: &httpChallengeWebserver{optPort: "23456"}}
+	solver := &httpChallenge{jws: jws, method: NewHttpChallengeWebserver("23456")}
 	clientChallenge := challenge{Type: "http01", Status: "pending", URI: ts.URL, Token: "http8"}
 
 	if err := solver.Solve(clientChallenge, "127.0.0.1"); err != nil {
@@ -191,7 +191,7 @@ func TestHTTPValidFull(t *testing.T) {
 	ts := httptest.NewServer(nil)
 
 	jws := &jws{privKey: privKey.(*rsa.PrivateKey), directoryURL: ts.URL}
-	solver := &httpChallenge{jws: jws, method: &httpChallengeWebserver{optPort: "23457"}}
+	solver := &httpChallenge{jws: jws, method: NewHttpChallengeWebserver("23457")}
 	clientChallenge := challenge{Type: "http01", Status: "pending", URI: ts.URL, Token: "http9"}
 
 	// Validate server on port 23456 which responds appropriately

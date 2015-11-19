@@ -8,13 +8,13 @@ import (
 	"time"
 )
 
-type httpChallengeMethod interface {
+type HttpChallengeMethod interface {
 	PresentToken(domain, token, keyAuth string, checkSolvedFunc func() error) (err error)
 }
 
 type httpChallenge struct {
 	jws    *jws
-	method httpChallengeMethod
+	method HttpChallengeMethod
 }
 
 func (s *httpChallenge) Solve(chlng challenge, domain string) error {

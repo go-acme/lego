@@ -52,13 +52,14 @@ type Client struct {
 	solvers    map[string]solver
 }
 
-// NewClient creates a new client for the set user.
-// caURL - The root url to the boulder instance you want certificates from
-// usr - A filled in user struct
-// keyBits - Size of the key in bits
-// optPort - The alternative port to listen on for challenges.
-func NewClient(caURL string, usr User, keyBits int, optPort string) (*Client, error) {
-	privKey := usr.GetPrivateKey()
+// NewClient creates a new ACME client on behalf of user. The client will depend on
+// the ACME directory located at caDirURL for the rest of its actions. It will
+// generate private keys for certificates of size keyBits. And, if the challenge
+// type requires it, the client will open a port at optPort to solve the challenge.
+// If optPort is blank, the port required by the spec will be used, but you must
+// forward the required port to optPort for the challenge to succeed.
+func NewClient(caDirURL string, user User, keyBits int, optPort string) (*Client, error) {
+	privKey := user.GetPrivateKey()
 	if privKey == nil {
 		return nil, errors.New("private key was nil")
 	}
@@ -67,12 +68,9 @@ func NewClient(caURL string, usr User, keyBits int, optPort string) (*Client, er
 		return nil, fmt.Errorf("invalid private key: %v", err)
 	}
 
-	if !strings.HasSuffix(caURL, "/directory") {
-		caURL = caURL + "/directory"
-	}
-	dirResp, err := http.Get(caURL)
+	dirResp, err := http.Get(caDirURL)
 	if err != nil {
-		return nil, fmt.Errorf("get directory at '%s': %v", caURL, err)
+		return nil, fmt.Errorf("get directory at '%s': %v", caDirURL, err)
 	}
 	defer dirResp.Body.Close()
 
@@ -95,7 +93,7 @@ func NewClient(caURL string, usr User, keyBits int, optPort string) (*Client, er
 		return nil, errors.New("directory missing revoke certificate URL")
 	}
 
-	jws := &jws{privKey: privKey, directoryURL: caURL}
+	jws := &jws{privKey: privKey, directoryURL: caDirURL}
 
 	// REVIEW: best possibility?
 	// Add all available solvers with the right index as per ACME
@@ -103,7 +101,7 @@ func NewClient(caURL string, usr User, keyBits int, optPort string) (*Client, er
 	solvers := make(map[string]solver)
 	solvers["http-01"] = &httpChallenge{jws: jws, optPort: optPort}
 
-	return &Client{directory: dir, user: usr, jws: jws, keyBits: keyBits, solvers: solvers}, nil
+	return &Client{directory: dir, user: user, jws: jws, keyBits: keyBits, solvers: solvers}, nil
 }
 
 // Register the current account to the ACME server.

@@ -43,19 +43,19 @@ func TestNewClient(t *testing.T) {
 		t.Errorf("Expected keyBits to be %d but was %d", keyBits, client.keyBits)
 	}
 
-	if expected, actual := 2, len(client.solvers); actual != expected {
+	if expected, actual := 1, len(client.solvers); actual != expected {
 		t.Fatalf("Expected %d solver(s), got %d", expected, actual)
 	}
 
 	httpSolver, ok := client.solvers["http-01"].(*httpChallenge)
 	if !ok {
-		t.Fatal("Expected simpleHttps solver to be simpleHTTPChallenge type")
+		t.Fatal("Expected http-01 solver to be httpChallenge type")
 	}
 	if httpSolver.jws != client.jws {
-		t.Error("Expected simpleHTTPChallenge to have same jws as client")
+		t.Error("Expected http-01 to have same jws as client")
 	}
 	if httpSolver.optPort != optPort {
-		t.Errorf("Expected simpleHTTPChallenge to have optPort %s but was %s", optPort, httpSolver.optPort)
+		t.Errorf("Expected http-01 to have optPort %s but was %s", optPort, httpSolver.optPort)
 	}
 }
 

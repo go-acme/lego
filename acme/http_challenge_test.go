@@ -21,7 +21,7 @@ func TestHTTPNonRootBind(t *testing.T) {
 	solver := &httpChallenge{jws: jws}
 	clientChallenge := challenge{Type: "http01", Status: "pending", URI: "localhost:4000", Token: "http1"}
 
-	// validate error on non-root bind to 443
+	// validate error on non-root bind to 80
 	if err := solver.Solve(clientChallenge, "127.0.0.1"); err == nil {
 		t.Error("BIND: Expected Solve to return an error but the error was nil.")
 	} else {

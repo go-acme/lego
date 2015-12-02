@@ -119,9 +119,9 @@ func (s *httpChallenge) startHTTPServer(domain string, token string, keyAuth str
 		if strings.HasPrefix(r.Host, domain) && r.Method == "GET" {
 			w.Header().Add("Content-Type", "text/plain")
 			w.Write([]byte(keyAuth))
-			logf("Served Key Authentication ...")
+			logf("[INFO] Served key authentication")
 		} else {
-			logf("Received request for domain %s with method %s", r.Host, r.Method)
+			logf("[INFO] Received request for domain %s with method %s", r.Host, r.Method)
 			w.Write([]byte("TEST"))
 		}
 	})

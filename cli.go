@@ -24,7 +24,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "lego"
 	app.Usage = "Let's encrypt client to go!"
-	app.Version = "0.0.2"
+	app.Version = "0.1.0"
 
 	cwd, err := os.Getwd()
 	if err != nil {

@@ -43,22 +43,22 @@ NAME:
 
 USAGE:
    ./lego [global options] command [command options] [arguments...]
-
+   
 VERSION:
-   0.0.2
-
+   0.1.0
+   
 COMMANDS:
    run		Register an account, then create and install a certificate
    revoke	Revoke a certificate
    renew	Renew a certificate
    help, h	Shows a list of commands or help for one command
-
+   
 GLOBAL OPTIONS:
    --domains, -d [--domains option --domains option]			Add domains to the process
-   --server, -s "https://acme-staging.api.letsencrypt.org/"		CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client.
+   --server, -s "https://acme-v01.api.letsencrypt.org/directory"	CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client.
    --email, -m 								Email used for registration and recovery contact.
    --rsa-key-size, -B "2048"						Size of the RSA key.
-   --path "CWD/.lego"	Directory to use for storing the data
+   --path "${CWD}"							Directory to use for storing the data
    --port 								Challenges will use this port to listen on. Please make sure to forward port 443 to this port on your machine. Otherwise use setcap on the binary
    --help, -h								show help
    --version, -v							print the version

@@ -12,6 +12,7 @@ import (
 
 type httpChallenge struct {
 	jws     *jws
+	optIP   string
 	optPort string
 	start   chan net.Listener
 	end     chan error
@@ -103,7 +104,7 @@ func (s *httpChallenge) startHTTPServer(domain string, token string, keyAuth str
 	listener, err := net.Listen("tcp", domain+port)
 	if err != nil {
 		// if the domain:port bind failed, fall back to :port bind and try that instead.
-		listener, err = net.Listen("tcp", port)
+		listener, err = net.Listen("tcp", s.optIP+port)
 		if err != nil {
 			s.end <- err
 		}

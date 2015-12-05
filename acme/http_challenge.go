@@ -42,7 +42,8 @@ func (s *httpChallenge) Solve(chlng challenge, domain string) error {
 
 	// The handler validates the HOST header and request type.
 	// For validation it then writes the token the server returned with the challenge
-	http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+	mux := http.NewServeMux()
+	mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.Host, domain) && r.Method == "GET" {
 			w.Header().Add("Content-Type", "text/plain")
 			w.Write([]byte(keyAuth))
@@ -53,7 +54,7 @@ func (s *httpChallenge) Solve(chlng challenge, domain string) error {
 		}
 	})
 
-	go http.Serve(listener, nil)
+	go http.Serve(listener, mux)
 
 	return validate(s.jws, chlng.URI, challenge{Resource: "challenge", Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
 }

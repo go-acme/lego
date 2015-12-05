@@ -176,56 +176,12 @@ func (c *Client) AgreeToTOS() error {
 	return err
 }
 
-// ObtainCertificates tries to obtain certificates from the CA server
-// using the challenges it has configured. The returned certificates are
-// PEM encoded byte slices.
-// If bundle is true, the []byte contains both the issuer certificate and
-// your issued certificate as a bundle.
-func (c *Client) ObtainCertificates(domains []string, bundle bool) ([]CertificateResource, map[string]error) {
-	if bundle {
-		logf("[INFO] acme: Obtaining bundled certificates for %v", strings.Join(domains, ", "))
-	} else {
-		logf("[INFO] acme: Obtaining certificates for %v", strings.Join(domains, ", "))
-	}
-
-	challenges, failures := c.getChallenges(domains)
-	if len(challenges) == 0 {
-		return nil, failures
-	}
-
-	err := c.solveChallenges(challenges)
-	for k, v := range err {
-		failures[k] = v
-	}
-
-	if len(failures) == len(domains) {
-		return nil, failures
-	}
-
-	// remove failed challenges from slice
-	var succeededChallenges []authorizationResource
-	for _, chln := range challenges {
-		if failures[chln.Domain] == nil {
-			succeededChallenges = append(succeededChallenges, chln)
-		}
-	}
-
-	logf("[INFO] acme: Validations succeeded; requesting certificates")
-
-	certs, err := c.requestCertificates(succeededChallenges, bundle)
-	for k, v := range err {
-		failures[k] = v
-	}
-
-	return certs, failures
-}
-
-// ObtainSANCertificate tries to obtain a single certificate using all domains passed into it.
+// ObtainCertificate tries to obtain a single certificate using all domains passed into it.
 // The first domain in domains is used for the CommonName field of the certificate, all other
 // domains are added using the Subject Alternate Names extension.
 // If bundle is true, the []byte contains both the issuer certificate and
 // your issued certificate as a bundle.
-func (c *Client) ObtainSANCertificate(domains []string, bundle bool) (CertificateResource, map[string]error) {
+func (c *Client) ObtainCertificate(domains []string, bundle bool) (CertificateResource, map[string]error) {
 	if bundle {
 		logf("[INFO] acme: Obtaining bundled SAN certificate for %v", strings.Join(domains, ", "))
 	} else {
@@ -281,7 +237,7 @@ func (c *Client) RevokeCertificate(certificate []byte) error {
 // this function will start a new-cert flow where a new certificate gets generated.
 // If bundle is true, the []byte contains both the issuer certificate and
 // your issued certificate as a bundle.
-func (c *Client) RenewCertificate(cert CertificateResource, revokeOld bool, bundle bool) (CertificateResource, error) {
+func (c *Client) RenewCertificate(cert CertificateResource, bundle bool) (CertificateResource, error) {
 	// Input certificate is PEM encoded. Decode it here as we may need the decoded
 	// cert later on in the renewal process. The input may be a bundle or a single certificate.
 	certificates, err := parsePEMBundle(cert.Certificate)
@@ -319,9 +275,6 @@ func (c *Client) RenewCertificate(cert CertificateResource, revokeOld bool, bund
 	// TODO: Further test if we can actually use the new certificate (Our private key works)
 	if !x509Cert.Equal(serverCert) {
 		logf("[INFO] acme: [%s] Server responded with renewed certificate", cert.Domain)
-		if revokeOld {
-			c.RevokeCertificate(cert.Certificate)
-		}
 		issuedCert := pemEncode(derCertificateBytes(serverCertBytes))
 		// If bundle is true, we want to return a certificate bundle.
 		// To do this, we need the issuer certificate.
@@ -345,16 +298,8 @@ func (c *Client) RenewCertificate(cert CertificateResource, revokeOld bool, bund
 		return cert, nil
 	}
 
-	newCerts, failures := c.ObtainCertificates([]string{cert.Domain}, bundle)
-	if len(failures) > 0 {
-		return CertificateResource{}, failures[cert.Domain]
-	}
-
-	if revokeOld {
-		c.RevokeCertificate(cert.Certificate)
-	}
-
-	return newCerts[0], nil
+	newCert, failures := c.ObtainCertificate([]string{cert.Domain}, bundle)
+	return newCert, failures[cert.Domain]
 }
 
 // Looks through the challenge combinations to find a solvable match.
@@ -447,39 +392,6 @@ func (c *Client) getChallenges(domains []string) ([]authorizationResource, map[s
 	close(errc)
 
 	return challenges, failures
-}
-
-// requestCertificates iterates all granted authorizations, creates RSA private keys and CSRs.
-// It then uses these to request a certificate from the CA and returns the list of successfully
-// granted certificates.
-func (c *Client) requestCertificates(challenges []authorizationResource, bundle bool) ([]CertificateResource, map[string]error) {
-	resc, errc := make(chan CertificateResource), make(chan domainError)
-	for _, authz := range challenges {
-		go func(authz authorizationResource, resc chan CertificateResource, errc chan domainError) {
-			certRes, err := c.requestCertificate([]authorizationResource{authz}, bundle)
-			if err != nil {
-				errc <- domainError{Domain: authz.Domain, Error: err}
-			} else {
-				resc <- certRes
-			}
-		}(authz, resc, errc)
-	}
-
-	var certs []CertificateResource
-	failures := make(map[string]error)
-	for i := 0; i < len(challenges); i++ {
-		select {
-		case res := <-resc:
-			certs = append(certs, res)
-		case err := <-errc:
-			failures[err.Domain] = err.Error
-		}
-	}
-
-	close(resc)
-	close(errc)
-
-	return certs, failures
 }
 
 func (c *Client) requestCertificate(authz []authorizationResource, bundle bool) (CertificateResource, error) {

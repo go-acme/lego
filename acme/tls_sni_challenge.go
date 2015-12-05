@@ -146,8 +146,8 @@ func (t *tlsSNIChallenge) startSNITLSServer(cert tls.Certificate) {
 	}
 	// Signal successfull start
 	t.start <- tlsListener
-	
+
 	http.Serve(tlsListener, nil)
-	
+
 	t.end <- nil
 }

@@ -6,15 +6,12 @@ import (
 	"crypto/tls"
 	"encoding/hex"
 	"fmt"
-	"net"
 	"net/http"
 )
 
 type tlsSNIChallenge struct {
 	jws     *jws
 	optPort string
-	start   chan net.Listener
-	end     chan error
 }
 
 func (t *tlsSNIChallenge) Solve(chlng challenge, domain string) error {
@@ -23,36 +20,33 @@ func (t *tlsSNIChallenge) Solve(chlng challenge, domain string) error {
 
 	logf("[INFO] acme: Trying to solve TLS-SNI-01")
 
-	t.start = make(chan net.Listener)
-	t.end = make(chan error)
-
 	// Generate the Key Authorization for the challenge
 	keyAuth, err := getKeyAuthorization(chlng.Token, &t.jws.privKey.PublicKey)
 	if err != nil {
 		return err
 	}
 
-	certificate, err := t.generateCertificate(keyAuth)
+	cert, err := t.generateCertificate(keyAuth)
 	if err != nil {
 		return err
 	}
 
-	go t.startSNITLSServer(certificate)
-	var listener net.Listener
-	select {
-	case listener = <-t.start:
-		break
-	case err := <-t.end:
-		return fmt.Errorf("Could not start HTTPS server for challenge -> %v", err)
+	// Allow for CLI port override
+	port := ":443"
+	if t.optPort != "" {
+		port = ":" + t.optPort
 	}
 
-	// Make sure we properly close the HTTP server before we return
-	defer func() {
-		listener.Close()
-		err = <-t.end
-		close(t.start)
-		close(t.end)
-	}()
+	tlsConf := new(tls.Config)
+	tlsConf.Certificates = []tls.Certificate{cert}
+
+	listener, err := tls.Listen("tcp", port, tlsConf)
+	if err != nil {
+		return fmt.Errorf("Could not start HTTPS server for challenge -> %v", err)
+	}
+	defer listener.Close()
+
+	go http.Serve(listener, nil)
 
 	return validate(t.jws, chlng.URI, challenge{Resource: "challenge", Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
 }
@@ -82,27 +76,4 @@ func (t *tlsSNIChallenge) generateCertificate(keyAuth string) (tls.Certificate, 
 	}
 
 	return certificate, nil
-}
-
-func (t *tlsSNIChallenge) startSNITLSServer(cert tls.Certificate) {
-
-	// Allow for CLI port override
-	port := ":443"
-	if t.optPort != "" {
-		port = ":" + t.optPort
-	}
-
-	tlsConf := new(tls.Config)
-	tlsConf.Certificates = []tls.Certificate{cert}
-
-	tlsListener, err := tls.Listen("tcp", port, tlsConf)
-	if err != nil {
-		t.end <- err
-	}
-	// Signal successfull start
-	t.start <- tlsListener
-
-	http.Serve(tlsListener, nil)
-
-	t.end <- nil
 }

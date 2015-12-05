@@ -27,8 +27,7 @@ func TestNewClient(t *testing.T) {
 		w.Write(data)
 	}))
 
-	caURL, optPort := ts.URL, "1234"
-	client, err := NewClient(caURL, user, keyBits, optPort)
+	client, err := NewClient(ts.URL, user, keyBits, nil)
 	if err != nil {
 		t.Fatalf("Could not create client: %v", err)
 	}
@@ -46,6 +45,30 @@ func TestNewClient(t *testing.T) {
 
 	if expected, actual := 2, len(client.solvers); actual != expected {
 		t.Fatalf("Expected %d solver(s), got %d", expected, actual)
+	}
+}
+
+func TestNewClientOptPort(t *testing.T) {
+	keyBits := 32 // small value keeps test fast
+	key, err := rsa.GenerateKey(rand.Reader, keyBits)
+	if err != nil {
+		t.Fatal("Could not generate test key:", err)
+	}
+	user := mockUser{
+		email:      "test@test.com",
+		regres:     new(RegistrationResource),
+		privatekey: key,
+	}
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		data, _ := json.Marshal(directory{NewAuthzURL: "http://test", NewCertURL: "http://test", NewRegURL: "http://test", RevokeCertURL: "http://test"})
+		w.Write(data)
+	}))
+
+	optPort := "1234"
+	client, err := NewClient(ts.URL, user, keyBits, []string{"http-01:" + optPort})
+	if err != nil {
+		t.Fatalf("Could not create client: %v", err)
 	}
 
 	httpSolver, ok := client.solvers["http-01"].(*httpChallenge)

@@ -16,8 +16,13 @@ import (
 	"time"
 )
 
-// Logger is an optional custom logger.
-var Logger *log.Logger
+var (
+	// DefaultSolvers is the set of solvers to use if none is given to NewClient.
+	DefaultSolvers = []string{"http-01", "tls-sni-01"}
+
+	// Logger is an optional custom logger.
+	Logger *log.Logger
+)
 
 // logf writes a log entry. It uses Logger if not
 // nil, otherwise it uses the default log.Logger.
@@ -56,9 +61,12 @@ type Client struct {
 // the ACME directory located at caDirURL for the rest of its actions. It will
 // generate private keys for certificates of size keyBits. And, if the challenge
 // type requires it, the client will open a port at optPort to solve the challenge.
-// If optPort is blank, the port required by the spec will be used, but you must
-// forward the required port to optPort for the challenge to succeed.
-func NewClient(caDirURL string, user User, keyBits int, optPort string) (*Client, error) {
+//
+// If optSolvers is nil, the value of DefaultSolvers is used. If given explicitly,
+// it is a set of solver names to enable. The "http-01" and "tls-sni-01" solvers
+// take an optional TCP port to listen on after a colon, e.g. "http-01:80". If
+// the port is not specified, the port required by the spec will be used.
+func NewClient(caDirURL string, user User, keyBits int, optSolvers []string) (*Client, error) {
 	privKey := user.GetPrivateKey()
 	if privKey == nil {
 		return nil, errors.New("private key was nil")
@@ -92,8 +100,30 @@ func NewClient(caDirURL string, user User, keyBits int, optPort string) (*Client
 	// Add all available solvers with the right index as per ACME
 	// spec to this map. Otherwise they won`t be found.
 	solvers := make(map[string]solver)
-	solvers["http-01"] = &httpChallenge{jws: jws, validate: validate, optPort: optPort}
-	solvers["tls-sni-01"] = &tlsSNIChallenge{jws: jws, validate: validate, optPort: optPort}
+	if optSolvers == nil {
+		optSolvers = DefaultSolvers
+	}
+	for _, s := range optSolvers {
+		ss := strings.SplitN(s, ":", 2)
+		switch ss[0] {
+		case "http-01":
+			optPort := ""
+			if len(ss) > 1 {
+				optPort = ss[1]
+			}
+			solvers["http-01"] = &httpChallenge{jws: jws, validate: validate, optPort: optPort}
+
+		case "tls-sni-01":
+			optPort := ""
+			if len(ss) > 1 {
+				optPort = ss[1]
+			}
+			solvers["tls-sni-01"] = &tlsSNIChallenge{jws: jws, validate: validate, optPort: optPort}
+
+		default:
+			return nil, fmt.Errorf("unknown solver: %s", s)
+		}
+	}
 
 	return &Client{directory: dir, user: user, jws: jws, keyBits: keyBits, solvers: solvers}, nil
 }

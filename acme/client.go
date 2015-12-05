@@ -99,8 +99,8 @@ func NewClient(caDirURL string, user User, keyBits int, optPort string) (*Client
 	// Add all available solvers with the right index as per ACME
 	// spec to this map. Otherwise they won`t be found.
 	solvers := make(map[string]solver)
-	solvers["http-01"] = &httpChallenge{jws: jws, optPort: optPort}
-	solvers["tls-sni-01"] = &tlsSNIChallenge{jws: jws, optPort: optPort}
+	solvers["http-01"] = &httpChallenge{jws: jws, validate: validate, optPort: optPort}
+	solvers["tls-sni-01"] = &tlsSNIChallenge{jws: jws, validate: validate, optPort: optPort}
 
 	return &Client{directory: dir, user: user, jws: jws, keyBits: keyBits, solvers: solvers}, nil
 }
@@ -671,6 +671,11 @@ func parseLinks(links []string) map[string]string {
 	return linkMap
 }
 
+var (
+	pollInterval    = 1 * time.Second
+	maxPollInterval = 15 * time.Minute
+)
+
 // validate makes the ACME server start validating a
 // challenge response, only returning once it is done.
 func validate(j *jws, uri string, chlng challenge) error {
@@ -680,8 +685,7 @@ func validate(j *jws, uri string, chlng challenge) error {
 		return err
 	}
 
-	interval := 1 * time.Second
-	maxInterval := 15 * time.Minute
+	delay := pollInterval
 
 	// After the path is sent, the ACME server will access our server.
 	// Repeatedly check the server for an updated status on our request.
@@ -699,10 +703,10 @@ func validate(j *jws, uri string, chlng challenge) error {
 		}
 
 		// Poll with exponential back-off.
-		time.Sleep(interval)
-		interval *= 2
-		if interval > maxInterval {
-			interval = maxInterval
+		time.Sleep(delay)
+		delay *= 2
+		if delay > maxPollInterval {
+			delay = maxPollInterval
 		}
 
 		if err := getJSON(uri, &challengeResponse); err != nil {

@@ -1,13 +1,10 @@
 package acme
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
 	"net"
 	"net/http"
 	"strings"
-	"time"
 )
 
 type httpChallenge struct {
@@ -47,49 +44,7 @@ func (s *httpChallenge) Solve(chlng challenge, domain string) error {
 		close(s.end)
 	}()
 
-	jsonBytes, err := json.Marshal(challenge{Resource: "challenge", Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
-	if err != nil {
-		return errors.New("Failed to marshal network message...")
-	}
-
-	// Tell the server we handle HTTP-01
-	resp, err := s.jws.post(chlng.URI, jsonBytes)
-	if err != nil {
-		return fmt.Errorf("Failed to post JWS message. -> %v", err)
-	}
-
-	// After the path is sent, the ACME server will access our server.
-	// Repeatedly check the server for an updated status on our request.
-	var challengeResponse challenge
-Loop:
-	for {
-		if resp.StatusCode >= http.StatusBadRequest {
-			return handleHTTPError(resp)
-		}
-
-		err = json.NewDecoder(resp.Body).Decode(&challengeResponse)
-		resp.Body.Close()
-		if err != nil {
-			return err
-		}
-
-		switch challengeResponse.Status {
-		case "valid":
-			logf("The server validated our request")
-			break Loop
-		case "pending":
-			break
-		case "invalid":
-			return errors.New("The server could not validate our request.")
-		default:
-			return errors.New("The server returned an unexpected state.")
-		}
-
-		time.Sleep(1 * time.Second)
-		resp, err = http.Get(chlng.URI)
-	}
-
-	return nil
+	return validate(s.jws, chlng.URI, challenge{Resource: "challenge", Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
 }
 
 func (s *httpChallenge) startHTTPServer(domain string, token string, keyAuth string) {

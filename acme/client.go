@@ -670,3 +670,82 @@ func parseLinks(links []string) map[string]string {
 
 	return linkMap
 }
+
+// validate makes the ACME server start validating a
+// challenge response, only returning once it is done.
+func validate(j *jws, uri string, chlng challenge) error {
+	var challengeResponse challenge
+
+	if err := postJSON(j, uri, chlng, &challengeResponse); err != nil {
+		return err
+	}
+
+	interval := 1 * time.Second
+	maxInterval := 15 * time.Minute
+
+	// After the path is sent, the ACME server will access our server.
+	// Repeatedly check the server for an updated status on our request.
+	for {
+		switch challengeResponse.Status {
+		case "valid":
+			logf("The server validated our request")
+			return nil
+		case "pending":
+			break
+		case "invalid":
+			return errors.New("The server could not validate our request.")
+		default:
+			return errors.New("The server returned an unexpected state.")
+		}
+
+		// Poll with exponential back-off.
+		time.Sleep(interval)
+		interval *= 2
+		if interval > maxInterval {
+			interval = maxInterval
+		}
+
+		if err := getJSON(uri, &challengeResponse); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// getJSON performs an HTTP GET request and parses the response body
+// as JSON, into the provided respBody object.
+func getJSON(uri string, respBody interface{}) error {
+	resp, err := http.Get(uri)
+	if err != nil {
+		return fmt.Errorf("failed to get %q: %v", uri, err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= http.StatusBadRequest {
+		return handleHTTPError(resp)
+	}
+
+	return json.NewDecoder(resp.Body).Decode(respBody)
+}
+
+// postJSON performs an HTTP POST request and parses the response body
+// as JSON, into the provided respBody object.
+func postJSON(j *jws, uri string, reqBody, respBody interface{}) error {
+	jsonBytes, err := json.Marshal(reqBody)
+	if err != nil {
+		return errors.New("Failed to marshal network message...")
+	}
+
+	resp, err := j.post(uri, jsonBytes)
+	if err != nil {
+		return fmt.Errorf("Failed to post JWS message. -> %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= http.StatusBadRequest {
+		return handleHTTPError(resp)
+	}
+
+	return json.NewDecoder(resp.Body).Decode(respBody)
+}

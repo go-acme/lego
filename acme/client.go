@@ -77,7 +77,7 @@ func NewClient(caDirURL string, user User, keyBits int, optSolvers []string) (*C
 	}
 
 	var dir directory
-	if err := getJSON(caDirURL, &dir); err != nil {
+	if _, err := getJSON(caDirURL, &dir); err != nil {
 		return nil, fmt.Errorf("get directory at '%s': %v", caDirURL, err)
 	}
 
@@ -634,22 +634,15 @@ func parseLinks(links []string) map[string]string {
 	return linkMap
 }
 
-var (
-	pollInterval    = 1 * time.Second
-	maxPollInterval = 15 * time.Minute
-)
-
 // validate makes the ACME server start validating a
 // challenge response, only returning once it is done.
 func validate(j *jws, uri string, chlng challenge) error {
 	var challengeResponse challenge
 
-	_, err := postJSON(j, uri, chlng, &challengeResponse)
+	hdr, err := postJSON(j, uri, chlng, &challengeResponse)
 	if err != nil {
 		return err
 	}
-
-	delay := pollInterval
 
 	// After the path is sent, the ACME server will access our server.
 	// Repeatedly check the server for an updated status on our request.
@@ -666,14 +659,16 @@ func validate(j *jws, uri string, chlng challenge) error {
 			return errors.New("The server returned an unexpected state.")
 		}
 
-		// Poll with exponential back-off.
-		time.Sleep(delay)
-		delay *= 2
-		if delay > maxPollInterval {
-			delay = maxPollInterval
+		ra, err := strconv.Atoi(hdr.Get("Retry-After"))
+		if err != nil {
+			// The ACME server MUST return a Retry-After.
+			// If it doesn't, we'll just poll hard.
+			ra = 1
 		}
+		time.Sleep(time.Duration(ra) * time.Second)
 
-		if err := getJSON(uri, &challengeResponse); err != nil {
+		hdr, err = getJSON(uri, &challengeResponse)
+		if err != nil {
 			return err
 		}
 	}
@@ -683,18 +678,18 @@ func validate(j *jws, uri string, chlng challenge) error {
 
 // getJSON performs an HTTP GET request and parses the response body
 // as JSON, into the provided respBody object.
-func getJSON(uri string, respBody interface{}) error {
+func getJSON(uri string, respBody interface{}) (http.Header, error) {
 	resp, err := http.Get(uri)
 	if err != nil {
-		return fmt.Errorf("failed to get %q: %v", uri, err)
+		return nil, fmt.Errorf("failed to get %q: %v", uri, err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= http.StatusBadRequest {
-		return handleHTTPError(resp)
+		return resp.Header, handleHTTPError(resp)
 	}
 
-	return json.NewDecoder(resp.Body).Decode(respBody)
+	return resp.Header, json.NewDecoder(resp.Body).Decode(respBody)
 }
 
 // postJSON performs an HTTP POST request and parses the response body

@@ -84,13 +84,11 @@ func TestNewClientOptPort(t *testing.T) {
 }
 
 func TestValidate(t *testing.T) {
-	// Disable polling delay in validate for faster tests.
-	pollInterval = 0
-
 	var statuses []string
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Minimal stub ACME server for validation.
 		w.Header().Add("Replay-Nonce", "12345")
+		w.Header().Add("Retry-After", "0")
 		switch r.Method {
 		case "HEAD":
 		case "POST":

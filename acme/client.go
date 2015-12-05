@@ -68,16 +68,9 @@ func NewClient(caDirURL string, user User, keyBits int, optPort string) (*Client
 		return nil, fmt.Errorf("invalid private key: %v", err)
 	}
 
-	dirResp, err := http.Get(caDirURL)
-	if err != nil {
-		return nil, fmt.Errorf("get directory at '%s': %v", caDirURL, err)
-	}
-	defer dirResp.Body.Close()
-
 	var dir directory
-	err = json.NewDecoder(dirResp.Body).Decode(&dir)
-	if err != nil {
-		return nil, fmt.Errorf("decode directory: %v", err)
+	if err := getJSON(caDirURL, &dir); err != nil {
+		return nil, fmt.Errorf("get directory at '%s': %v", caDirURL, err)
 	}
 
 	if dir.NewRegURL == "" {
@@ -121,32 +114,16 @@ func (c *Client) Register() (*RegistrationResource, error) {
 		regMsg.Contact = []string{}
 	}
 
-	jsonBytes, err := json.Marshal(regMsg)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := c.jws.post(c.directory.NewRegURL, jsonBytes)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode >= http.StatusBadRequest {
-		return nil, handleHTTPError(resp)
-	}
-
 	var serverReg Registration
-	decoder := json.NewDecoder(resp.Body)
-	err = decoder.Decode(&serverReg)
+	hdr, err := postJSON(c.jws, c.directory.NewRegURL, regMsg, &serverReg)
 	if err != nil {
 		return nil, err
 	}
 
 	reg := &RegistrationResource{Body: serverReg}
 
-	links := parseLinks(resp.Header["Link"])
-	reg.URI = resp.Header.Get("Location")
+	links := parseLinks(hdr["Link"])
+	reg.URI = hdr.Get("Location")
 	if links["terms-of-service"] != "" {
 		reg.TosURL = links["terms-of-service"]
 	}
@@ -165,22 +142,8 @@ func (c *Client) Register() (*RegistrationResource, error) {
 func (c *Client) AgreeToTOS() error {
 	c.user.GetRegistration().Body.Agreement = c.user.GetRegistration().TosURL
 	c.user.GetRegistration().Body.Resource = "reg"
-	jsonBytes, err := json.Marshal(&c.user.GetRegistration().Body)
-	if err != nil {
-		return err
-	}
-
-	resp, err := c.jws.post(c.user.GetRegistration().URI, jsonBytes)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusAccepted {
-		return handleHTTPError(resp)
-	}
-
-	return nil
+	_, err := postJSON(c.jws, c.user.GetRegistration().URI, c.user.GetRegistration().Body, nil)
+	return err
 }
 
 // ObtainCertificates tries to obtain certificates from the CA server
@@ -277,22 +240,8 @@ func (c *Client) RevokeCertificate(certificate []byte) error {
 
 	encodedCert := base64.URLEncoding.EncodeToString(x509Cert.Raw)
 
-	jsonBytes, err := json.Marshal(revokeCertMessage{Resource: "revoke-cert", Certificate: encodedCert})
-	if err != nil {
-		return err
-	}
-
-	resp, err := c.jws.post(c.directory.RevokeCertURL, jsonBytes)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return handleHTTPError(resp)
-	}
-
-	return nil
+	_, err = postJSON(c.jws, c.directory.RevokeCertURL, revokeCertMessage{Resource: "revoke-cert", Certificate: encodedCert}, nil)
+	return err
 }
 
 // RenewCertificate takes a CertificateResource and tries to renew the certificate.
@@ -428,37 +377,21 @@ func (c *Client) getChallenges(domains []string) ([]authorizationResource, map[s
 
 	for _, domain := range domains {
 		go func(domain string) {
-			jsonBytes, err := json.Marshal(authorization{Resource: "new-authz", Identifier: identifier{Type: "dns", Value: domain}})
+			authMsg := authorization{Resource: "new-authz", Identifier: identifier{Type: "dns", Value: domain}}
+			var authz authorization
+			hdr, err := postJSON(c.jws, c.user.GetRegistration().NewAuthzURL, authMsg, &authz)
 			if err != nil {
 				errc <- domainError{Domain: domain, Error: err}
 				return
 			}
 
-			resp, err := c.jws.post(c.user.GetRegistration().NewAuthzURL, jsonBytes)
-			if err != nil {
-				errc <- domainError{Domain: domain, Error: err}
-				return
-			}
-
-			if resp.StatusCode != http.StatusCreated {
-				errc <- domainError{Domain: domain, Error: handleHTTPError(resp)}
-			}
-
-			links := parseLinks(resp.Header["Link"])
+			links := parseLinks(hdr["Link"])
 			if links["next"] == "" {
 				logf("[ERROR] acme: Server did not provide next link to proceed")
 				return
 			}
 
-			var authz authorization
-			decoder := json.NewDecoder(resp.Body)
-			err = decoder.Decode(&authz)
-			if err != nil {
-				errc <- domainError{Domain: domain, Error: err}
-			}
-			resp.Body.Close()
-
-			resc <- authorizationResource{Body: authz, NewCertURL: links["next"], AuthURL: resp.Header.Get("Location"), Domain: domain}
+			resc <- authorizationResource{Body: authz, NewCertURL: links["next"], AuthURL: hdr.Get("Location"), Domain: domain}
 		}(domain)
 	}
 
@@ -681,7 +614,8 @@ var (
 func validate(j *jws, uri string, chlng challenge) error {
 	var challengeResponse challenge
 
-	if err := postJSON(j, uri, chlng, &challengeResponse); err != nil {
+	_, err := postJSON(j, uri, chlng, &challengeResponse)
+	if err != nil {
 		return err
 	}
 
@@ -735,21 +669,25 @@ func getJSON(uri string, respBody interface{}) error {
 
 // postJSON performs an HTTP POST request and parses the response body
 // as JSON, into the provided respBody object.
-func postJSON(j *jws, uri string, reqBody, respBody interface{}) error {
+func postJSON(j *jws, uri string, reqBody, respBody interface{}) (http.Header, error) {
 	jsonBytes, err := json.Marshal(reqBody)
 	if err != nil {
-		return errors.New("Failed to marshal network message...")
+		return nil, errors.New("Failed to marshal network message...")
 	}
 
 	resp, err := j.post(uri, jsonBytes)
 	if err != nil {
-		return fmt.Errorf("Failed to post JWS message. -> %v", err)
+		return nil, fmt.Errorf("Failed to post JWS message. -> %v", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= http.StatusBadRequest {
-		return handleHTTPError(resp)
+		return resp.Header, handleHTTPError(resp)
 	}
 
-	return json.NewDecoder(resp.Body).Decode(respBody)
+	if respBody == nil {
+		return resp.Header, nil
+	}
+
+	return resp.Header, json.NewDecoder(resp.Body).Decode(respBody)
 }

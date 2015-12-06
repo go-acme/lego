@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/codegangsta/cli"
 	"github.com/xenolf/lego/acme"
@@ -179,6 +180,17 @@ func renew(c *cli.Context) {
 		if err != nil {
 			logger().Printf("Error while loading the certificate for domain %s\n\t%v", domain, err)
 			return
+		}
+
+		if c.IsSet("days") {
+			expTime, err := acme.GetPEMCertExpiration(certBytes)
+			if err != nil {
+				logger().Printf("Could not get Certification expiration for domain %s", domain)
+			}
+
+			if int(expTime.Sub(time.Now()).Hours() / 24.0) <= c.Int("days") {
+				continue;
+			}
 		}
 
 		keyBytes, err := ioutil.ReadFile(privPath)

@@ -189,7 +189,7 @@ func renew(c *cli.Context) {
 			}
 
 			if int(expTime.Sub(time.Now()).Hours() / 24.0) <= c.Int("days") {
-				continue;
+				continue
 			}
 		}
 

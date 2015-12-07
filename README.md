@@ -103,7 +103,7 @@ myUser := MyUser{
 // We specify an optPort of 5001 because we aren't running as root and can't
 // bind a listener to port 443 (used later when we attempt to pass challenge).
 client, err := acme.NewClient("http://192.168.99.100:4000", &myUser, rsaKeySize, "5001")
-if err != inl {
+if err != nil {
   log.Fatal(err)
 }
 
@@ -123,7 +123,8 @@ if err != nil {
 
 // The acme library takes care of completing the challenges to obtain the certificate(s).
 // Of course, the hostnames must resolve to this machine or it will fail.
-certificates, err := client.ObtainCertificates([]string{"mydomain.com"})
+bundle := false
+certificates, err := client.ObtainCertificates([]string{"mydomain.com"}, bundle)
 if err != nil {
 	log.Fatal(err)
 }

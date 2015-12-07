@@ -233,7 +233,7 @@ func (c *Client) ObtainCertificates(domains []string, bundle bool) ([]Certificat
 // If bundle is true, the []byte contains both the issuer certificate and
 // your issued certificate as a bundle.
 // This function will never return a partial certificate. If one domain in the list fails,
-// the while certificate will fail.
+// the whole certificate will fail.
 func (c *Client) ObtainSANCertificate(domains []string, bundle bool) (CertificateResource, map[string]error) {
 	if bundle {
 		logf("[INFO] acme: Obtaining bundled SAN certificate for %v", strings.Join(domains, ", "))

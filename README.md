@@ -103,7 +103,7 @@ myUser := MyUser{
 // We specify an optPort of 5001 because we aren't running as root and can't
 // bind a listener to port 443 (used later when we attempt to pass challenge).
 client, err := acme.NewClient("http://192.168.99.100:4000", &myUser, rsaKeySize, "5001")
-if err != inl {
+if err != nil {
   log.Fatal(err)
 }
 

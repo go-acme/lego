@@ -65,6 +65,23 @@ GLOBAL OPTIONS:
 
 ```
 
+##### CLI Example
+
+Assumes the `lego` binary has permission to bind to ports 80 and 443. You can get a pre-built binary from the [releases](https://github.com/xenolf/lego/releases) page.
+
+Obtain a certificate:
+
+```bash
+$ lego --email="foo@bar.com" --domains="example.com" run
+```
+
+(Find your certificate in the `.lego` folder of current working directory.)
+
+To renew the certificate:
+
+```bash
+$ lego --email="foo@bar.com" --domains="example.com" renew
+```
 
 #### ACME Library Usage
 

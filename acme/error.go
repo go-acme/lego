@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 )
 
 const (
@@ -28,6 +29,27 @@ type TOSError struct {
 	RemoteError
 }
 
+type domainError struct {
+	Domain string
+	Error  error
+}
+
+type challengeError struct {
+	RemoteError
+	records []validationRecord
+}
+
+func (c challengeError) Error() string {
+
+	var errStr string
+	for _, validation := range c.records {
+		errStr = errStr + fmt.Sprintf("\tValidation for %s:%s\n\tResolved to:\n\t\t%s\n\tUsed: %s\n\n", 
+		validation.Hostname, validation.Port, strings.Join(validation.ResolvedAddresses, "\n\t\t"), validation.UsedAddress)
+	}
+
+	return fmt.Sprintf("%s\nError Detail:\n%s", c.RemoteError.Error(), errStr)
+}
+
 func handleHTTPError(resp *http.Response) error {
 	var errorDetail RemoteError
 	decoder := json.NewDecoder(resp.Body)
@@ -46,7 +68,6 @@ func handleHTTPError(resp *http.Response) error {
 	return errorDetail
 }
 
-type domainError struct {
-	Domain string
-	Error  error
+func handleChallengeError(chlng challenge) error {
+	return challengeError{chlng.Error, chlng.ValidationRecords}
 }

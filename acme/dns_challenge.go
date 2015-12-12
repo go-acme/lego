@@ -1,24 +1,26 @@
 package acme
 
 import (
-	"bufio"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
 	"time"
 )
 
-const (
-	dnsTemplate = "_acme-challenge.%s. 300 IN TXT \"%s\""
-)
+// DNSProvider represents a service for creating dns records.
+type DNSProvider interface {
+	// CreateTXT creates a TXT record
+	CreateTXTRecord(fqdn, value string, ttl int) error
+	RemoveTXTRecord(fqdn, value string, ttl int) error
+}
 
 // dnsChallenge implements the dns-01 challenge according to ACME 7.5
 type dnsChallenge struct {
-	jws *jws
+	jws      *jws
+	provider DNSProvider
 }
 
 func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
@@ -36,11 +38,10 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 	// of the base64 encoding mentioned by the spec. Fix this if either the spec or boulder changes!
 	keyAuthSha := hex.EncodeToString(keyAuthShaBytes[:sha256.Size])
 
-	dnsRecord := fmt.Sprintf(dnsTemplate, domain, keyAuthSha)
-	logf("[DEBUG] acme: DNS Record: %s", dnsRecord)
-
-	reader := bufio.NewReader(os.Stdin)
-	_, _ = reader.ReadString('\n')
+	fqdn := fmt.Sprintf("_acme-challenge.%s.", domain)
+	if err = s.provider.CreateTXTRecord(fqdn, keyAuthSha, 120); err != nil {
+		return err
+	}
 
 	jsonBytes, err := json.Marshal(challenge{Resource: "challenge", Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
 	if err != nil {
@@ -81,6 +82,10 @@ Loop:
 
 		time.Sleep(1 * time.Second)
 		resp, err = http.Get(chlng.URI)
+	}
+
+	if err = s.provider.RemoveTXTRecord(fqdn, keyAuthSha, 120); err != nil {
+		logf("[WARN] acme: Failed to cleanup DNS record. -> %v ", err)
 	}
 
 	return nil

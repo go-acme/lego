@@ -90,7 +90,7 @@ Loop:
 		case "pending":
 			break
 		case "invalid":
-			return errors.New("The server could not validate our request.")
+			return handleChallengeError(challengeResponse)
 		default:
 			return errors.New("The server returned an unexpected state.")
 		}
@@ -146,8 +146,8 @@ func (t *tlsSNIChallenge) startSNITLSServer(cert tls.Certificate) {
 	}
 	// Signal successfull start
 	t.start <- tlsListener
-	
+
 	http.Serve(tlsListener, nil)
-	
+
 	t.end <- nil
 }

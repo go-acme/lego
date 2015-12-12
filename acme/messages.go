@@ -72,15 +72,25 @@ type identifier struct {
 	Value string `json:"value"`
 }
 
+type validationRecord struct {
+	URI               string   `json:"url,omitempty"`
+	Hostname          string   `json:"hostname,omitempty"`
+	Port              string   `json:"port,omitempty"`
+	ResolvedAddresses []string `json:"addressesResolved,omitempty"`
+	UsedAddress       string   `json:"addressUsed,omitempty"`
+}
+
 type challenge struct {
-	Resource         string `json:"resource,omitempty"`
-	Type             string `json:"type,omitempty"`
-	Status           string `json:"status,omitempty"`
-	URI              string `json:"uri,omitempty"`
-	Token            string `json:"token,omitempty"`
-	KeyAuthorization string `json:"keyAuthorization,omitempty"`
-	TLS              bool   `json:"tls,omitempty"`
-	Iterations       int    `json:"n,omitempty"`
+	Resource          string             `json:"resource,omitempty"`
+	Type              string             `json:"type,omitempty"`
+	Status            string             `json:"status,omitempty"`
+	URI               string             `json:"uri,omitempty"`
+	Token             string             `json:"token,omitempty"`
+	KeyAuthorization  string             `json:"keyAuthorization,omitempty"`
+	TLS               bool               `json:"tls,omitempty"`
+	Iterations        int                `json:"n,omitempty"`
+	Error             RemoteError        `json:"error,omitempty"`
+	ValidationRecords []validationRecord `json:"validationRecord,omitempty"`
 }
 
 type csrMessage struct {

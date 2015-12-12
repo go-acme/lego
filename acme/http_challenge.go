@@ -80,7 +80,7 @@ Loop:
 		case "pending":
 			break
 		case "invalid":
-			return errors.New("The server could not validate our request.")
+			return handleChallengeError(challengeResponse)
 		default:
 			return errors.New("The server returned an unexpected state.")
 		}

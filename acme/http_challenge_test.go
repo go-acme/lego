@@ -161,7 +161,7 @@ func TestHTTPInvalidServerState(t *testing.T) {
 	if err := solver.Solve(clientChallenge, "127.0.0.1"); err == nil {
 		t.Error("UNEXPECTED: Expected Solve to return an error but the error was nil.")
 	} else {
-		expectedError := "The server could not validate our request."
+		expectedError := "acme: Error 0 -  - \nError Detail:\n"
 		if err.Error() != expectedError {
 			t.Errorf("Expected error |%s| but instead got |%s|", expectedError, err.Error())
 		}

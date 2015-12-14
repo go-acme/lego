@@ -20,7 +20,7 @@ func checkFolder(path string) error {
 	return nil
 }
 
-func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
+func setup(c *cli.Context) (*Configuration, *Account, *acme.Client, string) {
 	err := checkFolder(c.GlobalString("path"))
 	if err != nil {
 		logger().Fatalf("Cound not check/create path: %s", err.Error())
@@ -46,7 +46,7 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 		logger().Fatalf("Could not create client: %s", err.Error())
 	}
 
-	return conf, acc, client
+	return conf, acc, client, email
 }
 
 func saveCertRes(certRes acme.CertificateResource, conf *Configuration) {
@@ -78,7 +78,7 @@ func saveCertRes(certRes acme.CertificateResource, conf *Configuration) {
 }
 
 func run(c *cli.Context) {
-	conf, acc, client := setup(c)
+	conf, acc, client, email := setup(c)
 	if acc.Registration == nil {
 		reg, err := client.Register()
 		if err != nil {
@@ -95,7 +95,7 @@ func run(c *cli.Context) {
 		You should make a secure backup	of this folder now. This
 		configuration directory will also contain certificates and
 		private keys obtained from Let's Encrypt so making regular
-		backups of this folder is ideal.`, conf.AccountPath(c.GlobalString("email")))
+		backups of this folder is ideal.`, conf.AccountPath(email))
 
 	}
 

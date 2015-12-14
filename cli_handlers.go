@@ -31,8 +31,15 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 		logger().Fatal("You have to pass an account (email address) to the program using --email or -m")
 	}
 
+	var email string
+	if c.GlobalIsSet("email") {
+		email = c.GlobalString("email")
+	} else {
+		email = c.GlobalString("m")
+	}
+
 	//TODO: move to account struct? Currently MUST pass email.
-	acc := NewAccount(c.GlobalString("email"), conf)
+	acc := NewAccount(email, conf)
 
 	client, err := acme.NewClient(c.GlobalString("server"), acc, conf.RsaBits(), conf.OptPort())
 	if err != nil {
@@ -126,6 +133,12 @@ func run(c *cli.Context) {
 		logger().Fatal("Please specify --domains or -d")
 	}
 
+	var domains []string
+	if c.GlobalIsSet("domains") {
+		domains = c.GlobalStringSlice("domains")
+	} else {
+		domains = c.GlobalStringSlice("d")
+	}
 	cert, failures := client.ObtainSANCertificate(c.GlobalStringSlice("domains"), true)
 	if len(failures) > 0 {
 		for k, v := range failures {

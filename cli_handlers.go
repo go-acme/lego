@@ -20,26 +20,33 @@ func checkFolder(path string) error {
 	return nil
 }
 
-func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
+func setup(c *cli.Context) (*Configuration, *Account, *acme.Client, string) {
 	err := checkFolder(c.GlobalString("path"))
 	if err != nil {
 		logger().Fatalf("Cound not check/create path: %s", err.Error())
 	}
 
 	conf := NewConfiguration(c)
-	if !c.GlobalIsSet("email") {
+	if !c.GlobalIsSet("email") && !c.GlobalIsSet("m") {
 		logger().Fatal("You have to pass an account (email address) to the program using --email or -m")
 	}
 
+	var email string
+	if c.GlobalIsSet("email") {
+		email = c.GlobalString("email")
+	} else {
+		email = c.GlobalString("m")
+	}
+
 	//TODO: move to account struct? Currently MUST pass email.
-	acc := NewAccount(c.GlobalString("email"), conf)
+	acc := NewAccount(email, conf)
 
 	client, err := acme.NewClient(c.GlobalString("server"), acc, conf.RsaBits(), conf.OptPort())
 	if err != nil {
 		logger().Fatalf("Could not create client: %s", err.Error())
 	}
 
-	return conf, acc, client
+	return conf, acc, client, email
 }
 
 func saveCertRes(certRes acme.CertificateResource, conf *Configuration) {
@@ -71,7 +78,7 @@ func saveCertRes(certRes acme.CertificateResource, conf *Configuration) {
 }
 
 func run(c *cli.Context) {
-	conf, acc, client := setup(c)
+	conf, acc, client, email := setup(c)
 	if acc.Registration == nil {
 		reg, err := client.Register()
 		if err != nil {
@@ -88,7 +95,7 @@ func run(c *cli.Context) {
 		You should make a secure backup	of this folder now. This
 		configuration directory will also contain certificates and
 		private keys obtained from Let's Encrypt so making regular
-		backups of this folder is ideal.`, conf.AccountPath(c.GlobalString("email")))
+		backups of this folder is ideal.`, conf.AccountPath(email))
 
 	}
 
@@ -122,16 +129,22 @@ func run(c *cli.Context) {
 		}
 	}
 
-	if !c.GlobalIsSet("domains") {
-		logger().Fatal("Please specify --domains")
+	if !c.GlobalIsSet("domains") && !c.GlobalIsSet("d") {
+		logger().Fatal("Please specify --domains or -d")
 	}
 
+	var domains []string
+	if c.GlobalIsSet("domains") {
+		domains = c.GlobalStringSlice("domains")
+	} else {
+		domains = c.GlobalStringSlice("d")
+	}
 	cert, failures := client.ObtainSANCertificate(c.GlobalStringSlice("domains"), true)
 	if len(failures) > 0 {
 		for k, v := range failures {
 			logger().Printf("[%s] Could not obtain certificates\n\t%s", k, v.Error())
 		}
-		
+
 		// Make sure to return a non-zero exit code if ObtainSANCertificate
 		// returned at least one error. Due to us not returning partial
 		// certificate we can just exit here instead of at the end.
@@ -192,7 +205,7 @@ func renew(c *cli.Context) {
 				logger().Printf("Could not get Certification expiration for domain %s", domain)
 			}
 
-			if int(expTime.Sub(time.Now()).Hours() / 24.0) <= c.Int("days") {
+			if int(expTime.Sub(time.Now()).Hours()/24.0) <= c.Int("days") {
 				continue
 			}
 		}

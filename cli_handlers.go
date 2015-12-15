@@ -27,7 +27,7 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 	}
 
 	conf := NewConfiguration(c)
-	if len(c.GlobalString(email)) == 0 {
+	if len(c.GlobalString("email")) == 0 {
 		logger().Fatal("You have to pass an account (email address) to the program using --email or -m")
 	}
 
@@ -122,7 +122,7 @@ func run(c *cli.Context) {
 		}
 	}
 
-	if len(c.GlobalStringSlice(domains)) == 0 {
+	if len(c.GlobalStringSlice("domains")) == 0 {
 		logger().Fatal("Please specify --domains or -d")
 	}
 

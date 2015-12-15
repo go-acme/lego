@@ -24,7 +24,7 @@ func (t *tlsSNIChallenge) Solve(chlng challenge, domain string) error {
 	// FIXME: https://github.com/ietf-wg-acme/acme/pull/22
 	// Currently we implement this challenge to track boulder, not the current spec!
 
-	logf("[INFO] acme: Trying to solve TLS-SNI-01")
+	logf("[INFO][%s] acme: Trying to solve TLS-SNI-01", domain)
 
 	t.start = make(chan net.Listener)
 	t.end = make(chan error)
@@ -85,7 +85,7 @@ Loop:
 
 		switch challengeResponse.Status {
 		case "valid":
-			logf("The server validated our request")
+			logf("[INFO][%s] The server validated our request", domain)
 			break Loop
 		case "pending":
 			break

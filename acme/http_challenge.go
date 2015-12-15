@@ -19,7 +19,7 @@ type httpChallenge struct {
 
 func (s *httpChallenge) Solve(chlng challenge, domain string) error {
 
-	logf("[INFO] acme: Trying to solve HTTP-01")
+	logf("[INFO][%s] acme: Trying to solve HTTP-01", domain)
 
 	s.start = make(chan net.Listener)
 	s.end = make(chan error)
@@ -75,7 +75,7 @@ Loop:
 
 		switch challengeResponse.Status {
 		case "valid":
-			logf("The server validated our request")
+			logf("[INFO][%s] The server validated our request", domain)
 			break Loop
 		case "pending":
 			break

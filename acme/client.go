@@ -190,9 +190,9 @@ func (c *Client) AgreeToTOS() error {
 // your issued certificate as a bundle.
 func (c *Client) ObtainCertificates(domains []string, bundle bool) ([]CertificateResource, map[string]error) {
 	if bundle {
-		logf("[INFO] acme: Obtaining bundled certificates for %v", strings.Join(domains, ", "))
+		logf("[INFO][%s] acme: Obtaining bundled certificates", strings.Join(domains, ", "))
 	} else {
-		logf("[INFO] acme: Obtaining certificates for %v", strings.Join(domains, ", "))
+		logf("[INFO][%s] acme: Obtaining certificates", strings.Join(domains, ", "))
 	}
 
 	challenges, failures := c.getChallenges(domains)
@@ -217,7 +217,7 @@ func (c *Client) ObtainCertificates(domains []string, bundle bool) ([]Certificat
 		}
 	}
 
-	logf("[INFO] acme: Validations succeeded; requesting certificates")
+	logf("[INFO][%s] acme: Validations succeeded; requesting certificates", strings.Join(domains, ", "))
 
 	certs, err := c.requestCertificates(succeededChallenges, bundle)
 	for k, v := range err {
@@ -236,9 +236,9 @@ func (c *Client) ObtainCertificates(domains []string, bundle bool) ([]Certificat
 // the whole certificate will fail.
 func (c *Client) ObtainSANCertificate(domains []string, bundle bool) (CertificateResource, map[string]error) {
 	if bundle {
-		logf("[INFO] acme: Obtaining bundled SAN certificate for %v", strings.Join(domains, ", "))
+		logf("[INFO][%s] acme: Obtaining bundled SAN certificate", strings.Join(domains, ", "))
 	} else {
-		logf("[INFO] acme: Obtaining SAN certificate for %v", strings.Join(domains, ", "))
+		logf("[INFO][%s] acme: Obtaining SAN certificate", strings.Join(domains, ", "))
 	}
 
 	challenges, failures := c.getChallenges(domains)
@@ -253,7 +253,7 @@ func (c *Client) ObtainSANCertificate(domains []string, bundle bool) (Certificat
 		return CertificateResource{}, errs
 	}
 
-	logf("[INFO] acme: Validations succeeded; requesting certificates")
+	logf("[INFO][%s] acme: Validations succeeded; requesting certificates", strings.Join(domains, ", "))
 
 	cert, err := c.requestCertificate(challenges, bundle)
 	if err != nil {
@@ -319,7 +319,7 @@ func (c *Client) RenewCertificate(cert CertificateResource, revokeOld bool, bund
 
 	// This is just meant to be informal for the user.
 	timeLeft := x509Cert.NotAfter.Sub(time.Now().UTC())
-	logf("[INFO] acme: [%s] Trying renewal with %d hours remaining", cert.Domain, int(timeLeft.Hours()))
+	logf("[INFO][%s] acme: Trying renewal with %d hours remaining", cert.Domain, int(timeLeft.Hours()))
 
 	// The first step of renewal is to check if we get a renewed cert
 	// directly from the cert URL.
@@ -341,7 +341,7 @@ func (c *Client) RenewCertificate(cert CertificateResource, revokeOld bool, bund
 	// If the server responds with a different certificate we are effectively renewed.
 	// TODO: Further test if we can actually use the new certificate (Our private key works)
 	if !x509Cert.Equal(serverCert) {
-		logf("[INFO] acme: [%s] Server responded with renewed certificate", cert.Domain)
+		logf("[INFO][%s] acme: Server responded with renewed certificate", cert.Domain)
 		if revokeOld {
 			c.RevokeCertificate(cert.Certificate)
 		}
@@ -355,7 +355,7 @@ func (c *Client) RenewCertificate(cert CertificateResource, revokeOld bool, bund
 			issuerCert, err := c.getIssuerCertificate(links["up"])
 			if err != nil {
 				// If we fail to aquire the issuer cert, return the issued certificate - do not fail.
-				logf("[ERROR] acme: [%s] Could not bundle issuer certificate: %v", cert.Domain, err)
+				logf("[ERROR][%s] acme: Could not bundle issuer certificate: %v", cert.Domain, err)
 			} else {
 				// Success - append the issuer cert to the issued cert.
 				issuerCert = pemEncode(derCertificateBytes(issuerCert))
@@ -396,7 +396,7 @@ func (c *Client) solveChallenges(challenges []authorizationResource) map[string]
 				}
 			}
 		} else {
-			failures[authz.Domain] = fmt.Errorf("acme: Could not determine solvers for %s", authz.Domain)
+			failures[authz.Domain] = fmt.Errorf("[%s] acme: Could not determine solvers", authz.Domain)
 		}
 	}
 
@@ -412,7 +412,7 @@ func (c *Client) chooseSolvers(auth authorization, domain string) map[int]solver
 			if solver, ok := c.solvers[auth.Challenges[idx].Type]; ok {
 				solvers[idx] = solver
 			} else {
-				logf("[INFO] acme: Could not find solver for: %s", auth.Challenges[idx].Type)
+				logf("[INFO][%s] acme: Could not find solver for: %s", domain, auth.Challenges[idx].Type)
 			}
 		}
 
@@ -448,7 +448,7 @@ func (c *Client) getChallenges(domains []string) ([]authorizationResource, map[s
 
 			links := parseLinks(resp.Header["Link"])
 			if links["next"] == "" {
-				logf("[ERROR] acme: Server did not provide next link to proceed")
+				logf("[ERROR][%s] acme: Server did not provide next link to proceed", domain)
 				return
 			}
 
@@ -591,7 +591,7 @@ func (c *Client) requestCertificate(authz []authorizationResource, bundle bool) 
 					issuerCert, err := c.getIssuerCertificate(links["up"])
 					if err != nil {
 						// If we fail to aquire the issuer cert, return the issued certificate - do not fail.
-						logf("[WARNING] acme: [%s] Could not bundle issuer certificate: %v", commonName.Domain, err)
+						logf("[WARNING][%s] acme: Could not bundle issuer certificate: %v", commonName.Domain, err)
 					} else {
 						// Success - append the issuer cert to the issued cert.
 						issuerCert = pemEncode(derCertificateBytes(issuerCert))
@@ -600,7 +600,7 @@ func (c *Client) requestCertificate(authz []authorizationResource, bundle bool) 
 				}
 
 				cerRes.Certificate = issuedCert
-				logf("[%s] Server responded with a certificate.", commonName.Domain)
+				logf("[INFO][%s] Server responded with a certificate.", commonName.Domain)
 				return cerRes, nil
 			}
 
@@ -612,7 +612,7 @@ func (c *Client) requestCertificate(authz []authorizationResource, bundle bool) 
 				return CertificateResource{}, err
 			}
 
-			logf("[INFO] acme: [%s] Server responded with status 202; retrying after %ds", commonName.Domain, retryAfter)
+			logf("[INFO][%s] acme: Server responded with status 202; retrying after %ds", commonName.Domain, retryAfter)
 			time.Sleep(time.Duration(retryAfter) * time.Second)
 
 			break

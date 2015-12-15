@@ -172,55 +172,59 @@ func revoke(c *cli.Context) {
 
 func renew(c *cli.Context) {
 	conf, _, client := setup(c)
-
-	for _, domain := range c.GlobalStringSlice("domains") {
-		// load the cert resource from files.
-		// We store the certificate, private key and metadata in different files
-		// as web servers would not be able to work with a combined file.
-		certPath := path.Join(conf.CertPath(), domain+".crt")
-		privPath := path.Join(conf.CertPath(), domain+".key")
-		metaPath := path.Join(conf.CertPath(), domain+".json")
-
-		certBytes, err := ioutil.ReadFile(certPath)
-		if err != nil {
-			logger().Fatalf("Error while loading the certificate for domain %s\n\t%s", domain, err.Error())
-		}
-
-		if c.IsSet("days") {
-			expTime, err := acme.GetPEMCertExpiration(certBytes)
-			if err != nil {
-				logger().Printf("Could not get Certification expiration for domain %s", domain)
-			}
-
-			if int(expTime.Sub(time.Now()).Hours()/24.0) <= c.Int("days") {
-				continue
-			}
-		}
-
-		keyBytes, err := ioutil.ReadFile(privPath)
-		if err != nil {
-			logger().Fatalf("Error while loading the private key for domain %s\n\t%s", domain, err.Error())
-		}
-
-		metaBytes, err := ioutil.ReadFile(metaPath)
-		if err != nil {
-			logger().Fatalf("Error while loading the meta data for domain %s\n\t%s", domain, err.Error())
-		}
-
-		var certRes acme.CertificateResource
-		err = json.Unmarshal(metaBytes, &certRes)
-		if err != nil {
-			logger().Fatalf("Error while marshalling the meta data for domain %s\n\t%s", domain, err.Error())
-		}
-
-		certRes.PrivateKey = keyBytes
-		certRes.Certificate = certBytes
-
-		newCert, err := client.RenewCertificate(certRes, true, true)
-		if err != nil {
-			logger().Fatalf("%s", err.Error())
-		}
-
-		saveCertRes(newCert, conf)
+	
+	if len(c.GlobalStringSlice("domains")) <= 0 {
+		logger().Fatal("Please specify at least one domain.")
 	}
+	
+	domain := c.GlobalStringSlice("domains")[0]
+
+	// load the cert resource from files.
+	// We store the certificate, private key and metadata in different files
+	// as web servers would not be able to work with a combined file.
+	certPath := path.Join(conf.CertPath(), domain+".crt")
+	privPath := path.Join(conf.CertPath(), domain+".key")
+	metaPath := path.Join(conf.CertPath(), domain+".json")
+
+	certBytes, err := ioutil.ReadFile(certPath)
+	if err != nil {
+		logger().Fatalf("Error while loading the certificate for domain %s\n\t%s", domain, err.Error())
+	}
+
+	if c.IsSet("days") {
+		expTime, err := acme.GetPEMCertExpiration(certBytes)
+		if err != nil {
+			logger().Printf("Could not get Certification expiration for domain %s", domain)
+		}
+
+		if int(expTime.Sub(time.Now()).Hours() / 24.0) <= c.Int("days") {
+			return
+		}
+	}
+
+	keyBytes, err := ioutil.ReadFile(privPath)
+	if err != nil {
+		logger().Fatalf("Error while loading the private key for domain %s\n\t%s", domain, err.Error())
+	}
+
+	metaBytes, err := ioutil.ReadFile(metaPath)
+	if err != nil {
+		logger().Fatalf("Error while loading the meta data for domain %s\n\t%s", domain, err.Error())
+	}
+
+	var certRes acme.CertificateResource
+	err = json.Unmarshal(metaBytes, &certRes)
+	if err != nil {
+		logger().Fatalf("Error while marshalling the meta data for domain %s\n\t%s", domain, err.Error())
+	}
+
+	certRes.PrivateKey = keyBytes
+	certRes.Certificate = certBytes
+
+	newCert, err := client.RenewCertificate(certRes, true, true)
+	if err != nil {
+		logger().Fatalf("%s", err.Error())
+	}
+
+	saveCertRes(newCert, conf)
 }

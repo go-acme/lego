@@ -368,7 +368,24 @@ func (c *Client) RenewCertificate(cert CertificateResource, revokeOld bool, bund
 		return cert, nil
 	}
 
-	newCerts, failures := c.ObtainCertificates([]string{cert.Domain}, bundle)
+	var domains []string
+	newCerts := make([]CertificateResource, 1)
+	var failures map[string]error
+	// check for SAN certificate
+	if len(x509Cert.DNSNames) > 1 {
+		domains = append(domains, x509Cert.Subject.CommonName)
+		for _, sanDomain := range x509Cert.DNSNames {
+			if sanDomain == x509Cert.Subject.CommonName {
+				continue
+			}
+			domains = append(domains, sanDomain)
+			newCerts[0], failures = c.ObtainSANCertificate(domains, bundle)
+		}
+	} else {
+		domains = append(domains, x509Cert.Subject.CommonName)
+		newCerts, failures = c.ObtainCertificates(domains, bundle)
+	}
+
 	if len(failures) > 0 {
 		return CertificateResource{}, failures[cert.Domain]
 	}

@@ -27,7 +27,7 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 	}
 
 	conf := NewConfiguration(c)
-	if !c.GlobalIsSet("email") {
+	if len(c.GlobalString(email)) == 0 {
 		logger().Fatal("You have to pass an account (email address) to the program using --email or -m")
 	}
 
@@ -122,8 +122,8 @@ func run(c *cli.Context) {
 		}
 	}
 
-	if !c.GlobalIsSet("domains") {
-		logger().Fatal("Please specify --domains")
+	if len(c.GlobalStringSlice(domains)) == 0 {
+		logger().Fatal("Please specify --domains or -d")
 	}
 
 	cert, failures := client.ObtainSANCertificate(c.GlobalStringSlice("domains"), true)
@@ -131,7 +131,7 @@ func run(c *cli.Context) {
 		for k, v := range failures {
 			logger().Printf("[%s] Could not obtain certificates\n\t%s", k, v.Error())
 		}
-		
+
 		// Make sure to return a non-zero exit code if ObtainSANCertificate
 		// returned at least one error. Due to us not returning partial
 		// certificate we can just exit here instead of at the end.
@@ -192,7 +192,7 @@ func renew(c *cli.Context) {
 				logger().Printf("Could not get Certification expiration for domain %s", domain)
 			}
 
-			if int(expTime.Sub(time.Now()).Hours() / 24.0) <= c.Int("days") {
+			if int(expTime.Sub(time.Now()).Hours()/24.0) <= c.Int("days") {
 				continue
 			}
 		}

@@ -379,8 +379,8 @@ func (c *Client) RenewCertificate(cert CertificateResource, revokeOld bool, bund
 				continue
 			}
 			domains = append(domains, sanDomain)
-			newCerts[0], failures = c.ObtainSANCertificate(domains, bundle)
 		}
+		newCerts[0], failures = c.ObtainSANCertificate(domains, bundle)
 	} else {
 		domains = append(domains, x509Cert.Subject.CommonName)
 		newCerts, failures = c.ObtainCertificates(domains, bundle)

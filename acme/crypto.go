@@ -14,6 +14,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"math/big"
 	"net/http"
@@ -67,7 +68,7 @@ func GetOCSPForCert(bundle []byte) ([]byte, int, error) {
 		}
 		defer resp.Body.Close()
 
-		issuerBytes, err := ioutil.ReadAll(resp.Body)
+		issuerBytes, err := ioutil.ReadAll(limitReader(resp.Body, 1024*1024))
 		if err != nil {
 			return nil, OCSPUnknown, err
 		}
@@ -100,8 +101,8 @@ func GetOCSPForCert(bundle []byte) ([]byte, int, error) {
 		return nil, OCSPUnknown, err
 	}
 	defer req.Body.Close()
-
-	ocspResBytes, err := ioutil.ReadAll(req.Body)
+	
+	ocspResBytes, err := ioutil.ReadAll(limitReader(req.Body, 1024*1024))
 	ocspRes, err := ocsp.ParseResponse(ocspResBytes, issuerCert)
 	if err != nil {
 		return nil, OCSPUnknown, err
@@ -311,4 +312,8 @@ func generateDerCert(privKey *rsa.PrivateKey, expiration time.Time, domain strin
 	}
 
 	return x509.CreateCertificate(rand.Reader, &template, &template, &privKey.PublicKey, privKey)
+}
+
+func limitReader(rd io.ReadCloser, numBytes int64) io.ReadCloser {
+	return http.MaxBytesReader(nil, rd, numBytes)
 }

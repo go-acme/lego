@@ -52,7 +52,7 @@ If this is not possible in your environment, you can use the `--port` option to 
 lego to listen on that port for any incoming challenges.
 
 If you are using this option, make sure you proxy all of the following traffic to that port:
-- All plaintext HTTP requests to port 80 which begin with a request path of `/.well-known/acme/` for the HTTP-01 challenge.
+- All plaintext HTTP requests to port 80 which begin with a request path of `/.well-known/acme-challenge/` for the HTTP-01 challenge.
 - All TLS handshakes on port 443 for TLS-SNI-01.
 
 This traffic redirection is only needed as long as lego solves challenges. As soon as you have received your certificates you can deactivate the forwarding.

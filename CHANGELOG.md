@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed:
+- CLI: Fix logic using the --days parameter
+
 ## [0.1.1] - 2015-12-18
 
 ### Added:

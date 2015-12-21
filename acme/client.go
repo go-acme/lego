@@ -656,6 +656,7 @@ func (c *Client) getIssuerCertificate(url string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 
 	issuerBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {

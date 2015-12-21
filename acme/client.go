@@ -585,7 +585,7 @@ func (c *Client) requestCertificate(authz []authorizationResource, bundle bool) 
 		case 202:
 		case 201:
 
-			cert, err := ioutil.ReadAll(resp.Body)
+			cert, err := ioutil.ReadAll(limitReader(resp.Body, 1024 * 1024))
 			resp.Body.Close()
 			if err != nil {
 				return CertificateResource{}, err
@@ -658,7 +658,7 @@ func (c *Client) getIssuerCertificate(url string) ([]byte, error) {
 	}
 	defer resp.Body.Close()
 
-	issuerBytes, err := ioutil.ReadAll(resp.Body)
+	issuerBytes, err := ioutil.ReadAll(limitReader(resp.Body, 1024 * 1024))
 	if err != nil {
 		return nil, err
 	}

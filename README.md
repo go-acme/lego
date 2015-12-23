@@ -3,6 +3,7 @@ Let's Encrypt client and ACME library written in Go
 
 [![GoDoc](https://godoc.org/github.com/xenolf/lego/acme?status.svg)](https://godoc.org/github.com/xenolf/lego/acme)
 [![Build Status](https://travis-ci.org/xenolf/lego.svg?branch=master)](https://travis-ci.org/xenolf/lego)
+[![Dev Chat](https://img.shields.io/badge/dev%20chat-gitter-blue.svg?label=dev+chat)](https://gitter.im/xenolf/lego)
 
 #### General
 This is a work in progress. Please do *NOT* run this on a production server and please report any bugs you find!

@@ -172,11 +172,11 @@ func revoke(c *cli.Context) {
 
 func renew(c *cli.Context) {
 	conf, _, client := setup(c)
-	
+
 	if len(c.GlobalStringSlice("domains")) <= 0 {
 		logger().Fatal("Please specify at least one domain.")
 	}
-	
+
 	domain := c.GlobalStringSlice("domains")[0]
 
 	// load the cert resource from files.
@@ -197,7 +197,7 @@ func renew(c *cli.Context) {
 			logger().Printf("Could not get Certification expiration for domain %s", domain)
 		}
 
-		if int(expTime.Sub(time.Now()).Hours() / 24.0) > c.Int("days") {
+		if int(expTime.Sub(time.Now()).Hours()/24.0) > c.Int("days") {
 			return
 		}
 	}

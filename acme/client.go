@@ -16,8 +16,13 @@ import (
 	"time"
 )
 
-// Logger is an optional custom logger.
-var Logger *log.Logger
+var (
+	// DefaultSolvers is the set of solvers to use if none is given to NewClient.
+	DefaultSolvers = []string{"http-01", "tls-sni-01"}
+
+	// Logger is an optional custom logger.
+	Logger *log.Logger
+)
 
 // logf writes a log entry. It uses Logger if not
 // nil, otherwise it uses the default log.Logger.
@@ -56,9 +61,12 @@ type Client struct {
 // the ACME directory located at caDirURL for the rest of its actions. It will
 // generate private keys for certificates of size keyBits. And, if the challenge
 // type requires it, the client will open a port at optPort to solve the challenge.
-// If optPort is blank, the port required by the spec will be used, but you must
-// forward the required port to optPort for the challenge to succeed.
-func NewClient(caDirURL string, user User, keyBits int, optPort string) (*Client, error) {
+//
+// If optSolvers is nil, the value of DefaultSolvers is used. If given explicitly,
+// it is a set of solver names to enable. The "http-01" and "tls-sni-01" solvers
+// take an optional TCP port to listen on after a colon, e.g. "http-01:80". If
+// the port is not specified, the port required by the spec will be used.
+func NewClient(caDirURL string, user User, keyBits int, optSolvers []string) (*Client, error) {
 	privKey := user.GetPrivateKey()
 	if privKey == nil {
 		return nil, errors.New("private key was nil")
@@ -68,16 +76,9 @@ func NewClient(caDirURL string, user User, keyBits int, optPort string) (*Client
 		return nil, fmt.Errorf("invalid private key: %v", err)
 	}
 
-	dirResp, err := http.Get(caDirURL)
-	if err != nil {
-		return nil, fmt.Errorf("get directory at '%s': %v", caDirURL, err)
-	}
-	defer dirResp.Body.Close()
-
 	var dir directory
-	err = json.NewDecoder(dirResp.Body).Decode(&dir)
-	if err != nil {
-		return nil, fmt.Errorf("decode directory: %v", err)
+	if _, err := getJSON(caDirURL, &dir); err != nil {
+		return nil, fmt.Errorf("get directory at '%s': %v", caDirURL, err)
 	}
 
 	if dir.NewRegURL == "" {
@@ -99,8 +100,30 @@ func NewClient(caDirURL string, user User, keyBits int, optPort string) (*Client
 	// Add all available solvers with the right index as per ACME
 	// spec to this map. Otherwise they won`t be found.
 	solvers := make(map[string]solver)
-	solvers["http-01"] = &httpChallenge{jws: jws, optPort: optPort}
-	solvers["tls-sni-01"] = &tlsSNIChallenge{jws: jws, optPort: optPort}
+	if optSolvers == nil {
+		optSolvers = DefaultSolvers
+	}
+	for _, s := range optSolvers {
+		ss := strings.SplitN(s, ":", 2)
+		switch ss[0] {
+		case "http-01":
+			optPort := ""
+			if len(ss) > 1 {
+				optPort = ss[1]
+			}
+			solvers["http-01"] = &httpChallenge{jws: jws, validate: validate, optPort: optPort}
+
+		case "tls-sni-01":
+			optPort := ""
+			if len(ss) > 1 {
+				optPort = ss[1]
+			}
+			solvers["tls-sni-01"] = &tlsSNIChallenge{jws: jws, validate: validate, optPort: optPort}
+
+		default:
+			return nil, fmt.Errorf("unknown solver: %s", s)
+		}
+	}
 
 	return &Client{directory: dir, user: user, jws: jws, keyBits: keyBits, solvers: solvers}, nil
 }
@@ -121,32 +144,16 @@ func (c *Client) Register() (*RegistrationResource, error) {
 		regMsg.Contact = []string{}
 	}
 
-	jsonBytes, err := json.Marshal(regMsg)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := c.jws.post(c.directory.NewRegURL, jsonBytes)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode >= http.StatusBadRequest {
-		return nil, handleHTTPError(resp)
-	}
-
 	var serverReg Registration
-	decoder := json.NewDecoder(resp.Body)
-	err = decoder.Decode(&serverReg)
+	hdr, err := postJSON(c.jws, c.directory.NewRegURL, regMsg, &serverReg)
 	if err != nil {
 		return nil, err
 	}
 
 	reg := &RegistrationResource{Body: serverReg}
 
-	links := parseLinks(resp.Header["Link"])
-	reg.URI = resp.Header.Get("Location")
+	links := parseLinks(hdr["Link"])
+	reg.URI = hdr.Get("Location")
 	if links["terms-of-service"] != "" {
 		reg.TosURL = links["terms-of-service"]
 	}
@@ -165,76 +172,16 @@ func (c *Client) Register() (*RegistrationResource, error) {
 func (c *Client) AgreeToTOS() error {
 	c.user.GetRegistration().Body.Agreement = c.user.GetRegistration().TosURL
 	c.user.GetRegistration().Body.Resource = "reg"
-	jsonBytes, err := json.Marshal(&c.user.GetRegistration().Body)
-	if err != nil {
-		return err
-	}
-
-	resp, err := c.jws.post(c.user.GetRegistration().URI, jsonBytes)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusAccepted {
-		return handleHTTPError(resp)
-	}
-
-	return nil
+	_, err := postJSON(c.jws, c.user.GetRegistration().URI, c.user.GetRegistration().Body, nil)
+	return err
 }
 
-// ObtainCertificates tries to obtain certificates from the CA server
-// using the challenges it has configured. The returned certificates are
-// PEM encoded byte slices.
-// If bundle is true, the []byte contains both the issuer certificate and
-// your issued certificate as a bundle.
-func (c *Client) ObtainCertificates(domains []string, bundle bool) ([]CertificateResource, map[string]error) {
-	if bundle {
-		logf("[INFO][%s] acme: Obtaining bundled certificates", strings.Join(domains, ", "))
-	} else {
-		logf("[INFO][%s] acme: Obtaining certificates", strings.Join(domains, ", "))
-	}
-
-	challenges, failures := c.getChallenges(domains)
-	if len(challenges) == 0 {
-		return nil, failures
-	}
-
-	err := c.solveChallenges(challenges)
-	for k, v := range err {
-		failures[k] = v
-	}
-
-	if len(failures) == len(domains) {
-		return nil, failures
-	}
-
-	// remove failed challenges from slice
-	var succeededChallenges []authorizationResource
-	for _, chln := range challenges {
-		if failures[chln.Domain] == nil {
-			succeededChallenges = append(succeededChallenges, chln)
-		}
-	}
-
-	logf("[INFO][%s] acme: Validations succeeded; requesting certificates", strings.Join(domains, ", "))
-
-	certs, err := c.requestCertificates(succeededChallenges, bundle)
-	for k, v := range err {
-		failures[k] = v
-	}
-
-	return certs, failures
-}
-
-// ObtainSANCertificate tries to obtain a single certificate using all domains passed into it.
+// ObtainCertificate tries to obtain a single certificate using all domains passed into it.
 // The first domain in domains is used for the CommonName field of the certificate, all other
 // domains are added using the Subject Alternate Names extension.
 // If bundle is true, the []byte contains both the issuer certificate and
 // your issued certificate as a bundle.
-// This function will never return a partial certificate. If one domain in the list fails,
-// the whole certificate will fail.
-func (c *Client) ObtainSANCertificate(domains []string, bundle bool) (CertificateResource, map[string]error) {
+func (c *Client) ObtainCertificate(domains []string, bundle bool) (CertificateResource, map[string]error) {
 	if bundle {
 		logf("[INFO][%s] acme: Obtaining bundled SAN certificate", strings.Join(domains, ", "))
 	} else {
@@ -279,22 +226,8 @@ func (c *Client) RevokeCertificate(certificate []byte) error {
 
 	encodedCert := base64.URLEncoding.EncodeToString(x509Cert.Raw)
 
-	jsonBytes, err := json.Marshal(revokeCertMessage{Resource: "revoke-cert", Certificate: encodedCert})
-	if err != nil {
-		return err
-	}
-
-	resp, err := c.jws.post(c.directory.RevokeCertURL, jsonBytes)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return handleHTTPError(resp)
-	}
-
-	return nil
+	_, err = postJSON(c.jws, c.directory.RevokeCertURL, revokeCertMessage{Resource: "revoke-cert", Certificate: encodedCert}, nil)
+	return err
 }
 
 // RenewCertificate takes a CertificateResource and tries to renew the certificate.
@@ -304,7 +237,7 @@ func (c *Client) RevokeCertificate(certificate []byte) error {
 // this function will start a new-cert flow where a new certificate gets generated.
 // If bundle is true, the []byte contains both the issuer certificate and
 // your issued certificate as a bundle.
-func (c *Client) RenewCertificate(cert CertificateResource, revokeOld bool, bundle bool) (CertificateResource, error) {
+func (c *Client) RenewCertificate(cert CertificateResource, bundle bool) (CertificateResource, error) {
 	// Input certificate is PEM encoded. Decode it here as we may need the decoded
 	// cert later on in the renewal process. The input may be a bundle or a single certificate.
 	certificates, err := parsePEMBundle(cert.Certificate)
@@ -342,9 +275,6 @@ func (c *Client) RenewCertificate(cert CertificateResource, revokeOld bool, bund
 	// TODO: Further test if we can actually use the new certificate (Our private key works)
 	if !x509Cert.Equal(serverCert) {
 		logf("[INFO][%s] acme: Server responded with renewed certificate", cert.Domain)
-		if revokeOld {
-			c.RevokeCertificate(cert.Certificate)
-		}
 		issuedCert := pemEncode(derCertificateBytes(serverCertBytes))
 		// If bundle is true, we want to return a certificate bundle.
 		// To do this, we need the issuer certificate.
@@ -368,33 +298,8 @@ func (c *Client) RenewCertificate(cert CertificateResource, revokeOld bool, bund
 		return cert, nil
 	}
 
-	var domains []string
-	newCerts := make([]CertificateResource, 1)
-	var failures map[string]error
-	// check for SAN certificate
-	if len(x509Cert.DNSNames) > 1 {
-		domains = append(domains, x509Cert.Subject.CommonName)
-		for _, sanDomain := range x509Cert.DNSNames {
-			if sanDomain == x509Cert.Subject.CommonName {
-				continue
-			}
-			domains = append(domains, sanDomain)
-		}
-		newCerts[0], failures = c.ObtainSANCertificate(domains, bundle)
-	} else {
-		domains = append(domains, x509Cert.Subject.CommonName)
-		newCerts, failures = c.ObtainCertificates(domains, bundle)
-	}
-
-	if len(failures) > 0 {
-		return CertificateResource{}, failures[cert.Domain]
-	}
-
-	if revokeOld {
-		c.RevokeCertificate(cert.Certificate)
-	}
-
-	return newCerts[0], nil
+	newCert, failures := c.ObtainCertificate([]string{cert.Domain}, bundle)
+	return newCert, failures[cert.Domain]
 }
 
 // Looks through the challenge combinations to find a solvable match.
@@ -447,37 +352,21 @@ func (c *Client) getChallenges(domains []string) ([]authorizationResource, map[s
 
 	for _, domain := range domains {
 		go func(domain string) {
-			jsonBytes, err := json.Marshal(authorization{Resource: "new-authz", Identifier: identifier{Type: "dns", Value: domain}})
+			authMsg := authorization{Resource: "new-authz", Identifier: identifier{Type: "dns", Value: domain}}
+			var authz authorization
+			hdr, err := postJSON(c.jws, c.user.GetRegistration().NewAuthzURL, authMsg, &authz)
 			if err != nil {
 				errc <- domainError{Domain: domain, Error: err}
 				return
 			}
 
-			resp, err := c.jws.post(c.user.GetRegistration().NewAuthzURL, jsonBytes)
-			if err != nil {
-				errc <- domainError{Domain: domain, Error: err}
-				return
-			}
-
-			if resp.StatusCode != http.StatusCreated {
-				errc <- domainError{Domain: domain, Error: handleHTTPError(resp)}
-			}
-
-			links := parseLinks(resp.Header["Link"])
+			links := parseLinks(hdr["Link"])
 			if links["next"] == "" {
 				logf("[ERROR][%s] acme: Server did not provide next link to proceed", domain)
 				return
 			}
 
-			var authz authorization
-			decoder := json.NewDecoder(resp.Body)
-			err = decoder.Decode(&authz)
-			if err != nil {
-				errc <- domainError{Domain: domain, Error: err}
-			}
-			resp.Body.Close()
-
-			resc <- authorizationResource{Body: authz, NewCertURL: links["next"], AuthURL: resp.Header.Get("Location"), Domain: domain}
+			resc <- authorizationResource{Body: authz, NewCertURL: links["next"], AuthURL: hdr.Get("Location"), Domain: domain}
 		}(domain)
 	}
 
@@ -503,39 +392,6 @@ func (c *Client) getChallenges(domains []string) ([]authorizationResource, map[s
 	close(errc)
 
 	return challenges, failures
-}
-
-// requestCertificates iterates all granted authorizations, creates RSA private keys and CSRs.
-// It then uses these to request a certificate from the CA and returns the list of successfully
-// granted certificates.
-func (c *Client) requestCertificates(challenges []authorizationResource, bundle bool) ([]CertificateResource, map[string]error) {
-	resc, errc := make(chan CertificateResource), make(chan domainError)
-	for _, authz := range challenges {
-		go func(authz authorizationResource, resc chan CertificateResource, errc chan domainError) {
-			certRes, err := c.requestCertificate([]authorizationResource{authz}, bundle)
-			if err != nil {
-				errc <- domainError{Domain: authz.Domain, Error: err}
-			} else {
-				resc <- certRes
-			}
-		}(authz, resc, errc)
-	}
-
-	var certs []CertificateResource
-	failures := make(map[string]error)
-	for i := 0; i < len(challenges); i++ {
-		select {
-		case res := <-resc:
-			certs = append(certs, res)
-		case err := <-errc:
-			failures[err.Domain] = err.Error
-		}
-	}
-
-	close(resc)
-	close(errc)
-
-	return certs, failures
 }
 
 func (c *Client) requestCertificate(authz []authorizationResource, bundle bool) (CertificateResource, error) {
@@ -689,4 +545,87 @@ func parseLinks(links []string) map[string]string {
 	}
 
 	return linkMap
+}
+
+// validate makes the ACME server start validating a
+// challenge response, only returning once it is done.
+func validate(j *jws, uri string, chlng challenge) error {
+	var challengeResponse challenge
+
+	hdr, err := postJSON(j, uri, chlng, &challengeResponse)
+	if err != nil {
+		return err
+	}
+
+	// After the path is sent, the ACME server will access our server.
+	// Repeatedly check the server for an updated status on our request.
+	for {
+		switch challengeResponse.Status {
+		case "valid":
+			logf("The server validated our request")
+			return nil
+		case "pending":
+			break
+		case "invalid":
+			return errors.New("The server could not validate our request.")
+		default:
+			return errors.New("The server returned an unexpected state.")
+		}
+
+		ra, err := strconv.Atoi(hdr.Get("Retry-After"))
+		if err != nil {
+			// The ACME server MUST return a Retry-After.
+			// If it doesn't, we'll just poll hard.
+			ra = 1
+		}
+		time.Sleep(time.Duration(ra) * time.Second)
+
+		hdr, err = getJSON(uri, &challengeResponse)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// getJSON performs an HTTP GET request and parses the response body
+// as JSON, into the provided respBody object.
+func getJSON(uri string, respBody interface{}) (http.Header, error) {
+	resp, err := http.Get(uri)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get %q: %v", uri, err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= http.StatusBadRequest {
+		return resp.Header, handleHTTPError(resp)
+	}
+
+	return resp.Header, json.NewDecoder(resp.Body).Decode(respBody)
+}
+
+// postJSON performs an HTTP POST request and parses the response body
+// as JSON, into the provided respBody object.
+func postJSON(j *jws, uri string, reqBody, respBody interface{}) (http.Header, error) {
+	jsonBytes, err := json.Marshal(reqBody)
+	if err != nil {
+		return nil, errors.New("Failed to marshal network message...")
+	}
+
+	resp, err := j.post(uri, jsonBytes)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to post JWS message. -> %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= http.StatusBadRequest {
+		return resp.Header, handleHTTPError(resp)
+	}
+
+	if respBody == nil {
+		return resp.Header, nil
+	}
+
+	return resp.Header, json.NewDecoder(resp.Body).Decode(respBody)
 }

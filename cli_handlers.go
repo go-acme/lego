@@ -34,7 +34,7 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 	//TODO: move to account struct? Currently MUST pass email.
 	acc := NewAccount(c.GlobalString("email"), conf)
 
-	client, err := acme.NewClient(c.GlobalString("server"), acc, conf.RsaBits(), conf.OptPort())
+	client, err := acme.NewClient(c.GlobalString("server"), acc, conf.RsaBits(), conf.Solvers())
 	if err != nil {
 		logger().Fatalf("Could not create client: %s", err.Error())
 	}
@@ -126,7 +126,7 @@ func run(c *cli.Context) {
 		logger().Fatal("Please specify --domains or -d")
 	}
 
-	cert, failures := client.ObtainSANCertificate(c.GlobalStringSlice("domains"), true)
+	cert, failures := client.ObtainCertificate(c.GlobalStringSlice("domains"), true)
 	if len(failures) > 0 {
 		for k, v := range failures {
 			logger().Printf("[%s] Could not obtain certificates\n\t%s", k, v.Error())
@@ -221,7 +221,7 @@ func renew(c *cli.Context) {
 	certRes.PrivateKey = keyBytes
 	certRes.Certificate = certBytes
 
-	newCert, err := client.RenewCertificate(certRes, true, true)
+	newCert, err := client.RenewCertificate(certRes, true)
 	if err != nil {
 		logger().Fatalf("%s", err.Error())
 	}

@@ -81,9 +81,9 @@ func main() {
 			Usage: "Directory to use for storing the data",
 			Value: defaultPath,
 		},
-		cli.StringFlag{
-			Name:  "port",
-			Usage: "Challenges will use this port to listen on. Please make sure to forward port 80 and 443 to this port on your machine. Otherwise use setcap on the binary",
+		cli.StringSliceFlag{
+			Name:  "solvers, S",
+			Usage: "Add an explicit solver for challenges. Solvers: \"http-01[:port]\", \"tls-sni-01[:port]\".",
 		},
 	}
 

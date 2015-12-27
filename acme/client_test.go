@@ -27,7 +27,7 @@ func TestNewClient(t *testing.T) {
 		w.Write(data)
 	}))
 
-	client, err := NewClient(ts.URL, user, keyBits, nil)
+	client, err := NewClient(ts.URL, user, keyBits)
 	if err != nil {
 		t.Fatalf("Could not create client: %v", err)
 	}
@@ -48,7 +48,7 @@ func TestNewClient(t *testing.T) {
 	}
 }
 
-func TestNewClientOptPort(t *testing.T) {
+func TestClientOptPort(t *testing.T) {
 	keyBits := 32 // small value keeps test fast
 	key, err := rsa.GenerateKey(rand.Reader, keyBits)
 	if err != nil {
@@ -66,10 +66,12 @@ func TestNewClientOptPort(t *testing.T) {
 	}))
 
 	optPort := "1234"
-	client, err := NewClient(ts.URL, user, keyBits, []string{"http-01:" + optPort})
+	client, err := NewClient(ts.URL, user, keyBits)
 	if err != nil {
 		t.Fatalf("Could not create client: %v", err)
 	}
+	client.SetHTTPPort(optPort)
+	client.SetTLSPort(optPort)
 
 	httpSolver, ok := client.solvers["http-01"].(*httpChallenge)
 	if !ok {
@@ -80,6 +82,17 @@ func TestNewClientOptPort(t *testing.T) {
 	}
 	if httpSolver.optPort != optPort {
 		t.Errorf("Expected http-01 to have optPort %s but was %s", optPort, httpSolver.optPort)
+	}
+
+	httpsSolver, ok := client.solvers["tls-sni-01"].(*tlsSNIChallenge)
+	if !ok {
+		t.Fatal("Expected tls-sni-01 solver to be httpChallenge type")
+	}
+	if httpsSolver.jws != client.jws {
+		t.Error("Expected tls-sni-01 to have same jws as client")
+	}
+	if httpsSolver.optPort != optPort {
+		t.Errorf("Expected tls-sni-01 to have optPort %s but was %s", optPort, httpSolver.optPort)
 	}
 }
 

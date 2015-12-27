@@ -43,8 +43,8 @@ func (c challengeError) Error() string {
 
 	var errStr string
 	for _, validation := range c.records {
-		errStr = errStr + fmt.Sprintf("\tValidation for %s:%s\n\tResolved to:\n\t\t%s\n\tUsed: %s\n\n", 
-		validation.Hostname, validation.Port, strings.Join(validation.ResolvedAddresses, "\n\t\t"), validation.UsedAddress)
+		errStr = errStr + fmt.Sprintf("\tValidation for %s:%s\n\tResolved to:\n\t\t%s\n\tUsed: %s\n\n",
+			validation.Hostname, validation.Port, strings.Join(validation.ResolvedAddresses, "\n\t\t"), validation.UsedAddress)
 	}
 
 	return fmt.Sprintf("%s\nError Detail:\n%s", c.RemoteError.Error(), errStr)

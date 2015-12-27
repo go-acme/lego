@@ -49,7 +49,7 @@ func main() {
 			Action: renew,
 			Flags: []cli.Flag{
 				cli.IntFlag{
-					Name: "days",
+					Name:  "days",
 					Value: 0,
 					Usage: "The number of days left on a certificate to renew it.",
 				},

@@ -104,13 +104,13 @@ func NewClient(caDirURL string, user User, keyBits int) (*Client, error) {
 }
 
 // SetHTTPPort specifies a custom port to be used for HTTP based challenges.
-func (c *Client) SetHTTPPort(port int) {
+func (c *Client) SetHTTPPort(port string) {
 	/*if chlng, ok := c.solvers["http-01"]; ok {
 	}*/
 }
 
 // SetHTTPSPort specifies a custom port to be used for HTTPS based challenges.
-func (c *Client) SetHTTPSPort(port int) {
+func (c *Client) SetHTTPSPort(port string) {
 	/*if chlng, ok := c.solvers["tls-sni-01"]; ok {
 	}*/
 }

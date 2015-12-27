@@ -24,8 +24,8 @@ func (c *Configuration) RsaBits() int {
 	return c.context.GlobalInt("rsa-key-size")
 }
 
-func (c *Configuration) Solvers() []string {
-	return c.context.GlobalStringSlice("solvers")
+func (c *Configuration) ExcludedSolvers() []string {
+	return c.context.GlobalStringSlice("exclude")
 }
 
 // ServerPath returns the OS dependent path to the data for a specific CA

@@ -82,8 +82,16 @@ func main() {
 			Value: defaultPath,
 		},
 		cli.StringSliceFlag{
-			Name:  "solvers, S",
-			Usage: "Add an explicit solver for challenges. Solvers: \"http-01[:port]\", \"tls-sni-01[:port]\".",
+			Name:  "exclude, x",
+			Usage: "Explicitly disallow solvers by name from being used. Solvers: \"http-01\", \"tls-sni-01\".",
+		},
+		cli.StringFlag{
+			Name:  "httpPort",
+			Usage: "Set the port to use for HTTP based challenges to listen on.",
+		},
+		cli.StringFlag{
+			Name:  "tlsPort",
+			Usage: "Set the port to use for TLS based challenges to listen on.",
 		},
 	}
 

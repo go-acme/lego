@@ -586,8 +586,6 @@ func validate(j *jws, domain, uri string, chlng challenge) error {
 			return err
 		}
 	}
-
-	return nil
 }
 
 // getJSON performs an HTTP GET request and parses the response body

@@ -48,7 +48,7 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 	}
 
 	if c.GlobalIsSet("tlsPort") {
-		client.SetHTTPPort(c.GlobalString("tlsPort"))
+		client.SetTLSPort(c.GlobalString("tlsPort"))
 	}
 
 	return conf, acc, client

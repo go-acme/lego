@@ -11,7 +11,7 @@ import (
 
 type tlsSNIChallenge struct {
 	jws      *jws
-	validate func(j *jws, uri string, chlng challenge) error
+	validate validateFunc
 	optPort  string
 }
 
@@ -49,7 +49,7 @@ func (t *tlsSNIChallenge) Solve(chlng challenge, domain string) error {
 
 	go http.Serve(listener, nil)
 
-	return t.validate(t.jws, chlng.URI, challenge{Resource: "challenge", Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
+	return t.validate(t.jws, domain, chlng.URI, challenge{Resource: "challenge", Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
 }
 
 func (t *tlsSNIChallenge) generateCertificate(keyAuth string) (tls.Certificate, error) {

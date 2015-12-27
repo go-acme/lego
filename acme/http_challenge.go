@@ -9,7 +9,7 @@ import (
 
 type httpChallenge struct {
 	jws      *jws
-	validate func(j *jws, uri string, chlng challenge) error
+	validate validateFunc
 	optPort  string
 }
 
@@ -57,5 +57,5 @@ func (s *httpChallenge) Solve(chlng challenge, domain string) error {
 
 	go http.Serve(listener, mux)
 
-	return s.validate(s.jws, chlng.URI, challenge{Resource: "challenge", Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
+	return s.validate(s.jws, domain, chlng.URI, challenge{Resource: "challenge", Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
 }

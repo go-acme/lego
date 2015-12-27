@@ -44,6 +44,8 @@ type solver interface {
 	Solve(challenge challenge, domain string) error
 }
 
+type validateFunc func(j *jws, domain, uri string, chlng challenge) error
+
 // Client is the user-friendy way to ACME
 type Client struct {
 	directory  directory
@@ -97,8 +99,8 @@ func NewClient(caDirURL string, user User, keyBits int) (*Client, error) {
 	// Add all available solvers with the right index as per ACME
 	// spec to this map. Otherwise they won`t be found.
 	solvers := make(map[string]solver)
-	solvers["http-01"] = &httpChallenge{jws: jws}
-	solvers["tls-sni-01"] = &tlsSNIChallenge{jws: jws}
+	solvers["http-01"] = &httpChallenge{jws: jws, validate: validate}
+	solvers["tls-sni-01"] = &tlsSNIChallenge{jws: jws, validate: validate}
 
 	return &Client{directory: dir, user: user, jws: jws, keyBits: keyBits, solvers: solvers}, nil
 }
@@ -548,7 +550,7 @@ func parseLinks(links []string) map[string]string {
 
 // validate makes the ACME server start validating a
 // challenge response, only returning once it is done.
-func validate(j *jws, uri string, chlng challenge) error {
+func validate(j *jws, domain, uri string, chlng challenge) error {
 	var challengeResponse challenge
 
 	hdr, err := postJSON(j, uri, chlng, &challengeResponse)
@@ -561,12 +563,12 @@ func validate(j *jws, uri string, chlng challenge) error {
 	for {
 		switch challengeResponse.Status {
 		case "valid":
-			logf("The server validated our request")
+			logf("[INFO][%s] The server validated our request", domain)
 			return nil
 		case "pending":
 			break
 		case "invalid":
-			return errors.New("The server could not validate our request.")
+			return handleChallengeError(challengeResponse)
 		default:
 			return errors.New("The server returned an unexpected state.")
 		}

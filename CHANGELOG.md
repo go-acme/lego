@@ -12,6 +12,7 @@
 
 ### Changed:
 - lib: NewClient does no longer accept the optPort parameter
+- lib: ObtainCertificate now returns a SAN certificate if you pass more then one domain.
 
 ### Removed:
 - CLI: The `--port` switch was removed.

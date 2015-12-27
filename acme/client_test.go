@@ -130,15 +130,15 @@ func TestValidate(t *testing.T) {
 	}{
 		{"POST-unexpected", []string{"weird"}, "unexpected"},
 		{"POST-valid", []string{"valid"}, ""},
-		{"POST-invalid", []string{"invalid"}, "not validate"},
+		{"POST-invalid", []string{"invalid"}, "Error Detail"},
 		{"GET-unexpected", []string{"pending", "weird"}, "unexpected"},
 		{"GET-valid", []string{"pending", "valid"}, ""},
-		{"GET-invalid", []string{"pending", "invalid"}, "not validate"},
+		{"GET-invalid", []string{"pending", "invalid"}, "Error Detail"},
 	}
 
 	for _, tst := range tsts {
 		statuses = tst.statuses
-		if err := validate(j, ts.URL, challenge{Type: "http-01", Token: "token"}); err == nil && tst.want != "" {
+		if err := validate(j, "example.com", ts.URL, challenge{Type: "http-01", Token: "token"}); err == nil && tst.want != "" {
 			t.Errorf("[%s] validate: got error %v, want something with %q", tst.name, err, tst.want)
 		} else if err != nil && !strings.Contains(err.Error(), tst.want) {
 			t.Errorf("[%s] validate: got error %v, want something with %q", tst.name, err, tst.want)
@@ -161,7 +161,7 @@ func writeJSONResponse(w http.ResponseWriter, body interface{}) {
 }
 
 // stubValidate is like validate, except it does nothing.
-func stubValidate(j *jws, uri string, chlng challenge) error {
+func stubValidate(j *jws, domain, uri string, chlng challenge) error {
 	return nil
 }
 

@@ -14,7 +14,7 @@ func TestTLSSNIChallenge(t *testing.T) {
 	privKey, _ := generatePrivateKey(rsakey, 512)
 	j := &jws{privKey: privKey.(*rsa.PrivateKey)}
 	clientChallenge := challenge{Type: "tls-sni-01", Token: "tlssni1"}
-	mockValidate := func(_ *jws, _ string, chlng challenge) error {
+	mockValidate := func(_ *jws, _, _ string, chlng challenge) error {
 		conn, err := tls.Dial("tcp", "localhost:23457", &tls.Config{
 			InsecureSkipVerify: true,
 		})

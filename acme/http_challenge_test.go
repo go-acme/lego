@@ -12,7 +12,7 @@ func TestHTTPChallenge(t *testing.T) {
 	privKey, _ := generatePrivateKey(rsakey, 512)
 	j := &jws{privKey: privKey.(*rsa.PrivateKey)}
 	clientChallenge := challenge{Type: "http-01", Token: "http1"}
-	mockValidate := func(_ *jws, _ string, chlng challenge) error {
+	mockValidate := func(_ *jws, _, _ string, chlng challenge) error {
 		uri := "http://localhost:23457/.well-known/acme-challenge/" + chlng.Token
 		resp, err := http.Get(uri)
 		if err != nil {

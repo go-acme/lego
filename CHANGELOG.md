@@ -2,8 +2,22 @@
 
 ## [Unreleased]
 
+### Added:
+- CLI: The `--exclude` or `-x` switch. To exclude a challenge from being solved.
+- CLI: The `--httpPort`. To set the listen port of HTTP based challenges.
+- CLI: The `--tlsPort`. To set the listen port of TLS based challenges.
+- lib: ExcludeChallenges function. Pass an array of challenge identifiers to exclude them from solving.
+- lib: SetHTTPPort function. Pass a port to set the listen port for HTTP based challenges.
+- lib: SetTLSPort function. Pass a port to set the listen port of TLS based challenges.
+
+### Changed:
+- lib: NewClient does no longer accept the optPort parameter
+
+### Removed:
+- CLI: The `--port` switch was removed.
+
 ### Fixed:
-- CLI: Fix logic using the --days parameter
+- CLI: Fix logic using the `--days` parameter for renew
 
 ## [0.1.1] - 2015-12-18
 

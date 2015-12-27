@@ -17,9 +17,6 @@ import (
 )
 
 var (
-	// DefaultSolvers is the set of solvers to use if none is given to NewClient.
-	DefaultSolvers = []string{"http-01", "tls-sni-01"}
-
 	// Logger is an optional custom logger.
 	Logger *log.Logger
 )
@@ -66,7 +63,7 @@ type Client struct {
 // it is a set of solver names to enable. The "http-01" and "tls-sni-01" solvers
 // take an optional TCP port to listen on after a colon, e.g. "http-01:80". If
 // the port is not specified, the port required by the spec will be used.
-func NewClient(caDirURL string, user User, keyBits int, optSolvers []string) (*Client, error) {
+func NewClient(caDirURL string, user User, keyBits int) (*Client, error) {
 	privKey := user.GetPrivateKey()
 	if privKey == nil {
 		return nil, errors.New("private key was nil")
@@ -100,32 +97,32 @@ func NewClient(caDirURL string, user User, keyBits int, optSolvers []string) (*C
 	// Add all available solvers with the right index as per ACME
 	// spec to this map. Otherwise they won`t be found.
 	solvers := make(map[string]solver)
-	if optSolvers == nil {
-		optSolvers = DefaultSolvers
-	}
-	for _, s := range optSolvers {
-		ss := strings.SplitN(s, ":", 2)
-		switch ss[0] {
-		case "http-01":
-			optPort := ""
-			if len(ss) > 1 {
-				optPort = ss[1]
-			}
-			solvers["http-01"] = &httpChallenge{jws: jws, validate: validate, optPort: optPort}
-
-		case "tls-sni-01":
-			optPort := ""
-			if len(ss) > 1 {
-				optPort = ss[1]
-			}
-			solvers["tls-sni-01"] = &tlsSNIChallenge{jws: jws, validate: validate, optPort: optPort}
-
-		default:
-			return nil, fmt.Errorf("unknown solver: %s", s)
-		}
-	}
+	solvers["http-01"] = &httpChallenge{jws: jws}
+	solvers["tls-sni-01"] = &tlsSNIChallenge{jws: jws}
 
 	return &Client{directory: dir, user: user, jws: jws, keyBits: keyBits, solvers: solvers}, nil
+}
+
+// SetHTTPPort specifies a custom port to be used for HTTP based challenges.
+func (c *Client) SetHTTPPort(port int) {
+	/*if chlng, ok := c.solvers["http-01"]; ok {
+	}*/
+}
+
+// SetHTTPSPort specifies a custom port to be used for HTTPS based challenges.
+func (c *Client) SetHTTPSPort(port int) {
+	/*if chlng, ok := c.solvers["tls-sni-01"]; ok {
+	}*/
+}
+
+// ExcludeChallenges explicitly removes challenges from the pool for solving.
+func (c *Client) ExcludeChallenges(challenges []string) {
+	// Loop through all challenges and delete the requested one if found.
+	for _, challenge := range challenges {
+		if _, ok := c.solvers[challenge]; ok {
+			delete(c.solvers, challenge)
+		}
+	}
 }
 
 // Register the current account to the ACME server.

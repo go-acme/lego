@@ -56,15 +56,9 @@ type Client struct {
 	solvers    map[string]solver
 }
 
-// NewClient creates a new ACME client on behalf of user. The client will depend on
+// NewClient creates a new ACME client on behalf of the user. The client will depend on
 // the ACME directory located at caDirURL for the rest of its actions. It will
-// generate private keys for certificates of size keyBits. And, if the challenge
-// type requires it, the client will open a port at optPort to solve the challenge.
-//
-// If optSolvers is nil, the value of DefaultSolvers is used. If given explicitly,
-// it is a set of solver names to enable. The "http-01" and "tls-sni-01" solvers
-// take an optional TCP port to listen on after a colon, e.g. "http-01:80". If
-// the port is not specified, the port required by the spec will be used.
+// generate private keys for certificates of size keyBits.
 func NewClient(caDirURL string, user User, keyBits int) (*Client, error) {
 	privKey := user.GetPrivateKey()
 	if privKey == nil {
@@ -106,6 +100,7 @@ func NewClient(caDirURL string, user User, keyBits int) (*Client, error) {
 }
 
 // SetHTTPPort specifies a custom port to be used for HTTP based challenges.
+// If this option is not used, the default port 80 will be used.
 func (c *Client) SetHTTPPort(port string) {
 	if chlng, ok := c.solvers["http-01"]; ok {
 		chlng.(*httpChallenge).optPort = port
@@ -113,6 +108,7 @@ func (c *Client) SetHTTPPort(port string) {
 }
 
 // SetTLSPort specifies a custom port to be used for TLS based challenges.
+// If this option is not used, the default port 443 will be used.
 func (c *Client) SetTLSPort(port string) {
 	if chlng, ok := c.solvers["tls-sni-01"]; ok {
 		chlng.(*tlsSNIChallenge).optPort = port
@@ -182,6 +178,8 @@ func (c *Client) AgreeToTOS() error {
 // domains are added using the Subject Alternate Names extension.
 // If bundle is true, the []byte contains both the issuer certificate and
 // your issued certificate as a bundle.
+// This function will never return a partial certificate. If one domain in the list fails,
+// the whole certificate will fail.
 func (c *Client) ObtainCertificate(domains []string, bundle bool) (CertificateResource, map[string]error) {
 	if bundle {
 		logf("[INFO][%s] acme: Obtaining bundled SAN certificate", strings.Join(domains, ", "))

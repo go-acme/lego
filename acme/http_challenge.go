@@ -48,7 +48,7 @@ func (s *httpChallenge) Solve(chlng challenge, domain string) error {
 		if strings.HasPrefix(r.Host, domain) && r.Method == "GET" {
 			w.Header().Add("Content-Type", "text/plain")
 			w.Write([]byte(keyAuth))
-			logf("[INFO] Served key authentication")
+			logf("[INFO][%s] Served key authentication", domain)
 		} else {
 			logf("[INFO] Received request for domain %s with method %s", r.Host, r.Method)
 			w.Write([]byte("TEST"))

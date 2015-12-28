@@ -58,7 +58,7 @@ type Client struct {
 // type requires it, the client will open a port at optPort to solve the challenge.
 // If optPort is blank, the port required by the spec will be used, but you must
 // forward the required port to optPort for the challenge to succeed.
-func NewClient(caDirURL string, user User, keyBits int, optPort string) (*Client, error) {
+func NewClient(caDirURL string, user User, keyBits int, optIP, optPort string) (*Client, error) {
 	privKey := user.GetPrivateKey()
 	if privKey == nil {
 		return nil, errors.New("private key was nil")
@@ -99,8 +99,8 @@ func NewClient(caDirURL string, user User, keyBits int, optPort string) (*Client
 	// Add all available solvers with the right index as per ACME
 	// spec to this map. Otherwise they won`t be found.
 	solvers := make(map[string]solver)
-	solvers["http-01"] = &httpChallenge{jws: jws, optPort: optPort}
-	solvers["tls-sni-01"] = &tlsSNIChallenge{jws: jws, optPort: optPort}
+	solvers["http-01"] = &httpChallenge{jws: jws, optIP: optIP, optPort: optPort}
+	solvers["tls-sni-01"] = &tlsSNIChallenge{jws: jws, optIP: optIP, optPort: optPort}
 
 	return &Client{directory: dir, user: user, jws: jws, keyBits: keyBits, solvers: solvers}, nil
 }

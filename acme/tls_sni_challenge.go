@@ -15,6 +15,7 @@ import (
 
 type tlsSNIChallenge struct {
 	jws     *jws
+	optIP   string
 	optPort string
 	start   chan net.Listener
 	end     chan error
@@ -140,7 +141,7 @@ func (t *tlsSNIChallenge) startSNITLSServer(cert tls.Certificate) {
 	tlsConf := new(tls.Config)
 	tlsConf.Certificates = []tls.Certificate{cert}
 
-	tlsListener, err := tls.Listen("tcp", port, tlsConf)
+	tlsListener, err := tls.Listen("tcp", t.optIP+port, tlsConf)
 	if err != nil {
 		t.end <- err
 	}

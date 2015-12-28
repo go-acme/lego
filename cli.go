@@ -82,6 +82,10 @@ func main() {
 			Value: defaultPath,
 		},
 		cli.StringFlag{
+			Name:  "ip",
+			Usage: "Challenges will use this IP address to listen on.",
+		},
+		cli.StringFlag{
 			Name:  "port",
 			Usage: "Challenges will use this port to listen on. Please make sure to forward port 80 and 443 to this port on your machine. Otherwise use setcap on the binary",
 		},

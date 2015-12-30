@@ -62,7 +62,7 @@ func GetOCSPForCert(bundle []byte) ([]byte, int, error) {
 			return nil, OCSPUnknown, errors.New("no issuing certificate URL")
 		}
 
-		resp, err := http.Get(certificates[0].IssuingCertificateURL[0])
+		resp, err := httpGet(certificates[0].IssuingCertificateURL[0])
 		if err != nil {
 			return nil, OCSPUnknown, err
 		}
@@ -96,7 +96,7 @@ func GetOCSPForCert(bundle []byte) ([]byte, int, error) {
 	}
 
 	reader := bytes.NewReader(ocspReq)
-	req, err := http.Post(issuedCert.OCSPServer[0], "application/ocsp-request", reader)
+	req, err := httpPost(issuedCert.OCSPServer[0], "application/ocsp-request", reader)
 	if err != nil {
 		return nil, OCSPUnknown, err
 	}

@@ -3,7 +3,6 @@ package acme
 import (
 	"crypto/rsa"
 	"io/ioutil"
-	"net/http"
 	"strings"
 	"testing"
 )
@@ -14,7 +13,7 @@ func TestHTTPChallenge(t *testing.T) {
 	clientChallenge := challenge{Type: "http-01", Token: "http1"}
 	mockValidate := func(_ *jws, _, _ string, chlng challenge) error {
 		uri := "http://localhost:23457/.well-known/acme-challenge/" + chlng.Token
-		resp, err := http.Get(uri)
+		resp, err := httpGet(uri)
 		if err != nil {
 			return err
 		}
@@ -50,7 +49,7 @@ func TestHTTPChallengeInvalidPort(t *testing.T) {
 	solver := &httpChallenge{jws: j, validate: stubValidate, optPort: "123456"}
 
 	if err := solver.Solve(clientChallenge, "localhost:123456"); err == nil {
-		t.Error("Solve error: got %v, want error", err)
+		t.Errorf("Solve error: got %v, want error", err)
 	} else if want := "invalid port 123456"; !strings.HasSuffix(err.Error(), want) {
 		t.Errorf("Solve error: got %q, want suffix %q", err.Error(), want)
 	}

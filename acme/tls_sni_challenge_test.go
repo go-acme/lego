@@ -57,7 +57,7 @@ func TestTLSSNIChallengeInvalidPort(t *testing.T) {
 	solver := &tlsSNIChallenge{jws: j, validate: stubValidate, optPort: "123456"}
 
 	if err := solver.Solve(clientChallenge, "localhost:123456"); err == nil {
-		t.Error("Solve error: got %v, want error", err)
+		t.Errorf("Solve error: got %v, want error", err)
 	} else if want := "invalid port 123456"; !strings.HasSuffix(err.Error(), want) {
 		t.Errorf("Solve error: got %q, want suffix %q", err.Error(), want)
 	}

@@ -60,7 +60,6 @@ func httpGet(url string) (resp *http.Response, err error) {
 		return nil, err
 	}
 	req.Header.Set("User-Agent", userAgent())
-	fmt.Println(userAgent())
 
 	client := http.Client{}
 	return client.Do(req)

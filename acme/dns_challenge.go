@@ -2,11 +2,12 @@ package acme
 
 import (
 	"crypto/sha256"
-	"encoding/hex"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -34,9 +35,9 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 	}
 
 	keyAuthShaBytes := sha256.Sum256([]byte(keyAuth))
-	// FIXME: Currently boulder does not conform to the spec as in it uses hex encoding instead
-	// of the base64 encoding mentioned by the spec. Fix this if either the spec or boulder changes!
-	keyAuthSha := hex.EncodeToString(keyAuthShaBytes[:sha256.Size])
+	// base64URL encoding without padding
+	keyAuthSha := base64.URLEncoding.EncodeToString(keyAuthShaBytes[:sha256.Size])
+	keyAuthSha = strings.TrimRight(keyAuthSha, "=")
 
 	fqdn := fmt.Sprintf("_acme-challenge.%s.", domain)
 	if err = s.provider.CreateTXTRecord(fqdn, keyAuthSha, 120); err != nil {

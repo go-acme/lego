@@ -45,37 +45,38 @@ const (
 )
 
 // GetOCSPForCert takes a PEM encoded cert or cert bundle returning the raw OCSP response,
-// the status code of the response and an error, if any.
-// This []byte can be passed directly into the OCSPStaple property of a tls.Certificate.
-// If the bundle only contains the issued certificate, this function will try
-// to get the issuer certificate from the IssuingCertificateURL in the certificate.
-func GetOCSPForCert(bundle []byte) ([]byte, int, error) {
+// the parsed response, and an error, if any. The returned []byte can be passed directly
+// into the OCSPStaple property of a tls.Certificate. If the bundle only contains the
+// issued certificate, this function will try to get the issuer certificate from the
+// IssuingCertificateURL in the certificate. If the []byte and/or ocsp.Response return
+// values are nil, the OCSP status may be assumed OCSPUnknown.
+func GetOCSPForCert(bundle []byte) ([]byte, *ocsp.Response, error) {
 	certificates, err := parsePEMBundle(bundle)
 	if err != nil {
-		return nil, OCSPUnknown, err
+		return nil, nil, err
 	}
 
 	// We only got one certificate, means we have no issuer certificate - get it.
 	if len(certificates) == 1 {
 		// TODO: build fallback. If this fails, check the remaining array entries.
 		if len(certificates[0].IssuingCertificateURL) == 0 {
-			return nil, OCSPUnknown, errors.New("no issuing certificate URL")
+			return nil, nil, errors.New("no issuing certificate URL")
 		}
 
 		resp, err := http.Get(certificates[0].IssuingCertificateURL[0])
 		if err != nil {
-			return nil, OCSPUnknown, err
+			return nil, nil, err
 		}
 		defer resp.Body.Close()
 
 		issuerBytes, err := ioutil.ReadAll(limitReader(resp.Body, 1024*1024))
 		if err != nil {
-			return nil, OCSPUnknown, err
+			return nil, nil, err
 		}
 
 		issuerCert, err := x509.ParseCertificate(issuerBytes)
 		if err != nil {
-			return nil, OCSPUnknown, err
+			return nil, nil, err
 		}
 
 		// Insert it into the slice on position 0
@@ -92,30 +93,30 @@ func GetOCSPForCert(bundle []byte) ([]byte, int, error) {
 	// Finally kick off the OCSP request.
 	ocspReq, err := ocsp.CreateRequest(issuedCert, issuerCert, nil)
 	if err != nil {
-		return nil, OCSPUnknown, err
+		return nil, nil, err
 	}
 
 	reader := bytes.NewReader(ocspReq)
 	req, err := http.Post(issuedCert.OCSPServer[0], "application/ocsp-request", reader)
 	if err != nil {
-		return nil, OCSPUnknown, err
+		return nil, nil, err
 	}
 	defer req.Body.Close()
 
 	ocspResBytes, err := ioutil.ReadAll(limitReader(req.Body, 1024*1024))
 	ocspRes, err := ocsp.ParseResponse(ocspResBytes, issuerCert)
 	if err != nil {
-		return nil, OCSPUnknown, err
+		return nil, nil, err
 	}
 
 	if ocspRes.Certificate == nil {
 		err = ocspRes.CheckSignatureFrom(issuerCert)
 		if err != nil {
-			return nil, OCSPUnknown, err
+			return nil, nil, err
 		}
 	}
 
-	return ocspResBytes, ocspRes.Status, nil
+	return ocspResBytes, ocspRes, nil
 }
 
 func getKeyAuthorization(token string, key interface{}) (string, error) {

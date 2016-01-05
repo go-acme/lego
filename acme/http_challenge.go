@@ -95,12 +95,13 @@ Loop:
 func (s *httpChallenge) startHTTPServer(domain string, token string, keyAuth string) {
 
 	// Allow for CLI port override
-	port := ":80"
+	port := domain + ":80"
 	if s.optPort != "" {
 		port = ":" + s.optPort
 	}
 
-	listener, err := net.Listen("tcp", domain+port)
+	logf("[INFO] Listening to %s", port)
+	listener, err := net.Listen("tcp", port)
 	if err != nil {
 		// if the domain:port bind failed, fall back to :port bind and try that instead.
 		listener, err = net.Listen("tcp", port)

@@ -6,6 +6,7 @@ import (
 	"path"
 
 	"github.com/codegangsta/cli"
+	"github.com/xenolf/lego/acme"
 )
 
 // Logger is used to log errors; if nil, the default log.Logger is used.
@@ -20,11 +21,12 @@ func logger() *log.Logger {
 }
 
 func main() {
-
 	app := cli.NewApp()
 	app.Name = "lego"
 	app.Usage = "Let's encrypt client to go!"
 	app.Version = "0.1.0"
+
+	acme.UserAgent = "lego/" + app.Version
 
 	cwd, err := os.Getwd()
 	if err != nil {

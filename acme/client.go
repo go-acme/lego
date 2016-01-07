@@ -255,7 +255,7 @@ func (c *Client) RenewCertificate(cert CertificateResource, bundle bool) (Certif
 
 	// The first step of renewal is to check if we get a renewed cert
 	// directly from the cert URL.
-	resp, err := http.Get(cert.CertURL)
+	resp, err := httpGet(cert.CertURL)
 	if err != nil {
 		return CertificateResource{}, err
 	}
@@ -439,7 +439,6 @@ func (c *Client) requestCertificate(authz []authorizationResource, bundle bool) 
 		switch resp.StatusCode {
 		case 202:
 		case 201:
-
 			cert, err := ioutil.ReadAll(limitReader(resp.Body, 1024*1024))
 			resp.Body.Close()
 			if err != nil {
@@ -492,7 +491,7 @@ func (c *Client) requestCertificate(authz []authorizationResource, bundle bool) 
 			return CertificateResource{}, handleHTTPError(resp)
 		}
 
-		resp, err = http.Get(cerRes.CertURL)
+		resp, err = httpGet(cerRes.CertURL)
 		if err != nil {
 			return CertificateResource{}, err
 		}
@@ -507,7 +506,7 @@ func (c *Client) getIssuerCertificate(url string) ([]byte, error) {
 		return c.issuerCert, nil
 	}
 
-	resp, err := http.Get(url)
+	resp, err := httpGet(url)
 	if err != nil {
 		return nil, err
 	}
@@ -589,7 +588,7 @@ func validate(j *jws, domain, uri string, chlng challenge) error {
 // getJSON performs an HTTP GET request and parses the response body
 // as JSON, into the provided respBody object.
 func getJSON(uri string, respBody interface{}) (http.Header, error) {
-	resp, err := http.Get(uri)
+	resp, err := httpGet(uri)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get %q: %v", uri, err)
 	}

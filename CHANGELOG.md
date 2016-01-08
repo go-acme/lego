@@ -4,18 +4,21 @@
 
 ### Added:
 - CLI: The `--exclude` or `-x` switch. To exclude a challenge from being solved.
-- CLI: The `--httpPort`. To set the listen port of HTTP based challenges.
-- CLI: The `--tlsPort`. To set the listen port of TLS based challenges.
+- CLI: The `--http` switch. To set the listen address and port of HTTP based challenges. Supports `host:port` and `:port` for any interface.
+- CLI: The `--tls` switch. To set the listen address and port of TLS based challenges. Supports `host:port` and `:port` for any interface.
 - lib: ExcludeChallenges function. Pass an array of challenge identifiers to exclude them from solving.
-- lib: SetHTTPPort function. Pass a port to set the listen port for HTTP based challenges.
-- lib: SetTLSPort function. Pass a port to set the listen port of TLS based challenges.
+- lib: SetHTTPAddress function. Pass a port to set the listen port for HTTP based challenges.
+- lib: SetTLSAddress function. Pass a port to set the listen port of TLS based challenges.
+- lib: acme.UserAgent variable. Use this to customize the user agent on all requests sent by lego.
 
 ### Changed:
 - lib: NewClient does no longer accept the optPort parameter
 - lib: ObtainCertificate now returns a SAN certificate if you pass more then one domain.
+- lib: GetOCSPForCert now returns the parsed OCSP response instead of just the status.
 
 ### Removed:
 - CLI: The `--port` switch was removed.
+- lib: RenewCertificate does no longer offer to also revoke your old certificate.
 
 ### Fixed:
 - CLI: Fix logic using the `--days` parameter for renew

@@ -35,7 +35,7 @@ func TestHTTPChallenge(t *testing.T) {
 
 		return nil
 	}
-	solver := &httpChallenge{jws: j, validate: mockValidate, optPort: "23457"}
+	solver := &httpChallenge{jws: j, validate: mockValidate, port: "23457"}
 
 	if err := solver.Solve(clientChallenge, "localhost:23457"); err != nil {
 		t.Errorf("Solve error: got %v, want nil", err)
@@ -46,7 +46,7 @@ func TestHTTPChallengeInvalidPort(t *testing.T) {
 	privKey, _ := generatePrivateKey(rsakey, 128)
 	j := &jws{privKey: privKey.(*rsa.PrivateKey)}
 	clientChallenge := challenge{Type: "http-01", Token: "http2"}
-	solver := &httpChallenge{jws: j, validate: stubValidate, optPort: "123456"}
+	solver := &httpChallenge{jws: j, validate: stubValidate, port: "123456"}
 
 	if err := solver.Solve(clientChallenge, "localhost:123456"); err == nil {
 		t.Errorf("Solve error: got %v, want error", err)

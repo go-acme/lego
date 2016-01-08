@@ -1,6 +1,8 @@
 package acme
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -63,6 +65,47 @@ func httpGet(url string) (resp *http.Response, err error) {
 
 	client := http.Client{}
 	return client.Do(req)
+}
+
+// getJSON performs an HTTP GET request and parses the response body
+// as JSON, into the provided respBody object.
+func getJSON(uri string, respBody interface{}) (http.Header, error) {
+	resp, err := httpGet(uri)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get %q: %v", uri, err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= http.StatusBadRequest {
+		return resp.Header, handleHTTPError(resp)
+	}
+
+	return resp.Header, json.NewDecoder(resp.Body).Decode(respBody)
+}
+
+// postJSON performs an HTTP POST request and parses the response body
+// as JSON, into the provided respBody object.
+func postJSON(j *jws, uri string, reqBody, respBody interface{}) (http.Header, error) {
+	jsonBytes, err := json.Marshal(reqBody)
+	if err != nil {
+		return nil, errors.New("Failed to marshal network message...")
+	}
+
+	resp, err := j.post(uri, jsonBytes)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to post JWS message. -> %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= http.StatusBadRequest {
+		return resp.Header, handleHTTPError(resp)
+	}
+
+	if respBody == nil {
+		return resp.Header, nil
+	}
+
+	return resp.Header, json.NewDecoder(resp.Body).Decode(respBody)
 }
 
 // userAgent builds and returns the User-Agent string to use in requests.

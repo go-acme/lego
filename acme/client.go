@@ -1,6 +1,7 @@
 package acme
 
 import (
+	"crypto"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/base64"
@@ -10,7 +11,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net"
-	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
@@ -194,12 +194,14 @@ func (c *Client) AgreeToTOS() error {
 
 // ObtainCertificate tries to obtain a single certificate using all domains passed into it.
 // The first domain in domains is used for the CommonName field of the certificate, all other
-// domains are added using the Subject Alternate Names extension.
+// domains are added using the Subject Alternate Names extension. A new private key is generated
+// for every invocation of this function. If you do not want that you can supply your own private key
+// in the privKey parameter. If this parameter is non-nil it will be used instead of generating a new one.
 // If bundle is true, the []byte contains both the issuer certificate and
 // your issued certificate as a bundle.
 // This function will never return a partial certificate. If one domain in the list fails,
 // the whole certificate will fail.
-func (c *Client) ObtainCertificate(domains []string, bundle bool) (CertificateResource, map[string]error) {
+func (c *Client) ObtainCertificate(domains []string, bundle bool, privKey crypto.PrivateKey) (CertificateResource, map[string]error) {
 	if bundle {
 		logf("[INFO][%s] acme: Obtaining bundled SAN certificate", strings.Join(domains, ", "))
 	} else {
@@ -220,7 +222,7 @@ func (c *Client) ObtainCertificate(domains []string, bundle bool) (CertificateRe
 
 	logf("[INFO][%s] acme: Validations succeeded; requesting certificates", strings.Join(domains, ", "))
 
-	cert, err := c.requestCertificate(challenges, bundle)
+	cert, err := c.requestCertificate(challenges, bundle, privKey)
 	if err != nil {
 		for _, chln := range challenges {
 			failures[chln.Domain] = err
@@ -255,6 +257,7 @@ func (c *Client) RevokeCertificate(certificate []byte) error {
 // this function will start a new-cert flow where a new certificate gets generated.
 // If bundle is true, the []byte contains both the issuer certificate and
 // your issued certificate as a bundle.
+// For private key reuse the PrivateKey property of the passed in CertificateResource should be non-nil.
 func (c *Client) RenewCertificate(cert CertificateResource, bundle bool) (CertificateResource, error) {
 	// Input certificate is PEM encoded. Decode it here as we may need the decoded
 	// cert later on in the renewal process. The input may be a bundle or a single certificate.
@@ -316,7 +319,15 @@ func (c *Client) RenewCertificate(cert CertificateResource, bundle bool) (Certif
 		return cert, nil
 	}
 
-	newCert, failures := c.ObtainCertificate([]string{cert.Domain}, bundle)
+	var privKey crypto.PrivateKey
+	if cert.PrivateKey != nil {
+		privKey, err = parsePEMPrivateKey(cert.PrivateKey)
+		if err != nil {
+			return CertificateResource{}, err
+		}
+	}
+
+	newCert, failures := c.ObtainCertificate([]string{cert.Domain}, bundle, privKey)
 	return newCert, failures[cert.Domain]
 }
 
@@ -412,15 +423,18 @@ func (c *Client) getChallenges(domains []string) ([]authorizationResource, map[s
 	return challenges, failures
 }
 
-func (c *Client) requestCertificate(authz []authorizationResource, bundle bool) (CertificateResource, error) {
+func (c *Client) requestCertificate(authz []authorizationResource, bundle bool, privKey crypto.PrivateKey) (CertificateResource, error) {
 	if len(authz) == 0 {
 		return CertificateResource{}, errors.New("Passed no authorizations to requestCertificate!")
 	}
 
 	commonName := authz[0]
-	privKey, err := generatePrivateKey(rsakey, c.keyBits)
-	if err != nil {
-		return CertificateResource{}, err
+	var err error
+	if privKey == nil {
+		privKey, err = generatePrivateKey(rsakey, c.keyBits)
+		if err != nil {
+			return CertificateResource{}, err
+		}
 	}
 
 	var san []string

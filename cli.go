@@ -55,6 +55,10 @@ func main() {
 					Value: 0,
 					Usage: "The number of days left on a certificate to renew it.",
 				},
+				cli.BoolFlag{
+					Name:  "reuse-key",
+					Usage: "Used to indicate you want to reuse your current private key for the new certificate.",
+				},
 			},
 		},
 	}

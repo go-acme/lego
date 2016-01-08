@@ -202,6 +202,19 @@ func parsePEMBundle(bundle []byte) ([]*x509.Certificate, error) {
 	return certificates, nil
 }
 
+func parsePEMPrivateKey(key []byte) (crypto.PrivateKey, error) {
+	keyBlock, _ := pem.Decode(key)
+
+	switch keyBlock.Type {
+	case "RSA PRIVATE KEY":
+		return x509.ParsePKCS1PrivateKey(keyBlock.Bytes)
+	case "EC PRIVATE KEY":
+		return x509.ParseECPrivateKey(keyBlock.Bytes)
+	default:
+		return nil, errors.New("Unknown PEM header value")
+	}
+}
+
 func generatePrivateKey(t keyType, keyLength int) (crypto.PrivateKey, error) {
 	switch t {
 	case eckey:

@@ -6,13 +6,15 @@ import (
 	"crypto/tls"
 	"encoding/hex"
 	"fmt"
+	"net"
 	"net/http"
 )
 
 type tlsSNIChallenge struct {
 	jws      *jws
 	validate validateFunc
-	optPort  string
+	iface    string
+	port     string
 }
 
 func (t *tlsSNIChallenge) Solve(chlng challenge, domain string) error {
@@ -33,15 +35,20 @@ func (t *tlsSNIChallenge) Solve(chlng challenge, domain string) error {
 	}
 
 	// Allow for CLI port override
-	port := ":443"
-	if t.optPort != "" {
-		port = ":" + t.optPort
+	port := "443"
+	if t.port != "" {
+		port = t.port
+	}
+
+	iface := ""
+	if t.iface != "" {
+		iface = t.iface
 	}
 
 	tlsConf := new(tls.Config)
 	tlsConf.Certificates = []tls.Certificate{cert}
 
-	listener, err := tls.Listen("tcp", port, tlsConf)
+	listener, err := tls.Listen("tcp", net.JoinHostPort(iface, port), tlsConf)
 	if err != nil {
 		return fmt.Errorf("Could not start HTTPS server for challenge -> %v", err)
 	}

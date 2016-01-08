@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -99,20 +100,38 @@ func NewClient(caDirURL string, user User, keyBits int) (*Client, error) {
 	return &Client{directory: dir, user: user, jws: jws, keyBits: keyBits, solvers: solvers}, nil
 }
 
-// SetHTTPPort specifies a custom port to be used for HTTP based challenges.
-// If this option is not used, the default port 80 will be used.
-func (c *Client) SetHTTPPort(port string) {
-	if chlng, ok := c.solvers["http-01"]; ok {
-		chlng.(*httpChallenge).optPort = port
+// SetHTTPAddress specifies a custom interface:port to be used for HTTP based challenges.
+// If this option is not used, the default port 80 and all interfaces will be used.
+// To only specify a port and no interface use the ":port" notation.
+func (c *Client) SetHTTPAddress(iface string) error {
+	host, port, err := net.SplitHostPort(iface)
+	if err != nil {
+		return err
 	}
+
+	if chlng, ok := c.solvers["http-01"]; ok {
+		chlng.(*httpChallenge).iface = host
+		chlng.(*httpChallenge).port = port
+	}
+
+	return nil
 }
 
-// SetTLSPort specifies a custom port to be used for TLS based challenges.
-// If this option is not used, the default port 443 will be used.
-func (c *Client) SetTLSPort(port string) {
-	if chlng, ok := c.solvers["tls-sni-01"]; ok {
-		chlng.(*tlsSNIChallenge).optPort = port
+// SetTLSAddress specifies a custom interface:port to be used for TLS based challenges.
+// If this option is not used, the default port 443 and all interfaces will be used.
+// To only specify a port and no interface use the ":port" notation.
+func (c *Client) SetTLSAddress(iface string) error {
+	host, port, err := net.SplitHostPort(iface)
+	if err != nil {
+		return err
 	}
+
+	if chlng, ok := c.solvers["tls-sni-01"]; ok {
+		chlng.(*tlsSNIChallenge).iface = host
+		chlng.(*tlsSNIChallenge).port = port
+	}
+
+	return nil
 }
 
 // ExcludeChallenges explicitly removes challenges from the pool for solving.

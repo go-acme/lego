@@ -10,7 +10,8 @@ import (
 type httpChallenge struct {
 	jws      *jws
 	validate validateFunc
-	optPort  string
+	iface    string
+	port     string
 }
 
 func (s *httpChallenge) Solve(chlng challenge, domain string) error {
@@ -24,18 +25,19 @@ func (s *httpChallenge) Solve(chlng challenge, domain string) error {
 	}
 
 	// Allow for CLI port override
-	port := ":80"
-	if s.optPort != "" {
-		port = ":" + s.optPort
+	port := "80"
+	if s.port != "" {
+		port = s.port
 	}
 
-	listener, err := net.Listen("tcp", domain+port)
+	iface := ""
+	if s.iface != "" {
+		iface = s.iface
+	}
+
+	listener, err := net.Listen("tcp", net.JoinHostPort(iface, port))
 	if err != nil {
-		// if the domain:port bind failed, fall back to :port bind and try that instead.
-		listener, err = net.Listen("tcp", port)
-		if err != nil {
-			return fmt.Errorf("Could not start HTTP server for challenge -> %v", err)
-		}
+		return fmt.Errorf("Could not start HTTP server for challenge -> %v", err)
 	}
 	defer listener.Close()
 

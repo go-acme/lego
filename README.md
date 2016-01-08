@@ -38,19 +38,19 @@ Current features:
 
 Please keep in mind that CLI switches and APIs are still subject to change.
 
-When using the standard --path option, all certificates and account configurations are saved to a folder *.lego* in the current working directory.
+When using the standard `--path` option, all certificates and account configurations are saved to a folder *.lego* in the current working directory.
 
 #### Sudo
 The CLI does not require root permissions but needs to bind to port 80 and 443 for certain challenges. 
 To run the CLI without sudo, you have two options:
 
 - Use setcap 'cap_net_bind_service=+ep' /path/to/program
-- Pass the `--httpPort` or/and the `--tlsPort` option and specify a custom port to bind to. In this case you have to forward port 80/443 to these custom ports (see [Port Usage](#port-usage)).
+- Pass the `--http` or/and the `--tls` option and specify a custom port to bind to. In this case you have to forward port 80/443 to these custom ports (see [Port Usage](#port-usage)).
 
 #### Port Usage
 By default lego assumes it is able to bind to ports 80 and 443 to solve challenges.
-If this is not possible in your environment, you can use the `--httpPort` and `--tlsPort` options to instruct
-lego to listen on that port for any incoming challenges.
+If this is not possible in your environment, you can use the `--http` and `--tls` options to instruct
+lego to listen on that interface:port for any incoming challenges.
 
 If you are using this option, make sure you proxy all of the following traffic to these ports.
 
@@ -85,10 +85,10 @@ GLOBAL OPTIONS:
    --server, -s "https://acme-v01.api.letsencrypt.org/directory"	CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client.
    --email, -m 								Email used for registration and recovery contact.
    --rsa-key-size, -B "2048"						Size of the RSA key.
-   --path "${CWD}"	Directory to use for storing the data
+   --path "${CWD}/.lego"	Directory to use for storing the data
    --exclude, -x [--exclude option --exclude option]			Explicitly disallow solvers by name from being used. Solvers: "http-01", "tls-sni-01".
-   --httpPort 								Set the port to use for HTTP based challenges to listen on.
-   --tlsPort 								Set the port to use for TLS based challenges to listen on.
+   --http 								Set the port and interface to use for HTTP based challenges to listen on. Supported: interface:port or :port.
+   --tls 								Set the port and interface to use for TLS based challenges to listen on. Supported: interface:port or :port.
    --help, -h								show help
    --version, -v							print the version
 
@@ -152,12 +152,12 @@ if err != nil {
   log.Fatal(err)
 }
 
-// We specify an httpPort of 5002 and an tlsPort of 5001 because we aren't running as
+// We specify an http port of 5002 and an tls port of 5001 on all interfaces because we aren't running as
 // root and can't bind a listener to port 80 and 443 
 // (used later when we attempt to pass challenges).
 // Keep in mind that we still need to proxy challenge traffic to port 5002 and 5001.
-client.SetHTTPPort("5002")
-client.SetTLSPort("5001")
+client.SetHTTPAddress(":5002")
+client.SetTLSAddress(":5001")
 
 // New users will need to register; be sure to save it
 reg, err := client.Register()
@@ -176,7 +176,7 @@ if err != nil {
 // The acme library takes care of completing the challenges to obtain the certificate(s).
 // Of course, the hostnames must resolve to this machine or it will fail.
 bundle := false
-certificates, err := client.ObtainCertificates([]string{"mydomain.com"}, bundle)
+certificates, err := client.ObtainCertificate([]string{"mydomain.com"}, bundle, nil)
 if err != nil {
 	log.Fatal(err)
 }

@@ -43,12 +43,12 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 		client.ExcludeChallenges(conf.ExcludedSolvers())
 	}
 
-	if c.GlobalIsSet("httpPort") {
-		client.SetHTTPPort(c.GlobalString("httpPort"))
+	if c.GlobalIsSet("http") {
+		client.SetHTTPAddress(c.GlobalString("http"))
 	}
 
-	if c.GlobalIsSet("tlsPort") {
-		client.SetTLSPort(c.GlobalString("tlsPort"))
+	if c.GlobalIsSet("tls") {
+		client.SetTLSAddress(c.GlobalString("tls"))
 	}
 
 	return conf, acc, client

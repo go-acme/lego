@@ -88,12 +88,12 @@ func main() {
 			Usage: "Explicitly disallow solvers by name from being used. Solvers: \"http-01\", \"tls-sni-01\".",
 		},
 		cli.StringFlag{
-			Name:  "httpPort",
-			Usage: "Set the port to use for HTTP based challenges to listen on.",
+			Name:  "http",
+			Usage: "Set the port and interface to use for HTTP based challenges to listen on. Supported: interface:port or :port",
 		},
 		cli.StringFlag{
-			Name:  "tlsPort",
-			Usage: "Set the port to use for TLS based challenges to listen on.",
+			Name:  "tls",
+			Usage: "Set the port and interface to use for TLS based challenges to listen on. Supported: interface:port or :port",
 		},
 	}
 

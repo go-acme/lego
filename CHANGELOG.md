@@ -6,6 +6,7 @@
 - CLI: The `--exclude` or `-x` switch. To exclude a challenge from being solved.
 - CLI: The `--http` switch. To set the listen address and port of HTTP based challenges. Supports `host:port` and `:port` for any interface.
 - CLI: The `--tls` switch. To set the listen address and port of TLS based challenges. Supports `host:port` and `:port` for any interface.
+- CLI: The `--reuse-key` switch for the `renew` operation. This lets you reuse an existing private key for renewals.
 - lib: ExcludeChallenges function. Pass an array of challenge identifiers to exclude them from solving.
 - lib: SetHTTPAddress function. Pass a port to set the listen port for HTTP based challenges.
 - lib: SetTLSAddress function. Pass a port to set the listen port of TLS based challenges.
@@ -15,6 +16,8 @@
 - lib: NewClient does no longer accept the optPort parameter
 - lib: ObtainCertificate now returns a SAN certificate if you pass more then one domain.
 - lib: GetOCSPForCert now returns the parsed OCSP response instead of just the status.
+- lib: ObtainCertificate has a new parameter `privKey crypto.PrivateKey` which lets you reuse an existing private key for new certificates.
+- lib: RenewCertificate now expects the PrivateKey property of the CertificateResource to be set only if you want to reuse the key.
 
 ### Removed:
 - CLI: The `--port` switch was removed.

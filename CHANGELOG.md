@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.2.0] - 2016-01-09
 
 ### Added:
 - CLI: The `--exclude` or `-x` switch. To exclude a challenge from being solved.
@@ -45,6 +45,6 @@
 ## [0.1.0] - 2015-12-03
 - Initial release
 
-[Unreleased]: https://github.com/xenolf/lego/compare/v0.1.1...HEAD
+[0.2.0]: https://github.com/xenolf/lego/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/xenolf/lego/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/xenolf/lego/tree/v0.1.0

@@ -35,7 +35,7 @@ func (j *jws) post(url string, content []byte) (*http.Response, error) {
 		return nil, err
 	}
 
-	resp, err := http.Post(url, "application/jose+json", bytes.NewBuffer([]byte(signedContent.FullSerialize())))
+	resp, err := httpPost(url, "application/jose+json", bytes.NewBuffer([]byte(signedContent.FullSerialize())))
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +71,7 @@ func (j *jws) getNonceFromResponse(resp *http.Response) error {
 }
 
 func (j *jws) getNonce() error {
-	resp, err := http.Head(j.directoryURL)
+	resp, err := httpHead(j.directoryURL)
 	if err != nil {
 		return err
 	}

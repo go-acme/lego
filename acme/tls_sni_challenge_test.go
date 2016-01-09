@@ -5,61 +5,17 @@ import (
 	"crypto/sha256"
 	"crypto/tls"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"net/http"
-	"net/http/httptest"
+	"strings"
 	"testing"
-
-	"github.com/square/go-jose"
 )
 
-func TestTLSSNINonRootBind(t *testing.T) {
-	privKey, _ := generatePrivateKey(rsakey, 128)
-	jws := &jws{privKey: privKey.(*rsa.PrivateKey)}
-
-	solver := &tlsSNIChallenge{jws: jws}
-	clientChallenge := challenge{Type: "tls-sni-01", Status: "pending", URI: "localhost:4000", Token: "tls1"}
-
-	// validate error on non-root bind to 443
-	if err := solver.Solve(clientChallenge, "127.0.0.1"); err == nil {
-		t.Error("BIND: Expected Solve to return an error but the error was nil.")
-	} else {
-		expectedError := "Could not start HTTPS server for challenge -> listen tcp :443: bind: permission denied"
-		if err.Error() != expectedError {
-			t.Errorf("Expected error \"%s\" but instead got \"%s\"", expectedError, err.Error())
-		}
-	}
-}
-
-func TestTLSSNI(t *testing.T) {
+func TestTLSSNIChallenge(t *testing.T) {
 	privKey, _ := generatePrivateKey(rsakey, 512)
-	optPort := "5001"
-
-	ts := httptest.NewServer(nil)
-
-	ts.Config.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var request challenge
-		w.Header().Add("Replay-Nonce", "12345")
-
-		if r.Method == "HEAD" {
-			return
-		}
-
-		clientJws, _ := ioutil.ReadAll(r.Body)
-		j, err := jose.ParseSigned(string(clientJws))
-		if err != nil {
-			t.Errorf("Client sent invalid JWS to the server.\n\t%v", err)
-			return
-		}
-		output, err := j.Verify(&privKey.(*rsa.PrivateKey).PublicKey)
-		if err != nil {
-			t.Errorf("Unable to verify client data -> %v", err)
-		}
-		json.Unmarshal(output, &request)
-
-		conn, err := tls.Dial("tcp", "localhost:"+optPort, &tls.Config{
+	j := &jws{privKey: privKey.(*rsa.PrivateKey)}
+	clientChallenge := challenge{Type: "tls-sni-01", Token: "tlssni1"}
+	mockValidate := func(_ *jws, _, _ string, chlng challenge) error {
+		conn, err := tls.Dial("tcp", "localhost:23457", &tls.Config{
 			InsecureSkipVerify: true,
 		})
 		if err != nil {
@@ -77,7 +33,7 @@ func TestTLSSNI(t *testing.T) {
 			t.Errorf("Expected the challenge certificate to have exactly one DNSNames entry but had %d", count)
 		}
 
-		zBytes := sha256.Sum256([]byte(request.KeyAuthorization))
+		zBytes := sha256.Sum256([]byte(chlng.KeyAuthorization))
 		z := hex.EncodeToString(zBytes[:sha256.Size])
 		domain := fmt.Sprintf("%s.%s.acme.invalid", z[:32], z[32:])
 
@@ -85,16 +41,24 @@ func TestTLSSNI(t *testing.T) {
 			t.Errorf("Expected the challenge certificate DNSName to match %s but was %s", domain, remoteCert.DNSNames[0])
 		}
 
-		valid := challenge{Type: "tls-sni-01", Status: "valid", URI: ts.URL, Token: "tls1"}
-		jsonBytes, _ := json.Marshal(&valid)
-		w.Write(jsonBytes)
-	})
+		return nil
+	}
+	solver := &tlsSNIChallenge{jws: j, validate: mockValidate, port: "23457"}
 
-	jws := &jws{privKey: privKey.(*rsa.PrivateKey), directoryURL: ts.URL}
-	solver := &tlsSNIChallenge{jws: jws, optPort: optPort}
-	clientChallenge := challenge{Type: "tls-sni-01", Status: "pending", URI: ts.URL, Token: "tls1"}
+	if err := solver.Solve(clientChallenge, "localhost:23457"); err != nil {
+		t.Errorf("Solve error: got %v, want nil", err)
+	}
+}
 
-	if err := solver.Solve(clientChallenge, "127.0.0.1"); err != nil {
-		t.Error("UNEXPECTED: Expected Solve to return no error but the error was %s.", err.Error())
+func TestTLSSNIChallengeInvalidPort(t *testing.T) {
+	privKey, _ := generatePrivateKey(rsakey, 128)
+	j := &jws{privKey: privKey.(*rsa.PrivateKey)}
+	clientChallenge := challenge{Type: "tls-sni-01", Token: "tlssni2"}
+	solver := &tlsSNIChallenge{jws: j, validate: stubValidate, port: "123456"}
+
+	if err := solver.Solve(clientChallenge, "localhost:123456"); err == nil {
+		t.Errorf("Solve error: got %v, want error", err)
+	} else if want := "invalid port 123456"; !strings.HasSuffix(err.Error(), want) {
+		t.Errorf("Solve error: got %q, want suffix %q", err.Error(), want)
 	}
 }

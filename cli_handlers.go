@@ -34,9 +34,21 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 	//TODO: move to account struct? Currently MUST pass email.
 	acc := NewAccount(c.GlobalString("email"), conf)
 
-	client, err := acme.NewClient(c.GlobalString("server"), acc, conf.RsaBits(), conf.OptPort())
+	client, err := acme.NewClient(c.GlobalString("server"), acc, conf.RsaBits())
 	if err != nil {
 		logger().Fatalf("Could not create client: %s", err.Error())
+	}
+
+	if len(c.GlobalStringSlice("exclude")) > 0 {
+		client.ExcludeChallenges(conf.ExcludedSolvers())
+	}
+
+	if c.GlobalIsSet("http") {
+		client.SetHTTPAddress(c.GlobalString("http"))
+	}
+
+	if c.GlobalIsSet("tls") {
+		client.SetTLSAddress(c.GlobalString("tls"))
 	}
 
 	return conf, acc, client
@@ -126,7 +138,7 @@ func run(c *cli.Context) {
 		logger().Fatal("Please specify --domains or -d")
 	}
 
-	cert, failures := client.ObtainSANCertificate(c.GlobalStringSlice("domains"), true)
+	cert, failures := client.ObtainCertificate(c.GlobalStringSlice("domains"), true, nil)
 	if len(failures) > 0 {
 		for k, v := range failures {
 			logger().Printf("[%s] Could not obtain certificates\n\t%s", k, v.Error())
@@ -202,11 +214,6 @@ func renew(c *cli.Context) {
 		}
 	}
 
-	keyBytes, err := ioutil.ReadFile(privPath)
-	if err != nil {
-		logger().Fatalf("Error while loading the private key for domain %s\n\t%s", domain, err.Error())
-	}
-
 	metaBytes, err := ioutil.ReadFile(metaPath)
 	if err != nil {
 		logger().Fatalf("Error while loading the meta data for domain %s\n\t%s", domain, err.Error())
@@ -218,10 +225,17 @@ func renew(c *cli.Context) {
 		logger().Fatalf("Error while marshalling the meta data for domain %s\n\t%s", domain, err.Error())
 	}
 
-	certRes.PrivateKey = keyBytes
+	if c.Bool("reuse-key") {
+		keyBytes, err := ioutil.ReadFile(privPath)
+		if err != nil {
+			logger().Fatalf("Error while loading the private key for domain %s\n\t%s", domain, err.Error())
+		}
+		certRes.PrivateKey = keyBytes
+	}
+
 	certRes.Certificate = certBytes
 
-	newCert, err := client.RenewCertificate(certRes, true, true)
+	newCert, err := client.RenewCertificate(certRes, true)
 	if err != nil {
 		logger().Fatalf("%s", err.Error())
 	}

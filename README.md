@@ -38,22 +38,26 @@ Current features:
 
 Please keep in mind that CLI switches and APIs are still subject to change.
 
-When using the standard --path option, all certificates and account configurations are saved to a folder *.lego* in the current working directory.
+When using the standard `--path` option, all certificates and account configurations are saved to a folder *.lego* in the current working directory.
 
 #### Sudo
 The CLI does not require root permissions but needs to bind to port 80 and 443 for certain challenges. 
 To run the CLI without sudo, you have two options:
 
 - Use setcap 'cap_net_bind_service=+ep' /path/to/program
-- Pass the `--port` option and specify a custom port to bind to. In this case you have to forward port 443 to this custom port.
+- Pass the `--http` or/and the `--tls` option and specify a custom port to bind to. In this case you have to forward port 80/443 to these custom ports (see [Port Usage](#port-usage)).
 
 #### Port Usage
 By default lego assumes it is able to bind to ports 80 and 443 to solve challenges.
-If this is not possible in your environment, you can use the `--port` option to instruct
-lego to listen on that port for any incoming challenges.
+If this is not possible in your environment, you can use the `--http` and `--tls` options to instruct
+lego to listen on that interface:port for any incoming challenges.
 
-If you are using this option, make sure you proxy all of the following traffic to that port:
+If you are using this option, make sure you proxy all of the following traffic to these ports.
+
+HTTP Port:
 - All plaintext HTTP requests to port 80 which begin with a request path of `/.well-known/acme-challenge/` for the HTTP-01 challenge.
+
+TLS Port:
 - All TLS handshakes on port 443 for TLS-SNI-01.
 
 This traffic redirection is only needed as long as lego solves challenges. As soon as you have received your certificates you can deactivate the forwarding.
@@ -68,7 +72,7 @@ USAGE:
    ./lego [global options] command [command options] [arguments...]
    
 VERSION:
-   0.1.0
+   0.2.0
    
 COMMANDS:
    run		Register an account, then create and install a certificate
@@ -81,8 +85,10 @@ GLOBAL OPTIONS:
    --server, -s "https://acme-v01.api.letsencrypt.org/directory"	CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client.
    --email, -m 								Email used for registration and recovery contact.
    --rsa-key-size, -B "2048"						Size of the RSA key.
-   --path "${CWD}"							Directory to use for storing the data
-   --port 								Challenges will use this port to listen on. Please make sure to forward port 443 to this port on your machine. Otherwise use setcap on the binary
+   --path "${CWD}/.lego"	Directory to use for storing the data
+   --exclude, -x [--exclude option --exclude option]			Explicitly disallow solvers by name from being used. Solvers: "http-01", "tls-sni-01".
+   --http 								Set the port and interface to use for HTTP based challenges to listen on. Supported: interface:port or :port.
+   --tls 								Set the port and interface to use for TLS based challenges to listen on. Supported: interface:port or :port.
    --help, -h								show help
    --version, -v							print the version
 
@@ -141,13 +147,17 @@ myUser := MyUser{
 
 // A client facilitates communication with the CA server. This CA URL is
 // configured for a local dev instance of Boulder running in Docker in a VM.
-// We specify an optPort of 5001 because we aren't running as root and can't
-// bind a listener to port 80 or 443 (used later when we attempt to pass challenges).
-// Keep in mind that we still need to proxy challenge traffic to port 5001.
-client, err := acme.NewClient("http://192.168.99.100:4000", &myUser, rsaKeySize, "5001")
+client, err := acme.NewClient("http://192.168.99.100:4000", &myUser, rsaKeySize)
 if err != nil {
   log.Fatal(err)
 }
+
+// We specify an http port of 5002 and an tls port of 5001 on all interfaces because we aren't running as
+// root and can't bind a listener to port 80 and 443 
+// (used later when we attempt to pass challenges).
+// Keep in mind that we still need to proxy challenge traffic to port 5002 and 5001.
+client.SetHTTPAddress(":5002")
+client.SetTLSAddress(":5001")
 
 // New users will need to register; be sure to save it
 reg, err := client.Register()
@@ -166,7 +176,7 @@ if err != nil {
 // The acme library takes care of completing the challenges to obtain the certificate(s).
 // Of course, the hostnames must resolve to this machine or it will fail.
 bundle := false
-certificates, err := client.ObtainCertificates([]string{"mydomain.com"}, bundle)
+certificates, err := client.ObtainCertificate([]string{"mydomain.com"}, bundle, nil)
 if err != nil {
 	log.Fatal(err)
 }

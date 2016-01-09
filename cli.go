@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/codegangsta/cli"
 	"github.com/xenolf/lego/acme"
@@ -20,11 +21,19 @@ func logger() *log.Logger {
 	return Logger
 }
 
+var gittag string
+
 func main() {
 	app := cli.NewApp()
 	app.Name = "lego"
 	app.Usage = "Let's encrypt client to go!"
-	app.Version = "0.1.0"
+
+	version := "0.2.0"
+	if strings.HasPrefix(gittag, "v") {
+		version = gittag
+	}
+
+	app.Version = version
 
 	acme.UserAgent = "lego/" + app.Version
 

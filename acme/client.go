@@ -617,3 +617,14 @@ func validate(j *jws, domain, uri string, chlng challenge) error {
 		}
 	}
 }
+
+// UseDNSChallenge configures the client to use the provided DNSProvider
+// as it's only challenge
+func (c *Client) UseDNSChallenge(d DNSProvider) {
+	c.solvers = map[string]solver{
+		"dns-01": &dnsChallenge{
+			jws:      c.jws,
+			provider: d,
+		},
+	}
+}

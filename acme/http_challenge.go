@@ -12,11 +12,14 @@ type httpChallenge struct {
 	validate validateFunc
 	iface    string
 	port     string
+	done     chan bool
 }
 
 func (s *httpChallenge) Solve(chlng challenge, domain string) error {
 
 	logf("[INFO][%s] acme: Trying to solve HTTP-01", domain)
+
+	s.done = make(chan bool)
 
 	// Generate the Key Authorization for the challenge
 	keyAuth, err := getKeyAuthorization(chlng.Token, &s.jws.privKey.PublicKey)
@@ -39,10 +42,19 @@ func (s *httpChallenge) Solve(chlng challenge, domain string) error {
 	if err != nil {
 		return fmt.Errorf("Could not start HTTP server for challenge -> %v", err)
 	}
-	defer listener.Close()
 
 	path := "/.well-known/acme-challenge/" + chlng.Token
 
+	go s.serve(listener, path, keyAuth, domain)
+
+	err = s.validate(s.jws, domain, chlng.URI, challenge{Resource: "challenge", Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
+	listener.Close()
+	<-s.done
+
+	return err
+}
+
+func (s *httpChallenge) serve(listener net.Listener, path, keyAuth, domain string) {
 	// The handler validates the HOST header and request type.
 	// For validation it then writes the token the server returned with the challenge
 	mux := http.NewServeMux()
@@ -57,7 +69,6 @@ func (s *httpChallenge) Solve(chlng challenge, domain string) error {
 		}
 	})
 
-	go http.Serve(listener, mux)
-
-	return s.validate(s.jws, domain, chlng.URI, challenge{Resource: "challenge", Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
+	http.Serve(listener, mux)
+	s.done <- true
 }

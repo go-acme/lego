@@ -4,8 +4,10 @@ import (
 	"log"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/codegangsta/cli"
+	"github.com/xenolf/lego/acme"
 )
 
 // Logger is used to log errors; if nil, the default log.Logger is used.
@@ -19,12 +21,21 @@ func logger() *log.Logger {
 	return Logger
 }
 
-func main() {
+var gittag string
 
+func main() {
 	app := cli.NewApp()
 	app.Name = "lego"
 	app.Usage = "Let's encrypt client to go!"
-	app.Version = "0.0.2"
+
+	version := "0.2.0"
+	if strings.HasPrefix(gittag, "v") {
+		version = gittag
+	}
+
+	app.Version = version
+
+	acme.UserAgent = "lego/" + app.Version
 
 	cwd, err := os.Getwd()
 	if err != nil {
@@ -47,6 +58,17 @@ func main() {
 			Name:   "renew",
 			Usage:  "Renew a certificate",
 			Action: renew,
+			Flags: []cli.Flag{
+				cli.IntFlag{
+					Name:  "days",
+					Value: 0,
+					Usage: "The number of days left on a certificate to renew it.",
+				},
+				cli.BoolFlag{
+					Name:  "reuse-key",
+					Usage: "Used to indicate you want to reuse your current private key for the new certificate.",
+				},
+			},
 		},
 	}
 
@@ -57,7 +79,7 @@ func main() {
 		},
 		cli.StringFlag{
 			Name:  "server, s",
-			Value: "https://acme-staging.api.letsencrypt.org/",
+			Value: "https://acme-v01.api.letsencrypt.org/directory",
 			Usage: "CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client.",
 		},
 		cli.StringFlag{
@@ -74,9 +96,17 @@ func main() {
 			Usage: "Directory to use for storing the data",
 			Value: defaultPath,
 		},
+		cli.StringSliceFlag{
+			Name:  "exclude, x",
+			Usage: "Explicitly disallow solvers by name from being used. Solvers: \"http-01\", \"tls-sni-01\".",
+		},
 		cli.StringFlag{
-			Name:  "port",
-			Usage: "Challenges will use this port to listen on. Please make sure to forward port 443 to this port on your machine. Otherwise use setcap on the binary",
+			Name:  "http",
+			Usage: "Set the port and interface to use for HTTP based challenges to listen on. Supported: interface:port or :port",
+		},
+		cli.StringFlag{
+			Name:  "tls",
+			Usage: "Set the port and interface to use for TLS based challenges to listen on. Supported: interface:port or :port",
 		},
 	}
 

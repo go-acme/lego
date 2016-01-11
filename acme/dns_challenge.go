@@ -44,6 +44,10 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 		return err
 	}
 
+	// sleep a little bit to let the record propigate.
+	// it may be smarter to query until we can read from the authoritative nameserver
+	time.Sleep(10 * time.Second)
+
 	jsonBytes, err := json.Marshal(challenge{Resource: "challenge", Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
 	if err != nil {
 		return errors.New("Failed to marshal network message...")

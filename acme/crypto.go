@@ -177,22 +177,21 @@ func performECDH(priv *ecdsa.PrivateKey, pub *ecdsa.PublicKey, outLen int, label
 // a slice of x509 certificates. This function will error if no certificates are found.
 func parsePEMBundle(bundle []byte) ([]*x509.Certificate, error) {
 	var certificates []*x509.Certificate
+	var certDERBlock *pem.Block
 
-	remaining := bundle
-	for len(remaining) != 0 {
-		certBlock, rem := pem.Decode(remaining)
-		// Thanks golang for having me do this :[
-		remaining = rem
-		if certBlock == nil {
-			return nil, errors.New("Could not decode certificate.")
+	for {
+		certDERBlock, bundle = pem.Decode(bundle)
+		if certDERBlock == nil {
+			break
 		}
 
-		cert, err := x509.ParseCertificate(certBlock.Bytes)
-		if err != nil {
-			return nil, err
+		if certDERBlock.Type == "CERTIFICATE" {
+			cert, err := x509.ParseCertificate(certDERBlock.Bytes)
+			if err != nil {
+				return nil, err
+			}
+			certificates = append(certificates, cert)
 		}
-
-		certificates = append(certificates, cert)
 	}
 
 	if len(certificates) == 0 {

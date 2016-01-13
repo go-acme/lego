@@ -468,10 +468,8 @@ func (c *Client) requestCertificate(authz []authorizationResource, bundle bool, 
 		PrivateKey: privateKeyPem}
 
 	for {
-
 		switch resp.StatusCode {
-		case 202:
-		case 201:
+		case 201, 202:
 			cert, err := ioutil.ReadAll(limitReader(resp.Body, 1024*1024))
 			resp.Body.Close()
 			if err != nil {

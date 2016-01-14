@@ -8,9 +8,10 @@ import (
 )
 
 func TestHTTPHeadUserAgent(t *testing.T) {
-	var ua string
+	var ua, method string
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ua = r.Header.Get("User-Agent")
+		method = r.Method
 	}))
 	defer ts.Close()
 
@@ -19,15 +20,19 @@ func TestHTTPHeadUserAgent(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	if method != "HEAD" {
+		t.Errorf("Expected method to be HEAD, got %s", method)
+	}
 	if !strings.Contains(ua, ourUserAgent) {
 		t.Errorf("Expected User-Agent to contain '%s', got: '%s'", ourUserAgent, ua)
 	}
 }
 
 func TestHTTPGetUserAgent(t *testing.T) {
-	var ua string
+	var ua, method string
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ua = r.Header.Get("User-Agent")
+		method = r.Method
 	}))
 	defer ts.Close()
 
@@ -37,15 +42,19 @@ func TestHTTPGetUserAgent(t *testing.T) {
 	}
 	res.Body.Close()
 
+	if method != "GET" {
+		t.Errorf("Expected method to be GET, got %s", method)
+	}
 	if !strings.Contains(ua, ourUserAgent) {
 		t.Errorf("Expected User-Agent to contain '%s', got: '%s'", ourUserAgent, ua)
 	}
 }
 
 func TestHTTPPostUserAgent(t *testing.T) {
-	var ua string
+	var ua, method string
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ua = r.Header.Get("User-Agent")
+		method = r.Method
 	}))
 	defer ts.Close()
 
@@ -55,6 +64,9 @@ func TestHTTPPostUserAgent(t *testing.T) {
 	}
 	res.Body.Close()
 
+	if method != "POST" {
+		t.Errorf("Expected method to be POST, got %s", method)
+	}
 	if !strings.Contains(ua, ourUserAgent) {
 		t.Errorf("Expected User-Agent to contain '%s', got: '%s'", ourUserAgent, ua)
 	}

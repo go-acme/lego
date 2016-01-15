@@ -1,7 +1,6 @@
 package acme
 
 import (
-	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -54,7 +53,7 @@ func TestNewDNSProviderCloudFlareMissingCredErr(t *testing.T) {
 	restoreCloudFlareEnv()
 }
 
-func TestCloudFlareCreateTXTRecord(t *testing.T) {
+func TestCloudFlarePresent(t *testing.T) {
 	if !cflareLiveTest {
 		t.Skip("skipping live test")
 	}
@@ -62,12 +61,11 @@ func TestCloudFlareCreateTXTRecord(t *testing.T) {
 	provider, err := NewDNSProviderCloudFlare(cflareEmail, cflareAPIKey)
 	assert.NoError(t, err)
 
-	fqdn := fmt.Sprintf("_acme-challenge.123.%s.", cflareDomain)
-	err = provider.CreateTXTRecord(fqdn, "123d==", 120)
+	err = provider.Present(cflareDomain, "", "123d==")
 	assert.NoError(t, err)
 }
 
-func TestCloudFlareRemoveTXTRecord(t *testing.T) {
+func TestCloudFlareCleanUp(t *testing.T) {
 	if !cflareLiveTest {
 		t.Skip("skipping live test")
 	}
@@ -77,7 +75,6 @@ func TestCloudFlareRemoveTXTRecord(t *testing.T) {
 	provider, err := NewDNSProviderCloudFlare(cflareEmail, cflareAPIKey)
 	assert.NoError(t, err)
 
-	fqdn := fmt.Sprintf("_acme-challenge.123.%s.", cflareDomain)
-	err = provider.RemoveTXTRecord(fqdn, "123d==", 120)
+	err = provider.CleanUp(cflareDomain, "", "123d==")
 	assert.NoError(t, err)
 }

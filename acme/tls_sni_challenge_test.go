@@ -13,7 +13,7 @@ import (
 func TestTLSSNIChallenge(t *testing.T) {
 	privKey, _ := generatePrivateKey(rsakey, 512)
 	j := &jws{privKey: privKey.(*rsa.PrivateKey)}
-	clientChallenge := challenge{Type: "tls-sni-01", Token: "tlssni1"}
+	clientChallenge := challenge{Type: TLSSNI01, Token: "tlssni1"}
 	mockValidate := func(_ *jws, _, _ string, chlng challenge) error {
 		conn, err := tls.Dial("tcp", "localhost:23457", &tls.Config{
 			InsecureSkipVerify: true,
@@ -43,7 +43,7 @@ func TestTLSSNIChallenge(t *testing.T) {
 
 		return nil
 	}
-	solver := &tlsSNIChallenge{jws: j, validate: mockValidate, port: "23457"}
+	solver := &tlsSNIChallenge{jws: j, validate: mockValidate, provider: &tlsSNIChallengeServer{port: "23457"}}
 
 	if err := solver.Solve(clientChallenge, "localhost:23457"); err != nil {
 		t.Errorf("Solve error: got %v, want nil", err)
@@ -53,8 +53,8 @@ func TestTLSSNIChallenge(t *testing.T) {
 func TestTLSSNIChallengeInvalidPort(t *testing.T) {
 	privKey, _ := generatePrivateKey(rsakey, 128)
 	j := &jws{privKey: privKey.(*rsa.PrivateKey)}
-	clientChallenge := challenge{Type: "tls-sni-01", Token: "tlssni2"}
-	solver := &tlsSNIChallenge{jws: j, validate: stubValidate, port: "123456"}
+	clientChallenge := challenge{Type: TLSSNI01, Token: "tlssni2"}
+	solver := &tlsSNIChallenge{jws: j, validate: stubValidate, provider: &tlsSNIChallengeServer{port: "123456"}}
 
 	if err := solver.Solve(clientChallenge, "localhost:123456"); err == nil {
 		t.Errorf("Solve error: got %v, want error", err)

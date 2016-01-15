@@ -34,8 +34,9 @@ func NewDNSProviderCloudFlare(cloudflareEmail, cloudflareKey string) (*DNSProvid
 	return c, nil
 }
 
-// CreateTXTRecord creates a TXT record using the specified parameters
-func (c *DNSProviderCloudFlare) CreateTXTRecord(fqdn, value string, ttl int) error {
+// Present creates a TXT record to fulfil the dns-01 challenge
+func (c *DNSProviderCloudFlare) Present(domain, token, keyAuth string) error {
+	fqdn, value, ttl := DNS01Record(domain, keyAuth)
 	zoneID, err := c.getHostedZoneID(fqdn)
 	if err != nil {
 		return err
@@ -50,8 +51,9 @@ func (c *DNSProviderCloudFlare) CreateTXTRecord(fqdn, value string, ttl int) err
 	return nil
 }
 
-// RemoveTXTRecord removes the TXT record matching the specified parameters
-func (c *DNSProviderCloudFlare) RemoveTXTRecord(fqdn, value string, ttl int) error {
+// CleanUp removes the TXT record matching the specified parameters
+func (c *DNSProviderCloudFlare) CleanUp(domain, token, keyAuth string) error {
+	fqdn, _, _ := DNS01Record(domain, keyAuth)
 	records, err := c.findTxtRecords(fqdn)
 	if err != nil {
 		return err
@@ -60,10 +62,9 @@ func (c *DNSProviderCloudFlare) RemoveTXTRecord(fqdn, value string, ttl int) err
 	for _, rec := range records {
 		err := c.client.Records.Delete(c.ctx, rec.ZoneID, rec.ID)
 		if err != nil {
-			return fmt.Errorf("CloudFlare API call has failed: %v", err)
+			return err
 		}
 	}
-
 	return nil
 }
 
@@ -140,12 +141,14 @@ func unFqdn(name string) string {
 
 // TTL must be between 120 and 86400 seconds
 func sanitizeTTL(ttl int) int {
-	if ttl < 120 {
-		ttl = 120
-	} else if ttl > 86400 {
-		ttl = 86400
+	switch {
+	case ttl < 120:
+		return 120
+	case ttl > 86400:
+		return 86400
+	default:
+		return ttl
 	}
-	return ttl
 }
 
 func envAuth() (email, apiKey string) {

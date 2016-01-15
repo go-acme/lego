@@ -54,7 +54,7 @@ type Client struct {
 	jws        *jws
 	keyBits    int
 	issuerCert []byte
-	solvers    map[string]solver
+	solvers    map[Challenge]solver
 }
 
 // NewClient creates a new ACME client on behalf of the user. The client will depend on
@@ -93,11 +93,26 @@ func NewClient(caDirURL string, user User, keyBits int) (*Client, error) {
 	// REVIEW: best possibility?
 	// Add all available solvers with the right index as per ACME
 	// spec to this map. Otherwise they won`t be found.
-	solvers := make(map[string]solver)
-	solvers["http-01"] = &httpChallenge{jws: jws, validate: validate}
-	solvers["tls-sni-01"] = &tlsSNIChallenge{jws: jws, validate: validate}
+	solvers := make(map[Challenge]solver)
+	solvers[HTTP01] = &httpChallenge{jws: jws, validate: validate}
+	solvers[TLSSNI01] = &tlsSNIChallenge{jws: jws, validate: validate}
 
 	return &Client{directory: dir, user: user, jws: jws, keyBits: keyBits, solvers: solvers}, nil
+}
+
+// SetChallengeProvider specifies a custom provider that will make the solution available
+func (c *Client) SetChallengeProvider(challenge Challenge, p ChallengeProvider) error {
+	switch challenge {
+	case HTTP01:
+		c.solvers[challenge] = &httpChallenge{jws: c.jws, validate: validate, provider: p}
+	case TLSSNI01:
+		c.solvers[challenge] = &tlsSNIChallenge{jws: c.jws, validate: validate, provider: p}
+	case DNS01:
+		c.solvers[challenge] = &dnsChallenge{jws: c.jws, provider: p}
+	default:
+		return fmt.Errorf("Unknown challenge %v", challenge)
+	}
+	return nil
 }
 
 // SetHTTPAddress specifies a custom interface:port to be used for HTTP based challenges.
@@ -109,9 +124,8 @@ func (c *Client) SetHTTPAddress(iface string) error {
 		return err
 	}
 
-	if chlng, ok := c.solvers["http-01"]; ok {
-		chlng.(*httpChallenge).iface = host
-		chlng.(*httpChallenge).port = port
+	if chlng, ok := c.solvers[HTTP01]; ok {
+		chlng.(*httpChallenge).provider = &httpChallengeServer{iface: host, port: port}
 	}
 
 	return nil
@@ -126,21 +140,17 @@ func (c *Client) SetTLSAddress(iface string) error {
 		return err
 	}
 
-	if chlng, ok := c.solvers["tls-sni-01"]; ok {
-		chlng.(*tlsSNIChallenge).iface = host
-		chlng.(*tlsSNIChallenge).port = port
+	if chlng, ok := c.solvers[TLSSNI01]; ok {
+		chlng.(*tlsSNIChallenge).provider = &tlsSNIChallengeServer{iface: host, port: port}
 	}
-
 	return nil
 }
 
 // ExcludeChallenges explicitly removes challenges from the pool for solving.
-func (c *Client) ExcludeChallenges(challenges []string) {
+func (c *Client) ExcludeChallenges(challenges []Challenge) {
 	// Loop through all challenges and delete the requested one if found.
 	for _, challenge := range challenges {
-		if _, ok := c.solvers[challenge]; ok {
-			delete(c.solvers, challenge)
-		}
+		delete(c.solvers, challenge)
 	}
 }
 

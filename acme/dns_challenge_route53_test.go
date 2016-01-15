@@ -108,19 +108,22 @@ func TestNewDNSProviderRoute53InvalidRegionErr(t *testing.T) {
 	assert.EqualError(t, err, "Invalid AWS region name us-east-3")
 }
 
-func TestRoute53CreateTXTRecord(t *testing.T) {
+func TestRoute53Present(t *testing.T) {
 	assert := assert.New(t)
 	testServer := makeRoute53TestServer()
 	provider := makeRoute53Provider(testServer)
 	testServer.ResponseMap(2, serverResponseMap)
 
-	err := provider.CreateTXTRecord("_acme-challenge.123.example.com.", "123456d==", 120)
-	assert.NoError(err, "Expected CreateTXTRecord to return no error")
+	domain := "example.com"
+	keyAuth := "123456d=="
+
+	err := provider.Present(domain, "", keyAuth)
+	assert.NoError(err, "Expected Present to return no error")
 
 	httpReqs := testServer.WaitRequests(2)
 	httpReq := httpReqs[1]
 
 	assert.Equal("/2013-04-01/hostedzone/Z2K123214213123/rrset", httpReq.URL.Path,
-		"Expected CreateTXTRecord to select the correct hostedzone")
+		"Expected Present to select the correct hostedzone")
 
 }

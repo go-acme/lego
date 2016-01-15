@@ -82,7 +82,7 @@ type validationRecord struct {
 
 type challenge struct {
 	Resource          string             `json:"resource,omitempty"`
-	Type              string             `json:"type,omitempty"`
+	Type              Challenge          `json:"type,omitempty"`
 	Status            string             `json:"status,omitempty"`
 	URI               string             `json:"uri,omitempty"`
 	Token             string             `json:"token,omitempty"`

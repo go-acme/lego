@@ -9,7 +9,17 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/miekg/dns"
 )
+
+type preCheckDNSFunc func() bool
+
+var preCheckDNS = func() bool {
+	return true
+}
+
+var preCheckDNSFallbackCount = 5
 
 // DNSProvider represents a service for creating dns records.
 type DNSProvider interface {
@@ -42,6 +52,43 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 	fqdn := fmt.Sprintf("_acme-challenge.%s.", domain)
 	if err = s.provider.CreateTXTRecord(fqdn, keyAuthSha, 120); err != nil {
 		return err
+	}
+
+	if preCheckDNS() {
+		// check if the expected DNS entry was created. If not wait for some time and try again.
+		m := new(dns.Msg)
+		m.SetQuestion(domain+".", dns.TypeSOA)
+		c := new(dns.Client)
+		in, _, err := c.Exchange(m, "8.8.8.8:53")
+		if err != nil {
+			return err
+		}
+
+		var authorativeNS string
+		for _, answ := range in.Answer {
+			soa := answ.(*dns.SOA)
+			authorativeNS = soa.Ns
+		}
+
+		fallbackCnt := 0
+		for fallbackCnt < preCheckDNSFallbackCount {
+			m.SetQuestion(fqdn, dns.TypeTXT)
+			in, _, err = c.Exchange(m, authorativeNS+":53")
+			if err != nil {
+				return err
+			}
+
+			if len(in.Answer) > 0 {
+				break
+			}
+
+			fallbackCnt++
+			if fallbackCnt >= preCheckDNSFallbackCount {
+				return errors.New("Could not retrieve the value from DNS in a timely manner. Aborting.")
+			}
+
+			time.Sleep(time.Second * time.Duration(fallbackCnt))
+		}
 	}
 
 	jsonBytes, err := json.Marshal(challenge{Resource: "challenge", Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})

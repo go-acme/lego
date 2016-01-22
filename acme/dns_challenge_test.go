@@ -11,6 +11,9 @@ import (
 )
 
 func TestDNSValidServerResponse(t *testing.T) {
+	preCheckDNS = func() bool {
+		return false
+	}
 	privKey, _ := generatePrivateKey(rsakey, 512)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

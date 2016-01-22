@@ -2,10 +2,11 @@ package acme
 
 import (
 	"fmt"
-	"github.com/mitchellh/goamz/aws"
-	"github.com/mitchellh/goamz/route53"
 	"math"
 	"strings"
+
+	"github.com/mitchellh/goamz/aws"
+	"github.com/mitchellh/goamz/route53"
 )
 
 // DNSProviderRoute53 is an implementation of the DNSProvider interface
@@ -63,7 +64,7 @@ func (r *DNSProviderRoute53) changeRecord(action, fqdn, value string, ttl int) e
 }
 
 func (r *DNSProviderRoute53) getHostedZoneID(fqdn string) (string, error) {
-	zoneResp, err := r.client.ListHostedZones("", math.MaxInt64)
+	zoneResp, err := r.client.ListHostedZones("", math.MaxInt32)
 	if err != nil {
 		return "", err
 	}

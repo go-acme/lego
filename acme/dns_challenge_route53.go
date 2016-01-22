@@ -2,8 +2,8 @@ package acme
 
 import (
 	"fmt"
-	"math"
 	"strings"
+	"time"
 
 	"github.com/mitchellh/goamz/aws"
 	"github.com/mitchellh/goamz/route53"
@@ -64,13 +64,28 @@ func (r *DNSProviderRoute53) changeRecord(action, fqdn, value string, ttl int) e
 }
 
 func (r *DNSProviderRoute53) getHostedZoneID(fqdn string) (string, error) {
-	zoneResp, err := r.client.ListHostedZones("", math.MaxInt32)
+	zones := []route53.HostedZone{}
+	zoneResp, err := r.client.ListHostedZones("", 0)
 	if err != nil {
 		return "", err
 	}
+	zones = append(zones, zoneResp.HostedZones...)
+
+	for zoneResp.IsTruncated {
+		resp, err := r.client.ListHostedZones(zoneResp.Marker, 0)
+		if err != nil {
+			if rateExceeded(err) {
+				time.Sleep(time.Second)
+				continue
+			}
+			return "", err
+		}
+		zoneResp = resp
+		zones = append(zones, zoneResp.HostedZones...)
+	}
+
 	var hostedZone route53.HostedZone
-	for _, zone := range zoneResp.HostedZones {
-		//if strings.HasSuffix(domain, strings.Trim(zone.Name, ".")) {
+	for _, zone := range zones {
 		if strings.HasSuffix(fqdn, zone.Name) {
 			if len(zone.Name) > len(hostedZone.Name) {
 				hostedZone = zone
@@ -78,7 +93,7 @@ func (r *DNSProviderRoute53) getHostedZoneID(fqdn string) (string, error) {
 		}
 	}
 	if hostedZone.ID == "" {
-		return "", fmt.Errorf("No Route53 zone found for domain %s", fqdn)
+		return "", fmt.Errorf("No Route53 hosted zone found for domain %s", fqdn)
 	}
 
 	return hostedZone.ID, nil
@@ -91,4 +106,13 @@ func newTXTRecordSet(fqdn, value string, ttl int) route53.ResourceRecordSet {
 		Records: []string{value},
 		TTL:     ttl,
 	}
+}
+
+// Route53 API has pretty strict rate limits (5req/s globally per account)
+// Hence we check if we are being throttled to maybe retry the request
+func rateExceeded (err error) bool {
+	if strings.Contains(err.Error(), "Throttling") {
+		return true
+	}
+	return false
 }

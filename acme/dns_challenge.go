@@ -19,9 +19,8 @@ var preCheckDNS preCheckDNSFunc = checkDNS
 
 var preCheckDNSFallbackCount = 5
 
-// DNSProvider represents a service for creating dns records.
+// DNSProvider represents a service for managing DNS records.
 type DNSProvider interface {
-	// CreateTXT creates a TXT record
 	CreateTXTRecord(fqdn, value string, ttl int) error
 	RemoveTXTRecord(fqdn, value string, ttl int) error
 }

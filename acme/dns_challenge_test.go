@@ -1,0 +1,39 @@
+package acme
+
+import (
+	"bufio"
+	"crypto/rsa"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"testing"
+	"time"
+)
+
+func TestDNSValidServerResponse(t *testing.T) {
+	preCheckDNS = func() bool {
+		return false
+	}
+	privKey, _ := generatePrivateKey(rsakey, 512)
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Replay-Nonce", "12345")
+		w.Write([]byte("{\"type\":\"dns01\",\"status\":\"valid\",\"uri\":\"http://some.url\",\"token\":\"http8\"}"))
+	}))
+
+	manualProvider, _ := NewDNSProviderManual()
+	jws := &jws{privKey: privKey.(*rsa.PrivateKey), directoryURL: ts.URL}
+	solver := &dnsChallenge{jws: jws, provider: manualProvider}
+	clientChallenge := challenge{Type: "dns01", Status: "pending", URI: ts.URL, Token: "http8"}
+
+	go func() {
+		time.Sleep(time.Second * 2)
+		f := bufio.NewWriter(os.Stdout)
+		defer f.Flush()
+		f.WriteString("\n")
+	}()
+
+	if err := solver.Solve(clientChallenge, "example.com"); err != nil {
+		t.Errorf("VALID: Expected Solve to return no error but the error was -> %v", err)
+	}
+}

@@ -11,8 +11,8 @@ import (
 )
 
 func TestDNSValidServerResponse(t *testing.T) {
-	preCheckDNS = func() bool {
-		return false
+	preCheckDNS = func(domain, fqdn string) bool {
+		return true
 	}
 	privKey, _ := generatePrivateKey(rsakey, 512)
 

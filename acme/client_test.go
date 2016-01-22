@@ -75,32 +75,32 @@ func TestClientOptPort(t *testing.T) {
 	client.SetHTTPAddress(net.JoinHostPort(optHost, optPort))
 	client.SetTLSAddress(net.JoinHostPort(optHost, optPort))
 
-	httpSolver, ok := client.solvers["http-01"].(*httpChallenge)
+	httpSolver, ok := client.solvers[HTTP01].(*httpChallenge)
 	if !ok {
 		t.Fatal("Expected http-01 solver to be httpChallenge type")
 	}
 	if httpSolver.jws != client.jws {
 		t.Error("Expected http-01 to have same jws as client")
 	}
-	if httpSolver.port != optPort {
-		t.Errorf("Expected http-01 to have port %s but was %s", optPort, httpSolver.port)
+	if got := httpSolver.provider.(*httpChallengeServer).port; got != optPort {
+		t.Errorf("Expected http-01 to have port %s but was %s", optPort, got)
 	}
-	if httpSolver.iface != optHost {
-		t.Errorf("Expected http-01 to have iface %s but was %s", optHost, httpSolver.iface)
+	if got := httpSolver.provider.(*httpChallengeServer).iface; got != optHost {
+		t.Errorf("Expected http-01 to have iface %s but was %s", optHost, got)
 	}
 
-	httpsSolver, ok := client.solvers["tls-sni-01"].(*tlsSNIChallenge)
+	httpsSolver, ok := client.solvers[TLSSNI01].(*tlsSNIChallenge)
 	if !ok {
 		t.Fatal("Expected tls-sni-01 solver to be httpChallenge type")
 	}
 	if httpsSolver.jws != client.jws {
 		t.Error("Expected tls-sni-01 to have same jws as client")
 	}
-	if httpsSolver.port != optPort {
-		t.Errorf("Expected tls-sni-01 to have port %s but was %s", optPort, httpSolver.port)
+	if got := httpsSolver.provider.(*tlsSNIChallengeServer).port; got != optPort {
+		t.Errorf("Expected tls-sni-01 to have port %s but was %s", optPort, got)
 	}
-	if httpsSolver.port != optPort {
-		t.Errorf("Expected tls-sni-01 to have port %s but was %s", optHost, httpSolver.iface)
+	if got := httpsSolver.provider.(*tlsSNIChallengeServer).iface; got != optHost {
+		t.Errorf("Expected tls-sni-01 to have port %s but was %s", optHost, got)
 	}
 
 	// test setting different host
@@ -108,11 +108,11 @@ func TestClientOptPort(t *testing.T) {
 	client.SetHTTPAddress(net.JoinHostPort(optHost, optPort))
 	client.SetTLSAddress(net.JoinHostPort(optHost, optPort))
 
-	if httpSolver.iface != optHost {
-		t.Errorf("Expected http-01 to have iface %s but was %s", optHost, httpSolver.iface)
+	if got := httpSolver.provider.(*httpChallengeServer).iface; got != optHost {
+		t.Errorf("Expected http-01 to have iface %s but was %s", optHost, got)
 	}
-	if httpsSolver.port != optPort {
-		t.Errorf("Expected tls-sni-01 to have port %s but was %s", optHost, httpSolver.iface)
+	if got := httpsSolver.provider.(*tlsSNIChallengeServer).port; got != optPort {
+		t.Errorf("Expected tls-sni-01 to have port %s but was %s", optPort, got)
 	}
 }
 

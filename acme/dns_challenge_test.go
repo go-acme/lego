@@ -23,7 +23,7 @@ func TestDNSValidServerResponse(t *testing.T) {
 
 	manualProvider, _ := NewDNSProviderManual()
 	jws := &jws{privKey: privKey.(*rsa.PrivateKey), directoryURL: ts.URL}
-	solver := &dnsChallenge{jws: jws, provider: manualProvider}
+	solver := &dnsChallenge{jws: jws, validate: validate, provider: manualProvider}
 	clientChallenge := challenge{Type: "dns01", Status: "pending", URI: ts.URL, Token: "http8"}
 
 	go func() {

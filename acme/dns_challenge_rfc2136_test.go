@@ -2,16 +2,19 @@ package acme
 
 import (
 	"bytes"
-	"github.com/miekg/dns"
 	"net"
 	"strings"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/miekg/dns"
 )
 
 var (
-	rfc2136TestValue      = "so6ZGir4GaZqI11h9UccBB=="
+	rfc2136TestDomain     = "123456789.www.example.com"
+	rfc2136TestKeyAuth    = "123d=="
+	rfc2136TestValue      = "Now36o-3BmlB623-0c1qCIUmgWVVmDJb88KGl24pqpo"
 	rfc2136TestFqdn       = "_acme-challenge.123456789.www.example.com."
 	rfc2136TestZone       = "example.com."
 	rfc2136TestTTL        = 120
@@ -36,7 +39,7 @@ func TestRFC2136CanaryLocalTestServer(t *testing.T) {
 	m.SetQuestion("example.com.", dns.TypeTXT)
 	r, _, err := c.Exchange(m, addrstr)
 	if err != nil || len(r.Extra) == 0 {
-		t.Fatalf("Failed to communicate with test server:", err)
+		t.Fatalf("Failed to communicate with test server: %v", err)
 	}
 	txt := r.Extra[0].(*dns.TXT).Txt[0]
 	if txt != "Hello world" {
@@ -58,8 +61,8 @@ func TestRFC2136ServerSuccess(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Expected NewDNSProviderRFC2136() to return no error but the error was -> %v", err)
 	}
-	if err := provider.CreateTXTRecord(rfc2136TestFqdn, rfc2136TestValue, rfc2136TestTTL); err != nil {
-		t.Errorf("Expected CreateTXTRecord() to return no error but the error was -> %v", err)
+	if err := provider.Present(rfc2136TestDomain, "", rfc2136TestKeyAuth); err != nil {
+		t.Errorf("Expected Present() to return no error but the error was -> %v", err)
 	}
 }
 
@@ -77,10 +80,10 @@ func TestRFC2136ServerError(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Expected NewDNSProviderRFC2136() to return no error but the error was -> %v", err)
 	}
-	if err := provider.CreateTXTRecord(rfc2136TestFqdn, rfc2136TestValue, rfc2136TestTTL); err == nil {
-		t.Errorf("Expected CreateTXTRecord() to return an error but it did not.")
+	if err := provider.Present(rfc2136TestDomain, "", rfc2136TestKeyAuth); err == nil {
+		t.Errorf("Expected Present() to return an error but it did not.")
 	} else if !strings.Contains(err.Error(), "NOTZONE") {
-		t.Errorf("Expected CreateTXTRecord() to return an error with the 'NOTZONE' rcode string but it did not.")
+		t.Errorf("Expected Present() to return an error with the 'NOTZONE' rcode string but it did not.")
 	}
 }
 
@@ -98,8 +101,8 @@ func TestRFC2136TsigClient(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Expected NewDNSProviderRFC2136() to return no error but the error was -> %v", err)
 	}
-	if err := provider.CreateTXTRecord(rfc2136TestFqdn, rfc2136TestValue, rfc2136TestTTL); err != nil {
-		t.Errorf("Expected CreateTXTRecord() to return no error but the error was -> %v", err)
+	if err := provider.Present(rfc2136TestDomain, "", rfc2136TestKeyAuth); err != nil {
+		t.Errorf("Expected Present() to return no error but the error was -> %v", err)
 	}
 }
 
@@ -136,8 +139,9 @@ func TestRFC2136ValidUpdatePacket(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Expected NewDNSProviderRFC2136() to return no error but the error was -> %v", err)
 	}
-	if err := provider.CreateTXTRecord(rfc2136TestFqdn, rfc2136TestValue, rfc2136TestTTL); err != nil {
-		t.Errorf("Expected CreateTXTRecord() to return no error but the error was -> %v", err)
+
+	if err := provider.Present(rfc2136TestDomain, "", "1234d=="); err != nil {
+		t.Errorf("Expected Present() to return no error but the error was -> %v", err)
 	}
 
 	rcvMsg := <-reqChan

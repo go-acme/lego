@@ -65,7 +65,7 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 
 	preCheckDNS(domain, fqdn)
 
-	return s.validate(s.jws, domain, chlng.URI, chlng)
+	return s.validate(s.jws, domain, chlng.URI, challenge{Resource: "challenge", Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
 }
 
 func checkDNS(domain, fqdn string) bool {

@@ -176,9 +176,9 @@ if err != nil {
 // The acme library takes care of completing the challenges to obtain the certificate(s).
 // Of course, the hostnames must resolve to this machine or it will fail.
 bundle := false
-certificates, err := client.ObtainCertificate([]string{"mydomain.com"}, bundle, nil)
-if err != nil {
-	log.Fatal(err)
+certificates, failures := client.ObtainCertificate([]string{"mydomain.com"}, bundle, nil)
+if len(failures) > 0 {
+	log.Fatal(failures)
 }
 
 // Each certificate comes back with the cert bytes, the bytes of the client's

@@ -40,13 +40,15 @@ func NewDNSProviderRoute53(awsAccessKey, awsSecretKey, awsRegionName string) (*D
 	return &DNSProviderRoute53{client: client}, nil
 }
 
-// CreateTXTRecord creates a TXT record using the specified parameters
-func (r *DNSProviderRoute53) CreateTXTRecord(fqdn, value string, ttl int) error {
+// Present creates a TXT record using the specified parameters
+func (r *DNSProviderRoute53) Present(domain, token, keyAuth string) error {
+	fqdn, value, ttl := DNS01Record(domain, keyAuth)
 	return r.changeRecord("UPSERT", fqdn, value, ttl)
 }
 
-// RemoveTXTRecord removes the TXT record matching the specified parameters
-func (r *DNSProviderRoute53) RemoveTXTRecord(fqdn, value string, ttl int) error {
+// CleanUp removes the TXT record matching the specified parameters
+func (r *DNSProviderRoute53) CleanUp(domain, token, keyAuth string) error {
+	fqdn, value, ttl := DNS01Record(domain, keyAuth)
 	return r.changeRecord("DELETE", fqdn, value, ttl)
 }
 
@@ -110,7 +112,7 @@ func newTXTRecordSet(fqdn, value string, ttl int) route53.ResourceRecordSet {
 
 // Route53 API has pretty strict rate limits (5req/s globally per account)
 // Hence we check if we are being throttled to maybe retry the request
-func rateExceeded (err error) bool {
+func rateExceeded(err error) bool {
 	if strings.Contains(err.Error(), "Throttling") {
 		return true
 	}

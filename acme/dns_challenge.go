@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -19,21 +20,30 @@ var preCheckDNS preCheckDNSFunc = checkDNS
 
 var preCheckDNSFallbackCount = 5
 
-// DNSProvider represents a service for managing DNS records.
-type DNSProvider interface {
-	CreateTXTRecord(fqdn, value string, ttl int) error
-	RemoveTXTRecord(fqdn, value string, ttl int) error
+// DNS01Record returns a DNS record which will fulfill the `dns-01` challenge
+func DNS01Record(domain, keyAuth string) (fqdn string, value string, ttl int) {
+	keyAuthShaBytes := sha256.Sum256([]byte(keyAuth))
+	// base64URL encoding without padding
+	keyAuthSha := base64.URLEncoding.EncodeToString(keyAuthShaBytes[:sha256.Size])
+	value = strings.TrimRight(keyAuthSha, "=")
+	ttl = 120
+	fqdn = fmt.Sprintf("_acme-challenge.%s.", domain)
+	return
 }
 
 // dnsChallenge implements the dns-01 challenge according to ACME 7.5
 type dnsChallenge struct {
 	jws      *jws
-	provider DNSProvider
+	provider ChallengeProvider
 }
 
 func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 
 	logf("[INFO] acme: Trying to solve DNS-01")
+
+	if s.provider == nil {
+		return errors.New("No DNS Provider configured")
+	}
 
 	// Generate the Key Authorization for the challenge
 	keyAuth, err := getKeyAuthorization(chlng.Token, &s.jws.privKey.PublicKey)
@@ -41,15 +51,18 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 		return err
 	}
 
-	keyAuthShaBytes := sha256.Sum256([]byte(keyAuth))
-	// base64URL encoding without padding
-	keyAuthSha := base64.URLEncoding.EncodeToString(keyAuthShaBytes[:sha256.Size])
-	keyAuthSha = strings.TrimRight(keyAuthSha, "=")
-
-	fqdn := fmt.Sprintf("_acme-challenge.%s.", domain)
-	if err = s.provider.CreateTXTRecord(fqdn, keyAuthSha, 120); err != nil {
-		return err
+	err = s.provider.Present(domain, chlng.Token, keyAuth)
+	if err != nil {
+		return fmt.Errorf("Error presenting token %s", err)
 	}
+	defer func() {
+		err := s.provider.CleanUp(domain, chlng.Token, keyAuth)
+		if err != nil {
+			log.Printf("Error cleaning up %s %v ", domain, err)
+		}
+	}()
+
+	fqdn, _, _ := DNS01Record(domain, keyAuth)
 
 	preCheckDNS(domain, fqdn)
 
@@ -92,10 +105,6 @@ Loop:
 
 		time.Sleep(1 * time.Second)
 		resp, err = http.Get(chlng.URI)
-	}
-
-	if err = s.provider.RemoveTXTRecord(fqdn, keyAuthSha, 120); err != nil {
-		logf("[WARN] acme: Failed to cleanup DNS record. -> %v ", err)
 	}
 
 	return nil

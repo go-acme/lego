@@ -6,15 +6,13 @@ import (
 	"crypto/tls"
 	"encoding/hex"
 	"fmt"
-	"net"
-	"net/http"
+	"log"
 )
 
 type tlsSNIChallenge struct {
 	jws      *jws
 	validate validateFunc
-	iface    string
-	port     string
+	provider ChallengeProvider
 }
 
 func (t *tlsSNIChallenge) Solve(chlng challenge, domain string) error {
@@ -29,41 +27,25 @@ func (t *tlsSNIChallenge) Solve(chlng challenge, domain string) error {
 		return err
 	}
 
-	cert, err := t.generateCertificate(keyAuth)
+	if t.provider == nil {
+		t.provider = &tlsSNIChallengeServer{}
+	}
+
+	err = t.provider.Present(domain, chlng.Token, keyAuth)
 	if err != nil {
-		return err
+		return fmt.Errorf("Error presenting token %s", err)
 	}
-
-	// Allow for CLI port override
-	port := "443"
-	if t.port != "" {
-		port = t.port
-	}
-
-	iface := ""
-	if t.iface != "" {
-		iface = t.iface
-	}
-
-	tlsConf := new(tls.Config)
-	tlsConf.Certificates = []tls.Certificate{cert}
-
-	listener, err := tls.Listen("tcp", net.JoinHostPort(iface, port), tlsConf)
-	if err != nil {
-		return fmt.Errorf("Could not start HTTPS server for challenge -> %v", err)
-	}
-	defer listener.Close()
-
-	go http.Serve(listener, nil)
-
+	defer func() {
+		err := t.provider.CleanUp(domain, chlng.Token, keyAuth)
+		if err != nil {
+			log.Printf("Error cleaning up %s %v ", domain, err)
+		}
+	}()
 	return t.validate(t.jws, domain, chlng.URI, challenge{Resource: "challenge", Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
 }
 
-func (t *tlsSNIChallenge) generateCertificate(keyAuth string) (tls.Certificate, error) {
-
-	zBytes := sha256.Sum256([]byte(keyAuth))
-	z := hex.EncodeToString(zBytes[:sha256.Size])
-
+// TLSSNI01ChallengeCert returns a certificate for the `tls-sni-01` challenge
+func TLSSNI01ChallengeCert(keyAuth string) (tls.Certificate, error) {
 	// generate a new RSA key for the certificates
 	tempPrivKey, err := generatePrivateKey(rsakey, 2048)
 	if err != nil {
@@ -72,6 +54,8 @@ func (t *tlsSNIChallenge) generateCertificate(keyAuth string) (tls.Certificate, 
 	rsaPrivKey := tempPrivKey.(*rsa.PrivateKey)
 	rsaPrivPEM := pemEncode(rsaPrivKey)
 
+	zBytes := sha256.Sum256([]byte(keyAuth))
+	z := hex.EncodeToString(zBytes[:sha256.Size])
 	domain := fmt.Sprintf("%s.%s.acme.invalid", z[:32], z[32:])
 	tempCertPEM, err := generatePemCert(rsaPrivKey, domain)
 	if err != nil {

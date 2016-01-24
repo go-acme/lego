@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/codegangsta/cli"
+	"github.com/xenolf/lego/acme"
 )
 
 // Configuration type from CLI and config files.
@@ -24,8 +25,11 @@ func (c *Configuration) RsaBits() int {
 	return c.context.GlobalInt("rsa-key-size")
 }
 
-func (c *Configuration) ExcludedSolvers() []string {
-	return c.context.GlobalStringSlice("exclude")
+func (c *Configuration) ExcludedSolvers() (cc []acme.Challenge) {
+	for _, s := range c.context.GlobalStringSlice("exclude") {
+		cc = append(cc, acme.Challenge(s))
+	}
+	return
 }
 
 // ServerPath returns the OS dependent path to the data for a specific CA

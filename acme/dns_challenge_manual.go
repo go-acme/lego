@@ -10,7 +10,7 @@ const (
 	dnsTemplate = "%s %d IN TXT \"%s\""
 )
 
-// DNSProviderManual is an implementation of the DNSProvider interface
+// DNSProviderManual is an implementation of the ChallengeProvider interface
 type DNSProviderManual struct{}
 
 // NewDNSProviderManual returns a DNSProviderManual instance.
@@ -18,8 +18,9 @@ func NewDNSProviderManual() (*DNSProviderManual, error) {
 	return &DNSProviderManual{}, nil
 }
 
-// CreateTXTRecord prints instructions for manually creating the TXT record
-func (*DNSProviderManual) CreateTXTRecord(fqdn, value string, ttl int) error {
+// Present prints instructions for manually creating the TXT record
+func (*DNSProviderManual) Present(domain, token, keyAuth string) error {
+	fqdn, value, ttl := DNS01Record(domain, keyAuth)
 	dnsRecord := fmt.Sprintf(dnsTemplate, fqdn, ttl, value)
 	logf("[INFO] acme: Please create the following TXT record in your DNS zone:")
 	logf("[INFO] acme: %s", dnsRecord)
@@ -29,9 +30,10 @@ func (*DNSProviderManual) CreateTXTRecord(fqdn, value string, ttl int) error {
 	return nil
 }
 
-// RemoveTXTRecord prints instructions for manually removing the TXT record
-func (*DNSProviderManual) RemoveTXTRecord(fqdn, value string, ttl int) error {
-	dnsRecord := fmt.Sprintf(dnsTemplate, fqdn, ttl, value)
+// CleanUp prints instructions for manually removing the TXT record
+func (*DNSProviderManual) CleanUp(domain, token, keyAuth string) error {
+	fqdn, _, ttl := DNS01Record(domain, keyAuth)
+	dnsRecord := fmt.Sprintf(dnsTemplate, fqdn, ttl, "...")
 	logf("[INFO] acme: You can now remove this TXT record from your DNS zone:")
 	logf("[INFO] acme: %s", dnsRecord)
 	return nil

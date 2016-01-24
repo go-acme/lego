@@ -6,13 +6,14 @@ import (
 	"time"
 )
 
-// DNSProviderRFC2136 is an implementation of the DNSProvider interface that
+// DNSProviderRFC2136 is an implementation of the ChallengeProvider interface that
 // uses dynamic DNS updates (RFC 2136) to create TXT records on a nameserver.
 type DNSProviderRFC2136 struct {
 	nameserver string
 	zone       string
 	tsigKey    string
 	tsigSecret string
+	records    map[string]string
 }
 
 // NewDNSProviderRFC2136 returns a new DNSProviderRFC2136 instance.
@@ -23,6 +24,7 @@ func NewDNSProviderRFC2136(nameserver, zone, tsigKey, tsigSecret string) (*DNSPr
 	d := &DNSProviderRFC2136{
 		nameserver: nameserver,
 		zone:       zone,
+		records:    make(map[string]string),
 	}
 	if len(tsigKey) > 0 && len(tsigSecret) > 0 {
 		d.tsigKey = tsigKey
@@ -32,13 +34,17 @@ func NewDNSProviderRFC2136(nameserver, zone, tsigKey, tsigSecret string) (*DNSPr
 	return d, nil
 }
 
-// CreateTXTRecord creates a TXT record using the specified parameters
-func (r *DNSProviderRFC2136) CreateTXTRecord(fqdn, value string, ttl int) error {
+// Present creates a TXT record using the specified parameters
+func (r *DNSProviderRFC2136) Present(domain, token, keyAuth string) error {
+	fqdn, value, ttl := DNS01Record(domain, keyAuth)
+	r.records[fqdn] = value
 	return r.changeRecord("INSERT", fqdn, value, ttl)
 }
 
-// RemoveTXTRecord removes the TXT record matching the specified parameters
-func (r *DNSProviderRFC2136) RemoveTXTRecord(fqdn, value string, ttl int) error {
+// CleanUp removes the TXT record matching the specified parameters
+func (r *DNSProviderRFC2136) CleanUp(domain, token, keyAuth string) error {
+	fqdn, _, ttl := DNS01Record(domain, keyAuth)
+	value := r.records[fqdn]
 	return r.changeRecord("REMOVE", fqdn, value, ttl)
 }
 

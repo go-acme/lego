@@ -108,7 +108,7 @@ func (c *Client) SetChallengeProvider(challenge Challenge, p ChallengeProvider) 
 	case TLSSNI01:
 		c.solvers[challenge] = &tlsSNIChallenge{jws: c.jws, validate: validate, provider: p}
 	case DNS01:
-		c.solvers[challenge] = &dnsChallenge{jws: c.jws, provider: p}
+		c.solvers[challenge] = &dnsChallenge{jws: c.jws, validate: validate, provider: p}
 	default:
 		return fmt.Errorf("Unknown challenge %v", challenge)
 	}

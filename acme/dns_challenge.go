@@ -3,11 +3,9 @@ package acme
 import (
 	"crypto/sha256"
 	"encoding/base64"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
-	"net/http"
 	"strings"
 	"time"
 
@@ -34,6 +32,7 @@ func DNS01Record(domain, keyAuth string) (fqdn string, value string, ttl int) {
 // dnsChallenge implements the dns-01 challenge according to ACME 7.5
 type dnsChallenge struct {
 	jws      *jws
+	validate validateFunc
 	provider ChallengeProvider
 }
 
@@ -66,48 +65,7 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 
 	preCheckDNS(domain, fqdn)
 
-	jsonBytes, err := json.Marshal(challenge{Resource: "challenge", Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
-	if err != nil {
-		return errors.New("Failed to marshal network message...")
-	}
-
-	// Tell the server we handle DNS-01
-	resp, err := s.jws.post(chlng.URI, jsonBytes)
-	if err != nil {
-		return fmt.Errorf("Failed to post JWS message. -> %v", err)
-	}
-
-	// Repeatedly check the server for an updated status on our request.
-	var challengeResponse challenge
-Loop:
-	for {
-		if resp.StatusCode >= http.StatusBadRequest {
-			return handleHTTPError(resp)
-		}
-
-		err = json.NewDecoder(resp.Body).Decode(&challengeResponse)
-		resp.Body.Close()
-		if err != nil {
-			return err
-		}
-
-		switch challengeResponse.Status {
-		case "valid":
-			logf("The server validated our request")
-			break Loop
-		case "pending":
-			break
-		case "invalid":
-			return errors.New("The server could not validate our request.")
-		default:
-			return errors.New("The server returned an unexpected state.")
-		}
-
-		time.Sleep(1 * time.Second)
-		resp, err = http.Get(chlng.URI)
-	}
-
-	return nil
+	return s.validate(s.jws, domain, chlng.URI, chlng)
 }
 
 func checkDNS(domain, fqdn string) bool {

@@ -32,7 +32,7 @@ Current features:
   - [x] HTTP (http-01)
   - [x] TLS with Server Name Indication (tls-sni-01)
   - [ ] Proof of Possession of a Prior Key (proofOfPossession-01)
-  - [ ] DNS (dns-01) - Implemented in branch, blocked by upstream.
+  - [x] DNS (dns-01)
 - [x] Certificate bundling
 - [x] Library support for OCSP
 

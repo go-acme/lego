@@ -10,9 +10,9 @@ import (
 
 var (
 	dnsimpleLiveTest bool
-	dnsimpleEmail  string
-	dnsimpleAPIKey string
-	dnsimpleDomain string
+	dnsimpleEmail    string
+	dnsimpleAPIKey   string
+	dnsimpleDomain   string
 )
 
 func init() {

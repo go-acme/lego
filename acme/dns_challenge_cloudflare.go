@@ -123,22 +123,6 @@ func newTxtRecord(zoneID, fqdn, value string, ttl int) *cloudflare.Record {
 	}
 }
 
-func toFqdn(name string) string {
-	n := len(name)
-	if n == 0 || name[n-1] == '.' {
-		return name
-	}
-	return name + "."
-}
-
-func unFqdn(name string) string {
-	n := len(name)
-	if n != 0 && name[n-1] == '.' {
-		return name[:n-1]
-	}
-	return name
-}
-
 // TTL must be between 120 and 86400 seconds
 func sanitizeTTL(ttl int) int {
 	switch {

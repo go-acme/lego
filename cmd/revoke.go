@@ -5,7 +5,7 @@ import (
 	"log"
 	"path"
 
-	"github.com/gianluca311/lego/cmd/utils"
+	"github.com/xenolf/lego/cmd/utils"
 	"github.com/spf13/cobra"
 )
 

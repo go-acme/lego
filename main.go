@@ -1,6 +1,6 @@
 package main
 
-import "github.com/gianluca311/lego/cmd"
+import "github.com/xenolf/lego/cmd"
 
 func main() {
 	cmd.Execute()

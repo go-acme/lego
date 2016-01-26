@@ -6,7 +6,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/gianluca311/lego/cmd/utils"
+	"github.com/xenolf/lego/cmd/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/xenolf/lego/acme"

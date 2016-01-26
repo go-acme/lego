@@ -9,7 +9,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/gianluca311/lego/cmd/utils"
+	"github.com/xenolf/lego/cmd/utils"
 	"github.com/spf13/cobra"
 	"github.com/xenolf/lego/acme"
 )

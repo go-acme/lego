@@ -1,38 +1,47 @@
 package cmd
 
 import (
-	"fmt"
+	"io/ioutil"
+	"log"
+	"path"
 
+	"github.com/gianluca311/lego/cmd/utils"
 	"github.com/spf13/cobra"
 )
 
 // revokeCmd represents the revoke command
 var revokeCmd = &cobra.Command{
 	Use:   "revoke",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Revokes a certificate",
+	Long: ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		// TODO: Work your own magic here
-		fmt.Println("revoke called")
+		conf, _, client := setup(RootCmd)
+
+		err := utils.CheckFolder(conf.CertPath())
+		if err != nil {
+			log.Fatalf("Cound not check/create path: %s", err.Error())
+		}
+        
+        domains, err := RootCmd.PersistentFlags().GetStringSlice("domains")
+		if err != nil {
+			log.Fatalln(err.Error())
+		}
+		for _, domain := range domains {
+			log.Printf("Trying to revoke certificate for domain %s", domain)
+
+			certPath := path.Join(conf.CertPath(), domain+".crt")
+			certBytes, err := ioutil.ReadFile(certPath)
+
+			err = client.RevokeCertificate(certBytes)
+			if err != nil {
+				log.Fatalf("Error while revoking the certificate for domain %s\n\t%s", domain, err.Error())
+			} else {
+				log.Print("Certificate was revoked.")
+			}
+		}
 	},
 }
 
 func init() {
 	RootCmd.AddCommand(revokeCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// revokeCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// revokeCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
 }

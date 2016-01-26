@@ -9,7 +9,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/xenolf/lego/cmd/utils"
+	"github.com/gianluca311/lego/cmd/utils"
 	"github.com/spf13/cobra"
 	"github.com/xenolf/lego/acme"
 )
@@ -42,56 +42,10 @@ func saveCertRes(certRes acme.CertificateResource, conf *utils.Configuration) {
 	}
 }
 
-func setup(cmd *cobra.Command) (*utils.Configuration, *utils.Account, *acme.Client) {
-	path := cmd.Flag("path").Value.String()
-	log.Println("checking Path", path)
-	utils.CheckFolder(path)
-	conf := utils.NewConfiguration(cmd)
-	email, err := cmd.PersistentFlags().GetString("email")
-	if err != nil || len(email) == 0 {
-		log.Fatalln("You have to pass an account (email address) to the program using --email or -m")
-	}
-
-	acc := utils.NewAccount(email, conf)
-
-	server, err := cmd.PersistentFlags().GetString("server")
-	if err != nil {
-		log.Fatalln("Error on getting server value")
-	}
-
-	client, err := acme.NewClient(server, acc, conf.RsaBits())
-	if err != nil {
-		log.Fatalf("Could not create client: %s", err.Error())
-	}
-
-	if exclude, _ := cmd.PersistentFlags().GetStringSlice("exclude"); len(exclude) > 0 {
-		client.ExcludeChallenges(conf.ExcludedSolvers())
-	}
-
-	http, err := RootCmd.PersistentFlags().GetString("http")
-	if err != nil {
-		log.Fatalln(err.Error())
-	}
-	if len(http) > 0 {
-		client.SetHTTPAddress(http)
-	}
-
-	tls, err := RootCmd.PersistentFlags().GetString("tls")
-	if err != nil {
-		log.Fatalln(err.Error())
-	}
-	if len(tls) > 0 {
-		client.SetTLSAddress(tls)
-	}
-
-	log.Println("end of setup")
-	return conf, acc, client
-}
-
 // runCmd represents the run command
 var runCmd = &cobra.Command{
 	Use:   "run",
-	Short: "Runs lego",
+	Short: "Register an account, then create and install a certificate",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		conf, acc, client := setup(RootCmd)
@@ -181,15 +135,4 @@ var runCmd = &cobra.Command{
 
 func init() {
 	RootCmd.AddCommand(runCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// runCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// runCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
 }

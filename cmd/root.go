@@ -1,17 +1,3 @@
-// Copyright © 2016 NAME HERE <EMAIL ADDRESS>
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package cmd
 
 import (
@@ -61,7 +47,9 @@ func init() {
     
     RootCmd.PersistentFlags().StringP("server", "s", "https://acme-v01.api.letsencrypt.org/directory", "CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client.")
 	RootCmd.PersistentFlags().IntP("rsa-key-size", "B", 2048, "Size of the RSA key.")
-	RootCmd.PersistentFlags().StringP("path", "", defaultPath, "Directory to use for storing the data")
+	RootCmd.PersistentFlags().String("path", defaultPath, "Directory to use for storing the data")
+    RootCmd.PersistentFlags().String("http", "", "Set the port and interface to use for HTTP based challenges to listen on. Supported: interface:port or :port.")
+    RootCmd.PersistentFlags().String("tls", "", "Set the port and interface to use for TLS based challenges to listen on. Supported: interface:port or :port.")
 }
 
 // initConfig reads in config file and ENV variables if set.

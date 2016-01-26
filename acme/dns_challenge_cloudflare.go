@@ -20,7 +20,7 @@ type DNSProviderCloudFlare struct {
 // variables CLOUDFLARE_EMAIL and CLOUDFLARE_API_KEY.
 func NewDNSProviderCloudFlare(cloudflareEmail, cloudflareKey string) (*DNSProviderCloudFlare, error) {
 	if cloudflareEmail == "" || cloudflareKey == "" {
-		cloudflareEmail, cloudflareKey = envAuth()
+		cloudflareEmail, cloudflareKey = cloudflareEnvAuth()
 		if cloudflareEmail == "" || cloudflareKey == "" {
 			return nil, fmt.Errorf("CloudFlare credentials missing")
 		}
@@ -151,7 +151,7 @@ func sanitizeTTL(ttl int) int {
 	}
 }
 
-func envAuth() (email, apiKey string) {
+func cloudflareEnvAuth() (email, apiKey string) {
 	email = os.Getenv("CLOUDFLARE_EMAIL")
 	apiKey = os.Getenv("CLOUDFLARE_API_KEY")
 	if len(email) == 0 || len(apiKey) == 0 {

@@ -2,6 +2,7 @@ package acme
 
 import (
 	"bufio"
+	"crypto/rand"
 	"crypto/rsa"
 	"net/http"
 	"net/http/httptest"
@@ -76,7 +77,7 @@ func TestDNSValidServerResponse(t *testing.T) {
 	preCheckDNS = func(fqdn, value string) (bool, error) {
 		return true, nil
 	}
-	privKey, _ := generatePrivateKey(rsakey, 512)
+	privKey, _ := rsa.GenerateKey(rand.Reader, 512)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Replay-Nonce", "12345")
@@ -84,7 +85,7 @@ func TestDNSValidServerResponse(t *testing.T) {
 	}))
 
 	manualProvider, _ := NewDNSProviderManual()
-	jws := &jws{privKey: privKey.(*rsa.PrivateKey), directoryURL: ts.URL}
+	jws := &jws{privKey: privKey, directoryURL: ts.URL}
 	solver := &dnsChallenge{jws: jws, validate: validate, provider: manualProvider}
 	clientChallenge := challenge{Type: "dns01", Status: "pending", URI: ts.URL, Token: "http8"}
 

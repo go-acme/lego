@@ -33,12 +33,12 @@ func (t *tlsSNIChallenge) Solve(chlng challenge, domain string) error {
 
 	err = t.provider.Present(domain, chlng.Token, keyAuth)
 	if err != nil {
-		return fmt.Errorf("Error presenting token %s", err)
+		return fmt.Errorf("[%s] error presenting token: %v", domain, err)
 	}
 	defer func() {
 		err := t.provider.CleanUp(domain, chlng.Token, keyAuth)
 		if err != nil {
-			log.Printf("Error cleaning up %s %v ", domain, err)
+			log.Printf("[%s] error cleaning up: %v", domain, err)
 		}
 	}()
 	return t.validate(t.jws, domain, chlng.URI, challenge{Resource: "challenge", Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})

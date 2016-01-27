@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-// UserAgent, if non-empty, will be tacked onto the User-Agent string in requests.
+// UserAgent (if non-empty) will be tacked onto the User-Agent string in requests.
 var UserAgent string
 
 const (

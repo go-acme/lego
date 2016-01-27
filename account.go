@@ -1,7 +1,7 @@
 package main
 
 import (
-	"crypto/rsa"
+	"crypto"
 	"encoding/json"
 	"io/ioutil"
 	"os"
@@ -13,7 +13,7 @@ import (
 // Account represents a users local saved credentials
 type Account struct {
 	Email        string `json:"email"`
-	key          *rsa.PrivateKey
+	key          crypto.PrivateKey
 	Registration *acme.RegistrationResource `json:"registration"`
 
 	conf *Configuration
@@ -28,16 +28,18 @@ func NewAccount(email string, conf *Configuration) *Account {
 		logger().Fatalf("Could not check/create directory for account %s: %v", email, err)
 	}
 
-	var privKey *rsa.PrivateKey
+	var privKey crypto.PrivateKey
 	if _, err := os.Stat(accKeyPath); os.IsNotExist(err) {
-		logger().Printf("No key found for account %s. Generating a %v bit key.", email, conf.RsaBits())
-		privKey, err = generateRsaKey(conf.RsaBits(), accKeyPath)
+
+		logger().Printf("No key found for account %s. Generating a curve P384 EC key.", email)
+		privKey, err = generatePrivateKey(accKeyPath)
 		if err != nil {
 			logger().Fatalf("Could not generate RSA private account key for account %s: %v", email, err)
 		}
+
 		logger().Printf("Saved key to %s", accKeyPath)
 	} else {
-		privKey, err = loadRsaKey(accKeyPath)
+		privKey, err = loadPrivateKey(accKeyPath)
 		if err != nil {
 			logger().Fatalf("Could not load RSA private key from file %s: %v", accKeyPath, err)
 		}
@@ -73,7 +75,7 @@ func (a *Account) GetEmail() string {
 }
 
 // GetPrivateKey returns the private RSA account key.
-func (a *Account) GetPrivateKey() *rsa.PrivateKey {
+func (a *Account) GetPrivateKey() crypto.PrivateKey {
 	return a.key
 }
 

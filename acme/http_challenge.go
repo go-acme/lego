@@ -32,12 +32,12 @@ func (s *httpChallenge) Solve(chlng challenge, domain string) error {
 
 	err = s.provider.Present(domain, chlng.Token, keyAuth)
 	if err != nil {
-		return fmt.Errorf("Error presenting token %s", err)
+		return fmt.Errorf("[%s] error presenting token: %v", domain, err)
 	}
 	defer func() {
 		err := s.provider.CleanUp(domain, chlng.Token, keyAuth)
 		if err != nil {
-			log.Printf("Error cleaning up %s %v ", domain, err)
+			log.Printf("[%s] error cleaning up: %v", domain, err)
 		}
 	}()
 

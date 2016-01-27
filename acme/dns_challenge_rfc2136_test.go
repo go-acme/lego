@@ -2,12 +2,13 @@ package acme
 
 import (
 	"bytes"
-	"github.com/miekg/dns"
 	"net"
 	"strings"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/miekg/dns"
 )
 
 var (
@@ -38,7 +39,7 @@ func TestRFC2136CanaryLocalTestServer(t *testing.T) {
 	m.SetQuestion("example.com.", dns.TypeTXT)
 	r, _, err := c.Exchange(m, addrstr)
 	if err != nil || len(r.Extra) == 0 {
-		t.Fatalf("Failed to communicate with test server:", err)
+		t.Fatalf("Failed to communicate with test server: %v", err)
 	}
 	txt := r.Extra[0].(*dns.TXT).Txt[0]
 	if txt != "Hello world" {

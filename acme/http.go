@@ -32,8 +32,7 @@ func httpHead(url string) (resp *http.Response, err error) {
 
 	req.Header.Set("User-Agent", userAgent())
 
-	client := http.Client{}
-	resp, err = client.Do(req)
+	resp, err = http.DefaultClient.Do(req)
 	if resp.Body != nil {
 		resp.Body.Close()
 	}
@@ -50,8 +49,7 @@ func httpPost(url string, bodyType string, body io.Reader) (resp *http.Response,
 	req.Header.Set("Content-Type", bodyType)
 	req.Header.Set("User-Agent", userAgent())
 
-	client := http.Client{}
-	return client.Do(req)
+	return http.DefaultClient.Do(req)
 }
 
 // httpGet performs a GET request with a proper User-Agent string.
@@ -63,8 +61,7 @@ func httpGet(url string) (resp *http.Response, err error) {
 	}
 	req.Header.Set("User-Agent", userAgent())
 
-	client := http.Client{}
-	return client.Do(req)
+	return http.DefaultClient.Do(req)
 }
 
 // getJSON performs an HTTP GET request and parses the response body

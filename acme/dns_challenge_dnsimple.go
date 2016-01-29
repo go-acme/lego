@@ -35,12 +35,12 @@ func NewDNSProviderDNSimple(dnsimpleEmail, dnsimpleApiKey string) (*DNSProviderD
 func (c *DNSProviderDNSimple) Present(domain, token, keyAuth string) error {
 	fqdn, value, ttl := DNS01Record(domain, keyAuth)
 
-	zoneID, err := c.getHostedZoneID(domain)
+	zoneID, zoneName, err := c.getHostedZone(domain)
 	if err != nil {
 		return err
 	}
 
-	recordAttributes := c.newTxtRecord(domain, fqdn, value, ttl)
+	recordAttributes := c.newTxtRecord(zoneName, fqdn, value, ttl)
 	_, _, err = c.client.Domains.CreateRecord(zoneID, *recordAttributes)
 	if err != nil {
 		return fmt.Errorf("DNSimple API call failed: %v", err)
@@ -67,10 +67,10 @@ func (c *DNSProviderDNSimple) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-func (c *DNSProviderDNSimple) getHostedZoneID(domain string) (string, error) {
+func (c *DNSProviderDNSimple) getHostedZone(domain string) (string, string, error) {
 	domains, _, err := c.client.Domains.List()
 	if err != nil {
-		return "", fmt.Errorf("DNSimple API call failed: %v", err)
+		return "", "", fmt.Errorf("DNSimple API call failed: %v", err)
 	}
 
 	var hostedDomain dnsimple.Domain
@@ -82,14 +82,14 @@ func (c *DNSProviderDNSimple) getHostedZoneID(domain string) (string, error) {
 		}
 	}
 	if hostedDomain.Id == 0 {
-		return "", fmt.Errorf("No matching DNSimple domain found for domain %s", domain)
+		return "", "", fmt.Errorf("No matching DNSimple domain found for domain %s", domain)
 	}
 
-	return fmt.Sprintf("%v", hostedDomain.Id), nil
+	return fmt.Sprintf("%v", hostedDomain.Id), hostedDomain.Name, nil
 }
 
 func (c *DNSProviderDNSimple) findTxtRecords(domain, fqdn string) ([]*dnsimple.Record, error) {
-	zoneID, err := c.getHostedZoneID(domain)
+	zoneID, zoneName, err := c.getHostedZone(domain)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +100,7 @@ func (c *DNSProviderDNSimple) findTxtRecords(domain, fqdn string) ([]*dnsimple.R
 		return records, fmt.Errorf("DNSimple API call has failed: %v", err)
 	}
 
-	recordName := c.extractRecordName(fqdn, domain)
+	recordName := c.extractRecordName(fqdn, zoneName)
 	for _, record := range result {
 		if record.Name == recordName {
 			records = append(records, &record)
@@ -110,8 +110,8 @@ func (c *DNSProviderDNSimple) findTxtRecords(domain, fqdn string) ([]*dnsimple.R
 	return records, nil
 }
 
-func (c *DNSProviderDNSimple) newTxtRecord(domain, fqdn, value string, ttl int) *dnsimple.Record {
-	name := c.extractRecordName(fqdn, domain)
+func (c *DNSProviderDNSimple) newTxtRecord(zone, fqdn, value string, ttl int) *dnsimple.Record {
+	name := c.extractRecordName(fqdn, zone)
 
 	return &dnsimple.Record{
 		Type:    "TXT",

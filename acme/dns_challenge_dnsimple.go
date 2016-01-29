@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/weppos/go-dnsimple/dnsimple"
+	"github.com/weppos/dnsimple-go/dnsimple"
 )
 
 // DNSProviderDNSimple is an implementation of the DNSProvider interface.

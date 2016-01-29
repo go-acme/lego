@@ -106,3 +106,21 @@ func checkDNS(domain, fqdn string) bool {
 
 	return false
 }
+
+// toFqdn converts the name into a fqdn appending a trailing dot.
+func toFqdn(name string) string {
+	n := len(name)
+	if n == 0 || name[n-1] == '.' {
+		return name
+	}
+	return name + "."
+}
+
+// unFqdn converts the fqdn into a name removing the trailing dot.
+func unFqdn(name string) string {
+	n := len(name)
+	if n != 0 && name[n-1] == '.' {
+		return name[:n-1]
+	}
+	return name
+}

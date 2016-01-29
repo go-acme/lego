@@ -20,7 +20,7 @@ type DNSProviderCloudFlare struct {
 // variables CLOUDFLARE_EMAIL and CLOUDFLARE_API_KEY.
 func NewDNSProviderCloudFlare(cloudflareEmail, cloudflareKey string) (*DNSProviderCloudFlare, error) {
 	if cloudflareEmail == "" || cloudflareKey == "" {
-		cloudflareEmail, cloudflareKey = envAuth()
+		cloudflareEmail, cloudflareKey = cloudflareEnvAuth()
 		if cloudflareEmail == "" || cloudflareKey == "" {
 			return nil, fmt.Errorf("CloudFlare credentials missing")
 		}
@@ -123,22 +123,6 @@ func newTxtRecord(zoneID, fqdn, value string, ttl int) *cloudflare.Record {
 	}
 }
 
-func toFqdn(name string) string {
-	n := len(name)
-	if n == 0 || name[n-1] == '.' {
-		return name
-	}
-	return name + "."
-}
-
-func unFqdn(name string) string {
-	n := len(name)
-	if n != 0 && name[n-1] == '.' {
-		return name[:n-1]
-	}
-	return name
-}
-
 // TTL must be between 120 and 86400 seconds
 func sanitizeTTL(ttl int) int {
 	switch {
@@ -151,7 +135,7 @@ func sanitizeTTL(ttl int) int {
 	}
 }
 
-func envAuth() (email, apiKey string) {
+func cloudflareEnvAuth() (email, apiKey string) {
 	email = os.Getenv("CLOUDFLARE_EMAIL")
 	apiKey = os.Getenv("CLOUDFLARE_API_KEY")
 	if len(email) == 0 || len(apiKey) == 0 {

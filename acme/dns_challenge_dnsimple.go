@@ -88,13 +88,13 @@ func (c *DNSProviderDNSimple) getHostedZone(domain string) (string, string, erro
 	return fmt.Sprintf("%v", hostedDomain.Id), hostedDomain.Name, nil
 }
 
-func (c *DNSProviderDNSimple) findTxtRecords(domain, fqdn string) ([]*dnsimple.Record, error) {
+func (c *DNSProviderDNSimple) findTxtRecords(domain, fqdn string) ([]dnsimple.Record, error) {
 	zoneID, zoneName, err := c.getHostedZone(domain)
 	if err != nil {
 		return nil, err
 	}
 
-	var records []*dnsimple.Record
+	var records []dnsimple.Record
 	result, _, err := c.client.Domains.ListRecords(zoneID, "", "TXT")
 	if err != nil {
 		return records, fmt.Errorf("DNSimple API call has failed: %v", err)
@@ -103,7 +103,7 @@ func (c *DNSProviderDNSimple) findTxtRecords(domain, fqdn string) ([]*dnsimple.R
 	recordName := c.extractRecordName(fqdn, zoneName)
 	for _, record := range result {
 		if record.Name == recordName {
-			records = append(records, &record)
+			records = append(records, record)
 		}
 	}
 

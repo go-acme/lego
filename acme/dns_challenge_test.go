@@ -37,3 +37,9 @@ func TestDNSValidServerResponse(t *testing.T) {
 		t.Errorf("VALID: Expected Solve to return no error but the error was -> %v", err)
 	}
 }
+
+func TestPreCheckDNS(t *testing.T) {
+	if !preCheckDNS("api.letsencrypt.org", "acme-staging.api.letsencrypt.org") {
+		t.Errorf("preCheckDNS failed for acme-staging.api.letsencrypt.org")
+	}
+}

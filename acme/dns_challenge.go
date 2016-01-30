@@ -73,7 +73,7 @@ func checkDNS(domain, fqdn string) bool {
 	m := new(dns.Msg)
 	m.SetQuestion(domain+".", dns.TypeSOA)
 	c := new(dns.Client)
-	in, _, err := c.Exchange(m, "8.8.8.8:53")
+	in, _, err := c.Exchange(m, "google-public-dns-a.google.com:53")
 	if err != nil {
 		return false
 	}

@@ -37,8 +37,7 @@ type dnsChallenge struct {
 }
 
 func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
-
-	logf("[INFO] acme: Trying to solve DNS-01")
+	logf("[INFO][%s] acme: Trying to solve DNS-01", domain)
 
 	if s.provider == nil {
 		return errors.New("No DNS Provider configured")

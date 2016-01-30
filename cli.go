@@ -108,6 +108,19 @@ func main() {
 			Name:  "tls",
 			Usage: "Set the port and interface to use for TLS based challenges to listen on. Supported: interface:port or :port",
 		},
+		cli.StringFlag{
+			Name: "dns",
+			Usage: "Enable the DNS challenge for solving using a provider." +
+				"\n\tCredentials for providers have to be passed through environment variables." +
+				"\n\tFor a more detailed explanation of the parameters, please see the online docs." +
+				"\n\tValid providers:" +
+				"\n\tcloudflare: CLOUDFLARE_EMAIL, CLOUDFLARE_API_KEY" +
+				"\n\tdigitalocean: DO_AUTH_TOKEN" +
+				"\n\tdnsimple: DNSIMPLE_EMAIL, DNSIMPLE_API_KEY" +
+				"\n\troute53: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION_NAME" +
+				"\n\trfc2136: RFC2136_TSIG_KEY, RFC2136_TSIG_SECRET, RFC2136_NAMESERVER, RFC2136_ZONE" +
+				"\n\tmanual: none",
+		},
 	}
 
 	app.Run(os.Args)

@@ -1,5 +1,26 @@
 # Changelog
 
+## Unreleased
+
+### Added:
+- CLI: The `--dns` switch. To include the DNS challenge for consideration. Supported are the following solvers: cloudflare, digitalocean, dnsimple, route53, rfc2136 and manual.
+- lib: A new type for challenge identifiers `Challenge`
+- lib: A new interface for custom challenge providers `ChallengeProvider`
+- lib: SetChallengeProvider function. Pass a challenge identifier and a Provider to replace the default behaviour of a challenge.
+- lib: The DNS-01 challenge has been implemented with modular solvers using the `ChallengeProvider` interface. Included solvers are: cloudflare, digitalocean, dnsimple, route53, rfc2136 and manual.
+
+### Changed
+- lib: ExcludeChallenges now expects to be passed an array of `Challenge` types.
+- lib: HTTP-01 now supports custom solvers using the `ChallengeProvider` interface.
+- lib: TLS-SNI-01 now supports custom solvers using the `ChallengeProvider` interface.
+
+### Removed
+
+### Fixed
+- lib: Fixed a race condition in HTTP-01
+- lib: Fixed an issue where status codes on ACME challenge responses could lead to no action being taken.
+- lib: Fixed a regression when calling the Renew function with a SAN certificate.
+
 ## [0.2.0] - 2016-01-09
 
 ### Added:
@@ -45,6 +66,7 @@
 ## [0.1.0] - 2015-12-03
 - Initial release
 
+[Unreleased]: https://github.com/xenolf/lego/compare/v0.2.0...HEAD
 [0.2.0]: https://github.com/xenolf/lego/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/xenolf/lego/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/xenolf/lego/tree/v0.1.0

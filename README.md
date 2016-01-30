@@ -85,12 +85,23 @@ GLOBAL OPTIONS:
    --server, -s "https://acme-v01.api.letsencrypt.org/directory"	CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client.
    --email, -m 								Email used for registration and recovery contact.
    --rsa-key-size, -B "2048"						Size of the RSA key.
-   --path "${CWD}/.lego"	Directory to use for storing the data
+   --path "{$CWD}/.lego"	Directory to use for storing the data
    --exclude, -x [--exclude option --exclude option]			Explicitly disallow solvers by name from being used. Solvers: "http-01", "tls-sni-01".
-   --http 								Set the port and interface to use for HTTP based challenges to listen on. Supported: interface:port or :port.
-   --tls 								Set the port and interface to use for TLS based challenges to listen on. Supported: interface:port or :port.
+   --http 								Set the port and interface to use for HTTP based challenges to listen on. Supported: interface:port or :port
+   --tls 								Set the port and interface to use for TLS based challenges to listen on. Supported: interface:port or :port
+   --dns 								Enable the DNS challenge for solving using a provider.
+									Credentials for providers have to be passed through environment variables.
+									For a more detailed explanation of the parameters, please see the online docs.
+									Valid providers:
+									cloudflare: CLOUDFLARE_EMAIL, CLOUDFLARE_API_KEY
+									digitalocean: DO_AUTH_TOKEN
+									dnsimple: DNSIMPLE_EMAIL, DNSIMPLE_API_KEY
+									route53: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
+									rfc2136: RFC2136_TSIG_KEY, RFC2136_TSIG_SECRET, RFC2136_NAMESERVER, RFC2136_ZONE
+									manual: none
    --help, -h								show help
    --version, -v							print the version
+
 
 ```
 

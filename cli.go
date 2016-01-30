@@ -117,7 +117,7 @@ func main() {
 				"\n\tcloudflare: CLOUDFLARE_EMAIL, CLOUDFLARE_API_KEY" +
 				"\n\tdigitalocean: DO_AUTH_TOKEN" +
 				"\n\tdnsimple: DNSIMPLE_EMAIL, DNSIMPLE_API_KEY" +
-				"\n\troute53: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION_NAME" +
+				"\n\troute53: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION" +
 				"\n\trfc2136: RFC2136_TSIG_KEY, RFC2136_TSIG_SECRET, RFC2136_NAMESERVER, RFC2136_ZONE" +
 				"\n\tmanual: none",
 		},

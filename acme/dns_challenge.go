@@ -79,8 +79,12 @@ func checkDNS(domain, fqdn string) bool {
 
 	var authorativeNS string
 	for _, answ := range in.Answer {
-		soa := answ.(*dns.SOA)
-		authorativeNS = soa.Ns
+		switch ans := answ.(type) {
+		case *dns.SOA:
+			authorativeNS = ans.Ns
+		case *dns.CNAME:
+			authorativeNS = ans.Target
+		}
 	}
 
 	fallbackCnt := 0

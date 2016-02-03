@@ -123,3 +123,23 @@ func unFqdn(name string) string {
 	}
 	return name
 }
+
+// waitFor polls the given function 'f', once per second, up to 'timeout' seconds.
+func waitFor(timeout int, f func() (bool, error)) error {
+	start := time.Now().Second()
+	for {
+		time.Sleep(1 * time.Second)
+
+		if delta := time.Now().Second() - start; delta >= timeout {
+			return fmt.Errorf("Time limit exceeded (%d seconds)", delta)
+		}
+
+		stop, err := f()
+		if err != nil {
+			return err
+		}
+		if stop {
+			return nil
+		}
+	}
+}

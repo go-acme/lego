@@ -68,7 +68,7 @@ func (r *DNSProviderRoute53) changeRecord(action, fqdn, value string, ttl int) e
 		return err
 	}
 
-	return waitFor(90, func() (bool, error) {
+	return waitFor(90, 5, func() (bool, error) {
 		status, err := r.client.GetChange(resp.ChangeInfo.ID)
 		if err != nil {
 			return false, err

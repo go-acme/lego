@@ -122,6 +122,57 @@ To renew the certificate:
 $ lego --email="foo@bar.com" --domains="example.com" renew
 ```
 
+Obtain a certificate using the DNS challenge and AWS Route 53:
+
+```bash
+$ AWS_REGION=us-east-1 AWS_ACCESS_KEY_ID=my_id AWS_SECRET_ACCESS_KEY=my_key lego --email="foo@bar.com" --domains="example.com" --dns="route53" --exclude="http-01" --exclude="tls-sni-01" run
+```
+
+#### DNS Challenge API Details
+
+##### AWS Route 53
+
+The following AWS IAM policy document describes the permissions required for lego to complete the DNS challenge.
+Replace `<INSERT_YOUR_HOSTED_ZONE_ID_HERE>` with the Route 53 zone ID of the domain you are authorizing.
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "1",
+            "Effect": "Allow",
+            "Action": [
+                "route53:ChangeResourceRecordSets"
+            ],
+            "Resource": [
+                "arn:aws:route53:::hostedzone/<INSERT_YOUR_HOSTED_ZONE_ID_HERE>"
+            ]
+        },
+        {
+            "Sid": "2",
+            "Effect": "Allow",
+            "Action": [
+                "route53:GetChange"
+            ],
+            "Resource": [
+                "arn:aws:route53:::change/*"
+            ]
+        },
+        {
+            "Sid": "3",
+            "Effect": "Allow",
+            "Action": [
+                "route53:ListHostedZones"
+            ],
+            "Resource": [
+                "*"
+            ]
+        }
+    ]
+}
+```
+
 #### ACME Library Usage
 
 A valid, but bare-bones example use of the acme package:

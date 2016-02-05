@@ -43,12 +43,14 @@ func NewDNSProviderRoute53(awsAccessKey, awsSecretKey, awsRegionName string) (*D
 // Present creates a TXT record using the specified parameters
 func (r *DNSProviderRoute53) Present(domain, token, keyAuth string) error {
 	fqdn, value, ttl := DNS01Record(domain, keyAuth)
+	value = `"` + value + `"`
 	return r.changeRecord("UPSERT", fqdn, value, ttl)
 }
 
 // CleanUp removes the TXT record matching the specified parameters
 func (r *DNSProviderRoute53) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value, ttl := DNS01Record(domain, keyAuth)
+	value = `"` + value + `"`
 	return r.changeRecord("DELETE", fqdn, value, ttl)
 }
 
@@ -61,8 +63,21 @@ func (r *DNSProviderRoute53) changeRecord(action, fqdn, value string, ttl int) e
 	update := route53.Change{action, recordSet}
 	changes := []route53.Change{update}
 	req := route53.ChangeResourceRecordSetsRequest{Comment: "Created by Lego", Changes: changes}
-	_, err = r.client.ChangeResourceRecordSets(hostedZoneID, &req)
-	return err
+	resp, err := r.client.ChangeResourceRecordSets(hostedZoneID, &req)
+	if err != nil {
+		return err
+	}
+
+	return waitFor(90, func() (bool, error) {
+		status, err := r.client.GetChange(resp.ChangeInfo.ID)
+		if err != nil {
+			return false, err
+		}
+		if status == "INSYNC" {
+			return true, nil
+		}
+		return false, nil
+	})
 }
 
 func (r *DNSProviderRoute53) getHostedZoneID(fqdn string) (string, error) {
@@ -108,6 +123,7 @@ func newTXTRecordSet(fqdn, value string, ttl int) route53.ResourceRecordSet {
 		Records: []string{value},
 		TTL:     ttl,
 	}
+
 }
 
 // Route53 API has pretty strict rate limits (5req/s globally per account)

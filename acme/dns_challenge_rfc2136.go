@@ -2,30 +2,36 @@ package acme
 
 import (
 	"fmt"
-	"github.com/miekg/dns"
 	"time"
+
+	"github.com/miekg/dns"
 )
 
 // DNSProviderRFC2136 is an implementation of the ChallengeProvider interface that
 // uses dynamic DNS updates (RFC 2136) to create TXT records on a nameserver.
 type DNSProviderRFC2136 struct {
-	nameserver string
-	zone       string
-	tsigKey    string
-	tsigSecret string
-	records    map[string]string
+	nameserver    string
+	zone          string
+	tsigAlgorithm string
+	tsigKey       string
+	tsigSecret    string
+	records       map[string]string
 }
 
 // NewDNSProviderRFC2136 returns a new DNSProviderRFC2136 instance.
-// To disable TSIG authentication 'tsigKey' and 'tsigSecret' must be set to the empty string.
+// To disable TSIG authentication 'tsigAlgorithm, 'tsigKey' and 'tsigSecret' must be set to the empty string.
 // 'nameserver' must be a network address in the the form "host:port". 'zone' must be the fully
 // qualified name of the zone.
-func NewDNSProviderRFC2136(nameserver, zone, tsigKey, tsigSecret string) (*DNSProviderRFC2136, error) {
+func NewDNSProviderRFC2136(nameserver, zone, tsigAlgorithm, tsigKey, tsigSecret string) (*DNSProviderRFC2136, error) {
 	d := &DNSProviderRFC2136{
 		nameserver: nameserver,
 		zone:       zone,
 		records:    make(map[string]string),
 	}
+	if tsigAlgorithm == "" {
+		tsigAlgorithm = dns.HmacMD5
+	}
+	d.tsigAlgorithm = tsigAlgorithm
 	if len(tsigKey) > 0 && len(tsigSecret) > 0 {
 		d.tsigKey = tsigKey
 		d.tsigSecret = tsigSecret
@@ -73,7 +79,7 @@ func (r *DNSProviderRFC2136) changeRecord(action, fqdn, value string, ttl int) e
 	c.SingleInflight = true
 	// TSIG authentication / msg signing
 	if len(r.tsigKey) > 0 && len(r.tsigSecret) > 0 {
-		m.SetTsig(dns.Fqdn(r.tsigKey), dns.HmacMD5, 300, time.Now().Unix())
+		m.SetTsig(dns.Fqdn(r.tsigKey), r.tsigAlgorithm, 300, time.Now().Unix())
 		c.TsigSecret = map[string]string{dns.Fqdn(r.tsigKey): r.tsigSecret}
 	}
 

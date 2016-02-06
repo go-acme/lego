@@ -69,10 +69,11 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 		case "rfc2136":
 			nameserver := os.Getenv("RFC2136_NAMESERVER")
 			zone := os.Getenv("RFC2136_ZONE")
+			tsigAlgorithm := os.Getenv("RFC2136_TSIG_ALGORITHM")
 			tsigKey := os.Getenv("RFC2136_TSIG_KEY")
 			tsigSecret := os.Getenv("RFC2136_TSIG_SECRET")
 
-			provider, err = acme.NewDNSProviderRFC2136(nameserver, zone, tsigKey, tsigSecret)
+			provider, err = acme.NewDNSProviderRFC2136(nameserver, zone, tsigAlgorithm, tsigKey, tsigSecret)
 		case "manual":
 			provider, err = acme.NewDNSProviderManual()
 		}

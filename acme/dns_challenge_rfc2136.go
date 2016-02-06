@@ -2,6 +2,7 @@ package acme
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/miekg/dns"
@@ -20,9 +21,13 @@ type DNSProviderRFC2136 struct {
 
 // NewDNSProviderRFC2136 returns a new DNSProviderRFC2136 instance.
 // To disable TSIG authentication 'tsigAlgorithm, 'tsigKey' and 'tsigSecret' must be set to the empty string.
-// 'nameserver' must be a network address in the the form "host:port". 'zone' must be the fully
+// 'nameserver' must be a network address in the the form "host" or "host:port". 'zone' must be the fully
 // qualified name of the zone.
 func NewDNSProviderRFC2136(nameserver, zone, tsigAlgorithm, tsigKey, tsigSecret string) (*DNSProviderRFC2136, error) {
+	// Append the default DNS port if none is specified.
+	if !strings.Contains(nameserver, ":") {
+		nameserver += ":53"
+	}
 	d := &DNSProviderRFC2136{
 		nameserver: nameserver,
 		zone:       zone,

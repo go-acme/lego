@@ -33,9 +33,10 @@ func httpHead(url string) (resp *http.Response, err error) {
 	req.Header.Set("User-Agent", userAgent())
 
 	resp, err = http.DefaultClient.Do(req)
-	if resp.Body != nil {
-		resp.Body.Close()
+	if err != nil {
+		return resp, err
 	}
+	resp.Body.Close()
 	return resp, err
 }
 

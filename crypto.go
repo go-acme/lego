@@ -47,7 +47,7 @@ func loadPrivateKey(file string) (crypto.PrivateKey, error) {
 
 	switch keyBlock.Type {
 	case "RSA PRIVATE KEY":
-		x509.ParsePKCS1PrivateKey(keyBlock.Bytes)
+		return x509.ParsePKCS1PrivateKey(keyBlock.Bytes)
 	case "EC PRIVATE KEY":
 		return x509.ParseECPrivateKey(keyBlock.Bytes)
 	}

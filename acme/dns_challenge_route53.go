@@ -15,29 +15,29 @@ type DNSProviderRoute53 struct {
 }
 
 // NewDNSProviderRoute53 returns a DNSProviderRoute53 instance with a configured route53 client.
-// Authentication is either done using the passed credentials or - when empty -
-// using the environment variables AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.
+// Authentication is either done using the passed credentials or - when empty - falling back to
+// the customary AWS credential mechanisms, including the file refernced by $AWS_CREDENTIAL_FILE
+// (defaulting to $HOME/.aws/credentials) optionally scoped to $AWS_PROFILE, credentials
+// supplied by the environment variables AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY [ + AWS_SECURITY_TOKEN ],
+// and finally credentials available via the EC2 instance metadata service.
 func NewDNSProviderRoute53(awsAccessKey, awsSecretKey, awsRegionName string) (*DNSProviderRoute53, error) {
 	region, ok := aws.Regions[awsRegionName]
 	if !ok {
 		return nil, fmt.Errorf("Invalid AWS region name %s", awsRegionName)
 	}
 
-	var auth aws.Auth
-	// First try passed in credentials
-	if awsAccessKey != "" && awsSecretKey != "" {
-		auth = aws.Auth{awsAccessKey, awsSecretKey, ""}
+	// use aws.GetAuth, which tries really hard to find credentails:
+	//   - uses awsAccessKey and awsSecretKey, if provided
+	//   - uses AWS_PROFILE / AWS_CREDENTIAL_FILE, if provided
+	//   - uses AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY and optionally AWS_SECURITY_TOKEN, if provided
+	//   - uses EC2 instance metadata credentials (http://169.254.169.254/latest/meta-data/…), if available
+	//  ...and otherwise returns an error
+	if auth, err := aws.GetAuth(awsAccessKey, awsSecretKey); err != nil {
+		return nil, err
 	} else {
-		// try getting credentials from environment
-		envAuth, err := aws.EnvAuth()
-		if err != nil {
-			return nil, fmt.Errorf("AWS credentials missing")
-		}
-		auth = envAuth
+		client := route53.New(auth, region)
+		return &DNSProviderRoute53{client: client}, nil
 	}
-
-	client := route53.New(auth, region)
-	return &DNSProviderRoute53{client: client}, nil
 }
 
 // Present creates a TXT record using the specified parameters

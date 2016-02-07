@@ -11,9 +11,11 @@ import (
 )
 
 var (
-	route53Secret string
-	route53Key    string
-	testServer    *testutil.HTTPServer
+	route53Secret     string
+	route53Key        string
+	awsCredentialFile string
+	homeDir           string
+	testServer        *testutil.HTTPServer
 )
 
 var ChangeResourceRecordSetsAnswer = `<?xml version="1.0" encoding="UTF-8"?>
@@ -69,6 +71,8 @@ var serverResponseMap = testutil.ResponseMap{
 func init() {
 	route53Key = os.Getenv("AWS_ACCESS_KEY_ID")
 	route53Secret = os.Getenv("AWS_SECRET_ACCESS_KEY")
+	awsCredentialFile = os.Getenv("AWS_CREDENTIAL_FILE")
+	homeDir = os.Getenv("HOME")
 	testServer = testutil.NewHTTPServer()
 	testServer.Start()
 }
@@ -76,6 +80,8 @@ func init() {
 func restoreRoute53Env() {
 	os.Setenv("AWS_ACCESS_KEY_ID", route53Key)
 	os.Setenv("AWS_SECRET_ACCESS_KEY", route53Secret)
+	os.Setenv("AWS_CREDENTIAL_FILE", awsCredentialFile)
+	os.Setenv("HOME", homeDir)
 }
 
 func makeRoute53TestServer() *testutil.HTTPServer {
@@ -108,8 +114,10 @@ func TestNewDNSProviderRoute53ValidEnv(t *testing.T) {
 func TestNewDNSProviderRoute53MissingAuthErr(t *testing.T) {
 	os.Setenv("AWS_ACCESS_KEY_ID", "")
 	os.Setenv("AWS_SECRET_ACCESS_KEY", "")
+	os.Setenv("AWS_CREDENTIAL_FILE", "") // in case test machine has this variable set
+	os.Setenv("HOME", "/")               // in case test machine has ~/.aws/credentials
 	_, err := NewDNSProviderRoute53("", "", "us-east-1")
-	assert.EqualError(t, err, "AWS credentials missing")
+	assert.EqualError(t, err, "No valid AWS authentication found")
 	restoreRoute53Env()
 }
 

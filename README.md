@@ -102,6 +102,7 @@ GLOBAL OPTIONS:
 									namecheap: NAMECHEAP_API_USER, NAMECHEAP_API_KEY
 									route53: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION
 									rfc2136: RFC2136_TSIG_KEY, RFC2136_TSIG_SECRET, RFC2136_TSIG_ALGORITHM, RFC2136_NAMESERVER
+									dyn: DYN_CUSTOMER_NAME, DYN_USER_NAME, DYN_PASSWORD
 									manual: none
    --help, -h								show help
    --version, -v							print the version

@@ -90,6 +90,10 @@ func GetOCSPForCert(bundle []byte) ([]byte, *ocsp.Response, error) {
 	issuedCert := certificates[0]
 	issuerCert := certificates[1]
 
+	if len(issuedCert.OCSPServer) == 0 {
+		return nil, nil, errors.New("no OCSP server specified in cert")
+	}
+
 	// Finally kick off the OCSP request.
 	ocspReq, err := ocsp.CreateRequest(issuedCert, issuerCert, nil)
 	if err != nil {

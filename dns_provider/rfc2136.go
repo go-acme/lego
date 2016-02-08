@@ -2,12 +2,25 @@ package dns_provider
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/miekg/dns"
 	"github.com/xenolf/lego/acme"
 )
+
+func init() {
+	Registry.addProvider("rfc2136", "RFC2136_TSIG_KEY, RFC2136_TSIG_SECRET, RFC2136_TSIG_ALGORITHM, RFC2136_NAMESERVER, RFC2136_ZONE", func() (acme.ChallengeProvider, error) {
+		nameserver := os.Getenv("RFC2136_NAMESERVER")
+		zone := os.Getenv("RFC2136_ZONE")
+		tsigAlgorithm := os.Getenv("RFC2136_TSIG_ALGORITHM")
+		tsigKey := os.Getenv("RFC2136_TSIG_KEY")
+		tsigSecret := os.Getenv("RFC2136_TSIG_SECRET")
+
+		return NewDNSProviderRFC2136(nameserver, zone, tsigAlgorithm, tsigKey, tsigSecret)
+	})
+}
 
 // DNSProviderRFC2136 is an implementation of the ChallengeProvider interface that
 // uses dynamic DNS updates (RFC 2136) to create TXT records on a nameserver.

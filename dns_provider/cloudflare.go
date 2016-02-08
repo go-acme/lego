@@ -10,6 +10,12 @@ import (
 	"golang.org/x/net/context"
 )
 
+func init() {
+	Registry.addProvider("cloudflare", "CLOUDFLARE_EMAIL, CLOUDFLARE_API_KEY", func() (acme.ChallengeProvider, error) {
+		return NewDNSProviderCloudFlare("", "")
+	})
+}
+
 // DNSProviderCloudFlare is an implementation of the DNSProvider interface
 type DNSProviderCloudFlare struct {
 	client *cloudflare.Client

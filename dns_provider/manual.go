@@ -12,6 +12,12 @@ const (
 	dnsTemplate = "%s %d IN TXT \"%s\""
 )
 
+func init() {
+	Registry.addProvider("manual", "(none)", func() (acme.ChallengeProvider, error) {
+		return NewDNSProviderManual()
+	})
+}
+
 // DNSProviderManual is an implementation of the ChallengeProvider interface
 type DNSProviderManual struct{}
 

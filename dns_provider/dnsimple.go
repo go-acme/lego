@@ -9,6 +9,12 @@ import (
 	"github.com/xenolf/lego/acme"
 )
 
+func init() {
+	Registry.addProvider("dnsimple", "DNSIMPLE_EMAIL, DNSIMPLE_API_KEY", func() (acme.ChallengeProvider, error) {
+		return NewDNSProviderDNSimple("", "")
+	})
+}
+
 // DNSProviderDNSimple is an implementation of the DNSProvider interface.
 type DNSProviderDNSimple struct {
 	client *dnsimple.Client

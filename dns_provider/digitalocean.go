@@ -5,10 +5,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"sync"
 
 	"github.com/xenolf/lego/acme"
 )
+
+func init() {
+	Registry.addProvider("digitalocean", "DO_AUTH_TOKEN", func() (acme.ChallengeProvider, error) {
+		return NewDNSProviderDigitalOcean(os.Getenv("DO_AUTH_TOKEN"))
+	})
+}
 
 // DNSProviderDigitalOcean is an implementation of the DNSProvider interface
 // that uses DigitalOcean's REST API to manage TXT records for a domain.

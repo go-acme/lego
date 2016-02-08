@@ -58,6 +58,12 @@ func (s *httpChallengeServer) serve(domain, token, keyAuth string) {
 		}
 	})
 
-	http.Serve(s.listener, mux)
+	httpServer := &http.Server{
+		Handler: mux,
+	}
+	// Once httpServer is shut down we don't want any lingering
+	// connections, so disable KeepAlives.
+	httpServer.SetKeepAlivesEnabled(false)
+	httpServer.Serve(s.listener)
 	s.done <- true
 }

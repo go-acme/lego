@@ -6,17 +6,18 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net"
 	"strings"
 	"time"
 
 	"github.com/miekg/dns"
 )
 
-type preCheckDNSFunc func(domain, fqdn string) bool
+type preCheckDNSFunc func(domain, fqdn, value string) error
 
-var preCheckDNS preCheckDNSFunc = checkDNS
+var preCheckDNS preCheckDNSFunc = checkDnsPropagation
 
-var preCheckDNSFallbackCount = 5
+var recursionMaxDepth = 10
 
 // DNS01Record returns a DNS record which will fulfill the `dns-01` challenge
 func DNS01Record(domain, keyAuth string) (fqdn string, value string, ttl int) {
@@ -60,50 +61,141 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 		}
 	}()
 
-	fqdn, _, _ := DNS01Record(domain, keyAuth)
+	fqdn, value, _ := DNS01Record(domain, keyAuth)
 
-	preCheckDNS(domain, fqdn)
+	logf("[INFO][%s] Checking DNS record propagation...", domain)
+
+	if err = preCheckDNS(domain, fqdn, value); err != nil {
+		return err
+	}
 
 	return s.validate(s.jws, domain, chlng.URI, challenge{Resource: "challenge", Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
 }
 
-func checkDNS(domain, fqdn string) bool {
-	// check if the expected DNS entry was created. If not wait for some time and try again.
-	m := new(dns.Msg)
-	m.SetQuestion(domain+".", dns.TypeSOA)
-	c := new(dns.Client)
-	in, _, err := c.Exchange(m, "google-public-dns-a.google.com:53")
+// checkDnsPropagation checks if the expected DNS entry has been propagated to
+// all authoritative nameservers. If not it waits and retries for some time.
+func checkDnsPropagation(domain, fqdn, value string) error {
+	authoritativeNss, err := lookupNameservers(toFqdn(domain))
 	if err != nil {
-		return false
+		return err
 	}
 
-	var authorativeNS string
-	for _, answ := range in.Answer {
-		soa := answ.(*dns.SOA)
-		authorativeNS = soa.Ns
+	if err = waitFor(30, 2, func() (bool, error) {
+		return checkAuthoritativeNss(fqdn, value, authoritativeNss)
+	}); err != nil {
+		return err
 	}
 
-	fallbackCnt := 0
-	for fallbackCnt < preCheckDNSFallbackCount {
-		m.SetQuestion(fqdn, dns.TypeTXT)
-		in, _, err = c.Exchange(m, authorativeNS+":53")
+	return nil
+}
+
+// checkAuthoritativeNss checks whether a TXT record with fqdn and value exists on every given nameserver.
+func checkAuthoritativeNss(fqdn, value string, nameservers []string) (bool, error) {
+	for _, ns := range nameservers {
+		r, err := dnsQuery(fqdn, dns.TypeTXT, net.JoinHostPort(ns, "53"))
 		if err != nil {
-			return false
+			return false, err
 		}
 
-		if len(in.Answer) > 0 {
-			return true
+		if r.Rcode != dns.RcodeSuccess {
+			return false, fmt.Errorf("%s returned RCode %s", ns, dns.RcodeToString[r.Rcode])
 		}
 
-		fallbackCnt++
-		if fallbackCnt >= preCheckDNSFallbackCount {
-			return false
+		var found bool
+		for _, rr := range r.Answer {
+			if txt, ok := rr.(*dns.TXT); ok {
+				if strings.Join(txt.Txt, "") == value {
+					found = true
+					break
+				}
+			}
 		}
-
-		time.Sleep(time.Second * time.Duration(fallbackCnt))
+		if !found {
+			return false, fmt.Errorf("%s did not return the expected TXT record", ns)
+		}
 	}
 
-	return false
+	return true, nil
+}
+
+// dnsQuery directly queries the given authoritative nameserver.
+func dnsQuery(fqdn string, rtype uint16, nameserver string) (in *dns.Msg, err error) {
+	m := new(dns.Msg)
+	m.SetQuestion(fqdn, rtype)
+	m.SetEdns0(4096, false)
+	m.RecursionDesired = false
+
+	in, err = dns.Exchange(m, nameserver)
+	if err == dns.ErrTruncated {
+		tcp := &dns.Client{Net: "tcp"}
+		in, _, err = tcp.Exchange(m, nameserver)
+	}
+
+	return
+}
+
+// lookupNameservers returns the authoritative nameservers for the given domain name.
+func lookupNameservers(fqdn string) ([]string, error) {
+	var referralNameservers []string
+
+	// We start recursion at the gTLD origin
+	// so we don't have to manage root hints
+	labels := dns.SplitDomainName(fqdn)
+	tld := labels[len(labels)-1]
+	nss, err := net.LookupNS(tld)
+	if err != nil {
+		return nil, fmt.Errorf("Could not resolve TLD %s %v", tld, err)
+	}
+
+	for _, ns := range nss {
+		referralNameservers = append(referralNameservers, ns.Host)
+	}
+
+	// Follow the referrals until we hit the authoritative NS
+	for depth := 0; depth < recursionMaxDepth; depth++ {
+		var r *dns.Msg
+		var err error
+
+		for _, ns := range referralNameservers {
+			r, err = dnsQuery(fqdn, dns.TypeNS, net.JoinHostPort(ns, "53"))
+			if err != nil {
+				continue
+			}
+
+			if r.Rcode == dns.RcodeSuccess {
+				break
+			}
+
+			if r.Rcode == dns.RcodeNameError  {
+				return nil, fmt.Errorf("Could not resolve NXDOMAIN %s", fqdn)
+			}
+		}
+
+		if r == nil {
+			break
+		}
+
+		if r.Authoritative {
+			// We got an authoritative reply, which means that the
+			// last referral holds the authoritative nameservers.
+			return referralNameservers, nil
+		}
+
+		referralNameservers = nil
+
+		for _, rr := range r.Ns {
+			if ns, ok := rr.(*dns.NS); ok {
+				referralNameservers = append(referralNameservers, strings.ToLower(ns.Ns))
+			}
+		}
+
+		// No referrals to follow
+		if len(referralNameservers) == 0 {
+			break
+		}
+	}
+
+	return nil, fmt.Errorf("Could not determine nameservers for %s", fqdn)
 }
 
 // toFqdn converts the name into a fqdn appending a trailing dot.
@@ -124,22 +216,25 @@ func unFqdn(name string) string {
 	return name
 }
 
-// waitFor polls the given function 'f', once per second, up to 'timeout' seconds.
-func waitFor(timeout int, f func() (bool, error)) error {
-	start := time.Now().Second()
+// waitFor polls the given function 'f', once every 'interval' seconds, up to 'timeout' seconds.
+func waitFor(timeout, interval int, f func() (bool, error)) error {
+	var lastErr string
+	timeup := time.After(time.Duration(timeout) * time.Second)
 	for {
-		time.Sleep(1 * time.Second)
-
-		if delta := time.Now().Second() - start; delta >= timeout {
-			return fmt.Errorf("Time limit exceeded (%d seconds)", delta)
+		select {
+		case <-timeup:
+			return fmt.Errorf("Time limit exceeded. Last error: %s", lastErr)
+		default:
 		}
 
 		stop, err := f()
-		if err != nil {
-			return err
-		}
 		if stop {
 			return nil
 		}
+		if err != nil {
+			lastErr = err.Error()
+		}
+
+		time.Sleep(time.Duration(interval) * time.Second)
 	}
 }

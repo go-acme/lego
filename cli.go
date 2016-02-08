@@ -1,3 +1,5 @@
+// Let's Encrypt client to go!
+// CLI application for generating Let's Encrypt certificates using the ACME package.
 package main
 
 import (

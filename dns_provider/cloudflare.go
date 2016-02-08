@@ -1,4 +1,4 @@
-package acme
+package dns_provider
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/crackcomm/cloudflare"
+	"github.com/xenolf/lego/acme"
 	"golang.org/x/net/context"
 )
 
@@ -36,7 +37,7 @@ func NewDNSProviderCloudFlare(cloudflareEmail, cloudflareKey string) (*DNSProvid
 
 // Present creates a TXT record to fulfil the dns-01 challenge
 func (c *DNSProviderCloudFlare) Present(domain, token, keyAuth string) error {
-	fqdn, value, ttl := DNS01Record(domain, keyAuth)
+	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
 	zoneID, err := c.getHostedZoneID(fqdn)
 	if err != nil {
 		return err
@@ -53,7 +54,7 @@ func (c *DNSProviderCloudFlare) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters
 func (c *DNSProviderCloudFlare) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _, _ := DNS01Record(domain, keyAuth)
+	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
 	records, err := c.findTxtRecords(fqdn)
 	if err != nil {
 		return err

@@ -1,4 +1,4 @@
-package acme
+package dns_provider
 
 import (
 	"bytes"

@@ -128,6 +128,12 @@ Obtain a certificate using the DNS challenge and AWS Route 53:
 $ AWS_REGION=us-east-1 AWS_ACCESS_KEY_ID=my_id AWS_SECRET_ACCESS_KEY=my_key lego --email="foo@bar.com" --domains="example.com" --dns="route53" --exclude="http-01" --exclude="tls-sni-01" run
 ```
 
+lego defaults to communicating with the production Let's Encrypt ACME server. If you'd like to test something without issuing real certificates, consider using the staging endpoint instead:
+
+```bash
+$ lego --server=https://acme-staging.api.letsencrypt.org/directory …
+```
+
 #### DNS Challenge API Details
 
 ##### AWS Route 53

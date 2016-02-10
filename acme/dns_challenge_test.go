@@ -34,11 +34,11 @@ var lookupNameserversTestsErr = []struct {
 }{
 	// invalid tld
 	{"_null.n0n0.",
-		"Could not determine root domain",
+		"Could not determine authoritative nameservers",
 	},
 	// invalid domain
 	{"_null.com.",
-		"Could not determine root domain",
+		"Could not determine authoritative nameservers",
 	},
 }
 
@@ -73,8 +73,8 @@ var checkAuthoritativeNssTestsErr = []struct {
 }
 
 func TestDNSValidServerResponse(t *testing.T) {
-	preCheckDNS = func(domain, fqdn, value string) error {
-		return nil
+	preCheckDNS = func(fqdn, value string) (bool, error) {
+		return true, nil
 	}
 	privKey, _ := generatePrivateKey(rsakey, 512)
 
@@ -101,8 +101,8 @@ func TestDNSValidServerResponse(t *testing.T) {
 }
 
 func TestPreCheckDNS(t *testing.T) {
-	err := preCheckDNS("api.letsencrypt.org", "acme-staging.api.letsencrypt.org", "fe01=")
-	if err != nil {
+	ok, err := preCheckDNS("acme-staging.api.letsencrypt.org", "fe01=")
+	if err != nil || !ok {
 		t.Errorf("preCheckDNS failed for acme-staging.api.letsencrypt.org")
 	}
 }

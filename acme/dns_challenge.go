@@ -13,11 +13,11 @@ import (
 	"github.com/miekg/dns"
 )
 
-type preCheckDNSFunc func(domain, fqdn, value string) error
+type preCheckDNSFunc func(fqdn, value string) (bool, error)
 
 var preCheckDNS preCheckDNSFunc = checkDnsPropagation
 
-var recursionMaxDepth = 10
+var recursiveNameserver = "google-public-dns-a.google.com"
 
 // DNS01Record returns a DNS record which will fulfill the `dns-01` challenge
 func DNS01Record(domain, keyAuth string) (fqdn string, value string, ttl int) {
@@ -65,28 +65,43 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 
 	logf("[INFO][%s] Checking DNS record propagation...", domain)
 
-	if err = preCheckDNS(domain, fqdn, value); err != nil {
+	err = waitFor(30, 2, func() (bool, error) {
+		return preCheckDNS(fqdn, value)
+	})
+	if err != nil {
 		return err
 	}
 
 	return s.validate(s.jws, domain, chlng.URI, challenge{Resource: "challenge", Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
 }
 
-// checkDnsPropagation checks if the expected TXT record has been propagated to
-// all authoritative nameservers. If not it waits and retries for some time.
-func checkDnsPropagation(domain, fqdn, value string) error {
-	authoritativeNss, err := lookupNameservers(toFqdn(domain))
+// checkDnsPropagation checks if the expected TXT record has been propagated to all authoritative nameservers.
+func checkDnsPropagation(fqdn, value string) (bool, error) {
+	// Initial attempt to resolve at the recursive NS
+	r, err := dnsQuery(fqdn, dns.TypeTXT, recursiveNameserver, true)
 	if err != nil {
-		return err
+		return false, err
+	}
+	if r.Rcode != dns.RcodeSuccess {
+		return false, fmt.Errorf("Could not resolve %s -> %s", fqdn, dns.RcodeToString[r.Rcode])
 	}
 
-	if err = waitFor(30, 2, func() (bool, error) {
-		return checkAuthoritativeNss(fqdn, value, authoritativeNss)
-	}); err != nil {
-		return err
+	// If we see a CNAME here then use the alias
+	for _, rr := range r.Answer {
+		if cn, ok := rr.(*dns.CNAME); ok {
+			if cn.Hdr.Name == fqdn {
+				fqdn = cn.Target
+				break
+			}
+		}
 	}
 
-	return nil
+	authoritativeNss, err := lookupNameservers(fqdn)
+	if err != nil {
+		return false, err
+	}
+
+	return checkAuthoritativeNss(fqdn, value, authoritativeNss)
 }
 
 // checkAuthoritativeNss queries each of the given nameservers for the expected TXT record.
@@ -98,7 +113,7 @@ func checkAuthoritativeNss(fqdn, value string, nameservers []string) (bool, erro
 		}
 
 		if r.Rcode != dns.RcodeSuccess {
-			return false, fmt.Errorf("%s returned RCode %s", ns, dns.RcodeToString[r.Rcode])
+			return false, fmt.Errorf("NS %s returned %s for %s", ns, dns.RcodeToString[r.Rcode], fqdn)
 		}
 
 		var found bool
@@ -112,7 +127,7 @@ func checkAuthoritativeNss(fqdn, value string, nameservers []string) (bool, erro
 		}
 
 		if !found {
-			return false, fmt.Errorf("%s did not return the expected TXT record", ns)
+			return false, fmt.Errorf("NS %s did not return the expected TXT record", ns)
 		}
 	}
 
@@ -124,6 +139,7 @@ func dnsQuery(fqdn string, rtype uint16, nameserver string, recursive bool) (in 
 	m := new(dns.Msg)
 	m.SetQuestion(fqdn, rtype)
 	m.SetEdns0(4096, false)
+
 	if !recursive {
 		m.RecursionDesired = false
 	}
@@ -137,45 +153,33 @@ func dnsQuery(fqdn string, rtype uint16, nameserver string, recursive bool) (in 
 	return
 }
 
-// lookupNameservers returns the authoritative nameservers for the given domain name.
+// lookupNameservers returns the authoritative nameservers for the given fqdn.
 func lookupNameservers(fqdn string) ([]string, error) {
-	var err error
-	var r *dns.Msg
 	var authoritativeNss []string
-	resolver := "google-public-dns-a.google.com"
 
-	r, err = dnsQuery(fqdn, dns.TypeSOA, resolver, true)
+	r, err := dnsQuery(fqdn, dns.TypeNS, recursiveNameserver, true)
 	if err != nil {
 		return nil, err
 	}
 
-	// If there is a SOA RR in the Answer section then fqdn is the root domain.
 	for _, rr := range r.Answer {
-		if soa, ok := rr.(*dns.SOA); ok {
-			r, err = dnsQuery(soa.Hdr.Name, dns.TypeNS, resolver, true)
-			if err != nil {
-				return nil, err
-			}
-
-			for _, rr := range r.Answer {
-				if ns, ok := rr.(*dns.NS); ok {
-					authoritativeNss = append(authoritativeNss, strings.ToLower(ns.Ns))
-				}
-			}
-
-			return authoritativeNss, nil
+		if ns, ok := rr.(*dns.NS); ok {
+			authoritativeNss = append(authoritativeNss, strings.ToLower(ns.Ns))
 		}
+	}
+
+	if len(authoritativeNss) > 0 {
+		return authoritativeNss, nil
 	}
 
 	// Strip of the left most label to get the parent domain.
 	offset, _ := dns.NextLabel(fqdn, 0)
 	next := fqdn[offset:]
-	// Only the TLD label left. This should not happen if the domain DNS is healthy.
 	if dns.CountLabel(next) < 2 {
-		return nil, fmt.Errorf("Could not determine root domain")
+		return nil, fmt.Errorf("Could not determine authoritative nameservers")
 	}
-	
-	return lookupNameservers(fqdn[offset:])
+
+	return lookupNameservers(next)
 }
 
 // toFqdn converts the name into a fqdn appending a trailing dot.

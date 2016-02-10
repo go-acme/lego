@@ -49,7 +49,7 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 			logger().Fatal(err)
 		}
 
-		client.SetChallengeProvider(HTTP01, provider)
+		client.SetChallengeProvider(acme.HTTP01, provider)
 	}
 	if c.GlobalIsSet("http") {
 		client.SetHTTPAddress(c.GlobalString("http"))

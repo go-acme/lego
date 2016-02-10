@@ -43,6 +43,9 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 		client.ExcludeChallenges(conf.ExcludedSolvers())
 	}
 
+	if c.GlobalIsSet("webroot") {
+		client.SetWebRoot(c.GlobalString("webroot"))
+	}
 	if c.GlobalIsSet("http") {
 		client.SetHTTPAddress(c.GlobalString("http"))
 	}

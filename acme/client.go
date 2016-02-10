@@ -12,6 +12,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -113,6 +114,21 @@ func (c *Client) SetChallengeProvider(challenge Challenge, p ChallengeProvider) 
 	default:
 		return fmt.Errorf("Unknown challenge %v", challenge)
 	}
+	return nil
+}
+
+// SetWebRoot specifies a custom folder path to be used for HTTP based challenges.
+// If this option is used, lego will not bind any port to listen to,
+// instead it will write the challenge in a file into path/.well-known/acme-challenge/
+func (c *Client) SetWebRoot(path string) error {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return err
+	}
+
+	if chlng, ok := c.solvers[HTTP01]; ok {
+		chlng.(*httpChallenge).provider = &httpChallengeWebRoot{path: path}
+	}
+
 	return nil
 }
 

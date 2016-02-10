@@ -79,7 +79,7 @@ func TestHTTPChallengeWebRoot(t *testing.T) {
 
 		return nil
 	}
-	solver := &httpChallenge{jws: j, validate: mockValidate, provider: &httpChallengeWebRoot{path: "webroot"}}
+	solver := &httpChallenge{jws: j, validate: mockValidate, provider: &HTTPProviderWebroot{path: "webroot"}}
 
 	os.MkdirAll("webroot/.well-known/acme-challenge", 0777)
 	if err := solver.Solve(clientChallenge, "localhost:23457"); err != nil {
@@ -92,11 +92,11 @@ func TestHTTPChallengeWebRootInvalidPath(t *testing.T) {
 	privKey, _ := generatePrivateKey(rsakey, 128)
 	j := &jws{privKey: privKey.(*rsa.PrivateKey)}
 	clientChallenge := challenge{Type: HTTP01, Token: "http2"}
-	solver := &httpChallenge{jws: j, validate: stubValidate, provider: &httpChallengeWebRoot{path: "/invalid-path-123456"}}
+	solver := &httpChallenge{jws: j, validate: stubValidate, provider: &HTTPProviderWebroot{path: "/invalid-\000-path"}}
 
 	if err := solver.Solve(clientChallenge, "localhost:123456"); err == nil {
 		t.Errorf("Solve error: got %v, want error", err)
-	} else if want := "Could not write file in webroot"; !strings.Contains(err.Error(), want) {
+	} else if want := "Could not create required directories in webroot"; !strings.Contains(err.Error(), want) {
 		t.Errorf("Solve error: got %q, want content %q", err.Error(), want)
 	}
 }

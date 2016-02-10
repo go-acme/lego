@@ -44,7 +44,12 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 	}
 
 	if c.GlobalIsSet("webroot") {
-		client.SetWebRoot(c.GlobalString("webroot"))
+		provider, err := acme.NewHTTPProviderWebroot(c.GlobalString("webroot"))
+		if err != nil {
+			logger().Fatal(err)
+		}
+
+		client.SetChallengeProvider(HTTP01, provider)
 	}
 	if c.GlobalIsSet("http") {
 		client.SetHTTPAddress(c.GlobalString("http"))

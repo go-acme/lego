@@ -115,26 +115,29 @@ func saveCertRes(certRes acme.CertificateResource, conf *Configuration) {
 	}
 }
 
+func registration(c *cli.Context, conf *Configuration, acc *Account, client *acme.Client) {
+	reg, err := client.Register()
+	if err != nil {
+		logger().Fatalf("Could not complete registration\n\t%s", err.Error())
+	}
+
+	acc.Registration = reg
+	acc.Save()
+
+	logger().Print("!!!! HEADS UP !!!!")
+	logger().Printf(`
+	Your account credentials have been saved in your Let's Encrypt
+	configuration directory at "%s".
+	You should make a secure backup	of this folder now. This
+	configuration directory will also contain certificates and
+	private keys obtained from Let's Encrypt so making regular
+	backups of this folder is ideal.`, conf.AccountPath(c.GlobalString("email")))
+}
+
 func run(c *cli.Context) {
 	conf, acc, client := setup(c)
 	if acc.Registration == nil {
-		reg, err := client.Register()
-		if err != nil {
-			logger().Fatalf("Could not complete registration\n\t%s", err.Error())
-		}
-
-		acc.Registration = reg
-		acc.Save()
-
-		logger().Print("!!!! HEADS UP !!!!")
-		logger().Printf(`
-		Your account credentials have been saved in your Let's Encrypt
-		configuration directory at "%s".
-		You should make a secure backup	of this folder now. This
-		configuration directory will also contain certificates and
-		private keys obtained from Let's Encrypt so making regular
-		backups of this folder is ideal.`, conf.AccountPath(c.GlobalString("email")))
-
+		registration(c, conf, acc, client)
 	}
 
 	if acc.Registration.Body.Agreement == "" {
@@ -274,4 +277,31 @@ func renew(c *cli.Context) {
 	}
 
 	saveCertRes(newCert, conf)
+}
+
+func register(c *cli.Context) {
+	conf, acc, client := setup(c)
+	if acc.Registration != nil {
+		logger().Fatal("Account already registered")
+	}
+
+	registration(c, conf, acc, client)
+}
+
+func agree(c *cli.Context) {
+	_, acc, client := setup(c)
+	if acc.Registration == nil {
+		logger().Fatal("You must register an account first")
+	}
+
+	if acc.Registration.Body.Agreement == "" {
+		err := client.AgreeToTOS()
+		if err != nil {
+			logger().Fatalf("Could not agree to tos -> %s", err)
+		}
+		acc.Save()
+		logger().Print("TOS agreed")
+	} else {
+		logger().Print("You already agreed to the TOS")
+	}
 }

@@ -104,6 +104,10 @@ func main() {
 			Usage: "Add domains to the process",
 		},
 		cli.StringFlag{
+			Name:  "csr, c",
+			Usage: "Certificate signing request filename, if an external CSR is to be used",
+		},
+		cli.StringFlag{
 			Name:  "server, s",
 			Value: "https://acme-v01.api.letsencrypt.org/directory",
 			Usage: "CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client.",

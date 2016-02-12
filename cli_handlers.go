@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"encoding/pem"
 	"io/ioutil"
 	"os"
 	"path"
@@ -148,9 +149,12 @@ func saveCertRes(certRes acme.CertificateResource, conf *Configuration) {
 		logger().Fatalf("Unable to save Certificate for domain %s\n\t%s", certRes.Domain, err.Error())
 	}
 
-	err = ioutil.WriteFile(privOut, certRes.PrivateKey, 0600)
-	if err != nil {
-		logger().Fatalf("Unable to save PrivateKey for domain %s\n\t%s", certRes.Domain, err.Error())
+	if certRes.PrivateKey != nil {
+		// if we were given a CSR, we don't know the private key
+		err = ioutil.WriteFile(privOut, certRes.PrivateKey, 0600)
+		if err != nil {
+			logger().Fatalf("Unable to save PrivateKey for domain %s\n\t%s", certRes.Domain, err.Error())
+		}
 	}
 
 	jsonBytes, err := json.MarshalIndent(certRes, "", "\t")
@@ -205,6 +209,36 @@ func handleTOS(c *cli.Context, client *acme.Client, acc *Account) {
 	}
 }
 
+func readCSRFile(filename string) ([]byte, error) {
+	bytes, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	// see if we can find a PEM-encoded CSR
+	var p *pem.Block
+	rest := bytes
+	for {
+		// decode a PEM block
+		p, rest = pem.Decode(rest)
+
+		// did we fail?
+		if p == nil {
+			break
+		}
+
+		// did we get a CSR?
+		if p.Type == "CERTIFICATE REQUEST" {
+			return p.Bytes, nil
+		}
+	}
+
+	// no PEM-encoded CSR
+	// assume we were given a DER-encoded ASN.1 CSR
+	// (if this assumption is wrong, parsing these bytes will fail)
+	return bytes, nil
+}
+
 func run(c *cli.Context) error {
 	conf, acc, client := setup(c)
 	if acc.Registration == nil {
@@ -232,11 +266,35 @@ func run(c *cli.Context) error {
 		handleTOS(c, client, acc)
 	}
 
-	if len(c.GlobalStringSlice("domains")) == 0 {
-		logger().Fatal("Please specify --domains or -d")
+	// we require either domains or csr, but not both
+	hasDomains := len(c.GlobalStringSlice("domains")) > 0
+	hasCsr := len(c.GlobalString("csr")) > 0
+	if hasDomains && hasCsr {
+		logger().Fatal("Please specify either --domains/-d or --csr/-c, but not both")
+	}
+	if !hasDomains && !hasCsr {
+		logger().Fatal("Please specify --domains/-d (or --csr/-c if you already have a CSR)")
 	}
 
-	cert, failures := client.ObtainCertificate(c.GlobalStringSlice("domains"), !c.Bool("no-bundle"), nil)
+	var cert acme.CertificateResource
+	var failures map[string]error
+
+	if hasDomains {
+		// obtain a certificate, generating a new private key
+		cert, failures = client.ObtainCertificate(c.GlobalStringSlice("domains"), true, nil)
+	} else {
+		// read the CSR
+		csr, err := readCSRFile(c.GlobalString("csr"))
+		if err != nil {
+			// we couldn't read the CSR
+			failures = map[string]error{"csr": err}
+		} else {
+			// obtain a certificate for this CSR
+			cert, failures = client.ObtainCertificateForCSR(csr, true)
+		}
+	}
+
+	cert, failures = client.ObtainCertificate(c.GlobalStringSlice("domains"), !c.Bool("no-bundle"), nil)
 	if len(failures) > 0 {
 		for k, v := range failures {
 			logger().Printf("[%s] Could not obtain certificates\n\t%s", k, v.Error())

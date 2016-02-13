@@ -1,8 +1,10 @@
 package acme
 
 import (
+	"net/http"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/mitchellh/goamz/aws"
 	"github.com/mitchellh/goamz/route53"
@@ -116,9 +118,18 @@ func TestNewDNSProviderRoute53MissingAuthErr(t *testing.T) {
 	os.Setenv("AWS_SECRET_ACCESS_KEY", "")
 	os.Setenv("AWS_CREDENTIAL_FILE", "") // in case test machine has this variable set
 	os.Setenv("HOME", "/")               // in case test machine has ~/.aws/credentials
+
+	// The default AWS HTTP client retries three times with a deadline of 10 seconds.
+	// Replace the default HTTP client with one that does not retry and has a low timeout.
+	awsClient := aws.RetryingClient
+	aws.RetryingClient = &http.Client{Timeout: time.Millisecond}
+
 	_, err := NewDNSProviderRoute53("", "", "us-east-1")
 	assert.EqualError(t, err, "No valid AWS authentication found")
 	restoreRoute53Env()
+
+	// restore default AWS HTTP client
+	aws.RetryingClient = awsClient
 }
 
 func TestNewDNSProviderRoute53InvalidRegionErr(t *testing.T) {

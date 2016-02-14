@@ -29,9 +29,10 @@ import (
 type KeyType string
 type derCertificateBytes []byte
 
+// Constants for all key types we support.
 const (
 	EC256   = KeyType("P256")
-	EC384   = KeyType("P348")
+	EC384   = KeyType("P384")
 	RSA2048 = KeyType("2048")
 	RSA4096 = KeyType("4096")
 	RSA8192 = KeyType("8192")

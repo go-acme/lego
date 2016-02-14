@@ -89,7 +89,7 @@ GLOBAL OPTIONS:
    --exclude, -x [--exclude option --exclude option]			Explicitly disallow solvers by name from being used. Solvers: "http-01", "tls-sni-01".
    --http 								Set the port and interface to use for HTTP based challenges to listen on. Supported: interface:port or :port
    --tls 								Set the port and interface to use for TLS based challenges to listen on. Supported: interface:port or :port
-   --dns 								Solve a DNS challenge using the specified provider.
+   --dns 								Solve a DNS challenge using the specified provider. Disables all other solvers.
 									Credentials for providers have to be passed through environment variables.
 									For a more detailed explanation of the parameters, please see the online docs.
 									Valid providers:

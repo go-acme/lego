@@ -112,7 +112,7 @@ func main() {
 		},
 		cli.StringFlag{
 			Name: "dns",
-			Usage: "Solve a DNS challenge using the specified provider." +
+			Usage: "Solve a DNS challenge using the specified provider. Disables all other challenges." +
 				"\n\tCredentials for providers have to be passed through environment variables." +
 				"\n\tFor a more detailed explanation of the parameters, please see the online docs." +
 				"\n\tValid providers:" +

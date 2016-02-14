@@ -1,12 +1,21 @@
-package acme
+package dns_provider
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"sync"
+
+	"github.com/xenolf/lego/acme"
 )
+
+func init() {
+	Registry.addProvider("digitalocean", "DO_AUTH_TOKEN", func() (acme.ChallengeProvider, error) {
+		return NewDNSProviderDigitalOcean(os.Getenv("DO_AUTH_TOKEN"))
+	})
+}
 
 // DNSProviderDigitalOcean is an implementation of the DNSProvider interface
 // that uses DigitalOcean's REST API to manage TXT records for a domain.
@@ -45,7 +54,7 @@ func (d *DNSProviderDigitalOcean) Present(domain, token, keyAuth string) error {
 		} `json:"domain_record"`
 	}
 
-	fqdn, value, _ := DNS01Record(domain, keyAuth)
+	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
 
 	reqURL := fmt.Sprintf("%s/v2/domains/%s/records", digitalOceanBaseURL, domain)
 	reqData := txtRecordRequest{RecordType: "TXT", Name: fqdn, Data: value}
@@ -88,7 +97,7 @@ func (d *DNSProviderDigitalOcean) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters
 func (d *DNSProviderDigitalOcean) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _, _ := DNS01Record(domain, keyAuth)
+	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
 
 	// get the record's unique ID from when we created it
 	d.recordIDsMu.Lock()

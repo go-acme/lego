@@ -1,4 +1,4 @@
-package acme
+package dns_provider
 
 import (
 	"fmt"
@@ -6,7 +6,14 @@ import (
 	"strings"
 
 	"github.com/weppos/dnsimple-go/dnsimple"
+	"github.com/xenolf/lego/acme"
 )
+
+func init() {
+	Registry.addProvider("dnsimple", "DNSIMPLE_EMAIL, DNSIMPLE_API_KEY", func() (acme.ChallengeProvider, error) {
+		return NewDNSProviderDNSimple("", "")
+	})
+}
 
 // DNSProviderDNSimple is an implementation of the DNSProvider interface.
 type DNSProviderDNSimple struct {
@@ -33,7 +40,7 @@ func NewDNSProviderDNSimple(dnsimpleEmail, dnsimpleApiKey string) (*DNSProviderD
 
 // Present creates a TXT record to fulfil the dns-01 challenge.
 func (c *DNSProviderDNSimple) Present(domain, token, keyAuth string) error {
-	fqdn, value, ttl := DNS01Record(domain, keyAuth)
+	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
 
 	zoneID, zoneName, err := c.getHostedZone(domain)
 	if err != nil {
@@ -51,7 +58,7 @@ func (c *DNSProviderDNSimple) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (c *DNSProviderDNSimple) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _, _ := DNS01Record(domain, keyAuth)
+	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
 
 	records, err := c.findTxtRecords(domain, fqdn)
 	if err != nil {

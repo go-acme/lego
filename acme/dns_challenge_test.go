@@ -72,6 +72,17 @@ var checkAuthoritativeNssTestsErr = []struct {
 	},
 }
 
+// make a no-op provider for this test
+type nullProvider struct{}
+
+func (_ nullProvider) Present(domain, token, keyAuth string) error {
+	return nil
+}
+
+func (_ nullProvider) CleanUp(domain, token, keyAuth string) error {
+	return nil
+}
+
 func TestDNSValidServerResponse(t *testing.T) {
 	preCheckDNS = func(fqdn, value string) (bool, error) {
 		return true, nil
@@ -83,9 +94,8 @@ func TestDNSValidServerResponse(t *testing.T) {
 		w.Write([]byte("{\"type\":\"dns01\",\"status\":\"valid\",\"uri\":\"http://some.url\",\"token\":\"http8\"}"))
 	}))
 
-	manualProvider, _ := NewDNSProviderManual()
 	jws := &jws{privKey: privKey.(*rsa.PrivateKey), directoryURL: ts.URL}
-	solver := &dnsChallenge{jws: jws, validate: validate, provider: manualProvider}
+	solver := &dnsChallenge{jws: jws, validate: validate, provider: nullProvider{}}
 	clientChallenge := challenge{Type: "dns01", Status: "pending", URI: ts.URL, Token: "http8"}
 
 	go func() {

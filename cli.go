@@ -6,10 +6,12 @@ import (
 	"log"
 	"os"
 	"path"
+	"sort"
 	"strings"
 
 	"github.com/codegangsta/cli"
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/dns_provider"
 )
 
 // Logger is used to log errors; if nil, the default log.Logger is used.
@@ -24,6 +26,19 @@ func logger() *log.Logger {
 }
 
 var gittag string
+
+// Return a string describing all the DNS providers together, like
+// "\n\t{name}: {config description}", suitable for use in a CLI flag description
+func dnsProviderHelpString() string {
+	lines := []string{}
+
+	for _, entry := range dns_provider.Registry.Entries() {
+		lines = append(lines, "\n\t"+entry.Name+": "+entry.ConfigDescription)
+	}
+
+	sort.Strings(lines)
+	return strings.Join(lines, "")
+}
 
 func main() {
 	app := cli.NewApp()
@@ -115,13 +130,7 @@ func main() {
 			Usage: "Solve a DNS challenge using the specified provider. Disables all other challenges." +
 				"\n\tCredentials for providers have to be passed through environment variables." +
 				"\n\tFor a more detailed explanation of the parameters, please see the online docs." +
-				"\n\tValid providers:" +
-				"\n\tcloudflare: CLOUDFLARE_EMAIL, CLOUDFLARE_API_KEY" +
-				"\n\tdigitalocean: DO_AUTH_TOKEN" +
-				"\n\tdnsimple: DNSIMPLE_EMAIL, DNSIMPLE_API_KEY" +
-				"\n\troute53: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION" +
-				"\n\trfc2136: RFC2136_TSIG_KEY, RFC2136_TSIG_SECRET, RFC2136_NAMESERVER, RFC2136_ZONE" +
-				"\n\tmanual: none",
+				"\n\tValid providers:" + dnsProviderHelpString(),
 		},
 	}
 

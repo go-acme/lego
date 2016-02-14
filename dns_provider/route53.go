@@ -1,13 +1,21 @@
-package acme
+package dns_provider
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/mitchellh/goamz/aws"
 	"github.com/mitchellh/goamz/route53"
+	"github.com/xenolf/lego/acme"
 )
+
+func init() {
+	Registry.addProvider("route53", "AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, etc.", func() (acme.ChallengeProvider, error) {
+		return NewDNSProviderRoute53("", "", os.Getenv("AWS_REGION"))
+	})
+}
 
 // DNSProviderRoute53 is an implementation of the DNSProvider interface
 type DNSProviderRoute53 struct {
@@ -42,14 +50,14 @@ func NewDNSProviderRoute53(awsAccessKey, awsSecretKey, awsRegionName string) (*D
 
 // Present creates a TXT record using the specified parameters
 func (r *DNSProviderRoute53) Present(domain, token, keyAuth string) error {
-	fqdn, value, ttl := DNS01Record(domain, keyAuth)
+	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
 	value = `"` + value + `"`
 	return r.changeRecord("UPSERT", fqdn, value, ttl)
 }
 
 // CleanUp removes the TXT record matching the specified parameters
 func (r *DNSProviderRoute53) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value, ttl := DNS01Record(domain, keyAuth)
+	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
 	value = `"` + value + `"`
 	return r.changeRecord("DELETE", fqdn, value, ttl)
 }

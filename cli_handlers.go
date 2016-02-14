@@ -11,6 +11,7 @@ import (
 
 	"github.com/codegangsta/cli"
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/dns_provider"
 )
 
 func checkFolder(path string) error {
@@ -52,31 +53,16 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 	}
 
 	if c.GlobalIsSet("dns") {
-		var err error
-		var provider acme.ChallengeProvider
-		switch c.GlobalString("dns") {
-		case "cloudflare":
-			provider, err = acme.NewDNSProviderCloudFlare("", "")
-		case "digitalocean":
-			authToken := os.Getenv("DO_AUTH_TOKEN")
+		providerName := c.GlobalString("dns")
 
-			provider, err = acme.NewDNSProviderDigitalOcean(authToken)
-		case "dnsimple":
-			provider, err = acme.NewDNSProviderDNSimple("", "")
-		case "route53":
-			awsRegion := os.Getenv("AWS_REGION")
-			provider, err = acme.NewDNSProviderRoute53("", "", awsRegion)
-		case "rfc2136":
-			nameserver := os.Getenv("RFC2136_NAMESERVER")
-			zone := os.Getenv("RFC2136_ZONE")
-			tsigAlgorithm := os.Getenv("RFC2136_TSIG_ALGORITHM")
-			tsigKey := os.Getenv("RFC2136_TSIG_KEY")
-			tsigSecret := os.Getenv("RFC2136_TSIG_SECRET")
-
-			provider, err = acme.NewDNSProviderRFC2136(nameserver, zone, tsigAlgorithm, tsigKey, tsigSecret)
-		case "manual":
-			provider, err = acme.NewDNSProviderManual()
+		// look up the registry entry for this provider name
+		entry := dns_provider.Registry.FindEntryByName(providerName)
+		if entry == nil {
+			logger().Fatalf("no such DNS challenge provider %q", providerName)
 		}
+
+		// instantiate an acme.ChallengeProvider
+		provider, err := entry.NewChallengeProvider()
 
 		if err != nil {
 			logger().Fatal(err)

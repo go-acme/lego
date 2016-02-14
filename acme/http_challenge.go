@@ -26,10 +26,6 @@ func (s *httpChallenge) Solve(chlng challenge, domain string) error {
 		return err
 	}
 
-	if s.provider == nil {
-		s.provider = &httpChallengeServer{}
-	}
-
 	err = s.provider.Present(domain, chlng.Token, keyAuth)
 	if err != nil {
 		return fmt.Errorf("[%s] error presenting token: %v", domain, err)

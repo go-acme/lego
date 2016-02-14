@@ -27,10 +27,6 @@ func (t *tlsSNIChallenge) Solve(chlng challenge, domain string) error {
 		return err
 	}
 
-	if t.provider == nil {
-		t.provider = &tlsSNIChallengeServer{}
-	}
-
 	err = t.provider.Present(domain, chlng.Token, keyAuth)
 	if err != nil {
 		return fmt.Errorf("[%s] error presenting token: %v", domain, err)

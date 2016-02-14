@@ -27,7 +27,7 @@ func NewDNSProviderCloudFlare(cloudflareEmail, cloudflareKey string) (*DNSProvid
 	}
 
 	c := &DNSProviderCloudFlare{
-		client: cloudflare.New(&cloudflare.Options{cloudflareEmail, cloudflareKey}),
+		client: cloudflare.New(&cloudflare.Options{Email: cloudflareEmail, Key: cloudflareKey}),
 		ctx:    context.Background(),
 	}
 

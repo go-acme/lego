@@ -56,14 +56,22 @@ func GetOCSPForCert(bundle []byte) ([]byte, *ocsp.Response, error) {
 		return nil, nil, err
 	}
 
-	// We only got one certificate, means we have no issuer certificate - get it.
+	// We expect the certificate slice to be ordered downwards the chain.
+	// SRV CRT -> CA. We need to pull the leaf and issuer certs out of it,
+	// which should always be the first two certificates. If there's no
+	// OCSP server listed in the leaf cert, there's nothing to do. And if
+	// we have only one certificate so far, we need to get the issuer cert.
+	issuedCert := certificates[0]
+	if len(issuedCert.OCSPServer) == 0 {
+		return nil, nil, errors.New("no OCSP server specified in cert")
+	}
 	if len(certificates) == 1 {
 		// TODO: build fallback. If this fails, check the remaining array entries.
-		if len(certificates[0].IssuingCertificateURL) == 0 {
+		if len(issuedCert.IssuingCertificateURL) == 0 {
 			return nil, nil, errors.New("no issuing certificate URL")
 		}
 
-		resp, err := httpGet(certificates[0].IssuingCertificateURL[0])
+		resp, err := httpGet(issuedCert.IssuingCertificateURL[0])
 		if err != nil {
 			return nil, nil, err
 		}
@@ -83,16 +91,7 @@ func GetOCSPForCert(bundle []byte) ([]byte, *ocsp.Response, error) {
 		// We want it ordered right SRV CRT -> CA
 		certificates = append(certificates, issuerCert)
 	}
-
-	// We expect the certificate slice to be ordered downwards the chain.
-	// SRV CRT -> CA. We need to pull the cert and issuer cert out of it,
-	// which should always be the last two certificates.
-	issuedCert := certificates[0]
 	issuerCert := certificates[1]
-
-	if len(issuedCert.OCSPServer) == 0 {
-		return nil, nil, errors.New("no OCSP server specified in cert")
-	}
 
 	// Finally kick off the OCSP request.
 	ocspReq, err := ocsp.CreateRequest(issuedCert, issuerCert, nil)

@@ -141,7 +141,7 @@ func TestCheckAuthoritativeNss(t *testing.T) {
 	for _, tt := range checkAuthoritativeNssTests {
 		ok, _ := checkAuthoritativeNss(tt.fqdn, tt.value, tt.ns)
 		if ok != tt.ok {
-			t.Errorf("#%s: got %t; want %t", tt.fqdn, tt.ok)
+			t.Errorf("%s: got %t; want %t", tt.fqdn, tt.ok, tt.ok)
 		}
 	}
 }
@@ -174,7 +174,7 @@ func TestWaitForTimeout(t *testing.T) {
 		t.Fatal("timeout exceeded")
 	case err := <-c:
 		if err == nil {
-			t.Errorf("expected timeout error; got <nil>", err)
+			t.Errorf("expected timeout error; got %v", err)
 		}
 	}
 }

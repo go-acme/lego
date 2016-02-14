@@ -32,12 +32,13 @@ func NewDNSProviderRoute53(awsAccessKey, awsSecretKey, awsRegionName string) (*D
 	//   - uses AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY and optionally AWS_SECURITY_TOKEN, if provided
 	//   - uses EC2 instance metadata credentials (http://169.254.169.254/latest/meta-data/…), if available
 	//  ...and otherwise returns an error
-	if auth, err := aws.GetAuth(awsAccessKey, awsSecretKey); err != nil {
+	auth, err := aws.GetAuth(awsAccessKey, awsSecretKey)
+	if err != nil {
 		return nil, err
-	} else {
-		client := route53.New(auth, region)
-		return &DNSProviderRoute53{client: client}, nil
 	}
+
+	client := route53.New(auth, region)
+	return &DNSProviderRoute53{client: client}, nil
 }
 
 // Present creates a TXT record using the specified parameters
@@ -60,7 +61,7 @@ func (r *DNSProviderRoute53) changeRecord(action, fqdn, value string, ttl int) e
 		return err
 	}
 	recordSet := newTXTRecordSet(fqdn, value, ttl)
-	update := route53.Change{action, recordSet}
+	update := route53.Change{Action: action, Record: recordSet}
 	changes := []route53.Change{update}
 	req := route53.ChangeResourceRecordSetsRequest{Comment: "Created by Lego", Changes: changes}
 	resp, err := r.client.ChangeResourceRecordSets(hostedZoneID, &req)

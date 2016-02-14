@@ -82,10 +82,10 @@ func TestClientOptPort(t *testing.T) {
 	if httpSolver.jws != client.jws {
 		t.Error("Expected http-01 to have same jws as client")
 	}
-	if got := httpSolver.provider.(*httpChallengeServer).port; got != optPort {
+	if got := httpSolver.provider.(*HTTPProviderServer).port; got != optPort {
 		t.Errorf("Expected http-01 to have port %s but was %s", optPort, got)
 	}
-	if got := httpSolver.provider.(*httpChallengeServer).iface; got != optHost {
+	if got := httpSolver.provider.(*HTTPProviderServer).iface; got != optHost {
 		t.Errorf("Expected http-01 to have iface %s but was %s", optHost, got)
 	}
 
@@ -96,10 +96,10 @@ func TestClientOptPort(t *testing.T) {
 	if httpsSolver.jws != client.jws {
 		t.Error("Expected tls-sni-01 to have same jws as client")
 	}
-	if got := httpsSolver.provider.(*tlsSNIChallengeServer).port; got != optPort {
+	if got := httpsSolver.provider.(*TLSProviderServer).port; got != optPort {
 		t.Errorf("Expected tls-sni-01 to have port %s but was %s", optPort, got)
 	}
-	if got := httpsSolver.provider.(*tlsSNIChallengeServer).iface; got != optHost {
+	if got := httpsSolver.provider.(*TLSProviderServer).iface; got != optHost {
 		t.Errorf("Expected tls-sni-01 to have port %s but was %s", optHost, got)
 	}
 
@@ -108,10 +108,10 @@ func TestClientOptPort(t *testing.T) {
 	client.SetHTTPAddress(net.JoinHostPort(optHost, optPort))
 	client.SetTLSAddress(net.JoinHostPort(optHost, optPort))
 
-	if got := httpSolver.provider.(*httpChallengeServer).iface; got != optHost {
+	if got := httpSolver.provider.(*HTTPProviderServer).iface; got != optHost {
 		t.Errorf("Expected http-01 to have iface %s but was %s", optHost, got)
 	}
-	if got := httpsSolver.provider.(*tlsSNIChallengeServer).port; got != optPort {
+	if got := httpsSolver.provider.(*TLSProviderServer).port; got != optPort {
 		t.Errorf("Expected tls-sni-01 to have port %s but was %s", optPort, got)
 	}
 }

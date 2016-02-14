@@ -7,16 +7,25 @@ import (
 	"net/http"
 )
 
-// tlsSNIChallengeServer implements ChallengeProvider for `TLS-SNI-01` challenge
-type tlsSNIChallengeServer struct {
+// TLSProviderServer implements ChallengeProvider for `TLS-SNI-01` challenge
+// It may be instantiated without using the NewTLSProviderServer function if
+// you want only to use the default values.
+type TLSProviderServer struct {
 	iface    string
 	port     string
 	done     chan bool
 	listener net.Listener
 }
 
+// NewTLSProviderServer creates a new TLSProviderServer on the selected interface and port.
+// Setting iface and / or port to an empty string will make the server fall back to
+// the "any" interface and port 443 respectively.
+func NewTLSProviderServer(iface, port string) *TLSProviderServer {
+	return &TLSProviderServer{iface: iface, port: port}
+}
+
 // Present makes the keyAuth available as a cert
-func (s *tlsSNIChallengeServer) Present(domain, token, keyAuth string) error {
+func (s *TLSProviderServer) Present(domain, token, keyAuth string) error {
 	if s.port == "" {
 		s.port = "443"
 	}
@@ -42,7 +51,8 @@ func (s *tlsSNIChallengeServer) Present(domain, token, keyAuth string) error {
 	return nil
 }
 
-func (s *tlsSNIChallengeServer) CleanUp(domain, token, keyAuth string) error {
+// CleanUp closes the HTTP server.
+func (s *TLSProviderServer) CleanUp(domain, token, keyAuth string) error {
 	if s.listener == nil {
 		return nil
 	}

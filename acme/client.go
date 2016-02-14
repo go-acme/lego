@@ -126,7 +126,7 @@ func (c *Client) SetHTTPAddress(iface string) error {
 	}
 
 	if chlng, ok := c.solvers[HTTP01]; ok {
-		chlng.(*httpChallenge).provider = &httpChallengeServer{iface: host, port: port}
+		chlng.(*httpChallenge).provider = NewHTTPProviderServer(host, port)
 	}
 
 	return nil
@@ -142,7 +142,7 @@ func (c *Client) SetTLSAddress(iface string) error {
 	}
 
 	if chlng, ok := c.solvers[TLSSNI01]; ok {
-		chlng.(*tlsSNIChallenge).provider = &tlsSNIChallengeServer{iface: host, port: port}
+		chlng.(*tlsSNIChallenge).provider = NewTLSProviderServer(host, port)
 	}
 	return nil
 }

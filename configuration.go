@@ -25,6 +25,7 @@ func (c *Configuration) RsaBits() int {
 	return c.context.GlobalInt("rsa-key-size")
 }
 
+// ExcludedSolvers is a list of solvers that are to be excluded.
 func (c *Configuration) ExcludedSolvers() (cc []acme.Challenge) {
 	for _, s := range c.context.GlobalStringSlice("exclude") {
 		cc = append(cc, acme.Challenge(s))
@@ -39,6 +40,7 @@ func (c *Configuration) ServerPath() string {
 	return strings.Replace(srvStr, "/", string(os.PathSeparator), -1)
 }
 
+// CertPath gets the path for certificates.
 func (c *Configuration) CertPath() string {
 	return path.Join(c.context.GlobalString("path"), "certificates")
 }
@@ -54,7 +56,7 @@ func (c *Configuration) AccountPath(acc string) string {
 	return path.Join(c.AccountsPath(), acc)
 }
 
-// AccountPath returns the OS dependent path to the keys of a particular account
+// AccountKeysPath returns the OS dependent path to the keys of a particular account
 func (c *Configuration) AccountKeysPath(acc string) string {
 	return path.Join(c.AccountPath(acc), "keys")
 }

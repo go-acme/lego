@@ -65,9 +65,9 @@ var GetChangeAnswer = `<?xml version="1.0" encoding="UTF-8"?>
 </GetChangeResponse>`
 
 var serverResponseMap = testutil.ResponseMap{
-	"/2013-04-01/hostedzone/":                      testutil.Response{200, nil, ListHostedZonesAnswer},
-	"/2013-04-01/hostedzone/Z2K123214213123/rrset": testutil.Response{200, nil, ChangeResourceRecordSetsAnswer},
-	"/2013-04-01/change/asdf":                      testutil.Response{200, nil, GetChangeAnswer},
+	"/2013-04-01/hostedzone/":                      testutil.Response{Status: 200, Headers: nil, Body: ListHostedZonesAnswer},
+	"/2013-04-01/hostedzone/Z2K123214213123/rrset": testutil.Response{Status: 200, Headers: nil, Body: ChangeResourceRecordSetsAnswer},
+	"/2013-04-01/change/asdf":                      testutil.Response{Status: 200, Headers: nil, Body: GetChangeAnswer},
 }
 
 func init() {
@@ -92,7 +92,7 @@ func makeRoute53TestServer() *testutil.HTTPServer {
 }
 
 func makeRoute53Provider(server *testutil.HTTPServer) *DNSProviderRoute53 {
-	auth := aws.Auth{"abc", "123", ""}
+	auth := aws.Auth{AccessKey: "abc", SecretKey: "123", Token: ""}
 	client := route53.NewWithClient(auth, aws.Region{Route53Endpoint: server.URL}, testutil.DefaultClient)
 	return &DNSProviderRoute53{client: client}
 }

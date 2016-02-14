@@ -15,7 +15,7 @@ import (
 
 type preCheckDNSFunc func(fqdn, value string) (bool, error)
 
-var preCheckDNS preCheckDNSFunc = checkDnsPropagation
+var preCheckDNS preCheckDNSFunc = checkDNSPropagation
 
 var recursiveNameserver = "google-public-dns-a.google.com"
 
@@ -75,8 +75,8 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 	return s.validate(s.jws, domain, chlng.URI, challenge{Resource: "challenge", Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
 }
 
-// checkDnsPropagation checks if the expected TXT record has been propagated to all authoritative nameservers.
-func checkDnsPropagation(fqdn, value string) (bool, error) {
+// checkDNSPropagation checks if the expected TXT record has been propagated to all authoritative nameservers.
+func checkDNSPropagation(fqdn, value string) (bool, error) {
 	// Initial attempt to resolve at the recursive NS
 	r, err := dnsQuery(fqdn, dns.TypeTXT, recursiveNameserver, true)
 	if err != nil {

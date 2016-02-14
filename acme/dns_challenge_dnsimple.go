@@ -16,16 +16,16 @@ type DNSProviderDNSimple struct {
 // NewDNSProviderDNSimple returns a DNSProviderDNSimple instance with a configured dnsimple client.
 // Authentication is either done using the passed credentials or - when empty - using the environment
 // variables DNSIMPLE_EMAIL and DNSIMPLE_API_KEY.
-func NewDNSProviderDNSimple(dnsimpleEmail, dnsimpleApiKey string) (*DNSProviderDNSimple, error) {
-	if dnsimpleEmail == "" || dnsimpleApiKey == "" {
-		dnsimpleEmail, dnsimpleApiKey = dnsimpleEnvAuth()
-		if dnsimpleEmail == "" || dnsimpleApiKey == "" {
+func NewDNSProviderDNSimple(dnsimpleEmail, dnsimpleAPIKey string) (*DNSProviderDNSimple, error) {
+	if dnsimpleEmail == "" || dnsimpleAPIKey == "" {
+		dnsimpleEmail, dnsimpleAPIKey = dnsimpleEnvAuth()
+		if dnsimpleEmail == "" || dnsimpleAPIKey == "" {
 			return nil, fmt.Errorf("DNSimple credentials missing")
 		}
 	}
 
 	c := &DNSProviderDNSimple{
-		client: dnsimple.NewClient(dnsimpleApiKey, dnsimpleEmail),
+		client: dnsimple.NewClient(dnsimpleAPIKey, dnsimpleEmail),
 	}
 
 	return c, nil

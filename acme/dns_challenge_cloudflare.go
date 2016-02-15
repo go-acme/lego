@@ -11,7 +11,9 @@ import (
 	"time"
 )
 
-const CloudFlareApiURL = "https://api.cloudflare.com/client/v4"
+// CloudFlareAPIURL represents the API endpoint to call.
+// TODO: Unexport?
+const CloudFlareAPIURL = "https://api.cloudflare.com/client/v4"
 
 // DNSProviderCloudFlare is an implementation of the DNSProvider interface
 type DNSProviderCloudFlare struct {
@@ -141,20 +143,20 @@ func (c *DNSProviderCloudFlare) findTxtRecord(fqdn string) (*cloudFlareRecord, e
 }
 
 func (c *DNSProviderCloudFlare) makeRequest(method, uri string, body io.Reader) (json.RawMessage, error) {
-	// ApiError contains error details for failed requests
-	type ApiError struct {
+	// APIError contains error details for failed requests
+	type APIError struct {
 		Code    int    `json:"code,omitempty"`
 		Message string `json:"message,omitempty"`
 	}
 
-	// ApiResponse represents a response from CloudFlare API
-	type ApiResponse struct {
+	// APIResponse represents a response from CloudFlare API
+	type APIResponse struct {
 		Success bool            `json:"success"`
-		Errors  []*ApiError     `json:"errors"`
+		Errors  []*APIError     `json:"errors"`
 		Result  json.RawMessage `json:"result"`
 	}
 
-	req, err := http.NewRequest(method, fmt.Sprintf("%s%s", CloudFlareApiURL, uri), body)
+	req, err := http.NewRequest(method, fmt.Sprintf("%s%s", CloudFlareAPIURL, uri), body)
 	if err != nil {
 		return nil, err
 	}
@@ -171,7 +173,7 @@ func (c *DNSProviderCloudFlare) makeRequest(method, uri string, body io.Reader) 
 
 	defer resp.Body.Close()
 
-	var r ApiResponse
+	var r APIResponse
 	err = json.NewDecoder(resp.Body).Decode(&r)
 	if err != nil {
 		return nil, err

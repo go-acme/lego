@@ -16,7 +16,7 @@ type DNSProviderRoute53 struct {
 
 // NewDNSProviderRoute53 returns a DNSProviderRoute53 instance with a configured route53 client.
 // Authentication is either done using the passed credentials or - when empty - falling back to
-// the customary AWS credential mechanisms, including the file refernced by $AWS_CREDENTIAL_FILE
+// the customary AWS credential mechanisms, including the file referenced by $AWS_CREDENTIAL_FILE
 // (defaulting to $HOME/.aws/credentials) optionally scoped to $AWS_PROFILE, credentials
 // supplied by the environment variables AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY [ + AWS_SECURITY_TOKEN ],
 // and finally credentials available via the EC2 instance metadata service.

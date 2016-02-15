@@ -316,7 +316,7 @@ func (c *Client) RenewCertificate(cert CertificateResource, bundle bool) (Certif
 			links := parseLinks(resp.Header["Link"])
 			issuerCert, err := c.getIssuerCertificate(links["up"])
 			if err != nil {
-				// If we fail to aquire the issuer cert, return the issued certificate - do not fail.
+				// If we fail to acquire the issuer cert, return the issued certificate - do not fail.
 				logf("[ERROR][%s] acme: Could not bundle issuer certificate: %v", cert.Domain, err)
 			} else {
 				// Success - append the issuer cert to the issued cert.
@@ -518,7 +518,7 @@ func (c *Client) requestCertificate(authz []authorizationResource, bundle bool, 
 					links := parseLinks(resp.Header["Link"])
 					issuerCert, err := c.getIssuerCertificate(links["up"])
 					if err != nil {
-						// If we fail to aquire the issuer cert, return the issued certificate - do not fail.
+						// If we fail to acquire the issuer cert, return the issued certificate - do not fail.
 						logf("[WARNING][%s] acme: Could not bundle issuer certificate: %v", commonName.Domain, err)
 					} else {
 						// Success - append the issuer cert to the issued cert.

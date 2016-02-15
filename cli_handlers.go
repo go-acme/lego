@@ -23,7 +23,7 @@ func checkFolder(path string) error {
 func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 	err := checkFolder(c.GlobalString("path"))
 	if err != nil {
-		logger().Fatalf("Cound not check/create path: %s", err.Error())
+		logger().Fatalf("Could not check/create path: %s", err.Error())
 	}
 
 	conf := NewConfiguration(c)
@@ -190,7 +190,7 @@ func run(c *cli.Context) {
 
 	err := checkFolder(conf.CertPath())
 	if err != nil {
-		logger().Fatalf("Cound not check/create path: %s", err.Error())
+		logger().Fatalf("Could not check/create path: %s", err.Error())
 	}
 
 	saveCertRes(cert, conf)
@@ -202,7 +202,7 @@ func revoke(c *cli.Context) {
 
 	err := checkFolder(conf.CertPath())
 	if err != nil {
-		logger().Fatalf("Cound not check/create path: %s", err.Error())
+		logger().Fatalf("Could not check/create path: %s", err.Error())
 	}
 
 	for _, domain := range c.GlobalStringSlice("domains") {

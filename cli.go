@@ -88,6 +88,10 @@ func main() {
 			Name:  "email, m",
 			Usage: "Email used for registration and recovery contact.",
 		},
+		cli.BoolFlag{
+			Name:  "accept-tos, a",
+			Usage: "By setting this flag to true you indicate that you accept the current Let's Encrypt terms of service.",
+		},
 		cli.IntFlag{
 			Name:  "rsa-key-size, B",
 			Value: 2048,

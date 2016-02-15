@@ -126,6 +126,47 @@ func saveCertRes(certRes acme.CertificateResource, conf *Configuration) {
 	}
 }
 
+func handleTOS(c *cli.Context, client *acme.Client, acc *Account) {
+	// Check for a global accept override
+	if c.GlobalBool("accept-tos") {
+		err := client.AgreeToTOS()
+		if err != nil {
+			logger().Fatalf("Could not agree to TOS: %s", err.Error())
+		}
+
+		acc.Save()
+		return
+	}
+
+	reader := bufio.NewReader(os.Stdin)
+	logger().Printf("Please review the TOS at %s", acc.Registration.TosURL)
+
+	for {
+		logger().Println("Do you accept the TOS? Y/n")
+		text, err := reader.ReadString('\n')
+		if err != nil {
+			logger().Fatalf("Could not read from console: %s", err.Error())
+		}
+
+		text = strings.Trim(text, "\r\n")
+
+		if text == "n" {
+			logger().Fatal("You did not accept the TOS. Unable to proceed.")
+		}
+
+		if text == "Y" || text == "y" || text == "" {
+			err = client.AgreeToTOS()
+			if err != nil {
+				logger().Fatalf("Could not agree to TOS: %s", err.Error())
+			}
+			acc.Save()
+			break
+		}
+
+		logger().Println("Your input was invalid. Please answer with one of Y/y, n or by pressing enter.")
+	}
+}
+
 func run(c *cli.Context) {
 	conf, acc, client := setup(c)
 	if acc.Registration == nil {
@@ -148,34 +189,9 @@ func run(c *cli.Context) {
 
 	}
 
+	// If the agreement URL is empty, the account still needs to accept the LE TOS.
 	if acc.Registration.Body.Agreement == "" {
-		reader := bufio.NewReader(os.Stdin)
-		logger().Printf("Please review the TOS at %s", acc.Registration.TosURL)
-
-		for {
-			logger().Println("Do you accept the TOS? Y/n")
-			text, err := reader.ReadString('\n')
-			if err != nil {
-				logger().Fatalf("Could not read from console -> %s", err.Error())
-			}
-
-			text = strings.Trim(text, "\r\n")
-
-			if text == "n" {
-				logger().Fatal("You did not accept the TOS. Unable to proceed.")
-			}
-
-			if text == "Y" || text == "y" || text == "" {
-				err = client.AgreeToTOS()
-				if err != nil {
-					logger().Fatalf("Could not agree to tos -> %s", err)
-				}
-				acc.Save()
-				break
-			}
-
-			logger().Println("Your input was invalid. Please answer with one of Y/y, n or by pressing enter.")
-		}
+		handleTOS(c, client, acc)
 	}
 
 	if len(c.GlobalStringSlice("domains")) == 0 {

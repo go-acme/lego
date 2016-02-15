@@ -244,7 +244,7 @@ func renew(c *cli.Context) {
 
 		if int(expTime.Sub(time.Now()).Hours()/24.0) > c.Int("days") {
 			logger().Printf("Certification expiration not reached for domain %s", domain);
-			os.Exit(1)
+			os.Exit(2)
 		}
 	}
 

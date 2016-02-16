@@ -161,6 +161,7 @@ func (c *DNSProviderCloudFlare) makeRequest(method, uri string, body io.Reader) 
 
 	req.Header.Set("X-Auth-Email", c.authEmail)
 	req.Header.Set("X-Auth-Key", c.authKey)
+	req.Header.Set("User-Agent", userAgent())
 
 	client := http.DefaultClient
 	client.Timeout = time.Duration(30 * time.Second)

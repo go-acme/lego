@@ -70,7 +70,7 @@ func TestCloudFlareCleanUp(t *testing.T) {
 		t.Skip("skipping live test")
 	}
 
-	time.Sleep(time.Second * 1)
+	time.Sleep(time.Second * 2)
 
 	provider, err := NewDNSProviderCloudFlare(cflareEmail, cflareAPIKey)
 	assert.NoError(t, err)

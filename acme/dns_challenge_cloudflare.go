@@ -163,9 +163,7 @@ func (c *DNSProviderCloudFlare) makeRequest(method, uri string, body io.Reader) 
 	req.Header.Set("X-Auth-Key", c.authKey)
 	req.Header.Set("User-Agent", userAgent())
 
-	client := http.DefaultClient
-	client.Timeout = time.Duration(30 * time.Second)
-
+	client := http.Client{Timeout: 30 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("Error querying API -> %v", err)

@@ -141,7 +141,7 @@ func TestCheckAuthoritativeNss(t *testing.T) {
 	for _, tt := range checkAuthoritativeNssTests {
 		ok, _ := checkAuthoritativeNss(tt.fqdn, tt.value, tt.ns)
 		if ok != tt.ok {
-			t.Errorf("%s: got %t; want %t", tt.fqdn, tt.ok, tt.ok)
+			t.Errorf("%s: got %t; want %t", tt.fqdn, ok, tt.ok)
 		}
 	}
 }

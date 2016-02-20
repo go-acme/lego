@@ -82,16 +82,14 @@ func checkDNSPropagation(fqdn, value string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	if r.Rcode != dns.RcodeSuccess {
-		return false, fmt.Errorf("Could not resolve %s -> %s", fqdn, dns.RcodeToString[r.Rcode])
-	}
-
-	// If we see a CNAME here then use the alias
-	for _, rr := range r.Answer {
-		if cn, ok := rr.(*dns.CNAME); ok {
-			if cn.Hdr.Name == fqdn {
-				fqdn = cn.Target
-				break
+	if r.Rcode == dns.RcodeSuccess {
+		// If we see a CNAME here then use the alias
+		for _, rr := range r.Answer {
+			if cn, ok := rr.(*dns.CNAME); ok {
+				if cn.Hdr.Name == fqdn {
+					fqdn = cn.Target
+					break
+				}
 			}
 		}
 	}

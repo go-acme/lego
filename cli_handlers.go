@@ -44,10 +44,16 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 	}
 
 	if c.GlobalIsSet("http") {
+		if strings.Index(c.GlobalString("http"), ":") == -1 {
+			logger().Fatalf("The --http switch only accepts interface:port or :port for its argument.")
+		}
 		client.SetHTTPAddress(c.GlobalString("http"))
 	}
 
 	if c.GlobalIsSet("tls") {
+		if strings.Index(c.GlobalString("tls"), ":") == -1 {
+			logger().Fatalf("The --tls switch only accepts interface:port or :port for its argument.")
+		}
 		client.SetTLSAddress(c.GlobalString("tls"))
 	}
 

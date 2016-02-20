@@ -72,6 +72,16 @@ func main() {
 				},
 			},
 		},
+		{
+			Name:   "register",
+			Usage:  "Register an account",
+			Action: register,
+		},
+		{
+			Name:   "agree",
+			Usage:  "Agree to CA Terms Of Service",
+			Action: agree,
+		},
 	}
 
 	app.Flags = []cli.Flag{

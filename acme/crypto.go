@@ -10,7 +10,6 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/base64"
-	"encoding/binary"
 	"encoding/pem"
 	"errors"
 	"fmt"
@@ -22,7 +21,6 @@ import (
 	"time"
 
 	"golang.org/x/crypto/ocsp"
-	"golang.org/x/crypto/sha3"
 )
 
 type keyType int
@@ -141,39 +139,6 @@ func getKeyAuthorization(token string, key interface{}) (string, error) {
 	}
 
 	return token + "." + keyThumb, nil
-}
-
-// Derive the shared secret according to acme spec 5.6
-func performECDH(priv *ecdsa.PrivateKey, pub *ecdsa.PublicKey, outLen int, label string) []byte {
-	// Derive Z from the private and public keys according to SEC 1 Ver. 2.0 - 3.3.1
-	Z, _ := priv.PublicKey.ScalarMult(pub.X, pub.Y, priv.D.Bytes())
-
-	if len(Z.Bytes())+len(label)+4 > 384 {
-		return nil
-	}
-
-	if outLen < 384*(2^32-1) {
-		return nil
-	}
-
-	// Derive the shared secret key using the ANS X9.63 KDF - SEC 1 Ver. 2.0 - 3.6.1
-	hasher := sha3.New384()
-	buffer := make([]byte, outLen)
-	bufferLen := 0
-	for i := 0; i < outLen/384; i++ {
-		hasher.Reset()
-
-		// Ki = Hash(Z || Counter || [SharedInfo])
-		hasher.Write(Z.Bytes())
-		binary.Write(hasher, binary.BigEndian, i)
-		hasher.Write([]byte(label))
-
-		hash := hasher.Sum(nil)
-		copied := copy(buffer[bufferLen:], hash)
-		bufferLen += copied
-	}
-
-	return buffer
 }
 
 // parsePEMBundle parses a certificate bundle from top to bottom and returns

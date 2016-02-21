@@ -43,7 +43,7 @@ func TestNewClient(t *testing.T) {
 	}
 
 	if client.keyType != keyType {
-		t.Errorf("Expected keyBits to be %d but was %d", keyType, client.keyType)
+		t.Errorf("Expected keyType to be %s but was %s", keyType, client.keyType)
 	}
 
 	if expected, actual := 2, len(client.solvers); actual != expected {

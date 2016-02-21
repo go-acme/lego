@@ -71,7 +71,7 @@ func TestLiveDNSimpleCleanUp(t *testing.T) {
 
 	time.Sleep(time.Second * 1)
 
-	provider, err := NewDNSProviderDNSimple(cflareEmail, cflareAPIKey)
+	provider, err := NewDNSProviderDNSimple(dnsimpleEmail, dnsimpleAPIKey)
 	assert.NoError(t, err)
 
 	err = provider.CleanUp(dnsimpleDomain, "", "123d==")

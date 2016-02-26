@@ -198,7 +198,7 @@ func run(c *cli.Context) {
 		logger().Fatal("Please specify --domains or -d")
 	}
 
-	cert, failures := client.ObtainCertificate(c.GlobalStringSlice("domains"), true, nil)
+	cert, failures := client.ObtainCertificate(c.GlobalStringSlice("domains"), !c.Bool("nobundle"), nil)
 	if len(failures) > 0 {
 		for k, v := range failures {
 			logger().Printf("[%s] Could not obtain certificates\n\t%s", k, v.Error())
@@ -295,7 +295,7 @@ func renew(c *cli.Context) {
 
 	certRes.Certificate = certBytes
 
-	newCert, err := client.RenewCertificate(certRes, true)
+	newCert, err := client.RenewCertificate(certRes, !c.Bool("nobundle"))
 	if err != nil {
 		logger().Fatalf("%s", err.Error())
 	}

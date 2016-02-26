@@ -50,6 +50,12 @@ func main() {
 			Name:   "run",
 			Usage:  "Register an account, then create and install a certificate",
 			Action: run,
+			Flags: []cli.Flag{
+				cli.BoolFlag{
+					Name:  "nobundle",
+					Usage: "Do not create a certificate bundle by adding the issuers certificate to the new certificate.",
+				},
+			},
 		},
 		{
 			Name:   "revoke",
@@ -69,6 +75,10 @@ func main() {
 				cli.BoolFlag{
 					Name:  "reuse-key",
 					Usage: "Used to indicate you want to reuse your current private key for the new certificate.",
+				},
+				cli.BoolFlag{
+					Name:  "nobundle",
+					Usage: "Do not create a certificate bundle by adding the issuers certificate to the new certificate.",
 				},
 			},
 		},

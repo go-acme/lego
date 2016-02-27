@@ -52,7 +52,7 @@ func main() {
 			Action: run,
 			Flags: []cli.Flag{
 				cli.BoolFlag{
-					Name:  "nobundle",
+					Name:  "no-bundle",
 					Usage: "Do not create a certificate bundle by adding the issuers certificate to the new certificate.",
 				},
 			},
@@ -77,7 +77,7 @@ func main() {
 					Usage: "Used to indicate you want to reuse your current private key for the new certificate.",
 				},
 				cli.BoolFlag{
-					Name:  "nobundle",
+					Name:  "no-bundle",
 					Usage: "Do not create a certificate bundle by adding the issuers certificate to the new certificate.",
 				},
 			},

@@ -45,7 +45,7 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 	}
 
 	// Generate the Key Authorization for the challenge
-	keyAuth, err := getKeyAuthorization(chlng.Token, &s.jws.privKey.PublicKey)
+	keyAuth, err := getKeyAuthorization(chlng.Token, s.jws.privKey)
 	if err != nil {
 		return err
 	}

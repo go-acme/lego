@@ -34,7 +34,12 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 	//TODO: move to account struct? Currently MUST pass email.
 	acc := NewAccount(c.GlobalString("email"), conf)
 
-	client, err := acme.NewClient(c.GlobalString("server"), acc, conf.RsaBits())
+	keyType, err := conf.KeyType()
+	if err != nil {
+		logger().Fatal(err.Error())
+	}
+
+	client, err := acme.NewClient(c.GlobalString("server"), acc, keyType)
 	if err != nil {
 		logger().Fatalf("Could not create client: %s", err.Error())
 	}

@@ -23,12 +23,17 @@ import (
 	"golang.org/x/crypto/ocsp"
 )
 
-type keyType int
+// KeyType represents the key algo as well as the key size or curve to use.
+type KeyType string
 type derCertificateBytes []byte
 
+// Constants for all key types we support.
 const (
-	eckey keyType = iota
-	rsakey
+	EC256   = KeyType("P256")
+	EC384   = KeyType("P384")
+	RSA2048 = KeyType("2048")
+	RSA4096 = KeyType("4096")
+	RSA8192 = KeyType("8192")
 )
 
 const (
@@ -121,8 +126,16 @@ func GetOCSPForCert(bundle []byte) ([]byte, *ocsp.Response, error) {
 }
 
 func getKeyAuthorization(token string, key interface{}) (string, error) {
+	var publicKey crypto.PublicKey
+	switch k := key.(type) {
+	case *ecdsa.PrivateKey:
+		publicKey = k.Public()
+	case *rsa.PrivateKey:
+		publicKey = k.Public()
+	}
+
 	// Generate the Key Authorization for the challenge
-	jwk := keyAsJWK(key)
+	jwk := keyAsJWK(publicKey)
 	if jwk == nil {
 		return "", errors.New("Could not generate JWK from key.")
 	}
@@ -182,18 +195,25 @@ func parsePEMPrivateKey(key []byte) (crypto.PrivateKey, error) {
 	}
 }
 
-func generatePrivateKey(t keyType, keyLength int) (crypto.PrivateKey, error) {
-	switch t {
-	case eckey:
+func generatePrivateKey(keyType KeyType) (crypto.PrivateKey, error) {
+
+	switch keyType {
+	case EC256:
+		return ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	case EC384:
 		return ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
-	case rsakey:
-		return rsa.GenerateKey(rand.Reader, keyLength)
+	case RSA2048:
+		return rsa.GenerateKey(rand.Reader, 2048)
+	case RSA4096:
+		return rsa.GenerateKey(rand.Reader, 4096)
+	case RSA8192:
+		return rsa.GenerateKey(rand.Reader, 8192)
 	}
 
-	return nil, fmt.Errorf("Invalid keytype: %d", t)
+	return nil, fmt.Errorf("Invalid KeyType: %s", keyType)
 }
 
-func generateCsr(privateKey *rsa.PrivateKey, domain string, san []string) ([]byte, error) {
+func generateCsr(privateKey crypto.PrivateKey, domain string, san []string) ([]byte, error) {
 	template := x509.CertificateRequest{
 		Subject: pkix.Name{
 			CommonName: domain,
@@ -210,6 +230,9 @@ func generateCsr(privateKey *rsa.PrivateKey, domain string, san []string) ([]byt
 func pemEncode(data interface{}) []byte {
 	var pemBlock *pem.Block
 	switch key := data.(type) {
+	case *ecdsa.PrivateKey:
+		keyBytes, _ := x509.MarshalECPrivateKey(key)
+		pemBlock = &pem.Block{Type: "EC PRIVATE KEY", Bytes: keyBytes}
 	case *rsa.PrivateKey:
 		pemBlock = &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(key)}
 		break

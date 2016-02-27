@@ -102,10 +102,10 @@ func main() {
 			Name:  "accept-tos, a",
 			Usage: "By setting this flag to true you indicate that you accept the current Let's Encrypt terms of service.",
 		},
-		cli.IntFlag{
-			Name:  "rsa-key-size, B",
-			Value: 2048,
-			Usage: "Size of the RSA key.",
+		cli.StringFlag{
+			Name:  "key-type, k",
+			Value: "rsa2048",
+			Usage: "Key type to use for private keys. Supported: rsa2048, rsa4096, rsa8192, ec256, ec384",
 		},
 		cli.StringFlag{
 			Name:  "path",

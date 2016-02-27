@@ -2,13 +2,14 @@ package acme
 
 import (
 	"bytes"
+	"crypto/rand"
 	"crypto/rsa"
 	"testing"
 	"time"
 )
 
 func TestGeneratePrivateKey(t *testing.T) {
-	key, err := generatePrivateKey(rsakey, 32)
+	key, err := generatePrivateKey(RSA2048)
 	if err != nil {
 		t.Error("Error generating private key:", err)
 	}
@@ -18,12 +19,12 @@ func TestGeneratePrivateKey(t *testing.T) {
 }
 
 func TestGenerateCSR(t *testing.T) {
-	key, err := generatePrivateKey(rsakey, 512)
+	key, err := rsa.GenerateKey(rand.Reader, 512)
 	if err != nil {
 		t.Fatal("Error generating private key:", err)
 	}
 
-	csr, err := generateCsr(key.(*rsa.PrivateKey), "fizz.buzz", nil)
+	csr, err := generateCsr(key, "fizz.buzz", nil)
 	if err != nil {
 		t.Error("Error generating CSR:", err)
 	}
@@ -52,7 +53,7 @@ func TestPEMEncode(t *testing.T) {
 }
 
 func TestPEMCertExpiration(t *testing.T) {
-	privKey, err := generatePrivateKey(rsakey, 2048)
+	privKey, err := generatePrivateKey(RSA2048)
 	if err != nil {
 		t.Fatal("Error generating private key:", err)
 	}

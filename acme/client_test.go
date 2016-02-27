@@ -1,6 +1,7 @@
 package acme
 
 import (
+	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
 	"encoding/json"
@@ -13,6 +14,7 @@ import (
 
 func TestNewClient(t *testing.T) {
 	keyBits := 32 // small value keeps test fast
+	keyType := RSA2048
 	key, err := rsa.GenerateKey(rand.Reader, keyBits)
 	if err != nil {
 		t.Fatal("Could not generate test key:", err)
@@ -28,7 +30,7 @@ func TestNewClient(t *testing.T) {
 		w.Write(data)
 	}))
 
-	client, err := NewClient(ts.URL, user, keyBits)
+	client, err := NewClient(ts.URL, user, keyType)
 	if err != nil {
 		t.Fatalf("Could not create client: %v", err)
 	}
@@ -40,8 +42,8 @@ func TestNewClient(t *testing.T) {
 		t.Errorf("Expected jws.privKey to be %p but was %p", expected, actual)
 	}
 
-	if client.keyBits != keyBits {
-		t.Errorf("Expected keyBits to be %d but was %d", keyBits, client.keyBits)
+	if client.keyType != keyType {
+		t.Errorf("Expected keyType to be %s but was %s", keyType, client.keyType)
 	}
 
 	if expected, actual := 2, len(client.solvers); actual != expected {
@@ -68,7 +70,7 @@ func TestClientOptPort(t *testing.T) {
 
 	optPort := "1234"
 	optHost := ""
-	client, err := NewClient(ts.URL, user, keyBits)
+	client, err := NewClient(ts.URL, user, RSA2048)
 	if err != nil {
 		t.Fatalf("Could not create client: %v", err)
 	}
@@ -140,8 +142,8 @@ func TestValidate(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	privKey, _ := generatePrivateKey(rsakey, 512)
-	j := &jws{privKey: privKey.(*rsa.PrivateKey), directoryURL: ts.URL}
+	privKey, _ := rsa.GenerateKey(rand.Reader, 512)
+	j := &jws{privKey: privKey, directoryURL: ts.URL}
 
 	tsts := []struct {
 		name     string
@@ -193,4 +195,4 @@ type mockUser struct {
 
 func (u mockUser) GetEmail() string                       { return u.email }
 func (u mockUser) GetRegistration() *RegistrationResource { return u.regres }
-func (u mockUser) GetPrivateKey() *rsa.PrivateKey         { return u.privatekey }
+func (u mockUser) GetPrivateKey() crypto.PrivateKey       { return u.privatekey }

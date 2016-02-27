@@ -1,6 +1,7 @@
 package acme
 
 import (
+	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha256"
 	"crypto/tls"
@@ -11,8 +12,8 @@ import (
 )
 
 func TestTLSSNIChallenge(t *testing.T) {
-	privKey, _ := generatePrivateKey(rsakey, 512)
-	j := &jws{privKey: privKey.(*rsa.PrivateKey)}
+	privKey, _ := rsa.GenerateKey(rand.Reader, 512)
+	j := &jws{privKey: privKey}
 	clientChallenge := challenge{Type: TLSSNI01, Token: "tlssni1"}
 	mockValidate := func(_ *jws, _, _ string, chlng challenge) error {
 		conn, err := tls.Dial("tcp", "localhost:23457", &tls.Config{
@@ -51,8 +52,8 @@ func TestTLSSNIChallenge(t *testing.T) {
 }
 
 func TestTLSSNIChallengeInvalidPort(t *testing.T) {
-	privKey, _ := generatePrivateKey(rsakey, 128)
-	j := &jws{privKey: privKey.(*rsa.PrivateKey)}
+	privKey, _ := rsa.GenerateKey(rand.Reader, 128)
+	j := &jws{privKey: privKey}
 	clientChallenge := challenge{Type: TLSSNI01, Token: "tlssni2"}
 	solver := &tlsSNIChallenge{jws: j, validate: stubValidate, provider: &TLSProviderServer{port: "123456"}}
 

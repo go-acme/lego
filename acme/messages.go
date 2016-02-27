@@ -28,17 +28,13 @@ type registrationMessage struct {
 // Registration is returned by the ACME server after the registration
 // The client implementation should save this registration somewhere.
 type Registration struct {
-	Resource string `json:"resource,omitempty"`
-	ID       int    `json:"id"`
-	Key      struct {
-		Kty string `json:"kty"`
-		N   string `json:"n"`
-		E   string `json:"e"`
-	} `json:"key"`
-	Contact        []string `json:"contact"`
-	Agreement      string   `json:"agreement,omitempty"`
-	Authorizations string   `json:"authorizations,omitempty"`
-	Certificates   string   `json:"certificates,omitempty"`
+	Resource       string          `json:"resource,omitempty"`
+	ID             int             `json:"id"`
+	Key            jose.JsonWebKey `json:"key"`
+	Contact        []string        `json:"contact"`
+	Agreement      string          `json:"agreement,omitempty"`
+	Authorizations string          `json:"authorizations,omitempty"`
+	Certificates   string          `json:"certificates,omitempty"`
 	//	RecoveryKey    recoveryKeyMessage `json:"recoveryKey,omitempty"`
 }
 

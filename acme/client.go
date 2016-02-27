@@ -3,7 +3,6 @@ package acme
 
 import (
 	"crypto"
-	"crypto/rsa"
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
@@ -38,7 +37,7 @@ func logf(format string, args ...interface{}) {
 type User interface {
 	GetEmail() string
 	GetRegistration() *RegistrationResource
-	GetPrivateKey() *rsa.PrivateKey
+	GetPrivateKey() crypto.PrivateKey
 }
 
 // Interface for all challenge solvers to implement.
@@ -53,7 +52,7 @@ type Client struct {
 	directory  directory
 	user       User
 	jws        *jws
-	keyBits    int
+	keyType    KeyType
 	issuerCert []byte
 	solvers    map[Challenge]solver
 }
@@ -61,14 +60,10 @@ type Client struct {
 // NewClient creates a new ACME client on behalf of the user. The client will depend on
 // the ACME directory located at caDirURL for the rest of its actions. It will
 // generate private keys for certificates of size keyBits.
-func NewClient(caDirURL string, user User, keyBits int) (*Client, error) {
+func NewClient(caDirURL string, user User, keyType KeyType) (*Client, error) {
 	privKey := user.GetPrivateKey()
 	if privKey == nil {
 		return nil, errors.New("private key was nil")
-	}
-
-	if err := privKey.Validate(); err != nil {
-		return nil, fmt.Errorf("invalid private key: %v", err)
 	}
 
 	var dir directory
@@ -98,7 +93,7 @@ func NewClient(caDirURL string, user User, keyBits int) (*Client, error) {
 	solvers[HTTP01] = &httpChallenge{jws: jws, validate: validate, provider: &HTTPProviderServer{}}
 	solvers[TLSSNI01] = &tlsSNIChallenge{jws: jws, validate: validate, provider: &TLSProviderServer{}}
 
-	return &Client{directory: dir, user: user, jws: jws, keyBits: keyBits, solvers: solvers}, nil
+	return &Client{directory: dir, user: user, jws: jws, keyType: keyType, solvers: solvers}, nil
 }
 
 // SetChallengeProvider specifies a custom provider that will make the solution available
@@ -197,8 +192,10 @@ func (c *Client) Register() (*RegistrationResource, error) {
 // AgreeToTOS updates the Client registration and sends the agreement to
 // the server.
 func (c *Client) AgreeToTOS() error {
-	c.user.GetRegistration().Body.Agreement = c.user.GetRegistration().TosURL
-	c.user.GetRegistration().Body.Resource = "reg"
+	reg := c.user.GetRegistration()
+
+	reg.Body.Agreement = c.user.GetRegistration().TosURL
+	reg.Body.Resource = "reg"
 	_, err := postJSON(c.jws, c.user.GetRegistration().URI, c.user.GetRegistration().Body, nil)
 	return err
 }
@@ -457,7 +454,7 @@ func (c *Client) requestCertificate(authz []authorizationResource, bundle bool, 
 	commonName := authz[0]
 	var err error
 	if privKey == nil {
-		privKey, err = generatePrivateKey(rsakey, c.keyBits)
+		privKey, err = generatePrivateKey(c.keyType)
 		if err != nil {
 			return CertificateResource{}, err
 		}
@@ -471,7 +468,7 @@ func (c *Client) requestCertificate(authz []authorizationResource, bundle bool, 
 	}
 
 	// TODO: should the CSR be customizable?
-	csr, err := generateCsr(privKey.(*rsa.PrivateKey), commonName.Domain, san)
+	csr, err := generateCsr(privKey, commonName.Domain, san)
 	if err != nil {
 		return CertificateResource{}, err
 	}

@@ -50,6 +50,12 @@ func main() {
 			Name:   "run",
 			Usage:  "Register an account, then create and install a certificate",
 			Action: run,
+			Flags: []cli.Flag{
+				cli.BoolFlag{
+					Name:  "no-bundle",
+					Usage: "Do not create a certificate bundle by adding the issuers certificate to the new certificate.",
+				},
+			},
 		},
 		{
 			Name:   "revoke",
@@ -69,6 +75,10 @@ func main() {
 				cli.BoolFlag{
 					Name:  "reuse-key",
 					Usage: "Used to indicate you want to reuse your current private key for the new certificate.",
+				},
+				cli.BoolFlag{
+					Name:  "no-bundle",
+					Usage: "Do not create a certificate bundle by adding the issuers certificate to the new certificate.",
 				},
 			},
 		},
@@ -124,7 +134,7 @@ func main() {
 				"\n\tdigitalocean: DO_AUTH_TOKEN" +
 				"\n\tdnsimple: DNSIMPLE_EMAIL, DNSIMPLE_API_KEY" +
 				"\n\troute53: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION" +
-				"\n\trfc2136: RFC2136_TSIG_KEY, RFC2136_TSIG_SECRET, RFC2136_NAMESERVER, RFC2136_ZONE" +
+				"\n\trfc2136: RFC2136_TSIG_KEY, RFC2136_TSIG_SECRET, RFC2136_TSIG_ALGORITHM, RFC2136_NAMESERVER, RFC2136_ZONE" +
 				"\n\tmanual: none",
 		},
 	}

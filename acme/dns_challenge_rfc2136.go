@@ -2,6 +2,7 @@ package acme
 
 import (
 	"fmt"
+	"net"
 	"strings"
 	"time"
 
@@ -15,7 +16,6 @@ type DNSProviderRFC2136 struct {
 	tsigAlgorithm string
 	tsigKey       string
 	tsigSecret    string
-	domain2zone   map[string]string
 }
 
 // NewDNSProviderRFC2136 returns a new DNSProviderRFC2136 instance.
@@ -23,12 +23,15 @@ type DNSProviderRFC2136 struct {
 // 'nameserver' must be a network address in the the form "host" or "host:port".
 func NewDNSProviderRFC2136(nameserver, tsigAlgorithm, tsigKey, tsigSecret string) (*DNSProviderRFC2136, error) {
 	// Append the default DNS port if none is specified.
-	if !strings.Contains(nameserver, ":") {
-		nameserver += ":53"
+	if _, _, err := net.SplitHostPort(nameserver); err != nil {
+		if strings.Contains(err.Error(), "missing port") {
+			nameserver = net.JoinHostPort(nameserver, "53")
+		} else {
+			return nil, err
+		}
 	}
 	d := &DNSProviderRFC2136{
-		nameserver:  nameserver,
-		domain2zone: make(map[string]string),
+		nameserver: nameserver,
 	}
 	if tsigAlgorithm == "" {
 		tsigAlgorithm = dns.HmacMD5
@@ -55,7 +58,8 @@ func (r *DNSProviderRFC2136) CleanUp(domain, token, keyAuth string) error {
 }
 
 func (r *DNSProviderRFC2136) changeRecord(action, fqdn, value string, ttl int) error {
-	zone, err := r.findZone(fqdn)
+	// Find the zone for the given fqdn
+	zone, err := findZoneByFqdn(fqdn, r.nameserver)
 	if err != nil {
 		return err
 	}
@@ -64,8 +68,7 @@ func (r *DNSProviderRFC2136) changeRecord(action, fqdn, value string, ttl int) e
 	rr := new(dns.TXT)
 	rr.Hdr = dns.RR_Header{Name: fqdn, Rrtype: dns.TypeTXT, Class: dns.ClassINET, Ttl: uint32(ttl)}
 	rr.Txt = []string{value}
-	rrs := make([]dns.RR, 1)
-	rrs[0] = rr
+	rrs := []dns.RR{rr}
 
 	// Create dynamic update packet
 	m := new(dns.Msg)
@@ -100,56 +103,4 @@ func (r *DNSProviderRFC2136) changeRecord(action, fqdn, value string, ttl int) e
 	}
 
 	return nil
-}
-
-// findZone determines the zone of a qualifying cert DNSname
-func (r *DNSProviderRFC2136) findZone(fqdn string) (string, error) {
-	// Do we have it cached?
-	if val, ok := r.domain2zone[fqdn]; ok {
-		return val, nil
-	}
-
-	// Query the authorative nameserver for a hopefully non-existing SOA record,
-	// in the authority section of the reply it will have the SOA of the
-	// containing zone. rfc2308 has this to say on the subject:
-	//   Name servers authoritative for a zone MUST include the SOA record of
-	//   the zone in the authority section of the response when reporting an
-	//   NXDOMAIN or indicating that no data (NODATA) of the requested type exists
-	m := new(dns.Msg)
-	m.SetQuestion(fqdn, dns.TypeSOA)
-	m.SetEdns0(4096, false)
-	m.RecursionDesired = true
-	m.Authoritative = true
-
-	in, err := dns.Exchange(m, r.nameserver)
-	if err == dns.ErrTruncated {
-		tcp := &dns.Client{Net: "tcp"}
-		in, _, err = tcp.Exchange(m, r.nameserver)
-	}
-	if err != nil {
-		return "", err
-	}
-	if in.Rcode != dns.RcodeNameError {
-		if in.Rcode != dns.RcodeSuccess {
-			return "", fmt.Errorf("DNS Query for zone %q failed", fqdn)
-		}
-		// We have a success, so one of the answers has to be a SOA RR
-		for _, ans := range in.Answer {
-			if ans.Header().Rrtype == dns.TypeSOA {
-				zone := ans.Header().Name
-				r.domain2zone[fqdn] = zone
-				return zone, nil
-			}
-		}
-		// Or it is NODATA, fall through to NXDOMAIN
-	}
-	// Search the authority section for our precious SOA RR
-	for _, ns := range in.Ns {
-		if ns.Header().Rrtype == dns.TypeSOA {
-			zone := ns.Header().Name
-			r.domain2zone[fqdn] = zone
-			return zone, nil
-		}
-	}
-	return "", fmt.Errorf("Expected a SOA record in the authority section")
 }

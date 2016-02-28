@@ -35,11 +35,11 @@ var lookupNameserversTestsErr = []struct {
 }{
 	// invalid tld
 	{"_null.n0n0.",
-		"Could not determine authoritative nameservers",
+		"Could not determine zone authoritively",
 	},
 	// invalid domain
 	{"_null.com.",
-		"Could not determine authoritative nameservers",
+		"Could not determine zone authoritively",
 	},
 }
 

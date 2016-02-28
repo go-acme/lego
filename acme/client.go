@@ -319,7 +319,6 @@ func (c *Client) RenewCertificate(cert CertificateResource, bundle bool) (Certif
 				// Success - append the issuer cert to the issued cert.
 				issuerCert = pemEncode(derCertificateBytes(issuerCert))
 				issuedCert = append(issuedCert, issuerCert...)
-				cert.Certificate = issuedCert
 			}
 		}
 

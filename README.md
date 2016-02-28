@@ -97,7 +97,7 @@ GLOBAL OPTIONS:
 									digitalocean: DO_AUTH_TOKEN
 									dnsimple: DNSIMPLE_EMAIL, DNSIMPLE_API_KEY
 									route53: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION
-									rfc2136: RFC2136_TSIG_KEY, RFC2136_TSIG_SECRET, RFC2136_NAMESERVER
+									rfc2136: RFC2136_TSIG_KEY, RFC2136_TSIG_SECRET, RFC2136_TSIG_ALGORITHM, RFC2136_NAMESERVER
 									manual: none
    --help, -h								show help
    --version, -v							print the version

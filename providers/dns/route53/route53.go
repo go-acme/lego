@@ -1,4 +1,4 @@
-package acme
+package route53
 
 import (
 	"fmt"
@@ -7,6 +7,8 @@ import (
 
 	"github.com/mitchellh/goamz/aws"
 	"github.com/mitchellh/goamz/route53"
+	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/providers/dns"
 )
 
 // DNSProviderRoute53 is an implementation of the DNSProvider interface
@@ -43,14 +45,14 @@ func NewDNSProviderRoute53(awsAccessKey, awsSecretKey, awsRegionName string) (*D
 
 // Present creates a TXT record using the specified parameters
 func (r *DNSProviderRoute53) Present(domain, token, keyAuth string) error {
-	fqdn, value, ttl := DNS01Record(domain, keyAuth)
+	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
 	value = `"` + value + `"`
 	return r.changeRecord("UPSERT", fqdn, value, ttl)
 }
 
 // CleanUp removes the TXT record matching the specified parameters
 func (r *DNSProviderRoute53) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value, ttl := DNS01Record(domain, keyAuth)
+	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
 	value = `"` + value + `"`
 	return r.changeRecord("DELETE", fqdn, value, ttl)
 }
@@ -69,7 +71,7 @@ func (r *DNSProviderRoute53) changeRecord(action, fqdn, value string, ttl int) e
 		return err
 	}
 
-	return waitFor(90, 5, func() (bool, error) {
+	return dns.WaitFor(90, 5, func() (bool, error) {
 		status, err := r.client.GetChange(resp.ChangeInfo.ID)
 		if err != nil {
 			return false, err

@@ -234,24 +234,6 @@ func findZoneByFqdn(fqdn, nameserver string) (string, error) {
 	return "", fmt.Errorf("NS %s did not return the expected SOA record in the authority section", nameserver)
 }
 
-// toFqdn converts the name into a fqdn appending a trailing dot.
-func toFqdn(name string) string {
-	n := len(name)
-	if n == 0 || name[n-1] == '.' {
-		return name
-	}
-	return name + "."
-}
-
-// unFqdn converts the fqdn into a name removing the trailing dot.
-func unFqdn(name string) string {
-	n := len(name)
-	if n != 0 && name[n-1] == '.' {
-		return name[:n-1]
-	}
-	return name
-}
-
 // clearFqdnCache clears the cache of fqdn to zone mappings. Primarily used in testing.
 func clearFqdnCache() {
 	fqdnToZone = map[string]string{}

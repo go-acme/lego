@@ -1,4 +1,4 @@
-package acme
+package dnsimple
 
 import (
 	"os"

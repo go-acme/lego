@@ -1,4 +1,4 @@
-package acme
+package digitalocean
 
 import (
 	"fmt"

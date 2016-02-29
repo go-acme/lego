@@ -1,4 +1,4 @@
-package acme
+package rfc2136
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/miekg/dns"
+	"github.com/xenolf/lego/acme"
 )
 
 // DNSProviderRFC2136 is an implementation of the ChallengeProvider interface that
@@ -47,13 +48,13 @@ func NewDNSProviderRFC2136(nameserver, tsigAlgorithm, tsigKey, tsigSecret string
 
 // Present creates a TXT record using the specified parameters
 func (r *DNSProviderRFC2136) Present(domain, token, keyAuth string) error {
-	fqdn, value, ttl := DNS01Record(domain, keyAuth)
+	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
 	return r.changeRecord("INSERT", fqdn, value, ttl)
 }
 
 // CleanUp removes the TXT record matching the specified parameters
 func (r *DNSProviderRFC2136) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value, ttl := DNS01Record(domain, keyAuth)
+	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
 	return r.changeRecord("REMOVE", fqdn, value, ttl)
 }
 

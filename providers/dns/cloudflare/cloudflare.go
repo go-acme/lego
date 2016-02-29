@@ -1,4 +1,4 @@
-package acme
+package cloudflare
 
 import (
 	"bytes"
@@ -9,6 +9,9 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/providers/dns"
 )
 
 // CloudFlareAPIURL represents the API endpoint to call.
@@ -39,7 +42,7 @@ func NewDNSProviderCloudFlare(cloudflareEmail, cloudflareKey string) (*DNSProvid
 
 // Present creates a TXT record to fulfil the dns-01 challenge
 func (c *DNSProviderCloudFlare) Present(domain, token, keyAuth string) error {
-	fqdn, value, _ := DNS01Record(domain, keyAuth)
+	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
 	zoneID, err := c.getHostedZoneID(fqdn)
 	if err != nil {
 		return err
@@ -47,7 +50,7 @@ func (c *DNSProviderCloudFlare) Present(domain, token, keyAuth string) error {
 
 	rec := cloudFlareRecord{
 		Type:    "TXT",
-		Name:    unFqdn(fqdn),
+		Name:    dns.UnFqdn(fqdn),
 		Content: value,
 		TTL:     120,
 	}
@@ -67,7 +70,7 @@ func (c *DNSProviderCloudFlare) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters
 func (c *DNSProviderCloudFlare) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _, _ := DNS01Record(domain, keyAuth)
+	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
 
 	record, err := c.findTxtRecord(fqdn)
 	if err != nil {
@@ -102,7 +105,7 @@ func (c *DNSProviderCloudFlare) getHostedZoneID(fqdn string) (string, error) {
 
 	var hostedZone HostedZone
 	for _, zone := range zones {
-		name := toFqdn(zone.Name)
+		name := dns.ToFqdn(zone.Name)
 		if strings.HasSuffix(fqdn, name) {
 			if len(zone.Name) > len(hostedZone.Name) {
 				hostedZone = zone
@@ -134,7 +137,7 @@ func (c *DNSProviderCloudFlare) findTxtRecord(fqdn string) (*cloudFlareRecord, e
 	}
 
 	for _, rec := range records {
-		if rec.Name == unFqdn(fqdn) && rec.Type == "TXT" {
+		if rec.Name == dns.UnFqdn(fqdn) && rec.Type == "TXT" {
 			return &rec, nil
 		}
 	}
@@ -163,7 +166,7 @@ func (c *DNSProviderCloudFlare) makeRequest(method, uri string, body io.Reader) 
 
 	req.Header.Set("X-Auth-Email", c.authEmail)
 	req.Header.Set("X-Auth-Key", c.authKey)
-	req.Header.Set("User-Agent", userAgent())
+	//req.Header.Set("User-Agent", userAgent())
 
 	client := http.Client{Timeout: 30 * time.Second}
 	resp, err := client.Do(req)

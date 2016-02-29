@@ -18,7 +18,7 @@ type preCheckDNSFunc func(fqdn, value string) (bool, error)
 
 var (
 	preCheckDNS preCheckDNSFunc = checkDNSPropagation
-	fqdn2zone                   = map[string]string{}
+	fqdnToZone                  = map[string]string{}
 )
 
 var recursiveNameserver = "google-public-dns-a.google.com:53"
@@ -185,7 +185,7 @@ func lookupNameservers(fqdn string) ([]string, error) {
 // findZoneByFqdn determines the zone of the given fqdn
 func findZoneByFqdn(fqdn, nameserver string) (string, error) {
 	// Do we have it cached?
-	if zone, ok := fqdn2zone[fqdn]; ok {
+	if zone, ok := fqdnToZone[fqdn]; ok {
 		return zone, nil
 	}
 
@@ -210,9 +210,9 @@ func findZoneByFqdn(fqdn, nameserver string) (string, error) {
 				// If we ended up on one of the TLDs, it means the domain did not exist.
 				publicsuffix, _ := publicsuffix.PublicSuffix(unFqdn(zone))
 				if publicsuffix == unFqdn(zone) {
-					return "", fmt.Errorf("Could not determine zone authoritively")
+					return "", fmt.Errorf("Could not determine zone authoritatively")
 				}
-				fqdn2zone[fqdn] = zone
+				fqdnToZone[fqdn] = zone
 				return zone, nil
 			}
 		}
@@ -225,9 +225,9 @@ func findZoneByFqdn(fqdn, nameserver string) (string, error) {
 			// If we ended up on one of the TLDs, it means the domain did not exist.
 			publicsuffix, _ := publicsuffix.PublicSuffix(unFqdn(zone))
 			if publicsuffix == unFqdn(zone) {
-				return "", fmt.Errorf("Could not determine zone authoritively")
+				return "", fmt.Errorf("Could not determine zone authoritatively")
 			}
-			fqdn2zone[fqdn] = zone
+			fqdnToZone[fqdn] = zone
 			return zone, nil
 		}
 	}
@@ -250,6 +250,11 @@ func unFqdn(name string) string {
 		return name[:n-1]
 	}
 	return name
+}
+
+// clearFqdnCache clears the cache of fqdn to zone mappings. Primarily used in testing.
+func clearFqdnCache() {
+	fqdnToZone = map[string]string{}
 }
 
 // waitFor polls the given function 'f', once every 'interval' seconds, up to 'timeout' seconds.

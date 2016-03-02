@@ -11,13 +11,17 @@ import (
 	"time"
 
 	"github.com/miekg/dns"
+	"golang.org/x/net/publicsuffix"
 )
 
 type preCheckDNSFunc func(fqdn, value string) (bool, error)
 
-var preCheckDNS preCheckDNSFunc = checkDNSPropagation
+var (
+	preCheckDNS preCheckDNSFunc = checkDNSPropagation
+	fqdnToZone                  = map[string]string{}
+)
 
-var recursiveNameserver = "google-public-dns-a.google.com"
+var recursiveNameserver = "google-public-dns-a.google.com:53"
 
 // DNS01Record returns a DNS record which will fulfill the `dns-01` challenge
 func DNS01Record(domain, keyAuth string) (fqdn string, value string, ttl int) {
@@ -105,7 +109,7 @@ func checkDNSPropagation(fqdn, value string) (bool, error) {
 // checkAuthoritativeNss queries each of the given nameservers for the expected TXT record.
 func checkAuthoritativeNss(fqdn, value string, nameservers []string) (bool, error) {
 	for _, ns := range nameservers {
-		r, err := dnsQuery(fqdn, dns.TypeTXT, ns, false)
+		r, err := dnsQuery(fqdn, dns.TypeTXT, net.JoinHostPort(ns, "53"), false)
 		if err != nil {
 			return false, err
 		}
@@ -133,6 +137,7 @@ func checkAuthoritativeNss(fqdn, value string, nameservers []string) (bool, erro
 }
 
 // dnsQuery sends a DNS query to the given nameserver.
+// The nameserver should include a port, to facilitate testing where we talk to a mock dns server.
 func dnsQuery(fqdn string, rtype uint16, nameserver string, recursive bool) (in *dns.Msg, err error) {
 	m := new(dns.Msg)
 	m.SetQuestion(fqdn, rtype)
@@ -142,7 +147,7 @@ func dnsQuery(fqdn string, rtype uint16, nameserver string, recursive bool) (in 
 		m.RecursionDesired = false
 	}
 
-	in, err = dns.Exchange(m, net.JoinHostPort(nameserver, "53"))
+	in, err = dns.Exchange(m, nameserver)
 	if err == dns.ErrTruncated {
 		tcp := &dns.Client{Net: "tcp"}
 		in, _, err = tcp.Exchange(m, nameserver)
@@ -155,7 +160,12 @@ func dnsQuery(fqdn string, rtype uint16, nameserver string, recursive bool) (in 
 func lookupNameservers(fqdn string) ([]string, error) {
 	var authoritativeNss []string
 
-	r, err := dnsQuery(fqdn, dns.TypeNS, recursiveNameserver, true)
+	zone, err := findZoneByFqdn(fqdn, recursiveNameserver)
+	if err != nil {
+		return nil, err
+	}
+
+	r, err := dnsQuery(zone, dns.TypeNS, recursiveNameserver, true)
 	if err != nil {
 		return nil, err
 	}
@@ -169,15 +179,59 @@ func lookupNameservers(fqdn string) ([]string, error) {
 	if len(authoritativeNss) > 0 {
 		return authoritativeNss, nil
 	}
+	return nil, fmt.Errorf("Could not determine authoritative nameservers")
+}
 
-	// Strip of the left most label to get the parent domain.
-	offset, _ := dns.NextLabel(fqdn, 0)
-	next := fqdn[offset:]
-	if dns.CountLabel(next) < 2 {
-		return nil, fmt.Errorf("Could not determine authoritative nameservers")
+// findZoneByFqdn determines the zone of the given fqdn
+func findZoneByFqdn(fqdn, nameserver string) (string, error) {
+	// Do we have it cached?
+	if zone, ok := fqdnToZone[fqdn]; ok {
+		return zone, nil
 	}
 
-	return lookupNameservers(next)
+	// Query the authorative nameserver for a hopefully non-existing SOA record,
+	// in the authority section of the reply it will have the SOA of the
+	// containing zone. rfc2308 has this to say on the subject:
+	//   Name servers authoritative for a zone MUST include the SOA record of
+	//   the zone in the authority section of the response when reporting an
+	//   NXDOMAIN or indicating that no data (NODATA) of the requested type exists
+	in, err := dnsQuery(fqdn, dns.TypeSOA, nameserver, true)
+	if err != nil {
+		return "", err
+	}
+	if in.Rcode != dns.RcodeNameError {
+		if in.Rcode != dns.RcodeSuccess {
+			return "", fmt.Errorf("NS %s returned %s for %s", nameserver, dns.RcodeToString[in.Rcode], fqdn)
+		}
+		// We have a success, so one of the answers has to be a SOA RR
+		for _, ans := range in.Answer {
+			if soa, ok := ans.(*dns.SOA); ok {
+				zone := soa.Hdr.Name
+				// If we ended up on one of the TLDs, it means the domain did not exist.
+				publicsuffix, _ := publicsuffix.PublicSuffix(unFqdn(zone))
+				if publicsuffix == unFqdn(zone) {
+					return "", fmt.Errorf("Could not determine zone authoritatively")
+				}
+				fqdnToZone[fqdn] = zone
+				return zone, nil
+			}
+		}
+		// Or it is NODATA, fall through to NXDOMAIN
+	}
+	// Search the authority section for our precious SOA RR
+	for _, ns := range in.Ns {
+		if soa, ok := ns.(*dns.SOA); ok {
+			zone := soa.Hdr.Name
+			// If we ended up on one of the TLDs, it means the domain did not exist.
+			publicsuffix, _ := publicsuffix.PublicSuffix(unFqdn(zone))
+			if publicsuffix == unFqdn(zone) {
+				return "", fmt.Errorf("Could not determine zone authoritatively")
+			}
+			fqdnToZone[fqdn] = zone
+			return zone, nil
+		}
+	}
+	return "", fmt.Errorf("NS %s did not return the expected SOA record in the authority section", nameserver)
 }
 
 // toFqdn converts the name into a fqdn appending a trailing dot.
@@ -196,6 +250,11 @@ func unFqdn(name string) string {
 		return name[:n-1]
 	}
 	return name
+}
+
+// clearFqdnCache clears the cache of fqdn to zone mappings. Primarily used in testing.
+func clearFqdnCache() {
+	fqdnToZone = map[string]string{}
 }
 
 // waitFor polls the given function 'f', once every 'interval' seconds, up to 'timeout' seconds.

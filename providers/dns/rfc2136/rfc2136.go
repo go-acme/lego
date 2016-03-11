@@ -1,3 +1,4 @@
+// Package rfc2136 implements a DNS provider for solving the DNS-01 challenge using the rfc2136 dynamic update.
 package rfc2136
 
 import (
@@ -10,19 +11,19 @@ import (
 	"github.com/xenolf/lego/acme"
 )
 
-// DNSProviderRFC2136 is an implementation of the ChallengeProvider interface that
+// DNSProvider is an implementation of the acme.ChallengeProvider interface that
 // uses dynamic DNS updates (RFC 2136) to create TXT records on a nameserver.
-type DNSProviderRFC2136 struct {
+type DNSProvider struct {
 	nameserver    string
 	tsigAlgorithm string
 	tsigKey       string
 	tsigSecret    string
 }
 
-// NewDNSProviderRFC2136 returns a new DNSProviderRFC2136 instance.
+// NewDNSProvider returns a new DNSProvider instance.
 // To disable TSIG authentication 'tsigAlgorithm, 'tsigKey' and 'tsigSecret' must be set to the empty string.
 // 'nameserver' must be a network address in the the form "host" or "host:port".
-func NewDNSProviderRFC2136(nameserver, tsigAlgorithm, tsigKey, tsigSecret string) (*DNSProviderRFC2136, error) {
+func NewDNSProvider(nameserver, tsigAlgorithm, tsigKey, tsigSecret string) (*DNSProvider, error) {
 	// Append the default DNS port if none is specified.
 	if _, _, err := net.SplitHostPort(nameserver); err != nil {
 		if strings.Contains(err.Error(), "missing port") {
@@ -31,7 +32,7 @@ func NewDNSProviderRFC2136(nameserver, tsigAlgorithm, tsigKey, tsigSecret string
 			return nil, err
 		}
 	}
-	d := &DNSProviderRFC2136{
+	d := &DNSProvider{
 		nameserver: nameserver,
 	}
 	if tsigAlgorithm == "" {
@@ -47,18 +48,18 @@ func NewDNSProviderRFC2136(nameserver, tsigAlgorithm, tsigKey, tsigSecret string
 }
 
 // Present creates a TXT record using the specified parameters
-func (r *DNSProviderRFC2136) Present(domain, token, keyAuth string) error {
+func (r *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
 	return r.changeRecord("INSERT", fqdn, value, ttl)
 }
 
 // CleanUp removes the TXT record matching the specified parameters
-func (r *DNSProviderRFC2136) CleanUp(domain, token, keyAuth string) error {
+func (r *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
 	return r.changeRecord("REMOVE", fqdn, value, ttl)
 }
 
-func (r *DNSProviderRFC2136) changeRecord(action, fqdn, value string, ttl int) error {
+func (r *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 	// Find the zone for the given fqdn
 	zone, err := acme.FindZoneByFqdn(fqdn, r.nameserver)
 	if err != nil {

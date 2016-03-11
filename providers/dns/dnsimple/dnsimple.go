@@ -1,3 +1,4 @@
+// Package dnsimple implements a DNS provider for solving the DNS-01 challenge using dnsimple DNS.
 package dnsimple
 
 import (
@@ -9,15 +10,15 @@ import (
 	"github.com/xenolf/lego/acme"
 )
 
-// DNSProviderDNSimple is an implementation of the DNSProvider interface.
-type DNSProviderDNSimple struct {
+// DNSProvider is an implementation of the acme.ChallengeProvider interface.
+type DNSProvider struct {
 	client *dnsimple.Client
 }
 
-// NewDNSProviderDNSimple returns a DNSProviderDNSimple instance with a configured dnsimple client.
+// NewDNSProvider returns a DNSProvider instance with a configured dnsimple client.
 // Authentication is either done using the passed credentials or - when empty - using the environment
 // variables DNSIMPLE_EMAIL and DNSIMPLE_API_KEY.
-func NewDNSProviderDNSimple(dnsimpleEmail, dnsimpleAPIKey string) (*DNSProviderDNSimple, error) {
+func NewDNSProvider(dnsimpleEmail, dnsimpleAPIKey string) (*DNSProvider, error) {
 	if dnsimpleEmail == "" || dnsimpleAPIKey == "" {
 		dnsimpleEmail, dnsimpleAPIKey = dnsimpleEnvAuth()
 		if dnsimpleEmail == "" || dnsimpleAPIKey == "" {
@@ -25,7 +26,7 @@ func NewDNSProviderDNSimple(dnsimpleEmail, dnsimpleAPIKey string) (*DNSProviderD
 		}
 	}
 
-	c := &DNSProviderDNSimple{
+	c := &DNSProvider{
 		client: dnsimple.NewClient(dnsimpleAPIKey, dnsimpleEmail),
 	}
 
@@ -33,7 +34,7 @@ func NewDNSProviderDNSimple(dnsimpleEmail, dnsimpleAPIKey string) (*DNSProviderD
 }
 
 // Present creates a TXT record to fulfil the dns-01 challenge.
-func (c *DNSProviderDNSimple) Present(domain, token, keyAuth string) error {
+func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
 
 	zoneID, zoneName, err := c.getHostedZone(domain)
@@ -51,7 +52,7 @@ func (c *DNSProviderDNSimple) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (c *DNSProviderDNSimple) CleanUp(domain, token, keyAuth string) error {
+func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
 
 	records, err := c.findTxtRecords(domain, fqdn)
@@ -68,7 +69,7 @@ func (c *DNSProviderDNSimple) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-func (c *DNSProviderDNSimple) getHostedZone(domain string) (string, string, error) {
+func (c *DNSProvider) getHostedZone(domain string) (string, string, error) {
 	domains, _, err := c.client.Domains.List()
 	if err != nil {
 		return "", "", fmt.Errorf("DNSimple API call failed: %v", err)
@@ -89,7 +90,7 @@ func (c *DNSProviderDNSimple) getHostedZone(domain string) (string, string, erro
 	return fmt.Sprintf("%v", hostedDomain.Id), hostedDomain.Name, nil
 }
 
-func (c *DNSProviderDNSimple) findTxtRecords(domain, fqdn string) ([]dnsimple.Record, error) {
+func (c *DNSProvider) findTxtRecords(domain, fqdn string) ([]dnsimple.Record, error) {
 	zoneID, zoneName, err := c.getHostedZone(domain)
 	if err != nil {
 		return nil, err
@@ -111,7 +112,7 @@ func (c *DNSProviderDNSimple) findTxtRecords(domain, fqdn string) ([]dnsimple.Re
 	return records, nil
 }
 
-func (c *DNSProviderDNSimple) newTxtRecord(zone, fqdn, value string, ttl int) *dnsimple.Record {
+func (c *DNSProvider) newTxtRecord(zone, fqdn, value string, ttl int) *dnsimple.Record {
 	name := c.extractRecordName(fqdn, zone)
 
 	return &dnsimple.Record{
@@ -122,7 +123,7 @@ func (c *DNSProviderDNSimple) newTxtRecord(zone, fqdn, value string, ttl int) *d
 	}
 }
 
-func (c *DNSProviderDNSimple) extractRecordName(fqdn, domain string) string {
+func (c *DNSProvider) extractRecordName(fqdn, domain string) string {
 	name := acme.UnFqdn(fqdn)
 	if idx := strings.Index(name, "."+domain); idx != -1 {
 		return name[:idx]

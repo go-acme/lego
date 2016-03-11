@@ -72,23 +72,23 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 		var provider acme.ChallengeProvider
 		switch c.GlobalString("dns") {
 		case "cloudflare":
-			provider, err = cloudflare.NewDNSProviderCloudFlare("", "")
+			provider, err = cloudflare.NewDNSProvider("", "")
 		case "digitalocean":
 			authToken := os.Getenv("DO_AUTH_TOKEN")
 
-			provider, err = digitalocean.NewDNSProviderDigitalOcean(authToken)
+			provider, err = digitalocean.NewDNSProvider(authToken)
 		case "dnsimple":
-			provider, err = dnsimple.NewDNSProviderDNSimple("", "")
+			provider, err = dnsimple.NewDNSProvider("", "")
 		case "route53":
 			awsRegion := os.Getenv("AWS_REGION")
-			provider, err = route53.NewDNSProviderRoute53("", "", awsRegion)
+			provider, err = route53.NewDNSProvider("", "", awsRegion)
 		case "rfc2136":
 			nameserver := os.Getenv("RFC2136_NAMESERVER")
 			tsigAlgorithm := os.Getenv("RFC2136_TSIG_ALGORITHM")
 			tsigKey := os.Getenv("RFC2136_TSIG_KEY")
 			tsigSecret := os.Getenv("RFC2136_TSIG_SECRET")
 
-			provider, err = rfc2136.NewDNSProviderRFC2136(nameserver, tsigAlgorithm, tsigKey, tsigSecret)
+			provider, err = rfc2136.NewDNSProvider(nameserver, tsigAlgorithm, tsigKey, tsigSecret)
 		case "manual":
 			provider, err = acme.NewDNSProviderManual()
 		}

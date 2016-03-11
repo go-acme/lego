@@ -234,8 +234,8 @@ func FindZoneByFqdn(fqdn, nameserver string) (string, error) {
 	return "", fmt.Errorf("NS %s did not return the expected SOA record in the authority section", nameserver)
 }
 
-// clearFqdnCache clears the cache of fqdn to zone mappings. Primarily used in testing.
-func clearFqdnCache() {
+// ClearFqdnCache clears the cache of fqdn to zone mappings. Primarily used in testing.
+func ClearFqdnCache() {
 	fqdnToZone = map[string]string{}
 }
 

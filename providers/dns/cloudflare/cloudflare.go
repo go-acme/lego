@@ -1,3 +1,4 @@
+// Package cloudflare implements a DNS provider for solving the DNS-01 challenge using cloudflare DNS.
 package cloudflare
 
 import (
@@ -17,15 +18,15 @@ import (
 // TODO: Unexport?
 const CloudFlareAPIURL = "https://api.cloudflare.com/client/v4"
 
-// DNSProviderCloudFlare is an implementation of the DNSProvider interface
-type DNSProviderCloudFlare struct {
+// DNSProvider is an implementation of the acme.ChallengeProvider interface
+type DNSProvider struct {
 	authEmail string
 	authKey   string
 }
 
-// NewDNSProviderCloudFlare returns a DNSProviderCloudFlare instance with a configured cloudflare client.
+// NewDNSProvider returns a DNSProvider instance with a configured cloudflare client.
 // Credentials can either be passed as arguments or through CLOUDFLARE_EMAIL and CLOUDFLARE_API_KEY env vars.
-func NewDNSProviderCloudFlare(cloudflareEmail, cloudflareKey string) (*DNSProviderCloudFlare, error) {
+func NewDNSProvider(cloudflareEmail, cloudflareKey string) (*DNSProvider, error) {
 	if cloudflareEmail == "" || cloudflareKey == "" {
 		cloudflareEmail, cloudflareKey = cloudflareEnvAuth()
 		if cloudflareEmail == "" || cloudflareKey == "" {
@@ -33,14 +34,14 @@ func NewDNSProviderCloudFlare(cloudflareEmail, cloudflareKey string) (*DNSProvid
 		}
 	}
 
-	return &DNSProviderCloudFlare{
+	return &DNSProvider{
 		authEmail: cloudflareEmail,
 		authKey:   cloudflareKey,
 	}, nil
 }
 
 // Present creates a TXT record to fulfil the dns-01 challenge
-func (c *DNSProviderCloudFlare) Present(domain, token, keyAuth string) error {
+func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
 	zoneID, err := c.getHostedZoneID(fqdn)
 	if err != nil {
@@ -68,7 +69,7 @@ func (c *DNSProviderCloudFlare) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters
-func (c *DNSProviderCloudFlare) CleanUp(domain, token, keyAuth string) error {
+func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
 
 	record, err := c.findTxtRecord(fqdn)
@@ -84,7 +85,7 @@ func (c *DNSProviderCloudFlare) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-func (c *DNSProviderCloudFlare) getHostedZoneID(fqdn string) (string, error) {
+func (c *DNSProvider) getHostedZoneID(fqdn string) (string, error) {
 	// HostedZone represents a CloudFlare DNS zone
 	type HostedZone struct {
 		ID   string `json:"id"`
@@ -118,7 +119,7 @@ func (c *DNSProviderCloudFlare) getHostedZoneID(fqdn string) (string, error) {
 	return hostedZone.ID, nil
 }
 
-func (c *DNSProviderCloudFlare) findTxtRecord(fqdn string) (*cloudFlareRecord, error) {
+func (c *DNSProvider) findTxtRecord(fqdn string) (*cloudFlareRecord, error) {
 	zoneID, err := c.getHostedZoneID(fqdn)
 	if err != nil {
 		return nil, err
@@ -144,7 +145,7 @@ func (c *DNSProviderCloudFlare) findTxtRecord(fqdn string) (*cloudFlareRecord, e
 	return nil, fmt.Errorf("No existing record found for %s", fqdn)
 }
 
-func (c *DNSProviderCloudFlare) makeRequest(method, uri string, body io.Reader) (json.RawMessage, error) {
+func (c *DNSProvider) makeRequest(method, uri string, body io.Reader) (json.RawMessage, error) {
 	// APIError contains error details for failed requests
 	type APIError struct {
 		Code    int    `json:"code,omitempty"`

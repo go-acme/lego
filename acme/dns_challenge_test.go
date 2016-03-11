@@ -167,7 +167,7 @@ func TestCheckAuthoritativeNssErr(t *testing.T) {
 func TestWaitForTimeout(t *testing.T) {
 	c := make(chan error)
 	go func() {
-		err := waitFor(3, 1, func() (bool, error) {
+		err := WaitFor(3, 1, func() (bool, error) {
 			return false, nil
 		})
 		c <- err

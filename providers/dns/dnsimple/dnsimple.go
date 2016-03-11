@@ -7,7 +7,6 @@ import (
 
 	"github.com/weppos/dnsimple-go/dnsimple"
 	"github.com/xenolf/lego/acme"
-	"github.com/xenolf/lego/providers/dns"
 )
 
 // DNSProviderDNSimple is an implementation of the DNSProvider interface.
@@ -124,7 +123,7 @@ func (c *DNSProviderDNSimple) newTxtRecord(zone, fqdn, value string, ttl int) *d
 }
 
 func (c *DNSProviderDNSimple) extractRecordName(fqdn, domain string) string {
-	name := dns.UnFqdn(fqdn)
+	name := acme.UnFqdn(fqdn)
 	if idx := strings.Index(name, "."+domain); idx != -1 {
 		return name[:idx]
 	}

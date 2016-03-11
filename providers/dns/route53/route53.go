@@ -8,7 +8,6 @@ import (
 	"github.com/mitchellh/goamz/aws"
 	"github.com/mitchellh/goamz/route53"
 	"github.com/xenolf/lego/acme"
-	"github.com/xenolf/lego/providers/dns"
 )
 
 // DNSProviderRoute53 is an implementation of the DNSProvider interface
@@ -71,7 +70,7 @@ func (r *DNSProviderRoute53) changeRecord(action, fqdn, value string, ttl int) e
 		return err
 	}
 
-	return dns.WaitFor(90, 5, func() (bool, error) {
+	return acme.WaitFor(90, 5, func() (bool, error) {
 		status, err := r.client.GetChange(resp.ChangeInfo.ID)
 		if err != nil {
 			return false, err

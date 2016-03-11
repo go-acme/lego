@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/xenolf/lego/acme"
-	"github.com/xenolf/lego/providers/dns"
 )
 
 // CloudFlareAPIURL represents the API endpoint to call.
@@ -50,7 +49,7 @@ func (c *DNSProviderCloudFlare) Present(domain, token, keyAuth string) error {
 
 	rec := cloudFlareRecord{
 		Type:    "TXT",
-		Name:    dns.UnFqdn(fqdn),
+		Name:    acme.UnFqdn(fqdn),
 		Content: value,
 		TTL:     120,
 	}
@@ -105,7 +104,7 @@ func (c *DNSProviderCloudFlare) getHostedZoneID(fqdn string) (string, error) {
 
 	var hostedZone HostedZone
 	for _, zone := range zones {
-		name := dns.ToFqdn(zone.Name)
+		name := acme.ToFqdn(zone.Name)
 		if strings.HasSuffix(fqdn, name) {
 			if len(zone.Name) > len(hostedZone.Name) {
 				hostedZone = zone
@@ -137,7 +136,7 @@ func (c *DNSProviderCloudFlare) findTxtRecord(fqdn string) (*cloudFlareRecord, e
 	}
 
 	for _, rec := range records {
-		if rec.Name == dns.UnFqdn(fqdn) && rec.Type == "TXT" {
+		if rec.Name == acme.UnFqdn(fqdn) && rec.Type == "TXT" {
 			return &rec, nil
 		}
 	}

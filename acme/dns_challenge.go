@@ -69,7 +69,7 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 
 	logf("[INFO][%s] Checking DNS record propagation...", domain)
 
-	err = waitFor(30, 2, func() (bool, error) {
+	err = WaitFor(30, 2, func() (bool, error) {
 		return preCheckDNS(fqdn, value)
 	})
 	if err != nil {
@@ -160,7 +160,7 @@ func dnsQuery(fqdn string, rtype uint16, nameserver string, recursive bool) (in 
 func lookupNameservers(fqdn string) ([]string, error) {
 	var authoritativeNss []string
 
-	zone, err := findZoneByFqdn(fqdn, recursiveNameserver)
+	zone, err := FindZoneByFqdn(fqdn, recursiveNameserver)
 	if err != nil {
 		return nil, err
 	}
@@ -182,8 +182,8 @@ func lookupNameservers(fqdn string) ([]string, error) {
 	return nil, fmt.Errorf("Could not determine authoritative nameservers")
 }
 
-// findZoneByFqdn determines the zone of the given fqdn
-func findZoneByFqdn(fqdn, nameserver string) (string, error) {
+// FindZoneByFqdn determines the zone of the given fqdn
+func FindZoneByFqdn(fqdn, nameserver string) (string, error) {
 	// Do we have it cached?
 	if zone, ok := fqdnToZone[fqdn]; ok {
 		return zone, nil
@@ -208,8 +208,8 @@ func findZoneByFqdn(fqdn, nameserver string) (string, error) {
 			if soa, ok := ans.(*dns.SOA); ok {
 				zone := soa.Hdr.Name
 				// If we ended up on one of the TLDs, it means the domain did not exist.
-				publicsuffix, _ := publicsuffix.PublicSuffix(unFqdn(zone))
-				if publicsuffix == unFqdn(zone) {
+				publicsuffix, _ := publicsuffix.PublicSuffix(UnFqdn(zone))
+				if publicsuffix == UnFqdn(zone) {
 					return "", fmt.Errorf("Could not determine zone authoritatively")
 				}
 				fqdnToZone[fqdn] = zone
@@ -223,8 +223,8 @@ func findZoneByFqdn(fqdn, nameserver string) (string, error) {
 		if soa, ok := ns.(*dns.SOA); ok {
 			zone := soa.Hdr.Name
 			// If we ended up on one of the TLDs, it means the domain did not exist.
-			publicsuffix, _ := publicsuffix.PublicSuffix(unFqdn(zone))
-			if publicsuffix == unFqdn(zone) {
+			publicsuffix, _ := publicsuffix.PublicSuffix(UnFqdn(zone))
+			if publicsuffix == UnFqdn(zone) {
 				return "", fmt.Errorf("Could not determine zone authoritatively")
 			}
 			fqdnToZone[fqdn] = zone
@@ -239,8 +239,26 @@ func clearFqdnCache() {
 	fqdnToZone = map[string]string{}
 }
 
-// waitFor polls the given function 'f', once every 'interval' seconds, up to 'timeout' seconds.
-func waitFor(timeout, interval int, f func() (bool, error)) error {
+// ToFqdn converts the name into a fqdn appending a trailing dot.
+func ToFqdn(name string) string {
+	n := len(name)
+	if n == 0 || name[n-1] == '.' {
+		return name
+	}
+	return name + "."
+}
+
+// UnFqdn converts the fqdn into a name removing the trailing dot.
+func UnFqdn(name string) string {
+	n := len(name)
+	if n != 0 && name[n-1] == '.' {
+		return name[:n-1]
+	}
+	return name
+}
+
+// WaitFor polls the given function 'f', once every 'interval' seconds, up to 'timeout' seconds.
+func WaitFor(timeout, interval int, f func() (bool, error)) error {
 	var lastErr string
 	timeup := time.After(time.Duration(timeout) * time.Second)
 	for {

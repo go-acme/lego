@@ -8,7 +8,7 @@ import (
 func TestWaitForTimeout(t *testing.T) {
 	c := make(chan error)
 	go func() {
-		err := WaitFor(3, 1, func() (bool, error) {
+		err := WaitFor(3*time.Second, 1*time.Second, func() (bool, error) {
 			return false, nil
 		})
 		c <- err

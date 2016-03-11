@@ -71,7 +71,7 @@ func (r *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 		return err
 	}
 
-	return acme.WaitFor(90, 5, func() (bool, error) {
+	return acme.WaitFor(90*time.Second, 5*time.Second, func() (bool, error) {
 		status, err := r.client.GetChange(resp.ChangeInfo.ID)
 		if err != nil {
 			return false, err

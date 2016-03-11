@@ -8,6 +8,7 @@ import (
 	"log"
 	"net"
 	"strings"
+	"time"
 
 	"github.com/miekg/dns"
 	"golang.org/x/net/publicsuffix"
@@ -68,7 +69,7 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 
 	logf("[INFO][%s] Checking DNS record propagation...", domain)
 
-	err = WaitFor(30, 2, func() (bool, error) {
+	err = WaitFor(60*time.Second, 2*time.Second, func() (bool, error) {
 		return preCheckDNS(fqdn, value)
 	})
 	if err != nil {

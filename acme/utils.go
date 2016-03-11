@@ -5,10 +5,10 @@ import (
 	"time"
 )
 
-// WaitFor polls the given function 'f', once every 'interval' seconds, up to 'timeout' seconds.
+// WaitFor polls the given function 'f', once every 'interval', up to 'timeout'.
 func WaitFor(timeout, interval time.Duration, f func() (bool, error)) error {
 	var lastErr string
-	timeup := time.After(timeout * time.Second)
+	timeup := time.After(timeout)
 	for {
 		select {
 		case <-timeup:
@@ -24,6 +24,6 @@ func WaitFor(timeout, interval time.Duration, f func() (bool, error)) error {
 			lastErr = err.Error()
 		}
 
-		time.Sleep(interval * time.Second)
+		time.Sleep(interval)
 	}
 }

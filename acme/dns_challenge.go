@@ -69,7 +69,15 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 
 	logf("[INFO][%s] Checking DNS record propagation...", domain)
 
-	err = WaitFor(60*time.Second, 2*time.Second, func() (bool, error) {
+	var timeout, interval time.Duration
+	switch provider := s.provider.(type) {
+	case ChallengeProviderTimeout:
+		timeout, interval = provider.Timeout()
+	default:
+		timeout, interval = 60*time.Second, 2*time.Second
+	}
+
+	err = WaitFor(timeout, interval, func() (bool, error) {
 		return preCheckDNS(fqdn, value)
 	})
 	if err != nil {

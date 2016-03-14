@@ -504,6 +504,7 @@ func (c *Client) requestCertificate(authz []authorizationResource, bundle bool, 
 			if len(cert) > 0 {
 
 				cerRes.CertStableURL = resp.Header.Get("Content-Location")
+				cerRes.AccountRef = c.user.GetRegistration().URI
 
 				issuedCert := pemEncode(derCertificateBytes(cert))
 				// If bundle is true, we want to return a certificate bundle.

@@ -16,6 +16,7 @@ import (
 	"github.com/xenolf/lego/providers/dns/dnsimple"
 	"github.com/xenolf/lego/providers/dns/rfc2136"
 	"github.com/xenolf/lego/providers/dns/route53"
+	"github.com/xenolf/lego/providers/http/webroot"
 )
 
 func checkFolder(path string) error {
@@ -54,7 +55,7 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 	}
 
 	if c.GlobalIsSet("webroot") {
-		provider, err := acme.NewHTTPProviderWebroot(c.GlobalString("webroot"))
+		provider, err := webroot.NewHTTPProviderWebroot(c.GlobalString("webroot"))
 		if err != nil {
 			logger().Fatal(err)
 		}

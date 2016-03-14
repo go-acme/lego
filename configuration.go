@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/url"
 	"os"
 	"path"
@@ -20,11 +21,25 @@ func NewConfiguration(c *cli.Context) *Configuration {
 	return &Configuration{context: c}
 }
 
-// RsaBits returns the current set RSA bit length for private keys
-func (c *Configuration) RsaBits() int {
-	return c.context.GlobalInt("rsa-key-size")
+// KeyType the type from which private keys should be generated
+func (c *Configuration) KeyType() (acme.KeyType, error) {
+	switch strings.ToUpper(c.context.GlobalString("key-type")) {
+	case "RSA2048":
+		return acme.RSA2048, nil
+	case "RSA4096":
+		return acme.RSA4096, nil
+	case "RSA8192":
+		return acme.RSA8192, nil
+	case "EC256":
+		return acme.EC256, nil
+	case "EC384":
+		return acme.EC384, nil
+	}
+
+	return "", fmt.Errorf("Unsupported KeyType: %s", c.context.GlobalString("key-type"))
 }
 
+// ExcludedSolvers is a list of solvers that are to be excluded.
 func (c *Configuration) ExcludedSolvers() (cc []acme.Challenge) {
 	for _, s := range c.context.GlobalStringSlice("exclude") {
 		cc = append(cc, acme.Challenge(s))
@@ -39,6 +54,7 @@ func (c *Configuration) ServerPath() string {
 	return strings.Replace(srvStr, "/", string(os.PathSeparator), -1)
 }
 
+// CertPath gets the path for certificates.
 func (c *Configuration) CertPath() string {
 	return path.Join(c.context.GlobalString("path"), "certificates")
 }
@@ -54,7 +70,7 @@ func (c *Configuration) AccountPath(acc string) string {
 	return path.Join(c.AccountsPath(), acc)
 }
 
-// AccountPath returns the OS dependent path to the keys of a particular account
+// AccountKeysPath returns the OS dependent path to the keys of a particular account
 func (c *Configuration) AccountKeysPath(acc string) string {
 	return path.Join(c.AccountPath(acc), "keys")
 }

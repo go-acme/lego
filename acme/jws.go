@@ -2,7 +2,9 @@ package acme
 
 import (
 	"bytes"
+	"crypto"
 	"crypto/ecdsa"
+	"crypto/elliptic"
 	"crypto/rsa"
 	"fmt"
 	"net/http"
@@ -12,7 +14,7 @@ import (
 
 type jws struct {
 	directoryURL string
-	privKey      *rsa.PrivateKey
+	privKey      crypto.PrivateKey
 	nonces       []string
 }
 
@@ -46,8 +48,20 @@ func (j *jws) post(url string, content []byte) (*http.Response, error) {
 }
 
 func (j *jws) signContent(content []byte) (*jose.JsonWebSignature, error) {
-	// TODO: support other algorithms - RS512
-	signer, err := jose.NewSigner(jose.RS256, j.privKey)
+
+	var alg jose.SignatureAlgorithm
+	switch k := j.privKey.(type) {
+	case *rsa.PrivateKey:
+		alg = jose.RS256
+	case *ecdsa.PrivateKey:
+		if k.Curve == elliptic.P256() {
+			alg = jose.ES256
+		} else if k.Curve == elliptic.P384() {
+			alg = jose.ES384
+		}
+	}
+
+	signer, err := jose.NewSigner(alg, j.privKey)
 	if err != nil {
 		return nil, err
 	}

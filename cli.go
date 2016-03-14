@@ -50,6 +50,12 @@ func main() {
 			Name:   "run",
 			Usage:  "Register an account, then create and install a certificate",
 			Action: run,
+			Flags: []cli.Flag{
+				cli.BoolFlag{
+					Name:  "no-bundle",
+					Usage: "Do not create a certificate bundle by adding the issuers certificate to the new certificate.",
+				},
+			},
 		},
 		{
 			Name:   "revoke",
@@ -70,6 +76,10 @@ func main() {
 					Name:  "reuse-key",
 					Usage: "Used to indicate you want to reuse your current private key for the new certificate.",
 				},
+				cli.BoolFlag{
+					Name:  "no-bundle",
+					Usage: "Do not create a certificate bundle by adding the issuers certificate to the new certificate.",
+				},
 			},
 		},
 	}
@@ -88,10 +98,14 @@ func main() {
 			Name:  "email, m",
 			Usage: "Email used for registration and recovery contact.",
 		},
-		cli.IntFlag{
-			Name:  "rsa-key-size, B",
-			Value: 2048,
-			Usage: "Size of the RSA key.",
+		cli.BoolFlag{
+			Name:  "accept-tos, a",
+			Usage: "By setting this flag to true you indicate that you accept the current Let's Encrypt terms of service.",
+		},
+		cli.StringFlag{
+			Name:  "key-type, k",
+			Value: "rsa2048",
+			Usage: "Key type to use for private keys. Supported: rsa2048, rsa4096, rsa8192, ec256, ec384",
 		},
 		cli.StringFlag{
 			Name:  "path",
@@ -116,7 +130,7 @@ func main() {
 		},
 		cli.StringFlag{
 			Name: "dns",
-			Usage: "Enable the DNS challenge for solving using a provider." +
+			Usage: "Solve a DNS challenge using the specified provider. Disables all other challenges." +
 				"\n\tCredentials for providers have to be passed through environment variables." +
 				"\n\tFor a more detailed explanation of the parameters, please see the online docs." +
 				"\n\tValid providers:" +
@@ -124,7 +138,7 @@ func main() {
 				"\n\tdigitalocean: DO_AUTH_TOKEN" +
 				"\n\tdnsimple: DNSIMPLE_EMAIL, DNSIMPLE_API_KEY" +
 				"\n\troute53: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION" +
-				"\n\trfc2136: RFC2136_TSIG_KEY, RFC2136_TSIG_SECRET, RFC2136_NAMESERVER, RFC2136_ZONE" +
+				"\n\trfc2136: RFC2136_TSIG_KEY, RFC2136_TSIG_SECRET, RFC2136_TSIG_ALGORITHM, RFC2136_NAMESERVER" +
 				"\n\tmanual: none",
 		},
 	}

@@ -10,7 +10,6 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/base64"
-	"encoding/binary"
 	"encoding/pem"
 	"errors"
 	"fmt"
@@ -22,15 +21,19 @@ import (
 	"time"
 
 	"golang.org/x/crypto/ocsp"
-	"golang.org/x/crypto/sha3"
 )
 
-type keyType int
+// KeyType represents the key algo as well as the key size or curve to use.
+type KeyType string
 type derCertificateBytes []byte
 
+// Constants for all key types we support.
 const (
-	eckey keyType = iota
-	rsakey
+	EC256   = KeyType("P256")
+	EC384   = KeyType("P384")
+	RSA2048 = KeyType("2048")
+	RSA4096 = KeyType("4096")
+	RSA8192 = KeyType("8192")
 )
 
 const (
@@ -56,14 +59,22 @@ func GetOCSPForCert(bundle []byte) ([]byte, *ocsp.Response, error) {
 		return nil, nil, err
 	}
 
-	// We only got one certificate, means we have no issuer certificate - get it.
+	// We expect the certificate slice to be ordered downwards the chain.
+	// SRV CRT -> CA. We need to pull the leaf and issuer certs out of it,
+	// which should always be the first two certificates. If there's no
+	// OCSP server listed in the leaf cert, there's nothing to do. And if
+	// we have only one certificate so far, we need to get the issuer cert.
+	issuedCert := certificates[0]
+	if len(issuedCert.OCSPServer) == 0 {
+		return nil, nil, errors.New("no OCSP server specified in cert")
+	}
 	if len(certificates) == 1 {
 		// TODO: build fallback. If this fails, check the remaining array entries.
-		if len(certificates[0].IssuingCertificateURL) == 0 {
+		if len(issuedCert.IssuingCertificateURL) == 0 {
 			return nil, nil, errors.New("no issuing certificate URL")
 		}
 
-		resp, err := httpGet(certificates[0].IssuingCertificateURL[0])
+		resp, err := httpGet(issuedCert.IssuingCertificateURL[0])
 		if err != nil {
 			return nil, nil, err
 		}
@@ -83,16 +94,7 @@ func GetOCSPForCert(bundle []byte) ([]byte, *ocsp.Response, error) {
 		// We want it ordered right SRV CRT -> CA
 		certificates = append(certificates, issuerCert)
 	}
-
-	// We expect the certificate slice to be ordered downwards the chain.
-	// SRV CRT -> CA. We need to pull the cert and issuer cert out of it,
-	// which should always be the last two certificates.
-	issuedCert := certificates[0]
 	issuerCert := certificates[1]
-
-	if len(issuedCert.OCSPServer) == 0 {
-		return nil, nil, errors.New("no OCSP server specified in cert")
-	}
 
 	// Finally kick off the OCSP request.
 	ocspReq, err := ocsp.CreateRequest(issuedCert, issuerCert, nil)
@@ -124,8 +126,16 @@ func GetOCSPForCert(bundle []byte) ([]byte, *ocsp.Response, error) {
 }
 
 func getKeyAuthorization(token string, key interface{}) (string, error) {
+	var publicKey crypto.PublicKey
+	switch k := key.(type) {
+	case *ecdsa.PrivateKey:
+		publicKey = k.Public()
+	case *rsa.PrivateKey:
+		publicKey = k.Public()
+	}
+
 	// Generate the Key Authorization for the challenge
-	jwk := keyAsJWK(key)
+	jwk := keyAsJWK(publicKey)
 	if jwk == nil {
 		return "", errors.New("Could not generate JWK from key.")
 	}
@@ -142,39 +152,6 @@ func getKeyAuthorization(token string, key interface{}) (string, error) {
 	}
 
 	return token + "." + keyThumb, nil
-}
-
-// Derive the shared secret according to acme spec 5.6
-func performECDH(priv *ecdsa.PrivateKey, pub *ecdsa.PublicKey, outLen int, label string) []byte {
-	// Derive Z from the private and public keys according to SEC 1 Ver. 2.0 - 3.3.1
-	Z, _ := priv.PublicKey.ScalarMult(pub.X, pub.Y, priv.D.Bytes())
-
-	if len(Z.Bytes())+len(label)+4 > 384 {
-		return nil
-	}
-
-	if outLen < 384*(2^32-1) {
-		return nil
-	}
-
-	// Derive the shared secret key using the ANS X9.63 KDF - SEC 1 Ver. 2.0 - 3.6.1
-	hasher := sha3.New384()
-	buffer := make([]byte, outLen)
-	bufferLen := 0
-	for i := 0; i < outLen/384; i++ {
-		hasher.Reset()
-
-		// Ki = Hash(Z || Counter || [SharedInfo])
-		hasher.Write(Z.Bytes())
-		binary.Write(hasher, binary.BigEndian, i)
-		hasher.Write([]byte(label))
-
-		hash := hasher.Sum(nil)
-		copied := copy(buffer[bufferLen:], hash)
-		bufferLen += copied
-	}
-
-	return buffer
 }
 
 // parsePEMBundle parses a certificate bundle from top to bottom and returns
@@ -218,18 +195,25 @@ func parsePEMPrivateKey(key []byte) (crypto.PrivateKey, error) {
 	}
 }
 
-func generatePrivateKey(t keyType, keyLength int) (crypto.PrivateKey, error) {
-	switch t {
-	case eckey:
+func generatePrivateKey(keyType KeyType) (crypto.PrivateKey, error) {
+
+	switch keyType {
+	case EC256:
+		return ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	case EC384:
 		return ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
-	case rsakey:
-		return rsa.GenerateKey(rand.Reader, keyLength)
+	case RSA2048:
+		return rsa.GenerateKey(rand.Reader, 2048)
+	case RSA4096:
+		return rsa.GenerateKey(rand.Reader, 4096)
+	case RSA8192:
+		return rsa.GenerateKey(rand.Reader, 8192)
 	}
 
-	return nil, fmt.Errorf("Invalid keytype: %d", t)
+	return nil, fmt.Errorf("Invalid KeyType: %s", keyType)
 }
 
-func generateCsr(privateKey *rsa.PrivateKey, domain string, san []string) ([]byte, error) {
+func generateCsr(privateKey crypto.PrivateKey, domain string, san []string) ([]byte, error) {
 	template := x509.CertificateRequest{
 		Subject: pkix.Name{
 			CommonName: domain,
@@ -246,6 +230,9 @@ func generateCsr(privateKey *rsa.PrivateKey, domain string, san []string) ([]byt
 func pemEncode(data interface{}) []byte {
 	var pemBlock *pem.Block
 	switch key := data.(type) {
+	case *ecdsa.PrivateKey:
+		keyBytes, _ := x509.MarshalECPrivateKey(key)
+		pemBlock = &pem.Block{Type: "EC PRIVATE KEY", Bytes: keyBytes}
 	case *rsa.PrivateKey:
 		pemBlock = &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(key)}
 		break

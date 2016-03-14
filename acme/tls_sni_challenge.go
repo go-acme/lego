@@ -22,13 +22,9 @@ func (t *tlsSNIChallenge) Solve(chlng challenge, domain string) error {
 	logf("[INFO][%s] acme: Trying to solve TLS-SNI-01", domain)
 
 	// Generate the Key Authorization for the challenge
-	keyAuth, err := getKeyAuthorization(chlng.Token, &t.jws.privKey.PublicKey)
+	keyAuth, err := getKeyAuthorization(chlng.Token, t.jws.privKey)
 	if err != nil {
 		return err
-	}
-
-	if t.provider == nil {
-		t.provider = &tlsSNIChallengeServer{}
 	}
 
 	err = t.provider.Present(domain, chlng.Token, keyAuth)
@@ -47,7 +43,7 @@ func (t *tlsSNIChallenge) Solve(chlng challenge, domain string) error {
 // TLSSNI01ChallengeCert returns a certificate for the `tls-sni-01` challenge
 func TLSSNI01ChallengeCert(keyAuth string) (tls.Certificate, error) {
 	// generate a new RSA key for the certificates
-	tempPrivKey, err := generatePrivateKey(rsakey, 2048)
+	tempPrivKey, err := generatePrivateKey(RSA2048)
 	if err != nil {
 		return tls.Certificate{}, err
 	}

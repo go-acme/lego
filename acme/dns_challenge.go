@@ -6,17 +6,22 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net"
 	"strings"
 	"time"
 
 	"github.com/miekg/dns"
+	"golang.org/x/net/publicsuffix"
 )
 
-type preCheckDNSFunc func(domain, fqdn string) bool
+type preCheckDNSFunc func(fqdn, value string) (bool, error)
 
-var preCheckDNS preCheckDNSFunc = checkDNS
+var (
+	preCheckDNS preCheckDNSFunc = checkDNSPropagation
+	fqdnToZone                  = map[string]string{}
+)
 
-var preCheckDNSFallbackCount = 5
+var recursiveNameserver = "google-public-dns-a.google.com:53"
 
 // DNS01Record returns a DNS record which will fulfill the `dns-01` challenge
 func DNS01Record(domain, keyAuth string) (fqdn string, value string, ttl int) {
@@ -44,7 +49,7 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 	}
 
 	// Generate the Key Authorization for the challenge
-	keyAuth, err := getKeyAuthorization(chlng.Token, &s.jws.privKey.PublicKey)
+	keyAuth, err := getKeyAuthorization(chlng.Token, s.jws.privKey)
 	if err != nil {
 		return err
 	}
@@ -60,54 +65,182 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 		}
 	}()
 
-	fqdn, _, _ := DNS01Record(domain, keyAuth)
+	fqdn, value, _ := DNS01Record(domain, keyAuth)
 
-	preCheckDNS(domain, fqdn)
+	logf("[INFO][%s] Checking DNS record propagation...", domain)
+
+	err = WaitFor(60*time.Second, 2*time.Second, func() (bool, error) {
+		return preCheckDNS(fqdn, value)
+	})
+	if err != nil {
+		return err
+	}
 
 	return s.validate(s.jws, domain, chlng.URI, challenge{Resource: "challenge", Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
 }
 
-func checkDNS(domain, fqdn string) bool {
-	// check if the expected DNS entry was created. If not wait for some time and try again.
-	m := new(dns.Msg)
-	m.SetQuestion(domain+".", dns.TypeSOA)
-	c := new(dns.Client)
-	in, _, err := c.Exchange(m, "google-public-dns-a.google.com:53")
+// checkDNSPropagation checks if the expected TXT record has been propagated to all authoritative nameservers.
+func checkDNSPropagation(fqdn, value string) (bool, error) {
+	// Initial attempt to resolve at the recursive NS
+	r, err := dnsQuery(fqdn, dns.TypeTXT, recursiveNameserver, true)
 	if err != nil {
-		return false
+		return false, err
+	}
+	if r.Rcode == dns.RcodeSuccess {
+		// If we see a CNAME here then use the alias
+		for _, rr := range r.Answer {
+			if cn, ok := rr.(*dns.CNAME); ok {
+				if cn.Hdr.Name == fqdn {
+					fqdn = cn.Target
+					break
+				}
+			}
+		}
 	}
 
-	var authorativeNS string
-	for _, answ := range in.Answer {
-		soa := answ.(*dns.SOA)
-		authorativeNS = soa.Ns
+	authoritativeNss, err := lookupNameservers(fqdn)
+	if err != nil {
+		return false, err
 	}
 
-	fallbackCnt := 0
-	for fallbackCnt < preCheckDNSFallbackCount {
-		m.SetQuestion(fqdn, dns.TypeTXT)
-		in, _, err = c.Exchange(m, authorativeNS+":53")
-		if err != nil {
-			return false
-		}
-
-		if len(in.Answer) > 0 {
-			return true
-		}
-
-		fallbackCnt++
-		if fallbackCnt >= preCheckDNSFallbackCount {
-			return false
-		}
-
-		time.Sleep(time.Second * time.Duration(fallbackCnt))
-	}
-
-	return false
+	return checkAuthoritativeNss(fqdn, value, authoritativeNss)
 }
 
-// toFqdn converts the name into a fqdn appending a trailing dot.
-func toFqdn(name string) string {
+// checkAuthoritativeNss queries each of the given nameservers for the expected TXT record.
+func checkAuthoritativeNss(fqdn, value string, nameservers []string) (bool, error) {
+	for _, ns := range nameservers {
+		r, err := dnsQuery(fqdn, dns.TypeTXT, net.JoinHostPort(ns, "53"), false)
+		if err != nil {
+			return false, err
+		}
+
+		if r.Rcode != dns.RcodeSuccess {
+			return false, fmt.Errorf("NS %s returned %s for %s", ns, dns.RcodeToString[r.Rcode], fqdn)
+		}
+
+		var found bool
+		for _, rr := range r.Answer {
+			if txt, ok := rr.(*dns.TXT); ok {
+				if strings.Join(txt.Txt, "") == value {
+					found = true
+					break
+				}
+			}
+		}
+
+		if !found {
+			return false, fmt.Errorf("NS %s did not return the expected TXT record", ns)
+		}
+	}
+
+	return true, nil
+}
+
+// dnsQuery sends a DNS query to the given nameserver.
+// The nameserver should include a port, to facilitate testing where we talk to a mock dns server.
+func dnsQuery(fqdn string, rtype uint16, nameserver string, recursive bool) (in *dns.Msg, err error) {
+	m := new(dns.Msg)
+	m.SetQuestion(fqdn, rtype)
+	m.SetEdns0(4096, false)
+
+	if !recursive {
+		m.RecursionDesired = false
+	}
+
+	in, err = dns.Exchange(m, nameserver)
+	if err == dns.ErrTruncated {
+		tcp := &dns.Client{Net: "tcp"}
+		in, _, err = tcp.Exchange(m, nameserver)
+	}
+
+	return
+}
+
+// lookupNameservers returns the authoritative nameservers for the given fqdn.
+func lookupNameservers(fqdn string) ([]string, error) {
+	var authoritativeNss []string
+
+	zone, err := FindZoneByFqdn(fqdn, recursiveNameserver)
+	if err != nil {
+		return nil, err
+	}
+
+	r, err := dnsQuery(zone, dns.TypeNS, recursiveNameserver, true)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, rr := range r.Answer {
+		if ns, ok := rr.(*dns.NS); ok {
+			authoritativeNss = append(authoritativeNss, strings.ToLower(ns.Ns))
+		}
+	}
+
+	if len(authoritativeNss) > 0 {
+		return authoritativeNss, nil
+	}
+	return nil, fmt.Errorf("Could not determine authoritative nameservers")
+}
+
+// FindZoneByFqdn determines the zone of the given fqdn
+func FindZoneByFqdn(fqdn, nameserver string) (string, error) {
+	// Do we have it cached?
+	if zone, ok := fqdnToZone[fqdn]; ok {
+		return zone, nil
+	}
+
+	// Query the authorative nameserver for a hopefully non-existing SOA record,
+	// in the authority section of the reply it will have the SOA of the
+	// containing zone. rfc2308 has this to say on the subject:
+	//   Name servers authoritative for a zone MUST include the SOA record of
+	//   the zone in the authority section of the response when reporting an
+	//   NXDOMAIN or indicating that no data (NODATA) of the requested type exists
+	in, err := dnsQuery(fqdn, dns.TypeSOA, nameserver, true)
+	if err != nil {
+		return "", err
+	}
+	if in.Rcode != dns.RcodeNameError {
+		if in.Rcode != dns.RcodeSuccess {
+			return "", fmt.Errorf("NS %s returned %s for %s", nameserver, dns.RcodeToString[in.Rcode], fqdn)
+		}
+		// We have a success, so one of the answers has to be a SOA RR
+		for _, ans := range in.Answer {
+			if soa, ok := ans.(*dns.SOA); ok {
+				zone := soa.Hdr.Name
+				// If we ended up on one of the TLDs, it means the domain did not exist.
+				publicsuffix, _ := publicsuffix.PublicSuffix(UnFqdn(zone))
+				if publicsuffix == UnFqdn(zone) {
+					return "", fmt.Errorf("Could not determine zone authoritatively")
+				}
+				fqdnToZone[fqdn] = zone
+				return zone, nil
+			}
+		}
+		// Or it is NODATA, fall through to NXDOMAIN
+	}
+	// Search the authority section for our precious SOA RR
+	for _, ns := range in.Ns {
+		if soa, ok := ns.(*dns.SOA); ok {
+			zone := soa.Hdr.Name
+			// If we ended up on one of the TLDs, it means the domain did not exist.
+			publicsuffix, _ := publicsuffix.PublicSuffix(UnFqdn(zone))
+			if publicsuffix == UnFqdn(zone) {
+				return "", fmt.Errorf("Could not determine zone authoritatively")
+			}
+			fqdnToZone[fqdn] = zone
+			return zone, nil
+		}
+	}
+	return "", fmt.Errorf("NS %s did not return the expected SOA record in the authority section", nameserver)
+}
+
+// ClearFqdnCache clears the cache of fqdn to zone mappings. Primarily used in testing.
+func ClearFqdnCache() {
+	fqdnToZone = map[string]string{}
+}
+
+// ToFqdn converts the name into a fqdn appending a trailing dot.
+func ToFqdn(name string) string {
 	n := len(name)
 	if n == 0 || name[n-1] == '.' {
 		return name
@@ -115,31 +248,11 @@ func toFqdn(name string) string {
 	return name + "."
 }
 
-// unFqdn converts the fqdn into a name removing the trailing dot.
-func unFqdn(name string) string {
+// UnFqdn converts the fqdn into a name removing the trailing dot.
+func UnFqdn(name string) string {
 	n := len(name)
 	if n != 0 && name[n-1] == '.' {
 		return name[:n-1]
 	}
 	return name
-}
-
-// waitFor polls the given function 'f', once per second, up to 'timeout' seconds.
-func waitFor(timeout int, f func() (bool, error)) error {
-	start := time.Now().Second()
-	for {
-		time.Sleep(1 * time.Second)
-
-		if delta := time.Now().Second() - start; delta >= timeout {
-			return fmt.Errorf("Time limit exceeded (%d seconds)", delta)
-		}
-
-		stop, err := f()
-		if err != nil {
-			return err
-		}
-		if stop {
-			return nil
-		}
-	}
 }

@@ -11,6 +11,11 @@ import (
 
 	"github.com/codegangsta/cli"
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/providers/dns/cloudflare"
+	"github.com/xenolf/lego/providers/dns/digitalocean"
+	"github.com/xenolf/lego/providers/dns/dnsimple"
+	"github.com/xenolf/lego/providers/dns/rfc2136"
+	"github.com/xenolf/lego/providers/dns/route53"
 )
 
 func checkFolder(path string) error {
@@ -23,7 +28,7 @@ func checkFolder(path string) error {
 func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 	err := checkFolder(c.GlobalString("path"))
 	if err != nil {
-		logger().Fatalf("Cound not check/create path: %s", err.Error())
+		logger().Fatalf("Could not check/create path: %s", err.Error())
 	}
 
 	conf := NewConfiguration(c)
@@ -34,7 +39,12 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 	//TODO: move to account struct? Currently MUST pass email.
 	acc := NewAccount(c.GlobalString("email"), conf)
 
-	client, err := acme.NewClient(c.GlobalString("server"), acc, conf.RsaBits())
+	keyType, err := conf.KeyType()
+	if err != nil {
+		logger().Fatal(err.Error())
+	}
+
+	client, err := acme.NewClient(c.GlobalString("server"), acc, keyType)
 	if err != nil {
 		logger().Fatalf("Could not create client: %s", err.Error())
 	}
@@ -52,10 +62,16 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 		client.SetChallengeProvider(acme.HTTP01, provider)
 	}
 	if c.GlobalIsSet("http") {
+		if strings.Index(c.GlobalString("http"), ":") == -1 {
+			logger().Fatalf("The --http switch only accepts interface:port or :port for its argument.")
+		}
 		client.SetHTTPAddress(c.GlobalString("http"))
 	}
 
 	if c.GlobalIsSet("tls") {
+		if strings.Index(c.GlobalString("tls"), ":") == -1 {
+			logger().Fatalf("The --tls switch only accepts interface:port or :port for its argument.")
+		}
 		client.SetTLSAddress(c.GlobalString("tls"))
 	}
 
@@ -64,23 +80,23 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 		var provider acme.ChallengeProvider
 		switch c.GlobalString("dns") {
 		case "cloudflare":
-			provider, err = acme.NewDNSProviderCloudFlare("", "")
+			provider, err = cloudflare.NewDNSProvider("", "")
 		case "digitalocean":
 			authToken := os.Getenv("DO_AUTH_TOKEN")
 
-			provider, err = acme.NewDNSProviderDigitalOcean(authToken)
+			provider, err = digitalocean.NewDNSProvider(authToken)
 		case "dnsimple":
-			provider, err = acme.NewDNSProviderDNSimple("", "")
+			provider, err = dnsimple.NewDNSProvider("", "")
 		case "route53":
 			awsRegion := os.Getenv("AWS_REGION")
-			provider, err = acme.NewDNSProviderRoute53("", "", awsRegion)
+			provider, err = route53.NewDNSProvider("", "", awsRegion)
 		case "rfc2136":
 			nameserver := os.Getenv("RFC2136_NAMESERVER")
-			zone := os.Getenv("RFC2136_ZONE")
+			tsigAlgorithm := os.Getenv("RFC2136_TSIG_ALGORITHM")
 			tsigKey := os.Getenv("RFC2136_TSIG_KEY")
 			tsigSecret := os.Getenv("RFC2136_TSIG_SECRET")
 
-			provider, err = acme.NewDNSProviderRFC2136(nameserver, zone, tsigKey, tsigSecret)
+			provider, err = rfc2136.NewDNSProvider(nameserver, tsigAlgorithm, tsigKey, tsigSecret)
 		case "manual":
 			provider, err = acme.NewDNSProviderManual()
 		}
@@ -90,6 +106,10 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 		}
 
 		client.SetChallengeProvider(acme.DNS01, provider)
+
+		// --dns=foo indicates that the user specifically want to do a DNS challenge
+		// infer that the user also wants to exclude all other challenges
+		client.ExcludeChallenges([]acme.Challenge{acme.HTTP01, acme.TLSSNI01})
 	}
 
 	return conf, acc, client
@@ -123,6 +143,47 @@ func saveCertRes(certRes acme.CertificateResource, conf *Configuration) {
 	}
 }
 
+func handleTOS(c *cli.Context, client *acme.Client, acc *Account) {
+	// Check for a global accept override
+	if c.GlobalBool("accept-tos") {
+		err := client.AgreeToTOS()
+		if err != nil {
+			logger().Fatalf("Could not agree to TOS: %s", err.Error())
+		}
+
+		acc.Save()
+		return
+	}
+
+	reader := bufio.NewReader(os.Stdin)
+	logger().Printf("Please review the TOS at %s", acc.Registration.TosURL)
+
+	for {
+		logger().Println("Do you accept the TOS? Y/n")
+		text, err := reader.ReadString('\n')
+		if err != nil {
+			logger().Fatalf("Could not read from console: %s", err.Error())
+		}
+
+		text = strings.Trim(text, "\r\n")
+
+		if text == "n" {
+			logger().Fatal("You did not accept the TOS. Unable to proceed.")
+		}
+
+		if text == "Y" || text == "y" || text == "" {
+			err = client.AgreeToTOS()
+			if err != nil {
+				logger().Fatalf("Could not agree to TOS: %s", err.Error())
+			}
+			acc.Save()
+			break
+		}
+
+		logger().Println("Your input was invalid. Please answer with one of Y/y, n or by pressing enter.")
+	}
+}
+
 func run(c *cli.Context) {
 	conf, acc, client := setup(c)
 	if acc.Registration == nil {
@@ -145,41 +206,16 @@ func run(c *cli.Context) {
 
 	}
 
+	// If the agreement URL is empty, the account still needs to accept the LE TOS.
 	if acc.Registration.Body.Agreement == "" {
-		reader := bufio.NewReader(os.Stdin)
-		logger().Printf("Please review the TOS at %s", acc.Registration.TosURL)
-
-		for {
-			logger().Println("Do you accept the TOS? Y/n")
-			text, err := reader.ReadString('\n')
-			if err != nil {
-				logger().Fatalf("Could not read from console -> %s", err.Error())
-			}
-
-			text = strings.Trim(text, "\r\n")
-
-			if text == "n" {
-				logger().Fatal("You did not accept the TOS. Unable to proceed.")
-			}
-
-			if text == "Y" || text == "y" || text == "" {
-				err = client.AgreeToTOS()
-				if err != nil {
-					logger().Fatalf("Could not agree to tos -> %s", err)
-				}
-				acc.Save()
-				break
-			}
-
-			logger().Println("Your input was invalid. Please answer with one of Y/y, n or by pressing enter.")
-		}
+		handleTOS(c, client, acc)
 	}
 
 	if len(c.GlobalStringSlice("domains")) == 0 {
 		logger().Fatal("Please specify --domains or -d")
 	}
 
-	cert, failures := client.ObtainCertificate(c.GlobalStringSlice("domains"), true, nil)
+	cert, failures := client.ObtainCertificate(c.GlobalStringSlice("domains"), !c.Bool("no-bundle"), nil)
 	if len(failures) > 0 {
 		for k, v := range failures {
 			logger().Printf("[%s] Could not obtain certificates\n\t%s", k, v.Error())
@@ -193,7 +229,7 @@ func run(c *cli.Context) {
 
 	err := checkFolder(conf.CertPath())
 	if err != nil {
-		logger().Fatalf("Cound not check/create path: %s", err.Error())
+		logger().Fatalf("Could not check/create path: %s", err.Error())
 	}
 
 	saveCertRes(cert, conf)
@@ -205,7 +241,7 @@ func revoke(c *cli.Context) {
 
 	err := checkFolder(conf.CertPath())
 	if err != nil {
-		logger().Fatalf("Cound not check/create path: %s", err.Error())
+		logger().Fatalf("Could not check/create path: %s", err.Error())
 	}
 
 	for _, domain := range c.GlobalStringSlice("domains") {
@@ -276,7 +312,7 @@ func renew(c *cli.Context) {
 
 	certRes.Certificate = certBytes
 
-	newCert, err := client.RenewCertificate(certRes, true)
+	newCert, err := client.RenewCertificate(certRes, !c.Bool("no-bundle"))
 	if err != nil {
 		logger().Fatalf("%s", err.Error())
 	}

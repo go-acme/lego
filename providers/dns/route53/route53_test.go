@@ -1,8 +1,10 @@
-package acme
+package route53
 
 import (
+	"net/http"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/mitchellh/goamz/aws"
 	"github.com/mitchellh/goamz/route53"
@@ -63,9 +65,9 @@ var GetChangeAnswer = `<?xml version="1.0" encoding="UTF-8"?>
 </GetChangeResponse>`
 
 var serverResponseMap = testutil.ResponseMap{
-	"/2013-04-01/hostedzone/":                      testutil.Response{200, nil, ListHostedZonesAnswer},
-	"/2013-04-01/hostedzone/Z2K123214213123/rrset": testutil.Response{200, nil, ChangeResourceRecordSetsAnswer},
-	"/2013-04-01/change/asdf":                      testutil.Response{200, nil, GetChangeAnswer},
+	"/2013-04-01/hostedzone/":                      testutil.Response{Status: 200, Headers: nil, Body: ListHostedZonesAnswer},
+	"/2013-04-01/hostedzone/Z2K123214213123/rrset": testutil.Response{Status: 200, Headers: nil, Body: ChangeResourceRecordSetsAnswer},
+	"/2013-04-01/change/asdf":                      testutil.Response{Status: 200, Headers: nil, Body: GetChangeAnswer},
 }
 
 func init() {
@@ -89,40 +91,49 @@ func makeRoute53TestServer() *testutil.HTTPServer {
 	return testServer
 }
 
-func makeRoute53Provider(server *testutil.HTTPServer) *DNSProviderRoute53 {
-	auth := aws.Auth{"abc", "123", ""}
+func makeRoute53Provider(server *testutil.HTTPServer) *DNSProvider {
+	auth := aws.Auth{AccessKey: "abc", SecretKey: "123", Token: ""}
 	client := route53.NewWithClient(auth, aws.Region{Route53Endpoint: server.URL}, testutil.DefaultClient)
-	return &DNSProviderRoute53{client: client}
+	return &DNSProvider{client: client}
 }
 
-func TestNewDNSProviderRoute53Valid(t *testing.T) {
+func TestNewDNSProviderValid(t *testing.T) {
 	os.Setenv("AWS_ACCESS_KEY_ID", "")
 	os.Setenv("AWS_SECRET_ACCESS_KEY", "")
-	_, err := NewDNSProviderRoute53("123", "123", "us-east-1")
+	_, err := NewDNSProvider("123", "123", "us-east-1")
 	assert.NoError(t, err)
 	restoreRoute53Env()
 }
 
-func TestNewDNSProviderRoute53ValidEnv(t *testing.T) {
+func TestNewDNSProviderValidEnv(t *testing.T) {
 	os.Setenv("AWS_ACCESS_KEY_ID", "123")
 	os.Setenv("AWS_SECRET_ACCESS_KEY", "123")
-	_, err := NewDNSProviderRoute53("", "", "us-east-1")
+	_, err := NewDNSProvider("", "", "us-east-1")
 	assert.NoError(t, err)
 	restoreRoute53Env()
 }
 
-func TestNewDNSProviderRoute53MissingAuthErr(t *testing.T) {
+func TestNewDNSProviderMissingAuthErr(t *testing.T) {
 	os.Setenv("AWS_ACCESS_KEY_ID", "")
 	os.Setenv("AWS_SECRET_ACCESS_KEY", "")
 	os.Setenv("AWS_CREDENTIAL_FILE", "") // in case test machine has this variable set
 	os.Setenv("HOME", "/")               // in case test machine has ~/.aws/credentials
-	_, err := NewDNSProviderRoute53("", "", "us-east-1")
+
+	// The default AWS HTTP client retries three times with a deadline of 10 seconds.
+	// Replace the default HTTP client with one that does not retry and has a low timeout.
+	awsClient := aws.RetryingClient
+	aws.RetryingClient = &http.Client{Timeout: time.Millisecond}
+
+	_, err := NewDNSProvider("", "", "us-east-1")
 	assert.EqualError(t, err, "No valid AWS authentication found")
 	restoreRoute53Env()
+
+	// restore default AWS HTTP client
+	aws.RetryingClient = awsClient
 }
 
-func TestNewDNSProviderRoute53InvalidRegionErr(t *testing.T) {
-	_, err := NewDNSProviderRoute53("123", "123", "us-east-3")
+func TestNewDNSProviderInvalidRegionErr(t *testing.T) {
+	_, err := NewDNSProvider("123", "123", "us-east-3")
 	assert.EqualError(t, err, "Invalid AWS region name us-east-3")
 }
 

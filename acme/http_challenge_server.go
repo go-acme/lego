@@ -7,16 +7,25 @@ import (
 	"strings"
 )
 
-// httpChallengeServer implements ChallengeProvider for `http-01` challenge
-type httpChallengeServer struct {
+// HTTPProviderServer implements ChallengeProvider for `http-01` challenge
+// It may be instantiated without using the NewHTTPProviderServer function if
+// you want only to use the default values.
+type HTTPProviderServer struct {
 	iface    string
 	port     string
 	done     chan bool
 	listener net.Listener
 }
 
-// Present makes the token available at `HTTP01ChallengePath(token)`
-func (s *httpChallengeServer) Present(domain, token, keyAuth string) error {
+// NewHTTPProviderServer creates a new HTTPProviderServer on the selected interface and port.
+// Setting iface and / or port to an empty string will make the server fall back to
+// the "any" interface and port 80 respectively.
+func NewHTTPProviderServer(iface, port string) *HTTPProviderServer {
+	return &HTTPProviderServer{iface: iface, port: port}
+}
+
+// Present starts a web server and makes the token available at `HTTP01ChallengePath(token)` for web requests.
+func (s *HTTPProviderServer) Present(domain, token, keyAuth string) error {
 	if s.port == "" {
 		s.port = "80"
 	}
@@ -32,7 +41,8 @@ func (s *httpChallengeServer) Present(domain, token, keyAuth string) error {
 	return nil
 }
 
-func (s *httpChallengeServer) CleanUp(domain, token, keyAuth string) error {
+// CleanUp closes the HTTP server and removes the token from `HTTP01ChallengePath(token)`
+func (s *HTTPProviderServer) CleanUp(domain, token, keyAuth string) error {
 	if s.listener == nil {
 		return nil
 	}
@@ -41,7 +51,7 @@ func (s *httpChallengeServer) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-func (s *httpChallengeServer) serve(domain, token, keyAuth string) {
+func (s *HTTPProviderServer) serve(domain, token, keyAuth string) {
 	path := HTTP01ChallengePath(token)
 
 	// The handler validates the HOST header and request type.

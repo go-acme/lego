@@ -91,7 +91,7 @@ GLOBAL OPTIONS:
    --webroot 								Set the webroot folder to use for HTTP based challenges to write directly in a file in .well-known/acme-challenge
    --http 								Set the port and interface to use for HTTP based challenges to listen on. Supported: interface:port or :port
    --tls 								Set the port and interface to use for TLS based challenges to listen on. Supported: interface:port or :port
-   --dns 								Enable the DNS challenge for solving using a provider.
+   --dns 								Solve a DNS challenge using the specified provider. Disables all other solvers.
 									Credentials for providers have to be passed through environment variables.
 									For a more detailed explanation of the parameters, please see the online docs.
 									Valid providers:
@@ -99,7 +99,7 @@ GLOBAL OPTIONS:
 									digitalocean: DO_AUTH_TOKEN
 									dnsimple: DNSIMPLE_EMAIL, DNSIMPLE_API_KEY
 									route53: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION
-									rfc2136: RFC2136_TSIG_KEY, RFC2136_TSIG_SECRET, RFC2136_NAMESERVER, RFC2136_ZONE
+									rfc2136: RFC2136_TSIG_KEY, RFC2136_TSIG_SECRET, RFC2136_TSIG_ALGORITHM, RFC2136_NAMESERVER
 									manual: none
    --help, -h								show help
    --version, -v							print the version
@@ -127,8 +127,10 @@ $ lego --email="foo@bar.com" --domains="example.com" renew
 Obtain a certificate using the DNS challenge and AWS Route 53:
 
 ```bash
-$ AWS_REGION=us-east-1 AWS_ACCESS_KEY_ID=my_id AWS_SECRET_ACCESS_KEY=my_key lego --email="foo@bar.com" --domains="example.com" --dns="route53" --exclude="http-01" --exclude="tls-sni-01" run
+$ AWS_REGION=us-east-1 AWS_ACCESS_KEY_ID=my_id AWS_SECRET_ACCESS_KEY=my_key lego --email="foo@bar.com" --domains="example.com" --dns="route53" run
 ```
+
+Note that `--dns=foo` implies `--exclude=http-01` and `--exclude=tls-sni-01`. lego will not attempt other challenges if you've told it to use DNS instead.
 
 lego defaults to communicating with the production Let's Encrypt ACME server. If you'd like to test something without issuing real certificates, consider using the staging endpoint instead:
 

@@ -4,6 +4,7 @@
 
 ### Added:
 - CLI: The `--dns` switch. To include the DNS challenge for consideration. Supported are the following solvers: cloudflare, digitalocean, dnsimple, route53, rfc2136 and manual.
+- CLI: The `--accept-tos`  switch. Indicates your acceptance of the Let's Encrypt terms of service without prompting you.
 - lib: A new type for challenge identifiers `Challenge`
 - lib: A new interface for custom challenge providers `ChallengeProvider`
 - lib: SetChallengeProvider function. Pass a challenge identifier and a Provider to replace the default behaviour of a challenge.

@@ -15,6 +15,7 @@ import (
 	"github.com/xenolf/lego/providers/dns/digitalocean"
 	"github.com/xenolf/lego/providers/dns/dnsimple"
 	"github.com/xenolf/lego/providers/dns/gandi"
+	"github.com/xenolf/lego/providers/dns/namecheap"
 	"github.com/xenolf/lego/providers/dns/rfc2136"
 	"github.com/xenolf/lego/providers/dns/route53"
 	"github.com/xenolf/lego/providers/http/webroot"
@@ -62,7 +63,7 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 		}
 
 		client.SetChallengeProvider(acme.HTTP01, provider)
-		
+
 		// --webroot=foo indicates that the user specifically want to do a HTTP challenge
 		// infer that the user also wants to exclude all other challenges
 		client.ExcludeChallenges([]acme.Challenge{acme.DNS01, acme.TLSSNI01})
@@ -96,6 +97,8 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 		case "gandi":
 			apiKey := os.Getenv("GANDI_API_KEY")
 			provider, err = gandi.NewDNSProvider(apiKey)
+		case "namecheap":
+			provider, err = namecheap.NewDNSProvider("", "")
 		case "route53":
 			awsRegion := os.Getenv("AWS_REGION")
 			provider, err = route53.NewDNSProvider("", "", awsRegion)

@@ -1,4 +1,5 @@
-package acme
+// Package route53 implements a DNS provider for solving the DNS-01 challenge using route53 DNS.
+package route53
 
 import (
 	"fmt"
@@ -7,20 +8,21 @@ import (
 
 	"github.com/mitchellh/goamz/aws"
 	"github.com/mitchellh/goamz/route53"
+	"github.com/xenolf/lego/acme"
 )
 
-// DNSProviderRoute53 is an implementation of the DNSProvider interface
-type DNSProviderRoute53 struct {
+// DNSProvider is an implementation of the acme.ChallengeProvider interface
+type DNSProvider struct {
 	client *route53.Route53
 }
 
-// NewDNSProviderRoute53 returns a DNSProviderRoute53 instance with a configured route53 client.
+// NewDNSProvider returns a DNSProvider instance with a configured route53 client.
 // Authentication is either done using the passed credentials or - when empty - falling back to
 // the customary AWS credential mechanisms, including the file referenced by $AWS_CREDENTIAL_FILE
 // (defaulting to $HOME/.aws/credentials) optionally scoped to $AWS_PROFILE, credentials
 // supplied by the environment variables AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY [ + AWS_SECURITY_TOKEN ],
 // and finally credentials available via the EC2 instance metadata service.
-func NewDNSProviderRoute53(awsAccessKey, awsSecretKey, awsRegionName string) (*DNSProviderRoute53, error) {
+func NewDNSProvider(awsAccessKey, awsSecretKey, awsRegionName string) (*DNSProvider, error) {
 	region, ok := aws.Regions[awsRegionName]
 	if !ok {
 		return nil, fmt.Errorf("Invalid AWS region name %s", awsRegionName)
@@ -38,24 +40,24 @@ func NewDNSProviderRoute53(awsAccessKey, awsSecretKey, awsRegionName string) (*D
 	}
 
 	client := route53.New(auth, region)
-	return &DNSProviderRoute53{client: client}, nil
+	return &DNSProvider{client: client}, nil
 }
 
 // Present creates a TXT record using the specified parameters
-func (r *DNSProviderRoute53) Present(domain, token, keyAuth string) error {
-	fqdn, value, ttl := DNS01Record(domain, keyAuth)
+func (r *DNSProvider) Present(domain, token, keyAuth string) error {
+	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
 	value = `"` + value + `"`
 	return r.changeRecord("UPSERT", fqdn, value, ttl)
 }
 
 // CleanUp removes the TXT record matching the specified parameters
-func (r *DNSProviderRoute53) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value, ttl := DNS01Record(domain, keyAuth)
+func (r *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
 	value = `"` + value + `"`
 	return r.changeRecord("DELETE", fqdn, value, ttl)
 }
 
-func (r *DNSProviderRoute53) changeRecord(action, fqdn, value string, ttl int) error {
+func (r *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 	hostedZoneID, err := r.getHostedZoneID(fqdn)
 	if err != nil {
 		return err
@@ -69,7 +71,7 @@ func (r *DNSProviderRoute53) changeRecord(action, fqdn, value string, ttl int) e
 		return err
 	}
 
-	return waitFor(90, 5, func() (bool, error) {
+	return acme.WaitFor(90*time.Second, 5*time.Second, func() (bool, error) {
 		status, err := r.client.GetChange(resp.ChangeInfo.ID)
 		if err != nil {
 			return false, err
@@ -81,7 +83,7 @@ func (r *DNSProviderRoute53) changeRecord(action, fqdn, value string, ttl int) e
 	})
 }
 
-func (r *DNSProviderRoute53) getHostedZoneID(fqdn string) (string, error) {
+func (r *DNSProvider) getHostedZoneID(fqdn string) (string, error) {
 	zones := []route53.HostedZone{}
 	zoneResp, err := r.client.ListHostedZones("", 0)
 	if err != nil {

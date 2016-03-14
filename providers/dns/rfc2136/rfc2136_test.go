@@ -1,4 +1,4 @@
-package acme
+package rfc2136
 
 import (
 	"bytes"
@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/miekg/dns"
+	"github.com/xenolf/lego/acme"
 )
 
 var (
@@ -26,7 +27,7 @@ var (
 var reqChan = make(chan *dns.Msg, 10)
 
 func TestRFC2136CanaryLocalTestServer(t *testing.T) {
-	clearFqdnCache()
+	acme.ClearFqdnCache()
 	dns.HandleFunc("example.com.", serverHandlerHello)
 	defer dns.HandleRemove("example.com.")
 
@@ -50,7 +51,7 @@ func TestRFC2136CanaryLocalTestServer(t *testing.T) {
 }
 
 func TestRFC2136ServerSuccess(t *testing.T) {
-	clearFqdnCache()
+	acme.ClearFqdnCache()
 	dns.HandleFunc(rfc2136TestZone, serverHandlerReturnSuccess)
 	defer dns.HandleRemove(rfc2136TestZone)
 
@@ -60,9 +61,9 @@ func TestRFC2136ServerSuccess(t *testing.T) {
 	}
 	defer server.Shutdown()
 
-	provider, err := NewDNSProviderRFC2136(addrstr, "", "", "")
+	provider, err := NewDNSProvider(addrstr, "", "", "")
 	if err != nil {
-		t.Fatalf("Expected NewDNSProviderRFC2136() to return no error but the error was -> %v", err)
+		t.Fatalf("Expected NewDNSProvider() to return no error but the error was -> %v", err)
 	}
 	if err := provider.Present(rfc2136TestDomain, "", rfc2136TestKeyAuth); err != nil {
 		t.Errorf("Expected Present() to return no error but the error was -> %v", err)
@@ -70,7 +71,7 @@ func TestRFC2136ServerSuccess(t *testing.T) {
 }
 
 func TestRFC2136ServerError(t *testing.T) {
-	clearFqdnCache()
+	acme.ClearFqdnCache()
 	dns.HandleFunc(rfc2136TestZone, serverHandlerReturnErr)
 	defer dns.HandleRemove(rfc2136TestZone)
 
@@ -80,9 +81,9 @@ func TestRFC2136ServerError(t *testing.T) {
 	}
 	defer server.Shutdown()
 
-	provider, err := NewDNSProviderRFC2136(addrstr, "", "", "")
+	provider, err := NewDNSProvider(addrstr, "", "", "")
 	if err != nil {
-		t.Fatalf("Expected NewDNSProviderRFC2136() to return no error but the error was -> %v", err)
+		t.Fatalf("Expected NewDNSProvider() to return no error but the error was -> %v", err)
 	}
 	if err := provider.Present(rfc2136TestDomain, "", rfc2136TestKeyAuth); err == nil {
 		t.Errorf("Expected Present() to return an error but it did not.")
@@ -92,7 +93,7 @@ func TestRFC2136ServerError(t *testing.T) {
 }
 
 func TestRFC2136TsigClient(t *testing.T) {
-	clearFqdnCache()
+	acme.ClearFqdnCache()
 	dns.HandleFunc(rfc2136TestZone, serverHandlerReturnSuccess)
 	defer dns.HandleRemove(rfc2136TestZone)
 
@@ -102,9 +103,9 @@ func TestRFC2136TsigClient(t *testing.T) {
 	}
 	defer server.Shutdown()
 
-	provider, err := NewDNSProviderRFC2136(addrstr, "", rfc2136TestTsigKey, rfc2136TestTsigSecret)
+	provider, err := NewDNSProvider(addrstr, "", rfc2136TestTsigKey, rfc2136TestTsigSecret)
 	if err != nil {
-		t.Fatalf("Expected NewDNSProviderRFC2136() to return no error but the error was -> %v", err)
+		t.Fatalf("Expected NewDNSProvider() to return no error but the error was -> %v", err)
 	}
 	if err := provider.Present(rfc2136TestDomain, "", rfc2136TestKeyAuth); err != nil {
 		t.Errorf("Expected Present() to return no error but the error was -> %v", err)
@@ -112,7 +113,7 @@ func TestRFC2136TsigClient(t *testing.T) {
 }
 
 func TestRFC2136ValidUpdatePacket(t *testing.T) {
-	clearFqdnCache()
+	acme.ClearFqdnCache()
 	dns.HandleFunc(rfc2136TestZone, serverHandlerPassBackRequest)
 	defer dns.HandleRemove(rfc2136TestZone)
 
@@ -134,9 +135,9 @@ func TestRFC2136ValidUpdatePacket(t *testing.T) {
 		t.Fatalf("Error packing expect msg: %v", err)
 	}
 
-	provider, err := NewDNSProviderRFC2136(addrstr, "", "", "")
+	provider, err := NewDNSProvider(addrstr, "", "", "")
 	if err != nil {
-		t.Fatalf("Expected NewDNSProviderRFC2136() to return no error but the error was -> %v", err)
+		t.Fatalf("Expected NewDNSProvider() to return no error but the error was -> %v", err)
 	}
 
 	if err := provider.Present(rfc2136TestDomain, "", "1234d=="); err != nil {

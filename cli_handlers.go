@@ -11,6 +11,11 @@ import (
 
 	"github.com/codegangsta/cli"
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/providers/dns/cloudflare"
+	"github.com/xenolf/lego/providers/dns/digitalocean"
+	"github.com/xenolf/lego/providers/dns/dnsimple"
+	"github.com/xenolf/lego/providers/dns/rfc2136"
+	"github.com/xenolf/lego/providers/dns/route53"
 )
 
 func checkFolder(path string) error {
@@ -67,23 +72,23 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 		var provider acme.ChallengeProvider
 		switch c.GlobalString("dns") {
 		case "cloudflare":
-			provider, err = acme.NewDNSProviderCloudFlare("", "")
+			provider, err = cloudflare.NewDNSProvider("", "")
 		case "digitalocean":
 			authToken := os.Getenv("DO_AUTH_TOKEN")
 
-			provider, err = acme.NewDNSProviderDigitalOcean(authToken)
+			provider, err = digitalocean.NewDNSProvider(authToken)
 		case "dnsimple":
-			provider, err = acme.NewDNSProviderDNSimple("", "")
+			provider, err = dnsimple.NewDNSProvider("", "")
 		case "route53":
 			awsRegion := os.Getenv("AWS_REGION")
-			provider, err = acme.NewDNSProviderRoute53("", "", awsRegion)
+			provider, err = route53.NewDNSProvider("", "", awsRegion)
 		case "rfc2136":
 			nameserver := os.Getenv("RFC2136_NAMESERVER")
 			tsigAlgorithm := os.Getenv("RFC2136_TSIG_ALGORITHM")
 			tsigKey := os.Getenv("RFC2136_TSIG_KEY")
 			tsigSecret := os.Getenv("RFC2136_TSIG_SECRET")
 
-			provider, err = acme.NewDNSProviderRFC2136(nameserver, tsigAlgorithm, tsigKey, tsigSecret)
+			provider, err = rfc2136.NewDNSProvider(nameserver, tsigAlgorithm, tsigKey, tsigSecret)
 		case "manual":
 			provider, err = acme.NewDNSProviderManual()
 		}

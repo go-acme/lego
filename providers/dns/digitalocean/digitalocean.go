@@ -1,4 +1,5 @@
-package acme
+// Package digitalocean implements a DNS provider for solving the DNS-01 challenge using digitalocean DNS.
+package digitalocean
 
 import (
 	"bytes"
@@ -6,28 +7,30 @@ import (
 	"fmt"
 	"net/http"
 	"sync"
+
+	"github.com/xenolf/lego/acme"
 )
 
-// DNSProviderDigitalOcean is an implementation of the DNSProvider interface
+// DNSProvider is an implementation of the acme.ChallengeProvider interface
 // that uses DigitalOcean's REST API to manage TXT records for a domain.
-type DNSProviderDigitalOcean struct {
+type DNSProvider struct {
 	apiAuthToken string
 	recordIDs    map[string]int
 	recordIDsMu  sync.Mutex
 }
 
-// NewDNSProviderDigitalOcean returns a new DNSProviderDigitalOcean instance.
+// NewDNSProvider returns a new DNSProvider instance.
 // apiAuthToken is the personal access token created in the DigitalOcean account
 // control panel, and it will be sent in bearer authorization headers.
-func NewDNSProviderDigitalOcean(apiAuthToken string) (*DNSProviderDigitalOcean, error) {
-	return &DNSProviderDigitalOcean{
+func NewDNSProvider(apiAuthToken string) (*DNSProvider, error) {
+	return &DNSProvider{
 		apiAuthToken: apiAuthToken,
 		recordIDs:    make(map[string]int),
 	}, nil
 }
 
 // Present creates a TXT record using the specified parameters
-func (d *DNSProviderDigitalOcean) Present(domain, token, keyAuth string) error {
+func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	// txtRecordRequest represents the request body to DO's API to make a TXT record
 	type txtRecordRequest struct {
 		RecordType string `json:"type"`
@@ -45,7 +48,7 @@ func (d *DNSProviderDigitalOcean) Present(domain, token, keyAuth string) error {
 		} `json:"domain_record"`
 	}
 
-	fqdn, value, _ := DNS01Record(domain, keyAuth)
+	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
 
 	reqURL := fmt.Sprintf("%s/v2/domains/%s/records", digitalOceanBaseURL, domain)
 	reqData := txtRecordRequest{RecordType: "TXT", Name: fqdn, Data: value}
@@ -87,8 +90,8 @@ func (d *DNSProviderDigitalOcean) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters
-func (d *DNSProviderDigitalOcean) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _, _ := DNS01Record(domain, keyAuth)
+func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
 
 	// get the record's unique ID from when we created it
 	d.recordIDsMu.Lock()

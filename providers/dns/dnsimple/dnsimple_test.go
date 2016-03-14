@@ -1,4 +1,4 @@
-package acme
+package dnsimple
 
 import (
 	"os"
@@ -29,25 +29,25 @@ func restoreDNSimpleEnv() {
 	os.Setenv("DNSIMPLE_API_KEY", dnsimpleAPIKey)
 }
 
-func TestNewDNSProviderDNSimpleValid(t *testing.T) {
+func TestNewDNSProviderValid(t *testing.T) {
 	os.Setenv("DNSIMPLE_EMAIL", "")
 	os.Setenv("DNSIMPLE_API_KEY", "")
-	_, err := NewDNSProviderDNSimple("example@example.com", "123")
+	_, err := NewDNSProvider("example@example.com", "123")
 	assert.NoError(t, err)
 	restoreDNSimpleEnv()
 }
-func TestNewDNSProviderDNSimpleValidEnv(t *testing.T) {
+func TestNewDNSProviderValidEnv(t *testing.T) {
 	os.Setenv("DNSIMPLE_EMAIL", "example@example.com")
 	os.Setenv("DNSIMPLE_API_KEY", "123")
-	_, err := NewDNSProviderDNSimple("", "")
+	_, err := NewDNSProvider("", "")
 	assert.NoError(t, err)
 	restoreDNSimpleEnv()
 }
 
-func TestNewDNSProviderDNSimpleMissingCredErr(t *testing.T) {
+func TestNewDNSProviderMissingCredErr(t *testing.T) {
 	os.Setenv("DNSIMPLE_EMAIL", "")
 	os.Setenv("DNSIMPLE_API_KEY", "")
-	_, err := NewDNSProviderDNSimple("", "")
+	_, err := NewDNSProvider("", "")
 	assert.EqualError(t, err, "DNSimple credentials missing")
 	restoreDNSimpleEnv()
 }
@@ -57,7 +57,7 @@ func TestLiveDNSimplePresent(t *testing.T) {
 		t.Skip("skipping live test")
 	}
 
-	provider, err := NewDNSProviderDNSimple(dnsimpleEmail, dnsimpleAPIKey)
+	provider, err := NewDNSProvider(dnsimpleEmail, dnsimpleAPIKey)
 	assert.NoError(t, err)
 
 	err = provider.Present(dnsimpleDomain, "", "123d==")
@@ -71,7 +71,7 @@ func TestLiveDNSimpleCleanUp(t *testing.T) {
 
 	time.Sleep(time.Second * 1)
 
-	provider, err := NewDNSProviderDNSimple(dnsimpleEmail, dnsimpleAPIKey)
+	provider, err := NewDNSProvider(dnsimpleEmail, dnsimpleAPIKey)
 	assert.NoError(t, err)
 
 	err = provider.CleanUp(dnsimpleDomain, "", "123d==")

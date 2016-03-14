@@ -1,10 +1,13 @@
-package acme
+// Package webroot implements a HTTP provider for solving the HTTP-01 challenge using web server's root path.
+package webroot
 
 import (
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
+
+	"github.com/xenolf/lego/acme"
 )
 
 // HTTPProviderWebroot implements ChallengeProvider for `http-01` challenge
@@ -29,7 +32,7 @@ func NewHTTPProviderWebroot(path string) (*HTTPProviderWebroot, error) {
 func (w *HTTPProviderWebroot) Present(domain, token, keyAuth string) error {
 	var err error
 
-	challengeFilePath := path.Join(w.path, HTTP01ChallengePath(token))
+	challengeFilePath := path.Join(w.path, acme.HTTP01ChallengePath(token))
 	err = os.MkdirAll(path.Dir(challengeFilePath), 0777)
 	if err != nil {
 		return fmt.Errorf("Could not create required directories in webroot for HTTP challenge -> %v", err)
@@ -46,7 +49,7 @@ func (w *HTTPProviderWebroot) Present(domain, token, keyAuth string) error {
 // CleanUp removes the file created for the challenge
 func (w *HTTPProviderWebroot) CleanUp(domain, token, keyAuth string) error {
 	var err error
-	err = os.Remove(path.Join(w.path, HTTP01ChallengePath(token)))
+	err = os.Remove(path.Join(w.path, acme.HTTP01ChallengePath(token)))
 	if err != nil {
 		return fmt.Errorf("Could not remove file in webroot after HTTP challenge -> %v", err)
 	}

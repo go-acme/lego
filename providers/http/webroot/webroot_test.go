@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestHTTPProviderWebRoot(t *testing.T) {
+func TestHTTPProvider(t *testing.T) {
 	webroot := "webroot"
 	domain := "domain"
 	token := "token"
@@ -16,7 +16,7 @@ func TestHTTPProviderWebRoot(t *testing.T) {
 	os.MkdirAll(webroot+"/.well-known/acme-challenge", 0777)
 	defer os.RemoveAll(webroot)
 
-	provider, err := NewHTTPProviderWebroot(webroot)
+	provider, err := NewHTTPProvider(webroot)
 	if err != nil {
 		t.Errorf("Webroot provider error: got %v, want nil", err)
 	}

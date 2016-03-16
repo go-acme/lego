@@ -10,18 +10,18 @@ import (
 	"github.com/xenolf/lego/acme"
 )
 
-// HTTPProviderWebroot implements ChallengeProvider for `http-01` challenge
-type HTTPProviderWebroot struct {
+// HTTPProvider implements ChallengeProvider for `http-01` challenge
+type HTTPProvider struct {
 	path string
 }
 
-// NewHTTPProviderWebroot returns a HTTPProviderWebroot instance with a configured webroot path
-func NewHTTPProviderWebroot(path string) (*HTTPProviderWebroot, error) {
+// NewHTTPProvider returns a HTTPProvider instance with a configured webroot path
+func NewHTTPProvider(path string) (*HTTPProvider, error) {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return nil, fmt.Errorf("Webroot path does not exist")
 	}
 
-	c := &HTTPProviderWebroot{
+	c := &HTTPProvider{
 		path: path,
 	}
 
@@ -29,7 +29,7 @@ func NewHTTPProviderWebroot(path string) (*HTTPProviderWebroot, error) {
 }
 
 // Present makes the token available at `HTTP01ChallengePath(token)` by creating a file in the given webroot path
-func (w *HTTPProviderWebroot) Present(domain, token, keyAuth string) error {
+func (w *HTTPProvider) Present(domain, token, keyAuth string) error {
 	var err error
 
 	challengeFilePath := path.Join(w.path, acme.HTTP01ChallengePath(token))
@@ -47,7 +47,7 @@ func (w *HTTPProviderWebroot) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the file created for the challenge
-func (w *HTTPProviderWebroot) CleanUp(domain, token, keyAuth string) error {
+func (w *HTTPProvider) CleanUp(domain, token, keyAuth string) error {
 	var err error
 	err = os.Remove(path.Join(w.path, acme.HTTP01ChallengePath(token)))
 	if err != nil {

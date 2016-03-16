@@ -55,7 +55,7 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 	}
 
 	if c.GlobalIsSet("webroot") {
-		provider, err := webroot.NewHTTPProviderWebroot(c.GlobalString("webroot"))
+		provider, err := webroot.NewHTTPProvider(c.GlobalString("webroot"))
 		if err != nil {
 			logger().Fatal(err)
 		}

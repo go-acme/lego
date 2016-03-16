@@ -42,10 +42,11 @@ When using the standard `--path` option, all certificates and account configurat
 
 #### Sudo
 The CLI does not require root permissions but needs to bind to port 80 and 443 for certain challenges. 
-To run the CLI without sudo, you have two options:
+To run the CLI without sudo, you have three options:
 
 - Use setcap 'cap_net_bind_service=+ep' /path/to/program
 - Pass the `--http` or/and the `--tls` option and specify a custom port to bind to. In this case you have to forward port 80/443 to these custom ports (see [Port Usage](#port-usage)).
+- Pass the `--webroot` option and specify the path to your webroot folder. In this case the challenge will be written in a file in `.well-known/acme-challenge/` inside your webroot.
 
 #### Port Usage
 By default lego assumes it is able to bind to ports 80 and 443 to solve challenges.
@@ -87,6 +88,7 @@ GLOBAL OPTIONS:
    --rsa-key-size, -B "2048"						Size of the RSA key.
    --path "${CWD}/.lego"	Directory to use for storing the data
    --exclude, -x [--exclude option --exclude option]			Explicitly disallow solvers by name from being used. Solvers: "http-01", "tls-sni-01".
+   --webroot 								Set the webroot folder to use for HTTP based challenges to write directly in a file in .well-known/acme-challenge
    --http 								Set the port and interface to use for HTTP based challenges to listen on. Supported: interface:port or :port
    --tls 								Set the port and interface to use for TLS based challenges to listen on. Supported: interface:port or :port
    --dns 								Solve a DNS challenge using the specified provider. Disables all other solvers.

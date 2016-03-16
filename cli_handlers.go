@@ -16,6 +16,7 @@ import (
 	"github.com/xenolf/lego/providers/dns/dnsimple"
 	"github.com/xenolf/lego/providers/dns/rfc2136"
 	"github.com/xenolf/lego/providers/dns/route53"
+	"github.com/xenolf/lego/providers/http/webroot"
 )
 
 func checkFolder(path string) error {
@@ -53,6 +54,18 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 		client.ExcludeChallenges(conf.ExcludedSolvers())
 	}
 
+	if c.GlobalIsSet("webroot") {
+		provider, err := webroot.NewHTTPProviderWebroot(c.GlobalString("webroot"))
+		if err != nil {
+			logger().Fatal(err)
+		}
+
+		client.SetChallengeProvider(acme.HTTP01, provider)
+		
+		// --webroot=foo indicates that the user specifically want to do a HTTP challenge
+		// infer that the user also wants to exclude all other challenges
+		client.ExcludeChallenges([]acme.Challenge{acme.DNS01, acme.TLSSNI01})
+	}
 	if c.GlobalIsSet("http") {
 		if strings.Index(c.GlobalString("http"), ":") == -1 {
 			logger().Fatalf("The --http switch only accepts interface:port or :port for its argument.")

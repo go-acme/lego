@@ -161,7 +161,7 @@ func (c *Client) Register() (*RegistrationResource, error) {
 	if c == nil || c.user == nil {
 		return nil, errors.New("acme: cannot register a nil client or user")
 	}
-	logf("[INFO] acme: Registering account for %s", c.user.GetEmail())
+	logf("[INFO] acme: Registering account for \"%s\"", c.user.GetEmail())
 
 	regMsg := registrationMessage{
 		Resource: "new-reg",

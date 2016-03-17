@@ -14,6 +14,7 @@ import (
 	"github.com/xenolf/lego/providers/dns/cloudflare"
 	"github.com/xenolf/lego/providers/dns/digitalocean"
 	"github.com/xenolf/lego/providers/dns/dnsimple"
+	"github.com/xenolf/lego/providers/dns/gandi"
 	"github.com/xenolf/lego/providers/dns/rfc2136"
 	"github.com/xenolf/lego/providers/dns/route53"
 	"github.com/xenolf/lego/providers/http/webroot"
@@ -92,6 +93,9 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 			provider, err = digitalocean.NewDNSProvider(authToken)
 		case "dnsimple":
 			provider, err = dnsimple.NewDNSProvider("", "")
+		case "gandi":
+			apiKey := os.Getenv("GANDI_API_KEY")
+			provider, err = gandi.NewDNSProvider(apiKey)
 		case "route53":
 			awsRegion := os.Getenv("AWS_REGION")
 			provider, err = route53.NewDNSProvider("", "", awsRegion)

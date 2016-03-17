@@ -120,6 +120,10 @@ func main() {
 			Name:  "webroot",
 			Usage: "Set the webroot folder to use for HTTP based challenges to write directly in a file in .well-known/acme-challenge",
 		},
+		cli.BoolFlag{
+			Name:  "manual",
+			Usage: "Give instructions for fulfilling HTTP based challenges manually",
+		},
 		cli.StringFlag{
 			Name:  "http",
 			Usage: "Set the port and interface to use for HTTP based challenges to listen on. Supported: interface:port or :port",

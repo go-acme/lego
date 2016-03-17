@@ -53,7 +53,7 @@ func TestDigitalOceanPresent(t *testing.T) {
 	defer mock.Close()
 	digitalOceanBaseURL = mock.URL
 
-	doprov, err := NewDNSProvider(fakeDigitalOceanAuth)
+	doprov, err := NewDNSProviderCredentials(fakeDigitalOceanAuth)
 	if doprov == nil {
 		t.Fatal("Expected non-nil DigitalOcean provider, but was nil")
 	}
@@ -95,7 +95,7 @@ func TestDigitalOceanCleanUp(t *testing.T) {
 	defer mock.Close()
 	digitalOceanBaseURL = mock.URL
 
-	doprov, err := NewDNSProvider(fakeDigitalOceanAuth)
+	doprov, err := NewDNSProviderCredentials(fakeDigitalOceanAuth)
 	if doprov == nil {
 		t.Fatal("Expected non-nil DigitalOcean provider, but was nil")
 	}

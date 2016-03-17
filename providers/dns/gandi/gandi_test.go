@@ -1,4 +1,4 @@
-package gandi_test
+package gandi
 
 import (
 	"io"
@@ -8,8 +8,6 @@ import (
 	"regexp"
 	"strings"
 	"testing"
-
-	"github.com/xenolf/lego/providers/dns/gandi"
 )
 
 // TestDNSProvider runs Present and CleanUp against a fake Gandi RPC
@@ -17,7 +15,7 @@ import (
 func TestDNSProvider(t *testing.T) {
 	fakeAPIKey := "123412341234123412341234"
 	fakeKeyAuth := "XXXX"
-	provider, err := gandi.NewDNSProvider(fakeAPIKey)
+	provider, err := NewDNSProviderCredentials(fakeAPIKey)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -47,11 +45,11 @@ func TestDNSProvider(t *testing.T) {
 	}))
 	defer fakeServer.Close()
 	// override gandi endpoint to point to fake server
-	savedEndpoint := gandi.Endpoint
+	savedEndpoint := Endpoint
 	defer func() {
-		gandi.Endpoint = savedEndpoint
+		Endpoint = savedEndpoint
 	}()
-	gandi.Endpoint = fakeServer.URL + "/"
+	Endpoint = fakeServer.URL + "/"
 	// run Present
 	err = provider.Present("abc.def.example.com", "", fakeKeyAuth)
 	if err != nil {

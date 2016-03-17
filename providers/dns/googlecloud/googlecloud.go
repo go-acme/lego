@@ -22,12 +22,16 @@ type DNSProvider struct {
 	client  *dns.Service
 }
 
-// NewDNSProvider returns a DNSProvider instance with a configured gcloud client.
-// Authentication is done using the local account credentials managed by the gcloud utility.
-func NewDNSProvider(project string) (*DNSProvider, error) {
-	if project == "" {
-		project = gcloudEnvAuth()
-	}
+// NewDNSProvider returns a DNSProvider instance configured for Google Cloud
+// DNS. Credentials must be passed in the environment variable: GCE_PROJECT.
+func NewDNSProvider() (*DNSProvider, error) {
+	project := os.Getenv("GCE_PROJECT")
+	return NewDNSProviderCredentials(project)
+}
+
+// NewDNSProviderCredentials uses the supplied credentials to return a
+// DNSProvider instance configured for Google Cloud DNS.
+func NewDNSProviderCredentials(project string) (*DNSProvider, error) {
 	if project == "" {
 		return nil, fmt.Errorf("Google Cloud project name missing")
 	}
@@ -148,8 +152,4 @@ func (c *DNSProvider) findTxtRecords(zone, fqdn string) ([]*dns.ResourceRecordSe
 	}
 
 	return found, nil
-}
-
-func gcloudEnvAuth() (gcloud string) {
-	return os.Getenv("GCE_PROJECT")
 }

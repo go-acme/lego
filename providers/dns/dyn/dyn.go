@@ -1,4 +1,5 @@
-// Package dyn implements a DNS provider for solving the DNS-01 challenge using Dyn Managed DNS.
+// Package dyn implements a DNS provider for solving the DNS-01 challenge
+// using Dyn Managed DNS.
 package dyn
 
 import (
@@ -6,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -37,10 +39,23 @@ type DNSProvider struct {
 	token        string
 }
 
-// NewDNSProvider returns a new DNSProvider instance. customerName is
-// the customer name of the Dyn account. userName is the user name. password is
-// the password.
-func NewDNSProvider(customerName, userName, password string) (*DNSProvider, error) {
+// NewDNSProvider returns a DNSProvider instance configured for Dyn DNS.
+// Credentials must be passed in the environment variables: DYN_CUSTOMER_NAME,
+// DYN_USER_NAME and DYN_PASSWORD.
+func NewDNSProvider() (*DNSProvider, error) {
+	customerName := os.Getenv("DYN_CUSTOMER_NAME")
+	userName := os.Getenv("DYN_USER_NAME")
+	password := os.Getenv("DYN_PASSWORD")
+	return NewDNSProviderCredentials(customerName, userName, password)
+}
+
+// NewDNSProviderCredentials uses the supplied credentials to return a
+// DNSProvider instance configured for Dyn DNS.
+func NewDNSProviderCredentials(customerName, userName, password string) (*DNSProvider, error) {
+	if customerName == "" || userName == "" || password == "" {
+		return nil, fmt.Errorf("DynDNS credentials missing")
+	}
+
 	return &DNSProvider{
 		customerName: customerName,
 		userName:     userName,

@@ -9,6 +9,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -35,9 +36,16 @@ type DNSProvider struct {
 	inProgressMu      sync.Mutex
 }
 
-// NewDNSProvider returns a new DNSProvider instance. apiKey is the
-// API access key obtained from the Gandi account control panel.
-func NewDNSProvider(apiKey string) (*DNSProvider, error) {
+// NewDNSProvider returns a DNSProvider instance configured for Gandi.
+// Credentials must be passed in the environment variable: GANDI_API_KEY.
+func NewDNSProvider() (*DNSProvider, error) {
+	apiKey := os.Getenv("GANDI_API_KEY")
+	return NewDNSProviderCredentials(apiKey)
+}
+
+// NewDNSProviderCredentials uses the supplied credentials to return a
+// DNSProvider instance configured for Gandi.
+func NewDNSProviderCredentials(apiKey string) (*DNSProvider, error) {
 	if apiKey == "" {
 		return nil, fmt.Errorf("No Gandi API Key given")
 	}

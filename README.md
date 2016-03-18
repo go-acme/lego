@@ -42,15 +42,16 @@ When using the standard `--path` option, all certificates and account configurat
 
 #### Sudo
 The CLI does not require root permissions but needs to bind to port 80 and 443 for certain challenges. 
-To run the CLI without sudo, you have three options:
+To run the CLI without sudo, you have four options:
 
 - Use setcap 'cap_net_bind_service=+ep' /path/to/program
-- Pass the `--http` or/and the `--tls` option and specify a custom port to bind to. In this case you have to forward port 80/443 to these custom ports (see [Port Usage](#port-usage)).
-- Pass the `--webroot` option and specify the path to your webroot folder. In this case the challenge will be written in a file in `.well-known/acme-challenge/` inside your webroot.
+- Pass the `--http-address` or/and the `--tls-address` option and specify a custom port to bind to. In this case you have to forward port 80/443 to these custom ports (see [Port Usage](#port-usage)).
+- Pass the `--http` option with `webroot` as the argument, and specify the path to your webroot folder using the `WEBROOT_PATH` environment variable. In this case the challenge will be written in a file in `.well-known/acme-challenge/` inside your webroot.
+- Pass the `--dns` option and specify a dns provider (use `dnshelp` command for more information).
 
 #### Port Usage
 By default lego assumes it is able to bind to ports 80 and 443 to solve challenges.
-If this is not possible in your environment, you can use the `--http` and `--tls` options to instruct
+If this is not possible in your environment, you can use the `--http-address` and `--tls-address` options to instruct
 lego to listen on that interface:port for any incoming challenges.
 
 If you are using this option, make sure you proxy all of the following traffic to these ports.
@@ -70,7 +71,7 @@ NAME:
    lego - Let's encrypt client to go!
 
 USAGE:
-   ./lego [global options] command [command options] [arguments...]
+   lego [global options] command [command options] [arguments...]
    
 VERSION:
    0.2.0
@@ -79,30 +80,22 @@ COMMANDS:
    run		Register an account, then create and install a certificate
    revoke	Revoke a certificate
    renew	Renew a certificate
+   httphelp	Shows additional help for the --http global option
+   dnshelp	Shows additional help for the --dns global option
    help, h	Shows a list of commands or help for one command
    
 GLOBAL OPTIONS:
    --domains, -d [--domains option --domains option]			Add domains to the process
    --server, -s "https://acme-v01.api.letsencrypt.org/directory"	CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client.
    --email, -m 								Email used for registration and recovery contact.
-   --rsa-key-size, -B "2048"						Size of the RSA key.
-   --path "${CWD}/.lego"	Directory to use for storing the data
+   --accept-tos, -a							By setting this flag to true you indicate that you accept the current Let's Encrypt terms of service.
+   --key-type, -k "rsa2048"						Key type to use for private keys. Supported: rsa2048, rsa4096, rsa8192, ec256, ec384
+   --path "${CWD}/.lego"						Directory to use for storing the data
    --exclude, -x [--exclude option --exclude option]			Explicitly disallow solvers by name from being used. Solvers: "http-01", "tls-sni-01".
-   --webroot 								Set the webroot folder to use for HTTP based challenges to write directly in a file in .well-known/acme-challenge
-   --http 								Set the port and interface to use for HTTP based challenges to listen on. Supported: interface:port or :port
-   --tls 								Set the port and interface to use for TLS based challenges to listen on. Supported: interface:port or :port
-   --dns 								Solve a DNS challenge using the specified provider. Disables all other solvers.
-									Credentials for providers have to be passed through environment variables.
-									For a more detailed explanation of the parameters, please see the online docs.
-									Valid providers:
-									cloudflare: CLOUDFLARE_EMAIL, CLOUDFLARE_API_KEY
-									digitalocean: DO_AUTH_TOKEN
-									dnsimple: DNSIMPLE_EMAIL, DNSIMPLE_API_KEY
-									gandi: GANDI_API_KEY
-									namecheap: NAMECHEAP_API_USER, NAMECHEAP_API_KEY
-									route53: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION
-									rfc2136: RFC2136_TSIG_KEY, RFC2136_TSIG_SECRET, RFC2136_TSIG_ALGORITHM, RFC2136_NAMESERVER
-									manual: none
+   --http-address 							Set the port and interface to use for HTTP based challenges to listen on. Supported: interface:port or :port
+   --tls-address 							Set the port and interface to use for TLS based challenges to listen on. Supported: interface:port or :port
+   --http 								Solve an HTTP challenge using the specified provider. Disables all other challenges. Run 'lego httphelp' for help on usage.
+   --dns 								Solve a DNS challenge using the specified provider. Disables all other challenges. Run 'lego dnshelp' for help on usage.
    --help, -h								show help
    --version, -v							print the version
 ```

@@ -56,30 +56,38 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 		client.ExcludeChallenges(conf.ExcludedSolvers())
 	}
 
-	if c.GlobalIsSet("webroot") {
-		provider, err := webroot.NewHTTPProvider(c.GlobalString("webroot"))
+	if c.GlobalIsSet("http-address") {
+		if strings.Index(c.GlobalString("http-address"), ":") == -1 {
+			logger().Fatalf("The --http-address switch only accepts interface:port or :port for its argument.")
+		}
+		client.SetHTTPAddress(c.GlobalString("http-address"))
+	}
+
+	if c.GlobalIsSet("tls-address") {
+		if strings.Index(c.GlobalString("tls-address"), ":") == -1 {
+			logger().Fatalf("The --tls-address switch only accepts interface:port or :port for its argument.")
+		}
+		client.SetTLSAddress(c.GlobalString("tls-address"))
+	}
+
+	if c.GlobalIsSet("http") {
+		var err error
+		var provider acme.ChallengeProvider
+		switch c.GlobalString("http") {
+		case "webroot":
+			path := os.Getenv("WEBROOT_PATH")
+			provider, err = webroot.NewHTTPProvider(path)
+		}
+
 		if err != nil {
 			logger().Fatal(err)
 		}
 
 		client.SetChallengeProvider(acme.HTTP01, provider)
 
-		// --webroot=foo indicates that the user specifically want to do a HTTP challenge
+		// --http=foo indicates that the user specifically want to do a HTTP challenge
 		// infer that the user also wants to exclude all other challenges
 		client.ExcludeChallenges([]acme.Challenge{acme.DNS01, acme.TLSSNI01})
-	}
-	if c.GlobalIsSet("http") {
-		if strings.Index(c.GlobalString("http"), ":") == -1 {
-			logger().Fatalf("The --http switch only accepts interface:port or :port for its argument.")
-		}
-		client.SetHTTPAddress(c.GlobalString("http"))
-	}
-
-	if c.GlobalIsSet("tls") {
-		if strings.Index(c.GlobalString("tls"), ":") == -1 {
-			logger().Fatalf("The --tls switch only accepts interface:port or :port for its argument.")
-		}
-		client.SetTLSAddress(c.GlobalString("tls"))
 	}
 
 	if c.GlobalIsSet("dns") {

@@ -17,6 +17,9 @@ type HTTPProvider struct {
 
 // NewHTTPProvider returns a HTTPProvider instance with a configured webroot path
 func NewHTTPProvider(path string) (*HTTPProvider, error) {
+	if path == "" {
+		return nil, fmt.Errorf("Webroot path not provided")
+	}
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return nil, fmt.Errorf("Webroot path does not exist")
 	}

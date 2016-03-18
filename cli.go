@@ -3,10 +3,12 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"path"
 	"strings"
+	"text/tabwriter"
 
 	"github.com/codegangsta/cli"
 	"github.com/xenolf/lego/acme"
@@ -82,6 +84,11 @@ func main() {
 				},
 			},
 		},
+		{
+			Name:   "dnshelp",
+			Usage:  "Shows additional help for the --dns global option",
+			Action: dnshelp,
+		},
 	}
 
 	app.Flags = []cli.Flag{
@@ -129,21 +136,40 @@ func main() {
 			Usage: "Set the port and interface to use for TLS based challenges to listen on. Supported: interface:port or :port",
 		},
 		cli.StringFlag{
-			Name: "dns",
-			Usage: "Solve a DNS challenge using the specified provider. Disables all other challenges." +
-				"\n\tCredentials for providers have to be passed through environment variables." +
-				"\n\tFor a more detailed explanation of the parameters, please see the online docs." +
-				"\n\tValid providers:" +
-				"\n\tcloudflare: CLOUDFLARE_EMAIL, CLOUDFLARE_API_KEY" +
-				"\n\tdigitalocean: DO_AUTH_TOKEN" +
-				"\n\tdnsimple: DNSIMPLE_EMAIL, DNSIMPLE_API_KEY" +
-				"\n\tgandi: GANDI_API_KEY" +
-				"\n\tnamecheap: NAMECHEAP_API_USER, NAMECHEAP_API_KEY" +
-				"\n\troute53: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION" +
-				"\n\trfc2136: RFC2136_TSIG_KEY, RFC2136_TSIG_SECRET, RFC2136_TSIG_ALGORITHM, RFC2136_NAMESERVER" +
-				"\n\tmanual: none",
+			Name:  "dns",
+			Usage: "Solve a DNS challenge using the specified provider. Disables all other challenges. Run 'lego dnshelp' for help on usage.",
 		},
 	}
 
 	app.Run(os.Args)
+}
+
+func dnshelp(c *cli.Context) {
+	fmt.Printf(
+		`Credentials for DNS providers must be passed through environment variables.
+
+Here is an example bash command using the CloudFlare DNS provider:
+
+  $ CLOUDFLARE_EMAIL=foo@bar.com \
+    CLOUDFLARE_API_KEY=b9841238feb177a84330febba8a83208921177bffe733 \
+    lego --dns cloudflare --domains www.example.com --email me@bar.com run
+
+`)
+
+	w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
+	fmt.Fprintln(w, "Valid providers and their associated credential environment variables:")
+	fmt.Fprintln(w)
+	fmt.Fprintln(w, "\tcloudflare:\tCLOUDFLARE_EMAIL, CLOUDFLARE_API_KEY")
+	fmt.Fprintln(w, "\tdigitalocean:\tDO_AUTH_TOKEN")
+	fmt.Fprintln(w, "\tdnsimple:\tDNSIMPLE_EMAIL, DNSIMPLE_API_KEY")
+	fmt.Fprintln(w, "\tgandi:\tGANDI_API_KEY")
+	fmt.Fprintln(w, "\tmanual:\tnone")
+	fmt.Fprintln(w, "\tnamecheap:\tNAMECHEAP_API_USER, NAMECHEAP_API_KEY")
+	fmt.Fprintln(w, "\trfc2136:\tRFC2136_TSIG_KEY, RFC2136_TSIG_SECRET,\n\t\tRFC2136_TSIG_ALGORITHM, RFC2136_NAMESERVER")
+	fmt.Fprintln(w, "\troute53:\tAWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION")
+	w.Flush()
+
+	fmt.Println(`
+For a more detailed explanation of a DNS provider's credential variables,
+please consult their online documentation.`)
 }

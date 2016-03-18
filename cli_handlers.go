@@ -18,6 +18,7 @@ import (
 	"github.com/xenolf/lego/providers/dns/namecheap"
 	"github.com/xenolf/lego/providers/dns/rfc2136"
 	"github.com/xenolf/lego/providers/dns/route53"
+	"github.com/xenolf/lego/providers/dns/dyn"
 	"github.com/xenolf/lego/providers/http/webroot"
 )
 
@@ -114,7 +115,7 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 			dynUserName := os.Getenv("DYN_USER_NAME")
 			dynPassword := os.Getenv("DYN_PASSWORD")
 
-			provider, err = acme.NewDNSProviderDyn(dynCustomerName, dynUserName, dynPassword)
+			provider, err = dyn.NewDNSProvider(dynCustomerName, dynUserName, dynPassword)
 		case "manual":
 			provider, err = acme.NewDNSProviderManual()
 		}

@@ -1,4 +1,5 @@
-package acme
+// Package dyn implements a DNS provider for solving the DNS-01 challenge using Dyn Managed DNS.
+package dyn
 
 import (
 	"bytes"
@@ -6,6 +7,8 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+
+	"github.com/xenolf/lego/acme"
 )
 
 var dynBaseURL = "https://api.dynect.net/REST"
@@ -24,27 +27,27 @@ type DynResponse struct {
 	Messages json.RawMessage `json:"msgs"`
 }
 
-// DNSProviderDyn is an implementation of the DNSProvider interface that uses
+// DNSProvider is an implementation of the acme.ChallengeProvider interface that uses
 // Dyn's Managed DNS API to manage TXT records for a domain.
-type DNSProviderDyn struct {
+type DNSProvider struct {
 	customerName string
 	userName     string
 	password     string
 	token        string
 }
 
-// NewDNSProviderDyn returns a new DNSProviderDyn instance. customerName is
+// NewDNSProvider returns a new DNSProvider instance. customerName is
 // the customer name of the Dyn account. userName is the user name. password is
 // the password.
-func NewDNSProviderDyn(customerName, userName, password string) (*DNSProviderDyn, error) {
-	return &DNSProviderDyn{
+func NewDNSProvider(customerName, userName, password string) (*DNSProvider, error) {
+	return &DNSProvider{
 		customerName: customerName,
 		userName:     userName,
 		password:     password,
 	}, nil
 }
 
-func (d *DNSProviderDyn) sendRequest(method, resource string, payload interface{}) (*DynResponse, error) {
+func (d *DNSProvider) sendRequest(method, resource string, payload interface{}) (*DynResponse, error) {
 	url := fmt.Sprintf("%s/%s", dynBaseURL, resource)
 
 	body, err := json.Marshal(payload)
@@ -90,7 +93,7 @@ func (d *DNSProviderDyn) sendRequest(method, resource string, payload interface{
 
 // Starts a new Dyn API Session. Authenticates using customerName, userName,
 // password and receives a token to be used in for subsequent requests.
-func (d *DNSProviderDyn) login() error {
+func (d *DNSProvider) login() error {
 	type creds struct {
 		Customer string `json:"customer_name"`
 		User     string `json:"user_name"`
@@ -120,7 +123,7 @@ func (d *DNSProviderDyn) login() error {
 }
 
 // Destroys Dyn Session
-func (d *DNSProviderDyn) logout() error {
+func (d *DNSProvider) logout() error {
 	if len(d.token) == 0 {
 		// nothing to do
 		return nil
@@ -149,13 +152,13 @@ func (d *DNSProviderDyn) logout() error {
 }
 
 // Present creates a TXT record using the specified parameters
-func (d *DNSProviderDyn) Present(domain, token, keyAuth string) error {
+func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	err := d.login()
 	if err != nil {
 		return err
 	}
 
-	fqdn, value, ttl := DNS01Record(domain, keyAuth)
+	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
 
 	data := map[string]interface{}{
 		"rdata": map[string]string{
@@ -183,7 +186,7 @@ func (d *DNSProviderDyn) Present(domain, token, keyAuth string) error {
 	return nil
 }
 
-func (d *DNSProviderDyn) publish(domain, notes string) error {
+func (d *DNSProvider) publish(domain, notes string) error {
 	type publish struct {
 		Publish bool   `json:"publish"`
 		Notes   string `json:"notes"`
@@ -200,13 +203,13 @@ func (d *DNSProviderDyn) publish(domain, notes string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters
-func (d *DNSProviderDyn) CleanUp(domain, token, keyAuth string) error {
+func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	err := d.login()
 	if err != nil {
 		return err
 	}
 
-	fqdn, _, _ := DNS01Record(domain, keyAuth)
+	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
 
 	resource := fmt.Sprintf("TXTRecord/%s/%s/", domain, fqdn)
 	url := fmt.Sprintf("%s/%s", dynBaseURL, resource)

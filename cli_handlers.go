@@ -15,6 +15,7 @@ import (
 	"github.com/xenolf/lego/providers/dns/digitalocean"
 	"github.com/xenolf/lego/providers/dns/dnsimple"
 	"github.com/xenolf/lego/providers/dns/gandi"
+	"github.com/xenolf/lego/providers/dns/googlecloud"
 	"github.com/xenolf/lego/providers/dns/namecheap"
 	"github.com/xenolf/lego/providers/dns/rfc2136"
 	"github.com/xenolf/lego/providers/dns/route53"
@@ -97,6 +98,8 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 		case "gandi":
 			apiKey := os.Getenv("GANDI_API_KEY")
 			provider, err = gandi.NewDNSProvider(apiKey)
+		case "gcloud":
+			provider, err = googleclouddns.NewDNSProvider("")
 		case "namecheap":
 			provider, err = namecheap.NewDNSProvider("", "")
 		case "route53":

@@ -163,6 +163,7 @@ Here is an example bash command using the CloudFlare DNS provider:
 	fmt.Fprintln(w, "\tdigitalocean:\tDO_AUTH_TOKEN")
 	fmt.Fprintln(w, "\tdnsimple:\tDNSIMPLE_EMAIL, DNSIMPLE_API_KEY")
 	fmt.Fprintln(w, "\tgandi:\tGANDI_API_KEY")
+	fmt.Fprintln(w, "\tgcloud:\tGCE_PROJECT")
 	fmt.Fprintln(w, "\tmanual:\tnone")
 	fmt.Fprintln(w, "\tnamecheap:\tNAMECHEAP_API_USER, NAMECHEAP_API_KEY")
 	fmt.Fprintln(w, "\trfc2136:\tRFC2136_TSIG_KEY, RFC2136_TSIG_SECRET,\n\t\tRFC2136_TSIG_ALGORITHM, RFC2136_NAMESERVER")

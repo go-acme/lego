@@ -17,9 +17,15 @@ import (
 	"time"
 )
 
+// LoggerInterface usually used for *log.Logger, but allows support for
+// custom loggers such as Logrus
+type LoggerInterface interface {
+	Printf(string, ...interface{})
+}
+
 var (
 	// Logger is an optional custom logger.
-	Logger *log.Logger
+	Logger LoggerInterface
 )
 
 // logf writes a log entry. It uses Logger if not

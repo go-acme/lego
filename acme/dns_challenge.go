@@ -197,7 +197,7 @@ func FindZoneByFqdn(fqdn, nameserver string) (string, error) {
 		return zone, nil
 	}
 
-	// Query the authorative nameserver for a hopefully non-existing SOA record,
+	// Query the authoritative nameserver for a hopefully non-existing SOA record,
 	// in the authority section of the reply it will have the SOA of the
 	// containing zone. rfc2308 has this to say on the subject:
 	//   Name servers authoritative for a zone MUST include the SOA record of

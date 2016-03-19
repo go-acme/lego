@@ -85,6 +85,11 @@ func main() {
 			},
 		},
 		{
+			Name:   "httphelp",
+			Usage:  "Shows additional help for the --http global option",
+			Action: httphelp,
+		},
+		{
 			Name:   "dnshelp",
 			Usage:  "Shows additional help for the --dns global option",
 			Action: dnshelp,
@@ -124,16 +129,16 @@ func main() {
 			Usage: "Explicitly disallow solvers by name from being used. Solvers: \"http-01\", \"tls-sni-01\".",
 		},
 		cli.StringFlag{
-			Name:  "webroot",
-			Usage: "Set the webroot folder to use for HTTP based challenges to write directly in a file in .well-known/acme-challenge",
-		},
-		cli.StringFlag{
-			Name:  "http",
+			Name:  "http-address",
 			Usage: "Set the port and interface to use for HTTP based challenges to listen on. Supported: interface:port or :port",
 		},
 		cli.StringFlag{
-			Name:  "tls",
+			Name:  "tls-address",
 			Usage: "Set the port and interface to use for TLS based challenges to listen on. Supported: interface:port or :port",
+		},
+		cli.StringFlag{
+			Name:  "http",
+			Usage: "Solve an HTTP challenge using the specified provider. Disables all other challenges. Run 'lego httphelp' for help on usage.",
 		},
 		cli.StringFlag{
 			Name:  "dns",
@@ -142,6 +147,29 @@ func main() {
 	}
 
 	app.Run(os.Args)
+}
+
+func httphelp(c *cli.Context) {
+	fmt.Printf(
+		`Additional information needed for HTTP providers must be passed through
+environment variables.
+
+Here is an example bash command using the Webroot provider:
+
+  $ WEBROOT_PATH=/path/to/webroot \
+    lego --http webroot --domains www.example.com --email me@bar.com run
+
+`)
+
+	w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
+	fmt.Fprintln(w, "Valid providers and their associated environment variables:")
+	fmt.Fprintln(w)
+	fmt.Fprintln(w, "\twebroot:\tWEBROOT_PATH")
+	w.Flush()
+
+	fmt.Println(`
+For a more detailed explanation of an HTTP provider's variables,
+please consult their online documentation.`)
 }
 
 func dnshelp(c *cli.Context) {

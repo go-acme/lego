@@ -1,4 +1,4 @@
-package googleclouddns
+package googlecloud
 
 import (
 	"os"

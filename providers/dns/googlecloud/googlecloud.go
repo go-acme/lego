@@ -1,4 +1,6 @@
-package googleclouddns
+// Package googlecloud implements a DNS provider for solving the DNS-01
+// challenge using Google Cloud DNS.
+package googlecloud
 
 import (
 	"fmt"

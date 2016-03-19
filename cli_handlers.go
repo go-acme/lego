@@ -100,7 +100,7 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 			apiKey := os.Getenv("GANDI_API_KEY")
 			provider, err = gandi.NewDNSProvider(apiKey)
 		case "gcloud":
-			provider, err = googleclouddns.NewDNSProvider("")
+			provider, err = googlecloud.NewDNSProvider("")
 		case "namecheap":
 			provider, err = namecheap.NewDNSProvider("", "")
 		case "route53":

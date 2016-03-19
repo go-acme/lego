@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/xenolf/lego/acme"
 )
@@ -64,7 +65,8 @@ func (d *DNSProvider) sendRequest(method, resource string, payload interface{}) 
 		req.Header.Set("Auth-Token", d.token)
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	client := &http.Client{Timeout: time.Duration(10 * time.Second)}
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +138,9 @@ func (d *DNSProvider) logout() error {
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Auth-Token", d.token)
-	resp, err := http.DefaultClient.Do(req)
+
+	client := &http.Client{Timeout: time.Duration(10 * time.Second)}
+	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -219,7 +223,9 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Auth-Token", d.token)
-	resp, err := http.DefaultClient.Do(req)
+
+	client := &http.Client{Timeout: time.Duration(10 * time.Second)}
+	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}

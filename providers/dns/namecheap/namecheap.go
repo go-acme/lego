@@ -32,6 +32,7 @@ var (
 	debug          = false
 	defaultBaseURL = "https://api.namecheap.com/xml.response"
 	getIpURL       = "https://dynamicdns.park-your-domain.com/getip"
+	httpClient     = http.Client{Timeout: 60 * time.Second}
 )
 
 // DNSProvider is an implementation of the ChallengeProviderTimeout interface
@@ -93,7 +94,7 @@ type apierror struct {
 // getClientIP returns the client's public IP address. It uses namecheap's
 // IP discovery service to perform the lookup.
 func getClientIP() (addr string, err error) {
-	resp, err := http.Get(getIpURL)
+	resp, err := httpClient.Get(getIpURL)
 	if err != nil {
 		return "", err
 	}
@@ -179,7 +180,7 @@ func (d *DNSProvider) getTLDs() (tlds map[string]string, err error) {
 	reqURL, _ := url.Parse(d.baseURL)
 	reqURL.RawQuery = values.Encode()
 
-	resp, err := http.Get(reqURL.String())
+	resp, err := httpClient.Get(reqURL.String())
 	if err != nil {
 		return nil, err
 	}
@@ -228,7 +229,7 @@ func (d *DNSProvider) getHosts(ch *challenge) (hosts []host, err error) {
 	reqURL, _ := url.Parse(d.baseURL)
 	reqURL.RawQuery = values.Encode()
 
-	resp, err := http.Get(reqURL.String())
+	resp, err := httpClient.Get(reqURL.String())
 	if err != nil {
 		return nil, err
 	}
@@ -278,7 +279,7 @@ func (d *DNSProvider) setHosts(ch *challenge, hosts []host) error {
 		values.Add("TTL"+ind, h.TTL)
 	}
 
-	resp, err := http.PostForm(d.baseURL, values)
+	resp, err := httpClient.PostForm(d.baseURL, values)
 	if err != nil {
 		return err
 	}

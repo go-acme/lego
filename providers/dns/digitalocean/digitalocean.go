@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/xenolf/lego/acme"
 )
@@ -64,7 +65,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", d.apiAuthToken))
 
-	resp, err := http.DefaultClient.Do(req)
+	client := http.Client{Timeout: 30 * time.Second}
+	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -109,7 +111,8 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", d.apiAuthToken))
 
-	resp, err := http.DefaultClient.Do(req)
+	client := http.Client{Timeout: 30 * time.Second}
+	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}

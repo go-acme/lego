@@ -19,6 +19,7 @@ import (
 	"github.com/xenolf/lego/providers/dns/namecheap"
 	"github.com/xenolf/lego/providers/dns/rfc2136"
 	"github.com/xenolf/lego/providers/dns/route53"
+	"github.com/xenolf/lego/providers/dns/dyn"
 	"github.com/xenolf/lego/providers/http/webroot"
 )
 
@@ -112,6 +113,12 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 			tsigSecret := os.Getenv("RFC2136_TSIG_SECRET")
 
 			provider, err = rfc2136.NewDNSProvider(nameserver, tsigAlgorithm, tsigKey, tsigSecret)
+		case "dyn":
+			dynCustomerName := os.Getenv("DYN_CUSTOMER_NAME")
+			dynUserName := os.Getenv("DYN_USER_NAME")
+			dynPassword := os.Getenv("DYN_PASSWORD")
+
+			provider, err = dyn.NewDNSProvider(dynCustomerName, dynUserName, dynPassword)
 		case "manual":
 			provider, err = acme.NewDNSProviderManual()
 		}

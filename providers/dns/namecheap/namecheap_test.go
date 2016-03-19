@@ -303,7 +303,7 @@ var testcases = []testcase{
 		"test.example.com",
 		nil,
 		"Namecheap error: API Key is invalid or API access has not been enabled [1011102]",
-		responseGetHostsErrorBadApiKey1,
+		responseGetHostsErrorBadAPIKey1,
 		"",
 	},
 }

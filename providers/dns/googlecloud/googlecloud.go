@@ -107,6 +107,8 @@ func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
+// Timeout customizes the timeout values used by the ACME package for checking
+// DNS record validity.
 func (c *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return 180 * time.Second, 5 * time.Second
 }

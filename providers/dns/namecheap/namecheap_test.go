@@ -271,7 +271,7 @@ type testcase struct {
 	setHostsResponse string
 }
 
-var testcases []testcase = []testcase{
+var testcases = []testcase{
 	{
 		"Test:Success:1",
 		"test.example.com",
@@ -374,7 +374,7 @@ var responseSetHostsSuccess2 = `<?xml version="1.0" encoding="utf-8"?>
   <ExecutionTime>2.347</ExecutionTime>
 </ApiResponse>`
 
-var responseGetHostsErrorBadApiKey1 = `<?xml version="1.0" encoding="utf-8"?>
+var responseGetHostsErrorBadAPIKey1 = `<?xml version="1.0" encoding="utf-8"?>
 <ApiResponse Status="ERROR" xmlns="http://api.namecheap.com/xml.response">
   <Errors>
     <Error Number="1011102">API Key is invalid or API access has not been enabled</Error>

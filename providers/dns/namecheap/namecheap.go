@@ -31,7 +31,7 @@ import (
 var (
 	debug          = false
 	defaultBaseURL = "https://api.namecheap.com/xml.response"
-	getIpURL       = "https://dynamicdns.park-your-domain.com/getip"
+	getIPURL       = "https://dynamicdns.park-your-domain.com/getip"
 	httpClient     = http.Client{Timeout: 60 * time.Second}
 )
 
@@ -68,7 +68,7 @@ func NewDNSProvider(apiUser, apiKey string) (*DNSProvider, error) {
 	}, nil
 }
 
-// Namecheap can sometimes take a long time to complete an update, so wait
+// Timeout : Namecheap can sometimes take a long time to complete an update, so wait
 // up to 60 minutes for the update to propagate.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return 60 * time.Minute, 15 * time.Second
@@ -94,7 +94,7 @@ type apierror struct {
 // getClientIP returns the client's public IP address. It uses namecheap's
 // IP discovery service to perform the lookup.
 func getClientIP() (addr string, err error) {
-	resp, err := httpClient.Get(getIpURL)
+	resp, err := httpClient.Get(getIPURL)
 	if err != nil {
 		return "", err
 	}

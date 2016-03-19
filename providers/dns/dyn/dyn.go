@@ -14,7 +14,7 @@ import (
 
 var dynBaseURL = "https://api.dynect.net/REST"
 
-type DynResponse struct {
+type dynResponse struct {
 	// One of 'success', 'failure', or 'incomplete'
 	Status string `json:"status"`
 
@@ -22,7 +22,7 @@ type DynResponse struct {
 	Data json.RawMessage `json:"data"`
 
 	// The ID of the job that was created in response to a request.
-	JobId int `json:"job_id"`
+	JobID int `json:"job_id"`
 
 	// A list of zero or more messages
 	Messages json.RawMessage `json:"msgs"`
@@ -48,7 +48,7 @@ func NewDNSProvider(customerName, userName, password string) (*DNSProvider, erro
 	}, nil
 }
 
-func (d *DNSProvider) sendRequest(method, resource string, payload interface{}) (*DynResponse, error) {
+func (d *DNSProvider) sendRequest(method, resource string, payload interface{}) (*dynResponse, error) {
 	url := fmt.Sprintf("%s/%s", dynBaseURL, resource)
 
 	body, err := json.Marshal(payload)
@@ -79,7 +79,7 @@ func (d *DNSProvider) sendRequest(method, resource string, payload interface{}) 
 		return nil, fmt.Errorf("Dyn API request returned HTTP 307. This is currently unsupported")
 	}
 
-	var dynRes DynResponse
+	var dynRes dynResponse
 	err = json.NewDecoder(resp.Body).Decode(&dynRes)
 	if err != nil {
 		return nil, err

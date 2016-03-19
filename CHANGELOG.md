@@ -1,21 +1,30 @@
 # Changelog
 
-## Unreleased
+## [0.3.0] - 2016-03-19
 
 ### Added:
-- CLI: The `--dns` switch. To include the DNS challenge for consideration. Supported are the following solvers: cloudflare, digitalocean, dnsimple, gandi, namecheap, route53, rfc2136 and manual.
+- CLI: The `--dns` switch. To include the DNS challenge for consideration. When using this switch, all other solvers are disabled. Supported are the following solvers: cloudflare, digitalocean, dnsimple, dyn, gandi, googlecloud, namecheap, route53, rfc2136 and manual.
 - CLI: The `--accept-tos`  switch. Indicates your acceptance of the Let's Encrypt terms of service without prompting you.
+- CLI: The `--webroot` switch. The HTTP-01 challenge may now be completed by dropping a file into a webroot. When using this switch, all other solvers are disabled.
+- CLI: The `--key-type` switch. This replaces the `--rsa-key-size` switch and supports the following key types: EC256, EC384, RSA2048, RSA4096 and RSA8192.
+- CLI: The `--dnshelp` switch. This displays a more in-depth help topic for DNS solvers.
+- CLI: The `--no-bundle` sub switch for the `run` and `renew` commands. When this switch is set, the CLI will not bundle the issuer certificate with your certificate.
 - lib: A new type for challenge identifiers `Challenge`
-- lib: A new interface for custom challenge providers `ChallengeProvider`
+- lib: A new interface for custom challenge providers `acme.ChallengeProvider`
+- lib: A new interface for DNS-01 providers to allow for custom timeouts for the validation function `acme.ChallengeProviderTimeout`
 - lib: SetChallengeProvider function. Pass a challenge identifier and a Provider to replace the default behaviour of a challenge.
 - lib: The DNS-01 challenge has been implemented with modular solvers using the `ChallengeProvider` interface. Included solvers are: cloudflare, digitalocean, dnsimple, gandi, namecheap, route53, rfc2136 and manual.
+- lib: The `acme.KeyType` type was added and is used for the configuration of crypto parameters for RSA and EC keys. Valid KeyTypes are: EC256, EC384, RSA2048, RSA4096 and RSA8192.
 
 ### Changed
 - lib: ExcludeChallenges now expects to be passed an array of `Challenge` types.
 - lib: HTTP-01 now supports custom solvers using the `ChallengeProvider` interface.
 - lib: TLS-SNI-01 now supports custom solvers using the `ChallengeProvider` interface.
-
+- lib: The `GetPrivateKey` function in the `acme.User` interface is now expected to return a `crypto.PrivateKey` instead of an `rsa.PrivateKey` for EC compat.
+- lib: The `acme.NewClient` function now expects an `acme.KeyType` instead of the keyBits parameter.
+ 
 ### Removed
+- CLI: The `rsa-key-size` switch was removed in favor of `key-type` to support EC keys.
 
 ### Fixed
 - lib: Fixed a race condition in HTTP-01
@@ -67,7 +76,7 @@
 ## [0.1.0] - 2015-12-03
 - Initial release
 
-[Unreleased]: https://github.com/xenolf/lego/compare/v0.2.0...HEAD
+[0.3.0]: https://github.com/xenolf/lego/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/xenolf/lego/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/xenolf/lego/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/xenolf/lego/tree/v0.1.0

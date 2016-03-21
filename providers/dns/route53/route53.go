@@ -1,8 +1,10 @@
-// Package route53 implements a DNS provider for solving the DNS-01 challenge using route53 DNS.
+// Package route53 implements a DNS provider for solving the DNS-01 challenge
+// using route53 DNS.
 package route53
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -16,25 +18,35 @@ type DNSProvider struct {
 	client *route53.Route53
 }
 
-// NewDNSProvider returns a DNSProvider instance with a configured route53 client.
-// Authentication is either done using the passed credentials or - when empty - falling back to
-// the customary AWS credential mechanisms, including the file referenced by $AWS_CREDENTIAL_FILE
-// (defaulting to $HOME/.aws/credentials) optionally scoped to $AWS_PROFILE, credentials
-// supplied by the environment variables AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY [ + AWS_SECURITY_TOKEN ],
-// and finally credentials available via the EC2 instance metadata service.
-func NewDNSProvider(awsAccessKey, awsSecretKey, awsRegionName string) (*DNSProvider, error) {
-	region, ok := aws.Regions[awsRegionName]
+// NewDNSProvider returns a DNSProvider instance configured for the AWS
+// route53 service. The AWS region name must be passed in the environment
+// variable AWS_REGION.
+func NewDNSProvider() (*DNSProvider, error) {
+	regionName := os.Getenv("AWS_REGION")
+	return NewDNSProviderCredentials("", "", regionName)
+}
+
+// NewDNSProviderCredentials uses the supplied credentials to return a
+// DNSProvider instance configured for the AWS route53 service. Authentication
+// is done using the passed credentials or, if empty, falling back to the
+// custonmary AWS credential mechanisms, including the file referenced by
+// $AWS_CREDENTIAL_FILE (defaulting to $HOME/.aws/credentials) optionally
+// scoped to $AWS_PROFILE, credentials supplied by the environment variables
+// AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY [ + AWS_SECURITY_TOKEN ], and
+// finally credentials available via the EC2 instance metadata service.
+func NewDNSProviderCredentials(accessKey, secretKey, regionName string) (*DNSProvider, error) {
+	region, ok := aws.Regions[regionName]
 	if !ok {
-		return nil, fmt.Errorf("Invalid AWS region name %s", awsRegionName)
+		return nil, fmt.Errorf("Invalid AWS region name %s", regionName)
 	}
 
 	// use aws.GetAuth, which tries really hard to find credentails:
-	//   - uses awsAccessKey and awsSecretKey, if provided
+	//   - uses accessKey and secretKey, if provided
 	//   - uses AWS_PROFILE / AWS_CREDENTIAL_FILE, if provided
 	//   - uses AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY and optionally AWS_SECURITY_TOKEN, if provided
 	//   - uses EC2 instance metadata credentials (http://169.254.169.254/latest/meta-data/…), if available
 	//  ...and otherwise returns an error
-	auth, err := aws.GetAuth(awsAccessKey, awsSecretKey)
+	auth, err := aws.GetAuth(accessKey, secretKey)
 	if err != nil {
 		return nil, err
 	}

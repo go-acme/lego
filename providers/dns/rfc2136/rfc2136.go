@@ -1,9 +1,11 @@
-// Package rfc2136 implements a DNS provider for solving the DNS-01 challenge using the rfc2136 dynamic update.
+// Package rfc2136 implements a DNS provider for solving the DNS-01 challenge
+// using the rfc2136 dynamic update.
 package rfc2136
 
 import (
 	"fmt"
 	"net"
+	"os"
 	"strings"
 	"time"
 
@@ -20,10 +22,29 @@ type DNSProvider struct {
 	tsigSecret    string
 }
 
-// NewDNSProvider returns a new DNSProvider instance.
-// To disable TSIG authentication 'tsigAlgorithm, 'tsigKey' and 'tsigSecret' must be set to the empty string.
-// 'nameserver' must be a network address in the the form "host" or "host:port".
-func NewDNSProvider(nameserver, tsigAlgorithm, tsigKey, tsigSecret string) (*DNSProvider, error) {
+// NewDNSProvider returns a DNSProvider instance configured for rfc2136
+// dynamic update. Credentials must be passed in the environment variables:
+// RFC2136_NAMESERVER, RFC2136_TSIG_ALGORITHM, RFC2136_TSIG_KEY and
+// RFC2136_TSIG_SECRET. To disable TSIG authentication, leave the TSIG
+// variables unset. RFC2136_NAMESERVER must be a network address in the form
+// "host" or "host:port".
+func NewDNSProvider() (*DNSProvider, error) {
+	nameserver := os.Getenv("RFC2136_NAMESERVER")
+	tsigAlgorithm := os.Getenv("RFC2136_TSIG_ALGORITHM")
+	tsigKey := os.Getenv("RFC2136_TSIG_KEY")
+	tsigSecret := os.Getenv("RFC2136_TSIG_SECRET")
+	return NewDNSProviderCredentials(nameserver, tsigAlgorithm, tsigKey, tsigSecret)
+}
+
+// NewDNSProviderCredentials uses the supplied credentials to return a
+// DNSProvider instance configured for rfc2136 dynamic update. To disable TSIG
+// authentication, leave the TSIG parameters as empty strings.
+// nameserver must be a network address in the form "host" or "host:port".
+func NewDNSProviderCredentials(nameserver, tsigAlgorithm, tsigKey, tsigSecret string) (*DNSProvider, error) {
+	if nameserver == "" {
+		return nil, fmt.Errorf("RFC2136 nameserver missing")
+	}
+
 	// Append the default DNS port if none is specified.
 	if _, _, err := net.SplitHostPort(nameserver); err != nil {
 		if strings.Contains(err.Error(), "missing port") {

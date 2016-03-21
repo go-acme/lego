@@ -1,4 +1,5 @@
-// Package cloudflare implements a DNS provider for solving the DNS-01 challenge using cloudflare DNS.
+// Package cloudflare implements a DNS provider for solving the DNS-01
+// challenge using cloudflare DNS.
 package cloudflare
 
 import (
@@ -24,19 +25,25 @@ type DNSProvider struct {
 	authKey   string
 }
 
-// NewDNSProvider returns a DNSProvider instance with a configured cloudflare client.
-// Credentials can either be passed as arguments or through CLOUDFLARE_EMAIL and CLOUDFLARE_API_KEY env vars.
-func NewDNSProvider(cloudflareEmail, cloudflareKey string) (*DNSProvider, error) {
-	if cloudflareEmail == "" || cloudflareKey == "" {
-		cloudflareEmail, cloudflareKey = cloudflareEnvAuth()
-		if cloudflareEmail == "" || cloudflareKey == "" {
-			return nil, fmt.Errorf("CloudFlare credentials missing")
-		}
+// NewDNSProvider returns a DNSProvider instance configured for cloudflare.
+// Credentials must be passed in the environment variables: CLOUDFLARE_EMAIL
+// and CLOUDFLARE_API_KEY.
+func NewDNSProvider() (*DNSProvider, error) {
+	email := os.Getenv("CLOUDFLARE_EMAIL")
+	key := os.Getenv("CLOUDFLARE_API_KEY")
+	return NewDNSProviderCredentials(email, key)
+}
+
+// NewDNSProviderCredentials uses the supplied credentials to return a
+// DNSProvider instance configured for cloudflare.
+func NewDNSProviderCredentials(email, key string) (*DNSProvider, error) {
+	if email == "" || key == "" {
+		return nil, fmt.Errorf("CloudFlare credentials missing")
 	}
 
 	return &DNSProvider{
-		authEmail: cloudflareEmail,
-		authKey:   cloudflareKey,
+		authEmail: email,
+		authKey:   key,
 	}, nil
 }
 
@@ -190,15 +197,6 @@ func (c *DNSProvider) makeRequest(method, uri string, body io.Reader) (json.RawM
 	}
 
 	return r.Result, nil
-}
-
-func cloudflareEnvAuth() (email, apiKey string) {
-	email = os.Getenv("CLOUDFLARE_EMAIL")
-	apiKey = os.Getenv("CLOUDFLARE_API_KEY")
-	if len(email) == 0 || len(apiKey) == 0 {
-		return "", ""
-	}
-	return
 }
 
 // cloudFlareRecord represents a CloudFlare DNS record

@@ -61,9 +61,9 @@ func TestRFC2136ServerSuccess(t *testing.T) {
 	}
 	defer server.Shutdown()
 
-	provider, err := NewDNSProvider(addrstr, "", "", "")
+	provider, err := NewDNSProviderCredentials(addrstr, "", "", "")
 	if err != nil {
-		t.Fatalf("Expected NewDNSProvider() to return no error but the error was -> %v", err)
+		t.Fatalf("Expected NewDNSProviderCredentials() to return no error but the error was -> %v", err)
 	}
 	if err := provider.Present(rfc2136TestDomain, "", rfc2136TestKeyAuth); err != nil {
 		t.Errorf("Expected Present() to return no error but the error was -> %v", err)
@@ -81,9 +81,9 @@ func TestRFC2136ServerError(t *testing.T) {
 	}
 	defer server.Shutdown()
 
-	provider, err := NewDNSProvider(addrstr, "", "", "")
+	provider, err := NewDNSProviderCredentials(addrstr, "", "", "")
 	if err != nil {
-		t.Fatalf("Expected NewDNSProvider() to return no error but the error was -> %v", err)
+		t.Fatalf("Expected NewDNSProviderCredentials() to return no error but the error was -> %v", err)
 	}
 	if err := provider.Present(rfc2136TestDomain, "", rfc2136TestKeyAuth); err == nil {
 		t.Errorf("Expected Present() to return an error but it did not.")
@@ -103,9 +103,9 @@ func TestRFC2136TsigClient(t *testing.T) {
 	}
 	defer server.Shutdown()
 
-	provider, err := NewDNSProvider(addrstr, "", rfc2136TestTsigKey, rfc2136TestTsigSecret)
+	provider, err := NewDNSProviderCredentials(addrstr, "", rfc2136TestTsigKey, rfc2136TestTsigSecret)
 	if err != nil {
-		t.Fatalf("Expected NewDNSProvider() to return no error but the error was -> %v", err)
+		t.Fatalf("Expected NewDNSProviderCredentials() to return no error but the error was -> %v", err)
 	}
 	if err := provider.Present(rfc2136TestDomain, "", rfc2136TestKeyAuth); err != nil {
 		t.Errorf("Expected Present() to return no error but the error was -> %v", err)
@@ -135,9 +135,9 @@ func TestRFC2136ValidUpdatePacket(t *testing.T) {
 		t.Fatalf("Error packing expect msg: %v", err)
 	}
 
-	provider, err := NewDNSProvider(addrstr, "", "", "")
+	provider, err := NewDNSProviderCredentials(addrstr, "", "", "")
 	if err != nil {
-		t.Fatalf("Expected NewDNSProvider() to return no error but the error was -> %v", err)
+		t.Fatalf("Expected NewDNSProviderCredentials() to return no error but the error was -> %v", err)
 	}
 
 	if err := provider.Present(rfc2136TestDomain, "", "1234d=="); err != nil {

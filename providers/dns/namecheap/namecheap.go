@@ -44,15 +44,20 @@ type DNSProvider struct {
 	clientIP string
 }
 
-// NewDNSProvider returns a new DNSProvider instance. apiUser is the namecheap
-// API user's account name, and apiKey is the account's API access key.
-func NewDNSProvider(apiUser, apiKey string) (*DNSProvider, error) {
+// NewDNSProvider returns a DNSProvider instance configured for namecheap.
+// Credentials must be passed in the environment variables: NAMECHEAP_API_USER
+// and NAMECHEAP_API_KEY.
+func NewDNSProvider() (*DNSProvider, error) {
+	apiUser := os.Getenv("NAMECHEAP_API_USER")
+	apiKey := os.Getenv("NAMECHEAP_API_KEY")
+	return NewDNSProviderCredentials(apiUser, apiKey)
+}
+
+// NewDNSProviderCredentials uses the supplied credentials to return a
+// DNSProvider instance configured for namecheap.
+func NewDNSProviderCredentials(apiUser, apiKey string) (*DNSProvider, error) {
 	if apiUser == "" || apiKey == "" {
-		apiUser = os.Getenv("NAMECHEAP_API_USER")
-		apiKey = os.Getenv("NAMECHEAP_API_KEY")
-		if apiUser == "" || apiKey == "" {
-			return nil, fmt.Errorf("Namecheap credentials missing")
-		}
+		return nil, fmt.Errorf("Namecheap credentials missing")
 	}
 
 	clientIP, err := getClientIP()
@@ -68,8 +73,9 @@ func NewDNSProvider(apiUser, apiKey string) (*DNSProvider, error) {
 	}, nil
 }
 
-// Timeout : Namecheap can sometimes take a long time to complete an update, so wait
-// up to 60 minutes for the update to propagate.
+// Timeout returns the timeout and interval to use when checking for DNS
+// propagation. Namecheap can sometimes take a long time to complete an
+// update, so wait up to 60 minutes for the update to propagate.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return 60 * time.Minute, 15 * time.Second
 }

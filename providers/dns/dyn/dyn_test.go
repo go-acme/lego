@@ -31,7 +31,7 @@ func TestLiveDynPresent(t *testing.T) {
 		t.Skip("skipping live test")
 	}
 
-	provider, err := NewDNSProvider(dynCustomerName, dynUserName, dynPassword)
+	provider, err := NewDNSProvider()
 	assert.NoError(t, err)
 
 	err = provider.Present(dynDomain, "", "123d==")
@@ -45,7 +45,7 @@ func TestLiveDynCleanUp(t *testing.T) {
 
 	time.Sleep(time.Second * 1)
 
-	provider, err := NewDNSProvider(dynCustomerName, dynUserName, dynPassword)
+	provider, err := NewDNSProvider()
 	assert.NoError(t, err)
 
 	err = provider.CleanUp(dynDomain, "", "123d==")

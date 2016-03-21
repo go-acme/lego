@@ -36,7 +36,7 @@ func TestNewDNSProviderValid(t *testing.T) {
 		t.Skip("skipping live test (requires credentials)")
 	}
 	os.Setenv("GCE_PROJECT", "")
-	_, err := NewDNSProvider("my-project")
+	_, err := NewDNSProviderCredentials("my-project")
 	assert.NoError(t, err)
 	restoreGCloudEnv()
 }
@@ -46,14 +46,14 @@ func TestNewDNSProviderValidEnv(t *testing.T) {
 		t.Skip("skipping live test (requires credentials)")
 	}
 	os.Setenv("GCE_PROJECT", "my-project")
-	_, err := NewDNSProvider("")
+	_, err := NewDNSProvider()
 	assert.NoError(t, err)
 	restoreGCloudEnv()
 }
 
 func TestNewDNSProviderMissingCredErr(t *testing.T) {
 	os.Setenv("GCE_PROJECT", "")
-	_, err := NewDNSProvider("")
+	_, err := NewDNSProvider()
 	assert.EqualError(t, err, "Google Cloud project name missing")
 	restoreGCloudEnv()
 }
@@ -63,7 +63,7 @@ func TestLiveGoogleCloudPresent(t *testing.T) {
 		t.Skip("skipping live test")
 	}
 
-	provider, err := NewDNSProvider(gcloudProject)
+	provider, err := NewDNSProviderCredentials(gcloudProject)
 	assert.NoError(t, err)
 
 	err = provider.Present(gcloudDomain, "", "123d==")
@@ -77,7 +77,7 @@ func TestLiveGoogleCloudCleanUp(t *testing.T) {
 
 	time.Sleep(time.Second * 1)
 
-	provider, err := NewDNSProvider(gcloudProject)
+	provider, err := NewDNSProviderCredentials(gcloudProject)
 	assert.NoError(t, err)
 
 	err = provider.CleanUp(gcloudDomain, "", "123d==")

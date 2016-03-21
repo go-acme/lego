@@ -1,4 +1,5 @@
-// Package dnsimple implements a DNS provider for solving the DNS-01 challenge using dnsimple DNS.
+// Package dnsimple implements a DNS provider for solving the DNS-01 challenge
+// using dnsimple DNS.
 package dnsimple
 
 import (
@@ -15,22 +16,25 @@ type DNSProvider struct {
 	client *dnsimple.Client
 }
 
-// NewDNSProvider returns a DNSProvider instance with a configured dnsimple client.
-// Authentication is either done using the passed credentials or - when empty - using the environment
-// variables DNSIMPLE_EMAIL and DNSIMPLE_API_KEY.
-func NewDNSProvider(dnsimpleEmail, dnsimpleAPIKey string) (*DNSProvider, error) {
-	if dnsimpleEmail == "" || dnsimpleAPIKey == "" {
-		dnsimpleEmail, dnsimpleAPIKey = dnsimpleEnvAuth()
-		if dnsimpleEmail == "" || dnsimpleAPIKey == "" {
-			return nil, fmt.Errorf("DNSimple credentials missing")
-		}
+// NewDNSProvider returns a DNSProvider instance configured for dnsimple.
+// Credentials must be passed in the environment variables: DNSIMPLE_EMAIL
+// and DNSIMPLE_API_KEY.
+func NewDNSProvider() (*DNSProvider, error) {
+	email := os.Getenv("DNSIMPLE_EMAIL")
+	key := os.Getenv("DNSIMPLE_API_KEY")
+	return NewDNSProviderCredentials(email, key)
+}
+
+// NewDNSProviderCredentials uses the supplied credentials to return a
+// DNSProvider instance configured for dnsimple.
+func NewDNSProviderCredentials(email, key string) (*DNSProvider, error) {
+	if email == "" || key == "" {
+		return nil, fmt.Errorf("DNSimple credentials missing")
 	}
 
-	c := &DNSProvider{
-		client: dnsimple.NewClient(dnsimpleAPIKey, dnsimpleEmail),
-	}
-
-	return c, nil
+	return &DNSProvider{
+		client: dnsimple.NewClient(key, email),
+	}, nil
 }
 
 // Present creates a TXT record to fulfil the dns-01 challenge.
@@ -129,13 +133,4 @@ func (c *DNSProvider) extractRecordName(fqdn, domain string) string {
 		return name[:idx]
 	}
 	return name
-}
-
-func dnsimpleEnvAuth() (email, apiKey string) {
-	email = os.Getenv("DNSIMPLE_EMAIL")
-	apiKey = os.Getenv("DNSIMPLE_API_KEY")
-	if len(email) == 0 || len(apiKey) == 0 {
-		return "", ""
-	}
-	return
 }

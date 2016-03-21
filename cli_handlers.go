@@ -14,12 +14,12 @@ import (
 	"github.com/xenolf/lego/providers/dns/cloudflare"
 	"github.com/xenolf/lego/providers/dns/digitalocean"
 	"github.com/xenolf/lego/providers/dns/dnsimple"
+	"github.com/xenolf/lego/providers/dns/dyn"
 	"github.com/xenolf/lego/providers/dns/gandi"
 	"github.com/xenolf/lego/providers/dns/googlecloud"
 	"github.com/xenolf/lego/providers/dns/namecheap"
 	"github.com/xenolf/lego/providers/dns/rfc2136"
 	"github.com/xenolf/lego/providers/dns/route53"
-	"github.com/xenolf/lego/providers/dns/dyn"
 	"github.com/xenolf/lego/providers/http/webroot"
 )
 
@@ -89,38 +89,25 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 		var provider acme.ChallengeProvider
 		switch c.GlobalString("dns") {
 		case "cloudflare":
-			provider, err = cloudflare.NewDNSProvider("", "")
+			provider, err = cloudflare.NewDNSProvider()
 		case "digitalocean":
-			authToken := os.Getenv("DO_AUTH_TOKEN")
-
-			provider, err = digitalocean.NewDNSProvider(authToken)
+			provider, err = digitalocean.NewDNSProvider()
 		case "dnsimple":
-			provider, err = dnsimple.NewDNSProvider("", "")
-		case "gandi":
-			apiKey := os.Getenv("GANDI_API_KEY")
-			provider, err = gandi.NewDNSProvider(apiKey)
-		case "gcloud":
-			provider, err = googlecloud.NewDNSProvider("")
-		case "namecheap":
-			provider, err = namecheap.NewDNSProvider("", "")
-		case "route53":
-			awsRegion := os.Getenv("AWS_REGION")
-			provider, err = route53.NewDNSProvider("", "", awsRegion)
-		case "rfc2136":
-			nameserver := os.Getenv("RFC2136_NAMESERVER")
-			tsigAlgorithm := os.Getenv("RFC2136_TSIG_ALGORITHM")
-			tsigKey := os.Getenv("RFC2136_TSIG_KEY")
-			tsigSecret := os.Getenv("RFC2136_TSIG_SECRET")
-
-			provider, err = rfc2136.NewDNSProvider(nameserver, tsigAlgorithm, tsigKey, tsigSecret)
+			provider, err = dnsimple.NewDNSProvider()
 		case "dyn":
-			dynCustomerName := os.Getenv("DYN_CUSTOMER_NAME")
-			dynUserName := os.Getenv("DYN_USER_NAME")
-			dynPassword := os.Getenv("DYN_PASSWORD")
-
-			provider, err = dyn.NewDNSProvider(dynCustomerName, dynUserName, dynPassword)
+			provider, err = dyn.NewDNSProvider()
+		case "gandi":
+			provider, err = gandi.NewDNSProvider()
+		case "gcloud":
+			provider, err = googlecloud.NewDNSProvider()
 		case "manual":
 			provider, err = acme.NewDNSProviderManual()
+		case "namecheap":
+			provider, err = namecheap.NewDNSProvider()
+		case "route53":
+			provider, err = route53.NewDNSProvider()
+		case "rfc2136":
+			provider, err = rfc2136.NewDNSProvider()
 		}
 
 		if err != nil {

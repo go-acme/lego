@@ -1,4 +1,5 @@
-// Package digitalocean implements a DNS provider for solving the DNS-01 challenge using digitalocean DNS.
+// Package digitalocean implements a DNS provider for solving the DNS-01
+// challenge using digitalocean DNS.
 package digitalocean
 
 import (
@@ -6,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
@@ -20,10 +22,20 @@ type DNSProvider struct {
 	recordIDsMu  sync.Mutex
 }
 
-// NewDNSProvider returns a new DNSProvider instance.
-// apiAuthToken is the personal access token created in the DigitalOcean account
-// control panel, and it will be sent in bearer authorization headers.
-func NewDNSProvider(apiAuthToken string) (*DNSProvider, error) {
+// NewDNSProvider returns a DNSProvider instance configured for Digital
+// Ocean. Credentials must be passed in the environment variable:
+// DO_AUTH_TOKEN.
+func NewDNSProvider() (*DNSProvider, error) {
+	apiAuthToken := os.Getenv("DO_AUTH_TOKEN")
+	return NewDNSProviderCredentials(apiAuthToken)
+}
+
+// NewDNSProviderCredentials uses the supplied credentials to return a
+// DNSProvider instance configured for Digital Ocean.
+func NewDNSProviderCredentials(apiAuthToken string) (*DNSProvider, error) {
+	if apiAuthToken == "" {
+		return nil, fmt.Errorf("DigitalOcean credentials missing")
+	}
 	return &DNSProvider{
 		apiAuthToken: apiAuthToken,
 		recordIDs:    make(map[string]int),

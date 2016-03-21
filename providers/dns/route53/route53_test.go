@@ -100,7 +100,8 @@ func makeRoute53Provider(server *testutil.HTTPServer) *DNSProvider {
 func TestNewDNSProviderValid(t *testing.T) {
 	os.Setenv("AWS_ACCESS_KEY_ID", "")
 	os.Setenv("AWS_SECRET_ACCESS_KEY", "")
-	_, err := NewDNSProvider("123", "123", "us-east-1")
+	os.Setenv("AWS_REGION", "")
+	_, err := NewDNSProviderCredentials("123", "123", "us-east-1")
 	assert.NoError(t, err)
 	restoreRoute53Env()
 }
@@ -108,7 +109,8 @@ func TestNewDNSProviderValid(t *testing.T) {
 func TestNewDNSProviderValidEnv(t *testing.T) {
 	os.Setenv("AWS_ACCESS_KEY_ID", "123")
 	os.Setenv("AWS_SECRET_ACCESS_KEY", "123")
-	_, err := NewDNSProvider("", "", "us-east-1")
+	os.Setenv("AWS_REGION", "us-east-1")
+	_, err := NewDNSProvider()
 	assert.NoError(t, err)
 	restoreRoute53Env()
 }
@@ -124,7 +126,7 @@ func TestNewDNSProviderMissingAuthErr(t *testing.T) {
 	awsClient := aws.RetryingClient
 	aws.RetryingClient = &http.Client{Timeout: time.Millisecond}
 
-	_, err := NewDNSProvider("", "", "us-east-1")
+	_, err := NewDNSProviderCredentials("", "", "us-east-1")
 	assert.EqualError(t, err, "No valid AWS authentication found")
 	restoreRoute53Env()
 
@@ -133,7 +135,7 @@ func TestNewDNSProviderMissingAuthErr(t *testing.T) {
 }
 
 func TestNewDNSProviderInvalidRegionErr(t *testing.T) {
-	_, err := NewDNSProvider("123", "123", "us-east-3")
+	_, err := NewDNSProviderCredentials("123", "123", "us-east-3")
 	assert.EqualError(t, err, "Invalid AWS region name us-east-3")
 }
 

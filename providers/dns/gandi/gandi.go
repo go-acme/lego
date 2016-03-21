@@ -179,10 +179,8 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return 40 * time.Minute, 60 * time.Second
 }
 
-// Endpoint is the Gandi XML-RPC endpoint used by Present and
-// CleanUp. It is exported only so it may be overridden during package
-// tests.
-var Endpoint = "https://rpc.gandi.net/xmlrpc/"
+// endpoint is the Gandi XML-RPC endpoint used by Present and CleanUp.
+var endpoint = "https://rpc.gandi.net/xmlrpc/"
 
 // types for XML-RPC method calls and parameters
 
@@ -297,7 +295,7 @@ func rpcCall(call *methodCall, resp response) error {
 	}
 	// post
 	b = append([]byte(`<?xml version="1.0"?>`+"\n"), b...)
-	respBody, err := httpPost(Endpoint, "text/xml", bytes.NewReader(b))
+	respBody, err := httpPost(endpoint, "text/xml", bytes.NewReader(b))
 	if err != nil {
 		return err
 	}

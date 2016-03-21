@@ -45,11 +45,11 @@ func TestDNSProvider(t *testing.T) {
 	}))
 	defer fakeServer.Close()
 	// override gandi endpoint to point to fake server
-	savedEndpoint := Endpoint
+	savedEndpoint := endpoint
 	defer func() {
-		Endpoint = savedEndpoint
+		endpoint = savedEndpoint
 	}()
-	Endpoint = fakeServer.URL + "/"
+	endpoint = fakeServer.URL + "/"
 	// run Present
 	err = provider.Present("abc.def.example.com", "", fakeKeyAuth)
 	if err != nil {

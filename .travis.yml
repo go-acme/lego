@@ -1,15 +1,15 @@
 language: go
-
 go:
-  - 1.4.3
-  - 1.5.3
-  - 1.6
-  - tip
-
+- 1.4.3
+- 1.5.3
+- 1.6
+- tip
 install:
-  - go get -t ./...
-  - go get golang.org/x/tools/cmd/vet
-
+- go get -t ./...
+- go get golang.org/x/tools/cmd/vet
 script:
-  - go vet ./...
-  - go test -v ./...
+- go vet ./...
+- go test -v ./...
+before_install:
+- openssl aes-256-cbc -K $encrypted_26c593b079d9_key -iv $encrypted_26c593b079d9_iv
+  -in .gitcookies.enc -out .gitcookies -d

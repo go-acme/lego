@@ -30,9 +30,9 @@ var gittag string
 func main() {
 	app := cli.NewApp()
 	app.Name = "lego"
-	app.Usage = "Let's encrypt client to go!"
+	app.Usage = "Let's Encrypt client written in Go"
 
-	version := "0.2.0"
+	version := "0.3.0"
 	if strings.HasPrefix(gittag, "v") {
 		version = gittag
 	}

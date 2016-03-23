@@ -92,6 +92,7 @@ func NewClient(caDirURL string, user User, keyType KeyType) (*Client, error) {
 	solvers := make(map[Challenge]solver)
 	solvers[HTTP01] = &httpChallenge{jws: jws, validate: validate, provider: &HTTPProviderServer{}}
 	solvers[TLSSNI01] = &tlsSNIChallenge{jws: jws, validate: validate, provider: &TLSProviderServer{}}
+	solvers[TLSSNI02] = &tlsSNI02Challenge{jws: jws, validate: validate, provider: &TLSProviderServer{}}
 
 	return &Client{directory: dir, user: user, jws: jws, keyType: keyType, solvers: solvers}, nil
 }
@@ -138,6 +139,10 @@ func (c *Client) SetTLSAddress(iface string) error {
 
 	if chlng, ok := c.solvers[TLSSNI01]; ok {
 		chlng.(*tlsSNIChallenge).provider = NewTLSProviderServer(host, port)
+	}
+
+	if chlng, ok := c.solvers[TLSSNI02]; ok {
+		chlng.(*tlsSNI02Challenge).provider = NewTLSProviderServer(host, port)
 	}
 	return nil
 }

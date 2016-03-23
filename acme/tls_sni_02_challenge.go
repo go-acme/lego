@@ -9,15 +9,14 @@ import (
 	"log"
 )
 
-type tlsSNIChallenge struct {
+type tlsSNI02Challenge struct {
 	jws      *jws
 	validate validateFunc
 	provider ChallengeProvider
 }
 
-func (t *tlsSNIChallenge) Solve(chlng challenge, domain string) error {
-
-	logf("[INFO][%s] acme: Trying to solve TLS-SNI-01", domain)
+func (t *tlsSNI02Challenge) Solve(chlng challenge, domain string) error {
+	logf("[INFO][%s] acme: Trying to solve TLS-SNI-02", domain)
 
 	// Generate the Key Authorization for the challenge
 	keyAuth, err := getKeyAuthorization(chlng.Token, t.jws.privKey)
@@ -38,28 +37,36 @@ func (t *tlsSNIChallenge) Solve(chlng challenge, domain string) error {
 	return t.validate(t.jws, domain, chlng.URI, challenge{Resource: "challenge", Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
 }
 
-// TLSSNI01ChallengeCert returns a certificate and target domain for the `tls-sni-01` challenge
-func TLSSNI01ChallengeCert(keyAuth string) (tls.Certificate, string, error) {
-	// generate a new RSA key for the certificates
+// TLSSNI02ChallengeCert returns a certificate for the `tls-sni-02` challenge
+func TLSSNI02ChallengeCert(token, keyAuth string) (tls.Certificate, error) {
+
+	// Construct SanA value from token sha256
+	tokenShaBytes := sha256.Sum256([]byte(token))
+	tokenSha := hex.EncodeToString(tokenShaBytes[:sha256.Size])
+	sanA := fmt.Sprintf("%s.%s.token.acme.invalid", tokenSha[:32], tokenSha[32:])
+
+	// Construct SanB value from keyAuth sha256
+	keyAuthShaBytes := sha256.Sum256([]byte(keyAuth))
+	keyAuthSha := hex.EncodeToString(keyAuthShaBytes[:sha256.Size])
+	sanB := fmt.Sprintf("%s.%s.ka.acme.invalid", keyAuthSha[:32], keyAuthSha[32:])
+
+	// generate a new RSA key for the certificate
 	tempPrivKey, err := generatePrivateKey(RSA2048)
 	if err != nil {
-		return tls.Certificate{}, "", err
+		return tls.Certificate{}, err
 	}
 	rsaPrivKey := tempPrivKey.(*rsa.PrivateKey)
 	rsaPrivPEM := pemEncode(rsaPrivKey)
 
-	zBytes := sha256.Sum256([]byte(keyAuth))
-	z := hex.EncodeToString(zBytes[:sha256.Size])
-	domain := fmt.Sprintf("%s.%s.acme.invalid", z[:32], z[32:])
-	tempCertPEM, err := generatePemCert(rsaPrivKey, domain)
+	tempCertPEM, err := generatePemCert(rsaPrivKey, sanA, sanB)
 	if err != nil {
-		return tls.Certificate{}, "", err
+		return tls.Certificate{}, err
 	}
 
 	certificate, err := tls.X509KeyPair(tempCertPEM, rsaPrivPEM)
 	if err != nil {
-		return tls.Certificate{}, "", err
+		return tls.Certificate{}, err
 	}
 
-	return certificate, domain, nil
+	return certificate, nil
 }

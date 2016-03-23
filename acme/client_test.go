@@ -46,7 +46,7 @@ func TestNewClient(t *testing.T) {
 		t.Errorf("Expected keyType to be %s but was %s", keyType, client.keyType)
 	}
 
-	if expected, actual := 2, len(client.solvers); actual != expected {
+	if expected, actual := 3, len(client.solvers); actual != expected {
 		t.Fatalf("Expected %d solver(s), got %d", expected, actual)
 	}
 }

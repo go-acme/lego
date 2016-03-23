@@ -19,22 +19,21 @@ To install from source, just run
 go get -u github.com/xenolf/lego
 ```
 
-#### Current Status
-The code in this repository is under development.
+#### Features
 
-Current features:
-- [x] Registering with a CA
-- [x] Requesting Certificates
-- [x] Renewing Certificates
-- [x] Revoking Certificates
-- [ ] Initiating account recovery
-- Identifier validation challenges
-  - [x] HTTP (http-01)
-  - [x] TLS with Server Name Indication (tls-sni-01)
-  - [ ] Proof of Possession of a Prior Key (proofOfPossession-01)
-  - [x] DNS (dns-01)
-- [x] Certificate bundling
-- [x] Library support for OCSP
+- Register with CA
+- Obtain certificates
+- Renew certificates
+- Revoke certificates
+- Robust implementation of all ACME challenges
+  - HTTP (http-01)
+  - TLS with Server Name Indication (tls-sni-01)
+  - DNS (dns-01)
+- SAN certificate support
+- Comes with multiple optional [DNS providers](https://github.com/xenolf/lego/tree/master/providers/dns)
+- [Custom challenge solvers](https://github.com/xenolf/lego/wiki/Writing-a-Challenge-Solver)
+- Certificate bundling
+- OCSP helper function
 
 Please keep in mind that CLI switches and APIs are still subject to change.
 
@@ -56,10 +55,10 @@ lego to listen on that interface:port for any incoming challenges.
 If you are using this option, make sure you proxy all of the following traffic to these ports.
 
 HTTP Port:
-- All plaintext HTTP requests to port 80 which begin with a request path of `/.well-known/acme-challenge/` for the HTTP-01 challenge.
+- All plaintext HTTP requests to port 80 which begin with a request path of `/.well-known/acme-challenge/` for the HTTP challenge.
 
 TLS Port:
-- All TLS handshakes on port 443 for TLS-SNI-01.
+- All TLS handshakes on port 443 for the TLS-SNI challenge.
 
 This traffic redirection is only needed as long as lego solves challenges. As soon as you have received your certificates you can deactivate the forwarding.
 
@@ -67,13 +66,13 @@ This traffic redirection is only needed as long as lego solves challenges. As so
 
 ```
 NAME:
-   lego - Let's encrypt client to go!
+   lego - Let's Encrypt client written in Go
 
 USAGE:
    ./lego [global options] command [command options] [arguments...]
    
 VERSION:
-   0.2.0
+   0.3.0
    
 COMMANDS:
    run		Register an account, then create and install a certificate
@@ -209,19 +208,21 @@ if err != nil {
   log.Fatal(err)
 }
 
-// We specify an http port of 5002 and an tls port of 5001 on all interfaces because we aren't running as
-// root and can't bind a listener to port 80 and 443 
-// (used later when we attempt to pass challenges).
-// Keep in mind that we still need to proxy challenge traffic to port 5002 and 5001.
+// We specify an http port of 5002 and an tls port of 5001 on all interfaces
+// because we aren't running as root and can't bind a listener to port 80 and 443 
+// (used later when we attempt to pass challenges). Keep in mind that we still
+// need to proxy challenge traffic to port 5002 and 5001.
 client.SetHTTPAddress(":5002")
 client.SetTLSAddress(":5001")
 
-// New users will need to register; be sure to save it
+// New users will need to register
 reg, err := client.Register()
 if err != nil {
 	log.Fatal(err)
 }
 myUser.Registration = reg
+
+// SAVE THE USER.
 
 // The client has a URL to the current Let's Encrypt Subscriber
 // Agreement. The user will need to agree to it.
@@ -231,7 +232,7 @@ if err != nil {
 }
 
 // The acme library takes care of completing the challenges to obtain the certificate(s).
-// Of course, the hostnames must resolve to this machine or it will fail.
+// The domains must resolve to this machine or you have to use the DNS challenge.
 bundle := false
 certificates, failures := client.ObtainCertificate([]string{"mydomain.com"}, bundle, nil)
 if len(failures) > 0 {
@@ -239,7 +240,7 @@ if len(failures) > 0 {
 }
 
 // Each certificate comes back with the cert bytes, the bytes of the client's
-// private key, and a certificate URL. This is where you should save them to files!
+// private key, and a certificate URL. SAVE THESE TO DISK.
 fmt.Printf("%#v\n", certificates)
 
 // ... all done.

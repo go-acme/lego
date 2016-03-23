@@ -175,7 +175,7 @@ func (c *DNSProvider) makeRequest(method, uri string, body io.Reader) (json.RawM
 	req.Header.Set("X-Auth-Key", c.authKey)
 	//req.Header.Set("User-Agent", userAgent())
 
-	client := http.Client{Timeout: 120 * time.Second}
+	client := http.Client{Timeout: 30 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("Error querying API -> %v", err)

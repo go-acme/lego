@@ -38,10 +38,10 @@ func NewDNSProviderCredentials(email, key string) (*DNSProvider, error) {
 }
 
 // Present creates a TXT record to fulfil the dns-01 challenge.
-func (c *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
+func (c *DNSProvider) Present(domain *acme.Domain, token, keyAuth string) error {
+	fqdn, value, ttl := domain.GetDNS01Record(keyAuth)
 
-	zoneID, zoneName, err := c.getHostedZone(domain)
+	zoneID, zoneName, err := c.getHostedZone(domain.Domain)
 	if err != nil {
 		return err
 	}
@@ -56,10 +56,10 @@ func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
+func (c *DNSProvider) CleanUp(domain *acme.Domain, token, keyAuth string) error {
+	fqdn, _, _ := domain.GetDNS01Record(keyAuth)
 
-	records, err := c.findTxtRecords(domain, fqdn)
+	records, err := c.findTxtRecords(domain.Domain, fqdn)
 	if err != nil {
 		return err
 	}

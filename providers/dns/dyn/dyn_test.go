@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/xenolf/lego/acme"
 )
 
 var (
@@ -34,7 +35,9 @@ func TestLiveDynPresent(t *testing.T) {
 	provider, err := NewDNSProvider()
 	assert.NoError(t, err)
 
-	err = provider.Present(dynDomain, "", "123d==")
+	verifyDomain := acme.NewDomain(dynDomain)
+
+	err = provider.Present(verifyDomain, "", "123d==")
 	assert.NoError(t, err)
 }
 
@@ -48,6 +51,8 @@ func TestLiveDynCleanUp(t *testing.T) {
 	provider, err := NewDNSProvider()
 	assert.NoError(t, err)
 
-	err = provider.CleanUp(dynDomain, "", "123d==")
+	verifyDomain := acme.NewDomain(dynDomain)
+
+	err = provider.CleanUp(verifyDomain, "", "123d==")
 	assert.NoError(t, err)
 }

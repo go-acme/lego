@@ -131,9 +131,8 @@ type challenge struct {
 
 // newChallenge builds a challenge record from a domain name, a challenge
 // authentication key, and a map of available TLDs.
-func newChallenge(domain, keyAuth string, tlds map[string]string) (*challenge, error) {
-	domain = acme.UnFqdn(domain)
-	parts := strings.Split(domain, ".")
+func newChallenge(domain *acme.Domain, keyAuth string, tlds map[string]string) (*challenge, error) {
+	parts := strings.Split(domain.GetUnFqdn(), ".")
 
 	// Find the longest matching TLD.
 	longest := -1
@@ -144,7 +143,7 @@ func newChallenge(domain, keyAuth string, tlds map[string]string) (*challenge, e
 		}
 	}
 	if longest < 1 {
-		return nil, fmt.Errorf("Invalid domain name '%s'", domain)
+		return nil, fmt.Errorf("Invalid domain name '%s'", domain.Domain)
 	}
 
 	tld := strings.Join(parts[longest:], ".")
@@ -155,10 +154,10 @@ func newChallenge(domain, keyAuth string, tlds map[string]string) (*challenge, e
 		host = strings.Join(parts[:longest-1], ".")
 	}
 
-	key, keyValue, _ := acme.DNS01Record(domain, keyAuth)
+	key, keyValue, _ := domain.GetDNS01Record(keyAuth)
 
 	return &challenge{
-		domain:   domain,
+		domain:   domain.Domain,
 		key:      "_acme-challenge." + host,
 		keyFqdn:  key,
 		keyValue: keyValue,
@@ -362,7 +361,7 @@ func (d *DNSProvider) removeChallengeRecord(ch *challenge, hosts *[]host) bool {
 }
 
 // Present installs a TXT record for the DNS challenge.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+func (d *DNSProvider) Present(domain *acme.Domain, token, keyAuth string) error {
 	tlds, err := d.getTLDs()
 	if err != nil {
 		return err
@@ -392,7 +391,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes a TXT record used for a previous DNS challenge.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+func (d *DNSProvider) CleanUp(domain *acme.Domain, token, keyAuth string) error {
 	tlds, err := d.getTLDs()
 	if err != nil {
 		return err

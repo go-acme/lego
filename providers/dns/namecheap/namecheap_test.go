@@ -6,6 +6,8 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"testing"
+
+  	"github.com/xenolf/lego/acme"
 )
 
 var (
@@ -216,28 +218,28 @@ func TestNamecheap(t *testing.T) {
 
 func TestNamecheapDomainSplit(t *testing.T) {
 	tests := []struct {
-		domain string
+		domain *acme.Domain
 		valid  bool
 		tld    string
 		sld    string
 		host   string
 	}{
-		{"a.b.c.test.co.uk", true, "co.uk", "test", "a.b.c"},
-		{"test.co.uk", true, "co.uk", "test", ""},
-		{"test.com", true, "com", "test", ""},
-		{"test.co.com", true, "co.com", "test", ""},
-		{"www.test.com.au", true, "com.au", "test", "www"},
-		{"www.za.com", true, "za.com", "www", ""},
-		{"", false, "", "", ""},
-		{"a", false, "", "", ""},
-		{"com", false, "", "", ""},
-		{"co.com", false, "", "", ""},
-		{"co.uk", false, "", "", ""},
-		{"test.au", false, "", "", ""},
-		{"za.com", false, "", "", ""},
-		{"www.za", false, "", "", ""},
-		{"www.test.au", false, "", "", ""},
-		{"www.test.unk", false, "", "", ""},
+		{acme.NewDomain("a.b.c.test.co.uk"), true, "co.uk", "test", "a.b.c"},
+		{acme.NewDomain("test.co.uk"), true, "co.uk", "test", ""},
+		{acme.NewDomain("test.com"), true, "com", "test", ""},
+		{acme.NewDomain("test.co.com"), true, "co.com", "test", ""},
+		{acme.NewDomain("www.test.com.au"), true, "com.au", "test", "www"},
+		{acme.NewDomain("www.za.com"), true, "za.com", "www", ""},
+		{acme.NewDomain(""), false, "", "", ""},
+		{acme.NewDomain("a"), false, "", "", ""},
+		{acme.NewDomain("com"), false, "", "", ""},
+		{acme.NewDomain("co.com"), false, "", "", ""},
+		{acme.NewDomain("co.uk"), false, "", "", ""},
+		{acme.NewDomain("test.au"), false, "", "", ""},
+		{acme.NewDomain("za.com"), false, "", "", ""},
+		{acme.NewDomain("www.za"), false, "", "", ""},
+		{acme.NewDomain("www.test.au"), false, "", "", ""},
+		{acme.NewDomain("www.test.unk"), false, "", "", ""},
 	}
 
 	for _, test := range tests {
@@ -254,7 +256,7 @@ func TestNamecheapDomainSplit(t *testing.T) {
 		}
 
 		if test.valid && valid {
-			assertEq(t, "domain", ch.domain, test.domain)
+			assertEq(t, "domain", ch.domain, test.domain.Domain)
 			assertEq(t, "tld", ch.tld, test.tld)
 			assertEq(t, "sld", ch.sld, test.sld)
 			assertEq(t, "host", ch.host, test.host)
@@ -264,7 +266,7 @@ func TestNamecheapDomainSplit(t *testing.T) {
 
 type testcase struct {
 	name             string
-	domain           string
+	domain           *acme.Domain
 	hosts            []host
 	errString        string
 	getHostsResponse string
@@ -274,7 +276,7 @@ type testcase struct {
 var testcases = []testcase{
 	{
 		"Test:Success:1",
-		"test.example.com",
+		acme.NewDomain("test.example.com"),
 		[]host{
 			{"A", "home", "10.0.0.1", "10", "1799"},
 			{"A", "www", "10.0.0.2", "10", "1200"},
@@ -289,7 +291,7 @@ var testcases = []testcase{
 	},
 	{
 		"Test:Success:2",
-		"example.com",
+		acme.NewDomain("example.com"),
 		[]host{
 			{"A", "@", "10.0.0.2", "10", "1200"},
 			{"A", "www", "10.0.0.3", "10", "60"},
@@ -300,7 +302,7 @@ var testcases = []testcase{
 	},
 	{
 		"Test:Error:BadApiKey:1",
-		"test.example.com",
+		acme.NewDomain("test.example.com"),
 		nil,
 		"Namecheap error: API Key is invalid or API access has not been enabled [1011102]",
 		responseGetHostsErrorBadAPIKey1,

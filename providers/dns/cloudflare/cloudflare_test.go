@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+  	"github.com/xenolf/lego/acme"
 )
 
 var (
@@ -61,7 +62,9 @@ func TestCloudFlarePresent(t *testing.T) {
 	provider, err := NewDNSProviderCredentials(cflareEmail, cflareAPIKey)
 	assert.NoError(t, err)
 
-	err = provider.Present(cflareDomain, "", "123d==")
+	verifyDomain := acme.NewDomain(cflareDomain)
+
+	err = provider.Present(verifyDomain, "", "123d==")
 	assert.NoError(t, err)
 }
 
@@ -75,6 +78,8 @@ func TestCloudFlareCleanUp(t *testing.T) {
 	provider, err := NewDNSProviderCredentials(cflareEmail, cflareAPIKey)
 	assert.NoError(t, err)
 
-	err = provider.CleanUp(cflareDomain, "", "123d==")
+	verifyDomain := acme.NewDomain(cflareDomain)
+
+	err = provider.CleanUp(verifyDomain, "", "123d==")
 	assert.NoError(t, err)
 }

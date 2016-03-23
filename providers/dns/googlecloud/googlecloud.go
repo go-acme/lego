@@ -5,7 +5,6 @@ package googlecloud
 import (
 	"fmt"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/xenolf/lego/acme"
@@ -51,10 +50,10 @@ func NewDNSProviderCredentials(project string) (*DNSProvider, error) {
 }
 
 // Present creates a TXT record to fulfil the dns-01 challenge.
-func (c *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
+func (c *DNSProvider) Present(domain *acme.Domain, token, keyAuth string) error {
+	fqdn, value, ttl := domain.GetDNS01Record(keyAuth)
 
-	zone, err := c.getHostedZone(domain)
+	zone, err := domain.GetAuthoritativeZone()
 	if err != nil {
 		return err
 	}
@@ -88,10 +87,10 @@ func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
+func (c *DNSProvider) CleanUp(domain *acme.Domain, token, keyAuth string) error {
+	fqdn, _, _ := domain.GetDNS01Record(keyAuth)
 
-	zone, err := c.getHostedZone(domain)
+	zone, err := domain.GetAuthoritativeZone()
 	if err != nil {
 		return err
 	}
@@ -119,23 +118,23 @@ func (c *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return 180 * time.Second, 5 * time.Second
 }
 
-// getHostedZone returns the managed-zone
-func (c *DNSProvider) getHostedZone(domain string) (string, error) {
+// // getHostedZone returns the managed-zone
+// func (c *DNSProvider) getHostedZone(domain string) (string, error) {
 
-	zones, err := c.client.ManagedZones.List(c.project).Do()
-	if err != nil {
-		return "", fmt.Errorf("GoogleCloud API call failed: %v", err)
-	}
+// 	zones, err := c.client.ManagedZones.List(c.project).Do()
+// 	if err != nil {
+// 		return "", fmt.Errorf("GoogleCloud API call failed: %v", err)
+// 	}
 
-	for _, z := range zones.ManagedZones {
-		if strings.HasSuffix(domain+".", z.DnsName) {
-			return z.Name, nil
-		}
-	}
+// 	for _, z := range zones.ManagedZones {
+// 		if strings.HasSuffix(domain+".", z.DnsName) {
+// 			return z.Name, nil
+// 		}
+// 	}
 
-	return "", fmt.Errorf("No matching GoogleCloud domain found for domain %s", domain)
+// 	return "", fmt.Errorf("No matching GoogleCloud domain found for domain %s", domain)
 
-}
+// }
 
 func (c *DNSProvider) findTxtRecords(zone, fqdn string) ([]*dns.ResourceRecordSet, error) {
 

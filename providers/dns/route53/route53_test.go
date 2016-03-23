@@ -10,6 +10,7 @@ import (
 	"github.com/mitchellh/goamz/route53"
 	"github.com/mitchellh/goamz/testutil"
 	"github.com/stretchr/testify/assert"
+  	"github.com/xenolf/lego/acme"
 )
 
 var (
@@ -145,7 +146,7 @@ func TestRoute53Present(t *testing.T) {
 	provider := makeRoute53Provider(testServer)
 	testServer.ResponseMap(3, serverResponseMap)
 
-	domain := "example.com"
+	domain := acme.NewDomain("example.com")
 	keyAuth := "123456d=="
 
 	err := provider.Present(domain, "", keyAuth)

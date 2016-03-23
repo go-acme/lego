@@ -25,7 +25,7 @@ func NewHTTPProviderServer(iface, port string) *HTTPProviderServer {
 }
 
 // Present starts a web server and makes the token available at `HTTP01ChallengePath(token)` for web requests.
-func (s *HTTPProviderServer) Present(domain, token, keyAuth string) error {
+func (s *HTTPProviderServer) Present(domain *Domain, token, keyAuth string) error {
 	if s.port == "" {
 		s.port = "80"
 	}
@@ -37,12 +37,12 @@ func (s *HTTPProviderServer) Present(domain, token, keyAuth string) error {
 	}
 
 	s.done = make(chan bool)
-	go s.serve(domain, token, keyAuth)
+	go s.serve(domain.GetUnFqdn(), token, keyAuth)
 	return nil
 }
 
 // CleanUp closes the HTTP server and removes the token from `HTTP01ChallengePath(token)`
-func (s *HTTPProviderServer) CleanUp(domain, token, keyAuth string) error {
+func (s *HTTPProviderServer) CleanUp(domain *Domain, token, keyAuth string) error {
 	if s.listener == nil {
 		return nil
 	}

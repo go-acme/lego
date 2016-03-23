@@ -171,13 +171,13 @@ func (d *DNSProvider) logout() error {
 }
 
 // Present creates a TXT record using the specified parameters
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+func (d *DNSProvider) Present(domain *acme.Domain, token, keyAuth string) error {
 	err := d.login()
 	if err != nil {
 		return err
 	}
 
-	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
+	fqdn, value, ttl := domain.GetDNS01Record(keyAuth)
 
 	data := map[string]interface{}{
 		"rdata": map[string]string{
@@ -186,7 +186,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		"ttl": strconv.Itoa(ttl),
 	}
 
-	resource := fmt.Sprintf("TXTRecord/%s/%s/", domain, fqdn)
+	resource := fmt.Sprintf("TXTRecord/%s/%s/", domain.GetUnFqdn(), fqdn)
 	_, err = d.sendRequest("POST", resource, data)
 	if err != nil {
 		return err
@@ -205,14 +205,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	return nil
 }
 
-func (d *DNSProvider) publish(domain, notes string) error {
+func (d *DNSProvider) publish(domain *acme.Domain, notes string) error {
 	type publish struct {
 		Publish bool   `json:"publish"`
 		Notes   string `json:"notes"`
 	}
 
 	pub := &publish{Publish: true, Notes: notes}
-	resource := fmt.Sprintf("Zone/%s/", domain)
+	resource := fmt.Sprintf("Zone/%s/", domain.GetUnFqdn())
 	_, err := d.sendRequest("PUT", resource, pub)
 	if err != nil {
 		return err
@@ -222,15 +222,15 @@ func (d *DNSProvider) publish(domain, notes string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+func (d *DNSProvider) CleanUp(domain *acme.Domain, token, keyAuth string) error {
 	err := d.login()
 	if err != nil {
 		return err
 	}
 
-	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, _, _ := domain.GetDNS01Record(keyAuth)
 
-	resource := fmt.Sprintf("TXTRecord/%s/%s/", domain, fqdn)
+	resource := fmt.Sprintf("TXTRecord/%s/%s/", domain.GetUnFqdn(), fqdn)
 	url := fmt.Sprintf("%s/%s", dynBaseURL, resource)
 	req, err := http.NewRequest("DELETE", url, nil)
 	if err != nil {

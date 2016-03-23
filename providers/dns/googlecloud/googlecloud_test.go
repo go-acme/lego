@@ -10,6 +10,7 @@ import (
 	"google.golang.org/api/dns/v1"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/xenolf/lego/acme"
 )
 
 var (
@@ -66,7 +67,9 @@ func TestLiveGoogleCloudPresent(t *testing.T) {
 	provider, err := NewDNSProviderCredentials(gcloudProject)
 	assert.NoError(t, err)
 
-	err = provider.Present(gcloudDomain, "", "123d==")
+	verifyDomain := acme.NewDomain(gcloudDomain)
+
+	err = provider.Present(verifyDomain, "", "123d==")
 	assert.NoError(t, err)
 }
 
@@ -80,6 +83,8 @@ func TestLiveGoogleCloudCleanUp(t *testing.T) {
 	provider, err := NewDNSProviderCredentials(gcloudProject)
 	assert.NoError(t, err)
 
-	err = provider.CleanUp(gcloudDomain, "", "123d==")
+	verifyDomain := acme.NewDomain(gcloudDomain)
+
+	err = provider.CleanUp(verifyDomain, "", "123d==")
 	assert.NoError(t, err)
 }

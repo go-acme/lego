@@ -29,7 +29,7 @@ func NewHTTPProvider(path string) (*HTTPProvider, error) {
 }
 
 // Present makes the token available at `HTTP01ChallengePath(token)` by creating a file in the given webroot path
-func (w *HTTPProvider) Present(domain, token, keyAuth string) error {
+func (w *HTTPProvider) Present(domain *acme.Domain, token, keyAuth string) error {
 	var err error
 
 	challengeFilePath := path.Join(w.path, acme.HTTP01ChallengePath(token))
@@ -47,7 +47,7 @@ func (w *HTTPProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the file created for the challenge
-func (w *HTTPProvider) CleanUp(domain, token, keyAuth string) error {
+func (w *HTTPProvider) CleanUp(domain *acme.Domain, token, keyAuth string) error {
 	var err error
 	err = os.Remove(path.Join(w.path, acme.HTTP01ChallengePath(token)))
 	if err != nil {

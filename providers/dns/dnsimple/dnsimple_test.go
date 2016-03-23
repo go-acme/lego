@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+  	"github.com/xenolf/lego/acme"
 )
 
 var (
@@ -60,7 +61,9 @@ func TestLiveDNSimplePresent(t *testing.T) {
 	provider, err := NewDNSProviderCredentials(dnsimpleEmail, dnsimpleAPIKey)
 	assert.NoError(t, err)
 
-	err = provider.Present(dnsimpleDomain, "", "123d==")
+	verifyDomain := acme.NewDomain(dnsimpleDomain)
+
+	err = provider.Present(verifyDomain, "", "123d==")
 	assert.NoError(t, err)
 }
 
@@ -74,6 +77,8 @@ func TestLiveDNSimpleCleanUp(t *testing.T) {
 	provider, err := NewDNSProviderCredentials(dnsimpleEmail, dnsimpleAPIKey)
 	assert.NoError(t, err)
 
-	err = provider.CleanUp(dnsimpleDomain, "", "123d==")
+	verifyDomain := acme.NewDomain(dnsimpleDomain)
+
+	err = provider.CleanUp(verifyDomain, "", "123d==")
 	assert.NoError(t, err)
 }

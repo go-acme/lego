@@ -8,6 +8,8 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+
+  "github.com/xenolf/lego/acme"
 )
 
 // TestDNSProvider runs Present and CleanUp against a fake Gandi RPC
@@ -51,12 +53,13 @@ func TestDNSProvider(t *testing.T) {
 	}()
 	endpoint = fakeServer.URL + "/"
 	// run Present
-	err = provider.Present("abc.def.example.com", "", fakeKeyAuth)
+  verifyDomain := acme.NewDomain("abc.def.example.com")
+	err = provider.Present(verifyDomain, "", fakeKeyAuth)
 	if err != nil {
 		t.Fatal(err)
 	}
 	// run CleanUp
-	err = provider.CleanUp("abc.def.example.com", "", fakeKeyAuth)
+	err = provider.CleanUp(verifyDomain, "", fakeKeyAuth)
 	if err != nil {
 		t.Fatal(err)
 	}

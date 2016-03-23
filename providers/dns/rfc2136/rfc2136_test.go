@@ -27,7 +27,6 @@ var (
 var reqChan = make(chan *dns.Msg, 10)
 
 func TestRFC2136CanaryLocalTestServer(t *testing.T) {
-	acme.ClearFqdnCache()
 	dns.HandleFunc("example.com.", serverHandlerHello)
 	defer dns.HandleRemove("example.com.")
 
@@ -51,7 +50,6 @@ func TestRFC2136CanaryLocalTestServer(t *testing.T) {
 }
 
 func TestRFC2136ServerSuccess(t *testing.T) {
-	acme.ClearFqdnCache()
 	dns.HandleFunc(rfc2136TestZone, serverHandlerReturnSuccess)
 	defer dns.HandleRemove(rfc2136TestZone)
 
@@ -65,13 +63,15 @@ func TestRFC2136ServerSuccess(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Expected NewDNSProviderCredentials() to return no error but the error was -> %v", err)
 	}
-	if err := provider.Present(rfc2136TestDomain, "", rfc2136TestKeyAuth); err != nil {
+
+	verifyDomain := acme.NewDomain(rfc2136TestDomain)
+
+	if err := provider.Present(verifyDomain, "", rfc2136TestKeyAuth); err != nil {
 		t.Errorf("Expected Present() to return no error but the error was -> %v", err)
 	}
 }
 
 func TestRFC2136ServerError(t *testing.T) {
-	acme.ClearFqdnCache()
 	dns.HandleFunc(rfc2136TestZone, serverHandlerReturnErr)
 	defer dns.HandleRemove(rfc2136TestZone)
 
@@ -85,7 +85,10 @@ func TestRFC2136ServerError(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Expected NewDNSProviderCredentials() to return no error but the error was -> %v", err)
 	}
-	if err := provider.Present(rfc2136TestDomain, "", rfc2136TestKeyAuth); err == nil {
+
+	verifyDomain := acme.NewDomain(rfc2136TestDomain)
+
+	if err := provider.Present(verifyDomain, "", rfc2136TestKeyAuth); err == nil {
 		t.Errorf("Expected Present() to return an error but it did not.")
 	} else if !strings.Contains(err.Error(), "NOTZONE") {
 		t.Errorf("Expected Present() to return an error with the 'NOTZONE' rcode string but it did not.")
@@ -93,7 +96,6 @@ func TestRFC2136ServerError(t *testing.T) {
 }
 
 func TestRFC2136TsigClient(t *testing.T) {
-	acme.ClearFqdnCache()
 	dns.HandleFunc(rfc2136TestZone, serverHandlerReturnSuccess)
 	defer dns.HandleRemove(rfc2136TestZone)
 
@@ -103,17 +105,18 @@ func TestRFC2136TsigClient(t *testing.T) {
 	}
 	defer server.Shutdown()
 
+	verifyDomain := acme.NewDomain(rfc2136TestDomain)
+
 	provider, err := NewDNSProviderCredentials(addrstr, "", rfc2136TestTsigKey, rfc2136TestTsigSecret)
 	if err != nil {
 		t.Fatalf("Expected NewDNSProviderCredentials() to return no error but the error was -> %v", err)
 	}
-	if err := provider.Present(rfc2136TestDomain, "", rfc2136TestKeyAuth); err != nil {
+	if err := provider.Present(verifyDomain, "", rfc2136TestKeyAuth); err != nil {
 		t.Errorf("Expected Present() to return no error but the error was -> %v", err)
 	}
 }
 
 func TestRFC2136ValidUpdatePacket(t *testing.T) {
-	acme.ClearFqdnCache()
 	dns.HandleFunc(rfc2136TestZone, serverHandlerPassBackRequest)
 	defer dns.HandleRemove(rfc2136TestZone)
 
@@ -140,7 +143,9 @@ func TestRFC2136ValidUpdatePacket(t *testing.T) {
 		t.Fatalf("Expected NewDNSProviderCredentials() to return no error but the error was -> %v", err)
 	}
 
-	if err := provider.Present(rfc2136TestDomain, "", "1234d=="); err != nil {
+	verifyDomain := acme.NewDomain(rfc2136TestDomain)
+
+	if err := provider.Present(verifyDomain, "", "1234d=="); err != nil {
 		t.Errorf("Expected Present() to return no error but the error was -> %v", err)
 	}
 

@@ -25,7 +25,7 @@ func NewTLSProviderServer(iface, port string) *TLSProviderServer {
 }
 
 // Present makes the keyAuth available as a cert
-func (s *TLSProviderServer) Present(domain, token, keyAuth string) error {
+func (s *TLSProviderServer) Present(domain *Domain, token, keyAuth string) error {
 	if s.port == "" {
 		s.port = "443"
 	}
@@ -52,7 +52,7 @@ func (s *TLSProviderServer) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp closes the HTTP server.
-func (s *TLSProviderServer) CleanUp(domain, token, keyAuth string) error {
+func (s *TLSProviderServer) CleanUp(domain *Domain, token, keyAuth string) error {
 	if s.listener == nil {
 		return nil
 	}

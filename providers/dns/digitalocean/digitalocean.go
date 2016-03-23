@@ -43,7 +43,7 @@ func NewDNSProviderCredentials(apiAuthToken string) (*DNSProvider, error) {
 }
 
 // Present creates a TXT record using the specified parameters
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+func (d *DNSProvider) Present(domain *acme.Domain, token, keyAuth string) error {
 	// txtRecordRequest represents the request body to DO's API to make a TXT record
 	type txtRecordRequest struct {
 		RecordType string `json:"type"`
@@ -61,9 +61,16 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		} `json:"domain_record"`
 	}
 
-	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, value, _ := domain.GetDNS01Record(keyAuth)
 
-	reqURL := fmt.Sprintf("%s/v2/domains/%s/records", digitalOceanBaseURL, domain)
+	authZone, err := domain.GetAuthoritativeZone()
+	if err != nil {
+		return err
+	}
+
+	authZone = acme.UnFqdn(authZone)
+
+	reqURL := fmt.Sprintf("%s/v2/domains/%s/records", digitalOceanBaseURL, authZone)
 	reqData := txtRecordRequest{RecordType: "TXT", Name: fqdn, Data: value}
 	body, err := json.Marshal(reqData)
 	if err != nil {
@@ -104,8 +111,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
+func (d *DNSProvider) CleanUp(domain *acme.Domain, token, keyAuth string) error {
+	fqdn, _, _ := domain.GetDNS01Record(keyAuth)
 
 	// get the record's unique ID from when we created it
 	d.recordIDsMu.Lock()
@@ -115,7 +122,14 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("unknown record ID for '%s'", fqdn)
 	}
 
-	reqURL := fmt.Sprintf("%s/v2/domains/%s/records/%d", digitalOceanBaseURL, domain, recordID)
+	authZone, err := domain.GetAuthoritativeZone()
+	if err != nil {
+		return err
+	}
+
+	authZone = acme.UnFqdn(authZone)	
+
+	reqURL := fmt.Sprintf("%s/v2/domains/%s/records/%d", digitalOceanBaseURL, authZone, recordID)
 	req, err := http.NewRequest("DELETE", reqURL, nil)
 	if err != nil {
 		return err

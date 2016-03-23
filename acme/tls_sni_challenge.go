@@ -27,12 +27,14 @@ func (t *tlsSNIChallenge) Solve(chlng challenge, domain string) error {
 		return err
 	}
 
-	err = t.provider.Present(domain, chlng.Token, keyAuth)
+	verifyDomain := NewDomain(domain)
+
+	err = t.provider.Present(verifyDomain, chlng.Token, keyAuth)
 	if err != nil {
 		return fmt.Errorf("[%s] error presenting token: %v", domain, err)
 	}
 	defer func() {
-		err := t.provider.CleanUp(domain, chlng.Token, keyAuth)
+		err := t.provider.CleanUp(verifyDomain, chlng.Token, keyAuth)
 		if err != nil {
 			log.Printf("[%s] error cleaning up: %v", domain, err)
 		}

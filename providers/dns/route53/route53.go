@@ -56,15 +56,15 @@ func NewDNSProviderCredentials(accessKey, secretKey, regionName string) (*DNSPro
 }
 
 // Present creates a TXT record using the specified parameters
-func (r *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
+func (r *DNSProvider) Present(domain *acme.Domain, token, keyAuth string) error {
+	fqdn, value, ttl := domain.GetDNS01Record(keyAuth)
 	value = `"` + value + `"`
 	return r.changeRecord("UPSERT", fqdn, value, ttl)
 }
 
 // CleanUp removes the TXT record matching the specified parameters
-func (r *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
+func (r *DNSProvider) CleanUp(domain *acme.Domain, token, keyAuth string) error {
+	fqdn, value, ttl := domain.GetDNS01Record(keyAuth)
 	value = `"` + value + `"`
 	return r.changeRecord("DELETE", fqdn, value, ttl)
 }

@@ -69,27 +69,29 @@ func NewDNSProviderCredentials(nameserver, tsigAlgorithm, tsigKey, tsigSecret st
 }
 
 // Present creates a TXT record using the specified parameters
-func (r *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
-	return r.changeRecord("INSERT", fqdn, value, ttl)
+func (r *DNSProvider) Present(domain *acme.Domain, token, keyAuth string) error {
+	fqdn, value, ttl := domain.GetDNS01Record(keyAuth)
+	txtRecord := acme.NewDomain(fqdn)
+	return r.changeRecord("INSERT", txtRecord, value, ttl)
 }
 
 // CleanUp removes the TXT record matching the specified parameters
-func (r *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
-	return r.changeRecord("REMOVE", fqdn, value, ttl)
+func (r *DNSProvider) CleanUp(domain *acme.Domain, token, keyAuth string) error {
+	fqdn, value, ttl := domain.GetDNS01Record(keyAuth)
+	txtRecord := acme.NewDomain(fqdn)
+	return r.changeRecord("REMOVE", txtRecord, value, ttl)
 }
 
-func (r *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
+func (r *DNSProvider) changeRecord(action string, record *acme.Domain, value string, ttl int) error {
 	// Find the zone for the given fqdn
-	zone, err := acme.FindZoneByFqdn(fqdn, r.nameserver)
+	zone, err := record.GetAuthoritativeZone()
 	if err != nil {
 		return err
 	}
 
 	// Create RR
 	rr := new(dns.TXT)
-	rr.Hdr = dns.RR_Header{Name: fqdn, Rrtype: dns.TypeTXT, Class: dns.ClassINET, Ttl: uint32(ttl)}
+	rr.Hdr = dns.RR_Header{Name: record.Domain, Rrtype: dns.TypeTXT, Class: dns.ClassINET, Ttl: uint32(ttl)}
 	rr.Txt = []string{value}
 	rrs := []dns.RR{rr}
 
@@ -97,14 +99,14 @@ func (r *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 	m := new(dns.Msg)
 	m.SetUpdate(zone)
 	switch action {
-	case "INSERT":
-		// Always remove old challenge left over from who knows what.
-		m.RemoveRRset(rrs)
-		m.Insert(rrs)
-	case "REMOVE":
-		m.Remove(rrs)
-	default:
-		return fmt.Errorf("Unexpected action: %s", action)
+		case "INSERT":
+			// Always remove old challenge left over from who knows what.
+			m.RemoveRRset(rrs)
+			m.Insert(rrs)
+		case "REMOVE":
+			m.Remove(rrs)
+		default:
+			return fmt.Errorf("Unexpected action: %s", action)
 	}
 
 	// Setup client

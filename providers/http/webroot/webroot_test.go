@@ -4,6 +4,8 @@ import (
 	"io/ioutil"
 	"os"
 	"testing"
+
+  	"github.com/xenolf/lego/acme"
 )
 
 func TestHTTPProvider(t *testing.T) {
@@ -21,7 +23,9 @@ func TestHTTPProvider(t *testing.T) {
 		t.Errorf("Webroot provider error: got %v, want nil", err)
 	}
 
-	err = provider.Present(domain, token, keyAuth)
+	verifyDomain := acme.NewDomain(domain)
+
+	err = provider.Present(verifyDomain, token, keyAuth)
 	if err != nil {
 		t.Errorf("Webroot provider present() error: got %v, want nil", err)
 	}
@@ -39,7 +43,7 @@ func TestHTTPProvider(t *testing.T) {
 		t.Errorf("Challenge file content: got %q, want %q", dataStr, keyAuth)
 	}
 
-	err = provider.CleanUp(domain, token, keyAuth)
+	err = provider.CleanUp(verifyDomain, token, keyAuth)
 	if err != nil {
 		t.Errorf("Webroot provider CleanUp() error: got %v, want nil", err)
 	}

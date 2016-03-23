@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+  	"github.com/xenolf/lego/acme"
 )
 
 var fakeDigitalOceanAuth = "asdf1234"
@@ -61,7 +63,9 @@ func TestDigitalOceanPresent(t *testing.T) {
 		t.Fatalf("Expected no error creating provider, but got: %v", err)
 	}
 
-	err = doprov.Present("example.com", "", "foobar")
+	verifyDomain := acme.NewDomain("example.com")
+
+	err = doprov.Present(verifyDomain, "", "foobar")
 	if err != nil {
 		t.Fatalf("Expected no error creating TXT record, but got: %v", err)
 	}
@@ -107,7 +111,9 @@ func TestDigitalOceanCleanUp(t *testing.T) {
 	doprov.recordIDs["_acme-challenge.example.com."] = 1234567
 	doprov.recordIDsMu.Unlock()
 
-	err = doprov.CleanUp("example.com", "", "")
+	verifyDomain := acme.NewDomain("example.com")
+
+	err = doprov.CleanUp(verifyDomain, "", "")
 	if err != nil {
 		t.Fatalf("Expected no error removing TXT record, but got: %v", err)
 	}

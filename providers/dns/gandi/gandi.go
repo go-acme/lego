@@ -59,8 +59,8 @@ func NewDNSProviderCredentials(apiKey string) (*DNSProvider, error) {
 // Present creates a TXT record using the specified parameters. It
 // does this by creating and activating a new temporary DNS zone. This
 // new zone contains the TXT record.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
+func (d *DNSProvider) Present(domain *acme.Domain, token, keyAuth string) error {
+	fqdn, value, ttl := domain.GetDNS01Record(keyAuth)
 	if ttl < 300 {
 		ttl = 300 // 300 is gandi minimum value for ttl
 	}
@@ -146,8 +146,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 // CleanUp removes the TXT record matching the specified
 // parameters. It does this by restoring the old DNS zone and removing
 // the temporary one created by Present.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
+func (d *DNSProvider) CleanUp(domain *acme.Domain, token, keyAuth string) error {
+	fqdn, _, _ := domain.GetDNS01Record(keyAuth)
 	// acquire lock and retrieve zoneID, newZoneID and root
 	d.inProgressMu.Lock()
 	defer d.inProgressMu.Unlock()

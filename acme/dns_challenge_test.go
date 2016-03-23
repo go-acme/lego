@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-var lookupNameserversTestsOK = []struct {
+var LookupNameserversTestsOK = []struct {
 	fqdn string
 	nss  []string
 }{
@@ -29,7 +29,7 @@ var lookupNameserversTestsOK = []struct {
 	},
 }
 
-var lookupNameserversTestsErr = []struct {
+var LookupNameserversTestsErr = []struct {
 	fqdn  string
 	error string
 }{
@@ -78,7 +78,7 @@ var checkAuthoritativeNssTestsErr = []struct {
 }
 
 func TestDNSValidServerResponse(t *testing.T) {
-	preCheckDNS = func(fqdn, value string) (bool, error) {
+	preCheckDNS = func(fqdn *Domain, value string) (bool, error) {
 		return true, nil
 	}
 	privKey, _ := rsa.GenerateKey(rand.Reader, 512)
@@ -106,15 +106,17 @@ func TestDNSValidServerResponse(t *testing.T) {
 }
 
 func TestPreCheckDNS(t *testing.T) {
-	ok, err := preCheckDNS("acme-staging.api.letsencrypt.org", "fe01=")
+	testRecord := NewDomain("acme-staging.api.letsencrypt.org")
+	ok, err := preCheckDNS(testRecord, "fe01=")
 	if err != nil || !ok {
 		t.Errorf("preCheckDNS failed for acme-staging.api.letsencrypt.org")
 	}
 }
 
 func TestLookupNameserversOK(t *testing.T) {
-	for _, tt := range lookupNameserversTestsOK {
-		nss, err := lookupNameservers(tt.fqdn)
+	for _, tt := range LookupNameserversTestsOK {
+		domain := NewDomain(tt.fqdn)
+		nss, err := domain.LookupNameservers()
 		if err != nil {
 			t.Fatalf("#%s: got %q; want nil", tt.fqdn, err)
 		}
@@ -129,8 +131,9 @@ func TestLookupNameserversOK(t *testing.T) {
 }
 
 func TestLookupNameserversErr(t *testing.T) {
-	for _, tt := range lookupNameserversTestsErr {
-		_, err := lookupNameservers(tt.fqdn)
+	for _, tt := range LookupNameserversTestsErr {
+		domain := NewDomain(tt.fqdn)
+		_, err := domain.LookupNameservers()
 		if err == nil {
 			t.Fatalf("#%s: expected %q (error); got <nil>", tt.fqdn, tt.error)
 		}
@@ -144,7 +147,7 @@ func TestLookupNameserversErr(t *testing.T) {
 
 func TestCheckAuthoritativeNss(t *testing.T) {
 	for _, tt := range checkAuthoritativeNssTests {
-		ok, _ := checkAuthoritativeNss(tt.fqdn, tt.value, tt.ns)
+		ok, _ := checkAuthoritativeNss(tt.fqdn, tt.value, tt.ns, "53")
 		if ok != tt.ok {
 			t.Errorf("%s: got %t; want %t", tt.fqdn, ok, tt.ok)
 		}
@@ -153,7 +156,7 @@ func TestCheckAuthoritativeNss(t *testing.T) {
 
 func TestCheckAuthoritativeNssErr(t *testing.T) {
 	for _, tt := range checkAuthoritativeNssTestsErr {
-		_, err := checkAuthoritativeNss(tt.fqdn, tt.value, tt.ns)
+		_, err := checkAuthoritativeNss(tt.fqdn, tt.value, tt.ns, "53")
 		if err == nil {
 			t.Fatalf("#%s: expected %q (error); got <nil>", tt.fqdn, tt.error)
 		}

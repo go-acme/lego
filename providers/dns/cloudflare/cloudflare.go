@@ -48,8 +48,8 @@ func NewDNSProviderCredentials(email, key string) (*DNSProvider, error) {
 }
 
 // Present creates a TXT record to fulfil the dns-01 challenge
-func (c *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
+func (c *DNSProvider) Present(domain *acme.Domain, token, keyAuth string) error {
+	fqdn, value, _ := domain.GetDNS01Record(keyAuth)
 	zoneID, err := c.getHostedZoneID(fqdn)
 	if err != nil {
 		return err
@@ -57,7 +57,7 @@ func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	rec := cloudFlareRecord{
 		Type:    "TXT",
-		Name:    acme.UnFqdn(fqdn),
+		Name:    domain.Domain,
 		Content: value,
 		TTL:     120,
 	}
@@ -76,10 +76,8 @@ func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters
-func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
-
-	record, err := c.findTxtRecord(fqdn)
+func (c *DNSProvider) CleanUp(domain *acme.Domain, token, keyAuth string) error {
+	record, err := c.findTxtRecord(domain)
 	if err != nil {
 		return err
 	}
@@ -112,7 +110,8 @@ func (c *DNSProvider) getHostedZoneID(fqdn string) (string, error) {
 
 	var hostedZone HostedZone
 	for _, zone := range zones {
-		name := acme.ToFqdn(zone.Name)
+		domain := acme.NewDomain(zone.Name)
+		name := domain.GetFqdn()
 		if strings.HasSuffix(fqdn, name) {
 			if len(zone.Name) > len(hostedZone.Name) {
 				hostedZone = zone
@@ -126,8 +125,8 @@ func (c *DNSProvider) getHostedZoneID(fqdn string) (string, error) {
 	return hostedZone.ID, nil
 }
 
-func (c *DNSProvider) findTxtRecord(fqdn string) (*cloudFlareRecord, error) {
-	zoneID, err := c.getHostedZoneID(fqdn)
+func (c *DNSProvider) findTxtRecord(domain *acme.Domain) (*cloudFlareRecord, error) {
+	zoneID, err := c.getHostedZoneID(domain.GetFqdn())
 	if err != nil {
 		return nil, err
 	}
@@ -144,12 +143,12 @@ func (c *DNSProvider) findTxtRecord(fqdn string) (*cloudFlareRecord, error) {
 	}
 
 	for _, rec := range records {
-		if rec.Name == acme.UnFqdn(fqdn) && rec.Type == "TXT" {
+		if rec.Name == domain.Domain && rec.Type == "TXT" {
 			return &rec, nil
 		}
 	}
 
-	return nil, fmt.Errorf("No existing record found for %s", fqdn)
+	return nil, fmt.Errorf("No existing record found for %s", domain.GetFqdn())
 }
 
 func (c *DNSProvider) makeRequest(method, uri string, body io.Reader) (json.RawMessage, error) {

@@ -9,7 +9,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/xenolf/lego/acme"
@@ -105,31 +104,27 @@ func (c *DNSProvider) getHostedZoneID(fqdn string) (string, error) {
 		Name string `json:"name"`
 	}
 
-	result, err := c.makeRequest("GET", "/zones?per_page=1000", nil)
+	authZone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameserver)
 	if err != nil {
 		return "", err
 	}
 
-	var zones []HostedZone
-	err = json.Unmarshal(result, &zones)
+	result, err := c.makeRequest("GET", "/zones?name=" + acme.UnFqdn(authZone), nil)
 	if err != nil {
 		return "", err
 	}
 
-	var hostedZone HostedZone
-	for _, zone := range zones {
-		name := acme.ToFqdn(zone.Name)
-		if strings.HasSuffix(fqdn, name) {
-			if len(zone.Name) > len(hostedZone.Name) {
-				hostedZone = zone
-			}
-		}
-	}
-	if hostedZone.ID == "" {
-		return "", fmt.Errorf("No matching CloudFlare zone found for %s", fqdn)
+	var hostedZone []HostedZone
+	err = json.Unmarshal(result, &hostedZone)
+	if err != nil {
+		return "", err
 	}
 
-	return hostedZone.ID, nil
+	if len(hostedZone) != 1 {
+		return "", fmt.Errorf("Zone %s not found in CloudFlare for domain %s", authZone, fqdn)
+	}
+
+	return hostedZone[0].ID, nil
 }
 
 func (c *DNSProvider) findTxtRecord(fqdn string) (*cloudFlareRecord, error) {

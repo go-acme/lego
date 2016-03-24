@@ -22,9 +22,16 @@ func NewDNSProviderManual() (*DNSProviderManual, error) {
 func (*DNSProviderManual) Present(domain, token, keyAuth string) error {
 	fqdn, value, ttl := DNS01Record(domain, keyAuth)
 	dnsRecord := fmt.Sprintf(dnsTemplate, fqdn, ttl, value)
-	logf("[INFO] acme: Please create the following TXT record in your DNS zone:")
+
+	authZone, err := FindZoneByFqdn(fqdn, RecursiveNameserver)
+	if err != nil {
+		return err
+	}
+
+	logf("[INFO] acme: Please create the following TXT record in your %s zone:", authZone)
 	logf("[INFO] acme: %s", dnsRecord)
 	logf("[INFO] acme: Press 'Enter' when you are done")
+
 	reader := bufio.NewReader(os.Stdin)
 	_, _ = reader.ReadString('\n')
 	return nil
@@ -34,7 +41,13 @@ func (*DNSProviderManual) Present(domain, token, keyAuth string) error {
 func (*DNSProviderManual) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _, ttl := DNS01Record(domain, keyAuth)
 	dnsRecord := fmt.Sprintf(dnsTemplate, fqdn, ttl, "...")
-	logf("[INFO] acme: You can now remove this TXT record from your DNS zone:")
+
+	authZone, err := FindZoneByFqdn(fqdn, RecursiveNameserver)
+	if err != nil {
+		return err
+	}
+
+	logf("[INFO] acme: You can now remove this TXT record from your %s zone:", authZone)
 	logf("[INFO] acme: %s", dnsRecord)
 	return nil
 }

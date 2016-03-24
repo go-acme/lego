@@ -74,24 +74,30 @@ func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 }
 
 func (c *DNSProvider) getHostedZone(domain string) (string, string, error) {
-	domains, _, err := c.client.Domains.List()
+	zones, _, err := c.client.Domains.List()
 	if err != nil {
 		return "", "", fmt.Errorf("DNSimple API call failed: %v", err)
 	}
 
-	var hostedDomain dnsimple.Domain
-	for _, d := range domains {
-		if strings.HasSuffix(domain, d.Name) {
-			if len(d.Name) > len(hostedDomain.Name) {
-				hostedDomain = d
-			}
-		}
-	}
-	if hostedDomain.Id == 0 {
-		return "", "", fmt.Errorf("No matching DNSimple domain found for domain %s", domain)
+
+	authZone, err := acme.FindZoneByFqdn(domain, acme.RecursiveNameserver)
+	if err != nil {
+		return "", "", err
 	}
 
-	return fmt.Sprintf("%v", hostedDomain.Id), hostedDomain.Name, nil
+	var hostedZone dnsimple.Domain
+	for _, zone := range zones {
+		if zone.Name == acme.UnFqdn(authZone) {
+			hostedZone = zone
+		}
+	}
+
+	if hostedZone.Id == 0 {
+		return "", "", fmt.Errorf("Zone %s not found in DNSimple for domain %s", authZone, domain)
+
+	}
+
+	return fmt.Sprintf("%v", hostedZone.Id), hostedZone.Name, nil
 }
 
 func (c *DNSProvider) findTxtRecords(domain, fqdn string) ([]dnsimple.Record, error) {

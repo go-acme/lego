@@ -116,16 +116,19 @@ func (r *DNSProvider) getHostedZoneID(fqdn string) (string, error) {
 		zones = append(zones, zoneResp.HostedZones...)
 	}
 
+	authZone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameserver)
+	if err != nil {
+		return "", err
+	}
+
 	var hostedZone route53.HostedZone
 	for _, zone := range zones {
-		if strings.HasSuffix(fqdn, zone.Name) {
-			if len(zone.Name) > len(hostedZone.Name) {
-				hostedZone = zone
-			}
+		if zone.Name == authZone {
+			hostedZone = zone
 		}
 	}
 	if hostedZone.ID == "" {
-		return "", fmt.Errorf("No Route53 hosted zone found for domain %s", fqdn)
+		return "", fmt.Errorf("Zone %s not found in Route53 for domain %s", authZone, fqdn)
 	}
 
 	return hostedZone.ID, nil

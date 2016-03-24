@@ -21,7 +21,7 @@ var (
 	fqdnToZone                  = map[string]string{}
 )
 
-var recursiveNameserver = "google-public-dns-a.google.com:53"
+var RecursiveNameserver = "google-public-dns-a.google.com:53"
 
 // DNS01Record returns a DNS record which will fulfill the `dns-01` challenge
 func DNS01Record(domain, keyAuth string) (fqdn string, value string, ttl int) {
@@ -90,7 +90,7 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 // checkDNSPropagation checks if the expected TXT record has been propagated to all authoritative nameservers.
 func checkDNSPropagation(fqdn, value string) (bool, error) {
 	// Initial attempt to resolve at the recursive NS
-	r, err := dnsQuery(fqdn, dns.TypeTXT, recursiveNameserver, true)
+	r, err := dnsQuery(fqdn, dns.TypeTXT, RecursiveNameserver, true)
 	if err != nil {
 		return false, err
 	}
@@ -168,12 +168,12 @@ func dnsQuery(fqdn string, rtype uint16, nameserver string, recursive bool) (in 
 func lookupNameservers(fqdn string) ([]string, error) {
 	var authoritativeNss []string
 
-	zone, err := FindZoneByFqdn(fqdn, recursiveNameserver)
+	zone, err := FindZoneByFqdn(fqdn, RecursiveNameserver)
 	if err != nil {
 		return nil, err
 	}
 
-	r, err := dnsQuery(zone, dns.TypeNS, recursiveNameserver, true)
+	r, err := dnsQuery(zone, dns.TypeNS, RecursiveNameserver, true)
 	if err != nil {
 		return nil, err
 	}

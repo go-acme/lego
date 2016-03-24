@@ -69,7 +69,7 @@ NAME:
    lego - Let's Encrypt client written in Go
 
 USAGE:
-   ./lego [global options] command [command options] [arguments...]
+   lego [global options] command [command options] [arguments...]
    
 VERSION:
    0.3.0
@@ -78,31 +78,21 @@ COMMANDS:
    run		Register an account, then create and install a certificate
    revoke	Revoke a certificate
    renew	Renew a certificate
+   dnshelp	Shows additional help for the --dns global option
    help, h	Shows a list of commands or help for one command
    
 GLOBAL OPTIONS:
    --domains, -d [--domains option --domains option]			Add domains to the process
    --server, -s "https://acme-v01.api.letsencrypt.org/directory"	CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client.
    --email, -m 								Email used for registration and recovery contact.
-   --rsa-key-size, -B "2048"						Size of the RSA key.
+   --accept-tos, -a							By setting this flag to true you indicate that you accept the current Let's Encrypt terms of service.
+   --key-type, -k "rsa2048"						Key type to use for private keys. Supported: rsa2048, rsa4096, rsa8192, ec256, ec384
    --path "${CWD}/.lego"	Directory to use for storing the data
    --exclude, -x [--exclude option --exclude option]			Explicitly disallow solvers by name from being used. Solvers: "http-01", "tls-sni-01".
    --webroot 								Set the webroot folder to use for HTTP based challenges to write directly in a file in .well-known/acme-challenge
    --http 								Set the port and interface to use for HTTP based challenges to listen on. Supported: interface:port or :port
    --tls 								Set the port and interface to use for TLS based challenges to listen on. Supported: interface:port or :port
-   --dns 								Solve a DNS challenge using the specified provider. Disables all other solvers.
-									Credentials for providers have to be passed through environment variables.
-									For a more detailed explanation of the parameters, please see the online docs.
-									Valid providers:
-									cloudflare: CLOUDFLARE_EMAIL, CLOUDFLARE_API_KEY
-									digitalocean: DO_AUTH_TOKEN
-									dnsimple: DNSIMPLE_EMAIL, DNSIMPLE_API_KEY
-									gandi: GANDI_API_KEY
-									namecheap: NAMECHEAP_API_USER, NAMECHEAP_API_KEY
-									route53: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION
-									rfc2136: RFC2136_TSIG_KEY, RFC2136_TSIG_SECRET, RFC2136_TSIG_ALGORITHM, RFC2136_NAMESERVER
-									dyn: DYN_CUSTOMER_NAME, DYN_USER_NAME, DYN_PASSWORD
-									manual: none
+   --dns 								Solve a DNS challenge using the specified provider. Disables all other challenges. Run 'lego dnshelp' for help on usage.
    --help, -h								show help
    --version, -v							print the version
 ```

@@ -20,20 +20,30 @@ import (
 // Gandi API reference:       http://doc.rpc.gandi.net/index.html
 // Gandi API domain examples: http://doc.rpc.gandi.net/domain/faq.html
 
+var (
+	// endpoint is the Gandi XML-RPC endpoint used by Present and
+	// CleanUp. It is overridden during tests.
+	endpoint = "https://rpc.gandi.net/xmlrpc/"
+	// findZoneByFqdn determines the DNS zone of an fqdn. It is overridden
+	// during tests.
+	findZoneByFqdn = acme.FindZoneByFqdn
+)
+
+// inProgressInfo contains information about an in-progress challenge
 type inProgressInfo struct {
-	zoneID    int    // zoneID of zone to restore in CleanUp
-	newZoneID int    // zoneID of temporary zone containing TXT record
-	rootDN    string // the registered (root) domain name being manipulated
+	zoneID    int    // zoneID of gandi zone to restore in CleanUp
+	newZoneID int    // zoneID of temporary gandi zone containing TXT record
+	authZone  string // the domain name registered at gandi with trailing "."
 }
 
 // DNSProvider is an implementation of the
 // acme.ChallengeProviderTimeout interface that uses Gandi's XML-RPC
 // API to manage TXT records for a domain.
 type DNSProvider struct {
-	apiKey            string
-	inProgressFQDNs   map[string]inProgressInfo
-	inProgressRootDNs map[string]struct{}
-	inProgressMu      sync.Mutex
+	apiKey              string
+	inProgressFQDNs     map[string]inProgressInfo
+	inProgressAuthZones map[string]struct{}
+	inProgressMu        sync.Mutex
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Gandi.
@@ -50,69 +60,50 @@ func NewDNSProviderCredentials(apiKey string) (*DNSProvider, error) {
 		return nil, fmt.Errorf("No Gandi API Key given")
 	}
 	return &DNSProvider{
-		apiKey:            apiKey,
-		inProgressFQDNs:   make(map[string]inProgressInfo),
-		inProgressRootDNs: make(map[string]struct{}),
+		apiKey:              apiKey,
+		inProgressFQDNs:     make(map[string]inProgressInfo),
+		inProgressAuthZones: make(map[string]struct{}),
 	}, nil
 }
 
 // Present creates a TXT record using the specified parameters. It
-// does this by creating and activating a new temporary DNS zone. This
-// new zone contains the TXT record.
+// does this by creating and activating a new temporary Gandi DNS
+// zone. This new zone contains the TXT record.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
 	if ttl < 300 {
 		ttl = 300 // 300 is gandi minimum value for ttl
 	}
-	i := strings.Index(fqdn, ".")
-	sub := fqdn[:i+1]
-	root := fqdn[i+1:]
-	var zoneID int
-	var err error
-	// find sub and root (sub + root == fqdn) where root is the domain
-	// registered with gandi. Do this by successively increasing sub
-	// and decreasing root until root matches a registered domain with
-	// a zone_id
-	for {
-		zoneID, err = d.getZoneID(root)
-		if err == nil {
-			// domain found
-			break
-		}
-		if faultErr, ok := err.(rpcError); ok {
-			if faultErr.faultCode == 510042 {
-				// 510042 error means root is not found - increase
-				// sub, reduce root and retry.
-				// [see http://doc.rpc.gandi.net/errors/fault_codes.html]
-				i := strings.Index(root, ".")
-				if i != -1 && i != len(root)-1 &&
-					strings.Index(root[i+1:], ".") != -1 &&
-					strings.Index(root[i+1:], ".") != len(root[i+1:])-1 {
-					sub = sub + root[:i+1]
-					root = root[i+1:]
-					continue
-				}
-			}
-		}
-		// root is not found and cannot be reduced in size any further
-		// or there is some other error from getZoneID
+	// find authZone and Gandi zone_id for fqdn
+	authZone, err := findZoneByFqdn(fqdn, acme.RecursiveNameserver)
+	if err != nil {
+		return fmt.Errorf("Gandi DNS: findZoneByFqdn failure: %v", err)
+	}
+	zoneID, err := d.getZoneID(authZone)
+	if err != nil {
 		return err
 	}
-	// remove trailing "." from sub
-	sub = sub[:len(sub)-1]
+	// determine name of TXT record
+	if !strings.HasSuffix(
+		strings.ToLower(fqdn), strings.ToLower("."+authZone)) {
+		return fmt.Errorf(
+			"Gandi DNS: unexpected authZone %s for fqdn %s", authZone, fqdn)
+	}
+	name := fqdn[:len(fqdn)-len("."+authZone)]
 	// acquire lock and check there is not a challenge already in
-	// progress for this value of root
+	// progress for this value of authZone
 	d.inProgressMu.Lock()
 	defer d.inProgressMu.Unlock()
-	if _, ok := d.inProgressRootDNs[root]; ok {
+	if _, ok := d.inProgressAuthZones[authZone]; ok {
 		return fmt.Errorf(
-			"Gandi DNS: challenge already in progress on root domain")
+			"Gandi DNS: challenge already in progress for authZone %s",
+			authZone)
 	}
-	// perform API actions to create and activate new zone for root
+	// perform API actions to create and activate new gandi zone
 	// containing the required TXT record
 	newZoneName := fmt.Sprintf(
 		"%s [ACME Challenge %s]",
-		root[:len(root)-1], time.Now().Format(time.RFC822Z))
+		acme.UnFqdn(authZone), time.Now().Format(time.RFC822Z))
 	newZoneID, err := d.cloneZone(zoneID, newZoneName)
 	if err != nil {
 		return err
@@ -121,7 +112,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if err != nil {
 		return err
 	}
-	err = d.addTXTRecord(newZoneID, newZoneVersion, sub, value, ttl)
+	err = d.addTXTRecord(newZoneID, newZoneVersion, name, value, ttl)
 	if err != nil {
 		return err
 	}
@@ -129,7 +120,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if err != nil {
 		return err
 	}
-	err = d.setZone(root, newZoneID)
+	err = d.setZone(authZone, newZoneID)
 	if err != nil {
 		return err
 	}
@@ -137,18 +128,18 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	d.inProgressFQDNs[fqdn] = inProgressInfo{
 		zoneID:    zoneID,
 		newZoneID: newZoneID,
-		rootDN:    root,
+		authZone:  authZone,
 	}
-	d.inProgressRootDNs[root] = struct{}{}
+	d.inProgressAuthZones[authZone] = struct{}{}
 	return nil
 }
 
 // CleanUp removes the TXT record matching the specified
-// parameters. It does this by restoring the old DNS zone and removing
-// the temporary one created by Present.
+// parameters. It does this by restoring the old Gandi DNS zone and
+// removing the temporary one created by Present.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
-	// acquire lock and retrieve zoneID, newZoneID and root
+	// acquire lock and retrieve zoneID, newZoneID and authZone
 	d.inProgressMu.Lock()
 	defer d.inProgressMu.Unlock()
 	if _, ok := d.inProgressFQDNs[fqdn]; !ok {
@@ -157,11 +148,11 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 	zoneID := d.inProgressFQDNs[fqdn].zoneID
 	newZoneID := d.inProgressFQDNs[fqdn].newZoneID
-	root := d.inProgressFQDNs[fqdn].rootDN
+	authZone := d.inProgressFQDNs[fqdn].authZone
 	delete(d.inProgressFQDNs, fqdn)
-	delete(d.inProgressRootDNs, root)
-	// perform API actions to restore old zone for root
-	err := d.setZone(root, zoneID)
+	delete(d.inProgressAuthZones, authZone)
+	// perform API actions to restore old gandi zone for authZone
+	err := d.setZone(authZone, zoneID)
 	if err != nil {
 		return err
 	}
@@ -178,9 +169,6 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return 40 * time.Minute, 60 * time.Second
 }
-
-// endpoint is the Gandi XML-RPC endpoint used by Present and CleanUp.
-var endpoint = "https://rpc.gandi.net/xmlrpc/"
 
 // types for XML-RPC method calls and parameters
 
@@ -332,7 +320,8 @@ func (d *DNSProvider) getZoneID(domain string) (int, error) {
 		}
 	}
 	if zoneID == 0 {
-		return 0, fmt.Errorf("Gandi DNS: Could not determine zone_id")
+		return 0, fmt.Errorf(
+			"Gandi DNS: Could not determine zone_id for %s", domain)
 	}
 	return zoneID, nil
 }
@@ -458,7 +447,8 @@ func (d *DNSProvider) setZone(domain string, zoneID int) error {
 		}
 	}
 	if respZoneID != zoneID {
-		return fmt.Errorf("Gandi DNS: Could not set new zone_id")
+		return fmt.Errorf(
+			"Gandi DNS: Could not set new zone_id for %s", domain)
 	}
 	return nil
 }

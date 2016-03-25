@@ -44,12 +44,16 @@ func TestDNSProvider(t *testing.T) {
 		}
 	}))
 	defer fakeServer.Close()
-	// override gandi endpoint to point to fake server
-	savedEndpoint := endpoint
+	// define function to override findZoneByFqdn with
+	fakeFindZoneByFqdn := func(fqdn, nameserver string) (string, error) {
+		return "example.com.", nil
+	}
+	// override gandi endpoint and findZoneByFqdn function
+	savedEndpoint, savedFindZoneByFqdn := endpoint, findZoneByFqdn
 	defer func() {
-		endpoint = savedEndpoint
+		endpoint, findZoneByFqdn = savedEndpoint, savedFindZoneByFqdn
 	}()
-	endpoint = fakeServer.URL + "/"
+	endpoint, findZoneByFqdn = fakeServer.URL+"/", fakeFindZoneByFqdn
 	// run Present
 	err = provider.Present("abc.def.example.com", "", fakeKeyAuth)
 	if err != nil {
@@ -68,66 +72,6 @@ func TestDNSProvider(t *testing.T) {
 // anonymizing the RPC data.
 var serverResponses = map[string]string{
 	// Present Request->Response 1 (getZoneID)
-	`<?xml version="1.0"?>
-<methodCall>
-  <methodName>domain.info</methodName>
-  <param>
-    <value>
-      <string>123412341234123412341234</string>
-    </value>
-  </param>
-  <param>
-    <value>
-      <string>abc.def.example.com.</string>
-    </value>
-  </param>
-</methodCall>`: `<?xml version='1.0'?>
-<methodResponse>
-<fault>
-<value><struct>
-<member>
-<name>faultCode</name>
-<value><int>510042</int></value>
-</member>
-<member>
-<name>faultString</name>
-<value><string>Error on object : OBJECT_DOMAIN (CAUSE_NOTFOUND) [Domain 'abc.def.example.com.' doesn't exist.]</string></value>
-</member>
-</struct></value>
-</fault>
-</methodResponse>
-`,
-	// Present Request->Response 2 (getZoneID)
-	`<?xml version="1.0"?>
-<methodCall>
-  <methodName>domain.info</methodName>
-  <param>
-    <value>
-      <string>123412341234123412341234</string>
-    </value>
-  </param>
-  <param>
-    <value>
-      <string>def.example.com.</string>
-    </value>
-  </param>
-</methodCall>`: `<?xml version='1.0'?>
-<methodResponse>
-<fault>
-<value><struct>
-<member>
-<name>faultCode</name>
-<value><int>510042</int></value>
-</member>
-<member>
-<name>faultString</name>
-<value><string>Error on object : OBJECT_DOMAIN (CAUSE_NOTFOUND) [Domain 'def.example.com.' doesn't exist.]</string></value>
-</member>
-</struct></value>
-</fault>
-</methodResponse>
-`,
-	// Present Request->Response 3 (getZoneID)
 	`<?xml version="1.0"?>
 <methodCall>
   <methodName>domain.info</methodName>
@@ -309,7 +253,7 @@ var serverResponses = map[string]string{
 </params>
 </methodResponse>
 `,
-	// Present Request->Response 4 (cloneZone)
+	// Present Request->Response 2 (cloneZone)
 	`<?xml version="1.0"?>
 <methodCall>
   <methodName>domain.zone.clone</methodName>
@@ -384,7 +328,7 @@ var serverResponses = map[string]string{
 </params>
 </methodResponse>
 `,
-	// Present Request->Response 5 (newZoneVersion)
+	// Present Request->Response 3 (newZoneVersion)
 	`<?xml version="1.0"?>
 <methodCall>
   <methodName>domain.zone.version.new</methodName>
@@ -407,7 +351,7 @@ var serverResponses = map[string]string{
 </params>
 </methodResponse>
 `,
-	// Present Request->Response 6 (addTXTRecord)
+	// Present Request->Response 4 (addTXTRecord)
 	`<?xml version="1.0"?>
 <methodCall>
   <methodName>domain.zone.record.add</methodName>
@@ -486,7 +430,7 @@ var serverResponses = map[string]string{
 </params>
 </methodResponse>
 `,
-	// Present Request->Response 7 (setZoneVersion)
+	// Present Request->Response 5 (setZoneVersion)
 	`<?xml version="1.0"?>
 <methodCall>
   <methodName>domain.zone.version.set</methodName>
@@ -514,7 +458,7 @@ var serverResponses = map[string]string{
 </params>
 </methodResponse>
 `,
-	// Present Request->Response 8 (setZone)
+	// Present Request->Response 6 (setZone)
 	`<?xml version="1.0"?>
 <methodCall>
   <methodName>domain.zone.set</methodName>

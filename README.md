@@ -168,7 +168,7 @@ A valid, but bare-bones example use of the acme package:
 type MyUser struct {
 	Email        string
 	Registration *acme.RegistrationResource
-	key          *rsa.PrivateKey
+	key          crypto.PrivateKey
 }
 func (u MyUser) GetEmail() string {
 	return u.Email
@@ -176,7 +176,7 @@ func (u MyUser) GetEmail() string {
 func (u MyUser) GetRegistration() *acme.RegistrationResource {
 	return u.Registration
 }
-func (u MyUser) GetPrivateKey() *rsa.PrivateKey {
+func (u MyUser) GetPrivateKey() crypto.PrivateKey {
 	return u.key
 }
 
@@ -193,7 +193,7 @@ myUser := MyUser{
 
 // A client facilitates communication with the CA server. This CA URL is
 // configured for a local dev instance of Boulder running in Docker in a VM.
-client, err := acme.NewClient("http://192.168.99.100:4000", &myUser, rsaKeySize)
+client, err := acme.NewClient("http://192.168.99.100:4000", &myUser, acme.RSA2048)
 if err != nil {
   log.Fatal(err)
 }

@@ -1,57 +1,69 @@
 // Package route53 implements a DNS provider for solving the DNS-01 challenge
-// using route53 DNS.
+// using AWS Route 53 DNS.
 package route53
 
 import (
 	"fmt"
-	"os"
+	"math/rand"
 	"strings"
 	"time"
 
-	"github.com/mitchellh/goamz/aws"
-	"github.com/mitchellh/goamz/route53"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/client"
+	"github.com/aws/aws-sdk-go/aws/request"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/xenolf/lego/acme"
 )
 
-// DNSProvider is an implementation of the acme.ChallengeProvider interface
+const (
+	maxRetries = 5
+)
+
+// DNSProvider implements the acme.ChallengeProvider interface
 type DNSProvider struct {
 	client *route53.Route53
 }
 
-// NewDNSProvider returns a DNSProvider instance configured for the AWS
-// route53 service. The AWS region name must be passed in the environment
-// variable AWS_REGION.
-func NewDNSProvider() (*DNSProvider, error) {
-	regionName := os.Getenv("AWS_REGION")
-	return NewDNSProviderCredentials("", "", regionName)
+// customRetryer implements the client.Retryer interface by composing the
+// DefaultRetryer. It controls the logic for retrying recoverable request
+// errors (e.g. when rate limits are exceeded).
+type customRetryer struct {
+	client.DefaultRetryer
 }
 
-// NewDNSProviderCredentials uses the supplied credentials to return a
-// DNSProvider instance configured for the AWS route53 service. Authentication
-// is done using the passed credentials or, if empty, falling back to the
-// custonmary AWS credential mechanisms, including the file referenced by
-// $AWS_CREDENTIAL_FILE (defaulting to $HOME/.aws/credentials) optionally
-// scoped to $AWS_PROFILE, credentials supplied by the environment variables
-// AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY [ + AWS_SECURITY_TOKEN ], and
-// finally credentials available via the EC2 instance metadata service.
-func NewDNSProviderCredentials(accessKey, secretKey, regionName string) (*DNSProvider, error) {
-	region, ok := aws.Regions[regionName]
-	if !ok {
-		return nil, fmt.Errorf("Invalid AWS region name %s", regionName)
+// RetryRules overwrites the DefaultRetryer's method.
+// It uses a basic exponential backoff algorithm that returns an initial
+// delay of ~400ms with an upper limit of ~30 seconds which should prevent
+// causing a high number of consecutive throttling errors.
+// For reference: Route 53 enforces an account-wide(!) 5req/s query limit.
+func (d customRetryer) RetryRules(r *request.Request) time.Duration {
+	retryCount := r.RetryCount
+	if retryCount > 7 {
+		retryCount = 7
 	}
 
-	// use aws.GetAuth, which tries really hard to find credentails:
-	//   - uses accessKey and secretKey, if provided
-	//   - uses AWS_PROFILE / AWS_CREDENTIAL_FILE, if provided
-	//   - uses AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY and optionally AWS_SECURITY_TOKEN, if provided
-	//   - uses EC2 instance metadata credentials (http://169.254.169.254/latest/meta-data/…), if available
-	//  ...and otherwise returns an error
-	auth, err := aws.GetAuth(accessKey, secretKey)
-	if err != nil {
-		return nil, err
-	}
+	delay := (1 << uint(retryCount)) * (rand.Intn(50) + 200)
+	return time.Duration(delay) * time.Millisecond
+}
 
-	client := route53.New(auth, region)
+// NewDNSProvider returns a DNSProvider instance configured for the AWS
+// Route 53 service.
+//
+// AWS Credentials are automatically detected in the following locations
+// and prioritized in the following order:
+// 1. Environment variables: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY,
+//    AWS_REGION, [AWS_SESSION_TOKEN]
+// 2. Shared credentials file (defaults to ~/.aws/credentials)
+// 3. Amazon EC2 IAM role
+//
+// See also: https://github.com/aws/aws-sdk-go/wiki/configuring-sdk
+func NewDNSProvider() (*DNSProvider, error) {
+	r := customRetryer{}
+	r.NumMaxRetries = maxRetries
+	config := request.WithRetryer(aws.NewConfig(), r)
+	client := route53.New(session.New(config))
+
 	return &DNSProvider{client: client}, nil
 }
 
@@ -74,21 +86,37 @@ func (r *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 	if err != nil {
 		return err
 	}
+
 	recordSet := newTXTRecordSet(fqdn, value, ttl)
-	update := route53.Change{Action: action, Record: recordSet}
-	changes := []route53.Change{update}
-	req := route53.ChangeResourceRecordSetsRequest{Comment: "Created by Lego", Changes: changes}
-	resp, err := r.client.ChangeResourceRecordSets(hostedZoneID, &req)
+	reqParams := &route53.ChangeResourceRecordSetsInput{
+		HostedZoneId: aws.String(hostedZoneID),
+		ChangeBatch: &route53.ChangeBatch{
+			Comment: aws.String("Managed by Lego"),
+			Changes: []*route53.Change{
+				{
+					Action:            aws.String(action),
+					ResourceRecordSet: recordSet,
+				},
+			},
+		},
+	}
+
+	resp, err := r.client.ChangeResourceRecordSets(reqParams)
 	if err != nil {
 		return err
 	}
 
-	return acme.WaitFor(90*time.Second, 5*time.Second, func() (bool, error) {
-		status, err := r.client.GetChange(resp.ChangeInfo.ID)
+	statusId := resp.ChangeInfo.Id
+
+	return acme.WaitFor(120*time.Second, 4*time.Second, func() (bool, error) {
+		reqParams := &route53.GetChangeInput{
+			Id: statusId,
+		}
+		resp, err := r.client.GetChange(reqParams)
 		if err != nil {
 			return false, err
 		}
-		if status == "INSYNC" {
+		if *resp.ChangeInfo.Status == route53.ChangeStatusInsync {
 			return true, nil
 		}
 		return false, nil
@@ -96,59 +124,41 @@ func (r *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 }
 
 func (r *DNSProvider) getHostedZoneID(fqdn string) (string, error) {
-	zones := []route53.HostedZone{}
-	zoneResp, err := r.client.ListHostedZones("", 0)
-	if err != nil {
-		return "", err
-	}
-	zones = append(zones, zoneResp.HostedZones...)
-
-	for zoneResp.IsTruncated {
-		resp, err := r.client.ListHostedZones(zoneResp.Marker, 0)
-		if err != nil {
-			if rateExceeded(err) {
-				time.Sleep(time.Second)
-				continue
-			}
-			return "", err
-		}
-		zoneResp = resp
-		zones = append(zones, zoneResp.HostedZones...)
-	}
-
 	authZone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameserver)
 	if err != nil {
 		return "", err
 	}
 
-	var hostedZone route53.HostedZone
-	for _, zone := range zones {
-		if zone.Name == authZone {
-			hostedZone = zone
-		}
+	// .DNSName should not have a trailing dot
+	reqParams := &route53.ListHostedZonesByNameInput{
+		DNSName:  aws.String(acme.UnFqdn(authZone)),
+		MaxItems: aws.String("1"),
 	}
-	if hostedZone.ID == "" {
+	resp, err := r.client.ListHostedZonesByName(reqParams)
+	if err != nil {
+		return "", err
+	}
+
+	// .Name has a trailing dot
+	if len(resp.HostedZones) == 0 || *resp.HostedZones[0].Name != authZone {
 		return "", fmt.Errorf("Zone %s not found in Route53 for domain %s", authZone, fqdn)
 	}
 
-	return hostedZone.ID, nil
-}
-
-func newTXTRecordSet(fqdn, value string, ttl int) route53.ResourceRecordSet {
-	return route53.ResourceRecordSet{
-		Name:    fqdn,
-		Type:    "TXT",
-		Records: []string{value},
-		TTL:     ttl,
+	zoneId := *resp.HostedZones[0].Id
+	if strings.HasPrefix(zoneId, "/hostedzone/") {
+		zoneId = strings.TrimPrefix(zoneId, "/hostedzone/")
 	}
 
+	return zoneId, nil
 }
 
-// Route53 API has pretty strict rate limits (5req/s globally per account)
-// Hence we check if we are being throttled to maybe retry the request
-func rateExceeded(err error) bool {
-	if strings.Contains(err.Error(), "Throttling") {
-		return true
+func newTXTRecordSet(fqdn, value string, ttl int) *route53.ResourceRecordSet {
+	return &route53.ResourceRecordSet{
+		Name: aws.String(fqdn),
+		Type: aws.String("TXT"),
+		TTL:  aws.Int64(int64(ttl)),
+		ResourceRecords: []*route53.ResourceRecord{
+			{Value: aws.String(value)},
+		},
 	}
-	return false
 }

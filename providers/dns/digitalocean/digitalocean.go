@@ -63,7 +63,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
 
-	reqURL := fmt.Sprintf("%s/v2/domains/%s/records", digitalOceanBaseURL, domain)
+	authZone, err := acme.FindZoneByFqdn(acme.ToFqdn(domain), acme.RecursiveNameserver)
+	if err != nil {
+		return fmt.Errorf("Could not determine zone for domain: '%s'. %s", domain, err)
+	}	
+
+	authZone = acme.UnFqdn(authZone)
+
+	reqURL := fmt.Sprintf("%s/v2/domains/%s/records", digitalOceanBaseURL, authZone)
 	reqData := txtRecordRequest{RecordType: "TXT", Name: fqdn, Data: value}
 	body, err := json.Marshal(reqData)
 	if err != nil {
@@ -115,7 +122,14 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("unknown record ID for '%s'", fqdn)
 	}
 
-	reqURL := fmt.Sprintf("%s/v2/domains/%s/records/%d", digitalOceanBaseURL, domain, recordID)
+	authZone, err := acme.FindZoneByFqdn(acme.ToFqdn(domain), acme.RecursiveNameserver)
+	if err != nil {
+		return fmt.Errorf("Could not determine zone for domain: '%s'. %s", domain, err)
+	}	
+
+	authZone = acme.UnFqdn(authZone)
+
+	reqURL := fmt.Sprintf("%s/v2/domains/%s/records/%d", digitalOceanBaseURL, authZone, recordID)
 	req, err := http.NewRequest("DELETE", reqURL, nil)
 	if err != nil {
 		return err

@@ -1,9 +1,10 @@
-package main
+package utils
 
 import (
 	"crypto"
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"os"
 	"path"
 
@@ -24,24 +25,33 @@ func NewAccount(email string, conf *Configuration) *Account {
 	accKeysPath := conf.AccountKeysPath(email)
 	// TODO: move to function in configuration?
 	accKeyPath := accKeysPath + string(os.PathSeparator) + email + ".key"
-	if err := checkFolder(accKeysPath); err != nil {
-		logger().Fatalf("Could not check/create directory for account %s: %v", email, err)
+	if err := CheckFolder(accKeysPath); err != nil {
+		log.Fatalf("Could not check/create directory for account %s: %v", email, err)
 	}
 
 	var privKey crypto.PrivateKey
 	if _, err := os.Stat(accKeyPath); os.IsNotExist(err) {
+<<<<<<< HEAD:account.go
 
 		logger().Printf("No key found for account %s. Generating a curve P384 EC key.", email)
 		privKey, err = generatePrivateKey(accKeyPath)
+=======
+		log.Printf("No key found for account %s. Generating a %v bit key.", email, conf.RsaBits())
+		privKey, err = generateRsaKey(conf.RsaBits(), accKeyPath)
+>>>>>>> Cobra CLI run command:cmd/utils/account.go
 		if err != nil {
-			logger().Fatalf("Could not generate RSA private account key for account %s: %v", email, err)
+			log.Fatalf("Could not generate RSA private account key for account %s: %v", email, err)
 		}
+<<<<<<< HEAD:account.go
 
 		logger().Printf("Saved key to %s", accKeyPath)
+=======
+		log.Printf("Saved key to %s", accKeyPath)
+>>>>>>> Cobra CLI run command:cmd/utils/account.go
 	} else {
 		privKey, err = loadPrivateKey(accKeyPath)
 		if err != nil {
-			logger().Fatalf("Could not load RSA private key from file %s: %v", accKeyPath, err)
+			log.Fatalf("Could not load RSA private key from file %s: %v", accKeyPath, err)
 		}
 	}
 
@@ -52,13 +62,13 @@ func NewAccount(email string, conf *Configuration) *Account {
 
 	fileBytes, err := ioutil.ReadFile(accountFile)
 	if err != nil {
-		logger().Fatalf("Could not load file for account %s -> %v", email, err)
+		log.Fatalf("Could not load file for account %s -> %v", email, err)
 	}
 
 	var acc Account
 	err = json.Unmarshal(fileBytes, &acc)
 	if err != nil {
-		logger().Fatalf("Could not parse file for account %s -> %v", email, err)
+		log.Fatalf("Could not parse file for account %s -> %v", email, err)
 	}
 
 	acc.key = privKey

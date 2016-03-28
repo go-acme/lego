@@ -144,14 +144,19 @@ Replace `<INSERT_YOUR_HOSTED_ZONE_ID_HERE>` with the Route 53 zone ID of the dom
     "Statement": [
         {
             "Effect": "Allow",
-            "Action": [ "route53:ListHostedZones", "route53:GetChange" ],
+            "Action": [
+                "route53:GetChange",
+                "route53:ListHostedZonesByName"
+            ],
             "Resource": [
                 "*"
             ]
         },
         {
             "Effect": "Allow",
-            "Action": ["route53:ChangeResourceRecordSets"],
+            "Action": [
+                "route53:ChangeResourceRecordSets"
+            ],
             "Resource": [
                 "arn:aws:route53:::hostedzone/<INSERT_YOUR_HOSTED_ZONE_ID_HERE>"
             ]

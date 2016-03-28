@@ -3,7 +3,7 @@ package acme
 import (
 	"time"
 
-	"github.com/square/go-jose"
+	"gopkg.in/square/go-jose.v1"
 )
 
 type directory struct {

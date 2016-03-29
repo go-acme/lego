@@ -51,19 +51,19 @@ func runHandler(cmd *cobra.Command, args []string) {
 		utils.HandleTOS(RootCmd, client, acc)
 	}
 
-    domains, err := RootCmd.PersistentFlags().GetStringSlice("domains")
-    if err != nil {
-        logger().Fatalln(err.Error())
-    }
-    
+	domains, err := RootCmd.PersistentFlags().GetStringSlice("domains")
+	if err != nil {
+		logger().Fatalln(err.Error())
+	}
+
 	if len(domains) == 0 {
 		logger().Fatal("Please specify --domains or -d")
 	}
 
-    nobundle, err := cmd.PersistentFlags().GetBool("no-bundle")
-    if err != nil {
-        logger().Fatalln(err.Error())
-    }
+	nobundle, err := cmd.PersistentFlags().GetBool("no-bundle")
+	if err != nil {
+		logger().Fatalln(err.Error())
+	}
 	cert, failures := client.ObtainCertificate(domains, !nobundle, nil)
 	if len(failures) > 0 {
 		for k, v := range failures {
@@ -76,12 +76,12 @@ func runHandler(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	err := utils.CheckFolder(conf.CertPath())
+	err = utils.CheckFolder(conf.CertPath())
 	if err != nil {
 		logger().Fatalf("Could not check/create path: %s", err.Error())
 	}
 
-	saveCertRes(cert, conf)
+	utils.SaveCertRes(cert, conf)
 }
 
 // runCmd represents the run command

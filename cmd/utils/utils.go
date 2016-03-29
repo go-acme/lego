@@ -40,7 +40,7 @@ func CheckFolder(path string) error {
 	return nil
 }
 
-func saveCertRes(certRes acme.CertificateResource, conf *Configuration) {
+func SaveCertRes(certRes acme.CertificateResource, conf *Configuration) {
 	// We store the certificate, private key and metadata in different files
 	// as web servers would not be able to work with a combined file.
 	certOut := path.Join(conf.CertPath(), certRes.Domain+".crt")

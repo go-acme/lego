@@ -5,12 +5,16 @@ import (
 	"log"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/xenolf/lego/acme"
 )
 
+var gittag string
 var cfgFile string
+var version string
 var Logger *log.Logger
 
 func logger() *log.Logger {
@@ -41,6 +45,13 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
+    
+	version = "0.3.0"
+	if strings.HasPrefix(gittag, "v") {
+		version = gittag
+	}
+
+	acme.UserAgent = "lego/" + version
 	cwd, err := os.Getwd()
 	if err != nil {
 		logger().Fatal("Could not determine current working directory. Please pass --path.")

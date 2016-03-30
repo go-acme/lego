@@ -87,7 +87,7 @@ Flags:
   -h, --help              help for lego
       --http string       Set the port and interface to use for HTTP based challenges to listen on. Supported: interface:port or :port
   -k, --key-type string   Key type to use for private keys. Supported: rsa2048, rsa4096, rsa8192, ec256, ec384 (default "rsa2048")
-      --path string       Directory to use for storing the data (default "/Users/gianluca/ProgrammingProjects/go/src/github.com/xenolf/lego/.lego")
+      --path string       Directory to use for storing the data (default "{$CWD}/.lego")
   -s, --server string     CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client. (default "https://acme-v01.api.letsencrypt.org/directory")
       --tls string        Set the port and interface to use for TLS based challenges to listen on. Supported: interface:port or :port
       --webroot string    Set the webroot folder to use for HTTP based challenges to write directly in a file in .well-known/acme-challenge
@@ -97,7 +97,6 @@ Use "lego [command] --help" for more information about a command.
 
 For further help on a command:
 ```
-
 $ lego renew --help
 Renew a certificate
 

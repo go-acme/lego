@@ -52,10 +52,14 @@ func (c challengeError) Error() string {
 
 func handleHTTPError(resp *http.Response) error {
 	var errorDetail RemoteError
-	decoder := json.NewDecoder(resp.Body)
-	err := decoder.Decode(&errorDetail)
-	if err != nil {
-		return err
+
+	// try to decode the content as JSON
+	if resp.Header.Get("Content-Type") == "application/json" {
+		decoder := json.NewDecoder(resp.Body)
+		err := decoder.Decode(&errorDetail)
+		if err != nil {
+			return err
+		}
 	}
 
 	errorDetail.StatusCode = resp.StatusCode

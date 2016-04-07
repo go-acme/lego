@@ -109,7 +109,7 @@ func (c *DNSProvider) getHostedZoneID(fqdn string) (string, error) {
 		return "", err
 	}
 
-	result, err := c.makeRequest("GET", "/zones?name=" + acme.UnFqdn(authZone), nil)
+	result, err := c.makeRequest("GET", "/zones?name="+acme.UnFqdn(authZone), nil)
 	if err != nil {
 		return "", err
 	}

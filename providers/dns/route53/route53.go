@@ -106,11 +106,11 @@ func (r *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 		return err
 	}
 
-	statusId := resp.ChangeInfo.Id
+	statusID := resp.ChangeInfo.Id
 
 	return acme.WaitFor(120*time.Second, 4*time.Second, func() (bool, error) {
 		reqParams := &route53.GetChangeInput{
-			Id: statusId,
+			Id: statusID,
 		}
 		resp, err := r.client.GetChange(reqParams)
 		if err != nil {
@@ -144,12 +144,12 @@ func (r *DNSProvider) getHostedZoneID(fqdn string) (string, error) {
 		return "", fmt.Errorf("Zone %s not found in Route53 for domain %s", authZone, fqdn)
 	}
 
-	zoneId := *resp.HostedZones[0].Id
-	if strings.HasPrefix(zoneId, "/hostedzone/") {
-		zoneId = strings.TrimPrefix(zoneId, "/hostedzone/")
+	zoneID := *resp.HostedZones[0].Id
+	if strings.HasPrefix(zoneID, "/hostedzone/") {
+		zoneID = strings.TrimPrefix(zoneID, "/hostedzone/")
 	}
 
-	return zoneId, nil
+	return zoneID, nil
 }
 
 func newTXTRecordSet(fqdn, value string, ttl int) *route53.ResourceRecordSet {

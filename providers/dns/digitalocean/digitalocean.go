@@ -66,7 +66,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	authZone, err := acme.FindZoneByFqdn(acme.ToFqdn(domain), acme.RecursiveNameserver)
 	if err != nil {
 		return fmt.Errorf("Could not determine zone for domain: '%s'. %s", domain, err)
-	}	
+	}
 
 	authZone = acme.UnFqdn(authZone)
 
@@ -125,7 +125,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	authZone, err := acme.FindZoneByFqdn(acme.ToFqdn(domain), acme.RecursiveNameserver)
 	if err != nil {
 		return fmt.Errorf("Could not determine zone for domain: '%s'. %s", domain, err)
-	}	
+	}
 
 	authZone = acme.UnFqdn(authZone)
 

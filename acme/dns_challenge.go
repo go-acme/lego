@@ -214,14 +214,7 @@ func FindZoneByFqdn(fqdn, nameserver string) (string, error) {
 		// We have a success, so one of the answers has to be a SOA RR
 		for _, ans := range in.Answer {
 			if soa, ok := ans.(*dns.SOA); ok {
-				zone := soa.Hdr.Name
-				// If we ended up on one of the TLDs, it means the domain did not exist.
-				publicsuffix, _ := publicsuffix.PublicSuffix(UnFqdn(zone))
-				if publicsuffix == UnFqdn(zone) {
-					return "", fmt.Errorf("Could not determine zone authoritatively")
-				}
-				fqdnToZone[fqdn] = zone
-				return zone, nil
+				return checkIfTLD(fqdn, soa)
 			}
 		}
 		// Or it is NODATA, fall through to NXDOMAIN
@@ -229,17 +222,21 @@ func FindZoneByFqdn(fqdn, nameserver string) (string, error) {
 	// Search the authority section for our precious SOA RR
 	for _, ns := range in.Ns {
 		if soa, ok := ns.(*dns.SOA); ok {
-			zone := soa.Hdr.Name
-			// If we ended up on one of the TLDs, it means the domain did not exist.
-			publicsuffix, _ := publicsuffix.PublicSuffix(UnFqdn(zone))
-			if publicsuffix == UnFqdn(zone) {
-				return "", fmt.Errorf("Could not determine zone authoritatively")
-			}
-			fqdnToZone[fqdn] = zone
-			return zone, nil
+			return checkIfTLD(fqdn, soa)
 		}
 	}
 	return "", fmt.Errorf("NS %s did not return the expected SOA record in the authority section", nameserver)
+}
+
+func checkIfTLD(fqdn string, soa *dns.SOA) (string, error) {
+	zone := soa.Hdr.Name
+	// If we ended up on one of the TLDs, it means the domain did not exist.
+	publicsuffix, _ := publicsuffix.PublicSuffix(UnFqdn(zone))
+	if publicsuffix == UnFqdn(zone) {
+		return "", fmt.Errorf("Could not determine zone authoritatively")
+	}
+	fqdnToZone[fqdn] = zone
+	return zone, nil
 }
 
 // ClearFqdnCache clears the cache of fqdn to zone mappings. Primarily used in testing.

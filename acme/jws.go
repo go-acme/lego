@@ -101,7 +101,9 @@ func (j *jws) Nonce() (string, error) {
 		if err != nil {
 			return nonce, err
 		}
-		return "", errors.New("Can't get nonce")
+		if len(j.nonces) == 0 {
+			return "", errors.New("Can't get nonce")
+		}
 	}
 
 	nonce, j.nonces = j.nonces[len(j.nonces)-1], j.nonces[:len(j.nonces)-1]

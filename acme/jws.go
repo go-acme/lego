@@ -11,7 +11,11 @@ import (
 
 	"gopkg.in/square/go-jose.v1"
 	"errors"
+	"time"
 )
+
+const TRY_COUNT = 10
+const RETRY_PAUSE = time.Second
 
 type jws struct {
 	directoryURL string
@@ -97,13 +101,20 @@ func (j *jws) getNonce() error {
 func (j *jws) Nonce() (string, error) {
 	nonce := ""
 	if len(j.nonces) == 0 {
-		err := j.getNonce()
-		if err != nil {
-			return nonce, err
+		for i := 0; i < TRY_COUNT; i++ {
+			err := j.getNonce()
+			if err != nil {
+				return nonce, err
+			}
+			if len(j.nonces) != 0 {
+				// get nonce ok and can continue
+				break
+			}
+			time.Sleep(RETRY_PAUSE);
 		}
-		if len(j.nonces) == 0 {
-			return "", errors.New("Can't get nonce")
-		}
+	}
+	if len(j.nonces) == 0 {
+		return "", errors.New("Can't get nonce")
 	}
 
 	nonce, j.nonces = j.nonces[len(j.nonces)-1], j.nonces[:len(j.nonces)-1]

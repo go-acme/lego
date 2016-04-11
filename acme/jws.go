@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"gopkg.in/square/go-jose.v1"
 	"errors"
+	"gopkg.in/square/go-jose.v1"
 	"time"
 )
 
@@ -110,8 +110,8 @@ func (j *jws) Nonce() (string, error) {
 				// get nonce ok and can continue
 				break
 			}
-			if(i < TRY_COUNT -1) {
-				time.Sleep(RETRY_PAUSE);
+			if i < TRY_COUNT-1 {
+				time.Sleep(RETRY_PAUSE)
 			}
 		}
 	}

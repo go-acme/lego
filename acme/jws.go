@@ -110,7 +110,9 @@ func (j *jws) Nonce() (string, error) {
 				// get nonce ok and can continue
 				break
 			}
-			time.Sleep(RETRY_PAUSE);
+			if(i < TRY_COUNT -1) {
+				time.Sleep(RETRY_PAUSE);
+			}
 		}
 	}
 	if len(j.nonces) == 0 {

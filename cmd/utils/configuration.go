@@ -69,21 +69,21 @@ func (c *Configuration) ServerPath() string {
 
 // CertPath gets the path for certificates.
 func (c *Configuration) CertPath() string {
-    pathS, err := c.context.PersistentFlags().GetString("path")
+    pathStr, err := c.context.PersistentFlags().GetString("path")
     if err != nil {
         log.Fatalln(err.Error())
     }
-	return path.Join(pathS, "certificates")
+	return path.Join(pathStr, "certificates")
 }
 
 // AccountsPath returns the OS dependent path to the
 // local accounts for a specific CA
 func (c *Configuration) AccountsPath() string {
-    pathS, err := c.context.PersistentFlags().GetString("path")
+    pathStr, err := c.context.PersistentFlags().GetString("path")
     if err != nil {
         log.Fatalln(err.Error())
     }
-	return path.Join(pathS, "accounts", c.ServerPath())
+	return path.Join(pathStr, "accounts", c.ServerPath())
 }
 
 // AccountPath returns the OS dependent path to a particular account

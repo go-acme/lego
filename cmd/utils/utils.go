@@ -69,11 +69,11 @@ func SaveCertRes(certRes acme.CertificateResource, conf *Configuration) {
 }
 
 func Setup(c *cobra.Command) (*Configuration, *Account, *acme.Client) {
-	pathS, err := c.PersistentFlags().GetString("path")
+	pathStr, err := c.PersistentFlags().GetString("path")
 	if err != nil {
 		logger().Fatalf(err.Error())
 	}
-	err = CheckFolder(pathS)
+	err = CheckFolder(pathStr)
 	if err != nil {
 		logger().Fatalf("Could not check/create path: %s", err.Error())
 	}
@@ -106,21 +106,21 @@ func Setup(c *cobra.Command) (*Configuration, *Account, *acme.Client) {
 		logger().Fatalf("Could not create client: %s", err.Error())
 	}
 
-	excludeS, err := c.PersistentFlags().GetStringSlice("exclude")
+	excludeStr, err := c.PersistentFlags().GetStringSlice("exclude")
 	if err != nil {
 		logger().Fatal(err.Error())
 	}
-	if len(excludeS) > 0 {
+	if len(excludeStr) > 0 {
 		client.ExcludeChallenges(conf.ExcludedSolvers())
 	}
 
-	webrootS, err := c.PersistentFlags().GetString("webroot")
+	webrootStr, err := c.PersistentFlags().GetString("webroot")
 	if err != nil {
 		logger().Fatal(err.Error())
 	}
 
-	if len(webrootS) > 0 {
-		provider, err := webroot.NewHTTPProvider(webrootS)
+	if len(webrootStr) > 0 {
+		provider, err := webroot.NewHTTPProvider(webrootStr)
 		if err != nil {
 			logger().Fatal(err)
 		}
@@ -132,15 +132,15 @@ func Setup(c *cobra.Command) (*Configuration, *Account, *acme.Client) {
 		client.ExcludeChallenges([]acme.Challenge{acme.DNS01, acme.TLSSNI01})
 	}
 
-	httpS, err := c.PersistentFlags().GetString("http")
+	httpStr, err := c.PersistentFlags().GetString("http")
 	if err != nil {
 		logger().Fatal(err.Error())
 	}
-	if len(httpS) > 0 {
-		if strings.Index(httpS, ":") == -1 {
+	if len(httpStr) > 0 {
+		if strings.Index(httpStr, ":") == -1 {
 			logger().Fatalf("The --http switch only accepts interface:port or :port for its argument.")
 		}
-		client.SetHTTPAddress(httpS)
+		client.SetHTTPAddress(httpStr)
 	}
 
 	tls, err := c.PersistentFlags().GetString("tls")

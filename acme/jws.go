@@ -10,7 +10,6 @@ import (
 	"net/http"
 
 	"gopkg.in/square/go-jose.v1"
-	"errors"
 )
 
 type jws struct {
@@ -100,9 +99,6 @@ func (j *jws) Nonce() (string, error) {
 		err := j.getNonce()
 		if err != nil {
 			return nonce, err
-		}
-		if len(j.nonces) == 0 {
-			return "", errors.New("Can't get nonce")
 		}
 	}
 

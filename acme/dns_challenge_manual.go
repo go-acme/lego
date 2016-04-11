@@ -23,7 +23,7 @@ func (*DNSProviderManual) Present(domain, token, keyAuth string) error {
 	fqdn, value, ttl := DNS01Record(domain, keyAuth)
 	dnsRecord := fmt.Sprintf(dnsTemplate, fqdn, ttl, value)
 
-	authZone, err := FindZoneByFqdn(fqdn, RecursiveNameserver)
+	authZone, err := FindZoneByFqdn(fqdn, RecursiveNameservers)
 	if err != nil {
 		return err
 	}
@@ -42,7 +42,7 @@ func (*DNSProviderManual) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _, ttl := DNS01Record(domain, keyAuth)
 	dnsRecord := fmt.Sprintf(dnsTemplate, fqdn, ttl, "...")
 
-	authZone, err := FindZoneByFqdn(fqdn, RecursiveNameserver)
+	authZone, err := FindZoneByFqdn(fqdn, RecursiveNameservers)
 	if err != nil {
 		return err
 	}

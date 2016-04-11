@@ -19,6 +19,11 @@ To install from source, just run
 go get -u github.com/xenolf/lego
 ```
 
+To build lego inside a Docker container, just run
+```
+docker build -t lego .
+```
+
 #### Features
 
 - Register with CA

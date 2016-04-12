@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"crypto"
@@ -24,7 +24,7 @@ func NewAccount(email string, conf *Configuration) *Account {
 	accKeysPath := conf.AccountKeysPath(email)
 	// TODO: move to function in configuration?
 	accKeyPath := accKeysPath + string(os.PathSeparator) + email + ".key"
-	if err := checkFolder(accKeysPath); err != nil {
+	if err := CheckFolder(accKeysPath); err != nil {
 		logger().Fatalf("Could not check/create directory for account %s: %v", email, err)
 	}
 

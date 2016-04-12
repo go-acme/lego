@@ -158,7 +158,7 @@ func dnsQuery(fqdn string, rtype uint16, nameservers []string, recursive bool) (
 		m.RecursionDesired = false
 	}
 
-	// Will rety the request based on the number of servers (n+1)
+	// Will retry the request based on the number of servers (n+1)
 	for i := 1; i <= len(nameservers)+1; i++ {
 		ns := nameservers[i%len(nameservers)]
 		in, err = dns.Exchange(m, ns)

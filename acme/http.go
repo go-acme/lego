@@ -93,6 +93,8 @@ func postJSON(j *jws, uri string, reqBody, respBody interface{}) (http.Header, e
 		return nil, errors.New("Failed to marshal network message...")
 	}
 
+	logf("[DEBUG] Attempting to post %s to %s", string(jsonBytes), uri)
+
 	resp, err := j.post(uri, jsonBytes)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to post JWS message. -> %v", err)

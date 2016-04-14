@@ -71,7 +71,7 @@ func TestDNSProvider(t *testing.T) {
 	}))
 	defer fakeServer.Close()
 	// define function to override findZoneByFqdn with
-	fakeFindZoneByFqdn := func(fqdn, nameserver string) (string, error) {
+	fakeFindZoneByFqdn := func(fqdn string, nameserver []string) (string, error) {
 		return "example.com.", nil
 	}
 	// override gandi endpoint and findZoneByFqdn function

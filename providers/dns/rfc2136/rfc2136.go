@@ -82,7 +82,7 @@ func (r *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 func (r *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 	// Find the zone for the given fqdn
-	zone, err := acme.FindZoneByFqdn(fqdn, r.nameserver)
+	zone, err := acme.FindZoneByFqdn(fqdn, []string{r.nameserver})
 	if err != nil {
 		return err
 	}

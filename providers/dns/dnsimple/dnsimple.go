@@ -79,7 +79,7 @@ func (c *DNSProvider) getHostedZone(domain string) (string, string, error) {
 		return "", "", fmt.Errorf("DNSimple API call failed: %v", err)
 	}
 
-	authZone, err := acme.FindZoneByFqdn(domain, acme.RecursiveNameserver)
+	authZone, err := acme.FindZoneByFqdn(domain, acme.RecursiveNameservers)
 	if err != nil {
 		return "", "", err
 	}

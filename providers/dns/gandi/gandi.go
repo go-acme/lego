@@ -75,7 +75,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		ttl = 300 // 300 is gandi minimum value for ttl
 	}
 	// find authZone and Gandi zone_id for fqdn
-	authZone, err := findZoneByFqdn(fqdn, acme.RecursiveNameserver)
+	authZone, err := findZoneByFqdn(fqdn, acme.RecursiveNameservers)
 	if err != nil {
 		return fmt.Errorf("Gandi DNS: findZoneByFqdn failure: %v", err)
 	}

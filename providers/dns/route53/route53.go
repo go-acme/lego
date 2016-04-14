@@ -124,7 +124,7 @@ func (r *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 }
 
 func (r *DNSProvider) getHostedZoneID(fqdn string) (string, error) {
-	authZone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameserver)
+	authZone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameservers)
 	if err != nil {
 		return "", err
 	}

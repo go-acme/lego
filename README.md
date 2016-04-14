@@ -14,7 +14,7 @@ lego supports both binary installs and install from source.
 To get the binary just download the latest release for your OS/Arch from [the release page](https://github.com/xenolf/lego/releases)
 and put the binary somewhere convenient. lego does not assume anything about the location you run it from.
 
-To install from source, just run 
+To install from source, just run
 ```
 go get -u github.com/xenolf/lego
 ```
@@ -45,7 +45,7 @@ Please keep in mind that CLI switches and APIs are still subject to change.
 When using the standard `--path` option, all certificates and account configurations are saved to a folder *.lego* in the current working directory.
 
 #### Sudo
-The CLI does not require root permissions but needs to bind to port 80 and 443 for certain challenges. 
+The CLI does not require root permissions but needs to bind to port 80 and 443 for certain challenges.
 To run the CLI without sudo, you have four options:
 
 - Use setcap 'cap_net_bind_service=+ep' /path/to/program
@@ -71,36 +71,49 @@ This traffic redirection is only needed as long as lego solves challenges. As so
 #### Usage
 
 ```
-NAME:
-   lego - Let's Encrypt client written in Go
+Let's Encrypt client written in Go
 
-USAGE:
-   lego [global options] command [command options] [arguments...]
-   
-VERSION:
-   0.3.0
-   
-COMMANDS:
-   run		Register an account, then create and install a certificate
-   revoke	Revoke a certificate
-   renew	Renew a certificate
-   dnshelp	Shows additional help for the --dns global option
-   help, h	Shows a list of commands or help for one command
-   
-GLOBAL OPTIONS:
-   --domains, -d [--domains option --domains option]			Add domains to the process
-   --server, -s "https://acme-v01.api.letsencrypt.org/directory"	CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client.
-   --email, -m 								Email used for registration and recovery contact.
-   --accept-tos, -a							By setting this flag to true you indicate that you accept the current Let's Encrypt terms of service.
-   --key-type, -k "rsa2048"						Key type to use for private keys. Supported: rsa2048, rsa4096, rsa8192, ec256, ec384
-   --path "${CWD}/.lego"	Directory to use for storing the data
-   --exclude, -x [--exclude option --exclude option]			Explicitly disallow solvers by name from being used. Solvers: "http-01", "tls-sni-01".
-   --webroot 								Set the webroot folder to use for HTTP based challenges to write directly in a file in .well-known/acme-challenge
-   --http 								Set the port and interface to use for HTTP based challenges to listen on. Supported: interface:port or :port
-   --tls 								Set the port and interface to use for TLS based challenges to listen on. Supported: interface:port or :port
-   --dns 								Solve a DNS challenge using the specified provider. Disables all other challenges. Run 'lego dnshelp' for help on usage.
-   --help, -h								show help
-   --version, -v							print the version
+Usage:
+  lego [command]
+
+Available Commands:
+  dnshelp     Shows additional help for the --dns global option
+  renew       Renew a certificate
+  revoke      Revoke a certificate
+  run         Register an account, then create and install a certificate
+  version     Prints current version of lego
+
+Flags:
+  -a, --accept-tos        By setting this flag to true you indicate that you accept the current Let's Encrypt terms of service.
+      --dns string        Solve a DNS challenge using the specified provider. Disables all other challenges. Run 'lego dnshelp' for help on usage.
+  -d, --domains value     Add domains to the process (default [])
+  -m, --email string      Email used for registration and recovery contact.
+  -x, --exclude value     Explicitly disallow solvers by name from being used. Solvers: "http-01", "tls-sni-01". (default [])
+  -h, --help              help for lego
+      --http string       Set the port and interface to use for HTTP based challenges to listen on. Supported: interface:port or :port
+  -k, --key-type string   Key type to use for private keys. Supported: rsa2048, rsa4096, rsa8192, ec256, ec384 (default "rsa2048")
+      --path string       Directory to use for storing the data (default "{$CWD}/.lego")
+  -s, --server string     CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client. (default "https://acme-v01.api.letsencrypt.org/directory")
+      --tls string        Set the port and interface to use for TLS based challenges to listen on. Supported: interface:port or :port
+      --webroot string    Set the webroot folder to use for HTTP based challenges to write directly in a file in .well-known/acme-challenge
+
+Use "lego [command] --help" for more information about a command.
+```
+
+For further help on a command:
+```
+$ lego renew --help
+Renew a certificate
+
+Usage:
+  lego renew [flags]
+
+Flags:
+      --days int     The number of days left on a certificate to renew it.
+      --no-bundle    Do not create a certificate bundle by adding the issuers certificate to the new certificate.
+      --resuse-key   Used to indicate you want to reuse your current private key for the new certificate.
+      
+...
 ```
 
 ##### CLI Example
@@ -111,7 +124,7 @@ If your environment does not allow you to bind to these ports, please read [Port
 Obtain a certificate:
 
 ```bash
-$ lego --email="foo@bar.com" --domains="example.com" run
+$ lego run --email="foo@bar.com" --domains="example.com"
 ```
 
 (Find your certificate in the `.lego` folder of current working directory.)
@@ -119,13 +132,13 @@ $ lego --email="foo@bar.com" --domains="example.com" run
 To renew the certificate:
 
 ```bash
-$ lego --email="foo@bar.com" --domains="example.com" renew
+$ lego renew --email="foo@bar.com" --domains="example.com"
 ```
 
 Obtain a certificate using the DNS challenge and AWS Route 53:
 
 ```bash
-$ AWS_REGION=us-east-1 AWS_ACCESS_KEY_ID=my_id AWS_SECRET_ACCESS_KEY=my_key lego --email="foo@bar.com" --domains="example.com" --dns="route53" run
+$ AWS_REGION=us-east-1 AWS_ACCESS_KEY_ID=my_id AWS_SECRET_ACCESS_KEY=my_key lego run --email="foo@bar.com" --domains="example.com" --dns="route53"
 ```
 
 Note that `--dns=foo` implies `--exclude=http-01` and `--exclude=tls-sni-01`. lego will not attempt other challenges if you've told it to use DNS instead.
@@ -210,7 +223,7 @@ if err != nil {
 }
 
 // We specify an http port of 5002 and an tls port of 5001 on all interfaces
-// because we aren't running as root and can't bind a listener to port 80 and 443 
+// because we aren't running as root and can't bind a listener to port 80 and 443
 // (used later when we attempt to pass challenges). Keep in mind that we still
 // need to proxy challenge traffic to port 5002 and 5001.
 client.SetHTTPAddress(":5002")

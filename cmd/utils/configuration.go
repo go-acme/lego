@@ -1,29 +1,34 @@
-package main
+package utils
 
 import (
 	"fmt"
+	"log"
 	"net/url"
 	"os"
 	"path"
 	"strings"
 
-	"github.com/codegangsta/cli"
+	"github.com/spf13/cobra"
 	"github.com/xenolf/lego/acme"
 )
 
 // Configuration type from CLI and config files.
 type Configuration struct {
-	context *cli.Context
+	context *cobra.Command
 }
 
 // NewConfiguration creates a new configuration from CLI data.
-func NewConfiguration(c *cli.Context) *Configuration {
+func NewConfiguration(c *cobra.Command) *Configuration {
 	return &Configuration{context: c}
 }
 
 // KeyType the type from which private keys should be generated
 func (c *Configuration) KeyType() (acme.KeyType, error) {
-	switch strings.ToUpper(c.context.GlobalString("key-type")) {
+	keytype, err := c.context.PersistentFlags().GetString("key-type")
+	if err != nil {
+		return "", err
+	}
+	switch strings.ToUpper(keytype) {
 	case "RSA2048":
 		return acme.RSA2048, nil
 	case "RSA4096":
@@ -36,12 +41,16 @@ func (c *Configuration) KeyType() (acme.KeyType, error) {
 		return acme.EC384, nil
 	}
 
-	return "", fmt.Errorf("Unsupported KeyType: %s", c.context.GlobalString("key-type"))
+	return "", fmt.Errorf("Unsupported KeyType: %s", keytype)
 }
 
 // ExcludedSolvers is a list of solvers that are to be excluded.
 func (c *Configuration) ExcludedSolvers() (cc []acme.Challenge) {
-	for _, s := range c.context.GlobalStringSlice("exclude") {
+	exclude, err := c.context.PersistentFlags().GetStringSlice("exclude")
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+	for _, s := range exclude {
 		cc = append(cc, acme.Challenge(s))
 	}
 	return
@@ -49,20 +58,32 @@ func (c *Configuration) ExcludedSolvers() (cc []acme.Challenge) {
 
 // ServerPath returns the OS dependent path to the data for a specific CA
 func (c *Configuration) ServerPath() string {
-	srv, _ := url.Parse(c.context.GlobalString("server"))
+    server, err := c.context.PersistentFlags().GetString("server")
+    if err != nil {
+        log.Fatalln(err.Error())
+    }
+	srv, _ := url.Parse(server)
 	srvStr := strings.Replace(srv.Host, ":", "_", -1)
 	return strings.Replace(srvStr, "/", string(os.PathSeparator), -1)
 }
 
 // CertPath gets the path for certificates.
 func (c *Configuration) CertPath() string {
-	return path.Join(c.context.GlobalString("path"), "certificates")
+    pathStr, err := c.context.PersistentFlags().GetString("path")
+    if err != nil {
+        log.Fatalln(err.Error())
+    }
+	return path.Join(pathStr, "certificates")
 }
 
 // AccountsPath returns the OS dependent path to the
 // local accounts for a specific CA
 func (c *Configuration) AccountsPath() string {
-	return path.Join(c.context.GlobalString("path"), "accounts", c.ServerPath())
+    pathStr, err := c.context.PersistentFlags().GetString("path")
+    if err != nil {
+        log.Fatalln(err.Error())
+    }
+	return path.Join(pathStr, "accounts", c.ServerPath())
 }
 
 // AccountPath returns the OS dependent path to a particular account

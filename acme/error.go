@@ -3,6 +3,7 @@ package acme
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strings"
 )
@@ -53,13 +54,21 @@ func (c challengeError) Error() string {
 func handleHTTPError(resp *http.Response) error {
 	var errorDetail RemoteError
 
+	contenType := resp.Header.Get("Content-Type")
 	// try to decode the content as JSON
-	if resp.Header.Get("Content-Type") == "application/json" {
+	if contenType == "application/json" || contenType == "application/problem+json" {
 		decoder := json.NewDecoder(resp.Body)
 		err := decoder.Decode(&errorDetail)
 		if err != nil {
 			return err
 		}
+	} else {
+		detailBytes, err := ioutil.ReadAll(limitReader(resp.Body, 1024*1024))
+		if err != nil {
+			return err
+		}
+
+		errorDetail.Detail = string(detailBytes)
 	}
 
 	errorDetail.StatusCode = resp.StatusCode

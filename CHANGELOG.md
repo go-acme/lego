@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.3.1] - 2016-04-19
+
+### Added:
+- lib: A new DNS provider for Vultr.
+
+### Fixed:
+- lib: DNS Provider for DigitalOcean could not handle subdomains properly.
+- lib: handleHTTPError should only try to JSON decode error messages with the right content type.
+- lib: The propagation checker for the DNS challenge would not retry on send errors.
+
+
 ## [0.3.0] - 2016-03-19
 
 ### Added:
@@ -76,6 +87,7 @@
 ## [0.1.0] - 2015-12-03
 - Initial release
 
+[0.3.1]: https://github.com/xenolf/lego/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/xenolf/lego/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/xenolf/lego/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/xenolf/lego/compare/v0.1.0...v0.1.1

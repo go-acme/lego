@@ -64,6 +64,14 @@ func NewAccount(email string, conf *Configuration) *Account {
 	acc.key = privKey
 	acc.conf = conf
 
+	if acc.Registration == nil {
+		logger().Fatalf("Could not load account for %s. Registration is nil.", email)
+	}
+
+	if acc.conf == nil {
+		logger().Fatalf("Could not load account for %s. Configuration is nil.", email)
+	}
+
 	return &acc
 }
 

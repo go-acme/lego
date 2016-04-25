@@ -11,8 +11,8 @@ import (
 func TestHTTPChallenge(t *testing.T) {
 	privKey, _ := rsa.GenerateKey(rand.Reader, 512)
 	j := &jws{privKey: privKey}
-	clientChallenge := challenge{Type: HTTP01, Token: "http1"}
-	mockValidate := func(_ *jws, _, _ string, chlng challenge) error {
+	clientChallenge := IDChallenge{Type: HTTP01, Token: "http1"}
+	mockValidate := func(_ *jws, _, _ string, chlng IDChallenge) error {
 		uri := "http://localhost:23457/.well-known/acme-challenge/" + chlng.Token
 		resp, err := httpGet(uri)
 		if err != nil {
@@ -46,7 +46,7 @@ func TestHTTPChallenge(t *testing.T) {
 func TestHTTPChallengeInvalidPort(t *testing.T) {
 	privKey, _ := rsa.GenerateKey(rand.Reader, 128)
 	j := &jws{privKey: privKey}
-	clientChallenge := challenge{Type: HTTP01, Token: "http2"}
+	clientChallenge := IDChallenge{Type: HTTP01, Token: "http2"}
 	solver := &httpChallenge{jws: j, validate: stubValidate, provider: &HTTPProviderServer{port: "123456"}}
 
 	if err := solver.Solve(clientChallenge, "localhost:123456"); err == nil {

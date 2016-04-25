@@ -16,7 +16,7 @@ func HTTP01ChallengePath(token string) string {
 	return "/.well-known/acme-challenge/" + token
 }
 
-func (s *httpChallenge) Solve(chlng challenge, domain string) error {
+func (s *httpChallenge) Solve(chlng IDChallenge, domain string) error {
 
 	logf("[INFO][%s] acme: Trying to solve HTTP-01", domain)
 
@@ -37,5 +37,5 @@ func (s *httpChallenge) Solve(chlng challenge, domain string) error {
 		}
 	}()
 
-	return s.validate(s.jws, domain, chlng.URI, challenge{Resource: "challenge", Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
+	return s.validate(s.jws, domain, chlng.URI, IDChallenge{Resource: "challenge", Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
 }

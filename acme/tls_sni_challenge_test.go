@@ -14,8 +14,8 @@ import (
 func TestTLSSNIChallenge(t *testing.T) {
 	privKey, _ := rsa.GenerateKey(rand.Reader, 512)
 	j := &jws{privKey: privKey}
-	clientChallenge := challenge{Type: TLSSNI01, Token: "tlssni1"}
-	mockValidate := func(_ *jws, _, _ string, chlng challenge) error {
+	clientChallenge := IDChallenge{Type: TLSSNI01, Token: "tlssni1"}
+	mockValidate := func(_ *jws, _, _ string, chlng IDChallenge) error {
 		conn, err := tls.Dial("tcp", "localhost:23457", &tls.Config{
 			InsecureSkipVerify: true,
 		})
@@ -54,7 +54,7 @@ func TestTLSSNIChallenge(t *testing.T) {
 func TestTLSSNIChallengeInvalidPort(t *testing.T) {
 	privKey, _ := rsa.GenerateKey(rand.Reader, 128)
 	j := &jws{privKey: privKey}
-	clientChallenge := challenge{Type: TLSSNI01, Token: "tlssni2"}
+	clientChallenge := IDChallenge{Type: TLSSNI01, Token: "tlssni2"}
 	solver := &tlsSNIChallenge{jws: j, validate: stubValidate, provider: &TLSProviderServer{port: "123456"}}
 
 	if err := solver.Solve(clientChallenge, "localhost:123456"); err == nil {

@@ -17,7 +17,7 @@ import (
 type preCheckDNSFunc func(fqdn, value string) (bool, error)
 
 var (
-	preCheckDNS preCheckDNSFunc = checkDNSPropagation
+	preCheckDNS preCheckDNSFunc = CheckDNSPropagation
 	fqdnToZone                  = map[string]string{}
 )
 
@@ -44,7 +44,7 @@ type dnsChallenge struct {
 	provider ChallengeProvider
 }
 
-func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
+func (s *dnsChallenge) Solve(chlng IDChallenge, domain string) error {
 	logf("[INFO][%s] acme: Trying to solve DNS-01", domain)
 
 	if s.provider == nil {
@@ -87,11 +87,11 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 		return err
 	}
 
-	return s.validate(s.jws, domain, chlng.URI, challenge{Resource: "challenge", Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
+	return s.validate(s.jws, domain, chlng.URI, IDChallenge{Resource: "challenge", Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
 }
 
-// checkDNSPropagation checks if the expected TXT record has been propagated to all authoritative nameservers.
-func checkDNSPropagation(fqdn, value string) (bool, error) {
+// CheckDNSPropagation checks if the expected TXT record has been propagated to all authoritative nameservers.
+func CheckDNSPropagation(fqdn, value string) (bool, error) {
 	// Initial attempt to resolve at the recursive NS
 	r, err := dnsQuery(fqdn, dns.TypeTXT, RecursiveNameservers, true)
 	if err != nil {

@@ -81,6 +81,6 @@ func handleHTTPError(resp *http.Response) error {
 	return errorDetail
 }
 
-func handleChallengeError(chlng challenge) error {
+func handleChallengeError(chlng IDChallenge) error {
 	return challengeError{chlng.Error, chlng.ValidationRecords}
 }

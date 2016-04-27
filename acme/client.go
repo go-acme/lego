@@ -42,10 +42,10 @@ type User interface {
 
 // Interface for all challenge solvers to implement.
 type solver interface {
-	Solve(challenge challenge, domain string) error
+	Solve(challenge IDChallenge, domain string) error
 }
 
-type validateFunc func(j *jws, domain, uri string, chlng challenge) error
+type validateFunc func(j *jws, domain, uri string, chlng IDChallenge) error
 
 // Client is the user-friendy way to ACME
 type Client struct {
@@ -230,7 +230,7 @@ func (c *Client) ObtainCertificate(domains []string, bundle bool, privKey crypto
 
 	logf("[INFO][%s] acme: Validations succeeded; requesting certificates", strings.Join(domains, ", "))
 
-	cert, err := c.requestCertificate(challenges, bundle, privKey)
+	cert, err := c.RequestCertificate(challenges, bundle, privKey)
 	if err != nil {
 		for _, chln := range challenges {
 			failures[chln.Domain] = err
@@ -445,7 +445,7 @@ func (c *Client) getChallenges(domains []string) ([]authorizationResource, map[s
 	return challenges, failures
 }
 
-func (c *Client) requestCertificate(authz []authorizationResource, bundle bool, privKey crypto.PrivateKey) (CertificateResource, error) {
+func (c *Client) RequestCertificate(authz []authorizationResource, bundle bool, privKey crypto.PrivateKey) (CertificateResource, error) {
 	if len(authz) == 0 {
 		return CertificateResource{}, errors.New("Passed no authorizations to requestCertificate!")
 	}
@@ -601,8 +601,8 @@ func parseLinks(links []string) map[string]string {
 
 // validate makes the ACME server start validating a
 // challenge response, only returning once it is done.
-func validate(j *jws, domain, uri string, chlng challenge) error {
-	var challengeResponse challenge
+func validate(j *jws, domain, uri string, chlng IDChallenge) error {
+	var challengeResponse IDChallenge
 
 	hdr, err := postJSON(j, uri, chlng, &challengeResponse)
 	if err != nil {

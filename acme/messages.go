@@ -55,12 +55,12 @@ type authorizationResource struct {
 }
 
 type authorization struct {
-	Resource     string      `json:"resource,omitempty"`
-	Identifier   identifier  `json:"identifier"`
-	Status       string      `json:"status,omitempty"`
-	Expires      time.Time   `json:"expires,omitempty"`
-	Challenges   []challenge `json:"challenges,omitempty"`
-	Combinations [][]int     `json:"combinations,omitempty"`
+	Resource     string        `json:"resource,omitempty"`
+	Identifier   identifier    `json:"identifier"`
+	Status       string        `json:"status,omitempty"`
+	Expires      time.Time     `json:"expires,omitempty"`
+	Challenges   []IDChallenge `json:"challenges,omitempty"`
+	Combinations [][]int       `json:"combinations,omitempty"`
 }
 
 type identifier struct {
@@ -76,7 +76,7 @@ type validationRecord struct {
 	UsedAddress       string   `json:"addressUsed,omitempty"`
 }
 
-type challenge struct {
+type IDChallenge struct {
 	Resource          string             `json:"resource,omitempty"`
 	Type              Challenge          `json:"type,omitempty"`
 	Status            string             `json:"status,omitempty"`

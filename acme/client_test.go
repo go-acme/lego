@@ -129,12 +129,12 @@ func TestValidate(t *testing.T) {
 		case "POST":
 			st := statuses[0]
 			statuses = statuses[1:]
-			writeJSONResponse(w, &challenge{Type: "http-01", Status: st, URI: "http://example.com/", Token: "token"})
+			writeJSONResponse(w, &IDChallenge{Type: "http-01", Status: st, URI: "http://example.com/", Token: "token"})
 
 		case "GET":
 			st := statuses[0]
 			statuses = statuses[1:]
-			writeJSONResponse(w, &challenge{Type: "http-01", Status: st, URI: "http://example.com/", Token: "token"})
+			writeJSONResponse(w, &IDChallenge{Type: "http-01", Status: st, URI: "http://example.com/", Token: "token"})
 
 		default:
 			http.Error(w, r.Method, http.StatusMethodNotAllowed)
@@ -160,7 +160,7 @@ func TestValidate(t *testing.T) {
 
 	for _, tst := range tsts {
 		statuses = tst.statuses
-		if err := validate(j, "example.com", ts.URL, challenge{Type: "http-01", Token: "token"}); err == nil && tst.want != "" {
+		if err := validate(j, "example.com", ts.URL, IDChallenge{Type: "http-01", Token: "token"}); err == nil && tst.want != "" {
 			t.Errorf("[%s] validate: got error %v, want something with %q", tst.name, err, tst.want)
 		} else if err != nil && !strings.Contains(err.Error(), tst.want) {
 			t.Errorf("[%s] validate: got error %v, want something with %q", tst.name, err, tst.want)
@@ -183,7 +183,7 @@ func writeJSONResponse(w http.ResponseWriter, body interface{}) {
 }
 
 // stubValidate is like validate, except it does nothing.
-func stubValidate(j *jws, domain, uri string, chlng challenge) error {
+func stubValidate(j *jws, domain, uri string, chlng IDChallenge) error {
 	return nil
 }
 

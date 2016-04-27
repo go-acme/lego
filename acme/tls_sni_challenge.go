@@ -15,7 +15,7 @@ type tlsSNIChallenge struct {
 	provider ChallengeProvider
 }
 
-func (t *tlsSNIChallenge) Solve(chlng challenge, domain string) error {
+func (t *tlsSNIChallenge) Solve(chlng IDChallenge, domain string) error {
 	// FIXME: https://github.com/ietf-wg-acme/acme/pull/22
 	// Currently we implement this challenge to track boulder, not the current spec!
 
@@ -37,7 +37,7 @@ func (t *tlsSNIChallenge) Solve(chlng challenge, domain string) error {
 			log.Printf("[%s] error cleaning up: %v", domain, err)
 		}
 	}()
-	return t.validate(t.jws, domain, chlng.URI, challenge{Resource: "challenge", Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
+	return t.validate(t.jws, domain, chlng.URI, IDChallenge{Resource: "challenge", Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
 }
 
 // TLSSNI01ChallengeCert returns a certificate for the `tls-sni-01` challenge

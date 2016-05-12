@@ -196,7 +196,7 @@ func handleTOS(c *cli.Context, client *acme.Client, acc *Account) {
 	}
 }
 
-func run(c *cli.Context) {
+func run(c *cli.Context) error {
 	conf, acc, client := setup(c)
 	if acc.Registration == nil {
 		reg, err := client.Register()
@@ -245,9 +245,11 @@ func run(c *cli.Context) {
 	}
 
 	saveCertRes(cert, conf)
+
+	return nil
 }
 
-func revoke(c *cli.Context) {
+func revoke(c *cli.Context) error {
 
 	conf, _, client := setup(c)
 
@@ -269,9 +271,11 @@ func revoke(c *cli.Context) {
 			logger().Print("Certificate was revoked.")
 		}
 	}
+
+	return nil
 }
 
-func renew(c *cli.Context) {
+func renew(c *cli.Context) error {
 	conf, _, client := setup(c)
 
 	if len(c.GlobalStringSlice("domains")) <= 0 {
@@ -299,7 +303,7 @@ func renew(c *cli.Context) {
 		}
 
 		if int(expTime.Sub(time.Now()).Hours()/24.0) > c.Int("days") {
-			return
+			return nil
 		}
 	}
 
@@ -330,4 +334,6 @@ func renew(c *cli.Context) {
 	}
 
 	saveCertRes(newCert, conf)
+
+	return nil
 }

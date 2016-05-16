@@ -41,11 +41,18 @@ func main() {
 
 	acme.UserAgent = "lego/" + app.Version
 
+	defaultPath := ""
 	cwd, err := os.Getwd()
-	if err != nil {
-		logger().Fatal("Could not determine current working directory. Please pass --path.")
+	if err == nil {
+		defaultPath = path.Join(cwd, ".lego")
 	}
-	defaultPath := path.Join(cwd, ".lego")
+
+	app.Before = func(c *cli.Context) error {
+		if c.GlobalString("path") == "" {
+			logger().Fatal("Could not determine current working directory. Please pass --path.")
+		}
+		return nil
+	}
 
 	app.Commands = []cli.Command{
 		{

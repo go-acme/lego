@@ -14,8 +14,11 @@ import (
 // UserAgent (if non-empty) will be tacked onto the User-Agent string in requests.
 var UserAgent string
 
+// HTTPTimeout is used to override the default HTTP timeout of 10 seconds.
+var HTTPTimeout = 10 * time.Second
+
 // defaultClient is an HTTP client with a reasonable timeout value.
-var defaultClient = http.Client{Timeout: 10 * time.Second}
+var defaultClient = http.Client{Timeout: HTTPTimeout}
 
 const (
 	// defaultGoUserAgent is the Go HTTP package user agent string. Too

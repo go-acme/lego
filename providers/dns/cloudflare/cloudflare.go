@@ -156,8 +156,9 @@ func (c *DNSProvider) findTxtRecord(fqdn string) (*cloudFlareRecord, error) {
 func (c *DNSProvider) makeRequest(method, uri string, body io.Reader) (json.RawMessage, error) {
 	// APIError contains error details for failed requests
 	type APIError struct {
-		Code    int    `json:"code,omitempty"`
-		Message string `json:"message,omitempty"`
+		Code       int        `json:"code,omitempty"`
+		Message    string     `json:"message,omitempty"`
+		ErrorChain []APIError `json:"error_chain,omitempty"`
 	}
 
 	// APIResponse represents a response from CloudFlare API
@@ -179,7 +180,7 @@ func (c *DNSProvider) makeRequest(method, uri string, body io.Reader) (json.RawM
 	client := http.Client{Timeout: 30 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("Error querying API -> %v", err)
+		return nil, fmt.Errorf("Error querying Cloudflare API -> %v", err)
 	}
 
 	defer resp.Body.Close()
@@ -192,9 +193,16 @@ func (c *DNSProvider) makeRequest(method, uri string, body io.Reader) (json.RawM
 
 	if !r.Success {
 		if len(r.Errors) > 0 {
-			return nil, fmt.Errorf("API error -> %d: %s", r.Errors[0].Code, r.Errors[0].Message)
+			errStr := ""
+			for _, apiErr := range r.Errors {
+				errStr += fmt.Sprintf("\t Error: %d: %s", apiErr.Code, apiErr.Message)
+				for _, chainErr := range apiErr.ErrorChain {
+					errStr += fmt.Sprintf("<- %d: %s", chainErr.Code, chainErr.Message)
+				}
+			}
+			return nil, fmt.Errorf("Cloudflare API Error \n%s", errStr)
 		}
-		return nil, fmt.Errorf("API error")
+		return nil, fmt.Errorf("Cloudflare API error")
 	}
 
 	return r.Result, nil

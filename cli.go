@@ -146,6 +146,10 @@ func main() {
 			Name:  "dns",
 			Usage: "Solve a DNS challenge using the specified provider. Disables all other challenges. Run 'lego dnshelp' for help on usage.",
 		},
+		cli.IntFlag{
+			Name:  "http-timeout",
+			Usage: "Set the HTTP timeout value to a specific value in seconds. The default is 10 seconds.",
+		},
 	}
 
 	err = app.Run(os.Args)

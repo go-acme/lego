@@ -32,6 +32,11 @@ func checkFolder(path string) error {
 }
 
 func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
+
+	if c.GlobalIsSet("http-timeout") {
+		acme.HTTPTimeout = time.Duration(c.GlobalInt("http-timeout")) * time.Second
+	}
+
 	err := checkFolder(c.GlobalString("path"))
 	if err != nil {
 		logger().Fatalf("Could not check/create path: %s", err.Error())

@@ -37,6 +37,10 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 		acme.HTTPTimeout = time.Duration(c.GlobalInt("http-timeout")) * time.Second
 	}
 
+	if c.GlobalIsSet("dns-timeout") {
+		acme.DNSTimeout = time.Duration(c.GlobalInt("dns-timeout")) * time.Second
+	}
+
 	err := checkFolder(c.GlobalString("path"))
 	if err != nil {
 		logger().Fatalf("Could not check/create path: %s", err.Error())

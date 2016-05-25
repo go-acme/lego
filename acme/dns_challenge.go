@@ -26,6 +26,9 @@ var RecursiveNameservers = []string{
 	"google-public-dns-b.google.com:53",
 }
 
+// DNSTimeout is used to override the default DNS timeout of 10 seconds.
+var DNSTimeout = 10 * time.Second
+
 // DNS01Record returns a DNS record which will fulfill the `dns-01` challenge
 func DNS01Record(domain, keyAuth string) (fqdn string, value string, ttl int) {
 	keyAuthShaBytes := sha256.Sum256([]byte(keyAuth))
@@ -161,10 +164,11 @@ func dnsQuery(fqdn string, rtype uint16, nameservers []string, recursive bool) (
 	// Will retry the request based on the number of servers (n+1)
 	for i := 1; i <= len(nameservers)+1; i++ {
 		ns := nameservers[i%len(nameservers)]
-		in, err = dns.Exchange(m, ns)
+		udp := &dns.Client{Net: "udp", Timeout: DNSTimeout}
+		in, _, err = udp.Exchange(m, ns)
 
 		if err == dns.ErrTruncated {
-			tcp := &dns.Client{Net: "tcp"}
+			tcp := &dns.Client{Net: "tcp", Timeout: DNSTimeout}
 			// If the TCP request suceeds, the err will reset to nil
 			in, _, err = tcp.Exchange(m, ns)
 		}

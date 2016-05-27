@@ -150,6 +150,10 @@ func main() {
 			Name:  "http-timeout",
 			Usage: "Set the HTTP timeout value to a specific value in seconds. The default is 10 seconds.",
 		},
+		cli.IntFlag{
+			Name:  "dns-timeout",
+			Usage: "Set the DNS timeout value to a specific value in seconds. The default is 10 seconds.",
+		},
 	}
 
 	err = app.Run(os.Args)

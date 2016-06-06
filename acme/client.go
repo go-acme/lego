@@ -167,15 +167,29 @@ func (c *Client) Register() (*RegistrationResource, error) {
 	}
 
 	var serverReg Registration
+	var regURI string
 	hdr, err := postJSON(c.jws, c.directory.NewRegURL, regMsg, &serverReg)
 	if err != nil {
-		return nil, err
+		remoteErr, ok := err.(RemoteError)
+		if ok && remoteErr.StatusCode == 409 {
+			regURI = hdr.Get("Location")
+			regMsg.Resource = "reg"
+			if hdr, err = postJSON(c.jws, regURI, regMsg, &serverReg); err != nil {
+				return nil, err
+			}
+		} else {
+			return nil, err
+		}
 	}
 
 	reg := &RegistrationResource{Body: serverReg}
 
 	links := parseLinks(hdr["Link"])
-	reg.URI = hdr.Get("Location")
+
+	if regURI == "" {
+		regURI = hdr.Get("Location")
+	}
+	reg.URI = regURI
 	if links["terms-of-service"] != "" {
 		reg.TosURL = links["terms-of-service"]
 	}

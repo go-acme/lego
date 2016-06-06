@@ -189,6 +189,68 @@ func (c *Client) Register() (*RegistrationResource, error) {
 	return reg, nil
 }
 
+// DeleteRegistration deletes the client's user registration from the ACME
+// server.
+func (c *Client) DeleteRegistration() error {
+	if c == nil || c.user == nil {
+		return errors.New("acme: cannot unregister a nil client or user")
+	}
+	logf("[INFO] acme: Deleting account for %s", c.user.GetEmail())
+
+	regMsg := registrationMessage{
+		Resource: "reg",
+		Delete:   true,
+	}
+
+	_, err := postJSON(c.jws, c.user.GetRegistration().URI, regMsg, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// QueryRegistration runs a POST request on the client's registration and
+// returns the result.
+//
+// This is similar to the Register function, but acting on an existing
+// registration link and resource.
+func (c *Client) QueryRegistration() (*RegistrationResource, error) {
+	if c == nil || c.user == nil {
+		return nil, errors.New("acme: cannot query the registration of a nil client or user")
+	}
+	// Log the URL here instead of the email as the email may not be set
+	logf("[INFO] acme: Querying account for %s", c.user.GetRegistration().URI)
+
+	regMsg := registrationMessage{
+		Resource: "reg",
+	}
+
+	var serverReg Registration
+	hdr, err := postJSON(c.jws, c.user.GetRegistration().URI, regMsg, &serverReg)
+	if err != nil {
+		return nil, err
+	}
+
+	reg := &RegistrationResource{Body: serverReg}
+
+	links := parseLinks(hdr["Link"])
+	// Location: header is not returned so this needs to be populated off of
+	// existing URI
+	reg.URI = c.user.GetRegistration().URI
+	if links["terms-of-service"] != "" {
+		reg.TosURL = links["terms-of-service"]
+	}
+
+	if links["next"] != "" {
+		reg.NewAuthzURL = links["next"]
+	} else {
+		return nil, errors.New("acme: No new-authz link in response to registration query")
+	}
+
+	return reg, nil
+}
+
 // AgreeToTOS updates the Client registration and sends the agreement to
 // the server.
 func (c *Client) AgreeToTOS() error {

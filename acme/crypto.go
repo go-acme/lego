@@ -236,6 +236,9 @@ func pemEncode(data interface{}) []byte {
 	case *rsa.PrivateKey:
 		pemBlock = &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(key)}
 		break
+	case *x509.CertificateRequest:
+		pemBlock = &pem.Block{Type: "CERTIFICATE REQUEST", Bytes: key.Raw}
+		break
 	case derCertificateBytes:
 		pemBlock = &pem.Block{Type: "CERTIFICATE", Bytes: []byte(data.(derCertificateBytes))}
 	}
@@ -259,6 +262,19 @@ func pemDecodeTox509(pem []byte) (*x509.Certificate, error) {
 	}
 
 	return x509.ParseCertificate(pemBlock.Bytes)
+}
+
+func pemDecodeTox509CSR(pem []byte) (*x509.CertificateRequest, error) {
+	pemBlock, err := pemDecode(pem)
+	if pemBlock == nil {
+		return nil, err
+	}
+
+	if pemBlock.Type != "CERTIFICATE REQUEST" {
+		return nil, fmt.Errorf("PEM block is not a certificate request")
+	}
+
+	return x509.ParseCertificateRequest(pemBlock.Bytes)
 }
 
 // GetPEMCertExpiration returns the "NotAfter" date of a PEM encoded certificate.

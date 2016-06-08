@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"crypto/x509"
 	"encoding/json"
 	"encoding/pem"
 	"io/ioutil"
@@ -209,11 +210,12 @@ func handleTOS(c *cli.Context, client *acme.Client, acc *Account) {
 	}
 }
 
-func readCSRFile(filename string) ([]byte, error) {
+func readCSRFile(filename string) (*x509.CertificateRequest, error) {
 	bytes, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
+	raw := bytes
 
 	// see if we can find a PEM-encoded CSR
 	var p *pem.Block
@@ -229,14 +231,14 @@ func readCSRFile(filename string) ([]byte, error) {
 
 		// did we get a CSR?
 		if p.Type == "CERTIFICATE REQUEST" {
-			return p.Bytes, nil
+			raw = p.Bytes
 		}
 	}
 
 	// no PEM-encoded CSR
 	// assume we were given a DER-encoded ASN.1 CSR
 	// (if this assumption is wrong, parsing these bytes will fail)
-	return bytes, nil
+	return x509.ParseCertificateRequest(raw)
 }
 
 func run(c *cli.Context) error {
@@ -281,7 +283,7 @@ func run(c *cli.Context) error {
 
 	if hasDomains {
 		// obtain a certificate, generating a new private key
-		cert, failures = client.ObtainCertificate(c.GlobalStringSlice("domains"), true, nil)
+		cert, failures = client.ObtainCertificate(c.GlobalStringSlice("domains"), !c.Bool("no-bundle"), nil)
 	} else {
 		// read the CSR
 		csr, err := readCSRFile(c.GlobalString("csr"))
@@ -290,11 +292,10 @@ func run(c *cli.Context) error {
 			failures = map[string]error{"csr": err}
 		} else {
 			// obtain a certificate for this CSR
-			cert, failures = client.ObtainCertificateForCSR(csr, true)
+			cert, failures = client.ObtainCertificateForCSR(*csr, !c.Bool("no-bundle"))
 		}
 	}
 
-	cert, failures = client.ObtainCertificate(c.GlobalStringSlice("domains"), !c.Bool("no-bundle"), nil)
 	if len(failures) > 0 {
 		for k, v := range failures {
 			logger().Printf("[%s] Could not obtain certificates\n\t%s", k, v.Error())

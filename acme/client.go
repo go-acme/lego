@@ -285,21 +285,14 @@ func (c *Client) AgreeToTOS() error {
 // your issued certificate as a bundle.
 // This function will never return a partial certificate. If one domain in the list fails,
 // the whole certificate will fail.
-func (c *Client) ObtainCertificateForCSR(csr []byte, bundle bool) (CertificateResource, map[string]error) {
-	// parse the CSR
-	parsedCsr, err := x509.ParseCertificateRequest(csr)
-	if err != nil {
-		return CertificateResource{}, map[string]error{"csr": err}
-	}
-
+func (c *Client) ObtainCertificateForCSR(csr x509.CertificateRequest, bundle bool) (CertificateResource, map[string]error) {
 	// figure out what domains it concerns
 	// start with the common name
-	domains := []string{parsedCsr.Subject.CommonName}
+	domains := []string{csr.Subject.CommonName}
 
 	// loop over the SubjectAltName DNS names
 DNSNames:
-	for _, sanName := range parsedCsr.DNSNames {
-		// /
+	for _, sanName := range csr.DNSNames {
 		for _, existingName := range domains {
 			if existingName == sanName {
 				// duplicate; skip this name
@@ -331,12 +324,15 @@ DNSNames:
 
 	logf("[INFO][%s] acme: Validations succeeded; requesting certificates", strings.Join(domains, ", "))
 
-	cert, err := c.requestCertificateForCsr(challenges, bundle, csr, nil)
+	cert, err := c.requestCertificateForCsr(challenges, bundle, csr.Raw, nil)
 	if err != nil {
 		for _, chln := range challenges {
 			failures[chln.Domain] = err
 		}
 	}
+
+	// Add the CSR to the certificate so that it can be used for renewals.
+	cert.CSR = pemEncode(&csr)
 
 	return cert, failures
 }
@@ -465,6 +461,18 @@ func (c *Client) RenewCertificate(cert CertificateResource, bundle bool) (Certif
 
 		cert.Certificate = issuedCert
 		return cert, nil
+	}
+
+	// If the certificate is the same, then we need to request a new certificate.
+	// Start by checking to see if the certificate was based off a CSR, and
+	// use that if it's defined.
+	if len(cert.CSR) > 0 {
+		csr, err := pemDecodeTox509CSR(cert.CSR)
+		if err != nil {
+			return CertificateResource{}, err
+		}
+		newCert, failures := c.ObtainCertificateForCSR(*csr, bundle)
+		return newCert, failures[cert.Domain]
 	}
 
 	var privKey crypto.PrivateKey

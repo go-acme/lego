@@ -101,6 +101,9 @@ func (a *Account) Save() error {
 		return err
 	}
 
-	return ioutil.WriteFile(path.Join(a.conf.AccountPath(a.Email), "account.json"), jsonBytes, 0700)
-
+	return ioutil.WriteFile(
+		path.Join(a.conf.AccountPath(a.Email), "account.json"),
+		jsonBytes,
+		0600,
+	)
 }

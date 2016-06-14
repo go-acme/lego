@@ -173,7 +173,9 @@ func (c *Client) Register() (*RegistrationResource, error) {
 		remoteErr, ok := err.(RemoteError)
 		if ok && remoteErr.StatusCode == 409 {
 			regURI = hdr.Get("Location")
-			regMsg.Resource = "reg"
+			regMsg = registrationMessage{
+				Resource: "reg",
+			}
 			if hdr, err = postJSON(c.jws, regURI, regMsg, &serverReg); err != nil {
 				return nil, err
 			}

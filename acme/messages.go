@@ -113,4 +113,5 @@ type CertificateResource struct {
 	AccountRef    string `json:"accountRef,omitempty"`
 	PrivateKey    []byte `json:"-"`
 	Certificate   []byte `json:"-"`
+	CSR           []byte `json:"-"`
 }

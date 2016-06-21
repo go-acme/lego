@@ -170,7 +170,7 @@ func main() {
 	}
 }
 
-func dnshelp(c *cli.Context) error {
+func dnshelp(c *cli.Context) {
 	fmt.Printf(
 		`Credentials for DNS providers must be passed through environment variables.
 
@@ -201,6 +201,4 @@ Here is an example bash command using the CloudFlare DNS provider:
 	fmt.Println(`
 For a more detailed explanation of a DNS provider's credential variables,
 please consult their online documentation.`)
-
-	return nil
 }

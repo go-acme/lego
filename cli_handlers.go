@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"crypto/x509"
 	"encoding/json"
 	"encoding/pem"
@@ -143,6 +144,7 @@ func saveCertRes(certRes acme.CertificateResource, conf *Configuration) {
 	// as web servers would not be able to work with a combined file.
 	certOut := path.Join(conf.CertPath(), certRes.Domain+".crt")
 	privOut := path.Join(conf.CertPath(), certRes.Domain+".key")
+	pemOut := path.Join(conf.CertPath(), certRes.Domain+".pem")
 	metaOut := path.Join(conf.CertPath(), certRes.Domain+".json")
 
 	err := ioutil.WriteFile(certOut, certRes.Certificate, 0600)
@@ -156,6 +158,17 @@ func saveCertRes(certRes acme.CertificateResource, conf *Configuration) {
 		if err != nil {
 			logger().Fatalf("Unable to save PrivateKey for domain %s\n\t%s", certRes.Domain, err.Error())
 		}
+
+		if conf.context.GlobalBool("pem") {
+			err = ioutil.WriteFile(pemOut, bytes.Join([][]byte{certRes.Certificate, certRes.PrivateKey}, nil), 0600)
+			if err != nil {
+				logger().Fatalf("Unable to save Certificate and PrivateKey in .pem for domain %s\n\t%s", certRes.Domain, err.Error())
+			}
+		}
+
+	} else if conf.context.GlobalBool("pem") {
+		// we don't have the private key; can't write the .pem file
+		logger().Fatalf("Unable to save pem without private key for domain %s\n\t%s; are you using a CSR?", certRes.Domain, err.Error())
 	}
 
 	jsonBytes, err := json.MarshalIndent(certRes, "", "\t")

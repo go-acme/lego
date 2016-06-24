@@ -9,12 +9,12 @@ import (
 )
 
 var (
-	liveTest bool
-	apiEndpoint string
-	applicationKey string
+	liveTest          bool
+	apiEndpoint       string
+	applicationKey    string
 	applicationSecret string
-	consumerKey string
-	domain   string
+	consumerKey       string
+	domain            string
 )
 
 func init() {
@@ -51,7 +51,6 @@ func TestNewDNSProviderMissingCredErr(t *testing.T) {
 	_, err := NewDNSProvider()
 	assert.EqualError(t, err, "OVH credentials missing")
 
-
 	os.Setenv("OVH_ENDPOINT", "ovh-eu")
 	os.Setenv("OVH_APPLICATION_KEY", "")
 	os.Setenv("OVH_APPLICATION_SECRET", "5678")
@@ -59,7 +58,6 @@ func TestNewDNSProviderMissingCredErr(t *testing.T) {
 	defer restoreEnv()
 	_, err = NewDNSProvider()
 	assert.EqualError(t, err, "OVH credentials missing")
-
 
 	os.Setenv("OVH_ENDPOINT", "ovh-eu")
 	os.Setenv("OVH_APPLICATION_KEY", "1234")

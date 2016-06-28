@@ -507,22 +507,36 @@ func (c *Client) RenewCertificate(cert CertificateResource, bundle bool) (Certif
 func (c *Client) solveChallenges(challenges []authorizationResource) map[string]error {
 	// loop through the resources, basically through the domains.
 	failures := make(map[string]error)
+	ch := make(chan domainError, len(challenges))
 	for _, authz := range challenges {
-		// no solvers - no solving
-		if solvers := c.chooseSolvers(authz.Body, authz.Domain); solvers != nil {
-			for i, solver := range solvers {
-				// TODO: do not immediately fail if one domain fails to validate.
-				err := solver.Solve(authz.Body.Challenges[i], authz.Domain)
-				if err != nil {
-					failures[authz.Domain] = err
-				}
-			}
-		} else {
-			failures[authz.Domain] = fmt.Errorf("[%s] acme: Could not determine solvers", authz.Domain)
+		go func(authz authorizationResource) {
+			err := c.solveChallenge(authz)
+			ch <- domainError{Domain: authz.Domain, Error: err}
+		}(authz)
+	}
+	for i := 0; i < len(challenges); i++ {
+		de := <-ch
+		if de.Error != nil {
+			failures[de.Domain] = de.Error
 		}
 	}
-
 	return failures
+}
+
+func (c *Client) solveChallenge(authz authorizationResource) error {
+	if solvers := c.chooseSolvers(authz.Body, authz.Domain); solvers != nil {
+		for i, solver := range solvers {
+			// TODO: do not immediately fail if one domain fails to validate.
+			err := solver.Solve(authz.Body.Challenges[i], authz.Domain)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+		// no solvers - no solving
+		return fmt.Errorf("[%s] acme: Could not determine solvers", authz.Domain)
+	}
+	return nil
 }
 
 // Checks all combinations from the server and returns an array of

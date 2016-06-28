@@ -8,14 +8,17 @@ import (
 	"crypto/rsa"
 	"fmt"
 	"net/http"
+	"sync"
 
-	"gopkg.in/square/go-jose.v1"
+	jose "gopkg.in/square/go-jose.v1"
 )
 
 type jws struct {
 	directoryURL string
 	privKey      crypto.PrivateKey
-	nonces       []string
+
+	mu     sync.Mutex
+	nonces []string
 }
 
 func keyAsJWK(key interface{}) *jose.JsonWebKey {
@@ -42,9 +45,12 @@ func (j *jws) post(url string, content []byte) (*http.Response, error) {
 		return nil, err
 	}
 
-	j.getNonceFromResponse(resp)
-
-	return resp, err
+	nonce, err := j.getNonceFromResponse(resp)
+	if err != nil {
+		return nil, err
+	}
+	j.addNonce(nonce)
+	return resp, nil
 }
 
 func (j *jws) signContent(content []byte) (*jose.JsonWebSignature, error) {
@@ -74,36 +80,42 @@ func (j *jws) signContent(content []byte) (*jose.JsonWebSignature, error) {
 	return signed, nil
 }
 
-func (j *jws) getNonceFromResponse(resp *http.Response) error {
+func (j *jws) getNonceFromResponse(resp *http.Response) (string, error) {
 	nonce := resp.Header.Get("Replay-Nonce")
 	if nonce == "" {
-		return fmt.Errorf("Server did not respond with a proper nonce header.")
+		return "", fmt.Errorf("Server did not respond with a proper nonce header.")
 	}
-
-	j.nonces = append(j.nonces, nonce)
-	return nil
+	return nonce, nil
 }
 
-func (j *jws) getNonce() error {
+func (j *jws) Nonce() (string, error) {
+	nonce := j.claimNonce()
+	if nonce != "" {
+		return nonce, nil
+	}
 	resp, err := httpHead(j.directoryURL)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	return j.getNonceFromResponse(resp)
 }
 
-func (j *jws) Nonce() (string, error) {
+func (j *jws) claimNonce() string {
+	j.mu.Lock()
+	defer j.mu.Unlock()
+	if len(j.nonces) == 0 {
+		return ""
+	}
 	nonce := ""
-	if len(j.nonces) == 0 {
-		err := j.getNonce()
-		if err != nil {
-			return nonce, err
-		}
+	for len(j.nonces) != 0 && nonce == "" {
+		nonce, j.nonces = j.nonces[len(j.nonces)-1], j.nonces[:len(j.nonces)-1]
 	}
-	if len(j.nonces) == 0 {
-		return "", fmt.Errorf("Can't get nonce")
-	}
-	nonce, j.nonces = j.nonces[len(j.nonces)-1], j.nonces[:len(j.nonces)-1]
-	return nonce, nil
+	return nonce
+}
+
+func (j *jws) addNonce(nonce string) {
+	j.mu.Lock()
+	defer j.mu.Unlock()
+	j.nonces = append(j.nonces, nonce)
 }

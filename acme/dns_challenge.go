@@ -8,6 +8,7 @@ import (
 	"log"
 	"net"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/miekg/dns"
@@ -18,7 +19,9 @@ type preCheckDNSFunc func(fqdn, value string) (bool, error)
 
 var (
 	preCheckDNS preCheckDNSFunc = checkDNSPropagation
-	fqdnToZone                  = map[string]string{}
+
+	fqdnToZoneMu = &sync.Mutex{}
+	fqdnToZone   = map[string]string{}
 )
 
 var RecursiveNameservers = []string{
@@ -27,7 +30,7 @@ var RecursiveNameservers = []string{
 }
 
 // DNSTimeout is used to override the default DNS timeout of 10 seconds.
-var DNSTimeout = 10 * time.Second
+var DNSTimeout = 20 * time.Second
 
 // DNS01Record returns a DNS record which will fulfill the `dns-01` challenge
 func DNS01Record(domain, keyAuth string) (fqdn string, value string, ttl int) {
@@ -209,7 +212,10 @@ func lookupNameservers(fqdn string) ([]string, error) {
 // FindZoneByFqdn determines the zone of the given fqdn
 func FindZoneByFqdn(fqdn string, nameservers []string) (string, error) {
 	// Do we have it cached?
-	if zone, ok := fqdnToZone[fqdn]; ok {
+	fqdnToZoneMu.Lock()
+	zone, ok := fqdnToZone[fqdn]
+	fqdnToZoneMu.Unlock()
+	if ok {
 		return zone, nil
 	}
 
@@ -251,12 +257,16 @@ func checkIfTLD(fqdn string, soa *dns.SOA) (string, error) {
 	if publicsuffix == UnFqdn(zone) {
 		return "", fmt.Errorf("Could not determine zone authoritatively")
 	}
+	fqdnToZoneMu.Lock()
 	fqdnToZone[fqdn] = zone
+	fqdnToZoneMu.Unlock()
 	return zone, nil
 }
 
 // ClearFqdnCache clears the cache of fqdn to zone mappings. Primarily used in testing.
 func ClearFqdnCache() {
+	fqdnToZoneMu.Lock()
+	defer fqdnToZoneMu.Unlock()
 	fqdnToZone = map[string]string{}
 }
 

@@ -17,6 +17,7 @@ import (
 	"github.com/xenolf/lego/providers/dns/cloudflare"
 	"github.com/xenolf/lego/providers/dns/digitalocean"
 	"github.com/xenolf/lego/providers/dns/dnsimple"
+	"github.com/xenolf/lego/providers/dns/dnsmadeeasy"
 	"github.com/xenolf/lego/providers/dns/dyn"
 	"github.com/xenolf/lego/providers/dns/gandi"
 	"github.com/xenolf/lego/providers/dns/googlecloud"
@@ -107,6 +108,8 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 			provider, err = digitalocean.NewDNSProvider()
 		case "dnsimple":
 			provider, err = dnsimple.NewDNSProvider()
+		case "dnsmadeeasy":
+			provider, err = dnsmadeeasy.NewDNSProvider()
 		case "dyn":
 			provider, err = dyn.NewDNSProvider()
 		case "gandi":

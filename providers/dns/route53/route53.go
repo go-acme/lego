@@ -18,6 +18,7 @@ import (
 
 const (
 	maxRetries = 5
+	route53TTL = 10
 )
 
 // DNSProvider implements the acme.ChallengeProvider interface
@@ -69,20 +70,20 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 // Present creates a TXT record using the specified parameters
 func (r *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
+	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
 	value = `"` + value + `"`
-	return r.changeRecord("UPSERT", fqdn, value, ttl)
+	return r.changeRecord("UPSERT", fqdn, value, route53TTL)
 }
 
 // CleanUp removes the TXT record matching the specified parameters
 func (r *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
+	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
 	value = `"` + value + `"`
-	return r.changeRecord("DELETE", fqdn, value, ttl)
+	return r.changeRecord("DELETE", fqdn, value, route53TTL)
 }
 
 func (r *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
-	hostedZoneID, err := r.getHostedZoneID(fqdn)
+	hostedZoneID, err := getHostedZoneID(fqdn, r.client)
 	if err != nil {
 		return fmt.Errorf("Failed to determine Route 53 hosted zone ID: %v", err)
 	}
@@ -123,7 +124,7 @@ func (r *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 	})
 }
 
-func (r *DNSProvider) getHostedZoneID(fqdn string) (string, error) {
+func getHostedZoneID(fqdn string, client *route53.Route53) (string, error) {
 	authZone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameservers)
 	if err != nil {
 		return "", err
@@ -133,7 +134,7 @@ func (r *DNSProvider) getHostedZoneID(fqdn string) (string, error) {
 	reqParams := &route53.ListHostedZonesByNameInput{
 		DNSName: aws.String(acme.UnFqdn(authZone)),
 	}
-	resp, err := r.client.ListHostedZonesByName(reqParams)
+	resp, err := client.ListHostedZonesByName(reqParams)
 	if err != nil {
 		return "", err
 	}

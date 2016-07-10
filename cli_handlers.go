@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/urfave/cli"
+	"github.com/joho/godotenv"
 	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/providers/dns/cloudflare"
 	"github.com/xenolf/lego/providers/dns/digitalocean"
@@ -103,6 +104,12 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 	if c.GlobalIsSet("dns") {
 		var err error
 		var provider acme.ChallengeProvider
+		if c.GlobalIsSet("dns-env-file") {
+			err = godotenv.Load(c.GlobalString("dns-env-file"))
+			if err != nil {
+				logger().Printf("Unable to parse dns-env-file: %s", err.Error())
+			}
+		}
 		switch c.GlobalString("dns") {
 		case "cloudflare":
 			provider, err = cloudflare.NewDNSProvider()

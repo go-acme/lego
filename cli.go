@@ -150,6 +150,10 @@ func main() {
 			Name:  "dns",
 			Usage: "Solve a DNS challenge using the specified provider. Disables all other challenges. Run 'lego dnshelp' for help on usage.",
 		},
+		cli.StringFlag{
+			Name:  "dns-env-file",
+			Usage: "Set DNS challenge parameters in a standard environment file. If an environment variable is already set, tthe value from this file is ignored.",
+		},
 		cli.IntFlag{
 			Name:  "http-timeout",
 			Usage: "Set the HTTP timeout value to a specific value in seconds. The default is 10 seconds.",
@@ -172,7 +176,7 @@ func main() {
 
 func dnshelp(c *cli.Context) error {
 	fmt.Printf(
-		`Credentials for DNS providers must be passed through environment variables.
+		`Credentials for DNS providers must be passed through environment variables, or the --dns-env-file flag.
 
 Here is an example bash command using the CloudFlare DNS provider:
 

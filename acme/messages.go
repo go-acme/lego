@@ -48,7 +48,8 @@ type RegistrationResource struct {
 	TosURL      string       `json:"terms_of_service,omitempty"`
 }
 
-type authorizationResource struct {
+// AuthorizationResource represents an ACME authorization resource.
+type AuthorizationResource struct {
 	Body       authorization
 	Domain     string
 	NewCertURL string

@@ -278,13 +278,13 @@ func (c *Client) AgreeToTOS() error {
 	return err
 }
 
-// ObtainCertificateForCSR tries to obtain a certificate matching the CSR passed into it.
-// The domains are inferred from the CommonName and SubjectAltNames, if any. The private key
-// for this CSR is not required.
+// ObtainCertificateForCSR tries to obtain a certificate matching the CSR
+// passed into it.
+// The domains are inferred from the CommonName and SubjectAltNames, if any.
 // If bundle is true, the []byte contains both the issuer certificate and
 // your issued certificate as a bundle.
-// This function will never return a partial certificate. If one domain in the list fails,
-// the whole certificate will fail.
+// This function will never return a partial certificate. If one domain in
+// the list fails, the whole certificate will fail.
 func (c *Client) ObtainCertificateForCSR(csr x509.CertificateRequest, bundle bool) (CertificateResource, map[string]error) {
 	// figure out what domains it concerns
 	// start with the common name
@@ -310,13 +310,13 @@ DNSNames:
 		logf("[INFO][%s] acme: Obtaining SAN certificate given a CSR", strings.Join(domains, ", "))
 	}
 
-	challenges, failures := c.getChallenges(domains)
+	challenges, failures := c.GetChallenges(domains)
 	// If any challenge fails - return. Do not generate partial SAN certificates.
 	if len(failures) > 0 {
 		return CertificateResource{}, failures
 	}
 
-	errs := c.solveChallenges(challenges)
+	errs := c.SolveChallenges(challenges)
 	// If any challenge fails - return. Do not generate partial SAN certificates.
 	if len(errs) > 0 {
 		return CertificateResource{}, errs
@@ -324,7 +324,7 @@ DNSNames:
 
 	logf("[INFO][%s] acme: Validations succeeded; requesting certificates", strings.Join(domains, ", "))
 
-	cert, err := c.requestCertificateForCsr(challenges, bundle, csr.Raw, nil)
+	cert, err := c.RequestCertificateForCsr(challenges, bundle, csr.Raw, nil)
 	if err != nil {
 		for _, chln := range challenges {
 			failures[chln.Domain] = err
@@ -353,13 +353,13 @@ func (c *Client) ObtainCertificate(domains []string, bundle bool, privKey crypto
 		logf("[INFO][%s] acme: Obtaining SAN certificate", strings.Join(domains, ", "))
 	}
 
-	challenges, failures := c.getChallenges(domains)
+	challenges, failures := c.GetChallenges(domains)
 	// If any challenge fails - return. Do not generate partial SAN certificates.
 	if len(failures) > 0 {
 		return CertificateResource{}, failures
 	}
 
-	errs := c.solveChallenges(challenges)
+	errs := c.SolveChallenges(challenges)
 	// If any challenge fails - return. Do not generate partial SAN certificates.
 	if len(errs) > 0 {
 		return CertificateResource{}, errs
@@ -367,7 +367,7 @@ func (c *Client) ObtainCertificate(domains []string, bundle bool, privKey crypto
 
 	logf("[INFO][%s] acme: Validations succeeded; requesting certificates", strings.Join(domains, ", "))
 
-	cert, err := c.requestCertificate(challenges, bundle, privKey)
+	cert, err := c.RequestCertificate(challenges, bundle, privKey)
 	if err != nil {
 		for _, chln := range challenges {
 			failures[chln.Domain] = err
@@ -502,9 +502,9 @@ func (c *Client) RenewCertificate(cert CertificateResource, bundle bool) (Certif
 	return newCert, failures[cert.Domain]
 }
 
-// Looks through the challenge combinations to find a solvable match.
-// Then solves the challenges in series and returns.
-func (c *Client) solveChallenges(challenges []authorizationResource) map[string]error {
+// SolveChallenges looks through the challenge combinations to find a solvable
+// match, then solves the challenges in series and returns.
+func (c *Client) SolveChallenges(challenges []AuthorizationResource) map[string]error {
 	// loop through the resources, basically through the domains.
 	failures := make(map[string]error)
 	for _, authz := range challenges {
@@ -546,9 +546,10 @@ func (c *Client) chooseSolvers(auth authorization, domain string) map[int]solver
 	return nil
 }
 
-// Get the challenges needed to proof our identifier to the ACME server.
-func (c *Client) getChallenges(domains []string) ([]authorizationResource, map[string]error) {
-	resc, errc := make(chan authorizationResource), make(chan domainError)
+// GetChallenges gets the challenges needed to prove our identity to the
+// ACME server.
+func (c *Client) GetChallenges(domains []string) ([]AuthorizationResource, map[string]error) {
+	resc, errc := make(chan AuthorizationResource), make(chan domainError)
 
 	for _, domain := range domains {
 		go func(domain string) {
@@ -566,11 +567,11 @@ func (c *Client) getChallenges(domains []string) ([]authorizationResource, map[s
 				return
 			}
 
-			resc <- authorizationResource{Body: authz, NewCertURL: links["next"], AuthURL: hdr.Get("Location"), Domain: domain}
+			resc <- AuthorizationResource{Body: authz, NewCertURL: links["next"], AuthURL: hdr.Get("Location"), Domain: domain}
 		}(domain)
 	}
 
-	responses := make(map[string]authorizationResource)
+	responses := make(map[string]AuthorizationResource)
 	failures := make(map[string]error)
 	for i := 0; i < len(domains); i++ {
 		select {
@@ -581,7 +582,7 @@ func (c *Client) getChallenges(domains []string) ([]authorizationResource, map[s
 		}
 	}
 
-	challenges := make([]authorizationResource, 0, len(responses))
+	challenges := make([]AuthorizationResource, 0, len(responses))
 	for _, domain := range domains {
 		if challenge, ok := responses[domain]; ok {
 			challenges = append(challenges, challenge)
@@ -594,9 +595,18 @@ func (c *Client) getChallenges(domains []string) ([]authorizationResource, map[s
 	return challenges, failures
 }
 
-func (c *Client) requestCertificate(authz []authorizationResource, bundle bool, privKey crypto.PrivateKey) (CertificateResource, error) {
+// RequestCertificate tries to obtain a certificate using the authorizations
+// passed in to it.
+//
+// If bundle is true, the []byte contains both the issuer certificate and
+// your issued certificate as a bundle.
+//
+// Note that no authorization is performed here - if you require authorization
+// as well, either manually run GetChallenges and SolveChallenges before using
+// this function, or use ObtainCertificate instead.
+func (c *Client) RequestCertificate(authz []AuthorizationResource, bundle bool, privKey crypto.PrivateKey) (CertificateResource, error) {
 	if len(authz) == 0 {
-		return CertificateResource{}, errors.New("Passed no authorizations to requestCertificate!")
+		return CertificateResource{}, errors.New("Passed no authorizations to RequestCertificate!")
 	}
 
 	var err error
@@ -614,16 +624,27 @@ func (c *Client) requestCertificate(authz []authorizationResource, bundle bool, 
 		san = append(san, auth.Domain)
 	}
 
-	// TODO: should the CSR be customizable?
 	csr, err := generateCsr(privKey, commonName.Domain, san)
 	if err != nil {
 		return CertificateResource{}, err
 	}
 
-	return c.requestCertificateForCsr(authz, bundle, csr, pemEncode(privKey))
+	return c.RequestCertificateForCsr(authz, bundle, csr, pemEncode(privKey))
 }
 
-func (c *Client) requestCertificateForCsr(authz []authorizationResource, bundle bool, csr []byte, privateKeyPem []byte) (CertificateResource, error) {
+// RequestCertificateForCsr tries to obtain a certificate matching the CSR passed into it.
+// The domains are inferred from the CommonName and SubjectAltNames, if any.
+//
+// The private key for this CSR is not required - if it is already known and not required
+// to be returned by certificate resource, use nil for its value.
+//
+// If bundle is true, the []byte contains both the issuer certificate and
+// your issued certificate as a bundle.
+//
+// Note that no authorization is performed here - if you require authorization as well,
+// either manually run GetChallenges and SolveChallenges before using this function, or use
+// ObtainCertificateForCsr instead.
+func (c *Client) RequestCertificateForCsr(authz []AuthorizationResource, bundle bool, csr []byte, privateKeyPem []byte) (CertificateResource, error) {
 	commonName := authz[0]
 
 	var authURLs []string
@@ -645,7 +666,8 @@ func (c *Client) requestCertificateForCsr(authz []authorizationResource, bundle 
 	cerRes := CertificateResource{
 		Domain:     commonName.Domain,
 		CertURL:    resp.Header.Get("Location"),
-		PrivateKey: privateKeyPem}
+		PrivateKey: privateKeyPem,
+	}
 
 	for {
 		switch resp.StatusCode {

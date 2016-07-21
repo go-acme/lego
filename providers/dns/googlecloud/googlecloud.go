@@ -121,14 +121,17 @@ func (c *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // getHostedZone returns the managed-zone
 func (c *DNSProvider) getHostedZone(domain string) (string, error) {
-
-	zones, err := c.client.ManagedZones.List(c.project).Do()
+	dnsName := domain + "."
+	zones, err := c.client.ManagedZones.
+		List(c.project).
+		DnsName(dnsName).
+		Do()
 	if err != nil {
 		return "", fmt.Errorf("GoogleCloud API call failed: %v", err)
 	}
 
 	for _, z := range zones.ManagedZones {
-		if strings.HasSuffix(domain+".", z.DnsName) {
+		if strings.HasSuffix(dnsName, z.DnsName) {
 			return z.Name, nil
 		}
 	}

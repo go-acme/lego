@@ -8,13 +8,14 @@ import (
 	"net/http"
 	"runtime"
 	"strings"
+	"time"
 )
 
 // UserAgent (if non-empty) will be tacked onto the User-Agent string in requests.
 var UserAgent string
 
 // HTTPClient is an HTTP client with a reasonable timeout value.
-var HTTPClient = http.Client{Timeout: 10}
+var HTTPClient = http.Client{Timeout: 10 * time.Second}
 
 const (
 	// defaultGoUserAgent is the Go HTTP package user agent string. Too

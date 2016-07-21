@@ -115,13 +115,6 @@ func GetOCSPForCert(bundle []byte) ([]byte, *ocsp.Response, error) {
 		return nil, nil, err
 	}
 
-	if ocspRes.Certificate == nil {
-		err = ocspRes.CheckSignatureFrom(issuerCert)
-		if err != nil {
-			return nil, nil, err
-		}
-	}
-
 	return ocspResBytes, ocspRes, nil
 }
 

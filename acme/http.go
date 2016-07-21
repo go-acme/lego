@@ -8,17 +8,13 @@ import (
 	"net/http"
 	"runtime"
 	"strings"
-	"time"
 )
 
 // UserAgent (if non-empty) will be tacked onto the User-Agent string in requests.
 var UserAgent string
 
-// HTTPTimeout is used to override the default HTTP timeout of 10 seconds.
-var HTTPTimeout = 10 * time.Second
-
-// defaultClient is an HTTP client with a reasonable timeout value.
-var defaultClient = http.Client{Timeout: HTTPTimeout}
+// HTTPClient is an HTTP client with a reasonable timeout value.
+var HTTPClient = http.Client{Timeout: 10}
 
 const (
 	// defaultGoUserAgent is the Go HTTP package user agent string. Too
@@ -39,7 +35,7 @@ func httpHead(url string) (resp *http.Response, err error) {
 
 	req.Header.Set("User-Agent", userAgent())
 
-	resp, err = defaultClient.Do(req)
+	resp, err = HTTPClient.Do(req)
 	if err != nil {
 		return resp, err
 	}
@@ -57,7 +53,7 @@ func httpPost(url string, bodyType string, body io.Reader) (resp *http.Response,
 	req.Header.Set("Content-Type", bodyType)
 	req.Header.Set("User-Agent", userAgent())
 
-	return defaultClient.Do(req)
+	return HTTPClient.Do(req)
 }
 
 // httpGet performs a GET request with a proper User-Agent string.
@@ -69,7 +65,7 @@ func httpGet(url string) (resp *http.Response, err error) {
 	}
 	req.Header.Set("User-Agent", userAgent())
 
-	return defaultClient.Do(req)
+	return HTTPClient.Do(req)
 }
 
 // getJSON performs an HTTP GET request and parses the response body

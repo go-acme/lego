@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path"
 	"strings"
@@ -39,7 +40,7 @@ func checkFolder(path string) error {
 func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 
 	if c.GlobalIsSet("http-timeout") {
-		acme.HTTPTimeout = time.Duration(c.GlobalInt("http-timeout")) * time.Second
+		acme.HTTPClient = http.Client{Timeout: time.Duration(c.GlobalInt("http-timeout")) * time.Second}
 	}
 
 	if c.GlobalIsSet("dns-timeout") {

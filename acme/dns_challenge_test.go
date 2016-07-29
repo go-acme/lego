@@ -35,16 +35,24 @@ var lookupNameserversTestsErr = []struct {
 }{
 	// invalid tld
 	{"_null.n0n0.",
-		"Could not determine zone authoritatively",
+		"Could not determine the zone",
 	},
 	// invalid domain
 	{"_null.com.",
-		"Could not determine zone authoritatively",
+		"Could not determine the zone",
 	},
 	// invalid domain
 	{"in-valid.co.uk.",
-		"Could not determine zone authoritatively",
+		"Could not determine the zone",
 	},
+}
+
+var findZoneByFqdnTests = []struct {
+	fqdn string
+	zone string
+}{
+	{"mail.google.com.", "google.com."}, // domain is a CNAME
+	{"foo.google.com.", "google.com."},  // domain is a non-existent subdomain
 }
 
 var checkAuthoritativeNssTests = []struct {
@@ -138,6 +146,18 @@ func TestLookupNameserversErr(t *testing.T) {
 		if !strings.Contains(err.Error(), tt.error) {
 			t.Errorf("#%s: expected %q (error); got %q", tt.fqdn, tt.error, err)
 			continue
+		}
+	}
+}
+
+func TestFindZoneByFqdn(t *testing.T) {
+	for _, tt := range findZoneByFqdnTests {
+		res, err := FindZoneByFqdn(tt.fqdn, RecursiveNameservers)
+		if err != nil {
+			t.Errorf("FindZoneByFqdn failed for %s: %v", tt.fqdn, err)
+		}
+		if res != tt.zone {
+			t.Errorf("%s: got %s; want %s", tt.fqdn, res, tt.zone)
 		}
 	}
 }

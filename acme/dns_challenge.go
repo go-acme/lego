@@ -186,7 +186,7 @@ func lookupNameservers(fqdn string) ([]string, error) {
 
 	zone, err := FindZoneByFqdn(fqdn, RecursiveNameservers)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Could not determine the zone: %v", err)
 	}
 
 	r, err := dnsQuery(zone, dns.TypeNS, RecursiveNameservers, true)
@@ -206,53 +206,54 @@ func lookupNameservers(fqdn string) ([]string, error) {
 	return nil, fmt.Errorf("Could not determine authoritative nameservers")
 }
 
-// FindZoneByFqdn determines the zone of the given fqdn
+// FindZoneByFqdn determines the zone apex for the given fqdn by recursing up the
+// domain labels until the nameserver returns a SOA record in the answer section.
 func FindZoneByFqdn(fqdn string, nameservers []string) (string, error) {
 	// Do we have it cached?
 	if zone, ok := fqdnToZone[fqdn]; ok {
 		return zone, nil
 	}
 
-	// Query the authoritative nameserver for a hopefully non-existing SOA record,
-	// in the authority section of the reply it will have the SOA of the
-	// containing zone. rfc2308 has this to say on the subject:
-	//   Name servers authoritative for a zone MUST include the SOA record of
-	//   the zone in the authority section of the response when reporting an
-	//   NXDOMAIN or indicating that no data (NODATA) of the requested type exists
-	in, err := dnsQuery(fqdn, dns.TypeSOA, nameservers, true)
-	if err != nil {
-		return "", err
-	}
-	if in.Rcode != dns.RcodeNameError {
-		if in.Rcode != dns.RcodeSuccess {
-			return "", fmt.Errorf("The NS returned %s for %s", dns.RcodeToString[in.Rcode], fqdn)
+	labelIndexes := dns.Split(fqdn)
+	for _, index := range labelIndexes {
+		domain := fqdn[index:]
+		// Give up if we have reached the TLD
+		if isTLD(domain) {
+			break
 		}
-		// We have a success, so one of the answers has to be a SOA RR
-		for _, ans := range in.Answer {
-			if soa, ok := ans.(*dns.SOA); ok {
-				return checkIfTLD(fqdn, soa)
+
+		in, err := dnsQuery(domain, dns.TypeSOA, nameservers, true)
+		if err != nil {
+			return "", err
+		}
+
+		// Any response code other than NOERROR and NXDOMAIN is treated as error
+		if in.Rcode != dns.RcodeNameError && in.Rcode != dns.RcodeSuccess {
+			return "", fmt.Errorf("Unexpected response code '%s' for %s",
+				dns.RcodeToString[in.Rcode], domain)
+		}
+
+		// Check if we got a SOA RR in the answer section
+		if in.Rcode == dns.RcodeSuccess {
+			for _, ans := range in.Answer {
+				if soa, ok := ans.(*dns.SOA); ok {
+					zone := soa.Hdr.Name
+					fqdnToZone[fqdn] = zone
+					return zone, nil
+				}
 			}
 		}
-		// Or it is NODATA, fall through to NXDOMAIN
 	}
-	// Search the authority section for our precious SOA RR
-	for _, ns := range in.Ns {
-		if soa, ok := ns.(*dns.SOA); ok {
-			return checkIfTLD(fqdn, soa)
-		}
-	}
-	return "", fmt.Errorf("The NS did not return the expected SOA record in the authority section")
+
+	return "", fmt.Errorf("Could not find the start of authority")
 }
 
-func checkIfTLD(fqdn string, soa *dns.SOA) (string, error) {
-	zone := soa.Hdr.Name
-	// If we ended up on one of the TLDs, it means the domain did not exist.
-	publicsuffix, _ := publicsuffix.PublicSuffix(UnFqdn(zone))
-	if publicsuffix == UnFqdn(zone) {
-		return "", fmt.Errorf("Could not determine zone authoritatively")
+func isTLD(domain string) bool {
+	publicsuffix, _ := publicsuffix.PublicSuffix(UnFqdn(domain))
+	if publicsuffix == UnFqdn(domain) {
+		return true
 	}
-	fqdnToZone[fqdn] = zone
-	return zone, nil
+	return false
 }
 
 // ClearFqdnCache clears the cache of fqdn to zone mappings. Primarily used in testing.

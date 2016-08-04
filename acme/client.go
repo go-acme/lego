@@ -58,8 +58,9 @@ type Client struct {
 }
 
 // NewClient creates a new ACME client on behalf of the user. The client will depend on
-// the ACME directory located at caDirURL for the rest of its actions. It will
-// generate private keys for certificates of size keyBits.
+// the ACME directory located at caDirURL for the rest of its actions.  A private
+// key of type keyType (see KeyType contants) will be generated when requesting a new
+// certificate if one isn't provided.
 func NewClient(caDirURL string, user User, keyType KeyType) (*Client, error) {
 	privKey := user.GetPrivateKey()
 	if privKey == nil {

@@ -20,18 +20,19 @@ import (
 type DNSProvider struct {
 	project string
 	client  *dns.Service
+	zones   map[string]string
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Google Cloud
 // DNS. Credentials must be passed in the environment variable: GCE_PROJECT.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider(zones map[string]string) (*DNSProvider, error) {
 	project := os.Getenv("GCE_PROJECT")
-	return NewDNSProviderCredentials(project)
+	return NewDNSProviderCredentials(project, zones)
 }
 
 // NewDNSProviderCredentials uses the supplied credentials to return a
 // DNSProvider instance configured for Google Cloud DNS.
-func NewDNSProviderCredentials(project string) (*DNSProvider, error) {
+func NewDNSProviderCredentials(project string, zones map[string]string) (*DNSProvider, error) {
 	if project == "" {
 		return nil, fmt.Errorf("Google Cloud project name missing")
 	}
@@ -47,6 +48,7 @@ func NewDNSProviderCredentials(project string) (*DNSProvider, error) {
 	return &DNSProvider{
 		project: project,
 		client:  svc,
+		zones:   zones,
 	}, nil
 }
 
@@ -121,6 +123,9 @@ func (c *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // getHostedZone returns the managed-zone
 func (c *DNSProvider) getHostedZone(domain string) (string, error) {
+	if val, ok := c.zones[domain]; ok{
+		domain = val
+	}
 	dnsName := domain + "."
 	zones, err := c.client.ManagedZones.
 		List(c.project).

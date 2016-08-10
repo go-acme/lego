@@ -86,7 +86,7 @@ var checkAuthoritativeNssTestsErr = []struct {
 }
 
 func TestDNSValidServerResponse(t *testing.T) {
-	preCheckDNS = func(fqdn, value string) (bool, error) {
+	PreCheckDNS = func(fqdn, value string) (bool, error) {
 		return true, nil
 	}
 	privKey, _ := rsa.GenerateKey(rand.Reader, 512)
@@ -114,7 +114,7 @@ func TestDNSValidServerResponse(t *testing.T) {
 }
 
 func TestPreCheckDNS(t *testing.T) {
-	ok, err := preCheckDNS("acme-staging.api.letsencrypt.org", "fe01=")
+	ok, err := PreCheckDNS("acme-staging.api.letsencrypt.org", "fe01=")
 	if err != nil || !ok {
 		t.Errorf("preCheckDNS failed for acme-staging.api.letsencrypt.org")
 	}

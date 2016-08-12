@@ -5,7 +5,6 @@ package googlecloud
 import (
 	"fmt"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/xenolf/lego/acme"
@@ -121,23 +120,24 @@ func (c *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // getHostedZone returns the managed-zone
 func (c *DNSProvider) getHostedZone(domain string) (string, error) {
-	dnsName := domain + "."
+	authZone, err := acme.FindZoneByFqdn(acme.ToFqdn(domain), acme.RecursiveNameservers)
+	if err != nil {
+		return "", err
+	}
+
 	zones, err := c.client.ManagedZones.
 		List(c.project).
-		DnsName(dnsName).
+		DnsName(authZone).
 		Do()
 	if err != nil {
 		return "", fmt.Errorf("GoogleCloud API call failed: %v", err)
 	}
 
-	for _, z := range zones.ManagedZones {
-		if strings.HasSuffix(dnsName, z.DnsName) {
-			return z.Name, nil
-		}
+	if len(zones.ManagedZones) == 0 {
+		return "", fmt.Errorf("No matching GoogleCloud domain found for domain %s", authZone)
 	}
 
-	return "", fmt.Errorf("No matching GoogleCloud domain found for domain %s", domain)
-
+	return zones.ManagedZones[0].Name, nil
 }
 
 func (c *DNSProvider) findTxtRecords(zone, fqdn string) ([]*dns.ResourceRecordSet, error) {

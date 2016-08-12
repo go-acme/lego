@@ -17,7 +17,9 @@ import (
 type preCheckDNSFunc func(fqdn, value string) (bool, error)
 
 var (
-	preCheckDNS preCheckDNSFunc = checkDNSPropagation
+	// PreCheckDNS checks DNS propagation before notifying ACME that
+	// the DNS challenge is ready.
+	PreCheckDNS preCheckDNSFunc = checkDNSPropagation
 	fqdnToZone                  = map[string]string{}
 )
 
@@ -84,7 +86,7 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 	}
 
 	err = WaitFor(timeout, interval, func() (bool, error) {
-		return preCheckDNS(fqdn, value)
+		return PreCheckDNS(fqdn, value)
 	})
 	if err != nil {
 		return err

@@ -509,6 +509,10 @@ func (c *Client) solveChallenges(challenges []authorizationResource) map[string]
 	// loop through the resources, basically through the domains.
 	failures := make(map[string]error)
 	for _, authz := range challenges {
+		if authz.Body.Status == "valid" {
+			// Boulder might recycle already-valid authz, see issue #267
+			continue
+		}
 		// no solvers - no solving
 		if solvers := c.chooseSolvers(authz.Body, authz.Domain); solvers != nil {
 			for i, solver := range solvers {

@@ -510,7 +510,8 @@ func (c *Client) solveChallenges(challenges []authorizationResource) map[string]
 	failures := make(map[string]error)
 	for _, authz := range challenges {
 		if authz.Body.Status == "valid" {
-			// Boulder might recycle already-valid authz, see issue #267
+			// Boulder might recycle recent validated authz (see issue #267)
+			logf("[INFO][%s] acme: Authorization already valid; skipping challenge", authz.Domain)
 			continue
 		}
 		// no solvers - no solving

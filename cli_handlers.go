@@ -47,6 +47,17 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 		acme.DNSTimeout = time.Duration(c.GlobalInt("dns-timeout")) * time.Second
 	}
 
+	if len(c.GlobalStringSlice("dns-resolvers")) > 0 {
+		resolvers := []string{}
+		for _, resolver := range c.GlobalStringSlice("dns-resolvers") {
+			if !strings.Contains(resolver, ":") {
+				resolver += ":53"
+			}
+			resolvers = append(resolvers, resolver)
+		}
+		acme.RecursiveNameservers = resolvers
+	}
+
 	err := checkFolder(c.GlobalString("path"))
 	if err != nil {
 		logger().Fatalf("Could not check/create path: %s", err.Error())

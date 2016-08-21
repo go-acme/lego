@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/decker502/lego/providers/dns/dnspod"
 	"github.com/urfave/cli"
 	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/providers/dns/cloudflare"
@@ -130,6 +131,8 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 			provider, err = vultr.NewDNSProvider()
 		case "ovh":
 			provider, err = ovh.NewDNSProvider()
+		case "dnspod":
+			provider, err = dnspod.NewDNSProvider()
 		}
 
 		if err != nil {

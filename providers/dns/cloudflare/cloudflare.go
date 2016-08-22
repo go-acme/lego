@@ -133,7 +133,11 @@ func (c *DNSProvider) findTxtRecord(fqdn string) (*cloudFlareRecord, error) {
 		return nil, err
 	}
 
-	result, err := c.makeRequest("GET", fmt.Sprintf("/zones/%s/dns_records?per_page=1000", zoneID), nil)
+	result, err := c.makeRequest(
+		"GET",
+		fmt.Sprintf("/zones/%s/dns_records?per_page=1000&type=TXT&name=%s", zoneID, acme.UnFqdn(fqdn)),
+		nil,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -145,7 +149,7 @@ func (c *DNSProvider) findTxtRecord(fqdn string) (*cloudFlareRecord, error) {
 	}
 
 	for _, rec := range records {
-		if rec.Name == acme.UnFqdn(fqdn) && rec.Type == "TXT" {
+		if rec.Name == acme.UnFqdn(fqdn) {
 			return &rec, nil
 		}
 	}

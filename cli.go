@@ -158,6 +158,10 @@ func main() {
 			Name:  "dns-timeout",
 			Usage: "Set the DNS timeout value to a specific value in seconds. The default is 10 seconds.",
 		},
+		cli.StringSliceFlag{
+			Name:  "dns-resolvers",
+			Usage: "Set the resolvers to use for performing recursive DNS queries. Supported: host:port. The default is to use Google's DNS resolvers.",
+		},
 		cli.BoolFlag{
 			Name:  "pem",
 			Usage: "Generate a .pem file by concatanating the .key and .crt files together.",

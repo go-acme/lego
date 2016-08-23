@@ -19,6 +19,7 @@ import (
 	"github.com/xenolf/lego/providers/dns/digitalocean"
 	"github.com/xenolf/lego/providers/dns/dnsimple"
 	"github.com/xenolf/lego/providers/dns/dnsmadeeasy"
+	"github.com/xenolf/lego/providers/dns/dnspod"
 	"github.com/xenolf/lego/providers/dns/dyn"
 	"github.com/xenolf/lego/providers/dns/gandi"
 	"github.com/xenolf/lego/providers/dns/googlecloud"
@@ -141,6 +142,8 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 			provider, err = vultr.NewDNSProvider()
 		case "ovh":
 			provider, err = ovh.NewDNSProvider()
+		case "dnspod":
+			provider, err = dnspod.NewDNSProvider()
 		}
 
 		if err != nil {

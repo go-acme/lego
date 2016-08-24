@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/xenolf/lego/acme"
@@ -48,15 +49,21 @@ func NewDNSProviderCredentials(email string, key string) (*DNSProvider, error) {
 // Timeout returns the timeout and interval to use when checking for DNS
 // propagation. Adjusting here to cope with spikes in propagation times.
 func (c *DNSProvider) Timeout() (timeout, interval time.Duration) {
-	return 120 * time.Second, 2 * time.Second
+	return 1200 * time.Second, 2 * time.Second
+}
+
+func getRootDomain(fullDomain string) string {
+	_tmp := strings.Split(fullDomain, ".")
+	return _tmp[len(_tmp)-2] + "." + _tmp[len(_tmp)-1]
 }
 
 // Present creates a TXT record to fulfil the dns-01 challenge
 func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
+	rootDomain := getRootDomain(domain)
 
 	parameters := url.Values{}
-	parameters.Add("domain", domain)
+	parameters.Add("domain", rootDomain)
 	parameters.Add("type", "TXT")
 	parameters.Add("subdomain", acme.UnFqdn(fqdn))
 	parameters.Add("content", value)
@@ -73,6 +80,7 @@ func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 // CleanUp removes the TXT record matching the specified parameters
 func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
+	rootDomain := getRootDomain(domain)
 
 	record, err := c.findTxtRecord(fqdn, domain)
 	if err != nil {
@@ -80,7 +88,7 @@ func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	parameters := url.Values{}
-	parameters.Add("domain", domain)
+	parameters.Add("domain", rootDomain)
 	parameters.Add("record_id", fmt.Sprintf("%d", record.Id))
 
 	_, err = c.makeRequest("POST", fmt.Sprintf("/del?%s", parameters.Encode()), nil)
@@ -94,7 +102,8 @@ func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 func (c *DNSProvider) findTxtRecord(fqdn string, domain string) (*yandexRecord, error) {
 	parameters := url.Values{}
-	parameters.Add("domain", domain)
+	rootDomain := getRootDomain(domain)
+	parameters.Add("domain", rootDomain)
 	result, err := c.makeRequest("GET", fmt.Sprintf("/list?%s", parameters.Encode()), nil)
 	if err != nil {
 		return nil, err
@@ -107,7 +116,7 @@ func (c *DNSProvider) findTxtRecord(fqdn string, domain string) (*yandexRecord, 
 	}
 
 	for _, rec := range records {
-		foundFqdn := rec.Subdomain + "." + domain
+		foundFqdn := rec.Subdomain + "." + rootDomain
 		if foundFqdn == acme.UnFqdn(fqdn) && rec.Type == "TXT" {
 			return &rec, nil
 		}
@@ -118,7 +127,7 @@ func (c *DNSProvider) findTxtRecord(fqdn string, domain string) (*yandexRecord, 
 
 func (c *DNSProvider) makeRequest(method, uri string, body io.Reader) (json.RawMessage, error) {
 
-	// APIResponse represents a response from Yandex API
+	// APIResponse represents a response from CloudFlare API
 	type APIResponse struct {
 		Domain  string          `json:"domain,omitempty"`
 		Success string          `json:"success,omitempty"`
@@ -155,10 +164,9 @@ func (c *DNSProvider) makeRequest(method, uri string, body io.Reader) (json.RawM
 	return r.Record, nil
 }
 
-// yandexRecord represents a yandex DNS record
+// cloudFlareRecord represents a CloudFlare DNS record
 type yandexRecord struct {
 	Domain    string `json:"domain"`
-	fqdn      string `json:"fqdn"`
 	Id        int    `json:"record_id,omitempty"`
 	Subdomain string `json:"subdomain,omitempty"`
 	Name      string `json:"name,omitempty"`

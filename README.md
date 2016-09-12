@@ -78,7 +78,7 @@ USAGE:
    lego [global options] command [command options] [arguments...]
    
 VERSION:
-   0.3.0
+   0.3.1
    
 COMMANDS:
    run		Register an account, then create and install a certificate

@@ -22,6 +22,7 @@ import (
 	"github.com/xenolf/lego/providers/dns/dyn"
 	"github.com/xenolf/lego/providers/dns/gandi"
 	"github.com/xenolf/lego/providers/dns/googlecloud"
+	"github.com/xenolf/lego/providers/dns/linode"
 	"github.com/xenolf/lego/providers/dns/namecheap"
 	"github.com/xenolf/lego/providers/dns/ovh"
 	"github.com/xenolf/lego/providers/dns/pdns"
@@ -130,6 +131,8 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 			provider, err = gandi.NewDNSProvider()
 		case "gcloud":
 			provider, err = googlecloud.NewDNSProvider()
+		case "linode":
+			provider, err = linode.NewDNSProvider()
 		case "manual":
 			provider, err = acme.NewDNSProviderManual()
 		case "namecheap":

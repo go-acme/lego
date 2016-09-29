@@ -97,7 +97,7 @@ func NewClient(caDirURL string, user User, keyType KeyType) (*Client, error) {
 	return &Client{directory: dir, user: user, jws: jws, keyType: keyType, solvers: solvers}, nil
 }
 
-// SetChallengeProvider specifies a custom provider that will make the solution available
+// SetChallengeProvider specifies a custom provider p that can solve the given challenge type.
 func (c *Client) SetChallengeProvider(challenge Challenge, p ChallengeProvider) error {
 	switch challenge {
 	case HTTP01:
@@ -115,6 +115,9 @@ func (c *Client) SetChallengeProvider(challenge Challenge, p ChallengeProvider) 
 // SetHTTPAddress specifies a custom interface:port to be used for HTTP based challenges.
 // If this option is not used, the default port 80 and all interfaces will be used.
 // To only specify a port and no interface use the ":port" notation.
+//
+// NOTE: This REPLACES any custom HTTP provider previously set by calling
+// c.SetChallengeProvider with the default HTTP challenge provider.
 func (c *Client) SetHTTPAddress(iface string) error {
 	host, port, err := net.SplitHostPort(iface)
 	if err != nil {
@@ -131,6 +134,9 @@ func (c *Client) SetHTTPAddress(iface string) error {
 // SetTLSAddress specifies a custom interface:port to be used for TLS based challenges.
 // If this option is not used, the default port 443 and all interfaces will be used.
 // To only specify a port and no interface use the ":port" notation.
+//
+// NOTE: This REPLACES any custom TLS-SNI provider previously set by calling
+// c.SetChallengeProvider with the default TLS-SNI challenge provider.
 func (c *Client) SetTLSAddress(iface string) error {
 	host, port, err := net.SplitHostPort(iface)
 	if err != nil {

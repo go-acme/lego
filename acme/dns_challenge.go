@@ -40,7 +40,7 @@ func getNameservers() []string {
 		return defaultNameservers	
 	}
 	
-	systemNameservers = []string{}
+	systemNameservers := []string{}
 	for _, server := range config.Servers {
 		// ensure all servers have a port number
 		if _, _, err := net.SplitHostPort(server); err != nil {

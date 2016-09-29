@@ -23,21 +23,22 @@ var (
 	fqdnToZone                  = map[string]string{}
 )
 
+const defaultResolvConf = "/etc/resolv.conf"
 var defaultNameservers = []string{
 	"google-public-dns-a.google.com:53",
 	"google-public-dns-b.google.com:53",
 }
 
-var RecursiveNameservers = getNameservers()
+var RecursiveNameservers = getNameservers(defaultResolvConf, defaultNameservers)
 
 // DNSTimeout is used to override the default DNS timeout of 10 seconds.
 var DNSTimeout = 10 * time.Second
 
 // getNameservers attempts to get systems nameservers before falling back to the defaults
-func getNameservers() []string {
-	config, err := dns.ClientConfigFromFile("/etc/resolv.conf")
+func getNameservers(path string, defaults []string) []string {
+	config, err := dns.ClientConfigFromFile(path)
 	if err != nil || len(config.Servers) == 0 {
-		return defaultNameservers	
+		return defaults
 	}
 	
 	systemNameservers := []string{}

@@ -38,9 +38,10 @@ var DNSTimeout = 10 * time.Second
 func getNameservers(path string, defaults []string) []string {
 	config, err := dns.ClientConfigFromFile(path)
 	if err != nil || len(config.Servers) == 0 {
+		logf("[INFO] acme: Using default resolvers %v", defaults)
 		return defaults
 	}
-	
+
 	systemNameservers := []string{}
 	for _, server := range config.Servers {
 		// ensure all servers have a port number
@@ -50,6 +51,7 @@ func getNameservers(path string, defaults []string) []string {
 			systemNameservers = append(systemNameservers, server)
 		}
 	}
+	logf("[INFO] acme: Using system resolvers %v", systemNameservers)
 	return systemNameservers
 }
 

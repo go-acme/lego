@@ -31,6 +31,7 @@ import (
 	"github.com/xenolf/lego/providers/dns/rfc2136"
 	"github.com/xenolf/lego/providers/dns/route53"
 	"github.com/xenolf/lego/providers/dns/vultr"
+	"github.com/xenolf/lego/providers/http/memcached"
 	"github.com/xenolf/lego/providers/http/webroot"
 )
 
@@ -98,6 +99,18 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 		client.SetChallengeProvider(acme.HTTP01, provider)
 
 		// --webroot=foo indicates that the user specifically want to do a HTTP challenge
+		// infer that the user also wants to exclude all other challenges
+		client.ExcludeChallenges([]acme.Challenge{acme.DNS01, acme.TLSSNI01})
+	}
+	if c.GlobalIsSet("memcached-host") {
+		provider, err := memcached.NewMemcachedProvider(c.GlobalStringSlice("memcached-host"))
+		if err != nil {
+			logger().Fatal(err)
+		}
+
+		client.SetChallengeProvider(acme.HTTP01, provider)
+
+		// --memcached-host=foo:11211 indicates that the user specifically want to do a HTTP challenge
 		// infer that the user also wants to exclude all other challenges
 		client.ExcludeChallenges([]acme.Challenge{acme.DNS01, acme.TLSSNI01})
 	}

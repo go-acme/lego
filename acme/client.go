@@ -427,50 +427,7 @@ func (c *Client) RenewCertificate(cert CertificateResource, bundle bool) (Certif
 	timeLeft := x509Cert.NotAfter.Sub(time.Now().UTC())
 	logf("[INFO][%s] acme: Trying renewal with %d hours remaining", cert.Domain, int(timeLeft.Hours()))
 
-	// The first step of renewal is to check if we get a renewed cert
-	// directly from the cert URL.
-	resp, err := httpGet(cert.CertURL)
-	if err != nil {
-		return CertificateResource{}, err
-	}
-	defer resp.Body.Close()
-	serverCertBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return CertificateResource{}, err
-	}
-
-	serverCert, err := x509.ParseCertificate(serverCertBytes)
-	if err != nil {
-		return CertificateResource{}, err
-	}
-
-	// If the server responds with a different certificate we are effectively renewed.
-	// TODO: Further test if we can actually use the new certificate (Our private key works)
-	if !x509Cert.Equal(serverCert) {
-		logf("[INFO][%s] acme: Server responded with renewed certificate", cert.Domain)
-		issuedCert := pemEncode(derCertificateBytes(serverCertBytes))
-		// If bundle is true, we want to return a certificate bundle.
-		// To do this, we need the issuer certificate.
-		if bundle {
-			// The issuer certificate link is always supplied via an "up" link
-			// in the response headers of a new certificate.
-			links := parseLinks(resp.Header["Link"])
-			issuerCert, err := c.getIssuerCertificate(links["up"])
-			if err != nil {
-				// If we fail to acquire the issuer cert, return the issued certificate - do not fail.
-				logf("[ERROR][%s] acme: Could not bundle issuer certificate: %v", cert.Domain, err)
-			} else {
-				// Success - append the issuer cert to the issued cert.
-				issuerCert = pemEncode(derCertificateBytes(issuerCert))
-				issuedCert = append(issuedCert, issuerCert...)
-			}
-		}
-
-		cert.Certificate = issuedCert
-		return cert, nil
-	}
-
-	// If the certificate is the same, then we need to request a new certificate.
+	// We always need to request a new certificate to renew.
 	// Start by checking to see if the certificate was based off a CSR, and
 	// use that if it's defined.
 	if len(cert.CSR) > 0 {

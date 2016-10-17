@@ -24,6 +24,7 @@ import (
 	"github.com/xenolf/lego/providers/dns/googlecloud"
 	"github.com/xenolf/lego/providers/dns/linode"
 	"github.com/xenolf/lego/providers/dns/namecheap"
+	"github.com/xenolf/lego/providers/dns/ns1"
 	"github.com/xenolf/lego/providers/dns/ovh"
 	"github.com/xenolf/lego/providers/dns/pdns"
 	"github.com/xenolf/lego/providers/dns/rfc2136"
@@ -147,6 +148,8 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 			provider, err = ovh.NewDNSProvider()
 		case "pdns":
 			provider, err = pdns.NewDNSProvider()
+		case "ns1":
+			provider, err = ns1.NewDNSProvider()
 		}
 
 		if err != nil {

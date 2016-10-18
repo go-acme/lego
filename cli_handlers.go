@@ -15,6 +15,7 @@ import (
 
 	"github.com/urfave/cli"
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/providers/dns/auroradns"
 	"github.com/xenolf/lego/providers/dns/cloudflare"
 	"github.com/xenolf/lego/providers/dns/digitalocean"
 	"github.com/xenolf/lego/providers/dns/dnsimple"
@@ -118,6 +119,8 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 		var err error
 		var provider acme.ChallengeProvider
 		switch c.GlobalString("dns") {
+		case "auroradns":
+			provider, err = auroradns.NewDNSProvider()
 		case "cloudflare":
 			provider, err = cloudflare.NewDNSProvider()
 		case "digitalocean":

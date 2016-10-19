@@ -16,6 +16,10 @@ type MemcachedProvider struct {
 
 // NewHTTPProvider returns a HTTPProvider instance with a configured webroot path
 func NewMemcachedProvider(hosts []string) (*MemcachedProvider, error) {
+	if len(hosts) == 0 {
+		return nil, fmt.Errorf("No memcached hosts provided")
+	}
+
 	c := &MemcachedProvider{
 		hosts: hosts,
 	}

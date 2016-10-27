@@ -353,7 +353,7 @@ DNSNames:
 // your issued certificate as a bundle.
 // This function will never return a partial certificate. If one domain in the list fails,
 // the whole certificate will fail.
-func (c *Client) ObtainCertificate(domains []string, bundle bool, privKey crypto.PrivateKey) (CertificateResource, map[string]error) {
+func (c *Client) ObtainCertificate(domains []string, bundle bool, privKey crypto.PrivateKey, mustStaple bool) (CertificateResource, map[string]error) {
 	if bundle {
 		logf("[INFO][%s] acme: Obtaining bundled SAN certificate", strings.Join(domains, ", "))
 	} else {
@@ -374,7 +374,7 @@ func (c *Client) ObtainCertificate(domains []string, bundle bool, privKey crypto
 
 	logf("[INFO][%s] acme: Validations succeeded; requesting certificates", strings.Join(domains, ", "))
 
-	cert, err := c.requestCertificate(challenges, bundle, privKey)
+	cert, err := c.requestCertificate(challenges, bundle, privKey, mustStaple)
 	if err != nil {
 		for _, chln := range challenges {
 			failures[chln.Domain] = err
@@ -410,7 +410,7 @@ func (c *Client) RevokeCertificate(certificate []byte) error {
 // If bundle is true, the []byte contains both the issuer certificate and
 // your issued certificate as a bundle.
 // For private key reuse the PrivateKey property of the passed in CertificateResource should be non-nil.
-func (c *Client) RenewCertificate(cert CertificateResource, bundle bool) (CertificateResource, error) {
+func (c *Client) RenewCertificate(cert CertificateResource, bundle, mustStaple bool) (CertificateResource, error) {
 	// Input certificate is PEM encoded. Decode it here as we may need the decoded
 	// cert later on in the renewal process. The input may be a bundle or a single certificate.
 	certificates, err := parsePEMBundle(cert.Certificate)
@@ -462,7 +462,7 @@ func (c *Client) RenewCertificate(cert CertificateResource, bundle bool) (Certif
 		domains = append(domains, x509Cert.Subject.CommonName)
 	}
 
-	newCert, failures := c.ObtainCertificate(domains, bundle, privKey)
+	newCert, failures := c.ObtainCertificate(domains, bundle, privKey, mustStaple)
 	return newCert, failures[cert.Domain]
 }
 
@@ -563,7 +563,7 @@ func (c *Client) getChallenges(domains []string) ([]authorizationResource, map[s
 	return challenges, failures
 }
 
-func (c *Client) requestCertificate(authz []authorizationResource, bundle bool, privKey crypto.PrivateKey) (CertificateResource, error) {
+func (c *Client) requestCertificate(authz []authorizationResource, bundle bool, privKey crypto.PrivateKey, mustStaple bool) (CertificateResource, error) {
 	if len(authz) == 0 {
 		return CertificateResource{}, errors.New("Passed no authorizations to requestCertificate!")
 	}
@@ -584,7 +584,7 @@ func (c *Client) requestCertificate(authz []authorizationResource, bundle bool, 
 	}
 
 	// TODO: should the CSR be customizable?
-	csr, err := generateCsr(privKey, commonName.Domain, san)
+	csr, err := generateCsr(privKey, commonName.Domain, san, mustStaple)
 	if err != nil {
 		return CertificateResource{}, err
 	}

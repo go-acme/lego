@@ -141,7 +141,7 @@ func TestDNSProviderLive(t *testing.T) {
 	}
 	// complete the challenge
 	bundle := false
-	_, failures := client.ObtainCertificate([]string{domain}, bundle, nil)
+	_, failures := client.ObtainCertificate([]string{domain}, bundle, nil, false)
 	if len(failures) > 0 {
 		t.Fatal(failures)
 	}

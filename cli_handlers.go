@@ -29,6 +29,7 @@ import (
 	"github.com/xenolf/lego/providers/dns/ns1"
 	"github.com/xenolf/lego/providers/dns/ovh"
 	"github.com/xenolf/lego/providers/dns/pdns"
+	"github.com/xenolf/lego/providers/dns/rackspace"
 	"github.com/xenolf/lego/providers/dns/rfc2136"
 	"github.com/xenolf/lego/providers/dns/route53"
 	"github.com/xenolf/lego/providers/dns/vultr"
@@ -157,6 +158,8 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 			provider, err = acme.NewDNSProviderManual()
 		case "namecheap":
 			provider, err = namecheap.NewDNSProvider()
+		case "rackspace":
+			provider, err = rackspace.NewDNSProvider()
 		case "route53":
 			provider, err = route53.NewDNSProvider()
 		case "rfc2136":

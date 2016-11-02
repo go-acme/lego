@@ -24,6 +24,7 @@ var (
 )
 
 const defaultResolvConf = "/etc/resolv.conf"
+
 var defaultNameservers = []string{
 	"google-public-dns-a.google.com:53",
 	"google-public-dns-b.google.com:53",
@@ -38,7 +39,6 @@ var DNSTimeout = 10 * time.Second
 func getNameservers(path string, defaults []string) []string {
 	config, err := dns.ClientConfigFromFile(path)
 	if err != nil || len(config.Servers) == 0 {
-		logf("[INFO] acme: Using default resolvers %v", defaults)
 		return defaults
 	}
 
@@ -51,7 +51,6 @@ func getNameservers(path string, defaults []string) []string {
 			systemNameservers = append(systemNameservers, server)
 		}
 	}
-	logf("[INFO] acme: Using system resolvers %v", systemNameservers)
 	return systemNameservers
 }
 
@@ -99,7 +98,7 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 
 	fqdn, value, _ := DNS01Record(domain, keyAuth)
 
-	logf("[INFO][%s] Checking DNS record propagation...", domain)
+	logf("[INFO][%s] Checking DNS record propagation using %+v", domain, RecursiveNameservers)
 
 	var timeout, interval time.Duration
 	switch provider := s.provider.(type) {

@@ -15,6 +15,8 @@ import (
 
 	"github.com/urfave/cli"
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/providers/dns/azure"
+	"github.com/xenolf/lego/providers/dns/auroradns"
 	"github.com/xenolf/lego/providers/dns/cloudflare"
 	"github.com/xenolf/lego/providers/dns/digitalocean"
 	"github.com/xenolf/lego/providers/dns/dnsimple"
@@ -24,11 +26,13 @@ import (
 	"github.com/xenolf/lego/providers/dns/googlecloud"
 	"github.com/xenolf/lego/providers/dns/linode"
 	"github.com/xenolf/lego/providers/dns/namecheap"
+	"github.com/xenolf/lego/providers/dns/ns1"
 	"github.com/xenolf/lego/providers/dns/ovh"
 	"github.com/xenolf/lego/providers/dns/pdns"
 	"github.com/xenolf/lego/providers/dns/rfc2136"
 	"github.com/xenolf/lego/providers/dns/route53"
 	"github.com/xenolf/lego/providers/dns/vultr"
+	"github.com/xenolf/lego/providers/http/memcached"
 	"github.com/xenolf/lego/providers/http/webroot"
 )
 
@@ -99,6 +103,18 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 		// infer that the user also wants to exclude all other challenges
 		client.ExcludeChallenges([]acme.Challenge{acme.DNS01, acme.TLSSNI01})
 	}
+	if c.GlobalIsSet("memcached-host") {
+		provider, err := memcached.NewMemcachedProvider(c.GlobalStringSlice("memcached-host"))
+		if err != nil {
+			logger().Fatal(err)
+		}
+
+		client.SetChallengeProvider(acme.HTTP01, provider)
+
+		// --memcached-host=foo:11211 indicates that the user specifically want to do a HTTP challenge
+		// infer that the user also wants to exclude all other challenges
+		client.ExcludeChallenges([]acme.Challenge{acme.DNS01, acme.TLSSNI01})
+	}
 	if c.GlobalIsSet("http") {
 		if strings.Index(c.GlobalString("http"), ":") == -1 {
 			logger().Fatalf("The --http switch only accepts interface:port or :port for its argument.")
@@ -117,6 +133,10 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 		var err error
 		var provider acme.ChallengeProvider
 		switch c.GlobalString("dns") {
+		case "azure":
+			provider, err = azure.NewDNSProvider()
+		case "auroradns":
+			provider, err = auroradns.NewDNSProvider()
 		case "cloudflare":
 			provider, err = cloudflare.NewDNSProvider()
 		case "digitalocean":
@@ -147,6 +167,8 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 			provider, err = ovh.NewDNSProvider()
 		case "pdns":
 			provider, err = pdns.NewDNSProvider()
+		case "ns1":
+			provider, err = ns1.NewDNSProvider()
 		}
 
 		if err != nil {
@@ -320,7 +342,7 @@ func run(c *cli.Context) error {
 
 	if hasDomains {
 		// obtain a certificate, generating a new private key
-		cert, failures = client.ObtainCertificate(c.GlobalStringSlice("domains"), !c.Bool("no-bundle"), nil)
+		cert, failures = client.ObtainCertificate(c.GlobalStringSlice("domains"), !c.Bool("no-bundle"), nil, c.Bool("must-staple"))
 	} else {
 		// read the CSR
 		csr, err := readCSRFile(c.GlobalString("csr"))
@@ -433,7 +455,7 @@ func renew(c *cli.Context) error {
 
 	certRes.Certificate = certBytes
 
-	newCert, err := client.RenewCertificate(certRes, !c.Bool("no-bundle"))
+	newCert, err := client.RenewCertificate(certRes, !c.Bool("no-bundle"), c.Bool("must-staple"))
 	if err != nil {
 		logger().Fatalf("%s", err.Error())
 	}

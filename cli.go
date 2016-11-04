@@ -212,6 +212,7 @@ Here is an example bash command using the CloudFlare DNS provider:
 	fmt.Fprintln(w, "\tlinode:\tLINODE_API_KEY")
 	fmt.Fprintln(w, "\tmanual:\tnone")
 	fmt.Fprintln(w, "\tnamecheap:\tNAMECHEAP_API_USER, NAMECHEAP_API_KEY")
+	fmt.Fprintln(w, "\trackspace:\tRACKSPACE_USER, RACKSPACE_API_KEY")
 	fmt.Fprintln(w, "\trfc2136:\tRFC2136_TSIG_KEY, RFC2136_TSIG_SECRET,\n\t\tRFC2136_TSIG_ALGORITHM, RFC2136_NAMESERVER")
 	fmt.Fprintln(w, "\troute53:\tAWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION")
 	fmt.Fprintln(w, "\tdyn:\tDYN_CUSTOMER_NAME, DYN_USER_NAME, DYN_PASSWORD")

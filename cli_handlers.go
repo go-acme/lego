@@ -22,6 +22,7 @@ import (
 	"github.com/xenolf/lego/providers/dns/dnsimple"
 	"github.com/xenolf/lego/providers/dns/dnsmadeeasy"
 	"github.com/xenolf/lego/providers/dns/dyn"
+	"github.com/xenolf/lego/providers/dns/exoscale"
 	"github.com/xenolf/lego/providers/dns/gandi"
 	"github.com/xenolf/lego/providers/dns/googlecloud"
 	"github.com/xenolf/lego/providers/dns/linode"
@@ -146,6 +147,8 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 			provider, err = dnsimple.NewDNSProvider()
 		case "dnsmadeeasy":
 			provider, err = dnsmadeeasy.NewDNSProvider()
+		case "exoscale":
+			provider, err = exoscale.NewDNSProvider()
 		case "dyn":
 			provider, err = dyn.NewDNSProvider()
 		case "gandi":

@@ -517,7 +517,7 @@ func (c *Client) chooseSolvers(auth authorization, domain string) map[int]solver
 
 // Get the challenges needed to proof our identifier to the ACME server.
 func (c *Client) getChallenges(domains []string) ([]authorizationResource, map[string]error) {
-	resc, errc := make(chan authorizationResource), make(chan domainError)
+	resc, errc := make(chan authorizationResource), make(chan DomainError)
 
 	for _, domain := range domains {
 		go func(domain string) {
@@ -525,7 +525,7 @@ func (c *Client) getChallenges(domains []string) ([]authorizationResource, map[s
 			var authz authorization
 			hdr, err := postJSON(c.jws, c.user.GetRegistration().NewAuthzURL, authMsg, &authz)
 			if err != nil {
-				errc <- domainError{Domain: domain, Error: err}
+				errc <- DomainError{Domain: domain, Error: err}
 				return
 			}
 

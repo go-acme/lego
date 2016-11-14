@@ -15,12 +15,13 @@ import (
 
 	"github.com/urfave/cli"
 	"github.com/xenolf/lego/acme"
-	"github.com/xenolf/lego/providers/dns/azure"
 	"github.com/xenolf/lego/providers/dns/auroradns"
+	"github.com/xenolf/lego/providers/dns/azure"
 	"github.com/xenolf/lego/providers/dns/cloudflare"
 	"github.com/xenolf/lego/providers/dns/digitalocean"
 	"github.com/xenolf/lego/providers/dns/dnsimple"
 	"github.com/xenolf/lego/providers/dns/dnsmadeeasy"
+	"github.com/xenolf/lego/providers/dns/dnspod"
 	"github.com/xenolf/lego/providers/dns/dyn"
 	"github.com/xenolf/lego/providers/dns/exoscale"
 	"github.com/xenolf/lego/providers/dns/gandi"
@@ -175,6 +176,8 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 			provider, err = pdns.NewDNSProvider()
 		case "ns1":
 			provider, err = ns1.NewDNSProvider()
+		case "dnspod":
+			provider, err = dnspod.NewDNSProvider()
 		}
 
 		if err != nil {

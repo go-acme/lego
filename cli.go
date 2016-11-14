@@ -220,6 +220,7 @@ Here is an example bash command using the CloudFlare DNS provider:
 	fmt.Fprintln(w, "\tvultr:\tVULTR_API_KEY")
 	fmt.Fprintln(w, "\tovh:\tOVH_ENDPOINT, OVH_APPLICATION_KEY, OVH_APPLICATION_SECRET, OVH_CONSUMER_KEY")
 	fmt.Fprintln(w, "\tpdns:\tPDNS_API_KEY, PDNS_API_URL")
+	fmt.Fprintln(w, "\tdnspod:\tDNSPOD_API_KEY")
 	w.Flush()
 
 	fmt.Println(`

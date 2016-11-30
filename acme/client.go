@@ -643,12 +643,12 @@ func (c *Client) requestCertificateForCsr(authz []authorizationResource, bundle 
 					logf("[WARNING][%s] acme: Could not bundle issuer certificate: %v", commonName.Domain, err)
 				} else {
 					issuerCert = pemEncode(derCertificateBytes(issuerCert))
-				}
 
-				// If bundle is true, we want to return a certificate bundle.
-				// To do this, we append the issuer cert to the issued cert.
-				if bundle {
-					issuedCert = append(issuedCert, issuerCert...)
+					// If bundle is true, we want to return a certificate bundle.
+					// To do this, we append the issuer cert to the issued cert.
+					if bundle {
+						issuedCert = append(issuedCert, issuerCert...)
+					}
 				}
 
 				cerRes.Certificate = issuedCert

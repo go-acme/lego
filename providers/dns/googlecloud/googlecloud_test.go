@@ -36,7 +36,7 @@ func TestNewDNSProviderValid(t *testing.T) {
 		t.Skip("skipping live test (requires credentials)")
 	}
 	os.Setenv("GCE_PROJECT", "")
-	_, err := NewDNSProviderCredentials("my-project")
+	_, err := NewDNSProviderCredentials("my-project", nil)
 	assert.NoError(t, err)
 	restoreGCloudEnv()
 }
@@ -63,7 +63,7 @@ func TestLiveGoogleCloudPresent(t *testing.T) {
 		t.Skip("skipping live test")
 	}
 
-	provider, err := NewDNSProviderCredentials(gcloudProject)
+	provider, err := NewDNSProviderCredentials(gcloudProject, nil)
 	assert.NoError(t, err)
 
 	err = provider.Present(gcloudDomain, "", "123d==")
@@ -75,7 +75,7 @@ func TestLiveGoogleCloudPresentMultiple(t *testing.T) {
 		t.Skip("skipping live test")
 	}
 
-	provider, err := NewDNSProviderCredentials(gcloudProject)
+	provider, err := NewDNSProviderCredentials(gcloudProject, nil)
 	assert.NoError(t, err)
 
 	// Check that we're able to create multiple entries
@@ -91,7 +91,7 @@ func TestLiveGoogleCloudCleanUp(t *testing.T) {
 
 	time.Sleep(time.Second * 1)
 
-	provider, err := NewDNSProviderCredentials(gcloudProject)
+	provider, err := NewDNSProviderCredentials(gcloudProject, nil)
 	assert.NoError(t, err)
 
 	err = provider.CleanUp(gcloudDomain, "", "123d==")

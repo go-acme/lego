@@ -111,7 +111,7 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 	var timeout, interval time.Duration
 
 	for _, v := range s.providers {
-		var tiou, inter int
+		var tiou, inter time.Duration
 
 		switch provider := v.(type) {
 			case ChallengeProviderTimeout:

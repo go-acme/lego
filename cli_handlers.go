@@ -117,14 +117,14 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 		// Get providers
 		var providers []struct{}
 
-		for _, v := range strings.Split(c.GlobalString("dns"), ',') {
+		for _, v := range strings.Split(c.GlobalString("dns"), ",") {
 			provider, err := dns.NewDNSChallengeProviderByName(v)
 
 			if err != nil {
 				logger().Fatal(err)
 			}
 
-			providers.append(provider)
+			providers = append(providers, provider)
 		}
 
 		client.SetChallengeProvider(acme.DNS01, providers)

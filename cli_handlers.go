@@ -114,12 +114,20 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 	}
 
 	if c.GlobalIsSet("dns") {
-    provider, err := dns.NewDNSChallengeProviderByName(c.GlobalString("dns"))
-		if err != nil {
-			logger().Fatal(err)
+		// Get providers
+		var providers []DNSProvider
+
+		for _, v := range strings.Split(c.GlobalString("dns"), ',') {
+			provider, err := dns.NewDNSChallengeProviderByName(v)
+
+			if err != nil {
+				logger().Fatal(err)
+			}
+
+			providers.append(provider)
 		}
 
-		client.SetChallengeProvider(acme.DNS01, provider)
+		client.SetChallengeProvider(acme.DNS01, providers)
 
 		// --dns=foo indicates that the user specifically want to do a DNS challenge
 		// infer that the user also wants to exclude all other challenges

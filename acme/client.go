@@ -15,6 +15,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"reflect"
 )
 
 var (
@@ -105,7 +106,7 @@ func (c *Client) SetChallengeProvider(challenge Challenge, p ChallengeProvider) 
 	case TLSSNI01:
 		c.solvers[challenge] = &tlsSNIChallenge{jws: c.jws, validate: validate, provider: p}
 	case DNS01:
-		c.solvers[challenge] = &dnsChallenge{jws: c.jws, validate: validate, provider: p}
+		c.solvers[challenge] = &dnsChallenge{jws: c.jws, validate: validate, providers: p}
 	default:
 		return fmt.Errorf("Unknown challenge %v", challenge)
 	}

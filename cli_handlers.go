@@ -115,7 +115,7 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 
 	if c.GlobalIsSet("dns") {
 		// Get providers
-		var providers []struct{}
+		var providers []acme.ChallengeProvider
 
 		for _, v := range strings.Split(c.GlobalString("dns"), ",") {
 			provider, err := dns.NewDNSChallengeProviderByName(v)

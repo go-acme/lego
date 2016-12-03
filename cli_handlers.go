@@ -127,7 +127,7 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 			providers = append(providers, provider)
 		}
 
-		client.SetChallengeProvider(acme.DNS01, providers)
+		client.SetChallengeProviderDNS(acme.DNS01, providers)
 
 		// --dns=foo indicates that the user specifically want to do a DNS challenge
 		// infer that the user also wants to exclude all other challenges

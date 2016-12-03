@@ -12,7 +12,7 @@ import (
 
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/to"
-	"github.com/xenolf/lego/acme"
+	"github.com/ManuelGysin/lego/acme"
 	"strings"
 )
 

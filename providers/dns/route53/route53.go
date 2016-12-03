@@ -13,7 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/route53"
-	"github.com/xenolf/lego/acme"
+	"github.com/ManuelGysin/lego/acme"
 )
 
 const (

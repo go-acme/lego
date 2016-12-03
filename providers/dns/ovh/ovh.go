@@ -9,7 +9,7 @@ import (
 	"sync"
 
 	"github.com/ovh/go-ovh/ovh"
-	"github.com/ManuelGysin/lego/acme"
+	"github.com/xenolf/lego/acme"
 )
 
 // OVH API reference:       https://eu.api.ovh.com/

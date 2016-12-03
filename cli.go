@@ -11,7 +11,7 @@ import (
 	"text/tabwriter"
 
 	"github.com/urfave/cli"
-	"github.com/ManuelGysin/lego/acme"
+	"github.com/xenolf/lego/acme"
 )
 
 // Logger is used to log errors; if nil, the default log.Logger is used.

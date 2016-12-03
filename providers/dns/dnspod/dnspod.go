@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/decker502/dnspod-go"
-	"github.com/ManuelGysin/lego/acme"
+	"github.com/xenolf/lego/acme"
 )
 
 // DNSProvider is an implementation of the acme.ChallengeProvider interface.

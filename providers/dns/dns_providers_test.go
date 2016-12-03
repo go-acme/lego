@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/ManuelGysin/lego/providers/dns/exoscale"
+	"github.com/xenolf/lego/providers/dns/exoscale"
 )
 
 var (

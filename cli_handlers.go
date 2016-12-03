@@ -14,10 +14,10 @@ import (
 	"time"
 
 	"github.com/urfave/cli"
-	"github.com/ManuelGysin/lego/acme"
-	"github.com/ManuelGysin/lego/providers/dns"
-	"github.com/ManuelGysin/lego/providers/http/memcached"
-	"github.com/ManuelGysin/lego/providers/http/webroot"
+	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/providers/dns"
+	"github.com/xenolf/lego/providers/http/memcached"
+	"github.com/xenolf/lego/providers/http/webroot"
 )
 
 func checkFolder(path string) error {

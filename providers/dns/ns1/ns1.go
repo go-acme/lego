@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/ManuelGysin/lego/acme"
+	"github.com/xenolf/lego/acme"
 	"gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
 )

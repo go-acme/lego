@@ -11,7 +11,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/ManuelGysin/lego/acme"
+	"github.com/xenolf/lego/acme"
 )
 
 // rackspaceAPIURL represents the Identity API endpoint to call

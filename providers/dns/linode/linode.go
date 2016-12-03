@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/timewasted/linode/dns"
-	"github.com/ManuelGysin/lego/acme"
+	"github.com/xenolf/lego/acme"
 )
 
 const (

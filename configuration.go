@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/urfave/cli"
-	"github.com/ManuelGysin/lego/acme"
+	"github.com/xenolf/lego/acme"
 )
 
 // Configuration type from CLI and config files.

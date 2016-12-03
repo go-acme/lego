@@ -6,7 +6,7 @@ import (
 	"path"
 
 	"github.com/rainycape/memcache"
-	"github.com/ManuelGysin/lego/acme"
+	"github.com/xenolf/lego/acme"
 )
 
 // HTTPProvider implements ChallengeProvider for `http-01` challenge

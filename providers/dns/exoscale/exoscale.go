@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/pyr/egoscale/src/egoscale"
-	"github.com/ManuelGysin/lego/acme"
+	"github.com/xenolf/lego/acme"
 )
 
 // DNSProvider is an implementation of the acme.ChallengeProvider interface.

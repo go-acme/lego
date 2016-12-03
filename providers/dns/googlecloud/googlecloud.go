@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/ManuelGysin/lego/acme"
+	"github.com/xenolf/lego/acme"
 
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2/google"

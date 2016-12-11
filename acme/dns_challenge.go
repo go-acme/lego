@@ -129,6 +129,9 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 		}
 	}
 
+	timeout = 600*time.Second
+	interval = 600*time.Second
+
 	err = WaitFor(timeout, interval, func() (bool, error) {
 		return PreCheckDNS(fqdn, value)
 	})

@@ -69,13 +69,13 @@ func DNS01Record(domain, keyAuth string) (fqdn string, value string, ttl int) {
 type dnsChallenge struct {
 	jws      *jws
 	validate validateFunc
-	provider ChallengeProvider
+	providers []ChallengeProvider
 }
 
 func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 	logf("[INFO][%s] acme: Trying to solve DNS-01", domain)
 
-	if s.provider == nil {
+	if s.providers == nil {
 		return errors.New("No DNS Provider configured")
 	}
 
@@ -85,14 +85,22 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 		return err
 	}
 
-	err = s.provider.Present(domain, chlng.Token, keyAuth)
-	if err != nil {
-		return fmt.Errorf("Error presenting token: %s", err)
-	}
-	defer func() {
-		err := s.provider.CleanUp(domain, chlng.Token, keyAuth)
+	for _, v := range s.providers {
+		err = v.Present(domain, chlng.Token, keyAuth)
+
 		if err != nil {
-			log.Printf("Error cleaning up %s: %v ", domain, err)
+			return fmt.Errorf("Error presenting token: %s", err)
+		}
+	}
+
+	defer func() {
+
+		for _, v := range s.providers {
+			err := v.CleanUp(domain, chlng.Token, keyAuth)
+
+			if err != nil {
+				log.Printf("Error cleaning up %s: %v ", domain, err)
+			}
 		}
 	}()
 
@@ -101,16 +109,30 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 	logf("[INFO][%s] Checking DNS record propagation using %+v", domain, RecursiveNameservers)
 
 	var timeout, interval time.Duration
-	switch provider := s.provider.(type) {
-	case ChallengeProviderTimeout:
-		timeout, interval = provider.Timeout()
-	default:
-		timeout, interval = 60*time.Second, 2*time.Second
+
+	for _, v := range s.providers {
+		var tiou, inter time.Duration
+
+		switch provider := v.(type) {
+			case ChallengeProviderTimeout:
+				tiou, inter = provider.Timeout()
+			default:
+				tiou, inter = 60*time.Second, 2*time.Second
+		}
+
+		// Check if interval or timeout is greater, we take the highest number
+		if timeout < tiou {
+			timeout = tiou
+		}
+		if interval < inter {
+			interval = inter
+		}
 	}
 
 	err = WaitFor(timeout, interval, func() (bool, error) {
 		return PreCheckDNS(fqdn, value)
 	})
+
 	if err != nil {
 		return err
 	}

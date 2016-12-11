@@ -196,6 +196,9 @@ Here is an example bash command using the CloudFlare DNS provider:
     CLOUDFLARE_API_KEY=b9841238feb177a84330febba8a83208921177bffe733 \
     lego --dns cloudflare --domains www.example.com --email me@bar.com run
 
+Here is an example bash command using multiple DNS provider:
+  $ lego --dns gcloud,route53 --domains www.example.com --email me@bar.com run
+
 `)
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)

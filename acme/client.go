@@ -110,7 +110,8 @@ func (c *Client) SetChallengeProvider(challenge Challenge, p ChallengeProvider) 
 	return nil
 }
 
-func (c *Client) SetChallengeProviderDNS(challenge Challenge, p []ChallengeProvider) error {
+// SetChallengeProvidersDNS specifies one or more provider p that can solve the DNS challenge type.
+func (c *Client) SetChallengeProvidersDNS(challenge Challenge, p []ChallengeProvider) error {
 	c.solvers[challenge] = &dnsChallenge{jws: c.jws, validate: validate, providers: p}
 	return nil
 }

@@ -49,12 +49,11 @@ type validateFunc func(j *jws, domain, uri string, chlng challenge) error
 
 // Client is the user-friendy way to ACME
 type Client struct {
-	directory  directory
-	user       User
-	jws        *jws
-	keyType    KeyType
-	issuerCert []byte
-	solvers    map[Challenge]solver
+	directory directory
+	user      User
+	jws       *jws
+	keyType   KeyType
+	solvers   map[Challenge]solver
 }
 
 // NewClient creates a new ACME client on behalf of the user. The client will depend on
@@ -634,24 +633,26 @@ func (c *Client) requestCertificateForCsr(authz []authorizationResource, bundle 
 				cerRes.AccountRef = c.user.GetRegistration().URI
 
 				issuedCert := pemEncode(derCertificateBytes(cert))
-				// If bundle is true, we want to return a certificate bundle.
-				// To do this, we need the issuer certificate.
-				if bundle {
-					// The issuer certificate link is always supplied via an "up" link
-					// in the response headers of a new certificate.
-					links := parseLinks(resp.Header["Link"])
-					issuerCert, err := c.getIssuerCertificate(links["up"])
-					if err != nil {
-						// If we fail to acquire the issuer cert, return the issued certificate - do not fail.
-						logf("[WARNING][%s] acme: Could not bundle issuer certificate: %v", commonName.Domain, err)
-					} else {
-						// Success - append the issuer cert to the issued cert.
-						issuerCert = pemEncode(derCertificateBytes(issuerCert))
+
+				// The issuer certificate link is always supplied via an "up" link
+				// in the response headers of a new certificate.
+				links := parseLinks(resp.Header["Link"])
+				issuerCert, err := c.getIssuerCertificate(links["up"])
+				if err != nil {
+					// If we fail to acquire the issuer cert, return the issued certificate - do not fail.
+					logf("[WARNING][%s] acme: Could not bundle issuer certificate: %v", commonName.Domain, err)
+				} else {
+					issuerCert = pemEncode(derCertificateBytes(issuerCert))
+
+					// If bundle is true, we want to return a certificate bundle.
+					// To do this, we append the issuer cert to the issued cert.
+					if bundle {
 						issuedCert = append(issuedCert, issuerCert...)
 					}
 				}
 
 				cerRes.Certificate = issuedCert
+				cerRes.IssuerCertificate = issuerCert
 				logf("[INFO][%s] Server responded with a certificate.", commonName.Domain)
 				return cerRes, nil
 			}
@@ -679,14 +680,9 @@ func (c *Client) requestCertificateForCsr(authz []authorizationResource, bundle 
 	}
 }
 
-// getIssuerCertificate requests the issuer certificate and caches it for
-// subsequent requests.
+// getIssuerCertificate requests the issuer certificate
 func (c *Client) getIssuerCertificate(url string) ([]byte, error) {
 	logf("[INFO] acme: Requesting issuer cert from %s", url)
-	if c.issuerCert != nil {
-		return c.issuerCert, nil
-	}
-
 	resp, err := httpGet(url)
 	if err != nil {
 		return nil, err
@@ -703,7 +699,6 @@ func (c *Client) getIssuerCertificate(url string) ([]byte, error) {
 		return nil, err
 	}
 
-	c.issuerCert = issuerBytes
 	return issuerBytes, err
 }
 

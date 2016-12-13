@@ -9,7 +9,6 @@ import (
 	"net"
 	"strings"
 	"time"
-
 	"github.com/miekg/dns"
 	"golang.org/x/net/publicsuffix"
 )
@@ -75,7 +74,7 @@ type dnsChallenge struct {
 func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 	logf("[INFO][%s] acme: Trying to solve DNS-01", domain)
 
-	if s.providers == nil {
+	if len(s.providers) == 0 {
 		return errors.New("No DNS Provider configured")
 	}
 

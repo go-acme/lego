@@ -8,11 +8,11 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
-	"io/ioutil"
-	"os"
+
+	"github.com/xenolf/lego/storage"
 )
 
-func generatePrivateKey(file string) (crypto.PrivateKey, error) {
+func generatePrivateKey(path string, storage storage.StorageProvider) (crypto.PrivateKey, error) {
 
 	privateKey, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
 	if err != nil {
@@ -25,20 +25,17 @@ func generatePrivateKey(file string) (crypto.PrivateKey, error) {
 	}
 
 	pemKey := pem.Block{Type: "EC PRIVATE KEY", Bytes: keyBytes}
-
-	certOut, err := os.Create(file)
+	pem_data := pem.EncodeToMemory(&pemKey)
+	err = storage.WritePath(path, pem_data)
 	if err != nil {
 		return nil, err
 	}
 
-	pem.Encode(certOut, &pemKey)
-	certOut.Close()
-
 	return privateKey, nil
 }
 
-func loadPrivateKey(file string) (crypto.PrivateKey, error) {
-	keyBytes, err := ioutil.ReadFile(file)
+func loadPrivateKey(path string, storage storage.StorageProvider) (crypto.PrivateKey, error) {
+	keyBytes, err := storage.ReadPath(path)
 	if err != nil {
 		return nil, err
 	}

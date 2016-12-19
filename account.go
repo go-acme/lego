@@ -3,11 +3,11 @@ package main
 import (
 	"crypto"
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"path"
 
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/storage"
 )
 
 // Account represents a users local saved credentials
@@ -20,39 +20,35 @@ type Account struct {
 }
 
 // NewAccount creates a new account for an email address
-func NewAccount(email string, conf *Configuration) *Account {
+func NewAccount(email string, conf *Configuration, s storage.StorageProvider) *Account {
 	accKeysPath := conf.AccountKeysPath(email)
 	// TODO: move to function in configuration?
 	accKeyPath := accKeysPath + string(os.PathSeparator) + email + ".key"
-	if err := checkFolder(accKeysPath); err != nil {
+	if err := s.CheckPath(accKeysPath); err != nil {
 		logger().Fatalf("Could not check/create directory for account %s: %v", email, err)
 	}
 
 	var privKey crypto.PrivateKey
-	if _, err := os.Stat(accKeyPath); os.IsNotExist(err) {
-
+	if _, err := s.ReadPath(accKeyPath); err != nil {
+		logger().Printf("%v", err.Error())
 		logger().Printf("No key found for account %s. Generating a curve P384 EC key.", email)
-		privKey, err = generatePrivateKey(accKeyPath)
+		privKey, err = generatePrivateKey(accKeyPath, s)
 		if err != nil {
 			logger().Fatalf("Could not generate RSA private account key for account %s: %v", email, err)
 		}
 
 		logger().Printf("Saved key to %s", accKeyPath)
 	} else {
-		privKey, err = loadPrivateKey(accKeyPath)
+		privKey, err = loadPrivateKey(accKeyPath, s)
 		if err != nil {
 			logger().Fatalf("Could not load RSA private key from file %s: %v", accKeyPath, err)
 		}
 	}
 
 	accountFile := path.Join(conf.AccountPath(email), "account.json")
-	if _, err := os.Stat(accountFile); os.IsNotExist(err) {
-		return &Account{Email: email, key: privKey, conf: conf}
-	}
-
-	fileBytes, err := ioutil.ReadFile(accountFile)
+	fileBytes, err := s.ReadPath(accountFile)
 	if err != nil {
-		logger().Fatalf("Could not load file for account %s -> %v", email, err)
+		return &Account{Email: email, key: privKey, conf: conf}
 	}
 
 	var acc Account
@@ -95,15 +91,12 @@ func (a *Account) GetRegistration() *acme.RegistrationResource {
 /** End **/
 
 // Save the account to disk
-func (a *Account) Save() error {
+func (a *Account) Save(s storage.StorageProvider) error {
 	jsonBytes, err := json.MarshalIndent(a, "", "\t")
 	if err != nil {
 		return err
 	}
-
-	return ioutil.WriteFile(
+	return s.WritePath(
 		path.Join(a.conf.AccountPath(a.Email), "account.json"),
-		jsonBytes,
-		0600,
-	)
+		jsonBytes)
 }

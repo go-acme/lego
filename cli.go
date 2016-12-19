@@ -162,6 +162,10 @@ func main() {
 			Name:  "dns",
 			Usage: "Solve a DNS challenge using the specified provider. Disables all other challenges. Run 'lego dnshelp' for help on usage.",
 		},
+		cli.StringFlag{
+			Name:  "storage",
+			Usage: "Set the storage provider for certificates and account data, by default it is 'local' storage",
+		},
 		cli.IntFlag{
 			Name:  "http-timeout",
 			Usage: "Set the HTTP timeout value to a specific value in seconds. The default is 10 seconds.",

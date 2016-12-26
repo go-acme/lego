@@ -81,7 +81,7 @@ func (c *DNSProvider) getHostedZone(domain string) (string, error) {
 		return "", fmt.Errorf("Vultr API call failed: %v", err)
 	}
 
-	var hostedDomain vultr.DnsDomain
+	var hostedDomain vultr.DNSDomain
 	for _, d := range domains {
 		if strings.HasSuffix(domain, d.Domain) {
 			if len(d.Domain) > len(hostedDomain.Domain) {
@@ -96,13 +96,13 @@ func (c *DNSProvider) getHostedZone(domain string) (string, error) {
 	return hostedDomain.Domain, nil
 }
 
-func (c *DNSProvider) findTxtRecords(domain, fqdn string) (string, []vultr.DnsRecord, error) {
+func (c *DNSProvider) findTxtRecords(domain, fqdn string) (string, []vultr.DNSRecord, error) {
 	zoneDomain, err := c.getHostedZone(domain)
 	if err != nil {
 		return "", nil, err
 	}
 
-	var records []vultr.DnsRecord
+	var records []vultr.DNSRecord
 	result, err := c.client.GetDNSRecords(zoneDomain)
 	if err != nil {
 		return "", records, fmt.Errorf("Vultr API call has failed: %v", err)

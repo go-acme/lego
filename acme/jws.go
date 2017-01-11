@@ -44,9 +44,12 @@ func (j *jws) post(url string, content []byte) (*http.Response, error) {
 		return nil, err
 	}
 
-	j.Lock()
-	defer j.Unlock()
-	j.getNonceFromResponse(resp)
+	nonce, nonceErr := j.getNonceFromResponse(resp)
+	if nonceErr == nil {
+		j.Lock()
+		j.nonces = append(j.nonces, nonce)
+		j.Unlock()
+	}
 
 	return resp, err
 }
@@ -84,7 +87,6 @@ func (j *jws) getNonceFromResponse(resp *http.Response) (string, error) {
 		return "", fmt.Errorf("Server did not respond with a proper nonce header.")
 	}
 
-	j.nonces = append(j.nonces, nonce)
 	return nonce, nil
 }
 
@@ -99,17 +101,13 @@ func (j *jws) getNonce() (string, error) {
 
 func (j *jws) Nonce() (string, error) {
 	j.Lock()
+	if len(j.nonces) == 0 {
+		j.Unlock()
+		return j.getNonce()
+	}
+
 	defer j.Unlock()
-	nonce := ""
-	if len(j.nonces) == 0 {
-		_, err := j.getNonce()
-		if err != nil {
-			return nonce, err
-		}
-	}
-	if len(j.nonces) == 0 {
-		return "", fmt.Errorf("Can't get nonce")
-	}
-	nonce, j.nonces = j.nonces[len(j.nonces)-1], j.nonces[:len(j.nonces)-1]
+	nonce := j.nonces[len(j.nonces)-1]
+	j.nonces = j.nonces[:len(j.nonces)-1]
 	return nonce, nil
 }

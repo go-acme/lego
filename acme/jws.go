@@ -44,7 +44,7 @@ func (j *jws) post(url string, content []byte) (*http.Response, error) {
 		return nil, err
 	}
 
-	nonce, nonceErr := j.getNonceFromResponse(resp)
+	nonce, nonceErr := getNonceFromResponse(resp)
 	if nonceErr == nil {
 		j.Lock()
 		j.nonces = append(j.nonces, nonce)
@@ -81,33 +81,33 @@ func (j *jws) signContent(content []byte) (*jose.JsonWebSignature, error) {
 	return signed, nil
 }
 
-func (j *jws) getNonceFromResponse(resp *http.Response) (string, error) {
-	nonce := resp.Header.Get("Replay-Nonce")
-	if nonce == "" {
-		return "", fmt.Errorf("Server did not respond with a proper nonce header.")
-	}
-
-	return nonce, nil
-}
-
-func (j *jws) getNonce() (string, error) {
-	resp, err := httpHead(j.directoryURL)
-	if err != nil {
-		return "", err
-	}
-
-	return j.getNonceFromResponse(resp)
-}
-
 func (j *jws) Nonce() (string, error) {
 	j.Lock()
 	if len(j.nonces) == 0 {
 		j.Unlock()
-		return j.getNonce()
+		return getNonce(j.directoryURL)
 	}
 
 	defer j.Unlock()
 	nonce := j.nonces[len(j.nonces)-1]
 	j.nonces = j.nonces[:len(j.nonces)-1]
+	return nonce, nil
+}
+
+func getNonce(url string) (string, error) {
+	resp, err := httpHead(url)
+	if err != nil {
+		return "", err
+	}
+
+	return getNonceFromResponse(resp)
+}
+
+func getNonceFromResponse(resp *http.Response) (string, error) {
+	nonce := resp.Header.Get("Replay-Nonce")
+	if nonce == "" {
+		return "", fmt.Errorf("Server did not respond with a proper nonce header.")
+	}
+
 	return nonce, nil
 }

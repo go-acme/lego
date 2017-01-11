@@ -16,8 +16,7 @@ import (
 type jws struct {
 	directoryURL string
 	privKey      crypto.PrivateKey
-	nonces       []string
-	sync.Mutex
+	nonces       nonceManager
 }
 
 func keyAsJWK(key interface{}) *jose.JsonWebKey {
@@ -46,9 +45,7 @@ func (j *jws) post(url string, content []byte) (*http.Response, error) {
 
 	nonce, nonceErr := getNonceFromResponse(resp)
 	if nonceErr == nil {
-		j.Lock()
-		j.nonces = append(j.nonces, nonce)
-		j.Unlock()
+		j.nonces.Push(nonce)
 	}
 
 	return resp, err
@@ -82,16 +79,35 @@ func (j *jws) signContent(content []byte) (*jose.JsonWebSignature, error) {
 }
 
 func (j *jws) Nonce() (string, error) {
-	j.Lock()
-	if len(j.nonces) == 0 {
-		j.Unlock()
-		return getNonce(j.directoryURL)
+	if nonce, ok := j.nonces.Pop(); ok {
+		return nonce, nil
 	}
 
-	defer j.Unlock()
-	nonce := j.nonces[len(j.nonces)-1]
-	j.nonces = j.nonces[:len(j.nonces)-1]
-	return nonce, nil
+	return getNonce(j.directoryURL)
+}
+
+type nonceManager struct {
+	nonces []string
+	sync.Mutex
+}
+
+func (n *nonceManager) Pop() (string, bool) {
+	n.Lock()
+	defer n.Unlock()
+
+	if len(n.nonces) == 0 {
+		return "", false
+	}
+
+	nonce := n.nonces[len(n.nonces)-1]
+	n.nonces = n.nonces[:len(n.nonces)-1]
+	return nonce, true
+}
+
+func (n *nonceManager) Push(nonce string) {
+	n.Lock()
+	defer n.Unlock()
+	n.nonces = append(n.nonces, nonce)
 }
 
 func getNonce(url string) (string, error) {

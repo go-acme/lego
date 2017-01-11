@@ -78,20 +78,20 @@ func (j *jws) signContent(content []byte) (*jose.JsonWebSignature, error) {
 	return signed, nil
 }
 
-func (j *jws) getNonceFromResponse(resp *http.Response) error {
+func (j *jws) getNonceFromResponse(resp *http.Response) (string, error) {
 	nonce := resp.Header.Get("Replay-Nonce")
 	if nonce == "" {
-		return fmt.Errorf("Server did not respond with a proper nonce header.")
+		return "", fmt.Errorf("Server did not respond with a proper nonce header.")
 	}
 
 	j.nonces = append(j.nonces, nonce)
-	return nil
+	return nonce, nil
 }
 
-func (j *jws) getNonce() error {
+func (j *jws) getNonce() (string, error) {
 	resp, err := httpHead(j.directoryURL)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	return j.getNonceFromResponse(resp)
@@ -102,7 +102,7 @@ func (j *jws) Nonce() (string, error) {
 	defer j.Unlock()
 	nonce := ""
 	if len(j.nonces) == 0 {
-		err := j.getNonce()
+		_, err := j.getNonce()
 		if err != nil {
 			return nonce, err
 		}

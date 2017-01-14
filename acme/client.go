@@ -670,6 +670,7 @@ func (c *Client) requestCertificateForCsr(authz []authorizationResource, bundle 
 
 			break
 		default:
+			defer resp.Body.Close()
 			return CertificateResource{}, handleHTTPError(resp)
 		}
 

@@ -54,11 +54,9 @@ func (c challengeError) Error() string {
 func handleHTTPError(resp *http.Response) error {
 	var errorDetail RemoteError
 
-	contenType := resp.Header.Get("Content-Type")
-	// try to decode the content as JSON
-	if contenType == "application/json" || contenType == "application/problem+json" {
-		decoder := json.NewDecoder(resp.Body)
-		err := decoder.Decode(&errorDetail)
+	contentType := resp.Header.Get("Content-Type")
+	if contentType == "application/json" || contentType == "application/problem+json" {
+		err := json.NewDecoder(resp.Body).Decode(&errorDetail)
 		if err != nil {
 			return err
 		}
@@ -67,7 +65,6 @@ func handleHTTPError(resp *http.Response) error {
 		if err != nil {
 			return err
 		}
-
 		errorDetail.Detail = string(detailBytes)
 	}
 

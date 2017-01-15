@@ -619,9 +619,6 @@ func (c *Client) requestCertificateForCsr(authz []authorizationResource, bundle 
 
 	maxChecks := 1000
 	for i := 0; i < maxChecks; i++ {
-		if i == maxChecks-1 {
-			return CertificateResource{}, fmt.Errorf("polled for certificate %d times; giving up", maxChecks)
-		}
 		done, err := c.checkCertResponse(resp, &certRes, bundle)
 		resp.Body.Close()
 		if err != nil {
@@ -629,6 +626,9 @@ func (c *Client) requestCertificateForCsr(authz []authorizationResource, bundle 
 		}
 		if done {
 			break
+		}
+		if i == maxChecks-1 {
+			return CertificateResource{}, fmt.Errorf("polled for certificate %d times; giving up", i)
 		}
 		resp, err = httpGet(certRes.CertURL)
 		if err != nil {

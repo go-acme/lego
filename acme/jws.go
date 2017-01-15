@@ -32,7 +32,9 @@ func keyAsJWK(key interface{}) *jose.JsonWebKey {
 	}
 }
 
-// Posts a JWS signed message to the specified URL
+// Posts a JWS signed message to the specified URL.
+// It does NOT close the response body, so the caller must
+// do that if no error was returned.
 func (j *jws) post(url string, content []byte) (*http.Response, error) {
 	signedContent, err := j.signContent(content)
 	if err != nil {

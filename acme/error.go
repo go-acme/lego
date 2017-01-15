@@ -8,9 +8,7 @@ import (
 	"strings"
 )
 
-const (
-	tosAgreementError = "Must agree to subscriber agreement before any further actions"
-)
+const tosAgreementError = "Must agree to subscriber agreement before any further actions"
 
 // RemoteError is the base type for all errors specific to the ACME protocol.
 type RemoteError struct {
@@ -61,7 +59,7 @@ func handleHTTPError(resp *http.Response) error {
 			return err
 		}
 	} else {
-		detailBytes, err := ioutil.ReadAll(limitReader(resp.Body, 1024*1024))
+		detailBytes, err := ioutil.ReadAll(limitReader(resp.Body, maxBodySize))
 		if err != nil {
 			return err
 		}

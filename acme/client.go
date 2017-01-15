@@ -23,6 +23,9 @@ var (
 	Logger *log.Logger
 )
 
+// maxBodySize is the maximum size of body that we will read.
+const maxBodySize = 1024 * 1024
+
 // logf writes a log entry. It uses Logger if not
 // nil, otherwise it uses the default log.Logger.
 func logf(format string, args ...interface{}) {
@@ -783,6 +786,3 @@ func validate(j *jws, domain, uri string, chlng challenge) error {
 		}
 	}
 }
-
-// maxBodySize is the maximum size of body that we will read.
-const maxBodySize = 1024 * 1024

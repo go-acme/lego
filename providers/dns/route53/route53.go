@@ -93,7 +93,7 @@ func (r *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 }
 
 func (r *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
-	hostedZoneID, err := r.getHostedZoneID(fqdn, r.client)
+	hostedZoneID, err := r.getHostedZoneID(fqdn)
 	if err != nil {
 		return fmt.Errorf("Failed to determine Route 53 hosted zone ID: %v", err)
 	}
@@ -134,7 +134,7 @@ func (r *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 	})
 }
 
-func (r *DNSProvider) getHostedZoneID(fqdn string, client *route53.Route53) (string, error) {
+func (r *DNSProvider) getHostedZoneID(fqdn string) (string, error) {
 	if r.hostedZoneID != "" {
 		return r.hostedZoneID, nil
 	}
@@ -148,7 +148,7 @@ func (r *DNSProvider) getHostedZoneID(fqdn string, client *route53.Route53) (str
 	reqParams := &route53.ListHostedZonesByNameInput{
 		DNSName: aws.String(acme.UnFqdn(authZone)),
 	}
-	resp, err := client.ListHostedZonesByName(reqParams)
+	resp, err := r.client.ListHostedZonesByName(reqParams)
 	if err != nil {
 		return "", err
 	}

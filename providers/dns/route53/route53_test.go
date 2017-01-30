@@ -79,7 +79,7 @@ func TestHostedZoneIDFromEnv(t *testing.T) {
 	provider, err := NewDNSProvider()
 	assert.NoError(t, err, "Expected no error constructing DNSProvider")
 
-	fqdn, err := provider.getHostedZoneID("whatever", provider.client)
+	fqdn, err := provider.getHostedZoneID("whatever")
 	assert.NoError(t, err, "Expected FQDN to be resolved to environment variable value")
 
 	assert.Equal(t, testZoneID, fqdn)

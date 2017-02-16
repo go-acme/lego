@@ -28,17 +28,17 @@ type TOSError struct {
 	RemoteError
 }
 
-type domainError struct {
+type DomainError struct {
 	Domain string
 	Error  error
 }
 
-type challengeError struct {
+type ChallengeError struct {
 	RemoteError
 	records []validationRecord
 }
 
-func (c challengeError) Error() string {
+func (c ChallengeError) Error() string {
 
 	var errStr string
 	for _, validation := range c.records {
@@ -77,5 +77,5 @@ func handleHTTPError(resp *http.Response) error {
 }
 
 func handleChallengeError(chlng challenge) error {
-	return challengeError{chlng.Error, chlng.ValidationRecords}
+	return ChallengeError{chlng.Error, chlng.ValidationRecords}
 }

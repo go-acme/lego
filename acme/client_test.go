@@ -10,6 +10,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestNewClient(t *testing.T) {
@@ -115,6 +116,39 @@ func TestClientOptPort(t *testing.T) {
 	}
 	if got := httpsSolver.provider.(*TLSProviderServer).port; got != optPort {
 		t.Errorf("Expected tls-sni-01 to have port %s but was %s", optPort, got)
+	}
+}
+
+func TestNotHoldingLockWhileMakingHTTPRequests(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(250 * time.Millisecond)
+		w.Header().Add("Replay-Nonce", "12345")
+		w.Header().Add("Retry-After", "0")
+		writeJSONResponse(w, &challenge{Type: "http-01", Status: "Valid", URI: "http://example.com/", Token: "token"})
+	}))
+	defer ts.Close()
+
+	privKey, _ := rsa.GenerateKey(rand.Reader, 512)
+	j := &jws{privKey: privKey, directoryURL: ts.URL}
+	ch := make(chan bool)
+	resultCh := make(chan bool)
+	go func() {
+		j.Nonce()
+		ch <- true
+	}()
+	go func() {
+		j.Nonce()
+		ch <- true
+	}()
+	go func() {
+		<-ch
+		<-ch
+		resultCh <- true
+	}()
+	select {
+	case <-resultCh:
+	case <-time.After(400 * time.Millisecond):
+		t.Fatal("JWS is probably holding a lock while making HTTP request")
 	}
 }
 

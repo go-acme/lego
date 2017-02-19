@@ -41,13 +41,24 @@ func (j *jws) post(url string, content []byte) (*http.Response, error) {
 	}
 
 	resp, err := httpPost(url, "application/jose+json", bytes.NewBuffer([]byte(signedContent.FullSerialize())))
-	if err != nil {
-		return nil, err
-	}
 
+	// Even in case of an error, the response should still contain a nonce.
 	nonce, nonceErr := getNonceFromResponse(resp)
 	if nonceErr == nil {
 		j.nonces.Push(nonce)
+	}
+
+	if err != nil {
+		switch err.(type) {
+		case NonceError:
+			// In case of a nonce error - retry once
+			resp, err = httpPost(url, "application/jose+json", bytes.NewBuffer([]byte(signedContent.FullSerialize())))
+			if err != nil {
+				return nil, err
+			}
+		default:
+			return nil, err
+		}
 	}
 
 	return resp, err

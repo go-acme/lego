@@ -561,10 +561,18 @@ func (c *Client) getChallenges(domains []string) ([]authorizationResource, map[s
 		}
 	}
 
+	logAuthz(challenges)
+
 	close(resc)
 	close(errc)
 
 	return challenges, failures
+}
+
+func logAuthz(authz []authorizationResource) {
+	for _, auth := range authz {
+		logf("[INFO][%s] AuthURL: %s", auth.Domain, auth.AuthURL)
+	}
 }
 
 func (c *Client) requestCertificate(authz []authorizationResource, bundle bool, privKey crypto.PrivateKey, mustStaple bool) (CertificateResource, error) {

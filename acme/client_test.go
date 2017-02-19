@@ -202,6 +202,43 @@ func TestValidate(t *testing.T) {
 	}
 }
 
+func TestGetChallenges(t *testing.T) {
+	var ts *httptest.Server
+	ts = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case "GET", "HEAD":
+			w.Header().Add("Replay-Nonce", "12345")
+			w.Header().Add("Retry-After", "0")
+			writeJSONResponse(w, directory{NewAuthzURL: ts.URL, NewCertURL: ts.URL, NewRegURL: ts.URL, RevokeCertURL: ts.URL})
+		case "POST":
+			writeJSONResponse(w, authorization{})
+		}
+	}))
+	defer ts.Close()
+
+	keyBits := 512 // small value keeps test fast
+	keyType := RSA2048
+	key, err := rsa.GenerateKey(rand.Reader, keyBits)
+	if err != nil {
+		t.Fatal("Could not generate test key:", err)
+	}
+	user := mockUser{
+		email:      "test@test.com",
+		regres:     &RegistrationResource{NewAuthzURL: ts.URL},
+		privatekey: key,
+	}
+
+	client, err := NewClient(ts.URL, user, keyType)
+	if err != nil {
+		t.Fatalf("Could not create client: %v", err)
+	}
+
+	_, failures := client.getChallenges([]string{"example.com"})
+	if failures["example.com"] == nil {
+		t.Fatal("Expecting \"Server did not provide next link to proceed\" error, got nil")
+	}
+}
+
 // writeJSONResponse marshals the body as JSON and writes it to the response.
 func writeJSONResponse(w http.ResponseWriter, body interface{}) {
 	bs, err := json.Marshal(body)

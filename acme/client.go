@@ -535,6 +535,7 @@ func (c *Client) getChallenges(domains []string) ([]authorizationResource, map[s
 			links := parseLinks(hdr["Link"])
 			if links["next"] == "" {
 				logf("[ERROR][%s] acme: Server did not provide next link to proceed", domain)
+				errc <- domainError{Domain: domain, Error: errors.New("Server did not provide next link to proceed")}
 				return
 			}
 

@@ -1,7 +1,7 @@
 # lego
 Let's Encrypt client and ACME library written in Go
 
-[![GoDoc](https://godoc.org/github.com/xenolf/lego/acme?status.svg)](https://godoc.org/github.com/xenolf/lego/acme)
+[![GoDoc](https://godoc.org/github.com/ManuelGysin/lego/acme?status.svg)](https://godoc.org/github.com/ManuelGysin/lego/acme)
 [![Build Status](https://travis-ci.org/xenolf/lego.svg?branch=master)](https://travis-ci.org/xenolf/lego)
 [![Dev Chat](https://img.shields.io/badge/dev%20chat-gitter-blue.svg?label=dev+chat)](https://gitter.im/xenolf/lego)
 
@@ -11,7 +11,7 @@ This is a work in progress. Please do *NOT* run this on a production server and 
 #### Installation
 lego supports both binary installs and install from source.
 
-To get the binary just download the latest release for your OS/Arch from [the release page](https://github.com/xenolf/lego/releases)
+To get the binary just download the latest release for your OS/Arch from [the release page](https://github.com/ManuelGysin/lego/releases)
 and put the binary somewhere convenient. lego does not assume anything about the location you run it from.
 
 To install from source, just run 
@@ -39,8 +39,8 @@ yaourt -S lego-git
   - TLS with Server Name Indication (tls-sni-01)
   - DNS (dns-01)
 - SAN certificate support
-- Comes with multiple optional [DNS providers](https://github.com/xenolf/lego/tree/master/providers/dns)
-- [Custom challenge solvers](https://github.com/xenolf/lego/wiki/Writing-a-Challenge-Solver)
+- Comes with multiple optional [DNS providers](https://github.com/ManuelGysin/lego/tree/master/providers/dns)
+- [Custom challenge solvers](https://github.com/ManuelGysin/lego/wiki/Writing-a-Challenge-Solver)
 - Certificate bundling
 - OCSP helper function
 
@@ -110,7 +110,7 @@ GLOBAL OPTIONS:
 
 ##### CLI Example
 
-Assumes the `lego` binary has permission to bind to ports 80 and 443. You can get a pre-built binary from the [releases](https://github.com/xenolf/lego/releases) page.
+Assumes the `lego` binary has permission to bind to ports 80 and 443. You can get a pre-built binary from the [releases](https://github.com/ManuelGysin/lego/releases) page.
 If your environment does not allow you to bind to these ports, please read [Port Usage](#port-usage).
 
 Obtain a certificate:

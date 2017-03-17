@@ -209,6 +209,7 @@ Here is an example bash command using the CloudFlare DNS provider:
 	fmt.Fprintln(w, "\tdnsmadeeasy:\tDNSMADEEASY_API_KEY, DNSMADEEASY_API_SECRET")
 	fmt.Fprintln(w, "\texoscale:\tEXOSCALE_API_KEY, EXOSCALE_API_SECRET, EXOSCALE_ENDPOINT")
 	fmt.Fprintln(w, "\tgandi:\tGANDI_API_KEY")
+	fmt.Fprintln(w, "\tgandibeta:\tGANDI_API_KEY")
 	fmt.Fprintln(w, "\tgcloud:\tGCE_PROJECT")
 	fmt.Fprintln(w, "\tlinode:\tLINODE_API_KEY")
 	fmt.Fprintln(w, "\tmanual:\tnone")

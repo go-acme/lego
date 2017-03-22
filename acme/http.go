@@ -107,22 +107,25 @@ func postJSON(j *jws, uri string, reqBody, respBody interface{}) (http.Header, e
 		switch err.(type) {
 
 		case NonceError:
-			resp, err := j.post(uri, jsonBytes)
+
+			// Retry once if the nonce was invalidated
+
+			retryResp, err := j.post(uri, jsonBytes)
 			if err != nil {
 				return nil, fmt.Errorf("Failed to post JWS message. -> %v", err)
 			}
 
-			defer resp.Body.Close()
+			defer retryResp.Body.Close()
 
-			if resp.StatusCode >= http.StatusBadRequest {
-				return resp.Header, handleHTTPError(resp)
+			if retryResp.StatusCode >= http.StatusBadRequest {
+				return retryResp.Header, handleHTTPError(retryResp)
 			}
 
 			if respBody == nil {
-				return resp.Header, nil
+				return retryResp.Header, nil
 			}
 
-			return resp.Header, json.NewDecoder(resp.Body).Decode(respBody)
+			return retryResp.Header, json.NewDecoder(retryResp.Body).Decode(respBody)
 
 		default:
 			return resp.Header, err

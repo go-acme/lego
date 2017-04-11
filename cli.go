@@ -178,6 +178,10 @@ func main() {
 			Name:  "pem",
 			Usage: "Generate a .pem file by concatanating the .key and .crt files together.",
 		},
+		cli.BoolFlag{
+			Name:  "dns-no-authoritative-precheck",
+			Usage: "Disable authoritative dns precheck before firing le challenge check.",
+		},
 	}
 
 	err = app.Run(os.Args)

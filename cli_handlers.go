@@ -48,6 +48,10 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 		acme.RecursiveNameservers = resolvers
 	}
 
+	if c.GlobalBool("dns-no-authoritative-precheck") {
+		acme.DNSNoAuthoritCheck = true
+	}
+
 	err := checkFolder(c.GlobalString("path"))
 	if err != nil {
 		logger().Fatalf("Could not check/create path: %s", err.Error())

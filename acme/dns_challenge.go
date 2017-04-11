@@ -34,6 +34,8 @@ var RecursiveNameservers = getNameservers(defaultResolvConf, defaultNameservers)
 // DNSTimeout is used to override the default DNS timeout of 10 seconds.
 var DNSTimeout = 10 * time.Second
 
+var DNSNoAuthoritCheck = false
+
 // getNameservers attempts to get systems nameservers before falling back to the defaults
 func getNameservers(path string, defaults []string) []string {
 	config, err := dns.ClientConfigFromFile(path)
@@ -141,7 +143,12 @@ func checkDNSPropagation(fqdn, value string) (bool, error) {
 		return false, err
 	}
 
-	return checkAuthoritativeNss(fqdn, value, authoritativeNss)
+	if !DNSNoAuthoritCheck {
+		logf("[INFO][%s] Checking DNS record propagation near authoritative nameservers", fqdn)
+		return checkAuthoritativeNss(fqdn, value, authoritativeNss)
+	}
+
+	return true, nil
 }
 
 // checkAuthoritativeNss queries each of the given nameservers for the expected TXT record.

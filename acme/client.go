@@ -492,9 +492,11 @@ func (c *Client) solveChallenges(challenges []authorizationResource) map[string]
 			for i, solver := range solvers {
 				// TODO: do not immediately fail if one domain fails to validate.
 				err := solver.Solve(authz.Body.Challenges[i], authz.Domain)
-				if err != nil {
-					failures[authz.Domain] = err
+				if err == nil {
+					// we're done
+					return nil
 				}
+				failures[authz.Domain] = err
 			}
 		} else {
 			failures[authz.Domain] = fmt.Errorf("[%s] acme: Could not determine solvers", authz.Domain)
@@ -507,8 +509,8 @@ func (c *Client) solveChallenges(challenges []authorizationResource) map[string]
 // Checks all combinations from the server and returns an array of
 // solvers which should get executed in series.
 func (c *Client) chooseSolvers(auth authorization, domain string) map[int]solver {
+	solvers := make(map[int]solver)
 	for _, combination := range auth.Combinations {
-		solvers := make(map[int]solver)
 		for _, idx := range combination {
 			if solver, ok := c.solvers[auth.Challenges[idx].Type]; ok {
 				solvers[idx] = solver
@@ -516,13 +518,9 @@ func (c *Client) chooseSolvers(auth authorization, domain string) map[int]solver
 				logf("[INFO][%s] acme: Could not find solver for: %s", domain, auth.Challenges[idx].Type)
 			}
 		}
-
-		// If we can solve the whole combination, return the solvers
-		if len(solvers) == len(combination) {
-			return solvers
-		}
 	}
-	return nil
+
+	return solvers
 }
 
 // Get the challenges needed to proof our identifier to the ACME server.

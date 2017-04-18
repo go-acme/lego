@@ -61,7 +61,13 @@ var checkAuthoritativeNssTests = []struct {
 	ok          bool
 }{
 	// TXT RR w/ expected value
-	{"8.8.8.8.asn.routeviews.org.", "151698.8.8.024", []string{"asnums.routeviews.org."},
+	{"8.8.8.8.asn.routeviews.org.", "15169", []string{"asnums.routeviews.org."},
+		true,
+	},
+	{"8.8.8.8.asn.routeviews.org.", "8.8.8.0", []string{"asnums.routeviews.org."},
+		true,
+	},
+	{"8.8.8.8.asn.routeviews.org.", "24", []string{"asnums.routeviews.org."},
 		true,
 	},
 	// No TXT RR

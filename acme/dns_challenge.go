@@ -160,9 +160,11 @@ func checkAuthoritativeNss(fqdn, value string, nameservers []string) (bool, erro
 		var found bool
 		for _, rr := range r.Answer {
 			if txt, ok := rr.(*dns.TXT); ok {
-				if strings.Join(txt.Txt, "") == value {
-					found = true
-					break
+				for _, recval := range txt.Txt {
+					if recval == value {
+						found = true
+						break
+					}
 				}
 			}
 		}

@@ -40,7 +40,7 @@ type RegistrationResource struct {
 	TosURL      string       `json:"terms_of_service,omitempty"`
 }
 
-type authorizationResource struct {
+type AuthorizationResource struct {
 	Body       authorization
 	Domain     string
 	NewCertURL string

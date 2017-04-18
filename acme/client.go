@@ -327,13 +327,13 @@ DNSNames:
 		logf("[INFO][%s] acme: Obtaining SAN certificate given a CSR", strings.Join(domains, ", "))
 	}
 
-	challenges, failures := c.getChallenges(domains)
+	challenges, failures := c.GetChallenges(domains)
 	// If any challenge fails - return. Do not generate partial SAN certificates.
 	if len(failures) > 0 {
 		return CertificateResource{}, failures
 	}
 
-	errs := c.solveChallenges(challenges)
+	errs := c.SolveChallenges(challenges)
 	// If any challenge fails - return. Do not generate partial SAN certificates.
 	if len(errs) > 0 {
 		return CertificateResource{}, errs
@@ -370,13 +370,13 @@ func (c *Client) ObtainCertificate(domains []string, bundle bool, privKey crypto
 		logf("[INFO][%s] acme: Obtaining SAN certificate", strings.Join(domains, ", "))
 	}
 
-	challenges, failures := c.getChallenges(domains)
+	challenges, failures := c.GetChallenges(domains)
 	// If any challenge fails - return. Do not generate partial SAN certificates.
 	if len(failures) > 0 {
 		return CertificateResource{}, failures
 	}
 
-	errs := c.solveChallenges(challenges)
+	errs := c.SolveChallenges(challenges)
 	// If any challenge fails - return. Do not generate partial SAN certificates.
 	if len(errs) > 0 {
 		return CertificateResource{}, errs
@@ -384,7 +384,7 @@ func (c *Client) ObtainCertificate(domains []string, bundle bool, privKey crypto
 
 	logf("[INFO][%s] acme: Validations succeeded; requesting certificates", strings.Join(domains, ", "))
 
-	cert, err := c.requestCertificate(challenges, bundle, privKey, mustStaple)
+	cert, err := c.RequestCertificate(challenges, bundle, privKey, mustStaple)
 	if err != nil {
 		for _, chln := range challenges {
 			failures[chln.Domain] = err
@@ -478,7 +478,7 @@ func (c *Client) RenewCertificate(cert CertificateResource, bundle, mustStaple b
 
 // Looks through the challenge combinations to find a solvable match.
 // Then solves the challenges in series and returns.
-func (c *Client) solveChallenges(challenges []authorizationResource) map[string]error {
+func (c *Client) SolveChallenges(challenges []AuthorizationResource) map[string]error {
 	// loop through the resources, basically through the domains.
 	failures := make(map[string]error)
 	for _, authz := range challenges {
@@ -526,8 +526,8 @@ func (c *Client) chooseSolvers(auth authorization, domain string) map[int]solver
 }
 
 // Get the challenges needed to proof our identifier to the ACME server.
-func (c *Client) getChallenges(domains []string) ([]authorizationResource, map[string]error) {
-	resc, errc := make(chan authorizationResource), make(chan domainError)
+func (c *Client) GetChallenges(domains []string) ([]AuthorizationResource, map[string]error) {
+	resc, errc := make(chan AuthorizationResource), make(chan domainError)
 
 	delay := time.Second / overallRequestLimit
 
@@ -550,11 +550,11 @@ func (c *Client) getChallenges(domains []string) ([]authorizationResource, map[s
 				return
 			}
 
-			resc <- authorizationResource{Body: authz, NewCertURL: links["next"], AuthURL: hdr.Get("Location"), Domain: domain}
+			resc <- AuthorizationResource{Body: authz, NewCertURL: links["next"], AuthURL: hdr.Get("Location"), Domain: domain}
 		}(domain)
 	}
 
-	responses := make(map[string]authorizationResource)
+	responses := make(map[string]AuthorizationResource)
 	failures := make(map[string]error)
 	for i := 0; i < len(domains); i++ {
 		select {
@@ -565,7 +565,7 @@ func (c *Client) getChallenges(domains []string) ([]authorizationResource, map[s
 		}
 	}
 
-	challenges := make([]authorizationResource, 0, len(responses))
+	challenges := make([]AuthorizationResource, 0, len(responses))
 	for _, domain := range domains {
 		if challenge, ok := responses[domain]; ok {
 			challenges = append(challenges, challenge)
@@ -580,13 +580,13 @@ func (c *Client) getChallenges(domains []string) ([]authorizationResource, map[s
 	return challenges, failures
 }
 
-func logAuthz(authz []authorizationResource) {
+func logAuthz(authz []AuthorizationResource) {
 	for _, auth := range authz {
 		logf("[INFO][%s] AuthURL: %s", auth.Domain, auth.AuthURL)
 	}
 }
 
-func (c *Client) requestCertificate(authz []authorizationResource, bundle bool, privKey crypto.PrivateKey, mustStaple bool) (CertificateResource, error) {
+func (c *Client) RequestCertificate(authz []AuthorizationResource, bundle bool, privKey crypto.PrivateKey, mustStaple bool) (CertificateResource, error) {
 	if len(authz) == 0 {
 		return CertificateResource{}, errors.New("Passed no authorizations to requestCertificate!")
 	}
@@ -615,7 +615,7 @@ func (c *Client) requestCertificate(authz []authorizationResource, bundle bool, 
 	return c.requestCertificateForCsr(authz, bundle, csr, pemEncode(privKey))
 }
 
-func (c *Client) requestCertificateForCsr(authz []authorizationResource, bundle bool, csr []byte, privateKeyPem []byte) (CertificateResource, error) {
+func (c *Client) requestCertificateForCsr(authz []AuthorizationResource, bundle bool, csr []byte, privateKeyPem []byte) (CertificateResource, error) {
 	commonName := authz[0]
 
 	var authURLs []string

@@ -233,7 +233,7 @@ func TestGetChallenges(t *testing.T) {
 		t.Fatalf("Could not create client: %v", err)
 	}
 
-	_, failures := client.getChallenges([]string{"example.com"})
+	_, failures := client.GetChallenges([]string{"example.com"})
 	if failures["example.com"] == nil {
 		t.Fatal("Expecting \"Server did not provide next link to proceed\" error, got nil")
 	}

@@ -252,7 +252,7 @@ func readCSRFile(filename string) (*x509.CertificateRequest, error) {
 	return x509.ParseCertificateRequest(raw)
 }
 
-func run(c *cli.Context) error {
+func run(c *cli.Context) {
 	conf, acc, client := setup(c)
 	if acc.Registration == nil {
 		reg, err := client.Register()
@@ -324,11 +324,9 @@ func run(c *cli.Context) error {
 	}
 
 	saveCertRes(cert, conf)
-
-	return nil
 }
 
-func revoke(c *cli.Context) error {
+func revoke(c *cli.Context) {
 
 	conf, _, client := setup(c)
 
@@ -350,11 +348,9 @@ func revoke(c *cli.Context) error {
 			logger().Print("Certificate was revoked.")
 		}
 	}
-
-	return nil
 }
 
-func renew(c *cli.Context) error {
+func renew(c *cli.Context) {
 	conf, _, client := setup(c)
 
 	if len(c.GlobalStringSlice("domains")) <= 0 {
@@ -382,7 +378,7 @@ func renew(c *cli.Context) error {
 		}
 
 		if int(expTime.Sub(time.Now()).Hours()/24.0) > c.Int("days") {
-			return nil
+			return
 		}
 	}
 
@@ -413,6 +409,4 @@ func renew(c *cli.Context) error {
 	}
 
 	saveCertRes(newCert, conf)
-
-	return nil
 }

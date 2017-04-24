@@ -22,7 +22,7 @@ func (t *tlsSNIChallenge) Solve(chlng challenge, domain string) error {
 	logf("[INFO][%s] acme: Trying to solve TLS-SNI-01", domain)
 
 	// Generate the Key Authorization for the challenge
-	keyAuth, err := getKeyAuthorization(chlng.Token, t.jws.privKey)
+	keyAuth, err := GetKeyAuthorization(chlng.Token, t.jws.privKey)
 	if err != nil {
 		return err
 	}

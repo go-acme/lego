@@ -126,7 +126,7 @@ func GetOCSPForCert(bundle []byte) ([]byte, *ocsp.Response, error) {
 	return ocspResBytes, ocspRes, nil
 }
 
-func getKeyAuthorization(token string, key interface{}) (string, error) {
+func GetKeyAuthorization(token string, key interface{}) (string, error) {
 	var publicKey crypto.PublicKey
 	switch k := key.(type) {
 	case *ecdsa.PrivateKey:

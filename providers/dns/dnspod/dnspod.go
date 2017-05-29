@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/decker502/dnspod-go"
+	"github.com/mukaiu/dnspod-go"
 	"github.com/xenolf/lego/acme"
 )
 

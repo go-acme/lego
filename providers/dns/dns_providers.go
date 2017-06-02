@@ -25,6 +25,7 @@ import (
 	"github.com/xenolf/lego/providers/dns/rfc2136"
 	"github.com/xenolf/lego/providers/dns/route53"
 	"github.com/xenolf/lego/providers/dns/vultr"
+	"github.com/xenolf/lego/providers/dns/otc"
 )
 
 func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) {
@@ -73,6 +74,8 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 		provider, err = pdns.NewDNSProvider()
 	case "ns1":
 		provider, err = ns1.NewDNSProvider()
+    case "otc":
+		provider, err = otc.NewDNSProvider()
 	default:
 		err = fmt.Errorf("Unrecognised DNS provider: %s", name)
 	}

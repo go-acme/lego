@@ -128,14 +128,14 @@ func (c *Client) SetChallengeProvider(challenge Challenge, p ChallengeProvider) 
 //
 // NOTE: This REPLACES any custom HTTP provider previously set by calling
 // c.SetChallengeProvider with the default HTTP challenge provider.
-func (c *Client) SetHTTPAddress(iface string) error {
+func (c *Client) SetHTTPAddress(iface string, allowXForwardedHost bool) error {
 	host, port, err := net.SplitHostPort(iface)
 	if err != nil {
 		return err
 	}
 
 	if chlng, ok := c.solvers[HTTP01]; ok {
-		chlng.(*httpChallenge).provider = NewHTTPProviderServer(host, port)
+		chlng.(*httpChallenge).provider = NewHTTPProviderServer(host, port, allowXForwardedHost)
 	}
 
 	return nil

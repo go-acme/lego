@@ -11,17 +11,18 @@ import (
 // It may be instantiated without using the NewHTTPProviderServer function if
 // you want only to use the default values.
 type HTTPProviderServer struct {
-	iface    string
-	port     string
-	done     chan bool
-	listener net.Listener
+	iface               string
+	port                string
+	done                chan bool
+	listener            net.Listener
+	allowXForwardedHost bool
 }
 
 // NewHTTPProviderServer creates a new HTTPProviderServer on the selected interface and port.
 // Setting iface and / or port to an empty string will make the server fall back to
 // the "any" interface and port 80 respectively.
-func NewHTTPProviderServer(iface, port string) *HTTPProviderServer {
-	return &HTTPProviderServer{iface: iface, port: port}
+func NewHTTPProviderServer(iface, port string, allowXForwardedHost bool) *HTTPProviderServer {
+	return &HTTPProviderServer{iface: iface, port: port, allowXForwardedHost: allowXForwardedHost}
 }
 
 // Present starts a web server and makes the token available at `HTTP01ChallengePath(token)` for web requests.
@@ -58,7 +59,15 @@ func (s *HTTPProviderServer) serve(domain, token, keyAuth string) {
 	// For validation it then writes the token the server returned with the challenge
 	mux := http.NewServeMux()
 	mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasPrefix(r.Host, domain) && r.Method == "GET" {
+		requestHost := r.Host
+		if s.allowXForwardedHost {
+			xForwardedHost := r.Header.Get("x-forwarded-host")
+			if xForwardedHost != "" {
+				requestHost = xForwardedHost
+			}
+		}
+
+		if strings.HasPrefix(requestHost, domain) && r.Method == "GET" {
 			w.Header().Add("Content-Type", "text/plain")
 			w.Write([]byte(keyAuth))
 			logf("[INFO][%s] Served key authentication", domain)

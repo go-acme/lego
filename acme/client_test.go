@@ -75,7 +75,7 @@ func TestClientOptPort(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Could not create client: %v", err)
 	}
-	client.SetHTTPAddress(net.JoinHostPort(optHost, optPort))
+	client.SetHTTPAddress(net.JoinHostPort(optHost, optPort), false)
 	client.SetTLSAddress(net.JoinHostPort(optHost, optPort))
 
 	httpSolver, ok := client.solvers[HTTP01].(*httpChallenge)
@@ -108,7 +108,7 @@ func TestClientOptPort(t *testing.T) {
 
 	// test setting different host
 	optHost = "127.0.0.1"
-	client.SetHTTPAddress(net.JoinHostPort(optHost, optPort))
+	client.SetHTTPAddress(net.JoinHostPort(optHost, optPort), false)
 	client.SetTLSAddress(net.JoinHostPort(optHost, optPort))
 
 	if got := httpSolver.provider.(*HTTPProviderServer).iface; got != optHost {

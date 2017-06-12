@@ -103,7 +103,7 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 		if strings.Index(c.GlobalString("http"), ":") == -1 {
 			logger().Fatalf("The --http switch only accepts interface:port or :port for its argument.")
 		}
-		client.SetHTTPAddress(c.GlobalString("http"))
+		client.SetHTTPAddress(c.GlobalString("http"), false)
 	}
 
 	if c.GlobalIsSet("tls") {

@@ -232,7 +232,7 @@ if err != nil {
 // because we aren't running as root and can't bind a listener to port 80 and 443 
 // (used later when we attempt to pass challenges). Keep in mind that we still
 // need to proxy challenge traffic to port 5002 and 5001.
-client.SetHTTPAddress(":5002")
+client.SetHTTPAddress(":5002", false)
 client.SetTLSAddress(":5001")
 
 // New users will need to register

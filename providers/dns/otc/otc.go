@@ -242,7 +242,7 @@ func (d *DNSProvider) GetZoneID(zone string) (string, error) {
 		return "", err
 	}
 
-	if len(zonesRes.Zones) < 0 {
+	if len(zonesRes.Zones) < 1 {
 		return "", fmt.Errorf("zone not found")
 	}
 

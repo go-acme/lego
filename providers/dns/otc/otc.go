@@ -221,7 +221,7 @@ func (d *DNSProvider) login() error {
 	return nil
 }
 
-func (d *DNSProvider) GetZoneID(zone string) (string, error) {
+func (d *DNSProvider) getZoneID(zone string) (string, error) {
 	type zoneItem struct {
 		ID string `json:"id"`
 	}
@@ -243,7 +243,7 @@ func (d *DNSProvider) GetZoneID(zone string) (string, error) {
 	}
 
 	if len(zonesRes.Zones) < 1 {
-		return "", fmt.Errorf("zone not found")
+		return "", fmt.Errorf("zone %s not found", zone)
 	}
 
 	if len(zonesRes.Zones) > 1 {
@@ -278,7 +278,7 @@ func (d *DNSProvider) getRecordSetID(zoneID string, fqdn string) (string, error)
 		return "", err
 	}
 
-	if len(recordSetsRes.RecordSets) < 0 {
+	if len(recordSetsRes.RecordSets) < 1 {
 		return "", fmt.Errorf("record not found")
 	}
 
@@ -321,9 +321,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return err
 	}
 
-	zoneID, err := d.GetZoneID(authZone)
+	zoneID, err := d.getZoneID(authZone)
 	if err != nil {
-		return fmt.Errorf("zoneid %s", err)
+		return fmt.Errorf("unable to get zone: %s", err)
 	}
 
 	resource := fmt.Sprintf("zones/%s/recordsets", zoneID)
@@ -366,7 +366,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return err
 	}
 
-	zoneID, err := d.GetZoneID(authZone)
+	zoneID, err := d.getZoneID(authZone)
 
 	if err != nil {
 		return err
@@ -374,7 +374,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	recordID, err := d.getRecordSetID(zoneID, fqdn)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable go get record %s for zone %s: %s", fqdn, domain, err)
 	}
 	return d.deleteRecordSet(zoneID, recordID)
 }

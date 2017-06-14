@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+	"os"
 	"testing"
 )
 
@@ -30,6 +31,37 @@ func TestOTCDNSTestSuite(t *testing.T) {
 func (s *OTCDNSTestSuite) createDNSProvider() (*DNSProvider, error) {
 	url := fmt.Sprintf("%s/v3/auth/token", s.Mock.Server.URL)
 	return NewDNSProviderCredentials(fakeOTCUserName, fakeOTCPassword, fakeOTCDomainName, fakeOTCProjectName, url)
+}
+
+func (s *OTCDNSTestSuite) TestOTCDNSLoginEnv() {
+	os.Setenv("OTC_DOMAIN_NAME", "unittest1")
+	os.Setenv("OTC_USER_NAME", "unittest2")
+	os.Setenv("OTC_PASSWORD", "unittest3")
+	os.Setenv("OTC_PROJECT_NAME", "unittest4")
+	os.Setenv("OTC_IDENTITY_ENDPOINT", "unittest5")
+
+	provider, err := NewDNSProvider()
+	assert.Nil(s.T(), err)
+	assert.Equal(s.T(), provider.domainName, "unittest1")
+	assert.Equal(s.T(), provider.userName, "unittest2")
+	assert.Equal(s.T(), provider.password, "unittest3")
+	assert.Equal(s.T(), provider.projectName, "unittest4")
+	assert.Equal(s.T(), provider.identityEndpoint, "unittest5")
+
+	os.Setenv("OTC_IDENTITY_ENDPOINT", "")
+
+	provider, err = NewDNSProvider()
+	assert.Nil(s.T(), err)
+	assert.Equal(s.T(), provider.identityEndpoint, "https://iam.eu-de.otc.t-systems.com:443/v3/auth/tokens")
+
+	os.Clearenv()
+}
+
+func (s *OTCDNSTestSuite) TestOTCDNSLoginEnvEmpty() {
+	_, err := NewDNSProvider()
+	assert.Equal(s.T(), "OTC credentials missing", err.Error())
+
+	os.Clearenv()
 }
 
 func (s *OTCDNSTestSuite) TestOTCDNSLogin() {

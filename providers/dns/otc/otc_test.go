@@ -36,7 +36,7 @@ func (s *OTCDNSTestSuite) TestOTCDNSLogin() {
 	otcProvider, err := s.createDNSProvider()
 
 	assert.Nil(s.T(), err)
-	err = otcProvider.LoginRequest()
+	err = otcProvider.loginRequest()
 	assert.Nil(s.T(), err)
 	assert.Equal(s.T(), otcProvider.otcBaseURL, fmt.Sprintf("%s/v2", s.Mock.Server.URL))
 	assert.Equal(s.T(), fakeOTCToken, otcProvider.token)

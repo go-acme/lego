@@ -102,7 +102,7 @@ func (d *DNSProvider) SendRequest(method, resource string, payload interface{}) 
 	return bytes.NewReader(body1), nil
 }
 
-func (d *DNSProvider) LoginRequest() error {
+func (d *DNSProvider) loginRequest() error {
 	type nameResponse struct {
 		Name string `json:"name"`
 	}
@@ -213,8 +213,7 @@ func (d *DNSProvider) LoginRequest() error {
 // Starts a new OTC API Session. Authenticates using userName, password
 // and receives a token to be used in for subsequent requests.
 func (d *DNSProvider) login() error {
-
-	err := d.LoginRequest()
+	err := d.loginRequest()
 	if err != nil {
 		return err
 	}

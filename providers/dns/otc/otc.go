@@ -181,6 +181,10 @@ func (d *DNSProvider) loginRequest() error {
 
 	d.token = resp.Header.Get("X-Subject-Token")
 
+	if d.token == "" {
+		return fmt.Errorf("unable to get auth token")
+	}
+
 	type endpointResponse struct {
 		Token struct {
 			Catalog []struct {
@@ -205,6 +209,10 @@ func (d *DNSProvider) loginRequest() error {
 				continue
 			}
 		}
+	}
+
+	if d.otcBaseURL == "" {
+		return fmt.Errorf("unable to get dns endpoint")
 	}
 
 	return nil

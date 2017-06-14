@@ -76,11 +76,14 @@ func (d *DNSProvider) SendRequest(method, resource string, payload interface{}) 
 		req.Header.Set("X-Auth-Token", d.token)
 	}
 
+
 	client := &http.Client{
 		Timeout: time.Duration(10 * time.Second),
 		// Workaround for keep alive bug in otc api
-		Transport: &http.Transport{
+		Transport: &http.Transport {
+			Proxy: http.ProxyFromEnvironment,
 			DisableKeepAlives: true,
+			TLSHandshakeTimeout: 10 * time.Second,
 		},
 	}
 	resp, err := client.Do(req)

@@ -599,6 +599,9 @@ func logAuthz(authz []authorizationResource) {
 func (c *Client) DisableAuthzForURL(authURL string) error {
 	var disabledAuth authorization
 	_, err := postJSON(c.jws, authURL, deactivateAuthMessage{Resource: "authz", Status: "deactivated"}, &disabledAuth)
+	if err != nil && strings.Contains(err.Error(), "only valid and pending authorizations can be deactivated") {
+		err = nil
+	}
 	return err
 }
 

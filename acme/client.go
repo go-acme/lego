@@ -328,19 +328,20 @@ DNSNames:
 	}
 
 	challenges, failures := c.getChallenges(domains)
+	authURLs := extractAuthURLs(challenges)
 	// If any challenge fails - return. Do not generate partial SAN certificates.
 	if len(failures) > 0 {
 		for _, auth := range challenges {
 			c.disableAuthz(auth)
 		}
 
-		return CertificateResource{}, failures
+		return CertificateResource{AuthURLs: authURLs}, failures
 	}
 
 	errs := c.solveChallenges(challenges)
 	// If any challenge fails - return. Do not generate partial SAN certificates.
 	if len(errs) > 0 {
-		return CertificateResource{}, errs
+		return CertificateResource{AuthURLs: authURLs}, errs
 	}
 
 	logf("[INFO][%s] acme: Validations succeeded; requesting certificates", strings.Join(domains, ", "))
@@ -354,6 +355,7 @@ DNSNames:
 
 	// Add the CSR to the certificate so that it can be used for renewals.
 	cert.CSR = pemEncode(&csr)
+	cert.AuthURLs = authURLs
 
 	return cert, failures
 }
@@ -375,19 +377,20 @@ func (c *Client) ObtainCertificate(domains []string, bundle bool, privKey crypto
 	}
 
 	challenges, failures := c.getChallenges(domains)
+	authURLs := extractAuthURLs(challenges)
 	// If any challenge fails - return. Do not generate partial SAN certificates.
 	if len(failures) > 0 {
 		for _, auth := range challenges {
 			c.disableAuthz(auth)
 		}
 
-		return CertificateResource{}, failures
+		return CertificateResource{AuthURLs: authURLs}, failures
 	}
 
 	errs := c.solveChallenges(challenges)
 	// If any challenge fails - return. Do not generate partial SAN certificates.
 	if len(errs) > 0 {
-		return CertificateResource{}, errs
+		return CertificateResource{AuthURLs: authURLs}, errs
 	}
 
 	logf("[INFO][%s] acme: Validations succeeded; requesting certificates", strings.Join(domains, ", "))
@@ -398,6 +401,8 @@ func (c *Client) ObtainCertificate(domains []string, bundle bool, privKey crypto
 			failures[chln.Domain] = err
 		}
 	}
+
+	cert.AuthURLs = authURLs
 
 	return cert, failures
 }
@@ -588,6 +593,14 @@ func (c *Client) getChallenges(domains []string) ([]authorizationResource, map[s
 	close(errc)
 
 	return challenges, failures
+}
+
+func extractAuthURLs(authz []authorizationResource) []string {
+	var urls []string
+	for _, auth := range authz {
+		urls = append(urls, auth.AuthURL)
+	}
+	return urls
 }
 
 func logAuthz(authz []authorizationResource) {

@@ -104,12 +104,13 @@ type deactivateAuthMessage struct {
 // Certificate may be a certificate bundle, depending on the
 // options supplied to create it.
 type CertificateResource struct {
-	Domain            string `json:"domain"`
-	CertURL           string `json:"certUrl"`
-	CertStableURL     string `json:"certStableUrl"`
-	AccountRef        string `json:"accountRef,omitempty"`
-	PrivateKey        []byte `json:"-"`
-	Certificate       []byte `json:"-"`
-	IssuerCertificate []byte `json:"-"`
-	CSR               []byte `json:"-"`
+	Domain            string   `json:"domain"`
+	CertURL           string   `json:"certUrl"`
+	CertStableURL     string   `json:"certStableUrl"`
+	AccountRef        string   `json:"accountRef,omitempty"`
+	AuthURLs          []string `json:"-"`
+	PrivateKey        []byte   `json:"-"`
+	Certificate       []byte   `json:"-"`
+	IssuerCertificate []byte   `json:"-"`
+	CSR               []byte   `json:"-"`
 }

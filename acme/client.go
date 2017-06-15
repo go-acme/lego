@@ -596,10 +596,18 @@ func logAuthz(authz []authorizationResource) {
 	}
 }
 
+func (c *Client) DisableAuthzForURL(authURL string) error {
+	var disabledAuth authorization
+	_, err := postJSON(c.jws, authURL, deactivateAuthMessage{Resource: "authz", Status: "deactivated"}, &disabledAuth)
+	return err
+}
+
 // cleanAuthz loops through the passed in slice and disables any auths which are not "valid"
 func (c *Client) disableAuthz(auth authorizationResource) error {
-	var disabledAuth authorization
-	_, err := postJSON(c.jws, auth.AuthURL, deactivateAuthMessage{Resource: "authz", Status: "deactivated"}, &disabledAuth)
+	err := c.DisableAuthzForURL(auth.AuthURL)
+	if err != nil {
+		logf("[INFO][%s] Failed to disable authorization %s: %v", auth.Domain, auth.AuthURL, err)
+	}
 	return err
 }
 

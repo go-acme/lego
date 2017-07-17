@@ -29,8 +29,7 @@ type DNSProvider struct {
 // GCE_SERVICE_ACCOUNT_FILE
 func NewDNSProvider() (*DNSProvider, error) {
 	project := os.Getenv("GCE_PROJECT")
-	saFile := os.Getenv("GCE_SERVICE_ACCOUNT_FILE")
-	if len(saFile) > 0 {
+	if saFile, ok := os.LookupEnv("GCE_SERVICE_ACCOUNT_FILE"); ok {
 		return NewDNSProviderServiceAccount(project, saFile)
 	}
 	return NewDNSProviderCredentials(project)

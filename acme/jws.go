@@ -37,31 +37,20 @@ func keyAsJWK(key interface{}) *jose.JsonWebKey {
 func (j *jws) post(url string, content []byte) (*http.Response, error) {
 	signedContent, err := j.signContent(content)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to sign content -> %s", err.Error())
 	}
 
 	resp, err := httpPost(url, "application/jose+json", bytes.NewBuffer([]byte(signedContent.FullSerialize())))
+	if err != nil {
+		return nil, fmt.Errorf("Failed to HTTP POST to %s -> %s", url, err.Error())
+	}
 
-	// Even in case of an error, the response should still contain a nonce.
 	nonce, nonceErr := getNonceFromResponse(resp)
 	if nonceErr == nil {
 		j.nonces.Push(nonce)
 	}
 
-	if err != nil {
-		switch err.(type) {
-		case NonceError:
-			// In case of a nonce error - retry once
-			resp, err = httpPost(url, "application/jose+json", bytes.NewBuffer([]byte(signedContent.FullSerialize())))
-			if err != nil {
-				return nil, err
-			}
-		default:
-			return nil, err
-		}
-	}
-
-	return resp, err
+	return resp, nil
 }
 
 func (j *jws) signContent(content []byte) (*jose.JsonWebSignature, error) {
@@ -80,13 +69,13 @@ func (j *jws) signContent(content []byte) (*jose.JsonWebSignature, error) {
 
 	signer, err := jose.NewSigner(alg, j.privKey)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to create jose signer -> %s", err.Error())
 	}
 	signer.SetNonceSource(j)
 
 	signed, err := signer.Sign(content)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to sign content -> %s", err.Error())
 	}
 	return signed, nil
 }
@@ -126,7 +115,7 @@ func (n *nonceManager) Push(nonce string) {
 func getNonce(url string) (string, error) {
 	resp, err := httpHead(url)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("Failed to get nonce from HTTP HEAD -> %s", err.Error())
 	}
 
 	return getNonceFromResponse(resp)

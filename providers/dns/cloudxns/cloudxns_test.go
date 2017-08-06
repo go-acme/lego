@@ -65,7 +65,7 @@ func TestCloudXNSPresent(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestCloudFlareCleanUp(t *testing.T) {
+func TestCloudXNSCleanUp(t *testing.T) {
 	if !cxLiveTest {
 		t.Skip("skipping live test")
 	}

@@ -203,6 +203,7 @@ Here is an example bash command using the CloudFlare DNS provider:
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, "\tazure:\tAZURE_CLIENT_ID, AZURE_CLIENT_SECRET, AZURE_SUBSCRIPTION_ID, AZURE_TENANT_ID, AZURE_RESOURCE_GROUP")
 	fmt.Fprintln(w, "\tauroradns:\tAURORA_USER_ID, AURORA_KEY, AURORA_ENDPOINT")
+	fmt.Fprintln(w, "\tcloudxns:\tCLOUDXNS_API_KEY, CLOUDXNS_SECRET_KEY")
 	fmt.Fprintln(w, "\tcloudflare:\tCLOUDFLARE_EMAIL, CLOUDFLARE_API_KEY")
 	fmt.Fprintln(w, "\tdigitalocean:\tDO_AUTH_TOKEN")
 	fmt.Fprintln(w, "\tdnsimple:\tDNSIMPLE_EMAIL, DNSIMPLE_OAUTH_TOKEN")

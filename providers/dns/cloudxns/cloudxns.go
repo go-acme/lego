@@ -8,11 +8,12 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"lego/acme"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/xenolf/lego/acme"
 )
 
 const cloudXNSBaseURL = "https://www.cloudxns.net/api2/"

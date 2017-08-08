@@ -25,7 +25,7 @@ func restoreEnv() {
 }
 
 func TestNewDNSProviderValidEnv(t *testing.T) {
-	os.Setenv("SCRIPT_PATH", "/usr/bin/true")
+	os.Setenv("SCRIPT_PATH", "true")
 	defer restoreEnv()
 	_, err := NewDNSProvider()
 	assert.NoError(t, err)

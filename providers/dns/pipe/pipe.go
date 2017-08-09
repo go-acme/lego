@@ -37,7 +37,7 @@ func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("Writing 'present' operation failed: %s", err)
 	}
 
-	return c.pipeResponse()
+	return c.pipeResponse("present")
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
@@ -49,18 +49,18 @@ func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("Writing 'cleanup' operation failed: %s", err)
 	}
 
-	return c.pipeResponse()
+	return c.pipeResponse("cleanup")
 }
 
 // Handle response from pipe
-func (c *DNSProvider) pipeResponse() error {
+func (c *DNSProvider) pipeResponse(op string) error {
 	reader := bufio.NewReader(c.pipe)
 	if recvMsg, err := reader.ReadString('\n'); err != nil {
 		return fmt.Errorf("Failed to read result of 'present' operation: %s", err)
 	} else if recvMsg[:3] == "ERR" {
-		return fmt.Errorf("Operation 'present' failed: %s", recvMsg[4:len(recvMsg)])
+		return fmt.Errorf("Operation '%s' failed: %s", op, recvMsg[4:len(recvMsg)])
 	} else if recvMsg[:3] != "OKY" {
-		return fmt.Errorf("Operation 'present' returned strange result")
+		return fmt.Errorf("Operation '%s' returned strange result", op)
 	}
 	return nil
 }

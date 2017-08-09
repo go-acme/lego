@@ -32,7 +32,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
 
-	sendMsg := fmt.Sprintf("PRESENT %s %s %s %i\n", domain, fqdn, value, ttl)
+	sendMsg := fmt.Sprintf("PRESENT %s %s %s %d\n", domain, fqdn, value, ttl)
 	if _, err := c.pipe.WriteString(sendMsg); err != nil {
 		return fmt.Errorf("Writing 'present' operation failed: %s", err)
 	}

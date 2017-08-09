@@ -47,13 +47,6 @@ func TestNewDNSProviderMissingPipeErr(t *testing.T) {
 	assert.EqualError(t, err, "open : no such file or directory")
 }
 
-func TestNewDNSProviderNonpipeErr(t *testing.T) {
-	os.Setenv("EXEC_PATH", "/dev/null")
-	defer restoreEnv()
-	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "open : no such file or directory")
-}
-
 func TestLivePresent(t *testing.T) {
 	if !liveTest {
 		t.Skip("skipping live test")

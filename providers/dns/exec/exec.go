@@ -1,11 +1,11 @@
-// Package script implements a DNS provider for solving the DNS-01 challenge using
-// a user-provided script.
-package script
+// Package exec implements a DNS provider for solving the DNS-01 challenge using
+// a user-provided executable.
+package exec
 
 import (
 	"fmt"
 	"os"
-	"os/exec"
+	osexec "os/exec"
 	"strconv"
 
 	"github.com/xenolf/lego/acme"
@@ -13,17 +13,17 @@ import (
 
 // DNSProvider is an implementation of the acme.ChallengeProvider interface.
 type DNSProvider struct {
-	script string
+	exec string
 }
 
 // NewDNSProvider returns a DNSProvider instance with a script defined.
 func NewDNSProvider() (*DNSProvider, error) {
-	scriptCmd := os.Getenv("SCRIPT_PATH")
-	if scriptPath, err := exec.LookPath(scriptCmd); err != nil {
-		return nil, fmt.Errorf(err.Error())
+	cmd := os.Getenv("EXEC_PATH")
+	if execPath, err := osexec.LookPath(cmd); err != nil {
+		return nil, err
 	} else {
 		c := &DNSProvider{
-			script: scriptPath,
+			exec: execPath,
 		}
 		return c, nil
 	}
@@ -33,9 +33,9 @@ func NewDNSProvider() (*DNSProvider, error) {
 func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
 
-	cmd := exec.Command(c.script, "present", domain, fqdn, value, strconv.Itoa(ttl))
+	cmd := osexec.Command(c.exec, "present", domain, fqdn, value, strconv.Itoa(ttl))
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("Script failed at 'present' phase: %s", err)
+		return fmt.Errorf("Command %s failed at 'present' phase: %s", c.exec, err)
 	}
 
 	return nil
@@ -45,9 +45,9 @@ func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
 
-	cmd := exec.Command(c.script, "cleanup", domain, fqdn)
+	cmd := osexec.Command(c.exec, "cleanup", domain, fqdn)
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("Script failed at 'cleanup' phase: %s", err)
+		return fmt.Errorf("Command %s failed at 'cleanup' phase: %s", c.exec, err)
 	}
 	return nil
 }

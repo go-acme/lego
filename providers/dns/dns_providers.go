@@ -13,6 +13,7 @@ import (
 	"github.com/xenolf/lego/providers/dns/dnsmadeeasy"
 	"github.com/xenolf/lego/providers/dns/dnspod"
 	"github.com/xenolf/lego/providers/dns/dyn"
+	"github.com/xenolf/lego/providers/dns/exec"
 	"github.com/xenolf/lego/providers/dns/exoscale"
 	"github.com/xenolf/lego/providers/dns/gandi"
 	"github.com/xenolf/lego/providers/dns/googlecloud"
@@ -25,7 +26,6 @@ import (
 	"github.com/xenolf/lego/providers/dns/rackspace"
 	"github.com/xenolf/lego/providers/dns/rfc2136"
 	"github.com/xenolf/lego/providers/dns/route53"
-	"github.com/xenolf/lego/providers/dns/script"
 	"github.com/xenolf/lego/providers/dns/vultr"
 )
 
@@ -77,8 +77,8 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 		provider, err = ns1.NewDNSProvider()
 	case "otc":
 		provider, err = otc.NewDNSProvider()
-	case "script":
-		provider, err = script.NewDNSProvider()
+	case "exec":
+		provider, err = exec.NewDNSProvider()
 	default:
 		err = fmt.Errorf("Unrecognised DNS provider: %s", name)
 	}

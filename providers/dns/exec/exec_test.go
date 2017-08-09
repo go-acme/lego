@@ -1,4 +1,4 @@
-package script
+package exec
 
 import (
 	"os"
@@ -10,36 +10,36 @@ import (
 
 var (
 	liveTest bool
-	script   string
+	command  string
 	domain   string
 )
 
 func init() {
-	script = os.Getenv("SCRIPT_PATH")
-	domain = os.Getenv("SCRIPT_TEST_DOMAIN")
-	liveTest = len(script) > 0 && len(domain) > 0
+	command = os.Getenv("EXEC_PATH")
+	domain = os.Getenv("EXEC_TEST_DOMAIN")
+	liveTest = len(command) > 0 && len(domain) > 0
 }
 
 func restoreEnv() {
-	os.Setenv("SCRIPT_PATH", script)
+	os.Setenv("EXEC_PATH", command)
 }
 
 func TestNewDNSProviderValidEnv(t *testing.T) {
-	os.Setenv("SCRIPT_PATH", "true")
+	os.Setenv("EXEC_PATH", "true")
 	defer restoreEnv()
 	_, err := NewDNSProvider()
 	assert.NoError(t, err)
 }
 
-func TestNewDNSProviderMissingScriptErr(t *testing.T) {
-	os.Setenv("SCRIPT_PATH", "")
+func TestNewDNSProviderMissingCmdErr(t *testing.T) {
+	os.Setenv("EXEC_PATH", "")
 	defer restoreEnv()
 	_, err := NewDNSProvider()
 	assert.EqualError(t, err, "exec: \"\": executable file not found in $PATH")
 }
 
-func TestNewDNSProviderNonexecScriptErr(t *testing.T) {
-	os.Setenv("SCRIPT_PATH", "/dev/null")
+func TestNewDNSProviderNonexecCmdErr(t *testing.T) {
+	os.Setenv("EXEC_PATH", "/dev/null")
 	defer restoreEnv()
 	_, err := NewDNSProvider()
 	assert.EqualError(t, err, "exec: \"/dev/null\": permission denied")

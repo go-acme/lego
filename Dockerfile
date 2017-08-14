@@ -10,6 +10,6 @@ RUN apk update && apk add --no-cache --virtual run-dependencies ca-certificates 
     git checkout ${LEGO_VERSION} && \
     go build -o /usr/bin/lego . && \
     apk del build-dependencies && \
-    rm -rf /go
+    rm -rf ${GOPATH}
 
 ENTRYPOINT [ "/usr/bin/lego" ]

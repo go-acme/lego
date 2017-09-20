@@ -69,24 +69,27 @@ func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 		ttl = 600
 	}
 
-	rec := DNSRecord{
-		Type: "TXT",
-		Name: c.extractRecordName(fqdn, domainZone),
-		Data: value,
-		Ttl:  ttl,
+	recordName := c.extractRecordName(fqdn, domainZone)
+	rec := []DNSRecord{
+		{
+			Type: "TXT",
+			Name: recordName,
+			Data: value,
+			Ttl:  ttl,
+		},
 	}
 
-	return c.updateRecord(rec, domainZone)
+	return c.updateRecords(rec, domainZone, recordName)
 }
 
-func (c *DNSProvider) updateRecord(record DNSRecord, domainZone string) error {
-	body, err := json.Marshal(record)
+func (c *DNSProvider) updateRecords(records []DNSRecord, domainZone string, recordName string) error {
+	body, err := json.Marshal(records)
 	if err != nil {
 		return err
 	}
 
 	var resp *http.Response
-	resp, err = c.makeRequest("PUT", fmt.Sprintf("/v1/domains/%s/records/%s/%s", domainZone, record.Type, record.Name), bytes.NewReader(body))
+	resp, err = c.makeRequest("PUT", fmt.Sprintf("/v1/domains/%s/records/TXT/%s", domainZone, recordName), bytes.NewReader(body))
 	if err != nil {
 		return err
 	}
@@ -102,24 +105,22 @@ func (c *DNSProvider) updateRecord(record DNSRecord, domainZone string) error {
 
 // CleanUp sets null value in the TXT DNS record as GoDaddy has no proper DELETE record method
 func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _, ttl := acme.DNS01Record(domain, keyAuth)
+	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
 	domainZone, err := c.getZone(fqdn)
 	if err != nil {
 		return err
 	}
 
-	if ttl < 600 {
-		ttl = 600
+	recordName := c.extractRecordName(fqdn, domainZone)
+	rec := []DNSRecord{
+		{
+			Type: "TXT",
+			Name: recordName,
+			Data: "null",
+		},
 	}
 
-	rec := DNSRecord{
-		Type: "TXT",
-		Name: c.extractRecordName(fqdn, domainZone),
-		Data: "null",
-		Ttl:  ttl,
-	}
-
-	return c.updateRecord(rec, domainZone)
+	return c.updateRecords(rec, domainZone, recordName)
 }
 
 func (c *DNSProvider) getZone(fqdn string) (string, error) {

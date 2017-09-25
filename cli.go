@@ -109,7 +109,7 @@ func main() {
 	app.Flags = []cli.Flag{
 		cli.StringSliceFlag{
 			Name:  "domains, d",
-			Usage: "Add domains to the process",
+			Usage: "Add a domain to the process. Can be specified multiple times.",
 		},
 		cli.StringFlag{
 			Name:  "csr, c",

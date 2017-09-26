@@ -32,7 +32,7 @@ func main() {
 	app.Name = "lego"
 	app.Usage = "Let's Encrypt client written in Go"
 
-	version := "0.4.0"
+	version := "0.4.1"
 	if strings.HasPrefix(gittag, "v") {
 		version = gittag
 	}

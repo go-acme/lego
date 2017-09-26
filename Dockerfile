@@ -1,8 +1,9 @@
-FROM alpine:3.4
+FROM alpine:3.5
 
 ENV GOPATH /go
+ENV SYSROOT /go
 
-RUN apk update && apk add ca-certificates go git && \
+RUN apk update && apk add ca-certificates go git musl-dev && \
     rm -rf /var/cache/apk/* && \
     go get -u github.com/xenolf/lego && \
     cd /go/src/github.com/xenolf/lego && \

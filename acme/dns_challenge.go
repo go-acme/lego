@@ -274,8 +274,8 @@ func FindZoneByFqdn(fqdn string, nameservers []string) (string, error) {
 }
 
 func isTLD(domain string) bool {
-	publicsuffix, _ := publicsuffix.PublicSuffix(UnFqdn(domain))
-	if publicsuffix == UnFqdn(domain) {
+	publicsuffix, icann := publicsuffix.PublicSuffix(UnFqdn(domain))
+	if publicsuffix == UnFqdn(domain) && icann {
 		return true
 	}
 	return false

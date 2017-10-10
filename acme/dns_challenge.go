@@ -233,11 +233,6 @@ func lookupNameservers(fqdn string) ([]string, error) {
 // FindZoneByFqdn determines the zone apex for the given fqdn by recursing up the
 // domain labels until the nameserver returns a SOA record in the answer section.
 func FindZoneByFqdn(fqdn string, nameservers []string) (string, error) {
-	// Do we have it cached?
-	if zone, ok := fqdnToZone[fqdn]; ok {
-		return zone, nil
-	}
-
 	labelIndexes := dns.Split(fqdn)
 	for _, index := range labelIndexes {
 		domain := fqdn[index:]
@@ -252,17 +247,23 @@ func FindZoneByFqdn(fqdn string, nameservers []string) (string, error) {
 			return "", fmt.Errorf("Unexpected response code '%s' for %s",
 				dns.RcodeToString[in.Rcode], domain)
 		}
-
-		// Check if we got a SOA RR in the answer section
 		if in.Rcode == dns.RcodeSuccess {
 
-			// CNAME records cannot/should not exist at the root of a zone.
-			// So we skip a domain when a CNAME is found.
-			if dnsMsgContainsCNAME(in) {
-				continue
-			}
-
 			for _, ans := range in.Answer {
+				// Check CNAME
+				if cname, ok := ans.(*dns.CNAME); ok {
+					parent_zone := cname.Hdr.Name
+					zone_in := dns.SplitDomainName(parent_zone)
+					var zone string
+					for _, i := range zone_in[1:] {
+						zone += i + "."
+					}
+
+					println("Zone", zone)
+					println("Fqdn", fqdn)
+					return zone, nil
+
+				}
 				if soa, ok := ans.(*dns.SOA); ok {
 					zone := soa.Hdr.Name
 					fqdnToZone[fqdn] = zone

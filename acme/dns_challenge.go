@@ -264,8 +264,6 @@ func FindZoneByFqdn(fqdn string, nameservers []string) (string, error) {
 						zone += i + "."
 					}
 
-					println("Zone", zone)
-					println("Fqdn", fqdn)
 					return zone, nil
 
 				}

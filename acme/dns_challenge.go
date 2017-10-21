@@ -8,6 +8,7 @@ import (
 	"log"
 	"net"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/miekg/dns"
@@ -19,8 +20,9 @@ type preCheckDNSFunc func(fqdn, value string) (bool, error)
 var (
 	// PreCheckDNS checks DNS propagation before notifying ACME that
 	// the DNS challenge is ready.
-	PreCheckDNS preCheckDNSFunc = checkDNSPropagation
-	fqdnToZone                  = map[string]string{}
+	PreCheckDNS  preCheckDNSFunc = checkDNSPropagation
+	fqdnToZone                   = map[string]string{}
+	fqdnToZoneMu                 = &sync.Mutex{}
 )
 
 const defaultResolvConf = "/etc/resolv.conf"
@@ -98,8 +100,6 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 
 	fqdn, value, _ := DNS01Record(domain, keyAuth)
 
-	logf("[INFO][%s] Checking DNS record propagation using %+v", domain, RecursiveNameservers)
-
 	var timeout, interval time.Duration
 	switch provider := s.provider.(type) {
 	case ChallengeProviderTimeout:
@@ -108,12 +108,18 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 		timeout, interval = 60*time.Second, 2*time.Second
 	}
 
+	logf("[INFO][%s][timeout=%s][interval=%s] Checking DNS record propagation using %+v", domain, timeout, interval, RecursiveNameservers)
+
 	err = WaitFor(timeout, interval, func() (bool, error) {
 		return PreCheckDNS(fqdn, value)
 	})
 	if err != nil {
 		return err
 	}
+
+	extraWaitTime := 20 * time.Second
+	logf("[INFO][%s] DNS record is live, inserting %s of wait time to reduce the probability of a Let's Encrypt 400 error.", domain, extraWaitTime)
+	time.Sleep(extraWaitTime)
 
 	return s.validate(s.jws, domain, chlng.URI, challenge{Resource: "challenge", Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
 }
@@ -234,6 +240,9 @@ func lookupNameservers(fqdn string) ([]string, error) {
 // FindZoneByFqdn determines the zone apex for the given fqdn by recursing up the
 // domain labels until the nameserver returns a SOA record in the answer section.
 func FindZoneByFqdn(fqdn string, nameservers []string) (string, error) {
+	fqdnToZoneMu.Lock()
+	defer fqdnToZoneMu.Unlock()
+
 	// Do we have it cached?
 	if zone, ok := fqdnToZone[fqdn]; ok {
 		return zone, nil
@@ -283,6 +292,9 @@ func isTLD(domain string) bool {
 
 // ClearFqdnCache clears the cache of fqdn to zone mappings. Primarily used in testing.
 func ClearFqdnCache() {
+	fqdnToZoneMu.Lock()
+	defer fqdnToZoneMu.Unlock()
+
 	fqdnToZone = map[string]string{}
 }
 

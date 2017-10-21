@@ -20,7 +20,8 @@ import (
 
 var (
 	// Logger is an optional custom logger.
-	Logger *log.Logger
+	Logger               *log.Logger
+	maxConcurrentSolvers = 20
 )
 
 const (
@@ -489,28 +490,52 @@ func (c *Client) RenewCertificate(cert CertificateResource, bundle, mustStaple b
 func (c *Client) solveChallenges(challenges []authorizationResource) map[string]error {
 	// loop through the resources, basically through the domains.
 	failures := make(map[string]error)
+	errorsChannel := make(chan domainError, len(challenges))
+	concurrentSolvers := make(chan authorizationResource, maxConcurrentSolvers)
+
 	for _, authz := range challenges {
+
 		if authz.Body.Status == "valid" {
 			// Boulder might recycle recent validated authz (see issue #267)
 			logf("[INFO][%s] acme: Authorization already valid; skipping challenge", authz.Domain)
+			errorsChannel <- domainError{Domain: authz.Domain, Error: nil}
 			continue
 		}
-		// no solvers - no solving
-		if solvers := c.chooseSolvers(authz.Body, authz.Domain); solvers != nil {
-			for i, solver := range solvers {
-				// TODO: do not immediately fail if one domain fails to validate.
-				err := solver.Solve(authz.Body.Challenges[i], authz.Domain)
-				if err != nil {
-					c.disableAuthz(authz)
-					failures[authz.Domain] = err
+		go func(authz authorizationResource) {
+			// This ensures that we block the number of concurrent solvers running at
+			// once. This helps manage API flooding.
+			concurrentSolvers <- authz
+
+			// no solvers - no solving
+			if solvers := c.chooseSolvers(authz.Body, authz.Domain); solvers != nil {
+				for i, solver := range solvers {
+					// TODO: do not immediately fail if one domain fails to validate.
+					err := solver.Solve(authz.Body.Challenges[i], authz.Domain)
+					errorsChannel <- domainError{Domain: authz.Domain, Error: err}
+					if err != nil {
+						c.disableAuthz(authz)
+					}
 				}
+			} else {
+				c.disableAuthz(authz)
+				errorsChannel <- domainError{Domain: authz.Domain, Error: fmt.Errorf("[%s] acme: Could not determine solvers", authz.Domain)}
 			}
-		} else {
-			c.disableAuthz(authz)
-			failures[authz.Domain] = fmt.Errorf("[%s] acme: Could not determine solvers", authz.Domain)
+
+			// When finished remove from the channel
+			_ = <-concurrentSolvers
+		}(authz)
+	}
+
+	// This for block ensures that we block here until ALL challenges have
+	// been solved.
+	for i := 0; i < len(challenges); i++ {
+		de := <-errorsChannel
+		if de.Error != nil {
+			failures[de.Domain] = de.Error
 		}
 	}
 
+	// Finally return any and all failures
 	return failures
 }
 

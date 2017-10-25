@@ -53,6 +53,7 @@ var findZoneByFqdnTests = []struct {
 }{
 	{"mail.google.com.", "google.com."}, // domain is a CNAME
 	{"foo.google.com.", "google.com."},  // domain is a non-existent subdomain
+	{"test.dyndns.org.", "dyndns.org."}, // domain is a privately managed PSL
 }
 
 var checkAuthoritativeNssTests = []struct {

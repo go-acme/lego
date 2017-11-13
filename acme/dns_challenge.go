@@ -255,6 +255,20 @@ func FindZoneByFqdn(fqdn string, nameservers []string) (string, error) {
 
 		// Check if we got a SOA RR in the answer section
 		if in.Rcode == dns.RcodeSuccess {
+
+			// CNAME records cannot/should not exist at the root of a zone.
+			// So we skip a domain when a CNAME is found.
+			hasCNAME := false
+			for _, ans := range in.Answer {
+				if _, ok := ans.(*dns.CNAME); ok {
+					hasCNAME = true
+					break
+				}
+			}
+			if hasCNAME {
+				continue
+			}
+
 			for _, ans := range in.Answer {
 				if soa, ok := ans.(*dns.SOA); ok {
 					zone := soa.Hdr.Name

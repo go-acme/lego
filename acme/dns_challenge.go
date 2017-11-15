@@ -258,14 +258,7 @@ func FindZoneByFqdn(fqdn string, nameservers []string) (string, error) {
 
 			// CNAME records cannot/should not exist at the root of a zone.
 			// So we skip a domain when a CNAME is found.
-			hasCNAME := false
-			for _, ans := range in.Answer {
-				if _, ok := ans.(*dns.CNAME); ok {
-					hasCNAME = true
-					break
-				}
-			}
-			if hasCNAME {
+			if dnsMsgContainsCNAME(in) {
 				continue
 			}
 
@@ -280,6 +273,16 @@ func FindZoneByFqdn(fqdn string, nameservers []string) (string, error) {
 	}
 
 	return "", fmt.Errorf("Could not find the start of authority")
+}
+
+// dnsMsgContainsCNAME checks for a CNAME answer in msg
+func dnsMsgContainsCNAME(msg *dns.Msg) bool {
+	for _, ans := range msg.Answer {
+		if _, ok := ans.(*dns.CNAME); ok {
+			return true
+		}
+	}
+	return false
 }
 
 // ClearFqdnCache clears the cache of fqdn to zone mappings. Primarily used in testing.

@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -205,7 +206,11 @@ func (c *DNSProvider) makeRequest(method, uri string, body io.Reader) (json.RawM
 			}
 			return nil, fmt.Errorf("Cloudflare API Error \n%s", errStr)
 		}
-		return nil, fmt.Errorf("Cloudflare API error")
+		strBody := "Unreadable body"
+		if body, err := ioutil.ReadAll(resp.Body); err == nil {
+			strBody= string(body)
+		}
+		return nil, fmt.Errorf("Cloudflare API error. The request %s sent a response with a body which is not in JSON format : %s\n", req.URL.String(), strBody)
 	}
 
 	return r.Result, nil

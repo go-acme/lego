@@ -37,22 +37,16 @@ var lookupNameserversTestsErr = []struct {
 	{"_null.n0n0.",
 		"Could not determine the zone",
 	},
-	// invalid domain
-	{"_null.com.",
-		"Could not determine the zone",
-	},
-	// invalid domain
-	{"in-valid.co.uk.",
-		"Could not determine the zone",
-	},
 }
 
 var findZoneByFqdnTests = []struct {
 	fqdn string
 	zone string
 }{
-	{"mail.google.com.", "google.com."}, // domain is a CNAME
-	{"foo.google.com.", "google.com."},  // domain is a non-existent subdomain
+	{"mail.google.com.", "google.com."},             // domain is a CNAME
+	{"foo.google.com.", "google.com."},              // domain is a non-existent subdomain
+	{"example.com.ac.", "ac."},                      // domain is a eTLD
+	{"cross-zone-example.assets.sh.", "assets.sh."}, // domain is a cross-zone CNAME
 }
 
 var checkAuthoritativeNssTests = []struct {

@@ -17,6 +17,7 @@ import (
 	"github.com/xenolf/lego/providers/dns/gandi"
 	"github.com/xenolf/lego/providers/dns/gandiv5"
 	"github.com/xenolf/lego/providers/dns/googlecloud"
+	"github.com/xenolf/lego/providers/dns/godaddy"
 	"github.com/xenolf/lego/providers/dns/linode"
 	"github.com/xenolf/lego/providers/dns/namecheap"
 	"github.com/xenolf/lego/providers/dns/ns1"
@@ -57,6 +58,8 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 		provider, err = gandiv5.NewDNSProvider()
 	case "gcloud":
 		provider, err = googlecloud.NewDNSProvider()
+	case "godaddy":
+		provider, err = godaddy.NewDNSProvider()
 	case "linode":
 		provider, err = linode.NewDNSProvider()
 	case "manual":

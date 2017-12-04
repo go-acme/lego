@@ -1,4 +1,4 @@
-package gandibeta
+package gandiv5
 
 import (
 	"crypto"
@@ -94,13 +94,13 @@ func TestDNSProvider(t *testing.T) {
 
 // TestDNSProviderLive performs a live test to obtain a certificate
 // using the Let's Encrypt staging server. It runs provided that both
-// the environment variables GANDI_API_KEY and GANDI_TEST_DOMAIN are
+// the environment variables GANDIV5_API_KEY and GANDI_TEST_DOMAIN are
 // set. Otherwise the test is skipped.
 //
 // To complete this test, go test must be run with the -timeout=40m
 // flag, since the default timeout of 10m is insufficient.
 func TestDNSProviderLive(t *testing.T) {
-	apiKey := os.Getenv("GANDI_API_KEY")
+	apiKey := os.Getenv("GANDIV5_API_KEY")
 	domain := os.Getenv("GANDI_TEST_DOMAIN")
 	if apiKey == "" || domain == "" {
 		t.Skip("skipping live test")

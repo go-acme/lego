@@ -9,11 +9,14 @@ import (
 	"net/http"
 	"runtime"
 	"strings"
+	"sync"
 	"time"
 )
 
 // UserAgent (if non-empty) will be tacked onto the User-Agent string in requests.
 var UserAgent string
+
+var ConcurrentChallengesNoncesOrderEnsurer sync.Mutex
 
 // HTTPClient is an HTTP client with a reasonable timeout value.
 var HTTPClient = http.Client{
@@ -103,6 +106,9 @@ func postJSON(j *jws, uri string, reqBody, respBody interface{}) (http.Header, e
 	if err != nil {
 		return nil, errors.New("Failed to marshal network message...")
 	}
+
+	ConcurrentChallengesNoncesOrderEnsurer.Lock()
+	defer ConcurrentChallengesNoncesOrderEnsurer.Unlock()
 
 	resp, err := j.post(uri, jsonBytes)
 	if err != nil {

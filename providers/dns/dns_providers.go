@@ -17,6 +17,7 @@ import (
 	"github.com/xenolf/lego/providers/dns/gandi"
 	"github.com/xenolf/lego/providers/dns/godaddy"
 	"github.com/xenolf/lego/providers/dns/googlecloud"
+	"github.com/xenolf/lego/providers/dns/lightsail"
 	"github.com/xenolf/lego/providers/dns/linode"
 	"github.com/xenolf/lego/providers/dns/namecheap"
 	"github.com/xenolf/lego/providers/dns/ns1"
@@ -79,6 +80,8 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 		provider, err = ns1.NewDNSProvider()
 	case "otc":
 		provider, err = otc.NewDNSProvider()
+	case "lightsail":
+		provider, err = lightsail.NewDNSProvider()
 	default:
 		err = fmt.Errorf("Unrecognised DNS provider: %s", name)
 	}

@@ -55,7 +55,7 @@ func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	record := egoscale.DNSRecord{
 		Name:       recordName,
-		Ttl:        ttl,
+		TTL:        ttl,
 		Content:    value,
 		RecordType: "TXT",
 	}
@@ -66,7 +66,7 @@ func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 			return errors.New("Error while creating DNS record: " + err.Error())
 		}
 	} else {
-		record.Id = recordId
+		record.ID = recordId
 		_, err := c.client.UpdateRecord(zone, record)
 		if err != nil {
 			return errors.New("Error while updating DNS record: " + err.Error())
@@ -91,10 +91,10 @@ func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	if recordId != 0 {
 		record := egoscale.DNSRecord{
-			Id: recordId,
+			ID: recordId,
 		}
 
-		err = c.client.DeleteRecord(zone, record)
+		err = c.client.DeleteRecord(zone, record.ID)
 		if err != nil {
 			return errors.New("Error while deleting DNS record: " + err.Error())
 		}
@@ -111,8 +111,8 @@ func (c *DNSProvider) FindExistingRecordId(zone, recordName string) (int64, erro
 		return -1, errors.New("Error while retrievening DNS records: " + err.Error())
 	}
 	for _, response := range responses {
-		if response.Record.Name == recordName {
-			return response.Record.Id, nil
+		if response.Name == recordName {
+			return response.ID, nil
 		}
 	}
 	return 0, nil

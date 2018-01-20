@@ -167,6 +167,10 @@ func main() {
 			Usage: "Set the HTTP timeout value to a specific value in seconds. The default is 10 seconds.",
 		},
 		cli.IntFlag{
+			Name:  "dns-propagation-timeout",
+			Usage: "Set the DNS propagation timeout value to a specific value in seconds. The default is provider-dependent.",
+		},
+		cli.IntFlag{
 			Name:  "dns-timeout",
 			Usage: "Set the DNS timeout value to a specific value in seconds. The default is 10 seconds.",
 		},

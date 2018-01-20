@@ -33,6 +33,10 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 		acme.HTTPClient = http.Client{Timeout: time.Duration(c.GlobalInt("http-timeout")) * time.Second}
 	}
 
+	if c.GlobalIsSet("dns-propagation-timeout") {
+		acme.DNSPropagationTimeout = time.Duration(c.GlobalInt("dns-propagation-timeout")) * time.Second
+	}
+
 	if c.GlobalIsSet("dns-timeout") {
 		acme.DNSTimeout = time.Duration(c.GlobalInt("dns-timeout")) * time.Second
 	}

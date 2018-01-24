@@ -31,6 +31,7 @@ import (
 	"github.com/xenolf/lego/providers/dns/rfc2136"
 	"github.com/xenolf/lego/providers/dns/route53"
 	"github.com/xenolf/lego/providers/dns/vultr"
+	"github.com/xenolf/lego/providers/dns/bluecat"
 )
 
 func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) {
@@ -41,6 +42,8 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 		provider, err = azure.NewDNSProvider()
 	case "auroradns":
 		provider, err = auroradns.NewDNSProvider()
+	case "bluecat":
+		provider, err = bluecat.NewDNSProvider()
 	case "cloudflare":
 		provider, err = cloudflare.NewDNSProvider()
 	case "cloudxns":

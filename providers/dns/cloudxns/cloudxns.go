@@ -84,7 +84,7 @@ func (c *DNSProvider) getHostedZoneID(fqdn string) (string, error) {
 		return "", err
 	}
 
-	result, err := c.makeReauest("GET", "domain", nil)
+	result, err := c.makeRequest("GET", "domain", nil)
 	if err != nil {
 		return "", err
 	}
@@ -105,7 +105,7 @@ func (c *DNSProvider) getHostedZoneID(fqdn string) (string, error) {
 }
 
 func (c *DNSProvider) findTxtRecord(zoneID, fqdn string) (string, error) {
-	result, err := c.makeReauest("GET", fmt.Sprintf("record/%s?host_id=0&offset=0&row_num=2000", zoneID), nil)
+	result, err := c.makeRequest("GET", fmt.Sprintf("record/%s?host_id=0&offset=0&row_num=2000", zoneID), nil)
 	if err != nil {
 		return "", err
 	}
@@ -145,7 +145,7 @@ func (c *DNSProvider) addTxtRecord(zoneID, fqdn, value string, ttl int) error {
 		return err
 	}
 
-	_, err = c.makeReauest("POST", "record", body)
+	_, err = c.makeRequest("POST", "record", body)
 	if err != nil {
 		return err
 	}
@@ -154,7 +154,7 @@ func (c *DNSProvider) addTxtRecord(zoneID, fqdn, value string, ttl int) error {
 }
 
 func (c *DNSProvider) delTxtRecord(recordID, zoneID string) error {
-	_, err := c.makeReauest("DELETE", fmt.Sprintf("record/%s/%s", recordID, zoneID), nil)
+	_, err := c.makeRequest("DELETE", fmt.Sprintf("record/%s/%s", recordID, zoneID), nil)
 	return err
 }
 
@@ -163,7 +163,7 @@ func (c *DNSProvider) hmac(url, date, body string) string {
 	return hex.EncodeToString(sum[:])
 }
 
-func (c *DNSProvider) makeReauest(method, uri string, body []byte) (json.RawMessage, error) {
+func (c *DNSProvider) makeRequest(method, uri string, body []byte) (json.RawMessage, error) {
 	type APIResponse struct {
 		Code    int             `json:"code"`
 		Message string          `json:"message"`

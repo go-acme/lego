@@ -183,8 +183,7 @@ func (c *DNSProvider) makeRequest(method, uri string, body []byte) (json.RawMess
 	req.Header.Set("API-HMAC", c.hmac(url, requestDate, string(body)))
 	req.Header.Set("API-FORMAT", "json")
 
-	client := http.Client{Timeout: 60 * time.Second}
-	resp, err := client.Do(req)
+	resp, err := acme.HTTPClient.Do(req)
 	if err != nil {
 		return nil, err
 	}

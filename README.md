@@ -83,7 +83,7 @@ USAGE:
    lego [global options] command [command options] [arguments...]
 
 VERSION:
-   0.4.0
+   0.4.1
 
 COMMANDS:
      run      Register an account, then create and install a certificate
@@ -93,7 +93,7 @@ COMMANDS:
      help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --domains value, -d value   Add domains to the process
+   --domains value, -d value   Add a domain to the process. Can be specified multiple times.
    --csr value, -c value       Certificate signing request filename, if an external CSR is to be used
    --server value, -s value    CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client. (default: "https://acme-v01.api.letsencrypt.org/directory")
    --email value, -m value     Email used for registration and recovery contact.
@@ -229,7 +229,7 @@ myUser := MyUser{
 
 // A client facilitates communication with the CA server. This CA URL is
 // configured for a local dev instance of Boulder running in Docker in a VM.
-client, err := acme.NewClient("http://192.168.99.100:4000", &myUser, acme.RSA2048)
+client, err := acme.NewClient("http://192.168.99.100:4000/directory", &myUser, acme.RSA2048)
 if err != nil {
   log.Fatal(err)
 }

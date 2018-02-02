@@ -30,7 +30,7 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for azure.
 // Credentials must be passed in the environment variables: AZURE_CLIENT_ID,
-// AZURE_CLIENT_SECRET, AZURE_SUBSCRIPTION_ID, AZURE_TENANT_ID
+// AZURE_CLIENT_SECRET, AZURE_SUBSCRIPTION_ID, AZURE_TENANT_ID, AZURE_RESOURCE_GROUP
 func NewDNSProvider() (*DNSProvider, error) {
 	clientId := os.Getenv("AZURE_CLIENT_ID")
 	clientSecret := os.Getenv("AZURE_CLIENT_SECRET")
@@ -125,11 +125,10 @@ func (c *DNSProvider) getHostedZoneID(fqdn string) (string, error) {
 	}
 
 	// Now we want to to Azure and get the zone.
-	dc := dns.NewZonesClient(c.subscriptionId)
-
-	rsc := dns.NewRecordSetsClient(c.subscriptionId)
 	spt, err := c.newServicePrincipalTokenFromCredentials(azure.PublicCloud.ResourceManagerEndpoint)
-	rsc.Authorizer = autorest.NewBearerAuthorizer(spt)
+
+	dc := dns.NewZonesClient(c.subscriptionId)
+	dc.Authorizer = autorest.NewBearerAuthorizer(spt)
 
 	zone, err := dc.Get(c.resourceGroup, acme.UnFqdn(authZone))
 

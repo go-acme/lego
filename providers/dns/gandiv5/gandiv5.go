@@ -66,7 +66,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if ttl < 300 {
 		ttl = 300 // 300 is gandi minimum value for ttl
 	}
-	// find authZone and Gandi zone_id for fqdn
+	// find authZone
 	authZone, err := findZoneByFqdn(fqdn, acme.RecursiveNameservers)
 	if err != nil {
 		return fmt.Errorf("Gandi DNS: findZoneByFqdn failure: %v", err)
@@ -98,7 +98,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
-	// acquire lock and retrieve zoneID, newZoneID and authZone
+	// acquire lock and retrieve authZone
 	d.inProgressMu.Lock()
 	defer d.inProgressMu.Unlock()
 	if _, ok := d.inProgressFQDNs[fqdn]; !ok {
@@ -116,7 +116,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-// Timeout returns the values (40*time.Minute, 60*time.Second) which
+// Timeout returns the values (20*time.Minute, 20*time.Second) which
 // are used by the acme package as timeout and check interval values
 // when checking for DNS record propagation with Gandi.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {

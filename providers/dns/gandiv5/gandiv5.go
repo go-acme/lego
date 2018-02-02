@@ -33,7 +33,7 @@ type inProgressInfo struct {
 }
 
 // DNSProvider is an implementation of the
-// acme.ChallengeProviderTimeout interface that uses Gandi's XML-RPC
+// acme.ChallengeProviderTimeout interface that uses Gandi's LiveDNS
 // API to manage TXT records for a domain.
 type DNSProvider struct {
 	apiKey          string
@@ -60,9 +60,7 @@ func NewDNSProviderCredentials(apiKey string) (*DNSProvider, error) {
 	}, nil
 }
 
-// Present creates a TXT record using the specified parameters. It
-// does this by creating and activating a new temporary Gandi DNS
-// zone. This new zone contains the TXT record.
+// Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
 	if ttl < 300 {
@@ -84,8 +82,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	// progress for this value of authZone
 	d.inProgressMu.Lock()
 	defer d.inProgressMu.Unlock()
-	// perform API actions to create and activate new gandi zone
-	// containing the required TXT record
+	// add TXT record into authZone
 	err = d.addTXTRecord(acme.UnFqdn(authZone), name, value, ttl)
 	if err != nil {
 		return err
@@ -98,9 +95,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	return nil
 }
 
-// CleanUp removes the TXT record matching the specified
-// parameters. It does this by restoring the old Gandi DNS zone and
-// removing the temporary one created by Present.
+// CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
 	// acquire lock and retrieve zoneID, newZoneID and authZone
@@ -113,7 +108,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fieldName := d.inProgressFQDNs[fqdn].fieldName
 	authZone := d.inProgressFQDNs[fqdn].authZone
 	delete(d.inProgressFQDNs, fqdn)
-	// perform API actions to restore old gandi zone for authZone
+	// delete TXT record from authZone
 	err := d.deleteTXTRecord(acme.UnFqdn(authZone), fieldName)
 	if err != nil {
 		return err

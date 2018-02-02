@@ -8,6 +8,7 @@ import (
 	"github.com/xenolf/lego/providers/dns/auroradns"
 	"github.com/xenolf/lego/providers/dns/azure"
 	"github.com/xenolf/lego/providers/dns/cloudflare"
+	"github.com/xenolf/lego/providers/dns/cloudxns"
 	"github.com/xenolf/lego/providers/dns/digitalocean"
 	"github.com/xenolf/lego/providers/dns/dnsimple"
 	"github.com/xenolf/lego/providers/dns/dnsmadeeasy"
@@ -40,6 +41,8 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 		provider, err = auroradns.NewDNSProvider()
 	case "cloudflare":
 		provider, err = cloudflare.NewDNSProvider()
+	case "cloudxns":
+		provider, err = cloudxns.NewDNSProvider()
 	case "digitalocean":
 		provider, err = digitalocean.NewDNSProvider()
 	case "dnsimple":

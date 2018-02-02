@@ -32,7 +32,7 @@ func main() {
 	app.Name = "lego"
 	app.Usage = "Let's Encrypt client written in Go"
 
-	version := "0.4.0"
+	version := "0.4.1"
 	if strings.HasPrefix(gittag, "v") {
 		version = gittag
 	}
@@ -109,7 +109,7 @@ func main() {
 	app.Flags = []cli.Flag{
 		cli.StringSliceFlag{
 			Name:  "domains, d",
-			Usage: "Add domains to the process",
+			Usage: "Add a domain to the process. Can be specified multiple times.",
 		},
 		cli.StringFlag{
 			Name:  "csr, c",
@@ -140,7 +140,7 @@ func main() {
 		},
 		cli.StringSliceFlag{
 			Name:  "exclude, x",
-			Usage: "Explicitly disallow solvers by name from being used. Solvers: \"http-01\", \"tls-sni-01\".",
+			Usage: "Explicitly disallow solvers by name from being used. Solvers: \"http-01\", \"tls-sni-01\", \"dns-01\",.",
 		},
 		cli.StringFlag{
 			Name:  "webroot",
@@ -172,7 +172,7 @@ func main() {
 		},
 		cli.StringSliceFlag{
 			Name:  "dns-resolvers",
-			Usage: "Set the resolvers to use for performing recursive DNS queries. Supported: host:port. The default is to use Google's DNS resolvers.",
+			Usage: "Set the resolvers to use for performing recursive DNS queries. Supported: host:port. The default is to use the system resolvers, or Google's DNS resolvers if the system's cannot be determined.",
 		},
 		cli.BoolFlag{
 			Name:  "pem",
@@ -203,12 +203,14 @@ Here is an example bash command using the CloudFlare DNS provider:
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, "\tazure:\tAZURE_CLIENT_ID, AZURE_CLIENT_SECRET, AZURE_SUBSCRIPTION_ID, AZURE_TENANT_ID, AZURE_RESOURCE_GROUP")
 	fmt.Fprintln(w, "\tauroradns:\tAURORA_USER_ID, AURORA_KEY, AURORA_ENDPOINT")
+	fmt.Fprintln(w, "\tcloudxns:\tCLOUDXNS_API_KEY, CLOUDXNS_SECRET_KEY")
 	fmt.Fprintln(w, "\tcloudflare:\tCLOUDFLARE_EMAIL, CLOUDFLARE_API_KEY")
 	fmt.Fprintln(w, "\tdigitalocean:\tDO_AUTH_TOKEN")
 	fmt.Fprintln(w, "\tdnsimple:\tDNSIMPLE_EMAIL, DNSIMPLE_OAUTH_TOKEN")
 	fmt.Fprintln(w, "\tdnsmadeeasy:\tDNSMADEEASY_API_KEY, DNSMADEEASY_API_SECRET")
 	fmt.Fprintln(w, "\texoscale:\tEXOSCALE_API_KEY, EXOSCALE_API_SECRET, EXOSCALE_ENDPOINT")
 	fmt.Fprintln(w, "\tgandi:\tGANDI_API_KEY")
+	fmt.Fprintln(w, "\tgandiv5:\tGANDIV5_API_KEY")
 	fmt.Fprintln(w, "\tgcloud:\tGCE_PROJECT, GCE_SERVICE_ACCOUNT_FILE")
 	fmt.Fprintln(w, "\tlinode:\tLINODE_API_KEY")
 	fmt.Fprintln(w, "\tmanual:\tnone")

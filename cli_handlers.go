@@ -328,8 +328,7 @@ func run(c *cli.Context) error {
 }
 
 func revoke(c *cli.Context) error {
-	conf, _, client, storage := setup(c)
-	conf, acc, client := setup(c)
+	conf, acc, client, storage := setup(c)
 	if acc.Registration == nil {
 		logger().Fatalf("Account %s is not registered. Use 'run' to register a new account.\n", acc.Email)
 	}
@@ -357,8 +356,7 @@ func revoke(c *cli.Context) error {
 }
 
 func renew(c *cli.Context) error {
-	conf, _, client, storage := setup(c)
-	conf, acc, client := setup(c)
+	conf, acc, client, storage := setup(c)
 	if acc.Registration == nil {
 		logger().Fatalf("Account %s is not registered. Use 'run' to register a new account.\n", acc.Email)
 	}

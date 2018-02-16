@@ -26,11 +26,10 @@ func TestLightsailTTL(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Fatal: %s", err.Error())
 	}
-	// we need a separate R53 client here as the one in the DNS provider is
+	// we need a separate Lightshail client here as the one in the DNS provider is
 	// unexported.
 	fqdn := "_acme-challenge." + m["lightsailDomain"]
 	svc := lightsail.New(session.New())
-	//svc := route53.New(session.New())
 	if err != nil {
 		provider.CleanUp(m["lightsailDomain"], "foo", "bar")
 		t.Fatalf("Fatal: %s", err.Error())

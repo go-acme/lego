@@ -58,6 +58,8 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 		provider, err = googlecloud.NewDNSProvider()
 	case "godaddy":
 		provider, err = godaddy.NewDNSProvider()
+	case "lightsail":
+		provider, err = lightsail.NewDNSProvider()
 	case "linode":
 		provider, err = linode.NewDNSProvider()
 	case "manual":
@@ -80,8 +82,6 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 		provider, err = ns1.NewDNSProvider()
 	case "otc":
 		provider, err = otc.NewDNSProvider()
-	case "lightsail":
-		provider, err = lightsail.NewDNSProvider()
 	default:
 		err = fmt.Errorf("Unrecognised DNS provider: %s", name)
 	}

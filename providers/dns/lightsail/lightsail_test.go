@@ -60,10 +60,7 @@ func TestCredentialsFromEnv(t *testing.T) {
 
 func TestLightsailPresent(t *testing.T) {
 	mockResponses := MockResponseMap{
-	// "/2013-04-01/hostedzonesbyname":         MockResponse{StatusCode: 200, Body: ListHostedZonesByNameResponse},
-	// "/2013-04-01/hostedzone/ABCDEFG/rrset/": MockResponse{StatusCode: 200, Body: ChangeResourceRecordSetsResponse},
-	// "/2013-04-01/change/123456":             MockResponse{StatusCode: 200, Body: GetChangeResponse},
-	"/": MockResponse{StatusCode: 200, Body:""},
+		"/": MockResponse{StatusCode: 200, Body: ""},
 	}
 
 	ts := newMockServer(t, mockResponses)

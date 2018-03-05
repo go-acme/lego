@@ -7,6 +7,7 @@ import (
 	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/providers/dns/auroradns"
 	"github.com/xenolf/lego/providers/dns/azure"
+	"github.com/xenolf/lego/providers/dns/bluecat"
 	"github.com/xenolf/lego/providers/dns/cloudflare"
 	"github.com/xenolf/lego/providers/dns/cloudxns"
 	"github.com/xenolf/lego/providers/dns/digitalocean"
@@ -34,8 +35,8 @@ import (
 	"github.com/xenolf/lego/providers/dns/rackspace"
 	"github.com/xenolf/lego/providers/dns/rfc2136"
 	"github.com/xenolf/lego/providers/dns/route53"
+	"github.com/xenolf/lego/providers/dns/vegadns"
 	"github.com/xenolf/lego/providers/dns/vultr"
-	"github.com/xenolf/lego/providers/dns/bluecat"
 )
 
 func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) {
@@ -106,6 +107,8 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 		provider, err = otc.NewDNSProvider()
 	case "exec":
 		provider, err = exec.NewDNSProvider()
+	case "vegadns":
+		provider, err = vegadns.NewDNSProvider()
 	default:
 		err = fmt.Errorf("Unrecognised DNS provider: %s", name)
 	}

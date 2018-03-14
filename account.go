@@ -7,7 +7,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/acmev2"
 )
 
 // Account represents a users local saved credentials
@@ -64,8 +64,14 @@ func NewAccount(email string, conf *Configuration) *Account {
 	acc.key = privKey
 	acc.conf = conf
 
-	if acc.Registration == nil {
-		logger().Fatalf("Could not load account for %s. Registration is nil.", email)
+	if acc.Registration == nil || acc.Registration.Body.Status == "" {
+		reg, err := tryRecoverAccount(privKey, conf)
+		if err != nil {
+			logger().Fatalf("Could not load account for %s. Registration is nil -> %#v", email, err)
+		}
+
+		acc.Registration = reg
+		acc.Save()
 	}
 
 	if acc.conf == nil {
@@ -73,6 +79,21 @@ func NewAccount(email string, conf *Configuration) *Account {
 	}
 
 	return &acc
+}
+
+func tryRecoverAccount(privKey crypto.PrivateKey, conf *Configuration) (*acme.RegistrationResource, error) {
+	// couldn't load account but got a key. Try to look the account up.
+	serverURL := conf.context.GlobalString("server")
+	client, err := acme.NewClient(serverURL, &Account{key: privKey, conf: conf}, acme.RSA2048)
+	if err != nil {
+		return nil, err
+	}
+
+	reg, err := client.ResolveAccountByKey()
+	if err != nil {
+		return nil, err
+	}
+	return reg, nil
 }
 
 /** Implementation of the acme.User interface **/

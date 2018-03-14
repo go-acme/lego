@@ -2,3 +2,5 @@ lego.exe
 lego
 .lego
 .idea
+dist/
+.vscode/

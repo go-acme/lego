@@ -6,6 +6,7 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"encoding/pem"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -14,7 +15,7 @@ import (
 	"time"
 
 	"github.com/urfave/cli"
-	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/acmev2"
 	"github.com/xenolf/lego/providers/dns"
 	"github.com/xenolf/lego/providers/http/memcached"
 	"github.com/xenolf/lego/providers/http/webroot"
@@ -66,6 +67,8 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 		logger().Fatal(err.Error())
 	}
 
+	acme.UserAgent = fmt.Sprintf("le-go/cli %s", c.App.Version)
+
 	client, err := acme.NewClient(c.GlobalString("server"), acc, keyType)
 	if err != nil {
 		logger().Fatalf("Could not create client: %s", err.Error())
@@ -85,7 +88,7 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 
 		// --webroot=foo indicates that the user specifically want to do a HTTP challenge
 		// infer that the user also wants to exclude all other challenges
-		client.ExcludeChallenges([]acme.Challenge{acme.DNS01, acme.TLSSNI01})
+		client.ExcludeChallenges([]acme.Challenge{acme.DNS01})
 	}
 	if c.GlobalIsSet("memcached-host") {
 		provider, err := memcached.NewMemcachedProvider(c.GlobalStringSlice("memcached-host"))
@@ -97,20 +100,13 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 
 		// --memcached-host=foo:11211 indicates that the user specifically want to do a HTTP challenge
 		// infer that the user also wants to exclude all other challenges
-		client.ExcludeChallenges([]acme.Challenge{acme.DNS01, acme.TLSSNI01})
+		client.ExcludeChallenges([]acme.Challenge{acme.DNS01})
 	}
 	if c.GlobalIsSet("http") {
 		if strings.Index(c.GlobalString("http"), ":") == -1 {
 			logger().Fatalf("The --http switch only accepts interface:port or :port for its argument.")
 		}
 		client.SetHTTPAddress(c.GlobalString("http"))
-	}
-
-	if c.GlobalIsSet("tls") {
-		if strings.Index(c.GlobalString("tls"), ":") == -1 {
-			logger().Fatalf("The --tls switch only accepts interface:port or :port for its argument.")
-		}
-		client.SetTLSAddress(c.GlobalString("tls"))
 	}
 
 	if c.GlobalIsSet("dns") {
@@ -123,20 +119,23 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 
 		// --dns=foo indicates that the user specifically want to do a DNS challenge
 		// infer that the user also wants to exclude all other challenges
-		client.ExcludeChallenges([]acme.Challenge{acme.HTTP01, acme.TLSSNI01})
+		client.ExcludeChallenges([]acme.Challenge{acme.HTTP01})
 	}
 
 	return conf, acc, client
 }
 
 func saveCertRes(certRes acme.CertificateResource, conf *Configuration) {
+	// make sure no funny chars are in the cert names (like wildcards ;))
+	domainName := strings.Replace(certRes.Domain, "*", "_", -1)
+
 	// We store the certificate, private key and metadata in different files
 	// as web servers would not be able to work with a combined file.
-	certOut := path.Join(conf.CertPath(), certRes.Domain+".crt")
-	privOut := path.Join(conf.CertPath(), certRes.Domain+".key")
-	pemOut := path.Join(conf.CertPath(), certRes.Domain+".pem")
-	metaOut := path.Join(conf.CertPath(), certRes.Domain+".json")
-	issuerOut := path.Join(conf.CertPath(), certRes.Domain+".issuer.crt")
+	certOut := path.Join(conf.CertPath(), domainName+".crt")
+	privOut := path.Join(conf.CertPath(), domainName+".key")
+	pemOut := path.Join(conf.CertPath(), domainName+".pem")
+	metaOut := path.Join(conf.CertPath(), domainName+".json")
+	issuerOut := path.Join(conf.CertPath(), domainName+".issuer.crt")
 
 	err := ioutil.WriteFile(certOut, certRes.Certificate, 0600)
 	if err != nil {
@@ -180,20 +179,14 @@ func saveCertRes(certRes acme.CertificateResource, conf *Configuration) {
 	}
 }
 
-func handleTOS(c *cli.Context, client *acme.Client, acc *Account) {
+func handleTOS(c *cli.Context, client *acme.Client) bool {
 	// Check for a global accept override
 	if c.GlobalBool("accept-tos") {
-		err := client.AgreeToTOS()
-		if err != nil {
-			logger().Fatalf("Could not agree to TOS: %s", err.Error())
-		}
-
-		acc.Save()
-		return
+		return true
 	}
 
 	reader := bufio.NewReader(os.Stdin)
-	logger().Printf("Please review the TOS at %s", acc.Registration.TosURL)
+	logger().Printf("Please review the TOS at %s", client.GetToSURL())
 
 	for {
 		logger().Println("Do you accept the TOS? Y/n")
@@ -209,16 +202,13 @@ func handleTOS(c *cli.Context, client *acme.Client, acc *Account) {
 		}
 
 		if text == "Y" || text == "y" || text == "" {
-			err = client.AgreeToTOS()
-			if err != nil {
-				logger().Fatalf("Could not agree to TOS: %s", err.Error())
-			}
-			acc.Save()
-			break
+			return true
 		}
 
 		logger().Println("Your input was invalid. Please answer with one of Y/y, n or by pressing enter.")
 	}
+
+	return false
 }
 
 func readCSRFile(filename string) (*x509.CertificateRequest, error) {
@@ -255,7 +245,12 @@ func readCSRFile(filename string) (*x509.CertificateRequest, error) {
 func run(c *cli.Context) error {
 	conf, acc, client := setup(c)
 	if acc.Registration == nil {
-		reg, err := client.Register()
+		accepted := handleTOS(c, client)
+		if !accepted {
+			logger().Fatal("You did not accept the TOS. Unable to proceed.")
+		}
+
+		reg, err := client.Register(accepted)
 		if err != nil {
 			logger().Fatalf("Could not complete registration\n\t%s", err.Error())
 		}
@@ -272,11 +267,6 @@ func run(c *cli.Context) error {
 		private keys obtained from Let's Encrypt so making regular
 		backups of this folder is ideal.`, conf.AccountPath(c.GlobalString("email")))
 
-	}
-
-	// If the agreement URL is empty, the account still needs to accept the LE TOS.
-	if acc.Registration.Body.Agreement == "" {
-		handleTOS(c, client, acc)
 	}
 
 	// we require either domains or csr, but not both

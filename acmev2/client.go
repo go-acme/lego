@@ -296,6 +296,7 @@ DNSNames:
 		for _, auth := range order.Identifiers {
 			identErrors[auth.Value] = err
 		}
+		return CertificateResource{}, identErrors
 	}
 	authz, failures := c.getAuthzForOrder(order)
 	// If any challenge fails - return. Do not generate partial SAN certificates.
@@ -350,6 +351,7 @@ func (c *Client) ObtainCertificate(domains []string, bundle bool, privKey crypto
 		for _, auth := range order.Identifiers {
 			identErrors[auth.Value] = err
 		}
+		return CertificateResource{}, identErrors
 	}
 	authz, failures := c.getAuthzForOrder(order)
 	// If any challenge fails - return. Do not generate partial SAN certificates.

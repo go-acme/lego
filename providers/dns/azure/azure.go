@@ -4,55 +4,67 @@
 package azure
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/arm/dns"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/dns/mgmt/dns"
 
-	"strings"
-
-	"github.com/Azure/go-autorest/autorest"
-	"github.com/Azure/go-autorest/autorest/adal"
-	"github.com/Azure/go-autorest/autorest/azure"
+	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/xenolf/lego/acme"
 )
 
+// TODO: replace context.TODO() with context.WithTimeout()
+
 // DNSProvider is an implementation of the acme.ChallengeProvider interface
 type DNSProvider struct {
-	clientId       string
-	clientSecret   string
-	subscriptionId string
-	tenantId       string
-	resourceGroup  string
+	subscriptionID          string
+	resourceGroup           string
+	clientCredentialsConfig auth.ClientCredentialsConfig
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for azure.
 // Credentials must be passed in the environment variables: AZURE_CLIENT_ID,
 // AZURE_CLIENT_SECRET, AZURE_SUBSCRIPTION_ID, AZURE_TENANT_ID, AZURE_RESOURCE_GROUP
 func NewDNSProvider() (*DNSProvider, error) {
-	clientId := os.Getenv("AZURE_CLIENT_ID")
-	clientSecret := os.Getenv("AZURE_CLIENT_SECRET")
-	subscriptionId := os.Getenv("AZURE_SUBSCRIPTION_ID")
-	tenantId := os.Getenv("AZURE_TENANT_ID")
-	resourceGroup := os.Getenv("AZURE_RESOURCE_GROUP")
-	return NewDNSProviderCredentials(clientId, clientSecret, subscriptionId, tenantId, resourceGroup)
+	clientID, ok := os.LookupEnv("AZURE_CLIENT_ID")
+	if !ok {
+		return nil, errors.New("AZURE_CLIENT_ID was not set")
+	}
+	clientSecret, ok := os.LookupEnv("AZURE_CLIENT_SECRET")
+	if !ok {
+		return nil, errors.New("AZURE_CLIENT_SECRET was not set")
+	}
+	subscriptionID, ok := os.LookupEnv("AZURE_SUBSCRIPTION_ID")
+	if !ok {
+		return nil, errors.New("AZURE_SUBSCRIPTION_ID was not set")
+	}
+	tenantID, ok := os.LookupEnv("AZURE_TENANT_ID")
+	if !ok {
+		return nil, errors.New("AZURE_TENANT_ID was not set")
+	}
+	resourceGroup, ok := os.LookupEnv("AZURE_RESOURCE_GROUP")
+	if !ok {
+		return nil, errors.New("AZURE_RESOURCE_GROUP was not set")
+	}
+	return NewDNSProviderCredentials(clientID, clientSecret, subscriptionID, tenantID, resourceGroup)
 }
 
 // NewDNSProviderCredentials uses the supplied credentials to return a
 // DNSProvider instance configured for azure.
-func NewDNSProviderCredentials(clientId, clientSecret, subscriptionId, tenantId, resourceGroup string) (*DNSProvider, error) {
-	if clientId == "" || clientSecret == "" || subscriptionId == "" || tenantId == "" || resourceGroup == "" {
+func NewDNSProviderCredentials(clientID, clientSecret, subscriptionID, tenantID, resourceGroup string) (*DNSProvider, error) {
+	if clientID == "" || clientSecret == "" || subscriptionID == "" || tenantID == "" || resourceGroup == "" {
 		return nil, fmt.Errorf("Azure configuration missing")
 	}
 
 	return &DNSProvider{
-		clientId:       clientId,
-		clientSecret:   clientSecret,
-		subscriptionId: subscriptionId,
-		tenantId:       tenantId,
-		resourceGroup:  resourceGroup,
+		subscriptionID:          subscriptionID,
+		resourceGroup:           resourceGroup,
+		clientCredentialsConfig: auth.NewClientCredentialsConfig(clientID, clientSecret, tenantID),
 	}, nil
 }
 
@@ -70,9 +82,12 @@ func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 		return err
 	}
 
-	rsc := dns.NewRecordSetsClient(c.subscriptionId)
-	spt, err := c.newServicePrincipalTokenFromCredentials(azure.PublicCloud.ResourceManagerEndpoint)
-	rsc.Authorizer = autorest.NewBearerAuthorizer(spt)
+	rsc := dns.NewRecordSetsClient(c.subscriptionID)
+	a, err := c.clientCredentialsConfig.Authorizer()
+	if err != nil {
+		return err
+	}
+	rsc.Authorizer = a
 
 	relative := toRelativeRecord(fqdn, acme.ToFqdn(zone))
 	rec := dns.RecordSet{
@@ -82,7 +97,7 @@ func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 			TxtRecords: &[]dns.TxtRecord{dns.TxtRecord{Value: &[]string{value}}},
 		},
 	}
-	_, err = rsc.CreateOrUpdate(c.resourceGroup, zone, relative, dns.TXT, rec, "", "")
+	_, err = rsc.CreateOrUpdate(context.TODO(), c.resourceGroup, zone, relative, dns.TXT, rec, "", "")
 
 	if err != nil {
 		return err
@@ -106,10 +121,14 @@ func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	relative := toRelativeRecord(fqdn, acme.ToFqdn(zone))
-	rsc := dns.NewRecordSetsClient(c.subscriptionId)
-	spt, err := c.newServicePrincipalTokenFromCredentials(azure.PublicCloud.ResourceManagerEndpoint)
-	rsc.Authorizer = autorest.NewBearerAuthorizer(spt)
-	_, err = rsc.Delete(c.resourceGroup, zone, relative, dns.TXT, "")
+	rsc := dns.NewRecordSetsClient(c.subscriptionID)
+	a, err := c.clientCredentialsConfig.Authorizer()
+	if err != nil {
+		return err
+	}
+	rsc.Authorizer = a
+
+	_, err = rsc.Delete(context.TODO(), c.resourceGroup, zone, relative, dns.TXT, "")
 	if err != nil {
 		return err
 	}
@@ -125,12 +144,14 @@ func (c *DNSProvider) getHostedZoneID(fqdn string) (string, error) {
 	}
 
 	// Now we want to to Azure and get the zone.
-	spt, err := c.newServicePrincipalTokenFromCredentials(azure.PublicCloud.ResourceManagerEndpoint)
+	dc := dns.NewZonesClient(c.subscriptionID)
+	a, err := c.clientCredentialsConfig.Authorizer()
+	if err != nil {
+		return "", err
+	}
+	dc.Authorizer = a
 
-	dc := dns.NewZonesClient(c.subscriptionId)
-	dc.Authorizer = autorest.NewBearerAuthorizer(spt)
-
-	zone, err := dc.Get(c.resourceGroup, acme.UnFqdn(authZone))
+	zone, err := dc.Get(context.TODO(), c.resourceGroup, acme.UnFqdn(authZone))
 
 	if err != nil {
 		return "", err
@@ -138,14 +159,4 @@ func (c *DNSProvider) getHostedZoneID(fqdn string) (string, error) {
 
 	// zone.Name shouldn't have a trailing dot(.)
 	return to.String(zone.Name), nil
-}
-
-// NewServicePrincipalTokenFromCredentials creates a new ServicePrincipalToken using values of the
-// passed credentials map.
-func (c *DNSProvider) newServicePrincipalTokenFromCredentials(scope string) (*adal.ServicePrincipalToken, error) {
-	oauthConfig, err := adal.NewOAuthConfig(azure.PublicCloud.ActiveDirectoryEndpoint, c.tenantId)
-	if err != nil {
-		panic(err)
-	}
-	return adal.NewServicePrincipalToken(*oauthConfig, c.clientId, c.clientSecret, scope)
 }

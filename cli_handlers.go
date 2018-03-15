@@ -357,6 +357,7 @@ func renew(c *cli.Context) error {
 	}
 
 	domain := c.GlobalStringSlice("domains")[0]
+	domain = strings.Replace(domain, "*", "_", -1)
 
 	// load the cert resource from files.
 	// We store the certificate, private key and metadata in different files

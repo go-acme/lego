@@ -17,11 +17,8 @@ import (
 
 // GleSYS API reference: https://github.com/GleSYS/API/wiki/API-Documentation
 
-var (
-	// endpoint is the GleSYS API endpoint used by Present and
-	// CleanUp. It is overridden during tests.
-	endpoint = "https://api.glesys.com/domain"
-)
+// domainAPI is the GleSYS API endpoint used by Present and CleanUp. 
+const domainAPI = "https://api.glesys.com/domain"
 
 // DNSProvider is an implementation of the
 // acme.ChallengeProviderTimeout interface that uses GleSYS
@@ -139,7 +136,7 @@ type responseStruct struct {
 // POSTing/Marshalling/Unmarshalling
 
 func (d *DNSProvider) sendRequest(method string, resource string, payload interface{}) (*responseStruct, error) {
-	url := fmt.Sprintf("%s/%s", endpoint, resource)
+	url := fmt.Sprintf("%s/%s", domainAPI, resource)
 
 	body, err := json.Marshal(payload)
 	if err != nil {

@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -19,6 +20,22 @@ import (
 
 // domainAPI is the GleSYS API endpoint used by Present and CleanUp. 
 const domainAPI = "https://api.glesys.com/domain"
+
+var (
+	// Logger is used to log API communication results;
+	// if nil, the default log.Logger is used.
+	Logger *log.Logger
+)
+
+// logf writes a log entry. It uses Logger if not
+// nil, otherwise it uses the default log.Logger.
+func logf(format string, args ...interface{}) {
+	if Logger != nil {
+		Logger.Printf(format, args...)
+	} else {
+		log.Printf(format, args...)
+	}
+}
 
 // DNSProvider is an implementation of the
 // acme.ChallengeProviderTimeout interface that uses GleSYS
@@ -74,7 +91,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	d.inProgressMu.Lock()
 	defer d.inProgressMu.Unlock()
 	// add TXT record into authZone
-	recordId, err := d.addTXTRecord(acme.UnFqdn(authZone), name, value, ttl)
+	recordId, err := d.addTXTRecord(domain, acme.UnFqdn(authZone), name, value, ttl)
 	if err != nil {
 		return err
 	}
@@ -96,7 +113,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	recordId := d.activeRecords[fqdn]
 	delete(d.activeRecords, fqdn)
 	// delete TXT record from authZone
-	err := d.deleteTXTRecord(recordId)
+	err := d.deleteTXTRecord(domain, recordId)
 	if err != nil {
 		return err
 	}
@@ -127,7 +144,7 @@ type deleteRecordRequest struct {
 type responseStruct struct {
 	Response struct {
 		Status struct {
-			Text string `json:"text"`
+			Code int `json:"code"`
 		} `json:"status"`
 		Record deleteRecordRequest `json:"record"`
 	} `json:"response"`
@@ -162,12 +179,12 @@ func (d *DNSProvider) sendRequest(method string, resource string, payload interf
 	var response responseStruct
 	err = json.NewDecoder(resp.Body).Decode(&response)
 
-	return &response, nil
+	return &response, err
 }
 
 // functions to perform API actions
 
-func (d *DNSProvider) addTXTRecord(domain string, name string, value string, ttl int) (int, error) {
+func (d *DNSProvider) addTXTRecord(fqdn string, domain string, name string, value string, ttl int) (int, error) {
 	response, err := d.sendRequest("POST", "addrecord", addRecordRequest{
 		Domainname:    domain,
 		Host:          name,
@@ -175,18 +192,19 @@ func (d *DNSProvider) addTXTRecord(domain string, name string, value string, ttl
 		Data:          value,
 		Ttl:           ttl,
 	})
-	if response != nil {
-		fmt.Printf("GleSYS DNS: %s\n", response.Response.Status.Text)
+	if response != nil && response.Response.Status.Code == 200 {
+		logf("[INFO][%s] GleSYS DNS: Successfully created recordid %d", fqdn, response.Response.Record.Recordid)
+		return response.Response.Record.Recordid, nil
 	}
-	return response.Response.Record.Recordid, err
+	return 0, err
 }
 
-func (d *DNSProvider) deleteTXTRecord(recordid int) error {
+func (d *DNSProvider) deleteTXTRecord(fqdn string, recordid int) error {
 	response, err := d.sendRequest("POST", "deleterecord", deleteRecordRequest{
 		Recordid: recordid,
 	})
-	if response != nil && response.Response.Status.Text == "" {
-		fmt.Printf("GleSYS DNS: Zone record deleted\n")
+	if response != nil && response.Response.Status.Code == 200 {
+		logf("[INFO][%s] GleSYS DNS: Successfully deleted recordid %d", fqdn, recordid)
 	}
 	return err
 }

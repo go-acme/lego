@@ -7,6 +7,7 @@ import (
 	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/providers/dns/auroradns"
 	"github.com/xenolf/lego/providers/dns/azure"
+	"github.com/xenolf/lego/providers/dns/bind"
 	"github.com/xenolf/lego/providers/dns/cloudflare"
 	"github.com/xenolf/lego/providers/dns/cloudxns"
 	"github.com/xenolf/lego/providers/dns/digitalocean"
@@ -88,6 +89,8 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 		provider, err = ns1.NewDNSProvider()
 	case "otc":
 		provider, err = otc.NewDNSProvider()
+	case "bind":
+		provider, err = bind.NewDNSProvider()
 	default:
 		err = fmt.Errorf("Unrecognised DNS provider: %s", name)
 	}

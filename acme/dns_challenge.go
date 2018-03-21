@@ -122,6 +122,7 @@ func checkDNSPropagation(fqdn, value string) (bool, error) {
 	// Initial attempt to resolve at the recursive NS
 	r, err := dnsQuery(fqdn, dns.TypeTXT, RecursiveNameservers, true)
 	if err != nil {
+		fmt.Printf("Query (%s) failed: %s\n", fqdn, err)
 		return false, err
 	}
 	if r.Rcode == dns.RcodeSuccess {
@@ -136,8 +137,10 @@ func checkDNSPropagation(fqdn, value string) (bool, error) {
 		}
 	}
 
+	fmt.Printf("Looking up nameservers for %s...\n", fqdn)
 	authoritativeNss, err := lookupNameservers(fqdn)
 	if err != nil {
+		fmt.Printf("Found no nameserver for %s: %s\n", fqdn, err)
 		return false, err
 	}
 
@@ -145,29 +148,49 @@ func checkDNSPropagation(fqdn, value string) (bool, error) {
 }
 
 // checkAuthoritativeNss queries each of the given nameservers for the expected TXT record.
-func checkAuthoritativeNss(fqdn, value string, nameservers []string) (bool, error) {
+func checkAuthoritativeNss(ofqdn, value string, nameservers []string) (bool, error) {
+	var fqdn string
 	for _, ns := range nameservers {
+		fmt.Printf("Verifying nameserver %s\n", ns)
+		fqdn = ofqdn
+		new_fqdn, err := LookupCname(ofqdn, ns)
+		if err == nil {
+			fqdn = new_fqdn
+			fmt.Printf("Using %s instead of %s\n", new_fqdn, ofqdn)
+		} else {
+			fmt.Printf("cname lookup of %s @nameserver %s: %s\n", ofqdn, ns, err)
+		}
 		r, err := dnsQuery(fqdn, dns.TypeTXT, []string{net.JoinHostPort(ns, "53")}, false)
 		if err != nil {
+			fmt.Printf("2 Query (%s) failed: %s\n", fqdn, err)
 			return false, err
 		}
 
 		if r.Rcode != dns.RcodeSuccess {
+			fmt.Printf("Server %s is misbehaving (%s): %s\n", ns, dns.RcodeToString[r.Rcode], fqdn)
 			return false, fmt.Errorf("NS %s returned %s for %s", ns, dns.RcodeToString[r.Rcode], fqdn)
 		}
 
 		var found bool
 		for _, rr := range r.Answer {
+			fmt.Printf("Answer from %s: %v\n", ns, rr)
 			if txt, ok := rr.(*dns.TXT); ok {
-				if strings.Join(txt.Txt, "") == value {
+				s := strings.Join(txt.Txt, "")
+				if s == value {
 					found = true
 					break
 				}
+				fmt.Printf("TXT record differs from token=%s (txt=%s)\n", value, s)
+			} else {
+				fmt.Printf("Ay %v?\n", ok)
 			}
+
 		}
 
 		if !found {
-			return false, fmt.Errorf("NS %s did not return the expected TXT record", ns)
+			s := fmt.Sprintf("NS %s did not return the expected TXT record", ns)
+			fmt.Println(s)
+			return false, fmt.Errorf("%s", s)
 		}
 	}
 
@@ -306,4 +329,30 @@ func UnFqdn(name string) string {
 		return name[:n-1]
 	}
 	return name
+}
+
+// check's if there's a cname for a fdqn.
+// if there is it'll return it.
+// if there isn't (or some error) it'll return empty string and error
+func LookupCname(fqdn string, nameserver string) (string, error) {
+	if !strings.Contains(nameserver, ":") {
+		nameserver = net.JoinHostPort(nameserver, "53")
+	}
+	c := new(dns.Client)
+	m := new(dns.Msg)
+	m.SetQuestion(fqdn, dns.TypeCNAME)
+	reply, _, err := c.Exchange(m, nameserver)
+	if err != nil {
+		return "", err
+	}
+	if len(reply.Answer) == 0 {
+		return "", fmt.Errorf("No answers received")
+	}
+	answer := reply.Answer[0].(*dns.CNAME)
+	res := answer.Target
+	if res == "" {
+		return "", fmt.Errorf("Empty answer received")
+	}
+	fmt.Printf("Using cname %s for %s\n", res, fqdn)
+	return res, nil
 }

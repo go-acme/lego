@@ -48,7 +48,8 @@ type DNSProvider struct {
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for GleSYS.
-// Credentials must be passed in the environment variable: GLESYS_API_KEY.
+// Credentials must be passed in the environment variables: GLESYS_API_USER
+// and GLESYS_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
 	apiUser := os.Getenv("GLESYS_API_USER")
 	apiKey := os.Getenv("GLESYS_API_KEY")

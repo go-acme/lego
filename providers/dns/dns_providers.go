@@ -13,6 +13,7 @@ import (
 	"github.com/xenolf/lego/providers/dns/dnsimple"
 	"github.com/xenolf/lego/providers/dns/dnsmadeeasy"
 	"github.com/xenolf/lego/providers/dns/dnspod"
+	"github.com/xenolf/lego/providers/dns/duckdns"
 	"github.com/xenolf/lego/providers/dns/dyn"
 	"github.com/xenolf/lego/providers/dns/exec"
 	"github.com/xenolf/lego/providers/dns/exoscale"
@@ -55,6 +56,8 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 		provider, err = dnsmadeeasy.NewDNSProvider()
 	case "dnspod":
 		provider, err = dnspod.NewDNSProvider()
+	case "duckdns":
+		provider, err = duckdns.NewDNSProvider()
 	case "dyn":
 		provider, err = dyn.NewDNSProvider()
 	case "exoscale":

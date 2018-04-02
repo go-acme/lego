@@ -209,10 +209,12 @@ Here is an example bash command using the CloudFlare DNS provider:
 	fmt.Fprintln(w, "\tdigitalocean:\tDO_AUTH_TOKEN")
 	fmt.Fprintln(w, "\tdnsimple:\tDNSIMPLE_EMAIL, DNSIMPLE_OAUTH_TOKEN")
 	fmt.Fprintln(w, "\tdnsmadeeasy:\tDNSMADEEASY_API_KEY, DNSMADEEASY_API_SECRET")
+	fmt.Fprintln(w, "\tduckdns:\tDUCKDNS_TOKEN")
 	fmt.Fprintln(w, "\texoscale:\tEXOSCALE_API_KEY, EXOSCALE_API_SECRET, EXOSCALE_ENDPOINT")
 	fmt.Fprintln(w, "\tgandi:\tGANDI_API_KEY")
 	fmt.Fprintln(w, "\tgandiv5:\tGANDIV5_API_KEY")
 	fmt.Fprintln(w, "\tgcloud:\tGCE_PROJECT, GCE_SERVICE_ACCOUNT_FILE")
+	fmt.Fprintln(w, "\tglesys:\tGLESYS_API_USER, GLESYS_API_KEY")
 	fmt.Fprintln(w, "\tlinode:\tLINODE_API_KEY")
 	fmt.Fprintln(w, "\tlightsail:\tAWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, DNS_ZONE")
 	fmt.Fprintln(w, "\tmanual:\tnone")
@@ -227,6 +229,7 @@ Here is an example bash command using the CloudFlare DNS provider:
 	fmt.Fprintln(w, "\tpdns:\tPDNS_API_KEY, PDNS_API_URL")
 	fmt.Fprintln(w, "\tdnspod:\tDNSPOD_API_KEY")
 	fmt.Fprintln(w, "\totc:\tOTC_USER_NAME, OTC_PASSWORD, OTC_PROJECT_NAME, OTC_DOMAIN_NAME, OTC_IDENTITY_ENDPOINT")
+	fmt.Fprintln(w, "\texec:\tEXEC_PATH")
 	w.Flush()
 
 	fmt.Println(`

@@ -11,6 +11,8 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/client"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/route53"
@@ -70,10 +72,40 @@ func NewDNSProvider() (*DNSProvider, error) {
 	r := customRetryer{}
 	r.NumMaxRetries = maxRetries
 	config := request.WithRetryer(aws.NewConfig(), r)
-	client := route53.New(session.New(config))
-
+	s, err := session.NewSessionWithOptions(session.Options{
+		Config: *config,
+		// Support MFA when authing using assumed roles.
+		SharedConfigState:       session.SharedConfigEnable,
+		AssumeRoleTokenProvider: stscreds.StdinTokenProvider,
+	})
+	if err != nil {
+		return nil, err
+	}
 	return &DNSProvider{
-		client:       client,
+		client:       route53.New(s),
+		hostedZoneID: hostedZoneID,
+	}, nil
+}
+
+func NewDNSProviderCredentials(accessKeyId, secretAccessKey, hostedZoneID string) (*DNSProvider, error) {
+	r := customRetryer{}
+	r.NumMaxRetries = maxRetries
+	config := aws.Config{
+		Credentials: credentials.NewStaticCredentials(accessKeyId, secretAccessKey, ""),
+		Retryer:     r,
+		Region:      aws.String("us-east-1"),
+	}
+	s, err := session.NewSessionWithOptions(session.Options{
+		Config: config,
+		// Support MFA when authing using assumed roles.
+		SharedConfigState:       session.SharedConfigEnable,
+		AssumeRoleTokenProvider: stscreds.StdinTokenProvider,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &DNSProvider{
+		client:       route53.New(s),
 		hostedZoneID: hostedZoneID,
 	}, nil
 }

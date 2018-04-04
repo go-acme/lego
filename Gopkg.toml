@@ -1,0 +1,91 @@
+[[constraint]]
+  name = "github.com/Azure/azure-sdk-for-go"
+  version = "15.0.0"
+
+[[constraint]]
+  name = "github.com/Azure/go-autorest"
+  version = "10.5.1"
+
+[[constraint]]
+  name = "github.com/JamesClonk/vultr"
+  version = "1.15.0"
+
+[[constraint]]
+  name = "github.com/akamai/AkamaiOPEN-edgegrid-golang"
+  version = "0.6.0"
+
+[[constraint]]
+  name = "github.com/aws/aws-sdk-go"
+  version = "1.13.27"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/decker502/dnspod-go"
+
+[[constraint]]
+  name = "github.com/dnsimple/dnsimple-go"
+  revision = "bbe1a2c87affea187478e24d3aea3cac25f870b3"
+
+[[constraint]]
+  name = "github.com/edeckers/auroradnsclient"
+  version = "1.0.3"
+
+[[constraint]]
+  name = "github.com/exoscale/egoscale"
+  version = "0.9.17"
+
+[[constraint]]
+  name = "github.com/miekg/dns"
+  version = "1.0.5"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/namedotcom/go"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/ovh/go-ovh"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/rainycape/memcache"
+
+[[constraint]]
+  name = "github.com/stretchr/testify"
+  version = "1.2.1"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/timewasted/linode"
+
+[[constraint]]
+  name = "github.com/urfave/cli"
+  version = "1.20.0"
+
+[[constraint]]
+  branch = "master"
+  name = "golang.org/x/crypto"
+
+[[constraint]]
+  branch = "master"
+  name = "golang.org/x/net"
+
+[[constraint]]
+  branch = "master"
+  name = "golang.org/x/oauth2"
+
+[[constraint]]
+  branch = "master"
+  name = "google.golang.org/api"
+
+[[constraint]]
+  branch = "v2"
+  name = "gopkg.in/ns1/ns1-go.v2"
+
+[[constraint]]
+  name = "gopkg.in/square/go-jose.v1"
+  version = "1.1.1"
+
+[prune]
+  go-tests = true
+  unused-packages = true

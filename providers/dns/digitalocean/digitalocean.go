@@ -49,6 +49,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		RecordType string `json:"type"`
 		Name       string `json:"name"`
 		Data       string `json:"data"`
+		Ttl        int    `json:"ttl"`
 	}
 
 	// txtRecordResponse represents a response from DO's API after making a TXT record
@@ -61,7 +62,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		} `json:"domain_record"`
 	}
 
-	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
 
 	authZone, err := acme.FindZoneByFqdn(acme.ToFqdn(domain), acme.RecursiveNameservers)
 	if err != nil {
@@ -71,7 +72,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	authZone = acme.UnFqdn(authZone)
 
 	reqURL := fmt.Sprintf("%s/v2/domains/%s/records", digitalOceanBaseURL, authZone)
-	reqData := txtRecordRequest{RecordType: "TXT", Name: fqdn, Data: value}
+	reqData := txtRecordRequest{RecordType: "TXT", Name: fqdn, Data: value, Ttl: ttl}
 	body, err := json.Marshal(reqData)
 	if err != nil {
 		return err

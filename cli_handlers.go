@@ -207,8 +207,6 @@ func handleTOS(c *cli.Context, client *acme.Client) bool {
 
 		logger().Println("Your input was invalid. Please answer with one of Y/y, n or by pressing enter.")
 	}
-
-	return false
 }
 
 func readCSRFile(filename string) (*x509.CertificateRequest, error) {

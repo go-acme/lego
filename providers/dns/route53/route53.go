@@ -70,7 +70,11 @@ func NewDNSProvider() (*DNSProvider, error) {
 	r := customRetryer{}
 	r.NumMaxRetries = maxRetries
 	config := request.WithRetryer(aws.NewConfig(), r)
-	client := route53.New(session.New(config))
+	session, err := session.NewSessionWithOptions(session.Options{Config: *config})
+	if err != nil {
+		return nil, err
+	}
+	client := route53.New(session)
 
 	return &DNSProvider{
 		client:       client,

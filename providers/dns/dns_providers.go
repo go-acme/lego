@@ -110,7 +110,7 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 	case "exec":
 		provider, err = exec.NewDNSProvider()
 	default:
-		err = fmt.Errorf("Unrecognised DNS provider: %s", name)
+		err = fmt.Errorf("Unrecognised DNS provider is: %s", name)
 	}
 	return provider, err
 }

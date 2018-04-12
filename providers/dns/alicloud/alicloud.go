@@ -6,6 +6,8 @@ import (
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/alidns"
 	"github.com/xenolf/lego/acme"
 	"fmt"
+	"os"
+	"strings"
 )
 
 // DNSProvider is an implementation of the acme.ChallengeProvider interface.
@@ -40,12 +42,13 @@ func NewDNSProviderCredentials(key_id string, key_secret string) (*DNSProvider, 
 // Present creates a TXT record to fulfil the dns-01 challenge.
 func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
-	recordAttributes := c.newTxtRecord(fqdn, value, ttl)
 
 	// 创建API请求并设置参数
-    request := c.client.CreateAddDomainRecordRequest(recordAttributes)
+    request := alidns.CreateAddDomainRecordRequest()
+    c.newTxtRecord(request, domain, fqdn, value, ttl)
+    
     // 发起请求并处理异常
-    response, err := c.client.AddDomainRecord(request)
+    _, err := c.client.AddDomainRecord(request)
     if err != nil {
     	// 异常处理
     	panic(err)
@@ -66,10 +69,11 @@ func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return err
 	}
 
+	request := alidns.CreateDeleteDomainRecordRequest()
+
 	for _, rec := range records {
-		_, err := c.client.DeleteDomainRecord(&DeleteDomainRecordRequest{
-			RecordId: rec.RequestId
-			})
+		request.RecordId = rec.RecordId
+		_, err := c.client.DeleteDomainRecord(request)
 		if err != nil {
 			return err
 		}
@@ -80,15 +84,17 @@ func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 func (c *DNSProvider) findTxtRecords(domain, fqdn string) ([]alidns.Record, error) {
 
 	var records []alidns.Record
-	response, err := c.client.DescribeSubDomainRecords(&alidns.DescribeSubDomainRecordsRequest{
-		SubDomain: domain,
-		ype:  "TXT",
-		})
+
+	recordName := c.extractRecordName(fqdn, domain)
+
+	// 创建API请求并设置参数
+    request := alidns.CreateDescribeSubDomainRecordsRequest()
+    request.SubDomain = recordName+"."+domain
+    request.Type = "TXT"
+	response, err := c.client.DescribeSubDomainRecords(request)
 	if err != nil {
 		return records, fmt.Errorf("alidns API call has failed: %v", err)
 	}
-
-	recordName := c.extractRecordName(fqdn)
 
 	for _, record := range response.DomainRecords.Record {
 		if record.RR == recordName {
@@ -99,15 +105,13 @@ func (c *DNSProvider) findTxtRecords(domain, fqdn string) ([]alidns.Record, erro
 	return records, nil
 }
 
-func (c *DNSProvider) newTxtRecord(fqdn, value string, ttl int) *alidns.AddDomainRecordRequest {
-	name := c.extractRecordName(fqdn)
+func (c *DNSProvider) newTxtRecord(request *alidns.AddDomainRecordRequest,domain, fqdn, value string, ttl int) {
+	name := c.extractRecordName(fqdn, domain)
 
-	return &alidns.AddDomainRecordRequest{
-		DomainName:  fqdn,
-		RR: rr,
-		Type:  "TXT",
-		Value: value,
-	}
+	request.DomainName = domain
+	request.RR = name
+	request.Type = "TXT"
+	request.Value = value
 }
 
 func (c *DNSProvider) extractRecordName(fqdn, domain string) string {

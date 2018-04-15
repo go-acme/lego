@@ -36,6 +36,7 @@ import (
 	"github.com/xenolf/lego/providers/dns/route53"
 	"github.com/xenolf/lego/providers/dns/vultr"
 	"github.com/xenolf/lego/providers/dns/bluecat"
+	"github.com/xenolf/lego/providers/dns/alicloud"
 )
 
 func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) {
@@ -106,6 +107,8 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 		provider, err = otc.NewDNSProvider()
 	case "exec":
 		provider, err = exec.NewDNSProvider()
+	case "alicloud":
+		provider, err = alicloud.NewDNSProvider()
 	default:
 		err = fmt.Errorf("Unrecognised DNS provider: %s", name)
 	}

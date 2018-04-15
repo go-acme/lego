@@ -230,6 +230,7 @@ Here is an example bash command using the CloudFlare DNS provider:
 	fmt.Fprintln(w, "\tdnspod:\tDNSPOD_API_KEY")
 	fmt.Fprintln(w, "\totc:\tOTC_USER_NAME, OTC_PASSWORD, OTC_PROJECT_NAME, OTC_DOMAIN_NAME, OTC_IDENTITY_ENDPOINT")
 	fmt.Fprintln(w, "\texec:\tEXEC_PATH")
+	fmt.Fprintln(w, "\talicloud:\tALICLOUD_API_KEY, ALICLOUD_API_SECRET")
 	w.Flush()
 
 	fmt.Println(`

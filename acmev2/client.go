@@ -348,8 +348,8 @@ func (c *Client) ObtainCertificate(domains []string, bundle bool, privKey crypto
 	order, err := c.createOrderForIdentifiers(domains)
 	if err != nil {
 		identErrors := make(map[string]error)
-		for _, auth := range order.Identifiers {
-			identErrors[auth.Value] = err
+		for _, domain := range domains {
+			identErrors[domain] = err
 		}
 		return CertificateResource{}, identErrors
 	}

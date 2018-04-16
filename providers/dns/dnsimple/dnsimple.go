@@ -176,5 +176,5 @@ func (c *DNSProvider) getAccountID() (string, error) {
 		return "", fmt.Errorf("DNSimple user tokens are not supported, please use an account token.")
 	}
 
-	return strconv.Itoa(whoamiResponse.Data.Account.ID), nil
+	return strconv.FormatInt(whoamiResponse.Data.Account.ID, 10), nil
 }

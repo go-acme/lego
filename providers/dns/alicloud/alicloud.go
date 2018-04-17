@@ -15,7 +15,8 @@ type DNSProvider struct {
 	client *dns.Client
 }
 
-// NewDNSProvider returns a DNSProvider instance with a configured AliCloud client.
+// NewDNSProvider returns a DNSProvider instance configured for AliCloud client.
+// Credentials must be passed in the environment variables: ALICLOUD_API_KEY and ALICLOUD_API_SECRET.
 func NewDNSProvider() (*DNSProvider, error) {
 	apiKey := os.Getenv("ALICLOUD_API_KEY")
 	apiSecret := os.Getenv("ALICLOUD_API_SECRET")

@@ -252,6 +252,54 @@ func TestGetChallenges(t *testing.T) {
 	}
 }
 
+func TestResolveAccountByKey(t *testing.T) {
+	keyBits := 512
+	keyType := RSA2048
+	key, err := rsa.GenerateKey(rand.Reader, keyBits)
+	if err != nil {
+		t.Fatal("Could not generate test key:", err)
+	}
+	user := mockUser{
+		email:      "test@test.com",
+		regres:     new(RegistrationResource),
+		privatekey: key,
+	}
+
+	var ts *httptest.Server
+	ts = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.RequestURI {
+		case "/directory":
+			writeJSONResponse(w, directory{
+				NewNonceURL:   ts.URL + "/nonce",
+				NewAccountURL: ts.URL + "/account",
+				NewOrderURL:   ts.URL + "/newOrder",
+				RevokeCertURL: ts.URL + "/revokeCert",
+				KeyChangeURL:  ts.URL + "/keyChange",
+			})
+		case "/nonce":
+			w.Header().Add("Replay-Nonce", "12345")
+			w.Header().Add("Retry-After", "0")
+		case "/account":
+			w.Header().Set("Location", ts.URL+"/account_recovery")
+		case "/account_recovery":
+			writeJSONResponse(w, accountMessage{
+				Status: "valid",
+			})
+		}
+	}))
+
+	client, err := NewClient(ts.URL+"/directory", user, keyType)
+	if err != nil {
+		t.Fatalf("Could not create client: %v", err)
+	}
+
+	if res, err := client.ResolveAccountByKey(); err != nil {
+		t.Fatalf("Unexpected error resolving account by key: %v", err)
+	} else if res.Body.Status != "valid" {
+		t.Errorf("Unexpected account status: %v", res.Body.Status)
+	}
+}
+
 // writeJSONResponse marshals the body as JSON and writes it to the response.
 func writeJSONResponse(w http.ResponseWriter, body interface{}) {
 	bs, err := json.Marshal(body)

@@ -9,6 +9,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
+	"encoding/asn1"
 	"encoding/base64"
 	"encoding/pem"
 	"errors"
@@ -18,8 +19,6 @@ import (
 	"math/big"
 	"net/http"
 	"time"
-
-	"encoding/asn1"
 
 	"golang.org/x/crypto/ocsp"
 	jose "gopkg.in/square/go-jose.v2"

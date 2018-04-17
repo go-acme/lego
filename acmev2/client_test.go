@@ -27,7 +27,13 @@ func TestNewClient(t *testing.T) {
 	}
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		data, _ := json.Marshal(directory{NewAuthzURL: "http://test", NewCertURL: "http://test", NewRegURL: "http://test", RevokeCertURL: "http://test"})
+		data, _ := json.Marshal(directory{
+			NewNonceURL:   "http://test",
+			NewAccountURL: "http://test",
+			NewOrderURL:   "http://test",
+			RevokeCertURL: "http://test",
+			KeyChangeURL:  "http://test",
+		})
 		w.Write(data)
 	}))
 
@@ -47,7 +53,7 @@ func TestNewClient(t *testing.T) {
 		t.Errorf("Expected keyType to be %s but was %s", keyType, client.keyType)
 	}
 
-	if expected, actual := 2, len(client.solvers); actual != expected {
+	if expected, actual := 1, len(client.solvers); actual != expected {
 		t.Fatalf("Expected %d solver(s), got %d", expected, actual)
 	}
 }
@@ -65,7 +71,13 @@ func TestClientOptPort(t *testing.T) {
 	}
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		data, _ := json.Marshal(directory{NewAuthzURL: "http://test", NewCertURL: "http://test", NewRegURL: "http://test", RevokeCertURL: "http://test"})
+		data, _ := json.Marshal(directory{
+			NewNonceURL:   "http://test",
+			NewAccountURL: "http://test",
+			NewOrderURL:   "http://test",
+			RevokeCertURL: "http://test",
+			KeyChangeURL:  "http://test",
+		})
 		w.Write(data)
 	}))
 
@@ -76,7 +88,6 @@ func TestClientOptPort(t *testing.T) {
 		t.Fatalf("Could not create client: %v", err)
 	}
 	client.SetHTTPAddress(net.JoinHostPort(optHost, optPort))
-	client.SetTLSAddress(net.JoinHostPort(optHost, optPort))
 
 	httpSolver, ok := client.solvers[HTTP01].(*httpChallenge)
 	if !ok {
@@ -92,7 +103,7 @@ func TestClientOptPort(t *testing.T) {
 		t.Errorf("Expected http-01 to have iface %s but was %s", optHost, got)
 	}
 
-	httpsSolver, ok := client.solvers[TLSSNI01].(*tlsSNIChallenge)
+	/* httpsSolver, ok := client.solvers[TLSSNI01].(*tlsSNIChallenge)
 	if !ok {
 		t.Fatal("Expected tls-sni-01 solver to be httpChallenge type")
 	}
@@ -104,18 +115,14 @@ func TestClientOptPort(t *testing.T) {
 	}
 	if got := httpsSolver.provider.(*TLSProviderServer).iface; got != optHost {
 		t.Errorf("Expected tls-sni-01 to have port %s but was %s", optHost, got)
-	}
+	} */
 
 	// test setting different host
 	optHost = "127.0.0.1"
 	client.SetHTTPAddress(net.JoinHostPort(optHost, optPort))
-	client.SetTLSAddress(net.JoinHostPort(optHost, optPort))
 
 	if got := httpSolver.provider.(*HTTPProviderServer).iface; got != optHost {
 		t.Errorf("Expected http-01 to have iface %s but was %s", optHost, got)
-	}
-	if got := httpsSolver.provider.(*TLSProviderServer).port; got != optPort {
-		t.Errorf("Expected tls-sni-01 to have port %s but was %s", optPort, got)
 	}
 }
 
@@ -124,12 +131,12 @@ func TestNotHoldingLockWhileMakingHTTPRequests(t *testing.T) {
 		time.Sleep(250 * time.Millisecond)
 		w.Header().Add("Replay-Nonce", "12345")
 		w.Header().Add("Retry-After", "0")
-		writeJSONResponse(w, &challenge{Type: "http-01", Status: "Valid", URI: "http://example.com/", Token: "token"})
+		writeJSONResponse(w, &challenge{Type: "http-01", Status: "Valid", URL: "http://example.com/", Token: "token"})
 	}))
 	defer ts.Close()
 
 	privKey, _ := rsa.GenerateKey(rand.Reader, 512)
-	j := &jws{privKey: privKey, directoryURL: ts.URL}
+	j := &jws{privKey: privKey, getNonceURL: ts.URL}
 	ch := make(chan bool)
 	resultCh := make(chan bool)
 	go func() {
@@ -163,12 +170,12 @@ func TestValidate(t *testing.T) {
 		case "POST":
 			st := statuses[0]
 			statuses = statuses[1:]
-			writeJSONResponse(w, &challenge{Type: "http-01", Status: st, URI: "http://example.com/", Token: "token"})
+			writeJSONResponse(w, &challenge{Type: "http-01", Status: st, URL: "http://example.com/", Token: "token"})
 
 		case "GET":
 			st := statuses[0]
 			statuses = statuses[1:]
-			writeJSONResponse(w, &challenge{Type: "http-01", Status: st, URI: "http://example.com/", Token: "token"})
+			writeJSONResponse(w, &challenge{Type: "http-01", Status: st, URL: "http://example.com/", Token: "token"})
 
 		default:
 			http.Error(w, r.Method, http.StatusMethodNotAllowed)
@@ -177,7 +184,7 @@ func TestValidate(t *testing.T) {
 	defer ts.Close()
 
 	privKey, _ := rsa.GenerateKey(rand.Reader, 512)
-	j := &jws{privKey: privKey, directoryURL: ts.URL}
+	j := &jws{privKey: privKey, getNonceURL: ts.URL}
 
 	tsts := []struct {
 		name     string
@@ -186,10 +193,10 @@ func TestValidate(t *testing.T) {
 	}{
 		{"POST-unexpected", []string{"weird"}, "unexpected"},
 		{"POST-valid", []string{"valid"}, ""},
-		{"POST-invalid", []string{"invalid"}, "Error Detail"},
+		{"POST-invalid", []string{"invalid"}, "Error"},
 		{"GET-unexpected", []string{"pending", "weird"}, "unexpected"},
 		{"GET-valid", []string{"pending", "valid"}, ""},
-		{"GET-invalid", []string{"pending", "invalid"}, "Error Detail"},
+		{"GET-invalid", []string{"pending", "invalid"}, "Error"},
 	}
 
 	for _, tst := range tsts {
@@ -209,9 +216,15 @@ func TestGetChallenges(t *testing.T) {
 		case "GET", "HEAD":
 			w.Header().Add("Replay-Nonce", "12345")
 			w.Header().Add("Retry-After", "0")
-			writeJSONResponse(w, directory{NewAuthzURL: ts.URL, NewCertURL: ts.URL, NewRegURL: ts.URL, RevokeCertURL: ts.URL})
+			writeJSONResponse(w, directory{
+				NewNonceURL:   ts.URL,
+				NewAccountURL: ts.URL,
+				NewOrderURL:   ts.URL,
+				RevokeCertURL: ts.URL,
+				KeyChangeURL:  ts.URL,
+			})
 		case "POST":
-			writeJSONResponse(w, authorization{})
+			writeJSONResponse(w, orderMessage{})
 		}
 	}))
 	defer ts.Close()
@@ -224,7 +237,7 @@ func TestGetChallenges(t *testing.T) {
 	}
 	user := mockUser{
 		email:      "test@test.com",
-		regres:     &RegistrationResource{NewAuthzURL: ts.URL},
+		regres:     &RegistrationResource{URI: ts.URL},
 		privatekey: key,
 	}
 
@@ -233,8 +246,8 @@ func TestGetChallenges(t *testing.T) {
 		t.Fatalf("Could not create client: %v", err)
 	}
 
-	_, failures := client.getChallenges([]string{"example.com"})
-	if failures["example.com"] == nil {
+	_, err = client.createOrderForIdentifiers([]string{"example.com"})
+	if err != nil {
 		t.Fatal("Expecting \"Server did not provide next link to proceed\" error, got nil")
 	}
 }

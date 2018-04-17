@@ -73,11 +73,7 @@ func (provider *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		RecordId: recordId,
 	})
 
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 // Timeout returns the values (20*time.Minute, 20*time.Second) which

@@ -1,16 +1,16 @@
-package acme
+package acmev2
 
 import (
 	"crypto/sha256"
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"log"
 	"net"
 	"strings"
 	"time"
 
 	"github.com/miekg/dns"
+	"github.com/xenolf/lego/log"
 )
 
 type preCheckDNSFunc func(fqdn, value string) (bool, error)
@@ -29,7 +29,7 @@ var defaultNameservers = []string{
 	"google-public-dns-b.google.com:53",
 }
 
-// RecursiveNameservers are used to pre-check DNS propagations
+// RecursiveNameservers are used to pre-check DNS propagation
 var RecursiveNameservers = getNameservers(defaultResolvConf, defaultNameservers)
 
 // DNSTimeout is used to override the default DNS timeout of 10 seconds.
@@ -72,10 +72,10 @@ type dnsChallenge struct {
 }
 
 func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
-	logf("[INFO][%s] acme: Trying to solve DNS-01", domain)
+	log.Printf("[INFO][%s] acme: Trying to solve DNS-01", domain)
 
 	if s.provider == nil {
-		return errors.New("No DNS Provider configured")
+		return errors.New("no DNS Provider configured")
 	}
 
 	// Generate the Key Authorization for the challenge
@@ -97,7 +97,7 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 
 	fqdn, value, _ := DNS01Record(domain, keyAuth)
 
-	logf("[INFO][%s] Checking DNS record propagation using %+v", domain, RecursiveNameservers)
+	log.Printf("[INFO][%s] Checking DNS record propagation using %+v", domain, RecursiveNameservers)
 
 	var timeout, interval time.Duration
 	switch provider := s.provider.(type) {
@@ -227,7 +227,7 @@ func lookupNameservers(fqdn string) ([]string, error) {
 	if len(authoritativeNss) > 0 {
 		return authoritativeNss, nil
 	}
-	return nil, fmt.Errorf("Could not determine authoritative nameservers")
+	return nil, fmt.Errorf("could not determine authoritative nameservers")
 }
 
 // FindZoneByFqdn determines the zone apex for the given fqdn by recursing up the
@@ -272,7 +272,7 @@ func FindZoneByFqdn(fqdn string, nameservers []string) (string, error) {
 		}
 	}
 
-	return "", fmt.Errorf("Could not find the start of authority")
+	return "", fmt.Errorf("could not find the start of authority")
 }
 
 // dnsMsgContainsCNAME checks for a CNAME answer in msg

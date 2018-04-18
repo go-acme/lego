@@ -11,6 +11,7 @@ import (
 	"text/tabwriter"
 
 	"github.com/urfave/cli"
+	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/acmev2"
 )
 
@@ -40,6 +41,7 @@ func main() {
 	app.Version = version
 
 	acme.UserAgent = "lego/" + app.Version
+	acmev2.UserAgent = "lego/" + app.Version
 
 	defaultPath := ""
 	cwd, err := os.Getwd()
@@ -61,6 +63,10 @@ func main() {
 			Action: run,
 			Flags: []cli.Flag{
 				cli.BoolFlag{
+					Name:  "force-v1",
+					Usage: "Used to indicate you want to use Lego V1.",
+				},
+				cli.BoolFlag{
 					Name:  "no-bundle",
 					Usage: "Do not create a certificate bundle by adding the issuers certificate to the new certificate.",
 				},
@@ -71,8 +77,14 @@ func main() {
 			},
 		},
 		{
-			Name:   "revoke",
-			Usage:  "Revoke a certificate",
+			Name:  "revoke",
+			Usage: "Revoke a certificate",
+			Flags: []cli.Flag{
+				cli.BoolFlag{
+					Name:  "force-v1",
+					Usage: "Used to indicate you want to use Lego V1.",
+				},
+			},
 			Action: revoke,
 		},
 		{
@@ -80,6 +92,10 @@ func main() {
 			Usage:  "Renew a certificate",
 			Action: renew,
 			Flags: []cli.Flag{
+				cli.BoolFlag{
+					Name:  "force-v1",
+					Usage: "Used to indicate you want to use Lego V1.",
+				},
 				cli.IntFlag{
 					Name:  "days",
 					Value: 0,

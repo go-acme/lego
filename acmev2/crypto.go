@@ -1,4 +1,4 @@
-package acme
+package acmev2
 
 import (
 	"bytes"
@@ -21,7 +21,7 @@ import (
 	"time"
 
 	"golang.org/x/crypto/ocsp"
-	jose "gopkg.in/square/go-jose.v2"
+	"gopkg.in/square/go-jose.v2"
 )
 
 // KeyType represents the key algo as well as the key size or curve to use.
@@ -172,7 +172,7 @@ func parsePEMBundle(bundle []byte) ([]*x509.Certificate, error) {
 	}
 
 	if len(certificates) == 0 {
-		return nil, errors.New("No certificates were found while parsing the bundle")
+		return nil, errors.New("no certificates were found while parsing the bundle")
 	}
 
 	return certificates, nil
@@ -187,7 +187,7 @@ func parsePEMPrivateKey(key []byte) (crypto.PrivateKey, error) {
 	case "EC PRIVATE KEY":
 		return x509.ParseECPrivateKey(keyBlock.Bytes)
 	default:
-		return nil, errors.New("Unknown PEM header value")
+		return nil, errors.New("unknown PEM header value")
 	}
 }
 
@@ -206,7 +206,7 @@ func generatePrivateKey(keyType KeyType) (crypto.PrivateKey, error) {
 		return rsa.GenerateKey(rand.Reader, 8192)
 	}
 
-	return nil, fmt.Errorf("Invalid KeyType: %s", keyType)
+	return nil, fmt.Errorf("invalid KeyType: %s", keyType)
 }
 
 func generateCsr(privateKey crypto.PrivateKey, domain string, san []string, mustStaple bool) ([]byte, error) {
@@ -252,7 +252,7 @@ func pemEncode(data interface{}) []byte {
 func pemDecode(data []byte) (*pem.Block, error) {
 	pemBlock, _ := pem.Decode(data)
 	if pemBlock == nil {
-		return nil, fmt.Errorf("Pem decode did not yield a valid block. Is the certificate in the right format?")
+		return nil, fmt.Errorf("PEM decode did not yield a valid block. Is the certificate in the right format?")
 	}
 
 	return pemBlock, nil

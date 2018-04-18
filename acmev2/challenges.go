@@ -1,4 +1,4 @@
-package acme
+package acmev2
 
 // Challenge is a string that identifies a particular type and version of ACME challenge.
 type Challenge string

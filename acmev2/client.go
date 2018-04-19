@@ -189,7 +189,7 @@ func (c *Client) ResolveAccountByKey() (*RegistrationResource, error) {
 	logf("[INFO] acme: Trying to resolve account by key")
 
 	acc := accountMessage{OnlyReturnExisting: true}
-	hdr, err := postJSON(c.jws, c.directory.NewAccountURL, acc, &acc)
+	hdr, err := postJSON(c.jws, c.directory.NewAccountURL, acc, nil)
 	if err != nil {
 		return nil, err
 	}

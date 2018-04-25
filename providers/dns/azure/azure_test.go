@@ -58,7 +58,7 @@ func TestNewDNSProviderValidEnv(t *testing.T) {
 func TestNewDNSProviderMissingCredErr(t *testing.T) {
 	os.Setenv("AZURE_SUBSCRIPTION_ID", "")
 	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "Azure configuration missing")
+	assert.EqualError(t, err, "Azure configuration missing: AZURE_CLIENT_ID,AZURE_CLIENT_SECRET,AZURE_SUBSCRIPTION_ID,AZURE_TENANT_ID,AZURE_RESOURCE_GROUP")
 	restoreAzureEnv()
 }
 

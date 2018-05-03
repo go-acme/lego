@@ -27,7 +27,6 @@ type DNSProvider struct {
 	subscriptionId string
 	tenantId       string
 	resourceGroup  string
-
 	context        context.Context
 }
 
@@ -47,7 +46,13 @@ func NewDNSProvider() (*DNSProvider, error) {
 // DNSProvider instance configured for azure.
 func NewDNSProviderCredentials(clientId, clientSecret, subscriptionId, tenantId, resourceGroup string) (*DNSProvider, error) {
 	if clientId == "" || clientSecret == "" || subscriptionId == "" || tenantId == "" || resourceGroup == "" {
-		return nil, fmt.Errorf("Azure configuration missing")
+		missingEnvVars := []string{}
+		for _, envVar := range []string{"AZURE_CLIENT_ID", "AZURE_CLIENT_SECRET", "AZURE_SUBSCRIPTION_ID", "AZURE_TENANT_ID", "AZURE_RESOURCE_GROUP"} {
+			if os.Getenv(envVar) == "" {
+				missingEnvVars = append(missingEnvVars, envVar)
+			}
+		}
+		return nil, fmt.Errorf("Azure configuration missing: %s", strings.Join(missingEnvVars, ","))
 	}
 
 	return &DNSProvider{
@@ -57,7 +62,7 @@ func NewDNSProviderCredentials(clientId, clientSecret, subscriptionId, tenantId,
 		tenantId:       tenantId,
 		resourceGroup:  resourceGroup,
 		// TODO: A timeout can be added here for cancellation purposes.
-		context:        context.Background(),
+		context: context.Background(),
 	}, nil
 }
 

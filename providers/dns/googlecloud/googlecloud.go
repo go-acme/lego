@@ -35,6 +35,24 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderCredentials(project)
 }
 
+// NewDNSProviderService returns a DNSProvider instance configured for Google Cloud DNS
+// where the *dns.Service is obtained from Google's own api/dns package. This is
+// useful (and sometimes more secure) when you're using App Engine or something else
+// where you get a *dns.Service without having a service account file (so that the
+// GCE_SERVICE_ACCOUNT_FILE variable can be not set).
+func NewDNSProviderService(project string, svc *dns.Service) (*DNSProvider, error) {
+	if project == "" {
+		return nil, fmt.Errorf("Google Cloud project name missing")
+	}
+	if svc == nil {
+		return nil, fmt.Errorf("The *dns.Service must not be nil")
+	}
+	return &DNSProvider{
+		project: project,
+		client:  svc,
+	}, nil
+}
+
 // NewDNSProviderCredentials uses the supplied credentials to return a
 // DNSProvider instance configured for Google Cloud DNS.
 func NewDNSProviderCredentials(project string) (*DNSProvider, error) {

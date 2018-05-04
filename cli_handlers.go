@@ -248,7 +248,26 @@ func run(c *cli.Context) error {
 			logger().Fatal("You did not accept the TOS. Unable to proceed.")
 		}
 
-		reg, err := client.Register(accepted)
+		var reg *acme.RegistrationResource
+		var err error
+
+		if c.GlobalBool("eab") {
+			kid := c.GlobalString("kid")
+			hmacEncoded := c.GlobalString("hmac")
+
+			if kid == "" || hmacEncoded == "" {
+				logger().Fatalf("Requires arguments --kid and --hmac.")
+			}
+
+			reg, err = client.RegisterWithExternalAccountBinding(
+				accepted,
+				kid,
+				hmacEncoded,
+			)
+		} else {
+			reg, err = client.Register(accepted)
+		}
+
 		if err != nil {
 			logger().Fatalf("Could not complete registration\n\t%s", err.Error())
 		}

@@ -183,6 +183,55 @@ func (c *Client) Register(tosAgreed bool) (*RegistrationResource, error) {
 	return reg, nil
 }
 
+// Register the current account to the ACME server.
+func (c *Client) RegisterWithExternalAccountBinding(tosAgreed bool, kid string, hmacEncoded string) (*RegistrationResource, error) {
+	if c == nil || c.user == nil {
+		return nil, errors.New("acme: cannot register a nil client or user")
+	}
+	logf("[INFO] acme: Registering account (EAB) for %s", c.user.GetEmail())
+
+	accMsg := accountMessage{}
+	if c.user.GetEmail() != "" {
+		accMsg.Contact = []string{"mailto:" + c.user.GetEmail()}
+	} else {
+		accMsg.Contact = []string{}
+	}
+	accMsg.TermsOfServiceAgreed = tosAgreed
+
+	hmac, err := base64.RawURLEncoding.DecodeString(hmacEncoded)
+	if err != nil {
+		return nil, fmt.Errorf("acme: could not decode hmac key: %s", err.Error())
+	}
+
+	eabJWS, err := c.jws.signEABContent(c.directory.NewAccountURL, kid, hmac)
+	if err != nil {
+		return nil, fmt.Errorf("acme: error signing eab content: %s", err.Error())
+	}
+
+	eabPayload := eabJWS.FullSerialize()
+
+	accMsg.ExternalAccountBinding = []byte(eabPayload)
+
+	var serverReg accountMessage
+	hdr, err := postJSON(c.jws, c.directory.NewAccountURL, accMsg, &serverReg)
+	if err != nil {
+		remoteErr, ok := err.(RemoteError)
+		if ok && remoteErr.StatusCode == 409 {
+		} else {
+			return nil, err
+		}
+	}
+
+	reg := &RegistrationResource{
+		URI:  hdr.Get("Location"),
+		Body: serverReg,
+	}
+	c.jws.kid = reg.URI
+
+	return reg, nil
+}
+
+
 // ResolveAccountByKey will attempt to look up an account using the given account key
 // and return its registration resource.
 func (c *Client) ResolveAccountByKey() (*RegistrationResource, error) {

@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/xenolf/lego/acme"
@@ -37,7 +38,14 @@ func NewDNSProvider() (*DNSProvider, error) {
 // DNSProvider instance configured for cloudflare.
 func NewDNSProviderCredentials(email, key string) (*DNSProvider, error) {
 	if email == "" || key == "" {
-		return nil, fmt.Errorf("CloudFlare credentials missing")
+		missingEnvVars := []string{}
+		if email == "" {
+			missingEnvVars = append(missingEnvVars, "CLOUDFLARE_EMAIL")
+		}
+		if key == "" {
+			missingEnvVars = append(missingEnvVars, "CLOUDFLARE_API_KEY")
+		}
+		return nil, fmt.Errorf("CloudFlare credentials missing: %s", strings.Join(missingEnvVars, ","))
 	}
 
 	return &DNSProvider{

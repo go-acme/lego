@@ -122,6 +122,10 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 		client.ExcludeChallenges([]acme.Challenge{acme.HTTP01})
 	}
 
+	if client.GetExternalAccountRequired() && !c.GlobalIsSet("eab") {
+		logger().Fatal("Server requires External Account Binding. Use --eab with --kid and --hmac.")
+	}
+
 	return conf, acc, client
 }
 

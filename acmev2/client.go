@@ -149,6 +149,11 @@ func (c *Client) GetToSURL() string {
 	return c.directory.Meta.TermsOfService
 }
 
+// GetExternalAccountRequired returns the External Account Binding requirement of the Directory
+func (c *Client) GetExternalAccountRequired() bool {
+	return c.directory.Meta.ExternalAccountRequired
+}
+
 // Register the current account to the ACME server.
 func (c *Client) Register(tosAgreed bool) (*RegistrationResource, error) {
 	if c == nil || c.user == nil {

@@ -245,6 +245,8 @@ func readCSRFile(filename string) (*x509.CertificateRequest, error) {
 }
 
 func run(c *cli.Context) error {
+	var err error
+
 	conf, acc, client := setup(c)
 	if acc.Registration == nil {
 		accepted := handleTOS(c, client)
@@ -253,7 +255,6 @@ func run(c *cli.Context) error {
 		}
 
 		var reg *acme.RegistrationResource
-		var err error
 
 		if c.GlobalBool("eab") {
 			kid := c.GlobalString("kid")
@@ -305,7 +306,7 @@ func run(c *cli.Context) error {
 
 	if hasDomains {
 		// obtain a certificate, generating a new private key
-		cert, failures = client.ObtainCertificate(c.GlobalStringSlice("domains"), !c.Bool("no-bundle"), nil, c.Bool("must-staple"))
+		cert, err = client.ObtainCertificate(c.GlobalStringSlice("domains"), !c.Bool("no-bundle"), nil, c.Bool("must-staple"))
 	} else {
 		// read the CSR
 		csr, err := readCSRFile(c.GlobalString("csr"))
@@ -314,7 +315,7 @@ func run(c *cli.Context) error {
 			failures = map[string]error{"csr": err}
 		} else {
 			// obtain a certificate for this CSR
-			cert, failures = client.ObtainCertificateForCSR(*csr, !c.Bool("no-bundle"))
+			cert, err = client.ObtainCertificateForCSR(*csr, !c.Bool("no-bundle"))
 		}
 	}
 
@@ -329,7 +330,7 @@ func run(c *cli.Context) error {
 		os.Exit(1)
 	}
 
-	err := checkFolder(conf.CertPath())
+	err = checkFolder(conf.CertPath())
 	if err != nil {
 		logger().Fatalf("Could not check/create path: %s", err.Error())
 	}

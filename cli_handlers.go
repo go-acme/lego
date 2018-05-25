@@ -278,27 +278,23 @@ func run(c *cli.Context) error {
 	}
 
 	var cert acme.CertificateResource
-	var failures map[string]error
+	var err error
 
 	if hasDomains {
 		// obtain a certificate, generating a new private key
-		cert, failures = client.ObtainCertificate(c.GlobalStringSlice("domains"), !c.Bool("no-bundle"), nil, c.Bool("must-staple"))
+		cert, err = client.ObtainCertificate(c.GlobalStringSlice("domains"), !c.Bool("no-bundle"), nil, c.Bool("must-staple"))
 	} else {
 		// read the CSR
-		csr, err := readCSRFile(c.GlobalString("csr"))
-		if err != nil {
-			// we couldn't read the CSR
-			failures = map[string]error{"csr": err}
-		} else {
+		var csr *x509.CertificateRequest
+		csr, err = readCSRFile(c.GlobalString("csr"))
+		if err == nil {
 			// obtain a certificate for this CSR
-			cert, failures = client.ObtainCertificateForCSR(*csr, !c.Bool("no-bundle"))
+			cert, err = client.ObtainCertificateForCSR(*csr, !c.Bool("no-bundle"))
 		}
 	}
 
-	if len(failures) > 0 {
-		for k, v := range failures {
-			logger().Printf("[%s] Could not obtain certificates\n\t%s", k, v.Error())
-		}
+	if err != nil {
+		logger().Printf("[err] Could not obtain certificates\n\t%s", err.Error())
 
 		// Make sure to return a non-zero exit code if ObtainSANCertificate
 		// returned at least one error. Due to us not returning partial
@@ -306,7 +302,7 @@ func run(c *cli.Context) error {
 		os.Exit(1)
 	}
 
-	err := checkFolder(conf.CertPath())
+	err = checkFolder(conf.CertPath())
 	if err != nil {
 		logger().Fatalf("Could not check/create path: %s", err.Error())
 	}

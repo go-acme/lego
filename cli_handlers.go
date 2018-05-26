@@ -125,7 +125,7 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 	return conf, acc, client
 }
 
-func saveCertRes(certRes acme.CertificateResource, conf *Configuration) {
+func saveCertRes(certRes *acme.CertificateResource, conf *Configuration) {
 	// make sure no funny chars are in the cert names (like wildcards ;))
 	domainName := strings.Replace(certRes.Domain, "*", "_", -1)
 
@@ -277,28 +277,23 @@ func run(c *cli.Context) error {
 		logger().Fatal("Please specify --domains/-d (or --csr/-c if you already have a CSR)")
 	}
 
-	var cert acme.CertificateResource
-	var failures map[string]error
+	var cert *acme.CertificateResource
+	var err error
 
 	if hasDomains {
 		// obtain a certificate, generating a new private key
-		cert, failures = client.ObtainCertificate(c.GlobalStringSlice("domains"), !c.Bool("no-bundle"), nil, c.Bool("must-staple"))
+		cert, err = client.ObtainCertificate(c.GlobalStringSlice("domains"), !c.Bool("no-bundle"), nil, c.Bool("must-staple"))
 	} else {
 		// read the CSR
 		csr, err := readCSRFile(c.GlobalString("csr"))
-		if err != nil {
-			// we couldn't read the CSR
-			failures = map[string]error{"csr": err}
-		} else {
+		if err == nil {
 			// obtain a certificate for this CSR
-			cert, failures = client.ObtainCertificateForCSR(*csr, !c.Bool("no-bundle"))
+			cert, err = client.ObtainCertificateForCSR(*csr, !c.Bool("no-bundle"))
 		}
 	}
 
-	if len(failures) > 0 {
-		for k, v := range failures {
-			logger().Printf("[%s] Could not obtain certificates\n\t%s", k, v.Error())
-		}
+	if err != nil {
+		logger().Printf("Could not obtain certificates\n\t%s", err.Error())
 
 		// Make sure to return a non-zero exit code if ObtainSANCertificate
 		// returned at least one error. Due to us not returning partial
@@ -306,8 +301,7 @@ func run(c *cli.Context) error {
 		os.Exit(1)
 	}
 
-	err := checkFolder(conf.CertPath())
-	if err != nil {
+	if err := checkFolder(conf.CertPath()); err != nil {
 		logger().Fatalf("Could not check/create path: %s", err.Error())
 	}
 
@@ -322,8 +316,7 @@ func revoke(c *cli.Context) error {
 		logger().Fatalf("Account %s is not registered. Use 'run' to register a new account.\n", acc.Email)
 	}
 
-	err := checkFolder(conf.CertPath())
-	if err != nil {
+	if err := checkFolder(conf.CertPath()); err != nil {
 		logger().Fatalf("Could not check/create path: %s", err.Error())
 	}
 
@@ -386,8 +379,7 @@ func renew(c *cli.Context) error {
 	}
 
 	var certRes acme.CertificateResource
-	err = json.Unmarshal(metaBytes, &certRes)
-	if err != nil {
+	if err := json.Unmarshal(metaBytes, &certRes); err != nil {
 		logger().Fatalf("Error while marshalling the meta data for domain %s\n\t%s", domain, err.Error())
 	}
 

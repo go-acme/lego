@@ -10,37 +10,27 @@ import (
 	"net/http"
 	"sync"
 
-	"gopkg.in/square/go-jose.v1"
+	"gopkg.in/square/go-jose.v2"
 )
 
 type jws struct {
-	directoryURL string
-	privKey      crypto.PrivateKey
-	nonces       nonceManager
-}
-
-func keyAsJWK(key interface{}) *jose.JsonWebKey {
-	switch k := key.(type) {
-	case *ecdsa.PublicKey:
-		return &jose.JsonWebKey{Key: k, Algorithm: "EC"}
-	case *rsa.PublicKey:
-		return &jose.JsonWebKey{Key: k, Algorithm: "RSA"}
-
-	default:
-		return nil
-	}
+	getNonceURL string
+	privKey     crypto.PrivateKey
+	kid         string
+	nonces      nonceManager
 }
 
 // Posts a JWS signed message to the specified URL.
 // It does NOT close the response body, so the caller must
 // do that if no error was returned.
 func (j *jws) post(url string, content []byte) (*http.Response, error) {
-	signedContent, err := j.signContent(content)
+	signedContent, err := j.signContent(url, content)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to sign content -> %s", err.Error())
 	}
 
-	resp, err := httpPost(url, "application/jose+json", bytes.NewBuffer([]byte(signedContent.FullSerialize())))
+	data := bytes.NewBuffer([]byte(signedContent.FullSerialize()))
+	resp, err := httpPost(url, "application/jose+json", data)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to HTTP POST to %s -> %s", url, err.Error())
 	}
@@ -53,7 +43,7 @@ func (j *jws) post(url string, content []byte) (*http.Response, error) {
 	return resp, nil
 }
 
-func (j *jws) signContent(content []byte) (*jose.JsonWebSignature, error) {
+func (j *jws) signContent(url string, content []byte) (*jose.JSONWebSignature, error) {
 
 	var alg jose.SignatureAlgorithm
 	switch k := j.privKey.(type) {
@@ -67,11 +57,28 @@ func (j *jws) signContent(content []byte) (*jose.JsonWebSignature, error) {
 		}
 	}
 
-	signer, err := jose.NewSigner(alg, j.privKey)
+	jsonKey := jose.JSONWebKey{
+		Key:   j.privKey,
+		KeyID: j.kid,
+	}
+
+	signKey := jose.SigningKey{
+		Algorithm: alg,
+		Key:       jsonKey,
+	}
+	options := jose.SignerOptions{
+		NonceSource:  j,
+		ExtraHeaders: make(map[jose.HeaderKey]interface{}),
+	}
+	options.ExtraHeaders["url"] = url
+	if j.kid == "" {
+		options.EmbedJWK = true
+	}
+
+	signer, err := jose.NewSigner(signKey, &options)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create jose signer -> %s", err.Error())
 	}
-	signer.SetNonceSource(j)
 
 	signed, err := signer.Sign(content)
 	if err != nil {
@@ -80,12 +87,41 @@ func (j *jws) signContent(content []byte) (*jose.JsonWebSignature, error) {
 	return signed, nil
 }
 
+func (j *jws) signEABContent(url, kid string, hmac []byte) (*jose.JSONWebSignature, error) {
+	jwk := jose.JSONWebKey{Key: j.privKey}
+	jwkJSON, err := jwk.Public().MarshalJSON()
+	if err != nil {
+		return nil, fmt.Errorf("acme: error encoding eab jwk key: %s", err.Error())
+	}
+
+	signer, err := jose.NewSigner(
+		jose.SigningKey{Algorithm: jose.HS256, Key: hmac},
+		&jose.SignerOptions{
+			EmbedJWK: false,
+			ExtraHeaders: map[jose.HeaderKey]interface{}{
+				"kid": kid,
+				"url": url,
+			},
+		},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create External Account Binding jose signer -> %s", err.Error())
+	}
+
+	signed, err := signer.Sign(jwkJSON)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to External Account Binding sign content -> %s", err.Error())
+	}
+
+	return signed, nil
+}
+
 func (j *jws) Nonce() (string, error) {
 	if nonce, ok := j.nonces.Pop(); ok {
 		return nonce, nil
 	}
 
-	return getNonce(j.directoryURL)
+	return getNonce(j.getNonceURL)
 }
 
 type nonceManager struct {
@@ -124,7 +160,7 @@ func getNonce(url string) (string, error) {
 func getNonceFromResponse(resp *http.Response) (string, error) {
 	nonce := resp.Header.Get("Replay-Nonce")
 	if nonce == "" {
-		return "", fmt.Errorf("Server did not respond with a proper nonce header.")
+		return "", fmt.Errorf("Server did not respond with a proper nonce header")
 	}
 
 	return nonce, nil

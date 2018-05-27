@@ -29,6 +29,7 @@ var defaultNameservers = []string{
 	"google-public-dns-b.google.com:53",
 }
 
+// RecursiveNameservers are used to pre-check DNS propagations
 var RecursiveNameservers = getNameservers(defaultResolvConf, defaultNameservers)
 
 // DNSTimeout is used to override the default DNS timeout of 10 seconds.
@@ -57,8 +58,7 @@ func getNameservers(path string, defaults []string) []string {
 func DNS01Record(domain, keyAuth string) (fqdn string, value string, ttl int) {
 	keyAuthShaBytes := sha256.Sum256([]byte(keyAuth))
 	// base64URL encoding without padding
-	keyAuthSha := base64.URLEncoding.EncodeToString(keyAuthShaBytes[:sha256.Size])
-	value = strings.TrimRight(keyAuthSha, "=")
+	value = base64.RawURLEncoding.EncodeToString(keyAuthShaBytes[:sha256.Size])
 	ttl = 120
 	fqdn = fmt.Sprintf("_acme-challenge.%s.", domain)
 	return
@@ -114,7 +114,7 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 		return err
 	}
 
-	return s.validate(s.jws, domain, chlng.URI, challenge{Resource: "challenge", Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
+	return s.validate(s.jws, domain, chlng.URL, challenge{Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
 }
 
 // checkDNSPropagation checks if the expected TXT record has been propagated to all authoritative nameservers.

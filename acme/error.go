@@ -1,6 +1,7 @@
 package acme
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -9,8 +10,8 @@ import (
 )
 
 const (
-	tosAgreementError = "Must agree to subscriber agreement before any further actions"
-	invalidNonceError = "JWS has invalid anti-replay nonce"
+	tosAgreementError = "Terms of service have changed"
+	invalidNonceError = "urn:ietf:params:acme:error:badNonce"
 )
 
 // RemoteError is the base type for all errors specific to the ACME protocol.
@@ -42,27 +43,23 @@ type domainError struct {
 	Error  error
 }
 
-type challengeError struct {
-	RemoteError
-	records []validationRecord
-}
+// ObtainError is returned when there are specific errors available
+// per domain. For example in ObtainCertificate
+type ObtainError map[string]error
 
-func (c challengeError) Error() string {
-
-	var errStr string
-	for _, validation := range c.records {
-		errStr = errStr + fmt.Sprintf("\tValidation for %s:%s\n\tResolved to:\n\t\t%s\n\tUsed: %s\n\n",
-			validation.Hostname, validation.Port, strings.Join(validation.ResolvedAddresses, "\n\t\t"), validation.UsedAddress)
+func (e ObtainError) Error() string {
+	buffer := bytes.NewBufferString("acme: Error -> One or more domains had a problem:\n")
+	for dom, err := range e {
+		buffer.WriteString(fmt.Sprintf("[%s] %s\n", dom, err))
 	}
-
-	return fmt.Sprintf("%s\nError Detail:\n%s", c.RemoteError.Error(), errStr)
+	return buffer.String()
 }
 
 func handleHTTPError(resp *http.Response) error {
 	var errorDetail RemoteError
 
 	contentType := resp.Header.Get("Content-Type")
-	if contentType == "application/json" || contentType == "application/problem+json" {
+	if contentType == "application/json" || strings.HasPrefix(contentType, "application/problem+json") {
 		err := json.NewDecoder(resp.Body).Decode(&errorDetail)
 		if err != nil {
 			return err
@@ -82,7 +79,7 @@ func handleHTTPError(resp *http.Response) error {
 		return TOSError{errorDetail}
 	}
 
-	if errorDetail.StatusCode == http.StatusBadRequest && strings.HasPrefix(errorDetail.Detail, invalidNonceError) {
+	if errorDetail.StatusCode == http.StatusBadRequest && errorDetail.Type == invalidNonceError {
 		return NonceError{errorDetail}
 	}
 
@@ -90,5 +87,5 @@ func handleHTTPError(resp *http.Response) error {
 }
 
 func handleChallengeError(chlng challenge) error {
-	return challengeError{chlng.Error, chlng.ValidationRecords}
+	return chlng.Error
 }

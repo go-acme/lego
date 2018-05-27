@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -14,28 +13,13 @@ import (
 	"time"
 
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/log"
 )
 
 // GleSYS API reference: https://github.com/GleSYS/API/wiki/API-Documentation
 
-// domainAPI is the GleSYS API endpoint used by Present and CleanUp. 
+// domainAPI is the GleSYS API endpoint used by Present and CleanUp.
 const domainAPI = "https://api.glesys.com/domain"
-
-var (
-	// Logger is used to log API communication results;
-	// if nil, the default log.Logger is used.
-	Logger *log.Logger
-)
-
-// logf writes a log entry. It uses Logger if not
-// nil, otherwise it uses the default log.Logger.
-func logf(format string, args ...interface{}) {
-	if Logger != nil {
-		Logger.Printf(format, args...)
-	} else {
-		log.Printf(format, args...)
-	}
-}
 
 // DNSProvider is an implementation of the
 // acme.ChallengeProviderTimeout interface that uses GleSYS
@@ -187,14 +171,14 @@ func (d *DNSProvider) sendRequest(method string, resource string, payload interf
 
 func (d *DNSProvider) addTXTRecord(fqdn string, domain string, name string, value string, ttl int) (int, error) {
 	response, err := d.sendRequest("POST", "addrecord", addRecordRequest{
-		Domainname:    domain,
-		Host:          name,
-		Type:          "TXT",
-		Data:          value,
-		Ttl:           ttl,
+		Domainname: domain,
+		Host:       name,
+		Type:       "TXT",
+		Data:       value,
+		Ttl:        ttl,
 	})
 	if response != nil && response.Response.Status.Code == 200 {
-		logf("[INFO][%s] GleSYS DNS: Successfully created recordid %d", fqdn, response.Response.Record.Recordid)
+		log.Printf("[INFO][%s] GleSYS DNS: Successfully created recordid %d", fqdn, response.Response.Record.Recordid)
 		return response.Response.Record.Recordid, nil
 	}
 	return 0, err
@@ -205,7 +189,7 @@ func (d *DNSProvider) deleteTXTRecord(fqdn string, recordid int) error {
 		Recordid: recordid,
 	})
 	if response != nil && response.Response.Status.Code == 200 {
-		logf("[INFO][%s] GleSYS DNS: Successfully deleted recordid %d", fqdn, recordid)
+		log.Printf("[INFO][%s] GleSYS DNS: Successfully deleted recordid %d", fqdn, recordid)
 	}
 	return err
 }

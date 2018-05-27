@@ -16,6 +16,7 @@ import (
 
 	"github.com/urfave/cli"
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/log"
 	"github.com/xenolf/lego/providers/dns"
 	"github.com/xenolf/lego/providers/http/memcached"
 	"github.com/xenolf/lego/providers/http/webroot"
@@ -51,12 +52,12 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 
 	err := checkFolder(c.GlobalString("path"))
 	if err != nil {
-		logger().Fatalf("Could not check/create path: %s", err.Error())
+		log.Fatalf("Could not check/create path: %s", err.Error())
 	}
 
 	conf := NewConfiguration(c)
 	if len(c.GlobalString("email")) == 0 {
-		logger().Fatal("You have to pass an account (email address) to the program using --email or -m")
+		log.Fatal("You have to pass an account (email address) to the program using --email or -m")
 	}
 
 	//TODO: move to account struct? Currently MUST pass email.
@@ -64,14 +65,14 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 
 	keyType, err := conf.KeyType()
 	if err != nil {
-		logger().Fatal(err.Error())
+		log.Fatal(err)
 	}
 
 	acme.UserAgent = fmt.Sprintf("le-go/cli %s", c.App.Version)
 
 	client, err := acme.NewClient(c.GlobalString("server"), acc, keyType)
 	if err != nil {
-		logger().Fatalf("Could not create client: %s", err.Error())
+		log.Fatalf("Could not create client: %s", err.Error())
 	}
 
 	if len(c.GlobalStringSlice("exclude")) > 0 {
@@ -81,7 +82,7 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 	if c.GlobalIsSet("webroot") {
 		provider, err := webroot.NewHTTPProvider(c.GlobalString("webroot"))
 		if err != nil {
-			logger().Fatal(err)
+			log.Fatal(err)
 		}
 
 		client.SetChallengeProvider(acme.HTTP01, provider)
@@ -93,7 +94,7 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 	if c.GlobalIsSet("memcached-host") {
 		provider, err := memcached.NewMemcachedProvider(c.GlobalStringSlice("memcached-host"))
 		if err != nil {
-			logger().Fatal(err)
+			log.Fatal(err)
 		}
 
 		client.SetChallengeProvider(acme.HTTP01, provider)
@@ -104,7 +105,7 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 	}
 	if c.GlobalIsSet("http") {
 		if strings.Index(c.GlobalString("http"), ":") == -1 {
-			logger().Fatalf("The --http switch only accepts interface:port or :port for its argument.")
+			log.Fatalf("The --http switch only accepts interface:port or :port for its argument.")
 		}
 		client.SetHTTPAddress(c.GlobalString("http"))
 	}
@@ -112,7 +113,7 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 	if c.GlobalIsSet("dns") {
 		provider, err := dns.NewDNSChallengeProviderByName(c.GlobalString("dns"))
 		if err != nil {
-			logger().Fatal(err)
+			log.Fatal(err)
 		}
 
 		client.SetChallengeProvider(acme.DNS01, provider)
@@ -143,13 +144,13 @@ func saveCertRes(certRes *acme.CertificateResource, conf *Configuration) {
 
 	err := ioutil.WriteFile(certOut, certRes.Certificate, 0600)
 	if err != nil {
-		logger().Fatalf("Unable to save Certificate for domain %s\n\t%s", certRes.Domain, err.Error())
+		log.Fatalf("Unable to save Certificate for domain %s\n\t%s", certRes.Domain, err.Error())
 	}
 
 	if certRes.IssuerCertificate != nil {
 		err = ioutil.WriteFile(issuerOut, certRes.IssuerCertificate, 0600)
 		if err != nil {
-			logger().Fatalf("Unable to save IssuerCertificate for domain %s\n\t%s", certRes.Domain, err.Error())
+			log.Fatalf("Unable to save IssuerCertificate for domain %s\n\t%s", certRes.Domain, err.Error())
 		}
 	}
 
@@ -157,29 +158,29 @@ func saveCertRes(certRes *acme.CertificateResource, conf *Configuration) {
 		// if we were given a CSR, we don't know the private key
 		err = ioutil.WriteFile(privOut, certRes.PrivateKey, 0600)
 		if err != nil {
-			logger().Fatalf("Unable to save PrivateKey for domain %s\n\t%s", certRes.Domain, err.Error())
+			log.Fatalf("Unable to save PrivateKey for domain %s\n\t%s", certRes.Domain, err.Error())
 		}
 
 		if conf.context.GlobalBool("pem") {
 			err = ioutil.WriteFile(pemOut, bytes.Join([][]byte{certRes.Certificate, certRes.PrivateKey}, nil), 0600)
 			if err != nil {
-				logger().Fatalf("Unable to save Certificate and PrivateKey in .pem for domain %s\n\t%s", certRes.Domain, err.Error())
+				log.Fatalf("Unable to save Certificate and PrivateKey in .pem for domain %s\n\t%s", certRes.Domain, err.Error())
 			}
 		}
 
 	} else if conf.context.GlobalBool("pem") {
 		// we don't have the private key; can't write the .pem file
-		logger().Fatalf("Unable to save pem without private key for domain %s\n\t%s; are you using a CSR?", certRes.Domain, err.Error())
+		log.Fatalf("Unable to save pem without private key for domain %s\n\t%s; are you using a CSR?", certRes.Domain, err.Error())
 	}
 
 	jsonBytes, err := json.MarshalIndent(certRes, "", "\t")
 	if err != nil {
-		logger().Fatalf("Unable to marshal CertResource for domain %s\n\t%s", certRes.Domain, err.Error())
+		log.Fatalf("Unable to marshal CertResource for domain %s\n\t%s", certRes.Domain, err.Error())
 	}
 
 	err = ioutil.WriteFile(metaOut, jsonBytes, 0600)
 	if err != nil {
-		logger().Fatalf("Unable to save CertResource for domain %s\n\t%s", certRes.Domain, err.Error())
+		log.Fatalf("Unable to save CertResource for domain %s\n\t%s", certRes.Domain, err.Error())
 	}
 }
 
@@ -190,26 +191,26 @@ func handleTOS(c *cli.Context, client *acme.Client) bool {
 	}
 
 	reader := bufio.NewReader(os.Stdin)
-	logger().Printf("Please review the TOS at %s", client.GetToSURL())
+	log.Printf("Please review the TOS at %s", client.GetToSURL())
 
 	for {
-		logger().Println("Do you accept the TOS? Y/n")
+		log.Println("Do you accept the TOS? Y/n")
 		text, err := reader.ReadString('\n')
 		if err != nil {
-			logger().Fatalf("Could not read from console: %s", err.Error())
+			log.Fatalf("Could not read from console: %s", err.Error())
 		}
 
 		text = strings.Trim(text, "\r\n")
 
 		if text == "n" {
-			logger().Fatal("You did not accept the TOS. Unable to proceed.")
+			log.Fatal("You did not accept the TOS. Unable to proceed.")
 		}
 
 		if text == "Y" || text == "y" || text == "" {
 			return true
 		}
 
-		logger().Println("Your input was invalid. Please answer with one of Y/y, n or by pressing enter.")
+		log.Println("Your input was invalid. Please answer with one of Y/y, n or by pressing enter.")
 	}
 }
 
@@ -251,7 +252,7 @@ func run(c *cli.Context) error {
 	if acc.Registration == nil {
 		accepted := handleTOS(c, client)
 		if !accepted {
-			logger().Fatal("You did not accept the TOS. Unable to proceed.")
+			log.Fatal("You did not accept the TOS. Unable to proceed.")
 		}
 
 		var reg *acme.RegistrationResource
@@ -274,14 +275,14 @@ func run(c *cli.Context) error {
 		}
 
 		if err != nil {
-			logger().Fatalf("Could not complete registration\n\t%s", err.Error())
+			log.Fatalf("Could not complete registration\n\t%s", err.Error())
 		}
 
 		acc.Registration = reg
 		acc.Save()
 
-		logger().Print("!!!! HEADS UP !!!!")
-		logger().Printf(`
+		log.Print("!!!! HEADS UP !!!!")
+		log.Printf(`
 		Your account credentials have been saved in your Let's Encrypt
 		configuration directory at "%s".
 		You should make a secure backup	of this folder now. This
@@ -295,10 +296,10 @@ func run(c *cli.Context) error {
 	hasDomains := len(c.GlobalStringSlice("domains")) > 0
 	hasCsr := len(c.GlobalString("csr")) > 0
 	if hasDomains && hasCsr {
-		logger().Fatal("Please specify either --domains/-d or --csr/-c, but not both")
+		log.Fatal("Please specify either --domains/-d or --csr/-c, but not both")
 	}
 	if !hasDomains && !hasCsr {
-		logger().Fatal("Please specify --domains/-d (or --csr/-c if you already have a CSR)")
+		log.Fatal("Please specify --domains/-d (or --csr/-c if you already have a CSR)")
 	}
 
 	var cert *acme.CertificateResource
@@ -316,7 +317,7 @@ func run(c *cli.Context) error {
 	}
 
 	if err != nil {
-		logger().Printf("Could not obtain certificates\n\t%s", err.Error())
+		log.Printf("Could not obtain certificates\n\t%s", err.Error())
 
 		// Make sure to return a non-zero exit code if ObtainSANCertificate
 		// returned at least one error. Due to us not returning partial
@@ -325,7 +326,7 @@ func run(c *cli.Context) error {
 	}
 
 	if err = checkFolder(conf.CertPath()); err != nil {
-		logger().Fatalf("Could not check/create path: %s", err.Error())
+		log.Fatalf("Could not check/create path: %s", err.Error())
 	}
 
 	saveCertRes(cert, conf)
@@ -336,24 +337,24 @@ func run(c *cli.Context) error {
 func revoke(c *cli.Context) error {
 	conf, acc, client := setup(c)
 	if acc.Registration == nil {
-		logger().Fatalf("Account %s is not registered. Use 'run' to register a new account.\n", acc.Email)
+		log.Fatalf("Account %s is not registered. Use 'run' to register a new account.\n", acc.Email)
 	}
 
 	if err := checkFolder(conf.CertPath()); err != nil {
-		logger().Fatalf("Could not check/create path: %s", err.Error())
+		log.Fatalf("Could not check/create path: %s", err.Error())
 	}
 
 	for _, domain := range c.GlobalStringSlice("domains") {
-		logger().Printf("Trying to revoke certificate for domain %s", domain)
+		log.Printf("Trying to revoke certificate for domain %s", domain)
 
 		certPath := path.Join(conf.CertPath(), domain+".crt")
 		certBytes, err := ioutil.ReadFile(certPath)
 
 		err = client.RevokeCertificate(certBytes)
 		if err != nil {
-			logger().Fatalf("Error while revoking the certificate for domain %s\n\t%s", domain, err.Error())
+			log.Fatalf("Error while revoking the certificate for domain %s\n\t%s", domain, err.Error())
 		} else {
-			logger().Print("Certificate was revoked.")
+			log.Print("Certificate was revoked.")
 		}
 	}
 
@@ -363,11 +364,11 @@ func revoke(c *cli.Context) error {
 func renew(c *cli.Context) error {
 	conf, acc, client := setup(c)
 	if acc.Registration == nil {
-		logger().Fatalf("Account %s is not registered. Use 'run' to register a new account.\n", acc.Email)
+		log.Fatalf("Account %s is not registered. Use 'run' to register a new account.\n", acc.Email)
 	}
 
 	if len(c.GlobalStringSlice("domains")) <= 0 {
-		logger().Fatal("Please specify at least one domain.")
+		log.Fatal("Please specify at least one domain.")
 	}
 
 	domain := c.GlobalStringSlice("domains")[0]
@@ -382,13 +383,13 @@ func renew(c *cli.Context) error {
 
 	certBytes, err := ioutil.ReadFile(certPath)
 	if err != nil {
-		logger().Fatalf("Error while loading the certificate for domain %s\n\t%s", domain, err.Error())
+		log.Fatalf("Error while loading the certificate for domain %s\n\t%s", domain, err.Error())
 	}
 
 	if c.IsSet("days") {
 		expTime, err := acme.GetPEMCertExpiration(certBytes)
 		if err != nil {
-			logger().Printf("Could not get Certification expiration for domain %s", domain)
+			log.Printf("Could not get Certification expiration for domain %s", domain)
 		}
 
 		if int(expTime.Sub(time.Now()).Hours()/24.0) > c.Int("days") {
@@ -398,18 +399,18 @@ func renew(c *cli.Context) error {
 
 	metaBytes, err := ioutil.ReadFile(metaPath)
 	if err != nil {
-		logger().Fatalf("Error while loading the meta data for domain %s\n\t%s", domain, err.Error())
+		log.Fatalf("Error while loading the meta data for domain %s\n\t%s", domain, err.Error())
 	}
 
 	var certRes acme.CertificateResource
 	if err := json.Unmarshal(metaBytes, &certRes); err != nil {
-		logger().Fatalf("Error while marshalling the meta data for domain %s\n\t%s", domain, err.Error())
+		log.Fatalf("Error while marshalling the meta data for domain %s\n\t%s", domain, err.Error())
 	}
 
 	if c.Bool("reuse-key") {
 		keyBytes, err := ioutil.ReadFile(privPath)
 		if err != nil {
-			logger().Fatalf("Error while loading the private key for domain %s\n\t%s", domain, err.Error())
+			log.Fatalf("Error while loading the private key for domain %s\n\t%s", domain, err.Error())
 		}
 		certRes.PrivateKey = keyBytes
 	}
@@ -418,7 +419,7 @@ func renew(c *cli.Context) error {
 
 	newCert, err := client.RenewCertificate(certRes, !c.Bool("no-bundle"), c.Bool("must-staple"))
 	if err != nil {
-		logger().Fatalf("%s", err.Error())
+		log.Fatal(err)
 	}
 
 	saveCertRes(newCert, conf)

@@ -15,7 +15,7 @@ import (
 	"time"
 
 	"github.com/urfave/cli"
-	"github.com/xenolf/lego/acmev2"
+	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/providers/dns"
 	"github.com/xenolf/lego/providers/http/memcached"
 	"github.com/xenolf/lego/providers/http/webroot"
@@ -302,7 +302,6 @@ func run(c *cli.Context) error {
 	}
 
 	var cert *acme.CertificateResource
-	var err error
 
 	if hasDomains {
 		// obtain a certificate, generating a new private key

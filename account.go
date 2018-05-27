@@ -7,7 +7,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/xenolf/lego/acmev2"
+	"github.com/xenolf/lego/acme"
 )
 
 // Account represents a users local saved credentials

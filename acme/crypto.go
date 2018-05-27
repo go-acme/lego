@@ -18,10 +18,10 @@ import (
 	"io/ioutil"
 	"math/big"
 	"net/http"
-	"strings"
 	"time"
 
 	"golang.org/x/crypto/ocsp"
+	jose "gopkg.in/square/go-jose.v2"
 )
 
 // KeyType represents the key algo as well as the key size or curve to use.
@@ -135,9 +135,9 @@ func getKeyAuthorization(token string, key interface{}) (string, error) {
 	}
 
 	// Generate the Key Authorization for the challenge
-	jwk := keyAsJWK(publicKey)
+	jwk := &jose.JSONWebKey{Key: publicKey}
 	if jwk == nil {
-		return "", errors.New("Could not generate JWK from key.")
+		return "", errors.New("Could not generate JWK from key")
 	}
 	thumbBytes, err := jwk.Thumbprint(crypto.SHA256)
 	if err != nil {
@@ -145,11 +145,7 @@ func getKeyAuthorization(token string, key interface{}) (string, error) {
 	}
 
 	// unpad the base64URL
-	keyThumb := base64.URLEncoding.EncodeToString(thumbBytes)
-	index := strings.Index(keyThumb, "=")
-	if index != -1 {
-		keyThumb = keyThumb[:index]
-	}
+	keyThumb := base64.RawURLEncoding.EncodeToString(thumbBytes)
 
 	return token + "." + keyThumb, nil
 }
@@ -176,7 +172,7 @@ func parsePEMBundle(bundle []byte) ([]*x509.Certificate, error) {
 	}
 
 	if len(certificates) == 0 {
-		return nil, errors.New("No certificates were found while parsing the bundle.")
+		return nil, errors.New("No certificates were found while parsing the bundle")
 	}
 
 	return certificates, nil

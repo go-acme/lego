@@ -4,7 +4,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path"
 	"strings"
@@ -12,18 +11,8 @@ import (
 
 	"github.com/urfave/cli"
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/log"
 )
-
-// Logger is used to log errors; if nil, the default log.Logger is used.
-var Logger *log.Logger
-
-// logger is an helper function to retrieve the available logger
-func logger() *log.Logger {
-	if Logger == nil {
-		Logger = log.New(os.Stderr, "", log.LstdFlags)
-	}
-	return Logger
-}
 
 var gittag string
 
@@ -49,7 +38,7 @@ func main() {
 
 	app.Before = func(c *cli.Context) error {
 		if c.GlobalString("path") == "" {
-			logger().Fatal("Could not determine current working directory. Please pass --path.")
+			log.Fatal("Could not determine current working directory. Please pass --path.")
 		}
 		return nil
 	}

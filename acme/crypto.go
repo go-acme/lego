@@ -9,6 +9,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
+	"encoding/asn1"
 	"encoding/base64"
 	"encoding/pem"
 	"errors"
@@ -19,8 +20,6 @@ import (
 	"net/http"
 	"strings"
 	"time"
-
-	"encoding/asn1"
 
 	"golang.org/x/crypto/ocsp"
 )

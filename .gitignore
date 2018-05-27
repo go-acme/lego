@@ -4,3 +4,4 @@ lego
 .idea
 dist/
 .vscode/
+vendor/

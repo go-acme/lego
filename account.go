@@ -72,7 +72,10 @@ func NewAccount(email string, conf *Configuration) *Account {
 		}
 
 		acc.Registration = reg
-		acc.Save()
+		err = acc.Save()
+		if err != nil {
+			log.Fatalf("Could not save account for %s. Registration is nil -> %#v", email, err)
+		}
 	}
 
 	if acc.conf == nil {

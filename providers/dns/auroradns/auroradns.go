@@ -2,12 +2,13 @@ package auroradns
 
 import (
 	"fmt"
+	"os"
+	"sync"
+
 	"github.com/edeckers/auroradnsclient"
 	"github.com/edeckers/auroradnsclient/records"
 	"github.com/edeckers/auroradnsclient/zones"
 	"github.com/xenolf/lego/acme"
-	"os"
-	"sync"
 )
 
 // DNSProvider describes a provider for AuroraDNS
@@ -59,7 +60,7 @@ func (provider *DNSProvider) getZoneInformationByName(name string) (zones.ZoneRe
 		}
 	}
 
-	return zones.ZoneRecord{}, fmt.Errorf("Could not find Zone record")
+	return zones.ZoneRecord{}, fmt.Errorf("could not find Zone record")
 }
 
 // Present creates a record with a secret
@@ -83,6 +84,9 @@ func (provider *DNSProvider) Present(domain, token, keyAuth string) error {
 	authZone = acme.UnFqdn(authZone)
 
 	zoneRecord, err := provider.getZoneInformationByName(authZone)
+	if err != nil {
+		return fmt.Errorf("could not create record: %v", err)
+	}
 
 	reqData :=
 		records.CreateRecordRequest{
@@ -94,7 +98,7 @@ func (provider *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	respData, err := provider.client.CreateRecord(zoneRecord.ID, reqData)
 	if err != nil {
-		return fmt.Errorf("Could not create record: '%s'.", err)
+		return fmt.Errorf("could not create record: %v", err)
 	}
 
 	provider.recordIDsMu.Lock()
@@ -113,12 +117,12 @@ func (provider *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	provider.recordIDsMu.Unlock()
 
 	if !ok {
-		return fmt.Errorf("Unknown recordID for '%s'", fqdn)
+		return fmt.Errorf("unknown recordID for %q", fqdn)
 	}
 
 	authZone, err := acme.FindZoneByFqdn(acme.ToFqdn(domain), acme.RecursiveNameservers)
 	if err != nil {
-		return fmt.Errorf("Could not determine zone for domain: '%s'. %s", domain, err)
+		return fmt.Errorf("could not determine zone for domain: %q. %v", domain, err)
 	}
 
 	authZone = acme.UnFqdn(authZone)

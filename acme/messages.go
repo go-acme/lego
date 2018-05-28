@@ -78,9 +78,6 @@ type csrMessage struct {
 	Csr string `json:"csr"`
 }
 
-type emptyObjectMessage struct {
-}
-
 type revokeCertMessage struct {
 	Certificate string `json:"certificate"`
 }

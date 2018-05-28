@@ -28,7 +28,7 @@ func TestGenerateCSR(t *testing.T) {
 	if err != nil {
 		t.Error("Error generating CSR:", err)
 	}
-	if csr == nil || len(csr) == 0 {
+	if len(csr) == 0 {
 		t.Error("Expected CSR with data, but it was nil or length 0")
 	}
 }

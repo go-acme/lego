@@ -16,7 +16,7 @@ type DNSProvider struct {
 	client *egoscale.Client
 }
 
-// Credentials must be passed in the environment variables:
+// NewDNSProvider Credentials must be passed in the environment variables:
 // EXOSCALE_API_KEY, EXOSCALE_API_SECRET, EXOSCALE_ENDPOINT.
 func NewDNSProvider() (*DNSProvider, error) {
 	key := os.Getenv("EXOSCALE_API_KEY")
@@ -25,7 +25,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderClient(key, secret, endpoint)
 }
 
-// Uses the supplied parameters to return a DNSProvider instance
+// NewDNSProviderClient Uses the supplied parameters to return a DNSProvider instance
 // configured for Exoscale.
 func NewDNSProviderClient(key, secret, endpoint string) (*DNSProvider, error) {
 	if key == "" || secret == "" {
@@ -48,7 +48,7 @@ func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 		return err
 	}
 
-	recordID, err := c.FindExistingRecordId(zone, recordName)
+	recordID, err := c.FindExistingRecordID(zone, recordName)
 	if err != nil {
 		return err
 	}
@@ -84,7 +84,7 @@ func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return err
 	}
 
-	recordID, err := c.FindExistingRecordId(zone, recordName)
+	recordID, err := c.FindExistingRecordID(zone, recordName)
 	if err != nil {
 		return err
 	}
@@ -99,9 +99,9 @@ func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-// Query Exoscale to find an existing record for this name.
+// FindExistingRecordID Query Exoscale to find an existing record for this name.
 // Returns nil if no record could be found
-func (c *DNSProvider) FindExistingRecordId(zone, recordName string) (int64, error) {
+func (c *DNSProvider) FindExistingRecordID(zone, recordName string) (int64, error) {
 	records, err := c.client.GetRecords(zone)
 	if err != nil {
 		return -1, errors.New("Error while retrievening DNS records: " + err.Error())
@@ -114,7 +114,7 @@ func (c *DNSProvider) FindExistingRecordId(zone, recordName string) (int64, erro
 	return 0, nil
 }
 
-// Extract DNS zone and DNS entry name
+// FindZoneAndRecordName Extract DNS zone and DNS entry name
 func (c *DNSProvider) FindZoneAndRecordName(fqdn, domain string) (string, string, error) {
 	zone, err := acme.FindZoneByFqdn(acme.ToFqdn(domain), acme.RecursiveNameservers)
 	if err != nil {

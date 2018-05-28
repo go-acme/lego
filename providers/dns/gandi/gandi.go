@@ -74,15 +74,18 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if ttl < 300 {
 		ttl = 300 // 300 is gandi minimum value for ttl
 	}
+
 	// find authZone and Gandi zone_id for fqdn
 	authZone, err := findZoneByFqdn(fqdn, acme.RecursiveNameservers)
 	if err != nil {
 		return fmt.Errorf("Gandi DNS: findZoneByFqdn failure: %v", err)
 	}
+
 	zoneID, err := d.getZoneID(authZone)
 	if err != nil {
 		return err
 	}
+
 	// determine name of TXT record
 	if !strings.HasSuffix(
 		strings.ToLower(fqdn), strings.ToLower("."+authZone)) {
@@ -90,40 +93,49 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 			"Gandi DNS: unexpected authZone %s for fqdn %s", authZone, fqdn)
 	}
 	name := fqdn[:len(fqdn)-len("."+authZone)]
+
 	// acquire lock and check there is not a challenge already in
 	// progress for this value of authZone
 	d.inProgressMu.Lock()
 	defer d.inProgressMu.Unlock()
+
 	if _, ok := d.inProgressAuthZones[authZone]; ok {
 		return fmt.Errorf(
 			"Gandi DNS: challenge already in progress for authZone %s",
 			authZone)
 	}
+
 	// perform API actions to create and activate new gandi zone
 	// containing the required TXT record
 	newZoneName := fmt.Sprintf(
 		"%s [ACME Challenge %s]",
 		acme.UnFqdn(authZone), time.Now().Format(time.RFC822Z))
+
 	newZoneID, err := d.cloneZone(zoneID, newZoneName)
 	if err != nil {
 		return err
 	}
+
 	newZoneVersion, err := d.newZoneVersion(newZoneID)
 	if err != nil {
 		return err
 	}
+
 	err = d.addTXTRecord(newZoneID, newZoneVersion, name, value, ttl)
 	if err != nil {
 		return err
 	}
+
 	err = d.setZoneVersion(newZoneID, newZoneVersion)
 	if err != nil {
 		return err
 	}
+
 	err = d.setZone(authZone, newZoneID)
 	if err != nil {
 		return err
 	}
+
 	// save data necessary for CleanUp
 	d.inProgressFQDNs[fqdn] = inProgressInfo{
 		zoneID:    zoneID,
@@ -142,25 +154,25 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	// acquire lock and retrieve zoneID, newZoneID and authZone
 	d.inProgressMu.Lock()
 	defer d.inProgressMu.Unlock()
+
 	if _, ok := d.inProgressFQDNs[fqdn]; !ok {
 		// if there is no cleanup information then just return
 		return nil
 	}
+
 	zoneID := d.inProgressFQDNs[fqdn].zoneID
 	newZoneID := d.inProgressFQDNs[fqdn].newZoneID
 	authZone := d.inProgressFQDNs[fqdn].authZone
 	delete(d.inProgressFQDNs, fqdn)
 	delete(d.inProgressAuthZones, authZone)
+
 	// perform API actions to restore old gandi zone for authZone
 	err := d.setZone(authZone, zoneID)
 	if err != nil {
 		return err
 	}
-	err = d.deleteZone(newZoneID)
-	if err != nil {
-		return err
-	}
-	return nil
+
+	return d.deleteZone(newZoneID)
 }
 
 // Timeout returns the values (40*time.Minute, 60*time.Second) which
@@ -259,15 +271,18 @@ func (e rpcError) Error() string {
 
 func httpPost(url string, bodyType string, body io.Reader) ([]byte, error) {
 	client := http.Client{Timeout: 60 * time.Second}
+
 	resp, err := client.Post(url, bodyType, body)
 	if err != nil {
 		return nil, fmt.Errorf("Gandi DNS: HTTP Post Error: %v", err)
 	}
 	defer resp.Body.Close()
+
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("Gandi DNS: HTTP Post Error: %v", err)
 	}
+
 	return b, nil
 }
 
@@ -281,12 +296,14 @@ func rpcCall(call *methodCall, resp response) error {
 	if err != nil {
 		return fmt.Errorf("Gandi DNS: Marshal Error: %v", err)
 	}
+
 	// post
 	b = append([]byte(`<?xml version="1.0"?>`+"\n"), b...)
 	respBody, err := httpPost(endpoint, "text/xml", bytes.NewReader(b))
 	if err != nil {
 		return err
 	}
+
 	// unmarshal
 	err = xml.Unmarshal(respBody, resp)
 	if err != nil {
@@ -313,12 +330,14 @@ func (d *DNSProvider) getZoneID(domain string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+
 	var zoneID int
 	for _, member := range resp.StructMembers {
 		if member.Name == "zone_id" {
 			zoneID = member.ValueInt
 		}
 	}
+
 	if zoneID == 0 {
 		return 0, fmt.Errorf(
 			"Gandi DNS: Could not determine zone_id for %s", domain)
@@ -346,12 +365,14 @@ func (d *DNSProvider) cloneZone(zoneID int, name string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+
 	var newZoneID int
 	for _, member := range resp.StructMembers {
 		if member.Name == "id" {
 			newZoneID = member.ValueInt
 		}
 	}
+
 	if newZoneID == 0 {
 		return 0, fmt.Errorf("Gandi DNS: Could not determine cloned zone_id")
 	}
@@ -370,6 +391,7 @@ func (d *DNSProvider) newZoneVersion(zoneID int) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+
 	if resp.Value == 0 {
 		return 0, fmt.Errorf("Gandi DNS: Could not create new zone version")
 	}
@@ -402,10 +424,7 @@ func (d *DNSProvider) addTXTRecord(zoneID int, version int, name string, value s
 			},
 		},
 	}, resp)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 func (d *DNSProvider) setZoneVersion(zoneID int, version int) error {
@@ -421,6 +440,7 @@ func (d *DNSProvider) setZoneVersion(zoneID int, version int) error {
 	if err != nil {
 		return err
 	}
+
 	if !resp.Value {
 		return fmt.Errorf("Gandi DNS: could not set zone version")
 	}
@@ -440,12 +460,14 @@ func (d *DNSProvider) setZone(domain string, zoneID int) error {
 	if err != nil {
 		return err
 	}
+
 	var respZoneID int
 	for _, member := range resp.StructMembers {
 		if member.Name == "zone_id" {
 			respZoneID = member.ValueInt
 		}
 	}
+
 	if respZoneID != zoneID {
 		return fmt.Errorf(
 			"Gandi DNS: Could not set new zone_id for %s", domain)
@@ -465,6 +487,7 @@ func (d *DNSProvider) deleteZone(zoneID int) error {
 	if err != nil {
 		return err
 	}
+
 	if !resp.Value {
 		return fmt.Errorf("Gandi DNS: could not delete zone_id")
 	}

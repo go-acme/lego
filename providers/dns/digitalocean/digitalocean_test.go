@@ -33,7 +33,7 @@ func TestDigitalOceanPresent(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Error reading request body: %v", err)
 		}
-		if got, want := string(reqBody), `{"type":"TXT","name":"_acme-challenge.example.com.","data":"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI"}`; got != want {
+		if got, want := string(reqBody), `{"type":"TXT","name":"_acme-challenge.example.com.","data":"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI","ttl":30}`; got != want {
 			t.Errorf("Expected body data to be: `%s` but got `%s`", want, got)
 		}
 

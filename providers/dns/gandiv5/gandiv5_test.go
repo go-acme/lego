@@ -1,7 +1,6 @@
 package gandiv5
 
 import (
-	"crypto"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -9,29 +8,7 @@ import (
 	"regexp"
 	"strings"
 	"testing"
-
-	"github.com/xenolf/lego/acme"
 )
-
-// stagingServer is the Let's Encrypt staging server used by the live test
-const stagingServer = "https://acme-staging.api.letsencrypt.org/directory"
-
-// user implements acme.User and is used by the live test
-type user struct {
-	Email        string
-	Registration *acme.RegistrationResource
-	key          crypto.PrivateKey
-}
-
-func (u *user) GetEmail() string {
-	return u.Email
-}
-func (u *user) GetRegistration() *acme.RegistrationResource {
-	return u.Registration
-}
-func (u *user) GetPrivateKey() crypto.PrivateKey {
-	return u.key
-}
 
 // TestDNSProvider runs Present and CleanUp against a fake Gandi RPC
 // Server, whose responses are predetermined for particular requests.

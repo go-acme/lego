@@ -1,16 +1,35 @@
 language: go
+
 go:
-- 1.8.x
-- 1.9.x
-- tip
+  - 1.9.x
+  - 1.x
+  - tip
+
 services:
   - memcached
+
 env:
   - MEMCACHED_HOSTS=localhost:11211
-install:
-- go get -t ./...
-script:
-- go vet ./...
-- go test -v ./...
+
 before_install:
-- '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && openssl aes-256-cbc -K $encrypted_26c593b079d9_key -iv $encrypted_26c593b079d9_iv -in .gitcookies.enc -out .gitcookies -d || true'
+  - '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && openssl aes-256-cbc -K $encrypted_26c593b079d9_key -iv $encrypted_26c593b079d9_iv -in .gitcookies.enc -out .gitcookies -d || true'
+
+install:
+  - go get -t ./...
+
+before_deploy:
+  - >
+    if ! [ "$BEFORE_DEPLOY_RUN" ]; then
+      export BEFORE_DEPLOY_RUN=1;
+      make builds
+    fi
+
+deploy:
+  - provider: releases
+    api_key: ${GITHUB_TOKEN}
+    file: dist/lego*
+    skip_cleanup: true
+    overwrite: true
+    file_glob: true
+    on:
+      tags: true

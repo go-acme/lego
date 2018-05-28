@@ -64,6 +64,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("GleSYS DNS: findZoneByFqdn failure: %v", err)
 	}
+
 	// determine name of TXT record
 	if !strings.HasSuffix(
 		strings.ToLower(fqdn), strings.ToLower("."+authZone)) {
@@ -71,23 +72,27 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 			"GleSYS DNS: unexpected authZone %s for fqdn %s", authZone, fqdn)
 	}
 	name := fqdn[:len(fqdn)-len("."+authZone)]
+
 	// acquire lock and check there is not a challenge already in
 	// progress for this value of authZone
 	d.inProgressMu.Lock()
 	defer d.inProgressMu.Unlock()
+
 	// add TXT record into authZone
-	recordId, err := d.addTXTRecord(domain, acme.UnFqdn(authZone), name, value, ttl)
+	recordID, err := d.addTXTRecord(domain, acme.UnFqdn(authZone), name, value, ttl)
 	if err != nil {
 		return err
 	}
+
 	// save data necessary for CleanUp
-	d.activeRecords[fqdn] = recordId
+	d.activeRecords[fqdn] = recordID
 	return nil
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
+
 	// acquire lock and retrieve authZone
 	d.inProgressMu.Lock()
 	defer d.inProgressMu.Unlock()
@@ -95,14 +100,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		// if there is no cleanup information then just return
 		return nil
 	}
-	recordId := d.activeRecords[fqdn]
+
+	recordID := d.activeRecords[fqdn]
 	delete(d.activeRecords, fqdn)
+
 	// delete TXT record from authZone
-	err := d.deleteTXTRecord(domain, recordId)
-	if err != nil {
-		return err
-	}
-	return nil
+	return d.deleteTXTRecord(domain, recordID)
 }
 
 // Timeout returns the values (20*time.Minute, 20*time.Second) which
@@ -119,7 +122,7 @@ type addRecordRequest struct {
 	Host       string `json:"host"`
 	Type       string `json:"type"`
 	Data       string `json:"data"`
-	Ttl        int    `json:"ttl,omitempty"`
+	TTL        int    `json:"ttl,omitempty"`
 }
 
 type deleteRecordRequest struct {
@@ -144,14 +147,16 @@ func (d *DNSProvider) sendRequest(method string, resource string, payload interf
 	if err != nil {
 		return nil, err
 	}
+
 	req, err := http.NewRequest(method, url, bytes.NewReader(body))
 	if err != nil {
 		return nil, err
 	}
+
 	req.Header.Set("Content-Type", "application/json")
 	req.SetBasicAuth(d.apiUser, d.apiKey)
 
-	client := &http.Client{Timeout: time.Duration(10 * time.Second)}
+	client := &http.Client{Timeout: 10 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
@@ -161,6 +166,7 @@ func (d *DNSProvider) sendRequest(method string, resource string, payload interf
 	if resp.StatusCode >= 400 {
 		return nil, fmt.Errorf("GleSYS DNS: request failed with HTTP status code %d", resp.StatusCode)
 	}
+
 	var response responseStruct
 	err = json.NewDecoder(resp.Body).Decode(&response)
 
@@ -175,7 +181,7 @@ func (d *DNSProvider) addTXTRecord(fqdn string, domain string, name string, valu
 		Host:       name,
 		Type:       "TXT",
 		Data:       value,
-		Ttl:        ttl,
+		TTL:        ttl,
 	})
 	if response != nil && response.Response.Status.Code == 200 {
 		log.Printf("[INFO][%s] GleSYS DNS: Successfully created recordid %d", fqdn, response.Response.Record.Recordid)

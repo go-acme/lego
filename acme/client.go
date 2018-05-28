@@ -72,9 +72,6 @@ func NewClient(caDirURL string, user User, keyType KeyType) (*Client, error) {
 	if dir.NewOrderURL == "" {
 		return nil, errors.New("directory missing new order URL")
 	}
-	/*if dir.RevokeCertURL == "" {
-		return nil, errors.New("directory missing revoke certificate URL")
-	}*/
 
 	jws := &jws{privKey: privKey, getNonceURL: dir.NewNonceURL}
 	if reg := user.GetRegistration(); reg != nil {
@@ -179,7 +176,7 @@ func (c *Client) RegisterWithExternalAccountBinding(tosAgreed bool, kid string, 
 	if c == nil || c.user == nil {
 		return nil, errors.New("acme: cannot register a nil client or user")
 	}
-	logf("[INFO] acme: Registering account (EAB) for %s", c.user.GetEmail())
+	log.Printf("[INFO] acme: Registering account (EAB) for %s", c.user.GetEmail())
 
 	accMsg := accountMessage{}
 	if c.user.GetEmail() != "" {
@@ -240,7 +237,7 @@ func (c *Client) ResolveAccountByKey() (*RegistrationResource, error) {
 
 	var retAccount accountMessage
 	c.jws.kid = accountLink
-	hdr, err = postJSON(c.jws, accountLink, accountMessage{}, &retAccount)
+	_, err = postJSON(c.jws, accountLink, accountMessage{}, &retAccount)
 	if err != nil {
 		return nil, err
 	}
@@ -261,11 +258,7 @@ func (c *Client) DeleteRegistration() error {
 	}
 
 	_, err := postJSON(c.jws, c.user.GetRegistration().URI, accMsg, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 // QueryRegistration runs a POST request on the client's registration and
@@ -829,11 +822,10 @@ func validate(j *jws, domain, uri string, c challenge) error {
 			log.Printf("[INFO][%s] The server validated our request", domain)
 			return nil
 		case "pending":
-			break
 		case "invalid":
 			return handleChallengeError(chlng)
 		default:
-			return errors.New("The server returned an unexpected state")
+			return errors.New("the server returned an unexpected state")
 		}
 
 		ra, err := strconv.Atoi(hdr.Get("Retry-After"))

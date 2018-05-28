@@ -103,20 +103,6 @@ func TestClientOptPort(t *testing.T) {
 		t.Errorf("Expected http-01 to have iface %s but was %s", optHost, got)
 	}
 
-	/* httpsSolver, ok := client.solvers[TLSSNI01].(*tlsSNIChallenge)
-	if !ok {
-		t.Fatal("Expected tls-sni-01 solver to be httpChallenge type")
-	}
-	if httpsSolver.jws != client.jws {
-		t.Error("Expected tls-sni-01 to have same jws as client")
-	}
-	if got := httpsSolver.provider.(*TLSProviderServer).port; got != optPort {
-		t.Errorf("Expected tls-sni-01 to have port %s but was %s", optPort, got)
-	}
-	if got := httpsSolver.provider.(*TLSProviderServer).iface; got != optHost {
-		t.Errorf("Expected tls-sni-01 to have port %s but was %s", optHost, got)
-	} */
-
 	// test setting different host
 	optHost = "127.0.0.1"
 	client.SetHTTPAddress(net.JoinHostPort(optHost, optPort))

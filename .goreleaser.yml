@@ -1,8 +1,7 @@
 project_name: lego
 
 builds:
-  -
-    binary: lego
+  - binary: lego
     goos:
       - windows
       - darwin
@@ -17,9 +16,6 @@ builds:
       - arm64
     goarm:
       - 7
-
-    ldflags:
-      - -s -w -X "main.gittag={{.Env.TRAVIS_TAG}}"
 
     ignore:
       - goos: darwin

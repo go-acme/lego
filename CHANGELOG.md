@@ -1,5 +1,36 @@
 # Changelog
 
+## [v0.5.0] - 2018-05-29
+
+### Added:
+- **[dnsprovider]** Add DNS challenge provider `exec`
+- **[dnsprovider]** Add DNS Provider for Akamai FastDNS
+- **[dnsprovider]** Add DNS Provider for Bluecat DNS
+- **[dnsprovider]** Add DNS Provider for CloudXNS
+- **[dnsprovider]** Add DNS Provider for Duck DNS
+- **[dnsprovider]** Add DNS Provider for Gandi Beta Platform (LiveDNS)
+- **[dnsprovider]** Add DNS Provider for GleSYS API
+- **[dnsprovider]** Add DNS Provider for GoDaddy
+- **[dnsprovider]** Add DNS Provider for Lightsail
+- **[dnsprovider]** Add DNS Provider for Name.com
+
+### Fixed:
+- **[dnsprovider]** Azure: Added missing environment variable in the comments
+- **[dnsprovider]** PowerDNS: Fix zone URL, add leading slash.
+- **[dnsprovider]** DNSimple: Fix api
+- **[cli]** Correct help text for `--dns-resolvers` default.
+- **[cli]** renew/revoke - don't panic on wrong account.
+- **[lib]** Fix zone detection for cross-zone cnames.
+- **[lib]** Use proxies from environment when making outbound http connections.
+
+### Changed:
+- **[lib]** Users of an effective top-level domain can use the DNS challenge.
+- **[dnsprovider]** Azure: Refactor to work with new Azure SDK version.
+- **[dnsprovider]** Cloudflare and Azure: Adding output of which envvars are missing.
+- **[dnsprovider]** Dyn DNS: Slightly improve provider error reporting.
+- **[dnsprovider]** Exoscale: update to latest egoscale version.
+- **[dnsprovider]** Route53: Use NewSessionWithOptions instead of deprecated New.
+
 ## [0.4.1] - 2017-09-26
 
 ### Added:

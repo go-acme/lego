@@ -3,7 +3,6 @@ language: go
 go:
   - 1.9.x
   - 1.x
-  - tip
 
 services:
   - memcached
@@ -17,19 +16,20 @@ before_install:
 install:
   - go get -t ./...
 
-before_deploy:
-  - >
-    if ! [ "$BEFORE_DEPLOY_RUN" ]; then
-      export BEFORE_DEPLOY_RUN=1;
-      make builds
-    fi
-
 deploy:
+  - provider: script
+    skip_cleanup: true
+    script: curl -sL https://git.io/goreleaser | bash
+    on:
+      tags: true
+      condition: $TRAVIS_GO_VERSION =~ ^1\.10\.[0-9]+$
+
   - provider: releases
     api_key: ${GITHUB_TOKEN}
-    file: dist/lego*
+    file: dist/lego_*
     skip_cleanup: true
     overwrite: true
     file_glob: true
     on:
       tags: true
+      condition: $TRAVIS_GO_VERSION =~ ^1\.10\.[0-9]+$

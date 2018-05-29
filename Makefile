@@ -1,6 +1,6 @@
 .PHONY: all
 
-default: clean checks test
+default: clean checks test build
 
 test: clean
 	go test -v -cover ./...
@@ -11,5 +11,5 @@ clean:
 checks:
 	go vet ./...
 
-builds: clean
-	./releaser.sh
+build: clean
+	go build

@@ -52,5 +52,5 @@ func loadPrivateKey(file string) (crypto.PrivateKey, error) {
 		return x509.ParseECPrivateKey(keyBlock.Bytes)
 	}
 
-	return nil, errors.New("Unknown private key type.")
+	return nil, errors.New("unknown private key type")
 }

@@ -12,7 +12,6 @@ import (
 	"github.com/xenolf/lego/acme"
 
 	"golang.org/x/net/context"
-	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 
 	"google.golang.org/api/dns/v1"
@@ -83,7 +82,7 @@ func NewDNSProviderServiceAccount(saFile string) (*DNSProvider, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Unable to acquire config: %v", err)
 	}
-	client := conf.Client(oauth2.NoContext)
+	client := conf.Client(context.Background())
 
 	svc, err := dns.New(client)
 	if err != nil {

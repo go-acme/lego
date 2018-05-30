@@ -5,13 +5,12 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"log"
 	"net"
 	"strings"
 	"time"
 
 	"github.com/miekg/dns"
-	"golang.org/x/net/publicsuffix"
+	"github.com/xenolf/lego/log"
 )
 
 type preCheckDNSFunc func(fqdn, value string) (bool, error)
@@ -30,6 +29,7 @@ var defaultNameservers = []string{
 	"google-public-dns-b.google.com:53",
 }
 
+// RecursiveNameservers are used to pre-check DNS propagations
 var RecursiveNameservers = getNameservers(defaultResolvConf, defaultNameservers)
 
 // DNSTimeout is used to override the default DNS timeout of 10 seconds.
@@ -58,8 +58,7 @@ func getNameservers(path string, defaults []string) []string {
 func DNS01Record(domain, keyAuth string) (fqdn string, value string, ttl int) {
 	keyAuthShaBytes := sha256.Sum256([]byte(keyAuth))
 	// base64URL encoding without padding
-	keyAuthSha := base64.URLEncoding.EncodeToString(keyAuthShaBytes[:sha256.Size])
-	value = strings.TrimRight(keyAuthSha, "=")
+	value = base64.RawURLEncoding.EncodeToString(keyAuthShaBytes[:sha256.Size])
 	ttl = 120
 	fqdn = fmt.Sprintf("_acme-challenge.%s.", domain)
 	return
@@ -73,7 +72,7 @@ type dnsChallenge struct {
 }
 
 func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
-	logf("[INFO][%s] acme: Trying to solve DNS-01", domain)
+	log.Printf("[INFO][%s] acme: Trying to solve DNS-01", domain)
 
 	if s.provider == nil {
 		return errors.New("No DNS Provider configured")
@@ -98,7 +97,7 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 
 	fqdn, value, _ := DNS01Record(domain, keyAuth)
 
-	logf("[INFO][%s] Checking DNS record propagation using %+v", domain, RecursiveNameservers)
+	log.Printf("[INFO][%s] Checking DNS record propagation using %+v", domain, RecursiveNameservers)
 
 	var timeout, interval time.Duration
 	switch provider := s.provider.(type) {
@@ -115,7 +114,7 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 		return err
 	}
 
-	return s.validate(s.jws, domain, chlng.URI, challenge{Resource: "challenge", Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
+	return s.validate(s.jws, domain, chlng.URL, challenge{Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
 }
 
 // checkDNSPropagation checks if the expected TXT record has been propagated to all authoritative nameservers.
@@ -242,10 +241,6 @@ func FindZoneByFqdn(fqdn string, nameservers []string) (string, error) {
 	labelIndexes := dns.Split(fqdn)
 	for _, index := range labelIndexes {
 		domain := fqdn[index:]
-		// Give up if we have reached the TLD
-		if isTLD(domain) {
-			break
-		}
 
 		in, err := dnsQuery(domain, dns.TypeSOA, nameservers, true)
 		if err != nil {
@@ -260,6 +255,13 @@ func FindZoneByFqdn(fqdn string, nameservers []string) (string, error) {
 
 		// Check if we got a SOA RR in the answer section
 		if in.Rcode == dns.RcodeSuccess {
+
+			// CNAME records cannot/should not exist at the root of a zone.
+			// So we skip a domain when a CNAME is found.
+			if dnsMsgContainsCNAME(in) {
+				continue
+			}
+
 			for _, ans := range in.Answer {
 				if soa, ok := ans.(*dns.SOA); ok {
 					zone := soa.Hdr.Name
@@ -273,10 +275,12 @@ func FindZoneByFqdn(fqdn string, nameservers []string) (string, error) {
 	return "", fmt.Errorf("Could not find the start of authority")
 }
 
-func isTLD(domain string) bool {
-	publicsuffix, _ := publicsuffix.PublicSuffix(UnFqdn(domain))
-	if publicsuffix == UnFqdn(domain) {
-		return true
+// dnsMsgContainsCNAME checks for a CNAME answer in msg
+func dnsMsgContainsCNAME(msg *dns.Msg) bool {
+	for _, ans := range msg.Answer {
+		if _, ok := ans.(*dns.CNAME); ok {
+			return true
+		}
 	}
 	return false
 }

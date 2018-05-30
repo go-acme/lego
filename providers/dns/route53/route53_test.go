@@ -65,7 +65,7 @@ func TestRegionFromEnv(t *testing.T) {
 	os.Setenv("AWS_REGION", "us-east-1")
 
 	sess := session.New(aws.NewConfig())
-	assert.Equal(t, "us-east-1", *sess.Config.Region, "Expected Region to be set from environment")
+	assert.Equal(t, "us-east-1", aws.StringValue(sess.Config.Region), "Expected Region to be set from environment")
 
 	restoreRoute53Env()
 }

@@ -37,22 +37,16 @@ var lookupNameserversTestsErr = []struct {
 	{"_null.n0n0.",
 		"Could not determine the zone",
 	},
-	// invalid domain
-	{"_null.com.",
-		"Could not determine the zone",
-	},
-	// invalid domain
-	{"in-valid.co.uk.",
-		"Could not determine the zone",
-	},
 }
 
 var findZoneByFqdnTests = []struct {
 	fqdn string
 	zone string
 }{
-	{"mail.google.com.", "google.com."}, // domain is a CNAME
-	{"foo.google.com.", "google.com."},  // domain is a non-existent subdomain
+	{"mail.google.com.", "google.com."},             // domain is a CNAME
+	{"foo.google.com.", "google.com."},              // domain is a non-existent subdomain
+	{"example.com.ac.", "ac."},                      // domain is a eTLD
+	{"cross-zone-example.assets.sh.", "assets.sh."}, // domain is a cross-zone CNAME
 }
 
 var checkAuthoritativeNssTests = []struct {
@@ -106,9 +100,9 @@ func TestDNSValidServerResponse(t *testing.T) {
 	}))
 
 	manualProvider, _ := NewDNSProviderManual()
-	jws := &jws{privKey: privKey, directoryURL: ts.URL}
+	jws := &jws{privKey: privKey, getNonceURL: ts.URL}
 	solver := &dnsChallenge{jws: jws, validate: validate, provider: manualProvider}
-	clientChallenge := challenge{Type: "dns01", Status: "pending", URI: ts.URL, Token: "http8"}
+	clientChallenge := challenge{Type: "dns01", Status: "pending", URL: ts.URL, Token: "http8"}
 
 	go func() {
 		time.Sleep(time.Second * 2)

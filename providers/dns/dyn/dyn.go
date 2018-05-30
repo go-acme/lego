@@ -80,24 +80,28 @@ func (d *DNSProvider) sendRequest(method, resource string, payload interface{}) 
 		req.Header.Set("Auth-Token", d.token)
 	}
 
-	client := &http.Client{Timeout: time.Duration(10 * time.Second)}
+	client := &http.Client{Timeout: 10 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode >= 400 {
+	if resp.StatusCode >= 500 {
 		return nil, fmt.Errorf("Dyn API request failed with HTTP status code %d", resp.StatusCode)
-	} else if resp.StatusCode == 307 {
-		// TODO add support for HTTP 307 response and long running jobs
-		return nil, fmt.Errorf("Dyn API request returned HTTP 307. This is currently unsupported")
 	}
 
 	var dynRes dynResponse
 	err = json.NewDecoder(resp.Body).Decode(&dynRes)
 	if err != nil {
 		return nil, err
+	}
+
+	if resp.StatusCode >= 400 {
+		return nil, fmt.Errorf("Dyn API request failed with HTTP status code %d: %s", resp.StatusCode, dynRes.Messages)
+	} else if resp.StatusCode == 307 {
+		// TODO add support for HTTP 307 response and long running jobs
+		return nil, fmt.Errorf("Dyn API request returned HTTP 307. This is currently unsupported")
 	}
 
 	if dynRes.Status == "failure" {
@@ -154,7 +158,7 @@ func (d *DNSProvider) logout() error {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Auth-Token", d.token)
 
-	client := &http.Client{Timeout: time.Duration(10 * time.Second)}
+	client := &http.Client{Timeout: 10 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
@@ -202,12 +206,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return err
 	}
 
-	err = d.logout()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return d.logout()
 }
 
 func (d *DNSProvider) publish(zone, notes string) error {
@@ -218,12 +217,9 @@ func (d *DNSProvider) publish(zone, notes string) error {
 
 	pub := &publish{Publish: true, Notes: notes}
 	resource := fmt.Sprintf("Zone/%s/", zone)
-	_, err := d.sendRequest("PUT", resource, pub)
-	if err != nil {
-		return err
-	}
 
-	return nil
+	_, err := d.sendRequest("PUT", resource, pub)
+	return err
 }
 
 // CleanUp removes the TXT record matching the specified parameters
@@ -249,7 +245,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Auth-Token", d.token)
 
-	client := &http.Client{Timeout: time.Duration(10 * time.Second)}
+	client := &http.Client{Timeout: 10 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
@@ -265,10 +261,5 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return err
 	}
 
-	err = d.logout()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return d.logout()
 }

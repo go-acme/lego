@@ -18,6 +18,7 @@ var UserAgent string
 // HTTPClient is an HTTP client with a reasonable timeout value.
 var HTTPClient = http.Client{
 	Transport: &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
 		Dial: (&net.Dialer{
 			Timeout:   30 * time.Second,
 			KeepAlive: 30 * time.Second,
@@ -101,7 +102,7 @@ func getJSON(uri string, respBody interface{}) (http.Header, error) {
 func postJSON(j *jws, uri string, reqBody, respBody interface{}) (http.Header, error) {
 	jsonBytes, err := json.Marshal(reqBody)
 	if err != nil {
-		return nil, errors.New("Failed to marshal network message...")
+		return nil, errors.New("Failed to marshal network message")
 	}
 
 	resp, err := j.post(uri, jsonBytes)

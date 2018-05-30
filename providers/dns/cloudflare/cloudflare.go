@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/xenolf/lego/acme"
@@ -37,7 +38,14 @@ func NewDNSProvider() (*DNSProvider, error) {
 // DNSProvider instance configured for cloudflare.
 func NewDNSProviderCredentials(email, key string) (*DNSProvider, error) {
 	if email == "" || key == "" {
-		return nil, fmt.Errorf("CloudFlare credentials missing")
+		missingEnvVars := []string{}
+		if email == "" {
+			missingEnvVars = append(missingEnvVars, "CLOUDFLARE_EMAIL")
+		}
+		if key == "" {
+			missingEnvVars = append(missingEnvVars, "CLOUDFLARE_API_KEY")
+		}
+		return nil, fmt.Errorf("CloudFlare credentials missing: %s", strings.Join(missingEnvVars, ","))
 	}
 
 	return &DNSProvider{
@@ -73,11 +81,7 @@ func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	_, err = c.makeRequest("POST", fmt.Sprintf("/zones/%s/dns_records", zoneID), bytes.NewReader(body))
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 // CleanUp removes the TXT record matching the specified parameters
@@ -90,11 +94,7 @@ func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	_, err = c.makeRequest("DELETE", fmt.Sprintf("/zones/%s/dns_records/%s", record.ZoneID, record.ID), nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func (c *DNSProvider) getHostedZoneID(fqdn string) (string, error) {
@@ -154,7 +154,7 @@ func (c *DNSProvider) findTxtRecord(fqdn string) (*cloudFlareRecord, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("No existing record found for %s", fqdn)
+	return nil, fmt.Errorf("no existing record found for %s", fqdn)
 }
 
 func (c *DNSProvider) makeRequest(method, uri string, body io.Reader) (json.RawMessage, error) {
@@ -179,7 +179,6 @@ func (c *DNSProvider) makeRequest(method, uri string, body io.Reader) (json.RawM
 
 	req.Header.Set("X-Auth-Email", c.authEmail)
 	req.Header.Set("X-Auth-Key", c.authKey)
-	//req.Header.Set("User-Agent", userAgent())
 
 	client := http.Client{Timeout: 30 * time.Second}
 	resp, err := client.Do(req)

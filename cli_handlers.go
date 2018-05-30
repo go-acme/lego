@@ -322,7 +322,8 @@ func run(c *cli.Context) error {
 		cert, err = client.ObtainCertificate(c.GlobalStringSlice("domains"), !c.Bool("no-bundle"), nil, c.Bool("must-staple"))
 	} else {
 		// read the CSR
-		csr, err := readCSRFile(c.GlobalString("csr"))
+		var csr *x509.CertificateRequest
+		csr, err = readCSRFile(c.GlobalString("csr"))
 		if err == nil {
 			// obtain a certificate for this CSR
 			cert, err = client.ObtainCertificateForCSR(*csr, !c.Bool("no-bundle"))
@@ -330,12 +331,10 @@ func run(c *cli.Context) error {
 	}
 
 	if err != nil {
-		log.Printf("Could not obtain certificates\n\t%v", err)
-
 		// Make sure to return a non-zero exit code if ObtainSANCertificate
 		// returned at least one error. Due to us not returning partial
 		// certificate we can just exit here instead of at the end.
-		os.Exit(1)
+		log.Fatalf("Could not obtain certificates\n\t%v", err)
 	}
 
 	if err = checkFolder(conf.CertPath()); err != nil {
@@ -408,7 +407,7 @@ func renew(c *cli.Context) error {
 			log.Printf("Could not get Certification expiration for domain %s", domain)
 		}
 
-		if int(expTime.Sub(time.Now()).Hours()/24.0) > c.Int("days") {
+		if int(time.Until(expTime).Hours()/24.0) > c.Int("days") {
 			return nil
 		}
 	}

@@ -172,6 +172,10 @@ lego defaults to communicating with the production Let's Encrypt ACME server. If
 $ lego --server=https://acme-staging.api.letsencrypt.org/directory …
 ```
 
+#### ACME v1
+
+lego introduced support for ACME v2 in [v1.0.0](https://github.com/xenolf/lego/releases/tag/v1.0.0), if you still need to utilize ACME v1, you can do so by using the [v0.5.0](https://github.com/xenolf/lego/releases/tag/v0.5.0) version.
+
 #### DNS Challenge API Details
 
 ##### AWS Route 53

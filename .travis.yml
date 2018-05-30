@@ -23,7 +23,7 @@ before_install:
 
 
 install:
-  - make dependencies
+  - dep status -v
 
 deploy:
   - provider: script

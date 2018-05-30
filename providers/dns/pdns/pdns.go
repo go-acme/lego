@@ -90,7 +90,7 @@ func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	rrsets := rrSets{
 		RRSets: []rrSet{
-			rrSet{
+			{
 				Name:       name,
 				ChangeType: "REPLACE",
 				Type:       "TXT",
@@ -139,11 +139,7 @@ func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	_, err = c.makeRequest("PATCH", zone.URL, bytes.NewReader(body))
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func (c *DNSProvider) getHostedZone(fqdn string) (*hostedZone, error) {

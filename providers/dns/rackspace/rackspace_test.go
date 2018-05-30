@@ -86,7 +86,6 @@ func dnsMux() *http.ServeMux {
 			return
 		}
 		w.WriteHeader(http.StatusBadRequest)
-		return
 	})
 
 	mux.HandleFunc("/123456/domains/112233/records", func(w http.ResponseWriter, r *http.Request) {

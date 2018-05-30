@@ -13,3 +13,6 @@ checks:
 
 build: clean
 	go build
+
+dependencies:
+	dep ensure -v

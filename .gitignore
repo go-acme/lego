@@ -6,4 +6,3 @@ lego
 .vscode/
 dist/
 builds/
-vendor/

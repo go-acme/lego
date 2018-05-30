@@ -2,10 +2,6 @@ FROM golang:alpine3.7 as builder
 
 ARG LEGO_VERSION=dev
 
-RUN apk --update upgrade \
-&& apk --no-cache --no-progress add make \
-&& rm -rf /var/cache/apk/*
-
 WORKDIR /go/src/github.com/xenolf/lego
 COPY . .
 RUN go build -ldflags="-s -X main.version=${LEGO_VERSION}"

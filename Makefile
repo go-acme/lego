@@ -10,6 +10,10 @@ clean:
 build: clean
 	go build
 
+
+dependencies:
+	dep ensure -v
+
 test: clean
 	go test -v -cover ./...
 

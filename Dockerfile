@@ -1,16 +1,12 @@
 FROM golang:alpine3.7 as builder
 
-ARG LEGO_VERSION=master
+ARG LEGO_VERSION=dev
 
-RUN apk update && \
-    apk add --no-cache --virtual git && \
-    go get -u github.com/xenolf/lego && \
-    cd ${GOPATH}/src/github.com/xenolf/lego && \
-    git checkout ${LEGO_VERSION} && \
-    go build -o /usr/bin/lego .
+WORKDIR /go/src/github.com/xenolf/lego
+COPY . .
+RUN go build -ldflags="-s -X main.version=${LEGO_VERSION}"
 
 FROM alpine:3.7
 RUN apk update && apk add --no-cache --virtual ca-certificates
-COPY --from=builder /usr/bin/lego /usr/bin/lego
-
+COPY --from=builder /go/src/github.com/xenolf/lego/lego /usr/bin/lego
 ENTRYPOINT [ "/usr/bin/lego" ]

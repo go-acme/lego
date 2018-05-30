@@ -1,8 +1,9 @@
-// Package googlecloud implements a DNS provider for solving the DNS-01
+// Package gcloud implements a DNS provider for solving the DNS-01
 // challenge using Google Cloud DNS.
-package googlecloud
+package gcloud
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -27,10 +28,10 @@ type DNSProvider struct {
 // A Service Account file can be passed in the environment variable:
 // GCE_SERVICE_ACCOUNT_FILE
 func NewDNSProvider() (*DNSProvider, error) {
-	project := os.Getenv("GCE_PROJECT")
 	if saFile, ok := os.LookupEnv("GCE_SERVICE_ACCOUNT_FILE"); ok {
-		return NewDNSProviderServiceAccount(project, saFile)
+		return NewDNSProviderServiceAccount(saFile)
 	}
+	project := os.Getenv("GCE_PROJECT")
 	return NewDNSProviderCredentials(project)
 }
 
@@ -57,10 +58,7 @@ func NewDNSProviderCredentials(project string) (*DNSProvider, error) {
 
 // NewDNSProviderServiceAccount uses the supplied service account JSON file to
 // return a DNSProvider instance configured for Google Cloud DNS.
-func NewDNSProviderServiceAccount(project string, saFile string) (*DNSProvider, error) {
-	if project == "" {
-		return nil, fmt.Errorf("Google Cloud project name missing")
-	}
+func NewDNSProviderServiceAccount(saFile string) (*DNSProvider, error) {
 	if saFile == "" {
 		return nil, fmt.Errorf("Google Cloud Service Account file missing")
 	}
@@ -69,6 +67,17 @@ func NewDNSProviderServiceAccount(project string, saFile string) (*DNSProvider, 
 	if err != nil {
 		return nil, fmt.Errorf("Unable to read Service Account file: %v", err)
 	}
+
+	// read project id from service account file
+	var datJSON struct {
+		ProjectID string `json:"project_id"`
+	}
+	err = json.Unmarshal(dat, &datJSON)
+	if err != nil || datJSON.ProjectID == "" {
+		return nil, fmt.Errorf("Project ID not found in Google Cloud Service Account file")
+	}
+	project := datJSON.ProjectID
+
 	conf, err := google.JWTConfigFromJSON(dat, dns.NdevClouddnsReadwriteScope)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to acquire config: %v", err)

@@ -1,4 +1,4 @@
-package googlecloud
+package gcloud
 
 import (
 	"os"

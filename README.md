@@ -25,9 +25,10 @@ To build lego inside a Docker container, just run
 docker build -t lego .
 ```
 
-The container is, by default, built from `master`. This can be overriden by supplying a build argument containing a git SHA or reference.
-```
-docker build --build-arg LEGO_VERSION=tags/v0.4.1 -t lego .
+The container is, by default, built from `master`. 
+This can be overridden by supplying a build argument containing a git SHA or reference.
+```bash
+docker build --build-arg LEGO_VERSION=tags/v0.5.0 -t lego .
 ```
 
 ##### From the package manager

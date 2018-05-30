@@ -1,4 +1,3 @@
-// Factory for DNS providers
 package dns
 
 import (
@@ -7,6 +6,7 @@ import (
 	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/providers/dns/auroradns"
 	"github.com/xenolf/lego/providers/dns/azure"
+	"github.com/xenolf/lego/providers/dns/bluecat"
 	"github.com/xenolf/lego/providers/dns/cloudflare"
 	"github.com/xenolf/lego/providers/dns/cloudxns"
 	"github.com/xenolf/lego/providers/dns/digitalocean"
@@ -35,9 +35,9 @@ import (
 	"github.com/xenolf/lego/providers/dns/rfc2136"
 	"github.com/xenolf/lego/providers/dns/route53"
 	"github.com/xenolf/lego/providers/dns/vultr"
-	"github.com/xenolf/lego/providers/dns/bluecat"
 )
 
+// NewDNSChallengeProviderByName Factory for DNS providers
 func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) {
 	var err error
 	var provider acme.ChallengeProvider
@@ -107,7 +107,7 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 	case "exec":
 		provider, err = exec.NewDNSProvider()
 	default:
-		err = fmt.Errorf("Unrecognised DNS provider: %s", name)
+		err = fmt.Errorf("unrecognised DNS provider: %s", name)
 	}
 	return provider, err
 }

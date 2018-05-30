@@ -28,6 +28,7 @@ func TestPresentAndCleanup(t *testing.T) {
 	}
 
 	provider, err := NewDNSProvider()
+	assert.NoError(t, err)
 
 	err = provider.Present(testDomain, "", "123d==")
 	assert.NoError(t, err)

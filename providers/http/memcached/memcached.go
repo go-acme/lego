@@ -10,18 +10,18 @@ import (
 	"github.com/xenolf/lego/acme"
 )
 
-// HTTPProvider implements ChallengeProvider for `http-01` challenge
-type MemcachedProvider struct {
+// HTTPProvider implements HTTPProvider for `http-01` challenge
+type HTTPProvider struct {
 	hosts []string
 }
 
-// NewHTTPProvider returns a HTTPProvider instance with a configured webroot path
-func NewMemcachedProvider(hosts []string) (*MemcachedProvider, error) {
+// NewMemcachedProvider returns a HTTPProvider instance with a configured webroot path
+func NewMemcachedProvider(hosts []string) (*HTTPProvider, error) {
 	if len(hosts) == 0 {
-		return nil, fmt.Errorf("No memcached hosts provided")
+		return nil, fmt.Errorf("no memcached hosts provided")
 	}
 
-	c := &MemcachedProvider{
+	c := &HTTPProvider{
 		hosts: hosts,
 	}
 
@@ -29,7 +29,7 @@ func NewMemcachedProvider(hosts []string) (*MemcachedProvider, error) {
 }
 
 // Present makes the token available at `HTTP01ChallengePath(token)` by creating a file in the given webroot path
-func (w *MemcachedProvider) Present(domain, token, keyAuth string) error {
+func (w *HTTPProvider) Present(domain, token, keyAuth string) error {
 	var errs []error
 
 	challengePath := path.Join("/", acme.HTTP01ChallengePath(token))
@@ -39,7 +39,7 @@ func (w *MemcachedProvider) Present(domain, token, keyAuth string) error {
 			errs = append(errs, err)
 			continue
 		}
-		mc.Add(&memcache.Item{
+		_ = mc.Add(&memcache.Item{
 			Key:        challengePath,
 			Value:      []byte(keyAuth),
 			Expiration: 60,
@@ -47,14 +47,14 @@ func (w *MemcachedProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	if len(errs) == len(w.hosts) {
-		return fmt.Errorf("Unable to store key in any of the memcache hosts -> %v", errs)
+		return fmt.Errorf("unable to store key in any of the memcache hosts -> %v", errs)
 	}
 
 	return nil
 }
 
 // CleanUp removes the file created for the challenge
-func (w *MemcachedProvider) CleanUp(domain, token, keyAuth string) error {
+func (w *HTTPProvider) CleanUp(domain, token, keyAuth string) error {
 	// Memcached will clean up itself, that's what expiration is for.
 	return nil
 }

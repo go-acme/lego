@@ -12,19 +12,19 @@ var (
 	dnsimpleLiveTest   bool
 	dnsimpleOauthToken string
 	dnsimpleDomain     string
-	dnsimpleBaseUrl    string
+	dnsimpleBaseURL    string
 )
 
 func init() {
 	dnsimpleOauthToken = os.Getenv("DNSIMPLE_OAUTH_TOKEN")
 	dnsimpleDomain = os.Getenv("DNSIMPLE_DOMAIN")
-	dnsimpleBaseUrl = "https://api.sandbox.dnsimple.com"
+	dnsimpleBaseURL = "https://api.sandbox.dnsimple.com"
 
 	if len(dnsimpleOauthToken) > 0 && len(dnsimpleDomain) > 0 {
-		baseUrl := os.Getenv("DNSIMPLE_BASE_URL")
+		baseURL := os.Getenv("DNSIMPLE_BASE_URL")
 
-		if baseUrl != "" {
-			dnsimpleBaseUrl = baseUrl
+		if baseURL != "" {
+			dnsimpleBaseURL = baseURL
 		}
 
 		dnsimpleLiveTest = true
@@ -33,7 +33,7 @@ func init() {
 
 func restoreDNSimpleEnv() {
 	os.Setenv("DNSIMPLE_OAUTH_TOKEN", dnsimpleOauthToken)
-	os.Setenv("DNSIMPLE_BASE_URL", dnsimpleBaseUrl)
+	os.Setenv("DNSIMPLE_BASE_URL", dnsimpleBaseURL)
 }
 
 //
@@ -114,7 +114,7 @@ func TestLiveDNSimplePresent(t *testing.T) {
 		t.Skip("skipping live test")
 	}
 
-	provider, err := NewDNSProviderCredentials(dnsimpleOauthToken, dnsimpleBaseUrl)
+	provider, err := NewDNSProviderCredentials(dnsimpleOauthToken, dnsimpleBaseURL)
 	assert.NoError(t, err)
 
 	err = provider.Present(dnsimpleDomain, "", "123d==")
@@ -132,7 +132,7 @@ func TestLiveDNSimpleCleanUp(t *testing.T) {
 
 	time.Sleep(time.Second * 1)
 
-	provider, err := NewDNSProviderCredentials(dnsimpleOauthToken, dnsimpleBaseUrl)
+	provider, err := NewDNSProviderCredentials(dnsimpleOauthToken, dnsimpleBaseURL)
 	assert.NoError(t, err)
 
 	err = provider.CleanUp(dnsimpleDomain, "", "123d==")

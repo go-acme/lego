@@ -29,12 +29,12 @@ type DNSProvider struct {
 // PDNS_API_URL and PDNS_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
 	key := os.Getenv("PDNS_API_KEY")
-	hostUrl, err := url.Parse(os.Getenv("PDNS_API_URL"))
+	hostURL, err := url.Parse(os.Getenv("PDNS_API_URL"))
 	if err != nil {
 		return nil, err
 	}
 
-	return NewDNSProviderCredentials(hostUrl, key)
+	return NewDNSProviderCredentials(hostURL, key)
 }
 
 // NewDNSProviderCredentials uses the supplied credentials to return a
@@ -107,12 +107,7 @@ func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	_, err = c.makeRequest("PATCH", zone.URL, bytes.NewReader(body))
-	if err != nil {
-		fmt.Println("here")
-		return err
-	}
-
-	return nil
+	return err
 }
 
 // CleanUp removes the TXT record matching the specified parameters
@@ -131,7 +126,7 @@ func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	rrsets := rrSets{
 		RRSets: []rrSet{
-			rrSet{
+			{
 				Name:       set.Name,
 				Type:       set.Type,
 				ChangeType: "DELETE",
@@ -220,7 +215,7 @@ func (c *DNSProvider) findTxtRecord(fqdn string) (*rrSet, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("No existing record found for %s", fqdn)
+	return nil, fmt.Errorf("no existing record found for %s", fqdn)
 }
 
 func (c *DNSProvider) getAPIVersion() {

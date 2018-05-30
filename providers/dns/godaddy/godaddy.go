@@ -10,9 +10,10 @@ import (
 
 	"bytes"
 	"encoding/json"
-	"github.com/xenolf/lego/acme"
 	"io/ioutil"
 	"strings"
+
+	"github.com/xenolf/lego/acme"
 )
 
 // GoDaddyAPIURL represents the API endpoint to call.
@@ -75,7 +76,7 @@ func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 			Type: "TXT",
 			Name: recordName,
 			Data: value,
-			Ttl:  ttl,
+			TTL:  ttl,
 		},
 	}
 
@@ -98,7 +99,7 @@ func (c *DNSProvider) updateRecords(records []DNSRecord, domainZone string, reco
 
 	if resp.StatusCode != http.StatusOK {
 		bodyBytes, _ := ioutil.ReadAll(resp.Body)
-		return fmt.Errorf("Could not create record %v; Status: %v; Body: %s\n", string(body), resp.StatusCode, string(bodyBytes))
+		return fmt.Errorf("could not create record %v; Status: %v; Body: %s", string(body), resp.StatusCode, string(bodyBytes))
 	}
 	return nil
 }
@@ -146,10 +147,11 @@ func (c *DNSProvider) makeRequest(method, uri string, body io.Reader) (*http.Res
 	return client.Do(req)
 }
 
+// DNSRecord a DNS record
 type DNSRecord struct {
 	Type     string `json:"type"`
 	Name     string `json:"name"`
 	Data     string `json:"data"`
 	Priority int    `json:"priority,omitempty"`
-	Ttl      int    `json:"ttl,omitempty"`
+	TTL      int    `json:"ttl,omitempty"`
 }

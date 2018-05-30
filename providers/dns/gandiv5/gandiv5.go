@@ -21,6 +21,7 @@ var (
 	// endpoint is the Gandi API endpoint used by Present and
 	// CleanUp. It is overridden during tests.
 	endpoint = "https://dns.api.gandi.net/api/v5"
+
 	// findZoneByFqdn determines the DNS zone of an fqdn. It is overridden
 	// during tests.
 	findZoneByFqdn = acme.FindZoneByFqdn
@@ -66,11 +67,13 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if ttl < 300 {
 		ttl = 300 // 300 is gandi minimum value for ttl
 	}
+
 	// find authZone
 	authZone, err := findZoneByFqdn(fqdn, acme.RecursiveNameservers)
 	if err != nil {
 		return fmt.Errorf("Gandi DNS: findZoneByFqdn failure: %v", err)
 	}
+
 	// determine name of TXT record
 	if !strings.HasSuffix(
 		strings.ToLower(fqdn), strings.ToLower("."+authZone)) {
@@ -78,15 +81,18 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 			"Gandi DNS: unexpected authZone %s for fqdn %s", authZone, fqdn)
 	}
 	name := fqdn[:len(fqdn)-len("."+authZone)]
+
 	// acquire lock and check there is not a challenge already in
 	// progress for this value of authZone
 	d.inProgressMu.Lock()
 	defer d.inProgressMu.Unlock()
+
 	// add TXT record into authZone
 	err = d.addTXTRecord(acme.UnFqdn(authZone), name, value, ttl)
 	if err != nil {
 		return err
 	}
+
 	// save data necessary for CleanUp
 	d.inProgressFQDNs[fqdn] = inProgressInfo{
 		authZone:  authZone,
@@ -98,6 +104,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
+
 	// acquire lock and retrieve authZone
 	d.inProgressMu.Lock()
 	defer d.inProgressMu.Unlock()
@@ -105,15 +112,13 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		// if there is no cleanup information then just return
 		return nil
 	}
+
 	fieldName := d.inProgressFQDNs[fqdn].fieldName
 	authZone := d.inProgressFQDNs[fqdn].authZone
 	delete(d.inProgressFQDNs, fqdn)
+
 	// delete TXT record from authZone
-	err := d.deleteTXTRecord(acme.UnFqdn(authZone), fieldName)
-	if err != nil {
-		return err
-	}
-	return nil
+	return d.deleteTXTRecord(acme.UnFqdn(authZone), fieldName)
 }
 
 // Timeout returns the values (20*time.Minute, 20*time.Second) which
@@ -149,16 +154,18 @@ func (d *DNSProvider) sendRequest(method string, resource string, payload interf
 	if err != nil {
 		return nil, err
 	}
+
 	req, err := http.NewRequest(method, url, bytes.NewReader(body))
 	if err != nil {
 		return nil, err
 	}
+
 	req.Header.Set("Content-Type", "application/json")
 	if len(d.apiKey) > 0 {
 		req.Header.Set("X-Api-Key", d.apiKey)
 	}
 
-	client := &http.Client{Timeout: time.Duration(10 * time.Second)}
+	client := &http.Client{Timeout: 10 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err

@@ -17,7 +17,7 @@ var (
 func init() {
 	duckdnsToken = os.Getenv("DUCKDNS_TOKEN")
 	duckdnsDomain = os.Getenv("DUCKDNS_DOMAIN")
-	if len(duckdnsDomain) > 0 && len(duckdnsDomain) > 0 {
+	if len(duckdnsToken) > 0 && len(duckdnsDomain) > 0 {
 		duckdnsLiveTest = true
 	}
 }

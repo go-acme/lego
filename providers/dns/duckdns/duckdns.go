@@ -1,5 +1,4 @@
-// Adds lego support for http://duckdns.org .
-//
+// Package duckdns Adds lego support for http://duckdns.org .
 // See http://www.duckdns.org/spec.jsp for more info on updating TXT records.
 package duckdns
 

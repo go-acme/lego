@@ -102,7 +102,7 @@ func getJSON(uri string, respBody interface{}) (http.Header, error) {
 func postJSON(j *jws, uri string, reqBody, respBody interface{}) (http.Header, error) {
 	jsonBytes, err := json.Marshal(reqBody)
 	if err != nil {
-		return nil, errors.New("Failed to marshal network message...")
+		return nil, errors.New("Failed to marshal network message")
 	}
 
 	resp, err := j.post(uri, jsonBytes)

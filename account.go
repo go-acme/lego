@@ -8,6 +8,7 @@ import (
 	"path"
 
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/log"
 )
 
 // Account represents a users local saved credentials
@@ -25,23 +26,23 @@ func NewAccount(email string, conf *Configuration) *Account {
 	// TODO: move to function in configuration?
 	accKeyPath := accKeysPath + string(os.PathSeparator) + email + ".key"
 	if err := checkFolder(accKeysPath); err != nil {
-		logger().Fatalf("Could not check/create directory for account %s: %v", email, err)
+		log.Fatalf("Could not check/create directory for account %s: %v", email, err)
 	}
 
 	var privKey crypto.PrivateKey
 	if _, err := os.Stat(accKeyPath); os.IsNotExist(err) {
 
-		logger().Printf("No key found for account %s. Generating a curve P384 EC key.", email)
+		log.Printf("No key found for account %s. Generating a curve P384 EC key.", email)
 		privKey, err = generatePrivateKey(accKeyPath)
 		if err != nil {
-			logger().Fatalf("Could not generate RSA private account key for account %s: %v", email, err)
+			log.Fatalf("Could not generate RSA private account key for account %s: %v", email, err)
 		}
 
-		logger().Printf("Saved key to %s", accKeyPath)
+		log.Printf("Saved key to %s", accKeyPath)
 	} else {
 		privKey, err = loadPrivateKey(accKeyPath)
 		if err != nil {
-			logger().Fatalf("Could not load RSA private key from file %s: %v", accKeyPath, err)
+			log.Fatalf("Could not load RSA private key from file %s: %v", accKeyPath, err)
 		}
 	}
 
@@ -52,27 +53,51 @@ func NewAccount(email string, conf *Configuration) *Account {
 
 	fileBytes, err := ioutil.ReadFile(accountFile)
 	if err != nil {
-		logger().Fatalf("Could not load file for account %s -> %v", email, err)
+		log.Fatalf("Could not load file for account %s -> %v", email, err)
 	}
 
 	var acc Account
 	err = json.Unmarshal(fileBytes, &acc)
 	if err != nil {
-		logger().Fatalf("Could not parse file for account %s -> %v", email, err)
+		log.Fatalf("Could not parse file for account %s -> %v", email, err)
 	}
 
 	acc.key = privKey
 	acc.conf = conf
 
-	if acc.Registration == nil {
-		logger().Fatalf("Could not load account for %s. Registration is nil.", email)
+	if acc.Registration == nil || acc.Registration.Body.Status == "" {
+		reg, err := tryRecoverAccount(privKey, conf)
+		if err != nil {
+			log.Fatalf("Could not load account for %s. Registration is nil -> %#v", email, err)
+		}
+
+		acc.Registration = reg
+		err = acc.Save()
+		if err != nil {
+			log.Fatalf("Could not save account for %s. Registration is nil -> %#v", email, err)
+		}
 	}
 
 	if acc.conf == nil {
-		logger().Fatalf("Could not load account for %s. Configuration is nil.", email)
+		log.Fatalf("Could not load account for %s. Configuration is nil.", email)
 	}
 
 	return &acc
+}
+
+func tryRecoverAccount(privKey crypto.PrivateKey, conf *Configuration) (*acme.RegistrationResource, error) {
+	// couldn't load account but got a key. Try to look the account up.
+	serverURL := conf.context.GlobalString("server")
+	client, err := acme.NewClient(serverURL, &Account{key: privKey, conf: conf}, acme.RSA2048)
+	if err != nil {
+		return nil, err
+	}
+
+	reg, err := client.ResolveAccountByKey()
+	if err != nil {
+		return nil, err
+	}
+	return reg, nil
 }
 
 /** Implementation of the acme.User interface **/

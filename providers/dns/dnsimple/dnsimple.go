@@ -23,14 +23,14 @@ type DNSProvider struct {
 // See: https://developer.dnsimple.com/v2/#authentication
 func NewDNSProvider() (*DNSProvider, error) {
 	accessToken := os.Getenv("DNSIMPLE_OAUTH_TOKEN")
-	baseUrl := os.Getenv("DNSIMPLE_BASE_URL")
+	baseURL := os.Getenv("DNSIMPLE_BASE_URL")
 
-	return NewDNSProviderCredentials(accessToken, baseUrl)
+	return NewDNSProviderCredentials(accessToken, baseURL)
 }
 
 // NewDNSProviderCredentials uses the supplied credentials to return a
 // DNSProvider instance configured for dnsimple.
-func NewDNSProviderCredentials(accessToken, baseUrl string) (*DNSProvider, error) {
+func NewDNSProviderCredentials(accessToken, baseURL string) (*DNSProvider, error) {
 	if accessToken == "" {
 		return nil, fmt.Errorf("DNSimple OAuth token is missing")
 	}
@@ -38,8 +38,8 @@ func NewDNSProviderCredentials(accessToken, baseUrl string) (*DNSProvider, error
 	client := dnsimple.NewClient(dnsimple.NewOauthTokenCredentials(accessToken))
 	client.UserAgent = "lego"
 
-	if baseUrl != "" {
-		client.BaseURL = baseUrl
+	if baseURL != "" {
+		client.BaseURL = baseURL
 	}
 
 	return &DNSProvider{client: client}, nil
@@ -119,8 +119,7 @@ func (c *DNSProvider) getHostedZone(domain string) (string, error) {
 	}
 
 	if hostedZone.ID == 0 {
-		return "", fmt.Errorf("Zone %s not found in DNSimple for domain %s", authZone, domain)
-
+		return "", fmt.Errorf("zone %s not found in DNSimple for domain %s", authZone, domain)
 	}
 
 	return hostedZone.Name, nil
@@ -173,7 +172,7 @@ func (c *DNSProvider) getAccountID() (string, error) {
 	}
 
 	if whoamiResponse.Data.Account == nil {
-		return "", fmt.Errorf("DNSimple user tokens are not supported, please use an account token.")
+		return "", fmt.Errorf("DNSimple user tokens are not supported, please use an account token")
 	}
 
 	return strconv.FormatInt(whoamiResponse.Data.Account.ID, 10), nil

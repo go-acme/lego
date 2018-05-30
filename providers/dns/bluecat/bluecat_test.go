@@ -4,8 +4,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -14,7 +15,7 @@ var (
 	bluecatUserName   string
 	bluecatPassword   string
 	bluecatConfigName string
-	bluecatDnsView    string
+	bluecatDNSView    string
 	bluecatDomain     string
 )
 
@@ -24,8 +25,13 @@ func init() {
 	bluecatPassword = os.Getenv("BLUECAT_PASSWORD")
 	bluecatDomain = os.Getenv("BLUECAT_DOMAIN")
 	bluecatConfigName = os.Getenv("BLUECAT_CONFIG_NAME")
-	bluecatDnsView = os.Getenv("BLUECAT_DNS_VIEW")
-	if len(bluecatServer) > 0 && len(bluecatDomain) > 0 && len(bluecatUserName) > 0 && len(bluecatPassword) > 0 && len(bluecatConfigName) > 0 && len(bluecatDnsView) > 0 {
+	bluecatDNSView = os.Getenv("BLUECAT_DNS_VIEW")
+	if len(bluecatServer) > 0 &&
+		len(bluecatDomain) > 0 &&
+		len(bluecatUserName) > 0 &&
+		len(bluecatPassword) > 0 &&
+		len(bluecatConfigName) > 0 &&
+		len(bluecatDNSView) > 0 {
 		bluecatLiveTest = true
 	}
 }

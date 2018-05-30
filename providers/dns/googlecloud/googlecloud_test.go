@@ -80,6 +80,7 @@ func TestLiveGoogleCloudPresentMultiple(t *testing.T) {
 
 	// Check that we're able to create multiple entries
 	err = provider.Present(gcloudDomain, "1", "123d==")
+	assert.NoError(t, err)
 	err = provider.Present(gcloudDomain, "2", "123d==")
 	assert.NoError(t, err)
 }

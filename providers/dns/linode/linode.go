@@ -19,7 +19,7 @@ const (
 )
 
 type hostedZoneInfo struct {
-	domainId     int
+	domainID     int
 	resourceName string
 }
 
@@ -72,7 +72,7 @@ func (p *DNSProvider) Present(domain, token, keyAuth string) error {
 		return err
 	}
 
-	if _, err = p.linode.CreateDomainResourceTXT(zone.domainId, acme.UnFqdn(fqdn), value, 60); err != nil {
+	if _, err = p.linode.CreateDomainResourceTXT(zone.domainID, acme.UnFqdn(fqdn), value, 60); err != nil {
 		return err
 	}
 
@@ -88,7 +88,7 @@ func (p *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	// Get all TXT records for the specified domain.
-	resources, err := p.linode.GetResourcesByType(zone.domainId, "TXT")
+	resources, err := p.linode.GetResourcesByType(zone.domainID, "TXT")
 	if err != nil {
 		return err
 	}
@@ -101,7 +101,7 @@ func (p *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 				return err
 			}
 			if resp.ResourceID != resource.ResourceID {
-				return errors.New("Error deleting resource: resource IDs do not match!")
+				return errors.New("error deleting resource: resource IDs do not match")
 			}
 			break
 		}
@@ -125,7 +125,7 @@ func (p *DNSProvider) getHostedZoneInfo(fqdn string) (*hostedZoneInfo, error) {
 	}
 
 	return &hostedZoneInfo{
-		domainId:     domain.DomainID,
+		domainID:     domain.DomainID,
 		resourceName: resourceName,
 	}, nil
 }

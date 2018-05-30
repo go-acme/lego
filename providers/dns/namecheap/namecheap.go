@@ -144,7 +144,7 @@ func newChallenge(domain, keyAuth string, tlds map[string]string) (*challenge, e
 		}
 	}
 	if longest < 1 {
-		return nil, fmt.Errorf("Invalid domain name '%s'", domain)
+		return nil, fmt.Errorf("invalid domain name %q", domain)
 	}
 
 	tld := strings.Join(parts[longest:], ".")
@@ -318,7 +318,7 @@ func (d *DNSProvider) setHosts(ch *challenge, hosts []host) error {
 			shr.Errors[0].Description, shr.Errors[0].Number)
 	}
 	if shr.Result.IsSuccess != "true" {
-		return fmt.Errorf("Namecheap setHosts failed.")
+		return fmt.Errorf("Namecheap setHosts failed")
 	}
 
 	return nil

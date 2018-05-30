@@ -1,4 +1,4 @@
-// Package OVH implements a DNS provider for solving the DNS-01
+// Package ovh implements a DNS provider for solving the DNS-01
 // challenge using OVH DNS.
 package ovh
 

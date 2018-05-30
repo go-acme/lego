@@ -171,7 +171,7 @@ func (c *Client) Register(tosAgreed bool) (*RegistrationResource, error) {
 	return reg, nil
 }
 
-// Register the current account to the ACME server.
+// RegisterWithExternalAccountBinding Register the current account to the ACME server.
 func (c *Client) RegisterWithExternalAccountBinding(tosAgreed bool, kid string, hmacEncoded string) (*RegistrationResource, error) {
 	if c == nil || c.user == nil {
 		return nil, errors.New("acme: cannot register a nil client or user")

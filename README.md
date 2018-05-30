@@ -7,10 +7,6 @@ Let's Encrypt client and ACME library written in Go
 [![Dev Chat](https://img.shields.io/badge/dev%20chat-gitter-blue.svg?label=dev+chat)](https://gitter.im/xenolf/lego)
 [![Beerpay](https://beerpay.io/xenolf/lego/badge.svg)](https://beerpay.io/xenolf/lego)
 
-## General
-
-This is a work in progress. Please do *NOT* run this on a production server and please report any bugs you find!
-
 ## Installation
 
 lego supports both binary installs and install from source.

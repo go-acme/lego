@@ -87,6 +87,35 @@ func (j *jws) signContent(url string, content []byte) (*jose.JSONWebSignature, e
 	return signed, nil
 }
 
+func (j *jws) signEABContent(url, kid string, hmac []byte) (*jose.JSONWebSignature, error) {
+	jwk := jose.JSONWebKey{Key: j.privKey}
+	jwkJSON, err := jwk.Public().MarshalJSON()
+	if err != nil {
+		return nil, fmt.Errorf("acme: error encoding eab jwk key: %s", err.Error())
+	}
+
+	signer, err := jose.NewSigner(
+		jose.SigningKey{Algorithm: jose.HS256, Key: hmac},
+		&jose.SignerOptions{
+			EmbedJWK:    false,
+			ExtraHeaders: map[jose.HeaderKey]interface{}{
+				"kid": kid,
+				"url": url,
+			},
+		},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create External Account Binding jose signer -> %s", err.Error())
+	}
+
+	signed, err := signer.Sign(jwkJSON)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to External Account Binding sign content -> %s", err.Error())
+	}
+
+	return signed, nil
+}
+
 func (j *jws) Nonce() (string, error) {
 	if nonce, ok := j.nonces.Pop(); ok {
 		return nonce, nil

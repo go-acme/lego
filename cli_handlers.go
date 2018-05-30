@@ -122,6 +122,10 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 		client.ExcludeChallenges([]acme.Challenge{acme.HTTP01})
 	}
 
+	if client.GetExternalAccountRequired() && !c.GlobalIsSet("eab") {
+		logger().Fatal("Server requires External Account Binding. Use --eab with --kid and --hmac.")
+	}
+
 	return conf, acc, client
 }
 
@@ -241,6 +245,8 @@ func readCSRFile(filename string) (*x509.CertificateRequest, error) {
 }
 
 func run(c *cli.Context) error {
+	var err error
+
 	conf, acc, client := setup(c)
 	if acc.Registration == nil {
 		accepted := handleTOS(c, client)
@@ -248,7 +254,25 @@ func run(c *cli.Context) error {
 			logger().Fatal("You did not accept the TOS. Unable to proceed.")
 		}
 
-		reg, err := client.Register(accepted)
+		var reg *acme.RegistrationResource
+
+		if c.GlobalBool("eab") {
+			kid := c.GlobalString("kid")
+			hmacEncoded := c.GlobalString("hmac")
+
+			if kid == "" || hmacEncoded == "" {
+				logger().Fatalf("Requires arguments --kid and --hmac.")
+			}
+
+			reg, err = client.RegisterWithExternalAccountBinding(
+				accepted,
+				kid,
+				hmacEncoded,
+			)
+		} else {
+			reg, err = client.Register(accepted)
+		}
+
 		if err != nil {
 			logger().Fatalf("Could not complete registration\n\t%s", err.Error())
 		}
@@ -301,7 +325,7 @@ func run(c *cli.Context) error {
 		os.Exit(1)
 	}
 
-	if err := checkFolder(conf.CertPath()); err != nil {
+	if err = checkFolder(conf.CertPath()); err != nil {
 		logger().Fatalf("Could not check/create path: %s", err.Error())
 	}
 

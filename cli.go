@@ -128,6 +128,18 @@ func main() {
 			Name:  "accept-tos, a",
 			Usage: "By setting this flag to true you indicate that you accept the current Let's Encrypt terms of service.",
 		},
+		cli.BoolFlag{
+			Name: "eab",
+			Usage: "Use External Account Binding for account registration. Requires --kid and --hmac.",
+		},
+		cli.StringFlag{
+			Name: "kid",
+			Usage: "Key identifier from External CA. Used for External Account Binding.",
+		},
+		cli.StringFlag{
+			Name: "hmac",
+			Usage: "MAC key from External CA. Should be in Base64 URL Encoding without padding format. Used for External Account Binding.",
+		},
 		cli.StringFlag{
 			Name:  "key-type, k",
 			Value: "rsa2048",

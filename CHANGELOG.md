@@ -2,11 +2,6 @@
 
 ## [v1.0.0] - 2018-05-30
 
-### Added:
-- **[infrastructure]** Vendored dependencies using [dep](https://github.com/golang/dep).
-- **[infrastructure]** Added [gometalinter](https://github.com/alecthomas/gometalinter) to CI.
-- **[infrastructure]** Updated Dockerfile to use multistage build.
-
 ### Changed:
 - **[lib]** Deprecates the `acmev1` in favor of `acmev2`.
 - **[dnsprovider]** Renamed `/providers/dns/googlecloud` to `/providers/dns/gcloud`.

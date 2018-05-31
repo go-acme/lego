@@ -63,7 +63,7 @@ func (c customRetryer) RetryRules(r *request.Request) time.Duration {
 func NewDNSProvider() (*DNSProvider, error) {
 	r := customRetryer{}
 	r.NumMaxRetries = maxRetries
-	config := request.WithRetryer(aws.NewConfig().WithRegion("us-east-1"), r)
+	config := request.WithRetryer(aws.NewConfig(), r)
 	client := lightsail.New(session.New(config))
 
 	return &DNSProvider{

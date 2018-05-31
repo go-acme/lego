@@ -1,5 +1,13 @@
 # Changelog
 
+## [v1.0.0] - 2018-05-30
+
+### Changed:
+- **[lib]** ACME v2 Support.
+- **[dnsprovider]** Renamed `/providers/dns/googlecloud` to `/providers/dns/gcloud`.
+- **[dnsprovider]** Modified Google Cloud provider `gcloud.NewDNSProviderServiceAccount` function to extract the project id directly from the service account file.
+- **[dnsprovider]** Made errors more verbose for the Cloudflare provider.
+
 ## [v0.5.0] - 2018-05-29
 
 ### Added:

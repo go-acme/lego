@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-var fakeAuroraDNSUserId = "asdf1234"
+var fakeAuroraDNSUserID = "asdf1234"
 var fakeAuroraDNSKey = "key"
 
 func TestAuroraDNSPresent(t *testing.T) {
@@ -60,7 +60,7 @@ func TestAuroraDNSPresent(t *testing.T) {
 
 	defer mock.Close()
 
-	auroraProvider, err := NewDNSProviderCredentials(mock.URL, fakeAuroraDNSUserId, fakeAuroraDNSKey)
+	auroraProvider, err := NewDNSProviderCredentials(mock.URL, fakeAuroraDNSUserID, fakeAuroraDNSKey)
 	if auroraProvider == nil {
 		t.Fatal("Expected non-nil AuroraDNS provider, but was nil")
 	}
@@ -123,7 +123,7 @@ func TestAuroraDNSCleanUp(t *testing.T) {
 	}))
 	defer mock.Close()
 
-	auroraProvider, err := NewDNSProviderCredentials(mock.URL, fakeAuroraDNSUserId, fakeAuroraDNSKey)
+	auroraProvider, err := NewDNSProviderCredentials(mock.URL, fakeAuroraDNSUserID, fakeAuroraDNSKey)
 	if auroraProvider == nil {
 		t.Fatal("Expected non-nil AuroraDNS provider, but was nil")
 	}

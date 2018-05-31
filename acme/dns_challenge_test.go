@@ -100,9 +100,9 @@ func TestDNSValidServerResponse(t *testing.T) {
 	}))
 
 	manualProvider, _ := NewDNSProviderManual()
-	jws := &jws{privKey: privKey, directoryURL: ts.URL}
+	jws := &jws{privKey: privKey, getNonceURL: ts.URL}
 	solver := &dnsChallenge{jws: jws, validate: validate, provider: manualProvider}
-	clientChallenge := challenge{Type: "dns01", Status: "pending", URI: ts.URL, Token: "http8"}
+	clientChallenge := challenge{Type: "dns01", Status: "pending", URL: ts.URL, Token: "http8"}
 
 	go func() {
 		time.Sleep(time.Second * 2)

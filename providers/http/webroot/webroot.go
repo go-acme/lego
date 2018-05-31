@@ -35,12 +35,12 @@ func (w *HTTPProvider) Present(domain, token, keyAuth string) error {
 	challengeFilePath := path.Join(w.path, acme.HTTP01ChallengePath(token))
 	err = os.MkdirAll(path.Dir(challengeFilePath), 0755)
 	if err != nil {
-		return fmt.Errorf("Could not create required directories in webroot for HTTP challenge -> %v", err)
+		return fmt.Errorf("could not create required directories in webroot for HTTP challenge -> %v", err)
 	}
 
 	err = ioutil.WriteFile(challengeFilePath, []byte(keyAuth), 0644)
 	if err != nil {
-		return fmt.Errorf("Could not write file in webroot for HTTP challenge -> %v", err)
+		return fmt.Errorf("could not write file in webroot for HTTP challenge -> %v", err)
 	}
 
 	return nil
@@ -48,10 +48,9 @@ func (w *HTTPProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the file created for the challenge
 func (w *HTTPProvider) CleanUp(domain, token, keyAuth string) error {
-	var err error
-	err = os.Remove(path.Join(w.path, acme.HTTP01ChallengePath(token)))
+	err := os.Remove(path.Join(w.path, acme.HTTP01ChallengePath(token)))
 	if err != nil {
-		return fmt.Errorf("Could not remove file in webroot after HTTP challenge -> %v", err)
+		return fmt.Errorf("could not remove file in webroot after HTTP challenge -> %v", err)
 	}
 
 	return nil

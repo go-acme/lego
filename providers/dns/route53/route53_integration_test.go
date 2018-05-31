@@ -11,7 +11,6 @@ import (
 )
 
 func TestRoute53TTL(t *testing.T) {
-
 	m, err := testGetAndPreCheck()
 	if err != nil {
 		t.Skip(err.Error())
@@ -19,13 +18,14 @@ func TestRoute53TTL(t *testing.T) {
 
 	provider, err := NewDNSProvider()
 	if err != nil {
-		t.Fatalf("Fatal: %s", err.Error())
+		t.Fatal(err)
 	}
 
 	err = provider.Present(m["route53Domain"], "foo", "bar")
 	if err != nil {
-		t.Fatalf("Fatal: %s", err.Error())
+		t.Fatal(err)
 	}
+
 	// we need a separate R53 client here as the one in the DNS provider is
 	// unexported.
 	fqdn := "_acme-challenge." + m["route53Domain"] + "."
@@ -33,23 +33,25 @@ func TestRoute53TTL(t *testing.T) {
 	zoneID, err := provider.getHostedZoneID(fqdn)
 	if err != nil {
 		provider.CleanUp(m["route53Domain"], "foo", "bar")
-		t.Fatalf("Fatal: %s", err.Error())
+		t.Fatal(err)
 	}
+
 	params := &route53.ListResourceRecordSetsInput{
 		HostedZoneId: aws.String(zoneID),
 	}
 	resp, err := svc.ListResourceRecordSets(params)
 	if err != nil {
 		provider.CleanUp(m["route53Domain"], "foo", "bar")
-		t.Fatalf("Fatal: %s", err.Error())
+		t.Fatal(err)
 	}
 
 	for _, v := range resp.ResourceRecordSets {
-		if *v.Name == fqdn && *v.Type == "TXT" && *v.TTL == 10 {
+		if aws.StringValue(v.Name) == fqdn && aws.StringValue(v.Type) == "TXT" && aws.Int64Value(v.TTL) == 10 {
 			provider.CleanUp(m["route53Domain"], "foo", "bar")
 			return
 		}
 	}
+
 	provider.CleanUp(m["route53Domain"], "foo", "bar")
 	t.Fatalf("Could not find a TXT record for _acme-challenge.%s with a TTL of 10", m["route53Domain"])
 }

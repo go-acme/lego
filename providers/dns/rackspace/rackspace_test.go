@@ -42,13 +42,14 @@ func liveRackspaceEnv() {
 	os.Setenv("RACKSPACE_API_KEY", rackspaceAPIKey)
 }
 
-func startTestServers() (identityAPI, dnsAPI *httptest.Server) {
-	dnsAPI = httptest.NewServer(dnsMux())
+func startTestServers() (*httptest.Server, *httptest.Server) {
+	dnsAPI := httptest.NewServer(dnsMux())
 	dnsEndpoint := dnsAPI.URL + "/123456"
 
-	identityAPI = httptest.NewServer(identityHandler(dnsEndpoint))
+	identityAPI := httptest.NewServer(identityHandler(dnsEndpoint))
 	testAPIURL = identityAPI.URL + "/"
-	return
+
+	return identityAPI, dnsAPI
 }
 
 func closeTestServers(identityAPI, dnsAPI *httptest.Server) {
@@ -85,7 +86,6 @@ func dnsMux() *http.ServeMux {
 			return
 		}
 		w.WriteHeader(http.StatusBadRequest)
-		return
 	})
 
 	mux.HandleFunc("/123456/domains/112233/records", func(w http.ResponseWriter, r *http.Request) {

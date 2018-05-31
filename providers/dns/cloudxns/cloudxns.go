@@ -101,7 +101,7 @@ func (c *DNSProvider) getHostedZoneID(fqdn string) (string, error) {
 		}
 	}
 
-	return "", fmt.Errorf("Zone %s not found in cloudxns for domain %s", authZone, fqdn)
+	return "", fmt.Errorf("zone %s not found in cloudxns for domain %s", authZone, fqdn)
 }
 
 func (c *DNSProvider) findTxtRecord(zoneID, fqdn string) (string, error) {
@@ -122,7 +122,7 @@ func (c *DNSProvider) findTxtRecord(zoneID, fqdn string) (string, error) {
 		}
 	}
 
-	return "", fmt.Errorf("No existing record found for %s", fqdn)
+	return "", fmt.Errorf("no existing record found for %s", fqdn)
 }
 
 func (c *DNSProvider) addTxtRecord(zoneID, fqdn, value string, ttl int) error {
@@ -146,11 +146,7 @@ func (c *DNSProvider) addTxtRecord(zoneID, fqdn, value string, ttl int) error {
 	}
 
 	_, err = c.makeRequest("POST", "record", body)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func (c *DNSProvider) delTxtRecord(recordID, zoneID string) error {

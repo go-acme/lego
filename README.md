@@ -88,7 +88,7 @@ COMMANDS:
 GLOBAL OPTIONS:
    --domains value, -d value   Add a domain to the process. Can be specified multiple times.
    --csr value, -c value       Certificate signing request filename, if an external CSR is to be used
-   --server value, -s value    CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client. (default: "https://acme-v01.api.letsencrypt.org/directory")
+   --server value, -s value    CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client. (default: "https://acme-v02.api.letsencrypt.org/directory")
    --email value, -m value     Email used for registration and recovery contact.
    --accept-tos, -a            By setting this flag to true you indicate that you accept the current Let's Encrypt terms of service.
    --key-type value, -k value  Key type to use for private keys. Supported: rsa2048, rsa4096, rsa8192, ec256, ec384 (default: "rsa2048")

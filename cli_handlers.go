@@ -68,7 +68,7 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 		log.Fatal(err)
 	}
 
-	acme.UserAgent = fmt.Sprintf("le-go/cli %s", c.App.Version)
+	acme.UserAgent = fmt.Sprintf("lego-cli/%s", c.App.Version)
 
 	client, err := acme.NewClient(c.GlobalString("server"), acc, keyType)
 	if err != nil {

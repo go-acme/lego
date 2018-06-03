@@ -241,24 +241,27 @@ func TestNamecheapDomainSplit(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		valid := true
-		ch, err := newChallenge(test.domain, "", tlds)
-		if err != nil {
-			valid = false
-		}
+		test := test
+		t.Run(test.domain, func(t *testing.T) {
+			valid := true
+			ch, err := newChallenge(test.domain, "", tlds)
+			if err != nil {
+				valid = false
+			}
 
-		if test.valid && !valid {
-			t.Errorf("Expected '%s' to split", test.domain)
-		} else if !test.valid && valid {
-			t.Errorf("Expected '%s' to produce error", test.domain)
-		}
+			if test.valid && !valid {
+				t.Errorf("Expected '%s' to split", test.domain)
+			} else if !test.valid && valid {
+				t.Errorf("Expected '%s' to produce error", test.domain)
+			}
 
-		if test.valid && valid {
-			assertEq(t, "domain", ch.domain, test.domain)
-			assertEq(t, "tld", ch.tld, test.tld)
-			assertEq(t, "sld", ch.sld, test.sld)
-			assertEq(t, "host", ch.host, test.host)
-		}
+			if test.valid && valid {
+				assertEq(t, "domain", ch.domain, test.domain)
+				assertEq(t, "tld", ch.tld, test.tld)
+				assertEq(t, "sld", ch.sld, test.sld)
+				assertEq(t, "host", ch.host, test.host)
+			}
+		})
 	}
 }
 

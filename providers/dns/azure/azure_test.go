@@ -30,7 +30,7 @@ func init() {
 	}
 }
 
-func restoreAzureEnv() {
+func restoreEnv() {
 	os.Setenv("AZURE_CLIENT_ID", azureClientID)
 	os.Setenv("AZURE_SUBSCRIPTION_ID", azureSubscriptionID)
 }
@@ -39,27 +39,32 @@ func TestNewDNSProviderValid(t *testing.T) {
 	if !azureLiveTest {
 		t.Skip("skipping live test (requires credentials)")
 	}
+
+	defer restoreEnv()
 	os.Setenv("AZURE_CLIENT_ID", "")
+
 	_, err := NewDNSProviderCredentials(azureClientID, azureClientSecret, azureSubscriptionID, azureTenantID, azureResourceGroup)
 	assert.NoError(t, err)
-	restoreAzureEnv()
 }
 
 func TestNewDNSProviderValidEnv(t *testing.T) {
 	if !azureLiveTest {
 		t.Skip("skipping live test (requires credentials)")
 	}
+
+	defer restoreEnv()
 	os.Setenv("AZURE_CLIENT_ID", "other")
+
 	_, err := NewDNSProvider()
 	assert.NoError(t, err)
-	restoreAzureEnv()
 }
 
 func TestNewDNSProviderMissingCredErr(t *testing.T) {
+	defer restoreEnv()
 	os.Setenv("AZURE_SUBSCRIPTION_ID", "")
+
 	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "Azure configuration missing: AZURE_CLIENT_ID,AZURE_CLIENT_SECRET,AZURE_SUBSCRIPTION_ID,AZURE_TENANT_ID,AZURE_RESOURCE_GROUP")
-	restoreAzureEnv()
+	assert.EqualError(t, err, "Azure: some credentials information are missing: AZURE_CLIENT_ID,AZURE_CLIENT_SECRET,AZURE_SUBSCRIPTION_ID,AZURE_TENANT_ID,AZURE_RESOURCE_GROUP")
 }
 
 func TestLiveAzurePresent(t *testing.T) {

@@ -24,33 +24,36 @@ func init() {
 	}
 }
 
-func restoreCloudXNSEnv() {
+func restoreEnv() {
 	os.Setenv("CLOUDXNS_API_KEY", cxAPIKey)
 	os.Setenv("CLOUDXNS_SECRET_KEY", cxSecretKey)
 }
 
 func TestNewDNSProviderValid(t *testing.T) {
+	defer restoreEnv()
 	os.Setenv("CLOUDXNS_API_KEY", "")
 	os.Setenv("CLOUDXNS_SECRET_KEY", "")
+
 	_, err := NewDNSProviderCredentials("123", "123")
 	assert.NoError(t, err)
-	restoreCloudXNSEnv()
 }
 
 func TestNewDNSProviderValidEnv(t *testing.T) {
+	defer restoreEnv()
 	os.Setenv("CLOUDXNS_API_KEY", "123")
 	os.Setenv("CLOUDXNS_SECRET_KEY", "123")
+
 	_, err := NewDNSProvider()
 	assert.NoError(t, err)
-	restoreCloudXNSEnv()
 }
 
 func TestNewDNSProviderMissingCredErr(t *testing.T) {
+	defer restoreEnv()
 	os.Setenv("CLOUDXNS_API_KEY", "")
 	os.Setenv("CLOUDXNS_SECRET_KEY", "")
+
 	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "CloudXNS credentials missing")
-	restoreCloudXNSEnv()
+	assert.EqualError(t, err, "CloudXNS: some credentials information are missing: CLOUDXNS_API_KEY,CLOUDXNS_SECRET_KEY")
 }
 
 func TestCloudXNSPresent(t *testing.T) {

@@ -2,10 +2,11 @@ package otc
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/suite"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
 
 type OTCDNSTestSuite struct {
@@ -34,6 +35,8 @@ func (s *OTCDNSTestSuite) createDNSProvider() (*DNSProvider, error) {
 }
 
 func (s *OTCDNSTestSuite) TestOTCDNSLoginEnv() {
+	defer os.Clearenv()
+
 	os.Setenv("OTC_DOMAIN_NAME", "unittest1")
 	os.Setenv("OTC_USER_NAME", "unittest2")
 	os.Setenv("OTC_PASSWORD", "unittest3")
@@ -53,15 +56,13 @@ func (s *OTCDNSTestSuite) TestOTCDNSLoginEnv() {
 	provider, err = NewDNSProvider()
 	assert.Nil(s.T(), err)
 	assert.Equal(s.T(), provider.identityEndpoint, "https://iam.eu-de.otc.t-systems.com:443/v3/auth/tokens")
-
-	os.Clearenv()
 }
 
 func (s *OTCDNSTestSuite) TestOTCDNSLoginEnvEmpty() {
-	_, err := NewDNSProvider()
-	assert.Equal(s.T(), "OTC credentials missing", err.Error())
+	defer os.Clearenv()
 
-	os.Clearenv()
+	_, err := NewDNSProvider()
+	assert.EqualError(s.T(), err, "OTC: some credentials information are missing: OTC_DOMAIN_NAME,OTC_USER_NAME,OTC_PASSWORD,OTC_PROJECT_NAME")
 }
 
 func (s *OTCDNSTestSuite) TestOTCDNSLogin() {

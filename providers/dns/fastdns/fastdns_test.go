@@ -29,7 +29,7 @@ func init() {
 	}
 }
 
-func restoreFastdnsEnv() {
+func restoreEnv() {
 	os.Setenv("AKAMAI_HOST", host)
 	os.Setenv("AKAMAI_CLIENT_TOKEN", clientToken)
 	os.Setenv("AKAMAI_CLIENT_SECRET", clientSecret)
@@ -37,33 +37,36 @@ func restoreFastdnsEnv() {
 }
 
 func TestNewDNSProviderValid(t *testing.T) {
+	defer restoreEnv()
 	os.Setenv("AKAMAI_HOST", "")
 	os.Setenv("AKAMAI_CLIENT_TOKEN", "")
 	os.Setenv("AKAMAI_CLIENT_SECRET", "")
 	os.Setenv("AKAMAI_ACCESS_TOKEN", "")
+
 	_, err := NewDNSProviderClient("somehost", "someclienttoken", "someclientsecret", "someaccesstoken")
 	assert.NoError(t, err)
-	restoreFastdnsEnv()
 }
+
 func TestNewDNSProviderValidEnv(t *testing.T) {
+	defer restoreEnv()
 	os.Setenv("AKAMAI_HOST", "somehost")
 	os.Setenv("AKAMAI_CLIENT_TOKEN", "someclienttoken")
 	os.Setenv("AKAMAI_CLIENT_SECRET", "someclientsecret")
 	os.Setenv("AKAMAI_ACCESS_TOKEN", "someaccesstoken")
+
 	_, err := NewDNSProvider()
 	assert.NoError(t, err)
-	restoreFastdnsEnv()
 }
 
 func TestNewDNSProviderMissingCredErr(t *testing.T) {
+	defer restoreEnv()
 	os.Setenv("AKAMAI_HOST", "")
 	os.Setenv("AKAMAI_CLIENT_TOKEN", "")
 	os.Setenv("AKAMAI_CLIENT_SECRET", "")
 	os.Setenv("AKAMAI_ACCESS_TOKEN", "")
 
 	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "Akamai FastDNS credentials missing")
-	restoreFastdnsEnv()
+	assert.EqualError(t, err, "FastDNS: some credentials information are missing: AKAMAI_HOST,AKAMAI_CLIENT_TOKEN,AKAMAI_CLIENT_SECRET,AKAMAI_ACCESS_TOKEN")
 }
 
 func TestLiveFastdnsPresent(t *testing.T) {

@@ -22,22 +22,26 @@ func init() {
 	}
 }
 
-func restoreDuckdnsEnv() {
+func restoreEnv() {
 	os.Setenv("DUCKDNS_TOKEN", duckdnsToken)
 }
 
 func TestNewDNSProviderValidEnv(t *testing.T) {
+	defer restoreEnv()
 	os.Setenv("DUCKDNS_TOKEN", "123")
+
 	_, err := NewDNSProvider()
 	assert.NoError(t, err)
-	restoreDuckdnsEnv()
 }
+
 func TestNewDNSProviderMissingCredErr(t *testing.T) {
+	defer restoreEnv()
 	os.Setenv("DUCKDNS_TOKEN", "")
+
 	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "environment variable DUCKDNS_TOKEN not set")
-	restoreDuckdnsEnv()
+	assert.EqualError(t, err, "DuckDNS: some credentials information are missing: DUCKDNS_TOKEN")
 }
+
 func TestLiveDuckdnsPresent(t *testing.T) {
 	if !duckdnsLiveTest {
 		t.Skip("skipping live test")

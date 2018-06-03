@@ -27,7 +27,7 @@ func init() {
 	}
 }
 
-func TestLivenamedotcomPresent(t *testing.T) {
+func TestLiveNamedotcomPresent(t *testing.T) {
 	if !namedotcomLiveTest {
 		t.Skip("skipping live test")
 	}
@@ -43,7 +43,7 @@ func TestLivenamedotcomPresent(t *testing.T) {
 // Cleanup
 //
 
-func TestLivenamedotcomCleanUp(t *testing.T) {
+func TestLiveNamedotcomCleanUp(t *testing.T) {
 	if !namedotcomLiveTest {
 		t.Skip("skipping live test")
 	}

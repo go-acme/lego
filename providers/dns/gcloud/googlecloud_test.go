@@ -27,7 +27,7 @@ func init() {
 	}
 }
 
-func restoreGCloudEnv() {
+func restoreEnv() {
 	os.Setenv("GCE_PROJECT", gcloudProject)
 }
 
@@ -35,27 +35,32 @@ func TestNewDNSProviderValid(t *testing.T) {
 	if !gcloudLiveTest {
 		t.Skip("skipping live test (requires credentials)")
 	}
+
+	defer restoreEnv()
 	os.Setenv("GCE_PROJECT", "")
+
 	_, err := NewDNSProviderCredentials("my-project")
 	assert.NoError(t, err)
-	restoreGCloudEnv()
 }
 
 func TestNewDNSProviderValidEnv(t *testing.T) {
 	if !gcloudLiveTest {
 		t.Skip("skipping live test (requires credentials)")
 	}
+
+	defer restoreEnv()
 	os.Setenv("GCE_PROJECT", "my-project")
+
 	_, err := NewDNSProvider()
 	assert.NoError(t, err)
-	restoreGCloudEnv()
 }
 
 func TestNewDNSProviderMissingCredErr(t *testing.T) {
+	defer restoreEnv()
 	os.Setenv("GCE_PROJECT", "")
+
 	_, err := NewDNSProvider()
 	assert.EqualError(t, err, "Google Cloud project name missing")
-	restoreGCloudEnv()
 }
 
 func TestLiveGoogleCloudPresent(t *testing.T) {

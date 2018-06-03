@@ -22,22 +22,24 @@ func init() {
 	}
 }
 
-func restoreNS1Env() {
+func restoreEnv() {
 	os.Setenv("NS1_API_KEY", apiKey)
 }
 
 func TestNewDNSProviderValid(t *testing.T) {
+	defer restoreEnv()
 	os.Setenv("NS1_API_KEY", "")
+
 	_, err := NewDNSProviderCredentials("123")
 	assert.NoError(t, err)
-	restoreNS1Env()
 }
 
 func TestNewDNSProviderMissingCredErr(t *testing.T) {
+	defer restoreEnv()
 	os.Setenv("NS1_API_KEY", "")
+
 	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "NS1 credentials missing")
-	restoreNS1Env()
+	assert.EqualError(t, err, "NS1: some credentials information are missing: NS1_API_KEY")
 }
 
 func TestLivePresent(t *testing.T) {

@@ -26,42 +26,46 @@ func init() {
 	}
 }
 
-func restorePdnsEnv() {
+func restoreEnv() {
 	os.Setenv("PDNS_API_URL", pdnsURLStr)
 	os.Setenv("PDNS_API_KEY", pdnsAPIKey)
 }
 
 func TestNewDNSProviderValid(t *testing.T) {
+	defer restoreEnv()
 	os.Setenv("PDNS_API_URL", "")
 	os.Setenv("PDNS_API_KEY", "")
+
 	tmpURL, _ := url.Parse("http://localhost:8081")
 	_, err := NewDNSProviderCredentials(tmpURL, "123")
 	assert.NoError(t, err)
-	restorePdnsEnv()
 }
 
 func TestNewDNSProviderValidEnv(t *testing.T) {
+	defer restoreEnv()
 	os.Setenv("PDNS_API_URL", "http://localhost:8081")
 	os.Setenv("PDNS_API_KEY", "123")
+
 	_, err := NewDNSProvider()
 	assert.NoError(t, err)
-	restorePdnsEnv()
 }
 
 func TestNewDNSProviderMissingHostErr(t *testing.T) {
+	defer restoreEnv()
 	os.Setenv("PDNS_API_URL", "")
 	os.Setenv("PDNS_API_KEY", "123")
+
 	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "PDNS API URL missing")
-	restorePdnsEnv()
+	assert.EqualError(t, err, "PDNS: some credentials information are missing: PDNS_API_URL")
 }
 
 func TestNewDNSProviderMissingKeyErr(t *testing.T) {
+	defer restoreEnv()
 	os.Setenv("PDNS_API_URL", pdnsURLStr)
 	os.Setenv("PDNS_API_KEY", "")
+
 	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "PDNS API key missing")
-	restorePdnsEnv()
+	assert.EqualError(t, err, "PDNS: some credentials information are missing: PDNS_API_KEY,PDNS_API_URL")
 }
 
 func TestPdnsPresentAndCleanup(t *testing.T) {

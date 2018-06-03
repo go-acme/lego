@@ -6,6 +6,9 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var fakeAuroraDNSUserID = "asdf1234"
@@ -26,28 +29,13 @@ func TestAuroraDNSPresent(t *testing.T) {
 
 		requestReceived = true
 
-		if got, want := r.Method, "POST"; got != want {
-			t.Errorf("Expected method to be '%s' but got '%s'", want, got)
-		}
-
-		if got, want := r.URL.Path, "/zones/c56a4180-65aa-42ec-a945-5fd21dec0538/records"; got != want {
-			t.Errorf("Expected path to be '%s' but got '%s'", want, got)
-		}
-
-		if got, want := r.Header.Get("Content-Type"), "application/json"; got != want {
-			t.Errorf("Expected Content-Type to be '%s' but got '%s'", want, got)
-		}
+		assert.Equal(t, http.MethodPost, r.Method, "method")
+		assert.Equal(t, "/zones/c56a4180-65aa-42ec-a945-5fd21dec0538/records", r.URL.Path, "Path")
+		assert.Equal(t, "application/json", r.Header.Get("Content-Type"), "Content-Type")
 
 		reqBody, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			t.Fatalf("Error reading request body: %v", err)
-		}
-
-		if got, want := string(reqBody),
-			`{"type":"TXT","name":"_acme-challenge","content":"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI","ttl":300}`; got != want {
-
-			t.Errorf("Expected body data to be: `%s` but got `%s`", want, got)
-		}
+		require.NoError(t, err, "reading request body")
+		assert.Equal(t, `{"type":"TXT","name":"_acme-challenge","content":"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI","ttl":300}`, string(reqBody))
 
 		w.WriteHeader(http.StatusCreated)
 		fmt.Fprintf(w, `{
@@ -61,22 +49,13 @@ func TestAuroraDNSPresent(t *testing.T) {
 	defer mock.Close()
 
 	auroraProvider, err := NewDNSProviderCredentials(mock.URL, fakeAuroraDNSUserID, fakeAuroraDNSKey)
-	if auroraProvider == nil {
-		t.Fatal("Expected non-nil AuroraDNS provider, but was nil")
-	}
-
-	if err != nil {
-		t.Fatalf("Expected no error creating provider, but got: %v", err)
-	}
+	require.NoError(t, err)
+	require.NotNil(t, auroraProvider)
 
 	err = auroraProvider.Present("example.com", "", "foobar")
-	if err != nil {
-		t.Fatalf("Expected no error creating TXT record, but got: %v", err)
-	}
+	require.NoError(t, err, "fail to create TXT record")
 
-	if !requestReceived {
-		t.Error("Expected request to be received by mock backend, but it wasn't")
-	}
+	assert.True(t, requestReceived, "Expected request to be received by mock backend, but it wasn't")
 }
 
 func TestAuroraDNSCleanUp(t *testing.T) {
@@ -105,18 +84,9 @@ func TestAuroraDNSCleanUp(t *testing.T) {
 
 		requestReceived = true
 
-		if got, want := r.Method, "DELETE"; got != want {
-			t.Errorf("Expected method to be '%s' but got '%s'", want, got)
-		}
-
-		if got, want := r.URL.Path,
-			"/zones/c56a4180-65aa-42ec-a945-5fd21dec0538/records/ec56a4180-65aa-42ec-a945-5fd21dec0538"; got != want {
-			t.Errorf("Expected path to be '%s' but got '%s'", want, got)
-		}
-
-		if got, want := r.Header.Get("Content-Type"), "application/json"; got != want {
-			t.Errorf("Expected Content-Type to be '%s' but got '%s'", want, got)
-		}
+		assert.Equal(t, http.MethodDelete, r.Method, "method")
+		assert.Equal(t, "/zones/c56a4180-65aa-42ec-a945-5fd21dec0538/records/ec56a4180-65aa-42ec-a945-5fd21dec0538", r.URL.Path, "Path")
+		assert.Equal(t, "application/json", r.Header.Get("Content-Type"), "Content-Type")
 
 		w.WriteHeader(http.StatusCreated)
 		fmt.Fprintf(w, `{}`)
@@ -124,25 +94,14 @@ func TestAuroraDNSCleanUp(t *testing.T) {
 	defer mock.Close()
 
 	auroraProvider, err := NewDNSProviderCredentials(mock.URL, fakeAuroraDNSUserID, fakeAuroraDNSKey)
-	if auroraProvider == nil {
-		t.Fatal("Expected non-nil AuroraDNS provider, but was nil")
-	}
-
-	if err != nil {
-		t.Fatalf("Expected no error creating provider, but got: %v", err)
-	}
+	require.NoError(t, err)
+	require.NotNil(t, auroraProvider)
 
 	err = auroraProvider.Present("example.com", "", "foobar")
-	if err != nil {
-		t.Fatalf("Expected no error creating TXT record, but got: %v", err)
-	}
+	require.NoError(t, err, "fail to create TXT record")
 
 	err = auroraProvider.CleanUp("example.com", "", "foobar")
-	if err != nil {
-		t.Fatalf("Expected no error removing TXT record, but got: %v", err)
-	}
+	require.NoError(t, err, "fail to remove TXT record")
 
-	if !requestReceived {
-		t.Error("Expected request to be received by mock backend, but it wasn't")
-	}
+	assert.True(t, requestReceived, "Expected request to be received by mock backend, but it wasn't")
 }

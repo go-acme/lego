@@ -5,15 +5,15 @@ package cloudflare
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
-	"os"
-	"strings"
 	"time"
 
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/providers/dns/envvar"
 )
 
 // CloudFlareAPIURL represents the API endpoint to call.
@@ -30,23 +30,19 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables: CLOUDFLARE_EMAIL
 // and CLOUDFLARE_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	email := os.Getenv("CLOUDFLARE_EMAIL")
-	key := os.Getenv("CLOUDFLARE_API_KEY")
-	return NewDNSProviderCredentials(email, key)
+	values, err := envvar.Get("CLOUDFLARE_EMAIL", "CLOUDFLARE_API_KEY")
+	if err != nil {
+		return nil, fmt.Errorf("CloudFlare: %v", err)
+	}
+
+	return NewDNSProviderCredentials(values["CLOUDFLARE_EMAIL"], values["CLOUDFLARE_API_KEY"])
 }
 
 // NewDNSProviderCredentials uses the supplied credentials to return a
 // DNSProvider instance configured for cloudflare.
 func NewDNSProviderCredentials(email, key string) (*DNSProvider, error) {
 	if email == "" || key == "" {
-		missingEnvVars := []string{}
-		if email == "" {
-			missingEnvVars = append(missingEnvVars, "CLOUDFLARE_EMAIL")
-		}
-		if key == "" {
-			missingEnvVars = append(missingEnvVars, "CLOUDFLARE_API_KEY")
-		}
-		return nil, fmt.Errorf("CloudFlare credentials missing: %s", strings.Join(missingEnvVars, ","))
+		return nil, errors.New("CloudFlare: some credentials information are missing")
 	}
 
 	return &DNSProvider{

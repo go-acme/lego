@@ -24,7 +24,7 @@ func init() {
 	}
 }
 
-func restoreCloudFlareEnv() {
+func restoreEnv() {
 	os.Setenv("CLOUDFLARE_EMAIL", cflareEmail)
 	os.Setenv("CLOUDFLARE_API_KEY", cflareAPIKey)
 }
@@ -32,32 +32,37 @@ func restoreCloudFlareEnv() {
 func TestNewDNSProviderValid(t *testing.T) {
 	os.Setenv("CLOUDFLARE_EMAIL", "")
 	os.Setenv("CLOUDFLARE_API_KEY", "")
+	defer restoreEnv()
+
 	_, err := NewDNSProviderCredentials("123", "123")
+
 	assert.NoError(t, err)
-	restoreCloudFlareEnv()
 }
 
 func TestNewDNSProviderValidEnv(t *testing.T) {
+	defer restoreEnv()
 	os.Setenv("CLOUDFLARE_EMAIL", "test@example.com")
 	os.Setenv("CLOUDFLARE_API_KEY", "123")
+
 	_, err := NewDNSProvider()
 	assert.NoError(t, err)
-	restoreCloudFlareEnv()
 }
 
 func TestNewDNSProviderMissingCredErr(t *testing.T) {
+	defer restoreEnv()
 	os.Setenv("CLOUDFLARE_EMAIL", "")
 	os.Setenv("CLOUDFLARE_API_KEY", "")
+
 	_, err := NewDNSProvider()
-  assert.EqualError(t, err, "CloudFlare credentials missing: CLOUDFLARE_EMAIL,CLOUDFLARE_API_KEY")
-	restoreCloudFlareEnv()
+	assert.EqualError(t, err, "CloudFlare: some credentials information are missing: CLOUDFLARE_EMAIL,CLOUDFLARE_API_KEY")
 }
 
-func TestNewDNSProviderMissingCredErrSingle(t *testing.T){
-  os.Setenv("CLOUDFLARE_EMAIL", "awesome@possum.com")
-  _, err:= NewDNSProvider()
-  assert.EqualError(t, err, "CloudFlare credentials missing: CLOUDFLARE_API_KEY")
-  restoreCloudFlareEnv()
+func TestNewDNSProviderMissingCredErrSingle(t *testing.T) {
+	defer restoreEnv()
+	os.Setenv("CLOUDFLARE_EMAIL", "awesome@possum.com")
+
+	_, err := NewDNSProvider()
+	assert.EqualError(t, err, "CloudFlare: some credentials information are missing: CLOUDFLARE_API_KEY")
 }
 
 func TestCloudFlarePresent(t *testing.T) {

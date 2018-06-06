@@ -23,6 +23,23 @@
 //
 // When the record is to be removed again, the program is called with the first
 // command-line parameter set to "cleanup" instead of "present".
+//
+// If you want to use the raw domain, token, and keyAuth values with your program, you can set EXEC_MODE=RAW
+//
+//  EXEC_MODE=RAW \
+//  EXEC_PATH=./update-dns.sh \
+//    lego --dns exec \
+//    --domains foo.example.com \
+//    --email invalid@example.com run
+//
+// It will then call the program './update-dns.sh' like this:
+//
+//  ./update-dns.sh "present" "foo.example.com." "--" "some-token" "KxAy-J3NwUmg9ZQuM-gP_Mq1nStaYSaP9tYQs5_-YsE.ksT-qywTd8058G-SHHWA3RAN72Pr0yWtPYmmY5UBpQ8"
+//
+// NOTE: The "--" is because the token MAY start with a -, and the called
+// program may try and interpret a - as indicating a flag.  In the case of
+// urfave, which is commonly used, you can use the "--" delimiter to specify the
+// start of positional arguments, and handle such a string safely.
 package exec
 
 import (
@@ -59,8 +76,15 @@ func NewDNSProviderProgram(program string) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfil the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
-	cmd := exec.Command(d.program, "present", fqdn, value, strconv.Itoa(ttl))
+	var cmd *exec.Cmd
+	m := os.Getenv("EXEC_MODE")
+
+	if m == "RAW" {
+		cmd = exec.Command(d.program, "present", "--", domain, token, keyAuth)
+	} else {
+		fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
+		cmd = exec.Command(d.program, "present", fqdn, value, strconv.Itoa(ttl))
+	}
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 

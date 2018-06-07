@@ -1,33 +1,30 @@
 package acme
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net"
 	"net/http"
+	"os"
 	"runtime"
 	"strings"
 	"time"
 )
 
-// UserAgent (if non-empty) will be tacked onto the User-Agent string in requests.
-var UserAgent string
+var (
+	// UserAgent (if non-empty) will be tacked onto the User-Agent string in requests.
+	UserAgent string
 
-// HTTPClient is an HTTP client with a reasonable timeout value.
-var HTTPClient = http.Client{
-	Transport: &http.Transport{
-		Proxy: http.ProxyFromEnvironment,
-		Dial: (&net.Dialer{
-			Timeout:   30 * time.Second,
-			KeepAlive: 30 * time.Second,
-		}).Dial,
-		TLSHandshakeTimeout:   15 * time.Second,
-		ResponseHeaderTimeout: 15 * time.Second,
-		ExpectContinueTimeout: 1 * time.Second,
-	},
-}
+	// HTTPClient is an HTTP client with a reasonable timeout value and
+	// potentially a custom *x509.CertPool based on the caCertificateEnvVar
+	// environment variable (see the `initCertPool` function)
+	HTTPClient http.Client
+)
 
 const (
 	// defaultGoUserAgent is the Go HTTP package user agent string. Too
@@ -36,7 +33,54 @@ const (
 
 	// ourUserAgent is the User-Agent of this underlying library package.
 	ourUserAgent = "xenolf-acme"
+
+	// caCertificateEnvVar is the environment variable name that can be used to
+	// specify the path to a PEM encoded CA Certificate that can be used to
+	// authenticate an ACME server with a HTTPS certificate not issued by a CA in
+	// the system-wide trusted root list.
+	caCertificateEnvVar = "CA_CERTIFICATE"
 )
+
+// init populates the default HTTPClient instance. The httpClient's Transport's
+// TLSClientConfig is populated with initCertPool to allow developers to
+// override the system trust store for interacting with test ACME servers.
+func init() {
+	HTTPClient = http.Client{
+		Transport: &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
+			Dial: (&net.Dialer{
+				Timeout:   30 * time.Second,
+				KeepAlive: 30 * time.Second,
+			}).Dial,
+			TLSHandshakeTimeout:   15 * time.Second,
+			ResponseHeaderTimeout: 15 * time.Second,
+			ExpectContinueTimeout: 1 * time.Second,
+			TLSClientConfig: &tls.Config{
+				RootCAs: initCertPool(),
+			},
+		},
+	}
+}
+
+// initCertPool creates a *x509.CertPool populated with the PEM certificate
+// found in the filepath specified in the caCertificateEnvVar OS environment
+// variable. If the caCertificateEnvVar is not set, or there is an error
+// creating a *x509.CertPool from the provided value then nil is returned and
+// the default Golang CertPool is used.
+func initCertPool() *x509.CertPool {
+	if customCACertPath := os.Getenv(caCertificateEnvVar); customCACertPath != "" {
+		customCA, err := ioutil.ReadFile(customCACertPath)
+		if err != nil {
+			return nil
+		}
+		certPool := x509.NewCertPool()
+		if ok := certPool.AppendCertsFromPEM(customCA); !ok {
+			return nil
+		}
+		return certPool
+	}
+	return nil
+}
 
 // httpHead performs a HEAD request with a proper User-Agent string.
 // The response body (resp.Body) is already closed when this function returns.

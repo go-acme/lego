@@ -23,7 +23,21 @@ var (
 	// HTTPClient is an HTTP client with a reasonable timeout value and
 	// potentially a custom *x509.CertPool based on the caCertificateEnvVar
 	// environment variable (see the `initCertPool` function)
-	HTTPClient http.Client
+	HTTPClient http.Client = http.Client{
+		Transport: &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
+			Dial: (&net.Dialer{
+				Timeout:   30 * time.Second,
+				KeepAlive: 30 * time.Second,
+			}).Dial,
+			TLSHandshakeTimeout:   15 * time.Second,
+			ResponseHeaderTimeout: 15 * time.Second,
+			ExpectContinueTimeout: 1 * time.Second,
+			TLSClientConfig: &tls.Config{
+				RootCAs: initCertPool(),
+			},
+		},
+	}
 )
 
 const (
@@ -40,27 +54,6 @@ const (
 	// the system-wide trusted root list.
 	caCertificateEnvVar = "CA_CERTIFICATE"
 )
-
-// init populates the default HTTPClient instance. The httpClient's Transport's
-// TLSClientConfig is populated with initCertPool to allow developers to
-// override the system trust store for interacting with test ACME servers.
-func init() {
-	HTTPClient = http.Client{
-		Transport: &http.Transport{
-			Proxy: http.ProxyFromEnvironment,
-			Dial: (&net.Dialer{
-				Timeout:   30 * time.Second,
-				KeepAlive: 30 * time.Second,
-			}).Dial,
-			TLSHandshakeTimeout:   15 * time.Second,
-			ResponseHeaderTimeout: 15 * time.Second,
-			ExpectContinueTimeout: 1 * time.Second,
-			TLSClientConfig: &tls.Config{
-				RootCAs: initCertPool(),
-			},
-		},
-	}
-}
 
 // initCertPool creates a *x509.CertPool populated with the PEM certificate
 // found in the filepath specified in the caCertificateEnvVar OS environment

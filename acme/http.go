@@ -23,7 +23,7 @@ var (
 	// HTTPClient is an HTTP client with a reasonable timeout value and
 	// potentially a custom *x509.CertPool based on the caCertificateEnvVar
 	// environment variable (see the `initCertPool` function)
-	HTTPClient http.Client = http.Client{
+	HTTPClient = http.Client{
 		Transport: &http.Transport{
 			Proxy: http.ProxyFromEnvironment,
 			Dial: (&net.Dialer{

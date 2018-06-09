@@ -120,6 +120,13 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 		}
 	}
 
+	if c.GlobalIsSet("tls") {
+		if strings.Index(c.GlobalString("tls"), ":") == -1 {
+			log.Fatalf("The --tls switch only accepts interface:port or :port for its argument.")
+		}
+		client.SetTLSAddress(c.GlobalString("tls"))
+	}
+
 	if c.GlobalIsSet("dns") {
 		provider, err := dns.NewDNSChallengeProviderByName(c.GlobalString("dns"))
 		if err != nil {

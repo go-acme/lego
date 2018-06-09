@@ -76,9 +76,6 @@ NAME:
 USAGE:
    lego [global options] command [command options] [arguments...]
 
-VERSION:
-   0.4.1
-
 COMMANDS:
      run      Register an account, then create and install a certificate
      revoke   Revoke a certificate
@@ -92,12 +89,16 @@ GLOBAL OPTIONS:
    --server value, -s value    CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client. (default: "https://acme-v02.api.letsencrypt.org/directory")
    --email value, -m value     Email used for registration and recovery contact.
    --accept-tos, -a            By setting this flag to true you indicate that you accept the current Let's Encrypt terms of service.
+   --eab                       Use External Account Binding for account registration. Requires --kid and --hmac.
+   --kid value                 Key identifier from External CA. Used for External Account Binding.
+   --hmac value                MAC key from External CA. Should be in Base64 URL Encoding without padding format. Used for External Account Binding.
    --key-type value, -k value  Key type to use for private keys. Supported: rsa2048, rsa4096, rsa8192, ec256, ec384 (default: "rsa2048")
-   --path value                Directory to use for storing the data (default: "/.lego")
+   --path value                Directory to use for storing the data (default: "/Users/wyattjohnson/Go/src/github.com/xenolf/lego/.lego")
    --exclude value, -x value   Explicitly disallow solvers by name from being used. Solvers: "http-01", "dns-01", "tls-alpn-01".
    --webroot value             Set the webroot folder to use for HTTP based challenges to write directly in a file in .well-known/acme-challenge
    --memcached-host value      Set the memcached host(s) to use for HTTP based challenges. Challenges will be written to all specified hosts.
    --http value                Set the port and interface to use for HTTP based challenges to listen on. Supported: interface:port or :port
+   --tls value                 Set the port and interface to use for TLS based challenges to listen on. Supported: interface:port or :port
    --dns value                 Solve a DNS challenge using the specified provider. Disables all other challenges. Run 'lego dnshelp' for help on usage.
    --http-timeout value        Set the HTTP timeout value to a specific value in seconds. The default is 10 seconds. (default: 0)
    --dns-timeout value         Set the DNS timeout value to a specific value in seconds. The default is 10 seconds. (default: 0)

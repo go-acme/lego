@@ -149,36 +149,53 @@ p9BI7gVKtWSZYegicA==
 	validFile := writeTemp(t, validFileContents, "valid.pem")
 
 	testCases := []struct {
-		Name      string
-		EnvVar    string
-		ExpectNil bool
+		Name        string
+		EnvVar      string
+		ExpectPanic bool
+		ExpectNil   bool
 	}{
+		// Setting the env var to a file that doesn't exist should panic
 		{
-			Name:      "No env var",
-			EnvVar:    "",
-			ExpectNil: true,
+			Name:        "Env var with missing file",
+			EnvVar:      "not.a.real.file.pem",
+			ExpectPanic: true,
 		},
+		// Setting the env var to a file that contains invalid content should panic
 		{
-			Name:      "Env var with missing file",
-			EnvVar:    "not.a.real.file.pem",
-			ExpectNil: true,
+			Name:        "Env var with invalid content",
+			EnvVar:      invalidFile,
+			ExpectPanic: true,
 		},
+		// Setting the env var to the empty string should not panic and should
+		// return nil
 		{
-			Name:      "Env var with invalid content",
-			EnvVar:    invalidFile,
-			ExpectNil: true,
+			Name:        "No env var",
+			EnvVar:      "",
+			ExpectPanic: false,
+			ExpectNil:   true,
 		},
+		// Setting the env var to a file that contains valid content should not
+		// panic and should not return nil
 		{
-			Name:      "Env var with valid content",
-			EnvVar:    validFile,
-			ExpectNil: false,
+			Name:        "Env var with valid content",
+			EnvVar:      validFile,
+			ExpectPanic: false,
+			ExpectNil:   false,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
-			os.Setenv(caCertificateEnvVar, tc.EnvVar)
-			defer os.Setenv(caCertificateEnvVar, "")
+			os.Setenv(caCertificatesEnvVar, tc.EnvVar)
+			defer os.Setenv(caCertificatesEnvVar, "")
+
+			defer func() {
+				if r := recover(); r == nil && tc.ExpectPanic {
+					t.Errorf("expected initCertPool() to panic, it did not")
+				} else if r != nil && !tc.ExpectPanic {
+					t.Errorf("expected initCertPool() to not panic, but it did")
+				}
+			}()
 
 			result := initCertPool()
 

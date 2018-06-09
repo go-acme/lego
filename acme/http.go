@@ -21,7 +21,7 @@ var (
 	UserAgent string
 
 	// HTTPClient is an HTTP client with a reasonable timeout value and
-	// potentially a custom *x509.CertPool based on the caCertificateEnvVar
+	// potentially a custom *x509.CertPool based on the caCertificatesEnvVar
 	// environment variable (see the `initCertPool` function)
 	HTTPClient = http.Client{
 		Transport: &http.Transport{
@@ -48,27 +48,29 @@ const (
 	// ourUserAgent is the User-Agent of this underlying library package.
 	ourUserAgent = "xenolf-acme"
 
-	// caCertificateEnvVar is the environment variable name that can be used to
-	// specify the path to a PEM encoded CA Certificate that can be used to
+	// caCertificatesEnvVar is the environment variable name that can be used to
+	// specify the path to PEM encoded CA Certificates that can be used to
 	// authenticate an ACME server with a HTTPS certificate not issued by a CA in
 	// the system-wide trusted root list.
-	caCertificateEnvVar = "CA_CERTIFICATE"
+	caCertificatesEnvVar = "LEGO_CA_CERTIFICATES"
 )
 
-// initCertPool creates a *x509.CertPool populated with the PEM certificate
-// found in the filepath specified in the caCertificateEnvVar OS environment
-// variable. If the caCertificateEnvVar is not set, or there is an error
-// creating a *x509.CertPool from the provided value then nil is returned and
-// the default Golang CertPool is used.
+// initCertPool creates a *x509.CertPool populated with the PEM certificates
+// found in the filepath specified in the caCertificatesEnvVar OS environment
+// variable. If the caCertificatesEnvVar is not set then initCertPool will
+// return nil. If there is an error creating a *x509.CertPool from the provided
+// caCertificatesEnvVar value then initCertPool will panic.
 func initCertPool() *x509.CertPool {
-	if customCACertPath := os.Getenv(caCertificateEnvVar); customCACertPath != "" {
-		customCA, err := ioutil.ReadFile(customCACertPath)
+	if customCACertsPath := os.Getenv(caCertificatesEnvVar); customCACertsPath != "" {
+		customCAs, err := ioutil.ReadFile(customCACertsPath)
 		if err != nil {
-			return nil
+			panic(fmt.Sprintf("error reading %s=%q: %s",
+				caCertificatesEnvVar, customCACertsPath, err.Error()))
 		}
 		certPool := x509.NewCertPool()
-		if ok := certPool.AppendCertsFromPEM(customCA); !ok {
-			return nil
+		if ok := certPool.AppendCertsFromPEM(customCAs); !ok {
+			panic(fmt.Sprintf("error creating x509 cert pool from %s=%q: %s",
+				caCertificatesEnvVar, customCACertsPath, err.Error()))
 		}
 		return certPool
 	}

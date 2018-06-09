@@ -83,6 +83,7 @@ func NewClient(caDirURL string, user User, keyType KeyType) (*Client, error) {
 	// spec to this map. Otherwise they won`t be found.
 	solvers := make(map[Challenge]solver)
 	solvers[HTTP01] = &httpChallenge{jws: jws, validate: validate, provider: &HTTPProviderServer{}}
+	solvers[TLSALPN01] = &tlsALPNChallenge{jws: jws, validate: validate, provider: &TLSALPNProviderServer{}}
 
 	return &Client{directory: dir, user: user, jws: jws, keyType: keyType, solvers: solvers}, nil
 }
@@ -94,6 +95,8 @@ func (c *Client) SetChallengeProvider(challenge Challenge, p ChallengeProvider) 
 		c.solvers[challenge] = &httpChallenge{jws: c.jws, validate: validate, provider: p}
 	case DNS01:
 		c.solvers[challenge] = &dnsChallenge{jws: c.jws, validate: validate, provider: p}
+	case TLSALPN01:
+		c.solvers[challenge] = &tlsALPNChallenge{jws: c.jws, validate: validate, provider: p}
 	default:
 		return fmt.Errorf("Unknown challenge %v", challenge)
 	}

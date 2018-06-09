@@ -56,6 +56,7 @@ Otherwise the release will be tagged with the `dev` version identifier.
 - Robust implementation of all ACME challenges
   - HTTP (http-01)
   - DNS (dns-01)
+  - TLS (tls-alpn-01)
 - SAN certificate support
 - Comes with multiple optional [DNS providers](https://github.com/xenolf/lego/tree/master/providers/dns)
 - [Custom challenge solvers](https://github.com/xenolf/lego/wiki/Writing-a-Challenge-Solver)
@@ -93,7 +94,7 @@ GLOBAL OPTIONS:
    --accept-tos, -a            By setting this flag to true you indicate that you accept the current Let's Encrypt terms of service.
    --key-type value, -k value  Key type to use for private keys. Supported: rsa2048, rsa4096, rsa8192, ec256, ec384 (default: "rsa2048")
    --path value                Directory to use for storing the data (default: "/.lego")
-   --exclude value, -x value   Explicitly disallow solvers by name from being used. Solvers: "http-01", "dns-01",.
+   --exclude value, -x value   Explicitly disallow solvers by name from being used. Solvers: "http-01", "dns-01", "tls-alpn-01".
    --webroot value             Set the webroot folder to use for HTTP based challenges to write directly in a file in .well-known/acme-challenge
    --memcached-host value      Set the memcached host(s) to use for HTTP based challenges. Challenges will be written to all specified hosts.
    --http value                Set the port and interface to use for HTTP based challenges to listen on. Supported: interface:port or :port
@@ -130,7 +131,7 @@ HTTP Port:
 
 TLS Port:
 
-- All TLS handshakes on port 443 for the TLS-SNI challenge.
+- All TLS handshakes on port 443 for the TLS-ALPN challenge.
 
 This traffic redirection is only needed as long as lego solves challenges. As soon as you have received your certificates you can deactivate the forwarding.
 

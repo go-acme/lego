@@ -137,7 +137,7 @@ func main() {
 		},
 		cli.StringSliceFlag{
 			Name:  "exclude, x",
-			Usage: "Explicitly disallow solvers by name from being used. Solvers: \"http-01\", \"dns-01\".",
+			Usage: "Explicitly disallow solvers by name from being used. Solvers: \"http-01\", \"dns-01\", \"tls-alpn-01\".",
 		},
 		cli.StringFlag{
 			Name:  "webroot",

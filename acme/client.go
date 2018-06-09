@@ -126,8 +126,8 @@ func (c *Client) SetHTTPAddress(iface string) error {
 // If this option is not used, the default port 443 and all interfaces will be used.
 // To only specify a port and no interface use the ":port" notation.
 //
-// NOTE: This REPLACES any custom TLS-SNI provider previously set by calling
-// c.SetChallengeProvider with the default TLS-SNI challenge provider.
+// NOTE: This REPLACES any custom TLS-ALPN provider previously set by calling
+// c.SetChallengeProvider with the default TLS-ALPN challenge provider.
 func (c *Client) SetTLSAddress(iface string) error {
 	host, port, err := net.SplitHostPort(iface)
 	if err != nil {

@@ -109,11 +109,11 @@ func TestInitCertPool(t *testing.T) {
 	writeTemp := func(t *testing.T, contents, prefix string) string {
 		tmpFile, err := ioutil.TempFile("", prefix)
 		if err != nil {
-			t.Fatalf("Unable to create tempfile: %s", err.Error())
+			t.Fatalf("Unable to create tempfile: %v", err)
 		}
 		err = ioutil.WriteFile(tmpFile.Name(), []byte(contents), 0700)
 		if err != nil {
-			t.Fatalf("Unable to write tempfile contents: %s", err.Error())
+			t.Fatalf("Unable to write tempfile contents: %v", err)
 		}
 		return tmpFile.Name()
 	}

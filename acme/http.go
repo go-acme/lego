@@ -64,13 +64,13 @@ func initCertPool() *x509.CertPool {
 	if customCACertsPath := os.Getenv(caCertificatesEnvVar); customCACertsPath != "" {
 		customCAs, err := ioutil.ReadFile(customCACertsPath)
 		if err != nil {
-			panic(fmt.Sprintf("error reading %s=%q: %s",
-				caCertificatesEnvVar, customCACertsPath, err.Error()))
+			panic(fmt.Sprintf("error reading %s=%q: %v",
+				caCertificatesEnvVar, customCACertsPath, err))
 		}
 		certPool := x509.NewCertPool()
 		if ok := certPool.AppendCertsFromPEM(customCAs); !ok {
-			panic(fmt.Sprintf("error creating x509 cert pool from %s=%q: %s",
-				caCertificatesEnvVar, customCACertsPath, err.Error()))
+			panic(fmt.Sprintf("error creating x509 cert pool from %s=%q: %v",
+				caCertificatesEnvVar, customCACertsPath, err))
 		}
 		return certPool
 	}

@@ -107,6 +107,7 @@ func TestInitCertPool(t *testing.T) {
 	// writeTemp creates a temp file with the given contents & prefix and returns
 	// the file path. If an error occurs, t.Fatalf is called to end the test run.
 	writeTemp := func(t *testing.T, contents, prefix string) string {
+		t.Helper()
 		tmpFile, err := ioutil.TempFile("", prefix)
 		if err != nil {
 			t.Fatalf("Unable to create tempfile: %v", err)

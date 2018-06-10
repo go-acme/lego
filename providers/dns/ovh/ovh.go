@@ -9,7 +9,7 @@ import (
 
 	"github.com/ovh/go-ovh/ovh"
 	"github.com/xenolf/lego/acme"
-	"github.com/xenolf/lego/providers/dns/envvar"
+	"github.com/xenolf/lego/platform/config/env"
 )
 
 // OVH API reference:       https://eu.api.ovh.com/
@@ -30,7 +30,7 @@ type DNSProvider struct {
 // OVH_APPLICATION_SECRET
 // OVH_CONSUMER_KEY
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := envvar.Get("OVH_ENDPOINT", "OVH_APPLICATION_KEY", "OVH_APPLICATION_SECRET", "OVH_CONSUMER_KEY")
+	values, err := env.Get("OVH_ENDPOINT", "OVH_APPLICATION_KEY", "OVH_APPLICATION_SECRET", "OVH_CONSUMER_KEY")
 	if err != nil {
 		return nil, fmt.Errorf("OVH: %v", err)
 	}

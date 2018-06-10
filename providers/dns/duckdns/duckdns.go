@@ -8,7 +8,7 @@ import (
 	"io/ioutil"
 
 	"github.com/xenolf/lego/acme"
-	"github.com/xenolf/lego/providers/dns/envvar"
+	"github.com/xenolf/lego/platform/config/env"
 )
 
 // DNSProvider adds and removes the record for the DNS challenge
@@ -20,7 +20,7 @@ type DNSProvider struct {
 // NewDNSProvider returns a new DNS provider using
 // environment variable DUCKDNS_TOKEN for adding and removing the DNS record.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := envvar.Get("DUCKDNS_TOKEN")
+	values, err := env.Get("DUCKDNS_TOKEN")
 	if err != nil {
 		return nil, fmt.Errorf("DuckDNS: %v", err)
 	}

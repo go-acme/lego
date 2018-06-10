@@ -7,12 +7,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/platform/config/env"
 )
 
 // Gandi API reference:       http://doc.livedns.gandi.net/
@@ -45,8 +45,12 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for Gandi.
 // Credentials must be passed in the environment variable: GANDIV5_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	apiKey := os.Getenv("GANDIV5_API_KEY")
-	return NewDNSProviderCredentials(apiKey)
+	values, err := env.Get("GANDIV5_API_KEY")
+	if err != nil {
+		return nil, fmt.Errorf("GandiDNS: %v", err)
+	}
+
+	return NewDNSProviderCredentials(values["GANDIV5_API_KEY"])
 }
 
 // NewDNSProviderCredentials uses the supplied credentials to return a

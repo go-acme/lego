@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/xenolf/lego/acme"
-	"github.com/xenolf/lego/providers/dns/envvar"
+	"github.com/xenolf/lego/platform/config/env"
 )
 
 const cloudXNSBaseURL = "https://www.cloudxns.net/api2/"
@@ -28,7 +28,7 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables: CLOUDXNS_API_KEY
 // and CLOUDXNS_SECRET_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := envvar.Get("CLOUDXNS_API_KEY", "CLOUDXNS_SECRET_KEY")
+	values, err := env.Get("CLOUDXNS_API_KEY", "CLOUDXNS_SECRET_KEY")
 	if err != nil {
 		return nil, fmt.Errorf("CloudXNS: %v", err)
 	}

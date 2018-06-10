@@ -9,7 +9,7 @@ import (
 	"github.com/edeckers/auroradnsclient/records"
 	"github.com/edeckers/auroradnsclient/zones"
 	"github.com/xenolf/lego/acme"
-	"github.com/xenolf/lego/providers/dns/envvar"
+	"github.com/xenolf/lego/platform/config/env"
 )
 
 // DNSProvider describes a provider for AuroraDNS
@@ -23,7 +23,7 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables: AURORA_USER_ID
 // and AURORA_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := envvar.Get("AURORA_USER_ID", "AURORA_KEY")
+	values, err := env.Get("AURORA_USER_ID", "AURORA_KEY")
 	if err != nil {
 		return nil, fmt.Errorf("AuroraDNS: %v", err)
 	}

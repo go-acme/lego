@@ -46,7 +46,7 @@ func TestNewDNSProviderMissingCredErr(t *testing.T) {
 	os.Setenv("DNSPOD_API_KEY", "")
 
 	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "dnspod credentials missing")
+	assert.EqualError(t, err, "DNSPod: some credentials information are missing: DNSPOD_API_KEY")
 }
 
 func TestLivednspodPresent(t *testing.T) {

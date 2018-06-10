@@ -13,7 +13,7 @@ import (
 
 	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/log"
-	"github.com/xenolf/lego/providers/dns/envvar"
+	"github.com/xenolf/lego/platform/config/env"
 )
 
 // GleSYS API reference: https://github.com/GleSYS/API/wiki/API-Documentation
@@ -35,7 +35,7 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables: GLESYS_API_USER
 // and GLESYS_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := envvar.Get("GLESYS_API_USER", "GLESYS_API_KEY")
+	values, err := env.Get("GLESYS_API_USER", "GLESYS_API_KEY")
 	if err != nil {
 		return nil, fmt.Errorf("GleSYS DNS: %v", err)
 	}

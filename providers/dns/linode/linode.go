@@ -4,12 +4,13 @@ package linode
 
 import (
 	"errors"
-	"os"
+	"fmt"
 	"strings"
 	"time"
 
 	"github.com/timewasted/linode/dns"
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/platform/config/env"
 )
 
 const (
@@ -31,8 +32,12 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for Linode.
 // Credentials must be passed in the environment variable: LINODE_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	apiKey := os.Getenv("LINODE_API_KEY")
-	return NewDNSProviderCredentials(apiKey)
+	values, err := env.Get("LINODE_API_KEY")
+	if err != nil {
+		return nil, fmt.Errorf("Linode: %v", err)
+	}
+
+	return NewDNSProviderCredentials(values["LINODE_API_KEY"])
 }
 
 // NewDNSProviderCredentials uses the supplied credentials to return a

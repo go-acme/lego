@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/xenolf/lego/acme"
-	"github.com/xenolf/lego/providers/dns/envvar"
+	"github.com/xenolf/lego/platform/config/env"
 	"gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
 )
@@ -21,7 +21,7 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for NS1.
 // Credentials must be passed in the environment variables: NS1_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := envvar.Get("NS1_API_KEY")
+	values, err := env.Get("NS1_API_KEY")
 	if err != nil {
 		return nil, fmt.Errorf("NS1: %v", err)
 	}

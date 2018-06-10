@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/xenolf/lego/acme"
-	"github.com/xenolf/lego/providers/dns/envvar"
+	"github.com/xenolf/lego/platform/config/env"
 )
 
 // Notes about namecheap's tool API:
@@ -48,7 +48,7 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables: NAMECHEAP_API_USER
 // and NAMECHEAP_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := envvar.Get("NAMECHEAP_API_USER", "NAMECHEAP_API_KEY")
+	values, err := env.Get("NAMECHEAP_API_USER", "NAMECHEAP_API_KEY")
 	if err != nil {
 		return nil, fmt.Errorf("NameCheap: %v", err)
 	}

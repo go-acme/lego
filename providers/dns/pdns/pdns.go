@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/xenolf/lego/acme"
-	"github.com/xenolf/lego/providers/dns/envvar"
+	"github.com/xenolf/lego/platform/config/env"
 )
 
 // DNSProvider is an implementation of the acme.ChallengeProvider interface
@@ -28,7 +28,7 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variable:
 // PDNS_API_URL and PDNS_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := envvar.Get("PDNS_API_KEY", "PDNS_API_URL")
+	values, err := env.Get("PDNS_API_KEY", "PDNS_API_URL")
 	if err != nil {
 		return nil, fmt.Errorf("PDNS: %v", err)
 	}

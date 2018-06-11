@@ -20,7 +20,7 @@ func TestTLSALPNChallenge(t *testing.T) {
 			InsecureSkipVerify: true,
 		})
 		if err != nil {
-			t.Errorf("Expected to connect to challenge server without an error. %s", err.Error())
+			t.Errorf("Expected to connect to challenge server without an error. %v", err)
 		}
 
 		// Expect the server to only return one certificate

@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/platform/config/env"
 )
 
 // DNSProvider is an implementation of the acme.ChallengeProvider interface that uses
@@ -45,20 +46,19 @@ type Record struct {
 // Credentials must be passed in the environment variables: DNSMADEEASY_API_KEY
 // and DNSMADEEASY_API_SECRET.
 func NewDNSProvider() (*DNSProvider, error) {
-	dnsmadeeasyAPIKey := os.Getenv("DNSMADEEASY_API_KEY")
-	dnsmadeeasyAPISecret := os.Getenv("DNSMADEEASY_API_SECRET")
-	dnsmadeeasySandbox := os.Getenv("DNSMADEEASY_SANDBOX")
+	values, err := env.Get("DNSMADEEASY_API_KEY", "DNSMADEEASY_API_SECRET")
+	if err != nil {
+		return nil, fmt.Errorf("DNSMadeEasy: %v", err)
+	}
 
 	var baseURL string
-
-	sandbox, _ := strconv.ParseBool(dnsmadeeasySandbox)
-	if sandbox {
+	if sandbox, _ := strconv.ParseBool(os.Getenv("DNSMADEEASY_SANDBOX")); sandbox {
 		baseURL = "https://api.sandbox.dnsmadeeasy.com/V2.0"
 	} else {
 		baseURL = "https://api.dnsmadeeasy.com/V2.0"
 	}
 
-	return NewDNSProviderCredentials(baseURL, dnsmadeeasyAPIKey, dnsmadeeasyAPISecret)
+	return NewDNSProviderCredentials(baseURL, values["DNSMADEEASY_API_KEY"], values["DNSMADEEASY_API_SECRET"])
 }
 
 // NewDNSProviderCredentials uses the supplied credentials to return a

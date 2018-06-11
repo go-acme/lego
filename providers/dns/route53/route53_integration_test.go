@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/route53"
+	"github.com/stretchr/testify/require"
 )
 
 func TestRoute53TTL(t *testing.T) {
@@ -17,14 +18,10 @@ func TestRoute53TTL(t *testing.T) {
 	}
 
 	provider, err := NewDNSProvider()
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	err = provider.Present(m["route53Domain"], "foo", "bar")
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	// we need a separate R53 client here as the one in the DNS provider is
 	// unexported.

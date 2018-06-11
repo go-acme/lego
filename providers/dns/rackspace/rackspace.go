@@ -8,10 +8,10 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/platform/config/env"
 )
 
 // rackspaceAPIURL represents the Identity API endpoint to call
@@ -28,9 +28,12 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables: RACKSPACE_USER
 // and RACKSPACE_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	user := os.Getenv("RACKSPACE_USER")
-	key := os.Getenv("RACKSPACE_API_KEY")
-	return NewDNSProviderCredentials(user, key)
+	values, err := env.Get("RACKSPACE_USER", "RACKSPACE_API_KEY")
+	if err != nil {
+		return nil, fmt.Errorf("Rackspace: %v", err)
+	}
+
+	return NewDNSProviderCredentials(values["RACKSPACE_USER"], values["RACKSPACE_API_KEY"])
 }
 
 // NewDNSProviderCredentials uses the supplied credentials to return a

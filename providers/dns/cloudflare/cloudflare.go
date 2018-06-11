@@ -5,15 +5,15 @@ package cloudflare
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
-	"os"
-	"strings"
 	"time"
 
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/platform/config/env"
 )
 
 // CloudFlareAPIURL represents the API endpoint to call.
@@ -30,23 +30,19 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables: CLOUDFLARE_EMAIL
 // and CLOUDFLARE_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	email := os.Getenv("CLOUDFLARE_EMAIL")
-	key := os.Getenv("CLOUDFLARE_API_KEY")
-	return NewDNSProviderCredentials(email, key)
+	values, err := env.Get("CLOUDFLARE_EMAIL", "CLOUDFLARE_API_KEY")
+	if err != nil {
+		return nil, fmt.Errorf("CloudFlare: %v", err)
+	}
+
+	return NewDNSProviderCredentials(values["CLOUDFLARE_EMAIL"], values["CLOUDFLARE_API_KEY"])
 }
 
 // NewDNSProviderCredentials uses the supplied credentials to return a
 // DNSProvider instance configured for cloudflare.
 func NewDNSProviderCredentials(email, key string) (*DNSProvider, error) {
 	if email == "" || key == "" {
-		missingEnvVars := []string{}
-		if email == "" {
-			missingEnvVars = append(missingEnvVars, "CLOUDFLARE_EMAIL")
-		}
-		if key == "" {
-			missingEnvVars = append(missingEnvVars, "CLOUDFLARE_API_KEY")
-		}
-		return nil, fmt.Errorf("CloudFlare credentials missing: %s", strings.Join(missingEnvVars, ","))
+		return nil, errors.New("CloudFlare: some credentials information are missing")
 	}
 
 	return &DNSProvider{
@@ -63,7 +59,7 @@ func (c *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record to fulfil the dns-01 challenge
 func (c *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
 	zoneID, err := c.getHostedZoneID(fqdn)
 	if err != nil {
 		return err
@@ -73,7 +69,7 @@ func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 		Type:    "TXT",
 		Name:    acme.UnFqdn(fqdn),
 		Content: value,
-		TTL:     120,
+		TTL:     ttl,
 	}
 
 	body, err := json.Marshal(rec)
@@ -122,7 +118,7 @@ func (c *DNSProvider) getHostedZoneID(fqdn string) (string, error) {
 	}
 
 	if len(hostedZone) != 1 {
-		return "", fmt.Errorf("Zone %s not found in CloudFlare for domain %s", authZone, fqdn)
+		return "", fmt.Errorf("zone %s not found in CloudFlare for domain %s", authZone, fqdn)
 	}
 
 	return hostedZone[0].ID, nil
@@ -184,7 +180,7 @@ func (c *DNSProvider) makeRequest(method, uri string, body io.Reader) (json.RawM
 	client := http.Client{Timeout: 30 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("Error querying Cloudflare API -> %v", err)
+		return nil, fmt.Errorf("error querying Cloudflare API -> %v", err)
 	}
 
 	defer resp.Body.Close()

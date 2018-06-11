@@ -1,10 +1,11 @@
 package dnspod
 
 import (
-	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -21,28 +22,31 @@ func init() {
 	}
 }
 
-func restorednspodEnv() {
+func restoreEnv() {
 	os.Setenv("DNSPOD_API_KEY", dnspodAPIKey)
 }
 
 func TestNewDNSProviderValid(t *testing.T) {
+	defer restoreEnv()
 	os.Setenv("DNSPOD_API_KEY", "")
+
 	_, err := NewDNSProviderCredentials("123")
 	assert.NoError(t, err)
-	restorednspodEnv()
 }
 func TestNewDNSProviderValidEnv(t *testing.T) {
+	defer restoreEnv()
 	os.Setenv("DNSPOD_API_KEY", "123")
+
 	_, err := NewDNSProvider()
 	assert.NoError(t, err)
-	restorednspodEnv()
 }
 
 func TestNewDNSProviderMissingCredErr(t *testing.T) {
+	defer restoreEnv()
 	os.Setenv("DNSPOD_API_KEY", "")
+
 	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "dnspod credentials missing")
-	restorednspodEnv()
+	assert.EqualError(t, err, "DNSPod: some credentials information are missing: DNSPOD_API_KEY")
 }
 
 func TestLivednspodPresent(t *testing.T) {

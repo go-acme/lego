@@ -6,16 +6,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
-	"io/ioutil"
-
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/platform/config/env"
 )
 
 const bluecatURLTemplate = "%s/Services/REST/v1"
@@ -51,20 +50,33 @@ type DNSProvider struct {
 // and external DNS View Name must be passed in BLUECAT_CONFIG_NAME and
 // BLUECAT_DNS_VIEW
 func NewDNSProvider() (*DNSProvider, error) {
-	server := os.Getenv("BLUECAT_SERVER_URL")
-	userName := os.Getenv("BLUECAT_USER_NAME")
-	password := os.Getenv("BLUECAT_PASSWORD")
-	configName := os.Getenv("BLUECAT_CONFIG_NAME")
-	dnsView := os.Getenv("BLUECAT_DNS_VIEW")
-	httpClient := http.Client{Timeout: 30 * time.Second}
-	return NewDNSProviderCredentials(server, userName, password, configName, dnsView, httpClient)
+	values, err := env.Get("BLUECAT_SERVER_URL", "BLUECAT_USER_NAME", "BLUECAT_CONFIG_NAME", "BLUECAT_CONFIG_NAME", "BLUECAT_DNS_VIEW")
+	if err != nil {
+		return nil, fmt.Errorf("BlueCat: %v", err)
+	}
+
+	httpClient := &http.Client{Timeout: 30 * time.Second}
+
+	return NewDNSProviderCredentials(
+		values["BLUECAT_SERVER_URL"],
+		values["BLUECAT_USER_NAME"],
+		values["BLUECAT_PASSWORD"],
+		values["BLUECAT_CONFIG_NAME"],
+		values["BLUECAT_DNS_VIEW"],
+		httpClient,
+	)
 }
 
 // NewDNSProviderCredentials uses the supplied credentials to return a
 // DNSProvider instance configured for Bluecat DNS.
-func NewDNSProviderCredentials(server, userName, password, configName, dnsView string, httpClient http.Client) (*DNSProvider, error) {
+func NewDNSProviderCredentials(server, userName, password, configName, dnsView string, httpClient *http.Client) (*DNSProvider, error) {
 	if server == "" || userName == "" || password == "" || configName == "" || dnsView == "" {
 		return nil, fmt.Errorf("Bluecat credentials missing")
+	}
+
+	client := http.DefaultClient
+	if httpClient != nil {
+		client = httpClient
 	}
 
 	return &DNSProvider{
@@ -73,7 +85,7 @@ func NewDNSProviderCredentials(server, userName, password, configName, dnsView s
 		password:   password,
 		configName: configName,
 		dnsView:    dnsView,
-		httpClient: http.DefaultClient,
+		httpClient: client,
 	}, nil
 }
 

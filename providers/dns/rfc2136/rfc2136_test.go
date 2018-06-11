@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"github.com/miekg/dns"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/xenolf/lego/acme"
 )
 
@@ -32,22 +34,20 @@ func TestRFC2136CanaryLocalTestServer(t *testing.T) {
 	defer dns.HandleRemove("example.com.")
 
 	server, addrstr, err := runLocalDNSTestServer("127.0.0.1:0", false)
-	if err != nil {
-		t.Fatalf("Failed to start test server: %v", err)
-	}
+	require.NoError(t, err, "Failed to start test server")
 	defer server.Shutdown()
 
 	c := new(dns.Client)
 	m := new(dns.Msg)
+
 	m.SetQuestion("example.com.", dns.TypeTXT)
+
 	r, _, err := c.Exchange(m, addrstr)
-	if err != nil || len(r.Extra) == 0 {
-		t.Fatalf("Failed to communicate with test server: %v", err)
-	}
+	require.NoError(t, err, "Failed to communicate with test server")
+	assert.Len(t, r.Extra, 1, "Failed to communicate with test server")
+
 	txt := r.Extra[0].(*dns.TXT).Txt[0]
-	if txt != "Hello world" {
-		t.Error("Expected test server to return 'Hello world' but got: ", txt)
-	}
+	assert.Equal(t, "Hello world", txt)
 }
 
 func TestRFC2136ServerSuccess(t *testing.T) {
@@ -56,18 +56,14 @@ func TestRFC2136ServerSuccess(t *testing.T) {
 	defer dns.HandleRemove(rfc2136TestZone)
 
 	server, addrstr, err := runLocalDNSTestServer("127.0.0.1:0", false)
-	if err != nil {
-		t.Fatalf("Failed to start test server: %v", err)
-	}
+	require.NoError(t, err, "Failed to start test server")
 	defer server.Shutdown()
 
 	provider, err := NewDNSProviderCredentials(addrstr, "", "", "", "")
-	if err != nil {
-		t.Fatalf("Expected NewDNSProviderCredentials() to return no error but the error was -> %v", err)
-	}
-	if err := provider.Present(rfc2136TestDomain, "", rfc2136TestKeyAuth); err != nil {
-		t.Errorf("Expected Present() to return no error but the error was -> %v", err)
-	}
+	require.NoError(t, err)
+
+	err = provider.Present(rfc2136TestDomain, "", rfc2136TestKeyAuth)
+	require.NoError(t, err)
 }
 
 func TestRFC2136ServerError(t *testing.T) {
@@ -76,19 +72,16 @@ func TestRFC2136ServerError(t *testing.T) {
 	defer dns.HandleRemove(rfc2136TestZone)
 
 	server, addrstr, err := runLocalDNSTestServer("127.0.0.1:0", false)
-	if err != nil {
-		t.Fatalf("Failed to start test server: %v", err)
-	}
+	require.NoError(t, err, "Failed to start test server")
 	defer server.Shutdown()
 
 	provider, err := NewDNSProviderCredentials(addrstr, "", "", "", "")
-	if err != nil {
-		t.Fatalf("Expected NewDNSProviderCredentials() to return no error but the error was -> %v", err)
-	}
-	if err := provider.Present(rfc2136TestDomain, "", rfc2136TestKeyAuth); err == nil {
-		t.Errorf("Expected Present() to return an error but it did not.")
-	} else if !strings.Contains(err.Error(), "NOTZONE") {
-		t.Errorf("Expected Present() to return an error with the 'NOTZONE' rcode string but it did not.")
+	require.NoError(t, err)
+
+	err = provider.Present(rfc2136TestDomain, "", rfc2136TestKeyAuth)
+	require.Error(t, err)
+	if !strings.Contains(err.Error(), "NOTZONE") {
+		t.Errorf("Expected Present() to return an error with the 'NOTZONE' rcode string but it did not: %v", err)
 	}
 }
 
@@ -98,18 +91,14 @@ func TestRFC2136TsigClient(t *testing.T) {
 	defer dns.HandleRemove(rfc2136TestZone)
 
 	server, addrstr, err := runLocalDNSTestServer("127.0.0.1:0", true)
-	if err != nil {
-		t.Fatalf("Failed to start test server: %v", err)
-	}
+	require.NoError(t, err, "Failed to start test server")
 	defer server.Shutdown()
 
 	provider, err := NewDNSProviderCredentials(addrstr, "", rfc2136TestTsigKey, rfc2136TestTsigSecret, "")
-	if err != nil {
-		t.Fatalf("Expected NewDNSProviderCredentials() to return no error but the error was -> %v", err)
-	}
-	if err := provider.Present(rfc2136TestDomain, "", rfc2136TestKeyAuth); err != nil {
-		t.Errorf("Expected Present() to return no error but the error was -> %v", err)
-	}
+	require.NoError(t, err)
+
+	err = provider.Present(rfc2136TestDomain, "", rfc2136TestKeyAuth)
+	require.NoError(t, err)
 }
 
 func TestRFC2136ValidUpdatePacket(t *testing.T) {
@@ -118,9 +107,7 @@ func TestRFC2136ValidUpdatePacket(t *testing.T) {
 	defer dns.HandleRemove(rfc2136TestZone)
 
 	server, addrstr, err := runLocalDNSTestServer("127.0.0.1:0", false)
-	if err != nil {
-		t.Fatalf("Failed to start test server: %v", err)
-	}
+	require.NoError(t, err, "Failed to start test server")
 	defer server.Shutdown()
 
 	txtRR, _ := dns.NewRR(fmt.Sprintf("%s %d IN TXT %s", rfc2136TestFqdn, rfc2136TestTTL, rfc2136TestValue))
@@ -130,26 +117,21 @@ func TestRFC2136ValidUpdatePacket(t *testing.T) {
 	m.RemoveRRset(rrs)
 	m.Insert(rrs)
 	expectstr := m.String()
+
 	expect, err := m.Pack()
-	if err != nil {
-		t.Fatalf("Error packing expect msg: %v", err)
-	}
+	require.NoError(t, err, "error packing")
 
 	provider, err := NewDNSProviderCredentials(addrstr, "", "", "", "")
-	if err != nil {
-		t.Fatalf("Expected NewDNSProviderCredentials() to return no error but the error was -> %v", err)
-	}
+	require.NoError(t, err)
 
-	if err := provider.Present(rfc2136TestDomain, "", "1234d=="); err != nil {
-		t.Errorf("Expected Present() to return no error but the error was -> %v", err)
-	}
+	err = provider.Present(rfc2136TestDomain, "", "1234d==")
+	require.NoError(t, err)
 
 	rcvMsg := <-reqChan
 	rcvMsg.Id = m.Id
+
 	actual, err := rcvMsg.Pack()
-	if err != nil {
-		t.Fatalf("Error packing actual msg: %v", err)
-	}
+	require.NoError(t, err, "error packing")
 
 	if !bytes.Equal(actual, expect) {
 		tmp := new(dns.Msg)

@@ -5,8 +5,8 @@ package azure
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
@@ -16,6 +16,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/platform/config/env"
 )
 
 // DNSProvider is an implementation of the acme.ChallengeProvider interface
@@ -32,25 +33,25 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables: AZURE_CLIENT_ID,
 // AZURE_CLIENT_SECRET, AZURE_SUBSCRIPTION_ID, AZURE_TENANT_ID, AZURE_RESOURCE_GROUP
 func NewDNSProvider() (*DNSProvider, error) {
-	clientID := os.Getenv("AZURE_CLIENT_ID")
-	clientSecret := os.Getenv("AZURE_CLIENT_SECRET")
-	subscriptionID := os.Getenv("AZURE_SUBSCRIPTION_ID")
-	tenantID := os.Getenv("AZURE_TENANT_ID")
-	resourceGroup := os.Getenv("AZURE_RESOURCE_GROUP")
-	return NewDNSProviderCredentials(clientID, clientSecret, subscriptionID, tenantID, resourceGroup)
+	values, err := env.Get("AZURE_CLIENT_ID", "AZURE_CLIENT_SECRET", "AZURE_SUBSCRIPTION_ID", "AZURE_TENANT_ID", "AZURE_RESOURCE_GROUP")
+	if err != nil {
+		return nil, fmt.Errorf("Azure: %v", err)
+	}
+
+	return NewDNSProviderCredentials(
+		values["AZURE_CLIENT_ID"],
+		values["AZURE_CLIENT_SECRET"],
+		values["AZURE_SUBSCRIPTION_ID"],
+		values["AZURE_TENANT_ID"],
+		values["AZURE_RESOURCE_GROUP"],
+	)
 }
 
 // NewDNSProviderCredentials uses the supplied credentials to return a
 // DNSProvider instance configured for azure.
 func NewDNSProviderCredentials(clientID, clientSecret, subscriptionID, tenantID, resourceGroup string) (*DNSProvider, error) {
 	if clientID == "" || clientSecret == "" || subscriptionID == "" || tenantID == "" || resourceGroup == "" {
-		var missingEnvVars []string
-		for _, envVar := range []string{"AZURE_CLIENT_ID", "AZURE_CLIENT_SECRET", "AZURE_SUBSCRIPTION_ID", "AZURE_TENANT_ID", "AZURE_RESOURCE_GROUP"} {
-			if os.Getenv(envVar) == "" {
-				missingEnvVars = append(missingEnvVars, envVar)
-			}
-		}
-		return nil, fmt.Errorf("Azure configuration missing: %s", strings.Join(missingEnvVars, ","))
+		return nil, errors.New("Azure: some credentials information are missing")
 	}
 
 	return &DNSProvider{

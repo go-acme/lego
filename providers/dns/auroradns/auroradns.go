@@ -9,6 +9,7 @@ import (
 	"github.com/edeckers/auroradnsclient/records"
 	"github.com/edeckers/auroradnsclient/zones"
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/platform/config/env"
 )
 
 // DNSProvider describes a provider for AuroraDNS
@@ -22,20 +23,23 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables: AURORA_USER_ID
 // and AURORA_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	userID := os.Getenv("AURORA_USER_ID")
-	key := os.Getenv("AURORA_KEY")
-
-	endpoint := os.Getenv("AURORA_ENDPOINT")
-	if endpoint == "" {
-		endpoint = "https://api.auroradns.eu"
+	values, err := env.Get("AURORA_USER_ID", "AURORA_KEY")
+	if err != nil {
+		return nil, fmt.Errorf("AuroraDNS: %v", err)
 	}
 
-	return NewDNSProviderCredentials(endpoint, userID, key)
+	endpoint := os.Getenv("AURORA_ENDPOINT")
+
+	return NewDNSProviderCredentials(endpoint, values["AURORA_USER_ID"], values["AURORA_KEY"])
 }
 
 // NewDNSProviderCredentials uses the supplied credentials to return a
 // DNSProvider instance configured for AuroraDNS.
 func NewDNSProviderCredentials(baseURL string, userID string, key string) (*DNSProvider, error) {
+	if baseURL == "" {
+		baseURL = "https://api.auroradns.eu"
+	}
+
 	client, err := auroradnsclient.NewAuroraDNSClient(baseURL, userID, key)
 	if err != nil {
 		return nil, err
@@ -69,7 +73,7 @@ func (provider *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := acme.FindZoneByFqdn(acme.ToFqdn(domain), acme.RecursiveNameservers)
 	if err != nil {
-		return fmt.Errorf("Could not determine zone for domain: '%s'. %s", domain, err)
+		return fmt.Errorf("could not determine zone for domain: '%s'. %s", domain, err)
 	}
 
 	// 1. Aurora will happily create the TXT record when it is provided a fqdn,

@@ -23,7 +23,7 @@ func init() {
 	lightsailSecret = os.Getenv("AWS_SECRET_ACCESS_KEY")
 }
 
-func restoreLightsailEnv() {
+func restoreEnv() {
 	os.Setenv("AWS_ACCESS_KEY_ID", lightsailKey)
 	os.Setenv("AWS_SECRET_ACCESS_KEY", lightsailSecret)
 	os.Setenv("AWS_REGION", "us-east-1")
@@ -43,6 +43,7 @@ func makeLightsailProvider(ts *httptest.Server) *DNSProvider {
 }
 
 func TestCredentialsFromEnv(t *testing.T) {
+	defer restoreEnv()
 	os.Setenv("AWS_ACCESS_KEY_ID", "123")
 	os.Setenv("AWS_SECRET_ACCESS_KEY", "123")
 	os.Setenv("AWS_REGION", "us-east-1")
@@ -54,8 +55,6 @@ func TestCredentialsFromEnv(t *testing.T) {
 	sess := session.New(config)
 	_, err := sess.Config.Credentials.Get()
 	assert.NoError(t, err, "Expected credentials to be set from environment")
-
-	restoreLightsailEnv()
 }
 
 func TestLightsailPresent(t *testing.T) {

@@ -31,7 +31,7 @@ func init() {
 	}
 }
 
-func restoreDNSimpleEnv() {
+func restoreEnv() {
 	os.Setenv("DNSIMPLE_OAUTH_TOKEN", dnsimpleOauthToken)
 	os.Setenv("DNSIMPLE_BASE_URL", dnsimpleBaseURL)
 }
@@ -41,9 +41,9 @@ func restoreDNSimpleEnv() {
 //
 
 func TestNewDNSProviderValid(t *testing.T) {
-	defer restoreDNSimpleEnv()
-
+	defer restoreEnv()
 	os.Setenv("DNSIMPLE_OAUTH_TOKEN", "123")
+
 	provider, err := NewDNSProvider()
 
 	assert.NotNil(t, provider)
@@ -52,10 +52,10 @@ func TestNewDNSProviderValid(t *testing.T) {
 }
 
 func TestNewDNSProviderValidWithBaseUrl(t *testing.T) {
-	defer restoreDNSimpleEnv()
-
+	defer restoreEnv()
 	os.Setenv("DNSIMPLE_OAUTH_TOKEN", "123")
 	os.Setenv("DNSIMPLE_BASE_URL", "https://api.dnsimple.test")
+
 	provider, err := NewDNSProvider()
 
 	assert.NotNil(t, provider)
@@ -65,11 +65,8 @@ func TestNewDNSProviderValidWithBaseUrl(t *testing.T) {
 }
 
 func TestNewDNSProviderInvalidWithMissingOauthToken(t *testing.T) {
-	if dnsimpleLiveTest {
-		t.Skip("skipping test in live mode")
-	}
-
-	defer restoreDNSimpleEnv()
+	defer restoreEnv()
+	os.Setenv("DNSIMPLE_OAUTH_TOKEN", "")
 
 	provider, err := NewDNSProvider()
 

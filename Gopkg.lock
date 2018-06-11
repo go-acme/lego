@@ -35,6 +35,12 @@
   version = "1.15.0"
 
 [[projects]]
+  name = "github.com/PuerkitoBio/goquery"
+  packages = ["."]
+  revision = "dc2ec5c7ca4d9aae063b79b9f581dd3ea6afd2b2"
+  version = "v1.4.1"
+
+[[projects]]
   name = "github.com/akamai/AkamaiOPEN-edgegrid-golang"
   packages = [
     "client-v1",
@@ -44,6 +50,12 @@
   ]
   revision = "196fbdab2db66d0e231cc363efb63454f55fed1c"
   version = "v0.6.2"
+
+[[projects]]
+  name = "github.com/andybalholm/cascadia"
+  packages = ["."]
+  revision = "901648c87902174f774fac311d7f176f8647bdaa"
+  version = "v1.0.0"
 
 [[projects]]
   name = "github.com/aws/aws-sdk-go"
@@ -275,6 +287,8 @@
     "bpf",
     "context",
     "context/ctxhttp",
+    "html",
+    "html/atom",
     "internal/iana",
     "internal/socket",
     "ipv4",
@@ -363,6 +377,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "6b701827736620696c106773b62665f722b691a3025b851fe1a5d3c321d77d21"
+  inputs-digest = "079bb9621ab30b710e8b1ba7d8ac3695df3528e909076dd2a2494bfa7e0dea8e"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -98,7 +98,7 @@ func (c *Client) SetChallengeProvider(challenge Challenge, p ChallengeProvider) 
 	case TLSALPN01:
 		c.solvers[challenge] = &tlsALPNChallenge{jws: c.jws, validate: validate, provider: p}
 	default:
-		return fmt.Errorf("Unknown challenge %v", challenge)
+		return fmt.Errorf("unknown challenge %v", challenge)
 	}
 	return nil
 }

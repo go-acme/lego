@@ -1,5 +1,5 @@
-// Package he implements a DNS provider for solving the DNS-01 challenge using Hurricane Electric DNS.
-package he
+// Package hurricanedns implements a DNS provider for solving the DNS-01 challenge using Hurricane Electric DNS.
+package hurricanedns
 
 import (
 	"bytes"
@@ -37,7 +37,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 // DNSProvider instance configured for Hurricane Electric DNS.
 func NewDNSProviderCredentials(domainName, userName, password string) (*DNSProvider, error) {
 	if domainName == "" || userName == "" || password == "" {
-		return nil, fmt.Errorf("he.net credentials missing")
+		return nil, fmt.Errorf("dns.he.net credentials missing")
 	}
 
 	return &DNSProvider{
@@ -65,7 +65,7 @@ func (d *DNSProvider) SendRequest(payload map[string]string) (*goquery.Document,
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 400 {
-		return nil, fmt.Errorf("he.net request failed with HTTP status code %d", resp.StatusCode)
+		return nil, fmt.Errorf("dns.he.net request failed with HTTP status code %d", resp.StatusCode)
 	}
 
 	body1, err := ioutil.ReadAll(resp.Body)
@@ -145,7 +145,7 @@ func (d *DNSProvider) getRecordSetID(zoneID string, fqdn string) (string, error)
 	return "", fmt.Errorf("record %s not found", fqdn)
 }
 
-//Delete the record-set by send form post to dns.he.net
+//Delete the record-set by send form post to dns.hurricanedns.net
 func (d *DNSProvider) deleteRecordSet(zoneID, recordID string) error {
 	payload := map[string]string{
 		"menu":                  "edit_zone",
@@ -166,7 +166,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
 
 	if ttl < 300 {
-		ttl = 300 // 300 is he minimum value for ttl
+		ttl = 300 // 300 is hurricanedns minimum value for ttl
 	}
 
 	authZone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameservers)

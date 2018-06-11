@@ -8,6 +8,8 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 // TestDNSProvider runs Present and CleanUp against a fake Gandi RPC
@@ -15,55 +17,49 @@ import (
 func TestDNSProvider(t *testing.T) {
 	fakeAPIKey := "123412341234123412341234"
 	fakeKeyAuth := "XXXX"
+
 	provider, err := NewDNSProviderCredentials(fakeAPIKey)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
+
 	regexpDate, err := regexp.Compile(`\[ACME Challenge [^\]:]*:[^\]]*\]`)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
+
 	// start fake RPC server
 	fakeServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get("Content-Type") != "text/xml" {
-			t.Fatalf("Content-Type: text/xml header not found")
-		}
+		require.Equal(t, "text/xml", r.Header.Get("Content-Type"), "invalid content type")
+
 		req, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			t.Fatal(err)
-		}
-		req = regexpDate.ReplaceAllLiteral(
-			req, []byte(`[ACME Challenge 01 Jan 16 00:00 +0000]`))
+		require.NoError(t, err)
+
+		req = regexpDate.ReplaceAllLiteral(req, []byte(`[ACME Challenge 01 Jan 16 00:00 +0000]`))
 		resp, ok := serverResponses[string(req)]
-		if !ok {
-			t.Fatalf("Server response for request not found")
-		}
+		require.True(t, ok, "Server response for request not found")
+
 		_, err = io.Copy(w, strings.NewReader(resp))
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
 	}))
 	defer fakeServer.Close()
+
 	// define function to override findZoneByFqdn with
 	fakeFindZoneByFqdn := func(fqdn string, nameserver []string) (string, error) {
 		return "example.com.", nil
 	}
+
 	// override gandi endpoint and findZoneByFqdn function
 	savedEndpoint, savedFindZoneByFqdn := endpoint, findZoneByFqdn
 	defer func() {
 		endpoint, findZoneByFqdn = savedEndpoint, savedFindZoneByFqdn
 	}()
+
 	endpoint, findZoneByFqdn = fakeServer.URL+"/", fakeFindZoneByFqdn
+
 	// run Present
 	err = provider.Present("abc.def.example.com", "", fakeKeyAuth)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
+
 	// run CleanUp
 	err = provider.CleanUp("abc.def.example.com", "", fakeKeyAuth)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 }
 
 // serverResponses is the XML-RPC Request->Response map used by the

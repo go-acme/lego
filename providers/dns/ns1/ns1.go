@@ -5,10 +5,10 @@ package ns1
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/platform/config/env"
 	"gopkg.in/ns1/ns1-go.v2/rest"
 	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
 )
@@ -21,11 +21,12 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for NS1.
 // Credentials must be passed in the environment variables: NS1_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	key := os.Getenv("NS1_API_KEY")
-	if key == "" {
-		return nil, fmt.Errorf("NS1 credentials missing")
+	values, err := env.Get("NS1_API_KEY")
+	if err != nil {
+		return nil, fmt.Errorf("NS1: %v", err)
 	}
-	return NewDNSProviderCredentials(key)
+
+	return NewDNSProviderCredentials(values["NS1_API_KEY"])
 }
 
 // NewDNSProviderCredentials uses the supplied credentials to return a

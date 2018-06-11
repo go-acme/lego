@@ -2,7 +2,6 @@ package dns
 
 import (
 	"os"
-	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -25,23 +24,24 @@ func restoreExoscaleEnv() {
 }
 
 func TestKnownDNSProviderSuccess(t *testing.T) {
+	defer restoreExoscaleEnv()
 	os.Setenv("EXOSCALE_API_KEY", "abc")
 	os.Setenv("EXOSCALE_API_SECRET", "123")
+
 	provider, err := NewDNSChallengeProviderByName("exoscale")
 	assert.NoError(t, err)
 	assert.NotNil(t, provider)
-	if reflect.TypeOf(provider) != reflect.TypeOf(&exoscale.DNSProvider{}) {
-		t.Errorf("Not loaded correct DNS proviver: %v is not *exoscale.DNSProvider", reflect.TypeOf(provider))
-	}
-	restoreExoscaleEnv()
+
+	assert.IsType(t, &exoscale.DNSProvider{}, provider, "Not loaded correct DNS provider")
 }
 
 func TestKnownDNSProviderError(t *testing.T) {
+	defer restoreExoscaleEnv()
 	os.Setenv("EXOSCALE_API_KEY", "")
 	os.Setenv("EXOSCALE_API_SECRET", "")
+
 	_, err := NewDNSChallengeProviderByName("exoscale")
 	assert.Error(t, err)
-	restoreExoscaleEnv()
 }
 
 func TestUnknownDNSProvider(t *testing.T) {

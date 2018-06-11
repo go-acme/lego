@@ -2,12 +2,12 @@ package fastdns
 
 import (
 	"fmt"
-	"os"
 	"reflect"
 
 	configdns "github.com/akamai/AkamaiOPEN-edgegrid-golang/configdns-v1"
 	"github.com/akamai/AkamaiOPEN-edgegrid-golang/edgegrid"
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/platform/config/env"
 )
 
 // DNSProvider is an implementation of the acme.ChallengeProvider interface.
@@ -18,19 +18,24 @@ type DNSProvider struct {
 // NewDNSProvider uses the supplied environment variables to return a DNSProvider instance:
 // AKAMAI_HOST, AKAMAI_CLIENT_TOKEN, AKAMAI_CLIENT_SECRET, AKAMAI_ACCESS_TOKEN
 func NewDNSProvider() (*DNSProvider, error) {
-	host := os.Getenv("AKAMAI_HOST")
-	clientToken := os.Getenv("AKAMAI_CLIENT_TOKEN")
-	clientSecret := os.Getenv("AKAMAI_CLIENT_SECRET")
-	accessToken := os.Getenv("AKAMAI_ACCESS_TOKEN")
+	values, err := env.Get("AKAMAI_HOST", "AKAMAI_CLIENT_TOKEN", "AKAMAI_CLIENT_SECRET", "AKAMAI_ACCESS_TOKEN")
+	if err != nil {
+		return nil, fmt.Errorf("FastDNS: %v", err)
+	}
 
-	return NewDNSProviderClient(host, clientToken, clientSecret, accessToken)
+	return NewDNSProviderClient(
+		values["AKAMAI_HOST"],
+		values["AKAMAI_CLIENT_TOKEN"],
+		values["AKAMAI_CLIENT_SECRET"],
+		values["AKAMAI_ACCESS_TOKEN"],
+	)
 }
 
 // NewDNSProviderClient uses the supplied parameters to return a DNSProvider instance
 // configured for FastDNS.
 func NewDNSProviderClient(host, clientToken, clientSecret, accessToken string) (*DNSProvider, error) {
 	if clientToken == "" || clientSecret == "" || accessToken == "" || host == "" {
-		return nil, fmt.Errorf("Akamai FastDNS credentials missing")
+		return nil, fmt.Errorf("FastDNS credentials are missing")
 	}
 	config := edgegrid.Config{
 		Host:         host,

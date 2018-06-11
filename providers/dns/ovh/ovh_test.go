@@ -33,47 +33,88 @@ func restoreEnv() {
 }
 
 func TestNewDNSProviderValidEnv(t *testing.T) {
+	defer restoreEnv()
 	os.Setenv("OVH_ENDPOINT", "ovh-eu")
 	os.Setenv("OVH_APPLICATION_KEY", "1234")
 	os.Setenv("OVH_APPLICATION_SECRET", "5678")
 	os.Setenv("OVH_CONSUMER_KEY", "abcde")
-	defer restoreEnv()
+
 	_, err := NewDNSProvider()
 	assert.NoError(t, err)
 }
 
 func TestNewDNSProviderMissingCredErr(t *testing.T) {
-	os.Setenv("OVH_ENDPOINT", "")
-	os.Setenv("OVH_APPLICATION_KEY", "1234")
-	os.Setenv("OVH_APPLICATION_SECRET", "5678")
-	os.Setenv("OVH_CONSUMER_KEY", "abcde")
 	defer restoreEnv()
-	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "OVH credentials missing")
 
-	os.Setenv("OVH_ENDPOINT", "ovh-eu")
-	os.Setenv("OVH_APPLICATION_KEY", "")
-	os.Setenv("OVH_APPLICATION_SECRET", "5678")
-	os.Setenv("OVH_CONSUMER_KEY", "abcde")
-	defer restoreEnv()
-	_, err = NewDNSProvider()
-	assert.EqualError(t, err, "OVH credentials missing")
+	testCases := []struct {
+		desc     string
+		envVars  map[string]string
+		expected string
+	}{
+		{
+			desc: "missing OVH_ENDPOINT",
+			envVars: map[string]string{
+				"OVH_ENDPOINT":           "",
+				"OVH_APPLICATION_KEY":    "1234",
+				"OVH_APPLICATION_SECRET": "5678",
+				"OVH_CONSUMER_KEY":       "abcde",
+			},
+			expected: "OVH: some credentials information are missing: OVH_ENDPOINT",
+		},
+		{
+			desc: "missing OVH_APPLICATION_KEY",
+			envVars: map[string]string{
+				"OVH_ENDPOINT":           "ovh-eu",
+				"OVH_APPLICATION_KEY":    "",
+				"OVH_APPLICATION_SECRET": "5678",
+				"OVH_CONSUMER_KEY":       "abcde",
+			},
+			expected: "OVH: some credentials information are missing: OVH_APPLICATION_KEY",
+		},
+		{
+			desc: "missing OVH_APPLICATION_SECRET",
+			envVars: map[string]string{
+				"OVH_ENDPOINT":           "ovh-eu",
+				"OVH_APPLICATION_KEY":    "1234",
+				"OVH_APPLICATION_SECRET": "",
+				"OVH_CONSUMER_KEY":       "abcde",
+			},
+			expected: "OVH: some credentials information are missing: OVH_APPLICATION_SECRET",
+		},
+		{
+			desc: "missing OVH_CONSUMER_KEY",
+			envVars: map[string]string{
+				"OVH_ENDPOINT":           "ovh-eu",
+				"OVH_APPLICATION_KEY":    "1234",
+				"OVH_APPLICATION_SECRET": "5678",
+				"OVH_CONSUMER_KEY":       "",
+			},
+			expected: "OVH: some credentials information are missing: OVH_CONSUMER_KEY",
+		},
+		{
+			desc: "all missing",
+			envVars: map[string]string{
+				"OVH_ENDPOINT":           "",
+				"OVH_APPLICATION_KEY":    "",
+				"OVH_APPLICATION_SECRET": "",
+				"OVH_CONSUMER_KEY":       "",
+			},
+			expected: "OVH: some credentials information are missing: OVH_ENDPOINT,OVH_APPLICATION_KEY,OVH_APPLICATION_SECRET,OVH_CONSUMER_KEY",
+		},
+	}
 
-	os.Setenv("OVH_ENDPOINT", "ovh-eu")
-	os.Setenv("OVH_APPLICATION_KEY", "1234")
-	os.Setenv("OVH_APPLICATION_SECRET", "")
-	os.Setenv("OVH_CONSUMER_KEY", "abcde")
-	defer restoreEnv()
-	_, err = NewDNSProvider()
-	assert.EqualError(t, err, "OVH credentials missing")
+	for _, test := range testCases {
+		test := test
+		t.Run(test.desc, func(t *testing.T) {
 
-	os.Setenv("OVH_ENDPOINT", "ovh-eu")
-	os.Setenv("OVH_APPLICATION_KEY", "1234")
-	os.Setenv("OVH_APPLICATION_SECRET", "5678")
-	os.Setenv("OVH_CONSUMER_KEY", "")
-	defer restoreEnv()
-	_, err = NewDNSProvider()
-	assert.EqualError(t, err, "OVH credentials missing")
+			for key, value := range test.envVars {
+				os.Setenv(key, value)
+			}
+
+			_, err := NewDNSProvider()
+			assert.EqualError(t, err, test.expected)
+		})
+	}
 }
 
 func TestLivePresent(t *testing.T) {

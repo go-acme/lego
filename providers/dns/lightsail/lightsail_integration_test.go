@@ -8,40 +8,40 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/lightsail"
+	"github.com/stretchr/testify/require"
 )
 
 func TestLightsailTTL(t *testing.T) {
-
 	m, err := testGetAndPreCheck()
 	if err != nil {
 		t.Skip(err.Error())
 	}
 
 	provider, err := NewDNSProvider()
-	if err != nil {
-		t.Fatalf("Fatal: %s", err.Error())
-	}
+	require.NoError(t, err)
 
 	err = provider.Present(m["lightsailDomain"], "foo", "bar")
-	if err != nil {
-		t.Fatalf("Fatal: %s", err.Error())
-	}
+	require.NoError(t, err)
+
 	// we need a separate Lightshail client here as the one in the DNS provider is
 	// unexported.
 	fqdn := "_acme-challenge." + m["lightsailDomain"]
 	svc := lightsail.New(session.New())
 	if err != nil {
 		provider.CleanUp(m["lightsailDomain"], "foo", "bar")
-		t.Fatalf("Fatal: %s", err.Error())
+		t.Fatal(err)
 	}
+
 	params := &lightsail.GetDomainInput{
 		DomainName: aws.String(m["lightsailDomain"]),
 	}
+
 	resp, err := svc.GetDomain(params)
 	if err != nil {
 		provider.CleanUp(m["lightsailDomain"], "foo", "bar")
-		t.Fatalf("Fatal: %s", err.Error())
+		t.Fatal(err)
 	}
+
 	entries := resp.Domain.DomainEntries
 	for _, entry := range entries {
 		if *entry.Type == "TXT" && *entry.Name == fqdn {
@@ -49,6 +49,7 @@ func TestLightsailTTL(t *testing.T) {
 			return
 		}
 	}
+
 	provider.CleanUp(m["lightsailDomain"], "foo", "bar")
 	t.Fatalf("Could not find a TXT record for _acme-challenge.%s", m["lightsailDomain"])
 }

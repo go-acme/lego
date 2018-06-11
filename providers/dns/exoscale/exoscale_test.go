@@ -24,32 +24,36 @@ func init() {
 	}
 }
 
-func restoreExoscaleEnv() {
+func restoreEnv() {
 	os.Setenv("EXOSCALE_API_KEY", exoscaleAPIKey)
 	os.Setenv("EXOSCALE_API_SECRET", exoscaleAPISecret)
 }
 
 func TestNewDNSProviderValid(t *testing.T) {
+	defer restoreEnv()
 	os.Setenv("EXOSCALE_API_KEY", "")
 	os.Setenv("EXOSCALE_API_SECRET", "")
+
 	_, err := NewDNSProviderClient("example@example.com", "123", "")
 	assert.NoError(t, err)
-	restoreExoscaleEnv()
 }
+
 func TestNewDNSProviderValidEnv(t *testing.T) {
+	defer restoreEnv()
 	os.Setenv("EXOSCALE_API_KEY", "example@example.com")
 	os.Setenv("EXOSCALE_API_SECRET", "123")
+
 	_, err := NewDNSProvider()
 	assert.NoError(t, err)
-	restoreExoscaleEnv()
 }
 
 func TestNewDNSProviderMissingCredErr(t *testing.T) {
 	os.Setenv("EXOSCALE_API_KEY", "")
 	os.Setenv("EXOSCALE_API_SECRET", "")
+	defer restoreEnv()
+
 	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "Exoscale credentials missing")
-	restoreExoscaleEnv()
+	assert.EqualError(t, err, "Exoscale: some credentials information are missing: EXOSCALE_API_KEY,EXOSCALE_API_SECRET")
 }
 
 func TestExtractRootRecordName(t *testing.T) {

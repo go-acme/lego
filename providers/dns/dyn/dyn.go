@@ -7,11 +7,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/platform/config/env"
 )
 
 var dynBaseURL = "https://api.dynect.net/REST"
@@ -43,10 +43,12 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables: DYN_CUSTOMER_NAME,
 // DYN_USER_NAME and DYN_PASSWORD.
 func NewDNSProvider() (*DNSProvider, error) {
-	customerName := os.Getenv("DYN_CUSTOMER_NAME")
-	userName := os.Getenv("DYN_USER_NAME")
-	password := os.Getenv("DYN_PASSWORD")
-	return NewDNSProviderCredentials(customerName, userName, password)
+	values, err := env.Get("DYN_CUSTOMER_NAME", "DYN_USER_NAME", "DYN_PASSWORD")
+	if err != nil {
+		return nil, fmt.Errorf("DynDNS: %v", err)
+	}
+
+	return NewDNSProviderCredentials(values["DYN_CUSTOMER_NAME"], values["DYN_USER_NAME"], values["DYN_PASSWORD"])
 }
 
 // NewDNSProviderCredentials uses the supplied credentials to return a

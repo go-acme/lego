@@ -9,6 +9,7 @@ import (
 
 	"github.com/exoscale/egoscale"
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/platform/config/env"
 )
 
 // DNSProvider is an implementation of the acme.ChallengeProvider interface.
@@ -19,10 +20,13 @@ type DNSProvider struct {
 // NewDNSProvider Credentials must be passed in the environment variables:
 // EXOSCALE_API_KEY, EXOSCALE_API_SECRET, EXOSCALE_ENDPOINT.
 func NewDNSProvider() (*DNSProvider, error) {
-	key := os.Getenv("EXOSCALE_API_KEY")
-	secret := os.Getenv("EXOSCALE_API_SECRET")
+	values, err := env.Get("EXOSCALE_API_KEY", "EXOSCALE_API_SECRET")
+	if err != nil {
+		return nil, fmt.Errorf("Exoscale: %v", err)
+	}
+
 	endpoint := os.Getenv("EXOSCALE_ENDPOINT")
-	return NewDNSProviderClient(key, secret, endpoint)
+	return NewDNSProviderClient(values["EXOSCALE_API_KEY"], values["EXOSCALE_API_SECRET"], endpoint)
 }
 
 // NewDNSProviderClient Uses the supplied parameters to return a DNSProvider instance
@@ -31,6 +35,7 @@ func NewDNSProviderClient(key, secret, endpoint string) (*DNSProvider, error) {
 	if key == "" || secret == "" {
 		return nil, fmt.Errorf("Exoscale credentials missing")
 	}
+
 	if endpoint == "" {
 		endpoint = "https://api.exoscale.ch/dns"
 	}

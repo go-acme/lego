@@ -9,6 +9,7 @@ import (
 
 	"github.com/namedotcom/go/namecom"
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/platform/config/env"
 )
 
 // DNSProvider is an implementation of the acme.ChallengeProvider interface.
@@ -19,11 +20,13 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for namedotcom.
 // Credentials must be passed in the environment variables: NAMECOM_USERNAME and NAMECOM_API_TOKEN
 func NewDNSProvider() (*DNSProvider, error) {
-	username := os.Getenv("NAMECOM_USERNAME")
-	apiToken := os.Getenv("NAMECOM_API_TOKEN")
-	server := os.Getenv("NAMECOM_SERVER")
+	values, err := env.Get("NAMECOM_USERNAME", "NAMECOM_API_TOKEN")
+	if err != nil {
+		return nil, fmt.Errorf("Name.com: %v", err)
+	}
 
-	return NewDNSProviderCredentials(username, apiToken, server)
+	server := os.Getenv("NAMECOM_SERVER")
+	return NewDNSProviderCredentials(values["NAMECOM_USERNAME"], values["NAMECOM_API_TOKEN"], server)
 }
 
 // NewDNSProviderCredentials uses the supplied credentials to return a
@@ -59,7 +62,7 @@ func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	_, err := c.client.CreateRecord(request)
 	if err != nil {
-		return fmt.Errorf("namedotcom API call failed: %v", err)
+		return fmt.Errorf("Name.com API call failed: %v", err)
 	}
 
 	return nil

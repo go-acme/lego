@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/platform/config/env"
 )
 
 // DNSProvider is an implementation of the acme.ChallengeProvider interface that uses
@@ -31,12 +32,18 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables: OTC_USER_NAME,
 // OTC_DOMAIN_NAME, OTC_PASSWORD OTC_PROJECT_NAME and OTC_IDENTITY_ENDPOINT.
 func NewDNSProvider() (*DNSProvider, error) {
-	domainName := os.Getenv("OTC_DOMAIN_NAME")
-	userName := os.Getenv("OTC_USER_NAME")
-	password := os.Getenv("OTC_PASSWORD")
-	projectName := os.Getenv("OTC_PROJECT_NAME")
-	identityEndpoint := os.Getenv("OTC_IDENTITY_ENDPOINT")
-	return NewDNSProviderCredentials(domainName, userName, password, projectName, identityEndpoint)
+	values, err := env.Get("OTC_DOMAIN_NAME", "OTC_USER_NAME", "OTC_PASSWORD", "OTC_PROJECT_NAME")
+	if err != nil {
+		return nil, fmt.Errorf("OTC: %v", err)
+	}
+
+	return NewDNSProviderCredentials(
+		values["OTC_DOMAIN_NAME"],
+		values["OTC_USER_NAME"],
+		values["OTC_PASSWORD"],
+		values["OTC_PROJECT_NAME"],
+		os.Getenv("OTC_IDENTITY_ENDPOINT"),
+	)
 }
 
 // NewDNSProviderCredentials uses the supplied credentials to return a

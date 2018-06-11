@@ -4,11 +4,11 @@ package dnspod
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/decker502/dnspod-go"
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/platform/config/env"
 )
 
 // DNSProvider is an implementation of the acme.ChallengeProvider interface.
@@ -19,8 +19,12 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for dnspod.
 // Credentials must be passed in the environment variables: DNSPOD_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	key := os.Getenv("DNSPOD_API_KEY")
-	return NewDNSProviderCredentials(key)
+	values, err := env.Get("DNSPOD_API_KEY")
+	if err != nil {
+		return nil, fmt.Errorf("DNSPod: %v", err)
+	}
+
+	return NewDNSProviderCredentials(values["DNSPOD_API_KEY"])
 }
 
 // NewDNSProviderCredentials uses the supplied credentials to return a
@@ -95,7 +99,7 @@ func (c *DNSProvider) getHostedZone(domain string) (string, string, error) {
 	}
 
 	if hostedZone.ID == 0 {
-		return "", "", fmt.Errorf("Zone %s not found in dnspod for domain %s", authZone, domain)
+		return "", "", fmt.Errorf("zone %s not found in dnspod for domain %s", authZone, domain)
 
 	}
 

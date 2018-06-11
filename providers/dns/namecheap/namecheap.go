@@ -8,11 +8,11 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 	"time"
 
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/platform/config/env"
 )
 
 // Notes about namecheap's tool API:
@@ -48,9 +48,12 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables: NAMECHEAP_API_USER
 // and NAMECHEAP_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	apiUser := os.Getenv("NAMECHEAP_API_USER")
-	apiKey := os.Getenv("NAMECHEAP_API_KEY")
-	return NewDNSProviderCredentials(apiUser, apiKey)
+	values, err := env.Get("NAMECHEAP_API_USER", "NAMECHEAP_API_KEY")
+	if err != nil {
+		return nil, fmt.Errorf("NameCheap: %v", err)
+	}
+
+	return NewDNSProviderCredentials(values["NAMECHEAP_API_USER"], values["NAMECHEAP_API_KEY"])
 }
 
 // NewDNSProviderCredentials uses the supplied credentials to return a
@@ -117,7 +120,7 @@ func getClientIP() (addr string, err error) {
 	return string(clientIP), nil
 }
 
-// A challenge repesents all the data needed to specify a dns-01 challenge
+// A challenge represents all the data needed to specify a dns-01 challenge
 // to lets-encrypt.
 type challenge struct {
 	domain   string

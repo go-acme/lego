@@ -5,11 +5,11 @@ package vultr
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	vultr "github.com/JamesClonk/vultr/lib"
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/platform/config/env"
 )
 
 // DNSProvider is an implementation of the acme.ChallengeProvider interface.
@@ -20,8 +20,12 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance with a configured Vultr client.
 // Authentication uses the VULTR_API_KEY environment variable.
 func NewDNSProvider() (*DNSProvider, error) {
-	apiKey := os.Getenv("VULTR_API_KEY")
-	return NewDNSProviderCredentials(apiKey)
+	values, err := env.Get("VULTR_API_KEY")
+	if err != nil {
+		return nil, fmt.Errorf("Vultr: %v", err)
+	}
+
+	return NewDNSProviderCredentials(values["VULTR_API_KEY"])
 }
 
 // NewDNSProviderCredentials uses the supplied credentials to return a DNSProvider

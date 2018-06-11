@@ -7,11 +7,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"sync"
 	"time"
 
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/platform/config/env"
 )
 
 // DNSProvider is an implementation of the acme.ChallengeProvider interface
@@ -32,8 +32,12 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 // Ocean. Credentials must be passed in the environment variable:
 // DO_AUTH_TOKEN.
 func NewDNSProvider() (*DNSProvider, error) {
-	apiAuthToken := os.Getenv("DO_AUTH_TOKEN")
-	return NewDNSProviderCredentials(apiAuthToken)
+	values, err := env.Get("DO_AUTH_TOKEN")
+	if err != nil {
+		return nil, fmt.Errorf("DigitalOcean: %v", err)
+	}
+
+	return NewDNSProviderCredentials(values["DO_AUTH_TOKEN"])
 }
 
 // NewDNSProviderCredentials uses the supplied credentials to return a

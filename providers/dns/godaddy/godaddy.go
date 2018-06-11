@@ -2,18 +2,17 @@
 package godaddy
 
 import (
-	"fmt"
-	"io"
-	"net/http"
-	"os"
-	"time"
-
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"io"
 	"io/ioutil"
+	"net/http"
 	"strings"
+	"time"
 
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/platform/config/env"
 )
 
 // GoDaddyAPIURL represents the API endpoint to call.
@@ -29,9 +28,12 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables: GODADDY_API_KEY
 // and GODADDY_API_SECRET.
 func NewDNSProvider() (*DNSProvider, error) {
-	apikey := os.Getenv("GODADDY_API_KEY")
-	secret := os.Getenv("GODADDY_API_SECRET")
-	return NewDNSProviderCredentials(apikey, secret)
+	values, err := env.Get("GODADDY_API_KEY", "GODADDY_API_SECRET")
+	if err != nil {
+		return nil, fmt.Errorf("GoDaddy: %v", err)
+	}
+
+	return NewDNSProviderCredentials(values["GODADDY_API_KEY"], values["GODADDY_API_SECRET"])
 }
 
 // NewDNSProviderCredentials uses the supplied credentials to return a

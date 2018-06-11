@@ -23,6 +23,7 @@ import (
 	"github.com/xenolf/lego/providers/dns/gcloud"
 	"github.com/xenolf/lego/providers/dns/glesys"
 	"github.com/xenolf/lego/providers/dns/godaddy"
+	"github.com/xenolf/lego/providers/dns/he"
 	"github.com/xenolf/lego/providers/dns/lightsail"
 	"github.com/xenolf/lego/providers/dns/linode"
 	"github.com/xenolf/lego/providers/dns/namecheap"
@@ -78,6 +79,8 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 		provider, err = gcloud.NewDNSProvider()
 	case "godaddy":
 		provider, err = godaddy.NewDNSProvider()
+	case "he":
+		provider, err = he.DNSProvider()
 	case "lightsail":
 		provider, err = lightsail.NewDNSProvider()
 	case "linode":

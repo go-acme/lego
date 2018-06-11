@@ -80,7 +80,7 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 	case "godaddy":
 		provider, err = godaddy.NewDNSProvider()
 	case "hurricanedns":
-		provider, err = hurricanedns.DNSProvider()
+		provider, err = hurricanedns.NewDNSProvider()
 	case "lightsail":
 		provider, err = lightsail.NewDNSProvider()
 	case "linode":

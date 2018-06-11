@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
+	"net/url"
+	"regexp"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/xenolf/lego/acme"
-	"net/url"
-	"regexp"
+	"github.com/xenolf/lego/platform/config/env"
 )
 
 // DNSProvider is an implementation of the acme.ChallengeProvider interface that uses
@@ -27,10 +27,13 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables: HE_DOMAIN_NAME,
 // HE_USERNAME, HE_PASSWORD.
 func NewDNSProvider() (*DNSProvider, error) {
-	domainName := os.Getenv("HE_DOMAIN_NAME")
-	userName := os.Getenv("HE_USERNAME")
-	password := os.Getenv("HE_PASSWORD")
-	return NewDNSProviderCredentials(domainName, userName, password)
+	values, err := env.Get("HE_DOMAIN_NAME", "HE_USERNAME", "HE_PASSWORD")
+
+	if err != nil {
+		return nil, fmt.Errorf("Hurricanedns: %v", err)
+	}
+
+	return NewDNSProviderCredentials(values["HE_DOMAIN_NAME"], values["HE_USERNAME"], values["HE_PASSWORD"])
 }
 
 // NewDNSProviderCredentials uses the supplied credentials to return a
@@ -98,7 +101,7 @@ func (d *DNSProvider) getZoneID(zone string) (string, error) {
 	doc.Find("#domains_table tbody td:nth-child(2) img").Each(func(i int, s *goquery.Selection) {
 		domain, _ := s.Attr("name")
 		onclick, _ := s.Attr("onclick")
-		r, _ := regexp.Compile("hosted_dns_zoneid=(\\d+)")
+		r, _ := regexp.Compile(`hosted_dns_zoneid=(\d+)`)
 		id := r.FindStringSubmatch(onclick)
 		zones[domain+"."] = id[1]
 	})
@@ -129,9 +132,9 @@ func (d *DNSProvider) getRecordSetID(zoneID string, fqdn string) (string, error)
 	records := make(map[string]string)
 
 	doc.Find(".generictable .dns_tr").Each(func(i int, s *goquery.Selection) {
-		recordId, _ := s.Attr("id")
+		recordID, _ := s.Attr("id")
 		recordFqdn := s.Find("td:nth-child(3)").Text()
-		records[recordFqdn+"."] = recordId
+		records[recordFqdn+"."] = recordID
 	})
 
 	if val, ok := records[fqdn]; ok {

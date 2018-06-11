@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/xenolf/lego/acme"
 	"github.com/PuerkitoBio/goquery"
+	"github.com/xenolf/lego/acme"
 	"net/url"
 	"regexp"
 )
@@ -180,16 +180,16 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	payload := map[string]string{
-		"account":               "",
-		"menu":                  "edit_zone",
-		"Type":                  "TXT",
-		"hosted_dns_zoneid":     zoneID,
-		"hosted_dns_recordid":   "",
-		"hosted_dns_editzone":   "1",
-		"Priority":              "",
-		"Name":                  fqdn,
-		"Content":               value,
-		"TTL":                   string(ttl),
+		"account":             "",
+		"menu":                "edit_zone",
+		"Type":                "TXT",
+		"hosted_dns_zoneid":   zoneID,
+		"hosted_dns_recordid": "",
+		"hosted_dns_editzone": "1",
+		"Priority":            "",
+		"Name":                fqdn,
+		"Content":             value,
+		"TTL":                 string(ttl),
 		"hosted_dns_editrecord": "Submit",
 	}
 

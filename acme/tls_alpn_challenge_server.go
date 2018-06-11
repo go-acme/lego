@@ -7,8 +7,14 @@ import (
 	"net/http"
 )
 
-// acmeTLS1Protocol is the ALPN Protocol ID for the ACME-TLS/1 Protocol.
-const acmeTLS1Protocol = "acme-tls/1"
+const (
+	// acmeTLS1Protocol is the ALPN Protocol ID for the ACME-TLS/1 Protocol.
+	acmeTLS1Protocol = "acme-tls/1"
+
+	// defaultTLSPort is the port that the TLSALPNProviderServer will default to
+	// when no other port is provided.
+	defaultTLSPort = "443"
+)
 
 // TLSALPNProviderServer implements ChallengeProvider for `TLS-ALPN-01`
 // challenge. It may be instantiated without using the NewTLSALPNProviderServer
@@ -16,7 +22,6 @@ const acmeTLS1Protocol = "acme-tls/1"
 type TLSALPNProviderServer struct {
 	iface    string
 	port     string
-	done     chan bool
 	listener net.Listener
 }
 
@@ -33,7 +38,7 @@ func NewTLSALPNProviderServer(iface, port string) *TLSALPNProviderServer {
 func (t *TLSALPNProviderServer) Present(domain, token, keyAuth string) error {
 	if t.port == "" {
 		// Fallback to port 443 if the port was not provided.
-		t.port = "443"
+		t.port = defaultTLSPort
 	}
 
 	// Generate the challenge certificate using the provided keyAuth and domain.
@@ -59,10 +64,8 @@ func (t *TLSALPNProviderServer) Present(domain, token, keyAuth string) error {
 	}
 
 	// Shut the server down when we're finished.
-	t.done = make(chan bool)
 	go func() {
 		http.Serve(t.listener, nil)
-		t.done <- true
 	}()
 
 	return nil
@@ -73,7 +76,11 @@ func (t *TLSALPNProviderServer) CleanUp(domain, token, keyAuth string) error {
 	if t.listener == nil {
 		return nil
 	}
-	t.listener.Close()
-	<-t.done
+
+	// Server was created, close it.
+	if err := t.listener.Close(); err != nil && err != http.ErrServerClosed {
+		return err
+	}
+
 	return nil
 }

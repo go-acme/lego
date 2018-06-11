@@ -93,7 +93,7 @@ GLOBAL OPTIONS:
    --kid value                 Key identifier from External CA. Used for External Account Binding.
    --hmac value                MAC key from External CA. Should be in Base64 URL Encoding without padding format. Used for External Account Binding.
    --key-type value, -k value  Key type to use for private keys. Supported: rsa2048, rsa4096, rsa8192, ec256, ec384 (default: "rsa2048")
-   --path value                Directory to use for storing the data (default: "/Users/wyattjohnson/Go/src/github.com/xenolf/lego/.lego")
+   --path value                Directory to use for storing the data (default: "./.lego")
    --exclude value, -x value   Explicitly disallow solvers by name from being used. Solvers: "http-01", "dns-01", "tls-alpn-01".
    --webroot value             Set the webroot folder to use for HTTP based challenges to write directly in a file in .well-known/acme-challenge
    --memcached-host value      Set the memcached host(s) to use for HTTP based challenges. Challenges will be written to all specified hosts.

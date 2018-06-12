@@ -63,6 +63,11 @@ func TLSALPNChallengeCert(domain, keyAuth string) (*tls.Certificate, error) {
 	// Compute the SHA-256 digest of the key authorization.
 	zBytes := sha256.Sum256([]byte(keyAuth))
 
+	value, err := asn1.Marshal(zBytes[:sha256.Size])
+	if err != nil {
+		return nil, err
+	}
+
 	// Add the keyAuth digest as the acmeValidation-v1 extension (marked as
 	// critical such that it won't be used by non-ACME software). Reference:
 	// https://tools.ietf.org/html/draft-ietf-acme-tls-alpn-01#section-3
@@ -70,7 +75,7 @@ func TLSALPNChallengeCert(domain, keyAuth string) (*tls.Certificate, error) {
 		{
 			Id:       idPeAcmeIdentifierV1,
 			Critical: true,
-			Value:    zBytes[:sha256.Size],
+			Value:    value,
 		},
 	}
 

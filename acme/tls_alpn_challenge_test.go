@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"crypto/subtle"
 	"crypto/tls"
+	"encoding/asn1"
 	"strings"
 	"testing"
 )
@@ -61,7 +62,11 @@ func TestTLSALPNChallenge(t *testing.T) {
 		}
 
 		zBytes := sha256.Sum256([]byte(chlng.KeyAuthorization))
-		if subtle.ConstantTimeCompare(zBytes[:], ext.Value) != 1 {
+		value, err := asn1.Marshal(zBytes[:sha256.Size])
+		if err != nil {
+			t.Fatalf("Expected marshaling of the keyAuth to return no error, but was %v", err)
+		}
+		if subtle.ConstantTimeCompare(value[:], ext.Value) != 1 {
 			t.Errorf("Expected the challenge certificate id-pe-acmeIdentifier extension to contain the SHA-256 digest of the keyAuth, %v, but was %v", zBytes[:], ext.Value)
 		}
 

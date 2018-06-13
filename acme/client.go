@@ -81,9 +81,10 @@ func NewClient(caDirURL string, user User, keyType KeyType) (*Client, error) {
 	// REVIEW: best possibility?
 	// Add all available solvers with the right index as per ACME
 	// spec to this map. Otherwise they won`t be found.
-	solvers := make(map[Challenge]solver)
-	solvers[HTTP01] = &httpChallenge{jws: jws, validate: validate, provider: &HTTPProviderServer{}}
-	solvers[TLSALPN01] = &tlsALPNChallenge{jws: jws, validate: validate, provider: &TLSALPNProviderServer{}}
+	solvers := map[Challenge]solver{
+		HTTP01:    &httpChallenge{jws: jws, validate: validate, provider: &HTTPProviderServer{}},
+		TLSALPN01: &tlsALPNChallenge{jws: jws, validate: validate, provider: &TLSALPNProviderServer{}},
+	}
 
 	return &Client{directory: dir, user: user, jws: jws, keyType: keyType, solvers: solvers}, nil
 }

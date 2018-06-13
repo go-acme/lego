@@ -137,7 +137,7 @@ func main() {
 		},
 		cli.StringSliceFlag{
 			Name:  "exclude, x",
-			Usage: "Explicitly disallow solvers by name from being used. Solvers: \"http-01\", \"dns-01\".",
+			Usage: "Explicitly disallow solvers by name from being used. Solvers: \"http-01\", \"dns-01\", \"tls-alpn-01\".",
 		},
 		cli.StringFlag{
 			Name:  "webroot",
@@ -150,6 +150,10 @@ func main() {
 		cli.StringFlag{
 			Name:  "http",
 			Usage: "Set the port and interface to use for HTTP based challenges to listen on. Supported: interface:port or :port",
+		},
+		cli.StringFlag{
+			Name:  "tls",
+			Usage: "Set the port and interface to use for TLS based challenges to listen on. Supported: interface:port or :port",
 		},
 		cli.StringFlag{
 			Name:  "dns",

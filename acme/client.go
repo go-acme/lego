@@ -2,6 +2,7 @@
 package acme
 
 import (
+	"bytes"
 	"crypto"
 	"crypto/x509"
 	"encoding/base64"
@@ -711,7 +712,7 @@ func (c *Client) requestCertificateForCsr(order orderResource, bundle bool, csr 
 // response. if so, loads it into certRes and returns true. If the cert
 // is not yet ready, it returns false. The certRes input
 // should already have the Domain (common name) field populated. If bundle is
-// true, the certificate will be bundled with the issuer's cert.
+// false, the certificate chain will be split into the end-entity and issuer certs.
 func (c *Client) checkCertResponse(order orderMessage, certRes *CertificateResource, bundle bool) (bool, error) {
 
 	switch order.Status {
@@ -726,26 +727,29 @@ func (c *Client) checkCertResponse(order orderMessage, certRes *CertificateResou
 			return false, err
 		}
 
-		// The issuer certificate link is always supplied via an "up" link
+		// If bundle is false, we want to return an end-entity and issuer certificate
+		// To do this, we check if the issuer certificate is supplied via an "up" link
 		// in the response headers of a new certificate.
-		links := parseLinks(resp.Header["Link"])
-		if link, ok := links["up"]; ok {
-			issuerCert, err := c.getIssuerCertificate(link)
+		if !bundle {
+			var issuerCert []byte
+			links := parseLinks(resp.Header["Link"])
+			if link, ok := links["up"]; ok {
+				issuerCert, err = c.getIssuerCertificate(link)
 
-			if err != nil {
-				// If we fail to acquire the issuer cert, return the issued certificate - do not fail.
-				log.Printf("[WARNING][%s] acme: Could not bundle issuer certificate: %v", certRes.Domain, err)
-			} else {
-				issuerCert = pemEncode(derCertificateBytes(issuerCert))
-
-				// If bundle is true, we want to return a certificate bundle.
-				// To do this, we append the issuer cert to the issued cert.
-				if bundle {
-					cert = append(cert, issuerCert...)
+				if err != nil {
+					// If we fail to acquire the issuer cert, return the issued certificate - do not fail.
+					log.Printf("[WARNING][%s] acme: Could not bundle issuer certificate: %v", certRes.Domain, err)
+				} else {
+					issuerCert = pemEncode(derCertificateBytes(issuerCert))
 				}
-
-				certRes.IssuerCertificate = issuerCert
+			} else {
+				// The server doesn't provide an "up" link
+				// Split the certificate chain into end-entity and issuer certs
+				log.Printf("[INFO][%s] acme: Splitting certificate chain into end-entity and issuer certs", certRes.Domain)
+				issuerCert = bytes.Split(cert, []byte("\n\n"))[1]
+				cert = bytes.Split(cert, []byte("\n\n"))[0]
 			}
+			certRes.IssuerCertificate = issuerCert
 		}
 
 		certRes.Certificate = cert

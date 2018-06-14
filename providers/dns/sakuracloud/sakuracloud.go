@@ -3,6 +3,7 @@
 package sakuracloud
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -33,10 +34,10 @@ func NewDNSProvider() (*DNSProvider, error) {
 // DNSProvider instance configured for sakuracloud.
 func NewDNSProviderCredentials(token, secret string) (*DNSProvider, error) {
 	if token == "" {
-		return nil, fmt.Errorf("SakuraCloud AccessToken is missing")
+		return nil, errors.New("SakuraCloud AccessToken is missing")
 	}
 	if secret == "" {
-		return nil, fmt.Errorf("SakuraCloud AccessSecret is missing")
+		return nil, errors.New("SakuraCloud AccessSecret is missing")
 	}
 
 	client := api.NewClient(token, secret, "tk1a")

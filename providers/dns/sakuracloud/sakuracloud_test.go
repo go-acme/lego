@@ -26,7 +26,7 @@ func init() {
 	}
 }
 
-func restoreSakuraCloudEnv() {
+func restoreEnv() {
 	os.Setenv("SAKURACLOUD_ACCESS_TOKEN", sakuracloudAccessToken)
 	os.Setenv("SAKURACLOUD_ACCESS_TOKEN_SECRET", sakuracloudAccessSecret)
 }
@@ -36,7 +36,7 @@ func restoreSakuraCloudEnv() {
 //
 
 func TestNewDNSProviderValid(t *testing.T) {
-	defer restoreSakuraCloudEnv()
+	defer restoreEnv()
 
 	os.Setenv("SAKURACLOUD_ACCESS_TOKEN", "123")
 	os.Setenv("SAKURACLOUD_ACCESS_TOKEN_SECRET", "456")
@@ -48,7 +48,7 @@ func TestNewDNSProviderValid(t *testing.T) {
 }
 
 func TestNewDNSProviderInvalidWithMissingAccessToken(t *testing.T) {
-	defer restoreSakuraCloudEnv()
+	defer restoreEnv()
 
 	os.Setenv("SAKURACLOUD_ACCESS_TOKEN", "")
 	provider, err := NewDNSProvider()

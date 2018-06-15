@@ -121,7 +121,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 // types for JSON method calls, parameters, and responses
 
 type addRecordRequest struct {
-	Domainname string `json:"domainname"`
+	DomainName string `json:"domainname"`
 	Host       string `json:"host"`
 	Type       string `json:"type"`
 	Data       string `json:"data"`
@@ -129,7 +129,7 @@ type addRecordRequest struct {
 }
 
 type deleteRecordRequest struct {
-	Recordid int `json:"recordid"`
+	RecordID int `json:"recordid"`
 }
 
 type responseStruct struct {
@@ -179,26 +179,26 @@ func (d *DNSProvider) sendRequest(method string, resource string, payload interf
 // functions to perform API actions
 
 func (d *DNSProvider) addTXTRecord(fqdn string, domain string, name string, value string, ttl int) (int, error) {
-	response, err := d.sendRequest("POST", "addrecord", addRecordRequest{
-		Domainname: domain,
+	response, err := d.sendRequest(http.MethodPost, "addrecord", addRecordRequest{
+		DomainName: domain,
 		Host:       name,
 		Type:       "TXT",
 		Data:       value,
 		TTL:        ttl,
 	})
 	if response != nil && response.Response.Status.Code == 200 {
-		log.Printf("[INFO][%s] GleSYS DNS: Successfully created recordid %d", fqdn, response.Response.Record.Recordid)
-		return response.Response.Record.Recordid, nil
+		log.Infof("[%s] GleSYS DNS: Successfully created record id %d", fqdn, response.Response.Record.RecordID)
+		return response.Response.Record.RecordID, nil
 	}
 	return 0, err
 }
 
 func (d *DNSProvider) deleteTXTRecord(fqdn string, recordid int) error {
-	response, err := d.sendRequest("POST", "deleterecord", deleteRecordRequest{
-		Recordid: recordid,
+	response, err := d.sendRequest(http.MethodPost, "deleterecord", deleteRecordRequest{
+		RecordID: recordid,
 	})
 	if response != nil && response.Response.Status.Code == 200 {
-		log.Printf("[INFO][%s] GleSYS DNS: Successfully deleted recordid %d", fqdn, recordid)
+		log.Infof("[%s] GleSYS DNS: Successfully deleted record id %d", fqdn, recordid)
 	}
 	return err
 }

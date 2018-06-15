@@ -8,12 +8,16 @@ import (
 // Logger is an optional custom logger.
 var Logger *log.Logger
 
+func initDefaultLogger() {
+	if Logger == nil {
+		Logger = log.New(os.Stdout, "", log.LstdFlags)
+	}
+}
+
 // Fatal writes a log entry.
 // It uses Logger if not nil, otherwise it uses the default log.Logger.
 func Fatal(args ...interface{}) {
-	if Logger == nil {
-		Logger = log.New(os.Stderr, "", log.LstdFlags)
-	}
+	initDefaultLogger()
 
 	Logger.Fatal(args...)
 }
@@ -21,9 +25,7 @@ func Fatal(args ...interface{}) {
 // Fatalf writes a log entry.
 // It uses Logger if not nil, otherwise it uses the default log.Logger.
 func Fatalf(format string, args ...interface{}) {
-	if Logger == nil {
-		Logger = log.New(os.Stderr, "", log.LstdFlags)
-	}
+	initDefaultLogger()
 
 	Logger.Fatalf(format, args...)
 }
@@ -31,9 +33,7 @@ func Fatalf(format string, args ...interface{}) {
 // Print writes a log entry.
 // It uses Logger if not nil, otherwise it uses the default log.Logger.
 func Print(args ...interface{}) {
-	if Logger == nil {
-		Logger = log.New(os.Stdout, "", log.LstdFlags)
-	}
+	initDefaultLogger()
 
 	Logger.Print(args...)
 }
@@ -41,9 +41,7 @@ func Print(args ...interface{}) {
 // Println writes a log entry.
 // It uses Logger if not nil, otherwise it uses the default log.Logger.
 func Println(args ...interface{}) {
-	if Logger == nil {
-		Logger = log.New(os.Stdout, "", log.LstdFlags)
-	}
+	initDefaultLogger()
 
 	Logger.Println(args...)
 }
@@ -51,9 +49,17 @@ func Println(args ...interface{}) {
 // Printf writes a log entry.
 // It uses Logger if not nil, otherwise it uses the default log.Logger.
 func Printf(format string, args ...interface{}) {
-	if Logger == nil {
-		Logger = log.New(os.Stdout, "", log.LstdFlags)
-	}
+	initDefaultLogger()
 
 	Logger.Printf(format, args...)
+}
+
+// Warnf writes a log entry.
+func Warnf(format string, args ...interface{}) {
+	Printf("[WARN] "+format, args...)
+}
+
+// Infof writes a log entry.
+func Infof(format string, args ...interface{}) {
+	Printf("[INFO] "+format, args...)
 }

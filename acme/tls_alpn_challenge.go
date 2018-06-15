@@ -11,9 +11,8 @@ import (
 	"github.com/xenolf/lego/log"
 )
 
-// idPeAcmeIdentifierV1 is the SMI Security for PKIX Certification Extension
-// OID referencing the ACME extension. Reference:
-// https://tools.ietf.org/html/draft-ietf-acme-tls-alpn-01#section-5.1
+// idPeAcmeIdentifierV1 is the SMI Security for PKIX Certification Extension OID referencing the ACME extension.
+// Reference: https://tools.ietf.org/html/draft-ietf-acme-tls-alpn-01#section-5.1
 var idPeAcmeIdentifierV1 = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 1, 30, 1}
 
 type tlsALPNChallenge struct {
@@ -46,31 +45,20 @@ func (t *tlsALPNChallenge) Solve(chlng challenge, domain string) error {
 	return t.validate(t.jws, domain, chlng.URL, challenge{Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
 }
 
-// TLSALPNChallengeCert returns a certificate with the acmeValidation-v1
-// extension and domain name for the `tls-alpn-01` challenge.
-func TLSALPNChallengeCert(domain, keyAuth string) (*tls.Certificate, error) {
-	// Generate a new RSA key for the certificates.
-	tempPrivKey, err := generatePrivateKey(RSA2048)
-	if err != nil {
-		return nil, err
-	}
-
-	// Encode the private key into a PEM format. We'll need to use it to
-	// generate the x509 keypair.
-	rsaPrivKey := tempPrivKey.(*rsa.PrivateKey)
-	rsaPrivPEM := pemEncode(rsaPrivKey)
-
+// TLSALPNChallengeBlocks returns PEM blocks (certPEMBlock, keyPEMBlock) with the acmeValidation-v1 extension
+// and domain name for the `tls-alpn-01` challenge.
+func TLSALPNChallengeBlocks(domain, keyAuth string) ([]byte, []byte, error) {
 	// Compute the SHA-256 digest of the key authorization.
 	zBytes := sha256.Sum256([]byte(keyAuth))
 
 	value, err := asn1.Marshal(zBytes[:sha256.Size])
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	// Add the keyAuth digest as the acmeValidation-v1 extension (marked as
-	// critical such that it won't be used by non-ACME software). Reference:
-	// https://tools.ietf.org/html/draft-ietf-acme-tls-alpn-01#section-3
+	// Add the keyAuth digest as the acmeValidation-v1 extension
+	// (marked as critical such that it won't be used by non-ACME software).
+	// Reference: https://tools.ietf.org/html/draft-ietf-acme-tls-alpn-01#section-3
 	extensions := []pkix.Extension{
 		{
 			Id:       idPeAcmeIdentifierV1,
@@ -79,9 +67,30 @@ func TLSALPNChallengeCert(domain, keyAuth string) (*tls.Certificate, error) {
 		},
 	}
 
-	// Generate the PEM certificate using the provided private key, domain, and
-	// extra extensions.
+	// Generate a new RSA key for the certificates.
+	tempPrivKey, err := generatePrivateKey(RSA2048)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	rsaPrivKey := tempPrivKey.(*rsa.PrivateKey)
+
+	// Generate the PEM certificate using the provided private key, domain, and extra extensions.
 	tempCertPEM, err := generatePemCert(rsaPrivKey, domain, extensions)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Encode the private key into a PEM format. We'll need to use it to generate the x509 keypair.
+	rsaPrivPEM := pemEncode(rsaPrivKey)
+
+	return tempCertPEM, rsaPrivPEM, nil
+}
+
+// TLSALPNChallengeCert returns a certificate with the acmeValidation-v1 extension
+// and domain name for the `tls-alpn-01` challenge.
+func TLSALPNChallengeCert(domain, keyAuth string) (*tls.Certificate, error) {
+	tempCertPEM, rsaPrivPEM, err := TLSALPNChallengeBlocks(domain, keyAuth)
 	if err != nil {
 		return nil, err
 	}

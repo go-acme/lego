@@ -29,6 +29,7 @@ type DNSProvider struct {
 	apiKey        string
 	activeRecords map[string]int
 	inProgressMu  sync.Mutex
+	client        *http.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for GleSYS.
@@ -49,10 +50,12 @@ func NewDNSProviderCredentials(apiUser string, apiKey string) (*DNSProvider, err
 	if apiUser == "" || apiKey == "" {
 		return nil, fmt.Errorf("GleSYS DNS: Incomplete credentials provided")
 	}
+
 	return &DNSProvider{
 		apiUser:       apiUser,
 		apiKey:        apiKey,
 		activeRecords: make(map[string]int),
+		client:        &http.Client{Timeout: 10 * time.Second},
 	}, nil
 }
 
@@ -159,8 +162,7 @@ func (d *DNSProvider) sendRequest(method string, resource string, payload interf
 	req.Header.Set("Content-Type", "application/json")
 	req.SetBasicAuth(d.apiUser, d.apiKey)
 
-	client := &http.Client{Timeout: 10 * time.Second}
-	resp, err := client.Do(req)
+	resp, err := d.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -186,7 +188,8 @@ func (d *DNSProvider) addTXTRecord(fqdn string, domain string, name string, valu
 		Data:       value,
 		TTL:        ttl,
 	})
-	if response != nil && response.Response.Status.Code == 200 {
+
+	if response != nil && response.Response.Status.Code == http.StatusOK {
 		log.Infof("[%s] GleSYS DNS: Successfully created record id %d", fqdn, response.Response.Record.RecordID)
 		return response.Response.Record.RecordID, nil
 	}

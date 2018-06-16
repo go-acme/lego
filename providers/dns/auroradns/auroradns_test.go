@@ -18,7 +18,7 @@ func TestAuroraDNSPresent(t *testing.T) {
 	var requestReceived bool
 
 	mock := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == "GET" && r.URL.Path == "/zones" {
+		if r.Method == http.MethodGet && r.URL.Path == "/zones" {
 			w.WriteHeader(http.StatusCreated)
 			fmt.Fprintf(w, `[{
 			        "id":   "c56a4180-65aa-42ec-a945-5fd21dec0538",
@@ -62,7 +62,7 @@ func TestAuroraDNSCleanUp(t *testing.T) {
 	var requestReceived bool
 
 	mock := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == "GET" && r.URL.Path == "/zones" {
+		if r.Method == http.MethodGet && r.URL.Path == "/zones" {
 			w.WriteHeader(http.StatusCreated)
 			fmt.Fprintf(w, `[{
 			        "id":   "c56a4180-65aa-42ec-a945-5fd21dec0538",
@@ -71,7 +71,7 @@ func TestAuroraDNSCleanUp(t *testing.T) {
 			return
 		}
 
-		if r.Method == "POST" && r.URL.Path == "/zones/c56a4180-65aa-42ec-a945-5fd21dec0538/records" {
+		if r.Method == http.MethodPost && r.URL.Path == "/zones/c56a4180-65aa-42ec-a945-5fd21dec0538/records" {
 			w.WriteHeader(http.StatusCreated)
 			fmt.Fprintf(w, `{
 			        "id":   "ec56a4180-65aa-42ec-a945-5fd21dec0538",

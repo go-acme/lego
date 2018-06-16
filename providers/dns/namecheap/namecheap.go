@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/log"
 	"github.com/xenolf/lego/platform/config/env"
 )
 
@@ -32,7 +33,6 @@ var (
 	debug          = false
 	defaultBaseURL = "https://api.namecheap.com/xml.response"
 	getIPURL       = "https://dynamicdns.park-your-domain.com/getip"
-	httpClient     = http.Client{Timeout: 60 * time.Second}
 )
 
 // DNSProvider is an implementation of the ChallengeProviderTimeout interface
@@ -42,6 +42,7 @@ type DNSProvider struct {
 	apiUser  string
 	apiKey   string
 	clientIP string
+	client   *http.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for namecheap.
@@ -63,7 +64,9 @@ func NewDNSProviderCredentials(apiUser, apiKey string) (*DNSProvider, error) {
 		return nil, fmt.Errorf("Namecheap credentials missing")
 	}
 
-	clientIP, err := getClientIP()
+	client := &http.Client{Timeout: 60 * time.Second}
+
+	clientIP, err := getClientIP(client)
 	if err != nil {
 		return nil, err
 	}
@@ -73,6 +76,7 @@ func NewDNSProviderCredentials(apiUser, apiKey string) (*DNSProvider, error) {
 		apiUser:  apiUser,
 		apiKey:   apiKey,
 		clientIP: clientIP,
+		client:   client,
 	}, nil
 }
 
@@ -102,8 +106,8 @@ type apierror struct {
 
 // getClientIP returns the client's public IP address. It uses namecheap's
 // IP discovery service to perform the lookup.
-func getClientIP() (addr string, err error) {
-	resp, err := httpClient.Get(getIPURL)
+func getClientIP(client *http.Client) (addr string, err error) {
+	resp, err := client.Get(getIPURL)
 	if err != nil {
 		return "", err
 	}
@@ -115,7 +119,7 @@ func getClientIP() (addr string, err error) {
 	}
 
 	if debug {
-		fmt.Println("Client IP:", string(clientIP))
+		log.Println("Client IP:", string(clientIP))
 	}
 	return string(clientIP), nil
 }
@@ -189,7 +193,7 @@ func (d *DNSProvider) getTLDs() (tlds map[string]string, err error) {
 	reqURL, _ := url.Parse(d.baseURL)
 	reqURL.RawQuery = values.Encode()
 
-	resp, err := httpClient.Get(reqURL.String())
+	resp, err := d.client.Get(reqURL.String())
 	if err != nil {
 		return nil, err
 	}
@@ -238,7 +242,7 @@ func (d *DNSProvider) getHosts(ch *challenge) (hosts []host, err error) {
 	reqURL, _ := url.Parse(d.baseURL)
 	reqURL.RawQuery = values.Encode()
 
-	resp, err := httpClient.Get(reqURL.String())
+	resp, err := d.client.Get(reqURL.String())
 	if err != nil {
 		return nil, err
 	}
@@ -288,7 +292,7 @@ func (d *DNSProvider) setHosts(ch *challenge, hosts []host) error {
 		values.Add("TTL"+ind, h.TTL)
 	}
 
-	resp, err := httpClient.PostForm(d.baseURL, values)
+	resp, err := d.client.PostForm(d.baseURL, values)
 	if err != nil {
 		return err
 	}
@@ -385,7 +389,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	if debug {
 		for _, h := range hosts {
-			fmt.Printf(
+			log.Printf(
 				"%-5.5s %-30.30s %-6s %-70.70s\n",
 				h.Type, h.Name, h.TTL, h.Address)
 		}

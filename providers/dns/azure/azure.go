@@ -67,20 +67,20 @@ func NewDNSProviderCredentials(clientID, clientSecret, subscriptionID, tenantID,
 
 // Timeout returns the timeout and interval to use when checking for DNS
 // propagation. Adjusting here to cope with spikes in propagation times.
-func (c *DNSProvider) Timeout() (timeout, interval time.Duration) {
+func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return 120 * time.Second, 2 * time.Second
 }
 
 // Present creates a TXT record to fulfil the dns-01 challenge
-func (c *DNSProvider) Present(domain, token, keyAuth string) error {
+func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
-	zone, err := c.getHostedZoneID(fqdn)
+	zone, err := d.getHostedZoneID(fqdn)
 	if err != nil {
 		return err
 	}
 
-	rsc := dns.NewRecordSetsClient(c.subscriptionID)
-	spt, err := c.newServicePrincipalTokenFromCredentials(azure.PublicCloud.ResourceManagerEndpoint)
+	rsc := dns.NewRecordSetsClient(d.subscriptionID)
+	spt, err := d.newServicePrincipalTokenFromCredentials(azure.PublicCloud.ResourceManagerEndpoint)
 	if err != nil {
 		return err
 	}
@@ -96,7 +96,7 @@ func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 		},
 	}
 
-	_, err = rsc.CreateOrUpdate(c.context, c.resourceGroup, zone, relative, dns.TXT, rec, "", "")
+	_, err = rsc.CreateOrUpdate(d.context, d.resourceGroup, zone, relative, dns.TXT, rec, "", "")
 	return err
 }
 
@@ -106,44 +106,44 @@ func toRelativeRecord(domain, zone string) string {
 }
 
 // CleanUp removes the TXT record matching the specified parameters
-func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
 
-	zone, err := c.getHostedZoneID(fqdn)
+	zone, err := d.getHostedZoneID(fqdn)
 	if err != nil {
 		return err
 	}
 
 	relative := toRelativeRecord(fqdn, acme.ToFqdn(zone))
-	rsc := dns.NewRecordSetsClient(c.subscriptionID)
-	spt, err := c.newServicePrincipalTokenFromCredentials(azure.PublicCloud.ResourceManagerEndpoint)
+	rsc := dns.NewRecordSetsClient(d.subscriptionID)
+	spt, err := d.newServicePrincipalTokenFromCredentials(azure.PublicCloud.ResourceManagerEndpoint)
 	if err != nil {
 		return err
 	}
 
 	rsc.Authorizer = autorest.NewBearerAuthorizer(spt)
 
-	_, err = rsc.Delete(c.context, c.resourceGroup, zone, relative, dns.TXT, "")
+	_, err = rsc.Delete(d.context, d.resourceGroup, zone, relative, dns.TXT, "")
 	return err
 }
 
 // Checks that azure has a zone for this domain name.
-func (c *DNSProvider) getHostedZoneID(fqdn string) (string, error) {
+func (d *DNSProvider) getHostedZoneID(fqdn string) (string, error) {
 	authZone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameservers)
 	if err != nil {
 		return "", err
 	}
 
 	// Now we want to to Azure and get the zone.
-	spt, err := c.newServicePrincipalTokenFromCredentials(azure.PublicCloud.ResourceManagerEndpoint)
+	spt, err := d.newServicePrincipalTokenFromCredentials(azure.PublicCloud.ResourceManagerEndpoint)
 	if err != nil {
 		return "", err
 	}
 
-	dc := dns.NewZonesClient(c.subscriptionID)
+	dc := dns.NewZonesClient(d.subscriptionID)
 	dc.Authorizer = autorest.NewBearerAuthorizer(spt)
 
-	zone, err := dc.Get(c.context, c.resourceGroup, acme.UnFqdn(authZone))
+	zone, err := dc.Get(d.context, d.resourceGroup, acme.UnFqdn(authZone))
 	if err != nil {
 		return "", err
 	}
@@ -154,10 +154,10 @@ func (c *DNSProvider) getHostedZoneID(fqdn string) (string, error) {
 
 // NewServicePrincipalTokenFromCredentials creates a new ServicePrincipalToken using values of the
 // passed credentials map.
-func (c *DNSProvider) newServicePrincipalTokenFromCredentials(scope string) (*adal.ServicePrincipalToken, error) {
-	oauthConfig, err := adal.NewOAuthConfig(azure.PublicCloud.ActiveDirectoryEndpoint, c.tenantID)
+func (d *DNSProvider) newServicePrincipalTokenFromCredentials(scope string) (*adal.ServicePrincipalToken, error) {
+	oauthConfig, err := adal.NewOAuthConfig(azure.PublicCloud.ActiveDirectoryEndpoint, d.tenantID)
 	if err != nil {
 		return nil, err
 	}
-	return adal.NewServicePrincipalToken(*oauthConfig, c.clientID, c.clientSecret, scope)
+	return adal.NewServicePrincipalToken(*oauthConfig, d.clientID, d.clientSecret, scope)
 }

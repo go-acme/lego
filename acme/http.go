@@ -80,7 +80,7 @@ func initCertPool() *x509.CertPool {
 // httpHead performs a HEAD request with a proper User-Agent string.
 // The response body (resp.Body) is already closed when this function returns.
 func httpHead(url string) (resp *http.Response, err error) {
-	req, err := http.NewRequest("HEAD", url, nil)
+	req, err := http.NewRequest(http.MethodHead, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to head %q: %v", url, err)
 	}
@@ -98,7 +98,7 @@ func httpHead(url string) (resp *http.Response, err error) {
 // httpPost performs a POST request with a proper User-Agent string.
 // Callers should close resp.Body when done reading from it.
 func httpPost(url string, bodyType string, body io.Reader) (resp *http.Response, err error) {
-	req, err := http.NewRequest("POST", url, body)
+	req, err := http.NewRequest(http.MethodPost, url, body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to post %q: %v", url, err)
 	}
@@ -111,7 +111,7 @@ func httpPost(url string, bodyType string, body io.Reader) (resp *http.Response,
 // httpGet performs a GET request with a proper User-Agent string.
 // Callers should close resp.Body when done reading from it.
 func httpGet(url string) (resp *http.Response, err error) {
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get %q: %v", url, err)
 	}

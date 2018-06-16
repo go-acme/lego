@@ -22,7 +22,7 @@ func TestHTTPHeadUserAgent(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if method != "HEAD" {
+	if method != http.MethodHead {
 		t.Errorf("Expected method to be HEAD, got %s", method)
 	}
 	if !strings.Contains(ua, ourUserAgent) {
@@ -44,7 +44,7 @@ func TestHTTPGetUserAgent(t *testing.T) {
 	}
 	res.Body.Close()
 
-	if method != "GET" {
+	if method != http.MethodGet {
 		t.Errorf("Expected method to be GET, got %s", method)
 	}
 	if !strings.Contains(ua, ourUserAgent) {
@@ -66,7 +66,7 @@ func TestHTTPPostUserAgent(t *testing.T) {
 	}
 	res.Body.Close()
 
-	if method != "POST" {
+	if method != http.MethodPost {
 		t.Errorf("Expected method to be POST, got %s", method)
 	}
 	if !strings.Contains(ua, ourUserAgent) {

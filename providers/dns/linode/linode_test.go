@@ -127,7 +127,7 @@ func TestDNSProvider_Present(t *testing.T) {
 	mockSrv := newMockServer(t, mockResponses)
 	defer mockSrv.Close()
 
-	p.linode.ToLinode().SetEndpoint(mockSrv.URL)
+	p.client.ToLinode().SetEndpoint(mockSrv.URL)
 
 	err = p.Present(domain, "", keyAuth)
 	assert.NoError(t, err)
@@ -156,7 +156,7 @@ func TestDNSProvider_PresentNoDomain(t *testing.T) {
 	mockSrv := newMockServer(t, mockResponses)
 	defer mockSrv.Close()
 
-	p.linode.ToLinode().SetEndpoint(mockSrv.URL)
+	p.client.ToLinode().SetEndpoint(mockSrv.URL)
 
 	err = p.Present(domain, "", keyAuth)
 	assert.EqualError(t, err, "dns: requested domain not found")
@@ -193,7 +193,7 @@ func TestDNSProvider_PresentCreateFailed(t *testing.T) {
 	mockSrv := newMockServer(t, mockResponses)
 	defer mockSrv.Close()
 
-	p.linode.ToLinode().SetEndpoint(mockSrv.URL)
+	p.client.ToLinode().SetEndpoint(mockSrv.URL)
 
 	err = p.Present(domain, "", keyAuth)
 	assert.EqualError(t, err, "Failed to create domain resource")
@@ -244,7 +244,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 	mockSrv := newMockServer(t, mockResponses)
 	defer mockSrv.Close()
 
-	p.linode.ToLinode().SetEndpoint(mockSrv.URL)
+	p.client.ToLinode().SetEndpoint(mockSrv.URL)
 
 	err = p.CleanUp(domain, "", keyAuth)
 	assert.NoError(t, err)
@@ -273,7 +273,7 @@ func TestDNSProvider_CleanUpNoDomain(t *testing.T) {
 	mockSrv := newMockServer(t, mockResponses)
 	defer mockSrv.Close()
 
-	p.linode.ToLinode().SetEndpoint(mockSrv.URL)
+	p.client.ToLinode().SetEndpoint(mockSrv.URL)
 
 	err = p.CleanUp(domain, "", keyAuth)
 	assert.EqualError(t, err, "dns: requested domain not found")
@@ -322,7 +322,7 @@ func TestDNSProvider_CleanUpDeleteFailed(t *testing.T) {
 	mockSrv := newMockServer(t, mockResponses)
 	defer mockSrv.Close()
 
-	p.linode.ToLinode().SetEndpoint(mockSrv.URL)
+	p.client.ToLinode().SetEndpoint(mockSrv.URL)
 
 	err = p.CleanUp(domain, "", keyAuth)
 	assert.EqualError(t, err, "Failed to delete domain resource")

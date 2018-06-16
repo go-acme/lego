@@ -26,7 +26,7 @@ type hostedZoneInfo struct {
 
 // DNSProvider implements the acme.ChallengeProvider interface.
 type DNSProvider struct {
-	linode *dns.DNS
+	client *dns.DNS
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Linode.
@@ -48,7 +48,7 @@ func NewDNSProviderCredentials(apiKey string) (*DNSProvider, error) {
 	}
 
 	return &DNSProvider{
-		linode: dns.New(apiKey),
+		client: dns.New(apiKey),
 	}, nil
 }
 
@@ -77,7 +77,7 @@ func (p *DNSProvider) Present(domain, token, keyAuth string) error {
 		return err
 	}
 
-	if _, err = p.linode.CreateDomainResourceTXT(zone.domainID, acme.UnFqdn(fqdn), value, 60); err != nil {
+	if _, err = p.client.CreateDomainResourceTXT(zone.domainID, acme.UnFqdn(fqdn), value, 60); err != nil {
 		return err
 	}
 
@@ -93,7 +93,7 @@ func (p *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	// Get all TXT records for the specified domain.
-	resources, err := p.linode.GetResourcesByType(zone.domainID, "TXT")
+	resources, err := p.client.GetResourcesByType(zone.domainID, "TXT")
 	if err != nil {
 		return err
 	}
@@ -101,7 +101,7 @@ func (p *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	// Remove the specified resource, if it exists.
 	for _, resource := range resources {
 		if resource.Name == zone.resourceName && resource.Target == value {
-			resp, err := p.linode.DeleteDomainResource(resource.DomainID, resource.ResourceID)
+			resp, err := p.client.DeleteDomainResource(resource.DomainID, resource.ResourceID)
 			if err != nil {
 				return err
 			}
@@ -124,7 +124,7 @@ func (p *DNSProvider) getHostedZoneInfo(fqdn string) (*hostedZoneInfo, error) {
 	resourceName := strings.TrimSuffix(fqdn, "."+authZone)
 
 	// Query the authority zone.
-	domain, err := p.linode.GetDomain(acme.UnFqdn(authZone))
+	domain, err := p.client.GetDomain(acme.UnFqdn(authZone))
 	if err != nil {
 		return nil, err
 	}

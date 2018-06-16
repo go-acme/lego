@@ -39,7 +39,7 @@ type DNSProvider struct {
 	configName string
 	dnsView    string
 	token      string
-	httpClient *http.Client
+	client     *http.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Bluecat DNS.
@@ -85,7 +85,7 @@ func NewDNSProviderCredentials(server, userName, password, configName, dnsView s
 		password:   password,
 		configName: configName,
 		dnsView:    dnsView,
-		httpClient: client,
+		client:     client,
 	}, nil
 }
 
@@ -114,7 +114,7 @@ func (d *DNSProvider) sendRequest(method, resource string, payload interface{}, 
 		q.Add(argName, argVal)
 	}
 	req.URL.RawQuery = q.Encode()
-	resp, err := d.httpClient.Do(req)
+	resp, err := d.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -137,13 +137,16 @@ func (d *DNSProvider) login() error {
 		"password": d.password,
 	}
 
-	resp, err := d.sendRequest("GET", "login", nil, queryArgs)
+	resp, err := d.sendRequest(http.MethodGet, "login", nil, queryArgs)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
 
-	authBytes, _ := ioutil.ReadAll(resp.Body)
+	authBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
 	authResp := string(authBytes)
 
 	if strings.Contains(authResp, "Authentication Error") {
@@ -164,7 +167,7 @@ func (d *DNSProvider) logout() error {
 		return nil
 	}
 
-	resp, err := d.sendRequest("GET", "logout", nil, nil)
+	resp, err := d.sendRequest(http.MethodGet, "logout", nil, nil)
 	if err != nil {
 		return err
 	}
@@ -174,7 +177,10 @@ func (d *DNSProvider) logout() error {
 		return fmt.Errorf("Bluecat API request failed to delete session with HTTP status code %d", resp.StatusCode)
 	}
 
-	authBytes, _ := ioutil.ReadAll(resp.Body)
+	authBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
 	authResp := string(authBytes)
 
 	if !strings.Contains(authResp, "successfully") {
@@ -195,7 +201,7 @@ func (d *DNSProvider) lookupConfID() (uint, error) {
 		"type":     configType,
 	}
 
-	resp, err := d.sendRequest("GET", "getEntityByName", nil, queryArgs)
+	resp, err := d.sendRequest(http.MethodGet, "getEntityByName", nil, queryArgs)
 	if err != nil {
 		return 0, err
 	}
@@ -222,7 +228,7 @@ func (d *DNSProvider) lookupViewID(viewName string) (uint, error) {
 		"type":     viewType,
 	}
 
-	resp, err := d.sendRequest("GET", "getEntityByName", nil, queryArgs)
+	resp, err := d.sendRequest(http.MethodGet, "getEntityByName", nil, queryArgs)
 	if err != nil {
 		return 0, err
 	}
@@ -271,7 +277,7 @@ func (d *DNSProvider) getZone(parentID uint, name string) (uint, error) {
 		"type":     zoneType,
 	}
 
-	resp, err := d.sendRequest("GET", "getEntityByName", nil, queryArgs)
+	resp, err := d.sendRequest(http.MethodGet, "getEntityByName", nil, queryArgs)
 	// Return an empty zone if the named zone doesn't exist
 	if resp != nil && resp.StatusCode == 404 {
 		return 0, fmt.Errorf("Bluecat API could not find zone named %s", name)
@@ -321,8 +327,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Properties: fmt.Sprintf("ttl=%d|absoluteName=%s|txt=%s|", ttl, fqdn, value),
 	}
 
-	resp, err := d.sendRequest("POST", "addEntity", body, queryArgs)
-
+	resp, err := d.sendRequest(http.MethodPost, "addEntity", body, queryArgs)
 	if err != nil {
 		return err
 	}
@@ -350,8 +355,7 @@ func (d *DNSProvider) deploy(entityID uint) error {
 		"entityId": strconv.FormatUint(uint64(entityID), 10),
 	}
 
-	resp, err := d.sendRequest("POST", "quickDeploy", nil, queryArgs)
-
+	resp, err := d.sendRequest(http.MethodPost, "quickDeploy", nil, queryArgs)
 	if err != nil {
 		return err
 	}
@@ -385,7 +389,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		"type":     txtType,
 	}
 
-	resp, err := d.sendRequest("GET", "getEntityByName", nil, queryArgs)
+	resp, err := d.sendRequest(http.MethodGet, "getEntityByName", nil, queryArgs)
 	if err != nil {
 		return err
 	}
@@ -400,7 +404,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		"objectId": strconv.FormatUint(uint64(txtRec.ID), 10),
 	}
 
-	resp, err = d.sendRequest("DELETE", "delete", nil, queryArgs)
+	resp, err = d.sendRequest(http.MethodDelete, http.MethodDelete, nil, queryArgs)
 	if err != nil {
 		return err
 	}

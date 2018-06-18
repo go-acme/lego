@@ -60,7 +60,7 @@ func TestPEMCertExpiration(t *testing.T) {
 
 	expiration := time.Now().Add(365)
 	expiration = expiration.Round(time.Second)
-	certBytes, err := generateDerCert(privKey.(*rsa.PrivateKey), expiration, "test.com")
+	certBytes, err := generateDerCert(privKey.(*rsa.PrivateKey), expiration, "test.com", nil)
 	if err != nil {
 		t.Fatal("Error generating cert:", err)
 	}

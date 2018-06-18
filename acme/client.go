@@ -81,8 +81,10 @@ func NewClient(caDirURL string, user User, keyType KeyType) (*Client, error) {
 	// REVIEW: best possibility?
 	// Add all available solvers with the right index as per ACME
 	// spec to this map. Otherwise they won`t be found.
-	solvers := make(map[Challenge]solver)
-	solvers[HTTP01] = &httpChallenge{jws: jws, validate: validate, provider: &HTTPProviderServer{}}
+	solvers := map[Challenge]solver{
+		HTTP01:    &httpChallenge{jws: jws, validate: validate, provider: &HTTPProviderServer{}},
+		TLSALPN01: &tlsALPNChallenge{jws: jws, validate: validate, provider: &TLSALPNProviderServer{}},
+	}
 
 	return &Client{directory: dir, user: user, jws: jws, keyType: keyType, solvers: solvers}, nil
 }
@@ -94,8 +96,10 @@ func (c *Client) SetChallengeProvider(challenge Challenge, p ChallengeProvider) 
 		c.solvers[challenge] = &httpChallenge{jws: c.jws, validate: validate, provider: p}
 	case DNS01:
 		c.solvers[challenge] = &dnsChallenge{jws: c.jws, validate: validate, provider: p}
+	case TLSALPN01:
+		c.solvers[challenge] = &tlsALPNChallenge{jws: c.jws, validate: validate, provider: p}
 	default:
-		return fmt.Errorf("Unknown challenge %v", challenge)
+		return fmt.Errorf("unknown challenge %v", challenge)
 	}
 	return nil
 }
@@ -116,6 +120,24 @@ func (c *Client) SetHTTPAddress(iface string) error {
 		chlng.(*httpChallenge).provider = NewHTTPProviderServer(host, port)
 	}
 
+	return nil
+}
+
+// SetTLSAddress specifies a custom interface:port to be used for TLS based challenges.
+// If this option is not used, the default port 443 and all interfaces will be used.
+// To only specify a port and no interface use the ":port" notation.
+//
+// NOTE: This REPLACES any custom TLS-ALPN provider previously set by calling
+// c.SetChallengeProvider with the default TLS-ALPN challenge provider.
+func (c *Client) SetTLSAddress(iface string) error {
+	host, port, err := net.SplitHostPort(iface)
+	if err != nil {
+		return err
+	}
+
+	if chlng, ok := c.solvers[TLSALPN01]; ok {
+		chlng.(*tlsALPNChallenge).provider = NewTLSALPNProviderServer(host, port)
+	}
 	return nil
 }
 

@@ -723,6 +723,8 @@ func (c *Client) requestCertificateForCsr(order orderResource, bundle bool, csr 
 		}
 		if i == maxChecks-1 {
 			return nil, fmt.Errorf("polled for certificate %d times; giving up", i)
+		} else {
+			time.Sleep(1 * time.Second)
 		}
 	}
 

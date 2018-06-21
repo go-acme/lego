@@ -8,6 +8,7 @@ import (
 	"crypto/sha1"
 	"encoding/base64"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -16,12 +17,12 @@ import (
 const (
 	defaultEndpoint = "https://dns.api.cloud.nifty.com"
 	apiVersion      = "2012-12-12N2013-12-16"
-	xmlns           = "https://route53.amazonaws.com/doc/2012-12-12/"
+	xmlNs           = "https://route53.amazonaws.com/doc/2012-12-12/"
 )
 
 // ChangeResourceRecordSetsRequest is a complex type that contains change information for the resource record set.
 type ChangeResourceRecordSetsRequest struct {
-	Xmlns       string      `xml:"xmlns,attr"`
+	XMLNs       string      `xml:"xmlns,attr"`
 	ChangeBatch ChangeBatch `xml:"ChangeBatch"`
 }
 
@@ -87,11 +88,26 @@ type ChangeInfo struct {
 	SubmittedAt string `xml:"SubmittedAt"`
 }
 
+func newClient(httpClient *http.Client, accessKey string, secretKey string, endpoint string) *Client {
+	client := http.DefaultClient
+	if httpClient != nil {
+		client = httpClient
+	}
+
+	return &Client{
+		accessKey: accessKey,
+		secretKey: secretKey,
+		endpoint:  endpoint,
+		client:    client,
+	}
+}
+
 // Client client of NIFCLOUD DNS
 type Client struct {
 	accessKey string
 	secretKey string
 	endpoint  string
+	client    *http.Client
 }
 
 // ChangeResourceRecordSets Call ChangeResourceRecordSets API and return response.
@@ -110,16 +126,19 @@ func (c *Client) ChangeResourceRecordSets(hostedZoneID string, input ChangeResou
 		return nil, err
 	}
 
-	req.Header.Add("Content-Type", "text/xml; charset=utf-8")
+	req.Header.Set("Content-Type", "text/xml; charset=utf-8")
 
 	err = c.sign(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("an error occurred during the creation of the signature: %v", err)
 	}
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
+	}
+	if res.Body == nil {
+		return nil, errors.New("the response body is nil")
 	}
 
 	defer res.Body.Close()
@@ -128,16 +147,18 @@ func (c *Client) ChangeResourceRecordSets(hostedZoneID string, input ChangeResou
 		errResp := &ErrorResponse{}
 		err = xml.NewDecoder(res.Body).Decode(errResp)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("an error occurred while unmarshaling the error body to XML: %v", err)
 		}
-		return nil, fmt.Errorf(errResp.Error.Message)
+
+		return nil, fmt.Errorf("an error occurred: %s", errResp.Error.Message)
 	}
 
 	output := &ChangeResourceRecordSetsResponse{}
 	err = xml.NewDecoder(res.Body).Decode(output)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("an error occurred while unmarshaling the response body to XML: %v", err)
 	}
+
 	return output, err
 }
 
@@ -152,12 +173,15 @@ func (c *Client) GetChange(statusID string) (*GetChangeResponse, error) {
 
 	err = c.sign(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("an error occurred during the creation of the signature: %v", err)
 	}
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
+	}
+	if res.Body == nil {
+		return nil, errors.New("the response body is nil")
 	}
 
 	defer res.Body.Close()
@@ -166,29 +190,29 @@ func (c *Client) GetChange(statusID string) (*GetChangeResponse, error) {
 		errResp := &ErrorResponse{}
 		err = xml.NewDecoder(res.Body).Decode(errResp)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("an error occurred while unmarshaling the error body to XML: %v", err)
 		}
-		return nil, fmt.Errorf(errResp.Error.Message)
+
+		return nil, fmt.Errorf("an error occurred: %s", errResp.Error.Message)
 	}
 
 	output := &GetChangeResponse{}
 	err = xml.NewDecoder(res.Body).Decode(output)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("an error occurred while unmarshaling the response body to XML: %v", err)
 	}
+
 	return output, nil
 }
 
 func (c *Client) sign(req *http.Request) error {
-	location, err := time.LoadLocation("GMT")
-	if err != nil {
-		return err
-	}
-
-	ts := time.Now().In(location).Format(time.RFC1123)
-
 	if req.Header.Get("Date") == "" {
-		req.Header.Set("Date", ts)
+		location, err := time.LoadLocation("GMT")
+		if err != nil {
+			return err
+		}
+
+		req.Header.Set("Date", time.Now().In(location).Format(time.RFC1123))
 	}
 
 	if req.URL.Path == "" {
@@ -196,7 +220,7 @@ func (c *Client) sign(req *http.Request) error {
 	}
 
 	mac := hmac.New(sha1.New, []byte(c.secretKey))
-	_, err = mac.Write([]byte(req.Header.Get("Date")))
+	_, err := mac.Write([]byte(req.Header.Get("Date")))
 	if err != nil {
 		return err
 	}
@@ -204,6 +228,8 @@ func (c *Client) sign(req *http.Request) error {
 	hashed := mac.Sum(nil)
 	signature := base64.StdEncoding.EncodeToString(hashed)
 
-	req.Header.Set("X-Nifty-Authorization", "NIFTY3-HTTPS NiftyAccessKeyId="+c.accessKey+",Algorithm=HmacSHA1,Signature="+signature)
-	return err
+	auth := fmt.Sprintf("NIFTY3-HTTPS NiftyAccessKeyId=%s,Algorithm=HmacSHA1,Signature=%s", c.accessKey, signature)
+	req.Header.Set("X-Nifty-Authorization", auth)
+
+	return nil
 }

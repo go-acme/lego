@@ -4,6 +4,7 @@ package nifcloud
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 	"time"
 
@@ -29,17 +30,15 @@ func NewDNSProvider() (*DNSProvider, error) {
 		endpoint = defaultEndpoint
 	}
 
-	return NewDNSProviderCredentials(endpoint, values["NIFCLOUD_ACCESS_KEY_ID"], values["NIFCLOUD_SECRET_ACCESS_KEY"])
+	httpClient := &http.Client{Timeout: 30 * time.Second}
+
+	return NewDNSProviderCredentials(httpClient, endpoint, values["NIFCLOUD_ACCESS_KEY_ID"], values["NIFCLOUD_SECRET_ACCESS_KEY"])
 }
 
 // NewDNSProviderCredentials uses the supplied credentials to return a
 // DNSProvider instance configured for NIFCLOUD.
-func NewDNSProviderCredentials(endpoint, accessKey, secretKey string) (*DNSProvider, error) {
-	client := &Client{
-		accessKey: accessKey,
-		secretKey: secretKey,
-		endpoint:  endpoint,
-	}
+func NewDNSProviderCredentials(httpClient *http.Client, endpoint, accessKey, secretKey string) (*DNSProvider, error) {
+	client := newClient(httpClient, accessKey, secretKey, endpoint)
 
 	return &DNSProvider{
 		client: client,
@@ -47,22 +46,22 @@ func NewDNSProviderCredentials(endpoint, accessKey, secretKey string) (*DNSProvi
 }
 
 // Present creates a TXT record using the specified parameters
-func (r *DNSProvider) Present(domain, token, keyAuth string) error {
+func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
-	return r.changeRecord("CREATE", fqdn, value, domain, ttl)
+	return d.changeRecord("CREATE", fqdn, value, domain, ttl)
 }
 
 // CleanUp removes the TXT record matching the specified parameters
-func (r *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
-	return r.changeRecord("DELETE", fqdn, value, domain, ttl)
+	return d.changeRecord("DELETE", fqdn, value, domain, ttl)
 }
 
-func (r *DNSProvider) changeRecord(action, fqdn, value, domain string, ttl int) error {
+func (d *DNSProvider) changeRecord(action, fqdn, value, domain string, ttl int) error {
 	name := acme.UnFqdn(fqdn)
 
 	reqParams := ChangeResourceRecordSetsRequest{
-		Xmlns: xmlns,
+		XMLNs: xmlNs,
 		ChangeBatch: ChangeBatch{
 			Comment: "Managed by Lego",
 			Changes: Changes{
@@ -87,7 +86,7 @@ func (r *DNSProvider) changeRecord(action, fqdn, value, domain string, ttl int) 
 		},
 	}
 
-	resp, err := r.client.ChangeResourceRecordSets(domain, reqParams)
+	resp, err := d.client.ChangeResourceRecordSets(domain, reqParams)
 	if err != nil {
 		return fmt.Errorf("failed to change NIFCLOUD record set: %v", err)
 	}
@@ -95,7 +94,7 @@ func (r *DNSProvider) changeRecord(action, fqdn, value, domain string, ttl int) 
 	statusID := resp.ChangeInfo.ID
 
 	return acme.WaitFor(120*time.Second, 4*time.Second, func() (bool, error) {
-		resp, err := r.client.GetChange(statusID)
+		resp, err := d.client.GetChange(statusID)
 		if err != nil {
 			return false, fmt.Errorf("failed to query NIFCLOUD DNS change status: %v", err)
 		}

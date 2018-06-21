@@ -171,6 +171,19 @@ func (s *dnsChallenge) CleanUp(chlng challenge, domain string) error {
 	return s.provider.CleanUp(domain, chlng.Token, keyAuth)
 }
 
+// Update FQDN with CNAME if any
+func updateDomainWithCName(r *dns.Msg, fqdn string) string {
+	for _, rr := range r.Answer {
+		if cn, ok := rr.(*dns.CNAME); ok {
+			if cn.Hdr.Name == fqdn {
+				fqdn = cn.Target
+				break
+			}
+		}
+	}
+	return fqdn
+}
+
 // checkDNSPropagation checks if the expected TXT record has been propagated to all authoritative nameservers.
 func checkDNSPropagation(fqdn, value string) (bool, error) {
 	// Initial attempt to resolve at the recursive NS

@@ -69,6 +69,13 @@ func DNS01Record(domain, keyAuth string) (fqdn string, value string, ttl int) {
 	value = base64.RawURLEncoding.EncodeToString(keyAuthShaBytes[:sha256.Size])
 	ttl = 120
 	fqdn = fmt.Sprintf("_acme-challenge.%s.", domain)
+
+	// Check if the domain has CNAME then return that
+	r, err := dnsQuery(fqdn, dns.TypeCNAME, RecursiveNameservers, true)
+	if err == nil && r.Rcode == dns.RcodeSuccess {
+		fqdn = updateDomainWithCName(r, fqdn)
+	}
+
 	return
 }
 
@@ -142,6 +149,20 @@ func (s *dnsChallenge) CleanUp(chlng challenge, domain string) error {
 	return s.provider.CleanUp(domain, chlng.Token, keyAuth)
 }
 
+// Update FQDN with CNAME if any
+func updateDomainWithCName(r *dns.Msg, fqdn string) string {
+	for _, rr := range r.Answer {
+		if cn, ok := rr.(*dns.CNAME); ok {
+			if cn.Hdr.Name == fqdn {
+				fqdn = cn.Target
+				break
+			}
+		}
+	}
+
+	return fqdn
+}
+
 // checkDNSPropagation checks if the expected TXT record has been propagated to all authoritative nameservers.
 func checkDNSPropagation(fqdn, value string) (bool, error) {
 	// Initial attempt to resolve at the recursive NS
@@ -150,15 +171,7 @@ func checkDNSPropagation(fqdn, value string) (bool, error) {
 		return false, err
 	}
 	if r.Rcode == dns.RcodeSuccess {
-		// If we see a CNAME here then use the alias
-		for _, rr := range r.Answer {
-			if cn, ok := rr.(*dns.CNAME); ok {
-				if cn.Hdr.Name == fqdn {
-					fqdn = cn.Target
-					break
-				}
-			}
-		}
+		fqdn = updateDomainWithCName(r, fqdn)
 	}
 
 	authoritativeNss, err := lookupNameservers(fqdn)

@@ -35,7 +35,7 @@ type customRetryer struct {
 // delay of ~400ms with an upper limit of ~30 seconds which should prevent
 // causing a high number of consecutive throttling errors.
 // For reference: Route 53 enforces an account-wide(!) 5req/s query limit.
-func (d customRetryer) RetryRules(r *request.Request) time.Duration {
+func (c customRetryer) RetryRules(r *request.Request) time.Duration {
 	retryCount := r.RetryCount
 	if retryCount > 7 {
 		retryCount = 7
@@ -70,15 +70,15 @@ func NewDNSProvider() (*DNSProvider, error) {
 }
 
 // Present creates a TXT record using the specified parameters
-func (r *DNSProvider) Present(domain, token, keyAuth string) error {
+func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
 	value = `"` + value + `"`
-	err := r.newTxtRecord(domain, fqdn, value)
+	err := d.newTxtRecord(domain, fqdn, value)
 	return err
 }
 
 // CleanUp removes the TXT record matching the specified parameters
-func (r *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
 	value = `"` + value + `"`
 	params := &lightsail.DeleteDomainEntryInput{
@@ -89,11 +89,11 @@ func (r *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 			Target: aws.String(value),
 		},
 	}
-	_, err := r.client.DeleteDomainEntry(params)
+	_, err := d.client.DeleteDomainEntry(params)
 	return err
 }
 
-func (r *DNSProvider) newTxtRecord(domain string, fqdn string, value string) error {
+func (d *DNSProvider) newTxtRecord(domain string, fqdn string, value string) error {
 	params := &lightsail.CreateDomainEntryInput{
 		DomainName: aws.String(domain),
 		DomainEntry: &lightsail.DomainEntry{
@@ -102,6 +102,6 @@ func (r *DNSProvider) newTxtRecord(domain string, fqdn string, value string) err
 			Type:   aws.String("TXT"),
 		},
 	}
-	_, err := r.client.CreateDomainEntry(params)
+	_, err := d.client.CreateDomainEntry(params)
 	return err
 }

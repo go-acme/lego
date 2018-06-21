@@ -23,7 +23,7 @@ type tlsALPNChallenge struct {
 
 // Solve manages the provider to validate and solve the challenge.
 func (t *tlsALPNChallenge) Solve(chlng challenge, domain string) error {
-	log.Printf("[INFO][%s] acme: Trying to solve TLS-ALPN-01", domain)
+	log.Infof("[%s] acme: Trying to solve TLS-ALPN-01", domain)
 
 	// Generate the Key Authorization for the challenge
 	keyAuth, err := getKeyAuthorization(chlng.Token, t.jws.privKey)
@@ -38,7 +38,7 @@ func (t *tlsALPNChallenge) Solve(chlng challenge, domain string) error {
 	defer func() {
 		err := t.provider.CleanUp(domain, chlng.Token, keyAuth)
 		if err != nil {
-			log.Printf("[%s] error cleaning up: %v", domain, err)
+			log.Warnf("[%s] error cleaning up: %v", domain, err)
 		}
 	}()
 

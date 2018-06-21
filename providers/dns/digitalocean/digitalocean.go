@@ -20,12 +20,7 @@ type DNSProvider struct {
 	apiAuthToken string
 	recordIDs    map[string]int
 	recordIDsMu  sync.Mutex
-}
-
-// Timeout returns the timeout and interval to use when checking for DNS
-// propagation. Adjusting here to cope with spikes in propagation times.
-func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
-	return 60 * time.Second, 5 * time.Second
+	client       *http.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Digital
@@ -49,7 +44,14 @@ func NewDNSProviderCredentials(apiAuthToken string) (*DNSProvider, error) {
 	return &DNSProvider{
 		apiAuthToken: apiAuthToken,
 		recordIDs:    make(map[string]int),
+		client:       &http.Client{Timeout: 30 * time.Second},
 	}, nil
+}
+
+// Timeout returns the timeout and interval to use when checking for DNS
+// propagation. Adjusting here to cope with spikes in propagation times.
+func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
+	return 60 * time.Second, 5 * time.Second
 }
 
 // Present creates a TXT record using the specified parameters
@@ -70,15 +72,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return err
 	}
 
-	req, err := http.NewRequest("POST", reqURL, bytes.NewReader(body))
+	req, err := http.NewRequest(http.MethodPost, reqURL, bytes.NewReader(body))
 	if err != nil {
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", d.apiAuthToken))
 
-	client := http.Client{Timeout: 30 * time.Second}
-	resp, err := client.Do(req)
+	resp, err := d.client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -123,15 +124,15 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	authZone = acme.UnFqdn(authZone)
 
 	reqURL := fmt.Sprintf("%s/v2/domains/%s/records/%d", digitalOceanBaseURL, authZone, recordID)
-	req, err := http.NewRequest("DELETE", reqURL, nil)
+	req, err := http.NewRequest(http.MethodDelete, reqURL, nil)
 	if err != nil {
 		return err
 	}
+
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", d.apiAuthToken))
 
-	client := http.Client{Timeout: 30 * time.Second}
-	resp, err := client.Do(req)
+	resp, err := d.client.Do(req)
 	if err != nil {
 		return err
 	}

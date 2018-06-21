@@ -41,15 +41,15 @@ func NewDNSProviderCredentials(key string) (*DNSProvider, error) {
 }
 
 // Present creates a TXT record to fulfil the dns-01 challenge.
-func (c *DNSProvider) Present(domain, token, keyAuth string) error {
+func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
-	zoneID, zoneName, err := c.getHostedZone(domain)
+	zoneID, zoneName, err := d.getHostedZone(domain)
 	if err != nil {
 		return err
 	}
 
-	recordAttributes := c.newTxtRecord(zoneName, fqdn, value, ttl)
-	_, _, err = c.client.Domains.CreateRecord(zoneID, *recordAttributes)
+	recordAttributes := d.newTxtRecord(zoneName, fqdn, value, ttl)
+	_, _, err = d.client.Domains.CreateRecord(zoneID, *recordAttributes)
 	if err != nil {
 		return fmt.Errorf("dnspod API call failed: %v", err)
 	}
@@ -58,21 +58,21 @@ func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
 
-	records, err := c.findTxtRecords(domain, fqdn)
+	records, err := d.findTxtRecords(domain, fqdn)
 	if err != nil {
 		return err
 	}
 
-	zoneID, _, err := c.getHostedZone(domain)
+	zoneID, _, err := d.getHostedZone(domain)
 	if err != nil {
 		return err
 	}
 
 	for _, rec := range records {
-		_, err := c.client.Domains.DeleteRecord(zoneID, rec.ID)
+		_, err := d.client.Domains.DeleteRecord(zoneID, rec.ID)
 		if err != nil {
 			return err
 		}
@@ -80,8 +80,8 @@ func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-func (c *DNSProvider) getHostedZone(domain string) (string, string, error) {
-	zones, _, err := c.client.Domains.List()
+func (d *DNSProvider) getHostedZone(domain string) (string, string, error) {
+	zones, _, err := d.client.Domains.List()
 	if err != nil {
 		return "", "", fmt.Errorf("dnspod API call failed: %v", err)
 	}
@@ -106,8 +106,8 @@ func (c *DNSProvider) getHostedZone(domain string) (string, string, error) {
 	return fmt.Sprintf("%v", hostedZone.ID), hostedZone.Name, nil
 }
 
-func (c *DNSProvider) newTxtRecord(zone, fqdn, value string, ttl int) *dnspod.Record {
-	name := c.extractRecordName(fqdn, zone)
+func (d *DNSProvider) newTxtRecord(zone, fqdn, value string, ttl int) *dnspod.Record {
+	name := d.extractRecordName(fqdn, zone)
 
 	return &dnspod.Record{
 		Type:  "TXT",
@@ -118,19 +118,19 @@ func (c *DNSProvider) newTxtRecord(zone, fqdn, value string, ttl int) *dnspod.Re
 	}
 }
 
-func (c *DNSProvider) findTxtRecords(domain, fqdn string) ([]dnspod.Record, error) {
-	zoneID, zoneName, err := c.getHostedZone(domain)
+func (d *DNSProvider) findTxtRecords(domain, fqdn string) ([]dnspod.Record, error) {
+	zoneID, zoneName, err := d.getHostedZone(domain)
 	if err != nil {
 		return nil, err
 	}
 
 	var records []dnspod.Record
-	result, _, err := c.client.Domains.ListRecords(zoneID, "")
+	result, _, err := d.client.Domains.ListRecords(zoneID, "")
 	if err != nil {
 		return records, fmt.Errorf("dnspod API call has failed: %v", err)
 	}
 
-	recordName := c.extractRecordName(fqdn, zoneName)
+	recordName := d.extractRecordName(fqdn, zoneName)
 
 	for _, record := range result {
 		if record.Name == recordName {
@@ -141,7 +141,7 @@ func (c *DNSProvider) findTxtRecords(domain, fqdn string) ([]dnspod.Record, erro
 	return records, nil
 }
 
-func (c *DNSProvider) extractRecordName(fqdn, domain string) string {
+func (d *DNSProvider) extractRecordName(fqdn, domain string) string {
 	name := acme.UnFqdn(fqdn)
 	if idx := strings.Index(name, "."+domain); idx != -1 {
 		return name[:idx]

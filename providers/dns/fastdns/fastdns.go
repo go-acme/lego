@@ -51,14 +51,14 @@ func NewDNSProviderClient(host, clientToken, clientSecret, accessToken string) (
 }
 
 // Present creates a TXT record to fullfil the dns-01 challenge.
-func (c *DNSProvider) Present(domain, token, keyAuth string) error {
+func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
-	zoneName, recordName, err := c.findZoneAndRecordName(fqdn, domain)
+	zoneName, recordName, err := d.findZoneAndRecordName(fqdn, domain)
 	if err != nil {
 		return err
 	}
 
-	configdns.Init(c.config)
+	configdns.Init(d.config)
 
 	zone, err := configdns.GetZone(zoneName)
 	if err != nil {
@@ -71,35 +71,35 @@ func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 	record.SetField("target", value)
 	record.SetField("active", true)
 
-	existingRecord := c.findExistingRecord(zone, recordName)
+	existingRecord := d.findExistingRecord(zone, recordName)
 
 	if existingRecord != nil {
 		if reflect.DeepEqual(existingRecord.ToMap(), record.ToMap()) {
 			return nil
 		}
 		zone.RemoveRecord(existingRecord)
-		return c.createRecord(zone, record)
+		return d.createRecord(zone, record)
 	}
 
-	return c.createRecord(zone, record)
+	return d.createRecord(zone, record)
 }
 
 // CleanUp removes the record matching the specified parameters.
-func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
-	zoneName, recordName, err := c.findZoneAndRecordName(fqdn, domain)
+	zoneName, recordName, err := d.findZoneAndRecordName(fqdn, domain)
 	if err != nil {
 		return err
 	}
 
-	configdns.Init(c.config)
+	configdns.Init(d.config)
 
 	zone, err := configdns.GetZone(zoneName)
 	if err != nil {
 		return err
 	}
 
-	existingRecord := c.findExistingRecord(zone, recordName)
+	existingRecord := d.findExistingRecord(zone, recordName)
 
 	if existingRecord != nil {
 		err := zone.RemoveRecord(existingRecord)
@@ -112,7 +112,7 @@ func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-func (c *DNSProvider) findZoneAndRecordName(fqdn, domain string) (string, string, error) {
+func (d *DNSProvider) findZoneAndRecordName(fqdn, domain string) (string, string, error) {
 	zone, err := acme.FindZoneByFqdn(acme.ToFqdn(domain), acme.RecursiveNameservers)
 	if err != nil {
 		return "", "", err
@@ -124,7 +124,7 @@ func (c *DNSProvider) findZoneAndRecordName(fqdn, domain string) (string, string
 	return zone, name, nil
 }
 
-func (c *DNSProvider) findExistingRecord(zone *configdns.Zone, recordName string) *configdns.TxtRecord {
+func (d *DNSProvider) findExistingRecord(zone *configdns.Zone, recordName string) *configdns.TxtRecord {
 	for _, r := range zone.Zone.Txt {
 		if r.Name == recordName {
 			return r
@@ -134,7 +134,7 @@ func (c *DNSProvider) findExistingRecord(zone *configdns.Zone, recordName string
 	return nil
 }
 
-func (c *DNSProvider) createRecord(zone *configdns.Zone, record *configdns.TxtRecord) error {
+func (d *DNSProvider) createRecord(zone *configdns.Zone, record *configdns.TxtRecord) error {
 	err := zone.AddRecord(record)
 	if err != nil {
 		return err

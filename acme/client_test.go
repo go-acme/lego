@@ -152,13 +152,13 @@ func TestValidate(t *testing.T) {
 		w.Header().Add("Replay-Nonce", "12345")
 		w.Header().Add("Retry-After", "0")
 		switch r.Method {
-		case "HEAD":
-		case "POST":
+		case http.MethodHead:
+		case http.MethodPost:
 			st := statuses[0]
 			statuses = statuses[1:]
 			writeJSONResponse(w, &challenge{Type: "http-01", Status: st, URL: "http://example.com/", Token: "token"})
 
-		case "GET":
+		case http.MethodGet:
 			st := statuses[0]
 			statuses = statuses[1:]
 			writeJSONResponse(w, &challenge{Type: "http-01", Status: st, URL: "http://example.com/", Token: "token"})
@@ -199,7 +199,7 @@ func TestGetChallenges(t *testing.T) {
 	var ts *httptest.Server
 	ts = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
-		case "GET", "HEAD":
+		case http.MethodGet, http.MethodHead:
 			w.Header().Add("Replay-Nonce", "12345")
 			w.Header().Add("Retry-After", "0")
 			writeJSONResponse(w, directory{
@@ -209,7 +209,7 @@ func TestGetChallenges(t *testing.T) {
 				RevokeCertURL: ts.URL,
 				KeyChangeURL:  ts.URL,
 			})
-		case "POST":
+		case http.MethodPost:
 			writeJSONResponse(w, orderMessage{})
 		}
 	}))

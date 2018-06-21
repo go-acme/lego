@@ -96,10 +96,10 @@ func NewDNSProviderServiceAccount(saFile string) (*DNSProvider, error) {
 }
 
 // Present creates a TXT record to fulfil the dns-01 challenge.
-func (c *DNSProvider) Present(domain, token, keyAuth string) error {
+func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
 
-	zone, err := c.getHostedZone(domain)
+	zone, err := d.getHostedZone(domain)
 	if err != nil {
 		return err
 	}
@@ -115,7 +115,7 @@ func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	// Look for existing records.
-	list, err := c.client.ResourceRecordSets.List(c.project, zone).Name(fqdn).Type("TXT").Do()
+	list, err := d.client.ResourceRecordSets.List(d.project, zone).Name(fqdn).Type("TXT").Do()
 	if err != nil {
 		return err
 	}
@@ -124,7 +124,7 @@ func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 		change.Deletions = list.Rrsets
 	}
 
-	chg, err := c.client.Changes.Create(c.project, zone, change).Do()
+	chg, err := d.client.Changes.Create(d.project, zone, change).Do()
 	if err != nil {
 		return err
 	}
@@ -133,7 +133,7 @@ func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 	for chg.Status == "pending" {
 		time.Sleep(time.Second)
 
-		chg, err = c.client.Changes.Get(c.project, zone, chg.Id).Do()
+		chg, err = d.client.Changes.Get(d.project, zone, chg.Id).Do()
 		if err != nil {
 			return err
 		}
@@ -143,15 +143,15 @@ func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
 
-	zone, err := c.getHostedZone(domain)
+	zone, err := d.getHostedZone(domain)
 	if err != nil {
 		return err
 	}
 
-	records, err := c.findTxtRecords(zone, fqdn)
+	records, err := d.findTxtRecords(zone, fqdn)
 	if err != nil {
 		return err
 	}
@@ -160,7 +160,7 @@ func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		change := &dns.Change{
 			Deletions: []*dns.ResourceRecordSet{rec},
 		}
-		_, err = c.client.Changes.Create(c.project, zone, change).Do()
+		_, err = d.client.Changes.Create(d.project, zone, change).Do()
 		if err != nil {
 			return err
 		}
@@ -170,19 +170,19 @@ func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 // Timeout customizes the timeout values used by the ACME package for checking
 // DNS record validity.
-func (c *DNSProvider) Timeout() (timeout, interval time.Duration) {
+func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return 180 * time.Second, 5 * time.Second
 }
 
 // getHostedZone returns the managed-zone
-func (c *DNSProvider) getHostedZone(domain string) (string, error) {
+func (d *DNSProvider) getHostedZone(domain string) (string, error) {
 	authZone, err := acme.FindZoneByFqdn(acme.ToFqdn(domain), acme.RecursiveNameservers)
 	if err != nil {
 		return "", err
 	}
 
-	zones, err := c.client.ManagedZones.
-		List(c.project).
+	zones, err := d.client.ManagedZones.
+		List(d.project).
 		DnsName(authZone).
 		Do()
 	if err != nil {
@@ -196,9 +196,9 @@ func (c *DNSProvider) getHostedZone(domain string) (string, error) {
 	return zones.ManagedZones[0].Name, nil
 }
 
-func (c *DNSProvider) findTxtRecords(zone, fqdn string) ([]*dns.ResourceRecordSet, error) {
+func (d *DNSProvider) findTxtRecords(zone, fqdn string) ([]*dns.ResourceRecordSet, error) {
 
-	recs, err := c.client.ResourceRecordSets.List(c.project, zone).Do()
+	recs, err := d.client.ResourceRecordSets.List(d.project, zone).Do()
 	if err != nil {
 		return nil, err
 	}

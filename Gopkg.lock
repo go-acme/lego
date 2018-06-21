@@ -227,6 +227,17 @@
   revision = "1031fa0ce2f20c1c0e1e1b51951d8ea02c84fa05"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/sacloud/libsacloud"
+  packages = [
+    ".",
+    "api",
+    "sacloud",
+    "sacloud/ostype"
+  ]
+  revision = "178aa57136e8c6e3882b6b5ef37a48f0e7cf836f"
+
+[[projects]]
   name = "github.com/sirupsen/logrus"
   packages = ["."]
   revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
@@ -363,6 +374,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "6b701827736620696c106773b62665f722b691a3025b851fe1a5d3c321d77d21"
+  inputs-digest = "d93e6f0825f1f7c1c3c2ccd421af4d99b77b390f3346ca751968af0609119c96"
   solver-name = "gps-cdcl"
   solver-version = 1

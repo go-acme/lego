@@ -47,18 +47,18 @@ func NewDNSProviderCredentials(token, secret string) (*DNSProvider, error) {
 }
 
 // Present creates a TXT record to fulfil the dns-01 challenge.
-func (c *DNSProvider) Present(domain, token, keyAuth string) error {
+func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
 
-	zone, err := c.getHostedZone(domain)
+	zone, err := d.getHostedZone(domain)
 	if err != nil {
 		return err
 	}
 
-	name := c.extractRecordName(fqdn, zone.Name)
+	name := d.extractRecordName(fqdn, zone.Name)
 
 	zone.AddRecord(zone.CreateNewRecord(name, "TXT", value, ttl))
-	_, err = c.client.GetDNSAPI().Update(zone.ID, zone)
+	_, err = d.client.GetDNSAPI().Update(zone.ID, zone)
 	if err != nil {
 		return fmt.Errorf("SakuraCloud API call failed: %v", err)
 	}
@@ -67,15 +67,15 @@ func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
 
-	zone, err := c.getHostedZone(domain)
+	zone, err := d.getHostedZone(domain)
 	if err != nil {
 		return err
 	}
 
-	records, err := c.findTxtRecords(fqdn, zone)
+	records, err := d.findTxtRecords(fqdn, zone)
 	if err != nil {
 		return err
 	}
@@ -90,7 +90,7 @@ func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		zone.Settings.DNS.ResourceRecordSets = updRecords
 	}
 
-	_, err = c.client.GetDNSAPI().Update(zone.ID, zone)
+	_, err = d.client.GetDNSAPI().Update(zone.ID, zone)
 	if err != nil {
 		return fmt.Errorf("SakuraCloud API call failed: %v", err)
 	}
@@ -98,7 +98,7 @@ func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-func (c *DNSProvider) getHostedZone(domain string) (*sacloud.DNS, error) {
+func (d *DNSProvider) getHostedZone(domain string) (*sacloud.DNS, error) {
 	authZone, err := acme.FindZoneByFqdn(acme.ToFqdn(domain), acme.RecursiveNameservers)
 	if err != nil {
 		return nil, err
@@ -106,7 +106,7 @@ func (c *DNSProvider) getHostedZone(domain string) (*sacloud.DNS, error) {
 
 	zoneName := acme.UnFqdn(authZone)
 
-	res, err := c.client.GetDNSAPI().WithNameLike(zoneName).Find()
+	res, err := d.client.GetDNSAPI().WithNameLike(zoneName).Find()
 	if err != nil {
 		if notFound, ok := err.(api.Error); ok && notFound.ResponseCode() == http.StatusNotFound {
 			return nil, fmt.Errorf("zone %s not found on SakuraCloud DNS: %v", zoneName, err)
@@ -123,8 +123,8 @@ func (c *DNSProvider) getHostedZone(domain string) (*sacloud.DNS, error) {
 	return nil, fmt.Errorf("zone %s not found on SakuraCloud DNS", zoneName)
 }
 
-func (c *DNSProvider) findTxtRecords(fqdn string, zone *sacloud.DNS) ([]sacloud.DNSRecordSet, error) {
-	recordName := c.extractRecordName(fqdn, zone.Name)
+func (d *DNSProvider) findTxtRecords(fqdn string, zone *sacloud.DNS) ([]sacloud.DNSRecordSet, error) {
+	recordName := d.extractRecordName(fqdn, zone.Name)
 
 	var res []sacloud.DNSRecordSet
 	for _, record := range zone.Settings.DNS.ResourceRecordSets {
@@ -135,7 +135,7 @@ func (c *DNSProvider) findTxtRecords(fqdn string, zone *sacloud.DNS) ([]sacloud.
 	return res, nil
 }
 
-func (c *DNSProvider) extractRecordName(fqdn, domain string) string {
+func (d *DNSProvider) extractRecordName(fqdn, domain string) string {
 	name := acme.UnFqdn(fqdn)
 	if idx := strings.Index(name, "."+domain); idx != -1 {
 		return name[:idx]

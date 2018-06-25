@@ -51,7 +51,7 @@ func (r *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	_, domainID, err := r.client.GetAuthZone(fqdn)
 	if err != nil {
-		return fmt.Errorf("Can't find Authorative Zone for %s in Present: %v", fqdn, err)
+		return fmt.Errorf("Can't find Authoritative Zone for %s in Present: %v", fqdn, err)
 	}
 
 	if err := r.client.CreateTXT(domainID, fqdn, value, 10); err != nil {

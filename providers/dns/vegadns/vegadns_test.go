@@ -105,7 +105,6 @@ func vegaDNSMuxSuccess() *http.ServeMux {
 			return
 		}
 		w.WriteHeader(http.StatusBadRequest)
-		return
 	})
 
 	mux.HandleFunc("/1.0/domains", func(w http.ResponseWriter, r *http.Request) {
@@ -115,7 +114,6 @@ func vegaDNSMuxSuccess() *http.ServeMux {
 			return
 		}
 		w.WriteHeader(http.StatusNotFound)
-		return
 	})
 
 	mux.HandleFunc("/1.0/records", func(w http.ResponseWriter, r *http.Request) {
@@ -134,7 +132,6 @@ func vegaDNSMuxSuccess() *http.ServeMux {
 			return
 		}
 		w.WriteHeader(http.StatusBadRequest)
-		return
 	})
 
 	mux.HandleFunc("/1.0/records/3", func(w http.ResponseWriter, r *http.Request) {
@@ -145,7 +142,6 @@ func vegaDNSMuxSuccess() *http.ServeMux {
 			return
 		}
 		w.WriteHeader(http.StatusBadRequest)
-		return
 	})
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -167,12 +163,10 @@ func vegaDNSMuxFailToFindZone() *http.ServeMux {
 			return
 		}
 		w.WriteHeader(http.StatusBadRequest)
-		return
 	})
 
 	mux.HandleFunc("/1.0/domains", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
-		return
 	})
 
 	return mux
@@ -189,7 +183,6 @@ func vegaDNSMuxFailToCreateTXT() *http.ServeMux {
 			return
 		}
 		w.WriteHeader(http.StatusBadRequest)
-		return
 	})
 
 	mux.HandleFunc("/1.0/domains", func(w http.ResponseWriter, r *http.Request) {
@@ -199,7 +192,6 @@ func vegaDNSMuxFailToCreateTXT() *http.ServeMux {
 			return
 		}
 		w.WriteHeader(http.StatusNotFound)
-		return
 	})
 
 	mux.HandleFunc("/1.0/records", func(w http.ResponseWriter, r *http.Request) {
@@ -217,7 +209,6 @@ func vegaDNSMuxFailToCreateTXT() *http.ServeMux {
 			return
 		}
 		w.WriteHeader(http.StatusBadRequest)
-		return
 	})
 
 	return mux
@@ -234,7 +225,6 @@ func vegaDNSMuxFailToGetRecordID() *http.ServeMux {
 			return
 		}
 		w.WriteHeader(http.StatusBadRequest)
-		return
 	})
 
 	mux.HandleFunc("/1.0/domains", func(w http.ResponseWriter, r *http.Request) {
@@ -244,7 +234,6 @@ func vegaDNSMuxFailToGetRecordID() *http.ServeMux {
 			return
 		}
 		w.WriteHeader(http.StatusNotFound)
-		return
 	})
 
 	mux.HandleFunc("/1.0/records", func(w http.ResponseWriter, r *http.Request) {
@@ -254,7 +243,6 @@ func vegaDNSMuxFailToGetRecordID() *http.ServeMux {
 			return
 		}
 		w.WriteHeader(http.StatusBadRequest)
-		return
 	})
 
 	return mux

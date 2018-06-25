@@ -5,6 +5,7 @@ import (
 	"crypto"
 	"crypto/x509"
 	"encoding/base64"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -762,8 +763,9 @@ func (c *Client) checkCertResponse(order orderMessage, certRes *CertificateResou
 			return false, err
 		}
 
-		// The issuer certificate link is always supplied via an "up" link
-		// in the response headers of a new certificate.
+		// The issuer certificate link may be supplied via an "up" link
+		// in the response headers of a new certificate.  See
+		// https://tools.ietf.org/html/draft-ietf-acme-acme-12#section-7.4.2
 		links := parseLinks(resp.Header["Link"])
 		if link, ok := links["up"]; ok {
 			issuerCert, err := c.getIssuerCertificate(link)
@@ -781,6 +783,13 @@ func (c *Client) checkCertResponse(order orderMessage, certRes *CertificateResou
 				}
 
 				certRes.IssuerCertificate = issuerCert
+			}
+		} else {
+			// Get issuerCert from bundled response from Let's Encrypt
+			// See https://community.letsencrypt.org/t/acme-v2-no-up-link-in-response/64962
+			_, rest := pem.Decode(cert)
+			if rest != nil {
+				certRes.IssuerCertificate = rest
 			}
 		}
 

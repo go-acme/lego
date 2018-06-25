@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"testing"
+	"time"
 )
 
 var (
@@ -44,7 +45,7 @@ func assertHdr(tc *testcase, t *testing.T, values *url.Values) {
 func mockServer(tc *testcase, t *testing.T, w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 
-	case "GET":
+	case http.MethodGet:
 		values := r.URL.Query()
 		cmd := values.Get("Command")
 		switch cmd {
@@ -59,7 +60,7 @@ func mockServer(tc *testcase, t *testing.T, w http.ResponseWriter, r *http.Reque
 			t.Errorf("Unexpected GET command: %s", cmd)
 		}
 
-	case "POST":
+	case http.MethodPost:
 		r.ParseForm()
 		values := r.Form
 		cmd := values.Get("Command")
@@ -90,6 +91,7 @@ func testGetHosts(tc *testcase, t *testing.T) {
 		apiUser:  fakeUser,
 		apiKey:   fakeKey,
 		clientIP: fakeClientIP,
+		client:   &http.Client{Timeout: 60 * time.Second},
 	}
 
 	ch, _ := newChallenge(tc.domain, "", tlds)
@@ -133,6 +135,7 @@ func mockDNSProvider(url string) *DNSProvider {
 		apiUser:  fakeUser,
 		apiKey:   fakeKey,
 		clientIP: fakeClientIP,
+		client:   &http.Client{Timeout: 60 * time.Second},
 	}
 }
 

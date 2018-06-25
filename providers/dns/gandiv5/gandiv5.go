@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/log"
 	"github.com/xenolf/lego/platform/config/env"
 )
 
@@ -40,6 +41,7 @@ type DNSProvider struct {
 	apiKey          string
 	inProgressFQDNs map[string]inProgressInfo
 	inProgressMu    sync.Mutex
+	client          *http.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Gandi.
@@ -62,6 +64,7 @@ func NewDNSProviderCredentials(apiKey string) (*DNSProvider, error) {
 	return &DNSProvider{
 		apiKey:          apiKey,
 		inProgressFQDNs: make(map[string]inProgressInfo),
+		client:          &http.Client{Timeout: 10 * time.Second},
 	}, nil
 }
 
@@ -169,8 +172,7 @@ func (d *DNSProvider) sendRequest(method string, resource string, payload interf
 		req.Header.Set("X-Api-Key", d.apiKey)
 	}
 
-	client := &http.Client{Timeout: 10 * time.Second}
-	resp, err := client.Do(req)
+	resp, err := d.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -181,7 +183,7 @@ func (d *DNSProvider) sendRequest(method string, resource string, payload interf
 	}
 	var response responseStruct
 	err = json.NewDecoder(resp.Body).Decode(&response)
-	if err != nil && method != "DELETE" {
+	if err != nil && method != http.MethodDelete {
 		return nil, err
 	}
 
@@ -192,23 +194,23 @@ func (d *DNSProvider) sendRequest(method string, resource string, payload interf
 
 func (d *DNSProvider) addTXTRecord(domain string, name string, value string, ttl int) error {
 	target := fmt.Sprintf("domains/%s/records/%s/TXT", domain, name)
-	response, err := d.sendRequest("PUT", target, addFieldRequest{
+	response, err := d.sendRequest(http.MethodPut, target, addFieldRequest{
 		RRSetTTL:    ttl,
 		RRSetValues: []string{value},
 	})
 	if response != nil {
-		fmt.Printf("Gandi DNS: %s\n", response.Message)
+		log.Infof("Gandi DNS: %s", response.Message)
 	}
 	return err
 }
 
 func (d *DNSProvider) deleteTXTRecord(domain string, name string) error {
 	target := fmt.Sprintf("domains/%s/records/%s/TXT", domain, name)
-	response, err := d.sendRequest("DELETE", target, deleteFieldRequest{
+	response, err := d.sendRequest(http.MethodDelete, target, deleteFieldRequest{
 		Delete: true,
 	})
 	if response != nil && response.Message == "" {
-		fmt.Printf("Gandi DNS: Zone record deleted\n")
+		log.Infof("Gandi DNS: Zone record deleted")
 	}
 	return err
 }

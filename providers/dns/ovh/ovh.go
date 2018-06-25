@@ -102,16 +102,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	// Create TXT record
 	err = d.client.Post(reqURL, reqData, &respData)
 	if err != nil {
-		fmt.Printf("Error when call OVH api to add record : %q \n", err)
-		return err
+		return fmt.Errorf("error when call OVH api to add record: %v", err)
 	}
 
 	// Apply the change
 	reqURL = fmt.Sprintf("/domain/zone/%s/refresh", authZone)
 	err = d.client.Post(reqURL, nil, nil)
 	if err != nil {
-		fmt.Printf("Error when call OVH api to refresh zone : %q \n", err)
-		return err
+		return fmt.Errorf("error when call OVH api to refresh zone: %v", err)
 	}
 
 	d.recordIDsMu.Lock()
@@ -144,8 +142,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	err = d.client.Delete(reqURL, nil)
 	if err != nil {
-		fmt.Printf("Error when call OVH api to delete challenge record : %q \n", err)
-		return err
+		return fmt.Errorf("error when call OVH api to delete challenge record: %v", err)
 	}
 
 	// Delete record ID from map

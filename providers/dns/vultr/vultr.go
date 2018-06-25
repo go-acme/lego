@@ -35,25 +35,21 @@ func NewDNSProviderCredentials(apiKey string) (*DNSProvider, error) {
 		return nil, fmt.Errorf("Vultr credentials missing")
 	}
 
-	c := &DNSProvider{
-		client: vultr.NewClient(apiKey, nil),
-	}
-
-	return c, nil
+	return &DNSProvider{client: vultr.NewClient(apiKey, nil)}, nil
 }
 
 // Present creates a TXT record to fulfil the DNS-01 challenge.
-func (c *DNSProvider) Present(domain, token, keyAuth string) error {
+func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
 
-	zoneDomain, err := c.getHostedZone(domain)
+	zoneDomain, err := d.getHostedZone(domain)
 	if err != nil {
 		return err
 	}
 
-	name := c.extractRecordName(fqdn, zoneDomain)
+	name := d.extractRecordName(fqdn, zoneDomain)
 
-	err = c.client.CreateDNSRecord(zoneDomain, name, "TXT", `"`+value+`"`, 0, ttl)
+	err = d.client.CreateDNSRecord(zoneDomain, name, "TXT", `"`+value+`"`, 0, ttl)
 	if err != nil {
 		return fmt.Errorf("Vultr API call failed: %v", err)
 	}
@@ -62,16 +58,16 @@ func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
 
-	zoneDomain, records, err := c.findTxtRecords(domain, fqdn)
+	zoneDomain, records, err := d.findTxtRecords(domain, fqdn)
 	if err != nil {
 		return err
 	}
 
 	for _, rec := range records {
-		err := c.client.DeleteDNSRecord(zoneDomain, rec.RecordID)
+		err := d.client.DeleteDNSRecord(zoneDomain, rec.RecordID)
 		if err != nil {
 			return err
 		}
@@ -79,17 +75,17 @@ func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-func (c *DNSProvider) getHostedZone(domain string) (string, error) {
-	domains, err := c.client.GetDNSDomains()
+func (d *DNSProvider) getHostedZone(domain string) (string, error) {
+	domains, err := d.client.GetDNSDomains()
 	if err != nil {
 		return "", fmt.Errorf("Vultr API call failed: %v", err)
 	}
 
 	var hostedDomain vultr.DNSDomain
-	for _, d := range domains {
-		if strings.HasSuffix(domain, d.Domain) {
-			if len(d.Domain) > len(hostedDomain.Domain) {
-				hostedDomain = d
+	for _, dom := range domains {
+		if strings.HasSuffix(domain, dom.Domain) {
+			if len(dom.Domain) > len(hostedDomain.Domain) {
+				hostedDomain = dom
 			}
 		}
 	}
@@ -100,19 +96,19 @@ func (c *DNSProvider) getHostedZone(domain string) (string, error) {
 	return hostedDomain.Domain, nil
 }
 
-func (c *DNSProvider) findTxtRecords(domain, fqdn string) (string, []vultr.DNSRecord, error) {
-	zoneDomain, err := c.getHostedZone(domain)
+func (d *DNSProvider) findTxtRecords(domain, fqdn string) (string, []vultr.DNSRecord, error) {
+	zoneDomain, err := d.getHostedZone(domain)
 	if err != nil {
 		return "", nil, err
 	}
 
 	var records []vultr.DNSRecord
-	result, err := c.client.GetDNSRecords(zoneDomain)
+	result, err := d.client.GetDNSRecords(zoneDomain)
 	if err != nil {
 		return "", records, fmt.Errorf("Vultr API call has failed: %v", err)
 	}
 
-	recordName := c.extractRecordName(fqdn, zoneDomain)
+	recordName := d.extractRecordName(fqdn, zoneDomain)
 	for _, record := range result {
 		if record.Type == "TXT" && record.Name == recordName {
 			records = append(records, record)
@@ -122,7 +118,7 @@ func (c *DNSProvider) findTxtRecords(domain, fqdn string) (string, []vultr.DNSRe
 	return zoneDomain, records, nil
 }
 
-func (c *DNSProvider) extractRecordName(fqdn, domain string) string {
+func (d *DNSProvider) extractRecordName(fqdn, domain string) string {
 	name := acme.UnFqdn(fqdn)
 	if idx := strings.Index(name, "."+domain); idx != -1 {
 		return name[:idx]

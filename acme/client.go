@@ -708,9 +708,9 @@ func (c *Client) requestCertificateForCsr(order orderResource, bundle bool, csr 
 		}
 	}
 
-	stopTimer := time.NewTimer(20 * time.Second)
+	stopTimer := time.NewTimer(30 * time.Second)
 	defer stopTimer.Stop()
-	retryTick := time.NewTicker(200 * time.Millisecond)
+	retryTick := time.NewTicker(500 * time.Millisecond)
 	defer retryTick.Stop()
 
 	for {

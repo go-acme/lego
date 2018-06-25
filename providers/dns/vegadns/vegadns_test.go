@@ -1,3 +1,5 @@
+// Package vegadns implements a DNS provider for solving the DNS-01
+// challenge using VegaDNS.
 package vegadns
 
 import (
@@ -10,6 +12,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var ipPort = "127.0.0.1:2112"
@@ -31,67 +34,96 @@ func TestVegaDNSNewDNSProviderFail(t *testing.T) {
 }
 
 func TestVegaDNSTimeoutSuccess(t *testing.T) {
-	ts := startTestServer(vegaDNSMuxSuccess)
-	defer ts.Close()
+	ts, err := startTestServer(vegaDNSMuxSuccess)
+	require.NoError(t, err)
 
-	provider, _ := NewDNSProvider()
+	defer ts.Close()
+	defer os.Clearenv()
+
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
 	timeout, interval := provider.Timeout()
 	assert.Equal(t, timeout, time.Duration(720000000000))
 	assert.Equal(t, interval, time.Duration(60000000000))
 }
 
 func TestVegaDNSPresentSuccess(t *testing.T) {
-	ts := startTestServer(vegaDNSMuxSuccess)
-	defer ts.Close()
+	ts, err := startTestServer(vegaDNSMuxSuccess)
+	require.NoError(t, err)
 
-	provider, _ := NewDNSProvider()
-	err := provider.Present("example.com", "token", "keyAuth")
-	assert.Nil(t, err)
+	defer ts.Close()
+	defer os.Clearenv()
+
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
+	err = provider.Present("example.com", "token", "keyAuth")
+	assert.NoError(t, err)
 }
 
 func TestVegaDNSPresentFailToFindZone(t *testing.T) {
-	ts := startTestServer(vegaDNSMuxFailToFindZone)
-	defer ts.Close()
+	ts, err := startTestServer(vegaDNSMuxFailToFindZone)
+	require.NoError(t, err)
 
-	provider, _ := NewDNSProvider()
-	err := provider.Present("example.com", "token", "keyAuth")
-	assert.Contains(t, err.Error(), "Unable to find auth zone for fqdn _acme-challenge.example.com")
+	defer ts.Close()
+	defer os.Clearenv()
+
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
+	err = provider.Present("example.com", "token", "keyAuth")
+	assert.EqualError(t, err, "can't find Authoritative Zone for _acme-challenge.example.com. in Present: Unable to find auth zone for fqdn _acme-challenge.example.com")
 }
 
 func TestVegaDNSPresentFailToCreateTXT(t *testing.T) {
-	ts := startTestServer(vegaDNSMuxFailToCreateTXT)
-	defer ts.Close()
+	ts, err := startTestServer(vegaDNSMuxFailToCreateTXT)
+	require.NoError(t, err)
 
-	provider, _ := NewDNSProvider()
-	err := provider.Present("example.com", "token", "keyAuth")
-	assert.Contains(t, err.Error(), "Got bad answer from VegaDNS on CreateTXT")
+	defer ts.Close()
+	defer os.Clearenv()
+
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
+	err = provider.Present("example.com", "token", "keyAuth")
+	assert.EqualError(t, err, "Got bad answer from VegaDNS on CreateTXT. Code: 400. Message: ")
 }
 
 func TestVegaDNSCleanUpSuccess(t *testing.T) {
-	ts := startTestServer(vegaDNSMuxSuccess)
-	defer ts.Close()
+	ts, err := startTestServer(vegaDNSMuxSuccess)
+	require.NoError(t, err)
 
-	provider, _ := NewDNSProvider()
-	err := provider.CleanUp("example.com", "token", "keyAuth")
-	assert.Nil(t, err)
+	defer ts.Close()
+	defer os.Clearenv()
+
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
+	err = provider.CleanUp("example.com", "token", "keyAuth")
+	assert.NoError(t, err)
 }
 
 func TestVegaDNSCleanUpFailToFindZone(t *testing.T) {
-	ts := startTestServer(vegaDNSMuxFailToFindZone)
-	defer ts.Close()
+	ts, err := startTestServer(vegaDNSMuxFailToFindZone)
+	require.NoError(t, err)
 
-	provider, _ := NewDNSProvider()
-	err := provider.CleanUp("example.com", "token", "keyAuth")
-	assert.Contains(t, err.Error(), "Unable to find auth zone for fqdn _acme-challenge.example.com")
+	defer ts.Close()
+	defer os.Clearenv()
+
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
+	err = provider.CleanUp("example.com", "token", "keyAuth")
+	fmt.Println(err.Error())
+	assert.EqualError(t, err, "can't find Authoritative Zone for _acme-challenge.example.com. in CleanUp: Unable to find auth zone for fqdn _acme-challenge.example.com")
 }
 
 func TestVegaDNSCleanUpFailToGetRecordID(t *testing.T) {
-	ts := startTestServer(vegaDNSMuxFailToGetRecordID)
-	defer ts.Close()
+	ts, err := startTestServer(vegaDNSMuxFailToGetRecordID)
+	require.NoError(t, err)
 
-	provider, _ := NewDNSProvider()
-	err := provider.CleanUp("example.com", "token", "keyAuth")
-	assert.Contains(t, err.Error(), "Couldnt get Record ID in CleanUp: Got bad answer from VegaDNS on GetRecordID. Code: 404.")
+	defer ts.Close()
+	defer os.Clearenv()
+
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
+	err = provider.CleanUp("example.com", "token", "keyAuth")
+	assert.EqualError(t, err, "couldn't get Record ID in CleanUp: Got bad answer from VegaDNS on GetRecordID. Code: 404. Message: ")
 }
 
 func vegaDNSMuxSuccess() *http.ServeMux {
@@ -249,14 +281,30 @@ func vegaDNSMuxFailToGetRecordID() *http.ServeMux {
 }
 
 // Starts and returns a test server using a custom ip/port. Defer close() afterwards.
-func startTestServer(callback muxCallback) *httptest.Server {
-	os.Setenv("SECRET_VEGADNS_KEY", "key")
-	os.Setenv("SECRET_VEGADNS_SECRET", "secret")
-	os.Setenv("VEGADNS_URL", "http://"+ipPort)
+func startTestServer(callback muxCallback) (*httptest.Server, error) {
+	err := os.Setenv("SECRET_VEGADNS_KEY", "key")
+	if err != nil {
+		return nil, err
+	}
+
+	err = os.Setenv("SECRET_VEGADNS_SECRET", "secret")
+	if err != nil {
+		return nil, err
+	}
+
+	err = os.Setenv("VEGADNS_URL", "http://"+ipPort)
+	if err != nil {
+		return nil, err
+	}
 
 	ts := httptest.NewUnstartedServer(callback())
-	l, _ := net.Listen("tcp", ipPort)
+
+	l, err := net.Listen("tcp", ipPort)
+	if err != nil {
+		return nil, err
+	}
+
 	ts.Listener = l
 	ts.Start()
-	return ts
+	return ts, nil
 }

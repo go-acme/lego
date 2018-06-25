@@ -708,25 +708,30 @@ func (c *Client) requestCertificateForCsr(order orderResource, bundle bool, csr 
 		}
 	}
 
-	maxChecks := 1000
-	for i := 0; i < maxChecks; i++ {
-		_, err := getJSON(order.URL, &retOrder)
-		if err != nil {
-			return nil, err
-		}
-		done, err := c.checkCertResponse(retOrder, &certRes, bundle)
-		if err != nil {
-			return nil, err
-		}
-		if done {
-			break
-		}
-		if i == maxChecks-1 {
-			return nil, fmt.Errorf("polled for certificate %d times; giving up", i)
+	stopTimer := time.NewTimer(30 * time.Second)
+	defer stopTimer.Stop()
+	retryTick := time.NewTicker(500 * time.Millisecond)
+	defer retryTick.Stop()
+
+	for {
+		select {
+		case <-stopTimer.C:
+			return nil, errors.New("certificate polling timed out")
+		case <-retryTick.C:
+			_, err := getJSON(order.URL, &retOrder)
+			if err != nil {
+				return nil, err
+			}
+
+			done, err := c.checkCertResponse(retOrder, &certRes, bundle)
+			if err != nil {
+				return nil, err
+			}
+			if done {
+				return &certRes, nil
+			}
 		}
 	}
-
-	return &certRes, nil
 }
 
 // checkCertResponse checks to see if the certificate is ready and a link is contained in the

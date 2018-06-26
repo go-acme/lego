@@ -42,7 +42,8 @@ func makeRoute53Provider(ts *httptest.Server) *DNSProvider {
 	}
 
 	client := route53.New(session.New(config))
-	return &DNSProvider{client: client}
+	cfg := NewDefaultConfig()
+	return &DNSProvider{client: client, config: cfg}
 }
 
 func TestCredentialsFromEnv(t *testing.T) {
@@ -74,7 +75,7 @@ func TestHostedZoneIDFromEnv(t *testing.T) {
 	const testZoneID = "testzoneid"
 	os.Setenv("AWS_HOSTED_ZONE_ID", testZoneID)
 
-	provider, err := NewDNSProvider()
+	provider, err := NewDNSProvider(nil)
 	assert.NoError(t, err, "Expected no error constructing DNSProvider")
 
 	fqdn, err := provider.getHostedZoneID("whatever")

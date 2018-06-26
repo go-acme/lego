@@ -17,7 +17,7 @@ func TestRoute53TTL(t *testing.T) {
 		t.Skip(err.Error())
 	}
 
-	provider, err := NewDNSProvider()
+	provider, err := NewDNSProvider(nil)
 	require.NoError(t, err)
 
 	err = provider.Present(m["route53Domain"], "foo", "bar")

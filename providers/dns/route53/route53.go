@@ -17,15 +17,19 @@ import (
 	"github.com/xenolf/lego/acme"
 )
 
-const (
-	maxRetries = 5
-	route53TTL = 10
-)
+// Config is used to configure the creation of the DNSProvider
+type Config struct {
+	MaxRetries         int
+	Route53TTL         int
+	PropagationTimeout time.Duration
+	PollingInterval    time.Duration
+}
 
 // DNSProvider implements the acme.ChallengeProvider interface
 type DNSProvider struct {
 	client       *route53.Route53
 	hostedZoneID string
+	config       *Config
 }
 
 // customRetryer implements the client.Retryer interface by composing the
@@ -50,6 +54,16 @@ func (d customRetryer) RetryRules(r *request.Request) time.Duration {
 	return time.Duration(delay) * time.Millisecond
 }
 
+// NewDefaultConfig returns a default configuration for the DNSProvider
+func NewDefaultConfig() *Config {
+	return &Config{
+		MaxRetries:         5,
+		Route53TTL:         10,
+		PropagationTimeout: time.Minute * 2,
+		PollingInterval:    time.Second * 4,
+	}
+}
+
 // NewDNSProvider returns a DNSProvider instance configured for the AWS
 // Route 53 service.
 //
@@ -64,13 +78,17 @@ func (d customRetryer) RetryRules(r *request.Request) time.Duration {
 // public hosted zone via the FQDN.
 //
 // See also: https://github.com/aws/aws-sdk-go/wiki/configuring-sdk
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider(config *Config) (*DNSProvider, error) {
 	hostedZoneID := os.Getenv("AWS_HOSTED_ZONE_ID")
 
+	if config == nil {
+		config = NewDefaultConfig()
+	}
+
 	r := customRetryer{}
-	r.NumMaxRetries = maxRetries
-	config := request.WithRetryer(aws.NewConfig(), r)
-	session, err := session.NewSessionWithOptions(session.Options{Config: *config})
+	r.NumMaxRetries = config.MaxRetries
+	sessionCfg := request.WithRetryer(aws.NewConfig(), r)
+	session, err := session.NewSessionWithOptions(session.Options{Config: *sessionCfg})
 	if err != nil {
 		return nil, err
 	}
@@ -79,6 +97,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return &DNSProvider{
 		client:       client,
 		hostedZoneID: hostedZoneID,
+		config:       config,
 	}, nil
 }
 
@@ -86,14 +105,14 @@ func NewDNSProvider() (*DNSProvider, error) {
 func (r *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
 	value = `"` + value + `"`
-	return r.changeRecord("UPSERT", fqdn, value, route53TTL)
+	return r.changeRecord("UPSERT", fqdn, value, r.config.Route53TTL)
 }
 
 // CleanUp removes the TXT record matching the specified parameters
 func (r *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
 	value = `"` + value + `"`
-	return r.changeRecord("DELETE", fqdn, value, route53TTL)
+	return r.changeRecord("DELETE", fqdn, value, r.config.Route53TTL)
 }
 
 func (r *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
@@ -123,7 +142,7 @@ func (r *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 
 	statusID := resp.ChangeInfo.Id
 
-	return acme.WaitFor(120*time.Second, 4*time.Second, func() (bool, error) {
+	return acme.WaitFor(r.config.PropagationTimeout, r.config.PollingInterval, func() (bool, error) {
 		reqParams := &route53.GetChangeInput{
 			Id: statusID,
 		}

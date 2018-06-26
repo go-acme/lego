@@ -690,13 +690,13 @@ func (c *Client) requestCertificateForCsr(order orderResource, bundle bool, csr 
 
 	csrString := base64.RawURLEncoding.EncodeToString(csr)
 	var retOrder orderMessage
-	_, error := postJSON(c.jws, order.Finalize, csrMessage{Csr: csrString}, &retOrder)
-	if error != nil {
-		return nil, error
+	_, err := postJSON(c.jws, order.Finalize, csrMessage{Csr: csrString}, &retOrder)
+	if err != nil {
+		return nil, err
 	}
 
 	if retOrder.Status == "invalid" {
-		return nil, error
+		return nil, err
 	}
 
 	certRes := CertificateResource{

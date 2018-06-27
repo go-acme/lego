@@ -34,7 +34,8 @@ var (
 			ResponseHeaderTimeout: 15 * time.Second,
 			ExpectContinueTimeout: 1 * time.Second,
 			TLSClientConfig: &tls.Config{
-				RootCAs: initCertPool(),
+				ServerName: os.Getenv(caServerNameEnvVar),
+				RootCAs:    initCertPool(),
 			},
 		},
 	}
@@ -53,6 +54,12 @@ const (
 	// authenticate an ACME server with a HTTPS certificate not issued by a CA in
 	// the system-wide trusted root list.
 	caCertificatesEnvVar = "LEGO_CA_CERTIFICATES"
+
+	// caServerNameEnvVar is the environment variable name that can be used to
+	// specify the CA server name that can be used to
+	// authenticate an ACME server with a HTTPS certificate not issued by a CA in
+	// the system-wide trusted root list.
+	caServerNameEnvVar = "LEGO_CA_SERVER_NAME"
 )
 
 // initCertPool creates a *x509.CertPool populated with the PEM certificates

@@ -54,6 +54,12 @@ func (d customRetryer) RetryRules(r *request.Request) time.Duration {
 	return time.Duration(delay) * time.Millisecond
 }
 
+// Timeout returns the timeout and interval to use when checking for DNS
+// propagation.
+func (r *DNSProvider) Timeout() (timeout, interval time.Duration) {
+	return r.config.PropagationTimeout, r.config.PollingInterval
+}
+
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{

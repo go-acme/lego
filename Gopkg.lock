@@ -35,6 +35,12 @@
   version = "1.15.0"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/OpenDNS/vegadns2client"
+  packages = ["."]
+  revision = "a3fa4a771d87bda2514a90a157e1fed1b6897d2e"
+
+[[projects]]
   name = "github.com/akamai/AkamaiOPEN-edgegrid-golang"
   packages = [
     "client-v1",
@@ -374,6 +380,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d93e6f0825f1f7c1c3c2ccd421af4d99b77b390f3346ca751968af0609119c96"
+  inputs-digest = "68128f1cf61f649cdac1483e18c54541782cbd344605cab3cf6c2b448a86bda0"
   solver-name = "gps-cdcl"
   solver-version = 1

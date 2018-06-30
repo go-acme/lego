@@ -662,9 +662,18 @@ func (c *Client) requestCertificateForOrder(order orderResource, bundle bool, pr
 
 	// determine certificate name(s) based on the authorization resources
 	commonName := order.Domains[0]
-	var san []string
+
+	// ACME draft Section 7.4 "Applying for Certificate Issuance"
+	// https://tools.ietf.org/html/draft-ietf-acme-acme-12#section-7.4
+	// says:
+	//   Clients SHOULD NOT make any assumptions about the sort order of
+	//   "identifiers" or "authorizations" elements in the returned order
+	//   object.
+	san := []string{commonName}
 	for _, auth := range order.Identifiers {
-		san = append(san, auth.Value)
+		if auth.Value != commonName {
+			san = append(san, auth.Value)
+		}
 	}
 
 	// TODO: should the CSR be customizable?
@@ -681,13 +690,13 @@ func (c *Client) requestCertificateForCsr(order orderResource, bundle bool, csr 
 
 	csrString := base64.RawURLEncoding.EncodeToString(csr)
 	var retOrder orderMessage
-	_, error := postJSON(c.jws, order.Finalize, csrMessage{Csr: csrString}, &retOrder)
-	if error != nil {
-		return nil, error
+	_, err := postJSON(c.jws, order.Finalize, csrMessage{Csr: csrString}, &retOrder)
+	if err != nil {
+		return nil, err
 	}
 
 	if retOrder.Status == "invalid" {
-		return nil, error
+		return nil, err
 	}
 
 	certRes := CertificateResource{

@@ -18,10 +18,84 @@ import (
 var ipPort = "127.0.0.1:2112"
 
 var jsonMap = map[string]string{
-	"token":         `{"access_token": "699dd4ff-e381-46b8-8bf8-5de49dd56c1f", "token_type": "bearer", "expires_in": 3600}`,
-	"domains":       `{"domains":[{"domain_id" :1,"domain":"example.com","status":"active","owner_id":0}]}`,
-	"records":       `{"status": "ok", "total_records": 2, "domain": {"status": "active", "domain": "example.com", "owner_id": 0, "domain_id": 1}, "records": [{"retry": "2048", "minimum": "2560", "refresh": "16384", "email": "hostmaster.example.com", "record_type": "SOA", "expire": "1048576", "ttl": 86400, "record_id": 1, "nameserver": "ns1.example.com", "domain_id": 1, "serial": ""}, {"name": "example.com", "value": "ns1.example.com", "record_type": "NS", "ttl": 3600, "record_id": 2, "location_id": null, "domain_id": 1}, {"name": "_acme-challenge.example.com", "value": "my_challenge", "record_type": "TXT", "ttl": 3600, "record_id": 3, "location_id": null, "domain_id": 1}]}`,
-	"recordCreated": `{"status": "ok", "record": {"name": "_acme-challenge.example.com", "value": "my_challenge", "record_type": "TXT", "ttl": 3600, "record_id": 3, "location_id": null, "domain_id": 1}}`,
+	"token": `
+{
+  "access_token":"699dd4ff-e381-46b8-8bf8-5de49dd56c1f",
+  "token_type":"bearer",
+  "expires_in":3600
+}
+`,
+	"domains": `
+{
+  "domains":[
+    {
+      "domain_id":1,
+      "domain":"example.com",
+      "status":"active",
+      "owner_id":0
+    }
+  ]
+}
+`,
+	"records": `
+{
+  "status":"ok",
+  "total_records":2,
+  "domain":{
+    "status":"active",
+    "domain":"example.com",
+    "owner_id":0,
+    "domain_id":1
+  },
+  "records":[
+    {
+      "retry":"2048",
+      "minimum":"2560",
+      "refresh":"16384",
+      "email":"hostmaster.example.com",
+      "record_type":"SOA",
+      "expire":"1048576",
+      "ttl":86400,
+      "record_id":1,
+      "nameserver":"ns1.example.com",
+      "domain_id":1,
+      "serial":""
+    },
+    {
+      "name":"example.com",
+      "value":"ns1.example.com",
+      "record_type":"NS",
+      "ttl":3600,
+      "record_id":2,
+      "location_id":null,
+      "domain_id":1
+    },
+    {
+      "name":"_acme-challenge.example.com",
+      "value":"my_challenge",
+      "record_type":"TXT",
+      "ttl":3600,
+      "record_id":3,
+      "location_id":null,
+      "domain_id":1
+    }
+  ]
+}
+`,
+	"recordCreated": `
+{
+  "status":"ok",
+  "record":{
+    "name":"_acme-challenge.example.com",
+    "value":"my_challenge",
+    "record_type":"TXT",
+    "ttl":3600,
+    "record_id":3,
+    "location_id":null,
+    "domain_id":1
+  }
+}
+`,
 	"recordDeleted": `{"status": "ok"}`,
 }
 
@@ -42,6 +116,7 @@ func TestVegaDNSTimeoutSuccess(t *testing.T) {
 
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
+
 	timeout, interval := provider.Timeout()
 	assert.Equal(t, timeout, time.Duration(720000000000))
 	assert.Equal(t, interval, time.Duration(60000000000))
@@ -56,6 +131,7 @@ func TestVegaDNSPresentSuccess(t *testing.T) {
 
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
+
 	err = provider.Present("example.com", "token", "keyAuth")
 	assert.NoError(t, err)
 }
@@ -69,6 +145,7 @@ func TestVegaDNSPresentFailToFindZone(t *testing.T) {
 
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
+
 	err = provider.Present("example.com", "token", "keyAuth")
 	assert.EqualError(t, err, "can't find Authoritative Zone for _acme-challenge.example.com. in Present: Unable to find auth zone for fqdn _acme-challenge.example.com")
 }
@@ -82,6 +159,7 @@ func TestVegaDNSPresentFailToCreateTXT(t *testing.T) {
 
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
+
 	err = provider.Present("example.com", "token", "keyAuth")
 	assert.EqualError(t, err, "Got bad answer from VegaDNS on CreateTXT. Code: 400. Message: ")
 }
@@ -95,6 +173,7 @@ func TestVegaDNSCleanUpSuccess(t *testing.T) {
 
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
+
 	err = provider.CleanUp("example.com", "token", "keyAuth")
 	assert.NoError(t, err)
 }
@@ -108,8 +187,8 @@ func TestVegaDNSCleanUpFailToFindZone(t *testing.T) {
 
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
+
 	err = provider.CleanUp("example.com", "token", "keyAuth")
-	fmt.Println(err.Error())
 	assert.EqualError(t, err, "can't find Authoritative Zone for _acme-challenge.example.com. in CleanUp: Unable to find auth zone for fqdn _acme-challenge.example.com")
 }
 
@@ -122,6 +201,7 @@ func TestVegaDNSCleanUpFailToGetRecordID(t *testing.T) {
 
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
+
 	err = provider.CleanUp("example.com", "token", "keyAuth")
 	assert.EqualError(t, err, "couldn't get Record ID in CleanUp: Got bad answer from VegaDNS on GetRecordID. Code: 404. Message: ")
 }
@@ -306,5 +386,6 @@ func startTestServer(callback muxCallback) (*httptest.Server, error) {
 
 	ts.Listener = l
 	ts.Start()
+
 	return ts, nil
 }

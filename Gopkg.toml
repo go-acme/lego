@@ -24,6 +24,11 @@
 #   go-tests = true
 #   unused-packages = true
 
+[prune]
+  non-go = true
+  go-tests = true
+  unused-packages = true
+
 [[constraint]]
   branch = "master"
   name = "github.com/decker502/dnspod-go"
@@ -68,7 +73,6 @@
   branch = "v2"
   name = "gopkg.in/ns1/ns1-go.v2"
 
-[prune]
-  non-go = true
-  go-tests = true
-  unused-packages = true
+[[constraint]]
+  branch = "master"
+  name = "github.com/sacloud/libsacloud"

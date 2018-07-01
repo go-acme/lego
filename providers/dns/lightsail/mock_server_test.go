@@ -16,10 +16,7 @@ type MockResponse struct {
 	Body       string
 }
 
-// MockResponseMap maps request paths to responses
-type MockResponseMap map[string]MockResponse
-
-func newMockServer(t *testing.T, responses MockResponseMap) *httptest.Server {
+func newMockServer(t *testing.T, responses map[string]MockResponse) *httptest.Server {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path
 		resp, ok := responses[path]

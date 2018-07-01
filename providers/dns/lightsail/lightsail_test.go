@@ -9,7 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/lightsail"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -30,7 +30,7 @@ func restoreEnv() {
 	os.Setenv("AWS_HOSTED_ZONE_ID", lightsailZone)
 }
 
-func makeLightsailProvider(ts *httptest.Server) *DNSProvider {
+func makeLightsailProvider(ts *httptest.Server) (*DNSProvider, error) {
 	config := &aws.Config{
 		Credentials: credentials.NewStaticCredentials("abc", "123", " "),
 		Endpoint:    aws.String(ts.URL),
@@ -38,8 +38,13 @@ func makeLightsailProvider(ts *httptest.Server) *DNSProvider {
 		MaxRetries:  aws.Int(1),
 	}
 
-	client := lightsail.New(session.New(config))
-	return &DNSProvider{client: client}
+	sess, err := session.NewSession(config)
+	if err != nil {
+		return nil, err
+	}
+
+	client := lightsail.New(sess)
+	return &DNSProvider{client: client}, nil
 }
 
 func TestCredentialsFromEnv(t *testing.T) {
@@ -52,24 +57,27 @@ func TestCredentialsFromEnv(t *testing.T) {
 		CredentialsChainVerboseErrors: aws.Bool(true),
 	}
 
-	sess := session.New(config)
-	_, err := sess.Config.Credentials.Get()
-	assert.NoError(t, err, "Expected credentials to be set from environment")
+	sess, err := session.NewSession(config)
+	require.NoError(t, err)
+
+	_, err = sess.Config.Credentials.Get()
+	require.NoError(t, err, "Expected credentials to be set from environment")
 }
 
 func TestLightsailPresent(t *testing.T) {
-	mockResponses := MockResponseMap{
-		"/": MockResponse{StatusCode: 200, Body: ""},
+	mockResponses := map[string]MockResponse{
+		"/": {StatusCode: 200, Body: ""},
 	}
 
 	ts := newMockServer(t, mockResponses)
 	defer ts.Close()
 
-	provider := makeLightsailProvider(ts)
+	provider, err := makeLightsailProvider(ts)
+	require.NoError(t, err)
 
 	domain := "example.com"
 	keyAuth := "123456d=="
 
-	err := provider.Present(domain, "", keyAuth)
-	assert.NoError(t, err, "Expected Present to return no error")
+	err = provider.Present(domain, "", keyAuth)
+	require.NoError(t, err, "Expected Present to return no error")
 }

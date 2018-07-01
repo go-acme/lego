@@ -63,12 +63,16 @@ func (c customRetryer) RetryRules(r *request.Request) time.Duration {
 func NewDNSProvider() (*DNSProvider, error) {
 	r := customRetryer{}
 	r.NumMaxRetries = maxRetries
-	config := request.WithRetryer(aws.NewConfig(), r)
-	client := lightsail.New(session.New(config))
+
+	config := aws.NewConfig()
+	sess, err := session.NewSession(request.WithRetryer(config, r))
+	if err != nil {
+		return nil, err
+	}
 
 	return &DNSProvider{
 		dnsZone: os.Getenv("DNS_ZONE"),
-		client:  client,
+		client:  lightsail.New(sess),
 	}, nil
 }
 

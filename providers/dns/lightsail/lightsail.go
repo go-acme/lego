@@ -4,6 +4,7 @@ package lightsail
 
 import (
 	"math/rand"
+	"os"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -20,7 +21,8 @@ const (
 
 // DNSProvider implements the acme.ChallengeProvider interface
 type DNSProvider struct {
-	client *lightsail.Lightsail
+	client  *lightsail.Lightsail
+	dnsZone string
 }
 
 // customRetryer implements the client.Retryer interface by composing the
@@ -61,11 +63,16 @@ func (c customRetryer) RetryRules(r *request.Request) time.Duration {
 func NewDNSProvider() (*DNSProvider, error) {
 	r := customRetryer{}
 	r.NumMaxRetries = maxRetries
-	config := request.WithRetryer(aws.NewConfig(), r)
-	client := lightsail.New(session.New(config))
+
+	config := aws.NewConfig().WithRegion("us-east-1")
+	sess, err := session.NewSession(request.WithRetryer(config, r))
+	if err != nil {
+		return nil, err
+	}
 
 	return &DNSProvider{
-		client: client,
+		dnsZone: os.Getenv("DNS_ZONE"),
+		client:  lightsail.New(sess),
 	}, nil
 }
 
@@ -73,6 +80,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
 	value = `"` + value + `"`
+
 	err := d.newTxtRecord(domain, fqdn, value)
 	return err
 }
@@ -82,7 +90,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
 	value = `"` + value + `"`
 	params := &lightsail.DeleteDomainEntryInput{
-		DomainName: aws.String(domain),
+		DomainName: aws.String(d.dnsZone),
 		DomainEntry: &lightsail.DomainEntry{
 			Name:   aws.String(fqdn),
 			Type:   aws.String("TXT"),
@@ -95,7 +103,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 func (d *DNSProvider) newTxtRecord(domain string, fqdn string, value string) error {
 	params := &lightsail.CreateDomainEntryInput{
-		DomainName: aws.String(domain),
+		DomainName: aws.String(d.dnsZone),
 		DomainEntry: &lightsail.DomainEntry{
 			Name:   aws.String(fqdn),
 			Target: aws.String(value),

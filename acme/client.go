@@ -5,6 +5,7 @@ import (
 	"crypto"
 	"crypto/x509"
 	"encoding/base64"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -662,9 +663,18 @@ func (c *Client) requestCertificateForOrder(order orderResource, bundle bool, pr
 
 	// determine certificate name(s) based on the authorization resources
 	commonName := order.Domains[0]
-	var san []string
+
+	// ACME draft Section 7.4 "Applying for Certificate Issuance"
+	// https://tools.ietf.org/html/draft-ietf-acme-acme-12#section-7.4
+	// says:
+	//   Clients SHOULD NOT make any assumptions about the sort order of
+	//   "identifiers" or "authorizations" elements in the returned order
+	//   object.
+	san := []string{commonName}
 	for _, auth := range order.Identifiers {
-		san = append(san, auth.Value)
+		if auth.Value != commonName {
+			san = append(san, auth.Value)
+		}
 	}
 
 	// TODO: should the CSR be customizable?
@@ -681,13 +691,13 @@ func (c *Client) requestCertificateForCsr(order orderResource, bundle bool, csr 
 
 	csrString := base64.RawURLEncoding.EncodeToString(csr)
 	var retOrder orderMessage
-	_, error := postJSON(c.jws, order.Finalize, csrMessage{Csr: csrString}, &retOrder)
-	if error != nil {
-		return nil, error
+	_, err := postJSON(c.jws, order.Finalize, csrMessage{Csr: csrString}, &retOrder)
+	if err != nil {
+		return nil, err
 	}
 
 	if retOrder.Status == "invalid" {
-		return nil, error
+		return nil, err
 	}
 
 	certRes := CertificateResource{
@@ -753,8 +763,9 @@ func (c *Client) checkCertResponse(order orderMessage, certRes *CertificateResou
 			return false, err
 		}
 
-		// The issuer certificate link is always supplied via an "up" link
-		// in the response headers of a new certificate.
+		// The issuer certificate link may be supplied via an "up" link
+		// in the response headers of a new certificate.  See
+		// https://tools.ietf.org/html/draft-ietf-acme-acme-12#section-7.4.2
 		links := parseLinks(resp.Header["Link"])
 		if link, ok := links["up"]; ok {
 			issuerCert, err := c.getIssuerCertificate(link)
@@ -772,6 +783,13 @@ func (c *Client) checkCertResponse(order orderMessage, certRes *CertificateResou
 				}
 
 				certRes.IssuerCertificate = issuerCert
+			}
+		} else {
+			// Get issuerCert from bundled response from Let's Encrypt
+			// See https://community.letsencrypt.org/t/acme-v2-no-up-link-in-response/64962
+			_, rest := pem.Decode(cert)
+			if rest != nil {
+				certRes.IssuerCertificate = rest
 			}
 		}
 

@@ -64,7 +64,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	r := customRetryer{}
 	r.NumMaxRetries = maxRetries
 
-	config := aws.NewConfig()
+	config := aws.NewConfig().WithRegion("us-east-1")
 	sess, err := session.NewSession(request.WithRetryer(config, r))
 	if err != nil {
 		return nil, err

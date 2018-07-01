@@ -26,7 +26,10 @@ func TestLightsailTTL(t *testing.T) {
 	// we need a separate Lightshail client here as the one in the DNS provider is
 	// unexported.
 	fqdn := "_acme-challenge." + m["lightsailDomain"]
-	svc := lightsail.New(session.New())
+	sess, err := session.NewSession()
+	require.NoError(t, err)
+
+	svc := lightsail.New(sess)
 	if err != nil {
 		provider.CleanUp(m["lightsailDomain"], "foo", "bar")
 		t.Fatal(err)

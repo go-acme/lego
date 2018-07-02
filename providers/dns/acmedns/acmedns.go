@@ -6,10 +6,10 @@ package acmedns
 import (
 	"errors"
 	"fmt"
-	"os"
 
 	"github.com/cpu/goacmedns"
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/platform/config/env"
 )
 
 const (
@@ -47,9 +47,11 @@ type DNSProvider struct {
 // NewDNSProvider creates an ACME-DNS provider. Its configuration is loaded from
 // the environment by reading apiBaseEnvVar and storagePathEnvVar.
 func NewDNSProvider() (*DNSProvider, error) {
-	endpoint := os.Getenv(apiBaseEnvVar)
-	storagePath := os.Getenv(storagePathEnvVar)
-	return NewDNSProviderClient(endpoint, storagePath)
+	values, err := env.Get(apiBaseEnvVar, storagePathEnvVar)
+	if err != nil {
+		return nil, fmt.Errorf("acme-dns: %v", err)
+	}
+	return NewDNSProviderClient(values[apiBaseEnvVar], values[storagePathEnvVar])
 }
 
 // NewDNSProviderClient creates an ACME-DNS DNSProvider configured to

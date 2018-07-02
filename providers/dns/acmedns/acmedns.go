@@ -116,7 +116,8 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	// Errors other than goacmeDNS.ErrDomainNotFound are unexpected.
 	if err != nil && err != goacmedns.ErrDomainNotFound {
 		return err
-	} else if err == goacmedns.ErrDomainNotFound {
+	}
+	if err == goacmedns.ErrDomainNotFound {
 		// The account did not exist. Create a new one and return an error
 		// indicating the required one-time manual CNAME setup.
 		return d.register(domain, fqdn)

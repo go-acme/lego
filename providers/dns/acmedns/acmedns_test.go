@@ -2,6 +2,7 @@ package acmedns
 
 import (
 	"errors"
+	"github.com/stretchr/testify/assert"
 	"testing"
 
 	"github.com/cpu/goacmedns"
@@ -187,13 +188,13 @@ func TestPresent(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
+			assert := assert.New(t)
 			// create the DNS provider using. The API base address and the storage
 			// path can be made up because we mock the client and storage instead of
 			// making real API calls and writing JSON to disk.
 			dp, err := NewDNSProviderClient("foo", "bar")
-			if err != nil {
-				t.Fatalf("unexpected error creating NewDNSProviderClient: %v", err)
-			}
+			assert.Nil(err)
+
 			// mock the client.
 			dp.client = tc.Client
 			// mock the storage.
@@ -205,29 +206,20 @@ func TestPresent(t *testing.T) {
 			// call Present. The token argument can be garbage because the ACME-DNS
 			// provider does not use it.
 			err = dp.Present(egDomain, "foo", egKeyAuth)
-			if tc.ExpectedError != nil && err == nil {
-				t.Errorf("expected present to return error %v, got nil", tc.ExpectedError)
-			} else if tc.ExpectedError == nil && err != nil {
-				t.Errorf("expected present to return no error, got %v", err)
-			} else if tc.ExpectedError != nil && err != nil && tc.ExpectedError != err {
-				t.Errorf("expected present to return error %v, got %v", tc.ExpectedError, err)
+			if tc.ExpectedError != nil {
+				assert.NotNil(err)
+				assert.Equal(err, tc.ExpectedError)
+			} else {
+				assert.Nil(err)
 			}
 		})
 	}
 
 	// Check that the success testcase set a record.
-	if len(validUpdateClient.records) != 1 {
-		t.Fatalf("expected present to successfully set a record on the mock, got none")
-	}
+	assert.Equal(t, len(validUpdateClient.records), 1)
 
 	// Check that the success testcase set the right record for the right account.
-	if value, ok := validUpdateClient.records[egAccount]; !ok {
-		t.Errorf("expected present to successfully set a record for the egAccount, got none")
-	} else if len(value) != 43 {
-		t.Errorf("expected present to successfully set a record with 43 characters "+
-			"for the egAccount. Got value %q, len %d",
-			value, len(value))
-	}
+	assert.Equal(t, len(validUpdateClient.records[egAccount]), 43)
 }
 
 // TestRegister tests that the ACME-DNS register function works correctly.
@@ -270,13 +262,13 @@ func TestRegister(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
+			assert := assert.New(t)
 			// create the DNS provider using. The API base address and the storage
 			// path can be made up because we mock the client and storage instead of
 			// making real API calls and writing JSON to disk.
 			dp, err := NewDNSProviderClient("foo", "bar")
-			if err != nil {
-				t.Fatalf("unexpected error creating NewDNSProviderClient: %v", err)
-			}
+			assert.Nil(err)
+
 			// mock the client.
 			dp.client = tc.Client
 			// mock the storage.
@@ -287,14 +279,14 @@ func TestRegister(t *testing.T) {
 			if tc.Storage != nil {
 				dp.storage = tc.Storage
 			}
+
 			// Call register for the example domain/fqdn.
 			err = dp.register(egDomain, egFQDN)
-			if tc.ExpectedError != nil && err == nil {
-				t.Errorf("expected register to return error %v, got nil", tc.ExpectedError)
-			} else if tc.ExpectedError == nil && err != nil {
-				t.Errorf("expected register to return no error, got %v", err)
-			} else if tc.ExpectedError != nil && err != nil && tc.ExpectedError != err {
-				t.Errorf("expected register to return error %v, got %v", tc.ExpectedError, err)
+			if tc.ExpectedError != nil {
+				assert.NotNil(err)
+				assert.Equal(tc.ExpectedError, err)
+			} else {
+				assert.Nil(err)
 			}
 		})
 	}

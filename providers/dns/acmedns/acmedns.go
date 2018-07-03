@@ -76,7 +76,7 @@ func NewDNSProviderClient(apiBase string, storagePath string) (*DNSProvider, err
 // communicate with the provided ACME-DNS API endpoint, and to save/load account
 // credentials using the provided acmedns.Storage implementation. This is useful
 // for programmatic usage of the ACME-DNS provider where fine-grained control
-// over data persistance is required.
+// over data persistence is required.
 func NewDNSProviderClientStorage(apiBase string, storage goacmedns.Storage) (*DNSProvider, error) {
 	if apiBase == "" {
 		return nil, errors.New("ACME-DNS API base must not be empty")

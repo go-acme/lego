@@ -72,6 +72,26 @@ func NewDNSProviderClient(apiBase string, storagePath string) (*DNSProvider, err
 	}, nil
 }
 
+// NewDNSProviderClientStorage creates an ACME-DNS DNSProvider configured to
+// communicate with the provided ACME-DNS API endpoint, and to save/load account
+// credentials using the provided acmedns.Storage implementation. This is useful
+// for programmatic usage of the ACME-DNS provider where fine-grained control
+// over data persistance is required.
+func NewDNSProviderClientStorage(apiBase string, storage goacmedns.Storage) (*DNSProvider, error) {
+	if apiBase == "" {
+		return nil, errors.New("ACME-DNS API base must not be empty")
+	}
+	if storage == nil {
+		return nil, errors.New("ACME-DNS Storage must not be nil")
+	}
+
+	return &DNSProvider{
+		apiBase: apiBase,
+		client:  goacmedns.NewClient(apiBase),
+		storage: storage,
+	}, nil
+}
+
 // ErrCNAMERequired is returned by Present when the Domain indicated had no
 // existing ACME-DNS account in the Storage and additional setup is required.
 // The user must create a CNAME in the DNS zone for Domain that aliases FQDN

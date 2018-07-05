@@ -3,6 +3,7 @@ package acmedns
 import (
 	"errors"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 
 	"github.com/cpu/goacmedns"
@@ -188,9 +189,8 @@ func TestPresent(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
-			assert := assert.New(t)
 			dp, err := NewDNSProviderClient(tc.Client, mockStorage{make(map[string]goacmedns.Account)})
-			assert.Nil(err)
+			require.NoError(t, err)
 
 			// override the storage mock if required by the testcase.
 			if tc.Storage != nil {
@@ -200,19 +200,18 @@ func TestPresent(t *testing.T) {
 			// provider does not use it.
 			err = dp.Present(egDomain, "foo", egKeyAuth)
 			if tc.ExpectedError != nil {
-				assert.NotNil(err)
-				assert.Equal(err, tc.ExpectedError)
+				assert.Equal(t, tc.ExpectedError, err)
 			} else {
-				assert.Nil(err)
+				require.NoError(t, err)
 			}
 		})
 	}
 
 	// Check that the success testcase set a record.
-	assert.Equal(t, len(validUpdateClient.records), 1)
+	assert.Len(t, validUpdateClient.records, 1)
 
 	// Check that the success testcase set the right record for the right account.
-	assert.Equal(t, len(validUpdateClient.records[egAccount]), 43)
+	assert.Len(t, validUpdateClient.records[egAccount], 43)
 }
 
 // TestRegister tests that the ACME-DNS register function works correctly.
@@ -255,9 +254,8 @@ func TestRegister(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
-			assert := assert.New(t)
 			dp, err := NewDNSProviderClient(tc.Client, mockStorage{make(map[string]goacmedns.Account)})
-			assert.Nil(err)
+			require.NoError(t, err)
 
 			// override the storage mock if required by the testcase.
 			if tc.Storage != nil {
@@ -267,10 +265,9 @@ func TestRegister(t *testing.T) {
 			// Call register for the example domain/fqdn.
 			err = dp.register(egDomain, egFQDN)
 			if tc.ExpectedError != nil {
-				assert.NotNil(err)
-				assert.Equal(tc.ExpectedError, err)
+				assert.Equal(t, tc.ExpectedError, err)
 			} else {
-				assert.Nil(err)
+				require.NoError(t, err)
 			}
 		})
 	}

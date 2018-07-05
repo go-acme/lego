@@ -39,55 +39,34 @@ type acmeDNSClient interface {
 // DNSProvider is an implementation of the acme.ChallengeProvider interface for
 // an ACME-DNS server.
 type DNSProvider struct {
-	apiBase string
 	client  acmeDNSClient
 	storage goacmedns.Storage
 }
 
-// NewDNSProvider creates an ACME-DNS provider. Its configuration is loaded from
-// the environment by reading apiBaseEnvVar and storagePathEnvVar.
+// NewDNSProvider creates an ACME-DNS provider using file based account storage.
+// Its configuration is loaded from the environment by reading apiBaseEnvVar and
+// storagePathEnvVar.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(apiBaseEnvVar, storagePathEnvVar)
 	if err != nil {
 		return nil, fmt.Errorf("acme-dns: %v", err)
 	}
-	return NewDNSProviderClient(values[apiBaseEnvVar], values[storagePathEnvVar])
-}
-
-// NewDNSProviderClient creates an ACME-DNS DNSProvider configured to
-// communicate with the provided ACME-DNS API endpoint, and to save/load account
-// credentials in a file found at the provided storage path.
-func NewDNSProviderClient(apiBase string, storagePath string) (*DNSProvider, error) {
-	if apiBase == "" {
+	if values[apiBaseEnvVar] == "" {
 		return nil, errors.New("ACME-DNS API base must not be empty")
 	}
-	if storagePath == "" {
+	if values[storagePathEnvVar] == "" {
 		return nil, errors.New("ACME-DNS Storage path must not be empty")
 	}
-
-	return &DNSProvider{
-		apiBase: apiBase,
-		client:  goacmedns.NewClient(apiBase),
-		storage: goacmedns.NewFileStorage(storagePath, 0600),
-	}, nil
+	client := goacmedns.NewClient(values[apiBaseEnvVar])
+	storage := goacmedns.NewFileStorage(values[storagePathEnvVar], 0600)
+	return NewDNSProviderClient(client, storage)
 }
 
-// NewDNSProviderClientStorage creates an ACME-DNS DNSProvider configured to
-// communicate with the provided ACME-DNS API endpoint, and to save/load account
-// credentials using the provided acmedns.Storage implementation. This is useful
-// for programmatic usage of the ACME-DNS provider where fine-grained control
-// over data persistence is required.
-func NewDNSProviderClientStorage(apiBase string, storage goacmedns.Storage) (*DNSProvider, error) {
-	if apiBase == "" {
-		return nil, errors.New("ACME-DNS API base must not be empty")
-	}
-	if storage == nil {
-		return nil, errors.New("ACME-DNS Storage must not be nil")
-	}
-
+// NewDNSProviderClient creates an ACME-DNS DNSProvider with the given
+// acmeDNSClient and goacmedns.Storage.
+func NewDNSProviderClient(client acmeDNSClient, storage goacmedns.Storage) (*DNSProvider, error) {
 	return &DNSProvider{
-		apiBase: apiBase,
-		client:  goacmedns.NewClient(apiBase),
+		client:  client,
 		storage: storage,
 	}, nil
 }

@@ -189,16 +189,9 @@ func TestPresent(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
 			assert := assert.New(t)
-			// create the DNS provider using. The API base address and the storage
-			// path can be made up because we mock the client and storage instead of
-			// making real API calls and writing JSON to disk.
-			dp, err := NewDNSProviderClient("foo", "bar")
+			dp, err := NewDNSProviderClient(tc.Client, mockStorage{make(map[string]goacmedns.Account)})
 			assert.Nil(err)
 
-			// mock the client.
-			dp.client = tc.Client
-			// mock the storage.
-			dp.storage = mockStorage{make(map[string]goacmedns.Account)}
 			// override the storage mock if required by the testcase.
 			if tc.Storage != nil {
 				dp.storage = tc.Storage
@@ -263,18 +256,9 @@ func TestRegister(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
 			assert := assert.New(t)
-			// create the DNS provider using. The API base address and the storage
-			// path can be made up because we mock the client and storage instead of
-			// making real API calls and writing JSON to disk.
-			dp, err := NewDNSProviderClient("foo", "bar")
+			dp, err := NewDNSProviderClient(tc.Client, mockStorage{make(map[string]goacmedns.Account)})
 			assert.Nil(err)
 
-			// mock the client.
-			dp.client = tc.Client
-			// mock the storage.
-			dp.storage = mockStorage{
-				make(map[string]goacmedns.Account),
-			}
 			// override the storage mock if required by the testcase.
 			if tc.Storage != nil {
 				dp.storage = tc.Storage

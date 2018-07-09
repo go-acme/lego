@@ -2,9 +2,10 @@ package acmedns
 
 import (
 	"errors"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
 
 	"github.com/cpu/goacmedns"
 )
@@ -196,6 +197,7 @@ func TestPresent(t *testing.T) {
 			if tc.Storage != nil {
 				dp.storage = tc.Storage
 			}
+
 			// call Present. The token argument can be garbage because the ACME-DNS
 			// provider does not use it.
 			err = dp.Present(egDomain, "foo", egKeyAuth)

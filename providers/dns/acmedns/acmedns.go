@@ -51,12 +51,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	if err != nil {
 		return nil, fmt.Errorf("acme-dns: %v", err)
 	}
-	if values[apiBaseEnvVar] == "" {
-		return nil, errors.New("ACME-DNS API base must not be empty")
-	}
-	if values[storagePathEnvVar] == "" {
-		return nil, errors.New("ACME-DNS Storage path must not be empty")
-	}
+
 	client := goacmedns.NewClient(values[apiBaseEnvVar])
 	storage := goacmedns.NewFileStorage(values[storagePathEnvVar], 0600)
 	return NewDNSProviderClient(client, storage)
@@ -65,6 +60,14 @@ func NewDNSProvider() (*DNSProvider, error) {
 // NewDNSProviderClient creates an ACME-DNS DNSProvider with the given
 // acmeDNSClient and goacmedns.Storage.
 func NewDNSProviderClient(client acmeDNSClient, storage goacmedns.Storage) (*DNSProvider, error) {
+	if client == nil {
+		return nil, errors.New("ACME-DNS Client must be not nil")
+	}
+
+	if storage == nil {
+		return nil, errors.New("ACME-DNS Storage must be not nil")
+	}
+
 	return &DNSProvider{
 		client:  client,
 		storage: storage,
@@ -110,6 +113,7 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	// Compute the challenge response FQDN and TXT value for the domain based
 	// on the keyAuth.
 	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
+
 	// Check if credentials were previously saved for this domain.
 	account, err := d.storage.Fetch(domain)
 	// Errors other than goacmeDNS.ErrDomainNotFound are unexpected.
@@ -121,6 +125,7 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 		// indicating the required one-time manual CNAME setup.
 		return d.register(domain, fqdn)
 	}
+
 	// Update the acme-dns TXT record.
 	return d.client.UpdateTXTRecord(account, value)
 }
@@ -143,6 +148,7 @@ func (d *DNSProvider) register(domain, fqdn string) error {
 	if err != nil {
 		return err
 	}
+
 	// Store the new account in the storage and call save to persist the data.
 	err = d.storage.Put(domain, newAcct)
 	if err != nil {
@@ -152,6 +158,7 @@ func (d *DNSProvider) register(domain, fqdn string) error {
 	if err != nil {
 		return err
 	}
+
 	// Stop issuance by returning an error. The user needs to perform a manual
 	// one-time CNAME setup in their DNS zone to complete the setup of the new
 	// account we created.

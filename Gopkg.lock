@@ -89,6 +89,12 @@
   version = "v1.13.57"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/cpu/goacmedns"
+  packages = ["."]
+  revision = "f232997f461a5a58982d536108cfc382e512481e"
+
+[[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
@@ -380,6 +386,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "68128f1cf61f649cdac1483e18c54541782cbd344605cab3cf6c2b448a86bda0"
+  inputs-digest = "999db8b5286c234be2ff3302595ff6776e73c6773008f5010e0c3d105314e334"
   solver-name = "gps-cdcl"
   solver-version = 1

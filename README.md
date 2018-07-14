@@ -180,7 +180,7 @@ lego --email="foo@bar.com" --csr=/path/to/csr.pem run
 lego defaults to communicating with the production Let's Encrypt ACME server. If you'd like to test something without issuing real certificates, consider using the staging endpoint instead:
 
 ```bash
-lego --server=https://acme-staging.api.letsencrypt.org/directory …
+lego --server=https://acme-staging-v02.api.letsencrypt.org/directory …
 ```
 
 ## DNS Challenge API Details

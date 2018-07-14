@@ -198,6 +198,7 @@ Here is an example bash command using the CloudFlare DNS provider:
 	w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
 	fmt.Fprintln(w, "Valid providers and their associated credential environment variables:")
 	fmt.Fprintln(w)
+	fmt.Fprintln(w, "\tacme-dns:\tACME_DNS_API_BASE, ACME_DNS_STORAGE_PATH")
 	fmt.Fprintln(w, "\tazure:\tAZURE_CLIENT_ID, AZURE_CLIENT_SECRET, AZURE_SUBSCRIPTION_ID, AZURE_TENANT_ID, AZURE_RESOURCE_GROUP")
 	fmt.Fprintln(w, "\tauroradns:\tAURORA_USER_ID, AURORA_KEY, AURORA_ENDPOINT")
 	fmt.Fprintln(w, "\tbluecat:\tBLUECAT_SERVER_URL, BLUECAT_USER_NAME, BLUECAT_PASSWORD, BLUECAT_CONFIG_NAME, BLUECAT_DNS_VIEW")

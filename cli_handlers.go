@@ -40,7 +40,7 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 	}
 
 	if len(c.GlobalStringSlice("dns-resolvers")) > 0 {
-		resolvers := []string{}
+		var resolvers []string
 		for _, resolver := range c.GlobalStringSlice("dns-resolvers") {
 			if !strings.Contains(resolver, ":") {
 				resolver += ":53"
@@ -92,7 +92,7 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 
 		// --webroot=foo indicates that the user specifically want to do a HTTP challenge
 		// infer that the user also wants to exclude all other challenges
-		client.ExcludeChallenges([]acme.Challenge{acme.DNS01})
+		client.ExcludeChallenges([]acme.Challenge{acme.DNS01, acme.TLSALPN01})
 	}
 	if c.GlobalIsSet("memcached-host") {
 		provider, err := memcached.NewMemcachedProvider(c.GlobalStringSlice("memcached-host"))
@@ -107,7 +107,7 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 
 		// --memcached-host=foo:11211 indicates that the user specifically want to do a HTTP challenge
 		// infer that the user also wants to exclude all other challenges
-		client.ExcludeChallenges([]acme.Challenge{acme.DNS01})
+		client.ExcludeChallenges([]acme.Challenge{acme.DNS01, acme.TLSALPN01})
 	}
 	if c.GlobalIsSet("http") {
 		if !strings.Contains(c.GlobalString("http"), ":") {
@@ -140,7 +140,7 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 
 		// --dns=foo indicates that the user specifically want to do a DNS challenge
 		// infer that the user also wants to exclude all other challenges
-		client.ExcludeChallenges([]acme.Challenge{acme.HTTP01})
+		client.ExcludeChallenges([]acme.Challenge{acme.HTTP01, acme.TLSALPN01})
 	}
 
 	if client.GetExternalAccountRequired() && !c.GlobalIsSet("eab") {

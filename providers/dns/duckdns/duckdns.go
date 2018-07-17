@@ -41,11 +41,11 @@ func NewDNSProviderCredentials(duckdnsToken string) (*DNSProvider, error) {
 // makeDuckdnsURL creates a url to clear the set or unset the TXT record.
 // txt == "" will clear the TXT record.
 func makeDuckdnsURL(domain, token, txt string) string {
-	requestBase := fmt.Sprintf("https://www.duckdns.org/update?domains=%s&token=%s", domain, token)
+	requestBase := fmt.Sprintf("https://www.duckdns.org/update?domains=%s&token=%s&txt=%s", domain, token, txt)
 	if txt == "" {
 		return requestBase + "&clear=true"
 	}
-	return requestBase + "&txt=" + txt
+	return requestBase
 }
 
 func issueDuckdnsRequest(url string) error {

@@ -81,8 +81,15 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
-	cmd := exec.Command(d.config.Program, "cleanup", fqdn, value, strconv.Itoa(ttl))
+	var args []string
+	if d.config.Mode == "RAW" {
+		args = []string{"cleanup", "--", domain, token, keyAuth}
+	} else {
+		fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
+		args = []string{"cleanup", fqdn, value, strconv.Itoa(ttl)}
+	}
+
+	cmd := exec.Command(d.config.Program, args...)
 
 	output, err := cmd.CombinedOutput()
 	if len(output) > 0 {

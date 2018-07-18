@@ -42,7 +42,8 @@ func makeRoute53Provider(ts *httptest.Server) *DNSProvider {
 	}
 
 	client := route53.New(session.New(config))
-	return &DNSProvider{client: client}
+	cfg := NewDefaultConfig()
+	return &DNSProvider{client: client, config: cfg}
 }
 
 func TestCredentialsFromEnv(t *testing.T) {

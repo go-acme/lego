@@ -75,7 +75,7 @@ func TestHostedZoneIDFromEnv(t *testing.T) {
 	const testZoneID = "testzoneid"
 	os.Setenv("AWS_HOSTED_ZONE_ID", testZoneID)
 
-	provider, err := NewDNSProvider(nil)
+	provider, err := NewDNSProvider()
 	assert.NoError(t, err, "Expected no error constructing DNSProvider")
 
 	fqdn, err := provider.getHostedZoneID("whatever")

@@ -85,11 +85,13 @@ func NewDefaultConfig() *Config {
 // public hosted zone via the FQDN.
 //
 // See also: https://github.com/aws/aws-sdk-go/wiki/configuring-sdk
-func NewDNSProvider(config *Config) (*DNSProvider, error) {
-	if config == nil {
-		config = NewDefaultConfig()
-	}
+func NewDNSProvider() (*DNSProvider, error) {
+	return NewDNSProviderConfig(NewDefaultConfig())
+}
 
+// NewDNSProviderConfig takes a given config ans returns a custom configured
+// DNSProvider instance
+func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	r := customRetryer{}
 	r.NumMaxRetries = config.MaxRetries
 	sessionCfg := request.WithRetryer(aws.NewConfig(), r)

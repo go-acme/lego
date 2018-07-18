@@ -97,7 +97,7 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 	case "rackspace":
 		return rackspace.NewDNSProvider()
 	case "route53":
-		return route53.NewDNSProvider(nil)
+		return route53.NewDNSProvider()
 	case "rfc2136":
 		return rfc2136.NewDNSProvider()
 	case "sakuracloud":

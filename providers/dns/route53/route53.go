@@ -3,6 +3,7 @@
 package route53
 
 import (
+	"errors"
 	"fmt"
 	"math/rand"
 	"os"
@@ -20,10 +21,21 @@ import (
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	MaxRetries         int
-	Route53TTL         int
+	TTL                int
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	HostedZoneID       string
+}
+
+// NewDefaultConfig returns a default configuration for the DNSProvider
+func NewDefaultConfig() *Config {
+	return &Config{
+		MaxRetries:         5,
+		TTL:                10,
+		PropagationTimeout: time.Minute * 2,
+		PollingInterval:    time.Second * 4,
+		HostedZoneID:       os.Getenv("AWS_HOSTED_ZONE_ID"),
+	}
 }
 
 // DNSProvider implements the acme.ChallengeProvider interface
@@ -54,23 +66,6 @@ func (d customRetryer) RetryRules(r *request.Request) time.Duration {
 	return time.Duration(delay) * time.Millisecond
 }
 
-// Timeout returns the timeout and interval to use when checking for DNS
-// propagation.
-func (r *DNSProvider) Timeout() (timeout, interval time.Duration) {
-	return r.config.PropagationTimeout, r.config.PollingInterval
-}
-
-// NewDefaultConfig returns a default configuration for the DNSProvider
-func NewDefaultConfig() *Config {
-	return &Config{
-		MaxRetries:         5,
-		Route53TTL:         10,
-		PropagationTimeout: time.Minute * 2,
-		PollingInterval:    time.Second * 4,
-		HostedZoneID:       os.Getenv("AWS_HOSTED_ZONE_ID"),
-	}
-}
-
 // NewDNSProvider returns a DNSProvider instance configured for the AWS
 // Route 53 service.
 //
@@ -92,6 +87,10 @@ func NewDNSProvider() (*DNSProvider, error) {
 // NewDNSProviderConfig takes a given config ans returns a custom configured
 // DNSProvider instance
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
+	if config == nil {
+		return nil, errors.New("the configuration of the Route53 DNS provider is nil")
+	}
+
 	r := customRetryer{}
 	r.NumMaxRetries = config.MaxRetries
 	sessionCfg := request.WithRetryer(aws.NewConfig(), r)
@@ -107,18 +106,24 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}, nil
 }
 
+// Timeout returns the timeout and interval to use when checking for DNS
+// propagation.
+func (r *DNSProvider) Timeout() (timeout, interval time.Duration) {
+	return r.config.PropagationTimeout, r.config.PollingInterval
+}
+
 // Present creates a TXT record using the specified parameters
 func (r *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
 	value = `"` + value + `"`
-	return r.changeRecord("UPSERT", fqdn, value, r.config.Route53TTL)
+	return r.changeRecord("UPSERT", fqdn, value, r.config.TTL)
 }
 
 // CleanUp removes the TXT record matching the specified parameters
 func (r *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
 	value = `"` + value + `"`
-	return r.changeRecord("DELETE", fqdn, value, r.config.Route53TTL)
+	return r.changeRecord("DELETE", fqdn, value, r.config.TTL)
 }
 
 func (r *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {

@@ -4,6 +4,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -82,6 +83,27 @@ func TestHostedZoneIDFromEnv(t *testing.T) {
 	assert.NoError(t, err, "Expected FQDN to be resolved to environment variable value")
 
 	assert.Equal(t, testZoneID, fqdn)
+}
+
+func TestConfigFromEnv(t *testing.T) {
+	defer restoreEnv()
+
+	config := NewDefaultConfig()
+	assert.Equal(t, config.TTL, 10, "Expected TTL to be use the default")
+
+	os.Setenv("AWS_MAX_RETRIES", "10")
+	os.Setenv("AWS_TTL", "99")
+	os.Setenv("AWS_PROPAGATION_TIMEOUT", "60")
+	os.Setenv("AWS_POLLING_INTERVAL", "60")
+	const zoneID = "abc123"
+	os.Setenv("AWS_HOSTED_ZONE_ID", zoneID)
+
+	config = NewDefaultConfig()
+	assert.Equal(t, config.MaxRetries, 10, "Expected PropagationTimeout to be configured from the environment")
+	assert.Equal(t, config.TTL, 99, "Expected TTL to be configured from the environment")
+	assert.Equal(t, config.PropagationTimeout, time.Minute*60, "Expected PropagationTimeout to be configured from the environment")
+	assert.Equal(t, config.PollingInterval, time.Second*60, "Expected PollingInterval to be configured from the environment")
+	assert.Equal(t, config.HostedZoneID, zoneID, "Expected HostedZoneID to be configured from the environment")
 }
 
 func TestRoute53Present(t *testing.T) {

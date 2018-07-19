@@ -3,6 +3,7 @@ package env
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -24,4 +25,18 @@ func Get(names ...string) (map[string]string, error) {
 	}
 
 	return values, nil
+}
+
+// GetOrDefaultInt returns the given environment variable value as an integer.
+// Returns the default if the envvar cannot be cooered to an int, or is not
+// found.
+func GetOrDefaultInt(envVar string, def int) int {
+	s := os.Getenv(envVar)
+
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		return def
+	}
+
+	return i
 }

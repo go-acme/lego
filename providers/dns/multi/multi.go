@@ -56,9 +56,22 @@ type DNSProvider struct {
 	providers map[string]acme.ChallengeProvider
 }
 
+// NewDNSProvider creates a new multiple-provider meta-provider. It will look for a json configuration in "MULTI_CONFIG", or on disk from "MULTI_CONFIG_FILE"
+func NewDNSProvider() (*DNSProvider, error) {
+	config, err := getConfig()
+	if err != nil {
+		return nil, err
+	}
+	return &DNSProvider{
+		providers: map[string]acme.ChallengeProvider{},
+		config:    config,
+	}, nil
+}
+
 // AggregateProvider is simply a list of dns providers. All Challenges are filled by all members of the aggregate.
 type AggregateProvider []acme.ChallengeProvider
 
+// Present creates the txt record in all child dns providers
 func (a AggregateProvider) Present(domain, token, keyAuth string) error {
 	for _, p := range a {
 		if err := p.Present(domain, token, keyAuth); err != nil {
@@ -67,6 +80,8 @@ func (a AggregateProvider) Present(domain, token, keyAuth string) error {
 	}
 	return nil
 }
+
+// CleanUp removes the txt record from all dns providers
 func (a AggregateProvider) CleanUp(domain, token, keyAuth string) error {
 	for _, p := range a {
 		if err := p.CleanUp(domain, token, keyAuth); err != nil {
@@ -83,6 +98,7 @@ type AggregateProviderTimeout struct {
 	AggregateProvider
 }
 
+// Timeout gives the largest timeout values from any child provider that supports timeouts.
 func (a AggregateProviderTimeout) Timeout() (timeout, interval time.Duration) {
 	for _, p := range a.AggregateProvider {
 		if to, ok := p.(acme.ChallengeProviderTimeout); ok {
@@ -169,17 +185,6 @@ func (d *DNSProvider) buildProvider(name string, params map[string]string) (acme
 	}
 	d.providers[name] = prv
 	return prv, nil
-}
-
-func New() (*DNSProvider, error) {
-	config, err := getConfig()
-	if err != nil {
-		return nil, err
-	}
-	return &DNSProvider{
-		providers: map[string]acme.ChallengeProvider{},
-		config:    config,
-	}, nil
 }
 
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {

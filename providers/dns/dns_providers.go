@@ -122,7 +122,7 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 	case "manual":
 		return acme.NewDNSProviderManual()
 	case "multi":
-		return multi.New()
+		return multi.NewDNSProvider()
 	case "mydnsjp":
 		return mydnsjp.NewDNSProvider()
 	case "namecheap":

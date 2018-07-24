@@ -1,4 +1,4 @@
-// package multi implements a dynamic challenge provider that can select different dns providers for different domains,
+// Package multi implements a dynamic challenge provider that can select different dns providers for different domains,
 // and even multiple distinct dns providers and accounts for each individual domain. This can be useful if:
 //
 // - Multiple dns providers are used for active-active redundant dns service
@@ -11,10 +11,10 @@
 //    "Providers": {
 //      "cloudflare": {
 //        "CLOUDFLARE_EMAIL": "myacct@example.com",
-//        "CLOUDFLARE_API_KEY": "123qwerty"
+//        "CLOUDFLARE_API_KEY": "123qwerty..."
 //      },
 //      "digitalocean":{
-//        "DO_AUTH_TOKEN": "456uiop"
+//        "DO_AUTH_TOKEN": "456uiop..."
 //      }
 //    }
 //    "Domains": {

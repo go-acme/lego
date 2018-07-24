@@ -47,7 +47,7 @@ func getConfig() (*MultiProviderConfig, error) {
 			return nil, err
 		}
 	} else {
-		return nil, fmt.Errorf("'multi' provider requires json config in MULTI_CONFIG or MULTI_CONFIG_PATH")
+		return nil, fmt.Errorf("'multi' provider requires json config in MULTI_CONFIG or MULTI_CONFIG_FILE")
 	}
 	cfg := &MultiProviderConfig{}
 	if err = json.Unmarshal(rawJSON, cfg); err != nil {

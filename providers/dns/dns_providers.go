@@ -34,6 +34,7 @@ import (
 	"github.com/xenolf/lego/providers/dns/lightsail"
 	"github.com/xenolf/lego/providers/dns/linode"
 	"github.com/xenolf/lego/providers/dns/linodev4"
+	"github.com/xenolf/lego/providers/dns/multi"
 	"github.com/xenolf/lego/providers/dns/mydnsjp"
 	"github.com/xenolf/lego/providers/dns/namecheap"
 	"github.com/xenolf/lego/providers/dns/namedotcom"
@@ -120,6 +121,8 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 		return linodev4.NewDNSProvider()
 	case "manual":
 		return acme.NewDNSProviderManual()
+	case "multi":
+		return multi.New()
 	case "mydnsjp":
 		return mydnsjp.NewDNSProvider()
 	case "namecheap":
@@ -161,4 +164,8 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 	default:
 		return nil, fmt.Errorf("unrecognised DNS provider: %s", name)
 	}
+}
+
+func init() {
+	multi.NewDNSChallengeProviderByName = NewDNSChallengeProviderByName
 }

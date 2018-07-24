@@ -50,7 +50,8 @@ import (
 // the delegated dns providers may be dynamically instantiated
 var NewDNSChallengeProviderByName func(string) (acme.ChallengeProvider, error)
 
-type MultiProvider struct {
+// DNSProvider implements a dns provider that selects which other providers to use for each domain individually.
+type DNSProvider struct {
 	config    *MultiProviderConfig
 	providers map[string]acme.ChallengeProvider
 }
@@ -97,15 +98,15 @@ func (a AggregateProviderTimeout) Timeout() (timeout, interval time.Duration) {
 	return
 }
 
-func (m *MultiProvider) getProviderForDomain(domain string) (acme.ChallengeProvider, error) {
-	names, err := m.config.providerNamesForDomain(domain)
+func (d *DNSProvider) getProviderForDomain(domain string) (acme.ChallengeProvider, error) {
+	names, err := d.config.providerNamesForDomain(domain)
 	if err != nil {
 		return nil, err
 	}
 	var agg AggregateProvider
 	anyTimeouts := false
 	for _, n := range names {
-		p, err := m.providerByName(n)
+		p, err := d.providerByName(n)
 		if err != nil {
 			return nil, err
 		}
@@ -124,17 +125,17 @@ func (m *MultiProvider) getProviderForDomain(domain string) (acme.ChallengeProvi
 	return agg, nil
 }
 
-func (m *MultiProvider) providerByName(name string) (acme.ChallengeProvider, error) {
-	if p, ok := m.providers[name]; ok {
+func (d *DNSProvider) providerByName(name string) (acme.ChallengeProvider, error) {
+	if p, ok := d.providers[name]; ok {
 		return p, nil
 	}
-	if params, ok := m.config.Providers[name]; ok {
-		return m.buildProvider(name, params)
+	if params, ok := d.config.Providers[name]; ok {
+		return d.buildProvider(name, params)
 	}
 	return nil, fmt.Errorf("Couldn't find appropriate config for dns provider named '%s'", name)
 }
 
-func (m *MultiProvider) buildProvider(name string, params map[string]string) (acme.ChallengeProvider, error) {
+func (d *DNSProvider) buildProvider(name string, params map[string]string) (acme.ChallengeProvider, error) {
 	pType := name
 	origEnv := map[string]string{}
 
@@ -166,31 +167,31 @@ func (m *MultiProvider) buildProvider(name string, params map[string]string) (ac
 	if err != nil {
 		return nil, err
 	}
-	m.providers[name] = prv
+	d.providers[name] = prv
 	return prv, nil
 }
 
-func New() (*MultiProvider, error) {
+func New() (*DNSProvider, error) {
 	config, err := getConfig()
 	if err != nil {
 		return nil, err
 	}
-	return &MultiProvider{
+	return &DNSProvider{
 		providers: map[string]acme.ChallengeProvider{},
 		config:    config,
 	}, nil
 }
 
-func (m *MultiProvider) Present(domain, token, keyAuth string) error {
-	provider, err := m.getProviderForDomain(domain)
+func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+	provider, err := d.getProviderForDomain(domain)
 	if err != nil {
 		return err
 	}
 	return provider.Present(domain, token, keyAuth)
 }
 
-func (m *MultiProvider) CleanUp(domain, token, keyAuth string) error {
-	provider, err := m.getProviderForDomain(domain)
+func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+	provider, err := d.getProviderForDomain(domain)
 	if err != nil {
 		return err
 	}

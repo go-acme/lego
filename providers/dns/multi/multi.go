@@ -52,7 +52,7 @@ var NewDNSChallengeProviderByName func(string) (acme.ChallengeProvider, error)
 
 // DNSProvider implements a dns provider that selects which other providers to use for each domain individually.
 type DNSProvider struct {
-	config    *MultiProviderConfig
+	config    *ProviderConfig
 	providers map[string]acme.ChallengeProvider
 }
 

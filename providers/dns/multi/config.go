@@ -8,9 +8,9 @@ import (
 	"strings"
 )
 
-// MultiProviderConfig is the configuration for a multiple provider setup. This is expected to be given in json format via
+// ProviderConfig is the configuration for a multiple provider setup. This is expected to be given in json format via
 // MULTI_CONFIG environment variable, or in a file location specified by MULTI_CONFIG_FILE.
-type MultiProviderConfig struct {
+type ProviderConfig struct {
 	// Domain names to list of provider names
 	Domains map[string][]string
 	// Provider Name -> Key/Value pairs for environment
@@ -19,7 +19,7 @@ type MultiProviderConfig struct {
 
 // providerNamesForDomain chooses the most appropriate domain from the config and returns its' list of dns providers
 // looks for most specific match to least specific, one dot at a time. Finally folling back to "default" domain.
-func (m *MultiProviderConfig) providerNamesForDomain(domain string) ([]string, error) {
+func (m *ProviderConfig) providerNamesForDomain(domain string) ([]string, error) {
 	parts := strings.Split(domain, ".")
 	var names []string
 	for i := 0; i < len(parts); i++ {
@@ -37,7 +37,7 @@ func (m *MultiProviderConfig) providerNamesForDomain(domain string) ([]string, e
 	return names, nil
 }
 
-func getConfig() (*MultiProviderConfig, error) {
+func getConfig() (*ProviderConfig, error) {
 	var rawJSON []byte
 	var err error
 	if cfg := os.Getenv("MULTI_CONFIG"); cfg != "" {
@@ -49,7 +49,7 @@ func getConfig() (*MultiProviderConfig, error) {
 	} else {
 		return nil, fmt.Errorf("'multi' provider requires json config in MULTI_CONFIG or MULTI_CONFIG_FILE")
 	}
-	cfg := &MultiProviderConfig{}
+	cfg := &ProviderConfig{}
 	if err = json.Unmarshal(rawJSON, cfg); err != nil {
 		return nil, err
 	}

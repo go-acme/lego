@@ -71,8 +71,10 @@ type dnsChallenge struct {
 	provider ChallengeProvider
 }
 
-func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
-	log.Infof("[%s] acme: Trying to solve DNS-01", domain)
+// PreSolve just submits the txt record to the dns provider. It does not validate record propagation, or
+// do anything at all with the acme server.
+func (s *dnsChallenge) PreSolve(chlng challenge, domain string) error {
+	log.Infof("[%s] acme: Preparing to solve DNS-01", domain)
 
 	if s.provider == nil {
 		return errors.New("no DNS Provider configured")
@@ -88,6 +90,19 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 	if err != nil {
 		return fmt.Errorf("error presenting token: %s", err)
 	}
+
+	return nil
+}
+
+func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
+	log.Infof("[%s] acme: Trying to solve DNS-01", domain)
+
+	// Generate the Key Authorization for the challenge
+	keyAuth, err := getKeyAuthorization(chlng.Token, s.jws.privKey)
+	if err != nil {
+		return err
+	}
+
 	defer func() {
 		err := s.provider.CleanUp(domain, chlng.Token, keyAuth)
 		if err != nil {

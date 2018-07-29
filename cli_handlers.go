@@ -152,7 +152,14 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 
 func saveCertRes(certRes *acme.CertificateResource, conf *Configuration) {
 	// make sure no funny chars are in the cert names (like wildcards ;))
-	domainName := strings.Replace(certRes.Domain, "*", "_", -1)
+	var domainName string
+
+	// check filename cli parameter
+	if conf.context.GlobalString("filename") == "" {
+		domainName = strings.Replace(certRes.Domain, "*", "_", -1)
+	} else {
+		domainName = strings.Replace(conf.context.GlobalString("filename"), "*", "_", -1)
+	}
 
 	// We store the certificate, private key and metadata in different files
 	// as web servers would not be able to work with a combined file.

@@ -64,7 +64,7 @@
   version = "v0.6.2"
 
 [[projects]]
-  digest = "1:bf1d2990b1ff737e7ad35b21413747016a187056683e8db2ab34b37bd79905a8"
+  digest = "1:0a8fa18074e0885d26e1ae11a5d06c5926d947cbd0fecd8d69c4e586c3a1b69e"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -96,6 +96,7 @@
     "private/protocol/xml/xmlutil",
     "service/lightsail",
     "service/route53",
+    "service/s3",
     "service/sts",
   ]
   pruneopts = "NUT"
@@ -493,6 +494,7 @@
     "github.com/aws/aws-sdk-go/aws/session",
     "github.com/aws/aws-sdk-go/service/lightsail",
     "github.com/aws/aws-sdk-go/service/route53",
+    "github.com/aws/aws-sdk-go/service/s3",
     "github.com/cpu/goacmedns",
     "github.com/decker502/dnspod-go",
     "github.com/dnsimple/dnsimple-go/dnsimple",

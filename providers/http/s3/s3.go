@@ -12,11 +12,13 @@ import (
 	"github.com/xenolf/lego/acme"
 )
 
+// HTTPProvider implements ChallengeProvider for `http-01` challenge
 type HTTPProvider struct {
 	bucket string
 	client *s3.S3
 }
 
+// NewHTTPProvider returns a HTTPProvider instance with a configured s3 bucket
 func NewHTTPProvider(bucket, region string) (*HTTPProvider, error) {
 	if bucket == "" {
 		return nil, fmt.Errorf("S3 bucket name missing")
@@ -36,6 +38,7 @@ func NewHTTPProvider(bucket, region string) (*HTTPProvider, error) {
 	}, nil
 }
 
+// Present makes the token available at `HTTP01ChallengePath(token)` by creating a file in the given s3 bucket
 func (s *HTTPProvider) Present(domain, token, keyAuth string) error {
 	params := &s3.PutObjectInput{
 		Body:   strings.NewReader(keyAuth),
@@ -45,11 +48,12 @@ func (s *HTTPProvider) Present(domain, token, keyAuth string) error {
 	}
 	_, err := s.client.PutObject(params)
 	if err != nil {
-		return fmt.Errorf("failed to upload object to S3 bucket: %v", err)
+		return fmt.Errorf("failed to upload file to S3 bucket: %v", err)
 	}
 	return nil
 }
 
+// CleanUp removes the file created for the challenge
 func (s *HTTPProvider) CleanUp(domain, token, keyAuth string) error {
 	params := &s3.DeleteObjectInput{
 		Bucket: aws.String(s.bucket),
@@ -57,7 +61,7 @@ func (s *HTTPProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 	_, err := s.client.DeleteObject(params)
 	if err != nil {
-		return fmt.Errorf("failed to remove object from S3 bucket: %v", err)
+		return fmt.Errorf("failed to remove file from S3 bucket: %v", err)
 	}
 	return nil
 }

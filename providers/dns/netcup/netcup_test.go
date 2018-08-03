@@ -167,6 +167,9 @@ func TestUpdateDnsRecord(t *testing.T) {
 }
 
 func TestGetDnsRecordIdx(t *testing.T) {
+	if testCustomerNumber == "" || testAPIKey == "" || testAPIPassword == "" || testDomain == "" {
+		t.Skip("test credentials needed")
+	}
 	//Setup
 	p, err := NewDNSProvider()
 	assert.NoError(t, err)

@@ -14,8 +14,8 @@ import (
 	"github.com/xenolf/lego/platform/config/env"
 )
 
-// NetcupBaseUrl for reaching the jSON-based API-Endpoint of netcup
-const netcupBaseUrl = "https://ccp.netcup.net/run/webservice/servers/endpoint.php?JSON"
+// NetcupBaseURL for reaching the jSON-based API-Endpoint of netcup
+const netcupBaseURL = "https://ccp.netcup.net/run/webservice/servers/endpoint.php?JSON"
 
 // DNSProvider is an implementation of the acme.ChallengeProvider interface
 type DNSProvider struct {
@@ -69,7 +69,7 @@ type DNSRecordSet struct {
 	Dnsrecords []DNSRecord `json:"dnsrecords"`
 }
 
-// InfoDnsRecordsMsg as specified in netcup WSDL
+// InfoDNSRecordsMsg as specified in netcup WSDL
 // https://ccp.netcup.net/run/webservice/servers/endpoint.php#infoDnsRecords
 type InfoDNSRecordsMsg struct {
 	Domainname      string `json:"domainname"`
@@ -82,7 +82,7 @@ type InfoDNSRecordsMsg struct {
 // DNSRecord as specified in netcup WSDL
 // https://ccp.netcup.net/run/webservice/servers/endpoint.php#Dnsrecord
 type DNSRecord struct {
-	Id           int    `json:"id,string,omitempty"`
+	ID           int    `json:"id,string,omitempty"`
 	Hostname     string `json:"hostname"`
 	Recordtype   string `json:"type"`
 	Priority     string `json:"priority,omitempty"`
@@ -139,7 +139,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 // DNSProvider instance configured for netcup.
 func NewDNSProviderCredentials(customer, key, password string) (*DNSProvider, error) {
 	if customer == "" || key == "" || password == "" {
-		return nil, fmt.Errorf("netcup: netcup credentials missing!")
+		return nil, fmt.Errorf("netcup: netcup credentials missing")
 	}
 
 	client := http.Client{
@@ -174,7 +174,7 @@ func (d *DNSProvider) Present(domainname, token, keyAuth string) error {
 		return fmt.Errorf("netcup: %v", err)
 	}
 
-	err = d.updateDnsRecord(sessionid, zone, record)
+	err = d.updateDNSRecord(sessionid, zone, record)
 	if err != nil {
 		err2 := d.logout(sessionid)
 		if err2 != nil {
@@ -211,19 +211,19 @@ func (d *DNSProvider) CleanUp(domainname, token, keyAuth string) error {
 		return fmt.Errorf("netcup: %v", err)
 	}
 
-	records, err := d.getDnsRecords(zone, sessionid)
+	records, err := d.getDNSRecords(zone, sessionid)
 	if err != nil {
 		return fmt.Errorf("netcup: %v", err)
 	}
 
-	idx, err := d.getDnsRecordIdx(records, record)
+	idx, err := d.getDNSRecordIdx(records, record)
 	if err != nil {
 		return fmt.Errorf("netcup: %v", err)
 	}
 
 	records[idx].Deleterecord = true
 
-	err = d.updateDnsRecord(sessionid, zone, records[idx])
+	err = d.updateDNSRecord(sessionid, zone, records[idx])
 	if err != nil {
 		err2 := d.logout(sessionid)
 		if err2 != nil {
@@ -243,7 +243,7 @@ func (d *DNSProvider) CleanUp(domainname, token, keyAuth string) error {
 // DNSRecord of type TXT for the dns-01 challenge
 func createTxtRecord(hostname, value string) DNSRecord {
 	return DNSRecord{
-		Id:           0,
+		ID:           0,
 		Hostname:     hostname,
 		Recordtype:   "TXT",
 		Priority:     "",
@@ -320,9 +320,9 @@ func (d *DNSProvider) logout(sessionid string) error {
 	return nil
 }
 
-// updateDnsRecord performs an update of the DNSRecords as specified by the netcup WSDL
+// updateDNSRecord performs an update of the DNSRecords as specified by the netcup WSDL
 // https://ccp.netcup.net/run/webservice/servers/endpoint.php
-func (d *DNSProvider) updateDnsRecord(sessionid, domainname string, record DNSRecord) error {
+func (d *DNSProvider) updateDNSRecord(sessionid, domainname string, record DNSRecord) error {
 	msg := UpdateDNSRecordsMsg{
 		Domainname:      domainname,
 		Customernumber:  d.customernumber,
@@ -355,10 +355,10 @@ func (d *DNSProvider) updateDnsRecord(sessionid, domainname string, record DNSRe
 	return nil
 }
 
-// getDnsRecords retrieves all dns records of an DNS-Zone as specified by the netcup WSDL
+// getDNSRecords retrieves all dns records of an DNS-Zone as specified by the netcup WSDL
 // returns an array of DNSRecords
 // https://ccp.netcup.net/run/webservice/servers/endpoint.php
-func (d *DNSProvider) getDnsRecords(hostname, apisessionid string) ([]DNSRecord, error) {
+func (d *DNSProvider) getDNSRecords(hostname, apisessionid string) ([]DNSRecord, error) {
 	msg := InfoDNSRecordsMsg{
 		Domainname:      hostname,
 		Customernumber:  d.customernumber,
@@ -390,10 +390,10 @@ func (d *DNSProvider) getDnsRecords(hostname, apisessionid string) ([]DNSRecord,
 
 }
 
-// getDnsRecordIdx searches a given array of DNSRecords for a given DNSRecord
+// getDNSRecordIdx searches a given array of DNSRecords for a given DNSRecord
 // equivalence is determined by Destination and RecortType attributes
 // returns index of given DNSRecord in given array of DNSRecords
-func (d *DNSProvider) getDnsRecordIdx(records []DNSRecord, record DNSRecord) (int, error) {
+func (d *DNSProvider) getDNSRecordIdx(records []DNSRecord, record DNSRecord) (int, error) {
 	for index, element := range records {
 		if record.Destination == element.Destination && record.Recordtype == element.Recordtype {
 			return index, nil
@@ -410,7 +410,7 @@ func (d *DNSProvider) sendRequest(payload interface{}) ([]byte, error) {
 		return nil, err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, netcupBaseUrl, bytes.NewReader(body))
+	req, err := http.NewRequest(http.MethodPost, netcupBaseURL, bytes.NewReader(body))
 	if err != nil {
 		return nil, err
 	}

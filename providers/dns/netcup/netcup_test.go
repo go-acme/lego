@@ -13,17 +13,17 @@ import (
 var (
 	testLive           bool
 	testCustomerNumber string
-	testApiKey         string
-	testApiPassword    string
+	testAPIKey         string
+	testAPIPassword    string
 	testDomain         string
 )
 
 func init() {
 	testCustomerNumber = os.Getenv("NETCUP_CUSTOMER_NUMBER")
-	testApiKey = os.Getenv("NETCUP_API_KEY")
-	testApiPassword = os.Getenv("NETCUP_API_PASSWORD")
+	testAPIKey = os.Getenv("NETCUP_API_KEY")
+	testAPIPassword = os.Getenv("NETCUP_API_PASSWORD")
 	testDomain = os.Getenv("NETCUP_DOMAIN")
-	if len(testCustomerNumber) > 0 && len(testApiKey) > 0 && len(testApiPassword) > 0 && len(testDomain) > 0 {
+	if len(testCustomerNumber) > 0 && len(testAPIKey) > 0 && len(testAPIPassword) > 0 && len(testDomain) > 0 {
 		testLive = true
 	}
 }
@@ -107,7 +107,7 @@ func TestGetDnsRecords(t *testing.T) {
 	zone = acme.UnFqdn(zone)
 
 	//TestMethod
-	_, err = p.getDnsRecords(zone, sid)
+	_, err = p.getDNSRecords(zone, sid)
 	assert.NoError(t, err)
 
 	//Tear down
@@ -139,13 +139,13 @@ func TestUpdateDnsRecord(t *testing.T) {
 	record := createTxtRecord(hostname, "asdf5678")
 
 	//test
-	err = p.updateDnsRecord(sid, zone, record)
+	err = p.updateDNSRecord(sid, zone, record)
 	assert.NoError(t, err)
 
-	records, err := p.getDnsRecords(zone, sid)
+	records, err := p.getDNSRecords(zone, sid)
 	assert.NoError(t, err)
 
-	recordIdx, err := p.getDnsRecordIdx(records, record)
+	recordIdx, err := p.getDNSRecordIdx(records, record)
 	assert.NoError(t, err)
 
 	assert.Equal(t, record.Hostname, records[recordIdx].Hostname)
@@ -156,7 +156,7 @@ func TestUpdateDnsRecord(t *testing.T) {
 	records[recordIdx].Deleterecord = true
 
 	//Tear down
-	err = p.updateDnsRecord(sid, testDomain, records[recordIdx])
+	err = p.updateDNSRecord(sid, testDomain, records[recordIdx])
 	assert.NoError(t, err)
 	if err != nil {
 		t.Logf("Did not remove record! Please do so yourself.")
@@ -173,7 +173,7 @@ func TestGetDnsRecordIdx(t *testing.T) {
 
 	records := []DNSRecord{
 		{
-			Id:           12345,
+			ID:           12345,
 			Hostname:     "asdf",
 			Recordtype:   "TXT",
 			Priority:     "0",
@@ -182,7 +182,7 @@ func TestGetDnsRecordIdx(t *testing.T) {
 			State:        "yes",
 		},
 		{
-			Id:           23456,
+			ID:           23456,
 			Hostname:     "@",
 			Recordtype:   "A",
 			Priority:     "0",
@@ -191,7 +191,7 @@ func TestGetDnsRecordIdx(t *testing.T) {
 			State:        "yes",
 		},
 		{
-			Id:           34567,
+			ID:           34567,
 			Hostname:     "dfgh",
 			Recordtype:   "CNAME",
 			Priority:     "0",
@@ -200,7 +200,7 @@ func TestGetDnsRecordIdx(t *testing.T) {
 			State:        "yes",
 		},
 		{
-			Id:           45678,
+			ID:           45678,
 			Hostname:     "fghj",
 			Recordtype:   "MX",
 			Priority:     "10",
@@ -211,7 +211,7 @@ func TestGetDnsRecordIdx(t *testing.T) {
 	}
 
 	record := DNSRecord{
-		Id:           12345,
+		ID:           12345,
 		Hostname:     "asdf",
 		Recordtype:   "TXT",
 		Priority:     "0",
@@ -221,18 +221,18 @@ func TestGetDnsRecordIdx(t *testing.T) {
 	}
 
 	//TestMethod
-	idx, err := p.getDnsRecordIdx(records, record)
+	idx, err := p.getDNSRecordIdx(records, record)
 	assert.NoError(t, err)
 	assert.Equal(t, record, records[idx])
 
 	record.Destination = "wrong"
-	idx, err = p.getDnsRecordIdx(records, record)
+	idx, err = p.getDNSRecordIdx(records, record)
 	assert.Error(t, err)
 	assert.Equal(t, -1, idx)
 
 	record.Destination = "randomtext"
 	record.Recordtype = "CNAME"
-	idx, err = p.getDnsRecordIdx(records, record)
+	idx, err = p.getDNSRecordIdx(records, record)
 	assert.Error(t, err)
 	assert.Equal(t, -1, idx)
 }

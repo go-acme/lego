@@ -1,13 +1,13 @@
 package netcup
 
 import (
+	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/xenolf/lego/acme"
-	"fmt"
-	"strings"
 )
 
 var (
@@ -43,11 +43,11 @@ func TestPresentAndCleanup(t *testing.T) {
 
 	zone = acme.UnFqdn(zone)
 
-	testCases := []string {
+	testCases := []string{
 		zone,
-		"sub."+zone,
-		"*."+zone,
-		"*.sub."+zone,
+		"sub." + zone,
+		"*." + zone,
+		"*.sub." + zone,
 	}
 
 	for _, tc := range testCases {
@@ -73,9 +73,9 @@ func TestAuth(t *testing.T) {
 	provider, err := NewDNSProvider()
 	assert.NoError(t, err)
 
-	for i := 1; i<4; i++ {
+	for i := 1; i < 4; i++ {
 		i := i
-		t.Run("Test" + string(i), func(t *testing.T) {
+		t.Run("Test"+string(i), func(t *testing.T) {
 			t.Parallel()
 			skey, err := provider.login()
 			assert.NoError(t, err)

@@ -142,7 +142,7 @@ func NewClient(httpClient *http.Client, customerNumber string, apiKey string, ap
 // https://ccp.netcup.net/run/webservice/servers/endpoint.php
 func (c *Client) Login() (string, error) {
 	payload := &Request{
-		Action: "Login",
+		Action: "login",
 		Param: &LoginMsg{
 			CustomerNumber:  c.customerNumber,
 			APIKey:          c.apiKey,
@@ -172,7 +172,7 @@ func (c *Client) Login() (string, error) {
 // https://ccp.netcup.net/run/webservice/servers/endpoint.php
 func (c *Client) Logout(sessionID string) error {
 	payload := &Request{
-		Action: "Logout",
+		Action: "logout",
 		Param: &LogoutMsg{
 			CustomerNumber:  c.customerNumber,
 			APIKey:          c.apiKey,

@@ -96,6 +96,8 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 		return namecheap.NewDNSProvider()
 	case "namedotcom":
 		return namedotcom.NewDNSProvider()
+	case "netcup":
+		return netcup.NewDNSProvider()
 	case "nifcloud":
 		return nifcloud.NewDNSProvider()
 	case "rackspace":
@@ -120,8 +122,6 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 		return exec.NewDNSProvider()
 	case "vegadns":
 		return vegadns.NewDNSProvider()
-	case "netcup":
-		return netcup.NewDNSProvider()
 	default:
 		return nil, fmt.Errorf("unrecognised DNS provider: %s", name)
 	}

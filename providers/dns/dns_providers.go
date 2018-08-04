@@ -83,6 +83,8 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 		return gcloud.NewDNSProvider()
 	case "godaddy":
 		return godaddy.NewDNSProvider()
+	case "iij":
+		return iij.NewDNSProvider()
 	case "lightsail":
 		return lightsail.NewDNSProvider()
 	case "linode":
@@ -117,8 +119,6 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 		return exec.NewDNSProvider()
 	case "vegadns":
 		return vegadns.NewDNSProvider()
-	case "iijdo":
-		return iij.NewDNSProvider()
 	default:
 		return nil, fmt.Errorf("unrecognised DNS provider: %s", name)
 	}

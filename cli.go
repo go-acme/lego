@@ -106,8 +106,12 @@ func main() {
 			Usage: "CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client.",
 		},
 		cli.StringFlag{
+			Name:  "email, m",
+			Usage: "Email used for registration and recovery contact.",
+		},
+		cli.StringFlag{
 			Name:  "filename",
-			Usage: "Filename of the generated certificates",
+			Usage: "Filename of the generated certificate",
 		},
 		cli.BoolFlag{
 			Name:  "accept-tos, a",

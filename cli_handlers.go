@@ -151,11 +151,11 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 }
 
 func saveCertRes(certRes *acme.CertificateResource, conf *Configuration) {
-	// make sure no funny chars are in the cert names (like wildcards ;))
 	var domainName string
 
-	// check filename cli parameter
+	// Check filename cli parameter
 	if conf.context.GlobalString("filename") == "" {
+		// Make sure no funny chars are in the cert names (like wildcards ;))
 		domainName = strings.Replace(certRes.Domain, "*", "_", -1)
 	} else {
 		domainName = strings.Replace(conf.context.GlobalString("filename"), "*", "_", -1)

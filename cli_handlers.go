@@ -158,7 +158,7 @@ func saveCertRes(certRes *acme.CertificateResource, conf *Configuration) {
 		// Make sure no funny chars are in the cert names (like wildcards ;))
 		domainName = strings.Replace(certRes.Domain, "*", "_", -1)
 	} else {
-		domainName = strings.Replace(conf.context.GlobalString("filename"), "*", "_", -1)
+		domainName = conf.context.GlobalString("filename")
 	}
 
 	// We store the certificate, private key and metadata in different files

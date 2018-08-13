@@ -21,8 +21,6 @@ type EventType struct {
 }
 
 // ListEvents list the events
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/listEvents.html
 type ListEvents struct {
 	Account     string `json:"account,omitempty" doc:"list resources by account. Must be used with the domainId parameter."`
 	DomainID    string `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
@@ -33,20 +31,12 @@ type ListEvents struct {
 	IsRecursive *bool  `json:"isrecursive,omitempty" doc:"defaults to false, but if true, lists all resources from the parent specified by the domainId till leaves." doc:"defaults to false, but if true, lists all resources from the parent specified by the domainId till leaves."`
 	Keyword     string `json:"keyword,omitempty" doc:"List by keyword"`
 	Level       string `json:"level,omitempty" doc:"the event level (INFO, WARN, ERROR)"`
-	ListAll     *bool  `json:"listall,omitempty"`
+	ListAll     *bool  `json:"listall,omitempty" doc:"If set to false, list only resources belonging to the command's caller; if set to true - list resources that the caller is authorized to see. Default value is false"`
 	Page        int    `json:"page,omitempty" `
-	PageSize    int    `json:"pagesize,omitempty" doc:"If set to false, list only resources belonging to the command's caller; if set to true - list resources that the caller is authorized to see. Default value is false"`
+	PageSize    int    `json:"pagesize,omitempty"`
 	StartDate   string `json:"startdate,omitempty" doc:"the start date range of the list you want to retrieve (use format \"yyyy-MM-dd\" or the new format \"yyyy-MM-dd HH:mm:ss\")"`
 	Type        string `json:"type,omitempty" doc:"the event type (see event types)"`
-}
-
-// name returns the CloudStack API command name
-func (*ListEvents) name() string {
-	return "listEvents"
-}
-
-func (*ListEvents) response() interface{} {
-	return new(ListEventsResponse)
+	_           bool   `name:"listEvents" description:"A command to list events."`
 }
 
 // ListEventsResponse represents a response of a list query
@@ -55,22 +45,22 @@ type ListEventsResponse struct {
 	Event []Event `json:"event"`
 }
 
-// ListEventTypes list the event types
-//
-// CloudStack API: http://cloudstack.apache.org/api/apidocs-4.10/apis/listEventTypes.html
-type ListEventTypes struct{}
-
-// name returns the CloudStack API command name
-func (*ListEventTypes) name() string {
-	return "listEventTypes"
+func (ListEvents) response() interface{} {
+	return new(ListEventsResponse)
 }
 
-func (*ListEventTypes) response() interface{} {
-	return new(ListEventTypesResponse)
+// ListEventTypes list the event types
+type ListEventTypes struct {
+	_ bool `name:"listEventTypes" description:"List Event Types"`
 }
 
 // ListEventTypesResponse represents a response of a list query
 type ListEventTypesResponse struct {
 	Count     int         `json:"count"`
 	EventType []EventType `json:"eventtype"`
+	_         bool        `name:"listEventTypes" description:"List Event Types"`
+}
+
+func (ListEventTypes) response() interface{} {
+	return new(ListEventTypesResponse)
 }

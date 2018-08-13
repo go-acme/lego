@@ -158,12 +158,12 @@
   version = "v1.0.3"
 
 [[projects]]
-  digest = "1:88edf0bd76f728da7c2f0bae296f2efdada8b24d670db83597a524757d7ca86d"
+  digest = "1:303550d5c41db03c86192ea5a6fad0d52f3303b2dfb7ebd41908d1b042f4cd02"
   name = "github.com/exoscale/egoscale"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "caa6b3727b959d704dda224fb7a63fae3c14d8fb"
-  version = "v0.9.26"
+  revision = "d0b97c5313da1645585ba6c860e29161299849e1"
+  version = "v0.10.5"
 
 [[projects]]
   digest = "1:30b09d75e7e16119e85020374df10ea06f263c9bdff72afdc1522838b9609375"
@@ -196,14 +196,6 @@
   pruneopts = "NUT"
   revision = "064e2069ce9c359c118179501254f67d7d37ba24"
   version = "0.2"
-
-[[projects]]
-  branch = "master"
-  digest = "1:6c2f939d99ad2074a4113c36aa93fa792ede8ff0b8cdb97634b41b9c5da7fab6"
-  name = "github.com/jinzhu/copier"
-  packages = ["."]
-  pruneopts = "NUT"
-  revision = "7e38e58719c33e0d44d585c4ab477a30f8cb82dd"
 
 [[projects]]
   digest = "1:ac6d01547ec4f7f673311b4663909269bfb8249952de3279799289467837c3cc"

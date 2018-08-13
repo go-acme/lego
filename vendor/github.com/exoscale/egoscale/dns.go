@@ -53,6 +53,24 @@ type DNSRecordResponse struct {
 	Record DNSRecord `json:"record"`
 }
 
+// UpdateDNSRecord represents a DNS record
+type UpdateDNSRecord struct {
+	ID         int64  `json:"id,omitempty"`
+	DomainID   int64  `json:"domain_id,omitempty"`
+	Name       string `json:"name,omitempty"`
+	TTL        int    `json:"ttl,omitempty"`
+	CreatedAt  string `json:"created_at,omitempty"`
+	UpdatedAt  string `json:"updated_at,omitempty"`
+	Content    string `json:"content,omitempty"`
+	RecordType string `json:"record_type,omitempty"`
+	Prio       int    `json:"prio,omitempty"`
+}
+
+// UpdateDNSRecordResponse represents the creation of a DNS record
+type UpdateDNSRecordResponse struct {
+	Record UpdateDNSRecord `json:"record"`
+}
+
 // DNSErrorResponse represents an error in the API
 type DNSErrorResponse struct {
 	Message string    `json:"message,omitempty"`
@@ -64,16 +82,51 @@ type DNSError struct {
 	Name []string `json:"name"`
 }
 
+// Record represent record type
+type Record int
+
+//go:generate stringer -type=Record
+const (
+	// A record type
+	A Record = iota
+	// AAAA record type
+	AAAA
+	// ALIAS record type
+	ALIAS
+	// CNAME record type
+	CNAME
+	// HINFO record type
+	HINFO
+	// MX record type
+	MX
+	// NAPTR record type
+	NAPTR
+	// NS record type
+	NS
+	// POOL record type
+	POOL
+	// SPF record type
+	SPF
+	// SRV record type
+	SRV
+	// SSHFP record type
+	SSHFP
+	// TXT record type
+	TXT
+	// URL record type
+	URL
+)
+
 // Error formats the DNSerror into a string
-func (req *DNSErrorResponse) Error() error {
+func (req *DNSErrorResponse) Error() string {
 	if req.Errors != nil {
-		return fmt.Errorf("DNS error: %s", strings.Join(req.Errors.Name, ", "))
+		return fmt.Sprintf("dns error: %s (%s)", req.Message, strings.Join(req.Errors.Name, ", "))
 	}
-	return fmt.Errorf("DNS error: %s", req.Message)
+	return fmt.Sprintf("dns error: %s", req.Message)
 }
 
 // CreateDomain creates a DNS domain
-func (exo *Client) CreateDomain(name string) (*DNSDomain, error) {
+func (client *Client) CreateDomain(name string) (*DNSDomain, error) {
 	m, err := json.Marshal(DNSDomainResponse{
 		Domain: &DNSDomain{
 			Name: name,
@@ -83,7 +136,7 @@ func (exo *Client) CreateDomain(name string) (*DNSDomain, error) {
 		return nil, err
 	}
 
-	resp, err := exo.dnsRequest("/v1/domains", string(m), "POST")
+	resp, err := client.dnsRequest("/v1/domains", string(m), "POST")
 	if err != nil {
 		return nil, err
 	}
@@ -97,8 +150,8 @@ func (exo *Client) CreateDomain(name string) (*DNSDomain, error) {
 }
 
 // GetDomain gets a DNS domain
-func (exo *Client) GetDomain(name string) (*DNSDomain, error) {
-	resp, err := exo.dnsRequest("/v1/domains/"+name, "", "GET")
+func (client *Client) GetDomain(name string) (*DNSDomain, error) {
+	resp, err := client.dnsRequest("/v1/domains/"+name, "", "GET")
 	if err != nil {
 		return nil, err
 	}
@@ -111,20 +164,35 @@ func (exo *Client) GetDomain(name string) (*DNSDomain, error) {
 	return d.Domain, nil
 }
 
-// DeleteDomain delets a DNS domain
-func (exo *Client) DeleteDomain(name string) error {
-	_, err := exo.dnsRequest("/v1/domains/"+name, "", "DELETE")
+// GetDomains gets DNS domains
+func (client *Client) GetDomains() ([]DNSDomain, error) {
+	resp, err := client.dnsRequest("/v1/domains", "", "GET")
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	var d []DNSDomainResponse
+	if err := json.Unmarshal(resp, &d); err != nil {
+		return nil, err
+	}
+
+	domains := make([]DNSDomain, len(d))
+	for i := range d {
+		domains[i] = *d[i].Domain
+	}
+	return domains, nil
+}
+
+// DeleteDomain delets a DNS domain
+func (client *Client) DeleteDomain(name string) error {
+	_, err := client.dnsRequest("/v1/domains/"+name, "", "DELETE")
+	return err
 }
 
 // GetRecord returns a DNS record
-func (exo *Client) GetRecord(domain string, recordID int64) (*DNSRecord, error) {
+func (client *Client) GetRecord(domain string, recordID int64) (*DNSRecord, error) {
 	id := strconv.FormatInt(recordID, 10)
-	resp, err := exo.dnsRequest("/v1/domains/"+domain+"/records/"+id, "", "GET")
+	resp, err := client.dnsRequest("/v1/domains/"+domain+"/records/"+id, "", "GET")
 	if err != nil {
 		return nil, err
 	}
@@ -138,8 +206,8 @@ func (exo *Client) GetRecord(domain string, recordID int64) (*DNSRecord, error) 
 }
 
 // GetRecords returns the DNS records
-func (exo *Client) GetRecords(name string) ([]DNSRecord, error) {
-	resp, err := exo.dnsRequest("/v1/domains/"+name+"/records", "", "GET")
+func (client *Client) GetRecords(name string) ([]DNSRecord, error) {
+	resp, err := client.dnsRequest("/v1/domains/"+name+"/records", "", "GET")
 	if err != nil {
 		return nil, err
 	}
@@ -158,7 +226,7 @@ func (exo *Client) GetRecords(name string) ([]DNSRecord, error) {
 }
 
 // CreateRecord creates a DNS record
-func (exo *Client) CreateRecord(name string, rec DNSRecord) (*DNSRecord, error) {
+func (client *Client) CreateRecord(name string, rec DNSRecord) (*DNSRecord, error) {
 	body, err := json.Marshal(DNSRecordResponse{
 		Record: rec,
 	})
@@ -166,7 +234,7 @@ func (exo *Client) CreateRecord(name string, rec DNSRecord) (*DNSRecord, error) 
 		return nil, err
 	}
 
-	resp, err := exo.dnsRequest("/v1/domains/"+name+"/records", string(body), "POST")
+	resp, err := client.dnsRequest("/v1/domains/"+name+"/records", string(body), "POST")
 	if err != nil {
 		return nil, err
 	}
@@ -180,8 +248,8 @@ func (exo *Client) CreateRecord(name string, rec DNSRecord) (*DNSRecord, error) 
 }
 
 // UpdateRecord updates a DNS record
-func (exo *Client) UpdateRecord(name string, rec DNSRecord) (*DNSRecord, error) {
-	body, err := json.Marshal(DNSRecordResponse{
+func (client *Client) UpdateRecord(name string, rec UpdateDNSRecord) (*DNSRecord, error) {
+	body, err := json.Marshal(UpdateDNSRecordResponse{
 		Record: rec,
 	})
 	if err != nil {
@@ -189,7 +257,7 @@ func (exo *Client) UpdateRecord(name string, rec DNSRecord) (*DNSRecord, error) 
 	}
 
 	id := strconv.FormatInt(rec.ID, 10)
-	resp, err := exo.dnsRequest("/v1/domains/"+name+"/records/"+id, string(body), "PUT")
+	resp, err := client.dnsRequest("/v1/domains/"+name+"/records/"+id, string(body), "PUT")
 	if err != nil {
 		return nil, err
 	}
@@ -203,22 +271,22 @@ func (exo *Client) UpdateRecord(name string, rec DNSRecord) (*DNSRecord, error) 
 }
 
 // DeleteRecord deletes a record
-func (exo *Client) DeleteRecord(name string, recordID int64) error {
+func (client *Client) DeleteRecord(name string, recordID int64) error {
 	id := strconv.FormatInt(recordID, 10)
-	_, err := exo.dnsRequest("/v1/domains/"+name+"/records/"+id, "", "DELETE")
+	_, err := client.dnsRequest("/v1/domains/"+name+"/records/"+id, "", "DELETE")
 
 	return err
 }
 
-func (exo *Client) dnsRequest(uri string, params string, method string) (json.RawMessage, error) {
-	url := exo.Endpoint + uri
+func (client *Client) dnsRequest(uri string, params string, method string) (json.RawMessage, error) {
+	url := client.Endpoint + uri
 	req, err := http.NewRequest(method, url, strings.NewReader(params))
 	if err != nil {
 		return nil, err
 	}
 
 	var hdr = make(http.Header)
-	hdr.Add("X-DNS-TOKEN", exo.APIKey+":"+exo.apiSecret)
+	hdr.Add("X-DNS-TOKEN", client.APIKey+":"+client.apiSecret)
 	hdr.Add("User-Agent", fmt.Sprintf("exoscale/egoscale (%v)", Version))
 	hdr.Add("Accept", "application/json")
 	if params != "" {
@@ -226,23 +294,28 @@ func (exo *Client) dnsRequest(uri string, params string, method string) (json.Ra
 	}
 	req.Header = hdr
 
-	response, err := exo.HTTPClient.Do(req)
+	resp, err := client.HTTPClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close() // nolint: errcheck
+
+	contentType := resp.Header.Get("content-type")
+	if !strings.Contains(contentType, "application/json") {
+		return nil, fmt.Errorf(`response content-type expected to be "application/json", got %q`, contentType)
+	}
+
+	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
 
-	defer response.Body.Close() // nolint: errcheck
-	b, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	if response.StatusCode >= 400 {
-		var e DNSErrorResponse
-		if err := json.Unmarshal(b, &e); err != nil {
+	if resp.StatusCode >= 400 {
+		e := new(DNSErrorResponse)
+		if err := json.Unmarshal(b, e); err != nil {
 			return nil, err
 		}
-		return nil, e.Error()
+		return nil, e
 	}
 
 	return b, nil

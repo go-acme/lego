@@ -5,6 +5,7 @@ import (
 
 	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/providers/dns/acmedns"
+	"github.com/xenolf/lego/providers/dns/alidns"
 	"github.com/xenolf/lego/providers/dns/auroradns"
 	"github.com/xenolf/lego/providers/dns/azure"
 	"github.com/xenolf/lego/providers/dns/bluecat"
@@ -48,6 +49,8 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 	switch name {
 	case "acme-dns":
 		return acmedns.NewDNSProvider()
+	case "alidns":
+		return alidns.NewDNSProvider()
 	case "azure":
 		return azure.NewDNSProvider()
 	case "auroradns":

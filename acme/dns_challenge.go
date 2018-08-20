@@ -103,13 +103,6 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 		return err
 	}
 
-	defer func() {
-		err := s.provider.CleanUp(domain, chlng.Token, keyAuth)
-		if err != nil {
-			log.Warnf("Error cleaning up %s: %v ", domain, err)
-		}
-	}()
-
 	fqdn, value, _ := DNS01Record(domain, keyAuth)
 
 	log.Infof("[%s] Checking DNS record propagation using %+v", domain, RecursiveNameservers)
@@ -130,6 +123,15 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 	}
 
 	return s.validate(s.jws, domain, chlng.URL, challenge{Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
+}
+
+// CleanUp cleans the challenge
+func (s *dnsChallenge) CleanUp(chlng challenge, domain string) error {
+	keyAuth, err := getKeyAuthorization(chlng.Token, s.jws.privKey)
+	if err != nil {
+		return err
+	}
+	return s.provider.CleanUp(domain, chlng.Token, keyAuth)
 }
 
 // checkDNSPropagation checks if the expected TXT record has been propagated to all authoritative nameservers.

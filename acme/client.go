@@ -47,6 +47,11 @@ type presolver interface {
 	PreSolve(challenge challenge, domain string) error
 }
 
+// Interface for challenges like dns, where we can solve all the challenges before to delete them.
+type cleanup interface {
+	CleanUp(challenge challenge, domain string) error
+}
+
 type validateFunc func(j *jws, domain, uri string, chlng challenge) error
 
 // Client is the user-friendy way to ACME
@@ -596,6 +601,22 @@ func (c *Client) solveChallengeForAuthz(authorizations []authorization) error {
 			}
 		}
 	}
+
+	defer func() {
+		// clean all created TXT records
+		for _, item := range authSolvers {
+			if cleanup, ok := item.solver.(cleanup); ok {
+				if failures[item.authz.Identifier.Value] != nil {
+					// already failed in previous loop
+					continue
+				}
+				err := cleanup.CleanUp(item.authz.Challenges[item.challengeIndex], item.authz.Identifier.Value)
+				if err != nil {
+					log.Warnf("Error cleaning up %s: %v ", item.authz.Identifier.Value, err)
+				}
+			}
+		}
+	}()
 
 	// finally solve all challenges for real
 	for _, item := range authSolvers {

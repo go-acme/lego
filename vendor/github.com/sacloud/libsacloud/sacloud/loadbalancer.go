@@ -26,6 +26,7 @@ type LoadBalancerSetting struct {
 	Port             string                `json:",omitempty"` // ポート番号
 	DelayLoop        string                `json:",omitempty"` // 監視間隔
 	SorryServer      string                `json:",omitempty"` // ソーリーサーバー
+	Description      string                `json:",omitempty"` // 説明
 	Servers          []*LoadBalancerServer `json:",omitempty"` // 仮想IP配下の実サーバー
 }
 

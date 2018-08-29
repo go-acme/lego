@@ -99,7 +99,7 @@ func NewNFS(values *CreateNFSValue) *NFS {
 					DefaultRoute:   values.DefaultRoute,
 				},
 				Servers: []interface{}{
-					map[string]string{"IPAddress": values.IPAddress},
+					map[string]interface{}{"IPAddress": values.IPAddress},
 				},
 			},
 			propPlanID: propPlanID{Plan: &Resource{ID: int64(values.Plan)}},

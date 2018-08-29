@@ -18,6 +18,7 @@ type SearchSIMResponse struct {
 	// CommonServiceSIMItems SIMリスト
 	CommonServiceSIMItems []sacloud.SIM `json:"CommonServiceItems,omitempty"`
 }
+
 type simRequest struct {
 	CommonServiceSIMItem *sacloud.SIM           `json:"CommonServiceItem,omitempty"`
 	From                 int                    `json:",omitempty"`
@@ -27,6 +28,7 @@ type simRequest struct {
 	Exclude              []string               `json:",omitempty"`
 	Include              []string               `json:",omitempty"`
 }
+
 type simResponse struct {
 	*sacloud.ResultFlagValue
 	*sacloud.SIM `json:"CommonServiceItem,omitempty"`

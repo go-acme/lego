@@ -21,16 +21,16 @@ func poll(handler pollingHandler, timeout time.Duration) (chan (interface{}), ch
 			select {
 			case <-tick:
 				exit, state, err := handler()
+				if state != nil {
+					progChan <- state
+				}
 				if err != nil {
 					errChan <- fmt.Errorf("Failed: poll: %s", err)
 					return
 				}
-				if state != nil {
-					progChan <- state
-					if exit {
-						compChan <- state
-						return
-					}
+				if exit {
+					compChan <- state
+					return
 				}
 			case <-bomb:
 				errChan <- fmt.Errorf("Timeout")

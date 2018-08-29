@@ -158,12 +158,12 @@
   version = "v1.0.3"
 
 [[projects]]
-  digest = "1:303550d5c41db03c86192ea5a6fad0d52f3303b2dfb7ebd41908d1b042f4cd02"
+  digest = "1:e096f1857eedd49e2bd0885d05105d1d4af1bfcf8b1d07fa5710718e6641fd48"
   name = "github.com/exoscale/egoscale"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "d0b97c5313da1645585ba6c860e29161299849e1"
-  version = "v0.10.5"
+  revision = "0863d555d5198557e0bf2b61b6c59a873ab0173a"
+  version = "v0.11.1"
 
 [[projects]]
   digest = "1:30b09d75e7e16119e85020374df10ea06f263c9bdff72afdc1522838b9609375"
@@ -304,6 +304,14 @@
   ]
   pruneopts = "NUT"
   revision = "178aa57136e8c6e3882b6b5ef37a48f0e7cf836f"
+
+[[projects]]
+  digest = "1:6bc0652ea6e39e22ccd522458b8bdd8665bf23bdc5a20eec90056e4dc7e273ca"
+  name = "github.com/satori/go.uuid"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "f58768cc1a7a7e77a3bd49e98cdd21419399b6a3"
+  version = "v1.2.0"
 
 [[projects]]
   digest = "1:6989062eb7ccf25cf38bf4fe3dba097ee209f896cda42cefdca3927047bef7b6"

@@ -9,7 +9,7 @@ import (
 // See: http://docs.cloudstack.apache.org/projects/cloudstack-administration/en/latest/templates.html
 type Template struct {
 	Account               string            `json:"account,omitempty" doc:"the account name to which the template belongs"`
-	AccountID             string            `json:"accountid,omitempty" doc:"the account id to which the template belongs"`
+	AccountID             *UUID             `json:"accountid,omitempty" doc:"the account id to which the template belongs"`
 	Bootable              bool              `json:"bootable,omitempty" doc:"true if the ISO is bootable, false otherwise"`
 	Checksum              string            `json:"checksum,omitempty" doc:"checksum of the template"`
 	Created               string            `json:"created,omitempty" doc:"the date this template was created"`
@@ -17,24 +17,24 @@ type Template struct {
 	Details               map[string]string `json:"details,omitempty" doc:"additional key/value details tied with template"`
 	DisplayText           string            `json:"displaytext,omitempty" doc:"the template display text"`
 	Domain                string            `json:"domain,omitempty" doc:"the name of the domain to which the template belongs"`
-	DomainID              string            `json:"domainid,omitempty" doc:"the ID of the domain to which the template belongs"`
+	DomainID              *UUID             `json:"domainid,omitempty" doc:"the ID of the domain to which the template belongs"`
 	Format                string            `json:"format,omitempty" doc:"the format of the template."`
-	HostID                string            `json:"hostid,omitempty" doc:"the ID of the secondary storage host for the template"`
+	HostID                *UUID             `json:"hostid,omitempty" doc:"the ID of the secondary storage host for the template"`
 	HostName              string            `json:"hostname,omitempty" doc:"the name of the secondary storage host for the template"`
 	Hypervisor            string            `json:"hypervisor,omitempty" doc:"the hypervisor on which the template runs"`
-	ID                    string            `json:"id,omitempty" doc:"the template ID"`
+	ID                    *UUID             `json:"id,omitempty" doc:"the template ID"`
 	IsDynamicallyScalable bool              `json:"isdynamicallyscalable,omitempty" doc:"true if template contains XS/VMWare tools inorder to support dynamic scaling of VM cpu/memory"`
 	IsExtractable         bool              `json:"isextractable,omitempty" doc:"true if the template is extractable, false otherwise"`
 	IsFeatured            bool              `json:"isfeatured,omitempty" doc:"true if this template is a featured template, false otherwise"`
 	IsPublic              bool              `json:"ispublic,omitempty" doc:"true if this template is a public template, false otherwise"`
 	IsReady               bool              `json:"isready,omitempty" doc:"true if the template is ready to be deployed from, false otherwise."`
 	Name                  string            `json:"name,omitempty" doc:"the template name"`
-	OsTypeID              string            `json:"ostypeid,omitempty" doc:"the ID of the OS type for this template."`
+	OsTypeID              *UUID             `json:"ostypeid,omitempty" doc:"the ID of the OS type for this template."`
 	OsTypeName            string            `json:"ostypename,omitempty" doc:"the name of the OS type for this template."`
 	PasswordEnabled       bool              `json:"passwordenabled,omitempty" doc:"true if the reset password feature is enabled, false otherwise"`
 	Removed               string            `json:"removed,omitempty" doc:"the date this template was removed"`
 	Size                  int64             `json:"size,omitempty" doc:"the size of the template"`
-	SourceTemplateID      string            `json:"sourcetemplateid,omitempty" doc:"the template ID of the parent template if present"`
+	SourceTemplateID      *UUID             `json:"sourcetemplateid,omitempty" doc:"the template ID of the parent template if present"`
 	SSHKeyEnabled         bool              `json:"sshkeyenabled,omitempty" doc:"true if template is sshkey enabled, false otherwise"`
 	Status                string            `json:"status,omitempty" doc:"the status of the template"`
 	Tags                  []ResourceTag     `json:"tags,omitempty" doc:"the list of resource tags associated with tempate"`
@@ -42,7 +42,7 @@ type Template struct {
 	TemplateTag           string            `json:"templatetag,omitempty" doc:"the tag of this template"`
 	TemplateType          string            `json:"templatetype,omitempty" doc:"the type of the template"`
 	URL                   string            `json:"url,omitempty" doc:"Original URL of the template where it was downloaded"`
-	ZoneID                string            `json:"zoneid,omitempty" doc:"the ID of the zone for this template"`
+	ZoneID                *UUID             `json:"zoneid,omitempty" doc:"the ID of the zone for this template"`
 	ZoneName              string            `json:"zonename,omitempty" doc:"the name of the zone for this template"`
 }
 
@@ -76,9 +76,9 @@ func (temp Template) ListRequest() (ListCommand, error) {
 type ListTemplates struct {
 	TemplateFilter string        `json:"templatefilter" doc:"possible values are \"featured\", \"self\", \"selfexecutable\",\"sharedexecutable\",\"executable\", and \"community\". * featured : templates that have been marked as featured and public. * self : templates that have been registered or created by the calling user. * selfexecutable : same as self, but only returns templates that can be used to deploy a new VM. * sharedexecutable : templates ready to be deployed that have been granted to the calling user by another user. * executable : templates that are owned by the calling user, or public templates, that can be used to deploy a VM. * community : templates that have been marked as public but not featured. * all : all templates (only usable by admins)."`
 	Account        string        `json:"account,omitempty" doc:"list resources by account. Must be used with the domainId parameter."`
-	DomainID       string        `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
+	DomainID       *UUID         `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
 	Hypervisor     string        `json:"hypervisor,omitempty" doc:"the hypervisor for which to restrict the search"`
-	ID             string        `json:"id,omitempty" doc:"the template ID"`
+	ID             *UUID         `json:"id,omitempty" doc:"the template ID"`
 	IsRecursive    *bool         `json:"isrecursive,omitempty" doc:"defaults to false, but if true, lists all resources from the parent specified by the domainId till leaves."`
 	Keyword        string        `json:"keyword,omitempty" doc:"List by keyword"`
 	ListAll        *bool         `json:"listall,omitempty" doc:"If set to false, list only resources belonging to the command's caller; if set to true - list resources that the caller is authorized to see. Default value is false"`
@@ -87,7 +87,7 @@ type ListTemplates struct {
 	PageSize       int           `json:"pagesize,omitempty"`
 	ShowRemoved    *bool         `json:"showremoved,omitempty" doc:"show removed templates as well"`
 	Tags           []ResourceTag `json:"tags,omitempty" doc:"List resources by tags (key/value pairs)"`
-	ZoneID         string        `json:"zoneid,omitempty" doc:"list templates by zoneId"`
+	ZoneID         *UUID         `json:"zoneid,omitempty" doc:"list templates by zoneId"`
 	_              bool          `name:"listTemplates" description:"List all public, private, and privileged templates."`
 }
 
@@ -134,14 +134,14 @@ type CreateTemplate struct {
 	IsFeatured            *bool             `json:"isfeatured,omitempty" doc:"true if this template is a featured template, false otherwise"`
 	IsPublic              *bool             `json:"ispublic,omitempty" doc:"true if this template is a public template, false otherwise"`
 	Name                  string            `json:"name" doc:"the name of the template"`
-	OsTypeID              string            `json:"ostypeid" doc:"the ID of the OS Type that best represents the OS of this template."`
+	OsTypeID              *UUID             `json:"ostypeid" doc:"the ID of the OS Type that best represents the OS of this template."`
 	PasswordEnabled       *bool             `json:"passwordenabled,omitempty" doc:"true if the template supports the password reset feature; default is false"`
 	RequiresHVM           *bool             `json:"requireshvm,omitempty" doc:"true if the template requres HVM, false otherwise"`
-	SnapshotID            string            `json:"snapshotid,omitempty" doc:"the ID of the snapshot the template is being created from. Either this parameter, or volumeId has to be passed in"`
+	SnapshotID            *UUID             `json:"snapshotid,omitempty" doc:"the ID of the snapshot the template is being created from. Either this parameter, or volumeId has to be passed in"`
 	TemplateTag           string            `json:"templatetag,omitempty" doc:"the tag for this template."`
 	URL                   string            `json:"url,omitempty" doc:"Optional, only for baremetal hypervisor. The directory name where template stored on CIFS server"`
-	VirtualMachineID      string            `json:"virtualmachineid,omitempty" doc:"Optional, VM ID. If this presents, it is going to create a baremetal template for VM this ID refers to. This is only for VM whose hypervisor type is BareMetal"`
-	VolumeID              string            `json:"volumeid,omitempty" doc:"the ID of the disk volume the template is being created from. Either this parameter, or snapshotId has to be passed in"`
+	VirtualMachineID      *UUID             `json:"virtualmachineid,omitempty" doc:"Optional, VM ID. If this presents, it is going to create a baremetal template for VM this ID refers to. This is only for VM whose hypervisor type is BareMetal"`
+	VolumeID              *UUID             `json:"volumeid,omitempty" doc:"the ID of the disk volume the template is being created from. Either this parameter, or snapshotId has to be passed in"`
 	_                     bool              `name:"createTemplate" description:"Creates a template of a virtual machine. The virtual machine must be in a STOPPED state. A template created from this command is automatically designated as a private template visible to the account that created it."`
 }
 
@@ -155,10 +155,10 @@ func (CreateTemplate) asyncResponse() interface{} {
 
 // CopyTemplate (Async) represents a template copy
 type CopyTemplate struct {
-	DestZoneID   string `json:"destzoneid" doc:"ID of the zone the template is being copied to."`
-	ID           string `json:"id" doc:"Template ID."`
-	SourceZoneID string `json:"sourcezoneid,omitempty" doc:"ID of the zone the template is currently hosted on. If not specified and template is cross-zone, then we will sync this template to region wide image store."`
-	_            bool   `name:"copyTemplate" description:"Copies a template from one zone to another."`
+	DestZoneID   *UUID `json:"destzoneid" doc:"ID of the zone the template is being copied to."`
+	ID           *UUID `json:"id" doc:"Template ID."`
+	SourceZoneID *UUID `json:"sourcezoneid,omitempty" doc:"ID of the zone the template is currently hosted on. If not specified and template is cross-zone, then we will sync this template to region wide image store."`
+	_            bool  `name:"copyTemplate" description:"Copies a template from one zone to another."`
 }
 
 func (CopyTemplate) response() interface{} {
@@ -175,11 +175,11 @@ type UpdateTemplate struct {
 	Details               map[string]string `json:"details,omitempty" doc:"Details in key/value pairs."`
 	DisplayText           string            `json:"displaytext,omitempty" doc:"the display text of the image"`
 	Format                string            `json:"format,omitempty" doc:"the format for the image"`
-	ID                    string            `json:"id" doc:"the ID of the image file"`
+	ID                    *UUID             `json:"id" doc:"the ID of the image file"`
 	IsDynamicallyScalable *bool             `json:"isdynamicallyscalable,omitempty" doc:"true if template/ISO contains XS/VMWare tools inorder to support dynamic scaling of VM cpu/memory"`
 	IsRouting             *bool             `json:"isrouting,omitempty" doc:"true if the template type is routing i.e., if template is used to deploy router"`
 	Name                  string            `json:"name,omitempty" doc:"the name of the image file"`
-	OsTypeID              string            `json:"ostypeid,omitempty" doc:"the ID of the OS type that best represents the OS of this image."`
+	OsTypeID              *UUID             `json:"ostypeid,omitempty" doc:"the ID of the OS type that best represents the OS of this image."`
 	PasswordEnabled       *bool             `json:"passwordenabled,omitempty" doc:"true if the image supports the password reset feature; default is false"`
 	SortKey               int               `json:"sortkey,omitempty" doc:"sort key of the template, integer"`
 	_                     bool              `name:"updateTemplate" description:"Updates attributes of a template."`
@@ -195,9 +195,9 @@ func (UpdateTemplate) asyncResponse() interface{} {
 
 // DeleteTemplate (Async) represents the deletion of a template
 type DeleteTemplate struct {
-	ID     string `json:"id" doc:"the ID of the template"`
-	ZoneID string `json:"zoneid,omitempty" doc:"the ID of zone of the template"`
-	_      bool   `name:"deleteTemplate" description:"Deletes a template from the system. All virtual machines using the deleted template will not be affected."`
+	ID     *UUID `json:"id" doc:"the ID of the template"`
+	ZoneID *UUID `json:"zoneid,omitempty" doc:"the ID of zone of the template"`
+	_      bool  `name:"deleteTemplate" description:"Deletes a template from the system. All virtual machines using the deleted template will not be affected."`
 }
 
 func (DeleteTemplate) response() interface{} {
@@ -210,9 +210,9 @@ func (DeleteTemplate) asyncResponse() interface{} {
 
 // PrepareTemplate represents a template preparation
 type PrepareTemplate struct {
-	TemplateID string `json:"templateid" doc:"template ID of the template to be prepared in primary storage(s)."`
-	ZoneID     string `json:"zoneid" doc:"zone ID of the template to be prepared in primary storage(s)."`
-	_          bool   `name:"prepareTemplate" description:"load template into primary storage"`
+	TemplateID *UUID `json:"templateid" doc:"template ID of the template to be prepared in primary storage(s)."`
+	ZoneID     *UUID `json:"zoneid" doc:"zone ID of the template to be prepared in primary storage(s)."`
+	_          bool  `name:"prepareTemplate" description:"load template into primary storage"`
 }
 
 func (PrepareTemplate) response() interface{} {
@@ -230,7 +230,7 @@ type RegisterTemplate struct {
 	Checksum              string            `json:"checksum,omitempty" doc:"the MD5 checksum value of this template"`
 	Details               map[string]string `json:"details,omitempty" doc:"Template details in key/value pairs."`
 	DisplayText           string            `json:"displaytext" doc:"the display text of the template. This is usually used for display purposes."`
-	DomainID              string            `json:"domainid,omitempty" doc:"an optional domainId. If the account parameter is used, domainId must also be used."`
+	DomainID              *UUID             `json:"domainid,omitempty" doc:"an optional domainId. If the account parameter is used, domainId must also be used."`
 	Format                string            `json:"format" doc:"the format for the template. Possible values include QCOW2, RAW, and VHD."`
 	Hypervisor            string            `json:"hypervisor" doc:"the target hypervisor for the template"`
 	IsDynamicallyScalable *bool             `json:"isdynamicallyscalable,omitempty" doc:"true if template contains XS/VMWare tools inorder to support dynamic scaling of VM cpu/memory"`
@@ -240,16 +240,42 @@ type RegisterTemplate struct {
 	IsRouting             *bool             `json:"isrouting,omitempty" doc:"true if the template type is routing i.e., if template is used to deploy router"`
 	IsSystem              *bool             `json:"issystem,omitempty" doc:"true if the template type is system i.e., if template is used to deploy system VM"`
 	Name                  string            `json:"name" doc:"the name of the template"`
-	OsTypeID              string            `json:"ostypeid" doc:"the ID of the OS Type that best represents the OS of this template."`
+	OsTypeID              *UUID             `json:"ostypeid" doc:"the ID of the OS Type that best represents the OS of this template."`
 	PasswordEnabled       *bool             `json:"passwordenabled,omitempty" doc:"true if the template supports the password reset feature; default is false"`
 	RequiresHVM           *bool             `json:"requireshvm,omitempty" doc:"true if this template requires HVM"`
 	SSHKeyEnabled         *bool             `json:"sshkeyenabled,omitempty" doc:"true if the template supports the sshkey upload feature; default is false"`
 	TemplateTag           string            `json:"templatetag,omitempty" doc:"the tag for this template."`
 	URL                   string            `json:"url" doc:"the URL of where the template is hosted. Possible URL include http:// and https://"`
-	ZoneID                string            `json:"zoneid" doc:"the ID of the zone the template is to be hosted on"`
+	ZoneID                *UUID             `json:"zoneid" doc:"the ID of the zone the template is to be hosted on"`
 	_                     bool              `name:"registerTemplate" description:"Registers an existing template into the CloudStack cloud."`
 }
 
 func (RegisterTemplate) response() interface{} {
 	return new(Template)
+}
+
+// OSCategory represents an OS category
+type OSCategory struct {
+	ID   string `json:"id,omitempty" doc:"the ID of the OS category"`
+	Name string `json:"name,omitempty" doc:"the name of the OS category"`
+}
+
+// ListOSCategories lists the OS categories
+type ListOSCategories struct {
+	ID       string `json:"id,omitempty" doc:"list Os category by id"`
+	Keyword  string `json:"keyword,omitempty" doc:"List by keyword"`
+	Name     string `json:"name,omitempty" doc:"list os category by name"`
+	Page     int    `json:"page,omitempty"`
+	PageSize int    `json:"pagesize,omitempty"`
+	_        bool   `name:"listOsCategories" description:"Lists all supported OS categories for this cloud."`
+}
+
+// ListOSCategoriesResponse represents a list of OS categories
+type ListOSCategoriesResponse struct {
+	Count      int          `json:"count"`
+	OSCategory []OSCategory `json:"oscategory"`
+}
+
+func (ListOSCategories) response() interface{} {
+	return new(ListOSCategoriesResponse)
 }

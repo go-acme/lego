@@ -9,14 +9,14 @@ type NetworkOffering struct {
 	DisplayText              string            `json:"displaytext,omitempty" doc:"an alternate display text of the network offering."`
 	EgressDefaultPolicy      bool              `json:"egressdefaultpolicy,omitempty" doc:"true if guest network default egress policy is allow; false if default egress policy is deny"`
 	GuestIPType              string            `json:"guestiptype,omitempty" doc:"guest type of the network offering, can be Shared or Isolated"`
-	ID                       string            `json:"id,omitempty" doc:"the id of the network offering"`
+	ID                       *UUID             `json:"id,omitempty" doc:"the id of the network offering"`
 	IsDefault                bool              `json:"isdefault,omitempty" doc:"true if network offering is default, false otherwise"`
 	IsPersistent             bool              `json:"ispersistent,omitempty" doc:"true if network offering supports persistent networks, false otherwise"`
 	MaxConnections           int               `json:"maxconnections,omitempty" doc:"maximum number of concurrents connections to be handled by lb"`
 	Name                     string            `json:"name,omitempty" doc:"the name of the network offering"`
 	NetworkRate              int               `json:"networkrate,omitempty" doc:"data transfer rate in megabits per second allowed."`
 	Service                  []Service         `json:"service,omitempty" doc:"the list of supported services"`
-	ServiceOfferingID        string            `json:"serviceofferingid,omitempty" doc:"the ID of the service offering used by virtual router provider"`
+	ServiceOfferingID        *UUID             `json:"serviceofferingid,omitempty" doc:"the ID of the service offering used by virtual router provider"`
 	SpecifyIPRanges          bool              `json:"specifyipranges,omitempty" doc:"true if network offering supports specifying ip ranges, false otherwise"`
 	SpecifyVlan              bool              `json:"specifyvlan,omitempty" doc:"true if network offering supports vlans, false otherwise"`
 	State                    string            `json:"state,omitempty" doc:"state of the network offering. Can be Disabled/Enabled/Inactive"`
@@ -30,12 +30,12 @@ type ListNetworkOfferings struct {
 	Availability       string    `json:"availability,omitempty" doc:"the availability of network offering. Default value is Required"`
 	DisplayText        string    `json:"displaytext,omitempty" doc:"list network offerings by display text"`
 	GuestIPType        string    `json:"guestiptype,omitempty" doc:"list network offerings by guest type: Shared or Isolated"`
-	ID                 string    `json:"id,omitempty" doc:"list network offerings by id"`
+	ID                 *UUID     `json:"id,omitempty" doc:"list network offerings by id"`
 	IsDefault          *bool     `json:"isdefault,omitempty" doc:"true if need to list only default network offerings. Default value is false"`
 	IsTagged           *bool     `json:"istagged,omitempty" doc:"true if offering has tags specified"`
 	Keyword            string    `json:"keyword,omitempty" doc:"List by keyword"`
 	Name               string    `json:"name,omitempty" doc:"list network offerings by name"`
-	NetworkID          string    `json:"networkid,omitempty" doc:"the ID of the network. Pass this in if you want to see the available network offering that a network can be changed to."`
+	NetworkID          *UUID     `json:"networkid,omitempty" doc:"the ID of the network. Pass this in if you want to see the available network offering that a network can be changed to."`
 	Page               int       `json:"page,omitempty"`
 	PageSize           int       `json:"pagesize,omitempty"`
 	SourceNATSupported *bool     `json:"sourcenatsupported,omitempty" doc:"true if need to list only netwok offerings where source nat is supported, false otherwise"`
@@ -45,7 +45,7 @@ type ListNetworkOfferings struct {
 	SupportedServices  []Service `json:"supportedservices,omitempty" doc:"list network offerings supporting certain services"`
 	Tags               string    `json:"tags,omitempty" doc:"list network offerings by tags"`
 	TrafficType        string    `json:"traffictype,omitempty" doc:"list by traffic type"`
-	ZoneID             string    `json:"zoneid,omitempty" doc:"list netowrk offerings available for network creation in specific zone"`
+	ZoneID             *UUID     `json:"zoneid,omitempty" doc:"list network offerings available for network creation in specific zone"`
 	_                  bool      `name:"listNetworkOfferings" description:"Lists all available network offerings."`
 }
 
@@ -63,7 +63,7 @@ func (ListNetworkOfferings) response() interface{} {
 type UpdateNetworkOffering struct {
 	Availability     string `json:"availability,omitempty" doc:"the availability of network offering. Default value is Required for Guest Virtual network offering; Optional for Guest Direct network offering"`
 	DisplayText      string `json:"displaytext,omitempty" doc:"the display text of the network offering"`
-	ID               string `json:"id,omitempty" doc:"the id of the network offering"`
+	ID               *UUID  `json:"id,omitempty" doc:"the id of the network offering"`
 	KeepAliveEnabled *bool  `json:"keepaliveenabled,omitempty" doc:"if true keepalive will be turned on in the loadbalancer. At the time of writing this has only an effect on haproxy; the mode http and httpclose options are unset in the haproxy conf file."`
 	MaxConnections   int    `json:"maxconnections,omitempty" doc:"maximum number of concurrent connections supported by the network offering"`
 	Name             string `json:"name,omitempty" doc:"the name of the network offering"`

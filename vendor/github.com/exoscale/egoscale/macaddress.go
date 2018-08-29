@@ -53,8 +53,8 @@ func ParseMAC(s string) (MACAddress, error) {
 	return (MACAddress)(hw), err
 }
 
-// ForceParseMAC acts like ParseMAC but panics if in case of an error
-func ForceParseMAC(s string) MACAddress {
+// MustParseMAC acts like ParseMAC but panics if in case of an error
+func MustParseMAC(s string) MACAddress {
 	mac, err := ParseMAC(s)
 	if err != nil {
 		panic(err)

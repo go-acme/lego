@@ -24,7 +24,7 @@ Then everything within the struct is not a pointer. Find below some examples of 
 	vm := resp.(*egoscale.VirtualMachine)
 	fmt.Printf("Virtual Machine ID: %s\n", vm.ID)
 
-This exemple deploys a virtual machine while controlling the job status as it goes. It enables a finer control over errors, e.g. HTTP timeout, and eventually a way to kill it of (from the client side).
+This example deploys a virtual machine while controlling the job status as it goes. It enables a finer control over errors, e.g. HTTP timeout, and eventually a way to kill it of (from the client side).
 
 	req := &egoscale.DeployVirtualMachine{
 		Size:              10,

@@ -10,11 +10,11 @@ type AccountType int16
 //go:generate stringer -type AccountType
 const (
 	// UserAccount represents a User
-	UserAccount AccountType = iota
+	UserAccount AccountType = 0
 	// AdminAccount represents an Admin
-	AdminAccount
+	AdminAccount AccountType = 1
 	// DomainAdminAccount represents a Domain Admin
-	DomainAdminAccount
+	DomainAdminAccount AccountType = 2
 )
 
 // Account provides the detailed account information
@@ -24,12 +24,12 @@ type Account struct {
 	CPUAvailable              string            `json:"cpuavailable,omitempty" doc:"the total number of cpu cores available to be created for this account"`
 	CPULimit                  string            `json:"cpulimit,omitempty" doc:"the total number of cpu cores the account can own"`
 	CPUTotal                  int64             `json:"cputotal,omitempty" doc:"the total number of cpu cores owned by account"`
-	DefaultZoneID             string            `json:"defaultzoneid,omitempty" doc:"the default zone of the account"`
+	DefaultZoneID             *UUID             `json:"defaultzoneid,omitempty" doc:"the default zone of the account"`
 	Domain                    string            `json:"domain,omitempty" doc:"name of the Domain the account belongs too"`
-	DomainID                  string            `json:"domainid,omitempty" doc:"id of the Domain the account belongs too"`
+	DomainID                  *UUID             `json:"domainid,omitempty" doc:"id of the Domain the account belongs too"`
 	EipLimit                  string            `json:"eiplimit,omitempty" doc:"the total number of public elastic ip addresses this account can acquire"`
 	Groups                    []string          `json:"groups,omitempty" doc:"the list of acl groups that account belongs to"`
-	ID                        string            `json:"id,omitempty" doc:"the id of the account"`
+	ID                        *UUID             `json:"id,omitempty" doc:"the id of the account"`
 	IPAvailable               string            `json:"ipavailable,omitempty" doc:"the total number of public ip addresses available for this account to acquire"`
 	IPLimit                   string            `json:"iplimit,omitempty" doc:"the total number of public ip addresses this account can acquire"`
 	IPTotal                   int64             `json:"iptotal,omitempty" doc:"the total number of public ip addresses allocated for this account"`
@@ -84,9 +84,9 @@ func (a Account) ListRequest() (ListCommand, error) {
 // ListAccounts represents a query to display the accounts
 type ListAccounts struct {
 	AccountType       AccountType `json:"accounttype,omitempty" doc:"list accounts by account type. Valid account types are 1 (admin), 2 (domain-admin), and 0 (user)."`
-	DomainID          string      `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
-	ID                string      `json:"id,omitempty" doc:"list account by account ID"`
-	IsCleanUpRequired *bool       `json:"iscleanuprequired,omitempty" doc:"list accounts by cleanuprequred attribute (values are true or false)"`
+	DomainID          *UUID       `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
+	ID                *UUID       `json:"id,omitempty" doc:"list account by account ID"`
+	IsCleanUpRequired *bool       `json:"iscleanuprequired,omitempty" doc:"list accounts by cleanuprequired attribute (values are true or false)"`
 	IsRecursive       *bool       `json:"isrecursive,omitempty" doc:"defaults to false, but if true, lists all resources from the parent specified by the domainId till leaves."`
 	Keyword           string      `json:"keyword,omitempty" doc:"List by keyword"`
 	ListAll           *bool       `json:"listall,omitempty" doc:"If set to false, list only resources belonging to the command's caller; if set to true - list resources that the caller is authorized to see. Default value is false"`
@@ -134,8 +134,8 @@ type ListAccountsResponse struct {
 // EnableAccount represents the activation of an account
 type EnableAccount struct {
 	Account  string `json:"account,omitempty" doc:"Enables specified account."`
-	DomainID string `json:"domainid,omitempty" doc:"Enables specified account in this domain."`
-	ID       string `json:"id,omitempty" doc:"Account id"`
+	DomainID *UUID  `json:"domainid,omitempty" doc:"Enables specified account in this domain."`
+	ID       *UUID  `json:"id,omitempty" doc:"Account id"`
 	_        bool   `name:"enableAccount" description:"Enables an account"`
 }
 
@@ -147,8 +147,8 @@ func (EnableAccount) response() interface{} {
 type DisableAccount struct {
 	Lock     *bool  `json:"lock" doc:"If true, only lock the account; else disable the account"`
 	Account  string `json:"account,omitempty" doc:"Disables specified account."`
-	DomainID string `json:"domainid,omitempty" doc:"Disables specified account in this domain."`
-	ID       string `json:"id,omitempty" doc:"Account id"`
+	DomainID *UUID  `json:"domainid,omitempty" doc:"Disables specified account in this domain."`
+	ID       *UUID  `json:"id,omitempty" doc:"Account id"`
 	_        bool   `name:"disableAccount" description:"Disables an account"`
 }
 

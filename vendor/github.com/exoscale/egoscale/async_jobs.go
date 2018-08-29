@@ -7,18 +7,18 @@ import (
 
 // AsyncJobResult represents an asynchronous job result
 type AsyncJobResult struct {
-	AccountID       string           `json:"accountid"`
-	Cmd             string           `json:"cmd"`
-	Created         string           `json:"created"`
-	JobInstanceID   string           `json:"jobinstanceid,omitempty"`
-	JobInstanceType string           `json:"jobinstancetype,omitempty"`
-	JobProcStatus   int              `json:"jobprocstatus"`
-	JobResult       *json.RawMessage `json:"jobresult"`
-	JobResultCode   int              `json:"jobresultcode"`
-	JobResultType   string           `json:"jobresulttype"`
-	JobStatus       JobStatusType    `json:"jobstatus"`
-	UserID          string           `json:"userid"`
-	JobID           string           `json:"jobid"`
+	AccountID       *UUID            `json:"accountid,omitempty" doc:"the account that executed the async command"`
+	Cmd             string           `json:"cmd,omitempty" doc:"the async command executed"`
+	Created         string           `json:"created,omitempty" doc:"the created date of the job"`
+	JobID           *UUID            `json:"jobid,omitempty" doc:"extra field for the initial async call"`
+	JobInstanceID   *UUID            `json:"jobinstanceid,omitempty" doc:"the unique ID of the instance/entity object related to the job"`
+	JobInstanceType string           `json:"jobinstancetype,omitempty" doc:"the instance/entity object related to the job"`
+	JobProcStatus   int              `json:"jobprocstatus,omitempty" doc:"the progress information of the PENDING job"`
+	JobResult       *json.RawMessage `json:"jobresult,omitempty" doc:"the result reason"`
+	JobResultCode   int              `json:"jobresultcode,omitempty" doc:"the result code for the job"`
+	JobResultType   string           `json:"jobresulttype,omitempty" doc:"the result type"`
+	JobStatus       JobStatusType    `json:"jobstatus,omitempty" doc:"the current job status-should be 0 for PENDING"`
+	UserID          *UUID            `json:"userid,omitempty" doc:"the user that executed the async command"`
 }
 
 func (a AsyncJobResult) Error() error {
@@ -31,8 +31,8 @@ func (a AsyncJobResult) Error() error {
 
 // QueryAsyncJobResult represents a query to fetch the status of async job
 type QueryAsyncJobResult struct {
-	JobID string `json:"jobid" doc:"the ID of the asychronous job"`
-	_     bool   `name:"queryAsyncJobResult" description:"Retrieves the current status of asynchronous job."`
+	JobID *UUID `json:"jobid" doc:"the ID of the asynchronous job"`
+	_     bool  `name:"queryAsyncJobResult" description:"Retrieves the current status of asynchronous job."`
 }
 
 func (QueryAsyncJobResult) response() interface{} {
@@ -42,7 +42,7 @@ func (QueryAsyncJobResult) response() interface{} {
 // ListAsyncJobs list the asynchronous jobs
 type ListAsyncJobs struct {
 	Account     string `json:"account,omitempty" doc:"list resources by account. Must be used with the domainId parameter."`
-	DomainID    string `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
+	DomainID    *UUID  `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
 	IsRecursive *bool  `json:"isrecursive,omitempty" doc:"defaults to false, but if true, lists all resources from the parent specified by the domainId till leaves."`
 	Keyword     string `json:"keyword,omitempty" doc:"List by keyword"`
 	ListAll     *bool  `json:"listall,omitempty" doc:"If set to false, list only resources belonging to the command's caller; if set to true - list resources that the caller is authorized to see. Default value is false"`

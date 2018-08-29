@@ -13,9 +13,9 @@ type SecurityGroup struct {
 	Account     string        `json:"account,omitempty" doc:"the account owning the security group"`
 	Description string        `json:"description,omitempty" doc:"the description of the security group"`
 	Domain      string        `json:"domain,omitempty" doc:"the domain name of the security group"`
-	DomainID    string        `json:"domainid,omitempty" doc:"the domain ID of the security group"`
+	DomainID    *UUID         `json:"domainid,omitempty" doc:"the domain ID of the security group"`
 	EgressRule  []EgressRule  `json:"egressrule,omitempty" doc:"the list of egress rules associated with the security group"`
-	ID          string        `json:"id,omitempty" doc:"the ID of the security group"`
+	ID          *UUID         `json:"id,omitempty" doc:"the ID of the security group"`
 	IngressRule []IngressRule `json:"ingressrule,omitempty" doc:"the list of ingress rules associated with the security group"`
 	Name        string        `json:"name,omitempty" doc:"the name of the security group"`
 	Tags        []ResourceTag `json:"tags,omitempty" doc:"the list of resource tags associated with the rule"`
@@ -49,7 +49,7 @@ func (sg SecurityGroup) ListRequest() (ListCommand, error) {
 
 // Delete deletes the given Security Group
 func (sg SecurityGroup) Delete(ctx context.Context, client *Client) error {
-	if sg.ID == "" && sg.Name == "" {
+	if sg.ID == nil && sg.Name == "" {
 		return fmt.Errorf("a SecurityGroup may only be deleted using ID or Name")
 	}
 
@@ -58,7 +58,7 @@ func (sg SecurityGroup) Delete(ctx context.Context, client *Client) error {
 		DomainID: sg.DomainID,
 	}
 
-	if sg.ID != "" {
+	if sg.ID != nil {
 		req.ID = sg.ID
 	} else {
 		req.Name = sg.Name
@@ -68,15 +68,15 @@ func (sg SecurityGroup) Delete(ctx context.Context, client *Client) error {
 }
 
 // RuleByID returns IngressRule or EgressRule by a rule ID
-func (sg SecurityGroup) RuleByID(ruleID string) (*IngressRule, *EgressRule) {
+func (sg SecurityGroup) RuleByID(ruleID UUID) (*IngressRule, *EgressRule) {
 	for i, in := range sg.IngressRule {
-		if ruleID == in.RuleID {
+		if in.RuleID.Equal(ruleID) {
 			return &sg.IngressRule[i], nil
 		}
 	}
 
 	for i, out := range sg.EgressRule {
-		if ruleID == out.RuleID {
+		if out.RuleID.Equal(ruleID) {
 			return nil, &sg.EgressRule[i]
 		}
 	}
@@ -93,8 +93,8 @@ type IngressRule struct {
 	IcmpCode              uint8               `json:"icmpcode,omitempty" doc:"the code for the ICMP message response"`
 	IcmpType              uint8               `json:"icmptype,omitempty" doc:"the type of the ICMP message response"`
 	Protocol              string              `json:"protocol,omitempty" doc:"the protocol of the security group rule"`
-	RuleID                string              `json:"ruleid,omitempty" doc:"the id of the security group rule"`
-	SecurityGroupID       string              `json:"securitygroupid,omitempty"`
+	RuleID                *UUID               `json:"ruleid,omitempty" doc:"the id of the security group rule"`
+	SecurityGroupID       *UUID               `json:"securitygroupid,omitempty"`
 	SecurityGroupName     string              `json:"securitygroupname,omitempty" doc:"security group name"`
 	StartPort             uint16              `json:"startport,omitempty" doc:"the starting port of the security group rule"`
 	Tags                  []ResourceTag       `json:"tags,omitempty" doc:"the list of resource tags associated with the rule"`
@@ -120,7 +120,7 @@ type CreateSecurityGroup struct {
 	Name        string `json:"name" doc:"name of the security group"`
 	Account     string `json:"account,omitempty" doc:"an optional account for the security group. Must be used with domainId."`
 	Description string `json:"description,omitempty" doc:"the description of the security group"`
-	DomainID    string `json:"domainid,omitempty" doc:"an optional domainId for the security group. If the account parameter is used, domainId must also be used."`
+	DomainID    *UUID  `json:"domainid,omitempty" doc:"an optional domainId for the security group. If the account parameter is used, domainId must also be used."`
 	_           bool   `name:"createSecurityGroup" description:"Creates a security group"`
 }
 
@@ -131,8 +131,8 @@ func (CreateSecurityGroup) response() interface{} {
 // DeleteSecurityGroup represents a security group deletion
 type DeleteSecurityGroup struct {
 	Account  string `json:"account,omitempty" doc:"the account of the security group. Must be specified with domain ID"`
-	DomainID string `json:"domainid,omitempty" doc:"the domain ID of account owning the security group"`
-	ID       string `json:"id,omitempty" doc:"The ID of the security group. Mutually exclusive with name parameter"`
+	DomainID *UUID  `json:"domainid,omitempty" doc:"the domain ID of account owning the security group"`
+	ID       *UUID  `json:"id,omitempty" doc:"The ID of the security group. Mutually exclusive with name parameter"`
 	Name     string `json:"name,omitempty" doc:"The ID of the security group. Mutually exclusive with id parameter"`
 	_        bool   `name:"deleteSecurityGroup" description:"Deletes security group"`
 }
@@ -146,12 +146,12 @@ type AuthorizeSecurityGroupIngress struct {
 	Account               string              `json:"account,omitempty" doc:"an optional account for the security group. Must be used with domainId."`
 	CIDRList              []CIDR              `json:"cidrlist,omitempty" doc:"the cidr list associated"`
 	Description           string              `json:"description,omitempty" doc:"the description of the ingress/egress rule"`
-	DomainID              string              `json:"domainid,omitempty" doc:"an optional domainid for the security group. If the account parameter is used, domainid must also be used."`
+	DomainID              *UUID               `json:"domainid,omitempty" doc:"an optional domainid for the security group. If the account parameter is used, domainid must also be used."`
 	EndPort               uint16              `json:"endport,omitempty" doc:"end port for this ingress rule"`
 	IcmpCode              uint8               `json:"icmpcode,omitempty" doc:"error code for this icmp message"`
 	IcmpType              uint8               `json:"icmptype,omitempty" doc:"type of the icmp message being sent"`
 	Protocol              string              `json:"protocol,omitempty" doc:"TCP is default. UDP, ICMP, ICMPv6, AH, ESP, GRE are the other supported protocols"`
-	SecurityGroupID       string              `json:"securitygroupid,omitempty" doc:"The ID of the security group. Mutually exclusive with securitygroupname parameter"`
+	SecurityGroupID       *UUID               `json:"securitygroupid,omitempty" doc:"The ID of the security group. Mutually exclusive with securitygroupname parameter"`
 	SecurityGroupName     string              `json:"securitygroupname,omitempty" doc:"The name of the security group. Mutually exclusive with securitygroupid parameter"`
 	StartPort             uint16              `json:"startport,omitempty" doc:"start port for this ingress rule"`
 	UserSecurityGroupList []UserSecurityGroup `json:"usersecuritygrouplist,omitempty" doc:"user to security group mapping"`
@@ -196,8 +196,8 @@ func (req AuthorizeSecurityGroupEgress) onBeforeSend(params url.Values) error {
 
 // RevokeSecurityGroupIngress (Async) represents the ingress/egress rule deletion
 type RevokeSecurityGroupIngress struct {
-	ID string `json:"id" doc:"The ID of the ingress rule"`
-	_  bool   `name:"revokeSecurityGroupIngress" description:"Deletes a particular ingress rule from this security group"`
+	ID *UUID `json:"id" doc:"The ID of the ingress rule"`
+	_  bool  `name:"revokeSecurityGroupIngress" description:"Deletes a particular ingress rule from this security group"`
 }
 
 func (RevokeSecurityGroupIngress) response() interface{} {
@@ -209,8 +209,8 @@ func (RevokeSecurityGroupIngress) asyncResponse() interface{} {
 
 // RevokeSecurityGroupEgress (Async) represents the ingress/egress rule deletion
 type RevokeSecurityGroupEgress struct {
-	ID string `json:"id" doc:"The ID of the egress rule"`
-	_  bool   `name:"revokeSecurityGroupEgress" description:"Deletes a particular egress rule from this security group"`
+	ID *UUID `json:"id" doc:"The ID of the egress rule"`
+	_  bool  `name:"revokeSecurityGroupEgress" description:"Deletes a particular egress rule from this security group"`
 }
 
 func (RevokeSecurityGroupEgress) response() interface{} {
@@ -224,8 +224,8 @@ func (RevokeSecurityGroupEgress) asyncResponse() interface{} {
 // ListSecurityGroups represents a search for security groups
 type ListSecurityGroups struct {
 	Account           string        `json:"account,omitempty" doc:"list resources by account. Must be used with the domainId parameter."`
-	DomainID          string        `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
-	ID                string        `json:"id,omitempty" doc:"list the security group by the id provided"`
+	DomainID          *UUID         `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
+	ID                *UUID         `json:"id,omitempty" doc:"list the security group by the id provided"`
 	IsRecursive       *bool         `json:"isrecursive,omitempty" doc:"defaults to false, but if true, lists all resources from the parent specified by the domainId till leaves."`
 	Keyword           string        `json:"keyword,omitempty" doc:"List by keyword"`
 	ListAll           *bool         `json:"listall,omitempty" doc:"If set to false, list only resources belonging to the command's caller; if set to true - list resources that the caller is authorized to see. Default value is false"`
@@ -233,7 +233,7 @@ type ListSecurityGroups struct {
 	PageSize          int           `json:"pagesize,omitempty"`
 	SecurityGroupName string        `json:"securitygroupname,omitempty" doc:"lists security groups by name"`
 	Tags              []ResourceTag `json:"tags,omitempty" doc:"List resources by tags (key/value pairs)"`
-	VirtualMachineID  string        `json:"virtualmachineid,omitempty" doc:"lists security groups by virtual machine id"`
+	VirtualMachineID  *UUID         `json:"virtualmachineid,omitempty" doc:"lists security groups by virtual machine id"`
 	_                 bool          `name:"listSecurityGroups" description:"Lists security groups"`
 }
 

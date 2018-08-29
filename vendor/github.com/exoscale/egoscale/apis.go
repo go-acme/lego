@@ -9,7 +9,7 @@ type API struct {
 	Since       string     `json:"since,omitempty" doc:"version of CloudStack the api was introduced in"`
 	Type        string     `json:"type,omitempty" doc:"response field type"`
 	Params      []APIParam `json:"params,omitempty" doc:"the list params the api accepts"`
-	Response    []APIParam `json:"response,omitempty" doc:"api response fields"`
+	Response    []APIField `json:"response,omitempty" doc:"api response fields"`
 }
 
 // APIParam represents an API parameter field
@@ -18,8 +18,16 @@ type APIParam struct {
 	Length      int64  `json:"length"`
 	Name        string `json:"name"`
 	Required    bool   `json:"required"`
-	Since       string `json:"since"`
+	Since       string `json:"since,omitempty"`
 	Type        string `json:"type"`
+}
+
+// APIField represents an API response field
+type APIField struct {
+	Description string     `json:"description"`
+	Name        string     `json:"name"`
+	Response    []APIField `json:"response,omitempty"`
+	Type        string     `json:"type"`
 }
 
 // ListAPIs represents a query to list the api

@@ -9,11 +9,9 @@ import (
 //
 // See: http://docs.cloudstack.apache.org/projects/cloudstack-administration/en/stable/virtual_machines.html#creating-the-ssh-keypair
 type SSHKeyPair struct {
-	Account     string `json:"account,omitempty"` // must be used with a Domain ID
-	DomainID    string `json:"domainid,omitempty"`
-	Fingerprint string `json:"fingerprint,omitempty"`
-	Name        string `json:"name,omitempty"`
-	PrivateKey  string `json:"privatekey,omitempty"`
+	Fingerprint string `json:"fingerprint,omitempty" doc:"Fingerprint of the public key"`
+	Name        string `json:"name,omitempty" doc:"Name of the keypair"`
+	PrivateKey  string `json:"privatekey,omitempty" doc:"Private key"`
 }
 
 // Delete removes the given SSH key, by Name
@@ -23,17 +21,13 @@ func (ssh SSHKeyPair) Delete(ctx context.Context, client *Client) error {
 	}
 
 	return client.BooleanRequestWithContext(ctx, &DeleteSSHKeyPair{
-		Name:     ssh.Name,
-		Account:  ssh.Account,
-		DomainID: ssh.DomainID,
+		Name: ssh.Name,
 	})
 }
 
 // ListRequest builds the ListSSHKeyPairs request
 func (ssh SSHKeyPair) ListRequest() (ListCommand, error) {
 	req := &ListSSHKeyPairs{
-		Account:     ssh.Account,
-		DomainID:    ssh.DomainID,
 		Fingerprint: ssh.Fingerprint,
 		Name:        ssh.Name,
 	}
@@ -45,7 +39,7 @@ func (ssh SSHKeyPair) ListRequest() (ListCommand, error) {
 type CreateSSHKeyPair struct {
 	Name     string `json:"name" doc:"Name of the keypair"`
 	Account  string `json:"account,omitempty" doc:"an optional account for the ssh key. Must be used with domainId."`
-	DomainID string `json:"domainid,omitempty" doc:"an optional domainId for the ssh key. If the account parameter is used, domainId must also be used."`
+	DomainID *UUID  `json:"domainid,omitempty" doc:"an optional domainId for the ssh key. If the account parameter is used, domainId must also be used."`
 	_        bool   `name:"createSSHKeyPair" description:"Create a new keypair and returns the private key"`
 }
 
@@ -57,7 +51,7 @@ func (CreateSSHKeyPair) response() interface{} {
 type DeleteSSHKeyPair struct {
 	Name     string `json:"name" doc:"Name of the keypair"`
 	Account  string `json:"account,omitempty" doc:"the account associated with the keypair. Must be used with the domainId parameter."`
-	DomainID string `json:"domainid,omitempty" doc:"the domain ID associated with the keypair"`
+	DomainID *UUID  `json:"domainid,omitempty" doc:"the domain ID associated with the keypair"`
 	_        bool   `name:"deleteSSHKeyPair" description:"Deletes a keypair by name"`
 }
 
@@ -70,7 +64,7 @@ type RegisterSSHKeyPair struct {
 	Name      string `json:"name" doc:"Name of the keypair"`
 	PublicKey string `json:"publickey" doc:"Public key material of the keypair"`
 	Account   string `json:"account,omitempty" doc:"an optional account for the ssh key. Must be used with domainId."`
-	DomainID  string `json:"domainid,omitempty" doc:"an optional domainId for the ssh key. If the account parameter is used, domainId must also be used."`
+	DomainID  *UUID  `json:"domainid,omitempty" doc:"an optional domainId for the ssh key. If the account parameter is used, domainId must also be used."`
 	_         bool   `name:"registerSSHKeyPair" description:"Register a public key in a keypair under a certain name"`
 }
 
@@ -81,7 +75,7 @@ func (RegisterSSHKeyPair) response() interface{} {
 // ListSSHKeyPairs represents a query for a list of SSH KeyPairs
 type ListSSHKeyPairs struct {
 	Account     string `json:"account,omitempty" doc:"list resources by account. Must be used with the domainId parameter."`
-	DomainID    string `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
+	DomainID    *UUID  `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
 	Fingerprint string `json:"fingerprint,omitempty" doc:"A public key fingerprint to look for"`
 	IsRecursive *bool  `json:"isrecursive,omitempty" doc:"defaults to false, but if true, lists all resources from the parent specified by the domainId till leaves."`
 	Keyword     string `json:"keyword,omitempty" doc:"List by keyword"`
@@ -128,10 +122,10 @@ func (ListSSHKeyPairs) each(resp interface{}, callback IterateItemFunc) {
 
 // ResetSSHKeyForVirtualMachine (Async) represents a change for the key pairs
 type ResetSSHKeyForVirtualMachine struct {
-	ID       string `json:"id" doc:"The ID of the virtual machine"`
+	ID       *UUID  `json:"id" doc:"The ID of the virtual machine"`
 	KeyPair  string `json:"keypair" doc:"name of the ssh key pair used to login to the virtual machine"`
 	Account  string `json:"account,omitempty" doc:"an optional account for the ssh key. Must be used with domainId."`
-	DomainID string `json:"domainid,omitempty" doc:"an optional domainId for the virtual machine. If the account parameter is used, domainId must also be used."`
+	DomainID *UUID  `json:"domainid,omitempty" doc:"an optional domainId for the virtual machine. If the account parameter is used, domainId must also be used."`
 	_        bool   `name:"resetSSHKeyForVirtualMachine" description:"Resets the SSH Key for virtual machine. The virtual machine must be in a \"Stopped\" state."`
 }
 

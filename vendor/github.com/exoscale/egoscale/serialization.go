@@ -13,8 +13,6 @@ import (
 
 func csQuotePlus(s string) string {
 	s = strings.Replace(s, "+", "%20", -1)
-	s = strings.Replace(s, "%5B", "[", -1)
-	s = strings.Replace(s, "%5D", "]", -1)
 	return s
 }
 
@@ -132,7 +130,7 @@ func prepareValues(prefix string, params url.Values, command interface{}) error 
 			case reflect.Ptr:
 				if val.IsNil() {
 					if required {
-						return fmt.Errorf("%s.%s (%v) is required, got tempty ptr", typeof.Name(), n, val.Kind())
+						return fmt.Errorf("%s.%s (%v) is required, got empty ptr", typeof.Name(), n, val.Kind())
 					}
 				} else {
 					switch field.Type.Elem().Kind() {
@@ -189,24 +187,22 @@ func prepareValues(prefix string, params url.Values, command interface{}) error 
 						}
 					}
 				case reflect.String:
-					{
-						if val.Len() == 0 {
-							if required {
-								return fmt.Errorf("%s.%s (%v) is required, got empty slice", typeof.Name(), n, val.Kind())
-							}
-						} else {
-							elems := make([]string, 0, val.Len())
-							for i := 0; i < val.Len(); i++ {
-								// XXX what if the value contains a comma? Double encode?
-								s := val.Index(i).String()
-								elems = append(elems, s)
-							}
-							params.Set(name, strings.Join(elems, ","))
+					if val.Len() == 0 {
+						if required {
+							return fmt.Errorf("%s.%s (%v) is required, got empty slice", typeof.Name(), n, val.Kind())
 						}
+					} else {
+						elems := make([]string, 0, val.Len())
+						for i := 0; i < val.Len(); i++ {
+							// XXX what if the value contains a comma? Double encode?
+							s := val.Index(i).String()
+							elems = append(elems, s)
+						}
+						params.Set(name, strings.Join(elems, ","))
 					}
 				default:
 					switch field.Type.Elem() {
-					case reflect.TypeOf(CIDR{}):
+					case reflect.TypeOf(CIDR{}), reflect.TypeOf(UUID{}):
 						if val.Len() == 0 {
 							if required {
 								return fmt.Errorf("%s.%s (%v) is required, got empty slice", typeof.Name(), n, val.Kind())

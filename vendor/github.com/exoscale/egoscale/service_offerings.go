@@ -22,10 +22,10 @@ type ServiceOffering struct {
 	DiskIopsWriteRate         int64             `json:"diskIopsWriteRate,omitempty" doc:"io requests write rate of the service offering"`
 	Displaytext               string            `json:"displaytext,omitempty" doc:"an alternate display text of the service offering."`
 	Domain                    string            `json:"domain,omitempty" doc:"Domain name for the offering"`
-	DomainID                  string            `json:"domainid,omitempty" doc:"the domain id of the service offering"`
+	DomainID                  *UUID             `json:"domainid,omitempty" doc:"the domain id of the service offering"`
 	HostTags                  string            `json:"hosttags,omitempty" doc:"the host tag for the service offering"`
 	HypervisorSnapshotReserve int               `json:"hypervisorsnapshotreserve,omitempty" doc:"Hypervisor snapshot reserve space as a percent of a volume (for managed storage using Xen or VMware)"`
-	ID                        string            `json:"id,omitempty" doc:"the id of the service offering"`
+	ID                        *UUID             `json:"id,omitempty" doc:"the id of the service offering"`
 	IsCustomized              bool              `json:"iscustomized,omitempty" doc:"is true if the offering is customized"`
 	IsCustomizedIops          bool              `json:"iscustomizediops,omitempty" doc:"true if disk offering uses custom iops, false otherwise"`
 	IsSystem                  bool              `json:"issystem,omitempty" doc:"is this a system vm offering"`
@@ -50,7 +50,6 @@ func (so ServiceOffering) ListRequest() (ListCommand, error) {
 	req := &ListServiceOfferings{
 		ID:           so.ID,
 		DomainID:     so.DomainID,
-		IsSystem:     &so.IsSystem,
 		Name:         so.Name,
 		SystemVMType: so.SystemVMType,
 	}
@@ -64,8 +63,8 @@ func (so ServiceOffering) ListRequest() (ListCommand, error) {
 
 // ListServiceOfferings represents a query for service offerings
 type ListServiceOfferings struct {
-	DomainID         string `json:"domainid,omitempty" doc:"the ID of the domain associated with the service offering"`
-	ID               string `json:"id,omitempty" doc:"ID of the service offering"`
+	DomainID         *UUID  `json:"domainid,omitempty" doc:"the ID of the domain associated with the service offering"`
+	ID               *UUID  `json:"id,omitempty" doc:"ID of the service offering"`
 	IsSystem         *bool  `json:"issystem,omitempty" doc:"is this a system vm offering"`
 	Keyword          string `json:"keyword,omitempty" doc:"List by keyword"`
 	Name             string `json:"name,omitempty" doc:"name of the service offering"`
@@ -73,7 +72,7 @@ type ListServiceOfferings struct {
 	PageSize         int    `json:"pagesize,omitempty"`
 	Restricted       *bool  `json:"restricted,omitempty" doc:"filter by the restriction flag: true to list only the restricted service offerings, false to list non-restricted service offerings, or nothing for all."`
 	SystemVMType     string `json:"systemvmtype,omitempty" doc:"the system VM type. Possible types are \"consoleproxy\", \"secondarystoragevm\" or \"domainrouter\"."`
-	VirtualMachineID string `json:"virtualmachineid,omitempty" doc:"the ID of the virtual machine. Pass this in if you want to see the available service offering that a virtual machine can be changed to."`
+	VirtualMachineID *UUID  `json:"virtualmachineid,omitempty" doc:"the ID of the virtual machine. Pass this in if you want to see the available service offering that a virtual machine can be changed to."`
 	_                bool   `name:"listServiceOfferings" description:"Lists all available service offerings."`
 }
 

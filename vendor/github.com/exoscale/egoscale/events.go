@@ -6,10 +6,10 @@ type Event struct {
 	Created     string `json:"created,omitempty" doc:"the date the event was created"`
 	Description string `json:"description,omitempty" doc:"a brief description of the event"`
 	Domain      string `json:"domain,omitempty" doc:"the name of the account's domain"`
-	DomainID    string `json:"domainid,omitempty" doc:"the id of the account's domain"`
-	ID          string `json:"id,omitempty" doc:"the ID of the event"`
+	DomainID    *UUID  `json:"domainid,omitempty" doc:"the id of the account's domain"`
+	ID          *UUID  `json:"id,omitempty" doc:"the ID of the event"`
 	Level       string `json:"level,omitempty" doc:"the event level (INFO, WARN, ERROR)"`
-	ParentID    string `json:"parentid,omitempty" doc:"whether the event is parented"`
+	ParentID    *UUID  `json:"parentid,omitempty" doc:"whether the event is parented"`
 	State       string `json:"state,omitempty" doc:"the state of the event"`
 	Type        string `json:"type,omitempty" doc:"the type of the event (see event types)"`
 	UserName    string `json:"username,omitempty" doc:"the name of the user who performed the action (can be different from the account if an admin is performing an action for a user, e.g. starting/stopping a user's virtual machine)"`
@@ -23,11 +23,11 @@ type EventType struct {
 // ListEvents list the events
 type ListEvents struct {
 	Account     string `json:"account,omitempty" doc:"list resources by account. Must be used with the domainId parameter."`
-	DomainID    string `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
+	DomainID    *UUID  `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
 	Duration    int    `json:"duration,omitempty" doc:"the duration of the event"`
 	EndDate     string `json:"enddate,omitempty" doc:"the end date range of the list you want to retrieve (use format \"yyyy-MM-dd\" or the new format \"yyyy-MM-dd HH:mm:ss\")"`
 	EntryTime   int    `json:"entrytime,omitempty" doc:"the time the event was entered"`
-	ID          string `json:"id,omitempty" doc:"the ID of the event"`
+	ID          *UUID  `json:"id,omitempty" doc:"the ID of the event"`
 	IsRecursive *bool  `json:"isrecursive,omitempty" doc:"defaults to false, but if true, lists all resources from the parent specified by the domainId till leaves." doc:"defaults to false, but if true, lists all resources from the parent specified by the domainId till leaves."`
 	Keyword     string `json:"keyword,omitempty" doc:"List by keyword"`
 	Level       string `json:"level,omitempty" doc:"the event level (INFO, WARN, ERROR)"`

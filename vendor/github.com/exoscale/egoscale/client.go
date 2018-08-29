@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"os"
+	"reflect"
 	"strings"
 	"time"
 )
@@ -116,12 +117,13 @@ func (client *Client) GetWithContext(ctx context.Context, g Gettable) error {
 		if err != nil {
 			return err
 		}
-		payload, err := client.Payload(req)
+		params, err := client.Payload(req)
 		if err != nil {
 			return err
 		}
 
 		// formatting the query string nicely
+		payload := params.Encode()
 		payload = strings.Replace(payload, "&", ", ", -1)
 
 		if count == 0 {
@@ -161,8 +163,8 @@ func (client *Client) List(g Listable) ([]interface{}, error) {
 func (client *Client) ListWithContext(ctx context.Context, g Listable) ([]interface{}, error) {
 	s := make([]interface{}, 0)
 
-	if g == nil {
-		return s, fmt.Errorf("g Listable shouldn't be nil")
+	if g == nil || reflect.ValueOf(g).IsNil() {
+		return s, fmt.Errorf("g Listable shouldn't be nil, got %#v", g)
 	}
 
 	req, err := g.ListRequest()

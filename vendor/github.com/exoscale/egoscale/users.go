@@ -4,18 +4,18 @@ package egoscale
 type User struct {
 	APIKey              string `json:"apikey,omitempty" doc:"the api key of the user"`
 	Account             string `json:"account,omitempty" doc:"the account name of the user"`
-	AccountID           string `json:"accountid,omitempty" doc:"the account ID of the user"`
+	AccountID           *UUID  `json:"accountid,omitempty" doc:"the account ID of the user"`
 	AccountType         int16  `json:"accounttype,omitempty" doc:"the account type of the user"`
 	Created             string `json:"created,omitempty" doc:"the date and time the user account was created"`
 	Domain              string `json:"domain,omitempty" doc:"the domain name of the user"`
-	DomainID            string `json:"domainid,omitempty" doc:"the domain ID of the user"`
+	DomainID            *UUID  `json:"domainid,omitempty" doc:"the domain ID of the user"`
 	Email               string `json:"email,omitempty" doc:"the user email address"`
 	FirstName           string `json:"firstname,omitempty" doc:"the user firstname"`
-	ID                  string `json:"id,omitempty" doc:"the user ID"`
+	ID                  *UUID  `json:"id,omitempty" doc:"the user ID"`
 	IsCallerChildDomain bool   `json:"iscallerchilddomain,omitempty" doc:"the boolean value representing if the updating target is in caller's child domain"`
 	IsDefault           bool   `json:"isdefault,omitempty" doc:"true if user is default, false otherwise"`
 	LastName            string `json:"lastname,omitempty" doc:"the user lastname"`
-	RoleID              string `json:"roleid,omitempty" doc:"the ID of the role"`
+	RoleID              *UUID  `json:"roleid,omitempty" doc:"the ID of the role"`
 	RoleName            string `json:"rolename,omitempty" doc:"the name of the role"`
 	RoleType            string `json:"roletype,omitempty" doc:"the type of the role"`
 	SecretKey           string `json:"secretkey,omitempty" doc:"the secret key of the user"`
@@ -28,8 +28,8 @@ type User struct {
 //
 // NB: only the APIKey and SecretKey will be filled
 type RegisterUserKeys struct {
-	ID string `json:"id" doc:"User id"`
-	_  bool   `name:"registerUserKeys" description:"This command allows a user to register for the developer API, returning a secret key and an API key. This request is made through the integration API port, so it is a privileged command and must be made on behalf of a user. It is up to the implementer just how the username and password are entered, and then how that translates to an integration API request. Both secret key and API key should be returned to the user"`
+	ID *UUID `json:"id" doc:"User id"`
+	_  bool  `name:"registerUserKeys" description:"This command allows a user to register for the developer API, returning a secret key and an API key. This request is made through the integration API port, so it is a privileged command and must be made on behalf of a user. It is up to the implementer just how the username and password are entered, and then how that translates to an integration API request. Both secret key and API key should be returned to the user"`
 }
 
 func (RegisterUserKeys) response() interface{} {
@@ -44,9 +44,9 @@ type CreateUser struct {
 	LastName  string `json:"lastname" doc:"lastname"`
 	Password  string `json:"password" doc:"Clear text password (Default hashed to SHA256SALT). If you wish to use any other hashing algorithm, you would need to write a custom authentication adapter See Docs section."`
 	UserName  string `json:"username" doc:"Unique username."`
-	DomainID  string `json:"domainid,omitempty" doc:"Creates the user under the specified domain. Has to be accompanied with the account parameter"`
+	DomainID  *UUID  `json:"domainid,omitempty" doc:"Creates the user under the specified domain. Has to be accompanied with the account parameter"`
 	Timezone  string `json:"timezone,omitempty" doc:"Specifies a timezone for this command. For more information on the timezone parameter, see Time Zone Format."`
-	UserID    string `json:"userid,omitempty" doc:"User UUID, required for adding account from external provisioning system"`
+	UserID    *UUID  `json:"userid,omitempty" doc:"User UUID, required for adding account from external provisioning system"`
 	_         bool   `name:"createUser" description:"Creates a user for an account that already exists"`
 }
 
@@ -56,7 +56,7 @@ func (CreateUser) response() interface{} {
 
 // UpdateUser represents the modification of a User
 type UpdateUser struct {
-	ID            string `json:"id" doc:"User uuid"`
+	ID            *UUID  `json:"id" doc:"User uuid"`
 	Email         string `json:"email,omitempty" doc:"email"`
 	FirstName     string `json:"firstname,omitempty" doc:"first name"`
 	LastName      string `json:"lastname,omitempty" doc:"last name"`
@@ -76,8 +76,8 @@ func (UpdateUser) response() interface{} {
 type ListUsers struct {
 	Account     string `json:"account,omitempty" doc:"list resources by account. Must be used with the domainId parameter."`
 	AccountType int64  `json:"accounttype,omitempty" doc:"List users by account type. Valid types include admin, domain-admin, read-only-admin, or user."`
-	DomainID    string `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
-	ID          string `json:"id,omitempty" doc:"List user by ID."`
+	DomainID    *UUID  `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
+	ID          *UUID  `json:"id,omitempty" doc:"List user by ID."`
 	IsRecursive bool   `json:"isrecursive,omitempty" doc:"defaults to false, but if true, lists all resources from the parent specified by the domainId till leaves."`
 	Keyword     string `json:"keyword,omitempty" doc:"List by keyword"`
 	ListAll     bool   `json:"listall,omitempty" doc:"If set to false, list only resources belonging to the command's caller; if set to true - list resources that the caller is authorized to see. Default value is false"`
@@ -100,8 +100,8 @@ func (ListUsers) response() interface{} {
 
 // DeleteUser deletes a user for an account
 type DeleteUser struct {
-	ID string `json:"id" doc:"id of the user to be deleted"`
-	_  bool   `name:"deleteUser" description:"Deletes a user for an account"`
+	ID *UUID `json:"id" doc:"id of the user to be deleted"`
+	_  bool  `name:"deleteUser" description:"Deletes a user for an account"`
 }
 
 func (DeleteUser) response() interface{} {

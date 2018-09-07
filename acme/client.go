@@ -383,6 +383,7 @@ DNSNames:
 		for _, chln := range authz {
 			failures[chln.Identifier.Value] = err
 		}
+		return nil, err
 	}
 
 	// Add the CSR to the certificate so that it can be used for renewals.

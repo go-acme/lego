@@ -109,6 +109,10 @@ func main() {
 			Name:  "email, m",
 			Usage: "Email used for registration and recovery contact.",
 		},
+		cli.StringFlag{
+			Name:  "filename",
+			Usage: "Filename of the generated certificate",
+		},
 		cli.BoolFlag{
 			Name:  "accept-tos, a",
 			Usage: "By setting this flag to true you indicate that you accept the current Let's Encrypt terms of service.",

@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -151,8 +152,15 @@ func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 }
 
 func saveCertRes(certRes *acme.CertificateResource, conf *Configuration) {
-	// make sure no funny chars are in the cert names (like wildcards ;))
-	domainName := strings.Replace(certRes.Domain, "*", "_", -1)
+	var domainName string
+
+	// Check filename cli parameter
+	if conf.context.GlobalString("filename") == "" {
+		// Make sure no funny chars are in the cert names (like wildcards ;))
+		domainName = strings.Replace(certRes.Domain, "*", "_", -1)
+	} else {
+		domainName = conf.context.GlobalString("filename")
+	}
 
 	// We store the certificate, private key and metadata in different files
 	// as web servers would not be able to work with a combined file.
@@ -162,7 +170,12 @@ func saveCertRes(certRes *acme.CertificateResource, conf *Configuration) {
 	metaOut := path.Join(conf.CertPath(), domainName+".json")
 	issuerOut := path.Join(conf.CertPath(), domainName+".issuer.crt")
 
-	err := ioutil.WriteFile(certOut, certRes.Certificate, 0600)
+	err := checkFolder(filepath.Dir(certOut))
+	if err != nil {
+		log.Fatalf("Could not check/create path: %v", err)
+	}
+
+	err = ioutil.WriteFile(certOut, certRes.Certificate, 0600)
 	if err != nil {
 		log.Fatalf("Unable to save Certificate for domain %s\n\t%v", certRes.Domain, err)
 	}

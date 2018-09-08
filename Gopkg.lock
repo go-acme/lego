@@ -203,6 +203,17 @@
   version = "v1.0.0"
 
 [[projects]]
+  branch = "master"
+  digest = "1:fed64c975620bacb8b3e531e31974149eef07fa0c4bc99185d35c4beaa6bd98a"
+  name = "github.com/iij/doapi"
+  packages = [
+    ".",
+    "protocol",
+  ]
+  pruneopts = "NUT"
+  revision = "afe9fa11fb27e5e8ab2dfc1675e91387aa63eaa2"
+
+[[projects]]
   digest = "1:ac6d01547ec4f7f673311b4663909269bfb8249952de3279799289467837c3cc"
   name = "github.com/jmespath/go-jmespath"
   packages = ["."]
@@ -506,6 +517,8 @@
     "github.com/edeckers/auroradnsclient/records",
     "github.com/edeckers/auroradnsclient/zones",
     "github.com/exoscale/egoscale",
+    "github.com/iij/doapi",
+    "github.com/iij/doapi/protocol",
     "github.com/miekg/dns",
     "github.com/namedotcom/go/namecom",
     "github.com/ovh/go-ovh/ovh",

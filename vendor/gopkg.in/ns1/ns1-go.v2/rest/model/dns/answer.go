@@ -10,6 +10,8 @@ import (
 
 // Answer wraps the values of a Record's "filters" attribute
 type Answer struct {
+	ID string `json:"id,omitempty"`
+	
 	Meta *data.Meta `json:"meta,omitempty"`
 
 	// Answer response data. eg:

@@ -226,6 +226,17 @@ func MetaFromMap(m map[string]interface{}) *Meta {
 	mt := mv.Type()
 	for k, v := range m {
 		name := ToCamel(k)
+		if name == "UsState" {
+			name = "USState"
+		} else if name == "Loadavg" {
+			name = "LoadAvg"
+		} else if name == "CaProvince" {
+			name = "CAProvince"
+		} else if name == "IpPrefixes" {
+			name = "IPPrefixes"
+		} else if name == "Asn" {
+			name = "ASN"
+		}
 		if _, ok := mt.FieldByName(name); ok {
 			fv := mv.FieldByName(name)
 			if name == "Up" {

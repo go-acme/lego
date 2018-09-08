@@ -231,7 +231,7 @@ func (c *Client) Do(req *http.Request, obj interface{}) (*http.Response, error) 
 	// the response body is decoded into v.
 	if obj != nil {
 		if w, ok := obj.(io.Writer); ok {
-			io.Copy(w, resp.Body)
+			_, err = io.Copy(w, resp.Body)
 		} else {
 			err = json.NewDecoder(resp.Body).Decode(obj)
 		}

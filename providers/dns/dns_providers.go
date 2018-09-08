@@ -24,10 +24,12 @@ import (
 	"github.com/xenolf/lego/providers/dns/gcloud"
 	"github.com/xenolf/lego/providers/dns/glesys"
 	"github.com/xenolf/lego/providers/dns/godaddy"
+	"github.com/xenolf/lego/providers/dns/iij"
 	"github.com/xenolf/lego/providers/dns/lightsail"
 	"github.com/xenolf/lego/providers/dns/linode"
 	"github.com/xenolf/lego/providers/dns/namecheap"
 	"github.com/xenolf/lego/providers/dns/namedotcom"
+	"github.com/xenolf/lego/providers/dns/netcup"
 	"github.com/xenolf/lego/providers/dns/nifcloud"
 	"github.com/xenolf/lego/providers/dns/ns1"
 	"github.com/xenolf/lego/providers/dns/otc"
@@ -82,6 +84,8 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 		return gcloud.NewDNSProvider()
 	case "godaddy":
 		return godaddy.NewDNSProvider()
+	case "iij":
+		return iij.NewDNSProvider()
 	case "lightsail":
 		return lightsail.NewDNSProvider()
 	case "linode":
@@ -92,6 +96,8 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 		return namecheap.NewDNSProvider()
 	case "namedotcom":
 		return namedotcom.NewDNSProvider()
+	case "netcup":
+		return netcup.NewDNSProvider()
 	case "nifcloud":
 		return nifcloud.NewDNSProvider()
 	case "rackspace":

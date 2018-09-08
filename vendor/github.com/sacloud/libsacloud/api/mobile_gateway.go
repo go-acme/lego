@@ -282,6 +282,81 @@ func (api *MobileGatewayAPI) SetDNS(id int64, dns *sacloud.MobileGatewayResolver
 	return api.modify(method, uri, dns)
 }
 
+// GetSIMRoutes SIMルート 取得
+func (api *MobileGatewayAPI) GetSIMRoutes(id int64) ([]*sacloud.MobileGatewaySIMRoute, error) {
+	var (
+		method = "GET"
+		uri    = fmt.Sprintf("%s/%d/mobilegateway/simroutes", api.getResourceURL(), id)
+	)
+
+	data, err := api.client.newRequest(method, uri, nil)
+	if err != nil {
+		return nil, err
+	}
+	var res sacloud.MobileGatewaySIMRoutes
+
+	if err := json.Unmarshal(data, &res); err != nil {
+		return nil, err
+	}
+	return res.SIMRoutes, err
+}
+
+// SetSIMRoutes SIMルート 設定
+func (api *MobileGatewayAPI) SetSIMRoutes(id int64, simRoutes *sacloud.MobileGatewaySIMRoutes) (bool, error) {
+	var (
+		method = "PUT"
+		uri    = fmt.Sprintf("%s/%d/mobilegateway/simroutes", api.getResourceURL(), id)
+	)
+
+	return api.modify(method, uri, simRoutes)
+}
+
+// AddSIMRoute SIMルート 個別追加
+func (api *MobileGatewayAPI) AddSIMRoute(id int64, simID int64, prefix string) (bool, error) {
+
+	routes, err := api.GetSIMRoutes(id)
+	if err != nil {
+		return false, err
+	}
+
+	param := &sacloud.MobileGatewaySIMRoutes{
+		SIMRoutes: routes,
+	}
+	index, added := param.AddSIMRoute(simID, prefix)
+	if index < 0 || added == nil {
+		return false, nil
+	}
+
+	return api.SetSIMRoutes(id, param)
+}
+
+// DeleteSIMRoute SIMルート 個別削除
+func (api *MobileGatewayAPI) DeleteSIMRoute(id int64, simID int64, prefix string) (bool, error) {
+
+	routes, err := api.GetSIMRoutes(id)
+	if err != nil {
+		return false, err
+	}
+
+	param := &sacloud.MobileGatewaySIMRoutes{
+		SIMRoutes: routes,
+	}
+	deleted := param.DeleteSIMRoute(simID, prefix)
+	if !deleted {
+		return false, nil
+	}
+
+	_, err = api.SetSIMRoutes(id, param)
+	return deleted, err
+}
+
+// DeleteSIMRoutes SIMルート 全件削除
+func (api *MobileGatewayAPI) DeleteSIMRoutes(id int64) (bool, error) {
+	return api.SetSIMRoutes(id, &sacloud.MobileGatewaySIMRoutes{
+		SIMRoutes: []*sacloud.MobileGatewaySIMRoute{},
+	})
+}
+
 // ListSIM SIM一覧取得
 func (api *MobileGatewayAPI) ListSIM(id int64, req *MobileGatewaySIMRequest) ([]sacloud.SIMInfo, error) {
 	var (

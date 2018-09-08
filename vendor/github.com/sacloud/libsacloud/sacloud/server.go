@@ -1,5 +1,7 @@
 package sacloud
 
+import "fmt"
+
 // Server サーバー
 type Server struct {
 	*Resource             // ID
@@ -19,6 +21,62 @@ type Server struct {
 	propIcon              // アイコン
 	propTags              // タグ
 	propCreatedAt         // 作成日時
+}
+
+// DNSServers サーバの所属するリージョンの推奨ネームサーバリスト
+func (s *Server) DNSServers() []string {
+	return s.Zone.Region.NameServers
+}
+
+// IPAddress サーバの1番目のNIC(eth0)のIPアドレス
+func (s *Server) IPAddress() string {
+	// has NIC?
+	if len(s.Interfaces) == 0 {
+		return ""
+	}
+	ip := s.Interfaces[0].IPAddress
+	if ip == "" {
+		ip = s.Interfaces[0].UserIPAddress
+	}
+	return ip
+}
+
+// Gateway デフォルトゲートウェイアドレス
+func (s *Server) Gateway() string {
+	if len(s.Interfaces) == 0 || s.Interfaces[0].Switch == nil || s.Interfaces[0].Switch.UserSubnet == nil {
+		return ""
+	}
+	return s.Interfaces[0].Switch.UserSubnet.DefaultRoute
+}
+
+// DefaultRoute デフォルトゲートウェイアドレス(Gatewayのエイリアス)
+func (s *Server) DefaultRoute() string {
+	return s.Gateway()
+}
+
+// NetworkMaskLen サーバの1番目のNIC(eth0)のネットワークマスク長
+func (s *Server) NetworkMaskLen() int {
+	if len(s.Interfaces) == 0 || s.Interfaces[0].Switch == nil || s.Interfaces[0].Switch.UserSubnet == nil {
+		return 0
+	}
+	return s.Interfaces[0].Switch.UserSubnet.NetworkMaskLen
+}
+
+// NetworkAddress サーバの1番目のNIC(eth0)のネットワークアドレス
+func (s *Server) NetworkAddress() string {
+	if len(s.Interfaces) == 0 || s.Interfaces[0].Switch == nil || s.Interfaces[0].Switch.Subnet == nil {
+		return ""
+	}
+	return s.Interfaces[0].Switch.Subnet.NetworkAddress
+}
+
+// CIDRIPAddress サーバの1番目のNIC(eth0)のIPアドレス+ネットワークマスク長
+func (s *Server) CIDRIPAddress() string {
+	ip, maskLen := s.IPAddress(), s.NetworkMaskLen()
+	if ip != "" && maskLen > 0 {
+		return fmt.Sprintf("%s/%d", ip, maskLen)
+	}
+	return ""
 }
 
 const (

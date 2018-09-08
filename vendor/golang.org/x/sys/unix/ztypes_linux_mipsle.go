@@ -249,6 +249,13 @@ type RawSockaddrL2 struct {
 	_           [1]byte
 }
 
+type RawSockaddrRFCOMM struct {
+	Family  uint16
+	Bdaddr  [6]uint8
+	Channel uint8
+	_       [1]byte
+}
+
 type RawSockaddrCAN struct {
 	Family  uint16
 	_       [2]byte
@@ -402,6 +409,7 @@ const (
 	SizeofSockaddrNetlink   = 0xc
 	SizeofSockaddrHCI       = 0x6
 	SizeofSockaddrL2        = 0xe
+	SizeofSockaddrRFCOMM    = 0xa
 	SizeofSockaddrCAN       = 0x10
 	SizeofSockaddrALG       = 0x58
 	SizeofSockaddrVM        = 0x10
@@ -434,6 +442,7 @@ const (
 	IFLA_ADDRESS         = 0x1
 	IFLA_BROADCAST       = 0x2
 	IFLA_IFNAME          = 0x3
+	IFLA_INFO_KIND       = 0x1
 	IFLA_MTU             = 0x4
 	IFLA_LINK            = 0x5
 	IFLA_QDISC           = 0x6
@@ -697,6 +706,8 @@ const (
 
 	AT_SYMLINK_FOLLOW   = 0x400
 	AT_SYMLINK_NOFOLLOW = 0x100
+
+	AT_EACCESS = 0x200
 )
 
 type PollFd struct {
@@ -1806,4 +1817,63 @@ const (
 	NFTA_NG_OFFSET                    = 0x4
 	NFT_NG_INCREMENTAL                = 0x0
 	NFT_NG_RANDOM                     = 0x1
+)
+
+type RTCTime struct {
+	Sec   int32
+	Min   int32
+	Hour  int32
+	Mday  int32
+	Mon   int32
+	Year  int32
+	Wday  int32
+	Yday  int32
+	Isdst int32
+}
+
+type RTCWkAlrm struct {
+	Enabled uint8
+	Pending uint8
+	_       [2]byte
+	Time    RTCTime
+}
+
+type RTCPLLInfo struct {
+	Ctrl    int32
+	Value   int32
+	Max     int32
+	Min     int32
+	Posmult int32
+	Negmult int32
+	Clock   int32
+}
+
+type BlkpgIoctlArg struct {
+	Op      int32
+	Flags   int32
+	Datalen int32
+	Data    *byte
+}
+
+type BlkpgPartition struct {
+	Start   int64
+	Length  int64
+	Pno     int32
+	Devname [64]uint8
+	Volname [64]uint8
+	_       [4]byte
+}
+
+const (
+	BLKPG                  = 0x20001269
+	BLKPG_ADD_PARTITION    = 0x1
+	BLKPG_DEL_PARTITION    = 0x2
+	BLKPG_RESIZE_PARTITION = 0x3
+)
+
+const (
+	NETNSA_NONE = 0x0
+	NETNSA_NSID = 0x1
+	NETNSA_PID  = 0x2
+	NETNSA_FD   = 0x3
 )

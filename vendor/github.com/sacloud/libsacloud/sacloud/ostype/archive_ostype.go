@@ -41,10 +41,14 @@ const (
 	Windows2016RDSOffice
 	// Windows2016SQLServerWeb OS種別:Windows Server 2016 SQLServer(Web)
 	Windows2016SQLServerWeb
-	// Windows2016SQLServerStandard OS種別:Windows Server 2016 SQLServer(Standard)
+	// Windows2016SQLServerStandard OS種別:Windows Server 2016 SQLServer 2016(Standard)
 	Windows2016SQLServerStandard
+	// Windows2016SQLServer2017Standard OS種別:Windows Server 2016 SQLServer 2017(Standard)
+	Windows2016SQLServer2017Standard
 	// Windows2016SQLServerStandardAll OS種別:Windows Server 2016 SQLServer(Standard) + RDS + Office
 	Windows2016SQLServerStandardAll
+	// Windows2016SQLServer2017StandardAll OS種別:Windows Server 2016 SQLServer 2017(Standard) + RDS + Office
+	Windows2016SQLServer2017StandardAll
 	// Custom OS種別:カスタム
 	Custom
 )
@@ -56,6 +60,7 @@ var OSTypeShortNames = []string{
 	"windows2012", "windows2012-rds", "windows2012-rds-office",
 	"windows2016", "windows2016-rds", "windows2016-rds-office",
 	"windows2016-sql-web", "windows2016-sql-standard", "windows2016-sql-standard-all",
+	"windows2016-sql2017-standard", "windows2016-sql2017-standard-all",
 }
 
 // IsWindows Windowsか
@@ -63,7 +68,8 @@ func (o ArchiveOSTypes) IsWindows() bool {
 	switch o {
 	case Windows2012, Windows2012RDS, Windows2012RDSOffice,
 		Windows2016, Windows2016RDS, Windows2016RDSOffice,
-		Windows2016SQLServerWeb, Windows2016SQLServerStandard, Windows2016SQLServerStandardAll:
+		Windows2016SQLServerWeb, Windows2016SQLServerStandard, Windows2016SQLServerStandardAll,
+		Windows2016SQLServer2017Standard, Windows2016SQLServer2017StandardAll:
 		return true
 	default:
 		return false
@@ -119,8 +125,12 @@ func StrToOSType(osType string) ArchiveOSTypes {
 		return Windows2016SQLServerWeb
 	case "windows2016-sql-standard":
 		return Windows2016SQLServerStandard
+	case "windows2016-sql2017-standard":
+		return Windows2016SQLServer2017Standard
 	case "windows2016-sql-standard-all":
 		return Windows2016SQLServerStandardAll
+	case "windows2016-sql2017-standard-all":
+		return Windows2016SQLServer2017StandardAll
 	default:
 		return Custom
 	}

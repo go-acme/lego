@@ -170,12 +170,12 @@ func saveCertRes(certRes *acme.CertificateResource, conf *Configuration) {
 	metaOut := path.Join(conf.CertPath(), domainName+".json")
 	issuerOut := path.Join(conf.CertPath(), domainName+".issuer.crt")
 
-	folder := checkFolder(filepath.Dir(certOut))
-	if folder != nil {
-		log.Fatalf("Could not check/create path: %v", folder)
+	err := checkFolder(filepath.Dir(certOut))
+	if err != nil {
+		log.Fatalf("Could not check/create path: %v", err)
 	}
 
-	err := ioutil.WriteFile(certOut, certRes.Certificate, 0600)
+	err = ioutil.WriteFile(certOut, certRes.Certificate, 0600)
 	if err != nil {
 		log.Fatalf("Unable to save Certificate for domain %s\n\t%v", certRes.Domain, err)
 	}

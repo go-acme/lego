@@ -4,6 +4,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -13,24 +14,40 @@ import (
 )
 
 var (
-	route53Secret string
-	route53Key    string
-	route53Region string
-	route53Zone   string
+	r53AwsSecretAccessKey string
+	r53AwsAccessKeyID     string
+	r53AwsRegion          string
+	r53AwsHostedZoneID    string
+
+	r53AwsMaxRetries         string
+	r53AwsTTL                string
+	r53AwsPropagationTimeout string
+	r53AwsPollingInterval    string
 )
 
 func init() {
-	route53Key = os.Getenv("AWS_ACCESS_KEY_ID")
-	route53Secret = os.Getenv("AWS_SECRET_ACCESS_KEY")
-	route53Region = os.Getenv("AWS_REGION")
-	route53Zone = os.Getenv("AWS_HOSTED_ZONE_ID")
+	r53AwsAccessKeyID = os.Getenv("AWS_ACCESS_KEY_ID")
+	r53AwsSecretAccessKey = os.Getenv("AWS_SECRET_ACCESS_KEY")
+	r53AwsRegion = os.Getenv("AWS_REGION")
+	r53AwsHostedZoneID = os.Getenv("AWS_HOSTED_ZONE_ID")
+
+	r53AwsMaxRetries = os.Getenv("AWS_MAX_RETRIES")
+	r53AwsTTL = os.Getenv("AWS_TTL")
+	r53AwsPropagationTimeout = os.Getenv("AWS_PROPAGATION_TIMEOUT")
+	r53AwsPollingInterval = os.Getenv("AWS_POLLING_INTERVAL")
 }
 
 func restoreEnv() {
-	os.Setenv("AWS_ACCESS_KEY_ID", route53Key)
-	os.Setenv("AWS_SECRET_ACCESS_KEY", route53Secret)
-	os.Setenv("AWS_REGION", route53Region)
-	os.Setenv("AWS_HOSTED_ZONE_ID", route53Zone)
+	os.Setenv("AWS_ACCESS_KEY_ID", r53AwsAccessKeyID)
+	os.Setenv("AWS_SECRET_ACCESS_KEY", r53AwsSecretAccessKey)
+	os.Setenv("AWS_REGION", r53AwsRegion)
+	os.Setenv("AWS_HOSTED_ZONE_ID", r53AwsHostedZoneID)
+
+	os.Setenv("AWS_MAX_RETRIES", r53AwsMaxRetries)
+	os.Setenv("AWS_TTL", r53AwsTTL)
+	os.Setenv("AWS_PROPAGATION_TIMEOUT", r53AwsPropagationTimeout)
+	os.Setenv("AWS_POLLING_INTERVAL", r53AwsPollingInterval)
+
 }
 
 func makeRoute53Provider(ts *httptest.Server) *DNSProvider {
@@ -82,6 +99,27 @@ func TestHostedZoneIDFromEnv(t *testing.T) {
 	assert.NoError(t, err, "Expected FQDN to be resolved to environment variable value")
 
 	assert.Equal(t, testZoneID, fqdn)
+}
+
+func TestConfigFromEnv(t *testing.T) {
+	defer restoreEnv()
+
+	config := NewDefaultConfig()
+	assert.Equal(t, config.TTL, 10, "Expected TTL to be use the default")
+
+	os.Setenv("AWS_MAX_RETRIES", "10")
+	os.Setenv("AWS_TTL", "99")
+	os.Setenv("AWS_PROPAGATION_TIMEOUT", "60")
+	os.Setenv("AWS_POLLING_INTERVAL", "60")
+	const zoneID = "abc123"
+	os.Setenv("AWS_HOSTED_ZONE_ID", zoneID)
+
+	config = NewDefaultConfig()
+	assert.Equal(t, config.MaxRetries, 10, "Expected PropagationTimeout to be configured from the environment")
+	assert.Equal(t, config.TTL, 99, "Expected TTL to be configured from the environment")
+	assert.Equal(t, config.PropagationTimeout, time.Minute*60, "Expected PropagationTimeout to be configured from the environment")
+	assert.Equal(t, config.PollingInterval, time.Second*60, "Expected PollingInterval to be configured from the environment")
+	assert.Equal(t, config.HostedZoneID, zoneID, "Expected HostedZoneID to be configured from the environment")
 }
 
 func TestRoute53Present(t *testing.T) {

@@ -6,31 +6,26 @@ import (
 	"crypto/rsa"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGeneratePrivateKey(t *testing.T) {
 	key, err := generatePrivateKey(RSA2048)
-	if err != nil {
-		t.Error("Error generating private key:", err)
-	}
-	if key == nil {
-		t.Error("Expected key to not be nil, but it was")
-	}
+	require.NoError(t, err, "Error generating private key")
+
+	assert.NotNil(t, key)
 }
 
 func TestGenerateCSR(t *testing.T) {
 	key, err := rsa.GenerateKey(rand.Reader, 512)
-	if err != nil {
-		t.Fatal("Error generating private key:", err)
-	}
+	require.NoError(t, err, "Error generating private key")
 
 	csr, err := generateCsr(key, "fizz.buzz", nil, true)
-	if err != nil {
-		t.Error("Error generating CSR:", err)
-	}
-	if len(csr) == 0 {
-		t.Error("Expected CSR with data, but it was nil or length 0")
-	}
+	require.NoError(t, err, "Error generating CSR")
+
+	assert.NotEmpty(t, csr)
 }
 
 func TestPEMEncode(t *testing.T) {
@@ -38,50 +33,38 @@ func TestPEMEncode(t *testing.T) {
 
 	reader := MockRandReader{b: buf}
 	key, err := rsa.GenerateKey(reader, 32)
-	if err != nil {
-		t.Fatal("Error generating private key:", err)
-	}
+	require.NoError(t, err, "Error generating private key")
 
 	data := pemEncode(key)
-
-	if data == nil {
-		t.Fatal("Expected result to not be nil, but it was")
-	}
-	if len(data) != 127 {
-		t.Errorf("Expected PEM encoding to be length 127, but it was %d", len(data))
-	}
+	require.NotNil(t, data)
+	assert.Len(t, data, 127)
 }
 
 func TestPEMCertExpiration(t *testing.T) {
 	privKey, err := generatePrivateKey(RSA2048)
-	if err != nil {
-		t.Fatal("Error generating private key:", err)
-	}
+	require.NoError(t, err, "Error generating private key")
 
 	expiration := time.Now().Add(365)
 	expiration = expiration.Round(time.Second)
 	certBytes, err := generateDerCert(privKey.(*rsa.PrivateKey), expiration, "test.com", nil)
-	if err != nil {
-		t.Fatal("Error generating cert:", err)
-	}
+	require.NoError(t, err, "Error generating cert")
 
 	buf := bytes.NewBufferString("TestingRSAIsSoMuchFun")
 
 	// Some random string should return an error.
-	if ctime, err := GetPEMCertExpiration(buf.Bytes()); err == nil {
-		t.Errorf("Expected getCertExpiration to return an error for garbage string but returned %v", ctime)
-	}
+	ctime, err := GetPEMCertExpiration(buf.Bytes())
+	assert.Errorf(t, err, "Expected getCertExpiration to return an error for garbage string but returned %v", ctime)
 
 	// A DER encoded certificate should return an error.
-	if _, err := GetPEMCertExpiration(certBytes); err == nil {
-		t.Errorf("Expected getCertExpiration to return an error for DER certificates but returned none.")
-	}
+	_, err = GetPEMCertExpiration(certBytes)
+	require.Error(t, err, "Expected getCertExpiration to return an error for DER certificates")
 
 	// A PEM encoded certificate should work ok.
 	pemCert := pemEncode(derCertificateBytes(certBytes))
-	if ctime, err := GetPEMCertExpiration(pemCert); err != nil || !ctime.Equal(expiration.UTC()) {
-		t.Errorf("Expected getCertExpiration to return %v but returned %v. Error: %v", expiration, ctime, err)
-	}
+	ctime, err = GetPEMCertExpiration(pemCert)
+	require.NoError(t, err)
+
+	assert.Equal(t, expiration.UTC(), ctime)
 }
 
 type MockRandReader struct {

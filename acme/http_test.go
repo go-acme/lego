@@ -7,9 +7,12 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func TestHTTPHeadUserAgent(t *testing.T) {
+func TestHTTPUserAgent(t *testing.T) {
 	var ua, method string
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ua = r.Header.Get("User-Agent")
@@ -17,72 +20,43 @@ func TestHTTPHeadUserAgent(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	_, err := httpHead(ts.URL)
-	if err != nil {
-		t.Fatal(err)
+	testCases := []struct {
+		method string
+		call   func(u string) (resp *http.Response, err error)
+	}{
+		{
+			method: http.MethodGet,
+			call:   httpGet,
+		},
+		{
+			method: http.MethodHead,
+			call:   httpHead,
+		},
+		{
+			method: http.MethodPost,
+			call: func(u string) (resp *http.Response, err error) {
+				return httpPost(u, "text/plain", strings.NewReader("falalalala"))
+			},
+		},
 	}
 
-	if method != http.MethodHead {
-		t.Errorf("Expected method to be HEAD, got %s", method)
-	}
-	if !strings.Contains(ua, ourUserAgent) {
-		t.Errorf("Expected User-Agent to contain '%s', got: '%s'", ourUserAgent, ua)
-	}
-}
+	for _, test := range testCases {
+		t.Run(test.method, func(t *testing.T) {
 
-func TestHTTPGetUserAgent(t *testing.T) {
-	var ua, method string
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ua = r.Header.Get("User-Agent")
-		method = r.Method
-	}))
-	defer ts.Close()
+			_, err := test.call(ts.URL)
+			require.NoError(t, err)
 
-	res, err := httpGet(ts.URL)
-	if err != nil {
-		t.Fatal(err)
-	}
-	res.Body.Close()
-
-	if method != http.MethodGet {
-		t.Errorf("Expected method to be GET, got %s", method)
-	}
-	if !strings.Contains(ua, ourUserAgent) {
-		t.Errorf("Expected User-Agent to contain '%s', got: '%s'", ourUserAgent, ua)
-	}
-}
-
-func TestHTTPPostUserAgent(t *testing.T) {
-	var ua, method string
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ua = r.Header.Get("User-Agent")
-		method = r.Method
-	}))
-	defer ts.Close()
-
-	res, err := httpPost(ts.URL, "text/plain", strings.NewReader("falalalala"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	res.Body.Close()
-
-	if method != http.MethodPost {
-		t.Errorf("Expected method to be POST, got %s", method)
-	}
-	if !strings.Contains(ua, ourUserAgent) {
-		t.Errorf("Expected User-Agent to contain '%s', got: '%s'", ourUserAgent, ua)
+			assert.Equal(t, test.method, method)
+			assert.Contains(t, ua, ourUserAgent, "User-Agent")
+		})
 	}
 }
 
 func TestUserAgent(t *testing.T) {
 	ua := userAgent()
 
-	if !strings.Contains(ua, defaultGoUserAgent) {
-		t.Errorf("Expected UA to contain %s, got '%s'", defaultGoUserAgent, ua)
-	}
-	if !strings.Contains(ua, ourUserAgent) {
-		t.Errorf("Expected UA to contain %s, got '%s'", ourUserAgent, ua)
-	}
+	assert.Contains(t, ua, defaultGoUserAgent)
+	assert.Contains(t, ua, ourUserAgent)
 	if strings.HasSuffix(ua, " ") {
 		t.Errorf("UA should not have trailing spaces; got '%s'", ua)
 	}
@@ -90,15 +64,10 @@ func TestUserAgent(t *testing.T) {
 	// customize the UA by appending a value
 	UserAgent = "MyApp/1.2.3"
 	ua = userAgent()
-	if !strings.Contains(ua, defaultGoUserAgent) {
-		t.Errorf("Expected UA to contain %s, got '%s'", defaultGoUserAgent, ua)
-	}
-	if !strings.Contains(ua, ourUserAgent) {
-		t.Errorf("Expected UA to contain %s, got '%s'", ourUserAgent, ua)
-	}
-	if !strings.Contains(ua, UserAgent) {
-		t.Errorf("Expected custom UA to contain %s, got '%s'", UserAgent, ua)
-	}
+
+	assert.Contains(t, ua, defaultGoUserAgent)
+	assert.Contains(t, ua, ourUserAgent)
+	assert.Contains(t, ua, UserAgent)
 }
 
 // TestInitCertPool tests the http.go initCertPool function for customizing the
@@ -185,25 +154,27 @@ p9BI7gVKtWSZYegicA==
 		},
 	}
 
-	for _, tc := range testCases {
-		t.Run(tc.Name, func(t *testing.T) {
-			os.Setenv(caCertificatesEnvVar, tc.EnvVar)
+	for _, test := range testCases {
+		t.Run(test.Name, func(t *testing.T) {
+			os.Setenv(caCertificatesEnvVar, test.EnvVar)
 			defer os.Setenv(caCertificatesEnvVar, "")
 
 			defer func() {
-				if r := recover(); r == nil && tc.ExpectPanic {
-					t.Errorf("expected initCertPool() to panic, it did not")
-				} else if r != nil && !tc.ExpectPanic {
-					t.Errorf("expected initCertPool() to not panic, but it did")
+				r := recover()
+
+				if test.ExpectPanic {
+					assert.NotNil(t, r, "expected initCertPool() to panic")
+				} else {
+					assert.Nil(t, r, "expected initCertPool() to not panic")
 				}
 			}()
 
 			result := initCertPool()
 
-			if result == nil && !tc.ExpectNil {
-				t.Errorf("initCertPool() returned nil, expected non-nil")
-			} else if result != nil && tc.ExpectNil {
-				t.Errorf("initCertPool() returned non-nil, expected nil")
+			if test.ExpectNil {
+				assert.Nil(t, result)
+			} else {
+				assert.NotNil(t, result)
 			}
 		})
 	}

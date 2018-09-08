@@ -7,102 +7,26 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"reflect"
 	"sort"
-	"strings"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
-
-var lookupNameserversTestsOK = []struct {
-	fqdn string
-	nss  []string
-}{
-	{"books.google.com.ng.",
-		[]string{"ns1.google.com.", "ns2.google.com.", "ns3.google.com.", "ns4.google.com."},
-	},
-	{"www.google.com.",
-		[]string{"ns1.google.com.", "ns2.google.com.", "ns3.google.com.", "ns4.google.com."},
-	},
-	{"physics.georgetown.edu.",
-		[]string{"ns1.georgetown.edu.", "ns2.georgetown.edu.", "ns3.georgetown.edu."},
-	},
-}
-
-var lookupNameserversTestsErr = []struct {
-	fqdn  string
-	error string
-}{
-	// invalid tld
-	{"_null.n0n0.",
-		"Could not determine the zone",
-	},
-}
-
-var findZoneByFqdnTests = []struct {
-	fqdn string
-	zone string
-}{
-	{"mail.google.com.", "google.com."},             // domain is a CNAME
-	{"foo.google.com.", "google.com."},              // domain is a non-existent subdomain
-	{"example.com.ac.", "ac."},                      // domain is a eTLD
-	{"cross-zone-example.assets.sh.", "assets.sh."}, // domain is a cross-zone CNAME
-}
-
-var checkAuthoritativeNssTests = []struct {
-	fqdn, value string
-	ns          []string
-	ok          bool
-}{
-	// TXT RR w/ expected value
-	{"8.8.8.8.asn.routeviews.org.", "151698.8.8.024", []string{"asnums.routeviews.org."},
-		true,
-	},
-	// No TXT RR
-	{"ns1.google.com.", "", []string{"ns2.google.com."},
-		false,
-	},
-}
-
-var checkAuthoritativeNssTestsErr = []struct {
-	fqdn, value string
-	ns          []string
-	error       string
-}{
-	// TXT RR /w unexpected value
-	{"8.8.8.8.asn.routeviews.org.", "fe01=", []string{"asnums.routeviews.org."},
-		"did not return the expected TXT record",
-	},
-	// No TXT RR
-	{"ns1.google.com.", "fe01=", []string{"ns2.google.com."},
-		"did not return the expected TXT record",
-	},
-}
-
-var checkResolvConfServersTests = []struct {
-	fixture  string
-	expected []string
-	defaults []string
-}{
-	{"testdata/resolv.conf.1", []string{"10.200.3.249:53", "10.200.3.250:5353", "[2001:4860:4860::8844]:53", "[10.0.0.1]:5353"}, []string{"127.0.0.1:53"}},
-	{"testdata/resolv.conf.nonexistant", []string{"127.0.0.1:53"}, []string{"127.0.0.1:53"}},
-}
 
 func TestDNSValidServerResponse(t *testing.T) {
 	PreCheckDNS = func(fqdn, value string) (bool, error) {
 		return true, nil
 	}
-	privKey, _ := rsa.GenerateKey(rand.Reader, 512)
+
+	privKey, err := rsa.GenerateKey(rand.Reader, 512)
+	require.NoError(t, err)
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Replay-Nonce", "12345")
 		w.Write([]byte("{\"type\":\"dns01\",\"status\":\"valid\",\"uri\":\"http://some.url\",\"token\":\"http8\"}"))
 	}))
-
-	manualProvider, _ := NewDNSProviderManual()
-	jws := &jws{privKey: privKey, getNonceURL: ts.URL}
-	solver := &dnsChallenge{jws: jws, validate: validate, provider: manualProvider}
-	clientChallenge := challenge{Type: "dns01", Status: "pending", URL: ts.URL, Token: "http8"}
 
 	go func() {
 		time.Sleep(time.Second * 2)
@@ -111,90 +35,282 @@ func TestDNSValidServerResponse(t *testing.T) {
 		f.WriteString("\n")
 	}()
 
-	if err := solver.Solve(clientChallenge, "example.com"); err != nil {
-		t.Errorf("VALID: Expected Solve to return no error but the error was -> %v", err)
+	manualProvider, err := NewDNSProviderManual()
+	require.NoError(t, err)
+
+	clientChallenge := challenge{Type: "dns01", Status: "pending", URL: ts.URL, Token: "http8"}
+
+	solver := &dnsChallenge{
+		jws:      &jws{privKey: privKey, getNonceURL: ts.URL},
+		validate: validate,
+		provider: manualProvider,
 	}
+
+	err = solver.Solve(clientChallenge, "example.com")
+	require.NoError(t, err)
 }
 
 func TestPreCheckDNS(t *testing.T) {
 	ok, err := PreCheckDNS("acme-staging.api.letsencrypt.org", "fe01=")
 	if err != nil || !ok {
-		t.Errorf("preCheckDNS failed for acme-staging.api.letsencrypt.org")
+		t.Errorf("PreCheckDNS failed for acme-staging.api.letsencrypt.org")
 	}
 }
 
 func TestLookupNameserversOK(t *testing.T) {
-	for _, tt := range lookupNameserversTestsOK {
-		nss, err := lookupNameservers(tt.fqdn)
-		if err != nil {
-			t.Fatalf("#%s: got %q; want nil", tt.fqdn, err)
-		}
+	testCases := []struct {
+		fqdn string
+		nss  []string
+	}{
+		{
+			fqdn: "books.google.com.ng.",
+			nss:  []string{"ns1.google.com.", "ns2.google.com.", "ns3.google.com.", "ns4.google.com."},
+		},
+		{
+			fqdn: "www.google.com.",
+			nss:  []string{"ns1.google.com.", "ns2.google.com.", "ns3.google.com.", "ns4.google.com."},
+		},
+		{
+			fqdn: "physics.georgetown.edu.",
+			nss:  []string{"ns1.georgetown.edu.", "ns2.georgetown.edu.", "ns3.georgetown.edu."},
+		},
+	}
 
-		sort.Strings(nss)
-		sort.Strings(tt.nss)
+	for _, test := range testCases {
+		test := test
+		t.Run(test.fqdn, func(t *testing.T) {
+			t.Parallel()
 
-		if !reflect.DeepEqual(nss, tt.nss) {
-			t.Errorf("#%s: got %v; want %v", tt.fqdn, nss, tt.nss)
-		}
+			nss, err := lookupNameservers(test.fqdn)
+			require.NoError(t, err)
+
+			sort.Strings(nss)
+			sort.Strings(test.nss)
+
+			assert.EqualValues(t, test.nss, nss)
+		})
 	}
 }
 
 func TestLookupNameserversErr(t *testing.T) {
-	for _, tt := range lookupNameserversTestsErr {
-		_, err := lookupNameservers(tt.fqdn)
-		if err == nil {
-			t.Fatalf("#%s: expected %q (error); got <nil>", tt.fqdn, tt.error)
-		}
+	testCases := []struct {
+		desc  string
+		fqdn  string
+		error string
+	}{
+		{
+			desc:  "invalid tld",
+			fqdn:  "_null.n0n0.",
+			error: "could not determine the zone",
+		},
+	}
 
-		if !strings.Contains(err.Error(), tt.error) {
-			t.Errorf("#%s: expected %q (error); got %q", tt.fqdn, tt.error, err)
-			continue
-		}
+	for _, test := range testCases {
+		test := test
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			_, err := lookupNameservers(test.fqdn)
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), test.error)
+		})
 	}
 }
 
 func TestFindZoneByFqdn(t *testing.T) {
-	for _, tt := range findZoneByFqdnTests {
-		res, err := FindZoneByFqdn(tt.fqdn, RecursiveNameservers)
-		if err != nil {
-			t.Errorf("FindZoneByFqdn failed for %s: %v", tt.fqdn, err)
-		}
-		if res != tt.zone {
-			t.Errorf("%s: got %s; want %s", tt.fqdn, res, tt.zone)
-		}
+	testCases := []struct {
+		desc string
+		fqdn string
+		zone string
+	}{
+		{
+			desc: "domain is a CNAME",
+			fqdn: "mail.google.com.",
+			zone: "google.com.",
+		},
+		{
+			desc: "domain is a non-existent subdomain",
+			fqdn: "foo.google.com.",
+			zone: "google.com.",
+		},
+		{
+			desc: "domain is a eTLD",
+			fqdn: "example.com.ac.",
+			zone: "ac.",
+		},
+		{
+			desc: "domain is a cross-zone CNAME",
+			fqdn: "cross-zone-example.assets.sh.",
+			zone: "assets.sh.",
+		},
+	}
+
+	for _, test := range testCases {
+		test := test
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			zone, err := FindZoneByFqdn(test.fqdn, RecursiveNameservers)
+			require.NoError(t, err)
+
+			assert.Equal(t, test.zone, zone)
+		})
 	}
 }
 
 func TestCheckAuthoritativeNss(t *testing.T) {
-	for _, tt := range checkAuthoritativeNssTests {
-		ok, _ := checkAuthoritativeNss(tt.fqdn, tt.value, tt.ns)
-		if ok != tt.ok {
-			t.Errorf("%s: got %t; want %t", tt.fqdn, ok, tt.ok)
-		}
+	testCases := []struct {
+		desc        string
+		fqdn, value string
+		ns          []string
+		expected    bool
+	}{
+		{
+			desc:     "TXT RR w/ expected value",
+			fqdn:     "8.8.8.8.asn.routeviews.org.",
+			value:    "151698.8.8.024",
+			ns:       []string{"asnums.routeviews.org."},
+			expected: true,
+		},
+		{
+			desc: "No TXT RR",
+			fqdn: "ns1.google.com.",
+			ns:   []string{"ns2.google.com."},
+		},
+	}
+
+	for _, test := range testCases {
+		test := test
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			ok, _ := checkAuthoritativeNss(test.fqdn, test.value, test.ns)
+			assert.Equal(t, test.expected, ok, test.fqdn)
+		})
 	}
 }
 
 func TestCheckAuthoritativeNssErr(t *testing.T) {
-	for _, tt := range checkAuthoritativeNssTestsErr {
-		_, err := checkAuthoritativeNss(tt.fqdn, tt.value, tt.ns)
-		if err == nil {
-			t.Fatalf("#%s: expected %q (error); got <nil>", tt.fqdn, tt.error)
-		}
-		if !strings.Contains(err.Error(), tt.error) {
-			t.Errorf("#%s: expected %q (error); got %q", tt.fqdn, tt.error, err)
-			continue
-		}
+	testCases := []struct {
+		desc        string
+		fqdn, value string
+		ns          []string
+		error       string
+	}{
+		{
+			desc:  "TXT RR /w unexpected value",
+			fqdn:  "8.8.8.8.asn.routeviews.org.",
+			value: "fe01=",
+			ns:    []string{"asnums.routeviews.org."},
+			error: "did not return the expected TXT record",
+		},
+		{
+			desc:  "No TXT RR",
+			fqdn:  "ns1.google.com.",
+			value: "fe01=",
+			ns:    []string{"ns2.google.com."},
+			error: "did not return the expected TXT record",
+		},
+	}
+
+	for _, test := range testCases {
+		test := test
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			_, err := checkAuthoritativeNss(test.fqdn, test.value, test.ns)
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), test.error)
+		})
 	}
 }
 
 func TestResolveConfServers(t *testing.T) {
-	for _, tt := range checkResolvConfServersTests {
-		result := getNameservers(tt.fixture, tt.defaults)
+	var testCases = []struct {
+		fixture  string
+		expected []string
+		defaults []string
+	}{
+		{
+			fixture:  "testdata/resolv.conf.1",
+			defaults: []string{"127.0.0.1:53"},
+			expected: []string{"10.200.3.249:53", "10.200.3.250:5353", "[2001:4860:4860::8844]:53", "[10.0.0.1]:5353"},
+		},
+		{
+			fixture:  "testdata/resolv.conf.nonexistant",
+			defaults: []string{"127.0.0.1:53"},
+			expected: []string{"127.0.0.1:53"},
+		},
+	}
 
-		sort.Strings(result)
-		sort.Strings(tt.expected)
-		if !reflect.DeepEqual(result, tt.expected) {
-			t.Errorf("#%s: expected %q; got %q", tt.fixture, tt.expected, result)
-		}
+	for _, test := range testCases {
+		t.Run(test.fixture, func(t *testing.T) {
+
+			result := getNameservers(test.fixture, test.defaults)
+
+			sort.Strings(result)
+			sort.Strings(test.expected)
+
+			assert.Equal(t, test.expected, result)
+		})
+	}
+}
+
+func TestToFqdn(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		domain   string
+		expected string
+	}{
+		{
+			desc:     "simple",
+			domain:   "foo.bar.com",
+			expected: "foo.bar.com.",
+		},
+		{
+			desc:     "already FQDN",
+			domain:   "foo.bar.com.",
+			expected: "foo.bar.com.",
+		},
+	}
+
+	for _, test := range testCases {
+		test := test
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			fqdn := ToFqdn(test.domain)
+			assert.Equal(t, test.expected, fqdn)
+		})
+	}
+}
+
+func TestUnFqdn(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		fqdn     string
+		expected string
+	}{
+		{
+			desc:     "simple",
+			fqdn:     "foo.bar.com.",
+			expected: "foo.bar.com",
+		},
+		{
+			desc:     "already domain",
+			fqdn:     "foo.bar.com",
+			expected: "foo.bar.com",
+		},
+	}
+
+	for _, test := range testCases {
+		test := test
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			domain := UnFqdn(test.fqdn)
+
+			assert.Equal(t, test.expected, domain)
+		})
 	}
 }

@@ -67,6 +67,25 @@
   version = "v0.6.2"
 
 [[projects]]
+  digest = "1:823e87ae25170339e2bfd1d6f7c2e27554c6bb5655f91c67b37bd5be45bb6b32"
+  name = "github.com/aliyun/alibaba-cloud-sdk-go"
+  packages = [
+    "sdk",
+    "sdk/auth",
+    "sdk/auth/credentials",
+    "sdk/auth/signers",
+    "sdk/endpoints",
+    "sdk/errors",
+    "sdk/requests",
+    "sdk/responses",
+    "sdk/utils",
+    "services/alidns",
+  ]
+  pruneopts = "NUT"
+  revision = "cad214d7d71fba7883fcf3b7e550ba782c15b400"
+  version = "1.27.7"
+
+[[projects]]
   digest = "1:1634c57333a07adf7d7e206d3329340f1c36e82bca9e61e2cff08c064ab85046"
   name = "github.com/aws/aws-sdk-go"
   packages = [
@@ -503,6 +522,8 @@
     "github.com/OpenDNS/vegadns2client",
     "github.com/akamai/AkamaiOPEN-edgegrid-golang/configdns-v1",
     "github.com/akamai/AkamaiOPEN-edgegrid-golang/edgegrid",
+    "github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests",
+    "github.com/aliyun/alibaba-cloud-sdk-go/services/alidns",
     "github.com/aws/aws-sdk-go/aws",
     "github.com/aws/aws-sdk-go/aws/client",
     "github.com/aws/aws-sdk-go/aws/credentials",

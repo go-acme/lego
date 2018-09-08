@@ -35,7 +35,7 @@ func TestNewDNSProviderValid(t *testing.T) {
 	os.Setenv("ALIDNS_API_KEY", "")
 	os.Setenv("ALIDNS_SECRET_KEY", "")
 
-	_, err := NewDNSProviderCredentials("123", "123")
+	_, err := NewDNSProviderCredentials("123", "123", "")
 	assert.NoError(t, err)
 }
 
@@ -62,7 +62,7 @@ func TestCloudXNSPresent(t *testing.T) {
 		t.Skip("skipping live test")
 	}
 
-	provider, err := NewDNSProviderCredentials(alidnsAPIKey, alidnsSecretKey)
+	provider, err := NewDNSProviderCredentials(alidnsAPIKey, alidnsSecretKey, "")
 	assert.NoError(t, err)
 
 	err = provider.Present(alidnsDomain, "", "123d==")
@@ -75,7 +75,7 @@ func TestLivednspodCleanUp(t *testing.T) {
 	}
 
 	time.Sleep(time.Second * 1)
-	provider, err := NewDNSProviderCredentials(alidnsAPIKey, alidnsSecretKey)
+	provider, err := NewDNSProviderCredentials(alidnsAPIKey, alidnsSecretKey, "")
 	assert.NoError(t, err)
 	err = provider.CleanUp(alidnsDomain, "", "123d==")
 	assert.NoError(t, err)

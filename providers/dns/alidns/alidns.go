@@ -1,10 +1,10 @@
-// Package Aliyun implements a DNS provider for solving the DNS-01 challenge
-// using Aliyun DNS.
-
+// Package alidns implements a DNS provider for solving the DNS-01 challenge
+// using Alibaba Cloud DNS.
 package alidns
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
@@ -13,12 +13,14 @@ import (
 	"github.com/xenolf/lego/platform/config/env"
 )
 
+const defaultRegionID = "cn-hangzhou"
+
 // DNSProvider is an implementation of the acme.ChallengeProvider interface
 type DNSProvider struct {
 	client *alidns.Client
 }
 
-// NewDNSProvider returns a DNSProvider instance configured for alidns.
+// NewDNSProvider returns a DNSProvider instance configured for Alibaba Cloud DNS.
 // Credentials must be passed in the environment variables: ALIDNS_API_KEY and ALIDNS_SECRET_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("ALIDNS_API_KEY", "ALIDNS_SECRET_KEY")
@@ -26,19 +28,24 @@ func NewDNSProvider() (*DNSProvider, error) {
 		return nil, fmt.Errorf("AliDNS: %v", err)
 	}
 
-	return NewDNSProviderCredentials(values["ALIDNS_API_KEY"], values["ALIDNS_SECRET_KEY"])
+	regionID := os.Getenv("ALIDNS_REGION_ID")
+
+	return NewDNSProviderCredentials(values["ALIDNS_API_KEY"], values["ALIDNS_SECRET_KEY"], regionID)
 }
 
 // NewDNSProviderCredentials uses the supplied credentials to return a DNSProvider instance configured for alidns.
-func NewDNSProviderCredentials(apiKey, secretKey string) (*DNSProvider, error) {
+func NewDNSProviderCredentials(apiKey, secretKey, regionID string) (*DNSProvider, error) {
 	if apiKey == "" || secretKey == "" {
-		return nil, fmt.Errorf("AliDNS credentials missing")
+		return nil, fmt.Errorf("AliDNS: credentials missing")
 	}
 
-	regionID := "cn-hangzhou"
+	if len(regionID) == 0 {
+		regionID = defaultRegionID
+	}
+
 	client, err := alidns.NewClientWithAccessKey(regionID, apiKey, secretKey)
 	if err != nil {
-		return nil, fmt.Errorf("AliDNS credentials failed: %v", err)
+		return nil, fmt.Errorf("AliDNS: credentials failed: %v", err)
 	}
 
 	return &DNSProvider{
@@ -59,7 +66,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	_, err = d.client.AddDomainRecord(recordAttributes)
 	if err != nil {
-		return fmt.Errorf("AliDNS API call failed: %v", err)
+		return fmt.Errorf("AliDNS: API call failed: %v", err)
 	}
 	return nil
 }
@@ -93,7 +100,7 @@ func (d *DNSProvider) getHostedZone(domain string) (string, string, error) {
 	request := alidns.CreateDescribeDomainsRequest()
 	zones, err := d.client.DescribeDomains(request)
 	if err != nil {
-		return "", "", fmt.Errorf("AliDNS API call failed: %v", err)
+		return "", "", fmt.Errorf("AliDNS: API call failed: %v", err)
 	}
 
 	authZone, err := acme.FindZoneByFqdn(acme.ToFqdn(domain), acme.RecursiveNameservers)
@@ -109,17 +116,16 @@ func (d *DNSProvider) getHostedZone(domain string) (string, string, error) {
 	}
 
 	if hostedZone.DomainId == "" {
-		return "", "", fmt.Errorf("zone %s not found in AliDNS for domain %s", authZone, domain)
+		return "", "", fmt.Errorf("AliDNS: zone %s not found in AliDNS for domain %s", authZone, domain)
 	}
 	return fmt.Sprintf("%v", hostedZone.DomainId), hostedZone.DomainName, nil
 }
 
 func (d *DNSProvider) newTxtRecord(zone, fqdn, value string, ttl int) *alidns.AddDomainRecordRequest {
-	name := d.extractRecordName(fqdn, zone)
 	request := alidns.CreateAddDomainRecordRequest()
 	request.Type = "TXT"
 	request.DomainName = zone
-	request.RR = name
+	request.RR = d.extractRecordName(fqdn, zone)
 	request.Value = value
 	request.TTL = requests.NewInteger(600)
 	return request
@@ -131,14 +137,15 @@ func (d *DNSProvider) findTxtRecords(domain, fqdn string) ([]alidns.Record, erro
 		return nil, err
 	}
 
-	var records []alidns.Record
 	request := alidns.CreateDescribeDomainRecordsRequest()
 	request.DomainName = zoneName
 	request.PageSize = requests.NewInteger(500)
 
+	var records []alidns.Record
+
 	result, err := d.client.DescribeDomainRecords(request)
 	if err != nil {
-		return records, fmt.Errorf("AliDNS API call has failed: %v", err)
+		return records, fmt.Errorf("AliDNS: API call has failed: %v", err)
 	}
 
 	recordName := d.extractRecordName(fqdn, zoneName)

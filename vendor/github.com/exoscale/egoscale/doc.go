@@ -4,7 +4,7 @@ Package egoscale is a mapping for with the CloudStack API (http://cloudstack.apa
 
 Requests and Responses
 
-To build a request, construct the adequate struct. This library expects a pointer for efficiency reasons only. The response is a struct corresponding to the request itself. E.g. DeployVirtualMachine gives DeployVirtualMachineResponse, as a pointer as well to avoid big copies.
+To build a request, construct the adequate struct. This library expects a pointer for efficiency reasons only. The response is a struct corresponding to the data at stake. E.g. DeployVirtualMachine gives a VirtualMachine, as a pointer as well to avoid big copies.
 
 Then everything within the struct is not a pointer. Find below some examples of how egoscale may be used to interact with a CloudStack endpoint, especially Exoscale itself. If anything feels odd or unclear, please let us know: https://github.com/exoscale/egoscale/issues
 
@@ -21,10 +21,10 @@ Then everything within the struct is not a pointer. Find below some examples of 
 		panic(err)
 	}
 
-	vm := resp.(*egoscale.DeployVirtualMachineResponse).VirtualMachine
+	vm := resp.(*egoscale.VirtualMachine)
 	fmt.Printf("Virtual Machine ID: %s\n", vm.ID)
 
-This exemple deploys a virtual machine while controlling the job status as it goes. It enables a finer control over errors, e.g. HTTP timeout, and eventually a way to kill it of (from the client side).
+This example deploys a virtual machine while controlling the job status as it goes. It enables a finer control over errors, e.g. HTTP timeout, and eventually a way to kill it of (from the client side).
 
 	req := &egoscale.DeployVirtualMachine{
 		Size:              10,
@@ -32,7 +32,7 @@ This exemple deploys a virtual machine while controlling the job status as it go
 		TemplateID:        "...",
 		ZoneID:            "...",
 	}
-	resp := &egoscale.DeployVirtualMachineResponse{}
+	vm := &egoscale.VirtualMachine{}
 
 	fmt.Println("Deployment started")
 	cs.AsyncRequest(req, func(jobResult *egoscale.AsyncJobResult, err error) bool {
@@ -48,7 +48,7 @@ This exemple deploys a virtual machine while controlling the job status as it go
 		}
 
 		// Unmarshal the response into the response struct
-		if err := jobResult.Response(resp); err != nil {
+		if err := jobResult.Response(vm); err != nil {
 			// JSON unmarshaling error
 			panic(err)
 		}
@@ -57,7 +57,19 @@ This exemple deploys a virtual machine while controlling the job status as it go
 		return false
 	})
 
-	fmt.Printf("Virtual Machine ID: %s\n", resp.VirtualMachine.ID)
+	fmt.Printf("Virtual Machine ID: %s\n", vm.ID)
+
+Debugging and traces
+
+As this library is mostly an HTTP client, you can reuse all the existing tools around it.
+
+	cs := egoscale.NewClient("https://api.exoscale.ch/compute", "EXO...", "...")
+	// sets a logger on stderr
+	cs.Logger = log.Newos.Stderr, "prefix", log.LstdFlags)
+	// activates the HTTP traces
+	cs.TraceOn()
+
+Nota bene: when running the tests or the egoscale library via another tool, e.g. the exo cli (or the cs cli), the environment variable EXOSCALE_TRACE=prefix does the above configuration for you. As a developer using egoscale as a library, you'll find it more convenient to plug your favorite io.Writer as it's Logger.
 
 
 APIs
@@ -86,7 +98,7 @@ Security Groups provide a way to isolate traffic to VMs. Rules are added via the
 		Name: "Load balancer",
 		Description: "Opens HTTP/HTTPS ports from the outside world",
 	})
-	securityGroup := resp.(*egoscale.CreateSecurityGroupResponse).SecurityGroup
+	securityGroup := resp.(*egoscale.SecurityGroup)
 
 	resp, err = cs.Request(&egoscale.AuthorizeSecurityGroupIngress{
 		Description:     "SSH traffic",
@@ -97,7 +109,7 @@ Security Groups provide a way to isolate traffic to VMs. Rules are added via the
 		EndPort:         22,
 	})
 	// The modified SecurityGroup is returned
-	securityGroup := resp.(*egoscale.AuthorizeSecurityGroupResponse).SecurityGroup
+	securityGroup := resp.(*egoscale.SecurityGroup)
 
 	// ...
 	err = client.BooleanRequest(&egoscale.DeleteSecurityGroup{

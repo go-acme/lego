@@ -2,6 +2,8 @@ package sacloud
 
 import (
 	"encoding/json"
+	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -30,6 +32,62 @@ type MobileGatewaySetting struct {
 	InternetConnection *MGWInternetConnection `json:",omitempty"` // インターネット接続
 	Interfaces         []*MGWInterface        `json:",omitempty"` // インターフェース
 	StaticRoutes       []*MGWStaticRoute      `json:",omitempty"` // スタティックルート
+}
+
+// HasStaticRoutes スタティックルートを保持しているか
+func (m *MobileGatewaySetting) HasStaticRoutes() bool {
+	return m.StaticRoutes != nil && len(m.StaticRoutes) > 0
+}
+
+// AddStaticRoute スタティックルート設定 追加
+func (m *MobileGatewaySetting) AddStaticRoute(prefix string, nextHop string) (int, *MGWStaticRoute) {
+	if m.StaticRoutes == nil {
+		m.StaticRoutes = []*MGWStaticRoute{}
+	}
+
+	s := &MGWStaticRoute{
+		Prefix:  prefix,
+		NextHop: nextHop,
+	}
+	m.StaticRoutes = append(m.StaticRoutes, s)
+	return len(m.StaticRoutes) - 1, s
+}
+
+// RemoveStaticRoute スタティックルート設定 削除
+func (m *MobileGatewaySetting) RemoveStaticRoute(prefix string, nextHop string) {
+	if m.StaticRoutes == nil {
+		return
+	}
+
+	dest := []*MGWStaticRoute{}
+	for _, s := range m.StaticRoutes {
+		if s.Prefix != prefix || s.NextHop != nextHop {
+			dest = append(dest, s)
+		}
+	}
+	m.StaticRoutes = dest
+}
+
+// RemoveStaticRouteAt スタティックルート設定 削除
+func (m *MobileGatewaySetting) RemoveStaticRouteAt(index int) {
+	if m.StaticRoutes == nil {
+		return
+	}
+
+	if index < len(m.StaticRoutes) {
+		s := m.StaticRoutes[index]
+		m.RemoveStaticRoute(s.Prefix, s.NextHop)
+	}
+}
+
+// FindStaticRoute スタティックルート設定 検索
+func (m *MobileGatewaySetting) FindStaticRoute(prefix string, nextHop string) (int, *MGWStaticRoute) {
+	for i, s := range m.StaticRoutes {
+		if s.Prefix == prefix && s.NextHop == nextHop {
+			return i, s
+		}
+	}
+	return -1, nil
 }
 
 // MGWInternetConnection インターネット接続
@@ -120,6 +178,16 @@ func (m *MobileGateway) ClearPrivateInterface() {
 	m.Settings.MobileGateway.Interfaces = []*MGWInterface{nil}
 }
 
+// HasSetting モバイルゲートウェイ設定を保持しているか
+func (m *MobileGateway) HasSetting() bool {
+	return m.Settings != nil && m.Settings.MobileGateway != nil
+}
+
+// HasStaticRoutes スタティックルートを保持しているか
+func (m *MobileGateway) HasStaticRoutes() bool {
+	return m.HasSetting() && m.Settings.MobileGateway.HasStaticRoutes()
+}
+
 // NewMobileGatewayResolver DNS登録用パラメータ作成
 func NewMobileGatewayResolver(dns1, dns2 string) *MobileGatewayResolver {
 	return &MobileGatewayResolver{
@@ -159,4 +227,77 @@ func (m *MobileGatewaySIMGroup) UnmarshalJSON(data []byte) error {
 type MobileGatewaySIMGroup struct {
 	DNS1 string `json:"dns_1,omitempty"`
 	DNS2 string `json:"dns_2,omitempty"`
+}
+
+// MobileGatewaySIMRoute SIルート
+type MobileGatewaySIMRoute struct {
+	ICCID      string `json:"iccid,omitempty"`
+	Prefix     string `json:"prefix,omitempty"`
+	ResourceID string `json:"resource_id,omitempty"`
+}
+
+// MobileGatewaySIMRoutes SIMルート一覧
+type MobileGatewaySIMRoutes struct {
+	SIMRoutes []*MobileGatewaySIMRoute `json:"sim_routes"`
+}
+
+// AddSIMRoute SIMルート追加
+func (m *MobileGatewaySIMRoutes) AddSIMRoute(simID int64, prefix string) (int, *MobileGatewaySIMRoute) {
+	var exists bool
+	for _, route := range m.SIMRoutes {
+		if route.ResourceID == fmt.Sprintf("%d", simID) && route.Prefix == prefix {
+			exists = true
+			break
+		}
+	}
+	if !exists {
+		r := &MobileGatewaySIMRoute{
+			ResourceID: fmt.Sprintf("%d", simID),
+			Prefix:     prefix,
+		}
+		m.SIMRoutes = append(m.SIMRoutes, r)
+		return len(m.SIMRoutes) - 1, r
+	}
+	return -1, nil
+}
+
+// DeleteSIMRoute SIMルート削除
+func (m *MobileGatewaySIMRoutes) DeleteSIMRoute(simID int64, prefix string) bool {
+	routes := []*MobileGatewaySIMRoute{} // nolint (JSONヘのMarshal時に要素が0の場合にNULLではなく[]とするため)
+	var exists bool
+
+	for _, route := range m.SIMRoutes {
+		if route.ResourceID == fmt.Sprintf("%d", simID) && route.Prefix == prefix {
+			exists = true
+		} else {
+			routes = append(routes, route)
+		}
+	}
+	m.SIMRoutes = routes
+	return exists
+}
+
+// DeleteSIMRouteAt SIMルート削除
+func (m *MobileGatewaySIMRoutes) DeleteSIMRouteAt(index int) bool {
+	if m.SIMRoutes == nil {
+		return false
+	}
+
+	if index < len(m.SIMRoutes) {
+		s := m.SIMRoutes[index]
+		if simID, err := strconv.ParseInt(s.ResourceID, 10, 64); err == nil {
+			return m.DeleteSIMRoute(simID, s.Prefix)
+		}
+	}
+	return false
+}
+
+// FindSIMRoute SIMルート設定 検索
+func (m *MobileGatewaySIMRoutes) FindSIMRoute(simID int64, prefix string) (int, *MobileGatewaySIMRoute) {
+	for i, r := range m.SIMRoutes {
+		if r.Prefix == prefix && r.ResourceID == fmt.Sprintf("%d", simID) {
+			return i, r
+		}
+	}
+	return -1, nil
 }

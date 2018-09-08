@@ -76,3 +76,7 @@
 [[constraint]]
   branch = "master"
   name = "github.com/sacloud/libsacloud"
+
+[[constraint]]
+  version = "0.11.1"
+  name = "github.com/exoscale/egoscale"

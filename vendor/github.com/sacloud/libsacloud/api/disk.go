@@ -90,7 +90,7 @@ func (api *DiskAPI) install(id int64, body *sacloud.Disk) (bool, error) {
 		Success string `json:",omitempty"`
 	}
 	res := &diskResponse{}
-	err := api.baseAPI.request(method, uri, body, res)
+	err := api.baseAPI.request(method, uri, api.createRequest(body), res)
 	if err != nil {
 		return false, err
 	}

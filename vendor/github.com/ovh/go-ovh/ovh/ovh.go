@@ -21,7 +21,7 @@ const DefaultTimeout = 180 * time.Second
 const (
 	OvhEU        = "https://eu.api.ovh.com/1.0"
 	OvhCA        = "https://ca.api.ovh.com/1.0"
-	OvhUS        = "https://api.ovh.us/1.0"
+	OvhUS        = "https://api.ovhcloud.com/1.0"
 	KimsufiEU    = "https://eu.api.kimsufi.com/1.0"
 	KimsufiCA    = "https://ca.api.kimsufi.com/1.0"
 	SoyoustartEU = "https://eu.api.soyoustart.com/1.0"
@@ -64,6 +64,9 @@ type Client struct {
 
 	// Client is the underlying HTTP client used to run the requests. It may be overloaded but a default one is instanciated in ``NewClient`` by default.
 	Client *http.Client
+
+	// Logger is used to log HTTP requests and responses.
+	Logger Logger
 
 	// Ensures that the timeDelta function is only ran once
 	// sync.Once would consider init done, even in case of error
@@ -281,7 +284,17 @@ func (c *Client) NewRequest(method, path string, reqBody interface{}, needAuth b
 
 // Do sends an HTTP request and returns an HTTP response
 func (c *Client) Do(req *http.Request) (*http.Response, error) {
-	return c.Client.Do(req)
+	if c.Logger != nil {
+		c.Logger.LogRequest(req)
+	}
+	resp, err := c.Client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	if c.Logger != nil {
+		c.Logger.LogResponse(resp)
+	}
+	return resp, nil
 }
 
 // CallAPI is the lowest level call helper. If needAuth is true,

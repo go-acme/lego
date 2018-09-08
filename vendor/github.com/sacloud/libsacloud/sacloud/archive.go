@@ -1,5 +1,10 @@
 package sacloud
 
+// AllowArchiveSizes 作成できるアーカイブのサイズ
+func AllowArchiveSizes() []string {
+	return []string{"20", "40", "60", "80", "100", "250", "500", "750", "1024"}
+}
+
 // Archive アーカイブ
 type Archive struct {
 	*Resource             // ID

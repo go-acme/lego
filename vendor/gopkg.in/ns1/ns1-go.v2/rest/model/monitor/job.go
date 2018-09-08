@@ -123,11 +123,11 @@ type Rule struct {
 // connTimeout is the timeout(in sec) to wait for query output.
 func NewHTTPConfig(url, method, ua, auth string, connTimeout int) *Config {
 	return &Config{
-		"url":                url, // Required
-		"method":             method,
-		"user_agent":         ua,
-		"auth":               auth,
-		"connection_timeout": connTimeout,
+		"url":             url, // Required
+		"method":          method,
+		"user_agent":      ua,
+		"authorization":   auth,
+		"connect_timeout": connTimeout,
 	}
 
 }
@@ -157,12 +157,12 @@ func NewDNSConfig(host, domain string, port int, t string, respTimeout int) *Con
 // ssl determines whether to attempt negotiating an SSL connection.
 func NewTCPConfig(host string, port, connTimeout, respTimeout int, send string, ssl bool) *Config {
 	return &Config{
-		"host":               host, // Required
-		"port":               port, // Required
-		"connection_timeout": connTimeout,
-		"response_timeout":   respTimeout,
-		"send":               send,
-		"ssl":                ssl,
+		"host":             host, // Required
+		"port":             port, // Required
+		"connect_timeout":  connTimeout,
+		"response_timeout": respTimeout,
+		"send":             send,
+		"ssl":              ssl,
 	}
 }
 

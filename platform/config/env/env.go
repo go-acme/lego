@@ -28,15 +28,12 @@ func Get(names ...string) (map[string]string, error) {
 }
 
 // GetOrDefaultInt returns the given environment variable value as an integer.
-// Returns the default if the envvar cannot be cooered to an int, or is not
-// found.
-func GetOrDefaultInt(envVar string, def int) int {
-	s := os.Getenv(envVar)
-
-	i, err := strconv.Atoi(s)
+// Returns the default if the envvar cannot be coopered to an int, or is not found.
+func GetOrDefaultInt(envVar string, defaultValue int) int {
+	v, err := strconv.Atoi(os.Getenv(envVar))
 	if err != nil {
-		return def
+		return defaultValue
 	}
 
-	return i
+	return v
 }

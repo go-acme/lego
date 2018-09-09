@@ -385,8 +385,10 @@ DNSNames:
 		}
 	}
 
-	// Add the CSR to the certificate so that it can be used for renewals.
-	cert.CSR = pemEncode(&csr)
+	if cert != nil {
+		// Add the CSR to the certificate so that it can be used for renewals.
+		cert.CSR = pemEncode(&csr)
+	}
 
 	// do not return an empty failures map, because
 	// it would still be a non-nil error value

@@ -50,12 +50,16 @@ func NewDNSProviderCredentials(apiEndpoint, applicationKey, applicationSecret, c
 		return nil, fmt.Errorf("OVH credentials missing")
 	}
 
-	ovhClient, _ := ovh.NewClient(
+	ovhClient, err := ovh.NewClient(
 		apiEndpoint,
 		applicationKey,
 		applicationSecret,
 		consumerKey,
 	)
+
+	if err != nil {
+		return nil, err
+	}
 
 	return &DNSProvider{
 		client:    ovhClient,

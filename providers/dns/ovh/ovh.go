@@ -69,31 +69,12 @@ func NewDNSProviderCredentials(apiEndpoint, applicationKey, applicationSecret, c
 
 // Present creates a TXT record to fulfil the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-
-	// txtRecordRequest represents the request body to DO's API to make a TXT record
-	type txtRecordRequest struct {
-		FieldType string `json:"fieldType"`
-		SubDomain string `json:"subDomain"`
-		Target    string `json:"target"`
-		TTL       int    `json:"ttl"`
-	}
-
-	// txtRecordResponse represents a response from DO's API after making a TXT record
-	type txtRecordResponse struct {
-		ID        int    `json:"id"`
-		FieldType string `json:"fieldType"`
-		SubDomain string `json:"subDomain"`
-		Target    string `json:"target"`
-		TTL       int    `json:"ttl"`
-		Zone      string `json:"zone"`
-	}
-
 	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
 
 	// Parse domain name
 	authZone, err := acme.FindZoneByFqdn(acme.ToFqdn(domain), acme.RecursiveNameservers)
 	if err != nil {
-		return fmt.Errorf("Could not determine zone for domain: '%s'. %s", domain, err)
+		return fmt.Errorf("could not determine zone for domain: '%s'. %s", domain, err)
 	}
 
 	authZone = acme.UnFqdn(authZone)
@@ -137,7 +118,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := acme.FindZoneByFqdn(acme.ToFqdn(domain), acme.RecursiveNameservers)
 	if err != nil {
-		return fmt.Errorf("Could not determine zone for domain: '%s'. %s", domain, err)
+		return fmt.Errorf("could not determine zone for domain: '%s'. %s", domain, err)
 	}
 
 	authZone = acme.UnFqdn(authZone)
@@ -163,4 +144,22 @@ func (d *DNSProvider) extractRecordName(fqdn, domain string) string {
 		return name[:idx]
 	}
 	return name
+}
+
+// txtRecordRequest represents the request body to DO's API to make a TXT record
+type txtRecordRequest struct {
+	FieldType string `json:"fieldType"`
+	SubDomain string `json:"subDomain"`
+	Target    string `json:"target"`
+	TTL       int    `json:"ttl"`
+}
+
+// txtRecordResponse represents a response from DO's API after making a TXT record
+type txtRecordResponse struct {
+	ID        int    `json:"id"`
+	FieldType string `json:"fieldType"`
+	SubDomain string `json:"subDomain"`
+	Target    string `json:"target"`
+	TTL       int    `json:"ttl"`
+	Zone      string `json:"zone"`
 }

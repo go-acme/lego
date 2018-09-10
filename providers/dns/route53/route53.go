@@ -35,7 +35,7 @@ func NewDefaultConfig() *Config {
 	return &Config{
 		MaxRetries:         env.GetOrDefaultInt("AWS_MAX_RETRIES", 5),
 		TTL:                env.GetOrDefaultInt("AWS_TTL", 10),
-		PropagationTimeout: time.Minute * time.Duration(propagationMins),
+		PropagationTimeout: time.Second * time.Duration(propagationMins),
 		PollingInterval:    time.Second * time.Duration(intervalSecs),
 		HostedZoneID:       os.Getenv("AWS_HOSTED_ZONE_ID"),
 	}

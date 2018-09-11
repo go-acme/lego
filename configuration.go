@@ -11,6 +11,11 @@ import (
 	"github.com/xenolf/lego/acme"
 )
 
+var pathReplacer = strings.NewReplacer(
+	":", "_",
+	"/", string(os.PathSeparator),
+)
+
 // Configuration type from CLI and config files.
 type Configuration struct {
 	context *cli.Context
@@ -50,8 +55,7 @@ func (c *Configuration) ExcludedSolvers() (cc []acme.Challenge) {
 // ServerPath returns the OS dependent path to the data for a specific CA
 func (c *Configuration) ServerPath() string {
 	srv, _ := url.Parse(c.context.GlobalString("server"))
-	srvStr := strings.Replace(srv.Host, ":", "_", -1)
-	return strings.Replace(srvStr, "/", string(os.PathSeparator), -1)
+	return pathReplacer.Replace(srv.Host)
 }
 
 // CertPath gets the path for certificates.

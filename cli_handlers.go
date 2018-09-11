@@ -10,7 +10,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 	"time"
@@ -164,11 +163,11 @@ func saveCertRes(certRes *acme.CertificateResource, conf *Configuration) {
 
 	// We store the certificate, private key and metadata in different files
 	// as web servers would not be able to work with a combined file.
-	certOut := path.Join(conf.CertPath(), domainName+".crt")
-	privOut := path.Join(conf.CertPath(), domainName+".key")
-	pemOut := path.Join(conf.CertPath(), domainName+".pem")
-	metaOut := path.Join(conf.CertPath(), domainName+".json")
-	issuerOut := path.Join(conf.CertPath(), domainName+".issuer.crt")
+	certOut := filepath.Join(conf.CertPath(), domainName+".crt")
+	privOut := filepath.Join(conf.CertPath(), domainName+".key")
+	pemOut := filepath.Join(conf.CertPath(), domainName+".pem")
+	metaOut := filepath.Join(conf.CertPath(), domainName+".json")
+	issuerOut := filepath.Join(conf.CertPath(), domainName+".issuer.crt")
 
 	err := checkFolder(filepath.Dir(certOut))
 	if err != nil {
@@ -379,7 +378,7 @@ func revoke(c *cli.Context) error {
 	for _, domain := range c.GlobalStringSlice("domains") {
 		log.Printf("Trying to revoke certificate for domain %s", domain)
 
-		certPath := path.Join(conf.CertPath(), domain+".crt")
+		certPath := filepath.Join(conf.CertPath(), domain+".crt")
 		certBytes, err := ioutil.ReadFile(certPath)
 		if err != nil {
 			log.Println(err)
@@ -412,9 +411,9 @@ func renew(c *cli.Context) error {
 	// load the cert resource from files.
 	// We store the certificate, private key and metadata in different files
 	// as web servers would not be able to work with a combined file.
-	certPath := path.Join(conf.CertPath(), domain+".crt")
-	privPath := path.Join(conf.CertPath(), domain+".key")
-	metaPath := path.Join(conf.CertPath(), domain+".json")
+	certPath := filepath.Join(conf.CertPath(), domain+".crt")
+	privPath := filepath.Join(conf.CertPath(), domain+".key")
+	metaPath := filepath.Join(conf.CertPath(), domain+".json")
 
 	certBytes, err := ioutil.ReadFile(certPath)
 	if err != nil {

@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"os"
-	"path"
+	"path/filepath"
 
 	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/log"
@@ -24,7 +24,7 @@ type Account struct {
 func NewAccount(email string, conf *Configuration) *Account {
 	accKeysPath := conf.AccountKeysPath(email)
 	// TODO: move to function in configuration?
-	accKeyPath := accKeysPath + string(os.PathSeparator) + email + ".key"
+	accKeyPath := filepath.Join(accKeysPath, email+".key")
 	if err := checkFolder(accKeysPath); err != nil {
 		log.Fatalf("Could not check/create directory for account %s: %v", email, err)
 	}
@@ -46,7 +46,7 @@ func NewAccount(email string, conf *Configuration) *Account {
 		}
 	}
 
-	accountFile := path.Join(conf.AccountPath(email), "account.json")
+	accountFile := filepath.Join(conf.AccountPath(email), "account.json")
 	if _, err := os.Stat(accountFile); os.IsNotExist(err) {
 		return &Account{Email: email, key: privKey, conf: conf}
 	}
@@ -127,7 +127,7 @@ func (a *Account) Save() error {
 	}
 
 	return ioutil.WriteFile(
-		path.Join(a.conf.AccountPath(a.Email), "account.json"),
+		filepath.Join(a.conf.AccountPath(a.Email), "account.json"),
 		jsonBytes,
 		0600,
 	)

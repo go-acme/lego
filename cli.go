@@ -5,7 +5,7 @@ package main
 import (
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 	"text/tabwriter"
 
 	"github.com/urfave/cli"
@@ -29,7 +29,7 @@ func main() {
 	defaultPath := ""
 	cwd, err := os.Getwd()
 	if err == nil {
-		defaultPath = path.Join(cwd, ".lego")
+		defaultPath = filepath.Join(cwd, ".lego")
 	}
 
 	app.Before = func(c *cli.Context) error {

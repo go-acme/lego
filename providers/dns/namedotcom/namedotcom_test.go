@@ -32,7 +32,12 @@ func TestLiveNamedotcomPresent(t *testing.T) {
 		t.Skip("skipping live test")
 	}
 
-	provider, err := NewDNSProviderCredentials(namedotcomUsername, namedotcomAPIToken, namedotcomServer)
+	config := NewDefaultConfig()
+	config.Username = namedotcomUsername
+	config.APIToken = namedotcomAPIToken
+	config.Server = namedotcomServer
+
+	provider, err := NewDNSProviderConfig(config)
 	assert.NoError(t, err)
 
 	err = provider.Present(namedotcomDomain, "", "123d==")
@@ -50,7 +55,12 @@ func TestLiveNamedotcomCleanUp(t *testing.T) {
 
 	time.Sleep(time.Second * 1)
 
-	provider, err := NewDNSProviderCredentials(namedotcomUsername, namedotcomAPIToken, namedotcomServer)
+	config := NewDefaultConfig()
+	config.Username = namedotcomUsername
+	config.APIToken = namedotcomAPIToken
+	config.Server = namedotcomServer
+
+	provider, err := NewDNSProviderConfig(config)
 	assert.NoError(t, err)
 
 	err = provider.CleanUp(namedotcomDomain, "", "123d==")

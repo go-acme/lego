@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -31,13 +32,11 @@ func init() {
 }
 
 func testRackspaceEnv() {
-	rackspaceAPIURL = testAPIURL
 	os.Setenv("RACKSPACE_USER", "testUser")
 	os.Setenv("RACKSPACE_API_KEY", "testKey")
 }
 
 func liveRackspaceEnv() {
-	rackspaceAPIURL = "https://identity.api.rackspacecloud.com/v2.0/tokens"
 	os.Setenv("RACKSPACE_USER", rackspaceUser)
 	os.Setenv("RACKSPACE_API_KEY", rackspaceAPIKey)
 }
@@ -134,31 +133,50 @@ func dnsMux() *http.ServeMux {
 
 func TestNewDNSProviderMissingCredErr(t *testing.T) {
 	testRackspaceEnv()
-	_, err := NewDNSProviderCredentials("", "")
-	assert.EqualError(t, err, "Rackspace credentials missing")
+
+	_, err := NewDNSProviderConfig(&Config{})
+	assert.EqualError(t, err, "rackspace: credentials missing")
 }
 
 func TestOfflineRackspaceValid(t *testing.T) {
 	testRackspaceEnv()
-	provider, err := NewDNSProviderCredentials(os.Getenv("RACKSPACE_USER"), os.Getenv("RACKSPACE_API_KEY"))
 
-	assert.NoError(t, err)
+	config := NewDefaultConfig()
+	config.BaseURL = testAPIURL
+	config.APIKey = os.Getenv("RACKSPACE_API_KEY")
+	config.APIUser = os.Getenv("RACKSPACE_USER")
+
+	provider, err := NewDNSProviderConfig(config)
+	require.NoError(t, err)
+
 	assert.Equal(t, provider.token, "testToken", "The token should match")
 }
 
 func TestOfflineRackspacePresent(t *testing.T) {
 	testRackspaceEnv()
-	provider, err := NewDNSProvider()
+
+	config := NewDefaultConfig()
+	config.APIUser = os.Getenv("RACKSPACE_USER")
+	config.APIKey = os.Getenv("RACKSPACE_API_KEY")
+	config.BaseURL = testAPIURL
+
+	provider, err := NewDNSProviderConfig(config)
 
 	if assert.NoError(t, err) {
 		err = provider.Present("example.com", "token", "keyAuth")
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	}
 }
 
 func TestOfflineRackspaceCleanUp(t *testing.T) {
 	testRackspaceEnv()
-	provider, err := NewDNSProvider()
+
+	config := NewDefaultConfig()
+	config.APIUser = os.Getenv("RACKSPACE_USER")
+	config.APIKey = os.Getenv("RACKSPACE_API_KEY")
+	config.BaseURL = testAPIURL
+
+	provider, err := NewDNSProviderConfig(config)
 
 	if assert.NoError(t, err) {
 		err = provider.CleanUp("example.com", "token", "keyAuth")

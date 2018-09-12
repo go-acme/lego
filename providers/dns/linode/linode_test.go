@@ -86,17 +86,22 @@ func TestNewDNSProviderWithoutEnv(t *testing.T) {
 	os.Setenv("LINODE_API_KEY", "")
 
 	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "Linode: some credentials information are missing: LINODE_API_KEY")
+	assert.EqualError(t, err, "linode: some credentials information are missing: LINODE_API_KEY")
 }
 
 func TestNewDNSProviderCredentialsWithKey(t *testing.T) {
-	_, err := NewDNSProviderCredentials("testing")
+	config := NewDefaultConfig()
+	config.APIKey = "testing"
+
+	_, err := NewDNSProviderConfig(config)
 	assert.NoError(t, err)
 }
 
 func TestNewDNSProviderCredentialsWithoutKey(t *testing.T) {
-	_, err := NewDNSProviderCredentials("")
-	assert.EqualError(t, err, "Linode credentials missing")
+	config := NewDefaultConfig()
+
+	_, err := NewDNSProviderConfig(config)
+	assert.EqualError(t, err, "linode: credentials missing")
 }
 
 func TestDNSProvider_Present(t *testing.T) {

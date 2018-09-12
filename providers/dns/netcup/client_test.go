@@ -2,10 +2,8 @@ package netcup
 
 import (
 	"fmt"
-	"net/http"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/xenolf/lego/acme"
@@ -17,10 +15,7 @@ func TestClientAuth(t *testing.T) {
 	}
 
 	// Setup
-	httpClient := &http.Client{
-		Timeout: 10 * time.Second,
-	}
-	client := NewClient(httpClient, testCustomerNumber, testAPIKey, testAPIPassword)
+	client := NewClient(testCustomerNumber, testAPIKey, testAPIPassword)
 
 	for i := 1; i < 4; i++ {
 		i := i
@@ -42,10 +37,7 @@ func TestClientGetDnsRecords(t *testing.T) {
 		t.Skip("skipping live test")
 	}
 
-	httpClient := &http.Client{
-		Timeout: 10 * time.Second,
-	}
-	client := NewClient(httpClient, testCustomerNumber, testAPIKey, testAPIPassword)
+	client := NewClient(testCustomerNumber, testAPIKey, testAPIPassword)
 
 	// Setup
 	sessionID, err := client.Login()
@@ -73,10 +65,7 @@ func TestClientUpdateDnsRecord(t *testing.T) {
 	}
 
 	// Setup
-	httpClient := &http.Client{
-		Timeout: 10 * time.Second,
-	}
-	client := NewClient(httpClient, testCustomerNumber, testAPIKey, testAPIPassword)
+	client := NewClient(testCustomerNumber, testAPIKey, testAPIPassword)
 
 	sessionID, err := client.Login()
 	assert.NoError(t, err)
@@ -88,7 +77,7 @@ func TestClientUpdateDnsRecord(t *testing.T) {
 
 	hostname := strings.Replace(fqdn, "."+zone, "", 1)
 
-	record := CreateTxtRecord(hostname, "asdf5678")
+	record := CreateTxtRecord(hostname, "asdf5678", 120)
 
 	// test
 	zone = acme.UnFqdn(zone)

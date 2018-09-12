@@ -356,7 +356,7 @@ DNSNames:
 		log.Infof("[%s] acme: Obtaining SAN certificate given a CSR", strings.Join(domains, ", "))
 	}
 
-	order, err := c.createOrderForIdentifiers(domains)
+	order, err := c.createOrderForIdentifiers(domains, csr.Raw)
 	if err != nil {
 		return nil, err
 	}
@@ -418,7 +418,33 @@ func (c *Client) ObtainCertificate(domains []string, bundle bool, privKey crypto
 		log.Infof("[%s] acme: Obtaining SAN certificate", strings.Join(domains, ", "))
 	}
 
-	order, err := c.createOrderForIdentifiers(domains)
+	var err error
+	if privKey == nil {
+		privKey, err = generatePrivateKey(c.keyType)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	commonName := domains[0]
+	var identifiers []identifier
+	for _, domain := range domains {
+		identifiers = append(identifiers, identifier{Type: "dns", Value: domain})
+	}
+
+	san := []string{commonName}
+	for _, auth := range identifiers {
+		if auth.Value != commonName {
+			san = append(san, auth.Value)
+		}
+	}
+
+	csr, err := generateCsr(privKey, commonName, san, mustStaple)
+	if err != nil {
+		return nil, err
+	}
+
+	order, err := c.createOrderForIdentifiers(domains, csr)
 	if err != nil {
 		return nil, err
 	}
@@ -440,7 +466,7 @@ func (c *Client) ObtainCertificate(domains []string, bundle bool, privKey crypto
 	log.Infof("[%s] acme: Validations succeeded; requesting certificates", strings.Join(domains, ", "))
 
 	failures := make(ObtainError)
-	cert, err := c.requestCertificateForOrder(order, bundle, privKey, mustStaple)
+	cert, err := c.requestCertificateForCsr(order, bundle, csr, pemEncode(privKey))
 	if err != nil {
 		for _, auth := range authz {
 			failures[auth.Identifier.Value] = err
@@ -536,7 +562,7 @@ func (c *Client) RenewCertificate(cert CertificateResource, bundle, mustStaple b
 	return newCert, err
 }
 
-func (c *Client) createOrderForIdentifiers(domains []string) (orderResource, error) {
+func (c *Client) createOrderForIdentifiers(domains []string, csr []byte) (orderResource, error) {
 
 	var identifiers []identifier
 	for _, domain := range domains {
@@ -545,6 +571,7 @@ func (c *Client) createOrderForIdentifiers(domains []string) (orderResource, err
 
 	order := orderMessage{
 		Identifiers: identifiers,
+		Csr:         base64.RawURLEncoding.EncodeToString(csr),
 	}
 
 	var response orderMessage

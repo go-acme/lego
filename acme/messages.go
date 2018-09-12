@@ -50,6 +50,7 @@ type orderMessage struct {
 	Authorizations []string     `json:"authorizations,omitempty"`
 	Finalize       string       `json:"finalize,omitempty"`
 	Certificate    string       `json:"certificate,omitempty"`
+	Csr            string       `json:"csr,omitempty"`
 }
 
 type authorization struct {

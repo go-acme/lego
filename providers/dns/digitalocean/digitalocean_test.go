@@ -42,13 +42,16 @@ func TestDigitalOceanPresent(t *testing.T) {
 		}`)
 	}))
 	defer mock.Close()
-	digitalOceanBaseURL = mock.URL
 
-	doprov, err := NewDNSProviderCredentials(fakeDigitalOceanAuth)
+	config := NewDefaultConfig()
+	config.AuthToken = fakeDigitalOceanAuth
+	config.BaseURL = mock.URL
+
+	provider, err := NewDNSProviderConfig(config)
 	require.NoError(t, err)
-	require.NotNil(t, doprov)
+	require.NotNil(t, provider)
 
-	err = doprov.Present("example.com", "", "foobar")
+	err = provider.Present("example.com", "", "foobar")
 	require.NoError(t, err, "fail to create TXT record")
 
 	assert.True(t, requestReceived, "Expected request to be received by mock backend, but it wasn't")
@@ -69,17 +72,20 @@ func TestDigitalOceanCleanUp(t *testing.T) {
 		w.WriteHeader(http.StatusNoContent)
 	}))
 	defer mock.Close()
-	digitalOceanBaseURL = mock.URL
 
-	doprov, err := NewDNSProviderCredentials(fakeDigitalOceanAuth)
+	config := NewDefaultConfig()
+	config.AuthToken = fakeDigitalOceanAuth
+	config.BaseURL = mock.URL
+
+	provider, err := NewDNSProviderConfig(config)
 	require.NoError(t, err)
-	require.NotNil(t, doprov)
+	require.NotNil(t, provider)
 
-	doprov.recordIDsMu.Lock()
-	doprov.recordIDs["_acme-challenge.example.com."] = 1234567
-	doprov.recordIDsMu.Unlock()
+	provider.recordIDsMu.Lock()
+	provider.recordIDs["_acme-challenge.example.com."] = 1234567
+	provider.recordIDsMu.Unlock()
 
-	err = doprov.CleanUp("example.com", "", "")
+	err = provider.CleanUp("example.com", "", "")
 	require.NoError(t, err, "fail to remove TXT record")
 
 	assert.True(t, requestReceived, "Expected request to be received by mock backend, but it wasn't")

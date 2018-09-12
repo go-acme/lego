@@ -43,8 +43,10 @@ func makeLightsailProvider(ts *httptest.Server) (*DNSProvider, error) {
 		return nil, err
 	}
 
+	conf := NewDefaultConfig()
+
 	client := lightsail.New(sess)
-	return &DNSProvider{client: client}, nil
+	return &DNSProvider{client: client, config: conf}, nil
 }
 
 func TestCredentialsFromEnv(t *testing.T) {

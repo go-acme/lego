@@ -60,7 +60,7 @@ func TestNewDNSProviderMissingCredErr(t *testing.T) {
 	os.Setenv("GCE_PROJECT", "")
 
 	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "Google Cloud project name missing")
+	assert.EqualError(t, err, "googlecloud: project name missing")
 }
 
 func TestLiveGoogleCloudPresent(t *testing.T) {

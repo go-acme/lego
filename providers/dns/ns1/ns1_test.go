@@ -30,7 +30,10 @@ func TestNewDNSProviderValid(t *testing.T) {
 	defer restoreEnv()
 	os.Setenv("NS1_API_KEY", "")
 
-	_, err := NewDNSProviderCredentials("123")
+	config := NewDefaultConfig()
+	config.APIKey = "123"
+
+	_, err := NewDNSProviderConfig(config)
 	assert.NoError(t, err)
 }
 
@@ -39,7 +42,7 @@ func TestNewDNSProviderMissingCredErr(t *testing.T) {
 	os.Setenv("NS1_API_KEY", "")
 
 	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "NS1: some credentials information are missing: NS1_API_KEY")
+	assert.EqualError(t, err, "ns1: some credentials information are missing: NS1_API_KEY")
 }
 
 func TestLivePresent(t *testing.T) {
@@ -47,7 +50,10 @@ func TestLivePresent(t *testing.T) {
 		t.Skip("skipping live test")
 	}
 
-	provider, err := NewDNSProviderCredentials(apiKey)
+	config := NewDefaultConfig()
+	config.APIKey = apiKey
+
+	provider, err := NewDNSProviderConfig(config)
 	assert.NoError(t, err)
 
 	err = provider.Present(domain, "", "123d==")
@@ -61,7 +67,10 @@ func TestLiveCleanUp(t *testing.T) {
 
 	time.Sleep(time.Second * 1)
 
-	provider, err := NewDNSProviderCredentials(apiKey)
+	config := NewDefaultConfig()
+	config.APIKey = apiKey
+
+	provider, err := NewDNSProviderConfig(config)
 	assert.NoError(t, err)
 
 	err = provider.CleanUp(domain, "", "123d==")

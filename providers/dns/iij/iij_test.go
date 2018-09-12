@@ -95,7 +95,7 @@ func TestNewDNSProviderMissingCredErr(t *testing.T) {
 	os.Setenv("IIJ_DO_SERVICE_CODE", "")
 
 	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "IIJ: some credentials information are missing: IIJ_API_ACCESS_KEY,IIJ_API_SECRET_KEY,IIJ_DO_SERVICE_CODE")
+	assert.EqualError(t, err, "iij: some credentials information are missing: IIJ_API_ACCESS_KEY,IIJ_API_SECRET_KEY,IIJ_DO_SERVICE_CODE")
 }
 
 func TestNewDNSProvider(t *testing.T) {

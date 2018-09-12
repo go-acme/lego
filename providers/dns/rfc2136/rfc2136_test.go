@@ -59,7 +59,10 @@ func TestRFC2136ServerSuccess(t *testing.T) {
 	require.NoError(t, err, "Failed to start test server")
 	defer server.Shutdown()
 
-	provider, err := NewDNSProviderCredentials(addrstr, "", "", "", "")
+	config := NewDefaultConfig()
+	config.Nameserver = addrstr
+
+	provider, err := NewDNSProviderConfig(config)
 	require.NoError(t, err)
 
 	err = provider.Present(rfc2136TestDomain, "", rfc2136TestKeyAuth)
@@ -75,7 +78,10 @@ func TestRFC2136ServerError(t *testing.T) {
 	require.NoError(t, err, "Failed to start test server")
 	defer server.Shutdown()
 
-	provider, err := NewDNSProviderCredentials(addrstr, "", "", "", "")
+	config := NewDefaultConfig()
+	config.Nameserver = addrstr
+
+	provider, err := NewDNSProviderConfig(config)
 	require.NoError(t, err)
 
 	err = provider.Present(rfc2136TestDomain, "", rfc2136TestKeyAuth)
@@ -94,7 +100,12 @@ func TestRFC2136TsigClient(t *testing.T) {
 	require.NoError(t, err, "Failed to start test server")
 	defer server.Shutdown()
 
-	provider, err := NewDNSProviderCredentials(addrstr, "", rfc2136TestTsigKey, rfc2136TestTsigSecret, "")
+	config := NewDefaultConfig()
+	config.Nameserver = addrstr
+	config.TSIGKey = rfc2136TestTsigKey
+	config.TSIGSecret = rfc2136TestTsigSecret
+
+	provider, err := NewDNSProviderConfig(config)
 	require.NoError(t, err)
 
 	err = provider.Present(rfc2136TestDomain, "", rfc2136TestKeyAuth)
@@ -121,7 +132,10 @@ func TestRFC2136ValidUpdatePacket(t *testing.T) {
 	expect, err := m.Pack()
 	require.NoError(t, err, "error packing")
 
-	provider, err := NewDNSProviderCredentials(addrstr, "", "", "", "")
+	config := NewDefaultConfig()
+	config.Nameserver = addrstr
+
+	provider, err := NewDNSProviderConfig(config)
 	require.NoError(t, err)
 
 	err = provider.Present(rfc2136TestDomain, "", "1234d==")

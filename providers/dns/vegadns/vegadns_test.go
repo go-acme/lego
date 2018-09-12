@@ -147,7 +147,7 @@ func TestVegaDNSPresentFailToFindZone(t *testing.T) {
 	require.NoError(t, err)
 
 	err = provider.Present("example.com", "token", "keyAuth")
-	assert.EqualError(t, err, "can't find Authoritative Zone for _acme-challenge.example.com. in Present: Unable to find auth zone for fqdn _acme-challenge.example.com")
+	assert.EqualError(t, err, "vegadns: can't find Authoritative Zone for _acme-challenge.example.com. in Present: Unable to find auth zone for fqdn _acme-challenge.example.com")
 }
 
 func TestVegaDNSPresentFailToCreateTXT(t *testing.T) {
@@ -161,7 +161,7 @@ func TestVegaDNSPresentFailToCreateTXT(t *testing.T) {
 	require.NoError(t, err)
 
 	err = provider.Present("example.com", "token", "keyAuth")
-	assert.EqualError(t, err, "Got bad answer from VegaDNS on CreateTXT. Code: 400. Message: ")
+	assert.EqualError(t, err, "vegadns: Got bad answer from VegaDNS on CreateTXT. Code: 400. Message: ")
 }
 
 func TestVegaDNSCleanUpSuccess(t *testing.T) {
@@ -189,7 +189,7 @@ func TestVegaDNSCleanUpFailToFindZone(t *testing.T) {
 	require.NoError(t, err)
 
 	err = provider.CleanUp("example.com", "token", "keyAuth")
-	assert.EqualError(t, err, "can't find Authoritative Zone for _acme-challenge.example.com. in CleanUp: Unable to find auth zone for fqdn _acme-challenge.example.com")
+	assert.EqualError(t, err, "vegadns: can't find Authoritative Zone for _acme-challenge.example.com. in CleanUp: Unable to find auth zone for fqdn _acme-challenge.example.com")
 }
 
 func TestVegaDNSCleanUpFailToGetRecordID(t *testing.T) {
@@ -203,7 +203,7 @@ func TestVegaDNSCleanUpFailToGetRecordID(t *testing.T) {
 	require.NoError(t, err)
 
 	err = provider.CleanUp("example.com", "token", "keyAuth")
-	assert.EqualError(t, err, "couldn't get Record ID in CleanUp: Got bad answer from VegaDNS on GetRecordID. Code: 404. Message: ")
+	assert.EqualError(t, err, "vegadns: couldn't get Record ID in CleanUp: Got bad answer from VegaDNS on GetRecordID. Code: 404. Message: ")
 }
 
 func vegaDNSMuxSuccess() *http.ServeMux {

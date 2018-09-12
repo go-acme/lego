@@ -34,7 +34,11 @@ func TestNewDNSProviderValid(t *testing.T) {
 	os.Setenv("EXOSCALE_API_KEY", "")
 	os.Setenv("EXOSCALE_API_SECRET", "")
 
-	_, err := NewDNSProviderClient("example@example.com", "123", "")
+	config := NewDefaultConfig()
+	config.APIKey = "example@example.com"
+	config.APISecret = "123"
+
+	_, err := NewDNSProviderConfig(config)
 	assert.NoError(t, err)
 }
 
@@ -53,11 +57,15 @@ func TestNewDNSProviderMissingCredErr(t *testing.T) {
 	defer restoreEnv()
 
 	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "Exoscale: some credentials information are missing: EXOSCALE_API_KEY,EXOSCALE_API_SECRET")
+	assert.EqualError(t, err, "exoscale: some credentials information are missing: EXOSCALE_API_KEY,EXOSCALE_API_SECRET")
 }
 
 func TestExtractRootRecordName(t *testing.T) {
-	provider, err := NewDNSProviderClient("example@example.com", "123", "")
+	config := NewDefaultConfig()
+	config.APIKey = "example@example.com"
+	config.APISecret = "123"
+
+	provider, err := NewDNSProviderConfig(config)
 	assert.NoError(t, err)
 
 	zone, recordName, err := provider.FindZoneAndRecordName("_acme-challenge.bar.com.", "bar.com")
@@ -67,7 +75,11 @@ func TestExtractRootRecordName(t *testing.T) {
 }
 
 func TestExtractSubRecordName(t *testing.T) {
-	provider, err := NewDNSProviderClient("example@example.com", "123", "")
+	config := NewDefaultConfig()
+	config.APIKey = "example@example.com"
+	config.APISecret = "123"
+
+	provider, err := NewDNSProviderConfig(config)
 	assert.NoError(t, err)
 
 	zone, recordName, err := provider.FindZoneAndRecordName("_acme-challenge.foo.bar.com.", "foo.bar.com")
@@ -81,7 +93,11 @@ func TestLiveExoscalePresent(t *testing.T) {
 		t.Skip("skipping live test")
 	}
 
-	provider, err := NewDNSProviderClient(exoscaleAPIKey, exoscaleAPISecret, "")
+	config := NewDefaultConfig()
+	config.APIKey = exoscaleAPIKey
+	config.APISecret = exoscaleAPISecret
+
+	provider, err := NewDNSProviderConfig(config)
 	assert.NoError(t, err)
 
 	err = provider.Present(exoscaleDomain, "", "123d==")
@@ -99,7 +115,11 @@ func TestLiveExoscaleCleanUp(t *testing.T) {
 
 	time.Sleep(time.Second * 1)
 
-	provider, err := NewDNSProviderClient(exoscaleAPIKey, exoscaleAPISecret, "")
+	config := NewDefaultConfig()
+	config.APIKey = exoscaleAPIKey
+	config.APISecret = exoscaleAPISecret
+
+	provider, err := NewDNSProviderConfig(config)
 	assert.NoError(t, err)
 
 	err = provider.CleanUp(exoscaleDomain, "", "123d==")

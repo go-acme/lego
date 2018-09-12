@@ -42,13 +42,13 @@ func NewDNSProviderCredentials(key string) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfil the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
+	fqdn, _, ttl := acme.DNS01Record(domain, keyAuth)
 	zoneID, zoneName, err := d.getHostedZone(domain)
 	if err != nil {
 		return err
 	}
 
-	recordAttributes := d.newTxtRecord(zoneName, fqdn, value, ttl)
+	recordAttributes := d.newTxtRecord(zoneName, fqdn, token, ttl)
 	_, _, err = d.client.Domains.CreateRecord(zoneID, *recordAttributes)
 	if err != nil {
 		return fmt.Errorf("dnspod API call failed: %v", err)

@@ -1,8 +1,6 @@
 package acme
 
 import (
-	"crypto/sha256"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	"net"
@@ -56,11 +54,9 @@ func getNameservers(path string, defaults []string) []string {
 
 // DNS01Record returns a DNS record which will fulfill the `dns-01` challenge
 func DNS01Record(domain, keyAuth string) (fqdn string, value string, ttl int) {
-	keyAuthShaBytes := sha256.Sum256([]byte(keyAuth))
-	// base64URL encoding without padding
-	value = base64.RawURLEncoding.EncodeToString(keyAuthShaBytes[:sha256.Size])
+	value = keyAuth
 	ttl = 120
-	fqdn = fmt.Sprintf("_acme-challenge.%s.", domain)
+	fqdn = fmt.Sprintf("_dnsauth.%s.", domain)
 	return
 }
 
@@ -97,13 +93,7 @@ func (s *dnsChallenge) PreSolve(chlng challenge, domain string) error {
 func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 	log.Infof("[%s] acme: Trying to solve DNS-01", domain)
 
-	// Generate the Key Authorization for the challenge
-	keyAuth, err := getKeyAuthorization(chlng.Token, s.jws.privKey)
-	if err != nil {
-		return err
-	}
-
-	fqdn, value, _ := DNS01Record(domain, keyAuth)
+	fqdn, value, _ := DNS01Record(domain, chlng.Token)
 
 	log.Infof("[%s] Checking DNS record propagation using %+v", domain, RecursiveNameservers)
 
@@ -115,14 +105,13 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 		timeout, interval = 60*time.Second, 2*time.Second
 	}
 
-	err = WaitFor(timeout, interval, func() (bool, error) {
+	err := WaitFor(timeout, interval, func() (bool, error) {
 		return PreCheckDNS(fqdn, value)
 	})
 	if err != nil {
 		return err
 	}
-
-	return s.validate(s.jws, domain, chlng.URL, challenge{Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
+	return s.validate(s.jws, domain, chlng.URL, challenge{Type: chlng.Type, Token: chlng.Token, KeyAuthorization: chlng.Token})
 }
 
 // CleanUp cleans the challenge
@@ -176,9 +165,10 @@ func checkAuthoritativeNss(fqdn, value string, nameservers []string) (bool, erro
 		var found bool
 		for _, rr := range r.Answer {
 			if txt, ok := rr.(*dns.TXT); ok {
-				if strings.Join(txt.Txt, "") == value {
-					found = true
-					break
+				for _, v := range txt.Txt {
+					if v == value {
+						found = true
+					}
 				}
 			}
 		}
@@ -187,7 +177,6 @@ func checkAuthoritativeNss(fqdn, value string, nameservers []string) (bool, erro
 			return false, fmt.Errorf("NS %s did not return the expected TXT record", ns)
 		}
 	}
-
 	return true, nil
 }
 

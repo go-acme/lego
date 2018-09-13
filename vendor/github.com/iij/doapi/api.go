@@ -22,11 +22,11 @@ import (
 )
 
 const (
-	HmacSHA1           = "HmacSHA1"
-	HmacSHA256         = "HmacSHA256"
-	SignatureVersion2  = "2"
-	APIVersion = "20140601"
-	EndpointJSON       = "https://do.api.iij.jp/"
+	HmacSHA1          = "HmacSHA1"
+	HmacSHA256        = "HmacSHA256"
+	SignatureVersion2 = "2"
+	APIVersion        = "20140601"
+	EndpointJSON      = "https://do.api.iij.jp/"
 	// EndpointJSON = "http://localhost:9999/"
 	TimeLayout      = "2006-01-02T15:04:05Z"
 	PostContentType = "application/json"
@@ -140,6 +140,9 @@ func (a API) PostSome(method string, param url.URL, body interface{}) (resp *htt
 	if body != nil {
 		var bufb []byte
 		bufb, err = json.Marshal(body)
+		if err != nil {
+			return nil, err
+		}
 		if len(bufb) > 2 {
 			log.Debug("call with body", method, string(bufb))
 			buf = bytes.NewBuffer(bufb)
@@ -154,6 +157,9 @@ func (a API) PostSome(method string, param url.URL, body interface{}) (resp *htt
 		buf = bytes.NewBufferString("")
 	}
 	req, err := http.NewRequest(method, param.String(), buf)
+	if err != nil {
+		return nil, err
+	}
 	if body != nil {
 		req.Header.Add("content-type", PostContentType)
 	}

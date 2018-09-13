@@ -223,14 +223,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:fed64c975620bacb8b3e531e31974149eef07fa0c4bc99185d35c4beaa6bd98a"
+  digest = "1:c45e4f1755487478216e06437e161d56299d963282ce109555091bc4c7a57343"
   name = "github.com/iij/doapi"
   packages = [
     ".",
     "protocol",
   ]
   pruneopts = "NUT"
-  revision = "afe9fa11fb27e5e8ab2dfc1675e91387aa63eaa2"
+  revision = "8803795a9b7b938fa88ddbd63a77893beee14cd8"
 
 [[projects]]
   digest = "1:ac6d01547ec4f7f673311b4663909269bfb8249952de3279799289467837c3cc"

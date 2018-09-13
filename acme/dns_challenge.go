@@ -165,10 +165,9 @@ func checkAuthoritativeNss(fqdn, value string, nameservers []string) (bool, erro
 		var found bool
 		for _, rr := range r.Answer {
 			if txt, ok := rr.(*dns.TXT); ok {
-				for _, v := range txt.Txt {
-					if v == value {
-						found = true
-					}
+				if strings.Join(txt.Txt, "") == value {
+					found = true
+					break
 				}
 			}
 		}
@@ -177,6 +176,7 @@ func checkAuthoritativeNss(fqdn, value string, nameservers []string) (bool, erro
 			return false, fmt.Errorf("NS %s did not return the expected TXT record", ns)
 		}
 	}
+
 	return true, nil
 }
 

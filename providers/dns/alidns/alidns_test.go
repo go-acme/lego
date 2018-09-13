@@ -16,8 +16,8 @@ var (
 )
 
 func init() {
-	alidnsAPIKey = os.Getenv("ALIDNS_API_KEY")
-	alidnsSecretKey = os.Getenv("ALIDNS_SECRET_KEY")
+	alidnsAPIKey = os.Getenv("ALICLOUD_ACCESS_KEY")
+	alidnsSecretKey = os.Getenv("ALICLOUD_SECRET_KEY")
 	alidnsDomain = os.Getenv("ALIDNS_DOMAIN")
 
 	if len(alidnsAPIKey) > 0 && len(alidnsSecretKey) > 0 && len(alidnsDomain) > 0 {
@@ -26,14 +26,14 @@ func init() {
 }
 
 func restoreEnv() {
-	os.Setenv("ALIDNS_API_KEY", alidnsAPIKey)
-	os.Setenv("ALIDNS_SECRET_KEY", alidnsSecretKey)
+	os.Setenv("ALICLOUD_ACCESS_KEY", alidnsAPIKey)
+	os.Setenv("ALICLOUD_SECRET_KEY", alidnsSecretKey)
 }
 
 func TestNewDNSProviderValid(t *testing.T) {
 	defer restoreEnv()
-	os.Setenv("ALIDNS_API_KEY", "")
-	os.Setenv("ALIDNS_SECRET_KEY", "")
+	os.Setenv("ALICLOUD_ACCESS_KEY", "")
+	os.Setenv("ALICLOUD_SECRET_KEY", "")
 
 	_, err := NewDNSProviderCredentials("123", "123", "")
 	assert.NoError(t, err)
@@ -41,8 +41,8 @@ func TestNewDNSProviderValid(t *testing.T) {
 
 func TestNewDNSProviderValidEnv(t *testing.T) {
 	defer restoreEnv()
-	os.Setenv("ALIDNS_API_KEY", "123")
-	os.Setenv("ALIDNS_SECRET_KEY", "123")
+	os.Setenv("ALICLOUD_ACCESS_KEY", "123")
+	os.Setenv("ALICLOUD_SECRET_KEY", "123")
 
 	_, err := NewDNSProvider()
 	assert.NoError(t, err)
@@ -50,11 +50,11 @@ func TestNewDNSProviderValidEnv(t *testing.T) {
 
 func TestNewDNSProviderMissingCredErr(t *testing.T) {
 	defer restoreEnv()
-	os.Setenv("CLOUDXNS_API_KEY", "")
-	os.Setenv("CLOUDXNS_SECRET_KEY", "")
+	os.Setenv("ALICLOUD_ACCESS_KEY", "")
+	os.Setenv("ALICLOUD_SECRET_KEY", "")
 
 	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "AliDNS: some credentials information are missing: ALIDNS_API_KEY,ALIDNS_SECRET_KEY")
+	assert.EqualError(t, err, "AliDNS: some credentials information are missing: ALICLOUD_ACCESS_KEY,ALICLOUD_SECRET_KEY")
 }
 
 func TestCloudXNSPresent(t *testing.T) {

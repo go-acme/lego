@@ -170,7 +170,8 @@ func TestValidate(t *testing.T) {
 		},
 		{
 			name:     "POST-valid",
-			statuses: []string{"valid"}},
+			statuses: []string{"valid"},
+		},
 		{
 			name:     "POST-invalid",
 			statuses: []string{"invalid"},
@@ -183,7 +184,8 @@ func TestValidate(t *testing.T) {
 		},
 		{
 			name:     "GET-valid",
-			statuses: []string{"pending", "valid"}},
+			statuses: []string{"pending", "valid"},
+		},
 		{
 			name:     "GET-invalid",
 			statuses: []string{"pending", "invalid"},

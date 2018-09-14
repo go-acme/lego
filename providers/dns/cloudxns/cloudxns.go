@@ -74,7 +74,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, err
 	}
 
-	client.HttClient = config.HTTPClient
+	client.HTTPClient = config.HTTPClient
 
 	return &DNSProvider{client: client}, nil
 }

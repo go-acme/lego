@@ -16,7 +16,7 @@ func handlerMock(method string, response *apiResponse, data interface{}) http.Ha
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != method {
 			content, err := json.Marshal(apiResponse{
-				Code:    666,
+				Code:    999, // random code only for the test
 				Message: fmt.Sprintf("invalid method: got %s want %s", req.Method, method),
 			})
 			if err != nil {

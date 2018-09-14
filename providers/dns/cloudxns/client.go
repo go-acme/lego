@@ -53,19 +53,19 @@ func NewClient(apiKey string, secretKey string) (*Client, error) {
 	}
 
 	return &Client{
-		apiKey:    apiKey,
-		secretKey: secretKey,
-		HttClient: &http.Client{},
-		BaseURL:   defaultBaseURL,
+		apiKey:     apiKey,
+		secretKey:  secretKey,
+		HTTPClient: &http.Client{},
+		BaseURL:    defaultBaseURL,
 	}, nil
 }
 
 // Client CloudXNS client
 type Client struct {
-	apiKey    string
-	secretKey string
-	HttClient *http.Client
-	BaseURL   string
+	apiKey     string
+	secretKey  string
+	HTTPClient *http.Client
+	BaseURL    string
 }
 
 // GetDomainInformation Get domain name information for a FQDN
@@ -156,7 +156,7 @@ func (c *Client) doRequest(method, uri string, body []byte) (json.RawMessage, er
 		return nil, err
 	}
 
-	resp, err := c.HttClient.Do(req)
+	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("CloudXNS: %v", err)
 	}

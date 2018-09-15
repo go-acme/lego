@@ -35,7 +35,11 @@ func TestNewDNSProviderValid(t *testing.T) {
 	os.Setenv("ALICLOUD_ACCESS_KEY", "")
 	os.Setenv("ALICLOUD_SECRET_KEY", "")
 
-	_, err := NewDNSProviderCredentials("123", "123", "")
+	config := NewDefaultConfig()
+	config.APIKey = "123"
+	config.SecretKey = "123"
+
+	_, err := NewDNSProviderConfig(config)
 	assert.NoError(t, err)
 }
 
@@ -54,7 +58,7 @@ func TestNewDNSProviderMissingCredErr(t *testing.T) {
 	os.Setenv("ALICLOUD_SECRET_KEY", "")
 
 	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "AliDNS: some credentials information are missing: ALICLOUD_ACCESS_KEY,ALICLOUD_SECRET_KEY")
+	assert.EqualError(t, err, "alicloud: some credentials information are missing: ALICLOUD_ACCESS_KEY,ALICLOUD_SECRET_KEY")
 }
 
 func TestCloudXNSPresent(t *testing.T) {
@@ -62,7 +66,11 @@ func TestCloudXNSPresent(t *testing.T) {
 		t.Skip("skipping live test")
 	}
 
-	provider, err := NewDNSProviderCredentials(alidnsAPIKey, alidnsSecretKey, "")
+	config := NewDefaultConfig()
+	config.APIKey = alidnsAPIKey
+	config.SecretKey = alidnsSecretKey
+
+	provider, err := NewDNSProviderConfig(config)
 	assert.NoError(t, err)
 
 	err = provider.Present(alidnsDomain, "", "123d==")
@@ -75,7 +83,12 @@ func TestLivednspodCleanUp(t *testing.T) {
 	}
 
 	time.Sleep(time.Second * 1)
-	provider, err := NewDNSProviderCredentials(alidnsAPIKey, alidnsSecretKey, "")
+
+	config := NewDefaultConfig()
+	config.APIKey = alidnsAPIKey
+	config.SecretKey = alidnsSecretKey
+
+	provider, err := NewDNSProviderConfig(config)
 	assert.NoError(t, err)
 	err = provider.CleanUp(alidnsDomain, "", "123d==")
 	assert.NoError(t, err)

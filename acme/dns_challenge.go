@@ -24,6 +24,14 @@ var (
 
 const defaultResolvConf = "/etc/resolv.conf"
 
+const (
+	// DefaultPropagationTimeout default propagation timeout
+	DefaultPropagationTimeout = 60 * time.Second
+
+	// DefaultPollingInterval default polling interval
+	DefaultPollingInterval = 2 * time.Second
+)
+
 var defaultNameservers = []string{
 	"google-public-dns-a.google.com:53",
 	"google-public-dns-b.google.com:53",
@@ -112,7 +120,7 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 	case ChallengeProviderTimeout:
 		timeout, interval = provider.Timeout()
 	default:
-		timeout, interval = 60*time.Second, 2*time.Second
+		timeout, interval = DefaultPropagationTimeout, DefaultPollingInterval
 	}
 
 	err = WaitFor(timeout, interval, func() (bool, error) {

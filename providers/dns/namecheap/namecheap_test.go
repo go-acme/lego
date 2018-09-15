@@ -7,6 +7,9 @@ import (
 	"net/url"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -24,6 +27,174 @@ var (
 		"za.com": "za.com",
 	}
 )
+
+func TestGetHosts(t *testing.T) {
+	for _, test := range testcases {
+		t.Run(test.name, func(t *testing.T) {
+			mock := httptest.NewServer(http.HandlerFunc(
+				func(w http.ResponseWriter, r *http.Request) {
+					mockServer(&test, t, w, r)
+				}))
+			defer mock.Close()
+
+			config := NewDefaultConfig()
+			config.BaseURL = mock.URL
+			config.APIUser = fakeUser
+			config.APIKey = fakeKey
+			config.ClientIP = fakeClientIP
+			config.HTTPClient = &http.Client{Timeout: 60 * time.Second}
+
+			provider, err := NewDNSProviderConfig(config)
+			require.NoError(t, err)
+
+			ch, _ := newChallenge(test.domain, "", tlds)
+			hosts, err := provider.getHosts(ch)
+			if test.errString != "" {
+				assert.EqualError(t, err, test.errString)
+			} else {
+				assert.NoError(t, err)
+			}
+
+		next1:
+			for _, h := range hosts {
+				for _, th := range test.hosts {
+					if h == th {
+						continue next1
+					}
+				}
+				t.Errorf("getHosts case %s unexpected record [%s:%s:%s]", test.name, h.Type, h.Name, h.Address)
+			}
+
+		next2:
+			for _, th := range test.hosts {
+				for _, h := range hosts {
+					if h == th {
+						continue next2
+					}
+				}
+				t.Errorf("getHosts case %s missing record [%s:%s:%s]", test.name, th.Type, th.Name, th.Address)
+			}
+		})
+	}
+}
+
+func TestSetHosts(t *testing.T) {
+	for _, test := range testcases {
+		t.Run(test.name, func(t *testing.T) {
+			mock := httptest.NewServer(http.HandlerFunc(
+				func(w http.ResponseWriter, r *http.Request) {
+					mockServer(&test, t, w, r)
+				}))
+			defer mock.Close()
+
+			prov := mockDNSProvider(mock.URL)
+			ch, _ := newChallenge(test.domain, "", tlds)
+			hosts, err := prov.getHosts(ch)
+			if test.errString != "" {
+				assert.EqualError(t, err, test.errString)
+			} else {
+				assert.NoError(t, err)
+			}
+			if err != nil {
+				return
+			}
+
+			err = prov.setHosts(ch, hosts)
+			assert.NoError(t, err)
+		})
+	}
+}
+
+func TestPresent(t *testing.T) {
+	for _, test := range testcases {
+		t.Run(test.name, func(t *testing.T) {
+			mock := httptest.NewServer(http.HandlerFunc(
+				func(w http.ResponseWriter, r *http.Request) {
+					mockServer(&test, t, w, r)
+				}))
+			defer mock.Close()
+
+			prov := mockDNSProvider(mock.URL)
+			err := prov.Present(test.domain, "", "dummyKey")
+			if test.errString != "" {
+				assert.EqualError(t, err, "namecheap: "+test.errString)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestCleanUp(t *testing.T) {
+	for _, test := range testcases {
+		t.Run(test.name, func(t *testing.T) {
+			mock := httptest.NewServer(http.HandlerFunc(
+				func(w http.ResponseWriter, r *http.Request) {
+					mockServer(&test, t, w, r)
+				}))
+			defer mock.Close()
+
+			prov := mockDNSProvider(mock.URL)
+			err := prov.CleanUp(test.domain, "", "dummyKey")
+			if test.errString != "" {
+				assert.EqualError(t, err, "namecheap: "+test.errString)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestNamecheapDomainSplit(t *testing.T) {
+	tests := []struct {
+		domain string
+		valid  bool
+		tld    string
+		sld    string
+		host   string
+	}{
+		{domain: "a.b.c.test.co.uk", valid: true, tld: "co.uk", sld: "test", host: "a.b.c"},
+		{domain: "test.co.uk", valid: true, tld: "co.uk", sld: "test"},
+		{domain: "test.com", valid: true, tld: "com", sld: "test"},
+		{domain: "test.co.com", valid: true, tld: "co.com", sld: "test"},
+		{domain: "www.test.com.au", valid: true, tld: "com.au", sld: "test", host: "www"},
+		{domain: "www.za.com", valid: true, tld: "za.com", sld: "www"},
+		{},
+		{domain: "a"},
+		{domain: "com"},
+		{domain: "co.com"},
+		{domain: "co.uk"},
+		{domain: "test.au"},
+		{domain: "za.com"},
+		{domain: "www.za"},
+		{domain: "www.test.au"},
+		{domain: "www.test.unk"},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.domain, func(t *testing.T) {
+			valid := true
+			ch, err := newChallenge(test.domain, "", tlds)
+			if err != nil {
+				valid = false
+			}
+
+			if test.valid && !valid {
+				t.Errorf("Expected '%s' to split", test.domain)
+			} else if !test.valid && valid {
+				t.Errorf("Expected '%s' to produce error", test.domain)
+			}
+
+			if test.valid && valid {
+				assertEq(t, "domain", ch.domain, test.domain)
+				assertEq(t, "tld", ch.tld, test.tld)
+				assertEq(t, "sld", ch.sld, test.sld)
+				assertEq(t, "host", ch.host, test.host)
+			}
+		})
+	}
+}
 
 func assertEq(t *testing.T, variable, got, want string) {
 	if got != want {
@@ -79,193 +250,16 @@ func mockServer(tc *testcase, t *testing.T, w http.ResponseWriter, r *http.Reque
 	}
 }
 
-func testGetHosts(tc *testcase, t *testing.T) {
-	mock := httptest.NewServer(http.HandlerFunc(
-		func(w http.ResponseWriter, r *http.Request) {
-			mockServer(tc, t, w, r)
-		}))
-	defer mock.Close()
-
-	prov := &DNSProvider{
-		baseURL:  mock.URL,
-		apiUser:  fakeUser,
-		apiKey:   fakeKey,
-		clientIP: fakeClientIP,
-		client:   &http.Client{Timeout: 60 * time.Second},
-	}
-
-	ch, _ := newChallenge(tc.domain, "", tlds)
-	hosts, err := prov.getHosts(ch)
-	if tc.errString != "" {
-		if err == nil || err.Error() != tc.errString {
-			t.Errorf("Namecheap getHosts case %s expected error", tc.name)
-		}
-	} else {
-		if err != nil {
-			t.Errorf("Namecheap getHosts case %s failed\n%v", tc.name, err)
-		}
-	}
-
-next1:
-	for _, h := range hosts {
-		for _, th := range tc.hosts {
-			if h == th {
-				continue next1
-			}
-		}
-		t.Errorf("getHosts case %s unexpected record [%s:%s:%s]",
-			tc.name, h.Type, h.Name, h.Address)
-	}
-
-next2:
-	for _, th := range tc.hosts {
-		for _, h := range hosts {
-			if h == th {
-				continue next2
-			}
-		}
-		t.Errorf("getHosts case %s missing record [%s:%s:%s]",
-			tc.name, th.Type, th.Name, th.Address)
-	}
-}
-
 func mockDNSProvider(url string) *DNSProvider {
-	return &DNSProvider{
-		baseURL:  url,
-		apiUser:  fakeUser,
-		apiKey:   fakeKey,
-		clientIP: fakeClientIP,
-		client:   &http.Client{Timeout: 60 * time.Second},
-	}
-}
+	config := NewDefaultConfig()
+	config.BaseURL = url
+	config.APIUser = fakeUser
+	config.APIKey = fakeKey
+	config.ClientIP = fakeClientIP
+	config.HTTPClient = &http.Client{Timeout: 60 * time.Second}
 
-func testSetHosts(tc *testcase, t *testing.T) {
-	mock := httptest.NewServer(http.HandlerFunc(
-		func(w http.ResponseWriter, r *http.Request) {
-			mockServer(tc, t, w, r)
-		}))
-	defer mock.Close()
-
-	prov := mockDNSProvider(mock.URL)
-	ch, _ := newChallenge(tc.domain, "", tlds)
-	hosts, err := prov.getHosts(ch)
-	if tc.errString != "" {
-		if err == nil || err.Error() != tc.errString {
-			t.Errorf("Namecheap getHosts case %s expected error", tc.name)
-		}
-	} else {
-		if err != nil {
-			t.Errorf("Namecheap getHosts case %s failed\n%v", tc.name, err)
-		}
-	}
-	if err != nil {
-		return
-	}
-
-	err = prov.setHosts(ch, hosts)
-	if err != nil {
-		t.Errorf("Namecheap setHosts case %s failed", tc.name)
-	}
-}
-
-func testPresent(tc *testcase, t *testing.T) {
-	mock := httptest.NewServer(http.HandlerFunc(
-		func(w http.ResponseWriter, r *http.Request) {
-			mockServer(tc, t, w, r)
-		}))
-	defer mock.Close()
-
-	prov := mockDNSProvider(mock.URL)
-	err := prov.Present(tc.domain, "", "dummyKey")
-	if tc.errString != "" {
-		if err == nil || err.Error() != tc.errString {
-			t.Errorf("Namecheap Present case %s expected error", tc.name)
-		}
-	} else {
-		if err != nil {
-			t.Errorf("Namecheap Present case %s failed\n%v", tc.name, err)
-		}
-	}
-}
-
-func testCleanUp(tc *testcase, t *testing.T) {
-	mock := httptest.NewServer(http.HandlerFunc(
-		func(w http.ResponseWriter, r *http.Request) {
-			mockServer(tc, t, w, r)
-		}))
-	defer mock.Close()
-
-	prov := mockDNSProvider(mock.URL)
-	err := prov.CleanUp(tc.domain, "", "dummyKey")
-	if tc.errString != "" {
-		if err == nil || err.Error() != tc.errString {
-			t.Errorf("Namecheap CleanUp case %s expected error", tc.name)
-		}
-	} else {
-		if err != nil {
-			t.Errorf("Namecheap CleanUp case %s failed\n%v", tc.name, err)
-		}
-	}
-}
-
-func TestNamecheap(t *testing.T) {
-	for _, tc := range testcases {
-		testGetHosts(&tc, t)
-		testSetHosts(&tc, t)
-		testPresent(&tc, t)
-		testCleanUp(&tc, t)
-	}
-}
-
-func TestNamecheapDomainSplit(t *testing.T) {
-	tests := []struct {
-		domain string
-		valid  bool
-		tld    string
-		sld    string
-		host   string
-	}{
-		{"a.b.c.test.co.uk", true, "co.uk", "test", "a.b.c"},
-		{"test.co.uk", true, "co.uk", "test", ""},
-		{"test.com", true, "com", "test", ""},
-		{"test.co.com", true, "co.com", "test", ""},
-		{"www.test.com.au", true, "com.au", "test", "www"},
-		{"www.za.com", true, "za.com", "www", ""},
-		{"", false, "", "", ""},
-		{"a", false, "", "", ""},
-		{"com", false, "", "", ""},
-		{"co.com", false, "", "", ""},
-		{"co.uk", false, "", "", ""},
-		{"test.au", false, "", "", ""},
-		{"za.com", false, "", "", ""},
-		{"www.za", false, "", "", ""},
-		{"www.test.au", false, "", "", ""},
-		{"www.test.unk", false, "", "", ""},
-	}
-
-	for _, test := range tests {
-		test := test
-		t.Run(test.domain, func(t *testing.T) {
-			valid := true
-			ch, err := newChallenge(test.domain, "", tlds)
-			if err != nil {
-				valid = false
-			}
-
-			if test.valid && !valid {
-				t.Errorf("Expected '%s' to split", test.domain)
-			} else if !test.valid && valid {
-				t.Errorf("Expected '%s' to produce error", test.domain)
-			}
-
-			if test.valid && valid {
-				assertEq(t, "domain", ch.domain, test.domain)
-				assertEq(t, "tld", ch.tld, test.tld)
-				assertEq(t, "sld", ch.sld, test.sld)
-				assertEq(t, "host", ch.host, test.host)
-			}
-		})
-	}
+	provider, _ := NewDNSProviderConfig(config)
+	return provider
 }
 
 type testcase struct {
@@ -279,38 +273,34 @@ type testcase struct {
 
 var testcases = []testcase{
 	{
-		"Test:Success:1",
-		"test.example.com",
-		[]host{
-			{"A", "home", "10.0.0.1", "10", "1799"},
-			{"A", "www", "10.0.0.2", "10", "1200"},
-			{"AAAA", "a", "::0", "10", "1799"},
-			{"CNAME", "*", "example.com.", "10", "1799"},
-			{"MXE", "example.com", "10.0.0.5", "10", "1800"},
-			{"URL", "xyz", "https://google.com", "10", "1799"},
+		name:   "Test:Success:1",
+		domain: "test.example.com",
+		hosts: []host{
+			{Type: "A", Name: "home", Address: "10.0.0.1", MXPref: "10", TTL: "1799"},
+			{Type: "A", Name: "www", Address: "10.0.0.2", MXPref: "10", TTL: "1200"},
+			{Type: "AAAA", Name: "a", Address: "::0", MXPref: "10", TTL: "1799"},
+			{Type: "CNAME", Name: "*", Address: "example.com.", MXPref: "10", TTL: "1799"},
+			{Type: "MXE", Name: "example.com", Address: "10.0.0.5", MXPref: "10", TTL: "1800"},
+			{Type: "URL", Name: "xyz", Address: "https://google.com", MXPref: "10", TTL: "1799"},
 		},
-		"",
-		responseGetHostsSuccess1,
-		responseSetHostsSuccess1,
+		getHostsResponse: responseGetHostsSuccess1,
+		setHostsResponse: responseSetHostsSuccess1,
 	},
 	{
-		"Test:Success:2",
-		"example.com",
-		[]host{
-			{"A", "@", "10.0.0.2", "10", "1200"},
-			{"A", "www", "10.0.0.3", "10", "60"},
+		name:   "Test:Success:2",
+		domain: "example.com",
+		hosts: []host{
+			{Type: "A", Name: "@", Address: "10.0.0.2", MXPref: "10", TTL: "1200"},
+			{Type: "A", Name: "www", Address: "10.0.0.3", MXPref: "10", TTL: "60"},
 		},
-		"",
-		responseGetHostsSuccess2,
-		responseSetHostsSuccess2,
+		getHostsResponse: responseGetHostsSuccess2,
+		setHostsResponse: responseSetHostsSuccess2,
 	},
 	{
-		"Test:Error:BadApiKey:1",
-		"test.example.com",
-		nil,
-		"Namecheap error: API Key is invalid or API access has not been enabled [1011102]",
-		responseGetHostsErrorBadAPIKey1,
-		"",
+		name:             "Test:Error:BadApiKey:1",
+		domain:           "test.example.com",
+		errString:        "API Key is invalid or API access has not been enabled [1011102]",
+		getHostsResponse: responseGetHostsErrorBadAPIKey1,
 	},
 }
 

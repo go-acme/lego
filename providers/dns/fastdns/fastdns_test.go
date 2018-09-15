@@ -43,7 +43,13 @@ func TestNewDNSProviderValid(t *testing.T) {
 	os.Setenv("AKAMAI_CLIENT_SECRET", "")
 	os.Setenv("AKAMAI_ACCESS_TOKEN", "")
 
-	_, err := NewDNSProviderClient("somehost", "someclienttoken", "someclientsecret", "someaccesstoken")
+	config := NewDefaultConfig()
+	config.Host = "somehost"
+	config.ClientToken = "someclienttoken"
+	config.ClientSecret = "someclientsecret"
+	config.AccessToken = "someaccesstoken"
+
+	_, err := NewDNSProviderConfig(config)
 	assert.NoError(t, err)
 }
 
@@ -66,7 +72,7 @@ func TestNewDNSProviderMissingCredErr(t *testing.T) {
 	os.Setenv("AKAMAI_ACCESS_TOKEN", "")
 
 	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "FastDNS: some credentials information are missing: AKAMAI_HOST,AKAMAI_CLIENT_TOKEN,AKAMAI_CLIENT_SECRET,AKAMAI_ACCESS_TOKEN")
+	assert.EqualError(t, err, "fastdns: some credentials information are missing: AKAMAI_HOST,AKAMAI_CLIENT_TOKEN,AKAMAI_CLIENT_SECRET,AKAMAI_ACCESS_TOKEN")
 }
 
 func TestLiveFastdnsPresent(t *testing.T) {
@@ -74,7 +80,13 @@ func TestLiveFastdnsPresent(t *testing.T) {
 		t.Skip("skipping live test")
 	}
 
-	provider, err := NewDNSProviderClient(host, clientToken, clientSecret, accessToken)
+	config := NewDefaultConfig()
+	config.Host = host
+	config.ClientToken = clientToken
+	config.ClientSecret = clientSecret
+	config.AccessToken = accessToken
+
+	provider, err := NewDNSProviderConfig(config)
 	assert.NoError(t, err)
 
 	err = provider.Present(testDomain, "", "123d==")
@@ -86,7 +98,13 @@ func TestLiveFastdnsPresent(t *testing.T) {
 }
 
 func TestExtractRootRecordName(t *testing.T) {
-	provider, err := NewDNSProviderClient("somehost", "someclienttoken", "someclientsecret", "someaccesstoken")
+	config := NewDefaultConfig()
+	config.Host = "somehost"
+	config.ClientToken = "someclienttoken"
+	config.ClientSecret = "someclientsecret"
+	config.AccessToken = "someaccesstoken"
+
+	provider, err := NewDNSProviderConfig(config)
 	assert.NoError(t, err)
 
 	zone, recordName, err := provider.findZoneAndRecordName("_acme-challenge.bar.com.", "bar.com")
@@ -96,7 +114,13 @@ func TestExtractRootRecordName(t *testing.T) {
 }
 
 func TestExtractSubRecordName(t *testing.T) {
-	provider, err := NewDNSProviderClient("somehost", "someclienttoken", "someclientsecret", "someaccesstoken")
+	config := NewDefaultConfig()
+	config.Host = "somehost"
+	config.ClientToken = "someclienttoken"
+	config.ClientSecret = "someclientsecret"
+	config.AccessToken = "someaccesstoken"
+
+	provider, err := NewDNSProviderConfig(config)
 	assert.NoError(t, err)
 
 	zone, recordName, err := provider.findZoneAndRecordName("_acme-challenge.foo.bar.com.", "foo.bar.com")
@@ -112,7 +136,13 @@ func TestLiveFastdnsCleanUp(t *testing.T) {
 
 	time.Sleep(time.Second * 1)
 
-	provider, err := NewDNSProviderClient(host, clientToken, clientSecret, accessToken)
+	config := NewDefaultConfig()
+	config.Host = host
+	config.ClientToken = clientToken
+	config.ClientSecret = clientSecret
+	config.AccessToken = accessToken
+
+	provider, err := NewDNSProviderConfig(config)
 	assert.NoError(t, err)
 
 	err = provider.CleanUp(testDomain, "", "123d==")

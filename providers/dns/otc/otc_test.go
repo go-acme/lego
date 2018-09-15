@@ -31,7 +31,15 @@ func TestOTCDNSTestSuite(t *testing.T) {
 
 func (s *OTCDNSTestSuite) createDNSProvider() (*DNSProvider, error) {
 	url := fmt.Sprintf("%s/v3/auth/token", s.Mock.Server.URL)
-	return NewDNSProviderCredentials(fakeOTCUserName, fakeOTCPassword, fakeOTCDomainName, fakeOTCProjectName, url)
+
+	config := NewDefaultConfig()
+	config.UserName = fakeOTCUserName
+	config.Password = fakeOTCPassword
+	config.DomainName = fakeOTCDomainName
+	config.ProjectName = fakeOTCProjectName
+	config.IdentityEndpoint = url
+
+	return NewDNSProviderConfig(config)
 }
 
 func (s *OTCDNSTestSuite) TestOTCDNSLoginEnv() {
@@ -45,24 +53,24 @@ func (s *OTCDNSTestSuite) TestOTCDNSLoginEnv() {
 
 	provider, err := NewDNSProvider()
 	assert.Nil(s.T(), err)
-	assert.Equal(s.T(), provider.domainName, "unittest1")
-	assert.Equal(s.T(), provider.userName, "unittest2")
-	assert.Equal(s.T(), provider.password, "unittest3")
-	assert.Equal(s.T(), provider.projectName, "unittest4")
-	assert.Equal(s.T(), provider.identityEndpoint, "unittest5")
+	assert.Equal(s.T(), provider.config.DomainName, "unittest1")
+	assert.Equal(s.T(), provider.config.UserName, "unittest2")
+	assert.Equal(s.T(), provider.config.Password, "unittest3")
+	assert.Equal(s.T(), provider.config.ProjectName, "unittest4")
+	assert.Equal(s.T(), provider.config.IdentityEndpoint, "unittest5")
 
 	os.Setenv("OTC_IDENTITY_ENDPOINT", "")
 
 	provider, err = NewDNSProvider()
 	assert.Nil(s.T(), err)
-	assert.Equal(s.T(), provider.identityEndpoint, "https://iam.eu-de.otc.t-systems.com:443/v3/auth/tokens")
+	assert.Equal(s.T(), provider.config.IdentityEndpoint, "https://iam.eu-de.otc.t-systems.com:443/v3/auth/tokens")
 }
 
 func (s *OTCDNSTestSuite) TestOTCDNSLoginEnvEmpty() {
 	defer os.Clearenv()
 
 	_, err := NewDNSProvider()
-	assert.EqualError(s.T(), err, "OTC: some credentials information are missing: OTC_DOMAIN_NAME,OTC_USER_NAME,OTC_PASSWORD,OTC_PROJECT_NAME")
+	assert.EqualError(s.T(), err, "otc: some credentials information are missing: OTC_DOMAIN_NAME,OTC_USER_NAME,OTC_PASSWORD,OTC_PROJECT_NAME")
 }
 
 func (s *OTCDNSTestSuite) TestOTCDNSLogin() {
@@ -71,7 +79,7 @@ func (s *OTCDNSTestSuite) TestOTCDNSLogin() {
 	assert.Nil(s.T(), err)
 	err = otcProvider.loginRequest()
 	assert.Nil(s.T(), err)
-	assert.Equal(s.T(), otcProvider.otcBaseURL, fmt.Sprintf("%s/v2", s.Mock.Server.URL))
+	assert.Equal(s.T(), otcProvider.baseURL, fmt.Sprintf("%s/v2", s.Mock.Server.URL))
 	assert.Equal(s.T(), fakeOTCToken, otcProvider.token)
 }
 

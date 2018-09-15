@@ -39,7 +39,7 @@ func TestNewDNSProviderMissingCredErr(t *testing.T) {
 	os.Setenv("DUCKDNS_TOKEN", "")
 
 	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "DuckDNS: some credentials information are missing: DUCKDNS_TOKEN")
+	assert.EqualError(t, err, "duckdns: some credentials information are missing: DUCKDNS_TOKEN")
 }
 
 func TestLiveDuckdnsPresent(t *testing.T) {

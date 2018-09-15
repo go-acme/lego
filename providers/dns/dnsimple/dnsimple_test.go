@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/xenolf/lego/acme"
 )
 
 var (
@@ -44,6 +46,8 @@ func TestNewDNSProviderValid(t *testing.T) {
 	defer restoreEnv()
 	os.Setenv("DNSIMPLE_OAUTH_TOKEN", "123")
 
+	acme.UserAgent = "lego"
+
 	provider, err := NewDNSProvider()
 
 	assert.NotNil(t, provider)
@@ -71,7 +75,7 @@ func TestNewDNSProviderInvalidWithMissingOauthToken(t *testing.T) {
 	provider, err := NewDNSProvider()
 
 	assert.Nil(t, provider)
-	assert.EqualError(t, err, "DNSimple OAuth token is missing")
+	assert.EqualError(t, err, "dnsimple: OAuth token is missing")
 }
 
 //
@@ -79,27 +83,39 @@ func TestNewDNSProviderInvalidWithMissingOauthToken(t *testing.T) {
 //
 
 func TestNewDNSProviderCredentialsValid(t *testing.T) {
-	provider, err := NewDNSProviderCredentials("123", "")
+	config := NewDefaultConfig()
+	config.AccessToken = "123"
+	config.BaseURL = ""
 
-	assert.NotNil(t, provider)
+	provider, err := NewDNSProviderConfig(config)
+	require.NoError(t, err)
+	require.NotNil(t, provider)
+
 	assert.Equal(t, "lego", provider.client.UserAgent)
 	assert.NoError(t, err)
 }
 
 func TestNewDNSProviderCredentialsValidWithBaseUrl(t *testing.T) {
-	provider, err := NewDNSProviderCredentials("123", "https://api.dnsimple.test")
+	config := NewDefaultConfig()
+	config.AccessToken = "123"
+	config.BaseURL = "https://api.dnsimple.test"
 
-	assert.NotNil(t, provider)
-	assert.NoError(t, err)
+	provider, err := NewDNSProviderConfig(config)
+	require.NoError(t, err)
+	require.NotNil(t, provider)
 
 	assert.Equal(t, provider.client.BaseURL, "https://api.dnsimple.test")
 }
 
 func TestNewDNSProviderCredentialsInvalidWithMissingOauthToken(t *testing.T) {
-	provider, err := NewDNSProviderCredentials("", "")
+	config := NewDefaultConfig()
+	config.AccessToken = ""
+	config.BaseURL = ""
+
+	provider, err := NewDNSProviderConfig(config)
 
 	assert.Nil(t, provider)
-	assert.EqualError(t, err, "DNSimple OAuth token is missing")
+	assert.EqualError(t, err, "dnsimple: OAuth token is missing")
 }
 
 //
@@ -111,7 +127,11 @@ func TestLiveDNSimplePresent(t *testing.T) {
 		t.Skip("skipping live test")
 	}
 
-	provider, err := NewDNSProviderCredentials(dnsimpleOauthToken, dnsimpleBaseURL)
+	config := NewDefaultConfig()
+	config.AccessToken = dnsimpleOauthToken
+	config.BaseURL = dnsimpleBaseURL
+
+	provider, err := NewDNSProviderConfig(config)
 	assert.NoError(t, err)
 
 	err = provider.Present(dnsimpleDomain, "", "123d==")
@@ -129,7 +149,11 @@ func TestLiveDNSimpleCleanUp(t *testing.T) {
 
 	time.Sleep(time.Second * 1)
 
-	provider, err := NewDNSProviderCredentials(dnsimpleOauthToken, dnsimpleBaseURL)
+	config := NewDefaultConfig()
+	config.AccessToken = dnsimpleOauthToken
+	config.BaseURL = dnsimpleBaseURL
+
+	provider, err := NewDNSProviderConfig(config)
 	assert.NoError(t, err)
 
 	err = provider.CleanUp(dnsimpleDomain, "", "123d==")

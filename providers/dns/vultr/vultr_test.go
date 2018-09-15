@@ -37,7 +37,7 @@ func TestNewDNSProviderMissingCredErr(t *testing.T) {
 	os.Setenv("VULTR_API_KEY", "")
 
 	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "Vultr: some credentials information are missing: VULTR_API_KEY")
+	assert.EqualError(t, err, "vultr: some credentials information are missing: VULTR_API_KEY")
 }
 
 func TestLivePresent(t *testing.T) {

@@ -59,7 +59,7 @@ func TestNewDNSProviderMissingCredErr(t *testing.T) {
 				"OVH_APPLICATION_SECRET": "5678",
 				"OVH_CONSUMER_KEY":       "abcde",
 			},
-			expected: "OVH: some credentials information are missing: OVH_ENDPOINT",
+			expected: "ovh: some credentials information are missing: OVH_ENDPOINT",
 		},
 		{
 			desc: "missing OVH_APPLICATION_KEY",
@@ -69,7 +69,7 @@ func TestNewDNSProviderMissingCredErr(t *testing.T) {
 				"OVH_APPLICATION_SECRET": "5678",
 				"OVH_CONSUMER_KEY":       "abcde",
 			},
-			expected: "OVH: some credentials information are missing: OVH_APPLICATION_KEY",
+			expected: "ovh: some credentials information are missing: OVH_APPLICATION_KEY",
 		},
 		{
 			desc: "missing OVH_APPLICATION_SECRET",
@@ -79,7 +79,7 @@ func TestNewDNSProviderMissingCredErr(t *testing.T) {
 				"OVH_APPLICATION_SECRET": "",
 				"OVH_CONSUMER_KEY":       "abcde",
 			},
-			expected: "OVH: some credentials information are missing: OVH_APPLICATION_SECRET",
+			expected: "ovh: some credentials information are missing: OVH_APPLICATION_SECRET",
 		},
 		{
 			desc: "missing OVH_CONSUMER_KEY",
@@ -89,7 +89,7 @@ func TestNewDNSProviderMissingCredErr(t *testing.T) {
 				"OVH_APPLICATION_SECRET": "5678",
 				"OVH_CONSUMER_KEY":       "",
 			},
-			expected: "OVH: some credentials information are missing: OVH_CONSUMER_KEY",
+			expected: "ovh: some credentials information are missing: OVH_CONSUMER_KEY",
 		},
 		{
 			desc: "all missing",
@@ -99,7 +99,7 @@ func TestNewDNSProviderMissingCredErr(t *testing.T) {
 				"OVH_APPLICATION_SECRET": "",
 				"OVH_CONSUMER_KEY":       "",
 			},
-			expected: "OVH: some credentials information are missing: OVH_ENDPOINT,OVH_APPLICATION_KEY,OVH_APPLICATION_SECRET,OVH_CONSUMER_KEY",
+			expected: "ovh: some credentials information are missing: OVH_ENDPOINT,OVH_APPLICATION_KEY,OVH_APPLICATION_SECRET,OVH_CONSUMER_KEY",
 		},
 	}
 

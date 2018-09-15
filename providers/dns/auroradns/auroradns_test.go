@@ -48,11 +48,16 @@ func TestAuroraDNSPresent(t *testing.T) {
 
 	defer mock.Close()
 
-	auroraProvider, err := NewDNSProviderCredentials(mock.URL, fakeAuroraDNSUserID, fakeAuroraDNSKey)
-	require.NoError(t, err)
-	require.NotNil(t, auroraProvider)
+	config := NewDefaultConfig()
+	config.UserID = fakeAuroraDNSUserID
+	config.Key = fakeAuroraDNSKey
+	config.BaseURL = mock.URL
 
-	err = auroraProvider.Present("example.com", "", "foobar")
+	provider, err := NewDNSProviderConfig(config)
+	require.NoError(t, err)
+	require.NotNil(t, provider)
+
+	err = provider.Present("example.com", "", "foobar")
 	require.NoError(t, err, "fail to create TXT record")
 
 	assert.True(t, requestReceived, "Expected request to be received by mock backend, but it wasn't")
@@ -93,14 +98,19 @@ func TestAuroraDNSCleanUp(t *testing.T) {
 	}))
 	defer mock.Close()
 
-	auroraProvider, err := NewDNSProviderCredentials(mock.URL, fakeAuroraDNSUserID, fakeAuroraDNSKey)
-	require.NoError(t, err)
-	require.NotNil(t, auroraProvider)
+	config := NewDefaultConfig()
+	config.UserID = fakeAuroraDNSUserID
+	config.Key = fakeAuroraDNSKey
+	config.BaseURL = mock.URL
 
-	err = auroraProvider.Present("example.com", "", "foobar")
+	provider, err := NewDNSProviderConfig(config)
+	require.NoError(t, err)
+	require.NotNil(t, provider)
+
+	err = provider.Present("example.com", "", "foobar")
 	require.NoError(t, err, "fail to create TXT record")
 
-	err = auroraProvider.CleanUp("example.com", "", "foobar")
+	err = provider.CleanUp("example.com", "", "foobar")
 	require.NoError(t, err, "fail to remove TXT record")
 
 	assert.True(t, requestReceived, "Expected request to be received by mock backend, but it wasn't")

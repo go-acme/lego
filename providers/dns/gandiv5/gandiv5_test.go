@@ -15,11 +15,7 @@ import (
 // TestDNSProvider runs Present and CleanUp against a fake Gandi RPC
 // Server, whose responses are predetermined for particular requests.
 func TestDNSProvider(t *testing.T) {
-	fakeAPIKey := "123412341234123412341234"
 	fakeKeyAuth := "XXXX"
-
-	provider, err := NewDNSProviderCredentials(fakeAPIKey)
-	require.NoError(t, err)
 
 	regexpToken, err := regexp.Compile(`"rrset_values":\[".+"\]`)
 	require.NoError(t, err)
@@ -46,13 +42,19 @@ func TestDNSProvider(t *testing.T) {
 		return "example.com.", nil
 	}
 
-	// override gandi endpoint and findZoneByFqdn function
-	savedEndpoint, savedFindZoneByFqdn := endpoint, findZoneByFqdn
-	defer func() {
-		endpoint, findZoneByFqdn = savedEndpoint, savedFindZoneByFqdn
-	}()
+	config := NewDefaultConfig()
+	config.APIKey = "123412341234123412341234"
+	config.BaseURL = fakeServer.URL
 
-	endpoint, findZoneByFqdn = fakeServer.URL, fakeFindZoneByFqdn
+	provider, err := NewDNSProviderConfig(config)
+	require.NoError(t, err)
+
+	// override findZoneByFqdn function
+	savedFindZoneByFqdn := findZoneByFqdn
+	defer func() {
+		findZoneByFqdn = savedFindZoneByFqdn
+	}()
+	findZoneByFqdn = fakeFindZoneByFqdn
 
 	// run Present
 	err = provider.Present("abc.def.example.com", "", fakeKeyAuth)

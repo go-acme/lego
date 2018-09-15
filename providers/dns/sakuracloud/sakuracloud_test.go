@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/xenolf/lego/acme"
 )
 
@@ -54,7 +55,7 @@ func TestNewDNSProviderInvalidWithMissingAccessToken(t *testing.T) {
 	provider, err := NewDNSProvider()
 
 	assert.Nil(t, provider)
-	assert.EqualError(t, err, "SakuraCloud: some credentials information are missing: SAKURACLOUD_ACCESS_TOKEN,SAKURACLOUD_ACCESS_TOKEN_SECRET")
+	assert.EqualError(t, err, "sakuracloud: some credentials information are missing: SAKURACLOUD_ACCESS_TOKEN,SAKURACLOUD_ACCESS_TOKEN_SECRET")
 }
 
 //
@@ -62,18 +63,23 @@ func TestNewDNSProviderInvalidWithMissingAccessToken(t *testing.T) {
 //
 
 func TestNewDNSProviderCredentialsValid(t *testing.T) {
-	provider, err := NewDNSProviderCredentials("123", "456")
+	config := NewDefaultConfig()
+	config.Token = "123"
+	config.Secret = "456"
+
+	provider, err := NewDNSProviderConfig(config)
+	require.NoError(t, err)
 
 	assert.NotNil(t, provider)
 	assert.Equal(t, acme.UserAgent, provider.client.UserAgent)
-	assert.NoError(t, err)
 }
 
 func TestNewDNSProviderCredentialsInvalidWithMissingAccessToken(t *testing.T) {
-	provider, err := NewDNSProviderCredentials("", "")
+	config := NewDefaultConfig()
 
+	provider, err := NewDNSProviderConfig(config)
 	assert.Nil(t, provider)
-	assert.EqualError(t, err, "SakuraCloud AccessToken is missing")
+	assert.EqualError(t, err, "sakuracloud: AccessToken is missing")
 }
 
 //
@@ -85,7 +91,11 @@ func TestLiveSakuraCloudPresent(t *testing.T) {
 		t.Skip("skipping live test")
 	}
 
-	provider, err := NewDNSProviderCredentials(sakuracloudAccessToken, sakuracloudAccessSecret)
+	config := NewDefaultConfig()
+	config.Token = sakuracloudAccessToken
+	config.Secret = sakuracloudAccessSecret
+
+	provider, err := NewDNSProviderConfig(config)
 	assert.NoError(t, err)
 
 	err = provider.Present(sakuracloudDomain, "", "123d==")
@@ -103,7 +113,11 @@ func TestLiveSakuraCloudCleanUp(t *testing.T) {
 
 	time.Sleep(time.Second * 1)
 
-	provider, err := NewDNSProviderCredentials(sakuracloudAccessToken, sakuracloudAccessSecret)
+	config := NewDefaultConfig()
+	config.Token = sakuracloudAccessToken
+	config.Secret = sakuracloudAccessSecret
+
+	provider, err := NewDNSProviderConfig(config)
 	assert.NoError(t, err)
 
 	err = provider.CleanUp(sakuracloudDomain, "", "123d==")

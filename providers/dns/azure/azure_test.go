@@ -43,7 +43,14 @@ func TestNewDNSProviderValid(t *testing.T) {
 	defer restoreEnv()
 	os.Setenv("AZURE_CLIENT_ID", "")
 
-	_, err := NewDNSProviderCredentials(azureClientID, azureClientSecret, azureSubscriptionID, azureTenantID, azureResourceGroup)
+	config := NewDefaultConfig()
+	config.ClientID = azureClientID
+	config.ClientSecret = azureClientSecret
+	config.SubscriptionID = azureSubscriptionID
+	config.TenantID = azureTenantID
+	config.ResourceGroup = azureResourceGroup
+
+	_, err := NewDNSProviderConfig(config)
 	assert.NoError(t, err)
 }
 
@@ -64,7 +71,7 @@ func TestNewDNSProviderMissingCredErr(t *testing.T) {
 	os.Setenv("AZURE_SUBSCRIPTION_ID", "")
 
 	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "Azure: some credentials information are missing: AZURE_CLIENT_ID,AZURE_CLIENT_SECRET,AZURE_SUBSCRIPTION_ID,AZURE_TENANT_ID,AZURE_RESOURCE_GROUP")
+	assert.EqualError(t, err, "azure: some credentials information are missing: AZURE_CLIENT_ID,AZURE_CLIENT_SECRET,AZURE_SUBSCRIPTION_ID,AZURE_TENANT_ID,AZURE_RESOURCE_GROUP")
 }
 
 func TestLiveAzurePresent(t *testing.T) {
@@ -72,7 +79,14 @@ func TestLiveAzurePresent(t *testing.T) {
 		t.Skip("skipping live test")
 	}
 
-	provider, err := NewDNSProviderCredentials(azureClientID, azureClientSecret, azureSubscriptionID, azureTenantID, azureResourceGroup)
+	config := NewDefaultConfig()
+	config.ClientID = azureClientID
+	config.ClientSecret = azureClientSecret
+	config.SubscriptionID = azureSubscriptionID
+	config.TenantID = azureTenantID
+	config.ResourceGroup = azureResourceGroup
+
+	provider, err := NewDNSProviderConfig(config)
 	assert.NoError(t, err)
 
 	err = provider.Present(azureDomain, "", "123d==")
@@ -84,7 +98,15 @@ func TestLiveAzureCleanUp(t *testing.T) {
 		t.Skip("skipping live test")
 	}
 
-	provider, err := NewDNSProviderCredentials(azureClientID, azureClientSecret, azureSubscriptionID, azureTenantID, azureResourceGroup)
+	config := NewDefaultConfig()
+	config.ClientID = azureClientID
+	config.ClientSecret = azureClientSecret
+	config.SubscriptionID = azureSubscriptionID
+	config.TenantID = azureTenantID
+	config.ResourceGroup = azureResourceGroup
+
+	provider, err := NewDNSProviderConfig(config)
+
 	time.Sleep(time.Second * 1)
 
 	assert.NoError(t, err)

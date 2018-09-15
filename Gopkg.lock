@@ -522,6 +522,8 @@
     "github.com/OpenDNS/vegadns2client",
     "github.com/akamai/AkamaiOPEN-edgegrid-golang/configdns-v1",
     "github.com/akamai/AkamaiOPEN-edgegrid-golang/edgegrid",
+    "github.com/aliyun/alibaba-cloud-sdk-go/sdk",
+    "github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth/credentials",
     "github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests",
     "github.com/aliyun/alibaba-cloud-sdk-go/services/alidns",
     "github.com/aws/aws-sdk-go/aws",

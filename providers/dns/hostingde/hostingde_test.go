@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -34,8 +35,11 @@ func TestNewDNSProviderValid(t *testing.T) {
 	os.Setenv("HOSTINGDE_API_KEY", "")
 	defer restoreEnv()
 
-	_, err := NewDNSProviderCredentials("123", "example.com")
+	config := NewDefaultConfig()
+	config.APIKey = "123"
+	config.ZoneName = "example.com"
 
+	_, err := NewDNSProviderConfig(config)
 	assert.NoError(t, err)
 }
 
@@ -54,7 +58,7 @@ func TestNewDNSProviderMissingCredErr(t *testing.T) {
 	os.Setenv("HOSTINGDE_API_KEY", "")
 
 	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "Hostingde: some credentials information are missing: HOSTINGDE_API_KEY,HOSTINGDE_ZONE_NAME")
+	assert.EqualError(t, err, "hostingde: some credentials information are missing: HOSTINGDE_API_KEY,HOSTINGDE_ZONE_NAME")
 }
 
 func TestNewDNSProviderMissingCredErrSingle(t *testing.T) {
@@ -62,7 +66,7 @@ func TestNewDNSProviderMissingCredErrSingle(t *testing.T) {
 	os.Setenv("HOSTINGDE_ZONE_NAME", "example.com")
 
 	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "Hostingde: some credentials information are missing: HOSTINGDE_API_KEY")
+	assert.EqualError(t, err, "hostingde: some credentials information are missing: HOSTINGDE_API_KEY")
 }
 
 func TestHostingdePresent(t *testing.T) {
@@ -70,8 +74,12 @@ func TestHostingdePresent(t *testing.T) {
 		t.Skip("skipping live test")
 	}
 
-	provider, err := NewDNSProviderCredentials(hostingdeZone, hostingdeAPIKey)
-	assert.NoError(t, err)
+	config := NewDefaultConfig()
+	config.APIKey = hostingdeZone
+	config.ZoneName = hostingdeAPIKey
+
+	provider, err := NewDNSProviderConfig(config)
+	require.NoError(t, err)
 
 	err = provider.Present(hostingdeDomain, "", "123d==")
 	assert.NoError(t, err)
@@ -84,8 +92,12 @@ func TestHostingdeCleanUp(t *testing.T) {
 
 	time.Sleep(time.Second * 2)
 
-	provider, err := NewDNSProviderCredentials(hostingdeZone, hostingdeAPIKey)
-	assert.NoError(t, err)
+	config := NewDefaultConfig()
+	config.APIKey = hostingdeZone
+	config.ZoneName = hostingdeAPIKey
+
+	provider, err := NewDNSProviderConfig(config)
+	require.NoError(t, err)
 
 	err = provider.CleanUp(hostingdeDomain, "", "123d==")
 	assert.NoError(t, err)

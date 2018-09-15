@@ -37,7 +37,7 @@ var defaultNameservers = []string{
 	"google-public-dns-b.google.com:53",
 }
 
-// RecursiveNameservers are used to pre-check DNS propagations
+// RecursiveNameservers are used to pre-check DNS propagation
 var RecursiveNameservers = getNameservers(defaultResolvConf, defaultNameservers)
 
 // DNSTimeout is used to override the default DNS timeout of 10 seconds.
@@ -235,7 +235,7 @@ func lookupNameservers(fqdn string) ([]string, error) {
 
 	zone, err := FindZoneByFqdn(fqdn, RecursiveNameservers)
 	if err != nil {
-		return nil, fmt.Errorf("Could not determine the zone: %v", err)
+		return nil, fmt.Errorf("could not determine the zone: %v", err)
 	}
 
 	r, err := dnsQuery(zone, dns.TypeNS, RecursiveNameservers, true)
@@ -252,7 +252,7 @@ func lookupNameservers(fqdn string) ([]string, error) {
 	if len(authoritativeNss) > 0 {
 		return authoritativeNss, nil
 	}
-	return nil, fmt.Errorf("Could not determine authoritative nameservers")
+	return nil, fmt.Errorf("could not determine authoritative nameservers")
 }
 
 // FindZoneByFqdn determines the zone apex for the given fqdn by recursing up the
@@ -274,7 +274,7 @@ func FindZoneByFqdn(fqdn string, nameservers []string) (string, error) {
 
 		// Any response code other than NOERROR and NXDOMAIN is treated as error
 		if in.Rcode != dns.RcodeNameError && in.Rcode != dns.RcodeSuccess {
-			return "", fmt.Errorf("Unexpected response code '%s' for %s",
+			return "", fmt.Errorf("unexpected response code '%s' for %s",
 				dns.RcodeToString[in.Rcode], domain)
 		}
 
@@ -297,7 +297,7 @@ func FindZoneByFqdn(fqdn string, nameservers []string) (string, error) {
 		}
 	}
 
-	return "", fmt.Errorf("Could not find the start of authority")
+	return "", fmt.Errorf("could not find the start of authority")
 }
 
 // dnsMsgContainsCNAME checks for a CNAME answer in msg

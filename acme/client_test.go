@@ -8,18 +8,19 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewClient(t *testing.T) {
 	keyBits := 32 // small value keeps test fast
 	keyType := RSA2048
 	key, err := rsa.GenerateKey(rand.Reader, keyBits)
-	if err != nil {
-		t.Fatal("Could not generate test key:", err)
-	}
+	require.NoError(t, err, "Could not generate test key")
+
 	user := mockUser{
 		email:      "test@test.com",
 		regres:     new(RegistrationResource),
@@ -38,32 +39,19 @@ func TestNewClient(t *testing.T) {
 	}))
 
 	client, err := NewClient(ts.URL, user, keyType)
-	if err != nil {
-		t.Fatalf("Could not create client: %v", err)
-	}
+	require.NoError(t, err, "Could not create client")
 
-	if client.jws == nil {
-		t.Fatalf("Expected client.jws to not be nil")
-	}
-	if expected, actual := key, client.jws.privKey; actual != expected {
-		t.Errorf("Expected jws.privKey to be %p but was %p", expected, actual)
-	}
-
-	if client.keyType != keyType {
-		t.Errorf("Expected keyType to be %s but was %s", keyType, client.keyType)
-	}
-
-	if expected, actual := 2, len(client.solvers); actual != expected {
-		t.Fatalf("Expected %d solver(s), got %d", expected, actual)
-	}
+	require.NotNil(t, client.jws, "client.jws")
+	assert.Equal(t, key, client.jws.privKey, "client.jws.privKey")
+	assert.Equal(t, keyType, client.keyType, "client.keyType")
+	assert.Len(t, client.solvers, 2, "solvers")
 }
 
 func TestClientOptPort(t *testing.T) {
 	keyBits := 32 // small value keeps test fast
 	key, err := rsa.GenerateKey(rand.Reader, keyBits)
-	if err != nil {
-		t.Fatal("Could not generate test key:", err)
-	}
+	require.NoError(t, err, "Could not generate test key")
+
 	user := mockUser{
 		email:      "test@test.com",
 		regres:     new(RegistrationResource),
@@ -83,33 +71,26 @@ func TestClientOptPort(t *testing.T) {
 
 	optPort := "1234"
 	optHost := ""
+
 	client, err := NewClient(ts.URL, user, RSA2048)
-	if err != nil {
-		t.Fatalf("Could not create client: %v", err)
-	}
+	require.NoError(t, err, "Could not create client")
+
 	client.SetHTTPAddress(net.JoinHostPort(optHost, optPort))
 
-	httpSolver, ok := client.solvers[HTTP01].(*httpChallenge)
-	if !ok {
-		t.Fatal("Expected http-01 solver to be httpChallenge type")
-	}
-	if httpSolver.jws != client.jws {
-		t.Error("Expected http-01 to have same jws as client")
-	}
-	if got := httpSolver.provider.(*HTTPProviderServer).port; got != optPort {
-		t.Errorf("Expected http-01 to have port %s but was %s", optPort, got)
-	}
-	if got := httpSolver.provider.(*HTTPProviderServer).iface; got != optHost {
-		t.Errorf("Expected http-01 to have iface %s but was %s", optHost, got)
-	}
+	require.IsType(t, &httpChallenge{}, client.solvers[HTTP01])
+	httpSolver := client.solvers[HTTP01].(*httpChallenge)
+
+	assert.Equal(t, httpSolver.jws, client.jws, "Expected http-01 to have same jws as client")
+
+	httpProviderServer := httpSolver.provider.(*HTTPProviderServer)
+	assert.Equal(t, optPort, httpProviderServer.port, "port")
+	assert.Equal(t, optHost, httpProviderServer.iface, "iface")
 
 	// test setting different host
 	optHost = "127.0.0.1"
 	client.SetHTTPAddress(net.JoinHostPort(optHost, optPort))
 
-	if got := httpSolver.provider.(*HTTPProviderServer).iface; got != optHost {
-		t.Errorf("Expected http-01 to have iface %s but was %s", optHost, got)
-	}
+	assert.Equal(t, optHost, httpSolver.provider.(*HTTPProviderServer).iface, "iface")
 }
 
 func TestNotHoldingLockWhileMakingHTTPRequests(t *testing.T) {
@@ -121,7 +102,9 @@ func TestNotHoldingLockWhileMakingHTTPRequests(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	privKey, _ := rsa.GenerateKey(rand.Reader, 512)
+	privKey, err := rsa.GenerateKey(rand.Reader, 512)
+	require.NoError(t, err)
+
 	j := &jws{privKey: privKey, getNonceURL: ts.URL}
 	ch := make(chan bool)
 	resultCh := make(chan bool)
@@ -147,10 +130,12 @@ func TestNotHoldingLockWhileMakingHTTPRequests(t *testing.T) {
 
 func TestValidate(t *testing.T) {
 	var statuses []string
+
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Minimal stub ACME server for validation.
 		w.Header().Add("Replay-Nonce", "12345")
 		w.Header().Add("Retry-After", "0")
+
 		switch r.Method {
 		case http.MethodHead:
 		case http.MethodPost:
@@ -169,29 +154,57 @@ func TestValidate(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	privKey, _ := rsa.GenerateKey(rand.Reader, 512)
+	privKey, err := rsa.GenerateKey(rand.Reader, 512)
+	require.NoError(t, err)
 	j := &jws{privKey: privKey, getNonceURL: ts.URL}
 
-	tsts := []struct {
+	testCases := []struct {
 		name     string
 		statuses []string
 		want     string
 	}{
-		{"POST-unexpected", []string{"weird"}, "unexpected"},
-		{"POST-valid", []string{"valid"}, ""},
-		{"POST-invalid", []string{"invalid"}, "Error"},
-		{"GET-unexpected", []string{"pending", "weird"}, "unexpected"},
-		{"GET-valid", []string{"pending", "valid"}, ""},
-		{"GET-invalid", []string{"pending", "invalid"}, "Error"},
+		{
+			name:     "POST-unexpected",
+			statuses: []string{"weird"},
+			want:     "unexpected",
+		},
+		{
+			name:     "POST-valid",
+			statuses: []string{"valid"},
+		},
+		{
+			name:     "POST-invalid",
+			statuses: []string{"invalid"},
+			want:     "Error",
+		},
+		{
+			name:     "GET-unexpected",
+			statuses: []string{"pending", "weird"},
+			want:     "unexpected",
+		},
+		{
+			name:     "GET-valid",
+			statuses: []string{"pending", "valid"},
+		},
+		{
+			name:     "GET-invalid",
+			statuses: []string{"pending", "invalid"},
+			want:     "Error",
+		},
 	}
 
-	for _, tst := range tsts {
-		statuses = tst.statuses
-		if err := validate(j, "example.com", ts.URL, challenge{Type: "http-01", Token: "token"}); err == nil && tst.want != "" {
-			t.Errorf("[%s] validate: got error %v, want something with %q", tst.name, err, tst.want)
-		} else if err != nil && !strings.Contains(err.Error(), tst.want) {
-			t.Errorf("[%s] validate: got error %v, want something with %q", tst.name, err, tst.want)
-		}
+	for _, test := range testCases {
+		t.Run(test.name, func(t *testing.T) {
+			statuses = test.statuses
+
+			err := validate(j, "example.com", ts.URL, challenge{Type: "http-01", Token: "token"})
+			if test.want == "" {
+				assert.NoError(t, err)
+			} else {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), test.want)
+			}
+		})
 	}
 }
 
@@ -217,10 +230,10 @@ func TestGetChallenges(t *testing.T) {
 
 	keyBits := 512 // small value keeps test fast
 	keyType := RSA2048
+
 	key, err := rsa.GenerateKey(rand.Reader, keyBits)
-	if err != nil {
-		t.Fatal("Could not generate test key:", err)
-	}
+	require.NoError(t, err, "Could not generate test key")
+
 	user := mockUser{
 		email:      "test@test.com",
 		regres:     &RegistrationResource{URI: ts.URL},
@@ -228,23 +241,19 @@ func TestGetChallenges(t *testing.T) {
 	}
 
 	client, err := NewClient(ts.URL, user, keyType)
-	if err != nil {
-		t.Fatalf("Could not create client: %v", err)
-	}
+	require.NoError(t, err, "Could not create client")
 
 	_, err = client.createOrderForIdentifiers([]string{"example.com"})
-	if err != nil {
-		t.Fatal("Expecting \"Server did not provide next link to proceed\" error, got nil")
-	}
+	assert.NoError(t, err)
 }
 
 func TestResolveAccountByKey(t *testing.T) {
 	keyBits := 512
 	keyType := RSA2048
+
 	key, err := rsa.GenerateKey(rand.Reader, keyBits)
-	if err != nil {
-		t.Fatal("Could not generate test key:", err)
-	}
+	require.NoError(t, err, "Could not generate test key")
+
 	user := mockUser{
 		email:      "test@test.com",
 		regres:     new(RegistrationResource),
@@ -275,15 +284,12 @@ func TestResolveAccountByKey(t *testing.T) {
 	}))
 
 	client, err := NewClient(ts.URL+"/directory", user, keyType)
-	if err != nil {
-		t.Fatalf("Could not create client: %v", err)
-	}
+	require.NoError(t, err, "Could not create client")
 
-	if res, err := client.ResolveAccountByKey(); err != nil {
-		t.Fatalf("Unexpected error resolving account by key: %v", err)
-	} else if res.Body.Status != "valid" {
-		t.Errorf("Unexpected account status: %v", res.Body.Status)
-	}
+	res, err := client.ResolveAccountByKey()
+	require.NoError(t, err, "Unexpected error resolving account by key")
+
+	assert.Equal(t, "valid", res.Body.Status, "Unexpected account status")
 }
 
 // writeJSONResponse marshals the body as JSON and writes it to the response.
@@ -301,7 +307,7 @@ func writeJSONResponse(w http.ResponseWriter, body interface{}) {
 }
 
 // stubValidate is like validate, except it does nothing.
-func stubValidate(j *jws, domain, uri string, chlng challenge) error {
+func stubValidate(_ *jws, _, _ string, _ challenge) error {
 	return nil
 }
 

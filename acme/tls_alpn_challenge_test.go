@@ -7,41 +7,29 @@ import (
 	"crypto/subtle"
 	"crypto/tls"
 	"encoding/asn1"
-	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestTLSALPNChallenge(t *testing.T) {
 	domain := "localhost:23457"
-	privKey, _ := rsa.GenerateKey(rand.Reader, 512)
-	j := &jws{privKey: privKey}
-	clientChallenge := challenge{Type: string(TLSALPN01), Token: "tlsalpn1"}
+
 	mockValidate := func(_ *jws, _, _ string, chlng challenge) error {
 		conn, err := tls.Dial("tcp", domain, &tls.Config{
 			InsecureSkipVerify: true,
 		})
-		if err != nil {
-			t.Errorf("Expected to connect to challenge server without an error. %v", err)
-		}
+		assert.NoError(t, err, "Expected to connect to challenge server without an error")
 
 		// Expect the server to only return one certificate
 		connState := conn.ConnectionState()
-		if count := len(connState.PeerCertificates); count != 1 {
-			t.Errorf("Expected the challenge server to return exactly one certificate but got %d", count)
-		}
+		assert.Len(t, connState.PeerCertificates, 1, "Expected the challenge server to return exactly one certificate")
 
 		remoteCert := connState.PeerCertificates[0]
-		if count := len(remoteCert.DNSNames); count != 1 {
-			t.Errorf("Expected the challenge certificate to have exactly one DNSNames entry but had %d", count)
-		}
-
-		if remoteCert.DNSNames[0] != domain {
-			t.Errorf("Expected the challenge certificate DNSName to match %s but was %s", domain, remoteCert.DNSNames[0])
-		}
-
-		if len(remoteCert.Extensions) == 0 {
-			t.Error("Expected the challenge certificate to contain extensions, it contained nothing")
-		}
+		assert.Len(t, remoteCert.DNSNames, 1, "Expected the challenge certificate to have exactly one DNSNames entry")
+		assert.Equal(t, domain, remoteCert.DNSNames[0], "challenge certificate DNSName ")
+		assert.NotEmpty(t, remoteCert.Extensions, "Expected the challenge certificate to contain extensions")
 
 		idx := -1
 		for i, ext := range remoteCert.Extensions {
@@ -51,42 +39,51 @@ func TestTLSALPNChallenge(t *testing.T) {
 			}
 		}
 
-		if idx == -1 {
-			t.Fatal("Expected the challenge certificate to contain an extension with the id-pe-acmeIdentifier id, it did not")
-		}
+		require.NotEqual(t, -1, idx, "Expected the challenge certificate to contain an extension with the id-pe-acmeIdentifier id,")
 
 		ext := remoteCert.Extensions[idx]
-
-		if !ext.Critical {
-			t.Error("Expected the challenge certificate id-pe-acmeIdentifier extension to be marked as critical, it was not")
-		}
+		assert.True(t, ext.Critical, "Expected the challenge certificate id-pe-acmeIdentifier extension to be marked as critical")
 
 		zBytes := sha256.Sum256([]byte(chlng.KeyAuthorization))
 		value, err := asn1.Marshal(zBytes[:sha256.Size])
-		if err != nil {
-			t.Fatalf("Expected marshaling of the keyAuth to return no error, but was %v", err)
-		}
+		require.NoError(t, err, "Expected marshaling of the keyAuth to return no error")
+
 		if subtle.ConstantTimeCompare(value[:], ext.Value) != 1 {
 			t.Errorf("Expected the challenge certificate id-pe-acmeIdentifier extension to contain the SHA-256 digest of the keyAuth, %v, but was %v", zBytes[:], ext.Value)
 		}
 
 		return nil
 	}
-	solver := &tlsALPNChallenge{jws: j, validate: mockValidate, provider: &TLSALPNProviderServer{port: "23457"}}
-	if err := solver.Solve(clientChallenge, domain); err != nil {
-		t.Errorf("Solve error: got %v, want nil", err)
+
+	privKey, err := rsa.GenerateKey(rand.Reader, 512)
+	require.NoError(t, err, "Could not generate test key")
+
+	solver := &tlsALPNChallenge{
+		jws:      &jws{privKey: privKey},
+		validate: mockValidate,
+		provider: &TLSALPNProviderServer{port: "23457"},
 	}
+
+	clientChallenge := challenge{Type: string(TLSALPN01), Token: "tlsalpn1"}
+
+	err = solver.Solve(clientChallenge, domain)
+	assert.NoError(t, err)
 }
 
 func TestTLSALPNChallengeInvalidPort(t *testing.T) {
-	privKey, _ := rsa.GenerateKey(rand.Reader, 128)
-	j := &jws{privKey: privKey}
-	clientChallenge := challenge{Type: string(TLSALPN01), Token: "tlsalpn1"}
-	solver := &tlsALPNChallenge{jws: j, validate: stubValidate, provider: &TLSALPNProviderServer{port: "123456"}}
+	privKey, err := rsa.GenerateKey(rand.Reader, 128)
+	require.NoError(t, err, "Could not generate test key")
 
-	if err := solver.Solve(clientChallenge, "localhost:123456"); err == nil {
-		t.Errorf("Solve error: got %v, want error", err)
-	} else if want, want18 := "invalid port 123456", "123456: invalid port"; !strings.HasSuffix(err.Error(), want) && !strings.HasSuffix(err.Error(), want18) {
-		t.Errorf("Solve error: got %q, want suffix %q", err.Error(), want)
+	solver := &tlsALPNChallenge{
+		jws:      &jws{privKey: privKey},
+		validate: stubValidate,
+		provider: &TLSALPNProviderServer{port: "123456"},
 	}
+
+	clientChallenge := challenge{Type: string(TLSALPN01), Token: "tlsalpn1"}
+
+	err = solver.Solve(clientChallenge, "localhost:123456")
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "invalid port")
+	assert.Contains(t, err.Error(), "123456")
 }

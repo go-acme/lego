@@ -159,28 +159,6 @@ func updateDomainWithCName(r *dns.Msg, fqdn string) string {
 			}
 		}
 	}
-}
-
-	return fqdn
-// CleanUp cleans the challenge
-func (s *dnsChallenge) CleanUp(chlng challenge, domain string) error {
-	keyAuth, err := getKeyAuthorization(chlng.Token, s.jws.privKey)
-	if err != nil {
-		return err
-	}
-	return s.provider.CleanUp(domain, chlng.Token, keyAuth)
-}
-
-// Update FQDN with CNAME if any
-func updateDomainWithCName(r *dns.Msg, fqdn string) string {
-	for _, rr := range r.Answer {
-		if cn, ok := rr.(*dns.CNAME); ok {
-			if cn.Hdr.Name == fqdn {
-				fqdn = cn.Target
-				break
-			}
-		}
-	}
 	return fqdn
 }
 

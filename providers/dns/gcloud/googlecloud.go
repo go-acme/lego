@@ -188,7 +188,10 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	_, err = d.client.Changes.Create(d.config.Project, zone, &dns.Change{Deletions: records}).Do()
-	return fmt.Errorf("googlecloud: %v", err)
+	if err != nil {
+		return fmt.Errorf("googlecloud: %v", err)
+	}
+	return nil
 }
 
 // Timeout customizes the timeout values used by the ACME package for checking

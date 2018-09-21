@@ -4,6 +4,9 @@ import (
 	"io/ioutil"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestHTTPProvider(t *testing.T) {
@@ -13,34 +16,26 @@ func TestHTTPProvider(t *testing.T) {
 	keyAuth := "keyAuth"
 	challengeFilePath := webroot + "/.well-known/acme-challenge/" + token
 
-	os.MkdirAll(webroot+"/.well-known/acme-challenge", 0777)
+	require.NoError(t, os.MkdirAll(webroot+"/.well-known/acme-challenge", 0777))
 	defer os.RemoveAll(webroot)
 
 	provider, err := NewHTTPProvider(webroot)
-	if err != nil {
-		t.Errorf("Webroot provider error: got %v, want nil", err)
-	}
+	require.NoError(t, err)
 
 	err = provider.Present(domain, token, keyAuth)
-	if err != nil {
-		t.Errorf("Webroot provider present() error: got %v, want nil", err)
-	}
+	require.NoError(t, err)
 
-	if _, err := os.Stat(challengeFilePath); os.IsNotExist(err) {
+	if _, err = os.Stat(challengeFilePath); os.IsNotExist(err) {
 		t.Error("Challenge file was not created in webroot")
 	}
 
-	data, err := ioutil.ReadFile(challengeFilePath)
-	if err != nil {
-		t.Errorf("Webroot provider ReadFile() error: got %v, want nil", err)
-	}
+	var data []byte
+	data, err = ioutil.ReadFile(challengeFilePath)
+	require.NoError(t, err)
+
 	dataStr := string(data)
-	if dataStr != keyAuth {
-		t.Errorf("Challenge file content: got %q, want %q", dataStr, keyAuth)
-	}
+	assert.Equal(t, keyAuth, dataStr)
 
 	err = provider.CleanUp(domain, token, keyAuth)
-	if err != nil {
-		t.Errorf("Webroot provider CleanUp() error: got %v, want nil", err)
-	}
+	require.NoError(t, err)
 }

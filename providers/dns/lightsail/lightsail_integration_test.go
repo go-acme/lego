@@ -20,41 +20,42 @@ func TestLightsailTTL(t *testing.T) {
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.Present(m["lightsailDomain"], "foo", "bar")
+	lightsailDomain := m["lightsailDomain"]
+
+	err = provider.Present(lightsailDomain, "foo", "bar")
 	require.NoError(t, err)
 
 	// we need a separate Lightshail client here as the one in the DNS provider is
 	// unexported.
-	fqdn := "_acme-challenge." + m["lightsailDomain"]
+	fqdn := "_acme-challenge." + lightsailDomain
 	sess, err := session.NewSession()
 	require.NoError(t, err)
 
 	svc := lightsail.New(sess)
-	if err != nil {
-		provider.CleanUp(m["lightsailDomain"], "foo", "bar")
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
+
+	defer func() {
+		errC := provider.CleanUp(lightsailDomain, "foo", "bar")
+		if errC != nil {
+			t.Log(errC)
+		}
+	}()
 
 	params := &lightsail.GetDomainInput{
-		DomainName: aws.String(m["lightsailDomain"]),
+		DomainName: aws.String(lightsailDomain),
 	}
 
 	resp, err := svc.GetDomain(params)
-	if err != nil {
-		provider.CleanUp(m["lightsailDomain"], "foo", "bar")
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	entries := resp.Domain.DomainEntries
 	for _, entry := range entries {
 		if *entry.Type == "TXT" && *entry.Name == fqdn {
-			provider.CleanUp(m["lightsailDomain"], "foo", "bar")
 			return
 		}
 	}
 
-	provider.CleanUp(m["lightsailDomain"], "foo", "bar")
-	t.Fatalf("Could not find a TXT record for _acme-challenge.%s", m["lightsailDomain"])
+	t.Fatalf("Could not find a TXT record for _acme-challenge.%s", lightsailDomain)
 }
 
 func testGetAndPreCheck() (map[string]string, error) {

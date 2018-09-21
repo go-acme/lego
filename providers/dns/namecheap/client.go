@@ -2,10 +2,10 @@ package namecheap
 
 import "encoding/xml"
 
-// host describes a DNS record returned by the Namecheap DNS gethosts API.
+// record describes a DNS record returned by the Namecheap DNS gethosts API.
 // Namecheap uses the term "host" to refer to all DNS records that include
 // a host field (A, AAAA, CNAME, NS, TXT, URL).
-type host struct {
+type record struct {
 	Type    string `xml:",attr"`
 	Name    string `xml:",attr"`
 	Address string `xml:",attr"`
@@ -32,7 +32,7 @@ type getHostsResponse struct {
 	XMLName xml.Name   `xml:"ApiResponse"`
 	Status  string     `xml:"Status,attr"`
 	Errors  []apierror `xml:"Errors>Error"`
-	Hosts   []host     `xml:"CommandResponse>DomainDNSGetHostsResult>host"`
+	Hosts   []record   `xml:"CommandResponse>DomainDNSGetHostsResult>host"`
 }
 
 type getTldsResponse struct {

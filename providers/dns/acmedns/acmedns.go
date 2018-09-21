@@ -101,7 +101,7 @@ func (e ErrCNAMERequired) Error() string {
 		e.Domain, e.Domain, e.FQDN, e.Target)
 }
 
-// Present creates a TXT record to fulfil the DNS-01 challenge. If there is an
+// Present creates a TXT record to fulfill the DNS-01 challenge. If there is an
 // existing account for the domain in the provider's storage then it will be
 // used to set the challenge response TXT record with the ACME-DNS server and
 // issuance will continue. If there is not an account for the given domain

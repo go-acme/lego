@@ -33,9 +33,14 @@ func TestRFC2136CanaryLocalTestServer(t *testing.T) {
 	dns.HandleFunc("example.com.", serverHandlerHello)
 	defer dns.HandleRemove("example.com.")
 
-	server, addrstr, err := runLocalDNSTestServer("127.0.0.1:0", false)
+	server, addrstr, err := runLocalDNSTestServer(false)
 	require.NoError(t, err, "Failed to start test server")
-	defer server.Shutdown()
+	defer func() {
+		errS := server.Shutdown()
+		if errS != nil {
+			t.Log(errS)
+		}
+	}()
 
 	c := new(dns.Client)
 	m := new(dns.Msg)
@@ -55,9 +60,14 @@ func TestRFC2136ServerSuccess(t *testing.T) {
 	dns.HandleFunc(rfc2136TestZone, serverHandlerReturnSuccess)
 	defer dns.HandleRemove(rfc2136TestZone)
 
-	server, addrstr, err := runLocalDNSTestServer("127.0.0.1:0", false)
+	server, addrstr, err := runLocalDNSTestServer(false)
 	require.NoError(t, err, "Failed to start test server")
-	defer server.Shutdown()
+	defer func() {
+		errS := server.Shutdown()
+		if errS != nil {
+			t.Log(errS)
+		}
+	}()
 
 	config := NewDefaultConfig()
 	config.Nameserver = addrstr
@@ -74,9 +84,14 @@ func TestRFC2136ServerError(t *testing.T) {
 	dns.HandleFunc(rfc2136TestZone, serverHandlerReturnErr)
 	defer dns.HandleRemove(rfc2136TestZone)
 
-	server, addrstr, err := runLocalDNSTestServer("127.0.0.1:0", false)
+	server, addrstr, err := runLocalDNSTestServer(false)
 	require.NoError(t, err, "Failed to start test server")
-	defer server.Shutdown()
+	defer func() {
+		errS := server.Shutdown()
+		if errS != nil {
+			t.Log(errS)
+		}
+	}()
 
 	config := NewDefaultConfig()
 	config.Nameserver = addrstr
@@ -96,9 +111,14 @@ func TestRFC2136TsigClient(t *testing.T) {
 	dns.HandleFunc(rfc2136TestZone, serverHandlerReturnSuccess)
 	defer dns.HandleRemove(rfc2136TestZone)
 
-	server, addrstr, err := runLocalDNSTestServer("127.0.0.1:0", true)
+	server, addrstr, err := runLocalDNSTestServer(true)
 	require.NoError(t, err, "Failed to start test server")
-	defer server.Shutdown()
+	defer func() {
+		errS := server.Shutdown()
+		if errS != nil {
+			t.Log(errS)
+		}
+	}()
 
 	config := NewDefaultConfig()
 	config.Nameserver = addrstr
@@ -117,9 +137,14 @@ func TestRFC2136ValidUpdatePacket(t *testing.T) {
 	dns.HandleFunc(rfc2136TestZone, serverHandlerPassBackRequest)
 	defer dns.HandleRemove(rfc2136TestZone)
 
-	server, addrstr, err := runLocalDNSTestServer("127.0.0.1:0", false)
+	server, addrstr, err := runLocalDNSTestServer(false)
 	require.NoError(t, err, "Failed to start test server")
-	defer server.Shutdown()
+	defer func() {
+		errS := server.Shutdown()
+		if errS != nil {
+			t.Log(errS)
+		}
+	}()
 
 	txtRR, _ := dns.NewRR(fmt.Sprintf("%s %d IN TXT %s", rfc2136TestFqdn, rfc2136TestTTL, rfc2136TestValue))
 	rrs := []dns.RR{txtRR}
@@ -157,8 +182,8 @@ func TestRFC2136ValidUpdatePacket(t *testing.T) {
 	}
 }
 
-func runLocalDNSTestServer(listenAddr string, tsig bool) (*dns.Server, string, error) {
-	pc, err := net.ListenPacket("udp", listenAddr)
+func runLocalDNSTestServer(tsig bool) (*dns.Server, string, error) {
+	pc, err := net.ListenPacket("udp", "127.0.0.1:0")
 	if err != nil {
 		return nil, "", err
 	}
@@ -172,7 +197,7 @@ func runLocalDNSTestServer(listenAddr string, tsig bool) (*dns.Server, string, e
 	server.NotifyStartedFunc = waitLock.Unlock
 
 	go func() {
-		server.ActivateAndServe()
+		_ = server.ActivateAndServe()
 		pc.Close()
 	}()
 
@@ -188,7 +213,7 @@ func serverHandlerHello(w dns.ResponseWriter, req *dns.Msg) {
 		Hdr: dns.RR_Header{Name: m.Question[0].Name, Rrtype: dns.TypeTXT, Class: dns.ClassINET, Ttl: 0},
 		Txt: []string{"Hello world"},
 	}
-	w.WriteMsg(m)
+	_ = w.WriteMsg(m)
 }
 
 func serverHandlerReturnSuccess(w dns.ResponseWriter, req *dns.Msg) {
@@ -207,13 +232,13 @@ func serverHandlerReturnSuccess(w dns.ResponseWriter, req *dns.Msg) {
 		}
 	}
 
-	w.WriteMsg(m)
+	_ = w.WriteMsg(m)
 }
 
 func serverHandlerReturnErr(w dns.ResponseWriter, req *dns.Msg) {
 	m := new(dns.Msg)
 	m.SetRcode(req, dns.RcodeNotZone)
-	w.WriteMsg(m)
+	_ = w.WriteMsg(m)
 }
 
 func serverHandlerPassBackRequest(w dns.ResponseWriter, req *dns.Msg) {
@@ -232,7 +257,7 @@ func serverHandlerPassBackRequest(w dns.ResponseWriter, req *dns.Msg) {
 		}
 	}
 
-	w.WriteMsg(m)
+	_ = w.WriteMsg(m)
 	if req.Opcode != dns.OpcodeQuery || req.Question[0].Qtype != dns.TypeSOA || req.Question[0].Qclass != dns.ClassINET {
 		// Only talk back when it is not the SOA RR.
 		reqChan <- req

@@ -18,14 +18,10 @@ type HTTPProvider struct {
 // NewHTTPProvider returns a HTTPProvider instance with a configured webroot path
 func NewHTTPProvider(path string) (*HTTPProvider, error) {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		return nil, fmt.Errorf("Webroot path does not exist")
+		return nil, fmt.Errorf("webroot path does not exist")
 	}
 
-	c := &HTTPProvider{
-		path: path,
-	}
-
-	return c, nil
+	return &HTTPProvider{path: path}, nil
 }
 
 // Present makes the token available at `HTTP01ChallengePath(token)` by creating a file in the given webroot path

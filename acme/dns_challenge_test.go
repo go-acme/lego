@@ -25,14 +25,19 @@ func TestDNSValidServerResponse(t *testing.T) {
 
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Replay-Nonce", "12345")
-		w.Write([]byte("{\"type\":\"dns01\",\"status\":\"valid\",\"uri\":\"http://some.url\",\"token\":\"http8\"}"))
+
+		_, err = w.Write([]byte("{\"type\":\"dns01\",\"status\":\"valid\",\"uri\":\"http://some.url\",\"token\":\"http8\"}"))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}))
 
 	go func() {
 		time.Sleep(time.Second * 2)
 		f := bufio.NewWriter(os.Stdout)
 		defer f.Flush()
-		f.WriteString("\n")
+		_, _ = f.WriteString("\n")
 	}()
 
 	manualProvider, err := NewDNSProviderManual()

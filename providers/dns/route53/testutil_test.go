@@ -30,7 +30,11 @@ func newMockServer(t *testing.T, responses MockResponseMap) *httptest.Server {
 
 		w.Header().Set("Content-Type", "application/xml")
 		w.WriteHeader(resp.StatusCode)
-		w.Write([]byte(resp.Body))
+		_, err := w.Write([]byte(resp.Body))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}))
 
 	time.Sleep(100 * time.Millisecond)

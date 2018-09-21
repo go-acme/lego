@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -31,10 +31,10 @@ func TestLivenifcloudPresent(t *testing.T) {
 	}
 
 	provider, err := NewDNSProvider()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = provider.Present(nifcloudDomain, "", "123d==")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestLivenifcloudCleanUp(t *testing.T) {
@@ -45,8 +45,8 @@ func TestLivenifcloudCleanUp(t *testing.T) {
 	time.Sleep(time.Second * 1)
 
 	provider, err := NewDNSProvider()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = provider.CleanUp(nifcloudDomain, "", "123d==")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -43,7 +44,7 @@ func TestNewDNSProviderValid(t *testing.T) {
 	config.APIKey = "123"
 
 	_, err := NewDNSProviderConfig(config)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestNewDNSProviderValidEnv(t *testing.T) {
@@ -52,7 +53,7 @@ func TestNewDNSProviderValidEnv(t *testing.T) {
 	os.Setenv("PDNS_API_KEY", "123")
 
 	_, err := NewDNSProvider()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestNewDNSProviderMissingHostErr(t *testing.T) {
@@ -83,11 +84,11 @@ func TestPdnsPresentAndCleanup(t *testing.T) {
 	config.APIKey = pdnsAPIKey
 
 	provider, err := NewDNSProviderConfig(config)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = provider.Present(pdnsDomain, "", "123d==")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = provider.CleanUp(pdnsDomain, "", "123d==")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

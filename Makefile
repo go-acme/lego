@@ -17,8 +17,8 @@ dependencies:
 test: clean
 	go test -v -cover ./...
 
-checks: check-fmt
-	gometalinter ./...
+checks:
+	golangci-lint run
 
 check-fmt: SHELL := /bin/bash
 check-fmt:

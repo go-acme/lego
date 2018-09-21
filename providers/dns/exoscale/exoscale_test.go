@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -39,7 +40,7 @@ func TestNewDNSProviderValid(t *testing.T) {
 	config.APISecret = "123"
 
 	_, err := NewDNSProviderConfig(config)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestNewDNSProviderValidEnv(t *testing.T) {
@@ -48,7 +49,7 @@ func TestNewDNSProviderValidEnv(t *testing.T) {
 	os.Setenv("EXOSCALE_API_SECRET", "123")
 
 	_, err := NewDNSProvider()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestNewDNSProviderMissingCredErr(t *testing.T) {
@@ -66,7 +67,7 @@ func TestDNSProvider_FindZoneAndRecordName(t *testing.T) {
 	config.APISecret = "123"
 
 	provider, err := NewDNSProviderConfig(config)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	type expected struct {
 		zone       string
@@ -105,7 +106,7 @@ func TestDNSProvider_FindZoneAndRecordName(t *testing.T) {
 			t.Parallel()
 
 			zone, recordName, err := provider.FindZoneAndRecordName(test.fqdn, test.domain)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, test.expected.zone, zone)
 			assert.Equal(t, test.expected.recordName, recordName)
 		})
@@ -122,14 +123,14 @@ func TestLiveExoscalePresent(t *testing.T) {
 	config.APISecret = exoscaleAPISecret
 
 	provider, err := NewDNSProviderConfig(config)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = provider.Present(exoscaleDomain, "", "123d==")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// Present Twice to handle create / update
 	err = provider.Present(exoscaleDomain, "", "123d==")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestLiveExoscaleCleanUp(t *testing.T) {
@@ -144,8 +145,8 @@ func TestLiveExoscaleCleanUp(t *testing.T) {
 	config.APISecret = exoscaleAPISecret
 
 	provider, err := NewDNSProviderConfig(config)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = provider.CleanUp(exoscaleDomain, "", "123d==")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

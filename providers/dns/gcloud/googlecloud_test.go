@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/dns/v1"
@@ -39,7 +40,7 @@ func TestNewDNSProviderValid(t *testing.T) {
 	os.Setenv("GCE_PROJECT", "")
 
 	_, err := NewDNSProviderCredentials("my-project")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestNewDNSProviderValidEnv(t *testing.T) {
@@ -51,7 +52,7 @@ func TestNewDNSProviderValidEnv(t *testing.T) {
 	os.Setenv("GCE_PROJECT", "my-project")
 
 	_, err := NewDNSProvider()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestNewDNSProviderMissingCredErr(t *testing.T) {
@@ -68,10 +69,10 @@ func TestLiveGoogleCloudPresent(t *testing.T) {
 	}
 
 	provider, err := NewDNSProviderCredentials(gcloudProject)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = provider.Present(gcloudDomain, "", "123d==")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestLiveGoogleCloudPresentMultiple(t *testing.T) {
@@ -80,13 +81,13 @@ func TestLiveGoogleCloudPresentMultiple(t *testing.T) {
 	}
 
 	provider, err := NewDNSProviderCredentials(gcloudProject)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// Check that we're able to create multiple entries
 	err = provider.Present(gcloudDomain, "1", "123d==")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	err = provider.Present(gcloudDomain, "2", "123d==")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestLiveGoogleCloudCleanUp(t *testing.T) {
@@ -97,8 +98,8 @@ func TestLiveGoogleCloudCleanUp(t *testing.T) {
 	time.Sleep(time.Second * 1)
 
 	provider, err := NewDNSProviderCredentials(gcloudProject)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = provider.CleanUp(gcloudDomain, "", "123d==")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

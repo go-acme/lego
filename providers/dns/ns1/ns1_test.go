@@ -86,7 +86,7 @@ func TestNewDNSProviderValid(t *testing.T) {
 	config.APIKey = "123"
 
 	_, err := NewDNSProviderConfig(config)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestNewDNSProviderMissingCredErr(t *testing.T) {
@@ -106,10 +106,10 @@ func TestLivePresent(t *testing.T) {
 	config.APIKey = apiKey
 
 	provider, err := NewDNSProviderConfig(config)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = provider.Present(domain, "", "123d==")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestLiveCleanUp(t *testing.T) {
@@ -123,8 +123,8 @@ func TestLiveCleanUp(t *testing.T) {
 	config.APIKey = apiKey
 
 	provider, err := NewDNSProviderConfig(config)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = provider.CleanUp(domain, "", "123d==")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

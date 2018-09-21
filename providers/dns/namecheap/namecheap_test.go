@@ -93,14 +93,14 @@ func TestSetHosts(t *testing.T) {
 			if test.errString != "" {
 				assert.EqualError(t, err, test.errString)
 			} else {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 			}
 			if err != nil {
 				return
 			}
 
 			err = prov.setHosts(ch, hosts)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 		})
 	}
 }

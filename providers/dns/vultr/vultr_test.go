@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -29,7 +30,7 @@ func TestNewDNSProviderValidEnv(t *testing.T) {
 	os.Setenv("VULTR_API_KEY", "123")
 
 	_, err := NewDNSProvider()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestNewDNSProviderMissingCredErr(t *testing.T) {
@@ -46,10 +47,10 @@ func TestLivePresent(t *testing.T) {
 	}
 
 	provider, err := NewDNSProvider()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = provider.Present(domain, "", "123d==")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestLiveCleanUp(t *testing.T) {
@@ -60,8 +61,8 @@ func TestLiveCleanUp(t *testing.T) {
 	time.Sleep(time.Second * 1)
 
 	provider, err := NewDNSProvider()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = provider.CleanUp(domain, "", "123d==")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

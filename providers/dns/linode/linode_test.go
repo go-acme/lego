@@ -82,7 +82,7 @@ func TestNewDNSProviderWithEnv(t *testing.T) {
 	os.Setenv("LINODE_API_KEY", "testing")
 
 	_, err := NewDNSProvider()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestNewDNSProviderWithoutEnv(t *testing.T) {
@@ -93,15 +93,15 @@ func TestNewDNSProviderWithoutEnv(t *testing.T) {
 	assert.EqualError(t, err, "linode: some credentials information are missing: LINODE_API_KEY")
 }
 
-func TestNewDNSProviderCredentialsWithKey(t *testing.T) {
+func TestNewDNSProviderWithKey(t *testing.T) {
 	config := NewDefaultConfig()
 	config.APIKey = "testing"
 
 	_, err := NewDNSProviderConfig(config)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
-func TestNewDNSProviderCredentialsWithoutKey(t *testing.T) {
+func TestNewDNSProviderWithoutKey(t *testing.T) {
 	config := NewDefaultConfig()
 
 	_, err := NewDNSProviderConfig(config)
@@ -113,7 +113,7 @@ func TestDNSProvider_Present(t *testing.T) {
 	os.Setenv("LINODE_API_KEY", "testing")
 
 	p, err := NewDNSProvider()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	domain := "example.com"
 	keyAuth := "dGVzdGluZw=="
@@ -208,7 +208,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 	os.Setenv("LINODE_API_KEY", "testing")
 
 	p, err := NewDNSProvider()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	domain := "example.com"
 	keyAuth := "dGVzdGluZw=="

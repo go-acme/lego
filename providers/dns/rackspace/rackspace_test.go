@@ -180,7 +180,7 @@ func TestOfflineRackspaceCleanUp(t *testing.T) {
 
 	if assert.NoError(t, err) {
 		err = provider.CleanUp("example.com", "token", "keyAuth")
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	}
 }
 
@@ -191,7 +191,7 @@ func TestNewDNSProviderValidEnv(t *testing.T) {
 
 	liveRackspaceEnv()
 	provider, err := NewDNSProvider()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Contains(t, provider.cloudDNSEndpoint, "https://dns.api.rackspacecloud.com/v1.0/", "The endpoint URL should contain the base")
 }
 
@@ -202,10 +202,10 @@ func TestRackspacePresent(t *testing.T) {
 
 	liveRackspaceEnv()
 	provider, err := NewDNSProvider()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = provider.Present(rackspaceDomain, "", "112233445566==")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestRackspaceCleanUp(t *testing.T) {
@@ -217,10 +217,10 @@ func TestRackspaceCleanUp(t *testing.T) {
 
 	liveRackspaceEnv()
 	provider, err := NewDNSProvider()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = provider.CleanUp(rackspaceDomain, "", "112233445566==")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestMain(m *testing.M) {

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -32,7 +33,7 @@ func TestLiveDynPresent(t *testing.T) {
 	}
 
 	provider, err := NewDNSProvider()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = provider.Present(dynDomain, "", "123d==")
 	assert.NoError(t, err)

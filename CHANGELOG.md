@@ -1,13 +1,5 @@
 # Changelog
 
-## [next] - future
-
-### Changed:
-- **[dnsprovider]** Added `/providers/dns/linodev4` to use Linode's APIv4.
-
-### Added:
-- **[dnsprovider]** The `LINODE_TOKEN` environment variable to use with Linode's APIv4.
-
 ## [v1.0.0] - 2018-05-30
 
 ### Changed:

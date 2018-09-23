@@ -54,6 +54,10 @@
   name = "github.com/timewasted/linode"
 
 [[constraint]]
+  version = "0.5.1"
+  name = "github.com/linode/linodego"
+
+[[constraint]]
   branch = "master"
   name = "golang.org/x/crypto"
 

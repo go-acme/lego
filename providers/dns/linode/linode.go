@@ -110,7 +110,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return err
 	}
 
-	if _, err = d.client.CreateDomainResourceTXT(zone.domainID, acme.UnFqdn(fqdn), value, 60); err != nil {
+	if _, err = d.client.CreateDomainResourceTXT(zone.domainID, acme.UnFqdn(fqdn), value, d.config.TTL); err != nil {
 		return err
 	}
 
@@ -138,6 +138,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 			if err != nil {
 				return err
 			}
+
 			if resp.ResourceID != resource.ResourceID {
 				return errors.New("error deleting resource: resource IDs do not match")
 			}

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -29,44 +30,116 @@ func restoreEnv() {
 	os.Setenv("CLOUDFLARE_API_KEY", cflareAPIKey)
 }
 
-func TestNewDNSProviderValid(t *testing.T) {
-	os.Setenv("CLOUDFLARE_EMAIL", "")
-	os.Setenv("CLOUDFLARE_API_KEY", "")
-	defer restoreEnv()
+func TestNewDNSProvider(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		envVars  map[string]string
+		expected string
+	}{
+		{
+			desc: "success",
+			envVars: map[string]string{
+				"CLOUDFLARE_EMAIL":   "test@example.com",
+				"CLOUDFLARE_API_KEY": "123",
+			},
+		},
+		{
+			desc: "missing credentials",
+			envVars: map[string]string{
+				"CLOUDFLARE_EMAIL":   "",
+				"CLOUDFLARE_API_KEY": "",
+			},
+			expected: "cloudflare: some credentials information are missing: CLOUDFLARE_EMAIL,CLOUDFLARE_API_KEY",
+		},
+		{
+			desc: "missing email",
+			envVars: map[string]string{
+				"CLOUDFLARE_EMAIL":   "",
+				"CLOUDFLARE_API_KEY": "key",
+			},
+			expected: "cloudflare: some credentials information are missing: CLOUDFLARE_EMAIL",
+		},
+		{
+			desc: "missing api key",
+			envVars: map[string]string{
+				"CLOUDFLARE_EMAIL":   "awesome@possum.com",
+				"CLOUDFLARE_API_KEY": "",
+			},
+			expected: "cloudflare: some credentials information are missing: CLOUDFLARE_API_KEY",
+		},
+	}
 
-	config := NewDefaultConfig()
-	config.AuthEmail = "123"
-	config.AuthKey = "123"
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer restoreEnv()
+			for key, value := range test.envVars {
+				if len(value) == 0 {
+					os.Unsetenv(key)
+				} else {
+					os.Setenv(key, value)
+				}
+			}
 
-	_, err := NewDNSProviderConfig(config)
+			p, err := NewDNSProvider()
 
-	assert.NoError(t, err)
+			if len(test.expected) == 0 {
+				assert.NoError(t, err)
+				assert.NotNil(t, p)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
 }
 
-func TestNewDNSProviderValidEnv(t *testing.T) {
-	defer restoreEnv()
-	os.Setenv("CLOUDFLARE_EMAIL", "test@example.com")
-	os.Setenv("CLOUDFLARE_API_KEY", "123")
+func TestNewDNSProviderConfig(t *testing.T) {
+	testCases := []struct {
+		desc      string
+		authEmail string
+		authKey   string
+		expected  string
+	}{
+		{
+			desc:      "success",
+			authEmail: "test@example.com",
+			authKey:   "123",
+		},
+		{
+			desc:     "missing credentials",
+			expected: "invalid credentials: key & email must not be empty",
+		},
+		{
+			desc:     "missing email",
+			authKey:  "123",
+			expected: "invalid credentials: key & email must not be empty",
+		},
+		{
+			desc:      "missing api key",
+			authEmail: "test@example.com",
+			expected:  "invalid credentials: key & email must not be empty",
+		},
+	}
 
-	_, err := NewDNSProvider()
-	assert.NoError(t, err)
-}
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer restoreEnv()
+			os.Unsetenv("CLOUDFLARE_EMAIL")
+			os.Unsetenv("CLOUDFLARE_API_KEY")
 
-func TestNewDNSProviderMissingCredErr(t *testing.T) {
-	defer restoreEnv()
-	os.Setenv("CLOUDFLARE_EMAIL", "")
-	os.Setenv("CLOUDFLARE_API_KEY", "")
+			config := NewDefaultConfig()
+			config.AuthEmail = test.authEmail
+			config.AuthKey = test.authKey
 
-	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "cloudflare: some credentials information are missing: CLOUDFLARE_EMAIL,CLOUDFLARE_API_KEY")
-}
+			p, err := NewDNSProviderConfig(config)
 
-func TestNewDNSProviderMissingCredErrSingle(t *testing.T) {
-	defer restoreEnv()
-	os.Setenv("CLOUDFLARE_EMAIL", "awesome@possum.com")
-
-	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "cloudflare: some credentials information are missing: CLOUDFLARE_API_KEY")
+			if len(test.expected) == 0 {
+				assert.NoError(t, err)
+				assert.NotNil(t, p)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
 }
 
 func TestCloudFlarePresent(t *testing.T) {
@@ -79,10 +152,10 @@ func TestCloudFlarePresent(t *testing.T) {
 	config.AuthKey = cflareAPIKey
 
 	provider, err := NewDNSProviderConfig(config)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = provider.Present(cflareDomain, "", "123d==")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestCloudFlareCleanUp(t *testing.T) {
@@ -97,8 +170,8 @@ func TestCloudFlareCleanUp(t *testing.T) {
 	config.AuthKey = cflareAPIKey
 
 	provider, err := NewDNSProviderConfig(config)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = provider.CleanUp(cflareDomain, "", "123d==")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

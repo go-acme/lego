@@ -127,6 +127,14 @@
   version = "v1.15.23"
 
 [[projects]]
+  digest = "1:03cfacdc6bfd46007c15786c1ece3fa074f89e5193a292f0f26d9e98c99c7cc2"
+  name = "github.com/cloudflare/cloudflare-go"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "1f9007fbecae20711133c60519338c41cef1ffb4"
+  version = "v0.8.5"
+
+[[projects]]
   branch = "master"
   digest = "1:2a7013a7e8cfec93dd725f95ea0c4b390d7d71f8a8bc3dbde05cfc9524ba5ea8"
   name = "github.com/cpu/goacmedns"
@@ -485,6 +493,14 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:c9e7a4b4d47c0ed205d257648b0e5b0440880cb728506e318f8ac7cd36270bc4"
+  name = "golang.org/x/time"
+  packages = ["rate"]
+  pruneopts = "NUT"
+  revision = "fbb02b2291d28baffd63558aa44b4b56f178d650"
+
+[[projects]]
+  branch = "master"
   digest = "1:90f61cd4297f7f4ce75f142744673ecdafd9023668cd24730f14033f265e394a"
   name = "google.golang.org/api"
   packages = [
@@ -574,6 +590,7 @@
     "github.com/aws/aws-sdk-go/aws/session",
     "github.com/aws/aws-sdk-go/service/lightsail",
     "github.com/aws/aws-sdk-go/service/route53",
+    "github.com/cloudflare/cloudflare-go",
     "github.com/cpu/goacmedns",
     "github.com/decker502/dnspod-go",
     "github.com/dnsimple/dnsimple-go/dnsimple",

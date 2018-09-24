@@ -47,7 +47,11 @@ func handlerMock(method string, response *APIResponse, data interface{}) http.Ha
 			return
 		}
 
-		rw.Write(content)
+		_, err = rw.Write(content)
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	})
 }
 

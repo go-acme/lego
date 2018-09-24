@@ -308,7 +308,7 @@ func (d *DNSProvider) getTLDs() (tlds map[string]string, err error) {
 }
 
 // getHosts reads the full list of DNS host records using the Namecheap API.
-func (d *DNSProvider) getHosts(ch *challenge) (hosts []host, err error) {
+func (d *DNSProvider) getHosts(ch *challenge) (hosts []record, err error) {
 	values := make(url.Values)
 	d.setGlobalParams(&values, "namecheap.domains.dns.getHosts")
 
@@ -348,7 +348,7 @@ func (d *DNSProvider) getHosts(ch *challenge) (hosts []host, err error) {
 }
 
 // setHosts writes the full list of DNS host records using the Namecheap API.
-func (d *DNSProvider) setHosts(ch *challenge, hosts []host) error {
+func (d *DNSProvider) setHosts(ch *challenge, hosts []record) error {
 	values := make(url.Values)
 	d.setGlobalParams(&values, "namecheap.domains.dns.setHosts")
 
@@ -395,8 +395,8 @@ func (d *DNSProvider) setHosts(ch *challenge, hosts []host) error {
 
 // addChallengeRecord adds a DNS challenge TXT record to a list of namecheap
 // host records.
-func (d *DNSProvider) addChallengeRecord(ch *challenge, hosts *[]host) {
-	host := host{
+func (d *DNSProvider) addChallengeRecord(ch *challenge, hosts *[]record) {
+	host := record{
 		Name:    ch.key,
 		Type:    "TXT",
 		Address: ch.keyValue,
@@ -418,7 +418,7 @@ func (d *DNSProvider) addChallengeRecord(ch *challenge, hosts *[]host) {
 
 // removeChallengeRecord removes a DNS challenge TXT record from a list of
 // namecheap host records. Return true if a record was removed.
-func (d *DNSProvider) removeChallengeRecord(ch *challenge, hosts *[]host) bool {
+func (d *DNSProvider) removeChallengeRecord(ch *challenge, hosts *[]record) bool {
 	// Find the challenge TXT record and remove it if found.
 	for i, h := range *hosts {
 		if h.Name == ch.key && h.Type == "TXT" {

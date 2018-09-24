@@ -8,6 +8,7 @@ import (
 
 	"github.com/rainycape/memcache"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/xenolf/lego/acme"
 )
 
@@ -39,7 +40,7 @@ func TestNewMemcachedProviderValid(t *testing.T) {
 		t.Skip("Skipping memcached tests")
 	}
 	_, err := NewMemcachedProvider(memcachedHosts)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestMemcachedPresentSingleHost(t *testing.T) {
@@ -47,16 +48,16 @@ func TestMemcachedPresentSingleHost(t *testing.T) {
 		t.Skip("Skipping memcached tests")
 	}
 	p, err := NewMemcachedProvider(memcachedHosts[0:1])
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	challengePath := path.Join("/", acme.HTTP01ChallengePath(token))
 
 	err = p.Present(domain, token, keyAuth)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	mc, err := memcache.New(memcachedHosts[0])
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	i, err := mc.Get(challengePath)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, i.Value, []byte(keyAuth))
 }
 
@@ -65,17 +66,17 @@ func TestMemcachedPresentMultiHost(t *testing.T) {
 		t.Skip("Skipping memcached multi-host tests")
 	}
 	p, err := NewMemcachedProvider(memcachedHosts)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	challengePath := path.Join("/", acme.HTTP01ChallengePath(token))
 
 	err = p.Present(domain, token, keyAuth)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	for _, host := range memcachedHosts {
 		mc, err := memcache.New(host)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		i, err := mc.Get(challengePath)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, i.Value, []byte(keyAuth))
 	}
 }
@@ -86,17 +87,17 @@ func TestMemcachedPresentPartialFailureMultiHost(t *testing.T) {
 	}
 	hosts := append(memcachedHosts, "5.5.5.5:11211")
 	p, err := NewMemcachedProvider(hosts)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	challengePath := path.Join("/", acme.HTTP01ChallengePath(token))
 
 	err = p.Present(domain, token, keyAuth)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	for _, host := range memcachedHosts {
 		mc, err := memcache.New(host)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		i, err := mc.Get(challengePath)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, i.Value, []byte(keyAuth))
 	}
 }
@@ -106,6 +107,6 @@ func TestMemcachedCleanup(t *testing.T) {
 		t.Skip("Skipping memcached tests")
 	}
 	p, err := NewMemcachedProvider(memcachedHosts)
-	assert.NoError(t, err)
-	assert.NoError(t, p.CleanUp(domain, token, keyAuth))
+	require.NoError(t, err)
+	require.NoError(t, p.CleanUp(domain, token, keyAuth))
 }

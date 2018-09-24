@@ -35,7 +35,12 @@ func TestNewClient(t *testing.T) {
 			RevokeCertURL: "http://test",
 			KeyChangeURL:  "http://test",
 		})
-		w.Write(data)
+
+		_, err = w.Write(data)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}))
 
 	client, err := NewClient(ts.URL, user, keyType)
@@ -66,7 +71,12 @@ func TestClientOptPort(t *testing.T) {
 			RevokeCertURL: "http://test",
 			KeyChangeURL:  "http://test",
 		})
-		w.Write(data)
+
+		_, err = w.Write(data)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}))
 
 	optPort := "1234"
@@ -75,7 +85,8 @@ func TestClientOptPort(t *testing.T) {
 	client, err := NewClient(ts.URL, user, RSA2048)
 	require.NoError(t, err, "Could not create client")
 
-	client.SetHTTPAddress(net.JoinHostPort(optHost, optPort))
+	err = client.SetHTTPAddress(net.JoinHostPort(optHost, optPort))
+	require.NoError(t, err)
 
 	require.IsType(t, &httpChallenge{}, client.solvers[HTTP01])
 	httpSolver := client.solvers[HTTP01].(*httpChallenge)
@@ -88,7 +99,8 @@ func TestClientOptPort(t *testing.T) {
 
 	// test setting different host
 	optHost = "127.0.0.1"
-	client.SetHTTPAddress(net.JoinHostPort(optHost, optPort))
+	err = client.SetHTTPAddress(net.JoinHostPort(optHost, optPort))
+	require.NoError(t, err)
 
 	assert.Equal(t, optHost, httpSolver.provider.(*HTTPProviderServer).iface, "iface")
 }
@@ -109,11 +121,17 @@ func TestNotHoldingLockWhileMakingHTTPRequests(t *testing.T) {
 	ch := make(chan bool)
 	resultCh := make(chan bool)
 	go func() {
-		j.Nonce()
+		_, errN := j.Nonce()
+		if errN != nil {
+			t.Log(errN)
+		}
 		ch <- true
 	}()
 	go func() {
-		j.Nonce()
+		_, errN := j.Nonce()
+		if errN != nil {
+			t.Log(errN)
+		}
 		ch <- true
 	}()
 	go func() {

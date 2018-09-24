@@ -13,7 +13,6 @@ import (
 )
 
 func generatePrivateKey(file string) (crypto.PrivateKey, error) {
-
 	privateKey, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
 	if err != nil {
 		return nil, err
@@ -30,9 +29,12 @@ func generatePrivateKey(file string) (crypto.PrivateKey, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer certOut.Close()
 
-	pem.Encode(certOut, &pemKey)
-	certOut.Close()
+	err = pem.Encode(certOut, &pemKey)
+	if err != nil {
+		return nil, err
+	}
 
 	return privateKey, nil
 }

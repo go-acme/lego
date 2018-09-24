@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -50,7 +51,7 @@ func TestNewDNSProviderValid(t *testing.T) {
 	config.AccessToken = "someaccesstoken"
 
 	_, err := NewDNSProviderConfig(config)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestNewDNSProviderValidEnv(t *testing.T) {
@@ -61,7 +62,7 @@ func TestNewDNSProviderValidEnv(t *testing.T) {
 	os.Setenv("AKAMAI_ACCESS_TOKEN", "someaccesstoken")
 
 	_, err := NewDNSProvider()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestNewDNSProviderMissingCredErr(t *testing.T) {
@@ -87,17 +88,17 @@ func TestLiveFastdnsPresent(t *testing.T) {
 	config.AccessToken = accessToken
 
 	provider, err := NewDNSProviderConfig(config)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = provider.Present(testDomain, "", "123d==")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// Present Twice to handle create / update
 	err = provider.Present(testDomain, "", "123d==")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
-func TestExtractRootRecordName(t *testing.T) {
+func TestDNSProvider_findZoneAndRecordName(t *testing.T) {
 	config := NewDefaultConfig()
 	config.Host = "somehost"
 	config.ClientToken = "someclienttoken"
@@ -105,28 +106,50 @@ func TestExtractRootRecordName(t *testing.T) {
 	config.AccessToken = "someaccesstoken"
 
 	provider, err := NewDNSProviderConfig(config)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
-	zone, recordName, err := provider.findZoneAndRecordName("_acme-challenge.bar.com.", "bar.com")
-	assert.NoError(t, err)
-	assert.Equal(t, "bar.com", zone)
-	assert.Equal(t, "_acme-challenge", recordName)
-}
+	type expected struct {
+		zone       string
+		recordName string
+	}
 
-func TestExtractSubRecordName(t *testing.T) {
-	config := NewDefaultConfig()
-	config.Host = "somehost"
-	config.ClientToken = "someclienttoken"
-	config.ClientSecret = "someclientsecret"
-	config.AccessToken = "someaccesstoken"
+	testCases := []struct {
+		desc     string
+		fqdn     string
+		domain   string
+		expected expected
+	}{
+		{
+			desc:   "Extract root record name",
+			fqdn:   "_acme-challenge.bar.com.",
+			domain: "bar.com",
+			expected: expected{
+				zone:       "bar.com",
+				recordName: "_acme-challenge",
+			},
+		},
+		{
+			desc:   "Extract sub record name",
+			fqdn:   "_acme-challenge.foo.bar.com.",
+			domain: "foo.bar.com",
+			expected: expected{
+				zone:       "bar.com",
+				recordName: "_acme-challenge.foo",
+			},
+		},
+	}
 
-	provider, err := NewDNSProviderConfig(config)
-	assert.NoError(t, err)
+	for _, test := range testCases {
+		test := test
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
 
-	zone, recordName, err := provider.findZoneAndRecordName("_acme-challenge.foo.bar.com.", "foo.bar.com")
-	assert.NoError(t, err)
-	assert.Equal(t, "bar.com", zone)
-	assert.Equal(t, "_acme-challenge.foo", recordName)
+			zone, recordName, err := provider.findZoneAndRecordName(test.fqdn, test.domain)
+			require.NoError(t, err)
+			assert.Equal(t, test.expected.zone, zone)
+			assert.Equal(t, test.expected.recordName, recordName)
+		})
+	}
 }
 
 func TestLiveFastdnsCleanUp(t *testing.T) {
@@ -143,8 +166,8 @@ func TestLiveFastdnsCleanUp(t *testing.T) {
 	config.AccessToken = accessToken
 
 	provider, err := NewDNSProviderConfig(config)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = provider.CleanUp(testDomain, "", "123d==")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

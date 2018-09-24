@@ -177,7 +177,7 @@ func main() {
 		},
 		cli.BoolFlag{
 			Name:  "pem",
-			Usage: "Generate a .pem file by concatanating the .key and .crt files together.",
+			Usage: "Generate a .pem file by concatenating the .key and .crt files together.",
 		},
 	}
 

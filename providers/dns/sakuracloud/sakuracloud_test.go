@@ -45,7 +45,7 @@ func TestNewDNSProviderValid(t *testing.T) {
 
 	assert.NotNil(t, provider)
 	assert.Equal(t, acme.UserAgent, provider.client.UserAgent)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestNewDNSProviderInvalidWithMissingAccessToken(t *testing.T) {
@@ -96,10 +96,10 @@ func TestLiveSakuraCloudPresent(t *testing.T) {
 	config.Secret = sakuracloudAccessSecret
 
 	provider, err := NewDNSProviderConfig(config)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = provider.Present(sakuracloudDomain, "", "123d==")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 //
@@ -118,8 +118,8 @@ func TestLiveSakuraCloudCleanUp(t *testing.T) {
 	config.Secret = sakuracloudAccessSecret
 
 	provider, err := NewDNSProviderConfig(config)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = provider.CleanUp(sakuracloudDomain, "", "123d==")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

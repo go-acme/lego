@@ -93,14 +93,14 @@ func TestSetHosts(t *testing.T) {
 			if test.errString != "" {
 				assert.EqualError(t, err, test.errString)
 			} else {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 			}
 			if err != nil {
 				return
 			}
 
 			err = prov.setHosts(ch, hosts)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 		})
 	}
 }
@@ -232,7 +232,11 @@ func mockServer(tc *testcase, t *testing.T, w http.ResponseWriter, r *http.Reque
 		}
 
 	case http.MethodPost:
-		r.ParseForm()
+		err := r.ParseForm()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 		values := r.Form
 		cmd := values.Get("Command")
 		switch cmd {
@@ -246,7 +250,6 @@ func mockServer(tc *testcase, t *testing.T, w http.ResponseWriter, r *http.Reque
 
 	default:
 		t.Errorf("Unexpected http method: %s", r.Method)
-
 	}
 }
 
@@ -265,7 +268,7 @@ func mockDNSProvider(url string) *DNSProvider {
 type testcase struct {
 	name             string
 	domain           string
-	hosts            []host
+	hosts            []record
 	errString        string
 	getHostsResponse string
 	setHostsResponse string
@@ -275,7 +278,7 @@ var testcases = []testcase{
 	{
 		name:   "Test:Success:1",
 		domain: "test.example.com",
-		hosts: []host{
+		hosts: []record{
 			{Type: "A", Name: "home", Address: "10.0.0.1", MXPref: "10", TTL: "1799"},
 			{Type: "A", Name: "www", Address: "10.0.0.2", MXPref: "10", TTL: "1200"},
 			{Type: "AAAA", Name: "a", Address: "::0", MXPref: "10", TTL: "1799"},
@@ -289,7 +292,7 @@ var testcases = []testcase{
 	{
 		name:   "Test:Success:2",
 		domain: "example.com",
-		hosts: []host{
+		hosts: []record{
 			{Type: "A", Name: "@", Address: "10.0.0.2", MXPref: "10", TTL: "1200"},
 			{Type: "A", Name: "www", Address: "10.0.0.3", MXPref: "10", TTL: "60"},
 		},

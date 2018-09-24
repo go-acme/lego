@@ -24,16 +24,16 @@ func TestDNSProvider(t *testing.T) {
 	fakeServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		require.Equal(t, "application/json", r.Header.Get("Content-Type"), "invalid content type")
 
-		req, err := ioutil.ReadAll(r.Body)
-		require.NoError(t, err)
+		req, errS := ioutil.ReadAll(r.Body)
+		require.NoError(t, errS)
 
 		req = regexpToken.ReplaceAllLiteral(req, []byte(`"rrset_values":["TOKEN"]`))
 
 		resp, ok := serverResponses[string(req)]
 		require.True(t, ok, "Server response for request not found")
 
-		_, err = io.Copy(w, strings.NewReader(resp))
-		require.NoError(t, err)
+		_, errS = io.Copy(w, strings.NewReader(resp))
+		require.NoError(t, errS)
 	}))
 	defer fakeServer.Close()
 

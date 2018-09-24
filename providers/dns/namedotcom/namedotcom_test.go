@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -38,10 +38,10 @@ func TestLiveNamedotcomPresent(t *testing.T) {
 	config.Server = namedotcomServer
 
 	provider, err := NewDNSProviderConfig(config)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = provider.Present(namedotcomDomain, "", "123d==")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 //
@@ -61,8 +61,8 @@ func TestLiveNamedotcomCleanUp(t *testing.T) {
 	config.Server = namedotcomServer
 
 	provider, err := NewDNSProviderConfig(config)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = provider.CleanUp(namedotcomDomain, "", "123d==")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

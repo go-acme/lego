@@ -48,7 +48,7 @@ func newMockServer(t *testing.T, responses MockResponseMap) *httptest.Server {
 		action := r.URL.Query().Get("api_action")
 		resp, ok := responses[action]
 		if !ok {
-			require.FailNowf(t, "Unsupported mock action: %s", action)
+			require.FailNowf(t, "Unsupported mock action: %q", action)
 		}
 
 		// Build the response that the server will return.
@@ -66,7 +66,11 @@ func newMockServer(t *testing.T, responses MockResponseMap) *httptest.Server {
 		// Send the response.
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write(rawResponse)
+		_, err = w.Write(rawResponse)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}))
 
 	time.Sleep(100 * time.Millisecond)
@@ -78,7 +82,7 @@ func TestNewDNSProviderWithEnv(t *testing.T) {
 	os.Setenv("LINODE_API_KEY", "testing")
 
 	_, err := NewDNSProvider()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestNewDNSProviderWithoutEnv(t *testing.T) {
@@ -89,15 +93,15 @@ func TestNewDNSProviderWithoutEnv(t *testing.T) {
 	assert.EqualError(t, err, "linode: some credentials information are missing: LINODE_API_KEY")
 }
 
-func TestNewDNSProviderCredentialsWithKey(t *testing.T) {
+func TestNewDNSProviderWithKey(t *testing.T) {
 	config := NewDefaultConfig()
 	config.APIKey = "testing"
 
 	_, err := NewDNSProviderConfig(config)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
-func TestNewDNSProviderCredentialsWithoutKey(t *testing.T) {
+func TestNewDNSProviderWithoutKey(t *testing.T) {
 	config := NewDefaultConfig()
 
 	_, err := NewDNSProviderConfig(config)
@@ -109,105 +113,94 @@ func TestDNSProvider_Present(t *testing.T) {
 	os.Setenv("LINODE_API_KEY", "testing")
 
 	p, err := NewDNSProvider()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	domain := "example.com"
 	keyAuth := "dGVzdGluZw=="
-	mockResponses := MockResponseMap{
-		"domain.list": MockResponse{
-			Response: []dns.Domain{
-				{
-					Domain:   domain,
-					DomainID: 1234,
+
+	testCases := []struct {
+		desc          string
+		mockResponses MockResponseMap
+		expectedError string
+	}{
+		{
+			desc: "success",
+			mockResponses: MockResponseMap{
+				"domain.list": MockResponse{
+					Response: []dns.Domain{
+						{
+							Domain:   domain,
+							DomainID: 1234,
+						},
+					},
+				},
+				"domain.resource.create": MockResponse{
+					Response: dns.ResourceResponse{
+						ResourceID: 1234,
+					},
 				},
 			},
 		},
-		"domain.resource.create": MockResponse{
-			Response: dns.ResourceResponse{
-				ResourceID: 1234,
+		{
+			desc: "NoDomain",
+			mockResponses: MockResponseMap{
+				"domain.list": MockResponse{
+					Response: []dns.Domain{{
+						Domain:   "foobar.com",
+						DomainID: 1234,
+					}},
+				},
 			},
+			expectedError: "dns: requested domain not found",
+		},
+		{
+			desc: "CreateFailed",
+			mockResponses: MockResponseMap{
+				"domain.list": MockResponse{
+					Response: []dns.Domain{
+						{
+							Domain:   domain,
+							DomainID: 1234,
+						},
+					},
+				},
+				"domain.resource.create": MockResponse{
+					Response: nil,
+					Errors: []linode.ResponseError{
+						{
+							Code:    1234,
+							Message: "Failed to create domain resource",
+						},
+					},
+				},
+			},
+			expectedError: "Failed to create domain resource",
 		},
 	}
 
-	mockSrv := newMockServer(t, mockResponses)
-	defer mockSrv.Close()
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
 
-	p.client.ToLinode().SetEndpoint(mockSrv.URL)
+			mockSrv := newMockServer(t, test.mockResponses)
+			defer mockSrv.Close()
 
-	err = p.Present(domain, "", keyAuth)
-	assert.NoError(t, err)
-}
+			p.client.ToLinode().SetEndpoint(mockSrv.URL)
 
-func TestDNSProvider_PresentNoDomain(t *testing.T) {
-	defer restoreEnv()
-	os.Setenv("LINODE_API_KEY", "testing")
-
-	p, err := NewDNSProvider()
-	assert.NoError(t, err)
-
-	domain := "example.com"
-	keyAuth := "dGVzdGluZw=="
-	mockResponses := MockResponseMap{
-		"domain.list": MockResponse{
-			Response: []dns.Domain{
-				{
-					Domain:   "foobar.com",
-					DomainID: 1234,
-				},
-			},
-		},
+			err = p.Present(domain, "", keyAuth)
+			if len(test.expectedError) == 0 {
+				assert.NoError(t, err)
+			} else {
+				assert.EqualError(t, err, test.expectedError)
+			}
+		})
 	}
-
-	mockSrv := newMockServer(t, mockResponses)
-	defer mockSrv.Close()
-
-	p.client.ToLinode().SetEndpoint(mockSrv.URL)
-
-	err = p.Present(domain, "", keyAuth)
-	assert.EqualError(t, err, "dns: requested domain not found")
-}
-
-func TestDNSProvider_PresentCreateFailed(t *testing.T) {
-	defer restoreEnv()
-	os.Setenv("LINODE_API_KEY", "testing")
-
-	p, err := NewDNSProvider()
-	assert.NoError(t, err)
-
-	domain := "example.com"
-	keyAuth := "dGVzdGluZw=="
-	mockResponses := MockResponseMap{
-		"domain.list": MockResponse{
-			Response: []dns.Domain{
-				{
-					Domain:   domain,
-					DomainID: 1234,
-				},
-			},
-		},
-		"domain.resource.create": MockResponse{
-			Response: nil,
-			Errors: []linode.ResponseError{
-				{
-					Code:    1234,
-					Message: "Failed to create domain resource",
-				},
-			},
-		},
-	}
-	mockSrv := newMockServer(t, mockResponses)
-	defer mockSrv.Close()
-
-	p.client.ToLinode().SetEndpoint(mockSrv.URL)
-
-	err = p.Present(domain, "", keyAuth)
-	assert.EqualError(t, err, "Failed to create domain resource")
 }
 
 func TestDNSProvider_PresentLive(t *testing.T) {
 	if !isTestLive {
 		t.Skip("Skipping live test")
 	}
+	// TODO implement this test
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
@@ -215,120 +208,108 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 	os.Setenv("LINODE_API_KEY", "testing")
 
 	p, err := NewDNSProvider()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	domain := "example.com"
 	keyAuth := "dGVzdGluZw=="
-	mockResponses := MockResponseMap{
-		"domain.list": MockResponse{
-			Response: []dns.Domain{
-				{
-					Domain:   domain,
-					DomainID: 1234,
+
+	testCases := []struct {
+		desc          string
+		mockResponses MockResponseMap
+		expectedError string
+	}{
+		{
+			desc: "success",
+			mockResponses: MockResponseMap{
+				"domain.list": MockResponse{
+					Response: []dns.Domain{
+						{
+							Domain:   domain,
+							DomainID: 1234,
+						},
+					},
+				},
+				"domain.resource.list": MockResponse{
+					Response: []dns.Resource{
+						{
+							DomainID:   1234,
+							Name:       "_acme-challenge",
+							ResourceID: 1234,
+							Target:     "ElbOJKOkFWiZLQeoxf-wb3IpOsQCdvoM0y_wn0TEkxM",
+							Type:       "TXT",
+						},
+					},
+				},
+				"domain.resource.delete": MockResponse{
+					Response: dns.ResourceResponse{
+						ResourceID: 1234,
+					},
 				},
 			},
 		},
-		"domain.resource.list": MockResponse{
-			Response: []dns.Resource{
-				{
-					DomainID:   1234,
-					Name:       "_acme-challenge",
-					ResourceID: 1234,
-					Target:     "ElbOJKOkFWiZLQeoxf-wb3IpOsQCdvoM0y_wn0TEkxM",
-					Type:       "TXT",
+		{
+			desc: "NoDomain",
+			mockResponses: MockResponseMap{
+				"domain.list": MockResponse{
+					Response: []dns.Domain{
+						{
+							Domain:   "foobar.com",
+							DomainID: 1234,
+						},
+					},
 				},
 			},
+			expectedError: "dns: requested domain not found",
 		},
-		"domain.resource.delete": MockResponse{
-			Response: dns.ResourceResponse{
-				ResourceID: 1234,
+		{
+			desc: "DeleteFailed",
+			mockResponses: MockResponseMap{
+				"domain.list": MockResponse{
+					Response: []dns.Domain{
+						{
+							Domain:   domain,
+							DomainID: 1234,
+						},
+					},
+				},
+				"domain.resource.list": MockResponse{
+					Response: []dns.Resource{
+						{
+							DomainID:   1234,
+							Name:       "_acme-challenge",
+							ResourceID: 1234,
+							Target:     "ElbOJKOkFWiZLQeoxf-wb3IpOsQCdvoM0y_wn0TEkxM",
+							Type:       "TXT",
+						},
+					},
+				},
+				"domain.resource.delete": MockResponse{
+					Response: nil,
+					Errors: []linode.ResponseError{
+						{
+							Code:    1234,
+							Message: "Failed to delete domain resource",
+						},
+					},
+				},
 			},
+			expectedError: "Failed to delete domain resource",
 		},
 	}
 
-	mockSrv := newMockServer(t, mockResponses)
-	defer mockSrv.Close()
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			mockSrv := newMockServer(t, test.mockResponses)
+			defer mockSrv.Close()
 
-	p.client.ToLinode().SetEndpoint(mockSrv.URL)
+			p.client.ToLinode().SetEndpoint(mockSrv.URL)
 
-	err = p.CleanUp(domain, "", keyAuth)
-	assert.NoError(t, err)
-}
-
-func TestDNSProvider_CleanUpNoDomain(t *testing.T) {
-	defer restoreEnv()
-	os.Setenv("LINODE_API_KEY", "testing")
-
-	p, err := NewDNSProvider()
-	assert.NoError(t, err)
-
-	domain := "example.com"
-	keyAuth := "dGVzdGluZw=="
-	mockResponses := MockResponseMap{
-		"domain.list": MockResponse{
-			Response: []dns.Domain{
-				{
-					Domain:   "foobar.com",
-					DomainID: 1234,
-				},
-			},
-		},
+			err = p.CleanUp(domain, "", keyAuth)
+			if len(test.expectedError) == 0 {
+				assert.NoError(t, err)
+			} else {
+				assert.EqualError(t, err, test.expectedError)
+			}
+		})
 	}
-
-	mockSrv := newMockServer(t, mockResponses)
-	defer mockSrv.Close()
-
-	p.client.ToLinode().SetEndpoint(mockSrv.URL)
-
-	err = p.CleanUp(domain, "", keyAuth)
-	assert.EqualError(t, err, "dns: requested domain not found")
-}
-
-func TestDNSProvider_CleanUpDeleteFailed(t *testing.T) {
-	defer restoreEnv()
-	os.Setenv("LINODE_API_KEY", "testing")
-
-	p, err := NewDNSProvider()
-	assert.NoError(t, err)
-
-	domain := "example.com"
-	keyAuth := "dGVzdGluZw=="
-	mockResponses := MockResponseMap{
-		"domain.list": MockResponse{
-			Response: []dns.Domain{
-				{
-					Domain:   domain,
-					DomainID: 1234,
-				},
-			},
-		},
-		"domain.resource.list": MockResponse{
-			Response: []dns.Resource{
-				{
-					DomainID:   1234,
-					Name:       "_acme-challenge",
-					ResourceID: 1234,
-					Target:     "ElbOJKOkFWiZLQeoxf-wb3IpOsQCdvoM0y_wn0TEkxM",
-					Type:       "TXT",
-				},
-			},
-		},
-		"domain.resource.delete": MockResponse{
-			Response: nil,
-			Errors: []linode.ResponseError{
-				{
-					Code:    1234,
-					Message: "Failed to delete domain resource",
-				},
-			},
-		},
-	}
-
-	mockSrv := newMockServer(t, mockResponses)
-	defer mockSrv.Close()
-
-	p.client.ToLinode().SetEndpoint(mockSrv.URL)
-
-	err = p.CleanUp(domain, "", keyAuth)
-	assert.EqualError(t, err, "Failed to delete domain resource")
 }

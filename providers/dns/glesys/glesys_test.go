@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -41,10 +42,10 @@ func TestDNSProvider_Present(t *testing.T) {
 	}
 
 	provider, err := NewDNSProvider()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = provider.Present(glesysDomain, "", "123d==")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
@@ -53,8 +54,8 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 	}
 
 	provider, err := NewDNSProvider()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = provider.CleanUp(glesysDomain, "", "123d==")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

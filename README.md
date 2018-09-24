@@ -155,7 +155,7 @@ To renew the certificate:
 lego --email="foo@bar.com" --domains="example.com" renew
 ```
 
-To renew the certificate only if it's older than 30 days
+To renew the certificate only if it expires within 30 days
 
 ```bash
 lego --email="foo@bar.com" --domains="example.com" renew --days 30

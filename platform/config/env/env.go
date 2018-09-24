@@ -1,6 +1,7 @@
 package env
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -26,6 +27,68 @@ func Get(names ...string) (map[string]string, error) {
 	}
 
 	return values, nil
+}
+
+// GetWithFallback Get environment variable values
+// The first name in each group is use as key in the result map
+//
+//	// LEGO_ONE="ONE"
+//	// LEGO_TWO="TWO"
+//	env.GetWithFallback([]string{"LEGO_ONE", "LEGO_TWO"})
+//	// => "LEGO_ONE" = "ONE"
+//
+// ----
+//
+//	// LEGO_ONE=""
+//	// LEGO_TWO="TWO"
+//	env.GetWithFallback([]string{"LEGO_ONE", "LEGO_TWO"})
+//	// => "LEGO_ONE" = "TWO"
+//
+// ----
+//
+//	// LEGO_ONE=""
+//	// LEGO_TWO=""
+//	env.GetWithFallback([]string{"LEGO_ONE", "LEGO_TWO"})
+//	// => error
+//
+func GetWithFallback(groups ...[]string) (map[string]string, error) {
+	values := map[string]string{}
+
+	var missingEnvVars []string
+	for _, names := range groups {
+		if len(names) == 0 {
+			return nil, errors.New("undefined environment variable names")
+		}
+
+		value, envVar := getOneWithFallback(names[0], names[1:]...)
+		if len(value) == 0 {
+			missingEnvVars = append(missingEnvVars, envVar)
+			continue
+		}
+		values[envVar] = value
+	}
+
+	if len(missingEnvVars) > 0 {
+		return nil, fmt.Errorf("some credentials information are missing: %s", strings.Join(missingEnvVars, ","))
+	}
+
+	return values, nil
+}
+
+func getOneWithFallback(main string, names ...string) (string, string) {
+	value := os.Getenv(main)
+	if len(value) > 0 {
+		return value, main
+	}
+
+	for _, name := range names {
+		value := os.Getenv(name)
+		if len(value) > 0 {
+			return value, main
+		}
+	}
+
+	return "", main
 }
 
 // GetOrDefaultInt returns the given environment variable value as an integer.

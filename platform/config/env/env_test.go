@@ -9,6 +9,96 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestGetWithFallback(t *testing.T) {
+	type expected struct {
+		value map[string]string
+		error string
+	}
+
+	testCases := []struct {
+		desc     string
+		envVars  map[string]string
+		groups   [][]string
+		expected expected
+	}{
+		{
+			desc:   "no groups",
+			groups: nil,
+			expected: expected{
+				value: map[string]string{},
+			},
+		},
+		{
+			desc:   "empty groups",
+			groups: [][]string{{}, {}},
+			expected: expected{
+				error: "undefined environment variable names",
+			},
+		},
+		{
+			desc:   "missing env var",
+			groups: [][]string{{"TEST_LEGO_A"}},
+			expected: expected{
+				error: "some credentials information are missing: TEST_LEGO_A",
+			},
+		},
+		{
+			desc:   "all env var in a groups are missing",
+			groups: [][]string{{"TEST_LEGO_B", "TEST_LEGO_C"}},
+			expected: expected{
+				error: "some credentials information are missing: TEST_LEGO_B",
+			},
+		},
+		{
+			desc:    "only the first env var have a value",
+			envVars: map[string]string{"TEST_LEGO_D": "D"},
+			groups:  [][]string{{"TEST_LEGO_D", "TEST_LEGO_E"}},
+			expected: expected{
+				value: map[string]string{"TEST_LEGO_D": "D"},
+			},
+		},
+		{
+			desc:    "only the second env var have a value",
+			envVars: map[string]string{"TEST_LEGO_G": "G"},
+			groups:  [][]string{{"TEST_LEGO_F", "TEST_LEGO_G"}},
+			expected: expected{
+				value: map[string]string{"TEST_LEGO_F": "G"},
+			},
+		},
+		{
+			desc:    "only all env vars have a value",
+			envVars: map[string]string{"TEST_LEGO_H": "H", "TEST_LEGO_I": "I"},
+			groups:  [][]string{{"TEST_LEGO_H", "TEST_LEGO_I"}},
+			expected: expected{
+				value: map[string]string{"TEST_LEGO_H": "H"},
+			},
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			for key, value := range test.envVars {
+				os.Setenv(key, value)
+			}
+
+			defer func() {
+				for key := range test.envVars {
+					os.Unsetenv(key)
+				}
+			}()
+
+			value, err := GetWithFallback(test.groups...)
+			if len(test.expected.error) > 0 {
+				assert.EqualError(t, err, test.expected.error)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, test.expected.value, value)
+			}
+		})
+	}
+
+}
+
 func TestGetOrDefaultInt(t *testing.T) {
 	testCases := []struct {
 		desc         string

@@ -5,6 +5,7 @@ package mydnsjp
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
@@ -107,6 +108,16 @@ func (d *DNSProvider) doRequest(domain, token, keyAuth string, cmd string) error
 	}
 
 	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		var content []byte
+		content, err = ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+
+		return fmt.Errorf("request %s failed [status code %d]: %s", req.URL, resp.StatusCode, string(content))
+	}
 
 	return nil
 }

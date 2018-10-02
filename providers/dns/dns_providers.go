@@ -3,6 +3,11 @@ package dns
 import (
 	"fmt"
 
+	"github.com/xenolf/lego/providers/dns/ns1"
+	"github.com/xenolf/lego/providers/dns/otc"
+	"github.com/xenolf/lego/providers/dns/ovh"
+	"github.com/xenolf/lego/providers/dns/pdns"
+
 	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/providers/dns/acmedns"
 	"github.com/xenolf/lego/providers/dns/alidns"
@@ -34,10 +39,6 @@ import (
 	"github.com/xenolf/lego/providers/dns/namedotcom"
 	"github.com/xenolf/lego/providers/dns/netcup"
 	"github.com/xenolf/lego/providers/dns/nifcloud"
-	"github.com/xenolf/lego/providers/dns/ns1"
-	"github.com/xenolf/lego/providers/dns/otc"
-	"github.com/xenolf/lego/providers/dns/ovh"
-	"github.com/xenolf/lego/providers/dns/pdns"
 	"github.com/xenolf/lego/providers/dns/rackspace"
 	"github.com/xenolf/lego/providers/dns/rfc2136"
 	"github.com/xenolf/lego/providers/dns/route53"
@@ -77,6 +78,8 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 		return dyn.NewDNSProvider()
 	case "fastdns":
 		return fastdns.NewDNSProvider()
+	case "exec":
+		return exec.NewDNSProvider()
 	case "exoscale":
 		return exoscale.NewDNSProvider()
 	case "gandi":
@@ -109,6 +112,14 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 		return netcup.NewDNSProvider()
 	case "nifcloud":
 		return nifcloud.NewDNSProvider()
+	case "ns1":
+		return ns1.NewDNSProvider()
+	case "otc":
+		return otc.NewDNSProvider()
+	case "ovh":
+		return ovh.NewDNSProvider()
+	case "pdns":
+		return pdns.NewDNSProvider()
 	case "rackspace":
 		return rackspace.NewDNSProvider()
 	case "route53":
@@ -117,20 +128,10 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 		return rfc2136.NewDNSProvider()
 	case "sakuracloud":
 		return sakuracloud.NewDNSProvider()
-	case "vultr":
-		return vultr.NewDNSProvider()
-	case "ovh":
-		return ovh.NewDNSProvider()
-	case "pdns":
-		return pdns.NewDNSProvider()
-	case "ns1":
-		return ns1.NewDNSProvider()
-	case "otc":
-		return otc.NewDNSProvider()
-	case "exec":
-		return exec.NewDNSProvider()
 	case "vegadns":
 		return vegadns.NewDNSProvider()
+	case "vultr":
+		return vultr.NewDNSProvider()
 	default:
 		return nil, fmt.Errorf("unrecognised DNS provider: %s", name)
 	}

@@ -28,8 +28,8 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt("DNSPOD_TTL", 600),
-		PropagationTimeout: env.GetOrDefaultSecond("ALICLOUD_PROPAGATION_TIMEOUT", acme.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("ALICLOUD_POLLING_INTERVAL", acme.DefaultPollingInterval),
+		PropagationTimeout: env.GetOrDefaultSecond("DNSPOD_PROPAGATION_TIMEOUT", acme.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond("DNSPOD_POLLING_INTERVAL", acme.DefaultPollingInterval),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond("DNSPOD_HTTP_TIMEOUT", 0),
 		},

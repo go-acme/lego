@@ -9,6 +9,103 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestGetWithFallback(t *testing.T) {
+	var1Exist := os.Getenv("TEST_LEGO_VAR_EXIST_1")
+	var2Exist := os.Getenv("TEST_LEGO_VAR_EXIST_2")
+	var1Missing := os.Getenv("TEST_LEGO_VAR_MISSING_1")
+	var2Missing := os.Getenv("TEST_LEGO_VAR_MISSING_2")
+
+	defer func() {
+		_ = os.Setenv("TEST_LEGO_VAR_EXIST_1", var1Exist)
+		_ = os.Setenv("TEST_LEGO_VAR_EXIST_2", var2Exist)
+		_ = os.Setenv("TEST_LEGO_VAR_MISSING_1", var1Missing)
+		_ = os.Setenv("TEST_LEGO_VAR_MISSING_2", var2Missing)
+	}()
+
+	err := os.Setenv("TEST_LEGO_VAR_EXIST_1", "VAR1")
+	require.NoError(t, err)
+	err = os.Setenv("TEST_LEGO_VAR_EXIST_2", "VAR2")
+	require.NoError(t, err)
+	err = os.Unsetenv("TEST_LEGO_VAR_MISSING_1")
+	require.NoError(t, err)
+	err = os.Unsetenv("TEST_LEGO_VAR_MISSING_2")
+	require.NoError(t, err)
+
+	type expected struct {
+		value map[string]string
+		error string
+	}
+
+	testCases := []struct {
+		desc     string
+		groups   [][]string
+		expected expected
+	}{
+		{
+			desc:   "no groups",
+			groups: nil,
+			expected: expected{
+				value: map[string]string{},
+			},
+		},
+		{
+			desc:   "empty groups",
+			groups: [][]string{{}, {}},
+			expected: expected{
+				error: "undefined environment variable names",
+			},
+		},
+		{
+			desc:   "missing env var",
+			groups: [][]string{{"TEST_LEGO_VAR_MISSING_1"}},
+			expected: expected{
+				error: "some credentials information are missing: TEST_LEGO_VAR_MISSING_1",
+			},
+		},
+		{
+			desc:   "all env var in a groups are missing",
+			groups: [][]string{{"TEST_LEGO_VAR_MISSING_1", "TEST_LEGO_VAR_MISSING_2"}},
+			expected: expected{
+				error: "some credentials information are missing: TEST_LEGO_VAR_MISSING_1",
+			},
+		},
+		{
+			desc:   "only the first env var have a value",
+			groups: [][]string{{"TEST_LEGO_VAR_EXIST_1", "TEST_LEGO_VAR_MISSING_1"}},
+			expected: expected{
+				value: map[string]string{"TEST_LEGO_VAR_EXIST_1": "VAR1"},
+			},
+		},
+		{
+			desc:   "only the second env var have a value",
+			groups: [][]string{{"TEST_LEGO_VAR_MISSING_1", "TEST_LEGO_VAR_EXIST_1"}},
+			expected: expected{
+				value: map[string]string{"TEST_LEGO_VAR_MISSING_1": "VAR1"},
+			},
+		},
+		{
+			desc:   "only all env vars have a value",
+			groups: [][]string{{"TEST_LEGO_VAR_EXIST_1", "TEST_LEGO_VAR_EXIST_2"}},
+			expected: expected{
+				value: map[string]string{"TEST_LEGO_VAR_EXIST_1": "VAR1"},
+			},
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			value, err := GetWithFallback(test.groups...)
+			if len(test.expected.error) > 0 {
+				assert.EqualError(t, err, test.expected.error)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, test.expected.value, value)
+			}
+		})
+	}
+
+}
+
 func TestGetOrDefaultInt(t *testing.T) {
 	testCases := []struct {
 		desc         string

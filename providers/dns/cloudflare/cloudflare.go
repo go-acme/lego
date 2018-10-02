@@ -47,7 +47,9 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables:
 // CLOUDFLARE_EMAIL and CLOUDFLARE_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("CLOUDFLARE_EMAIL", "CLOUDFLARE_API_KEY")
+	values, err := env.GetWithFallback(
+		[]string{"CLOUDFLARE_EMAIL", "CF_API_EMAIL"},
+		[]string{"CLOUDFLARE_API_KEY", "CF_API_KEY"})
 	if err != nil {
 		return nil, fmt.Errorf("cloudflare: %v", err)
 	}
@@ -92,8 +94,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}, nil
 }
 
-// Timeout returns the timeout and interval to use when checking for DNS
-// propagation. Adjusting here to cope with spikes in propagation times.
+// Timeout returns the timeout and interval to use when checking for DNS propagation.
+// Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }

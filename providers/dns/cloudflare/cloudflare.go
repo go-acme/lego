@@ -67,6 +67,17 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderConfig(config)
 }
 
+// NewDNSProviderCredentials uses the supplied credentials
+// to return a DNSProvider instance configured for Cloudflare.
+// Deprecated
+func NewDNSProviderCredentials(email, key string) (*DNSProvider, error) {
+	config := NewDefaultConfig()
+	config.AuthEmail = email
+	config.AuthKey = key
+
+	return NewDNSProviderConfig(config)
+}
+
 // NewDNSProviderConfig return a DNSProvider instance configured for Cloudflare.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {

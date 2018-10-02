@@ -53,7 +53,7 @@ func TestPEMCertExpiration(t *testing.T) {
 
 	// Some random string should return an error.
 	ctime, err := GetPEMCertExpiration(buf.Bytes())
-	assert.Errorf(t, err, "Expected getCertExpiration to return an error for garbage string but returned %v", ctime)
+	require.Errorf(t, err, "Expected getCertExpiration to return an error for garbage string but returned %v", ctime)
 
 	// A DER encoded certificate should return an error.
 	_, err = GetPEMCertExpiration(certBytes)

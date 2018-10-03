@@ -3,11 +3,6 @@ package dns
 import (
 	"fmt"
 
-	"github.com/xenolf/lego/providers/dns/ns1"
-	"github.com/xenolf/lego/providers/dns/otc"
-	"github.com/xenolf/lego/providers/dns/ovh"
-	"github.com/xenolf/lego/providers/dns/pdns"
-
 	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/providers/dns/acmedns"
 	"github.com/xenolf/lego/providers/dns/alidns"
@@ -39,6 +34,10 @@ import (
 	"github.com/xenolf/lego/providers/dns/namedotcom"
 	"github.com/xenolf/lego/providers/dns/netcup"
 	"github.com/xenolf/lego/providers/dns/nifcloud"
+	"github.com/xenolf/lego/providers/dns/ns1"
+	"github.com/xenolf/lego/providers/dns/otc"
+	"github.com/xenolf/lego/providers/dns/ovh"
+	"github.com/xenolf/lego/providers/dns/pdns"
 	"github.com/xenolf/lego/providers/dns/rackspace"
 	"github.com/xenolf/lego/providers/dns/rfc2136"
 	"github.com/xenolf/lego/providers/dns/route53"

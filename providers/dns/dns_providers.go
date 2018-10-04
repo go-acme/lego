@@ -77,6 +77,8 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 		return dyn.NewDNSProvider()
 	case "fastdns":
 		return fastdns.NewDNSProvider()
+	case "exec":
+		return exec.NewDNSProvider()
 	case "exoscale":
 		return exoscale.NewDNSProvider()
 	case "gandi":
@@ -109,6 +111,14 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 		return netcup.NewDNSProvider()
 	case "nifcloud":
 		return nifcloud.NewDNSProvider()
+	case "ns1":
+		return ns1.NewDNSProvider()
+	case "otc":
+		return otc.NewDNSProvider()
+	case "ovh":
+		return ovh.NewDNSProvider()
+	case "pdns":
+		return pdns.NewDNSProvider()
 	case "rackspace":
 		return rackspace.NewDNSProvider()
 	case "route53":
@@ -117,20 +127,10 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 		return rfc2136.NewDNSProvider()
 	case "sakuracloud":
 		return sakuracloud.NewDNSProvider()
-	case "vultr":
-		return vultr.NewDNSProvider()
-	case "ovh":
-		return ovh.NewDNSProvider()
-	case "pdns":
-		return pdns.NewDNSProvider()
-	case "ns1":
-		return ns1.NewDNSProvider()
-	case "otc":
-		return otc.NewDNSProvider()
-	case "exec":
-		return exec.NewDNSProvider()
 	case "vegadns":
 		return vegadns.NewDNSProvider()
+	case "vultr":
+		return vultr.NewDNSProvider()
 	default:
 		return nil, fmt.Errorf("unrecognised DNS provider: %s", name)
 	}

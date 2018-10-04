@@ -26,7 +26,9 @@ func TestRoute53TTL(t *testing.T) {
 
 	// we need a separate R53 client here as the one in the DNS provider is unexported.
 	fqdn := "_acme-challenge." + r53Domain + "."
-	svc := route53.New(session.New())
+	sess, err := session.NewSession()
+	require.NoError(t, err)
+	svc := route53.New(sess)
 
 	defer func() {
 		errC := provider.CleanUp(r53Domain, "foo", "bar")

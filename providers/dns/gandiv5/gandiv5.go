@@ -185,38 +185,67 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 func (d *DNSProvider) addTXTRecord(domain string, name string, value string, ttl int) error {
 	target := fmt.Sprintf("domains/%s/records/%s/TXT", domain, name)
-	response, err := d.sendRequest(http.MethodPut, target, addFieldRequest{
-		RRSetTTL:    ttl,
-		RRSetValues: []string{value},
-	})
-	if response != nil {
-		log.Infof("gandiv5: %s", response.Message)
+
+	// Get exiting values for the TXT records
+	// Needed to create challenges for both wildcard and base name domains
+	txtRecords := &responseStruct{}
+	err := d.sendRequest(http.MethodGet, target, getFieldRequest{
+		Get: true,
+	}, txtRecords)
+	if err != nil {
+		return fmt.Errorf("unable to get TXT records for domain %s and name %s: %v", domain, name, err)
 	}
-	return err
+
+	values := []string{value}
+	if len(txtRecords.RRSetValues) > 0 {
+		values = append(values, txtRecords.RRSetValues...)
+	}
+
+	createMessage := &responseMessage{}
+	err = d.sendRequest(http.MethodPut, target, addFieldRequest{
+		RRSetTTL:    ttl,
+		RRSetValues: values,
+	}, createMessage)
+	if err != nil {
+		return fmt.Errorf("unable to create TXT record for domain %s and name %s: %v", domain, name, err)
+	}
+
+	if len(createMessage.Message) > 0 {
+		log.Infof("gandiv5: %s", createMessage.Message)
+	}
+
+	return nil
 }
 
 func (d *DNSProvider) deleteTXTRecord(domain string, name string) error {
 	target := fmt.Sprintf("domains/%s/records/%s/TXT", domain, name)
-	response, err := d.sendRequest(http.MethodDelete, target, deleteFieldRequest{
+
+	responseDelete := &responseMessage{}
+	err := d.sendRequest(http.MethodDelete, target, deleteFieldRequest{
 		Delete: true,
-	})
-	if response != nil && response.Message == "" {
-		log.Infof("gandiv5: Zone record deleted")
+	}, responseDelete)
+	if err != nil {
+		return fmt.Errorf("unable to delete TXT record for domain %s and name %s: %v", domain, name, err)
 	}
-	return err
+
+	if responseDelete != nil && len(responseDelete.Message) == 0 {
+		log.Infof("gandiv5: %s", responseDelete.Message)
+	}
+
+	return nil
 }
 
-func (d *DNSProvider) sendRequest(method string, resource string, payload interface{}) (*responseStruct, error) {
+func (d *DNSProvider) sendRequest(method string, resource string, payload interface{}, response interface{}) error {
 	url := fmt.Sprintf("%s/%s", d.config.BaseURL, resource)
 
 	body, err := json.Marshal(payload)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	req, err := http.NewRequest(method, url, bytes.NewReader(body))
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -226,19 +255,22 @@ func (d *DNSProvider) sendRequest(method string, resource string, payload interf
 
 	resp, err := d.config.HTTPClient.Do(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode == 404 && method == http.MethodGet {
+		return nil
+	}
+
 	if resp.StatusCode >= 400 {
-		return nil, fmt.Errorf("request failed with HTTP status code %d", resp.StatusCode)
+		return fmt.Errorf("request failed with HTTP status code %d", resp.StatusCode)
 	}
 
-	var response responseStruct
-	err = json.NewDecoder(resp.Body).Decode(&response)
+	err = json.NewDecoder(resp.Body).Decode(response)
 	if err != nil && method != http.MethodDelete {
-		return nil, err
+		return err
 	}
 
-	return &response, nil
+	return nil
 }

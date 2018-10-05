@@ -72,4 +72,6 @@ var serverResponses = map[string]string{
 	`{"rrset_ttl":300,"rrset_values":["TOKEN"]}`: `{"message": "Zone Record Created"}`,
 	// CleanUp Request->Response (deleteTXTRecord)
 	`{"delete":true}`: ``,
+	// Get existing TXT record (addTXTRecord)
+	`{"get":true}`: `{"rrset_ttl":300,"rrset_values":[],"rrset_name":"_acme-challenge.abc.def","rrset_type":"TXT"}`,
 }

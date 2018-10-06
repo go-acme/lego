@@ -3,6 +3,7 @@ package env
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
@@ -133,4 +134,31 @@ func GetOrDefaultBool(envVar string, defaultValue bool) bool {
 	}
 
 	return v
+}
+
+// Attempts to resolve 'key' as an environment variable. Failing that, it will
+// check to see if '$key_FILE' exists. If so, it will attempt to read from the
+// referenced file to populate a value.
+func GetenvOrFile(envVar string) string {
+	envVarValue := os.Getenv(envVar)
+
+	if envVarValue != "" {
+		return envVarValue
+	}
+
+	fileVar := envVar + "_FILE"
+	fileVarValue := os.Getenv(fileVar)
+
+	if fileVarValue == "" {
+		return envVarValue
+	}
+
+	fileContents, err := ioutil.ReadFile(fileVarValue)
+
+	if err != nil {
+		fmt.Printf("Error reading the file %s (defined by env var %s): %s\n", fileVarValue, fileVar, err)
+		return ""
+	}
+
+	return string(fileContents)
 }

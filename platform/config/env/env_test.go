@@ -1,6 +1,7 @@
 package env
 
 import (
+	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -271,5 +272,37 @@ func TestGetOrDefaultBool(t *testing.T) {
 			actual := GetOrDefaultBool(key, test.defaultValue)
 			assert.Equal(t, test.expected, actual)
 		})
+	}
+}
+
+func TestGetenvReadsEnvVars(t *testing.T) {
+	os.Setenv("MY_SILLY_ENV_VAR", "bacon")
+	readValue := GetenvOrFile("MY_SILLY_ENV_VAR")
+
+	if readValue != "bacon" {
+		t.Fatal("Expected bacon, got: ", readValue)
+	}
+}
+
+func TestGetenvReadsFiles(t *testing.T) {
+	os.Setenv("MY_SILLY_ENV_VAR_FILE", "/tmp/bacon.env.test")
+	ioutil.WriteFile("/tmp/bacon.env.test", []byte("bacon"), 0644)
+
+	readValue := GetenvOrFile("MY_SILLY_ENV_VAR")
+
+	if readValue != "bacon" {
+		t.Fatal("Expected bacon, got: ", readValue)
+	}
+}
+
+func TestGetenvPrefersEnvVars(t *testing.T) {
+	os.Setenv("MY_SILLY_ENV_VAR", "bacon1")
+	os.Setenv("MY_SILLY_ENV_VAR_FILE", "/tmp/bacon.env.test")
+	ioutil.WriteFile("/tmp/bacon.env.test", []byte("bacon2"), 0644)
+
+	readValue := GetenvOrFile("MY_SILLY_ENV_VAR")
+
+	if readValue != "bacon1" {
+		t.Fatal("Expected bacon1, got: ", readValue)
 	}
 }

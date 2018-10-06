@@ -15,7 +15,6 @@ import (
 const (
 	defaultBaseURL = "https://gateway.stackpath.com/dns/v1/stacks"
 	defaultAuthURL = "https://gateway.stackpath.com/identity/v1/oauth2/token"
-	dnsAPIPath     = "dns/v1/"
 )
 
 // DNSProvider is an implementation of the acme.ChallengeProvider interface.

@@ -5,7 +5,6 @@ package vegadns
 import (
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
@@ -50,8 +49,8 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 	config := NewDefaultConfig()
 	config.BaseURL = values["VEGADNS_URL"]
-	config.APIKey = os.Getenv("SECRET_VEGADNS_KEY")
-	config.APISecret = os.Getenv("SECRET_VEGADNS_SECRET")
+	config.APIKey = env.GetOrFile("SECRET_VEGADNS_KEY")
+	config.APISecret = env.GetOrFile("SECRET_VEGADNS_SECRET")
 
 	return NewDNSProviderConfig(config)
 }

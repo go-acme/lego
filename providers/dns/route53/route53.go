@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
-	"os"
 	"strings"
 	"time"
 
@@ -35,7 +34,7 @@ func NewDefaultConfig() *Config {
 		TTL:                env.GetOrDefaultInt("AWS_TTL", 10),
 		PropagationTimeout: env.GetOrDefaultSecond("AWS_PROPAGATION_TIMEOUT", 2*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond("AWS_POLLING_INTERVAL", 4*time.Second),
-		HostedZoneID:       os.Getenv("AWS_HOSTED_ZONE_ID"),
+		HostedZoneID:       env.GetOrFile("AWS_HOSTED_ZONE_ID"),
 	}
 }
 

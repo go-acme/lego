@@ -5,7 +5,6 @@ package dnsimple
 import (
 	"errors"
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -45,8 +44,8 @@ type DNSProvider struct {
 // See: https://developer.dnsimple.com/v2/#authentication
 func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
-	config.AccessToken = os.Getenv("DNSIMPLE_OAUTH_TOKEN")
-	config.BaseURL = os.Getenv("DNSIMPLE_BASE_URL")
+	config.AccessToken = env.GetOrFile("DNSIMPLE_OAUTH_TOKEN")
+	config.BaseURL = env.GetOrFile("DNSIMPLE_BASE_URL")
 
 	return NewDNSProviderConfig(config)
 }

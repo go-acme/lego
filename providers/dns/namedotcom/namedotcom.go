@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
@@ -56,7 +55,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
 	config.Username = values["NAMECOM_USERNAME"]
 	config.APIToken = values["NAMECOM_API_TOKEN"]
-	config.Server = os.Getenv("NAMECOM_SERVER")
+	config.Server = env.GetOrFile("NAMECOM_SERVER")
 
 	return NewDNSProviderConfig(config)
 }

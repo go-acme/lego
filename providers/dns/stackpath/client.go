@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 
 	"github.com/xenolf/lego/acme"
+	"golang.org/x/net/publicsuffix"
 )
 
 // Zone is the item response from the Stackpath api getZone
@@ -16,27 +18,33 @@ type Zone struct {
 	Domain string
 }
 
-// GetZoneResponse is the response struct from the Stackpath api getZone
-type GetZoneResponse struct {
+// getZoneResponse is the response struct from the Stackpath api getZone
+type getZoneResponse struct {
 	Zones []*Zone
 }
 
-// GetRecordsResponse is the response struct from the Stackpath api GetRecords
-type GetRecordsResponse struct {
-	ZoneRecords []*Record
+// getRecordsResponse is the response struct from the Stackpath api GetRecords
+type getRecordsResponse struct {
+	Records []*Record
 }
 
 // Record is the item response from the Stackpath api GetRecords
 type Record struct {
-	ID   string
-	Name string
-	Type string
+	ID   string `json:"id,omitempty"`
+	Name string `json:"name"`
+	Type string `json:"type"`
+	TTL  int    `json:"ttl"`
+	Data string `json:"data"`
 }
 
 func (d *DNSProvider) httpGet(path string, in interface{}) error {
 	resp, err := d.client.Get(fmt.Sprintf("%s/%s%s", defaultBaseURL, d.config.StackID, path))
 	if err != nil {
 		return err
+	}
+
+	if resp.Body == nil {
+		return fmt.Errorf("no response body for request GET %s", path)
 	}
 
 	rawBody, err := ioutil.ReadAll(resp.Body)
@@ -71,13 +79,17 @@ func (d *DNSProvider) httpPost(path string, body interface{}) error {
 		return err
 	}
 
-	rawBody, err := ioutil.ReadAll(resp.Body)
-	defer resp.Body.Close()
-	if err != nil {
-		return err
-	}
-
 	if resp.StatusCode > 299 {
+		if resp.Body == nil {
+			return fmt.Errorf("no response body for request POST %s", path)
+		}
+
+		rawBody, err := ioutil.ReadAll(resp.Body)
+		defer resp.Body.Close()
+		if err != nil {
+			return err
+		}
+
 		return fmt.Errorf("non 200 response: %d - %s", resp.StatusCode, string(rawBody))
 	}
 
@@ -85,7 +97,11 @@ func (d *DNSProvider) httpPost(path string, body interface{}) error {
 }
 
 func (d *DNSProvider) httpDelete(path string) error {
-	req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/%s%s", defaultBaseURL, d.config.StackID, path), nil)
+	req, err := http.NewRequest(
+		http.MethodDelete,
+		fmt.Sprintf("%s/%s%s", defaultBaseURL, d.config.StackID, path),
+		nil,
+	)
 	if err != nil {
 		return err
 	}
@@ -95,13 +111,17 @@ func (d *DNSProvider) httpDelete(path string) error {
 		return err
 	}
 
-	rawBody, err := ioutil.ReadAll(resp.Body)
-	defer resp.Body.Close()
-	if err != nil {
-		return err
-	}
-
 	if resp.StatusCode > 299 {
+		if resp.Body == nil {
+			return fmt.Errorf("no response body for request DELETES %s", path)
+		}
+
+		rawBody, err := ioutil.ReadAll(resp.Body)
+		defer resp.Body.Close()
+		if err != nil {
+			return err
+		}
+
 		return fmt.Errorf("non 200 response: %d - %s", resp.StatusCode, string(rawBody))
 	}
 
@@ -110,9 +130,17 @@ func (d *DNSProvider) httpDelete(path string) error {
 
 func (d *DNSProvider) getZoneForDomain(domain string) (*Zone, error) {
 	domain = acme.UnFqdn(domain)
+	tld, err := publicsuffix.EffectiveTLDPlusOne(domain)
+	if err != nil {
+		return nil, err
+	}
 
-	var zones GetZoneResponse
-	if err := d.httpGet(fmt.Sprintf("/zones?page_request.filter=domain = '%s'", domain), &zones); err != nil {
+	params := url.Values{}
+	params.Add("page_request.filter", fmt.Sprintf("domain='%s'", tld))
+
+	var zones getZoneResponse
+	err = d.httpGet(fmt.Sprintf("/zones?%s", params.Encode()), &zones)
+	if err != nil {
 		return nil, err
 	}
 
@@ -124,18 +152,18 @@ func (d *DNSProvider) getZoneForDomain(domain string) (*Zone, error) {
 }
 
 func (d *DNSProvider) getRecordForZone(name string, zone *Zone) (*Record, error) {
-	var records GetRecordsResponse
-	err := d.httpGet(
-		fmt.Sprintf("/zones%s/records?page_request.filter=name = '%s' and type = 'TXT'", zone.ID, name),
-		&records,
-	)
+	params := url.Values{}
+	params.Add("page_request.filter", fmt.Sprintf("name='%s' and type='TXT'", name))
+
+	var records getRecordsResponse
+	err := d.httpGet(fmt.Sprintf("/zones/%s/records?%s", zone.ID, params.Encode()), &records)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(records.ZoneRecords) == 0 {
+	if len(records.Records) == 0 {
 		return nil, fmt.Errorf("did not find record with name %s", name)
 	}
 
-	return records.ZoneRecords[0], nil
+	return records.Records[0], nil
 }

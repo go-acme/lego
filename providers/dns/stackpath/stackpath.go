@@ -2,6 +2,7 @@ package stackpath
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -25,6 +26,8 @@ type DNSProvider struct {
 
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
+	ClientID           string
+	ClientSecret       string
 	StackID            string
 	TTL                int
 	PropagationTimeout time.Duration
@@ -40,24 +43,34 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// NewDNSProviderCredentials uses the supplied credentials
-// to return a DNSProvider instance configured for Stackpath.
-func NewDNSProviderCredentials(clientID, clientSecret, stackID string) (*DNSProvider, error) {
-	defaultConfig := NewDefaultConfig()
-	defaultConfig.StackID = stackID
-
-	oathConfig := &clientcredentials.Config{
-		TokenURL:     defaultAuthURL,
-		ClientID:     clientID,
-		ClientSecret: clientSecret,
+// NewDNSProviderConfig return a DNSProvider instance configured for Stackpath.
+func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
+	if config == nil {
+		return nil, errors.New("the configuration of the DNS provider is nil")
 	}
 
-	httpClient := oathConfig.Client(context.Background())
+	if len(config.ClientID) == 0 || len(config.ClientSecret) == 0 {
+		return nil, errors.New("credentials missing")
+	}
+
+	if len(config.StackID) == 0 {
+		return nil, errors.New("stack id missing")
+	}
 
 	return &DNSProvider{
-		client: httpClient,
-		config: defaultConfig,
+		client: getOathClient(config),
+		config: config,
 	}, nil
+}
+
+func getOathClient(config *Config) *http.Client {
+	oathConfig := &clientcredentials.Config{
+		TokenURL:     defaultAuthURL,
+		ClientID:     config.ClientID,
+		ClientSecret: config.ClientSecret,
+	}
+
+	return oathConfig.Client(context.Background())
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Stackpath.
@@ -69,10 +82,12 @@ func NewDNSProvider() (*DNSProvider, error) {
 		return nil, err
 	}
 
-	return NewDNSProviderCredentials(
-		values["STACKPATH_CLIENT_ID"],
-		values["STACKPATH_CLIENT_SECRET"],
-		values["STACKPATH_STACK_ID"],
+	return NewDNSProviderConfig(
+		&Config{
+			ClientID:     values["STACKPATH_CLIENT_ID"],
+			ClientSecret: values["STACKPATH_CLIENT_SECRET"],
+			StackID:      values["STACKPATH_STACK_ID"],
+		},
 	)
 }
 
@@ -86,11 +101,11 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
 	parts := strings.Split(fqdn, ".")
 
-	body := map[string]interface{}{
-		"name": parts[0],
-		"type": "TXT",
-		"ttl":  d.config.TTL,
-		"data": value,
+	body := Record{
+		Name: parts[0],
+		Type: "TXT",
+		TTL:  d.config.TTL,
+		Data: value,
 	}
 
 	return d.httpPost(fmt.Sprintf("/zones/%s/records", zone.ID), body)

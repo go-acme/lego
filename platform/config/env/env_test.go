@@ -275,34 +275,66 @@ func TestGetOrDefaultBool(t *testing.T) {
 	}
 }
 
-func TestGetenvReadsEnvVars(t *testing.T) {
-	os.Setenv("MY_SILLY_ENV_VAR", "bacon")
-	readValue := GetenvOrFile("MY_SILLY_ENV_VAR")
+func TestGetOrFile_ReadsEnvVars(t *testing.T) {
+	err := os.Setenv("TEST_LEGO_ENV_VAR", "lego_env")
+	require.NoError(t, err)
+	defer os.Unsetenv("TEST_LEGO_ENV_VAR")
 
-	if readValue != "bacon" {
-		t.Fatal("Expected bacon, got: ", readValue)
-	}
+	value := GetOrFile("TEST_LEGO_ENV_VAR")
+
+	assert.Equal(t, "lego_env", value)
 }
 
-func TestGetenvReadsFiles(t *testing.T) {
-	os.Setenv("MY_SILLY_ENV_VAR_FILE", "/tmp/bacon.env.test")
-	ioutil.WriteFile("/tmp/bacon.env.test", []byte("bacon"), 0644)
+func TestGetOrFile_ReadsFiles(t *testing.T) {
+	varEnvFileName := "TEST_LEGO_ENV_VAR_FILE"
+	varEnvName := "TEST_LEGO_ENV_VAR"
 
-	readValue := GetenvOrFile("MY_SILLY_ENV_VAR")
+	err := os.Unsetenv(varEnvFileName)
+	require.NoError(t, err)
+	err = os.Unsetenv(varEnvName)
+	require.NoError(t, err)
 
-	if readValue != "bacon" {
-		t.Fatal("Expected bacon, got: ", readValue)
-	}
+	file, err := ioutil.TempFile("", "lego")
+	require.NoError(t, err)
+	defer os.Remove(file.Name())
+
+	err = ioutil.WriteFile(file.Name(), []byte("lego_file"), 0644)
+	require.NoError(t, err)
+
+	err = os.Setenv(varEnvFileName, file.Name())
+	require.NoError(t, err)
+	defer os.Unsetenv(varEnvFileName)
+
+	value := GetOrFile(varEnvName)
+
+	assert.Equal(t, "lego_file", value)
 }
 
-func TestGetenvPrefersEnvVars(t *testing.T) {
-	os.Setenv("MY_SILLY_ENV_VAR", "bacon1")
-	os.Setenv("MY_SILLY_ENV_VAR_FILE", "/tmp/bacon.env.test")
-	ioutil.WriteFile("/tmp/bacon.env.test", []byte("bacon2"), 0644)
+func TestGetOrFile_PrefersEnvVars(t *testing.T) {
+	varEnvFileName := "TEST_LEGO_ENV_VAR_FILE"
+	varEnvName := "TEST_LEGO_ENV_VAR"
 
-	readValue := GetenvOrFile("MY_SILLY_ENV_VAR")
+	err := os.Unsetenv(varEnvFileName)
+	require.NoError(t, err)
+	err = os.Unsetenv(varEnvName)
+	require.NoError(t, err)
 
-	if readValue != "bacon1" {
-		t.Fatal("Expected bacon1, got: ", readValue)
-	}
+	file, err := ioutil.TempFile("", "lego")
+	require.NoError(t, err)
+	defer os.Remove(file.Name())
+
+	err = ioutil.WriteFile(file.Name(), []byte("lego_file"), 0644)
+	require.NoError(t, err)
+
+	err = os.Setenv(varEnvFileName, file.Name())
+	require.NoError(t, err)
+	defer os.Unsetenv(varEnvFileName)
+
+	err = os.Setenv(varEnvName, "lego_env")
+	require.NoError(t, err)
+	defer os.Unsetenv(varEnvName)
+
+	value := GetOrFile(varEnvName)
+
+	assert.Equal(t, "lego_env", value)
 }

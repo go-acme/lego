@@ -47,7 +47,9 @@ func TestGetHosts(t *testing.T) {
 			provider, err := NewDNSProviderConfig(config)
 			require.NoError(t, err)
 
-			ch, _ := newChallenge(test.domain, "", tlds)
+			ch, err := newChallenge(test.domain, "", tlds)
+			require.NoError(t, err)
+
 			hosts, err := provider.getHosts(ch.sld, ch.tld)
 			if test.errString != "" {
 				assert.EqualError(t, err, test.errString)
@@ -88,7 +90,10 @@ func TestSetHosts(t *testing.T) {
 			defer mock.Close()
 
 			prov := mockDNSProvider(mock.URL)
-			ch, _ := newChallenge(test.domain, "", tlds)
+
+			ch, err := newChallenge(test.domain, "", tlds)
+			require.NoError(t, err)
+
 			hosts, err := prov.getHosts(ch.sld, ch.tld)
 			if test.errString != "" {
 				assert.EqualError(t, err, test.errString)
@@ -261,7 +266,10 @@ func mockDNSProvider(url string) *DNSProvider {
 	config.ClientIP = fakeClientIP
 	config.HTTPClient = &http.Client{Timeout: 60 * time.Second}
 
-	provider, _ := NewDNSProviderConfig(config)
+	provider, err := NewDNSProviderConfig(config)
+	if err != nil {
+		panic(err)
+	}
 	return provider
 }
 

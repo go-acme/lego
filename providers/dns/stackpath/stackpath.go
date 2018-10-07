@@ -1,3 +1,5 @@
+// Package stackpath implements a DNS provider for solving the DNS-01 challenge using Stackpath DNS.
+// https://developer.stackpath.com/en/api/dns/
 package stackpath
 
 import (
@@ -18,12 +20,6 @@ const (
 	defaultAuthURL = "https://gateway.stackpath.com/identity/v1/oauth2/token"
 )
 
-// DNSProvider is an implementation of the acme.ChallengeProvider interface.
-type DNSProvider struct {
-	client *http.Client
-	config *Config
-}
-
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	ClientID           string
@@ -43,18 +39,41 @@ func NewDefaultConfig() *Config {
 	}
 }
 
+// DNSProvider is an implementation of the acme.ChallengeProvider interface.
+type DNSProvider struct {
+	client *http.Client
+	config *Config
+}
+
+// NewDNSProvider returns a DNSProvider instance configured for Stackpath.
+// Credentials must be passed in the environment variables:
+// STACKPATH_CLIENT_ID, STACKPATH_CLIENT_SECRET, and STACKPATH_STACK_ID.
+func NewDNSProvider() (*DNSProvider, error) {
+	values, err := env.Get("STACKPATH_CLIENT_ID", "STACKPATH_CLIENT_SECRET", "STACKPATH_STACK_ID")
+	if err != nil {
+		return nil, fmt.Errorf("stackpath: %v", err)
+	}
+
+	config := NewDefaultConfig()
+	config.ClientID = values["STACKPATH_CLIENT_ID"]
+	config.ClientSecret = values["STACKPATH_CLIENT_SECRET"]
+	config.StackID = values["STACKPATH_STACK_ID"]
+
+	return NewDNSProviderConfig(config)
+}
+
 // NewDNSProviderConfig return a DNSProvider instance configured for Stackpath.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
-		return nil, errors.New("the configuration of the DNS provider is nil")
+		return nil, errors.New("stackpath: the configuration of the DNS provider is nil")
 	}
 
 	if len(config.ClientID) == 0 || len(config.ClientSecret) == 0 {
-		return nil, errors.New("credentials missing")
+		return nil, errors.New("stackpath: credentials missing")
 	}
 
 	if len(config.StackID) == 0 {
-		return nil, errors.New("stack id missing")
+		return nil, errors.New("stackpath: stack id missing")
 	}
 
 	return &DNSProvider{
@@ -73,24 +92,6 @@ func getOathClient(config *Config) *http.Client {
 	return oathConfig.Client(context.Background())
 }
 
-// NewDNSProvider returns a DNSProvider instance configured for Stackpath.
-// Credentials must be passed in the environment variables:
-// STACKPATH_CLIENT_ID, STACKPATH_CLIENT_SECRET, and STACKPATH_STACK_ID.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("STACKPATH_CLIENT_ID", "STACKPATH_CLIENT_SECRET", "STACKPATH_STACK_ID")
-	if err != nil {
-		return nil, err
-	}
-
-	return NewDNSProviderConfig(
-		&Config{
-			ClientID:     values["STACKPATH_CLIENT_ID"],
-			ClientSecret: values["STACKPATH_CLIENT_SECRET"],
-			StackID:      values["STACKPATH_STACK_ID"],
-		},
-	)
-}
-
 // Present creates a TXT record to fulfill the dns-01 challenge
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	zone, err := d.getZoneForDomain(domain)
@@ -101,14 +102,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
 	parts := strings.Split(fqdn, ".")
 
-	body := Record{
+	record := Record{
 		Name: parts[0],
 		Type: "TXT",
 		TTL:  d.config.TTL,
 		Data: value,
 	}
 
-	return d.httpPost(fmt.Sprintf("/zones/%s/records", zone.ID), body)
+	return d.httpPost(fmt.Sprintf("/zones/%s/records", zone.ID), record)
 }
 
 // CleanUp removes the TXT record matching the specified parameters

@@ -37,97 +37,6 @@ type Record struct {
 	Data string `json:"data"`
 }
 
-func (d *DNSProvider) httpGet(path string, in interface{}) error {
-	resp, err := d.client.Get(fmt.Sprintf("%s/%s%s", defaultBaseURL, d.config.StackID, path))
-	if err != nil {
-		return err
-	}
-
-	if resp.Body == nil {
-		return fmt.Errorf("no response body for request GET %s", path)
-	}
-
-	rawBody, err := ioutil.ReadAll(resp.Body)
-	defer resp.Body.Close()
-	if err != nil {
-		return err
-	}
-
-	if resp.StatusCode > 299 {
-		return fmt.Errorf("non 200 response: %d - %s", resp.StatusCode, string(rawBody))
-	}
-
-	if err := json.Unmarshal(rawBody, in); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (d *DNSProvider) httpPost(path string, body interface{}) error {
-	reqBody, err := json.Marshal(body)
-	if err != nil {
-		return err
-	}
-
-	resp, err := d.client.Post(
-		fmt.Sprintf("%s/%s%s", defaultBaseURL, d.config.StackID, path),
-		"application/json",
-		bytes.NewBuffer(reqBody),
-	)
-	if err != nil {
-		return err
-	}
-
-	if resp.StatusCode > 299 {
-		if resp.Body == nil {
-			return fmt.Errorf("no response body for request POST %s", path)
-		}
-
-		rawBody, err := ioutil.ReadAll(resp.Body)
-		defer resp.Body.Close()
-		if err != nil {
-			return err
-		}
-
-		return fmt.Errorf("non 200 response: %d - %s", resp.StatusCode, string(rawBody))
-	}
-
-	return nil
-}
-
-func (d *DNSProvider) httpDelete(path string) error {
-	req, err := http.NewRequest(
-		http.MethodDelete,
-		fmt.Sprintf("%s/%s%s", defaultBaseURL, d.config.StackID, path),
-		nil,
-	)
-	if err != nil {
-		return err
-	}
-
-	resp, err := d.client.Do(req)
-	if err != nil {
-		return err
-	}
-
-	if resp.StatusCode > 299 {
-		if resp.Body == nil {
-			return fmt.Errorf("no response body for request DELETES %s", path)
-		}
-
-		rawBody, err := ioutil.ReadAll(resp.Body)
-		defer resp.Body.Close()
-		if err != nil {
-			return err
-		}
-
-		return fmt.Errorf("non 200 response: %d - %s", resp.StatusCode, string(rawBody))
-	}
-
-	return nil
-}
-
 func (d *DNSProvider) getZoneForDomain(domain string) (*Zone, error) {
 	domain = acme.UnFqdn(domain)
 	tld, err := publicsuffix.EffectiveTLDPlusOne(domain)
@@ -166,4 +75,97 @@ func (d *DNSProvider) getRecordForZone(name string, zone *Zone) (*Record, error)
 	}
 
 	return records.Records[0], nil
+}
+
+func (d *DNSProvider) httpGet(path string, out interface{}) error {
+	resp, err := d.client.Get(fmt.Sprintf("%s/%s%s", defaultBaseURL, d.config.StackID, path))
+	if err != nil {
+		return err
+	}
+
+	err = checkResponse(resp)
+	if err != nil {
+		return err
+	}
+
+	rawBody, err := readBody(resp)
+	if err != nil {
+		return err
+	}
+
+	if err := json.Unmarshal(rawBody, out); err != nil {
+		return fmt.Errorf("failed to unmarshal response body: %v: %s", err, string(rawBody))
+	}
+
+	return nil
+}
+
+func (d *DNSProvider) httpPost(path string, body interface{}) error {
+	reqBody, err := json.Marshal(body)
+	if err != nil {
+		return err
+	}
+
+	u := fmt.Sprintf("%s/%s%s", defaultBaseURL, d.config.StackID, path)
+	resp, err := d.client.Post(u, "application/json", bytes.NewBuffer(reqBody))
+	if err != nil {
+		return err
+	}
+
+	err = checkResponse(resp)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (d *DNSProvider) httpDelete(path string) error {
+	u := fmt.Sprintf("%s/%s%s", defaultBaseURL, d.config.StackID, path)
+	req, err := http.NewRequest(http.MethodDelete, u, nil)
+	if err != nil {
+		return err
+	}
+
+	resp, err := d.client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	err = checkResponse(resp)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func checkResponse(resp *http.Response) error {
+	if resp.StatusCode > 299 {
+		rawBody, err := readBody(resp)
+		if err != nil {
+			return fmt.Errorf("non 200 response: %d - %v", resp.StatusCode, err)
+		}
+		return fmt.Errorf("non 200 response: %d - %s", resp.StatusCode, string(rawBody))
+	}
+
+	return nil
+}
+
+func readBody(resp *http.Response) ([]byte, error) {
+	if resp.Body == nil {
+		return nil, fmt.Errorf("response body is nil")
+	}
+
+	rawBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	err = resp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	return rawBody, nil
 }

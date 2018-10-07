@@ -6,7 +6,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -16,7 +18,7 @@ import (
 )
 
 const (
-	defaultBaseURL = "https://gateway.stackpath.com/dns/v1/stacks"
+	defaultBaseURL = "https://gateway.stackpath.com/dns/v1/stacks/"
 	defaultAuthURL = "https://gateway.stackpath.com/identity/v1/oauth2/token"
 )
 
@@ -41,8 +43,9 @@ func NewDefaultConfig() *Config {
 
 // DNSProvider is an implementation of the acme.ChallengeProvider interface.
 type DNSProvider struct {
-	client *http.Client
-	config *Config
+	BaseURL *url.URL
+	client  *http.Client
+	config  *Config
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Stackpath.
@@ -76,9 +79,12 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("stackpath: stack id missing")
 	}
 
+	baseURL, _ := url.Parse(defaultBaseURL)
+
 	return &DNSProvider{
-		client: getOathClient(config),
-		config: config,
+		BaseURL: baseURL,
+		client:  getOathClient(config),
+		config:  config,
 	}, nil
 }
 
@@ -94,9 +100,9 @@ func getOathClient(config *Config) *http.Client {
 
 // Present creates a TXT record to fulfill the dns-01 challenge
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	zone, err := d.getZoneForDomain(domain)
+	zone, err := d.getZones(domain)
 	if err != nil {
-		return err
+		return fmt.Errorf("stackpath: %v", err)
 	}
 
 	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
@@ -109,25 +115,32 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Data: value,
 	}
 
-	return d.httpPost(fmt.Sprintf("/zones/%s/records", zone.ID), record)
+	return d.createZoneRecord(zone, record)
 }
 
 // CleanUp removes the TXT record matching the specified parameters
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	zone, err := d.getZoneForDomain(domain)
+	zone, err := d.getZones(domain)
 	if err != nil {
-		return err
+		return fmt.Errorf("stackpath: %v", err)
 	}
 
 	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
 	parts := strings.Split(fqdn, ".")
 
-	record, err := d.getRecordForZone(parts[0], zone)
+	records, err := d.getZoneRecords(parts[0], zone)
 	if err != nil {
 		return err
 	}
 
-	return d.httpDelete(fmt.Sprintf("/zones/%s/records/%s", zone.ID, record.ID))
+	for _, record := range records {
+		err = d.deleteZoneRecord(zone, record)
+		if err != nil {
+			log.Printf("stackpath: failed to delete TXT record: %v", err)
+		}
+	}
+
+	return nil
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.

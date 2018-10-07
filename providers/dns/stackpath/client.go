@@ -6,29 +6,29 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"net/url"
+	"path"
 
 	"github.com/xenolf/lego/acme"
 	"golang.org/x/net/publicsuffix"
 )
 
-// Zone is the item response from the Stackpath api getZone
+// Zones is the response struct from the Stackpath api GetZones
+type Zones struct {
+	Zones []Zone `json:"zones"`
+}
+
+// Zone a DNS zone representation
 type Zone struct {
 	ID     string
 	Domain string
 }
 
-// getZoneResponse is the response struct from the Stackpath api getZone
-type getZoneResponse struct {
-	Zones []*Zone
+// Records is the response struct from the Stackpath api GetZoneRecords
+type Records struct {
+	Records []Record `json:"records"`
 }
 
-// getRecordsResponse is the response struct from the Stackpath api GetRecords
-type getRecordsResponse struct {
-	Records []*Record
-}
-
-// Record is the item response from the Stackpath api GetRecords
+// Record a DNS record representation
 type Record struct {
 	ID   string `json:"id,omitempty"`
 	Name string `json:"name"`
@@ -37,18 +37,35 @@ type Record struct {
 	Data string `json:"data"`
 }
 
-func (d *DNSProvider) getZoneForDomain(domain string) (*Zone, error) {
+// ErrorResponse the API error response representation
+type ErrorResponse struct {
+	Code    int    `json:"code"`
+	Message string `json:"error"`
+}
+
+func (e *ErrorResponse) Error() string {
+	return fmt.Sprintf("%d %s", e.Code, e.Message)
+}
+
+// https://developer.stackpath.com/en/api/dns/#operation/GetZones
+func (d *DNSProvider) getZones(domain string) (*Zone, error) {
 	domain = acme.UnFqdn(domain)
 	tld, err := publicsuffix.EffectiveTLDPlusOne(domain)
 	if err != nil {
 		return nil, err
 	}
 
-	params := url.Values{}
-	params.Add("page_request.filter", fmt.Sprintf("domain='%s'", tld))
+	req, err := d.newRequest(http.MethodGet, "/zones", nil)
+	if err != nil {
+		return nil, err
+	}
 
-	var zones getZoneResponse
-	err = d.httpGet(fmt.Sprintf("/zones?%s", params.Encode()), &zones)
+	query := req.URL.Query()
+	query.Add("page_request.filter", fmt.Sprintf("domain='%s'", tld))
+	req.URL.RawQuery = query.Encode()
+
+	var zones Zones
+	err = d.do(req, &zones)
 	if err != nil {
 		return nil, err
 	}
@@ -57,15 +74,23 @@ func (d *DNSProvider) getZoneForDomain(domain string) (*Zone, error) {
 		return nil, fmt.Errorf("did not find zone with domain %s", domain)
 	}
 
-	return zones.Zones[0], nil
+	return &zones.Zones[0], nil
 }
 
-func (d *DNSProvider) getRecordForZone(name string, zone *Zone) (*Record, error) {
-	params := url.Values{}
-	params.Add("page_request.filter", fmt.Sprintf("name='%s' and type='TXT'", name))
+// https://developer.stackpath.com/en/api/dns/#operation/GetZoneRecords
+func (d *DNSProvider) getZoneRecords(name string, zone *Zone) ([]Record, error) {
+	u := fmt.Sprintf("/zones/%s/records", zone.ID)
+	req, err := d.newRequest(http.MethodGet, u, nil)
+	if err != nil {
+		return nil, err
+	}
 
-	var records getRecordsResponse
-	err := d.httpGet(fmt.Sprintf("/zones/%s/records?%s", zone.ID, params.Encode()), &records)
+	query := req.URL.Query()
+	query.Add("page_request.filter", fmt.Sprintf("name='%s' and type='TXT'", name))
+	req.URL.RawQuery = query.Encode()
+
+	var records Records
+	err = d.do(req, &records)
 	if err != nil {
 		return nil, err
 	}
@@ -74,59 +99,63 @@ func (d *DNSProvider) getRecordForZone(name string, zone *Zone) (*Record, error)
 		return nil, fmt.Errorf("did not find record with name %s", name)
 	}
 
-	return records.Records[0], nil
+	return records.Records, nil
 }
 
-func (d *DNSProvider) httpGet(path string, out interface{}) error {
-	resp, err := d.client.Get(fmt.Sprintf("%s/%s%s", defaultBaseURL, d.config.StackID, path))
+// https://developer.stackpath.com/en/api/dns/#operation/CreateZoneRecord
+func (d *DNSProvider) createZoneRecord(zone *Zone, record Record) error {
+	u := fmt.Sprintf("/zones/%s/records", zone.ID)
+	req, err := d.newRequest(http.MethodPost, u, record)
 	if err != nil {
 		return err
 	}
 
-	err = checkResponse(resp)
-	if err != nil {
-		return err
-	}
-
-	rawBody, err := readBody(resp)
-	if err != nil {
-		return err
-	}
-
-	if err := json.Unmarshal(rawBody, out); err != nil {
-		return fmt.Errorf("failed to unmarshal response body: %v: %s", err, string(rawBody))
-	}
-
-	return nil
+	return d.do(req, nil)
 }
 
-func (d *DNSProvider) httpPost(path string, body interface{}) error {
+// https://developer.stackpath.com/en/api/dns/#operation/DeleteZoneRecord
+func (d *DNSProvider) deleteZoneRecord(zone *Zone, record Record) error {
+	u := fmt.Sprintf("/zones/%s/records/%s", zone.ID, record.ID)
+	req, err := d.newRequest(http.MethodDelete, u, nil)
+	if err != nil {
+		return err
+	}
+
+	return d.do(req, nil)
+}
+
+func (d *DNSProvider) newRequest(method, urlStr string, body interface{}) (*http.Request, error) {
+	u, err := d.BaseURL.Parse(path.Join(d.config.StackID, urlStr))
+	if err != nil {
+		return nil, err
+	}
+
+	if body == nil {
+		var req *http.Request
+		req, err = http.NewRequest(method, u.String(), nil)
+		if err != nil {
+			return nil, err
+		}
+
+		return req, nil
+	}
+
 	reqBody, err := json.Marshal(body)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	u := fmt.Sprintf("%s/%s%s", defaultBaseURL, d.config.StackID, path)
-	resp, err := d.client.Post(u, "application/json", bytes.NewBuffer(reqBody))
+	req, err := http.NewRequest(method, u.String(), bytes.NewBuffer(reqBody))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	err = checkResponse(resp)
-	if err != nil {
-		return err
-	}
+	req.Header.Set("Content-Type", "application/json")
 
-	return nil
+	return req, nil
 }
 
-func (d *DNSProvider) httpDelete(path string) error {
-	u := fmt.Sprintf("%s/%s%s", defaultBaseURL, d.config.StackID, path)
-	req, err := http.NewRequest(http.MethodDelete, u, nil)
-	if err != nil {
-		return err
-	}
-
+func (d *DNSProvider) do(req *http.Request, v interface{}) error {
 	resp, err := d.client.Do(req)
 	if err != nil {
 		return err
@@ -137,16 +166,36 @@ func (d *DNSProvider) httpDelete(path string) error {
 		return err
 	}
 
+	if v == nil {
+		return nil
+	}
+
+	raw, err := readBody(resp)
+	if err != nil {
+		return fmt.Errorf("failed to read body: %v", err)
+	}
+
+	err = json.Unmarshal(raw, v)
+	if err != nil {
+		return fmt.Errorf("unmarshaling error: %v: %s", err, string(raw))
+	}
+
 	return nil
 }
 
 func checkResponse(resp *http.Response) error {
 	if resp.StatusCode > 299 {
-		rawBody, err := readBody(resp)
+		data, err := readBody(resp)
 		if err != nil {
-			return fmt.Errorf("non 200 response: %d - %v", resp.StatusCode, err)
+			return &ErrorResponse{Code: resp.StatusCode, Message: err.Error()}
 		}
-		return fmt.Errorf("non 200 response: %d - %s", resp.StatusCode, string(rawBody))
+
+		errResp := &ErrorResponse{}
+		err = json.Unmarshal(data, errResp)
+		if err != nil {
+			return &ErrorResponse{Code: resp.StatusCode, Message: fmt.Sprintf("unmarshaling error: %v: %s", err, string(data))}
+		}
+		return errResp
 	}
 
 	return nil
@@ -157,12 +206,9 @@ func readBody(resp *http.Response) ([]byte, error) {
 		return nil, fmt.Errorf("response body is nil")
 	}
 
-	rawBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
+	defer resp.Body.Close()
 
-	err = resp.Body.Close()
+	rawBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

@@ -256,13 +256,13 @@ func newChallenge(domain, keyAuth string, tlds map[string]string) (*challenge, e
 		host = strings.Join(parts[:longest-1], ".")
 	}
 
-	key, keyValue, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
 
 	return &challenge{
 		domain:   domain,
 		key:      "_acme-challenge." + host,
-		keyFqdn:  key,
-		keyValue: keyValue,
+		keyFqdn:  fqdn,
+		keyValue: value,
 		tld:      tld,
 		sld:      sld,
 		host:     host,

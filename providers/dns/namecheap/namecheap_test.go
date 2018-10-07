@@ -29,7 +29,7 @@ var (
 )
 
 func TestGetHosts(t *testing.T) {
-	for _, test := range testcases {
+	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
 			mock := httptest.NewServer(http.HandlerFunc(
 				func(w http.ResponseWriter, r *http.Request) {
@@ -48,7 +48,7 @@ func TestGetHosts(t *testing.T) {
 			require.NoError(t, err)
 
 			ch, _ := newChallenge(test.domain, "", tlds)
-			hosts, err := provider.getHosts(ch)
+			hosts, err := provider.getHosts(ch.sld, ch.tld)
 			if test.errString != "" {
 				assert.EqualError(t, err, test.errString)
 			} else {
@@ -79,7 +79,7 @@ func TestGetHosts(t *testing.T) {
 }
 
 func TestSetHosts(t *testing.T) {
-	for _, test := range testcases {
+	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
 			mock := httptest.NewServer(http.HandlerFunc(
 				func(w http.ResponseWriter, r *http.Request) {
@@ -89,7 +89,7 @@ func TestSetHosts(t *testing.T) {
 
 			prov := mockDNSProvider(mock.URL)
 			ch, _ := newChallenge(test.domain, "", tlds)
-			hosts, err := prov.getHosts(ch)
+			hosts, err := prov.getHosts(ch.sld, ch.tld)
 			if test.errString != "" {
 				assert.EqualError(t, err, test.errString)
 			} else {
@@ -99,14 +99,14 @@ func TestSetHosts(t *testing.T) {
 				return
 			}
 
-			err = prov.setHosts(ch, hosts)
+			err = prov.setHosts(ch.sld, ch.tld, hosts)
 			require.NoError(t, err)
 		})
 	}
 }
 
 func TestPresent(t *testing.T) {
-	for _, test := range testcases {
+	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
 			mock := httptest.NewServer(http.HandlerFunc(
 				func(w http.ResponseWriter, r *http.Request) {
@@ -126,7 +126,7 @@ func TestPresent(t *testing.T) {
 }
 
 func TestCleanUp(t *testing.T) {
-	for _, test := range testcases {
+	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
 			mock := httptest.NewServer(http.HandlerFunc(
 				func(w http.ResponseWriter, r *http.Request) {
@@ -145,7 +145,7 @@ func TestCleanUp(t *testing.T) {
 	}
 }
 
-func TestNamecheapDomainSplit(t *testing.T) {
+func TestDomainSplit(t *testing.T) {
 	tests := []struct {
 		domain string
 		valid  bool
@@ -202,7 +202,7 @@ func assertEq(t *testing.T, variable, got, want string) {
 	}
 }
 
-func assertHdr(tc *testcase, t *testing.T, values *url.Values) {
+func assertHdr(tc *testCase, t *testing.T, values *url.Values) {
 	ch, _ := newChallenge(tc.domain, "", tlds)
 
 	assertEq(t, "ApiUser", values.Get("ApiUser"), fakeUser)
@@ -213,7 +213,7 @@ func assertHdr(tc *testcase, t *testing.T, values *url.Values) {
 	assertEq(t, "TLD", values.Get("TLD"), ch.tld)
 }
 
-func mockServer(tc *testcase, t *testing.T, w http.ResponseWriter, r *http.Request) {
+func mockServer(tc *testCase, t *testing.T, w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 
 	case http.MethodGet:
@@ -265,7 +265,7 @@ func mockDNSProvider(url string) *DNSProvider {
 	return provider
 }
 
-type testcase struct {
+type testCase struct {
 	name             string
 	domain           string
 	hosts            []record
@@ -274,7 +274,7 @@ type testcase struct {
 	setHostsResponse string
 }
 
-var testcases = []testcase{
+var testCases = []testCase{
 	{
 		name:   "Test:Success:1",
 		domain: "test.example.com",

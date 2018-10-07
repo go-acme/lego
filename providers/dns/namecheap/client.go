@@ -9,10 +9,10 @@ import (
 	"strings"
 )
 
-// record describes a DNS record returned by the Namecheap DNS gethosts API.
+// Record describes a DNS record returned by the Namecheap DNS gethosts API.
 // Namecheap uses the term "host" to refer to all DNS records that include
 // a host field (A, AAAA, CNAME, NS, TXT, URL).
-type record struct {
+type Record struct {
 	Type    string `xml:",attr"`
 	Name    string `xml:",attr"`
 	Address string `xml:",attr"`
@@ -39,7 +39,7 @@ type getHostsResponse struct {
 	XMLName xml.Name   `xml:"ApiResponse"`
 	Status  string     `xml:"Status,attr"`
 	Errors  []apierror `xml:"Errors>Error"`
-	Hosts   []record   `xml:"CommandResponse>DomainDNSGetHostsResult>host"`
+	Hosts   []Record   `xml:"CommandResponse>DomainDNSGetHostsResult>host"`
 }
 
 type getTldsResponse struct {
@@ -77,7 +77,7 @@ func (d *DNSProvider) getTLDs() (map[string]string, error) {
 
 // getHosts reads the full list of DNS host records.
 // https://www.namecheap.com/support/api/methods/domains-dns/get-hosts.aspx
-func (d *DNSProvider) getHosts(sld, tld string) ([]record, error) {
+func (d *DNSProvider) getHosts(sld, tld string) ([]Record, error) {
 	request, err := d.newRequestGet("namecheap.domains.dns.getHosts",
 		addParam("SLD", sld),
 		addParam("TLD", tld),
@@ -101,7 +101,7 @@ func (d *DNSProvider) getHosts(sld, tld string) ([]record, error) {
 
 // setHosts writes the full list of DNS host records .
 // https://www.namecheap.com/support/api/methods/domains-dns/set-hosts.aspx
-func (d *DNSProvider) setHosts(sld, tld string, hosts []record) error {
+func (d *DNSProvider) setHosts(sld, tld string, hosts []Record) error {
 	req, err := d.newRequestPost("namecheap.domains.dns.setHosts",
 		addParam("SLD", sld),
 		addParam("TLD", tld),

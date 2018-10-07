@@ -268,7 +268,7 @@ func mockDNSProvider(url string) *DNSProvider {
 type testCase struct {
 	name             string
 	domain           string
-	hosts            []record
+	hosts            []Record
 	errString        string
 	getHostsResponse string
 	setHostsResponse string
@@ -278,7 +278,7 @@ var testCases = []testCase{
 	{
 		name:   "Test:Success:1",
 		domain: "test.example.com",
-		hosts: []record{
+		hosts: []Record{
 			{Type: "A", Name: "home", Address: "10.0.0.1", MXPref: "10", TTL: "1799"},
 			{Type: "A", Name: "www", Address: "10.0.0.2", MXPref: "10", TTL: "1200"},
 			{Type: "AAAA", Name: "a", Address: "::0", MXPref: "10", TTL: "1799"},
@@ -292,7 +292,7 @@ var testCases = []testCase{
 	{
 		name:   "Test:Success:2",
 		domain: "example.com",
-		hosts: []record{
+		hosts: []Record{
 			{Type: "A", Name: "@", Address: "10.0.0.2", MXPref: "10", TTL: "1200"},
 			{Type: "A", Name: "www", Address: "10.0.0.3", MXPref: "10", TTL: "60"},
 		},

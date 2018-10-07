@@ -145,20 +145,28 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("namecheap: %v", err)
 	}
 
-	hosts, err := d.getHosts(ch.sld, ch.tld)
+	records, err := d.getHosts(ch.sld, ch.tld)
 	if err != nil {
 		return fmt.Errorf("namecheap: %v", err)
 	}
 
-	addChallengeRecord(ch, d.config.TTL, &hosts)
+	record := Record{
+		Name:    ch.key,
+		Type:    "TXT",
+		Address: ch.keyValue,
+		MXPref:  "10",
+		TTL:     strconv.Itoa(d.config.TTL),
+	}
+
+	records = append(records, record)
 
 	if d.config.Debug {
-		for _, h := range hosts {
+		for _, h := range records {
 			log.Printf("%-5.5s %-30.30s %-6s %-70.70s", h.Type, h.Name, h.TTL, h.Address)
 		}
 	}
 
-	err = d.setHosts(ch.sld, ch.tld, hosts)
+	err = d.setHosts(ch.sld, ch.tld, records)
 	if err != nil {
 		return fmt.Errorf("namecheap: %v", err)
 	}
@@ -177,16 +185,25 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("namecheap: %v", err)
 	}
 
-	hosts, err := d.getHosts(ch.sld, ch.tld)
+	records, err := d.getHosts(ch.sld, ch.tld)
 	if err != nil {
 		return fmt.Errorf("namecheap: %v", err)
 	}
 
-	if removed := removeChallengeRecord(ch.key, &hosts); !removed {
+	// Find the challenge TXT record and remove it if found.
+	var found bool
+	for i, h := range records {
+		if h.Name == ch.key && h.Type == "TXT" {
+			records = append(records[:i], records[i+1:]...)
+			found = true
+		}
+	}
+
+	if !found {
 		return nil
 	}
 
-	err = d.setHosts(ch.sld, ch.tld, hosts)
+	err = d.setHosts(ch.sld, ch.tld, records)
 	if err != nil {
 		return fmt.Errorf("namecheap: %v", err)
 	}
@@ -250,41 +267,4 @@ func newChallenge(domain, keyAuth string, tlds map[string]string) (*challenge, e
 		sld:      sld,
 		host:     host,
 	}, nil
-}
-
-// addChallengeRecord adds a DNS challenge TXT record to a list of namecheap
-// host records.
-func addChallengeRecord(ch *challenge, ttl int, hosts *[]record) {
-	host := record{
-		Name:    ch.key,
-		Type:    "TXT",
-		Address: ch.keyValue,
-		MXPref:  "10",
-		TTL:     strconv.Itoa(ttl),
-	}
-
-	// If there's already a TXT record with the same name, replace it.
-	for i, h := range *hosts {
-		if h.Name == ch.key && h.Type == "TXT" {
-			(*hosts)[i] = host
-			return
-		}
-	}
-
-	// No record was replaced, so add a new one.
-	*hosts = append(*hosts, host)
-}
-
-// removeChallengeRecord removes a DNS challenge TXT record from a list of
-// namecheap host records. Return true if a record was removed.
-func removeChallengeRecord(key string, hosts *[]record) bool {
-	// Find the challenge TXT record and remove it if found.
-	for i, h := range *hosts {
-		if h.Name == key && h.Type == "TXT" {
-			*hosts = append((*hosts)[:i], (*hosts)[i+1:]...)
-			return true
-		}
-	}
-
-	return false
 }

@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"path"
 	"strings"
 	"sync"
 	"time"
@@ -188,10 +189,8 @@ func (d *DNSProvider) addTXTRecord(domain string, name string, value string, ttl
 
 	// Get exiting values for the TXT records
 	// Needed to create challenges for both wildcard and base name domains
-	txtRecords := &responseStruct{}
-	err := d.sendRequest(http.MethodGet, target, getFieldRequest{
-		Get: true,
-	}, txtRecords)
+	txtRecords := &Record{}
+	err := d.sendRequest(http.MethodGet, target, getFieldRequest{Get: true}, txtRecords)
 	if err != nil {
 		return fmt.Errorf("unable to get TXT records for domain %s and name %s: %v", domain, name, err)
 	}
@@ -201,8 +200,8 @@ func (d *DNSProvider) addTXTRecord(domain string, name string, value string, ttl
 		values = append(values, txtRecords.RRSetValues...)
 	}
 
-	createMessage := &responseMessage{}
-	err = d.sendRequest(http.MethodPut, target, addFieldRequest{
+	createMessage := &apiResponse{}
+	err = d.sendRequest(http.MethodPut, target, Record{
 		RRSetTTL:    ttl,
 		RRSetValues: values,
 	}, createMessage)
@@ -220,10 +219,8 @@ func (d *DNSProvider) addTXTRecord(domain string, name string, value string, ttl
 func (d *DNSProvider) deleteTXTRecord(domain string, name string) error {
 	target := fmt.Sprintf("domains/%s/records/%s/TXT", domain, name)
 
-	responseDelete := &responseMessage{}
-	err := d.sendRequest(http.MethodDelete, target, deleteFieldRequest{
-		Delete: true,
-	}, responseDelete)
+	responseDelete := &apiResponse{}
+	err := d.sendRequest(http.MethodDelete, target, deleteFieldRequest{Delete: true}, responseDelete)
 	if err != nil {
 		return fmt.Errorf("unable to delete TXT record for domain %s and name %s: %v", domain, name, err)
 	}
@@ -236,7 +233,7 @@ func (d *DNSProvider) deleteTXTRecord(domain string, name string) error {
 }
 
 func (d *DNSProvider) sendRequest(method string, resource string, payload interface{}, response interface{}) error {
-	url := fmt.Sprintf("%s/%s", d.config.BaseURL, resource)
+	url := path.Join(d.config.BaseURL, resource)
 
 	body, err := json.Marshal(payload)
 	if err != nil {

@@ -1,11 +1,5 @@
 package gandiv5
 
-// types for JSON method calls and parameters
-type addFieldRequest struct {
-	RRSetTTL    int      `json:"rrset_ttl"`
-	RRSetValues []string `json:"rrset_values"`
-}
-
 type deleteFieldRequest struct {
 	Delete bool `json:"delete"`
 }
@@ -15,14 +9,14 @@ type getFieldRequest struct {
 }
 
 // types for JSON responses with only a message
-type responseMessage struct {
+type apiResponse struct {
 	Message string `json:"message"`
 }
 
-// types for JSON responses with a struct
-type responseStruct struct {
+// Record TXT record representation
+type Record struct {
 	RRSetTTL    int      `json:"rrset_ttl"`
 	RRSetValues []string `json:"rrset_values"`
-	RRSetName   string   `json:"rrset_name"`
-	RRSetType   string   `json:"rrset_type"`
+	RRSetName   string   `json:"rrset_name,omitempty"`
+	RRSetType   string   `json:"rrset_type,omitempty"`
 }

@@ -237,7 +237,7 @@ func (d *DNSProvider) getTXTRecord(domain, name string) (*Record, error) {
 func (d *DNSProvider) deleteTXTRecord(domain string, name string) error {
 	target := fmt.Sprintf("domains/%s/records/%s/TXT", domain, name)
 
-	req, err := d.newRequest(http.MethodPut, target, nil)
+	req, err := d.newRequest(http.MethodDelete, target, nil)
 	if err != nil {
 		return err
 	}

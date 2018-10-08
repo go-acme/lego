@@ -87,18 +87,18 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zoneName, err := d.getHostedZone(domain)
 	if err != nil {
-		return err
+		return fmt.Errorf("dnsimple: %v", err)
 	}
 
 	accountID, err := d.getAccountID()
 	if err != nil {
-		return err
+		return fmt.Errorf("dnsimple: %v", err)
 	}
 
 	recordAttributes := d.newTxtRecord(zoneName, fqdn, value, d.config.TTL)
 	_, err = d.client.Zones.CreateRecord(accountID, zoneName, recordAttributes)
 	if err != nil {
-		return fmt.Errorf("API call failed: %v", err)
+		return fmt.Errorf("dnsimple: API call failed: %v", err)
 	}
 
 	return nil
@@ -110,22 +110,23 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	records, err := d.findTxtRecords(domain, fqdn)
 	if err != nil {
-		return err
+		return fmt.Errorf("dnsimple: %v", err)
 	}
 
 	accountID, err := d.getAccountID()
 	if err != nil {
-		return err
+		return fmt.Errorf("dnsimple: %v", err)
 	}
 
+	var lastErr error
 	for _, rec := range records {
 		_, err := d.client.Zones.DeleteRecord(accountID, rec.ZoneID, rec.ID)
 		if err != nil {
-			return err
+			lastErr = fmt.Errorf("dnsimple: %v", err)
 		}
 	}
 
-	return nil
+	return lastErr
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.

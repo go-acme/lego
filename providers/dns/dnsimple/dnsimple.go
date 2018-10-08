@@ -78,7 +78,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		client.BaseURL = config.BaseURL
 	}
 
-	return &DNSProvider{client: client}, nil
+	return &DNSProvider{client: client, config: config}, nil
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.

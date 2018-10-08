@@ -3,12 +3,9 @@
 package gandiv5
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
-	"path"
 	"strings"
 	"sync"
 	"time"
@@ -185,88 +182,74 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 // functions to perform API actions
 
 func (d *DNSProvider) addTXTRecord(domain string, name string, value string, ttl int) error {
-	target := fmt.Sprintf("domains/%s/records/%s/TXT", domain, name)
-
 	// Get exiting values for the TXT records
 	// Needed to create challenges for both wildcard and base name domains
-	txtRecords := &Record{}
-	err := d.sendRequest(http.MethodGet, target, getFieldRequest{Get: true}, txtRecords)
+	txtRecord, err := d.getTXTRecord(domain, name)
 	if err != nil {
-		return fmt.Errorf("unable to get TXT records for domain %s and name %s: %v", domain, name, err)
+		return err
 	}
 
 	values := []string{value}
-	if len(txtRecords.RRSetValues) > 0 {
-		values = append(values, txtRecords.RRSetValues...)
+	if len(txtRecord.RRSetValues) > 0 {
+		values = append(values, txtRecord.RRSetValues...)
 	}
 
-	createMessage := &apiResponse{}
-	err = d.sendRequest(http.MethodPut, target, Record{
-		RRSetTTL:    ttl,
-		RRSetValues: values,
-	}, createMessage)
+	target := fmt.Sprintf("domains/%s/records/%s/TXT", domain, name)
+
+	newRecord := &Record{RRSetTTL: ttl, RRSetValues: values}
+	req, err := d.newRequest(http.MethodPut, target, newRecord)
+	if err != nil {
+		return err
+	}
+
+	message := &apiResponse{}
+	err = d.do(req, message)
 	if err != nil {
 		return fmt.Errorf("unable to create TXT record for domain %s and name %s: %v", domain, name, err)
 	}
 
-	if len(createMessage.Message) > 0 {
-		log.Infof("gandiv5: %s", createMessage.Message)
+	if message != nil && len(message.Message) > 0 {
+		log.Infof("API response: %s", message.Message)
 	}
 
 	return nil
+}
+
+func (d *DNSProvider) getTXTRecord(domain, name string) (*Record, error) {
+	target := fmt.Sprintf("domains/%s/records/%s/TXT", domain, name)
+
+	// Get exiting values for the TXT records
+	// Needed to create challenges for both wildcard and base name domains
+	req, err := d.newRequest(http.MethodGet, target, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	txtRecord := &Record{}
+	err = d.do(req, txtRecord)
+	if err != nil {
+		return nil, fmt.Errorf("unable to get TXT records for domain %s and name %s: %v", domain, name, err)
+	}
+
+	return txtRecord, nil
 }
 
 func (d *DNSProvider) deleteTXTRecord(domain string, name string) error {
 	target := fmt.Sprintf("domains/%s/records/%s/TXT", domain, name)
 
-	responseDelete := &apiResponse{}
-	err := d.sendRequest(http.MethodDelete, target, deleteFieldRequest{Delete: true}, responseDelete)
+	req, err := d.newRequest(http.MethodPut, target, nil)
+	if err != nil {
+		return err
+	}
+
+	message := &apiResponse{}
+	err = d.do(req, message)
 	if err != nil {
 		return fmt.Errorf("unable to delete TXT record for domain %s and name %s: %v", domain, name, err)
 	}
 
-	if responseDelete != nil && len(responseDelete.Message) == 0 {
-		log.Infof("gandiv5: %s", responseDelete.Message)
-	}
-
-	return nil
-}
-
-func (d *DNSProvider) sendRequest(method string, resource string, payload interface{}, response interface{}) error {
-	url := path.Join(d.config.BaseURL, resource)
-
-	body, err := json.Marshal(payload)
-	if err != nil {
-		return err
-	}
-
-	req, err := http.NewRequest(method, url, bytes.NewReader(body))
-	if err != nil {
-		return err
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-	if len(d.config.APIKey) > 0 {
-		req.Header.Set("X-Api-Key", d.config.APIKey)
-	}
-
-	resp, err := d.config.HTTPClient.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode == 404 && method == http.MethodGet {
-		return nil
-	}
-
-	if resp.StatusCode >= 400 {
-		return fmt.Errorf("request failed with HTTP status code %d", resp.StatusCode)
-	}
-
-	err = json.NewDecoder(resp.Body).Decode(response)
-	if err != nil && method != http.MethodDelete {
-		return err
+	if message != nil && len(message.Message) > 0 {
+		log.Infof("API response: %s", message.Message)
 	}
 
 	return nil

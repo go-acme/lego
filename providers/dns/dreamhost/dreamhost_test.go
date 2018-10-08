@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var fakeDreamHostApiKey = "asdf1234"
+var fakeDreamHostAPIKey = "asdf1234"
 var fakeDreamHostChallengeToken = "foobar"
 var fakeDreamHostKeyAuth = "w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI"
 
@@ -24,7 +24,7 @@ func TestDreamHostPresent(t *testing.T) {
 
 		q := r.URL.Query()
 
-		assert.Equal(t, q.Get("key"), fakeDreamHostApiKey, "key mismatch")
+		assert.Equal(t, q.Get("key"), fakeDreamHostAPIKey, "key mismatch")
 		assert.Equal(t, q.Get("cmd"), "dns-add_record", "cmd mismatch")
 		assert.Equal(t, q.Get("record"), "_acme-challenge.example.com")
 		assert.Equal(t, q.Get("value"), fakeDreamHostKeyAuth, "value mismatch")
@@ -35,7 +35,7 @@ func TestDreamHostPresent(t *testing.T) {
 	defer mock.Close()
 
 	config := NewDefaultConfig()
-	config.ApiKey = fakeDreamHostApiKey
+	config.APIKey = fakeDreamHostAPIKey
 	config.BaseURL = mock.URL
 
 	provider, err := NewDNSProviderConfig(config)
@@ -62,7 +62,7 @@ func TestDreamHostPresentFailed(t *testing.T) {
 	defer mock.Close()
 
 	config := NewDefaultConfig()
-	config.ApiKey = fakeDreamHostApiKey
+	config.APIKey = fakeDreamHostAPIKey
 	config.BaseURL = mock.URL
 
 	provider, err := NewDNSProviderConfig(config)
@@ -85,7 +85,7 @@ func TestDreamHostCleanup(t *testing.T) {
 
 		q := r.URL.Query()
 
-		assert.Equal(t, q.Get("key"), fakeDreamHostApiKey, "key mismatch")
+		assert.Equal(t, q.Get("key"), fakeDreamHostAPIKey, "key mismatch")
 		assert.Equal(t, q.Get("cmd"), "dns-remove_record", "cmd mismatch")
 		assert.Equal(t, q.Get("record"), "_acme-challenge.example.com")
 		assert.Equal(t, q.Get("value"), fakeDreamHostKeyAuth, "value mismatch")
@@ -96,7 +96,7 @@ func TestDreamHostCleanup(t *testing.T) {
 	defer mock.Close()
 
 	config := NewDefaultConfig()
-	config.ApiKey = fakeDreamHostApiKey
+	config.APIKey = fakeDreamHostAPIKey
 	config.BaseURL = mock.URL
 
 	provider, err := NewDNSProviderConfig(config)

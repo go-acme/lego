@@ -18,7 +18,7 @@ import (
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	BaseURL            string
-	ApiKey             string
+	APIKey             string
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	HTTPClient         *http.Client
@@ -51,7 +51,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	}
 
 	config := NewDefaultConfig()
-	config.ApiKey = values["DREAMHOST_API_KEY"]
+	config.APIKey = values["DREAMHOST_API_KEY"]
 
 	return NewDNSProviderConfig(config)
 }
@@ -62,7 +62,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("dreamhost: the configuration of the DNS provider is nil")
 	}
 
-	if config.ApiKey == "" {
+	if config.APIKey == "" {
 		return nil, errors.New("dreamhost: credentials missing")
 	}
 
@@ -78,7 +78,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
 	record := acme.UnFqdn(fqdn)
 
-	err := d.updateTxtRecord("add", d.config.ApiKey, record, value)
+	err := d.updateTxtRecord("add", d.config.APIKey, record, value)
 	if err != nil {
 		return fmt.Errorf("dreamhost: %v", err)
 	}
@@ -89,7 +89,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
 	record := acme.UnFqdn(fqdn)
-	return d.updateTxtRecord("remove", d.config.ApiKey, record, value)
+	return d.updateTxtRecord("remove", d.config.APIKey, record, value)
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.

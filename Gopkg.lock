@@ -445,10 +445,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:bc2b221d465bb28ce46e8d472ecdc424b9a9b541bd61d8c311c5f29c8dd75b1b"
+  digest = "1:b20a60bb1085d4c535af064faf3e74b4e185781b58bba1ad7406cd9733d82403"
   name = "golang.org/x/oauth2"
   packages = [
     ".",
+    "clientcredentials",
     "google",
     "internal",
     "jws",
@@ -615,7 +616,9 @@
     "github.com/urfave/cli",
     "golang.org/x/crypto/ocsp",
     "golang.org/x/net/context",
+    "golang.org/x/net/publicsuffix",
     "golang.org/x/oauth2",
+    "golang.org/x/oauth2/clientcredentials",
     "golang.org/x/oauth2/google",
     "google.golang.org/api/dns/v1",
     "gopkg.in/ns1/ns1-go.v2/rest",

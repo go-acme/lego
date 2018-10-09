@@ -29,7 +29,7 @@ var (
 )
 
 func TestGetHosts(t *testing.T) {
-	for _, test := range testcases {
+	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
 			mock := httptest.NewServer(http.HandlerFunc(
 				func(w http.ResponseWriter, r *http.Request) {
@@ -47,8 +47,10 @@ func TestGetHosts(t *testing.T) {
 			provider, err := NewDNSProviderConfig(config)
 			require.NoError(t, err)
 
-			ch, _ := newChallenge(test.domain, "", tlds)
-			hosts, err := provider.getHosts(ch)
+			ch, err := newChallenge(test.domain, "", tlds)
+			require.NoError(t, err)
+
+			hosts, err := provider.getHosts(ch.sld, ch.tld)
 			if test.errString != "" {
 				assert.EqualError(t, err, test.errString)
 			} else {
@@ -79,7 +81,7 @@ func TestGetHosts(t *testing.T) {
 }
 
 func TestSetHosts(t *testing.T) {
-	for _, test := range testcases {
+	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
 			mock := httptest.NewServer(http.HandlerFunc(
 				func(w http.ResponseWriter, r *http.Request) {
@@ -88,8 +90,11 @@ func TestSetHosts(t *testing.T) {
 			defer mock.Close()
 
 			prov := mockDNSProvider(mock.URL)
-			ch, _ := newChallenge(test.domain, "", tlds)
-			hosts, err := prov.getHosts(ch)
+
+			ch, err := newChallenge(test.domain, "", tlds)
+			require.NoError(t, err)
+
+			hosts, err := prov.getHosts(ch.sld, ch.tld)
 			if test.errString != "" {
 				assert.EqualError(t, err, test.errString)
 			} else {
@@ -99,14 +104,14 @@ func TestSetHosts(t *testing.T) {
 				return
 			}
 
-			err = prov.setHosts(ch, hosts)
+			err = prov.setHosts(ch.sld, ch.tld, hosts)
 			require.NoError(t, err)
 		})
 	}
 }
 
 func TestPresent(t *testing.T) {
-	for _, test := range testcases {
+	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
 			mock := httptest.NewServer(http.HandlerFunc(
 				func(w http.ResponseWriter, r *http.Request) {
@@ -126,7 +131,7 @@ func TestPresent(t *testing.T) {
 }
 
 func TestCleanUp(t *testing.T) {
-	for _, test := range testcases {
+	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
 			mock := httptest.NewServer(http.HandlerFunc(
 				func(w http.ResponseWriter, r *http.Request) {
@@ -145,7 +150,7 @@ func TestCleanUp(t *testing.T) {
 	}
 }
 
-func TestNamecheapDomainSplit(t *testing.T) {
+func TestDomainSplit(t *testing.T) {
 	tests := []struct {
 		domain string
 		valid  bool
@@ -202,7 +207,7 @@ func assertEq(t *testing.T, variable, got, want string) {
 	}
 }
 
-func assertHdr(tc *testcase, t *testing.T, values *url.Values) {
+func assertHdr(tc *testCase, t *testing.T, values *url.Values) {
 	ch, _ := newChallenge(tc.domain, "", tlds)
 
 	assertEq(t, "ApiUser", values.Get("ApiUser"), fakeUser)
@@ -213,7 +218,7 @@ func assertHdr(tc *testcase, t *testing.T, values *url.Values) {
 	assertEq(t, "TLD", values.Get("TLD"), ch.tld)
 }
 
-func mockServer(tc *testcase, t *testing.T, w http.ResponseWriter, r *http.Request) {
+func mockServer(tc *testCase, t *testing.T, w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 
 	case http.MethodGet:
@@ -261,24 +266,27 @@ func mockDNSProvider(url string) *DNSProvider {
 	config.ClientIP = fakeClientIP
 	config.HTTPClient = &http.Client{Timeout: 60 * time.Second}
 
-	provider, _ := NewDNSProviderConfig(config)
+	provider, err := NewDNSProviderConfig(config)
+	if err != nil {
+		panic(err)
+	}
 	return provider
 }
 
-type testcase struct {
+type testCase struct {
 	name             string
 	domain           string
-	hosts            []record
+	hosts            []Record
 	errString        string
 	getHostsResponse string
 	setHostsResponse string
 }
 
-var testcases = []testcase{
+var testCases = []testCase{
 	{
 		name:   "Test:Success:1",
 		domain: "test.example.com",
-		hosts: []record{
+		hosts: []Record{
 			{Type: "A", Name: "home", Address: "10.0.0.1", MXPref: "10", TTL: "1799"},
 			{Type: "A", Name: "www", Address: "10.0.0.2", MXPref: "10", TTL: "1200"},
 			{Type: "AAAA", Name: "a", Address: "::0", MXPref: "10", TTL: "1799"},
@@ -292,7 +300,7 @@ var testcases = []testcase{
 	{
 		name:   "Test:Success:2",
 		domain: "example.com",
-		hosts: []record{
+		hosts: []Record{
 			{Type: "A", Name: "@", Address: "10.0.0.2", MXPref: "10", TTL: "1200"},
 			{Type: "A", Name: "www", Address: "10.0.0.3", MXPref: "10", TTL: "60"},
 		},

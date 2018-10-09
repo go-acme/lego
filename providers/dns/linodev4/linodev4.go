@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	dnsMinTTLSecs      = 300
+	minTTL             = 300
 	dnsUpdateFreqMins  = 15
 	dnsUpdateFudgeSecs = 120
 )
@@ -35,7 +35,7 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		PollingInterval: env.GetOrDefaultSecond("LINODE_POLLING_INTERVAL", 15*time.Second),
-		TTL:             env.GetOrDefaultInt("LINODE_TTL", 60),
+		TTL:             env.GetOrDefaultInt("LINODE_TTL", minTTL),
 		HTTPTimeout:     env.GetOrDefaultSecond("LINODE_HTTP_TIMEOUT", 0),
 	}
 }
@@ -75,6 +75,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("linodev4: Linode Access Token missing")
 	}
 
+	if config.TTL < minTTL {
+		return nil, fmt.Errorf("linodev4: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL)
+	}
+
 	tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: config.Token})
 	oauth2Client := &http.Client{
 		Timeout: config.HTTPTimeout,
@@ -103,7 +107,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	minsRemaining := dnsUpdateFreqMins - (time.Now().Minute() % dnsUpdateFreqMins)
 
 	timeout = (time.Duration(minsRemaining) * time.Minute) +
-		(dnsMinTTLSecs * time.Second) +
+		(minTTL * time.Second) +
 		(dnsUpdateFudgeSecs * time.Second)
 	interval = d.config.PollingInterval
 	return

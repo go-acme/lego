@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/exoscale/egoscale"
@@ -56,7 +55,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
 	config.APIKey = values["EXOSCALE_API_KEY"]
 	config.APISecret = values["EXOSCALE_API_SECRET"]
-	config.Endpoint = os.Getenv("EXOSCALE_ENDPOINT")
+	config.Endpoint = env.GetOrFile("EXOSCALE_ENDPOINT")
 
 	return NewDNSProviderConfig(config)
 }

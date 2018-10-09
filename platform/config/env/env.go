@@ -3,10 +3,13 @@ package env
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/xenolf/lego/log"
 )
 
 // Get environment variables
@@ -15,7 +18,7 @@ func Get(names ...string) (map[string]string, error) {
 
 	var missingEnvVars []string
 	for _, envVar := range names {
-		value := os.Getenv(envVar)
+		value := GetOrFile(envVar)
 		if value == "" {
 			missingEnvVars = append(missingEnvVars, envVar)
 		}
@@ -76,13 +79,13 @@ func GetWithFallback(groups ...[]string) (map[string]string, error) {
 }
 
 func getOneWithFallback(main string, names ...string) (string, string) {
-	value := os.Getenv(main)
+	value := GetOrFile(main)
 	if len(value) > 0 {
 		return value, main
 	}
 
 	for _, name := range names {
-		value := os.Getenv(name)
+		value := GetOrFile(name)
 		if len(value) > 0 {
 			return value, main
 		}
@@ -94,7 +97,7 @@ func getOneWithFallback(main string, names ...string) (string, string) {
 // GetOrDefaultInt returns the given environment variable value as an integer.
 // Returns the default if the envvar cannot be coopered to an int, or is not found.
 func GetOrDefaultInt(envVar string, defaultValue int) int {
-	v, err := strconv.Atoi(os.Getenv(envVar))
+	v, err := strconv.Atoi(GetOrFile(envVar))
 	if err != nil {
 		return defaultValue
 	}
@@ -116,7 +119,7 @@ func GetOrDefaultSecond(envVar string, defaultValue time.Duration) time.Duration
 // GetOrDefaultString returns the given environment variable value as a string.
 // Returns the default if the envvar cannot be find.
 func GetOrDefaultString(envVar string, defaultValue string) string {
-	v := os.Getenv(envVar)
+	v := GetOrFile(envVar)
 	if len(v) == 0 {
 		return defaultValue
 	}
@@ -127,10 +130,34 @@ func GetOrDefaultString(envVar string, defaultValue string) string {
 // GetOrDefaultBool returns the given environment variable value as a boolean.
 // Returns the default if the envvar cannot be coopered to a boolean, or is not found.
 func GetOrDefaultBool(envVar string, defaultValue bool) bool {
-	v, err := strconv.ParseBool(os.Getenv(envVar))
+	v, err := strconv.ParseBool(GetOrFile(envVar))
 	if err != nil {
 		return defaultValue
 	}
 
 	return v
+}
+
+// GetOrFile Attempts to resolve 'key' as an environment variable.
+// Failing that, it will check to see if '<key>_FILE' exists.
+// If so, it will attempt to read from the referenced file to populate a value.
+func GetOrFile(envVar string) string {
+	envVarValue := os.Getenv(envVar)
+	if envVarValue != "" {
+		return envVarValue
+	}
+
+	fileVar := envVar + "_FILE"
+	fileVarValue := os.Getenv(fileVar)
+	if fileVarValue == "" {
+		return envVarValue
+	}
+
+	fileContents, err := ioutil.ReadFile(fileVarValue)
+	if err != nil {
+		log.Printf("Failed to read the file %s (defined by env var %s): %s", fileVarValue, fileVar, err)
+		return ""
+	}
+
+	return string(fileContents)
 }

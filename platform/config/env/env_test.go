@@ -1,6 +1,7 @@
 package env
 
 import (
+	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -272,4 +273,68 @@ func TestGetOrDefaultBool(t *testing.T) {
 			assert.Equal(t, test.expected, actual)
 		})
 	}
+}
+
+func TestGetOrFile_ReadsEnvVars(t *testing.T) {
+	err := os.Setenv("TEST_LEGO_ENV_VAR", "lego_env")
+	require.NoError(t, err)
+	defer os.Unsetenv("TEST_LEGO_ENV_VAR")
+
+	value := GetOrFile("TEST_LEGO_ENV_VAR")
+
+	assert.Equal(t, "lego_env", value)
+}
+
+func TestGetOrFile_ReadsFiles(t *testing.T) {
+	varEnvFileName := "TEST_LEGO_ENV_VAR_FILE"
+	varEnvName := "TEST_LEGO_ENV_VAR"
+
+	err := os.Unsetenv(varEnvFileName)
+	require.NoError(t, err)
+	err = os.Unsetenv(varEnvName)
+	require.NoError(t, err)
+
+	file, err := ioutil.TempFile("", "lego")
+	require.NoError(t, err)
+	defer os.Remove(file.Name())
+
+	err = ioutil.WriteFile(file.Name(), []byte("lego_file"), 0644)
+	require.NoError(t, err)
+
+	err = os.Setenv(varEnvFileName, file.Name())
+	require.NoError(t, err)
+	defer os.Unsetenv(varEnvFileName)
+
+	value := GetOrFile(varEnvName)
+
+	assert.Equal(t, "lego_file", value)
+}
+
+func TestGetOrFile_PrefersEnvVars(t *testing.T) {
+	varEnvFileName := "TEST_LEGO_ENV_VAR_FILE"
+	varEnvName := "TEST_LEGO_ENV_VAR"
+
+	err := os.Unsetenv(varEnvFileName)
+	require.NoError(t, err)
+	err = os.Unsetenv(varEnvName)
+	require.NoError(t, err)
+
+	file, err := ioutil.TempFile("", "lego")
+	require.NoError(t, err)
+	defer os.Remove(file.Name())
+
+	err = ioutil.WriteFile(file.Name(), []byte("lego_file"), 0644)
+	require.NoError(t, err)
+
+	err = os.Setenv(varEnvFileName, file.Name())
+	require.NoError(t, err)
+	defer os.Unsetenv(varEnvFileName)
+
+	err = os.Setenv(varEnvName, "lego_env")
+	require.NoError(t, err)
+	defer os.Unsetenv(varEnvName)
+
+	value := GetOrFile(varEnvName)
+
+	assert.Equal(t, "lego_env", value)
 }

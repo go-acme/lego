@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
-	"os"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -54,7 +53,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		DNSZone:            os.Getenv("DNS_ZONE"),
+		DNSZone:            env.GetOrFile("DNS_ZONE"),
 		PropagationTimeout: env.GetOrDefaultSecond("LIGHTSAIL_PROPAGATION_TIMEOUT", acme.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond("LIGHTSAIL_POLLING_INTERVAL", acme.DefaultPollingInterval),
 		Region:             env.GetOrDefaultString("LIGHTSAIL_REGION", "us-east-1"),

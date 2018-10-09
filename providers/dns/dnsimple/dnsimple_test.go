@@ -38,84 +38,125 @@ func restoreEnv() {
 	os.Setenv("DNSIMPLE_BASE_URL", dnsimpleBaseURL)
 }
 
-//
-// NewDNSProvider
-//
+func TestNewDNSProvider(t *testing.T) {
+	testCases := []struct {
+		desc      string
+		userAgent string
+		envVars   map[string]string
+		expected  string
+	}{
+		{
+			desc:      "success",
+			userAgent: "lego",
+			envVars: map[string]string{
+				"DNSIMPLE_OAUTH_TOKEN": "my_token",
+			},
+		},
+		{
+			desc: "success: base url",
+			envVars: map[string]string{
+				"DNSIMPLE_OAUTH_TOKEN": "my_token",
+				"DNSIMPLE_BASE_URL":    "https://api.dnsimple.test",
+			},
+		},
+		{
+			desc: "missing oauth token",
+			envVars: map[string]string{
+				"DNSIMPLE_OAUTH_TOKEN": "",
+			},
+			expected: "dnsimple: OAuth token is missing",
+		},
+	}
 
-func TestNewDNSProviderValid(t *testing.T) {
-	defer restoreEnv()
-	os.Setenv("DNSIMPLE_OAUTH_TOKEN", "123")
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer restoreEnv()
+			for key, value := range test.envVars {
+				if len(value) == 0 {
+					os.Unsetenv(key)
+				} else {
+					os.Setenv(key, value)
+				}
+			}
 
-	acme.UserAgent = "lego"
+			if test.userAgent != "" {
+				acme.UserAgent = test.userAgent
+			}
 
-	provider, err := NewDNSProvider()
+			p, err := NewDNSProvider()
 
-	assert.NotNil(t, provider)
-	assert.Equal(t, "lego", provider.client.UserAgent)
-	assert.NoError(t, err)
+			if len(test.expected) == 0 {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
+
+				baseURL := os.Getenv("DNSIMPLE_BASE_URL")
+				if baseURL != "" {
+					assert.Equal(t, baseURL, p.client.BaseURL)
+				}
+
+				if test.userAgent != "" {
+					assert.Equal(t, "lego", p.client.UserAgent)
+				}
+
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
 }
 
-func TestNewDNSProviderValidWithBaseUrl(t *testing.T) {
-	defer restoreEnv()
-	os.Setenv("DNSIMPLE_OAUTH_TOKEN", "123")
-	os.Setenv("DNSIMPLE_BASE_URL", "https://api.dnsimple.test")
+func TestNewDNSProviderConfig(t *testing.T) {
+	testCases := []struct {
+		desc        string
+		accessToken string
+		baseURL     string
+		expected    string
+	}{
+		{
+			desc:        "success",
+			accessToken: "my_token",
+			baseURL:     "",
+		},
+		{
+			desc:        "success: base url",
+			accessToken: "my_token",
+			baseURL:     "https://api.dnsimple.test",
+		},
+		{
+			desc:     "missing oauth token",
+			expected: "dnsimple: OAuth token is missing",
+		},
+	}
 
-	provider, err := NewDNSProvider()
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer restoreEnv()
+			os.Unsetenv("DNSIMPLE_OAUTH_TOKEN")
+			os.Unsetenv("DNSIMPLE_BASE_URL")
 
-	assert.NotNil(t, provider)
-	assert.NoError(t, err)
+			config := NewDefaultConfig()
+			config.AccessToken = test.accessToken
+			config.BaseURL = test.baseURL
 
-	assert.Equal(t, provider.client.BaseURL, "https://api.dnsimple.test")
-}
+			p, err := NewDNSProviderConfig(config)
 
-func TestNewDNSProviderInvalidWithMissingOauthToken(t *testing.T) {
-	defer restoreEnv()
-	os.Setenv("DNSIMPLE_OAUTH_TOKEN", "")
+			if len(test.expected) == 0 {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
 
-	provider, err := NewDNSProvider()
+				if test.baseURL != "" {
+					assert.Equal(t, test.baseURL, p.client.BaseURL)
+				}
 
-	assert.Nil(t, provider)
-	assert.EqualError(t, err, "dnsimple: OAuth token is missing")
-}
-
-//
-// NewDNSProviderCredentials
-//
-
-func TestNewDNSProviderCredentialsValid(t *testing.T) {
-	config := NewDefaultConfig()
-	config.AccessToken = "123"
-	config.BaseURL = ""
-
-	provider, err := NewDNSProviderConfig(config)
-	require.NoError(t, err)
-	require.NotNil(t, provider)
-
-	assert.Equal(t, "lego", provider.client.UserAgent)
-	assert.NoError(t, err)
-}
-
-func TestNewDNSProviderCredentialsValidWithBaseUrl(t *testing.T) {
-	config := NewDefaultConfig()
-	config.AccessToken = "123"
-	config.BaseURL = "https://api.dnsimple.test"
-
-	provider, err := NewDNSProviderConfig(config)
-	require.NoError(t, err)
-	require.NotNil(t, provider)
-
-	assert.Equal(t, provider.client.BaseURL, "https://api.dnsimple.test")
-}
-
-func TestNewDNSProviderCredentialsInvalidWithMissingOauthToken(t *testing.T) {
-	config := NewDefaultConfig()
-	config.AccessToken = ""
-	config.BaseURL = ""
-
-	provider, err := NewDNSProviderConfig(config)
-
-	assert.Nil(t, provider)
-	assert.EqualError(t, err, "dnsimple: OAuth token is missing")
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
 }
 
 //

@@ -1,13 +1,14 @@
 package gandiv5
 
 import (
-	"io"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"regexp"
-	"strings"
 	"testing"
+
+	"github.com/xenolf/lego/log"
 
 	"github.com/stretchr/testify/require"
 )
@@ -21,21 +22,49 @@ func TestDNSProvider(t *testing.T) {
 	require.NoError(t, err)
 
 	// start fake RPC server
-	fakeServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		require.Equal(t, "application/json", r.Header.Get("Content-Type"), "invalid content type")
+	handler := http.NewServeMux()
+	handler.HandleFunc("/domains/example.com/records/_acme-challenge.abc.def/TXT", func(rw http.ResponseWriter, req *http.Request) {
+		log.Infof("request: %s %s", req.Method, req.URL)
 
-		req, errS := ioutil.ReadAll(r.Body)
-		require.NoError(t, errS)
+		if req.Header.Get(apiKeyHeader) == "" {
+			http.Error(rw, `{"message": "missing API key"}`, http.StatusUnauthorized)
+			return
+		}
 
-		req = regexpToken.ReplaceAllLiteral(req, []byte(`"rrset_values":["TOKEN"]`))
+		if req.Method == http.MethodPost && req.Header.Get("Content-Type") != "application/json" {
+			http.Error(rw, `{"message": "invalid content type"}`, http.StatusBadRequest)
+			return
+		}
 
-		resp, ok := serverResponses[string(req)]
-		require.True(t, ok, "Server response for request not found")
+		body, errS := ioutil.ReadAll(req.Body)
+		if errS != nil {
+			http.Error(rw, fmt.Sprintf(`{"message": "read body error: %v"}`, errS), http.StatusInternalServerError)
+			return
+		}
 
-		_, errS = io.Copy(w, strings.NewReader(resp))
-		require.NoError(t, errS)
-	}))
-	defer fakeServer.Close()
+		body = regexpToken.ReplaceAllLiteral(body, []byte(`"rrset_values":["TOKEN"]`))
+
+		responses, ok := serverResponses[req.Method]
+		if !ok {
+			http.Error(rw, fmt.Sprintf(`{"message": "Server response for request not found: %#q"}`, string(body)), http.StatusInternalServerError)
+			return
+		}
+
+		resp := responses[string(body)]
+
+		_, errS = rw.Write([]byte(resp))
+		if errS != nil {
+			http.Error(rw, fmt.Sprintf(`{"message": "failed to write response: %v"}`, errS), http.StatusInternalServerError)
+			return
+		}
+	})
+	handler.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
+		log.Infof("request: %s %s", req.Method, req.URL)
+		http.Error(rw, fmt.Sprintf(`{"message": "URL doesn't match: %s"}`, req.URL), http.StatusNotFound)
+	})
+
+	server := httptest.NewServer(handler)
+	defer server.Close()
 
 	// define function to override findZoneByFqdn with
 	fakeFindZoneByFqdn := func(fqdn string, nameserver []string) (string, error) {
@@ -44,7 +73,7 @@ func TestDNSProvider(t *testing.T) {
 
 	config := NewDefaultConfig()
 	config.APIKey = "123412341234123412341234"
-	config.BaseURL = fakeServer.URL
+	config.BaseURL = server.URL
 
 	provider, err := NewDNSProviderConfig(config)
 	require.NoError(t, err)
@@ -67,9 +96,14 @@ func TestDNSProvider(t *testing.T) {
 
 // serverResponses is the JSON Request->Response map used by the
 // fake JSON server.
-var serverResponses = map[string]string{
-	// Present Request->Response (addTXTRecord)
-	`{"rrset_ttl":300,"rrset_values":["TOKEN"]}`: `{"message": "Zone Record Created"}`,
-	// CleanUp Request->Response (deleteTXTRecord)
-	`{"delete":true}`: ``,
+var serverResponses = map[string]map[string]string{
+	http.MethodGet: {
+		``: `{"rrset_ttl":300,"rrset_values":[],"rrset_name":"_acme-challenge.abc.def","rrset_type":"TXT"}`,
+	},
+	http.MethodPut: {
+		`{"rrset_ttl":300,"rrset_values":["TOKEN"]}`: `{"message": "Zone Record Created"}`,
+	},
+	http.MethodDelete: {
+		``: ``,
+	},
 }

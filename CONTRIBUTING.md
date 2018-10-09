@@ -35,7 +35,7 @@ owners to license your work under the terms of the [MIT License](LICENSE).
 
 | DNS provider              | Code           | Documentation                                                                                                | Go client                                                         |
 |---------------------------|----------------|--------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------|
-| Acme DNS                  | `acmedns`      | [documentation](https://github.com/joohoi/acme-dns#api)                                                      | [Go client](https://github.com/joohoi/acme-dns)                   |
+| Acme DNS                  | `acmedns`      | [documentation](https://github.com/joohoi/acme-dns#api)                                                      | [Go client](https://github.com/cpu/goacmedns)                     |
 | Alibaba Cloud             | `alidns`       | [documentation](https://www.alibabacloud.com/help/doc-detail/42875.htm)                                      | [Go client](https://github.com/aliyun/alibaba-cloud-sdk-go)       |
 | Aurora DNS                | `auroradns`    | ?                                                                                                            | [Go client](https://github.com/edeckers/auroradnsclient)          |
 | Azure                     | `azure`        | [documentation](https://docs.microsoft.com/en-us/go/azure/)                                                  | [Go client](https://github.com/Azure/azure-sdk-for-go)            |

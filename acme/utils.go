@@ -12,10 +12,10 @@ func WaitFor(timeout, interval time.Duration, f func() (bool, error)) error {
 	log.Infof("Wait [timeout: %s, interval: %s]", timeout, interval)
 
 	var lastErr string
-	timeup := time.After(timeout)
+	timeUp := time.After(timeout)
 	for {
 		select {
-		case <-timeup:
+		case <-timeUp:
 			return fmt.Errorf("time limit exceeded: last error: %s", lastErr)
 		default:
 		}

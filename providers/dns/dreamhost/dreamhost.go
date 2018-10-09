@@ -26,14 +26,13 @@ type Config struct {
 
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
-	client := acme.HTTPClient
-	client.Timeout = env.GetOrDefaultSecond("DREAMHOST_HTTP_TIMEOUT", 30*time.Second)
-
 	return &Config{
 		BaseURL:            defaultBaseURL,
 		PropagationTimeout: env.GetOrDefaultSecond("DREAMHOST_PROPAGATION_TIMEOUT", acme.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond("DREAMHOST_POLLING_INTERVAL", acme.DefaultPollingInterval),
-		HTTPClient:         &client,
+		HTTPClient: &http.Client{
+			Timeout: env.GetOrDefaultSecond("DREAMHOST_HTTP_TIMEOUT", 30*time.Second),
+		},
 	}
 }
 
@@ -78,7 +77,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
 	record := acme.UnFqdn(fqdn)
 
-	err := d.updateTxtRecord("add", d.config.APIKey, record, value)
+	err := d.updateTxtRecord(cmdAddRecord, record, value)
 	if err != nil {
 		return fmt.Errorf("dreamhost: %v", err)
 	}
@@ -89,7 +88,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
 	record := acme.UnFqdn(fqdn)
-	return d.updateTxtRecord("remove", d.config.APIKey, record, value)
+	return d.updateTxtRecord(cmdRemoveRecord, record, value)
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
@@ -98,22 +97,27 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-// addTxtRecord adds the TXT record to the domain
-func (d *DNSProvider) updateTxtRecord(action, token, domain, txt string) error {
-	var cmd string
-	switch action {
-	case "add":
-		cmd = "dns-add_record"
-	case "remove":
-		cmd = "dns-remove_record"
-	default:
-		return fmt.Errorf("dreamhost: updateTxtRecord called with invalid action: %s", action)
+// updateTxtRecord will either add or remove a TXT record.
+// action is either cmdAddRecord or cmdRemoveRecord
+func (d *DNSProvider) updateTxtRecord(action, domain, txt string) error {
+
+	u, err := url.Parse(d.config.BaseURL)
+	if err != nil {
+		return err
 	}
 
-	comment := url.QueryEscape("Managed By lego")
-	u := fmt.Sprintf("%s/?key=%s&cmd=%s&format=json&record=%s&type=TXT&value=%s&comment=%s", d.config.BaseURL, token, cmd, domain, txt, comment)
+	query := u.Query()
+	query.Set("key", d.config.APIKey)
+	query.Set("cmd", action)
+	query.Set("format", "json")
+	query.Set("record", domain)
+	query.Set("type", "TXT")
+	query.Set("value", txt)
+	query.Set("comment", url.QueryEscape("Managed By lego"))
 
-	resp, err := acme.HTTPClient.Get(u)
+	u.RawQuery = query.Encode()
+
+	resp, err := d.config.HTTPClient.Get(u.String())
 
 	if err != nil {
 		return err
@@ -124,12 +128,13 @@ func (d *DNSProvider) updateTxtRecord(action, token, domain, txt string) error {
 		return fmt.Errorf("request failed with HTTP status code %d", resp.StatusCode)
 	}
 
-	var response responseStruct
+	var response apiResponse
 	err = json.NewDecoder(resp.Body).Decode(&response)
-	// return fmt.Errorf(fmt.Sprint(response.Result))
 	if err != nil {
 		return fmt.Errorf("unable to decode API server response")
-	} else if response.Result == "error" {
+	}
+
+	if response.Result == "error" {
 		return fmt.Errorf("dreamhost: add TXT record failed: %s", response.Data)
 	}
 

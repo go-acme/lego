@@ -25,7 +25,6 @@ func TestDreamHostPresent(t *testing.T) {
 		assert.Equal(t, q.Get("record"), "_acme-challenge.example.com")
 		assert.Equal(t, q.Get("value"), fakeDreamHostKeyAuth, "value mismatch")
 
-		w.WriteHeader(http.StatusOK)
 		_, err := fmt.Fprintf(w, `{"data":"record_added","result":"success"}`)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

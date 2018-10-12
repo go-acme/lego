@@ -13,141 +13,202 @@ import (
 )
 
 var (
-	dreamHostLiveTest           bool
-	testDomain                  string
-	APIKey                      string
-	fakeDreamHostAPIKey         = "asdf1234"
-	fakeDreamHostChallengeToken = "foobar"
-	fakeDreamHostKeyAuth        = "w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI"
+	liveTest      bool
+	envTestDomain string
+	envTestAPIKey string
+
+	fakeAPIKey         = "asdf1234"
+	fakeChallengeToken = "foobar"
+	fakeKeyAuth        = "w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI"
 )
 
 func init() {
-	APIKey = os.Getenv("DREAMHOST_API_KEY")
-	testDomain = os.Getenv("DREAMHOST_TEST_DOMAIN")
-	if len(APIKey) > 0 && len(testDomain) > 0 {
-		dreamHostLiveTest = true
+	envTestAPIKey = os.Getenv("DREAMHOST_API_KEY")
+	envTestDomain = os.Getenv("DREAMHOST_TEST_DOMAIN")
+
+	if len(envTestAPIKey) > 0 && len(envTestDomain) > 0 {
+		liveTest = true
 	}
 }
 
 func restoreEnv() {
-	os.Setenv("DREAMHOST_API_KEY", APIKey)
+	os.Setenv("DREAMHOST_API_KEY", envTestAPIKey)
 }
 
-func TestNewDNSProviderValidEnv(t *testing.T) {
-	defer restoreEnv()
-	os.Setenv("DREAMHOST_API_KEY", "somekey")
+func setupTest() (*DNSProvider, *http.ServeMux, func()) {
+	handler := http.NewServeMux()
+	server := httptest.NewServer(handler)
 
-	_, err := NewDNSProvider()
-	require.NoError(t, err)
+	config := NewDefaultConfig()
+	config.APIKey = fakeAPIKey
+	config.BaseURL = server.URL
+
+	provider, err := NewDNSProviderConfig(config)
+	if err != nil {
+		panic(err)
+	}
+
+	return provider, handler, server.Close
 }
 
-func TestNewDNSProviderMissingCredErr(t *testing.T) {
-	defer restoreEnv()
-	os.Setenv("DREAMHOST_API_KEY", "")
+func TestNewDNSProvider(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		envVars  map[string]string
+		expected string
+	}{
+		{
+			desc: "success",
+			envVars: map[string]string{
+				"DREAMHOST_API_KEY": "123",
+			},
+		},
+		{
+			desc: "missing API key",
+			envVars: map[string]string{
+				"DREAMHOST_API_KEY": "",
+			},
+			expected: "dreamhost: some credentials information are missing: DREAMHOST_API_KEY",
+		},
+	}
 
-	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "dreamhost: some credentials information are missing: DREAMHOST_API_KEY")
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer restoreEnv()
+			for key, value := range test.envVars {
+				if len(value) == 0 {
+					os.Unsetenv(key)
+				} else {
+					os.Setenv(key, value)
+				}
+			}
+
+			p, err := NewDNSProvider()
+
+			if len(test.expected) == 0 {
+				assert.NoError(t, err)
+				assert.NotNil(t, p)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
 }
-func TestDreamHostPresent(t *testing.T) {
-	mock := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+func TestNewDNSProviderConfig(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		apiKey   string
+		expected string
+	}{
+		{
+			desc:   "success",
+			apiKey: "123",
+		},
+		{
+			desc:     "missing credentials",
+			expected: "dreamhost: credentials missing",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			config := NewDefaultConfig()
+			config.APIKey = test.apiKey
+
+			p, err := NewDNSProviderConfig(config)
+
+			if len(test.expected) == 0 {
+				assert.NoError(t, err)
+				assert.NotNil(t, p)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
+}
+
+func TestDNSProvider_Present(t *testing.T) {
+	provider, mux, tearDown := setupTest()
+	defer tearDown()
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodGet, r.Method, "method")
 
 		q := r.URL.Query()
-
-		assert.Equal(t, q.Get("key"), fakeDreamHostAPIKey, "key mismatch")
-		assert.Equal(t, q.Get("cmd"), "dns-add_record", "cmd mismatch")
+		assert.Equal(t, q.Get("key"), fakeAPIKey)
+		assert.Equal(t, q.Get("cmd"), "dns-add_record")
+		assert.Equal(t, q.Get("format"), "json")
 		assert.Equal(t, q.Get("record"), "_acme-challenge.example.com")
-		assert.Equal(t, q.Get("value"), fakeDreamHostKeyAuth, "value mismatch")
+		assert.Equal(t, q.Get("value"), fakeKeyAuth)
+		assert.Equal(t, q.Get("comment"), "Managed+By+lego")
 
 		_, err := fmt.Fprintf(w, `{"data":"record_added","result":"success"}`)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
-	}))
-	defer mock.Close()
+	})
 
-	config := NewDefaultConfig()
-	config.APIKey = fakeDreamHostAPIKey
-	config.BaseURL = mock.URL
-
-	provider, err := NewDNSProviderConfig(config)
+	err := provider.Present("example.com", "", fakeChallengeToken)
 	require.NoError(t, err)
-	require.NotNil(t, provider)
-
-	err = provider.Present("example.com", "", fakeDreamHostChallengeToken)
-	require.NoError(t, err, "fail to create TXT record")
 }
 
-func TestDreamHostPresentFailed(t *testing.T) {
-	mock := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func TestDNSProvider_PresentFailed(t *testing.T) {
+	provider, mux, tearDown := setupTest()
+	defer tearDown()
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodGet, r.Method, "method")
 
 		_, err := fmt.Fprintf(w, `{"data":"record_already_exists_remove_first","result":"error"}`)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
-	}))
-	defer mock.Close()
+	})
 
-	config := NewDefaultConfig()
-	config.APIKey = fakeDreamHostAPIKey
-	config.BaseURL = mock.URL
-
-	provider, err := NewDNSProviderConfig(config)
-	require.NoError(t, err)
-	require.NotNil(t, provider)
-
-	err = provider.Present("example.com", "", fakeDreamHostChallengeToken)
-	require.Error(t, err, "API error not detected")
+	err := provider.Present("example.com", "", fakeChallengeToken)
+	require.EqualError(t, err, "dreamhost: add TXT record failed: record_already_exists_remove_first")
 }
 
-func TestDreamHostCleanup(t *testing.T) {
-	mock := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func TestDNSProvider_Cleanup(t *testing.T) {
+	provider, mux, tearDown := setupTest()
+	defer tearDown()
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodGet, r.Method, "method")
 
 		q := r.URL.Query()
-
-		assert.Equal(t, q.Get("key"), fakeDreamHostAPIKey, "key mismatch")
+		assert.Equal(t, q.Get("key"), fakeAPIKey, "key mismatch")
 		assert.Equal(t, q.Get("cmd"), "dns-remove_record", "cmd mismatch")
+		assert.Equal(t, q.Get("format"), "json")
 		assert.Equal(t, q.Get("record"), "_acme-challenge.example.com")
-		assert.Equal(t, q.Get("value"), fakeDreamHostKeyAuth, "value mismatch")
+		assert.Equal(t, q.Get("value"), fakeKeyAuth, "value mismatch")
+		assert.Equal(t, q.Get("comment"), "Managed+By+lego")
 
 		_, err := fmt.Fprintf(w, `{"data":"record_removed","result":"success"}`)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
-	}))
-	defer mock.Close()
+	})
 
-	config := NewDefaultConfig()
-	config.APIKey = fakeDreamHostAPIKey
-	config.BaseURL = mock.URL
-
-	provider, err := NewDNSProviderConfig(config)
-	require.NoError(t, err)
-	require.NotNil(t, provider)
-
-	err = provider.CleanUp("example.com", "", fakeDreamHostChallengeToken)
+	err := provider.CleanUp("example.com", "", fakeChallengeToken)
 	require.NoError(t, err, "failed to remove TXT record")
 }
 
-func TestLiveDreamHostPresentAndCleanUp(t *testing.T) {
-	if !dreamHostLiveTest {
+func TestLivePresentAndCleanUp(t *testing.T) {
+	if !liveTest {
 		t.Skip("skipping live test")
 	}
 
-	time.Sleep(time.Second * 1)
-
-	config := NewDefaultConfig()
-	config.APIKey = APIKey
-
-	provider, err := NewDNSProviderConfig(config)
-	require.NoError(t, err)
-	err = provider.Present(testDomain, "", "123d==")
+	restoreEnv()
+	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	time.Sleep(time.Second * 1)
+	err = provider.Present(envTestDomain, "", "123d==")
+	require.NoError(t, err)
 
-	err = provider.CleanUp(testDomain, "", "123d==")
+	time.Sleep(1 * time.Second)
+
+	err = provider.CleanUp(envTestDomain, "", "123d==")
 	require.NoError(t, err)
 }

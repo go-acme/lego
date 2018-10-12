@@ -14,23 +14,23 @@ import (
 
 var (
 	dreamHostLiveTest           bool
-	dreamHostTestDomain         string
-	dreamHostAPIKey             string
+	testDomain                  string
+	APIKey                      string
 	fakeDreamHostAPIKey         = "asdf1234"
 	fakeDreamHostChallengeToken = "foobar"
 	fakeDreamHostKeyAuth        = "w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI"
 )
 
 func init() {
-	dreamHostAPIKey = os.Getenv("DREAMHOST_API_KEY")
-	dreamHostTestDomain = os.Getenv("DREAMHOST_TEST_DOMAIN")
-	if len(dreamHostAPIKey) > 0 && len(dreamHostTestDomain) > 0 {
+	APIKey = os.Getenv("DREAMHOST_API_KEY")
+	testDomain = os.Getenv("DREAMHOST_TEST_DOMAIN")
+	if len(APIKey) > 0 && len(testDomain) > 0 {
 		dreamHostLiveTest = true
 	}
 }
 
 func restoreEnv() {
-	os.Setenv("DREAMHOST_API_KEY", dreamHostAPIKey)
+	os.Setenv("DREAMHOST_API_KEY", APIKey)
 }
 
 func TestNewDNSProviderValidEnv(t *testing.T) {
@@ -139,15 +139,15 @@ func TestLiveDreamHostPresentAndCleanUp(t *testing.T) {
 	time.Sleep(time.Second * 1)
 
 	config := NewDefaultConfig()
-	config.APIKey = dreamHostAPIKey
+	config.APIKey = APIKey
 
 	provider, err := NewDNSProviderConfig(config)
 	require.NoError(t, err)
-	err = provider.Present(dreamHostTestDomain, "", "123d==")
+	err = provider.Present(testDomain, "", "123d==")
 	require.NoError(t, err)
 
 	time.Sleep(time.Second * 1)
 
-	err = provider.CleanUp(dreamHostTestDomain, "", "123d==")
+	err = provider.CleanUp(testDomain, "", "123d==")
 	require.NoError(t, err)
 }

@@ -26,8 +26,8 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		BaseURL:            defaultBaseURL,
-		PropagationTimeout: env.GetOrDefaultSecond("DREAMHOST_PROPAGATION_TIMEOUT", acme.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("DREAMHOST_POLLING_INTERVAL", acme.DefaultPollingInterval),
+		PropagationTimeout: env.GetOrDefaultSecond("DREAMHOST_PROPAGATION_TIMEOUT", 60*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond("DREAMHOST_POLLING_INTERVAL", 1*time.Minute),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond("DREAMHOST_HTTP_TIMEOUT", 30*time.Second),
 		},

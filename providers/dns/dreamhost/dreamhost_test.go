@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -13,6 +14,7 @@ import (
 
 var (
 	dreamHostLiveTest           bool
+	dreamHostTestDomain         string
 	dreamHostAPIKey             string
 	fakeDreamHostAPIKey         = "asdf1234"
 	fakeDreamHostChallengeToken = "foobar"
@@ -21,7 +23,8 @@ var (
 
 func init() {
 	dreamHostAPIKey = os.Getenv("DREAMHOST_API_KEY")
-	if len(dreamHostAPIKey) > 0 {
+	dreamHostTestDomain = os.Getenv("DREAMHOST_TEST_DOMAIN")
+	if len(dreamHostAPIKey) > 0 && len(dreamHostTestDomain) > 0 {
 		dreamHostLiveTest = true
 	}
 }
@@ -126,4 +129,25 @@ func TestDreamHostCleanup(t *testing.T) {
 
 	err = provider.CleanUp("example.com", "", fakeDreamHostChallengeToken)
 	require.NoError(t, err, "failed to remove TXT record")
+}
+
+func TestLiveDreamHostPresentAndCleanUp(t *testing.T) {
+	if !dreamHostLiveTest {
+		t.Skip("skipping live test")
+	}
+
+	time.Sleep(time.Second * 1)
+
+	config := NewDefaultConfig()
+	config.APIKey = dreamHostAPIKey
+
+	provider, err := NewDNSProviderConfig(config)
+	require.NoError(t, err)
+	err = provider.Present(dreamHostTestDomain, "", "123d==")
+	require.NoError(t, err)
+
+	time.Sleep(time.Second * 1)
+
+	err = provider.CleanUp(dreamHostTestDomain, "", "123d==")
+	require.NoError(t, err)
 }

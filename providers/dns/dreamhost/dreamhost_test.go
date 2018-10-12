@@ -4,16 +4,47 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-var fakeDreamHostAPIKey = "asdf1234"
-var fakeDreamHostChallengeToken = "foobar"
-var fakeDreamHostKeyAuth = "w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI"
+var (
+	dreamHostLiveTest           bool
+	dreamHostAPIKey             string
+	fakeDreamHostAPIKey         = "asdf1234"
+	fakeDreamHostChallengeToken = "foobar"
+	fakeDreamHostKeyAuth        = "w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI"
+)
 
+func init() {
+	dreamHostAPIKey = os.Getenv("DREAMHOST_API_KEY")
+	if len(dreamHostAPIKey) > 0 {
+		dreamHostLiveTest = true
+	}
+}
+
+func restoreEnv() {
+	os.Setenv("DREAMHOST_API_KEY", dreamHostAPIKey)
+}
+
+func TestNewDNSProviderValidEnv(t *testing.T) {
+	defer restoreEnv()
+	os.Setenv("DREAMHOST_API_KEY", "somekey")
+
+	_, err := NewDNSProvider()
+	require.NoError(t, err)
+}
+
+func TestNewDNSProviderMissingCredErr(t *testing.T) {
+	defer restoreEnv()
+	os.Setenv("DREAMHOST_API_KEY", "")
+
+	_, err := NewDNSProvider()
+	assert.EqualError(t, err, "dreamhost: some credentials information are missing: DREAMHOST_API_KEY")
+}
 func TestDreamHostPresent(t *testing.T) {
 	mock := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodGet, r.Method, "method")

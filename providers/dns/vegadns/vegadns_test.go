@@ -103,14 +103,14 @@ var jsonMap = map[string]string{
 
 type muxCallback func() *http.ServeMux
 
-func TestVegaDNSNewDNSProviderFail(t *testing.T) {
+func TestNewDNSProvider_Fail(t *testing.T) {
 	os.Setenv("VEGADNS_URL", "")
 	_, err := NewDNSProvider()
 	assert.Error(t, err, "VEGADNS_URL env missing")
 }
 
-func TestVegaDNSTimeoutSuccess(t *testing.T) {
-	ts, err := startTestServer(vegaDNSMuxSuccess)
+func TestDNSProvider_TimeoutSuccess(t *testing.T) {
+	ts, err := startTestServer(muxSuccess)
 	require.NoError(t, err)
 
 	defer ts.Close()
@@ -132,16 +132,16 @@ func TestDNSProvider_Present(t *testing.T) {
 	}{
 		{
 			desc:     "Success",
-			callback: vegaDNSMuxSuccess,
+			callback: muxSuccess,
 		},
 		{
 			desc:          "FailToFindZone",
-			callback:      vegaDNSMuxFailToFindZone,
+			callback:      muxFailToFindZone,
 			expectedError: "vegadns: can't find Authoritative Zone for _acme-challenge.example.com. in Present: Unable to find auth zone for fqdn _acme-challenge.example.com",
 		},
 		{
 			desc:          "FailToCreateTXT",
-			callback:      vegaDNSMuxFailToCreateTXT,
+			callback:      muxFailToCreateTXT,
 			expectedError: "vegadns: Got bad answer from VegaDNS on CreateTXT. Code: 400. Message: ",
 		},
 	}
@@ -175,16 +175,16 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 	}{
 		{
 			desc:     "Success",
-			callback: vegaDNSMuxSuccess,
+			callback: muxSuccess,
 		},
 		{
 			desc:          "FailToFindZone",
-			callback:      vegaDNSMuxFailToFindZone,
+			callback:      muxFailToFindZone,
 			expectedError: "vegadns: can't find Authoritative Zone for _acme-challenge.example.com. in CleanUp: Unable to find auth zone for fqdn _acme-challenge.example.com",
 		},
 		{
 			desc:          "FailToGetRecordID",
-			callback:      vegaDNSMuxFailToGetRecordID,
+			callback:      muxFailToGetRecordID,
 			expectedError: "vegadns: couldn't get Record ID in CleanUp: Got bad answer from VegaDNS on GetRecordID. Code: 404. Message: ",
 		},
 	}
@@ -210,7 +210,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 	}
 }
 
-func vegaDNSMuxSuccess() *http.ServeMux {
+func muxSuccess() *http.ServeMux {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/1.0/token", func(w http.ResponseWriter, r *http.Request) {
@@ -268,7 +268,7 @@ func vegaDNSMuxSuccess() *http.ServeMux {
 	return mux
 }
 
-func vegaDNSMuxFailToFindZone() *http.ServeMux {
+func muxFailToFindZone() *http.ServeMux {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/1.0/token", func(w http.ResponseWriter, r *http.Request) {
@@ -288,7 +288,7 @@ func vegaDNSMuxFailToFindZone() *http.ServeMux {
 	return mux
 }
 
-func vegaDNSMuxFailToCreateTXT() *http.ServeMux {
+func muxFailToCreateTXT() *http.ServeMux {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/1.0/token", func(w http.ResponseWriter, r *http.Request) {
@@ -330,7 +330,7 @@ func vegaDNSMuxFailToCreateTXT() *http.ServeMux {
 	return mux
 }
 
-func vegaDNSMuxFailToGetRecordID() *http.ServeMux {
+func muxFailToGetRecordID() *http.ServeMux {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/1.0/token", func(w http.ResponseWriter, r *http.Request) {

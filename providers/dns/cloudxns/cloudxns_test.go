@@ -5,79 +5,169 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
-	cxLiveTest  bool
-	cxAPIKey    string
-	cxSecretKey string
-	cxDomain    string
+	liveTest         bool
+	envTestAPIKey    string
+	envTestSecretKey string
+	envTestDomain    string
 )
 
 func init() {
-	cxAPIKey = os.Getenv("CLOUDXNS_API_KEY")
-	cxSecretKey = os.Getenv("CLOUDXNS_SECRET_KEY")
-	cxDomain = os.Getenv("CLOUDXNS_DOMAIN")
-	if len(cxAPIKey) > 0 && len(cxSecretKey) > 0 && len(cxDomain) > 0 {
-		cxLiveTest = true
+	envTestAPIKey = os.Getenv("CLOUDXNS_API_KEY")
+	envTestSecretKey = os.Getenv("CLOUDXNS_SECRET_KEY")
+	envTestDomain = os.Getenv("CLOUDXNS_DOMAIN")
+
+	if len(envTestAPIKey) > 0 && len(envTestSecretKey) > 0 && len(envTestDomain) > 0 {
+		liveTest = true
 	}
 }
 
 func restoreEnv() {
-	os.Setenv("CLOUDXNS_API_KEY", cxAPIKey)
-	os.Setenv("CLOUDXNS_SECRET_KEY", cxSecretKey)
+	os.Setenv("CLOUDXNS_API_KEY", envTestAPIKey)
+	os.Setenv("CLOUDXNS_SECRET_KEY", envTestSecretKey)
 }
 
-func TestNewDNSProviderValid(t *testing.T) {
-	defer restoreEnv()
-	os.Setenv("CLOUDXNS_API_KEY", "")
-	os.Setenv("CLOUDXNS_SECRET_KEY", "")
+func TestNewDNSProvider(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		envVars  map[string]string
+		expected string
+	}{
+		{
+			desc: "success",
+			envVars: map[string]string{
+				"CLOUDXNS_API_KEY":    "123",
+				"CLOUDXNS_SECRET_KEY": "456",
+			},
+		},
+		{
+			desc: "missing credentials",
+			envVars: map[string]string{
+				"CLOUDXNS_API_KEY":    "",
+				"CLOUDXNS_SECRET_KEY": "",
+			},
+			expected: "CloudXNS: some credentials information are missing: CLOUDXNS_API_KEY,CLOUDXNS_SECRET_KEY",
+		},
+		{
+			desc: "missing API key",
+			envVars: map[string]string{
+				"CLOUDXNS_API_KEY":    "",
+				"CLOUDXNS_SECRET_KEY": "456",
+			},
+			expected: "CloudXNS: some credentials information are missing: CLOUDXNS_API_KEY",
+		},
+		{
+			desc: "missing secret key",
+			envVars: map[string]string{
+				"CLOUDXNS_API_KEY":    "123",
+				"CLOUDXNS_SECRET_KEY": "",
+			},
+			expected: "CloudXNS: some credentials information are missing: CLOUDXNS_SECRET_KEY",
+		},
+	}
 
-	_, err := NewDNSProviderCredentials("123", "123")
-	assert.NoError(t, err)
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer restoreEnv()
+			for key, value := range test.envVars {
+				if len(value) == 0 {
+					os.Unsetenv(key)
+				} else {
+					os.Setenv(key, value)
+				}
+			}
+
+			p, err := NewDNSProvider()
+
+			if len(test.expected) == 0 {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
 }
 
-func TestNewDNSProviderValidEnv(t *testing.T) {
-	defer restoreEnv()
-	os.Setenv("CLOUDXNS_API_KEY", "123")
-	os.Setenv("CLOUDXNS_SECRET_KEY", "123")
+func TestNewDNSProviderConfig(t *testing.T) {
+	testCases := []struct {
+		desc      string
+		apiKey    string
+		secretKey string
+		expected  string
+	}{
+		{
+			desc:      "success",
+			apiKey:    "123",
+			secretKey: "456",
+		},
+		{
+			desc:     "missing credentials",
+			expected: "CloudXNS: credentials missing: apiKey",
+		},
+		{
+			desc:      "missing api key",
+			secretKey: "456",
+			expected:  "CloudXNS: credentials missing: apiKey",
+		},
+		{
+			desc:     "missing secret key",
+			apiKey:   "123",
+			expected: "CloudXNS: credentials missing: secretKey",
+		},
+	}
 
-	_, err := NewDNSProvider()
-	assert.NoError(t, err)
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer restoreEnv()
+			os.Unsetenv("CLOUDXNS_API_KEY")
+			os.Unsetenv("CLOUDXNS_SECRET_KEY")
+
+			config := NewDefaultConfig()
+			config.APIKey = test.apiKey
+			config.SecretKey = test.secretKey
+
+			p, err := NewDNSProviderConfig(config)
+
+			if len(test.expected) == 0 {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
 }
 
-func TestNewDNSProviderMissingCredErr(t *testing.T) {
-	defer restoreEnv()
-	os.Setenv("CLOUDXNS_API_KEY", "")
-	os.Setenv("CLOUDXNS_SECRET_KEY", "")
-
-	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "CloudXNS: some credentials information are missing: CLOUDXNS_API_KEY,CLOUDXNS_SECRET_KEY")
-}
-
-func TestCloudXNSPresent(t *testing.T) {
-	if !cxLiveTest {
+func TestPresent(t *testing.T) {
+	if !liveTest {
 		t.Skip("skipping live test")
 	}
 
-	provider, err := NewDNSProviderCredentials(cxAPIKey, cxSecretKey)
-	assert.NoError(t, err)
+	provider, err := NewDNSProviderCredentials(envTestAPIKey, envTestSecretKey)
+	require.NoError(t, err)
 
-	err = provider.Present(cxDomain, "", "123d==")
-	assert.NoError(t, err)
+	err = provider.Present(envTestDomain, "", "123d==")
+	require.NoError(t, err)
 }
 
-func TestCloudXNSCleanUp(t *testing.T) {
-	if !cxLiveTest {
+func TestCleanUp(t *testing.T) {
+	if !liveTest {
 		t.Skip("skipping live test")
 	}
 
 	time.Sleep(time.Second * 2)
 
-	provider, err := NewDNSProviderCredentials(cxAPIKey, cxSecretKey)
-	assert.NoError(t, err)
+	provider, err := NewDNSProviderCredentials(envTestAPIKey, envTestSecretKey)
+	require.NoError(t, err)
 
-	err = provider.CleanUp(cxDomain, "", "123d==")
-	assert.NoError(t, err)
+	err = provider.CleanUp(envTestDomain, "", "123d==")
+	require.NoError(t, err)
 }

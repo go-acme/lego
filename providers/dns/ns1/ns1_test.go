@@ -10,21 +10,105 @@ import (
 )
 
 var (
-	liveTest bool
-	apiKey   string
-	domain   string
+	liveTest      bool
+	envTestAPIKey string
+	envTestDomain string
 )
 
 func init() {
-	apiKey = os.Getenv("NS1_API_KEY")
-	domain = os.Getenv("NS1_DOMAIN")
-	if len(apiKey) > 0 && len(domain) > 0 {
+	envTestAPIKey = os.Getenv("NS1_API_KEY")
+	envTestDomain = os.Getenv("NS1_DOMAIN")
+	if len(envTestAPIKey) > 0 && len(envTestDomain) > 0 {
 		liveTest = true
 	}
 }
 
 func restoreEnv() {
-	os.Setenv("NS1_API_KEY", apiKey)
+	os.Setenv("NS1_API_KEY", envTestAPIKey)
+}
+
+func TestNewDNSProvider(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		envVars  map[string]string
+		expected string
+	}{
+		{
+			desc: "success",
+			envVars: map[string]string{
+				"NS1_API_KEY": "123",
+			},
+		},
+		{
+			desc: "missing api key",
+			envVars: map[string]string{
+				"NS1_API_KEY": "",
+			},
+			expected: "ns1: some credentials information are missing: NS1_API_KEY",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer restoreEnv()
+			for key, value := range test.envVars {
+				if len(value) == 0 {
+					os.Unsetenv(key)
+				} else {
+					os.Setenv(key, value)
+				}
+			}
+
+			p, err := NewDNSProvider()
+
+			if len(test.expected) == 0 {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
+}
+
+func TestNewDNSProviderConfig(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		apiKey   string
+		expected string
+	}{
+		{
+			desc:   "success",
+			apiKey: "123",
+		},
+		{
+			desc:     "missing credentials",
+			expected: "ns1: credentials missing",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer restoreEnv()
+			os.Unsetenv("NS1_API_KEY")
+
+			config := NewDefaultConfig()
+			config.APIKey = test.apiKey
+
+			p, err := NewDNSProviderConfig(config)
+
+			if len(test.expected) == 0 {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
 }
 
 func Test_getAuthZone(t *testing.T) {
@@ -78,37 +162,16 @@ func Test_getAuthZone(t *testing.T) {
 	}
 }
 
-func TestNewDNSProviderValid(t *testing.T) {
-	defer restoreEnv()
-	os.Setenv("NS1_API_KEY", "")
-
-	config := NewDefaultConfig()
-	config.APIKey = "123"
-
-	_, err := NewDNSProviderConfig(config)
-	require.NoError(t, err)
-}
-
-func TestNewDNSProviderMissingCredErr(t *testing.T) {
-	defer restoreEnv()
-	os.Setenv("NS1_API_KEY", "")
-
-	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "ns1: some credentials information are missing: NS1_API_KEY")
-}
-
 func TestLivePresent(t *testing.T) {
 	if !liveTest {
 		t.Skip("skipping live test")
 	}
 
-	config := NewDefaultConfig()
-	config.APIKey = apiKey
-
-	provider, err := NewDNSProviderConfig(config)
+	restoreEnv()
+	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.Present(domain, "", "123d==")
+	err = provider.Present(envTestDomain, "", "123d==")
 	require.NoError(t, err)
 }
 
@@ -117,14 +180,12 @@ func TestLiveCleanUp(t *testing.T) {
 		t.Skip("skipping live test")
 	}
 
-	time.Sleep(time.Second * 1)
-
-	config := NewDefaultConfig()
-	config.APIKey = apiKey
-
-	provider, err := NewDNSProviderConfig(config)
+	restoreEnv()
+	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.CleanUp(domain, "", "123d==")
+	time.Sleep(1 * time.Second)
+
+	err = provider.CleanUp(envTestDomain, "", "123d==")
 	require.NoError(t, err)
 }

@@ -19,32 +19,34 @@ type (
 )
 
 var (
-	apiToken   string
-	isTestLive bool
+	liveTest        bool
+	envTestAPIToken string
 )
 
 func init() {
-	apiToken = os.Getenv("LINODE_TOKEN")
-	isTestLive = len(apiToken) != 0
+	envTestAPIToken = os.Getenv("LINODE_TOKEN")
+
+	liveTest = len(envTestAPIToken) != 0
 }
 
 func restoreEnv() {
-	os.Setenv("LINODE_TOKEN", apiToken)
+	os.Setenv("LINODE_TOKEN", envTestAPIToken)
 }
 
-func newMockServer(t *testing.T, responses MockResponseMap) *httptest.Server {
+func newMockServer(responses MockResponseMap) *httptest.Server {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Ensure that we support the requested action.
 		action := r.Method + ":" + r.URL.Path
 		resp, ok := responses[action]
 		if !ok {
-			require.FailNowf(t, "Unsupported mock", "action: %s", action)
+			http.Error(w, fmt.Sprintf("Unsupported mock action: %q", action), http.StatusInternalServerError)
+			return
 		}
 
 		rawResponse, err := json.Marshal(resp)
 		if err != nil {
-			msg := fmt.Sprintf("Failed to JSON encode response: %v", err)
-			require.FailNow(t, msg)
+			http.Error(w, fmt.Sprintf("Failed to JSON encode response: %v", err), http.StatusInternalServerError)
+			return
 		}
 
 		// Send the response.
@@ -69,36 +71,88 @@ func newMockServer(t *testing.T, responses MockResponseMap) *httptest.Server {
 	return srv
 }
 
-func TestNewDNSProviderWithEnv(t *testing.T) {
-	defer restoreEnv()
-	os.Setenv("LINODE_TOKEN", "testing")
+func TestNewDNSProvider(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		envVars  map[string]string
+		expected string
+	}{
+		{
+			desc: "success",
+			envVars: map[string]string{
+				"LINODE_TOKEN": "123",
+			},
+		},
+		{
+			desc: "missing api key",
+			envVars: map[string]string{
+				"LINODE_TOKEN": "",
+			},
+			expected: "linodev4: some credentials information are missing: LINODE_TOKEN",
+		},
+	}
 
-	_, err := NewDNSProvider()
-	assert.NoError(t, err)
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer restoreEnv()
+			for key, value := range test.envVars {
+				if len(value) == 0 {
+					os.Unsetenv(key)
+				} else {
+					os.Setenv(key, value)
+				}
+			}
+
+			p, err := NewDNSProvider()
+
+			if len(test.expected) == 0 {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
 }
 
-func TestNewDNSProviderWithoutEnv(t *testing.T) {
-	defer restoreEnv()
-	os.Setenv("LINODE_TOKEN", "")
+func TestNewDNSProviderConfig(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		apiKey   string
+		expected string
+	}{
+		{
+			desc:   "success",
+			apiKey: "123",
+		},
+		{
+			desc:     "missing credentials",
+			expected: "linodev4: Linode Access Token missing",
+		},
+	}
 
-	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "linodev4: some credentials information are missing: LINODE_TOKEN")
-}
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer restoreEnv()
+			os.Unsetenv("LINODE_TOKEN")
 
-func TestNewDNSProviderWithKey(t *testing.T) {
-	config := NewDefaultConfig()
-	config.Token = "testing"
+			config := NewDefaultConfig()
+			config.Token = test.apiKey
 
-	_, err := NewDNSProviderConfig(config)
-	assert.NoError(t, err)
-}
+			p, err := NewDNSProviderConfig(config)
 
-func TestNewDNSProviderWithoutKey(t *testing.T) {
-	config := NewDefaultConfig()
-	config.Token = ""
-
-	_, err := NewDNSProviderConfig(config)
-	assert.EqualError(t, err, "linodev4: Linode Access Token missing")
+			if len(test.expected) == 0 {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
 }
 
 func TestDNSProvider_Present(t *testing.T) {
@@ -175,11 +229,11 @@ func TestDNSProvider_Present(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 
-			mockSrv := newMockServer(t, test.mockResponses)
-			defer mockSrv.Close()
+			server := newMockServer(test.mockResponses)
+			defer server.Close()
 
 			assert.NotNil(t, p.client)
-			p.client.SetBaseURL(mockSrv.URL)
+			p.client.SetBaseURL(server.URL)
 
 			err = p.Present(domain, "", keyAuth)
 			if len(test.expectedError) == 0 {
@@ -189,13 +243,6 @@ func TestDNSProvider_Present(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestDNSProvider_PresentLive(t *testing.T) {
-	if !isTestLive {
-		t.Skip("Skipping live test")
-	}
-	// TODO implement this test
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
@@ -298,10 +345,10 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			mockSrv := newMockServer(t, test.mockResponses)
-			defer mockSrv.Close()
+			server := newMockServer(test.mockResponses)
+			defer server.Close()
 
-			p.client.SetBaseURL(mockSrv.URL)
+			p.client.SetBaseURL(server.URL)
 
 			err = p.CleanUp(domain, "", keyAuth)
 			if len(test.expectedError) == 0 {
@@ -311,4 +358,18 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestLivePresent(t *testing.T) {
+	if !liveTest {
+		t.Skip("Skipping live test")
+	}
+	// TODO implement this test
+}
+
+func TestLiveCleanUp(t *testing.T) {
+	if !liveTest {
+		t.Skip("Skipping live test")
+	}
+	// TODO implement this test
 }

@@ -31,7 +31,9 @@ func TestChangeResourceRecordSets(t *testing.T) {
 	server := runTestServer(responseBody, http.StatusOK)
 	defer server.Close()
 
-	client := NewClient("", "")
+	client, err := NewClient("A", "B")
+	require.NoError(t, err)
+
 	client.BaseURL = server.URL
 
 	res, err := client.ChangeResourceRecordSets("example.com", ChangeResourceRecordSetsRequest{})
@@ -83,7 +85,9 @@ func TestChangeResourceRecordSetsErrors(t *testing.T) {
 			server := runTestServer(test.responseBody, test.statusCode)
 			defer server.Close()
 
-			client := NewClient("", "")
+			client, err := NewClient("A", "B")
+			require.NoError(t, err)
+
 			client.BaseURL = server.URL
 
 			res, err := client.ChangeResourceRecordSets("example.com", ChangeResourceRecordSetsRequest{})
@@ -107,7 +111,9 @@ func TestGetChange(t *testing.T) {
 	server := runTestServer(responseBody, http.StatusOK)
 	defer server.Close()
 
-	client := NewClient("", "")
+	client, err := NewClient("A", "B")
+	require.NoError(t, err)
+
 	client.BaseURL = server.URL
 
 	res, err := client.GetChange("12345")
@@ -159,7 +165,9 @@ func TestGetChangeErrors(t *testing.T) {
 			server := runTestServer(test.responseBody, test.statusCode)
 			defer server.Close()
 
-			client := NewClient("", "")
+			client, err := NewClient("A", "B")
+			require.NoError(t, err)
+
 			client.BaseURL = server.URL
 
 			res, err := client.GetChange("12345")

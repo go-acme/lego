@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/xenolf/lego/providers/dns/exoscale"
 )
 
@@ -29,7 +30,7 @@ func TestKnownDNSProviderSuccess(t *testing.T) {
 	os.Setenv("EXOSCALE_API_SECRET", "123")
 
 	provider, err := NewDNSChallengeProviderByName("exoscale")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.NotNil(t, provider)
 
 	assert.IsType(t, &exoscale.DNSProvider{}, provider, "Not loaded correct DNS provider")

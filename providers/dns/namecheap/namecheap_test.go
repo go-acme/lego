@@ -13,9 +13,9 @@ import (
 )
 
 var (
-	fakeUser     = "foo"
-	fakeKey      = "bar"
-	fakeClientIP = "10.0.0.1"
+	envTestUser     = "foo"
+	envTestKey      = "bar"
+	envTestClientIP = "10.0.0.1"
 
 	tlds = map[string]string{
 		"com.au": "com.au",
@@ -28,24 +28,13 @@ var (
 	}
 )
 
-func TestGetHosts(t *testing.T) {
+func TestDNSProvider_getHosts(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
-			mock := httptest.NewServer(http.HandlerFunc(
-				func(w http.ResponseWriter, r *http.Request) {
-					mockServer(&test, t, w, r)
-				}))
+			mock := httptest.NewServer(mockServer(&test, t))
 			defer mock.Close()
 
-			config := NewDefaultConfig()
-			config.BaseURL = mock.URL
-			config.APIUser = fakeUser
-			config.APIKey = fakeKey
-			config.ClientIP = fakeClientIP
-			config.HTTPClient = &http.Client{Timeout: 60 * time.Second}
-
-			provider, err := NewDNSProviderConfig(config)
-			require.NoError(t, err)
+			provider := mockDNSProvider(mock.URL)
 
 			ch, err := newChallenge(test.domain, "", tlds)
 			require.NoError(t, err)
@@ -80,13 +69,10 @@ func TestGetHosts(t *testing.T) {
 	}
 }
 
-func TestSetHosts(t *testing.T) {
+func TestDNSProvider_setHosts(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
-			mock := httptest.NewServer(http.HandlerFunc(
-				func(w http.ResponseWriter, r *http.Request) {
-					mockServer(&test, t, w, r)
-				}))
+			mock := httptest.NewServer(mockServer(&test, t))
 			defer mock.Close()
 
 			prov := mockDNSProvider(mock.URL)
@@ -110,13 +96,10 @@ func TestSetHosts(t *testing.T) {
 	}
 }
 
-func TestPresent(t *testing.T) {
+func TestDNSProvider_Present(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
-			mock := httptest.NewServer(http.HandlerFunc(
-				func(w http.ResponseWriter, r *http.Request) {
-					mockServer(&test, t, w, r)
-				}))
+			mock := httptest.NewServer(mockServer(&test, t))
 			defer mock.Close()
 
 			prov := mockDNSProvider(mock.URL)
@@ -130,13 +113,10 @@ func TestPresent(t *testing.T) {
 	}
 }
 
-func TestCleanUp(t *testing.T) {
+func TestDNSProvider_CleanUp(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
-			mock := httptest.NewServer(http.HandlerFunc(
-				func(w http.ResponseWriter, r *http.Request) {
-					mockServer(&test, t, w, r)
-				}))
+			mock := httptest.NewServer(mockServer(&test, t))
 			defer mock.Close()
 
 			prov := mockDNSProvider(mock.URL)
@@ -210,60 +190,61 @@ func assertEq(t *testing.T, variable, got, want string) {
 func assertHdr(tc *testCase, t *testing.T, values *url.Values) {
 	ch, _ := newChallenge(tc.domain, "", tlds)
 
-	assertEq(t, "ApiUser", values.Get("ApiUser"), fakeUser)
-	assertEq(t, "ApiKey", values.Get("ApiKey"), fakeKey)
-	assertEq(t, "UserName", values.Get("UserName"), fakeUser)
-	assertEq(t, "ClientIp", values.Get("ClientIp"), fakeClientIP)
+	assertEq(t, "ApiUser", values.Get("ApiUser"), envTestUser)
+	assertEq(t, "ApiKey", values.Get("ApiKey"), envTestKey)
+	assertEq(t, "UserName", values.Get("UserName"), envTestUser)
+	assertEq(t, "ClientIp", values.Get("ClientIp"), envTestClientIP)
 	assertEq(t, "SLD", values.Get("SLD"), ch.sld)
 	assertEq(t, "TLD", values.Get("TLD"), ch.tld)
 }
 
-func mockServer(tc *testCase, t *testing.T, w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
+func mockServer(tc *testCase, t *testing.T) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			values := r.URL.Query()
+			cmd := values.Get("Command")
+			switch cmd {
+			case "namecheap.domains.dns.getHosts":
+				assertHdr(tc, t, &values)
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprintf(w, tc.getHostsResponse)
+			case "namecheap.domains.getTldList":
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprintf(w, responseGetTlds)
+			default:
+				t.Errorf("Unexpected GET command: %s", cmd)
+			}
 
-	case http.MethodGet:
-		values := r.URL.Query()
-		cmd := values.Get("Command")
-		switch cmd {
-		case "namecheap.domains.dns.getHosts":
-			assertHdr(tc, t, &values)
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, tc.getHostsResponse)
-		case "namecheap.domains.getTldList":
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, responseGetTlds)
+		case http.MethodPost:
+			err := r.ParseForm()
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			values := r.Form
+			cmd := values.Get("Command")
+			switch cmd {
+			case "namecheap.domains.dns.setHosts":
+				assertHdr(tc, t, &values)
+				w.WriteHeader(http.StatusOK)
+				fmt.Fprint(w, tc.setHostsResponse)
+			default:
+				t.Errorf("Unexpected POST command: %s", cmd)
+			}
+
 		default:
-			t.Errorf("Unexpected GET command: %s", cmd)
+			t.Errorf("Unexpected http method: %s", r.Method)
 		}
-
-	case http.MethodPost:
-		err := r.ParseForm()
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		values := r.Form
-		cmd := values.Get("Command")
-		switch cmd {
-		case "namecheap.domains.dns.setHosts":
-			assertHdr(tc, t, &values)
-			w.WriteHeader(http.StatusOK)
-			fmt.Fprint(w, tc.setHostsResponse)
-		default:
-			t.Errorf("Unexpected POST command: %s", cmd)
-		}
-
-	default:
-		t.Errorf("Unexpected http method: %s", r.Method)
-	}
+	})
 }
 
 func mockDNSProvider(url string) *DNSProvider {
 	config := NewDefaultConfig()
 	config.BaseURL = url
-	config.APIUser = fakeUser
-	config.APIKey = fakeKey
-	config.ClientIP = fakeClientIP
+	config.APIUser = envTestUser
+	config.APIKey = envTestKey
+	config.ClientIP = envTestClientIP
 	config.HTTPClient = &http.Client{Timeout: 60 * time.Second}
 
 	provider, err := NewDNSProviderConfig(config)

@@ -17,6 +17,7 @@ var (
 func init() {
 	envTestAPIUser = os.Getenv("GLESYS_API_USER")
 	envTestAPIKey = os.Getenv("GLESYS_API_KEY")
+	envTestDomain = os.Getenv("GLESYS_DOMAIN")
 
 	if len(envTestAPIUser) > 0 && len(envTestAPIKey) > 0 && len(envTestDomain) > 0 {
 		liveTest = true

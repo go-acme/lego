@@ -106,7 +106,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			defer restoreEnv()
 			os.Unsetenv("DO_AUTH_TOKEN")
-			os.Unsetenv("ALICLOUD_SECRET_KEY")
 
 			config := NewDefaultConfig()
 			config.AuthToken = test.authToken

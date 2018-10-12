@@ -10,39 +10,37 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var fakeOTCUserName = "test"
-var fakeOTCPassword = "test"
-var fakeOTCDomainName = "test"
-var fakeOTCProjectName = "test"
 var fakeOTCToken = "62244bc21da68d03ebac94e6636ff01f"
 
-// DNSMock mock
-type DNSMock struct {
+// DNSServerMock mock
+type DNSServerMock struct {
 	t      *testing.T
-	Server *httptest.Server
+	server *httptest.Server
 	Mux    *http.ServeMux
 }
 
-// NewDNSMock create a new DNSMock
-func NewDNSMock(t *testing.T) *DNSMock {
-	return &DNSMock{
-		t: t,
+// NewDNSServerMock create a new DNSServerMock
+func NewDNSServerMock(t *testing.T) *DNSServerMock {
+	mux := http.NewServeMux()
+
+	return &DNSServerMock{
+		t:      t,
+		server: httptest.NewServer(mux),
+		Mux:    mux,
 	}
 }
 
-// Setup creates the mock server
-func (m *DNSMock) Setup() {
-	m.Mux = http.NewServeMux()
-	m.Server = httptest.NewServer(m.Mux)
+func (m *DNSServerMock) GetServerURL() string {
+	return m.server.URL
 }
 
 // ShutdownServer creates the mock server
-func (m *DNSMock) ShutdownServer() {
-	m.Server.Close()
+func (m *DNSServerMock) ShutdownServer() {
+	m.server.Close()
 }
 
 // HandleAuthSuccessfully Handle auth successfully
-func (m *DNSMock) HandleAuthSuccessfully() {
+func (m *DNSServerMock) HandleAuthSuccessfully() {
 	m.Mux.HandleFunc("/v3/auth/token", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("X-Subject-Token", fakeOTCToken)
 
@@ -64,99 +62,101 @@ func (m *DNSMock) HandleAuthSuccessfully() {
 			]
 		      }
 		    ]
-		  }}`, m.Server.URL)
+		  }}`, m.server.URL)
 	})
 }
 
 // HandleListZonesSuccessfully Handle list zones successfully
-func (m *DNSMock) HandleListZonesSuccessfully() {
+func (m *DNSServerMock) HandleListZonesSuccessfully() {
 	m.Mux.HandleFunc("/v2/zones", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(m.t, r.Method, http.MethodGet)
+		assert.Equal(m.t, r.URL.Path, "/v2/zones")
+		assert.Equal(m.t, r.URL.RawQuery, "name=example.com.")
+		assert.Equal(m.t, r.Header.Get("Content-Type"), "application/json")
+
 		fmt.Fprintf(w, `{
 		  "zones":[{
 		    "id":"123123"
 		  }]}
 		`)
 
-		assert.Equal(m.t, r.Method, http.MethodGet)
-		assert.Equal(m.t, r.URL.Path, "/v2/zones")
-		assert.Equal(m.t, r.URL.RawQuery, "name=example.com.")
-		assert.Equal(m.t, r.Header.Get("Content-Type"), "application/json")
 	})
 }
 
 // HandleListZonesEmpty Handle list zones empty
-func (m *DNSMock) HandleListZonesEmpty() {
+func (m *DNSServerMock) HandleListZonesEmpty() {
 	m.Mux.HandleFunc("/v2/zones", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, `{
-		  "zones":[
-		  ]}
-		`)
-
 		assert.Equal(m.t, r.Method, http.MethodGet)
 		assert.Equal(m.t, r.URL.Path, "/v2/zones")
 		assert.Equal(m.t, r.URL.RawQuery, "name=example.com.")
 		assert.Equal(m.t, r.Header.Get("Content-Type"), "application/json")
+
+		fmt.Fprintf(w, `{
+		  "zones":[
+		  ]}
+		`)
 	})
 }
 
 // HandleDeleteRecordsetsSuccessfully Handle delete recordsets successfully
-func (m *DNSMock) HandleDeleteRecordsetsSuccessfully() {
+func (m *DNSServerMock) HandleDeleteRecordsetsSuccessfully() {
 	m.Mux.HandleFunc("/v2/zones/123123/recordsets/321321", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(m.t, r.Method, http.MethodDelete)
+		assert.Equal(m.t, r.URL.Path, "/v2/zones/123123/recordsets/321321")
+		assert.Equal(m.t, r.Header.Get("Content-Type"), "application/json")
+
 		fmt.Fprintf(w, `{
 		  "zones":[{
 		    "id":"123123"
 		  }]}
 		`)
-
-		assert.Equal(m.t, r.Method, http.MethodDelete)
-		assert.Equal(m.t, r.URL.Path, "/v2/zones/123123/recordsets/321321")
-		assert.Equal(m.t, r.Header.Get("Content-Type"), "application/json")
 	})
 }
 
 // HandleListRecordsetsEmpty Handle list recordsets empty
-func (m *DNSMock) HandleListRecordsetsEmpty() {
+func (m *DNSServerMock) HandleListRecordsetsEmpty() {
 	m.Mux.HandleFunc("/v2/zones/123123/recordsets", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(m.t, r.URL.Path, "/v2/zones/123123/recordsets")
+		assert.Equal(m.t, r.URL.RawQuery, "type=TXT&name=_acme-challenge.example.com.")
+
 		fmt.Fprintf(w, `{
 		  "recordsets":[
 		  ]}
 		`)
-
-		assert.Equal(m.t, r.URL.Path, "/v2/zones/123123/recordsets")
-		assert.Equal(m.t, r.URL.RawQuery, "type=TXT&name=_acme-challenge.example.com.")
 	})
 }
 
 // HandleListRecordsetsSuccessfully Handle list recordsets successfully
-func (m *DNSMock) HandleListRecordsetsSuccessfully() {
+func (m *DNSServerMock) HandleListRecordsetsSuccessfully() {
 	m.Mux.HandleFunc("/v2/zones/123123/recordsets", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
+			assert.Equal(m.t, r.URL.Path, "/v2/zones/123123/recordsets")
+			assert.Equal(m.t, r.URL.RawQuery, "type=TXT&name=_acme-challenge.example.com.")
+			assert.Equal(m.t, r.Header.Get("Content-Type"), "application/json")
+
 			fmt.Fprintf(w, `{
 			  "recordsets":[{
 			    "id":"321321"
 			  }]}
 			`)
+			return
+		}
 
-			assert.Equal(m.t, r.URL.Path, "/v2/zones/123123/recordsets")
-			assert.Equal(m.t, r.URL.RawQuery, "type=TXT&name=_acme-challenge.example.com.")
+		if r.Method == http.MethodPost {
+			assert.Equal(m.t, r.Header.Get("Content-Type"), "application/json")
 
-		} else if r.Method == http.MethodPost {
 			body, err := ioutil.ReadAll(r.Body)
-
 			assert.Nil(m.t, err)
 			exceptedString := "{\"name\":\"_acme-challenge.example.com.\",\"description\":\"Added TXT record for ACME dns-01 challenge using lego client\",\"type\":\"TXT\",\"ttl\":300,\"records\":[\"\\\"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI\\\"\"]}"
 			assert.Equal(m.t, string(body), exceptedString)
-
 			fmt.Fprintf(w, `{
 			  "recordsets":[{
                             "id":"321321"
 			  }]}
 			`)
-
-		} else {
-			m.t.Errorf("Expected method to be 'GET' or 'POST' but got '%s'", r.Method)
+			return
 		}
 
-		assert.Equal(m.t, r.Header.Get("Content-Type"), "application/json")
+		http.Error(w, fmt.Sprintf("Expected method to be 'GET' or 'POST' but got '%s'", r.Method), http.StatusBadRequest)
 	})
 }

@@ -285,16 +285,11 @@ func TestLiveCleanUp(t *testing.T) {
 		t.Skip("skipping live test")
 	}
 
-	time.Sleep(time.Second * 1)
-
-	config := NewDefaultConfig()
-	config.Host = envTestHost
-	config.ClientToken = envTestClientToken
-	config.ClientSecret = envTestClientSecret
-	config.AccessToken = envTestAccessToken
-
-	provider, err := NewDNSProviderConfig(config)
+	restoreEnv()
+	provider, err := NewDNSProvider()
 	require.NoError(t, err)
+
+	time.Sleep(1 * time.Second)
 
 	err = provider.CleanUp(envTestDomain, "", "123d==")
 	require.NoError(t, err)

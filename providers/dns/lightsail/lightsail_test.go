@@ -16,17 +16,20 @@ var (
 	envTestSecret string
 	envTestKey    string
 	envTestZone   string
+	envTestRegion string
 )
 
 func init() {
 	envTestKey = os.Getenv("AWS_ACCESS_KEY_ID")
 	envTestSecret = os.Getenv("AWS_SECRET_ACCESS_KEY")
+	envTestSecret = os.Getenv("AWS_REGION")
+	envTestSecret = os.Getenv("AWS_HOSTED_ZONE_ID")
 }
 
 func restoreEnv() {
 	os.Setenv("AWS_ACCESS_KEY_ID", envTestKey)
 	os.Setenv("AWS_SECRET_ACCESS_KEY", envTestSecret)
-	os.Setenv("AWS_REGION", "us-east-1")
+	os.Setenv("AWS_REGION", envTestRegion)
 	os.Setenv("AWS_HOSTED_ZONE_ID", envTestZone)
 }
 

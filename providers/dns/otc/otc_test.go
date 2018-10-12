@@ -8,49 +8,47 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type TestSuite struct {
+type OTCSuite struct {
 	suite.Suite
-	Mock *DNSMock
+	Mock *DNSServerMock
 }
 
-func (s *TestSuite) TearDownSuite() {
-	s.Mock.ShutdownServer()
-}
-
-func (s *TestSuite) SetupTest() {
-	s.Mock = NewDNSMock(s.T())
-	s.Mock.Setup()
+func (s *OTCSuite) SetupTest() {
+	s.Mock = NewDNSServerMock(s.T())
 	s.Mock.HandleAuthSuccessfully()
 }
 
-func TestTestSuite(t *testing.T) {
-	suite.Run(t, new(TestSuite))
+func (s *OTCSuite) TearDownSuite() {
+	s.Mock.ShutdownServer()
 }
 
-func (s *TestSuite) createDNSProvider() (*DNSProvider, error) {
-	url := fmt.Sprintf("%s/v3/auth/token", s.Mock.Server.URL)
+func TestTestSuite(t *testing.T) {
+	suite.Run(t, new(OTCSuite))
+}
 
+func (s *OTCSuite) createDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
-	config.UserName = fakeOTCUserName
-	config.Password = fakeOTCPassword
-	config.DomainName = fakeOTCDomainName
-	config.ProjectName = fakeOTCProjectName
-	config.IdentityEndpoint = url
+	config.UserName = "test"
+	config.Password = "test"
+	config.DomainName = "test"
+	config.ProjectName = "test"
+	config.IdentityEndpoint = fmt.Sprintf("%s/v3/auth/token", s.Mock.GetServerURL())
 
 	return NewDNSProviderConfig(config)
 }
 
-func (s *TestSuite) TestLogin() {
+func (s *OTCSuite) TestLogin() {
 	provider, err := s.createDNSProvider()
 	s.Require().NoError(err)
 
 	err = provider.loginRequest()
 	s.Require().NoError(err)
-	s.Equal(provider.baseURL, fmt.Sprintf("%s/v2", s.Mock.Server.URL))
+
+	s.Equal(provider.baseURL, fmt.Sprintf("%s/v2", s.Mock.GetServerURL()))
 	s.Equal(fakeOTCToken, provider.token)
 }
 
-func (s *TestSuite) TestLoginEnv() {
+func (s *OTCSuite) TestLoginEnv() {
 	defer os.Clearenv()
 
 	os.Setenv("OTC_DOMAIN_NAME", "unittest1")
@@ -61,6 +59,7 @@ func (s *TestSuite) TestLoginEnv() {
 
 	provider, err := NewDNSProvider()
 	s.Require().NoError(err)
+
 	s.Equal(provider.config.DomainName, "unittest1")
 	s.Equal(provider.config.UserName, "unittest2")
 	s.Equal(provider.config.Password, "unittest3")
@@ -71,17 +70,18 @@ func (s *TestSuite) TestLoginEnv() {
 
 	provider, err = NewDNSProvider()
 	s.Require().NoError(err)
+
 	s.Equal(provider.config.IdentityEndpoint, "https://iam.eu-de.otc.t-systems.com:443/v3/auth/tokens")
 }
 
-func (s *TestSuite) TestLoginEnvEmpty() {
+func (s *OTCSuite) TestLoginEnvEmpty() {
 	defer os.Clearenv()
 
 	_, err := NewDNSProvider()
 	s.EqualError(err, "otc: some credentials information are missing: OTC_DOMAIN_NAME,OTC_USER_NAME,OTC_PASSWORD,OTC_PROJECT_NAME")
 }
 
-func (s *TestSuite) TestDNSProvider_Present() {
+func (s *OTCSuite) TestDNSProvider_Present() {
 	s.Mock.HandleListZonesSuccessfully()
 	s.Mock.HandleListRecordsetsSuccessfully()
 
@@ -92,7 +92,7 @@ func (s *TestSuite) TestDNSProvider_Present() {
 	s.Require().NoError(err)
 }
 
-func (s *TestSuite) TestDNSProvider_Present_EmptyZone() {
+func (s *OTCSuite) TestDNSProvider_Present_EmptyZone() {
 	s.Mock.HandleListZonesEmpty()
 	s.Mock.HandleListRecordsetsSuccessfully()
 
@@ -103,7 +103,7 @@ func (s *TestSuite) TestDNSProvider_Present_EmptyZone() {
 	s.NotNil(err)
 }
 
-func (s *TestSuite) TestDNSProvider_CleanUp() {
+func (s *OTCSuite) TestDNSProvider_CleanUp() {
 	s.Mock.HandleListZonesSuccessfully()
 	s.Mock.HandleListRecordsetsSuccessfully()
 	s.Mock.HandleDeleteRecordsetsSuccessfully()
@@ -115,7 +115,7 @@ func (s *TestSuite) TestDNSProvider_CleanUp() {
 	s.Require().NoError(err)
 }
 
-func (s *TestSuite) TestDNSProvider_CleanUp_EmptyRecordset() {
+func (s *OTCSuite) TestDNSProvider_CleanUp_EmptyRecordset() {
 	s.Mock.HandleListZonesSuccessfully()
 	s.Mock.HandleListRecordsetsEmpty()
 

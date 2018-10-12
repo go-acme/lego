@@ -146,35 +146,29 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}
 }
 
-func TestPresent(t *testing.T) {
+func TestLivePresent(t *testing.T) {
 	if !liveTest {
 		t.Skip("skipping live test")
 	}
 
-	config := NewDefaultConfig()
-	config.AuthEmail = envTestEmail
-	config.AuthKey = envTestAPIKey
-
-	provider, err := NewDNSProviderConfig(config)
+	restoreEnv()
+	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
 	err = provider.Present(envTestDomain, "", "123d==")
 	require.NoError(t, err)
 }
 
-func TestCleanUp(t *testing.T) {
+func TestLiveCleanUp(t *testing.T) {
 	if !liveTest {
 		t.Skip("skipping live test")
 	}
 
-	time.Sleep(time.Second * 2)
-
-	config := NewDefaultConfig()
-	config.AuthEmail = envTestEmail
-	config.AuthKey = envTestAPIKey
-
-	provider, err := NewDNSProviderConfig(config)
+	restoreEnv()
+	provider, err := NewDNSProvider()
 	require.NoError(t, err)
+
+	time.Sleep(2 * time.Second)
 
 	err = provider.CleanUp(envTestDomain, "", "123d==")
 	require.NoError(t, err)

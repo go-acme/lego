@@ -19,6 +19,7 @@ func init() {
 	envTestAPIKey = os.Getenv("HOSTINGDE_API_KEY")
 	envTestZone = os.Getenv("HOSTINGDE_ZONE_NAME")
 	envTestDomain = os.Getenv("HOSTINGDE_DOMAIN")
+
 	if len(envTestZone) > 0 && len(envTestAPIKey) > 0 && len(envTestDomain) > 0 {
 		liveTest = true
 	}

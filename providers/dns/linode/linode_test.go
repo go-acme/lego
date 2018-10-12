@@ -29,18 +29,18 @@ type (
 )
 
 var (
-	apiKey   string
-	liveTest bool
+	envTestAPIKey string
+	liveTest      bool
 )
 
 func init() {
-	apiKey = os.Getenv("LINODE_API_KEY")
+	envTestAPIKey = os.Getenv("LINODE_API_KEY")
 
-	liveTest = len(apiKey) != 0
+	liveTest = len(envTestAPIKey) != 0
 }
 
 func restoreEnv() {
-	os.Setenv("LINODE_API_KEY", apiKey)
+	os.Setenv("LINODE_API_KEY", envTestAPIKey)
 }
 
 func newMockServer(responses MockResponseMap) *httptest.Server {

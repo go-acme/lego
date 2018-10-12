@@ -217,7 +217,7 @@ func TestValidate(t *testing.T) {
 
 			err := validate(j, "example.com", ts.URL, challenge{Type: "http-01", Token: "token"})
 			if test.want == "" {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 			} else {
 				assert.Error(t, err)
 				assert.Contains(t, err.Error(), test.want)
@@ -262,7 +262,7 @@ func TestGetChallenges(t *testing.T) {
 	require.NoError(t, err, "Could not create client")
 
 	_, err = client.createOrderForIdentifiers([]string{"example.com"})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestResolveAccountByKey(t *testing.T) {

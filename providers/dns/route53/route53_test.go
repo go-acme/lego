@@ -15,39 +15,39 @@ import (
 )
 
 var (
-	r53AwsSecretAccessKey string
-	r53AwsAccessKeyID     string
-	r53AwsRegion          string
-	r53AwsHostedZoneID    string
+	envTestAwsSecretAccessKey string
+	envTestAwsAccessKeyID     string
+	envTestAwsRegion          string
+	envTestAwsHostedZoneID    string
 
-	r53AwsMaxRetries         string
-	r53AwsTTL                string
-	r53AwsPropagationTimeout string
-	r53AwsPollingInterval    string
+	envTestAwsMaxRetries         string
+	envTestAwsTTL                string
+	envTestAwsPropagationTimeout string
+	envTestAwsPollingInterval    string
 )
 
 func init() {
-	r53AwsAccessKeyID = os.Getenv("AWS_ACCESS_KEY_ID")
-	r53AwsSecretAccessKey = os.Getenv("AWS_SECRET_ACCESS_KEY")
-	r53AwsRegion = os.Getenv("AWS_REGION")
-	r53AwsHostedZoneID = os.Getenv("AWS_HOSTED_ZONE_ID")
+	envTestAwsAccessKeyID = os.Getenv("AWS_ACCESS_KEY_ID")
+	envTestAwsSecretAccessKey = os.Getenv("AWS_SECRET_ACCESS_KEY")
+	envTestAwsRegion = os.Getenv("AWS_REGION")
+	envTestAwsHostedZoneID = os.Getenv("AWS_HOSTED_ZONE_ID")
 
-	r53AwsMaxRetries = os.Getenv("AWS_MAX_RETRIES")
-	r53AwsTTL = os.Getenv("AWS_TTL")
-	r53AwsPropagationTimeout = os.Getenv("AWS_PROPAGATION_TIMEOUT")
-	r53AwsPollingInterval = os.Getenv("AWS_POLLING_INTERVAL")
+	envTestAwsMaxRetries = os.Getenv("AWS_MAX_RETRIES")
+	envTestAwsTTL = os.Getenv("AWS_TTL")
+	envTestAwsPropagationTimeout = os.Getenv("AWS_PROPAGATION_TIMEOUT")
+	envTestAwsPollingInterval = os.Getenv("AWS_POLLING_INTERVAL")
 }
 
 func restoreEnv() {
-	os.Setenv("AWS_ACCESS_KEY_ID", r53AwsAccessKeyID)
-	os.Setenv("AWS_SECRET_ACCESS_KEY", r53AwsSecretAccessKey)
-	os.Setenv("AWS_REGION", r53AwsRegion)
-	os.Setenv("AWS_HOSTED_ZONE_ID", r53AwsHostedZoneID)
+	os.Setenv("AWS_ACCESS_KEY_ID", envTestAwsAccessKeyID)
+	os.Setenv("AWS_SECRET_ACCESS_KEY", envTestAwsSecretAccessKey)
+	os.Setenv("AWS_REGION", envTestAwsRegion)
+	os.Setenv("AWS_HOSTED_ZONE_ID", envTestAwsHostedZoneID)
 
-	os.Setenv("AWS_MAX_RETRIES", r53AwsMaxRetries)
-	os.Setenv("AWS_TTL", r53AwsTTL)
-	os.Setenv("AWS_PROPAGATION_TIMEOUT", r53AwsPropagationTimeout)
-	os.Setenv("AWS_POLLING_INTERVAL", r53AwsPollingInterval)
+	os.Setenv("AWS_MAX_RETRIES", envTestAwsMaxRetries)
+	os.Setenv("AWS_TTL", envTestAwsTTL)
+	os.Setenv("AWS_PROPAGATION_TIMEOUT", envTestAwsPropagationTimeout)
+	os.Setenv("AWS_POLLING_INTERVAL", envTestAwsPollingInterval)
 }
 
 func cleanEnv() {
@@ -62,7 +62,7 @@ func cleanEnv() {
 	os.Unsetenv("AWS_POLLING_INTERVAL")
 }
 
-func makeRoute53Provider(ts *httptest.Server) *DNSProvider {
+func makeTestProvider(ts *httptest.Server) *DNSProvider {
 	config := &aws.Config{
 		Credentials: credentials.NewStaticCredentials("abc", "123", " "),
 		Endpoint:    aws.String(ts.URL),
@@ -93,7 +93,7 @@ func Test_loadCredentials_FromEnv(t *testing.T) {
 	require.NoError(t, err)
 
 	value, err := sess.Config.Credentials.Get()
-	assert.NoError(t, err, "Expected credentials to be set from environment")
+	require.NoError(t, err, "Expected credentials to be set from environment")
 
 	expected := credentials.Value{
 		AccessKeyID:     "123",
@@ -123,10 +123,10 @@ func Test_getHostedZoneID_FromEnv(t *testing.T) {
 	os.Setenv("AWS_HOSTED_ZONE_ID", expectedZoneID)
 
 	provider, err := NewDNSProvider()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	hostedZoneID, err := provider.getHostedZoneID("whatever")
-	assert.NoError(t, err, "HostedZoneID")
+	require.NoError(t, err, "HostedZoneID")
 
 	assert.Equal(t, expectedZoneID, hostedZoneID)
 }
@@ -181,7 +181,7 @@ func TestNewDefaultConfig(t *testing.T) {
 	}
 }
 
-func TestRoute53Present(t *testing.T) {
+func TestDNSProvider_Present(t *testing.T) {
 	mockResponses := MockResponseMap{
 		"/2013-04-01/hostedzonesbyname":         {StatusCode: 200, Body: ListHostedZonesByNameResponse},
 		"/2013-04-01/hostedzone/ABCDEFG/rrset/": {StatusCode: 200, Body: ChangeResourceRecordSetsResponse},
@@ -195,11 +195,11 @@ func TestRoute53Present(t *testing.T) {
 	ts := newMockServer(t, mockResponses)
 	defer ts.Close()
 
-	provider := makeRoute53Provider(ts)
+	provider := makeTestProvider(ts)
 
 	domain := "example.com"
 	keyAuth := "123456d=="
 
 	err := provider.Present(domain, "", keyAuth)
-	assert.NoError(t, err, "Expected Present to return no error")
+	require.NoError(t, err, "Expected Present to return no error")
 }

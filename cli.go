@@ -87,7 +87,7 @@ func main() {
 		{
 			Name:   "dnshelp",
 			Usage:  "Shows additional help for the --dns global option",
-			Action: dnshelp,
+			Action: dnsHelp,
 		},
 	}
 
@@ -187,7 +187,7 @@ func main() {
 	}
 }
 
-func dnshelp(c *cli.Context) error {
+func dnsHelp(_ *cli.Context) error {
 	fmt.Printf(
 		`Credentials for DNS providers must be passed through environment variables.
 

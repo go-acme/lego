@@ -10,55 +10,141 @@ import (
 )
 
 var (
-	exoscaleLiveTest  bool
-	exoscaleAPIKey    string
-	exoscaleAPISecret string
-	exoscaleDomain    string
+	liveTest         bool
+	envTestAPIKey    string
+	envTestAPISecret string
+	envTestDomain    string
 )
 
 func init() {
-	exoscaleAPISecret = os.Getenv("EXOSCALE_API_SECRET")
-	exoscaleAPIKey = os.Getenv("EXOSCALE_API_KEY")
-	exoscaleDomain = os.Getenv("EXOSCALE_DOMAIN")
-	if len(exoscaleAPIKey) > 0 && len(exoscaleAPISecret) > 0 && len(exoscaleDomain) > 0 {
-		exoscaleLiveTest = true
+	envTestAPISecret = os.Getenv("EXOSCALE_API_SECRET")
+	envTestAPIKey = os.Getenv("EXOSCALE_API_KEY")
+	envTestDomain = os.Getenv("EXOSCALE_DOMAIN")
+
+	if len(envTestAPIKey) > 0 && len(envTestAPISecret) > 0 && len(envTestDomain) > 0 {
+		liveTest = true
 	}
 }
 
 func restoreEnv() {
-	os.Setenv("EXOSCALE_API_KEY", exoscaleAPIKey)
-	os.Setenv("EXOSCALE_API_SECRET", exoscaleAPISecret)
+	os.Setenv("EXOSCALE_API_KEY", envTestAPIKey)
+	os.Setenv("EXOSCALE_API_SECRET", envTestAPISecret)
 }
 
-func TestNewDNSProviderValid(t *testing.T) {
-	defer restoreEnv()
-	os.Setenv("EXOSCALE_API_KEY", "")
-	os.Setenv("EXOSCALE_API_SECRET", "")
+func TestNewDNSProvider(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		envVars  map[string]string
+		expected string
+	}{
+		{
+			desc: "success",
+			envVars: map[string]string{
+				"EXOSCALE_API_KEY":    "123",
+				"EXOSCALE_API_SECRET": "456",
+			},
+		},
+		{
+			desc: "missing credentials",
+			envVars: map[string]string{
+				"EXOSCALE_API_KEY":    "",
+				"EXOSCALE_API_SECRET": "",
+			},
+			expected: "exoscale: some credentials information are missing: EXOSCALE_API_KEY,EXOSCALE_API_SECRET",
+		},
+		{
+			desc: "missing access key",
+			envVars: map[string]string{
+				"EXOSCALE_API_KEY":    "",
+				"EXOSCALE_API_SECRET": "456",
+			},
+			expected: "exoscale: some credentials information are missing: EXOSCALE_API_KEY",
+		},
+		{
+			desc: "missing secret key",
+			envVars: map[string]string{
+				"EXOSCALE_API_KEY":    "123",
+				"EXOSCALE_API_SECRET": "",
+			},
+			expected: "exoscale: some credentials information are missing: EXOSCALE_API_SECRET",
+		},
+	}
 
-	config := NewDefaultConfig()
-	config.APIKey = "example@example.com"
-	config.APISecret = "123"
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer restoreEnv()
+			for key, value := range test.envVars {
+				if len(value) == 0 {
+					os.Unsetenv(key)
+				} else {
+					os.Setenv(key, value)
+				}
+			}
 
-	_, err := NewDNSProviderConfig(config)
-	require.NoError(t, err)
+			p, err := NewDNSProvider()
+
+			if len(test.expected) == 0 {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
 }
 
-func TestNewDNSProviderValidEnv(t *testing.T) {
-	defer restoreEnv()
-	os.Setenv("EXOSCALE_API_KEY", "example@example.com")
-	os.Setenv("EXOSCALE_API_SECRET", "123")
+func TestNewDNSProviderConfig(t *testing.T) {
+	testCases := []struct {
+		desc      string
+		apiKey    string
+		apiSecret string
+		expected  string
+	}{
+		{
+			desc:      "success",
+			apiKey:    "123",
+			apiSecret: "456",
+		},
+		{
+			desc:     "missing credentials",
+			expected: "exoscale: credentials missing",
+		},
+		{
+			desc:      "missing api key",
+			apiSecret: "456",
+			expected:  "exoscale: credentials missing",
+		},
+		{
+			desc:     "missing secret key",
+			apiKey:   "123",
+			expected: "exoscale: credentials missing",
+		},
+	}
 
-	_, err := NewDNSProvider()
-	require.NoError(t, err)
-}
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer restoreEnv()
+			os.Unsetenv("EXOSCALE_API_KEY")
+			os.Unsetenv("EXOSCALE_API_SECRET")
 
-func TestNewDNSProviderMissingCredErr(t *testing.T) {
-	os.Setenv("EXOSCALE_API_KEY", "")
-	os.Setenv("EXOSCALE_API_SECRET", "")
-	defer restoreEnv()
+			config := NewDefaultConfig()
+			config.APIKey = test.apiKey
+			config.APISecret = test.apiSecret
 
-	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "exoscale: some credentials information are missing: EXOSCALE_API_KEY,EXOSCALE_API_SECRET")
+			p, err := NewDNSProviderConfig(config)
+
+			if len(test.expected) == 0 {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
 }
 
 func TestDNSProvider_FindZoneAndRecordName(t *testing.T) {
@@ -113,40 +199,34 @@ func TestDNSProvider_FindZoneAndRecordName(t *testing.T) {
 	}
 }
 
-func TestLiveExoscalePresent(t *testing.T) {
-	if !exoscaleLiveTest {
+func TestLivePresent(t *testing.T) {
+	if !liveTest {
 		t.Skip("skipping live test")
 	}
 
-	config := NewDefaultConfig()
-	config.APIKey = exoscaleAPIKey
-	config.APISecret = exoscaleAPISecret
-
-	provider, err := NewDNSProviderConfig(config)
+	restoreEnv()
+	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.Present(exoscaleDomain, "", "123d==")
+	err = provider.Present(envTestDomain, "", "123d==")
 	require.NoError(t, err)
 
 	// Present Twice to handle create / update
-	err = provider.Present(exoscaleDomain, "", "123d==")
+	err = provider.Present(envTestDomain, "", "123d==")
 	require.NoError(t, err)
 }
 
-func TestLiveExoscaleCleanUp(t *testing.T) {
-	if !exoscaleLiveTest {
+func TestLiveCleanUp(t *testing.T) {
+	if !liveTest {
 		t.Skip("skipping live test")
 	}
 
-	time.Sleep(time.Second * 1)
-
-	config := NewDefaultConfig()
-	config.APIKey = exoscaleAPIKey
-	config.APISecret = exoscaleAPISecret
-
-	provider, err := NewDNSProviderConfig(config)
+	restoreEnv()
+	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.CleanUp(exoscaleDomain, "", "123d==")
+	time.Sleep(1 * time.Second)
+
+	err = provider.CleanUp(envTestDomain, "", "123d==")
 	require.NoError(t, err)
 }

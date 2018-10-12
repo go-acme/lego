@@ -13,58 +13,32 @@ import (
 )
 
 var (
-	stackpathLiveTest     bool
-	stackpathClientID     string
-	stackpathClientSecret string
-	stackpathStackID      string
-	stackpathDomain       string
+	liveTest            bool
+	envTestClientID     string
+	envTestClientSecret string
+	envTestStackID      string
+	envTestDomain       string
 )
 
 func init() {
-	stackpathClientID = os.Getenv("STACKPATH_CLIENT_ID")
-	stackpathClientSecret = os.Getenv("STACKPATH_CLIENT_SECRET")
-	stackpathStackID = os.Getenv("STACKPATH_STACK_ID")
-	stackpathDomain = os.Getenv("STACKPATH_DOMAIN")
+	envTestClientID = os.Getenv("STACKPATH_CLIENT_ID")
+	envTestClientSecret = os.Getenv("STACKPATH_CLIENT_SECRET")
+	envTestStackID = os.Getenv("STACKPATH_STACK_ID")
+	envTestDomain = os.Getenv("STACKPATH_DOMAIN")
 
-	if len(stackpathClientID) > 0 &&
-		len(stackpathClientSecret) > 0 &&
-		len(stackpathStackID) > 0 &&
-		len(stackpathDomain) > 0 {
-		stackpathLiveTest = true
+	if len(envTestClientID) > 0 &&
+		len(envTestClientSecret) > 0 &&
+		len(envTestStackID) > 0 &&
+		len(envTestDomain) > 0 {
+		liveTest = true
 	}
 }
 
 func restoreEnv() {
-	os.Setenv("STACKPATH_CLIENT_ID", stackpathClientID)
-	os.Setenv("STACKPATH_CLIENT_SECRET", stackpathClientSecret)
-	os.Setenv("STACKPATH_STACK_ID", stackpathStackID)
-	os.Setenv("STACKPATH_DOMAIN", stackpathDomain)
-}
-
-func TestLivePresent(t *testing.T) {
-	if !stackpathLiveTest {
-		t.Skip("skipping live test")
-	}
-
-	provider, err := NewDNSProvider()
-	require.NoError(t, err)
-
-	err = provider.Present(stackpathDomain, "", "123d==")
-	require.NoError(t, err)
-}
-
-func TestLiveCleanUp(t *testing.T) {
-	if !stackpathLiveTest {
-		t.Skip("skipping live test")
-	}
-
-	time.Sleep(time.Second * 1)
-
-	provider, err := NewDNSProvider()
-	require.NoError(t, err)
-
-	err = provider.CleanUp(stackpathDomain, "", "123d==")
-	require.NoError(t, err)
+	os.Setenv("STACKPATH_CLIENT_ID", envTestClientID)
+	os.Setenv("STACKPATH_CLIENT_SECRET", envTestClientSecret)
+	os.Setenv("STACKPATH_STACK_ID", envTestStackID)
+	os.Setenv("STACKPATH_DOMAIN", envTestDomain)
 }
 
 func TestNewDNSProvider(t *testing.T) {
@@ -133,7 +107,7 @@ func TestNewDNSProvider(t *testing.T) {
 			p, err := NewDNSProvider()
 
 			if len(test.expected) == 0 {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				assert.NotNil(t, p)
 			} else {
 				require.EqualError(t, err, test.expected)
@@ -312,4 +286,32 @@ func TestDNSProvider_getZones(t *testing.T) {
 	expected := &Zone{ID: "A", Domain: "foo.com"}
 
 	assert.Equal(t, expected, zone)
+}
+
+func TestLivePresent(t *testing.T) {
+	if !liveTest {
+		t.Skip("skipping live test")
+	}
+
+	restoreEnv()
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
+
+	err = provider.Present(envTestDomain, "", "123d==")
+	require.NoError(t, err)
+}
+
+func TestLiveCleanUp(t *testing.T) {
+	if !liveTest {
+		t.Skip("skipping live test")
+	}
+
+	restoreEnv()
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
+
+	time.Sleep(1 * time.Second)
+
+	err = provider.CleanUp(envTestDomain, "", "123d==")
+	require.NoError(t, err)
 }

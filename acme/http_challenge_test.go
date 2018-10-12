@@ -48,7 +48,7 @@ func TestHTTPChallenge(t *testing.T) {
 	clientChallenge := challenge{Type: string(HTTP01), Token: "http1"}
 
 	err = solver.Solve(clientChallenge, "localhost:23457")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestHTTPChallengeInvalidPort(t *testing.T) {

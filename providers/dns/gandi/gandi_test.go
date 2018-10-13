@@ -5,12 +5,111 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"regexp"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
+
+var (
+	envTestAPIKey string
+)
+
+func init() {
+	envTestAPIKey = os.Getenv("GANDI_API_KEY")
+}
+
+func restoreEnv() {
+	os.Setenv("GANDI_API_KEY", envTestAPIKey)
+}
+
+func TestNewDNSProvider(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		envVars  map[string]string
+		expected string
+	}{
+		{
+			desc: "success",
+			envVars: map[string]string{
+				"GANDI_API_KEY": "123",
+			},
+		},
+		{
+			desc: "missing api key",
+			envVars: map[string]string{
+				"GANDI_API_KEY": "",
+			},
+			expected: "gandi: some credentials information are missing: GANDI_API_KEY",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer restoreEnv()
+			for key, value := range test.envVars {
+				if len(value) == 0 {
+					os.Unsetenv(key)
+				} else {
+					os.Setenv(key, value)
+				}
+			}
+
+			p, err := NewDNSProvider()
+
+			if len(test.expected) == 0 {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.inProgressFQDNs)
+				require.NotNil(t, p.inProgressAuthZones)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
+}
+
+func TestNewDNSProviderConfig(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		apiKey   string
+		expected string
+	}{
+		{
+			desc:   "success",
+			apiKey: "123",
+		},
+		{
+			desc:     "missing credentials",
+			expected: "gandi: no API Key given",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer restoreEnv()
+			os.Unsetenv("GANDI_API_KEY")
+
+			config := NewDefaultConfig()
+			config.APIKey = test.apiKey
+
+			p, err := NewDNSProviderConfig(config)
+
+			if len(test.expected) == 0 {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.inProgressFQDNs)
+				require.NotNil(t, p.inProgressAuthZones)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
+}
 
 // TestDNSProvider runs Present and CleanUp against a fake Gandi RPC
 // Server, whose responses are predetermined for particular requests.

@@ -14,6 +14,9 @@ import (
 	"github.com/xenolf/lego/platform/config/env"
 )
 
+// according to https://www.name.com/api-docs/DNS#CreateRecord
+const minTTL = 300
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	Username           string
@@ -28,7 +31,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("NAMECOM_TTL", 120),
+		TTL:                env.GetOrDefaultInt("NAMECOM_TTL", minTTL),
 		PropagationTimeout: env.GetOrDefaultSecond("NAMECOM_PROPAGATION_TIMEOUT", acme.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond("NAMECOM_POLLING_INTERVAL", acme.DefaultPollingInterval),
 		HTTPClient: &http.Client{
@@ -84,6 +87,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	if config.APIToken == "" {
 		return nil, fmt.Errorf("namedotcom: API token is required")
+	}
+
+	if config.TTL < minTTL {
+		return nil, fmt.Errorf("namedotcom: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL)
 	}
 
 	client := namecom.New(config.Username, config.APIToken)

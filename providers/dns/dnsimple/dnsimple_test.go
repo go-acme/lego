@@ -11,151 +11,178 @@ import (
 )
 
 var (
-	dnsimpleLiveTest   bool
-	dnsimpleOauthToken string
-	dnsimpleDomain     string
-	dnsimpleBaseURL    string
+	liveTest          bool
+	envTestOauthToken string
+	envTestDomain     string
+	envTestBaseURL    string
 )
 
 func init() {
-	dnsimpleOauthToken = os.Getenv("DNSIMPLE_OAUTH_TOKEN")
-	dnsimpleDomain = os.Getenv("DNSIMPLE_DOMAIN")
-	dnsimpleBaseURL = "https://api.sandbox.dnsimple.com"
+	envTestOauthToken = os.Getenv("DNSIMPLE_OAUTH_TOKEN")
+	envTestDomain = os.Getenv("DNSIMPLE_DOMAIN")
+	envTestBaseURL = "https://api.sandbox.fake.com"
 
-	if len(dnsimpleOauthToken) > 0 && len(dnsimpleDomain) > 0 {
+	if len(envTestOauthToken) > 0 && len(envTestDomain) > 0 {
 		baseURL := os.Getenv("DNSIMPLE_BASE_URL")
 
 		if baseURL != "" {
-			dnsimpleBaseURL = baseURL
+			envTestBaseURL = baseURL
 		}
 
-		dnsimpleLiveTest = true
+		liveTest = true
 	}
 }
 
 func restoreEnv() {
-	os.Setenv("DNSIMPLE_OAUTH_TOKEN", dnsimpleOauthToken)
-	os.Setenv("DNSIMPLE_BASE_URL", dnsimpleBaseURL)
+	os.Setenv("DNSIMPLE_OAUTH_TOKEN", envTestOauthToken)
+	os.Setenv("DNSIMPLE_BASE_URL", envTestBaseURL)
 }
 
-//
-// NewDNSProvider
-//
+func TestNewDNSProvider(t *testing.T) {
+	testCases := []struct {
+		desc      string
+		userAgent string
+		envVars   map[string]string
+		expected  string
+	}{
+		{
+			desc:      "success",
+			userAgent: "lego",
+			envVars: map[string]string{
+				"DNSIMPLE_OAUTH_TOKEN": "my_token",
+			},
+		},
+		{
+			desc: "success: base url",
+			envVars: map[string]string{
+				"DNSIMPLE_OAUTH_TOKEN": "my_token",
+				"DNSIMPLE_BASE_URL":    "https://api.dnsimple.test",
+			},
+		},
+		{
+			desc: "missing oauth token",
+			envVars: map[string]string{
+				"DNSIMPLE_OAUTH_TOKEN": "",
+			},
+			expected: "dnsimple: OAuth token is missing",
+		},
+	}
 
-func TestNewDNSProviderValid(t *testing.T) {
-	defer restoreEnv()
-	os.Setenv("DNSIMPLE_OAUTH_TOKEN", "123")
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer restoreEnv()
+			for key, value := range test.envVars {
+				if len(value) == 0 {
+					os.Unsetenv(key)
+				} else {
+					os.Setenv(key, value)
+				}
+			}
 
-	acme.UserAgent = "lego"
+			if test.userAgent != "" {
+				acme.UserAgent = test.userAgent
+			}
 
-	provider, err := NewDNSProvider()
+			p, err := NewDNSProvider()
 
-	assert.NotNil(t, provider)
-	assert.Equal(t, "lego", provider.client.UserAgent)
-	assert.NoError(t, err)
+			if len(test.expected) == 0 {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
+
+				baseURL := os.Getenv("DNSIMPLE_BASE_URL")
+				if baseURL != "" {
+					assert.Equal(t, baseURL, p.client.BaseURL)
+				}
+
+				if test.userAgent != "" {
+					assert.Equal(t, "lego", p.client.UserAgent)
+				}
+
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
 }
 
-func TestNewDNSProviderValidWithBaseUrl(t *testing.T) {
-	defer restoreEnv()
-	os.Setenv("DNSIMPLE_OAUTH_TOKEN", "123")
-	os.Setenv("DNSIMPLE_BASE_URL", "https://api.dnsimple.test")
+func TestNewDNSProviderConfig(t *testing.T) {
+	testCases := []struct {
+		desc        string
+		accessToken string
+		baseURL     string
+		expected    string
+	}{
+		{
+			desc:        "success",
+			accessToken: "my_token",
+			baseURL:     "",
+		},
+		{
+			desc:        "success: base url",
+			accessToken: "my_token",
+			baseURL:     "https://api.dnsimple.test",
+		},
+		{
+			desc:     "missing oauth token",
+			expected: "dnsimple: OAuth token is missing",
+		},
+	}
 
-	provider, err := NewDNSProvider()
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer restoreEnv()
+			os.Unsetenv("DNSIMPLE_OAUTH_TOKEN")
+			os.Unsetenv("DNSIMPLE_BASE_URL")
 
-	assert.NotNil(t, provider)
-	assert.NoError(t, err)
+			config := NewDefaultConfig()
+			config.AccessToken = test.accessToken
+			config.BaseURL = test.baseURL
 
-	assert.Equal(t, provider.client.BaseURL, "https://api.dnsimple.test")
+			p, err := NewDNSProviderConfig(config)
+
+			if len(test.expected) == 0 {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
+
+				if test.baseURL != "" {
+					assert.Equal(t, test.baseURL, p.client.BaseURL)
+				}
+
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
 }
 
-func TestNewDNSProviderInvalidWithMissingOauthToken(t *testing.T) {
-	defer restoreEnv()
-	os.Setenv("DNSIMPLE_OAUTH_TOKEN", "")
-
-	provider, err := NewDNSProvider()
-
-	assert.Nil(t, provider)
-	assert.EqualError(t, err, "dnsimple: OAuth token is missing")
-}
-
-//
-// NewDNSProviderCredentials
-//
-
-func TestNewDNSProviderCredentialsValid(t *testing.T) {
-	config := NewDefaultConfig()
-	config.AccessToken = "123"
-	config.BaseURL = ""
-
-	provider, err := NewDNSProviderConfig(config)
-	require.NoError(t, err)
-	require.NotNil(t, provider)
-
-	assert.Equal(t, "lego", provider.client.UserAgent)
-	assert.NoError(t, err)
-}
-
-func TestNewDNSProviderCredentialsValidWithBaseUrl(t *testing.T) {
-	config := NewDefaultConfig()
-	config.AccessToken = "123"
-	config.BaseURL = "https://api.dnsimple.test"
-
-	provider, err := NewDNSProviderConfig(config)
-	require.NoError(t, err)
-	require.NotNil(t, provider)
-
-	assert.Equal(t, provider.client.BaseURL, "https://api.dnsimple.test")
-}
-
-func TestNewDNSProviderCredentialsInvalidWithMissingOauthToken(t *testing.T) {
-	config := NewDefaultConfig()
-	config.AccessToken = ""
-	config.BaseURL = ""
-
-	provider, err := NewDNSProviderConfig(config)
-
-	assert.Nil(t, provider)
-	assert.EqualError(t, err, "dnsimple: OAuth token is missing")
-}
-
-//
-// Present
-//
-
-func TestLiveDNSimplePresent(t *testing.T) {
-	if !dnsimpleLiveTest {
+func TestLivePresent(t *testing.T) {
+	if !liveTest {
 		t.Skip("skipping live test")
 	}
 
-	config := NewDefaultConfig()
-	config.AccessToken = dnsimpleOauthToken
-	config.BaseURL = dnsimpleBaseURL
+	restoreEnv()
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
 
-	provider, err := NewDNSProviderConfig(config)
-	assert.NoError(t, err)
-
-	err = provider.Present(dnsimpleDomain, "", "123d==")
-	assert.NoError(t, err)
+	err = provider.Present(envTestDomain, "", "123d==")
+	require.NoError(t, err)
 }
 
-//
-// Cleanup
-//
-
-func TestLiveDNSimpleCleanUp(t *testing.T) {
-	if !dnsimpleLiveTest {
+func TestLiveCleanUp(t *testing.T) {
+	if !liveTest {
 		t.Skip("skipping live test")
 	}
 
-	time.Sleep(time.Second * 1)
+	restoreEnv()
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
 
-	config := NewDefaultConfig()
-	config.AccessToken = dnsimpleOauthToken
-	config.BaseURL = dnsimpleBaseURL
+	time.Sleep(1 * time.Second)
 
-	provider, err := NewDNSProviderConfig(config)
-	assert.NoError(t, err)
-
-	err = provider.CleanUp(dnsimpleDomain, "", "123d==")
-	assert.NoError(t, err)
+	err = provider.CleanUp(envTestDomain, "", "123d==")
+	require.NoError(t, err)
 }

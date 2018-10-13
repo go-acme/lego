@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestLightsailTTL(t *testing.T) {
+func TestLiveTTL(t *testing.T) {
 	m, err := testGetAndPreCheck()
 	if err != nil {
 		t.Skip(err.Error())
@@ -20,14 +20,14 @@ func TestLightsailTTL(t *testing.T) {
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	lightsailDomain := m["lightsailDomain"]
+	domain := m["lightsailDomain"]
 
-	err = provider.Present(lightsailDomain, "foo", "bar")
+	err = provider.Present(domain, "foo", "bar")
 	require.NoError(t, err)
 
-	// we need a separate Lightshail client here as the one in the DNS provider is
+	// we need a separate Lightsail client here as the one in the DNS provider is
 	// unexported.
-	fqdn := "_acme-challenge." + lightsailDomain
+	fqdn := "_acme-challenge." + domain
 	sess, err := session.NewSession()
 	require.NoError(t, err)
 
@@ -35,14 +35,14 @@ func TestLightsailTTL(t *testing.T) {
 	require.NoError(t, err)
 
 	defer func() {
-		errC := provider.CleanUp(lightsailDomain, "foo", "bar")
+		errC := provider.CleanUp(domain, "foo", "bar")
 		if errC != nil {
 			t.Log(errC)
 		}
 	}()
 
 	params := &lightsail.GetDomainInput{
-		DomainName: aws.String(lightsailDomain),
+		DomainName: aws.String(domain),
 	}
 
 	resp, err := svc.GetDomain(params)
@@ -55,7 +55,7 @@ func TestLightsailTTL(t *testing.T) {
 		}
 	}
 
-	t.Fatalf("Could not find a TXT record for _acme-challenge.%s", lightsailDomain)
+	t.Fatalf("Could not find a TXT record for _acme-challenge.%s", domain)
 }
 
 func testGetAndPreCheck() (map[string]string, error) {

@@ -5,31 +5,146 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-var fakeDigitalOceanAuth = "asdf1234"
+var (
+	envTestAuthToken string
+)
 
-func TestDigitalOceanPresent(t *testing.T) {
-	var requestReceived bool
+func init() {
+	envTestAuthToken = os.Getenv("DO_AUTH_TOKEN")
+}
 
-	mock := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		requestReceived = true
+func restoreEnv() {
+	os.Setenv("DO_AUTH_TOKEN", envTestAuthToken)
+}
 
+func setupTest() (*DNSProvider, *http.ServeMux, func()) {
+	handler := http.NewServeMux()
+	server := httptest.NewServer(handler)
+
+	config := NewDefaultConfig()
+	config.AuthToken = "asdf1234"
+	config.BaseURL = server.URL
+
+	provider, err := NewDNSProviderConfig(config)
+	if err != nil {
+		panic(err)
+	}
+
+	return provider, handler, server.Close
+}
+
+func TestNewDNSProvider(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		envVars  map[string]string
+		expected string
+	}{
+		{
+			desc: "success",
+			envVars: map[string]string{
+				"DO_AUTH_TOKEN": "123",
+			},
+		},
+		{
+			desc: "missing credentials",
+			envVars: map[string]string{
+				"DO_AUTH_TOKEN": "",
+			},
+			expected: "digitalocean: some credentials information are missing: DO_AUTH_TOKEN",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer restoreEnv()
+			for key, value := range test.envVars {
+				if len(value) == 0 {
+					os.Unsetenv(key)
+				} else {
+					os.Setenv(key, value)
+				}
+			}
+
+			p, err := NewDNSProvider()
+
+			if len(test.expected) == 0 {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.recordIDs)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
+}
+
+func TestNewDNSProviderConfig(t *testing.T) {
+	testCases := []struct {
+		desc      string
+		authToken string
+		expected  string
+	}{
+		{
+			desc:      "success",
+			authToken: "123",
+		},
+		{
+			desc:     "missing credentials",
+			expected: "digitalocean: credentials missing",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer restoreEnv()
+			os.Unsetenv("DO_AUTH_TOKEN")
+			os.Unsetenv("ALICLOUD_SECRET_KEY")
+
+			config := NewDefaultConfig()
+			config.AuthToken = test.authToken
+
+			p, err := NewDNSProviderConfig(config)
+
+			if len(test.expected) == 0 {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.recordIDs)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
+}
+
+func TestDNSProvider_Present(t *testing.T) {
+	provider, mux, tearDown := setupTest()
+	defer tearDown()
+
+	mux.HandleFunc("/v2/domains/example.com/records", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodPost, r.Method, "method")
-		assert.Equal(t, "/v2/domains/example.com/records", r.URL.Path, "Path")
+
 		assert.Equal(t, "application/json", r.Header.Get("Content-Type"), "Content-Type")
 		assert.Equal(t, "Bearer asdf1234", r.Header.Get("Authorization"), "Authorization")
 
 		reqBody, err := ioutil.ReadAll(r.Body)
-		require.NoError(t, err, "reading request body")
-		assert.Equal(t, `{"type":"TXT","name":"_acme-challenge.example.com.","data":"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI","ttl":30}`, string(reqBody))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		expectedReqBody := `{"type":"TXT","name":"_acme-challenge.example.com.","data":"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI","ttl":30}`
+		assert.Equal(t, expectedReqBody, string(reqBody))
 
 		w.WriteHeader(http.StatusCreated)
-		fmt.Fprintf(w, `{
+		_, err = fmt.Fprintf(w, `{
 			"domain_record": {
 				"id": 1234567,
 				"type": "TXT",
@@ -40,53 +155,35 @@ func TestDigitalOceanPresent(t *testing.T) {
 				"weight": null
 			}
 		}`)
-	}))
-	defer mock.Close()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	})
 
-	config := NewDefaultConfig()
-	config.AuthToken = fakeDigitalOceanAuth
-	config.BaseURL = mock.URL
-
-	provider, err := NewDNSProviderConfig(config)
+	err := provider.Present("example.com", "", "foobar")
 	require.NoError(t, err)
-	require.NotNil(t, provider)
-
-	err = provider.Present("example.com", "", "foobar")
-	require.NoError(t, err, "fail to create TXT record")
-
-	assert.True(t, requestReceived, "Expected request to be received by mock backend, but it wasn't")
 }
 
-func TestDigitalOceanCleanUp(t *testing.T) {
-	var requestReceived bool
+func TestDNSProvider_CleanUp(t *testing.T) {
+	provider, mux, tearDown := setupTest()
+	defer tearDown()
 
-	mock := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		requestReceived = true
-
+	mux.HandleFunc("/v2/domains/example.com/records/1234567", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodDelete, r.Method, "method")
+
 		assert.Equal(t, "/v2/domains/example.com/records/1234567", r.URL.Path, "Path")
+
 		// NOTE: Even though the body is empty, DigitalOcean API docs still show setting this Content-Type...
 		assert.Equal(t, "application/json", r.Header.Get("Content-Type"), "Content-Type")
 		assert.Equal(t, "Bearer asdf1234", r.Header.Get("Authorization"), "Authorization")
 
 		w.WriteHeader(http.StatusNoContent)
-	}))
-	defer mock.Close()
-
-	config := NewDefaultConfig()
-	config.AuthToken = fakeDigitalOceanAuth
-	config.BaseURL = mock.URL
-
-	provider, err := NewDNSProviderConfig(config)
-	require.NoError(t, err)
-	require.NotNil(t, provider)
+	})
 
 	provider.recordIDsMu.Lock()
 	provider.recordIDs["_acme-challenge.example.com."] = 1234567
 	provider.recordIDsMu.Unlock()
 
-	err = provider.CleanUp("example.com", "", "")
+	err := provider.CleanUp("example.com", "", "")
 	require.NoError(t, err, "fail to remove TXT record")
-
-	assert.True(t, requestReceived, "Expected request to be received by mock backend, but it wasn't")
 }

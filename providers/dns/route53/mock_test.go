@@ -24,8 +24,11 @@ func newMockServer(t *testing.T, responses MockResponseMap) *httptest.Server {
 		path := r.URL.Path
 		resp, ok := responses[path]
 		if !ok {
-			msg := fmt.Sprintf("Requested path not found in response map: %s", path)
-			require.FailNow(t, msg)
+			resp, ok = responses[r.RequestURI]
+			if !ok {
+				msg := fmt.Sprintf("Requested path not found in response map: %s", path)
+				require.FailNow(t, msg)
+			}
 		}
 
 		w.Header().Set("Content-Type", "application/xml")

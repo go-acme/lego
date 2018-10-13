@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2/google"
@@ -13,93 +12,168 @@ import (
 )
 
 var (
-	gcloudLiveTest bool
-	gcloudProject  string
-	gcloudDomain   string
+	liveTest                            bool
+	envTestProject                      string
+	envTestServiceAccountFile           string
+	envTestGoogleApplicationCredentials string
+	envTestDomain                       string
 )
 
 func init() {
-	gcloudProject = os.Getenv("GCE_PROJECT")
-	gcloudDomain = os.Getenv("GCE_DOMAIN")
+	envTestProject = os.Getenv("GCE_PROJECT")
+	envTestServiceAccountFile = os.Getenv("GCE_SERVICE_ACCOUNT_FILE")
+	envTestGoogleApplicationCredentials = os.Getenv("GOOGLE_APPLICATION_CREDENTIALS")
+	envTestDomain = os.Getenv("GCE_DOMAIN")
+
 	_, err := google.DefaultClient(context.Background(), dns.NdevClouddnsReadwriteScope)
-	if err == nil && len(gcloudProject) > 0 && len(gcloudDomain) > 0 {
-		gcloudLiveTest = true
+	if err == nil && len(envTestProject) > 0 && len(envTestDomain) > 0 {
+		liveTest = true
 	}
 }
 
 func restoreEnv() {
-	os.Setenv("GCE_PROJECT", gcloudProject)
+	os.Setenv("GCE_PROJECT", envTestProject)
+	os.Setenv("GCE_SERVICE_ACCOUNT_FILE", envTestServiceAccountFile)
+	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", envTestGoogleApplicationCredentials)
 }
 
-func TestNewDNSProviderValid(t *testing.T) {
-	if !gcloudLiveTest {
-		t.Skip("skipping live test (requires credentials)")
+func TestNewDNSProvider(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		envVars  map[string]string
+		expected string
+	}{
+		{
+			desc: "invalid credentials",
+			envVars: map[string]string{
+				"GCE_PROJECT":              "123",
+				"GCE_SERVICE_ACCOUNT_FILE": "",
+				// as Travis run on GCE, we have to alter env
+				"GOOGLE_APPLICATION_CREDENTIALS": "not-a-secret-file",
+			},
+			expected: "googlecloud: unable to get Google Cloud client: google: error getting credentials using GOOGLE_APPLICATION_CREDENTIALS environment variable: open not-a-secret-file: no such file or directory",
+		},
+		{
+			desc: "missing project",
+			envVars: map[string]string{
+				"GCE_PROJECT":              "",
+				"GCE_SERVICE_ACCOUNT_FILE": "",
+			},
+			expected: "googlecloud: project name missing",
+		},
+		{
+			desc: "success",
+			envVars: map[string]string{
+				"GCE_PROJECT":              "",
+				"GCE_SERVICE_ACCOUNT_FILE": "fixtures/gce_account_service_file.json",
+			},
+		},
 	}
 
-	defer restoreEnv()
-	os.Setenv("GCE_PROJECT", "")
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer restoreEnv()
 
-	_, err := NewDNSProviderCredentials("my-project")
-	require.NoError(t, err)
+			for key, value := range test.envVars {
+				if len(value) == 0 {
+					os.Unsetenv(key)
+				} else {
+					os.Setenv(key, value)
+				}
+			}
+
+			p, err := NewDNSProvider()
+
+			if len(test.expected) == 0 {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
 }
 
-func TestNewDNSProviderValidEnv(t *testing.T) {
-	if !gcloudLiveTest {
-		t.Skip("skipping live test (requires credentials)")
+func TestNewDNSProviderConfig(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		project  string
+		expected string
+	}{
+		{
+			desc:     "invalid project",
+			project:  "123",
+			expected: "googlecloud: unable to create Google Cloud DNS service: client is nil",
+		},
+		{
+			desc:     "missing project",
+			expected: "googlecloud: unable to create Google Cloud DNS service: client is nil",
+		},
 	}
 
-	defer restoreEnv()
-	os.Setenv("GCE_PROJECT", "my-project")
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer restoreEnv()
+			os.Unsetenv("GCE_PROJECT")
+			os.Unsetenv("GCE_SERVICE_ACCOUNT_FILE")
 
-	_, err := NewDNSProvider()
-	require.NoError(t, err)
+			config := NewDefaultConfig()
+			config.Project = test.project
+
+			p, err := NewDNSProviderConfig(config)
+
+			if len(test.expected) == 0 {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
 }
 
-func TestNewDNSProviderMissingCredErr(t *testing.T) {
-	defer restoreEnv()
-	os.Setenv("GCE_PROJECT", "")
-
-	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "googlecloud: project name missing")
-}
-
-func TestLiveGoogleCloudPresent(t *testing.T) {
-	if !gcloudLiveTest {
+func TestLivePresent(t *testing.T) {
+	if !liveTest {
 		t.Skip("skipping live test")
 	}
 
-	provider, err := NewDNSProviderCredentials(gcloudProject)
+	provider, err := NewDNSProviderCredentials(envTestProject)
 	require.NoError(t, err)
 
-	err = provider.Present(gcloudDomain, "", "123d==")
+	err = provider.Present(envTestDomain, "", "123d==")
 	require.NoError(t, err)
 }
 
-func TestLiveGoogleCloudPresentMultiple(t *testing.T) {
-	if !gcloudLiveTest {
+func TestLivePresentMultiple(t *testing.T) {
+	if !liveTest {
 		t.Skip("skipping live test")
 	}
 
-	provider, err := NewDNSProviderCredentials(gcloudProject)
+	provider, err := NewDNSProviderCredentials(envTestProject)
 	require.NoError(t, err)
 
 	// Check that we're able to create multiple entries
-	err = provider.Present(gcloudDomain, "1", "123d==")
+	err = provider.Present(envTestDomain, "1", "123d==")
 	require.NoError(t, err)
-	err = provider.Present(gcloudDomain, "2", "123d==")
+
+	err = provider.Present(envTestDomain, "2", "123d==")
 	require.NoError(t, err)
 }
 
-func TestLiveGoogleCloudCleanUp(t *testing.T) {
-	if !gcloudLiveTest {
+func TestLiveCleanUp(t *testing.T) {
+	if !liveTest {
 		t.Skip("skipping live test")
 	}
 
-	time.Sleep(time.Second * 1)
-
-	provider, err := NewDNSProviderCredentials(gcloudProject)
+	provider, err := NewDNSProviderCredentials(envTestProject)
 	require.NoError(t, err)
 
-	err = provider.CleanUp(gcloudDomain, "", "123d==")
+	time.Sleep(1 * time.Second)
+
+	err = provider.CleanUp(envTestDomain, "", "123d==")
 	require.NoError(t, err)
 }

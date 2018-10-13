@@ -20,7 +20,7 @@ func TestTLSALPNChallenge(t *testing.T) {
 		conn, err := tls.Dial("tcp", domain, &tls.Config{
 			InsecureSkipVerify: true,
 		})
-		assert.NoError(t, err, "Expected to connect to challenge server without an error")
+		require.NoError(t, err, "Expected to connect to challenge server without an error")
 
 		// Expect the server to only return one certificate
 		connState := conn.ConnectionState()
@@ -67,7 +67,7 @@ func TestTLSALPNChallenge(t *testing.T) {
 	clientChallenge := challenge{Type: string(TLSALPN01), Token: "tlsalpn1"}
 
 	err = solver.Solve(clientChallenge, domain)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestTLSALPNChallengeInvalidPort(t *testing.T) {

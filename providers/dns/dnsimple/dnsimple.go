@@ -78,7 +78,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		client.BaseURL = config.BaseURL
 	}
 
-	return &DNSProvider{client: client}, nil
+	return &DNSProvider{client: client, config: config}, nil
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
@@ -87,18 +87,18 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zoneName, err := d.getHostedZone(domain)
 	if err != nil {
-		return err
+		return fmt.Errorf("dnsimple: %v", err)
 	}
 
 	accountID, err := d.getAccountID()
 	if err != nil {
-		return err
+		return fmt.Errorf("dnsimple: %v", err)
 	}
 
-	recordAttributes := d.newTxtRecord(zoneName, fqdn, value, d.config.TTL)
+	recordAttributes := newTxtRecord(zoneName, fqdn, value, d.config.TTL)
 	_, err = d.client.Zones.CreateRecord(accountID, zoneName, recordAttributes)
 	if err != nil {
-		return fmt.Errorf("API call failed: %v", err)
+		return fmt.Errorf("dnsimple: API call failed: %v", err)
 	}
 
 	return nil
@@ -110,22 +110,23 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	records, err := d.findTxtRecords(domain, fqdn)
 	if err != nil {
-		return err
+		return fmt.Errorf("dnsimple: %v", err)
 	}
 
 	accountID, err := d.getAccountID()
 	if err != nil {
-		return err
+		return fmt.Errorf("dnsimple: %v", err)
 	}
 
+	var lastErr error
 	for _, rec := range records {
 		_, err := d.client.Zones.DeleteRecord(accountID, rec.ZoneID, rec.ID)
 		if err != nil {
-			return err
+			lastErr = fmt.Errorf("dnsimple: %v", err)
 		}
 	}
 
-	return nil
+	return lastErr
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
@@ -177,7 +178,7 @@ func (d *DNSProvider) findTxtRecords(domain, fqdn string) ([]dnsimple.ZoneRecord
 		return nil, err
 	}
 
-	recordName := d.extractRecordName(fqdn, zoneName)
+	recordName := extractRecordName(fqdn, zoneName)
 
 	result, err := d.client.Zones.ListRecords(accountID, zoneName, &dnsimple.ZoneRecordListOptions{Name: recordName, Type: "TXT", ListOptions: dnsimple.ListOptions{}})
 	if err != nil {
@@ -187,8 +188,8 @@ func (d *DNSProvider) findTxtRecords(domain, fqdn string) ([]dnsimple.ZoneRecord
 	return result.Data, nil
 }
 
-func (d *DNSProvider) newTxtRecord(zoneName, fqdn, value string, ttl int) dnsimple.ZoneRecord {
-	name := d.extractRecordName(fqdn, zoneName)
+func newTxtRecord(zoneName, fqdn, value string, ttl int) dnsimple.ZoneRecord {
+	name := extractRecordName(fqdn, zoneName)
 
 	return dnsimple.ZoneRecord{
 		Type:    "TXT",
@@ -198,7 +199,7 @@ func (d *DNSProvider) newTxtRecord(zoneName, fqdn, value string, ttl int) dnsimp
 	}
 }
 
-func (d *DNSProvider) extractRecordName(fqdn, domain string) string {
+func extractRecordName(fqdn, domain string) string {
 	name := acme.UnFqdn(fqdn)
 	if idx := strings.Index(name, "."+domain); idx != -1 {
 		return name[:idx]

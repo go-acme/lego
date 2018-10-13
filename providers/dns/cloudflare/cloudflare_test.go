@@ -10,24 +10,24 @@ import (
 )
 
 var (
-	cflareLiveTest bool
-	cflareEmail    string
-	cflareAPIKey   string
-	cflareDomain   string
+	liveTest      bool
+	envTestEmail  string
+	envTestAPIKey string
+	envTestDomain string
 )
 
 func init() {
-	cflareEmail = os.Getenv("CLOUDFLARE_EMAIL")
-	cflareAPIKey = os.Getenv("CLOUDFLARE_API_KEY")
-	cflareDomain = os.Getenv("CLOUDFLARE_DOMAIN")
-	if len(cflareEmail) > 0 && len(cflareAPIKey) > 0 && len(cflareDomain) > 0 {
-		cflareLiveTest = true
+	envTestEmail = os.Getenv("CLOUDFLARE_EMAIL")
+	envTestAPIKey = os.Getenv("CLOUDFLARE_API_KEY")
+	envTestDomain = os.Getenv("CLOUDFLARE_DOMAIN")
+	if len(envTestEmail) > 0 && len(envTestAPIKey) > 0 && len(envTestDomain) > 0 {
+		liveTest = true
 	}
 }
 
 func restoreEnv() {
-	os.Setenv("CLOUDFLARE_EMAIL", cflareEmail)
-	os.Setenv("CLOUDFLARE_API_KEY", cflareAPIKey)
+	os.Setenv("CLOUDFLARE_EMAIL", envTestEmail)
+	os.Setenv("CLOUDFLARE_API_KEY", envTestAPIKey)
 }
 
 func TestNewDNSProvider(t *testing.T) {
@@ -83,8 +83,10 @@ func TestNewDNSProvider(t *testing.T) {
 			p, err := NewDNSProvider()
 
 			if len(test.expected) == 0 {
-				assert.NoError(t, err)
-				assert.NotNil(t, p)
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				assert.NotNil(t, p.config)
+				assert.NotNil(t, p.client)
 			} else {
 				require.EqualError(t, err, test.expected)
 			}
@@ -133,8 +135,10 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			p, err := NewDNSProviderConfig(config)
 
 			if len(test.expected) == 0 {
-				assert.NoError(t, err)
-				assert.NotNil(t, p)
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				assert.NotNil(t, p.config)
+				assert.NotNil(t, p.client)
 			} else {
 				require.EqualError(t, err, test.expected)
 			}
@@ -142,36 +146,36 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}
 }
 
-func TestCloudFlarePresent(t *testing.T) {
-	if !cflareLiveTest {
+func TestPresent(t *testing.T) {
+	if !liveTest {
 		t.Skip("skipping live test")
 	}
 
 	config := NewDefaultConfig()
-	config.AuthEmail = cflareEmail
-	config.AuthKey = cflareAPIKey
+	config.AuthEmail = envTestEmail
+	config.AuthKey = envTestAPIKey
 
 	provider, err := NewDNSProviderConfig(config)
 	require.NoError(t, err)
 
-	err = provider.Present(cflareDomain, "", "123d==")
+	err = provider.Present(envTestDomain, "", "123d==")
 	require.NoError(t, err)
 }
 
-func TestCloudFlareCleanUp(t *testing.T) {
-	if !cflareLiveTest {
+func TestCleanUp(t *testing.T) {
+	if !liveTest {
 		t.Skip("skipping live test")
 	}
 
 	time.Sleep(time.Second * 2)
 
 	config := NewDefaultConfig()
-	config.AuthEmail = cflareEmail
-	config.AuthKey = cflareAPIKey
+	config.AuthEmail = envTestEmail
+	config.AuthKey = envTestAPIKey
 
 	provider, err := NewDNSProviderConfig(config)
 	require.NoError(t, err)
 
-	err = provider.CleanUp(cflareDomain, "", "123d==")
+	err = provider.CleanUp(envTestDomain, "", "123d==")
 	require.NoError(t, err)
 }

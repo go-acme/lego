@@ -5,95 +5,52 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 var (
-	liveTest          bool
-	apiEndpoint       string
-	applicationKey    string
-	applicationSecret string
-	consumerKey       string
-	domain            string
+	liveTest                 bool
+	envTestAPIEndpoint       string
+	envTestApplicationKey    string
+	envTestApplicationSecret string
+	envTestConsumerKey       string
+	envTestDomain            string
 )
 
 func init() {
-	apiEndpoint = os.Getenv("OVH_ENDPOINT")
-	applicationKey = os.Getenv("OVH_APPLICATION_KEY")
-	applicationSecret = os.Getenv("OVH_APPLICATION_SECRET")
-	consumerKey = os.Getenv("OVH_CONSUMER_KEY")
-	liveTest = len(apiEndpoint) > 0 && len(applicationKey) > 0 && len(applicationSecret) > 0 && len(consumerKey) > 0
+	envTestAPIEndpoint = os.Getenv("OVH_ENDPOINT")
+	envTestApplicationKey = os.Getenv("OVH_APPLICATION_KEY")
+	envTestApplicationSecret = os.Getenv("OVH_APPLICATION_SECRET")
+	envTestConsumerKey = os.Getenv("OVH_CONSUMER_KEY")
+	envTestDomain = os.Getenv("OVH_DOMAIN")
+
+	liveTest = len(envTestAPIEndpoint) > 0 && len(envTestApplicationKey) > 0 && len(envTestApplicationSecret) > 0 && len(envTestConsumerKey) > 0
 }
 
 func restoreEnv() {
-	os.Setenv("OVH_ENDPOINT", apiEndpoint)
-	os.Setenv("OVH_APPLICATION_KEY", applicationKey)
-	os.Setenv("OVH_APPLICATION_SECRET", applicationSecret)
-	os.Setenv("OVH_CONSUMER_KEY", consumerKey)
+	os.Setenv("OVH_ENDPOINT", envTestAPIEndpoint)
+	os.Setenv("OVH_APPLICATION_KEY", envTestApplicationKey)
+	os.Setenv("OVH_APPLICATION_SECRET", envTestApplicationSecret)
+	os.Setenv("OVH_CONSUMER_KEY", envTestConsumerKey)
 }
 
-func TestNewDNSProviderValidEnv(t *testing.T) {
-	defer restoreEnv()
-	os.Setenv("OVH_ENDPOINT", "ovh-eu")
-	os.Setenv("OVH_APPLICATION_KEY", "1234")
-	os.Setenv("OVH_APPLICATION_SECRET", "5678")
-	os.Setenv("OVH_CONSUMER_KEY", "abcde")
-
-	_, err := NewDNSProvider()
-	require.NoError(t, err)
-}
-
-func TestNewDNSProviderMissingCredErr(t *testing.T) {
-	defer restoreEnv()
-
+func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
 		desc     string
 		envVars  map[string]string
 		expected string
 	}{
 		{
-			desc: "missing OVH_ENDPOINT",
-			envVars: map[string]string{
-				"OVH_ENDPOINT":           "",
-				"OVH_APPLICATION_KEY":    "1234",
-				"OVH_APPLICATION_SECRET": "5678",
-				"OVH_CONSUMER_KEY":       "abcde",
-			},
-			expected: "ovh: some credentials information are missing: OVH_ENDPOINT",
-		},
-		{
-			desc: "missing OVH_APPLICATION_KEY",
+			desc: "success",
 			envVars: map[string]string{
 				"OVH_ENDPOINT":           "ovh-eu",
-				"OVH_APPLICATION_KEY":    "",
-				"OVH_APPLICATION_SECRET": "5678",
-				"OVH_CONSUMER_KEY":       "abcde",
+				"OVH_APPLICATION_KEY":    "B",
+				"OVH_APPLICATION_SECRET": "C",
+				"OVH_CONSUMER_KEY":       "D",
 			},
-			expected: "ovh: some credentials information are missing: OVH_APPLICATION_KEY",
 		},
 		{
-			desc: "missing OVH_APPLICATION_SECRET",
-			envVars: map[string]string{
-				"OVH_ENDPOINT":           "ovh-eu",
-				"OVH_APPLICATION_KEY":    "1234",
-				"OVH_APPLICATION_SECRET": "",
-				"OVH_CONSUMER_KEY":       "abcde",
-			},
-			expected: "ovh: some credentials information are missing: OVH_APPLICATION_SECRET",
-		},
-		{
-			desc: "missing OVH_CONSUMER_KEY",
-			envVars: map[string]string{
-				"OVH_ENDPOINT":           "ovh-eu",
-				"OVH_APPLICATION_KEY":    "1234",
-				"OVH_APPLICATION_SECRET": "5678",
-				"OVH_CONSUMER_KEY":       "",
-			},
-			expected: "ovh: some credentials information are missing: OVH_CONSUMER_KEY",
-		},
-		{
-			desc: "all missing",
+			desc: "missing credentials",
 			envVars: map[string]string{
 				"OVH_ENDPOINT":           "",
 				"OVH_APPLICATION_KEY":    "",
@@ -102,18 +59,171 @@ func TestNewDNSProviderMissingCredErr(t *testing.T) {
 			},
 			expected: "ovh: some credentials information are missing: OVH_ENDPOINT,OVH_APPLICATION_KEY,OVH_APPLICATION_SECRET,OVH_CONSUMER_KEY",
 		},
+		{
+			desc: "missing endpoint",
+			envVars: map[string]string{
+				"OVH_ENDPOINT":           "",
+				"OVH_APPLICATION_KEY":    "B",
+				"OVH_APPLICATION_SECRET": "C",
+				"OVH_CONSUMER_KEY":       "D",
+			},
+			expected: "ovh: some credentials information are missing: OVH_ENDPOINT",
+		},
+		{
+			desc: "missing invalid endpoint",
+			envVars: map[string]string{
+				"OVH_ENDPOINT":           "foobar",
+				"OVH_APPLICATION_KEY":    "B",
+				"OVH_APPLICATION_SECRET": "C",
+				"OVH_CONSUMER_KEY":       "D",
+			},
+			expected: "ovh: unknown endpoint 'foobar', consider checking 'Endpoints' list of using an URL",
+		},
+		{
+			desc: "missing application key",
+			envVars: map[string]string{
+				"OVH_ENDPOINT":           "ovh-eu",
+				"OVH_APPLICATION_KEY":    "",
+				"OVH_APPLICATION_SECRET": "C",
+				"OVH_CONSUMER_KEY":       "D",
+			},
+			expected: "ovh: some credentials information are missing: OVH_APPLICATION_KEY",
+		},
+		{
+			desc: "missing application secret",
+			envVars: map[string]string{
+				"OVH_ENDPOINT":           "ovh-eu",
+				"OVH_APPLICATION_KEY":    "B",
+				"OVH_APPLICATION_SECRET": "",
+				"OVH_CONSUMER_KEY":       "D",
+			},
+			expected: "ovh: some credentials information are missing: OVH_APPLICATION_SECRET",
+		},
+		{
+			desc: "missing consumer key",
+			envVars: map[string]string{
+				"OVH_ENDPOINT":           "ovh-eu",
+				"OVH_APPLICATION_KEY":    "B",
+				"OVH_APPLICATION_SECRET": "C",
+				"OVH_CONSUMER_KEY":       "",
+			},
+			expected: "ovh: some credentials information are missing: OVH_CONSUMER_KEY",
+		},
 	}
 
 	for _, test := range testCases {
-		test := test
 		t.Run(test.desc, func(t *testing.T) {
-
+			defer restoreEnv()
 			for key, value := range test.envVars {
-				os.Setenv(key, value)
+				if len(value) == 0 {
+					os.Unsetenv(key)
+				} else {
+					os.Setenv(key, value)
+				}
 			}
 
-			_, err := NewDNSProvider()
-			assert.EqualError(t, err, test.expected)
+			p, err := NewDNSProvider()
+
+			if len(test.expected) == 0 {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
+				require.NotNil(t, p.recordIDs)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
+}
+
+func TestNewDNSProviderConfig(t *testing.T) {
+	testCases := []struct {
+		desc              string
+		apiEndpoint       string
+		applicationKey    string
+		applicationSecret string
+		consumerKey       string
+		expected          string
+	}{
+		{
+			desc:              "success",
+			apiEndpoint:       "ovh-eu",
+			applicationKey:    "B",
+			applicationSecret: "C",
+			consumerKey:       "D",
+		},
+		{
+			desc:     "missing credentials",
+			expected: "ovh: credentials missing",
+		},
+		{
+			desc:              "missing api endpoint",
+			apiEndpoint:       "",
+			applicationKey:    "B",
+			applicationSecret: "C",
+			consumerKey:       "D",
+			expected:          "ovh: credentials missing",
+		},
+		{
+			desc:              "missing invalid api endpoint",
+			apiEndpoint:       "foobar",
+			applicationKey:    "B",
+			applicationSecret: "C",
+			consumerKey:       "D",
+			expected:          "ovh: unknown endpoint 'foobar', consider checking 'Endpoints' list of using an URL",
+		},
+		{
+			desc:              "missing application key",
+			apiEndpoint:       "ovh-eu",
+			applicationKey:    "",
+			applicationSecret: "C",
+			consumerKey:       "D",
+			expected:          "ovh: credentials missing",
+		},
+		{
+			desc:              "missing application secret",
+			apiEndpoint:       "ovh-eu",
+			applicationKey:    "B",
+			applicationSecret: "",
+			consumerKey:       "D",
+			expected:          "ovh: credentials missing",
+		},
+		{
+			desc:              "missing consumer key",
+			apiEndpoint:       "ovh-eu",
+			applicationKey:    "B",
+			applicationSecret: "C",
+			consumerKey:       "",
+			expected:          "ovh: credentials missing",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer restoreEnv()
+			os.Unsetenv("OVH_ENDPOINT")
+			os.Unsetenv("OVH_APPLICATION_KEY")
+			os.Unsetenv("OVH_APPLICATION_SECRET")
+			os.Unsetenv("OVH_CONSUMER_KEY")
+
+			config := NewDefaultConfig()
+			config.APIEndpoint = test.apiEndpoint
+			config.ApplicationKey = test.applicationKey
+			config.ApplicationSecret = test.applicationSecret
+			config.ConsumerKey = test.consumerKey
+
+			p, err := NewDNSProviderConfig(config)
+
+			if len(test.expected) == 0 {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
+				require.NotNil(t, p.recordIDs)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
 		})
 	}
 }
@@ -123,10 +233,11 @@ func TestLivePresent(t *testing.T) {
 		t.Skip("skipping live test")
 	}
 
+	restoreEnv()
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.Present(domain, "", "123d==")
+	err = provider.Present(envTestDomain, "", "123d==")
 	require.NoError(t, err)
 }
 
@@ -135,11 +246,12 @@ func TestLiveCleanUp(t *testing.T) {
 		t.Skip("skipping live test")
 	}
 
-	time.Sleep(time.Second * 1)
-
+	restoreEnv()
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.CleanUp(domain, "", "123d==")
+	time.Sleep(1 * time.Second)
+
+	err = provider.CleanUp(envTestDomain, "", "123d==")
 	require.NoError(t, err)
 }

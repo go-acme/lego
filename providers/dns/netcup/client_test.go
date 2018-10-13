@@ -6,16 +6,17 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/xenolf/lego/acme"
 )
 
-func TestClientAuth(t *testing.T) {
-	if !testLive {
+func TestLiveClientAuth(t *testing.T) {
+	if !liveTest {
 		t.Skip("skipping live test")
 	}
 
 	// Setup
-	client := NewClient(testCustomerNumber, testAPIKey, testAPIPassword)
+	client := NewClient(envTestCustomerNumber, envTestAPIKey, envTestAPIPassword)
 
 	for i := 1; i < 4; i++ {
 		i := i
@@ -23,57 +24,57 @@ func TestClientAuth(t *testing.T) {
 			t.Parallel()
 
 			sessionID, err := client.Login()
-			assert.NoError(t, err)
+			require.NoError(t, err)
 
 			err = client.Logout(sessionID)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 		})
 	}
 
 }
 
-func TestClientGetDnsRecords(t *testing.T) {
-	if !testLive {
+func TestLiveClientGetDnsRecords(t *testing.T) {
+	if !liveTest {
 		t.Skip("skipping live test")
 	}
 
-	client := NewClient(testCustomerNumber, testAPIKey, testAPIPassword)
+	client := NewClient(envTestCustomerNumber, envTestAPIKey, envTestAPIPassword)
 
 	// Setup
 	sessionID, err := client.Login()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
-	fqdn, _, _ := acme.DNS01Record(testDomain, "123d==")
+	fqdn, _, _ := acme.DNS01Record(envTestDomain, "123d==")
 
 	zone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameservers)
-	assert.NoError(t, err, "error finding DNSZone")
+	require.NoError(t, err, "error finding DNSZone")
 
 	zone = acme.UnFqdn(zone)
 
 	// TestMethod
 	_, err = client.GetDNSRecords(zone, sessionID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// Tear down
 	err = client.Logout(sessionID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
-func TestClientUpdateDnsRecord(t *testing.T) {
-	if !testLive {
+func TestLiveClientUpdateDnsRecord(t *testing.T) {
+	if !liveTest {
 		t.Skip("skipping live test")
 	}
 
 	// Setup
-	client := NewClient(testCustomerNumber, testAPIKey, testAPIPassword)
+	client := NewClient(envTestCustomerNumber, envTestAPIKey, envTestAPIPassword)
 
 	sessionID, err := client.Login()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
-	fqdn, _, _ := acme.DNS01Record(testDomain, "123d==")
+	fqdn, _, _ := acme.DNS01Record(envTestDomain, "123d==")
 
 	zone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameservers)
-	assert.NoError(t, err, fmt.Errorf("error finding DNSZone, %v", err))
+	require.NoError(t, err, fmt.Errorf("error finding DNSZone, %v", err))
 
 	hostname := strings.Replace(fqdn, "."+zone, "", 1)
 
@@ -83,13 +84,13 @@ func TestClientUpdateDnsRecord(t *testing.T) {
 	zone = acme.UnFqdn(zone)
 
 	err = client.UpdateDNSRecord(sessionID, zone, record)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	records, err := client.GetDNSRecords(zone, sessionID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	recordIdx, err := GetDNSRecordIdx(records, record)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	assert.Equal(t, record.Hostname, records[recordIdx].Hostname)
 	assert.Equal(t, record.RecordType, records[recordIdx].RecordType)
@@ -99,11 +100,11 @@ func TestClientUpdateDnsRecord(t *testing.T) {
 	records[recordIdx].DeleteRecord = true
 
 	// Tear down
-	err = client.UpdateDNSRecord(sessionID, testDomain, records[recordIdx])
-	assert.NoError(t, err, "Did not remove record! Please do so yourself.")
+	err = client.UpdateDNSRecord(sessionID, envTestDomain, records[recordIdx])
+	require.NoError(t, err, "Did not remove record! Please do so yourself.")
 
 	err = client.Logout(sessionID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestClientGetDnsRecordIdx(t *testing.T) {

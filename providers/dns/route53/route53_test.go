@@ -12,55 +12,20 @@ import (
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/xenolf/lego/platform/tester"
 )
 
-var (
-	envTestAwsSecretAccessKey string
-	envTestAwsAccessKeyID     string
-	envTestAwsRegion          string
-	envTestAwsHostedZoneID    string
-
-	envTestAwsMaxRetries         string
-	envTestAwsTTL                string
-	envTestAwsPropagationTimeout string
-	envTestAwsPollingInterval    string
-)
-
-func init() {
-	envTestAwsAccessKeyID = os.Getenv("AWS_ACCESS_KEY_ID")
-	envTestAwsSecretAccessKey = os.Getenv("AWS_SECRET_ACCESS_KEY")
-	envTestAwsRegion = os.Getenv("AWS_REGION")
-	envTestAwsHostedZoneID = os.Getenv("AWS_HOSTED_ZONE_ID")
-
-	envTestAwsMaxRetries = os.Getenv("AWS_MAX_RETRIES")
-	envTestAwsTTL = os.Getenv("AWS_TTL")
-	envTestAwsPropagationTimeout = os.Getenv("AWS_PROPAGATION_TIMEOUT")
-	envTestAwsPollingInterval = os.Getenv("AWS_POLLING_INTERVAL")
-}
-
-func restoreEnv() {
-	os.Setenv("AWS_ACCESS_KEY_ID", envTestAwsAccessKeyID)
-	os.Setenv("AWS_SECRET_ACCESS_KEY", envTestAwsSecretAccessKey)
-	os.Setenv("AWS_REGION", envTestAwsRegion)
-	os.Setenv("AWS_HOSTED_ZONE_ID", envTestAwsHostedZoneID)
-
-	os.Setenv("AWS_MAX_RETRIES", envTestAwsMaxRetries)
-	os.Setenv("AWS_TTL", envTestAwsTTL)
-	os.Setenv("AWS_PROPAGATION_TIMEOUT", envTestAwsPropagationTimeout)
-	os.Setenv("AWS_POLLING_INTERVAL", envTestAwsPollingInterval)
-}
-
-func cleanEnv() {
-	os.Unsetenv("AWS_ACCESS_KEY_ID")
-	os.Unsetenv("AWS_SECRET_ACCESS_KEY")
-	os.Unsetenv("AWS_REGION")
-	os.Unsetenv("AWS_HOSTED_ZONE_ID")
-
-	os.Unsetenv("AWS_MAX_RETRIES")
-	os.Unsetenv("AWS_TTL")
-	os.Unsetenv("AWS_PROPAGATION_TIMEOUT")
-	os.Unsetenv("AWS_POLLING_INTERVAL")
-}
+var envTest = tester.NewEnvTest(
+	"AWS_ACCESS_KEY_ID",
+	"AWS_SECRET_ACCESS_KEY",
+	"AWS_REGION",
+	"AWS_HOSTED_ZONE_ID",
+	"AWS_MAX_RETRIES",
+	"AWS_TTL",
+	"AWS_PROPAGATION_TIMEOUT",
+	"AWS_POLLING_INTERVAL").
+	WithDomain("R53_DOMAIN").
+	WithLiveTestRequirements("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_REGION", "R53_DOMAIN")
 
 func makeTestProvider(ts *httptest.Server) *DNSProvider {
 	config := &aws.Config{
@@ -80,7 +45,9 @@ func makeTestProvider(ts *httptest.Server) *DNSProvider {
 }
 
 func Test_loadCredentials_FromEnv(t *testing.T) {
-	defer restoreEnv()
+	defer envTest.RestoreEnv()
+	envTest.ClearEnv()
+
 	os.Setenv("AWS_ACCESS_KEY_ID", "123")
 	os.Setenv("AWS_SECRET_ACCESS_KEY", "456")
 	os.Setenv("AWS_REGION", "us-east-1")
@@ -105,7 +72,9 @@ func Test_loadCredentials_FromEnv(t *testing.T) {
 }
 
 func Test_loadRegion_FromEnv(t *testing.T) {
-	defer restoreEnv()
+	defer envTest.RestoreEnv()
+	envTest.ClearEnv()
+
 	os.Setenv("AWS_REGION", route53.CloudWatchRegionUsEast1)
 
 	sess, err := session.NewSession(aws.NewConfig())
@@ -116,7 +85,8 @@ func Test_loadRegion_FromEnv(t *testing.T) {
 }
 
 func Test_getHostedZoneID_FromEnv(t *testing.T) {
-	defer restoreEnv()
+	defer envTest.RestoreEnv()
+	envTest.ClearEnv()
 
 	expectedZoneID := "zoneID"
 
@@ -132,7 +102,7 @@ func Test_getHostedZoneID_FromEnv(t *testing.T) {
 }
 
 func TestNewDefaultConfig(t *testing.T) {
-	defer restoreEnv()
+	defer envTest.RestoreEnv()
 
 	testCases := []struct {
 		desc     string
@@ -169,7 +139,7 @@ func TestNewDefaultConfig(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			cleanEnv()
+			envTest.ClearEnv()
 			for key, value := range test.envVars {
 				os.Setenv(key, value)
 			}
@@ -195,6 +165,8 @@ func TestDNSProvider_Present(t *testing.T) {
 	ts := newMockServer(t, mockResponses)
 	defer ts.Close()
 
+	defer envTest.RestoreEnv()
+	envTest.ClearEnv()
 	provider := makeTestProvider(ts)
 
 	domain := "example.com"

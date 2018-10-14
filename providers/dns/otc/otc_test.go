@@ -6,19 +6,29 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+	"github.com/xenolf/lego/platform/tester"
 )
 
 type OTCSuite struct {
 	suite.Suite
-	Mock *DNSServerMock
+	Mock    *DNSServerMock
+	envTest *tester.EnvTest
 }
 
 func (s *OTCSuite) SetupTest() {
 	s.Mock = NewDNSServerMock(s.T())
 	s.Mock.HandleAuthSuccessfully()
+	s.envTest = tester.NewEnvTest(
+		"OTC_DOMAIN_NAME",
+		"OTC_USER_NAME",
+		"OTC_PASSWORD",
+		"OTC_PROJECT_NAME",
+		"OTC_IDENTITY_ENDPOINT",
+	)
 }
 
-func (s *OTCSuite) TearDownSuite() {
+func (s *OTCSuite) TearDownTest() {
+	s.envTest.RestoreEnv()
 	s.Mock.ShutdownServer()
 }
 
@@ -49,13 +59,15 @@ func (s *OTCSuite) TestLogin() {
 }
 
 func (s *OTCSuite) TestLoginEnv() {
-	defer os.Clearenv()
+	s.envTest.ClearEnv()
 
-	os.Setenv("OTC_DOMAIN_NAME", "unittest1")
-	os.Setenv("OTC_USER_NAME", "unittest2")
-	os.Setenv("OTC_PASSWORD", "unittest3")
-	os.Setenv("OTC_PROJECT_NAME", "unittest4")
-	os.Setenv("OTC_IDENTITY_ENDPOINT", "unittest5")
+	tester.Apply(map[string]string{
+		"OTC_DOMAIN_NAME":       "unittest1",
+		"OTC_USER_NAME":         "unittest2",
+		"OTC_PASSWORD":          "unittest3",
+		"OTC_PROJECT_NAME":      "unittest4",
+		"OTC_IDENTITY_ENDPOINT": "unittest5",
+	})
 
 	provider, err := NewDNSProvider()
 	s.Require().NoError(err)
@@ -75,7 +87,7 @@ func (s *OTCSuite) TestLoginEnv() {
 }
 
 func (s *OTCSuite) TestLoginEnvEmpty() {
-	defer os.Clearenv()
+	s.envTest.ClearEnv()
 
 	_, err := NewDNSProvider()
 	s.EqualError(err, "otc: some credentials information are missing: OTC_DOMAIN_NAME,OTC_USER_NAME,OTC_PASSWORD,OTC_PROJECT_NAME")

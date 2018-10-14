@@ -1,8 +1,6 @@
 package lightsail
 
 import (
-	"fmt"
-	"os"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -12,15 +10,16 @@ import (
 )
 
 func TestLiveTTL(t *testing.T) {
-	m, err := testGetAndPreCheck()
-	if err != nil {
-		t.Skip(err.Error())
+	if !envTest.IsLiveTest() {
+		t.Skip("skipping live test")
 	}
+
+	envTest.RestoreEnv()
 
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	domain := m["lightsailDomain"]
+	domain := envTest.GetDomain()
 
 	err = provider.Present(domain, "foo", "bar")
 	require.NoError(t, err)
@@ -50,24 +49,10 @@ func TestLiveTTL(t *testing.T) {
 
 	entries := resp.Domain.DomainEntries
 	for _, entry := range entries {
-		if *entry.Type == "TXT" && *entry.Name == fqdn {
+		if aws.StringValue(entry.Type) == "TXT" && aws.StringValue(entry.Name) == fqdn {
 			return
 		}
 	}
 
 	t.Fatalf("Could not find a TXT record for _acme-challenge.%s", domain)
-}
-
-func testGetAndPreCheck() (map[string]string, error) {
-	m := map[string]string{
-		"lightsailKey":    os.Getenv("AWS_ACCESS_KEY_ID"),
-		"lightsailSecret": os.Getenv("AWS_SECRET_ACCESS_KEY"),
-		"lightsailDomain": os.Getenv("DNS_ZONE"),
-	}
-	for _, v := range m {
-		if v == "" {
-			return nil, fmt.Errorf("AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and R53_DOMAIN are needed to run this test")
-		}
-	}
-	return m, nil
 }

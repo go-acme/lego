@@ -7,19 +7,19 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/platform/config/env"
 )
 
 func TestLiveTTL(t *testing.T) {
-	config, err := env.Get("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_REGION", "R53_DOMAIN")
-	if err != nil {
-		t.Skip(err.Error())
+	if !envTest.IsLiveTest() {
+		t.Skip("skipping live test")
 	}
+
+	envTest.RestoreEnv()
 
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	domain := config["R53_DOMAIN"]
+	domain := envTest.GetDomain()
 
 	err = provider.Present(domain, "foo", "bar")
 	require.NoError(t, err)

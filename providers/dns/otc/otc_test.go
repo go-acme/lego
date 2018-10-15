@@ -38,10 +38,10 @@ func TestTestSuite(t *testing.T) {
 
 func (s *OTCSuite) createDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
-	config.UserName = "test"
-	config.Password = "test"
-	config.DomainName = "test"
-	config.ProjectName = "test"
+	config.UserName = "UserName"
+	config.Password = "Password"
+	config.DomainName = "DomainName"
+	config.ProjectName = "ProjectName"
 	config.IdentityEndpoint = fmt.Sprintf("%s/v3/auth/token", s.Mock.GetServerURL())
 
 	return NewDNSProviderConfig(config)

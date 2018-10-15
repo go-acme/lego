@@ -1,6 +1,9 @@
 package tester
 
-import "os"
+import (
+	"fmt"
+	"os"
+)
 
 // EnvTest Environment variables manager for tests.
 type EnvTest struct {
@@ -10,8 +13,8 @@ type EnvTest struct {
 	liveTestHook      func() bool
 	liveTestExtraHook func() bool
 
-	domain        string
-	requireDomain bool
+	domain    string
+	domainKey string
 }
 
 // NewEnvTest Creates an EnvTest.
@@ -33,7 +36,7 @@ func NewEnvTest(keys ...string) *EnvTest {
 // WithDomain Defines the name of the environment variable used to define the domain related to the DNS request.
 // If the domain is defined, it was considered mandatory to define a test as a "live" test.
 func (e *EnvTest) WithDomain(key string) *EnvTest {
-	e.requireDomain = true
+	e.domainKey = key
 	e.domain = os.Getenv(key)
 	return e
 }
@@ -79,7 +82,7 @@ func (e *EnvTest) IsLiveTest() bool {
 
 	liveTest = liveTest && len(e.values) == len(e.keys)
 
-	if liveTest && e.requireDomain && len(e.domain) == 0 {
+	if liveTest && len(e.domainKey) > 0 && len(e.domain) == 0 {
 		return false
 	}
 
@@ -115,12 +118,25 @@ func (e *EnvTest) liveTestExtra() bool {
 
 // Apply Sets/Unsets environment variables.
 // Not related to the main environment variables.
-func Apply(envVars map[string]string) {
+func (e *EnvTest) Apply(envVars map[string]string) {
 	for key, value := range envVars {
-		if len(value) == 0 {
-			os.Unsetenv(key)
+		if e.isManagedKey(key) {
+			if len(value) == 0 {
+				os.Unsetenv(key)
+			} else {
+				os.Setenv(key, value)
+			}
 		} else {
-			os.Setenv(key, value)
+			panic(fmt.Sprintf("Unauthorized action, the env var %s is not managed.", key))
 		}
 	}
+}
+
+func (e *EnvTest) isManagedKey(varName string) bool {
+	for _, key := range e.keys {
+		if key == varName {
+			return true
+		}
+	}
+	return false
 }

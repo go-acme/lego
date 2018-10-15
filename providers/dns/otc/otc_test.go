@@ -61,7 +61,7 @@ func (s *OTCSuite) TestLogin() {
 func (s *OTCSuite) TestLoginEnv() {
 	s.envTest.ClearEnv()
 
-	tester.Apply(map[string]string{
+	s.envTest.Apply(map[string]string{
 		"OTC_DOMAIN_NAME":       "unittest1",
 		"OTC_USER_NAME":         "unittest2",
 		"OTC_PASSWORD":          "unittest3",

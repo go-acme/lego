@@ -54,7 +54,7 @@ func TestNewDNSProvider(t *testing.T) {
 			defer envTest.RestoreEnv()
 			envTest.ClearEnv()
 
-			tester.Apply(test.envVars)
+			envTest.Apply(test.envVars)
 
 			if test.userAgent != "" {
 				acme.UserAgent = test.userAgent

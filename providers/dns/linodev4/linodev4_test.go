@@ -19,7 +19,7 @@ type (
 	MockResponseMap map[string]interface{}
 )
 
-var envTest = tester.NewEnvTest("LINODE_API_KEY")
+var envTest = tester.NewEnvTest("LINODE_TOKEN")
 
 func newMockServer(responses MockResponseMap) *httptest.Server {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -85,7 +85,7 @@ func TestNewDNSProvider(t *testing.T) {
 			defer envTest.RestoreEnv()
 			envTest.ClearEnv()
 
-			tester.Apply(test.envVars)
+			envTest.Apply(test.envVars)
 
 			p, err := NewDNSProvider()
 

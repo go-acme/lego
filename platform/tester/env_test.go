@@ -22,6 +22,16 @@ func TestMain(m *testing.M) {
 	os.Exit(exitCode)
 }
 
+func applyEnv(envVars map[string]string) {
+	for key, value := range envVars {
+		if len(value) == 0 {
+			os.Unsetenv(key)
+		} else {
+			os.Setenv(key, value)
+		}
+	}
+}
+
 func clearEnv() {
 	environ := os.Environ()
 	for _, key := range environ {
@@ -299,7 +309,7 @@ func TestEnvTest(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			defer clearEnv()
-			tester.Apply(test.envVars)
+			applyEnv(test.envVars)
 
 			envTest := test.envTestSetup()
 

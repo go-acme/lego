@@ -1,38 +1,19 @@
 package ovh
 
 import (
-	"os"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"github.com/xenolf/lego/platform/tester"
 )
 
-var (
-	liveTest                 bool
-	envTestAPIEndpoint       string
-	envTestApplicationKey    string
-	envTestApplicationSecret string
-	envTestConsumerKey       string
-	envTestDomain            string
-)
-
-func init() {
-	envTestAPIEndpoint = os.Getenv("OVH_ENDPOINT")
-	envTestApplicationKey = os.Getenv("OVH_APPLICATION_KEY")
-	envTestApplicationSecret = os.Getenv("OVH_APPLICATION_SECRET")
-	envTestConsumerKey = os.Getenv("OVH_CONSUMER_KEY")
-	envTestDomain = os.Getenv("OVH_DOMAIN")
-
-	liveTest = len(envTestAPIEndpoint) > 0 && len(envTestApplicationKey) > 0 && len(envTestApplicationSecret) > 0 && len(envTestConsumerKey) > 0
-}
-
-func restoreEnv() {
-	os.Setenv("OVH_ENDPOINT", envTestAPIEndpoint)
-	os.Setenv("OVH_APPLICATION_KEY", envTestApplicationKey)
-	os.Setenv("OVH_APPLICATION_SECRET", envTestApplicationSecret)
-	os.Setenv("OVH_CONSUMER_KEY", envTestConsumerKey)
-}
+var envTest = tester.NewEnvTest(
+	"OVH_ENDPOINT",
+	"OVH_APPLICATION_KEY",
+	"OVH_APPLICATION_SECRET",
+	"OVH_CONSUMER_KEY").
+	WithDomain("OVH_DOMAIN")
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -113,14 +94,10 @@ func TestNewDNSProvider(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer restoreEnv()
-			for key, value := range test.envVars {
-				if len(value) == 0 {
-					os.Unsetenv(key)
-				} else {
-					os.Setenv(key, value)
-				}
-			}
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
+			envTest.Apply(test.envVars)
 
 			p, err := NewDNSProvider()
 
@@ -201,12 +178,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer restoreEnv()
-			os.Unsetenv("OVH_ENDPOINT")
-			os.Unsetenv("OVH_APPLICATION_KEY")
-			os.Unsetenv("OVH_APPLICATION_SECRET")
-			os.Unsetenv("OVH_CONSUMER_KEY")
-
 			config := NewDefaultConfig()
 			config.APIEndpoint = test.apiEndpoint
 			config.ApplicationKey = test.applicationKey
@@ -229,29 +200,29 @@ func TestNewDNSProviderConfig(t *testing.T) {
 }
 
 func TestLivePresent(t *testing.T) {
-	if !liveTest {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	restoreEnv()
+	envTest.RestoreEnv()
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.Present(envTestDomain, "", "123d==")
+	err = provider.Present(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
 func TestLiveCleanUp(t *testing.T) {
-	if !liveTest {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	restoreEnv()
+	envTest.RestoreEnv()
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
 	time.Sleep(1 * time.Second)
 
-	err = provider.CleanUp(envTestDomain, "", "123d==")
+	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }

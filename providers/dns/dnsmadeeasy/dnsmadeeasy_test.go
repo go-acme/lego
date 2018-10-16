@@ -5,28 +5,16 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"github.com/xenolf/lego/platform/tester"
 )
 
-var (
-	liveTest         bool
-	envTestAPIKey    string
-	envTestAPISecret string
-	envTestDomain    string
-)
+var envTest = tester.NewEnvTest(
+	"DNSMADEEASY_API_KEY",
+	"DNSMADEEASY_API_SECRET").
+	WithDomain("DNSMADEEASY_DOMAIN")
 
 func init() {
-	envTestAPIKey = os.Getenv("DNSMADEEASY_API_KEY")
-	envTestAPISecret = os.Getenv("DNSMADEEASY_API_SECRET")
-	envTestDomain = os.Getenv("DNSMADEEASY_DOMAIN")
-
 	os.Setenv("DNSMADEEASY_SANDBOX", "true")
-
-	liveTest = len(envTestAPIKey) > 0 && len(envTestAPISecret) > 0
-}
-
-func restoreEnv() {
-	os.Setenv("DNSMADEEASY_API_KEY", envTestAPIKey)
-	os.Setenv("DNSMADEEASY_API_SECRET", envTestAPISecret)
 }
 
 func TestNewDNSProvider(t *testing.T) {
@@ -70,14 +58,10 @@ func TestNewDNSProvider(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer restoreEnv()
-			for key, value := range test.envVars {
-				if len(value) == 0 {
-					os.Unsetenv(key)
-				} else {
-					os.Setenv(key, value)
-				}
-			}
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
+			envTest.Apply(test.envVars)
 
 			p, err := NewDNSProvider()
 
@@ -123,10 +107,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer restoreEnv()
-			os.Unsetenv("DNSMADEEASY_API_KEY")
-			os.Unsetenv("DNSMADEEASY_API_SECRET")
-
 			config := NewDefaultConfig()
 			config.APIKey = test.apiKey
 			config.APISecret = test.apiSecret
@@ -146,17 +126,17 @@ func TestNewDNSProviderConfig(t *testing.T) {
 }
 
 func TestLivePresentAndCleanup(t *testing.T) {
-	if !liveTest {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	restoreEnv()
+	envTest.RestoreEnv()
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.Present(envTestDomain, "", "123d==")
+	err = provider.Present(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 
-	err = provider.CleanUp(envTestDomain, "", "123d==")
+	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }

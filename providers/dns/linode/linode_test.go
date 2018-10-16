@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/timewasted/linode"
 	"github.com/timewasted/linode/dns"
+	"github.com/xenolf/lego/platform/tester"
 )
 
 type (
@@ -28,20 +29,7 @@ type (
 	MockResponseMap map[string]MockResponse
 )
 
-var (
-	apiKey   string
-	liveTest bool
-)
-
-func init() {
-	apiKey = os.Getenv("LINODE_API_KEY")
-
-	liveTest = len(apiKey) != 0
-}
-
-func restoreEnv() {
-	os.Setenv("LINODE_API_KEY", apiKey)
-}
+var envTest = tester.NewEnvTest("LINODE_API_KEY")
 
 func newMockServer(responses MockResponseMap) *httptest.Server {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -103,14 +91,10 @@ func TestNewDNSProvider(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer restoreEnv()
-			for key, value := range test.envVars {
-				if len(value) == 0 {
-					os.Unsetenv(key)
-				} else {
-					os.Setenv(key, value)
-				}
-			}
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
+			envTest.Apply(test.envVars)
 
 			p, err := NewDNSProvider()
 
@@ -144,9 +128,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer restoreEnv()
-			os.Unsetenv("LINODE_API_KEY")
-
 			config := NewDefaultConfig()
 			config.APIKey = test.apiKey
 
@@ -165,7 +146,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 }
 
 func TestDNSProvider_Present(t *testing.T) {
-	defer restoreEnv()
+	defer envTest.RestoreEnv()
 	os.Setenv("LINODE_API_KEY", "testing")
 
 	p, err := NewDNSProvider()
@@ -252,7 +233,7 @@ func TestDNSProvider_Present(t *testing.T) {
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
-	defer restoreEnv()
+	defer envTest.RestoreEnv()
 	os.Setenv("LINODE_API_KEY", "testing")
 
 	p, err := NewDNSProvider()
@@ -363,14 +344,14 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 }
 
 func TestLivePresent(t *testing.T) {
-	if !liveTest {
+	if !envTest.IsLiveTest() {
 		t.Skip("Skipping live test")
 	}
 	// TODO implement this test
 }
 
 func TestLiveCleanUp(t *testing.T) {
-	if !liveTest {
+	if !envTest.IsLiveTest() {
 		t.Skip("Skipping live test")
 	}
 	// TODO implement this test

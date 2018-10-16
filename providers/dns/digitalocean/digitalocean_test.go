@@ -5,24 +5,14 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/xenolf/lego/platform/tester"
 )
 
-var (
-	envTestAuthToken string
-)
-
-func init() {
-	envTestAuthToken = os.Getenv("DO_AUTH_TOKEN")
-}
-
-func restoreEnv() {
-	os.Setenv("DO_AUTH_TOKEN", envTestAuthToken)
-}
+var envTest = tester.NewEnvTest("DO_AUTH_TOKEN")
 
 func setupTest() (*DNSProvider, *http.ServeMux, func()) {
 	handler := http.NewServeMux()
@@ -63,14 +53,10 @@ func TestNewDNSProvider(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer restoreEnv()
-			for key, value := range test.envVars {
-				if len(value) == 0 {
-					os.Unsetenv(key)
-				} else {
-					os.Setenv(key, value)
-				}
-			}
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
+			envTest.Apply(test.envVars)
 
 			p, err := NewDNSProvider()
 
@@ -104,10 +90,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer restoreEnv()
-			os.Unsetenv("DO_AUTH_TOKEN")
-			os.Unsetenv("ALICLOUD_SECRET_KEY")
-
 			config := NewDefaultConfig()
 			config.AuthToken = test.authToken
 

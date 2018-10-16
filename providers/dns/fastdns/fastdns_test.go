@@ -1,41 +1,20 @@
 package fastdns
 
 import (
-	"os"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/xenolf/lego/platform/tester"
 )
 
-var (
-	liveTest            bool
-	envTestHost         string
-	envTestClientToken  string
-	envTestClientSecret string
-	envTestAccessToken  string
-	envTestDomain       string
-)
-
-func init() {
-	envTestHost = os.Getenv("AKAMAI_HOST")
-	envTestClientToken = os.Getenv("AKAMAI_CLIENT_TOKEN")
-	envTestClientSecret = os.Getenv("AKAMAI_CLIENT_SECRET")
-	envTestAccessToken = os.Getenv("AKAMAI_ACCESS_TOKEN")
-	envTestDomain = os.Getenv("AKAMAI_TEST_DOMAIN")
-
-	if len(envTestHost) > 0 && len(envTestClientToken) > 0 && len(envTestClientSecret) > 0 && len(envTestAccessToken) > 0 {
-		liveTest = true
-	}
-}
-
-func restoreEnv() {
-	os.Setenv("AKAMAI_HOST", envTestHost)
-	os.Setenv("AKAMAI_CLIENT_TOKEN", envTestClientToken)
-	os.Setenv("AKAMAI_CLIENT_SECRET", envTestClientSecret)
-	os.Setenv("AKAMAI_ACCESS_TOKEN", envTestAccessToken)
-}
+var envTest = tester.NewEnvTest(
+	"AKAMAI_HOST",
+	"AKAMAI_CLIENT_TOKEN",
+	"AKAMAI_CLIENT_SECRET",
+	"AKAMAI_ACCESS_TOKEN").
+	WithDomain("AKAMAI_TEST_DOMAIN")
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -106,14 +85,10 @@ func TestNewDNSProvider(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer restoreEnv()
-			for key, value := range test.envVars {
-				if len(value) == 0 {
-					os.Unsetenv(key)
-				} else {
-					os.Setenv(key, value)
-				}
-			}
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
+			envTest.Apply(test.envVars)
 
 			p, err := NewDNSProvider()
 
@@ -184,12 +159,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer restoreEnv()
-			os.Unsetenv("AKAMAI_HOST")
-			os.Unsetenv("AKAMAI_CLIENT_TOKEN")
-			os.Unsetenv("AKAMAI_CLIENT_SECRET")
-			os.Unsetenv("AKAMAI_ACCESS_TOKEN")
-
 			config := NewDefaultConfig()
 			config.ClientToken = test.clientToken
 			config.ClientSecret = test.clientSecret
@@ -264,38 +233,33 @@ func TestDNSProvider_findZoneAndRecordName(t *testing.T) {
 }
 
 func TestLivePresent(t *testing.T) {
-	if !liveTest {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	restoreEnv()
+	envTest.RestoreEnv()
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.Present(envTestDomain, "", "123d==")
+	err = provider.Present(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 
 	// Present Twice to handle create / update
-	err = provider.Present(envTestDomain, "", "123d==")
+	err = provider.Present(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
 func TestLiveCleanUp(t *testing.T) {
-	if !liveTest {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	time.Sleep(time.Second * 1)
-
-	config := NewDefaultConfig()
-	config.Host = envTestHost
-	config.ClientToken = envTestClientToken
-	config.ClientSecret = envTestClientSecret
-	config.AccessToken = envTestAccessToken
-
-	provider, err := NewDNSProviderConfig(config)
+	envTest.RestoreEnv()
+	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.CleanUp(envTestDomain, "", "123d==")
+	time.Sleep(1 * time.Second)
+
+	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }

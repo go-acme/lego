@@ -4,42 +4,19 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/xenolf/lego/platform/tester"
 )
 
-var (
-	liveTest            bool
-	envTestClientID     string
-	envTestClientSecret string
-	envTestStackID      string
-	envTestDomain       string
-)
-
-func init() {
-	envTestClientID = os.Getenv("STACKPATH_CLIENT_ID")
-	envTestClientSecret = os.Getenv("STACKPATH_CLIENT_SECRET")
-	envTestStackID = os.Getenv("STACKPATH_STACK_ID")
-	envTestDomain = os.Getenv("STACKPATH_DOMAIN")
-
-	if len(envTestClientID) > 0 &&
-		len(envTestClientSecret) > 0 &&
-		len(envTestStackID) > 0 &&
-		len(envTestDomain) > 0 {
-		liveTest = true
-	}
-}
-
-func restoreEnv() {
-	os.Setenv("STACKPATH_CLIENT_ID", envTestClientID)
-	os.Setenv("STACKPATH_CLIENT_SECRET", envTestClientSecret)
-	os.Setenv("STACKPATH_STACK_ID", envTestStackID)
-	os.Setenv("STACKPATH_DOMAIN", envTestDomain)
-}
+var envTest = tester.NewEnvTest(
+	"STACKPATH_CLIENT_ID",
+	"STACKPATH_CLIENT_SECRET",
+	"STACKPATH_STACK_ID").
+	WithDomain("STACKPATH_DOMAIN")
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -95,14 +72,10 @@ func TestNewDNSProvider(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer restoreEnv()
-			for key, value := range test.envVars {
-				if len(value) == 0 {
-					os.Unsetenv(key)
-				} else {
-					os.Setenv(key, value)
-				}
-			}
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
+			envTest.Apply(test.envVars)
 
 			p, err := NewDNSProvider()
 
@@ -289,29 +262,29 @@ func TestDNSProvider_getZones(t *testing.T) {
 }
 
 func TestLivePresent(t *testing.T) {
-	if !liveTest {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	restoreEnv()
+	envTest.RestoreEnv()
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.Present(envTestDomain, "", "123d==")
+	err = provider.Present(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
 func TestLiveCleanUp(t *testing.T) {
-	if !liveTest {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	restoreEnv()
+	envTest.RestoreEnv()
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
 	time.Sleep(1 * time.Second)
 
-	err = provider.CleanUp(envTestDomain, "", "123d==")
+	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }

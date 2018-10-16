@@ -11,12 +11,17 @@ import (
 )
 
 func TestLiveClientAuth(t *testing.T) {
-	if !liveTest {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
 	// Setup
-	client := NewClient(envTestCustomerNumber, envTestAPIKey, envTestAPIPassword)
+	envTest.RestoreEnv()
+
+	client := NewClient(
+		envTest.GetValue("NETCUP_CUSTOMER_NUMBER"),
+		envTest.GetValue("NETCUP_API_KEY"),
+		envTest.GetValue("NETCUP_API_PASSWORD"))
 
 	for i := 1; i < 4; i++ {
 		i := i
@@ -34,17 +39,22 @@ func TestLiveClientAuth(t *testing.T) {
 }
 
 func TestLiveClientGetDnsRecords(t *testing.T) {
-	if !liveTest {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	client := NewClient(envTestCustomerNumber, envTestAPIKey, envTestAPIPassword)
-
 	// Setup
+	envTest.RestoreEnv()
+
+	client := NewClient(
+		envTest.GetValue("NETCUP_CUSTOMER_NUMBER"),
+		envTest.GetValue("NETCUP_API_KEY"),
+		envTest.GetValue("NETCUP_API_PASSWORD"))
+
 	sessionID, err := client.Login()
 	require.NoError(t, err)
 
-	fqdn, _, _ := acme.DNS01Record(envTestDomain, "123d==")
+	fqdn, _, _ := acme.DNS01Record(envTest.GetDomain(), "123d==")
 
 	zone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameservers)
 	require.NoError(t, err, "error finding DNSZone")
@@ -61,17 +71,22 @@ func TestLiveClientGetDnsRecords(t *testing.T) {
 }
 
 func TestLiveClientUpdateDnsRecord(t *testing.T) {
-	if !liveTest {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
 	// Setup
-	client := NewClient(envTestCustomerNumber, envTestAPIKey, envTestAPIPassword)
+	envTest.RestoreEnv()
+
+	client := NewClient(
+		envTest.GetValue("NETCUP_CUSTOMER_NUMBER"),
+		envTest.GetValue("NETCUP_API_KEY"),
+		envTest.GetValue("NETCUP_API_PASSWORD"))
 
 	sessionID, err := client.Login()
 	require.NoError(t, err)
 
-	fqdn, _, _ := acme.DNS01Record(envTestDomain, "123d==")
+	fqdn, _, _ := acme.DNS01Record(envTest.GetDomain(), "123d==")
 
 	zone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameservers)
 	require.NoError(t, err, fmt.Errorf("error finding DNSZone, %v", err))
@@ -100,7 +115,7 @@ func TestLiveClientUpdateDnsRecord(t *testing.T) {
 	records[recordIdx].DeleteRecord = true
 
 	// Tear down
-	err = client.UpdateDNSRecord(sessionID, envTestDomain, records[recordIdx])
+	err = client.UpdateDNSRecord(sessionID, envTest.GetDomain(), records[recordIdx])
 	require.NoError(t, err, "Did not remove record! Please do so yourself.")
 
 	err = client.Logout(sessionID)

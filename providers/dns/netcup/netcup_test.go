@@ -2,37 +2,18 @@ package netcup
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/platform/tester"
 )
 
-var (
-	liveTest              bool
-	envTestCustomerNumber string
-	envTestAPIKey         string
-	envTestAPIPassword    string
-	envTestDomain         string
-)
-
-func init() {
-	envTestCustomerNumber = os.Getenv("NETCUP_CUSTOMER_NUMBER")
-	envTestAPIKey = os.Getenv("NETCUP_API_KEY")
-	envTestAPIPassword = os.Getenv("NETCUP_API_PASSWORD")
-	envTestDomain = os.Getenv("NETCUP_DOMAIN")
-
-	if len(envTestCustomerNumber) > 0 && len(envTestAPIKey) > 0 && len(envTestAPIPassword) > 0 && len(envTestDomain) > 0 {
-		liveTest = true
-	}
-}
-
-func restoreEnv() {
-	os.Setenv("NETCUP_CUSTOMER_NUMBER", envTestCustomerNumber)
-	os.Setenv("NETCUP_API_KEY", envTestAPIKey)
-	os.Setenv("NETCUP_API_PASSWORD", envTestAPIPassword)
-}
+var envTest = tester.NewEnvTest(
+	"NETCUP_CUSTOMER_NUMBER",
+	"NETCUP_API_KEY",
+	"NETCUP_API_PASSWORD").
+	WithDomain("NETCUP_DOMAIN")
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -88,14 +69,10 @@ func TestNewDNSProvider(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer restoreEnv()
-			for key, value := range test.envVars {
-				if len(value) == 0 {
-					os.Unsetenv(key)
-				} else {
-					os.Setenv(key, value)
-				}
-			}
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
+			envTest.Apply(test.envVars)
 
 			p, err := NewDNSProvider()
 
@@ -154,11 +131,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer restoreEnv()
-			os.Unsetenv("NETCUP_CUSTOMER_NUMBER")
-			os.Unsetenv("NETCUP_API_KEY")
-			os.Unsetenv("NETCUP_API_PASSWORD")
-
 			config := NewDefaultConfig()
 			config.Customer = test.customer
 			config.Key = test.key
@@ -179,15 +151,15 @@ func TestNewDNSProviderConfig(t *testing.T) {
 }
 
 func TestLivePresentAndCleanup(t *testing.T) {
-	if !liveTest {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	restoreEnv()
+	envTest.RestoreEnv()
 	p, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	fqdn, _, _ := acme.DNS01Record(envTestDomain, "123d==")
+	fqdn, _, _ := acme.DNS01Record(envTest.GetDomain(), "123d==")
 
 	zone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameservers)
 	require.NoError(t, err, "error finding DNSZone")

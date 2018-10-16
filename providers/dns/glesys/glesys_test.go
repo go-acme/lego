@@ -1,32 +1,16 @@
 package glesys
 
 import (
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"github.com/xenolf/lego/platform/tester"
 )
 
-var (
-	liveTest       bool
-	envTestAPIUser string
-	envTestAPIKey  string
-	envTestDomain  string
-)
-
-func init() {
-	envTestAPIUser = os.Getenv("GLESYS_API_USER")
-	envTestAPIKey = os.Getenv("GLESYS_API_KEY")
-
-	if len(envTestAPIUser) > 0 && len(envTestAPIKey) > 0 && len(envTestDomain) > 0 {
-		liveTest = true
-	}
-}
-
-func restoreEnv() {
-	os.Setenv("GLESYS_API_USER", envTestAPIUser)
-	os.Setenv("GLESYS_API_KEY", envTestAPIKey)
-}
+var envTest = tester.NewEnvTest(
+	"GLESYS_API_USER",
+	"GLESYS_API_KEY").
+	WithDomain("GLESYS_DOMAIN")
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -69,14 +53,10 @@ func TestNewDNSProvider(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer restoreEnv()
-			for key, value := range test.envVars {
-				if len(value) == 0 {
-					os.Unsetenv(key)
-				} else {
-					os.Setenv(key, value)
-				}
-			}
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
+			envTest.Apply(test.envVars)
 
 			p, err := NewDNSProvider()
 
@@ -124,10 +104,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer restoreEnv()
-			os.Unsetenv("GLESYS_API_USER")
-			os.Unsetenv("GLESYS_API_KEY")
-
 			config := NewDefaultConfig()
 			config.APIKey = test.apiKey
 			config.APIUser = test.apiUser
@@ -147,27 +123,27 @@ func TestNewDNSProviderConfig(t *testing.T) {
 }
 
 func TestLivePresent(t *testing.T) {
-	if !liveTest {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	restoreEnv()
+	envTest.RestoreEnv()
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.Present(envTestDomain, "", "123d==")
+	err = provider.Present(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
 func TestLiveCleanUp(t *testing.T) {
-	if !liveTest {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	restoreEnv()
+	envTest.RestoreEnv()
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.CleanUp(envTestDomain, "", "123d==")
+	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }

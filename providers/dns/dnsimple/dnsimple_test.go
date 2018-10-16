@@ -8,35 +8,16 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/platform/tester"
 )
 
-var (
-	liveTest          bool
-	envTestOauthToken string
-	envTestDomain     string
-	envTestBaseURL    string
-)
+const sandboxURL = "https://api.sandbox.fake.com"
 
-func init() {
-	envTestOauthToken = os.Getenv("DNSIMPLE_OAUTH_TOKEN")
-	envTestDomain = os.Getenv("DNSIMPLE_DOMAIN")
-	envTestBaseURL = "https://api.sandbox.fake.com"
-
-	if len(envTestOauthToken) > 0 && len(envTestDomain) > 0 {
-		baseURL := os.Getenv("DNSIMPLE_BASE_URL")
-
-		if baseURL != "" {
-			envTestBaseURL = baseURL
-		}
-
-		liveTest = true
-	}
-}
-
-func restoreEnv() {
-	os.Setenv("DNSIMPLE_OAUTH_TOKEN", envTestOauthToken)
-	os.Setenv("DNSIMPLE_BASE_URL", envTestBaseURL)
-}
+var envTest = tester.NewEnvTest(
+	"DNSIMPLE_OAUTH_TOKEN",
+	"DNSIMPLE_BASE_URL").
+	WithDomain("DNSIMPLE_DOMAIN").
+	WithLiveTestRequirements("DNSIMPLE_OAUTH_TOKEN", "DNSIMPLE_DOMAIN")
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -70,14 +51,10 @@ func TestNewDNSProvider(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer restoreEnv()
-			for key, value := range test.envVars {
-				if len(value) == 0 {
-					os.Unsetenv(key)
-				} else {
-					os.Setenv(key, value)
-				}
-			}
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
+			envTest.Apply(test.envVars)
 
 			if test.userAgent != "" {
 				acme.UserAgent = test.userAgent
@@ -132,10 +109,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer restoreEnv()
-			os.Unsetenv("DNSIMPLE_OAUTH_TOKEN")
-			os.Unsetenv("DNSIMPLE_BASE_URL")
-
 			config := NewDefaultConfig()
 			config.AccessToken = test.accessToken
 			config.BaseURL = test.baseURL
@@ -160,29 +133,39 @@ func TestNewDNSProviderConfig(t *testing.T) {
 }
 
 func TestLivePresent(t *testing.T) {
-	if !liveTest {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	restoreEnv()
+	envTest.RestoreEnv()
+
+	if len(os.Getenv("DNSIMPLE_BASE_URL")) == 0 {
+		os.Setenv("DNSIMPLE_BASE_URL", sandboxURL)
+	}
+
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.Present(envTestDomain, "", "123d==")
+	err = provider.Present(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
 func TestLiveCleanUp(t *testing.T) {
-	if !liveTest {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	restoreEnv()
+	envTest.RestoreEnv()
+
+	if len(os.Getenv("DNSIMPLE_BASE_URL")) == 0 {
+		os.Setenv("DNSIMPLE_BASE_URL", sandboxURL)
+	}
+
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
 	time.Sleep(1 * time.Second)
 
-	err = provider.CleanUp(envTestDomain, "", "123d==")
+	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }

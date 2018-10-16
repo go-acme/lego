@@ -1,41 +1,25 @@
 package gcloud
 
 import (
-	"os"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"github.com/xenolf/lego/platform/tester"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/dns/v1"
 )
 
-var (
-	liveTest                            bool
-	envTestProject                      string
-	envTestServiceAccountFile           string
-	envTestGoogleApplicationCredentials string
-	envTestDomain                       string
-)
-
-func init() {
-	envTestProject = os.Getenv("GCE_PROJECT")
-	envTestServiceAccountFile = os.Getenv("GCE_SERVICE_ACCOUNT_FILE")
-	envTestGoogleApplicationCredentials = os.Getenv("GOOGLE_APPLICATION_CREDENTIALS")
-	envTestDomain = os.Getenv("GCE_DOMAIN")
-
-	_, err := google.DefaultClient(context.Background(), dns.NdevClouddnsReadwriteScope)
-	if err == nil && len(envTestProject) > 0 && len(envTestDomain) > 0 {
-		liveTest = true
-	}
-}
-
-func restoreEnv() {
-	os.Setenv("GCE_PROJECT", envTestProject)
-	os.Setenv("GCE_SERVICE_ACCOUNT_FILE", envTestServiceAccountFile)
-	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", envTestGoogleApplicationCredentials)
-}
+var envTest = tester.NewEnvTest(
+	"GCE_PROJECT",
+	"GCE_SERVICE_ACCOUNT_FILE",
+	"GOOGLE_APPLICATION_CREDENTIALS").
+	WithDomain("GCE_DOMAIN").
+	WithLiveTestExtra(func() bool {
+		_, err := google.DefaultClient(context.Background(), dns.NdevClouddnsReadwriteScope)
+		return err == nil
+	})
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -72,15 +56,10 @@ func TestNewDNSProvider(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer restoreEnv()
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
 
-			for key, value := range test.envVars {
-				if len(value) == 0 {
-					os.Unsetenv(key)
-				} else {
-					os.Setenv(key, value)
-				}
-			}
+			envTest.Apply(test.envVars)
 
 			p, err := NewDNSProvider()
 
@@ -115,9 +94,8 @@ func TestNewDNSProviderConfig(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer restoreEnv()
-			os.Unsetenv("GCE_PROJECT")
-			os.Unsetenv("GCE_SERVICE_ACCOUNT_FILE")
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
 
 			config := NewDefaultConfig()
 			config.Project = test.project
@@ -137,43 +115,49 @@ func TestNewDNSProviderConfig(t *testing.T) {
 }
 
 func TestLivePresent(t *testing.T) {
-	if !liveTest {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	provider, err := NewDNSProviderCredentials(envTestProject)
+	envTest.RestoreEnv()
+
+	provider, err := NewDNSProviderCredentials(envTest.GetValue("GCE_PROJECT"))
 	require.NoError(t, err)
 
-	err = provider.Present(envTestDomain, "", "123d==")
+	err = provider.Present(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
 func TestLivePresentMultiple(t *testing.T) {
-	if !liveTest {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	provider, err := NewDNSProviderCredentials(envTestProject)
+	envTest.RestoreEnv()
+
+	provider, err := NewDNSProviderCredentials(envTest.GetValue("GCE_PROJECT"))
 	require.NoError(t, err)
 
 	// Check that we're able to create multiple entries
-	err = provider.Present(envTestDomain, "1", "123d==")
+	err = provider.Present(envTest.GetDomain(), "1", "123d==")
 	require.NoError(t, err)
 
-	err = provider.Present(envTestDomain, "2", "123d==")
+	err = provider.Present(envTest.GetDomain(), "2", "123d==")
 	require.NoError(t, err)
 }
 
 func TestLiveCleanUp(t *testing.T) {
-	if !liveTest {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	provider, err := NewDNSProviderCredentials(envTestProject)
+	envTest.RestoreEnv()
+
+	provider, err := NewDNSProviderCredentials(envTest.GetValue("GCE_PROJECT"))
 	require.NoError(t, err)
 
 	time.Sleep(1 * time.Second)
 
-	err = provider.CleanUp(envTestDomain, "", "123d==")
+	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }

@@ -1,34 +1,17 @@
 package sakuracloud
 
 import (
-	"os"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"github.com/xenolf/lego/platform/tester"
 )
 
-var (
-	liveTest            bool
-	envTestAccessToken  string
-	envTestAccessSecret string
-	envTestDomain       string
-)
-
-func init() {
-	envTestAccessToken = os.Getenv("SAKURACLOUD_ACCESS_TOKEN")
-	envTestAccessSecret = os.Getenv("SAKURACLOUD_ACCESS_TOKEN_SECRET")
-	envTestDomain = os.Getenv("SAKURACLOUD_DOMAIN")
-
-	if len(envTestAccessToken) > 0 && len(envTestAccessSecret) > 0 && len(envTestDomain) > 0 {
-		liveTest = true
-	}
-}
-
-func restoreEnv() {
-	os.Setenv("SAKURACLOUD_ACCESS_TOKEN", envTestAccessToken)
-	os.Setenv("SAKURACLOUD_ACCESS_TOKEN_SECRET", envTestAccessSecret)
-}
+var envTest = tester.NewEnvTest(
+	"SAKURACLOUD_ACCESS_TOKEN",
+	"SAKURACLOUD_ACCESS_TOKEN_SECRET").
+	WithDomain("SAKURACLOUD_DOMAIN")
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -71,14 +54,10 @@ func TestNewDNSProvider(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer restoreEnv()
-			for key, value := range test.envVars {
-				if len(value) == 0 {
-					os.Unsetenv(key)
-				} else {
-					os.Setenv(key, value)
-				}
-			}
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
+			envTest.Apply(test.envVars)
 
 			p, err := NewDNSProvider()
 
@@ -124,10 +103,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer restoreEnv()
-			os.Unsetenv("SAKURACLOUD_ACCESS_TOKEN")
-			os.Unsetenv("SAKURACLOUD_ACCESS_TOKEN_SECRET")
-
 			config := NewDefaultConfig()
 			config.Token = test.token
 			config.Secret = test.secret
@@ -147,29 +122,29 @@ func TestNewDNSProviderConfig(t *testing.T) {
 }
 
 func TestLivePresent(t *testing.T) {
-	if !liveTest {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	restoreEnv()
+	envTest.RestoreEnv()
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.Present(envTestDomain, "", "123d==")
+	err = provider.Present(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
 func TestLiveCleanUp(t *testing.T) {
-	if !liveTest {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	restoreEnv()
+	envTest.RestoreEnv()
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
 	time.Sleep(1 * time.Second)
 
-	err = provider.CleanUp(envTestDomain, "", "123d==")
+	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }

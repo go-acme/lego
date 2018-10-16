@@ -13,6 +13,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/xenolf/lego/platform/tester"
 )
 
 const testDomain = "example.com"
@@ -101,20 +102,26 @@ var jsonMap = map[string]string{
 	"recordDeleted": `{"status": "ok"}`,
 }
 
+var envTest = tester.NewEnvTest("SECRET_VEGADNS_KEY", "SECRET_VEGADNS_SECRET", "VEGADNS_URL")
+
 type muxCallback func() *http.ServeMux
 
 func TestNewDNSProvider_Fail(t *testing.T) {
-	os.Setenv("VEGADNS_URL", "")
+	defer envTest.RestoreEnv()
+	envTest.ClearEnv()
+
 	_, err := NewDNSProvider()
 	assert.Error(t, err, "VEGADNS_URL env missing")
 }
 
 func TestDNSProvider_TimeoutSuccess(t *testing.T) {
+	defer envTest.RestoreEnv()
+	envTest.ClearEnv()
+
 	ts, err := startTestServer(muxSuccess)
 	require.NoError(t, err)
 
 	defer ts.Close()
-	defer os.Clearenv()
 
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
@@ -148,11 +155,13 @@ func TestDNSProvider_Present(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
 			ts, err := startTestServer(test.callback)
 			require.NoError(t, err)
 
 			defer ts.Close()
-			defer os.Clearenv()
 
 			provider, err := NewDNSProvider()
 			require.NoError(t, err)
@@ -191,11 +200,13 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
 			ts, err := startTestServer(test.callback)
 			require.NoError(t, err)
 
 			defer ts.Close()
-			defer os.Clearenv()
 
 			provider, err := NewDNSProvider()
 			require.NoError(t, err)

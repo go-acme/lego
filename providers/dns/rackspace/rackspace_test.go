@@ -5,31 +5,19 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/xenolf/lego/platform/tester"
 )
 
-var (
-	liveTest      bool
-	envTestUser   string
-	envTestAPIKey string
-	envTestDomain string
-)
-
-func init() {
-	envTestUser = os.Getenv("RACKSPACE_USER")
-	envTestAPIKey = os.Getenv("RACKSPACE_API_KEY")
-	envTestDomain = os.Getenv("RACKSPACE_DOMAIN")
-
-	if len(envTestUser) > 0 && len(envTestAPIKey) > 0 && len(envTestDomain) > 0 {
-		liveTest = true
-	}
-}
+var envTest = tester.NewEnvTest(
+	"RACKSPACE_USER",
+	"RACKSPACE_API_KEY").
+	WithDomain("RACKSPACE_DOMAIN")
 
 func TestNewDNSProviderConfig(t *testing.T) {
 	config, tearDown := setupTest()
@@ -72,38 +60,42 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 }
 
 func TestLiveNewDNSProvider_ValidEnv(t *testing.T) {
-	if !liveTest {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
+	envTest.RestoreEnv()
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
+
 	assert.Contains(t, provider.cloudDNSEndpoint, "https://dns.api.rackspacecloud.com/v1.0/", "The endpoint URL should contain the base")
 }
 
 func TestLivePresent(t *testing.T) {
-	if !liveTest {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
+	envTest.RestoreEnv()
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.Present(envTestDomain, "", "112233445566==")
+	err = provider.Present(envTest.GetDomain(), "", "112233445566==")
 	require.NoError(t, err)
 }
 
 func TestLiveCleanUp(t *testing.T) {
-	if !liveTest {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	time.Sleep(time.Second * 15)
-
+	envTest.RestoreEnv()
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.CleanUp(envTestDomain, "", "112233445566==")
+	time.Sleep(15 * time.Second)
+
+	err = provider.CleanUp(envTest.GetDomain(), "", "112233445566==")
 	require.NoError(t, err)
 }
 

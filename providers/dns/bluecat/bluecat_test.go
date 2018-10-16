@@ -1,48 +1,20 @@
 package bluecat
 
 import (
-	"os"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"github.com/xenolf/lego/platform/tester"
 )
 
-var (
-	liveTest          bool
-	envTestServer     string
-	envTestUserName   string
-	envTestPassword   string
-	envTestConfigName string
-	envTestDNSView    string
-	envTestDomain     string
-)
-
-func init() {
-	envTestServer = os.Getenv("BLUECAT_SERVER_URL")
-	envTestUserName = os.Getenv("BLUECAT_USER_NAME")
-	envTestPassword = os.Getenv("BLUECAT_PASSWORD")
-	envTestDomain = os.Getenv("BLUECAT_DOMAIN")
-	envTestConfigName = os.Getenv("BLUECAT_CONFIG_NAME")
-	envTestDNSView = os.Getenv("BLUECAT_DNS_VIEW")
-
-	if len(envTestServer) > 0 &&
-		len(envTestDomain) > 0 &&
-		len(envTestUserName) > 0 &&
-		len(envTestPassword) > 0 &&
-		len(envTestConfigName) > 0 &&
-		len(envTestDNSView) > 0 {
-		liveTest = true
-	}
-}
-
-func restoreEnv() {
-	os.Setenv("BLUECAT_SERVER_URL", envTestServer)
-	os.Setenv("BLUECAT_USER_NAME", envTestUserName)
-	os.Setenv("BLUECAT_PASSWORD", envTestPassword)
-	os.Setenv("BLUECAT_CONFIG_NAME", envTestConfigName)
-	os.Setenv("BLUECAT_DNS_VIEW", envTestDNSView)
-}
+var envTest = tester.NewEnvTest(
+	"BLUECAT_SERVER_URL",
+	"BLUECAT_USER_NAME",
+	"BLUECAT_PASSWORD",
+	"BLUECAT_CONFIG_NAME",
+	"BLUECAT_DNS_VIEW").
+	WithDomain("BLUECAT_DOMAIN")
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -130,14 +102,10 @@ func TestNewDNSProvider(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer restoreEnv()
-			for key, value := range test.envVars {
-				if len(value) == 0 {
-					os.Unsetenv(key)
-				} else {
-					os.Setenv(key, value)
-				}
-			}
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
+			envTest.Apply(test.envVars)
 
 			p, err := NewDNSProvider()
 
@@ -223,13 +191,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer restoreEnv()
-			os.Unsetenv("BLUECAT_SERVER_URL")
-			os.Unsetenv("BLUECAT_USER_NAME")
-			os.Unsetenv("BLUECAT_PASSWORD")
-			os.Unsetenv("BLUECAT_CONFIG_NAME")
-			os.Unsetenv("BLUECAT_DNS_VIEW")
-
 			config := NewDefaultConfig()
 			config.BaseURL = test.baseURL
 			config.UserName = test.userName
@@ -251,29 +212,29 @@ func TestNewDNSProviderConfig(t *testing.T) {
 }
 
 func TestLivePresent(t *testing.T) {
-	if !liveTest {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	restoreEnv()
+	envTest.RestoreEnv()
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.Present(envTestDomain, "", "123d==")
+	err = provider.Present(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
 func TestLiveCleanUp(t *testing.T) {
-	if !liveTest {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	restoreEnv()
+	envTest.RestoreEnv()
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
 	time.Sleep(time.Second * 1)
 
-	err = provider.CleanUp(envTestDomain, "", "123d==")
+	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }

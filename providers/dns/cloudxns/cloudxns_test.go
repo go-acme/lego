@@ -1,34 +1,17 @@
 package cloudxns
 
 import (
-	"os"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"github.com/xenolf/lego/platform/tester"
 )
 
-var (
-	liveTest         bool
-	envTestAPIKey    string
-	envTestSecretKey string
-	envTestDomain    string
-)
-
-func init() {
-	envTestAPIKey = os.Getenv("CLOUDXNS_API_KEY")
-	envTestSecretKey = os.Getenv("CLOUDXNS_SECRET_KEY")
-	envTestDomain = os.Getenv("CLOUDXNS_DOMAIN")
-
-	if len(envTestAPIKey) > 0 && len(envTestSecretKey) > 0 && len(envTestDomain) > 0 {
-		liveTest = true
-	}
-}
-
-func restoreEnv() {
-	os.Setenv("CLOUDXNS_API_KEY", envTestAPIKey)
-	os.Setenv("CLOUDXNS_SECRET_KEY", envTestSecretKey)
-}
+var envTest = tester.NewEnvTest(
+	"CLOUDXNS_API_KEY",
+	"CLOUDXNS_SECRET_KEY").
+	WithDomain("CLOUDXNS_DOMAIN")
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -71,14 +54,10 @@ func TestNewDNSProvider(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer restoreEnv()
-			for key, value := range test.envVars {
-				if len(value) == 0 {
-					os.Unsetenv(key)
-				} else {
-					os.Setenv(key, value)
-				}
-			}
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
+			envTest.Apply(test.envVars)
 
 			p, err := NewDNSProvider()
 
@@ -124,10 +103,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer restoreEnv()
-			os.Unsetenv("CLOUDXNS_API_KEY")
-			os.Unsetenv("CLOUDXNS_SECRET_KEY")
-
 			config := NewDefaultConfig()
 			config.APIKey = test.apiKey
 			config.SecretKey = test.secretKey
@@ -146,28 +121,30 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}
 }
 
-func TestPresent(t *testing.T) {
-	if !liveTest {
+func TestLivePresent(t *testing.T) {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	provider, err := NewDNSProviderCredentials(envTestAPIKey, envTestSecretKey)
+	envTest.RestoreEnv()
+	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.Present(envTestDomain, "", "123d==")
+	err = provider.Present(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
-func TestCleanUp(t *testing.T) {
-	if !liveTest {
+func TestLiveCleanUp(t *testing.T) {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	time.Sleep(time.Second * 2)
-
-	provider, err := NewDNSProviderCredentials(envTestAPIKey, envTestSecretKey)
+	envTest.RestoreEnv()
+	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.CleanUp(envTestDomain, "", "123d==")
+	time.Sleep(2 * time.Second)
+
+	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }

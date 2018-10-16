@@ -1,34 +1,17 @@
 package namedotcom
 
 import (
-	"os"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"github.com/xenolf/lego/platform/tester"
 )
 
-var (
-	liveTest        bool
-	envTestUsername string
-	envTestAPIToken string
-	envTestDomain   string
-)
-
-func init() {
-	envTestUsername = os.Getenv("NAMECOM_USERNAME")
-	envTestAPIToken = os.Getenv("NAMECOM_API_TOKEN")
-	envTestDomain = os.Getenv("NAMEDOTCOM_DOMAIN")
-
-	if len(envTestAPIToken) > 0 && len(envTestUsername) > 0 && len(envTestDomain) > 0 {
-		liveTest = true
-	}
-}
-
-func restoreEnv() {
-	os.Setenv("NAMECOM_USERNAME", envTestUsername)
-	os.Setenv("NAMECOM_API_TOKEN", envTestAPIToken)
-}
+var envTest = tester.NewEnvTest(
+	"NAMECOM_USERNAME",
+	"NAMECOM_API_TOKEN").
+	WithDomain("NAMEDOTCOM_DOMAIN")
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -71,14 +54,10 @@ func TestNewDNSProvider(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer restoreEnv()
-			for key, value := range test.envVars {
-				if len(value) == 0 {
-					os.Unsetenv(key)
-				} else {
-					os.Setenv(key, value)
-				}
-			}
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
+			envTest.Apply(test.envVars)
 
 			p, err := NewDNSProvider()
 
@@ -126,10 +105,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer restoreEnv()
-			os.Unsetenv("NAMECOM_USERNAME")
-			os.Unsetenv("NAMECOM_API_TOKEN")
-
 			config := NewDefaultConfig()
 			config.Username = test.username
 			config.APIToken = test.apiToken
@@ -149,29 +124,29 @@ func TestNewDNSProviderConfig(t *testing.T) {
 }
 
 func TestLivePresent(t *testing.T) {
-	if !liveTest {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	restoreEnv()
+	envTest.RestoreEnv()
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.Present(envTestDomain, "", "123d==")
+	err = provider.Present(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
 func TestLiveCleanUp(t *testing.T) {
-	if !liveTest {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	restoreEnv()
+	envTest.RestoreEnv()
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
 	time.Sleep(1 * time.Second)
 
-	err = provider.CleanUp(envTestDomain, "", "123d==")
+	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }

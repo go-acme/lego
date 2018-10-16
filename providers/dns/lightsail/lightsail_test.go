@@ -10,25 +10,16 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/lightsail"
 	"github.com/stretchr/testify/require"
+	"github.com/xenolf/lego/platform/tester"
 )
 
-var (
-	envTestSecret string
-	envTestKey    string
-	envTestZone   string
-)
-
-func init() {
-	envTestKey = os.Getenv("AWS_ACCESS_KEY_ID")
-	envTestSecret = os.Getenv("AWS_SECRET_ACCESS_KEY")
-}
-
-func restoreEnv() {
-	os.Setenv("AWS_ACCESS_KEY_ID", envTestKey)
-	os.Setenv("AWS_SECRET_ACCESS_KEY", envTestSecret)
-	os.Setenv("AWS_REGION", "us-east-1")
-	os.Setenv("AWS_HOSTED_ZONE_ID", envTestZone)
-}
+var envTest = tester.NewEnvTest(
+	"AWS_ACCESS_KEY_ID",
+	"AWS_SECRET_ACCESS_KEY",
+	"AWS_REGION",
+	"AWS_HOSTED_ZONE_ID").
+	WithDomain("DNS_ZONE").
+	WithLiveTestRequirements("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "DNS_ZONE")
 
 func makeProvider(ts *httptest.Server) (*DNSProvider, error) {
 	config := &aws.Config{
@@ -50,7 +41,9 @@ func makeProvider(ts *httptest.Server) (*DNSProvider, error) {
 }
 
 func TestCredentialsFromEnv(t *testing.T) {
-	defer restoreEnv()
+	defer envTest.RestoreEnv()
+	envTest.ClearEnv()
+
 	os.Setenv("AWS_ACCESS_KEY_ID", "123")
 	os.Setenv("AWS_SECRET_ACCESS_KEY", "123")
 	os.Setenv("AWS_REGION", "us-east-1")

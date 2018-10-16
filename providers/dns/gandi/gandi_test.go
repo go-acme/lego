@@ -5,25 +5,15 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"regexp"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"github.com/xenolf/lego/platform/tester"
 )
 
-var (
-	envTestAPIKey string
-)
-
-func init() {
-	envTestAPIKey = os.Getenv("GANDI_API_KEY")
-}
-
-func restoreEnv() {
-	os.Setenv("GANDI_API_KEY", envTestAPIKey)
-}
+var envTest = tester.NewEnvTest("GANDI_API_KEY")
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -48,14 +38,10 @@ func TestNewDNSProvider(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer restoreEnv()
-			for key, value := range test.envVars {
-				if len(value) == 0 {
-					os.Unsetenv(key)
-				} else {
-					os.Setenv(key, value)
-				}
-			}
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
+			envTest.Apply(test.envVars)
 
 			p, err := NewDNSProvider()
 
@@ -90,9 +76,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer restoreEnv()
-			os.Unsetenv("GANDI_API_KEY")
-
 			config := NewDefaultConfig()
 			config.APIKey = test.apiKey
 

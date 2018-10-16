@@ -5,27 +5,17 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/xenolf/lego/platform/tester"
 )
 
-var (
-	envTestUserID string
-	envTestKey    string
+var envTest = tester.NewEnvTest(
+	"AURORA_USER_ID",
+	"AURORA_KEY",
 )
-
-func init() {
-	envTestUserID = os.Getenv("AURORA_USER_ID")
-	envTestKey = os.Getenv("AURORA_KEY")
-}
-
-func restoreEnv() {
-	os.Setenv("AURORA_USER_ID", envTestUserID)
-	os.Setenv("AURORA_KEY", envTestKey)
-}
 
 func setupTest() (*DNSProvider, *http.ServeMux, func()) {
 	handler := http.NewServeMux()
@@ -85,14 +75,10 @@ func TestNewDNSProvider(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer restoreEnv()
-			for key, value := range test.envVars {
-				if len(value) == 0 {
-					os.Unsetenv(key)
-				} else {
-					os.Setenv(key, value)
-				}
-			}
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
+			envTest.Apply(test.envVars)
 
 			p, err := NewDNSProvider()
 
@@ -142,10 +128,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer restoreEnv()
-			os.Unsetenv("AURORA_USER_ID")
-			os.Unsetenv("AURORA_KEY")
-
 			config := NewDefaultConfig()
 			config.UserID = test.userID
 			config.Key = test.key

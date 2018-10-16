@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/miekg/dns"
 	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/platform/config/env"
 )
@@ -92,11 +93,23 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
+// DuckDNS only lets you write to your subdomain
+// so it must be in format subdomain.duckdns.org
+// not in format subsubdomain.subdomain.duckdns.org
+// so strip off everything that is not top 3 levels
+func getDuckDNSWriteableDomain(domain string) string {
+	split := dns.Split(domain)
+	firstSubDomainIndex := split[len(split)-3]
+	writeableDomain := domain[firstSubDomainIndex:]
+	return writeableDomain
+}
+
 // updateTxtRecord Update the domains TXT record
 // To update the TXT record we just need to make one simple get request.
 // In DuckDNS you only have one TXT record shared with the domain and all sub domains.
 func updateTxtRecord(domain, token, txt string, clear bool) error {
-	u := fmt.Sprintf("https://www.duckdns.org/update?domains=%s&token=%s&clear=%t&txt=%s", domain, token, clear, txt)
+	writeableDomain := getDuckDNSWriteableDomain(domain)
+	u := fmt.Sprintf("https://www.duckdns.org/update?domains=%s&token=%s&clear=%t&txt=%s", writeableDomain, token, clear, txt)
 
 	response, err := acme.HTTPClient.Get(u)
 	if err != nil {

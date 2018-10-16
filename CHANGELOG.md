@@ -1,5 +1,38 @@
 # Changelog
 
+## [v1.1.0] - 2018-10-16
+
+### Added:
+- **[lib]** TLS-ALPN-01 Challenge
+- **[cli]** Add filename parameter
+- **[dnsprovider]** Allow to configure TTL, interval and timeout
+- **[dnsprovider]** Add support for reading DNS provider setup from files
+- **[dnsprovider]** Add DNS Provider for ACME-DNS
+- **[dnsprovider]** Add DNS Provider for ALIYUN DNS
+- **[dnsprovider]** Add DNS Provider for DreamHost
+- **[dnsprovider]** Add DNS provider for hosting.de
+- **[dnsprovider]** Add DNS Provider for IIJ
+- **[dnsprovider]** Add DNS Provider for netcup
+- **[dnsprovider]** Add DNS Provider for NIFCLOUD DNS
+- **[dnsprovider]** Add DNS Provider for SAKURA Cloud
+- **[dnsprovider]** Add DNS Provider for Stackpath
+- **[dnsprovider]** Add DNS Provider for VegaDNS
+- **[dnsprovider]** exec: add EXEC_MODE=RAW support.
+- **[dnsprovider]** cloudflare: support for CF_API_KEY and CF_API_EMAIL
+
+### Fixed:
+- **[lib]** Don't trust identifiers order.
+- **[lib]** Fix missing issuer certificates from Let's Encrypt
+- **[dnsprovider]** duckdns: fix TXT record update url
+- **[dnsprovider]** duckdns: fix subsubdomain
+- **[dnsprovider]** gcloud: update findTxtRecords to use Name=fqdn and Type=TXT
+- **[dnsprovider]** lightsail: Fix Domain does not exist error
+- **[dnsprovider]** ns1: use the authoritative zone and not the domain name
+- **[dnsprovider]** ovh: check error to avoid panic due to nil client
+
+### Changed:
+- **[lib]** Submit all dns records up front, then validate serially
+
 ## [v1.0.0] - 2018-05-30
 
 ### Changed:

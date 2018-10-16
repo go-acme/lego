@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -98,10 +100,16 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 // To update the TXT record we just need to make one simple get request.
 // In DuckDNS you only have one TXT record shared with the domain and all sub domains.
 func updateTxtRecord(domain, token, txt string, clear bool) error {
-	writeableDomain := getMainDomain(domain)
-	u := fmt.Sprintf("https://www.duckdns.org/update?domains=%s&token=%s&clear=%t&txt=%s", writeableDomain, token, clear, txt)
+	u, _ := url.Parse("https://www.duckdns.org/update")
 
-	response, err := acme.HTTPClient.Get(u)
+	query := u.Query()
+	query.Set("domains", getMainDomain(domain))
+	query.Set("token", token)
+	query.Set("clear", strconv.FormatBool(clear))
+	query.Set("txt", txt)
+	u.RawQuery = query.Encode()
+
+	response, err := acme.HTTPClient.Get(u.String())
 	if err != nil {
 		return err
 	}

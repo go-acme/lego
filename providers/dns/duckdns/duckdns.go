@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/miekg/dns"
@@ -98,10 +99,19 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 // not in format subsubdomain.subdomain.duckdns.org
 // so strip off everything that is not top 3 levels
 func getDuckDNSWriteableDomain(domain string) string {
+	lowercaseDomain := strings.ToLower(acme.UnFqdn(domain))
 	split := dns.Split(domain)
-	firstSubDomainIndex := split[len(split)-3]
-	writeableDomain := domain[firstSubDomainIndex:]
-	return writeableDomain
+	if strings.HasSuffix(lowercaseDomain, "duckdns.org") {
+		if len(split) < 3 {
+			return ""
+		}
+
+		firstSubDomainIndex := split[len(split)-3]
+		writeableDomain := domain[firstSubDomainIndex:]
+		return writeableDomain
+	}
+
+	return domain[split[len(split)-1]:]
 }
 
 // updateTxtRecord Update the domains TXT record

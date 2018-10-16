@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/xenolf/lego/platform/tester"
 )
@@ -112,4 +113,53 @@ func TestLiveCleanUp(t *testing.T) {
 
 	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
+}
+
+func Test_getDuckDNSWriteableDomain(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		domain   string
+		expected string
+	}{
+		{
+			desc:     "missing sub domain",
+			domain:   "duckdns.org",
+			expected: "", // Not a panic
+		},
+		{
+			desc:     "explicit domain: sub domain",
+			domain:   "sub.duckdns.org",
+			expected: "sub.duckdns.org",
+		},
+		{
+			desc:     "explicit domain: subsub domain",
+			domain:   "my.sub.duckdns.org",
+			expected: "sub.duckdns.org",
+		},
+		{
+			desc:     "only subname: sub domain",
+			domain:   "sub",
+			expected: "sub",
+		},
+		{
+			desc:     "only subname: subsub domain",
+			domain:   "my.sub",
+			expected: "sub",
+		},
+		{
+			desc:     "empty",
+			domain:   "",
+			expected: "", // Not a panic
+		},
+	}
+
+	for _, test := range testCases {
+		test := test
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			wDomain := getDuckDNSWriteableDomain(test.domain)
+			assert.Equal(t, test.expected, wDomain)
+		})
+	}
 }

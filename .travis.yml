@@ -22,6 +22,7 @@ before_install:
   - golangci-lint --version
 
 install:
+  - echo "TRAVIS_GO_VERSION=$TRAVIS_GO_VERSION"
   - dep status -v
 
 deploy:
@@ -30,7 +31,7 @@ deploy:
     script: curl -sL https://git.io/goreleaser | bash
     on:
       tags: true
-      condition: $TRAVIS_GO_VERSION =~ ^1\.11\.[0-9]+$
+      condition: $TRAVIS_GO_VERSION =~ ^1\.x$
 
   - provider: releases
     api_key: ${GITHUB_TOKEN}
@@ -40,4 +41,4 @@ deploy:
     file_glob: true
     on:
       tags: true
-      condition: $TRAVIS_GO_VERSION =~ ^1\.11\.[0-9]+$
+      condition: $TRAVIS_GO_VERSION =~ ^1\.x$

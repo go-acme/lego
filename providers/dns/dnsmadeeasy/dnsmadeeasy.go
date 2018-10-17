@@ -1,3 +1,4 @@
+// Package dnsmadeeasy implements a DNS provider for solving the DNS-01 challenge using DNS Made Easy.
 package dnsmadeeasy
 
 import (

@@ -1,51 +1,40 @@
 package dns
 
 import (
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/providers/dns/exoscale"
+	"github.com/xenolf/lego/platform/tester"
+	"github.com/xenolf/lego/providers/dns/exec"
 )
 
-var (
-	apiKey    string
-	apiSecret string
-)
-
-func init() {
-	apiSecret = os.Getenv("EXOSCALE_API_SECRET")
-	apiKey = os.Getenv("EXOSCALE_API_KEY")
-}
-
-func restoreExoscaleEnv() {
-	os.Setenv("EXOSCALE_API_KEY", apiKey)
-	os.Setenv("EXOSCALE_API_SECRET", apiSecret)
-}
+var envTest = tester.NewEnvTest("EXEC_PATH")
 
 func TestKnownDNSProviderSuccess(t *testing.T) {
-	defer restoreExoscaleEnv()
-	os.Setenv("EXOSCALE_API_KEY", "abc")
-	os.Setenv("EXOSCALE_API_SECRET", "123")
+	defer envTest.RestoreEnv()
+	envTest.Apply(map[string]string{
+		"EXEC_PATH": "abc",
+	})
 
-	provider, err := NewDNSChallengeProviderByName("exoscale")
+	provider, err := NewDNSChallengeProviderByName("exec")
 	require.NoError(t, err)
 	assert.NotNil(t, provider)
 
-	assert.IsType(t, &exoscale.DNSProvider{}, provider, "Not loaded correct DNS provider")
+	assert.IsType(t, &exec.DNSProvider{}, provider, "The loaded DNS provider doesn't have the expected type.")
 }
 
 func TestKnownDNSProviderError(t *testing.T) {
-	defer restoreExoscaleEnv()
-	os.Setenv("EXOSCALE_API_KEY", "")
-	os.Setenv("EXOSCALE_API_SECRET", "")
+	defer envTest.RestoreEnv()
+	envTest.ClearEnv()
 
-	_, err := NewDNSChallengeProviderByName("exoscale")
+	provider, err := NewDNSChallengeProviderByName("exec")
 	assert.Error(t, err)
+	assert.Nil(t, provider)
 }
 
 func TestUnknownDNSProvider(t *testing.T) {
-	_, err := NewDNSChallengeProviderByName("foobar")
+	provider, err := NewDNSChallengeProviderByName("foobar")
 	assert.Error(t, err)
+	assert.Nil(t, provider)
 }

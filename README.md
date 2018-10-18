@@ -2,8 +2,9 @@
 
 Let's Encrypt client and ACME library written in Go
 
-[![GoDoc](https://godoc.org/github.com/xenolf/lego/acme?status.svg)](https://godoc.org/github.com/xenolf/lego/acme)
+[![GoDoc](https://godoc.org/github.com/xenolf/lego?status.svg)](https://godoc.org/github.com/xenolf/lego/acme)
 [![Build Status](https://travis-ci.org/xenolf/lego.svg?branch=master)](https://travis-ci.org/xenolf/lego)
+[![Docker Pulls](https://img.shields.io/docker/pulls/xenolf/lego.svg)](https://hub.docker.com/r/xenolf/lego/)
 [![Dev Chat](https://img.shields.io/badge/dev%20chat-gitter-blue.svg?label=dev+chat)](https://gitter.im/xenolf/lego)
 [![Beerpay](https://beerpay.io/xenolf/lego/badge.svg)](https://beerpay.io/xenolf/lego)
 
@@ -20,8 +21,7 @@ To install from source, just run:
 go get -u github.com/xenolf/lego
 ```
 
-To build lego inside a Docker container, just run
-
+To build lego inside a Docker container, just run:
 ```bash
 docker build -t lego .
 ```

@@ -1,4 +1,4 @@
-// Package duckdns Adds lego support for http://duckdns.org.
+// Package duckdns implements a DNS provider for solving the DNS-01 challenge using DuckDNS.
 // See http://www.duckdns.org/spec.jsp for more info on updating TXT records.
 package duckdns
 

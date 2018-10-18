@@ -45,7 +45,12 @@ func (e *EnvTest) WithDomain(key string) *EnvTest {
 // Replaces the default behavior (all keys are required).
 func (e *EnvTest) WithLiveTestRequirements(keys ...string) *EnvTest {
 	var countValuedVars int
+
 	for _, key := range keys {
+		if e.domainKey != key && !e.isManagedKey(key) {
+			panic(fmt.Sprintf("Unauthorized action, the env var %s is not managed or it's not the key of the domain.", key))
+		}
+
 		if _, ok := e.values[key]; ok {
 			countValuedVars++
 		}
@@ -120,14 +125,14 @@ func (e *EnvTest) liveTestExtra() bool {
 // Not related to the main environment variables.
 func (e *EnvTest) Apply(envVars map[string]string) {
 	for key, value := range envVars {
-		if e.isManagedKey(key) {
-			if len(value) == 0 {
-				os.Unsetenv(key)
-			} else {
-				os.Setenv(key, value)
-			}
-		} else {
+		if !e.isManagedKey(key) {
 			panic(fmt.Sprintf("Unauthorized action, the env var %s is not managed.", key))
+		}
+
+		if len(value) == 0 {
+			os.Unsetenv(key)
+		} else {
+			os.Setenv(key, value)
 		}
 	}
 }

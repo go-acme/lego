@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"time"
 )
@@ -151,7 +152,11 @@ func (c *Client) sendRequest(method, resource string, payload interface{}) (*htt
 	}
 
 	if resp.StatusCode > 299 {
-		return nil, fmt.Errorf("DNSMadeEasy API request failed with HTTP status code %d", resp.StatusCode)
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("DNSMadeEasy API request failed with HTTP status code %d", resp.StatusCode)
+		}
+		return nil, fmt.Errorf("DNSMadeEasy API request failed with HTTP status code %d: %s", resp.StatusCode, string(body))
 	}
 
 	return resp, nil

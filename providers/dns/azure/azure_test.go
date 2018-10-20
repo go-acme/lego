@@ -8,10 +8,6 @@ import (
 	"github.com/xenolf/lego/platform/tester"
 )
 
-func init() {
-	// metadataEndpoint = "http://localhost:8080"
-}
-
 var envTest = tester.NewEnvTest(
 	"AZURE_CLIENT_ID",
 	"AZURE_CLIENT_SECRET",
@@ -31,10 +27,21 @@ func TestNewDNSProvider(t *testing.T) {
 			envVars: map[string]string{
 				"AZURE_CLIENT_ID":       "A",
 				"AZURE_CLIENT_SECRET":   "B",
-				"AZURE_SUBSCRIPTION_ID": "C",
-				"AZURE_TENANT_ID":       "D",
+				"AZURE_TENANT_ID":       "C",
+				"AZURE_SUBSCRIPTION_ID": "D",
 				"AZURE_RESOURCE_GROUP":  "E",
 			},
+		},
+		{
+			desc: "missing client ID",
+			envVars: map[string]string{
+				"AZURE_CLIENT_ID":       "",
+				"AZURE_CLIENT_SECRET":   "B",
+				"AZURE_TENANT_ID":       "C",
+				"AZURE_SUBSCRIPTION_ID": "D",
+				"AZURE_RESOURCE_GROUP":  "E",
+			},
+			expected: "failed to get oauth token from client credentials: parameter 'clientID' cannot be empty",
 		},
 	}
 
@@ -72,8 +79,8 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			desc:           "success",
 			clientID:       "A",
 			clientSecret:   "B",
-			subscriptionID: "C",
-			tenantID:       "D",
+			tenantID:       "C",
+			subscriptionID: "D",
 			resourceGroup:  "E",
 		},
 	}

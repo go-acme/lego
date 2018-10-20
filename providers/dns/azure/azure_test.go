@@ -8,6 +8,10 @@ import (
 	"github.com/xenolf/lego/platform/tester"
 )
 
+func init() {
+	// metadataEndpoint = "http://localhost:8080"
+}
+
 var envTest = tester.NewEnvTest(
 	"AZURE_CLIENT_ID",
 	"AZURE_CLIENT_SECRET",
@@ -31,72 +35,6 @@ func TestNewDNSProvider(t *testing.T) {
 				"AZURE_TENANT_ID":       "D",
 				"AZURE_RESOURCE_GROUP":  "E",
 			},
-		},
-		{
-			desc: "missing credentials",
-			envVars: map[string]string{
-				"AZURE_CLIENT_ID":       "",
-				"AZURE_CLIENT_SECRET":   "",
-				"AZURE_SUBSCRIPTION_ID": "",
-				"AZURE_TENANT_ID":       "",
-				"AZURE_RESOURCE_GROUP":  "",
-			},
-			expected: "azure: some credentials information are missing: AZURE_CLIENT_ID,AZURE_CLIENT_SECRET,AZURE_SUBSCRIPTION_ID,AZURE_TENANT_ID,AZURE_RESOURCE_GROUP",
-		},
-		{
-			desc: "missing client id",
-			envVars: map[string]string{
-				"AZURE_CLIENT_ID":       "",
-				"AZURE_CLIENT_SECRET":   "B",
-				"AZURE_SUBSCRIPTION_ID": "C",
-				"AZURE_TENANT_ID":       "D",
-				"AZURE_RESOURCE_GROUP":  "E",
-			},
-			expected: "azure: some credentials information are missing: AZURE_CLIENT_ID",
-		},
-		{
-			desc: "missing client secret",
-			envVars: map[string]string{
-				"AZURE_CLIENT_ID":       "A",
-				"AZURE_CLIENT_SECRET":   "",
-				"AZURE_SUBSCRIPTION_ID": "C",
-				"AZURE_TENANT_ID":       "D",
-				"AZURE_RESOURCE_GROUP":  "E",
-			},
-			expected: "azure: some credentials information are missing: AZURE_CLIENT_SECRET",
-		},
-		{
-			desc: "missing subscription id",
-			envVars: map[string]string{
-				"AZURE_CLIENT_ID":       "A",
-				"AZURE_CLIENT_SECRET":   "B",
-				"AZURE_SUBSCRIPTION_ID": "",
-				"AZURE_TENANT_ID":       "D",
-				"AZURE_RESOURCE_GROUP":  "E",
-			},
-			expected: "azure: some credentials information are missing: AZURE_SUBSCRIPTION_ID",
-		},
-		{
-			desc: "missing tenant id",
-			envVars: map[string]string{
-				"AZURE_CLIENT_ID":       "A",
-				"AZURE_CLIENT_SECRET":   "B",
-				"AZURE_SUBSCRIPTION_ID": "C",
-				"AZURE_TENANT_ID":       "",
-				"AZURE_RESOURCE_GROUP":  "E",
-			},
-			expected: "azure: some credentials information are missing: AZURE_TENANT_ID",
-		},
-		{
-			desc: "missing resource group",
-			envVars: map[string]string{
-				"AZURE_CLIENT_ID":       "A",
-				"AZURE_CLIENT_SECRET":   "B",
-				"AZURE_SUBSCRIPTION_ID": "C",
-				"AZURE_TENANT_ID":       "D",
-				"AZURE_RESOURCE_GROUP":  "",
-			},
-			expected: "azure: some credentials information are missing: AZURE_RESOURCE_GROUP",
 		},
 	}
 
@@ -137,55 +75,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			subscriptionID: "C",
 			tenantID:       "D",
 			resourceGroup:  "E",
-		},
-		{
-			desc:     "missing credentials",
-			expected: "azure: some credentials information are missing",
-		},
-		{
-			desc:           "missing client id",
-			clientID:       "",
-			clientSecret:   "B",
-			subscriptionID: "C",
-			tenantID:       "D",
-			resourceGroup:  "E",
-			expected:       "azure: some credentials information are missing",
-		},
-		{
-			desc:           "missing client secret",
-			clientID:       "A",
-			clientSecret:   "",
-			subscriptionID: "C",
-			tenantID:       "D",
-			resourceGroup:  "E",
-			expected:       "azure: some credentials information are missing",
-		},
-		{
-			desc:           "missing subscription id",
-			clientID:       "A",
-			clientSecret:   "B",
-			subscriptionID: "",
-			tenantID:       "D",
-			resourceGroup:  "E",
-			expected:       "azure: some credentials information are missing",
-		},
-		{
-			desc:           "missing tenant id",
-			clientID:       "A",
-			clientSecret:   "B",
-			subscriptionID: "C",
-			tenantID:       "",
-			resourceGroup:  "E",
-			expected:       "azure: some credentials information are missing",
-		},
-		{
-			desc:           "missing resource group",
-			clientID:       "A",
-			clientSecret:   "B",
-			subscriptionID: "C",
-			tenantID:       "D",
-			resourceGroup:  "",
-			expected:       "azure: some credentials information are missing",
 		},
 	}
 

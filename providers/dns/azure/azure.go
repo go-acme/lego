@@ -56,7 +56,7 @@ type DNSProvider struct {
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for azure.
-// Credentials cat be passed in the environment variables: AZURE_CLIENT_ID,
+// Credentials can be passed in the environment variables: AZURE_CLIENT_ID,
 // AZURE_CLIENT_SECRET, AZURE_SUBSCRIPTION_ID, AZURE_TENANT_ID, AZURE_RESOURCE_GROUP
 // If the credentials are _not_ set via the environment, then it will attempt
 // to get a bearer token via the instance metadata service.

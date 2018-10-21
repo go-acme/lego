@@ -230,7 +230,7 @@ func getAuthorizer(config *Config) (autorest.Authorizer, error) {
 // borrowed from https://github.com/Microsoft/azureimds/blob/master/imdssample.go
 func getMetadata(config *Config, field string) (string, error) {
 	metadataEndpoint := config.MetadataEndpoint
-	if len(metadataEndpoint) < 0 {
+	if len(metadataEndpoint) == 0 {
 		metadataEndpoint = defaultMetadataEndpoint
 	}
 

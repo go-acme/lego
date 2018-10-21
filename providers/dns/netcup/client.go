@@ -160,10 +160,10 @@ func (c *Client) Login() (string, error) {
 	var r ResponseMsg
 
 	err = json.Unmarshal(response, &r)
-	if err != nil {
-		return "", fmt.Errorf("error decoding response of DNS-API, %v", err)
-	}
 	if r.Status != success {
+		if err != nil {
+			return "", fmt.Errorf("error decoding response of DNS-API, %v", err)
+		}
 		return "", fmt.Errorf("error logging into DNS-API, %v", r.LongMessage)
 	}
 	return r.ResponseData.APISessionID, nil
@@ -190,11 +190,11 @@ func (c *Client) Logout(sessionID string) error {
 	var r LogoutResponseMsg
 
 	err = json.Unmarshal(response, &r)
-	if err != nil {
-		return fmt.Errorf("error logging out of DNS-API: %v", err)
-	}
 
 	if r.Status != success {
+		if err != nil {
+			return fmt.Errorf("error logging out of DNS-API: %v", err)
+		}
 		return fmt.Errorf("error logging out of DNS-API: %v", r.ShortMessage)
 	}
 	return nil
@@ -223,11 +223,11 @@ func (c *Client) UpdateDNSRecord(sessionID, domainName string, record DNSRecord)
 	var r ResponseMsg
 
 	err = json.Unmarshal(response, &r)
-	if err != nil {
-		return err
-	}
-
+	
 	if r.Status != success {
+		if err != nil {
+			return err
+		}
 		return fmt.Errorf("%s: %+v", r.ShortMessage, r)
 	}
 	return nil
@@ -256,11 +256,11 @@ func (c *Client) GetDNSRecords(hostname, apiSessionID string) ([]DNSRecord, erro
 	var r ResponseMsg
 
 	err = json.Unmarshal(response, &r)
-	if err != nil {
-		return nil, err
-	}
 
 	if r.Status != success {
+		if err != nil {
+			return nil, err
+		}
 		return nil, fmt.Errorf("%s", r.ShortMessage)
 	}
 	return r.ResponseData.DNSRecords, nil

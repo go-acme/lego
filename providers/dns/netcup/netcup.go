@@ -101,7 +101,7 @@ func (d *DNSProvider) Present(domainName, token, keyAuth string) error {
 	}
 
 	hostname := strings.Replace(fqdn, "."+zone, "", 1)
-	record := CreateTxtRecord(hostname, value, d.config.TTL)
+	record := createTxtRecord(hostname, value, d.config.TTL)
 
 	err = d.client.UpdateDNSRecord(sessionID, acme.UnFqdn(zone), record)
 	if err != nil {
@@ -141,9 +141,9 @@ func (d *DNSProvider) CleanUp(domainname, token, keyAuth string) error {
 		return fmt.Errorf("netcup: %v", err)
 	}
 
-	record := CreateTxtRecord(hostname, value, 0)
+	record := createTxtRecord(hostname, value, 0)
 
-	idx, err := GetDNSRecordIdx(records, record)
+	idx, err := getDNSRecordIdx(records, record)
 	if err != nil {
 		return fmt.Errorf("netcup: %v", err)
 	}
@@ -169,4 +169,30 @@ func (d *DNSProvider) CleanUp(domainname, token, keyAuth string) error {
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
+}
+
+// getDNSRecordIdx searches a given array of DNSRecords for a given DNSRecord
+// equivalence is determined by Destination and RecortType attributes
+// returns index of given DNSRecord in given array of DNSRecords
+func getDNSRecordIdx(records []DNSRecord, record DNSRecord) (int, error) {
+	for index, element := range records {
+		if record.Destination == element.Destination && record.RecordType == element.RecordType {
+			return index, nil
+		}
+	}
+	return -1, fmt.Errorf("no DNS Record found")
+}
+
+// createTxtRecord uses the supplied values to return a DNSRecord of type TXT for the dns-01 challenge
+func createTxtRecord(hostname, value string, ttl int) DNSRecord {
+	return DNSRecord{
+		ID:           0,
+		Hostname:     hostname,
+		RecordType:   "TXT",
+		Priority:     "",
+		Destination:  value,
+		DeleteRecord: false,
+		State:        "",
+		TTL:          ttl,
+	}
 }

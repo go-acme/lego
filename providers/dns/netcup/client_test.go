@@ -2,6 +2,10 @@ package netcup
 
 import (
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -9,6 +13,205 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/xenolf/lego/acme"
 )
+
+func setupClientTest() (*Client, *http.ServeMux, func()) {
+	handler := http.NewServeMux()
+	server := httptest.NewServer(handler)
+
+	client := NewClient("a", "b", "c")
+	client.BaseURL = server.URL
+
+	return client, handler, server.Close
+}
+
+func TestClient_Login(t *testing.T) {
+	client, mux, tearDown := setupClientTest()
+	defer tearDown()
+
+	mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
+		raw, err := ioutil.ReadAll(req.Body)
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+		}
+
+		if string(raw) != `{"action":"login","param":{"customernumber":"a","apikey":"b","apipassword":"c"}}` {
+			http.Error(rw, fmt.Sprintf("invalid request body: %s", string(raw)), http.StatusBadRequest)
+		}
+
+		response := `
+		{
+		    "serverrequestid": "srv-request-id",
+		    "clientrequestid": "",
+		    "action": "login",
+		    "status": "success",
+		    "statuscode": 2000,
+		    "shortmessage": "Login successful",
+		    "longmessage": "Session has been created successful.",
+		    "responsedata": {
+		        "apisessionid": "api-session-id"
+		    }
+		}
+		`
+		_, err = rw.Write([]byte(response))
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+		}
+	})
+
+	sessionID, err := client.Login()
+	require.NoError(t, err)
+
+	assert.Equal(t, "api-session-id", sessionID)
+}
+
+func TestClient_Login_errors(t *testing.T) {
+	testCases := []struct {
+		desc    string
+		handler func(rw http.ResponseWriter, req *http.Request)
+	}{
+		{
+			desc: "HTTP error",
+			handler: func(rw http.ResponseWriter, req *http.Request) {
+				http.Error(rw, "error message", http.StatusInternalServerError)
+			},
+		},
+		{
+			desc: "API error",
+			handler: func(rw http.ResponseWriter, req *http.Request) {
+				response := `
+					{
+						"serverrequestid":"YxTr4EzdbJ101T211zR4yzUEMVE",
+						"clientrequestid":"",
+						"action":"undefined",
+						"status":"error",
+						"statuscode":4013,
+						"shortmessage":"Validation Error.",
+						"longmessage":"Message is empty.",
+						"responsedata":""
+					}`
+				_, err := rw.Write([]byte(response))
+				if err != nil {
+					http.Error(rw, err.Error(), http.StatusInternalServerError)
+				}
+			},
+		},
+		{
+			desc: "responsedata marshaling error",
+			handler: func(rw http.ResponseWriter, req *http.Request) {
+				response := `
+							{
+								"serverrequestid": "srv-request-id",
+								"clientrequestid": "",
+								"action": "login",
+								"status": "success",
+								"statuscode": 2000,
+								"shortmessage": "Login successful",
+								"longmessage": "Session has been created successful.",
+								"responsedata": ""
+							}`
+				_, err := rw.Write([]byte(response))
+				if err != nil {
+					http.Error(rw, err.Error(), http.StatusInternalServerError)
+				}
+			},
+		},
+	}
+
+	for _, test := range testCases {
+		test := test
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			client, mux, tearDown := setupClientTest()
+			defer tearDown()
+
+			mux.HandleFunc("/", test.handler)
+
+			sessionID, err := client.Login()
+			assert.Error(t, err)
+			assert.Equal(t, "", sessionID)
+		})
+	}
+}
+
+func TestClient_GetDNSRecords(t *testing.T) {
+	client, mux, tearDown := setupClientTest()
+	defer tearDown()
+
+	mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
+		raw, err := ioutil.ReadAll(req.Body)
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+		}
+
+		if string(raw) != `{"action":"infoDnsRecords","param":{"domainname":"example.com","customernumber":"a","apikey":"b","apisessionid":"api-session-id"}}` {
+			http.Error(rw, fmt.Sprintf("invalid request body: %s", string(raw)), http.StatusBadRequest)
+		}
+
+		response := `
+			{
+			  "serverrequestid":"srv-request-id",
+			  "clientrequestid":"",
+			  "action":"infoDnsRecords",
+			  "status":"success",
+			  "statuscode":2000,
+			  "shortmessage":"Login successful",
+			  "longmessage":"Session has been created successful.",
+			  "responsedata":{
+			    "apisessionid":"api-session-id",
+			    "dnsrecords":[
+			      {
+			        "id":"1",
+			        "hostname":"example.com",
+			        "type":"TXT",
+			        "priority":"1",
+			        "destination":"bGVnbzE=",
+			        "state":"foobar",
+			        "ttl":300
+			      },
+			      {
+			        "id":"2",
+			        "hostname":"example2.com",
+			        "type":"TXT",
+			        "priority":"1",
+			        "destination":"bGVnbw==",
+			        "state":"foobar",
+			        "ttl":300
+			      }
+			    ]
+			  }
+			}`
+		_, err = rw.Write([]byte(response))
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+		}
+	})
+
+	expected := []DNSRecord{{
+		ID:           1,
+		Hostname:     "example.com",
+		RecordType:   "TXT",
+		Priority:     "1",
+		Destination:  "bGVnbzE=",
+		DeleteRecord: false,
+		State:        "foobar",
+		TTL:          300,
+	}, {
+		ID:           2,
+		Hostname:     "example2.com",
+		RecordType:   "TXT",
+		Priority:     "1",
+		Destination:  "bGVnbw==",
+		DeleteRecord: false,
+		State:        "foobar",
+		TTL:          300,
+	}}
+
+	records, err := client.GetDNSRecords("example.com", "api-session-id")
+	require.NoError(t, err)
+
+	assert.Equal(t, expected, records)
+}
 
 func TestLiveClientAuth(t *testing.T) {
 	if !envTest.IsLiveTest() {
@@ -25,7 +228,7 @@ func TestLiveClientAuth(t *testing.T) {
 
 	for i := 1; i < 4; i++ {
 		i := i
-		t.Run("Test"+string(i), func(t *testing.T) {
+		t.Run("Test_"+strconv.Itoa(i), func(t *testing.T) {
 			t.Parallel()
 
 			sessionID, err := client.Login()
@@ -93,7 +296,7 @@ func TestLiveClientUpdateDnsRecord(t *testing.T) {
 
 	hostname := strings.Replace(fqdn, "."+zone, "", 1)
 
-	record := CreateTxtRecord(hostname, "asdf5678", 120)
+	record := createTxtRecord(hostname, "asdf5678", 120)
 
 	// test
 	zone = acme.UnFqdn(zone)
@@ -104,7 +307,7 @@ func TestLiveClientUpdateDnsRecord(t *testing.T) {
 	records, err := client.GetDNSRecords(zone, sessionID)
 	require.NoError(t, err)
 
-	recordIdx, err := GetDNSRecordIdx(records, record)
+	recordIdx, err := getDNSRecordIdx(records, record)
 	require.NoError(t, err)
 
 	assert.Equal(t, record.Hostname, records[recordIdx].Hostname)
@@ -120,106 +323,4 @@ func TestLiveClientUpdateDnsRecord(t *testing.T) {
 
 	err = client.Logout(sessionID)
 	require.NoError(t, err)
-}
-
-func TestClientGetDnsRecordIdx(t *testing.T) {
-	records := []DNSRecord{
-		{
-			ID:           12345,
-			Hostname:     "asdf",
-			RecordType:   "TXT",
-			Priority:     "0",
-			Destination:  "randomtext",
-			DeleteRecord: false,
-			State:        "yes",
-		},
-		{
-			ID:           23456,
-			Hostname:     "@",
-			RecordType:   "A",
-			Priority:     "0",
-			Destination:  "127.0.0.1",
-			DeleteRecord: false,
-			State:        "yes",
-		},
-		{
-			ID:           34567,
-			Hostname:     "dfgh",
-			RecordType:   "CNAME",
-			Priority:     "0",
-			Destination:  "example.com",
-			DeleteRecord: false,
-			State:        "yes",
-		},
-		{
-			ID:           45678,
-			Hostname:     "fghj",
-			RecordType:   "MX",
-			Priority:     "10",
-			Destination:  "mail.example.com",
-			DeleteRecord: false,
-			State:        "yes",
-		},
-	}
-
-	testCases := []struct {
-		desc        string
-		record      DNSRecord
-		expectError bool
-	}{
-		{
-			desc: "simple",
-			record: DNSRecord{
-				ID:           12345,
-				Hostname:     "asdf",
-				RecordType:   "TXT",
-				Priority:     "0",
-				Destination:  "randomtext",
-				DeleteRecord: false,
-				State:        "yes",
-			},
-		},
-		{
-			desc: "wrong Destination",
-			record: DNSRecord{
-				ID:           12345,
-				Hostname:     "asdf",
-				RecordType:   "TXT",
-				Priority:     "0",
-				Destination:  "wrong",
-				DeleteRecord: false,
-				State:        "yes",
-			},
-			expectError: true,
-		},
-		{
-			desc: "record type CNAME",
-			record: DNSRecord{
-				ID:           12345,
-				Hostname:     "asdf",
-				RecordType:   "CNAME",
-				Priority:     "0",
-				Destination:  "randomtext",
-				DeleteRecord: false,
-				State:        "yes",
-			},
-			expectError: true,
-		},
-	}
-
-	for _, test := range testCases {
-		test := test
-		t.Run(test.desc, func(t *testing.T) {
-			t.Parallel()
-
-			idx, err := GetDNSRecordIdx(records, test.record)
-			if test.expectError {
-				assert.Error(t, err)
-				assert.Equal(t, -1, idx)
-			} else {
-				assert.NoError(t, err)
-				assert.Equal(t, records[idx], test.record)
-			}
-		})
-	}
 }

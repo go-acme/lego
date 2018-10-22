@@ -82,7 +82,7 @@ func TestClient_Login_errors(t *testing.T) {
 					{
 						"serverrequestid":"YxTr4EzdbJ101T211zR4yzUEMVE",
 						"clientrequestid":"",
-						"action":"undefined",
+						"action":"login",
 						"status":"error",
 						"statuscode":4013,
 						"shortmessage":"Validation Error.",
@@ -134,6 +134,90 @@ func TestClient_Login_errors(t *testing.T) {
 	}
 }
 
+func TestClient_Logout(t *testing.T) {
+	client, mux, tearDown := setupClientTest()
+	defer tearDown()
+
+	mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
+		raw, err := ioutil.ReadAll(req.Body)
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+		}
+
+		if string(raw) != `{"action":"logout","param":{"customernumber":"a","apikey":"b","apisessionid":"session-id"}}` {
+			http.Error(rw, fmt.Sprintf("invalid request body: %s", string(raw)), http.StatusBadRequest)
+		}
+
+		response := `
+			{
+				"serverrequestid": "request-id",
+				"clientrequestid": "",
+				"action": "logout",
+				"status": "success",
+				"statuscode": 2000,
+				"shortmessage": "Logout successful",
+				"longmessage": "Session has been terminated successful.",
+				"responsedata": ""
+			}`
+		_, err = rw.Write([]byte(response))
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+		}
+	})
+
+	err := client.Logout("session-id")
+	require.NoError(t, err)
+}
+
+func TestClient_Logout_errors(t *testing.T) {
+	testCases := []struct {
+		desc    string
+		handler func(rw http.ResponseWriter, req *http.Request)
+	}{
+		{
+			desc: "HTTP error",
+			handler: func(rw http.ResponseWriter, req *http.Request) {
+				http.Error(rw, "error message", http.StatusInternalServerError)
+			},
+		},
+		{
+			desc: "API error",
+			handler: func(rw http.ResponseWriter, req *http.Request) {
+				response := `
+					{
+						"serverrequestid":"YxTr4EzdbJ101T211zR4yzUEMVE",
+						"clientrequestid":"",
+						"action":"logout",
+						"status":"error",
+						"statuscode":4013,
+						"shortmessage":"Validation Error.",
+						"longmessage":"Message is empty.",
+						"responsedata":""
+					}`
+				_, err := rw.Write([]byte(response))
+				if err != nil {
+					http.Error(rw, err.Error(), http.StatusInternalServerError)
+				}
+			},
+		},
+	}
+
+	for _, test := range testCases {
+		test := test
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			client, mux, tearDown := setupClientTest()
+			defer tearDown()
+
+			mux.HandleFunc("/", test.handler)
+
+			err := client.Logout("session-id")
+			require.Error(t, err)
+		})
+	}
+}
+
 func TestClient_GetDNSRecords(t *testing.T) {
 	client, mux, tearDown := setupClientTest()
 	defer tearDown()
@@ -166,7 +250,7 @@ func TestClient_GetDNSRecords(t *testing.T) {
 			        "type":"TXT",
 			        "priority":"1",
 			        "destination":"bGVnbzE=",
-			        "state":"foobar",
+			        "state":"yes",
 			        "ttl":300
 			      },
 			      {
@@ -175,7 +259,7 @@ func TestClient_GetDNSRecords(t *testing.T) {
 			        "type":"TXT",
 			        "priority":"1",
 			        "destination":"bGVnbw==",
-			        "state":"foobar",
+			        "state":"yes",
 			        "ttl":300
 			      }
 			    ]
@@ -194,7 +278,7 @@ func TestClient_GetDNSRecords(t *testing.T) {
 		Priority:     "1",
 		Destination:  "bGVnbzE=",
 		DeleteRecord: false,
-		State:        "foobar",
+		State:        "yes",
 		TTL:          300,
 	}, {
 		ID:           2,
@@ -203,7 +287,7 @@ func TestClient_GetDNSRecords(t *testing.T) {
 		Priority:     "1",
 		Destination:  "bGVnbw==",
 		DeleteRecord: false,
-		State:        "foobar",
+		State:        "yes",
 		TTL:          300,
 	}}
 
@@ -211,6 +295,85 @@ func TestClient_GetDNSRecords(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, expected, records)
+}
+
+func TestClient_GetDNSRecords_errors(t *testing.T) {
+	testCases := []struct {
+		desc    string
+		handler func(rw http.ResponseWriter, req *http.Request)
+	}{
+		{
+			desc: "HTTP error",
+			handler: func(rw http.ResponseWriter, req *http.Request) {
+				http.Error(rw, "error message", http.StatusInternalServerError)
+			},
+		},
+		{
+			desc: "API error",
+			handler: func(rw http.ResponseWriter, req *http.Request) {
+				response := `
+					{
+						"serverrequestid":"YxTr4EzdbJ101T211zR4yzUEMVE",
+						"clientrequestid":"",
+						"action":"infoDnsRecords",
+						"status":"error",
+						"statuscode":4013,
+						"shortmessage":"Validation Error.",
+						"longmessage":"Message is empty.",
+						"responsedata":""
+					}`
+				_, err := rw.Write([]byte(response))
+				if err != nil {
+					http.Error(rw, err.Error(), http.StatusInternalServerError)
+				}
+			},
+		},
+		{
+			desc: "responsedata marshaling error",
+			handler: func(rw http.ResponseWriter, req *http.Request) {
+				raw, err := ioutil.ReadAll(req.Body)
+				if err != nil {
+					http.Error(rw, err.Error(), http.StatusInternalServerError)
+				}
+
+				if string(raw) != `{"action":"infoDnsRecords","param":{"domainname":"example.com","customernumber":"a","apikey":"b","apisessionid":"api-session-id"}}` {
+					http.Error(rw, fmt.Sprintf("invalid request body: %s", string(raw)), http.StatusBadRequest)
+				}
+
+				response := `
+			{
+			  "serverrequestid":"srv-request-id",
+			  "clientrequestid":"",
+			  "action":"infoDnsRecords",
+			  "status":"success",
+			  "statuscode":2000,
+			  "shortmessage":"Login successful",
+			  "longmessage":"Session has been created successful.",
+			  "responsedata":""
+			}`
+				_, err = rw.Write([]byte(response))
+				if err != nil {
+					http.Error(rw, err.Error(), http.StatusInternalServerError)
+				}
+			},
+		},
+	}
+
+	for _, test := range testCases {
+		test := test
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			client, mux, tearDown := setupClientTest()
+			defer tearDown()
+
+			mux.HandleFunc("/", test.handler)
+
+			records, err := client.GetDNSRecords("example.com", "api-session-id")
+			require.Error(t, err)
+			assert.Empty(t, records)
+		})
+	}
 }
 
 func TestLiveClientAuth(t *testing.T) {

@@ -185,7 +185,7 @@ func (c *Client) Logout(sessionID string) error {
 
 // UpdateDNSRecord performs an update of the DNSRecords as specified by the netcup WSDL
 // https://ccp.netcup.net/run/webservice/servers/endpoint.php
-func (c *Client) UpdateDNSRecord(sessionID, domainName string, record DNSRecord) error {
+func (c *Client) UpdateDNSRecord(sessionID, domainName string, records []DNSRecord) error {
 	payload := &Request{
 		Action: "updateDnsRecords",
 		Param: UpdateDNSRecordsRequest{
@@ -194,7 +194,7 @@ func (c *Client) UpdateDNSRecord(sessionID, domainName string, record DNSRecord)
 			APIKey:          c.apiKey,
 			APISessionID:    sessionID,
 			ClientRequestID: "",
-			DNSRecordSet:    DNSRecordSet{DNSRecords: []DNSRecord{record}},
+			DNSRecordSet:    DNSRecordSet{DNSRecords: records},
 		},
 	}
 

@@ -103,7 +103,16 @@ func (d *DNSProvider) Present(domainName, token, keyAuth string) error {
 	hostname := strings.Replace(fqdn, "."+zone, "", 1)
 	record := createTxtRecord(hostname, value, d.config.TTL)
 
-	err = d.client.UpdateDNSRecord(sessionID, acme.UnFqdn(zone), record)
+	zone = acme.UnFqdn(zone)
+
+	records, err := d.client.GetDNSRecords(zone, sessionID)
+	if err != nil {
+		// skip no existing records
+	}
+
+	records = append(records, record)
+
+	err = d.client.UpdateDNSRecord(sessionID, zone, records)
 	if err != nil {
 		if errLogout := d.client.Logout(sessionID); errLogout != nil {
 			return fmt.Errorf("netcup: failed to add TXT-Record: %v; %v", err, errLogout)
@@ -119,8 +128,8 @@ func (d *DNSProvider) Present(domainName, token, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters
-func (d *DNSProvider) CleanUp(domainname, token, keyAuth string) error {
-	fqdn, value, _ := acme.DNS01Record(domainname, keyAuth)
+func (d *DNSProvider) CleanUp(domainName, token, keyAuth string) error {
+	fqdn, value, _ := acme.DNS01Record(domainName, keyAuth)
 
 	zone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameservers)
 	if err != nil {
@@ -150,7 +159,7 @@ func (d *DNSProvider) CleanUp(domainname, token, keyAuth string) error {
 
 	records[idx].DeleteRecord = true
 
-	err = d.client.UpdateDNSRecord(sessionID, zone, records[idx])
+	err = d.client.UpdateDNSRecord(sessionID, zone, []DNSRecord{records[idx]})
 	if err != nil {
 		if errLogout := d.client.Logout(sessionID); errLogout != nil {
 			return fmt.Errorf("netcup: %v; %v", err, errLogout)

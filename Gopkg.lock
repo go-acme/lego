@@ -175,21 +175,6 @@
   revision = "35bcc6b47c20ec9bf3a53adcb7fa9665a75f0e7b"
 
 [[projects]]
-  digest = "1:82127d77b40b617d650e64dc287cfc190f31d1030bd01cae5110780dd1e5bbb3"
-  name = "github.com/edeckers/auroradnsclient"
-  packages = [
-    ".",
-    "records",
-    "requests",
-    "requests/errors",
-    "tokens",
-    "zones",
-  ]
-  pruneopts = "NUT"
-  revision = "1563e622aaca0a8bb895a448f31d4a430ab97586"
-  version = "v1.0.3"
-
-[[projects]]
   digest = "1:e096f1857eedd49e2bd0885d05105d1d4af1bfcf8b1d07fa5710718e6641fd48"
   name = "github.com/exoscale/egoscale"
   packages = ["."]
@@ -270,6 +255,14 @@
   pruneopts = "NUT"
   revision = "59fac5042749a5afb9af70e813da1dd5474f0167"
   version = "1.0.1"
+
+[[projects]]
+  digest = "1:417193ba917954c4837c6fc48c6ac241b3fefd13fc0889367b4a7e43b69d582c"
+  name = "github.com/ldez/go-auroradns"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "b40dfcae7c417f8129579362695dc1f3cfe5928d"
+  version = "v2.0.0"
 
 [[projects]]
   digest = "1:111ff5a09a32895248270bfaef9b8b6ac163a8cde9cdd603fed64b3e4b59e8ab"
@@ -604,12 +597,10 @@
     "github.com/cpu/goacmedns",
     "github.com/decker502/dnspod-go",
     "github.com/dnsimple/dnsimple-go/dnsimple",
-    "github.com/edeckers/auroradnsclient",
-    "github.com/edeckers/auroradnsclient/records",
-    "github.com/edeckers/auroradnsclient/zones",
     "github.com/exoscale/egoscale",
     "github.com/iij/doapi",
     "github.com/iij/doapi/protocol",
+    "github.com/ldez/go-auroradns",
     "github.com/linode/linodego",
     "github.com/miekg/dns",
     "github.com/namedotcom/go/namecom",

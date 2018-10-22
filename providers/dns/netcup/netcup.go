@@ -76,11 +76,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("netcup: the configuration of the DNS provider is nil")
 	}
 
-	if config.Customer == "" || config.Key == "" || config.Password == "" {
-		return nil, fmt.Errorf("netcup: netcup credentials missing")
+	client, err := NewClient(config.Customer, config.Key, config.Password)
+	if err != nil {
+		return nil, fmt.Errorf("netcup: %v", err)
 	}
 
-	client := NewClient(config.Customer, config.Key, config.Password)
 	client.HTTPClient = config.HTTPClient
 
 	return &DNSProvider{client: client, config: config}, nil

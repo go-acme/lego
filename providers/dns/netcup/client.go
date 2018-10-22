@@ -123,7 +123,11 @@ type Client struct {
 }
 
 // NewClient creates a netcup DNS client
-func NewClient(customerNumber string, apiKey string, apiPassword string) *Client {
+func NewClient(customerNumber string, apiKey string, apiPassword string) (*Client, error) {
+	if customerNumber == "" || apiKey == "" || apiPassword == "" {
+		return nil, fmt.Errorf("credentials missing")
+	}
+
 	return &Client{
 		customerNumber: customerNumber,
 		apiKey:         apiKey,
@@ -132,7 +136,7 @@ func NewClient(customerNumber string, apiKey string, apiPassword string) *Client
 		HTTPClient: &http.Client{
 			Timeout: 10 * time.Second,
 		},
-	}
+	}, nil
 }
 
 // Login performs the login as specified by the netcup WSDL

@@ -18,7 +18,10 @@ func setupClientTest() (*Client, *http.ServeMux, func()) {
 	handler := http.NewServeMux()
 	server := httptest.NewServer(handler)
 
-	client := NewClient("a", "b", "c")
+	client, err := NewClient("a", "b", "c")
+	if err != nil {
+		panic(err)
+	}
 	client.BaseURL = server.URL
 
 	return client, handler, server.Close
@@ -384,10 +387,11 @@ func TestLiveClientAuth(t *testing.T) {
 	// Setup
 	envTest.RestoreEnv()
 
-	client := NewClient(
+	client, err := NewClient(
 		envTest.GetValue("NETCUP_CUSTOMER_NUMBER"),
 		envTest.GetValue("NETCUP_API_KEY"),
 		envTest.GetValue("NETCUP_API_PASSWORD"))
+	require.NoError(t, err)
 
 	for i := 1; i < 4; i++ {
 		i := i
@@ -412,10 +416,11 @@ func TestLiveClientGetDnsRecords(t *testing.T) {
 	// Setup
 	envTest.RestoreEnv()
 
-	client := NewClient(
+	client, err := NewClient(
 		envTest.GetValue("NETCUP_CUSTOMER_NUMBER"),
 		envTest.GetValue("NETCUP_API_KEY"),
 		envTest.GetValue("NETCUP_API_PASSWORD"))
+	require.NoError(t, err)
 
 	sessionID, err := client.Login()
 	require.NoError(t, err)
@@ -444,10 +449,11 @@ func TestLiveClientUpdateDnsRecord(t *testing.T) {
 	// Setup
 	envTest.RestoreEnv()
 
-	client := NewClient(
+	client, err := NewClient(
 		envTest.GetValue("NETCUP_CUSTOMER_NUMBER"),
 		envTest.GetValue("NETCUP_API_KEY"),
 		envTest.GetValue("NETCUP_API_PASSWORD"))
+	require.NoError(t, err)
 
 	sessionID, err := client.Login()
 	require.NoError(t, err)

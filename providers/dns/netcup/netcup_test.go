@@ -105,28 +105,28 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		},
 		{
 			desc:     "missing credentials",
-			expected: "netcup: netcup credentials missing",
+			expected: "netcup: credentials missing",
 		},
 		{
 			desc:     "missing customer",
 			customer: "",
 			key:      "B",
 			password: "C",
-			expected: "netcup: netcup credentials missing",
+			expected: "netcup: credentials missing",
 		},
 		{
 			desc:     "missing key",
 			customer: "A",
 			key:      "",
 			password: "C",
-			expected: "netcup: netcup credentials missing",
+			expected: "netcup: credentials missing",
 		},
 		{
 			desc:     "missing password",
 			customer: "A",
 			key:      "B",
 			password: "",
-			expected: "netcup: netcup credentials missing",
+			expected: "netcup: credentials missing",
 		},
 	}
 

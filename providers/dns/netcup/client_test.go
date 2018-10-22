@@ -470,7 +470,7 @@ func TestLiveClientUpdateDnsRecord(t *testing.T) {
 	// test
 	zone = acme.UnFqdn(zone)
 
-	err = client.UpdateDNSRecord(sessionID, zone, record)
+	err = client.UpdateDNSRecord(sessionID, zone, []DNSRecord{record})
 	require.NoError(t, err)
 
 	records, err := client.GetDNSRecords(zone, sessionID)
@@ -487,7 +487,7 @@ func TestLiveClientUpdateDnsRecord(t *testing.T) {
 	records[recordIdx].DeleteRecord = true
 
 	// Tear down
-	err = client.UpdateDNSRecord(sessionID, envTest.GetDomain(), records[recordIdx])
+	err = client.UpdateDNSRecord(sessionID, envTest.GetDomain(), []DNSRecord{records[recordIdx]})
 	require.NoError(t, err, "Did not remove record! Please do so yourself.")
 
 	err = client.Logout(sessionID)

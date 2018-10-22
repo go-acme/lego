@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/log"
 	"github.com/xenolf/lego/platform/config/env"
 )
 
@@ -27,8 +28,8 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt("NETCUP_TTL", 120),
-		PropagationTimeout: env.GetOrDefaultSecond("NETCUP_PROPAGATION_TIMEOUT", acme.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("NETCUP_POLLING_INTERVAL", acme.DefaultPollingInterval),
+		PropagationTimeout: env.GetOrDefaultSecond("NETCUP_PROPAGATION_TIMEOUT", 120*time.Second),
+		PollingInterval:    env.GetOrDefaultSecond("NETCUP_POLLING_INTERVAL", 5*time.Second),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond("NETCUP_HTTP_TIMEOUT", 10*time.Second),
 		},
@@ -100,6 +101,13 @@ func (d *DNSProvider) Present(domainName, token, keyAuth string) error {
 		return fmt.Errorf("netcup: %v", err)
 	}
 
+	defer func() {
+		err = d.client.Logout(sessionID)
+		if err != nil {
+			log.Print("netcup: %v", err)
+		}
+	}()
+
 	hostname := strings.Replace(fqdn, "."+zone, "", 1)
 	record := createTxtRecord(hostname, value, d.config.TTL)
 
@@ -108,22 +116,16 @@ func (d *DNSProvider) Present(domainName, token, keyAuth string) error {
 	records, err := d.client.GetDNSRecords(zone, sessionID)
 	if err != nil {
 		// skip no existing records
+		log.Infof("no existing records, error ignored: %v", err)
 	}
 
 	records = append(records, record)
 
 	err = d.client.UpdateDNSRecord(sessionID, zone, records)
 	if err != nil {
-		if errLogout := d.client.Logout(sessionID); errLogout != nil {
-			return fmt.Errorf("netcup: failed to add TXT-Record: %v; %v", err, errLogout)
-		}
 		return fmt.Errorf("netcup: failed to add TXT-Record: %v", err)
 	}
 
-	err = d.client.Logout(sessionID)
-	if err != nil {
-		return fmt.Errorf("netcup: %v", err)
-	}
 	return nil
 }
 
@@ -140,6 +142,13 @@ func (d *DNSProvider) CleanUp(domainName, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("netcup: %v", err)
 	}
+
+	defer func() {
+		err = d.client.Logout(sessionID)
+		if err != nil {
+			log.Print("netcup: %v", err)
+		}
+	}()
 
 	hostname := strings.Replace(fqdn, "."+zone, "", 1)
 
@@ -161,16 +170,9 @@ func (d *DNSProvider) CleanUp(domainName, token, keyAuth string) error {
 
 	err = d.client.UpdateDNSRecord(sessionID, zone, []DNSRecord{records[idx]})
 	if err != nil {
-		if errLogout := d.client.Logout(sessionID); errLogout != nil {
-			return fmt.Errorf("netcup: %v; %v", err, errLogout)
-		}
 		return fmt.Errorf("netcup: %v", err)
 	}
 
-	err = d.client.Logout(sessionID)
-	if err != nil {
-		return fmt.Errorf("netcup: %v", err)
-	}
 	return nil
 }
 

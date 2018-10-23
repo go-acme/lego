@@ -1,6 +1,8 @@
 package azure
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -73,6 +75,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		subscriptionID string
 		tenantID       string
 		resourceGroup  string
+		handler        func(w http.ResponseWriter, r *http.Request)
 		expected       string
 	}{
 		{
@@ -82,6 +85,38 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			tenantID:       "C",
 			subscriptionID: "D",
 			resourceGroup:  "E",
+		},
+		{
+			desc:           "SubscriptionID missing",
+			clientID:       "A",
+			clientSecret:   "B",
+			tenantID:       "C",
+			subscriptionID: "",
+			resourceGroup:  "",
+			expected:       "azure: SubscriptionID is missing",
+		},
+		{
+			desc:           "ResourceGroup missing",
+			clientID:       "A",
+			clientSecret:   "B",
+			tenantID:       "C",
+			subscriptionID: "D",
+			resourceGroup:  "",
+			expected:       "azure: ResourceGroup is missing",
+		},
+		{
+			desc:           "use metadata",
+			clientID:       "A",
+			clientSecret:   "B",
+			tenantID:       "C",
+			subscriptionID: "",
+			resourceGroup:  "",
+			handler: func(w http.ResponseWriter, r *http.Request) {
+				_, err := w.Write([]byte("foo"))
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+				}
+			},
 		},
 	}
 
@@ -93,6 +128,16 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			config.SubscriptionID = test.subscriptionID
 			config.TenantID = test.tenantID
 			config.ResourceGroup = test.resourceGroup
+
+			handler := http.NewServeMux()
+			server := httptest.NewServer(handler)
+			defer server.Close()
+			if test.handler == nil {
+				handler.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {})
+			} else {
+				handler.HandleFunc("/", test.handler)
+			}
+			config.MetadataEndpoint = server.URL
 
 			p, err := NewDNSProviderConfig(config)
 

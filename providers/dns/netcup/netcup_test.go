@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/platform/tester"
@@ -104,28 +105,28 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		},
 		{
 			desc:     "missing credentials",
-			expected: "netcup: netcup credentials missing",
+			expected: "netcup: credentials missing",
 		},
 		{
 			desc:     "missing customer",
 			customer: "",
 			key:      "B",
 			password: "C",
-			expected: "netcup: netcup credentials missing",
+			expected: "netcup: credentials missing",
 		},
 		{
 			desc:     "missing key",
 			customer: "A",
 			key:      "",
 			password: "C",
-			expected: "netcup: netcup credentials missing",
+			expected: "netcup: credentials missing",
 		},
 		{
 			desc:     "missing password",
 			customer: "A",
 			key:      "B",
 			password: "",
-			expected: "netcup: netcup credentials missing",
+			expected: "netcup: credentials missing",
 		},
 	}
 
@@ -145,6 +146,108 @@ func TestNewDNSProviderConfig(t *testing.T) {
 				require.NotNil(t, p.client)
 			} else {
 				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
+}
+
+func TestGetDNSRecordIdx(t *testing.T) {
+	records := []DNSRecord{
+		{
+			ID:           12345,
+			Hostname:     "asdf",
+			RecordType:   "TXT",
+			Priority:     "0",
+			Destination:  "randomtext",
+			DeleteRecord: false,
+			State:        "yes",
+		},
+		{
+			ID:           23456,
+			Hostname:     "@",
+			RecordType:   "A",
+			Priority:     "0",
+			Destination:  "127.0.0.1",
+			DeleteRecord: false,
+			State:        "yes",
+		},
+		{
+			ID:           34567,
+			Hostname:     "dfgh",
+			RecordType:   "CNAME",
+			Priority:     "0",
+			Destination:  "example.com",
+			DeleteRecord: false,
+			State:        "yes",
+		},
+		{
+			ID:           45678,
+			Hostname:     "fghj",
+			RecordType:   "MX",
+			Priority:     "10",
+			Destination:  "mail.example.com",
+			DeleteRecord: false,
+			State:        "yes",
+		},
+	}
+
+	testCases := []struct {
+		desc        string
+		record      DNSRecord
+		expectError bool
+	}{
+		{
+			desc: "simple",
+			record: DNSRecord{
+				ID:           12345,
+				Hostname:     "asdf",
+				RecordType:   "TXT",
+				Priority:     "0",
+				Destination:  "randomtext",
+				DeleteRecord: false,
+				State:        "yes",
+			},
+		},
+		{
+			desc: "wrong Destination",
+			record: DNSRecord{
+				ID:           12345,
+				Hostname:     "asdf",
+				RecordType:   "TXT",
+				Priority:     "0",
+				Destination:  "wrong",
+				DeleteRecord: false,
+				State:        "yes",
+			},
+			expectError: true,
+		},
+		{
+			desc: "record type CNAME",
+			record: DNSRecord{
+				ID:           12345,
+				Hostname:     "asdf",
+				RecordType:   "CNAME",
+				Priority:     "0",
+				Destination:  "randomtext",
+				DeleteRecord: false,
+				State:        "yes",
+			},
+			expectError: true,
+		},
+	}
+
+	for _, test := range testCases {
+		test := test
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			idx, err := getDNSRecordIdx(records, test.record)
+			if test.expectError {
+				assert.Error(t, err)
+				assert.Equal(t, -1, idx)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, records[idx], test.record)
 			}
 		})
 	}

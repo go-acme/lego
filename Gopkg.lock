@@ -21,12 +21,13 @@
   version = "v19.1.0"
 
 [[projects]]
-  digest = "1:6b05ebcb43e299f0319de63de668c804a4c3a2dbc12da392a6720de500b10358"
+  digest = "1:0b2163d4a757420217d4e0461128bf5c96be6d1614513b31d35029872a07ad40"
   name = "github.com/Azure/go-autorest"
   packages = [
     "autorest",
     "autorest/adal",
     "autorest/azure",
+    "autorest/azure/auth",
     "autorest/date",
     "autorest/to",
     "autorest/validation",
@@ -165,6 +166,14 @@
   pruneopts = "NUT"
   revision = "06ea1031745cb8b3dab3f6a236daf2b0aa468b7e"
   version = "v3.2.0"
+
+[[projects]]
+  branch = "master"
+  digest = "1:ec6271918b59b872a2d25e374569a4f75f1839d91e4191470c297b7eaaaf7641"
+  name = "github.com/dimchansky/utfbom"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "5448fe645cb1964ba70ac8f9f2ffe975e61a536c"
 
 [[projects]]
   branch = "master"
@@ -415,13 +424,15 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:1683f109d69f4a055621eeb7f396d37121c1d2a259b3a77030c3ce5a1b8c92e9"
+  digest = "1:af471e1efb6318085c2c27ba0bcbf659feab5f7044388c0c0104f456831eb281"
   name = "golang.org/x/crypto"
   packages = [
     "ed25519",
     "ed25519/internal/edwards25519",
     "ocsp",
     "pbkdf2",
+    "pkcs12",
+    "pkcs12/internal/rc2",
     "ssh/terminal",
   ]
   pruneopts = "NUT"
@@ -577,6 +588,7 @@
     "github.com/Azure/go-autorest/autorest",
     "github.com/Azure/go-autorest/autorest/adal",
     "github.com/Azure/go-autorest/autorest/azure",
+    "github.com/Azure/go-autorest/autorest/azure/auth",
     "github.com/Azure/go-autorest/autorest/to",
     "github.com/JamesClonk/vultr/lib",
     "github.com/OpenDNS/vegadns2client",

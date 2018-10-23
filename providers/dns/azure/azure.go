@@ -122,6 +122,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		if resGroup == "" {
 			return nil, errors.New("azure: ResourceGroup is missing")
 		}
+		config.ResourceGroup = resGroup
 	}
 
 	return &DNSProvider{config: config, authorizer: authorizer}, nil

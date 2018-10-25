@@ -192,6 +192,14 @@
   version = "v0.11.1"
 
 [[projects]]
+  digest = "1:aa3ed0a71c4e66e4ae6486bf97a3f4cab28edc78df2e50c5ad01dc7d91604b88"
+  name = "github.com/fatih/structs"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "4966fc68f5b7593aafa6cbbba2d65ec6e1416047"
+  version = "v1.1.0"
+
+[[projects]]
   digest = "1:74d9b0a7b4107b41e0ade759fac64502876f82d29fb23d77b3dd24b194ee3dd5"
   name = "github.com/go-ini/ini"
   packages = ["."]
@@ -206,6 +214,14 @@
   pruneopts = "NUT"
   revision = "97a15579492cd5f35632499f315d7a8df94160a1"
   version = "v1.8.0"
+
+[[projects]]
+  branch = "master"
+  digest = "1:e2b86e41f3d669fc36b50d31d32d22c8ac656c75aa5ea89717ce7177e134ff2a"
+  name = "github.com/golang/glog"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "23def4e6c14b4da8ac2ed8007337bc5eb5007998"
 
 [[projects]]
   digest = "1:97df918963298c287643883209a2c3f642e6593379f97ab400c2a2e219ab647d"
@@ -266,6 +282,14 @@
   version = "1.0.1"
 
 [[projects]]
+  branch = "master"
+  digest = "1:ec142582cd3bb5cc29a2bc7181a6e67367b90b19f6a957ce506dcd7d1500bf95"
+  name = "github.com/kolo/xmlrpc"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "16bdd962781df9696f40cc2bab924f1a855a7f89"
+
+[[projects]]
   digest = "1:417193ba917954c4837c6fc48c6ac241b3fefd13fc0889367b4a7e43b69d582c"
   name = "github.com/ldez/go-auroradns"
   packages = ["."]
@@ -296,6 +320,14 @@
   pruneopts = "NUT"
   revision = "ae18d6b8b3205b561c79e8e5f69bff09736185f4"
   version = "v1.0.0"
+
+[[projects]]
+  digest = "1:a45ae66dea4c899d79fceb116accfa1892105c251f0dcd9a217ddc276b42ec68"
+  name = "github.com/mitchellh/mapstructure"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "3536a929edddb9a5b34bd6861dc4a9647cb459fe"
+  version = "v1.1.2"
 
 [[projects]]
   digest = "1:2f42fa12d6911c7b7659738758631bec870b7e9b4c6be5444f963cdcfccc191f"
@@ -381,6 +413,14 @@
   pruneopts = "NUT"
   revision = "3e01752db0189b9157070a0e1668a620f9a85da2"
   version = "v1.0.6"
+
+[[projects]]
+  digest = "1:a304dd244e7b4b82108126d904e2294f1d916d4bb3b64e377fb761baf584a676"
+  name = "github.com/smueller18/goinwx"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "4dce1088ed8c6ee489b6f23ed693d3348207e55e"
+  version = "v0.4.0"
 
 [[projects]]
   digest = "1:60a46e2410edbf02b419f833372dd1d24d7aa1b916a990a7370e792fada1eadd"
@@ -620,6 +660,7 @@
     "github.com/rainycape/memcache",
     "github.com/sacloud/libsacloud/api",
     "github.com/sacloud/libsacloud/sacloud",
+    "github.com/smueller18/goinwx",
     "github.com/stretchr/testify/assert",
     "github.com/stretchr/testify/mock",
     "github.com/stretchr/testify/require",

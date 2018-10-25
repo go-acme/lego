@@ -84,3 +84,7 @@
 [[constraint]]
   version = "0.11.1"
   name = "github.com/exoscale/egoscale"
+
+[[constraint]]
+  version = "v0.4.0"
+  name = "github.com/smueller18/goinwx"

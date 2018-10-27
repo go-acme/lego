@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 
 	"gopkg.in/square/go-jose.v2"
@@ -22,75 +23,68 @@ type jws struct {
 	nonces      nonceManager
 }
 
-// postJSON performs an HTTP POST request and parses the response body
-// as JSON, into the provided respBody object.
-func (j *jws) postJSON(uri string, reqBody, respBody interface{}) (http.Header, error) {
-	jsonBytes, err := json.Marshal(reqBody)
-	if err != nil {
-		return nil, errors.New("failed to marshal network message")
-	}
-
-	signedContent, err := j.signContent(uri, jsonBytes)
-	if err != nil {
-		return nil, fmt.Errorf("failed to post JWS message -> failed to sign content -> %v", err)
-	}
-
-	data := bytes.NewBuffer([]byte(signedContent.FullSerialize()))
-	resp, err := httpPost(uri, "application/jose+json", data)
+// FIXME
+func httpPostTEMP(uri string, bodyType string, data io.Reader, response interface{}) (*http.Response, error) {
+	resp, err := httpPost(uri, bodyType, data)
 	if err != nil {
 		return nil, fmt.Errorf("failed to post JWS message -> failed to HTTP POST to %s -> %v", uri, err)
 	}
 
+	// FIXME yes or no?
 	defer resp.Body.Close()
+
+	if resp.StatusCode >= http.StatusBadRequest {
+		return resp, handleHTTPError(resp)
+	}
+
+	err = json.NewDecoder(resp.Body).Decode(response)
+	if err != nil {
+		return resp, err
+	}
+
+	return resp, nil
+}
+
+// postJSON performs an HTTP POST request and parses the response body
+// as JSON, into the provided respBody object.
+func (j *jws) postJSON(uri string, reqBody, response interface{}) (http.Header, error) {
+	content, err := json.Marshal(reqBody)
+	if err != nil {
+		return nil, errors.New("failed to marshal network message")
+	}
+
+	resp, err := j.signedPost(uri, content, response)
+	if err != nil {
+		switch err.(type) {
+		// Retry once if the nonce was invalidated
+		case NonceError:
+			resp, err := j.signedPost(uri, content, response)
+			if err != nil {
+				return resp.Header, err
+			}
+		default:
+			return resp.Header, err
+		}
+	}
+
+	return resp.Header, nil
+}
+
+func (j *jws) signedPost(uri string, content []byte, response interface{}) (*http.Response, error) {
+	signedContent, err := j.signContent(uri, content)
+	if err != nil {
+		return nil, fmt.Errorf("failed to post JWS message -> failed to sign content -> %v", err)
+	}
+
+	signedBody := bytes.NewBuffer([]byte(signedContent.FullSerialize()))
+	resp, err := httpPostTEMP(uri, "application/jose+json", signedBody, response)
 
 	nonce, nonceErr := getNonceFromResponse(resp)
 	if nonceErr == nil {
 		j.nonces.Push(nonce)
 	}
 
-	if resp.StatusCode >= http.StatusBadRequest {
-		err = handleHTTPError(resp)
-		switch err.(type) {
-		// Retry once if the nonce was invalidated
-		case NonceError:
-			signedContent, errP := j.signContent(uri, jsonBytes)
-			if errP != nil {
-				return nil, fmt.Errorf("failed to post JWS message -> failed to sign content -> %v", errP)
-			}
-
-			data := bytes.NewBuffer([]byte(signedContent.FullSerialize()))
-			retryResp, errP := httpPost(uri, "application/jose+json", data)
-			if errP != nil {
-				return nil, fmt.Errorf("failed to post JWS message -> failed to HTTP POST to %s -> %v", uri, errP)
-			}
-
-			defer retryResp.Body.Close()
-
-			nonce, nonceErr := getNonceFromResponse(resp)
-			if nonceErr == nil {
-				j.nonces.Push(nonce)
-			}
-
-			if retryResp.StatusCode >= http.StatusBadRequest {
-				return retryResp.Header, handleHTTPError(retryResp)
-			}
-
-			if respBody == nil {
-				return retryResp.Header, nil
-			}
-
-			return retryResp.Header, json.NewDecoder(retryResp.Body).Decode(respBody)
-
-		default:
-			return resp.Header, err
-		}
-	}
-
-	if respBody == nil {
-		return resp.Header, nil
-	}
-
-	return resp.Header, json.NewDecoder(resp.Body).Decode(respBody)
+	return resp, err
 }
 
 func (j *jws) signContent(url string, content []byte) (*jose.JSONWebSignature, error) {

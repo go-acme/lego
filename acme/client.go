@@ -57,7 +57,7 @@ type cleanup interface {
 
 type validateFunc func(j *jws, domain, uri string, chlng challenge) error
 
-// Client is the user-friendy way to ACME
+// Client is the user-friendly way to ACME
 type Client struct {
 	directory directory
 	user      User
@@ -68,7 +68,7 @@ type Client struct {
 
 // NewClient creates a new ACME client on behalf of the user. The client will depend on
 // the ACME directory located at caDirURL for the rest of its actions.  A private
-// key of type keyType (see KeyType contants) will be generated when requesting a new
+// key of type keyType (see KeyType constants) will be generated when requesting a new
 // certificate if one isn't provided.
 func NewClient(caDirURL string, user User, keyType KeyType) (*Client, error) {
 	privKey := user.GetPrivateKey()
@@ -221,21 +221,19 @@ func (c *Client) RegisterWithExternalAccountBinding(tosAgreed bool, kid string, 
 	} else {
 		accMsg.Contact = []string{}
 	}
+
 	accMsg.TermsOfServiceAgreed = tosAgreed
 
 	hmac, err := base64.RawURLEncoding.DecodeString(hmacEncoded)
 	if err != nil {
-		return nil, fmt.Errorf("acme: could not decode hmac key: %s", err.Error())
+		return nil, fmt.Errorf("acme: could not decode hmac key: %v", err)
 	}
 
 	eabJWS, err := c.jws.signEABContent(c.directory.NewAccountURL, kid, hmac)
 	if err != nil {
-		return nil, fmt.Errorf("acme: error signing eab content: %s", err.Error())
+		return nil, fmt.Errorf("acme: error signing eab content: %v", err)
 	}
-
-	eabPayload := eabJWS.FullSerialize()
-
-	accMsg.ExternalAccountBinding = []byte(eabPayload)
+	accMsg.ExternalAccountBinding = []byte(eabJWS.FullSerialize())
 
 	var serverReg accountMessage
 	hdr, err := postJSON(c.jws, c.directory.NewAccountURL, accMsg, &serverReg)
@@ -247,10 +245,7 @@ func (c *Client) RegisterWithExternalAccountBinding(tosAgreed bool, kid string, 
 		}
 	}
 
-	reg := &RegistrationResource{
-		URI:  hdr.Get("Location"),
-		Body: serverReg,
-	}
+	reg := &RegistrationResource{URI: hdr.Get("Location"), Body: serverReg}
 	c.jws.kid = reg.URI
 
 	return reg, nil

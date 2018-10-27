@@ -18,7 +18,6 @@ func HTTP01ChallengePath(token string) string {
 }
 
 func (s *httpChallenge) Solve(chlng challenge, domain string) error {
-
 	log.Infof("[%s] acme: Trying to solve HTTP-01", domain)
 
 	// Generate the Key Authorization for the challenge

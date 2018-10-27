@@ -26,13 +26,13 @@ type jws struct {
 func (j *jws) post(url string, content []byte) (*http.Response, error) {
 	signedContent, err := j.signContent(url, content)
 	if err != nil {
-		return nil, fmt.Errorf("failed to sign content -> %s", err.Error())
+		return nil, fmt.Errorf("failed to sign content -> %v", err)
 	}
 
 	data := bytes.NewBuffer([]byte(signedContent.FullSerialize()))
 	resp, err := httpPost(url, "application/jose+json", data)
 	if err != nil {
-		return nil, fmt.Errorf("failed to HTTP POST to %s -> %s", url, err.Error())
+		return nil, fmt.Errorf("failed to HTTP POST to %s -> %v", url, err)
 	}
 
 	nonce, nonceErr := getNonceFromResponse(resp)
@@ -44,7 +44,6 @@ func (j *jws) post(url string, content []byte) (*http.Response, error) {
 }
 
 func (j *jws) signContent(url string, content []byte) (*jose.JSONWebSignature, error) {
-
 	var alg jose.SignatureAlgorithm
 	switch k := j.privKey.(type) {
 	case *rsa.PrivateKey:
@@ -77,12 +76,12 @@ func (j *jws) signContent(url string, content []byte) (*jose.JSONWebSignature, e
 
 	signer, err := jose.NewSigner(signKey, &options)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create jose signer -> %s", err.Error())
+		return nil, fmt.Errorf("failed to create jose signer -> %v", err)
 	}
 
 	signed, err := signer.Sign(content)
 	if err != nil {
-		return nil, fmt.Errorf("failed to sign content -> %s", err.Error())
+		return nil, fmt.Errorf("failed to sign content -> %v", err)
 	}
 	return signed, nil
 }
@@ -91,7 +90,7 @@ func (j *jws) signEABContent(url, kid string, hmac []byte) (*jose.JSONWebSignatu
 	jwk := jose.JSONWebKey{Key: j.privKey}
 	jwkJSON, err := jwk.Public().MarshalJSON()
 	if err != nil {
-		return nil, fmt.Errorf("acme: error encoding eab jwk key: %s", err.Error())
+		return nil, fmt.Errorf("acme: error encoding eab jwk key: %v", err)
 	}
 
 	signer, err := jose.NewSigner(
@@ -105,12 +104,12 @@ func (j *jws) signEABContent(url, kid string, hmac []byte) (*jose.JSONWebSignatu
 		},
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create External Account Binding jose signer -> %s", err.Error())
+		return nil, fmt.Errorf("failed to create External Account Binding jose signer -> %v", err)
 	}
 
 	signed, err := signer.Sign(jwkJSON)
 	if err != nil {
-		return nil, fmt.Errorf("failed to External Account Binding sign content -> %s", err.Error())
+		return nil, fmt.Errorf("failed to External Account Binding sign content -> %v", err)
 	}
 
 	return signed, nil
@@ -151,7 +150,7 @@ func (n *nonceManager) Push(nonce string) {
 func getNonce(url string) (string, error) {
 	resp, err := httpHead(url)
 	if err != nil {
-		return "", fmt.Errorf("failed to get nonce from HTTP HEAD -> %s", err.Error())
+		return "", fmt.Errorf("failed to get nonce from HTTP HEAD -> %v", err)
 	}
 
 	return getNonceFromResponse(resp)

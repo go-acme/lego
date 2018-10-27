@@ -87,7 +87,7 @@ func GetOCSPForCert(bundle []byte) ([]byte, *ocsp.Response, error) {
 		}
 		defer resp.Body.Close()
 
-		issuerBytes, errC := ioutil.ReadAll(limitReader(resp.Body, 1024*1024))
+		issuerBytes, errC := ioutil.ReadAll(limitReader(resp.Body, maxBodySize))
 		if errC != nil {
 			return nil, nil, errC
 		}
@@ -110,13 +110,13 @@ func GetOCSPForCert(bundle []byte) ([]byte, *ocsp.Response, error) {
 	}
 
 	reader := bytes.NewReader(ocspReq)
-	req, err := httpPost(issuedCert.OCSPServer[0], "application/ocsp-request", reader)
+	resp, err := httpPost(issuedCert.OCSPServer[0], "application/ocsp-request", reader)
 	if err != nil {
 		return nil, nil, err
 	}
-	defer req.Body.Close()
+	defer resp.Body.Close()
 
-	ocspResBytes, err := ioutil.ReadAll(limitReader(req.Body, 1024*1024))
+	ocspResBytes, err := ioutil.ReadAll(limitReader(resp.Body, maxBodySize))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -129,7 +129,7 @@ func GetOCSPForCert(bundle []byte) ([]byte, *ocsp.Response, error) {
 	return ocspResBytes, ocspRes, nil
 }
 
-func getKeyAuthorization(token string, key interface{}) (string, error) {
+func getKeyAuthorization(token string, key crypto.PrivateKey) (string, error) {
 	var publicKey crypto.PublicKey
 	switch k := key.(type) {
 	case *ecdsa.PrivateKey:
@@ -196,7 +196,6 @@ func parsePEMPrivateKey(key []byte) (crypto.PrivateKey, error) {
 }
 
 func generatePrivateKey(keyType KeyType) (crypto.PrivateKey, error) {
-
 	switch keyType {
 	case EC256:
 		return ecdsa.GenerateKey(elliptic.P256(), rand.Reader)

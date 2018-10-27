@@ -190,7 +190,7 @@ func (c *Client) Register(tosAgreed bool) (*RegistrationResource, error) {
 	accMsg.TermsOfServiceAgreed = tosAgreed
 
 	var serverReg accountMessage
-	hdr, err := postJSON(c.jws, c.directory.NewAccountURL, accMsg, &serverReg)
+	hdr, err := c.jws.postJSON(c.directory.NewAccountURL, accMsg, &serverReg)
 	if err != nil {
 		remoteErr, ok := err.(RemoteError)
 		if ok && remoteErr.StatusCode == 409 {
@@ -236,7 +236,7 @@ func (c *Client) RegisterWithExternalAccountBinding(tosAgreed bool, kid string, 
 	accMsg.ExternalAccountBinding = []byte(eabJWS.FullSerialize())
 
 	var serverReg accountMessage
-	hdr, err := postJSON(c.jws, c.directory.NewAccountURL, accMsg, &serverReg)
+	hdr, err := c.jws.postJSON(c.directory.NewAccountURL, accMsg, &serverReg)
 	if err != nil {
 		remoteErr, ok := err.(RemoteError)
 		if ok && remoteErr.StatusCode == 409 {
@@ -257,7 +257,7 @@ func (c *Client) ResolveAccountByKey() (*RegistrationResource, error) {
 	log.Infof("acme: Trying to resolve account by key")
 
 	acc := accountMessage{OnlyReturnExisting: true}
-	hdr, err := postJSON(c.jws, c.directory.NewAccountURL, acc, nil)
+	hdr, err := c.jws.postJSON(c.directory.NewAccountURL, acc, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -269,7 +269,7 @@ func (c *Client) ResolveAccountByKey() (*RegistrationResource, error) {
 
 	var retAccount accountMessage
 	c.jws.kid = accountLink
-	_, err = postJSON(c.jws, accountLink, accountMessage{}, &retAccount)
+	_, err = c.jws.postJSON(accountLink, accountMessage{}, &retAccount)
 	if err != nil {
 		return nil, err
 	}
@@ -289,7 +289,7 @@ func (c *Client) DeleteRegistration() error {
 		Status: "deactivated",
 	}
 
-	_, err := postJSON(c.jws, c.user.GetRegistration().URI, accMsg, nil)
+	_, err := c.jws.postJSON(c.user.GetRegistration().URI, accMsg, nil)
 	return err
 }
 
@@ -308,7 +308,7 @@ func (c *Client) QueryRegistration() (*RegistrationResource, error) {
 	accMsg := accountMessage{}
 
 	var serverReg accountMessage
-	_, err := postJSON(c.jws, c.user.GetRegistration().URI, accMsg, &serverReg)
+	_, err := c.jws.postJSON(c.user.GetRegistration().URI, accMsg, &serverReg)
 	if err != nil {
 		return nil, err
 	}
@@ -467,7 +467,7 @@ func (c *Client) RevokeCertificate(certificate []byte) error {
 
 	encodedCert := base64.URLEncoding.EncodeToString(x509Cert.Raw)
 
-	_, err = postJSON(c.jws, c.directory.RevokeCertURL, revokeCertMessage{Certificate: encodedCert}, nil)
+	_, err = c.jws.postJSON(c.directory.RevokeCertURL, revokeCertMessage{Certificate: encodedCert}, nil)
 	return err
 }
 
@@ -545,7 +545,7 @@ func (c *Client) createOrderForIdentifiers(domains []string) (orderResource, err
 	}
 
 	var response orderMessage
-	hdr, err := postJSON(c.jws, c.directory.NewOrderURL, order, &response)
+	hdr, err := c.jws.postJSON(c.directory.NewOrderURL, order, &response)
 	if err != nil {
 		return orderResource{}, err
 	}
@@ -703,7 +703,7 @@ func logAuthz(order orderResource) {
 // cleanAuthz loops through the passed in slice and disables any auths which are not "valid"
 func (c *Client) disableAuthz(authURL string) error {
 	var disabledAuth authorization
-	_, err := postJSON(c.jws, authURL, deactivateAuthMessage{Status: "deactivated"}, &disabledAuth)
+	_, err := c.jws.postJSON(authURL, deactivateAuthMessage{Status: "deactivated"}, &disabledAuth)
 	return err
 }
 
@@ -747,7 +747,7 @@ func (c *Client) requestCertificateForCsr(order orderResource, bundle bool, csr 
 
 	csrString := base64.RawURLEncoding.EncodeToString(csr)
 	var retOrder orderMessage
-	_, err := postJSON(c.jws, order.Finalize, csrMessage{Csr: csrString}, &retOrder)
+	_, err := c.jws.postJSON(order.Finalize, csrMessage{Csr: csrString}, &retOrder)
 	if err != nil {
 		return nil, err
 	}
@@ -912,7 +912,7 @@ func validate(j *jws, domain, uri string, c challenge) error {
 	// Challenge initiation is done by sending a JWS payload containing the
 	// trivial JSON object `{}`. We use an empty struct instance as the postJSON
 	// payload here to achieve this result.
-	hdr, err := postJSON(j, uri, struct{}{}, &chlng)
+	hdr, err := j.postJSON(uri, struct{}{}, &chlng)
 	if err != nil {
 		return err
 	}

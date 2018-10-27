@@ -6,6 +6,8 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rsa"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"sync"
@@ -18,6 +20,55 @@ type jws struct {
 	privKey     crypto.PrivateKey
 	kid         string
 	nonces      nonceManager
+}
+
+// postJSON performs an HTTP POST request and parses the response body
+// as JSON, into the provided respBody object.
+func (j *jws) postJSON(uri string, reqBody, respBody interface{}) (http.Header, error) {
+	jsonBytes, err := json.Marshal(reqBody)
+	if err != nil {
+		return nil, errors.New("failed to marshal network message")
+	}
+
+	resp, err := j.post(uri, jsonBytes)
+	if err != nil {
+		return nil, fmt.Errorf("failed to post JWS message. -> %v", err)
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= http.StatusBadRequest {
+		err = handleHTTPError(resp)
+		switch err.(type) {
+		// Retry once if the nonce was invalidated
+		case NonceError:
+			retryResp, errP := j.post(uri, jsonBytes)
+			if errP != nil {
+				return nil, fmt.Errorf("failed to post JWS message. -> %v", errP)
+			}
+
+			defer retryResp.Body.Close()
+
+			if retryResp.StatusCode >= http.StatusBadRequest {
+				return retryResp.Header, handleHTTPError(retryResp)
+			}
+
+			if respBody == nil {
+				return retryResp.Header, nil
+			}
+
+			return retryResp.Header, json.NewDecoder(retryResp.Body).Decode(respBody)
+
+		default:
+			return resp.Header, err
+		}
+	}
+
+	if respBody == nil {
+		return resp.Header, nil
+	}
+
+	return resp.Header, json.NewDecoder(resp.Body).Decode(respBody)
 }
 
 // Posts a JWS signed message to the specified URL.

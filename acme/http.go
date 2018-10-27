@@ -86,33 +86,58 @@ func initCertPool() *x509.CertPool {
 	return nil
 }
 
-// httpHead performs a HEAD request with a proper User-Agent string.
-// The response body (resp.Body) is already closed when this function returns.
-func httpHead(url string) (resp *http.Response, err error) {
-	req, err := http.NewRequest(http.MethodHead, url, nil)
+type requestOption func(*http.Request) error
+
+func contentType(ct string) requestOption {
+	return func(req *http.Request) error {
+		req.Header.Set("Content-Type", ct)
+		return nil
+	}
+}
+
+func newRequest(method, uri string, body io.Reader, opts ...requestOption) (*http.Request, error) {
+	req, err := http.NewRequest(method, uri, body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to head %q: %v", url, err)
+		return nil, fmt.Errorf("failed to create request: %v", err)
 	}
 
 	req.Header.Set("User-Agent", userAgent())
+
+	for _, opt := range opts {
+		err = opt(req)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return req, nil
+}
+
+// httpHead performs a HEAD request with a proper User-Agent string.
+// The response body (resp.Body) is already closed when this function returns.
+func httpHead(url string) (resp *http.Response, err error) {
+	req, err := newRequest(http.MethodHead, url, nil)
+	if err != nil {
+		return nil, err
+	}
 
 	resp, err = HTTPClient.Do(req)
 	if err != nil {
 		return resp, fmt.Errorf("failed to do head %q: %v", url, err)
 	}
+
 	resp.Body.Close()
-	return resp, err
+
+	return resp, nil
 }
 
 // httpPost performs a POST request with a proper User-Agent string.
 // Callers should close resp.Body when done reading from it.
 func httpPost(url string, bodyType string, body io.Reader) (resp *http.Response, err error) {
-	req, err := http.NewRequest(http.MethodPost, url, body)
+	req, err := newRequest(http.MethodPost, url, body, contentType(bodyType))
 	if err != nil {
-		return nil, fmt.Errorf("failed to post %q: %v", url, err)
+		return nil, err
 	}
-	req.Header.Set("Content-Type", bodyType)
-	req.Header.Set("User-Agent", userAgent())
 
 	return HTTPClient.Do(req)
 }
@@ -120,11 +145,10 @@ func httpPost(url string, bodyType string, body io.Reader) (resp *http.Response,
 // httpGet performs a GET request with a proper User-Agent string.
 // Callers should close resp.Body when done reading from it.
 func httpGet(url string) (resp *http.Response, err error) {
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+	req, err := newRequest(http.MethodGet, url, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get %q: %v", url, err)
+		return nil, err
 	}
-	req.Header.Set("User-Agent", userAgent())
 
 	return HTTPClient.Do(req)
 }

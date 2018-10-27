@@ -823,7 +823,7 @@ func (c *Client) checkCertResponse(order orderMessage, certRes *CertificateResou
 		// https://tools.ietf.org/html/draft-ietf-acme-acme-12#section-7.4.2
 		links := parseLinks(resp.Header["Link"])
 		if link, ok := links["up"]; ok {
-			issuerCert, err := c.getIssuerCertificate(link)
+			issuerCert, err := c.getIssuerCertificateFromLink(link)
 
 			if err != nil {
 				// If we fail to acquire the issuer cert, return the issued certificate - do not fail.
@@ -863,8 +863,8 @@ func (c *Client) checkCertResponse(order orderMessage, certRes *CertificateResou
 	}
 }
 
-// getIssuerCertificate requests the issuer certificate
-func (c *Client) getIssuerCertificate(url string) ([]byte, error) {
+// getIssuerCertificateFromLink requests the issuer certificate
+func (c *Client) getIssuerCertificateFromLink(url string) ([]byte, error) {
 	log.Infof("acme: Requesting issuer cert from %s", url)
 	resp, err := httpGet(url)
 	if err != nil {

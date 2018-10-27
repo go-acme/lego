@@ -1,6 +1,7 @@
 package acme
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"sync"
@@ -40,6 +41,10 @@ func getNonce(url string) (string, error) {
 }
 
 func getNonceFromResponse(resp *http.Response) (string, error) {
+	if resp == nil {
+		return "", errors.New("nil response")
+	}
+
 	nonce := resp.Header.Get("Replay-Nonce")
 	if nonce == "" {
 		return "", fmt.Errorf("server did not respond with a proper nonce header")

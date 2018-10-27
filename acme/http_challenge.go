@@ -21,7 +21,7 @@ func (s *httpChallenge) Solve(chlng challenge, domain string) error {
 	log.Infof("[%s] acme: Trying to solve HTTP-01", domain)
 
 	// Generate the Key Authorization for the challenge
-	keyAuth, err := getKeyAuthorization(chlng.Token, s.jws.privKey)
+	keyAuth, err := s.jws.getKeyAuthorization(chlng.Token)
 	if err != nil {
 		return err
 	}

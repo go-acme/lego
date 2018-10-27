@@ -26,7 +26,7 @@ func (t *tlsALPNChallenge) Solve(chlng challenge, domain string) error {
 	log.Infof("[%s] acme: Trying to solve TLS-ALPN-01", domain)
 
 	// Generate the Key Authorization for the challenge
-	keyAuth, err := getKeyAuthorization(chlng.Token, t.jws.privKey)
+	keyAuth, err := t.jws.getKeyAuthorization(chlng.Token)
 	if err != nil {
 		return err
 	}

@@ -38,7 +38,7 @@ func (s *dnsChallenge) PreSolve(chlng challenge, domain string) error {
 	}
 
 	// Generate the Key Authorization for the challenge
-	keyAuth, err := getKeyAuthorization(chlng.Token, s.jws.privKey)
+	keyAuth, err := s.jws.getKeyAuthorization(chlng.Token)
 	if err != nil {
 		return err
 	}
@@ -55,7 +55,7 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 	log.Infof("[%s] acme: Trying to solve DNS-01", domain)
 
 	// Generate the Key Authorization for the challenge
-	keyAuth, err := getKeyAuthorization(chlng.Token, s.jws.privKey)
+	keyAuth, err := s.jws.getKeyAuthorization(chlng.Token)
 	if err != nil {
 		return err
 	}
@@ -84,7 +84,7 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 
 // CleanUp cleans the challenge
 func (s *dnsChallenge) CleanUp(chlng challenge, domain string) error {
-	keyAuth, err := getKeyAuthorization(chlng.Token, s.jws.privKey)
+	keyAuth, err := s.jws.getKeyAuthorization(chlng.Token)
 	if err != nil {
 		return err
 	}

@@ -10,7 +10,6 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/asn1"
-	"encoding/base64"
 	"encoding/pem"
 	"errors"
 	"fmt"
@@ -21,7 +20,6 @@ import (
 	"time"
 
 	"golang.org/x/crypto/ocsp"
-	jose "gopkg.in/square/go-jose.v2"
 )
 
 // KeyType represents the key algo as well as the key size or curve to use.
@@ -127,31 +125,6 @@ func GetOCSPForCert(bundle []byte) ([]byte, *ocsp.Response, error) {
 	}
 
 	return ocspResBytes, ocspRes, nil
-}
-
-func getKeyAuthorization(token string, key crypto.PrivateKey) (string, error) {
-	var publicKey crypto.PublicKey
-	switch k := key.(type) {
-	case *ecdsa.PrivateKey:
-		publicKey = k.Public()
-	case *rsa.PrivateKey:
-		publicKey = k.Public()
-	}
-
-	// Generate the Key Authorization for the challenge
-	jwk := &jose.JSONWebKey{Key: publicKey}
-	if jwk == nil {
-		return "", errors.New("could not generate JWK from key")
-	}
-	thumbBytes, err := jwk.Thumbprint(crypto.SHA256)
-	if err != nil {
-		return "", err
-	}
-
-	// unpad the base64URL
-	keyThumb := base64.RawURLEncoding.EncodeToString(thumbBytes)
-
-	return token + "." + keyThumb, nil
 }
 
 // parsePEMBundle parses a certificate bundle from top to bottom and returns

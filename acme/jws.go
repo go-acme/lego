@@ -6,6 +6,7 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rsa"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -168,4 +169,30 @@ func (j *jws) Nonce() (string, error) {
 	}
 
 	return getNonce(j.getNonceURL)
+}
+
+func (j *jws) getKeyAuthorization(token string) (string, error) {
+	var publicKey crypto.PublicKey
+	switch k := j.privKey.(type) {
+	case *ecdsa.PrivateKey:
+		publicKey = k.Public()
+	case *rsa.PrivateKey:
+		publicKey = k.Public()
+	}
+
+	// Generate the Key Authorization for the challenge
+	jwk := &jose.JSONWebKey{Key: publicKey}
+	if jwk == nil {
+		return "", errors.New("could not generate JWK from key")
+	}
+
+	thumbBytes, err := jwk.Thumbprint(crypto.SHA256)
+	if err != nil {
+		return "", err
+	}
+
+	// unpad the base64URL
+	keyThumb := base64.RawURLEncoding.EncodeToString(thumbBytes)
+
+	return token + "." + keyThumb, nil
 }

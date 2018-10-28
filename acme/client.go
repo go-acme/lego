@@ -88,9 +88,9 @@ func NewClient(caDirURL string, user User, keyType KeyType) (*Client, error) {
 		return nil, errors.New("directory missing new order URL")
 	}
 
-	jws := &jws{privKey: privKey, getNonceURL: dir.NewNonceURL}
+	jws := newJWS(privKey, dir.NewNonceURL)
 	if reg := user.GetRegistration(); reg != nil {
-		jws.kid = reg.URI
+		jws.setKid(reg.URI)
 	}
 
 	// REVIEW: best possibility?
@@ -203,7 +203,7 @@ func (c *Client) Register(tosAgreed bool) (*RegistrationResource, error) {
 		URI:  hdr.Get("Location"),
 		Body: serverReg,
 	}
-	c.jws.kid = reg.URI
+	c.jws.setKid(reg.URI)
 
 	return reg, nil
 }
@@ -246,7 +246,7 @@ func (c *Client) RegisterWithExternalAccountBinding(tosAgreed bool, kid string, 
 	}
 
 	reg := &RegistrationResource{URI: hdr.Get("Location"), Body: serverReg}
-	c.jws.kid = reg.URI
+	c.jws.setKid(reg.URI)
 
 	return reg, nil
 }
@@ -268,7 +268,7 @@ func (c *Client) ResolveAccountByKey() (*RegistrationResource, error) {
 	}
 
 	var retAccount accountMessage
-	c.jws.kid = accountLink
+	c.jws.setKid(accountLink)
 	_, err = c.jws.postJSON(accountLink, accountMessage{}, &retAccount)
 	if err != nil {
 		return nil, err

@@ -50,7 +50,7 @@ func TestDNSValidServerResponse(t *testing.T) {
 	clientChallenge := challenge{Type: "dns01", Status: "pending", URL: ts.URL, Token: "http8"}
 
 	solver := &dnsChallenge{
-		jws:      &jws{privKey: privKey, getNonceURL: ts.URL},
+		jws:      newJWS(privKey, ts.URL),
 		validate: validate,
 		provider: manualProvider,
 	}

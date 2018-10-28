@@ -59,7 +59,7 @@ func TestTLSALPNChallenge(t *testing.T) {
 	require.NoError(t, err, "Could not generate test key")
 
 	solver := &tlsALPNChallenge{
-		jws:      &jws{privKey: privKey},
+		jws:      newJWS(privKey, ""),
 		validate: mockValidate,
 		provider: &TLSALPNProviderServer{port: "23457"},
 	}
@@ -75,7 +75,7 @@ func TestTLSALPNChallengeInvalidPort(t *testing.T) {
 	require.NoError(t, err, "Could not generate test key")
 
 	solver := &tlsALPNChallenge{
-		jws:      &jws{privKey: privKey},
+		jws:      newJWS(privKey, ""),
 		validate: stubValidate,
 		provider: &TLSALPNProviderServer{port: "123456"},
 	}

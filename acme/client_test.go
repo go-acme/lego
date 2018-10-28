@@ -120,7 +120,7 @@ func TestNotHoldingLockWhileMakingHTTPRequests(t *testing.T) {
 	privKey, err := rsa.GenerateKey(rand.Reader, 512)
 	require.NoError(t, err)
 
-	j := &jws{privKey: privKey, getNonceURL: ts.URL}
+	j := newJWS(privKey, ts.URL)
 	ch := make(chan bool)
 	resultCh := make(chan bool)
 	go func() {
@@ -212,7 +212,7 @@ func TestValidate(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	j := &jws{privKey: privKey, getNonceURL: ts.URL}
+	j := newJWS(privKey, ts.URL)
 
 	testCases := []struct {
 		name     string

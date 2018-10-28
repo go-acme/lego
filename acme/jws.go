@@ -17,10 +17,21 @@ import (
 )
 
 type jws struct {
-	getNonceURL string
 	privKey     crypto.PrivateKey
-	kid         string
+	getNonceURL string
+	kid         string // Key identifier: TODO exported or accessor?
 	nonces      nonceManager
+}
+
+func newJWS(privKey crypto.PrivateKey, nonceURL string) *jws {
+	return &jws{
+		privKey:     privKey,
+		getNonceURL: nonceURL,
+	}
+}
+
+func (j *jws) setKid(kid string) {
+	j.kid = kid
 }
 
 // FIXME
@@ -63,6 +74,9 @@ func (j *jws) postJSON(uri string, reqBody, response interface{}) (http.Header, 
 				return resp.Header, err
 			}
 		default:
+			if resp == nil {
+				return nil, err
+			}
 			return resp.Header, err
 		}
 	}

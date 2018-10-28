@@ -40,7 +40,7 @@ func TestHTTPChallenge(t *testing.T) {
 	require.NoError(t, err, "Could not generate test key")
 
 	solver := &httpChallenge{
-		jws:      &jws{privKey: privKey},
+		jws:      newJWS(privKey, ""),
 		validate: mockValidate,
 		provider: &HTTPProviderServer{port: "23457"},
 	}
@@ -56,7 +56,7 @@ func TestHTTPChallengeInvalidPort(t *testing.T) {
 	require.NoError(t, err, "Could not generate test key")
 
 	solver := &httpChallenge{
-		jws:      &jws{privKey: privKey},
+		jws:      newJWS(privKey, ""),
 		validate: stubValidate,
 		provider: &HTTPProviderServer{port: "123456"},
 	}

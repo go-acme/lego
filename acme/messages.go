@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// RegistrationResource represents all important informations about a registration
+// RegistrationResource represents all important information about a registration
 // of which the client needs to keep track itself.
 type RegistrationResource struct {
 	Body accountMessage `json:"body,omitempty"`
@@ -83,7 +83,7 @@ type revokeCertMessage struct {
 }
 
 type deactivateAuthMessage struct {
-	Status string `jsom:"status"`
+	Status string `json:"status"`
 }
 
 // CertificateResource represents a CA issued certificate.

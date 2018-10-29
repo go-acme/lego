@@ -48,9 +48,11 @@ func httpPostTEMP(uri string, bodyType string, data io.Reader, response interfac
 		return resp, handleHTTPError(resp)
 	}
 
-	err = json.NewDecoder(resp.Body).Decode(response)
-	if err != nil {
-		return resp, err
+	if response != nil {
+		err = json.NewDecoder(resp.Body).Decode(response)
+		if err != nil {
+			return resp, err
+		}
 	}
 
 	return resp, nil

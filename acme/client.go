@@ -22,9 +22,10 @@ const (
 	// maxBodySize is the maximum size of body that we will read.
 	maxBodySize = 1024 * 1024
 
-	// overallRequestLimit is the overall number of request per second limited on the
-	// “new-reg”, “new-authz” and “new-cert” endpoints. From the documentation the
-	// limitation is 20 requests per second, but using 20 as value doesn't work but 18 do
+	// overallRequestLimit is the overall number of request per second
+	// limited on the "new-reg", "new-authz" and "new-cert" endpoints.
+	// From the documentation the limitation is 20 requests per second,
+	// but using 20 as value doesn't work but 18 do
 	overallRequestLimit = 18
 
 	statusValid   = "valid"
@@ -66,10 +67,10 @@ type Client struct {
 	solvers   map[Challenge]solver
 }
 
-// NewClient creates a new ACME client on behalf of the user. The client will depend on
-// the ACME directory located at caDirURL for the rest of its actions.  A private
-// key of type keyType (see KeyType constants) will be generated when requesting a new
-// certificate if one isn't provided.
+// NewClient creates a new ACME client on behalf of the user.
+// The client will depend on the ACME directory located at caDirURL for the rest of its actions.
+// A private key of type keyType (see KeyType constants) will be generated
+// when requesting a new certificate if one isn't provided.
 func NewClient(caDirURL string, user User, keyType KeyType) (*Client, error) {
 	privKey := user.GetPrivateKey()
 	if privKey == nil {
@@ -94,8 +95,8 @@ func NewClient(caDirURL string, user User, keyType KeyType) (*Client, error) {
 	}
 
 	// REVIEW: best possibility?
-	// Add all available solvers with the right index as per ACME
-	// spec to this map. Otherwise they won`t be found.
+	// Add all available solvers with the right index as per ACME spec to this map.
+	// Otherwise they won`t be found.
 	solvers := map[Challenge]solver{
 		HTTP01:    &httpChallenge{jws: jws, validate: validate, provider: &HTTPProviderServer{}},
 		TLSALPN01: &tlsALPNChallenge{jws: jws, validate: validate, provider: &TLSALPNProviderServer{}},

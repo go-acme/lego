@@ -53,11 +53,11 @@ var (
 )
 
 // GetOCSPForCert takes a PEM encoded cert or cert bundle returning the raw OCSP response,
-// the parsed response, and an error, if any. The returned []byte can be passed directly
-// into the OCSPStaple property of a tls.Certificate. If the bundle only contains the
-// issued certificate, this function will try to get the issuer certificate from the
-// IssuingCertificateURL in the certificate. If the []byte and/or ocsp.Response return
-// values are nil, the OCSP status may be assumed OCSPUnknown.
+// the parsed response, and an error, if any.
+// The returned []byte can be passed directly into the OCSPStaple property of a tls.Certificate.
+// If the bundle only contains the issued certificate,
+// this function will try to get the issuer certificate from the IssuingCertificateURL in the certificate.
+// If the []byte and/or ocsp.Response return values are nil, the OCSP status may be assumed OCSPUnknown.
 func GetOCSPForCert(bundle []byte) ([]byte, *ocsp.Response, error) {
 	certificates, err := parsePEMBundle(bundle)
 	if err != nil {

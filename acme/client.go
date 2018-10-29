@@ -914,7 +914,10 @@ func parseLinks(links []string) map[string]string {
 func validate(j *jws, domain, uri string, c challenge) error {
 	var chlng challenge
 
-	hdr, err := postJSON(j, uri, c, &chlng)
+	// Challenge initiation is done by sending a JWS payload containing the
+	// trivial JSON object `{}`. We use an empty struct instance as the postJSON
+	// payload here to achieve this result.
+	hdr, err := postJSON(j, uri, struct{}{}, &chlng)
 	if err != nil {
 		return err
 	}

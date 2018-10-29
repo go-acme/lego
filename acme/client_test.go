@@ -113,7 +113,11 @@ func TestNotHoldingLockWhileMakingHTTPRequests(t *testing.T) {
 		time.Sleep(250 * time.Millisecond)
 		w.Header().Add("Replay-Nonce", "12345")
 		w.Header().Add("Retry-After", "0")
-		writeJSONResponse(w, &challenge{Type: "http-01", Status: "Valid", URL: "http://example.com/", Token: "token"})
+		err := writeJSONResponse(w, &challenge{Type: "http-01", Status: "Valid", URL: "http://example.com/", Token: "token"})
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}))
 	defer ts.Close()
 
@@ -199,13 +203,19 @@ func TestValidate(t *testing.T) {
 
 			st := statuses[0]
 			statuses = statuses[1:]
-			writeJSONResponse(w, &challenge{Type: "http-01", Status: st, URL: "http://example.com/", Token: "token"})
-
+			err := writeJSONResponse(w, &challenge{Type: "http-01", Status: st, URL: "http://example.com/", Token: "token"})
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
 		case http.MethodGet:
 			st := statuses[0]
 			statuses = statuses[1:]
-			writeJSONResponse(w, &challenge{Type: "http-01", Status: st, URL: "http://example.com/", Token: "token"})
-
+			err := writeJSONResponse(w, &challenge{Type: "http-01", Status: st, URL: "http://example.com/", Token: "token"})
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
 		default:
 			http.Error(w, r.Method, http.StatusMethodNotAllowed)
 		}
@@ -271,15 +281,24 @@ func TestGetChallenges(t *testing.T) {
 		case http.MethodGet, http.MethodHead:
 			w.Header().Add("Replay-Nonce", "12345")
 			w.Header().Add("Retry-After", "0")
-			writeJSONResponse(w, directory{
+			err := writeJSONResponse(w, directory{
 				NewNonceURL:   ts.URL,
 				NewAccountURL: ts.URL,
 				NewOrderURL:   ts.URL,
 				RevokeCertURL: ts.URL,
 				KeyChangeURL:  ts.URL,
 			})
+
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
 		case http.MethodPost:
-			writeJSONResponse(w, orderMessage{})
+			err := writeJSONResponse(w, orderMessage{})
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
 		}
 	}))
 	defer ts.Close()
@@ -320,22 +339,30 @@ func TestResolveAccountByKey(t *testing.T) {
 	ts = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.RequestURI {
 		case "/directory":
-			writeJSONResponse(w, directory{
+			err = writeJSONResponse(w, directory{
 				NewNonceURL:   ts.URL + "/nonce",
 				NewAccountURL: ts.URL + "/account",
 				NewOrderURL:   ts.URL + "/newOrder",
 				RevokeCertURL: ts.URL + "/revokeCert",
 				KeyChangeURL:  ts.URL + "/keyChange",
 			})
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
 		case "/nonce":
 			w.Header().Add("Replay-Nonce", "12345")
 			w.Header().Add("Retry-After", "0")
 		case "/account":
 			w.Header().Set("Location", ts.URL+"/account_recovery")
 		case "/account_recovery":
-			writeJSONResponse(w, accountMessage{
+			err = writeJSONResponse(w, accountMessage{
 				Status: "valid",
 			})
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
 		}
 	}))
 
@@ -349,17 +376,18 @@ func TestResolveAccountByKey(t *testing.T) {
 }
 
 // writeJSONResponse marshals the body as JSON and writes it to the response.
-func writeJSONResponse(w http.ResponseWriter, body interface{}) {
+func writeJSONResponse(w http.ResponseWriter, body interface{}) error {
 	bs, err := json.Marshal(body)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return err
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	if _, err := w.Write(bs); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return err
 	}
+
+	return nil
 }
 
 // stubValidate is like validate, except it does nothing.

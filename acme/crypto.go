@@ -13,7 +13,6 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"math/big"
 	"net/http"
@@ -85,7 +84,7 @@ func GetOCSPForCert(bundle []byte) ([]byte, *ocsp.Response, error) {
 		}
 		defer resp.Body.Close()
 
-		issuerBytes, errC := ioutil.ReadAll(limitReader(resp.Body, maxBodySize))
+		issuerBytes, errC := ioutil.ReadAll(http.MaxBytesReader(nil, resp.Body, maxBodySize))
 		if errC != nil {
 			return nil, nil, errC
 		}
@@ -107,14 +106,13 @@ func GetOCSPForCert(bundle []byte) ([]byte, *ocsp.Response, error) {
 		return nil, nil, err
 	}
 
-	reader := bytes.NewReader(ocspReq)
-	resp, err := httpPost(issuedCert.OCSPServer[0], "application/ocsp-request", reader)
+	resp, err := httpPost(issuedCert.OCSPServer[0], "application/ocsp-request", bytes.NewReader(ocspReq))
 	if err != nil {
 		return nil, nil, err
 	}
 	defer resp.Body.Close()
 
-	ocspResBytes, err := ioutil.ReadAll(limitReader(resp.Body, maxBodySize))
+	ocspResBytes, err := ioutil.ReadAll(http.MaxBytesReader(nil, resp.Body, maxBodySize))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -299,8 +297,4 @@ func generateDerCert(privKey *rsa.PrivateKey, expiration time.Time, domain strin
 	}
 
 	return x509.CreateCertificate(rand.Reader, &template, &template, &privKey.PublicKey, privKey)
-}
-
-func limitReader(rd io.ReadCloser, numBytes int64) io.ReadCloser {
-	return http.MaxBytesReader(nil, rd, numBytes)
 }

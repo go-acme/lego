@@ -65,7 +65,7 @@ func handleHTTPError(resp *http.Response) error {
 			return err
 		}
 	} else {
-		detailBytes, err := ioutil.ReadAll(limitReader(resp.Body, maxBodySize))
+		detailBytes, err := ioutil.ReadAll(http.MaxBytesReader(nil, resp.Body, maxBodySize))
 		if err != nil {
 			return err
 		}

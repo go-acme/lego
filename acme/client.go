@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
+	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
@@ -814,7 +815,7 @@ func (c *Client) checkCertResponse(order orderMessage, certRes *CertificateResou
 			return false, err
 		}
 
-		cert, err := ioutil.ReadAll(limitReader(resp.Body, maxBodySize))
+		cert, err := ioutil.ReadAll(http.MaxBytesReader(nil, resp.Body, maxBodySize))
 		if err != nil {
 			return false, err
 		}
@@ -873,7 +874,7 @@ func (c *Client) getIssuerCertificateFromLink(url string) ([]byte, error) {
 	}
 	defer resp.Body.Close()
 
-	issuerBytes, err := ioutil.ReadAll(limitReader(resp.Body, maxBodySize))
+	issuerBytes, err := ioutil.ReadAll(http.MaxBytesReader(nil, resp.Body, maxBodySize))
 	if err != nil {
 		return nil, err
 	}

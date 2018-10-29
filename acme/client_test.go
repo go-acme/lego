@@ -13,10 +13,9 @@ import (
 	"testing"
 	"time"
 
-	jose "gopkg.in/square/go-jose.v2"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"gopkg.in/square/go-jose.v2"
 )
 
 func TestNewClient(t *testing.T) {

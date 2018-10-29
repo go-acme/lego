@@ -164,10 +164,12 @@ func TestValidate(t *testing.T) {
 		if err != nil {
 			return err
 		}
+
 		jws, err := jose.ParseSigned(string(reqBody))
 		if err != nil {
 			return err
 		}
+
 		body, err := jws.Verify(&jose.JSONWebKey{
 			Key:       privKey.Public(),
 			Algorithm: "RSA",
@@ -175,8 +177,9 @@ func TestValidate(t *testing.T) {
 		if err != nil {
 			return err
 		}
+
 		if bodyStr := string(body); bodyStr != "{}" {
-			return fmt.Errorf(`Expected JWS POST body "{}", got %q`, bodyStr)
+			return fmt.Errorf(`expected JWS POST body "{}", got %q`, bodyStr)
 		}
 		return nil
 	}

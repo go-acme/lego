@@ -5,6 +5,8 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -13,6 +15,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"gopkg.in/square/go-jose.v2"
 )
 
 func TestNewClient(t *testing.T) {
@@ -149,6 +152,38 @@ func TestNotHoldingLockWhileMakingHTTPRequests(t *testing.T) {
 func TestValidate(t *testing.T) {
 	var statuses []string
 
+	privKey, err := rsa.GenerateKey(rand.Reader, 512)
+	require.NoError(t, err)
+
+	// validateNoBody reads the http.Request POST body, parses the JWS and
+	// validates it to read the body. If there is an error doing this, or if the
+	// JWS body is not the empty JSON payload "{}" an error is returned. We use
+	// this to verify challenge POSTs to the ts below do not send a JWS body.
+	validateNoBody := func(r *http.Request) error {
+		reqBody, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			return err
+		}
+
+		jws, err := jose.ParseSigned(string(reqBody))
+		if err != nil {
+			return err
+		}
+
+		body, err := jws.Verify(&jose.JSONWebKey{
+			Key:       privKey.Public(),
+			Algorithm: "RSA",
+		})
+		if err != nil {
+			return err
+		}
+
+		if bodyStr := string(body); bodyStr != "{}" {
+			return fmt.Errorf(`expected JWS POST body "{}", got %q`, bodyStr)
+		}
+		return nil
+	}
+
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Minimal stub ACME server for validation.
 		w.Header().Add("Replay-Nonce", "12345")
@@ -157,6 +192,11 @@ func TestValidate(t *testing.T) {
 		switch r.Method {
 		case http.MethodHead:
 		case http.MethodPost:
+			if err := validateNoBody(r); err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+
 			st := statuses[0]
 			statuses = statuses[1:]
 			writeJSONResponse(w, &challenge{Type: "http-01", Status: st, URL: "http://example.com/", Token: "token"})
@@ -172,8 +212,6 @@ func TestValidate(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	privKey, err := rsa.GenerateKey(rand.Reader, 512)
-	require.NoError(t, err)
 	j := &jws{privKey: privKey, getNonceURL: ts.URL}
 
 	testCases := []struct {

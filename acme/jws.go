@@ -64,27 +64,24 @@ func (j *jws) postJSON(uri string, reqBody, response interface{}) (http.Header, 
 		return nil, errors.New("failed to marshal network message")
 	}
 
-	resp, err := j.signedPost(uri, content, response)
+	header, err := j.signedPost(uri, content, response)
 	if err != nil {
 		switch err.(type) {
 		// Retry once if the nonce was invalidated
 		case NonceError:
-			resp, err := j.signedPost(uri, content, response)
+			header, err = j.signedPost(uri, content, response)
 			if err != nil {
-				return resp.Header, err
+				return header, err
 			}
 		default:
-			if resp == nil {
-				return nil, err
-			}
-			return resp.Header, err
+			return header, err
 		}
 	}
 
-	return resp.Header, nil
+	return header, nil
 }
 
-func (j *jws) signedPost(uri string, content []byte, response interface{}) (*http.Response, error) {
+func (j *jws) signedPost(uri string, content []byte, response interface{}) (http.Header, error) {
 	signedContent, err := j.signContent(uri, content)
 	if err != nil {
 		return nil, fmt.Errorf("failed to post JWS message -> failed to sign content -> %v", err)
@@ -98,7 +95,11 @@ func (j *jws) signedPost(uri string, content []byte, response interface{}) (*htt
 		j.nonces.Push(nonce)
 	}
 
-	return resp, err
+	if resp == nil {
+		return nil, err
+	}
+
+	return resp.Header, err
 }
 
 func (j *jws) signContent(url string, content []byte) (*jose.JSONWebSignature, error) {

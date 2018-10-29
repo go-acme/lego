@@ -177,7 +177,16 @@ func (j *jws) Nonce() (string, error) {
 		return nonce, nil
 	}
 
-	return getNonce(j.getNonceURL)
+	return j.getNonce()
+}
+
+func (j *jws) getNonce() (string, error) {
+	resp, err := httpHead(j.getNonceURL)
+	if err != nil {
+		return "", fmt.Errorf("failed to get nonce from HTTP HEAD -> %v", err)
+	}
+
+	return getNonceFromResponse(resp)
 }
 
 func (j *jws) getKeyAuthorization(token string) (string, error) {

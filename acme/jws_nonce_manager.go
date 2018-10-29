@@ -31,15 +31,6 @@ func (n *nonceManager) Push(nonce string) {
 	n.nonces = append(n.nonces, nonce)
 }
 
-func getNonce(url string) (string, error) {
-	resp, err := httpHead(url)
-	if err != nil {
-		return "", fmt.Errorf("failed to get nonce from HTTP HEAD -> %v", err)
-	}
-
-	return getNonceFromResponse(resp)
-}
-
 func getNonceFromResponse(resp *http.Response) (string, error) {
 	if resp == nil {
 		return "", errors.New("nil response")

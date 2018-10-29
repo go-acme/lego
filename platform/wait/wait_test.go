@@ -1,14 +1,14 @@
-package acme
+package wait
 
 import (
 	"testing"
 	"time"
 )
 
-func TestWaitForTimeout(t *testing.T) {
+func TestForTimeout(t *testing.T) {
 	c := make(chan error)
 	go func() {
-		err := WaitFor(3*time.Second, 1*time.Second, func() (bool, error) {
+		err := For(3*time.Second, 1*time.Second, func() (bool, error) {
 			return false, nil
 		})
 		c <- err

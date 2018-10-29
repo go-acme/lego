@@ -10,6 +10,7 @@ import (
 
 	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/platform/config/env"
+	"github.com/xenolf/lego/platform/wait"
 )
 
 // Config is used to configure the creation of the DNSProvider
@@ -157,7 +158,7 @@ func (d *DNSProvider) changeRecord(action, fqdn, value, domain string, ttl int) 
 
 	statusID := resp.ChangeInfo.ID
 
-	return acme.WaitFor(120*time.Second, 4*time.Second, func() (bool, error) {
+	return wait.For(120*time.Second, 4*time.Second, func() (bool, error) {
 		resp, err := d.client.GetChange(statusID)
 		if err != nil {
 			return false, fmt.Errorf("failed to query NIFCLOUD DNS change status: %v", err)

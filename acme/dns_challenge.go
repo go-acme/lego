@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/xenolf/lego/log"
+	"github.com/xenolf/lego/platform/wait"
 )
 
 const (
@@ -72,7 +73,7 @@ func (s *dnsChallenge) Solve(chlng challenge, domain string) error {
 		timeout, interval = DefaultPropagationTimeout, DefaultPollingInterval
 	}
 
-	err = WaitFor(timeout, interval, func() (bool, error) {
+	err = wait.For(timeout, interval, func() (bool, error) {
 		return PreCheckDNS(fqdn, value)
 	})
 	if err != nil {

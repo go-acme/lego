@@ -1,4 +1,4 @@
-package acme
+package wait
 
 import (
 	"fmt"
@@ -7,8 +7,8 @@ import (
 	"github.com/xenolf/lego/log"
 )
 
-// WaitFor polls the given function 'f', once every 'interval', up to 'timeout'.
-func WaitFor(timeout, interval time.Duration, f func() (bool, error)) error {
+// For polls the given function 'f', once every 'interval', up to 'timeout'.
+func For(timeout, interval time.Duration, f func() (bool, error)) error {
 	log.Infof("Wait [timeout: %s, interval: %s]", timeout, interval)
 
 	var lastErr string

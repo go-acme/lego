@@ -16,6 +16,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/platform/config/env"
+	"github.com/xenolf/lego/platform/wait"
 )
 
 // Config is used to configure the creation of the DNSProvider
@@ -197,7 +198,7 @@ func (d *DNSProvider) changeRecord(action, hostedZoneID string, recordSet *route
 
 	changeID := resp.ChangeInfo.Id
 
-	return acme.WaitFor(d.config.PropagationTimeout, d.config.PollingInterval, func() (bool, error) {
+	return wait.For(d.config.PropagationTimeout, d.config.PollingInterval, func() (bool, error) {
 		reqParams := &route53.GetChangeInput{Id: changeID}
 
 		resp, err := d.client.GetChange(reqParams)

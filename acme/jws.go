@@ -19,7 +19,7 @@ import (
 type jws struct {
 	privKey     crypto.PrivateKey
 	getNonceURL string
-	kid         string // Key identifier: TODO exported or accessor?
+	kid         string // Key identifier
 	nonces      nonceManager
 }
 

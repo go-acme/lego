@@ -100,7 +100,6 @@ func (r *Registrar) QueryRegistration() (*le.RegistrationResource, error) {
 		return nil, errors.New("acme: cannot query the registration of a nil client or user")
 	}
 
-	// TODO same for register?
 	// Log the URL here instead of the email as the email may not be set
 	log.Infof("acme: Querying account for %s", r.user.GetRegistration().URI)
 

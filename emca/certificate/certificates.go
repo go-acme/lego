@@ -36,7 +36,7 @@ const (
 )
 
 type resolver interface {
-	SolveChallengeForAuthz(authorizations []le.Authorization) error
+	SolveForAuthz(authorizations []le.Authorization) error
 }
 
 type Certifier struct {
@@ -55,14 +55,14 @@ func NewCertifier(jws *secure.JWS, keyType certcrypto.KeyType, directory le.Dire
 	}
 }
 
-// ObtainCertificateForCSR tries to obtain a certificate matching the CSR passed into it.
+// ObtainForCSR tries to obtain a certificate matching the CSR passed into it.
 // The domains are inferred from the CommonName and SubjectAltNames, if any. The private key
 // for this CSR is not required.
 // If bundle is true, the []byte contains both the issuer certificate and
 // your issued certificate as a bundle.
 // This function will never return a partial certificate. If one domain in the list fails,
 // the whole certificate will fail.
-func (c *Certifier) ObtainCertificateForCSR(csr x509.CertificateRequest, bundle bool) (*le.CertificateResource, error) {
+func (c *Certifier) ObtainForCSR(csr x509.CertificateRequest, bundle bool) (*le.CertificateResource, error) {
 	// figure out what domains it concerns
 	// start with the common name
 	domains := []string{csr.Subject.CommonName}
@@ -98,7 +98,7 @@ func (c *Certifier) ObtainCertificateForCSR(csr x509.CertificateRequest, bundle 
 		return nil, err
 	}
 
-	err = c.resolver.SolveChallengeForAuthz(authz)
+	err = c.resolver.SolveForAuthz(authz)
 	if err != nil {
 		// If any challenge fails, return. Do not generate partial SAN certificates.
 		return nil, err
@@ -107,7 +107,7 @@ func (c *Certifier) ObtainCertificateForCSR(csr x509.CertificateRequest, bundle 
 	log.Infof("[%s] acme: Validations succeeded; requesting certificates", strings.Join(domains, ", "))
 
 	failures := make(obtainError)
-	cert, err := c.requestCertificateForCSR(order, bundle, csr.Raw, nil)
+	cert, err := c.requestForCSR(order, bundle, csr.Raw, nil)
 	if err != nil {
 		for _, chln := range authz {
 			failures[chln.Identifier.Value] = err
@@ -127,7 +127,7 @@ func (c *Certifier) ObtainCertificateForCSR(csr x509.CertificateRequest, bundle 
 	return cert, nil
 }
 
-func (c *Certifier) requestCertificateForCSR(order le.OrderResource, bundle bool, csr []byte, privateKeyPem []byte) (*le.CertificateResource, error) {
+func (c *Certifier) requestForCSR(order le.OrderResource, bundle bool, csr []byte, privateKeyPem []byte) (*le.CertificateResource, error) {
 	commonName := order.Domains[0]
 	csrString := base64.RawURLEncoding.EncodeToString(csr)
 
@@ -149,7 +149,7 @@ func (c *Certifier) requestCertificateForCSR(order le.OrderResource, bundle bool
 
 	if retOrder.Status == statusValid {
 		// if the certificate is available right away, short cut!
-		ok, err := c.checkCertResponse(retOrder, &certRes, bundle)
+		ok, err := c.checkResponse(retOrder, &certRes, bundle)
 		if err != nil {
 			return nil, err
 		}
@@ -174,7 +174,7 @@ func (c *Certifier) requestCertificateForCSR(order le.OrderResource, bundle bool
 				return nil, err
 			}
 
-			done, err := c.checkCertResponse(retOrder, &certRes, bundle)
+			done, err := c.checkResponse(retOrder, &certRes, bundle)
 			if err != nil {
 				return nil, err
 			}
@@ -185,7 +185,7 @@ func (c *Certifier) requestCertificateForCSR(order le.OrderResource, bundle bool
 	}
 }
 
-// ObtainCertificate tries to obtain a single certificate using all domains passed into it.
+// Obtain tries to obtain a single certificate using all domains passed into it.
 // The first domain in domains is used for the CommonName field of the certificate, all other
 // domains are added using the Subject Alternate Names extension. A new private key is generated
 // for every invocation of this function. If you do not want that you can supply your own private key
@@ -194,7 +194,7 @@ func (c *Certifier) requestCertificateForCSR(order le.OrderResource, bundle bool
 // your issued certificate as a bundle.
 // This function will never return a partial certificate. If one domain in the list fails,
 // the whole certificate will fail.
-func (c *Certifier) ObtainCertificate(domains []string, bundle bool, privKey crypto.PrivateKey, mustStaple bool) (*le.CertificateResource, error) {
+func (c *Certifier) Obtain(domains []string, bundle bool, privKey crypto.PrivateKey, mustStaple bool) (*le.CertificateResource, error) {
 	if len(domains) == 0 {
 		return nil, errors.New("no domains to obtain a certificate for")
 	}
@@ -218,7 +218,7 @@ func (c *Certifier) ObtainCertificate(domains []string, bundle bool, privKey cry
 		return nil, err
 	}
 
-	err = c.resolver.SolveChallengeForAuthz(authz)
+	err = c.resolver.SolveForAuthz(authz)
 	if err != nil {
 		// If any challenge fails, return. Do not generate partial SAN certificates.
 		return nil, err
@@ -227,7 +227,7 @@ func (c *Certifier) ObtainCertificate(domains []string, bundle bool, privKey cry
 	log.Infof("[%s] acme: Validations succeeded; requesting certificates", strings.Join(domains, ", "))
 
 	failures := make(obtainError)
-	cert, err := c.requestCertificateForOrder(order, bundle, privKey, mustStaple)
+	cert, err := c.requestForOrder(order, bundle, privKey, mustStaple)
 	if err != nil {
 		for _, auth := range authz {
 			failures[auth.Identifier.Value] = err
@@ -242,7 +242,7 @@ func (c *Certifier) ObtainCertificate(domains []string, bundle bool, privKey cry
 	return cert, nil
 }
 
-func (c *Certifier) requestCertificateForOrder(order le.OrderResource, bundle bool, privKey crypto.PrivateKey, mustStaple bool) (*le.CertificateResource, error) {
+func (c *Certifier) requestForOrder(order le.OrderResource, bundle bool, privKey crypto.PrivateKey, mustStaple bool) (*le.CertificateResource, error) {
 	if privKey == nil {
 		var err error
 		privKey, err = certcrypto.GeneratePrivateKey(c.keyType)
@@ -273,11 +273,11 @@ func (c *Certifier) requestCertificateForOrder(order le.OrderResource, bundle bo
 		return nil, err
 	}
 
-	return c.requestCertificateForCSR(order, bundle, csr, certcrypto.PEMEncode(privKey))
+	return c.requestForCSR(order, bundle, csr, certcrypto.PEMEncode(privKey))
 }
 
-// RevokeCertificate takes a PEM encoded certificate or bundle and tries to revoke it at the CA.
-func (c *Certifier) RevokeCertificate(cert []byte) error {
+// Revoke takes a PEM encoded certificate or bundle and tries to revoke it at the CA.
+func (c *Certifier) Revoke(cert []byte) error {
 	certificates, err := certcrypto.ParsePEMBundle(cert)
 	if err != nil {
 		return err
@@ -294,7 +294,7 @@ func (c *Certifier) RevokeCertificate(cert []byte) error {
 	return err
 }
 
-// RenewCertificate takes a CertificateResource and tries to renew the certificate.
+// Renew takes a CertificateResource and tries to renew the certificate.
 // If the renewal process succeeds, the new certificate will ge returned in a new CertResource.
 // Please be aware that this function will return a new certificate in ANY case that is not an error.
 // If the server does not provide us with a new cert on a GET request to the CertURL
@@ -302,7 +302,7 @@ func (c *Certifier) RevokeCertificate(cert []byte) error {
 // If bundle is true, the []byte contains both the issuer certificate and
 // your issued certificate as a bundle.
 // For private key reuse the PrivateKey property of the passed in CertificateResource should be non-nil.
-func (c *Certifier) RenewCertificate(cert le.CertificateResource, bundle, mustStaple bool) (*le.CertificateResource, error) {
+func (c *Certifier) Renew(cert le.CertificateResource, bundle, mustStaple bool) (*le.CertificateResource, error) {
 	// Input certificate is PEM encoded. Decode it here as we may need the decoded
 	// cert later on in the renewal process. The input may be a bundle or a single certificate.
 	certificates, err := certcrypto.ParsePEMBundle(cert.Certificate)
@@ -328,7 +328,7 @@ func (c *Certifier) RenewCertificate(cert le.CertificateResource, bundle, mustSt
 			return nil, errP
 		}
 
-		newCert, failures := c.ObtainCertificateForCSR(*csr, bundle)
+		newCert, failures := c.ObtainForCSR(*csr, bundle)
 		return newCert, failures
 	}
 
@@ -354,16 +354,16 @@ func (c *Certifier) RenewCertificate(cert le.CertificateResource, bundle, mustSt
 		domains = append(domains, x509Cert.Subject.CommonName)
 	}
 
-	newCert, err := c.ObtainCertificate(domains, bundle, privKey, mustStaple)
+	newCert, err := c.Obtain(domains, bundle, privKey, mustStaple)
 	return newCert, err
 }
 
-// checkCertResponse checks to see if the certificate is ready and a link is contained in the
+// checkResponse checks to see if the certificate is ready and a link is contained in the
 // response. if so, loads it into certRes and returns true. If the cert
 // is not yet ready, it returns false. The certRes input
 // should already have the Domain (common name) field populated. If bundle is
 // true, the certificate will be bundled with the issuer's cert.
-func (c *Certifier) checkCertResponse(order le.OrderMessage, certRes *le.CertificateResource, bundle bool) (bool, error) {
+func (c *Certifier) checkResponse(order le.OrderMessage, certRes *le.CertificateResource, bundle bool) (bool, error) {
 	switch order.Status {
 	// TODO extract function?
 	case statusValid:

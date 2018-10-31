@@ -79,7 +79,7 @@ func setup(c *cli.Context) (*Configuration, *Account, *emca.Client) {
 	}
 
 	if len(c.GlobalStringSlice("exclude")) > 0 {
-		client.Challenge.ExcludeChallenges(conf.ExcludedSolvers())
+		client.Challenge.Exclude(conf.ExcludedSolvers())
 	}
 
 	if c.GlobalIsSet("webroot") {
@@ -88,14 +88,14 @@ func setup(c *cli.Context) (*Configuration, *Account, *emca.Client) {
 			log.Fatal(errO)
 		}
 
-		errO = client.Challenge.SetChallengeProvider(challenge.HTTP01, provider)
+		errO = client.Challenge.SetProvider(challenge.HTTP01, provider)
 		if errO != nil {
 			log.Fatal(errO)
 		}
 
 		// --webroot=foo indicates that the user specifically want to do a HTTP challenge
 		// infer that the user also wants to exclude all other challenges
-		client.Challenge.ExcludeChallenges([]challenge.Type{challenge.DNS01, challenge.TLSALPN01})
+		client.Challenge.Exclude([]challenge.Type{challenge.DNS01, challenge.TLSALPN01})
 	}
 
 	if c.GlobalIsSet("memcached-host") {
@@ -104,14 +104,14 @@ func setup(c *cli.Context) (*Configuration, *Account, *emca.Client) {
 			log.Fatal(errO)
 		}
 
-		errO = client.Challenge.SetChallengeProvider(challenge.HTTP01, provider)
+		errO = client.Challenge.SetProvider(challenge.HTTP01, provider)
 		if errO != nil {
 			log.Fatal(errO)
 		}
 
 		// --memcached-host=foo:11211 indicates that the user specifically want to do a HTTP challenge
 		// infer that the user also wants to exclude all other challenges
-		client.Challenge.ExcludeChallenges([]challenge.Type{challenge.DNS01, challenge.TLSALPN01})
+		client.Challenge.Exclude([]challenge.Type{challenge.DNS01, challenge.TLSALPN01})
 	}
 
 	if c.GlobalIsSet("http") {
@@ -142,14 +142,14 @@ func setup(c *cli.Context) (*Configuration, *Account, *emca.Client) {
 			log.Fatal(errO)
 		}
 
-		errO = client.Challenge.SetChallengeProvider(challenge.DNS01, provider)
+		errO = client.Challenge.SetProvider(challenge.DNS01, provider)
 		if errO != nil {
 			log.Fatal(errO)
 		}
 
 		// --dns=foo indicates that the user specifically want to do a DNS challenge
 		// infer that the user also wants to exclude all other challenges
-		client.Challenge.ExcludeChallenges([]challenge.Type{challenge.HTTP01, challenge.TLSALPN01})
+		client.Challenge.Exclude([]challenge.Type{challenge.HTTP01, challenge.TLSALPN01})
 	}
 
 	if client.GetExternalAccountRequired() && !c.GlobalIsSet("eab") {

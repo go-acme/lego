@@ -39,7 +39,7 @@ func NewSolversManager(jws *secure.JWS) *SolverManager {
 // To only specify a port and no interface use the ":port" notation.
 //
 // NOTE: This REPLACES any custom HTTP provider previously set by calling
-// c.SetChallengeProvider with the default HTTP challenge provider.
+// c.SetProvider with the default HTTP challenge provider.
 func (c *SolverManager) SetHTTPAddress(iface string) error {
 	host, port, err := net.SplitHostPort(iface)
 	if err != nil {
@@ -58,7 +58,7 @@ func (c *SolverManager) SetHTTPAddress(iface string) error {
 // To only specify a port and no interface use the ":port" notation.
 //
 // NOTE: This REPLACES any custom TLS-ALPN provider previously set by calling
-// c.SetChallengeProvider with the default TLS-ALPN challenge provider.
+// c.SetProvider with the default TLS-ALPN challenge provider.
 func (c *SolverManager) SetTLSAddress(iface string) error {
 	host, port, err := net.SplitHostPort(iface)
 	if err != nil {
@@ -72,8 +72,8 @@ func (c *SolverManager) SetTLSAddress(iface string) error {
 	return nil
 }
 
-// SetChallengeProvider specifies a custom provider p that can solve the given challenge type.
-func (c *SolverManager) SetChallengeProvider(chlg challenge.Type, p challenge.Provider) error {
+// SetProvider specifies a custom provider p that can solve the given challenge type.
+func (c *SolverManager) SetProvider(chlg challenge.Type, p challenge.Provider) error {
 	switch chlg {
 	case challenge.HTTP01:
 		c.solvers[chlg] = http01.NewChallenge(c.jws, validate, p)
@@ -87,8 +87,8 @@ func (c *SolverManager) SetChallengeProvider(chlg challenge.Type, p challenge.Pr
 	return nil
 }
 
-// ExcludeChallenges explicitly removes challenges from the pool for solving.
-func (c *SolverManager) ExcludeChallenges(challenges []challenge.Type) {
+// Exclude explicitly removes challenges from the pool for solving.
+func (c *SolverManager) Exclude(challenges []challenge.Type) {
 	// Loop through all challenges and delete the requested one if found.
 	for _, chlg := range challenges {
 		delete(c.solvers, chlg)

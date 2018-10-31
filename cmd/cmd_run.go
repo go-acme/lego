@@ -96,14 +96,14 @@ func run(c *cli.Context) error {
 
 	if hasDomains {
 		// obtain a certificate, generating a new private key
-		cert, err = client.Certificate.ObtainCertificate(c.GlobalStringSlice("domains"), !c.Bool("no-bundle"), nil, c.Bool("must-staple"))
+		cert, err = client.Certificate.Obtain(c.GlobalStringSlice("domains"), !c.Bool("no-bundle"), nil, c.Bool("must-staple"))
 	} else {
 		// read the CSR
 		var csr *x509.CertificateRequest
 		csr, err = readCSRFile(c.GlobalString("csr"))
 		if err == nil {
 			// obtain a certificate for this CSR
-			cert, err = client.Certificate.ObtainCertificateForCSR(*csr, !c.Bool("no-bundle"))
+			cert, err = client.Certificate.ObtainForCSR(*csr, !c.Bool("no-bundle"))
 		}
 	}
 

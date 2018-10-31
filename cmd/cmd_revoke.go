@@ -35,7 +35,7 @@ func revoke(c *cli.Context) error {
 			log.Println(err)
 		}
 
-		err = client.Certificate.RevokeCertificate(certBytes)
+		err = client.Certificate.Revoke(certBytes)
 		if err != nil {
 			log.Fatalf("Error while revoking the certificate for domain %s\n\t%v", domain, err)
 		} else {

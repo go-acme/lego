@@ -83,6 +83,6 @@ func writeJSONResponse(w http.ResponseWriter, body interface{}) error {
 
 type mockResolver struct{}
 
-func (*mockResolver) SolveChallengeForAuthz(authorizations []le.Authorization) error {
+func (*mockResolver) SolveForAuthz(authorizations []le.Authorization) error {
 	return nil
 }

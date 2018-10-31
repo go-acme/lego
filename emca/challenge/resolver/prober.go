@@ -52,9 +52,9 @@ func NewProber(jws *secure.JWS, solverManager *SolverManager) *Prober {
 	}
 }
 
-// SolveChallengeForAuthz Looks through the challenge combinations to find a solvable match.
+// SolveForAuthz Looks through the challenge combinations to find a solvable match.
 // Then solves the challenges in series and returns.
-func (c *Prober) SolveChallengeForAuthz(authorizations []le.Authorization) error {
+func (c *Prober) SolveForAuthz(authorizations []le.Authorization) error {
 	failures := make(obtainError)
 
 	var authSolvers []*selectedAuthSolver

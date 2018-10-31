@@ -3,9 +3,10 @@ package acme
 import (
 	"crypto/tls"
 	"fmt"
-	"log"
 	"net"
 	"net/http"
+
+	"github.com/xenolf/lego/log"
 )
 
 const (

@@ -20,10 +20,10 @@ type validateFunc func(j *secure.JWS, domain, uri string, chlng le.Challenge) er
 type Challenge struct {
 	jws      *secure.JWS
 	validate validateFunc
-	provider challenge.ChallengeProvider
+	provider challenge.Provider
 }
 
-func NewChallenge(jws *secure.JWS, validate validateFunc, provider challenge.ChallengeProvider) *Challenge {
+func NewChallenge(jws *secure.JWS, validate validateFunc, provider challenge.Provider) *Challenge {
 	return &Challenge{
 		jws:      jws,
 		validate: validate,
@@ -31,7 +31,7 @@ func NewChallenge(jws *secure.JWS, validate validateFunc, provider challenge.Cha
 	}
 }
 
-func (c *Challenge) SetProvider(provider challenge.ChallengeProvider) {
+func (c *Challenge) SetProvider(provider challenge.Provider) {
 	c.provider = provider
 }
 

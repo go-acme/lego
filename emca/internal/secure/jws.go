@@ -55,6 +55,7 @@ func (j *JWS) PostJSON(uri string, reqBody, response interface{}) (http.Header, 
 }
 
 // PostAsGet performs an HTTP POST ("POST-as-GET") request.
+// https://tools.ietf.org/html/draft-ietf-acme-acme-16#section-6.3
 func (j *JWS) PostAsGet(uri string, response interface{}) (*http.Response, error) {
 	return j.retrievablePost(uri, []byte{}, response)
 }

@@ -166,8 +166,8 @@ func (c *Client) solveChallengeForAuthz(authorizations []authorization) error {
 // Checks all challenges from the server in order and returns the first matching solver.
 func (c *Client) chooseSolver(auth authorization, domain string) (int, solver) {
 	for i, challenge := range auth.Challenges {
-		if solver, ok := c.solvers[Challenge(challenge.Type)]; ok {
-			return i, solver
+		if solvr, ok := c.solvers[Challenge(challenge.Type)]; ok {
+			return i, solvr
 		}
 		log.Infof("[%s] acme: Could not find solver for: %s", domain, challenge.Type)
 	}

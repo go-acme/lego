@@ -32,10 +32,10 @@ const (
 type Challenge struct {
 	jws      *secure.JWS
 	validate validateFunc
-	provider challenge.ChallengeProvider
+	provider challenge.Provider
 }
 
-func NewChallenge(jws *secure.JWS, validate validateFunc, provider challenge.ChallengeProvider) *Challenge {
+func NewChallenge(jws *secure.JWS, validate validateFunc, provider challenge.Provider) *Challenge {
 	return &Challenge{
 		jws:      jws,
 		validate: validate,
@@ -75,13 +75,13 @@ func (s *Challenge) Solve(chlng le.Challenge, domain string) error {
 		return err
 	}
 
-	fqdn, value, _ := DNS01Record(domain, keyAuth)
+	fqdn, value, _ := GetRecord(domain, keyAuth)
 
 	log.Infof("[%s] Checking DNS record propagation using %+v", domain, RecursiveNameservers)
 
 	var timeout, interval time.Duration
 	switch provider := s.provider.(type) {
-	case challenge.ChallengeProviderTimeout:
+	case challenge.ProviderTimeout:
 		timeout, interval = provider.Timeout()
 	default:
 		timeout, interval = DefaultPropagationTimeout, DefaultPollingInterval
@@ -106,8 +106,8 @@ func (s *Challenge) CleanUp(chlng le.Challenge, domain string) error {
 	return s.provider.CleanUp(domain, chlng.Token, keyAuth)
 }
 
-// DNS01Record returns a DNS record which will fulfill the `dns-01` challenge
-func DNS01Record(domain, keyAuth string) (fqdn string, value string, ttl int) {
+// GetRecord returns a DNS record which will fulfill the `dns-01` challenge
+func GetRecord(domain, keyAuth string) (fqdn string, value string, ttl int) {
 	keyAuthShaBytes := sha256.Sum256([]byte(keyAuth))
 	// base64URL encoding without padding
 	value = base64.RawURLEncoding.EncodeToString(keyAuthShaBytes[:sha256.Size])

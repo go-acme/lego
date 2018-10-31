@@ -22,7 +22,7 @@ func NewDNSProviderManual() (*DNSProviderManual, error) {
 
 // Present prints instructions for manually creating the TXT record
 func (*DNSProviderManual) Present(domain, token, keyAuth string) error {
-	fqdn, value, ttl := DNS01Record(domain, keyAuth)
+	fqdn, value, ttl := GetRecord(domain, keyAuth)
 	dnsRecord := fmt.Sprintf(dnsTemplate, fqdn, ttl, value)
 
 	authZone, err := FindZoneByFqdn(fqdn, RecursiveNameservers)
@@ -41,7 +41,7 @@ func (*DNSProviderManual) Present(domain, token, keyAuth string) error {
 
 // CleanUp prints instructions for manually removing the TXT record
 func (*DNSProviderManual) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _, ttl := DNS01Record(domain, keyAuth)
+	fqdn, _, ttl := GetRecord(domain, keyAuth)
 	dnsRecord := fmt.Sprintf(dnsTemplate, fqdn, ttl, "...")
 
 	authZone, err := FindZoneByFqdn(fqdn, RecursiveNameservers)

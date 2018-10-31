@@ -5,12 +5,9 @@ import (
 	"fmt"
 	"net/http"
 	"sync"
-
-	"github.com/xenolf/lego/emca/internal/sender"
 )
 
 type nonceManager struct {
-	do     *sender.Do
 	nonces []string
 	sync.Mutex
 }

@@ -76,7 +76,7 @@ func (c *Client) SetTLSAddress(iface string) error {
 }
 
 // SetChallengeProvider specifies a custom provider p that can solve the given challenge type.
-func (c *Client) SetChallengeProvider(chlg challenge.Type, p challenge.ChallengeProvider) error {
+func (c *Client) SetChallengeProvider(chlg challenge.Type, p challenge.Provider) error {
 	switch chlg {
 	case challenge.HTTP01:
 		c.solvers[chlg] = http01.NewChallenge(c.jws, validate, p)
@@ -174,10 +174,10 @@ func (c *Client) solveChallengeForAuthz(authorizations []le.Authorization) error
 // Checks all challenges from the server in order and returns the first matching solver.
 func (c *Client) chooseSolver(auth le.Authorization, domain string) (int, solver) {
 	for i, chlg := range auth.Challenges {
-		if solver, ok := c.solvers[challenge.Type(chlg.Type)]; ok {
-			return i, solver
+		if solvr, ok := c.solvers[challenge.Type(chlg.Type)]; ok {
+			return i, solvr
 		}
-		log.Infof("[%s] acme: Could not find solver for: %s", domain, chlg.Type)
+		log.Infof("[%s] acme: Could not find solvr for: %s", domain, chlg.Type)
 	}
 	return 0, nil
 }

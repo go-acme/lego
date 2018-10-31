@@ -1,5 +1,5 @@
 [run]
-  deadline = "2m"
+  deadline = "5m"
 
 [linters-settings]
 
@@ -13,7 +13,7 @@
     suggest-new = true
 
   [linters-settings.goconst]
-    min-len = 2.0
+    min-len = 3.0
     min-occurrences = 3.0
 
   [linters-settings.misspell]

@@ -34,8 +34,6 @@ type Client struct {
 	jws       *secure.JWS
 	keyType   certificate.KeyType
 	solvers   map[challenge.Type]solver
-
-	do *sender.Do
 }
 
 // NewClient creates a new ACME client on behalf of the user.
@@ -76,7 +74,6 @@ func NewClient(config *Config) (*Client, error) {
 		jws:       jws,
 		keyType:   config.keyType,
 		solvers:   defaultSolvers(jws),
-		do:        do,
 	}, nil
 }
 

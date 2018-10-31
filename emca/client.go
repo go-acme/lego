@@ -4,36 +4,20 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/xenolf/lego/emca/certificate/certcrypto"
-	"github.com/xenolf/lego/emca/challenge"
+	"github.com/xenolf/lego/emca/certificate"
+	"github.com/xenolf/lego/emca/challenge/resolver"
 	"github.com/xenolf/lego/emca/internal/secure"
 	"github.com/xenolf/lego/emca/internal/sender"
 	"github.com/xenolf/lego/emca/le"
-)
-
-const (
-	statusValid   = "valid"
-	statusInvalid = "invalid"
-)
-
-const (
-	// maxBodySize is the maximum size of body that we will read.
-	maxBodySize = 1024 * 1024
-
-	// overallRequestLimit is the overall number of request per second
-	// limited on the "new-reg", "new-authz" and "new-cert" endpoints.
-	// From the documentation the limitation is 20 requests per second,
-	// but using 20 as value doesn't work but 18 do
-	overallRequestLimit = 18
+	"github.com/xenolf/lego/emca/registration"
 )
 
 // Client is the user-friendly way to ACME
 type Client struct {
-	directory le.Directory
-	user      User
-	jws       *secure.JWS
-	keyType   certcrypto.KeyType
-	solvers   map[challenge.Type]solver
+	Certificate  *certificate.Certifier
+	Challenge    *resolver.SolverManager
+	Registration *registration.Registrar
+	directory    le.Directory
 }
 
 // NewClient creates a new ACME client on behalf of the user.
@@ -68,12 +52,14 @@ func NewClient(config *Config) (*Client, error) {
 		jws.SetKid(reg.URI)
 	}
 
+	solversManager := resolver.NewSolversManager(jws)
+	prober := resolver.NewProber(jws, solversManager)
+
 	return &Client{
-		directory: dir,
-		user:      config.user,
-		jws:       jws,
-		keyType:   config.keyType,
-		solvers:   defaultSolvers(jws),
+		Certificate:  certificate.NewCertifier(jws, config.keyType, dir, prober),
+		Challenge:    solversManager,
+		Registration: registration.NewRegistrar(jws, config.user, dir),
+		directory:    dir,
 	}, nil
 }
 

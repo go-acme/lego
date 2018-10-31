@@ -29,7 +29,7 @@ func (c *Certifier) getAuthzForOrder(order le.OrderResource) ([]le.Authorization
 	}
 
 	var responses []le.Authorization
-	failures := make(ObtainError)
+	failures := make(obtainError)
 	for i := 0; i < len(order.Authorizations); i++ {
 		select {
 		case res := <-resc:

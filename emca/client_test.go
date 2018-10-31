@@ -1,6 +1,7 @@
 package emca
 
 import (
+	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
 	"encoding/json"
@@ -10,7 +11,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/emca/certificate/certcrypto"
 	"github.com/xenolf/lego/emca/le"
 )
 
@@ -35,37 +35,26 @@ func TestNewClient(t *testing.T) {
 	key, err := rsa.GenerateKey(rand.Reader, keyBits)
 	require.NoError(t, err, "Could not generate test key")
 
-	keyType := certcrypto.RSA2048
-
 	user := mockUser{
 		email:      "test@test.com",
 		regres:     new(le.RegistrationResource),
 		privatekey: key,
 	}
 
-	config := NewDefaultConfig(user).
-		WithCADirURL(ts.URL).
-		WithKeyType(keyType)
+	config := NewDefaultConfig(user).WithCADirURL(ts.URL)
 
 	client, err := NewClient(config)
 	require.NoError(t, err, "Could not create client")
 
-	require.NotNil(t, client.jws, "client.jws")
-	assert.Equal(t, keyType, client.keyType, "client.keyType")
-	assert.Len(t, client.solvers, 2, "solvers")
+	assert.NotNil(t, client)
 }
 
-// writeJSONResponse marshals the body as JSON and writes it to the response.
-func writeJSONResponse(w http.ResponseWriter, body interface{}) error {
-	bs, err := json.Marshal(body)
-	if err != nil {
-		return err
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if _, err := w.Write(bs); err != nil {
-		return err
-	}
-
-	return nil
+type mockUser struct {
+	email      string
+	regres     *le.RegistrationResource
+	privatekey *rsa.PrivateKey
 }
+
+func (u mockUser) GetEmail() string                          { return u.email }
+func (u mockUser) GetRegistration() *le.RegistrationResource { return u.regres }
+func (u mockUser) GetPrivateKey() crypto.PrivateKey          { return u.privatekey }

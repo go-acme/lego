@@ -106,7 +106,7 @@ func (c *Certifier) ObtainCertificateForCSR(csr x509.CertificateRequest, bundle 
 
 	log.Infof("[%s] acme: Validations succeeded; requesting certificates", strings.Join(domains, ", "))
 
-	failures := make(ObtainError)
+	failures := make(obtainError)
 	cert, err := c.requestCertificateForCSR(order, bundle, csr.Raw, nil)
 	if err != nil {
 		for _, chln := range authz {
@@ -226,7 +226,7 @@ func (c *Certifier) ObtainCertificate(domains []string, bundle bool, privKey cry
 
 	log.Infof("[%s] acme: Validations succeeded; requesting certificates", strings.Join(domains, ", "))
 
-	failures := make(ObtainError)
+	failures := make(obtainError)
 	cert, err := c.requestCertificateForOrder(order, bundle, privKey, mustStaple)
 	if err != nil {
 		for _, auth := range authz {

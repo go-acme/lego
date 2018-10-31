@@ -10,6 +10,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/xenolf/lego/emca/registration"
+
 	"github.com/xenolf/lego/emca/certificate/certcrypto"
 )
 
@@ -29,13 +31,13 @@ const (
 
 type Config struct {
 	caDirURL   string
-	user       User
+	user       registration.User
 	keyType    certcrypto.KeyType
 	userAgent  string
 	HTTPClient *http.Client
 }
 
-func NewDefaultConfig(user User) *Config {
+func NewDefaultConfig(user registration.User) *Config {
 	return &Config{
 		caDirURL:   "https://acme-v02.api.letsencrypt.org/directory",
 		user:       user,
@@ -49,7 +51,7 @@ func (c *Config) WithCADirURL(caDirURL string) *Config {
 	return c
 }
 
-func (c *Config) WithUser(user User) *Config {
+func (c *Config) WithUser(user registration.User) *Config {
 	c.user = user
 	return c
 }

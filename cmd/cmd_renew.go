@@ -96,7 +96,7 @@ func renew(c *cli.Context) error {
 
 	certRes.Certificate = certBytes
 
-	newCert, err := client.RenewCertificate(certRes, !c.Bool("no-bundle"), c.Bool("must-staple"))
+	newCert, err := client.Certificate.RenewCertificate(certRes, !c.Bool("no-bundle"), c.Bool("must-staple"))
 	if err != nil {
 		log.Fatal(err)
 	}

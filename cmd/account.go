@@ -96,7 +96,7 @@ func tryRecoverAccount(privKey crypto.PrivateKey, conf *Configuration) (*le.Regi
 		return nil, err
 	}
 
-	reg, err := client.ResolveAccountByKey()
+	reg, err := client.Registration.ResolveAccountByKey()
 	if err != nil {
 		return nil, err
 	}

@@ -44,12 +44,14 @@ type Directory struct {
 	NewOrderURL   string `json:"newOrder"`
 	RevokeCertURL string `json:"revokeCert"`
 	KeyChangeURL  string `json:"keyChange"`
-	Meta          struct {
-		TermsOfService          string   `json:"termsOfService"`
-		Website                 string   `json:"website"`
-		CaaIdentities           []string `json:"caaIdentities"`
-		ExternalAccountRequired bool     `json:"externalAccountRequired"`
-	} `json:"meta"`
+	Meta          Meta   `json:"meta"`
+}
+
+type Meta struct {
+	TermsOfService          string   `json:"termsOfService"`
+	Website                 string   `json:"website"`
+	CaaIdentities           []string `json:"caaIdentities"`
+	ExternalAccountRequired bool     `json:"externalAccountRequired"`
 }
 
 type AccountMessage struct {

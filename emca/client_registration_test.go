@@ -13,9 +13,43 @@ import (
 )
 
 func TestClient_ResolveAccountByKey(t *testing.T) {
-	keyBits := 512
+	mux := http.NewServeMux()
+	ts := httptest.NewServer(mux)
 
-	key, err := rsa.GenerateKey(rand.Reader, keyBits)
+	mux.HandleFunc("/directory", func(w http.ResponseWriter, r *http.Request) {
+		err := writeJSONResponse(w, le.Directory{
+			NewNonceURL:   ts.URL + "/nonce",
+			NewAccountURL: ts.URL + "/account",
+			NewOrderURL:   ts.URL + "/newOrder",
+			RevokeCertURL: ts.URL + "/revokeCert",
+			KeyChangeURL:  ts.URL + "/keyChange",
+		})
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	})
+
+	mux.HandleFunc("/nonce", func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Add("Replay-Nonce", "12345")
+		w.Header().Add("Retry-After", "0")
+	})
+
+	mux.HandleFunc("/account", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Location", ts.URL+"/account_recovery")
+	})
+
+	mux.HandleFunc("/account_recovery", func(w http.ResponseWriter, r *http.Request) {
+		err := writeJSONResponse(w, le.AccountMessage{
+			Status: "valid",
+		})
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	})
+
+	key, err := rsa.GenerateKey(rand.Reader, 512)
 	require.NoError(t, err, "Could not generate test key")
 
 	user := mockUser{
@@ -23,37 +57,6 @@ func TestClient_ResolveAccountByKey(t *testing.T) {
 		regres:     new(le.RegistrationResource),
 		privatekey: key,
 	}
-
-	var ts *httptest.Server
-	ts = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch r.RequestURI {
-		case "/directory":
-			err = writeJSONResponse(w, le.Directory{
-				NewNonceURL:   ts.URL + "/nonce",
-				NewAccountURL: ts.URL + "/account",
-				NewOrderURL:   ts.URL + "/newOrder",
-				RevokeCertURL: ts.URL + "/revokeCert",
-				KeyChangeURL:  ts.URL + "/keyChange",
-			})
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-		case "/nonce":
-			w.Header().Add("Replay-Nonce", "12345")
-			w.Header().Add("Retry-After", "0")
-		case "/account":
-			w.Header().Set("Location", ts.URL+"/account_recovery")
-		case "/account_recovery":
-			err = writeJSONResponse(w, le.AccountMessage{
-				Status: "valid",
-			})
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-		}
-	}))
 
 	config := NewDefaultConfig(user).WithCADirURL(ts.URL + "/directory")
 

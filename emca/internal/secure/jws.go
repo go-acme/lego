@@ -12,10 +12,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/xenolf/lego/log"
-
 	"github.com/xenolf/lego/emca/internal/sender"
 	"github.com/xenolf/lego/emca/le"
+	"github.com/xenolf/lego/log"
 	"gopkg.in/square/go-jose.v2"
 )
 
@@ -44,28 +43,42 @@ func (j *JWS) SetKid(kid string) {
 func (j *JWS) PostJSON(uri string, reqBody, response interface{}) (http.Header, error) {
 	content, err := json.Marshal(reqBody)
 	if err != nil {
-		return nil, errors.New("failed to marshal network message")
+		return nil, errors.New("failed to marshal message")
 	}
 
-	header, err := j.signedPost(uri, content, response)
+	resp, err := j.retrievablePost(uri, content, response)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.Header, nil
+}
+
+// PostAsGet performs an HTTP POST ("POST-as-GET") request.
+func (j *JWS) PostAsGet(uri string, response interface{}) (*http.Response, error) {
+	return j.retrievablePost(uri, []byte{}, response)
+}
+
+func (j *JWS) retrievablePost(uri string, content []byte, response interface{}) (*http.Response, error) {
+	resp, err := j.signedPost(uri, content, response)
 	if err != nil {
 		switch err.(type) {
 		// Retry once if the nonce was invalidated
 		case *le.NonceError:
 			log.Infof("nonce error retry: %s", uri)
-			header, err = j.signedPost(uri, content, response)
+			resp, err = j.signedPost(uri, content, response)
 			if err != nil {
-				return header, err
+				return resp, err
 			}
 		default:
-			return header, err
+			return resp, err
 		}
 	}
 
-	return header, nil
+	return resp, nil
 }
 
-func (j *JWS) signedPost(uri string, content []byte, response interface{}) (http.Header, error) {
+func (j *JWS) signedPost(uri string, content []byte, response interface{}) (*http.Response, error) {
 	signedContent, err := j.signContent(uri, content)
 	if err != nil {
 		return nil, fmt.Errorf("failed to post JWS message -> failed to sign content -> %v", err)
@@ -80,11 +93,7 @@ func (j *JWS) signedPost(uri string, content []byte, response interface{}) (http
 		j.nonces.Push(nonce)
 	}
 
-	if resp == nil {
-		return nil, err
-	}
-
-	return resp.Header, err
+	return resp, err
 }
 
 func (j *JWS) signContent(url string, content []byte) (*jose.JSONWebSignature, error) {

@@ -18,7 +18,7 @@ func (c *Client) getAuthzForOrder(order le.OrderResource) ([]le.Authorization, e
 
 		go func(authzURL string) {
 			var authz le.Authorization
-			_, err := c.do.Get(authzURL, &authz)
+			_, err := c.jws.PostAsGet(authzURL, &authz)
 			if err != nil {
 				errc <- domainError{Domain: authz.Identifier.Value, Error: err}
 				return

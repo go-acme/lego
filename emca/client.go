@@ -81,8 +81,8 @@ func NewClient(config *Config) (*Client, error) {
 	// Add all available solvers with the right index as per ACME spec to this map.
 	// Otherwise they won't be found.
 	solvers := map[challenge.Type]solver{
-		challenge.HTTP01:    http01.NewChallenge(jws, validate(do), &http01.ProviderServer{}),
-		challenge.TLSALPN01: tlsalpn01.NewChallenge(jws, validate(do), &tlsalpn01.ProviderServer{}),
+		challenge.HTTP01:    http01.NewChallenge(jws, validate, &http01.ProviderServer{}),
+		challenge.TLSALPN01: tlsalpn01.NewChallenge(jws, validate, &tlsalpn01.ProviderServer{}),
 	}
 
 	return &Client{
@@ -105,51 +105,48 @@ func (c *Client) GetExternalAccountRequired() bool {
 	return c.directory.Meta.ExternalAccountRequired
 }
 
-func validate(do *sender.Do) func(*secure.JWS, string, string, le.Challenge) error {
-	return func(j *secure.JWS, domain, uri string, _ le.Challenge) error {
-		var chlng le.Challenge
+func validate(j *secure.JWS, domain, uri string, _ le.Challenge) error {
+	var chlng le.Challenge
 
-		// Challenge initiation is done by sending a JWS payload containing the
-		// trivial JSON object `{}`. We use an empty struct instance as the postJSON
-		// payload here to achieve this result.
-		hdr, err := j.PostJSON(uri, struct{}{}, &chlng)
+	// Challenge initiation is done by sending a JWS payload containing the trivial JSON object `{}`.
+	// We use an empty struct instance as the postJSON payload here to achieve this result.
+	hdr, err := j.PostJSON(uri, struct{}{}, &chlng)
+	if err != nil {
+		return err
+	}
+
+	// After the path is sent, the ACME server will access our server.
+	// Repeatedly check the server for an updated status on our request.
+	for {
+		switch chlng.Status {
+		case statusValid:
+			log.Infof("[%s] The server validated our request", domain)
+			return nil
+		case "pending":
+		case "processing":
+		case statusInvalid:
+			return handleChallengeError(chlng)
+		default:
+			return errors.New("the server returned an unexpected state")
+		}
+
+		ra, err := strconv.Atoi(hdr.Get("Retry-After"))
+		if err != nil {
+			// The ACME server MUST return a Retry-After.
+			// If it doesn't, we'll just poll hard.
+			ra = 5
+		}
+
+		time.Sleep(time.Duration(ra) * time.Second)
+
+		resp, err := j.PostAsGet(uri, &chlng)
+		if resp != nil {
+			hdr = resp.Header
+		}
 		if err != nil {
 			return err
 		}
 
-		// After the path is sent, the ACME server will access our server.
-		// Repeatedly check the server for an updated status on our request.
-		for {
-			switch chlng.Status {
-			case statusValid:
-				log.Infof("[%s] The server validated our request", domain)
-				return nil
-			case "pending":
-			case "processing":
-			case statusInvalid:
-				return handleChallengeError(chlng)
-			default:
-				return errors.New("the server returned an unexpected state")
-			}
-
-			ra, err := strconv.Atoi(hdr.Get("Retry-After"))
-			if err != nil {
-				// The ACME server MUST return a Retry-After.
-				// If it doesn't, we'll just poll hard.
-				ra = 5
-			}
-
-			time.Sleep(time.Duration(ra) * time.Second)
-
-			resp, err := do.Get(uri, &chlng)
-			if resp != nil {
-				hdr = resp.Header
-			}
-			if err != nil {
-				return err
-			}
-
-		}
 	}
 }
 

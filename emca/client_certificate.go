@@ -132,7 +132,7 @@ func (c *Client) requestCertificateForCSR(order le.OrderResource, bundle bool, c
 		case <-stopTimer.C:
 			return nil, errors.New("certificate polling timed out")
 		case <-retryTick.C:
-			_, err := c.do.Get(order.URL, &retOrder)
+			_, err := c.jws.PostAsGet(order.URL, &retOrder)
 			if err != nil {
 				return nil, err
 			}
@@ -330,7 +330,7 @@ func (c *Client) checkCertResponse(order le.OrderMessage, certRes *le.Certificat
 	switch order.Status {
 	// TODO extract function?
 	case statusValid:
-		resp, err := c.do.Get(order.Certificate, nil)
+		resp, err := c.jws.PostAsGet(order.Certificate, nil)
 		if err != nil {
 			return false, err
 		}
@@ -387,7 +387,7 @@ func (c *Client) checkCertResponse(order le.OrderMessage, certRes *le.Certificat
 func (c *Client) getIssuerCertificateFromLink(url string) ([]byte, error) {
 	log.Infof("acme: Requesting issuer cert from %s", url)
 
-	resp, err := c.do.Get(url, nil)
+	resp, err := c.jws.PostAsGet(url, nil)
 	if err != nil {
 		return nil, err
 	}

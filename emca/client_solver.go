@@ -79,11 +79,11 @@ func (c *Client) SetTLSAddress(iface string) error {
 func (c *Client) SetChallengeProvider(chlg challenge.Type, p challenge.ChallengeProvider) error {
 	switch chlg {
 	case challenge.HTTP01:
-		c.solvers[chlg] = http01.NewChallenge(c.jws, validate(c.do), p)
+		c.solvers[chlg] = http01.NewChallenge(c.jws, validate, p)
 	case challenge.DNS01:
-		c.solvers[chlg] = dns01.NewChallenge(c.jws, validate(c.do), p)
+		c.solvers[chlg] = dns01.NewChallenge(c.jws, validate, p)
 	case challenge.TLSALPN01:
-		c.solvers[chlg] = tlsalpn01.NewChallenge(c.jws, validate(c.do), p)
+		c.solvers[chlg] = tlsalpn01.NewChallenge(c.jws, validate, p)
 	default:
 		return fmt.Errorf("unknown challenge %v", chlg)
 	}

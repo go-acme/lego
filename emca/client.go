@@ -6,8 +6,6 @@ import (
 
 	"github.com/xenolf/lego/emca/certificate"
 	"github.com/xenolf/lego/emca/challenge"
-	"github.com/xenolf/lego/emca/challenge/http01"
-	"github.com/xenolf/lego/emca/challenge/tlsalpn01"
 	"github.com/xenolf/lego/emca/internal/secure"
 	"github.com/xenolf/lego/emca/internal/sender"
 	"github.com/xenolf/lego/emca/le"
@@ -72,20 +70,12 @@ func NewClient(config *Config) (*Client, error) {
 		jws.SetKid(reg.URI)
 	}
 
-	// REVIEW: best possibility?
-	// Add all available solvers with the right index as per ACME spec to this map.
-	// Otherwise they won't be found.
-	solvers := map[challenge.Type]solver{
-		challenge.HTTP01:    http01.NewChallenge(jws, validate, &http01.ProviderServer{}),
-		challenge.TLSALPN01: tlsalpn01.NewChallenge(jws, validate, &tlsalpn01.ProviderServer{}),
-	}
-
 	return &Client{
 		directory: dir,
 		user:      config.user,
 		jws:       jws,
 		keyType:   config.keyType,
-		solvers:   solvers,
+		solvers:   defaultSolvers(jws),
 		do:        do,
 	}, nil
 }

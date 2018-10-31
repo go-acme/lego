@@ -39,6 +39,16 @@ type selectedAuthSolver struct {
 	solver         solver
 }
 
+func defaultSolvers(jws *secure.JWS) map[challenge.Type]solver {
+	// REVIEW: best possibility?
+	// Add all available solvers with the right index as per ACME spec to this map.
+	// Otherwise they won't be found.
+	return map[challenge.Type]solver{
+		challenge.HTTP01:    http01.NewChallenge(jws, validate, &http01.ProviderServer{}),
+		challenge.TLSALPN01: tlsalpn01.NewChallenge(jws, validate, &tlsalpn01.ProviderServer{}),
+	}
+}
+
 // SetHTTPAddress specifies a custom interface:port to be used for HTTP based challenges.
 // If this option is not used, the default port 80 and all interfaces will be used.
 // To only specify a port and no interface use the ":port" notation.

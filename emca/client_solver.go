@@ -1,15 +1,17 @@
 package emca
 
 import (
+	"errors"
 	"fmt"
 	"net"
-
-	"github.com/xenolf/lego/emca/challenge/tlsalpn01"
-
-	"github.com/xenolf/lego/emca/challenge/dns01"
-	"github.com/xenolf/lego/emca/challenge/http01"
+	"strconv"
+	"time"
 
 	"github.com/xenolf/lego/emca/challenge"
+	"github.com/xenolf/lego/emca/challenge/dns01"
+	"github.com/xenolf/lego/emca/challenge/http01"
+	"github.com/xenolf/lego/emca/challenge/tlsalpn01"
+	"github.com/xenolf/lego/emca/internal/secure"
 	"github.com/xenolf/lego/emca/le"
 	"github.com/xenolf/lego/log"
 )
@@ -180,4 +182,53 @@ func (c *Client) chooseSolver(auth le.Authorization, domain string) (int, solver
 		log.Infof("[%s] acme: Could not find solvr for: %s", domain, chlg.Type)
 	}
 	return 0, nil
+}
+
+func validate(j *secure.JWS, domain, uri string, _ le.Challenge) error {
+	var chlng le.Challenge
+
+	// Challenge initiation is done by sending a JWS payload containing the trivial JSON object `{}`.
+	// We use an empty struct instance as the postJSON payload here to achieve this result.
+	hdr, err := j.PostJSON(uri, struct{}{}, &chlng)
+	if err != nil {
+		return err
+	}
+
+	// After the path is sent, the ACME server will access our server.
+	// Repeatedly check the server for an updated status on our request.
+	for {
+		switch chlng.Status {
+		case statusValid:
+			log.Infof("[%s] The server validated our request", domain)
+			return nil
+		case "pending":
+		case "processing":
+		case statusInvalid:
+			return handleChallengeError(chlng)
+		default:
+			return errors.New("the server returned an unexpected state")
+		}
+
+		ra, err := strconv.Atoi(hdr.Get("Retry-After"))
+		if err != nil {
+			// The ACME server MUST return a Retry-After.
+			// If it doesn't, we'll just poll hard.
+			ra = 5
+		}
+
+		time.Sleep(time.Duration(ra) * time.Second)
+
+		resp, err := j.PostAsGet(uri, &chlng)
+		if resp != nil {
+			hdr = resp.Header
+		}
+		if err != nil {
+			return err
+		}
+
+	}
+}
+
+func handleChallengeError(chlng le.Challenge) error {
+	return chlng.Error
 }

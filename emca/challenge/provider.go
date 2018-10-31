@@ -14,7 +14,7 @@ type Provider interface {
 // ProviderTimeout allows for implementing a
 // Provider where an unusually long timeout is required when
 // waiting for an ACME challenge to be satisfied, such as when
-// checking for DNS record progagation. If an implementor of a
+// checking for DNS record propagation. If an implementor of a
 // Provider provides a Timeout method, then the return values
 // of the Timeout method will be used when appropriate by the acme
 // package. The interval value is the time between checks.

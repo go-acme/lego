@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/urfave/cli"
-	"github.com/xenolf/lego/emca/certificate"
+	"github.com/xenolf/lego/emca/certificate/certcrypto"
 	"github.com/xenolf/lego/emca/challenge"
 )
 
@@ -23,18 +23,18 @@ func NewConfiguration(c *cli.Context) *Configuration {
 }
 
 // KeyType the type from which private keys should be generated
-func (c *Configuration) KeyType() (certificate.KeyType, error) {
+func (c *Configuration) KeyType() (certcrypto.KeyType, error) {
 	switch strings.ToUpper(c.context.GlobalString("key-type")) {
 	case "RSA2048":
-		return certificate.RSA2048, nil
+		return certcrypto.RSA2048, nil
 	case "RSA4096":
-		return certificate.RSA4096, nil
+		return certcrypto.RSA4096, nil
 	case "RSA8192":
-		return certificate.RSA8192, nil
+		return certcrypto.RSA8192, nil
 	case "EC256":
-		return certificate.EC256, nil
+		return certcrypto.EC256, nil
 	case "EC384":
-		return certificate.EC384, nil
+		return certcrypto.EC384, nil
 	}
 
 	return "", fmt.Errorf("unsupported KeyType: %s", c.context.GlobalString("key-type"))

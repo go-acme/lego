@@ -1,4 +1,4 @@
-package certificate
+package certcrypto
 
 import (
 	"bytes"

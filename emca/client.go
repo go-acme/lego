@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/xenolf/lego/emca/certificate"
+	"github.com/xenolf/lego/emca/certificate/certcrypto"
 	"github.com/xenolf/lego/emca/challenge"
 	"github.com/xenolf/lego/emca/internal/secure"
 	"github.com/xenolf/lego/emca/internal/sender"
@@ -32,7 +32,7 @@ type Client struct {
 	directory le.Directory
 	user      User
 	jws       *secure.JWS
-	keyType   certificate.KeyType
+	keyType   certcrypto.KeyType
 	solvers   map[challenge.Type]solver
 }
 

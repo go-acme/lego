@@ -8,7 +8,7 @@ import (
 	"encoding/asn1"
 	"fmt"
 
-	"github.com/xenolf/lego/emca/certificate"
+	"github.com/xenolf/lego/emca/certificate/certcrypto"
 	"github.com/xenolf/lego/emca/challenge"
 	"github.com/xenolf/lego/emca/internal/secure"
 	"github.com/xenolf/lego/emca/le"
@@ -87,7 +87,7 @@ func ChallengeBlocks(domain, keyAuth string) ([]byte, []byte, error) {
 	}
 
 	// Generate a new RSA key for the certificates.
-	tempPrivKey, err := certificate.GeneratePrivateKey(certificate.RSA2048)
+	tempPrivKey, err := certcrypto.GeneratePrivateKey(certcrypto.RSA2048)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -95,13 +95,13 @@ func ChallengeBlocks(domain, keyAuth string) ([]byte, []byte, error) {
 	rsaPrivKey := tempPrivKey.(*rsa.PrivateKey)
 
 	// Generate the PEM certificate using the provided private key, domain, and extra extensions.
-	tempCertPEM, err := certificate.GeneratePemCert(rsaPrivKey, domain, extensions)
+	tempCertPEM, err := certcrypto.GeneratePemCert(rsaPrivKey, domain, extensions)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	// Encode the private key into a PEM format. We'll need to use it to generate the x509 keypair.
-	rsaPrivPEM := certificate.PEMEncode(rsaPrivKey)
+	rsaPrivPEM := certcrypto.PEMEncode(rsaPrivKey)
 
 	return tempCertPEM, rsaPrivPEM, nil
 }

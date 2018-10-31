@@ -7,9 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/xenolf/lego/emca/certificate"
-
 	"github.com/urfave/cli"
+	"github.com/xenolf/lego/emca/certificate/certcrypto"
 	"github.com/xenolf/lego/emca/le"
 	"github.com/xenolf/lego/log"
 )
@@ -67,7 +66,7 @@ func renew(c *cli.Context) error {
 	}
 
 	if c.IsSet("days") {
-		expTime, errE := certificate.GetPEMCertExpiration(certBytes)
+		expTime, errE := certcrypto.GetPEMCertExpiration(certBytes)
 		if errE != nil {
 			log.Printf("Could not get Certification expiration for domain %s", domain)
 		}

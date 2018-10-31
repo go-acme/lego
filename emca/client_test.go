@@ -10,22 +10,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/emca/certificate"
+	"github.com/xenolf/lego/emca/certificate/certcrypto"
 	"github.com/xenolf/lego/emca/le"
 )
 
 func TestNewClient(t *testing.T) {
-	keyBits := 32 // small value keeps test fast
-	keyType := certificate.RSA2048
-	key, err := rsa.GenerateKey(rand.Reader, keyBits)
-	require.NoError(t, err, "Could not generate test key")
-
-	user := mockUser{
-		email:      "test@test.com",
-		regres:     new(le.RegistrationResource),
-		privatekey: key,
-	}
-
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		data, _ := json.Marshal(le.Directory{
 			NewNonceURL:   "http://test",
@@ -35,12 +24,24 @@ func TestNewClient(t *testing.T) {
 			KeyChangeURL:  "http://test",
 		})
 
-		_, err = w.Write(data)
+		_, err := w.Write(data)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}))
+
+	keyBits := 32 // small value keeps test fast
+	key, err := rsa.GenerateKey(rand.Reader, keyBits)
+	require.NoError(t, err, "Could not generate test key")
+
+	keyType := certcrypto.RSA2048
+
+	user := mockUser{
+		email:      "test@test.com",
+		regres:     new(le.RegistrationResource),
+		privatekey: key,
+	}
 
 	config := NewDefaultConfig(user).
 		WithCADirURL(ts.URL).

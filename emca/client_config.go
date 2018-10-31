@@ -10,7 +10,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/xenolf/lego/emca/certificate"
+	"github.com/xenolf/lego/emca/certificate/certcrypto"
 )
 
 const (
@@ -30,7 +30,7 @@ const (
 type Config struct {
 	caDirURL   string
 	user       User
-	keyType    certificate.KeyType
+	keyType    certcrypto.KeyType
 	userAgent  string
 	HTTPClient *http.Client
 }
@@ -39,7 +39,7 @@ func NewDefaultConfig(user User) *Config {
 	return &Config{
 		caDirURL:   "https://acme-v02.api.letsencrypt.org/directory",
 		user:       user,
-		keyType:    certificate.RSA2048,
+		keyType:    certcrypto.RSA2048,
 		HTTPClient: createDefaultHTTPClient(),
 	}
 }
@@ -59,7 +59,7 @@ func (c *Config) WithUserAgent(userAgent string) *Config {
 	return c
 }
 
-func (c *Config) WithKeyType(keyType certificate.KeyType) *Config {
+func (c *Config) WithKeyType(keyType certcrypto.KeyType) *Config {
 	c.keyType = keyType
 	return c
 }

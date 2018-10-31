@@ -5,6 +5,7 @@ package conoha
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/xenolf/lego/acme"
@@ -17,18 +18,22 @@ type Config struct {
 	TenantID           string
 	Username           string
 	Password           string
+	TTL                int
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
-	TTL                int
+	HTTPClient         *http.Client
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
 		Region:             env.GetOrDefaultString("CONOHA_REGION", "tyo1"),
+		TTL:                env.GetOrDefaultInt("CONOHA_TTL", 60),
 		PropagationTimeout: env.GetOrDefaultSecond("CONOHA_PROPAGATION_TIMEOUT", acme.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond("CONOHA_POLLING_INTERVAL", acme.DefaultPollingInterval),
-		TTL:                env.GetOrDefaultInt("CONOHA_TTL", 60),
+		HTTPClient: &http.Client{
+			Timeout: env.GetOrDefaultSecond("CONOHA_HTTP_TIMEOUT", 30*time.Second),
+		},
 	}
 }
 
@@ -59,16 +64,25 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("conoha: the configuration of the DNS provider is nil")
 	}
+
 	if config.TenantID == "" || config.Username == "" || config.Password == "" {
 		return nil, errors.New("conoha: some credentials information are missing")
 	}
 
-	client, err := NewClient(config.Region, config.TenantID, config.Username, config.Password)
-	if err != nil {
-		return nil, fmt.Errorf("conoha: failed to login: %v", err)
+	auth := Auth{
+		TenantID: config.TenantID,
+		PasswordCredentials: PasswordCredentials{
+			Username: config.Username,
+			Password: config.Password,
+		},
 	}
 
-	return &DNSProvider{config, client}, nil
+	client, err := NewClient(config.Region, auth, config.HTTPClient)
+	if err != nil {
+		return nil, fmt.Errorf("conoha: failed to create client: %v", err)
+	}
+
+	return &DNSProvider{config: config, client: client}, nil
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
@@ -80,7 +94,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("conoha: failed to get domain ID: %v", err)
 	}
 
-	err = d.client.CreateRecord(id, fqdn, "TXT", value, d.config.TTL)
+	record := Record{
+		Name: fqdn,
+		Type: "TXT",
+		Data: value,
+		TTL:  d.config.TTL,
+	}
+
+	err = d.client.CreateRecord(id, record)
 	if err != nil {
 		return fmt.Errorf("conoha: failed to create record: %v", err)
 	}

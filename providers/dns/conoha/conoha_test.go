@@ -27,7 +27,7 @@ func TestNewDNSProvider(t *testing.T) {
 				"CONOHA_API_USERNAME": "api_username",
 				"CONOHA_API_PASSWORD": "api_password",
 			},
-			expected: "conoha: failed to login: HTTP request failed with status code 401",
+			expected: `conoha: failed to create client: failed to login: HTTP request failed with status code 401: {"unauthorized":{"message":"Invalid user: api_username","code":401}}`,
 		},
 		{
 			desc: "missing credentials",
@@ -97,7 +97,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}{
 		{
 			desc:     "complete credentials, but login failed",
-			expected: "conoha: failed to login: HTTP request failed with status code 401",
+			expected: `conoha: failed to create client: failed to login: HTTP request failed with status code 401: {"unauthorized":{"message":"Invalid user: api_username","code":401}}`,
 			tenant:   "tenant_id",
 			username: "api_username",
 			password: "api_password",

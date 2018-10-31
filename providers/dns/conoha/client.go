@@ -9,6 +9,11 @@ import (
 	"net/http"
 )
 
+const (
+	identityBaseURL   = "https://identity.%s.conoha.io"
+	dnsServiceBaseURL = "https://dns-service.%s.conoha.io"
+)
+
 // IdentityRequest is an authentication request body.
 type IdentityRequest struct {
 	Auth Auth `json:"auth"`
@@ -68,61 +73,72 @@ type Record struct {
 
 // Client is a ConoHa API client.
 type Client struct {
-	*http.Client
-	token    string
-	endpoint string
+	token      string
+	endpoint   string
+	httpClient *http.Client
 }
 
 // NewClient returns a client instance logged into the ConoHa service.
-func NewClient(region, tenant, username, password string) (*Client, error) {
-	c := &Client{
-		Client:   &http.Client{},
-		endpoint: "https://identity." + region + ".conoha.io/v2.0",
+func NewClient(region string, auth Auth, httpClient *http.Client) (*Client, error) {
+	if httpClient == nil {
+		httpClient = &http.Client{}
 	}
 
-	req := &IdentityRequest{
-		Auth{
-			tenant,
-			PasswordCredentials{username, password},
-		},
-	}
-	resp := &IdentityResponse{}
+	c := &Client{httpClient: httpClient}
 
-	err := c.request("POST", "/tokens", req, resp)
+	c.endpoint = fmt.Sprintf(identityBaseURL, region)
+
+	identity, err := c.getIdentity(auth)
+	if err != nil {
+		return nil, fmt.Errorf("failed to login: %v", err)
+	}
+
+	c.token = identity.Access.Token.ID
+	c.endpoint = fmt.Sprintf(dnsServiceBaseURL, region)
+
+	return c, nil
+}
+
+func (c *Client) getIdentity(auth Auth) (*IdentityResponse, error) {
+	req := &IdentityRequest{Auth: auth}
+
+	identity := &IdentityResponse{}
+
+	err := c.do(http.MethodPost, "/v2.0/tokens", req, identity)
 	if err != nil {
 		return nil, err
 	}
 
-	c.token = resp.Access.Token.ID
-	c.endpoint = "https://dns-service." + region + ".conoha.io/v1"
-	return c, nil
+	return identity, nil
 }
 
 // GetDomainID returns an ID of specified domain.
 func (c *Client) GetDomainID(domainName string) (string, error) {
-	resp := &DomainListResponse{}
-	err := c.request("GET", "/domains", nil, resp)
+	domainList := &DomainListResponse{}
+
+	err := c.do(http.MethodGet, "/v1/domains", nil, domainList)
 	if err != nil {
 		return "", err
 	}
 
-	for _, domain := range resp.Domains {
+	for _, domain := range domainList.Domains {
 		if domain.Name == domainName {
 			return domain.ID, nil
 		}
 	}
-	return "", errors.New("no such domain")
+	return "", fmt.Errorf("no such domain: %s", domainName)
 }
 
 // GetRecordID returns an ID of specified record.
 func (c *Client) GetRecordID(domainID, recordName, recordType, data string) (string, error) {
-	resp := &RecordListResponse{}
-	err := c.request("GET", "/domains/"+domainID+"/records", nil, resp)
+	recordList := &RecordListResponse{}
+
+	err := c.do(http.MethodGet, fmt.Sprintf("/v1/domains/%s/records", domainID), nil, recordList)
 	if err != nil {
 		return "", err
 	}
 
-	for _, record := range resp.Records {
+	for _, record := range recordList.Records {
 		if record.Name == recordName && record.Type == recordType && record.Data == data {
 			return record.ID, nil
 		}
@@ -131,17 +147,16 @@ func (c *Client) GetRecordID(domainID, recordName, recordType, data string) (str
 }
 
 // CreateRecord adds new record.
-func (c *Client) CreateRecord(domainID, recordName, recordType, data string, ttl int) error {
-	req := &Record{"", recordName, recordType, data, ttl}
-	return c.request("POST", "/v1/domains/"+domainID+"/records", req, nil)
+func (c *Client) CreateRecord(domainID string, record Record) error {
+	return c.do(http.MethodPost, fmt.Sprintf("/v1/domains/%s/records", domainID), record, nil)
 }
 
 // DeleteRecord removes specified record.
 func (c *Client) DeleteRecord(domainID, recordID string) error {
-	return c.request("DELETE", "/v1/domains/"+domainID+"/records/"+recordID, nil, nil)
+	return c.do(http.MethodDelete, fmt.Sprintf("/v1/domains/%s/records/%s", domainID, recordID), nil, nil)
 }
 
-func (c *Client) request(method, path string, payload, result interface{}) error {
+func (c *Client) do(method, path string, payload, result interface{}) error {
 	body := bytes.NewReader(nil)
 
 	if payload != nil {
@@ -161,13 +176,19 @@ func (c *Client) request(method, path string, payload, result interface{}) error
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-Auth-Token", c.token)
 
-	resp, err := c.Do(req)
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return err
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("HTTP request failed with status code %d", resp.StatusCode)
+		respBody, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+
+		return fmt.Errorf("HTTP request failed with status code %d: %s", resp.StatusCode, string(respBody))
 	}
 
 	if result != nil {
@@ -175,6 +196,8 @@ func (c *Client) request(method, path string, payload, result interface{}) error
 		if err != nil {
 			return err
 		}
+		defer resp.Body.Close()
+
 		return json.Unmarshal(respBody, result)
 	}
 

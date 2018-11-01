@@ -33,6 +33,11 @@ func NewClient(config *Config) (*Client, error) {
 		return nil, errors.New("private key was nil")
 	}
 
+	var kid string
+	if reg := config.user.GetRegistration(); reg != nil {
+		kid = reg.URI
+	}
+
 	do := sender.NewDo(config.HTTPClient, config.userAgent)
 
 	var dir le.Directory
@@ -48,9 +53,7 @@ func NewClient(config *Config) (*Client, error) {
 	}
 
 	jws := secure.NewJWS(do, privKey, dir.NewNonceURL)
-	if reg := config.user.GetRegistration(); reg != nil {
-		jws.SetKid(reg.URI)
-	}
+	jws.SetKid(kid)
 
 	solversManager := resolver.NewSolversManager(jws)
 	prober := resolver.NewProber(jws, solversManager)

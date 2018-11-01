@@ -2,7 +2,6 @@ package resolver
 
 import (
 	"errors"
-	"fmt"
 	"net"
 	"strconv"
 	"time"
@@ -74,18 +73,21 @@ func (c *SolverManager) SetTLSAddress(iface string) error {
 	return nil
 }
 
-// SetProvider specifies a custom provider p that can solve the given challenge type.
-func (c *SolverManager) SetProvider(chlg challenge.Type, p challenge.Provider) error {
-	switch chlg {
-	case challenge.HTTP01:
-		c.solvers[chlg] = http01.NewChallenge(c.core, validate, p)
-	case challenge.DNS01:
-		c.solvers[chlg] = dns01.NewChallenge(c.core, validate, p)
-	case challenge.TLSALPN01:
-		c.solvers[chlg] = tlsalpn01.NewChallenge(c.core, validate, p)
-	default:
-		return fmt.Errorf("unknown challenge %v", chlg)
-	}
+// SetHTTP01Provider specifies a custom provider p that can solve the given HTTP-01 challenge.
+func (c *SolverManager) SetHTTP01Provider(p challenge.Provider) error {
+	c.solvers[challenge.HTTP01] = http01.NewChallenge(c.core, validate, p)
+	return nil
+}
+
+// SetTLSALPN01Provider specifies a custom provider p that can solve the given TLS-ALPN-01 challenge.
+func (c *SolverManager) SetTLSALPN01Provider(chlg challenge.Type, p challenge.Provider) error {
+	c.solvers[challenge.TLSALPN01] = tlsalpn01.NewChallenge(c.core, validate, p)
+	return nil
+}
+
+// SetDNS01Provider specifies a custom provider p that can solve the given DNS-01 challenge.
+func (c *SolverManager) SetDNS01Provider(p challenge.Provider, opts ...dns01.ChallengeOption) error {
+	c.solvers[challenge.DNS01] = dns01.NewChallenge(c.core, validate, p, opts...)
 	return nil
 }
 

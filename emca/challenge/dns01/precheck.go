@@ -8,11 +8,8 @@ import (
 	"github.com/miekg/dns"
 )
 
-type preCheckDNSFunc func(fqdn, value string) (bool, error)
-
-// PreCheckDNS checks DNS propagation before notifying ACME that
-// the DNS challenge is ready.
-var PreCheckDNS preCheckDNSFunc = checkDNSPropagation
+// PreCheckFunc checks DNS propagation before notifying ACME that the DNS challenge is ready.
+type PreCheckFunc func(fqdn, value string) (bool, error)
 
 // checkDNSPropagation checks if the expected TXT record has been propagated to all authoritative nameservers.
 func checkDNSPropagation(fqdn, value string) (bool, error) {

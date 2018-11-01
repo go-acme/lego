@@ -55,6 +55,7 @@ import (
 	"github.com/xenolf/lego/providers/dns/vultr"
 )
 
+// FIXME rename
 // NewDNSChallengeProviderByName Factory for DNS providers
 func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) {
 	switch name {

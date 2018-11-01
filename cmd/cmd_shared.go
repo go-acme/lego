@@ -109,7 +109,7 @@ func setupWebroot(client *emca.Client, path string) {
 		log.Fatal(err)
 	}
 
-	err = client.Challenge.SetProvider(challenge.HTTP01, provider)
+	err = client.Challenge.SetHTTP01Provider(provider)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -125,7 +125,7 @@ func setupMemcached(client *emca.Client, hosts []string) {
 		log.Fatal(err)
 	}
 
-	err = client.Challenge.SetProvider(challenge.HTTP01, provider)
+	err = client.Challenge.SetHTTP01Provider(provider)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -163,7 +163,7 @@ func setupDNS(client *emca.Client, providerName string) {
 		log.Fatal(err)
 	}
 
-	err = client.Challenge.SetProvider(challenge.DNS01, provider)
+	err = client.Challenge.SetDNS01Provider(provider)
 	if err != nil {
 		log.Fatal(err)
 	}

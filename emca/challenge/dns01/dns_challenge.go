@@ -17,6 +17,15 @@ import (
 // FIXME refactor
 type validateFunc func(core *api.Core, domain, uri string, chlng le.Challenge) error
 
+type ChallengeOption func(*Challenge) error
+
+func AddPreCheck(preCheck PreCheckFunc) ChallengeOption {
+	return func(chlg *Challenge) error {
+		chlg.preCheckDNSFunc = preCheck
+		return nil
+	}
+}
+
 const (
 	// DefaultPropagationTimeout default propagation timeout
 	DefaultPropagationTimeout = 60 * time.Second
@@ -30,21 +39,32 @@ const (
 
 // Challenge implements the dns-01 challenge according to ACME 7.5
 type Challenge struct {
-	core     *api.Core
-	validate validateFunc
-	provider challenge.Provider
+	core            *api.Core
+	validate        validateFunc
+	provider        challenge.Provider
+	preCheckDNSFunc PreCheckFunc
 }
 
-func NewChallenge(core *api.Core, validate validateFunc, provider challenge.Provider) *Challenge {
-	return &Challenge{
-		core:     core,
-		validate: validate,
-		provider: provider,
+func NewChallenge(core *api.Core, validate validateFunc, provider challenge.Provider, opts ...ChallengeOption) *Challenge {
+	chlg := &Challenge{
+		core:            core,
+		validate:        validate,
+		provider:        provider,
+		preCheckDNSFunc: checkDNSPropagation,
 	}
+
+	for _, opt := range opts {
+		err := opt(chlg)
+		if err != nil {
+			// FIXME panic ?
+		}
+	}
+
+	return chlg
 }
 
-// PreSolve just submits the txt record to the dns provider. It does not validate record propagation, or
-// do anything at all with the acme server.
+// PreSolve just submits the txt record to the dns provider.
+// It does not validate record propagation, or do anything at all with the acme server.
 func (s *Challenge) PreSolve(chlng le.Challenge, domain string) error {
 	log.Infof("[%s] acme: Preparing to solve DNS-01", domain)
 
@@ -88,7 +108,7 @@ func (s *Challenge) Solve(chlng le.Challenge, domain string) error {
 	}
 
 	err = wait.For(timeout, interval, func() (bool, error) {
-		return PreCheckDNS(fqdn, value)
+		return s.preCheckDNSFunc(fqdn, value)
 	})
 	if err != nil {
 		return err
@@ -97,7 +117,7 @@ func (s *Challenge) Solve(chlng le.Challenge, domain string) error {
 	return s.validate(s.core, domain, chlng.URL, le.Challenge{Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
 }
 
-// CleanUp cleans the challenge
+// CleanUp cleans the challenge.
 func (s *Challenge) CleanUp(chlng le.Challenge, domain string) error {
 	keyAuth, err := s.core.GetKeyAuthorization(chlng.Token)
 	if err != nil {

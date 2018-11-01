@@ -8,9 +8,9 @@ import (
 	"encoding/asn1"
 	"fmt"
 
+	"github.com/xenolf/lego/emca/api"
 	"github.com/xenolf/lego/emca/certificate/certcrypto"
 	"github.com/xenolf/lego/emca/challenge"
-	"github.com/xenolf/lego/emca/internal/secure"
 	"github.com/xenolf/lego/emca/le"
 	"github.com/xenolf/lego/log"
 )
@@ -20,17 +20,17 @@ import (
 var idPeAcmeIdentifierV1 = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 1, 31}
 
 // FIXME refactor
-type validateFunc func(j *secure.JWS, domain, uri string, chlng le.Challenge) error
+type validateFunc func(core *api.Core, domain, uri string, chlng le.Challenge) error
 
 type Challenge struct {
-	jws      *secure.JWS
+	core     *api.Core
 	validate validateFunc
 	provider challenge.Provider
 }
 
-func NewChallenge(jws *secure.JWS, validate validateFunc, provider challenge.Provider) *Challenge {
+func NewChallenge(core *api.Core, validate validateFunc, provider challenge.Provider) *Challenge {
 	return &Challenge{
-		jws:      jws,
+		core:     core,
 		validate: validate,
 		provider: provider,
 	}
@@ -45,7 +45,7 @@ func (c *Challenge) Solve(chlng le.Challenge, domain string) error {
 	log.Infof("[%s] acme: Trying to solve TLS-ALPN-01", domain)
 
 	// Generate the Key Authorization for the challenge
-	keyAuth, err := c.jws.GetKeyAuthorization(chlng.Token)
+	keyAuth, err := c.core.GetKeyAuthorization(chlng.Token)
 	if err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func (c *Challenge) Solve(chlng le.Challenge, domain string) error {
 		}
 	}()
 
-	return c.validate(c.jws, domain, chlng.URL, le.Challenge{Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
+	return c.validate(c.core, domain, chlng.URL, le.Challenge{Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
 }
 
 // ChallengeBlocks returns PEM blocks (certPEMBlock, keyPEMBlock) with the acmeValidation-v1 extension

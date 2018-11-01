@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/xenolf/lego/emca/internal/secure"
+	"github.com/xenolf/lego/emca/api"
 	"github.com/xenolf/lego/emca/le"
 	"github.com/xenolf/lego/log"
 )
@@ -19,16 +19,14 @@ type Resource struct {
 }
 
 type Registrar struct {
-	jws       *secure.JWS
-	user      User
-	directory le.Directory
+	core *api.Core
+	user User
 }
 
-func NewRegistrar(jws *secure.JWS, user User, directory le.Directory) *Registrar {
+func NewRegistrar(core *api.Core, user User) *Registrar {
 	return &Registrar{
-		jws:       jws,
-		user:      user,
-		directory: directory,
+		core: core,
+		user: user,
 	}
 }
 
@@ -45,12 +43,12 @@ func (r *Registrar) RegisterWithExternalAccountBinding(tosAgreed bool, kid strin
 			return fmt.Errorf("acme: could not decode hmac key: %v", err)
 		}
 
-		eabJWS, err := r.jws.SignEABContent(r.directory.NewAccountURL, kid, hmac)
+		eabJWS, err := r.core.SignEABContent(r.core.GetDirectory().NewAccountURL, kid, hmac)
 		if err != nil {
 			return fmt.Errorf("acme: error signing eab content: %v", err)
 		}
 
-		accMsg.ExternalAccountBinding = []byte(eabJWS.FullSerialize())
+		accMsg.ExternalAccountBinding = eabJWS
 
 		return nil
 	}
@@ -83,7 +81,7 @@ func (r *Registrar) register(tosAgreed bool, opts ...func(*le.AccountMessage) er
 	}
 
 	var serverReg le.AccountMessage
-	resp, err := r.jws.Post(r.directory.NewAccountURL, accMsg, &serverReg)
+	resp, err := r.core.Post(r.core.GetDirectory().NewAccountURL, accMsg, &serverReg)
 	if err != nil {
 		errorDetails, ok := err.(le.ProblemDetails)
 		if !ok || errorDetails.HTTPStatus != http.StatusConflict {
@@ -91,7 +89,7 @@ func (r *Registrar) register(tosAgreed bool, opts ...func(*le.AccountMessage) er
 		}
 	}
 
-	r.jws.SetKid(resp.Header.Get("Location"))
+	r.core.UpdateKID(resp.Header.Get("Location"))
 
 	return &Resource{URI: resp.Header.Get("Location"), Body: serverReg}, nil
 }
@@ -111,7 +109,7 @@ func (r *Registrar) QueryRegistration() (*Resource, error) {
 	accMsg := le.AccountMessage{}
 
 	var serverReg le.AccountMessage
-	_, err := r.jws.Post(r.user.GetRegistration().URI, accMsg, &serverReg)
+	_, err := r.core.Post(r.user.GetRegistration().URI, accMsg, &serverReg)
 	if err != nil {
 		return nil, err
 	}
@@ -133,7 +131,7 @@ func (r *Registrar) DeleteRegistration() error {
 
 	accMsg := le.AccountMessage{Status: le.StatusDeactivated}
 
-	_, err := r.jws.Post(r.user.GetRegistration().URI, accMsg, nil)
+	_, err := r.core.Post(r.user.GetRegistration().URI, accMsg, nil)
 	return err
 }
 
@@ -143,7 +141,7 @@ func (r *Registrar) ResolveAccountByKey() (*Resource, error) {
 	log.Infof("acme: Trying to resolve account by key")
 
 	acc := le.AccountMessage{OnlyReturnExisting: true}
-	resp, err := r.jws.Post(r.directory.NewAccountURL, acc, nil)
+	resp, err := r.core.Post(r.core.GetDirectory().NewAccountURL, acc, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -153,10 +151,10 @@ func (r *Registrar) ResolveAccountByKey() (*Resource, error) {
 		return nil, errors.New("server did not return the account link")
 	}
 
-	r.jws.SetKid(accountLink)
+	r.core.UpdateKID(accountLink)
 
 	var retAccount le.AccountMessage
-	_, err = r.jws.Post(accountLink, le.AccountMessage{}, &retAccount)
+	_, err = r.core.Post(accountLink, le.AccountMessage{}, &retAccount)
 	if err != nil {
 		return nil, err
 	}

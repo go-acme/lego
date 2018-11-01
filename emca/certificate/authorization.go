@@ -26,7 +26,7 @@ func (c *Certifier) getAuthzForOrder(order orderResource) ([]le.Authorization, e
 
 		go func(authzURL string) {
 			var authz le.Authorization
-			_, err := c.jws.PostAsGet(authzURL, &authz)
+			_, err := c.core.PostAsGet(authzURL, &authz)
 			if err != nil {
 				errc <- domainError{Domain: authz.Identifier.Value, Error: err}
 				return
@@ -69,6 +69,6 @@ func logAuthorizations(order orderResource) {
 // disableAuthz loops through the passed in slice and disables any auths which are not "valid"
 func (c *Certifier) disableAuthz(authzURL string) error {
 	var disabledAuth le.Authorization
-	_, err := c.jws.Post(authzURL, le.Authorization{Status: le.StatusDeactivated}, &disabledAuth)
+	_, err := c.core.Post(authzURL, le.Authorization{Status: le.StatusDeactivated}, &disabledAuth)
 	return err
 }

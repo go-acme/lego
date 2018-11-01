@@ -2,13 +2,10 @@ package emca
 
 import (
 	"errors"
-	"fmt"
 
+	"github.com/xenolf/lego/emca/api"
 	"github.com/xenolf/lego/emca/certificate"
 	"github.com/xenolf/lego/emca/challenge/resolver"
-	"github.com/xenolf/lego/emca/internal/secure"
-	"github.com/xenolf/lego/emca/internal/sender"
-	"github.com/xenolf/lego/emca/le"
 	"github.com/xenolf/lego/emca/registration"
 )
 
@@ -17,7 +14,7 @@ type Client struct {
 	Certificate  *certificate.Certifier
 	Challenge    *resolver.SolverManager
 	Registration *registration.Registrar
-	directory    le.Directory
+	core         *api.Core
 }
 
 // NewClient creates a new ACME client on behalf of the user.
@@ -38,40 +35,28 @@ func NewClient(config *Config) (*Client, error) {
 		kid = reg.URI
 	}
 
-	do := sender.NewDo(config.HTTPClient, config.userAgent)
-
-	var dir le.Directory
-	if _, err := do.Get(config.caDirURL, &dir); err != nil {
-		return nil, fmt.Errorf("get directory at '%s': %v", config.caDirURL, err)
+	core, err := api.New(config.HTTPClient, config.userAgent, config.caDirURL, kid, privKey)
+	if err != nil {
+		return nil, err
 	}
 
-	if dir.NewAccountURL == "" {
-		return nil, errors.New("directory missing new registration URL")
-	}
-	if dir.NewOrderURL == "" {
-		return nil, errors.New("directory missing new order URL")
-	}
+	solversManager := resolver.NewSolversManager(core)
 
-	jws := secure.NewJWS(do, privKey, dir.NewNonceURL)
-	jws.SetKid(kid)
-
-	solversManager := resolver.NewSolversManager(jws)
-	prober := resolver.NewProber(jws, solversManager)
+	prober := resolver.NewProber(solversManager)
 
 	return &Client{
-		Certificate:  certificate.NewCertifier(jws, config.keyType, dir, prober),
+		Certificate:  certificate.NewCertifier(core, config.keyType, prober),
 		Challenge:    solversManager,
-		Registration: registration.NewRegistrar(jws, config.user, dir),
-		directory:    dir,
+		Registration: registration.NewRegistrar(core, config.user),
 	}, nil
 }
 
 // GetToSURL returns the current ToS URL from the Directory
 func (c *Client) GetToSURL() string {
-	return c.directory.Meta.TermsOfService
+	return c.core.GetDirectory().Meta.TermsOfService
 }
 
 // GetExternalAccountRequired returns the External Account Binding requirement of the Directory
 func (c *Client) GetExternalAccountRequired() bool {
-	return c.directory.Meta.ExternalAccountRequired
+	return c.core.GetDirectory().Meta.ExternalAccountRequired
 }

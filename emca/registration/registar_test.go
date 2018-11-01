@@ -10,8 +10,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/emca/internal/secure"
-	"github.com/xenolf/lego/emca/internal/sender"
+	"github.com/xenolf/lego/emca/api"
 	"github.com/xenolf/lego/emca/le"
 )
 
@@ -52,23 +51,19 @@ func TestRegistrar_ResolveAccountByKey(t *testing.T) {
 		}
 	})
 
-	directory := le.Directory{
-		NewAccountURL: ts.URL + "/account",
-	}
-
 	key, err := rsa.GenerateKey(rand.Reader, 512)
 	require.NoError(t, err, "Could not generate test key")
 
 	user := mockUser{
 		email:      "test@test.com",
-		regres:     new(Resource),
+		regres:     &Resource{},
 		privatekey: key,
 	}
 
-	do := sender.NewDo(http.DefaultClient, "lego-test")
-	jws := secure.NewJWS(do, user.GetPrivateKey(), ts.URL+"/nonce")
+	core, err := api.New(http.DefaultClient, "lego-test", ts.URL+"/directory", "", key)
+	require.NoError(t, err)
 
-	registrar := NewRegistrar(jws, user, directory)
+	registrar := NewRegistrar(core, user)
 
 	res, err := registrar.ResolveAccountByKey()
 	require.NoError(t, err, "Unexpected error resolving account by key")

@@ -13,8 +13,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/xenolf/lego/emca/api"
 	"github.com/xenolf/lego/emca/certificate/certcrypto"
-	"github.com/xenolf/lego/emca/internal/secure"
 	"github.com/xenolf/lego/emca/le"
 	"github.com/xenolf/lego/log"
 	"golang.org/x/net/idna"
@@ -53,18 +53,16 @@ type resolver interface {
 }
 
 type Certifier struct {
-	jws       *secure.JWS
-	keyType   certcrypto.KeyType
-	directory le.Directory
-	resolver  resolver
+	core     *api.Core
+	keyType  certcrypto.KeyType
+	resolver resolver
 }
 
-func NewCertifier(jws *secure.JWS, keyType certcrypto.KeyType, directory le.Directory, resolver resolver) *Certifier {
+func NewCertifier(core *api.Core, keyType certcrypto.KeyType, resolver resolver) *Certifier {
 	return &Certifier{
-		jws:       jws,
-		keyType:   keyType,
-		directory: directory,
-		resolver:  resolver,
+		core:     core,
+		keyType:  keyType,
+		resolver: resolver,
 	}
 }
 
@@ -240,7 +238,7 @@ func (c *Certifier) createForCSR(order orderResource, bundle bool, csr []byte, p
 	csrString := base64.RawURLEncoding.EncodeToString(csr)
 
 	var retOrder le.OrderMessage
-	_, err := c.jws.Post(order.Finalize, le.CSRMessage{Csr: csrString}, &retOrder)
+	_, err := c.core.Post(order.Finalize, le.CSRMessage{Csr: csrString}, &retOrder)
 	if err != nil {
 		return nil, err
 	}
@@ -278,7 +276,7 @@ func (c *Certifier) createForCSR(order orderResource, bundle bool, csr []byte, p
 		case <-stopTimer.C:
 			return nil, errors.New("certificate polling timed out")
 		case <-retryTick.C:
-			_, err := c.jws.PostAsGet(order.URL, &retOrder)
+			_, err := c.core.PostAsGet(order.URL, &retOrder)
 			if err != nil {
 				return nil, err
 			}
@@ -308,7 +306,7 @@ func (c *Certifier) Revoke(cert []byte) error {
 
 	encodedCert := base64.URLEncoding.EncodeToString(x509Cert.Raw)
 
-	_, err = c.jws.Post(c.directory.RevokeCertURL, le.RevokeCertMessage{Certificate: encodedCert}, nil)
+	_, err = c.core.Post(c.core.GetDirectory().RevokeCertURL, le.RevokeCertMessage{Certificate: encodedCert}, nil)
 	return err
 }
 
@@ -394,7 +392,7 @@ func (c *Certifier) createOrderForIdentifiers(domains []string) (orderResource, 
 	order := le.OrderMessage{Identifiers: identifiers}
 
 	var response le.OrderMessage
-	resp, err := c.jws.Post(c.directory.NewOrderURL, order, &response)
+	resp, err := c.core.Post(c.core.GetDirectory().NewOrderURL, order, &response)
 	if err != nil {
 		return orderResource{}, err
 	}
@@ -415,7 +413,7 @@ func (c *Certifier) checkResponse(order le.OrderMessage, certRes *Resource, bund
 	switch order.Status {
 	// TODO extract function?
 	case le.StatusValid:
-		resp, err := c.jws.PostAsGet(order.Certificate, nil)
+		resp, err := c.core.PostAsGet(order.Certificate, nil)
 		if err != nil {
 			return false, err
 		}
@@ -472,7 +470,7 @@ func (c *Certifier) checkResponse(order le.OrderMessage, certRes *Resource, bund
 func (c *Certifier) getIssuerCertificateFromLink(url string) ([]byte, error) {
 	log.Infof("acme: Requesting issuer cert from %s", url)
 
-	resp, err := c.jws.PostAsGet(url, nil)
+	resp, err := c.core.PostAsGet(url, nil)
 	if err != nil {
 		return nil, err
 	}

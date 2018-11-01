@@ -1,12 +1,8 @@
 package resolver
 
 import (
-	"errors"
 	"fmt"
-	"strconv"
-	"time"
 
-	"github.com/xenolf/lego/emca/internal/secure"
 	"github.com/xenolf/lego/emca/le"
 	"github.com/xenolf/lego/log"
 )
@@ -34,16 +30,13 @@ type selectedAuthSolver struct {
 	solver         solver
 }
 
-// TODO comments
 type Prober struct {
-	jws           *secure.JWS
 	solverManager *SolverManager
 }
 
-func NewProber(jws *secure.JWS, solverManager *SolverManager) *Prober {
+func NewProber(solverManager *SolverManager) *Prober {
 	return &Prober{
 		solverManager: solverManager,
-		jws:           jws,
 	}
 }
 
@@ -120,45 +113,4 @@ func (c *Prober) Solve(authorizations []le.Authorization) error {
 		return failures
 	}
 	return nil
-}
-
-func validate(j *secure.JWS, domain, uri string, _ le.Challenge) error {
-	var chlng le.Challenge
-
-	// Challenge initiation is done by sending a JWS payload containing the trivial JSON object `{}`.
-	// We use an empty struct instance as the postJSON payload here to achieve this result.
-	resp, err := j.Post(uri, struct{}{}, &chlng)
-	if err != nil {
-		return err
-	}
-
-	// After the path is sent, the ACME server will access our server.
-	// Repeatedly check the server for an updated status on our request.
-	for {
-		switch chlng.Status {
-		case le.StatusValid:
-			log.Infof("[%s] The server validated our request", domain)
-			return nil
-		case le.StatusPending:
-		case le.StatusProcessing:
-		case le.StatusInvalid:
-			return chlng.Error
-		default:
-			return errors.New("the server returned an unexpected state")
-		}
-
-		ra, err := strconv.Atoi(resp.Header.Get("Retry-After"))
-		if err != nil {
-			// The ACME server MUST return a Retry-After.
-			// If it doesn't, we'll just poll hard.
-			ra = 5
-		}
-
-		time.Sleep(time.Duration(ra) * time.Second)
-
-		resp, err = j.PostAsGet(uri, &chlng)
-		if err != nil {
-			return err
-		}
-	}
 }

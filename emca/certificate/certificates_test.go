@@ -9,9 +9,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"github.com/xenolf/lego/emca/api"
 	"github.com/xenolf/lego/emca/certificate/certcrypto"
-	"github.com/xenolf/lego/emca/internal/secure"
-	"github.com/xenolf/lego/emca/internal/sender"
 	"github.com/xenolf/lego/emca/le"
 )
 
@@ -20,21 +19,19 @@ func TestCertifier_createOrderForIdentifiers(t *testing.T) {
 	ts := httptest.NewServer(mux)
 	defer ts.Close()
 
-	directory := le.Directory{
-		NewNonceURL:   ts.URL,
-		NewAccountURL: ts.URL,
-		NewOrderURL:   ts.URL,
-		RevokeCertURL: ts.URL,
-		KeyChangeURL:  ts.URL,
-	}
-
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet, http.MethodHead:
 			w.Header().Add("Replay-Nonce", "12345")
 			w.Header().Add("Retry-After", "0")
 
-			err := writeJSONResponse(w, directory)
+			err := writeJSONResponse(w, le.Directory{
+				NewNonceURL:   ts.URL + "/nonce",
+				NewAccountURL: ts.URL + "/account",
+				NewOrderURL:   ts.URL + "/newOrder",
+				RevokeCertURL: ts.URL + "/revokeCert",
+				KeyChangeURL:  ts.URL + "/keyChange",
+			})
 
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -54,12 +51,12 @@ func TestCertifier_createOrderForIdentifiers(t *testing.T) {
 	key, err := rsa.GenerateKey(rand.Reader, keyBits)
 	require.NoError(t, err, "Could not generate test key")
 
-	do := sender.NewDo(http.DefaultClient, "lego-test")
-	jws := secure.NewJWS(do, key, ts.URL+"/nonce")
+	core, err := api.New(http.DefaultClient, "lego-test", ts.URL, "", key)
+	require.NoError(t, err)
 
 	resolver := &mockResolver{}
 
-	certifier := NewCertifier(jws, certcrypto.RSA2048, directory, resolver)
+	certifier := NewCertifier(core, certcrypto.RSA2048, resolver)
 
 	_, err = certifier.createOrderForIdentifiers([]string{"example.com"})
 	require.NoError(t, err)

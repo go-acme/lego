@@ -7,15 +7,15 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/xenolf/lego/emca/api"
 	"github.com/xenolf/lego/emca/challenge"
-	"github.com/xenolf/lego/emca/internal/secure"
 	"github.com/xenolf/lego/emca/le"
 	"github.com/xenolf/lego/log"
 	"github.com/xenolf/lego/platform/wait"
 )
 
 // FIXME refactor
-type validateFunc func(j *secure.JWS, domain, uri string, chlng le.Challenge) error
+type validateFunc func(core *api.Core, domain, uri string, chlng le.Challenge) error
 
 const (
 	// DefaultPropagationTimeout default propagation timeout
@@ -30,14 +30,14 @@ const (
 
 // Challenge implements the dns-01 challenge according to ACME 7.5
 type Challenge struct {
-	jws      *secure.JWS
+	core     *api.Core
 	validate validateFunc
 	provider challenge.Provider
 }
 
-func NewChallenge(jws *secure.JWS, validate validateFunc, provider challenge.Provider) *Challenge {
+func NewChallenge(core *api.Core, validate validateFunc, provider challenge.Provider) *Challenge {
 	return &Challenge{
-		jws:      jws,
+		core:     core,
 		validate: validate,
 		provider: provider,
 	}
@@ -53,7 +53,7 @@ func (s *Challenge) PreSolve(chlng le.Challenge, domain string) error {
 	}
 
 	// Generate the Key Authorization for the challenge
-	keyAuth, err := s.jws.GetKeyAuthorization(chlng.Token)
+	keyAuth, err := s.core.GetKeyAuthorization(chlng.Token)
 	if err != nil {
 		return err
 	}
@@ -70,7 +70,7 @@ func (s *Challenge) Solve(chlng le.Challenge, domain string) error {
 	log.Infof("[%s] acme: Trying to solve DNS-01", domain)
 
 	// Generate the Key Authorization for the challenge
-	keyAuth, err := s.jws.GetKeyAuthorization(chlng.Token)
+	keyAuth, err := s.core.GetKeyAuthorization(chlng.Token)
 	if err != nil {
 		return err
 	}
@@ -94,12 +94,12 @@ func (s *Challenge) Solve(chlng le.Challenge, domain string) error {
 		return err
 	}
 
-	return s.validate(s.jws, domain, chlng.URL, le.Challenge{Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
+	return s.validate(s.core, domain, chlng.URL, le.Challenge{Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
 }
 
 // CleanUp cleans the challenge
 func (s *Challenge) CleanUp(chlng le.Challenge, domain string) error {
-	keyAuth, err := s.jws.GetKeyAuthorization(chlng.Token)
+	keyAuth, err := s.core.GetKeyAuthorization(chlng.Token)
 	if err != nil {
 		return err
 	}

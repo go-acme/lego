@@ -1,16 +1,13 @@
 package secure
 
 import (
-	"crypto/rand"
-	"crypto/rsa"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/emca/internal/sender"
+	"github.com/xenolf/lego/emca/api/internal/sender"
 	"github.com/xenolf/lego/emca/le"
 )
 
@@ -27,10 +24,8 @@ func TestNotHoldingLockWhileMakingHTTPRequests(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	privKey, err := rsa.GenerateKey(rand.Reader, 512)
-	require.NoError(t, err)
-
-	j := NewJWS(sender.NewDo(http.DefaultClient, ""), privKey, ts.URL)
+	do := sender.NewDo(http.DefaultClient, "lego-test")
+	j := NewNonceManager(do, ts.URL)
 	ch := make(chan bool)
 	resultCh := make(chan bool)
 	go func() {

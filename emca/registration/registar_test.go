@@ -61,7 +61,7 @@ func TestRegistrar_ResolveAccountByKey(t *testing.T) {
 
 	user := mockUser{
 		email:      "test@test.com",
-		regres:     new(le.RegistrationResource),
+		regres:     new(Resource),
 		privatekey: key,
 	}
 

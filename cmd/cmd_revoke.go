@@ -8,7 +8,7 @@ import (
 	"github.com/xenolf/lego/log"
 )
 
-func CreateRevoke() cli.Command {
+func createRevoke() cli.Command {
 	return cli.Command{
 		Name:   "revoke",
 		Usage:  "Revoke a certificate",

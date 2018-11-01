@@ -12,9 +12,9 @@ import (
 
 	"github.com/urfave/cli"
 	"github.com/xenolf/lego/emca"
+	"github.com/xenolf/lego/emca/certificate"
 	"github.com/xenolf/lego/emca/challenge"
 	"github.com/xenolf/lego/emca/challenge/dns01"
-	"github.com/xenolf/lego/emca/le"
 	"github.com/xenolf/lego/log"
 	"github.com/xenolf/lego/providers/dns"
 	"github.com/xenolf/lego/providers/http/memcached"
@@ -159,7 +159,7 @@ func setup(c *cli.Context) (*Configuration, *Account, *emca.Client) {
 	return conf, acc, client
 }
 
-func saveCertRes(certRes *le.CertificateResource, conf *Configuration) {
+func saveCertRes(certRes *certificate.Resource, conf *Configuration) {
 	var domainName string
 
 	// Check filename cli parameter

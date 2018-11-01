@@ -2,14 +2,12 @@ package registration
 
 import (
 	"crypto"
-
-	"github.com/xenolf/lego/emca/le"
 )
 
 // User interface is to be implemented by users of this library.
 // It is used by the client type to get user specific information.
 type User interface {
 	GetEmail() string
-	GetRegistration() *le.RegistrationResource
+	GetRegistration() *Resource
 	GetPrivateKey() crypto.PrivateKey
 }

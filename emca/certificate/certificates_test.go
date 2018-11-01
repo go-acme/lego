@@ -8,11 +8,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/stretchr/testify/require"
 	"github.com/xenolf/lego/emca/certificate/certcrypto"
 	"github.com/xenolf/lego/emca/internal/secure"
 	"github.com/xenolf/lego/emca/internal/sender"
-
-	"github.com/stretchr/testify/require"
 	"github.com/xenolf/lego/emca/le"
 )
 
@@ -83,6 +82,6 @@ func writeJSONResponse(w http.ResponseWriter, body interface{}) error {
 
 type mockResolver struct{}
 
-func (*mockResolver) SolveForAuthz(authorizations []le.Authorization) error {
+func (*mockResolver) Solve(authorizations []le.Authorization) error {
 	return nil
 }

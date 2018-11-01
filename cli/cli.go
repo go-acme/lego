@@ -36,12 +36,7 @@ func main() {
 		return nil
 	}
 
-	app.Commands = []cli.Command{
-		cmd.CreateRun(),
-		cmd.CreateRevoke(),
-		cmd.CreateRenew(),
-		cmd.CreateDNSHelp(),
-	}
+	app.Commands = cmd.CreateCommands()
 
 	app.Flags = []cli.Flag{
 		cli.StringSliceFlag{

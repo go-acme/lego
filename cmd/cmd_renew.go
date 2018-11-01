@@ -8,12 +8,12 @@ import (
 	"time"
 
 	"github.com/urfave/cli"
+	"github.com/xenolf/lego/emca/certificate"
 	"github.com/xenolf/lego/emca/certificate/certcrypto"
-	"github.com/xenolf/lego/emca/le"
 	"github.com/xenolf/lego/log"
 )
 
-func CreateRenew() cli.Command {
+func createRenew() cli.Command {
 	return cli.Command{
 		Name:   "renew",
 		Usage:  "Renew a certificate",
@@ -81,7 +81,7 @@ func renew(c *cli.Context) error {
 		log.Fatalf("Error while loading the meta data for domain %s\n\t%v", domain, err)
 	}
 
-	var certRes le.CertificateResource
+	var certRes certificate.Resource
 	if err = json.Unmarshal(metaBytes, &certRes); err != nil {
 		log.Fatalf("Error while marshaling the meta data for domain %s\n\t%v", domain, err)
 	}

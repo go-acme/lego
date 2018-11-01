@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	// defaultGoUserAgent is the Go HTTP package user agent string. Too
-	// bad it isn't exported. If it changes, we should update it here, too.
+	// defaultGoUserAgent is the Go HTTP package user agent string.
+	// Too bad it isn't exported. If it changes, we should update it here, too.
 	defaultGoUserAgent = "Go-http-client/1.1"
 
 	// ourUserAgent is the User-Agent of this underlying library package.
@@ -42,7 +42,7 @@ func NewDo(client *http.Client, userAgent string) *Do {
 	}
 }
 
-// httpGet performs a GET request with a proper User-Agent string.
+// Get performs a GET request with a proper User-Agent string.
 // If "response" is not provided, callers should close resp.Body when done reading from it.
 func (d *Do) Get(url string, response interface{}) (*http.Response, error) {
 	req, err := d.newRequest(http.MethodGet, url, nil)
@@ -53,7 +53,7 @@ func (d *Do) Get(url string, response interface{}) (*http.Response, error) {
 	return d.do(req, response)
 }
 
-// httpHead performs a HEAD request with a proper User-Agent string.
+// Head performs a HEAD request with a proper User-Agent string.
 // The response body (resp.Body) is already closed when this function returns.
 func (d *Do) Head(url string) (*http.Response, error) {
 	req, err := d.newRequest(http.MethodHead, url, nil)
@@ -64,7 +64,7 @@ func (d *Do) Head(url string) (*http.Response, error) {
 	return d.do(req, nil)
 }
 
-// httpPost performs a POST request with a proper User-Agent string.
+// Post performs a POST request with a proper User-Agent string.
 // If "response" is not provided, callers should close resp.Body when done reading from it.
 func (d *Do) Post(url string, body io.Reader, bodyType string, response interface{}) (*http.Response, error) {
 	req, err := d.newRequest(http.MethodPost, url, body, contentType(bodyType))
@@ -134,7 +134,7 @@ func checkError(req *http.Request, resp *http.Response) error {
 			return fmt.Errorf("%d :: %s :: %s :: %v", resp.StatusCode, req.Method, req.URL, err)
 		}
 
-		var errorDetails *le.ErrorDetails
+		var errorDetails *le.ProblemDetails
 		err = json.Unmarshal(body, &errorDetails)
 		if err != nil {
 			return fmt.Errorf("%d ::%s :: %s :: %v :: %s", resp.StatusCode, req.Method, req.URL, err, string(body))
@@ -145,7 +145,7 @@ func checkError(req *http.Request, resp *http.Response) error {
 
 		// Check for errors we handle specifically
 		if errorDetails.HTTPStatus == http.StatusBadRequest && errorDetails.Type == le.BadNonceErr {
-			return &le.NonceError{ErrorDetails: errorDetails}
+			return &le.NonceError{ProblemDetails: errorDetails}
 		}
 
 		return errorDetails

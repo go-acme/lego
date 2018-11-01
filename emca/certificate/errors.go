@@ -5,8 +5,7 @@ import (
 	"fmt"
 )
 
-// obtainError is returned when there are specific errors available
-// per domain. For example in Obtain
+// obtainError is returned when there are specific errors available per domain.
 type obtainError map[string]error
 
 func (e obtainError) Error() string {

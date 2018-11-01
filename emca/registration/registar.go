@@ -11,6 +11,13 @@ import (
 	"github.com/xenolf/lego/log"
 )
 
+// Resource represents all important information about a registration
+// of which the client needs to keep track itself.
+type Resource struct {
+	Body le.AccountMessage `json:"body,omitempty"`
+	URI  string            `json:"uri,omitempty"`
+}
+
 type Registrar struct {
 	jws       *secure.JWS
 	user      User
@@ -26,12 +33,12 @@ func NewRegistrar(jws *secure.JWS, user User, directory le.Directory) *Registrar
 }
 
 // Register the current account to the ACME server.
-func (r *Registrar) Register(tosAgreed bool) (*le.RegistrationResource, error) {
+func (r *Registrar) Register(tosAgreed bool) (*Resource, error) {
 	return r.register(tosAgreed)
 }
 
 // RegisterWithExternalAccountBinding Register the current account to the ACME server.
-func (r *Registrar) RegisterWithExternalAccountBinding(tosAgreed bool, kid string, hmacEncoded string) (*le.RegistrationResource, error) {
+func (r *Registrar) RegisterWithExternalAccountBinding(tosAgreed bool, kid string, hmacEncoded string) (*Resource, error) {
 	eab := func(accMsg *le.AccountMessage) error {
 		hmac, err := base64.RawURLEncoding.DecodeString(hmacEncoded)
 		if err != nil {
@@ -52,7 +59,7 @@ func (r *Registrar) RegisterWithExternalAccountBinding(tosAgreed bool, kid strin
 }
 
 // register the current account to the ACME server.
-func (r *Registrar) register(tosAgreed bool, opts ...func(*le.AccountMessage) error) (*le.RegistrationResource, error) {
+func (r *Registrar) register(tosAgreed bool, opts ...func(*le.AccountMessage) error) (*Resource, error) {
 	if r == nil || r.user == nil {
 		return nil, errors.New("acme: cannot register a nil client or user")
 	}
@@ -78,13 +85,13 @@ func (r *Registrar) register(tosAgreed bool, opts ...func(*le.AccountMessage) er
 	var serverReg le.AccountMessage
 	hdr, err := r.jws.PostJSON(r.directory.NewAccountURL, accMsg, &serverReg)
 	if err != nil {
-		errorDetails, ok := err.(le.ErrorDetails)
+		errorDetails, ok := err.(le.ProblemDetails)
 		if !ok || errorDetails.HTTPStatus != http.StatusConflict {
 			return nil, err
 		}
 	}
 
-	reg := &le.RegistrationResource{URI: hdr.Get("Location"), Body: serverReg}
+	reg := &Resource{URI: hdr.Get("Location"), Body: serverReg}
 
 	r.jws.SetKid(reg.URI)
 
@@ -95,7 +102,7 @@ func (r *Registrar) register(tosAgreed bool, opts ...func(*le.AccountMessage) er
 //
 // This is similar to the Register function,
 // but acting on an existing registration link and resource.
-func (r *Registrar) QueryRegistration() (*le.RegistrationResource, error) {
+func (r *Registrar) QueryRegistration() (*Resource, error) {
 	if r == nil || r.user == nil {
 		return nil, errors.New("acme: cannot query the registration of a nil client or user")
 	}
@@ -111,7 +118,7 @@ func (r *Registrar) QueryRegistration() (*le.RegistrationResource, error) {
 		return nil, err
 	}
 
-	return &le.RegistrationResource{
+	return &Resource{
 		Body: serverReg,
 		// Location: header is not returned so this needs to be populated off of existing URI
 		URI: r.user.GetRegistration().URI,
@@ -134,7 +141,7 @@ func (r *Registrar) DeleteRegistration() error {
 
 // ResolveAccountByKey will attempt to look up an account using the given account key
 // and return its registration resource.
-func (r *Registrar) ResolveAccountByKey() (*le.RegistrationResource, error) {
+func (r *Registrar) ResolveAccountByKey() (*Resource, error) {
 	log.Infof("acme: Trying to resolve account by key")
 
 	acc := le.AccountMessage{OnlyReturnExisting: true}
@@ -156,5 +163,5 @@ func (r *Registrar) ResolveAccountByKey() (*le.RegistrationResource, error) {
 		return nil, err
 	}
 
-	return &le.RegistrationResource{URI: accountLink, Body: retAccount}, nil
+	return &Resource{URI: accountLink, Body: retAccount}, nil
 }

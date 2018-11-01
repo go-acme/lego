@@ -10,11 +10,12 @@ import (
 
 	"github.com/urfave/cli"
 	"github.com/xenolf/lego/emca"
-	"github.com/xenolf/lego/emca/le"
+	"github.com/xenolf/lego/emca/certificate"
+	"github.com/xenolf/lego/emca/registration"
 	"github.com/xenolf/lego/log"
 )
 
-func CreateRun() cli.Command {
+func createRun() cli.Command {
 	return cli.Command{
 		Name:   "run",
 		Usage:  "Register an account, then create and install a certificate",
@@ -42,7 +43,7 @@ func run(c *cli.Context) error {
 			log.Fatal("You did not accept the TOS. Unable to proceed.")
 		}
 
-		var reg *le.RegistrationResource
+		var reg *registration.Resource
 
 		if c.GlobalBool("eab") {
 			kid := c.GlobalString("kid")
@@ -92,7 +93,7 @@ func run(c *cli.Context) error {
 		log.Fatal("Please specify --domains/-d (or --csr/-c if you already have a CSR)")
 	}
 
-	var cert *le.CertificateResource
+	var cert *certificate.Resource
 
 	if hasDomains {
 		// obtain a certificate, generating a new private key

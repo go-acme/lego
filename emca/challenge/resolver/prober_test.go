@@ -68,7 +68,11 @@ func TestValidate(t *testing.T) {
 
 			st := statuses[0]
 			statuses = statuses[1:]
-			err := writeJSONResponse(w, &le.Challenge{Type: "http-01", Status: st, URL: "http://example.com/", Token: "token"})
+			chlg := &le.Challenge{Type: "http-01", Status: st, URL: "http://example.com/", Token: "token"}
+			if st == le.StatusInvalid {
+				chlg.Error = &le.ProblemDetails{}
+			}
+			err := writeJSONResponse(w, chlg)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
@@ -94,25 +98,25 @@ func TestValidate(t *testing.T) {
 		},
 		{
 			name:     "POST-valid",
-			statuses: []string{"valid"},
+			statuses: []string{le.StatusValid},
 		},
 		{
 			name:     "POST-invalid",
-			statuses: []string{"invalid"},
+			statuses: []string{le.StatusInvalid},
 			want:     "error",
 		},
 		{
 			name:     "GET-unexpected",
-			statuses: []string{"pending", "weird"},
+			statuses: []string{le.StatusPending, "weird"},
 			want:     "unexpected",
 		},
 		{
 			name:     "GET-valid",
-			statuses: []string{"pending", "valid"},
+			statuses: []string{le.StatusPending, le.StatusValid},
 		},
 		{
 			name:     "GET-invalid",
-			statuses: []string{"pending", "invalid"},
+			statuses: []string{le.StatusPending, le.StatusInvalid},
 			want:     "error",
 		},
 	}
@@ -125,7 +129,7 @@ func TestValidate(t *testing.T) {
 			if test.want == "" {
 				require.NoError(t, err)
 			} else {
-				assert.Error(t, err)
+				require.Error(t, err)
 				assert.Contains(t, err.Error(), test.want)
 			}
 		})

@@ -8,14 +8,14 @@ import (
 	"path/filepath"
 
 	"github.com/xenolf/lego/emca"
-	"github.com/xenolf/lego/emca/le"
+	"github.com/xenolf/lego/emca/registration"
 	"github.com/xenolf/lego/log"
 )
 
 // Account represents a users local saved credentials
 type Account struct {
-	Email        string                   `json:"email"`
-	Registration *le.RegistrationResource `json:"registration"`
+	Email        string                 `json:"email"`
+	Registration *registration.Resource `json:"registration"`
 	key          crypto.PrivateKey
 
 	conf *Configuration
@@ -86,7 +86,7 @@ func NewAccount(email string, conf *Configuration) *Account {
 	return &acc
 }
 
-func tryRecoverAccount(privKey crypto.PrivateKey, conf *Configuration) (*le.RegistrationResource, error) {
+func tryRecoverAccount(privKey crypto.PrivateKey, conf *Configuration) (*registration.Resource, error) {
 	// couldn't load account but got a key. Try to look the account up.
 	config := emca.NewDefaultConfig(&Account{key: privKey, conf: conf}).
 		WithCADirURL(conf.context.GlobalString("server"))
@@ -116,7 +116,7 @@ func (a *Account) GetPrivateKey() crypto.PrivateKey {
 }
 
 // GetRegistration returns the server registration
-func (a *Account) GetRegistration() *le.RegistrationResource {
+func (a *Account) GetRegistration() *registration.Resource {
 	return a.Registration
 }
 

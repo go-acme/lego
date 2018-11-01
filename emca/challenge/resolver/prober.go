@@ -11,11 +11,6 @@ import (
 	"github.com/xenolf/lego/log"
 )
 
-const (
-	statusInvalid = "invalid"
-	statusValid   = "valid"
-)
-
 // Interface for all challenge solvers to implement.
 type solver interface {
 	Solve(challenge le.Challenge, domain string) error
@@ -52,16 +47,17 @@ func NewProber(jws *secure.JWS, solverManager *SolverManager) *Prober {
 	}
 }
 
-// SolveForAuthz Looks through the challenge combinations to find a solvable match.
+// Solve Looks through the challenge combinations to find a solvable match.
 // Then solves the challenges in series and returns.
-func (c *Prober) SolveForAuthz(authorizations []le.Authorization) error {
+func (c *Prober) Solve(authorizations []le.Authorization) error {
 	failures := make(obtainError)
 
 	var authSolvers []*selectedAuthSolver
 
-	// loop through the resources, basically through the domains. First pass just selects a solver for each authz.
+	// Loop through the resources, basically through the domains.
+	// First pass just selects a solver for each authz.
 	for _, authz := range authorizations {
-		if authz.Status == statusValid {
+		if authz.Status == le.StatusValid {
 			// Boulder might recycle recent validated authz (see issue #267)
 			log.Infof("[%s] acme: Authorization already valid; skipping challenge", authz.Identifier.Value)
 			continue
@@ -78,7 +74,7 @@ func (c *Prober) SolveForAuthz(authorizations []le.Authorization) error {
 		}
 	}
 
-	// for all valid presolvers, first submit the challenges so they have max time to propagate
+	// For all valid presolvers, first submit the challenges so they have max time to propagate
 	for _, item := range authSolvers {
 		authz := item.authz
 		i := item.challengeIndex
@@ -90,7 +86,7 @@ func (c *Prober) SolveForAuthz(authorizations []le.Authorization) error {
 	}
 
 	defer func() {
-		// clean all created TXT records
+		// Clean all created TXT records
 		for _, item := range authSolvers {
 			if clean, ok := item.solver.(cleanup); ok {
 				if failures[item.authz.Identifier.Value] != nil {
@@ -105,7 +101,7 @@ func (c *Prober) SolveForAuthz(authorizations []le.Authorization) error {
 		}
 	}()
 
-	// finally solve all challenges for real
+	// Finally solve all challenges for real
 	for _, item := range authSolvers {
 		authz := item.authz
 		i := item.challengeIndex
@@ -118,8 +114,8 @@ func (c *Prober) SolveForAuthz(authorizations []le.Authorization) error {
 		}
 	}
 
-	// be careful not to return an empty failures map, for
-	// even an empty obtainError is a non-nil error value
+	// Be careful not to return an empty failures map,
+	// for even an empty obtainError is a non-nil error value
 	if len(failures) > 0 {
 		return failures
 	}
@@ -140,13 +136,13 @@ func validate(j *secure.JWS, domain, uri string, _ le.Challenge) error {
 	// Repeatedly check the server for an updated status on our request.
 	for {
 		switch chlng.Status {
-		case statusValid:
+		case le.StatusValid:
 			log.Infof("[%s] The server validated our request", domain)
 			return nil
-		case "pending":
-		case "processing":
-		case statusInvalid:
-			return handleChallengeError(chlng)
+		case le.StatusPending:
+		case le.StatusProcessing:
+		case le.StatusInvalid:
+			return chlng.Error
 		default:
 			return errors.New("the server returned an unexpected state")
 		}
@@ -169,8 +165,4 @@ func validate(j *secure.JWS, domain, uri string, _ le.Challenge) error {
 		}
 
 	}
-}
-
-func handleChallengeError(chlng le.Challenge) error {
-	return chlng.Error
 }

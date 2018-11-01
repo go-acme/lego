@@ -7,8 +7,16 @@ import (
 	"github.com/xenolf/lego/log"
 )
 
+const (
+	// overallRequestLimit is the overall number of request per second
+	// limited on the "new-reg", "new-authz" and "new-cert" endpoints.
+	// From the documentation the limitation is 20 requests per second,
+	// but using 20 as value doesn't work but 18 do
+	overallRequestLimit = 18
+)
+
 // Get the challenges needed to proof our identifier to the ACME server.
-func (c *Certifier) getAuthzForOrder(order le.OrderResource) ([]le.Authorization, error) {
+func (c *Certifier) getAuthzForOrder(order orderResource) ([]le.Authorization, error) {
 	resc, errc := make(chan le.Authorization), make(chan domainError)
 
 	delay := time.Second / overallRequestLimit
@@ -52,15 +60,15 @@ func (c *Certifier) getAuthzForOrder(order le.OrderResource) ([]le.Authorization
 	return responses, nil
 }
 
-func logAuthorizations(order le.OrderResource) {
+func logAuthorizations(order orderResource) {
 	for i, auth := range order.Authorizations {
 		log.Infof("[%s] AuthURL: %s", order.Identifiers[i].Value, auth)
 	}
 }
 
 // disableAuthz loops through the passed in slice and disables any auths which are not "valid"
-func (c *Certifier) disableAuthz(authURL string) error {
+func (c *Certifier) disableAuthz(authzURL string) error {
 	var disabledAuth le.Authorization
-	_, err := c.jws.PostJSON(authURL, le.DeactivateAuthMessage{Status: "deactivated"}, &disabledAuth)
+	_, err := c.jws.PostJSON(authzURL, le.Authorization{Status: le.StatusDeactivated}, &disabledAuth)
 	return err
 }

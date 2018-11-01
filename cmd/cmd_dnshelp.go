@@ -8,7 +8,7 @@ import (
 	"github.com/urfave/cli"
 )
 
-func CreateDNSHelp() cli.Command {
+func createDNSHelp() cli.Command {
 	return cli.Command{
 		Name:   "dnshelp",
 		Usage:  "Shows additional help for the --dns global option",

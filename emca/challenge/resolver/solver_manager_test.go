@@ -19,6 +19,7 @@ import (
 	"github.com/xenolf/lego/emca/internal/secure"
 	"github.com/xenolf/lego/emca/internal/sender"
 	"github.com/xenolf/lego/emca/le"
+	"github.com/xenolf/lego/emca/registration"
 )
 
 func TestSolverManager_SetHTTPAddress(t *testing.T) {
@@ -44,7 +45,7 @@ func TestSolverManager_SetHTTPAddress(t *testing.T) {
 
 	user := mockUser{
 		email:      "test@test.com",
-		regres:     new(le.RegistrationResource),
+		regres:     new(registration.Resource),
 		privatekey: key,
 	}
 
@@ -77,10 +78,10 @@ func TestSolverManager_SetHTTPAddress(t *testing.T) {
 
 type mockUser struct {
 	email      string
-	regres     *le.RegistrationResource
+	regres     *registration.Resource
 	privatekey *rsa.PrivateKey
 }
 
-func (u mockUser) GetEmail() string                          { return u.email }
-func (u mockUser) GetRegistration() *le.RegistrationResource { return u.regres }
-func (u mockUser) GetPrivateKey() crypto.PrivateKey          { return u.privatekey }
+func (u mockUser) GetEmail() string                        { return u.email }
+func (u mockUser) GetRegistration() *registration.Resource { return u.regres }
+func (u mockUser) GetPrivateKey() crypto.PrivateKey        { return u.privatekey }

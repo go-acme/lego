@@ -3,9 +3,9 @@ package emca
 import (
 	"errors"
 
-	"github.com/xenolf/lego/emca/api"
 	"github.com/xenolf/lego/emca/certificate"
 	"github.com/xenolf/lego/emca/challenge/resolver"
+	"github.com/xenolf/lego/emca/le/api"
 	"github.com/xenolf/lego/emca/registration"
 )
 
@@ -48,6 +48,7 @@ func NewClient(config *Config) (*Client, error) {
 		Certificate:  certificate.NewCertifier(core, config.keyType, prober),
 		Challenge:    solversManager,
 		Registration: registration.NewRegistrar(core, config.user),
+		core:         core,
 	}, nil
 }
 

@@ -3,34 +3,19 @@ package registration
 import (
 	"crypto/rand"
 	"crypto/rsa"
-	"encoding/json"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/emca/api"
 	"github.com/xenolf/lego/emca/le"
+	"github.com/xenolf/lego/emca/le/api"
+	"github.com/xenolf/lego/platform/tester"
 )
 
 func TestRegistrar_ResolveAccountByKey(t *testing.T) {
-	mux := http.NewServeMux()
-	ts := httptest.NewServer(mux)
-
-	mux.HandleFunc("/directory", func(w http.ResponseWriter, r *http.Request) {
-		err := writeJSONResponse(w, le.Directory{
-			NewNonceURL:   ts.URL + "/nonce",
-			NewAccountURL: ts.URL + "/account",
-			NewOrderURL:   ts.URL + "/newOrder",
-			RevokeCertURL: ts.URL + "/revokeCert",
-			KeyChangeURL:  ts.URL + "/keyChange",
-		})
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
+	mux, apiURL, tearDown := tester.SetupFakeAPI()
+	defer tearDown()
 
 	mux.HandleFunc("/nonce", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Add("Replay-Nonce", "12345")
@@ -38,11 +23,11 @@ func TestRegistrar_ResolveAccountByKey(t *testing.T) {
 	})
 
 	mux.HandleFunc("/account", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Location", ts.URL+"/account_recovery")
+		w.Header().Set("Location", apiURL+"/account_recovery")
 	})
 
 	mux.HandleFunc("/account_recovery", func(w http.ResponseWriter, r *http.Request) {
-		err := writeJSONResponse(w, le.AccountMessage{
+		err := tester.WriteJSONResponse(w, le.AccountMessage{
 			Status: "valid",
 		})
 		if err != nil {
@@ -60,7 +45,7 @@ func TestRegistrar_ResolveAccountByKey(t *testing.T) {
 		privatekey: key,
 	}
 
-	core, err := api.New(http.DefaultClient, "lego-test", ts.URL+"/directory", "", key)
+	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/directory", "", key)
 	require.NoError(t, err)
 
 	registrar := NewRegistrar(core, user)
@@ -69,19 +54,4 @@ func TestRegistrar_ResolveAccountByKey(t *testing.T) {
 	require.NoError(t, err, "Unexpected error resolving account by key")
 
 	assert.Equal(t, "valid", res.Body.Status, "Unexpected account status")
-}
-
-// writeJSONResponse marshals the body as JSON and writes it to the response.
-func writeJSONResponse(w http.ResponseWriter, body interface{}) error {
-	bs, err := json.Marshal(body)
-	if err != nil {
-		return err
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if _, err := w.Write(bs); err != nil {
-		return err
-	}
-
-	return nil
 }

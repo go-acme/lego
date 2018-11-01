@@ -7,12 +7,12 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/xenolf/lego/emca/api"
 	"github.com/xenolf/lego/emca/challenge"
 	"github.com/xenolf/lego/emca/challenge/dns01"
 	"github.com/xenolf/lego/emca/challenge/http01"
 	"github.com/xenolf/lego/emca/challenge/tlsalpn01"
 	"github.com/xenolf/lego/emca/le"
+	"github.com/xenolf/lego/emca/le/api"
 	"github.com/xenolf/lego/log"
 )
 

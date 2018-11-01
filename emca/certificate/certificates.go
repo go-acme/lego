@@ -13,9 +13,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/xenolf/lego/emca/api"
 	"github.com/xenolf/lego/emca/certificate/certcrypto"
 	"github.com/xenolf/lego/emca/le"
+	"github.com/xenolf/lego/emca/le/api"
 	"github.com/xenolf/lego/log"
 	"golang.org/x/net/idna"
 )
@@ -244,7 +244,7 @@ func (c *Certifier) createForCSR(order orderResource, bundle bool, csr []byte, p
 	}
 
 	if retOrder.Status == le.StatusInvalid {
-		return nil, err
+		return nil, retOrder.Error
 	}
 
 	commonName := order.Domains[0]

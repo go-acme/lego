@@ -8,9 +8,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/xenolf/lego/emca/api/internal/secure"
-	"github.com/xenolf/lego/emca/api/internal/sender"
 	"github.com/xenolf/lego/emca/le"
+	"github.com/xenolf/lego/emca/le/api/internal/secure"
+	"github.com/xenolf/lego/emca/le/api/internal/sender"
 	"github.com/xenolf/lego/log"
 )
 

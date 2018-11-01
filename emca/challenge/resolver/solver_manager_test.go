@@ -8,42 +8,29 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
-	"net/http/httptest"
 	"reflect"
 	"testing"
 	"unsafe"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/emca/api"
 	"github.com/xenolf/lego/emca/challenge"
 	"github.com/xenolf/lego/emca/challenge/http01"
 	"github.com/xenolf/lego/emca/le"
+	"github.com/xenolf/lego/emca/le/api"
+	"github.com/xenolf/lego/platform/tester"
 	"gopkg.in/square/go-jose.v2"
 )
 
 func TestSolverManager_SetHTTPAddress(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		data, _ := json.Marshal(le.Directory{
-			NewNonceURL:   "http://test",
-			NewAccountURL: "http://test",
-			NewOrderURL:   "http://test",
-			RevokeCertURL: "http://test",
-			KeyChangeURL:  "http://test",
-		})
-
-		_, err := w.Write(data)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}))
+	_, apiURL, tearDown := tester.SetupFakeAPI()
+	defer tearDown()
 
 	keyBits := 32 // small value keeps test fast
 	key, err := rsa.GenerateKey(rand.Reader, keyBits)
 	require.NoError(t, err, "Could not generate test key")
 
-	core, err := api.New(http.DefaultClient, "lego-test", ts.URL, "", key)
+	core, err := api.New(http.DefaultClient, "lego-test", apiURL, "", key)
 	require.NoError(t, err)
 
 	solversManager := NewSolversManager(core)
@@ -70,9 +57,8 @@ func TestSolverManager_SetHTTPAddress(t *testing.T) {
 }
 
 func TestValidate(t *testing.T) {
-	mux := http.NewServeMux()
-	ts := httptest.NewServer(mux)
-	defer ts.Close()
+	mux, apiURL, tearDown := tester.SetupFakeAPI()
+	defer tearDown()
 
 	var statuses []string
 
@@ -108,49 +94,44 @@ func TestValidate(t *testing.T) {
 		return nil
 	}
 
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		// Minimal stub ACME server for validation.
+	mux.HandleFunc("/nonce", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodHead {
+			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+			return
+		}
+
 		w.Header().Add("Replay-Nonce", "12345")
 		w.Header().Add("Retry-After", "0")
-
-		switch r.Method {
-		case http.MethodGet:
-			err := writeJSONResponse(w, le.Directory{
-				NewNonceURL:   ts.URL + "/nonce",
-				NewAccountURL: ts.URL + "/account",
-				NewOrderURL:   ts.URL + "/newOrder",
-				RevokeCertURL: ts.URL + "/revokeCert",
-				KeyChangeURL:  ts.URL + "/keyChange",
-			})
-
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-		case http.MethodHead:
-		case http.MethodPost:
-			if err := validateNoBody(r); err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-
-			st := statuses[0]
-			statuses = statuses[1:]
-			chlg := &le.Challenge{Type: "http-01", Status: st, URL: "http://example.com/", Token: "token"}
-			if st == le.StatusInvalid {
-				chlg.Error = &le.ProblemDetails{}
-			}
-			err := writeJSONResponse(w, chlg)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-		default:
-			http.Error(w, r.Method, http.StatusMethodNotAllowed)
-		}
 	})
 
-	core, err := api.New(http.DefaultClient, "lego-test", ts.URL, "", privKey)
+	mux.HandleFunc("/chlg", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+			return
+		}
+
+		if err := validateNoBody(r); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		st := statuses[0]
+		statuses = statuses[1:]
+
+		chlg := &le.Challenge{Type: "http-01", Status: st, URL: "http://example.com/", Token: "token"}
+		if st == le.StatusInvalid {
+			chlg.Error = &le.ProblemDetails{}
+		}
+
+		err := writeJSONResponse(w, chlg)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+	})
+
+	core, err := api.New(http.DefaultClient, "lego-test", apiURL, "", privKey)
 	require.NoError(t, err)
 
 	testCases := []struct {
@@ -173,16 +154,16 @@ func TestValidate(t *testing.T) {
 			want:     "error",
 		},
 		{
-			name:     "GET-unexpected",
+			name:     "POST-pending-unexpected",
 			statuses: []string{le.StatusPending, "weird"},
 			want:     "unexpected",
 		},
 		{
-			name:     "GET-valid",
+			name:     "POST-pending-valid",
 			statuses: []string{le.StatusPending, le.StatusValid},
 		},
 		{
-			name:     "GET-invalid",
+			name:     "POST-pending-invalid",
 			statuses: []string{le.StatusPending, le.StatusInvalid},
 			want:     "error",
 		},
@@ -192,7 +173,7 @@ func TestValidate(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			statuses = test.statuses
 
-			err := validate(core, "example.com", ts.URL, le.Challenge{Type: "http-01", Token: "token"})
+			err := validate(core, "example.com", apiURL+"/chlg", le.Challenge{Type: "http-01", Token: "token"})
 			if test.want == "" {
 				require.NoError(t, err)
 			} else {

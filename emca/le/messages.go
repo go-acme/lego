@@ -58,7 +58,7 @@ type OrderMessage struct {
 	Identifiers    []Identifier    `json:"identifiers"`
 	NotBefore      string          `json:"notBefore,omitempty"`
 	NotAfter       string          `json:"notAfter,omitempty"`
-	Error          *ProblemDetails `json:"error,omitempty"` // TODO new field
+	Error          *ProblemDetails `json:"error,omitempty"`
 	Authorizations []string        `json:"authorizations,omitempty"`
 	Finalize       string          `json:"finalize,omitempty"`
 	Certificate    string          `json:"certificate,omitempty"`
@@ -106,5 +106,5 @@ type CSRMessage struct {
 // - https://tools.ietf.org/html/rfc5280#section-5.3.1
 type RevokeCertMessage struct {
 	Certificate string `json:"certificate"`
-	Reason      *uint  `json:"reason,omitempty"` // TODO new field
+	Reason      *uint  `json:"reason,omitempty"`
 }

@@ -89,7 +89,7 @@ func (s *ProviderServer) serve(domain, token, keyAuth string) {
 	httpServer.SetKeepAlivesEnabled(false)
 
 	err := httpServer.Serve(s.listener)
-	if err != nil {
+	if err != nil && !strings.Contains(err.Error(), "use of closed network connection") {
 		log.Println(err)
 	}
 	s.done <- true

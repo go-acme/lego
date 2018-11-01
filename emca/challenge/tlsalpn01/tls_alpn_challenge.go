@@ -8,10 +8,10 @@ import (
 	"encoding/asn1"
 	"fmt"
 
-	"github.com/xenolf/lego/emca/api"
 	"github.com/xenolf/lego/emca/certificate/certcrypto"
 	"github.com/xenolf/lego/emca/challenge"
 	"github.com/xenolf/lego/emca/le"
+	"github.com/xenolf/lego/emca/le/api"
 	"github.com/xenolf/lego/log"
 )
 

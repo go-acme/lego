@@ -69,6 +69,6 @@ func logAuthorizations(order orderResource) {
 // disableAuthz loops through the passed in slice and disables any auths which are not "valid"
 func (c *Certifier) disableAuthz(authzURL string) error {
 	var disabledAuth le.Authorization
-	_, err := c.jws.PostJSON(authzURL, le.Authorization{Status: le.StatusDeactivated}, &disabledAuth)
+	_, err := c.jws.Post(authzURL, le.Authorization{Status: le.StatusDeactivated}, &disabledAuth)
 	return err
 }

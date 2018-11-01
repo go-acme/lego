@@ -83,7 +83,7 @@ func (r *Registrar) register(tosAgreed bool, opts ...func(*le.AccountMessage) er
 	}
 
 	var serverReg le.AccountMessage
-	hdr, err := r.jws.PostJSON(r.directory.NewAccountURL, accMsg, &serverReg)
+	resp, err := r.jws.Post(r.directory.NewAccountURL, accMsg, &serverReg)
 	if err != nil {
 		errorDetails, ok := err.(le.ProblemDetails)
 		if !ok || errorDetails.HTTPStatus != http.StatusConflict {
@@ -91,11 +91,9 @@ func (r *Registrar) register(tosAgreed bool, opts ...func(*le.AccountMessage) er
 		}
 	}
 
-	reg := &Resource{URI: hdr.Get("Location"), Body: serverReg}
+	r.jws.SetKid(resp.Header.Get("Location"))
 
-	r.jws.SetKid(reg.URI)
-
-	return reg, nil
+	return &Resource{URI: resp.Header.Get("Location"), Body: serverReg}, nil
 }
 
 // QueryRegistration runs a POST request on the client's registration and returns the result.
@@ -113,7 +111,7 @@ func (r *Registrar) QueryRegistration() (*Resource, error) {
 	accMsg := le.AccountMessage{}
 
 	var serverReg le.AccountMessage
-	_, err := r.jws.PostJSON(r.user.GetRegistration().URI, accMsg, &serverReg)
+	_, err := r.jws.Post(r.user.GetRegistration().URI, accMsg, &serverReg)
 	if err != nil {
 		return nil, err
 	}
@@ -133,9 +131,9 @@ func (r *Registrar) DeleteRegistration() error {
 
 	log.Infof("acme: Deleting account for %s", r.user.GetEmail())
 
-	accMsg := le.AccountMessage{Status: "deactivated"}
+	accMsg := le.AccountMessage{Status: le.StatusDeactivated}
 
-	_, err := r.jws.PostJSON(r.user.GetRegistration().URI, accMsg, nil)
+	_, err := r.jws.Post(r.user.GetRegistration().URI, accMsg, nil)
 	return err
 }
 
@@ -145,12 +143,12 @@ func (r *Registrar) ResolveAccountByKey() (*Resource, error) {
 	log.Infof("acme: Trying to resolve account by key")
 
 	acc := le.AccountMessage{OnlyReturnExisting: true}
-	hdr, err := r.jws.PostJSON(r.directory.NewAccountURL, acc, nil)
+	resp, err := r.jws.Post(r.directory.NewAccountURL, acc, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	accountLink := hdr.Get("Location")
+	accountLink := resp.Header.Get("Location")
 	if accountLink == "" {
 		return nil, errors.New("server did not return the account link")
 	}
@@ -158,7 +156,7 @@ func (r *Registrar) ResolveAccountByKey() (*Resource, error) {
 	r.jws.SetKid(accountLink)
 
 	var retAccount le.AccountMessage
-	_, err = r.jws.PostJSON(accountLink, le.AccountMessage{}, &retAccount)
+	_, err = r.jws.Post(accountLink, le.AccountMessage{}, &retAccount)
 	if err != nil {
 		return nil, err
 	}

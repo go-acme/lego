@@ -240,7 +240,7 @@ func (c *Certifier) createForCSR(order orderResource, bundle bool, csr []byte, p
 	csrString := base64.RawURLEncoding.EncodeToString(csr)
 
 	var retOrder le.OrderMessage
-	_, err := c.jws.PostJSON(order.Finalize, le.CSRMessage{Csr: csrString}, &retOrder)
+	_, err := c.jws.Post(order.Finalize, le.CSRMessage{Csr: csrString}, &retOrder)
 	if err != nil {
 		return nil, err
 	}
@@ -308,7 +308,7 @@ func (c *Certifier) Revoke(cert []byte) error {
 
 	encodedCert := base64.URLEncoding.EncodeToString(x509Cert.Raw)
 
-	_, err = c.jws.PostJSON(c.directory.RevokeCertURL, le.RevokeCertMessage{Certificate: encodedCert}, nil)
+	_, err = c.jws.Post(c.directory.RevokeCertURL, le.RevokeCertMessage{Certificate: encodedCert}, nil)
 	return err
 }
 
@@ -394,13 +394,13 @@ func (c *Certifier) createOrderForIdentifiers(domains []string) (orderResource, 
 	order := le.OrderMessage{Identifiers: identifiers}
 
 	var response le.OrderMessage
-	hdr, err := c.jws.PostJSON(c.directory.NewOrderURL, order, &response)
+	resp, err := c.jws.Post(c.directory.NewOrderURL, order, &response)
 	if err != nil {
 		return orderResource{}, err
 	}
 
 	return orderResource{
-		URL:          hdr.Get("Location"),
+		URL:          resp.Header.Get("Location"),
 		Domains:      domains,
 		OrderMessage: response,
 	}, nil

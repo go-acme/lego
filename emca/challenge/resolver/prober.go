@@ -127,7 +127,7 @@ func validate(j *secure.JWS, domain, uri string, _ le.Challenge) error {
 
 	// Challenge initiation is done by sending a JWS payload containing the trivial JSON object `{}`.
 	// We use an empty struct instance as the postJSON payload here to achieve this result.
-	hdr, err := j.PostJSON(uri, struct{}{}, &chlng)
+	resp, err := j.Post(uri, struct{}{}, &chlng)
 	if err != nil {
 		return err
 	}
@@ -147,7 +147,7 @@ func validate(j *secure.JWS, domain, uri string, _ le.Challenge) error {
 			return errors.New("the server returned an unexpected state")
 		}
 
-		ra, err := strconv.Atoi(hdr.Get("Retry-After"))
+		ra, err := strconv.Atoi(resp.Header.Get("Retry-After"))
 		if err != nil {
 			// The ACME server MUST return a Retry-After.
 			// If it doesn't, we'll just poll hard.
@@ -156,13 +156,9 @@ func validate(j *secure.JWS, domain, uri string, _ le.Challenge) error {
 
 		time.Sleep(time.Duration(ra) * time.Second)
 
-		resp, err := j.PostAsGet(uri, &chlng)
-		if resp != nil {
-			hdr = resp.Header
-		}
+		resp, err = j.PostAsGet(uri, &chlng)
 		if err != nil {
 			return err
 		}
-
 	}
 }

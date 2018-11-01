@@ -38,9 +38,9 @@ func (j *JWS) SetKid(kid string) {
 	j.kid = kid
 }
 
-// PostJSON performs an HTTP POST request and parses the response body as JSON,
+// Post performs an HTTP POST request and parses the response body as JSON,
 // into the provided respBody object.
-func (j *JWS) PostJSON(uri string, reqBody, response interface{}) (http.Header, error) {
+func (j *JWS) Post(uri string, reqBody, response interface{}) (*http.Response, error) {
 	content, err := json.Marshal(reqBody)
 	if err != nil {
 		return nil, errors.New("failed to marshal message")
@@ -51,7 +51,7 @@ func (j *JWS) PostJSON(uri string, reqBody, response interface{}) (http.Header, 
 		return nil, err
 	}
 
-	return resp.Header, nil
+	return resp, nil
 }
 
 // PostAsGet performs an HTTP POST ("POST-as-GET") request.

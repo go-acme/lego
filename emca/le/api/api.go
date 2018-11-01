@@ -19,6 +19,7 @@ type Core struct {
 	nonceManager *secure.NonceManager
 	jws          *secure.JWS
 	directory    le.Directory
+	HTTPClient   *http.Client
 }
 
 func New(httpClient *http.Client, userAgent string, caDirURL, kid string, privKey crypto.PrivateKey) (*Core, error) {

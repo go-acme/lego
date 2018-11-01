@@ -49,81 +49,6 @@ type KeyType string
 
 type DERCertificateBytes []byte
 
-// FIXME move to Client?
-// GetOCSPForCert takes a PEM encoded cert or cert bundle returning the raw OCSP response,
-// the parsed response, and an error, if any.
-// The returned []byte can be passed directly into the OCSPStaple property of a tls.Certificate.
-// If the bundle only contains the issued certificate,
-// this function will try to get the issuer certificate from the IssuingCertificateURL in the certificate.
-// If the []byte and/or ocsp.Response return values are nil, the OCSP status may be assumed OCSPUnknown.
-// func GetOCSPForCert(bundle []byte) ([]byte, *ocsp.Response, error) {
-// 	certificates, err := ParsePEMBundle(bundle)
-// 	if err != nil {
-// 		return nil, nil, err
-// 	}
-//
-// 	// We expect the certificate slice to be ordered downwards the chain.
-// 	// SRV CRT -> CA. We need to pull the leaf and issuer certs out of it,
-// 	// which should always be the first two certificates. If there's no
-// 	// OCSP server listed in the leaf cert, there's nothing to do. And if
-// 	// we have only one certificate so far, we need to get the issuer cert.
-// 	issuedCert := certificates[0]
-// 	if len(issuedCert.OCSPServer) == 0 {
-// 		return nil, nil, errors.New("no OCSP server specified in cert")
-// 	}
-// 	if len(certificates) == 1 {
-// 		// TODO: build fallback. If this fails, check the remaining array entries.
-// 		if len(issuedCert.IssuingCertificateURL) == 0 {
-// 			return nil, nil, errors.New("no issuing certificate URL")
-// 		}
-//
-// 		resp, errC := httpGet(issuedCert.IssuingCertificateURL[0])
-// 		if errC != nil {
-// 			return nil, nil, errC
-// 		}
-// 		defer resp.Body.Close()
-//
-// 		issuerBytes, errC := ioutil.ReadAll(limitReader(resp.Body, maxBodySize))
-// 		if errC != nil {
-// 			return nil, nil, errC
-// 		}
-//
-// 		issuerCert, errC := x509.ParseCertificate(issuerBytes)
-// 		if errC != nil {
-// 			return nil, nil, errC
-// 		}
-//
-// 		// Insert it into the slice on position 0
-// 		// We want it ordered right SRV CRT -> CA
-// 		certificates = append(certificates, issuerCert)
-// 	}
-// 	issuerCert := certificates[1]
-//
-// 	// Finally kick off the OCSP request.
-// 	ocspReq, err := ocsp.CreateRequest(issuedCert, issuerCert, nil)
-// 	if err != nil {
-// 		return nil, nil, err
-// 	}
-//
-// 	resp, err := httpPost(issuedCert.OCSPServer[0], "application/ocsp-request", bytes.NewReader(ocspReq))
-// 	if err != nil {
-// 		return nil, nil, err
-// 	}
-// 	defer resp.Body.Close()
-//
-// 	ocspResBytes, err := ioutil.ReadAll(limitReader(resp.Body, maxBodySize))
-// 	if err != nil {
-// 		return nil, nil, err
-// 	}
-//
-// 	ocspRes, err := ocsp.ParseResponse(ocspResBytes, issuerCert)
-// 	if err != nil {
-// 		return nil, nil, err
-// 	}
-//
-// 	return ocspResBytes, ocspRes, nil
-// }
-
 // ParsePEMBundle parses a certificate bundle from top to bottom and returns
 // a slice of x509 certificates. This function will error if no certificates are found.
 func ParsePEMBundle(bundle []byte) ([]*x509.Certificate, error) {
@@ -201,7 +126,6 @@ func GenerateCsr(privateKey crypto.PrivateKey, domain string, san []string, must
 	return x509.CreateCertificateRequest(rand.Reader, &template, privateKey)
 }
 
-// TODO use crypto.PrivateKey?
 func PEMEncode(data interface{}) []byte {
 	var pemBlock *pem.Block
 	switch key := data.(type) {

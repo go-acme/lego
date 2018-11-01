@@ -62,8 +62,7 @@ func TestValidate(t *testing.T) {
 
 	var statuses []string
 
-	privKey, err := rsa.GenerateKey(rand.Reader, 512)
-	require.NoError(t, err)
+	privKey, _ := rsa.GenerateKey(rand.Reader, 512)
 
 	// validateNoBody reads the http.Request POST body, parses the JWS and validates it to read the body.
 	// If there is an error doing this,

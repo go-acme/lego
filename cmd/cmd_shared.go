@@ -34,16 +34,10 @@ func setup(c *cli.Context) (*Configuration, *Account, *emca.Client) {
 		dns01.DNSTimeout = time.Duration(c.GlobalInt("dns-timeout")) * time.Second
 	}
 
-	if len(c.GlobalStringSlice("dns-resolvers")) > 0 {
-		var resolvers []string
-		for _, resolver := range c.GlobalStringSlice("dns-resolvers") {
-			if !strings.Contains(resolver, ":") {
-				resolver += ":53"
-			}
-			resolvers = append(resolvers, resolver)
-		}
+	servers := c.GlobalStringSlice("dns-resolvers")
+	if len(servers) > 0 {
 		// FIXME move to Config?
-		dns01.RecursiveNameservers = resolvers
+		dns01.RecursiveNameservers = dns01.ParseNameservers(servers)
 	}
 
 	err := checkFolder(c.GlobalString("path"))
@@ -83,73 +77,23 @@ func setup(c *cli.Context) (*Configuration, *Account, *emca.Client) {
 	}
 
 	if c.GlobalIsSet("webroot") {
-		provider, errO := webroot.NewHTTPProvider(c.GlobalString("webroot"))
-		if errO != nil {
-			log.Fatal(errO)
-		}
-
-		errO = client.Challenge.SetProvider(challenge.HTTP01, provider)
-		if errO != nil {
-			log.Fatal(errO)
-		}
-
-		// --webroot=foo indicates that the user specifically want to do a HTTP challenge
-		// infer that the user also wants to exclude all other challenges
-		client.Challenge.Exclude([]challenge.Type{challenge.DNS01, challenge.TLSALPN01})
+		setupWebroot(client, c.GlobalString("webroot"))
 	}
 
 	if c.GlobalIsSet("memcached-host") {
-		provider, errO := memcached.NewMemcachedProvider(c.GlobalStringSlice("memcached-host"))
-		if errO != nil {
-			log.Fatal(errO)
-		}
-
-		errO = client.Challenge.SetProvider(challenge.HTTP01, provider)
-		if errO != nil {
-			log.Fatal(errO)
-		}
-
-		// --memcached-host=foo:11211 indicates that the user specifically want to do a HTTP challenge
-		// infer that the user also wants to exclude all other challenges
-		client.Challenge.Exclude([]challenge.Type{challenge.DNS01, challenge.TLSALPN01})
+		setupMemcached(client, c.GlobalStringSlice("memcached-host"))
 	}
 
 	if c.GlobalIsSet("http") {
-		if !strings.Contains(c.GlobalString("http"), ":") {
-			log.Fatalf("The --http switch only accepts interface:port or :port for its argument.")
-		}
-
-		err = client.Challenge.SetHTTPAddress(c.GlobalString("http"))
-		if err != nil {
-			log.Fatal(err)
-		}
+		setupHTTP(client, c.GlobalString("http"))
 	}
 
 	if c.GlobalIsSet("tls") {
-		if !strings.Contains(c.GlobalString("tls"), ":") {
-			log.Fatalf("The --tls switch only accepts interface:port or :port for its argument.")
-		}
-
-		err = client.Challenge.SetTLSAddress(c.GlobalString("tls"))
-		if err != nil {
-			log.Fatal(err)
-		}
+		setupTLS(client, c.GlobalString("tls"))
 	}
 
 	if c.GlobalIsSet("dns") {
-		provider, errO := dns.NewDNSChallengeProviderByName(c.GlobalString("dns"))
-		if errO != nil {
-			log.Fatal(errO)
-		}
-
-		errO = client.Challenge.SetProvider(challenge.DNS01, provider)
-		if errO != nil {
-			log.Fatal(errO)
-		}
-
-		// --dns=foo indicates that the user specifically want to do a DNS challenge
-		// infer that the user also wants to exclude all other challenges
-		client.Challenge.Exclude([]challenge.Type{challenge.HTTP01, challenge.TLSALPN01})
+		setupDNS(client, c.GlobalString("dns"))
 	}
 
 	if client.GetExternalAccountRequired() && !c.GlobalIsSet("eab") {
@@ -157,6 +101,76 @@ func setup(c *cli.Context) (*Configuration, *Account, *emca.Client) {
 	}
 
 	return conf, acc, client
+}
+
+func setupWebroot(client *emca.Client, path string) {
+	provider, err := webroot.NewHTTPProvider(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = client.Challenge.SetProvider(challenge.HTTP01, provider)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// --webroot=foo indicates that the user specifically want to do a HTTP challenge
+	// infer that the user also wants to exclude all other challenges
+	client.Challenge.Exclude([]challenge.Type{challenge.DNS01, challenge.TLSALPN01})
+}
+
+func setupMemcached(client *emca.Client, hosts []string) {
+	provider, err := memcached.NewMemcachedProvider(hosts)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = client.Challenge.SetProvider(challenge.HTTP01, provider)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// --memcached-host=foo:11211 indicates that the user specifically want to do a HTTP challenge
+	// infer that the user also wants to exclude all other challenges
+	client.Challenge.Exclude([]challenge.Type{challenge.DNS01, challenge.TLSALPN01})
+}
+
+func setupHTTP(client *emca.Client, iface string) {
+	if !strings.Contains(iface, ":") {
+		log.Fatalf("The --http switch only accepts interface:port or :port for its argument.")
+	}
+
+	err := client.Challenge.SetHTTPAddress(iface)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func setupTLS(client *emca.Client, iface string) {
+	if !strings.Contains(iface, ":") {
+		log.Fatalf("The --tls switch only accepts interface:port or :port for its argument.")
+	}
+
+	err := client.Challenge.SetTLSAddress(iface)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func setupDNS(client *emca.Client, providerName string) {
+	provider, err := dns.NewDNSChallengeProviderByName(providerName)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = client.Challenge.SetProvider(challenge.DNS01, provider)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// --dns=foo indicates that the user specifically want to do a DNS challenge
+	// infer that the user also wants to exclude all other challenges
+	client.Challenge.Exclude([]challenge.Type{challenge.HTTP01, challenge.TLSALPN01})
 }
 
 func saveCertRes(certRes *certificate.Resource, conf *Configuration) {

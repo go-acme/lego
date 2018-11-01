@@ -35,12 +35,16 @@ func NewProviderServer(iface, port string) *ProviderServer {
 	return &ProviderServer{iface: iface, port: port}
 }
 
+func (s *ProviderServer) GetAddress() string {
+	return net.JoinHostPort(s.iface, s.port)
+}
+
 // Present generates a certificate with a SHA-256 digest of the keyAuth provided
 // as the acmeValidation-v1 extension value to conform to the ACME-TLS-ALPN spec.
-func (t *ProviderServer) Present(domain, token, keyAuth string) error {
-	if t.port == "" {
+func (s *ProviderServer) Present(domain, token, keyAuth string) error {
+	if s.port == "" {
 		// Fallback to port 443 if the port was not provided.
-		t.port = defaultTLSPort
+		s.port = defaultTLSPort
 	}
 
 	// Generate the challenge certificate using the provided keyAuth and domain.
@@ -60,14 +64,14 @@ func (t *ProviderServer) Present(domain, token, keyAuth string) error {
 	tlsConf.NextProtos = []string{ACMETLS1Protocol}
 
 	// Create the listener with the created tls.Config.
-	t.listener, err = tls.Listen("tcp", net.JoinHostPort(t.iface, t.port), tlsConf)
+	s.listener, err = tls.Listen("tcp", s.GetAddress(), tlsConf)
 	if err != nil {
 		return fmt.Errorf("could not start HTTPS server for challenge -> %v", err)
 	}
 
 	// Shut the server down when we're finished.
 	go func() {
-		err := http.Serve(t.listener, nil)
+		err := http.Serve(s.listener, nil)
 		if err != nil && !strings.Contains(err.Error(), "use of closed network connection") {
 			log.Println(err)
 		}
@@ -77,13 +81,13 @@ func (t *ProviderServer) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp closes the HTTPS server.
-func (t *ProviderServer) CleanUp(domain, token, keyAuth string) error {
-	if t.listener == nil {
+func (s *ProviderServer) CleanUp(domain, token, keyAuth string) error {
+	if s.listener == nil {
 		return nil
 	}
 
 	// Server was created, close it.
-	if err := t.listener.Close(); err != nil && err != http.ErrServerClosed {
+	if err := s.listener.Close(); err != nil && err != http.ErrServerClosed {
 		return err
 	}
 

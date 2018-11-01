@@ -36,16 +36,20 @@ func getNameservers(path string, defaults []string) []string {
 		return defaults
 	}
 
-	var systemNameservers []string
-	for _, server := range config.Servers {
+	return ParseNameservers(config.Servers)
+}
+
+func ParseNameservers(servers []string) []string {
+	var resolvers []string
+	for _, resolver := range servers {
 		// ensure all servers have a port number
-		if _, _, err := net.SplitHostPort(server); err != nil {
-			systemNameservers = append(systemNameservers, net.JoinHostPort(server, "53"))
+		if _, _, err := net.SplitHostPort(resolver); err != nil {
+			resolvers = append(resolvers, net.JoinHostPort(resolver, "53"))
 		} else {
-			systemNameservers = append(systemNameservers, server)
+			resolvers = append(resolvers, resolver)
 		}
 	}
-	return systemNameservers
+	return resolvers
 }
 
 // lookupNameservers returns the authoritative nameservers for the given fqdn.

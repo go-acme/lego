@@ -9,7 +9,7 @@ import (
 
 	"github.com/iij/doapi"
 	"github.com/iij/doapi/protocol"
-	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/old/acme"
 	"github.com/xenolf/lego/platform/config/env"
 )
 

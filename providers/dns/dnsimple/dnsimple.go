@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/dnsimple/dnsimple-go/dnsimple"
-	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/old/acme"
 	"github.com/xenolf/lego/platform/config/env"
 )
 

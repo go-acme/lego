@@ -14,7 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/route53"
-	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/old/acme"
 	"github.com/xenolf/lego/platform/config/env"
 	"github.com/xenolf/lego/platform/wait"
 )

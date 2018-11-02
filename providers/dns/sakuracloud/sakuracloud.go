@@ -11,7 +11,7 @@ import (
 
 	"github.com/sacloud/libsacloud/api"
 	"github.com/sacloud/libsacloud/sacloud"
-	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/old/acme"
 	"github.com/xenolf/lego/platform/config/env"
 )
 

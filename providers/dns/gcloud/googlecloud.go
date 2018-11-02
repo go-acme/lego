@@ -11,7 +11,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/old/acme"
 	"github.com/xenolf/lego/platform/config/env"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2/google"

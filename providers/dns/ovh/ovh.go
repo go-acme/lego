@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/ovh/go-ovh/ovh"
-	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/old/acme"
 	"github.com/xenolf/lego/platform/config/env"
 )
 

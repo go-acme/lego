@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/old/acme"
 )
 
 const defaultBaseURL = "https://www.cloudxns.net/api2/"

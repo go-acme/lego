@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/log"
+	"github.com/xenolf/lego/old/acme"
 	"github.com/xenolf/lego/platform/config/env"
 	"golang.org/x/oauth2/clientcredentials"
 )

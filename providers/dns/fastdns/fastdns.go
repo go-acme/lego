@@ -8,7 +8,7 @@ import (
 
 	configdns "github.com/akamai/AkamaiOPEN-edgegrid-golang/configdns-v1"
 	"github.com/akamai/AkamaiOPEN-edgegrid-golang/edgegrid"
-	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/old/acme"
 	"github.com/xenolf/lego/platform/config/env"
 )
 

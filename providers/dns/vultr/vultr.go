@@ -12,7 +12,7 @@ import (
 	"time"
 
 	vultr "github.com/JamesClonk/vultr/lib"
-	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/old/acme"
 	"github.com/xenolf/lego/platform/config/env"
 )
 

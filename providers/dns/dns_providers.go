@@ -3,7 +3,7 @@ package dns
 import (
 	"fmt"
 
-	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/old/acme"
 	"github.com/xenolf/lego/providers/dns/acmedns"
 	"github.com/xenolf/lego/providers/dns/alidns"
 	"github.com/xenolf/lego/providers/dns/auroradns"

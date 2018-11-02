@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"path"
 
-	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/old/acme"
 	"golang.org/x/net/publicsuffix"
 )
 

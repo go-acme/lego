@@ -13,7 +13,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/old/acme"
 	"github.com/xenolf/lego/platform/config/env"
 )
 

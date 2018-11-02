@@ -12,7 +12,7 @@ import (
 	"github.com/miekg/dns"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/old/acme"
 )
 
 var (

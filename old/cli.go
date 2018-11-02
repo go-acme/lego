@@ -9,8 +9,8 @@ import (
 	"text/tabwriter"
 
 	"github.com/urfave/cli"
-	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/log"
+	"github.com/xenolf/lego/old/acme"
 )
 
 var (

@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/urfave/cli"
-	"github.com/xenolf/lego/emca/certificate/certcrypto"
-	"github.com/xenolf/lego/emca/challenge"
+	"github.com/xenolf/lego/certificate/certcrypto"
+	"github.com/xenolf/lego/challenge"
 )
 
 // Configuration type from CLI and config files.

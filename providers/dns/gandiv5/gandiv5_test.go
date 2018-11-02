@@ -146,7 +146,7 @@ func TestDNSProvider(t *testing.T) {
 	defer server.Close()
 
 	// define function to override findZoneByFqdn with
-	fakeFindZoneByFqdn := func(fqdn string, nameserver []string) (string, error) {
+	fakeFindZoneByFqdn := func(fqdn string) (string, error) {
 		return "example.com.", nil
 	}
 

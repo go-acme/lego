@@ -11,7 +11,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/xenolf/lego/old/acme"
+	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/platform/config/env"
 )
 
@@ -34,8 +34,8 @@ func NewDefaultConfig() *Config {
 	return &Config{
 		BaseURL:            defaultBaseURL,
 		TTL:                env.GetOrDefaultInt("RACKSPACE_TTL", 300),
-		PropagationTimeout: env.GetOrDefaultSecond("RACKSPACE_PROPAGATION_TIMEOUT", acme.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("RACKSPACE_POLLING_INTERVAL", acme.DefaultPollingInterval),
+		PropagationTimeout: env.GetOrDefaultSecond("RACKSPACE_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond("RACKSPACE_POLLING_INTERVAL", dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond("RACKSPACE_HTTP_TIMEOUT", 30*time.Second),
 		},
@@ -62,18 +62,6 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
 	config.APIUser = values["RACKSPACE_USER"]
 	config.APIKey = values["RACKSPACE_API_KEY"]
-
-	return NewDNSProviderConfig(config)
-}
-
-// NewDNSProviderCredentials uses the supplied credentials
-// to return a DNSProvider instance configured for Rackspace.
-// It authenticates against the API, also grabbing the DNS Endpoint.
-// Deprecated
-func NewDNSProviderCredentials(user, key string) (*DNSProvider, error) {
-	config := NewDefaultConfig()
-	config.APIUser = user
-	config.APIKey = key
 
 	return NewDNSProviderConfig(config)
 }
@@ -117,7 +105,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, value, _ := dns01.GetRecord(domain, keyAuth)
 
 	zoneID, err := d.getHostedZoneID(fqdn)
 	if err != nil {
@@ -126,7 +114,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	rec := Records{
 		Record: []Record{{
-			Name: acme.UnFqdn(fqdn),
+			Name: dns01.UnFqdn(fqdn),
 			Type: "TXT",
 			Data: value,
 			TTL:  d.config.TTL,
@@ -147,7 +135,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, _, _ := dns01.GetRecord(domain, keyAuth)
 
 	zoneID, err := d.getHostedZoneID(fqdn)
 	if err != nil {
@@ -175,12 +163,12 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 // getHostedZoneID performs a lookup to get the DNS zone which needs
 // modifying for a given FQDN
 func (d *DNSProvider) getHostedZoneID(fqdn string) (int, error) {
-	authZone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameservers)
+	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
 		return 0, err
 	}
 
-	result, err := d.makeRequest(http.MethodGet, fmt.Sprintf("/domains?name=%s", acme.UnFqdn(authZone)), nil)
+	result, err := d.makeRequest(http.MethodGet, fmt.Sprintf("/domains?name=%s", dns01.UnFqdn(authZone)), nil)
 	if err != nil {
 		return 0, err
 	}
@@ -201,7 +189,7 @@ func (d *DNSProvider) getHostedZoneID(fqdn string) (int, error) {
 
 // findTxtRecord searches a DNS zone for a TXT record with a specific name
 func (d *DNSProvider) findTxtRecord(fqdn string, zoneID int) (*Record, error) {
-	result, err := d.makeRequest(http.MethodGet, fmt.Sprintf("/domains/%d/records?type=TXT&name=%s", zoneID, acme.UnFqdn(fqdn)), nil)
+	result, err := d.makeRequest(http.MethodGet, fmt.Sprintf("/domains/%d/records?type=TXT&name=%s", zoneID, dns01.UnFqdn(fqdn)), nil)
 	if err != nil {
 		return nil, err
 	}

@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/log"
-	"github.com/xenolf/lego/old/acme"
 	"github.com/xenolf/lego/platform/config/env"
 )
 
@@ -91,17 +91,6 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
 	config.APIUser = values["NAMECHEAP_API_USER"]
 	config.APIKey = values["NAMECHEAP_API_KEY"]
-
-	return NewDNSProviderConfig(config)
-}
-
-// NewDNSProviderCredentials uses the supplied credentials
-// to return a DNSProvider instance configured for namecheap.
-// Deprecated
-func NewDNSProviderCredentials(apiUser, apiKey string) (*DNSProvider, error) {
-	config := NewDefaultConfig()
-	config.APIUser = apiUser
-	config.APIKey = apiKey
 
 	return NewDNSProviderConfig(config)
 }
@@ -233,7 +222,7 @@ func getClientIP(client *http.Client, debug bool) (addr string, err error) {
 // newChallenge builds a challenge record from a domain name, a challenge
 // authentication key, and a map of available TLDs.
 func newChallenge(domain, keyAuth string, tlds map[string]string) (*challenge, error) {
-	domain = acme.UnFqdn(domain)
+	domain = dns01.UnFqdn(domain)
 	parts := strings.Split(domain, ".")
 
 	// Find the longest matching TLD.
@@ -256,7 +245,7 @@ func newChallenge(domain, keyAuth string, tlds map[string]string) (*challenge, e
 		host = strings.Join(parts[:longest-1], ".")
 	}
 
-	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, value, _ := dns01.GetRecord(domain, keyAuth)
 
 	return &challenge{
 		domain:   domain,

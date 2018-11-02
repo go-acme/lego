@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/ovh/go-ovh/ovh"
-	"github.com/xenolf/lego/old/acme"
+	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/platform/config/env"
 )
 
@@ -34,8 +34,8 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt("OVH_TTL", 120),
-		PropagationTimeout: env.GetOrDefaultSecond("OVH_PROPAGATION_TIMEOUT", acme.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("OVH_POLLING_INTERVAL", acme.DefaultPollingInterval),
+		PropagationTimeout: env.GetOrDefaultSecond("OVH_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond("OVH_POLLING_INTERVAL", dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond("OVH_HTTP_TIMEOUT", ovh.DefaultTimeout),
 		},
@@ -72,19 +72,6 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderCredentials uses the supplied credentials
-// to return a DNSProvider instance configured for OVH.
-// Deprecated
-func NewDNSProviderCredentials(apiEndpoint, applicationKey, applicationSecret, consumerKey string) (*DNSProvider, error) {
-	config := NewDefaultConfig()
-	config.APIEndpoint = apiEndpoint
-	config.ApplicationKey = applicationKey
-	config.ApplicationSecret = applicationSecret
-	config.ConsumerKey = consumerKey
-
-	return NewDNSProviderConfig(config)
-}
-
 // NewDNSProviderConfig return a DNSProvider instance configured for OVH.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
@@ -116,15 +103,15 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, value, _ := dns01.GetRecord(domain, keyAuth)
 
 	// Parse domain name
-	authZone, err := acme.FindZoneByFqdn(acme.ToFqdn(domain), acme.RecursiveNameservers)
+	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
 	if err != nil {
 		return fmt.Errorf("ovh: could not determine zone for domain: '%s'. %s", domain, err)
 	}
 
-	authZone = acme.UnFqdn(authZone)
+	authZone = dns01.UnFqdn(authZone)
 	subDomain := d.extractRecordName(fqdn, authZone)
 
 	reqURL := fmt.Sprintf("/domain/zone/%s/record", authZone)
@@ -153,7 +140,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, _, _ := dns01.GetRecord(domain, keyAuth)
 
 	// get the record's unique ID from when we created it
 	d.recordIDsMu.Lock()
@@ -163,12 +150,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("ovh: unknown record ID for '%s'", fqdn)
 	}
 
-	authZone, err := acme.FindZoneByFqdn(acme.ToFqdn(domain), acme.RecursiveNameservers)
+	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
 	if err != nil {
 		return fmt.Errorf("ovh: could not determine zone for domain: '%s'. %s", domain, err)
 	}
 
-	authZone = acme.UnFqdn(authZone)
+	authZone = dns01.UnFqdn(authZone)
 
 	reqURL := fmt.Sprintf("/domain/zone/%s/record/%d", authZone, recordID)
 
@@ -192,7 +179,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 func (d *DNSProvider) extractRecordName(fqdn, domain string) string {
-	name := acme.UnFqdn(fqdn)
+	name := dns01.UnFqdn(fqdn)
 	if idx := strings.Index(name, "."+domain); idx != -1 {
 		return name[:idx]
 	}

@@ -2,12 +2,7 @@
   deadline = "5m"
 
   skip-files = [
-    "^acme/.*",
-    "^cli_handlers.go",
-    "^account.go",
-    "^cli.go",
-    "^crypto.go",
-    "^providers/.*",
+    "^old/.*",
   ]
 
 [linters-settings]
@@ -46,4 +41,5 @@
     "Error return value of (.+) is not checked",
     "exported (type|method|function) (.+) should have comment or be unexported",
     "possible misuse of unsafe.Pointer",
+    "cyclomatic complexity (.+) of func `NewDNSChallengeProviderByName` is high (.+)", # providers/dns/dns_providers.go
   ]

@@ -7,8 +7,8 @@ import (
 	"os/exec"
 	"strconv"
 
+	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/log"
-	"github.com/xenolf/lego/old/acme"
 	"github.com/xenolf/lego/platform/config/env"
 )
 
@@ -48,24 +48,13 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	return &DNSProvider{config: config}, nil
 }
 
-// NewDNSProviderProgram returns a new DNS provider which runs the given program
-// for adding and removing the DNS record.
-// Deprecated: use NewDNSProviderConfig instead
-func NewDNSProviderProgram(program string) (*DNSProvider, error) {
-	if len(program) == 0 {
-		return nil, errors.New("the program is undefined")
-	}
-
-	return NewDNSProviderConfig(&Config{Program: program})
-}
-
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	var args []string
 	if d.config.Mode == "RAW" {
 		args = []string{"present", "--", domain, token, keyAuth}
 	} else {
-		fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
+		fqdn, value, ttl := dns01.GetRecord(domain, keyAuth)
 		args = []string{"present", fqdn, value, strconv.Itoa(ttl)}
 	}
 
@@ -85,7 +74,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	if d.config.Mode == "RAW" {
 		args = []string{"cleanup", "--", domain, token, keyAuth}
 	} else {
-		fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
+		fqdn, value, ttl := dns01.GetRecord(domain, keyAuth)
 		args = []string{"cleanup", fqdn, value, strconv.Itoa(ttl)}
 	}
 

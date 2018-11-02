@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/xenolf/lego/old/acme"
+	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/platform/config/env"
 )
 
@@ -91,11 +91,11 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, value, _ := dns01.GetRecord(domain, keyAuth)
 
 	rec := []RecordsAddRequest{{
 		Type:    "TXT",
-		Name:    acme.UnFqdn(fqdn),
+		Name:    dns01.UnFqdn(fqdn),
 		Content: value,
 		TTL:     d.config.TTL,
 	}}
@@ -114,7 +114,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	for _, record := range resp.Response.Records {
-		if record.Name == acme.UnFqdn(fqdn) && record.Content == fmt.Sprintf(`"%s"`, value) {
+		if record.Name == dns01.UnFqdn(fqdn) && record.Content == fmt.Sprintf(`"%s"`, value) {
 			d.recordIDsMu.Lock()
 			d.recordIDs[fqdn] = record.ID
 			d.recordIDsMu.Unlock()
@@ -130,7 +130,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, value, _ := dns01.GetRecord(domain, keyAuth)
 
 	// get the record's unique ID from when we created it
 	d.recordIDsMu.Lock()
@@ -142,7 +142,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	rec := []RecordsDeleteRequest{{
 		Type:    "TXT",
-		Name:    acme.UnFqdn(fqdn),
+		Name:    dns01.UnFqdn(fqdn),
 		Content: value,
 		ID:      recordID,
 	}}

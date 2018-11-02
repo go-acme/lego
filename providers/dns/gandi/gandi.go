@@ -14,7 +14,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/xenolf/lego/old/acme"
+	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/platform/config/env"
 )
 
@@ -29,7 +29,7 @@ const (
 
 // findZoneByFqdn determines the DNS zone of an fqdn.
 // It is overridden during tests.
-var findZoneByFqdn = acme.FindZoneByFqdn
+var findZoneByFqdn = dns01.FindZoneByFqdn
 
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
@@ -84,16 +84,6 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderCredentials uses the supplied credentials
-// to return a DNSProvider instance configured for Gandi.
-// Deprecated
-func NewDNSProviderCredentials(apiKey string) (*DNSProvider, error) {
-	config := NewDefaultConfig()
-	config.APIKey = apiKey
-
-	return NewDNSProviderConfig(config)
-}
-
 // NewDNSProviderConfig return a DNSProvider instance configured for Gandi.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
@@ -119,14 +109,14 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 // does this by creating and activating a new temporary Gandi DNS
 // zone. This new zone contains the TXT record.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, value, _ := dns01.GetRecord(domain, keyAuth)
 
 	if d.config.TTL < minTTL {
 		d.config.TTL = minTTL // 300 is gandi minimum value for ttl
 	}
 
 	// find authZone and Gandi zone_id for fqdn
-	authZone, err := findZoneByFqdn(fqdn, acme.RecursiveNameservers)
+	authZone, err := findZoneByFqdn(fqdn)
 	if err != nil {
 		return fmt.Errorf("gandi: findZoneByFqdn failure: %v", err)
 	}
@@ -154,7 +144,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	// perform API actions to create and activate new gandi zone
 	// containing the required TXT record
-	newZoneName := fmt.Sprintf("%s [ACME Challenge %s]", acme.UnFqdn(authZone), time.Now().Format(time.RFC822Z))
+	newZoneName := fmt.Sprintf("%s [ACME Challenge %s]", dns01.UnFqdn(authZone), time.Now().Format(time.RFC822Z))
 
 	newZoneID, err := d.cloneZone(zoneID, newZoneName)
 	if err != nil {
@@ -196,7 +186,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 // parameters. It does this by restoring the old Gandi DNS zone and
 // removing the temporary one created by Present.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, _, _ := dns01.GetRecord(domain, keyAuth)
 
 	// acquire lock and retrieve zoneID, newZoneID and authZone
 	d.inProgressMu.Lock()

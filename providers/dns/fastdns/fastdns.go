@@ -8,7 +8,7 @@ import (
 
 	configdns "github.com/akamai/AkamaiOPEN-edgegrid-golang/configdns-v1"
 	"github.com/akamai/AkamaiOPEN-edgegrid-golang/edgegrid"
-	"github.com/xenolf/lego/old/acme"
+	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/platform/config/env"
 )
 
@@ -23,8 +23,8 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		PropagationTimeout: env.GetOrDefaultSecond("AKAMAI_PROPAGATION_TIMEOUT", acme.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("AKAMAI_POLLING_INTERVAL", acme.DefaultPollingInterval),
+		PropagationTimeout: env.GetOrDefaultSecond("AKAMAI_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond("AKAMAI_POLLING_INTERVAL", dns01.DefaultPollingInterval),
 		TTL:                env.GetOrDefaultInt("AKAMAI_TTL", 120),
 	}
 }
@@ -54,22 +54,6 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderClient uses the supplied parameters
-// to return a DNSProvider instance configured for FastDNS.
-// Deprecated
-func NewDNSProviderClient(host, clientToken, clientSecret, accessToken string) (*DNSProvider, error) {
-	config := NewDefaultConfig()
-	config.Config = edgegrid.Config{
-		Host:         host,
-		ClientToken:  clientToken,
-		ClientSecret: clientSecret,
-		AccessToken:  accessToken,
-		MaxBody:      131072,
-	}
-
-	return NewDNSProviderConfig(config)
-}
-
 // NewDNSProviderConfig return a DNSProvider instance configured for FastDNS.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
@@ -85,7 +69,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fullfil the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, value, _ := dns01.GetRecord(domain, keyAuth)
 	zoneName, recordName, err := d.findZoneAndRecordName(fqdn, domain)
 	if err != nil {
 		return fmt.Errorf("fastdns: %v", err)
@@ -121,7 +105,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, _, _ := dns01.GetRecord(domain, keyAuth)
 	zoneName, recordName, err := d.findZoneAndRecordName(fqdn, domain)
 	if err != nil {
 		return fmt.Errorf("fastdns: %v", err)
@@ -154,12 +138,12 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 func (d *DNSProvider) findZoneAndRecordName(fqdn, domain string) (string, string, error) {
-	zone, err := acme.FindZoneByFqdn(acme.ToFqdn(domain), acme.RecursiveNameservers)
+	zone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
 	if err != nil {
 		return "", "", err
 	}
-	zone = acme.UnFqdn(zone)
-	name := acme.UnFqdn(fqdn)
+	zone = dns01.UnFqdn(zone)
+	name := dns01.UnFqdn(fqdn)
 	name = name[:len(name)-len("."+zone)]
 
 	return zone, name, nil

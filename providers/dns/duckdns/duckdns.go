@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/miekg/dns"
-	"github.com/xenolf/lego/old/acme"
+	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/platform/config/env"
 )
 
@@ -27,13 +27,12 @@ type Config struct {
 
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
-	client := acme.HTTPClient
-	client.Timeout = env.GetOrDefaultSecond("DUCKDNS_HTTP_TIMEOUT", 30*time.Second)
-
 	return &Config{
-		PropagationTimeout: env.GetOrDefaultSecond("DUCKDNS_PROPAGATION_TIMEOUT", acme.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("DUCKDNS_POLLING_INTERVAL", acme.DefaultPollingInterval),
-		HTTPClient:         &client,
+		PropagationTimeout: env.GetOrDefaultSecond("DUCKDNS_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond("DUCKDNS_POLLING_INTERVAL", dns01.DefaultPollingInterval),
+		HTTPClient: &http.Client{
+			Timeout: env.GetOrDefaultSecond("DUCKDNS_HTTP_TIMEOUT", 30*time.Second),
+		},
 	}
 }
 
@@ -56,16 +55,6 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderCredentials uses the supplied credentials
-// to return a DNSProvider instance configured for http://duckdns.org
-// Deprecated
-func NewDNSProviderCredentials(token string) (*DNSProvider, error) {
-	config := NewDefaultConfig()
-	config.Token = token
-
-	return NewDNSProviderConfig(config)
-}
-
 // NewDNSProviderConfig return a DNSProvider instance configured for DuckDNS.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
@@ -81,13 +70,13 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	_, txtRecord, _ := acme.DNS01Record(domain, keyAuth)
-	return updateTxtRecord(domain, d.config.Token, txtRecord, false)
+	_, txtRecord, _ := dns01.GetRecord(domain, keyAuth)
+	return d.updateTxtRecord(domain, d.config.Token, txtRecord, false)
 }
 
 // CleanUp clears DuckDNS TXT record
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	return updateTxtRecord(domain, d.config.Token, "", true)
+	return d.updateTxtRecord(domain, d.config.Token, "", true)
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
@@ -99,7 +88,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 // updateTxtRecord Update the domains TXT record
 // To update the TXT record we just need to make one simple get request.
 // In DuckDNS you only have one TXT record shared with the domain and all sub domains.
-func updateTxtRecord(domain, token, txt string, clear bool) error {
+func (d *DNSProvider) updateTxtRecord(domain, token, txt string, clear bool) error {
 	u, _ := url.Parse("https://www.duckdns.org/update")
 
 	query := u.Query()
@@ -109,7 +98,7 @@ func updateTxtRecord(domain, token, txt string, clear bool) error {
 	query.Set("txt", txt)
 	u.RawQuery = query.Encode()
 
-	response, err := acme.HTTPClient.Get(u.String())
+	response, err := d.config.HTTPClient.Get(u.String())
 	if err != nil {
 		return err
 	}
@@ -132,7 +121,7 @@ func updateTxtRecord(domain, token, txt string, clear bool) error {
 // not in format subsubdomain.subdomain.duckdns.org
 // so strip off everything that is not top 3 levels
 func getMainDomain(domain string) string {
-	domain = acme.UnFqdn(domain)
+	domain = dns01.UnFqdn(domain)
 
 	split := dns.Split(domain)
 	if strings.HasSuffix(strings.ToLower(domain), "duckdns.org") {

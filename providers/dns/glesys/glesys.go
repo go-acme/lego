@@ -12,8 +12,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/log"
-	"github.com/xenolf/lego/old/acme"
 	"github.com/xenolf/lego/platform/config/env"
 )
 
@@ -72,17 +72,6 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderCredentials uses the supplied credentials
-// to return a DNSProvider instance configured for GleSYS.
-// Deprecated
-func NewDNSProviderCredentials(apiUser string, apiKey string) (*DNSProvider, error) {
-	config := NewDefaultConfig()
-	config.APIUser = apiUser
-	config.APIKey = apiKey
-
-	return NewDNSProviderConfig(config)
-}
-
 // NewDNSProviderConfig return a DNSProvider instance configured for GleSYS.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
@@ -105,10 +94,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, value, _ := dns01.GetRecord(domain, keyAuth)
 
 	// find authZone
-	authZone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameservers)
+	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
 		return fmt.Errorf("glesys: findZoneByFqdn failure: %v", err)
 	}
@@ -126,7 +115,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	defer d.inProgressMu.Unlock()
 
 	// add TXT record into authZone
-	recordID, err := d.addTXTRecord(domain, acme.UnFqdn(authZone), name, value, d.config.TTL)
+	recordID, err := d.addTXTRecord(domain, dns01.UnFqdn(authZone), name, value, d.config.TTL)
 	if err != nil {
 		return err
 	}
@@ -138,7 +127,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, _, _ := dns01.GetRecord(domain, keyAuth)
 
 	// acquire lock and retrieve authZone
 	d.inProgressMu.Lock()

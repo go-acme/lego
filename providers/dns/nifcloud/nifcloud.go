@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/xenolf/lego/old/acme"
+	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/platform/config/env"
 	"github.com/xenolf/lego/platform/wait"
 )
@@ -28,8 +28,8 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt("NIFCLOUD_TTL", 120),
-		PropagationTimeout: env.GetOrDefaultSecond("NIFCLOUD_PROPAGATION_TIMEOUT", acme.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("NIFCLOUD_POLLING_INTERVAL", acme.DefaultPollingInterval),
+		PropagationTimeout: env.GetOrDefaultSecond("NIFCLOUD_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond("NIFCLOUD_POLLING_INTERVAL", dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond("NIFCLOUD_HTTP_TIMEOUT", 30*time.Second),
 		},
@@ -59,19 +59,6 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderCredentials uses the supplied credentials
-// to return a DNSProvider instance configured for NIFCLOUD.
-// Deprecated
-func NewDNSProviderCredentials(httpClient *http.Client, endpoint, accessKey, secretKey string) (*DNSProvider, error) {
-	config := NewDefaultConfig()
-	config.HTTPClient = httpClient
-	config.BaseURL = endpoint
-	config.AccessKey = accessKey
-	config.SecretKey = secretKey
-
-	return NewDNSProviderConfig(config)
-}
-
 // NewDNSProviderConfig return a DNSProvider instance configured for NIFCLOUD.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
@@ -96,7 +83,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record using the specified parameters
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, value, _ := dns01.GetRecord(domain, keyAuth)
 
 	err := d.changeRecord("CREATE", fqdn, value, domain, d.config.TTL)
 	if err != nil {
@@ -107,7 +94,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, value, _ := dns01.GetRecord(domain, keyAuth)
 
 	err := d.changeRecord("DELETE", fqdn, value, domain, d.config.TTL)
 	if err != nil {
@@ -123,7 +110,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 func (d *DNSProvider) changeRecord(action, fqdn, value, domain string, ttl int) error {
-	name := acme.UnFqdn(fqdn)
+	name := dns01.UnFqdn(fqdn)
 
 	reqParams := ChangeResourceRecordSetsRequest{
 		XMLNs: xmlNs,

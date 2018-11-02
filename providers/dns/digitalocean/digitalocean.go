@@ -13,7 +13,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/xenolf/lego/old/acme"
+	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/platform/config/env"
 )
 
@@ -63,16 +63,6 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderCredentials uses the supplied credentials
-// to return a DNSProvider instance configured for Digital Ocean.
-// Deprecated
-func NewDNSProviderCredentials(apiAuthToken string) (*DNSProvider, error) {
-	config := NewDefaultConfig()
-	config.AuthToken = apiAuthToken
-
-	return NewDNSProviderConfig(config)
-}
-
 // NewDNSProviderConfig return a DNSProvider instance configured for Digital Ocean.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
@@ -101,7 +91,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record using the specified parameters
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, value, _ := dns01.GetRecord(domain, keyAuth)
 
 	respData, err := d.addTxtRecord(domain, fqdn, value)
 	if err != nil {
@@ -117,7 +107,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, _, _ := dns01.GetRecord(domain, keyAuth)
 
 	// get the record's unique ID from when we created it
 	d.recordIDsMu.Lock()
@@ -141,12 +131,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 }
 
 func (d *DNSProvider) removeTxtRecord(domain string, recordID int) error {
-	authZone, err := acme.FindZoneByFqdn(acme.ToFqdn(domain), acme.RecursiveNameservers)
+	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
 	if err != nil {
 		return fmt.Errorf("could not determine zone for domain: '%s'. %s", domain, err)
 	}
 
-	reqURL := fmt.Sprintf("%s/v2/domains/%s/records/%d", d.config.BaseURL, acme.UnFqdn(authZone), recordID)
+	reqURL := fmt.Sprintf("%s/v2/domains/%s/records/%d", d.config.BaseURL, dns01.UnFqdn(authZone), recordID)
 	req, err := d.newRequest(http.MethodDelete, reqURL, nil)
 	if err != nil {
 		return err
@@ -166,7 +156,7 @@ func (d *DNSProvider) removeTxtRecord(domain string, recordID int) error {
 }
 
 func (d *DNSProvider) addTxtRecord(domain, fqdn, value string) (*txtRecordResponse, error) {
-	authZone, err := acme.FindZoneByFqdn(acme.ToFqdn(domain), acme.RecursiveNameservers)
+	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
 	if err != nil {
 		return nil, fmt.Errorf("could not determine zone for domain: '%s'. %s", domain, err)
 	}
@@ -177,7 +167,7 @@ func (d *DNSProvider) addTxtRecord(domain, fqdn, value string) (*txtRecordRespon
 		return nil, err
 	}
 
-	reqURL := fmt.Sprintf("%s/v2/domains/%s/records", d.config.BaseURL, acme.UnFqdn(authZone))
+	reqURL := fmt.Sprintf("%s/v2/domains/%s/records", d.config.BaseURL, dns01.UnFqdn(authZone))
 	req, err := d.newRequest(http.MethodPost, reqURL, bytes.NewReader(body))
 	if err != nil {
 		return nil, err

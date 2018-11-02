@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/xenolf/lego/old/acme"
+	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/platform/config/env"
 )
 
@@ -24,14 +24,13 @@ type Config struct {
 
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
-	client := acme.HTTPClient
-	client.Timeout = time.Second * time.Duration(env.GetOrDefaultInt("CLOUDXNS_HTTP_TIMEOUT", 30))
-
 	return &Config{
-		PropagationTimeout: env.GetOrDefaultSecond("CLOUDXNS_PROPAGATION_TIMEOUT", acme.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("CLOUDXNS_POLLING_INTERVAL", acme.DefaultPollingInterval),
+		PropagationTimeout: env.GetOrDefaultSecond("CLOUDXNS_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond("CLOUDXNS_POLLING_INTERVAL", dns01.DefaultPollingInterval),
 		TTL:                env.GetOrDefaultInt("CLOUDXNS_TTL", 120),
-		HTTPClient:         &client,
+		HTTPClient: &http.Client{
+			Timeout: time.Second * time.Duration(env.GetOrDefaultInt("CLOUDXNS_HTTP_TIMEOUT", 30)),
+		},
 	}
 }
 
@@ -50,15 +49,9 @@ func NewDNSProvider() (*DNSProvider, error) {
 		return nil, fmt.Errorf("CloudXNS: %v", err)
 	}
 
-	return NewDNSProviderCredentials(values["CLOUDXNS_API_KEY"], values["CLOUDXNS_SECRET_KEY"])
-}
-
-// NewDNSProviderCredentials uses the supplied credentials to return a
-// DNSProvider instance configured for CloudXNS.
-func NewDNSProviderCredentials(apiKey, secretKey string) (*DNSProvider, error) {
 	config := NewDefaultConfig()
-	config.APIKey = apiKey
-	config.SecretKey = secretKey
+	config.APIKey = values["CLOUDXNS_API_KEY"]
+	config.SecretKey = values["CLOUDXNS_SECRET_KEY"]
 
 	return NewDNSProviderConfig(config)
 }
@@ -81,7 +74,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, value, _ := dns01.GetRecord(domain, keyAuth)
 
 	info, err := d.client.GetDomainInformation(fqdn)
 	if err != nil {
@@ -93,7 +86,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, _, _ := dns01.GetRecord(domain, keyAuth)
 
 	info, err := d.client.GetDomainInformation(fqdn)
 	if err != nil {

@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/xenolf/lego/old/acme"
+	"github.com/xenolf/lego/challenge/dns01"
 )
 
 const defaultBaseURL = "https://www.cloudxns.net/api2/"
@@ -70,7 +70,7 @@ type Client struct {
 
 // GetDomainInformation Get domain name information for a FQDN
 func (c *Client) GetDomainInformation(fqdn string) (*Data, error) {
-	authZone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameservers)
+	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +111,7 @@ func (c *Client) FindTxtRecord(zoneID, fqdn string) (*TXTRecord, error) {
 	}
 
 	for _, record := range records {
-		if record.Host == acme.UnFqdn(fqdn) && record.Type == "TXT" {
+		if record.Host == dns01.UnFqdn(fqdn) && record.Type == "TXT" {
 			return &record, nil
 		}
 	}
@@ -128,7 +128,7 @@ func (c *Client) AddTxtRecord(info *Data, fqdn, value string, ttl int) error {
 
 	payload := TXTRecord{
 		ID:     id,
-		Host:   acme.UnFqdn(strings.TrimSuffix(fqdn, info.Domain)),
+		Host:   dns01.UnFqdn(strings.TrimSuffix(fqdn, info.Domain)),
 		Value:  value,
 		Type:   "TXT",
 		LineID: 1,

@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	"github.com/cpu/goacmedns"
-	"github.com/xenolf/lego/old/acme"
+	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/platform/config/env"
 )
 
@@ -111,7 +111,7 @@ func (e ErrCNAMERequired) Error() string {
 func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	// Compute the challenge response FQDN and TXT value for the domain based
 	// on the keyAuth.
-	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, value, _ := dns01.GetRecord(domain, keyAuth)
 
 	// Check if credentials were previously saved for this domain.
 	account, err := d.storage.Fetch(domain)

@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/exoscale/egoscale"
-	"github.com/xenolf/lego/old/acme"
+	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/platform/config/env"
 )
 
@@ -30,8 +30,8 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt("EXOSCALE_TTL", 120),
-		PropagationTimeout: env.GetOrDefaultSecond("EXOSCALE_PROPAGATION_TIMEOUT", acme.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("EXOSCALE_POLLING_INTERVAL", acme.DefaultPollingInterval),
+		PropagationTimeout: env.GetOrDefaultSecond("EXOSCALE_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond("EXOSCALE_POLLING_INTERVAL", dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond("EXOSCALE_HTTP_TIMEOUT", 0),
 		},
@@ -60,18 +60,6 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderClient Uses the supplied parameters
-// to return a DNSProvider instance configured for Exoscale.
-// Deprecated
-func NewDNSProviderClient(key, secret, endpoint string) (*DNSProvider, error) {
-	config := NewDefaultConfig()
-	config.APIKey = key
-	config.APISecret = secret
-	config.Endpoint = endpoint
-
-	return NewDNSProviderConfig(config)
-}
-
 // NewDNSProviderConfig return a DNSProvider instance configured for Exoscale.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
@@ -94,7 +82,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, value, _ := dns01.GetRecord(domain, keyAuth)
 	zone, recordName, err := d.FindZoneAndRecordName(fqdn, domain)
 	if err != nil {
 		return err
@@ -137,7 +125,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, _, _ := dns01.GetRecord(domain, keyAuth)
 	zone, recordName, err := d.FindZoneAndRecordName(fqdn, domain)
 	if err != nil {
 		return err
@@ -181,12 +169,12 @@ func (d *DNSProvider) FindExistingRecordID(zone, recordName string) (int64, erro
 
 // FindZoneAndRecordName Extract DNS zone and DNS entry name
 func (d *DNSProvider) FindZoneAndRecordName(fqdn, domain string) (string, string, error) {
-	zone, err := acme.FindZoneByFqdn(acme.ToFqdn(domain), acme.RecursiveNameservers)
+	zone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
 	if err != nil {
 		return "", "", err
 	}
-	zone = acme.UnFqdn(zone)
-	name := acme.UnFqdn(fqdn)
+	zone = dns01.UnFqdn(zone)
+	name := dns01.UnFqdn(fqdn)
 	name = name[:len(name)-len("."+zone)]
 
 	return zone, name, nil

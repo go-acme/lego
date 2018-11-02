@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/urfave/cli"
-	"github.com/xenolf/lego/emca/certificate"
-	"github.com/xenolf/lego/emca/certificate/certcrypto"
+	"github.com/xenolf/lego/certificate"
+	"github.com/xenolf/lego/certificate/certcrypto"
 	"github.com/xenolf/lego/log"
 )
 

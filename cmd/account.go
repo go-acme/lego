@@ -7,9 +7,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/xenolf/lego/emca"
-	"github.com/xenolf/lego/emca/registration"
+	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/log"
+	"github.com/xenolf/lego/registration"
 )
 
 // Account represents a users local saved credentials
@@ -88,10 +88,10 @@ func NewAccount(email string, conf *Configuration) *Account {
 
 func tryRecoverAccount(privKey crypto.PrivateKey, conf *Configuration) (*registration.Resource, error) {
 	// couldn't load account but got a key. Try to look the account up.
-	config := emca.NewDefaultConfig(&Account{key: privKey, conf: conf}).
+	config := acme.NewDefaultConfig(&Account{key: privKey, conf: conf}).
 		WithCADirURL(conf.context.GlobalString("server"))
 
-	client, err := emca.NewClient(config)
+	client, err := acme.NewClient(config)
 	if err != nil {
 		return nil, err
 	}

@@ -7,8 +7,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"time"
-
-	"github.com/xenolf/lego/old/acme"
 )
 
 // defaultBaseURL for reaching the jSON-based API-Endpoint of netcup
@@ -246,7 +244,6 @@ func (c *Client) doRequest(payload interface{}, responseData interface{}) error 
 
 	req.Close = true
 	req.Header.Set("content-type", "application/json")
-	req.Header.Set("User-Agent", acme.UserAgent)
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {

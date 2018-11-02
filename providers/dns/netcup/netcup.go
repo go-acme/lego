@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/log"
-	"github.com/xenolf/lego/old/acme"
 	"github.com/xenolf/lego/platform/config/env"
 )
 
@@ -59,18 +59,6 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderCredentials uses the supplied credentials
-// to return a DNSProvider instance configured for netcup.
-// Deprecated
-func NewDNSProviderCredentials(customer, key, password string) (*DNSProvider, error) {
-	config := NewDefaultConfig()
-	config.Customer = customer
-	config.Key = key
-	config.Password = password
-
-	return NewDNSProviderConfig(config)
-}
-
 // NewDNSProviderConfig return a DNSProvider instance configured for netcup.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
@@ -89,9 +77,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge
 func (d *DNSProvider) Present(domainName, token, keyAuth string) error {
-	fqdn, value, _ := acme.DNS01Record(domainName, keyAuth)
+	fqdn, value, _ := dns01.GetRecord(domainName, keyAuth)
 
-	zone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameservers)
+	zone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
 		return fmt.Errorf("netcup: failed to find DNSZone, %v", err)
 	}
@@ -111,7 +99,7 @@ func (d *DNSProvider) Present(domainName, token, keyAuth string) error {
 	hostname := strings.Replace(fqdn, "."+zone, "", 1)
 	record := createTxtRecord(hostname, value, d.config.TTL)
 
-	zone = acme.UnFqdn(zone)
+	zone = dns01.UnFqdn(zone)
 
 	records, err := d.client.GetDNSRecords(zone, sessionID)
 	if err != nil {
@@ -131,9 +119,9 @@ func (d *DNSProvider) Present(domainName, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters
 func (d *DNSProvider) CleanUp(domainName, token, keyAuth string) error {
-	fqdn, value, _ := acme.DNS01Record(domainName, keyAuth)
+	fqdn, value, _ := dns01.GetRecord(domainName, keyAuth)
 
-	zone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameservers)
+	zone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
 		return fmt.Errorf("netcup: failed to find DNSZone, %v", err)
 	}
@@ -152,7 +140,7 @@ func (d *DNSProvider) CleanUp(domainName, token, keyAuth string) error {
 
 	hostname := strings.Replace(fqdn, "."+zone, "", 1)
 
-	zone = acme.UnFqdn(zone)
+	zone = dns01.UnFqdn(zone)
 
 	records, err := d.client.GetDNSRecords(zone, sessionID)
 	if err != nil {

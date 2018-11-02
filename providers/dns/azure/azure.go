@@ -18,7 +18,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/Azure/go-autorest/autorest/to"
-	"github.com/xenolf/lego/old/acme"
+	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/platform/config/env"
 )
 
@@ -68,20 +68,6 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
 	config.SubscriptionID = env.GetOrFile("AZURE_SUBSCRIPTION_ID")
 	config.ResourceGroup = env.GetOrFile("AZURE_RESOURCE_GROUP")
-
-	return NewDNSProviderConfig(config)
-}
-
-// NewDNSProviderCredentials uses the supplied credentials
-// to return a DNSProvider instance configured for azure.
-// Deprecated
-func NewDNSProviderCredentials(clientID, clientSecret, subscriptionID, tenantID, resourceGroup string) (*DNSProvider, error) {
-	config := NewDefaultConfig()
-	config.ClientID = clientID
-	config.ClientSecret = clientSecret
-	config.TenantID = tenantID
-	config.SubscriptionID = subscriptionID
-	config.ResourceGroup = resourceGroup
 
 	return NewDNSProviderConfig(config)
 }
@@ -137,7 +123,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 // Present creates a TXT record to fulfill the dns-01 challenge
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
-	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, value, _ := dns01.GetRecord(domain, keyAuth)
 
 	zone, err := d.getHostedZoneID(ctx, fqdn)
 	if err != nil {
@@ -147,7 +133,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	rsc := dns.NewRecordSetsClient(d.config.SubscriptionID)
 	rsc.Authorizer = d.authorizer
 
-	relative := toRelativeRecord(fqdn, acme.ToFqdn(zone))
+	relative := toRelativeRecord(fqdn, dns01.ToFqdn(zone))
 
 	// Get existing record set
 	rset, err := rsc.Get(ctx, d.config.ResourceGroup, zone, relative, dns.TXT)
@@ -192,14 +178,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 // CleanUp removes the TXT record matching the specified parameters
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
-	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, _, _ := dns01.GetRecord(domain, keyAuth)
 
 	zone, err := d.getHostedZoneID(ctx, fqdn)
 	if err != nil {
 		return fmt.Errorf("azure: %v", err)
 	}
 
-	relative := toRelativeRecord(fqdn, acme.ToFqdn(zone))
+	relative := toRelativeRecord(fqdn, dns01.ToFqdn(zone))
 	rsc := dns.NewRecordSetsClient(d.config.SubscriptionID)
 	rsc.Authorizer = d.authorizer
 
@@ -212,7 +198,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 // Checks that azure has a zone for this domain name.
 func (d *DNSProvider) getHostedZoneID(ctx context.Context, fqdn string) (string, error) {
-	authZone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameservers)
+	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
 		return "", err
 	}
@@ -220,7 +206,7 @@ func (d *DNSProvider) getHostedZoneID(ctx context.Context, fqdn string) (string,
 	dc := dns.NewZonesClient(d.config.SubscriptionID)
 	dc.Authorizer = d.authorizer
 
-	zone, err := dc.Get(ctx, d.config.ResourceGroup, acme.UnFqdn(authZone))
+	zone, err := dc.Get(ctx, d.config.ResourceGroup, dns01.UnFqdn(authZone))
 	if err != nil {
 		return "", err
 	}
@@ -231,7 +217,7 @@ func (d *DNSProvider) getHostedZoneID(ctx context.Context, fqdn string) (string,
 
 // Returns the relative record to the domain
 func toRelativeRecord(domain, zone string) string {
-	return acme.UnFqdn(strings.TrimSuffix(domain, zone))
+	return dns01.UnFqdn(strings.TrimSuffix(domain, zone))
 }
 
 func getAuthorizer(config *Config) (autorest.Authorizer, error) {

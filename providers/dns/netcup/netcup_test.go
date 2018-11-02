@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/old/acme"
+	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/platform/tester"
 )
 
@@ -262,12 +262,12 @@ func TestLivePresentAndCleanup(t *testing.T) {
 	p, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	fqdn, _, _ := acme.DNS01Record(envTest.GetDomain(), "123d==")
+	fqdn, _, _ := dns01.GetRecord(envTest.GetDomain(), "123d==")
 
-	zone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameservers)
+	zone, err := dns01.FindZoneByFqdn(fqdn)
 	require.NoError(t, err, "error finding DNSZone")
 
-	zone = acme.UnFqdn(zone)
+	zone = dns01.UnFqdn(zone)
 
 	testCases := []string{
 		zone,

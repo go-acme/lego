@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/xenolf/lego/old/acme"
+	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/platform/config/env"
 )
 
@@ -40,8 +40,8 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt("BLUECAT_TTL", 120),
-		PropagationTimeout: env.GetOrDefaultSecond("BLUECAT_PROPAGATION_TIMEOUT", acme.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("BLUECAT_POLLING_INTERVAL", acme.DefaultPollingInterval),
+		PropagationTimeout: env.GetOrDefaultSecond("BLUECAT_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond("BLUECAT_POLLING_INTERVAL", dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond("BLUECAT_HTTP_TIMEOUT", 30*time.Second),
 		},
@@ -76,24 +76,6 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderCredentials uses the supplied credentials
-// to return a DNSProvider instance configured for Bluecat DNS.
-// Deprecated
-func NewDNSProviderCredentials(baseURL, userName, password, configName, dnsView string, httpClient *http.Client) (*DNSProvider, error) {
-	config := NewDefaultConfig()
-	config.BaseURL = baseURL
-	config.UserName = userName
-	config.Password = password
-	config.ConfigName = configName
-	config.DNSView = dnsView
-
-	if httpClient != nil {
-		config.HTTPClient = httpClient
-	}
-
-	return NewDNSProviderConfig(config)
-}
-
 // NewDNSProviderConfig return a DNSProvider instance configured for Bluecat DNS.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
@@ -111,7 +93,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 // This will *not* create a subzone to contain the TXT record,
 // so make sure the FQDN specified is within an extant zone.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, value, _ := dns01.GetRecord(domain, keyAuth)
 
 	err := d.login()
 	if err != nil {
@@ -162,7 +144,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, _, _ := dns01.GetRecord(domain, keyAuth)
 
 	err := d.login()
 	if err != nil {

@@ -10,8 +10,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/log"
-	"github.com/xenolf/lego/old/acme"
 	"github.com/xenolf/lego/platform/config/env"
 )
 
@@ -25,7 +25,7 @@ const (
 
 // findZoneByFqdn determines the DNS zone of an fqdn.
 // It is overridden during tests.
-var findZoneByFqdn = acme.FindZoneByFqdn
+var findZoneByFqdn = dns01.FindZoneByFqdn
 
 // inProgressInfo contains information about an in-progress challenge
 type inProgressInfo struct {
@@ -78,16 +78,6 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderCredentials uses the supplied credentials
-// to return a DNSProvider instance configured for Gandi.
-// Deprecated
-func NewDNSProviderCredentials(apiKey string) (*DNSProvider, error) {
-	config := NewDefaultConfig()
-	config.APIKey = apiKey
-
-	return NewDNSProviderConfig(config)
-}
-
 // NewDNSProviderConfig return a DNSProvider instance configured for Gandi.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
@@ -114,10 +104,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, value, _ := dns01.GetRecord(domain, keyAuth)
 
 	// find authZone
-	authZone, err := findZoneByFqdn(fqdn, acme.RecursiveNameservers)
+	authZone, err := findZoneByFqdn(fqdn)
 	if err != nil {
 		return fmt.Errorf("gandiv5: findZoneByFqdn failure: %v", err)
 	}
@@ -135,7 +125,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	defer d.inProgressMu.Unlock()
 
 	// add TXT record into authZone
-	err = d.addTXTRecord(acme.UnFqdn(authZone), name, value, d.config.TTL)
+	err = d.addTXTRecord(dns01.UnFqdn(authZone), name, value, d.config.TTL)
 	if err != nil {
 		return err
 	}
@@ -150,7 +140,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, _, _ := dns01.GetRecord(domain, keyAuth)
 
 	// acquire lock and retrieve authZone
 	d.inProgressMu.Lock()
@@ -165,7 +155,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	delete(d.inProgressFQDNs, fqdn)
 
 	// delete TXT record from authZone
-	err := d.deleteTXTRecord(acme.UnFqdn(authZone), fieldName)
+	err := d.deleteTXTRecord(dns01.UnFqdn(authZone), fieldName)
 	if err != nil {
 		return fmt.Errorf("gandiv5: %v", err)
 	}

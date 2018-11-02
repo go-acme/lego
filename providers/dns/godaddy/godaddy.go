@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/xenolf/lego/old/acme"
+	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/platform/config/env"
 )
 
@@ -65,17 +65,6 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderCredentials uses the supplied credentials
-// to return a DNSProvider instance configured for godaddy.
-// Deprecated
-func NewDNSProviderCredentials(apiKey, apiSecret string) (*DNSProvider, error) {
-	config := NewDefaultConfig()
-	config.APIKey = apiKey
-	config.APISecret = apiSecret
-
-	return NewDNSProviderConfig(config)
-}
-
 // NewDNSProviderConfig return a DNSProvider instance configured for godaddy.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
@@ -100,7 +89,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 func (d *DNSProvider) extractRecordName(fqdn, domain string) string {
-	name := acme.UnFqdn(fqdn)
+	name := dns01.UnFqdn(fqdn)
 	if idx := strings.Index(name, "."+domain); idx != -1 {
 		return name[:idx]
 	}
@@ -109,7 +98,7 @@ func (d *DNSProvider) extractRecordName(fqdn, domain string) string {
 
 // Present creates a TXT record to fulfill the dns-01 challenge
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, value, _ := dns01.GetRecord(domain, keyAuth)
 	domainZone, err := d.getZone(fqdn)
 	if err != nil {
 		return err
@@ -151,7 +140,7 @@ func (d *DNSProvider) updateRecords(records []DNSRecord, domainZone string, reco
 
 // CleanUp sets null value in the TXT DNS record as GoDaddy has no proper DELETE record method
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, _, _ := dns01.GetRecord(domain, keyAuth)
 	domainZone, err := d.getZone(fqdn)
 	if err != nil {
 		return err
@@ -170,12 +159,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 }
 
 func (d *DNSProvider) getZone(fqdn string) (string, error) {
-	authZone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameservers)
+	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
 		return "", err
 	}
 
-	return acme.UnFqdn(authZone), nil
+	return dns01.UnFqdn(authZone), nil
 }
 
 func (d *DNSProvider) makeRequest(method, uri string, body io.Reader) (*http.Response, error) {

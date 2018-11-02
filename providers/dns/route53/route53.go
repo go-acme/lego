@@ -14,7 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/route53"
-	"github.com/xenolf/lego/old/acme"
+	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/platform/config/env"
 	"github.com/xenolf/lego/platform/wait"
 )
@@ -108,7 +108,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record using the specified parameters
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, value, _ := dns01.GetRecord(domain, keyAuth)
 
 	hostedZoneID, err := d.getHostedZoneID(fqdn)
 	if err != nil {
@@ -149,7 +149,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, _, _ := dns01.GetRecord(domain, keyAuth)
 
 	hostedZoneID, err := d.getHostedZoneID(fqdn)
 	if err != nil {
@@ -245,14 +245,14 @@ func (d *DNSProvider) getHostedZoneID(fqdn string) (string, error) {
 		return d.config.HostedZoneID, nil
 	}
 
-	authZone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameservers)
+	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
 		return "", err
 	}
 
 	// .DNSName should not have a trailing dot
 	reqParams := &route53.ListHostedZonesByNameInput{
-		DNSName: aws.String(acme.UnFqdn(authZone)),
+		DNSName: aws.String(dns01.UnFqdn(authZone)),
 	}
 	resp, err := d.client.ListHostedZonesByName(reqParams)
 	if err != nil {

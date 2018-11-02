@@ -11,7 +11,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/old/acme"
+	"github.com/xenolf/lego/challenge/dns01"
 )
 
 func setupClientTest() (*Client, *http.ServeMux, func()) {
@@ -425,12 +425,12 @@ func TestLiveClientGetDnsRecords(t *testing.T) {
 	sessionID, err := client.Login()
 	require.NoError(t, err)
 
-	fqdn, _, _ := acme.DNS01Record(envTest.GetDomain(), "123d==")
+	fqdn, _, _ := dns01.GetRecord(envTest.GetDomain(), "123d==")
 
-	zone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameservers)
+	zone, err := dns01.FindZoneByFqdn(fqdn)
 	require.NoError(t, err, "error finding DNSZone")
 
-	zone = acme.UnFqdn(zone)
+	zone = dns01.UnFqdn(zone)
 
 	// TestMethod
 	_, err = client.GetDNSRecords(zone, sessionID)
@@ -458,9 +458,9 @@ func TestLiveClientUpdateDnsRecord(t *testing.T) {
 	sessionID, err := client.Login()
 	require.NoError(t, err)
 
-	fqdn, _, _ := acme.DNS01Record(envTest.GetDomain(), "123d==")
+	fqdn, _, _ := dns01.GetRecord(envTest.GetDomain(), "123d==")
 
-	zone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameservers)
+	zone, err := dns01.FindZoneByFqdn(fqdn)
 	require.NoError(t, err, fmt.Errorf("error finding DNSZone, %v", err))
 
 	hostname := strings.Replace(fqdn, "."+zone, "", 1)
@@ -468,7 +468,7 @@ func TestLiveClientUpdateDnsRecord(t *testing.T) {
 	record := createTxtRecord(hostname, "asdf5678", 120)
 
 	// test
-	zone = acme.UnFqdn(zone)
+	zone = dns01.UnFqdn(zone)
 
 	err = client.UpdateDNSRecord(sessionID, zone, []DNSRecord{record})
 	require.NoError(t, err)

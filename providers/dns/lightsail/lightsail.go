@@ -13,7 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/lightsail"
-	"github.com/xenolf/lego/old/acme"
+	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/platform/config/env"
 )
 
@@ -54,8 +54,8 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		DNSZone:            env.GetOrFile("DNS_ZONE"),
-		PropagationTimeout: env.GetOrDefaultSecond("LIGHTSAIL_PROPAGATION_TIMEOUT", acme.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("LIGHTSAIL_POLLING_INTERVAL", acme.DefaultPollingInterval),
+		PropagationTimeout: env.GetOrDefaultSecond("LIGHTSAIL_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond("LIGHTSAIL_POLLING_INTERVAL", dns01.DefaultPollingInterval),
 		Region:             env.GetOrDefaultString("LIGHTSAIL_REGION", "us-east-1"),
 	}
 }
@@ -105,7 +105,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record using the specified parameters
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, value, _ := dns01.GetRecord(domain, keyAuth)
 
 	err := d.newTxtRecord(fqdn, `"`+value+`"`)
 	if err != nil {
@@ -116,7 +116,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, value, _ := dns01.GetRecord(domain, keyAuth)
 
 	params := &lightsail.DeleteDomainEntryInput{
 		DomainName: aws.String(d.config.DNSZone),

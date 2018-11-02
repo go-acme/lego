@@ -9,10 +9,10 @@ import (
 	"strings"
 
 	"github.com/urfave/cli"
-	"github.com/xenolf/lego/emca"
-	"github.com/xenolf/lego/emca/certificate"
-	"github.com/xenolf/lego/emca/registration"
+	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/certificate"
 	"github.com/xenolf/lego/log"
+	"github.com/xenolf/lego/registration"
 )
 
 func createRun() cli.Command {
@@ -123,7 +123,7 @@ func run(c *cli.Context) error {
 	return nil
 }
 
-func handleTOS(c *cli.Context, client *emca.Client) bool {
+func handleTOS(c *cli.Context, client *acme.Client) bool {
 	// Check for a global accept override
 	if c.GlobalBool("accept-tos") {
 		return true

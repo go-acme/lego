@@ -11,10 +11,10 @@ import (
 	"time"
 
 	"github.com/urfave/cli"
-	"github.com/xenolf/lego/emca"
-	"github.com/xenolf/lego/emca/certificate"
-	"github.com/xenolf/lego/emca/challenge"
-	"github.com/xenolf/lego/emca/challenge/dns01"
+	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/certificate"
+	"github.com/xenolf/lego/challenge"
+	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/log"
 	"github.com/xenolf/lego/providers/dns"
 	"github.com/xenolf/lego/providers/http/memcached"
@@ -28,7 +28,7 @@ func checkFolder(path string) error {
 	return nil
 }
 
-func setup(c *cli.Context) (*Configuration, *Account, *emca.Client) {
+func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 	err := checkFolder(c.GlobalString("path"))
 	if err != nil {
 		log.Fatalf("Could not check/create path: %v", err)
@@ -47,7 +47,7 @@ func setup(c *cli.Context) (*Configuration, *Account, *emca.Client) {
 		log.Fatal(err)
 	}
 
-	config := emca.NewDefaultConfig(acc).
+	config := acme.NewDefaultConfig(acc).
 		WithKeyType(keyType).
 		WithCADirURL(c.GlobalString("server")).
 		WithUserAgent(fmt.Sprintf("lego-cli/%s", c.App.Version))
@@ -56,7 +56,7 @@ func setup(c *cli.Context) (*Configuration, *Account, *emca.Client) {
 		config.HTTPClient.Timeout = time.Duration(c.GlobalInt("http-timeout")) * time.Second
 	}
 
-	client, err := emca.NewClient(config)
+	client, err := acme.NewClient(config)
 	if err != nil {
 		log.Fatalf("Could not create client: %v", err)
 	}
@@ -92,7 +92,7 @@ func setup(c *cli.Context) (*Configuration, *Account, *emca.Client) {
 	return conf, acc, client
 }
 
-func setupWebroot(client *emca.Client, path string) {
+func setupWebroot(client *acme.Client, path string) {
 	provider, err := webroot.NewHTTPProvider(path)
 	if err != nil {
 		log.Fatal(err)
@@ -108,7 +108,7 @@ func setupWebroot(client *emca.Client, path string) {
 	client.Challenge.Exclude([]challenge.Type{challenge.DNS01, challenge.TLSALPN01})
 }
 
-func setupMemcached(client *emca.Client, hosts []string) {
+func setupMemcached(client *acme.Client, hosts []string) {
 	provider, err := memcached.NewMemcachedProvider(hosts)
 	if err != nil {
 		log.Fatal(err)
@@ -124,7 +124,7 @@ func setupMemcached(client *emca.Client, hosts []string) {
 	client.Challenge.Exclude([]challenge.Type{challenge.DNS01, challenge.TLSALPN01})
 }
 
-func setupHTTP(client *emca.Client, iface string) {
+func setupHTTP(client *acme.Client, iface string) {
 	if !strings.Contains(iface, ":") {
 		log.Fatalf("The --http switch only accepts interface:port or :port for its argument.")
 	}
@@ -135,7 +135,7 @@ func setupHTTP(client *emca.Client, iface string) {
 	}
 }
 
-func setupTLS(client *emca.Client, iface string) {
+func setupTLS(client *acme.Client, iface string) {
 	if !strings.Contains(iface, ":") {
 		log.Fatalf("The --tls switch only accepts interface:port or :port for its argument.")
 	}
@@ -146,7 +146,7 @@ func setupTLS(client *emca.Client, iface string) {
 	}
 }
 
-func setupDNS(client *emca.Client, c *cli.Context) {
+func setupDNS(client *acme.Client, c *cli.Context) {
 	provider, err := dns.NewDNSChallengeProviderByName(c.GlobalString("dns"))
 	if err != nil {
 		log.Fatal(err)

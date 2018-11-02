@@ -13,7 +13,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/xenolf/lego/old/acme"
+	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/platform/config/env"
 )
 
@@ -39,8 +39,8 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		IdentityEndpoint:   env.GetOrDefaultString("OTC_IDENTITY_ENDPOINT", defaultIdentityEndpoint),
-		PropagationTimeout: env.GetOrDefaultSecond("OTC_PROPAGATION_TIMEOUT", acme.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("OTC_POLLING_INTERVAL", acme.DefaultPollingInterval),
+		PropagationTimeout: env.GetOrDefaultSecond("OTC_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond("OTC_POLLING_INTERVAL", dns01.DefaultPollingInterval),
 		TTL:                env.GetOrDefaultInt("OTC_TTL", minTTL),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond("OTC_HTTP_TIMEOUT", 10*time.Second),
@@ -89,20 +89,6 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderCredentials uses the supplied credentials
-// to return a DNSProvider instance configured for OTC DNS.
-// Deprecated
-func NewDNSProviderCredentials(domainName, userName, password, projectName, identityEndpoint string) (*DNSProvider, error) {
-	config := NewDefaultConfig()
-	config.IdentityEndpoint = identityEndpoint
-	config.DomainName = domainName
-	config.UserName = userName
-	config.Password = password
-	config.ProjectName = projectName
-
-	return NewDNSProviderConfig(config)
-}
-
 // NewDNSProviderConfig return a DNSProvider instance configured for OTC DNS.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
@@ -126,9 +112,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record using the specified parameters
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, value, _ := dns01.GetRecord(domain, keyAuth)
 
-	authZone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameservers)
+	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
 		return fmt.Errorf("otc: %v", err)
 	}
@@ -162,9 +148,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, _, _ := dns01.GetRecord(domain, keyAuth)
 
-	authZone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameservers)
+	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
 		return fmt.Errorf("otc: %v", err)
 	}

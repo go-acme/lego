@@ -213,76 +213,90 @@ Replace `<INSERT_YOUR_HOSTED_ZONE_ID_HERE>` with the Route 53 zone ID of the dom
 A valid, but bare-bones example use of the acme package:
 
 ```go
+package sample
+
+import (
+	"crypto"
+	"crypto/rand"
+	"crypto/rsa"
+	"fmt"
+	"log"
+
+	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/certificate/certcrypto"
+	"github.com/xenolf/lego/registration"
+)
+
 // You'll need a user or account type that implements acme.User
 type MyUser struct {
 	Email        string
-	Registration *acme.RegistrationResource
+	Registration *registration.Resource
 	key          crypto.PrivateKey
 }
-func (u MyUser) GetEmail() string {
+
+func (u *MyUser) GetEmail() string {
 	return u.Email
 }
-func (u MyUser) GetRegistration() *acme.RegistrationResource {
+func (u MyUser) GetRegistration() *registration.Resource {
 	return u.Registration
-}
-func (u MyUser) GetPrivateKey() crypto.PrivateKey {
+}*
+func (u *MyUser) GetPrivateKey() crypto.PrivateKey {
 	return u.key
 }
 
-// Create a user. New accounts need an email and private key to start.
-const rsaKeySize = 2048
-privateKey, err := rsa.GenerateKey(rand.Reader, rsaKeySize)
-if err != nil {
-	log.Fatal(err)
+func main() {
+
+	// Create a user. New accounts need an email and private key to start.
+	const rsaKeySize = 2048
+	privateKey, err := rsa.GenerateKey(rand.Reader, rsaKeySize)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	myUser := MyUser{
+		Email: "you@yours.com",
+		key:   privateKey,
+	}
+
+	// A client facilitates communication with the CA server. This CA URL is
+	// configured for a local dev instance of Boulder running in Docker in a VM.
+
+	config := acme.NewDefaultConfig(&myUser).
+		WithCADirURL("http://192.168.99.100:4000/directory").WithKeyType(certcrypto.RSA2048)
+
+	client, err := acme.NewClient(config)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// We specify an http port of 5002 and an tls port of 5001 on all interfaces
+	// because we aren't running as root and can't bind a listener to port 80 and 443
+	// (used later when we attempt to pass challenges). Keep in mind that we still
+	// need to proxy challenge traffic to port 5002 and 5001.
+	client.Challenge.SetHTTP01Address(":5002")
+	client.Challenge.SetTLSALPN01Address(":5001")
+
+	// New users will need to register
+	reg, err := client.Registration.Register(true)
+	if err != nil {
+		log.Fatal(err)
+	}
+	myUser.Registration = reg
+
+	// The acme library takes care of completing the challenges to obtain the certificate(s).
+	// The domains must resolve to this machine or you have to use the DNS challenge.
+	bundle := false
+	certificates, err := client.Certificate.Obtain([]string{"mydomain.com"}, bundle, nil, false)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Each certificate comes back with the cert bytes, the bytes of the client's
+	// private key, and a certificate URL. SAVE THESE TO DISK.
+	fmt.Printf("%#v\n", certificates)
+
+	// ... all done.
 }
-myUser := MyUser{
-	Email: "you@yours.com",
-	key: privateKey,
-}
-
-// A client facilitates communication with the CA server. This CA URL is
-// configured for a local dev instance of Boulder running in Docker in a VM.
-client, err := acme.NewClient("http://192.168.99.100:4000/directory", &myUser, acme.RSA2048)
-if err != nil {
-  log.Fatal(err)
-}
-
-// We specify an http port of 5002 and an tls port of 5001 on all interfaces
-// because we aren't running as root and can't bind a listener to port 80 and 443
-// (used later when we attempt to pass challenges). Keep in mind that we still
-// need to proxy challenge traffic to port 5002 and 5001.
-client.SetHTTPAddress(":5002")
-client.SetTLSAddress(":5001")
-
-// New users will need to register
-reg, err := client.Register()
-if err != nil {
-	log.Fatal(err)
-}
-myUser.Registration = reg
-
-// SAVE THE USER.
-
-// The client has a URL to the current Let's Encrypt Subscriber
-// Agreement. The user will need to agree to it.
-err = client.AgreeToTOS()
-if err != nil {
-	log.Fatal(err)
-}
-
-// The acme library takes care of completing the challenges to obtain the certificate(s).
-// The domains must resolve to this machine or you have to use the DNS challenge.
-bundle := false
-certificates, failures := client.ObtainCertificate([]string{"mydomain.com"}, bundle, nil, false)
-if len(failures) > 0 {
-	log.Fatal(failures)
-}
-
-// Each certificate comes back with the cert bytes, the bytes of the client's
-// private key, and a certificate URL. SAVE THESE TO DISK.
-fmt.Printf("%#v\n", certificates)
-
-// ... all done.
 ```
 
 ## ACME v1

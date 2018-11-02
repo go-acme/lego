@@ -9,21 +9,20 @@ import (
 	"github.com/xenolf/lego/log"
 )
 
+type ValidateFunc func(core *api.Core, domain, uri string, chlng le.Challenge) error
+
 // ChallengePath returns the URL path for the `http-01` challenge
 func ChallengePath(token string) string {
 	return "/.well-known/acme-challenge/" + token
 }
 
-// FIXME refactor
-type validateFunc func(core *api.Core, domain, uri string, chlng le.Challenge) error
-
 type Challenge struct {
 	core     *api.Core
-	validate validateFunc
+	validate ValidateFunc
 	provider challenge.Provider
 }
 
-func NewChallenge(core *api.Core, validate validateFunc, provider challenge.Provider) *Challenge {
+func NewChallenge(core *api.Core, validate ValidateFunc, provider challenge.Provider) *Challenge {
 	return &Challenge{
 		core:     core,
 		validate: validate,

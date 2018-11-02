@@ -414,7 +414,6 @@ func (c *Certifier) createOrderForIdentifiers(domains []string) (orderResource, 
 // If bundle is true, the certificate will be bundled with the issuer's cert.
 func (c *Certifier) checkResponse(order le.OrderMessage, certRes *Resource, bundle bool) (bool, error) {
 	switch order.Status {
-	// TODO extract function?
 	case le.StatusValid:
 		resp, err := c.core.PostAsGet(order.Certificate, nil)
 		if err != nil {

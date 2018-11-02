@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestPreCheckDNS(t *testing.T) {
+func TestCheckDNSPropagation(t *testing.T) {
 	testCases := []struct {
 		desc        string
 		fqdn        string
@@ -32,7 +32,7 @@ func TestPreCheckDNS(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			ok, err := PreCheckDNS(test.fqdn, test.value)
+			ok, err := checkDNSPropagation(test.fqdn, test.value)
 			if test.expectError {
 				assert.Errorf(t, err, "PreCheckDNS must failed for %s", test.fqdn)
 				assert.False(t, ok, "PreCheckDNS must failed for %s", test.fqdn)

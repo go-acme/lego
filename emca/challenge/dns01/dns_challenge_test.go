@@ -16,15 +16,6 @@ import (
 )
 
 func TestDNSValidServerResponse(t *testing.T) {
-	backupPreCheckDNS := PreCheckDNS
-	defer func() {
-		PreCheckDNS = backupPreCheckDNS
-	}()
-
-	PreCheckDNS = func(fqdn, value string) (bool, error) {
-		return true, nil
-	}
-
 	privKey, err := rsa.GenerateKey(rand.Reader, 512)
 	require.NoError(t, err)
 
@@ -46,19 +37,16 @@ func TestDNSValidServerResponse(t *testing.T) {
 	core, err := api.New(http.DefaultClient, "lego-test", apiURL, "", privKey)
 	require.NoError(t, err)
 
-	solver := &Challenge{
-		core:     core,
-		validate: stubValidate,
-		provider: manualProvider,
-	}
+	solver := NewChallenge(
+		core,
+		func(_ *api.Core, _, _ string, _ le.Challenge) error { return nil },
+		manualProvider,
+		AddPreCheck(func(fqdn, value string) (bool, error) {
+			return true, nil
+		}),
+	)
 
 	err = solver.Solve(clientChallenge, "example.com")
 
 	require.NoError(t, err)
-}
-
-// FIXME remove?
-// stubValidate is like validate, except it does nothing.
-func stubValidate(_ *api.Core, _, _ string, _ le.Challenge) error {
-	return nil
 }

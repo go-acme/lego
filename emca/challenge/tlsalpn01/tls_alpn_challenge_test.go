@@ -93,7 +93,7 @@ func TestChallengeInvalidPort(t *testing.T) {
 
 	solver := NewChallenge(
 		core,
-		stubValidate,
+		func(_ *api.Core, _, _ string, _ le.Challenge) error { return nil },
 		&ProviderServer{port: "123456"},
 	)
 
@@ -103,10 +103,4 @@ func TestChallengeInvalidPort(t *testing.T) {
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "invalid port")
 	assert.Contains(t, err.Error(), "123456")
-}
-
-// FIXME remove?
-// stubValidate is like validate, except it does nothing.
-func stubValidate(_ *api.Core, _, _ string, _ le.Challenge) error {
-	return nil
 }

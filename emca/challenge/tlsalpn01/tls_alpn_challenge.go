@@ -19,16 +19,15 @@ import (
 // Reference: https://tools.ietf.org/html/draft-ietf-acme-tls-alpn-05#section-5.1
 var idPeAcmeIdentifierV1 = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 1, 31}
 
-// FIXME refactor
-type validateFunc func(core *api.Core, domain, uri string, chlng le.Challenge) error
+type ValidateFunc func(core *api.Core, domain, uri string, chlng le.Challenge) error
 
 type Challenge struct {
 	core     *api.Core
-	validate validateFunc
+	validate ValidateFunc
 	provider challenge.Provider
 }
 
-func NewChallenge(core *api.Core, validate validateFunc, provider challenge.Provider) *Challenge {
+func NewChallenge(core *api.Core, validate ValidateFunc, provider challenge.Provider) *Challenge {
 	return &Challenge{
 		core:     core,
 		validate: validate,

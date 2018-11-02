@@ -25,8 +25,7 @@ const (
 	DefaultTTL = 120
 )
 
-// FIXME refactor
-type validateFunc func(core *api.Core, domain, uri string, chlng le.Challenge) error
+type ValidateFunc func(core *api.Core, domain, uri string, chlng le.Challenge) error
 
 type ChallengeOption func(*Challenge) error
 
@@ -44,13 +43,13 @@ func CondOption(condition bool, opt ChallengeOption) ChallengeOption {
 // Challenge implements the dns-01 challenge according to ACME 7.5
 type Challenge struct {
 	core            *api.Core
-	validate        validateFunc
+	validate        ValidateFunc
 	provider        challenge.Provider
 	preCheckDNSFunc PreCheckFunc
 	dnsTimeout      time.Duration
 }
 
-func NewChallenge(core *api.Core, validate validateFunc, provider challenge.Provider, opts ...ChallengeOption) *Challenge {
+func NewChallenge(core *api.Core, validate ValidateFunc, provider challenge.Provider, opts ...ChallengeOption) *Challenge {
 	chlg := &Challenge{
 		core:            core,
 		validate:        validate,
@@ -62,7 +61,7 @@ func NewChallenge(core *api.Core, validate validateFunc, provider challenge.Prov
 	for _, opt := range opts {
 		err := opt(chlg)
 		if err != nil {
-			// FIXME panic ?
+			panic(err)
 		}
 	}
 

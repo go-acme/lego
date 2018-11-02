@@ -1,4 +1,4 @@
-package secure
+package nonces
 
 import (
 	"errors"
@@ -9,21 +9,21 @@ import (
 	"github.com/xenolf/lego/le/api/internal/sender"
 )
 
-type NonceManager struct {
+type Manager struct {
 	do       *sender.Do
 	nonceURL string
 	nonces   []string
 	sync.Mutex
 }
 
-func NewNonceManager(do *sender.Do, nonceURL string) *NonceManager {
-	return &NonceManager{
+func NewManager(do *sender.Do, nonceURL string) *Manager {
+	return &Manager{
 		do:       do,
 		nonceURL: nonceURL,
 	}
 }
 
-func (n *NonceManager) Pop() (string, bool) {
+func (n *Manager) Pop() (string, bool) {
 	n.Lock()
 	defer n.Unlock()
 
@@ -36,30 +36,30 @@ func (n *NonceManager) Pop() (string, bool) {
 	return nonce, true
 }
 
-func (n *NonceManager) Push(nonce string) {
+func (n *Manager) Push(nonce string) {
 	n.Lock()
 	defer n.Unlock()
 	n.nonces = append(n.nonces, nonce)
 }
 
 // Nonce implement jose.NonceSource
-func (n *NonceManager) Nonce() (string, error) {
+func (n *Manager) Nonce() (string, error) {
 	if nonce, ok := n.Pop(); ok {
 		return nonce, nil
 	}
 	return n.getNonce()
 }
 
-func (n *NonceManager) getNonce() (string, error) {
+func (n *Manager) getNonce() (string, error) {
 	resp, err := n.do.Head(n.nonceURL)
 	if err != nil {
 		return "", fmt.Errorf("failed to get nonce from HTTP HEAD -> %v", err)
 	}
 
-	return GetNonceFromResponse(resp)
+	return GetFromResponse(resp)
 }
 
-func GetNonceFromResponse(resp *http.Response) (string, error) {
+func GetFromResponse(resp *http.Response) (string, error) {
 	if resp == nil {
 		return "", errors.New("nil response")
 	}

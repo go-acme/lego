@@ -9,6 +9,7 @@ import (
 	"net/http"
 
 	"github.com/xenolf/lego/le"
+	"github.com/xenolf/lego/le/api/internal/nonces"
 	"github.com/xenolf/lego/le/api/internal/secure"
 	"github.com/xenolf/lego/le/api/internal/sender"
 	"github.com/xenolf/lego/log"
@@ -16,7 +17,7 @@ import (
 
 type Core struct {
 	do           *sender.Do
-	nonceManager *secure.NonceManager
+	nonceManager *nonces.Manager
 	jws          *secure.JWS
 	directory    le.Directory
 	HTTPClient   *http.Client
@@ -30,7 +31,7 @@ func New(httpClient *http.Client, userAgent string, caDirURL, kid string, privKe
 		return nil, err
 	}
 
-	nonceManager := secure.NewNonceManager(do, dir.NewNonceURL)
+	nonceManager := nonces.NewManager(do, dir.NewNonceURL)
 
 	jws := secure.NewJWS(privKey, kid, nonceManager)
 
@@ -83,7 +84,7 @@ func (a *Core) signedPost(uri string, content []byte, response interface{}) (*ht
 
 	resp, err := a.do.Post(uri, signedBody, "application/jose+json", response)
 
-	nonce, nonceErr := secure.GetNonceFromResponse(resp)
+	nonce, nonceErr := nonces.GetFromResponse(resp)
 	if nonceErr == nil {
 		a.nonceManager.Push(nonce)
 	}

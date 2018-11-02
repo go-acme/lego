@@ -9,16 +9,17 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/xenolf/lego/le/api/internal/nonces"
 	"gopkg.in/square/go-jose.v2"
 )
 
 type JWS struct {
 	privKey crypto.PrivateKey
 	kid     string // Key identifier
-	nonces  *NonceManager
+	nonces  *nonces.Manager
 }
 
-func NewJWS(privKey crypto.PrivateKey, kid string, nonceManager *NonceManager) *JWS {
+func NewJWS(privKey crypto.PrivateKey, kid string, nonceManager *nonces.Manager) *JWS {
 	return &JWS{
 		privKey: privKey,
 		nonces:  nonceManager,

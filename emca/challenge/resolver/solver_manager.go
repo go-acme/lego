@@ -35,13 +35,13 @@ func NewSolversManager(core *api.Core) *SolverManager {
 	}
 }
 
-// SetHTTPAddress specifies a custom interface:port to be used for HTTP based challenges.
+// SetHTTP01Address specifies a custom interface:port to be used for HTTP based challenges.
 // If this option is not used, the default port 80 and all interfaces will be used.
 // To only specify a port and no interface use the ":port" notation.
 //
 // NOTE: This REPLACES any custom HTTP provider previously set by calling
 // c.SetProvider with the default HTTP challenge provider.
-func (c *SolverManager) SetHTTPAddress(iface string) error {
+func (c *SolverManager) SetHTTP01Address(iface string) error {
 	host, port, err := net.SplitHostPort(iface)
 	if err != nil {
 		return err
@@ -54,13 +54,13 @@ func (c *SolverManager) SetHTTPAddress(iface string) error {
 	return nil
 }
 
-// SetTLSAddress specifies a custom interface:port to be used for TLS based challenges.
+// SetTLSALPN01Address specifies a custom interface:port to be used for TLS based challenges.
 // If this option is not used, the default port 443 and all interfaces will be used.
 // To only specify a port and no interface use the ":port" notation.
 //
 // NOTE: This REPLACES any custom TLS-ALPN provider previously set by calling
 // c.SetProvider with the default TLS-ALPN challenge provider.
-func (c *SolverManager) SetTLSAddress(iface string) error {
+func (c *SolverManager) SetTLSALPN01Address(iface string) error {
 	host, port, err := net.SplitHostPort(iface)
 	if err != nil {
 		return err

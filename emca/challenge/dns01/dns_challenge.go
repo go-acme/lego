@@ -14,18 +14,6 @@ import (
 	"github.com/xenolf/lego/platform/wait"
 )
 
-// FIXME refactor
-type validateFunc func(core *api.Core, domain, uri string, chlng le.Challenge) error
-
-type ChallengeOption func(*Challenge) error
-
-func AddPreCheck(preCheck PreCheckFunc) ChallengeOption {
-	return func(chlg *Challenge) error {
-		chlg.preCheckDNSFunc = preCheck
-		return nil
-	}
-}
-
 const (
 	// DefaultPropagationTimeout default propagation timeout
 	DefaultPropagationTimeout = 60 * time.Second
@@ -37,12 +25,29 @@ const (
 	DefaultTTL = 120
 )
 
+// FIXME refactor
+type validateFunc func(core *api.Core, domain, uri string, chlng le.Challenge) error
+
+type ChallengeOption func(*Challenge) error
+
+// CondOption Conditional challenge option.
+func CondOption(condition bool, opt ChallengeOption) ChallengeOption {
+	if !condition {
+		// NoOp options
+		return func(*Challenge) error {
+			return nil
+		}
+	}
+	return opt
+}
+
 // Challenge implements the dns-01 challenge according to ACME 7.5
 type Challenge struct {
 	core            *api.Core
 	validate        validateFunc
 	provider        challenge.Provider
 	preCheckDNSFunc PreCheckFunc
+	dnsTimeout      time.Duration
 }
 
 func NewChallenge(core *api.Core, validate validateFunc, provider challenge.Provider, opts ...ChallengeOption) *Challenge {
@@ -51,6 +56,7 @@ func NewChallenge(core *api.Core, validate validateFunc, provider challenge.Prov
 		validate:        validate,
 		provider:        provider,
 		preCheckDNSFunc: checkDNSPropagation,
+		dnsTimeout:      10 * time.Second,
 	}
 
 	for _, opt := range opts {
@@ -97,7 +103,7 @@ func (s *Challenge) Solve(chlng le.Challenge, domain string) error {
 
 	fqdn, value, _ := GetRecord(domain, keyAuth)
 
-	log.Infof("[%s] Checking DNS record propagation using %+v", domain, RecursiveNameservers)
+	log.Infof("[%s] Checking DNS record propagation using %+v", domain, recursiveNameservers)
 
 	var timeout, interval time.Duration
 	switch provider := s.provider.(type) {

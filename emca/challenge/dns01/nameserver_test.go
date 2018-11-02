@@ -101,7 +101,7 @@ func TestFindZoneByFqdn(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			zone, err := FindZoneByFqdn(test.fqdn, RecursiveNameservers)
+			zone, err := FindZoneByFqdn(test.fqdn)
 			require.NoError(t, err)
 
 			assert.Equal(t, test.zone, zone)

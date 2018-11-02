@@ -11,10 +11,17 @@ import (
 // PreCheckFunc checks DNS propagation before notifying ACME that the DNS challenge is ready.
 type PreCheckFunc func(fqdn, value string) (bool, error)
 
+func AddPreCheck(preCheck PreCheckFunc) ChallengeOption {
+	return func(chlg *Challenge) error {
+		chlg.preCheckDNSFunc = preCheck
+		return nil
+	}
+}
+
 // checkDNSPropagation checks if the expected TXT record has been propagated to all authoritative nameservers.
 func checkDNSPropagation(fqdn, value string) (bool, error) {
 	// Initial attempt to resolve at the recursive NS
-	r, err := dnsQuery(fqdn, dns.TypeTXT, RecursiveNameservers, true)
+	r, err := dnsQuery(fqdn, dns.TypeTXT, recursiveNameservers, true)
 	if err != nil {
 		return false, err
 	}

@@ -29,17 +29,6 @@ func checkFolder(path string) error {
 }
 
 func setup(c *cli.Context) (*Configuration, *Account, *emca.Client) {
-	if c.GlobalIsSet("dns-timeout") {
-		// FIXME move to Config?
-		dns01.DNSTimeout = time.Duration(c.GlobalInt("dns-timeout")) * time.Second
-	}
-
-	servers := c.GlobalStringSlice("dns-resolvers")
-	if len(servers) > 0 {
-		// FIXME move to Config?
-		dns01.RecursiveNameservers = dns01.ParseNameservers(servers)
-	}
-
 	err := checkFolder(c.GlobalString("path"))
 	if err != nil {
 		log.Fatalf("Could not check/create path: %v", err)
@@ -93,7 +82,7 @@ func setup(c *cli.Context) (*Configuration, *Account, *emca.Client) {
 	}
 
 	if c.GlobalIsSet("dns") {
-		setupDNS(client, c.GlobalString("dns"))
+		setupDNS(client, c)
 	}
 
 	if client.GetExternalAccountRequired() && !c.GlobalIsSet("eab") {
@@ -140,7 +129,7 @@ func setupHTTP(client *emca.Client, iface string) {
 		log.Fatalf("The --http switch only accepts interface:port or :port for its argument.")
 	}
 
-	err := client.Challenge.SetHTTPAddress(iface)
+	err := client.Challenge.SetHTTP01Address(iface)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -151,19 +140,25 @@ func setupTLS(client *emca.Client, iface string) {
 		log.Fatalf("The --tls switch only accepts interface:port or :port for its argument.")
 	}
 
-	err := client.Challenge.SetTLSAddress(iface)
+	err := client.Challenge.SetTLSALPN01Address(iface)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func setupDNS(client *emca.Client, providerName string) {
-	provider, err := dns.NewDNSChallengeProviderByName(providerName)
+func setupDNS(client *emca.Client, c *cli.Context) {
+	provider, err := dns.NewDNSChallengeProviderByName(c.GlobalString("dns"))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = client.Challenge.SetDNS01Provider(provider)
+	servers := c.GlobalStringSlice("dns-resolvers")
+	err = client.Challenge.SetDNS01Provider(provider,
+		dns01.CondOption(c.GlobalIsSet("dns-timeout"),
+			dns01.AddDNSTimeout(time.Duration(c.GlobalInt("dns-timeout"))*time.Second)),
+		dns01.CondOption(len(servers) > 0,
+			dns01.AddRecursiveNameservers(dns01.ParseNameservers(c.GlobalStringSlice("dns-resolvers")))),
+	)
 	if err != nil {
 		log.Fatal(err)
 	}

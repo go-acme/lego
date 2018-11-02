@@ -12,9 +12,8 @@ import (
 
 const defaultResolvConf = "/etc/resolv.conf"
 
-// DNSTimeout is used to override the default DNS timeout of 10 seconds.
-// FIXME how to define this in Config?
-var DNSTimeout = 10 * time.Second
+// dnsTimeout is used to override the default DNS timeout of 10 seconds.
+var dnsTimeout = 10 * time.Second
 
 var (
 	fqdnToZone   = map[string]string{}
@@ -26,8 +25,22 @@ var defaultNameservers = []string{
 	"google-public-dns-b.google.com:53",
 }
 
-// RecursiveNameservers are used to pre-check DNS propagation
-var RecursiveNameservers = getNameservers(defaultResolvConf, defaultNameservers)
+// recursiveNameservers are used to pre-check DNS propagation
+var recursiveNameservers = getNameservers(defaultResolvConf, defaultNameservers)
+
+func AddDNSTimeout(timeout time.Duration) ChallengeOption {
+	return func(_ *Challenge) error {
+		dnsTimeout = timeout
+		return nil
+	}
+}
+
+func AddRecursiveNameservers(nameservers []string) ChallengeOption {
+	return func(_ *Challenge) error {
+		recursiveNameservers = ParseNameservers(nameservers)
+		return nil
+	}
+}
 
 // getNameservers attempts to get systems nameservers before falling back to the defaults
 func getNameservers(path string, defaults []string) []string {
@@ -56,12 +69,12 @@ func ParseNameservers(servers []string) []string {
 func lookupNameservers(fqdn string) ([]string, error) {
 	var authoritativeNss []string
 
-	zone, err := FindZoneByFqdn(fqdn, RecursiveNameservers)
+	zone, err := FindZoneByFqdn(fqdn)
 	if err != nil {
 		return nil, fmt.Errorf("could not determine the zone: %v", err)
 	}
 
-	r, err := dnsQuery(zone, dns.TypeNS, RecursiveNameservers, true)
+	r, err := dnsQuery(zone, dns.TypeNS, recursiveNameservers, true)
 	if err != nil {
 		return nil, err
 	}
@@ -78,9 +91,9 @@ func lookupNameservers(fqdn string) ([]string, error) {
 	return nil, fmt.Errorf("could not determine authoritative nameservers")
 }
 
-// FindZoneByFqdn determines the zone apex for the given fqdn by recursing up the
-// domain labels until the nameserver returns a SOA record in the answer section.
-func FindZoneByFqdn(fqdn string, nameservers []string) (string, error) {
+// FindZoneByFqdnCustom determines the zone apex for the given fqdn
+// by recursing up the domain labels until the nameserver returns a SOA record in the answer section.
+func FindZoneByFqdnCustom(fqdn string, nameservers []string) (string, error) {
 	muFqdnToZone.Lock()
 	defer muFqdnToZone.Unlock()
 
@@ -94,6 +107,54 @@ func FindZoneByFqdn(fqdn string, nameservers []string) (string, error) {
 		domain := fqdn[index:]
 
 		in, err := dnsQuery(domain, dns.TypeSOA, nameservers, true)
+		if err != nil {
+			return "", err
+		}
+
+		// Any response code other than NOERROR and NXDOMAIN is treated as error
+		if in.Rcode != dns.RcodeNameError && in.Rcode != dns.RcodeSuccess {
+			return "", fmt.Errorf("unexpected response code '%s' for %s",
+				dns.RcodeToString[in.Rcode], domain)
+		}
+
+		// Check if we got a SOA RR in the answer section
+		if in.Rcode == dns.RcodeSuccess {
+
+			// CNAME records cannot/should not exist at the root of a zone.
+			// So we skip a domain when a CNAME is found.
+			if dnsMsgContainsCNAME(in) {
+				continue
+			}
+
+			for _, ans := range in.Answer {
+				if soa, ok := ans.(*dns.SOA); ok {
+					zone := soa.Hdr.Name
+					fqdnToZone[fqdn] = zone
+					return zone, nil
+				}
+			}
+		}
+	}
+
+	return "", fmt.Errorf("could not find the start of authority")
+}
+
+// FindZoneByFqdn determines the zone apex for the given fqdn
+// by recursing up the domain labels until the nameserver returns a SOA record in the answer section.
+func FindZoneByFqdn(fqdn string) (string, error) {
+	muFqdnToZone.Lock()
+	defer muFqdnToZone.Unlock()
+
+	// Do we have it cached?
+	if zone, ok := fqdnToZone[fqdn]; ok {
+		return zone, nil
+	}
+
+	labelIndexes := dns.Split(fqdn)
+	for _, index := range labelIndexes {
+		domain := fqdn[index:]
+
+		in, err := dnsQuery(domain, dns.TypeSOA, recursiveNameservers, true)
 		if err != nil {
 			return "", err
 		}
@@ -155,11 +216,11 @@ func dnsQuery(fqdn string, rtype uint16, nameservers []string, recursive bool) (
 	// Will retry the request based on the number of servers (n+1)
 	for i := 1; i <= len(nameservers)+1; i++ {
 		ns := nameservers[i%len(nameservers)]
-		udp := &dns.Client{Net: "udp", Timeout: DNSTimeout}
+		udp := &dns.Client{Net: "udp", Timeout: dnsTimeout}
 		in, _, err = udp.Exchange(m, ns)
 
 		if err == dns.ErrTruncated {
-			tcp := &dns.Client{Net: "tcp", Timeout: DNSTimeout}
+			tcp := &dns.Client{Net: "tcp", Timeout: dnsTimeout}
 			// If the TCP request succeeds, the err will reset to nil
 			in, _, err = tcp.Exchange(m, ns)
 		}

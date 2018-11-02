@@ -22,7 +22,7 @@ import (
 	"gopkg.in/square/go-jose.v2"
 )
 
-func TestSolverManager_SetHTTPAddress(t *testing.T) {
+func TestSolverManager_SetHTTP01Address(t *testing.T) {
 	_, apiURL, tearDown := tester.SetupFakeAPI()
 	defer tearDown()
 
@@ -38,7 +38,7 @@ func TestSolverManager_SetHTTPAddress(t *testing.T) {
 	optPort := "1234"
 	optHost := ""
 
-	err = solversManager.SetHTTPAddress(net.JoinHostPort(optHost, optPort))
+	err = solversManager.SetHTTP01Address(net.JoinHostPort(optHost, optPort))
 	require.NoError(t, err)
 
 	require.IsType(t, &http01.Challenge{}, solversManager.solvers[challenge.HTTP01])
@@ -49,7 +49,7 @@ func TestSolverManager_SetHTTPAddress(t *testing.T) {
 
 	// test setting different host
 	optHost = "127.0.0.1"
-	err = solversManager.SetHTTPAddress(net.JoinHostPort(optHost, optPort))
+	err = solversManager.SetHTTP01Address(net.JoinHostPort(optHost, optPort))
 	require.NoError(t, err)
 
 	httpProviderServer = (*http01.ProviderServer)(unsafe.Pointer(reflect.ValueOf(httpSolver).Elem().FieldByName("provider").InterfaceData()[1]))

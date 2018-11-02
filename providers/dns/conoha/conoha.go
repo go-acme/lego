@@ -89,7 +89,12 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
 
-	id, err := d.client.GetDomainID(acme.ToFqdn(domain))
+	authZone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameservers)
+	if err != nil {
+		return err
+	}
+
+	id, err := d.client.GetDomainID(authZone)
 	if err != nil {
 		return fmt.Errorf("conoha: failed to get domain ID: %v", err)
 	}
@@ -113,7 +118,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
 
-	domID, err := d.client.GetDomainID(acme.ToFqdn(domain))
+	authZone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameservers)
+	if err != nil {
+		return err
+	}
+
+	domID, err := d.client.GetDomainID(authZone)
 	if err != nil {
 		return fmt.Errorf("conoha: failed to get domain ID: %v", err)
 	}

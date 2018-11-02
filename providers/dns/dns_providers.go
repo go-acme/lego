@@ -11,6 +11,7 @@ import (
 	"github.com/xenolf/lego/providers/dns/bluecat"
 	"github.com/xenolf/lego/providers/dns/cloudflare"
 	"github.com/xenolf/lego/providers/dns/cloudxns"
+	"github.com/xenolf/lego/providers/dns/conoha"
 	"github.com/xenolf/lego/providers/dns/digitalocean"
 	"github.com/xenolf/lego/providers/dns/dnsimple"
 	"github.com/xenolf/lego/providers/dns/dnsmadeeasy"
@@ -65,6 +66,8 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 		return cloudflare.NewDNSProvider()
 	case "cloudxns":
 		return cloudxns.NewDNSProvider()
+	case "conoha":
+		return conoha.NewDNSProvider()
 	case "digitalocean":
 		return digitalocean.NewDNSProvider()
 	case "dnsimple":

@@ -1,13 +1,12 @@
-// Package selectel implements a DNS provider for solving the DNS-01
-// challenge using Selectel Domains API.
-package selectel
-
+// Package selectel implements a DNS provider for solving the DNS-01 challenge using Selectel Domains API.
 // Selectel Domain API reference: https://my.selectel.ru/domains/doc
 // Token: https://my.selectel.ru/profile/apikeys
+package selectel
 
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/xenolf/lego/acme"
@@ -17,13 +16,16 @@ import (
 const (
 	defaultBaseURL = "https://api.selectel.ru/domains/v1"
 	minTTL         = 60
+)
 
-	envSelectelBaseURL            = "SELECTEL_BASE_URL"
-	envSelectelAPIToken           = "SELECTEL_API_TOKEN"
-	envSelectelTTL                = "SELECTEL_TTL"
-	envSelectelPropagationTimeout = "SELECTEL_PROPAGATION_TIMEOUT"
-	envSelectelPollingInterval    = "SELECTEL_POLLING_INTERVAL"
-	envSelectelHTTPTimeout        = "SELECTEL_HTTP_TIMEOUT"
+const (
+	envNamespace             = "SELECTEL_"
+	baseURLEnvVar            = envNamespace + "BASE_URL"
+	apiTokenEnvVar           = envNamespace + "API_TOKEN"
+	ttlEnvVar                = envNamespace + "TTL"
+	propagationTimeoutEnvVar = envNamespace + "PROPAGATION_TIMEOUT"
+	pollingIntervalEnvVar    = envNamespace + "POLLING_INTERVAL"
+	httpTimeoutEnvVar        = envNamespace + "HTTP_TIMEOUT"
 )
 
 // Config is used to configure the creation of the DNSProvider.
@@ -32,18 +34,20 @@ type Config struct {
 	Token              string
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
-	HTTPTimeout        time.Duration
 	TTL                int
+	HTTPClient         *http.Client
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		BaseURL:            env.GetOrDefaultString(envSelectelBaseURL, defaultBaseURL),
-		TTL:                env.GetOrDefaultInt(envSelectelTTL, minTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(envSelectelPropagationTimeout, 120*time.Second),
-		PollingInterval:    env.GetOrDefaultSecond(envSelectelPollingInterval, 2*time.Second),
-		HTTPTimeout:        env.GetOrDefaultSecond(envSelectelHTTPTimeout, 30*time.Second),
+		BaseURL:            env.GetOrDefaultString(baseURLEnvVar, defaultBaseURL),
+		TTL:                env.GetOrDefaultInt(ttlEnvVar, minTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(propagationTimeoutEnvVar, 120*time.Second),
+		PollingInterval:    env.GetOrDefaultSecond(pollingIntervalEnvVar, 2*time.Second),
+		HTTPClient: &http.Client{
+			Timeout: env.GetOrDefaultSecond(httpTimeoutEnvVar, 30*time.Second),
+		},
 	}
 }
 
@@ -56,13 +60,13 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for Selectel Domains API.
 // API token must be passed in the environment variable SELECTEL_API_TOKEN.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(envSelectelAPIToken)
+	values, err := env.Get(apiTokenEnvVar)
 	if err != nil {
 		return nil, fmt.Errorf("selectel: %v", err)
 	}
 
 	config := NewDefaultConfig()
-	config.Token = values[envSelectelAPIToken]
+	config.Token = values[apiTokenEnvVar]
 
 	return NewDNSProviderConfig(config)
 }
@@ -74,31 +78,25 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.Token == "" {
-		return nil, fmt.Errorf("selectel: credentials missing")
+		return nil, errors.New("selectel: credentials missing")
 	}
 
 	if config.TTL < minTTL {
-		return nil, fmt.Errorf("selectel: invalid TTL, TTL (%d) must be greater than %d",
-			config.TTL,
-			minTTL)
+		return nil, fmt.Errorf("selectel: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL)
 	}
 
-	// Init client options
-	opts := ClientOpts{
-		BaseURL:   config.BaseURL,
-		Token:     config.Token,
-		UserAgent: "lego",
-		Timeout:   config.HTTPTimeout,
-	}
-
-	// Init Selectel DNS client
-	client := NewSelectelDNS(opts)
+	client := NewClient(ClientOpts{
+		BaseURL:    config.BaseURL,
+		Token:      config.Token,
+		UserAgent:  acme.UserAgent,
+		HTTPClient: config.HTTPClient,
+	})
 
 	return &DNSProvider{config: config, client: client}, nil
 }
 
-// Timeout returns the Timeout and interval to use when checking for DNS
-// propagation. Adjusting here to cope with spikes in propagation times.
+// Timeout returns the Timeout and interval to use when checking for DNS propagation.
+// Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
@@ -107,13 +105,11 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
 
-	// Get domain via Selectel Domain API
 	domainObj, err := d.client.GetDomainByName(domain)
 	if err != nil {
-		return err
+		return fmt.Errorf("selectel: %v", err)
 	}
 
-	// Set TXT record for DNS-01 challenge
 	txtRecord := Record{
 		Type:    "TXT",
 		TTL:     d.config.TTL,
@@ -121,34 +117,37 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Content: value,
 	}
 	_, err = d.client.AddRecord(domainObj.ID, txtRecord)
-	return err
+	if err != nil {
+		return fmt.Errorf("selectel: %v", err)
+	}
+
+	return nil
 }
 
 // CleanUp removes a TXT record used for DNS-01 challenge.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
 
-	// Get domain via Selectel Domain API
 	domainObj, err := d.client.GetDomainByName(domain)
 	if err != nil {
-		return err
+		return fmt.Errorf("selectel: %v", err)
 	}
 
-	// Get list records for domain
 	records, err := d.client.ListRecords(domainObj.ID)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("selectel: %v", err)
 	}
 
 	// Delete records with specific FQDN
+	var lastErr error
 	for _, record := range records {
 		if record.Name == fqdn {
 			err = d.client.DeleteRecord(domainObj.ID, record.ID)
 			if err != nil {
-				return err
+				lastErr = fmt.Errorf("selectel: %v", err)
 			}
 		}
 	}
 
-	return nil
+	return lastErr
 }

@@ -10,7 +10,7 @@ import (
 	"github.com/xenolf/lego/platform/tester"
 )
 
-var envTest = tester.NewEnvTest(envSelectelAPIToken, envSelectelTTL)
+var envTest = tester.NewEnvTest(apiTokenEnvVar, ttlEnvVar)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -21,16 +21,15 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				envSelectelAPIToken: "123",
+				apiTokenEnvVar: "123",
 			},
 		},
 		{
 			desc: "missing api key",
 			envVars: map[string]string{
-				envSelectelAPIToken: "",
+				apiTokenEnvVar: "",
 			},
-			expected: fmt.Sprintf("selectel: some credentials information are missing: %s",
-				envSelectelAPIToken),
+			expected: fmt.Sprintf("selectel: some credentials information are missing: %s", apiTokenEnvVar),
 		},
 	}
 
@@ -74,11 +73,10 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			expected: "selectel: credentials missing",
 		},
 		{
-			desc:  "bad TTL value",
-			token: "123",
-			ttl:   59,
-			expected: fmt.Sprintf("selectel: invalid TTL, TTL (59) must be greater than %d",
-				minTTL),
+			desc:     "bad TTL value",
+			token:    "123",
+			ttl:      59,
+			expected: fmt.Sprintf("selectel: invalid TTL, TTL (59) must be greater than %d", minTTL),
 		},
 	}
 

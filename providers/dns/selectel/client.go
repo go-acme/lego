@@ -40,6 +40,17 @@ type ClientOpts struct {
 	HTTPClient *http.Client
 }
 
+// APIError API error message
+type APIError struct {
+	Description string `json:"error"`
+	Code        int    `json:"code"`
+	Field       string `json:"field"`
+}
+
+func (a *APIError) Error() string {
+	return fmt.Sprintf("API error: %d - %s - %s", a.Code, a.Description, a.Field)
+}
+
 // NewClient returns a client instance.
 func NewClient(opts ClientOpts) *Client {
 	if opts.HTTPClient == nil {
@@ -172,7 +183,13 @@ func checkResponse(resp *http.Response) error {
 		}
 		defer resp.Body.Close()
 
-		return fmt.Errorf("request failed with status code %d, response body: %s", resp.StatusCode, string(body))
+		apiError := APIError{}
+		err = json.Unmarshal(body, &apiError)
+		if err != nil {
+			return fmt.Errorf("request failed with status code %d, response body: %s", resp.StatusCode, string(body))
+		}
+
+		return fmt.Errorf("request failed with status code %d: %v", resp.StatusCode, apiError)
 	}
 
 	return nil

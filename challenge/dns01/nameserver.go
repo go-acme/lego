@@ -142,49 +142,7 @@ func FindZoneByFqdnCustom(fqdn string, nameservers []string) (string, error) {
 // FindZoneByFqdn determines the zone apex for the given fqdn
 // by recursing up the domain labels until the nameserver returns a SOA record in the answer section.
 func FindZoneByFqdn(fqdn string) (string, error) {
-	muFqdnToZone.Lock()
-	defer muFqdnToZone.Unlock()
-
-	// Do we have it cached?
-	if zone, ok := fqdnToZone[fqdn]; ok {
-		return zone, nil
-	}
-
-	labelIndexes := dns.Split(fqdn)
-	for _, index := range labelIndexes {
-		domain := fqdn[index:]
-
-		in, err := dnsQuery(domain, dns.TypeSOA, recursiveNameservers, true)
-		if err != nil {
-			return "", err
-		}
-
-		// Any response code other than NOERROR and NXDOMAIN is treated as error
-		if in.Rcode != dns.RcodeNameError && in.Rcode != dns.RcodeSuccess {
-			return "", fmt.Errorf("unexpected response code '%s' for %s",
-				dns.RcodeToString[in.Rcode], domain)
-		}
-
-		// Check if we got a SOA RR in the answer section
-		if in.Rcode == dns.RcodeSuccess {
-
-			// CNAME records cannot/should not exist at the root of a zone.
-			// So we skip a domain when a CNAME is found.
-			if dnsMsgContainsCNAME(in) {
-				continue
-			}
-
-			for _, ans := range in.Answer {
-				if soa, ok := ans.(*dns.SOA); ok {
-					zone := soa.Hdr.Name
-					fqdnToZone[fqdn] = zone
-					return zone, nil
-				}
-			}
-		}
-	}
-
-	return "", fmt.Errorf("could not find the start of authority")
+	return FindZoneByFqdnCustom(fqdn, recursiveNameservers)
 }
 
 // dnsMsgContainsCNAME checks for a CNAME answer in msg

@@ -20,7 +20,6 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "lego"
 	app.Usage = "Let's Encrypt client written in Go"
-
 	app.Version = version
 
 	defaultPath := ""
@@ -117,6 +116,10 @@ func main() {
 		cli.IntFlag{
 			Name:  "dns-timeout",
 			Usage: "Set the DNS timeout value to a specific value in seconds. The default is 10 seconds.",
+		},
+		cli.BoolFlag{
+			Name:  "disable-cp",
+			Usage: "By setting this flag to true, disables the need to wait the propagation of the TXT record to all authoritative name servers.",
 		},
 		cli.StringSliceFlag{
 			Name:  "dns-resolvers",

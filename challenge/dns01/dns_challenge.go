@@ -42,26 +42,26 @@ func CondOption(condition bool, opt ChallengeOption) ChallengeOption {
 
 // Challenge implements the dns-01 challenge according to ACME 7.5
 type Challenge struct {
-	core            *api.Core
-	validate        ValidateFunc
-	provider        challenge.Provider
-	preCheckDNSFunc PreCheckFunc
-	dnsTimeout      time.Duration
+	core       *api.Core
+	validate   ValidateFunc
+	provider   challenge.Provider
+	preCheck   preCheck
+	dnsTimeout time.Duration
 }
 
 func NewChallenge(core *api.Core, validate ValidateFunc, provider challenge.Provider, opts ...ChallengeOption) *Challenge {
 	chlg := &Challenge{
-		core:            core,
-		validate:        validate,
-		provider:        provider,
-		preCheckDNSFunc: checkDNSPropagation,
-		dnsTimeout:      10 * time.Second,
+		core:       core,
+		validate:   validate,
+		provider:   provider,
+		preCheck:   newPreCheck(),
+		dnsTimeout: 10 * time.Second,
 	}
 
 	for _, opt := range opts {
 		err := opt(chlg)
 		if err != nil {
-			panic(err)
+			log.Infof("challenge option error: %v", err)
 		}
 	}
 
@@ -113,7 +113,7 @@ func (s *Challenge) Solve(chlng le.Challenge, domain string) error {
 	}
 
 	err = wait.For(timeout, interval, func() (bool, error) {
-		stop, err := s.preCheckDNSFunc(fqdn, value)
+		stop, err := s.preCheck.getFunc()(fqdn, value)
 		if !stop || err != nil {
 			log.Infof("[%s] Waiting for DNS record propagation.", domain)
 		}

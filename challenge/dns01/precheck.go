@@ -15,17 +15,48 @@ func AddPreCheck(preCheck PreCheckFunc) ChallengeOption {
 	// Prevent race condition
 	check := preCheck
 	return func(chlg *Challenge) error {
-		chlg.preCheckDNSFunc = check
+		chlg.preCheck.checkFunc = check
 		return nil
 	}
 }
 
+func DisableCompletePropagationRequirement() ChallengeOption {
+	return func(chlg *Challenge) error {
+		chlg.preCheck.requireCompletePropagation = false
+		return nil
+	}
+}
+
+type preCheck struct {
+	// checks DNS propagation before notifying ACME that the DNS challenge is ready.
+	checkFunc PreCheckFunc
+	// require the TXT record to be propagated to all authoritative name servers
+	requireCompletePropagation bool
+}
+
+func newPreCheck() preCheck {
+	return preCheck{
+		requireCompletePropagation: true,
+	}
+}
+
+func (p preCheck) getFunc() PreCheckFunc {
+	if p.checkFunc == nil {
+		return p.checkDNSPropagation
+	}
+	return p.checkFunc
+}
+
 // checkDNSPropagation checks if the expected TXT record has been propagated to all authoritative nameservers.
-func checkDNSPropagation(fqdn, value string) (bool, error) {
+func (p preCheck) checkDNSPropagation(fqdn, value string) (bool, error) {
 	// Initial attempt to resolve at the recursive NS
 	r, err := dnsQuery(fqdn, dns.TypeTXT, recursiveNameservers, true)
 	if err != nil {
 		return false, err
+	}
+
+	if !p.requireCompletePropagation {
+		return true, nil
 	}
 
 	if r.Rcode == dns.RcodeSuccess {

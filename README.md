@@ -93,6 +93,7 @@ GLOBAL OPTIONS:
    --dns value                 Solve a DNS challenge using the specified provider. Disables all other challenges. Run 'lego dnshelp' for help on usage.
    --http-timeout value        Set the HTTP timeout value to a specific value in seconds. The default is 10 seconds. (default: 0)
    --dns-timeout value         Set the DNS timeout value to a specific value in seconds. The default is 10 seconds. (default: 0)
+   --disable-cp                By setting this flag to true, disables the need to wait the propagation of the TXT record to all authoritative name servers.
    --dns-resolvers value       Set the resolvers to use for performing recursive DNS queries. Supported: host:port. The default is to use the system resolvers, or Google's DNS resolvers if the system's cannot be determined.
    --pem                       Generate a .pem file by concatenating the .key and .crt files together.
    --help, -h                  show help

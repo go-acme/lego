@@ -158,6 +158,8 @@ func setupDNS(client *acme.Client, c *cli.Context) {
 			dns01.AddDNSTimeout(time.Duration(c.GlobalInt("dns-timeout"))*time.Second)),
 		dns01.CondOption(len(servers) > 0,
 			dns01.AddRecursiveNameservers(dns01.ParseNameservers(c.GlobalStringSlice("dns-resolvers")))),
+		dns01.CondOption(c.GlobalIsSet("disable-cp"),
+			dns01.DisableCompletePropagationRequirement()),
 	)
 	if err != nil {
 		log.Fatal(err)

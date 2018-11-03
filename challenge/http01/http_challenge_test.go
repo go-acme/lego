@@ -21,7 +21,7 @@ func TestChallenge(t *testing.T) {
 
 	providerServer := &ProviderServer{port: "23457"}
 
-	mockValidate := func(_ *api.Core, _, _ string, chlng le.Challenge) error {
+	validate := func(_ *api.Core, _, _ string, chlng le.Challenge) error {
 		uri := "http://localhost" + providerServer.GetAddress() + ChallengePath(chlng.Token)
 
 		resp, err := http.DefaultClient.Get(uri)
@@ -53,11 +53,7 @@ func TestChallenge(t *testing.T) {
 	core, err := api.New(http.DefaultClient, "lego-test", apiURL, "", privKey)
 	require.NoError(t, err)
 
-	solver := &Challenge{
-		core:     core,
-		validate: mockValidate,
-		provider: providerServer,
-	}
+	solver := NewChallenge(core, validate, providerServer)
 
 	clientChallenge := le.Challenge{Type: string(challenge.HTTP01), Token: "http1"}
 
@@ -75,11 +71,9 @@ func TestChallengeInvalidPort(t *testing.T) {
 	core, err := api.New(http.DefaultClient, "lego-test", apiURL, "", privKey)
 	require.NoError(t, err)
 
-	solver := &Challenge{
-		core:     core,
-		validate: func(_ *api.Core, _, _ string, _ le.Challenge) error { return nil },
-		provider: &ProviderServer{port: "123456"},
-	}
+	validate := func(_ *api.Core, _, _ string, _ le.Challenge) error { return nil }
+
+	solver := NewChallenge(core, validate, &ProviderServer{port: "123456"})
 
 	clientChallenge := le.Challenge{Type: string(challenge.HTTP01), Token: "http2"}
 

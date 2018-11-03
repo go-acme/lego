@@ -4,12 +4,10 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-
-	"github.com/xenolf/lego/log"
 )
 
 const (
-	dnsTemplate = "%s %d IN TXT \"%s\""
+	dnsTemplate = `%s %d IN TXT "%s"`
 )
 
 // DNSProviderManual is an implementation of the ChallengeProvider interface
@@ -23,33 +21,32 @@ func NewDNSProviderManual() (*DNSProviderManual, error) {
 // Present prints instructions for manually creating the TXT record
 func (*DNSProviderManual) Present(domain, token, keyAuth string) error {
 	fqdn, value, ttl := GetRecord(domain, keyAuth)
-	dnsRecord := fmt.Sprintf(dnsTemplate, fqdn, ttl, value)
 
 	authZone, err := FindZoneByFqdn(fqdn)
 	if err != nil {
 		return err
 	}
 
-	log.Infof("acme: Please create the following TXT record in your %s zone:", authZone)
-	log.Infof("acme: %s", dnsRecord)
-	log.Infof("acme: Press 'Enter' when you are done")
+	fmt.Printf("lego: Please create the following TXT record in your %s zone:\n", authZone)
+	fmt.Printf(dnsTemplate+"\n", fqdn, ttl, value)
+	fmt.Printf("lego: Press 'Enter' when you are done\n")
 
-	reader := bufio.NewReader(os.Stdin)
-	_, _ = reader.ReadString('\n')
-	return nil
+	_, err = bufio.NewReader(os.Stdin).ReadBytes('\n')
+
+	return err
 }
 
 // CleanUp prints instructions for manually removing the TXT record
 func (*DNSProviderManual) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _, ttl := GetRecord(domain, keyAuth)
-	dnsRecord := fmt.Sprintf(dnsTemplate, fqdn, ttl, "...")
 
 	authZone, err := FindZoneByFqdn(fqdn)
 	if err != nil {
 		return err
 	}
 
-	log.Infof("acme: You can now remove this TXT record from your %s zone:", authZone)
-	log.Infof("acme: %s", dnsRecord)
+	fmt.Printf("lego: You can now remove this TXT record from your %s zone:\n", authZone)
+	fmt.Printf(dnsTemplate+"\n", fqdn, ttl, "...")
+
 	return nil
 }

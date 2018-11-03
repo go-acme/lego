@@ -1,47 +1,62 @@
 package dns01
 
 import (
-	"bufio"
-	"crypto/rand"
-	"crypto/rsa"
-	"net/http"
+	"io"
+	"io/ioutil"
 	"os"
 	"testing"
-	"time"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/le"
-	"github.com/xenolf/lego/le/api"
-	"github.com/xenolf/lego/platform/tester"
 )
 
-func TestDNSValidServerResponse(t *testing.T) {
-	_, apiURL, tearDown := tester.SetupFakeAPI()
-	defer tearDown()
+func TestDNSProviderManual(t *testing.T) {
+	backupStdin := os.Stdin
+	defer func() { os.Stdin = backupStdin }()
 
-	go func() {
-		time.Sleep(time.Second * 2)
-		f := bufio.NewWriter(os.Stdout)
-		defer f.Flush()
-		_, _ = f.WriteString("\n")
-	}()
+	testCases := []struct {
+		desc        string
+		input       string
+		expectError bool
+	}{
+		{
+			desc:  "Press enter",
+			input: "ok\n",
+		},
+		{
+			desc:        "Missing enter",
+			input:       "ok",
+			expectError: true,
+		},
+	}
 
-	privKey, err := rsa.GenerateKey(rand.Reader, 512)
-	require.NoError(t, err)
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			file, err := ioutil.TempFile("", "lego_test")
+			assert.NoError(t, err)
+			defer func() { _ = os.Remove(file.Name()) }()
 
-	core, err := api.New(http.DefaultClient, "lego-test", apiURL, "", privKey)
-	require.NoError(t, err)
+			_, err = io.WriteString(file, test.input)
+			assert.NoError(t, err)
 
-	manualProvider, err := NewDNSProviderManual()
-	require.NoError(t, err)
+			_, err = file.Seek(0, io.SeekStart)
+			assert.NoError(t, err)
 
-	validate := func(_ *api.Core, _, _ string, _ le.Challenge) error { return nil }
-	preCheck := func(fqdn, value string) (bool, error) { return true, nil }
+			os.Stdin = file
 
-	chlg := NewChallenge(core, validate, manualProvider, AddPreCheck(preCheck))
+			manualProvider, err := NewDNSProviderManual()
+			require.NoError(t, err)
 
-	clientChallenge := le.Challenge{Type: "dns01", Status: "pending", URL: apiURL + "/chlg", Token: "http8"}
+			err = manualProvider.Present("example.com", "", "")
+			if test.expectError {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
 
-	err = chlg.Solve(clientChallenge, "example.com")
-	require.NoError(t, err)
+				err = manualProvider.CleanUp("example.com", "", "")
+				require.NoError(t, err)
+			}
+		})
+	}
 }

@@ -1,5 +1,5 @@
 // Package selectel implements a DNS provider for solving the DNS-01 challenge using Selectel Domains API.
-// Selectel Domain API reference: https://my.selectel.ru/domains/doc
+// Selectel Domain API reference: https://kb.selectel.com/23136054.html
 // Token: https://my.selectel.ru/profile/apikeys
 package selectel
 

@@ -91,6 +91,12 @@ func lookupNameservers(fqdn string) ([]string, error) {
 	return nil, fmt.Errorf("could not determine authoritative nameservers")
 }
 
+// FindZoneByFqdn determines the zone apex for the given fqdn
+// by recursing up the domain labels until the nameserver returns a SOA record in the answer section.
+func FindZoneByFqdn(fqdn string) (string, error) {
+	return FindZoneByFqdnCustom(fqdn, recursiveNameservers)
+}
+
 // FindZoneByFqdnCustom determines the zone apex for the given fqdn
 // by recursing up the domain labels until the nameserver returns a SOA record in the answer section.
 func FindZoneByFqdnCustom(fqdn string, nameservers []string) (string, error) {
@@ -111,14 +117,9 @@ func FindZoneByFqdnCustom(fqdn string, nameservers []string) (string, error) {
 			return "", err
 		}
 
-		// Any response code other than NOERROR and NXDOMAIN is treated as error
-		if in.Rcode != dns.RcodeNameError && in.Rcode != dns.RcodeSuccess {
-			return "", fmt.Errorf("unexpected response code '%s' for %s",
-				dns.RcodeToString[in.Rcode], domain)
-		}
-
-		// Check if we got a SOA RR in the answer section
-		if in.Rcode == dns.RcodeSuccess {
+		switch in.Rcode {
+		case dns.RcodeSuccess:
+			// Check if we got a SOA RR in the answer section
 
 			// CNAME records cannot/should not exist at the root of a zone.
 			// So we skip a domain when a CNAME is found.
@@ -133,16 +134,15 @@ func FindZoneByFqdnCustom(fqdn string, nameservers []string) (string, error) {
 					return zone, nil
 				}
 			}
+		case dns.RcodeNameError:
+			// NXDOMAIN
+		default:
+			// Any response code other than NOERROR and NXDOMAIN is treated as error
+			return "", fmt.Errorf("unexpected response code '%s' for %s", dns.RcodeToString[in.Rcode], domain)
 		}
 	}
 
 	return "", fmt.Errorf("could not find the start of authority")
-}
-
-// FindZoneByFqdn determines the zone apex for the given fqdn
-// by recursing up the domain labels until the nameserver returns a SOA record in the answer section.
-func FindZoneByFqdn(fqdn string) (string, error) {
-	return FindZoneByFqdnCustom(fqdn, recursiveNameservers)
 }
 
 // dnsMsgContainsCNAME checks for a CNAME answer in msg

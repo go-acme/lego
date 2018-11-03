@@ -31,6 +31,7 @@ func TestCheckDNSPropagation(t *testing.T) {
 		test := test
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
+			ClearFqdnCache()
 
 			ok, err := checkDNSPropagation(test.fqdn, test.value)
 			if test.expectError {
@@ -69,6 +70,7 @@ func TestCheckAuthoritativeNss(t *testing.T) {
 		test := test
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
+			ClearFqdnCache()
 
 			ok, _ := checkAuthoritativeNss(test.fqdn, test.value, test.ns)
 			assert.Equal(t, test.expected, ok, test.fqdn)
@@ -103,6 +105,7 @@ func TestCheckAuthoritativeNssErr(t *testing.T) {
 		test := test
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
+			ClearFqdnCache()
 
 			_, err := checkAuthoritativeNss(test.fqdn, test.value, test.ns)
 			require.Error(t, err)

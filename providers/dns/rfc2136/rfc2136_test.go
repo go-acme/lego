@@ -12,7 +12,7 @@ import (
 	"github.com/miekg/dns"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/old/acme"
+	"github.com/xenolf/lego/challenge/dns01"
 )
 
 var (
@@ -29,7 +29,7 @@ var (
 var reqChan = make(chan *dns.Msg, 10)
 
 func TestCanaryLocalTestServer(t *testing.T) {
-	acme.ClearFqdnCache()
+	dns01.ClearFqdnCache()
 	dns.HandleFunc("example.com.", serverHandlerHello)
 	defer dns.HandleRemove("example.com.")
 
@@ -51,7 +51,7 @@ func TestCanaryLocalTestServer(t *testing.T) {
 }
 
 func TestServerSuccess(t *testing.T) {
-	acme.ClearFqdnCache()
+	dns01.ClearFqdnCache()
 	dns.HandleFunc(envTestZone, serverHandlerReturnSuccess)
 	defer dns.HandleRemove(envTestZone)
 
@@ -70,7 +70,7 @@ func TestServerSuccess(t *testing.T) {
 }
 
 func TestServerError(t *testing.T) {
-	acme.ClearFqdnCache()
+	dns01.ClearFqdnCache()
 	dns.HandleFunc(envTestZone, serverHandlerReturnErr)
 	defer dns.HandleRemove(envTestZone)
 
@@ -92,7 +92,7 @@ func TestServerError(t *testing.T) {
 }
 
 func TestTsigClient(t *testing.T) {
-	acme.ClearFqdnCache()
+	dns01.ClearFqdnCache()
 	dns.HandleFunc(envTestZone, serverHandlerReturnSuccess)
 	defer dns.HandleRemove(envTestZone)
 
@@ -113,7 +113,7 @@ func TestTsigClient(t *testing.T) {
 }
 
 func TestValidUpdatePacket(t *testing.T) {
-	acme.ClearFqdnCache()
+	dns01.ClearFqdnCache()
 	dns.HandleFunc(envTestZone, serverHandlerPassBackRequest)
 	defer dns.HandleRemove(envTestZone)
 

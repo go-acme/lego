@@ -12,8 +12,10 @@ import (
 type PreCheckFunc func(fqdn, value string) (bool, error)
 
 func AddPreCheck(preCheck PreCheckFunc) ChallengeOption {
+	// Prevent race condition
+	check := preCheck
 	return func(chlg *Challenge) error {
-		chlg.preCheckDNSFunc = preCheck
+		chlg.preCheckDNSFunc = check
 		return nil
 	}
 }

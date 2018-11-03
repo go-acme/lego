@@ -28,6 +28,13 @@ var defaultNameservers = []string{
 // recursiveNameservers are used to pre-check DNS propagation
 var recursiveNameservers = getNameservers(defaultResolvConf, defaultNameservers)
 
+// ClearFqdnCache clears the cache of fqdn to zone mappings. Primarily used in testing.
+func ClearFqdnCache() {
+	muFqdnToZone.Lock()
+	defer muFqdnToZone.Unlock()
+	fqdnToZone = map[string]string{}
+}
+
 func AddDNSTimeout(timeout time.Duration) ChallengeOption {
 	return func(_ *Challenge) error {
 		dnsTimeout = timeout
@@ -108,18 +115,31 @@ func FindZoneByFqdnCustom(fqdn string, nameservers []string) (string, error) {
 		return zone, nil
 	}
 
+	var err error
+	var in *dns.Msg
+
 	labelIndexes := dns.Split(fqdn)
 	for _, index := range labelIndexes {
 		domain := fqdn[index:]
 
-		in, err := dnsQuery(domain, dns.TypeSOA, nameservers, true)
+		in, err = dnsQuery(domain, dns.TypeSOA, nameservers, true)
 		if err != nil {
-			return "", err
+			// FIXME log?
+			continue
+			// return "", err
+		}
+
+		if in == nil {
+			continue
 		}
 
 		switch in.Rcode {
 		case dns.RcodeSuccess:
 			// Check if we got a SOA RR in the answer section
+
+			if len(in.Answer) == 0 {
+				continue
+			}
 
 			// CNAME records cannot/should not exist at the root of a zone.
 			// So we skip a domain when a CNAME is found.
@@ -142,7 +162,7 @@ func FindZoneByFqdnCustom(fqdn string, nameservers []string) (string, error) {
 		}
 	}
 
-	return "", fmt.Errorf("could not find the start of authority")
+	return "", fmt.Errorf("could not find the start of authority for %s%s", fqdn, formatDNSError(in, err))
 }
 
 // dnsMsgContainsCNAME checks for a CNAME answer in msg
@@ -155,14 +175,22 @@ func dnsMsgContainsCNAME(msg *dns.Msg) bool {
 	return false
 }
 
-// ClearFqdnCache clears the cache of fqdn to zone mappings. Primarily used in testing.
-func ClearFqdnCache() {
-	fqdnToZone = map[string]string{}
+func dnsQuery(fqdn string, rtype uint16, nameservers []string, recursive bool) (*dns.Msg, error) {
+	m := createDNSMsg(fqdn, rtype, recursive)
+
+	var in *dns.Msg
+	var err error
+
+	for _, ns := range nameservers {
+		in, err = sendDNSQuery(m, ns)
+		if err == nil && len(in.Answer) > 0 {
+			break
+		}
+	}
+	return in, err
 }
 
-// dnsQuery will query a nameserver, iterating through the supplied servers as it retries
-// The nameserver should include a port, to facilitate testing where we talk to a mock dns server.
-func dnsQuery(fqdn string, rtype uint16, nameservers []string, recursive bool) (in *dns.Msg, err error) {
+func createDNSMsg(fqdn string, rtype uint16, recursive bool) *dns.Msg {
 	m := new(dns.Msg)
 	m.SetQuestion(fqdn, rtype)
 	m.SetEdns0(4096, false)
@@ -171,21 +199,36 @@ func dnsQuery(fqdn string, rtype uint16, nameservers []string, recursive bool) (
 		m.RecursionDesired = false
 	}
 
-	// Will retry the request based on the number of servers (n+1)
-	for i := 1; i <= len(nameservers)+1; i++ {
-		ns := nameservers[i%len(nameservers)]
-		udp := &dns.Client{Net: "udp", Timeout: dnsTimeout}
-		in, _, err = udp.Exchange(m, ns)
+	return m
+}
 
-		if err == dns.ErrTruncated {
-			tcp := &dns.Client{Net: "tcp", Timeout: dnsTimeout}
-			// If the TCP request succeeds, the err will reset to nil
-			in, _, err = tcp.Exchange(m, ns)
-		}
+func sendDNSQuery(m *dns.Msg, ns string) (*dns.Msg, error) {
+	udp := &dns.Client{Net: "udp", Timeout: dnsTimeout}
+	in, _, err := udp.Exchange(m, ns)
 
-		if err == nil {
-			break
-		}
+	if err == dns.ErrTruncated {
+		tcp := &dns.Client{Net: "tcp", Timeout: dnsTimeout}
+		// If the TCP request succeeds, the err will reset to nil
+		in, _, err = tcp.Exchange(m, ns)
 	}
-	return
+
+	return in, err
+}
+
+func formatDNSError(msg *dns.Msg, err error) string {
+	var parts []string
+
+	if msg != nil {
+		parts = append(parts, dns.RcodeToString[msg.Rcode])
+	}
+
+	if err != nil {
+		parts = append(parts, fmt.Sprintf("%v", err))
+	}
+
+	if len(parts) > 0 {
+		return ": " + strings.Join(parts, " ")
+	}
+
+	return ""
 }

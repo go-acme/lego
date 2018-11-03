@@ -1,0 +1,9 @@
+{
+  "pebble": {
+    "listenAddress": "0.0.0.0:14000",
+    "certificate": "fixtures/certs/localhost/cert.pem",
+    "privateKey": "fixtures/certs/localhost/key.pem",
+    "httpPort": 5002,
+    "tlsPort": 5001
+  }
+}

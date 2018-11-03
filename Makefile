@@ -21,6 +21,9 @@ dependencies:
 test: clean
 	go test -v -cover ./...
 
+e2e: clean
+	LEGO_E2E_TESTS=local go test -v ./e2e/...
+
 checks:
 	golangci-lint run
 

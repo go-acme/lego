@@ -1,5 +1,4 @@
-// Package rfc2136 implements a DNS provider for solving the DNS-01 challenge
-// using the rfc2136 dynamic update.
+// Package rfc2136 implements a DNS provider for solving the DNS-01 challenge using the rfc2136 dynamic update.
 package rfc2136
 
 import (

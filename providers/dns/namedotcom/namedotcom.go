@@ -1,5 +1,4 @@
-// Package namedotcom implements a DNS provider for solving the DNS-01 challenge
-// using Name.com's DNS service.
+// Package namedotcom implements a DNS provider for solving the DNS-01 challenge using Name.com's DNS service.
 package namedotcom
 
 import (

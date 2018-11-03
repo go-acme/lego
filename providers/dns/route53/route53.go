@@ -1,5 +1,4 @@
-// Package route53 implements a DNS provider for solving the DNS-01 challenge
-// using AWS Route 53 DNS.
+// Package route53 implements a DNS provider for solving the DNS-01 challenge using AWS Route 53 DNS.
 package route53
 
 import (

@@ -1,10 +1,7 @@
-// Package glesys implements a DNS provider for solving the DNS-01
-// challenge using GleSYS api.
+// Package glesys implements a DNS provider for solving the DNS-01 challenge using GleSYS api.
 package glesys
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -13,7 +10,6 @@ import (
 	"time"
 
 	"github.com/xenolf/lego/challenge/dns01"
-	"github.com/xenolf/lego/log"
 	"github.com/xenolf/lego/platform/config/env"
 )
 
@@ -149,64 +145,4 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 // when checking for DNS record propagation with GleSYS.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
-}
-
-func (d *DNSProvider) sendRequest(method string, resource string, payload interface{}) (*responseStruct, error) {
-	url := fmt.Sprintf("%s/%s", defaultBaseURL, resource)
-
-	body, err := json.Marshal(payload)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest(method, url, bytes.NewReader(body))
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-	req.SetBasicAuth(d.config.APIUser, d.config.APIKey)
-
-	resp, err := d.config.HTTPClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode >= 400 {
-		return nil, fmt.Errorf("request failed with HTTP status code %d", resp.StatusCode)
-	}
-
-	var response responseStruct
-	err = json.NewDecoder(resp.Body).Decode(&response)
-
-	return &response, err
-}
-
-// functions to perform API actions
-
-func (d *DNSProvider) addTXTRecord(fqdn string, domain string, name string, value string, ttl int) (int, error) {
-	response, err := d.sendRequest(http.MethodPost, "addrecord", addRecordRequest{
-		DomainName: domain,
-		Host:       name,
-		Type:       "TXT",
-		Data:       value,
-		TTL:        ttl,
-	})
-
-	if response != nil && response.Response.Status.Code == http.StatusOK {
-		log.Infof("[%s]: Successfully created record id %d", fqdn, response.Response.Record.RecordID)
-		return response.Response.Record.RecordID, nil
-	}
-	return 0, err
-}
-
-func (d *DNSProvider) deleteTXTRecord(fqdn string, recordid int) error {
-	response, err := d.sendRequest(http.MethodPost, "deleterecord", deleteRecordRequest{
-		RecordID: recordid,
-	})
-	if response != nil && response.Response.Status.Code == 200 {
-		log.Infof("[%s]: Successfully deleted record id %d", fqdn, recordid)
-	}
-	return err
 }

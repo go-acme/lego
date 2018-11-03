@@ -1,5 +1,4 @@
-// Package cloudflare implements a DNS provider for solving the DNS-01
-// challenge using cloudflare DNS.
+// Package cloudflare implements a DNS provider for solving the DNS-01 challenge using cloudflare DNS.
 package cloudflare
 
 import (

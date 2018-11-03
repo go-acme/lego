@@ -1,5 +1,4 @@
-// Package linode implements a DNS provider for solving the DNS-01 challenge
-// using Linode DNS.
+// Package linode implements a DNS provider for solving the DNS-01 challenge using Linode DNS.
 package linode
 
 import (

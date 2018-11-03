@@ -1,4 +1,4 @@
-package cloudxns
+package internal
 
 import (
 	"bytes"

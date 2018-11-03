@@ -1,5 +1,4 @@
-// Package dnsimple implements a DNS provider for solving the DNS-01 challenge
-// using dnsimple DNS.
+// Package dnsimple implements a DNS provider for solving the DNS-01 challenge using dnsimple DNS.
 package dnsimple
 
 import (

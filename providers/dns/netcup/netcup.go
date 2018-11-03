@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/xenolf/lego/providers/dns/netcup/internal"
+
 	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/log"
 	"github.com/xenolf/lego/platform/config/env"
@@ -38,7 +40,7 @@ func NewDefaultConfig() *Config {
 
 // DNSProvider is an implementation of the acme.ChallengeProvider interface
 type DNSProvider struct {
-	client *Client
+	client *internal.Client
 	config *Config
 }
 
@@ -65,7 +67,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("netcup: the configuration of the DNS provider is nil")
 	}
 
-	client, err := NewClient(config.Customer, config.Key, config.Password)
+	client, err := internal.NewClient(config.Customer, config.Key, config.Password)
 	if err != nil {
 		return nil, fmt.Errorf("netcup: %v", err)
 	}
@@ -97,7 +99,12 @@ func (d *DNSProvider) Present(domainName, token, keyAuth string) error {
 	}()
 
 	hostname := strings.Replace(fqdn, "."+zone, "", 1)
-	record := createTxtRecord(hostname, value, d.config.TTL)
+	record := internal.DNSRecord{
+		Hostname:    hostname,
+		RecordType:  "TXT",
+		Destination: value,
+		TTL:         d.config.TTL,
+	}
 
 	zone = dns01.UnFqdn(zone)
 
@@ -147,16 +154,20 @@ func (d *DNSProvider) CleanUp(domainName, token, keyAuth string) error {
 		return fmt.Errorf("netcup: %v", err)
 	}
 
-	record := createTxtRecord(hostname, value, 0)
+	record := internal.DNSRecord{
+		Hostname:    hostname,
+		RecordType:  "TXT",
+		Destination: value,
+	}
 
-	idx, err := getDNSRecordIdx(records, record)
+	idx, err := internal.GetDNSRecordIdx(records, record)
 	if err != nil {
 		return fmt.Errorf("netcup: %v", err)
 	}
 
 	records[idx].DeleteRecord = true
 
-	err = d.client.UpdateDNSRecord(sessionID, zone, []DNSRecord{records[idx]})
+	err = d.client.UpdateDNSRecord(sessionID, zone, []internal.DNSRecord{records[idx]})
 	if err != nil {
 		return fmt.Errorf("netcup: %v", err)
 	}
@@ -168,30 +179,4 @@ func (d *DNSProvider) CleanUp(domainName, token, keyAuth string) error {
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
-}
-
-// getDNSRecordIdx searches a given array of DNSRecords for a given DNSRecord
-// equivalence is determined by Destination and RecortType attributes
-// returns index of given DNSRecord in given array of DNSRecords
-func getDNSRecordIdx(records []DNSRecord, record DNSRecord) (int, error) {
-	for index, element := range records {
-		if record.Destination == element.Destination && record.RecordType == element.RecordType {
-			return index, nil
-		}
-	}
-	return -1, fmt.Errorf("no DNS Record found")
-}
-
-// createTxtRecord uses the supplied values to return a DNSRecord of type TXT for the dns-01 challenge
-func createTxtRecord(hostname, value string, ttl int) DNSRecord {
-	return DNSRecord{
-		ID:           0,
-		Hostname:     hostname,
-		RecordType:   "TXT",
-		Priority:     "",
-		Destination:  value,
-		DeleteRecord: false,
-		State:        "",
-		TTL:          ttl,
-	}
 }

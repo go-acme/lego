@@ -1,4 +1,4 @@
-package netcup
+package internal
 
 import (
 	"bytes"
@@ -312,4 +312,16 @@ func decodeResponseMsg(resp *http.Response) (*ResponseMsg, error) {
 	}
 
 	return &respMsg, nil
+}
+
+// GetDNSRecordIdx searches a given array of DNSRecords for a given DNSRecord
+// equivalence is determined by Destination and RecortType attributes
+// returns index of given DNSRecord in given array of DNSRecords
+func GetDNSRecordIdx(records []DNSRecord, record DNSRecord) (int, error) {
+	for index, element := range records {
+		if record.Destination == element.Destination && record.RecordType == element.RecordType {
+			return index, nil
+		}
+	}
+	return -1, fmt.Errorf("no DNS Record found")
 }

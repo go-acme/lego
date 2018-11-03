@@ -1,5 +1,4 @@
-// Package ovh implements a DNS provider for solving the DNS-01
-// challenge using OVH DNS.
+// Package ovh implements a DNS provider for solving the DNS-01 challenge using OVH DNS.
 package ovh
 
 import (
@@ -17,6 +16,16 @@ import (
 
 // OVH API reference:       https://eu.api.ovh.com/
 // Create a Token:					https://eu.api.ovh.com/createToken/
+
+// Record a DNS record
+type Record struct {
+	ID        int    `json:"id,omitempty"`
+	FieldType string `json:"fieldType,omitempty"`
+	SubDomain string `json:"subDomain,omitempty"`
+	Target    string `json:"target,omitempty"`
+	TTL       int    `json:"ttl,omitempty"`
+	Zone      string `json:"zone,omitempty"`
+}
 
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
@@ -115,10 +124,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	subDomain := d.extractRecordName(fqdn, authZone)
 
 	reqURL := fmt.Sprintf("/domain/zone/%s/record", authZone)
-	reqData := txtRecordRequest{FieldType: "TXT", SubDomain: subDomain, Target: value, TTL: d.config.TTL}
-	var respData txtRecordResponse
+	reqData := Record{FieldType: "TXT", SubDomain: subDomain, Target: value, TTL: d.config.TTL}
 
 	// Create TXT record
+	var respData Record
 	err = d.client.Post(reqURL, reqData, &respData)
 	if err != nil {
 		return fmt.Errorf("ovh: error when call api to add record: %v", err)
@@ -184,22 +193,4 @@ func (d *DNSProvider) extractRecordName(fqdn, domain string) string {
 		return name[:idx]
 	}
 	return name
-}
-
-// txtRecordRequest represents the request body to DO's API to make a TXT record
-type txtRecordRequest struct {
-	FieldType string `json:"fieldType"`
-	SubDomain string `json:"subDomain"`
-	Target    string `json:"target"`
-	TTL       int    `json:"ttl"`
-}
-
-// txtRecordResponse represents a response from DO's API after making a TXT record
-type txtRecordResponse struct {
-	ID        int    `json:"id"`
-	FieldType string `json:"fieldType"`
-	SubDomain string `json:"subDomain"`
-	Target    string `json:"target"`
-	TTL       int    `json:"ttl"`
-	Zone      string `json:"zone"`
 }

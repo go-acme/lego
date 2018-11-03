@@ -1,13 +1,9 @@
-// Package hostingde implements a DNS provider for solving the DNS-01
-// challenge using hosting.de.
+// Package hostingde implements a DNS provider for solving the DNS-01 challenge using hosting.de.
 package hostingde
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"sync"
 	"time"
@@ -15,8 +11,6 @@ import (
 	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/platform/config/env"
 )
-
-const defaultBaseURL = "https://secure.hosting.de/api/dns/v1/json"
 
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
@@ -165,45 +159,4 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("hostingde: %v", err)
 	}
 	return nil
-}
-
-func (d *DNSProvider) updateZone(updateRequest ZoneUpdateRequest) (*ZoneUpdateResponse, error) {
-	body, err := json.Marshal(updateRequest)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest(http.MethodPost, defaultBaseURL+"/zoneUpdate", bytes.NewReader(body))
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := d.config.HTTPClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("error querying API: %v", err)
-	}
-
-	defer resp.Body.Close()
-
-	content, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, errors.New(toUnreadableBodyMessage(req, content))
-	}
-
-	// Everything looks good; but we'll need the ID later to delete the record
-	updateResponse := &ZoneUpdateResponse{}
-	err = json.Unmarshal(content, updateResponse)
-	if err != nil {
-		return nil, fmt.Errorf("%v: %s", err, toUnreadableBodyMessage(req, content))
-	}
-
-	if updateResponse.Status != "success" && updateResponse.Status != "pending" {
-		return updateResponse, errors.New(toUnreadableBodyMessage(req, content))
-	}
-
-	return updateResponse, nil
-}
-
-func toUnreadableBodyMessage(req *http.Request, rawBody []byte) string {
-	return fmt.Sprintf("the request %s sent a response with a body which is an invalid format: %q", req.URL, string(rawBody))
 }

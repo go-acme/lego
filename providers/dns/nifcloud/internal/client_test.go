@@ -1,4 +1,4 @@
-package nifcloud
+package internal
 
 import (
 	"fmt"

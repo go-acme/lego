@@ -1,5 +1,4 @@
-// Package alidns implements a DNS provider for solving the DNS-01 challenge
-// using Alibaba Cloud DNS.
+// Package alidns implements a DNS provider for solving the DNS-01 challenge using Alibaba Cloud DNS.
 package alidns
 
 import (

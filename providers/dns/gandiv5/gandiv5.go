@@ -1,5 +1,4 @@
-// Package gandiv5 implements a DNS provider for solving the DNS-01
-// challenge using Gandi LiveDNS api.
+// Package gandiv5 implements a DNS provider for solving the DNS-01 challenge using Gandi LiveDNS api.
 package gandiv5
 
 import (
@@ -11,7 +10,6 @@ import (
 	"time"
 
 	"github.com/xenolf/lego/challenge/dns01"
-	"github.com/xenolf/lego/log"
 	"github.com/xenolf/lego/platform/config/env"
 )
 
@@ -167,80 +165,4 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 // when checking for DNS record propagation with Gandi.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
-}
-
-// functions to perform API actions
-
-func (d *DNSProvider) addTXTRecord(domain string, name string, value string, ttl int) error {
-	// Get exiting values for the TXT records
-	// Needed to create challenges for both wildcard and base name domains
-	txtRecord, err := d.getTXTRecord(domain, name)
-	if err != nil {
-		return err
-	}
-
-	values := []string{value}
-	if len(txtRecord.RRSetValues) > 0 {
-		values = append(values, txtRecord.RRSetValues...)
-	}
-
-	target := fmt.Sprintf("domains/%s/records/%s/TXT", domain, name)
-
-	newRecord := &Record{RRSetTTL: ttl, RRSetValues: values}
-	req, err := d.newRequest(http.MethodPut, target, newRecord)
-	if err != nil {
-		return err
-	}
-
-	message := &apiResponse{}
-	err = d.do(req, message)
-	if err != nil {
-		return fmt.Errorf("unable to create TXT record for domain %s and name %s: %v", domain, name, err)
-	}
-
-	if message != nil && len(message.Message) > 0 {
-		log.Infof("API response: %s", message.Message)
-	}
-
-	return nil
-}
-
-func (d *DNSProvider) getTXTRecord(domain, name string) (*Record, error) {
-	target := fmt.Sprintf("domains/%s/records/%s/TXT", domain, name)
-
-	// Get exiting values for the TXT records
-	// Needed to create challenges for both wildcard and base name domains
-	req, err := d.newRequest(http.MethodGet, target, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	txtRecord := &Record{}
-	err = d.do(req, txtRecord)
-	if err != nil {
-		return nil, fmt.Errorf("unable to get TXT records for domain %s and name %s: %v", domain, name, err)
-	}
-
-	return txtRecord, nil
-}
-
-func (d *DNSProvider) deleteTXTRecord(domain string, name string) error {
-	target := fmt.Sprintf("domains/%s/records/%s/TXT", domain, name)
-
-	req, err := d.newRequest(http.MethodDelete, target, nil)
-	if err != nil {
-		return err
-	}
-
-	message := &apiResponse{}
-	err = d.do(req, message)
-	if err != nil {
-		return fmt.Errorf("unable to delete TXT record for domain %s and name %s: %v", domain, name, err)
-	}
-
-	if message != nil && len(message.Message) > 0 {
-		log.Infof("API response: %s", message.Message)
-	}
-
-	return nil
 }

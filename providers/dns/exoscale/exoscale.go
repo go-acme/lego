@@ -1,5 +1,4 @@
-// Package exoscale implements a DNS provider for solving the DNS-01 challenge
-// using exoscale DNS.
+// Package exoscale implements a DNS provider for solving the DNS-01 challenge using exoscale DNS.
 package exoscale
 
 import (

@@ -1,5 +1,4 @@
-// Package sakuracloud implements a DNS provider for solving the DNS-01 challenge
-// using sakuracloud DNS.
+// Package sakuracloud implements a DNS provider for solving the DNS-01 challenge using SakuraCloud DNS.
 package sakuracloud
 
 import (
@@ -39,7 +38,7 @@ type DNSProvider struct {
 	client *api.Client
 }
 
-// NewDNSProvider returns a DNSProvider instance configured for sakuracloud.
+// NewDNSProvider returns a DNSProvider instance configured for SakuraCloud.
 // Credentials must be passed in the environment variables: SAKURACLOUD_ACCESS_TOKEN & SAKURACLOUD_ACCESS_TOKEN_SECRET
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("SAKURACLOUD_ACCESS_TOKEN", "SAKURACLOUD_ACCESS_TOKEN_SECRET")
@@ -54,7 +53,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderConfig return a DNSProvider instance configured for GleSYS.
+// NewDNSProviderConfig return a DNSProvider instance configured for SakuraCloud.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("sakuracloud: the configuration of the DNS provider is nil")

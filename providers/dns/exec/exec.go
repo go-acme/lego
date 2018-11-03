@@ -1,3 +1,4 @@
+// Package exec mplements a DNS provider for solving the DNS-01 challenge using an external program.
 package exec
 
 import (

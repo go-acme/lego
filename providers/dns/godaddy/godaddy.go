@@ -2,12 +2,8 @@
 package godaddy
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
@@ -88,14 +84,6 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-func (d *DNSProvider) extractRecordName(fqdn, domain string) string {
-	name := dns01.UnFqdn(fqdn)
-	if idx := strings.Index(name, "."+domain); idx != -1 {
-		return name[:idx]
-	}
-	return name
-}
-
 // Present creates a TXT record to fulfill the dns-01 challenge
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value, _ := dns01.GetRecord(domain, keyAuth)
@@ -115,27 +103,6 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	return d.updateRecords(rec, domainZone, recordName)
-}
-
-func (d *DNSProvider) updateRecords(records []DNSRecord, domainZone string, recordName string) error {
-	body, err := json.Marshal(records)
-	if err != nil {
-		return err
-	}
-
-	var resp *http.Response
-	resp, err = d.makeRequest(http.MethodPut, fmt.Sprintf("/v1/domains/%s/records/TXT/%s", domainZone, recordName), bytes.NewReader(body))
-	if err != nil {
-		return err
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		bodyBytes, _ := ioutil.ReadAll(resp.Body)
-		return fmt.Errorf("could not create record %v; Status: %v; Body: %s", string(body), resp.StatusCode, string(bodyBytes))
-	}
-	return nil
 }
 
 // CleanUp sets null value in the TXT DNS record as GoDaddy has no proper DELETE record method
@@ -158,6 +125,14 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return d.updateRecords(rec, domainZone, recordName)
 }
 
+func (d *DNSProvider) extractRecordName(fqdn, domain string) string {
+	name := dns01.UnFqdn(fqdn)
+	if idx := strings.Index(name, "."+domain); idx != -1 {
+		return name[:idx]
+	}
+	return name
+}
+
 func (d *DNSProvider) getZone(fqdn string) (string, error) {
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
@@ -165,26 +140,4 @@ func (d *DNSProvider) getZone(fqdn string) (string, error) {
 	}
 
 	return dns01.UnFqdn(authZone), nil
-}
-
-func (d *DNSProvider) makeRequest(method, uri string, body io.Reader) (*http.Response, error) {
-	req, err := http.NewRequest(method, fmt.Sprintf("%s%s", defaultBaseURL, uri), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("sso-key %s:%s", d.config.APIKey, d.config.APISecret))
-
-	return d.config.HTTPClient.Do(req)
-}
-
-// DNSRecord a DNS record
-type DNSRecord struct {
-	Type     string `json:"type"`
-	Name     string `json:"name"`
-	Data     string `json:"data"`
-	Priority int    `json:"priority,omitempty"`
-	TTL      int    `json:"ttl,omitempty"`
 }

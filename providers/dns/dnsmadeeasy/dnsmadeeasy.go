@@ -11,6 +11,7 @@ import (
 
 	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/platform/config/env"
+	"github.com/xenolf/lego/providers/dns/dnsmadeeasy/internal"
 )
 
 // Config is used to configure the creation of the DNSProvider
@@ -44,7 +45,7 @@ func NewDefaultConfig() *Config {
 // DNSMadeEasy's DNS API to manage TXT records for a domain.
 type DNSProvider struct {
 	config *Config
-	client *Client
+	client *internal.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for DNSMadeEasy DNS.
@@ -81,7 +82,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		}
 	}
 
-	client, err := NewClient(config.APIKey, config.APISecret)
+	client, err := internal.NewClient(config.APIKey, config.APISecret)
 	if err != nil {
 		return nil, fmt.Errorf("dnsmadeeasy: %v", err)
 	}
@@ -112,7 +113,7 @@ func (d *DNSProvider) Present(domainName, token, keyAuth string) error {
 
 	// create the TXT record
 	name := strings.Replace(fqdn, "."+authZone, "", 1)
-	record := &Record{Type: "TXT", Name: name, Value: value, TTL: d.config.TTL}
+	record := &internal.Record{Type: "TXT", Name: name, Value: value, TTL: d.config.TTL}
 
 	err = d.client.CreateRecord(domain, record)
 	if err != nil {

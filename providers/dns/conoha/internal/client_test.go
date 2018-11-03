@@ -1,4 +1,4 @@
-package conoha
+package internal
 
 import (
 	"fmt"

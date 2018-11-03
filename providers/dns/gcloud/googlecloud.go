@@ -1,5 +1,4 @@
-// Package gcloud implements a DNS provider for solving the DNS-01
-// challenge using Google Cloud DNS.
+// Package gcloud implements a DNS provider for solving the DNS-01 challenge using Google Cloud DNS.
 package gcloud
 
 import (

@@ -1,5 +1,4 @@
-// Package nifcloud implements a DNS provider for solving the DNS-01 challenge
-// using NIFCLOUD DNS.
+// Package nifcloud implements a DNS provider for solving the DNS-01 challenge using NIFCLOUD DNS.
 package nifcloud
 
 import (
@@ -7,6 +6,8 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/xenolf/lego/providers/dns/nifcloud/internal"
 
 	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/platform/config/env"
@@ -38,7 +39,7 @@ func NewDefaultConfig() *Config {
 
 // DNSProvider implements the acme.ChallengeProvider interface
 type DNSProvider struct {
-	client *Client
+	client *internal.Client
 	config *Config
 }
 
@@ -65,7 +66,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("nifcloud: the configuration of the DNS provider is nil")
 	}
 
-	client, err := NewClient(config.AccessKey, config.SecretKey)
+	client, err := internal.NewClient(config.AccessKey, config.SecretKey)
 	if err != nil {
 		return nil, fmt.Errorf("nifcloud: %v", err)
 	}
@@ -112,20 +113,20 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) changeRecord(action, fqdn, value, domain string, ttl int) error {
 	name := dns01.UnFqdn(fqdn)
 
-	reqParams := ChangeResourceRecordSetsRequest{
-		XMLNs: xmlNs,
-		ChangeBatch: ChangeBatch{
+	reqParams := internal.ChangeResourceRecordSetsRequest{
+		XMLNs: internal.XMLNs,
+		ChangeBatch: internal.ChangeBatch{
 			Comment: "Managed by Lego",
-			Changes: Changes{
-				Change: []Change{
+			Changes: internal.Changes{
+				Change: []internal.Change{
 					{
 						Action: action,
-						ResourceRecordSet: ResourceRecordSet{
+						ResourceRecordSet: internal.ResourceRecordSet{
 							Name: name,
 							Type: "TXT",
 							TTL:  ttl,
-							ResourceRecords: ResourceRecords{
-								ResourceRecord: []ResourceRecord{
+							ResourceRecords: internal.ResourceRecords{
+								ResourceRecord: []internal.ResourceRecord{
 									{
 										Value: value,
 									},

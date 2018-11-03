@@ -1,5 +1,4 @@
-// Package conoha implements a DNS provider for solving the DNS-01 challenge
-// using ConoHa DNS.
+// Package conoha implements a DNS provider for solving the DNS-01 challenge using ConoHa DNS.
 package conoha
 
 import (
@@ -10,6 +9,7 @@ import (
 
 	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/platform/config/env"
+	"github.com/xenolf/lego/providers/dns/conoha/internal"
 )
 
 // Config is used to configure the creation of the DNSProvider
@@ -40,7 +40,7 @@ func NewDefaultConfig() *Config {
 // DNSProvider is an implementation of the acme.ChallengeProvider interface
 type DNSProvider struct {
 	config *Config
-	client *Client
+	client *internal.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for ConoHa DNS.
@@ -69,15 +69,15 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("conoha: some credentials information are missing")
 	}
 
-	auth := Auth{
+	auth := internal.Auth{
 		TenantID: config.TenantID,
-		PasswordCredentials: PasswordCredentials{
+		PasswordCredentials: internal.PasswordCredentials{
 			Username: config.Username,
 			Password: config.Password,
 		},
 	}
 
-	client, err := NewClient(config.Region, auth, config.HTTPClient)
+	client, err := internal.NewClient(config.Region, auth, config.HTTPClient)
 	if err != nil {
 		return nil, fmt.Errorf("conoha: failed to create client: %v", err)
 	}
@@ -99,7 +99,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("conoha: failed to get domain ID: %v", err)
 	}
 
-	record := Record{
+	record := internal.Record{
 		Name: fqdn,
 		Type: "TXT",
 		Data: value,

@@ -1,5 +1,4 @@
-// Package vegadns implements a DNS provider for solving the DNS-01
-// challenge using VegaDNS.
+// Package vegadns implements a DNS provider for solving the DNS-01 challenge using VegaDNS.
 package vegadns
 
 import (

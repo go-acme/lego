@@ -1,5 +1,4 @@
-// Package namecheap implements a DNS provider for solving the DNS-01
-// challenge using namecheap DNS.
+// Package namecheap implements a DNS provider for solving the DNS-01 challenge using namecheap DNS.
 package namecheap
 
 import (

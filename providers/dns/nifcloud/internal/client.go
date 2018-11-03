@@ -1,6 +1,4 @@
-// Package nifcloud implements a DNS provider for solving the DNS-01 challenge
-// using NIFCLOUD DNS.
-package nifcloud
+package internal
 
 import (
 	"bytes"
@@ -17,7 +15,8 @@ import (
 const (
 	defaultBaseURL = "https://dns.api.cloud.nifty.com"
 	apiVersion     = "2012-12-12N2013-12-16"
-	xmlNs          = "https://route53.amazonaws.com/doc/2012-12-12/"
+	// XMLNs XML NS of Route53
+	XMLNs = "https://route53.amazonaws.com/doc/2012-12-12/"
 )
 
 // ChangeResourceRecordSetsRequest is a complex type that contains change information for the resource record set.

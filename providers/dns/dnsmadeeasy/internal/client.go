@@ -1,4 +1,4 @@
-package dnsmadeeasy
+package internal
 
 import (
 	"bytes"

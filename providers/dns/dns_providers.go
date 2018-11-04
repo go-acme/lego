@@ -32,6 +32,7 @@ import (
 	"github.com/xenolf/lego/providers/dns/lightsail"
 	"github.com/xenolf/lego/providers/dns/linode"
 	"github.com/xenolf/lego/providers/dns/linodev4"
+	"github.com/xenolf/lego/providers/dns/mydnsjp"
 	"github.com/xenolf/lego/providers/dns/namecheap"
 	"github.com/xenolf/lego/providers/dns/namedotcom"
 	"github.com/xenolf/lego/providers/dns/netcup"
@@ -111,6 +112,8 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 		return linodev4.NewDNSProvider()
 	case "manual":
 		return acme.NewDNSProviderManual()
+	case "mydnsjp":
+		return mydnsjp.NewDNSProvider()
 	case "namecheap":
 		return namecheap.NewDNSProvider()
 	case "namedotcom":

@@ -1,9 +1,9 @@
 package api
 
 import (
-	"encoding/json"
-	//	"strings"
+	"encoding/json" //	"strings"
 	"fmt"
+
 	"github.com/sacloud/libsacloud/sacloud"
 )
 

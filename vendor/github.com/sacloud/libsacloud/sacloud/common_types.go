@@ -213,7 +213,7 @@ type Request struct {
 	Filter               map[string]interface{} `json:",omitempty"` // フィルタ
 	Exclude              []string               `json:",omitempty"` // 除外する項目
 	Include              []string               `json:",omitempty"` // 取得する項目
-
+	DistantFrom          []int64                `json:",omitempty"` // ストレージ隔離対象ディスク
 }
 
 // AddFilter フィルタの追加
@@ -324,3 +324,15 @@ var (
 
 // DatetimeLayout さくらのクラウドAPIで利用される日付型のレイアウト(RFC3339)
 var DatetimeLayout = "2006-01-02T15:04:05-07:00"
+
+// PlanGenerations サーバプラン世代
+type PlanGenerations int
+
+var (
+	// PlanDefault デフォルト
+	PlanDefault = PlanGenerations(0)
+	// PlanG1 第1世代(Generation:100)
+	PlanG1 = PlanGenerations(100)
+	// PlanG2 第2世代(Generation:200)
+	PlanG2 = PlanGenerations(200)
+)

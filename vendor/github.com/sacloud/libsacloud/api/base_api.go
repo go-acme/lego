@@ -3,8 +3,9 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/sacloud/libsacloud/sacloud"
 	"net/url"
+
+	"github.com/sacloud/libsacloud/sacloud"
 )
 
 type baseAPI struct {

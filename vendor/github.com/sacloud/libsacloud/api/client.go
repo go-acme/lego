@@ -4,14 +4,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/sacloud/libsacloud"
-	"github.com/sacloud/libsacloud/sacloud"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/sacloud/libsacloud"
+	"github.com/sacloud/libsacloud/sacloud"
 )
 
 var (

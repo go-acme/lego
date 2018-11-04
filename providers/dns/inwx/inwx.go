@@ -1,5 +1,4 @@
-// Package inwx implements a DNS provider for solving the DNS-01 challenge
-// using inwx dom robot
+// Package inwx implements a DNS provider for solving the DNS-01 challenge using inwx dom robot
 package inwx
 
 import (
@@ -88,6 +87,13 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("inwx: %v", err)
 	}
 
+	defer func() {
+		errL := d.client.Account.Logout()
+		if errL != nil {
+			log.Infof("inwx: failed to logout: %v", errL)
+		}
+	}()
+
 	var request = &goinwx.NameserverRecordRequest{
 		Domain:  acme.UnFqdn(authZone),
 		Name:    acme.UnFqdn(fqdn),
@@ -103,6 +109,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 			if err.(*goinwx.ErrorResponse).Message == "Object exists" {
 				return nil
 			}
+			return fmt.Errorf("inwx: %v", err)
 		default:
 			return fmt.Errorf("inwx: %v", err)
 		}
@@ -125,6 +132,13 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("inwx: %v", err)
 	}
 
+	defer func() {
+		errL := d.client.Account.Logout()
+		if errL != nil {
+			log.Infof("inwx: failed to logout: %v", errL)
+		}
+	}()
+
 	response, err := d.client.Nameservers.Info(&goinwx.NameserverInfoRequest{
 		Domain: acme.UnFqdn(authZone),
 		Name:   acme.UnFqdn(fqdn),
@@ -141,11 +155,8 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 			lastErr = fmt.Errorf("inwx: %v", err)
 		}
 	}
-	if lastErr != nil {
-		return lastErr
-	}
 
-	return d.client.Account.Logout()
+	return lastErr
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.

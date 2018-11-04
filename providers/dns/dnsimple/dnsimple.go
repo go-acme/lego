@@ -2,6 +2,7 @@
 package dnsimple
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strconv"
@@ -11,6 +12,7 @@ import (
 	"github.com/dnsimple/dnsimple-go/dnsimple"
 	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/platform/config/env"
+	"golang.org/x/oauth2"
 )
 
 // Config is used to configure the creation of the DNSProvider
@@ -59,7 +61,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("dnsimple: OAuth token is missing")
 	}
 
-	client := dnsimple.NewClient(dnsimple.NewOauthTokenCredentials(config.AccessToken))
+	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: config.AccessToken})
+	client := dnsimple.NewClient(oauth2.NewClient(context.Background(), ts))
 
 	if config.BaseURL != "" {
 		client.BaseURL = config.BaseURL

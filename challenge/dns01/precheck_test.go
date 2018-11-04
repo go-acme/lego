@@ -33,7 +33,9 @@ func TestCheckDNSPropagation(t *testing.T) {
 			t.Parallel()
 			ClearFqdnCache()
 
-			ok, err := checkDNSPropagation(test.fqdn, test.value)
+			check := newPreCheck()
+
+			ok, err := check.checkDNSPropagation(test.fqdn, test.value)
 			if test.expectError {
 				assert.Errorf(t, err, "PreCheckDNS must failed for %s", test.fqdn)
 				assert.False(t, ok, "PreCheckDNS must failed for %s", test.fqdn)

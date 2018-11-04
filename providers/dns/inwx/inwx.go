@@ -52,10 +52,6 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config.Username = values["INWX_USERNAME"]
 	config.Password = values["INWX_PASSWORD"]
 
-	if config.Sandbox {
-		log.Infof("inwx: sandbox mode is enabled")
-	}
-
 	return NewDNSProviderConfig(config)
 }
 
@@ -67,6 +63,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	if config.Username == "" || config.Password == "" {
 		return nil, fmt.Errorf("inwx: credentials missing")
+	}
+
+	if config.Sandbox {
+		log.Infof("inwx: sandbox mode is enabled")
 	}
 
 	client := goinwx.NewClient(config.Username, config.Password, &goinwx.ClientOptions{Sandbox: config.Sandbox})

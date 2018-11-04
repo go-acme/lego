@@ -1,7 +1,6 @@
 package inwx
 
 import (
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -10,8 +9,11 @@ import (
 
 var envTest = tester.NewEnvTest(
 	"INWX_USERNAME",
-	"INWX_PASSWORD").
-	WithDomain("INWX_DOMAIN")
+	"INWX_PASSWORD",
+	"INWX_SANDBOX",
+	"INWX_TTL").
+	WithDomain("INWX_DOMAIN").
+	WithLiveTestRequirements("INWX_USERNAME", "INWX_PASSWORD", "INWX_DOMAIN")
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -116,11 +118,13 @@ func TestLivePresentAndCleanup(t *testing.T) {
 		t.Skip("skipping live test")
 	}
 
-	os.Setenv("INWX_SANDBOX", "true")
-	// In sandbox mode, the minimum allowed TTL is 3600
-	os.Setenv("INWX_TTL", "3600")
-
 	envTest.RestoreEnv()
+	envTest.Apply(map[string]string{
+		"INWX_SANDBOX": "true",
+		"INWX_TTL":     "3600", // In sandbox mode, the minimum allowed TTL is 3600
+	})
+	defer envTest.RestoreEnv()
+
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 

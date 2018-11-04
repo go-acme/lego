@@ -1,5 +1,7 @@
 .PHONY: clean checks test build image dependencies
 
+SRCS = $(shell git ls-files '*.go' | grep -v '^vendor/')
+
 LEGO_IMAGE := xenolf/lego
 
 TAG_NAME := $(shell git tag -l --contains HEAD)
@@ -27,6 +29,8 @@ e2e: clean
 checks:
 	golangci-lint run
 
+fmt:
+	gofmt -s -l -w $(SRCS)
 image:
 	@echo Version: $(VERSION)
 	docker build -t $(LEGO_IMAGE) .

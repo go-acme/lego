@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/log"
 )
 
@@ -153,6 +155,66 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 				require.NoError(t, err)
 				assert.Equal(t, test.expected.args, message)
 			}
+		})
+	}
+}
+
+func TestDNSProvider_Timeout(t *testing.T) {
+	type expected struct {
+		Timeout, Interval time.Duration
+	}
+
+	testCases := []struct {
+		desc     string
+		config   *Config
+		expected expected
+	}{
+		{
+			desc: "Standard mode",
+			config: &Config{
+				Program: "./fixtures/timeout.sh",
+				Mode:    "",
+			},
+			expected: expected{
+				Timeout:  30 * time.Second,
+				Interval: 5 * time.Second,
+			},
+		},
+		{
+			desc: "Raw mode",
+			config: &Config{
+				Program: "./fixtures/timeout.sh",
+				Mode:    "RAW",
+			},
+			expected: expected{
+				Timeout:  30 * time.Second,
+				Interval: 5 * time.Second,
+			},
+		},
+		{
+			desc: "program error",
+			config: &Config{
+				Program: "ogellego",
+				Mode:    "",
+			},
+			expected: expected{
+				Timeout:  dns01.DefaultPropagationTimeout,
+				Interval: dns01.DefaultPollingInterval,
+			},
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			// message = ""
+
+			provider, err := NewDNSProviderConfig(test.config)
+			require.NoError(t, err)
+
+			timeout, interval := provider.Timeout()
+
+			assert.Equal(t, test.expected.Timeout, timeout)
+			assert.Equal(t, test.expected.Interval, interval)
 		})
 	}
 }

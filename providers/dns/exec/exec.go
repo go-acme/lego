@@ -1,16 +1,22 @@
-// Package exec mplements a DNS provider for solving the DNS-01 challenge using an external program.
+// Package exec implements a DNS provider which runs a program for adding/removing the DNS record.
 package exec
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
 	"os/exec"
+	"time"
 
 	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/log"
 	"github.com/xenolf/lego/platform/config/env"
 )
+
+type timeoutConfig struct {
+	Timeout, Interval int
+}
 
 // Config Provider configuration.
 type Config struct {
@@ -86,4 +92,30 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	return err
+}
+
+func (d *DNSProvider) Timeout() (time.Duration, time.Duration) {
+	cmd := exec.Command(d.config.Program, "timeout")
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return handleTimeoutError(err, output)
+	}
+
+	var tc timeoutConfig
+	err = json.Unmarshal(output, &tc)
+	if err != nil {
+		return handleTimeoutError(err, output)
+	}
+
+	return time.Duration(tc.Timeout) * time.Second, time.Duration(tc.Interval) * time.Second
+}
+
+func handleTimeoutError(err error, output []byte) (time.Duration, time.Duration) {
+	log.Infof("fallback to default timeout and interval because command 'timeout' failed: %v", err)
+	if len(output) > 0 {
+		log.Println(string(output))
+	}
+
+	return dns01.DefaultPropagationTimeout, dns01.DefaultPollingInterval
 }

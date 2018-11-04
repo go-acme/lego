@@ -15,6 +15,7 @@ var envTest = tester.NewEnvTest(
 
 func init() {
 	os.Setenv("INWX_SANDBOX", "true")
+	// In sandbox mode, the minimum allowed TTL is 3600
 	os.Setenv("INWX_TTL", "3600")
 }
 

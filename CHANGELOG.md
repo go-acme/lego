@@ -4,6 +4,7 @@
 
 ### Added:
 - **[dnsprovider]** Add DNS Provider for ConoHa DNS
+- **[dnsprovider]** Add DNS Provider for MyDNS.jp
 - **[dnsprovider]** Add DNS Provider for Selectel
 
 ### Fixed:

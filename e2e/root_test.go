@@ -21,7 +21,6 @@ import (
 var lego string
 
 func testMain(m *testing.M) int {
-	os.Setenv("LEGO_E2E_TESTS", "yop")
 	_, force := os.LookupEnv("LEGO_E2E_TESTS")
 	if _, ci := os.LookupEnv("CI"); !ci && !force {
 		fmt.Fprintln(os.Stderr, "skipping test: e2e tests are disable. (no 'CI' or 'LEGO_E2E_TESTS' env var)")

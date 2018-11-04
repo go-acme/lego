@@ -1,34 +1,17 @@
 package mydnsjp
 
 import (
-	"os"
 	"testing"
 	"time"
+
+	"github.com/xenolf/lego/platform/tester"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-var (
-	mydnsjpLiveTest bool
-	mydnsjpMasterID string
-	mydnsjpPassword string
-	mydnsjpDomain   string
-)
-
-func init() {
-	mydnsjpMasterID = os.Getenv("MYDNSJP_MASTER_ID")
-	mydnsjpPassword = os.Getenv("MYDNSJP_PASSWORD")
-	mydnsjpDomain = os.Getenv("MYDNSJP_DOMAIN")
-	if len(mydnsjpMasterID) > 0 && len(mydnsjpPassword) > 0 && len(mydnsjpDomain) > 0 {
-		mydnsjpLiveTest = true
-	}
-}
-
-func restoreEnv() {
-	os.Setenv("MYDNSJP_MASTER_ID", mydnsjpMasterID)
-	os.Setenv("MYDNSJP_PASSWORD", mydnsjpPassword)
-}
+var envTest = tester.NewEnvTest("MYDNSJP_MASTER_ID", "MYDNSJP_PASSWORD").
+	WithDomain("MYDNSJP_DOMAIN")
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -71,14 +54,10 @@ func TestNewDNSProvider(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer restoreEnv()
-			for key, value := range test.envVars {
-				if len(value) == 0 {
-					os.Unsetenv(key)
-				} else {
-					os.Setenv(key, value)
-				}
-			}
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
+			envTest.Apply(test.envVars)
 
 			p, err := NewDNSProvider()
 
@@ -122,10 +101,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer restoreEnv()
-			os.Unsetenv("MYDNSJP_MASTER_ID")
-			os.Unsetenv("MYDNSJP_PASSWORD")
-
 			config := NewDefaultConfig()
 			config.MasterID = test.masterID
 			config.Password = test.password
@@ -143,35 +118,29 @@ func TestNewDNSProviderConfig(t *testing.T) {
 }
 
 func TestLivePresent(t *testing.T) {
-	if !mydnsjpLiveTest {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	config := NewDefaultConfig()
-	config.MasterID = mydnsjpMasterID
-	config.Password = mydnsjpPassword
-
-	provider, err := NewDNSProviderConfig(config)
+	envTest.RestoreEnv()
+	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.Present(mydnsjpDomain, "", "123d==")
+	err = provider.Present(envTest.GetDomain(), "", "123d==")
 	assert.NoError(t, err)
 }
 
 func TestLiveCleanUp(t *testing.T) {
-	if !mydnsjpLiveTest {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	time.Sleep(2 * time.Second)
-
-	config := NewDefaultConfig()
-	config.MasterID = mydnsjpMasterID
-	config.Password = mydnsjpPassword
-
-	provider, err := NewDNSProviderConfig(config)
+	envTest.RestoreEnv()
+	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.CleanUp(mydnsjpDomain, "", "123d==")
+	time.Sleep(2 * time.Second)
+
+	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
 	assert.NoError(t, err)
 }

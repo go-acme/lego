@@ -78,7 +78,8 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	err := d.doRequest(domain, keyAuth, "REGIST")
+	_, value, _ := acme.DNS01Record(domain, keyAuth)
+	err := d.doRequest(domain, value, "REGIST")
 	if err != nil {
 		return fmt.Errorf("mydnsjp: %v", err)
 	}
@@ -87,16 +88,15 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	err := d.doRequest(domain, keyAuth, "DELETE")
+	_, value, _ := acme.DNS01Record(domain, keyAuth)
+	err := d.doRequest(domain, value, "DELETE")
 	if err != nil {
 		return fmt.Errorf("mydnsjp: %v", err)
 	}
 	return nil
 }
 
-func (d *DNSProvider) doRequest(domain, keyAuth string, cmd string) error {
-	_, value, _ := acme.DNS01Record(domain, keyAuth)
-
+func (d *DNSProvider) doRequest(domain, value string, cmd string) error {
 	req, err := d.buildRequest(domain, value, cmd)
 	if err != nil {
 		return err

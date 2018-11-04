@@ -10,27 +10,18 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/lightsail"
 	"github.com/stretchr/testify/require"
+	"github.com/xenolf/lego/platform/tester"
 )
 
-var (
-	lightsailSecret string
-	lightsailKey    string
-	lightsailZone   string
-)
+var envTest = tester.NewEnvTest(
+	"AWS_ACCESS_KEY_ID",
+	"AWS_SECRET_ACCESS_KEY",
+	"AWS_REGION",
+	"AWS_HOSTED_ZONE_ID").
+	WithDomain("DNS_ZONE").
+	WithLiveTestRequirements("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "DNS_ZONE")
 
-func init() {
-	lightsailKey = os.Getenv("AWS_ACCESS_KEY_ID")
-	lightsailSecret = os.Getenv("AWS_SECRET_ACCESS_KEY")
-}
-
-func restoreEnv() {
-	os.Setenv("AWS_ACCESS_KEY_ID", lightsailKey)
-	os.Setenv("AWS_SECRET_ACCESS_KEY", lightsailSecret)
-	os.Setenv("AWS_REGION", "us-east-1")
-	os.Setenv("AWS_HOSTED_ZONE_ID", lightsailZone)
-}
-
-func makeLightsailProvider(ts *httptest.Server) (*DNSProvider, error) {
+func makeProvider(ts *httptest.Server) (*DNSProvider, error) {
 	config := &aws.Config{
 		Credentials: credentials.NewStaticCredentials("abc", "123", " "),
 		Endpoint:    aws.String(ts.URL),
@@ -50,7 +41,9 @@ func makeLightsailProvider(ts *httptest.Server) (*DNSProvider, error) {
 }
 
 func TestCredentialsFromEnv(t *testing.T) {
-	defer restoreEnv()
+	defer envTest.RestoreEnv()
+	envTest.ClearEnv()
+
 	os.Setenv("AWS_ACCESS_KEY_ID", "123")
 	os.Setenv("AWS_SECRET_ACCESS_KEY", "123")
 	os.Setenv("AWS_REGION", "us-east-1")
@@ -66,7 +59,7 @@ func TestCredentialsFromEnv(t *testing.T) {
 	require.NoError(t, err, "Expected credentials to be set from environment")
 }
 
-func TestLightsailPresent(t *testing.T) {
+func TestDNSProvider_Present(t *testing.T) {
 	mockResponses := map[string]MockResponse{
 		"/": {StatusCode: 200, Body: ""},
 	}
@@ -74,7 +67,7 @@ func TestLightsailPresent(t *testing.T) {
 	ts := newMockServer(t, mockResponses)
 	defer ts.Close()
 
-	provider, err := makeLightsailProvider(ts)
+	provider, err := makeProvider(ts)
 	require.NoError(t, err)
 
 	domain := "example.com"

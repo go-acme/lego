@@ -1,101 +1,181 @@
 package fastdns
 
 import (
-	"os"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/xenolf/lego/platform/tester"
 )
 
-var (
-	fastdnsLiveTest bool
-	host            string
-	clientToken     string
-	clientSecret    string
-	accessToken     string
-	testDomain      string
-)
+var envTest = tester.NewEnvTest(
+	"AKAMAI_HOST",
+	"AKAMAI_CLIENT_TOKEN",
+	"AKAMAI_CLIENT_SECRET",
+	"AKAMAI_ACCESS_TOKEN").
+	WithDomain("AKAMAI_TEST_DOMAIN")
 
-func init() {
-	host = os.Getenv("AKAMAI_HOST")
-	clientToken = os.Getenv("AKAMAI_CLIENT_TOKEN")
-	clientSecret = os.Getenv("AKAMAI_CLIENT_SECRET")
-	accessToken = os.Getenv("AKAMAI_ACCESS_TOKEN")
-	testDomain = os.Getenv("AKAMAI_TEST_DOMAIN")
+func TestNewDNSProvider(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		envVars  map[string]string
+		expected string
+	}{
+		{
+			desc: "success",
+			envVars: map[string]string{
+				"AKAMAI_HOST":          "A",
+				"AKAMAI_CLIENT_TOKEN":  "B",
+				"AKAMAI_CLIENT_SECRET": "C",
+				"AKAMAI_ACCESS_TOKEN":  "D",
+			},
+		},
+		{
+			desc: "missing credentials",
+			envVars: map[string]string{
+				"AKAMAI_HOST":          "",
+				"AKAMAI_CLIENT_TOKEN":  "",
+				"AKAMAI_CLIENT_SECRET": "",
+				"AKAMAI_ACCESS_TOKEN":  "",
+			},
+			expected: "fastdns: some credentials information are missing: AKAMAI_HOST,AKAMAI_CLIENT_TOKEN,AKAMAI_CLIENT_SECRET,AKAMAI_ACCESS_TOKEN",
+		},
+		{
+			desc: "missing host",
+			envVars: map[string]string{
+				"AKAMAI_HOST":          "",
+				"AKAMAI_CLIENT_TOKEN":  "B",
+				"AKAMAI_CLIENT_SECRET": "C",
+				"AKAMAI_ACCESS_TOKEN":  "D",
+			},
+			expected: "fastdns: some credentials information are missing: AKAMAI_HOST",
+		},
+		{
+			desc: "missing client token",
+			envVars: map[string]string{
+				"AKAMAI_HOST":          "A",
+				"AKAMAI_CLIENT_TOKEN":  "",
+				"AKAMAI_CLIENT_SECRET": "C",
+				"AKAMAI_ACCESS_TOKEN":  "D",
+			},
+			expected: "fastdns: some credentials information are missing: AKAMAI_CLIENT_TOKEN",
+		},
+		{
+			desc: "missing client secret",
+			envVars: map[string]string{
+				"AKAMAI_HOST":          "A",
+				"AKAMAI_CLIENT_TOKEN":  "B",
+				"AKAMAI_CLIENT_SECRET": "",
+				"AKAMAI_ACCESS_TOKEN":  "D",
+			},
+			expected: "fastdns: some credentials information are missing: AKAMAI_CLIENT_SECRET",
+		},
+		{
+			desc: "missing access token",
+			envVars: map[string]string{
+				"AKAMAI_HOST":          "A",
+				"AKAMAI_CLIENT_TOKEN":  "B",
+				"AKAMAI_CLIENT_SECRET": "C",
+				"AKAMAI_ACCESS_TOKEN":  "",
+			},
+			expected: "fastdns: some credentials information are missing: AKAMAI_ACCESS_TOKEN",
+		},
+	}
 
-	if len(host) > 0 && len(clientToken) > 0 && len(clientSecret) > 0 && len(accessToken) > 0 {
-		fastdnsLiveTest = true
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
+			envTest.Apply(test.envVars)
+
+			p, err := NewDNSProvider()
+
+			if len(test.expected) == 0 {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
 	}
 }
 
-func restoreEnv() {
-	os.Setenv("AKAMAI_HOST", host)
-	os.Setenv("AKAMAI_CLIENT_TOKEN", clientToken)
-	os.Setenv("AKAMAI_CLIENT_SECRET", clientSecret)
-	os.Setenv("AKAMAI_ACCESS_TOKEN", accessToken)
-}
-
-func TestNewDNSProviderValid(t *testing.T) {
-	defer restoreEnv()
-	os.Setenv("AKAMAI_HOST", "")
-	os.Setenv("AKAMAI_CLIENT_TOKEN", "")
-	os.Setenv("AKAMAI_CLIENT_SECRET", "")
-	os.Setenv("AKAMAI_ACCESS_TOKEN", "")
-
-	config := NewDefaultConfig()
-	config.Host = "somehost"
-	config.ClientToken = "someclienttoken"
-	config.ClientSecret = "someclientsecret"
-	config.AccessToken = "someaccesstoken"
-
-	_, err := NewDNSProviderConfig(config)
-	require.NoError(t, err)
-}
-
-func TestNewDNSProviderValidEnv(t *testing.T) {
-	defer restoreEnv()
-	os.Setenv("AKAMAI_HOST", "somehost")
-	os.Setenv("AKAMAI_CLIENT_TOKEN", "someclienttoken")
-	os.Setenv("AKAMAI_CLIENT_SECRET", "someclientsecret")
-	os.Setenv("AKAMAI_ACCESS_TOKEN", "someaccesstoken")
-
-	_, err := NewDNSProvider()
-	require.NoError(t, err)
-}
-
-func TestNewDNSProviderMissingCredErr(t *testing.T) {
-	defer restoreEnv()
-	os.Setenv("AKAMAI_HOST", "")
-	os.Setenv("AKAMAI_CLIENT_TOKEN", "")
-	os.Setenv("AKAMAI_CLIENT_SECRET", "")
-	os.Setenv("AKAMAI_ACCESS_TOKEN", "")
-
-	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "fastdns: some credentials information are missing: AKAMAI_HOST,AKAMAI_CLIENT_TOKEN,AKAMAI_CLIENT_SECRET,AKAMAI_ACCESS_TOKEN")
-}
-
-func TestLiveFastdnsPresent(t *testing.T) {
-	if !fastdnsLiveTest {
-		t.Skip("skipping live test")
+func TestNewDNSProviderConfig(t *testing.T) {
+	testCases := []struct {
+		desc         string
+		host         string
+		clientToken  string
+		clientSecret string
+		accessToken  string
+		expected     string
+	}{
+		{
+			desc:         "success",
+			host:         "A",
+			clientToken:  "B",
+			clientSecret: "C",
+			accessToken:  "D",
+		},
+		{
+			desc:     "missing credentials",
+			expected: "fastdns: credentials are missing",
+		},
+		{
+			desc:         "missing host",
+			host:         "",
+			clientToken:  "B",
+			clientSecret: "C",
+			accessToken:  "D",
+			expected:     "fastdns: credentials are missing",
+		},
+		{
+			desc:         "missing client token",
+			host:         "A",
+			clientToken:  "",
+			clientSecret: "C",
+			accessToken:  "D",
+			expected:     "fastdns: credentials are missing",
+		},
+		{
+			desc:         "missing client secret",
+			host:         "A",
+			clientToken:  "B",
+			clientSecret: "",
+			accessToken:  "B",
+			expected:     "fastdns: credentials are missing",
+		},
+		{
+			desc:         "missing access token",
+			host:         "A",
+			clientToken:  "B",
+			clientSecret: "C",
+			accessToken:  "",
+			expected:     "fastdns: credentials are missing",
+		},
 	}
 
-	config := NewDefaultConfig()
-	config.Host = host
-	config.ClientToken = clientToken
-	config.ClientSecret = clientSecret
-	config.AccessToken = accessToken
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			config := NewDefaultConfig()
+			config.ClientToken = test.clientToken
+			config.ClientSecret = test.clientSecret
+			config.Host = test.host
+			config.AccessToken = test.accessToken
 
-	provider, err := NewDNSProviderConfig(config)
-	require.NoError(t, err)
+			p, err := NewDNSProviderConfig(config)
 
-	err = provider.Present(testDomain, "", "123d==")
-	require.NoError(t, err)
-
-	// Present Twice to handle create / update
-	err = provider.Present(testDomain, "", "123d==")
-	require.NoError(t, err)
+			if len(test.expected) == 0 {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
 }
 
 func TestDNSProvider_findZoneAndRecordName(t *testing.T) {
@@ -152,22 +232,34 @@ func TestDNSProvider_findZoneAndRecordName(t *testing.T) {
 	}
 }
 
-func TestLiveFastdnsCleanUp(t *testing.T) {
-	if !fastdnsLiveTest {
+func TestLivePresent(t *testing.T) {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	time.Sleep(time.Second * 1)
-
-	config := NewDefaultConfig()
-	config.Host = host
-	config.ClientToken = clientToken
-	config.ClientSecret = clientSecret
-	config.AccessToken = accessToken
-
-	provider, err := NewDNSProviderConfig(config)
+	envTest.RestoreEnv()
+	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.CleanUp(testDomain, "", "123d==")
+	err = provider.Present(envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
+
+	// Present Twice to handle create / update
+	err = provider.Present(envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
+}
+
+func TestLiveCleanUp(t *testing.T) {
+	if !envTest.IsLiveTest() {
+		t.Skip("skipping live test")
+	}
+
+	envTest.RestoreEnv()
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
+
+	time.Sleep(1 * time.Second)
+
+	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }

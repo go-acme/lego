@@ -7,29 +7,31 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/platform/config/env"
 )
 
-func TestRoute53TTL(t *testing.T) {
-	config, err := env.Get("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_REGION", "R53_DOMAIN")
-	if err != nil {
-		t.Skip(err.Error())
+func TestLiveTTL(t *testing.T) {
+	if !envTest.IsLiveTest() {
+		t.Skip("skipping live test")
 	}
+
+	envTest.RestoreEnv()
 
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	r53Domain := config["R53_DOMAIN"]
+	domain := envTest.GetDomain()
 
-	err = provider.Present(r53Domain, "foo", "bar")
+	err = provider.Present(domain, "foo", "bar")
 	require.NoError(t, err)
 
 	// we need a separate R53 client here as the one in the DNS provider is unexported.
-	fqdn := "_acme-challenge." + r53Domain + "."
-	svc := route53.New(session.New())
+	fqdn := "_acme-challenge." + domain + "."
+	sess, err := session.NewSession()
+	require.NoError(t, err)
+	svc := route53.New(sess)
 
 	defer func() {
-		errC := provider.CleanUp(r53Domain, "foo", "bar")
+		errC := provider.CleanUp(domain, "foo", "bar")
 		if errC != nil {
 			t.Log(errC)
 		}
@@ -50,5 +52,5 @@ func TestRoute53TTL(t *testing.T) {
 		}
 	}
 
-	t.Fatalf("Could not find a TXT record for _acme-challenge.%s with a TTL of 10", r53Domain)
+	t.Fatalf("Could not find a TXT record for _acme-challenge.%s with a TTL of 10", domain)
 }

@@ -2,8 +2,9 @@
 
 Let's Encrypt client and ACME library written in Go
 
-[![GoDoc](https://godoc.org/github.com/xenolf/lego/acme?status.svg)](https://godoc.org/github.com/xenolf/lego/acme)
+[![GoDoc](https://godoc.org/github.com/xenolf/lego?status.svg)](https://godoc.org/github.com/xenolf/lego/acme)
 [![Build Status](https://travis-ci.org/xenolf/lego.svg?branch=master)](https://travis-ci.org/xenolf/lego)
+[![Docker Pulls](https://img.shields.io/docker/pulls/xenolf/lego.svg)](https://hub.docker.com/r/xenolf/lego/)
 [![Dev Chat](https://img.shields.io/badge/dev%20chat-gitter-blue.svg?label=dev+chat)](https://gitter.im/xenolf/lego)
 [![Beerpay](https://beerpay.io/xenolf/lego/badge.svg)](https://beerpay.io/xenolf/lego)
 
@@ -20,8 +21,7 @@ To install from source, just run:
 go get -u github.com/xenolf/lego
 ```
 
-To build lego inside a Docker container, just run
-
+To build lego inside a Docker container, just run:
 ```bash
 docker build -t lego .
 ```
@@ -34,7 +34,7 @@ If you want to tag the binary with the designated release, you can do so by
 passing the version identifier as a [`--build-arg`](https://docs.docker.com/engine/reference/commandline/build/#set-build-time-variables---build-arg)
 
 ```bash
-docker build --build-arg LEGO_VERSION=v1.0.0 -t lego .
+docker build --build-arg LEGO_VERSION=v1.1.0 -t lego .
 ```
 
 Otherwise the release will be tagged with the `dev` version identifier.
@@ -88,6 +88,7 @@ GLOBAL OPTIONS:
    --csr value, -c value       Certificate signing request filename, if an external CSR is to be used
    --server value, -s value    CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client. (default: "https://acme-v02.api.letsencrypt.org/directory")
    --email value, -m value     Email used for registration and recovery contact.
+   --filename value            Filename of the generated certificate
    --accept-tos, -a            By setting this flag to true you indicate that you accept the current Let's Encrypt terms of service.
    --eab                       Use External Account Binding for account registration. Requires --kid and --hmac.
    --kid value                 Key identifier from External CA. Used for External Account Binding.
@@ -103,7 +104,7 @@ GLOBAL OPTIONS:
    --http-timeout value        Set the HTTP timeout value to a specific value in seconds. The default is 10 seconds. (default: 0)
    --dns-timeout value         Set the DNS timeout value to a specific value in seconds. The default is 10 seconds. (default: 0)
    --dns-resolvers value       Set the resolvers to use for performing recursive DNS queries. Supported: host:port. The default is to use the system resolvers, or Google's DNS resolvers if the system's cannot be determined.
-   --pem                       Generate a .pem file by concatanating the .key and .crt files together.
+   --pem                       Generate a .pem file by concatenating the .key and .crt files together.
    --help, -h                  show help
    --version, -v               print the version
 ```

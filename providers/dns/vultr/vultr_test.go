@@ -1,68 +1,117 @@
 package vultr
 
 import (
-	"os"
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/xenolf/lego/platform/tester"
 )
 
-var (
-	liveTest bool
-	apiKey   string
-	domain   string
-)
+var envTest = tester.NewEnvTest("VULTR_API_KEY").
+	WithDomain("VULTR_TEST_DOMAIN")
 
-func init() {
-	apiKey = os.Getenv("VULTR_API_KEY")
-	domain = os.Getenv("VULTR_TEST_DOMAIN")
-	liveTest = len(apiKey) > 0 && len(domain) > 0
+func TestNewDNSProvider(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		envVars  map[string]string
+		expected string
+	}{
+		{
+			desc: "success",
+			envVars: map[string]string{
+				"VULTR_API_KEY": "123",
+			},
+		},
+		{
+			desc: "missing api key",
+			envVars: map[string]string{
+				"VULTR_API_KEY": "",
+			},
+			expected: "vultr: some credentials information are missing: VULTR_API_KEY",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
+			envTest.Apply(test.envVars)
+
+			p, err := NewDNSProvider()
+
+			if len(test.expected) == 0 {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
 }
 
-func restoreEnv() {
-	os.Setenv("VULTR_API_KEY", apiKey)
-}
+func TestNewDNSProviderConfig(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		apiKey   string
+		expected string
+	}{
+		{
+			desc:   "success",
+			apiKey: "123",
+		},
+		{
+			desc:     "missing credentials",
+			expected: "vultr: credentials missing",
+		},
+	}
 
-func TestNewDNSProviderValidEnv(t *testing.T) {
-	defer restoreEnv()
-	os.Setenv("VULTR_API_KEY", "123")
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			config := NewDefaultConfig()
+			config.APIKey = test.apiKey
 
-	_, err := NewDNSProvider()
-	require.NoError(t, err)
-}
+			p, err := NewDNSProviderConfig(config)
 
-func TestNewDNSProviderMissingCredErr(t *testing.T) {
-	defer restoreEnv()
-	os.Setenv("VULTR_API_KEY", "")
-
-	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "vultr: some credentials information are missing: VULTR_API_KEY")
+			if len(test.expected) == 0 {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
 }
 
 func TestLivePresent(t *testing.T) {
-	if !liveTest {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
+	envTest.RestoreEnv()
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.Present(domain, "", "123d==")
+	err = provider.Present(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
 func TestLiveCleanUp(t *testing.T) {
-	if !liveTest {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	time.Sleep(time.Second * 1)
-
+	envTest.RestoreEnv()
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.CleanUp(domain, "", "123d==")
+	time.Sleep(1 * time.Second)
+
+	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }

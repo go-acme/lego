@@ -1,3 +1,4 @@
+// Package dnsmadeeasy implements a DNS provider for solving the DNS-01 challenge using DNS Made Easy.
 package dnsmadeeasy
 
 import (
@@ -5,8 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -19,6 +18,7 @@ type Config struct {
 	BaseURL            string
 	APIKey             string
 	APISecret          string
+	Sandbox            bool
 	HTTPClient         *http.Client
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -56,15 +56,8 @@ func NewDNSProvider() (*DNSProvider, error) {
 		return nil, fmt.Errorf("dnsmadeeasy: %v", err)
 	}
 
-	var baseURL string
-	if sandbox, _ := strconv.ParseBool(os.Getenv("DNSMADEEASY_SANDBOX")); sandbox {
-		baseURL = "https://api.sandbox.dnsmadeeasy.com/V2.0"
-	} else {
-		baseURL = "https://api.dnsmadeeasy.com/V2.0"
-	}
-
 	config := NewDefaultConfig()
-	config.BaseURL = baseURL
+	config.Sandbox = env.GetOrDefaultBool("DNSMADEEASY_SANDBOX", false)
 	config.APIKey = values["DNSMADEEASY_API_KEY"]
 	config.APISecret = values["DNSMADEEASY_API_SECRET"]
 
@@ -89,8 +82,15 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("dnsmadeeasy: the configuration of the DNS provider is nil")
 	}
 
-	if config.BaseURL == "" {
-		return nil, fmt.Errorf("dnsmadeeasy: base URL missing")
+	var baseURL string
+	if config.Sandbox {
+		baseURL = "https://api.sandbox.dnsmadeeasy.com/V2.0"
+	} else {
+		if len(config.BaseURL) > 0 {
+			baseURL = config.BaseURL
+		} else {
+			baseURL = "https://api.dnsmadeeasy.com/V2.0"
+		}
 	}
 
 	client, err := NewClient(config.APIKey, config.APISecret)
@@ -99,7 +99,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	client.HTTPClient = config.HTTPClient
-	client.BaseURL = config.BaseURL
+	client.BaseURL = baseURL
 
 	return &DNSProvider{
 		client: client,
@@ -113,13 +113,13 @@ func (d *DNSProvider) Present(domainName, token, keyAuth string) error {
 
 	authZone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameservers)
 	if err != nil {
-		return err
+		return fmt.Errorf("dnsmadeeasy: unable to find zone for %s: %v", fqdn, err)
 	}
 
 	// fetch the domain details
 	domain, err := d.client.GetDomain(authZone)
 	if err != nil {
-		return err
+		return fmt.Errorf("dnsmadeeasy: unable to get domain for zone %s: %v", authZone, err)
 	}
 
 	// create the TXT record
@@ -127,7 +127,10 @@ func (d *DNSProvider) Present(domainName, token, keyAuth string) error {
 	record := &Record{Type: "TXT", Name: name, Value: value, TTL: d.config.TTL}
 
 	err = d.client.CreateRecord(domain, record)
-	return err
+	if err != nil {
+		return fmt.Errorf("dnsmadeeasy: unable to create record for %s: %v", name, err)
+	}
+	return nil
 }
 
 // CleanUp removes the TXT records matching the specified parameters
@@ -136,31 +139,32 @@ func (d *DNSProvider) CleanUp(domainName, token, keyAuth string) error {
 
 	authZone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameservers)
 	if err != nil {
-		return err
+		return fmt.Errorf("dnsmadeeasy: unable to find zone for %s: %v", fqdn, err)
 	}
 
 	// fetch the domain details
 	domain, err := d.client.GetDomain(authZone)
 	if err != nil {
-		return err
+		return fmt.Errorf("dnsmadeeasy: unable to get domain for zone %s: %v", authZone, err)
 	}
 
 	// find matching records
 	name := strings.Replace(fqdn, "."+authZone, "", 1)
 	records, err := d.client.GetRecords(domain, name, "TXT")
 	if err != nil {
-		return err
+		return fmt.Errorf("dnsmadeeasy: unable to get records for domain %s: %v", domain.Name, err)
 	}
 
 	// delete records
+	var lastError error
 	for _, record := range *records {
 		err = d.client.DeleteRecord(record)
 		if err != nil {
-			return err
+			lastError = fmt.Errorf("dnsmadeeasy: unable to delete record [id=%d, name=%s]: %v", record.ID, record.Name, err)
 		}
 	}
 
-	return nil
+	return lastError
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.

@@ -1,8 +1,6 @@
 package lightsail
 
 import (
-	"fmt"
-	"os"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -11,23 +9,24 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestLightsailTTL(t *testing.T) {
-	m, err := testGetAndPreCheck()
-	if err != nil {
-		t.Skip(err.Error())
+func TestLiveTTL(t *testing.T) {
+	if !envTest.IsLiveTest() {
+		t.Skip("skipping live test")
 	}
+
+	envTest.RestoreEnv()
 
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	lightsailDomain := m["lightsailDomain"]
+	domain := envTest.GetDomain()
 
-	err = provider.Present(lightsailDomain, "foo", "bar")
+	err = provider.Present(domain, "foo", "bar")
 	require.NoError(t, err)
 
-	// we need a separate Lightshail client here as the one in the DNS provider is
+	// we need a separate Lightsail client here as the one in the DNS provider is
 	// unexported.
-	fqdn := "_acme-challenge." + lightsailDomain
+	fqdn := "_acme-challenge." + domain
 	sess, err := session.NewSession()
 	require.NoError(t, err)
 
@@ -35,14 +34,14 @@ func TestLightsailTTL(t *testing.T) {
 	require.NoError(t, err)
 
 	defer func() {
-		errC := provider.CleanUp(lightsailDomain, "foo", "bar")
+		errC := provider.CleanUp(domain, "foo", "bar")
 		if errC != nil {
 			t.Log(errC)
 		}
 	}()
 
 	params := &lightsail.GetDomainInput{
-		DomainName: aws.String(lightsailDomain),
+		DomainName: aws.String(domain),
 	}
 
 	resp, err := svc.GetDomain(params)
@@ -50,24 +49,10 @@ func TestLightsailTTL(t *testing.T) {
 
 	entries := resp.Domain.DomainEntries
 	for _, entry := range entries {
-		if *entry.Type == "TXT" && *entry.Name == fqdn {
+		if aws.StringValue(entry.Type) == "TXT" && aws.StringValue(entry.Name) == fqdn {
 			return
 		}
 	}
 
-	t.Fatalf("Could not find a TXT record for _acme-challenge.%s", lightsailDomain)
-}
-
-func testGetAndPreCheck() (map[string]string, error) {
-	m := map[string]string{
-		"lightsailKey":    os.Getenv("AWS_ACCESS_KEY_ID"),
-		"lightsailSecret": os.Getenv("AWS_SECRET_ACCESS_KEY"),
-		"lightsailDomain": os.Getenv("DNS_ZONE"),
-	}
-	for _, v := range m {
-		if v == "" {
-			return nil, fmt.Errorf("AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and R53_DOMAIN are needed to run this test")
-		}
-	}
-	return m, nil
+	t.Fatalf("Could not find a TXT record for _acme-challenge.%s", domain)
 }

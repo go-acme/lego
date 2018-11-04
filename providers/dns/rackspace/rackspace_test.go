@@ -5,55 +5,119 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/xenolf/lego/platform/tester"
 )
 
-var (
-	rackspaceLiveTest bool
-	rackspaceUser     string
-	rackspaceAPIKey   string
-	rackspaceDomain   string
-	testAPIURL        string
-)
+var envTest = tester.NewEnvTest(
+	"RACKSPACE_USER",
+	"RACKSPACE_API_KEY").
+	WithDomain("RACKSPACE_DOMAIN")
 
-func init() {
-	rackspaceUser = os.Getenv("RACKSPACE_USER")
-	rackspaceAPIKey = os.Getenv("RACKSPACE_API_KEY")
-	rackspaceDomain = os.Getenv("RACKSPACE_DOMAIN")
-	if len(rackspaceUser) > 0 && len(rackspaceAPIKey) > 0 && len(rackspaceDomain) > 0 {
-		rackspaceLiveTest = true
+func TestNewDNSProviderConfig(t *testing.T) {
+	config, tearDown := setupTest()
+	defer tearDown()
+
+	provider, err := NewDNSProviderConfig(config)
+	require.NoError(t, err)
+	assert.NotNil(t, provider.config)
+
+	assert.Equal(t, provider.token, "testToken", "The token should match")
+}
+
+func TestNewDNSProviderConfig_MissingCredErr(t *testing.T) {
+	_, err := NewDNSProviderConfig(NewDefaultConfig())
+	assert.EqualError(t, err, "rackspace: credentials missing")
+}
+
+func TestDNSProvider_Present(t *testing.T) {
+	config, tearDown := setupTest()
+	defer tearDown()
+
+	provider, err := NewDNSProviderConfig(config)
+
+	if assert.NoError(t, err) {
+		err = provider.Present("example.com", "token", "keyAuth")
+		require.NoError(t, err)
 	}
 }
 
-func testRackspaceEnv() {
-	os.Setenv("RACKSPACE_USER", "testUser")
-	os.Setenv("RACKSPACE_API_KEY", "testKey")
+func TestDNSProvider_CleanUp(t *testing.T) {
+	config, tearDown := setupTest()
+	defer tearDown()
+
+	provider, err := NewDNSProviderConfig(config)
+
+	if assert.NoError(t, err) {
+		err = provider.CleanUp("example.com", "token", "keyAuth")
+		require.NoError(t, err)
+	}
 }
 
-func liveRackspaceEnv() {
-	os.Setenv("RACKSPACE_USER", rackspaceUser)
-	os.Setenv("RACKSPACE_API_KEY", rackspaceAPIKey)
+func TestLiveNewDNSProvider_ValidEnv(t *testing.T) {
+	if !envTest.IsLiveTest() {
+		t.Skip("skipping live test")
+	}
+
+	envTest.RestoreEnv()
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
+
+	assert.Contains(t, provider.cloudDNSEndpoint, "https://dns.api.rackspacecloud.com/v1.0/", "The endpoint URL should contain the base")
 }
 
-func startTestServers() (*httptest.Server, *httptest.Server) {
-	dnsAPI := httptest.NewServer(dnsMux())
-	dnsEndpoint := dnsAPI.URL + "/123456"
+func TestLivePresent(t *testing.T) {
+	if !envTest.IsLiveTest() {
+		t.Skip("skipping live test")
+	}
 
-	identityAPI := httptest.NewServer(identityHandler(dnsEndpoint))
-	testAPIURL = identityAPI.URL + "/"
+	envTest.RestoreEnv()
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
 
-	return identityAPI, dnsAPI
+	err = provider.Present(envTest.GetDomain(), "", "112233445566==")
+	require.NoError(t, err)
 }
 
-func closeTestServers(identityAPI, dnsAPI *httptest.Server) {
-	identityAPI.Close()
-	dnsAPI.Close()
+func TestLiveCleanUp(t *testing.T) {
+	if !envTest.IsLiveTest() {
+		t.Skip("skipping live test")
+	}
+
+	envTest.RestoreEnv()
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
+
+	time.Sleep(15 * time.Second)
+
+	err = provider.CleanUp(envTest.GetDomain(), "", "112233445566==")
+	require.NoError(t, err)
+}
+
+func setupTest() (*Config, func()) {
+	apiURL, tearDown := startTestServers()
+
+	config := NewDefaultConfig()
+	config.APIUser = "testUser"
+	config.APIKey = "testKey"
+	config.BaseURL = apiURL
+
+	return config, tearDown
+}
+
+func startTestServers() (string, func()) {
+	dnsAPI := httptest.NewServer(dnsHandler())
+	identityAPI := httptest.NewServer(identityHandler(dnsAPI.URL + "/123456"))
+
+	return identityAPI.URL + "/", func() {
+		identityAPI.Close()
+		dnsAPI.Close()
+	}
 }
 
 func identityHandler(dnsEndpoint string) http.Handler {
@@ -63,18 +127,20 @@ func identityHandler(dnsEndpoint string) http.Handler {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
+
 		resp, found := jsonMap[string(reqBody)]
 		if !found {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
+
 		resp = strings.Replace(resp, "https://dns.api.rackspacecloud.com/v1.0/123456", dnsEndpoint, 1)
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprintf(w, resp)
 	})
 }
 
-func dnsMux() *http.ServeMux {
+func dnsHandler() *http.ServeMux {
 	mux := http.NewServeMux()
 
 	// Used by `getHostedZoneID()` finding `zoneID` "?name=example.com"
@@ -93,7 +159,7 @@ func dnsMux() *http.ServeMux {
 		case http.MethodPost:
 			reqBody, err := ioutil.ReadAll(r.Body)
 			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
+				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 			resp, found := jsonMap[string(reqBody)]
@@ -103,7 +169,7 @@ func dnsMux() *http.ServeMux {
 			}
 			w.WriteHeader(http.StatusAccepted)
 			fmt.Fprintf(w, resp)
-		// Used by `findTxtRecord()` finding `record.ID` "?type=TXT&name=_acme-challenge.example.com"
+			// Used by `findTxtRecord()` finding `record.ID` "?type=TXT&name=_acme-challenge.example.com"
 		case http.MethodGet:
 			if r.URL.Query().Get("type") == "TXT" && r.URL.Query().Get("name") == "_acme-challenge.example.com" {
 				w.WriteHeader(http.StatusOK)
@@ -112,7 +178,7 @@ func dnsMux() *http.ServeMux {
 			}
 			w.WriteHeader(http.StatusBadRequest)
 			return
-		// Used by `CleanUp()` deleting the TXT record "?id=445566"
+			// Used by `CleanUp()` deleting the TXT record "?id=445566"
 		case http.MethodDelete:
 			if r.URL.Query().Get("id") == "TXT-654321" {
 				w.WriteHeader(http.StatusOK)
@@ -129,104 +195,6 @@ func dnsMux() *http.ServeMux {
 	})
 
 	return mux
-}
-
-func TestNewDNSProviderMissingCredErr(t *testing.T) {
-	testRackspaceEnv()
-
-	_, err := NewDNSProviderConfig(&Config{})
-	assert.EqualError(t, err, "rackspace: credentials missing")
-}
-
-func TestOfflineRackspaceValid(t *testing.T) {
-	testRackspaceEnv()
-
-	config := NewDefaultConfig()
-	config.BaseURL = testAPIURL
-	config.APIKey = os.Getenv("RACKSPACE_API_KEY")
-	config.APIUser = os.Getenv("RACKSPACE_USER")
-
-	provider, err := NewDNSProviderConfig(config)
-	require.NoError(t, err)
-
-	assert.Equal(t, provider.token, "testToken", "The token should match")
-}
-
-func TestOfflineRackspacePresent(t *testing.T) {
-	testRackspaceEnv()
-
-	config := NewDefaultConfig()
-	config.APIUser = os.Getenv("RACKSPACE_USER")
-	config.APIKey = os.Getenv("RACKSPACE_API_KEY")
-	config.BaseURL = testAPIURL
-
-	provider, err := NewDNSProviderConfig(config)
-
-	if assert.NoError(t, err) {
-		err = provider.Present("example.com", "token", "keyAuth")
-		require.NoError(t, err)
-	}
-}
-
-func TestOfflineRackspaceCleanUp(t *testing.T) {
-	testRackspaceEnv()
-
-	config := NewDefaultConfig()
-	config.APIUser = os.Getenv("RACKSPACE_USER")
-	config.APIKey = os.Getenv("RACKSPACE_API_KEY")
-	config.BaseURL = testAPIURL
-
-	provider, err := NewDNSProviderConfig(config)
-
-	if assert.NoError(t, err) {
-		err = provider.CleanUp("example.com", "token", "keyAuth")
-		require.NoError(t, err)
-	}
-}
-
-func TestNewDNSProviderValidEnv(t *testing.T) {
-	if !rackspaceLiveTest {
-		t.Skip("skipping live test")
-	}
-
-	liveRackspaceEnv()
-	provider, err := NewDNSProvider()
-	require.NoError(t, err)
-	assert.Contains(t, provider.cloudDNSEndpoint, "https://dns.api.rackspacecloud.com/v1.0/", "The endpoint URL should contain the base")
-}
-
-func TestRackspacePresent(t *testing.T) {
-	if !rackspaceLiveTest {
-		t.Skip("skipping live test")
-	}
-
-	liveRackspaceEnv()
-	provider, err := NewDNSProvider()
-	require.NoError(t, err)
-
-	err = provider.Present(rackspaceDomain, "", "112233445566==")
-	require.NoError(t, err)
-}
-
-func TestRackspaceCleanUp(t *testing.T) {
-	if !rackspaceLiveTest {
-		t.Skip("skipping live test")
-	}
-
-	time.Sleep(time.Second * 15)
-
-	liveRackspaceEnv()
-	provider, err := NewDNSProvider()
-	require.NoError(t, err)
-
-	err = provider.CleanUp(rackspaceDomain, "", "112233445566==")
-	require.NoError(t, err)
-}
-
-func TestMain(m *testing.M) {
-	identityAPI, dnsAPI := startTestServers()
-	defer closeTestServers(identityAPI, dnsAPI)
-	os.Exit(m.Run())
 }
 
 var jsonMap = map[string]string{

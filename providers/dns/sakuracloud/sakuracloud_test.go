@@ -1,125 +1,150 @@
 package sakuracloud
 
 import (
-	"os"
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/platform/tester"
 )
 
-var (
-	sakuracloudLiveTest     bool
-	sakuracloudAccessToken  string
-	sakuracloudAccessSecret string
-	sakuracloudDomain       string
-)
+var envTest = tester.NewEnvTest(
+	"SAKURACLOUD_ACCESS_TOKEN",
+	"SAKURACLOUD_ACCESS_TOKEN_SECRET").
+	WithDomain("SAKURACLOUD_DOMAIN")
 
-func init() {
-	sakuracloudAccessToken = os.Getenv("SAKURACLOUD_ACCESS_TOKEN")
-	sakuracloudAccessSecret = os.Getenv("SAKURACLOUD_ACCESS_TOKEN_SECRET")
-	sakuracloudDomain = os.Getenv("SAKURACLOUD_DOMAIN")
+func TestNewDNSProvider(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		envVars  map[string]string
+		expected string
+	}{
+		{
+			desc: "success",
+			envVars: map[string]string{
+				"SAKURACLOUD_ACCESS_TOKEN":        "123",
+				"SAKURACLOUD_ACCESS_TOKEN_SECRET": "456",
+			},
+		},
+		{
+			desc: "missing credentials",
+			envVars: map[string]string{
+				"SAKURACLOUD_ACCESS_TOKEN":        "",
+				"SAKURACLOUD_ACCESS_TOKEN_SECRET": "",
+			},
+			expected: "sakuracloud: some credentials information are missing: SAKURACLOUD_ACCESS_TOKEN,SAKURACLOUD_ACCESS_TOKEN_SECRET",
+		},
+		{
+			desc: "missing access token",
+			envVars: map[string]string{
+				"SAKURACLOUD_ACCESS_TOKEN":        "",
+				"SAKURACLOUD_ACCESS_TOKEN_SECRET": "456",
+			},
+			expected: "sakuracloud: some credentials information are missing: SAKURACLOUD_ACCESS_TOKEN",
+		},
+		{
+			desc: "missing token secret",
+			envVars: map[string]string{
+				"SAKURACLOUD_ACCESS_TOKEN":        "123",
+				"SAKURACLOUD_ACCESS_TOKEN_SECRET": "",
+			},
+			expected: "sakuracloud: some credentials information are missing: SAKURACLOUD_ACCESS_TOKEN_SECRET",
+		},
+	}
 
-	if len(sakuracloudAccessToken) > 0 && len(sakuracloudAccessSecret) > 0 && len(sakuracloudDomain) > 0 {
-		sakuracloudLiveTest = true
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
+			envTest.Apply(test.envVars)
+
+			p, err := NewDNSProvider()
+
+			if len(test.expected) == 0 {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
 	}
 }
 
-func restoreEnv() {
-	os.Setenv("SAKURACLOUD_ACCESS_TOKEN", sakuracloudAccessToken)
-	os.Setenv("SAKURACLOUD_ACCESS_TOKEN_SECRET", sakuracloudAccessSecret)
+func TestNewDNSProviderConfig(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		token    string
+		secret   string
+		expected string
+	}{
+		{
+			desc:   "success",
+			token:  "123",
+			secret: "456",
+		},
+		{
+			desc:     "missing credentials",
+			expected: "sakuracloud: AccessToken is missing",
+		},
+		{
+			desc:     "missing token",
+			secret:   "456",
+			expected: "sakuracloud: AccessToken is missing",
+		},
+		{
+			desc:     "missing secret",
+			token:    "123",
+			expected: "sakuracloud: AccessSecret is missing",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			config := NewDefaultConfig()
+			config.Token = test.token
+			config.Secret = test.secret
+
+			p, err := NewDNSProviderConfig(config)
+
+			if len(test.expected) == 0 {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
 }
 
-//
-// NewDNSProvider
-//
-
-func TestNewDNSProviderValid(t *testing.T) {
-	defer restoreEnv()
-
-	os.Setenv("SAKURACLOUD_ACCESS_TOKEN", "123")
-	os.Setenv("SAKURACLOUD_ACCESS_TOKEN_SECRET", "456")
-	provider, err := NewDNSProvider()
-
-	assert.NotNil(t, provider)
-	assert.Equal(t, acme.UserAgent, provider.client.UserAgent)
-	require.NoError(t, err)
-}
-
-func TestNewDNSProviderInvalidWithMissingAccessToken(t *testing.T) {
-	defer restoreEnv()
-
-	os.Setenv("SAKURACLOUD_ACCESS_TOKEN", "")
-	provider, err := NewDNSProvider()
-
-	assert.Nil(t, provider)
-	assert.EqualError(t, err, "sakuracloud: some credentials information are missing: SAKURACLOUD_ACCESS_TOKEN,SAKURACLOUD_ACCESS_TOKEN_SECRET")
-}
-
-//
-// NewDNSProviderCredentials
-//
-
-func TestNewDNSProviderCredentialsValid(t *testing.T) {
-	config := NewDefaultConfig()
-	config.Token = "123"
-	config.Secret = "456"
-
-	provider, err := NewDNSProviderConfig(config)
-	require.NoError(t, err)
-
-	assert.NotNil(t, provider)
-	assert.Equal(t, acme.UserAgent, provider.client.UserAgent)
-}
-
-func TestNewDNSProviderCredentialsInvalidWithMissingAccessToken(t *testing.T) {
-	config := NewDefaultConfig()
-
-	provider, err := NewDNSProviderConfig(config)
-	assert.Nil(t, provider)
-	assert.EqualError(t, err, "sakuracloud: AccessToken is missing")
-}
-
-//
-// Present
-//
-
-func TestLiveSakuraCloudPresent(t *testing.T) {
-	if !sakuracloudLiveTest {
+func TestLivePresent(t *testing.T) {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	config := NewDefaultConfig()
-	config.Token = sakuracloudAccessToken
-	config.Secret = sakuracloudAccessSecret
-
-	provider, err := NewDNSProviderConfig(config)
+	envTest.RestoreEnv()
+	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.Present(sakuracloudDomain, "", "123d==")
+	err = provider.Present(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
-//
-// Cleanup
-//
-
-func TestLiveSakuraCloudCleanUp(t *testing.T) {
-	if !sakuracloudLiveTest {
+func TestLiveCleanUp(t *testing.T) {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	time.Sleep(time.Second * 1)
-
-	config := NewDefaultConfig()
-	config.Token = sakuracloudAccessToken
-	config.Secret = sakuracloudAccessSecret
-
-	provider, err := NewDNSProviderConfig(config)
+	envTest.RestoreEnv()
+	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.CleanUp(sakuracloudDomain, "", "123d==")
+	time.Sleep(1 * time.Second)
+
+	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }

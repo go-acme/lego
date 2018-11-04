@@ -1,104 +1,150 @@
 package hostingde
 
 import (
-	"os"
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/xenolf/lego/platform/tester"
 )
 
-var (
-	hostingdeLiveTest bool
-	hostingdeAPIKey   string
-	hostingdeZone     string
-	hostingdeDomain   string
-)
+var envTest = tester.NewEnvTest(
+	"HOSTINGDE_API_KEY",
+	"HOSTINGDE_ZONE_NAME").
+	WithDomain("HOSTINGDE_DOMAIN")
 
-func init() {
-	hostingdeAPIKey = os.Getenv("HOSTINGDE_API_KEY")
-	hostingdeZone = os.Getenv("HOSTINGDE_ZONE_NAME")
-	hostingdeDomain = os.Getenv("HOSTINGDE_DOMAIN")
-	if len(hostingdeZone) > 0 && len(hostingdeAPIKey) > 0 && len(hostingdeDomain) > 0 {
-		hostingdeLiveTest = true
+func TestNewDNSProvider(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		envVars  map[string]string
+		expected string
+	}{
+		{
+			desc: "success",
+			envVars: map[string]string{
+				"HOSTINGDE_API_KEY":   "123",
+				"HOSTINGDE_ZONE_NAME": "456",
+			},
+		},
+		{
+			desc: "missing credentials",
+			envVars: map[string]string{
+				"HOSTINGDE_API_KEY":   "",
+				"HOSTINGDE_ZONE_NAME": "",
+			},
+			expected: "hostingde: some credentials information are missing: HOSTINGDE_API_KEY,HOSTINGDE_ZONE_NAME",
+		},
+		{
+			desc: "missing access key",
+			envVars: map[string]string{
+				"HOSTINGDE_API_KEY":   "",
+				"HOSTINGDE_ZONE_NAME": "456",
+			},
+			expected: "hostingde: some credentials information are missing: HOSTINGDE_API_KEY",
+		},
+		{
+			desc: "missing zone name",
+			envVars: map[string]string{
+				"HOSTINGDE_API_KEY":   "123",
+				"HOSTINGDE_ZONE_NAME": "",
+			},
+			expected: "hostingde: some credentials information are missing: HOSTINGDE_ZONE_NAME",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
+			envTest.Apply(test.envVars)
+
+			p, err := NewDNSProvider()
+
+			if len(test.expected) == 0 {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.recordIDs)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
 	}
 }
 
-func restoreEnv() {
-	os.Setenv("HOSTINGDE_ZONE_NAME", hostingdeZone)
-	os.Setenv("HOSTINGDE_API_KEY", hostingdeAPIKey)
+func TestNewDNSProviderConfig(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		apiKey   string
+		zoneName string
+		expected string
+	}{
+		{
+			desc:     "success",
+			apiKey:   "123",
+			zoneName: "456",
+		},
+		{
+			desc:     "missing credentials",
+			expected: "hostingde: API key missing",
+		},
+		{
+			desc:     "missing api key",
+			zoneName: "456",
+			expected: "hostingde: API key missing",
+		},
+		{
+			desc:     "missing zone name",
+			apiKey:   "123",
+			expected: "hostingde: Zone Name missing",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			config := NewDefaultConfig()
+			config.APIKey = test.apiKey
+			config.ZoneName = test.zoneName
+
+			p, err := NewDNSProviderConfig(config)
+
+			if len(test.expected) == 0 {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.recordIDs)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
 }
 
-func TestNewDNSProviderValid(t *testing.T) {
-	os.Setenv("HOSTINGDE_ZONE_NAME", "")
-	os.Setenv("HOSTINGDE_API_KEY", "")
-	defer restoreEnv()
-
-	config := NewDefaultConfig()
-	config.APIKey = "123"
-	config.ZoneName = "example.com"
-
-	_, err := NewDNSProviderConfig(config)
-	assert.NoError(t, err)
-}
-
-func TestNewDNSProviderValidEnv(t *testing.T) {
-	defer restoreEnv()
-	os.Setenv("HOSTINGDE_ZONE_NAME", "example.com")
-	os.Setenv("HOSTINGDE_API_KEY", "123")
-
-	_, err := NewDNSProvider()
-	assert.NoError(t, err)
-}
-
-func TestNewDNSProviderMissingCredErr(t *testing.T) {
-	defer restoreEnv()
-	os.Setenv("HOSTINGDE_ZONE_NAME", "")
-	os.Setenv("HOSTINGDE_API_KEY", "")
-
-	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "hostingde: some credentials information are missing: HOSTINGDE_API_KEY,HOSTINGDE_ZONE_NAME")
-}
-
-func TestNewDNSProviderMissingCredErrSingle(t *testing.T) {
-	defer restoreEnv()
-	os.Setenv("HOSTINGDE_ZONE_NAME", "example.com")
-
-	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "hostingde: some credentials information are missing: HOSTINGDE_API_KEY")
-}
-
-func TestHostingdePresent(t *testing.T) {
-	if !hostingdeLiveTest {
+func TestLivePresent(t *testing.T) {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	config := NewDefaultConfig()
-	config.APIKey = hostingdeZone
-	config.ZoneName = hostingdeAPIKey
-
-	provider, err := NewDNSProviderConfig(config)
+	envTest.RestoreEnv()
+	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.Present(hostingdeDomain, "", "123d==")
-	assert.NoError(t, err)
+	err = provider.Present(envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
 }
 
-func TestHostingdeCleanUp(t *testing.T) {
-	if !hostingdeLiveTest {
+func TestLiveCleanUp(t *testing.T) {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	time.Sleep(time.Second * 2)
-
-	config := NewDefaultConfig()
-	config.APIKey = hostingdeZone
-	config.ZoneName = hostingdeAPIKey
-
-	provider, err := NewDNSProviderConfig(config)
+	envTest.RestoreEnv()
+	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	err = provider.CleanUp(hostingdeDomain, "", "123d==")
-	assert.NoError(t, err)
+	time.Sleep(2 * time.Second)
+
+	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
 }

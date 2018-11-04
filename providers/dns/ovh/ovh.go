@@ -42,7 +42,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("OVH_TTL", 120),
+		TTL:                env.GetOrDefaultInt("OVH_TTL", dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond("OVH_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond("OVH_POLLING_INTERVAL", dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
@@ -112,7 +112,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value, _ := dns01.GetRecord(domain, keyAuth)
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
 	// Parse domain name
 	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
@@ -149,7 +149,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _, _ := dns01.GetRecord(domain, keyAuth)
+	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 
 	// get the record's unique ID from when we created it
 	d.recordIDsMu.Lock()

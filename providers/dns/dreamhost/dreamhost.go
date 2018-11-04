@@ -72,7 +72,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value, _ := dns01.GetRecord(domain, keyAuth)
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
 	record := dns01.UnFqdn(fqdn)
 
 	u, err := d.buildQuery(cmdAddRecord, record, value)
@@ -89,7 +89,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp clears DreamHost TXT record
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value, _ := dns01.GetRecord(domain, keyAuth)
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
 	record := dns01.UnFqdn(fqdn)
 
 	u, err := d.buildQuery(cmdRemoveRecord, record, value)

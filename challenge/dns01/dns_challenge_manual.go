@@ -20,7 +20,7 @@ func NewDNSProviderManual() (*DNSProviderManual, error) {
 
 // Present prints instructions for manually creating the TXT record
 func (*DNSProviderManual) Present(domain, token, keyAuth string) error {
-	fqdn, value, ttl := GetRecord(domain, keyAuth)
+	fqdn, value := GetRecord(domain, keyAuth)
 
 	authZone, err := FindZoneByFqdn(fqdn)
 	if err != nil {
@@ -28,7 +28,7 @@ func (*DNSProviderManual) Present(domain, token, keyAuth string) error {
 	}
 
 	fmt.Printf("lego: Please create the following TXT record in your %s zone:\n", authZone)
-	fmt.Printf(dnsTemplate+"\n", fqdn, ttl, value)
+	fmt.Printf(dnsTemplate+"\n", fqdn, DefaultTTL, value)
 	fmt.Printf("lego: Press 'Enter' when you are done\n")
 
 	_, err = bufio.NewReader(os.Stdin).ReadBytes('\n')
@@ -38,7 +38,7 @@ func (*DNSProviderManual) Present(domain, token, keyAuth string) error {
 
 // CleanUp prints instructions for manually removing the TXT record
 func (*DNSProviderManual) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _, ttl := GetRecord(domain, keyAuth)
+	fqdn, _ := GetRecord(domain, keyAuth)
 
 	authZone, err := FindZoneByFqdn(fqdn)
 	if err != nil {
@@ -46,7 +46,7 @@ func (*DNSProviderManual) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	fmt.Printf("lego: You can now remove this TXT record from your %s zone:\n", authZone)
-	fmt.Printf(dnsTemplate+"\n", fqdn, ttl, "...")
+	fmt.Printf(dnsTemplate+"\n", fqdn, DefaultTTL, "...")
 
 	return nil
 }

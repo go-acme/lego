@@ -104,7 +104,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record using the specified parameters
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value, _ := dns01.GetRecord(domain, keyAuth)
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
 	err := d.newTxtRecord(fqdn, `"`+value+`"`)
 	if err != nil {
@@ -115,7 +115,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value, _ := dns01.GetRecord(domain, keyAuth)
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
 	params := &lightsail.DeleteDomainEntryInput{
 		DomainName: aws.String(d.config.DNSZone),

@@ -26,7 +26,7 @@ func NewDefaultConfig() *Config {
 	return &Config{
 		PropagationTimeout: env.GetOrDefaultSecond("AKAMAI_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond("AKAMAI_POLLING_INTERVAL", dns01.DefaultPollingInterval),
-		TTL:                env.GetOrDefaultInt("AKAMAI_TTL", 120),
+		TTL:                env.GetOrDefaultInt("AKAMAI_TTL", dns01.DefaultTTL),
 	}
 }
 
@@ -70,7 +70,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fullfil the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value, _ := dns01.GetRecord(domain, keyAuth)
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
 	zoneName, recordName, err := d.findZoneAndRecordName(fqdn, domain)
 	if err != nil {
 		return fmt.Errorf("fastdns: %v", err)
@@ -106,7 +106,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _, _ := dns01.GetRecord(domain, keyAuth)
+	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 	zoneName, recordName, err := d.findZoneAndRecordName(fqdn, domain)
 	if err != nil {
 		return fmt.Errorf("fastdns: %v", err)

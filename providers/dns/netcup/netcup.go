@@ -29,7 +29,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("NETCUP_TTL", 120),
+		TTL:                env.GetOrDefaultInt("NETCUP_TTL", dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond("NETCUP_PROPAGATION_TIMEOUT", 120*time.Second),
 		PollingInterval:    env.GetOrDefaultSecond("NETCUP_POLLING_INTERVAL", 5*time.Second),
 		HTTPClient: &http.Client{
@@ -79,7 +79,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge
 func (d *DNSProvider) Present(domainName, token, keyAuth string) error {
-	fqdn, value, _ := dns01.GetRecord(domainName, keyAuth)
+	fqdn, value := dns01.GetRecord(domainName, keyAuth)
 
 	zone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
@@ -126,7 +126,7 @@ func (d *DNSProvider) Present(domainName, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters
 func (d *DNSProvider) CleanUp(domainName, token, keyAuth string) error {
-	fqdn, value, _ := dns01.GetRecord(domainName, keyAuth)
+	fqdn, value := dns01.GetRecord(domainName, keyAuth)
 
 	zone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {

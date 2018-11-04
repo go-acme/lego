@@ -63,7 +63,7 @@ func NewDefaultConfig() *Config {
 	return &Config{
 		BaseURL:            defaultBaseURL,
 		Debug:              env.GetOrDefaultBool("NAMECHEAP_DEBUG", false),
-		TTL:                env.GetOrDefaultInt("NAMECHEAP_TTL", 120),
+		TTL:                env.GetOrDefaultInt("NAMECHEAP_TTL", dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond("NAMECHEAP_PROPAGATION_TIMEOUT", 60*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond("NAMECHEAP_POLLING_INTERVAL", 15*time.Second),
 		HTTPClient: &http.Client{
@@ -244,7 +244,7 @@ func newChallenge(domain, keyAuth string, tlds map[string]string) (*challenge, e
 		host = strings.Join(parts[:longest-1], ".")
 	}
 
-	fqdn, value, _ := dns01.GetRecord(domain, keyAuth)
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
 	return &challenge{
 		domain:   domain,

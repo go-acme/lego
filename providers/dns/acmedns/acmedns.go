@@ -104,7 +104,7 @@ func (e ErrCNAMERequired) Error() string {
 func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	// Compute the challenge response FQDN and TXT value for the domain based
 	// on the keyAuth.
-	fqdn, value, _ := dns01.GetRecord(domain, keyAuth)
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
 	// Check if credentials were previously saved for this domain.
 	account, err := d.storage.Fetch(domain)

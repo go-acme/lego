@@ -37,7 +37,7 @@ func TestDNSProvider_Present(t *testing.T) {
 				Mode:    "",
 			},
 			expected: expected{
-				args: "present _acme-challenge.domain. pW9ZKG0xz_PCriK-nCMOjADy9eJcgGWIzkkj2fN4uZM 120\n",
+				args: "present _acme-challenge.domain. pW9ZKG0xz_PCriK-nCMOjADy9eJcgGWIzkkj2fN4uZM\n",
 			},
 		},
 		{
@@ -110,7 +110,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 				Mode:    "",
 			},
 			expected: expected{
-				args: "cleanup _acme-challenge.domain. pW9ZKG0xz_PCriK-nCMOjADy9eJcgGWIzkkj2fN4uZM 120\n",
+				args: "cleanup _acme-challenge.domain. pW9ZKG0xz_PCriK-nCMOjADy9eJcgGWIzkkj2fN4uZM\n",
 			},
 		},
 		{

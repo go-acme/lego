@@ -28,7 +28,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("PDNS_TTL", 120),
+		TTL:                env.GetOrDefaultInt("PDNS_TTL", dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond("PDNS_PROPAGATION_TIMEOUT", 120*time.Second),
 		PollingInterval:    env.GetOrDefaultSecond("PDNS_POLLING_INTERVAL", 2*time.Second),
 		HTTPClient: &http.Client{
@@ -97,7 +97,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value, _ := dns01.GetRecord(domain, keyAuth)
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
 	zone, err := d.getHostedZone(fqdn)
 	if err != nil {
 		return fmt.Errorf("pdns: %v", err)
@@ -147,7 +147,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _, _ := dns01.GetRecord(domain, keyAuth)
+	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 
 	zone, err := d.getHostedZone(fqdn)
 	if err != nil {

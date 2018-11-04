@@ -159,7 +159,7 @@ func TestLivePresentAndCleanup(t *testing.T) {
 	p, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	fqdn, _, _ := dns01.GetRecord(envTest.GetDomain(), "123d==")
+	fqdn, _ := dns01.GetRecord(envTest.GetDomain(), "123d==")
 
 	zone, err := dns01.FindZoneByFqdn(fqdn)
 	require.NoError(t, err, "error finding DNSZone")

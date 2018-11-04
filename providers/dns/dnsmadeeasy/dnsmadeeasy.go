@@ -29,7 +29,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("DNSMADEEASY_TTL", 120),
+		TTL:                env.GetOrDefaultInt("DNSMADEEASY_TTL", dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond("DNSMADEEASY_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond("DNSMADEEASY_POLLING_INTERVAL", dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
@@ -98,7 +98,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record using the specified parameters
 func (d *DNSProvider) Present(domainName, token, keyAuth string) error {
-	fqdn, value, _ := dns01.GetRecord(domainName, keyAuth)
+	fqdn, value := dns01.GetRecord(domainName, keyAuth)
 
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
@@ -124,7 +124,7 @@ func (d *DNSProvider) Present(domainName, token, keyAuth string) error {
 
 // CleanUp removes the TXT records matching the specified parameters
 func (d *DNSProvider) CleanUp(domainName, token, keyAuth string) error {
-	fqdn, _, _ := dns01.GetRecord(domainName, keyAuth)
+	fqdn, _ := dns01.GetRecord(domainName, keyAuth)
 
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {

@@ -104,7 +104,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 // does this by creating and activating a new temporary Gandi DNS
 // zone. This new zone contains the TXT record.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value, _ := dns01.GetRecord(domain, keyAuth)
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
 	if d.config.TTL < minTTL {
 		d.config.TTL = minTTL // 300 is gandi minimum value for ttl
@@ -181,7 +181,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 // parameters. It does this by restoring the old Gandi DNS zone and
 // removing the temporary one created by Present.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _, _ := dns01.GetRecord(domain, keyAuth)
+	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 
 	// acquire lock and retrieve zoneID, newZoneID and authZone
 	d.inProgressMu.Lock()

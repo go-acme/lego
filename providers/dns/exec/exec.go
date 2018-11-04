@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"strconv"
 
 	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/log"
@@ -55,8 +54,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if d.config.Mode == "RAW" {
 		args = []string{"present", "--", domain, token, keyAuth}
 	} else {
-		fqdn, value, ttl := dns01.GetRecord(domain, keyAuth)
-		args = []string{"present", fqdn, value, strconv.Itoa(ttl)}
+		fqdn, value := dns01.GetRecord(domain, keyAuth)
+		args = []string{"present", fqdn, value}
 	}
 
 	cmd := exec.Command(d.config.Program, args...)
@@ -75,8 +74,8 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	if d.config.Mode == "RAW" {
 		args = []string{"cleanup", "--", domain, token, keyAuth}
 	} else {
-		fqdn, value, ttl := dns01.GetRecord(domain, keyAuth)
-		args = []string{"cleanup", fqdn, value, strconv.Itoa(ttl)}
+		fqdn, value := dns01.GetRecord(domain, keyAuth)
+		args = []string{"cleanup", fqdn, value}
 	}
 
 	cmd := exec.Command(d.config.Program, args...)

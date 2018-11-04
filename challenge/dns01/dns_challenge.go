@@ -100,7 +100,7 @@ func (s *Challenge) Solve(chlng le.Challenge, domain string) error {
 		return err
 	}
 
-	fqdn, value, _ := GetRecord(domain, keyAuth)
+	fqdn, value := GetRecord(domain, keyAuth)
 
 	log.Infof("[%s] Checking DNS record propagation using %+v", domain, recursiveNameservers)
 
@@ -136,11 +136,10 @@ func (s *Challenge) CleanUp(chlng le.Challenge, domain string) error {
 }
 
 // GetRecord returns a DNS record which will fulfill the `dns-01` challenge
-func GetRecord(domain, keyAuth string) (fqdn string, value string, ttl int) {
+func GetRecord(domain, keyAuth string) (fqdn string, value string) {
 	keyAuthShaBytes := sha256.Sum256([]byte(keyAuth))
 	// base64URL encoding without padding
 	value = base64.RawURLEncoding.EncodeToString(keyAuthShaBytes[:sha256.Size])
-	ttl = DefaultTTL
 	fqdn = fmt.Sprintf("_acme-challenge.%s.", domain)
 	return
 }

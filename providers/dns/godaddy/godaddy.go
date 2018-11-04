@@ -86,7 +86,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value, _ := dns01.GetRecord(domain, keyAuth)
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
 	domainZone, err := d.getZone(fqdn)
 	if err != nil {
 		return err
@@ -107,7 +107,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp sets null value in the TXT DNS record as GoDaddy has no proper DELETE record method
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _, _ := dns01.GetRecord(domain, keyAuth)
+	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 	domainZone, err := d.getZone(fqdn)
 	if err != nil {
 		return err

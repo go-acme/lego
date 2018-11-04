@@ -535,7 +535,7 @@ func TestLiveClientGetDnsRecords(t *testing.T) {
 	sessionID, err := client.Login()
 	require.NoError(t, err)
 
-	fqdn, _, _ := dns01.GetRecord(envTest.GetDomain(), "123d==")
+	fqdn, _ := dns01.GetRecord(envTest.GetDomain(), "123d==")
 
 	zone, err := dns01.FindZoneByFqdn(fqdn)
 	require.NoError(t, err, "error finding DNSZone")
@@ -568,7 +568,7 @@ func TestLiveClientUpdateDnsRecord(t *testing.T) {
 	sessionID, err := client.Login()
 	require.NoError(t, err)
 
-	fqdn, _, _ := dns01.GetRecord(envTest.GetDomain(), "123d==")
+	fqdn, _ := dns01.GetRecord(envTest.GetDomain(), "123d==")
 
 	zone, err := dns01.FindZoneByFqdn(fqdn)
 	require.NoError(t, err, fmt.Errorf("error finding DNSZone, %v", err))

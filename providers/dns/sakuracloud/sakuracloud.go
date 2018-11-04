@@ -26,7 +26,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("SAKURACLOUD_TTL", 120),
+		TTL:                env.GetOrDefaultInt("SAKURACLOUD_TTL", dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond("SAKURACLOUD_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond("SAKURACLOUD_POLLING_INTERVAL", dns01.DefaultPollingInterval),
 	}
@@ -74,7 +74,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value, _ := dns01.GetRecord(domain, keyAuth)
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
 	zone, err := d.getHostedZone(domain)
 	if err != nil {
@@ -94,7 +94,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _, _ := dns01.GetRecord(domain, keyAuth)
+	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 
 	zone, err := d.getHostedZone(domain)
 	if err != nil {

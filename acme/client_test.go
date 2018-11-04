@@ -155,10 +155,10 @@ func TestValidate(t *testing.T) {
 	privKey, err := rsa.GenerateKey(rand.Reader, 512)
 	require.NoError(t, err)
 
-	// validateNoBody reads the http.Request POST body, parses the JWS and
-	// validates it to read the body. If there is an error doing this, or if the
-	// JWS body is not the empty JSON payload "{}" an error is returned. We use
-	// this to verify challenge POSTs to the ts below do not send a JWS body.
+	// validateNoBody reads the http.Request POST body, parses the JWS and validates it to read the body.
+	// If there is an error doing this,
+	// or if the JWS body is not the empty JSON payload "{}" or a POST-as-GET payload "" an error is returned.
+	// We use this to verify challenge POSTs to the ts below do not send a JWS body.
 	validateNoBody := func(r *http.Request) error {
 		reqBody, err := ioutil.ReadAll(r.Body)
 		if err != nil {
@@ -178,8 +178,8 @@ func TestValidate(t *testing.T) {
 			return err
 		}
 
-		if bodyStr := string(body); bodyStr != "{}" {
-			return fmt.Errorf(`expected JWS POST body "{}", got %q`, bodyStr)
+		if bodyStr := string(body); bodyStr != "{}" && bodyStr != "" {
+			return fmt.Errorf(`expected JWS POST body "{}" or "", got %q`, bodyStr)
 		}
 		return nil
 	}

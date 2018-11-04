@@ -151,12 +151,25 @@ func postJSON(j *jws, uri string, reqBody, respBody interface{}) (http.Header, e
 		return nil, errors.New("failed to marshal network message")
 	}
 
-	resp, err := j.post(uri, jsonBytes)
-	if err != nil {
-		return nil, fmt.Errorf("failed to post JWS message. -> %v", err)
+	resp, err := post(j, uri, jsonBytes, respBody)
+	if resp == nil {
+		return nil, err
 	}
 
 	defer resp.Body.Close()
+
+	return resp.Header, err
+}
+
+func postAsGet(j *jws, uri string, respBody interface{}) (*http.Response, error) {
+	return post(j, uri, []byte{}, respBody)
+}
+
+func post(j *jws, uri string, reqBody []byte, respBody interface{}) (*http.Response, error) {
+	resp, err := j.post(uri, reqBody)
+	if err != nil {
+		return nil, fmt.Errorf("failed to post JWS message. -> %v", err)
+	}
 
 	if resp.StatusCode >= http.StatusBadRequest {
 		err = handleHTTPError(resp)
@@ -164,35 +177,30 @@ func postJSON(j *jws, uri string, reqBody, respBody interface{}) (http.Header, e
 		case NonceError:
 			// Retry once if the nonce was invalidated
 
-			retryResp, errP := j.post(uri, jsonBytes)
+			retryResp, errP := j.post(uri, reqBody)
 			if errP != nil {
 				return nil, fmt.Errorf("failed to post JWS message. -> %v", errP)
 			}
 
-			defer retryResp.Body.Close()
-
 			if retryResp.StatusCode >= http.StatusBadRequest {
-				return retryResp.Header, handleHTTPError(retryResp)
+				return retryResp, handleHTTPError(retryResp)
 			}
 
 			if respBody == nil {
-				return retryResp.Header, nil
+				return retryResp, nil
 			}
 
-			return retryResp.Header, json.NewDecoder(retryResp.Body).Decode(respBody)
-
+			return retryResp, json.NewDecoder(retryResp.Body).Decode(respBody)
 		default:
-			return resp.Header, err
-
+			return resp, err
 		}
-
 	}
 
 	if respBody == nil {
-		return resp.Header, nil
+		return resp, nil
 	}
 
-	return resp.Header, json.NewDecoder(resp.Body).Decode(respBody)
+	return resp, json.NewDecoder(resp.Body).Decode(respBody)
 }
 
 // userAgent builds and returns the User-Agent string to use in requests.

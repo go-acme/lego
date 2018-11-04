@@ -34,7 +34,7 @@
   name = "github.com/decker502/dnspod-go"
 
 [[constraint]]
-  branch = "master"
+  version = "0.21.0"
   name = "github.com/dnsimple/dnsimple-go"
 
 [[constraint]]

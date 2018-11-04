@@ -1,5 +1,4 @@
-// Package mydnsjp implements a DNS provider for solving the DNS-01
-// challenge using MyDNS.jp.
+// Package mydnsjp implements a DNS provider for solving the DNS-01 challenge using MyDNS.jp.
 package mydnsjp
 
 import (

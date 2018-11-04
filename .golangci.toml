@@ -1,9 +1,6 @@
 [run]
   deadline = "5m"
-
-  skip-files = [
-    "^old/.*",
-  ]
+  skip-files = []
 
 [linters-settings]
 

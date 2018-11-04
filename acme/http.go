@@ -153,25 +153,12 @@ func postJSON(j *jws, uri string, reqBody, respBody interface{}) (http.Header, e
 		return nil, errors.New("failed to marshal network message")
 	}
 
-	resp, err := post(j, uri, jsonBytes, respBody)
-	if resp == nil {
-		return nil, err
-	}
-
-	defer resp.Body.Close()
-
-	return resp.Header, err
-}
-
-func postAsGet(j *jws, uri string, respBody interface{}) (*http.Response, error) {
-	return post(j, uri, []byte{}, respBody)
-}
-
-func post(j *jws, uri string, reqBody []byte, respBody interface{}) (*http.Response, error) {
-	resp, err := j.post(uri, reqBody)
+	resp, err := j.post(uri, jsonBytes)
 	if err != nil {
 		return nil, fmt.Errorf("failed to post JWS message. -> %v", err)
 	}
+
+	defer resp.Body.Close()
 
 	if resp.StatusCode >= http.StatusBadRequest {
 		err = handleHTTPError(resp)
@@ -179,30 +166,35 @@ func post(j *jws, uri string, reqBody []byte, respBody interface{}) (*http.Respo
 		case NonceError:
 			// Retry once if the nonce was invalidated
 
-			retryResp, errP := j.post(uri, reqBody)
+			retryResp, errP := j.post(uri, jsonBytes)
 			if errP != nil {
 				return nil, fmt.Errorf("failed to post JWS message. -> %v", errP)
 			}
 
+			defer retryResp.Body.Close()
+
 			if retryResp.StatusCode >= http.StatusBadRequest {
-				return retryResp, handleHTTPError(retryResp)
+				return retryResp.Header, handleHTTPError(retryResp)
 			}
 
 			if respBody == nil {
-				return retryResp, nil
+				return retryResp.Header, nil
 			}
 
-			return retryResp, json.NewDecoder(retryResp.Body).Decode(respBody)
+			return retryResp.Header, json.NewDecoder(retryResp.Body).Decode(respBody)
+
 		default:
-			return resp, err
+			return resp.Header, err
+
 		}
+
 	}
 
 	if respBody == nil {
-		return resp, nil
+		return resp.Header, nil
 	}
 
-	return resp, json.NewDecoder(resp.Body).Decode(respBody)
+	return resp.Header, json.NewDecoder(resp.Body).Decode(respBody)
 }
 
 // userAgent builds and returns the User-Agent string to use in requests.

@@ -23,14 +23,6 @@ func (s *preSolverMock) CleanUp(challenge le.Challenge, domain string) error {
 	return s.cleanUp[domain]
 }
 
-type solverMock struct {
-	solve   map[string]error
-	cleanUp map[string]error
-}
-
-func (s *solverMock) Solve(challenge le.Challenge, domain string) error   { return s.solve[domain] }
-func (s *solverMock) CleanUp(challenge le.Challenge, domain string) error { return s.cleanUp[domain] }
-
 func createStubAuthorizationHTTP01(domain, status string) le.Authorization {
 	return le.Authorization{
 		Status:  status,

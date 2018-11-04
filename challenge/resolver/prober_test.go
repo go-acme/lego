@@ -33,6 +33,21 @@ func TestProber_Solve(t *testing.T) {
 			},
 		},
 		{
+			desc: "already valid",
+			solvers: map[challenge.Type]solver{
+				challenge.HTTP01: &preSolverMock{
+					preSolve: map[string]error{},
+					solve:    map[string]error{},
+					cleanUp:  map[string]error{},
+				},
+			},
+			authz: []le.Authorization{
+				createStubAuthorizationHTTP01("acme.wtf", le.StatusValid),
+				createStubAuthorizationHTTP01("lego.wtf", le.StatusValid),
+				createStubAuthorizationHTTP01("mydomain.wtf", le.StatusValid),
+			},
+		},
+		{
 			desc: "when preSolve fail, auth is flagged as error and skipped",
 			solvers: map[challenge.Type]solver{
 				challenge.HTTP01: &preSolverMock{

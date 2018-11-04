@@ -59,8 +59,7 @@ func (c *Configuration) CertPath() string {
 	return filepath.Join(c.context.GlobalString("path"), "certificates")
 }
 
-// AccountsPath returns the OS dependent path to the
-// local accounts for a specific CA
+// AccountsPath returns the OS dependent path to the local accounts for a specific CA
 func (c *Configuration) AccountsPath() string {
 	return filepath.Join(c.context.GlobalString("path"), "accounts", c.ServerPath())
 }

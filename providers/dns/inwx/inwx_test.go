@@ -13,12 +13,6 @@ var envTest = tester.NewEnvTest(
 	"INWX_PASSWORD").
 	WithDomain("INWX_DOMAIN")
 
-func init() {
-	os.Setenv("INWX_SANDBOX", "true")
-	// In sandbox mode, the minimum allowed TTL is 3600
-	os.Setenv("INWX_TTL", "3600")
-}
-
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
 		desc     string
@@ -121,6 +115,10 @@ func TestLivePresentAndCleanup(t *testing.T) {
 	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
+
+	os.Setenv("INWX_SANDBOX", "true")
+	// In sandbox mode, the minimum allowed TTL is 3600
+	os.Setenv("INWX_TTL", "3600")
 
 	envTest.RestoreEnv()
 	provider, err := NewDNSProvider()

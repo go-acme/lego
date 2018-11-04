@@ -80,7 +80,7 @@ func (c *SolverManager) SetHTTP01Provider(p challenge.Provider) error {
 }
 
 // SetTLSALPN01Provider specifies a custom provider p that can solve the given TLS-ALPN-01 challenge.
-func (c *SolverManager) SetTLSALPN01Provider(chlg challenge.Type, p challenge.Provider) error {
+func (c *SolverManager) SetTLSALPN01Provider(p challenge.Provider) error {
 	c.solvers[challenge.TLSALPN01] = tlsalpn01.NewChallenge(c.core, validate, p)
 	return nil
 }
@@ -100,12 +100,12 @@ func (c *SolverManager) Exclude(challenges []challenge.Type) {
 }
 
 // Checks all challenges from the server in order and returns the first matching solver.
-func (c *SolverManager) chooseSolver(auth le.Authorization, domain string) (int, solver) {
+func (c *SolverManager) chooseSolver(auth le.Authorization) (int, solver) {
 	for i, chlg := range auth.Challenges {
 		if solvr, ok := c.solvers[challenge.Type(chlg.Type)]; ok {
 			return i, solvr
 		}
-		log.Infof("[%s] acme: Could not find solvr for: %s", domain, chlg.Type)
+		log.Infof("[%s] acme: Could not find solver for: %s", auth.Identifier.Value, chlg.Type)
 	}
 	return 0, nil
 }

@@ -52,27 +52,27 @@ func (c *Prober) Solve(authorizations []le.Authorization) error {
 	for _, authz := range authorizations {
 		if authz.Status == le.StatusValid {
 			// Boulder might recycle recent validated authz (see issue #267)
-			log.Infof("[%s] acme: Authorization already valid; skipping challenge", authz.Identifier.Value)
+			log.Infof("[%s] acme: authorization already valid; skipping challenge", authz.Identifier.Value)
 			continue
 		}
 
-		if i, solvr := c.solverManager.chooseSolver(authz, authz.Identifier.Value); solvr != nil {
+		if i, solvr := c.solverManager.chooseSolver(authz); solvr != nil {
 			authSolvers = append(authSolvers, &selectedAuthSolver{
 				authz:          authz,
 				challengeIndex: i,
 				solver:         solvr,
 			})
 		} else {
-			failures[authz.Identifier.Value] = fmt.Errorf("[%s] acme: Could not determine solvers", authz.Identifier.Value)
+			failures[authz.Identifier.Value] = fmt.Errorf("[%s] acme: could not determine solvers", authz.Identifier.Value)
 		}
 	}
 
 	// For all valid presolvers, first submit the challenges so they have max time to propagate
-	for _, item := range authSolvers {
-		authz := item.authz
-		i := item.challengeIndex
-		if presolver, ok := item.solver.(preSolver); ok {
-			if err := presolver.PreSolve(authz.Challenges[i], authz.Identifier.Value); err != nil {
+	for _, authSolver := range authSolvers {
+		authz := authSolver.authz
+		if solvr, ok := authSolver.solver.(preSolver); ok {
+			err := solvr.PreSolve(authz.Challenges[authSolver.challengeIndex], authz.Identifier.Value)
+			if err != nil {
 				failures[authz.Identifier.Value] = err
 			}
 		}
@@ -80,29 +80,31 @@ func (c *Prober) Solve(authorizations []le.Authorization) error {
 
 	defer func() {
 		// Clean all created TXT records
-		for _, item := range authSolvers {
-			if clean, ok := item.solver.(cleanup); ok {
-				if failures[item.authz.Identifier.Value] != nil {
+		for _, authSolver := range authSolvers {
+			if solvr, ok := authSolver.solver.(cleanup); ok {
+				if failures[authSolver.authz.Identifier.Value] != nil {
 					// already failed in previous loop
 					continue
 				}
-				err := clean.CleanUp(item.authz.Challenges[item.challengeIndex], item.authz.Identifier.Value)
+
+				err := solvr.CleanUp(authSolver.authz.Challenges[authSolver.challengeIndex], authSolver.authz.Identifier.Value)
 				if err != nil {
-					log.Warnf("Error cleaning up %s: %v ", item.authz.Identifier.Value, err)
+					log.Warnf("Error cleaning up %s: %v ", authSolver.authz.Identifier.Value, err)
 				}
 			}
 		}
 	}()
 
 	// Finally solve all challenges for real
-	for _, item := range authSolvers {
-		authz := item.authz
-		i := item.challengeIndex
+	for _, solvr := range authSolvers {
+		authz := solvr.authz
 		if failures[authz.Identifier.Value] != nil {
 			// already failed in previous loop
 			continue
 		}
-		if err := item.solver.Solve(authz.Challenges[i], authz.Identifier.Value); err != nil {
+
+		err := solvr.solver.Solve(authz.Challenges[solvr.challengeIndex], authz.Identifier.Value)
+		if err != nil {
 			failures[authz.Identifier.Value] = err
 		}
 	}

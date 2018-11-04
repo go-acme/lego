@@ -308,7 +308,7 @@ func (client *Client) APIName(command Command) string {
 func (client *Client) APIDescription(command Command) string {
 	info, err := info(command)
 	if err != nil {
-		panic(err)
+		return "*missing description*"
 	}
 	return info.Description
 }

@@ -613,7 +613,7 @@
   revision = "028658c6d9be774b6d103a923d8c4b2715135c3f"
 
 [[projects]]
-  digest = "1:3b7124c543146736e07107be13ea6288923c4a743e07c7a31d6b7209a00a9dab"
+  digest = "1:a50fabe7a46692dc7c656310add3d517abe7914df02afd151ef84da884605dc8"
   name = "gopkg.in/square/go-jose.v2"
   packages = [
     ".",
@@ -621,8 +621,8 @@
     "json",
   ]
   pruneopts = "NUT"
-  revision = "8254d6c783765f38c8675fae4427a1fe73fbd09d"
-  version = "v2.1.8"
+  revision = "ef984e69dd356202fd4e4910d4d9c24468bdf0b8"
+  version = "v2.1.9"
 
 [solve-meta]
   analyzer-name = "dep"

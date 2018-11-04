@@ -21,6 +21,7 @@ import (
 var lego string
 
 func testMain(m *testing.M) int {
+	os.Setenv("LEGO_E2E_TESTS", "yop")
 	_, force := os.LookupEnv("LEGO_E2E_TESTS")
 	if _, ci := os.LookupEnv("CI"); !ci && !force {
 		fmt.Fprintln(os.Stderr, "skipping test: e2e tests are disable. (no 'CI' or 'LEGO_E2E_TESTS' env var)")
@@ -78,6 +79,12 @@ func testMain(m *testing.M) int {
 	})
 
 	return m.Run()
+}
+
+func runLego(arg ...string) ([]byte, error) {
+	cmd := exec.Command(lego, arg...)
+	cmd.Env = []string{"LEGO_CA_CERTIFICATES=./fixtures/certs/pebble.minica.pem"}
+	return cmd.CombinedOutput()
 }
 
 func buildLego() (string, func(), error) {

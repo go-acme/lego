@@ -4,10 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"os/exec"
 	"testing"
-
-	"github.com/xenolf/lego/log"
 )
 
 func TestMain(m *testing.M) {
@@ -16,8 +13,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestHelp(t *testing.T) {
-	cmd := exec.Command(lego, "-h")
-	output, err := cmd.CombinedOutput()
+	output, err := runLego("-h")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", output)
 		t.Fatal(err)
@@ -29,7 +25,7 @@ func TestHelp(t *testing.T) {
 func TestChallengeHTTP(t *testing.T) {
 	cleanLegoFiles()
 
-	cmd := exec.Command(lego,
+	output, err := runLego(
 		"-m", "hubert@hubert.com",
 		"-a",
 		"-x", "dns-01",
@@ -40,11 +36,8 @@ func TestChallengeHTTP(t *testing.T) {
 		"--tls", ":5001",
 		"run")
 
-	cmd.Env = []string{"LEGO_CA_CERTIFICATES=./fixtures/certs/pebble.minica.pem"}
-
-	output, err := cmd.CombinedOutput()
 	if len(output) > 0 {
-		log.Println(string(output))
+		fmt.Fprintf(os.Stdout, "%s\n", output)
 	}
 	if err != nil {
 		t.Fatal(err)
@@ -54,7 +47,7 @@ func TestChallengeHTTP(t *testing.T) {
 func TestChallengeTLS(t *testing.T) {
 	cleanLegoFiles()
 
-	cmd := exec.Command(lego,
+	output, err := runLego(
 		"-m", "hubert@hubert.com",
 		"-a",
 		"-x", "dns-01",
@@ -65,11 +58,8 @@ func TestChallengeTLS(t *testing.T) {
 		"--tls", ":5001",
 		"run")
 
-	cmd.Env = []string{"LEGO_CA_CERTIFICATES=./fixtures/certs/pebble.minica.pem"}
-
-	output, err := cmd.CombinedOutput()
 	if len(output) > 0 {
-		log.Println(string(output))
+		fmt.Fprintf(os.Stdout, "%s\n", output)
 	}
 	if err != nil {
 		t.Fatal(err)

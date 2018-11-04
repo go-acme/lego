@@ -113,7 +113,7 @@ func (s *Challenge) Solve(chlng le.Challenge, domain string) error {
 	}
 
 	err = wait.For(timeout, interval, func() (bool, error) {
-		stop, errP := s.preCheck.getFunc()(fqdn, value)
+		stop, errP := s.preCheck.call(fqdn, value)
 		if !stop || errP != nil {
 			log.Infof("[%s] Waiting for DNS record propagation.", domain)
 		}

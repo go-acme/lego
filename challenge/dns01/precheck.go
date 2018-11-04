@@ -40,11 +40,11 @@ func newPreCheck() preCheck {
 	}
 }
 
-func (p preCheck) getFunc() PreCheckFunc {
+func (p preCheck) call(fqdn, value string) (bool, error) {
 	if p.checkFunc == nil {
-		return p.checkDNSPropagation
+		return p.checkDNSPropagation(fqdn, value)
 	}
-	return p.checkFunc
+	return p.checkFunc(fqdn, value)
 }
 
 // checkDNSPropagation checks if the expected TXT record has been propagated to all authoritative nameservers.

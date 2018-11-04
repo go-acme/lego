@@ -96,14 +96,14 @@ func (c *Prober) Solve(authorizations []le.Authorization) error {
 	}()
 
 	// Finally solve all challenges for real
-	for _, solvr := range authSolvers {
-		authz := solvr.authz
+	for _, authSolver := range authSolvers {
+		authz := authSolver.authz
 		if failures[authz.Identifier.Value] != nil {
 			// already failed in previous loop
 			continue
 		}
 
-		err := solvr.solver.Solve(authz.Challenges[solvr.challengeIndex], authz.Identifier.Value)
+		err := authSolver.solver.Solve(authz.Challenges[authSolver.challengeIndex], authz.Identifier.Value)
 		if err != nil {
 			failures[authz.Identifier.Value] = err
 		}

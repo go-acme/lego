@@ -244,6 +244,7 @@ Here is an example bash command using the CloudFlare DNS provider:
 	fmt.Fprintln(w, "\troute53:\tAWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, AWS_HOSTED_ZONE_ID")
 	fmt.Fprintln(w, "\tsakuracloud:\tSAKURACLOUD_ACCESS_TOKEN, SAKURACLOUD_ACCESS_TOKEN_SECRET")
 	fmt.Fprintln(w, "\tstackpath:\tSTACKPATH_CLIENT_ID, STACKPATH_CLIENT_SECRET, STACKPATH_STACK_ID")
+	fmt.Fprintln(w, "\tselectel:\tSELECTEL_API_TOKEN")
 	fmt.Fprintln(w, "\tvegadns:\tSECRET_VEGADNS_KEY, SECRET_VEGADNS_SECRET, VEGADNS_URL")
 	fmt.Fprintln(w, "\tvultr:\tVULTR_API_KEY")
 	fmt.Fprintln(w)
@@ -288,6 +289,7 @@ Here is an example bash command using the CloudFlare DNS provider:
 	fmt.Fprintln(w, "\troute53:\tAWS_POLLING_INTERVAL, AWS_PROPAGATION_TIMEOUT, AWS_TTL")
 	fmt.Fprintln(w, "\tsakuracloud:\tSAKURACLOUD_POLLING_INTERVAL, SAKURACLOUD_PROPAGATION_TIMEOUT, SAKURACLOUD_TTL")
 	fmt.Fprintln(w, "\tstackpath:\tSTACKPATH_POLLING_INTERVAL, STACKPATH_PROPAGATION_TIMEOUT, STACKPATH_TTL")
+	fmt.Fprintln(w, "\tselectel:\tSELECTEL_BASE_URL, SELECTEL_TTL, SELECTEL_PROPAGATION_TIMEOUT, SELECTEL_POLLING_INTERVAL, SELECTEL_HTTP_TIMEOUT")
 	fmt.Fprintln(w, "\tvegadns:\tVEGADNS_POLLING_INTERVAL, VEGADNS_PROPAGATION_TIMEOUT, VEGADNS_TTL")
 	fmt.Fprintln(w, "\tvultr:\tVULTR_POLLING_INTERVAL, VULTR_PROPAGATION_TIMEOUT, VULTR_TTL, VULTR_HTTP_TIMEOUT")
 

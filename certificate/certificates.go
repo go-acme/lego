@@ -91,7 +91,7 @@ func (c *Certifier) Obtain(domains []string, bundle bool, privKey crypto.Private
 		log.Infof("[%s] acme: Obtaining SAN certificate", strings.Join(domains, ", "))
 	}
 
-	order, err := c.createOrderForIdentifiers(domains)
+	order, err := c.getNewOrderForIdentifiers(domains)
 	if err != nil {
 		return nil, err
 	}
@@ -160,7 +160,7 @@ func (c *Certifier) ObtainForCSR(csr x509.CertificateRequest, bundle bool) (*Res
 		log.Infof("[%s] acme: Obtaining SAN certificate given a CSR", strings.Join(domains, ", "))
 	}
 
-	order, err := c.createOrderForIdentifiers(domains)
+	order, err := c.getNewOrderForIdentifiers(domains)
 	if err != nil {
 		return nil, err
 	}
@@ -382,7 +382,7 @@ func (c *Certifier) Renew(cert Resource, bundle, mustStaple bool) (*Resource, er
 	return c.Obtain(domains, bundle, privKey, mustStaple)
 }
 
-func (c *Certifier) createOrderForIdentifiers(domains []string) (orderResource, error) {
+func (c *Certifier) getNewOrderForIdentifiers(domains []string) (orderResource, error) {
 	var identifiers []le.Identifier
 	for _, domain := range domains {
 		identifiers = append(identifiers, le.Identifier{Type: "dns", Value: domain})

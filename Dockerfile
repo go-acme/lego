@@ -6,7 +6,7 @@ RUN apk --update upgrade \
 
 WORKDIR /go/src/github.com/xenolf/lego
 COPY . .
-RUN make version-build
+RUN make build
 
 FROM alpine:3.8
 RUN apk update && apk add --no-cache --virtual ca-certificates

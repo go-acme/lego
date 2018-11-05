@@ -94,6 +94,13 @@ type AccountMessage struct {
 	ExternalAccountBinding json.RawMessage `json:"externalAccountBinding,omitempty"`
 }
 
+// OrderExtend a extended OrderMessage.
+type OrderExtend struct {
+	OrderMessage
+	// The order URL, contains the value of the response header `Location`
+	Location string `json:"-"`
+}
+
 // OrderMessage the ACME order Object.
 // - https://tools.ietf.org/html/draft-ietf-acme-acme-16#section-7.1.3
 type OrderMessage struct {

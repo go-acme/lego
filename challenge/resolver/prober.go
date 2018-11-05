@@ -42,7 +42,7 @@ func NewProber(solverManager *SolverManager) *Prober {
 
 // Solve Looks through the challenge combinations to find a solvable match.
 // Then solves the challenges in series and returns.
-func (c *Prober) Solve(authorizations []le.Authorization) error {
+func (p *Prober) Solve(authorizations []le.Authorization) error {
 	failures := make(obtainError)
 
 	var authSolvers []*selectedAuthSolver
@@ -56,7 +56,7 @@ func (c *Prober) Solve(authorizations []le.Authorization) error {
 			continue
 		}
 
-		if i, solvr := c.solverManager.chooseSolver(authz); solvr != nil {
+		if i, solvr := p.solverManager.chooseSolver(authz); solvr != nil {
 			authSolvers = append(authSolvers, &selectedAuthSolver{
 				authz:          authz,
 				challengeIndex: i,

@@ -27,13 +27,6 @@ const (
 	maxBodySize = 1024 * 1024
 )
 
-// orderResource representing an account's requests to issue certificates.
-type orderResource struct {
-	le.OrderMessage
-	URL     string
-	Domains []string
-}
-
 // Resource represents a CA issued certificate.
 // PrivateKey, Certificate and IssuerCertificate are all
 // already PEM encoded and can be directly written to disk.
@@ -116,7 +109,7 @@ func (c *Certifier) Obtain(domains []string, bundle bool, privKey crypto.Private
 	log.Infof("[%s] acme: Validations succeeded; requesting certificates", strings.Join(domains, ", "))
 
 	failures := make(obtainError)
-	cert, err := c.createForOrder(order, bundle, privKey, mustStaple)
+	cert, err := c.createForOrder(domains, order, bundle, privKey, mustStaple)
 	if err != nil {
 		for _, auth := range authz {
 			failures[auth.Identifier.Value] = err
@@ -185,7 +178,7 @@ func (c *Certifier) ObtainForCSR(csr x509.CertificateRequest, bundle bool) (*Res
 	log.Infof("[%s] acme: Validations succeeded; requesting certificates", strings.Join(domains, ", "))
 
 	failures := make(obtainError)
-	cert, err := c.createForCSR(order, bundle, csr.Raw, nil)
+	cert, err := c.createForCSR(domains, order, bundle, csr.Raw, nil)
 	if err != nil {
 		for _, chln := range authz {
 			failures[chln.Identifier.Value] = err
@@ -205,7 +198,7 @@ func (c *Certifier) ObtainForCSR(csr x509.CertificateRequest, bundle bool) (*Res
 	return cert, nil
 }
 
-func (c *Certifier) createForOrder(order orderResource, bundle bool, privKey crypto.PrivateKey, mustStaple bool) (*Resource, error) {
+func (c *Certifier) createForOrder(domains []string, order le.OrderExtend, bundle bool, privKey crypto.PrivateKey, mustStaple bool) (*Resource, error) {
 	if privKey == nil {
 		var err error
 		privKey, err = certcrypto.GeneratePrivateKey(c.keyType)
@@ -215,7 +208,7 @@ func (c *Certifier) createForOrder(order orderResource, bundle bool, privKey cry
 	}
 
 	// Determine certificate name(s) based on the authorization resources
-	commonName := order.Domains[0]
+	commonName := domains[0]
 
 	// ACME draft Section 7.4 "Applying for Certificate Issuance"
 	// https://tools.ietf.org/html/draft-ietf-acme-acme-12#section-7.4
@@ -236,10 +229,10 @@ func (c *Certifier) createForOrder(order orderResource, bundle bool, privKey cry
 		return nil, err
 	}
 
-	return c.createForCSR(order, bundle, csr, certcrypto.PEMEncode(privKey))
+	return c.createForCSR(domains, order, bundle, csr, certcrypto.PEMEncode(privKey))
 }
 
-func (c *Certifier) createForCSR(order orderResource, bundle bool, csr []byte, privateKeyPem []byte) (*Resource, error) {
+func (c *Certifier) createForCSR(domains []string, order le.OrderExtend, bundle bool, csr []byte, privateKeyPem []byte) (*Resource, error) {
 	csrMsg := le.CSRMessage{
 		Csr: base64.RawURLEncoding.EncodeToString(csr),
 	}
@@ -254,7 +247,7 @@ func (c *Certifier) createForCSR(order orderResource, bundle bool, csr []byte, p
 		return nil, retOrder.Error
 	}
 
-	commonName := order.Domains[0]
+	commonName := domains[0]
 	certRes := Resource{
 		Domain:     commonName,
 		CertURL:    retOrder.Certificate,
@@ -283,7 +276,7 @@ func (c *Certifier) createForCSR(order orderResource, bundle bool, csr []byte, p
 		case <-stopTimer.C:
 			return nil, errors.New("certificate polling timed out")
 		case <-retryTick.C:
-			_, err := c.core.PostAsGet(order.URL, &retOrder)
+			_, err := c.core.PostAsGet(order.Location, &retOrder)
 			if err != nil {
 				return nil, err
 			}
@@ -381,7 +374,7 @@ func (c *Certifier) Renew(cert Resource, bundle, mustStaple bool) (*Resource, er
 	return c.Obtain(domains, bundle, privKey, mustStaple)
 }
 
-func (c *Certifier) getNewOrderForIdentifiers(domains []string) (orderResource, error) {
+func (c *Certifier) getNewOrderForIdentifiers(domains []string) (le.OrderExtend, error) {
 	var identifiers []le.Identifier
 	for _, domain := range domains {
 		identifiers = append(identifiers, le.Identifier{Type: "dns", Value: domain})
@@ -392,12 +385,11 @@ func (c *Certifier) getNewOrderForIdentifiers(domains []string) (orderResource, 
 	var order le.OrderMessage
 	resp, err := c.core.Post(c.core.GetDirectory().NewOrderURL, orderReq, &order)
 	if err != nil {
-		return orderResource{}, err
+		return le.OrderExtend{}, err
 	}
 
-	return orderResource{
-		URL:          resp.Header.Get("Location"),
-		Domains:      domains,
+	return le.OrderExtend{
+		Location:     resp.Header.Get("Location"),
 		OrderMessage: order,
 	}, nil
 }

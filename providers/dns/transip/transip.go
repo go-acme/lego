@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/transip/gotransip"
-	transip_domain "github.com/transip/gotransip/domain"
+	transipdomain "github.com/transip/gotransip/domain"
 	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/platform/config/env"
 )
@@ -52,10 +52,10 @@ func NewDNSProvider() (*DNSProvider, error) {
 // NewDNSProviderCredentials uses the supplied credentials
 // to return a DNSProvider instance configured for TransIP.
 // Deprecated
-func NewDNSProviderCredentials(accountname string, privatekeypath string) (*DNSProvider, error) {
+func NewDNSProviderCredentials(accountName string, privateKeyPath string) (*DNSProvider, error) {
 	config := NewDefaultConfig()
-	config.AccountName = accountname
-	config.PrivateKeyPath = privatekeypath
+	config.AccountName = accountName
+	config.PrivateKeyPath = privateKeyPath
 
 	return NewDNSProviderConfig(config)
 }
@@ -66,15 +66,15 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("transip: the configuration of the DNS provider is nil")
 	}
 
-	c, err := gotransip.NewSOAPClient(gotransip.ClientConfig{
-		AccountName: config.AccountName,
+	client, err := gotransip.NewSOAPClient(gotransip.ClientConfig{
+		AccountName:    config.AccountName,
 		PrivateKeyPath: config.PrivateKeyPath,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("transip: %v", err.Error())
+		return nil, fmt.Errorf("transip: %v", err)
 	}
 
-	return &DNSProvider{client: c, config: config}, nil
+	return &DNSProvider{client: client, config: config}, nil
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
@@ -86,20 +86,26 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 // Present creates a TXT record to fulfill the dns-01 challenge
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	// get all DNS entries
-	domainName, err := transip_domain.GetInfo(d.client, domain)
+	domainName, err := transipdomain.GetInfo(d.client, domain)
 
 	if err != nil {
 		return fmt.Errorf("transip: error for %s in Present: %v", domain, err)
 	}
 
 	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
+
 	// get the domain with the main domain
-	name := strings.TrimSuffix(fqdn, "." + domain + ".")
+	name := strings.TrimSuffix(fqdn, "."+domain+".")
 
 	// append the new DNS entry
-	dnsEntries := append(domainName.DNSEntries, transip_domain.DNSEntry{name, d.config.TTL, transip_domain.DNSEntryTypeTXT, value})
+	dnsEntries := append(domainName.DNSEntries, transipdomain.DNSEntry{
+		Name:    name,
+		TTL:     d.config.TTL,
+		Type:    transipdomain.DNSEntryTypeTXT,
+		Content: value,
+	})
 
-	err = transip_domain.SetDNSEntries(d.client, domain, dnsEntries)
+	err = transipdomain.SetDNSEntries(d.client, domain, dnsEntries)
 	if err != nil {
 		return fmt.Errorf("transip: %v", err)
 	}
@@ -111,10 +117,10 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
 
 	// get the non-fqdn name
-	name := strings.TrimSuffix(fqdn, "." + domain + ".")
+	name := strings.TrimSuffix(fqdn, "."+domain+".")
 
 	// get all DNS entries
-	domainName, err := transip_domain.GetInfo(d.client, fqdn)
+	domainName, err := transipdomain.GetInfo(d.client, fqdn)
 	if err != nil {
 		return fmt.Errorf("transip: error for %s in CleanUp: %v", fqdn, err)
 	}
@@ -124,14 +130,14 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	// loop through the existing entries and remove the specific record
 	for _, e := range domainName.DNSEntries {
-		if  e.Name != name {
+		if e.Name != name {
 			newEntries = append(newEntries, e)
 		}
 	}
 
-	err = transip_domain.SetDNSEntries(d.client, fqdn, newEntries)
+	err = transipdomain.SetDNSEntries(d.client, fqdn, newEntries)
 	if err != nil {
-		return fmt.Errorf("transip: couldn't get Record ID in CleanUp: %s", err)
+		return fmt.Errorf("transip: couldn't get Record ID in CleanUp: %sv", err)
 	}
 
 	return nil

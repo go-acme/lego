@@ -14,12 +14,11 @@ import (
 	"strings"
 	"time"
 
-	"golang.org/x/crypto/ocsp"
-
 	"github.com/xenolf/lego/certificate/certcrypto"
 	"github.com/xenolf/lego/le"
 	"github.com/xenolf/lego/le/api"
 	"github.com/xenolf/lego/log"
+	"golang.org/x/crypto/ocsp"
 	"golang.org/x/net/idna"
 )
 

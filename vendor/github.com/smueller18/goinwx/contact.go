@@ -93,22 +93,14 @@ func (s *ContactServiceOp) Delete(roId int) error {
 	})
 
 	_, err := s.client.Do(*req)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func (s *ContactServiceOp) Update(request *ContactUpdateRequest) error {
 	req := s.client.NewRequest(methodContactUpdate, structs.Map(request))
 
 	_, err := s.client.Do(*req)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func (s *ContactServiceOp) Info(contactId int) (*ContactInfoResponse, error) {
@@ -125,6 +117,7 @@ func (s *ContactServiceOp) Info(contactId int) (*ContactInfoResponse, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	var result ContactInfoResponse
 	err = mapstructure.Decode(*resp, &result)
 	if err != nil {
@@ -146,6 +139,7 @@ func (s *ContactServiceOp) List(search string) (*ContactListResponse, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	var result ContactListResponse
 	err = mapstructure.Decode(*resp, &result)
 	if err != nil {

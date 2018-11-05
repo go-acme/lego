@@ -1,11 +1,9 @@
 package goinwx
 
 import (
-	"time"
-
-	"fmt"
-
 	"errors"
+	"fmt"
+	"time"
 
 	"github.com/fatih/structs"
 	"github.com/mitchellh/mapstructure"
@@ -214,7 +212,6 @@ func (s *DomainServiceOp) GetPrices(tlds []string) ([]DomainPriceResponse, error
 func (s *DomainServiceOp) Register(request *DomainRegisterRequest) (*DomainRegisterResponse, error) {
 	req := s.client.NewRequest(methodDomainCreate, structs.Map(request))
 
-	//fmt.Println("Args", req.Args)
 	resp, err := s.client.Do(*req)
 	if err != nil {
 		return nil, err
@@ -236,7 +233,6 @@ func (s *DomainServiceOp) Delete(domain string, scheduledDate time.Time) error {
 	})
 
 	_, err := s.client.Do(*req)
-
 	return err
 }
 

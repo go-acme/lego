@@ -27,33 +27,21 @@ func (s *AccountServiceOp) Login() error {
 	})
 
 	_, err := s.client.Do(*req)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func (s *AccountServiceOp) Logout() error {
 	req := s.client.NewRequest(methodAccountLogout, nil)
 
 	_, err := s.client.Do(*req)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func (s *AccountServiceOp) Lock() error {
 	req := s.client.NewRequest(methodAccountLock, nil)
 
 	_, err := s.client.Do(*req)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func (s *AccountServiceOp) Unlock(tan string) error {
@@ -62,9 +50,5 @@ func (s *AccountServiceOp) Unlock(tan string) error {
 	})
 
 	_, err := s.client.Do(*req)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }

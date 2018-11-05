@@ -1,13 +1,10 @@
 package goinwx
 
 import (
+	"fmt"
 	"net/url"
 
-	"fmt"
-
 	"github.com/kolo/xmlrpc"
-
-	"github.com/golang/glog"
 )
 
 const (
@@ -69,24 +66,20 @@ type ErrorResponse struct {
 
 // NewClient returns a new INWX API client.
 func NewClient(username, password string, opts *ClientOptions) *Client {
-	useSandbox := false
-
+	var useSandbox bool
 	if opts != nil {
 		useSandbox = opts.Sandbox
 	}
 
 	var baseURL *url.URL
 
-	if useSandbox == true {
+	if useSandbox {
 		baseURL, _ = url.Parse(APISandboxBaseUrl)
-
 	} else {
 		baseURL, _ = url.Parse(APIBaseUrl)
 	}
 
 	rpcClient, _ := xmlrpc.NewClient(baseURL.String(), nil)
-
-	glog.V(5).Info("Base URL: %s\n", baseURL)
 
 	client := &Client{RPCClient: rpcClient,
 		BaseURL:  baseURL,
@@ -107,21 +100,19 @@ func (c *Client) NewRequest(serviceMethod string, args map[string]interface{}) *
 	if args != nil {
 		args["lang"] = APILanguage
 	}
-	req := &Request{ServiceMethod: serviceMethod, Args: args}
-	return req
+
+	return &Request{ServiceMethod: serviceMethod, Args: args}
 }
 
 // Do sends an API request and returns the API response.
 func (c *Client) Do(req Request) (*map[string]interface{}, error) {
 	var resp Response
 	err := c.RPCClient.Call(req.ServiceMethod, req.Args, &resp)
-	glog.V(9).Info("Response: %v", resp)
 	if err != nil {
 		return nil, err
 	}
 
-	err = CheckResponse(&resp)
-	return &resp.ResponseData, err
+	return &resp.ResponseData, CheckResponse(&resp)
 }
 
 func (r *ErrorResponse) Error() string {
@@ -138,7 +129,5 @@ func CheckResponse(r *Response) error {
 		return nil
 	}
 
-	errorResponse := &ErrorResponse{Code: r.Code, Message: r.Message, Reason: r.Reason, ReasonCode: r.ReasonCode}
-
-	return errorResponse
+	return &ErrorResponse{Code: r.Code, Message: r.Message, Reason: r.Reason, ReasonCode: r.ReasonCode}
 }

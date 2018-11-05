@@ -2,10 +2,8 @@ package goinwx
 
 import (
 	"errors"
-
-	"time"
-
 	"fmt"
+	"time"
 
 	"github.com/fatih/structs"
 	"github.com/mitchellh/mapstructure"
@@ -209,7 +207,6 @@ func (s *NameserverServiceOp) Create(request *NameserverCreateRequest) (int, err
 func (s *NameserverServiceOp) CreateRecord(request *NameserverRecordRequest) (int, error) {
 	req := s.client.NewRequest(methodNameserverCreateRecord, structs.Map(request))
 
-	//fmt.Println("Args", req.Args)
 	resp, err := s.client.Do(*req)
 	if err != nil {
 		return 0, err
@@ -255,9 +252,6 @@ func (s *NameserverServiceOp) DeleteRecord(recId int) error {
 }
 
 func (s *NameserverServiceOp) FindRecordById(recId int) (*NameserverRecord, *NameserverDomain, error) {
-	var domain *NameserverDomain
-	var rec *NameserverRecord
-
 	listResp, err := s.client.Nameservers.List("")
 	if err != nil {
 		return nil, nil, err
@@ -271,12 +265,11 @@ func (s *NameserverServiceOp) FindRecordById(recId int) (*NameserverRecord, *Nam
 
 		for _, record := range resp.Records {
 			if record.Id == recId {
-				rec = &record
-				domain = &domainItem
-				return rec, domain, nil
+				return &record, &domainItem, nil
 			}
 		}
 	}
-	return nil, nil, errors.New(fmt.Sprintf("Couldn't find INWX Record for id %d", recId))
+
+	return nil, nil, fmt.Errorf("couldn't find INWX Record for id %d", recId)
 
 }

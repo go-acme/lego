@@ -216,14 +216,6 @@
   version = "v1.8.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:e2b86e41f3d669fc36b50d31d32d22c8ac656c75aa5ea89717ce7177e134ff2a"
-  name = "github.com/golang/glog"
-  packages = ["."]
-  pruneopts = "NUT"
-  revision = "23def4e6c14b4da8ac2ed8007337bc5eb5007998"
-
-[[projects]]
   digest = "1:97df918963298c287643883209a2c3f642e6593379f97ab400c2a2e219ab647d"
   name = "github.com/golang/protobuf"
   packages = ["proto"]
@@ -415,12 +407,12 @@
   version = "v1.0.6"
 
 [[projects]]
-  digest = "1:a304dd244e7b4b82108126d904e2294f1d916d4bb3b64e377fb761baf584a676"
+  branch = "master"
+  digest = "1:94fcec8ba983a96bb3f123ab9690955baf44d6d32de342f95f5a2f665c70457a"
   name = "github.com/smueller18/goinwx"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "4dce1088ed8c6ee489b6f23ed693d3348207e55e"
-  version = "v0.4.0"
+  revision = "5d138389109eca96463f44f692408f0d1c731278"
 
 [[projects]]
   digest = "1:60a46e2410edbf02b419f833372dd1d24d7aa1b916a990a7370e792fada1eadd"

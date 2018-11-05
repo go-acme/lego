@@ -241,12 +241,12 @@ func (c *Certifier) createForOrder(order orderResource, bundle bool, privKey cry
 }
 
 func (c *Certifier) createForCSR(order orderResource, bundle bool, csr []byte, privateKeyPem []byte) (*Resource, error) {
-	message := le.CSRMessage{
+	csrMsg := le.CSRMessage{
 		Csr: base64.RawURLEncoding.EncodeToString(csr),
 	}
 
 	var retOrder le.OrderMessage
-	_, err := c.core.Post(order.Finalize, message, &retOrder)
+	_, err := c.core.Post(order.Finalize, csrMsg, &retOrder)
 	if err != nil {
 		return nil, err
 	}
@@ -312,11 +312,11 @@ func (c *Certifier) Revoke(cert []byte) error {
 		return fmt.Errorf("certificate bundle starts with a CA certificate")
 	}
 
-	message := le.RevokeCertMessage{
+	revokeMsg := le.RevokeCertMessage{
 		Certificate: base64.URLEncoding.EncodeToString(x509Cert.Raw),
 	}
 
-	_, err = c.core.Post(c.core.GetDirectory().RevokeCertURL, message, nil)
+	_, err = c.core.Post(c.core.GetDirectory().RevokeCertURL, revokeMsg, nil)
 	return err
 }
 
@@ -388,10 +388,10 @@ func (c *Certifier) createOrderForIdentifiers(domains []string) (orderResource, 
 		identifiers = append(identifiers, le.Identifier{Type: "dns", Value: domain})
 	}
 
-	order := le.OrderMessage{Identifiers: identifiers}
+	orderReq := le.OrderMessage{Identifiers: identifiers}
 
-	var response le.OrderMessage
-	resp, err := c.core.Post(c.core.GetDirectory().NewOrderURL, order, &response)
+	var order le.OrderMessage
+	resp, err := c.core.Post(c.core.GetDirectory().NewOrderURL, orderReq, &order)
 	if err != nil {
 		return orderResource{}, err
 	}
@@ -399,7 +399,7 @@ func (c *Certifier) createOrderForIdentifiers(domains []string) (orderResource, 
 	return orderResource{
 		URL:          resp.Header.Get("Location"),
 		Domains:      domains,
-		OrderMessage: response,
+		OrderMessage: order,
 	}, nil
 }
 

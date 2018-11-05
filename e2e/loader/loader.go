@@ -124,6 +124,9 @@ func (l *EnvLoader) MainTest(m *testing.M) int {
 func (l *EnvLoader) RunLego(arg ...string) ([]byte, error) {
 	cmd := exec.Command(l.lego, arg...)
 	cmd.Env = l.LegoOptions
+
+	fmt.Printf("$ %s\n", strings.Join(cmd.Args, " "))
+
 	return cmd.CombinedOutput()
 }
 
@@ -131,6 +134,8 @@ func (l *EnvLoader) cmdPebble() (*exec.Cmd, *bytes.Buffer) {
 	cmd := exec.Command(cmdNamePebble, l.PebbleOptions.Args...)
 	cmd.Env = l.PebbleOptions.Env
 	cmd.Dir, _ = filepath.Abs(l.PebbleOptions.Dir)
+
+	fmt.Printf("$ %s\n", strings.Join(cmd.Args, " "))
 
 	var b bytes.Buffer
 	cmd.Stdout = &b
@@ -141,6 +146,8 @@ func (l *EnvLoader) cmdPebble() (*exec.Cmd, *bytes.Buffer) {
 
 func (l *EnvLoader) cmdChallSrv() (*exec.Cmd, *bytes.Buffer) {
 	cmd := exec.Command(cmdNameChallSrv, l.ChallSrv.Args...)
+
+	fmt.Printf("$ %s\n", strings.Join(cmd.Args, " "))
 
 	var b bytes.Buffer
 	cmd.Stdout = &b
@@ -247,6 +254,7 @@ func goTool() (string, error) {
 }
 
 func CleanLegoFiles() {
-	rm := exec.Command("rm", "-rf", ".lego")
-	rm.CombinedOutput()
+	cmd := exec.Command("rm", "-rf", ".lego")
+	fmt.Printf("$ %s\n", strings.Join(cmd.Args, " "))
+	cmd.CombinedOutput()
 }

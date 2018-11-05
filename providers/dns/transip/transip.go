@@ -1,5 +1,4 @@
-// Package transip implements a DNS provider for solving the DNS-01
-// challenge using TransIP.
+// Package transip implements a DNS provider for solving the DNS-01 challenge using TransIP.
 package transip
 
 import (
@@ -42,20 +41,14 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables:
 // TRANSIP_ACCOUNTNAME, TRANSIP_PRIVATEKEYPATH.
 func NewDNSProvider() (*DNSProvider, error) {
-	config := NewDefaultConfig()
-	config.AccountName = env.GetOrFile("TRANSIP_ACCOUNT_NAME")
-	config.PrivateKeyPath = env.GetOrFile("TRANSIP_PRIVATE_KEY_PATH")
+	values, err := env.Get("TRANSIP_ACCOUNT_NAME", "TRANSIP_PRIVATE_KEY_PATH")
+	if err != nil {
+		return nil, fmt.Errorf("transip: %v", err)
+	}
 
-	return NewDNSProviderConfig(config)
-}
-
-// NewDNSProviderCredentials uses the supplied credentials
-// to return a DNSProvider instance configured for TransIP.
-// Deprecated
-func NewDNSProviderCredentials(accountName string, privateKeyPath string) (*DNSProvider, error) {
 	config := NewDefaultConfig()
-	config.AccountName = accountName
-	config.PrivateKeyPath = privateKeyPath
+	config.AccountName = values["TRANSIP_ACCOUNT_NAME"]
+	config.PrivateKeyPath = values["TRANSIP_PRIVATE_KEY_PATH"]
 
 	return NewDNSProviderConfig(config)
 }
@@ -87,7 +80,6 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	// get all DNS entries
 	domainName, err := transipdomain.GetInfo(d.client, domain)
-
 	if err != nil {
 		return fmt.Errorf("transip: error for %s in Present: %v", domain, err)
 	}
@@ -125,10 +117,8 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("transip: error for %s in CleanUp: %v", fqdn, err)
 	}
 
-	// create a slice with the same underlying array
-	newEntries := domainName.DNSEntries[:0]
-
 	// loop through the existing entries and remove the specific record
+	newEntries := domainName.DNSEntries[:0]
 	for _, e := range domainName.DNSEntries {
 		if e.Name != name {
 			newEntries = append(newEntries, e)

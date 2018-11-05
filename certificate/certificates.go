@@ -83,6 +83,8 @@ func (c *Certifier) Obtain(domains []string, bundle bool, privKey crypto.Private
 		return nil, errors.New("no domains to obtain a certificate for")
 	}
 
+	domains = sanitizeDomain(domains)
+
 	if bundle {
 		log.Infof("[%s] acme: Obtaining bundled SAN certificate", strings.Join(domains, ", "))
 	} else {
@@ -383,18 +385,7 @@ func (c *Certifier) Renew(cert Resource, bundle, mustStaple bool) (*Resource, er
 func (c *Certifier) createOrderForIdentifiers(domains []string) (orderResource, error) {
 	var identifiers []le.Identifier
 	for _, domain := range domains {
-		// https://tools.ietf.org/html/draft-ietf-acme-acme-16#section-7.1.4
-		// The domain name MUST be encoded
-		//   in the form in which it would appear in a certificate.  That is, it
-		//   MUST be encoded according to the rules in Section 7 of [RFC5280].
-		//
-		// https://tools.ietf.org/html/rfc5280#section-7
-		sanitizedDomain, err := idna.ToASCII(domain)
-		if err != nil {
-			log.Infof("skip domain %q: unable to sanitize (punnycode): %v", domain, err)
-		} else {
-			identifiers = append(identifiers, le.Identifier{Type: "dns", Value: sanitizedDomain})
-		}
+		identifiers = append(identifiers, le.Identifier{Type: "dns", Value: domain})
 	}
 
 	order := le.OrderMessage{Identifiers: identifiers}
@@ -410,6 +401,25 @@ func (c *Certifier) createOrderForIdentifiers(domains []string) (orderResource, 
 		Domains:      domains,
 		OrderMessage: response,
 	}, nil
+}
+
+// https://tools.ietf.org/html/draft-ietf-acme-acme-16#section-7.1.4
+// The domain name MUST be encoded
+//   in the form in which it would appear in a certificate.  That is, it
+//   MUST be encoded according to the rules in Section 7 of [RFC5280].
+//
+// https://tools.ietf.org/html/rfc5280#section-7
+func sanitizeDomain(domains []string) []string {
+	var sanitizedDomains []string
+	for _, domain := range domains {
+		sanitizedDomain, err := idna.ToASCII(domain)
+		if err != nil {
+			log.Infof("skip domain %q: unable to sanitize (punnycode): %v", domain, err)
+		} else {
+			sanitizedDomains = append(sanitizedDomains, sanitizedDomain)
+		}
+	}
+	return sanitizedDomains
 }
 
 // checkResponse checks to see if the certificate is ready and a link is contained in the response.

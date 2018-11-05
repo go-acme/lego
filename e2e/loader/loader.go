@@ -1,4 +1,4 @@
-package e2e
+package loader
 
 import (
 	"bytes"
@@ -18,18 +18,28 @@ import (
 	"github.com/xenolf/lego/platform/wait"
 )
 
-var lego string
+const (
+	cmdNamePebble   = "pebble"
+	cmdNameChallSrv = "challtestsrv"
+)
 
-func testMain(m *testing.M) int {
+type CmdOption struct {
+	Args []string
+	Env  []string
+	Dir  string
+}
+
+type EnvLoader struct {
+	PebbleOptions *CmdOption
+	LegoOptions   []string
+	ChallSrv      *CmdOption
+	lego          string
+}
+
+func (l *EnvLoader) MainTest(m *testing.M) int {
 	_, force := os.LookupEnv("LEGO_E2E_TESTS")
 	if _, ci := os.LookupEnv("CI"); !ci && !force {
 		fmt.Fprintln(os.Stderr, "skipping test: e2e tests are disable. (no 'CI' or 'LEGO_E2E_TESTS' env var)")
-		fmt.Println("PASS")
-		return 0
-	}
-
-	if _, err := exec.LookPath("pebble"); err != nil {
-		fmt.Fprintln(os.Stderr, "skipping because pebble binary not found")
 		fmt.Println("PASS")
 		return 0
 	}
@@ -40,28 +50,59 @@ func testMain(m *testing.M) int {
 		return 0
 	}
 
-	pebble, output := cmdPebble()
+	if _, err := exec.LookPath(cmdNamePebble); err != nil {
+		fmt.Fprintln(os.Stderr, "skipping because pebble binary not found")
+		fmt.Println("PASS")
+		return 0
+	}
 
-	go func() {
-		err := pebble.Run()
-		if err != nil {
-			fmt.Println(err)
+	if _, err := exec.LookPath(cmdNameChallSrv); err != nil {
+		fmt.Fprintln(os.Stderr, "skipping because challtestsrv binary not found")
+		fmt.Println("PASS")
+		return 0
+	}
+
+	pebbleTearDown := func() {}
+	if l.PebbleOptions != nil {
+		pebble, outPebble := l.cmdPebble()
+		go func() {
+			err := pebble.Run()
+			if err != nil {
+				fmt.Println(err)
+			}
+		}()
+		pebbleTearDown = func() {
+			pebble.Process.Kill()
+			fmt.Println(outPebble.String())
+			CleanLegoFiles()
 		}
-	}()
+	}
+	defer pebbleTearDown()
 
-	defer func() {
-		pebble.Process.Kill()
-
-		fmt.Println(output.String())
-		cleanLegoFiles()
-	}()
+	challSrvTearDown := func() {}
+	if l.ChallSrv != nil {
+		challtestsrv, outChalSrv := l.cmdChallSrv()
+		go func() {
+			err := challtestsrv.Run()
+			if err != nil {
+				fmt.Println(err)
+			}
+		}()
+		challSrvTearDown = func() {
+			challtestsrv.Process.Kill()
+			fmt.Println(outChalSrv.String())
+			CleanLegoFiles()
+		}
+	}
+	defer challSrvTearDown()
 
 	legoBinary, tearDown, err := buildLego()
 	defer tearDown()
 	if err != nil {
 		return 1
 	}
-	lego = legoBinary
+
+	l.lego = legoBinary
 
 	client := &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}}
 	wait.For(10*time.Second, 500*time.Millisecond, func() (bool, error) {
@@ -80,10 +121,32 @@ func testMain(m *testing.M) int {
 	return m.Run()
 }
 
-func runLego(arg ...string) ([]byte, error) {
-	cmd := exec.Command(lego, arg...)
-	cmd.Env = []string{"LEGO_CA_CERTIFICATES=./fixtures/certs/pebble.minica.pem"}
+func (l *EnvLoader) RunLego(arg ...string) ([]byte, error) {
+	cmd := exec.Command(l.lego, arg...)
+	cmd.Env = l.LegoOptions
 	return cmd.CombinedOutput()
+}
+
+func (l *EnvLoader) cmdPebble() (*exec.Cmd, *bytes.Buffer) {
+	cmd := exec.Command(cmdNamePebble, l.PebbleOptions.Args...)
+	cmd.Env = l.PebbleOptions.Env
+	cmd.Dir, _ = filepath.Abs(l.PebbleOptions.Dir)
+
+	var b bytes.Buffer
+	cmd.Stdout = &b
+	cmd.Stderr = &b
+
+	return cmd, &b
+}
+
+func (l *EnvLoader) cmdChallSrv() (*exec.Cmd, *bytes.Buffer) {
+	cmd := exec.Command(cmdNameChallSrv, l.ChallSrv.Args...)
+
+	var b bytes.Buffer
+	cmd.Stdout = &b
+	cmd.Stderr = &b
+
+	return cmd, &b
 }
 
 func buildLego() (string, func(), error) {
@@ -117,7 +180,10 @@ func buildLego() (string, func(), error) {
 		return "", func() {}, err
 	}
 
-	return binary, func() { _ = os.RemoveAll(buildPath) }, nil
+	return binary, func() {
+		_ = os.RemoveAll(buildPath)
+		CleanLegoFiles()
+	}, nil
 }
 
 func getProjectRoot() (string, error) {
@@ -180,21 +246,7 @@ func goTool() (string, error) {
 	return goBin, nil
 }
 
-func cmdPebble() (*exec.Cmd, *bytes.Buffer) {
-	cmd := exec.Command("pebble", "-strict", "-config", "fixtures/pebble-config.json")
-	cmd.Env = []string{
-		"PEBBLE_VA_NOSLEEP=1", // FIXME comment
-		"PEBBLE_WFE_NONCEREJECT=20",
-	}
-
-	var b bytes.Buffer
-	cmd.Stdout = &b
-	cmd.Stderr = &b
-
-	return cmd, &b
-}
-
-func cleanLegoFiles() {
+func CleanLegoFiles() {
 	rm := exec.Command("rm", "-rf", ".lego")
 	rm.CombinedOutput()
 }

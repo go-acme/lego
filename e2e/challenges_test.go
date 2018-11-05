@@ -1,19 +1,29 @@
 package e2e
 
 import (
-	"flag"
 	"fmt"
 	"os"
 	"testing"
+
+	"github.com/xenolf/lego/e2e/loader"
 )
 
+var load = loader.EnvLoader{
+	PebbleOptions: &loader.CmdOption{
+		Args: []string{"-strict", "-config", "fixtures/pebble-config.json"},
+		Env:  []string{"PEBBLE_VA_NOSLEEP=1", "PEBBLE_WFE_NONCEREJECT=20"},
+	},
+	LegoOptions: []string{
+		"LEGO_CA_CERTIFICATES=./fixtures/certs/pebble.minica.pem",
+	},
+}
+
 func TestMain(m *testing.M) {
-	flag.Parse()
-	os.Exit(testMain(m))
+	os.Exit(load.MainTest(m))
 }
 
 func TestHelp(t *testing.T) {
-	output, err := runLego("-h")
+	output, err := load.RunLego("-h")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s\n", output)
 		t.Fatal(err)
@@ -23,9 +33,9 @@ func TestHelp(t *testing.T) {
 }
 
 func TestChallengeHTTP(t *testing.T) {
-	cleanLegoFiles()
+	loader.CleanLegoFiles()
 
-	output, err := runLego(
+	output, err := load.RunLego(
 		"-m", "hubert@hubert.com",
 		"-a",
 		"-x", "dns-01",
@@ -45,9 +55,9 @@ func TestChallengeHTTP(t *testing.T) {
 }
 
 func TestChallengeTLS(t *testing.T) {
-	cleanLegoFiles()
+	loader.CleanLegoFiles()
 
-	output, err := runLego(
+	output, err := load.RunLego(
 		"-m", "hubert@hubert.com",
 		"-a",
 		"-x", "dns-01",

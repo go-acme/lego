@@ -31,8 +31,8 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt("NAMECOM_TTL", minTTL),
-		PropagationTimeout: env.GetOrDefaultSecond("NAMECOM_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("NAMECOM_POLLING_INTERVAL", dns01.DefaultPollingInterval),
+		PropagationTimeout: env.GetOrDefaultSecond("NAMECOM_PROPAGATION_TIMEOUT", 15*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond("NAMECOM_POLLING_INTERVAL", 20*time.Second),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond("NAMECOM_HTTP_TIMEOUT", 10*time.Second),
 		},

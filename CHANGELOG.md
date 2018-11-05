@@ -1,5 +1,23 @@
 # Changelog
 
+## [v1.2.0] - 2018-11-04
+
+### Added:
+- **[dnsprovider]** Add DNS Provider for ConoHa DNS
+- **[dnsprovider]** Add DNS Provider for MyDNS.jp
+- **[dnsprovider]** Add DNS Provider for Selectel
+
+### Fixed:
+- **[dnsprovider]** netcup: make unmarshalling of api-responses more lenient.
+
+### Changed:
+- **[dnsprovider]** aurora: change DNS client
+- **[dnsprovider]** azure: update auth to support instance metadata service
+- **[dnsprovider]** dnsmadeeasy: log response body on error
+- **[lib]** TLS-ALPN-01: Update idPeAcmeIdentifierV1, draft refs.
+- **[lib]** Do not send a JWS body when POSTing challenges.
+- **[lib]** Support POST-as-GET.
+
 ## [v1.1.0] - 2018-10-16
 
 ### Added:

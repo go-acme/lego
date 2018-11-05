@@ -1,6 +1,10 @@
-.PHONY: all
+.PHONY: clean checks test build image dependencies
 
-GOFILES := $(shell go list -f '{{range $$index, $$element := .GoFiles}}{{$$.Dir}}/{{$$element}}{{"\n"}}{{end}}' ./... | grep -v '/vendor/')
+LEGO_IMAGE := xenolf/lego
+
+TAG_NAME := $(shell git tag -l --contains HEAD)
+SHA := $(shell git rev-parse HEAD)
+VERSION := $(if $(TAG_NAME),$(TAG_NAME),$(SHA))
 
 default: clean checks test build
 
@@ -8,7 +12,8 @@ clean:
 	rm -rf dist/ builds/ cover.out
 
 build: clean
-	go build
+	@echo Version: $(VERSION)
+	go build -v -ldflags '-X "main.version=${VERSION}"'
 
 dependencies:
 	dep ensure -v
@@ -19,6 +24,6 @@ test: clean
 checks:
 	golangci-lint run
 
-check-fmt: SHELL := /bin/bash
-check-fmt:
-	diff -u <(echo -n) <(gofmt -d $(GOFILES))
+image:
+	@echo Version: $(VERSION)
+	docker build -t $(LEGO_IMAGE) .

@@ -23,7 +23,7 @@ func TestNewDNSProvider(t *testing.T) {
 			desc: "success",
 			envVars: map[string]string{
 				"TRANSIP_ACCOUNT_NAME":     "johndoe",
-				"TRANSIP_PRIVATE_KEY_PATH": "/home/johndoe/private.key",
+				"TRANSIP_PRIVATE_KEY_PATH": "./fixtures/private.key",
 			},
 		},
 		{
@@ -38,7 +38,7 @@ func TestNewDNSProvider(t *testing.T) {
 			desc: "missing account name",
 			envVars: map[string]string{
 				"TRANSIP_ACCOUNT_NAME":     "",
-				"TRANSIP_PRIVATE_KEY_PATH": "/home/johndoe/private.key",
+				"TRANSIP_PRIVATE_KEY_PATH": "./fixtures/private.key",
 			},
 			expected: "transip: AccountName is required",
 		},
@@ -46,7 +46,7 @@ func TestNewDNSProvider(t *testing.T) {
 			desc: "missing private key path",
 			envVars: map[string]string{
 				"TRANSIP_ACCOUNT_NAME":     "johndoe",
-				"TRANSIP_PRIVATE_KEY_PATH": "./private.key",
+				"TRANSIP_PRIVATE_KEY_PATH": "",
 			},
 			expected: "transip: PrivateKeyPath or PrivateKeyBody is required",
 		},
@@ -54,9 +54,9 @@ func TestNewDNSProvider(t *testing.T) {
 			desc: "could not open private key path",
 			envVars: map[string]string{
 				"TRANSIP_ACCOUNT_NAME":     "johndoe",
-				"TRANSIP_PRIVATE_KEY_PATH": "/non/existent/private.key",
+				"TRANSIP_PRIVATE_KEY_PATH": "./fixtures/non/existent/private.key",
 			},
-			expected: "transip: could not open private key: stat /non/existent/private.key: no such file or directory",
+			expected: "transip: could not open private key: stat ./fixtures/non/existent/private.key: no such file or directory",
 		},
 	}
 
@@ -91,7 +91,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		{
 			desc:           "success",
 			accountName:    "johndoe",
-			privateKeyPath: "/home/johndoe/private.key",
+			privateKeyPath: "./fixtures/private.key",
 		},
 		{
 			desc:     "missing all credentials",
@@ -99,7 +99,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		},
 		{
 			desc:           "missing account name",
-			privateKeyPath: "/home/johndoe/private.key",
+			privateKeyPath: "./fixtures/private.key",
 			expected:       "transip: AccountName is required",
 		},
 		{
@@ -110,8 +110,8 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		{
 			desc:           "could not open private key path",
 			accountName:    "johndoe",
-			privateKeyPath: "/non/existent/private.key",
-			expected:       "transip: could not open private key: stat /non/existent/private.key: no such file or directory",
+			privateKeyPath: "./fixtures/non/existent/private.key",
+			expected:       "transip: could not open private key: stat ./fixtures/non/existent/private.key: no such file or directory",
 		},
 	}
 

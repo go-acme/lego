@@ -30,9 +30,9 @@ const (
 
 // orderResource representing an account's requests to issue certificates.
 type orderResource struct {
-	le.OrderMessage `json:"body,omitempty"`
-	URL             string   `json:"url,omitempty"`
-	Domains         []string `json:"domains,omitempty"`
+	le.OrderMessage
+	URL     string
+	Domains []string
 }
 
 // Resource represents a CA issued certificate.

@@ -3,7 +3,6 @@ package resolver
 import (
 	"crypto/rand"
 	"crypto/rsa"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -122,7 +121,7 @@ func TestValidate(t *testing.T) {
 			chlg.Error = &le.ProblemDetails{}
 		}
 
-		err := writeJSONResponse(w, chlg)
+		err := tester.WriteJSONResponse(w, chlg)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -181,19 +180,4 @@ func TestValidate(t *testing.T) {
 			}
 		})
 	}
-}
-
-// writeJSONResponse marshals the body as JSON and writes it to the response.
-func writeJSONResponse(w http.ResponseWriter, body interface{}) error {
-	bs, err := json.Marshal(body)
-	if err != nil {
-		return err
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if _, err := w.Write(bs); err != nil {
-		return err
-	}
-
-	return nil
 }

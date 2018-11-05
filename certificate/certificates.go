@@ -162,6 +162,7 @@ func (c *Certifier) ObtainForCSR(csr x509.CertificateRequest, bundle bool) (*Res
 	if err != nil {
 		return nil, err
 	}
+
 	authz, err := c.getAuthzForOrder(order)
 	if err != nil {
 		// If any challenge fails, return. Do not generate partial SAN certificates.
@@ -238,10 +239,12 @@ func (c *Certifier) createForOrder(order orderResource, bundle bool, privKey cry
 }
 
 func (c *Certifier) createForCSR(order orderResource, bundle bool, csr []byte, privateKeyPem []byte) (*Resource, error) {
-	csrString := base64.RawURLEncoding.EncodeToString(csr)
+	message := le.CSRMessage{
+		Csr: base64.RawURLEncoding.EncodeToString(csr),
+	}
 
 	var retOrder le.OrderMessage
-	_, err := c.core.Post(order.Finalize, le.CSRMessage{Csr: csrString}, &retOrder)
+	_, err := c.core.Post(order.Finalize, message, &retOrder)
 	if err != nil {
 		return nil, err
 	}
@@ -307,9 +310,11 @@ func (c *Certifier) Revoke(cert []byte) error {
 		return fmt.Errorf("certificate bundle starts with a CA certificate")
 	}
 
-	encodedCert := base64.URLEncoding.EncodeToString(x509Cert.Raw)
+	message := le.RevokeCertMessage{
+		Certificate: base64.URLEncoding.EncodeToString(x509Cert.Raw),
+	}
 
-	_, err = c.core.Post(c.core.GetDirectory().RevokeCertURL, le.RevokeCertMessage{Certificate: encodedCert}, nil)
+	_, err = c.core.Post(c.core.GetDirectory().RevokeCertURL, message, nil)
 	return err
 }
 
@@ -431,13 +436,10 @@ func (c *Certifier) checkResponse(order le.OrderMessage, certRes *Resource, bund
 		links := parseLinks(resp.Header["Link"])
 		if link, ok := links["up"]; ok {
 			issuerCert, err := c.getIssuerCertificateFromLink(link)
-
 			if err != nil {
 				// If we fail to acquire the issuer cert, return the issued certificate - do not fail.
 				log.Warnf("[%s] acme: Could not bundle issuer certificate: %v", certRes.Domain, err)
 			} else {
-				issuerCert = certcrypto.PEMEncode(certcrypto.DERCertificateBytes(issuerCert))
-
 				// If bundle is true, we want to return a certificate bundle.
 				// To do this, we append the issuer cert to the issued cert.
 				if bundle {
@@ -469,35 +471,34 @@ func (c *Certifier) checkResponse(order le.OrderMessage, certRes *Resource, bund
 }
 
 // getIssuerCertificateFromLink requests the issuer certificate
-func (c *Certifier) getIssuerCertificateFromLink(url string) ([]byte, error) {
-	log.Infof("acme: Requesting issuer cert from %s", url)
+func (c *Certifier) getIssuerCertificateFromLink(link string) ([]byte, error) {
+	log.Infof("acme: Requesting issuer cert from %s", link)
 
-	resp, err := c.core.PostAsGet(url, nil)
+	resp, err := c.core.PostAsGet(link, nil)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 
-	issuerRaw, err := ioutil.ReadAll(http.MaxBytesReader(nil, resp.Body, maxBodySize))
+	issuerCert, err := ioutil.ReadAll(http.MaxBytesReader(nil, resp.Body, maxBodySize))
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = x509.ParseCertificate(issuerRaw)
+	_, err = x509.ParseCertificate(issuerCert)
 	if err != nil {
 		return nil, err
 	}
 
-	return issuerRaw, err
+	return certcrypto.PEMEncode(certcrypto.DERCertificateBytes(issuerCert)), nil
 }
 
 func parseLinks(links []string) map[string]string {
 	aBrkt := regexp.MustCompile("[<>]")
 	slver := regexp.MustCompile("(.+) *= *\"(.+)\"")
+
 	linkMap := make(map[string]string)
-
 	for _, link := range links {
-
 		link = aBrkt.ReplaceAllString(link, "")
 		parts := strings.Split(link, ";")
 

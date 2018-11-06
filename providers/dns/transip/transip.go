@@ -53,6 +53,15 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderConfig(config)
 }
 
+// NewDNSProviderCredentials uses the supplied credentials to return a DNSProvider instance configured for TransIP.
+func NewDNSProviderCredentials(accountName string, privateKeyPath string) (*DNSProvider, error) {
+	config := NewDefaultConfig()
+	config.AccountName = accountName
+	config.PrivateKeyPath = privateKeyPath
+
+	return NewDNSProviderConfig(config)
+}
+
 // NewDNSProviderConfig return a DNSProvider instance configured for TransIP.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {

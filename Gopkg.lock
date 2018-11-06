@@ -447,6 +447,18 @@
   revision = "37e84520dcf74488f67654f9c775b9752c232dc1"
 
 [[projects]]
+  branch = "master"
+  digest = "1:3b236e8930d31aeb375fe405c15c2afc581e04bd6cb68da4723e1aa8d2e2da37"
+  name = "github.com/transip/gotransip"
+  packages = [
+    ".",
+    "domain",
+    "util",
+  ]
+  pruneopts = "NUT"
+  revision = "1dc93a7db3567a5ccf865106afac88278ba940cf"
+
+[[projects]]
   digest = "1:5dba68a1600a235630e208cb7196b24e58fcbb77bb7a6bec08fcd23f081b0a58"
   name = "github.com/urfave/cli"
   packages = ["."]
@@ -659,6 +671,8 @@
     "github.com/stretchr/testify/suite",
     "github.com/timewasted/linode",
     "github.com/timewasted/linode/dns",
+    "github.com/transip/gotransip",
+    "github.com/transip/gotransip/domain",
     "github.com/urfave/cli",
     "golang.org/x/crypto/ocsp",
     "golang.org/x/net/context",

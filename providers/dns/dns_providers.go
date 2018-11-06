@@ -48,6 +48,7 @@ import (
 	"github.com/xenolf/lego/providers/dns/sakuracloud"
 	"github.com/xenolf/lego/providers/dns/selectel"
 	"github.com/xenolf/lego/providers/dns/stackpath"
+	"github.com/xenolf/lego/providers/dns/transip"
 	"github.com/xenolf/lego/providers/dns/vegadns"
 	"github.com/xenolf/lego/providers/dns/vultr"
 )
@@ -145,6 +146,8 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 		return stackpath.NewDNSProvider()
 	case "selectel":
 		return selectel.NewDNSProvider()
+	case "transip":
+		return transip.NewDNSProvider()
 	case "vegadns":
 		return vegadns.NewDNSProvider()
 	case "vultr":

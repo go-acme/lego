@@ -78,21 +78,17 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-
-	// get the FQDN
 	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
 
-	// get the zone
 	authZone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameservers)
 	if err != nil {
 		return err
 	}
 
-	// get the domain name without the trailing dot
 	domainName := acme.UnFqdn(authZone)
 
-	// get the subdomain
-	subdomain := strings.TrimSuffix(acme.UnFqdn(fqdn), "."+domainName)
+	// get the subDomain
+	subDomain := strings.TrimSuffix(acme.UnFqdn(fqdn), "."+domainName)
 
 	// get all DNS entries
 	info, err := transipdomain.GetInfo(d.client, domainName)
@@ -102,7 +98,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	// include the new DNS entry
 	dnsEntries := append(info.DNSEntries, transipdomain.DNSEntry{
-		Name:    subdomain,
+		Name:    subDomain,
 		TTL:     d.config.TTL,
 		Type:    transipdomain.DNSEntryTypeTXT,
 		Content: value,
@@ -118,21 +114,17 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-
-	// get the FQDN
 	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
 
-	// get the zone
 	authZone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameservers)
 	if err != nil {
 		return err
 	}
 
-	// get the domain name without the trailing dot
 	domainName := acme.UnFqdn(authZone)
 
-	// get the subdomain
-	subdomain := strings.TrimSuffix(acme.UnFqdn(fqdn), "."+domainName)
+	// get the subDomain
+	subDomain := strings.TrimSuffix(acme.UnFqdn(fqdn), "."+domainName)
 
 	// get all DNS entries
 	info, err := transipdomain.GetInfo(d.client, domainName)
@@ -143,7 +135,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	// loop through the existing entries and remove the specific record
 	updatedEntries := info.DNSEntries[:0]
 	for _, e := range info.DNSEntries {
-		if e.Name != subdomain {
+		if e.Name != subDomain {
 			updatedEntries = append(updatedEntries, e)
 		}
 	}

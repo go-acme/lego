@@ -20,7 +20,7 @@ It is up to you to make a strong point about your proposal and convince us of th
 
 ## Pull requests
 
-Patches, new features and improvements are a great way to help the project. 
+Patches, new features and improvements are a great way to help the project.
 Please keep them focused on one thing and do not include unrelated commits.
 
 All pull requests which alter the behaviour of the program, add new behaviour or somehow alter code in a non-trivial way should **always** include tests.
@@ -60,6 +60,7 @@ owners to license your work under the terms of the [MIT License](LICENSE).
 | Go Daddy                  | `godaddy`      | [documentation](https://developer.godaddy.com/doc/endpoint/domains)                                          | -                                                                 |
 | hosting.de                | `hostingde`    | [documentation](https://www.hosting.de/api/#dns)                                                             | -                                                                 |
 | Internet Initiative Japan | `iij`          | [documentation](http://manual.iij.jp/p2/pubapi/)                                                             | [Go client](https://github.com/iij/doapi)                         |
+| INWX                      | `inwx`         | [documentation](https://www.inwx.de/en/help/apidoc)                                                          | [Go client](https://github.com/smueller18/goinwx)                 | 
 | Lightsail                 | `lightsail`    | ?                                                                                                            | [Go client](https://github.com/aws/aws-sdk-go/aws)                |
 | Linode (deprecated)       | `linode`       | [documentation](https://www.linode.com/api/dns)                                                              | [Go client](https://github.com/timewasted/linode)                 |
 | Linodev4                  | `linodev4`     | [documentation](https://developers.linode.com/api/v4)                                                        | [Go client](https://github.com/linode/linodego)                   |

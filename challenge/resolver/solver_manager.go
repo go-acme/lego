@@ -111,10 +111,9 @@ func (c *SolverManager) chooseSolver(auth le.Authorization) (int, solver) {
 }
 
 func validate(core *api.Core, domain, uri string, _ le.Challenge) error {
-	var chlng le.Challenge
-
 	// Challenge initiation is done by sending a JWS payload containing the trivial JSON object `{}`.
 	// We use an empty struct instance as the postJSON payload here to achieve this result.
+	var chlng le.Challenge
 	resp, err := core.Post(uri, struct{}{}, &chlng)
 	if err != nil {
 		return err

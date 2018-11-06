@@ -26,8 +26,8 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                int64(env.GetOrDefaultInt("TRANSIP_TTL", 10)),
-		PropagationTimeout: env.GetOrDefaultSecond("TRANSIP_PROPAGATION_TIMEOUT", 12*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond("TRANSIP_POLLING_INTERVAL", 1*time.Minute),
+		PropagationTimeout: env.GetOrDefaultSecond("TRANSIP_PROPAGATION_TIMEOUT", 10*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond("TRANSIP_POLLING_INTERVAL", 10*time.Second),
 	}
 }
 
@@ -57,6 +57,12 @@ func NewDNSProvider() (*DNSProvider, error) {
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("transip: the configuration of the DNS provider is nil")
+	} else if config.AccountName == "" && config.PrivateKeyPath == "" {
+		return nil, errors.New("transip: some credentials information are missing: TRANSIP_ACCOUNT_NAME,TRANSIP_PRIVATE_KEY_PATH")
+	} else if config.AccountName == "" {
+		return nil, errors.New("transip: some credentials information are missing: TRANSIP_ACCOUNT_NAME")
+	} else if config.PrivateKeyPath == "" {
+		return nil, errors.New("transip: some credentials information are missing: TRANSIP_PRIVATE_KEY_PATH")
 	}
 
 	client, err := gotransip.NewSOAPClient(gotransip.ClientConfig{
@@ -78,26 +84,38 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+
+	// get the FQDN
+	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
+
+	// get the zone
+	authZone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameservers)
+	if err != nil {
+		return err
+	}
+
+	// get the domain name without the trailing dot
+	domainName := acme.UnFqdn(authZone)
+
+	// get the subdomain
+	subdomain := strings.TrimSuffix(acme.UnFqdn(fqdn), "."+domainName)
+
 	// get all DNS entries
-	domainName, err := transipdomain.GetInfo(d.client, domain)
+	info, err := transipdomain.GetInfo(d.client, domainName)
 	if err != nil {
 		return fmt.Errorf("transip: error for %s in Present: %v", domain, err)
 	}
 
-	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
-
-	// get the domain with the main domain
-	name := strings.TrimSuffix(fqdn, "."+domain+".")
-
-	// append the new DNS entry
-	dnsEntries := append(domainName.DNSEntries, transipdomain.DNSEntry{
-		Name:    name,
+	// include the new DNS entry
+	dnsEntries := append(info.DNSEntries, transipdomain.DNSEntry{
+		Name:    subdomain,
 		TTL:     d.config.TTL,
 		Type:    transipdomain.DNSEntryTypeTXT,
 		Content: value,
 	})
 
-	err = transipdomain.SetDNSEntries(d.client, domain, dnsEntries)
+	// set the updated DNS entries
+	err = transipdomain.SetDNSEntries(d.client, domainName, dnsEntries)
 	if err != nil {
 		return fmt.Errorf("transip: %v", err)
 	}
@@ -106,26 +124,38 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+
+	// get the FQDN
 	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
 
-	// get the non-fqdn name
-	name := strings.TrimSuffix(fqdn, "."+domain+".")
+	// get the zone
+	authZone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameservers)
+	if err != nil {
+		return err
+	}
+
+	// get the domain name without the trailing dot
+	domainName := acme.UnFqdn(authZone)
+
+	// get the subdomain
+	subdomain := strings.TrimSuffix(acme.UnFqdn(fqdn), "."+domainName)
 
 	// get all DNS entries
-	domainName, err := transipdomain.GetInfo(d.client, fqdn)
+	info, err := transipdomain.GetInfo(d.client, domainName)
 	if err != nil {
 		return fmt.Errorf("transip: error for %s in CleanUp: %v", fqdn, err)
 	}
 
 	// loop through the existing entries and remove the specific record
-	newEntries := domainName.DNSEntries[:0]
-	for _, e := range domainName.DNSEntries {
-		if e.Name != name {
-			newEntries = append(newEntries, e)
+	updatedEntries := info.DNSEntries[:0]
+	for _, e := range info.DNSEntries {
+		if e.Name != subdomain {
+			updatedEntries = append(updatedEntries, e)
 		}
 	}
 
-	err = transipdomain.SetDNSEntries(d.client, fqdn, newEntries)
+	// set the updated DNS entries
+	err = transipdomain.SetDNSEntries(d.client, domainName, updatedEntries)
 	if err != nil {
 		return fmt.Errorf("transip: couldn't get Record ID in CleanUp: %sv", err)
 	}

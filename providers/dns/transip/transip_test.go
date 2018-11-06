@@ -95,17 +95,17 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		},
 		{
 			desc:     "missing all credentials",
-			expected: "transip: AccountName is required",
+			expected: "transip: some credentials information are missing: TRANSIP_ACCOUNT_NAME,TRANSIP_PRIVATE_KEY_PATH",
 		},
 		{
 			desc:           "missing account name",
 			privateKeyPath: "./fixtures/private.key",
-			expected:       "transip: AccountName is required",
+			expected: "transip: some credentials information are missing: TRANSIP_ACCOUNT_NAME",
 		},
 		{
 			desc:        "missing private key path",
 			accountName: "johndoe",
-			expected:    "transip: PrivateKeyPath or PrivateKeyBody is required",
+			expected: "transip: some credentials information are missing: TRANSIP_PRIVATE_KEY_PATH",
 		},
 		{
 			desc:           "could not open private key path",

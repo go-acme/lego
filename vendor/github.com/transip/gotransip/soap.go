@@ -76,69 +76,76 @@ type paramsEncoder interface {
 // SOAP parameters
 type ParamsContainer interface {
 	Len() int
-	Set(string, string)
-	SetMulti(string, []string)
+	Add(string, interface{})
 }
 
-// SoapParams is a utility to make sure our key/value pairs are glued together
-// in the same order as we set them
-// the TransIP API requires this order for verifying the signature
+// soapParams is a utility to make sure parameter data is encoded into a query
+// in the same order as we set them. The TransIP API requires this order for
+// verifying the signature
 type soapParams struct {
 	keys   []string
-	values []string
+	values []interface{}
 }
 
-// Set sets value v for key k in this SoapParams
-// will overwrite a previously set value for key k
-func (s *soapParams) Set(k, v string) {
-	// go over existing keys and see if key already exists
-	for i, x := range s.keys {
-		if x == k {
-			s.values[i] = v
-			return
-		}
+// Add adds parameter data to the end of this SoapParams
+func (s *soapParams) Add(k string, v interface{}) {
+	if s.keys == nil {
+		s.keys = make([]string, 0)
 	}
 
-	// key didn't exist, set it
+	if s.values == nil {
+		s.values = make([]interface{}, 0)
+	}
+
 	s.keys = append(s.keys, k)
 	s.values = append(s.values, v)
 }
 
-// SetMulti wraps around Set to easily set array values
-func (s *soapParams) SetMulti(k string, v []string) {
-	for i, x := range v {
-		s.Set(fmt.Sprintf("%s[%d]", k, i), x)
-	}
-}
-
-// Get returns value for key k or error when key was not found
-func (s soapParams) Get(k string) (string, error) {
-	for i, x := range s.keys {
-		if x == k {
-			return s.values[i], nil
-		}
-	}
-
-	return "", fmt.Errorf("no value found for key %s", k)
-}
-
-// Len returns amount of key/value pairs set in this SoapParams
+// Len returns amount of parameters set in this SoapParams
 func (s soapParams) Len() int {
 	return len(s.keys)
 }
 
-// Encode is similar to url.Values.Encode() but without sorting of the keys
+// Encode returns a URL-like query string that can be used to generate a request's
+// signature. It's similar to url.Values.Encode() but without sorting of the keys
+// and based on the value's type it tries to encode accordingly.
 func (s soapParams) Encode() string {
 	var buf bytes.Buffer
+	var key string
 
-	for i, k := range s.keys {
-		v := s.values[i]
-		if buf.Len() > 0 {
+	for i, v := range s.values {
+		// if this is not the first parameter, prefix with &
+		if i > 0 {
 			buf.WriteString("&")
 		}
 
-		buf.WriteString(k + "=")
-		buf.WriteString(url.QueryEscape(v))
+		// for empty data fields, don't encode anything
+		if v == nil {
+			continue
+		}
+
+		key = s.keys[i]
+
+		switch v.(type) {
+		case []string:
+			c := v.([]string)
+			for j, cc := range c {
+				if j > 0 {
+					buf.WriteString("&")
+				}
+				buf.WriteString(fmt.Sprintf("%s[%d]=", key, j))
+				buf.WriteString(strings.Replace(url.QueryEscape(cc), "+", "%20", -1))
+			}
+		case string:
+			c := v.(string)
+			buf.WriteString(fmt.Sprintf("%s=", key))
+			buf.WriteString(strings.Replace(url.QueryEscape(c), "+", "%20", -1))
+		case int, int8, int16, int32, int64:
+			buf.WriteString(fmt.Sprintf("%s=", key))
+			buf.WriteString(fmt.Sprintf("%d", v))
+		default:
+			continue
+		}
 	}
 
 	return buf.String()
@@ -195,18 +202,18 @@ func (sr *SoapRequest) AddArgument(key string, value interface{}) {
 
 	switch value.(type) {
 	case []string:
-		sr.params.SetMulti(fmt.Sprintf("%d", sr.params.Len()), value.([]string))
+		sr.params.Add(fmt.Sprintf("%d", sr.params.Len()), value)
 		sr.args = append(sr.args, getSOAPArg(key, value))
 	case string:
-		sr.params.Set(fmt.Sprintf("%d", sr.params.Len()), value.(string))
+		sr.params.Add(fmt.Sprintf("%d", sr.params.Len()), value)
 		sr.args = append(sr.args, getSOAPArg(key, value.(string)))
 	case int, int8, int16, int32, int64:
-		sr.params.Set(fmt.Sprintf("%d", sr.params.Len()), fmt.Sprintf("%d", value))
+		sr.params.Add(fmt.Sprintf("%d", sr.params.Len()), value)
 		sr.args = append(sr.args, getSOAPArg(key, fmt.Sprintf("%d", value)))
 	default:
 		// check if value implements the String interface
 		if str, ok := value.(fmt.Stringer); ok {
-			sr.params.Set(fmt.Sprintf("%d", sr.params.Len()), str.String())
+			sr.params.Add(fmt.Sprintf("%d", sr.params.Len()), str.String())
 			sr.args = append(sr.args, getSOAPArg(key, str.String()))
 		}
 	}
@@ -269,11 +276,11 @@ func (s soapClient) httpReqForSoapRequest(req SoapRequest) (*http.Request, error
 	}
 	// TransIP API is quite picky on the order of the parameters
 	// so don't change anything in the order below
-	req.params.Set("__method", req.Method)
-	req.params.Set("__service", req.Service)
-	req.params.Set("__hostname", transipAPIHost)
-	req.params.Set("__timestamp", timestamp)
-	req.params.Set("__nonce", nonce)
+	req.params.Add("__method", req.Method)
+	req.params.Add("__service", req.Service)
+	req.params.Add("__hostname", transipAPIHost)
+	req.params.Add("__timestamp", timestamp)
+	req.params.Add("__nonce", nonce)
 
 	signature, err := signWithKey(req.params, s.PrivateKey)
 	if err != nil {
@@ -396,9 +403,9 @@ type TestParamsContainer struct {
 	Prm string
 }
 
-// Set just make sure we use Len(), key and value in the result so it can be
+// Add just makes sure we use Len(), key and value in the result so it can be
 // tested
-func (t *TestParamsContainer) Set(key, value string) {
+func (t *TestParamsContainer) Add(key string, value interface{}) {
 	var prefix string
 	if t.Len() > 0 {
 		prefix = "&"
@@ -406,14 +413,7 @@ func (t *TestParamsContainer) Set(key, value string) {
 	t.Prm = t.Prm + prefix + fmt.Sprintf("%d%s=%s", t.Len(), key, value)
 }
 
-// SetMulti is a wrapper for Set to use with string arrays
-func (t *TestParamsContainer) SetMulti(key string, value []string) {
-	for i, x := range value {
-		t.Set(fmt.Sprintf("%s[%d]", key, i), x)
-	}
-}
-
-// Len returns current lenght of test data in TestParamsContainer
+// Len returns current length of test data in TestParamsContainer
 func (t TestParamsContainer) Len() int {
 	return len(t.Prm)
 }

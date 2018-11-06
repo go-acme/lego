@@ -29,11 +29,11 @@ type Domain struct {
 // EncodeParams returns Domain parameters ready to be used for constructing a signature
 func (d Domain) EncodeParams(prm gotransip.ParamsContainer) {
 	idx := prm.Len()
-	prm.Set(fmt.Sprintf("%d[name]", idx), d.Name)
-	prm.Set(fmt.Sprintf("%d[authCode]", idx), d.AuthorizationCode)
-	prm.Set(fmt.Sprintf("%d[isLocked]", idx), fmt.Sprintf("%t", d.IsLocked))
-	prm.Set(fmt.Sprintf("%d[registrationDate]", idx), d.RegistrationDate.Format("2006-01-02"))
-	prm.Set(fmt.Sprintf("%d[renewalDate]", idx), d.RenewalDate.Format("2006-01-02"))
+	prm.Add(fmt.Sprintf("%d[name]", idx), d.Name)
+	prm.Add(fmt.Sprintf("%d[authCode]", idx), d.AuthorizationCode)
+	prm.Add(fmt.Sprintf("%d[isLocked]", idx), fmt.Sprintf("%t", d.IsLocked))
+	prm.Add(fmt.Sprintf("%d[registrationDate]", idx), d.RegistrationDate.Format("2006-01-02"))
+	prm.Add(fmt.Sprintf("%d[renewalDate]", idx), d.RenewalDate.Format("2006-01-02"))
 	// nameservers
 	for i, e := range d.Nameservers {
 		var ipv4, ipv6 string
@@ -43,43 +43,43 @@ func (d Domain) EncodeParams(prm gotransip.ParamsContainer) {
 		if e.IPv6Address != nil {
 			ipv6 = e.IPv6Address.String()
 		}
-		prm.Set(fmt.Sprintf("%d[nameservers][%d][hostname]", idx, i), e.Hostname)
-		prm.Set(fmt.Sprintf("%d[nameservers][%d][ipv4]", idx, i), ipv4)
-		prm.Set(fmt.Sprintf("%d[nameservers][%d][ipv6]", idx, i), ipv6)
+		prm.Add(fmt.Sprintf("%d[nameservers][%d][hostname]", idx, i), e.Hostname)
+		prm.Add(fmt.Sprintf("%d[nameservers][%d][ipv4]", idx, i), ipv4)
+		prm.Add(fmt.Sprintf("%d[nameservers][%d][ipv6]", idx, i), ipv6)
 	}
 	// contacts
 	for i, e := range d.Contacts {
-		prm.Set(fmt.Sprintf("%d[contacts][%d][type]", idx, i), e.Type)
-		prm.Set(fmt.Sprintf("%d[contacts][%d][firstName]", idx, i), e.FirstName)
-		prm.Set(fmt.Sprintf("%d[contacts][%d][middleName]", idx, i), e.MiddleName)
-		prm.Set(fmt.Sprintf("%d[contacts][%d][lastName]", idx, i), e.LastName)
-		prm.Set(fmt.Sprintf("%d[contacts][%d][companyName]", idx, i), e.CompanyName)
-		prm.Set(fmt.Sprintf("%d[contacts][%d][companyKvk]", idx, i), e.CompanyKvk)
-		prm.Set(fmt.Sprintf("%d[contacts][%d][companyType]", idx, i), e.CompanyType)
-		prm.Set(fmt.Sprintf("%d[contacts][%d][street]", idx, i), e.Street)
-		prm.Set(fmt.Sprintf("%d[contacts][%d][number]", idx, i), e.Number)
-		prm.Set(fmt.Sprintf("%d[contacts][%d][postalCode]", idx, i), e.PostalCode)
-		prm.Set(fmt.Sprintf("%d[contacts][%d][city]", idx, i), e.City)
-		prm.Set(fmt.Sprintf("%d[contacts][%d][phoneNumber]", idx, i), e.PhoneNumber)
-		prm.Set(fmt.Sprintf("%d[contacts][%d][faxNumber]", idx, i), e.FaxNumber)
-		prm.Set(fmt.Sprintf("%d[contacts][%d][email]", idx, i), e.Email)
-		prm.Set(fmt.Sprintf("%d[contacts][%d][country]", idx, i), e.Country)
+		prm.Add(fmt.Sprintf("%d[contacts][%d][type]", idx, i), e.Type)
+		prm.Add(fmt.Sprintf("%d[contacts][%d][firstName]", idx, i), e.FirstName)
+		prm.Add(fmt.Sprintf("%d[contacts][%d][middleName]", idx, i), e.MiddleName)
+		prm.Add(fmt.Sprintf("%d[contacts][%d][lastName]", idx, i), e.LastName)
+		prm.Add(fmt.Sprintf("%d[contacts][%d][companyName]", idx, i), e.CompanyName)
+		prm.Add(fmt.Sprintf("%d[contacts][%d][companyKvk]", idx, i), e.CompanyKvk)
+		prm.Add(fmt.Sprintf("%d[contacts][%d][companyType]", idx, i), e.CompanyType)
+		prm.Add(fmt.Sprintf("%d[contacts][%d][street]", idx, i), e.Street)
+		prm.Add(fmt.Sprintf("%d[contacts][%d][number]", idx, i), e.Number)
+		prm.Add(fmt.Sprintf("%d[contacts][%d][postalCode]", idx, i), e.PostalCode)
+		prm.Add(fmt.Sprintf("%d[contacts][%d][city]", idx, i), e.City)
+		prm.Add(fmt.Sprintf("%d[contacts][%d][phoneNumber]", idx, i), e.PhoneNumber)
+		prm.Add(fmt.Sprintf("%d[contacts][%d][faxNumber]", idx, i), e.FaxNumber)
+		prm.Add(fmt.Sprintf("%d[contacts][%d][email]", idx, i), e.Email)
+		prm.Add(fmt.Sprintf("%d[contacts][%d][country]", idx, i), e.Country)
 	}
 	// dnsEntries
 	for i, e := range d.DNSEntries {
-		prm.Set(fmt.Sprintf("%d[dnsEntries][%d][name]", idx, i), e.Name)
-		prm.Set(fmt.Sprintf("%d[dnsEntries][%d][expire]", idx, i), fmt.Sprintf("%d", e.TTL))
-		prm.Set(fmt.Sprintf("%d[dnsEntries][%d][type]", idx, i), string(e.Type))
-		prm.Set(fmt.Sprintf("%d[dnsEntries][%d][content]", idx, i), e.Content)
+		prm.Add(fmt.Sprintf("%d[dnsEntries][%d][name]", idx, i), e.Name)
+		prm.Add(fmt.Sprintf("%d[dnsEntries][%d][expire]", idx, i), fmt.Sprintf("%d", e.TTL))
+		prm.Add(fmt.Sprintf("%d[dnsEntries][%d][type]", idx, i), string(e.Type))
+		prm.Add(fmt.Sprintf("%d[dnsEntries][%d][content]", idx, i), e.Content)
 	}
 	// branding
-	prm.Set(fmt.Sprintf("%d[branding][companyName]", idx), d.Branding.CompanyName)
-	prm.Set(fmt.Sprintf("%d[branding][supportEmail]", idx), d.Branding.SupportEmail)
-	prm.Set(fmt.Sprintf("%d[branding][companyUrl]", idx), d.Branding.CompanyURL)
-	prm.Set(fmt.Sprintf("%d[branding][termsOfUsageUrl]", idx), d.Branding.TermsOfUsageURL)
-	prm.Set(fmt.Sprintf("%d[branding][bannerLine1]", idx), d.Branding.BannerLine1)
-	prm.Set(fmt.Sprintf("%d[branding][bannerLine2]", idx), d.Branding.BannerLine2)
-	prm.Set(fmt.Sprintf("%d[branding][bannerLine3]", idx), d.Branding.BannerLine3)
+	prm.Add(fmt.Sprintf("%d[branding][companyName]", idx), d.Branding.CompanyName)
+	prm.Add(fmt.Sprintf("%d[branding][supportEmail]", idx), d.Branding.SupportEmail)
+	prm.Add(fmt.Sprintf("%d[branding][companyUrl]", idx), d.Branding.CompanyURL)
+	prm.Add(fmt.Sprintf("%d[branding][termsOfUsageUrl]", idx), d.Branding.TermsOfUsageURL)
+	prm.Add(fmt.Sprintf("%d[branding][bannerLine1]", idx), d.Branding.BannerLine1)
+	prm.Add(fmt.Sprintf("%d[branding][bannerLine2]", idx), d.Branding.BannerLine2)
+	prm.Add(fmt.Sprintf("%d[branding][bannerLine3]", idx), d.Branding.BannerLine3)
 }
 
 // EncodeArgs returns Domain XML body ready to be passed in the SOAP call
@@ -161,9 +161,9 @@ func (n Nameservers) EncodeParams(prm gotransip.ParamsContainer) {
 		if e.IPv6Address != nil {
 			ipv6 = e.IPv6Address.String()
 		}
-		prm.Set(fmt.Sprintf("%d[%d][hostname]", idx, i), e.Hostname)
-		prm.Set(fmt.Sprintf("%d[%d][ipv4]", idx, i), ipv4)
-		prm.Set(fmt.Sprintf("%d[%d][ipv6]", idx, i), ipv6)
+		prm.Add(fmt.Sprintf("%d[%d][hostname]", idx, i), e.Hostname)
+		prm.Add(fmt.Sprintf("%d[%d][ipv4]", idx, i), ipv4)
+		prm.Add(fmt.Sprintf("%d[%d][ipv6]", idx, i), ipv6)
 	}
 }
 
@@ -225,10 +225,10 @@ type DNSEntries []DNSEntry
 func (d DNSEntries) EncodeParams(prm gotransip.ParamsContainer) {
 	idx := prm.Len()
 	for i, e := range d {
-		prm.Set(fmt.Sprintf("%d[%d][name]", idx, i), e.Name)
-		prm.Set(fmt.Sprintf("%d[%d][expire]", idx, i), fmt.Sprintf("%d", e.TTL))
-		prm.Set(fmt.Sprintf("%d[%d][type]", idx, i), string(e.Type))
-		prm.Set(fmt.Sprintf("%d[%d][content]", idx, i), e.Content)
+		prm.Add(fmt.Sprintf("%d[%d][name]", idx, i), e.Name)
+		prm.Add(fmt.Sprintf("%d[%d][expire]", idx, i), fmt.Sprintf("%d", e.TTL))
+		prm.Add(fmt.Sprintf("%d[%d][type]", idx, i), string(e.Type))
+		prm.Add(fmt.Sprintf("%d[%d][content]", idx, i), e.Content)
 	}
 }
 
@@ -288,13 +288,13 @@ type Branding struct {
 // EncodeParams returns WhoisContacts parameters ready to be used for constructing a signature
 func (b Branding) EncodeParams(prm gotransip.ParamsContainer) {
 	idx := prm.Len()
-	prm.Set(fmt.Sprintf("%d[companyName]", idx), b.CompanyName)
-	prm.Set(fmt.Sprintf("%d[supportEmail]", idx), b.SupportEmail)
-	prm.Set(fmt.Sprintf("%d[companyUrl]", idx), b.CompanyURL)
-	prm.Set(fmt.Sprintf("%d[termsOfUsageUrl]", idx), b.TermsOfUsageURL)
-	prm.Set(fmt.Sprintf("%d[bannerLine1]", idx), b.BannerLine1)
-	prm.Set(fmt.Sprintf("%d[bannerLine2]", idx), b.BannerLine2)
-	prm.Set(fmt.Sprintf("%d[bannerLine3]", idx), b.BannerLine3)
+	prm.Add(fmt.Sprintf("%d[companyName]", idx), b.CompanyName)
+	prm.Add(fmt.Sprintf("%d[supportEmail]", idx), b.SupportEmail)
+	prm.Add(fmt.Sprintf("%d[companyUrl]", idx), b.CompanyURL)
+	prm.Add(fmt.Sprintf("%d[termsOfUsageUrl]", idx), b.TermsOfUsageURL)
+	prm.Add(fmt.Sprintf("%d[bannerLine1]", idx), b.BannerLine1)
+	prm.Add(fmt.Sprintf("%d[bannerLine2]", idx), b.BannerLine2)
+	prm.Add(fmt.Sprintf("%d[bannerLine3]", idx), b.BannerLine3)
 }
 
 // EncodeArgs returns Branding XML body ready to be passed in the SOAP call
@@ -358,21 +358,21 @@ type WhoisContacts []WhoisContact
 func (w WhoisContacts) EncodeParams(prm gotransip.ParamsContainer) {
 	idx := prm.Len()
 	for i, e := range w {
-		prm.Set(fmt.Sprintf("%d[%d][type]", idx, i), e.Type)
-		prm.Set(fmt.Sprintf("%d[%d][firstName]", idx, i), e.FirstName)
-		prm.Set(fmt.Sprintf("%d[%d][middleName]", idx, i), e.MiddleName)
-		prm.Set(fmt.Sprintf("%d[%d][lastName]", idx, i), e.LastName)
-		prm.Set(fmt.Sprintf("%d[%d][companyName]", idx, i), e.CompanyName)
-		prm.Set(fmt.Sprintf("%d[%d][companyKvk]", idx, i), e.CompanyKvk)
-		prm.Set(fmt.Sprintf("%d[%d][companyType]", idx, i), e.CompanyType)
-		prm.Set(fmt.Sprintf("%d[%d][street]", idx, i), e.Street)
-		prm.Set(fmt.Sprintf("%d[%d][number]", idx, i), e.Number)
-		prm.Set(fmt.Sprintf("%d[%d][postalCode]", idx, i), e.PostalCode)
-		prm.Set(fmt.Sprintf("%d[%d][city]", idx, i), e.City)
-		prm.Set(fmt.Sprintf("%d[%d][phoneNumber]", idx, i), e.PhoneNumber)
-		prm.Set(fmt.Sprintf("%d[%d][faxNumber]", idx, i), e.FaxNumber)
-		prm.Set(fmt.Sprintf("%d[%d][email]", idx, i), e.Email)
-		prm.Set(fmt.Sprintf("%d[%d][country]", idx, i), e.Country)
+		prm.Add(fmt.Sprintf("%d[%d][type]", idx, i), e.Type)
+		prm.Add(fmt.Sprintf("%d[%d][firstName]", idx, i), e.FirstName)
+		prm.Add(fmt.Sprintf("%d[%d][middleName]", idx, i), e.MiddleName)
+		prm.Add(fmt.Sprintf("%d[%d][lastName]", idx, i), e.LastName)
+		prm.Add(fmt.Sprintf("%d[%d][companyName]", idx, i), e.CompanyName)
+		prm.Add(fmt.Sprintf("%d[%d][companyKvk]", idx, i), e.CompanyKvk)
+		prm.Add(fmt.Sprintf("%d[%d][companyType]", idx, i), e.CompanyType)
+		prm.Add(fmt.Sprintf("%d[%d][street]", idx, i), e.Street)
+		prm.Add(fmt.Sprintf("%d[%d][number]", idx, i), e.Number)
+		prm.Add(fmt.Sprintf("%d[%d][postalCode]", idx, i), e.PostalCode)
+		prm.Add(fmt.Sprintf("%d[%d][city]", idx, i), e.City)
+		prm.Add(fmt.Sprintf("%d[%d][phoneNumber]", idx, i), e.PhoneNumber)
+		prm.Add(fmt.Sprintf("%d[%d][faxNumber]", idx, i), e.FaxNumber)
+		prm.Add(fmt.Sprintf("%d[%d][email]", idx, i), e.Email)
+		prm.Add(fmt.Sprintf("%d[%d][country]", idx, i), e.Country)
 	}
 }
 

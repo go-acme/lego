@@ -224,7 +224,7 @@ func (c *Certifier) createForOrder(domains []string, order le.OrderExtend, bundl
 	}
 
 	// TODO: should the CSR be customizable?
-	csr, err := certcrypto.GenerateCsr(privKey, commonName, san, mustStaple)
+	csr, err := certcrypto.GenerateCSR(privKey, commonName, san, mustStaple)
 	if err != nil {
 		return nil, err
 	}

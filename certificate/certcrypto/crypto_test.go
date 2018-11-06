@@ -2,6 +2,7 @@ package certcrypto
 
 import (
 	"bytes"
+	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
 	"testing"
@@ -19,13 +20,78 @@ func TestGeneratePrivateKey(t *testing.T) {
 }
 
 func TestGenerateCSR(t *testing.T) {
-	key, err := rsa.GenerateKey(rand.Reader, 512)
+	privateKey, err := rsa.GenerateKey(rand.Reader, 512)
 	require.NoError(t, err, "Error generating private key")
 
-	csr, err := GenerateCsr(key, "fizz.buzz", nil, true)
-	require.NoError(t, err, "Error generating CSR")
+	type expected struct {
+		len   int
+		error bool
+	}
 
-	assert.NotEmpty(t, csr)
+	testCases := []struct {
+		desc       string
+		privateKey crypto.PrivateKey
+		domain     string
+		san        []string
+		mustStaple bool
+		expected   expected
+	}{
+		{
+			desc:       "without SAN",
+			privateKey: privateKey,
+			domain:     "lego.acme",
+			mustStaple: true,
+			expected:   expected{len: 245},
+		},
+		{
+			desc:       "with SAN",
+			privateKey: privateKey,
+			domain:     "lego.acme",
+			san:        []string{"a.lego.acme", "b.lego.acme", "c.lego.acme"},
+			mustStaple: true,
+			expected:   expected{len: 296},
+		},
+		{
+			desc:       "no domain",
+			privateKey: privateKey,
+			domain:     "",
+			mustStaple: true,
+			expected:   expected{len: 225},
+		},
+		{
+			desc:       "no domain with SAN",
+			privateKey: privateKey,
+			domain:     "",
+			san:        []string{"a.lego.acme", "b.lego.acme", "c.lego.acme"},
+			mustStaple: true,
+			expected:   expected{len: 276},
+		},
+		{
+			desc:       "private key nil",
+			privateKey: nil,
+			domain:     "fizz.buzz",
+			mustStaple: true,
+			expected:   expected{error: true},
+		},
+	}
+
+	for _, test := range testCases {
+		test := test
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			csr, err := GenerateCSR(test.privateKey, test.domain, test.san, test.mustStaple)
+
+			if test.expected.error {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err, "Error generating CSR")
+
+				assert.NotEmpty(t, csr)
+				assert.Len(t, csr, test.expected.len)
+			}
+		})
+	}
 }
 
 func TestPEMEncode(t *testing.T) {

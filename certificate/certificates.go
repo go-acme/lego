@@ -83,7 +83,7 @@ func (c *Certifier) Obtain(domains []string, bundle bool, privKey crypto.Private
 		log.Infof("[%s] acme: Obtaining SAN certificate", strings.Join(domains, ", "))
 	}
 
-	order, err := c.getNewOrderForIdentifiers(domains)
+	order, err := c.getNewOrderForDomains(domains)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +109,7 @@ func (c *Certifier) Obtain(domains []string, bundle bool, privKey crypto.Private
 	log.Infof("[%s] acme: Validations succeeded; requesting certificates", strings.Join(domains, ", "))
 
 	failures := make(obtainError)
-	cert, err := c.createForOrder(domains, order, bundle, privKey, mustStaple)
+	cert, err := c.getForOrder(domains, order, bundle, privKey, mustStaple)
 	if err != nil {
 		for _, auth := range authz {
 			failures[auth.Identifier.Value] = err
@@ -152,7 +152,7 @@ func (c *Certifier) ObtainForCSR(csr x509.CertificateRequest, bundle bool) (*Res
 		log.Infof("[%s] acme: Obtaining SAN certificate given a CSR", strings.Join(domains, ", "))
 	}
 
-	order, err := c.getNewOrderForIdentifiers(domains)
+	order, err := c.getNewOrderForDomains(domains)
 	if err != nil {
 		return nil, err
 	}
@@ -178,7 +178,7 @@ func (c *Certifier) ObtainForCSR(csr x509.CertificateRequest, bundle bool) (*Res
 	log.Infof("[%s] acme: Validations succeeded; requesting certificates", strings.Join(domains, ", "))
 
 	failures := make(obtainError)
-	cert, err := c.createForCSR(domains, order, bundle, csr.Raw, nil)
+	cert, err := c.getForCSR(domains, order, bundle, csr.Raw, nil)
 	if err != nil {
 		for _, chln := range authz {
 			failures[chln.Identifier.Value] = err
@@ -198,7 +198,7 @@ func (c *Certifier) ObtainForCSR(csr x509.CertificateRequest, bundle bool) (*Res
 	return cert, nil
 }
 
-func (c *Certifier) createForOrder(domains []string, order le.OrderExtend, bundle bool, privKey crypto.PrivateKey, mustStaple bool) (*Resource, error) {
+func (c *Certifier) getForOrder(domains []string, order le.OrderExtend, bundle bool, privKey crypto.PrivateKey, mustStaple bool) (*Resource, error) {
 	if privKey == nil {
 		var err error
 		privKey, err = certcrypto.GeneratePrivateKey(c.keyType)
@@ -229,10 +229,10 @@ func (c *Certifier) createForOrder(domains []string, order le.OrderExtend, bundl
 		return nil, err
 	}
 
-	return c.createForCSR(domains, order, bundle, csr, certcrypto.PEMEncode(privKey))
+	return c.getForCSR(domains, order, bundle, csr, certcrypto.PEMEncode(privKey))
 }
 
-func (c *Certifier) createForCSR(domains []string, order le.OrderExtend, bundle bool, csr []byte, privateKeyPem []byte) (*Resource, error) {
+func (c *Certifier) getForCSR(domains []string, order le.OrderExtend, bundle bool, csr []byte, privateKeyPem []byte) (*Resource, error) {
 	csrMsg := le.CSRMessage{
 		Csr: base64.RawURLEncoding.EncodeToString(csr),
 	}
@@ -374,7 +374,7 @@ func (c *Certifier) Renew(cert Resource, bundle, mustStaple bool) (*Resource, er
 	return c.Obtain(domains, bundle, privKey, mustStaple)
 }
 
-func (c *Certifier) getNewOrderForIdentifiers(domains []string) (le.OrderExtend, error) {
+func (c *Certifier) getNewOrderForDomains(domains []string) (le.OrderExtend, error) {
 	var identifiers []le.Identifier
 	for _, domain := range domains {
 		identifiers = append(identifiers, le.Identifier{Type: "dns", Value: domain})

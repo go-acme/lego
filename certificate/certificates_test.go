@@ -13,7 +13,7 @@ import (
 	"github.com/xenolf/lego/platform/tester"
 )
 
-func TestCertifier_getNewOrderForIdentifiers(t *testing.T) {
+func TestCertifier_getNewOrderForDomains(t *testing.T) {
 	mux, apiURL, tearDown := tester.SetupFakeAPI()
 	defer tearDown()
 
@@ -49,7 +49,7 @@ func TestCertifier_getNewOrderForIdentifiers(t *testing.T) {
 
 	certifier := NewCertifier(core, certcrypto.RSA2048, &mockResolver{})
 
-	_, err = certifier.getNewOrderForIdentifiers([]string{"example.com"})
+	_, err = certifier.getNewOrderForDomains([]string{"example.com"})
 	require.NoError(t, err)
 }
 

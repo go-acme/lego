@@ -50,6 +50,7 @@ import (
 	"github.com/xenolf/lego/providers/dns/stackpath"
 	"github.com/xenolf/lego/providers/dns/transip"
 	"github.com/xenolf/lego/providers/dns/vegadns"
+	"github.com/xenolf/lego/providers/dns/vscale"
 	"github.com/xenolf/lego/providers/dns/vultr"
 )
 
@@ -152,6 +153,8 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 		return vegadns.NewDNSProvider()
 	case "vultr":
 		return vultr.NewDNSProvider()
+	case "vscale":
+		return vscale.NewDNSProvider()
 	default:
 		return nil, fmt.Errorf("unrecognised DNS provider: %s", name)
 	}

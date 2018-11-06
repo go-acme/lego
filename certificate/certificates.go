@@ -394,25 +394,6 @@ func (c *Certifier) getNewOrderForIdentifiers(domains []string) (le.OrderExtend,
 	}, nil
 }
 
-// https://tools.ietf.org/html/draft-ietf-acme-acme-16#section-7.1.4
-// The domain name MUST be encoded
-//   in the form in which it would appear in a certificate.  That is, it
-//   MUST be encoded according to the rules in Section 7 of [RFC5280].
-//
-// https://tools.ietf.org/html/rfc5280#section-7
-func sanitizeDomain(domains []string) []string {
-	var sanitizedDomains []string
-	for _, domain := range domains {
-		sanitizedDomain, err := idna.ToASCII(domain)
-		if err != nil {
-			log.Infof("skip domain %q: unable to sanitize (punnycode): %v", domain, err)
-		} else {
-			sanitizedDomains = append(sanitizedDomains, sanitizedDomain)
-		}
-	}
-	return sanitizedDomains
-}
-
 // checkResponse checks to see if the certificate is ready and a link is contained in the response.
 // If so, loads it into certRes and returns true.
 // If the cert is not yet ready, it returns false.
@@ -494,33 +475,6 @@ func (c *Certifier) getIssuerCertificateFromLink(link string) ([]byte, error) {
 	return certcrypto.PEMEncode(certcrypto.DERCertificateBytes(issuerCert)), nil
 }
 
-func parseLinks(links []string) map[string]string {
-	aBrkt := regexp.MustCompile("[<>]")
-	slver := regexp.MustCompile("(.+) *= *\"(.+)\"")
-
-	linkMap := make(map[string]string)
-	for _, link := range links {
-		link = aBrkt.ReplaceAllString(link, "")
-		parts := strings.Split(link, ";")
-
-		matches := slver.FindStringSubmatch(parts[1])
-		if len(matches) > 0 {
-			linkMap[matches[2]] = parts[0]
-		}
-	}
-
-	return linkMap
-}
-
-func containsSAN(domains []string, sanName string) bool {
-	for _, existingName := range domains {
-		if existingName == sanName {
-			return true
-		}
-	}
-	return false
-}
-
 // GetOCSP takes a PEM encoded cert or cert bundle returning the raw OCSP response,
 // the parsed response, and an error, if any.
 // The returned []byte can be passed directly into the OCSPStaple property of a tls.Certificate.
@@ -597,4 +551,50 @@ func (c *Certifier) GetOCSP(bundle []byte) ([]byte, *ocsp.Response, error) {
 	}
 
 	return ocspResBytes, ocspRes, nil
+}
+
+// https://tools.ietf.org/html/draft-ietf-acme-acme-16#section-7.1.4
+// The domain name MUST be encoded
+//   in the form in which it would appear in a certificate.  That is, it
+//   MUST be encoded according to the rules in Section 7 of [RFC5280].
+//
+// https://tools.ietf.org/html/rfc5280#section-7
+func sanitizeDomain(domains []string) []string {
+	var sanitizedDomains []string
+	for _, domain := range domains {
+		sanitizedDomain, err := idna.ToASCII(domain)
+		if err != nil {
+			log.Infof("skip domain %q: unable to sanitize (punnycode): %v", domain, err)
+		} else {
+			sanitizedDomains = append(sanitizedDomains, sanitizedDomain)
+		}
+	}
+	return sanitizedDomains
+}
+
+func parseLinks(links []string) map[string]string {
+	aBrkt := regexp.MustCompile("[<>]")
+	slver := regexp.MustCompile("(.+) *= *\"(.+)\"")
+
+	linkMap := make(map[string]string)
+	for _, link := range links {
+		link = aBrkt.ReplaceAllString(link, "")
+		parts := strings.Split(link, ";")
+
+		matches := slver.FindStringSubmatch(parts[1])
+		if len(matches) > 0 {
+			linkMap[matches[2]] = parts[0]
+		}
+	}
+
+	return linkMap
+}
+
+func containsSAN(domains []string, sanName string) bool {
+	for _, existingName := range domains {
+		if existingName == sanName {
+			return true
+		}
+	}
+	return false
 }

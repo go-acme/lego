@@ -57,12 +57,6 @@ func NewDNSProvider() (*DNSProvider, error) {
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("transip: the configuration of the DNS provider is nil")
-	} else if config.AccountName == "" && config.PrivateKeyPath == "" {
-		return nil, errors.New("transip: some credentials information are missing: TRANSIP_ACCOUNT_NAME,TRANSIP_PRIVATE_KEY_PATH")
-	} else if config.AccountName == "" {
-		return nil, errors.New("transip: some credentials information are missing: TRANSIP_ACCOUNT_NAME")
-	} else if config.PrivateKeyPath == "" {
-		return nil, errors.New("transip: some credentials information are missing: TRANSIP_PRIVATE_KEY_PATH")
 	}
 
 	client, err := gotransip.NewSOAPClient(gotransip.ClientConfig{

@@ -30,7 +30,7 @@ require (
 	github.com/kolo/xmlrpc v0.0.0-20181023172212-16bdd962781d // indirect
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/ldez/go-auroradns/v2 v2.0.2
-	github.com/linode/linodego v0.5.2-0.20180916122319-6e819a4ba980
+	github.com/linode/linodego v0.6.2
 	github.com/miekg/dns v1.0.8
 	github.com/mitchellh/go-homedir v1.0.0 // indirect
 	github.com/mitchellh/mapstructure v1.1.2 // indirect

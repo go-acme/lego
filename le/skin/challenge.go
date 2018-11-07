@@ -5,6 +5,8 @@ import "github.com/xenolf/lego/le"
 type ChallengeService service
 
 func (c *ChallengeService) New(chlgURL string) (le.ChallengeExtend, error) {
+	// Challenge initiation is done by sending a JWS payload containing the trivial JSON object `{}`.
+	// We use an empty struct instance as the postJSON payload here to achieve this result.
 	var chlng le.ChallengeExtend
 	resp, err := c.core.post(chlgURL, struct{}{}, &chlng)
 	if err != nil {

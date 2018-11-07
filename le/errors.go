@@ -34,7 +34,11 @@ type SubProblem struct {
 }
 
 func (p ProblemDetails) Error() string {
-	msg := fmt.Sprintf("acme: error: %d :: %s :: %s :: %s :: %s", p.HTTPStatus, p.Method, p.URL, p.Type, p.Detail)
+	msg := fmt.Sprintf("acme: error: %d", p.HTTPStatus)
+	if len(p.Method) != 0 || len(p.URL) != 0 {
+		msg += fmt.Sprintf(" :: %s :: %s", p.Method, p.URL)
+	}
+	msg += fmt.Sprintf(" :: %s :: %s", p.Type, p.Detail)
 
 	for _, sub := range p.SubProblems {
 		msg += fmt.Sprintf(", problem: %q :: %s", sub.Type, sub.Detail)

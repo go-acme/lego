@@ -2,6 +2,7 @@ package resolver
 
 import (
 	"errors"
+	"fmt"
 	"net"
 	"strconv"
 	"time"
@@ -111,40 +112,88 @@ func (c *SolverManager) chooseSolver(auth le.Authorization) (int, solver) {
 }
 
 func validate(core *skin.Core, domain, uri string, _ le.Challenge) error {
-	// Challenge initiation is done by sending a JWS payload containing the trivial JSON object `{}`.
-	// We use an empty struct instance as the postJSON payload here to achieve this result.
 	chlng, err := core.Challenges.New(uri)
 	if err != nil {
 		return err
 	}
 
+	valid, err := checkChallengeStatus(chlng)
+	if err != nil {
+		return err
+	}
+
+	if valid {
+		log.Infof("[%s] The server validated our request", domain)
+		return nil
+	}
+
 	// After the path is sent, the ACME server will access our server.
 	// Repeatedly check the server for an updated status on our request.
 	for {
-		switch chlng.Status {
-		case le.StatusValid:
-			log.Infof("[%s] The server validated our request", domain)
-			return nil
-		case le.StatusPending:
-		case le.StatusProcessing:
-		case le.StatusInvalid:
-			return chlng.Error
-		default:
-			return errors.New("the server returned an unexpected state")
-		}
-
 		ra, err := strconv.Atoi(chlng.RetryAfter)
 		if err != nil {
 			// The ACME server MUST return a Retry-After.
 			// If it doesn't, we'll just poll hard.
+			// Boulder does not implement the ability to retry challenges or the Retry-After header.
+			// https://github.com/letsencrypt/boulder/blob/master/docs/acme-divergences.md#section-82
 			ra = 5
 		}
-
 		time.Sleep(time.Duration(ra) * time.Second)
 
-		chlng, err = core.Challenges.Get(uri)
+		authz, err := core.Authorizations.Get(chlng.AuthorizationURL)
 		if err != nil {
 			return err
 		}
+
+		valid, err := checkAuthorizationStatus(authz)
+		if err != nil {
+			return err
+		}
+
+		if valid {
+			log.Infof("[%s] The server validated our request", domain)
+			return nil
+		}
+	}
+}
+
+func checkChallengeStatus(chlng le.ChallengeExtend) (bool, error) {
+	switch chlng.Status {
+	case le.StatusValid:
+		return true, nil
+	case le.StatusPending:
+		return false, nil
+	case le.StatusProcessing:
+		return false, nil
+	case le.StatusInvalid:
+		return false, chlng.Error
+	default:
+		return false, errors.New("the server returned an unexpected state")
+	}
+}
+
+func checkAuthorizationStatus(authz le.Authorization) (bool, error) {
+	switch authz.Status {
+	case le.StatusValid:
+		return true, nil
+	case le.StatusPending:
+		return false, nil
+	case le.StatusProcessing:
+		return false, nil
+	case le.StatusDeactivated:
+		return false, fmt.Errorf("the authorization state %s", authz.Status)
+	case le.StatusExpired:
+		return false, fmt.Errorf("the authorization state %s", authz.Status)
+	case le.StatusRevoked:
+		return false, fmt.Errorf("the authorization state %s", authz.Status)
+	case le.StatusInvalid:
+		for _, chlg := range authz.Challenges {
+			if chlg.Status == le.StatusInvalid {
+				return false, chlg.Error
+			}
+		}
+		return false, fmt.Errorf("the authorization state %s", authz.Status)
+	default:
+		return false, errors.New("the server returned an unexpected state")
 	}
 }

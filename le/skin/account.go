@@ -14,7 +14,6 @@ func (a *AccountService) New(req le.AccountMessage) (le.AccountExtend, error) {
 	resp, err := a.core.post(a.core.GetDirectory().NewAccountURL, req, &account)
 	location := getLocation(resp)
 
-	// TODO good or not?
 	if len(location) > 0 {
 		a.core.jws.SetKid(location)
 	}

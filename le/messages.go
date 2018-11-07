@@ -15,6 +15,8 @@ const (
 	StatusValid       = "valid"
 	StatusProcessing  = "processing"
 	StatusDeactivated = "deactivated"
+	StatusExpired     = "expired"
+	StatusRevoked     = "revoked"
 )
 
 // Directory the ACME directory object.

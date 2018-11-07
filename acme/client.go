@@ -5,7 +5,7 @@ import (
 
 	"github.com/xenolf/lego/certificate"
 	"github.com/xenolf/lego/challenge/resolver"
-	"github.com/xenolf/lego/le/api"
+	"github.com/xenolf/lego/le/skin"
 	"github.com/xenolf/lego/registration"
 )
 
@@ -14,7 +14,7 @@ type Client struct {
 	Certificate  *certificate.Certifier
 	Challenge    *resolver.SolverManager
 	Registration *registration.Registrar
-	core         *api.Core
+	core         *skin.Core
 }
 
 // NewClient creates a new ACME client on behalf of the user.
@@ -35,7 +35,7 @@ func NewClient(config *Config) (*Client, error) {
 		kid = reg.URI
 	}
 
-	core, err := api.New(config.HTTPClient, config.userAgent, config.caDirURL, kid, privKey)
+	core, err := skin.New(config.HTTPClient, config.userAgent, config.caDirURL, kid, privKey)
 	if err != nil {
 		return nil, err
 	}

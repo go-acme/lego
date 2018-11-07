@@ -1,13 +1,11 @@
 package registration
 
 import (
-	"encoding/base64"
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/xenolf/lego/le"
-	"github.com/xenolf/lego/le/api"
+	"github.com/xenolf/lego/le/skin"
 	"github.com/xenolf/lego/log"
 )
 
@@ -19,11 +17,11 @@ type Resource struct {
 }
 
 type Registrar struct {
-	core *api.Core
+	core *skin.Core
 	user User
 }
 
-func NewRegistrar(core *api.Core, user User) *Registrar {
+func NewRegistrar(core *skin.Core, user User) *Registrar {
 	return &Registrar{
 		core: core,
 		user: user,
@@ -37,61 +35,56 @@ func (r *Registrar) Register(tosAgreed bool) (*Resource, error) {
 
 // RegisterWithExternalAccountBinding Register the current account to the ACME server.
 func (r *Registrar) RegisterWithExternalAccountBinding(tosAgreed bool, kid string, hmacEncoded string) (*Resource, error) {
-	eab := func(accMsg *le.AccountMessage) error {
-		hmac, err := base64.RawURLEncoding.DecodeString(hmacEncoded)
-		if err != nil {
-			return fmt.Errorf("acme: could not decode hmac key: %v", err)
-		}
-
-		eabJWS, err := r.core.SignEABContent(r.core.GetDirectory().NewAccountURL, kid, hmac)
-		if err != nil {
-			return fmt.Errorf("acme: error signing eab content: %v", err)
-		}
-
-		accMsg.ExternalAccountBinding = eabJWS
-
-		return nil
-	}
-
-	return r.register(tosAgreed, eab)
-}
-
-// register the current account to the ACME server.
-func (r *Registrar) register(tosAgreed bool, opts ...func(*le.AccountMessage) error) (*Resource, error) {
-	if r == nil || r.user == nil {
-		return nil, errors.New("acme: cannot register a nil client or user")
-	}
-
-	log.Infof("acme: Registering account for %s", r.user.GetEmail())
-
-	accMsg := &le.AccountMessage{
+	accMsg := le.AccountMessage{
 		TermsOfServiceAgreed: tosAgreed,
 		Contact:              []string{},
 	}
 
 	if r.user.GetEmail() != "" {
+		log.Infof("acme: Registering account for %s", r.user.GetEmail())
 		accMsg.Contact = []string{"mailto:" + r.user.GetEmail()}
 	}
 
-	for _, opt := range opts {
-		err := opt(accMsg)
-		if err != nil {
+	account, err := r.core.Accounts.NewEAB(accMsg, kid, hmacEncoded)
+	if err != nil {
+		errorDetails, ok := err.(le.ProblemDetails)
+		// FIXME seems impossible
+		if !ok || errorDetails.HTTPStatus != http.StatusConflict {
 			return nil, err
 		}
 	}
 
-	var serverReg le.AccountMessage
-	resp, err := r.core.Post(r.core.GetDirectory().NewAccountURL, accMsg, &serverReg)
+	// FIXME remove resource
+	return &Resource{URI: account.Location, Body: account.AccountMessage}, nil
+}
+
+// register the current account to the ACME server.
+func (r *Registrar) register(tosAgreed bool) (*Resource, error) {
+	if r == nil || r.user == nil {
+		return nil, errors.New("acme: cannot register a nil client or user")
+	}
+
+	accMsg := le.AccountMessage{
+		TermsOfServiceAgreed: tosAgreed,
+		Contact:              []string{},
+	}
+
+	if r.user.GetEmail() != "" {
+		log.Infof("acme: Registering account for %s", r.user.GetEmail())
+		accMsg.Contact = []string{"mailto:" + r.user.GetEmail()}
+	}
+
+	account, err := r.core.Accounts.New(accMsg)
 	if err != nil {
+		// FIXME seems impossible
 		errorDetails, ok := err.(le.ProblemDetails)
 		if !ok || errorDetails.HTTPStatus != http.StatusConflict {
 			return nil, err
 		}
 	}
 
-	r.core.UpdateKID(resp.Header.Get("Location"))
-
-	return &Resource{URI: resp.Header.Get("Location"), Body: serverReg}, nil
+	// FIXME remove resource
+	return &Resource{URI: account.Location, Body: account.AccountMessage}, nil
 }
 
 // QueryRegistration runs a POST request on the client's registration and returns the result.
@@ -106,16 +99,14 @@ func (r *Registrar) QueryRegistration() (*Resource, error) {
 	// Log the URL here instead of the email as the email may not be set
 	log.Infof("acme: Querying account for %s", r.user.GetRegistration().URI)
 
-	accMsg := le.AccountMessage{}
-
-	var serverReg le.AccountMessage
-	_, err := r.core.Post(r.user.GetRegistration().URI, accMsg, &serverReg)
+	account, err := r.core.Accounts.Get(r.user.GetRegistration().URI)
 	if err != nil {
 		return nil, err
 	}
 
+	// FIXME remove resource
 	return &Resource{
-		Body: serverReg,
+		Body: account,
 		// Location: header is not returned so this needs to be populated off of existing URI
 		URI: r.user.GetRegistration().URI,
 	}, nil
@@ -129,10 +120,7 @@ func (r *Registrar) DeleteRegistration() error {
 
 	log.Infof("acme: Deleting account for %s", r.user.GetEmail())
 
-	accMsg := le.AccountMessage{Status: le.StatusDeactivated}
-
-	_, err := r.core.Post(r.user.GetRegistration().URI, accMsg, nil)
-	return err
+	return r.core.Accounts.Deactivate(r.user.GetRegistration().URI)
 }
 
 // ResolveAccountByKey will attempt to look up an account using the given account key
@@ -140,24 +128,17 @@ func (r *Registrar) DeleteRegistration() error {
 func (r *Registrar) ResolveAccountByKey() (*Resource, error) {
 	log.Infof("acme: Trying to resolve account by key")
 
-	acc := le.AccountMessage{OnlyReturnExisting: true}
-	resp, err := r.core.Post(r.core.GetDirectory().NewAccountURL, acc, nil)
+	accMsg := le.AccountMessage{OnlyReturnExisting: true}
+	accountTransit, err := r.core.Accounts.New(accMsg)
 	if err != nil {
 		return nil, err
 	}
 
-	accountLink := resp.Header.Get("Location")
-	if accountLink == "" {
-		return nil, errors.New("server did not return the account link")
-	}
-
-	r.core.UpdateKID(accountLink)
-
-	var retAccount le.AccountMessage
-	_, err = r.core.Post(accountLink, le.AccountMessage{}, &retAccount)
+	account, err := r.core.Accounts.Get(accountTransit.Location)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Resource{URI: accountLink, Body: retAccount}, nil
+	// FIXME remove resource
+	return &Resource{URI: accountTransit.Location, Body: account}, nil
 }

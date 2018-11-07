@@ -9,7 +9,7 @@ import (
 
 	"github.com/xenolf/lego/challenge"
 	"github.com/xenolf/lego/le"
-	"github.com/xenolf/lego/le/api"
+	"github.com/xenolf/lego/le/skin"
 	"github.com/xenolf/lego/log"
 	"github.com/xenolf/lego/platform/wait"
 )
@@ -25,7 +25,7 @@ const (
 	DefaultTTL = 120
 )
 
-type ValidateFunc func(core *api.Core, domain, uri string, chlng le.Challenge) error
+type ValidateFunc func(core *skin.Core, domain, uri string, chlng le.Challenge) error
 
 type ChallengeOption func(*Challenge) error
 
@@ -42,14 +42,14 @@ func CondOption(condition bool, opt ChallengeOption) ChallengeOption {
 
 // Challenge implements the dns-01 challenge according to ACME 7.5
 type Challenge struct {
-	core       *api.Core
+	core       *skin.Core
 	validate   ValidateFunc
 	provider   challenge.Provider
 	preCheck   preCheck
 	dnsTimeout time.Duration
 }
 
-func NewChallenge(core *api.Core, validate ValidateFunc, provider challenge.Provider, opts ...ChallengeOption) *Challenge {
+func NewChallenge(core *skin.Core, validate ValidateFunc, provider challenge.Provider, opts ...ChallengeOption) *Challenge {
 	chlg := &Challenge{
 		core:       core,
 		validate:   validate,

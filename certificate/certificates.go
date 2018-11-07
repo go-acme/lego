@@ -10,13 +10,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"regexp"
 	"strings"
 	"time"
 
 	"github.com/xenolf/lego/certificate/certcrypto"
 	"github.com/xenolf/lego/le"
-	"github.com/xenolf/lego/le/api"
+	"github.com/xenolf/lego/le/skin"
 	"github.com/xenolf/lego/log"
 	"golang.org/x/crypto/ocsp"
 	"golang.org/x/net/idna"
@@ -48,12 +47,12 @@ type resolver interface {
 }
 
 type Certifier struct {
-	core     *api.Core
+	core     *skin.Core
 	keyType  certcrypto.KeyType
 	resolver resolver
 }
 
-func NewCertifier(core *api.Core, keyType certcrypto.KeyType, resolver resolver) *Certifier {
+func NewCertifier(core *skin.Core, keyType certcrypto.KeyType, resolver resolver) *Certifier {
 	return &Certifier{
 		core:     core,
 		keyType:  keyType,
@@ -83,7 +82,7 @@ func (c *Certifier) Obtain(domains []string, bundle bool, privKey crypto.Private
 		log.Infof("[%s] acme: Obtaining SAN certificate", strings.Join(domains, ", "))
 	}
 
-	order, err := c.getNewOrderForDomains(domains)
+	order, err := c.core.Orders.New(domains)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +91,7 @@ func (c *Certifier) Obtain(domains []string, bundle bool, privKey crypto.Private
 	if err != nil {
 		// If any challenge fails, return. Do not generate partial SAN certificates.
 		for _, auth := range order.Authorizations {
-			errD := c.disableAuthz(auth)
+			errD := c.core.Authorizations.Disable(auth)
 			if errD != nil {
 				log.Infof("unable to deactivated authorizations: %s", auth)
 			}
@@ -152,7 +151,7 @@ func (c *Certifier) ObtainForCSR(csr x509.CertificateRequest, bundle bool) (*Res
 		log.Infof("[%s] acme: Obtaining SAN certificate given a CSR", strings.Join(domains, ", "))
 	}
 
-	order, err := c.getNewOrderForDomains(domains)
+	order, err := c.core.Orders.New(domains)
 	if err != nil {
 		return nil, err
 	}
@@ -161,7 +160,7 @@ func (c *Certifier) ObtainForCSR(csr x509.CertificateRequest, bundle bool) (*Res
 	if err != nil {
 		// If any challenge fails, return. Do not generate partial SAN certificates.
 		for _, auth := range order.Authorizations {
-			errD := c.disableAuthz(auth)
+			errD := c.core.Authorizations.Disable(auth)
 			if errD != nil {
 				log.Infof("unable to deactivated authorizations: %s", auth)
 			}
@@ -233,30 +232,21 @@ func (c *Certifier) getForOrder(domains []string, order le.OrderExtend, bundle b
 }
 
 func (c *Certifier) getForCSR(domains []string, order le.OrderExtend, bundle bool, csr []byte, privateKeyPem []byte) (*Resource, error) {
-	csrMsg := le.CSRMessage{
-		Csr: base64.RawURLEncoding.EncodeToString(csr),
-	}
-
-	var retOrder le.OrderMessage
-	_, err := c.core.Post(order.Finalize, csrMsg, &retOrder)
+	respOrder, err := c.core.Orders.UpdateForCSR(order.Finalize, csr)
 	if err != nil {
 		return nil, err
-	}
-
-	if retOrder.Status == le.StatusInvalid {
-		return nil, retOrder.Error
 	}
 
 	commonName := domains[0]
 	certRes := Resource{
 		Domain:     commonName,
-		CertURL:    retOrder.Certificate,
+		CertURL:    respOrder.Certificate,
 		PrivateKey: privateKeyPem,
 	}
 
-	if retOrder.Status == le.StatusValid {
+	if respOrder.Status == le.StatusValid {
 		// if the certificate is available right away, short cut!
-		ok, err := c.checkResponse(retOrder, &certRes, bundle)
+		ok, err := c.checkResponse(respOrder, &certRes, bundle)
 		if err != nil {
 			return nil, err
 		}
@@ -276,12 +266,12 @@ func (c *Certifier) getForCSR(domains []string, order le.OrderExtend, bundle boo
 		case <-stopTimer.C:
 			return nil, errors.New("certificate polling timed out")
 		case <-retryTick.C:
-			_, err := c.core.PostAsGet(order.Location, &retOrder)
+			order, err := c.core.Orders.Get(order.Location)
 			if err != nil {
 				return nil, err
 			}
 
-			done, err := c.checkResponse(retOrder, &certRes, bundle)
+			done, err := c.checkResponse(order, &certRes, bundle)
 			if err != nil {
 				return nil, err
 			}
@@ -308,8 +298,7 @@ func (c *Certifier) Revoke(cert []byte) error {
 		Certificate: base64.URLEncoding.EncodeToString(x509Cert.Raw),
 	}
 
-	_, err = c.core.Post(c.core.GetDirectory().RevokeCertURL, revokeMsg, nil)
-	return err
+	return c.core.Certificates.Revoke(revokeMsg)
 }
 
 // Renew takes a Resource and tries to renew the certificate.
@@ -374,26 +363,6 @@ func (c *Certifier) Renew(cert Resource, bundle, mustStaple bool) (*Resource, er
 	return c.Obtain(domains, bundle, privKey, mustStaple)
 }
 
-func (c *Certifier) getNewOrderForDomains(domains []string) (le.OrderExtend, error) {
-	var identifiers []le.Identifier
-	for _, domain := range domains {
-		identifiers = append(identifiers, le.Identifier{Type: "dns", Value: domain})
-	}
-
-	orderReq := le.OrderMessage{Identifiers: identifiers}
-
-	var order le.OrderMessage
-	resp, err := c.core.Post(c.core.GetDirectory().NewOrderURL, orderReq, &order)
-	if err != nil {
-		return le.OrderExtend{}, err
-	}
-
-	return le.OrderExtend{
-		Location:     resp.Header.Get("Location"),
-		OrderMessage: order,
-	}, nil
-}
-
 // checkResponse checks to see if the certificate is ready and a link is contained in the response.
 // If so, loads it into certRes and returns true.
 // If the cert is not yet ready, it returns false.
@@ -402,12 +371,7 @@ func (c *Certifier) getNewOrderForDomains(domains []string) (le.OrderExtend, err
 func (c *Certifier) checkResponse(order le.OrderMessage, certRes *Resource, bundle bool) (bool, error) {
 	switch order.Status {
 	case le.StatusValid:
-		resp, err := c.core.PostAsGet(order.Certificate, nil)
-		if err != nil {
-			return false, err
-		}
-
-		cert, err := ioutil.ReadAll(http.MaxBytesReader(nil, resp.Body, maxBodySize))
+		cert, up, err := c.core.Certificates.Get(order.Certificate)
 		if err != nil {
 			return false, err
 		}
@@ -415,9 +379,8 @@ func (c *Certifier) checkResponse(order le.OrderMessage, certRes *Resource, bund
 		// The issuer certificate link may be supplied via an "up" link
 		// in the response headers of a new certificate.
 		// See https://tools.ietf.org/html/draft-ietf-acme-acme-12#section-7.4.2
-		links := parseLinks(resp.Header["Link"])
-		if link, ok := links["up"]; ok {
-			issuerCert, err := c.getIssuerCertificateFromLink(link)
+		if len(up) > 0 {
+			issuerCert, err := c.getIssuerCertificateFromLink(up)
 			if err != nil {
 				// If we fail to acquire the issuer cert, return the issued certificate - do not fail.
 				log.Warnf("[%s] acme: Could not bundle issuer certificate: %v", certRes.Domain, err)
@@ -456,23 +419,17 @@ func (c *Certifier) checkResponse(order le.OrderMessage, certRes *Resource, bund
 func (c *Certifier) getIssuerCertificateFromLink(link string) ([]byte, error) {
 	log.Infof("acme: Requesting issuer cert from %s", link)
 
-	resp, err := c.core.PostAsGet(link, nil)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	issuerCert, err := ioutil.ReadAll(http.MaxBytesReader(nil, resp.Body, maxBodySize))
+	cert, _, err := c.core.Certificates.Get(link)
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = x509.ParseCertificate(issuerCert)
+	_, err = x509.ParseCertificate(cert)
 	if err != nil {
 		return nil, err
 	}
 
-	return certcrypto.PEMEncode(certcrypto.DERCertificateBytes(issuerCert)), nil
+	return certcrypto.PEMEncode(certcrypto.DERCertificateBytes(cert)), nil
 }
 
 // GetOCSP takes a PEM encoded cert or cert bundle returning the raw OCSP response,
@@ -570,24 +527,6 @@ func sanitizeDomain(domains []string) []string {
 		}
 	}
 	return sanitizedDomains
-}
-
-func parseLinks(links []string) map[string]string {
-	aBrkt := regexp.MustCompile("[<>]")
-	slver := regexp.MustCompile("(.+) *= *\"(.+)\"")
-
-	linkMap := make(map[string]string)
-	for _, link := range links {
-		link = aBrkt.ReplaceAllString(link, "")
-		parts := strings.Split(link, ";")
-
-		matches := slver.FindStringSubmatch(parts[1])
-		if len(matches) > 0 {
-			linkMap[matches[2]] = parts[0]
-		}
-	}
-
-	return linkMap
 }
 
 func containsSAN(domains []string, sanName string) bool {

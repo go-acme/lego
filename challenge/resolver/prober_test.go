@@ -5,9 +5,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/le"
-
 	"github.com/xenolf/lego/challenge"
+	"github.com/xenolf/lego/le"
 )
 
 func TestProber_Solve(t *testing.T) {

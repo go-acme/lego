@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/xenolf/lego/le"
-	"github.com/xenolf/lego/le/api"
+	"github.com/xenolf/lego/le/skin"
 	"github.com/xenolf/lego/platform/tester"
 )
 
@@ -24,6 +24,7 @@ func TestRegistrar_ResolveAccountByKey(t *testing.T) {
 
 	mux.HandleFunc("/account", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Location", apiURL+"/account_recovery")
+		w.Write([]byte("{}"))
 	})
 
 	mux.HandleFunc("/account_recovery", func(w http.ResponseWriter, r *http.Request) {
@@ -45,7 +46,7 @@ func TestRegistrar_ResolveAccountByKey(t *testing.T) {
 		privatekey: key,
 	}
 
-	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/directory", "", key)
+	core, err := skin.New(http.DefaultClient, "lego-test", apiURL+"/directory", "", key)
 	require.NoError(t, err)
 
 	registrar := NewRegistrar(core, user)

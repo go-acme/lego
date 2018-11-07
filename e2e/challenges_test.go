@@ -18,6 +18,10 @@ var load = loader.EnvLoader{
 	},
 }
 
+func init() {
+	os.Setenv("LEGO_E2E_TESTS", "LEGO_E2E_TESTS")
+}
+
 func TestMain(m *testing.M) {
 	os.Exit(load.MainTest(m))
 }

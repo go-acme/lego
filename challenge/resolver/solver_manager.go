@@ -11,16 +11,16 @@ import (
 	"github.com/xenolf/lego/challenge/http01"
 	"github.com/xenolf/lego/challenge/tlsalpn01"
 	"github.com/xenolf/lego/le"
-	"github.com/xenolf/lego/le/api"
+	"github.com/xenolf/lego/le/skin"
 	"github.com/xenolf/lego/log"
 )
 
 type SolverManager struct {
-	core    *api.Core
+	core    *skin.Core
 	solvers map[challenge.Type]solver
 }
 
-func NewSolversManager(core *api.Core) *SolverManager {
+func NewSolversManager(core *skin.Core) *SolverManager {
 	// REVIEW: best possibility?
 	// Add all available solvers with the right index as per ACME spec to this map.
 	// Otherwise they won't be found.
@@ -110,11 +110,10 @@ func (c *SolverManager) chooseSolver(auth le.Authorization) (int, solver) {
 	return 0, nil
 }
 
-func validate(core *api.Core, domain, uri string, _ le.Challenge) error {
+func validate(core *skin.Core, domain, uri string, _ le.Challenge) error {
 	// Challenge initiation is done by sending a JWS payload containing the trivial JSON object `{}`.
 	// We use an empty struct instance as the postJSON payload here to achieve this result.
-	var chlng le.Challenge
-	resp, err := core.Post(uri, struct{}{}, &chlng)
+	chlng, err := core.Challenges.New(uri)
 	if err != nil {
 		return err
 	}
@@ -134,7 +133,7 @@ func validate(core *api.Core, domain, uri string, _ le.Challenge) error {
 			return errors.New("the server returned an unexpected state")
 		}
 
-		ra, err := strconv.Atoi(resp.Header.Get("Retry-After"))
+		ra, err := strconv.Atoi(chlng.RetryAfter)
 		if err != nil {
 			// The ACME server MUST return a Retry-After.
 			// If it doesn't, we'll just poll hard.
@@ -143,7 +142,7 @@ func validate(core *api.Core, domain, uri string, _ le.Challenge) error {
 
 		time.Sleep(time.Duration(ra) * time.Second)
 
-		resp, err = core.PostAsGet(uri, &chlng)
+		chlng, err = core.Challenges.Get(uri)
 		if err != nil {
 			return err
 		}

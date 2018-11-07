@@ -55,6 +55,13 @@ type Meta struct {
 	ExternalAccountRequired bool `json:"externalAccountRequired"`
 }
 
+// AccountExtend a extended AccountMessage.
+type AccountExtend struct {
+	AccountMessage
+	// Contains the value of the response header `Location`
+	Location string `json:"-"`
+}
+
 // AccountMessage the ACME account Object.
 // - https://tools.ietf.org/html/draft-ietf-acme-acme-16#section-7.1.2
 // - https://tools.ietf.org/html/draft-ietf-acme-acme-16#section-7.3
@@ -185,6 +192,15 @@ type Authorization struct {
 	// For authorizations created as a result of a newOrder request containing a DNS identifier
 	// with a value that contained a wildcard prefix this field MUST be present, and true.
 	Wildcard bool `json:"wildcard,omitempty"`
+}
+
+// ChallengeExtend a extended Challenge.
+type ChallengeExtend struct {
+	Challenge
+	// Contains the value of the response header `Retry-After`
+	RetryAfter string `json:"-"`
+	// Contains the value of the response header `Link` rel="up"
+	AuthorizationURL string `json:"-"`
 }
 
 // Challenge the ACME challenge object.

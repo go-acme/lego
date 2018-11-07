@@ -14,7 +14,7 @@ import (
 // 			return
 // 		}
 //
-// 		err := tester.WriteJSONResponse(w, le.OrderMessage{})
+// 		err := tester.WriteJSONResponse(w, le.Order{})
 // 		if err != nil {
 // 			http.Error(w, err.Error(), http.StatusInternalServerError)
 // 			return

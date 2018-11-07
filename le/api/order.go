@@ -8,49 +8,49 @@ import (
 
 type OrderService service
 
-func (o *OrderService) New(domains []string) (le.OrderExtend, error) {
+func (o *OrderService) New(domains []string) (le.ExtendedOrder, error) {
 	var identifiers []le.Identifier
 	for _, domain := range domains {
 		identifiers = append(identifiers, le.Identifier{Type: "dns", Value: domain})
 	}
 
-	orderReq := le.OrderMessage{Identifiers: identifiers}
+	orderReq := le.Order{Identifiers: identifiers}
 
-	var order le.OrderMessage
+	var order le.Order
 	resp, err := o.core.post(o.core.GetDirectory().NewOrderURL, orderReq, &order)
 	if err != nil {
-		return le.OrderExtend{}, err
+		return le.ExtendedOrder{}, err
 	}
 
-	return le.OrderExtend{
-		Location:     resp.Header.Get("Location"),
-		OrderMessage: order,
+	return le.ExtendedOrder{
+		Location: resp.Header.Get("Location"),
+		Order:    order,
 	}, nil
 }
 
-func (o *OrderService) Get(orderURL string) (le.OrderMessage, error) {
-	var order le.OrderMessage
+func (o *OrderService) Get(orderURL string) (le.Order, error) {
+	var order le.Order
 	_, err := o.core.postAsGet(orderURL, &order)
 	if err != nil {
-		return le.OrderMessage{}, err
+		return le.Order{}, err
 	}
 
 	return order, nil
 }
 
-func (o *OrderService) UpdateForCSR(orderURL string, csr []byte) (le.OrderMessage, error) {
+func (o *OrderService) UpdateForCSR(orderURL string, csr []byte) (le.Order, error) {
 	csrMsg := le.CSRMessage{
 		Csr: base64.RawURLEncoding.EncodeToString(csr),
 	}
 
-	var order le.OrderMessage
+	var order le.Order
 	_, err := o.core.post(orderURL, csrMsg, &order)
 	if err != nil {
-		return le.OrderMessage{}, err
+		return le.Order{}, err
 	}
 
 	if order.Status == le.StatusInvalid {
-		return le.OrderMessage{}, order.Error
+		return le.Order{}, order.Error
 	}
 
 	return order, nil

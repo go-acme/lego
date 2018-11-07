@@ -197,7 +197,7 @@ func (c *Certifier) ObtainForCSR(csr x509.CertificateRequest, bundle bool) (*Res
 	return cert, nil
 }
 
-func (c *Certifier) getForOrder(domains []string, order le.OrderExtend, bundle bool, privKey crypto.PrivateKey, mustStaple bool) (*Resource, error) {
+func (c *Certifier) getForOrder(domains []string, order le.ExtendedOrder, bundle bool, privKey crypto.PrivateKey, mustStaple bool) (*Resource, error) {
 	if privKey == nil {
 		var err error
 		privKey, err = certcrypto.GeneratePrivateKey(c.keyType)
@@ -231,7 +231,7 @@ func (c *Certifier) getForOrder(domains []string, order le.OrderExtend, bundle b
 	return c.getForCSR(domains, order, bundle, csr, certcrypto.PEMEncode(privKey))
 }
 
-func (c *Certifier) getForCSR(domains []string, order le.OrderExtend, bundle bool, csr []byte, privateKeyPem []byte) (*Resource, error) {
+func (c *Certifier) getForCSR(domains []string, order le.ExtendedOrder, bundle bool, csr []byte, privateKeyPem []byte) (*Resource, error) {
 	respOrder, err := c.core.Orders.UpdateForCSR(order.Finalize, csr)
 	if err != nil {
 		return nil, err
@@ -368,7 +368,7 @@ func (c *Certifier) Renew(cert Resource, bundle, mustStaple bool) (*Resource, er
 // If the cert is not yet ready, it returns false.
 // The certRes input should already have the Domain (common name) field populated.
 // If bundle is true, the certificate will be bundled with the issuer's cert.
-func (c *Certifier) checkResponse(order le.OrderMessage, certRes *Resource, bundle bool) (bool, error) {
+func (c *Certifier) checkResponse(order le.Order, certRes *Resource, bundle bool) (bool, error) {
 	switch order.Status {
 	case le.StatusValid:
 		cert, up, err := c.core.Certificates.Get(order.Certificate)

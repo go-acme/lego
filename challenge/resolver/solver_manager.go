@@ -157,7 +157,7 @@ func validate(core *api.Core, domain, uri string, _ le.Challenge) error {
 	}
 }
 
-func checkChallengeStatus(chlng le.ChallengeExtend) (bool, error) {
+func checkChallengeStatus(chlng le.ExtendedChallenge) (bool, error) {
 	switch chlng.Status {
 	case le.StatusValid:
 		return true, nil

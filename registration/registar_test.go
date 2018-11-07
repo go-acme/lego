@@ -28,7 +28,7 @@ func TestRegistrar_ResolveAccountByKey(t *testing.T) {
 	})
 
 	mux.HandleFunc("/account_recovery", func(w http.ResponseWriter, r *http.Request) {
-		err := tester.WriteJSONResponse(w, le.AccountMessage{
+		err := tester.WriteJSONResponse(w, le.Account{
 			Status: "valid",
 		})
 		if err != nil {

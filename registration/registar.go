@@ -12,8 +12,8 @@ import (
 // Resource represents all important information about a registration
 // of which the client needs to keep track itself.
 type Resource struct {
-	Body le.AccountMessage `json:"body,omitempty"`
-	URI  string            `json:"uri,omitempty"`
+	Body le.Account `json:"body,omitempty"`
+	URI  string     `json:"uri,omitempty"`
 }
 
 type Registrar struct {
@@ -35,7 +35,7 @@ func (r *Registrar) Register(tosAgreed bool) (*Resource, error) {
 
 // RegisterWithExternalAccountBinding Register the current account to the ACME server.
 func (r *Registrar) RegisterWithExternalAccountBinding(tosAgreed bool, kid string, hmacEncoded string) (*Resource, error) {
-	accMsg := le.AccountMessage{
+	accMsg := le.Account{
 		TermsOfServiceAgreed: tosAgreed,
 		Contact:              []string{},
 	}
@@ -55,7 +55,7 @@ func (r *Registrar) RegisterWithExternalAccountBinding(tosAgreed bool, kid strin
 	}
 
 	// FIXME remove resource
-	return &Resource{URI: account.Location, Body: account.AccountMessage}, nil
+	return &Resource{URI: account.Location, Body: account.Account}, nil
 }
 
 // register the current account to the ACME server.
@@ -64,7 +64,7 @@ func (r *Registrar) register(tosAgreed bool) (*Resource, error) {
 		return nil, errors.New("acme: cannot register a nil client or user")
 	}
 
-	accMsg := le.AccountMessage{
+	accMsg := le.Account{
 		TermsOfServiceAgreed: tosAgreed,
 		Contact:              []string{},
 	}
@@ -84,7 +84,7 @@ func (r *Registrar) register(tosAgreed bool) (*Resource, error) {
 	}
 
 	// FIXME remove resource
-	return &Resource{URI: account.Location, Body: account.AccountMessage}, nil
+	return &Resource{URI: account.Location, Body: account.Account}, nil
 }
 
 // QueryRegistration runs a POST request on the client's registration and returns the result.
@@ -128,7 +128,7 @@ func (r *Registrar) DeleteRegistration() error {
 func (r *Registrar) ResolveAccountByKey() (*Resource, error) {
 	log.Infof("acme: Trying to resolve account by key")
 
-	accMsg := le.AccountMessage{OnlyReturnExisting: true}
+	accMsg := le.Account{OnlyReturnExisting: true}
 	accountTransit, err := r.core.Accounts.New(accMsg)
 	if err != nil {
 		return nil, err

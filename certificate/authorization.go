@@ -16,7 +16,7 @@ const (
 )
 
 // Get the challenges needed to proof our identifier to the ACME server.
-func (c *Certifier) getAuthzForOrder(order le.OrderExtend) ([]le.Authorization, error) {
+func (c *Certifier) getAuthzForOrder(order le.ExtendedOrder) ([]le.Authorization, error) {
 	resc, errc := make(chan le.Authorization), make(chan domainError)
 
 	delay := time.Second / overallRequestLimit

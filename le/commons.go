@@ -57,17 +57,17 @@ type Meta struct {
 	ExternalAccountRequired bool `json:"externalAccountRequired"`
 }
 
-// AccountExtend a extended AccountMessage.
-type AccountExtend struct {
-	AccountMessage
+// ExtendedAccount a extended Account.
+type ExtendedAccount struct {
+	Account
 	// Contains the value of the response header `Location`
 	Location string `json:"-"`
 }
 
-// AccountMessage the ACME account Object.
+// Account the ACME account Object.
 // - https://tools.ietf.org/html/draft-ietf-acme-acme-16#section-7.1.2
 // - https://tools.ietf.org/html/draft-ietf-acme-acme-16#section-7.3
-type AccountMessage struct {
+type Account struct {
 	// status (required, string):
 	// The status of this account.
 	// Possible values are: "valid", "deactivated", and "revoked".
@@ -103,16 +103,16 @@ type AccountMessage struct {
 	ExternalAccountBinding json.RawMessage `json:"externalAccountBinding,omitempty"`
 }
 
-// OrderExtend a extended OrderMessage.
-type OrderExtend struct {
-	OrderMessage
+// ExtendedOrder a extended Order.
+type ExtendedOrder struct {
+	Order
 	// The order URL, contains the value of the response header `Location`
 	Location string `json:"-"`
 }
 
-// OrderMessage the ACME order Object.
+// Order the ACME order Object.
 // - https://tools.ietf.org/html/draft-ietf-acme-acme-16#section-7.1.3
-type OrderMessage struct {
+type Order struct {
 	// status (required, string):
 	// The status of this order.
 	// Possible values are: "pending", "ready", "processing", "valid", and "invalid".
@@ -196,8 +196,8 @@ type Authorization struct {
 	Wildcard bool `json:"wildcard,omitempty"`
 }
 
-// ChallengeExtend a extended Challenge.
-type ChallengeExtend struct {
+// ExtendedChallenge a extended Challenge.
+type ExtendedChallenge struct {
 	Challenge
 	// Contains the value of the response header `Retry-After`
 	RetryAfter string `json:"-"`

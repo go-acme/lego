@@ -13,7 +13,7 @@ func TestName(t *testing.T) {
 
 	}
 
-	_, err = core.Accounts.New(le.AccountMessage{})
+	_, err = core.Accounts.New(le.Account{})
 	if err != nil {
 
 	}

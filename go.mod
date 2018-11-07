@@ -11,6 +11,7 @@ require (
 	github.com/aws/aws-sdk-go v1.15.23
 	github.com/cloudflare/cloudflare-go v0.8.5
 	github.com/cpu/goacmedns v0.0.0-20180701200144-565ecf2a84df
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/decker502/dnspod-go v0.0.0-20180416134550-83a3ba562b04
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/dimchansky/utfbom v1.0.0 // indirect
@@ -29,7 +30,6 @@ require (
 	github.com/juju/ratelimit v1.0.1 // indirect
 	github.com/kolo/xmlrpc v0.0.0-20181023172212-16bdd962781d // indirect
 	github.com/kr/pretty v0.1.0 // indirect
-	github.com/ldez/go-auroradns v0.0.0-20181107021640-532168a1e313
 	github.com/linode/linodego v0.5.2-0.20180916122319-6e819a4ba980
 	github.com/miekg/dns v1.0.8
 	github.com/mitchellh/go-homedir v1.0.0 // indirect
@@ -41,6 +41,7 @@ require (
 	github.com/onsi/gomega v1.4.2 // indirect
 	github.com/ovh/go-ovh v0.0.0-20180717143715-c3e61035ea66
 	github.com/pkg/errors v0.8.0 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rainycape/memcache v0.0.0-20150622160815-1031fa0ce2f2
 	github.com/sacloud/libsacloud v0.0.0-20180828090100-7afff3fbc0a3
 	github.com/satori/go.uuid v1.2.0 // indirect

@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ldez/go-auroradns"
+	"github.com/ldez/go-auroradns/v2"
 	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/platform/config/env"
 )

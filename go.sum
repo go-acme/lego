@@ -68,8 +68,6 @@ github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORN
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
 github.com/kr/text v0.1.0 h1:45sCR5RtlFHMR4UwH9sdQ5TC8v0qDQCHnXt+kaKSTVE=
 github.com/kr/text v0.1.0/go.mod h1:4Jbv+DJW3UT/LiOwJeYQe1efqtUx/iVham/4vfdArNI=
-github.com/ldez/go-auroradns v0.0.0-20181107021640-532168a1e313 h1:r+fLKtJ4j2rij4NWVYIGO4coS9lXwcLHILJNLSNFhDY=
-github.com/ldez/go-auroradns v0.0.0-20181107021640-532168a1e313/go.mod h1:rYVFf+IWLBOstIDDRj3WWdJ/DUvtsP+tZoNgnpEuBZo=
 github.com/linode/linodego v0.5.2-0.20180916122319-6e819a4ba980 h1:5+0ZePV1ueUxeVQy+SxPqDvmtp+p2dZfnSqHPyEKTQw=
 github.com/linode/linodego v0.5.2-0.20180916122319-6e819a4ba980/go.mod h1:ga11n3ivecUrPCHN0rANxKmfWBJVkOXfLMZinAbj2sY=
 github.com/miekg/dns v1.0.8 h1:Zi8HNpze3NeRWH1PQV6O71YcvJRQ6j0lORO6DAEmAAI=

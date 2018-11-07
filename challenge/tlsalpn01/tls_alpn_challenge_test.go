@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/xenolf/lego/challenge"
 	"github.com/xenolf/lego/le"
-	"github.com/xenolf/lego/le/skin"
+	"github.com/xenolf/lego/le/api"
 	"github.com/xenolf/lego/platform/tester"
 )
 
@@ -24,7 +24,7 @@ func TestChallenge(t *testing.T) {
 
 	domain := "localhost:23457"
 
-	mockValidate := func(_ *skin.Core, _, _ string, chlng le.Challenge) error {
+	mockValidate := func(_ *api.Core, _, _ string, chlng le.Challenge) error {
 		conn, err := tls.Dial("tcp", domain, &tls.Config{
 			InsecureSkipVerify: true,
 		})
@@ -66,7 +66,7 @@ func TestChallenge(t *testing.T) {
 	privKey, err := rsa.GenerateKey(rand.Reader, 512)
 	require.NoError(t, err, "Could not generate test key")
 
-	core, err := skin.New(http.DefaultClient, "lego-test", apiURL, "", privKey)
+	core, err := api.New(http.DefaultClient, "lego-test", apiURL, "", privKey)
 	require.NoError(t, err)
 
 	solver := NewChallenge(
@@ -88,12 +88,12 @@ func TestChallengeInvalidPort(t *testing.T) {
 	privKey, err := rsa.GenerateKey(rand.Reader, 128)
 	require.NoError(t, err, "Could not generate test key")
 
-	core, err := skin.New(http.DefaultClient, "lego-test", apiURL, "", privKey)
+	core, err := api.New(http.DefaultClient, "lego-test", apiURL, "", privKey)
 	require.NoError(t, err)
 
 	solver := NewChallenge(
 		core,
-		func(_ *skin.Core, _, _ string, _ le.Challenge) error { return nil },
+		func(_ *api.Core, _, _ string, _ le.Challenge) error { return nil },
 		&ProviderServer{port: "123456"},
 	)
 

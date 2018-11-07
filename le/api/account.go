@@ -1,4 +1,4 @@
-package skin
+package api
 
 import (
 	"encoding/base64"

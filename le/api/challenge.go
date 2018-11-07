@@ -1,4 +1,4 @@
-package skin
+package api
 
 import "github.com/xenolf/lego/le"
 

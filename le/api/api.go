@@ -21,6 +21,14 @@ type Core struct {
 	jws          *secure.JWS
 	directory    le.Directory
 	HTTPClient   *http.Client
+
+	common service // Reuse a single struct instead of allocating one for each service on the heap.
+
+	Accounts       *AccountService
+	Authorizations *AuthorizationService
+	Certificates   *CertificateService
+	Challenges     *ChallengeService
+	Orders         *OrderService
 }
 
 func New(httpClient *http.Client, userAgent string, caDirURL, kid string, privKey crypto.PrivateKey) (*Core, error) {
@@ -35,12 +43,21 @@ func New(httpClient *http.Client, userAgent string, caDirURL, kid string, privKe
 
 	jws := secure.NewJWS(privKey, kid, nonceManager)
 
-	return &Core{do: do, nonceManager: nonceManager, jws: jws, directory: dir}, nil
+	c := &Core{do: do, nonceManager: nonceManager, jws: jws, directory: dir}
+
+	c.common.core = c
+	c.Accounts = (*AccountService)(&c.common)
+	c.Authorizations = (*AuthorizationService)(&c.common)
+	c.Certificates = (*CertificateService)(&c.common)
+	c.Challenges = (*ChallengeService)(&c.common)
+	c.Orders = (*OrderService)(&c.common)
+
+	return c, nil
 }
 
-// Post performs an HTTP POST request and parses the response body as JSON,
+// post performs an HTTP POST request and parses the response body as JSON,
 // into the provided respBody object.
-func (a *Core) Post(uri string, reqBody, response interface{}) (*http.Response, error) {
+func (a *Core) post(uri string, reqBody, response interface{}) (*http.Response, error) {
 	content, err := json.Marshal(reqBody)
 	if err != nil {
 		return nil, errors.New("failed to marshal message")
@@ -49,9 +66,9 @@ func (a *Core) Post(uri string, reqBody, response interface{}) (*http.Response, 
 	return a.retrievablePost(uri, content, response)
 }
 
-// PostAsGet performs an HTTP POST ("POST-as-GET") request.
+// postAsGet performs an HTTP POST ("POST-as-GET") request.
 // https://tools.ietf.org/html/draft-ietf-acme-acme-16#section-6.3
-func (a *Core) PostAsGet(uri string, response interface{}) (*http.Response, error) {
+func (a *Core) postAsGet(uri string, response interface{}) (*http.Response, error) {
 	return a.retrievablePost(uri, []byte{}, response)
 }
 
@@ -92,27 +109,24 @@ func (a *Core) signedPost(uri string, content []byte, response interface{}) (*ht
 	return resp, err
 }
 
-// Head performs a HEAD request with a proper User-Agent string.
+// head performs a HEAD request with a proper User-Agent string.
 // The response body (resp.Body) is already closed when this function returns.
-func (a *Core) Head(url string) (*http.Response, error) {
+func (a *Core) head(url string) (*http.Response, error) {
 	return a.do.Head(url)
 }
 
-func (a *Core) UpdateKID(kid string) {
-	a.jws.SetKid(kid)
-}
-
-func (a *Core) GetKeyAuthorization(token string) (string, error) {
-	return a.jws.GetKeyAuthorization(token)
-}
-
-func (a *Core) SignEABContent(newAccountURL, kid string, hmac []byte) ([]byte, error) {
+func (a *Core) signEABContent(newAccountURL, kid string, hmac []byte) ([]byte, error) {
 	eabJWS, err := a.jws.SignEABContent(newAccountURL, kid, hmac)
 	if err != nil {
 		return nil, err
 	}
 
 	return []byte(eabJWS.FullSerialize()), nil
+}
+
+// TODO still alive?
+func (a *Core) GetKeyAuthorization(token string) (string, error) {
+	return a.jws.GetKeyAuthorization(token)
 }
 
 func (a *Core) GetDirectory() le.Directory {

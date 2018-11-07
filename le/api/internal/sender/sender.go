@@ -113,7 +113,7 @@ func (d *Do) do(req *http.Request, response interface{}) (*http.Response, error)
 
 		err = json.Unmarshal(raw, response)
 		if err != nil {
-			return resp, err
+			return resp, fmt.Errorf("failed to unmarshal %q to type %T: %v", raw, response, err)
 		}
 	}
 

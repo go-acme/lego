@@ -5,11 +5,11 @@ import (
 
 	"github.com/xenolf/lego/challenge"
 	"github.com/xenolf/lego/le"
-	"github.com/xenolf/lego/le/skin"
+	"github.com/xenolf/lego/le/api"
 	"github.com/xenolf/lego/log"
 )
 
-type ValidateFunc func(core *skin.Core, domain, uri string, chlng le.Challenge) error
+type ValidateFunc func(core *api.Core, domain, uri string, chlng le.Challenge) error
 
 // ChallengePath returns the URL path for the `http-01` challenge
 func ChallengePath(token string) string {
@@ -17,12 +17,12 @@ func ChallengePath(token string) string {
 }
 
 type Challenge struct {
-	core     *skin.Core
+	core     *api.Core
 	validate ValidateFunc
 	provider challenge.Provider
 }
 
-func NewChallenge(core *skin.Core, validate ValidateFunc, provider challenge.Provider) *Challenge {
+func NewChallenge(core *api.Core, validate ValidateFunc, provider challenge.Provider) *Challenge {
 	return &Challenge{
 		core:     core,
 		validate: validate,

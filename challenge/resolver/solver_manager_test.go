@@ -16,7 +16,7 @@ import (
 	"github.com/xenolf/lego/challenge"
 	"github.com/xenolf/lego/challenge/http01"
 	"github.com/xenolf/lego/le"
-	"github.com/xenolf/lego/le/skin"
+	"github.com/xenolf/lego/le/api"
 	"github.com/xenolf/lego/platform/tester"
 	"gopkg.in/square/go-jose.v2"
 )
@@ -29,7 +29,7 @@ func TestSolverManager_SetHTTP01Address(t *testing.T) {
 	key, err := rsa.GenerateKey(rand.Reader, keyBits)
 	require.NoError(t, err, "Could not generate test key")
 
-	core, err := skin.New(http.DefaultClient, "lego-test", apiURL, "", key)
+	core, err := api.New(http.DefaultClient, "lego-test", apiURL, "", key)
 	require.NoError(t, err)
 
 	solversManager := NewSolversManager(core)
@@ -129,7 +129,7 @@ func TestValidate(t *testing.T) {
 
 	})
 
-	core, err := skin.New(http.DefaultClient, "lego-test", apiURL, "", privKey)
+	core, err := api.New(http.DefaultClient, "lego-test", apiURL, "", privKey)
 	require.NoError(t, err)
 
 	testCases := []struct {

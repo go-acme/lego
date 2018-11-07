@@ -12,16 +12,16 @@ import (
 	"github.com/xenolf/lego/challenge/http01"
 	"github.com/xenolf/lego/challenge/tlsalpn01"
 	"github.com/xenolf/lego/le"
-	"github.com/xenolf/lego/le/skin"
+	"github.com/xenolf/lego/le/api"
 	"github.com/xenolf/lego/log"
 )
 
 type SolverManager struct {
-	core    *skin.Core
+	core    *api.Core
 	solvers map[challenge.Type]solver
 }
 
-func NewSolversManager(core *skin.Core) *SolverManager {
+func NewSolversManager(core *api.Core) *SolverManager {
 	// REVIEW: best possibility?
 	// Add all available solvers with the right index as per ACME spec to this map.
 	// Otherwise they won't be found.
@@ -111,7 +111,7 @@ func (c *SolverManager) chooseSolver(auth le.Authorization) (int, solver) {
 	return 0, nil
 }
 
-func validate(core *skin.Core, domain, uri string, _ le.Challenge) error {
+func validate(core *api.Core, domain, uri string, _ le.Challenge) error {
 	chlng, err := core.Challenges.New(uri)
 	if err != nil {
 		return err

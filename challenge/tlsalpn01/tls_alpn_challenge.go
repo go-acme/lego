@@ -11,7 +11,7 @@ import (
 	"github.com/xenolf/lego/certificate/certcrypto"
 	"github.com/xenolf/lego/challenge"
 	"github.com/xenolf/lego/le"
-	"github.com/xenolf/lego/le/skin"
+	"github.com/xenolf/lego/le/api"
 	"github.com/xenolf/lego/log"
 )
 
@@ -19,15 +19,15 @@ import (
 // Reference: https://tools.ietf.org/html/draft-ietf-acme-tls-alpn-05#section-5.1
 var idPeAcmeIdentifierV1 = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 1, 31}
 
-type ValidateFunc func(core *skin.Core, domain, uri string, chlng le.Challenge) error
+type ValidateFunc func(core *api.Core, domain, uri string, chlng le.Challenge) error
 
 type Challenge struct {
-	core     *skin.Core
+	core     *api.Core
 	validate ValidateFunc
 	provider challenge.Provider
 }
 
-func NewChallenge(core *skin.Core, validate ValidateFunc, provider challenge.Provider) *Challenge {
+func NewChallenge(core *api.Core, validate ValidateFunc, provider challenge.Provider) *Challenge {
 	return &Challenge{
 		core:     core,
 		validate: validate,

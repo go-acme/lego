@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/xenolf/lego/le"
-	"github.com/xenolf/lego/le/skin"
+	"github.com/xenolf/lego/le/api"
 	"github.com/xenolf/lego/log"
 )
 
@@ -17,11 +17,11 @@ type Resource struct {
 }
 
 type Registrar struct {
-	core *skin.Core
+	core *api.Core
 	user User
 }
 
-func NewRegistrar(core *skin.Core, user User) *Registrar {
+func NewRegistrar(core *api.Core, user User) *Registrar {
 	return &Registrar{
 		core: core,
 		user: user,

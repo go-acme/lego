@@ -15,7 +15,7 @@ import (
 
 	"github.com/xenolf/lego/certificate/certcrypto"
 	"github.com/xenolf/lego/le"
-	"github.com/xenolf/lego/le/skin"
+	"github.com/xenolf/lego/le/api"
 	"github.com/xenolf/lego/log"
 	"golang.org/x/crypto/ocsp"
 	"golang.org/x/net/idna"
@@ -47,12 +47,12 @@ type resolver interface {
 }
 
 type Certifier struct {
-	core     *skin.Core
+	core     *api.Core
 	keyType  certcrypto.KeyType
 	resolver resolver
 }
 
-func NewCertifier(core *skin.Core, keyType certcrypto.KeyType, resolver resolver) *Certifier {
+func NewCertifier(core *api.Core, keyType certcrypto.KeyType, resolver resolver) *Certifier {
 	return &Certifier{
 		core:     core,
 		keyType:  keyType,

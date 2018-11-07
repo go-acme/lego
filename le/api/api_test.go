@@ -1,14 +1,14 @@
-package skin_test
+package api_test
 
 import (
 	"testing"
 
 	"github.com/xenolf/lego/le"
-	"github.com/xenolf/lego/le/skin"
+	"github.com/xenolf/lego/le/api"
 )
 
 func TestName(t *testing.T) {
-	core, err := skin.New(nil, "", "", "", nil)
+	core, err := api.New(nil, "", "", "", nil)
 	if err != nil {
 
 	}

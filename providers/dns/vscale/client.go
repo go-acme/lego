@@ -1,4 +1,4 @@
-package selectel
+package vscale
 
 import (
 	"bytes"

@@ -5,7 +5,6 @@ import (
 	"crypto"
 	"crypto/x509"
 	"encoding/base64"
-	"encoding/pem"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -369,72 +368,35 @@ func (c *Certifier) Renew(cert Resource, bundle, mustStaple bool) (*Resource, er
 // The certRes input should already have the Domain (common name) field populated.
 // If bundle is true, the certificate will be bundled with the issuer's cert.
 func (c *Certifier) checkResponse(order le.Order, certRes *Resource, bundle bool) (bool, error) {
+	valid, err := checkOrderStatus(order)
+	if err != nil || !valid {
+		return valid, err
+	}
+
+	cert, issuer, err := c.core.Certificates.Get(order.Certificate, bundle)
+	if err != nil {
+		return false, err
+	}
+
+	log.Infof("[%s] Server responded with a certificate.", certRes.Domain)
+
+	certRes.IssuerCertificate = issuer
+	certRes.Certificate = cert
+	certRes.CertURL = order.Certificate
+	certRes.CertStableURL = order.Certificate
+
+	return true, nil
+}
+
+func checkOrderStatus(order le.Order) (bool, error) {
 	switch order.Status {
 	case le.StatusValid:
-		cert, issuer, err := c.getCertificate(certRes.Domain, order, bundle)
-		if err != nil {
-			return false, err
-		}
-
-		certRes.IssuerCertificate = issuer
-		certRes.Certificate = cert
-		certRes.CertURL = order.Certificate
-		certRes.CertStableURL = order.Certificate
-
-		log.Infof("[%s] Server responded with a certificate.", certRes.Domain)
 		return true, nil
 	case le.StatusInvalid:
-		return false, errors.New("order has invalid state: invalid")
+		return false, order.Error
 	default:
 		return false, nil
 	}
-}
-
-func (c *Certifier) getCertificate(domain string, order le.Order, bundle bool) ([]byte, []byte, error) {
-	cert, up, err := c.core.Certificates.Get(order.Certificate)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	// Get issuerCert from bundled response from Let's Encrypt
-	// See https://community.letsencrypt.org/t/acme-v2-no-up-link-in-response/64962
-	_, issuer := pem.Decode(cert)
-	if issuer == nil {
-		issuer, err = c.getIssuerFromLink(up)
-		if err != nil {
-			// If we fail to acquire the issuer cert, return the issued certificate - do not fail.
-			log.Warnf("[%s] acme: Could not bundle issuer certificate: %v", domain, err)
-		} else if len(issuer) > 0 {
-			// If bundle is true, we want to return a certificate bundle.
-			// To do this, we append the issuer cert to the issued cert.
-			if bundle {
-				cert = append(cert, issuer...)
-			}
-		}
-	}
-
-	return cert, issuer, nil
-}
-
-// getIssuerFromLink requests the issuer certificate
-func (c *Certifier) getIssuerFromLink(up string) ([]byte, error) {
-	if len(up) == 0 {
-		return nil, nil
-	}
-
-	log.Infof("acme: Requesting issuer cert from %s", up)
-
-	cert, _, err := c.core.Certificates.Get(up)
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = x509.ParseCertificate(cert)
-	if err != nil {
-		return nil, err
-	}
-
-	return certcrypto.PEMEncode(certcrypto.DERCertificateBytes(cert)), nil
 }
 
 // GetOCSP takes a PEM encoded cert or cert bundle returning the raw OCSP response,

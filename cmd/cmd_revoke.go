@@ -32,15 +32,15 @@ func revoke(c *cli.Context) error {
 		certPath := filepath.Join(conf.CertPath(), domain+".crt")
 		certBytes, err := ioutil.ReadFile(certPath)
 		if err != nil {
-			log.Println(err)
+			log.Fatalf("Error while revoking the certificate for domain %s\n\t%v", domain, err)
 		}
 
 		err = client.Certificate.Revoke(certBytes)
 		if err != nil {
 			log.Fatalf("Error while revoking the certificate for domain %s\n\t%v", domain, err)
-		} else {
-			log.Println("Certificate was revoked.")
 		}
+
+		log.Println("Certificate was revoked.")
 	}
 
 	return nil

@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"crypto/x509"
 	"encoding/pem"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -67,13 +68,13 @@ func run(c *cli.Context) error {
 		}
 
 		acc.Registration = reg
-		err = acc.Save()
-		if err != nil {
+
+		if err = acc.Save(); err != nil {
 			log.Fatal(err)
 		}
 
-		log.Print("!!!! HEADS UP !!!!")
-		log.Printf(`
+		fmt.Println("!!!! HEADS UP !!!!")
+		fmt.Printf(`
 		Your account credentials have been saved in your Let's Encrypt
 		configuration directory at "%s".
 		You should make a secure backup	of this folder now. This
@@ -133,23 +134,21 @@ func handleTOS(c *cli.Context, client *acme.Client) bool {
 	log.Printf("Please review the TOS at %s", client.GetToSURL())
 
 	for {
-		log.Println("Do you accept the TOS? Y/n")
+		fmt.Println("Do you accept the TOS? Y/n")
 		text, err := reader.ReadString('\n')
 		if err != nil {
 			log.Fatalf("Could not read from console: %v", err)
 		}
 
 		text = strings.Trim(text, "\r\n")
-
-		if text == "n" {
-			log.Fatal("You did not accept the TOS. Unable to proceed.")
-		}
-
-		if text == "Y" || text == "y" || text == "" {
+		switch text {
+		case "", "y", "Y":
 			return true
+		case "n", "N":
+			log.Fatal("You did not accept the TOS. Unable to proceed.")
+		default:
+			fmt.Println("Your input was invalid. Please answer with one of Y/y, n/N or by pressing enter.")
 		}
-
-		log.Println("Your input was invalid. Please answer with one of Y/y, n or by pressing enter.")
 	}
 }
 

@@ -2,7 +2,7 @@
 
 The server must provide:
 - `POST` `/present`
-- `POST` `/client`
+- `POST` `/cleanup`
 
 The URL of the server must be define by `HTTPREQ_ENDPOINT`.
 

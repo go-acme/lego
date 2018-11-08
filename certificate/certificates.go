@@ -404,7 +404,7 @@ func (c *Certifier) getCertificate(domain string, order le.Order, bundle bool) (
 		if err != nil {
 			// If we fail to acquire the issuer cert, return the issued certificate - do not fail.
 			log.Warnf("[%s] acme: Could not bundle issuer certificate: %v", domain, err)
-		} else {
+		} else if len(issuer) > 0 {
 			// If bundle is true, we want to return a certificate bundle.
 			// To do this, we append the issuer cert to the issued cert.
 			if bundle {

@@ -109,12 +109,6 @@ func (a *Core) signedPost(uri string, content []byte, response interface{}) (*ht
 	return resp, err
 }
 
-// head performs a HEAD request with a proper User-Agent string.
-// The response body (resp.Body) is already closed when this function returns.
-func (a *Core) head(url string) (*http.Response, error) {
-	return a.do.Head(url)
-}
-
 func (a *Core) signEABContent(newAccountURL, kid string, hmac []byte) ([]byte, error) {
 	eabJWS, err := a.jws.SignEABContent(newAccountURL, kid, hmac)
 	if err != nil {
@@ -124,7 +118,7 @@ func (a *Core) signEABContent(newAccountURL, kid string, hmac []byte) ([]byte, e
 	return []byte(eabJWS.FullSerialize()), nil
 }
 
-// TODO still alive?
+// GetKeyAuthorization TODO still alive?
 func (a *Core) GetKeyAuthorization(token string) (string, error) {
 	return a.jws.GetKeyAuthorization(token)
 }

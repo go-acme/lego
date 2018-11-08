@@ -13,6 +13,7 @@ const maxBodySize = 1024 * 1024
 
 type CertificateService service
 
+// Get Returns the certificate and the "up" link.
 func (c *CertificateService) Get(certURL string) ([]byte, string, error) {
 	if len(certURL) == 0 {
 		return nil, "", errors.New("certificate[get]: empty URL")
@@ -36,6 +37,7 @@ func (c *CertificateService) Get(certURL string) ([]byte, string, error) {
 	return cert, up, err
 }
 
+// Revoke Revokes a certificate.
 func (c *CertificateService) Revoke(req le.RevokeCertMessage) error {
 	_, err := c.core.post(c.core.GetDirectory().RevokeCertURL, req, nil)
 	return err

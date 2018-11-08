@@ -20,8 +20,8 @@ func TestOrderService_New(t *testing.T) {
 	defer tearDown()
 
 	// small value keeps test fast
-	privKey, err := rsa.GenerateKey(rand.Reader, 512)
-	require.NoError(t, err, "Could not generate test key")
+	privKey, errK := rsa.GenerateKey(rand.Reader, 512)
+	require.NoError(t, errK, "Could not generate test key")
 
 	mux.HandleFunc("/newOrder", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {

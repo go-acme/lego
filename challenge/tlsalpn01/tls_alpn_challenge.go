@@ -8,7 +8,7 @@ import (
 	"encoding/asn1"
 	"fmt"
 
-	"github.com/xenolf/lego/certificate/certcrypto"
+	"github.com/xenolf/lego/certcrypto"
 	"github.com/xenolf/lego/challenge"
 	"github.com/xenolf/lego/le"
 	"github.com/xenolf/lego/le/api"

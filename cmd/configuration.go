@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/urfave/cli"
-	"github.com/xenolf/lego/certificate/certcrypto"
+	"github.com/xenolf/lego/certcrypto"
 	"github.com/xenolf/lego/challenge"
 )
 

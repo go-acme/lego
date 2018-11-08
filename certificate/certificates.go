@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/xenolf/lego/certificate/certcrypto"
+	"github.com/xenolf/lego/certcrypto"
 	"github.com/xenolf/lego/le"
 	"github.com/xenolf/lego/le/api"
 	"github.com/xenolf/lego/log"

@@ -9,7 +9,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/certificate/certcrypto"
+	"github.com/xenolf/lego/certcrypto"
 	"github.com/xenolf/lego/le"
 	"github.com/xenolf/lego/le/api"
 	"github.com/xenolf/lego/platform/tester"

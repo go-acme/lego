@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/base64"
+	"errors"
 
 	"github.com/xenolf/lego/le"
 )
@@ -29,6 +30,10 @@ func (o *OrderService) New(domains []string) (le.ExtendedOrder, error) {
 }
 
 func (o *OrderService) Get(orderURL string) (le.Order, error) {
+	if len(orderURL) == 0 {
+		return le.Order{}, errors.New("order[get]: empty URL")
+	}
+
 	var order le.Order
 	_, err := o.core.postAsGet(orderURL, &order)
 	if err != nil {

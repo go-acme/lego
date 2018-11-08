@@ -130,16 +130,6 @@ func validate(core *api.Core, domain, uri string, _ le.Challenge) error {
 	// After the path is sent, the ACME server will access our server.
 	// Repeatedly check the server for an updated status on our request.
 	for {
-		ra, err := strconv.Atoi(chlng.RetryAfter)
-		if err != nil {
-			// The ACME server MUST return a Retry-After.
-			// If it doesn't, we'll just poll hard.
-			// Boulder does not implement the ability to retry challenges or the Retry-After header.
-			// https://github.com/letsencrypt/boulder/blob/master/docs/acme-divergences.md#section-82
-			ra = 5
-		}
-		time.Sleep(time.Duration(ra) * time.Second)
-
 		authz, err := core.Authorizations.Get(chlng.AuthorizationURL)
 		if err != nil {
 			return err
@@ -154,6 +144,16 @@ func validate(core *api.Core, domain, uri string, _ le.Challenge) error {
 			log.Infof("[%s] The server validated our request", domain)
 			return nil
 		}
+
+		ra, err := strconv.Atoi(chlng.RetryAfter)
+		if err != nil {
+			// The ACME server MUST return a Retry-After.
+			// If it doesn't, we'll just poll hard.
+			// Boulder does not implement the ability to retry challenges or the Retry-After header.
+			// https://github.com/letsencrypt/boulder/blob/master/docs/acme-divergences.md#section-82
+			ra = 5
+		}
+		time.Sleep(time.Duration(ra) * time.Second)
 	}
 }
 

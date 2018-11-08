@@ -109,11 +109,8 @@ func GeneratePrivateKey(keyType KeyType) (crypto.PrivateKey, error) {
 
 func GenerateCSR(privateKey crypto.PrivateKey, domain string, san []string, mustStaple bool) ([]byte, error) {
 	template := x509.CertificateRequest{
-		Subject: pkix.Name{CommonName: domain},
-	}
-
-	if len(san) > 0 {
-		template.DNSNames = san
+		Subject:  pkix.Name{CommonName: domain},
+		DNSNames: san,
 	}
 
 	if mustStaple {
@@ -146,7 +143,7 @@ func PEMEncode(data interface{}) []byte {
 func pemDecode(data []byte) (*pem.Block, error) {
 	pemBlock, _ := pem.Decode(data)
 	if pemBlock == nil {
-		return nil, fmt.Errorf("Pem decode did not yield a valid block. Is the certificate in the right format?")
+		return nil, fmt.Errorf("PEM decode did not yield a valid block. Is the certificate in the right format?")
 	}
 
 	return pemBlock, nil

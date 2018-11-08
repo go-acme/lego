@@ -44,6 +44,14 @@ func TestGenerateCSR(t *testing.T) {
 			expected:   expected{len: 245},
 		},
 		{
+			desc:       "without SAN",
+			privateKey: privateKey,
+			domain:     "lego.acme",
+			san:        []string{},
+			mustStaple: true,
+			expected:   expected{len: 245},
+		},
+		{
 			desc:       "with SAN",
 			privateKey: privateKey,
 			domain:     "lego.acme",
@@ -110,8 +118,7 @@ func TestPEMCertExpiration(t *testing.T) {
 	privKey, err := GeneratePrivateKey(RSA2048)
 	require.NoError(t, err, "Error generating private key")
 
-	expiration := time.Now().Add(365)
-	expiration = expiration.Round(time.Second)
+	expiration := time.Now().Add(365).Round(time.Second)
 	certBytes, err := generateDerCert(privKey.(*rsa.PrivateKey), expiration, "test.com", nil)
 	require.NoError(t, err, "Error generating cert")
 

@@ -29,7 +29,7 @@ func TestSolverManager_SetHTTP01Address(t *testing.T) {
 	key, err := rsa.GenerateKey(rand.Reader, keyBits)
 	require.NoError(t, err, "Could not generate test key")
 
-	core, err := api.New(http.DefaultClient, "lego-test", apiURL, "", key)
+	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", key)
 	require.NoError(t, err)
 
 	solversManager := NewSolversManager(core)
@@ -113,6 +113,8 @@ func TestValidate(t *testing.T) {
 			return
 		}
 
+		w.Header().Set("Link", "<"+apiURL+`/my-authz>; rel="up"`)
+
 		st := statuses[0]
 		statuses = statuses[1:]
 
@@ -126,10 +128,39 @@ func TestValidate(t *testing.T) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-
 	})
 
-	core, err := api.New(http.DefaultClient, "lego-test", apiURL, "", privKey)
+	mux.HandleFunc("/my-authz", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+			return
+		}
+
+		st := statuses[0]
+		statuses = statuses[1:]
+
+		authorization := le.Authorization{
+			Status:     st,
+			Challenges: []le.Challenge{},
+		}
+
+		if st == le.StatusInvalid {
+			chlg := le.Challenge{
+				Status: le.StatusInvalid,
+				Error:  &le.ProblemDetails{},
+			}
+			authorization.Challenges = append(authorization.Challenges, chlg)
+		}
+
+		fmt.Println(r.Method, r.URL)
+		err := tester.WriteJSONResponse(w, authorization)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	})
+
+	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privKey)
 	require.NoError(t, err)
 
 	testCases := []struct {

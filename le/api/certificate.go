@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"io/ioutil"
 	"net/http"
 
@@ -13,6 +14,10 @@ const maxBodySize = 1024 * 1024
 type CertificateService service
 
 func (c *CertificateService) Get(certURL string) ([]byte, string, error) {
+	if len(certURL) == 0 {
+		return nil, "", errors.New("certificate[get]: empty URL")
+	}
+
 	resp, err := c.core.postAsGet(certURL, nil)
 	if err != nil {
 		return nil, "", err

@@ -19,6 +19,7 @@ var load = loader.EnvLoader{
 }
 
 func init() {
+	// FIXME remove
 	os.Setenv("LEGO_E2E_TESTS", "LEGO_E2E_TESTS")
 }
 

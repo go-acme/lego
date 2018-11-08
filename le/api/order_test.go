@@ -8,13 +8,11 @@ import (
 	"net/http"
 	"testing"
 
-	"gopkg.in/square/go-jose.v2"
-
 	"github.com/stretchr/testify/assert"
-
 	"github.com/stretchr/testify/require"
 	"github.com/xenolf/lego/le"
 	"github.com/xenolf/lego/platform/tester"
+	"gopkg.in/square/go-jose.v2"
 )
 
 func TestOrderService_New(t *testing.T) {
@@ -63,7 +61,7 @@ func TestOrderService_New(t *testing.T) {
 		w.Header().Add("Retry-After", "0")
 	})
 
-	core, err := New(http.DefaultClient, "lego-test", apiURL, "", privKey)
+	core, err := New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privKey)
 	require.NoError(t, err)
 
 	order, err := core.Orders.New([]string{"example.com"})

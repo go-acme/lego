@@ -91,7 +91,7 @@ func (c *Certifier) Obtain(domains []string, bundle bool, privKey crypto.Private
 	if err != nil {
 		// If any challenge fails, return. Do not generate partial SAN certificates.
 		for _, auth := range order.Authorizations {
-			errD := c.core.Authorizations.Disable(auth)
+			errD := c.core.Authorizations.Deactivate(auth)
 			if errD != nil {
 				log.Infof("unable to deactivated authorizations: %s", auth)
 			}
@@ -160,7 +160,7 @@ func (c *Certifier) ObtainForCSR(csr x509.CertificateRequest, bundle bool) (*Res
 	if err != nil {
 		// If any challenge fails, return. Do not generate partial SAN certificates.
 		for _, auth := range order.Authorizations {
-			errD := c.core.Authorizations.Disable(auth)
+			errD := c.core.Authorizations.Deactivate(auth)
 			if errD != nil {
 				log.Infof("unable to deactivated authorizations: %s", auth)
 			}

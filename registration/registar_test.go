@@ -46,7 +46,7 @@ func TestRegistrar_ResolveAccountByKey(t *testing.T) {
 		privatekey: key,
 	}
 
-	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/directory", "", key)
+	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", key)
 	require.NoError(t, err)
 
 	registrar := NewRegistrar(core, user)

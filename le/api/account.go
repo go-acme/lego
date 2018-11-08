@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/base64"
+	"errors"
 	"fmt"
 
 	"github.com/xenolf/lego/le"
@@ -41,6 +42,10 @@ func (a *AccountService) NewEAB(accMsg le.Account, kid string, hmacEncoded strin
 }
 
 func (a *AccountService) Get(accountURL string) (le.Account, error) {
+	if len(accountURL) == 0 {
+		return le.Account{}, errors.New("account[get]: empty URL")
+	}
+
 	var account le.Account
 	_, err := a.core.post(accountURL, le.Account{}, &account)
 	if err != nil {
@@ -50,6 +55,10 @@ func (a *AccountService) Get(accountURL string) (le.Account, error) {
 }
 
 func (a *AccountService) Deactivate(accountURL string) error {
+	if len(accountURL) == 0 {
+		return errors.New("account[deactivate]: empty URL")
+	}
+
 	req := le.Account{Status: le.StatusDeactivated}
 	_, err := a.core.post(accountURL, req, nil)
 	return err

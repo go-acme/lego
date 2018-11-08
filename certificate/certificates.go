@@ -371,37 +371,12 @@ func (c *Certifier) Renew(cert Resource, bundle, mustStaple bool) (*Resource, er
 func (c *Certifier) checkResponse(order le.Order, certRes *Resource, bundle bool) (bool, error) {
 	switch order.Status {
 	case le.StatusValid:
-		cert, up, err := c.core.Certificates.Get(order.Certificate)
+		cert, issuer, err := c.getCertificate(certRes.Domain, order, bundle)
 		if err != nil {
 			return false, err
 		}
 
-		// The issuer certificate link may be supplied via an "up" link
-		// in the response headers of a new certificate.
-		// See https://tools.ietf.org/html/draft-ietf-acme-acme-12#section-7.4.2
-		if len(up) > 0 {
-			issuerCert, err := c.getIssuerCertificateFromLink(up)
-			if err != nil {
-				// If we fail to acquire the issuer cert, return the issued certificate - do not fail.
-				log.Warnf("[%s] acme: Could not bundle issuer certificate: %v", certRes.Domain, err)
-			} else {
-				// If bundle is true, we want to return a certificate bundle.
-				// To do this, we append the issuer cert to the issued cert.
-				if bundle {
-					cert = append(cert, issuerCert...)
-				}
-
-				certRes.IssuerCertificate = issuerCert
-			}
-		} else {
-			// Get issuerCert from bundled response from Let's Encrypt
-			// See https://community.letsencrypt.org/t/acme-v2-no-up-link-in-response/64962
-			_, rest := pem.Decode(cert)
-			if rest != nil {
-				certRes.IssuerCertificate = rest
-			}
-		}
-
+		certRes.IssuerCertificate = issuer
 		certRes.Certificate = cert
 		certRes.CertURL = order.Certificate
 		certRes.CertStableURL = order.Certificate
@@ -415,11 +390,41 @@ func (c *Certifier) checkResponse(order le.Order, certRes *Resource, bundle bool
 	}
 }
 
-// getIssuerCertificateFromLink requests the issuer certificate
-func (c *Certifier) getIssuerCertificateFromLink(link string) ([]byte, error) {
-	log.Infof("acme: Requesting issuer cert from %s", link)
+func (c *Certifier) getCertificate(domain string, order le.Order, bundle bool) ([]byte, []byte, error) {
+	cert, up, err := c.core.Certificates.Get(order.Certificate)
+	if err != nil {
+		return nil, nil, err
+	}
 
-	cert, _, err := c.core.Certificates.Get(link)
+	// Get issuerCert from bundled response from Let's Encrypt
+	// See https://community.letsencrypt.org/t/acme-v2-no-up-link-in-response/64962
+	_, issuer := pem.Decode(cert)
+	if issuer == nil {
+		issuer, err = c.getIssuerFromLink(up)
+		if err != nil {
+			// If we fail to acquire the issuer cert, return the issued certificate - do not fail.
+			log.Warnf("[%s] acme: Could not bundle issuer certificate: %v", domain, err)
+		} else {
+			// If bundle is true, we want to return a certificate bundle.
+			// To do this, we append the issuer cert to the issued cert.
+			if bundle {
+				cert = append(cert, issuer...)
+			}
+		}
+	}
+
+	return cert, issuer, nil
+}
+
+// getIssuerFromLink requests the issuer certificate
+func (c *Certifier) getIssuerFromLink(up string) ([]byte, error) {
+	if len(up) == 0 {
+		return nil, nil
+	}
+
+	log.Infof("acme: Requesting issuer cert from %s", up)
+
+	cert, _, err := c.core.Certificates.Get(up)
 	if err != nil {
 		return nil, err
 	}

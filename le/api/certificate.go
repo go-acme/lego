@@ -17,7 +17,7 @@ const maxBodySize = 1024 * 1024
 
 type CertificateService service
 
-// GetNEW Returns the certificate and the issuer certificate.
+// Get Returns the certificate and the issuer certificate.
 // 'bundle' is only applied if the issuer is provided by the 'up' link.
 func (c *CertificateService) Get(certURL string, bundle bool) ([]byte, []byte, error) {
 	cert, up, err := c.get(certURL)

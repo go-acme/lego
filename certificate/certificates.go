@@ -60,12 +60,16 @@ func NewCertifier(core *api.Core, keyType certcrypto.KeyType, resolver resolver)
 }
 
 // Obtain tries to obtain a single certificate using all domains passed into it.
+//
 // The first domain in domains is used for the CommonName field of the certificate,
 // all other domains are added using the Subject Alternate Names extension.
+//
 // A new private key is generated for every invocation of this function.
 // If you do not want that you can supply your own private key in the privKey parameter.
 // If this parameter is non-nil it will be used instead of generating a new one.
+//
 // If bundle is true, the []byte contains both the issuer certificate and your issued certificate as a bundle.
+//
 // This function will never return a partial certificate.
 // If one domain in the list fails, the whole certificate will fail.
 func (c *Certifier) Obtain(domains []string, bundle bool, privKey crypto.PrivateKey, mustStaple bool) (*Resource, error) {
@@ -123,11 +127,14 @@ func (c *Certifier) Obtain(domains []string, bundle bool, privKey crypto.Private
 }
 
 // ObtainForCSR tries to obtain a certificate matching the CSR passed into it.
+//
 // The domains are inferred from the CommonName and SubjectAltNames, if any.
 // The private key for this CSR is not required.
+//
 // If bundle is true, the []byte contains both the issuer certificate and your issued certificate as a bundle.
-// This function will never return a partial certificate. If one domain in the list fails,
-// the whole certificate will fail.
+//
+// This function will never return a partial certificate.
+// If one domain in the list fails, the whole certificate will fail.
 func (c *Certifier) ObtainForCSR(csr x509.CertificateRequest, bundle bool) (*Resource, error) {
 	// figure out what domains it concerns
 	// start with the common name
@@ -305,11 +312,14 @@ func (c *Certifier) Revoke(cert []byte) error {
 }
 
 // Renew takes a Resource and tries to renew the certificate.
+//
 // If the renewal process succeeds, the new certificate will ge returned in a new CertResource.
 // Please be aware that this function will return a new certificate in ANY case that is not an error.
 // If the server does not provide us with a new cert on a GET request to the CertURL
 // this function will start a new-cert flow where a new certificate gets generated.
+//
 // If bundle is true, the []byte contains both the issuer certificate and your issued certificate as a bundle.
+//
 // For private key reuse the PrivateKey property of the passed in Resource should be non-nil.
 func (c *Certifier) Renew(cert Resource, bundle, mustStaple bool) (*Resource, error) {
 	// Input certificate is PEM encoded. Decode it here as we may need the decoded
@@ -367,9 +377,12 @@ func (c *Certifier) Renew(cert Resource, bundle, mustStaple bool) (*Resource, er
 }
 
 // checkResponse checks to see if the certificate is ready and a link is contained in the response.
+//
 // If so, loads it into certRes and returns true.
 // If the cert is not yet ready, it returns false.
+//
 // The certRes input should already have the Domain (common name) field populated.
+//
 // If bundle is true, the certificate will be bundled with the issuer's cert.
 func (c *Certifier) checkResponse(order le.Order, certRes *Resource, bundle bool) (bool, error) {
 	valid, err := checkOrderStatus(order)
@@ -405,9 +418,11 @@ func checkOrderStatus(order le.Order) (bool, error) {
 
 // GetOCSP takes a PEM encoded cert or cert bundle returning the raw OCSP response,
 // the parsed response, and an error, if any.
+//
 // The returned []byte can be passed directly into the OCSPStaple property of a tls.Certificate.
 // If the bundle only contains the issued certificate,
 // this function will try to get the issuer certificate from the IssuingCertificateURL in the certificate.
+//
 // If the []byte and/or ocsp.Response return values are nil, the OCSP status may be assumed OCSPUnknown.
 func (c *Certifier) GetOCSP(bundle []byte) ([]byte, *ocsp.Response, error) {
 	certificates, err := certcrypto.ParsePEMBundle(bundle)

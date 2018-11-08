@@ -237,7 +237,7 @@ func (c *Certifier) getForCSR(domains []string, order le.ExtendedOrder, bundle b
 	}
 
 	commonName := domains[0]
-	certRes := Resource{
+	certRes := &Resource{
 		Domain:     commonName,
 		CertURL:    respOrder.Certificate,
 		PrivateKey: privateKeyPem,
@@ -245,16 +245,20 @@ func (c *Certifier) getForCSR(domains []string, order le.ExtendedOrder, bundle b
 
 	if respOrder.Status == le.StatusValid {
 		// if the certificate is available right away, short cut!
-		ok, err := c.checkResponse(respOrder, &certRes, bundle)
+		ok, err := c.checkResponse(respOrder, certRes, bundle)
 		if err != nil {
 			return nil, err
 		}
 
 		if ok {
-			return &certRes, nil
+			return certRes, nil
 		}
 	}
 
+	return c.waitForCertificate(certRes, order.Location, bundle)
+}
+
+func (c *Certifier) waitForCertificate(certRes *Resource, orderURL string, bundle bool) (*Resource, error) {
 	stopTimer := time.NewTimer(30 * time.Second)
 	defer stopTimer.Stop()
 	retryTick := time.NewTicker(500 * time.Millisecond)
@@ -265,17 +269,17 @@ func (c *Certifier) getForCSR(domains []string, order le.ExtendedOrder, bundle b
 		case <-stopTimer.C:
 			return nil, errors.New("certificate polling timed out")
 		case <-retryTick.C:
-			order, err := c.core.Orders.Get(order.Location)
+			order, err := c.core.Orders.Get(orderURL)
 			if err != nil {
 				return nil, err
 			}
 
-			done, err := c.checkResponse(order, &certRes, bundle)
+			done, err := c.checkResponse(order, certRes, bundle)
 			if err != nil {
 				return nil, err
 			}
 			if done {
-				return &certRes, nil
+				return certRes, nil
 			}
 		}
 	}

@@ -98,15 +98,8 @@ func Test_checkResponse(t *testing.T) {
 	certifier := NewCertifier(core, certcrypto.RSA2048, &resolverMock{})
 
 	order := le.Order{
-		Status:         le.StatusValid,
-		Expires:        "",
-		Identifiers:    nil,
-		NotBefore:      "",
-		NotAfter:       "",
-		Error:          nil,
-		Authorizations: nil,
-		Finalize:       "",
-		Certificate:    apiURL + "/certificate",
+		Status:      le.StatusValid,
+		Certificate: apiURL + "/certificate",
 	}
 	certRes := &Resource{}
 	bundle := false
@@ -153,15 +146,8 @@ func Test_checkResponse_issuerRelUp(t *testing.T) {
 	certifier := NewCertifier(core, certcrypto.RSA2048, &resolverMock{})
 
 	order := le.Order{
-		Status:         le.StatusValid,
-		Expires:        "",
-		Identifiers:    nil,
-		NotBefore:      "",
-		NotAfter:       "",
-		Error:          nil,
-		Authorizations: nil,
-		Finalize:       "",
-		Certificate:    apiURL + "/certificate",
+		Status:      le.StatusValid,
+		Certificate: apiURL + "/certificate",
 	}
 	certRes := &Resource{}
 	bundle := false

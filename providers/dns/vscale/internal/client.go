@@ -1,4 +1,4 @@
-package vscale
+package internal
 
 import (
 	"bytes"

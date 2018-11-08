@@ -1,4 +1,4 @@
-// Package selectel implements a DNS provider for solving the DNS-01 challenge using Vscale Domains API.
+// Package vscale implements a DNS provider for solving the DNS-01 challenge using Vscale Domains API.
 // Vscale Domain API reference: https://developers.vscale.io/documentation/api/v1/#api-Domains
 // Token: https://vscale.io/panel/settings/tokens/
 package vscale

@@ -24,12 +24,15 @@ type Record struct {
 	Content string `json:"content,omitempty"` // Record content (not for SRV)
 }
 
-// Client represents DNS client.
-type Client struct {
-	baseURL    string
-	token      string
-	userAgent  string
-	httpClient *http.Client
+// APIError API error message
+type APIError struct {
+	Description string `json:"error"`
+	Code        int    `json:"code"`
+	Field       string `json:"field"`
+}
+
+func (a *APIError) Error() string {
+	return fmt.Sprintf("API error: %d - %s - %s", a.Code, a.Description, a.Field)
 }
 
 // ClientOpts represents options to init client.
@@ -40,15 +43,12 @@ type ClientOpts struct {
 	HTTPClient *http.Client
 }
 
-// APIError API error message
-type APIError struct {
-	Description string `json:"error"`
-	Code        int    `json:"code"`
-	Field       string `json:"field"`
-}
-
-func (a *APIError) Error() string {
-	return fmt.Sprintf("API error: %d - %s - %s", a.Code, a.Description, a.Field)
+// Client represents DNS client.
+type Client struct {
+	baseURL    string
+	token      string
+	userAgent  string
+	httpClient *http.Client
 }
 
 // NewClient returns a client instance.
@@ -161,8 +161,8 @@ func (c *Client) do(req *http.Request, to interface{}) (*http.Response, error) {
 	}
 
 	if to != nil {
-		if err = extractResult(resp, to); err != nil {
-			return resp, fmt.Errorf("failed to extract request body into interface with error: %v", err)
+		if err = unmarshalBody(resp, to); err != nil {
+			return resp, err
 		}
 	}
 
@@ -195,12 +195,17 @@ func checkResponse(resp *http.Response) error {
 	return nil
 }
 
-func extractResult(resp *http.Response, to interface{}) error {
+func unmarshalBody(resp *http.Response, to interface{}) error {
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
 
-	return json.Unmarshal(body, to)
+	err = json.Unmarshal(body, to)
+	if err != nil {
+		return fmt.Errorf("unmarshaling error: %v: %s", err, string(body))
+	}
+
+	return nil
 }

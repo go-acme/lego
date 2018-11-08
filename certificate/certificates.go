@@ -292,6 +292,35 @@ func (c *Certifier) waitForCertificate(certRes *Resource, orderURL string, bundl
 	}
 }
 
+// checkResponse checks to see if the certificate is ready and a link is contained in the response.
+//
+// If so, loads it into certRes and returns true.
+// If the cert is not yet ready, it returns false.
+//
+// The certRes input should already have the Domain (common name) field populated.
+//
+// If bundle is true, the certificate will be bundled with the issuer's cert.
+func (c *Certifier) checkResponse(order le.Order, certRes *Resource, bundle bool) (bool, error) {
+	valid, err := checkOrderStatus(order)
+	if err != nil || !valid {
+		return valid, err
+	}
+
+	cert, issuer, err := c.core.Certificates.Get(order.Certificate, bundle)
+	if err != nil {
+		return false, err
+	}
+
+	log.Infof("[%s] Server responded with a certificate.", certRes.Domain)
+
+	certRes.IssuerCertificate = issuer
+	certRes.Certificate = cert
+	certRes.CertURL = order.Certificate
+	certRes.CertStableURL = order.Certificate
+
+	return true, nil
+}
+
 // Revoke takes a PEM encoded certificate or bundle and tries to revoke it at the CA.
 func (c *Certifier) Revoke(cert []byte) error {
 	certificates, err := certcrypto.ParsePEMBundle(cert)
@@ -376,46 +405,6 @@ func (c *Certifier) Renew(cert Resource, bundle, mustStaple bool) (*Resource, er
 	return c.Obtain(domains, bundle, privKey, mustStaple)
 }
 
-// checkResponse checks to see if the certificate is ready and a link is contained in the response.
-//
-// If so, loads it into certRes and returns true.
-// If the cert is not yet ready, it returns false.
-//
-// The certRes input should already have the Domain (common name) field populated.
-//
-// If bundle is true, the certificate will be bundled with the issuer's cert.
-func (c *Certifier) checkResponse(order le.Order, certRes *Resource, bundle bool) (bool, error) {
-	valid, err := checkOrderStatus(order)
-	if err != nil || !valid {
-		return valid, err
-	}
-
-	cert, issuer, err := c.core.Certificates.Get(order.Certificate, bundle)
-	if err != nil {
-		return false, err
-	}
-
-	log.Infof("[%s] Server responded with a certificate.", certRes.Domain)
-
-	certRes.IssuerCertificate = issuer
-	certRes.Certificate = cert
-	certRes.CertURL = order.Certificate
-	certRes.CertStableURL = order.Certificate
-
-	return true, nil
-}
-
-func checkOrderStatus(order le.Order) (bool, error) {
-	switch order.Status {
-	case le.StatusValid:
-		return true, nil
-	case le.StatusInvalid:
-		return false, order.Error
-	default:
-		return false, nil
-	}
-}
-
 // GetOCSP takes a PEM encoded cert or cert bundle returning the raw OCSP response,
 // the parsed response, and an error, if any.
 //
@@ -494,6 +483,17 @@ func (c *Certifier) GetOCSP(bundle []byte) ([]byte, *ocsp.Response, error) {
 	}
 
 	return ocspResBytes, ocspRes, nil
+}
+
+func checkOrderStatus(order le.Order) (bool, error) {
+	switch order.Status {
+	case le.StatusValid:
+		return true, nil
+	case le.StatusInvalid:
+		return false, order.Error
+	default:
+		return false, nil
+	}
 }
 
 // https://tools.ietf.org/html/draft-ietf-acme-acme-16#section-7.1.4

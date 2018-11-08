@@ -22,9 +22,6 @@ type SolverManager struct {
 }
 
 func NewSolversManager(core *api.Core) *SolverManager {
-	// REVIEW: best possibility?
-	// Add all available solvers with the right index as per ACME spec to this map.
-	// Otherwise they won't be found.
 	solvers := map[challenge.Type]solver{
 		challenge.HTTP01:    http01.NewChallenge(core, validate, &http01.ProviderServer{}),
 		challenge.TLSALPN01: tlsalpn01.NewChallenge(core, validate, &tlsalpn01.ProviderServer{}),

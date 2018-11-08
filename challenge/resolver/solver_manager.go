@@ -161,9 +161,7 @@ func checkChallengeStatus(chlng le.ExtendedChallenge) (bool, error) {
 	switch chlng.Status {
 	case le.StatusValid:
 		return true, nil
-	case le.StatusPending:
-		return false, nil
-	case le.StatusProcessing:
+	case le.StatusPending, le.StatusProcessing:
 		return false, nil
 	case le.StatusInvalid:
 		return false, chlng.Error
@@ -176,15 +174,9 @@ func checkAuthorizationStatus(authz le.Authorization) (bool, error) {
 	switch authz.Status {
 	case le.StatusValid:
 		return true, nil
-	case le.StatusPending:
+	case le.StatusPending, le.StatusProcessing:
 		return false, nil
-	case le.StatusProcessing:
-		return false, nil
-	case le.StatusDeactivated:
-		return false, fmt.Errorf("the authorization state %s", authz.Status)
-	case le.StatusExpired:
-		return false, fmt.Errorf("the authorization state %s", authz.Status)
-	case le.StatusRevoked:
+	case le.StatusDeactivated, le.StatusExpired, le.StatusRevoked:
 		return false, fmt.Errorf("the authorization state %s", authz.Status)
 	case le.StatusInvalid:
 		for _, chlg := range authz.Challenges {

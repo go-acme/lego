@@ -34,7 +34,6 @@ type Resource struct {
 	Domain            string `json:"domain"`
 	CertURL           string `json:"certUrl"`
 	CertStableURL     string `json:"certStableUrl"`
-	AccountRef        string `json:"accountRef,omitempty"`
 	PrivateKey        []byte `json:"-"`
 	Certificate       []byte `json:"-"`
 	IssuerCertificate []byte `json:"-"`

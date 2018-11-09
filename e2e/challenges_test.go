@@ -1,11 +1,19 @@
 package e2e
 
 import (
+	"crypto"
+	"crypto/rand"
+	"crypto/rsa"
 	"fmt"
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/challenge"
 	"github.com/xenolf/lego/e2e/loader"
+	"github.com/xenolf/lego/registration"
 )
 
 var load = loader.EnvLoader{
@@ -16,11 +24,6 @@ var load = loader.EnvLoader{
 	LegoOptions: []string{
 		"LEGO_CA_CERTIFICATES=./fixtures/certs/pebble.minica.pem",
 	},
-}
-
-func init() {
-	// FIXME remove
-	os.Setenv("LEGO_E2E_TESTS", "LEGO_E2E_TESTS")
 }
 
 func TestMain(m *testing.M) {
@@ -42,7 +45,7 @@ func TestChallengeHTTP(t *testing.T) {
 
 	output, err := load.RunLego(
 		"-m", "hubert@hubert.com",
-		"-a",
+		"--accept-tos",
 		"-x", "dns-01",
 		"-x", "tls-alpn-01",
 		"-s", "https://localhost:14000/dir",
@@ -64,7 +67,7 @@ func TestChallengeTLS(t *testing.T) {
 
 	output, err := load.RunLego(
 		"-m", "hubert@hubert.com",
-		"-a",
+		"--accept-tos",
 		"-x", "dns-01",
 		"-x", "http-01",
 		"-s", "https://localhost:14000/dir",
@@ -80,3 +83,81 @@ func TestChallengeTLS(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestChallengeHTTP_Client(t *testing.T) {
+	os.Setenv("LEGO_CA_CERTIFICATES", "./fixtures/certs/pebble.minica.pem")
+	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
+
+	privKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err, "Could not generate test key")
+
+	user := &fakeUser{privateKey: privKey}
+	config := acme.NewDefaultConfig(user).
+		WithCADirURL("https://localhost:14000/dir")
+	client, err := acme.NewClient(config)
+	require.NoError(t, err)
+
+	client.Challenge.Exclude([]challenge.Type{challenge.DNS01, challenge.TLSALPN01})
+	client.Challenge.SetHTTP01Address(":5002")
+
+	reg, err := client.Registration.Register(true)
+	require.NoError(t, err)
+	user.registration = reg
+
+	domains := []string{"acme.wtf"}
+
+	resource, err := client.Certificate.Obtain(domains, true, privKey, false)
+	require.NoError(t, err)
+
+	require.NotNil(t, resource)
+	assert.Equal(t, "acme.wtf", resource.Domain)
+	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{16}`, resource.CertURL)
+	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{16}`, resource.CertStableURL)
+	assert.NotEmpty(t, resource.Certificate)
+	assert.NotEmpty(t, resource.IssuerCertificate)
+	assert.Empty(t, resource.CSR)
+}
+
+func TestChallengeTLS_Client(t *testing.T) {
+	os.Setenv("LEGO_CA_CERTIFICATES", "./fixtures/certs/pebble.minica.pem")
+	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
+
+	privKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err, "Could not generate test key")
+
+	user := &fakeUser{privateKey: privKey}
+	config := acme.NewDefaultConfig(user).
+		WithCADirURL("https://localhost:14000/dir")
+	client, err := acme.NewClient(config)
+	require.NoError(t, err)
+
+	client.Challenge.Exclude([]challenge.Type{challenge.DNS01, challenge.HTTP01})
+	client.Challenge.SetTLSALPN01Address(":5001")
+
+	reg, err := client.Registration.Register(true)
+	require.NoError(t, err)
+	user.registration = reg
+
+	domains := []string{"acme.wtf"}
+
+	resource, err := client.Certificate.Obtain(domains, true, privKey, false)
+	require.NoError(t, err)
+
+	require.NotNil(t, resource)
+	assert.Equal(t, "acme.wtf", resource.Domain)
+	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{16}`, resource.CertURL)
+	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{16}`, resource.CertStableURL)
+	assert.NotEmpty(t, resource.Certificate)
+	assert.NotEmpty(t, resource.IssuerCertificate)
+	assert.Empty(t, resource.CSR)
+}
+
+type fakeUser struct {
+	email        string
+	privateKey   crypto.PrivateKey
+	registration *registration.Resource
+}
+
+func (f *fakeUser) GetEmail() string                        { return f.email }
+func (f *fakeUser) GetRegistration() *registration.Resource { return f.registration }
+func (f *fakeUser) GetPrivateKey() crypto.PrivateKey        { return f.privateKey }

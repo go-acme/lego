@@ -1,11 +1,21 @@
 package dnschallenge
 
 import (
+	"crypto"
+	"crypto/rand"
+	"crypto/rsa"
 	"fmt"
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/challenge"
+	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/e2e/loader"
+	"github.com/xenolf/lego/providers/dns"
+	"github.com/xenolf/lego/registration"
 )
 
 var load = loader.EnvLoader{
@@ -42,15 +52,15 @@ func TestChallengeDNS(t *testing.T) {
 
 	output, err := load.RunLego(
 		"-m", "hubert@hubert.com",
-		"-a",
+		"--accept-tos",
 		"-x", "http-01",
 		"-x", "tls-alpn-01",
 		"--disable-cp",
 		"--dns-resolvers", ":8053",
 		"--dns", "exec",
 		"-s", "https://localhost:15000/dir",
-		"-d", "*.lego.acme",
-		"-d", "lego.acme",
+		"-d", "*.légo.acme",
+		"-d", "légo.acme",
 		"--http", ":5004",
 		"--tls", ":5003",
 		"run")
@@ -62,3 +72,54 @@ func TestChallengeDNS(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestChallengeDNS_Client(t *testing.T) {
+	os.Setenv("LEGO_CA_CERTIFICATES", "../fixtures/certs/pebble.minica.pem")
+	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
+
+	os.Setenv("EXEC_PATH", "../fixtures/update-dns.sh")
+	defer func() { _ = os.Unsetenv("EXEC_PATH") }()
+
+	privKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err, "Could not generate test key")
+
+	user := &fakeUser{privateKey: privKey}
+	config := acme.NewDefaultConfig(user).
+		WithCADirURL("https://localhost:15000/dir")
+	client, err := acme.NewClient(config)
+	require.NoError(t, err)
+
+	provider, err := dns.NewDNSChallengeProviderByName("exec")
+	require.NoError(t, err)
+	client.Challenge.SetDNS01Provider(provider,
+		dns01.AddRecursiveNameservers([]string{":8053"}),
+		dns01.DisableCompletePropagationRequirement())
+	client.Challenge.Exclude([]challenge.Type{challenge.HTTP01, challenge.TLSALPN01})
+
+	reg, err := client.Registration.Register(true)
+	require.NoError(t, err)
+	user.registration = reg
+
+	domains := []string{"*.légo.acme", "légo.acme"}
+
+	resource, err := client.Certificate.Obtain(domains, true, privKey, false)
+	require.NoError(t, err)
+
+	require.NotNil(t, resource)
+	assert.Equal(t, "*.xn--lgo-bma.acme", resource.Domain)
+	assert.Regexp(t, `https://localhost:15000/certZ/[\w\d]{16}`, resource.CertURL)
+	assert.Regexp(t, `https://localhost:15000/certZ/[\w\d]{16}`, resource.CertStableURL)
+	assert.NotEmpty(t, resource.Certificate)
+	assert.NotEmpty(t, resource.IssuerCertificate)
+	assert.Empty(t, resource.CSR)
+}
+
+type fakeUser struct {
+	email        string
+	privateKey   crypto.PrivateKey
+	registration *registration.Resource
+}
+
+func (f *fakeUser) GetEmail() string                        { return f.email }
+func (f *fakeUser) GetRegistration() *registration.Resource { return f.registration }
+func (f *fakeUser) GetPrivateKey() crypto.PrivateKey        { return f.privateKey }

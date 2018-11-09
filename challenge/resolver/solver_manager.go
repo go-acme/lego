@@ -123,7 +123,7 @@ func (c *SolverManager) chooseSolver(auth le.Authorization) (int, solver) {
 func validate(core *api.Core, domain, uri string, _ le.Challenge) error {
 	chlng, err := core.Challenges.New(uri)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to initiate challenge: %v", err)
 	}
 
 	valid, err := checkChallengeStatus(chlng)

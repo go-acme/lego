@@ -350,39 +350,38 @@ func (c *Certifier) Revoke(cert []byte) error {
 // If bundle is true, the []byte contains both the issuer certificate and your issued certificate as a bundle.
 //
 // For private key reuse the PrivateKey property of the passed in Resource should be non-nil.
-func (c *Certifier) Renew(cert Resource, bundle, mustStaple bool) (*Resource, error) {
+func (c *Certifier) Renew(certRes Resource, bundle, mustStaple bool) (*Resource, error) {
 	// Input certificate is PEM encoded. Decode it here as we may need the decoded
 	// cert later on in the renewal process. The input may be a bundle or a single certificate.
-	certificates, err := certcrypto.ParsePEMBundle(cert.Certificate)
+	certificates, err := certcrypto.ParsePEMBundle(certRes.Certificate)
 	if err != nil {
 		return nil, err
 	}
 
 	x509Cert := certificates[0]
 	if x509Cert.IsCA {
-		return nil, fmt.Errorf("[%s] Certificate bundle starts with a CA certificate", cert.Domain)
+		return nil, fmt.Errorf("[%s] Certificate bundle starts with a CA certificate", certRes.Domain)
 	}
 
 	// This is just meant to be informal for the user.
 	timeLeft := x509Cert.NotAfter.Sub(time.Now().UTC())
-	log.Infof("[%s] acme: Trying renewal with %d hours remaining", cert.Domain, int(timeLeft.Hours()))
+	log.Infof("[%s] acme: Trying renewal with %d hours remaining", certRes.Domain, int(timeLeft.Hours()))
 
 	// We always need to request a new certificate to renew.
 	// Start by checking to see if the certificate was based off a CSR,
 	// and use that if it's defined.
-	if len(cert.CSR) > 0 {
-		csr, errP := certcrypto.PemDecodeTox509CSR(cert.CSR)
+	if len(certRes.CSR) > 0 {
+		csr, errP := certcrypto.PemDecodeTox509CSR(certRes.CSR)
 		if errP != nil {
 			return nil, errP
 		}
 
-		newCert, failures := c.ObtainForCSR(*csr, bundle)
-		return newCert, failures
+		return c.ObtainForCSR(*csr, bundle)
 	}
 
 	var privKey crypto.PrivateKey
-	if cert.PrivateKey != nil {
-		privKey, err = certcrypto.ParsePEMPrivateKey(cert.PrivateKey)
+	if certRes.PrivateKey != nil {
+		privKey, err = certcrypto.ParsePEMPrivateKey(certRes.PrivateKey)
 		if err != nil {
 			return nil, err
 		}

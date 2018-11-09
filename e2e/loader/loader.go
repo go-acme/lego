@@ -50,16 +50,20 @@ func (l *EnvLoader) MainTest(m *testing.M) int {
 		return 0
 	}
 
-	if _, err := exec.LookPath(cmdNamePebble); err != nil {
-		fmt.Fprintln(os.Stderr, "skipping because pebble binary not found")
-		fmt.Println("PASS")
-		return 0
+	if l.PebbleOptions != nil {
+		if _, err := exec.LookPath(cmdNamePebble); err != nil {
+			fmt.Fprintln(os.Stderr, "skipping because pebble binary not found")
+			fmt.Println("PASS")
+			return 0
+		}
 	}
 
-	if _, err := exec.LookPath(cmdNameChallSrv); err != nil {
-		fmt.Fprintln(os.Stderr, "skipping because challtestsrv binary not found")
-		fmt.Println("PASS")
-		return 0
+	if l.ChallSrv != nil {
+		if _, err := exec.LookPath(cmdNameChallSrv); err != nil {
+			fmt.Fprintln(os.Stderr, "skipping because challtestsrv binary not found")
+			fmt.Println("PASS")
+			return 0
+		}
 	}
 
 	pebbleTearDown := func() {}
@@ -104,19 +108,22 @@ func (l *EnvLoader) MainTest(m *testing.M) int {
 
 	l.lego = legoBinary
 
-	client := &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}}
-	wait.For(10*time.Second, 500*time.Millisecond, func() (bool, error) {
-		resp, err := client.Get("https://localhost:14000/dir")
-		if err != nil {
-			return false, err
-		}
+	if l.PebbleOptions != nil {
+		client := &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}}
+		wait.For(10*time.Second, 500*time.Millisecond, func() (bool, error) {
+			// FIXME port
+			resp, err := client.Get("https://localhost:14000/dir")
+			if err != nil {
+				return false, err
+			}
 
-		if resp.StatusCode != http.StatusOK {
-			return false, nil
-		}
+			if resp.StatusCode != http.StatusOK {
+				return false, nil
+			}
 
-		return true, nil
-	})
+			return true, nil
+		})
+	}
 
 	return m.Run()
 }
@@ -133,7 +140,12 @@ func (l *EnvLoader) RunLego(arg ...string) ([]byte, error) {
 func (l *EnvLoader) cmdPebble() (*exec.Cmd, *bytes.Buffer) {
 	cmd := exec.Command(cmdNamePebble, l.PebbleOptions.Args...)
 	cmd.Env = l.PebbleOptions.Env
-	cmd.Dir, _ = filepath.Abs(l.PebbleOptions.Dir)
+
+	dir, err := filepath.Abs(l.PebbleOptions.Dir)
+	if err != nil {
+		panic(err)
+	}
+	cmd.Dir = dir
 
 	fmt.Printf("$ %s\n", strings.Join(cmd.Args, " "))
 

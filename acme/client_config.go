@@ -26,6 +26,9 @@ const (
 	// authenticate an ACME server with a HTTPS certificate not issued by a CA in
 	// the system-wide trusted root list.
 	caServerNameEnvVar = "LEGO_CA_SERVER_NAME"
+
+	// LEDirectoryProduction URL to the Let's Encrypt production
+	LEDirectoryProduction = "https://acme-v02.api.letsencrypt.org/directory"
 )
 
 type Config struct {
@@ -38,7 +41,7 @@ type Config struct {
 
 func NewDefaultConfig(user registration.User) *Config {
 	return &Config{
-		caDirURL:   "https://acme-v02.api.letsencrypt.org/directory",
+		caDirURL:   LEDirectoryProduction,
 		user:       user,
 		keyType:    certcrypto.RSA2048,
 		HTTPClient: createDefaultHTTPClient(),

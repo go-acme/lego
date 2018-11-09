@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"sort"
 	"strconv"
 	"time"
 
@@ -15,6 +16,12 @@ import (
 	"github.com/xenolf/lego/le/api"
 	"github.com/xenolf/lego/log"
 )
+
+type byType []le.Challenge
+
+func (a byType) Len() int           { return len(a) }
+func (a byType) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a byType) Less(i, j int) bool { return a[i].Type < a[j].Type }
 
 type SolverManager struct {
 	core    *api.Core
@@ -99,12 +106,17 @@ func (c *SolverManager) Exclude(challenges []challenge.Type) {
 
 // Checks all challenges from the server in order and returns the first matching solver.
 func (c *SolverManager) chooseSolver(auth le.Authorization) (int, solver) {
+	// Allow to have a deterministic challenge order
+	sort.Sort(sort.Reverse(byType(auth.Challenges)))
+
 	for i, chlg := range auth.Challenges {
 		if solvr, ok := c.solvers[challenge.Type(chlg.Type)]; ok {
+			log.Infof("[%s] (wildcard: %v) acme: use %s solver", auth.Identifier.Value, auth.Wildcard, chlg.Type)
 			return i, solvr
 		}
-		log.Infof("[%s] acme: Could not find solver for: %s", auth.Identifier.Value, chlg.Type)
+		log.Infof("[%s] (wildcard: %v) acme: Could not find solver for: %s", auth.Identifier.Value, auth.Wildcard, chlg.Type)
 	}
+
 	return 0, nil
 }
 

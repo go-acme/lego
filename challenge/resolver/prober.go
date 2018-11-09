@@ -52,7 +52,7 @@ func (p *Prober) Solve(authorizations []le.Authorization) error {
 	for _, authz := range authorizations {
 		if authz.Status == le.StatusValid {
 			// Boulder might recycle recent validated authz (see issue #267)
-			log.Infof("[%s] acme: authorization already valid; skipping challenge", authz.Identifier.Value)
+			log.Infof("[%s] (wildcard: %v) acme: authorization already valid; skipping challenge", authz.Identifier.Value, authz.Wildcard)
 			continue
 		}
 
@@ -63,7 +63,7 @@ func (p *Prober) Solve(authorizations []le.Authorization) error {
 				solver:         solvr,
 			})
 		} else {
-			failures[authz.Identifier.Value] = fmt.Errorf("[%s] acme: could not determine solvers", authz.Identifier.Value)
+			failures[authz.Identifier.Value] = fmt.Errorf("[%s] (wildcard: %v) acme: could not determine solvers", authz.Identifier.Value, authz.Wildcard)
 		}
 	}
 
@@ -89,7 +89,7 @@ func (p *Prober) Solve(authorizations []le.Authorization) error {
 
 				err := solvr.CleanUp(authSolver.authz.Challenges[authSolver.challengeIndex], authSolver.authz.Identifier.Value)
 				if err != nil {
-					log.Warnf("Error cleaning up %s: %v ", authSolver.authz.Identifier.Value, err)
+					log.Warnf("[%s] (wildcard: %v) acme: error cleaning up: %v ", authSolver.authz.Identifier.Value, authSolver.authz.Wildcard, err)
 				}
 			}
 		}

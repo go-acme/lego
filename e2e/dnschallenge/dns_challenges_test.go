@@ -49,6 +49,7 @@ func TestChallengeDNS(t *testing.T) {
 		"--dns-resolvers", ":8053",
 		"--dns", "exec",
 		"-s", "https://localhost:15000/dir",
+		"-d", "*.lego.acme",
 		"-d", "lego.acme",
 		"--http", ":5004",
 		"--tls", ":5003",

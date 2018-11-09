@@ -17,8 +17,13 @@ import (
 func (d *DNSProvider) updateTxtRecord(domain, token, txt string, clear bool) error {
 	u, _ := url.Parse("https://www.duckdns.org/update")
 
+	mainDomain := getMainDomain(domain)
+	if len(mainDomain) == 0 {
+		return fmt.Errorf("unable to find the main domain for: %s", domain)
+	}
+
 	query := u.Query()
-	query.Set("domains", getMainDomain(domain))
+	query.Set("domains", mainDomain)
 	query.Set("token", token)
 	query.Set("clear", strconv.FormatBool(clear))
 	query.Set("txt", txt)

@@ -165,6 +165,7 @@ func setupDNS(client *acme.Client, c *cli.Context) {
 		log.Fatal(err)
 	}
 
+	// FIXME Why?
 	// --dns=foo indicates that the user specifically want to do a DNS challenge
 	// infer that the user also wants to exclude all other challenges
 	client.Challenge.Exclude([]challenge.Type{challenge.HTTP01, challenge.TLSALPN01})

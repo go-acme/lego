@@ -123,7 +123,7 @@ func (s *Challenge) Solve(chlng le.Challenge, domain string) error {
 		return err
 	}
 
-	return s.validate(s.core, domain, chlng.URL, le.Challenge{Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
+	return s.validate(s.core, domain, chlng.URL, chlng)
 }
 
 // CleanUp cleans the challenge.

@@ -2,6 +2,7 @@ package resolver
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/xenolf/lego/challenge"
 	"github.com/xenolf/lego/le"
@@ -22,6 +23,10 @@ type preSolver interface {
 // Interface for challenges like dns, where we can solve all the challenges before to delete them.
 type cleanup interface {
 	CleanUp(authorization le.Authorization) error
+}
+
+type sequential interface {
+	Sequential() (bool, time.Duration)
 }
 
 // an authz with the solver we have chosen and the index of the challenge associated with it
@@ -46,6 +51,7 @@ func (p *Prober) Solve(authorizations []le.Authorization) error {
 	failures := make(obtainError)
 
 	var authSolvers []*selectedAuthSolver
+	var authSolversSequential []*selectedAuthSolver
 
 	// Loop through the resources, basically through the domains.
 	// First pass just selects a solver for each authz.
@@ -58,15 +64,70 @@ func (p *Prober) Solve(authorizations []le.Authorization) error {
 		}
 
 		if solvr := p.solverManager.chooseSolver(authz); solvr != nil {
-			authSolvers = append(authSolvers, &selectedAuthSolver{
-				authz:  authz,
-				solver: solvr,
-			})
+			authSolver := &selectedAuthSolver{authz: authz, solver: solvr}
+
+			switch s := solvr.(type) {
+			case sequential:
+				if ok, _ := s.Sequential(); ok {
+					authSolversSequential = append(authSolversSequential, authSolver)
+				} else {
+					authSolvers = append(authSolvers, authSolver)
+				}
+			default:
+				authSolvers = append(authSolvers, authSolver)
+			}
 		} else {
 			failures[domain] = fmt.Errorf("[%s] acme: could not determine solvers", domain)
 		}
 	}
 
+	parallelSolve(authSolvers, failures)
+
+	sequentialSolve(authSolversSequential, failures)
+
+	// Be careful not to return an empty failures map,
+	// for even an empty obtainError is a non-nil error value
+	if len(failures) > 0 {
+		return failures
+	}
+	return nil
+}
+
+func sequentialSolve(authSolvers []*selectedAuthSolver, failures obtainError) {
+	for i, authSolver := range authSolvers {
+		// Submit the challenge
+		domain := challenge.GetTargetedDomain(authSolver.authz)
+
+		if solvr, ok := authSolver.solver.(preSolver); ok {
+			err := solvr.PreSolve(authSolver.authz)
+			if err != nil {
+				failures[domain] = err
+				cleanUp(authSolver.solver, authSolver.authz)
+				continue
+			}
+		}
+
+		// Solve challenge
+		err := authSolver.solver.Solve(authSolver.authz)
+		if err != nil {
+			failures[authSolver.authz.Identifier.Value] = err
+			cleanUp(authSolver.solver, authSolver.authz)
+			continue
+		}
+
+		// Clean challenge
+		cleanUp(authSolver.solver, authSolver.authz)
+
+		if len(authSolvers)-1 > i {
+			solvr := authSolver.solver.(sequential)
+			_, interval := solvr.Sequential()
+			log.Infof("sequence: wait for %s", interval)
+			time.Sleep(interval)
+		}
+	}
+}
+
+func parallelSolve(authSolvers []*selectedAuthSolver, failures obtainError) {
 	// For all valid preSolvers, first submit the challenges so they have max time to propagate
 	for _, authSolver := range authSolvers {
 		authz := authSolver.authz
@@ -81,13 +142,7 @@ func (p *Prober) Solve(authorizations []le.Authorization) error {
 	defer func() {
 		// Clean all created TXT records
 		for _, authSolver := range authSolvers {
-			if solvr, ok := authSolver.solver.(cleanup); ok {
-				domain := challenge.GetTargetedDomain(authSolver.authz)
-				err := solvr.CleanUp(authSolver.authz)
-				if err != nil {
-					log.Warnf("[%s] acme: error cleaning up: %v ", domain, err)
-				}
-			}
+			cleanUp(authSolver.solver, authSolver.authz)
 		}
 	}()
 
@@ -104,11 +159,14 @@ func (p *Prober) Solve(authorizations []le.Authorization) error {
 			failures[authz.Identifier.Value] = err
 		}
 	}
+}
 
-	// Be careful not to return an empty failures map,
-	// for even an empty obtainError is a non-nil error value
-	if len(failures) > 0 {
-		return failures
+func cleanUp(solvr solver, authz le.Authorization) {
+	if solvr, ok := solvr.(cleanup); ok {
+		domain := challenge.GetTargetedDomain(authz)
+		err := solvr.CleanUp(authz)
+		if err != nil {
+			log.Warnf("[%s] acme: error cleaning up: %v ", domain, err)
+		}
 	}
-	return nil
 }

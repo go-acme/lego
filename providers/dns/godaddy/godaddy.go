@@ -24,6 +24,7 @@ type Config struct {
 	APISecret          string
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
+	SequenceInterval   time.Duration
 	TTL                int
 	HTTPClient         *http.Client
 }
@@ -34,6 +35,7 @@ func NewDefaultConfig() *Config {
 		TTL:                env.GetOrDefaultInt("GODADDY_TTL", minTTL),
 		PropagationTimeout: env.GetOrDefaultSecond("GODADDY_PROPAGATION_TIMEOUT", 120*time.Second),
 		PollingInterval:    env.GetOrDefaultSecond("GODADDY_POLLING_INTERVAL", 2*time.Second),
+		SequenceInterval:   env.GetOrDefaultSecond("GODADDY_SEQUENCE_INTERVAL", dns01.DefaultPropagationTimeout),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond("GODADDY_HTTP_TIMEOUT", 30*time.Second),
 		},
@@ -123,6 +125,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	return d.updateRecords(rec, domainZone, recordName)
+}
+
+// Sequential All DNS challenges for this provider will be resolved sequentially.
+// Returns the interval between each iteration.
+func (d *DNSProvider) Sequential() time.Duration {
+	return d.config.SequenceInterval
 }
 
 func (d *DNSProvider) extractRecordName(fqdn, domain string) string {

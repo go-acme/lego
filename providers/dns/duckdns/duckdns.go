@@ -17,6 +17,7 @@ type Config struct {
 	Token              string
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
+	SequenceInterval   time.Duration
 	HTTPClient         *http.Client
 }
 
@@ -25,6 +26,7 @@ func NewDefaultConfig() *Config {
 	return &Config{
 		PropagationTimeout: env.GetOrDefaultSecond("DUCKDNS_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond("DUCKDNS_POLLING_INTERVAL", dns01.DefaultPollingInterval),
+		SequenceInterval:   env.GetOrDefaultSecond("DUCKDNS_SEQUENCE_INTERVAL", dns01.DefaultPropagationTimeout),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond("DUCKDNS_HTTP_TIMEOUT", 30*time.Second),
 		},
@@ -78,4 +80,10 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
+}
+
+// Sequential All DNS challenges for this provider will be resolved sequentially.
+// Returns the interval between each iteration.
+func (d *DNSProvider) Sequential() time.Duration {
+	return d.config.SequenceInterval
 }

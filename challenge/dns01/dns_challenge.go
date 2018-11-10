@@ -153,6 +153,17 @@ func (c *Challenge) CleanUp(authz le.Authorization) error {
 	return c.provider.CleanUp(authz.Identifier.Value, chlng.Token, keyAuth)
 }
 
+func (c *Challenge) Sequential() (bool, time.Duration) {
+	if p, ok := c.provider.(sequential); ok {
+		return ok, p.Sequential()
+	}
+	return false, 0
+}
+
+type sequential interface {
+	Sequential() time.Duration
+}
+
 // GetRecord returns a DNS record which will fulfill the `dns-01` challenge
 func GetRecord(domain, keyAuth string) (fqdn string, value string) {
 	keyAuthShaBytes := sha256.Sum256([]byte(keyAuth))

@@ -55,7 +55,7 @@ func TestChallengeDNS(t *testing.T) {
 		"--accept-tos",
 		"-x", "http-01",
 		"-x", "tls-alpn-01",
-		"--disable-cp",
+		"--dns-disable-cp",
 		"--dns-resolvers", ":8053",
 		"--dns", "exec",
 		"-s", "https://localhost:15000/dir",

@@ -111,8 +111,6 @@ func (c *Challenge) Solve(authz le.Authorization) error {
 		return err
 	}
 
-	log.Infof("[%s] acme: Checking DNS record propagation using %+v", domain, recursiveNameservers)
-
 	fqdn, value := GetRecord(authz.Identifier.Value, keyAuth)
 
 	var timeout, interval time.Duration
@@ -122,6 +120,8 @@ func (c *Challenge) Solve(authz le.Authorization) error {
 	default:
 		timeout, interval = DefaultPropagationTimeout, DefaultPollingInterval
 	}
+
+	log.Infof("[%s] acme: Checking DNS record propagation using %+v", domain, recursiveNameservers)
 
 	err = wait.For(timeout, interval, func() (bool, error) {
 		stop, errP := c.preCheck.call(fqdn, value)

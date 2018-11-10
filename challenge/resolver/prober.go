@@ -83,11 +83,6 @@ func (p *Prober) Solve(authorizations []le.Authorization) error {
 		for _, authSolver := range authSolvers {
 			if solvr, ok := authSolver.solver.(cleanup); ok {
 				domain := challenge.GetTargetedDomain(authSolver.authz)
-				if failures[domain] != nil {
-					// already failed in previous loop
-					continue
-				}
-
 				err := solvr.CleanUp(authSolver.authz)
 				if err != nil {
 					log.Warnf("[%s] acme: error cleaning up: %v ", domain, err)

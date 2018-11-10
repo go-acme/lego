@@ -92,9 +92,7 @@ func TestChallenge_PreSolve(t *testing.T) {
 	}
 
 	for _, test := range testCases {
-		test := test
 		t.Run(test.desc, func(t *testing.T) {
-			t.Parallel()
 
 			chlg := NewChallenge(core, test.validate, test.provider, AddPreCheck(test.preCheck))
 
@@ -179,9 +177,7 @@ func TestChallenge_Solve(t *testing.T) {
 	}
 
 	for _, test := range testCases {
-		test := test
 		t.Run(test.desc, func(t *testing.T) {
-			t.Parallel()
 
 			chlg := NewChallenge(core, test.validate, test.provider, AddPreCheck(test.preCheck))
 
@@ -265,9 +261,7 @@ func TestChallenge_CleanUp(t *testing.T) {
 	}
 
 	for _, test := range testCases {
-		test := test
 		t.Run(test.desc, func(t *testing.T) {
-			t.Parallel()
 
 			chlg := NewChallenge(core, test.validate, test.provider, AddPreCheck(test.preCheck))
 

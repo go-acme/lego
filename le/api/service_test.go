@@ -53,5 +53,4 @@ func Test_getLink(t *testing.T) {
 			assert.Equal(t, test.expected, link)
 		})
 	}
-
 }

@@ -24,9 +24,10 @@ const (
 )
 
 type CmdOption struct {
-	Args []string
-	Env  []string
-	Dir  string
+	HealthCheckURL string
+	Args           []string
+	Env            []string
+	Dir            string
 }
 
 type EnvLoader struct {
@@ -108,21 +109,8 @@ func (l *EnvLoader) MainTest(m *testing.M) int {
 
 	l.lego = legoBinary
 
-	if l.PebbleOptions != nil {
-		client := &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}}
-		wait.For(10*time.Second, 500*time.Millisecond, func() (bool, error) {
-			// FIXME port
-			resp, err := client.Get("https://localhost:14000/dir")
-			if err != nil {
-				return false, err
-			}
-
-			if resp.StatusCode != http.StatusOK {
-				return false, nil
-			}
-
-			return true, nil
-		})
+	if l.PebbleOptions != nil && l.PebbleOptions.HealthCheckURL != "" {
+		pebbleHealthCheck(l.PebbleOptions)
 	}
 
 	return m.Run()
@@ -154,6 +142,22 @@ func (l *EnvLoader) cmdPebble() (*exec.Cmd, *bytes.Buffer) {
 	cmd.Stderr = &b
 
 	return cmd, &b
+}
+
+func pebbleHealthCheck(options *CmdOption) {
+	client := &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}}
+	wait.For(10*time.Second, 500*time.Millisecond, func() (bool, error) {
+		resp, err := client.Get(options.HealthCheckURL)
+		if err != nil {
+			return false, err
+		}
+
+		if resp.StatusCode != http.StatusOK {
+			return false, nil
+		}
+
+		return true, nil
+	})
 }
 
 func (l *EnvLoader) cmdChallSrv() (*exec.Cmd, *bytes.Buffer) {

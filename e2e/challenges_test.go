@@ -18,8 +18,9 @@ import (
 
 var load = loader.EnvLoader{
 	PebbleOptions: &loader.CmdOption{
-		Args: []string{"-strict", "-config", "fixtures/pebble-config.json"},
-		Env:  []string{"PEBBLE_VA_NOSLEEP=1", "PEBBLE_WFE_NONCEREJECT=20"},
+		HealthCheckURL: "https://localhost:14000/dir",
+		Args:           []string{"-strict", "-config", "fixtures/pebble-config.json"},
+		Env:            []string{"PEBBLE_VA_NOSLEEP=1", "PEBBLE_WFE_NONCEREJECT=20"},
 	},
 	LegoOptions: []string{
 		"LEGO_CA_CERTIFICATES=./fixtures/certs/pebble.minica.pem",

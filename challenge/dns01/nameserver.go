@@ -124,9 +124,7 @@ func FindZoneByFqdnCustom(fqdn string, nameservers []string) (string, error) {
 
 		in, err = dnsQuery(domain, dns.TypeSOA, nameservers, true)
 		if err != nil {
-			// FIXME log?
 			continue
-			// return "", err
 		}
 
 		if in == nil {

@@ -105,19 +105,20 @@ func (c *SolverManager) Exclude(challenges []challenge.Type) {
 }
 
 // Checks all challenges from the server in order and returns the first matching solver.
-func (c *SolverManager) chooseSolver(auth le.Authorization) (int, solver) {
+func (c *SolverManager) chooseSolver(authz le.Authorization) solver {
 	// Allow to have a deterministic challenge order
-	sort.Sort(sort.Reverse(byType(auth.Challenges)))
+	sort.Sort(sort.Reverse(byType(authz.Challenges)))
 
-	for i, chlg := range auth.Challenges {
+	domain := challenge.GetTargetedDomain(authz)
+	for _, chlg := range authz.Challenges {
 		if solvr, ok := c.solvers[challenge.Type(chlg.Type)]; ok {
-			log.Infof("[%s] (wildcard: %v) acme: use %s solver", auth.Identifier.Value, auth.Wildcard, chlg.Type)
-			return i, solvr
+			log.Infof("[%s] acme: use %s solver", domain, chlg.Type)
+			return solvr
 		}
-		log.Infof("[%s] (wildcard: %v) acme: Could not find solver for: %s", auth.Identifier.Value, auth.Wildcard, chlg.Type)
+		log.Infof("[%s] acme: Could not find solver for: %s", domain, chlg.Type)
 	}
 
-	return 0, nil
+	return nil
 }
 
 func validate(core *api.Core, domain, uri string, _ le.Challenge) error {
@@ -189,7 +190,7 @@ func checkAuthorizationStatus(authz le.Authorization) (bool, error) {
 		return false, fmt.Errorf("the authorization state %s", authz.Status)
 	case le.StatusInvalid:
 		for _, chlg := range authz.Challenges {
-			if chlg.Status == le.StatusInvalid {
+			if chlg.Status == le.StatusInvalid && chlg.Error != nil {
 				return false, chlg.Error
 			}
 		}

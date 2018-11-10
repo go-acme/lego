@@ -40,8 +40,14 @@ func (c *Challenge) SetProvider(provider challenge.Provider) {
 }
 
 // Solve manages the provider to validate and solve the challenge.
-func (c *Challenge) Solve(chlng le.Challenge, domain string) error {
-	log.Infof("[%s] acme: Trying to solve TLS-ALPN-01", domain)
+func (c *Challenge) Solve(authz le.Authorization) error {
+	domain := authz.Identifier.Value
+	log.Infof("[%s] acme: Trying to solve TLS-ALPN-01", challenge.GetTargetedDomain(authz))
+
+	chlng, err := challenge.FindChallenge(challenge.TLSALPN01, authz)
+	if err != nil {
+		return err
+	}
 
 	// Generate the Key Authorization for the challenge
 	keyAuth, err := c.core.GetKeyAuthorization(chlng.Token)
@@ -51,16 +57,17 @@ func (c *Challenge) Solve(chlng le.Challenge, domain string) error {
 
 	err = c.provider.Present(domain, chlng.Token, keyAuth)
 	if err != nil {
-		return fmt.Errorf("[%s] error presenting token: %v", domain, err)
+		return fmt.Errorf("[%s] acme: error presenting token: %v", challenge.GetTargetedDomain(authz), err)
 	}
 	defer func() {
 		err := c.provider.CleanUp(domain, chlng.Token, keyAuth)
 		if err != nil {
-			log.Warnf("[%s] error cleaning up: %v", domain, err)
+			log.Warnf("[%s] acme: error cleaning up: %v", challenge.GetTargetedDomain(authz), err)
 		}
 	}()
 
-	return c.validate(c.core, domain, chlng.URL, le.Challenge{Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
+	chlng.KeyAuthorization = keyAuth
+	return c.validate(c.core, domain, chlng.URL, chlng)
 }
 
 // ChallengeBlocks returns PEM blocks (certPEMBlock, keyPEMBlock) with the acmeValidation-v1 extension

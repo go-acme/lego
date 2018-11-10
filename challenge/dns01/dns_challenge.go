@@ -3,7 +3,6 @@ package dns01
 import (
 	"crypto/sha256"
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"time"
 
@@ -40,7 +39,7 @@ func CondOption(condition bool, opt ChallengeOption) ChallengeOption {
 	return opt
 }
 
-// Challenge implements the dns-01 challenge according to ACME 7.5
+// Challenge implements the dns-01 challenge
 type Challenge struct {
 	core       *api.Core
 	validate   ValidateFunc
@@ -70,42 +69,54 @@ func NewChallenge(core *api.Core, validate ValidateFunc, provider challenge.Prov
 
 // PreSolve just submits the txt record to the dns provider.
 // It does not validate record propagation, or do anything at all with the acme server.
-func (s *Challenge) PreSolve(chlng le.Challenge, domain string) error {
+func (c *Challenge) PreSolve(authz le.Authorization) error {
+	domain := challenge.GetTargetedDomain(authz)
 	log.Infof("[%s] acme: Preparing to solve DNS-01", domain)
 
-	if s.provider == nil {
-		return errors.New("no DNS Provider configured")
-	}
-
-	// Generate the Key Authorization for the challenge
-	keyAuth, err := s.core.GetKeyAuthorization(chlng.Token)
+	chlng, err := challenge.FindChallenge(challenge.DNS01, authz)
 	if err != nil {
 		return err
 	}
 
-	err = s.provider.Present(domain, chlng.Token, keyAuth)
+	if c.provider == nil {
+		return fmt.Errorf("[%s] acme: no DNS Provider configured", domain)
+	}
+
+	// Generate the Key Authorization for the challenge
+	keyAuth, err := c.core.GetKeyAuthorization(chlng.Token)
 	if err != nil {
-		return fmt.Errorf("error presenting token: %s", err)
+		return err
+	}
+
+	err = c.provider.Present(authz.Identifier.Value, chlng.Token, keyAuth)
+	if err != nil {
+		return fmt.Errorf("[%s] acme: error presenting token: %s", domain, err)
 	}
 
 	return nil
 }
 
-func (s *Challenge) Solve(chlng le.Challenge, domain string) error {
+func (c *Challenge) Solve(authz le.Authorization) error {
+	domain := challenge.GetTargetedDomain(authz)
 	log.Infof("[%s] acme: Trying to solve DNS-01", domain)
 
-	// Generate the Key Authorization for the challenge
-	keyAuth, err := s.core.GetKeyAuthorization(chlng.Token)
+	chlng, err := challenge.FindChallenge(challenge.DNS01, authz)
 	if err != nil {
 		return err
 	}
 
-	fqdn, value := GetRecord(domain, keyAuth)
+	// Generate the Key Authorization for the challenge
+	keyAuth, err := c.core.GetKeyAuthorization(chlng.Token)
+	if err != nil {
+		return err
+	}
 
-	log.Infof("[%s] Checking DNS record propagation using %+v", domain, recursiveNameservers)
+	log.Infof("[%s] acme: Checking DNS record propagation using %+v", domain, recursiveNameservers)
+
+	fqdn, value := GetRecord(authz.Identifier.Value, keyAuth)
 
 	var timeout, interval time.Duration
-	switch provider := s.provider.(type) {
+	switch provider := c.provider.(type) {
 	case challenge.ProviderTimeout:
 		timeout, interval = provider.Timeout()
 	default:
@@ -113,9 +124,9 @@ func (s *Challenge) Solve(chlng le.Challenge, domain string) error {
 	}
 
 	err = wait.For(timeout, interval, func() (bool, error) {
-		stop, errP := s.preCheck.call(fqdn, value)
+		stop, errP := c.preCheck.call(fqdn, value)
 		if !stop || errP != nil {
-			log.Infof("[%s] Waiting for DNS record propagation.", domain)
+			log.Infof("[%s] acme: Waiting for DNS record propagation.", domain)
 		}
 		return stop, errP
 	})
@@ -123,16 +134,23 @@ func (s *Challenge) Solve(chlng le.Challenge, domain string) error {
 		return err
 	}
 
-	return s.validate(s.core, domain, chlng.URL, chlng)
+	chlng.KeyAuthorization = keyAuth
+	return c.validate(c.core, authz.Identifier.Value, chlng.URL, chlng)
 }
 
 // CleanUp cleans the challenge.
-func (s *Challenge) CleanUp(chlng le.Challenge, domain string) error {
-	keyAuth, err := s.core.GetKeyAuthorization(chlng.Token)
+func (c *Challenge) CleanUp(authz le.Authorization) error {
+	chlng, err := challenge.FindChallenge(challenge.DNS01, authz)
 	if err != nil {
 		return err
 	}
-	return s.provider.CleanUp(domain, chlng.Token, keyAuth)
+
+	keyAuth, err := c.core.GetKeyAuthorization(chlng.Token)
+	if err != nil {
+		return err
+	}
+
+	return c.provider.CleanUp(authz.Identifier.Value, chlng.Token, keyAuth)
 }
 
 // GetRecord returns a DNS record which will fulfill the `dns-01` challenge

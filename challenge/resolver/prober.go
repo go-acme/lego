@@ -3,31 +3,31 @@ package resolver
 import (
 	"fmt"
 
+	"github.com/xenolf/lego/challenge"
 	"github.com/xenolf/lego/le"
 	"github.com/xenolf/lego/log"
 )
 
 // Interface for all challenge solvers to implement.
 type solver interface {
-	Solve(challenge le.Challenge, domain string) error
+	Solve(authorization le.Authorization) error
 }
 
 // Interface for challenges like dns, where we can set a record in advance for ALL challenges.
 // This saves quite a bit of time vs creating the records and solving them serially.
 type preSolver interface {
-	PreSolve(challenge le.Challenge, domain string) error
+	PreSolve(authorization le.Authorization) error
 }
 
 // Interface for challenges like dns, where we can solve all the challenges before to delete them.
 type cleanup interface {
-	CleanUp(challenge le.Challenge, domain string) error
+	CleanUp(authorization le.Authorization) error
 }
 
 // an authz with the solver we have chosen and the index of the challenge associated with it
 type selectedAuthSolver struct {
-	authz          le.Authorization
-	challengeIndex int
-	solver         solver
+	authz  le.Authorization
+	solver solver
 }
 
 type Prober struct {
@@ -50,20 +50,20 @@ func (p *Prober) Solve(authorizations []le.Authorization) error {
 	// Loop through the resources, basically through the domains.
 	// First pass just selects a solver for each authz.
 	for _, authz := range authorizations {
+		domain := challenge.GetTargetedDomain(authz)
 		if authz.Status == le.StatusValid {
 			// Boulder might recycle recent validated authz (see issue #267)
-			log.Infof("[%s] (wildcard: %v) acme: authorization already valid; skipping challenge", authz.Identifier.Value, authz.Wildcard)
+			log.Infof("[%s] acme: authorization already valid; skipping challenge", domain)
 			continue
 		}
 
-		if i, solvr := p.solverManager.chooseSolver(authz); solvr != nil {
+		if solvr := p.solverManager.chooseSolver(authz); solvr != nil {
 			authSolvers = append(authSolvers, &selectedAuthSolver{
-				authz:          authz,
-				challengeIndex: i,
-				solver:         solvr,
+				authz:  authz,
+				solver: solvr,
 			})
 		} else {
-			failures[authz.Identifier.Value] = fmt.Errorf("[%s] (wildcard: %v) acme: could not determine solvers", authz.Identifier.Value, authz.Wildcard)
+			failures[domain] = fmt.Errorf("[%s] acme: could not determine solvers", domain)
 		}
 	}
 
@@ -71,9 +71,9 @@ func (p *Prober) Solve(authorizations []le.Authorization) error {
 	for _, authSolver := range authSolvers {
 		authz := authSolver.authz
 		if solvr, ok := authSolver.solver.(preSolver); ok {
-			err := solvr.PreSolve(authz.Challenges[authSolver.challengeIndex], authz.Identifier.Value)
+			err := solvr.PreSolve(authz)
 			if err != nil {
-				failures[authz.Identifier.Value] = err
+				failures[challenge.GetTargetedDomain(authz)] = err
 			}
 		}
 	}
@@ -82,14 +82,15 @@ func (p *Prober) Solve(authorizations []le.Authorization) error {
 		// Clean all created TXT records
 		for _, authSolver := range authSolvers {
 			if solvr, ok := authSolver.solver.(cleanup); ok {
-				if failures[authSolver.authz.Identifier.Value] != nil {
+				domain := challenge.GetTargetedDomain(authSolver.authz)
+				if failures[domain] != nil {
 					// already failed in previous loop
 					continue
 				}
 
-				err := solvr.CleanUp(authSolver.authz.Challenges[authSolver.challengeIndex], authSolver.authz.Identifier.Value)
+				err := solvr.CleanUp(authSolver.authz)
 				if err != nil {
-					log.Warnf("[%s] (wildcard: %v) acme: error cleaning up: %v ", authSolver.authz.Identifier.Value, authSolver.authz.Wildcard, err)
+					log.Warnf("[%s] acme: error cleaning up: %v ", domain, err)
 				}
 			}
 		}
@@ -103,7 +104,7 @@ func (p *Prober) Solve(authorizations []le.Authorization) error {
 			continue
 		}
 
-		err := authSolver.solver.Solve(authz.Challenges[authSolver.challengeIndex], authz.Identifier.Value)
+		err := authSolver.solver.Solve(authz)
 		if err != nil {
 			failures[authz.Identifier.Value] = err
 		}

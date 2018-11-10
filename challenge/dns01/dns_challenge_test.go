@@ -98,7 +98,16 @@ func TestChallenge_PreSolve(t *testing.T) {
 
 			chlg := NewChallenge(core, test.validate, test.provider, AddPreCheck(test.preCheck))
 
-			err = chlg.PreSolve(le.Challenge{}, "example.com")
+			authz := le.Authorization{
+				Identifier: le.Identifier{
+					Value: "example.com",
+				},
+				Challenges: []le.Challenge{
+					{Type: challenge.DNS01.String()},
+				},
+			}
+
+			err = chlg.PreSolve(authz)
 			if test.expectError {
 				require.Error(t, err)
 			} else {
@@ -176,7 +185,16 @@ func TestChallenge_Solve(t *testing.T) {
 
 			chlg := NewChallenge(core, test.validate, test.provider, AddPreCheck(test.preCheck))
 
-			err = chlg.Solve(le.Challenge{}, "example.com")
+			authz := le.Authorization{
+				Identifier: le.Identifier{
+					Value: "example.com",
+				},
+				Challenges: []le.Challenge{
+					{Type: challenge.DNS01.String()},
+				},
+			}
+
+			err = chlg.Solve(authz)
 			if test.expectError {
 				require.Error(t, err)
 			} else {
@@ -253,7 +271,16 @@ func TestChallenge_CleanUp(t *testing.T) {
 
 			chlg := NewChallenge(core, test.validate, test.provider, AddPreCheck(test.preCheck))
 
-			err = chlg.CleanUp(le.Challenge{}, "example.com")
+			authz := le.Authorization{
+				Identifier: le.Identifier{
+					Value: "example.com",
+				},
+				Challenges: []le.Challenge{
+					{Type: challenge.DNS01.String()},
+				},
+			}
+
+			err = chlg.CleanUp(authz)
 			if test.expectError {
 				require.Error(t, err)
 			} else {

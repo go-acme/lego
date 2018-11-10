@@ -34,8 +34,14 @@ func (c *Challenge) SetProvider(provider challenge.Provider) {
 	c.provider = provider
 }
 
-func (c *Challenge) Solve(chlng le.Challenge, domain string) error {
+func (c *Challenge) Solve(authz le.Authorization) error {
+	domain := challenge.GetTargetedDomain(authz)
 	log.Infof("[%s] acme: Trying to solve HTTP-01", domain)
+
+	chlng, err := challenge.FindChallenge(challenge.HTTP01, authz)
+	if err != nil {
+		return err
+	}
 
 	// Generate the Key Authorization for the challenge
 	keyAuth, err := c.core.GetKeyAuthorization(chlng.Token)
@@ -43,16 +49,17 @@ func (c *Challenge) Solve(chlng le.Challenge, domain string) error {
 		return err
 	}
 
-	err = c.provider.Present(domain, chlng.Token, keyAuth)
+	err = c.provider.Present(authz.Identifier.Value, chlng.Token, keyAuth)
 	if err != nil {
-		return fmt.Errorf("[%s] error presenting token: %v", domain, err)
+		return fmt.Errorf("[%s] acme: error presenting token: %v", domain, err)
 	}
 	defer func() {
-		err := c.provider.CleanUp(domain, chlng.Token, keyAuth)
+		err := c.provider.CleanUp(authz.Identifier.Value, chlng.Token, keyAuth)
 		if err != nil {
-			log.Warnf("[%s] error cleaning up: %v", domain, err)
+			log.Warnf("[%s] acme: error cleaning up: %v", domain, err)
 		}
 	}()
 
-	return c.validate(c.core, domain, chlng.URL, le.Challenge{Type: chlng.Type, Token: chlng.Token, KeyAuthorization: keyAuth})
+	chlng.KeyAuthorization = keyAuth
+	return c.validate(c.core, authz.Identifier.Value, chlng.URL, chlng)
 }

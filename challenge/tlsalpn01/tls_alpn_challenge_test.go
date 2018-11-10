@@ -75,9 +75,16 @@ func TestChallenge(t *testing.T) {
 		&ProviderServer{port: "23457"},
 	)
 
-	clientChallenge := le.Challenge{Type: string(challenge.TLSALPN01), Token: "tlsalpn1"}
+	authz := le.Authorization{
+		Identifier: le.Identifier{
+			Value: domain,
+		},
+		Challenges: []le.Challenge{
+			{Type: challenge.TLSALPN01.String(), Token: "tlsalpn1"},
+		},
+	}
 
-	err = solver.Solve(clientChallenge, domain)
+	err = solver.Solve(authz)
 	require.NoError(t, err)
 }
 
@@ -97,9 +104,16 @@ func TestChallengeInvalidPort(t *testing.T) {
 		&ProviderServer{port: "123456"},
 	)
 
-	clientChallenge := le.Challenge{Type: string(challenge.TLSALPN01), Token: "tlsalpn1"}
+	authz := le.Authorization{
+		Identifier: le.Identifier{
+			Value: "localhost:123456",
+		},
+		Challenges: []le.Challenge{
+			{Type: challenge.TLSALPN01.String(), Token: "tlsalpn1"},
+		},
+	}
 
-	err = solver.Solve(clientChallenge, "localhost:123456")
+	err = solver.Solve(authz)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "invalid port")
 	assert.Contains(t, err.Error(), "123456")

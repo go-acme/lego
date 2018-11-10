@@ -13,14 +13,14 @@ type preSolverMock struct {
 	cleanUp  map[string]error
 }
 
-func (s *preSolverMock) PreSolve(challenge le.Challenge, domain string) error {
-	return s.preSolve[domain]
+func (s *preSolverMock) PreSolve(authorization le.Authorization) error {
+	return s.preSolve[authorization.Identifier.Value]
 }
-func (s *preSolverMock) Solve(challenge le.Challenge, domain string) error {
-	return s.solve[domain]
+func (s *preSolverMock) Solve(authorization le.Authorization) error {
+	return s.solve[authorization.Identifier.Value]
 }
-func (s *preSolverMock) CleanUp(challenge le.Challenge, domain string) error {
-	return s.cleanUp[domain]
+func (s *preSolverMock) CleanUp(authorization le.Authorization) error {
+	return s.cleanUp[authorization.Identifier.Value]
 }
 
 func createStubAuthorizationHTTP01(domain, status string) le.Authorization {
@@ -28,12 +28,12 @@ func createStubAuthorizationHTTP01(domain, status string) le.Authorization {
 		Status:  status,
 		Expires: time.Now(),
 		Identifier: le.Identifier{
-			Type:  string(challenge.HTTP01),
+			Type:  challenge.HTTP01.String(),
 			Value: domain,
 		},
 		Challenges: []le.Challenge{
 			{
-				Type:      string(challenge.HTTP01),
+				Type:      challenge.HTTP01.String(),
 				Validated: time.Now(),
 				Error:     nil,
 			},

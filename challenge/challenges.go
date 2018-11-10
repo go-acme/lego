@@ -1,5 +1,11 @@
 package challenge
 
+import (
+	"fmt"
+
+	"github.com/xenolf/lego/le"
+)
+
 // Type is a string that identifies a particular challenge type and version of ACME challenge.
 type Type string
 
@@ -15,3 +21,24 @@ const (
 	// TLSALPN01 is the "tls-alpn-01" ACME challenge https://tools.ietf.org/html/draft-ietf-acme-tls-alpn-05
 	TLSALPN01 = Type("tls-alpn-01")
 )
+
+func (t Type) String() string {
+	return string(t)
+}
+
+func FindChallenge(chlgType Type, authz le.Authorization) (le.Challenge, error) {
+	for _, chlg := range authz.Challenges {
+		if chlg.Type == string(chlgType) {
+			return chlg, nil
+		}
+	}
+
+	return le.Challenge{}, fmt.Errorf("[%s] acme: unable to find challenge %s", GetTargetedDomain(authz), chlgType)
+}
+
+func GetTargetedDomain(authz le.Authorization) string {
+	if authz.Wildcard {
+		return "*." + authz.Identifier.Value
+	}
+	return authz.Identifier.Value
+}

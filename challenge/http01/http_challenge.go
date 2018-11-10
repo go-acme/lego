@@ -9,7 +9,7 @@ import (
 	"github.com/xenolf/lego/log"
 )
 
-type ValidateFunc func(core *api.Core, domain, uri string, chlng le.Challenge) error
+type ValidateFunc func(core *api.Core, domain string, chlng le.Challenge) error
 
 // ChallengePath returns the URL path for the `http-01` challenge
 func ChallengePath(token string) string {
@@ -61,5 +61,5 @@ func (c *Challenge) Solve(authz le.Authorization) error {
 	}()
 
 	chlng.KeyAuthorization = keyAuth
-	return c.validate(c.core, authz.Identifier.Value, chlng.URL, chlng)
+	return c.validate(c.core, authz.Identifier.Value, chlng)
 }

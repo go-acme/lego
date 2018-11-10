@@ -19,7 +19,7 @@ import (
 // Reference: https://tools.ietf.org/html/draft-ietf-acme-tls-alpn-05#section-5.1
 var idPeAcmeIdentifierV1 = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 1, 31}
 
-type ValidateFunc func(core *api.Core, domain, uri string, chlng le.Challenge) error
+type ValidateFunc func(core *api.Core, domain string, chlng le.Challenge) error
 
 type Challenge struct {
 	core     *api.Core
@@ -67,7 +67,7 @@ func (c *Challenge) Solve(authz le.Authorization) error {
 	}()
 
 	chlng.KeyAuthorization = keyAuth
-	return c.validate(c.core, domain, chlng.URL, chlng)
+	return c.validate(c.core, domain, chlng)
 }
 
 // ChallengeBlocks returns PEM blocks (certPEMBlock, keyPEMBlock) with the acmeValidation-v1 extension

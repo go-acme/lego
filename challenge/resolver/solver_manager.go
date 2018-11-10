@@ -121,8 +121,8 @@ func (c *SolverManager) chooseSolver(authz le.Authorization) solver {
 	return nil
 }
 
-func validate(core *api.Core, domain, uri string, _ le.Challenge) error {
-	chlng, err := core.Challenges.New(uri)
+func validate(core *api.Core, domain string, chlg le.Challenge) error {
+	chlng, err := core.Challenges.New(chlg.URL)
 	if err != nil {
 		return fmt.Errorf("failed to initiate challenge: %v", err)
 	}

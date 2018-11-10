@@ -24,7 +24,7 @@ func TestChallenge(t *testing.T) {
 
 	domain := "localhost:23457"
 
-	mockValidate := func(_ *api.Core, _, _ string, chlng le.Challenge) error {
+	mockValidate := func(_ *api.Core, _ string, chlng le.Challenge) error {
 		conn, err := tls.Dial("tcp", domain, &tls.Config{
 			InsecureSkipVerify: true,
 		})
@@ -100,7 +100,7 @@ func TestChallengeInvalidPort(t *testing.T) {
 
 	solver := NewChallenge(
 		core,
-		func(_ *api.Core, _, _ string, _ le.Challenge) error { return nil },
+		func(_ *api.Core, _ string, _ le.Challenge) error { return nil },
 		&ProviderServer{port: "123456"},
 	)
 

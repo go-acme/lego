@@ -51,16 +51,6 @@ func TestOrderService_New(t *testing.T) {
 		}
 	})
 
-	mux.HandleFunc("/nonce", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodHead {
-			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-			return
-		}
-
-		w.Header().Add("Replay-Nonce", "12345")
-		w.Header().Add("Retry-After", "0")
-	})
-
 	core, err := New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privKey)
 	require.NoError(t, err)
 

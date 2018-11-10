@@ -17,11 +17,6 @@ func TestRegistrar_ResolveAccountByKey(t *testing.T) {
 	mux, apiURL, tearDown := tester.SetupFakeAPI()
 	defer tearDown()
 
-	mux.HandleFunc("/nonce", func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Add("Replay-Nonce", "12345")
-		w.Header().Add("Retry-After", "0")
-	})
-
 	mux.HandleFunc("/account", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Location", apiURL+"/account_recovery")
 		w.Write([]byte("{}"))

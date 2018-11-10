@@ -39,6 +39,7 @@ func createRenew() cli.Command {
 
 func renew(c *cli.Context) error {
 	acc, client := setup(c)
+
 	if acc.Registration == nil {
 		log.Fatalf("Account %s is not registered. Use 'run' to register a new account.\n", acc.Email)
 	}
@@ -84,7 +85,7 @@ func renew(c *cli.Context) error {
 		log.Fatal(err)
 	}
 
-	saveCertRes(newCert, c)
+	saveCertificates(c, newCert)
 
 	return nil
 }

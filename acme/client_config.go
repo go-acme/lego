@@ -29,6 +29,9 @@ const (
 
 	// LEDirectoryProduction URL to the Let's Encrypt production
 	LEDirectoryProduction = "https://acme-v02.api.letsencrypt.org/directory"
+
+	// LEDirectoryStaging URL to the Let's Encrypt staging
+	LEDirectoryStaging = "https://acme-staging-v02.api.letsencrypt.org/directory"
 )
 
 type Config struct {

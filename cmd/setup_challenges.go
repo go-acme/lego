@@ -14,9 +14,9 @@ import (
 	"github.com/xenolf/lego/providers/http/webroot"
 )
 
-func setupChallenges(client *acme.Client, c *cli.Context) {
+func setupChallenges(c *cli.Context, client *acme.Client) {
 	if len(c.GlobalStringSlice("exclude")) > 0 {
-		excludedSolvers(client, c)
+		excludedSolvers(c, client)
 	}
 
 	if c.GlobalIsSet("webroot") {
@@ -36,11 +36,11 @@ func setupChallenges(client *acme.Client, c *cli.Context) {
 	}
 
 	if c.GlobalIsSet("dns") {
-		setupDNS(client, c)
+		setupDNS(c, client)
 	}
 }
 
-func excludedSolvers(client *acme.Client, c *cli.Context) {
+func excludedSolvers(c *cli.Context, client *acme.Client) {
 	var cc []challenge.Type
 	for _, s := range c.GlobalStringSlice("exclude") {
 		cc = append(cc, challenge.Type(s))
@@ -102,7 +102,7 @@ func setupTLS(client *acme.Client, iface string) {
 	}
 }
 
-func setupDNS(client *acme.Client, c *cli.Context) {
+func setupDNS(c *cli.Context, client *acme.Client) {
 	provider, err := dns.NewDNSChallengeProviderByName(c.GlobalString("dns"))
 	if err != nil {
 		log.Fatal(err)

@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/xenolf/lego/certcrypto"
+	"github.com/xenolf/lego/challenge"
 	"github.com/xenolf/lego/le"
 	"github.com/xenolf/lego/le/api"
 	"github.com/xenolf/lego/log"
@@ -20,10 +21,8 @@ import (
 	"golang.org/x/net/idna"
 )
 
-const (
-	// maxBodySize is the maximum size of body that we will read.
-	maxBodySize = 1024 * 1024
-)
+// maxBodySize is the maximum size of body that we will read.
+const maxBodySize = 1024 * 1024
 
 // Resource represents a CA issued certificate.
 // PrivateKey, Certificate and IssuerCertificate are all
@@ -89,15 +88,10 @@ func (c *Certifier) Obtain(domains []string, bundle bool, privKey crypto.Private
 		return nil, err
 	}
 
-	authz, err := c.getAuthzForOrder(order)
+	authz, err := c.getAuthorizations(order)
 	if err != nil {
 		// If any challenge fails, return. Do not generate partial SAN certificates.
-		for _, auth := range order.Authorizations {
-			errD := c.core.Authorizations.Deactivate(auth)
-			if errD != nil {
-				log.Infof("unable to deactivated authorizations: %s", auth)
-			}
-		}
+		c.deactivateAuthorizations(order)
 		return nil, err
 	}
 
@@ -113,7 +107,7 @@ func (c *Certifier) Obtain(domains []string, bundle bool, privKey crypto.Private
 	cert, err := c.getForOrder(domains, order, bundle, privKey, mustStaple)
 	if err != nil {
 		for _, auth := range authz {
-			failures[auth.Identifier.Value] = err
+			failures[challenge.GetTargetedDomain(auth)] = err
 		}
 	}
 
@@ -161,15 +155,10 @@ func (c *Certifier) ObtainForCSR(csr x509.CertificateRequest, bundle bool) (*Res
 		return nil, err
 	}
 
-	authz, err := c.getAuthzForOrder(order)
+	authz, err := c.getAuthorizations(order)
 	if err != nil {
 		// If any challenge fails, return. Do not generate partial SAN certificates.
-		for _, auth := range order.Authorizations {
-			errD := c.core.Authorizations.Deactivate(auth)
-			if errD != nil {
-				log.Infof("unable to deactivated authorizations: %s", auth)
-			}
-		}
+		c.deactivateAuthorizations(order)
 		return nil, err
 	}
 
@@ -184,8 +173,8 @@ func (c *Certifier) ObtainForCSR(csr x509.CertificateRequest, bundle bool) (*Res
 	failures := make(obtainError)
 	cert, err := c.getForCSR(domains, order, bundle, csr.Raw, nil)
 	if err != nil {
-		for _, chln := range authz {
-			failures[chln.Identifier.Value] = err
+		for _, auth := range authz {
+			failures[challenge.GetTargetedDomain(auth)] = err
 		}
 	}
 

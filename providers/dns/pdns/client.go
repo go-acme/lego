@@ -11,7 +11,7 @@ import (
 	"github.com/xenolf/lego/challenge/dns01"
 )
 
-type pdnsRecord struct {
+type Record struct {
 	Content  string `json:"content"`
 	Disabled bool   `json:"disabled"`
 
@@ -28,20 +28,33 @@ type hostedZone struct {
 	RRSets []rrSet `json:"rrsets"`
 
 	// pre-v1 API
-	Records []pdnsRecord `json:"records"`
+	Records []Record `json:"records"`
 }
 
 type rrSet struct {
-	Name       string       `json:"name"`
-	Type       string       `json:"type"`
-	Kind       string       `json:"kind"`
-	ChangeType string       `json:"changetype"`
-	Records    []pdnsRecord `json:"records"`
-	TTL        int          `json:"ttl,omitempty"`
+	Name       string   `json:"name"`
+	Type       string   `json:"type"`
+	Kind       string   `json:"kind"`
+	ChangeType string   `json:"changetype"`
+	Records    []Record `json:"records"`
+	TTL        int      `json:"ttl,omitempty"`
 }
 
 type rrSets struct {
 	RRSets []rrSet `json:"rrsets"`
+}
+
+type apiError struct {
+	ShortMsg string `json:"error"`
+}
+
+func (a apiError) Error() string {
+	return a.ShortMsg
+}
+
+type apiVersion struct {
+	URL     string `json:"url"`
+	Version int    `json:"version"`
 }
 
 func (d *DNSProvider) getHostedZone(fqdn string) (*hostedZone, error) {
@@ -52,7 +65,7 @@ func (d *DNSProvider) getHostedZone(fqdn string) (*hostedZone, error) {
 	}
 
 	u := "/servers/localhost/zones"
-	result, err := d.makeRequest(http.MethodGet, u, nil)
+	result, err := d.sendRequest(http.MethodGet, u, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +83,7 @@ func (d *DNSProvider) getHostedZone(fqdn string) (*hostedZone, error) {
 		}
 	}
 
-	result, err = d.makeRequest(http.MethodGet, u, nil)
+	result, err = d.sendRequest(http.MethodGet, u, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +100,7 @@ func (d *DNSProvider) getHostedZone(fqdn string) (*hostedZone, error) {
 			set := rrSet{
 				Name:    record.Name,
 				Type:    record.Type,
-				Records: []pdnsRecord{record},
+				Records: []Record{record},
 			}
 			zone.RRSets = append(zone.RRSets, set)
 		}
@@ -102,7 +115,7 @@ func (d *DNSProvider) findTxtRecord(fqdn string) (*rrSet, error) {
 		return nil, err
 	}
 
-	_, err = d.makeRequest(http.MethodGet, zone.URL, nil)
+	_, err = d.sendRequest(http.MethodGet, zone.URL, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -117,17 +130,12 @@ func (d *DNSProvider) findTxtRecord(fqdn string) (*rrSet, error) {
 }
 
 func (d *DNSProvider) getAPIVersion() (int, error) {
-	type APIVersion struct {
-		URL     string `json:"url"`
-		Version int    `json:"version"`
-	}
-
-	result, err := d.makeRequest(http.MethodGet, "/api", nil)
+	result, err := d.sendRequest(http.MethodGet, "/api", nil)
 	if err != nil {
 		return 0, err
 	}
 
-	var versions []APIVersion
+	var versions []apiVersion
 	err = json.Unmarshal(result, &versions)
 	if err != nil {
 		return 0, err
@@ -143,11 +151,49 @@ func (d *DNSProvider) getAPIVersion() (int, error) {
 	return latestVersion, err
 }
 
-func (d *DNSProvider) makeRequest(method, uri string, body io.Reader) (json.RawMessage, error) {
-	type APIError struct {
-		Error string `json:"error"`
+func (d *DNSProvider) sendRequest(method, uri string, body io.Reader) (json.RawMessage, error) {
+	req, err := d.makeRequest(method, uri, body)
+	if err != nil {
+		return nil, err
 	}
 
+	resp, err := d.config.HTTPClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("error talking to PDNS API -> %v", err)
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusUnprocessableEntity && (resp.StatusCode < 200 || resp.StatusCode >= 300) {
+		return nil, fmt.Errorf("unexpected HTTP status code %d when fetching '%s'", resp.StatusCode, req.URL)
+	}
+
+	var msg json.RawMessage
+	err = json.NewDecoder(resp.Body).Decode(&msg)
+	if err != nil {
+		if err == io.EOF {
+			// empty body
+			return nil, nil
+		}
+		// other error
+		return nil, err
+	}
+
+	// check for PowerDNS error message
+	if len(msg) > 0 && msg[0] == '{' {
+		var errInfo apiError
+		err = json.Unmarshal(msg, &errInfo)
+		if err != nil {
+			return nil, err
+		}
+		if errInfo.ShortMsg != "" {
+			return nil, fmt.Errorf("error talking to PDNS API -> %v", errInfo)
+		}
+	}
+	return msg, nil
+}
+
+func (d *DNSProvider) makeRequest(method, uri string, body io.Reader) (*http.Request, error) {
 	var path = ""
 	if d.config.Host.Path != "/" {
 		path = d.config.Host.Path
@@ -169,38 +215,5 @@ func (d *DNSProvider) makeRequest(method, uri string, body io.Reader) (json.RawM
 
 	req.Header.Set("X-API-Key", d.config.APIKey)
 
-	resp, err := d.config.HTTPClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("error talking to PDNS API -> %v", err)
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusUnprocessableEntity && (resp.StatusCode < 200 || resp.StatusCode >= 300) {
-		return nil, fmt.Errorf("unexpected HTTP status code %d when fetching '%s'", resp.StatusCode, u)
-	}
-
-	var msg json.RawMessage
-	err = json.NewDecoder(resp.Body).Decode(&msg)
-	switch {
-	case err == io.EOF:
-		// empty body
-		return nil, nil
-	case err != nil:
-		// other error
-		return nil, err
-	}
-
-	// check for PowerDNS error message
-	if len(msg) > 0 && msg[0] == '{' {
-		var apiError APIError
-		err = json.Unmarshal(msg, &apiError)
-		if err != nil {
-			return nil, err
-		}
-		if apiError.Error != "" {
-			return nil, fmt.Errorf("error talking to PDNS API -> %v", apiError.Error)
-		}
-	}
-	return msg, nil
+	return req, nil
 }

@@ -14,7 +14,7 @@ import (
 
 const baseCertificatesFolderName = "certificates"
 
-func saveCertRes(certRes *certificate.Resource, c *cli.Context) {
+func saveCertificates(c *cli.Context, certRes *certificate.Resource) {
 	getOrCreateCertFolder(c)
 
 	domain := certRes.Domain

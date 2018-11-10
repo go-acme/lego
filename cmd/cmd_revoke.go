@@ -15,6 +15,7 @@ func createRevoke() cli.Command {
 
 func revoke(c *cli.Context) error {
 	acc, client := setup(c)
+
 	if acc.Registration == nil {
 		log.Fatalf("Account %s is not registered. Use 'run' to register a new account.\n", acc.Email)
 	}

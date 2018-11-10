@@ -80,11 +80,6 @@ func Test_checkResponse(t *testing.T) {
 	mux, apiURL, tearDown := tester.SetupFakeAPI()
 	defer tearDown()
 
-	mux.HandleFunc("/nonce", func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Add("Replay-Nonce", "12345")
-		w.Header().Add("Retry-After", "0")
-	})
-
 	mux.HandleFunc("/certificate", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(certResponseMock))
 	})
@@ -120,11 +115,6 @@ func Test_checkResponse(t *testing.T) {
 func Test_checkResponse_issuerRelUp(t *testing.T) {
 	mux, apiURL, tearDown := tester.SetupFakeAPI()
 	defer tearDown()
-
-	mux.HandleFunc("/nonce", func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Add("Replay-Nonce", "12345")
-		w.Header().Add("Retry-After", "0")
-	})
 
 	mux.HandleFunc("/certificate", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Link", "<"+apiURL+`/issuer>; rel="up"`)
@@ -167,11 +157,6 @@ func Test_checkResponse_issuerRelUp(t *testing.T) {
 func Test_checkResponse_embeddedIssuer(t *testing.T) {
 	mux, apiURL, tearDown := tester.SetupFakeAPI()
 	defer tearDown()
-
-	mux.HandleFunc("/nonce", func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Add("Replay-Nonce", "12345")
-		w.Header().Add("Retry-After", "0")
-	})
 
 	mux.HandleFunc("/certificate", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(certResponseMock))

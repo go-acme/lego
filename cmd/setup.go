@@ -36,7 +36,7 @@ func setup(c *cli.Context) (*Account, *acme.Client) {
 		log.Fatalf("Could not create client: %v", err)
 	}
 
-	setupChallenges(client, c)
+	setupChallenges(c, client)
 
 	if client.GetExternalAccountRequired() && !c.GlobalIsSet("eab") {
 		log.Fatal("Server requires External Account Binding. Use --eab with --kid and --hmac.")

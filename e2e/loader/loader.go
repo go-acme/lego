@@ -67,38 +67,10 @@ func (l *EnvLoader) MainTest(m *testing.M) int {
 		}
 	}
 
-	pebbleTearDown := func() {}
-	if l.PebbleOptions != nil {
-		pebble, outPebble := l.cmdPebble()
-		go func() {
-			err := pebble.Run()
-			if err != nil {
-				fmt.Println(err)
-			}
-		}()
-		pebbleTearDown = func() {
-			pebble.Process.Kill()
-			fmt.Println(outPebble.String())
-			CleanLegoFiles()
-		}
-	}
+	pebbleTearDown := l.launchPebble()
 	defer pebbleTearDown()
 
-	challSrvTearDown := func() {}
-	if l.ChallSrv != nil {
-		challtestsrv, outChalSrv := l.cmdChallSrv()
-		go func() {
-			err := challtestsrv.Run()
-			if err != nil {
-				fmt.Println(err)
-			}
-		}()
-		challSrvTearDown = func() {
-			challtestsrv.Process.Kill()
-			fmt.Println(outChalSrv.String())
-			CleanLegoFiles()
-		}
-	}
+	challSrvTearDown := l.launchChallSrv()
 	defer challSrvTearDown()
 
 	legoBinary, tearDown, err := buildLego()
@@ -123,6 +95,26 @@ func (l *EnvLoader) RunLego(arg ...string) ([]byte, error) {
 	fmt.Printf("$ %s\n", strings.Join(cmd.Args, " "))
 
 	return cmd.CombinedOutput()
+}
+
+func (l *EnvLoader) launchPebble() func() {
+	if l.PebbleOptions == nil {
+		return func() {}
+	}
+
+	pebble, outPebble := l.cmdPebble()
+	go func() {
+		err := pebble.Run()
+		if err != nil {
+			fmt.Println(err)
+		}
+	}()
+
+	return func() {
+		pebble.Process.Kill()
+		fmt.Println(outPebble.String())
+		CleanLegoFiles()
+	}
 }
 
 func (l *EnvLoader) cmdPebble() (*exec.Cmd, *bytes.Buffer) {
@@ -158,6 +150,26 @@ func pebbleHealthCheck(options *CmdOption) {
 
 		return true, nil
 	})
+}
+
+func (l *EnvLoader) launchChallSrv() func() {
+	if l.ChallSrv == nil {
+		return func() {}
+	}
+
+	challtestsrv, outChalSrv := l.cmdChallSrv()
+	go func() {
+		err := challtestsrv.Run()
+		if err != nil {
+			fmt.Println(err)
+		}
+	}()
+
+	return func() {
+		challtestsrv.Process.Kill()
+		fmt.Println(outChalSrv.String())
+		CleanLegoFiles()
+	}
 }
 
 func (l *EnvLoader) cmdChallSrv() (*exec.Cmd, *bytes.Buffer) {

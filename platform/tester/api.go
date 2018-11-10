@@ -27,6 +27,16 @@ func SetupFakeAPI() (*http.ServeMux, string, func()) {
 			KeyChangeURL:  ts.URL + "/keyChange",
 		})
 
+		mux.HandleFunc("/nonce", func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != http.MethodHead {
+				http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+				return
+			}
+
+			w.Header().Add("Replay-Nonce", "12345")
+			w.Header().Add("Retry-After", "0")
+		})
+
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

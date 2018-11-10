@@ -98,6 +98,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 // Present creates a TXT record to fulfill the dns-01 challenge
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
+
 	zone, err := d.getHostedZone(fqdn)
 	if err != nil {
 		return fmt.Errorf("pdns: %v", err)
@@ -110,7 +111,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		name = dns01.UnFqdn(fqdn)
 	}
 
-	rec := pdnsRecord{
+	rec := Record{
 		Content:  "\"" + value + "\"",
 		Disabled: false,
 
@@ -128,7 +129,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 				Type:       "TXT",
 				Kind:       "Master",
 				TTL:        d.config.TTL,
-				Records:    []pdnsRecord{rec},
+				Records:    []Record{rec},
 			},
 		},
 	}
@@ -138,7 +139,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("pdns: %v", err)
 	}
 
-	_, err = d.makeRequest(http.MethodPatch, zone.URL, bytes.NewReader(body))
+	_, err = d.sendRequest(http.MethodPatch, zone.URL, bytes.NewReader(body))
 	if err != nil {
 		return fmt.Errorf("pdns: %v", err)
 	}
@@ -173,7 +174,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("pdns: %v", err)
 	}
 
-	_, err = d.makeRequest(http.MethodPatch, zone.URL, bytes.NewReader(body))
+	_, err = d.sendRequest(http.MethodPatch, zone.URL, bytes.NewReader(body))
 	if err != nil {
 		return fmt.Errorf("pdns: %v", err)
 	}

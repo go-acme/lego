@@ -15,8 +15,7 @@ const (
 	overallRequestLimit = 18
 )
 
-// Get the challenges needed to proof our identifier to the ACME server.
-func (c *Certifier) getAuthzForOrder(order le.ExtendedOrder) ([]le.Authorization, error) {
+func (c *Certifier) getAuthorizations(order le.ExtendedOrder) ([]le.Authorization, error) {
 	resc, errc := make(chan le.Authorization), make(chan domainError)
 
 	delay := time.Second / overallRequestLimit
@@ -59,4 +58,12 @@ func (c *Certifier) getAuthzForOrder(order le.ExtendedOrder) ([]le.Authorization
 		return responses, failures
 	}
 	return responses, nil
+}
+
+func (c *Certifier) deactivateAuthorizations(order le.ExtendedOrder) {
+	for _, auth := range order.Authorizations {
+		if err := c.core.Authorizations.Deactivate(auth); err != nil {
+			log.Infof("Unable to deactivated authorizations: %s", auth)
+		}
+	}
 }

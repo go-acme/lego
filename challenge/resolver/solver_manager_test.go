@@ -63,52 +63,13 @@ func TestValidate(t *testing.T) {
 
 	privKey, _ := rsa.GenerateKey(rand.Reader, 512)
 
-	// validateNoBody reads the http.Request POST body, parses the JWS and validates it to read the body.
-	// If there is an error doing this,
-	// or if the JWS body is not the empty JSON payload "{}" or a POST-as-GET payload "" an error is returned.
-	// We use this to verify challenge POSTs to the ts below do not send a JWS body.
-	validateNoBody := func(r *http.Request) error {
-		reqBody, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			return err
-		}
-
-		jws, err := jose.ParseSigned(string(reqBody))
-		if err != nil {
-			return err
-		}
-
-		body, err := jws.Verify(&jose.JSONWebKey{
-			Key:       privKey.Public(),
-			Algorithm: "RSA",
-		})
-		if err != nil {
-			return err
-		}
-
-		if bodyStr := string(body); bodyStr != "{}" && bodyStr != "" {
-			return fmt.Errorf(`expected JWS POST body "{}" or "", got %q`, bodyStr)
-		}
-		return nil
-	}
-
-	mux.HandleFunc("/nonce", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodHead {
-			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-			return
-		}
-
-		w.Header().Add("Replay-Nonce", "12345")
-		w.Header().Add("Retry-After", "0")
-	})
-
 	mux.HandleFunc("/chlg", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 			return
 		}
 
-		if err := validateNoBody(r); err != nil {
+		if err := validateNoBody(privKey, r); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
@@ -210,4 +171,33 @@ func TestValidate(t *testing.T) {
 			}
 		})
 	}
+}
+
+// validateNoBody reads the http.Request POST body, parses the JWS and validates it to read the body.
+// If there is an error doing this,
+// or if the JWS body is not the empty JSON payload "{}" or a POST-as-GET payload "" an error is returned.
+// We use this to verify challenge POSTs to the ts below do not send a JWS body.
+func validateNoBody(privKey *rsa.PrivateKey, r *http.Request) error {
+	reqBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return err
+	}
+
+	jws, err := jose.ParseSigned(string(reqBody))
+	if err != nil {
+		return err
+	}
+
+	body, err := jws.Verify(&jose.JSONWebKey{
+		Key:       privKey.Public(),
+		Algorithm: "RSA",
+	})
+	if err != nil {
+		return err
+	}
+
+	if bodyStr := string(body); bodyStr != "{}" && bodyStr != "" {
+		return fmt.Errorf(`expected JWS POST body "{}" or "", got %q`, bodyStr)
+	}
+	return nil
 }

@@ -35,34 +35,10 @@ func createRun() cli.Command {
 }
 
 func run(c *cli.Context) error {
-	var err error
-
 	account, client := setup(c)
+
 	if account.Registration == nil {
-		accepted := handleTOS(c, client)
-		if !accepted {
-			log.Fatal("You did not accept the TOS. Unable to proceed.")
-		}
-
-		var reg *registration.Resource
-
-		if c.GlobalBool("eab") {
-			kid := c.GlobalString("kid")
-			hmacEncoded := c.GlobalString("hmac")
-
-			if kid == "" || hmacEncoded == "" {
-				log.Fatalf("Requires arguments --kid and --hmac.")
-			}
-
-			reg, err = client.Registration.RegisterWithExternalAccountBinding(
-				accepted,
-				kid,
-				hmacEncoded,
-			)
-		} else {
-			reg, err = client.Registration.Register(accepted)
-		}
-
+		reg, err := register(c, client)
 		if err != nil {
 			log.Fatalf("Could not complete registration\n\t%v", err)
 		}
@@ -81,41 +57,16 @@ func run(c *cli.Context) error {
 		configuration directory will also contain certificates and
 		private keys obtained from Let's Encrypt so making regular
 		backups of this folder is ideal.`, account.GetAccountPath(c))
-
 	}
 
-	// we require either domains or csr, but not both
-	hasDomains := len(c.GlobalStringSlice("domains")) > 0
-	hasCsr := len(c.GlobalString("csr")) > 0
-	if hasDomains && hasCsr {
-		log.Fatal("Please specify either --domains/-d or --csr/-c, but not both")
-	}
-	if !hasDomains && !hasCsr {
-		log.Fatal("Please specify --domains/-d (or --csr/-c if you already have a CSR)")
-	}
-
-	var cert *certificate.Resource
-
-	if hasDomains {
-		// obtain a certificate, generating a new private key
-		cert, err = client.Certificate.Obtain(c.GlobalStringSlice("domains"), !c.Bool("no-bundle"), nil, c.Bool("must-staple"))
-	} else {
-		// read the CSR
-		var csr *x509.CertificateRequest
-		csr, err = readCSRFile(c.GlobalString("csr"))
-		if err == nil {
-			// obtain a certificate for this CSR
-			cert, err = client.Certificate.ObtainForCSR(*csr, !c.Bool("no-bundle"))
-		}
-	}
-
+	cert, err := obtainCertificate(c, client)
 	if err != nil {
 		// Make sure to return a non-zero exit code if ObtainSANCertificate returned at least one error.
 		// Due to us not returning partial certificate we can just exit here instead of at the end.
 		log.Fatalf("Could not obtain certificates:\n\t%v", err)
 	}
 
-	saveCertRes(cert, c)
+	saveCertificates(c, cert)
 
 	return nil
 }
@@ -146,6 +97,71 @@ func handleTOS(c *cli.Context, client *acme.Client) bool {
 			fmt.Println("Your input was invalid. Please answer with one of Y/y, n/N or by pressing enter.")
 		}
 	}
+}
+
+func register(c *cli.Context, client *acme.Client) (*registration.Resource, error) {
+	accepted := handleTOS(c, client)
+	if !accepted {
+		log.Fatal("You did not accept the TOS. Unable to proceed.")
+	}
+
+	if c.GlobalBool("eab") {
+		kid := c.GlobalString("kid")
+		hmacEncoded := c.GlobalString("hmac")
+
+		if kid == "" || hmacEncoded == "" {
+			log.Fatalf("Requires arguments --kid and --hmac.")
+		}
+
+		reg, err := client.Registration.RegisterWithExternalAccountBinding(accepted, kid, hmacEncoded)
+		if err != nil {
+			return nil, err
+		}
+		return reg, nil
+	}
+
+	reg, err := client.Registration.Register(accepted)
+	if err != nil {
+		return nil, err
+	}
+	return reg, nil
+}
+
+func obtainCertificate(c *cli.Context, client *acme.Client) (*certificate.Resource, error) {
+	if hasDomains(c) {
+		// obtain a certificate, generating a new private key
+		cert, err := client.Certificate.Obtain(c.GlobalStringSlice("domains"), !c.Bool("no-bundle"), nil, c.Bool("must-staple"))
+		if err != nil {
+			return nil, err
+		}
+		return cert, nil
+	}
+
+	// read the CSR
+	csr, err := readCSRFile(c.GlobalString("csr"))
+	if err != nil {
+		return nil, err
+	}
+
+	// obtain a certificate for this CSR
+	cert, err := client.Certificate.ObtainForCSR(*csr, !c.Bool("no-bundle"))
+	if err != nil {
+		return nil, err
+	}
+	return cert, nil
+}
+
+func hasDomains(c *cli.Context) bool {
+	// we require either domains or csr, but not both
+	hasDomains := len(c.GlobalStringSlice("domains")) > 0
+	hasCsr := len(c.GlobalString("csr")) > 0
+	if hasDomains && hasCsr {
+		log.Fatal("Please specify either --domains/-d or --csr/-c, but not both")
+	}
+	if !hasDomains && !hasCsr {
+		log.Fatal("Please specify --domains/-d (or --csr/-c if you already have a CSR)")
+	}
+	return hasDomains
 }
 
 func readCSRFile(filename string) (*x509.CertificateRequest, error) {

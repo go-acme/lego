@@ -152,7 +152,6 @@ func TestValidate(t *testing.T) {
 			authorization.Challenges = append(authorization.Challenges, chlg)
 		}
 
-		fmt.Println(r.Method, r.URL)
 		err := tester.WriteJSONResponse(w, authorization)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

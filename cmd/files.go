@@ -21,19 +21,19 @@ func checkFolder(path string) error {
 }
 
 func saveCertRes(certRes *certificate.Resource, c *cli.Context) {
-	var domainName string
+	var baseFileName string
 
 	// Check filename cli parameter
 	if c.GlobalString("filename") == "" {
 		// Make sure no funny chars are in the cert names (like wildcards ;))
-		domainName = strings.Replace(certRes.Domain, "*", "_", -1)
+		baseFileName = santizedDomain(certRes.Domain)
 	} else {
-		domainName = c.GlobalString("filename")
+		baseFileName = c.GlobalString("filename")
 	}
 
 	// We store the certificate, private key and metadata in different files
 	// as web servers would not be able to work with a combined file.
-	certOut := filepath.Join(CertPath(c), domainName+".crt")
+	certOut := filepath.Join(getCertPath(c), baseFileName+".crt")
 
 	err := checkFolder(filepath.Dir(certOut))
 	if err != nil {
@@ -45,7 +45,7 @@ func saveCertRes(certRes *certificate.Resource, c *cli.Context) {
 		log.Fatalf("Unable to save Certificate for domain %s\n\t%v", certRes.Domain, err)
 	}
 
-	issuerOut := filepath.Join(CertPath(c), domainName+".issuer.crt")
+	issuerOut := filepath.Join(getCertPath(c), baseFileName+".issuer.crt")
 
 	if certRes.IssuerCertificate != nil {
 		err = ioutil.WriteFile(issuerOut, certRes.IssuerCertificate, 0600)
@@ -55,7 +55,7 @@ func saveCertRes(certRes *certificate.Resource, c *cli.Context) {
 	}
 
 	if certRes.PrivateKey != nil {
-		privOut := filepath.Join(CertPath(c), domainName+".key")
+		privOut := filepath.Join(getCertPath(c), baseFileName+".key")
 
 		// if we were given a CSR, we don't know the private key
 		err = ioutil.WriteFile(privOut, certRes.PrivateKey, 0600)
@@ -64,7 +64,7 @@ func saveCertRes(certRes *certificate.Resource, c *cli.Context) {
 		}
 
 		if c.GlobalBool("pem") {
-			pemOut := filepath.Join(CertPath(c), domainName+".pem")
+			pemOut := filepath.Join(getCertPath(c), baseFileName+".pem")
 			err = ioutil.WriteFile(pemOut, bytes.Join([][]byte{certRes.Certificate, certRes.PrivateKey}, nil), 0600)
 			if err != nil {
 				log.Fatalf("Unable to save Certificate and PrivateKey in .pem for domain %s\n\t%v", certRes.Domain, err)
@@ -81,14 +81,18 @@ func saveCertRes(certRes *certificate.Resource, c *cli.Context) {
 		log.Fatalf("Unable to marshal CertResource for domain %s\n\t%v", certRes.Domain, err)
 	}
 
-	metaOut := filepath.Join(CertPath(c), domainName+".json")
+	metaOut := filepath.Join(getCertPath(c), baseFileName+".json")
 	err = ioutil.WriteFile(metaOut, jsonBytes, 0600)
 	if err != nil {
 		log.Fatalf("Unable to save CertResource for domain %s\n\t%v", certRes.Domain, err)
 	}
 }
 
-// CertPath gets the path for certificates.
-func CertPath(c *cli.Context) string {
+// getCertPath gets the path for certificates.
+func getCertPath(c *cli.Context) string {
 	return filepath.Join(c.GlobalString("path"), "certificates")
+}
+
+func santizedDomain(domain string) string {
+	return strings.Replace(domain, "*", "_", -1)
 }

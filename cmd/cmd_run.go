@@ -115,7 +115,7 @@ func run(c *cli.Context) error {
 		log.Fatalf("Could not obtain certificates:\n\t%v", err)
 	}
 
-	if err = checkFolder(CertPath(c)); err != nil {
+	if err = checkFolder(getCertPath(c)); err != nil {
 		log.Fatalf("Could not check/create path: %v", err)
 	}
 

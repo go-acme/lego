@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/urfave/cli"
@@ -51,12 +50,12 @@ func renew(c *cli.Context) error {
 	}
 
 	domain := c.GlobalStringSlice("domains")[0]
-	baseFileName := strings.Replace(domain, "*", "_", -1)
+	baseFileName := santizedDomain(domain)
 
 	// load the cert resource from files.
 	// We store the certificate, private key and metadata in different files
 	// as web servers would not be able to work with a combined file.
-	certPath := filepath.Join(CertPath(c), baseFileName+".crt")
+	certPath := filepath.Join(getCertPath(c), baseFileName+".crt")
 
 	certBytes, err := ioutil.ReadFile(certPath)
 	if err != nil {
@@ -74,7 +73,30 @@ func renew(c *cli.Context) error {
 		}
 	}
 
-	metaPath := filepath.Join(CertPath(c), baseFileName+".json")
+	certRes := readMeta(c, domain, baseFileName)
+	certRes.Certificate = certBytes
+
+	if c.Bool("reuse-key") {
+		privPath := filepath.Join(getCertPath(c), baseFileName+".key")
+		keyBytes, errR := ioutil.ReadFile(privPath)
+		if errR != nil {
+			log.Fatalf("Error while loading the private key for domain %s\n\t%v", domain, errR)
+		}
+		certRes.PrivateKey = keyBytes
+	}
+
+	newCert, err := client.Certificate.Renew(certRes, !c.Bool("no-bundle"), c.Bool("must-staple"))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	saveCertRes(newCert, c)
+
+	return nil
+}
+
+func readMeta(c *cli.Context, domain, baseFileName string) certificate.Resource {
+	metaPath := filepath.Join(getCertPath(c), baseFileName+".json")
 	metaBytes, err := ioutil.ReadFile(metaPath)
 	if err != nil {
 		log.Fatalf("Error while loading the meta data for domain %s\n\t%v", domain, err)
@@ -85,23 +107,5 @@ func renew(c *cli.Context) error {
 		log.Fatalf("Error while marshaling the meta data for domain %s\n\t%v", domain, err)
 	}
 
-	if c.Bool("reuse-key") {
-		privPath := filepath.Join(CertPath(c), baseFileName+".key")
-		keyBytes, errR := ioutil.ReadFile(privPath)
-		if errR != nil {
-			log.Fatalf("Error while loading the private key for domain %s\n\t%v", domain, errR)
-		}
-		certRes.PrivateKey = keyBytes
-	}
-
-	certRes.Certificate = certBytes
-
-	newCert, err := client.Certificate.Renew(certRes, !c.Bool("no-bundle"), c.Bool("must-staple"))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	saveCertRes(newCert, c)
-
-	return nil
+	return certRes
 }

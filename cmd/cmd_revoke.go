@@ -17,19 +17,19 @@ func createRevoke() cli.Command {
 }
 
 func revoke(c *cli.Context) error {
-	conf, acc, client := setup(c)
+	acc, client := setup(c)
 	if acc.Registration == nil {
 		log.Fatalf("Account %s is not registered. Use 'run' to register a new account.\n", acc.Email)
 	}
 
-	if err := checkFolder(conf.CertPath()); err != nil {
+	if err := checkFolder(CertPath(c)); err != nil {
 		log.Fatalf("Could not check/create path: %v", err)
 	}
 
 	for _, domain := range c.GlobalStringSlice("domains") {
 		log.Printf("Trying to revoke certificate for domain %s", domain)
 
-		certPath := filepath.Join(conf.CertPath(), domain+".crt")
+		certPath := filepath.Join(CertPath(c), domain+".crt")
 		certBytes, err := ioutil.ReadFile(certPath)
 		if err != nil {
 			log.Fatalf("Error while revoking the certificate for domain %s\n\t%v", domain, err)

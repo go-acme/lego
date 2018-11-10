@@ -4,9 +4,12 @@ import (
 	"crypto"
 	"encoding/json"
 	"io/ioutil"
+	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 
+	"github.com/urfave/cli"
 	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/log"
 	"github.com/xenolf/lego/registration"
@@ -17,13 +20,11 @@ type Account struct {
 	Email        string                 `json:"email"`
 	Registration *registration.Resource `json:"registration"`
 	key          crypto.PrivateKey
-
-	conf *Configuration
 }
 
 // NewAccount creates a new account for an email address
-func NewAccount(email string, conf *Configuration) *Account {
-	accKeysPath := conf.AccountKeysPath(email)
+func NewAccount(c *cli.Context, email string) *Account {
+	accKeysPath := AccountKeysPath(c, email)
 	// TODO: move to function in configuration?
 	accKeyPath := filepath.Join(accKeysPath, email+".key")
 	if err := checkFolder(accKeysPath); err != nil {
@@ -47,9 +48,9 @@ func NewAccount(email string, conf *Configuration) *Account {
 		}
 	}
 
-	accountFile := filepath.Join(conf.AccountPath(email), "account.json")
+	accountFile := filepath.Join(AccountPath(c, email), "account.json")
 	if _, err := os.Stat(accountFile); os.IsNotExist(err) {
-		return &Account{Email: email, key: privKey, conf: conf}
+		return &Account{Email: email, key: privKey}
 	}
 
 	fileBytes, err := ioutil.ReadFile(accountFile)
@@ -64,32 +65,27 @@ func NewAccount(email string, conf *Configuration) *Account {
 	}
 
 	acc.key = privKey
-	acc.conf = conf
 
 	if acc.Registration == nil || acc.Registration.Body.Status == "" {
-		reg, err := tryRecoverAccount(privKey, conf)
+		reg, err := tryRecoverAccount(privKey, c)
 		if err != nil {
 			log.Fatalf("Could not load account for %s. Registration is nil -> %#v", email, err)
 		}
 
 		acc.Registration = reg
-		err = acc.Save()
+		err = acc.Save(c)
 		if err != nil {
 			log.Fatalf("Could not save account for %s. Registration is nil -> %#v", email, err)
 		}
 	}
 
-	if acc.conf == nil {
-		log.Fatalf("Could not load account for %s. Configuration is nil.", email)
-	}
-
 	return &acc
 }
 
-func tryRecoverAccount(privKey crypto.PrivateKey, conf *Configuration) (*registration.Resource, error) {
+func tryRecoverAccount(privKey crypto.PrivateKey, c *cli.Context) (*registration.Resource, error) {
 	// couldn't load account but got a key. Try to look the account up.
-	config := acme.NewDefaultConfig(&Account{key: privKey, conf: conf}).
-		WithCADirURL(conf.context.GlobalString("server"))
+	config := acme.NewDefaultConfig(&Account{key: privKey}).
+		WithCADirURL(c.GlobalString("server"))
 
 	client, err := acme.NewClient(config)
 	if err != nil {
@@ -123,15 +119,36 @@ func (a *Account) GetRegistration() *registration.Resource {
 /** End **/
 
 // Save the account to disk
-func (a *Account) Save() error {
+func (a *Account) Save(c *cli.Context) error {
 	jsonBytes, err := json.MarshalIndent(a, "", "\t")
 	if err != nil {
 		return err
 	}
 
 	return ioutil.WriteFile(
-		filepath.Join(a.conf.AccountPath(a.Email), "account.json"),
+		filepath.Join(AccountPath(c, a.Email), "account.json"),
 		jsonBytes,
 		0600,
 	)
+}
+
+// AccountKeysPath returns the OS dependent path to the keys of a particular account
+func AccountKeysPath(c *cli.Context, acc string) string {
+	return filepath.Join(AccountPath(c, acc), "keys")
+}
+
+// AccountPath returns the OS dependent path to a particular account
+func AccountPath(c *cli.Context, acc string) string {
+	return filepath.Join(accountsPath(c), acc)
+}
+
+// accountsPath returns the OS dependent path to the local accounts for a specific CA
+func accountsPath(c *cli.Context) string {
+	return filepath.Join(c.GlobalString("path"), "accounts", serverPath(c))
+}
+
+// serverPath returns the OS dependent path to the data for a specific CA
+func serverPath(c *cli.Context) string {
+	srv, _ := url.Parse(c.GlobalString("server"))
+	return strings.NewReplacer(":", "_", "/", string(os.PathSeparator)).Replace(srv.Host)
 }

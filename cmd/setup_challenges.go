@@ -14,9 +14,9 @@ import (
 	"github.com/xenolf/lego/providers/http/webroot"
 )
 
-func setupChallenges(client *acme.Client, c *cli.Context, conf *Configuration) {
+func setupChallenges(client *acme.Client, c *cli.Context) {
 	if len(c.GlobalStringSlice("exclude")) > 0 {
-		client.Challenge.Exclude(conf.ExcludedSolvers())
+		client.Challenge.Exclude(excludedSolvers(c))
 	}
 
 	if c.GlobalIsSet("webroot") {
@@ -38,6 +38,14 @@ func setupChallenges(client *acme.Client, c *cli.Context, conf *Configuration) {
 	if c.GlobalIsSet("dns") {
 		setupDNS(client, c)
 	}
+}
+
+// excludedSolvers is a list of solvers that are to be excluded.
+func excludedSolvers(c *cli.Context) (cc []challenge.Type) {
+	for _, s := range c.GlobalStringSlice("exclude") {
+		cc = append(cc, challenge.Type(s))
+	}
+	return
 }
 
 func setupWebroot(client *acme.Client, path string) {

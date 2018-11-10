@@ -37,7 +37,7 @@ func createRun() cli.Command {
 func run(c *cli.Context) error {
 	var err error
 
-	conf, acc, client := setup(c)
+	acc, client := setup(c)
 	if acc.Registration == nil {
 		accepted := handleTOS(c, client)
 		if !accepted {
@@ -69,7 +69,7 @@ func run(c *cli.Context) error {
 
 		acc.Registration = reg
 
-		if err = acc.Save(); err != nil {
+		if err = acc.Save(c); err != nil {
 			log.Fatal(err)
 		}
 
@@ -80,7 +80,7 @@ func run(c *cli.Context) error {
 		You should make a secure backup	of this folder now. This
 		configuration directory will also contain certificates and
 		private keys obtained from Let's Encrypt so making regular
-		backups of this folder is ideal.`, conf.AccountPath(c.GlobalString("email")))
+		backups of this folder is ideal.`, AccountPath(c, c.GlobalString("email")))
 
 	}
 
@@ -115,11 +115,11 @@ func run(c *cli.Context) error {
 		log.Fatalf("Could not obtain certificates:\n\t%v", err)
 	}
 
-	if err = checkFolder(conf.CertPath()); err != nil {
+	if err = checkFolder(CertPath(c)); err != nil {
 		log.Fatalf("Could not check/create path: %v", err)
 	}
 
-	saveCertRes(cert, conf)
+	saveCertRes(cert, c)
 
 	return nil
 }

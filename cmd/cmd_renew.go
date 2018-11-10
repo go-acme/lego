@@ -41,7 +41,7 @@ func createRenew() cli.Command {
 }
 
 func renew(c *cli.Context) error {
-	conf, acc, client := setup(c)
+	acc, client := setup(c)
 	if acc.Registration == nil {
 		log.Fatalf("Account %s is not registered. Use 'run' to register a new account.\n", acc.Email)
 	}
@@ -56,7 +56,7 @@ func renew(c *cli.Context) error {
 	// load the cert resource from files.
 	// We store the certificate, private key and metadata in different files
 	// as web servers would not be able to work with a combined file.
-	certPath := filepath.Join(conf.CertPath(), baseFileName+".crt")
+	certPath := filepath.Join(CertPath(c), baseFileName+".crt")
 
 	certBytes, err := ioutil.ReadFile(certPath)
 	if err != nil {
@@ -74,7 +74,7 @@ func renew(c *cli.Context) error {
 		}
 	}
 
-	metaPath := filepath.Join(conf.CertPath(), baseFileName+".json")
+	metaPath := filepath.Join(CertPath(c), baseFileName+".json")
 	metaBytes, err := ioutil.ReadFile(metaPath)
 	if err != nil {
 		log.Fatalf("Error while loading the meta data for domain %s\n\t%v", domain, err)
@@ -86,7 +86,7 @@ func renew(c *cli.Context) error {
 	}
 
 	if c.Bool("reuse-key") {
-		privPath := filepath.Join(conf.CertPath(), baseFileName+".key")
+		privPath := filepath.Join(CertPath(c), baseFileName+".key")
 		keyBytes, errR := ioutil.ReadFile(privPath)
 		if errR != nil {
 			log.Fatalf("Error while loading the private key for domain %s\n\t%v", domain, errR)
@@ -101,7 +101,7 @@ func renew(c *cli.Context) error {
 		log.Fatal(err)
 	}
 
-	saveCertRes(newCert, conf)
+	saveCertRes(newCert, c)
 
 	return nil
 }

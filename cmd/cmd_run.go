@@ -37,8 +37,8 @@ func createRun() cli.Command {
 func run(c *cli.Context) error {
 	var err error
 
-	acc, client := setup(c)
-	if acc.Registration == nil {
+	account, client := setup(c)
+	if account.Registration == nil {
 		accepted := handleTOS(c, client)
 		if !accepted {
 			log.Fatal("You did not accept the TOS. Unable to proceed.")
@@ -67,9 +67,9 @@ func run(c *cli.Context) error {
 			log.Fatalf("Could not complete registration\n\t%v", err)
 		}
 
-		acc.Registration = reg
+		account.Registration = reg
 
-		if err = acc.Save(c); err != nil {
+		if err = account.Save(c); err != nil {
 			log.Fatal(err)
 		}
 
@@ -80,7 +80,7 @@ func run(c *cli.Context) error {
 		You should make a secure backup	of this folder now. This
 		configuration directory will also contain certificates and
 		private keys obtained from Let's Encrypt so making regular
-		backups of this folder is ideal.`, acc.GetAccountPath(c))
+		backups of this folder is ideal.`, account.GetAccountPath(c))
 
 	}
 
@@ -113,10 +113,6 @@ func run(c *cli.Context) error {
 		// Make sure to return a non-zero exit code if ObtainSANCertificate returned at least one error.
 		// Due to us not returning partial certificate we can just exit here instead of at the end.
 		log.Fatalf("Could not obtain certificates:\n\t%v", err)
-	}
-
-	if err = checkFolder(getCertPath(c)); err != nil {
-		log.Fatalf("Could not check/create path: %v", err)
 	}
 
 	saveCertRes(cert, c)

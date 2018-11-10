@@ -9,8 +9,38 @@ import (
 	"encoding/pem"
 	"errors"
 	"io/ioutil"
+	"net/url"
 	"os"
+	"path/filepath"
+	"strings"
+
+	"github.com/urfave/cli"
+	"github.com/xenolf/lego/log"
 )
+
+const (
+	baseAccountFolderName = "accounts"
+	baseKeysFolderName    = "keys"
+	accountFileName       = "account.json"
+)
+
+// getAccountPath returns the OS dependent path to a particular account
+func getAccountPath(c *cli.Context, acc string) string {
+	srv, _ := url.Parse(c.GlobalString("server"))
+	serverPath := strings.NewReplacer(":", "_", "/", string(os.PathSeparator)).Replace(srv.Host)
+
+	accountsPath := filepath.Join(c.GlobalString("path"), baseAccountFolderName, serverPath)
+
+	return filepath.Join(accountsPath, acc)
+}
+
+func getOrCreateAccountKeysFolder(c *cli.Context, email string) string {
+	accKeysPath := filepath.Join(getAccountPath(c, email), baseKeysFolderName)
+	if err := createNonExistingFolder(accKeysPath); err != nil {
+		log.Fatalf("Could not check/create directory for account %s: %v", email, err)
+	}
+	return accKeysPath
+}
 
 func generatePrivateKey(file string) (crypto.PrivateKey, error) {
 	privateKey, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)

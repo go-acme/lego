@@ -16,7 +16,7 @@ import (
 
 func setupChallenges(client *acme.Client, c *cli.Context) {
 	if len(c.GlobalStringSlice("exclude")) > 0 {
-		client.Challenge.Exclude(excludedSolvers(c))
+		excludedSolvers(client, c)
 	}
 
 	if c.GlobalIsSet("webroot") {
@@ -40,12 +40,12 @@ func setupChallenges(client *acme.Client, c *cli.Context) {
 	}
 }
 
-// excludedSolvers is a list of solvers that are to be excluded.
-func excludedSolvers(c *cli.Context) (cc []challenge.Type) {
+func excludedSolvers(client *acme.Client, c *cli.Context) {
+	var cc []challenge.Type
 	for _, s := range c.GlobalStringSlice("exclude") {
 		cc = append(cc, challenge.Type(s))
 	}
-	return
+	client.Challenge.Exclude(cc)
 }
 
 func setupWebroot(client *acme.Client, path string) {

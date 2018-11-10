@@ -1,9 +1,6 @@
 package cmd
 
 import (
-	"io/ioutil"
-	"path/filepath"
-
 	"github.com/urfave/cli"
 	"github.com/xenolf/lego/log"
 )
@@ -22,16 +19,12 @@ func revoke(c *cli.Context) error {
 		log.Fatalf("Account %s is not registered. Use 'run' to register a new account.\n", acc.Email)
 	}
 
-	if err := checkFolder(getCertPath(c)); err != nil {
-		log.Fatalf("Could not check/create path: %v", err)
-	}
+	getOrCreateCertFolder(c)
 
 	for _, domain := range c.GlobalStringSlice("domains") {
 		log.Printf("Trying to revoke certificate for domain %s", domain)
 
-		baseFileName := santizedDomain(domain)
-		certPath := filepath.Join(getCertPath(c), baseFileName+".crt")
-		certBytes, err := ioutil.ReadFile(certPath)
+		certBytes, err := readStoredFileCert(c, domain, ".crt")
 		if err != nil {
 			log.Fatalf("Error while revoking the certificate for domain %s\n\t%v", domain, err)
 		}

@@ -3,11 +3,10 @@ package cmd
 import (
 	"crypto"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
-	"net/url"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/urfave/cli"
 	"github.com/xenolf/lego/acme"
@@ -24,12 +23,13 @@ type Account struct {
 
 // NewAccount creates a new account for an email address
 func NewAccount(c *cli.Context, email string) *Account {
-	accKeyPath := getAccountKeyPath(c, email)
+	accKeysPath := getOrCreateAccountKeysFolder(c, email)
+	accKeyPath := filepath.Join(accKeysPath, email+".key")
 
 	var privKey crypto.PrivateKey
 	if _, err := os.Stat(accKeyPath); os.IsNotExist(err) {
-
 		log.Printf("No key found for account %s. Generating a curve P384 EC key.", email)
+
 		privKey, err = generatePrivateKey(accKeyPath)
 		if err != nil {
 			log.Fatalf("Could not generate RSA private account key for account %s: %v", email, err)
@@ -43,7 +43,7 @@ func NewAccount(c *cli.Context, email string) *Account {
 		}
 	}
 
-	accountFile := filepath.Join(getAccountPath(c, email), "account.json")
+	accountFile := filepath.Join(getAccountPath(c, email), accountFileName)
 	if _, err := os.Stat(accountFile); os.IsNotExist(err) {
 		return &Account{Email: email, key: privKey}
 	}
@@ -80,7 +80,8 @@ func NewAccount(c *cli.Context, email string) *Account {
 func tryRecoverAccount(privKey crypto.PrivateKey, c *cli.Context) (*registration.Resource, error) {
 	// couldn't load account but got a key. Try to look the account up.
 	config := acme.NewDefaultConfig(&Account{key: privKey}).
-		WithCADirURL(c.GlobalString("server"))
+		WithCADirURL(c.GlobalString("server")).
+		WithUserAgent(fmt.Sprintf("lego-cli/%s", c.App.Version))
 
 	client, err := acme.NewClient(config)
 	if err != nil {
@@ -120,32 +121,11 @@ func (a *Account) Save(c *cli.Context) error {
 		return err
 	}
 
-	return ioutil.WriteFile(
-		filepath.Join(getAccountPath(c, a.Email), "account.json"),
-		jsonBytes,
-		0600,
-	)
+	accountPath := filepath.Join(getAccountPath(c, a.Email), accountFileName)
+	return ioutil.WriteFile(accountPath, jsonBytes, 0600)
 }
 
 // GetAccountPath returns the OS dependent path to a particular account
 func (a *Account) GetAccountPath(c *cli.Context) string {
 	return getAccountPath(c, a.Email)
-}
-
-func getAccountKeyPath(c *cli.Context, email string) string {
-	accKeysPath := filepath.Join(getAccountPath(c, email), "keys")
-	if err := checkFolder(accKeysPath); err != nil {
-		log.Fatalf("Could not check/create directory for account %s: %v", email, err)
-	}
-	return filepath.Join(accKeysPath, email+".key")
-}
-
-// getAccountPath returns the OS dependent path to a particular account
-func getAccountPath(c *cli.Context, acc string) string {
-	srv, _ := url.Parse(c.GlobalString("server"))
-	serverPath := strings.NewReplacer(":", "_", "/", string(os.PathSeparator)).Replace(srv.Host)
-
-	accountsPath := filepath.Join(c.GlobalString("path"), "accounts", serverPath)
-
-	return filepath.Join(accountsPath, acc)
 }

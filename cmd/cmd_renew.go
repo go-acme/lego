@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"encoding/json"
-	"io/ioutil"
-	"path/filepath"
 	"time"
 
 	"github.com/urfave/cli"
@@ -50,14 +48,11 @@ func renew(c *cli.Context) error {
 	}
 
 	domain := c.GlobalStringSlice("domains")[0]
-	baseFileName := santizedDomain(domain)
 
 	// load the cert resource from files.
 	// We store the certificate, private key and metadata in different files
 	// as web servers would not be able to work with a combined file.
-	certPath := filepath.Join(getCertPath(c), baseFileName+".crt")
-
-	certBytes, err := ioutil.ReadFile(certPath)
+	certBytes, err := readStoredFileCert(c, domain, ".crt")
 	if err != nil {
 		log.Fatalf("Error while loading the certificate for domain %s\n\t%v", domain, err)
 	}
@@ -65,7 +60,7 @@ func renew(c *cli.Context) error {
 	if c.IsSet("days") {
 		expTime, errE := certcrypto.GetPEMCertExpiration(certBytes)
 		if errE != nil {
-			log.Printf("Could not get Certification expiration for domain %s", baseFileName)
+			log.Printf("Could not get Certification expiration for domain %s", domain)
 		}
 
 		if int(time.Until(expTime).Hours()/24.0) > c.Int("days") {
@@ -73,12 +68,11 @@ func renew(c *cli.Context) error {
 		}
 	}
 
-	certRes := readMeta(c, domain, baseFileName)
+	certRes := readMeta(c, domain)
 	certRes.Certificate = certBytes
 
 	if c.Bool("reuse-key") {
-		privPath := filepath.Join(getCertPath(c), baseFileName+".key")
-		keyBytes, errR := ioutil.ReadFile(privPath)
+		keyBytes, errR := readStoredFileCert(c, domain, ".key")
 		if errR != nil {
 			log.Fatalf("Error while loading the private key for domain %s\n\t%v", domain, errR)
 		}
@@ -95,9 +89,8 @@ func renew(c *cli.Context) error {
 	return nil
 }
 
-func readMeta(c *cli.Context, domain, baseFileName string) certificate.Resource {
-	metaPath := filepath.Join(getCertPath(c), baseFileName+".json")
-	metaBytes, err := ioutil.ReadFile(metaPath)
+func readMeta(c *cli.Context, domain string) certificate.Resource {
+	metaBytes, err := readStoredFileCert(c, domain, ".json")
 	if err != nil {
 		log.Fatalf("Error while loading the meta data for domain %s\n\t%v", domain, err)
 	}

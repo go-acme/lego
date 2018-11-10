@@ -17,10 +17,7 @@ func setup(c *cli.Context) (*Account, *acme.Client) {
 		log.Fatal("You have to pass an account (email address) to the program using --email or -m")
 	}
 
-	keyType, err := KeyType(c)
-	if err != nil {
-		log.Fatal(err)
-	}
+	keyType := getKeyType(c)
 
 	// TODO: move to account struct? Currently MUST pass email.
 	acc := NewAccount(c, email)
@@ -48,21 +45,22 @@ func setup(c *cli.Context) (*Account, *acme.Client) {
 	return acc, client
 }
 
-// KeyType the type from which private keys should be generated
-func KeyType(c *cli.Context) (certcrypto.KeyType, error) {
+// getKeyType the type from which private keys should be generated
+func getKeyType(c *cli.Context) certcrypto.KeyType {
 	keyType := c.GlobalString("key-type")
 	switch strings.ToUpper(keyType) {
 	case "RSA2048":
-		return certcrypto.RSA2048, nil
+		return certcrypto.RSA2048
 	case "RSA4096":
-		return certcrypto.RSA4096, nil
+		return certcrypto.RSA4096
 	case "RSA8192":
-		return certcrypto.RSA8192, nil
+		return certcrypto.RSA8192
 	case "EC256":
-		return certcrypto.EC256, nil
+		return certcrypto.EC256
 	case "EC384":
-		return certcrypto.EC384, nil
+		return certcrypto.EC384
 	}
 
-	return "", fmt.Errorf("unsupported KeyType: %s", keyType)
+	log.Fatalf("Unsupported KeyType: %s", keyType)
+	return ""
 }

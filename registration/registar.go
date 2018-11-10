@@ -11,6 +11,7 @@ import (
 
 // Resource represents all important information about a registration
 // of which the client needs to keep track itself.
+// Deprecated: will be remove in the future.
 type Resource struct {
 	Body le.Account `json:"body,omitempty"`
 	URI  string     `json:"uri,omitempty"`
@@ -54,7 +55,6 @@ func (r *Registrar) RegisterWithExternalAccountBinding(tosAgreed bool, kid strin
 		}
 	}
 
-	// FIXME remove resource
 	return &Resource{URI: account.Location, Body: account.Account}, nil
 }
 
@@ -83,7 +83,6 @@ func (r *Registrar) register(tosAgreed bool) (*Resource, error) {
 		}
 	}
 
-	// FIXME remove resource
 	return &Resource{URI: account.Location, Body: account.Account}, nil
 }
 
@@ -104,7 +103,6 @@ func (r *Registrar) QueryRegistration() (*Resource, error) {
 		return nil, err
 	}
 
-	// FIXME remove resource
 	return &Resource{
 		Body: account,
 		// Location: header is not returned so this needs to be populated off of existing URI
@@ -139,6 +137,5 @@ func (r *Registrar) ResolveAccountByKey() (*Resource, error) {
 		return nil, err
 	}
 
-	// FIXME remove resource
 	return &Resource{URI: accountTransit.Location, Body: account}, nil
 }

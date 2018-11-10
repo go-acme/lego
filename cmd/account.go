@@ -103,7 +103,7 @@ func tryRecoverAccount(privKey crypto.PrivateKey, conf *Configuration) (*registr
 	return reg, nil
 }
 
-/** Implementation of the emca.User interface **/
+/** Implementation of the acme.User interface **/
 
 // GetEmail returns the email address for the account
 func (a *Account) GetEmail() string {

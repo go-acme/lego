@@ -51,14 +51,12 @@ func renew(c *cli.Context) error {
 	}
 
 	domain := c.GlobalStringSlice("domains")[0]
-	domain = strings.Replace(domain, "*", "_", -1)
+	baseFileName := strings.Replace(domain, "*", "_", -1)
 
 	// load the cert resource from files.
 	// We store the certificate, private key and metadata in different files
 	// as web servers would not be able to work with a combined file.
-	certPath := filepath.Join(conf.CertPath(), domain+".crt")
-	privPath := filepath.Join(conf.CertPath(), domain+".key")
-	metaPath := filepath.Join(conf.CertPath(), domain+".json")
+	certPath := filepath.Join(conf.CertPath(), baseFileName+".crt")
 
 	certBytes, err := ioutil.ReadFile(certPath)
 	if err != nil {
@@ -68,7 +66,7 @@ func renew(c *cli.Context) error {
 	if c.IsSet("days") {
 		expTime, errE := certcrypto.GetPEMCertExpiration(certBytes)
 		if errE != nil {
-			log.Printf("Could not get Certification expiration for domain %s", domain)
+			log.Printf("Could not get Certification expiration for domain %s", baseFileName)
 		}
 
 		if int(time.Until(expTime).Hours()/24.0) > c.Int("days") {
@@ -76,6 +74,7 @@ func renew(c *cli.Context) error {
 		}
 	}
 
+	metaPath := filepath.Join(conf.CertPath(), baseFileName+".json")
 	metaBytes, err := ioutil.ReadFile(metaPath)
 	if err != nil {
 		log.Fatalf("Error while loading the meta data for domain %s\n\t%v", domain, err)
@@ -87,6 +86,7 @@ func renew(c *cli.Context) error {
 	}
 
 	if c.Bool("reuse-key") {
+		privPath := filepath.Join(conf.CertPath(), baseFileName+".key")
 		keyBytes, errR := ioutil.ReadFile(privPath)
 		if errR != nil {
 			log.Fatalf("Error while loading the private key for domain %s\n\t%v", domain, errR)

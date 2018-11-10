@@ -6,9 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/xenolf/lego/cmd"
-
 	"github.com/urfave/cli"
+	"github.com/xenolf/lego/cmd"
 	"github.com/xenolf/lego/log"
 )
 

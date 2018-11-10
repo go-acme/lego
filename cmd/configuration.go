@@ -24,7 +24,8 @@ func NewConfiguration(c *cli.Context) *Configuration {
 
 // KeyType the type from which private keys should be generated
 func (c *Configuration) KeyType() (certcrypto.KeyType, error) {
-	switch strings.ToUpper(c.context.GlobalString("key-type")) {
+	keyType := c.context.GlobalString("key-type")
+	switch strings.ToUpper(keyType) {
 	case "RSA2048":
 		return certcrypto.RSA2048, nil
 	case "RSA4096":
@@ -37,7 +38,7 @@ func (c *Configuration) KeyType() (certcrypto.KeyType, error) {
 		return certcrypto.EC384, nil
 	}
 
-	return "", fmt.Errorf("unsupported KeyType: %s", c.context.GlobalString("key-type"))
+	return "", fmt.Errorf("unsupported KeyType: %s", keyType)
 }
 
 // ExcludedSolvers is a list of solvers that are to be excluded.

@@ -80,7 +80,7 @@ func run(c *cli.Context) error {
 		You should make a secure backup	of this folder now. This
 		configuration directory will also contain certificates and
 		private keys obtained from Let's Encrypt so making regular
-		backups of this folder is ideal.`, AccountPath(c, c.GlobalString("email")))
+		backups of this folder is ideal.`, acc.GetAccountPath(c))
 
 	}
 

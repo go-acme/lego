@@ -12,7 +12,8 @@ import (
 )
 
 func setup(c *cli.Context) (*Account, *acme.Client) {
-	if len(c.GlobalString("email")) == 0 {
+	email := c.GlobalString("email")
+	if len(email) == 0 {
 		log.Fatal("You have to pass an account (email address) to the program using --email or -m")
 	}
 
@@ -22,7 +23,7 @@ func setup(c *cli.Context) (*Account, *acme.Client) {
 	}
 
 	// TODO: move to account struct? Currently MUST pass email.
-	acc := NewAccount(c, c.GlobalString("email"))
+	acc := NewAccount(c, email)
 
 	config := acme.NewDefaultConfig(acc).
 		WithKeyType(keyType).

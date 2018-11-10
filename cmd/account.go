@@ -24,12 +24,7 @@ type Account struct {
 
 // NewAccount creates a new account for an email address
 func NewAccount(c *cli.Context, email string) *Account {
-	accKeysPath := AccountKeysPath(c, email)
-	// TODO: move to function in configuration?
-	accKeyPath := filepath.Join(accKeysPath, email+".key")
-	if err := checkFolder(accKeysPath); err != nil {
-		log.Fatalf("Could not check/create directory for account %s: %v", email, err)
-	}
+	accKeyPath := getAccountKeyPath(c, email)
 
 	var privKey crypto.PrivateKey
 	if _, err := os.Stat(accKeyPath); os.IsNotExist(err) {
@@ -48,7 +43,7 @@ func NewAccount(c *cli.Context, email string) *Account {
 		}
 	}
 
-	accountFile := filepath.Join(AccountPath(c, email), "account.json")
+	accountFile := filepath.Join(getAccountPath(c, email), "account.json")
 	if _, err := os.Stat(accountFile); os.IsNotExist(err) {
 		return &Account{Email: email, key: privKey}
 	}
@@ -58,28 +53,28 @@ func NewAccount(c *cli.Context, email string) *Account {
 		log.Fatalf("Could not load file for account %s -> %v", email, err)
 	}
 
-	var acc Account
-	err = json.Unmarshal(fileBytes, &acc)
+	var account Account
+	err = json.Unmarshal(fileBytes, &account)
 	if err != nil {
 		log.Fatalf("Could not parse file for account %s -> %v", email, err)
 	}
 
-	acc.key = privKey
+	account.key = privKey
 
-	if acc.Registration == nil || acc.Registration.Body.Status == "" {
+	if account.Registration == nil || account.Registration.Body.Status == "" {
 		reg, err := tryRecoverAccount(privKey, c)
 		if err != nil {
 			log.Fatalf("Could not load account for %s. Registration is nil -> %#v", email, err)
 		}
 
-		acc.Registration = reg
-		err = acc.Save(c)
+		account.Registration = reg
+		err = account.Save(c)
 		if err != nil {
 			log.Fatalf("Could not save account for %s. Registration is nil -> %#v", email, err)
 		}
 	}
 
-	return &acc
+	return &account
 }
 
 func tryRecoverAccount(privKey crypto.PrivateKey, c *cli.Context) (*registration.Resource, error) {
@@ -126,29 +121,31 @@ func (a *Account) Save(c *cli.Context) error {
 	}
 
 	return ioutil.WriteFile(
-		filepath.Join(AccountPath(c, a.Email), "account.json"),
+		filepath.Join(getAccountPath(c, a.Email), "account.json"),
 		jsonBytes,
 		0600,
 	)
 }
 
-// AccountKeysPath returns the OS dependent path to the keys of a particular account
-func AccountKeysPath(c *cli.Context, acc string) string {
-	return filepath.Join(AccountPath(c, acc), "keys")
+// GetAccountPath returns the OS dependent path to a particular account
+func (a *Account) GetAccountPath(c *cli.Context) string {
+	return getAccountPath(c, a.Email)
 }
 
-// AccountPath returns the OS dependent path to a particular account
-func AccountPath(c *cli.Context, acc string) string {
-	return filepath.Join(accountsPath(c), acc)
+func getAccountKeyPath(c *cli.Context, email string) string {
+	accKeysPath := filepath.Join(getAccountPath(c, email), "keys")
+	if err := checkFolder(accKeysPath); err != nil {
+		log.Fatalf("Could not check/create directory for account %s: %v", email, err)
+	}
+	return filepath.Join(accKeysPath, email+".key")
 }
 
-// accountsPath returns the OS dependent path to the local accounts for a specific CA
-func accountsPath(c *cli.Context) string {
-	return filepath.Join(c.GlobalString("path"), "accounts", serverPath(c))
-}
-
-// serverPath returns the OS dependent path to the data for a specific CA
-func serverPath(c *cli.Context) string {
+// getAccountPath returns the OS dependent path to a particular account
+func getAccountPath(c *cli.Context, acc string) string {
 	srv, _ := url.Parse(c.GlobalString("server"))
-	return strings.NewReplacer(":", "_", "/", string(os.PathSeparator)).Replace(srv.Host)
+	serverPath := strings.NewReplacer(":", "_", "/", string(os.PathSeparator)).Replace(srv.Host)
+
+	accountsPath := filepath.Join(c.GlobalString("path"), "accounts", serverPath)
+
+	return filepath.Join(accountsPath, acc)
 }

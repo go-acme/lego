@@ -28,12 +28,7 @@ func main() {
 	}
 	app.Flags = cmd.CreateFlags(defaultPath)
 
-	app.Before = func(c *cli.Context) error {
-		if c.GlobalString("path") == "" {
-			log.Fatal("Could not determine current working directory. Please pass --path.")
-		}
-		return nil
-	}
+	app.Before = cmd.Before
 
 	app.Commands = cmd.CreateCommands()
 

@@ -9,24 +9,19 @@ import (
 	"github.com/xenolf/lego/log"
 )
 
-func setup(c *cli.Context) (*Configuration, *Account, *acme.Client, error) {
-	err := checkFolder(c.GlobalString("path"))
-	if err != nil {
-		log.Fatalf("Could not check/create path: %v", err)
-	}
-
-	conf := NewConfiguration(c)
+func setup(c *cli.Context) (*Configuration, *Account, *acme.Client) {
 	if len(c.GlobalString("email")) == 0 {
 		log.Fatal("You have to pass an account (email address) to the program using --email or -m")
 	}
 
-	// TODO: move to account struct? Currently MUST pass email.
-	acc := NewAccount(c.GlobalString("email"), conf)
-
+	conf := NewConfiguration(c)
 	keyType, err := conf.KeyType()
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// TODO: move to account struct? Currently MUST pass email.
+	acc := NewAccount(c.GlobalString("email"), conf)
 
 	config := acme.NewDefaultConfig(acc).
 		WithKeyType(keyType).

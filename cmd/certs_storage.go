@@ -6,40 +6,62 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
+	"time"
+
+	"golang.org/x/net/idna"
 
 	"github.com/urfave/cli"
 	"github.com/xenolf/lego/certificate"
 	"github.com/xenolf/lego/log"
 )
 
-const baseCertificatesFolderName = "certificates"
+const (
+	baseCertificatesFolderName = "certificates"
+	baseArchivesFolderName     = "archives"
+)
 
 // CertificatesStorage a certificates storage.
 //
-// Directory structure:
+// rootPath:
 //
 //     ./.lego/certificates/
 //          │      └── root certificates directory
 //          └── "path" option
 //
+// archivePath:
+//
+//     ./.lego/archives/
+//          │      └── archived certificates directory
+//          └── "path" option
+//
 type CertificatesStorage struct {
-	rootPath string
-	pem      bool
-	filename string // Deprecated
+	rootPath    string
+	archivePath string
+	pem         bool
+	filename    string // Deprecated
 }
 
 // NewCertificatesStorage create a new certificates storage.
 func NewCertificatesStorage(ctx *cli.Context) *CertificatesStorage {
 	return &CertificatesStorage{
-		rootPath: filepath.Join(ctx.GlobalString("path"), baseCertificatesFolderName),
-		pem:      ctx.GlobalBool("pem"),
-		filename: ctx.GlobalString("filename"),
+		rootPath:    filepath.Join(ctx.GlobalString("path"), baseCertificatesFolderName),
+		archivePath: filepath.Join(ctx.GlobalString("path"), baseArchivesFolderName),
+		pem:         ctx.GlobalBool("pem"),
+		filename:    ctx.GlobalString("filename"),
 	}
 }
 
 func (s *CertificatesStorage) CreateRootFolder() {
 	err := createNonExistingFolder(s.rootPath)
+	if err != nil {
+		log.Fatalf("Could not check/create path: %v", err)
+	}
+}
+
+func (s *CertificatesStorage) CreateArchiveFolder() {
+	err := createNonExistingFolder(s.archivePath)
 	if err != nil {
 		log.Fatalf("Could not check/create path: %v", err)
 	}
@@ -141,7 +163,31 @@ func (s *CertificatesStorage) WriteFile(domain, extension string, data []byte) e
 	return ioutil.WriteFile(filePath, data, filePerm)
 }
 
+func (s *CertificatesStorage) MoveToArchive(domain string) error {
+	matches, err := filepath.Glob(filepath.Join(s.rootPath, sanitizedDomain(domain)+".*"))
+	if err != nil {
+		return err
+	}
+
+	for _, oldFile := range matches {
+		date := strconv.FormatInt(time.Now().Unix(), 10)
+		filename := date + "." + filepath.Base(oldFile)
+		newFile := filepath.Join(s.archivePath, filename)
+
+		err = os.Rename(oldFile, newFile)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // sanitizedDomain Make sure no funny chars are in the cert names (like wildcards ;))
 func sanitizedDomain(domain string) string {
-	return strings.Replace(domain, "*", "_", -1)
+	safe, err := idna.ToASCII(strings.Replace(domain, "*", "_", -1))
+	if err != nil {
+		log.Fatal(err)
+	}
+	return safe
 }

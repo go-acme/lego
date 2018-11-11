@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/urfave/cli"
 	"github.com/xenolf/lego/log"
 )
@@ -10,6 +12,12 @@ func createRevoke() cli.Command {
 		Name:   "revoke",
 		Usage:  "Revoke a certificate",
 		Action: revoke,
+		Flags: []cli.Flag{
+			cli.BoolFlag{
+				Name:  "keep, k",
+				Usage: "Keep the certificates after the revocation instead of archiving them.",
+			},
+		},
 	}
 }
 
@@ -37,6 +45,19 @@ func revoke(ctx *cli.Context) error {
 		}
 
 		log.Println("Certificate was revoked.")
+
+		if ctx.Bool("keep") {
+			return nil
+		}
+
+		certsStorage.CreateArchiveFolder()
+
+		err = certsStorage.MoveToArchive(domain)
+		if err != nil {
+			return err
+		}
+
+		fmt.Println("Certificate was archived for domain:", domain)
 	}
 
 	return nil

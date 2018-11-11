@@ -113,7 +113,6 @@ func (l *EnvLoader) launchPebble() func() {
 	return func() {
 		pebble.Process.Kill()
 		fmt.Println(outPebble.String())
-		CleanLegoFiles()
 	}
 }
 
@@ -168,7 +167,6 @@ func (l *EnvLoader) launchChallSrv() func() {
 	return func() {
 		challtestsrv.Process.Kill()
 		fmt.Println(outChalSrv.String())
-		CleanLegoFiles()
 	}
 }
 

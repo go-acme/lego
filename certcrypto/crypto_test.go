@@ -114,7 +114,7 @@ func TestPEMEncode(t *testing.T) {
 	assert.Len(t, data, 127)
 }
 
-func TestPEMCertExpiration(t *testing.T) {
+func TestParsePEMCertificate(t *testing.T) {
 	privKey, err := GeneratePrivateKey(RSA2048)
 	require.NoError(t, err, "Error generating private key")
 
@@ -125,19 +125,19 @@ func TestPEMCertExpiration(t *testing.T) {
 	buf := bytes.NewBufferString("TestingRSAIsSoMuchFun")
 
 	// Some random string should return an error.
-	ctime, err := GetPEMCertExpiration(buf.Bytes())
-	require.Errorf(t, err, "Expected getCertExpiration to return an error for garbage string but returned %v", ctime)
+	cert, err := ParsePEMCertificate(buf.Bytes())
+	require.Errorf(t, err, "returned %v", cert)
 
 	// A DER encoded certificate should return an error.
-	_, err = GetPEMCertExpiration(certBytes)
-	require.Error(t, err, "Expected getCertExpiration to return an error for DER certificates")
+	_, err = ParsePEMCertificate(certBytes)
+	require.Error(t, err, "Expected to return an error for DER certificates")
 
 	// A PEM encoded certificate should work ok.
 	pemCert := PEMEncode(DERCertificateBytes(certBytes))
-	ctime, err = GetPEMCertExpiration(pemCert)
+	cert, err = ParsePEMCertificate(pemCert)
 	require.NoError(t, err)
 
-	assert.Equal(t, expiration.UTC(), ctime)
+	assert.Equal(t, expiration.UTC(), cert.NotAfter)
 }
 
 type MockRandReader struct {

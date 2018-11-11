@@ -71,6 +71,7 @@ COMMANDS:
      revoke   Revoke a certificate
      renew    Renew a certificate
      dnshelp  Shows additional help for the --dns global option
+     list     Display certificates and accounts information.
      help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
@@ -98,7 +99,6 @@ GLOBAL OPTIONS:
    --pem                       Generate a .pem file by concatenating the .key and .crt files together.
    --help, -h                  show help
    --version, -v               print the version
-
 ```
 
 ### Sudo

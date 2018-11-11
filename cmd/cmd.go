@@ -9,5 +9,6 @@ func CreateCommands() []cli.Command {
 		createRevoke(),
 		createRenew(),
 		createDNSHelp(),
+		createList(),
 	}
 }

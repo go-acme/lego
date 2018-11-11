@@ -61,12 +61,12 @@ func renew(ctx *cli.Context) error {
 	}
 
 	if days := ctx.Int("days"); days >= 0 {
-		expTime, errE := certcrypto.GetPEMCertExpiration(certBytes)
+		cert, errE := certcrypto.ParsePEMCertificate(certBytes)
 		if errE != nil {
 			log.Printf("Could not get Certification expiration for domain %s", domain)
 		}
 
-		if int(time.Until(expTime).Hours()/24.0) > days {
+		if int(time.Until(cert.NotAfter).Hours()/24.0) > days {
 			return nil
 		}
 	}

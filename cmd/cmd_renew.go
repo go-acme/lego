@@ -1,12 +1,10 @@
 package cmd
 
 import (
-	"encoding/json"
 	"time"
 
 	"github.com/urfave/cli"
 	"github.com/xenolf/lego/certcrypto"
-	"github.com/xenolf/lego/certificate"
 	"github.com/xenolf/lego/log"
 )
 
@@ -53,7 +51,7 @@ func renew(c *cli.Context) error {
 	// load the cert resource from files.
 	// We store the certificate, private key and metadata in different files
 	// as web servers would not be able to work with a combined file.
-	certBytes, err := readStoredFileCert(c, domain, ".crt")
+	certBytes, err := readStoredCertFile(c, domain, ".crt")
 	if err != nil {
 		log.Fatalf("Error while loading the certificate for domain %s\n\t%v", domain, err)
 	}
@@ -69,11 +67,11 @@ func renew(c *cli.Context) error {
 		}
 	}
 
-	certRes := readMeta(c, domain)
+	certRes := readCertResourceFile(c, domain)
 	certRes.Certificate = certBytes
 
 	if c.Bool("reuse-key") {
-		keyBytes, errR := readStoredFileCert(c, domain, ".key")
+		keyBytes, errR := readStoredCertFile(c, domain, ".key")
 		if errR != nil {
 			log.Fatalf("Error while loading the private key for domain %s\n\t%v", domain, errR)
 		}
@@ -88,18 +86,4 @@ func renew(c *cli.Context) error {
 	saveCertificates(c, newCert)
 
 	return nil
-}
-
-func readMeta(c *cli.Context, domain string) certificate.Resource {
-	metaBytes, err := readStoredFileCert(c, domain, ".json")
-	if err != nil {
-		log.Fatalf("Error while loading the meta data for domain %s\n\t%v", domain, err)
-	}
-
-	var certRes certificate.Resource
-	if err = json.Unmarshal(metaBytes, &certRes); err != nil {
-		log.Fatalf("Error while marshaling the meta data for domain %s\n\t%v", domain, err)
-	}
-
-	return certRes
 }

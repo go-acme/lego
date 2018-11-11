@@ -7,6 +7,8 @@ import (
 	"github.com/xenolf/lego/log"
 )
 
+const filePerm os.FileMode = 0600
+
 func Before(c *cli.Context) error {
 	if c.GlobalString("path") == "" {
 		log.Fatal("Could not determine current working directory. Please pass --path.")

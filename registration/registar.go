@@ -11,7 +11,7 @@ import (
 
 // Resource represents all important information about a registration
 // of which the client needs to keep track itself.
-// Deprecated: will be remove in the future.
+// Deprecated: will be remove in the future (le.ExtendedAccount).
 type Resource struct {
 	Body le.Account `json:"body,omitempty"`
 	URI  string     `json:"uri,omitempty"`

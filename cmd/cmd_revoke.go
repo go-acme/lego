@@ -25,7 +25,7 @@ func revoke(c *cli.Context) error {
 	for _, domain := range c.GlobalStringSlice("domains") {
 		log.Printf("Trying to revoke certificate for domain %s", domain)
 
-		certBytes, err := readStoredFileCert(c, domain, ".crt")
+		certBytes, err := readStoredCertFile(c, domain, ".crt")
 		if err != nil {
 			log.Fatalf("Error while revoking the certificate for domain %s\n\t%v", domain, err)
 		}

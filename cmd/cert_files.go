@@ -73,10 +73,24 @@ func writeFileCert(c *cli.Context, domain, extension string, data []byte) error 
 	}
 
 	issuerOut := filepath.Join(getCertPath(c), baseFileName+extension)
-	return ioutil.WriteFile(issuerOut, data, 0600)
+	return ioutil.WriteFile(issuerOut, data, filePerm)
 }
 
-func readStoredFileCert(c *cli.Context, domain, extension string) ([]byte, error) {
+func readCertResourceFile(c *cli.Context, domain string) certificate.Resource {
+	metaBytes, err := readStoredCertFile(c, domain, ".json")
+	if err != nil {
+		log.Fatalf("Error while loading the meta data for domain %s\n\t%v", domain, err)
+	}
+
+	var certRes certificate.Resource
+	if err = json.Unmarshal(metaBytes, &certRes); err != nil {
+		log.Fatalf("Error while marshaling the meta data for domain %s\n\t%v", domain, err)
+	}
+
+	return certRes
+}
+
+func readStoredCertFile(c *cli.Context, domain, extension string) ([]byte, error) {
 	filename := sanitizedDomain(domain) + extension
 	certPath := filepath.Join(getCertPath(c), filename)
 	return ioutil.ReadFile(certPath)

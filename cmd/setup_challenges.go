@@ -14,35 +14,35 @@ import (
 	"github.com/xenolf/lego/providers/http/webroot"
 )
 
-func setupChallenges(c *cli.Context, client *acme.Client) {
-	if len(c.GlobalStringSlice("exclude")) > 0 {
-		excludedSolvers(c, client)
+func setupChallenges(ctx *cli.Context, client *acme.Client) {
+	if len(ctx.GlobalStringSlice("exclude")) > 0 {
+		excludedSolvers(ctx, client)
 	}
 
-	if c.GlobalIsSet("webroot") {
-		setupWebroot(client, c.GlobalString("webroot"))
+	if ctx.GlobalIsSet("webroot") {
+		setupWebroot(client, ctx.GlobalString("webroot"))
 	}
 
-	if c.GlobalIsSet("memcached-host") {
-		setupMemcached(client, c.GlobalStringSlice("memcached-host"))
+	if ctx.GlobalIsSet("memcached-host") {
+		setupMemcached(client, ctx.GlobalStringSlice("memcached-host"))
 	}
 
-	if c.GlobalIsSet("http") {
-		setupHTTP(client, c.GlobalString("http"))
+	if ctx.GlobalIsSet("http") {
+		setupHTTP(client, ctx.GlobalString("http"))
 	}
 
-	if c.GlobalIsSet("tls") {
-		setupTLS(client, c.GlobalString("tls"))
+	if ctx.GlobalIsSet("tls") {
+		setupTLS(client, ctx.GlobalString("tls"))
 	}
 
-	if c.GlobalIsSet("dns") {
-		setupDNS(c, client)
+	if ctx.GlobalIsSet("dns") {
+		setupDNS(ctx, client)
 	}
 }
 
-func excludedSolvers(c *cli.Context, client *acme.Client) {
+func excludedSolvers(ctx *cli.Context, client *acme.Client) {
 	var cc []challenge.Type
-	for _, s := range c.GlobalStringSlice("exclude") {
+	for _, s := range ctx.GlobalStringSlice("exclude") {
 		cc = append(cc, challenge.Type(s))
 	}
 	client.Challenge.Exclude(cc)
@@ -102,20 +102,20 @@ func setupTLS(client *acme.Client, iface string) {
 	}
 }
 
-func setupDNS(c *cli.Context, client *acme.Client) {
-	provider, err := dns.NewDNSChallengeProviderByName(c.GlobalString("dns"))
+func setupDNS(ctx *cli.Context, client *acme.Client) {
+	provider, err := dns.NewDNSChallengeProviderByName(ctx.GlobalString("dns"))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	servers := c.GlobalStringSlice("dns-resolvers")
+	servers := ctx.GlobalStringSlice("dns-resolvers")
 	err = client.Challenge.SetDNS01Provider(provider,
 		dns01.CondOption(len(servers) > 0,
-			dns01.AddRecursiveNameservers(dns01.ParseNameservers(c.GlobalStringSlice("dns-resolvers")))),
-		dns01.CondOption(c.GlobalIsSet("dns-disable-cp"),
+			dns01.AddRecursiveNameservers(dns01.ParseNameservers(ctx.GlobalStringSlice("dns-resolvers")))),
+		dns01.CondOption(ctx.GlobalIsSet("dns-disable-cp"),
 			dns01.DisableCompletePropagationRequirement()),
-		dns01.CondOption(c.GlobalIsSet("dns-timeout"),
-			dns01.AddDNSTimeout(time.Duration(c.GlobalInt("dns-timeout"))*time.Second)),
+		dns01.CondOption(ctx.GlobalIsSet("dns-timeout"),
+			dns01.AddDNSTimeout(time.Duration(ctx.GlobalInt("dns-timeout"))*time.Second)),
 	)
 	if err != nil {
 		log.Fatal(err)

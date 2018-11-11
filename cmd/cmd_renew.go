@@ -13,10 +13,16 @@ func createRenew() cli.Command {
 		Name:   "renew",
 		Usage:  "Renew a certificate",
 		Action: renew,
+		Before: func(ctx *cli.Context) error {
+			if len(ctx.GlobalStringSlice("domains")) == 0 {
+				log.Fatal("Please specify at least one domain.")
+			}
+			return nil
+		},
 		Flags: []cli.Flag{
 			cli.IntFlag{
 				Name:  "days",
-				Value: 0,
+				Value: 15,
 				Usage: "The number of days left on a certificate to renew it.",
 			},
 			cli.BoolFlag{
@@ -35,55 +41,53 @@ func createRenew() cli.Command {
 	}
 }
 
-func renew(c *cli.Context) error {
-	acc, client := setup(c)
+func renew(ctx *cli.Context) error {
+	account, client := setup(ctx, NewAccountsStorage(ctx))
 
-	if acc.Registration == nil {
-		log.Fatalf("Account %s is not registered. Use 'run' to register a new account.\n", acc.Email)
+	if account.Registration == nil {
+		log.Fatalf("Account %s is not registered. Use 'run' to register a new account.\n", account.Email)
 	}
 
-	if len(c.GlobalStringSlice("domains")) <= 0 {
-		log.Fatal("Please specify at least one domain.")
-	}
+	certsStorage := NewCertificatesStorage(ctx)
 
-	domain := c.GlobalStringSlice("domains")[0]
+	domain := ctx.GlobalStringSlice("domains")[0]
 
 	// load the cert resource from files.
 	// We store the certificate, private key and metadata in different files
 	// as web servers would not be able to work with a combined file.
-	certBytes, err := readStoredCertFile(c, domain, ".crt")
+	certBytes, err := certsStorage.ReadFile(domain, ".crt")
 	if err != nil {
 		log.Fatalf("Error while loading the certificate for domain %s\n\t%v", domain, err)
 	}
 
-	if c.IsSet("days") {
+	if days := ctx.Int("days"); days >= 0 {
 		expTime, errE := certcrypto.GetPEMCertExpiration(certBytes)
 		if errE != nil {
 			log.Printf("Could not get Certification expiration for domain %s", domain)
 		}
 
-		if int(time.Until(expTime).Hours()/24.0) > c.Int("days") {
+		if int(time.Until(expTime).Hours()/24.0) > days {
 			return nil
 		}
 	}
 
-	certRes := readCertResourceFile(c, domain)
+	certRes := certsStorage.ReadResource(domain)
 	certRes.Certificate = certBytes
 
-	if c.Bool("reuse-key") {
-		keyBytes, errR := readStoredCertFile(c, domain, ".key")
+	if ctx.Bool("reuse-key") {
+		keyBytes, errR := certsStorage.ReadFile(domain, ".key")
 		if errR != nil {
 			log.Fatalf("Error while loading the private key for domain %s\n\t%v", domain, errR)
 		}
 		certRes.PrivateKey = keyBytes
 	}
 
-	newCert, err := client.Certificate.Renew(certRes, !c.Bool("no-bundle"), c.Bool("must-staple"))
+	cert, err := client.Certificate.Renew(certRes, !ctx.Bool("no-bundle"), ctx.Bool("must-staple"))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	saveCertificates(c, newCert)
+	certsStorage.SaveResource(cert)
 
 	return nil
 }

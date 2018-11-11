@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -9,26 +10,36 @@ import (
 	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/certcrypto"
 	"github.com/xenolf/lego/log"
+	"github.com/xenolf/lego/registration"
 )
 
-func setup(c *cli.Context) (*Account, *acme.Client) {
-	email := c.GlobalString("email")
-	if len(email) == 0 {
-		log.Fatal("You have to pass an account (email address) to the program using --email or -m")
+const filePerm os.FileMode = 0600
+
+func setup(ctx *cli.Context, accountsStorage *AccountsStorage) (*Account, *acme.Client) {
+	privateKey := accountsStorage.GetPrivateKey()
+
+	var account *Account
+	if accountsStorage.ExistsAccountFilePath() {
+		account = accountsStorage.LoadAccount(privateKey)
+	} else {
+		account = &Account{Email: accountsStorage.GetUserID(), key: privateKey}
 	}
 
-	keyType := getKeyType(c)
+	client := newClient(ctx, account)
 
-	// TODO: move to account struct? Currently MUST pass email.
-	acc := NewAccount(c, email)
+	return account, client
+}
+
+func newClient(ctx *cli.Context, acc registration.User) *acme.Client {
+	keyType := getKeyType(ctx)
 
 	config := acme.NewDefaultConfig(acc).
 		WithKeyType(keyType).
-		WithCADirURL(c.GlobalString("server")).
-		WithUserAgent(fmt.Sprintf("lego-cli/%s", c.App.Version))
+		WithCADirURL(ctx.GlobalString("server")).
+		WithUserAgent(fmt.Sprintf("lego-cli/%s", ctx.App.Version))
 
-	if c.GlobalIsSet("http-timeout") {
-		config.HTTPClient.Timeout = time.Duration(c.GlobalInt("http-timeout")) * time.Second
+	if ctx.GlobalIsSet("http-timeout") {
+		config.HTTPClient.Timeout = time.Duration(ctx.GlobalInt("http-timeout")) * time.Second
 	}
 
 	client, err := acme.NewClient(config)
@@ -36,18 +47,18 @@ func setup(c *cli.Context) (*Account, *acme.Client) {
 		log.Fatalf("Could not create client: %v", err)
 	}
 
-	setupChallenges(c, client)
+	setupChallenges(ctx, client)
 
-	if client.GetExternalAccountRequired() && !c.GlobalIsSet("eab") {
+	if client.GetExternalAccountRequired() && !ctx.GlobalIsSet("eab") {
 		log.Fatal("Server requires External Account Binding. Use --eab with --kid and --hmac.")
 	}
 
-	return acc, client
+	return client
 }
 
 // getKeyType the type from which private keys should be generated
-func getKeyType(c *cli.Context) certcrypto.KeyType {
-	keyType := c.GlobalString("key-type")
+func getKeyType(ctx *cli.Context) certcrypto.KeyType {
+	keyType := ctx.GlobalString("key-type")
 	switch strings.ToUpper(keyType) {
 	case "RSA2048":
 		return certcrypto.RSA2048
@@ -63,4 +74,21 @@ func getKeyType(c *cli.Context) certcrypto.KeyType {
 
 	log.Fatalf("Unsupported KeyType: %s", keyType)
 	return ""
+}
+
+func getEmail(ctx *cli.Context) string {
+	email := ctx.GlobalString("email")
+	if len(email) == 0 {
+		log.Fatal("You have to pass an account (email address) to the program using --email or -m")
+	}
+	return email
+}
+
+func createNonExistingFolder(path string) error {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return os.MkdirAll(path, 0700)
+	} else if err != nil {
+		return err
+	}
+	return nil
 }

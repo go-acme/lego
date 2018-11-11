@@ -10,13 +10,17 @@ import (
 const filePerm os.FileMode = 0600
 
 func Before(c *cli.Context) error {
-	if c.GlobalString("path") == "" {
+	if len(c.GlobalString("path")) == 0 {
 		log.Fatal("Could not determine current working directory. Please pass --path.")
 	}
 
 	err := createNonExistingFolder(c.GlobalString("path"))
 	if err != nil {
 		log.Fatalf("Could not check/create path: %v", err)
+	}
+
+	if len(c.GlobalString("server")) == 0 {
+		log.Fatal("Could not determine current working server. Please pass --server.")
 	}
 
 	return nil

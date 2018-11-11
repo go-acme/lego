@@ -23,15 +23,26 @@ import (
 )
 
 const (
-	baseAccountFolderName = "accounts"
-	baseKeysFolderName    = "keys"
-	accountFileName       = "account.json"
+	baseAccountsFolderName = "accounts"
+	baseKeysFolderName     = "keys"
+	accountFileName        = "account.json"
 )
 
-func getOrCreateAccountKeysFolder(c *cli.Context, email string) string {
-	accKeysPath := filepath.Join(getAccountPath(c, email), baseKeysFolderName)
+// getOrCreateAccountKeysFolder returns the OS dependent path to the root directory of keys.
+//
+// Output example:
+//
+//     ./.lego/accounts/localhost_14000/hubert@hubert.com/keys/
+//          │      │             │             │           └── root keys directory
+//          │      │             │             └── userID ("email" option)
+//          │      │             └── CA server ("server" option)
+//          │      └── root accounts directory
+//          └── "path" option
+//
+func getOrCreateAccountKeysFolder(c *cli.Context, userID string) string {
+	accKeysPath := filepath.Join(getAccountsRootPath(c, userID), baseKeysFolderName)
 	if err := createNonExistingFolder(accKeysPath); err != nil {
-		log.Fatalf("Could not check/create directory for account %s: %v", email, err)
+		log.Fatalf("Could not check/create directory for account %s: %v", userID, err)
 	}
 	return accKeysPath
 }
@@ -152,12 +163,25 @@ func loadPrivateKey(file string) (crypto.PrivateKey, error) {
 	return nil, errors.New("unknown private key type")
 }
 
-// getAccountPath returns the OS dependent path to a particular account
-func getAccountPath(c *cli.Context, acc string) string {
-	srv, _ := url.Parse(c.GlobalString("server"))
+// getAccountsRootPath returns the OS dependent path to the root directory of accounts.
+//
+// Output example:
+//
+//     ./.lego/accounts/localhost_14000/hubert@hubert.com/
+//          │      │             │             └── userID ("email" option)
+//          │      │             └── CA server ("server" option)
+//          │      └── root accounts directory
+//          └── "path" option
+//
+func getAccountsRootPath(c *cli.Context, userID string) string {
+	srv, err := url.Parse(c.GlobalString("server"))
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	serverPath := strings.NewReplacer(":", "_", "/", string(os.PathSeparator)).Replace(srv.Host)
 
-	accountsPath := filepath.Join(c.GlobalString("path"), baseAccountFolderName, serverPath)
+	accountsPath := filepath.Join(c.GlobalString("path"), baseAccountsFolderName, serverPath)
 
-	return filepath.Join(accountsPath, acc)
+	return filepath.Join(accountsPath, userID)
 }

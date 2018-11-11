@@ -20,7 +20,7 @@ func revoke(c *cli.Context) error {
 		log.Fatalf("Account %s is not registered. Use 'run' to register a new account.\n", acc.Email)
 	}
 
-	getOrCreateCertFolder(c)
+	getOrCreateCertsRootFolder(c)
 
 	for _, domain := range c.GlobalStringSlice("domains") {
 		log.Printf("Trying to revoke certificate for domain %s", domain)

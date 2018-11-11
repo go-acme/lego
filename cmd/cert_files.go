@@ -15,7 +15,7 @@ import (
 const baseCertificatesFolderName = "certificates"
 
 func saveCertificates(c *cli.Context, certRes *certificate.Resource) {
-	getOrCreateCertFolder(c)
+	getOrCreateCertsRootFolder(c)
 
 	domain := certRes.Domain
 
@@ -72,8 +72,8 @@ func writeFileCert(c *cli.Context, domain, extension string, data []byte) error 
 		baseFileName = c.GlobalString("filename")
 	}
 
-	issuerOut := filepath.Join(getCertPath(c), baseFileName+extension)
-	return ioutil.WriteFile(issuerOut, data, filePerm)
+	filePath := filepath.Join(getCertsRootPath(c), baseFileName+extension)
+	return ioutil.WriteFile(filePath, data, filePerm)
 }
 
 func readCertResourceFile(c *cli.Context, domain string) certificate.Resource {
@@ -92,12 +92,12 @@ func readCertResourceFile(c *cli.Context, domain string) certificate.Resource {
 
 func readStoredCertFile(c *cli.Context, domain, extension string) ([]byte, error) {
 	filename := sanitizedDomain(domain) + extension
-	certPath := filepath.Join(getCertPath(c), filename)
-	return ioutil.ReadFile(certPath)
+	filePath := filepath.Join(getCertsRootPath(c), filename)
+	return ioutil.ReadFile(filePath)
 }
 
-func getOrCreateCertFolder(c *cli.Context) string {
-	folder := filepath.Join(getCertPath(c))
+func getOrCreateCertsRootFolder(c *cli.Context) string {
+	folder := getCertsRootPath(c)
 	err := createNonExistingFolder(folder)
 	if err != nil {
 		log.Fatalf("Could not check/create path: %v", err)
@@ -105,8 +105,15 @@ func getOrCreateCertFolder(c *cli.Context) string {
 	return folder
 }
 
-// getCertPath gets the path for certificates.
-func getCertPath(c *cli.Context) string {
+// getCertsRootPath returns the OS dependent path to the root directory of certificates storage.
+//
+// Output example:
+//
+//     ./.lego/certificates/
+//          │      └── root certificates directory
+//          └── "path" option
+//
+func getCertsRootPath(c *cli.Context) string {
 	return filepath.Join(c.GlobalString("path"), baseCertificatesFolderName)
 }
 

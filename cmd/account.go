@@ -22,7 +22,7 @@ type Account struct {
 func NewAccount(c *cli.Context, email string) *Account {
 	privateKey := getPrivateKey(c, email)
 
-	accountFile := filepath.Join(getAccountPath(c, email), accountFileName)
+	accountFile := filepath.Join(getAccountsRootPath(c, email), accountFileName)
 	if _, err := os.Stat(accountFile); os.IsNotExist(err) {
 		return &Account{Email: email, key: privateKey}
 	}
@@ -56,11 +56,11 @@ func (a *Account) Save(c *cli.Context) error {
 		return err
 	}
 
-	accountPath := filepath.Join(getAccountPath(c, a.Email), accountFileName)
+	accountPath := filepath.Join(getAccountsRootPath(c, a.Email), accountFileName)
 	return ioutil.WriteFile(accountPath, jsonBytes, filePerm)
 }
 
 // GetAccountPath returns the OS dependent path to a particular account
 func (a *Account) GetAccountPath(c *cli.Context) string {
-	return getAccountPath(c, a.Email)
+	return getAccountsRootPath(c, a.Email)
 }

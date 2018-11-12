@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"crypto"
+	"fmt"
 	"time"
 
 	"github.com/urfave/cli"
@@ -50,7 +52,8 @@ func renew(ctx *cli.Context) error {
 
 	certsStorage := NewCertificatesStorage(ctx)
 
-	domain := ctx.GlobalStringSlice("domains")[0]
+	domains := ctx.GlobalStringSlice("domains")
+	domain := domains[0]
 
 	// load the cert resource from files.
 	// We store the certificate, private key and metadata in different files
@@ -60,29 +63,43 @@ func renew(ctx *cli.Context) error {
 		log.Fatalf("Error while loading the certificate for domain %s\n\t%v", domain, err)
 	}
 
-	if days := ctx.Int("days"); days >= 0 {
-		cert, errE := certcrypto.ParsePEMCertificate(certBytes)
-		if errE != nil {
-			log.Printf("Could not get Certification expiration for domain %s", domain)
-		}
+	// The input may be a bundle or a single certificate.
+	certificates, err := certcrypto.ParsePEMBundle(certBytes)
+	if err != nil {
+		return err
+	}
 
-		if int(time.Until(cert.NotAfter).Hours()/24.0) > days {
+	x509Cert := certificates[0]
+	if x509Cert.IsCA {
+		return fmt.Errorf("[%s] Certificate bundle starts with a CA certificate", domain)
+	}
+
+	if days := ctx.Int("days"); days >= 0 {
+		if int(time.Until(x509Cert.NotAfter).Hours()/24.0) > days {
 			return nil
 		}
 	}
 
-	certRes := certsStorage.ReadResource(domain)
-	certRes.Certificate = certBytes
+	// This is just meant to be informal for the user.
+	timeLeft := x509Cert.NotAfter.Sub(time.Now().UTC())
+	log.Infof("[%s] acme: Trying renewal with %d hours remaining", domain, int(timeLeft.Hours()))
 
+	certDomains := certcrypto.ExtractDomains(x509Cert)
+
+	var privateKey crypto.PrivateKey
 	if ctx.Bool("reuse-key") {
 		keyBytes, errR := certsStorage.ReadFile(domain, ".key")
 		if errR != nil {
 			log.Fatalf("Error while loading the private key for domain %s\n\t%v", domain, errR)
 		}
-		certRes.PrivateKey = keyBytes
+
+		privateKey, errR = certcrypto.ParsePEMPrivateKey(keyBytes)
+		if errR != nil {
+			return errR
+		}
 	}
 
-	cert, err := client.Certificate.Renew(certRes, !ctx.Bool("no-bundle"), ctx.Bool("must-staple"))
+	cert, err := client.Certificate.Obtain(merge(certDomains, domains), !ctx.Bool("no-bundle"), privateKey, ctx.Bool("must-staple"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -90,4 +107,20 @@ func renew(ctx *cli.Context) error {
 	certsStorage.SaveResource(cert)
 
 	return nil
+}
+
+func merge(prevDomains []string, nextDomains []string) []string {
+	for _, next := range nextDomains {
+		var found bool
+		for _, prev := range prevDomains {
+			if prev == next {
+				found = true
+				break
+			}
+		}
+		if !found {
+			prevDomains = append(prevDomains, next)
+		}
+	}
+	return prevDomains
 }

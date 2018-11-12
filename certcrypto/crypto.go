@@ -174,6 +174,20 @@ func ParsePEMCertificate(cert []byte) (*x509.Certificate, error) {
 	return x509.ParseCertificate(pemBlock.Bytes)
 }
 
+func ExtractDomains(cert *x509.Certificate) []string {
+	domains := []string{cert.Subject.CommonName}
+
+	// Check for SAN certificate
+	for _, sanDomain := range cert.DNSNames {
+		if sanDomain == cert.Subject.CommonName {
+			continue
+		}
+		domains = append(domains, sanDomain)
+	}
+
+	return domains
+}
+
 func GeneratePemCert(privKey *rsa.PrivateKey, domain string, extensions []pkix.Extension) ([]byte, error) {
 	derBytes, err := generateDerCert(privKey, time.Time{}, domain, extensions)
 	if err != nil {

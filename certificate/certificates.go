@@ -339,8 +339,9 @@ func (c *Certifier) Revoke(cert []byte) error {
 //
 // For private key reuse the PrivateKey property of the passed in Resource should be non-nil.
 func (c *Certifier) Renew(certRes Resource, bundle, mustStaple bool) (*Resource, error) {
-	// Input certificate is PEM encoded. Decode it here as we may need the decoded
-	// cert later on in the renewal process. The input may be a bundle or a single certificate.
+	// Input certificate is PEM encoded.
+	// Decode it here as we may need the decoded cert later on in the renewal process.
+	// The input may be a bundle or a single certificate.
 	certificates, err := certcrypto.ParsePEMBundle(certRes.Certificate)
 	if err != nil {
 		return nil, err
@@ -375,19 +376,7 @@ func (c *Certifier) Renew(certRes Resource, bundle, mustStaple bool) (*Resource,
 		}
 	}
 
-	var domains []string
-	// Check for SAN certificate
-	if len(x509Cert.DNSNames) > 1 {
-		domains = append(domains, x509Cert.Subject.CommonName)
-		for _, sanDomain := range x509Cert.DNSNames {
-			if sanDomain == x509Cert.Subject.CommonName {
-				continue
-			}
-			domains = append(domains, sanDomain)
-		}
-	} else {
-		domains = append(domains, x509Cert.Subject.CommonName)
-	}
+	domains := certcrypto.ExtractDomains(x509Cert)
 
 	return c.Obtain(domains, bundle, privKey, mustStaple)
 }

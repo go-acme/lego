@@ -176,40 +176,6 @@ lego defaults to communicating with the production Let's Encrypt ACME server. If
 lego --server=https://acme-staging-v02.api.letsencrypt.org/directory …
 ```
 
-## DNS Challenge API Details
-
-### AWS Route 53
-
-The following AWS IAM policy document describes the permissions required for lego to complete the DNS challenge.
-Replace `<INSERT_YOUR_HOSTED_ZONE_ID_HERE>` with the Route 53 zone ID of the domain you are authorizing.
-
-```json
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Action": [
-                "route53:GetChange",
-                "route53:ListHostedZonesByName"
-            ],
-            "Resource": [
-                "*"
-            ]
-        },
-        {
-            "Effect": "Allow",
-            "Action": [
-                "route53:ChangeResourceRecordSets"
-            ],
-            "Resource": [
-                "arn:aws:route53:::hostedzone/<INSERT_YOUR_HOSTED_ZONE_ID_HERE>"
-            ]
-        }
-    ]
-}
-```
-
 ## ACME Library Usage
 
 A valid, but bare-bones example use of the acme package:
@@ -298,6 +264,40 @@ func main() {
 	fmt.Printf("%#v\n", certificates)
 
 	// ... all done.
+}
+```
+
+## DNS Challenge API Details
+
+### AWS Route 53
+
+The following AWS IAM policy document describes the permissions required for lego to complete the DNS challenge.
+Replace `<INSERT_YOUR_HOSTED_ZONE_ID_HERE>` with the Route 53 zone ID of the domain you are authorizing.
+
+```json
+{
+   "Version": "2012-10-17",
+   "Statement": [
+       {
+           "Sid": "",
+           "Effect": "Allow",
+           "Action": [
+               "route53:GetChange",
+               "route53:ChangeResourceRecordSets",
+               "route53:ListResourceRecordSets"
+           ],
+           "Resource": [
+               "arn:aws:route53:::hostedzone/*",
+               "arn:aws:route53:::change/*"
+           ]
+       },
+       {
+           "Sid": "",
+           "Effect": "Allow",
+           "Action": "route53:ListHostedZonesByName",
+           "Resource": "*"
+       }
+   ]
 }
 ```
 

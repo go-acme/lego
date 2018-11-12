@@ -322,7 +322,7 @@ func (c *Certifier) Revoke(cert []byte) error {
 	}
 
 	revokeMsg := le.RevokeCertMessage{
-		Certificate: base64.URLEncoding.EncodeToString(x509Cert.Raw),
+		Certificate: base64.RawURLEncoding.EncodeToString(x509Cert.Raw),
 	}
 
 	return c.core.Certificates.Revoke(revokeMsg)

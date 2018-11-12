@@ -11,6 +11,10 @@ addons:
   hosts:
   # for e2e tests
   - acme.wtf
+  - lego.wtf
+  - acme.lego.wtf
+  - légô.wtf
+  - xn--lg-bja9b.wtf
 
 env:
   - MEMCACHED_HOSTS=localhost:11211

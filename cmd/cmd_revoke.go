@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/urfave/cli"
 	"github.com/xenolf/lego/log"
 )
@@ -57,7 +55,7 @@ func revoke(ctx *cli.Context) error {
 			return err
 		}
 
-		fmt.Println("Certificate was archived for domain:", domain)
+		log.Println("Certificate was archived for domain:", domain)
 	}
 
 	return nil

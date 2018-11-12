@@ -63,23 +63,28 @@ func (a *Core) post(uri string, reqBody, response interface{}) (*http.Response, 
 		return nil, errors.New("failed to marshal message")
 	}
 
-	return a.retrievablePost(uri, content, response)
+	return a.retrievablePost(uri, content, response, 0)
 }
 
 // postAsGet performs an HTTP POST ("POST-as-GET") request.
 // https://tools.ietf.org/html/draft-ietf-acme-acme-16#section-6.3
 func (a *Core) postAsGet(uri string, response interface{}) (*http.Response, error) {
-	return a.retrievablePost(uri, []byte{}, response)
+	return a.retrievablePost(uri, []byte{}, response, 0)
 }
 
-func (a *Core) retrievablePost(uri string, content []byte, response interface{}) (*http.Response, error) {
+func (a *Core) retrievablePost(uri string, content []byte, response interface{}, retry int) (*http.Response, error) {
 	resp, err := a.signedPost(uri, content, response)
 	if err != nil {
+		// during tests, 5 retries allow to support ~50% of bad nonce.
+		if retry >= 5 {
+			log.Infof("too many retry on a nonce error, retry count: %d", retry)
+			return resp, err
+		}
 		switch err.(type) {
 		// Retry once if the nonce was invalidated
 		case *le.NonceError:
-			log.Infof("nonce error retry: %s", uri)
-			resp, err = a.signedPost(uri, content, response)
+			log.Infof("nonce error retry: %s", err)
+			resp, err = a.retrievablePost(uri, content, response, retry+1)
 			if err != nil {
 				return resp, err
 			}

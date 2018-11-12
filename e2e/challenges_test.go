@@ -85,6 +85,87 @@ func TestChallengeTLS(t *testing.T) {
 	}
 }
 
+func TestChallengeTLS_New_Revoke(t *testing.T) {
+	loader.CleanLegoFiles()
+
+	output, err := load.RunLego(
+		"-m", "hubert@hubert.com",
+		"--accept-tos",
+		"-x", "dns-01",
+		"-x", "http-01",
+		"-s", "https://localhost:14000/dir",
+		"-d", "lego.wtf",
+		"-d", "acme.lego.wtf",
+		"--http", ":5002",
+		"--tls", ":5001",
+		"run")
+
+	if len(output) > 0 {
+		fmt.Fprintf(os.Stdout, "%s\n", output)
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	output, err = load.RunLego(
+		"-m", "hubert@hubert.com",
+		"--accept-tos",
+		"-x", "dns-01",
+		"-x", "http-01",
+		"-s", "https://localhost:14000/dir",
+		"-d", "lego.wtf",
+		"--http", ":5002",
+		"--tls", ":5001",
+		"revoke")
+
+	if len(output) > 0 {
+		fmt.Fprintf(os.Stdout, "%s\n", output)
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestChallengeTLS_New_Revoke_Non_ASCII(t *testing.T) {
+	loader.CleanLegoFiles()
+
+	output, err := load.RunLego(
+		"-m", "hubert@hubert.com",
+		"--accept-tos",
+		"-x", "dns-01",
+		"-x", "http-01",
+		"-s", "https://localhost:14000/dir",
+		"-d", "légô.wtf",
+		"--http", ":5002",
+		"--tls", ":5001",
+		"run")
+
+	if len(output) > 0 {
+		fmt.Fprintf(os.Stdout, "%s\n", output)
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	output, err = load.RunLego(
+		"-m", "hubert@hubert.com",
+		"--accept-tos",
+		"-x", "dns-01",
+		"-x", "http-01",
+		"-s", "https://localhost:14000/dir",
+		"-d", "légô.wtf",
+		"--http", ":5002",
+		"--tls", ":5001",
+		"revoke")
+
+	if len(output) > 0 {
+		fmt.Fprintf(os.Stdout, "%s\n", output)
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestChallengeHTTP_Client(t *testing.T) {
 	os.Setenv("LEGO_CA_CERTIFICATES", "./fixtures/certs/pebble.minica.pem")
 	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()

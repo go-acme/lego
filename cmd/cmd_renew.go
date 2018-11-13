@@ -2,10 +2,11 @@ package cmd
 
 import (
 	"crypto"
-	"fmt"
+	"crypto/x509"
 	"time"
 
 	"github.com/urfave/cli"
+	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/certcrypto"
 	"github.com/xenolf/lego/log"
 )
@@ -16,8 +17,14 @@ func createRenew() cli.Command {
 		Usage:  "Renew a certificate",
 		Action: renew,
 		Before: func(ctx *cli.Context) error {
-			if len(ctx.GlobalStringSlice("domains")) == 0 {
-				log.Fatal("Please specify at least one domain.")
+			// we require either domains or csr, but not both
+			hasDomains := len(ctx.GlobalStringSlice("domains")) > 0
+			hasCsr := len(ctx.GlobalString("csr")) > 0
+			if hasDomains && hasCsr {
+				log.Fatal("Please specify either --domains/-d or --csr/-c, but not both")
+			}
+			if !hasDomains && !hasCsr {
+				log.Fatal("Please specify --domains/-d (or --csr/-c if you already have a CSR)")
 			}
 			return nil
 		},
@@ -52,39 +59,40 @@ func renew(ctx *cli.Context) error {
 
 	certsStorage := NewCertificatesStorage(ctx)
 
+	bundle := !ctx.Bool("no-bundle")
+
+	// CSR
+	if ctx.GlobalIsSet("csr") {
+		return renewForCSR(ctx, client, certsStorage, bundle)
+	}
+
+	// Domains
+	return renewForDomains(ctx, client, certsStorage, bundle)
+}
+
+func renewForDomains(ctx *cli.Context, client *acme.Client, certsStorage *CertificatesStorage, bundle bool) error {
 	domains := ctx.GlobalStringSlice("domains")
 	domain := domains[0]
 
 	// load the cert resource from files.
 	// We store the certificate, private key and metadata in different files
 	// as web servers would not be able to work with a combined file.
-	certBytes, err := certsStorage.ReadFile(domain, ".crt")
+	certificates, err := certsStorage.ReadCertificate(domain, ".crt")
 	if err != nil {
 		log.Fatalf("Error while loading the certificate for domain %s\n\t%v", domain, err)
 	}
 
-	// The input may be a bundle or a single certificate.
-	certificates, err := certcrypto.ParsePEMBundle(certBytes)
-	if err != nil {
-		return err
-	}
+	cert := certificates[0]
 
-	x509Cert := certificates[0]
-	if x509Cert.IsCA {
-		return fmt.Errorf("[%s] Certificate bundle starts with a CA certificate", domain)
-	}
-
-	if days := ctx.Int("days"); days >= 0 {
-		if int(time.Until(x509Cert.NotAfter).Hours()/24.0) > days {
-			return nil
-		}
+	if !needRenewal(cert, domain, ctx.Int("days")) {
+		return nil
 	}
 
 	// This is just meant to be informal for the user.
-	timeLeft := x509Cert.NotAfter.Sub(time.Now().UTC())
+	timeLeft := cert.NotAfter.Sub(time.Now().UTC())
 	log.Infof("[%s] acme: Trying renewal with %d hours remaining", domain, int(timeLeft.Hours()))
 
-	certDomains := certcrypto.ExtractDomains(x509Cert)
+	certDomains := certcrypto.ExtractDomains(cert)
 
 	var privateKey crypto.PrivateKey
 	if ctx.Bool("reuse-key") {
@@ -99,14 +107,65 @@ func renew(ctx *cli.Context) error {
 		}
 	}
 
-	cert, err := client.Certificate.Obtain(merge(certDomains, domains), !ctx.Bool("no-bundle"), privateKey, ctx.Bool("must-staple"))
+	certRes, err := client.Certificate.Obtain(merge(certDomains, domains), bundle, privateKey, ctx.Bool("must-staple"))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	certsStorage.SaveResource(cert)
+	certsStorage.SaveResource(certRes)
 
 	return nil
+}
+
+func renewForCSR(ctx *cli.Context, client *acme.Client, certsStorage *CertificatesStorage, bundle bool) error {
+	csr, err := readCSRFile(ctx.GlobalString("csr"))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	domain := csr.Subject.CommonName
+
+	// load the cert resource from files.
+	// We store the certificate, private key and metadata in different files
+	// as web servers would not be able to work with a combined file.
+	certificates, err := certsStorage.ReadCertificate(domain, ".crt")
+	if err != nil {
+		log.Fatalf("Error while loading the certificate for domain %s\n\t%v", domain, err)
+	}
+
+	cert := certificates[0]
+
+	if !needRenewal(cert, domain, ctx.Int("days")) {
+		return nil
+	}
+
+	// This is just meant to be informal for the user.
+	timeLeft := cert.NotAfter.Sub(time.Now().UTC())
+	log.Infof("[%s] acme: Trying renewal with %d hours remaining", domain, int(timeLeft.Hours()))
+
+	certRes, err := client.Certificate.ObtainForCSR(*csr, bundle)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	certsStorage.SaveResource(certRes)
+
+	return nil
+
+}
+
+func needRenewal(x509Cert *x509.Certificate, domain string, days int) bool {
+	if x509Cert.IsCA {
+		log.Fatalf("[%s] Certificate bundle starts with a CA certificate", domain)
+	}
+
+	if days >= 0 {
+		if int(time.Until(x509Cert.NotAfter).Hours()/24.0) > days {
+			return false
+		}
+	}
+
+	return true
 }
 
 func merge(prevDomains []string, nextDomains []string) []string {

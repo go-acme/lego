@@ -131,18 +131,7 @@ func (c *Certifier) Obtain(domains []string, bundle bool, privKey crypto.Private
 func (c *Certifier) ObtainForCSR(csr x509.CertificateRequest, bundle bool) (*Resource, error) {
 	// figure out what domains it concerns
 	// start with the common name
-	domains := []string{csr.Subject.CommonName}
-
-	// loop over the SubjectAltName DNS names
-	for _, sanName := range csr.DNSNames {
-		if containsSAN(domains, sanName) {
-			// Duplicate; skip this name
-			continue
-		}
-
-		// Name is unique
-		domains = append(domains, sanName)
-	}
+	domains := certcrypto.ExtractDomainsCSR(&csr)
 
 	if bundle {
 		log.Infof("[%s] acme: Obtaining bundled SAN certificate given a CSR", strings.Join(domains, ", "))
@@ -489,13 +478,4 @@ func sanitizeDomain(domains []string) []string {
 		}
 	}
 	return sanitizedDomains
-}
-
-func containsSAN(domains []string, sanName string) bool {
-	for _, existingName := range domains {
-		if existingName == sanName {
-			return true
-		}
-	}
-	return false
 }

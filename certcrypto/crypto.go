@@ -188,6 +188,32 @@ func ExtractDomains(cert *x509.Certificate) []string {
 	return domains
 }
 
+func ExtractDomainsCSR(csr *x509.CertificateRequest) []string {
+	domains := []string{csr.Subject.CommonName}
+
+	// loop over the SubjectAltName DNS names
+	for _, sanName := range csr.DNSNames {
+		if containsSAN(domains, sanName) {
+			// Duplicate; skip this name
+			continue
+		}
+
+		// Name is unique
+		domains = append(domains, sanName)
+	}
+
+	return domains
+}
+
+func containsSAN(domains []string, sanName string) bool {
+	for _, existingName := range domains {
+		if existingName == sanName {
+			return true
+		}
+	}
+	return false
+}
+
 func GeneratePemCert(privKey *rsa.PrivateKey, domain string, extensions []pkix.Extension) ([]byte, error) {
 	derBytes, err := generateDerCert(privKey, time.Time{}, domain, extensions)
 	if err != nil {

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bytes"
+	"crypto/x509"
 	"encoding/json"
 	"io/ioutil"
 	"os"
@@ -10,11 +11,11 @@ import (
 	"strings"
 	"time"
 
-	"golang.org/x/net/idna"
-
 	"github.com/urfave/cli"
+	"github.com/xenolf/lego/certcrypto"
 	"github.com/xenolf/lego/certificate"
 	"github.com/xenolf/lego/log"
+	"golang.org/x/net/idna"
 )
 
 const (
@@ -148,6 +149,16 @@ func (s *CertificatesStorage) ReadFile(domain, extension string) ([]byte, error)
 	filePath := filepath.Join(s.rootPath, filename)
 
 	return ioutil.ReadFile(filePath)
+}
+
+func (s *CertificatesStorage) ReadCertificate(domain, extension string) ([]*x509.Certificate, error) {
+	content, err := s.ReadFile(domain, extension)
+	if err != nil {
+		return nil, err
+	}
+
+	// The input may be a bundle or a single certificate.
+	return certcrypto.ParsePEMBundle(content)
 }
 
 func (s *CertificatesStorage) WriteFile(domain, extension string, data []byte) error {

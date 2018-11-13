@@ -1,5 +1,4 @@
-// Package cloudxns implements a DNS provider for solving the DNS-01 challenge
-// using CloudXNS DNS.
+// Package cloudxns implements a DNS provider for solving the DNS-01 challenge using CloudXNS DNS.
 package cloudxns
 
 import (

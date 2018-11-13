@@ -2,7 +2,6 @@
 package exec
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -14,14 +13,20 @@ import (
 	"github.com/xenolf/lego/platform/config/env"
 )
 
-type timeoutConfig struct {
-	Timeout, Interval int
-}
-
 // Config Provider configuration.
 type Config struct {
-	Program string
-	Mode    string
+	Program            string
+	Mode               string
+	PropagationTimeout time.Duration
+	PollingInterval    time.Duration
+}
+
+// NewDefaultConfig returns a default configuration for the DNSProvider
+func NewDefaultConfig() *Config {
+	return &Config{
+		PropagationTimeout: env.GetOrDefaultSecond("EXEC_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond("EXEC_POLLING_INTERVAL", dns01.DefaultPollingInterval),
+	}
 }
 
 // DNSProvider adds and removes the record for the DNS challenge by calling a
@@ -38,10 +43,11 @@ func NewDNSProvider() (*DNSProvider, error) {
 		return nil, fmt.Errorf("exec: %v", err)
 	}
 
-	return NewDNSProviderConfig(&Config{
-		Program: values["EXEC_PATH"],
-		Mode:    os.Getenv("EXEC_MODE"),
-	})
+	config := NewDefaultConfig()
+	config.Program = values["EXEC_PATH"]
+	config.Mode = os.Getenv("EXEC_MODE")
+
+	return NewDNSProviderConfig(config)
 }
 
 // NewDNSProviderConfig returns a new DNS provider which runs the given configuration
@@ -94,28 +100,8 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return err
 }
 
-func (d *DNSProvider) Timeout() (time.Duration, time.Duration) {
-	cmd := exec.Command(d.config.Program, "timeout")
-
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return handleTimeoutError(err, output)
-	}
-
-	var tc timeoutConfig
-	err = json.Unmarshal(output, &tc)
-	if err != nil {
-		return handleTimeoutError(err, output)
-	}
-
-	return time.Duration(tc.Timeout) * time.Second, time.Duration(tc.Interval) * time.Second
-}
-
-func handleTimeoutError(err error, output []byte) (time.Duration, time.Duration) {
-	log.Infof("fallback to default timeout and interval because command 'timeout' failed: %v", err)
-	if len(output) > 0 {
-		log.Println(string(output))
-	}
-
-	return dns01.DefaultPropagationTimeout, dns01.DefaultPollingInterval
+// Timeout returns the timeout and interval to use when checking for DNS propagation.
+// Adjusting here to cope with spikes in propagation times.
+func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
+	return d.config.PropagationTimeout, d.config.PollingInterval
 }

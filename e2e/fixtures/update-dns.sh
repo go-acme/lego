@@ -5,9 +5,6 @@
 set -e
 
 case "$1" in
-  "timeout")
-    echo '{"timeout": 30, "interval": 5}'
-    ;;
   "present")
     echo  "Present"
     payload="{\"host\":\"$2\", \"value\":\"$3\"}"

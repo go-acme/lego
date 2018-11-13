@@ -1,5 +1,4 @@
-// Package azure implements a DNS provider for solving the DNS-01
-// challenge using azure DNS.
+// Package azure implements a DNS provider for solving the DNS-01 challenge using azure DNS.
 // Azure doesn't like trailing dots on domain names, most of the acme code does.
 package azure
 
@@ -114,8 +113,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	return &DNSProvider{config: config, authorizer: authorizer}, nil
 }
 
-// Timeout returns the timeout and interval to use when checking for DNS
-// propagation. Adjusting here to cope with spikes in propagation times.
+// Timeout returns the timeout and interval to use when checking for DNS propagation.
+// Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }

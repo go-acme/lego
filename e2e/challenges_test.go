@@ -4,7 +4,9 @@ import (
 	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/x509"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"testing"
 
@@ -41,7 +43,7 @@ func TestHelp(t *testing.T) {
 	fmt.Fprintf(os.Stdout, "%s\n", output)
 }
 
-func TestChallengeHTTP(t *testing.T) {
+func TestChallengeHTTP_Run(t *testing.T) {
 	loader.CleanLegoFiles()
 
 	output, err := load.RunLego(
@@ -63,7 +65,7 @@ func TestChallengeHTTP(t *testing.T) {
 	}
 }
 
-func TestChallengeTLS(t *testing.T) {
+func TestChallengeTLS_Run_Domains(t *testing.T) {
 	loader.CleanLegoFiles()
 
 	output, err := load.RunLego(
@@ -85,7 +87,51 @@ func TestChallengeTLS(t *testing.T) {
 	}
 }
 
-func TestChallengeTLS_New_Revoke(t *testing.T) {
+func TestChallengeTLS_Run_CSR(t *testing.T) {
+	loader.CleanLegoFiles()
+
+	output, err := load.RunLego(
+		"-m", "hubert@hubert.com",
+		"--accept-tos",
+		"-x", "dns-01",
+		"-x", "http-01",
+		"-s", "https://localhost:14000/dir",
+		"-csr", "./fixtures/csr.raw",
+		"--http", ":5002",
+		"--tls", ":5001",
+		"run")
+
+	if len(output) > 0 {
+		fmt.Fprintf(os.Stdout, "%s\n", output)
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestChallengeTLS_Run_CSR_PEM(t *testing.T) {
+	loader.CleanLegoFiles()
+
+	output, err := load.RunLego(
+		"-m", "hubert@hubert.com",
+		"--accept-tos",
+		"-x", "dns-01",
+		"-x", "http-01",
+		"-s", "https://localhost:14000/dir",
+		"-csr", "./fixtures/csr.cert",
+		"--http", ":5002",
+		"--tls", ":5001",
+		"run")
+
+	if len(output) > 0 {
+		fmt.Fprintf(os.Stdout, "%s\n", output)
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestChallengeTLS_Run_Revoke(t *testing.T) {
 	loader.CleanLegoFiles()
 
 	output, err := load.RunLego(
@@ -126,7 +172,7 @@ func TestChallengeTLS_New_Revoke(t *testing.T) {
 	}
 }
 
-func TestChallengeTLS_New_Revoke_Non_ASCII(t *testing.T) {
+func TestChallengeTLS_Run_Revoke_Non_ASCII(t *testing.T) {
 	loader.CleanLegoFiles()
 
 	output, err := load.RunLego(
@@ -166,7 +212,7 @@ func TestChallengeTLS_New_Revoke_Non_ASCII(t *testing.T) {
 	}
 }
 
-func TestChallengeHTTP_Client(t *testing.T) {
+func TestChallengeHTTP_Client_Obtain(t *testing.T) {
 	os.Setenv("LEGO_CA_CERTIFICATES", "./fixtures/certs/pebble.minica.pem")
 	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
 
@@ -188,7 +234,7 @@ func TestChallengeHTTP_Client(t *testing.T) {
 
 	domains := []string{"acme.wtf"}
 
-	resource, err := client.Certificate.Obtain(domains, true, privKey, false)
+	resource, err := client.Certificate.Obtain(domains, true, nil, false)
 	require.NoError(t, err)
 
 	require.NotNil(t, resource)
@@ -200,7 +246,7 @@ func TestChallengeHTTP_Client(t *testing.T) {
 	assert.Empty(t, resource.CSR)
 }
 
-func TestChallengeTLS_Client(t *testing.T) {
+func TestChallengeTLS_Client_Obtain(t *testing.T) {
 	os.Setenv("LEGO_CA_CERTIFICATES", "./fixtures/certs/pebble.minica.pem")
 	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
 
@@ -232,6 +278,44 @@ func TestChallengeTLS_Client(t *testing.T) {
 	assert.NotEmpty(t, resource.Certificate)
 	assert.NotEmpty(t, resource.IssuerCertificate)
 	assert.Empty(t, resource.CSR)
+}
+
+func TestChallengeTLS_Client_ObtainForCSR(t *testing.T) {
+	os.Setenv("LEGO_CA_CERTIFICATES", "./fixtures/certs/pebble.minica.pem")
+	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
+
+	privKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err, "Could not generate test key")
+
+	user := &fakeUser{privateKey: privKey}
+	config := acme.NewDefaultConfig(user).
+		WithCADirURL("https://localhost:14000/dir")
+	client, err := acme.NewClient(config)
+	require.NoError(t, err)
+
+	client.Challenge.Exclude([]challenge.Type{challenge.DNS01, challenge.HTTP01})
+	client.Challenge.SetTLSALPN01Address(":5001")
+
+	reg, err := client.Registration.Register(true)
+	require.NoError(t, err)
+	user.registration = reg
+
+	csrRaw, err := ioutil.ReadFile("./fixtures/csr.raw")
+	require.NoError(t, err)
+
+	csr, err := x509.ParseCertificateRequest(csrRaw)
+	require.NoError(t, err)
+
+	resource, err := client.Certificate.ObtainForCSR(*csr, true)
+	require.NoError(t, err)
+
+	require.NotNil(t, resource)
+	assert.Equal(t, "acme.wtf", resource.Domain)
+	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{16}`, resource.CertURL)
+	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{16}`, resource.CertStableURL)
+	assert.NotEmpty(t, resource.Certificate)
+	assert.NotEmpty(t, resource.IssuerCertificate)
+	assert.NotEmpty(t, resource.CSR)
 }
 
 type fakeUser struct {

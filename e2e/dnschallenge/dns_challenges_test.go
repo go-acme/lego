@@ -48,7 +48,7 @@ func TestDNSHelp(t *testing.T) {
 	fmt.Fprintf(os.Stdout, "%s\n", output)
 }
 
-func TestChallengeDNS(t *testing.T) {
+func TestChallengeDNS_Run(t *testing.T) {
 	loader.CleanLegoFiles()
 
 	output, err := load.RunLego(
@@ -74,7 +74,7 @@ func TestChallengeDNS(t *testing.T) {
 	}
 }
 
-func TestChallengeDNS_Client(t *testing.T) {
+func TestChallengeDNS_Client_Obtain(t *testing.T) {
 	os.Setenv("LEGO_CA_CERTIFICATES", "../fixtures/certs/pebble.minica.pem")
 	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
 

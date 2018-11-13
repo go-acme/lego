@@ -21,8 +21,14 @@ func createRun() cli.Command {
 		Name:  "run",
 		Usage: "Register an account, then create and install a certificate",
 		Before: func(ctx *cli.Context) error {
-			if len(ctx.GlobalStringSlice("domains")) == 0 {
-				log.Fatal("Please specify at least one domain.")
+			// we require either domains or csr, but not both
+			hasDomains := len(ctx.GlobalStringSlice("domains")) > 0
+			hasCsr := len(ctx.GlobalString("csr")) > 0
+			if hasDomains && hasCsr {
+				log.Fatal("Please specify either --domains/-d or --csr/-c, but not both")
+			}
+			if !hasDomains && !hasCsr {
+				log.Fatal("Please specify --domains/-d (or --csr/-c if you already have a CSR)")
 			}
 			return nil
 		},
@@ -124,30 +130,19 @@ func register(ctx *cli.Context, client *acme.Client) (*registration.Resource, er
 			log.Fatalf("Requires arguments --kid and --hmac.")
 		}
 
-		reg, err := client.Registration.RegisterWithExternalAccountBinding(accepted, kid, hmacEncoded)
-		if err != nil {
-			return nil, err
-		}
-		return reg, nil
+		return client.Registration.RegisterWithExternalAccountBinding(accepted, kid, hmacEncoded)
 	}
 
-	reg, err := client.Registration.Register(accepted)
-	if err != nil {
-		return nil, err
-	}
-	return reg, nil
+	return client.Registration.Register(accepted)
 }
 
 func obtainCertificate(ctx *cli.Context, client *acme.Client) (*certificate.Resource, error) {
 	bundle := !ctx.Bool("no-bundle")
 
-	if hasDomains(ctx) {
+	domains := ctx.GlobalStringSlice("domains")
+	if len(domains) > 0 {
 		// obtain a certificate, generating a new private key
-		cert, err := client.Certificate.Obtain(ctx.GlobalStringSlice("domains"), bundle, nil, ctx.Bool("must-staple"))
-		if err != nil {
-			return nil, err
-		}
-		return cert, nil
+		return client.Certificate.Obtain(domains, bundle, nil, ctx.Bool("must-staple"))
 	}
 
 	// read the CSR
@@ -157,24 +152,7 @@ func obtainCertificate(ctx *cli.Context, client *acme.Client) (*certificate.Reso
 	}
 
 	// obtain a certificate for this CSR
-	cert, err := client.Certificate.ObtainForCSR(*csr, bundle)
-	if err != nil {
-		return nil, err
-	}
-	return cert, nil
-}
-
-func hasDomains(ctx *cli.Context) bool {
-	// we require either domains or csr, but not both
-	hasDomains := len(ctx.GlobalStringSlice("domains")) > 0
-	hasCsr := len(ctx.GlobalString("csr")) > 0
-	if hasDomains && hasCsr {
-		log.Fatal("Please specify either --domains/-d or --csr/-c, but not both")
-	}
-	if !hasDomains && !hasCsr {
-		log.Fatal("Please specify --domains/-d (or --csr/-c if you already have a CSR)")
-	}
-	return hasDomains
+	return client.Certificate.ObtainForCSR(*csr, bundle)
 }
 
 func readCSRFile(filename string) (*x509.CertificateRequest, error) {

@@ -17,6 +17,10 @@ build: clean
 	@echo Version: $(VERSION)
 	go build -v -ldflags '-X "main.version=${VERSION}"'
 
+image:
+	@echo Version: $(VERSION)
+	docker build -t $(LEGO_IMAGE) .
+
 dependencies:
 	dep ensure -v
 
@@ -31,6 +35,3 @@ checks:
 
 fmt:
 	gofmt -s -l -w $(SRCS)
-image:
-	@echo Version: $(VERSION)
-	docker build -t $(LEGO_IMAGE) .

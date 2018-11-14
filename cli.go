@@ -18,6 +18,7 @@ var (
 func main() {
 	app := cli.NewApp()
 	app.Name = "lego"
+	app.HelpName = "lego"
 	app.Usage = "Let's Encrypt client written in Go"
 	app.Version = version
 

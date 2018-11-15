@@ -239,8 +239,8 @@ func TestChallengeHTTP_Client_Obtain(t *testing.T) {
 
 	require.NotNil(t, resource)
 	assert.Equal(t, "acme.wtf", resource.Domain)
-	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{16}`, resource.CertURL)
-	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{16}`, resource.CertStableURL)
+	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertURL)
+	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertStableURL)
 	assert.NotEmpty(t, resource.Certificate)
 	assert.NotEmpty(t, resource.IssuerCertificate)
 	assert.Empty(t, resource.CSR)
@@ -273,8 +273,8 @@ func TestChallengeTLS_Client_Obtain(t *testing.T) {
 
 	require.NotNil(t, resource)
 	assert.Equal(t, "acme.wtf", resource.Domain)
-	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{16}`, resource.CertURL)
-	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{16}`, resource.CertStableURL)
+	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertURL)
+	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertStableURL)
 	assert.NotEmpty(t, resource.Certificate)
 	assert.NotEmpty(t, resource.IssuerCertificate)
 	assert.Empty(t, resource.CSR)
@@ -311,8 +311,8 @@ func TestChallengeTLS_Client_ObtainForCSR(t *testing.T) {
 
 	require.NotNil(t, resource)
 	assert.Equal(t, "acme.wtf", resource.Domain)
-	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{16}`, resource.CertURL)
-	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{16}`, resource.CertStableURL)
+	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertURL)
+	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertStableURL)
 	assert.NotEmpty(t, resource.Certificate)
 	assert.NotEmpty(t, resource.IssuerCertificate)
 	assert.NotEmpty(t, resource.CSR)

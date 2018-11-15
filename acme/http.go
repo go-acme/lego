@@ -46,6 +46,11 @@ const (
 	// NOTE: Update this with each tagged release.
 	ourUserAgent = "xenolf-acme/1.2.1"
 
+	// ourUserAgentComment is part of the UA comment linked to the version status of this underlying library package.
+	// values: detach|release
+	// NOTE: Update this with each tagged release.
+	ourUserAgentComment = "detach"
+
 	// caCertificatesEnvVar is the environment variable name that can be used to
 	// specify the path to PEM encoded CA Certificates that can be used to
 	// authenticate an ACME server with a HTTPS certificate not issued by a CA in
@@ -202,6 +207,6 @@ func post(j *jws, uri string, reqBody []byte, respBody interface{}) (*http.Respo
 
 // userAgent builds and returns the User-Agent string to use in requests.
 func userAgent() string {
-	ua := fmt.Sprintf("%s %s (%s; %s)", UserAgent, ourUserAgent, runtime.GOOS, runtime.GOARCH)
+	ua := fmt.Sprintf("%s %s (%s; %s; %s)", UserAgent, ourUserAgent, ourUserAgentComment, runtime.GOOS, runtime.GOARCH)
 	return strings.TrimSpace(ua)
 }

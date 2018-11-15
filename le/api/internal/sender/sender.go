@@ -12,15 +12,6 @@ import (
 	"github.com/xenolf/lego/le"
 )
 
-const (
-	// defaultGoUserAgent is the Go HTTP package user agent string.
-	// Too bad it isn't exported. If it changes, we should update it here, too.
-	defaultGoUserAgent = "Go-http-client/1.1"
-
-	// ourUserAgent is the User-Agent of this underlying library package.
-	ourUserAgent = "xenolf-acme"
-)
-
 type RequestOption func(*http.Request) error
 
 func contentType(ct string) RequestOption {
@@ -122,7 +113,7 @@ func (d *Do) do(req *http.Request, response interface{}) (*http.Response, error)
 
 // formatUserAgent builds and returns the User-Agent string to use in requests.
 func (d *Do) formatUserAgent() string {
-	ua := fmt.Sprintf("%s %s (%s; %s) %s", d.userAgent, ourUserAgent, runtime.GOOS, runtime.GOARCH, defaultGoUserAgent)
+	ua := fmt.Sprintf("%s %s (%s; %s; %s)", d.userAgent, ourUserAgent, ourUserAgentComment, runtime.GOOS, runtime.GOARCH)
 	return strings.TrimSpace(ua)
 }
 

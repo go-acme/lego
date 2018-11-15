@@ -59,7 +59,6 @@ func TestDo_CustomUserAgent(t *testing.T) {
 	do := NewDo(http.DefaultClient, customUA)
 
 	ua := do.formatUserAgent()
-	assert.Contains(t, ua, defaultGoUserAgent)
 	assert.Contains(t, ua, ourUserAgent)
 	assert.Contains(t, ua, customUA)
 	if strings.HasSuffix(ua, " ") {

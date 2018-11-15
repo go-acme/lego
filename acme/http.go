@@ -42,12 +42,14 @@ var (
 )
 
 const (
-	// defaultGoUserAgent is the Go HTTP package user agent string. Too
-	// bad it isn't exported. If it changes, we should update it here, too.
-	defaultGoUserAgent = "Go-http-client/1.1"
-
 	// ourUserAgent is the User-Agent of this underlying library package.
-	ourUserAgent = "xenolf-acme"
+	// NOTE: Update this with each tagged release.
+	ourUserAgent = "xenolf-acme/1.2.1"
+
+	// ourUserAgentComment is part of the UA comment linked to the version status of this underlying library package.
+	// values: detach|release
+	// NOTE: Update this with each tagged release.
+	ourUserAgentComment = "detach"
 
 	// caCertificatesEnvVar is the environment variable name that can be used to
 	// specify the path to PEM encoded CA Certificates that can be used to
@@ -205,6 +207,6 @@ func post(j *jws, uri string, reqBody []byte, respBody interface{}) (*http.Respo
 
 // userAgent builds and returns the User-Agent string to use in requests.
 func userAgent() string {
-	ua := fmt.Sprintf("%s %s (%s; %s) %s", UserAgent, ourUserAgent, runtime.GOOS, runtime.GOARCH, defaultGoUserAgent)
+	ua := fmt.Sprintf("%s %s (%s; %s; %s)", UserAgent, ourUserAgent, ourUserAgentComment, runtime.GOOS, runtime.GOARCH)
 	return strings.TrimSpace(ua)
 }

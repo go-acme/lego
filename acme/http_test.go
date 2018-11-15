@@ -55,7 +55,6 @@ func TestHTTPUserAgent(t *testing.T) {
 func TestUserAgent(t *testing.T) {
 	ua := userAgent()
 
-	assert.Contains(t, ua, defaultGoUserAgent)
 	assert.Contains(t, ua, ourUserAgent)
 	if strings.HasSuffix(ua, " ") {
 		t.Errorf("UA should not have trailing spaces; got '%s'", ua)
@@ -65,7 +64,6 @@ func TestUserAgent(t *testing.T) {
 	UserAgent = "MyApp/1.2.3"
 	ua = userAgent()
 
-	assert.Contains(t, ua, defaultGoUserAgent)
 	assert.Contains(t, ua, ourUserAgent)
 	assert.Contains(t, ua, UserAgent)
 }

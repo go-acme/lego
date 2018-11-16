@@ -12,21 +12,20 @@ import (
 	"github.com/xenolf/lego/challenge/http01"
 )
 
-var (
-	memcachedHosts []string
-)
-
 const (
 	domain  = "lego.test"
 	token   = "foo"
 	keyAuth = "bar"
 )
 
-func init() {
+var memcachedHosts = loadMemcachedHosts()
+
+func loadMemcachedHosts() []string {
 	memcachedHostsStr := os.Getenv("MEMCACHED_HOSTS")
 	if len(memcachedHostsStr) > 0 {
-		memcachedHosts = strings.Split(memcachedHostsStr, ",")
+		return strings.Split(memcachedHostsStr, ",")
 	}
+	return nil
 }
 
 func TestNewMemcachedProviderEmpty(t *testing.T) {

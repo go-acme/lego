@@ -173,12 +173,12 @@ func TestLivePresentAndCleanup(t *testing.T) {
 		"*.sub." + zone,
 	}
 
-	for _, tc := range testCases {
-		t.Run(fmt.Sprintf("domain(%s)", tc), func(t *testing.T) {
-			err = p.Present(tc, "987d", "123d==")
+	for _, test := range testCases {
+		t.Run(fmt.Sprintf("domain(%s)", test), func(t *testing.T) {
+			err = p.Present(test, "987d", "123d==")
 			require.NoError(t, err)
 
-			err = p.CleanUp(tc, "987d", "123d==")
+			err = p.CleanUp(test, "987d", "123d==")
 			require.NoError(t, err, "Did not clean up! Please remove record yourself.")
 		})
 	}

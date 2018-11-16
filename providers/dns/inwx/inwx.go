@@ -104,9 +104,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	_, err = d.client.Nameservers.CreateRecord(request)
 	if err != nil {
-		switch err.(type) {
+		switch er := err.(type) {
 		case *goinwx.ErrorResponse:
-			if err.(*goinwx.ErrorResponse).Message == "Object exists" {
+			if er.Message == "Object exists" {
 				return nil
 			}
 			return fmt.Errorf("inwx: %v", err)

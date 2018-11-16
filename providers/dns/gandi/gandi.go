@@ -22,10 +22,6 @@ const (
 	minTTL         = 300
 )
 
-// findZoneByFqdn determines the DNS zone of an fqdn.
-// It is overridden during tests.
-var findZoneByFqdn = dns01.FindZoneByFqdn
-
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	BaseURL            string
@@ -63,6 +59,8 @@ type DNSProvider struct {
 	inProgressAuthZones map[string]struct{}
 	inProgressMu        sync.Mutex
 	config              *Config
+	// findZoneByFqdn determines the DNS zone of an fqdn. It is overridden during tests.
+	findZoneByFqdn func(fqdn string) (string, error)
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Gandi.
@@ -97,6 +95,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		config:              config,
 		inProgressFQDNs:     make(map[string]inProgressInfo),
 		inProgressAuthZones: make(map[string]struct{}),
+		findZoneByFqdn:      dns01.FindZoneByFqdn,
 	}, nil
 }
 
@@ -111,7 +110,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	// find authZone and Gandi zone_id for fqdn
-	authZone, err := findZoneByFqdn(fqdn)
+	authZone, err := d.findZoneByFqdn(fqdn)
 	if err != nil {
 		return fmt.Errorf("gandi: findZoneByFqdn failure: %v", err)
 	}

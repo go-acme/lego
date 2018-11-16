@@ -270,5 +270,5 @@ func getMetadata(config *Config, field string) (string, error) {
 		return "", err
 	}
 
-	return string(respBody[:]), nil
+	return string(respBody), nil
 }

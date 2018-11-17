@@ -185,8 +185,9 @@ package sample
 
 import (
 	"crypto"
+	"crypto/ecdsa"
+	"crypto/elliptic"
 	"crypto/rand"
-	"crypto/rsa"
 	"fmt"
 	"log"
 
@@ -207,7 +208,7 @@ func (u *MyUser) GetEmail() string {
 }
 func (u MyUser) GetRegistration() *registration.Resource {
 	return u.Registration
-}*
+}
 func (u *MyUser) GetPrivateKey() crypto.PrivateKey {
 	return u.key
 }
@@ -215,8 +216,7 @@ func (u *MyUser) GetPrivateKey() crypto.PrivateKey {
 func main() {
 
 	// Create a user. New accounts need an email and private key to start.
-	const rsaKeySize = 2048
-	privateKey, err := rsa.GenerateKey(rand.Reader, rsaKeySize)
+	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -239,7 +239,7 @@ func main() {
 
 	// We specify an http port of 5002 and an tls port of 5001 on all interfaces
 	// because we aren't running as root and can't bind a listener to port 80 and 443
-	// (used later when we attempt to pass challenges). Keep in mind that we still
+	// (used later when we attempt to pass challenges). Keep in mind that you still
 	// need to proxy challenge traffic to port 5002 and 5001.
 	client.Challenge.SetHTTP01Address(":5002")
 	client.Challenge.SetTLSALPN01Address(":5001")

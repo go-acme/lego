@@ -234,9 +234,13 @@ func loadPrivateKey(file string) (crypto.PrivateKey, error) {
 
 func tryRecoverRegistration(ctx *cli.Context, privateKey crypto.PrivateKey) (*registration.Resource, error) {
 	// couldn't load account but got a key. Try to look the account up.
-	config := acme.NewDefaultConfig(&Account{key: privateKey}).
-		WithCADirURL(ctx.GlobalString("server")).
-		WithUserAgent(fmt.Sprintf("lego-cli/%s", ctx.App.Version))
+	config, err := acme.NewConfig(&Account{key: privateKey},
+		acme.WithCADirURL(ctx.GlobalString("server")),
+		acme.WithUserAgent(fmt.Sprintf("lego-cli/%s", ctx.App.Version)),
+	)
+	if err != nil {
+		return nil, err
+	}
 
 	client, err := acme.NewClient(config)
 	if err != nil {

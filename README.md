@@ -229,8 +229,12 @@ func main() {
 	// A client facilitates communication with the CA server. This CA URL is
 	// configured for a local dev instance of Boulder running in Docker in a VM.
 
-	config := acme.NewDefaultConfig(&myUser).
-		WithCADirURL("http://192.168.99.100:4000/directory").WithKeyType(certcrypto.RSA2048)
+	config, err := acme.NewConfig(&myUser,
+		acme.WithCADirURL("http://192.168.99.100:4000/directory"),
+		acme.WithKeyType(certcrypto.RSA2048))
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	client, err := acme.NewClient(config)
 	if err != nil {

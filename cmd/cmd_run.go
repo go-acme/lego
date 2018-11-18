@@ -139,7 +139,12 @@ func obtainCertificate(ctx *cli.Context, client *acme.Client) (*certificate.Reso
 	domains := ctx.GlobalStringSlice("domains")
 	if len(domains) > 0 {
 		// obtain a certificate, generating a new private key
-		return client.Certificate.Obtain(domains, bundle, nil, ctx.Bool("must-staple"))
+		request := certificate.ObtainRequest{
+			Domains:    domains,
+			Bundle:     bundle,
+			MustStaple: ctx.Bool("must-staple"),
+		}
+		return client.Certificate.Obtain(request)
 	}
 
 	// read the CSR

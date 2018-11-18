@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/certificate"
 	"github.com/xenolf/lego/challenge"
 	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/e2e/loader"
@@ -104,7 +105,12 @@ func TestChallengeDNS_Client_Obtain(t *testing.T) {
 
 	domains := []string{"*.légo.acme", "légo.acme"}
 
-	resource, err := client.Certificate.Obtain(domains, true, privKey, false)
+	request := certificate.ObtainRequest{
+		Domains:    domains,
+		Bundle:     true,
+		PrivateKey: privKey,
+	}
+	resource, err := client.Certificate.Obtain(request)
 	require.NoError(t, err)
 
 	require.NotNil(t, resource)

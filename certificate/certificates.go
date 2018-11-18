@@ -39,6 +39,23 @@ type Resource struct {
 	CSR               []byte `json:"-"`
 }
 
+// ObtainRequest The request to obtain certificate.
+//
+// The first domain in domains is used for the CommonName field of the certificate,
+// all other domains are added using the Subject Alternate Names extension.
+//
+// A new private key is generated for every invocation of the function Obtain.
+// If you do not want that you can supply your own private key in the privKey parameter.
+// If this parameter is non-nil it will be used instead of generating a new one.
+//
+// If bundle is true, the []byte contains both the issuer certificate and your issued certificate as a bundle.
+type ObtainRequest struct {
+	Domains    []string
+	Bundle     bool
+	PrivateKey crypto.PrivateKey
+	MustStaple bool
+}
+
 type resolver interface {
 	Solve(authorizations []le.Authorization) error
 }
@@ -59,25 +76,16 @@ func NewCertifier(core *api.Core, keyType certcrypto.KeyType, resolver resolver)
 
 // Obtain tries to obtain a single certificate using all domains passed into it.
 //
-// The first domain in domains is used for the CommonName field of the certificate,
-// all other domains are added using the Subject Alternate Names extension.
-//
-// A new private key is generated for every invocation of this function.
-// If you do not want that you can supply your own private key in the privKey parameter.
-// If this parameter is non-nil it will be used instead of generating a new one.
-//
-// If bundle is true, the []byte contains both the issuer certificate and your issued certificate as a bundle.
-//
 // This function will never return a partial certificate.
 // If one domain in the list fails, the whole certificate will fail.
-func (c *Certifier) Obtain(domains []string, bundle bool, privKey crypto.PrivateKey, mustStaple bool) (*Resource, error) {
-	if len(domains) == 0 {
+func (c *Certifier) Obtain(request ObtainRequest) (*Resource, error) {
+	if len(request.Domains) == 0 {
 		return nil, errors.New("no domains to obtain a certificate for")
 	}
 
-	domains = sanitizeDomain(domains)
+	domains := sanitizeDomain(request.Domains)
 
-	if bundle {
+	if request.Bundle {
 		log.Infof("[%s] acme: Obtaining bundled SAN certificate", strings.Join(domains, ", "))
 	} else {
 		log.Infof("[%s] acme: Obtaining SAN certificate", strings.Join(domains, ", "))
@@ -104,7 +112,7 @@ func (c *Certifier) Obtain(domains []string, bundle bool, privKey crypto.Private
 	log.Infof("[%s] acme: Validations succeeded; requesting certificates", strings.Join(domains, ", "))
 
 	failures := make(obtainError)
-	cert, err := c.getForOrder(domains, order, bundle, privKey, mustStaple)
+	cert, err := c.getForOrder(domains, order, request.Bundle, request.PrivateKey, request.MustStaple)
 	if err != nil {
 		for _, auth := range authz {
 			failures[challenge.GetTargetedDomain(auth)] = err
@@ -365,9 +373,13 @@ func (c *Certifier) Renew(certRes Resource, bundle, mustStaple bool) (*Resource,
 		}
 	}
 
-	domains := certcrypto.ExtractDomains(x509Cert)
-
-	return c.Obtain(domains, bundle, privKey, mustStaple)
+	query := ObtainRequest{
+		Domains:    certcrypto.ExtractDomains(x509Cert),
+		Bundle:     bundle,
+		PrivateKey: privKey,
+		MustStaple: mustStaple,
+	}
+	return c.Obtain(query)
 }
 
 // GetOCSP takes a PEM encoded cert or cert bundle returning the raw OCSP response,

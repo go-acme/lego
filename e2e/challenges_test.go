@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/certificate"
 	"github.com/xenolf/lego/challenge"
 	"github.com/xenolf/lego/e2e/loader"
 	"github.com/xenolf/lego/registration"
@@ -233,9 +234,11 @@ func TestChallengeHTTP_Client_Obtain(t *testing.T) {
 	require.NoError(t, err)
 	user.registration = reg
 
-	domains := []string{"acme.wtf"}
-
-	resource, err := client.Certificate.Obtain(domains, true, nil, false)
+	request := certificate.ObtainRequest{
+		Domains: []string{"acme.wtf"},
+		Bundle:  true,
+	}
+	resource, err := client.Certificate.Obtain(request)
 	require.NoError(t, err)
 
 	require.NotNil(t, resource)
@@ -268,9 +271,12 @@ func TestChallengeTLS_Client_Obtain(t *testing.T) {
 	require.NoError(t, err)
 	user.registration = reg
 
-	domains := []string{"acme.wtf"}
-
-	resource, err := client.Certificate.Obtain(domains, true, privKey, false)
+	request := certificate.ObtainRequest{
+		Domains:    []string{"acme.wtf"},
+		Bundle:     true,
+		PrivateKey: privKey,
+	}
+	resource, err := client.Certificate.Obtain(request)
 	require.NoError(t, err)
 
 	require.NotNil(t, resource)

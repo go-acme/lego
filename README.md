@@ -193,6 +193,7 @@ import (
 
 	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/certcrypto"
+	"github.com/xenolf/lego/certificate"
 	"github.com/xenolf/lego/registration"
 )
 
@@ -255,10 +256,11 @@ func main() {
 	}
 	myUser.Registration = reg
 
-	// The acme library takes care of completing the challenges to obtain the certificate(s).
-	// The domains must resolve to this machine or you have to use the DNS challenge.
-	bundle := true
-	certificates, err := client.Certificate.Obtain([]string{"mydomain.com"}, bundle, nil, false)
+	request := certificate.ObtainRequest{
+		Domains: []string{"mydomain.com"},
+		Bundle:  true,
+	}
+	certificates, err := client.Certificate.Obtain(request)
 	if err != nil {
 		log.Fatal(err)
 	}

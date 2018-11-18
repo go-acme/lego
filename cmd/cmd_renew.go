@@ -8,6 +8,7 @@ import (
 	"github.com/urfave/cli"
 	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/certcrypto"
+	"github.com/xenolf/lego/certificate"
 	"github.com/xenolf/lego/log"
 )
 
@@ -107,7 +108,13 @@ func renewForDomains(ctx *cli.Context, client *acme.Client, certsStorage *Certif
 		}
 	}
 
-	certRes, err := client.Certificate.Obtain(merge(certDomains, domains), bundle, privateKey, ctx.Bool("must-staple"))
+	request := certificate.ObtainRequest{
+		Domains:    merge(certDomains, domains),
+		Bundle:     bundle,
+		PrivateKey: privateKey,
+		MustStaple: ctx.Bool("must-staple"),
+	}
+	certRes, err := client.Certificate.Obtain(request)
 	if err != nil {
 		log.Fatal(err)
 	}

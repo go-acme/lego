@@ -26,8 +26,8 @@ func TestNewClient(t *testing.T) {
 		privatekey: key,
 	}
 
-	config, err := NewConfig(user, WithCADirURL(apiURL+"/dir"))
-	require.NoError(t, err)
+	config := NewConfig(user)
+	config.CADirURL = apiURL + "/dir"
 
 	client, err := NewClient(config)
 	require.NoError(t, err, "Could not create client")

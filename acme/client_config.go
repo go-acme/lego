@@ -3,12 +3,10 @@ package acme
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net"
 	"net/http"
-	"net/url"
 	"os"
 	"time"
 
@@ -37,74 +35,19 @@ const (
 )
 
 type Config struct {
-	caDirURL   string
-	user       registration.User
-	keyType    certcrypto.KeyType
-	userAgent  string
+	CADirURL   string
+	User       registration.User
+	KeyType    certcrypto.KeyType
+	UserAgent  string
 	HTTPClient *http.Client
 }
 
-type ConfigOption func(*Config) error
-
-func NewConfig(user registration.User, opts ...ConfigOption) (*Config, error) {
-	config := &Config{
-		caDirURL:   LEDirectoryProduction,
-		user:       user,
-		keyType:    certcrypto.RSA2048,
+func NewConfig(user registration.User) *Config {
+	return &Config{
+		CADirURL:   LEDirectoryProduction,
+		User:       user,
+		KeyType:    certcrypto.RSA2048,
 		HTTPClient: createDefaultHTTPClient(),
-	}
-
-	for _, opt := range opts {
-		err := opt(config)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return config, nil
-}
-
-func WithCADirURL(caDirURL string) ConfigOption {
-	return func(c *Config) error {
-		_, err := url.Parse(caDirURL)
-		if err != nil {
-			return err
-		}
-
-		c.caDirURL = caDirURL
-		return nil
-	}
-}
-
-func WithUser(user registration.User) ConfigOption {
-	return func(c *Config) error {
-		c.user = user
-		return nil
-	}
-}
-
-func WithUserAgent(userAgent string) ConfigOption {
-	return func(c *Config) error {
-		c.userAgent = userAgent
-		return nil
-	}
-}
-
-func WithKeyType(keyType certcrypto.KeyType) ConfigOption {
-	return func(c *Config) error {
-		c.keyType = keyType
-		return nil
-	}
-}
-
-func WithHTTPClient(httpClient *http.Client) ConfigOption {
-	return func(c *Config) error {
-		if httpClient == nil {
-			return errors.New("the HTTP client cannot be nil")
-		}
-
-		c.HTTPClient = httpClient
-		return nil
 	}
 }
 

@@ -36,14 +36,10 @@ func setup(ctx *cli.Context, accountsStorage *AccountsStorage) (*Account, *acme.
 func newClient(ctx *cli.Context, acc registration.User) *acme.Client {
 	keyType := getKeyType(ctx)
 
-	config, err := acme.NewConfig(acc,
-		acme.WithKeyType(keyType),
-		acme.WithCADirURL(ctx.GlobalString("server")),
-		acme.WithUserAgent(fmt.Sprintf("lego-cli/%s", ctx.App.Version)),
-	)
-	if err != nil {
-		log.Fatalf("Could not create client: %v", err)
-	}
+	config := acme.NewConfig(acc)
+	config.CADirURL = ctx.GlobalString("server")
+	config.KeyType = keyType
+	config.UserAgent = fmt.Sprintf("lego-cli/%s", ctx.App.Version)
 
 	if ctx.GlobalIsSet("http-timeout") {
 		config.HTTPClient.Timeout = time.Duration(ctx.GlobalInt("http-timeout")) * time.Second

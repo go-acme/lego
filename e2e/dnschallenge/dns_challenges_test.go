@@ -86,8 +86,8 @@ func TestChallengeDNS_Client_Obtain(t *testing.T) {
 	require.NoError(t, err, "Could not generate test key")
 
 	user := &fakeUser{privateKey: privKey}
-	config, err := acme.NewConfig(user, acme.WithCADirURL("https://localhost:15000/dir"))
-	require.NoError(t, err)
+	config := acme.NewConfig(user)
+	config.CADirURL = "https://localhost:15000/dir"
 
 	client, err := acme.NewClient(config)
 	require.NoError(t, err)

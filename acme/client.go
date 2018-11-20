@@ -2,6 +2,7 @@ package acme
 
 import (
 	"errors"
+	"net/url"
 
 	"github.com/xenolf/lego/certificate"
 	"github.com/xenolf/lego/challenge/resolver"
@@ -18,24 +19,33 @@ type Client struct {
 }
 
 // NewClient creates a new ACME client on behalf of the user.
-// The client will depend on the ACME directory located at caDirURL for the rest of its actions.
+// The client will depend on the ACME directory located at CADirURL for the rest of its actions.
 // A private key of type keyType (see KeyType constants) will be generated when requesting a new certificate if one isn't provided.
 func NewClient(config *Config) (*Client, error) {
 	if config == nil {
 		return nil, errors.New("a configuration must be provided")
 	}
 
-	privKey := config.user.GetPrivateKey()
+	_, err := url.Parse(config.CADirURL)
+	if err != nil {
+		return nil, err
+	}
+
+	if config.HTTPClient == nil {
+		return nil, errors.New("the HTTP client cannot be nil")
+	}
+
+	privKey := config.User.GetPrivateKey()
 	if privKey == nil {
 		return nil, errors.New("private key was nil")
 	}
 
 	var kid string
-	if reg := config.user.GetRegistration(); reg != nil {
+	if reg := config.User.GetRegistration(); reg != nil {
 		kid = reg.URI
 	}
 
-	core, err := api.New(config.HTTPClient, config.userAgent, config.caDirURL, kid, privKey)
+	core, err := api.New(config.HTTPClient, config.UserAgent, config.CADirURL, kid, privKey)
 	if err != nil {
 		return nil, err
 	}
@@ -45,9 +55,9 @@ func NewClient(config *Config) (*Client, error) {
 	prober := resolver.NewProber(solversManager)
 
 	return &Client{
-		Certificate:  certificate.NewCertifier(core, config.keyType, prober),
+		Certificate:  certificate.NewCertifier(core, config.KeyType, prober),
 		Challenge:    solversManager,
-		Registration: registration.NewRegistrar(core, config.user),
+		Registration: registration.NewRegistrar(core, config.User),
 		core:         core,
 	}, nil
 }

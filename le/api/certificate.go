@@ -28,17 +28,19 @@ func (c *CertificateService) Get(certURL string, bundle bool) ([]byte, []byte, e
 	// Get issuerCert from bundled response from Let's Encrypt
 	// See https://community.letsencrypt.org/t/acme-v2-no-up-link-in-response/64962
 	_, issuer := pem.Decode(cert)
-	if issuer == nil {
-		issuer, err = c.getIssuerFromLink(up)
-		if err != nil {
-			// If we fail to acquire the issuer cert, return the issued certificate - do not fail.
-			log.Warnf("acme: Could not bundle issuer certificate [%s]: %v", certURL, err)
-		} else if len(issuer) > 0 {
-			// If bundle is true, we want to return a certificate bundle.
-			// To do this, we append the issuer cert to the issued cert.
-			if bundle {
-				cert = append(cert, issuer...)
-			}
+	if issuer != nil {
+		return cert, issuer, nil
+	}
+
+	issuer, err = c.getIssuerFromLink(up)
+	if err != nil {
+		// If we fail to acquire the issuer cert, return the issued certificate - do not fail.
+		log.Warnf("acme: Could not bundle issuer certificate [%s]: %v", certURL, err)
+	} else if len(issuer) > 0 {
+		// If bundle is true, we want to return a certificate bundle.
+		// To do this, we append the issuer cert to the issued cert.
+		if bundle {
+			cert = append(cert, issuer...)
 		}
 	}
 

@@ -2,6 +2,7 @@ package dns
 
 import (
 	"fmt"
+	"github.com/xenolf/lego/providers/dns/online"
 
 	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/providers/dns/acmedns"
@@ -132,6 +133,8 @@ func NewDNSChallengeProviderByName(name string) (acme.ChallengeProvider, error) 
 		return nifcloud.NewDNSProvider()
 	case "ns1":
 		return ns1.NewDNSProvider()
+	case "online":
+		return online.NewDNSProvider()
 	case "otc":
 		return otc.NewDNSProvider()
 	case "ovh":

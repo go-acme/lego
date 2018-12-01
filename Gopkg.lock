@@ -298,12 +298,12 @@
   version = "v0.5.1"
 
 [[projects]]
-  digest = "1:24b5f8d41224b90e3f4d22768926ed782a8ca481d945c0e064c8f165bf768280"
+  digest = "1:6676c63cef61a47c84eae578bcd8fe8352908ccfe3ea663c16797617a29e3c44"
   name = "github.com/miekg/dns"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "5a2b9fab83ff0f8bfc99684bd5f43a37abe560f1"
-  version = "v1.0.8"
+  revision = "a220737569d8137d4c610f80bd33f1dc762522e5"
+  version = "v1.1.0"
 
 [[projects]]
   digest = "1:a4df73029d2c42fabcb6b41e327d2f87e685284ec03edf76921c267d9cfc9c23"

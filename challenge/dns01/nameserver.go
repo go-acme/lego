@@ -204,7 +204,7 @@ func sendDNSQuery(m *dns.Msg, ns string) (*dns.Msg, error) {
 	udp := &dns.Client{Net: "udp", Timeout: dnsTimeout}
 	in, _, err := udp.Exchange(m, ns)
 
-	if err == dns.ErrTruncated {
+	if in != nil && in.Truncated {
 		tcp := &dns.Client{Net: "tcp", Timeout: dnsTimeout}
 		// If the TCP request succeeds, the err will reset to nil
 		in, _, err = tcp.Exchange(m, ns)

@@ -163,7 +163,15 @@ func runLocalDNSTestServer(tsig bool) (*dns.Server, string, error) {
 		return nil, "", err
 	}
 
-	server := &dns.Server{PacketConn: pc, ReadTimeout: time.Hour, WriteTimeout: time.Hour}
+	server := &dns.Server{
+		PacketConn:   pc,
+		ReadTimeout:  time.Hour,
+		WriteTimeout: time.Hour,
+		MsgAcceptFunc: func(dh dns.Header) dns.MsgAcceptAction {
+			// bypass defaultMsgAcceptFunc to allow dynamic update (https://github.com/miekg/dns/pull/830)
+			return dns.MsgAccept
+		}}
+
 	if tsig {
 		server.TsigSecret = map[string]string{envTestTsigKey: envTestTsigSecret}
 	}

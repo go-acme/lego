@@ -2,6 +2,11 @@ project_name: lego
 
 builds:
   - binary: lego
+
+    main: ./cmd/lego/main.go
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+
     goos:
       - windows
       - darwin

@@ -34,7 +34,7 @@ yaourt -S lego-git
 To install from source, just run:
 
 ```bash
-go get -u github.com/xenolf/lego
+go get -u github.com/xenolf/lego/cmd/lego
 ```
 
 ## Features

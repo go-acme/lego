@@ -76,6 +76,7 @@ func (l *EnvLoader) MainTest(m *testing.M) int {
 	legoBinary, tearDown, err := buildLego()
 	defer tearDown()
 	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
 		return 1
 	}
 
@@ -111,7 +112,10 @@ func (l *EnvLoader) launchPebble() func() {
 	}()
 
 	return func() {
-		pebble.Process.Kill()
+		err := pebble.Process.Kill()
+		if err != nil {
+			fmt.Println(err)
+		}
 		fmt.Println(outPebble.String())
 	}
 }
@@ -137,7 +141,7 @@ func (l *EnvLoader) cmdPebble() (*exec.Cmd, *bytes.Buffer) {
 
 func pebbleHealthCheck(options *CmdOption) {
 	client := &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}}
-	wait.For(10*time.Second, 500*time.Millisecond, func() (bool, error) {
+	err := wait.For(10*time.Second, 500*time.Millisecond, func() (bool, error) {
 		resp, err := client.Get(options.HealthCheckURL)
 		if err != nil {
 			return false, err
@@ -149,6 +153,9 @@ func pebbleHealthCheck(options *CmdOption) {
 
 		return true, nil
 	})
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (l *EnvLoader) launchChallSrv() func() {
@@ -165,7 +172,10 @@ func (l *EnvLoader) launchChallSrv() func() {
 	}()
 
 	return func() {
-		challtestsrv.Process.Kill()
+		err := challtestsrv.Process.Kill()
+		if err != nil {
+			fmt.Println(err)
+		}
 		fmt.Println(outChalSrv.String())
 	}
 }
@@ -199,14 +209,19 @@ func buildLego() (string, func(), error) {
 		return "", func() {}, err
 	}
 
-	err = os.Chdir(projectRoot)
+	mainFolder := filepath.Join(projectRoot, "cmd", "lego")
+
+	err = os.Chdir(mainFolder)
 	if err != nil {
 		return "", func() {}, err
 	}
 
 	binary := filepath.Join(buildPath, "lego")
 
-	build(binary)
+	err = build(binary)
+	if err != nil {
+		return "", func() {}, err
+	}
 
 	err = os.Chdir(here)
 	if err != nil {
@@ -282,5 +297,8 @@ func goTool() (string, error) {
 func CleanLegoFiles() {
 	cmd := exec.Command("rm", "-rf", ".lego")
 	fmt.Printf("$ %s\n", strings.Join(cmd.Args, " "))
-	cmd.CombinedOutput()
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Println(string(output))
+	}
 }

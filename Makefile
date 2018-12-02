@@ -3,6 +3,8 @@
 SRCS = $(shell git ls-files '*.go' | grep -v '^vendor/')
 
 LEGO_IMAGE := xenolf/lego
+MAIN_DIRECTORY := ./cmd/lego/
+BIN_OUTPUT := dist/lego
 
 TAG_NAME := $(shell git tag -l --contains HEAD)
 SHA := $(shell git rev-parse HEAD)
@@ -15,7 +17,7 @@ clean:
 
 build: clean
 	@echo Version: $(VERSION)
-	go build -v -ldflags '-X "main.version=${VERSION}"'
+	go build -v -ldflags '-X "main.version=${VERSION}"' -o ${BIN_OUTPUT} ${MAIN_DIRECTORY}
 
 image:
 	@echo Version: $(VERSION)

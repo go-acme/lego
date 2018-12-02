@@ -17,7 +17,7 @@ import (
 	"strings"
 
 	"github.com/urfave/cli"
-	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/lego"
 	"github.com/xenolf/lego/log"
 	"github.com/xenolf/lego/registration"
 )
@@ -234,11 +234,11 @@ func loadPrivateKey(file string) (crypto.PrivateKey, error) {
 
 func tryRecoverRegistration(ctx *cli.Context, privateKey crypto.PrivateKey) (*registration.Resource, error) {
 	// couldn't load account but got a key. Try to look the account up.
-	config := acme.NewConfig(&Account{key: privateKey})
+	config := lego.NewConfig(&Account{key: privateKey})
 	config.CADirURL = ctx.GlobalString("server")
 	config.UserAgent = fmt.Sprintf("lego-cli/%s", ctx.App.Version)
 
-	client, err := acme.NewClient(config)
+	client, err := lego.NewClient(config)
 	if err != nil {
 		return nil, err
 	}

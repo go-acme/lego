@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/urfave/cli"
-	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/certcrypto"
 	"github.com/xenolf/lego/certificate"
+	"github.com/xenolf/lego/lego"
 	"github.com/xenolf/lego/log"
 )
 
@@ -71,7 +71,7 @@ func renew(ctx *cli.Context) error {
 	return renewForDomains(ctx, client, certsStorage, bundle)
 }
 
-func renewForDomains(ctx *cli.Context, client *acme.Client, certsStorage *CertificatesStorage, bundle bool) error {
+func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *CertificatesStorage, bundle bool) error {
 	domains := ctx.GlobalStringSlice("domains")
 	domain := domains[0]
 
@@ -124,7 +124,7 @@ func renewForDomains(ctx *cli.Context, client *acme.Client, certsStorage *Certif
 	return nil
 }
 
-func renewForCSR(ctx *cli.Context, client *acme.Client, certsStorage *CertificatesStorage, bundle bool) error {
+func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *CertificatesStorage, bundle bool) error {
 	csr, err := readCSRFile(ctx.GlobalString("csr"))
 	if err != nil {
 		log.Fatal(err)

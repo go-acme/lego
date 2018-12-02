@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"github.com/urfave/cli"
-	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/lego"
 )
 
 func CreateFlags(defaultPath string) []cli.Flag {
@@ -13,7 +13,7 @@ func CreateFlags(defaultPath string) []cli.Flag {
 		},
 		cli.StringFlag{
 			Name:  "server, s",
-			Value: acme.LEDirectoryProduction,
+			Value: lego.LEDirectoryProduction,
 			Usage: "CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client.",
 		},
 		cli.BoolFlag{

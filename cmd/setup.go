@@ -10,15 +10,15 @@ import (
 	"time"
 
 	"github.com/urfave/cli"
-	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/certcrypto"
+	"github.com/xenolf/lego/lego"
 	"github.com/xenolf/lego/log"
 	"github.com/xenolf/lego/registration"
 )
 
 const filePerm os.FileMode = 0600
 
-func setup(ctx *cli.Context, accountsStorage *AccountsStorage) (*Account, *acme.Client) {
+func setup(ctx *cli.Context, accountsStorage *AccountsStorage) (*Account, *lego.Client) {
 	privateKey := accountsStorage.GetPrivateKey()
 
 	var account *Account
@@ -33,10 +33,10 @@ func setup(ctx *cli.Context, accountsStorage *AccountsStorage) (*Account, *acme.
 	return account, client
 }
 
-func newClient(ctx *cli.Context, acc registration.User) *acme.Client {
+func newClient(ctx *cli.Context, acc registration.User) *lego.Client {
 	keyType := getKeyType(ctx)
 
-	config := acme.NewConfig(acc)
+	config := lego.NewConfig(acc)
 	config.CADirURL = ctx.GlobalString("server")
 	config.KeyType = keyType
 	config.UserAgent = fmt.Sprintf("lego-cli/%s", ctx.App.Version)
@@ -45,7 +45,7 @@ func newClient(ctx *cli.Context, acc registration.User) *acme.Client {
 		config.HTTPClient.Timeout = time.Duration(ctx.GlobalInt("http-timeout")) * time.Second
 	}
 
-	client, err := acme.NewClient(config)
+	client, err := lego.NewClient(config)
 	if err != nil {
 		log.Fatalf("Could not create client: %v", err)
 	}

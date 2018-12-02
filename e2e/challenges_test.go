@@ -12,10 +12,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/certificate"
 	"github.com/xenolf/lego/challenge"
 	"github.com/xenolf/lego/e2e/loader"
+	"github.com/xenolf/lego/lego"
 	"github.com/xenolf/lego/registration"
 )
 
@@ -221,10 +221,10 @@ func TestChallengeHTTP_Client_Obtain(t *testing.T) {
 	require.NoError(t, err, "Could not generate test key")
 
 	user := &fakeUser{privateKey: privKey}
-	config := acme.NewConfig(user)
+	config := lego.NewConfig(user)
 	config.CADirURL = load.PebbleOptions.HealthCheckURL
 
-	client, err := acme.NewClient(config)
+	client, err := lego.NewClient(config)
 	require.NoError(t, err)
 
 	client.Challenge.Exclude([]challenge.Type{challenge.DNS01, challenge.TLSALPN01})
@@ -258,10 +258,10 @@ func TestChallengeTLS_Client_Obtain(t *testing.T) {
 	require.NoError(t, err, "Could not generate test key")
 
 	user := &fakeUser{privateKey: privKey}
-	config := acme.NewConfig(user)
+	config := lego.NewConfig(user)
 	config.CADirURL = load.PebbleOptions.HealthCheckURL
 
-	client, err := acme.NewClient(config)
+	client, err := lego.NewClient(config)
 	require.NoError(t, err)
 
 	client.Challenge.Exclude([]challenge.Type{challenge.DNS01, challenge.HTTP01})
@@ -296,10 +296,10 @@ func TestChallengeTLS_Client_ObtainForCSR(t *testing.T) {
 	require.NoError(t, err, "Could not generate test key")
 
 	user := &fakeUser{privateKey: privKey}
-	config := acme.NewConfig(user)
+	config := lego.NewConfig(user)
 	config.CADirURL = load.PebbleOptions.HealthCheckURL
 
-	client, err := acme.NewClient(config)
+	client, err := lego.NewClient(config)
 	require.NoError(t, err)
 
 	client.Challenge.Exclude([]challenge.Type{challenge.DNS01, challenge.HTTP01})

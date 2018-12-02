@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/urfave/cli"
-	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/certificate"
+	"github.com/xenolf/lego/lego"
 	"github.com/xenolf/lego/log"
 	"github.com/xenolf/lego/registration"
 )
@@ -85,7 +85,7 @@ func run(ctx *cli.Context) error {
 	return nil
 }
 
-func handleTOS(ctx *cli.Context, client *acme.Client) bool {
+func handleTOS(ctx *cli.Context, client *lego.Client) bool {
 	// Check for a global accept override
 	if ctx.GlobalBool("accept-tos") {
 		return true
@@ -113,7 +113,7 @@ func handleTOS(ctx *cli.Context, client *acme.Client) bool {
 	}
 }
 
-func register(ctx *cli.Context, client *acme.Client) (*registration.Resource, error) {
+func register(ctx *cli.Context, client *lego.Client) (*registration.Resource, error) {
 	accepted := handleTOS(ctx, client)
 	if !accepted {
 		log.Fatal("You did not accept the TOS. Unable to proceed.")
@@ -133,7 +133,7 @@ func register(ctx *cli.Context, client *acme.Client) (*registration.Resource, er
 	return client.Registration.Register(accepted)
 }
 
-func obtainCertificate(ctx *cli.Context, client *acme.Client) (*certificate.Resource, error) {
+func obtainCertificate(ctx *cli.Context, client *lego.Client) (*certificate.Resource, error) {
 	bundle := !ctx.Bool("no-bundle")
 
 	domains := ctx.GlobalStringSlice("domains")

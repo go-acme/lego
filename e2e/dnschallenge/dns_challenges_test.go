@@ -10,11 +10,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/certificate"
 	"github.com/xenolf/lego/challenge"
 	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/e2e/loader"
+	"github.com/xenolf/lego/lego"
 	"github.com/xenolf/lego/providers/dns"
 	"github.com/xenolf/lego/registration"
 )
@@ -86,10 +86,10 @@ func TestChallengeDNS_Client_Obtain(t *testing.T) {
 	require.NoError(t, err, "Could not generate test key")
 
 	user := &fakeUser{privateKey: privKey}
-	config := acme.NewConfig(user)
+	config := lego.NewConfig(user)
 	config.CADirURL = "https://localhost:15000/dir"
 
-	client, err := acme.NewClient(config)
+	client, err := lego.NewClient(config)
 	require.NoError(t, err)
 
 	provider, err := dns.NewDNSChallengeProviderByName("exec")

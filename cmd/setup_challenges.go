@@ -5,16 +5,16 @@ import (
 	"time"
 
 	"github.com/urfave/cli"
-	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/challenge"
 	"github.com/xenolf/lego/challenge/dns01"
+	"github.com/xenolf/lego/lego"
 	"github.com/xenolf/lego/log"
 	"github.com/xenolf/lego/providers/dns"
 	"github.com/xenolf/lego/providers/http/memcached"
 	"github.com/xenolf/lego/providers/http/webroot"
 )
 
-func setupChallenges(ctx *cli.Context, client *acme.Client) {
+func setupChallenges(ctx *cli.Context, client *lego.Client) {
 	if len(ctx.GlobalStringSlice("exclude")) > 0 {
 		excludedSolvers(ctx, client)
 	}
@@ -40,7 +40,7 @@ func setupChallenges(ctx *cli.Context, client *acme.Client) {
 	}
 }
 
-func excludedSolvers(ctx *cli.Context, client *acme.Client) {
+func excludedSolvers(ctx *cli.Context, client *lego.Client) {
 	var cc []challenge.Type
 	for _, s := range ctx.GlobalStringSlice("exclude") {
 		cc = append(cc, challenge.Type(s))
@@ -48,7 +48,7 @@ func excludedSolvers(ctx *cli.Context, client *acme.Client) {
 	client.Challenge.Exclude(cc)
 }
 
-func setupWebroot(client *acme.Client, path string) {
+func setupWebroot(client *lego.Client, path string) {
 	provider, err := webroot.NewHTTPProvider(path)
 	if err != nil {
 		log.Fatal(err)
@@ -64,7 +64,7 @@ func setupWebroot(client *acme.Client, path string) {
 	client.Challenge.Exclude([]challenge.Type{challenge.DNS01, challenge.TLSALPN01})
 }
 
-func setupMemcached(client *acme.Client, hosts []string) {
+func setupMemcached(client *lego.Client, hosts []string) {
 	provider, err := memcached.NewMemcachedProvider(hosts)
 	if err != nil {
 		log.Fatal(err)
@@ -80,7 +80,7 @@ func setupMemcached(client *acme.Client, hosts []string) {
 	client.Challenge.Exclude([]challenge.Type{challenge.DNS01, challenge.TLSALPN01})
 }
 
-func setupHTTP(client *acme.Client, iface string) {
+func setupHTTP(client *lego.Client, iface string) {
 	if !strings.Contains(iface, ":") {
 		log.Fatalf("The --http switch only accepts interface:port or :port for its argument.")
 	}
@@ -91,7 +91,7 @@ func setupHTTP(client *acme.Client, iface string) {
 	}
 }
 
-func setupTLS(client *acme.Client, iface string) {
+func setupTLS(client *lego.Client, iface string) {
 	if !strings.Contains(iface, ":") {
 		log.Fatalf("The --tls switch only accepts interface:port or :port for its argument.")
 	}
@@ -102,7 +102,7 @@ func setupTLS(client *acme.Client, iface string) {
 	}
 }
 
-func setupDNS(ctx *cli.Context, client *acme.Client) {
+func setupDNS(ctx *cli.Context, client *lego.Client) {
 	provider, err := dns.NewDNSChallengeProviderByName(ctx.GlobalString("dns"))
 	if err != nil {
 		log.Fatal(err)

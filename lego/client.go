@@ -4,9 +4,9 @@ import (
 	"errors"
 	"net/url"
 
+	"github.com/xenolf/lego/acme/api"
 	"github.com/xenolf/lego/certificate"
 	"github.com/xenolf/lego/challenge/resolver"
-	"github.com/xenolf/lego/le/api"
 	"github.com/xenolf/lego/registration"
 )
 

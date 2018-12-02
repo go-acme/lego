@@ -9,7 +9,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/xenolf/lego/le/api/internal/nonces"
+	"github.com/xenolf/lego/acme/api/internal/nonces"
 	"gopkg.in/square/go-jose.v2"
 )
 

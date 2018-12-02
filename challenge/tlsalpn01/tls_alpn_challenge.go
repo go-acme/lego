@@ -8,10 +8,10 @@ import (
 	"encoding/asn1"
 	"fmt"
 
+	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/acme/api"
 	"github.com/xenolf/lego/certcrypto"
 	"github.com/xenolf/lego/challenge"
-	"github.com/xenolf/lego/le"
-	"github.com/xenolf/lego/le/api"
 	"github.com/xenolf/lego/log"
 )
 
@@ -19,7 +19,7 @@ import (
 // Reference: https://tools.ietf.org/html/draft-ietf-acme-tls-alpn-05#section-5.1
 var idPeAcmeIdentifierV1 = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 1, 31}
 
-type ValidateFunc func(core *api.Core, domain string, chlng le.Challenge) error
+type ValidateFunc func(core *api.Core, domain string, chlng acme.Challenge) error
 
 type Challenge struct {
 	core     *api.Core
@@ -40,7 +40,7 @@ func (c *Challenge) SetProvider(provider challenge.Provider) {
 }
 
 // Solve manages the provider to validate and solve the challenge.
-func (c *Challenge) Solve(authz le.Authorization) error {
+func (c *Challenge) Solve(authz acme.Authorization) error {
 	domain := authz.Identifier.Value
 	log.Infof("[%s] acme: Trying to solve TLS-ALPN-01", challenge.GetTargetedDomain(authz))
 

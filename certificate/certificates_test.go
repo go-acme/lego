@@ -9,9 +9,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/acme/api"
 	"github.com/xenolf/lego/certcrypto"
-	"github.com/xenolf/lego/le"
-	"github.com/xenolf/lego/le/api"
 	"github.com/xenolf/lego/platform/tester"
 )
 
@@ -92,8 +92,8 @@ func Test_checkResponse(t *testing.T) {
 
 	certifier := NewCertifier(core, certcrypto.RSA2048, &resolverMock{})
 
-	order := le.Order{
-		Status:      le.StatusValid,
+	order := acme.Order{
+		Status:      acme.StatusValid,
 		Certificate: apiURL + "/certificate",
 	}
 	certRes := &Resource{}
@@ -134,8 +134,8 @@ func Test_checkResponse_issuerRelUp(t *testing.T) {
 
 	certifier := NewCertifier(core, certcrypto.RSA2048, &resolverMock{})
 
-	order := le.Order{
-		Status:      le.StatusValid,
+	order := acme.Order{
+		Status:      acme.StatusValid,
 		Certificate: apiURL + "/certificate",
 	}
 	certRes := &Resource{}
@@ -170,8 +170,8 @@ func Test_checkResponse_embeddedIssuer(t *testing.T) {
 
 	certifier := NewCertifier(core, certcrypto.RSA2048, &resolverMock{})
 
-	order := le.Order{
-		Status:      le.StatusValid,
+	order := acme.Order{
+		Status:      acme.StatusValid,
 		Certificate: apiURL + "/certificate",
 	}
 	certRes := &Resource{}
@@ -194,6 +194,6 @@ type resolverMock struct {
 	error error
 }
 
-func (r *resolverMock) Solve(authorizations []le.Authorization) error {
+func (r *resolverMock) Solve(authorizations []acme.Authorization) error {
 	return r.error
 }

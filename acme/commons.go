@@ -1,6 +1,6 @@
-// Package le contains all objects related the ACME endpoints.
+// Package acme contains all objects related the ACME endpoints.
 // https://tools.ietf.org/html/draft-ietf-acme-acme-16
-package le
+package acme
 
 import (
 	"encoding/json"

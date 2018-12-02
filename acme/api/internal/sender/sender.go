@@ -9,7 +9,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/xenolf/lego/le"
+	"github.com/xenolf/lego/acme"
 )
 
 type RequestOption func(*http.Request) error
@@ -126,7 +126,7 @@ func checkError(req *http.Request, resp *http.Response) error {
 			return fmt.Errorf("%d :: %s :: %s :: %v", resp.StatusCode, req.Method, req.URL, err)
 		}
 
-		var errorDetails *le.ProblemDetails
+		var errorDetails *acme.ProblemDetails
 		err = json.Unmarshal(body, &errorDetails)
 		if err != nil {
 			return fmt.Errorf("%d ::%s :: %s :: %v :: %s", resp.StatusCode, req.Method, req.URL, err, string(body))
@@ -136,8 +136,8 @@ func checkError(req *http.Request, resp *http.Response) error {
 		errorDetails.URL = req.URL.String()
 
 		// Check for errors we handle specifically
-		if errorDetails.HTTPStatus == http.StatusBadRequest && errorDetails.Type == le.BadNonceErr {
-			return &le.NonceError{ProblemDetails: errorDetails}
+		if errorDetails.HTTPStatus == http.StatusBadRequest && errorDetails.Type == acme.BadNonceErr {
+			return &acme.NonceError{ProblemDetails: errorDetails}
 		}
 
 		return errorDetails

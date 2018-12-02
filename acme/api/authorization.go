@@ -3,21 +3,21 @@ package api
 import (
 	"errors"
 
-	"github.com/xenolf/lego/le"
+	"github.com/xenolf/lego/acme"
 )
 
 type AuthorizationService service
 
 // Get Gets an authorization.
-func (c *AuthorizationService) Get(authzURL string) (le.Authorization, error) {
+func (c *AuthorizationService) Get(authzURL string) (acme.Authorization, error) {
 	if len(authzURL) == 0 {
-		return le.Authorization{}, errors.New("authorization[get]: empty URL")
+		return acme.Authorization{}, errors.New("authorization[get]: empty URL")
 	}
 
-	var authz le.Authorization
+	var authz acme.Authorization
 	_, err := c.core.postAsGet(authzURL, &authz)
 	if err != nil {
-		return le.Authorization{}, err
+		return acme.Authorization{}, err
 	}
 	return authz, nil
 }
@@ -28,7 +28,7 @@ func (c *AuthorizationService) Deactivate(authzURL string) error {
 		return errors.New("authorization[deactivate]: empty URL")
 	}
 
-	var disabledAuth le.Authorization
-	_, err := c.core.post(authzURL, le.Authorization{Status: le.StatusDeactivated}, &disabledAuth)
+	var disabledAuth acme.Authorization
+	_, err := c.core.post(authzURL, acme.Authorization{Status: acme.StatusDeactivated}, &disabledAuth)
 	return err
 }

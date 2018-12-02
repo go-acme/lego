@@ -10,7 +10,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/le"
+	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/platform/tester"
 	"gopkg.in/square/go-jose.v2"
 )
@@ -34,15 +34,15 @@ func TestOrderService_New(t *testing.T) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 		}
 
-		order := le.Order{}
+		order := acme.Order{}
 		err = json.Unmarshal(body, &order)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		err = tester.WriteJSONResponse(w, le.Order{
-			Status:      le.StatusValid,
+		err = tester.WriteJSONResponse(w, acme.Order{
+			Status:      acme.StatusValid,
 			Identifiers: order.Identifiers,
 		})
 		if err != nil {
@@ -57,10 +57,10 @@ func TestOrderService_New(t *testing.T) {
 	order, err := core.Orders.New([]string{"example.com"})
 	require.NoError(t, err)
 
-	expected := le.ExtendedOrder{
-		Order: le.Order{
+	expected := acme.ExtendedOrder{
+		Order: acme.Order{
 			Status:      "valid",
-			Identifiers: []le.Identifier{{Type: "dns", Value: "example.com"}},
+			Identifiers: []acme.Identifier{{Type: "dns", Value: "example.com"}},
 		},
 	}
 	assert.Equal(t, expected, order)

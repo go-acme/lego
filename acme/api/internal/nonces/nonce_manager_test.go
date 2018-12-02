@@ -1,4 +1,4 @@
-package secure
+package nonces
 
 import (
 	"net/http"
@@ -6,9 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/xenolf/lego/le"
-	"github.com/xenolf/lego/le/api/internal/nonces"
-	"github.com/xenolf/lego/le/api/internal/sender"
+	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/acme/api/internal/sender"
 	"github.com/xenolf/lego/platform/tester"
 )
 
@@ -17,7 +16,7 @@ func TestNotHoldingLockWhileMakingHTTPRequests(t *testing.T) {
 		time.Sleep(250 * time.Millisecond)
 		w.Header().Add("Replay-Nonce", "12345")
 		w.Header().Add("Retry-After", "0")
-		err := tester.WriteJSONResponse(w, &le.Challenge{Type: "http-01", Status: "Valid", URL: "http://example.com/", Token: "token"})
+		err := tester.WriteJSONResponse(w, &acme.Challenge{Type: "http-01", Status: "Valid", URL: "http://example.com/", Token: "token"})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -26,7 +25,7 @@ func TestNotHoldingLockWhileMakingHTTPRequests(t *testing.T) {
 	defer ts.Close()
 
 	do := sender.NewDo(http.DefaultClient, "lego-test")
-	j := nonces.NewManager(do, ts.URL)
+	j := NewManager(do, ts.URL)
 	ch := make(chan bool)
 	resultCh := make(chan bool)
 	go func() {

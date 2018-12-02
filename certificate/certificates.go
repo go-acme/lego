@@ -12,10 +12,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/acme/api"
 	"github.com/xenolf/lego/certcrypto"
 	"github.com/xenolf/lego/challenge"
-	"github.com/xenolf/lego/le"
-	"github.com/xenolf/lego/le/api"
 	"github.com/xenolf/lego/log"
 	"golang.org/x/crypto/ocsp"
 	"golang.org/x/net/idna"
@@ -57,7 +57,7 @@ type ObtainRequest struct {
 }
 
 type resolver interface {
-	Solve(authorizations []le.Authorization) error
+	Solve(authorizations []acme.Authorization) error
 }
 
 type Certifier struct {
@@ -188,7 +188,7 @@ func (c *Certifier) ObtainForCSR(csr x509.CertificateRequest, bundle bool) (*Res
 	return cert, nil
 }
 
-func (c *Certifier) getForOrder(domains []string, order le.ExtendedOrder, bundle bool, privKey crypto.PrivateKey, mustStaple bool) (*Resource, error) {
+func (c *Certifier) getForOrder(domains []string, order acme.ExtendedOrder, bundle bool, privKey crypto.PrivateKey, mustStaple bool) (*Resource, error) {
 	if privKey == nil {
 		var err error
 		privKey, err = certcrypto.GeneratePrivateKey(c.keyType)
@@ -222,7 +222,7 @@ func (c *Certifier) getForOrder(domains []string, order le.ExtendedOrder, bundle
 	return c.getForCSR(domains, order, bundle, csr, certcrypto.PEMEncode(privKey))
 }
 
-func (c *Certifier) getForCSR(domains []string, order le.ExtendedOrder, bundle bool, csr []byte, privateKeyPem []byte) (*Resource, error) {
+func (c *Certifier) getForCSR(domains []string, order acme.ExtendedOrder, bundle bool, csr []byte, privateKeyPem []byte) (*Resource, error) {
 	respOrder, err := c.core.Orders.UpdateForCSR(order.Finalize, csr)
 	if err != nil {
 		return nil, err
@@ -235,7 +235,7 @@ func (c *Certifier) getForCSR(domains []string, order le.ExtendedOrder, bundle b
 		PrivateKey: privateKeyPem,
 	}
 
-	if respOrder.Status == le.StatusValid {
+	if respOrder.Status == acme.StatusValid {
 		// if the certificate is available right away, short cut!
 		ok, err := c.checkResponse(respOrder, certRes, bundle)
 		if err != nil {
@@ -285,7 +285,7 @@ func (c *Certifier) waitForCertificate(certRes *Resource, orderURL string, bundl
 // The certRes input should already have the Domain (common name) field populated.
 //
 // If bundle is true, the certificate will be bundled with the issuer's cert.
-func (c *Certifier) checkResponse(order le.Order, certRes *Resource, bundle bool) (bool, error) {
+func (c *Certifier) checkResponse(order acme.Order, certRes *Resource, bundle bool) (bool, error) {
 	valid, err := checkOrderStatus(order)
 	if err != nil || !valid {
 		return valid, err
@@ -318,7 +318,7 @@ func (c *Certifier) Revoke(cert []byte) error {
 		return fmt.Errorf("certificate bundle starts with a CA certificate")
 	}
 
-	revokeMsg := le.RevokeCertMessage{
+	revokeMsg := acme.RevokeCertMessage{
 		Certificate: base64.RawURLEncoding.EncodeToString(x509Cert.Raw),
 	}
 
@@ -462,11 +462,11 @@ func (c *Certifier) GetOCSP(bundle []byte) ([]byte, *ocsp.Response, error) {
 	return ocspResBytes, ocspRes, nil
 }
 
-func checkOrderStatus(order le.Order) (bool, error) {
+func checkOrderStatus(order acme.Order) (bool, error) {
 	switch order.Status {
-	case le.StatusValid:
+	case acme.StatusValid:
 		return true, nil
-	case le.StatusInvalid:
+	case acme.StatusInvalid:
 		return false, order.Error
 	default:
 		return false, nil

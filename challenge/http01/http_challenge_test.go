@@ -9,9 +9,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/acme/api"
 	"github.com/xenolf/lego/challenge"
-	"github.com/xenolf/lego/le"
-	"github.com/xenolf/lego/le/api"
 	"github.com/xenolf/lego/platform/tester"
 )
 
@@ -21,7 +21,7 @@ func TestChallenge(t *testing.T) {
 
 	providerServer := &ProviderServer{port: "23457"}
 
-	validate := func(_ *api.Core, _ string, chlng le.Challenge) error {
+	validate := func(_ *api.Core, _ string, chlng acme.Challenge) error {
 		uri := "http://localhost" + providerServer.GetAddress() + ChallengePath(chlng.Token)
 
 		resp, err := http.DefaultClient.Get(uri)
@@ -55,11 +55,11 @@ func TestChallenge(t *testing.T) {
 
 	solver := NewChallenge(core, validate, providerServer)
 
-	authz := le.Authorization{
-		Identifier: le.Identifier{
+	authz := acme.Authorization{
+		Identifier: acme.Identifier{
 			Value: "localhost:23457",
 		},
-		Challenges: []le.Challenge{
+		Challenges: []acme.Challenge{
 			{Type: challenge.HTTP01.String(), Token: "http1"},
 		},
 	}
@@ -78,15 +78,15 @@ func TestChallengeInvalidPort(t *testing.T) {
 	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privKey)
 	require.NoError(t, err)
 
-	validate := func(_ *api.Core, _ string, _ le.Challenge) error { return nil }
+	validate := func(_ *api.Core, _ string, _ acme.Challenge) error { return nil }
 
 	solver := NewChallenge(core, validate, &ProviderServer{port: "123456"})
 
-	authz := le.Authorization{
-		Identifier: le.Identifier{
+	authz := acme.Authorization{
+		Identifier: acme.Identifier{
 			Value: "localhost:123456",
 		},
-		Challenges: []le.Challenge{
+		Challenges: []acme.Challenge{
 			{Type: challenge.HTTP01.String(), Token: "http2"},
 		},
 	}

@@ -13,10 +13,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/acme/api"
 	"github.com/xenolf/lego/challenge"
 	"github.com/xenolf/lego/challenge/http01"
-	"github.com/xenolf/lego/le"
-	"github.com/xenolf/lego/le/api"
 	"github.com/xenolf/lego/platform/tester"
 	"gopkg.in/square/go-jose.v2"
 )
@@ -79,9 +79,9 @@ func TestValidate(t *testing.T) {
 		st := statuses[0]
 		statuses = statuses[1:]
 
-		chlg := &le.Challenge{Type: "http-01", Status: st, URL: "http://example.com/", Token: "token"}
-		if st == le.StatusInvalid {
-			chlg.Error = &le.ProblemDetails{}
+		chlg := &acme.Challenge{Type: "http-01", Status: st, URL: "http://example.com/", Token: "token"}
+		if st == acme.StatusInvalid {
+			chlg.Error = &acme.ProblemDetails{}
 		}
 
 		err := tester.WriteJSONResponse(w, chlg)
@@ -100,15 +100,15 @@ func TestValidate(t *testing.T) {
 		st := statuses[0]
 		statuses = statuses[1:]
 
-		authorization := le.Authorization{
+		authorization := acme.Authorization{
 			Status:     st,
-			Challenges: []le.Challenge{},
+			Challenges: []acme.Challenge{},
 		}
 
-		if st == le.StatusInvalid {
-			chlg := le.Challenge{
-				Status: le.StatusInvalid,
-				Error:  &le.ProblemDetails{},
+		if st == acme.StatusInvalid {
+			chlg := acme.Challenge{
+				Status: acme.StatusInvalid,
+				Error:  &acme.ProblemDetails{},
 			}
 			authorization.Challenges = append(authorization.Challenges, chlg)
 		}
@@ -135,25 +135,25 @@ func TestValidate(t *testing.T) {
 		},
 		{
 			name:     "POST-valid",
-			statuses: []string{le.StatusValid},
+			statuses: []string{acme.StatusValid},
 		},
 		{
 			name:     "POST-invalid",
-			statuses: []string{le.StatusInvalid},
+			statuses: []string{acme.StatusInvalid},
 			want:     "error",
 		},
 		{
 			name:     "POST-pending-unexpected",
-			statuses: []string{le.StatusPending, "weird"},
+			statuses: []string{acme.StatusPending, "weird"},
 			want:     "unexpected",
 		},
 		{
 			name:     "POST-pending-valid",
-			statuses: []string{le.StatusPending, le.StatusValid},
+			statuses: []string{acme.StatusPending, acme.StatusValid},
 		},
 		{
 			name:     "POST-pending-invalid",
-			statuses: []string{le.StatusPending, le.StatusInvalid},
+			statuses: []string{acme.StatusPending, acme.StatusInvalid},
 			want:     "error",
 		},
 	}
@@ -162,7 +162,7 @@ func TestValidate(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			statuses = test.statuses
 
-			err := validate(core, "example.com", le.Challenge{Type: "http-01", Token: "token", URL: apiURL + "/chlg"})
+			err := validate(core, "example.com", acme.Challenge{Type: "http-01", Token: "token", URL: apiURL + "/chlg"})
 			if test.want == "" {
 				require.NoError(t, err)
 			} else {

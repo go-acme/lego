@@ -3,8 +3,8 @@ package resolver
 import (
 	"time"
 
+	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/challenge"
-	"github.com/xenolf/lego/le"
 )
 
 type preSolverMock struct {
@@ -13,25 +13,25 @@ type preSolverMock struct {
 	cleanUp  map[string]error
 }
 
-func (s *preSolverMock) PreSolve(authorization le.Authorization) error {
+func (s *preSolverMock) PreSolve(authorization acme.Authorization) error {
 	return s.preSolve[authorization.Identifier.Value]
 }
-func (s *preSolverMock) Solve(authorization le.Authorization) error {
+func (s *preSolverMock) Solve(authorization acme.Authorization) error {
 	return s.solve[authorization.Identifier.Value]
 }
-func (s *preSolverMock) CleanUp(authorization le.Authorization) error {
+func (s *preSolverMock) CleanUp(authorization acme.Authorization) error {
 	return s.cleanUp[authorization.Identifier.Value]
 }
 
-func createStubAuthorizationHTTP01(domain, status string) le.Authorization {
-	return le.Authorization{
+func createStubAuthorizationHTTP01(domain, status string) acme.Authorization {
+	return acme.Authorization{
 		Status:  status,
 		Expires: time.Now(),
-		Identifier: le.Identifier{
+		Identifier: acme.Identifier{
 			Type:  challenge.HTTP01.String(),
 			Value: domain,
 		},
-		Challenges: []le.Challenge{
+		Challenges: []acme.Challenge{
 			{
 				Type:      challenge.HTTP01.String(),
 				Validated: time.Now(),

@@ -8,16 +8,16 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/acme/api"
 	"github.com/xenolf/lego/challenge"
 	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/challenge/http01"
 	"github.com/xenolf/lego/challenge/tlsalpn01"
-	"github.com/xenolf/lego/le"
-	"github.com/xenolf/lego/le/api"
 	"github.com/xenolf/lego/log"
 )
 
-type byType []le.Challenge
+type byType []acme.Challenge
 
 func (a byType) Len() int           { return len(a) }
 func (a byType) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
@@ -105,7 +105,7 @@ func (c *SolverManager) Exclude(challenges []challenge.Type) {
 }
 
 // Checks all challenges from the server in order and returns the first matching solver.
-func (c *SolverManager) chooseSolver(authz le.Authorization) solver {
+func (c *SolverManager) chooseSolver(authz acme.Authorization) solver {
 	// Allow to have a deterministic challenge order
 	sort.Sort(sort.Reverse(byType(authz.Challenges)))
 
@@ -121,7 +121,7 @@ func (c *SolverManager) chooseSolver(authz le.Authorization) solver {
 	return nil
 }
 
-func validate(core *api.Core, domain string, chlg le.Challenge) error {
+func validate(core *api.Core, domain string, chlg acme.Challenge) error {
 	chlng, err := core.Challenges.New(chlg.URL)
 	if err != nil {
 		return fmt.Errorf("failed to initiate challenge: %v", err)
@@ -167,30 +167,30 @@ func validate(core *api.Core, domain string, chlg le.Challenge) error {
 	}
 }
 
-func checkChallengeStatus(chlng le.ExtendedChallenge) (bool, error) {
+func checkChallengeStatus(chlng acme.ExtendedChallenge) (bool, error) {
 	switch chlng.Status {
-	case le.StatusValid:
+	case acme.StatusValid:
 		return true, nil
-	case le.StatusPending, le.StatusProcessing:
+	case acme.StatusPending, acme.StatusProcessing:
 		return false, nil
-	case le.StatusInvalid:
+	case acme.StatusInvalid:
 		return false, chlng.Error
 	default:
 		return false, errors.New("the server returned an unexpected state")
 	}
 }
 
-func checkAuthorizationStatus(authz le.Authorization) (bool, error) {
+func checkAuthorizationStatus(authz acme.Authorization) (bool, error) {
 	switch authz.Status {
-	case le.StatusValid:
+	case acme.StatusValid:
 		return true, nil
-	case le.StatusPending, le.StatusProcessing:
+	case acme.StatusPending, acme.StatusProcessing:
 		return false, nil
-	case le.StatusDeactivated, le.StatusExpired, le.StatusRevoked:
+	case acme.StatusDeactivated, acme.StatusExpired, acme.StatusRevoked:
 		return false, fmt.Errorf("the authorization state %s", authz.Status)
-	case le.StatusInvalid:
+	case acme.StatusInvalid:
 		for _, chlg := range authz.Challenges {
-			if chlg.Status == le.StatusInvalid && chlg.Error != nil {
+			if chlg.Status == acme.StatusInvalid && chlg.Error != nil {
 				return false, chlg.Error
 			}
 		}

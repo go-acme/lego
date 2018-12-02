@@ -3,7 +3,7 @@ package challenge
 import (
 	"fmt"
 
-	"github.com/xenolf/lego/le"
+	"github.com/xenolf/lego/acme"
 )
 
 // Type is a string that identifies a particular challenge type and version of ACME challenge.
@@ -26,17 +26,17 @@ func (t Type) String() string {
 	return string(t)
 }
 
-func FindChallenge(chlgType Type, authz le.Authorization) (le.Challenge, error) {
+func FindChallenge(chlgType Type, authz acme.Authorization) (acme.Challenge, error) {
 	for _, chlg := range authz.Challenges {
 		if chlg.Type == string(chlgType) {
 			return chlg, nil
 		}
 	}
 
-	return le.Challenge{}, fmt.Errorf("[%s] acme: unable to find challenge %s", GetTargetedDomain(authz), chlgType)
+	return acme.Challenge{}, fmt.Errorf("[%s] acme: unable to find challenge %s", GetTargetedDomain(authz), chlgType)
 }
 
-func GetTargetedDomain(authz le.Authorization) string {
+func GetTargetedDomain(authz acme.Authorization) string {
 	if authz.Wildcard {
 		return "*." + authz.Identifier.Value
 	}

@@ -12,9 +12,9 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/acme/api"
 	"github.com/xenolf/lego/challenge"
-	"github.com/xenolf/lego/le"
-	"github.com/xenolf/lego/le/api"
 	"github.com/xenolf/lego/platform/tester"
 )
 
@@ -24,7 +24,7 @@ func TestChallenge(t *testing.T) {
 
 	domain := "localhost:23457"
 
-	mockValidate := func(_ *api.Core, _ string, chlng le.Challenge) error {
+	mockValidate := func(_ *api.Core, _ string, chlng acme.Challenge) error {
 		conn, err := tls.Dial("tcp", domain, &tls.Config{
 			InsecureSkipVerify: true,
 		})
@@ -75,11 +75,11 @@ func TestChallenge(t *testing.T) {
 		&ProviderServer{port: "23457"},
 	)
 
-	authz := le.Authorization{
-		Identifier: le.Identifier{
+	authz := acme.Authorization{
+		Identifier: acme.Identifier{
 			Value: domain,
 		},
-		Challenges: []le.Challenge{
+		Challenges: []acme.Challenge{
 			{Type: challenge.TLSALPN01.String(), Token: "tlsalpn1"},
 		},
 	}
@@ -100,15 +100,15 @@ func TestChallengeInvalidPort(t *testing.T) {
 
 	solver := NewChallenge(
 		core,
-		func(_ *api.Core, _ string, _ le.Challenge) error { return nil },
+		func(_ *api.Core, _ string, _ acme.Challenge) error { return nil },
 		&ProviderServer{port: "123456"},
 	)
 
-	authz := le.Authorization{
-		Identifier: le.Identifier{
+	authz := acme.Authorization{
+		Identifier: acme.Identifier{
 			Value: "localhost:123456",
 		},
-		Challenges: []le.Challenge{
+		Challenges: []acme.Challenge{
 			{Type: challenge.TLSALPN01.String(), Token: "tlsalpn1"},
 		},
 	}

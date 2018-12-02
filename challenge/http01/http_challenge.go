@@ -3,13 +3,13 @@ package http01
 import (
 	"fmt"
 
+	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/acme/api"
 	"github.com/xenolf/lego/challenge"
-	"github.com/xenolf/lego/le"
-	"github.com/xenolf/lego/le/api"
 	"github.com/xenolf/lego/log"
 )
 
-type ValidateFunc func(core *api.Core, domain string, chlng le.Challenge) error
+type ValidateFunc func(core *api.Core, domain string, chlng acme.Challenge) error
 
 // ChallengePath returns the URL path for the `http-01` challenge
 func ChallengePath(token string) string {
@@ -34,7 +34,7 @@ func (c *Challenge) SetProvider(provider challenge.Provider) {
 	c.provider = provider
 }
 
-func (c *Challenge) Solve(authz le.Authorization) error {
+func (c *Challenge) Solve(authz acme.Authorization) error {
 	domain := challenge.GetTargetedDomain(authz)
 	log.Infof("[%s] acme: Trying to solve HTTP-01", domain)
 

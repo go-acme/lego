@@ -8,8 +8,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/le"
-	"github.com/xenolf/lego/le/api"
+	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/acme/api"
 	"github.com/xenolf/lego/platform/tester"
 )
 
@@ -23,7 +23,7 @@ func TestRegistrar_ResolveAccountByKey(t *testing.T) {
 	})
 
 	mux.HandleFunc("/account_recovery", func(w http.ResponseWriter, r *http.Request) {
-		err := tester.WriteJSONResponse(w, le.Account{
+		err := tester.WriteJSONResponse(w, acme.Account{
 			Status: "valid",
 		})
 		if err != nil {

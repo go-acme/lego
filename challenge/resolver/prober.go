@@ -4,25 +4,25 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/challenge"
-	"github.com/xenolf/lego/le"
 	"github.com/xenolf/lego/log"
 )
 
 // Interface for all challenge solvers to implement.
 type solver interface {
-	Solve(authorization le.Authorization) error
+	Solve(authorization acme.Authorization) error
 }
 
 // Interface for challenges like dns, where we can set a record in advance for ALL challenges.
 // This saves quite a bit of time vs creating the records and solving them serially.
 type preSolver interface {
-	PreSolve(authorization le.Authorization) error
+	PreSolve(authorization acme.Authorization) error
 }
 
 // Interface for challenges like dns, where we can solve all the challenges before to delete them.
 type cleanup interface {
-	CleanUp(authorization le.Authorization) error
+	CleanUp(authorization acme.Authorization) error
 }
 
 type sequential interface {
@@ -31,7 +31,7 @@ type sequential interface {
 
 // an authz with the solver we have chosen and the index of the challenge associated with it
 type selectedAuthSolver struct {
-	authz  le.Authorization
+	authz  acme.Authorization
 	solver solver
 }
 
@@ -47,7 +47,7 @@ func NewProber(solverManager *SolverManager) *Prober {
 
 // Solve Looks through the challenge combinations to find a solvable match.
 // Then solves the challenges in series and returns.
-func (p *Prober) Solve(authorizations []le.Authorization) error {
+func (p *Prober) Solve(authorizations []acme.Authorization) error {
 	failures := make(obtainError)
 
 	var authSolvers []*selectedAuthSolver
@@ -57,7 +57,7 @@ func (p *Prober) Solve(authorizations []le.Authorization) error {
 	// First pass just selects a solver for each authz.
 	for _, authz := range authorizations {
 		domain := challenge.GetTargetedDomain(authz)
-		if authz.Status == le.StatusValid {
+		if authz.Status == acme.StatusValid {
 			// Boulder might recycle recent validated authz (see issue #267)
 			log.Infof("[%s] acme: authorization already valid; skipping challenge", domain)
 			continue
@@ -161,7 +161,7 @@ func parallelSolve(authSolvers []*selectedAuthSolver, failures obtainError) {
 	}
 }
 
-func cleanUp(solvr solver, authz le.Authorization) {
+func cleanUp(solvr solver, authz acme.Authorization) {
 	if solvr, ok := solvr.(cleanup); ok {
 		domain := challenge.GetTargetedDomain(authz)
 		err := solvr.CleanUp(authz)

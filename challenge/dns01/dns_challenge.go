@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/acme/api"
 	"github.com/xenolf/lego/challenge"
-	"github.com/xenolf/lego/le"
-	"github.com/xenolf/lego/le/api"
 	"github.com/xenolf/lego/log"
 	"github.com/xenolf/lego/platform/wait"
 )
@@ -24,7 +24,7 @@ const (
 	DefaultTTL = 120
 )
 
-type ValidateFunc func(core *api.Core, domain string, chlng le.Challenge) error
+type ValidateFunc func(core *api.Core, domain string, chlng acme.Challenge) error
 
 type ChallengeOption func(*Challenge) error
 
@@ -69,7 +69,7 @@ func NewChallenge(core *api.Core, validate ValidateFunc, provider challenge.Prov
 
 // PreSolve just submits the txt record to the dns provider.
 // It does not validate record propagation, or do anything at all with the acme server.
-func (c *Challenge) PreSolve(authz le.Authorization) error {
+func (c *Challenge) PreSolve(authz acme.Authorization) error {
 	domain := challenge.GetTargetedDomain(authz)
 	log.Infof("[%s] acme: Preparing to solve DNS-01", domain)
 
@@ -96,7 +96,7 @@ func (c *Challenge) PreSolve(authz le.Authorization) error {
 	return nil
 }
 
-func (c *Challenge) Solve(authz le.Authorization) error {
+func (c *Challenge) Solve(authz acme.Authorization) error {
 	domain := challenge.GetTargetedDomain(authz)
 	log.Infof("[%s] acme: Trying to solve DNS-01", domain)
 
@@ -139,7 +139,7 @@ func (c *Challenge) Solve(authz le.Authorization) error {
 }
 
 // CleanUp cleans the challenge.
-func (c *Challenge) CleanUp(authz le.Authorization) error {
+func (c *Challenge) CleanUp(authz acme.Authorization) error {
 	chlng, err := challenge.FindChallenge(challenge.DNS01, authz)
 	if err != nil {
 		return err

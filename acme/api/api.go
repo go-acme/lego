@@ -8,10 +8,10 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/xenolf/lego/le"
-	"github.com/xenolf/lego/le/api/internal/nonces"
-	"github.com/xenolf/lego/le/api/internal/secure"
-	"github.com/xenolf/lego/le/api/internal/sender"
+	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/acme/api/internal/nonces"
+	"github.com/xenolf/lego/acme/api/internal/secure"
+	"github.com/xenolf/lego/acme/api/internal/sender"
 	"github.com/xenolf/lego/log"
 )
 
@@ -20,7 +20,7 @@ type Core struct {
 	do           *sender.Do
 	nonceManager *nonces.Manager
 	jws          *secure.JWS
-	directory    le.Directory
+	directory    acme.Directory
 	HTTPClient   *http.Client
 
 	common service // Reuse a single struct instead of allocating one for each service on the heap.
@@ -84,7 +84,7 @@ func (a *Core) retrievablePost(uri string, content []byte, response interface{},
 		}
 		switch err.(type) {
 		// Retry once if the nonce was invalidated
-		case *le.NonceError:
+		case *acme.NonceError:
 			log.Infof("nonce error retry: %s", err)
 			resp, err = a.retrievablePost(uri, content, response, retry+1)
 			if err != nil {
@@ -130,12 +130,12 @@ func (a *Core) GetKeyAuthorization(token string) (string, error) {
 	return a.jws.GetKeyAuthorization(token)
 }
 
-func (a *Core) GetDirectory() le.Directory {
+func (a *Core) GetDirectory() acme.Directory {
 	return a.directory
 }
 
-func getDirectory(do *sender.Do, caDirURL string) (le.Directory, error) {
-	var dir le.Directory
+func getDirectory(do *sender.Do, caDirURL string) (acme.Directory, error) {
+	var dir acme.Directory
 	if _, err := do.Get(caDirURL, &dir); err != nil {
 		return dir, fmt.Errorf("get directory at '%s': %v", caDirURL, err)
 	}

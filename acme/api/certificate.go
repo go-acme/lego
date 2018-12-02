@@ -7,8 +7,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/certcrypto"
-	"github.com/xenolf/lego/le"
 	"github.com/xenolf/lego/log"
 )
 
@@ -48,7 +48,7 @@ func (c *CertificateService) Get(certURL string, bundle bool) ([]byte, []byte, e
 }
 
 // Revoke Revokes a certificate.
-func (c *CertificateService) Revoke(req le.RevokeCertMessage) error {
+func (c *CertificateService) Revoke(req acme.RevokeCertMessage) error {
 	_, err := c.core.post(c.core.GetDirectory().RevokeCertURL, req, nil)
 	return err
 }

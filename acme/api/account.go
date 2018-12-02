@@ -5,14 +5,14 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/xenolf/lego/le"
+	"github.com/xenolf/lego/acme"
 )
 
 type AccountService service
 
 // New Creates a new account.
-func (a *AccountService) New(req le.Account) (le.ExtendedAccount, error) {
-	var account le.Account
+func (a *AccountService) New(req acme.Account) (acme.ExtendedAccount, error) {
+	var account acme.Account
 	resp, err := a.core.post(a.core.GetDirectory().NewAccountURL, req, &account)
 	location := getLocation(resp)
 
@@ -21,22 +21,22 @@ func (a *AccountService) New(req le.Account) (le.ExtendedAccount, error) {
 	}
 
 	if err != nil {
-		return le.ExtendedAccount{Location: location}, err
+		return acme.ExtendedAccount{Location: location}, err
 	}
 
-	return le.ExtendedAccount{Account: account, Location: location}, nil
+	return acme.ExtendedAccount{Account: account, Location: location}, nil
 }
 
 // NewEAB Creates a new account with an External Account Binding.
-func (a *AccountService) NewEAB(accMsg le.Account, kid string, hmacEncoded string) (le.ExtendedAccount, error) {
+func (a *AccountService) NewEAB(accMsg acme.Account, kid string, hmacEncoded string) (acme.ExtendedAccount, error) {
 	hmac, err := base64.RawURLEncoding.DecodeString(hmacEncoded)
 	if err != nil {
-		return le.ExtendedAccount{}, fmt.Errorf("acme: could not decode hmac key: %v", err)
+		return acme.ExtendedAccount{}, fmt.Errorf("acme: could not decode hmac key: %v", err)
 	}
 
 	eabJWS, err := a.core.signEABContent(a.core.GetDirectory().NewAccountURL, kid, hmac)
 	if err != nil {
-		return le.ExtendedAccount{}, fmt.Errorf("acme: error signing eab content: %v", err)
+		return acme.ExtendedAccount{}, fmt.Errorf("acme: error signing eab content: %v", err)
 	}
 	accMsg.ExternalAccountBinding = eabJWS
 
@@ -44,15 +44,15 @@ func (a *AccountService) NewEAB(accMsg le.Account, kid string, hmacEncoded strin
 }
 
 // Get Retrieves an account.
-func (a *AccountService) Get(accountURL string) (le.Account, error) {
+func (a *AccountService) Get(accountURL string) (acme.Account, error) {
 	if len(accountURL) == 0 {
-		return le.Account{}, errors.New("account[get]: empty URL")
+		return acme.Account{}, errors.New("account[get]: empty URL")
 	}
 
-	var account le.Account
-	_, err := a.core.post(accountURL, le.Account{}, &account)
+	var account acme.Account
+	_, err := a.core.post(accountURL, acme.Account{}, &account)
 	if err != nil {
-		return le.Account{}, err
+		return acme.Account{}, err
 	}
 	return account, nil
 }
@@ -63,7 +63,7 @@ func (a *AccountService) Deactivate(accountURL string) error {
 		return errors.New("account[deactivate]: empty URL")
 	}
 
-	req := le.Account{Status: le.StatusDeactivated}
+	req := acme.Account{Status: acme.StatusDeactivated}
 	_, err := a.core.post(accountURL, req, nil)
 	return err
 }

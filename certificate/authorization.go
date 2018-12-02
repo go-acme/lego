@@ -3,7 +3,7 @@ package certificate
 import (
 	"time"
 
-	"github.com/xenolf/lego/le"
+	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/log"
 )
 
@@ -15,8 +15,8 @@ const (
 	overallRequestLimit = 18
 )
 
-func (c *Certifier) getAuthorizations(order le.ExtendedOrder) ([]le.Authorization, error) {
-	resc, errc := make(chan le.Authorization), make(chan domainError)
+func (c *Certifier) getAuthorizations(order acme.ExtendedOrder) ([]acme.Authorization, error) {
+	resc, errc := make(chan acme.Authorization), make(chan domainError)
 
 	delay := time.Second / overallRequestLimit
 
@@ -34,7 +34,7 @@ func (c *Certifier) getAuthorizations(order le.ExtendedOrder) ([]le.Authorizatio
 		}(authzURL)
 	}
 
-	var responses []le.Authorization
+	var responses []acme.Authorization
 	failures := make(obtainError)
 	for i := 0; i < len(order.Authorizations); i++ {
 		select {
@@ -60,7 +60,7 @@ func (c *Certifier) getAuthorizations(order le.ExtendedOrder) ([]le.Authorizatio
 	return responses, nil
 }
 
-func (c *Certifier) deactivateAuthorizations(order le.ExtendedOrder) {
+func (c *Certifier) deactivateAuthorizations(order acme.ExtendedOrder) {
 	for _, auth := range order.Authorizations {
 		if err := c.core.Authorizations.Deactivate(auth); err != nil {
 			log.Infof("Unable to deactivated authorizations: %s", auth)

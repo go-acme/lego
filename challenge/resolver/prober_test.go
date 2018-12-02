@@ -5,15 +5,15 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/challenge"
-	"github.com/xenolf/lego/le"
 )
 
 func TestProber_Solve(t *testing.T) {
 	testCases := []struct {
 		desc          string
 		solvers       map[challenge.Type]solver
-		authz         []le.Authorization
+		authz         []acme.Authorization
 		expectedError string
 	}{
 		{
@@ -25,10 +25,10 @@ func TestProber_Solve(t *testing.T) {
 					cleanUp:  map[string]error{},
 				},
 			},
-			authz: []le.Authorization{
-				createStubAuthorizationHTTP01("acme.wtf", le.StatusProcessing),
-				createStubAuthorizationHTTP01("lego.wtf", le.StatusProcessing),
-				createStubAuthorizationHTTP01("mydomain.wtf", le.StatusProcessing),
+			authz: []acme.Authorization{
+				createStubAuthorizationHTTP01("acme.wtf", acme.StatusProcessing),
+				createStubAuthorizationHTTP01("lego.wtf", acme.StatusProcessing),
+				createStubAuthorizationHTTP01("mydomain.wtf", acme.StatusProcessing),
 			},
 		},
 		{
@@ -40,10 +40,10 @@ func TestProber_Solve(t *testing.T) {
 					cleanUp:  map[string]error{},
 				},
 			},
-			authz: []le.Authorization{
-				createStubAuthorizationHTTP01("acme.wtf", le.StatusValid),
-				createStubAuthorizationHTTP01("lego.wtf", le.StatusValid),
-				createStubAuthorizationHTTP01("mydomain.wtf", le.StatusValid),
+			authz: []acme.Authorization{
+				createStubAuthorizationHTTP01("acme.wtf", acme.StatusValid),
+				createStubAuthorizationHTTP01("lego.wtf", acme.StatusValid),
+				createStubAuthorizationHTTP01("mydomain.wtf", acme.StatusValid),
 			},
 		},
 		{
@@ -61,10 +61,10 @@ func TestProber_Solve(t *testing.T) {
 					},
 				},
 			},
-			authz: []le.Authorization{
-				createStubAuthorizationHTTP01("acme.wtf", le.StatusProcessing),
-				createStubAuthorizationHTTP01("lego.wtf", le.StatusProcessing),
-				createStubAuthorizationHTTP01("mydomain.wtf", le.StatusProcessing),
+			authz: []acme.Authorization{
+				createStubAuthorizationHTTP01("acme.wtf", acme.StatusProcessing),
+				createStubAuthorizationHTTP01("lego.wtf", acme.StatusProcessing),
+				createStubAuthorizationHTTP01("mydomain.wtf", acme.StatusProcessing),
 			},
 			expectedError: `acme: Error -> One or more domains had a problem:
 [acme.wtf] preSolve error acme.wtf
@@ -86,10 +86,10 @@ func TestProber_Solve(t *testing.T) {
 					},
 				},
 			},
-			authz: []le.Authorization{
-				createStubAuthorizationHTTP01("acme.wtf", le.StatusProcessing),
-				createStubAuthorizationHTTP01("lego.wtf", le.StatusProcessing),
-				createStubAuthorizationHTTP01("mydomain.wtf", le.StatusProcessing),
+			authz: []acme.Authorization{
+				createStubAuthorizationHTTP01("acme.wtf", acme.StatusProcessing),
+				createStubAuthorizationHTTP01("lego.wtf", acme.StatusProcessing),
+				createStubAuthorizationHTTP01("mydomain.wtf", acme.StatusProcessing),
 			},
 			expectedError: `acme: Error -> One or more domains had a problem:
 [acme.wtf] preSolve error acme.wtf

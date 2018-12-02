@@ -4,17 +4,17 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/xenolf/lego/le"
-	"github.com/xenolf/lego/le/api"
+	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/acme/api"
 	"github.com/xenolf/lego/log"
 )
 
 // Resource represents all important information about a registration
 // of which the client needs to keep track itself.
-// Deprecated: will be remove in the future (le.ExtendedAccount).
+// Deprecated: will be remove in the future (acme.ExtendedAccount).
 type Resource struct {
-	Body le.Account `json:"body,omitempty"`
-	URI  string     `json:"uri,omitempty"`
+	Body acme.Account `json:"body,omitempty"`
+	URI  string       `json:"uri,omitempty"`
 }
 
 type Registrar struct {
@@ -36,7 +36,7 @@ func (r *Registrar) Register(tosAgreed bool) (*Resource, error) {
 
 // RegisterWithExternalAccountBinding Register the current account to the ACME server.
 func (r *Registrar) RegisterWithExternalAccountBinding(tosAgreed bool, kid string, hmacEncoded string) (*Resource, error) {
-	accMsg := le.Account{
+	accMsg := acme.Account{
 		TermsOfServiceAgreed: tosAgreed,
 		Contact:              []string{},
 	}
@@ -48,7 +48,7 @@ func (r *Registrar) RegisterWithExternalAccountBinding(tosAgreed bool, kid strin
 
 	account, err := r.core.Accounts.NewEAB(accMsg, kid, hmacEncoded)
 	if err != nil {
-		errorDetails, ok := err.(le.ProblemDetails)
+		errorDetails, ok := err.(acme.ProblemDetails)
 		// FIXME seems impossible
 		if !ok || errorDetails.HTTPStatus != http.StatusConflict {
 			return nil, err
@@ -64,7 +64,7 @@ func (r *Registrar) register(tosAgreed bool) (*Resource, error) {
 		return nil, errors.New("acme: cannot register a nil client or user")
 	}
 
-	accMsg := le.Account{
+	accMsg := acme.Account{
 		TermsOfServiceAgreed: tosAgreed,
 		Contact:              []string{},
 	}
@@ -77,7 +77,7 @@ func (r *Registrar) register(tosAgreed bool) (*Resource, error) {
 	account, err := r.core.Accounts.New(accMsg)
 	if err != nil {
 		// FIXME seems impossible
-		errorDetails, ok := err.(le.ProblemDetails)
+		errorDetails, ok := err.(acme.ProblemDetails)
 		if !ok || errorDetails.HTTPStatus != http.StatusConflict {
 			return nil, err
 		}
@@ -126,7 +126,7 @@ func (r *Registrar) DeleteRegistration() error {
 func (r *Registrar) ResolveAccountByKey() (*Resource, error) {
 	log.Infof("acme: Trying to resolve account by key")
 
-	accMsg := le.Account{OnlyReturnExisting: true}
+	accMsg := acme.Account{OnlyReturnExisting: true}
 	accountTransit, err := r.core.Accounts.New(accMsg)
 	if err != nil {
 		return nil, err

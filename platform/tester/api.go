@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"github.com/xenolf/lego/le"
+	"github.com/xenolf/lego/acme"
 )
 
 // SetupFakeAPI Minimal stub ACME server for validation.
@@ -19,7 +19,7 @@ func SetupFakeAPI() (*http.ServeMux, string, func()) {
 			return
 		}
 
-		err := WriteJSONResponse(w, le.Directory{
+		err := WriteJSONResponse(w, acme.Directory{
 			NewNonceURL:   ts.URL + "/nonce",
 			NewAccountURL: ts.URL + "/account",
 			NewOrderURL:   ts.URL + "/newOrder",

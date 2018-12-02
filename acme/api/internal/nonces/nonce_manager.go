@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/xenolf/lego/le/api/internal/sender"
+	"github.com/xenolf/lego/acme/api/internal/sender"
 )
 
 // Manager Manages nonces.

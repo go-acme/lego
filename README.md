@@ -191,9 +191,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/certcrypto"
 	"github.com/xenolf/lego/certificate"
+	"github.com/xenolf/lego/lego"
 	"github.com/xenolf/lego/registration"
 )
 
@@ -227,14 +227,14 @@ func main() {
 		key:   privateKey,
 	}
 
-	config := acme.NewConfig(&myUser)
+	config := lego.NewConfig(&myUser)
 
 	// This CA URL is configured for a local dev instance of Boulder running in Docker in a VM.
 	config.CADirURL = "http://192.168.99.100:4000/directory"
 	config.KeyType = certcrypto.RSA2048
 
 	// A client facilitates communication with the CA server.
-	client, err := acme.NewClient(config)
+	client, err := lego.NewClient(config)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -243,8 +243,12 @@ func main() {
 	// because we aren't running as root and can't bind a listener to port 80 and 443
 	// (used later when we attempt to pass challenges). Keep in mind that you still
 	// need to proxy challenge traffic to port 5002 and 5001.
-	client.Challenge.SetHTTP01Address(":5002")
-	client.Challenge.SetTLSALPN01Address(":5001")
+	if err = client.Challenge.SetHTTP01Address(":5002"); err != nil {
+		log.Fatal(err)
+	}
+	if err = client.Challenge.SetTLSALPN01Address(":5001"); err != nil {
+		log.Fatal(err)
+	}
 
 	// New users will need to register
 	reg, err := client.Registration.Register(true)

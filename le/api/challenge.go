@@ -8,6 +8,7 @@ import (
 
 type ChallengeService service
 
+// New Creates a challenge.
 func (c *ChallengeService) New(chlgURL string) (le.ExtendedChallenge, error) {
 	if len(chlgURL) == 0 {
 		return le.ExtendedChallenge{}, errors.New("challenge[new]: empty URL")
@@ -26,6 +27,7 @@ func (c *ChallengeService) New(chlgURL string) (le.ExtendedChallenge, error) {
 	return chlng, nil
 }
 
+// Get Gets a challenge.
 func (c *ChallengeService) Get(chlgURL string) (le.ExtendedChallenge, error) {
 	if len(chlgURL) == 0 {
 		return le.ExtendedChallenge{}, errors.New("challenge[get]: empty URL")

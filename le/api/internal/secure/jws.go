@@ -13,12 +13,14 @@ import (
 	"gopkg.in/square/go-jose.v2"
 )
 
+// JWS Represents a JWS.
 type JWS struct {
 	privKey crypto.PrivateKey
 	kid     string // Key identifier
 	nonces  *nonces.Manager
 }
 
+// NewJWS Create a new JWS.
 func NewJWS(privKey crypto.PrivateKey, kid string, nonceManager *nonces.Manager) *JWS {
 	return &JWS{
 		privKey: privKey,
@@ -27,10 +29,12 @@ func NewJWS(privKey crypto.PrivateKey, kid string, nonceManager *nonces.Manager)
 	}
 }
 
+// SetKid Sets a key identifier.
 func (j *JWS) SetKid(kid string) {
 	j.kid = kid
 }
 
+// SignContent Signs a content with the JWS.
 func (j *JWS) SignContent(url string, content []byte) (*jose.JSONWebSignature, error) {
 	var alg jose.SignatureAlgorithm
 	switch k := j.privKey.(type) {
@@ -72,6 +76,7 @@ func (j *JWS) SignContent(url string, content []byte) (*jose.JSONWebSignature, e
 	return signed, nil
 }
 
+// SignEABContent Signs an external account binding content with the JWS.
 func (j *JWS) SignEABContent(url, kid string, hmac []byte) (*jose.JSONWebSignature, error) {
 	jwk := jose.JSONWebKey{Key: j.privKey}
 	jwkJSON, err := jwk.Public().MarshalJSON()
@@ -101,6 +106,7 @@ func (j *JWS) SignEABContent(url, kid string, hmac []byte) (*jose.JSONWebSignatu
 	return signed, nil
 }
 
+// GetKeyAuthorization Gets the key authorization for a token.
 func (j *JWS) GetKeyAuthorization(token string) (string, error) {
 	var publicKey crypto.PublicKey
 	switch k := j.privKey.(type) {

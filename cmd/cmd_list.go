@@ -28,7 +28,9 @@ func createList() cli.Command {
 
 func list(ctx *cli.Context) error {
 	if ctx.Bool("accounts") {
-		listAccount(ctx)
+		if err := listAccount(ctx); err != nil {
+			return err
+		}
 	}
 
 	return listCertificates(ctx)
@@ -75,7 +77,10 @@ func listCertificates(ctx *cli.Context) error {
 
 func listAccount(ctx *cli.Context) error {
 	// fake email, needed by NewAccountsStorage
-	ctx.GlobalSet("email", "unknown")
+	if err := ctx.GlobalSet("email", "unknown"); err != nil {
+		return err
+	}
+
 	accountsStorage := NewAccountsStorage(ctx)
 
 	matches, err := filepath.Glob(filepath.Join(accountsStorage.GetRootPath(), "*", "*", "*.json"))
@@ -96,7 +101,10 @@ func listAccount(ctx *cli.Context) error {
 		}
 
 		var account Account
-		json.Unmarshal(data, &account)
+		err = json.Unmarshal(data, &account)
+		if err != nil {
+			return err
+		}
 
 		uri, err := url.Parse(account.Registration.URI)
 		if err != nil {

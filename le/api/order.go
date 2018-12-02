@@ -9,6 +9,7 @@ import (
 
 type OrderService service
 
+// New Creates a new order.
 func (o *OrderService) New(domains []string) (le.ExtendedOrder, error) {
 	var identifiers []le.Identifier
 	for _, domain := range domains {
@@ -29,6 +30,7 @@ func (o *OrderService) New(domains []string) (le.ExtendedOrder, error) {
 	}, nil
 }
 
+// Get Gets an order.
 func (o *OrderService) Get(orderURL string) (le.Order, error) {
 	if len(orderURL) == 0 {
 		return le.Order{}, errors.New("order[get]: empty URL")
@@ -43,6 +45,7 @@ func (o *OrderService) Get(orderURL string) (le.Order, error) {
 	return order, nil
 }
 
+// UpdateForCSR Updates an order for a CSR.
 func (o *OrderService) UpdateForCSR(orderURL string, csr []byte) (le.Order, error) {
 	csrMsg := le.CSRMessage{
 		Csr: base64.RawURLEncoding.EncodeToString(csr),

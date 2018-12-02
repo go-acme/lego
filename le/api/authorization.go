@@ -8,6 +8,7 @@ import (
 
 type AuthorizationService service
 
+// Get Gets an authorization.
 func (c *AuthorizationService) Get(authzURL string) (le.Authorization, error) {
 	if len(authzURL) == 0 {
 		return le.Authorization{}, errors.New("authorization[get]: empty URL")
@@ -21,6 +22,7 @@ func (c *AuthorizationService) Get(authzURL string) (le.Authorization, error) {
 	return authz, nil
 }
 
+// Deactivate Deactivates an authorization.
 func (c *AuthorizationService) Deactivate(authzURL string) error {
 	if len(authzURL) == 0 {
 		return errors.New("authorization[deactivate]: empty URL")

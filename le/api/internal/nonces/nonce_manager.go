@@ -9,6 +9,7 @@ import (
 	"github.com/xenolf/lego/le/api/internal/sender"
 )
 
+// Manager Manages nonces.
 type Manager struct {
 	do       *sender.Do
 	nonceURL string
@@ -16,6 +17,7 @@ type Manager struct {
 	sync.Mutex
 }
 
+// NewManager Creates a new Manager.
 func NewManager(do *sender.Do, nonceURL string) *Manager {
 	return &Manager{
 		do:       do,
@@ -23,6 +25,7 @@ func NewManager(do *sender.Do, nonceURL string) *Manager {
 	}
 }
 
+// Pop Pops a nonce.
 func (n *Manager) Pop() (string, bool) {
 	n.Lock()
 	defer n.Unlock()
@@ -36,6 +39,7 @@ func (n *Manager) Pop() (string, bool) {
 	return nonce, true
 }
 
+// Push Pushes a nonce.
 func (n *Manager) Push(nonce string) {
 	n.Lock()
 	defer n.Unlock()
@@ -59,6 +63,7 @@ func (n *Manager) getNonce() (string, error) {
 	return GetFromResponse(resp)
 }
 
+// GetFromResponse Extracts a nonce from a HTTP response.
 func GetFromResponse(resp *http.Response) (string, error) {
 	if resp == nil {
 		return "", errors.New("nil response")

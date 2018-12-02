@@ -26,6 +26,7 @@ type Do struct {
 	userAgent  string
 }
 
+// NewDo Creates a new Do.
 func NewDo(client *http.Client, userAgent string) *Do {
 	return &Do{
 		httpClient: client,

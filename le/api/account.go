@@ -10,6 +10,7 @@ import (
 
 type AccountService service
 
+// New Creates a new account.
 func (a *AccountService) New(req le.Account) (le.ExtendedAccount, error) {
 	var account le.Account
 	resp, err := a.core.post(a.core.GetDirectory().NewAccountURL, req, &account)
@@ -26,6 +27,7 @@ func (a *AccountService) New(req le.Account) (le.ExtendedAccount, error) {
 	return le.ExtendedAccount{Account: account, Location: location}, nil
 }
 
+// NewEAB Creates a new account with an External Account Binding.
 func (a *AccountService) NewEAB(accMsg le.Account, kid string, hmacEncoded string) (le.ExtendedAccount, error) {
 	hmac, err := base64.RawURLEncoding.DecodeString(hmacEncoded)
 	if err != nil {
@@ -41,6 +43,7 @@ func (a *AccountService) NewEAB(accMsg le.Account, kid string, hmacEncoded strin
 	return a.New(accMsg)
 }
 
+// Get Retrieves an account.
 func (a *AccountService) Get(accountURL string) (le.Account, error) {
 	if len(accountURL) == 0 {
 		return le.Account{}, errors.New("account[get]: empty URL")
@@ -54,6 +57,7 @@ func (a *AccountService) Get(accountURL string) (le.Account, error) {
 	return account, nil
 }
 
+// Deactivate Deactivates an account.
 func (a *AccountService) Deactivate(accountURL string) error {
 	if len(accountURL) == 0 {
 		return errors.New("account[deactivate]: empty URL")

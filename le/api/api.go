@@ -15,6 +15,7 @@ import (
 	"github.com/xenolf/lego/log"
 )
 
+// Core ACME/LE core API.
 type Core struct {
 	do           *sender.Do
 	nonceManager *nonces.Manager
@@ -31,6 +32,7 @@ type Core struct {
 	Orders         *OrderService
 }
 
+// New Creates a new Core.
 func New(httpClient *http.Client, userAgent string, caDirURL, kid string, privKey crypto.PrivateKey) (*Core, error) {
 	do := sender.NewDo(httpClient, userAgent)
 

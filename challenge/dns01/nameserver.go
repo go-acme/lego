@@ -31,8 +31,8 @@ var recursiveNameservers = getNameservers(defaultResolvConf, defaultNameservers)
 // ClearFqdnCache clears the cache of fqdn to zone mappings. Primarily used in testing.
 func ClearFqdnCache() {
 	muFqdnToZone.Lock()
-	defer muFqdnToZone.Unlock()
 	fqdnToZone = map[string]string{}
+	muFqdnToZone.Unlock()
 }
 
 func AddDNSTimeout(timeout time.Duration) ChallengeOption {

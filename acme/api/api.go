@@ -108,6 +108,7 @@ func (a *Core) signedPost(uri string, content []byte, response interface{}) (*ht
 
 	resp, err := a.do.Post(uri, signedBody, "application/jose+json", response)
 
+	// nonceErr is ignored to keep the root error.
 	nonce, nonceErr := nonces.GetFromResponse(resp)
 	if nonceErr == nil {
 		a.nonceManager.Push(nonce)

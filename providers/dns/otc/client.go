@@ -50,14 +50,20 @@ type loginResponse struct {
 }
 
 type endpointResponse struct {
-	Token struct {
-		Catalog []struct {
-			Type      string `json:"type"`
-			Endpoints []struct {
-				URL string `json:"url"`
-			} `json:"endpoints"`
-		} `json:"catalog"`
-	} `json:"token"`
+	Token token `json:"token"`
+}
+
+type token struct {
+	Catalog []catalog `json:"catalog"`
+}
+
+type catalog struct {
+	Type      string     `json:"type"`
+	Endpoints []endpoint `json:"endpoints"`
+}
+
+type endpoint struct {
+	URL string `json:"url"`
 }
 
 type zoneItem struct {
@@ -142,16 +148,16 @@ func (d *DNSProvider) loginRequest() error {
 		return err
 	}
 
+	var endpoints []endpoint
 	for _, v := range endpointResp.Token.Catalog {
 		if v.Type == "dns" {
-			for _, endpoint := range v.Endpoints {
-				d.baseURL = fmt.Sprintf("%s/v2", endpoint.URL)
-				continue
-			}
+			endpoints = append(endpoints, v.Endpoints...)
 		}
 	}
 
-	if d.baseURL == "" {
+	if len(endpoints) > 0 {
+		d.baseURL = fmt.Sprintf("%s/v2", endpoints[0].URL)
+	} else {
 		return fmt.Errorf("unable to get dns endpoint")
 	}
 

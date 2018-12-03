@@ -80,6 +80,7 @@ func (d *DNSProvider) getHostedZone(fqdn string) (*hostedZone, error) {
 	for _, zone := range zones {
 		if dns01.UnFqdn(zone.Name) == dns01.UnFqdn(authZone) {
 			u = zone.URL
+			break
 		}
 	}
 

@@ -148,11 +148,37 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	rsc.Authorizer = d.authorizer
 
 	relative := toRelativeRecord(fqdn, acme.ToFqdn(zone))
+
+	// Get existing record set
+	rset, err := rsc.Get(ctx, d.config.ResourceGroup, zone, relative, dns.TXT)
+	if err != nil {
+		detailedError, ok := err.(autorest.DetailedError)
+		if !ok || detailedError.StatusCode != http.StatusNotFound {
+			return fmt.Errorf("azure: %v", err)
+		}
+	}
+
+	// Construct unique TXT records using map
+	uniqRecords := map[string]struct{}{value: {}}
+	if rset.RecordSetProperties != nil && rset.TxtRecords != nil {
+		for _, txtRecord := range *rset.TxtRecords {
+			// Assume Value doesn't contain multiple strings
+			if txtRecord.Value != nil && len(*txtRecord.Value) > 0 {
+				uniqRecords[(*txtRecord.Value)[0]] = struct{}{}
+			}
+		}
+	}
+
+	var txtRecords []dns.TxtRecord
+	for txt := range uniqRecords {
+		txtRecords = append(txtRecords, dns.TxtRecord{Value: &[]string{txt}})
+	}
+
 	rec := dns.RecordSet{
 		Name: &relative,
 		RecordSetProperties: &dns.RecordSetProperties{
 			TTL:        to.Int64Ptr(int64(d.config.TTL)),
-			TxtRecords: &[]dns.TxtRecord{{Value: &[]string{value}}},
+			TxtRecords: &txtRecords,
 		},
 	}
 

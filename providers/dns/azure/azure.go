@@ -159,17 +159,18 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	// Construct unique TXT records using map
-	txtMap := map[string]bool{value: true}
+	uniqRecords := map[string]struct{}{value: {}}
 	if rset.RecordSetProperties != nil && rset.TxtRecords != nil {
 		for _, txtRecord := range *rset.TxtRecords {
 			// Assume Value doesn't contain multiple strings
-			if len(*txtRecord.Value) > 0 {
-				txtMap[(*txtRecord.Value)[0]] = true
+			if txtRecord.Value != nil && len(*txtRecord.Value) > 0 {
+				uniqRecords[(*txtRecord.Value)[0]] = struct{}{}
 			}
 		}
 	}
-	txtRecords := []dns.TxtRecord{}
-	for txt := range txtMap {
+
+	var txtRecords []dns.TxtRecord
+	for txt := range uniqRecords {
 		txtRecords = append(txtRecords, dns.TxtRecord{Value: &[]string{txt}})
 	}
 

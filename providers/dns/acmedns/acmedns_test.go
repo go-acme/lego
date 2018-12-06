@@ -118,7 +118,7 @@ func (e errorPutStorage) Put(_ string, _ goacmedns.Account) error {
 	return errorStorageErr
 }
 
-// errorSaveStoragr is a mock implementing the goacmedns.Storage interface that
+// errorSaveStorage is a mock implementing the goacmedns.Storage interface that
 // always returns errors from Save.
 type errorSaveStorage struct {
 	mockStorage
@@ -195,7 +195,7 @@ func TestPresent(t *testing.T) {
 			dp, err := NewDNSProviderClient(test.Client, mockStorage{make(map[string]goacmedns.Account)})
 			require.NoError(t, err)
 
-			// override the storage mock if required by the testcase.
+			// override the storage mock if required by the test case.
 			if test.Storage != nil {
 				dp.storage = test.Storage
 			}
@@ -211,10 +211,10 @@ func TestPresent(t *testing.T) {
 		})
 	}
 
-	// Check that the success testcase set a record.
+	// Check that the success test case set a record.
 	assert.Len(t, validUpdateClient.records, 1)
 
-	// Check that the success testcase set the right record for the right account.
+	// Check that the success test case set the right record for the right account.
 	assert.Len(t, validUpdateClient.records[egTestAccount], 43)
 }
 

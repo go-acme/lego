@@ -164,21 +164,21 @@ func (s *AccountsStorage) GetPrivateKey() crypto.PrivateKey {
 		log.Printf("No key found for account %s. Generating a curve P384 EC key.", s.userID)
 		s.createKeysFolder()
 
-		privKey, err := generatePrivateKey(accKeyPath)
+		privateKey, err := generatePrivateKey(accKeyPath)
 		if err != nil {
 			log.Fatalf("Could not generate RSA private account key for account %s: %v", s.userID, err)
 		}
 
 		log.Printf("Saved key to %s", accKeyPath)
-		return privKey
+		return privateKey
 	}
 
-	privKey, err := loadPrivateKey(accKeyPath)
+	privateKey, err := loadPrivateKey(accKeyPath)
 	if err != nil {
 		log.Fatalf("Could not load RSA private key from file %s: %v", accKeyPath, err)
 	}
 
-	return privKey
+	return privateKey
 }
 
 func (s *AccountsStorage) createKeysFolder() {

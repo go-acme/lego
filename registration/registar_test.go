@@ -19,7 +19,10 @@ func TestRegistrar_ResolveAccountByKey(t *testing.T) {
 
 	mux.HandleFunc("/account", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Location", apiURL+"/account_recovery")
-		w.Write([]byte("{}"))
+		_, err := w.Write([]byte("{}"))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 	})
 
 	mux.HandleFunc("/account_recovery", func(w http.ResponseWriter, r *http.Request) {

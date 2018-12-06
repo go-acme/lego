@@ -127,10 +127,14 @@ func register(ctx *cli.Context, client *lego.Client) (*registration.Resource, er
 			log.Fatalf("Requires arguments --kid and --hmac.")
 		}
 
-		return client.Registration.RegisterWithExternalAccountBinding(accepted, kid, hmacEncoded)
+		return client.Registration.RegisterWithExternalAccountBinding(registration.RegisterEABOptions{
+			TermsOfServiceAgreed: accepted,
+			Kid:                  kid,
+			HmacEncoded:          hmacEncoded,
+		})
 	}
 
-	return client.Registration.Register(accepted)
+	return client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
 }
 
 func obtainCertificate(ctx *cli.Context, client *lego.Client) (*certificate.Resource, error) {

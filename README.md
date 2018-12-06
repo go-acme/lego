@@ -181,7 +181,7 @@ lego --server=https://acme-staging-v02.api.letsencrypt.org/directory …
 A valid, but bare-bones example use of the acme package:
 
 ```go
-package sample
+package main
 
 import (
 	"crypto"
@@ -251,7 +251,7 @@ func main() {
 	}
 
 	// New users will need to register
-	reg, err := client.Registration.Register(true)
+	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
 	if err != nil {
 		log.Fatal(err)
 	}

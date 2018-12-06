@@ -81,7 +81,10 @@ func Test_checkResponse(t *testing.T) {
 	defer tearDown()
 
 	mux.HandleFunc("/certificate", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(certResponseMock))
+		_, err := w.Write([]byte(certResponseMock))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 	})
 
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -118,12 +121,18 @@ func Test_checkResponse_issuerRelUp(t *testing.T) {
 
 	mux.HandleFunc("/certificate", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Link", "<"+apiURL+`/issuer>; rel="up"`)
-		w.Write([]byte(certResponseMock))
+		_, err := w.Write([]byte(certResponseMock))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 	})
 
 	mux.HandleFunc("/issuer", func(w http.ResponseWriter, r *http.Request) {
 		p, _ := pem.Decode([]byte(issuerMock))
-		w.Write(p.Bytes)
+		_, err := w.Write(p.Bytes)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 	})
 
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -159,7 +168,10 @@ func Test_checkResponse_embeddedIssuer(t *testing.T) {
 	defer tearDown()
 
 	mux.HandleFunc("/certificate", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(certResponseMock))
+		_, err := w.Write([]byte(certResponseMock))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 	})
 
 	key, err := rsa.GenerateKey(rand.Reader, 2048)

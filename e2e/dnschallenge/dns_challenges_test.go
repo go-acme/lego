@@ -76,16 +76,18 @@ func TestChallengeDNS_Run(t *testing.T) {
 }
 
 func TestChallengeDNS_Client_Obtain(t *testing.T) {
-	os.Setenv("LEGO_CA_CERTIFICATES", "../fixtures/certs/pebble.minica.pem")
+	err := os.Setenv("LEGO_CA_CERTIFICATES", "../fixtures/certs/pebble.minica.pem")
+	require.NoError(t, err)
 	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
 
-	os.Setenv("EXEC_PATH", "../fixtures/update-dns.sh")
+	err = os.Setenv("EXEC_PATH", "../fixtures/update-dns.sh")
+	require.NoError(t, err)
 	defer func() { _ = os.Unsetenv("EXEC_PATH") }()
 
-	privKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err, "Could not generate test key")
 
-	user := &fakeUser{privateKey: privKey}
+	user := &fakeUser{privateKey: privateKey}
 	config := lego.NewConfig(user)
 	config.CADirURL = "https://localhost:15000/dir"
 
@@ -94,12 +96,14 @@ func TestChallengeDNS_Client_Obtain(t *testing.T) {
 
 	provider, err := dns.NewDNSChallengeProviderByName("exec")
 	require.NoError(t, err)
-	client.Challenge.SetDNS01Provider(provider,
+
+	err = client.Challenge.SetDNS01Provider(provider,
 		dns01.AddRecursiveNameservers([]string{":8053"}),
 		dns01.DisableCompletePropagationRequirement())
 	client.Challenge.Exclude([]challenge.Type{challenge.HTTP01, challenge.TLSALPN01})
+	require.NoError(t, err)
 
-	reg, err := client.Registration.Register(true)
+	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
 	require.NoError(t, err)
 	user.registration = reg
 
@@ -108,7 +112,7 @@ func TestChallengeDNS_Client_Obtain(t *testing.T) {
 	request := certificate.ObtainRequest{
 		Domains:    domains,
 		Bundle:     true,
-		PrivateKey: privKey,
+		PrivateKey: privateKey,
 	}
 	resource, err := client.Certificate.Obtain(request)
 	require.NoError(t, err)

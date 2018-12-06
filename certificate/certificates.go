@@ -45,7 +45,7 @@ type Resource struct {
 // all other domains are added using the Subject Alternate Names extension.
 //
 // A new private key is generated for every invocation of the function Obtain.
-// If you do not want that you can supply your own private key in the privKey parameter.
+// If you do not want that you can supply your own private key in the privateKey parameter.
 // If this parameter is non-nil it will be used instead of generating a new one.
 //
 // If bundle is true, the []byte contains both the issuer certificate and your issued certificate as a bundle.
@@ -188,10 +188,10 @@ func (c *Certifier) ObtainForCSR(csr x509.CertificateRequest, bundle bool) (*Res
 	return cert, nil
 }
 
-func (c *Certifier) getForOrder(domains []string, order acme.ExtendedOrder, bundle bool, privKey crypto.PrivateKey, mustStaple bool) (*Resource, error) {
-	if privKey == nil {
+func (c *Certifier) getForOrder(domains []string, order acme.ExtendedOrder, bundle bool, privateKey crypto.PrivateKey, mustStaple bool) (*Resource, error) {
+	if privateKey == nil {
 		var err error
-		privKey, err = certcrypto.GeneratePrivateKey(c.keyType)
+		privateKey, err = certcrypto.GeneratePrivateKey(c.keyType)
 		if err != nil {
 			return nil, err
 		}
@@ -214,12 +214,12 @@ func (c *Certifier) getForOrder(domains []string, order acme.ExtendedOrder, bund
 	}
 
 	// TODO: should the CSR be customizable?
-	csr, err := certcrypto.GenerateCSR(privKey, commonName, san, mustStaple)
+	csr, err := certcrypto.GenerateCSR(privateKey, commonName, san, mustStaple)
 	if err != nil {
 		return nil, err
 	}
 
-	return c.getForCSR(domains, order, bundle, csr, certcrypto.PEMEncode(privKey))
+	return c.getForCSR(domains, order, bundle, csr, certcrypto.PEMEncode(privateKey))
 }
 
 func (c *Certifier) getForCSR(domains []string, order acme.ExtendedOrder, bundle bool, csr []byte, privateKeyPem []byte) (*Resource, error) {
@@ -365,9 +365,9 @@ func (c *Certifier) Renew(certRes Resource, bundle, mustStaple bool) (*Resource,
 		return c.ObtainForCSR(*csr, bundle)
 	}
 
-	var privKey crypto.PrivateKey
+	var privateKey crypto.PrivateKey
 	if certRes.PrivateKey != nil {
-		privKey, err = certcrypto.ParsePEMPrivateKey(certRes.PrivateKey)
+		privateKey, err = certcrypto.ParsePEMPrivateKey(certRes.PrivateKey)
 		if err != nil {
 			return nil, err
 		}
@@ -376,7 +376,7 @@ func (c *Certifier) Renew(certRes Resource, bundle, mustStaple bool) (*Resource,
 	query := ObtainRequest{
 		Domains:    certcrypto.ExtractDomains(x509Cert),
 		Bundle:     bundle,
-		PrivateKey: privKey,
+		PrivateKey: privateKey,
 		MustStaple: mustStaple,
 	}
 	return c.Obtain(query)

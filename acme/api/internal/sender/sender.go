@@ -21,14 +21,14 @@ func contentType(ct string) RequestOption {
 	}
 }
 
-type Do struct {
+type Doer struct {
 	httpClient *http.Client
 	userAgent  string
 }
 
-// NewDo Creates a new Do.
-func NewDo(client *http.Client, userAgent string) *Do {
-	return &Do{
+// NewDoer Creates a new Doer.
+func NewDoer(client *http.Client, userAgent string) *Doer {
+	return &Doer{
 		httpClient: client,
 		userAgent:  userAgent,
 	}
@@ -36,7 +36,7 @@ func NewDo(client *http.Client, userAgent string) *Do {
 
 // Get performs a GET request with a proper User-Agent string.
 // If "response" is not provided, callers should close resp.Body when done reading from it.
-func (d *Do) Get(url string, response interface{}) (*http.Response, error) {
+func (d *Doer) Get(url string, response interface{}) (*http.Response, error) {
 	req, err := d.newRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
@@ -47,7 +47,7 @@ func (d *Do) Get(url string, response interface{}) (*http.Response, error) {
 
 // Head performs a HEAD request with a proper User-Agent string.
 // The response body (resp.Body) is already closed when this function returns.
-func (d *Do) Head(url string) (*http.Response, error) {
+func (d *Doer) Head(url string) (*http.Response, error) {
 	req, err := d.newRequest(http.MethodHead, url, nil)
 	if err != nil {
 		return nil, err
@@ -58,7 +58,7 @@ func (d *Do) Head(url string) (*http.Response, error) {
 
 // Post performs a POST request with a proper User-Agent string.
 // If "response" is not provided, callers should close resp.Body when done reading from it.
-func (d *Do) Post(url string, body io.Reader, bodyType string, response interface{}) (*http.Response, error) {
+func (d *Doer) Post(url string, body io.Reader, bodyType string, response interface{}) (*http.Response, error) {
 	req, err := d.newRequest(http.MethodPost, url, body, contentType(bodyType))
 	if err != nil {
 		return nil, err
@@ -67,7 +67,7 @@ func (d *Do) Post(url string, body io.Reader, bodyType string, response interfac
 	return d.do(req, response)
 }
 
-func (d *Do) newRequest(method, uri string, body io.Reader, opts ...RequestOption) (*http.Request, error) {
+func (d *Doer) newRequest(method, uri string, body io.Reader, opts ...RequestOption) (*http.Request, error) {
 	req, err := http.NewRequest(method, uri, body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %v", err)
@@ -85,7 +85,7 @@ func (d *Do) newRequest(method, uri string, body io.Reader, opts ...RequestOptio
 	return req, nil
 }
 
-func (d *Do) do(req *http.Request, response interface{}) (*http.Response, error) {
+func (d *Doer) do(req *http.Request, response interface{}) (*http.Response, error) {
 	resp, err := d.httpClient.Do(req)
 	if err != nil {
 		return nil, err
@@ -113,7 +113,7 @@ func (d *Do) do(req *http.Request, response interface{}) (*http.Response, error)
 }
 
 // formatUserAgent builds and returns the User-Agent string to use in requests.
-func (d *Do) formatUserAgent() string {
+func (d *Doer) formatUserAgent() string {
 	ua := fmt.Sprintf("%s %s (%s; %s; %s)", d.userAgent, ourUserAgent, ourUserAgentComment, runtime.GOOS, runtime.GOARCH)
 	return strings.TrimSpace(ua)
 }

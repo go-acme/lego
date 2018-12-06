@@ -214,13 +214,14 @@ func TestChallengeTLS_Run_Revoke_Non_ASCII(t *testing.T) {
 }
 
 func TestChallengeHTTP_Client_Obtain(t *testing.T) {
-	os.Setenv("LEGO_CA_CERTIFICATES", "./fixtures/certs/pebble.minica.pem")
+	err := os.Setenv("LEGO_CA_CERTIFICATES", "./fixtures/certs/pebble.minica.pem")
+	require.NoError(t, err)
 	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
 
-	privKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err, "Could not generate test key")
 
-	user := &fakeUser{privateKey: privKey}
+	user := &fakeUser{privateKey: privateKey}
 	config := lego.NewConfig(user)
 	config.CADirURL = load.PebbleOptions.HealthCheckURL
 
@@ -228,9 +229,10 @@ func TestChallengeHTTP_Client_Obtain(t *testing.T) {
 	require.NoError(t, err)
 
 	client.Challenge.Exclude([]challenge.Type{challenge.DNS01, challenge.TLSALPN01})
-	client.Challenge.SetHTTP01Address(":5002")
+	err = client.Challenge.SetHTTP01Address(":5002")
+	require.NoError(t, err)
 
-	reg, err := client.Registration.Register(true)
+	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
 	require.NoError(t, err)
 	user.registration = reg
 
@@ -251,13 +253,14 @@ func TestChallengeHTTP_Client_Obtain(t *testing.T) {
 }
 
 func TestChallengeTLS_Client_Obtain(t *testing.T) {
-	os.Setenv("LEGO_CA_CERTIFICATES", "./fixtures/certs/pebble.minica.pem")
+	err := os.Setenv("LEGO_CA_CERTIFICATES", "./fixtures/certs/pebble.minica.pem")
+	require.NoError(t, err)
 	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
 
-	privKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err, "Could not generate test key")
 
-	user := &fakeUser{privateKey: privKey}
+	user := &fakeUser{privateKey: privateKey}
 	config := lego.NewConfig(user)
 	config.CADirURL = load.PebbleOptions.HealthCheckURL
 
@@ -265,16 +268,17 @@ func TestChallengeTLS_Client_Obtain(t *testing.T) {
 	require.NoError(t, err)
 
 	client.Challenge.Exclude([]challenge.Type{challenge.DNS01, challenge.HTTP01})
-	client.Challenge.SetTLSALPN01Address(":5001")
+	err = client.Challenge.SetTLSALPN01Address(":5001")
+	require.NoError(t, err)
 
-	reg, err := client.Registration.Register(true)
+	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
 	require.NoError(t, err)
 	user.registration = reg
 
 	request := certificate.ObtainRequest{
 		Domains:    []string{"acme.wtf"},
 		Bundle:     true,
-		PrivateKey: privKey,
+		PrivateKey: privateKey,
 	}
 	resource, err := client.Certificate.Obtain(request)
 	require.NoError(t, err)
@@ -289,13 +293,14 @@ func TestChallengeTLS_Client_Obtain(t *testing.T) {
 }
 
 func TestChallengeTLS_Client_ObtainForCSR(t *testing.T) {
-	os.Setenv("LEGO_CA_CERTIFICATES", "./fixtures/certs/pebble.minica.pem")
+	err := os.Setenv("LEGO_CA_CERTIFICATES", "./fixtures/certs/pebble.minica.pem")
+	require.NoError(t, err)
 	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
 
-	privKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err, "Could not generate test key")
 
-	user := &fakeUser{privateKey: privKey}
+	user := &fakeUser{privateKey: privateKey}
 	config := lego.NewConfig(user)
 	config.CADirURL = load.PebbleOptions.HealthCheckURL
 
@@ -303,9 +308,10 @@ func TestChallengeTLS_Client_ObtainForCSR(t *testing.T) {
 	require.NoError(t, err)
 
 	client.Challenge.Exclude([]challenge.Type{challenge.DNS01, challenge.HTTP01})
-	client.Challenge.SetTLSALPN01Address(":5001")
+	err = client.Challenge.SetTLSALPN01Address(":5001")
+	require.NoError(t, err)
 
-	reg, err := client.Registration.Register(true)
+	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
 	require.NoError(t, err)
 	user.registration = reg
 

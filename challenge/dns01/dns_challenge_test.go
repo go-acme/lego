@@ -35,10 +35,10 @@ func TestChallenge_PreSolve(t *testing.T) {
 	_, apiURL, tearDown := tester.SetupFakeAPI()
 	defer tearDown()
 
-	privKey, err := rsa.GenerateKey(rand.Reader, 512)
+	privateKey, err := rsa.GenerateKey(rand.Reader, 512)
 	require.NoError(t, err)
 
-	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privKey)
+	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)
 	require.NoError(t, err)
 
 	testCases := []struct {
@@ -119,10 +119,10 @@ func TestChallenge_Solve(t *testing.T) {
 	_, apiURL, tearDown := tester.SetupFakeAPI()
 	defer tearDown()
 
-	privKey, err := rsa.GenerateKey(rand.Reader, 512)
+	privateKey, err := rsa.GenerateKey(rand.Reader, 512)
 	require.NoError(t, err)
 
-	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privKey)
+	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)
 	require.NoError(t, err)
 
 	testCases := []struct {
@@ -204,10 +204,10 @@ func TestChallenge_CleanUp(t *testing.T) {
 	_, apiURL, tearDown := tester.SetupFakeAPI()
 	defer tearDown()
 
-	privKey, err := rsa.GenerateKey(rand.Reader, 512)
+	privateKey, err := rsa.GenerateKey(rand.Reader, 512)
 	require.NoError(t, err)
 
-	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privKey)
+	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)
 	require.NoError(t, err)
 
 	testCases := []struct {

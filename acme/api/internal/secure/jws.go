@@ -21,9 +21,9 @@ type JWS struct {
 }
 
 // NewJWS Create a new JWS.
-func NewJWS(privKey crypto.PrivateKey, kid string, nonceManager *nonces.Manager) *JWS {
+func NewJWS(privateKey crypto.PrivateKey, kid string, nonceManager *nonces.Manager) *JWS {
 	return &JWS{
-		privKey: privKey,
+		privKey: privateKey,
 		nonces:  nonceManager,
 		kid:     kid,
 	}

@@ -17,6 +17,16 @@ type Resource struct {
 	URI  string       `json:"uri,omitempty"`
 }
 
+type RegisterOptions struct {
+	TermsOfServiceAgreed bool
+}
+
+type RegisterEABOptions struct {
+	TermsOfServiceAgreed bool
+	Kid                  string
+	HmacEncoded          string
+}
+
 type Registrar struct {
 	core *api.Core
 	user User
@@ -30,42 +40,13 @@ func NewRegistrar(core *api.Core, user User) *Registrar {
 }
 
 // Register the current account to the ACME server.
-func (r *Registrar) Register(tosAgreed bool) (*Resource, error) {
-	return r.register(tosAgreed)
-}
-
-// RegisterWithExternalAccountBinding Register the current account to the ACME server.
-func (r *Registrar) RegisterWithExternalAccountBinding(tosAgreed bool, kid string, hmacEncoded string) (*Resource, error) {
-	accMsg := acme.Account{
-		TermsOfServiceAgreed: tosAgreed,
-		Contact:              []string{},
-	}
-
-	if r.user.GetEmail() != "" {
-		log.Infof("acme: Registering account for %s", r.user.GetEmail())
-		accMsg.Contact = []string{"mailto:" + r.user.GetEmail()}
-	}
-
-	account, err := r.core.Accounts.NewEAB(accMsg, kid, hmacEncoded)
-	if err != nil {
-		errorDetails, ok := err.(acme.ProblemDetails)
-		// FIXME seems impossible
-		if !ok || errorDetails.HTTPStatus != http.StatusConflict {
-			return nil, err
-		}
-	}
-
-	return &Resource{URI: account.Location, Body: account.Account}, nil
-}
-
-// register the current account to the ACME server.
-func (r *Registrar) register(tosAgreed bool) (*Resource, error) {
+func (r *Registrar) Register(options RegisterOptions) (*Resource, error) {
 	if r == nil || r.user == nil {
 		return nil, errors.New("acme: cannot register a nil client or user")
 	}
 
 	accMsg := acme.Account{
-		TermsOfServiceAgreed: tosAgreed,
+		TermsOfServiceAgreed: options.TermsOfServiceAgreed,
 		Contact:              []string{},
 	}
 
@@ -78,6 +59,30 @@ func (r *Registrar) register(tosAgreed bool) (*Resource, error) {
 	if err != nil {
 		// FIXME seems impossible
 		errorDetails, ok := err.(acme.ProblemDetails)
+		if !ok || errorDetails.HTTPStatus != http.StatusConflict {
+			return nil, err
+		}
+	}
+
+	return &Resource{URI: account.Location, Body: account.Account}, nil
+}
+
+// RegisterWithExternalAccountBinding Register the current account to the ACME server.
+func (r *Registrar) RegisterWithExternalAccountBinding(options RegisterEABOptions) (*Resource, error) {
+	accMsg := acme.Account{
+		TermsOfServiceAgreed: options.TermsOfServiceAgreed,
+		Contact:              []string{},
+	}
+
+	if r.user.GetEmail() != "" {
+		log.Infof("acme: Registering account for %s", r.user.GetEmail())
+		accMsg.Contact = []string{"mailto:" + r.user.GetEmail()}
+	}
+
+	account, err := r.core.Accounts.NewEAB(accMsg, options.Kid, options.HmacEncoded)
+	if err != nil {
+		errorDetails, ok := err.(acme.ProblemDetails)
+		// FIXME seems impossible
 		if !ok || errorDetails.HTTPStatus != http.StatusConflict {
 			return nil, err
 		}

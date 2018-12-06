@@ -115,11 +115,11 @@ func TestPEMEncode(t *testing.T) {
 }
 
 func TestParsePEMCertificate(t *testing.T) {
-	privKey, err := GeneratePrivateKey(RSA2048)
+	privateKey, err := GeneratePrivateKey(RSA2048)
 	require.NoError(t, err, "Error generating private key")
 
 	expiration := time.Now().Add(365).Round(time.Second)
-	certBytes, err := generateDerCert(privKey.(*rsa.PrivateKey), expiration, "test.com", nil)
+	certBytes, err := generateDerCert(privateKey.(*rsa.PrivateKey), expiration, "test.com", nil)
 	require.NoError(t, err, "Error generating cert")
 
 	buf := bytes.NewBufferString("TestingRSAIsSoMuchFun")

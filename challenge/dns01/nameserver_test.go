@@ -23,7 +23,7 @@ func TestLookupNameserversOK(t *testing.T) {
 		},
 		{
 			fqdn: "physics.georgetown.edu.",
-			nss:  []string{"ns1.georgetown.edu.", "ns2.georgetown.edu.", "ns3.georgetown.edu."},
+			nss:  []string{"ns4.georgetown.edu.", "ns5.georgetown.edu.", "ns6.georgetown.edu."},
 		},
 	}
 

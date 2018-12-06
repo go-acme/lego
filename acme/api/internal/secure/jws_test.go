@@ -25,8 +25,8 @@ func TestNotHoldingLockWhileMakingHTTPRequests(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	do := sender.NewDo(http.DefaultClient, "lego-test")
-	j := nonces.NewManager(do, ts.URL)
+	doer := sender.NewDoer(http.DefaultClient, "lego-test")
+	j := nonces.NewManager(doer, ts.URL)
 	ch := make(chan bool)
 	resultCh := make(chan bool)
 	go func() {

@@ -61,7 +61,7 @@ func TestValidate(t *testing.T) {
 
 	var statuses []string
 
-	privKey, _ := rsa.GenerateKey(rand.Reader, 512)
+	privateKey, _ := rsa.GenerateKey(rand.Reader, 512)
 
 	mux.HandleFunc("/chlg", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
@@ -69,7 +69,7 @@ func TestValidate(t *testing.T) {
 			return
 		}
 
-		if err := validateNoBody(privKey, r); err != nil {
+		if err := validateNoBody(privateKey, r); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
@@ -120,7 +120,7 @@ func TestValidate(t *testing.T) {
 		}
 	})
 
-	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privKey)
+	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)
 	require.NoError(t, err)
 
 	testCases := []struct {
@@ -177,7 +177,7 @@ func TestValidate(t *testing.T) {
 // If there is an error doing this,
 // or if the JWS body is not the empty JSON payload "{}" or a POST-as-GET payload "" an error is returned.
 // We use this to verify challenge POSTs to the ts below do not send a JWS body.
-func validateNoBody(privKey *rsa.PrivateKey, r *http.Request) error {
+func validateNoBody(privateKey *rsa.PrivateKey, r *http.Request) error {
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		return err
@@ -189,7 +189,7 @@ func validateNoBody(privKey *rsa.PrivateKey, r *http.Request) error {
 	}
 
 	body, err := jws.Verify(&jose.JSONWebKey{
-		Key:       privKey.Public(),
+		Key:       privateKey.Public(),
 		Algorithm: "RSA",
 	})
 	if err != nil {

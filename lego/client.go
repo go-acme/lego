@@ -35,8 +35,8 @@ func NewClient(config *Config) (*Client, error) {
 		return nil, errors.New("the HTTP client cannot be nil")
 	}
 
-	privKey := config.User.GetPrivateKey()
-	if privKey == nil {
+	privateKey := config.User.GetPrivateKey()
+	if privateKey == nil {
 		return nil, errors.New("private key was nil")
 	}
 
@@ -45,7 +45,7 @@ func NewClient(config *Config) (*Client, error) {
 		kid = reg.URI
 	}
 
-	core, err := api.New(config.HTTPClient, config.UserAgent, config.CADirURL, kid, privKey)
+	core, err := api.New(config.HTTPClient, config.UserAgent, config.CADirURL, kid, privateKey)
 	if err != nil {
 		return nil, err
 	}

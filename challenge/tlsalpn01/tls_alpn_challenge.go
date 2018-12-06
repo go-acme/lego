@@ -93,34 +93,34 @@ func ChallengeBlocks(domain, keyAuth string) ([]byte, []byte, error) {
 	}
 
 	// Generate a new RSA key for the certificates.
-	tempPrivKey, err := certcrypto.GeneratePrivateKey(certcrypto.RSA2048)
+	tempPrivateKey, err := certcrypto.GeneratePrivateKey(certcrypto.RSA2048)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	rsaPrivKey := tempPrivKey.(*rsa.PrivateKey)
+	rsaPrivateKey := tempPrivateKey.(*rsa.PrivateKey)
 
 	// Generate the PEM certificate using the provided private key, domain, and extra extensions.
-	tempCertPEM, err := certcrypto.GeneratePemCert(rsaPrivKey, domain, extensions)
+	tempCertPEM, err := certcrypto.GeneratePemCert(rsaPrivateKey, domain, extensions)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	// Encode the private key into a PEM format. We'll need to use it to generate the x509 keypair.
-	rsaPrivPEM := certcrypto.PEMEncode(rsaPrivKey)
+	rsaPrivatePEM := certcrypto.PEMEncode(rsaPrivateKey)
 
-	return tempCertPEM, rsaPrivPEM, nil
+	return tempCertPEM, rsaPrivatePEM, nil
 }
 
 // ChallengeCert returns a certificate with the acmeValidation-v1 extension
 // and domain name for the `tls-alpn-01` challenge.
 func ChallengeCert(domain, keyAuth string) (*tls.Certificate, error) {
-	tempCertPEM, rsaPrivPEM, err := ChallengeBlocks(domain, keyAuth)
+	tempCertPEM, rsaPrivatePEM, err := ChallengeBlocks(domain, keyAuth)
 	if err != nil {
 		return nil, err
 	}
 
-	cert, err := tls.X509KeyPair(tempCertPEM, rsaPrivPEM)
+	cert, err := tls.X509KeyPair(tempCertPEM, rsaPrivatePEM)
 	if err != nil {
 		return nil, err
 	}

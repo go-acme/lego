@@ -63,10 +63,10 @@ func TestChallenge(t *testing.T) {
 		return nil
 	}
 
-	privKey, err := rsa.GenerateKey(rand.Reader, 512)
+	privateKey, err := rsa.GenerateKey(rand.Reader, 512)
 	require.NoError(t, err, "Could not generate test key")
 
-	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privKey)
+	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)
 	require.NoError(t, err)
 
 	solver := NewChallenge(
@@ -92,10 +92,10 @@ func TestChallengeInvalidPort(t *testing.T) {
 	_, apiURL, tearDown := tester.SetupFakeAPI()
 	defer tearDown()
 
-	privKey, err := rsa.GenerateKey(rand.Reader, 128)
+	privateKey, err := rsa.GenerateKey(rand.Reader, 128)
 	require.NoError(t, err, "Could not generate test key")
 
-	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privKey)
+	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)
 	require.NoError(t, err)
 
 	solver := NewChallenge(

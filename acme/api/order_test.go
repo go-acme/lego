@@ -20,7 +20,7 @@ func TestOrderService_New(t *testing.T) {
 	defer tearDown()
 
 	// small value keeps test fast
-	privKey, errK := rsa.GenerateKey(rand.Reader, 512)
+	privateKey, errK := rsa.GenerateKey(rand.Reader, 512)
 	require.NoError(t, errK, "Could not generate test key")
 
 	mux.HandleFunc("/newOrder", func(w http.ResponseWriter, r *http.Request) {
@@ -29,7 +29,7 @@ func TestOrderService_New(t *testing.T) {
 			return
 		}
 
-		body, err := readSignedBody(r, privKey)
+		body, err := readSignedBody(r, privateKey)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 		}
@@ -51,7 +51,7 @@ func TestOrderService_New(t *testing.T) {
 		}
 	})
 
-	core, err := New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privKey)
+	core, err := New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)
 	require.NoError(t, err)
 
 	order, err := core.Orders.New([]string{"example.com"})
@@ -66,7 +66,7 @@ func TestOrderService_New(t *testing.T) {
 	assert.Equal(t, expected, order)
 }
 
-func readSignedBody(r *http.Request, privKey *rsa.PrivateKey) ([]byte, error) {
+func readSignedBody(r *http.Request, privateKey *rsa.PrivateKey) ([]byte, error) {
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		return nil, err
@@ -78,7 +78,7 @@ func readSignedBody(r *http.Request, privKey *rsa.PrivateKey) ([]byte, error) {
 	}
 
 	body, err := jws.Verify(&jose.JSONWebKey{
-		Key:       privKey.Public(),
+		Key:       privateKey.Public(),
 		Algorithm: "RSA",
 	})
 	if err != nil {

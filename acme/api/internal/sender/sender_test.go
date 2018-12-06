@@ -18,7 +18,7 @@ func TestDo_UserAgentOnAllHTTPMethod(t *testing.T) {
 	}))
 	defer ts.Close()
 
-	do := NewDo(http.DefaultClient, "")
+	doer := NewDoer(http.DefaultClient, "")
 
 	testCases := []struct {
 		method string
@@ -27,17 +27,17 @@ func TestDo_UserAgentOnAllHTTPMethod(t *testing.T) {
 		{
 			method: http.MethodGet,
 			call: func(u string) (*http.Response, error) {
-				return do.Get(u, nil)
+				return doer.Get(u, nil)
 			},
 		},
 		{
 			method: http.MethodHead,
-			call:   do.Head,
+			call:   doer.Head,
 		},
 		{
 			method: http.MethodPost,
 			call: func(u string) (*http.Response, error) {
-				return do.Post(u, strings.NewReader("falalalala"), "text/plain", nil)
+				return doer.Post(u, strings.NewReader("falalalala"), "text/plain", nil)
 			},
 		},
 	}
@@ -56,9 +56,9 @@ func TestDo_UserAgentOnAllHTTPMethod(t *testing.T) {
 
 func TestDo_CustomUserAgent(t *testing.T) {
 	customUA := "MyApp/1.2.3"
-	do := NewDo(http.DefaultClient, customUA)
+	doer := NewDoer(http.DefaultClient, customUA)
 
-	ua := do.formatUserAgent()
+	ua := doer.formatUserAgent()
 	assert.Contains(t, ua, ourUserAgent)
 	assert.Contains(t, ua, customUA)
 	if strings.HasSuffix(ua, " ") {

@@ -23,7 +23,7 @@ type dynResponse struct {
 	Messages json.RawMessage `json:"msgs"`
 }
 
-type creds struct {
+type credentials struct {
 	Customer string `json:"customer_name"`
 	User     string `json:"user_name"`
 	Pass     string `json:"password"`
@@ -42,7 +42,7 @@ type publish struct {
 // Starts a new Dyn API Session. Authenticates using customerName, userName,
 // password and receives a token to be used in for subsequent requests.
 func (d *DNSProvider) login() error {
-	payload := &creds{Customer: d.config.CustomerName, User: d.config.UserName, Pass: d.config.Password}
+	payload := &credentials{Customer: d.config.CustomerName, User: d.config.UserName, Pass: d.config.Password}
 	dynRes, err := d.sendRequest(http.MethodPost, "Session", payload)
 	if err != nil {
 		return err

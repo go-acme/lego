@@ -37,3 +37,17 @@ checks:
 
 fmt:
 	gofmt -s -l -w $(SRCS)
+
+# Release helper
+
+patch:
+	go run internal/release.go release -m patch
+
+minor:
+	go run internal/release.go release -m minor
+
+major:
+	go run internal/release.go release -m major
+
+detach:
+	go run internal/release.go detach

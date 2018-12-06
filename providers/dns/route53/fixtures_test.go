@@ -1,6 +1,6 @@
 package route53
 
-var ChangeResourceRecordSetsResponse = `<?xml version="1.0" encoding="UTF-8"?>
+const ChangeResourceRecordSetsResponse = `<?xml version="1.0" encoding="UTF-8"?>
 <ChangeResourceRecordSetsResponse xmlns="https://route53.amazonaws.com/doc/2013-04-01/">
 <ChangeInfo>
    <Id>/change/123456</Id>
@@ -9,7 +9,7 @@ var ChangeResourceRecordSetsResponse = `<?xml version="1.0" encoding="UTF-8"?>
 </ChangeInfo>
 </ChangeResourceRecordSetsResponse>`
 
-var ListHostedZonesByNameResponse = `<?xml version="1.0" encoding="UTF-8"?>
+const ListHostedZonesByNameResponse = `<?xml version="1.0" encoding="UTF-8"?>
 <ListHostedZonesByNameResponse xmlns="https://route53.amazonaws.com/doc/2013-04-01/">
    <HostedZones>
       <HostedZone>
@@ -29,7 +29,7 @@ var ListHostedZonesByNameResponse = `<?xml version="1.0" encoding="UTF-8"?>
    <MaxItems>1</MaxItems>
 </ListHostedZonesByNameResponse>`
 
-var GetChangeResponse = `<?xml version="1.0" encoding="UTF-8"?>
+const GetChangeResponse = `<?xml version="1.0" encoding="UTF-8"?>
 <GetChangeResponse xmlns="https://route53.amazonaws.com/doc/2013-04-01/">
    <ChangeInfo>
       <Id>123456</Id>

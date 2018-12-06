@@ -34,7 +34,7 @@ yaourt -S lego-git
 To install from source, just run:
 
 ```bash
-go get -u github.com/xenolf/lego
+go get -u github.com/xenolf/lego/cmd/lego
 ```
 
 ## Features
@@ -71,29 +71,31 @@ COMMANDS:
      revoke   Revoke a certificate
      renew    Renew a certificate
      dnshelp  Shows additional help for the --dns global option
+     list     Display certificates and accounts information.
      help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
    --domains value, -d value   Add a domain to the process. Can be specified multiple times.
-   --csr value, -c value       Certificate signing request filename, if an external CSR is to be used
    --server value, -s value    CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client. (default: "https://acme-v02.api.letsencrypt.org/directory")
-   --email value, -m value     Email used for registration and recovery contact.
-   --filename value            Filename of the generated certificate
    --accept-tos, -a            By setting this flag to true you indicate that you accept the current Let's Encrypt terms of service.
+   --email value, -m value     Email used for registration and recovery contact.
+   --csr value, -c value       Certificate signing request filename, if an external CSR is to be used
    --eab                       Use External Account Binding for account registration. Requires --kid and --hmac.
    --kid value                 Key identifier from External CA. Used for External Account Binding.
    --hmac value                MAC key from External CA. Should be in Base64 URL Encoding without padding format. Used for External Account Binding.
    --key-type value, -k value  Key type to use for private keys. Supported: rsa2048, rsa4096, rsa8192, ec256, ec384 (default: "rsa2048")
+   --filename value            Filename of the generated certificate
    --path value                Directory to use for storing the data (default: "./.lego")
    --exclude value, -x value   Explicitly disallow solvers by name from being used. Solvers: "http-01", "dns-01", "tls-alpn-01".
+   --http-timeout value        Set the HTTP timeout value to a specific value in seconds. The default is 10 seconds. (default: 0)
    --webroot value             Set the webroot folder to use for HTTP based challenges to write directly in a file in .well-known/acme-challenge
    --memcached-host value      Set the memcached host(s) to use for HTTP based challenges. Challenges will be written to all specified hosts.
    --http value                Set the port and interface to use for HTTP based challenges to listen on. Supported: interface:port or :port
    --tls value                 Set the port and interface to use for TLS based challenges to listen on. Supported: interface:port or :port
    --dns value                 Solve a DNS challenge using the specified provider. Disables all other challenges. Run 'lego dnshelp' for help on usage.
-   --http-timeout value        Set the HTTP timeout value to a specific value in seconds. The default is 10 seconds. (default: 0)
-   --dns-timeout value         Set the DNS timeout value to a specific value in seconds. The default is 10 seconds. (default: 0)
+   --dns-disable-cp            By setting this flag to true, disables the need to wait the propagation of the TXT record to all authoritative name servers.
    --dns-resolvers value       Set the resolvers to use for performing recursive DNS queries. Supported: host:port. The default is to use the system resolvers, or Google's DNS resolvers if the system's cannot be determined.
+   --dns-timeout value         Set the DNS timeout value to a specific value in seconds. Used only when performing authoritative name servers queries. The default is 10 seconds. (default: 0)
    --pem                       Generate a .pem file by concatenating the .key and .crt files together.
    --help, -h                  show help
    --version, -v               print the version
@@ -174,6 +176,104 @@ lego defaults to communicating with the production Let's Encrypt ACME server. If
 lego --server=https://acme-staging-v02.api.letsencrypt.org/directory …
 ```
 
+## ACME Library Usage
+
+A valid, but bare-bones example use of the acme package:
+
+```go
+package main
+
+import (
+	"crypto"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
+	"fmt"
+	"log"
+
+	"github.com/xenolf/lego/certcrypto"
+	"github.com/xenolf/lego/certificate"
+	"github.com/xenolf/lego/lego"
+	"github.com/xenolf/lego/registration"
+)
+
+// You'll need a user or account type that implements acme.User
+type MyUser struct {
+	Email        string
+	Registration *registration.Resource
+	key          crypto.PrivateKey
+}
+
+func (u *MyUser) GetEmail() string {
+	return u.Email
+}
+func (u MyUser) GetRegistration() *registration.Resource {
+	return u.Registration
+}
+func (u *MyUser) GetPrivateKey() crypto.PrivateKey {
+	return u.key
+}
+
+func main() {
+
+	// Create a user. New accounts need an email and private key to start.
+	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	myUser := MyUser{
+		Email: "you@yours.com",
+		key:   privateKey,
+	}
+
+	config := lego.NewConfig(&myUser)
+
+	// This CA URL is configured for a local dev instance of Boulder running in Docker in a VM.
+	config.CADirURL = "http://192.168.99.100:4000/directory"
+	config.KeyType = certcrypto.RSA2048
+
+	// A client facilitates communication with the CA server.
+	client, err := lego.NewClient(config)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// We specify an http port of 5002 and an tls port of 5001 on all interfaces
+	// because we aren't running as root and can't bind a listener to port 80 and 443
+	// (used later when we attempt to pass challenges). Keep in mind that you still
+	// need to proxy challenge traffic to port 5002 and 5001.
+	if err = client.Challenge.SetHTTP01Address(":5002"); err != nil {
+		log.Fatal(err)
+	}
+	if err = client.Challenge.SetTLSALPN01Address(":5001"); err != nil {
+		log.Fatal(err)
+	}
+
+	// New users will need to register
+	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
+	if err != nil {
+		log.Fatal(err)
+	}
+	myUser.Registration = reg
+
+	request := certificate.ObtainRequest{
+		Domains: []string{"mydomain.com"},
+		Bundle:  true,
+	}
+	certificates, err := client.Certificate.Obtain(request)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Each certificate comes back with the cert bytes, the bytes of the client's
+	// private key, and a certificate URL. SAVE THESE TO DISK.
+	fmt.Printf("%#v\n", certificates)
+
+	// ... all done.
+}
+```
+
 ## DNS Challenge API Details
 
 ### AWS Route 53
@@ -183,106 +283,29 @@ Replace `<INSERT_YOUR_HOSTED_ZONE_ID_HERE>` with the Route 53 zone ID of the dom
 
 ```json
 {
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Action": [
-                "route53:GetChange",
-                "route53:ListHostedZonesByName"
-            ],
-            "Resource": [
-                "*"
-            ]
-        },
-        {
-            "Effect": "Allow",
-            "Action": [
-                "route53:ChangeResourceRecordSets"
-            ],
-            "Resource": [
-                "arn:aws:route53:::hostedzone/<INSERT_YOUR_HOSTED_ZONE_ID_HERE>"
-            ]
-        }
-    ]
+   "Version": "2012-10-17",
+   "Statement": [
+       {
+           "Sid": "",
+           "Effect": "Allow",
+           "Action": [
+               "route53:GetChange",
+               "route53:ChangeResourceRecordSets",
+               "route53:ListResourceRecordSets"
+           ],
+           "Resource": [
+               "arn:aws:route53:::hostedzone/*",
+               "arn:aws:route53:::change/*"
+           ]
+       },
+       {
+           "Sid": "",
+           "Effect": "Allow",
+           "Action": "route53:ListHostedZonesByName",
+           "Resource": "*"
+       }
+   ]
 }
-```
-
-## ACME Library Usage
-
-A valid, but bare-bones example use of the acme package:
-
-```go
-// You'll need a user or account type that implements acme.User
-type MyUser struct {
-	Email        string
-	Registration *acme.RegistrationResource
-	key          crypto.PrivateKey
-}
-func (u MyUser) GetEmail() string {
-	return u.Email
-}
-func (u MyUser) GetRegistration() *acme.RegistrationResource {
-	return u.Registration
-}
-func (u MyUser) GetPrivateKey() crypto.PrivateKey {
-	return u.key
-}
-
-// Create a user. New accounts need an email and private key to start.
-const rsaKeySize = 2048
-privateKey, err := rsa.GenerateKey(rand.Reader, rsaKeySize)
-if err != nil {
-	log.Fatal(err)
-}
-myUser := MyUser{
-	Email: "you@yours.com",
-	key: privateKey,
-}
-
-// A client facilitates communication with the CA server. This CA URL is
-// configured for a local dev instance of Boulder running in Docker in a VM.
-client, err := acme.NewClient("http://192.168.99.100:4000/directory", &myUser, acme.RSA2048)
-if err != nil {
-  log.Fatal(err)
-}
-
-// We specify an http port of 5002 and an tls port of 5001 on all interfaces
-// because we aren't running as root and can't bind a listener to port 80 and 443
-// (used later when we attempt to pass challenges). Keep in mind that we still
-// need to proxy challenge traffic to port 5002 and 5001.
-client.SetHTTPAddress(":5002")
-client.SetTLSAddress(":5001")
-
-// New users will need to register
-reg, err := client.Register()
-if err != nil {
-	log.Fatal(err)
-}
-myUser.Registration = reg
-
-// SAVE THE USER.
-
-// The client has a URL to the current Let's Encrypt Subscriber
-// Agreement. The user will need to agree to it.
-err = client.AgreeToTOS()
-if err != nil {
-	log.Fatal(err)
-}
-
-// The acme library takes care of completing the challenges to obtain the certificate(s).
-// The domains must resolve to this machine or you have to use the DNS challenge.
-bundle := false
-certificates, failures := client.ObtainCertificate([]string{"mydomain.com"}, bundle, nil, false)
-if len(failures) > 0 {
-	log.Fatal(failures)
-}
-
-// Each certificate comes back with the cert bytes, the bytes of the client's
-// private key, and a certificate URL. SAVE THESE TO DISK.
-fmt.Printf("%#v\n", certificates)
-
-// ... all done.
 ```
 
 ## ACME v1

@@ -18,89 +18,7 @@ import (
 
 const testDomain = "example.com"
 
-var ipPort = "127.0.0.1:2112"
-
-var jsonMap = map[string]string{
-	"token": `
-{
-  "access_token":"699dd4ff-e381-46b8-8bf8-5de49dd56c1f",
-  "token_type":"bearer",
-  "expires_in":3600
-}
-`,
-	"domains": `
-{
-  "domains":[
-    {
-      "domain_id":1,
-      "domain":"example.com",
-      "status":"active",
-      "owner_id":0
-    }
-  ]
-}
-`,
-	"records": `
-{
-  "status":"ok",
-  "total_records":2,
-  "domain":{
-    "status":"active",
-    "domain":"example.com",
-    "owner_id":0,
-    "domain_id":1
-  },
-  "records":[
-    {
-      "retry":"2048",
-      "minimum":"2560",
-      "refresh":"16384",
-      "email":"hostmaster.example.com",
-      "record_type":"SOA",
-      "expire":"1048576",
-      "ttl":86400,
-      "record_id":1,
-      "nameserver":"ns1.example.com",
-      "domain_id":1,
-      "serial":""
-    },
-    {
-      "name":"example.com",
-      "value":"ns1.example.com",
-      "record_type":"NS",
-      "ttl":3600,
-      "record_id":2,
-      "location_id":null,
-      "domain_id":1
-    },
-    {
-      "name":"_acme-challenge.example.com",
-      "value":"my_challenge",
-      "record_type":"TXT",
-      "ttl":3600,
-      "record_id":3,
-      "location_id":null,
-      "domain_id":1
-    }
-  ]
-}
-`,
-	"recordCreated": `
-{
-  "status":"ok",
-  "record":{
-    "name":"_acme-challenge.example.com",
-    "value":"my_challenge",
-    "record_type":"TXT",
-    "ttl":3600,
-    "record_id":3,
-    "location_id":null,
-    "domain_id":1
-  }
-}
-`,
-	"recordDeleted": `{"status": "ok"}`,
-}
+const ipPort = "127.0.0.1:2112"
 
 var envTest = tester.NewEnvTest("SECRET_VEGADNS_KEY", "SECRET_VEGADNS_SECRET", "VEGADNS_URL")
 
@@ -225,10 +143,9 @@ func muxSuccess() *http.ServeMux {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/1.0/token", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodPost:
+		if r.Method == http.MethodPost {
 			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, jsonMap["token"])
+			fmt.Fprintf(w, tokenResponseMock)
 			return
 		}
 		w.WriteHeader(http.StatusBadRequest)
@@ -237,7 +154,7 @@ func muxSuccess() *http.ServeMux {
 	mux.HandleFunc("/1.0/domains", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Query().Get("search") == "example.com" {
 			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, jsonMap["domains"])
+			fmt.Fprintf(w, domainsResponseMock)
 			return
 		}
 		w.WriteHeader(http.StatusNotFound)
@@ -248,24 +165,23 @@ func muxSuccess() *http.ServeMux {
 		case http.MethodGet:
 			if r.URL.Query().Get("domain_id") == "1" {
 				w.WriteHeader(http.StatusOK)
-				fmt.Fprintf(w, jsonMap["records"])
+				fmt.Fprintf(w, recordsResponseMock)
 				return
 			}
 			w.WriteHeader(http.StatusNotFound)
 			return
 		case http.MethodPost:
 			w.WriteHeader(http.StatusCreated)
-			fmt.Fprintf(w, jsonMap["recordCreated"])
+			fmt.Fprintf(w, recordCreatedResponseMock)
 			return
 		}
 		w.WriteHeader(http.StatusBadRequest)
 	})
 
 	mux.HandleFunc("/1.0/records/3", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodDelete:
+		if r.Method == http.MethodDelete {
 			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, jsonMap["recordDeleted"])
+			fmt.Fprintf(w, recordDeletedResponseMock)
 			return
 		}
 		w.WriteHeader(http.StatusBadRequest)
@@ -283,10 +199,9 @@ func muxFailToFindZone() *http.ServeMux {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/1.0/token", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodPost:
+		if r.Method == http.MethodPost {
 			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, jsonMap["token"])
+			fmt.Fprintf(w, tokenResponseMock)
 			return
 		}
 		w.WriteHeader(http.StatusBadRequest)
@@ -303,10 +218,9 @@ func muxFailToCreateTXT() *http.ServeMux {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/1.0/token", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodPost:
+		if r.Method == http.MethodPost {
 			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, jsonMap["token"])
+			fmt.Fprintf(w, tokenResponseMock)
 			return
 		}
 		w.WriteHeader(http.StatusBadRequest)
@@ -315,7 +229,7 @@ func muxFailToCreateTXT() *http.ServeMux {
 	mux.HandleFunc("/1.0/domains", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Query().Get("search") == testDomain {
 			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, jsonMap["domains"])
+			fmt.Fprintf(w, domainsResponseMock)
 			return
 		}
 		w.WriteHeader(http.StatusNotFound)
@@ -326,7 +240,7 @@ func muxFailToCreateTXT() *http.ServeMux {
 		case http.MethodGet:
 			if r.URL.Query().Get("domain_id") == "1" {
 				w.WriteHeader(http.StatusOK)
-				fmt.Fprintf(w, jsonMap["records"])
+				fmt.Fprintf(w, recordsResponseMock)
 				return
 			}
 			w.WriteHeader(http.StatusNotFound)
@@ -345,10 +259,9 @@ func muxFailToGetRecordID() *http.ServeMux {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/1.0/token", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodPost:
+		if r.Method == http.MethodPost {
 			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, jsonMap["token"])
+			fmt.Fprintf(w, tokenResponseMock)
 			return
 		}
 		w.WriteHeader(http.StatusBadRequest)
@@ -357,15 +270,14 @@ func muxFailToGetRecordID() *http.ServeMux {
 	mux.HandleFunc("/1.0/domains", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Query().Get("search") == testDomain {
 			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, jsonMap["domains"])
+			fmt.Fprintf(w, domainsResponseMock)
 			return
 		}
 		w.WriteHeader(http.StatusNotFound)
 	})
 
 	mux.HandleFunc("/1.0/records", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodGet:
+		if r.Method == http.MethodGet {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}

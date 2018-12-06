@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/platform/tester"
 )
 
@@ -151,108 +150,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}
 }
 
-func TestGetDNSRecordIdx(t *testing.T) {
-	records := []DNSRecord{
-		{
-			ID:           12345,
-			Hostname:     "asdf",
-			RecordType:   "TXT",
-			Priority:     "0",
-			Destination:  "randomtext",
-			DeleteRecord: false,
-			State:        "yes",
-		},
-		{
-			ID:           23456,
-			Hostname:     "@",
-			RecordType:   "A",
-			Priority:     "0",
-			Destination:  "127.0.0.1",
-			DeleteRecord: false,
-			State:        "yes",
-		},
-		{
-			ID:           34567,
-			Hostname:     "dfgh",
-			RecordType:   "CNAME",
-			Priority:     "0",
-			Destination:  "example.com",
-			DeleteRecord: false,
-			State:        "yes",
-		},
-		{
-			ID:           45678,
-			Hostname:     "fghj",
-			RecordType:   "MX",
-			Priority:     "10",
-			Destination:  "mail.example.com",
-			DeleteRecord: false,
-			State:        "yes",
-		},
-	}
-
-	testCases := []struct {
-		desc        string
-		record      DNSRecord
-		expectError bool
-	}{
-		{
-			desc: "simple",
-			record: DNSRecord{
-				ID:           12345,
-				Hostname:     "asdf",
-				RecordType:   "TXT",
-				Priority:     "0",
-				Destination:  "randomtext",
-				DeleteRecord: false,
-				State:        "yes",
-			},
-		},
-		{
-			desc: "wrong Destination",
-			record: DNSRecord{
-				ID:           12345,
-				Hostname:     "asdf",
-				RecordType:   "TXT",
-				Priority:     "0",
-				Destination:  "wrong",
-				DeleteRecord: false,
-				State:        "yes",
-			},
-			expectError: true,
-		},
-		{
-			desc: "record type CNAME",
-			record: DNSRecord{
-				ID:           12345,
-				Hostname:     "asdf",
-				RecordType:   "CNAME",
-				Priority:     "0",
-				Destination:  "randomtext",
-				DeleteRecord: false,
-				State:        "yes",
-			},
-			expectError: true,
-		},
-	}
-
-	for _, test := range testCases {
-		test := test
-		t.Run(test.desc, func(t *testing.T) {
-			t.Parallel()
-
-			idx, err := getDNSRecordIdx(records, test.record)
-			if test.expectError {
-				assert.Error(t, err)
-				assert.Equal(t, -1, idx)
-			} else {
-				assert.NoError(t, err)
-				assert.Equal(t, records[idx], test.record)
-			}
-		})
-	}
-}
-
 func TestLivePresentAndCleanup(t *testing.T) {
 	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
@@ -262,12 +159,12 @@ func TestLivePresentAndCleanup(t *testing.T) {
 	p, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	fqdn, _, _ := acme.DNS01Record(envTest.GetDomain(), "123d==")
+	fqdn, _ := dns01.GetRecord(envTest.GetDomain(), "123d==")
 
-	zone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameservers)
+	zone, err := dns01.FindZoneByFqdn(fqdn)
 	require.NoError(t, err, "error finding DNSZone")
 
-	zone = acme.UnFqdn(zone)
+	zone = dns01.UnFqdn(zone)
 
 	testCases := []string{
 		zone,
@@ -276,12 +173,12 @@ func TestLivePresentAndCleanup(t *testing.T) {
 		"*.sub." + zone,
 	}
 
-	for _, tc := range testCases {
-		t.Run(fmt.Sprintf("domain(%s)", tc), func(t *testing.T) {
-			err = p.Present(tc, "987d", "123d==")
+	for _, test := range testCases {
+		t.Run(fmt.Sprintf("domain(%s)", test), func(t *testing.T) {
+			err = p.Present(test, "987d", "123d==")
 			require.NoError(t, err)
 
-			err = p.CleanUp(tc, "987d", "123d==")
+			err = p.CleanUp(test, "987d", "123d==")
 			require.NoError(t, err, "Did not clean up! Please remove record yourself.")
 		})
 	}

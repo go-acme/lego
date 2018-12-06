@@ -27,6 +27,10 @@ const (
 	SophosUTM
 	// FreeBSD OS種別:FreeBSD
 	FreeBSD
+	// Netwiser OS種別: Netwiser Virtual Edition
+	Netwiser
+	// OPNsense OS種別: OPNsense
+	OPNsense
 	// Windows2012 OS種別:Windows Server 2012 R2 Datacenter Edition
 	Windows2012
 	// Windows2012RDS OS種別:Windows Server 2012 R2 for RDS
@@ -57,6 +61,7 @@ const (
 var OSTypeShortNames = []string{
 	"centos", "centos6", "ubuntu", "debian", "vyos", "coreos",
 	"rancheros", "kusanagi", "sophos-utm", "freebsd",
+	"netwiser", "opnsense",
 	"windows2012", "windows2012-rds", "windows2012-rds-office",
 	"windows2016", "windows2016-rds", "windows2016-rds-office",
 	"windows2016-sql-web", "windows2016-sql-standard", "windows2016-sql-standard-all",
@@ -109,6 +114,10 @@ func StrToOSType(osType string) ArchiveOSTypes {
 		return SophosUTM
 	case "freebsd":
 		return FreeBSD
+	case "netwiser":
+		return Netwiser
+	case "opnsense":
+		return OPNsense
 	case "windows2012":
 		return Windows2012
 	case "windows2012-rds":

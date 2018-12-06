@@ -34,7 +34,7 @@
   name = "github.com/decker502/dnspod-go"
 
 [[constraint]]
-  branch = "master"
+  version = "0.21.0"
   name = "github.com/dnsimple/dnsimple-go"
 
 [[constraint]]
@@ -92,3 +92,7 @@
 [[constraint]]
   version = "0.11.1"
   name = "github.com/exoscale/egoscale"
+
+[[constraint]]
+  version = "v1.1.0"
+  name = "github.com/miekg/dns"

@@ -95,10 +95,23 @@ func TestNewDNSProviderConfig(t *testing.T) {
 // TestDNSProvider runs Present and CleanUp against a fake Gandi RPC
 // Server, whose responses are predetermined for particular requests.
 func TestDNSProvider(t *testing.T) {
+	// serverResponses is the JSON Request->Response map used by the
+	// fake JSON server.
+	var serverResponses = map[string]map[string]string{
+		http.MethodGet: {
+			``: `{"rrset_ttl":300,"rrset_values":[],"rrset_name":"_acme-challenge.abc.def","rrset_type":"TXT"}`,
+		},
+		http.MethodPut: {
+			`{"rrset_ttl":300,"rrset_values":["TOKEN"]}`: `{"message": "Zone Record Created"}`,
+		},
+		http.MethodDelete: {
+			``: ``,
+		},
+	}
+
 	fakeKeyAuth := "XXXX"
 
-	regexpToken, err := regexp.Compile(`"rrset_values":\[".+"\]`)
-	require.NoError(t, err)
+	regexpToken := regexp.MustCompile(`"rrset_values":\[".+"\]`)
 
 	// start fake RPC server
 	handler := http.NewServeMux()
@@ -146,7 +159,7 @@ func TestDNSProvider(t *testing.T) {
 	defer server.Close()
 
 	// define function to override findZoneByFqdn with
-	fakeFindZoneByFqdn := func(fqdn string, nameserver []string) (string, error) {
+	fakeFindZoneByFqdn := func(fqdn string) (string, error) {
 		return "example.com.", nil
 	}
 
@@ -158,11 +171,11 @@ func TestDNSProvider(t *testing.T) {
 	require.NoError(t, err)
 
 	// override findZoneByFqdn function
-	savedFindZoneByFqdn := findZoneByFqdn
+	savedFindZoneByFqdn := provider.findZoneByFqdn
 	defer func() {
-		findZoneByFqdn = savedFindZoneByFqdn
+		provider.findZoneByFqdn = savedFindZoneByFqdn
 	}()
-	findZoneByFqdn = fakeFindZoneByFqdn
+	provider.findZoneByFqdn = fakeFindZoneByFqdn
 
 	// run Present
 	err = provider.Present("abc.def.example.com", "", fakeKeyAuth)
@@ -171,18 +184,4 @@ func TestDNSProvider(t *testing.T) {
 	// run CleanUp
 	err = provider.CleanUp("abc.def.example.com", "", fakeKeyAuth)
 	require.NoError(t, err)
-}
-
-// serverResponses is the JSON Request->Response map used by the
-// fake JSON server.
-var serverResponses = map[string]map[string]string{
-	http.MethodGet: {
-		``: `{"rrset_ttl":300,"rrset_values":[],"rrset_name":"_acme-challenge.abc.def","rrset_type":"TXT"}`,
-	},
-	http.MethodPut: {
-		`{"rrset_ttl":300,"rrset_values":["TOKEN"]}`: `{"message": "Zone Record Created"}`,
-	},
-	http.MethodDelete: {
-		``: ``,
-	},
 }

@@ -18,12 +18,6 @@ type SecurityGroup struct {
 	ID          *UUID         `json:"id,omitempty" doc:"the ID of the security group"`
 	IngressRule []IngressRule `json:"ingressrule,omitempty" doc:"the list of ingress rules associated with the security group"`
 	Name        string        `json:"name,omitempty" doc:"the name of the security group"`
-	Tags        []ResourceTag `json:"tags,omitempty" doc:"the list of resource tags associated with the rule"`
-}
-
-// ResourceType returns the type of the resource
-func (SecurityGroup) ResourceType() string {
-	return "SecurityGroup"
 }
 
 // UserSecurityGroup converts a SecurityGroup to a UserSecurityGroup
@@ -36,7 +30,6 @@ func (sg SecurityGroup) UserSecurityGroup() UserSecurityGroup {
 
 // ListRequest builds the ListSecurityGroups request
 func (sg SecurityGroup) ListRequest() (ListCommand, error) {
-	//TODO add tags
 	req := &ListSecurityGroups{
 		Account:           sg.Account,
 		DomainID:          sg.DomainID,
@@ -97,7 +90,6 @@ type IngressRule struct {
 	SecurityGroupID       *UUID               `json:"securitygroupid,omitempty"`
 	SecurityGroupName     string              `json:"securitygroupname,omitempty" doc:"security group name"`
 	StartPort             uint16              `json:"startport,omitempty" doc:"the starting port of the security group rule"`
-	Tags                  []ResourceTag       `json:"tags,omitempty" doc:"the list of resource tags associated with the rule"`
 	UserSecurityGroupList []UserSecurityGroup `json:"usersecuritygrouplist,omitempty"`
 }
 
@@ -223,18 +215,17 @@ func (RevokeSecurityGroupEgress) asyncResponse() interface{} {
 
 // ListSecurityGroups represents a search for security groups
 type ListSecurityGroups struct {
-	Account           string        `json:"account,omitempty" doc:"list resources by account. Must be used with the domainId parameter."`
-	DomainID          *UUID         `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
-	ID                *UUID         `json:"id,omitempty" doc:"list the security group by the id provided"`
-	IsRecursive       *bool         `json:"isrecursive,omitempty" doc:"defaults to false, but if true, lists all resources from the parent specified by the domainId till leaves."`
-	Keyword           string        `json:"keyword,omitempty" doc:"List by keyword"`
-	ListAll           *bool         `json:"listall,omitempty" doc:"If set to false, list only resources belonging to the command's caller; if set to true - list resources that the caller is authorized to see. Default value is false"`
-	Page              int           `json:"page,omitempty"`
-	PageSize          int           `json:"pagesize,omitempty"`
-	SecurityGroupName string        `json:"securitygroupname,omitempty" doc:"lists security groups by name"`
-	Tags              []ResourceTag `json:"tags,omitempty" doc:"List resources by tags (key/value pairs)"`
-	VirtualMachineID  *UUID         `json:"virtualmachineid,omitempty" doc:"lists security groups by virtual machine id"`
-	_                 bool          `name:"listSecurityGroups" description:"Lists security groups"`
+	Account           string `json:"account,omitempty" doc:"list resources by account. Must be used with the domainId parameter."`
+	DomainID          *UUID  `json:"domainid,omitempty" doc:"list only resources belonging to the domain specified"`
+	ID                *UUID  `json:"id,omitempty" doc:"list the security group by the id provided"`
+	IsRecursive       *bool  `json:"isrecursive,omitempty" doc:"defaults to false, but if true, lists all resources from the parent specified by the domainId till leaves."`
+	Keyword           string `json:"keyword,omitempty" doc:"List by keyword"`
+	ListAll           *bool  `json:"listall,omitempty" doc:"If set to false, list only resources belonging to the command's caller; if set to true - list resources that the caller is authorized to see. Default value is false"`
+	Page              int    `json:"page,omitempty"`
+	PageSize          int    `json:"pagesize,omitempty"`
+	SecurityGroupName string `json:"securitygroupname,omitempty" doc:"lists security groups by name"`
+	VirtualMachineID  *UUID  `json:"virtualmachineid,omitempty" doc:"lists security groups by virtual machine id"`
+	_                 bool   `name:"listSecurityGroups" description:"Lists security groups"`
 }
 
 // ListSecurityGroupsResponse represents a list of security groups

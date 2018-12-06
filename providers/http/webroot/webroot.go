@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/challenge/http01"
 )
 
 // HTTPProvider implements ChallengeProvider for `http-01` challenge
@@ -28,7 +28,7 @@ func NewHTTPProvider(path string) (*HTTPProvider, error) {
 func (w *HTTPProvider) Present(domain, token, keyAuth string) error {
 	var err error
 
-	challengeFilePath := filepath.Join(w.path, acme.HTTP01ChallengePath(token))
+	challengeFilePath := filepath.Join(w.path, http01.ChallengePath(token))
 	err = os.MkdirAll(filepath.Dir(challengeFilePath), 0755)
 	if err != nil {
 		return fmt.Errorf("could not create required directories in webroot for HTTP challenge -> %v", err)
@@ -44,7 +44,7 @@ func (w *HTTPProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the file created for the challenge
 func (w *HTTPProvider) CleanUp(domain, token, keyAuth string) error {
-	err := os.Remove(filepath.Join(w.path, acme.HTTP01ChallengePath(token)))
+	err := os.Remove(filepath.Join(w.path, http01.ChallengePath(token)))
 	if err != nil {
 		return fmt.Errorf("could not remove file in webroot after HTTP challenge -> %v", err)
 	}

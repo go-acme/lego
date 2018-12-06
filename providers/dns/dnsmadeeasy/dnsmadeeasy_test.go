@@ -13,11 +13,9 @@ var envTest = tester.NewEnvTest(
 	"DNSMADEEASY_API_SECRET").
 	WithDomain("DNSMADEEASY_DOMAIN")
 
-func init() {
-	os.Setenv("DNSMADEEASY_SANDBOX", "true")
-}
-
 func TestNewDNSProvider(t *testing.T) {
+	os.Setenv("DNSMADEEASY_SANDBOX", "true")
+
 	testCases := []struct {
 		desc     string
 		envVars  map[string]string
@@ -78,6 +76,8 @@ func TestNewDNSProvider(t *testing.T) {
 }
 
 func TestNewDNSProviderConfig(t *testing.T) {
+	os.Setenv("DNSMADEEASY_SANDBOX", "true")
+
 	testCases := []struct {
 		desc      string
 		apiKey    string
@@ -129,6 +129,8 @@ func TestLivePresentAndCleanup(t *testing.T) {
 	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
+
+	os.Setenv("DNSMADEEASY_SANDBOX", "true")
 
 	envTest.RestoreEnv()
 	provider, err := NewDNSProvider()

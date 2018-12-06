@@ -12,21 +12,21 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var (
+const (
 	envTestUser     = "foo"
 	envTestKey      = "bar"
 	envTestClientIP = "10.0.0.1"
-
-	tlds = map[string]string{
-		"com.au": "com.au",
-		"com":    "com",
-		"co.uk":  "co.uk",
-		"uk":     "uk",
-		"edu":    "edu",
-		"co.com": "co.com",
-		"za.com": "za.com",
-	}
 )
+
+var tldsMock = map[string]string{
+	"com.au": "com.au",
+	"com":    "com",
+	"co.uk":  "co.uk",
+	"uk":     "uk",
+	"edu":    "edu",
+	"co.com": "co.com",
+	"za.com": "za.com",
+}
 
 func TestDNSProvider_getHosts(t *testing.T) {
 	for _, test := range testCases {
@@ -36,7 +36,7 @@ func TestDNSProvider_getHosts(t *testing.T) {
 
 			provider := mockDNSProvider(mock.URL)
 
-			ch, err := newChallenge(test.domain, "", tlds)
+			ch, err := newChallenge(test.domain, "", tldsMock)
 			require.NoError(t, err)
 
 			hosts, err := provider.getHosts(ch.sld, ch.tld)
@@ -77,7 +77,7 @@ func TestDNSProvider_setHosts(t *testing.T) {
 
 			prov := mockDNSProvider(mock.URL)
 
-			ch, err := newChallenge(test.domain, "", tlds)
+			ch, err := newChallenge(test.domain, "", tldsMock)
 			require.NoError(t, err)
 
 			hosts, err := prov.getHosts(ch.sld, ch.tld)
@@ -160,7 +160,7 @@ func TestDomainSplit(t *testing.T) {
 		test := test
 		t.Run(test.domain, func(t *testing.T) {
 			valid := true
-			ch, err := newChallenge(test.domain, "", tlds)
+			ch, err := newChallenge(test.domain, "", tldsMock)
 			if err != nil {
 				valid = false
 			}
@@ -188,7 +188,7 @@ func assertEq(t *testing.T, variable, got, want string) {
 }
 
 func assertHdr(tc *testCase, t *testing.T, values *url.Values) {
-	ch, _ := newChallenge(tc.domain, "", tlds)
+	ch, _ := newChallenge(tc.domain, "", tldsMock)
 
 	assertEq(t, "ApiUser", values.Get("ApiUser"), envTestUser)
 	assertEq(t, "ApiKey", values.Get("ApiKey"), envTestKey)
@@ -296,7 +296,7 @@ var testCases = []testCase{
 	},
 }
 
-var responseGetHostsSuccess1 = `<?xml version="1.0" encoding="utf-8"?>
+const responseGetHostsSuccess1 = `<?xml version="1.0" encoding="utf-8"?>
 <ApiResponse Status="OK" xmlns="http://api.namecheap.com/xml.response">
   <Errors />
   <Warnings />
@@ -316,7 +316,7 @@ var responseGetHostsSuccess1 = `<?xml version="1.0" encoding="utf-8"?>
   <ExecutionTime>3.338</ExecutionTime>
 </ApiResponse>`
 
-var responseSetHostsSuccess1 = `<?xml version="1.0" encoding="utf-8"?>
+const responseSetHostsSuccess1 = `<?xml version="1.0" encoding="utf-8"?>
 <ApiResponse Status="OK" xmlns="http://api.namecheap.com/xml.response">
   <Errors />
   <Warnings />
@@ -331,7 +331,7 @@ var responseSetHostsSuccess1 = `<?xml version="1.0" encoding="utf-8"?>
   <ExecutionTime>2.347</ExecutionTime>
 </ApiResponse>`
 
-var responseGetHostsSuccess2 = `<?xml version="1.0" encoding="utf-8"?>
+const responseGetHostsSuccess2 = `<?xml version="1.0" encoding="utf-8"?>
 <ApiResponse Status="OK" xmlns="http://api.namecheap.com/xml.response">
   <Errors />
   <Warnings />
@@ -347,7 +347,7 @@ var responseGetHostsSuccess2 = `<?xml version="1.0" encoding="utf-8"?>
   <ExecutionTime>3.338</ExecutionTime>
 </ApiResponse>`
 
-var responseSetHostsSuccess2 = `<?xml version="1.0" encoding="utf-8"?>
+const responseSetHostsSuccess2 = `<?xml version="1.0" encoding="utf-8"?>
 <ApiResponse Status="OK" xmlns="http://api.namecheap.com/xml.response">
   <Errors />
   <Warnings />
@@ -362,7 +362,7 @@ var responseSetHostsSuccess2 = `<?xml version="1.0" encoding="utf-8"?>
   <ExecutionTime>2.347</ExecutionTime>
 </ApiResponse>`
 
-var responseGetHostsErrorBadAPIKey1 = `<?xml version="1.0" encoding="utf-8"?>
+const responseGetHostsErrorBadAPIKey1 = `<?xml version="1.0" encoding="utf-8"?>
 <ApiResponse Status="ERROR" xmlns="http://api.namecheap.com/xml.response">
   <Errors>
     <Error Number="1011102">API Key is invalid or API access has not been enabled</Error>
@@ -374,7 +374,7 @@ var responseGetHostsErrorBadAPIKey1 = `<?xml version="1.0" encoding="utf-8"?>
   <ExecutionTime>0</ExecutionTime>
 </ApiResponse>`
 
-var responseGetTlds = `<?xml version="1.0" encoding="utf-8"?>
+const responseGetTlds = `<?xml version="1.0" encoding="utf-8"?>
 <ApiResponse Status="OK" xmlns="http://api.namecheap.com/xml.response">
   <Errors />
   <Warnings />

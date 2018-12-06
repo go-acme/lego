@@ -7,7 +7,7 @@ import (
 	"path"
 
 	"github.com/rainycape/memcache"
-	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/challenge/http01"
 )
 
 // HTTPProvider implements HTTPProvider for `http-01` challenge
@@ -32,7 +32,7 @@ func NewMemcachedProvider(hosts []string) (*HTTPProvider, error) {
 func (w *HTTPProvider) Present(domain, token, keyAuth string) error {
 	var errs []error
 
-	challengePath := path.Join("/", acme.HTTP01ChallengePath(token))
+	challengePath := path.Join("/", http01.ChallengePath(token))
 	for _, host := range w.hosts {
 		mc, err := memcache.New(host)
 		if err != nil {

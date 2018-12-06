@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var fakeOTCToken = "62244bc21da68d03ebac94e6636ff01f"
+const fakeOTCToken = "62244bc21da68d03ebac94e6636ff01f"
 
 // DNSServerMock mock
 type DNSServerMock struct {

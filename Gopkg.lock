@@ -176,20 +176,20 @@
   revision = "5448fe645cb1964ba70ac8f9f2ffe975e61a536c"
 
 [[projects]]
-  branch = "master"
-  digest = "1:6b873be0e0ec65484ee086d02143f31332e363b968fdc6d6663160fa98fda505"
+  digest = "1:e856fc44ab196970612bdc8c15e65ccf92ed8d4ccb3a2e65b88dc240a2fe5d0b"
   name = "github.com/dnsimple/dnsimple-go"
   packages = ["dnsimple"]
   pruneopts = "NUT"
-  revision = "35bcc6b47c20ec9bf3a53adcb7fa9665a75f0e7b"
+  revision = "f5ead9c20763fd925dea1362f2af5d671ed2a459"
+  version = "v0.21.0"
 
 [[projects]]
-  digest = "1:e096f1857eedd49e2bd0885d05105d1d4af1bfcf8b1d07fa5710718e6641fd48"
+  digest = "1:e68d50b8dc605565eb62df1c2b2c67fa729e5b55aa1a6c81456eecbe0326ecdb"
   name = "github.com/exoscale/egoscale"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "0863d555d5198557e0bf2b61b6c59a873ab0173a"
-  version = "v0.11.1"
+  revision = "67368ae928a70cb5cb44ecf6f418ee33a1ade044"
+  version = "v0.11.6"
 
 [[projects]]
   digest = "1:aa3ed0a71c4e66e4ae6486bf97a3f4cab28edc78df2e50c5ad01dc7d91604b88"
@@ -298,12 +298,12 @@
   version = "v0.5.1"
 
 [[projects]]
-  digest = "1:24b5f8d41224b90e3f4d22768926ed782a8ca481d945c0e064c8f165bf768280"
+  digest = "1:6676c63cef61a47c84eae578bcd8fe8352908ccfe3ea663c16797617a29e3c44"
   name = "github.com/miekg/dns"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "5a2b9fab83ff0f8bfc99684bd5f43a37abe560f1"
-  version = "v1.0.8"
+  revision = "a220737569d8137d4c610f80bd33f1dc762522e5"
+  version = "v1.1.0"
 
 [[projects]]
   digest = "1:a4df73029d2c42fabcb6b41e327d2f87e685284ec03edf76921c267d9cfc9c23"
@@ -379,7 +379,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:0f9362b2768972675cf28574249bfb5dd65556aac6ad1c36830b4bc8c2134926"
+  digest = "1:180e8ec2d3734b269a8a30b51dbca47fede2ce274fa76da2f00e664481cfb39e"
   name = "github.com/sacloud/libsacloud"
   packages = [
     ".",
@@ -388,7 +388,7 @@
     "sacloud/ostype",
   ]
   pruneopts = "NUT"
-  revision = "7afff3fbc0a3bdff2e008fe2c429d44d9f66f209"
+  revision = "108b1efe4b4d106fee6760bdf1847c4f92e1a92e"
 
 [[projects]]
   digest = "1:6bc0652ea6e39e22ccd522458b8bdd8665bf23bdc5a20eec90056e4dc7e273ca"
@@ -613,7 +613,7 @@
   revision = "028658c6d9be774b6d103a923d8c4b2715135c3f"
 
 [[projects]]
-  digest = "1:3b7124c543146736e07107be13ea6288923c4a743e07c7a31d6b7209a00a9dab"
+  digest = "1:a50fabe7a46692dc7c656310add3d517abe7914df02afd151ef84da884605dc8"
   name = "gopkg.in/square/go-jose.v2"
   packages = [
     ".",
@@ -621,8 +621,8 @@
     "json",
   ]
   pruneopts = "NUT"
-  revision = "8254d6c783765f38c8675fae4427a1fe73fbd09d"
-  version = "v2.1.8"
+  revision = "ef984e69dd356202fd4e4910d4d9c24468bdf0b8"
+  version = "v2.1.9"
 
 [solve-meta]
   analyzer-name = "dep"
@@ -676,6 +676,7 @@
     "github.com/urfave/cli",
     "golang.org/x/crypto/ocsp",
     "golang.org/x/net/context",
+    "golang.org/x/net/idna",
     "golang.org/x/net/publicsuffix",
     "golang.org/x/oauth2",
     "golang.org/x/oauth2/clientcredentials",

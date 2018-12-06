@@ -1,5 +1,6 @@
 [run]
-  deadline = "2m"
+  deadline = "5m"
+  skip-files = []
 
 [linters-settings]
 
@@ -7,13 +8,13 @@
     check-shadowing = true
 
   [linters-settings.gocyclo]
-    min-complexity = 16.0
+    min-complexity = 12.0
 
   [linters-settings.maligned]
     suggest-new = true
 
   [linters-settings.goconst]
-    min-len = 2.0
+    min-len = 3.0
     min-occurrences = 3.0
 
   [linters-settings.misspell]
@@ -27,15 +28,27 @@
     "gas",
     "dupl",
     "prealloc",
+    "scopelint",
   ]
 
 [issues]
+  exclude-use-default = false
   max-per-linter = 0
   max-same = 0
   exclude = [
-    "func (.+)disableAuthz(.) is unused", # acme/client.go#disableAuthz
-    "type (.+)deactivateAuthMessage(.) is unused", # acme/messages.go#deactivateAuthMessage
-    "(.)limitReader(.) - (.)numBytes(.) always receives (.)1048576(.)", # acme/crypto.go#limitReader
-    "cyclomatic complexity (\\d+) of func (.)NewDNSChallengeProviderByName(.) is high", # providers/dns/dns_providers.go#NewDNSChallengeProviderByName
-    "cyclomatic complexity (\\d+) of func (.)setup(.) is high", # cli_handler.go#setup
+    "Error return value of (.+) is not checked",
+    "exported (type|method|function) (.+) should have comment or be unexported",
+    "possible misuse of unsafe.Pointer",
+    "cyclomatic complexity (.+) of func `NewDNSChallengeProviderByName` is high (.+)", # providers/dns/dns_providers.go
+
+    "`(tlsFeatureExtensionOID|ocspMustStapleFeature)` is a global variable", # certcrypto/crypto.go
+    "`(defaultNameservers|recursiveNameservers|dnsTimeout|fqdnToZone|muFqdnToZone)` is a global variable", # challenge/dns01/nameserver.go
+    "`idPeAcmeIdentifierV1` is a global variable", # challenge/tlsalpn01/tls_alpn_challenge.go
+    "`Logger` is a global variable", # log/logger.go
+    "`version` is a global variable", # cli.go
+    "`load` is a global variable", # e2e/challenges_test.go
+    "`envTest` is a global variable", # providers/dns/**/*_test.go
+    "`(tldsMock|testCases)` is a global variable", # providers/dns/namecheap/namecheap_test.go
+    "`(errorClientErr|errorStorageErr|egTestAccount)` is a global variable", # providers/dns/acmedns/acmedns_test.go
+    "`memcachedHosts` is a global variable", # providers/http/memcached/memcached_test.go
   ]

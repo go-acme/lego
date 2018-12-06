@@ -37,6 +37,7 @@ var responseKeys = map[string]string{
 	"addiptonicresponse":            "addiptovmnicresponse",
 	"activateip6response":           "activateip6nicresponse",
 	"restorevirtualmachineresponse": "restorevmresponse",
+	"updatevmaffinitygroupresponse": "updatevirtualmachineresponse",
 }
 
 func (client *Client) parseResponse(resp *http.Response, apiName string) (json.RawMessage, error) {
@@ -87,7 +88,8 @@ func (client *Client) parseResponse(resp *http.Response, apiName string) (json.R
 		return nil, err
 	}
 
-	if len(n) > 1 {
+	// list response may contain only one key
+	if len(n) > 1 || strings.HasPrefix(key, "list") {
 		return response, nil
 	}
 
@@ -118,7 +120,7 @@ func (client *Client) asyncRequest(ctx context.Context, asyncCommand AsyncComman
 				err = e
 				return false
 			}
-			if j.JobStatus == Success {
+			if j.JobStatus != Pending {
 				if r := j.Result(resp); r != nil {
 					err = r
 				}
@@ -268,14 +270,8 @@ func (client *Client) AsyncRequestWithContext(ctx context.Context, asyncCommand 
 			}
 		}
 
-		if result.JobStatus == Failure {
-			if !callback(nil, result.Error()) {
-				return
-			}
-		} else {
-			if !callback(result, nil) {
-				return
-			}
+		if !callback(result, nil) {
+			return
 		}
 	}
 }

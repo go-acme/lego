@@ -7,7 +7,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/platform/tester"
 )
 
@@ -21,14 +20,12 @@ var envTest = tester.NewEnvTest(
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
-		desc      string
-		userAgent string
-		envVars   map[string]string
-		expected  string
+		desc     string
+		envVars  map[string]string
+		expected string
 	}{
 		{
-			desc:      "success",
-			userAgent: "lego",
+			desc: "success",
 			envVars: map[string]string{
 				"DNSIMPLE_OAUTH_TOKEN": "my_token",
 			},
@@ -56,10 +53,6 @@ func TestNewDNSProvider(t *testing.T) {
 
 			envTest.Apply(test.envVars)
 
-			if test.userAgent != "" {
-				acme.UserAgent = test.userAgent
-			}
-
 			p, err := NewDNSProvider()
 
 			if len(test.expected) == 0 {
@@ -72,11 +65,6 @@ func TestNewDNSProvider(t *testing.T) {
 				if baseURL != "" {
 					assert.Equal(t, baseURL, p.client.BaseURL)
 				}
-
-				if test.userAgent != "" {
-					assert.Equal(t, "lego", p.client.UserAgent)
-				}
-
 			} else {
 				require.EqualError(t, err, test.expected)
 			}

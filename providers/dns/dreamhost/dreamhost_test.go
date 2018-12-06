@@ -15,7 +15,7 @@ import (
 var envTest = tester.NewEnvTest("DREAMHOST_API_KEY").
 	WithDomain("DREAMHOST_TEST_DOMAIN")
 
-var (
+const (
 	fakeAPIKey         = "asdf1234"
 	fakeChallengeToken = "foobar"
 	fakeKeyAuth        = "w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI"

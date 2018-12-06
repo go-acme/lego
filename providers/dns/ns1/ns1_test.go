@@ -111,14 +111,14 @@ func Test_getAuthZone(t *testing.T) {
 			desc: "invalid fqdn",
 			fqdn: "_acme-challenge.myhost.sub.example.com",
 			expected: expected{
-				Error: "dns: domain must be fully qualified",
+				Error: "could not find the start of authority for _acme-challenge.myhost.sub.example.com: dns: domain must be fully qualified",
 			},
 		},
 		{
 			desc: "invalid authority",
 			fqdn: "_acme-challenge.myhost.sub.domain.tld.",
 			expected: expected{
-				Error: "could not find the start of authority",
+				Error: "could not find the start of authority for _acme-challenge.myhost.sub.domain.tld.: NXDOMAIN",
 			},
 		},
 	}

@@ -301,3 +301,54 @@ func (m *MobileGatewaySIMRoutes) FindSIMRoute(simID int64, prefix string) (int, 
 	}
 	return -1, nil
 }
+
+// TrafficStatus トラフィックコントロール 当月通信量
+type TrafficStatus struct {
+	UplinkBytes    uint64 `json:"uplink_bytes,omitempty"`
+	DownlinkBytes  uint64 `json:"downlink_bytes,omitempty"`
+	TrafficShaping bool   `json:"traffic_shaping"` // 帯域制限
+}
+
+// UnmarshalJSON JSONアンマーシャル(uint64文字列対応)
+func (s *TrafficStatus) UnmarshalJSON(data []byte) error {
+	tmp := &struct {
+		UplinkBytes    string `json:"uplink_bytes,omitempty"`
+		DownlinkBytes  string `json:"downlink_bytes,omitempty"`
+		TrafficShaping bool   `json:"traffic_shaping"`
+	}{}
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	var err error
+	s.UplinkBytes, err = strconv.ParseUint(tmp.UplinkBytes, 10, 64)
+	if err != nil {
+		return err
+	}
+	s.DownlinkBytes, err = strconv.ParseUint(tmp.DownlinkBytes, 10, 64)
+	if err != nil {
+		return err
+	}
+	s.TrafficShaping = tmp.TrafficShaping
+	return nil
+}
+
+// TrafficMonitoringConfig トラフィックコントロール 設定
+type TrafficMonitoringConfig struct {
+	TrafficQuotaInMB     int                           `json:"traffic_quota_in_mb"`
+	BandWidthLimitInKbps int                           `json:"bandwidth_limit_in_kbps"`
+	EMailConfig          *TrafficMonitoringNotifyEmail `json:"email_config"`
+	SlackConfig          *TrafficMonitoringNotifySlack `json:"slack_config"`
+	AutoTrafficShaping   bool                          `json:"auto_traffic_shaping"`
+}
+
+// TrafficMonitoringNotifyEmail トラフィックコントロール通知設定
+type TrafficMonitoringNotifyEmail struct {
+	Enabled bool `json:"enabled"` // 有効/無効
+}
+
+// TrafficMonitoringNotifySlack トラフィックコントロール通知設定
+type TrafficMonitoringNotifySlack struct {
+	Enabled             bool   `json:"enabled"`             // 有効/無効
+	IncomingWebhooksURL string `json:"slack_url,omitempty"` // Slack通知の場合のWebhook URL
+}

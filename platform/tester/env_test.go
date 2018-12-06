@@ -9,7 +9,7 @@ import (
 	"github.com/xenolf/lego/platform/tester"
 )
 
-var (
+const (
 	envNamespace = "LEGO_TEST_"
 	envVar01     = envNamespace + "01"
 	envVar02     = envNamespace + "02"

@@ -33,7 +33,7 @@ type APIField struct {
 // ListAPIs represents a query to list the api
 type ListAPIs struct {
 	Name string `json:"name,omitempty" doc:"API name"`
-	_    bool   `name:"listApis" description:"lists all available apis on the server, provided by the Api Discovery plugin"`
+	_    bool   `name:"listApis" description:"lists all available apis on the server"`
 }
 
 // ListAPIsResponse represents a list of API

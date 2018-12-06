@@ -78,10 +78,6 @@ func (a AsyncJobResult) Result(i interface{}) error {
 					return json.Unmarshal(*(a.JobResult), i)
 				}
 
-				// more than one keys are list...response
-				if len(m) > 1 {
-					return json.Unmarshal(*(a.JobResult), i)
-				}
 				// otherwise, pick the first key
 				for k := range m {
 					return json.Unmarshal(m[k], i)

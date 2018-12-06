@@ -12,10 +12,10 @@ import (
 	"github.com/miekg/dns"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/acme"
+	"github.com/xenolf/lego/challenge/dns01"
 )
 
-var (
+const (
 	envTestDomain     = "123456789.www.example.com"
 	envTestKeyAuth    = "123d=="
 	envTestValue      = "Now36o-3BmlB623-0c1qCIUmgWVVmDJb88KGl24pqpo"
@@ -26,10 +26,8 @@ var (
 	envTestTsigSecret = "IwBTJx9wrDp4Y1RyC3H0gA=="
 )
 
-var reqChan = make(chan *dns.Msg, 10)
-
 func TestCanaryLocalTestServer(t *testing.T) {
-	acme.ClearFqdnCache()
+	dns01.ClearFqdnCache()
 	dns.HandleFunc("example.com.", serverHandlerHello)
 	defer dns.HandleRemove("example.com.")
 
@@ -51,7 +49,7 @@ func TestCanaryLocalTestServer(t *testing.T) {
 }
 
 func TestServerSuccess(t *testing.T) {
-	acme.ClearFqdnCache()
+	dns01.ClearFqdnCache()
 	dns.HandleFunc(envTestZone, serverHandlerReturnSuccess)
 	defer dns.HandleRemove(envTestZone)
 
@@ -70,7 +68,7 @@ func TestServerSuccess(t *testing.T) {
 }
 
 func TestServerError(t *testing.T) {
-	acme.ClearFqdnCache()
+	dns01.ClearFqdnCache()
 	dns.HandleFunc(envTestZone, serverHandlerReturnErr)
 	defer dns.HandleRemove(envTestZone)
 
@@ -92,7 +90,7 @@ func TestServerError(t *testing.T) {
 }
 
 func TestTsigClient(t *testing.T) {
-	acme.ClearFqdnCache()
+	dns01.ClearFqdnCache()
 	dns.HandleFunc(envTestZone, serverHandlerReturnSuccess)
 	defer dns.HandleRemove(envTestZone)
 
@@ -113,8 +111,10 @@ func TestTsigClient(t *testing.T) {
 }
 
 func TestValidUpdatePacket(t *testing.T) {
-	acme.ClearFqdnCache()
-	dns.HandleFunc(envTestZone, serverHandlerPassBackRequest)
+	var reqChan = make(chan *dns.Msg, 10)
+
+	dns01.ClearFqdnCache()
+	dns.HandleFunc(envTestZone, serverHandlerPassBackRequest(reqChan))
 	defer dns.HandleRemove(envTestZone)
 
 	server, addr, err := runLocalDNSTestServer(false)
@@ -163,7 +163,15 @@ func runLocalDNSTestServer(tsig bool) (*dns.Server, string, error) {
 		return nil, "", err
 	}
 
-	server := &dns.Server{PacketConn: pc, ReadTimeout: time.Hour, WriteTimeout: time.Hour}
+	server := &dns.Server{
+		PacketConn:   pc,
+		ReadTimeout:  time.Hour,
+		WriteTimeout: time.Hour,
+		MsgAcceptFunc: func(dh dns.Header) dns.MsgAcceptAction {
+			// bypass defaultMsgAcceptFunc to allow dynamic update (https://github.com/miekg/dns/pull/830)
+			return dns.MsgAccept
+		}}
+
 	if tsig {
 		server.TsigSecret = map[string]string{envTestTsigKey: envTestTsigSecret}
 	}
@@ -217,25 +225,27 @@ func serverHandlerReturnErr(w dns.ResponseWriter, req *dns.Msg) {
 	_ = w.WriteMsg(m)
 }
 
-func serverHandlerPassBackRequest(w dns.ResponseWriter, req *dns.Msg) {
-	m := new(dns.Msg)
-	m.SetReply(req)
-	if req.Opcode == dns.OpcodeQuery && req.Question[0].Qtype == dns.TypeSOA && req.Question[0].Qclass == dns.ClassINET {
-		// Return SOA to appease findZoneByFqdn()
-		soaRR, _ := dns.NewRR(fmt.Sprintf("%s %d IN SOA ns1.%s admin.%s 2016022801 28800 7200 2419200 1200", envTestZone, envTestTTL, envTestZone, envTestZone))
-		m.Answer = []dns.RR{soaRR}
-	}
-
-	if t := req.IsTsig(); t != nil {
-		if w.TsigStatus() == nil {
-			// Validated
-			m.SetTsig(envTestZone, dns.HmacMD5, 300, time.Now().Unix())
+func serverHandlerPassBackRequest(reqChan chan *dns.Msg) func(w dns.ResponseWriter, req *dns.Msg) {
+	return func(w dns.ResponseWriter, req *dns.Msg) {
+		m := new(dns.Msg)
+		m.SetReply(req)
+		if req.Opcode == dns.OpcodeQuery && req.Question[0].Qtype == dns.TypeSOA && req.Question[0].Qclass == dns.ClassINET {
+			// Return SOA to appease findZoneByFqdn()
+			soaRR, _ := dns.NewRR(fmt.Sprintf("%s %d IN SOA ns1.%s admin.%s 2016022801 28800 7200 2419200 1200", envTestZone, envTestTTL, envTestZone, envTestZone))
+			m.Answer = []dns.RR{soaRR}
 		}
-	}
 
-	_ = w.WriteMsg(m)
-	if req.Opcode != dns.OpcodeQuery || req.Question[0].Qtype != dns.TypeSOA || req.Question[0].Qclass != dns.ClassINET {
-		// Only talk back when it is not the SOA RR.
-		reqChan <- req
+		if t := req.IsTsig(); t != nil {
+			if w.TsigStatus() == nil {
+				// Validated
+				m.SetTsig(envTestZone, dns.HmacMD5, 300, time.Now().Unix())
+			}
+		}
+
+		_ = w.WriteMsg(m)
+		if req.Opcode != dns.OpcodeQuery || req.Question[0].Qtype != dns.TypeSOA || req.Question[0].Qclass != dns.ClassINET {
+			// Only talk back when it is not the SOA RR.
+			reqChan <- req
+		}
 	}
 }

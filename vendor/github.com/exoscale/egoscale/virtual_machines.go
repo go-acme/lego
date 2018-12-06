@@ -626,3 +626,14 @@ func (MigrateVirtualMachine) response() interface{} {
 func (MigrateVirtualMachine) asyncResponse() interface{} {
 	return new(VirtualMachine)
 }
+
+// UpdateVMNicIP updates the default IP address of a VM Nic
+type UpdateVMNicIP struct {
+	_         bool   `name:"updateVmNicIp" description:"Update the default Ip of a VM Nic"`
+	IPAddress net.IP `json:"ipaddress" doc:"Static IP address lease for the corresponding NIC and network which should be in the range defined in the network. Also, the last IP of the network is reserved by the DHCP server."`
+	NicID     *UUID  `json:"nicid" doc:"the ID of the nic."`
+}
+
+func (UpdateVMNicIP) response() interface{} {
+	return new(VirtualMachine)
+}

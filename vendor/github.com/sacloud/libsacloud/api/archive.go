@@ -2,10 +2,11 @@ package api
 
 import (
 	"fmt"
-	"github.com/sacloud/libsacloud/sacloud"
-	"github.com/sacloud/libsacloud/sacloud/ostype"
 	"strings"
 	"time"
+
+	"github.com/sacloud/libsacloud/sacloud"
+	"github.com/sacloud/libsacloud/sacloud/ostype"
 )
 
 // ArchiveAPI アーカイブAPI
@@ -25,6 +26,8 @@ var (
 	archiveLatestStableKusanagiTags                        = []string{"current-stable", "pkg-kusanagi"}
 	archiveLatestStableSophosUTMTags                       = []string{"current-stable", "pkg-sophosutm"}
 	archiveLatestStableFreeBSDTags                         = []string{"current-stable", "distro-freebsd"}
+	archiveLatestStableNetwiserTags                        = []string{"current-stable", "pkg-netwiserve"}
+	archiveLatestStableOPNsenseTags                        = []string{"current-stable", "distro-opnsense"}
 	archiveLatestStableWindows2012Tags                     = []string{"os-windows", "distro-ver-2012.2"}
 	archiveLatestStableWindows2012RDSTags                  = []string{"os-windows", "distro-ver-2012.2", "windows-rds"}
 	archiveLatestStableWindows2012RDSOfficeTags            = []string{"os-windows", "distro-ver-2012.2", "windows-rds", "with-office"}
@@ -60,6 +63,8 @@ func NewArchiveAPI(client *Client) *ArchiveAPI {
 		ostype.Kusanagi:                            api.FindLatestStableKusanagi,
 		ostype.SophosUTM:                           api.FindLatestStableSophosUTM,
 		ostype.FreeBSD:                             api.FindLatestStableFreeBSD,
+		ostype.Netwiser:                            api.FindLatestStableNetwiser,
+		ostype.OPNsense:                            api.FindLatestStableOPNsense,
 		ostype.Windows2012:                         api.FindLatestStableWindows2012,
 		ostype.Windows2012RDS:                      api.FindLatestStableWindows2012RDS,
 		ostype.Windows2012RDSOffice:                api.FindLatestStableWindows2012RDSOffice,
@@ -141,6 +146,14 @@ func (api *ArchiveAPI) CanEditDisk(id int64) (bool, error) {
 	if archive.HasTag("pkg-sophosutm") || archive.IsSophosUTM() {
 		return false, nil
 	}
+	// OPNsenseであれば編集不可
+	if archive.HasTag("distro-opnsense") {
+		return false, nil
+	}
+	// Netwiser VEであれば編集不可
+	if archive.HasTag("pkg-netwiserve") {
+		return false, nil
+	}
 
 	for _, t := range allowDiskEditTags {
 		if archive.HasTag(t) {
@@ -182,6 +195,14 @@ func (api *ArchiveAPI) GetPublicArchiveIDFromAncestors(id int64) (int64, bool) {
 
 	// SophosUTMであれば編集不可
 	if archive.HasTag("pkg-sophosutm") || archive.IsSophosUTM() {
+		return emptyID, false
+	}
+	// OPNsenseであれば編集不可
+	if archive.HasTag("distro-opnsense") {
+		return emptyID, false
+	}
+	// Netwiser VEであれば編集不可
+	if archive.HasTag("pkg-netwiserve") {
 		return emptyID, false
 	}
 
@@ -251,6 +272,16 @@ func (api *ArchiveAPI) FindLatestStableSophosUTM() (*sacloud.Archive, error) {
 // FindLatestStableFreeBSD 安定版最新のFreeBSDパブリックアーカイブを取得
 func (api *ArchiveAPI) FindLatestStableFreeBSD() (*sacloud.Archive, error) {
 	return api.findByOSTags(archiveLatestStableFreeBSDTags)
+}
+
+// FindLatestStableNetwiser 安定版最新のNetwiserパブリックアーカイブを取得
+func (api *ArchiveAPI) FindLatestStableNetwiser() (*sacloud.Archive, error) {
+	return api.findByOSTags(archiveLatestStableNetwiserTags)
+}
+
+// FindLatestStableOPNsense 安定版最新のOPNsenseパブリックアーカイブを取得
+func (api *ArchiveAPI) FindLatestStableOPNsense() (*sacloud.Archive, error) {
+	return api.findByOSTags(archiveLatestStableOPNsenseTags)
 }
 
 // FindLatestStableWindows2012 安定版最新のWindows2012パブリックアーカイブを取得

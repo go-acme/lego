@@ -1,0 +1,12 @@
+language: go
+go: "1.11"
+
+install:
+  - go get -u golang.org/x/lint/golint
+  - go get golang.org/x/tools/cmd/goimports
+  - go get github.com/stretchr/testify/assert
+
+script:
+  - make vet goimports
+  - go test -v ./sacloud
+  - travis_wait 120 go test -v ./builder -timeout 120m

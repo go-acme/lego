@@ -1,0 +1,55 @@
+builds:
+  - main: ./cmd/cs/
+    binary: cs
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - windows
+      - darwin
+      - linux
+      - openbsd
+      - freebsd
+
+    goarch:
+      - amd64
+  - main: ./cmd/exo/
+    binary: exo
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - windows
+      - darwin
+      - linux
+      - openbsd
+    goarch:
+      - amd64
+
+sign:
+  cmd: gpg
+  args: ["-u", "ops@exoscale.ch", "--detach-sign", "${artifact}"]
+  artifacts: all
+
+archive:
+  format_overrides:
+    - goos: windows
+      format: zip
+  files:
+    - LICENSE
+    - CHANGELOG.md
+    - bash_completion
+
+release:
+  github:
+    owner: exoscale
+    name: egoscale
+  draft: true
+
+nfpm:
+  vendor: Exoscale
+  homepage: https://www.exoscale.com/
+  maintainer: Exoscale Support <support@exoscale.com>
+  description: Tools to manage (almost) everything at Exoscale from the command line.
+  license: Apache 2.0
+  formats:
+    - deb
+    - rpm

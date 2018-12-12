@@ -3,6 +3,7 @@
 package dnsimple
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strconv"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/dnsimple/dnsimple-go/dnsimple"
 	"github.com/xenolf/lego/acme"
+	"golang.org/x/oauth2"
 )
 
 // DNSProvider is an implementation of the acme.ChallengeProvider interface.
@@ -35,7 +37,9 @@ func NewDNSProviderCredentials(accessToken, baseURL string) (*DNSProvider, error
 		return nil, fmt.Errorf("DNSimple OAuth token is missing")
 	}
 
-	client := dnsimple.NewClient(dnsimple.NewOauthTokenCredentials(accessToken))
+	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: accessToken})
+	tc := oauth2.NewClient(context.Background(), ts)
+	client := dnsimple.NewClient(tc)
 	client.UserAgent = "lego"
 
 	if baseURL != "" {

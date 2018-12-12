@@ -1,0 +1,10 @@
+ignored = ["github.com/exoscale/egoscale/cmd/*"]
+
+[[constraint]]
+  name = "github.com/satori/go.uuid"
+  version = "1.2.0"
+
+[prune]
+  non-go = true
+  go-tests = true
+  unused-packages = true

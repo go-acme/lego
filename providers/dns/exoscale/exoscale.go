@@ -53,20 +53,25 @@ func (c *DNSProvider) Present(domain, token, keyAuth string) error {
 		return err
 	}
 
-	record := egoscale.DNSRecord{
-		Name:       recordName,
-		TTL:        ttl,
-		Content:    value,
-		RecordType: "TXT",
-	}
-
 	if recordID == 0 {
+		record := egoscale.DNSRecord{
+			Name:       recordName,
+			TTL:        ttl,
+			Content:    value,
+			RecordType: "TXT",
+		}
 		_, err := c.client.CreateRecord(zone, record)
 		if err != nil {
 			return errors.New("Error while creating DNS record: " + err.Error())
 		}
 	} else {
-		record.ID = recordID
+		record := egoscale.UpdateDNSRecord{
+			Name:       recordName,
+			TTL:        ttl,
+			Content:    value,
+			RecordType: "TXT",
+			ID:         recordID,
+		}
 		_, err := c.client.UpdateRecord(zone, record)
 		if err != nil {
 			return errors.New("Error while updating DNS record: " + err.Error())

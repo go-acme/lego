@@ -1,0 +1,8 @@
+PASS
+BenchmarkSetGet	    5000	    214443 ns/op	   0.03 MB/s	    2479 B/op	      18 allocs/op
+BenchmarkSetGetLarge	   10000	    262164 ns/op	   4.82 MB/s	    7537 B/op	      19 allocs/op
+BenchmarkConcurrentSetGetSmall10_100	      20	  82561221 ns/op	   0.07 MB/s	 3101520 B/op	   58469 allocs/op
+BenchmarkConcurrentSetGetLarge10_100	      20	  96067285 ns/op	  13.16 MB/s	 8330341 B/op	   59848 allocs/op
+BenchmarkConcurrentSetGetSmall20_100	      10	 152834658 ns/op	   0.08 MB/s	 6318072 B/op	  117177 allocs/op
+BenchmarkConcurrentSetGetLarge20_100	       5	 202574186 ns/op	  12.48 MB/s	16884200 B/op	  120173 allocs/op
+ok  	gomemcache/memcache	11.902s

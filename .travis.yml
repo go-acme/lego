@@ -19,6 +19,7 @@ install:
   - echo "TRAVIS_GO_VERSION=$TRAVIS_GO_VERSION"
   - dep status -v
 
-script:
-- go vet ./...
-- go test -v ./...
+jobs:
+  include:
+    - stage: vet
+      script: go vet ./...

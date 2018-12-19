@@ -16,11 +16,6 @@ How to run:
 go get -u github.com/letsencrypt/pebble/...
 ```
 
-- Install [challtestsrv](https://github.com/letsencrypt/boulder/tree/master/test/challtestsrv):
-```bash
-go get -u github.com/letsencrypt/boulder/test/challtestsrv/...
-```
-
 - Launch tests:
 ```bash
 make e2e

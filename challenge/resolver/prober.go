@@ -110,7 +110,7 @@ func sequentialSolve(authSolvers []*selectedAuthSolver, failures obtainError) {
 		// Solve challenge
 		err := authSolver.solver.Solve(authSolver.authz)
 		if err != nil {
-			failures[authSolver.authz.Identifier.Value] = err
+			failures[domain] = err
 			cleanUp(authSolver.solver, authSolver.authz)
 			continue
 		}

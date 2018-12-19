@@ -20,7 +20,7 @@ import (
 
 const (
 	cmdNamePebble   = "pebble"
-	cmdNameChallSrv = "challtestsrv"
+	cmdNameChallSrv = "pebble-challtestsrv"
 )
 
 type CmdOption struct {

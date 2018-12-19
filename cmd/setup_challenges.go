@@ -120,4 +120,8 @@ func setupDNS(ctx *cli.Context, client *lego.Client) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// --dns=foo indicates that the user specifically want to do a DNS challenge
+	// infer that the user also wants to exclude all other challenges
+	client.Challenge.Exclude([]challenge.Type{challenge.HTTP01, challenge.TLSALPN01})
 }

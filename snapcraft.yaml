@@ -1,0 +1,20 @@
+name: lego
+version: '1.0'
+summary: Let's Encrypt client and ACME library written in Go
+description: |
+  Let's Encrypt client and ACME library written in Go.
+grade: stable
+confinement: strict
+base: core18
+parts:
+  lego:
+    plugin: go
+    source: https://github.com/xenolf/lego.git
+    go-importpath: github.com/xenolf/lego
+    build-packages:
+      - build-essential
+apps:
+  lego:
+    command: bin/lego
+    plugs:
+      - home

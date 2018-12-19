@@ -149,14 +149,14 @@ func parallelSolve(authSolvers []*selectedAuthSolver, failures obtainError) {
 	// Finally solve all challenges for real
 	for _, authSolver := range authSolvers {
 		authz := authSolver.authz
-		if failures[authz.Identifier.Value] != nil {
+		if failures[challenge.GetTargetedDomain(authz)] != nil {
 			// already failed in previous loop
 			continue
 		}
 
 		err := authSolver.solver.Solve(authz)
 		if err != nil {
-			failures[authz.Identifier.Value] = err
+			failures[challenge.GetTargetedDomain(authz)] = err
 		}
 	}
 }

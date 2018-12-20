@@ -135,10 +135,20 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 }
 
 func (d *DNSProvider) getHostedZone(domain string) (string, string, error) {
+	var domains []alidns.Domain
 	request := alidns.CreateDescribeDomainsRequest()
-	zones, err := d.client.DescribeDomains(request)
-	if err != nil {
-		return "", "", fmt.Errorf("API call failed: %v", err)
+	startPage := 1
+	for {
+		request.PageNumber = requests.NewInteger(startPage)
+		response, err := d.client.DescribeDomains(request)
+		if err != nil {
+			return "", "", fmt.Errorf("API call failed: %v", err)
+		}
+		domains = append(domains, response.Domains.Domain...)
+		if response.PageNumber >= response.PageSize {
+			break
+		}
+		startPage += 1
 	}
 
 	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
@@ -147,7 +157,7 @@ func (d *DNSProvider) getHostedZone(domain string) (string, string, error) {
 	}
 
 	var hostedZone alidns.Domain
-	for _, zone := range zones.Domains.Domain {
+	for _, zone := range domains {
 		if zone.DomainName == dns01.UnFqdn(authZone) {
 			hostedZone = zone
 		}

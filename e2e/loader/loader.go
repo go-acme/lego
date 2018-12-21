@@ -141,7 +141,7 @@ func (l *EnvLoader) cmdPebble() (*exec.Cmd, *bytes.Buffer) {
 
 func pebbleHealthCheck(options *CmdOption) {
 	client := &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}}
-	err := wait.For(10*time.Second, 500*time.Millisecond, func() (bool, error) {
+	err := wait.For("pebble", 10*time.Second, 500*time.Millisecond, func() (bool, error) {
 		resp, err := client.Get(options.HealthCheckURL)
 		if err != nil {
 			return false, err

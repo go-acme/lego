@@ -682,6 +682,7 @@
     "golang.org/x/oauth2/clientcredentials",
     "golang.org/x/oauth2/google",
     "google.golang.org/api/dns/v1",
+    "google.golang.org/api/googleapi",
     "gopkg.in/ns1/ns1-go.v2/rest",
     "gopkg.in/ns1/ns1-go.v2/rest/model/dns",
     "gopkg.in/square/go-jose.v2",

@@ -3,8 +3,10 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 
 	"github.com/urfave/cli"
 	"github.com/xenolf/lego/cmd"
@@ -20,7 +22,12 @@ func main() {
 	app.Name = "lego"
 	app.HelpName = "lego"
 	app.Usage = "Let's Encrypt client written in Go"
+	app.EnableBashCompletion = true
+
 	app.Version = version
+	cli.VersionPrinter = func(c *cli.Context) {
+		fmt.Printf("lego version %s %s/%s\n", c.App.Version, runtime.GOOS, runtime.GOARCH)
+	}
 
 	defaultPath := ""
 	cwd, err := os.Getwd()

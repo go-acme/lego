@@ -11,7 +11,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/xenolf/lego/certificate"
-	"github.com/xenolf/lego/challenge"
 	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/e2e/loader"
 	"github.com/xenolf/lego/lego"
@@ -55,16 +54,12 @@ func TestChallengeDNS_Run(t *testing.T) {
 	output, err := load.RunLego(
 		"-m", "hubert@hubert.com",
 		"--accept-tos",
-		"-x", "http-01",
-		"-x", "tls-alpn-01",
-		"--dns-disable-cp",
-		"--dns-resolvers", ":8053",
 		"--dns", "exec",
+		"--dns.resolvers", ":8053",
+		"--dns.disable-cp",
 		"-s", "https://localhost:15000/dir",
 		"-d", "*.légo.acme",
 		"-d", "légo.acme",
-		"--http", ":5004",
-		"--tls", ":5003",
 		"run")
 
 	if len(output) > 0 {
@@ -100,7 +95,6 @@ func TestChallengeDNS_Client_Obtain(t *testing.T) {
 	err = client.Challenge.SetDNS01Provider(provider,
 		dns01.AddRecursiveNameservers([]string{":8053"}),
 		dns01.DisableCompletePropagationRequirement())
-	client.Challenge.Exclude([]challenge.Type{challenge.HTTP01, challenge.TLSALPN01})
 	require.NoError(t, err)
 
 	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})

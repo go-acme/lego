@@ -279,7 +279,6 @@ func main() {
 ### AWS Route 53
 
 The following AWS IAM policy document describes the permissions required for lego to complete the DNS challenge.
-Replace `<INSERT_YOUR_HOSTED_ZONE_ID_HERE>` with the Route 53 zone ID of the domain you are authorizing.
 
 ```json
 {

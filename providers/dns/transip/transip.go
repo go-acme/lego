@@ -92,6 +92,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	// get the subDomain
 	subDomain := strings.TrimSuffix(dns01.UnFqdn(fqdn), "."+domainName)
 
+	// use mutex to prevent race condition from GetInfo until SetDNSEntries
 	d.dnsEntriesMu.Lock()
 	defer d.dnsEntriesMu.Unlock()
 

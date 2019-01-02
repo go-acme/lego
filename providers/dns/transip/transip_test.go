@@ -2,6 +2,7 @@ package transip
 
 import (
 	"encoding/xml"
+	"fmt"
 	"reflect"
 	"strings"
 	"sync"
@@ -217,49 +218,37 @@ func TestDNSProvider_concurrentGetInfo(t *testing.T) {
 	var wg sync.WaitGroup
 	wg.Add(2)
 
-	go func() {
-		defer wg.Done()
-
-		domain1 := "bar.lego.wtf"
-
-		time.Sleep(500 * time.Millisecond)
+	solve := func(domain1 string, suffix string, timeoutPresent time.Duration, timeoutSolve time.Duration, timeoutCleanup time.Duration) error {
+		time.Sleep(timeoutPresent)
 		err := p.Present(domain1, "", "")
-		require.NoError(t, err)
+		if err != nil {
+			return err
+		}
 
-		time.Sleep(100 * time.Millisecond)
+		time.Sleep(timeoutSolve)
 		var found bool
 		for _, entry := range client.dnsEntries {
-			if strings.HasSuffix(entry.Name, ".bar") {
+			if strings.HasSuffix(entry.Name, suffix) {
 				found = true
 			}
 		}
-		assert.True(t, found, "record bar not found: %v", client.dnsEntries)
+		if !found {
+			return fmt.Errorf("record %s not found: %v", suffix, client.dnsEntries)
+		}
 
-		time.Sleep(100 * time.Millisecond)
-		err = p.CleanUp(domain1, "", "")
+		time.Sleep(timeoutCleanup)
+		return p.CleanUp(domain1, "", "")
+	}
+
+	go func() {
+		defer wg.Done()
+		err := solve("bar.lego.wtf", ".bar", 500*time.Millisecond, 100*time.Millisecond, 100*time.Millisecond)
 		require.NoError(t, err)
 	}()
 
 	go func() {
 		defer wg.Done()
-
-		domain2 := "foo.lego.wtf"
-
-		time.Sleep(500 * time.Millisecond)
-		err := p.Present(domain2, "", "")
-		require.NoError(t, err)
-
-		time.Sleep(200 * time.Millisecond)
-		var found bool
-		for _, entry := range client.dnsEntries {
-			if strings.HasSuffix(entry.Name, ".foo") {
-				found = true
-			}
-		}
-		assert.True(t, found, "record foo not found: %v", client.dnsEntries)
-
-		time.Sleep(100 * time.Millisecond)
-		err = p.CleanUp(domain2, "", "")
+		err := solve("foo.lego.wtf", ".foo", 500*time.Millisecond, 200*time.Millisecond, 100*time.Millisecond)
 		require.NoError(t, err)
 	}()
 
@@ -276,31 +265,29 @@ func TestDNSProvider_concurrentSetDNSEntries(t *testing.T) {
 		client: client,
 	}
 
-	token := ""
-	keyAuth := ""
-
 	var wg sync.WaitGroup
 	wg.Add(2)
 
+	solve := func(domain1 string, timeoutPresent time.Duration, timeoutCleanup time.Duration) error {
+		time.Sleep(timeoutPresent)
+		err := p.Present(domain1, "", "")
+		if err != nil {
+			return err
+		}
+
+		time.Sleep(timeoutCleanup)
+		return p.CleanUp(domain1, "", "")
+	}
+
 	go func() {
 		defer wg.Done()
-		time.Sleep(550 * time.Millisecond)
-		err := p.Present("bar.lego.wtf", token, keyAuth)
-		require.NoError(t, err)
-
-		time.Sleep(500 * time.Millisecond)
-		err = p.CleanUp("bar.lego.wtf", token, keyAuth)
+		err := solve("bar.lego.wtf", 550*time.Millisecond, 500*time.Millisecond)
 		require.NoError(t, err)
 	}()
 
 	go func() {
 		defer wg.Done()
-		time.Sleep(500 * time.Millisecond)
-		err := p.Present("foo.lego.wtf", token, keyAuth)
-		require.NoError(t, err)
-
-		time.Sleep(100 * time.Millisecond)
-		err = p.CleanUp("foo.lego.wtf", token, keyAuth)
+		err := solve("foo.lego.wtf", 500*time.Millisecond, 100*time.Millisecond)
 		require.NoError(t, err)
 	}()
 

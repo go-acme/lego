@@ -21,6 +21,10 @@ import (
 	"google.golang.org/api/googleapi"
 )
 
+const (
+	changeStatusDone = "done"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	Debug              bool
@@ -174,7 +178,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	for _, rrSet := range existingRrSet {
 		for _, rr := range rrSet.Rrdatas {
 			if rr != value {
-				rec.Rrdatas = append(rec.Rrdatas, rrSet.Rrdatas...)
+				rec.Rrdatas = append(rec.Rrdatas, rr)
 			}
 		}
 	}
@@ -208,7 +212,7 @@ func (d *DNSProvider) applyChanges(zone string, change *dns.Change) error {
 		return fmt.Errorf("failed to perform changes [zone %s, change %s]: %v", zone, string(data), err)
 	}
 
-	if chg.Status == "done" {
+	if chg.Status == changeStatusDone {
 		return nil
 	}
 
@@ -227,7 +231,7 @@ func (d *DNSProvider) applyChanges(zone string, change *dns.Change) error {
 			return false, fmt.Errorf("failed to get changes [zone %s, change %s]: %v", zone, string(data), err)
 		}
 
-		if chg.Status == "done" {
+		if chg.Status == changeStatusDone {
 			return true, nil
 		}
 

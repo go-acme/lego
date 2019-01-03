@@ -13,7 +13,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/xenolf/lego/certificate"
-	"github.com/xenolf/lego/challenge"
+	"github.com/xenolf/lego/challenge/http01"
+	"github.com/xenolf/lego/challenge/tlsalpn01"
 	"github.com/xenolf/lego/e2e/loader"
 	"github.com/xenolf/lego/lego"
 	"github.com/xenolf/lego/registration"
@@ -50,12 +51,10 @@ func TestChallengeHTTP_Run(t *testing.T) {
 	output, err := load.RunLego(
 		"-m", "hubert@hubert.com",
 		"--accept-tos",
-		"-x", "dns-01",
-		"-x", "tls-alpn-01",
 		"-s", "https://localhost:14000/dir",
 		"-d", "acme.wtf",
-		"--http", ":5002",
-		"--tls", ":5001",
+		"--http",
+		"--http.port", ":5002",
 		"run")
 
 	if len(output) > 0 {
@@ -72,12 +71,10 @@ func TestChallengeTLS_Run_Domains(t *testing.T) {
 	output, err := load.RunLego(
 		"-m", "hubert@hubert.com",
 		"--accept-tos",
-		"-x", "dns-01",
-		"-x", "http-01",
 		"-s", "https://localhost:14000/dir",
 		"-d", "acme.wtf",
-		"--http", ":5002",
-		"--tls", ":5001",
+		"--tls",
+		"--tls.port", ":5001",
 		"run")
 
 	if len(output) > 0 {
@@ -94,12 +91,10 @@ func TestChallengeTLS_Run_CSR(t *testing.T) {
 	output, err := load.RunLego(
 		"-m", "hubert@hubert.com",
 		"--accept-tos",
-		"-x", "dns-01",
-		"-x", "http-01",
 		"-s", "https://localhost:14000/dir",
 		"-csr", "./fixtures/csr.raw",
-		"--http", ":5002",
-		"--tls", ":5001",
+		"--tls",
+		"--tls.port", ":5001",
 		"run")
 
 	if len(output) > 0 {
@@ -116,12 +111,10 @@ func TestChallengeTLS_Run_CSR_PEM(t *testing.T) {
 	output, err := load.RunLego(
 		"-m", "hubert@hubert.com",
 		"--accept-tos",
-		"-x", "dns-01",
-		"-x", "http-01",
 		"-s", "https://localhost:14000/dir",
 		"-csr", "./fixtures/csr.cert",
-		"--http", ":5002",
-		"--tls", ":5001",
+		"--tls",
+		"--tls.port", ":5001",
 		"run")
 
 	if len(output) > 0 {
@@ -138,13 +131,11 @@ func TestChallengeTLS_Run_Revoke(t *testing.T) {
 	output, err := load.RunLego(
 		"-m", "hubert@hubert.com",
 		"--accept-tos",
-		"-x", "dns-01",
-		"-x", "http-01",
 		"-s", "https://localhost:14000/dir",
 		"-d", "lego.wtf",
 		"-d", "acme.lego.wtf",
-		"--http", ":5002",
-		"--tls", ":5001",
+		"--tls",
+		"--tls.port", ":5001",
 		"run")
 
 	if len(output) > 0 {
@@ -157,12 +148,10 @@ func TestChallengeTLS_Run_Revoke(t *testing.T) {
 	output, err = load.RunLego(
 		"-m", "hubert@hubert.com",
 		"--accept-tos",
-		"-x", "dns-01",
-		"-x", "http-01",
 		"-s", "https://localhost:14000/dir",
 		"-d", "lego.wtf",
-		"--http", ":5002",
-		"--tls", ":5001",
+		"--tls",
+		"--tls.port", ":5001",
 		"revoke")
 
 	if len(output) > 0 {
@@ -179,12 +168,10 @@ func TestChallengeTLS_Run_Revoke_Non_ASCII(t *testing.T) {
 	output, err := load.RunLego(
 		"-m", "hubert@hubert.com",
 		"--accept-tos",
-		"-x", "dns-01",
-		"-x", "http-01",
 		"-s", "https://localhost:14000/dir",
 		"-d", "légô.wtf",
-		"--http", ":5002",
-		"--tls", ":5001",
+		"--tls",
+		"--tls.port", ":5001",
 		"run")
 
 	if len(output) > 0 {
@@ -197,12 +184,10 @@ func TestChallengeTLS_Run_Revoke_Non_ASCII(t *testing.T) {
 	output, err = load.RunLego(
 		"-m", "hubert@hubert.com",
 		"--accept-tos",
-		"-x", "dns-01",
-		"-x", "http-01",
 		"-s", "https://localhost:14000/dir",
 		"-d", "légô.wtf",
-		"--http", ":5002",
-		"--tls", ":5001",
+		"--tls",
+		"--tls.port", ":5001",
 		"revoke")
 
 	if len(output) > 0 {
@@ -228,8 +213,7 @@ func TestChallengeHTTP_Client_Obtain(t *testing.T) {
 	client, err := lego.NewClient(config)
 	require.NoError(t, err)
 
-	client.Challenge.Exclude([]challenge.Type{challenge.DNS01, challenge.TLSALPN01})
-	err = client.Challenge.SetHTTP01Address(":5002")
+	err = client.Challenge.SetHTTP01Provider(http01.NewProviderServer("", "5002"))
 	require.NoError(t, err)
 
 	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
@@ -267,8 +251,7 @@ func TestChallengeTLS_Client_Obtain(t *testing.T) {
 	client, err := lego.NewClient(config)
 	require.NoError(t, err)
 
-	client.Challenge.Exclude([]challenge.Type{challenge.DNS01, challenge.HTTP01})
-	err = client.Challenge.SetTLSALPN01Address(":5001")
+	err = client.Challenge.SetTLSALPN01Provider(tlsalpn01.NewProviderServer("", "5001"))
 	require.NoError(t, err)
 
 	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
@@ -307,8 +290,7 @@ func TestChallengeTLS_Client_ObtainForCSR(t *testing.T) {
 	client, err := lego.NewClient(config)
 	require.NoError(t, err)
 
-	client.Challenge.Exclude([]challenge.Type{challenge.DNS01, challenge.HTTP01})
-	err = client.Challenge.SetTLSALPN01Address(":5001")
+	err = client.Challenge.SetTLSALPN01Provider(tlsalpn01.NewProviderServer("", "5001"))
 	require.NoError(t, err)
 
 	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})

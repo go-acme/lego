@@ -5,54 +5,30 @@ import (
 	"crypto/rsa"
 	"fmt"
 	"io/ioutil"
-	"net"
 	"net/http"
-	"reflect"
+	"sort"
 	"testing"
-	"unsafe"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/acme/api"
-	"github.com/xenolf/lego/challenge"
-	"github.com/xenolf/lego/challenge/http01"
 	"github.com/xenolf/lego/platform/tester"
 	"gopkg.in/square/go-jose.v2"
 )
 
-func TestSolverManager_SetHTTP01Address(t *testing.T) {
-	_, apiURL, tearDown := tester.SetupFakeAPI()
-	defer tearDown()
+func TestByType(t *testing.T) {
+	challenges := []acme.Challenge{
+		{Type: "dns-01"}, {Type: "tlsalpn-01"}, {Type: "http-01"},
+	}
 
-	keyBits := 32 // small value keeps test fast
-	key, err := rsa.GenerateKey(rand.Reader, keyBits)
-	require.NoError(t, err, "Could not generate test key")
+	sort.Sort(byType(challenges))
 
-	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", key)
-	require.NoError(t, err)
+	expected := []acme.Challenge{
+		{Type: "tlsalpn-01"}, {Type: "http-01"}, {Type: "dns-01"},
+	}
 
-	solversManager := NewSolversManager(core)
-
-	optPort := "1234"
-	optHost := ""
-
-	err = solversManager.SetHTTP01Address(net.JoinHostPort(optHost, optPort))
-	require.NoError(t, err)
-
-	require.IsType(t, &http01.Challenge{}, solversManager.solvers[challenge.HTTP01])
-	httpSolver := solversManager.solvers[challenge.HTTP01].(*http01.Challenge)
-
-	httpProviderServer := (*http01.ProviderServer)(unsafe.Pointer(reflect.ValueOf(httpSolver).Elem().FieldByName("provider").InterfaceData()[1]))
-	assert.Equal(t, net.JoinHostPort(optHost, optPort), httpProviderServer.GetAddress())
-
-	// test setting different host
-	optHost = "127.0.0.1"
-	err = solversManager.SetHTTP01Address(net.JoinHostPort(optHost, optPort))
-	require.NoError(t, err)
-
-	httpProviderServer = (*http01.ProviderServer)(unsafe.Pointer(reflect.ValueOf(httpSolver).Elem().FieldByName("provider").InterfaceData()[1]))
-	assert.Equal(t, net.JoinHostPort(optHost, optPort), httpProviderServer.GetAddress())
+	assert.Equal(t, expected, challenges)
 }
 
 func TestValidate(t *testing.T) {

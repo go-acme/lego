@@ -37,7 +37,7 @@ First, you have to install [Golang](https://golang.org/doc/install).
 
 ```bash
 # Create the root folder
-mkdir $GOPATH/src/github.com/xenolf
+mkdir -p $GOPATH/src/github.com/xenolf
 cd $GOPATH/src/github.com/xenolf
 
 # clone your fork

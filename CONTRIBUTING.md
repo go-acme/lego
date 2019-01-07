@@ -33,7 +33,7 @@ owners to license your work under the terms of the [MIT License](LICENSE).
 
 ### How to create a pull request
 
-First, you have to install [Golang](https://golang.org/doc/install).
+First, you have to install [GoLang](https://golang.org/doc/install) and [golangci-lint](https://github.com/golangci/golangci-lint#install).
 
 ```bash
 # Create the root folder

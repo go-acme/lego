@@ -99,7 +99,7 @@ func NewDNSProviderServiceAccount(saFile string) (*DNSProvider, error) {
 	// If GCE_PROJECT is non-empty it overrides the project in the service
 	// account file.
 	project := os.Getenv("GCE_PROJECT")
-	if project != "" {
+	if project == "" {
 		// read project id from service account file
 		var datJSON struct {
 			ProjectID string `json:"project_id"`

@@ -47,8 +47,7 @@ func NewDefaultConfig() *Config {
 
 // DNSProvider describes a provider for acme-proxy
 type DNSProvider struct {
-	config    *Config
-	recordURL string
+	config *Config
 }
 
 // NewDNSProvider returns a DNSProvider instance.
@@ -151,7 +150,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("zone: server returned an invalid url: %v (%v)", deleteURL, err)
 	}
 
-	uri = fmt.Sprintf("%s/%s", endpoint, strings.TrimLeft(u.Path, "/v2/dns"))
+	uri = fmt.Sprintf("%s/%s", endpoint, strings.TrimPrefix(u.Path, "/v2/dns"))
 
 	req, err = http.NewRequest(http.MethodDelete, uri, nil)
 	if err != nil {

@@ -21,17 +21,19 @@ lego does not assume anything about the location you run it from.
 docker run xenolf/lego -h
 ```
 
-### From the package manager
+### From package managers
 
-- [ArchLinux (AUR)](https://aur.archlinux.org/packages/lego-git):
+- [ArchLinux (AUR)](https://aur.archlinux.org/packages/lego):
 
 ```bash
-yaourt -S lego-git
+yay -S lego
 ```
 
-### From source
+**Note**: only the package manager for Arch Linux is officially supported by the lego team.
 
-To install from source, just run:
+### From sources
+
+To install from sources, just run:
 
 ```bash
 go get -u github.com/xenolf/lego/cmd/lego

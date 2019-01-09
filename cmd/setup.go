@@ -34,11 +34,13 @@ func setup(ctx *cli.Context, accountsStorage *AccountsStorage) (*Account, *lego.
 }
 
 func newClient(ctx *cli.Context, acc registration.User) *lego.Client {
-	keyType := getKeyType(ctx)
-
 	config := lego.NewConfig(acc)
 	config.CADirURL = ctx.GlobalString("server")
-	config.KeyType = keyType
+
+	config.Certificate = lego.CertificateConfig{
+		KeyType: getKeyType(ctx),
+		Timeout: time.Duration(ctx.GlobalInt("cert.timeout")) * time.Second,
+	}
 	config.UserAgent = fmt.Sprintf("lego-cli/%s", ctx.App.Version)
 
 	if ctx.GlobalIsSet("http-timeout") {

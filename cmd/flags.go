@@ -105,5 +105,10 @@ func CreateFlags(defaultPath string) []cli.Flag {
 			Name:  "pem",
 			Usage: "Generate a .pem file by concatenating the .key and .crt files together.",
 		},
+		cli.IntFlag{
+			Name:  "cert.timeout",
+			Usage: "Set the certificate timeout value to a specific value in seconds. Only used when obtaining certificates.",
+			Value: 30,
+		},
 	}
 }

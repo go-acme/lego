@@ -93,7 +93,7 @@ func Test_checkResponse(t *testing.T) {
 	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", key)
 	require.NoError(t, err)
 
-	certifier := NewCertifier(core, certcrypto.RSA2048, &resolverMock{})
+	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
 
 	order := acme.Order{
 		Status:      acme.StatusValid,
@@ -141,7 +141,7 @@ func Test_checkResponse_issuerRelUp(t *testing.T) {
 	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", key)
 	require.NoError(t, err)
 
-	certifier := NewCertifier(core, certcrypto.RSA2048, &resolverMock{})
+	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
 
 	order := acme.Order{
 		Status:      acme.StatusValid,
@@ -180,7 +180,7 @@ func Test_checkResponse_embeddedIssuer(t *testing.T) {
 	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", key)
 	require.NoError(t, err)
 
-	certifier := NewCertifier(core, certcrypto.RSA2048, &resolverMock{})
+	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
 
 	order := acme.Order{
 		Status:      acme.StatusValid,

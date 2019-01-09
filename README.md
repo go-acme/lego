@@ -98,6 +98,7 @@ GLOBAL OPTIONS:
    --http-timeout value         Set the HTTP timeout value to a specific value in seconds. (default: 0)
    --dns-timeout value          Set the DNS timeout value to a specific value in seconds. Used only when performing authoritative name servers queries. (default: 10)
    --pem                        Generate a .pem file by concatenating the .key and .crt files together.
+   --cert.timeout value         Set the certificate timeout value to a specific value in seconds. Only used when obtaining certificates. (default: 30)
    --help, -h                   show help
    --version, -v                print the version
 ```
@@ -234,7 +235,7 @@ func main() {
 
 	// This CA URL is configured for a local dev instance of Boulder running in Docker in a VM.
 	config.CADirURL = "http://192.168.99.100:4000/directory"
-	config.KeyType = certcrypto.RSA2048
+	config.Certificate.KeyType = certcrypto.RSA2048
 
 	// A client facilitates communication with the CA server.
 	client, err := lego.NewClient(config)

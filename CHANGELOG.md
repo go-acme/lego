@@ -1,5 +1,52 @@
 # Changelog
 
+## [v2.0.0] - 2019-01-09
+
+### Added:
+- **[cli,lib]** Option to disable the complete propagation Requirement
+- **[lib,cli]** Support non-ascii domain name (punnycode)
+- **[cli,lib]** Add configurable timeout when obtaining certificates
+- **[cli]** Archive revoked certificates
+- **[cli]** Add command to list certificates.
+- **[cli]** support for renew with CSR
+- **[cli]** add SAN on renew
+- **[lib]** Adds `Remove` for challenges
+- **[lib]** Add version to xenolf-acme in User-Agent.
+- **[dnsprovider]** The ability for a DNS provider to solve the challenge sequentially
+- **[dnsprovider]** Add DNS provider for &#34;HTTP request&#34;.
+- **[dnsprovider]** Add DNS Provider for Vscale
+- **[dnsprovider]** Add DNS Provider for TransIP
+- **[dnsprovider]** Add DNS Provider for inwx
+- **[dnsprovider]** alidns: add support to handle more than 20 domains
+
+### Changed:
+- **[lib]** Check all challenges in a predictable order
+- **[lib]** Poll authz URL instead of challenge URL
+- **[lib]** Check all nameservers in a predictable order
+- **[lib]** Logs every iteration of waiting for the propagation
+- **[cli]** `--http`: enable HTTP challenge **important**
+- **[cli]** `--http.port`: previously named `--http`
+- **[cli]** `--http.webroot`: previously named `--webroot`
+- **[cli]** `--http.memcached-host`: previously named `--memcached-host`
+- **[cli]** `--tls`: enable TLS challenge **important**
+- **[cli]** `--tls.port`:  previously named `--tls`
+- **[cli]** `--dns.resolvers`: previously named `--dns-resolvers`
+- **[dnsprovider]** gcloud: Use GCE_PROJECT for project always, if specified
+
+### Removed:
+- **[lib]** Remove `SetHTTP01Address`
+- **[lib]** Remove `SetTLSALPN01Address`
+- **[lib]** Remove `Exclude`
+- **[cli]** Remove `--exclude`, `-x` 
+
+### Fixed:
+- **[lib]** Fixes revocation for subdomains and non-ascii domains
+- **[lib]** Disable pending authorizations
+- **[dnsprovider]** transip: concurrent access to the API.
+- **[dnsprovider]** gcloud: fix for wildcard
+- **[dnsprovider]** Azure: Do not overwrite existing TXT records
+- **[dnsprovider]** fix: Cloudflare error.
+
 ## [v1.2.0] - 2018-11-04
 
 ### Added:

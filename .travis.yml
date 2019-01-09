@@ -37,6 +37,9 @@ install:
   - echo "TRAVIS_GO_VERSION=$TRAVIS_GO_VERSION"
   - dep status -v
 
+after_success:
+  - make clean
+
 deploy:
   - provider: script
     skip_cleanup: true

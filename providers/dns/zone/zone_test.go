@@ -7,12 +7,13 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 	"github.com/xenolf/lego/platform/tester"
 )
 
-var envTest = tester.NewEnvTest("ZONE_ENDPOINT", "ZONE_USERNAME", "ZONE_APIKEY")
+var envTest = tester.NewEnvTest("ZONE_ENDPOINT", "ZONE_API_USER", "ZONE_API_KEY")
 
 const testResponse = `[
   {
@@ -223,6 +224,34 @@ func TestNewDNSProvider_Cleanup(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestLivePresent(t *testing.T) {
+	if !envTest.IsLiveTest() {
+		t.Skip("skipping live test")
+	}
+
+	envTest.RestoreEnv()
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
+
+	err = provider.Present(envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
+}
+
+func TestLiveCleanUp(t *testing.T) {
+	if !envTest.IsLiveTest() {
+		t.Skip("skipping live test")
+	}
+
+	envTest.RestoreEnv()
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
+
+	time.Sleep(2 * time.Second)
+
+	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
 }
 
 func successHandler(rw http.ResponseWriter, req *http.Request) {

@@ -37,8 +37,8 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		PropagationTimeout: env.GetOrDefaultSecond("ZONE_PROPAGATION_TIMEOUT", 5*dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("ZONE_POLLING_INTERVAL", 5*dns01.DefaultPollingInterval),
+		PropagationTimeout: env.GetOrDefaultSecond("ZONE_PROPAGATION_TIMEOUT", 5*time.Minute), // zone.ee can take up to 5min to propagate according to the support
+		PollingInterval:    env.GetOrDefaultSecond("ZONE_POLLING_INTERVAL", 5*time.Second),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond("ZONE_HTTP_TIMEOUT", 30*time.Second),
 		},
@@ -64,8 +64,8 @@ func NewDNSProvider() (*DNSProvider, error) {
 	}
 
 	config := NewDefaultConfig()
-	config.Username = os.Getenv("ZONE_USERNAME")
-	config.APIKey = os.Getenv("ZONE_APIKEY")
+	config.Username = os.Getenv("ZONE_API_USER")
+	config.APIKey = os.Getenv("ZONE_API_KEY")
 	config.Endpoint = endpoint
 	return NewDNSProviderConfig(config)
 }
@@ -150,7 +150,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("zone: server returned an invalid url: %v (%v)", deleteURL, err)
 	}
 
-	uri = fmt.Sprintf("%s/%s", endpoint, strings.TrimPrefix(u.Path, "/v2/dns"))
+	uri = fmt.Sprintf("%s/%s", endpoint, strings.TrimPrefix(u.Path, "/v2/dns/"))
 
 	req, err = http.NewRequest(http.MethodDelete, uri, nil)
 	if err != nil {

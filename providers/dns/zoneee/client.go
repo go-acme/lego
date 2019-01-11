@@ -13,9 +13,9 @@ import (
 const defaultEndpoint = "https://api.zone.eu/v2/dns"
 
 type txtRecord struct {
-	// identificator
+	// Identifier (identificator)
 	ID string `json:"id,omitempty"`
-	// hostname
+	// Hostname
 	Name string `json:"name"`
 	// TXT content value
 	Destination string `json:"destination"`

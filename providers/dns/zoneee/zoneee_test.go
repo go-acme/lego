@@ -14,6 +14,7 @@ import (
 )
 
 var envTest = tester.NewEnvTest("ZONEEE_ENDPOINT", "ZONEEE_API_USER", "ZONEEE_API_KEY").
+	WithLiveTestRequirements("ZONEEE_API_USER", "ZONEEE_API_KEY").
 	WithDomain("ZONEE_DOMAIN")
 
 func TestNewDNSProvider(t *testing.T) {
@@ -137,6 +138,8 @@ func TestNewDNSProviderConfig(t *testing.T) {
 }
 
 func TestNewDNSProvider_Present(t *testing.T) {
+	domain := "prefix.example.com"
+
 	testCases := []struct {
 		desc          string
 		username      string
@@ -145,18 +148,27 @@ func TestNewDNSProvider_Present(t *testing.T) {
 		expectedError string
 	}{
 		{
-			desc:          "error",
-			username:      "bar",
-			apiKey:        "foo",
-			expectedError: "zoneee: status code=404: 404 page not found\n",
-		},
-		{
 			desc:     "success",
 			username: "bar",
 			apiKey:   "foo",
 			handlers: map[string]http.HandlerFunc{
-				"/prefix.example.com/txt": mockHandlerCreateRecord,
+				"/" + domain + "/txt": mockHandlerCreateRecord,
 			},
+		},
+		{
+			desc:     "invalid auth",
+			username: "nope",
+			apiKey:   "foo",
+			handlers: map[string]http.HandlerFunc{
+				"/" + domain + "/txt": mockHandlerCreateRecord,
+			},
+			expectedError: "zoneee: status code=401: Unauthorized\n",
+		},
+		{
+			desc:          "error",
+			username:      "bar",
+			apiKey:        "foo",
+			expectedError: "zoneee: status code=404: 404 page not found\n",
 		},
 	}
 
@@ -180,7 +192,7 @@ func TestNewDNSProvider_Present(t *testing.T) {
 			p, err := NewDNSProviderConfig(config)
 			require.NoError(t, err)
 
-			err = p.Present("prefix.example.com", "token", "key")
+			err = p.Present(domain, "token", "key")
 			if test.expectedError == "" {
 				require.NoError(t, err)
 			} else {
@@ -191,6 +203,8 @@ func TestNewDNSProvider_Present(t *testing.T) {
 }
 
 func TestNewDNSProvider_Cleanup(t *testing.T) {
+	domain := "prefix.example.com"
+
 	testCases := []struct {
 		desc          string
 		username      string
@@ -203,9 +217,41 @@ func TestNewDNSProvider_Cleanup(t *testing.T) {
 			username: "bar",
 			apiKey:   "foo",
 			handlers: map[string]http.HandlerFunc{
-				"/domain.com/txt":      mockHandlerGetRecords,
-				"/domain.com/txt/1234": mockHandlerDeleteRecord,
+				"/" + domain + "/txt": mockHandlerGetRecords([]txtRecord{{
+					ID:          "1234",
+					Name:        domain,
+					Destination: "LHDhK3oGRvkiefQnx7OOczTY5Tic_xZ6HcMOc_gmtoM",
+					Delete:      true,
+					Modify:      true,
+				}}),
+				"/" + domain + "/txt/1234": mockHandlerDeleteRecord,
 			},
+		},
+		{
+			desc:     "no txt records",
+			username: "bar",
+			apiKey:   "foo",
+			handlers: map[string]http.HandlerFunc{
+				"/" + domain + "/txt":      mockHandlerGetRecords([]txtRecord{}),
+				"/" + domain + "/txt/1234": mockHandlerDeleteRecord,
+			},
+			expectedError: "zoneee: txt record does not exist for LHDhK3oGRvkiefQnx7OOczTY5Tic_xZ6HcMOc_gmtoM",
+		},
+		{
+			desc:     "invalid auth",
+			username: "nope",
+			apiKey:   "foo",
+			handlers: map[string]http.HandlerFunc{
+				"/" + domain + "/txt": mockHandlerGetRecords([]txtRecord{{
+					ID:          "1234",
+					Name:        domain,
+					Destination: "LHDhK3oGRvkiefQnx7OOczTY5Tic_xZ6HcMOc_gmtoM",
+					Delete:      true,
+					Modify:      true,
+				}}),
+				"/" + domain + "/txt/1234": mockHandlerDeleteRecord,
+			},
+			expectedError: "zoneee: status code=401: Unauthorized\n",
 		},
 		{
 			desc:          "error",
@@ -235,7 +281,7 @@ func TestNewDNSProvider_Cleanup(t *testing.T) {
 			p, err := NewDNSProviderConfig(config)
 			require.NoError(t, err)
 
-			err = p.CleanUp("domain.com", "token", "key")
+			err = p.CleanUp(domain, "token", "key")
 			if test.expectedError == "" {
 				require.NoError(t, err)
 			} else {
@@ -317,36 +363,35 @@ func mockHandlerCreateRecord(rw http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func mockHandlerGetRecords(rw http.ResponseWriter, req *http.Request) {
-	if req.Method != http.MethodGet {
-		http.Error(rw, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-	}
+func mockHandlerGetRecords(records []txtRecord) http.HandlerFunc {
+	return func(rw http.ResponseWriter, req *http.Request) {
+		if req.Method != http.MethodGet {
+			http.Error(rw, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+		}
 
-	username, apiKey, ok := req.BasicAuth()
-	if username != "bar" || apiKey != "foo" || !ok {
-		rw.Header().Set("WWW-Authenticate", fmt.Sprintf(`Basic realm="%s"`, "Please enter your username and API key."))
-		http.Error(rw, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-		return
-	}
+		username, apiKey, ok := req.BasicAuth()
+		if username != "bar" || apiKey != "foo" || !ok {
+			rw.Header().Set("WWW-Authenticate", fmt.Sprintf(`Basic realm="%s"`, "Please enter your username and API key."))
+			http.Error(rw, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+			return
+		}
 
-	record := txtRecord{
-		ID:          "1234",
-		Name:        "domain.com",
-		Destination: "LHDhK3oGRvkiefQnx7OOczTY5Tic_xZ6HcMOc_gmtoM",
-		Delete:      true,
-		Modify:      true,
-		ResourceURL: req.URL.String() + "/1234",
-	}
+		for _, value := range records {
+			if len(value.ResourceURL) == 0 {
+				value.ResourceURL = req.URL.String() + "/" + value.ID
+			}
+		}
 
-	bytes, err := json.Marshal([]txtRecord{record})
-	if err != nil {
-		http.Error(rw, err.Error(), http.StatusInternalServerError)
-		return
-	}
+		bytes, err := json.Marshal(records)
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
-	if _, err = rw.Write(bytes); err != nil {
-		http.Error(rw, err.Error(), http.StatusInternalServerError)
-		return
+		if _, err = rw.Write(bytes); err != nil {
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 }
 

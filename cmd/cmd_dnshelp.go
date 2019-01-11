@@ -81,7 +81,7 @@ Here is an example bash command using the CloudFlare DNS provider:
 	fmt.Fprintln(w, "\tvegadns:\tSECRET_VEGADNS_KEY, SECRET_VEGADNS_SECRET, VEGADNS_URL")
 	fmt.Fprintln(w, "\tvscale:\tVSCALE_API_TOKEN")
 	fmt.Fprintln(w, "\tvultr:\tVULTR_API_KEY")
-	fmt.Fprintln(w, "\tzone:\tZONE_ENDPOINT, ZONE_API_USER, ZONE_API_KEY")
+	fmt.Fprintln(w, "\tzoneee:\tZONEEE_ENDPOINT, ZONEEE_API_USER, ZONEEE_API_KEY")
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, "Additional configuration environment variables:")
 	fmt.Fprintln(w)
@@ -133,7 +133,7 @@ Here is an example bash command using the CloudFlare DNS provider:
 	fmt.Fprintln(w, "\tvegadns:\tVEGADNS_POLLING_INTERVAL, VEGADNS_PROPAGATION_TIMEOUT, VEGADNS_TTL")
 	fmt.Fprintln(w, "\tvscale:\tVSCALE_BASE_URL, VSCALE_TTL, VSCALE_PROPAGATION_TIMEOUT, VSCALE_POLLING_INTERVAL, VSCALE_HTTP_TIMEOUT")
 	fmt.Fprintln(w, "\tvultr:\tVULTR_POLLING_INTERVAL, VULTR_PROPAGATION_TIMEOUT, VULTR_TTL, VULTR_HTTP_TIMEOUT")
-	fmt.Fprintln(w, "\tzone:\tZONE_POLLING_INTERVAL, ZONE_PROPAGATION_TIMEOUT, ZONE_HTTP_TIMEOUT")
+	fmt.Fprintln(w, "\tzoneee:\tZONEEE_POLLING_INTERVAL, ZONEEE_PROPAGATION_TIMEOUT, ZONEEE_HTTP_TIMEOUT")
 
 	w.Flush()
 

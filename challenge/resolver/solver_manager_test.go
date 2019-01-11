@@ -14,7 +14,7 @@ import (
 	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/acme/api"
 	"github.com/xenolf/lego/platform/tester"
-	"gopkg.in/square/go-jose.v2"
+	jose "gopkg.in/square/go-jose.v2"
 )
 
 func TestByType(t *testing.T) {

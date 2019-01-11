@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/platform/tester"
-	"gopkg.in/square/go-jose.v2"
+	jose "gopkg.in/square/go-jose.v2"
 )
 
 func TestOrderService_New(t *testing.T) {

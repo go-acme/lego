@@ -137,7 +137,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}
 }
 
-func TestNewDNSProvider_Present(t *testing.T) {
+func TestDNSProvider_Present(t *testing.T) {
 	domain := "prefix.example.com"
 
 	testCases := []struct {
@@ -202,7 +202,7 @@ func TestNewDNSProvider_Present(t *testing.T) {
 	}
 }
 
-func TestNewDNSProvider_Cleanup(t *testing.T) {
+func TestDNSProvider_Cleanup(t *testing.T) {
 	domain := "prefix.example.com"
 
 	testCases := []struct {

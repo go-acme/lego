@@ -10,7 +10,7 @@ import (
 	"path"
 )
 
-const defaultEndpoint = "https://api.zone.eu/v2/dns"
+const defaultEndpoint = "https://api.zone.eu/v2/dns/"
 
 type txtRecord struct {
 	// Identifier (identificator)

@@ -51,7 +51,7 @@ Here is an example bash command using the CloudFlare DNS provider:
 	fmt.Fprintln(w, "\tfastdns:\tAKAMAI_HOST, AKAMAI_CLIENT_TOKEN, AKAMAI_CLIENT_SECRET, AKAMAI_ACCESS_TOKEN")
 	fmt.Fprintln(w, "\tgandi:\tGANDI_API_KEY")
 	fmt.Fprintln(w, "\tgandiv5:\tGANDIV5_API_KEY")
-	fmt.Fprintln(w, "\tgcloud:\tGCE_PROJECT, GCE_SERVICE_ACCOUNT_FILE")
+	fmt.Fprintln(w, "\tgcloud:\tGCE_PROJECT, 'Application Default Credentials', [GCE_SERVICE_ACCOUNT_FILE]")
 	fmt.Fprintln(w, "\tglesys:\tGLESYS_API_USER, GLESYS_API_KEY")
 	fmt.Fprintln(w, "\tgodaddy:\tGODADDY_API_KEY, GODADDY_API_SECRET")
 	fmt.Fprintln(w, "\thostingde:\tHOSTINGDE_API_KEY, HOSTINGDE_ZONE_NAME")

@@ -128,3 +128,4 @@ git push -u origin my-feature
 | VegaDNS                   | `vegadns`      | [documentation](https://github.com/shupp/VegaDNS-API)                                                        | [Go client](https://github.com/OpenDNS/vegadns2client)            |
 | Vultr                     | `vultr`        | [documentation](https://www.vultr.com/api/#dns)                                                              | [Go client](https://github.com/JamesClonk/vultr)                  |
 | Vscale                    | `vscale`       | [documentation](https://developers.vscale.io/documentation/api/v1/#api-Domains_Records)                      | -                                                                 |
+| Zone.ee                   | `zone`         | [documentation](https://api.zone.eu/v2)                                                                      | -                                                                 |

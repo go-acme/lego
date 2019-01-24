@@ -1,5 +1,19 @@
 # Changelog
 
+## [v2.1.0] - 2019-01-24
+
+### Added:
+- **[dnsprovider]** Add support for zone.ee as a DNS provider.
+
+### Changed:
+- **[dnsprovider]** nifcloud: Change DNS base url.
+- **[dnsprovider]** gcloud: More detailed information about Google Cloud DNS.
+
+### Fixed:
+- **[lib]** fix: OCSP, set HTTP client.
+- **[dnsprovider]** alicloud: fix pagination.
+- **[dnsprovider]** namecheap: fix panic.
+
 ## [v2.0.0] - 2019-01-09
 
 ### Added:

@@ -180,7 +180,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	// Find the challenge TXT record and remove it if found.
 	var found bool
-	newRecords := records[:0]
+	var newRecords []Record
 	for _, h := range records {
 		if h.Name == ch.key && h.Type == "TXT" {
 			found = true

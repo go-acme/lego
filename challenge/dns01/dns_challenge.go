@@ -135,7 +135,7 @@ func (c *Challenge) Solve(authz acme.Authorization) error {
 	}
 
 	chlng.KeyAuthorization = keyAuth
-	return c.validate(c.core, authz.Identifier.Value, chlng)
+	return c.validate(c.core, domain, chlng)
 }
 
 // CleanUp cleans the challenge.

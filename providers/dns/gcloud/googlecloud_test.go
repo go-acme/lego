@@ -19,7 +19,8 @@ import (
 var envTest = tester.NewEnvTest(
 	"GCE_PROJECT",
 	"GCE_SERVICE_ACCOUNT_FILE",
-	"GOOGLE_APPLICATION_CREDENTIALS").
+	"GOOGLE_APPLICATION_CREDENTIALS",
+	"GCE_SERVICE_ACCOUNT_KEY").
 	WithDomain("GCE_DOMAIN").
 	WithLiveTestExtra(func() bool {
 		_, err := google.DefaultClient(context.Background(), dns.NdevClouddnsReadwriteScope)

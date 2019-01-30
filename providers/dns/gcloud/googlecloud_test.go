@@ -61,8 +61,8 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success key",
 			envVars: map[string]string{
-				"GCE_PROJECT":             "",
-				"GCE_SERVICE_ACCOUNT":     `{"project_id": "A","type": "service_account","client_email": "foo@bar.com","private_key_id": "pki","private_key": "pk","token_uri": "/token","client_secret": "secret","client_id": "C","refresh_token": "D"}`,
+				"GCE_PROJECT":         "",
+				"GCE_SERVICE_ACCOUNT": `{"project_id": "A","type": "service_account","client_email": "foo@bar.com","private_key_id": "pki","private_key": "pk","token_uri": "/token","client_secret": "secret","client_id": "C","refresh_token": "D"}`,
 			},
 		},
 	}

@@ -3,7 +3,6 @@ package gcloud
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"sort"
@@ -62,7 +61,7 @@ func TestNewDNSProvider(t *testing.T) {
 			desc: "success key",
 			envVars: map[string]string{
 				"GCE_PROJECT":             "",
-				"GCE_SERVICE_ACCOUNT_KEY": ioutil.ReadFile("fixtures/gce_account_service_file.json"),
+				"GCE_SERVICE_ACCOUNT_KEY": `{"project_id": "A","type": "service_account","client_email": "foo@bar.com","private_key_id": "pki","private_key": "pk","token_uri": "/token","client_secret": "secret","client_id": "C","refresh_token": "D"}`,
 			},
 		},
 	}

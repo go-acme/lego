@@ -54,7 +54,7 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for Google Cloud DNS.
 // Project name must be passed in the environment variable: GCE_PROJECT.
 // A Service Account can be passed in the environment variable: GCE_SERVICE_ACCOUNT_KEY
-// or by specifing the keyfile location: GCE_SERVICE_ACCOUNT_FILE
+// or by specifying the keyfile location: GCE_SERVICE_ACCOUNT_FILE
 func NewDNSProvider() (*DNSProvider, error) {
 	// Use a service account file if specified via environment variable.
 	if saFile, ok := os.LookupEnv("GCE_SERVICE_ACCOUNT_FILE"); ok {

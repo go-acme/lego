@@ -20,7 +20,7 @@ var envTest = tester.NewEnvTest(
 	"GCE_PROJECT",
 	"GCE_SERVICE_ACCOUNT_FILE",
 	"GOOGLE_APPLICATION_CREDENTIALS",
-	"GCE_SERVICE_ACCOUNT_KEY").
+	"GCE_SERVICE_ACCOUNT").
 	WithDomain("GCE_DOMAIN").
 	WithLiveTestExtra(func() bool {
 		_, err := google.DefaultClient(context.Background(), dns.NdevClouddnsReadwriteScope)
@@ -62,7 +62,7 @@ func TestNewDNSProvider(t *testing.T) {
 			desc: "success key",
 			envVars: map[string]string{
 				"GCE_PROJECT":             "",
-				"GCE_SERVICE_ACCOUNT_KEY": `{"project_id": "A","type": "service_account","client_email": "foo@bar.com","private_key_id": "pki","private_key": "pk","token_uri": "/token","client_secret": "secret","client_id": "C","refresh_token": "D"}`,
+				"GCE_SERVICE_ACCOUNT": `{"project_id": "A","type": "service_account","client_email": "foo@bar.com","private_key_id": "pki","private_key": "pk","token_uri": "/token","client_secret": "secret","client_id": "C","refresh_token": "D"}`,
 			},
 		},
 	}

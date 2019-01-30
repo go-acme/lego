@@ -53,11 +53,18 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for Google Cloud DNS.
 // Project name must be passed in the environment variable: GCE_PROJECT.
-// A Service Account file can be passed in the environment variable: GCE_SERVICE_ACCOUNT_FILE
+// A Service Account can be passed in the environment variable: GCE_SERVICE_ACCOUNT_KEY
+// or by specifing the keyfile location: GCE_SERVICE_ACCOUNT_FILE
 func NewDNSProvider() (*DNSProvider, error) {
 	// Use a service account file if specified via environment variable.
 	if saFile, ok := os.LookupEnv("GCE_SERVICE_ACCOUNT_FILE"); ok {
-		return NewDNSProviderServiceAccount(saFile)
+		saKey, err := ioutil.ReadFile(saFile)
+		if err != nil {
+			return nil, fmt.Errorf("googlecloud: unable to read Service Account file: %v", err)
+		}
+		return NewDNSProviderServiceAccount(saKey)
+	} else if saKey, ok := os.LookupEnv("GCE_SERVICE_ACCOUNT_KEY"); ok {
+		return NewDNSProviderServiceAccount([]byte(saKey))
 	}
 
 	// Use default credentials.
@@ -84,16 +91,11 @@ func NewDNSProviderCredentials(project string) (*DNSProvider, error) {
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderServiceAccount uses the supplied service account JSON file
+// NewDNSProviderServiceAccount uses the supplied service account JSON
 // to return a DNSProvider instance configured for Google Cloud DNS.
-func NewDNSProviderServiceAccount(saFile string) (*DNSProvider, error) {
-	if saFile == "" {
-		return nil, fmt.Errorf("googlecloud: Service Account file missing")
-	}
-
-	dat, err := ioutil.ReadFile(saFile)
-	if err != nil {
-		return nil, fmt.Errorf("googlecloud: unable to read Service Account file: %v", err)
+func NewDNSProviderServiceAccount(saKey []byte) (*DNSProvider, error) {
+	if len(saKey) == 0 {
+		return nil, fmt.Errorf("googlecloud: Service Account is missing")
 	}
 
 	// If GCE_PROJECT is non-empty it overrides the project in the service
@@ -104,14 +106,14 @@ func NewDNSProviderServiceAccount(saFile string) (*DNSProvider, error) {
 		var datJSON struct {
 			ProjectID string `json:"project_id"`
 		}
-		err = json.Unmarshal(dat, &datJSON)
+		err := json.Unmarshal(saKey, &datJSON)
 		if err != nil || datJSON.ProjectID == "" {
 			return nil, fmt.Errorf("googlecloud: project ID not found in Google Cloud Service Account file")
 		}
 		project = datJSON.ProjectID
 	}
 
-	conf, err := google.JWTConfigFromJSON(dat, dns.NdevClouddnsReadwriteScope)
+	conf, err := google.JWTConfigFromJSON(saKey, dns.NdevClouddnsReadwriteScope)
 	if err != nil {
 		return nil, fmt.Errorf("googlecloud: unable to acquire config: %v", err)
 	}

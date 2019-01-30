@@ -3,6 +3,7 @@ package gcloud
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"sort"
@@ -51,10 +52,17 @@ func TestNewDNSProvider(t *testing.T) {
 			expected: "googlecloud: project name missing",
 		},
 		{
-			desc: "success",
+			desc: "success key file",
 			envVars: map[string]string{
 				"GCE_PROJECT":              "",
 				"GCE_SERVICE_ACCOUNT_FILE": "fixtures/gce_account_service_file.json",
+			},
+		},
+		{
+			desc: "success key",
+			envVars: map[string]string{
+				"GCE_PROJECT":             "",
+				"GCE_SERVICE_ACCOUNT_KEY": ioutil.ReadFile("fixtures/gce_account_service_file.json"),
 			},
 		},
 	}

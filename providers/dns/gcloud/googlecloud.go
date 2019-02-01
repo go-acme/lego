@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 
@@ -57,14 +56,8 @@ type DNSProvider struct {
 // or by specifying the keyfile location: GCE_SERVICE_ACCOUNT_FILE
 func NewDNSProvider() (*DNSProvider, error) {
 	// Use a service account file if specified via environment variable.
-	if saFile, ok := os.LookupEnv("GCE_SERVICE_ACCOUNT_FILE"); ok {
-		saKey, err := ioutil.ReadFile(saFile)
-		if err != nil {
-			return nil, fmt.Errorf("googlecloud: unable to read Service Account file: %v", err)
-		}
-		return NewDNSProviderServiceAccount(saKey)
-	} else if saKey, ok := os.LookupEnv("GCE_SERVICE_ACCOUNT"); ok {
-		return NewDNSProviderServiceAccount([]byte(saKey))
+	if saKey := env.GetOrFile("GCE_SERVICE_ACCOUNT"); len(saKey) > 0 {
+		return NewDNSProviderServiceAccountKey([]byte(saKey))
 	}
 
 	// Use default credentials.
@@ -91,9 +84,9 @@ func NewDNSProviderCredentials(project string) (*DNSProvider, error) {
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderServiceAccount uses the supplied service account JSON
+// NewDNSProviderServiceAccountKey uses the supplied service account JSON
 // to return a DNSProvider instance configured for Google Cloud DNS.
-func NewDNSProviderServiceAccount(saKey []byte) (*DNSProvider, error) {
+func NewDNSProviderServiceAccountKey(saKey []byte) (*DNSProvider, error) {
 	if len(saKey) == 0 {
 		return nil, fmt.Errorf("googlecloud: Service Account is missing")
 	}
@@ -124,6 +117,21 @@ func NewDNSProviderServiceAccount(saKey []byte) (*DNSProvider, error) {
 	config.HTTPClient = client
 
 	return NewDNSProviderConfig(config)
+}
+
+// NewDNSProviderServiceAccount uses the supplied service account JSON file
+// to return a DNSProvider instance configured for Google Cloud DNS.
+func NewDNSProviderServiceAccount(saFile string) (*DNSProvider, error) {
+	if saFile == "" {
+		return nil, fmt.Errorf("googlecloud: Service Account file missing")
+	}
+
+	saKey, err := ioutil.ReadFile(saFile)
+	if err != nil {
+		return nil, fmt.Errorf("googlecloud: unable to read Service Account file: %v", err)
+	}
+
+	return NewDNSProviderServiceAccountKey(saKey)
 }
 
 // NewDNSProviderConfig return a DNSProvider instance configured for Google Cloud DNS.

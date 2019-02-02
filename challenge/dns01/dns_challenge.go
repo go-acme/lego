@@ -69,7 +69,7 @@ func NewChallenge(core *api.Core, validate ValidateFunc, provider challenge.Prov
 
 // PreSolve just submits the txt record to the dns provider.
 // It does not validate record propagation, or do anything at all with the acme server.
-func (c *Challenge) PreSolve(authz acme.Authorization) error {
+func (c *Challenge) PreSolve(authz acme.ExtendedAuthorization) error {
 	domain := challenge.GetTargetedDomain(authz)
 	log.Infof("[%s] acme: Preparing to solve DNS-01", domain)
 
@@ -96,7 +96,7 @@ func (c *Challenge) PreSolve(authz acme.Authorization) error {
 	return nil
 }
 
-func (c *Challenge) Solve(authz acme.Authorization) error {
+func (c *Challenge) Solve(authz acme.ExtendedAuthorization) error {
 	domain := challenge.GetTargetedDomain(authz)
 	log.Infof("[%s] acme: Trying to solve DNS-01", domain)
 
@@ -121,6 +121,20 @@ func (c *Challenge) Solve(authz acme.Authorization) error {
 		timeout, interval = DefaultPropagationTimeout, DefaultPollingInterval
 	}
 
+	if c.preCheck.delay > 0 {
+		// This is a way to uniquely identify an order.
+		orderString := authz.ExtendedOrder.Authorizations[0]
+		if c.preCheck.solveAt[orderString].IsZero() {
+			c.preCheck.solveAt[orderString] = time.Now().Add(c.preCheck.delay)
+		}
+		delay := time.Until(c.preCheck.solveAt[orderString])
+		if delay > 0 {
+			log.Infof("[%s] acme: Waiting %s before checking DNS propagation",
+				domain, delay.Round(time.Second))
+			time.Sleep(delay)
+		}
+	}
+
 	log.Infof("[%s] acme: Checking DNS record propagation using %+v", domain, recursiveNameservers)
 
 	err = wait.For("propagation", timeout, interval, func() (bool, error) {
@@ -135,11 +149,11 @@ func (c *Challenge) Solve(authz acme.Authorization) error {
 	}
 
 	chlng.KeyAuthorization = keyAuth
-	return c.validate(c.core, domain, chlng)
+	return c.validate(c.core, authz.Identifier.Value, chlng)
 }
 
 // CleanUp cleans the challenge.
-func (c *Challenge) CleanUp(authz acme.Authorization) error {
+func (c *Challenge) CleanUp(authz acme.ExtendedAuthorization) error {
 	log.Infof("[%s] acme: Cleaning DNS-01 challenge", challenge.GetTargetedDomain(authz))
 
 	chlng, err := challenge.FindChallenge(challenge.DNS01, authz)

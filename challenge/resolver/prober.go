@@ -11,18 +11,18 @@ import (
 
 // Interface for all challenge solvers to implement.
 type solver interface {
-	Solve(authorization acme.Authorization) error
+	Solve(authorization acme.ExtendedAuthorization) error
 }
 
 // Interface for challenges like dns, where we can set a record in advance for ALL challenges.
 // This saves quite a bit of time vs creating the records and solving them serially.
 type preSolver interface {
-	PreSolve(authorization acme.Authorization) error
+	PreSolve(authorization acme.ExtendedAuthorization) error
 }
 
 // Interface for challenges like dns, where we can solve all the challenges before to delete them.
 type cleanup interface {
-	CleanUp(authorization acme.Authorization) error
+	CleanUp(authorization acme.ExtendedAuthorization) error
 }
 
 type sequential interface {
@@ -31,7 +31,7 @@ type sequential interface {
 
 // an authz with the solver we have chosen and the index of the challenge associated with it
 type selectedAuthSolver struct {
-	authz  acme.Authorization
+	authz  acme.ExtendedAuthorization
 	solver solver
 }
 
@@ -47,7 +47,7 @@ func NewProber(solverManager *SolverManager) *Prober {
 
 // Solve Looks through the challenge combinations to find a solvable match.
 // Then solves the challenges in series and returns.
-func (p *Prober) Solve(authorizations []acme.Authorization) error {
+func (p *Prober) Solve(authorizations []acme.ExtendedAuthorization) error {
 	failures := make(obtainError)
 
 	var authSolvers []*selectedAuthSolver
@@ -162,7 +162,7 @@ func parallelSolve(authSolvers []*selectedAuthSolver, failures obtainError) {
 	}
 }
 
-func cleanUp(solvr solver, authz acme.Authorization) {
+func cleanUp(solvr solver, authz acme.ExtendedAuthorization) {
 	if solvr, ok := solvr.(cleanup); ok {
 		domain := challenge.GetTargetedDomain(authz)
 		err := solvr.CleanUp(authz)

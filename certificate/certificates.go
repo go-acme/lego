@@ -58,7 +58,7 @@ type ObtainRequest struct {
 }
 
 type resolver interface {
-	Solve(authorizations []acme.Authorization) error
+	Solve(authorizations []acme.ExtendedAuthorization) error
 }
 
 type CertifierOptions struct {

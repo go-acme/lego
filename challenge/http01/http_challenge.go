@@ -34,7 +34,7 @@ func (c *Challenge) SetProvider(provider challenge.Provider) {
 	c.provider = provider
 }
 
-func (c *Challenge) Solve(authz acme.Authorization) error {
+func (c *Challenge) Solve(authz acme.ExtendedAuthorization) error {
 	domain := challenge.GetTargetedDomain(authz)
 	log.Infof("[%s] acme: Trying to solve HTTP-01", domain)
 

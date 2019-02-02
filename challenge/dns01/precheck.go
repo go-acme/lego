@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"strings"
+	"time"
 
 	"github.com/miekg/dns"
 )
@@ -27,16 +28,28 @@ func DisableCompletePropagationRequirement() ChallengeOption {
 	}
 }
 
+func SetPreCheckDelay(delay time.Duration) ChallengeOption {
+	return func(chlg *Challenge) error {
+		chlg.preCheck.delay = delay
+		return nil
+	}
+}
+
 type preCheck struct {
 	// checks DNS propagation before notifying ACME that the DNS challenge is ready.
 	checkFunc PreCheckFunc
 	// require the TXT record to be propagated to all authoritative name servers
 	requireCompletePropagation bool
+	// how long to wait before checking propagation (configuration)
+	delay time.Duration
+	// when to stop waiting before checking propagation (implementation)
+	solveAt map[string]time.Time
 }
 
 func newPreCheck() preCheck {
 	return preCheck{
 		requireCompletePropagation: true,
+		solveAt:                    make(map[string]time.Time),
 	}
 }
 

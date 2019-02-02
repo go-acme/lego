@@ -206,6 +206,6 @@ type resolverMock struct {
 	error error
 }
 
-func (r *resolverMock) Solve(authorizations []acme.Authorization) error {
+func (r *resolverMock) Solve(authorizations []acme.ExtendedAuthorization) error {
 	return r.error
 }

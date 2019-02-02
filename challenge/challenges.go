@@ -26,7 +26,7 @@ func (t Type) String() string {
 	return string(t)
 }
 
-func FindChallenge(chlgType Type, authz acme.Authorization) (acme.Challenge, error) {
+func FindChallenge(chlgType Type, authz acme.ExtendedAuthorization) (acme.Challenge, error) {
 	for _, chlg := range authz.Challenges {
 		if chlg.Type == string(chlgType) {
 			return chlg, nil
@@ -36,7 +36,7 @@ func FindChallenge(chlgType Type, authz acme.Authorization) (acme.Challenge, err
 	return acme.Challenge{}, fmt.Errorf("[%s] acme: unable to find challenge %s", GetTargetedDomain(authz), chlgType)
 }
 
-func GetTargetedDomain(authz acme.Authorization) string {
+func GetTargetedDomain(authz acme.ExtendedAuthorization) string {
 	if authz.Wildcard {
 		return "*." + authz.Identifier.Value
 	}

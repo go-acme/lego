@@ -15,8 +15,8 @@ const (
 	overallRequestLimit = 18
 )
 
-func (c *Certifier) getAuthorizations(order acme.ExtendedOrder) ([]acme.Authorization, error) {
-	resc, errc := make(chan acme.Authorization), make(chan domainError)
+func (c *Certifier) getAuthorizations(order acme.ExtendedOrder) ([]acme.ExtendedAuthorization, error) {
+	resc, errc := make(chan acme.ExtendedAuthorization), make(chan domainError)
 
 	delay := time.Second / overallRequestLimit
 
@@ -29,12 +29,13 @@ func (c *Certifier) getAuthorizations(order acme.ExtendedOrder) ([]acme.Authoriz
 				errc <- domainError{Domain: authz.Identifier.Value, Error: err}
 				return
 			}
+			authz.ExtendedOrder = order
 
 			resc <- authz
 		}(authzURL)
 	}
 
-	var responses []acme.Authorization
+	var responses []acme.ExtendedAuthorization
 	failures := make(obtainError)
 	for i := 0; i < len(order.Authorizations); i++ {
 		select {

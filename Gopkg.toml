@@ -54,8 +54,8 @@
   name = "github.com/timewasted/linode"
 
 [[constraint]]
-  branch = "master"
-  name = "github.com/smueller18/goinwx"
+  version = "0.6.0"
+  name = "github.com/nrdcg/goinwx"
 
 [[constraint]]
   version = "0.5.1"

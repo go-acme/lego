@@ -96,3 +96,7 @@
 [[constraint]]
   version = "v1.1.0"
   name = "github.com/miekg/dns"
+
+[[constraint]]
+  version = "v0.7.3"
+  name = "github.com/akamai/AkamaiOPEN-edgegrid-golang"

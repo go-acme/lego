@@ -55,7 +55,7 @@
   revision = "a3fa4a771d87bda2514a90a157e1fed1b6897d2e"
 
 [[projects]]
-  digest = "1:d677d9bb0dfb2cf2ec6ab5ff1d2deb08ef88f4b255c9f201f01100933ef001a2"
+  digest = "1:47071ecf8d840dd357ede1b2aed46576bdd0a866adecef3c9e85a00db9672202"
   name = "github.com/akamai/AkamaiOPEN-edgegrid-golang"
   packages = [
     "client-v1",
@@ -64,8 +64,8 @@
     "jsonhooks-v1",
   ]
   pruneopts = "NUT"
-  revision = "196fbdab2db66d0e231cc363efb63454f55fed1c"
-  version = "v0.6.2"
+  revision = "1471ce9c14c6d8c007516e129262962a628fecdf"
+  version = "v0.7.3"
 
 [[projects]]
   digest = "1:823e87ae25170339e2bfd1d6f7c2e27554c6bb5655f91c67b37bd5be45bb6b32"
@@ -232,12 +232,12 @@
   revision = "53e6ce116135b80d037921a7fdd5138cf32d7a8a"
 
 [[projects]]
-  digest = "1:a1578f7323eca2b88021fdc9a79a99833d40b12c32a5ea4f284e2fad19ea2657"
+  digest = "1:1bb197a3b5db4e06e00b7560f8e89836c486627f2a0338332ed37daa003d259e"
   name = "github.com/google/uuid"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "d460ce9f8df2e77fb1ba55ca87fafed96c607494"
-  version = "v1.0.0"
+  revision = "064e2069ce9c359c118179501254f67d7d37ba24"
+  version = "0.2"
 
 [[projects]]
   branch = "master"

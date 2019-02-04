@@ -11,6 +11,10 @@ import (
 // PreCheckFunc checks DNS propagation before notifying ACME that the DNS challenge is ready.
 type PreCheckFunc func(fqdn, value string) (bool, error)
 
+// WrapFunc wraps a PreCheckFunc in order to do extra operations before or after
+// the main check, put it in a loop, etc.
+type WrapFunc func(domain, fqdn, value string, orig PreCheckFunc) (bool, error)
+
 func AddPreCheck(preCheck PreCheckFunc) ChallengeOption {
 	// Prevent race condition
 	check := preCheck
@@ -27,11 +31,20 @@ func DisableCompletePropagationRequirement() ChallengeOption {
 	}
 }
 
+func WrapPreCheck(wrap WrapFunc) ChallengeOption {
+	return func(chlg *Challenge) error {
+		chlg.preCheck.wrapFunc = wrap
+		return nil
+	}
+}
+
 type preCheck struct {
 	// checks DNS propagation before notifying ACME that the DNS challenge is ready.
 	checkFunc PreCheckFunc
 	// require the TXT record to be propagated to all authoritative name servers
 	requireCompletePropagation bool
+	// wrapper function
+	wrapFunc WrapFunc
 }
 
 func newPreCheck() preCheck {
@@ -40,7 +53,13 @@ func newPreCheck() preCheck {
 	}
 }
 
-func (p preCheck) call(fqdn, value string) (bool, error) {
+func (p preCheck) call(domain, fqdn, value string) (bool, error) {
+	if p.wrapFunc != nil {
+		if p.checkFunc == nil {
+			return p.wrapFunc(domain, fqdn, value, p.checkDNSPropagation)
+		}
+		return p.wrapFunc(domain, fqdn, value, p.checkFunc)
+	}
 	if p.checkFunc == nil {
 		return p.checkDNSPropagation(fqdn, value)
 	}

@@ -55,14 +55,12 @@ func TestChallenge(t *testing.T) {
 
 	solver := NewChallenge(core, validate, providerServer)
 
-	authz := acme.ExtendedAuthorization{
-		Authorization: acme.Authorization{
-			Identifier: acme.Identifier{
-				Value: "localhost:23457",
-			},
-			Challenges: []acme.Challenge{
-				{Type: challenge.HTTP01.String(), Token: "http1"},
-			},
+	authz := acme.Authorization{
+		Identifier: acme.Identifier{
+			Value: "localhost:23457",
+		},
+		Challenges: []acme.Challenge{
+			{Type: challenge.HTTP01.String(), Token: "http1"},
 		},
 	}
 
@@ -84,14 +82,12 @@ func TestChallengeInvalidPort(t *testing.T) {
 
 	solver := NewChallenge(core, validate, &ProviderServer{port: "123456"})
 
-	authz := acme.ExtendedAuthorization{
-		Authorization: acme.Authorization{
-			Identifier: acme.Identifier{
-				Value: "localhost:123456",
-			},
-			Challenges: []acme.Challenge{
-				{Type: challenge.HTTP01.String(), Token: "http2"},
-			},
+	authz := acme.Authorization{
+		Identifier: acme.Identifier{
+			Value: "localhost:123456",
+		},
+		Challenges: []acme.Challenge{
+			{Type: challenge.HTTP01.String(), Token: "http2"},
 		},
 	}
 

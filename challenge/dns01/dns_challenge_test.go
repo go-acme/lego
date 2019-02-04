@@ -96,14 +96,12 @@ func TestChallenge_PreSolve(t *testing.T) {
 
 			chlg := NewChallenge(core, test.validate, test.provider, AddPreCheck(test.preCheck))
 
-			authz := acme.ExtendedAuthorization{
-				Authorization: acme.Authorization{
-					Identifier: acme.Identifier{
-						Value: "example.com",
-					},
-					Challenges: []acme.Challenge{
-						{Type: challenge.DNS01.String()},
-					},
+			authz := acme.Authorization{
+				Identifier: acme.Identifier{
+					Value: "example.com",
+				},
+				Challenges: []acme.Challenge{
+					{Type: challenge.DNS01.String()},
 				},
 			}
 
@@ -183,14 +181,12 @@ func TestChallenge_Solve(t *testing.T) {
 
 			chlg := NewChallenge(core, test.validate, test.provider, AddPreCheck(test.preCheck))
 
-			authz := acme.ExtendedAuthorization{
-				Authorization: acme.Authorization{
-					Identifier: acme.Identifier{
-						Value: "example.com",
-					},
-					Challenges: []acme.Challenge{
-						{Type: challenge.DNS01.String()},
-					},
+			authz := acme.Authorization{
+				Identifier: acme.Identifier{
+					Value: "example.com",
+				},
+				Challenges: []acme.Challenge{
+					{Type: challenge.DNS01.String()},
 				},
 			}
 
@@ -269,14 +265,12 @@ func TestChallenge_CleanUp(t *testing.T) {
 
 			chlg := NewChallenge(core, test.validate, test.provider, AddPreCheck(test.preCheck))
 
-			authz := acme.ExtendedAuthorization{
-				Authorization: acme.Authorization{
-					Identifier: acme.Identifier{
-						Value: "example.com",
-					},
-					Challenges: []acme.Challenge{
-						{Type: challenge.DNS01.String()},
-					},
+			authz := acme.Authorization{
+				Identifier: acme.Identifier{
+					Value: "example.com",
+				},
+				Challenges: []acme.Challenge{
+					{Type: challenge.DNS01.String()},
 				},
 			}
 

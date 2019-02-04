@@ -40,7 +40,7 @@ func (c *Challenge) SetProvider(provider challenge.Provider) {
 }
 
 // Solve manages the provider to validate and solve the challenge.
-func (c *Challenge) Solve(authz acme.ExtendedAuthorization) error {
+func (c *Challenge) Solve(authz acme.Authorization) error {
 	domain := authz.Identifier.Value
 	log.Infof("[%s] acme: Trying to solve TLS-ALPN-01", challenge.GetTargetedDomain(authz))
 

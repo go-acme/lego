@@ -9,15 +9,15 @@ import (
 type AuthorizationService service
 
 // Get Gets an authorization.
-func (c *AuthorizationService) Get(authzURL string) (acme.ExtendedAuthorization, error) {
+func (c *AuthorizationService) Get(authzURL string) (acme.Authorization, error) {
 	if len(authzURL) == 0 {
-		return acme.ExtendedAuthorization{}, errors.New("authorization[get]: empty URL")
+		return acme.Authorization{}, errors.New("authorization[get]: empty URL")
 	}
 
-	var authz acme.ExtendedAuthorization
+	var authz acme.Authorization
 	_, err := c.core.postAsGet(authzURL, &authz)
 	if err != nil {
-		return acme.ExtendedAuthorization{}, err
+		return acme.Authorization{}, err
 	}
 	return authz, nil
 }

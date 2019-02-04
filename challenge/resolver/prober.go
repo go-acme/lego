@@ -2,6 +2,7 @@ package resolver
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/xenolf/lego/acme"
@@ -11,18 +12,19 @@ import (
 
 // Interface for all challenge solvers to implement.
 type solver interface {
-	Solve(authorization acme.ExtendedAuthorization) error
+	Solve(authorization acme.Authorization) error
 }
 
 // Interface for challenges like dns, where we can set a record in advance for ALL challenges.
 // This saves quite a bit of time vs creating the records and solving them serially.
 type preSolver interface {
-	PreSolve(authorization acme.ExtendedAuthorization) error
+	PreSolve(authorization acme.Authorization) error
+	GetPreCheckDelay() time.Duration
 }
 
 // Interface for challenges like dns, where we can solve all the challenges before to delete them.
 type cleanup interface {
-	CleanUp(authorization acme.ExtendedAuthorization) error
+	CleanUp(authorization acme.Authorization) error
 }
 
 type sequential interface {
@@ -31,7 +33,7 @@ type sequential interface {
 
 // an authz with the solver we have chosen and the index of the challenge associated with it
 type selectedAuthSolver struct {
-	authz  acme.ExtendedAuthorization
+	authz  acme.Authorization
 	solver solver
 }
 
@@ -47,7 +49,7 @@ func NewProber(solverManager *SolverManager) *Prober {
 
 // Solve Looks through the challenge combinations to find a solvable match.
 // Then solves the challenges in series and returns.
-func (p *Prober) Solve(authorizations []acme.ExtendedAuthorization) error {
+func (p *Prober) Solve(authorizations []acme.Authorization) error {
 	failures := make(obtainError)
 
 	var authSolvers []*selectedAuthSolver
@@ -129,12 +131,22 @@ func sequentialSolve(authSolvers []*selectedAuthSolver, failures obtainError) {
 
 func parallelSolve(authSolvers []*selectedAuthSolver, failures obtainError) {
 	// For all valid preSolvers, first submit the challenges so they have max time to propagate
+	var maxDelay time.Duration
+	var delayDomains []string
 	for _, authSolver := range authSolvers {
 		authz := authSolver.authz
 		if solvr, ok := authSolver.solver.(preSolver); ok {
+			delay := solvr.GetPreCheckDelay()
+			if delay > maxDelay {
+				maxDelay = delay
+			}
+			domain := challenge.GetTargetedDomain(authz)
+			if delay > 0 {
+				delayDomains = append(delayDomains, domain)
+			}
 			err := solvr.PreSolve(authz)
 			if err != nil {
-				failures[challenge.GetTargetedDomain(authz)] = err
+				failures[domain] = err
 			}
 		}
 	}
@@ -145,6 +157,12 @@ func parallelSolve(authSolvers []*selectedAuthSolver, failures obtainError) {
 			cleanUp(authSolver.solver, authSolver.authz)
 		}
 	}()
+
+	if maxDelay > 0 {
+		log.Infof("[%s] acme: Waiting %s before checking DNS propagation",
+			strings.Join(delayDomains, ", "), maxDelay.Round(time.Second))
+		time.Sleep(maxDelay)
+	}
 
 	// Finally solve all challenges for real
 	for _, authSolver := range authSolvers {
@@ -162,7 +180,7 @@ func parallelSolve(authSolvers []*selectedAuthSolver, failures obtainError) {
 	}
 }
 
-func cleanUp(solvr solver, authz acme.ExtendedAuthorization) {
+func cleanUp(solvr solver, authz acme.Authorization) {
 	if solvr, ok := solvr.(cleanup); ok {
 		domain := challenge.GetTargetedDomain(authz)
 		err := solvr.CleanUp(authz)

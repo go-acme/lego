@@ -39,13 +39,24 @@ func CondOption(condition bool, opt ChallengeOption) ChallengeOption {
 	return opt
 }
 
+// SetPreCheckDelay sets the time to wait between presenting the DNS changes and
+// starting the check to see if those changes have propagated to the
+// nameservers.
+func SetPreCheckDelay(delay time.Duration) ChallengeOption {
+	return func(chlg *Challenge) error {
+		chlg.dnsPreCheckDelay = delay
+		return nil
+	}
+}
+
 // Challenge implements the dns-01 challenge
 type Challenge struct {
-	core       *api.Core
-	validate   ValidateFunc
-	provider   challenge.Provider
-	preCheck   preCheck
-	dnsTimeout time.Duration
+	core             *api.Core
+	validate         ValidateFunc
+	provider         challenge.Provider
+	preCheck         preCheck
+	dnsTimeout       time.Duration
+	dnsPreCheckDelay time.Duration
 }
 
 func NewChallenge(core *api.Core, validate ValidateFunc, provider challenge.Provider, opts ...ChallengeOption) *Challenge {
@@ -67,9 +78,13 @@ func NewChallenge(core *api.Core, validate ValidateFunc, provider challenge.Prov
 	return chlg
 }
 
+func (c *Challenge) GetPreCheckDelay() time.Duration {
+	return c.dnsPreCheckDelay
+}
+
 // PreSolve just submits the txt record to the dns provider.
 // It does not validate record propagation, or do anything at all with the acme server.
-func (c *Challenge) PreSolve(authz acme.ExtendedAuthorization) error {
+func (c *Challenge) PreSolve(authz acme.Authorization) error {
 	domain := challenge.GetTargetedDomain(authz)
 	log.Infof("[%s] acme: Preparing to solve DNS-01", domain)
 
@@ -96,7 +111,7 @@ func (c *Challenge) PreSolve(authz acme.ExtendedAuthorization) error {
 	return nil
 }
 
-func (c *Challenge) Solve(authz acme.ExtendedAuthorization) error {
+func (c *Challenge) Solve(authz acme.Authorization) error {
 	domain := challenge.GetTargetedDomain(authz)
 	log.Infof("[%s] acme: Trying to solve DNS-01", domain)
 
@@ -121,20 +136,6 @@ func (c *Challenge) Solve(authz acme.ExtendedAuthorization) error {
 		timeout, interval = DefaultPropagationTimeout, DefaultPollingInterval
 	}
 
-	if c.preCheck.delay > 0 {
-		// This is a way to uniquely identify an order.
-		orderString := authz.ExtendedOrder.Authorizations[0]
-		if c.preCheck.solveAt[orderString].IsZero() {
-			c.preCheck.solveAt[orderString] = time.Now().Add(c.preCheck.delay)
-		}
-		delay := time.Until(c.preCheck.solveAt[orderString])
-		if delay > 0 {
-			log.Infof("[%s] acme: Waiting %s before checking DNS propagation",
-				domain, delay.Round(time.Second))
-			time.Sleep(delay)
-		}
-	}
-
 	log.Infof("[%s] acme: Checking DNS record propagation using %+v", domain, recursiveNameservers)
 
 	err = wait.For("propagation", timeout, interval, func() (bool, error) {
@@ -149,11 +150,11 @@ func (c *Challenge) Solve(authz acme.ExtendedAuthorization) error {
 	}
 
 	chlng.KeyAuthorization = keyAuth
-	return c.validate(c.core, authz.Identifier.Value, chlng)
+	return c.validate(c.core, domain, chlng)
 }
 
 // CleanUp cleans the challenge.
-func (c *Challenge) CleanUp(authz acme.ExtendedAuthorization) error {
+func (c *Challenge) CleanUp(authz acme.Authorization) error {
 	log.Infof("[%s] acme: Cleaning DNS-01 challenge", challenge.GetTargetedDomain(authz))
 
 	chlng, err := challenge.FindChallenge(challenge.DNS01, authz)

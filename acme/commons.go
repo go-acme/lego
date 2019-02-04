@@ -163,14 +163,6 @@ type Order struct {
 	Certificate string `json:"certificate,omitempty"`
 }
 
-// ExtendedAuthorization extends Authorization with extra fields.
-type ExtendedAuthorization struct {
-	Authorization
-	// Contains the ExtendedOrder object from which the authorization was
-	// derived
-	ExtendedOrder ExtendedOrder `json:"-"`
-}
-
 // Authorization the ACME authorization object.
 // - https://tools.ietf.org/html/draft-ietf-acme-acme-16#section-7.1.4
 type Authorization struct {

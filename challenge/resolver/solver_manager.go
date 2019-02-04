@@ -58,7 +58,7 @@ func (c *SolverManager) Remove(chlgType challenge.Type) {
 }
 
 // Checks all challenges from the server in order and returns the first matching solver.
-func (c *SolverManager) chooseSolver(authz acme.ExtendedAuthorization) solver {
+func (c *SolverManager) chooseSolver(authz acme.Authorization) solver {
 	// Allow to have a deterministic challenge order
 	sort.Sort(byType(authz.Challenges))
 
@@ -133,7 +133,7 @@ func checkChallengeStatus(chlng acme.ExtendedChallenge) (bool, error) {
 	}
 }
 
-func checkAuthorizationStatus(authz acme.ExtendedAuthorization) (bool, error) {
+func checkAuthorizationStatus(authz acme.Authorization) (bool, error) {
 	switch authz.Status {
 	case acme.StatusValid:
 		return true, nil

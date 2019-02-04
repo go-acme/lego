@@ -75,14 +75,12 @@ func TestChallenge(t *testing.T) {
 		&ProviderServer{port: "23457"},
 	)
 
-	authz := acme.ExtendedAuthorization{
-		Authorization: acme.Authorization{
-			Identifier: acme.Identifier{
-				Value: domain,
-			},
-			Challenges: []acme.Challenge{
-				{Type: challenge.TLSALPN01.String(), Token: "tlsalpn1"},
-			},
+	authz := acme.Authorization{
+		Identifier: acme.Identifier{
+			Value: domain,
+		},
+		Challenges: []acme.Challenge{
+			{Type: challenge.TLSALPN01.String(), Token: "tlsalpn1"},
 		},
 	}
 
@@ -106,14 +104,12 @@ func TestChallengeInvalidPort(t *testing.T) {
 		&ProviderServer{port: "123456"},
 	)
 
-	authz := acme.ExtendedAuthorization{
-		Authorization: acme.Authorization{
-			Identifier: acme.Identifier{
-				Value: "localhost:123456",
-			},
-			Challenges: []acme.Challenge{
-				{Type: challenge.TLSALPN01.String(), Token: "tlsalpn1"},
-			},
+	authz := acme.Authorization{
+		Identifier: acme.Identifier{
+			Value: "localhost:123456",
+		},
+		Challenges: []acme.Challenge{
+			{Type: challenge.TLSALPN01.String(), Token: "tlsalpn1"},
 		},
 	}
 

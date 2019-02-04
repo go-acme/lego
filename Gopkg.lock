@@ -282,14 +282,6 @@
   revision = "16bdd962781df9696f40cc2bab924f1a855a7f89"
 
 [[projects]]
-  digest = "1:417193ba917954c4837c6fc48c6ac241b3fefd13fc0889367b4a7e43b69d582c"
-  name = "github.com/ldez/go-auroradns"
-  packages = ["."]
-  pruneopts = "NUT"
-  revision = "b40dfcae7c417f8129579362695dc1f3cfe5928d"
-  version = "v2.0.0"
-
-[[projects]]
   digest = "1:111ff5a09a32895248270bfaef9b8b6ac163a8cde9cdd603fed64b3e4b59e8ab"
   name = "github.com/linode/linodego"
   packages = ["."]
@@ -344,6 +336,22 @@
   packages = ["namecom"]
   pruneopts = "NUT"
   revision = "08470befbe04613bd4b44cb6978b05d50294c4d4"
+
+[[projects]]
+  digest = "1:417193ba917954c4837c6fc48c6ac241b3fefd13fc0889367b4a7e43b69d582c"
+  name = "github.com/nrdcg/auroradns"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "750ca8603f9f2cca2457acb22ea6e44d3f05358c"
+  version = "v1.0.0"
+
+[[projects]]
+  digest = "1:78bc7967454f8c2a1257b3fe4ed1d57227fb1dff46fd74d38b91bd0d0cc2620a"
+  name = "github.com/nrdcg/goinwx"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "d8152159450570012552f924a0ae6ab3d8c617e0"
+  version = "v0.6.0"
 
 [[projects]]
   branch = "master"
@@ -405,14 +413,6 @@
   pruneopts = "NUT"
   revision = "3e01752db0189b9157070a0e1668a620f9a85da2"
   version = "v1.0.6"
-
-[[projects]]
-  branch = "master"
-  digest = "1:94fcec8ba983a96bb3f123ab9690955baf44d6d32de342f95f5a2f665c70457a"
-  name = "github.com/smueller18/goinwx"
-  packages = ["."]
-  pruneopts = "NUT"
-  revision = "5d138389109eca96463f44f692408f0d1c731278"
 
 [[projects]]
   digest = "1:60a46e2410edbf02b419f833372dd1d24d7aa1b916a990a7370e792fada1eadd"
@@ -656,15 +656,15 @@
     "github.com/exoscale/egoscale",
     "github.com/iij/doapi",
     "github.com/iij/doapi/protocol",
-    "github.com/ldez/go-auroradns",
     "github.com/linode/linodego",
     "github.com/miekg/dns",
     "github.com/namedotcom/go/namecom",
+    "github.com/nrdcg/auroradns",
+    "github.com/nrdcg/goinwx",
     "github.com/ovh/go-ovh/ovh",
     "github.com/rainycape/memcache",
     "github.com/sacloud/libsacloud/api",
     "github.com/sacloud/libsacloud/sacloud",
-    "github.com/smueller18/goinwx",
     "github.com/stretchr/testify/assert",
     "github.com/stretchr/testify/mock",
     "github.com/stretchr/testify/require",

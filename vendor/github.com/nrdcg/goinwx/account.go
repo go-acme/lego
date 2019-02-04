@@ -7,44 +7,38 @@ const (
 	methodAccountUnlock = "account.unlock"
 )
 
-type AccountService interface {
-	Login() error
-	Logout() error
-	Lock() error
-	Unlock(tan string) error
-}
+// AccountService API access to Account.
+type AccountService service
 
-type AccountServiceOp struct {
-	client *Client
-}
-
-var _ AccountService = &AccountServiceOp{}
-
-func (s *AccountServiceOp) Login() error {
+// Login Account login.
+func (s *AccountService) Login() error {
 	req := s.client.NewRequest(methodAccountLogin, map[string]interface{}{
-		"user": s.client.Username,
-		"pass": s.client.Password,
+		"user": s.client.username,
+		"pass": s.client.password,
 	})
 
 	_, err := s.client.Do(*req)
 	return err
 }
 
-func (s *AccountServiceOp) Logout() error {
+// Logout Account logout.
+func (s *AccountService) Logout() error {
 	req := s.client.NewRequest(methodAccountLogout, nil)
 
 	_, err := s.client.Do(*req)
 	return err
 }
 
-func (s *AccountServiceOp) Lock() error {
+// Lock Account lock.
+func (s *AccountService) Lock() error {
 	req := s.client.NewRequest(methodAccountLock, nil)
 
 	_, err := s.client.Do(*req)
 	return err
 }
 
-func (s *AccountServiceOp) Unlock(tan string) error {
+// Unlock Account unlock.
+func (s *AccountService) Unlock(tan string) error {
 	req := s.client.NewRequest(methodAccountUnlock, map[string]interface{}{
 		"tan": tan,
 	})

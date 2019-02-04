@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"path"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -104,12 +105,18 @@ func TestNewDNSProvider_Present(t *testing.T) {
 		mode          string
 		username      string
 		password      string
+		pathPrefix    string
 		handler       http.HandlerFunc
 		expectedError string
 	}{
 		{
 			desc:    "success",
 			handler: successHandler,
+		},
+		{
+			desc:       "success with path prefix",
+			handler:    successHandler,
+			pathPrefix: "/api/acme/",
 		},
 		{
 			desc:          "error",
@@ -150,11 +157,11 @@ func TestNewDNSProvider_Present(t *testing.T) {
 			t.Parallel()
 
 			mux := http.NewServeMux()
-			mux.HandleFunc("/present", test.handler)
+			mux.HandleFunc(path.Join("/", test.pathPrefix, "present"), test.handler)
 			server := httptest.NewServer(mux)
 
 			config := NewDefaultConfig()
-			config.Endpoint = mustParse(server.URL)
+			config.Endpoint = mustParse(server.URL + test.pathPrefix)
 			config.Mode = test.mode
 			config.Username = test.username
 			config.Password = test.password

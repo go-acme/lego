@@ -17,7 +17,7 @@ func TestRegistrar_ResolveAccountByKey(t *testing.T) {
 	mux, apiURL, tearDown := tester.SetupFakeAPI()
 	defer tearDown()
 
-	mux.HandleFunc("/account", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/account", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Location", apiURL+"/account_recovery")
 		_, err := w.Write([]byte("{}"))
 		if err != nil {
@@ -25,7 +25,7 @@ func TestRegistrar_ResolveAccountByKey(t *testing.T) {
 		}
 	})
 
-	mux.HandleFunc("/account_recovery", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/account_recovery", func(w http.ResponseWriter, _ *http.Request) {
 		err := tester.WriteJSONResponse(w, acme.Account{
 			Status: "valid",
 		})

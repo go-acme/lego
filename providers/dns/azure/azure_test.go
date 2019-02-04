@@ -111,7 +111,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			tenantID:       "C",
 			subscriptionID: "",
 			resourceGroup:  "",
-			handler: func(w http.ResponseWriter, r *http.Request) {
+			handler: func(w http.ResponseWriter, _ *http.Request) {
 				_, err := w.Write([]byte("foo"))
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)

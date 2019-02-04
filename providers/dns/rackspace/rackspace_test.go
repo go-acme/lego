@@ -135,7 +135,7 @@ func identityHandler(dnsEndpoint string) http.Handler {
 
 		resp := strings.Replace(identityResponseMock, "https://dns.api.rackspacecloud.com/v1.0/123456", dnsEndpoint, 1)
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintf(w, resp)
+		fmt.Fprint(w, resp)
 	})
 }
 
@@ -146,7 +146,7 @@ func dnsHandler() *http.ServeMux {
 	mux.HandleFunc("/123456/domains", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Query().Get("name") == "example.com" {
 			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, zoneDetailsMock)
+			fmt.Fprint(w, zoneDetailsMock)
 			return
 		}
 		w.WriteHeader(http.StatusBadRequest)
@@ -168,12 +168,12 @@ func dnsHandler() *http.ServeMux {
 			}
 
 			w.WriteHeader(http.StatusAccepted)
-			fmt.Fprintf(w, recordResponseMock)
+			fmt.Fprint(w, recordResponseMock)
 			// Used by `findTxtRecord()` finding `record.ID` "?type=TXT&name=_acme-challenge.example.com"
 		case http.MethodGet:
 			if r.URL.Query().Get("type") == "TXT" && r.URL.Query().Get("name") == "_acme-challenge.example.com" {
 				w.WriteHeader(http.StatusOK)
-				fmt.Fprintf(w, recordDetailsMock)
+				fmt.Fprint(w, recordDetailsMock)
 				return
 			}
 			w.WriteHeader(http.StatusBadRequest)
@@ -182,7 +182,7 @@ func dnsHandler() *http.ServeMux {
 		case http.MethodDelete:
 			if r.URL.Query().Get("id") == "TXT-654321" {
 				w.WriteHeader(http.StatusOK)
-				fmt.Fprintf(w, recordDeleteMock)
+				fmt.Fprint(w, recordDeleteMock)
 				return
 			}
 			w.WriteHeader(http.StatusBadRequest)

@@ -41,6 +41,7 @@
     "cyclomatic complexity (.+) of func `NewDNSChallengeProviderByName` is high (.+)", # providers/dns/dns_providers.go
     "string `(lego\\.wtf|manhattan)` has (\\d+) occurrences, make it a constant", #providers/dns/gcloud/googlecloud_test.go
 
+    "(dnsHelp|createRenew\\$1|createRun\\$1|run) - result 0 \\(error\\) is always nil", # cmd/
     "`(tlsFeatureExtensionOID|ocspMustStapleFeature)` is a global variable", # certcrypto/crypto.go
     "`(defaultNameservers|recursiveNameservers|dnsTimeout|fqdnToZone|muFqdnToZone)` is a global variable", # challenge/dns01/nameserver.go
     "`idPeAcmeIdentifierV1` is a global variable", # challenge/tlsalpn01/tls_alpn_challenge.go

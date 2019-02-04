@@ -12,7 +12,7 @@ import (
 
 func TestDo_UserAgentOnAllHTTPMethod(t *testing.T) {
 	var ua, method string
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	ts := httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, r *http.Request) {
 		ua = r.Header.Get("User-Agent")
 		method = r.Method
 	}))

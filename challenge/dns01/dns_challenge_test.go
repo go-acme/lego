@@ -129,6 +129,7 @@ func TestChallenge_Solve(t *testing.T) {
 		desc        string
 		validate    ValidateFunc
 		preCheck    PreCheckFunc
+		wrapFunc    WrapFunc
 		provider    challenge.Provider
 		expectError bool
 	}{
@@ -174,12 +175,27 @@ func TestChallenge_Solve(t *testing.T) {
 				cleanUp: errors.New("OOPS"),
 			},
 		},
+		{
+			desc:     "preCheck wrap",
+			validate: func(_ *api.Core, _ string, _ acme.Challenge) error { return nil },
+			preCheck: func(_, _ string) (bool, error) { return true, nil },
+			wrapFunc: func(_, _, _ string, orig PreCheckFunc) (bool, error) { return false, errors.New("GOTCHA") },
+			provider: &providerTimeoutMock{
+				timeout:  2 * time.Second,
+				interval: 500 * time.Millisecond,
+			},
+			expectError: true,
+		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 
-			chlg := NewChallenge(core, test.validate, test.provider, AddPreCheck(test.preCheck))
+			options := []ChallengeOption{AddPreCheck(test.preCheck)}
+			if test.wrapFunc != nil {
+				options = append(options, WrapPreCheck(test.wrapFunc))
+			}
+			chlg := NewChallenge(core, test.validate, test.provider, options...)
 
 			authz := acme.Authorization{
 				Identifier: acme.Identifier{

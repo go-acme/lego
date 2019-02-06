@@ -2,6 +2,7 @@ package dns
 
 import (
 	"fmt"
+	"github.com/xenolf/lego/providers/dns/designate"
 
 	"github.com/xenolf/lego/challenge"
 	"github.com/xenolf/lego/challenge/dns01"
@@ -76,6 +77,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return cloudxns.NewDNSProvider()
 	case "conoha":
 		return conoha.NewDNSProvider()
+	case "designate":
+		return designate.NewDNSProvider()
 	case "digitalocean":
 		return digitalocean.NewDNSProvider()
 	case "dnsimple":

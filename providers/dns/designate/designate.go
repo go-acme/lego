@@ -192,7 +192,6 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-
 // Sequential All DNS challenges for this provider will be resolved sequentially.
 // Returns the interval between each iteration.
 func (d *DNSProvider) Sequential() time.Duration {

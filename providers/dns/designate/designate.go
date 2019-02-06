@@ -48,13 +48,14 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	_, err := env.Get("OS_AUTH_URL", "OS_USERNAME", "OS_PASSWORD", "OS_TENANT_NAME", "OS_REGION_NAME")
 	if err != nil {
-		return nil, errors.New("designate: missing Openstack credentials, please specify: OS_AUTH_URL, OS_USERNAME, OS_PASSWORD, OS_TENANT_NAME, OS_REGION_NAME")
+		return nil, fmt.Errorf("designate: %v", err)
 	}
 
 	opts, err := openstack.AuthOptionsFromEnv()
 	if err != nil {
 		return nil, fmt.Errorf("designate: %v", err)
 	}
+
 	config := NewDefaultConfig()
 	config.opts = opts
 
@@ -88,42 +89,6 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-func getZoneID(client *gophercloud.ServiceClient, wanted string) (string, error) {
-	allPages, err := zones.List(client, nil).AllPages()
-	if err != nil {
-		return "", err
-	}
-	allZones, err := zones.ExtractZones(allPages)
-	if err != nil {
-		return "", err
-	}
-
-	for _, zone := range allZones {
-		if zone.Name == wanted {
-			return zone.ID, nil
-		}
-	}
-	return "", fmt.Errorf("zone id not found for %s", wanted)
-}
-
-func getRecordID(client *gophercloud.ServiceClient, zoneID string, wanted string) (string, error) {
-	allPages, err := recordsets.ListByZone(client, zoneID, nil).AllPages()
-	if err != nil {
-		return "", err
-	}
-	allRecords, err := recordsets.ExtractRecordSets(allPages)
-	if err != nil {
-		return "", err
-	}
-
-	for _, record := range allRecords {
-		if record.Name == wanted {
-			return record.ID, nil
-		}
-	}
-	return "", fmt.Errorf("record id not found for %s", wanted)
-}
-
 // Present creates a TXT record to fulfill the dns-01 challenge
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
@@ -133,7 +98,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("designate: couldn't get zone ID in Present: %sv", err)
 	}
 
-	zoneID, err := getZoneID(d.client, authZone)
+	zoneID, err := d.getZoneID(authZone)
 	if err != nil {
 		return fmt.Errorf("designate: %v", err)
 	}
@@ -154,6 +119,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("designate: error for %s in Present while creating record: %v", fqdn, err)
 	}
+
 	if actual.Name != fqdn || actual.Records[0] != value || actual.TTL != d.config.TTL {
 		return fmt.Errorf("designate: the created record doesn't match what we wanted to create")
 	}
@@ -169,7 +135,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return err
 	}
 
-	zoneID, err := getZoneID(d.client, authZone)
+	zoneID, err := d.getZoneID(authZone)
 	if err != nil {
 		return fmt.Errorf("designate: couldn't get zone ID in CleanUp: %sv", err)
 	}
@@ -178,7 +144,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	d.dnsEntriesMu.Lock()
 	defer d.dnsEntriesMu.Unlock()
 
-	recordID, err := getRecordID(d.client, zoneID, fqdn)
+	recordID, err := d.getRecordID(zoneID, fqdn)
 	if err != nil {
 		return fmt.Errorf("designate: couldn't get Record ID in CleanUp: %sv", err)
 	}
@@ -194,4 +160,40 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 // Returns the interval between each iteration.
 func (d *DNSProvider) Sequential() time.Duration {
 	return d.config.SequenceInterval
+}
+
+func (d *DNSProvider) getZoneID(wanted string) (string, error) {
+	allPages, err := zones.List(d.client, nil).AllPages()
+	if err != nil {
+		return "", err
+	}
+	allZones, err := zones.ExtractZones(allPages)
+	if err != nil {
+		return "", err
+	}
+
+	for _, zone := range allZones {
+		if zone.Name == wanted {
+			return zone.ID, nil
+		}
+	}
+	return "", fmt.Errorf("zone id not found for %s", wanted)
+}
+
+func (d *DNSProvider) getRecordID(zoneID string, wanted string) (string, error) {
+	allPages, err := recordsets.ListByZone(d.client, zoneID, nil).AllPages()
+	if err != nil {
+		return "", err
+	}
+	allRecords, err := recordsets.ExtractRecordSets(allPages)
+	if err != nil {
+		return "", err
+	}
+
+	for _, record := range allRecords {
+		if record.Name == wanted {
+			return record.ID, nil
+		}
+	}
+	return "", fmt.Errorf("record id not found for %s", wanted)
 }

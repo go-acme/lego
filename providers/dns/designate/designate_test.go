@@ -18,45 +18,6 @@ var envTest = tester.NewEnvTest(
 	"OS_REGION_NAME").
 	WithDomain("DESIGNATE_DOMAIN")
 
-const authResponse = `{
-	"access": {
-		"token": {
-			"id": "a",
-			"expires": "9015-06-05T16:24:57.637Z"
-		},
-		"user": {
-			"name": "a",
-			"roles": [ ],
-			"role_links": [ ] 
-		},
-		"serviceCatalog": [
-			{
-				"endpoints": [
-					{
-						"adminURL": "http://23.253.72.207:9696/",
-						"region": "D",
-						"internalURL": "http://23.253.72.207:9696/",
-						"id": "97c526db8d7a4c88bbb8d68db1bdcdb8",
-						"publicURL": "http://23.253.72.207:9696/"
-					}
-				],
-     	       "endpoints_links": [ ],
-				"type": "dns",
-				"name": "designate"
-			}
-		]
-	}
-}`
-
-func getServer() *httptest.Server {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
-		_, _ = w.Write([]byte(authResponse))
-		w.WriteHeader(200)
-	})
-	return httptest.NewServer(mux)
-}
-
 func TestNewDNSProvider(t *testing.T) {
 	server := getServer()
 	defer server.Close()
@@ -85,7 +46,7 @@ func TestNewDNSProvider(t *testing.T) {
 				"OS_REGION_NAME": "",
 				"OS_TENANT_NAME": "",
 			},
-			expected: "designate: missing Openstack credentials, please specify: OS_AUTH_URL, OS_USERNAME, OS_PASSWORD, OS_TENANT_NAME, OS_REGION_NAME",
+			expected: "designate: some credentials information are missing: OS_AUTH_URL,OS_USERNAME,OS_PASSWORD,OS_TENANT_NAME,OS_REGION_NAME",
 		},
 		{
 			desc: "missing auth url",
@@ -96,7 +57,7 @@ func TestNewDNSProvider(t *testing.T) {
 				"OS_REGION_NAME": "D",
 				"OS_TENANT_NAME": "E",
 			},
-			expected: "designate: missing Openstack credentials, please specify: OS_AUTH_URL, OS_USERNAME, OS_PASSWORD, OS_TENANT_NAME, OS_REGION_NAME",
+			expected: "designate: some credentials information are missing: OS_AUTH_URL",
 		},
 		{
 			desc: "missing username",
@@ -107,7 +68,7 @@ func TestNewDNSProvider(t *testing.T) {
 				"OS_REGION_NAME": "D",
 				"OS_TENANT_NAME": "E",
 			},
-			expected: "designate: missing Openstack credentials, please specify: OS_AUTH_URL, OS_USERNAME, OS_PASSWORD, OS_TENANT_NAME, OS_REGION_NAME",
+			expected: "designate: some credentials information are missing: OS_USERNAME",
 		},
 		{
 			desc: "missing password",
@@ -118,7 +79,7 @@ func TestNewDNSProvider(t *testing.T) {
 				"OS_REGION_NAME": "D",
 				"OS_TENANT_NAME": "E",
 			},
-			expected: "designate: missing Openstack credentials, please specify: OS_AUTH_URL, OS_USERNAME, OS_PASSWORD, OS_TENANT_NAME, OS_REGION_NAME",
+			expected: "designate: some credentials information are missing: OS_PASSWORD",
 		},
 		{
 			desc: "missing region name",
@@ -129,7 +90,7 @@ func TestNewDNSProvider(t *testing.T) {
 				"OS_REGION_NAME": "",
 				"OS_TENANT_NAME": "E",
 			},
-			expected: "designate: missing Openstack credentials, please specify: OS_AUTH_URL, OS_USERNAME, OS_PASSWORD, OS_TENANT_NAME, OS_REGION_NAME",
+			expected: "designate: some credentials information are missing: OS_REGION_NAME",
 		},
 		{
 			desc: "missing tenant name",
@@ -140,7 +101,7 @@ func TestNewDNSProvider(t *testing.T) {
 				"OS_REGION_NAME": "D",
 				"OS_TENANT_NAME": "",
 			},
-			expected: "designate: missing Openstack credentials, please specify: OS_AUTH_URL, OS_USERNAME, OS_PASSWORD, OS_TENANT_NAME, OS_REGION_NAME",
+			expected: "designate: some credentials information are missing: OS_TENANT_NAME",
 		},
 	}
 
@@ -212,6 +173,43 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			}
 		})
 	}
+}
+
+func getServer() *httptest.Server {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte(`{
+	"access": {
+		"token": {
+			"id": "a",
+			"expires": "9015-06-05T16:24:57.637Z"
+		},
+		"user": {
+			"name": "a",
+			"roles": [ ],
+			"role_links": [ ] 
+		},
+		"serviceCatalog": [
+			{
+				"endpoints": [
+					{
+						"adminURL": "http://23.253.72.207:9696/",
+						"region": "D",
+						"internalURL": "http://23.253.72.207:9696/",
+						"id": "97c526db8d7a4c88bbb8d68db1bdcdb8",
+						"publicURL": "http://23.253.72.207:9696/"
+					}
+				],
+				"endpoints_links": [ ],
+				"type": "dns",
+				"name": "designate"
+			}
+		]
+	}
+}`))
+		w.WriteHeader(200)
+	})
+	return httptest.NewServer(mux)
 }
 
 func TestLivePresent(t *testing.T) {

@@ -20,6 +20,7 @@ import (
 type Config struct {
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
+	SequenceInterval   time.Duration
 	TTL                int
 	opts               gophercloud.AuthOptions
 }
@@ -30,6 +31,7 @@ func NewDefaultConfig() *Config {
 		TTL:                env.GetOrDefaultInt("DESIGNATE_TTL", 10),
 		PropagationTimeout: env.GetOrDefaultSecond("DESIGNATE_PROPAGATION_TIMEOUT", 10*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond("DESIGNATE_POLLING_INTERVAL", 10*time.Second),
+		SequenceInterval:   env.GetOrDefaultSecond("DESIGNATE_SEQUENCE_INTERVAL", dns01.DefaultPropagationTimeout),
 	}
 }
 
@@ -188,4 +190,11 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("designate: error for %s in CleanUp: %v", fqdn, err)
 	}
 	return nil
+}
+
+
+// Sequential All DNS challenges for this provider will be resolved sequentially.
+// Returns the interval between each iteration.
+func (d *DNSProvider) Sequential() time.Duration {
+	return d.config.SequenceInterval
 }

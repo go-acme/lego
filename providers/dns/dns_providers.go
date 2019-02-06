@@ -2,7 +2,6 @@ package dns
 
 import (
 	"fmt"
-	"github.com/xenolf/lego/providers/dns/designate"
 
 	"github.com/xenolf/lego/challenge"
 	"github.com/xenolf/lego/challenge/dns01"
@@ -14,6 +13,7 @@ import (
 	"github.com/xenolf/lego/providers/dns/cloudflare"
 	"github.com/xenolf/lego/providers/dns/cloudxns"
 	"github.com/xenolf/lego/providers/dns/conoha"
+	"github.com/xenolf/lego/providers/dns/designate"
 	"github.com/xenolf/lego/providers/dns/digitalocean"
 	"github.com/xenolf/lego/providers/dns/dnsimple"
 	"github.com/xenolf/lego/providers/dns/dnsmadeeasy"

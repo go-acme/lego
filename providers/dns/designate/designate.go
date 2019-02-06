@@ -33,7 +33,7 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider describes a provider for TransIP
+// DNSProvider describes a provider for Designate
 type DNSProvider struct {
 	config       *Config
 	client       *gophercloud.ServiceClient

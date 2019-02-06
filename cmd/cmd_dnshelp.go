@@ -39,6 +39,7 @@ Here is an example bash command using the CloudFlare DNS provider:
 	fmt.Fprintln(w, "\tcloudflare:\tCLOUDFLARE_EMAIL, CLOUDFLARE_API_KEY")
 	fmt.Fprintln(w, "\tcloudxns:\tCLOUDXNS_API_KEY, CLOUDXNS_SECRET_KEY")
 	fmt.Fprintln(w, "\tconoha:\tCONOHA_TENANT_ID, CONOHA_API_USERNAME, CONOHA_API_PASSWORD")
+	fmt.Fprintln(w, "\tdesignate:OS_AUTH_URL, OS_USERNAME, OS_PASSWORD, OS_TENANT_NAME, OS_REGION_NAME")
 	fmt.Fprintln(w, "\tdigitalocean:\tDO_AUTH_TOKEN")
 	fmt.Fprintln(w, "\tdnsimple:\tDNSIMPLE_EMAIL, DNSIMPLE_OAUTH_TOKEN")
 	fmt.Fprintln(w, "\tdnsmadeeasy:\tDNSMADEEASY_API_KEY, DNSMADEEASY_API_SECRET")

@@ -11,7 +11,7 @@ import (
 )
 
 func runTestServer(responseBody string, statusCode int) *httptest.Server {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(statusCode)
 		fmt.Fprintln(w, responseBody)
 	}))

@@ -88,42 +88,40 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-func getZoneID(client *gophercloud.ServiceClient, wanted string) (zoneID string, err error) {
+func getZoneID(client *gophercloud.ServiceClient, wanted string) (string, error) {
 	allPages, err := zones.List(client, nil).AllPages()
 	if err != nil {
-		return
+		return "", err
 	}
 	allZones, err := zones.ExtractZones(allPages)
 	if err != nil {
-		return
+		return "", err
 	}
 
 	for _, zone := range allZones {
 		if zone.Name == wanted {
-			zoneID = zone.ID
-			return
+			return zone.ID, nil
 		}
 	}
-	return
+	return "", fmt.Errorf("zone id not found for %s", wanted)
 }
 
-func getRecordID(client *gophercloud.ServiceClient, zoneID string, wanted string) (recordID string, err error) {
+func getRecordID(client *gophercloud.ServiceClient, zoneID string, wanted string) (string, error) {
 	allPages, err := recordsets.ListByZone(client, zoneID, nil).AllPages()
 	if err != nil {
-		return
+		return "", err
 	}
 	allRecords, err := recordsets.ExtractRecordSets(allPages)
 	if err != nil {
-		return
+		return "", err
 	}
 
 	for _, record := range allRecords {
 		if record.Name == wanted {
-			recordID = record.ID
-			return
+			return record.ID, nil
 		}
 	}
-	return
+	return "", fmt.Errorf("record id not found for %s", wanted)
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge
@@ -148,7 +146,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Records:     []string{value},
 	}
 
-	// use mutex to prevent race condition from GetInfo until SetDNSEntries
+	// use mutex to prevent race condition between creating the record and verifying it
 	d.dnsEntriesMu.Lock()
 	defer d.dnsEntriesMu.Unlock()
 
@@ -176,7 +174,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("designate: couldn't get zone ID in CleanUp: %sv", err)
 	}
 
-	// use mutex to prevent race condition from GetInfo until SetDNSEntries
+	// use mutex to prevent race condition between getting the record and deleting it
 	d.dnsEntriesMu.Lock()
 	defer d.dnsEntriesMu.Unlock()
 

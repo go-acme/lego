@@ -157,7 +157,7 @@ func TestDNSProvider_getZoneRecords(t *testing.T) {
 	provider, mux, tearDown := setupMockAPITest()
 	defer tearDown()
 
-	mux.HandleFunc("/STACK_ID/zones/A/records", func(w http.ResponseWriter, req *http.Request) {
+	mux.HandleFunc("/STACK_ID/zones/A/records", func(w http.ResponseWriter, _ *http.Request) {
 		content := `
 			{
 				"records": [
@@ -188,7 +188,7 @@ func TestDNSProvider_getZoneRecords_apiError(t *testing.T) {
 	provider, mux, tearDown := setupMockAPITest()
 	defer tearDown()
 
-	mux.HandleFunc("/STACK_ID/zones/A/records", func(w http.ResponseWriter, req *http.Request) {
+	mux.HandleFunc("/STACK_ID/zones/A/records", func(w http.ResponseWriter, _ *http.Request) {
 		content := `
 {
 	"code": 401,
@@ -213,7 +213,7 @@ func TestDNSProvider_getZones(t *testing.T) {
 	provider, mux, tearDown := setupMockAPITest()
 	defer tearDown()
 
-	mux.HandleFunc("/STACK_ID/zones", func(w http.ResponseWriter, req *http.Request) {
+	mux.HandleFunc("/STACK_ID/zones", func(w http.ResponseWriter, _ *http.Request) {
 		content := `
 {
   "pageInfo": {

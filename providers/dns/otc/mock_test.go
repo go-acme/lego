@@ -41,7 +41,7 @@ func (m *DNSServerMock) ShutdownServer() {
 
 // HandleAuthSuccessfully Handle auth successfully
 func (m *DNSServerMock) HandleAuthSuccessfully() {
-	m.Mux.HandleFunc("/v3/auth/token", func(w http.ResponseWriter, r *http.Request) {
+	m.Mux.HandleFunc("/v3/auth/token", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("X-Subject-Token", fakeOTCToken)
 
 		fmt.Fprintf(w, `{

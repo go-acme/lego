@@ -184,13 +184,13 @@ func TestClient_Login_errors(t *testing.T) {
 	}{
 		{
 			desc: "HTTP error",
-			handler: func(rw http.ResponseWriter, req *http.Request) {
+			handler: func(rw http.ResponseWriter, _ *http.Request) {
 				http.Error(rw, "error message", http.StatusInternalServerError)
 			},
 		},
 		{
 			desc: "API error",
-			handler: func(rw http.ResponseWriter, req *http.Request) {
+			handler: func(rw http.ResponseWriter, _ *http.Request) {
 				response := `
 					{
 						"serverrequestid":"YxTr4EzdbJ101T211zR4yzUEMVE",
@@ -210,7 +210,7 @@ func TestClient_Login_errors(t *testing.T) {
 		},
 		{
 			desc: "responsedata marshaling error",
-			handler: func(rw http.ResponseWriter, req *http.Request) {
+			handler: func(rw http.ResponseWriter, _ *http.Request) {
 				response := `
 							{
 								"serverrequestid": "srv-request-id",
@@ -289,13 +289,13 @@ func TestClient_Logout_errors(t *testing.T) {
 	}{
 		{
 			desc: "HTTP error",
-			handler: func(rw http.ResponseWriter, req *http.Request) {
+			handler: func(rw http.ResponseWriter, _ *http.Request) {
 				http.Error(rw, "error message", http.StatusInternalServerError)
 			},
 		},
 		{
 			desc: "API error",
-			handler: func(rw http.ResponseWriter, req *http.Request) {
+			handler: func(rw http.ResponseWriter, _ *http.Request) {
 				response := `
 					{
 						"serverrequestid":"YxTr4EzdbJ101T211zR4yzUEMVE",
@@ -417,13 +417,13 @@ func TestClient_GetDNSRecords_errors(t *testing.T) {
 	}{
 		{
 			desc: "HTTP error",
-			handler: func(rw http.ResponseWriter, req *http.Request) {
+			handler: func(rw http.ResponseWriter, _ *http.Request) {
 				http.Error(rw, "error message", http.StatusInternalServerError)
 			},
 		},
 		{
 			desc: "API error",
-			handler: func(rw http.ResponseWriter, req *http.Request) {
+			handler: func(rw http.ResponseWriter, _ *http.Request) {
 				response := `
 					{
 						"serverrequestid":"YxTr4EzdbJ101T211zR4yzUEMVE",

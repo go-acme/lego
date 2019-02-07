@@ -146,17 +146,17 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	d.dnsEntriesMu.Lock()
 	defer d.dnsEntriesMu.Unlock()
 
-	recordID, err := d.getRecordID(zoneID, fqdn)
+	record, err := d.getRecord(zoneID, fqdn)
 	if err != nil {
 		return fmt.Errorf("designate: couldn't get Record ID in CleanUp: %v", err)
 	}
 
-	if recordID == "" {
+	if record == nil {
 		// Record is already deleted
 		return nil
 	}
 
-	err = recordsets.Delete(d.client, zoneID, recordID).ExtractErr()
+	err = recordsets.Delete(d.client, zoneID, record.ID).ExtractErr()
 	if err != nil {
 		return fmt.Errorf("designate: error for %s in CleanUp: %v", fqdn, err)
 	}
@@ -199,8 +199,7 @@ func (d *DNSProvider) updateRecord(record *recordsets.RecordSet, value string) e
 		return nil
 	}
 
-	values := []string{value}
-	values = append(values, record.Records...)
+	values := append([]string{value}, record.Records...)
 
 	updateOpts := recordsets.UpdateOpts{
 		Description: &record.Description,
@@ -228,24 +227,6 @@ func (d *DNSProvider) getZoneID(wanted string) (string, error) {
 		}
 	}
 	return "", fmt.Errorf("zone id not found for %s", wanted)
-}
-
-func (d *DNSProvider) getRecordID(zoneID string, wanted string) (string, error) {
-	allPages, err := recordsets.ListByZone(d.client, zoneID, nil).AllPages()
-	if err != nil {
-		return "", err
-	}
-	allRecords, err := recordsets.ExtractRecordSets(allPages)
-	if err != nil {
-		return "", err
-	}
-
-	for _, record := range allRecords {
-		if record.Name == wanted {
-			return record.ID, nil
-		}
-	}
-	return "", nil
 }
 
 func (d *DNSProvider) getRecord(zoneID string, wanted string) (*recordsets.RecordSet, error) {

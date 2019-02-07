@@ -4,6 +4,7 @@ package designate
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"sync"
 	"time"
@@ -20,7 +21,6 @@ import (
 type Config struct {
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
-	SequenceInterval   time.Duration
 	TTL                int
 	opts               gophercloud.AuthOptions
 }
@@ -31,7 +31,6 @@ func NewDefaultConfig() *Config {
 		TTL:                env.GetOrDefaultInt("DESIGNATE_TTL", 10),
 		PropagationTimeout: env.GetOrDefaultSecond("DESIGNATE_PROPAGATION_TIMEOUT", 10*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond("DESIGNATE_POLLING_INTERVAL", 10*time.Second),
-		SequenceInterval:   env.GetOrDefaultSecond("DESIGNATE_SEQUENCE_INTERVAL", dns01.DefaultPropagationTimeout),
 	}
 }
 
@@ -95,7 +94,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return fmt.Errorf("designate: couldn't get zone ID in Present: %sv", err)
+		return fmt.Errorf("designate: couldn't get zone ID in Present: %v", err)
 	}
 
 	zoneID, err := d.getZoneID(authZone)
@@ -103,26 +102,29 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("designate: %v", err)
 	}
 
-	createOpts := recordsets.CreateOpts{
-		Name:        fqdn,
-		Type:        "TXT",
-		TTL:         d.config.TTL,
-		Description: "ACME verification record",
-		Records:     []string{value},
-	}
-
 	// use mutex to prevent race condition between creating the record and verifying it
 	d.dnsEntriesMu.Lock()
 	defer d.dnsEntriesMu.Unlock()
 
-	actual, err := recordsets.Create(d.client, zoneID, createOpts).Extract()
+	existingRecord, err := d.getRecord(zoneID, fqdn)
 	if err != nil {
-		return fmt.Errorf("designate: error for %s in Present while creating record: %v", fqdn, err)
+		return fmt.Errorf("designate: %v", err)
 	}
 
-	if actual.Name != fqdn || actual.Records[0] != value || actual.TTL != d.config.TTL {
-		return fmt.Errorf("designate: the created record doesn't match what we wanted to create")
+	if existingRecord != nil {
+		if contains(existingRecord.Records, value) {
+			log.Printf("designate: the record already exists: %s", value)
+			return nil
+		}
+
+		return d.updateRecord(existingRecord, value)
 	}
+
+	err = d.createRecord(zoneID, fqdn, value)
+	if err != nil {
+		return fmt.Errorf("designate: %v", err)
+	}
+
 	return nil
 }
 
@@ -137,7 +139,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	zoneID, err := d.getZoneID(authZone)
 	if err != nil {
-		return fmt.Errorf("designate: couldn't get zone ID in CleanUp: %sv", err)
+		return fmt.Errorf("designate: couldn't get zone ID in CleanUp: %v", err)
 	}
 
 	// use mutex to prevent race condition between getting the record and deleting it
@@ -146,7 +148,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	recordID, err := d.getRecordID(zoneID, fqdn)
 	if err != nil {
-		return fmt.Errorf("designate: couldn't get Record ID in CleanUp: %sv", err)
+		return fmt.Errorf("designate: couldn't get Record ID in CleanUp: %v", err)
+	}
+
+	if recordID == "" {
+		// Record is already deleted
+		return nil
 	}
 
 	err = recordsets.Delete(d.client, zoneID, recordID).ExtractErr()
@@ -156,10 +163,53 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-// Sequential All DNS challenges for this provider will be resolved sequentially.
-// Returns the interval between each iteration.
-func (d *DNSProvider) Sequential() time.Duration {
-	return d.config.SequenceInterval
+func contains(values []string, value string) bool {
+	for _, v := range values {
+		if v == value {
+			return true
+		}
+	}
+	return false
+}
+
+func (d *DNSProvider) createRecord(zoneID, fqdn, value string) error {
+	createOpts := recordsets.CreateOpts{
+		Name:        fqdn,
+		Type:        "TXT",
+		TTL:         d.config.TTL,
+		Description: "ACME verification record",
+		Records:     []string{value},
+	}
+
+	actual, err := recordsets.Create(d.client, zoneID, createOpts).Extract()
+	if err != nil {
+		return fmt.Errorf("error for %s in Present while creating record: %v", fqdn, err)
+	}
+
+	if actual.Name != fqdn || actual.TTL != d.config.TTL {
+		return fmt.Errorf("the created record doesn't match what we wanted to create")
+	}
+
+	return nil
+}
+
+func (d *DNSProvider) updateRecord(record *recordsets.RecordSet, value string) error {
+	if contains(record.Records, value) {
+		log.Printf("skip: the record already exists: %s", value)
+		return nil
+	}
+
+	values := []string{value}
+	values = append(values, record.Records...)
+
+	updateOpts := recordsets.UpdateOpts{
+		Description: &record.Description,
+		TTL:         record.TTL,
+		Records:     values,
+	}
+
+	result := recordsets.Update(d.client, record.ZoneID, record.ID, updateOpts)
+	return result.Err
 }
 
 func (d *DNSProvider) getZoneID(wanted string) (string, error) {
@@ -195,5 +245,24 @@ func (d *DNSProvider) getRecordID(zoneID string, wanted string) (string, error) 
 			return record.ID, nil
 		}
 	}
-	return "", fmt.Errorf("record id not found for %s", wanted)
+	return "", nil
+}
+
+func (d *DNSProvider) getRecord(zoneID string, wanted string) (*recordsets.RecordSet, error) {
+	allPages, err := recordsets.ListByZone(d.client, zoneID, nil).AllPages()
+	if err != nil {
+		return nil, err
+	}
+	allRecords, err := recordsets.ExtractRecordSets(allPages)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, record := range allRecords {
+		if record.Name == wanted {
+			return &record, nil
+		}
+	}
+
+	return nil, nil
 }

@@ -2,9 +2,6 @@ package cmd
 
 import (
 	"crypto"
-	"crypto/ecdsa"
-	"crypto/elliptic"
-	"crypto/rand"
 	"crypto/x509"
 	"encoding/json"
 	"encoding/pem"
@@ -17,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/urfave/cli"
+	"github.com/xenolf/lego/certcrypto"
 	"github.com/xenolf/lego/lego"
 	"github.com/xenolf/lego/log"
 	"github.com/xenolf/lego/registration"
@@ -157,14 +155,14 @@ func (s *AccountsStorage) LoadAccount(privateKey crypto.PrivateKey) *Account {
 	return &account
 }
 
-func (s *AccountsStorage) GetPrivateKey() crypto.PrivateKey {
+func (s *AccountsStorage) GetPrivateKey(keyType certcrypto.KeyType) crypto.PrivateKey {
 	accKeyPath := filepath.Join(s.keysPath, s.userID+".key")
 
 	if _, err := os.Stat(accKeyPath); os.IsNotExist(err) {
-		log.Printf("No key found for account %s. Generating a curve P384 EC key.", s.userID)
+		log.Printf("No key found for account %s. Generating a %s key.", s.userID, keyType)
 		s.createKeysFolder()
 
-		privateKey, err := generatePrivateKey(accKeyPath)
+		privateKey, err := generatePrivateKey(accKeyPath, keyType)
 		if err != nil {
 			log.Fatalf("Could not generate RSA private account key for account %s: %v", s.userID, err)
 		}
@@ -187,18 +185,11 @@ func (s *AccountsStorage) createKeysFolder() {
 	}
 }
 
-func generatePrivateKey(file string) (crypto.PrivateKey, error) {
-	privateKey, err := ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
+func generatePrivateKey(file string, keyType certcrypto.KeyType) (crypto.PrivateKey, error) {
+	privateKey, err := certcrypto.GeneratePrivateKey(keyType)
 	if err != nil {
 		return nil, err
 	}
-
-	keyBytes, err := x509.MarshalECPrivateKey(privateKey)
-	if err != nil {
-		return nil, err
-	}
-
-	pemKey := pem.Block{Type: "EC PRIVATE KEY", Bytes: keyBytes}
 
 	certOut, err := os.Create(file)
 	if err != nil {
@@ -206,7 +197,8 @@ func generatePrivateKey(file string) (crypto.PrivateKey, error) {
 	}
 	defer certOut.Close()
 
-	err = pem.Encode(certOut, &pemKey)
+	pemKey := certcrypto.PEMBlock(privateKey)
+	err = pem.Encode(certOut, pemKey)
 	if err != nil {
 		return nil, err
 	}

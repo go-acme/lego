@@ -19,7 +19,8 @@ import (
 const filePerm os.FileMode = 0600
 
 func setup(ctx *cli.Context, accountsStorage *AccountsStorage) (*Account, *lego.Client) {
-	privateKey := accountsStorage.GetPrivateKey()
+	keyType := getKeyType(ctx)
+	privateKey := accountsStorage.GetPrivateKey(keyType)
 
 	var account *Account
 	if accountsStorage.ExistsAccountFilePath() {
@@ -28,17 +29,17 @@ func setup(ctx *cli.Context, accountsStorage *AccountsStorage) (*Account, *lego.
 		account = &Account{Email: accountsStorage.GetUserID(), key: privateKey}
 	}
 
-	client := newClient(ctx, account)
+	client := newClient(ctx, account, keyType)
 
 	return account, client
 }
 
-func newClient(ctx *cli.Context, acc registration.User) *lego.Client {
+func newClient(ctx *cli.Context, acc registration.User, keyType certcrypto.KeyType) *lego.Client {
 	config := lego.NewConfig(acc)
 	config.CADirURL = ctx.GlobalString("server")
 
 	config.Certificate = lego.CertificateConfig{
-		KeyType: getKeyType(ctx),
+		KeyType: keyType,
 		Timeout: time.Duration(ctx.GlobalInt("cert.timeout")) * time.Second,
 	}
 	config.UserAgent = fmt.Sprintf("lego-cli/%s", ctx.App.Version)

@@ -32,7 +32,7 @@ func createRenew() cli.Command {
 		Flags: []cli.Flag{
 			cli.IntFlag{
 				Name:  "days",
-				Value: 15,
+				Value: 30,
 				Usage: "The number of days left on a certificate to renew it.",
 			},
 			cli.BoolFlag{

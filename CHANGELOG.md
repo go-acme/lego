@@ -1,5 +1,22 @@
 # Changelog
 
+## [v2.2.0] - 2019-02-08
+
+### Added:
+- **[dnsprovider]** Add support for Openstack Designate as a DNS provider
+- **[dnsprovider]** gcloud: Option to specify gcloud service account json by env as string
+- **[experimental feature]** Resolve CNAME when creating dns-01 challenge. To enable: set `LEGO_EXPERIMENTAL_CNAME_SUPPORT` to `true`.
+ 
+### Changed:
+- **[cli]** Applies Let’s Encrypt’s recommendation about renew. The option `--days` of the command `renew` has a new default value (`30`)
+- **[lib]** Uses a jittered exponential backoff
+
+### Fixed:
+- **[cli]** CLI and key type.
+- **[dnsprovider]** httpreq: Endpoint with path.
+- **[dnsprovider]** fastdns: Do not overwrite existing TXT records
+- Log wildcard domain correctly in validation
+
 ## [v2.1.0] - 2019-01-24
 
 ### Added:
@@ -45,6 +62,7 @@
 - **[cli]** `--tls`: enable TLS challenge **important**
 - **[cli]** `--tls.port`:  previously named `--tls`
 - **[cli]** `--dns.resolvers`: previously named `--dns-resolvers`
+- **[cli]** the option `--days` of the command `renew` has default value (`15`)
 - **[dnsprovider]** gcloud: Use GCE_PROJECT for project always, if specified
 
 ### Removed:

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/miekg/dns"
 	"github.com/xenolf/lego/acme"
 	"github.com/xenolf/lego/acme/api"
 	"github.com/xenolf/lego/challenge"
@@ -172,5 +173,12 @@ func GetRecord(domain, keyAuth string) (fqdn string, value string) {
 	// base64URL encoding without padding
 	value = base64.RawURLEncoding.EncodeToString(keyAuthShaBytes[:sha256.Size])
 	fqdn = fmt.Sprintf("_acme-challenge.%s.", domain)
+
+	// Check if the domain has CNAME then return that
+	r, err := dnsQuery(fqdn, dns.TypeCNAME, recursiveNameservers, true)
+	if err == nil && r.Rcode == dns.RcodeSuccess {
+		fqdn = updateDomainWithCName(r, fqdn)
+	}
+
 	return
 }

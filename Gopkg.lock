@@ -241,6 +241,24 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:de9a3291ce7afad12af8b11f3e9972edca4b77ca1374eacd0c9fa1ff1bddcc7c"
+  name = "github.com/gophercloud/gophercloud"
+  packages = [
+    ".",
+    "openstack",
+    "openstack/dns/v2/recordsets",
+    "openstack/dns/v2/zones",
+    "openstack/identity/v2/tenants",
+    "openstack/identity/v2/tokens",
+    "openstack/identity/v3/tokens",
+    "openstack/utils",
+    "pagination",
+  ]
+  pruneopts = "NUT"
+  revision = "a2b0ad6ce68c8302027db1a5f9dbb03b0c8ab072"
+
+[[projects]]
+  branch = "master"
   digest = "1:c45e4f1755487478216e06437e161d56299d963282ce109555091bc4c7a57343"
   name = "github.com/iij/doapi"
   packages = [
@@ -654,6 +672,10 @@
     "github.com/decker502/dnspod-go",
     "github.com/dnsimple/dnsimple-go/dnsimple",
     "github.com/exoscale/egoscale",
+    "github.com/gophercloud/gophercloud",
+    "github.com/gophercloud/gophercloud/openstack",
+    "github.com/gophercloud/gophercloud/openstack/dns/v2/recordsets",
+    "github.com/gophercloud/gophercloud/openstack/dns/v2/zones",
     "github.com/iij/doapi",
     "github.com/iij/doapi/protocol",
     "github.com/linode/linodego",

@@ -19,7 +19,7 @@ var (
 const (
 	// Fixed test data for unit tests.
 	egDomain  = "threeletter.agency"
-	egFQDN    = "30feb5f3-7cfa-43e2-95aa-d42ca56db9b0.pki." + egDomain + "."
+	egFQDN    = "_acme-challenge." + egDomain + "."
 	egKeyAuth = "⚷"
 )
 

@@ -128,6 +128,14 @@
   version = "v1.15.23"
 
 [[projects]]
+  digest = "1:cdee563173093e5ae7ab2a19c298e0904129719e1919a3c532b7bb0c3398b818"
+  name = "github.com/cenkalti/backoff"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "1e4cf3da559842a91afcb6ea6141451e6c30c618"
+  version = "v2.1.1"
+
+[[projects]]
   digest = "1:03cfacdc6bfd46007c15786c1ece3fa074f89e5193a292f0f26d9e98c99c7cc2"
   name = "github.com/cloudflare/cloudflare-go"
   packages = ["."]
@@ -667,6 +675,7 @@
     "github.com/aws/aws-sdk-go/aws/session",
     "github.com/aws/aws-sdk-go/service/lightsail",
     "github.com/aws/aws-sdk-go/service/route53",
+    "github.com/cenkalti/backoff",
     "github.com/cloudflare/cloudflare-go",
     "github.com/cpu/goacmedns",
     "github.com/decker502/dnspod-go",

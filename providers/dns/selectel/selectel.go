@@ -127,6 +127,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 // CleanUp removes a TXT record used for DNS-01 challenge.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	recordName := dns01.UnFqdn(fqdn)
 
 	domainObj, err := d.client.GetDomainByName(domain)
 	if err != nil {
@@ -141,7 +142,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	// Delete records with specific FQDN
 	var lastErr error
 	for _, record := range records {
-		if record.Name == fqdn {
+		if record.Name == recordName {
 			err = d.client.DeleteRecord(domainObj.ID, record.ID)
 			if err != nil {
 				lastErr = fmt.Errorf("selectel: %v", err)

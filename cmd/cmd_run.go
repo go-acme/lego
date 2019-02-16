@@ -106,7 +106,7 @@ func handleTOS(ctx *cli.Context, client *lego.Client) bool {
 		case "", "y", "Y":
 			return true
 		case "n", "N":
-			log.Fatal("You did not accept the TOS. Unable to proceed.")
+			return false
 		default:
 			fmt.Println("Your input was invalid. Please answer with one of Y/y, n/N or by pressing enter.")
 		}

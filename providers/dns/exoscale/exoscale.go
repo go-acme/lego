@@ -82,6 +82,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+	ctx := context.Background()
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 	zone, recordName, err := d.FindZoneAndRecordName(fqdn, domain)
 	if err != nil {
@@ -101,7 +102,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 			RecordType: "TXT",
 		}
 
-		_, err := d.client.CreateRecord(context.TODO(), zone, record)
+		_, err := d.client.CreateRecord(ctx, zone, record)
 		if err != nil {
 			return errors.New("Error while creating DNS record: " + err.Error())
 		}
@@ -114,7 +115,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 			RecordType: "TXT",
 		}
 
-		_, err := d.client.UpdateRecord(context.TODO(), zone, record)
+		_, err := d.client.UpdateRecord(ctx, zone, record)
 		if err != nil {
 			return errors.New("Error while updating DNS record: " + err.Error())
 		}
@@ -125,6 +126,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+	ctx := context.Background()
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 	zone, recordName, err := d.FindZoneAndRecordName(fqdn, domain)
 	if err != nil {
@@ -137,7 +139,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	if recordID != 0 {
-		err = d.client.DeleteRecord(context.TODO(), zone, recordID)
+		err = d.client.DeleteRecord(ctx, zone, recordID)
 		if err != nil {
 			return errors.New("Error while deleting DNS record: " + err.Error())
 		}
@@ -155,7 +157,8 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 // FindExistingRecordID Query Exoscale to find an existing record for this name.
 // Returns nil if no record could be found
 func (d *DNSProvider) FindExistingRecordID(zone, recordName string) (int64, error) {
-	records, err := d.client.GetRecords(context.TODO(), zone)
+	ctx := context.Background()
+	records, err := d.client.GetRecords(ctx, zone)
 	if err != nil {
 		return -1, errors.New("Error while retrievening DNS records: " + err.Error())
 	}

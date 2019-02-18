@@ -34,7 +34,7 @@
 [issues]
   exclude-use-default = false
   max-per-linter = 0
-  max-same = 0
+  max-same-issues = 0
   exclude = [
     "Error return value of .((os\\.)?std(out|err)\\..*|.*Close|.*Flush|os\\.Remove(All)?|.*printf?|os\\.(Un)?Setenv). is not checked",
     "exported (type|method|function) (.+) should have comment or be unexported",

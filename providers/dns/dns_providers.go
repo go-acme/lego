@@ -42,6 +42,7 @@ import (
 	"github.com/xenolf/lego/providers/dns/netcup"
 	"github.com/xenolf/lego/providers/dns/nifcloud"
 	"github.com/xenolf/lego/providers/dns/ns1"
+	"github.com/xenolf/lego/providers/dns/oraclecloud"
 	"github.com/xenolf/lego/providers/dns/otc"
 	"github.com/xenolf/lego/providers/dns/ovh"
 	"github.com/xenolf/lego/providers/dns/pdns"
@@ -135,8 +136,10 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return netcup.NewDNSProvider()
 	case "nifcloud":
 		return nifcloud.NewDNSProvider()
-	case "ns1":
+	case "Ns1":
 		return ns1.NewDNSProvider()
+	case "oraclecloud":
+		return oraclecloud.NewDNSProvider()
 	case "otc":
 		return otc.NewDNSProvider()
 	case "ovh":

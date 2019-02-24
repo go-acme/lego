@@ -3,6 +3,7 @@ package oraclecloud
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/Sugi275/oci-env-configprovider/envprovider"
 	"github.com/oracle/oci-go-sdk/dns"
@@ -36,11 +37,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fmt.Println("helloOracle Present")
-
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	fqdn = DeleteLastDot(fqdn)
 	fmt.Println("fqdn: ", fqdn)
 	fmt.Println("value: ", value)
+	fmt.Println("domain: ", domain)
 
 	client, err := dns.NewDnsClientWithConfigurationProvider(envprovider.GetEnvConfigProvider())
 	if err != nil {
@@ -54,17 +55,16 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	// DNSのレコードを作成するパラメータを生成
-	fmt.Println("domain: ", domain)
-	zn := "test.enc"
-	dn := "_acme-challenge.test.enc"
+	//zn := "test.enc"
+	//dn := "_acme-challenge.test.enc"
 	txttype := "TXT"
 	falseFlg := false
-	rdata := "testdayoooooo!"
+	//rdata := "testdayoooooo!"
 	ttl := 30
 
 	recordDetails := dns.RecordDetails{
-		Domain:      &dn,
-		Rdata:       &rdata,
+		Domain:      &fqdn,
+		Rdata:       &value,
 		Rtype:       &txttype,
 		Ttl:         &ttl,
 		IsProtected: &falseFlg,
@@ -78,8 +78,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	request := dns.UpdateDomainRecordsRequest{
-		ZoneNameOrId:               &zn,
-		Domain:                     &dn,
+		ZoneNameOrId:               &domain,
+		Domain:                     &fqdn,
 		UpdateDomainRecordsDetails: updateDomainRecordsDetails,
 		CompartmentId:              &compartmentid,
 	}
@@ -98,4 +98,13 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fmt.Println("helloOracle CleanUp")
 
 	return nil
+}
+
+// DeleteLastDot Delete the last dot.
+// error occur if the last dot exist in oci-go-sdk.
+func DeleteLastDot(fqdn string) string {
+	if strings.HasSuffix(fqdn, ".") {
+		fqdn = strings.TrimRight(fqdn, ".")
+	}
+	return fqdn
 }

@@ -136,7 +136,7 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return netcup.NewDNSProvider()
 	case "nifcloud":
 		return nifcloud.NewDNSProvider()
-	case "Ns1":
+	case "ns1":
 		return ns1.NewDNSProvider()
 	case "oraclecloud":
 		return oraclecloud.NewDNSProvider()

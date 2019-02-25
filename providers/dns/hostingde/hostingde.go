@@ -89,7 +89,6 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	// get the ZoneConfig for that domain
 	zonesFind := ZoneConfigsFindRequest{
-		AuthToken: d.config.APIKey,
 		Filter: Filter{
 			Field: "zoneName",
 			Value: domain,
@@ -97,6 +96,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Limit: 1,
 		Page:  1,
 	}
+	zonesFind.AuthToken = d.config.APIKey
 
 	zoneConfig, err := d.getZone(zonesFind)
 	if err != nil {
@@ -104,7 +104,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 	zoneConfig.Name = d.config.ZoneName
 
-	rec := []RecordsAddRequest{{
+	rec := []DNSRecord{{
 		Type:    "TXT",
 		Name:    dns01.UnFqdn(fqdn),
 		Content: value,
@@ -112,10 +112,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}}
 
 	req := ZoneUpdateRequest{
-		AuthToken:    d.config.APIKey,
 		ZoneConfig:   *zoneConfig,
 		RecordsToAdd: rec,
 	}
+	req.AuthToken = d.config.APIKey
 
 	resp, err := d.updateZone(req)
 	if err != nil {
@@ -141,16 +141,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	rec := []RecordsDeleteRequest{{
+	rec := []DNSRecord{{
 		Type:    "TXT",
 		Name:    dns01.UnFqdn(fqdn),
-		Content: "\"" + value + "\"",
-		//ID:      recordID,
+		Content: `"` + value + `"`,
 	}}
 
 	// get the ZoneConfig for that domain
 	zonesFind := ZoneConfigsFindRequest{
-		AuthToken: d.config.APIKey,
 		Filter: Filter{
 			Field: "zoneName",
 			Value: domain,
@@ -158,6 +156,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		Limit: 1,
 		Page:  1,
 	}
+	zonesFind.AuthToken = d.config.APIKey
 
 	zoneConfig, err := d.getZone(zonesFind)
 	if err != nil {
@@ -166,10 +165,10 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	zoneConfig.Name = d.config.ZoneName
 
 	req := ZoneUpdateRequest{
-		AuthToken:       d.config.APIKey,
 		ZoneConfig:      *zoneConfig,
 		RecordsToDelete: rec,
 	}
+	req.AuthToken = d.config.APIKey
 
 	// Delete record ID from map
 	d.recordIDsMu.Lock()

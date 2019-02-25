@@ -9,13 +9,13 @@ import (
 )
 
 var envTest = tester.NewEnvTest(
-	"OCI_PrivateRSAKeyEncoded",
-	"OCI_PrivateRSAKey_passphrase",
-	"OCI_TenancyOCID",
-	"OCI_UserOCID",
-	"OCI_KeyFingerprint",
-	"OCI_Region",
-	"OCI_COMPARTMENT_ID").
+	"OCI_PRIVKEY_BASE64",
+	"OCI_PRIVKEY_PASS",
+	"OCI_TENANCY_OCID",
+	"OCI_USER_OCID",
+	"OCI_PUBKEY_FINGERPRINT",
+	"OCI_REGION",
+	"OCI_COMPARTMENT_OCID").
 	WithDomain("ORACLECLOUD_DOMAIN")
 
 func TestNewDNSProvider(t *testing.T) {
@@ -27,27 +27,27 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"OCI_PrivateRSAKeyEncoded":     "secret",
-				"OCI_PrivateRSAKey_passphrase": "secret",
-				"OCI_TenancyOCID":              "ocid1.tenancy.oc1..secret",
-				"OCI_UserOCID":                 "ocid1.user.oc1..secret",
-				"OCI_KeyFingerprint":           "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
-				"OCI_Region":                   "us-phoenix-1",
-				"OCI_COMPARTMENT_ID":           "123",
+				"OCI_PRIVKEY_BASE64":     "secret",
+				"OCI_PRIVKEY_PASS":       "secret",
+				"OCI_TENANCY_OCID":       "ocid1.tenancy.oc1..secret",
+				"OCI_USER_OCID":          "ocid1.user.oc1..secret",
+				"OCI_PUBKEY_FINGERPRINT": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
+				"OCI_REGION":             "us-phoenix-1",
+				"OCI_COMPARTMENT_OCID":   "123",
 			},
 		},
 		{
 			desc: "missing CompartmentID",
 			envVars: map[string]string{
-				"OCI_PrivateRSAKeyEncoded":     "secret",
-				"OCI_PrivateRSAKey_passphrase": "secret",
-				"OCI_TenancyOCID":              "ocid1.tenancy.oc1..secret",
-				"OCI_UserOCID":                 "ocid1.user.oc1..secret",
-				"OCI_KeyFingerprint":           "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
-				"OCI_Region":                   "us-phoenix-1",
-				"OCI_COMPARTMENT_ID":           "",
+				"OCI_PRIVKEY_BASE64":     "secret",
+				"OCI_PRIVKEY_PASS":       "secret",
+				"OCI_TENANCY_OCID":       "ocid1.tenancy.oc1..secret",
+				"OCI_USER_OCID":          "ocid1.user.oc1..secret",
+				"OCI_PUBKEY_FINGERPRINT": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
+				"OCI_REGION":             "us-phoenix-1",
+				"OCI_COMPARTMENT_OCID":   "",
 			},
-			expected: "oraclecloud: can not read CompartmentID from environment variable OCI_COMPARTMENT_ID",
+			expected: "oraclecloud: can not read CompartmentID from environment variable OCI_COMPARTMENT_OCID",
 		},
 	}
 

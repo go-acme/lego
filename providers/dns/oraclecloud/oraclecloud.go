@@ -39,27 +39,20 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 	fqdn = DeleteLastDot(fqdn)
-	fmt.Println("fqdn: ", fqdn)
-	fmt.Println("value: ", value)
-	fmt.Println("domain: ", domain)
 
 	client, err := dns.NewDnsClientWithConfigurationProvider(envprovider.GetEnvConfigProvider())
 	if err != nil {
 		return fmt.Errorf("oraclecloud: %v", err)
 	}
 
-	ctx := context.Background()
 	compartmentid, err := envprovider.GetCompartmentID()
 	if err != nil {
 		return fmt.Errorf("oraclecloud: %v", err)
 	}
 
-	// DNSのレコードを作成するパラメータを生成
-	//zn := "test.enc"
-	//dn := "_acme-challenge.test.enc"
+	// generate request RecordDetails
 	txttype := "TXT"
 	falseFlg := false
-	//rdata := "testdayoooooo!"
 	ttl := 30
 
 	recordDetails := dns.RecordDetails{
@@ -84,11 +77,11 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		CompartmentId:              &compartmentid,
 	}
 
-	response, err := client.UpdateDomainRecords(ctx, request)
+	ctx := context.Background()
+	_, err = client.UpdateDomainRecords(ctx, request)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(response)
 
 	return nil
 }

@@ -100,3 +100,11 @@
 [[constraint]]
   version = "v0.7.3"
   name = "github.com/akamai/AkamaiOPEN-edgegrid-golang"
+
+[[constraint]]
+  version = "master"
+  name = "github.com/oracle/oci-go-sdk"
+
+[[constraint]]
+  version = "master"
+  name = "github.com/Sugi275/oci-env-configprovider"

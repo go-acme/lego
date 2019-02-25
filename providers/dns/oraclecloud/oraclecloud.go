@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
+	"net/http"
 	"time"
 
 	"github.com/Sugi275/oci-env-configprovider/envprovider"
+	"github.com/oracle/oci-go-sdk/common"
 	"github.com/oracle/oci-go-sdk/dns"
 	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/platform/config/env"
@@ -19,6 +20,7 @@ type Config struct {
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
+	HTTPClient         *http.Client
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider
@@ -27,8 +29,10 @@ func NewDefaultConfig() *Config {
 		TTL:                env.GetOrDefaultInt("OCI_TTL", dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond("OCI_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond("OCI_POLLING_INTERVAL", dns01.DefaultPollingInterval),
+		HTTPClient: &http.Client{
+			Timeout: env.GetOrDefaultSecond("OCI_HTTP_TIMEOUT", 60*time.Second),
+		},
 	}
-
 }
 
 // DNSProvider is an implementation of the acme.ChallengeProvider interface.
@@ -39,14 +43,13 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for OracleCloud.
 func NewDNSProvider() (*DNSProvider, error) {
-
-	compartmentid, err := envprovider.GetCompartmentID()
+	compartmentID, err := envprovider.GetCompartmentID()
 	if err != nil {
 		return nil, fmt.Errorf("oraclecloud: %v", err)
 	}
 
 	config := NewDefaultConfig()
-	config.compartmentID = compartmentid
+	config.compartmentID = compartmentID
 
 	return NewDNSProviderConfig(config)
 }
@@ -66,45 +69,40 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("oraclecloud: %v", err)
 	}
 
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
+	}
+
 	return &DNSProvider{client: &client, config: config}, nil
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
-	fqdn = DeleteLastDot(fqdn)
 
 	// generate request RecordDetails
-	txttype := "TXT"
-	falseFlg := false
-	ttl := 30
-
 	recordDetails := dns.RecordDetails{
-		Domain:      &fqdn,
-		Rdata:       &value,
-		Rtype:       &txttype,
-		Ttl:         &ttl,
-		IsProtected: &falseFlg,
-	}
-
-	var recordDetailsList []dns.RecordDetails
-	recordDetailsList = append(recordDetailsList, recordDetails)
-
-	updateDomainRecordsDetails := dns.UpdateDomainRecordsDetails{
-		Items: recordDetailsList,
+		Domain:      common.String(dns01.UnFqdn(fqdn)),
+		Rdata:       common.String(value),
+		Rtype:       common.String("TXT"),
+		Ttl:         common.Int(30),
+		IsProtected: common.Bool(false),
 	}
 
 	request := dns.UpdateDomainRecordsRequest{
-		ZoneNameOrId:               &domain,
-		Domain:                     &fqdn,
-		UpdateDomainRecordsDetails: updateDomainRecordsDetails,
-		CompartmentId:              &d.config.compartmentID,
+		ZoneNameOrId: common.String(domain),
+		Domain:       common.String(dns01.UnFqdn(fqdn)),
+		UpdateDomainRecordsDetails: dns.UpdateDomainRecordsDetails{
+			Items: []dns.RecordDetails{
+				recordDetails,
+			},
+		},
+		CompartmentId: common.String(d.config.compartmentID),
 	}
 
-	ctx := context.Background()
-	_, err := d.client.UpdateDomainRecords(ctx, request)
+	_, err := d.client.UpdateDomainRecords(context.Background(), request)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("oraclecloud: %v", err)
 	}
 
 	return nil
@@ -113,28 +111,17 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 // CleanUp removes the TXT record matching the specified parameters
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
-	fqdn = DeleteLastDot(fqdn)
 
 	request := dns.DeleteDomainRecordsRequest{
-		ZoneNameOrId:  &domain,
-		Domain:        &fqdn,
-		CompartmentId: &d.config.compartmentID,
+		ZoneNameOrId:  common.String(domain),
+		Domain:        common.String(dns01.UnFqdn(fqdn)),
+		CompartmentId: common.String(d.config.compartmentID),
 	}
 
-	ctx := context.Background()
-	_, err := d.client.DeleteDomainRecords(ctx, request)
+	_, err := d.client.DeleteDomainRecords(context.Background(), request)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("oraclecloud: %v", err)
 	}
 
 	return nil
-}
-
-// DeleteLastDot Delete the last dot.
-// error occur if the last dot exist in oci-go-sdk.
-func DeleteLastDot(fqdn string) string {
-	if strings.HasSuffix(fqdn, ".") {
-		fqdn = strings.TrimRight(fqdn, ".")
-	}
-	return fqdn
 }

@@ -73,12 +73,9 @@ func TestNewDNSProvider(t *testing.T) {
 }
 
 func TestNewDNSProviderConfig(t *testing.T) {
-	// validate to golangci-lint
-	config := &Config{}
-	config.TTL = 60
-	config = nil
+	// TODO add tests.
 
-	_, err := NewDNSProviderConfig(config)
+	_, err := NewDNSProviderConfig(nil)
 	require.EqualError(t, err, "oraclecloud: the configuration of the DNS provider is nil")
 }
 

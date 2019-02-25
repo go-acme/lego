@@ -73,7 +73,9 @@ func TestNewDNSProvider(t *testing.T) {
 }
 
 func TestNewDNSProviderConfig(t *testing.T) {
-	var config *Config
+	// validate to golangci-lint
+	config := &Config{}
+	config.TTL = 60
 	config = nil
 
 	_, err := NewDNSProviderConfig(config)

@@ -88,7 +88,30 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fmt.Println("helloOracle CleanUp")
+	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	fqdn = DeleteLastDot(fqdn)
+
+	client, err := dns.NewDnsClientWithConfigurationProvider(envprovider.GetEnvConfigProvider())
+	if err != nil {
+		return fmt.Errorf("oraclecloud: %v", err)
+	}
+
+	compartmentid, err := envprovider.GetCompartmentID()
+	if err != nil {
+		return fmt.Errorf("oraclecloud: %v", err)
+	}
+
+	request := dns.DeleteDomainRecordsRequest{
+		ZoneNameOrId:  &domain,
+		Domain:        &fqdn,
+		CompartmentId: &compartmentid,
+	}
+
+	ctx := context.Background()
+	_, err = client.DeleteDomainRecords(ctx, request)
+	if err != nil {
+		panic(err)
+	}
 
 	return nil
 }

@@ -1,20 +1,27 @@
 package oraclecloud
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/base64"
+	"encoding/pem"
 	"testing"
 	"time"
+
+	"github.com/oracle/oci-go-sdk/common"
 
 	"github.com/stretchr/testify/require"
 	"github.com/xenolf/lego/platform/tester"
 )
 
 var envTest = tester.NewEnvTest(
-	"OCI_PRIVKEY_BASE64",
-	"OCI_PRIVKEY_PASS",
-	"OCI_TENANCY_OCID",
-	"OCI_USER_OCID",
-	"OCI_PUBKEY_FINGERPRINT",
-	"OCI_REGION",
+	ociPrivkeyBase64,
+	ociPrivkeyPass,
+	ociTenancyOCID,
+	ociUserOCID,
+	ociPubkeyFingerprint,
+	ociRegion,
 	"OCI_COMPARTMENT_OCID").
 	WithDomain("ORACLECLOUD_DOMAIN")
 
@@ -27,27 +34,123 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"OCI_PRIVKEY_BASE64":     "secret",
-				"OCI_PRIVKEY_PASS":       "secret",
-				"OCI_TENANCY_OCID":       "ocid1.tenancy.oc1..secret",
-				"OCI_USER_OCID":          "ocid1.user.oc1..secret",
-				"OCI_PUBKEY_FINGERPRINT": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
-				"OCI_REGION":             "us-phoenix-1",
-				"OCI_COMPARTMENT_OCID":   "123",
+				ociPrivkeyBase64:       mustGeneratePrivateKey("secret1"),
+				ociPrivkeyPass:         "secret1",
+				ociTenancyOCID:         "ocid1.tenancy.oc1..secret",
+				ociUserOCID:            "ocid1.user.oc1..secret",
+				ociPubkeyFingerprint:   "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
+				ociRegion:              "us-phoenix-1",
+				"OCI_COMPARTMENT_OCID": "123",
 			},
+		},
+		{
+			desc:     "missing credentials",
+			envVars:  map[string]string{},
+			expected: "oraclecloud: some credentials information are missing: OCI_PRIVKEY_BASE64,OCI_TENANCY_OCID,OCI_USER_OCID,OCI_PUBKEY_FINGERPRINT,OCI_REGION,OCI_COMPARTMENT_OCID",
 		},
 		{
 			desc: "missing CompartmentID",
 			envVars: map[string]string{
-				"OCI_PRIVKEY_BASE64":     "secret",
-				"OCI_PRIVKEY_PASS":       "secret",
-				"OCI_TENANCY_OCID":       "ocid1.tenancy.oc1..secret",
-				"OCI_USER_OCID":          "ocid1.user.oc1..secret",
-				"OCI_PUBKEY_FINGERPRINT": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
-				"OCI_REGION":             "us-phoenix-1",
-				"OCI_COMPARTMENT_OCID":   "",
+				ociPrivkeyBase64:       mustGeneratePrivateKey("secret"),
+				ociPrivkeyPass:         "secret",
+				ociTenancyOCID:         "ocid1.tenancy.oc1..secret",
+				ociUserOCID:            "ocid1.user.oc1..secret",
+				ociPubkeyFingerprint:   "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
+				ociRegion:              "us-phoenix-1",
+				"OCI_COMPARTMENT_OCID": "",
 			},
-			expected: "oraclecloud: can not read CompartmentID from environment variable OCI_COMPARTMENT_OCID",
+			expected: "oraclecloud: some credentials information are missing: OCI_COMPARTMENT_OCID",
+		},
+		{
+			desc: "missing OCI_PRIVKEY_BASE64",
+			envVars: map[string]string{
+				ociPrivkeyBase64:       "",
+				ociPrivkeyPass:         "secret",
+				ociTenancyOCID:         "ocid1.tenancy.oc1..secret",
+				ociUserOCID:            "ocid1.user.oc1..secret",
+				ociPubkeyFingerprint:   "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
+				ociRegion:              "us-phoenix-1",
+				"OCI_COMPARTMENT_OCID": "123",
+			},
+			expected: "oraclecloud: some credentials information are missing: OCI_PRIVKEY_BASE64",
+		},
+		{
+			desc: "missing OCI_PRIVKEY_PASS",
+			envVars: map[string]string{
+				ociPrivkeyBase64:       mustGeneratePrivateKey("secret"),
+				ociPrivkeyPass:         "",
+				ociTenancyOCID:         "ocid1.tenancy.oc1..secret",
+				ociUserOCID:            "ocid1.user.oc1..secret",
+				ociPubkeyFingerprint:   "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
+				ociRegion:              "us-phoenix-1",
+				"OCI_COMPARTMENT_OCID": "123",
+			},
+			expected: "oraclecloud: can not create client, bad configuration: x509: decryption password incorrect",
+		},
+		{
+			desc: "missing OCI_TENANCY_OCID",
+			envVars: map[string]string{
+				ociPrivkeyBase64:       mustGeneratePrivateKey("secret"),
+				ociPrivkeyPass:         "secret",
+				ociTenancyOCID:         "",
+				ociUserOCID:            "ocid1.user.oc1..secret",
+				ociPubkeyFingerprint:   "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
+				ociRegion:              "us-phoenix-1",
+				"OCI_COMPARTMENT_OCID": "123",
+			},
+			expected: "oraclecloud: some credentials information are missing: OCI_TENANCY_OCID",
+		},
+		{
+			desc: "missing OCI_USER_OCID",
+			envVars: map[string]string{
+				ociPrivkeyBase64:       mustGeneratePrivateKey("secret"),
+				ociPrivkeyPass:         "secret",
+				ociTenancyOCID:         "ocid1.tenancy.oc1..secret",
+				ociUserOCID:            "",
+				ociPubkeyFingerprint:   "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
+				ociRegion:              "us-phoenix-1",
+				"OCI_COMPARTMENT_OCID": "123",
+			},
+			expected: "oraclecloud: some credentials information are missing: OCI_USER_OCID",
+		},
+		{
+			desc: "missing OCI_PUBKEY_FINGERPRINT",
+			envVars: map[string]string{
+				ociPrivkeyBase64:       mustGeneratePrivateKey("secret"),
+				ociPrivkeyPass:         "secret",
+				ociTenancyOCID:         "ocid1.tenancy.oc1..secret",
+				ociUserOCID:            "ocid1.user.oc1..secret",
+				ociPubkeyFingerprint:   "",
+				ociRegion:              "us-phoenix-1",
+				"OCI_COMPARTMENT_OCID": "123",
+			},
+			expected: "oraclecloud: some credentials information are missing: OCI_PUBKEY_FINGERPRINT",
+		},
+		{
+			desc: "missing OCI_REGION",
+			envVars: map[string]string{
+				ociPrivkeyBase64:       mustGeneratePrivateKey("secret"),
+				ociPrivkeyPass:         "secret",
+				ociTenancyOCID:         "ocid1.tenancy.oc1..secret",
+				ociUserOCID:            "ocid1.user.oc1..secret",
+				ociPubkeyFingerprint:   "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
+				ociRegion:              "",
+				"OCI_COMPARTMENT_OCID": "123",
+			},
+			expected: "oraclecloud: some credentials information are missing: OCI_REGION",
+		},
+		{
+			desc: "missing OCI_REGION",
+			envVars: map[string]string{
+				ociPrivkeyBase64:       mustGeneratePrivateKey("secret"),
+				ociPrivkeyPass:         "secret",
+				ociTenancyOCID:         "ocid1.tenancy.oc1..secret",
+				ociUserOCID:            "ocid1.user.oc1..secret",
+				ociPubkeyFingerprint:   "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
+				ociRegion:              "",
+				"OCI_COMPARTMENT_OCID": "123",
+			},
+			expected: "oraclecloud: some credentials information are missing: OCI_REGION",
 		},
 	}
 
@@ -73,10 +176,47 @@ func TestNewDNSProvider(t *testing.T) {
 }
 
 func TestNewDNSProviderConfig(t *testing.T) {
-	// TODO add tests.
+	testCases := []struct {
+		desc                  string
+		compartmentID         string
+		configurationProvider common.ConfigurationProvider
+		expected              string
+	}{
+		{
+			desc:                  "invalid configuration",
+			configurationProvider: &configProvider{},
+			compartmentID:         "123",
+			expected:              "oraclecloud: can not create client, bad configuration: PEM data was not found in buffer",
+		},
+		{
+			desc:          "OCIConfigProvider is missing",
+			compartmentID: "123",
+			expected:      "oraclecloud: OCIConfigProvider is missing",
+		},
+		{
+			desc:     "missing CompartmentID",
+			expected: "oraclecloud: CompartmentID is missing",
+		},
+	}
 
-	_, err := NewDNSProviderConfig(nil)
-	require.EqualError(t, err, "oraclecloud: the configuration of the DNS provider is nil")
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			config := NewDefaultConfig()
+			config.CompartmentID = test.compartmentID
+			config.OCIConfigProvider = test.configurationProvider
+
+			p, err := NewDNSProviderConfig(config)
+
+			if len(test.expected) == 0 {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
 }
 
 func TestLivePresent(t *testing.T) {
@@ -105,4 +245,25 @@ func TestLiveCleanUp(t *testing.T) {
 
 	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
+}
+
+func mustGeneratePrivateKey(pwd string) string {
+	key, err := rsa.GenerateKey(rand.Reader, 512)
+	if err != nil {
+		panic(err)
+	}
+
+	block := &pem.Block{
+		Type:  "RSA PRIVATE KEY",
+		Bytes: x509.MarshalPKCS1PrivateKey(key),
+	}
+
+	if pwd != "" {
+		block, err = x509.EncryptPEMBlock(rand.Reader, block.Type, block.Bytes, []byte(pwd), x509.PEMCipherAES256)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	return base64.StdEncoding.EncodeToString(pem.EncodeToMemory(block))
 }

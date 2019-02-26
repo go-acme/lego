@@ -55,14 +55,6 @@
   revision = "a3fa4a771d87bda2514a90a157e1fed1b6897d2e"
 
 [[projects]]
-  branch = "master"
-  digest = "1:06ea4af01419d7fc892e8c1ccf3b3ed18aaae7a7fe4a1e2560c6190e12e785d3"
-  name = "github.com/Sugi275/oci-env-configprovider"
-  packages = ["envprovider"]
-  pruneopts = "NUT"
-  revision = "f5676033d1083ff1ac36c85f50d490f0e18cc4ce"
-
-[[projects]]
   digest = "1:47071ecf8d840dd357ede1b2aed46576bdd0a866adecef3c9e85a00db9672202"
   name = "github.com/akamai/AkamaiOPEN-edgegrid-golang"
   packages = [
@@ -681,7 +673,6 @@
     "github.com/Azure/go-autorest/autorest/to",
     "github.com/JamesClonk/vultr/lib",
     "github.com/OpenDNS/vegadns2client",
-    "github.com/Sugi275/oci-env-configprovider/envprovider",
     "github.com/akamai/AkamaiOPEN-edgegrid-golang/configdns-v1",
     "github.com/akamai/AkamaiOPEN-edgegrid-golang/edgegrid",
     "github.com/aliyun/alibaba-cloud-sdk-go/sdk",
@@ -712,6 +703,7 @@
     "github.com/namedotcom/go/namecom",
     "github.com/nrdcg/auroradns",
     "github.com/nrdcg/goinwx",
+    "github.com/oracle/oci-go-sdk/common",
     "github.com/oracle/oci-go-sdk/dns",
     "github.com/ovh/go-ovh/ovh",
     "github.com/rainycape/memcache",

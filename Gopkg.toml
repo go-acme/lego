@@ -105,6 +105,3 @@
   version = "4.0.0"
   name = "github.com/oracle/oci-go-sdk"
 
-[[constraint]]
-  branch = "master"
-  name = "github.com/Sugi275/oci-env-configprovider"

@@ -95,14 +95,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	request := dns.PatchDomainRecordsRequest{
-		ZoneNameOrId: common.String(domain),
-		Domain:       common.String(dns01.UnFqdn(fqdn)),
-		PatchDomainRecordsDetails: dns.PatchDomainRecordsDetails{
-			Items: []dns.RecordOperation{
-				recordOperation,
-			},
-		},
 		CompartmentId: common.String(d.config.CompartmentID),
+		ZoneNameOrId:  common.String(domain),
+		Domain:        common.String(dns01.UnFqdn(fqdn)),
+		PatchDomainRecordsDetails: dns.PatchDomainRecordsDetails{
+			Items: []dns.RecordOperation{recordOperation},
+		},
 	}
 
 	_, err := d.client.PatchDomainRecords(context.Background(), request)
@@ -136,20 +134,20 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("oraclecloud: no record to CleanUp")
 	}
 
-	var deletehash *string
+	var deleteHash *string
 	for _, record := range domainRecords.RecordCollection.Items {
-		if *record.Rdata == "\""+value+"\"" {
-			deletehash = record.RecordHash
+		if record.Rdata != nil && *record.Rdata == `"`+value+`"` {
+			deleteHash = record.RecordHash
 			break
 		}
 	}
 
-	if deletehash == nil {
+	if deleteHash == nil {
 		return fmt.Errorf("oraclecloud: no record to CleanUp")
 	}
 
 	recordOperation := dns.RecordOperation{
-		RecordHash: deletehash,
+		RecordHash: deleteHash,
 		Operation:  dns.RecordOperationOperationRemove,
 	}
 
@@ -157,9 +155,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		ZoneNameOrId: common.String(domain),
 		Domain:       common.String(dns01.UnFqdn(fqdn)),
 		PatchDomainRecordsDetails: dns.PatchDomainRecordsDetails{
-			Items: []dns.RecordOperation{
-				recordOperation,
-			},
+			Items: []dns.RecordOperation{recordOperation},
 		},
 		CompartmentId: common.String(d.config.CompartmentID),
 	}

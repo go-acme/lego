@@ -380,6 +380,17 @@
   version = "v0.6.0"
 
 [[projects]]
+  digest = "1:c665ac9fd8cedb7bea85380a441dec4e5de3c7d4574e18c6ba53dfe04cf50878"
+  name = "github.com/oracle/oci-go-sdk"
+  packages = [
+    "common",
+    "dns",
+  ]
+  pruneopts = "NUT"
+  revision = "f1ecb80f81a9cfa7dbfc964a34a3c62323277a9d"
+  version = "v4.0.0"
+
+[[projects]]
   branch = "master"
   digest = "1:02584222c11b07d1d61cd76cc73e78cbc72810384a7ea69c543246d60d3335f7"
   name = "github.com/ovh/go-ovh"
@@ -692,6 +703,8 @@
     "github.com/namedotcom/go/namecom",
     "github.com/nrdcg/auroradns",
     "github.com/nrdcg/goinwx",
+    "github.com/oracle/oci-go-sdk/common",
+    "github.com/oracle/oci-go-sdk/dns",
     "github.com/ovh/go-ovh/ovh",
     "github.com/rainycape/memcache",
     "github.com/sacloud/libsacloud/api",

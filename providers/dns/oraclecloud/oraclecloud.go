@@ -85,8 +85,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	// generate request RecordDetails
-	recordDetails := dns.RecordDetails{
+	// generate request to dns.PatchDomainRecordsRequest
+	recordOperation := dns.RecordOperation{
 		Domain:      common.String(dns01.UnFqdn(fqdn)),
 		Rdata:       common.String(value),
 		Rtype:       common.String("TXT"),
@@ -94,18 +94,18 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		IsProtected: common.Bool(false),
 	}
 
-	request := dns.UpdateDomainRecordsRequest{
+	request := dns.PatchDomainRecordsRequest{
 		ZoneNameOrId: common.String(domain),
 		Domain:       common.String(dns01.UnFqdn(fqdn)),
-		UpdateDomainRecordsDetails: dns.UpdateDomainRecordsDetails{
-			Items: []dns.RecordDetails{
-				recordDetails,
+		PatchDomainRecordsDetails: dns.PatchDomainRecordsDetails{
+			Items: []dns.RecordOperation{
+				recordOperation,
 			},
 		},
 		CompartmentId: common.String(d.config.CompartmentID),
 	}
 
-	_, err := d.client.UpdateDomainRecords(context.Background(), request)
+	_, err := d.client.PatchDomainRecords(context.Background(), request)
 	if err != nil {
 		return fmt.Errorf("oraclecloud: %v", err)
 	}

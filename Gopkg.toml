@@ -90,7 +90,7 @@
   name = "github.com/transip/gotransip"
 
 [[constraint]]
-  version = "0.11.1"
+  version = "0.14.0"
   name = "github.com/exoscale/egoscale"
 
 [[constraint]]
@@ -100,3 +100,8 @@
 [[constraint]]
   version = "v0.7.3"
   name = "github.com/akamai/AkamaiOPEN-edgegrid-golang"
+
+[[constraint]]
+  version = "4.0.0"
+  name = "github.com/oracle/oci-go-sdk"
+

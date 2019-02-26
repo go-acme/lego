@@ -192,12 +192,12 @@
   version = "v0.21.0"
 
 [[projects]]
-  digest = "1:e68d50b8dc605565eb62df1c2b2c67fa729e5b55aa1a6c81456eecbe0326ecdb"
+  digest = "1:9013e4c7a6ff077dcb478aa75524aa73b5763136efb4efe8949b18d9b90dd212"
   name = "github.com/exoscale/egoscale"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "67368ae928a70cb5cb44ecf6f418ee33a1ade044"
-  version = "v0.11.6"
+  revision = "4acc53d7aa0960f007acf1daedef69a6d24d8d1f"
+  version = "v0.14.0"
 
 [[projects]]
   digest = "1:aa3ed0a71c4e66e4ae6486bf97a3f4cab28edc78df2e50c5ad01dc7d91604b88"
@@ -378,6 +378,17 @@
   pruneopts = "NUT"
   revision = "d8152159450570012552f924a0ae6ab3d8c617e0"
   version = "v0.6.0"
+
+[[projects]]
+  digest = "1:c665ac9fd8cedb7bea85380a441dec4e5de3c7d4574e18c6ba53dfe04cf50878"
+  name = "github.com/oracle/oci-go-sdk"
+  packages = [
+    "common",
+    "dns",
+  ]
+  pruneopts = "NUT"
+  revision = "f1ecb80f81a9cfa7dbfc964a34a3c62323277a9d"
+  version = "v4.0.0"
 
 [[projects]]
   branch = "master"
@@ -692,6 +703,8 @@
     "github.com/namedotcom/go/namecom",
     "github.com/nrdcg/auroradns",
     "github.com/nrdcg/goinwx",
+    "github.com/oracle/oci-go-sdk/common",
+    "github.com/oracle/oci-go-sdk/dns",
     "github.com/ovh/go-ovh/ovh",
     "github.com/rainycape/memcache",
     "github.com/sacloud/libsacloud/api",

@@ -87,7 +87,24 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	rec := []RecordsAddRequest{{
+	// get the ZoneConfig for that domain
+	zonesFind := ZoneConfigsFindRequest{
+		Filter: Filter{
+			Field: "zoneName",
+			Value: domain,
+		},
+		Limit: 1,
+		Page:  1,
+	}
+	zonesFind.AuthToken = d.config.APIKey
+
+	zoneConfig, err := d.getZone(zonesFind)
+	if err != nil {
+		return fmt.Errorf("hostingde: %v", err)
+	}
+	zoneConfig.Name = d.config.ZoneName
+
+	rec := []DNSRecord{{
 		Type:    "TXT",
 		Name:    dns01.UnFqdn(fqdn),
 		Content: value,
@@ -95,12 +112,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}}
 
 	req := ZoneUpdateRequest{
-		AuthToken: d.config.APIKey,
-		ZoneConfigSelector: ZoneConfigSelector{
-			Name: d.config.ZoneName,
-		},
+		ZoneConfig:   *zoneConfig,
 		RecordsToAdd: rec,
 	}
+	req.AuthToken = d.config.APIKey
 
 	resp, err := d.updateZone(req)
 	if err != nil {
@@ -126,35 +141,41 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	// get the record's unique ID from when we created it
-	d.recordIDsMu.Lock()
-	recordID, ok := d.recordIDs[fqdn]
-	d.recordIDsMu.Unlock()
-	if !ok {
-		return fmt.Errorf("hostingde: unknown record ID for %q", fqdn)
-	}
-
-	rec := []RecordsDeleteRequest{{
+	rec := []DNSRecord{{
 		Type:    "TXT",
 		Name:    dns01.UnFqdn(fqdn),
-		Content: value,
-		ID:      recordID,
+		Content: `"` + value + `"`,
 	}}
 
-	req := ZoneUpdateRequest{
-		AuthToken: d.config.APIKey,
-		ZoneConfigSelector: ZoneConfigSelector{
-			Name: d.config.ZoneName,
+	// get the ZoneConfig for that domain
+	zonesFind := ZoneConfigsFindRequest{
+		Filter: Filter{
+			Field: "zoneName",
+			Value: domain,
 		},
+		Limit: 1,
+		Page:  1,
+	}
+	zonesFind.AuthToken = d.config.APIKey
+
+	zoneConfig, err := d.getZone(zonesFind)
+	if err != nil {
+		return fmt.Errorf("hostingde: %v", err)
+	}
+	zoneConfig.Name = d.config.ZoneName
+
+	req := ZoneUpdateRequest{
+		ZoneConfig:      *zoneConfig,
 		RecordsToDelete: rec,
 	}
+	req.AuthToken = d.config.APIKey
 
 	// Delete record ID from map
 	d.recordIDsMu.Lock()
 	delete(d.recordIDs, fqdn)
 	d.recordIDsMu.Unlock()
 
-	_, err := d.updateZone(req)
+	_, err = d.updateZone(req)
 	if err != nil {
 		return fmt.Errorf("hostingde: %v", err)
 	}

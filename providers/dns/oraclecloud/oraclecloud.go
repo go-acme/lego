@@ -115,15 +115,56 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	request := dns.DeleteDomainRecordsRequest{
+	// search to TXT record's hash to delete
+	getRequest := dns.GetDomainRecordsRequest{
 		ZoneNameOrId:  common.String(domain),
 		Domain:        common.String(dns01.UnFqdn(fqdn)),
 		CompartmentId: common.String(d.config.CompartmentID),
+		Rtype:         common.String("TXT"),
 	}
 
-	_, err := d.client.DeleteDomainRecords(context.Background(), request)
+	ctx := context.Background()
+
+	domainRecords, err := d.client.GetDomainRecords(ctx, getRequest)
+	if err != nil {
+		return fmt.Errorf("oraclecloud: %v", err)
+	}
+
+	if *domainRecords.OpcTotalItems == 0 {
+		return fmt.Errorf("oraclecloud: no record to CleanUp")
+	}
+
+	var deletehash *string
+	for _, record := range domainRecords.RecordCollection.Items {
+		if *record.Rdata == "\""+value+"\"" {
+			deletehash = record.RecordHash
+			break
+		}
+	}
+
+	if deletehash == nil {
+		return fmt.Errorf("oraclecloud: no record to CleanUp")
+	}
+
+	recordOperation := dns.RecordOperation{
+		RecordHash: deletehash,
+		Operation:  dns.RecordOperationOperationRemove,
+	}
+
+	patchRequest := dns.PatchDomainRecordsRequest{
+		ZoneNameOrId: common.String(domain),
+		Domain:       common.String(dns01.UnFqdn(fqdn)),
+		PatchDomainRecordsDetails: dns.PatchDomainRecordsDetails{
+			Items: []dns.RecordOperation{
+				recordOperation,
+			},
+		},
+		CompartmentId: common.String(d.config.CompartmentID),
+	}
+
+	_, err = d.client.PatchDomainRecords(ctx, patchRequest)
 	if err != nil {
 		return fmt.Errorf("oraclecloud: %v", err)
 	}

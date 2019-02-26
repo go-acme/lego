@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/oracle/oci-go-sdk/common"
-
 	"github.com/stretchr/testify/require"
 	"github.com/xenolf/lego/platform/tester"
 )

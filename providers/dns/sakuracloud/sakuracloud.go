@@ -101,10 +101,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("sakuracloud: %v", err)
 	}
 
-	records, err := d.findTxtRecords(fqdn, zone)
-	if err != nil {
-		return fmt.Errorf("sakuracloud: %v", err)
-	}
+	records := d.findTxtRecords(fqdn, zone)
 
 	for _, record := range records {
 		var updRecords []sacloud.DNSRecordSet
@@ -155,7 +152,7 @@ func (d *DNSProvider) getHostedZone(domain string) (*sacloud.DNS, error) {
 	return nil, fmt.Errorf("zone %s not found", zoneName)
 }
 
-func (d *DNSProvider) findTxtRecords(fqdn string, zone *sacloud.DNS) ([]sacloud.DNSRecordSet, error) {
+func (d *DNSProvider) findTxtRecords(fqdn string, zone *sacloud.DNS) []sacloud.DNSRecordSet {
 	recordName := d.extractRecordName(fqdn, zone.Name)
 
 	var res []sacloud.DNSRecordSet
@@ -164,7 +161,7 @@ func (d *DNSProvider) findTxtRecords(fqdn string, zone *sacloud.DNS) ([]sacloud.
 			res = append(res, record)
 		}
 	}
-	return res, nil
+	return res
 }
 
 func (d *DNSProvider) extractRecordName(fqdn, domain string) string {

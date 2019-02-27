@@ -90,7 +90,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Domain:      common.String(dns01.UnFqdn(fqdn)),
 		Rdata:       common.String(value),
 		Rtype:       common.String("TXT"),
-		Ttl:         common.Int(30),
+		Ttl:         common.Int(1),
 		IsProtected: common.Bool(false),
 	}
 
@@ -164,6 +164,30 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("oraclecloud: %v", err)
 	}
+	for yes := true; yes; {
+		yes, err = existRecord(ctx, d.client, getRequest, *deleteHash)
+
+		if err != nil {
+			return fmt.Errorf("oraclecloud: %v", err)
+		}
+
+		time.Sleep(3 * time.Second)
+	}
 
 	return nil
+}
+
+func existRecord(ctx context.Context, client *dns.DnsClient, getRequest dns.GetDomainRecordsRequest, recordHash string) (bool, error) {
+	domainRecords, err := client.GetDomainRecords(ctx, getRequest)
+	if err != nil {
+		return false, fmt.Errorf("oraclecloud: %v", err)
+	}
+
+	for _, record := range domainRecords.RecordCollection.Items {
+		if *record.RecordHash == recordHash {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }

@@ -90,7 +90,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Domain:      common.String(dns01.UnFqdn(fqdn)),
 		Rdata:       common.String(value),
 		Rtype:       common.String("TXT"),
-		Ttl:         common.Int(30),
+		Ttl:         common.Int(1),
 		IsProtected: common.Bool(false),
 	}
 

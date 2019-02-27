@@ -168,7 +168,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		yes, err = existRecord(ctx, d.client, getRequest, *deleteHash)
 
 		if err != nil {
-			panic(err)
+			return fmt.Errorf("oraclecloud: %v", err)
 		}
 
 		time.Sleep(3 * time.Second)
@@ -180,7 +180,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 func existRecord(ctx context.Context, client *dns.DnsClient, getRequest dns.GetDomainRecordsRequest, recordHash string) (bool, error) {
 	domainRecords, err := client.GetDomainRecords(ctx, getRequest)
 	if err != nil {
-		panic(err)
+		return false, fmt.Errorf("oraclecloud: %v", err)
 	}
 
 	for _, record := range domainRecords.RecordCollection.Items {

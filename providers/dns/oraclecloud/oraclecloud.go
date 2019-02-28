@@ -167,3 +167,9 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	return nil
 }
+
+// Timeout returns the timeout and interval to use when checking for DNS propagation.
+// Adjusting here to cope with spikes in propagation times.
+func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
+	return d.config.PropagationTimeout, d.config.PollingInterval
+}

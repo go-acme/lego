@@ -90,7 +90,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Domain:      common.String(dns01.UnFqdn(fqdn)),
 		Rdata:       common.String(value),
 		Rtype:       common.String("TXT"),
-		Ttl:         common.Int(30),
+		Ttl:         common.Int(d.config.TTL),
 		IsProtected: common.Bool(false),
 	}
 
@@ -166,4 +166,10 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	return nil
+}
+
+// Timeout returns the timeout and interval to use when checking for DNS propagation.
+// Adjusting here to cope with spikes in propagation times.
+func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
+	return d.config.PropagationTimeout, d.config.PollingInterval
 }

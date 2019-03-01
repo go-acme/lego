@@ -1,5 +1,5 @@
-// Package cloudxns implements a DNS provider for solving the DNS-01 challenge using CloudXNS DNS.
-package cloudxns
+// Package cloudns implements a DNS provider for solving the DNS-01 challenge using ClouDNS DNS.
+package cloudns
 
 import (
 	"errors"
@@ -9,13 +9,13 @@ import (
 
 	"github.com/xenolf/lego/challenge/dns01"
 	"github.com/xenolf/lego/platform/config/env"
-	"github.com/xenolf/lego/providers/dns/cloudxns/internal"
+	"github.com/xenolf/lego/providers/dns/cloudns/internal"
 )
 
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
-	APIKey             string
-	SecretKey          string
+	AuthID             string
+	AuthPassword       string
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
@@ -25,11 +25,11 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		PropagationTimeout: env.GetOrDefaultSecond("CLOUDXNS_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("CLOUDXNS_POLLING_INTERVAL", dns01.DefaultPollingInterval),
-		TTL:                env.GetOrDefaultInt("CLOUDXNS_TTL", dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond("CLOUDNS_PROPAGATION_TIMEOUT", 120*time.Second),
+		PollingInterval:    env.GetOrDefaultSecond("CLOUDNS_POLLING_INTERVAL", 4*time.Second),
+		TTL:                env.GetOrDefaultInt("CLOUDNS_TTL", dns01.DefaultTTL),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("CLOUDXNS_HTTP_TIMEOUT", 30*time.Second),
+			Timeout: env.GetOrDefaultSecond("CLOUDNS_HTTP_TIMEOUT", 30*time.Second),
 		},
 	}
 }
@@ -40,29 +40,29 @@ type DNSProvider struct {
 	client *internal.Client
 }
 
-// NewDNSProvider returns a DNSProvider instance configured for CloudXNS.
+// NewDNSProvider returns a DNSProvider instance configured for ClouDNS.
 // Credentials must be passed in the environment variables:
-// CLOUDXNS_API_KEY and CLOUDXNS_SECRET_KEY.
+// CLOUDNS_AUTH_ID and CLOUDNS_AUTH_PASSWORD.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("CLOUDXNS_API_KEY", "CLOUDXNS_SECRET_KEY")
+	values, err := env.Get("CLOUDNS_AUTH_ID", "CLOUDNS_AUTH_PASSWORD")
 	if err != nil {
-		return nil, fmt.Errorf("CloudXNS: %v", err)
+		return nil, fmt.Errorf("ClouDNS: %v", err)
 	}
 
 	config := NewDefaultConfig()
-	config.APIKey = values["CLOUDXNS_API_KEY"]
-	config.SecretKey = values["CLOUDXNS_SECRET_KEY"]
+	config.AuthID = values["CLOUDNS_AUTH_ID"]
+	config.AuthPassword = values["CLOUDNS_AUTH_PASSWORD"]
 
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderConfig return a DNSProvider instance configured for CloudXNS.
+// NewDNSProviderConfig return a DNSProvider instance configured for ClouDNS.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
-		return nil, errors.New("CloudXNS: the configuration of the DNS provider is nil")
+		return nil, errors.New("ClouDNS: the configuration of the DNS provider is nil")
 	}
 
-	client, err := internal.NewClient(config.APIKey, config.SecretKey)
+	client, err := internal.NewClient(config.AuthID, config.AuthPassword)
 	if err != nil {
 		return nil, err
 	}
@@ -76,29 +76,29 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	info, err := d.client.GetDomainInformation(fqdn)
+	zone, err := d.client.GetZone(fqdn)
 	if err != nil {
 		return err
 	}
 
-	return d.client.AddTxtRecord(info, fqdn, value, d.config.TTL)
+	return d.client.AddTxtRecord(zone.Name, fqdn, value, d.config.TTL)
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 
-	info, err := d.client.GetDomainInformation(fqdn)
+	zone, err := d.client.GetZone(fqdn)
 	if err != nil {
 		return err
 	}
 
-	record, err := d.client.FindTxtRecord(info.ID, fqdn)
+	record, err := d.client.FindTxtRecord(zone.Name, fqdn)
 	if err != nil {
 		return err
 	}
 
-	return d.client.RemoveTxtRecord(record.RecordID, info.ID)
+	return d.client.RemoveTxtRecord(record.ID, zone.Name)
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.

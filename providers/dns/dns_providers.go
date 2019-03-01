@@ -11,6 +11,7 @@ import (
 	"github.com/xenolf/lego/providers/dns/azure"
 	"github.com/xenolf/lego/providers/dns/bluecat"
 	"github.com/xenolf/lego/providers/dns/cloudflare"
+	"github.com/xenolf/lego/providers/dns/cloudns"
 	"github.com/xenolf/lego/providers/dns/cloudxns"
 	"github.com/xenolf/lego/providers/dns/conoha"
 	"github.com/xenolf/lego/providers/dns/designate"
@@ -74,6 +75,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return bluecat.NewDNSProvider()
 	case "cloudflare":
 		return cloudflare.NewDNSProvider()
+	case "cloudns":
+		return cloudns.NewDNSProvider()
 	case "cloudxns":
 		return cloudxns.NewDNSProvider()
 	case "conoha":

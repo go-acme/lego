@@ -44,7 +44,6 @@ func NewClient(authID string, authPassword string) (*Client, error) {
 		return nil, fmt.Errorf("ClouDNS: credentials missing: authPassword")
 	}
 
-	var url url.URL
 	baseURL, err := url.Parse(defaultBaseURL)
 	if err != nil {
 		return nil, err
@@ -73,9 +72,11 @@ func (c *Client) GetZone(authFQDN string) (*Zone, error) {
 		return nil, err
 	}
 
-	var authZoneName string = dns01.UnFqdn(authZone)
+	authZoneName := dns01.UnFqdn(authZone)
+
 	reqURL := *c.BaseURL
 	reqURL.Path += "get-zone-info.json"
+
 	q := reqURL.Query()
 	q.Add("domain-name", authZoneName)
 	reqURL.RawQuery = q.Encode()
@@ -88,8 +89,7 @@ func (c *Client) GetZone(authFQDN string) (*Zone, error) {
 	var zone Zone
 
 	if len(result) > 0 {
-		err = json.Unmarshal([]byte(result), &zone)
-		if err != nil {
+		if err = json.Unmarshal(result, &zone); err != nil {
 			return nil, fmt.Errorf("ClouDNS: zone unmarshaling error: %v", err)
 		}
 	}
@@ -103,10 +103,11 @@ func (c *Client) GetZone(authFQDN string) (*Zone, error) {
 
 // FindTxtRecord return the TXT record a zone ID and a FQDN
 func (c *Client) FindTxtRecord(zoneName, fqdn string) (*TXTRecord, error) {
-	var host string = dns01.UnFqdn(strings.TrimSuffix(dns01.UnFqdn(fqdn), zoneName))
+	host := dns01.UnFqdn(strings.TrimSuffix(dns01.UnFqdn(fqdn), zoneName))
 
 	reqURL := *c.BaseURL
 	reqURL.Path += "records.json"
+
 	q := reqURL.Query()
 	q.Add("domain-name", zoneName)
 	q.Add("host", host)
@@ -119,9 +120,7 @@ func (c *Client) FindTxtRecord(zoneName, fqdn string) (*TXTRecord, error) {
 	}
 
 	var records TXTRecords
-
-	err = json.Unmarshal([]byte(result), &records)
-	if err != nil {
+	if err = json.Unmarshal(result, &records); err != nil {
 		return nil, fmt.Errorf("ClouDNS: TXT record unmarshaling error: %v", err)
 	}
 
@@ -136,11 +135,11 @@ func (c *Client) FindTxtRecord(zoneName, fqdn string) (*TXTRecord, error) {
 
 // AddTxtRecord add a TXT record
 func (c *Client) AddTxtRecord(zoneName string, fqdn, value string, ttl int) error {
-
-	var host string = dns01.UnFqdn(strings.TrimSuffix(dns01.UnFqdn(fqdn), zoneName))
+	host := dns01.UnFqdn(strings.TrimSuffix(dns01.UnFqdn(fqdn), zoneName))
 
 	reqURL := *c.BaseURL
 	reqURL.Path += "add-record.json"
+
 	q := reqURL.Query()
 	q.Add("domain-name", zoneName)
 	q.Add("host", host)
@@ -157,10 +156,12 @@ func (c *Client) AddTxtRecord(zoneName string, fqdn, value string, ttl int) erro
 func (c *Client) RemoveTxtRecord(recordID int, zoneName string) error {
 	reqURL := *c.BaseURL
 	reqURL.Path += "delete-record.json"
+
 	q := reqURL.Query()
 	q.Add("domain-name", zoneName)
 	q.Add("record-id", strconv.Itoa(recordID))
 	reqURL.RawQuery = q.Encode()
+
 	_, err := c.doRequest(http.MethodPost, &reqURL)
 	return err
 }
@@ -190,7 +191,6 @@ func (c *Client) doRequest(method string, url *url.URL) (json.RawMessage, error)
 }
 
 func (c *Client) buildRequest(method string, url *url.URL) (*http.Request, error) {
-
 	q := url.Query()
 	q.Add("auth-id", c.authID)
 	q.Add("auth-password", c.authPassword)

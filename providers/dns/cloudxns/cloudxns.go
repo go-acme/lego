@@ -29,7 +29,7 @@ func NewDefaultConfig() *Config {
 		PollingInterval:    env.GetOrDefaultSecond("CLOUDXNS_POLLING_INTERVAL", dns01.DefaultPollingInterval),
 		TTL:                env.GetOrDefaultInt("CLOUDXNS_TTL", dns01.DefaultTTL),
 		HTTPClient: &http.Client{
-			Timeout: time.Second * time.Duration(env.GetOrDefaultInt("CLOUDXNS_HTTP_TIMEOUT", 30)),
+			Timeout: env.GetOrDefaultSecond("CLOUDXNS_HTTP_TIMEOUT", 30*time.Second),
 		},
 	}
 }

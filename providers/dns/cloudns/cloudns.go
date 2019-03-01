@@ -25,11 +25,11 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		PropagationTimeout: env.GetOrDefaultSecond("CLOUDNS_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("CLOUDNS_POLLING_INTERVAL", dns01.DefaultPollingInterval),
+		PropagationTimeout: env.GetOrDefaultSecond("CLOUDNS_PROPAGATION_TIMEOUT", 120*time.Second),
+		PollingInterval:    env.GetOrDefaultSecond("CLOUDNS_POLLING_INTERVAL", 4*time.Second),
 		TTL:                env.GetOrDefaultInt("CLOUDNS_TTL", dns01.DefaultTTL),
 		HTTPClient: &http.Client{
-			Timeout: time.Second * time.Duration(env.GetOrDefaultInt("CLOUDNS_HTTP_TIMEOUT", 30)),
+			Timeout: env.GetOrDefaultSecond("CLOUDNS_HTTP_TIMEOUT", 30*time.Second),
 		},
 	}
 }

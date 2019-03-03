@@ -6,6 +6,8 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/pem"
+	"io/ioutil"
+	"os"
 	"testing"
 	"time"
 
@@ -15,7 +17,8 @@ import (
 )
 
 var envTest = tester.NewEnvTest(
-	ociPrivkeyBase64,
+	ociPrivkey,
+	ociPrivkey+"_FILE",
 	ociPrivkeyPass,
 	ociTenancyOCID,
 	ociUserOCID,
@@ -33,7 +36,19 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				ociPrivkeyBase64:       mustGeneratePrivateKey("secret1"),
+				ociPrivkey:             mustGeneratePrivateKey("secret1"),
+				ociPrivkeyPass:         "secret1",
+				ociTenancyOCID:         "ocid1.tenancy.oc1..secret",
+				ociUserOCID:            "ocid1.user.oc1..secret",
+				ociPubkeyFingerprint:   "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
+				ociRegion:              "us-phoenix-1",
+				"OCI_COMPARTMENT_OCID": "123",
+			},
+		},
+		{
+			desc: "success file",
+			envVars: map[string]string{
+				ociPrivkey + "_FILE":   mustGeneratePrivateKeyFile("secret1"),
 				ociPrivkeyPass:         "secret1",
 				ociTenancyOCID:         "ocid1.tenancy.oc1..secret",
 				ociUserOCID:            "ocid1.user.oc1..secret",
@@ -45,12 +60,12 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc:     "missing credentials",
 			envVars:  map[string]string{},
-			expected: "oraclecloud: some credentials information are missing: OCI_PRIVKEY_BASE64,OCI_TENANCY_OCID,OCI_USER_OCID,OCI_PUBKEY_FINGERPRINT,OCI_REGION,OCI_COMPARTMENT_OCID",
+			expected: "oraclecloud: some credentials information are missing: OCI_PRIVKEY,OCI_TENANCY_OCID,OCI_USER_OCID,OCI_PUBKEY_FINGERPRINT,OCI_REGION,OCI_COMPARTMENT_OCID",
 		},
 		{
 			desc: "missing CompartmentID",
 			envVars: map[string]string{
-				ociPrivkeyBase64:       mustGeneratePrivateKey("secret"),
+				ociPrivkey:             mustGeneratePrivateKey("secret"),
 				ociPrivkeyPass:         "secret",
 				ociTenancyOCID:         "ocid1.tenancy.oc1..secret",
 				ociUserOCID:            "ocid1.user.oc1..secret",
@@ -61,9 +76,9 @@ func TestNewDNSProvider(t *testing.T) {
 			expected: "oraclecloud: some credentials information are missing: OCI_COMPARTMENT_OCID",
 		},
 		{
-			desc: "missing OCI_PRIVKEY_BASE64",
+			desc: "missing OCI_PRIVKEY",
 			envVars: map[string]string{
-				ociPrivkeyBase64:       "",
+				ociPrivkey:             "",
 				ociPrivkeyPass:         "secret",
 				ociTenancyOCID:         "ocid1.tenancy.oc1..secret",
 				ociUserOCID:            "ocid1.user.oc1..secret",
@@ -71,12 +86,12 @@ func TestNewDNSProvider(t *testing.T) {
 				ociRegion:              "us-phoenix-1",
 				"OCI_COMPARTMENT_OCID": "123",
 			},
-			expected: "oraclecloud: some credentials information are missing: OCI_PRIVKEY_BASE64",
+			expected: "oraclecloud: some credentials information are missing: OCI_PRIVKEY",
 		},
 		{
 			desc: "missing OCI_PRIVKEY_PASS",
 			envVars: map[string]string{
-				ociPrivkeyBase64:       mustGeneratePrivateKey("secret"),
+				ociPrivkey:             mustGeneratePrivateKey("secret"),
 				ociPrivkeyPass:         "",
 				ociTenancyOCID:         "ocid1.tenancy.oc1..secret",
 				ociUserOCID:            "ocid1.user.oc1..secret",
@@ -89,7 +104,7 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "missing OCI_TENANCY_OCID",
 			envVars: map[string]string{
-				ociPrivkeyBase64:       mustGeneratePrivateKey("secret"),
+				ociPrivkey:             mustGeneratePrivateKey("secret"),
 				ociPrivkeyPass:         "secret",
 				ociTenancyOCID:         "",
 				ociUserOCID:            "ocid1.user.oc1..secret",
@@ -102,7 +117,7 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "missing OCI_USER_OCID",
 			envVars: map[string]string{
-				ociPrivkeyBase64:       mustGeneratePrivateKey("secret"),
+				ociPrivkey:             mustGeneratePrivateKey("secret"),
 				ociPrivkeyPass:         "secret",
 				ociTenancyOCID:         "ocid1.tenancy.oc1..secret",
 				ociUserOCID:            "",
@@ -115,7 +130,7 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "missing OCI_PUBKEY_FINGERPRINT",
 			envVars: map[string]string{
-				ociPrivkeyBase64:       mustGeneratePrivateKey("secret"),
+				ociPrivkey:             mustGeneratePrivateKey("secret"),
 				ociPrivkeyPass:         "secret",
 				ociTenancyOCID:         "ocid1.tenancy.oc1..secret",
 				ociUserOCID:            "ocid1.user.oc1..secret",
@@ -128,7 +143,7 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "missing OCI_REGION",
 			envVars: map[string]string{
-				ociPrivkeyBase64:       mustGeneratePrivateKey("secret"),
+				ociPrivkey:             mustGeneratePrivateKey("secret"),
 				ociPrivkeyPass:         "secret",
 				ociTenancyOCID:         "ocid1.tenancy.oc1..secret",
 				ociUserOCID:            "ocid1.user.oc1..secret",
@@ -141,7 +156,7 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "missing OCI_REGION",
 			envVars: map[string]string{
-				ociPrivkeyBase64:       mustGeneratePrivateKey("secret"),
+				ociPrivkey:             mustGeneratePrivateKey("secret"),
 				ociPrivkeyPass:         "secret",
 				ociTenancyOCID:         "ocid1.tenancy.oc1..secret",
 				ociUserOCID:            "ocid1.user.oc1..secret",
@@ -155,7 +170,13 @@ func TestNewDNSProvider(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer envTest.RestoreEnv()
+			defer func() {
+				privKeyFile := os.Getenv(ociPrivkey + "_FILE")
+				if privKeyFile != "" {
+					_ = os.Remove(privKeyFile)
+				}
+				envTest.RestoreEnv()
+			}()
 			envTest.ClearEnv()
 
 			envTest.Apply(test.envVars)
@@ -185,7 +206,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			desc:                  "invalid configuration",
 			configurationProvider: &configProvider{},
 			compartmentID:         "123",
-			expected:              "oraclecloud: can not create client, bad configuration: PEM data was not found in buffer",
+			expected:              "oraclecloud: can not create client, bad configuration: x509: decryption password incorrect",
 		},
 		{
 			desc:          "OCIConfigProvider is missing",
@@ -247,9 +268,37 @@ func TestLiveCleanUp(t *testing.T) {
 }
 
 func mustGeneratePrivateKey(pwd string) string {
-	key, err := rsa.GenerateKey(rand.Reader, 512)
+	block, err := generatePrivateKey(pwd)
 	if err != nil {
 		panic(err)
+	}
+
+	return base64.StdEncoding.EncodeToString(pem.EncodeToMemory(block))
+}
+
+func mustGeneratePrivateKeyFile(pwd string) string {
+	block, err := generatePrivateKey(pwd)
+	if err != nil {
+		panic(err)
+	}
+
+	file, err := ioutil.TempFile("", "lego_oci_*.pem")
+	if err != nil {
+		panic(err)
+	}
+
+	err = pem.Encode(file, block)
+	if err != nil {
+		panic(err)
+	}
+
+	return file.Name()
+}
+
+func generatePrivateKey(pwd string) (*pem.Block, error) {
+	key, err := rsa.GenerateKey(rand.Reader, 512)
+	if err != nil {
+		return nil, err
 	}
 
 	block := &pem.Block{
@@ -260,9 +309,9 @@ func mustGeneratePrivateKey(pwd string) string {
 	if pwd != "" {
 		block, err = x509.EncryptPEMBlock(rand.Reader, block.Type, block.Bytes, []byte(pwd), x509.PEMCipherAES256)
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 	}
 
-	return base64.StdEncoding.EncodeToString(pem.EncodeToMemory(block))
+	return block, nil
 }

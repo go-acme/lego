@@ -4,13 +4,15 @@ import (
 	"crypto/rsa"
 	"encoding/base64"
 	"fmt"
+	"io/ioutil"
+	"os"
 
 	"github.com/oracle/oci-go-sdk/common"
 	"github.com/xenolf/lego/platform/config/env"
 )
 
 const (
-	ociPrivkeyBase64     = "OCI_PRIVKEY_BASE64"
+	ociPrivkey           = "OCI_PRIVKEY"
 	ociPrivkeyPass       = "OCI_PRIVKEY_PASS"
 	ociTenancyOCID       = "OCI_TENANCY_OCID"
 	ociUserOCID          = "OCI_USER_OCID"
@@ -31,12 +33,12 @@ func newConfigProvider(values map[string]string) *configProvider {
 }
 
 func (p *configProvider) PrivateRSAKey() (*rsa.PrivateKey, error) {
-	privateKeyDecoded, err := base64.StdEncoding.DecodeString(p.values[ociPrivkeyBase64])
+	privateKey, err := getPrivateKey(ociPrivkey)
 	if err != nil {
 		return nil, err
 	}
 
-	return common.PrivateKeyFromBytes(privateKeyDecoded, common.String(p.privateKeyPassphrase))
+	return common.PrivateKeyFromBytes(privateKey, common.String(p.privateKeyPassphrase))
 }
 
 func (p *configProvider) KeyID() (string, error) {
@@ -72,4 +74,28 @@ func (p *configProvider) KeyFingerprint() (string, error) {
 
 func (p *configProvider) Region() (string, error) {
 	return p.values[ociRegion], nil
+}
+
+func getPrivateKey(envVar string) ([]byte, error) {
+	envVarValue := os.Getenv(envVar)
+	if envVarValue != "" {
+		bytes, err := base64.StdEncoding.DecodeString(envVarValue)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read base64 value %s (defined by env var %s): %s", envVarValue, envVar, err)
+		}
+		return bytes, nil
+	}
+
+	fileVar := envVar + "_FILE"
+	fileVarValue := os.Getenv(fileVar)
+	if fileVarValue == "" {
+		return nil, fmt.Errorf("no value provided for: %s or %s", envVar, fileVar)
+	}
+
+	fileContents, err := ioutil.ReadFile(fileVarValue)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read the file %s (defined by env var %s): %s", fileVarValue, fileVar, err)
+	}
+
+	return fileContents, nil
 }

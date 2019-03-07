@@ -1,6 +1,49 @@
-# Execute an external program
+---
+title: "External program"
+date: 2019-03-03T16:39:46+01:00
+draft: false
+slug: exec
+---
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+<!-- providers/dns/exec/exec.toml -->
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+<!-- providers/dns/exec/exec.toml -->
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 Solving the DNS-01 challenge using an external program.
+
+
+<!--more-->
+
+- Code: `exec`
+
+Here is an example bash command using the External program provider:
+
+```bash
+EXEC_PATH=/the/path/to/myscript.sh \
+lego --dns exec --domains my.domain.com --email my@email.com run
+```
+
+
+
+
+
+## Base Configuration
+
+| Environment Variable Name | Description |
+|-----------------------|-------------|
+| `EXEC_MODE` | `RAW`, none |
+| `EXEC_PATH` | TODO |
+
+
+## Additional Configuration
+
+| Environment Variable Name | Description |
+|--------------------------------|-------------|
+| `EXEC_POLLING_INTERVAL` | Time between DNS propagation check |
+| `EXEC_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
+
 
 ## Description
 
@@ -48,6 +91,12 @@ It will then call the program `./update-dns.sh` like this:
 
 ## Commands
 
+{{% notice note %}}
+The `--` is because the token MAY start with a `-`, and the called program may try and interpret a `-` as indicating a flag.
+In the case of urfave, which is commonly used,
+you can use the `--` delimiter to specify the start of positional arguments, and handle such a string safely.
+{{% /notice %}}
+
 ### Present
 
 | Mode    | Command                                            |
@@ -78,9 +127,11 @@ the default display propagation timeout and polling interval are used.
 | `RAW`   | `myprogram timeout`                                |
 
 
-## NOTE
 
-The `--` is because the token MAY start with a `-`, and the called program may try and interpret a - as indicating a flag.
 
-In the case of urfave, which is commonly used,
-you can use the `--` delimiter to specify the start of positional arguments, and handle such a string safely.
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+<!-- providers/dns/exec/exec.toml -->
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+<!-- providers/dns/exec/exec.toml -->
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

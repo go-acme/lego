@@ -13,8 +13,6 @@ import (
 	"github.com/xenolf/lego/platform/config/env"
 )
 
-// GleSYS API reference: https://github.com/GleSYS/API/wiki/API-Documentation
-
 const (
 	// defaultBaseURL is the GleSYS API endpoint used by Present and CleanUp.
 	defaultBaseURL = "https://api.glesys.com/domain"

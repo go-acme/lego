@@ -1,11 +1,13 @@
 language: go
 
 go:
-  - 1.10.x
+  - 1.12.x
   - 1.x
 
 services:
   - memcached
+
+go_import_path: github.com/xenolf/lego
 
 addons:
   hosts:
@@ -33,12 +35,23 @@ before_install:
   - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | bash -s -- -b $GOPATH/bin v1.15.0
   - golangci-lint --version
 
+  # Hugo - documentation
+  - wget -O /tmp/hugo.deb https://github.com/gohugoio/hugo/releases/download/v0.54.0/hugo_0.54.0_Linux-64bit.deb
+  - sudo dpkg -i /tmp/hugo.deb
+
 install:
   - echo "TRAVIS_GO_VERSION=$TRAVIS_GO_VERSION"
   - dep status -v
 
 after_success:
   - make clean
+
+before_deploy:
+  - >
+    if ! [ "$BEFORE_DEPLOY_RUN" ]; then
+      export BEFORE_DEPLOY_RUN=1;
+      make docs-build
+    fi
 
 deploy:
   - provider: script
@@ -54,6 +67,14 @@ deploy:
     skip_cleanup: true
     overwrite: true
     file_glob: true
+    on:
+      tags: true
+      condition: $TRAVIS_GO_VERSION =~ ^1\.x$
+
+  - provider: pages
+    local_dir: docs/public
+    skip_cleanup: true
+    github_token: ${GITHUB_TOKEN}
     on:
       tags: true
       condition: $TRAVIS_GO_VERSION =~ ^1\.x$

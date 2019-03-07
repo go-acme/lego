@@ -1,0 +1,53 @@
+package cmd
+
+// CODE GENERATED AUTOMATICALLY
+// THIS FILE MUST NOT BE EDITED BY HAND
+
+import (
+	"fmt"
+	"os"
+	"strings"
+	"text/tabwriter"
+
+	"github.com/xenolf/lego/log"
+)
+
+func allDNSCodes() string {
+	return strings.Join([]string{
+{{- range $provider := .Providers }}
+		"{{ $provider.Code }}",
+{{- end}}
+	}, ", ")
+}
+
+func displayDNSHelp(name string) {
+	w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
+	switch name {
+{{ range $provider := .Providers }}
+	case "{{ $provider.Code }}":
+		// generated from: {{ .GeneratedFrom }}
+		fmt.Fprintln(w, `Configuration for {{ $provider.Name }}.`)
+		fmt.Fprintln(w, `Code: '{{ $provider.Code }}'`)
+		fmt.Fprintln(w)
+{{if $provider.Configuration }}{{if $provider.Configuration.Credentials }}
+		fmt.Fprintln(w, `Credentials:`)
+{{- range $k, $v := $provider.Configuration.Credentials }}
+		fmt.Fprintln(w,`	- "{{ $k }}": {{ safe $v }}`)
+{{- end}}
+		fmt.Fprintln(w)
+{{end}}{{if $provider.Configuration.Additional }}
+		fmt.Fprintln(w, `Additional Configuration:`)
+{{- range $k, $v := $provider.Configuration.Additional }}
+		fmt.Fprintln(w, `	- "{{ $k }}": {{ safe $v }}`)
+{{- end}}
+{{end}}{{end}}
+		fmt.Fprintln(w)
+		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/{{ $provider.Code }}`)
+{{end}}
+    case "manual":
+		fmt.Fprintln(w, `Solving the DNS-01 challenge using CLI prompt.`)
+	default:
+		log.Fatalf("%q is not yet supported.", name)
+	}
+	w.Flush()
+}

@@ -8,8 +8,6 @@ slug: acme-dns
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/acmedns/acmedns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/acmedns/acmedns.toml -->
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
 Configuration for [Joohoi's ACME-DNS](https://github.com/joohoi/acme-dns).
@@ -43,8 +41,6 @@ _Please contribute by adding a CLI example._
 - [API documentation](https://github.com/joohoi/acme-dns#api)
 - [Go client](https://github.com/cpu/goacmedns)
 
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/acmedns/acmedns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/acmedns/acmedns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

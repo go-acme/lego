@@ -8,8 +8,6 @@ slug: iij
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/iij/iij.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/iij/iij.toml -->
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
 Configuration for [Internet Initiative Japan](https://www.iij.ad.jp/en/).
@@ -51,8 +49,6 @@ _Please contribute by adding a CLI example._
 - [API documentation](http://manual.iij.jp/p2/pubapi/http://manual.iij.jp/p2/pubapi/)
 - [Go client](https://github.com/iij/doapi)
 
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/iij/iij.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/iij/iij.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

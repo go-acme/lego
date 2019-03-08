@@ -8,8 +8,6 @@ slug: godaddy
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/godaddy/godaddy.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/godaddy/godaddy.toml -->
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
 Configuration for [Go Daddy](https://godaddy.com).
@@ -51,8 +49,6 @@ _Please contribute by adding a CLI example._
 
 - [API documentation](https://developer.godaddy.com/doc/endpoint/domains)
 
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/godaddy/godaddy.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/godaddy/godaddy.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

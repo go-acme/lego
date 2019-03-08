@@ -8,8 +8,6 @@ slug: netcup
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/netcup/netcup.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/netcup/netcup.toml -->
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
 Configuration for [Netcup](https://www.netcup.eu/).
@@ -51,8 +49,6 @@ _Please contribute by adding a CLI example._
 
 - [API documentation](https://www.netcup-wiki.de/wiki/DNS_API)
 
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/netcup/netcup.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/netcup/netcup.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

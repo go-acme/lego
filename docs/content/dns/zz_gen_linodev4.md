@@ -8,8 +8,6 @@ slug: linodev4
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/linodev4/linodev4.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/linodev4/linodev4.toml -->
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
 Configuration for [Linode (v4)](https://www.linode.com/).
@@ -49,8 +47,6 @@ _Please contribute by adding a CLI example._
 - [API documentation](https://developers.linode.com/api/v4)
 - [Go client](https://github.com/linode/linodego)
 
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/linodev4/linodev4.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/linodev4/linodev4.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

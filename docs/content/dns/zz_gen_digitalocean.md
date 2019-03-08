@@ -8,8 +8,6 @@ slug: digitalocean
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/digitalocean/digitalocean.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/digitalocean/digitalocean.toml -->
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
 Configuration for [Digital Ocean](https://www.digitalocean.com/docs/networking/dns/).
@@ -49,8 +47,6 @@ _Please contribute by adding a CLI example._
 
 - [API documentation](https://developers.digitalocean.com/documentation/v2/#domain-records)
 
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/digitalocean/digitalocean.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/digitalocean/digitalocean.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

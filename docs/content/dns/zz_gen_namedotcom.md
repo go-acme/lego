@@ -8,8 +8,6 @@ slug: namedotcom
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/namedotcom/namedotcom.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/namedotcom/namedotcom.toml -->
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
 Configuration for [Name.com](https://www.name.com).
@@ -51,8 +49,6 @@ _Please contribute by adding a CLI example._
 - [API documentation](https://www.name.com/api-docs/DNS)
 - [Go client](https://github.com/namedotcom/go)
 
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/namedotcom/namedotcom.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/namedotcom/namedotcom.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

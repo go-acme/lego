@@ -8,8 +8,6 @@ slug: fastdns
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/fastdns/fastdns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/fastdns/fastdns.toml -->
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
 Configuration for [FastDNS](https://www.akamai.com/us/en/products/security/fast-dns.jsp).
@@ -52,8 +50,6 @@ _Please contribute by adding a CLI example._
 - [API documentation](https://developer.akamai.com/api/web_performance/fast_dns_record_management/v1.html)
 - [Go client](https://github.com/akamai/AkamaiOPEN-edgegrid-golang)
 
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/fastdns/fastdns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/fastdns/fastdns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

@@ -8,8 +8,6 @@ slug: auroradns
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/auroradns/auroradns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/auroradns/auroradns.toml -->
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
 Configuration for [Aurora DNS](https://www.pcextreme.com/aurora/dns).
@@ -51,8 +49,6 @@ _Please contribute by adding a CLI example._
 - [API documentation](https://libcloud.readthedocs.io/en/latest/dns/drivers/auroradns.html#api-docs)
 - [Go client](https://github.com/nrdcg/auroradns)
 
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/auroradns/auroradns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/auroradns/auroradns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

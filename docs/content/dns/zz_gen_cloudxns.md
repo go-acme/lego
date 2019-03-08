@@ -8,8 +8,6 @@ slug: cloudxns
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/cloudxns/cloudxns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/cloudxns/cloudxns.toml -->
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
 Configuration for [CloudXNS](https://www.cloudxns.net/).
@@ -50,8 +48,6 @@ _Please contribute by adding a CLI example._
 
 - [API documentation](https://www.cloudxns.net/Public/Doc/CloudXNS_api2.0_doc_zh-cn.zip)
 
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/cloudxns/cloudxns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/cloudxns/cloudxns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

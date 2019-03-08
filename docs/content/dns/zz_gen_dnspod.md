@@ -8,8 +8,6 @@ slug: dnspod
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/dnspod/dnspod.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/dnspod/dnspod.toml -->
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
 Configuration for [DNSPod](http://www.dnspod.com/).
@@ -50,8 +48,6 @@ _Please contribute by adding a CLI example._
 - [API documentation](https://www.dnspod.com/docs/index.html)
 - [Go client](https://github.com/decker502/dnspod-go)
 
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/dnspod/dnspod.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/dnspod/dnspod.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

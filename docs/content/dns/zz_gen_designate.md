@@ -8,8 +8,6 @@ slug: designate
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/designate/designate.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/designate/designate.toml -->
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
 Configuration for [Designate DNSaaS for Openstack](https://docs.openstack.org/designate/latest/).
@@ -53,8 +51,6 @@ _Please contribute by adding a CLI example._
 - [API documentation](https://docs.openstack.org/designate/latest/)
 - [Go client](https://godoc.org/github.com/gophercloud/gophercloud/openstack/dns/v2)
 
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/designate/designate.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/designate/designate.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

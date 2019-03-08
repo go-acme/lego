@@ -8,8 +8,6 @@ slug: gcloud
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/gcloud/gcloud.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/gcloud/gcloud.toml -->
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
 Configuration for [Google Cloud](https://cloud.google.com).
@@ -52,8 +50,6 @@ _Please contribute by adding a CLI example._
 - [API documentation](https://community.exoscale.com/documentation/dns/api/)
 - [Go client](https://github.com/googleapis/google-api-go-client)
 
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/gcloud/gcloud.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/gcloud/gcloud.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

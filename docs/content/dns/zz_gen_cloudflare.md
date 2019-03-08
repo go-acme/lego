@@ -8,8 +8,6 @@ slug: cloudflare
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/cloudflare/cloudflare.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/cloudflare/cloudflare.toml -->
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
 Configuration for [Cloudflare](https://www.cloudflare.com/dns/).
@@ -55,8 +53,6 @@ lego --dns cloudflare --domains my.domain.com --email my@email.com run
 - [API documentation](https://api.cloudflare.com/)
 - [Go client](https://github.com/cloudflare/cloudflare-go)
 
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/cloudflare/cloudflare.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/cloudflare/cloudflare.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

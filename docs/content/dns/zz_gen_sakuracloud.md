@@ -8,8 +8,6 @@ slug: sakuracloud
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/sakuracloud/sakuracloud.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/sakuracloud/sakuracloud.toml -->
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
 Configuration for [Sakura Cloud](https://cloud.sakura.ad.jp/).
@@ -50,8 +48,6 @@ _Please contribute by adding a CLI example._
 - [API documentation](https://developer.sakura.ad.jp/cloud/api/1.1/)
 - [Go client](https://github.com/sacloud/libsacloud)
 
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/sakuracloud/sakuracloud.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/sakuracloud/sakuracloud.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

@@ -8,8 +8,6 @@ slug: dnsimple
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/dnsimple/dnsimple.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/dnsimple/dnsimple.toml -->
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
 Configuration for [DNSimple](https://dnsimple.com/).
@@ -50,8 +48,6 @@ _Please contribute by adding a CLI example._
 - [API documentation](https://developer.dnsimple.com/v2/)
 - [Go client](https://github.com/dnsimple/dnsimple-go)
 
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/dnsimple/dnsimple.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/dnsimple/dnsimple.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

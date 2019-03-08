@@ -8,8 +8,6 @@ slug: exoscale
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/exoscale/exoscale.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/exoscale/exoscale.toml -->
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
 Configuration for [Exoscale](https://www.exoscale.com/).
@@ -52,8 +50,6 @@ _Please contribute by adding a CLI example._
 - [API documentation](https://community.exoscale.com/documentation/dns/api/)
 - [Go client](https://github.com/exoscale/egoscale)
 
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/exoscale/exoscale.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/exoscale/exoscale.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

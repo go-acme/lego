@@ -8,8 +8,6 @@ slug: alidns
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/alidns/alidns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/alidns/alidns.toml -->
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
 Configuration for [Alibaba Cloud DNS](https://www.alibabacloud.com/product/dns).
@@ -51,8 +49,6 @@ _Please contribute by adding a CLI example._
 - [API documentation](https://www.alibabacloud.com/help/doc-detail/42875.htm)
 - [Go client](https://github.com/aliyun/alibaba-cloud-sdk-go)
 
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/alidns/alidns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/alidns/alidns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

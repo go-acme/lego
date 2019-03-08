@@ -8,8 +8,6 @@ slug: vegadns
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/vegadns/vegadns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/vegadns/vegadns.toml -->
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
 Configuration for [VegaDNS](https://github.com/shupp/VegaDNS-API).
@@ -51,8 +49,6 @@ _Please contribute by adding a CLI example._
 - [API documentation](https://github.com/shupp/VegaDNS-API)
 - [Go client](https://github.com/OpenDNS/vegadns2client)
 
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/vegadns/vegadns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/vegadns/vegadns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

@@ -8,8 +8,6 @@ slug: dreamhost
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/dreamhost/dreamhost.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/dreamhost/dreamhost.toml -->
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
 Configuration for [DreamHost](https://www.dreamhost.com).
@@ -49,8 +47,6 @@ _Please contribute by adding a CLI example._
 
 - [API documentation](https://help.dreamhost.com/hc/en-us/articles/217560167-API_overview)
 
-<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/dreamhost/dreamhost.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/dreamhost/dreamhost.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

@@ -1,0 +1,52 @@
+---
+title: "Gandi Live DNS (v5)"
+date: 2019-03-03T16:39:46+01:00
+draft: false
+slug: gandiv5
+---
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+<!-- providers/dns/gandiv5/gandiv5.toml -->
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+
+Configuration for [Gandi Live DNS (v5)](https://www.gandi.net).
+
+
+<!--more-->
+
+- Code: `gandiv5`
+
+{{% notice note %}}
+_Please contribute by adding a CLI example._
+{{% /notice %}}
+
+
+
+
+## Credentials
+
+| Environment Variable Name | Description |
+|-----------------------|-------------|
+| `GANDIV5_API_KEY` | API key |
+
+
+## Additional Configuration
+
+| Environment Variable Name | Description |
+|--------------------------------|-------------|
+| `GANDIV5_HTTP_TIMEOUT` | API request timeout |
+| `GANDIV5_POLLING_INTERVAL` | Time between DNS propagation check |
+| `GANDIV5_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
+| `GANDIV5_TTL` | The TTL of the TXT record used for the DNS challenge |
+
+
+
+
+## More information
+
+- [API documentation](http://doc.livedns.gandi.net)
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+<!-- providers/dns/gandiv5/gandiv5.toml -->
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

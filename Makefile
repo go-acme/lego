@@ -1,4 +1,4 @@
-.PHONY: clean checks test build image dependencies
+.PHONY: clean checks test build image dependencies e2e fmt
 
 SRCS = $(shell git ls-files '*.go' | grep -v '^vendor/')
 
@@ -10,7 +10,7 @@ TAG_NAME := $(shell git tag -l --contains HEAD)
 SHA := $(shell git rev-parse HEAD)
 VERSION := $(if $(TAG_NAME),$(TAG_NAME),$(SHA))
 
-default: clean checks test build
+default: clean generate-dns checks test build
 
 clean:
 	rm -rf dist/ builds/ cover.out
@@ -39,6 +39,7 @@ fmt:
 	gofmt -s -l -w $(SRCS)
 
 # Release helper
+.PHONY: patch minor major detach
 
 patch:
 	go run internal/release.go release -m patch
@@ -51,3 +52,21 @@ major:
 
 detach:
 	go run internal/release.go detach
+
+# Docs
+.PHONY: docs-build docs-serve docs-themes
+
+docs-build: generate-dns
+	@make -C ./docs hugo-build
+
+docs-serve: generate-dns
+	@make -C ./docs hugo
+
+docs-themes:
+	@make -C ./docs hugo-themes
+
+# Generate DNS
+.PHONY: generate-dns
+
+generate-dns:
+	go generate ./...

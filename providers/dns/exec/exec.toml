@@ -1,6 +1,30 @@
-# Execute an external program
+Name = "External program"
+Description = "Solving the DNS-01 challenge using an external program."
+URL = "/dns/exec"
+Code = "exec"
 
-Solving the DNS-01 challenge using an external program.
+Example = '''
+EXEC_PATH=/the/path/to/myscript.sh \
+lego --dns exec --domains my.domain.com --email my@email.com run
+'''
+
+Additional = '''
+
+## Base Configuration
+
+| Environment Variable Name | Description |
+|-----------------------|-------------|
+| `EXEC_MODE` | `RAW`, none |
+| `EXEC_PATH` | TODO |
+
+
+## Additional Configuration
+
+| Environment Variable Name | Description |
+|--------------------------------|-------------|
+| `EXEC_POLLING_INTERVAL` | Time between DNS propagation check |
+| `EXEC_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
+
 
 ## Description
 
@@ -48,6 +72,12 @@ It will then call the program `./update-dns.sh` like this:
 
 ## Commands
 
+{{% notice note %}}
+The `--` is because the token MAY start with a `-`, and the called program may try and interpret a `-` as indicating a flag.
+In the case of urfave, which is commonly used,
+you can use the `--` delimiter to specify the start of positional arguments, and handle such a string safely.
+{{% /notice %}}
+
 ### Present
 
 | Mode    | Command                                            |
@@ -77,10 +107,4 @@ the default display propagation timeout and polling interval are used.
 | default | `myprogram timeout`                                |
 | `RAW`   | `myprogram timeout`                                |
 
-
-## NOTE
-
-The `--` is because the token MAY start with a `-`, and the called program may try and interpret a - as indicating a flag.
-
-In the case of urfave, which is commonly used,
-you can use the `--` delimiter to specify the start of positional arguments, and handle such a string safely.
+'''

@@ -51,7 +51,7 @@ type DNSProvider struct {
 // See https://github.com/miekg/dns/blob/master/tsig.go for supported values.
 // RFC2136_TSIG_KEY: Name of the secret key as defined in DNS server configuration.
 // RFC2136_TSIG_SECRET: Secret key payload.
-// RFC2136_TIMEOUT: DNS propagation timeout in time.ParseDuration format. (60s)
+// RFC2136_PROPAGATION_TIMEOUT: DNS propagation timeout in time.ParseDuration format. (60s)
 // To disable TSIG authentication, leave the RFC2136_TSIG* variables unset.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("RFC2136_NAMESERVER")

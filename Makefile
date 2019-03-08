@@ -69,4 +69,4 @@ docs-themes:
 .PHONY: generate-dns
 
 generate-dns:
-	go run internal/dnsdocs/generator.go
+	go generate ./...

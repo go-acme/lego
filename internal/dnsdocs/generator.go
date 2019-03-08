@@ -1,5 +1,7 @@
 package main
 
+//go:generate go run .
+
 import (
 	"bytes"
 	"go/format"
@@ -13,7 +15,7 @@ import (
 )
 
 const (
-	root        = "./"
+	root        = "../../"
 	dnsPackage  = root + "providers/dns"
 	mdTemplate  = root + "internal/dnsdocs/dns.md.tmpl"
 	cliTemplate = root + "internal/dnsdocs/dns.go.tmpl"
@@ -69,8 +71,11 @@ func walker(prs *Providers) func(string, os.FileInfo, error) error {
 		}
 
 		if filepath.Ext(path) == ".toml" {
-			m := Model{
-				GeneratedFrom: path,
+			m := Model{}
+
+			m.GeneratedFrom, err = filepath.Rel(root, path)
+			if err != nil {
+				return err
 			}
 
 			_, err := toml.DecodeFile(path, &m)

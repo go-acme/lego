@@ -18,6 +18,3 @@ Example = ''''''
 [Links]
   API = "http://manual.iij.jp/p2/pubapi/http://manual.iij.jp/p2/pubapi/"
   GoClient = "https://github.com/iij/doapi"
-
-
-

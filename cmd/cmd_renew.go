@@ -168,7 +168,10 @@ func needRenewal(x509Cert *x509.Certificate, domain string, days int) bool {
 	}
 
 	if days >= 0 {
-		if int(time.Until(x509Cert.NotAfter).Hours()/24.0) > days {
+		notAfter := int(time.Until(x509Cert.NotAfter).Hours() / 24.0)
+		if notAfter > days {
+			log.Printf("[%s] The certificate expires in %d days, the number of days defined to perform the renewal is %d: no renewal.",
+				domain, notAfter, days)
 			return false
 		}
 	}

@@ -1,5 +1,26 @@
 # Changelog
 
+## [v2.3.0] - 2019-03-11
+
+### Added:
+- **[dnsprovider]** Add DNS Provider for ClouDNS.net
+- **[dnsprovider]** Add DNS Provider for Oracle Cloud
+
+### Changed:
+- **[cli]** Adds log when no renewal.
+- **[dnsprovider,lib]** Add a mechanism to wrap a PreCheckFunc
+- **[dnsprovider]** oraclecloud: better way to get private key.
+- **[dnsprovider]** exoscale: update library
+
+### Fixed:
+- **[dnsprovider]** OVH: Refresh zone after deleting challenge record
+- **[dnsprovider]** oraclecloud: ttl config and timeout 
+- **[dnsprovider]** hostingde: fix client fails if customer has no access to dns-groups
+- **[dnsprovider]** vscale: getting sub-domain
+- **[dnsprovider]** selectel: getting sub-domain
+- **[dnsprovider]** vscale: fix TXT records clean up
+- **[dnsprovider]** selectel: fix TXT records clean up
+
 ## [v2.2.0] - 2019-02-08
 
 ### Added:

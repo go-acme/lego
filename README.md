@@ -3,7 +3,7 @@
 Let's Encrypt client and ACME library written in Go.
 
 [![GoDoc](https://godoc.org/github.com/go-acme/lego?status.svg)](https://godoc.org/github.com/go-acme/lego/acme)
-[![Build Status](https://travis-ci.com/go-acme/lego.svg?branch=master)](https://travis-ci.comorg/go-acme/lego)
+[![Build Status](https://travis-ci.com/go-acme/lego.svg?branch=master)](https://travis-ci.com/go-acme/lego)
 [![Docker Pulls](https://img.shields.io/docker/pulls/goacme/lego.svg)](https://hub.docker.com/r/goacme/lego/)
 
 ## Features
@@ -17,7 +17,7 @@ Let's Encrypt client and ACME library written in Go.
   - DNS (dns-01)
   - TLS (tls-alpn-01)
 - SAN certificate support
-- Comes with multiple optional [DNS providers](hhttps://go-acme.github.io/lego/dns)
+- Comes with multiple optional [DNS providers](https://go-acme.github.io/lego/dns)
 - [Custom challenge solvers](https://go-acme.github.io/lego/usage/library/writing-a-challenge-solver/)
 - Certificate bundling
 - OCSP helper function

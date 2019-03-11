@@ -1,4 +1,4 @@
-package lightsail
+package lightsail // import "github.com/xenolf/lego/providers/dns/lightsail"
 
 import (
 	"testing"

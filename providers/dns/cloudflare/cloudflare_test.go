@@ -1,4 +1,4 @@
-package cloudflare
+package cloudflare // import "github.com/xenolf/lego/providers/dns/cloudflare"
 
 import (
 	"testing"

@@ -1,4 +1,4 @@
-package auroradns
+package auroradns // import "github.com/xenolf/lego/providers/dns/auroradns"
 
 import (
 	"fmt"

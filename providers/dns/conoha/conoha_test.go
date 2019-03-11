@@ -1,4 +1,4 @@
-package conoha
+package conoha // import "github.com/xenolf/lego/providers/dns/conoha"
 
 import (
 	"testing"

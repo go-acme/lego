@@ -1,4 +1,4 @@
-package loader
+package loader // import "github.com/xenolf/lego/e2e/loader"
 
 import (
 	"bytes"

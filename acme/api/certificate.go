@@ -1,4 +1,4 @@
-package api
+package api // import "github.com/xenolf/lego/acme/api"
 
 import (
 	"crypto/x509"

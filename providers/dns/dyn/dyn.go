@@ -1,5 +1,5 @@
 // Package dyn implements a DNS provider for solving the DNS-01 challenge using Dyn Managed DNS.
-package dyn
+package dyn // import "github.com/xenolf/lego/providers/dns/dyn"
 
 import (
 	"errors"

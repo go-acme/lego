@@ -1,5 +1,5 @@
 // Package pdns implements a DNS provider for solving the DNS-01 challenge using PowerDNS nameserver.
-package pdns
+package pdns // import "github.com/xenolf/lego/providers/dns/pdns"
 
 import (
 	"bytes"

@@ -1,4 +1,4 @@
-package hostingde
+package hostingde // import "github.com/xenolf/lego/providers/dns/hostingde"
 
 import (
 	"testing"

@@ -1,4 +1,4 @@
-package http01
+package http01 // import "github.com/xenolf/lego/challenge/http01"
 
 import (
 	"fmt"

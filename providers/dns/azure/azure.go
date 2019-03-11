@@ -1,6 +1,6 @@
 // Package azure implements a DNS provider for solving the DNS-01 challenge using azure DNS.
 // Azure doesn't like trailing dots on domain names, most of the acme code does.
-package azure
+package azure // import "github.com/xenolf/lego/providers/dns/azure"
 
 import (
 	"context"

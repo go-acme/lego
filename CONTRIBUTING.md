@@ -44,8 +44,8 @@ cd $GOPATH/src/github.com/xenolf
 git clone git@github.com:YOUR_USERNAME/lego.git
 cd lego
 
-# Add the xenolf/lego remote
-git remote add upstream git@github.com:xenolf/lego.git
+# Add the go-acme/lego remote
+git remote add upstream git@github.com:go-acme/lego.git
 git fetch upstream
 ```
 

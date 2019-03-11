@@ -1,4 +1,4 @@
-package resolver
+package resolver // import "github.com/xenolf/lego/challenge/resolver"
 
 import (
 	"context"

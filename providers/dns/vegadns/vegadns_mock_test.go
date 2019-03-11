@@ -1,4 +1,4 @@
-package vegadns
+package vegadns // import "github.com/xenolf/lego/providers/dns/vegadns"
 
 const tokenResponseMock = `
 {

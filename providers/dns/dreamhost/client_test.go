@@ -1,4 +1,4 @@
-package dreamhost
+package dreamhost // import "github.com/xenolf/lego/providers/dns/dreamhost"
 
 import (
 	"testing"

@@ -1,5 +1,5 @@
 // Package auroradns implements a DNS provider for solving the DNS-01 challenge using Aurora DNS.
-package auroradns
+package auroradns // import "github.com/xenolf/lego/providers/dns/auroradns"
 
 import (
 	"errors"

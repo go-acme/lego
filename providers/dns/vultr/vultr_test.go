@@ -1,4 +1,4 @@
-package vultr
+package vultr // import "github.com/xenolf/lego/providers/dns/vultr"
 
 import (
 	"testing"

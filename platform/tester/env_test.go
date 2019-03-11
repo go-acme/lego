@@ -1,4 +1,4 @@
-package tester_test
+package tester_test // import "github.com/xenolf/lego/platform/tester"
 
 import (
 	"os"

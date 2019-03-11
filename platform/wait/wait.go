@@ -1,4 +1,4 @@
-package wait
+package wait // import "github.com/xenolf/lego/platform/wait"
 
 import (
 	"fmt"

@@ -1,4 +1,4 @@
-package secure
+package secure // import "github.com/xenolf/lego/acme/api/internal/secure"
 
 import (
 	"net/http"

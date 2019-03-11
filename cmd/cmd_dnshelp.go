@@ -1,4 +1,4 @@
-package cmd
+package cmd // import "github.com/xenolf/lego/cmd"
 
 import (
 	"fmt"
@@ -37,7 +37,7 @@ func dnsHelp(ctx *cli.Context) error {
 		fmt.Fprintln(w, "All DNS codes:")
 		fmt.Fprintf(w, "\t%s\n", allDNSCodes())
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, "More information: https://xenolf.github.io/lego/dns")
+		fmt.Fprintln(w, "More information: https://go-acme.github.io/lego/dns")
 
 		return w.Flush()
 	}

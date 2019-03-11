@@ -1,4 +1,4 @@
-package memcached
+package memcached // import "github.com/xenolf/lego/providers/http/memcached"
 
 import (
 	"os"

@@ -1,4 +1,4 @@
-package alidns
+package alidns // import "github.com/xenolf/lego/providers/dns/alidns"
 
 import (
 	"testing"

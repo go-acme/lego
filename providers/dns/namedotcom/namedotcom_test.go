@@ -1,4 +1,4 @@
-package namedotcom
+package namedotcom // import "github.com/xenolf/lego/providers/dns/namedotcom"
 
 import (
 	"testing"

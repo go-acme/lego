@@ -1,4 +1,4 @@
-package internal
+package internal // import "github.com/xenolf/lego/providers/dns/selectel/internal"
 
 import (
 	"bytes"

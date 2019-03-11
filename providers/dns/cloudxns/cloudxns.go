@@ -1,5 +1,5 @@
 // Package cloudxns implements a DNS provider for solving the DNS-01 challenge using CloudXNS DNS.
-package cloudxns
+package cloudxns // import "github.com/xenolf/lego/providers/dns/cloudxns"
 
 import (
 	"errors"

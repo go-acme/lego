@@ -1,4 +1,4 @@
-package stackpath
+package stackpath // import "github.com/xenolf/lego/providers/dns/stackpath"
 
 import (
 	"bytes"

@@ -1,5 +1,5 @@
 // Package transip implements a DNS provider for solving the DNS-01 challenge using TransIP.
-package transip
+package transip // import "github.com/xenolf/lego/providers/dns/transip"
 
 import (
 	"errors"

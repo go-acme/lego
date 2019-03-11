@@ -1,4 +1,4 @@
-package nifcloud
+package nifcloud // import "github.com/xenolf/lego/providers/dns/nifcloud"
 
 import (
 	"testing"

@@ -1,5 +1,5 @@
 // Package namedotcom implements a DNS provider for solving the DNS-01 challenge using Name.com's DNS service.
-package namedotcom
+package namedotcom // import "github.com/xenolf/lego/providers/dns/namedotcom"
 
 import (
 	"errors"

@@ -1,5 +1,5 @@
 // Package linodev4 implements a DNS provider for solving the DNS-01 challenge using Linode DNS and Linode's APIv4
-package linodev4
+package linodev4 // import "github.com/xenolf/lego/providers/dns/linodev4"
 
 import (
 	"context"

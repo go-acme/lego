@@ -1,4 +1,4 @@
-package exoscale
+package exoscale // import "github.com/xenolf/lego/providers/dns/exoscale"
 
 import (
 	"testing"

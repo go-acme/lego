@@ -1,4 +1,4 @@
-package ns1
+package ns1 // import "github.com/xenolf/lego/providers/dns/ns1"
 
 import (
 	"testing"

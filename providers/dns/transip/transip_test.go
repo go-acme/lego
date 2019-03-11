@@ -1,4 +1,4 @@
-package transip
+package transip // import "github.com/xenolf/lego/providers/dns/transip"
 
 import (
 	"encoding/xml"

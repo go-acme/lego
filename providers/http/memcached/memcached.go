@@ -1,6 +1,6 @@
 // Package memcached implements a HTTP provider for solving the HTTP-01 challenge using memcached
 // in combination with a webserver.
-package memcached
+package memcached // import "github.com/xenolf/lego/providers/http/memcached"
 
 import (
 	"fmt"

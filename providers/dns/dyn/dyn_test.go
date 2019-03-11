@@ -1,4 +1,4 @@
-package dyn
+package dyn // import "github.com/xenolf/lego/providers/dns/dyn"
 
 import (
 	"testing"

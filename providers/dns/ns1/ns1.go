@@ -1,5 +1,5 @@
 // Package ns1 implements a DNS provider for solving the DNS-01 challenge using NS1 DNS.
-package ns1
+package ns1 // import "github.com/xenolf/lego/providers/dns/ns1"
 
 import (
 	"errors"

@@ -1,4 +1,4 @@
-package log
+package log // import "github.com/xenolf/lego/log"
 
 import (
 	"log"

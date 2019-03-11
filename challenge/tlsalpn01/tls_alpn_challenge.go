@@ -1,4 +1,4 @@
-package tlsalpn01
+package tlsalpn01 // import "github.com/xenolf/lego/challenge/tlsalpn01"
 
 import (
 	"crypto/rsa"

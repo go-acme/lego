@@ -1,5 +1,5 @@
 // Package zoneee implements a DNS provider for solving the DNS-01 challenge through zone.ee.
-package zoneee
+package zoneee // import "github.com/xenolf/lego/providers/dns/zoneee"
 
 import (
 	"errors"

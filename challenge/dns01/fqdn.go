@@ -1,4 +1,4 @@
-package dns01
+package dns01 // import "github.com/xenolf/lego/challenge/dns01"
 
 // ToFqdn converts the name into a fqdn appending a trailing dot.
 func ToFqdn(name string) string {

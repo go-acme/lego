@@ -2,7 +2,7 @@
 
 SRCS = $(shell git ls-files '*.go' | grep -v '^vendor/')
 
-LEGO_IMAGE := xenolf/lego
+LEGO_IMAGE := go-acme/lego
 MAIN_DIRECTORY := ./cmd/lego/
 BIN_OUTPUT := dist/lego
 

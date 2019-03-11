@@ -1,5 +1,5 @@
 // Package exoscale implements a DNS provider for solving the DNS-01 challenge using exoscale DNS.
-package exoscale
+package exoscale // import "github.com/xenolf/lego/providers/dns/exoscale"
 
 import (
 	"context"

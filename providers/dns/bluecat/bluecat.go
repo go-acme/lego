@@ -1,5 +1,5 @@
 // Package bluecat implements a DNS provider for solving the DNS-01 challenge using a self-hosted Bluecat Address Manager.
-package bluecat
+package bluecat // import "github.com/xenolf/lego/providers/dns/bluecat"
 
 import (
 	"encoding/json"

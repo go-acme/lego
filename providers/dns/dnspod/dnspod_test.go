@@ -1,4 +1,4 @@
-package dnspod
+package dnspod // import "github.com/xenolf/lego/providers/dns/dnspod"
 
 import (
 	"testing"

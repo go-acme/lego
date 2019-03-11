@@ -1,5 +1,5 @@
 // Package conoha implements a DNS provider for solving the DNS-01 challenge using ConoHa DNS.
-package conoha
+package conoha // import "github.com/xenolf/lego/providers/dns/conoha"
 
 import (
 	"errors"

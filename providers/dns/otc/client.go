@@ -1,4 +1,4 @@
-package otc
+package otc // import "github.com/xenolf/lego/providers/dns/otc"
 
 import (
 	"bytes"

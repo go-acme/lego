@@ -1,5 +1,5 @@
 // Package cloudflare implements a DNS provider for solving the DNS-01 challenge using cloudflare DNS.
-package cloudflare
+package cloudflare // import "github.com/xenolf/lego/providers/dns/cloudflare"
 
 import (
 	"errors"

@@ -1,5 +1,5 @@
 // Package cloudns implements a DNS provider for solving the DNS-01 challenge using ClouDNS DNS.
-package cloudns
+package cloudns // import "github.com/xenolf/lego/providers/dns/cloudns"
 
 import (
 	"errors"

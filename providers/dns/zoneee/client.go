@@ -1,4 +1,4 @@
-package zoneee
+package zoneee // import "github.com/xenolf/lego/providers/dns/zoneee"
 
 import (
 	"bytes"

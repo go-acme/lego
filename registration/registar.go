@@ -1,4 +1,4 @@
-package registration
+package registration // import "github.com/xenolf/lego/registration"
 
 import (
 	"errors"

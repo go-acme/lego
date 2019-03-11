@@ -1,5 +1,5 @@
 // Package alidns implements a DNS provider for solving the DNS-01 challenge using Alibaba Cloud DNS.
-package alidns
+package alidns // import "github.com/xenolf/lego/providers/dns/alidns"
 
 import (
 	"errors"

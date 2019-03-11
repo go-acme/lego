@@ -1,4 +1,4 @@
-package gandi // import "github.com/xenolf/lego/providers/dns/gandi"
+package gandi
 
 import (
 	"bytes"

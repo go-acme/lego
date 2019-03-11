@@ -1,4 +1,4 @@
-package stackpath // import "github.com/xenolf/lego/providers/dns/stackpath"
+package stackpath
 
 import (
 	"net/http"
@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-acme/lego/platform/tester"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/platform/tester"
 )
 
 var envTest = tester.NewEnvTest(

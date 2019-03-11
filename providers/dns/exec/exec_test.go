@@ -1,14 +1,14 @@
-package exec // import "github.com/xenolf/lego/providers/dns/exec"
+package exec
 
 import (
 	"fmt"
 	"os"
 	"testing"
 
+	"github.com/go-acme/lego/log"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/log"
 )
 
 func TestDNSProvider_Present(t *testing.T) {

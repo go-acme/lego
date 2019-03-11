@@ -1,12 +1,12 @@
-package otc // import "github.com/xenolf/lego/providers/dns/otc"
+package otc
 
 import (
 	"fmt"
 	"os"
 	"testing"
 
+	"github.com/go-acme/lego/platform/tester"
 	"github.com/stretchr/testify/suite"
-	"github.com/xenolf/lego/platform/tester"
 )
 
 type OTCSuite struct {

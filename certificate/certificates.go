@@ -1,4 +1,4 @@
-package certificate // import "github.com/xenolf/lego/certificate"
+package certificate
 
 import (
 	"bytes"
@@ -12,12 +12,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/xenolf/lego/acme"
-	"github.com/xenolf/lego/acme/api"
-	"github.com/xenolf/lego/certcrypto"
-	"github.com/xenolf/lego/challenge"
-	"github.com/xenolf/lego/log"
-	"github.com/xenolf/lego/platform/wait"
+	"github.com/go-acme/lego/acme"
+	"github.com/go-acme/lego/acme/api"
+	"github.com/go-acme/lego/certcrypto"
+	"github.com/go-acme/lego/challenge"
+	"github.com/go-acme/lego/log"
+	"github.com/go-acme/lego/platform/wait"
 	"golang.org/x/crypto/ocsp"
 	"golang.org/x/net/idna"
 )

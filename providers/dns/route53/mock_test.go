@@ -1,4 +1,4 @@
-package route53 // import "github.com/xenolf/lego/providers/dns/route53"
+package route53
 
 import (
 	"fmt"

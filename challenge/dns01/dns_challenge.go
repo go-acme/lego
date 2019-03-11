@@ -1,4 +1,4 @@
-package dns01 // import "github.com/xenolf/lego/challenge/dns01"
+package dns01
 
 import (
 	"crypto/sha256"
@@ -8,12 +8,12 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/go-acme/lego/acme"
+	"github.com/go-acme/lego/acme/api"
+	"github.com/go-acme/lego/challenge"
+	"github.com/go-acme/lego/log"
+	"github.com/go-acme/lego/platform/wait"
 	"github.com/miekg/dns"
-	"github.com/xenolf/lego/acme"
-	"github.com/xenolf/lego/acme/api"
-	"github.com/xenolf/lego/challenge"
-	"github.com/xenolf/lego/log"
-	"github.com/xenolf/lego/platform/wait"
 )
 
 const (

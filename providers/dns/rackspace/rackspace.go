@@ -1,5 +1,5 @@
 // Package rackspace implements a DNS provider for solving the DNS-01 challenge using rackspace DNS.
-package rackspace // import "github.com/xenolf/lego/providers/dns/rackspace"
+package rackspace
 
 import (
 	"bytes"
@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/xenolf/lego/challenge/dns01"
-	"github.com/xenolf/lego/platform/config/env"
+	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/platform/config/env"
 )
 
 // defaultBaseURL represents the Identity API endpoint to call

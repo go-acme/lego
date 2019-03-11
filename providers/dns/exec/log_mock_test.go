@@ -1,4 +1,4 @@
-package exec // import "github.com/xenolf/lego/providers/dns/exec"
+package exec
 
 import "github.com/stretchr/testify/mock"
 

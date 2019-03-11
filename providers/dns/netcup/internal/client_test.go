@@ -1,4 +1,4 @@
-package internal // import "github.com/xenolf/lego/providers/dns/netcup/internal"
+package internal
 
 import (
 	"fmt"
@@ -9,11 +9,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/xenolf/lego/platform/tester"
+	"github.com/go-acme/lego/platform/tester"
 
+	"github.com/go-acme/lego/challenge/dns01"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/challenge/dns01"
 )
 
 var envTest = tester.NewEnvTest(

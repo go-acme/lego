@@ -1,4 +1,4 @@
-package api // import "github.com/xenolf/lego/acme/api"
+package api
 
 import (
 	"crypto/x509"
@@ -7,9 +7,9 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/xenolf/lego/acme"
-	"github.com/xenolf/lego/certcrypto"
-	"github.com/xenolf/lego/log"
+	"github.com/go-acme/lego/acme"
+	"github.com/go-acme/lego/certcrypto"
+	"github.com/go-acme/lego/log"
 )
 
 // maxBodySize is the maximum size of body that we will read.

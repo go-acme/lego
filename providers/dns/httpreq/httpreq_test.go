@@ -9,8 +9,8 @@ import (
 	"path"
 	"testing"
 
+	"github.com/go-acme/lego/platform/tester"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/platform/tester"
 )
 
 var envTest = tester.NewEnvTest("HTTPREQ_ENDPOINT", "HTTPREQ_MODE", "HTTPREQ_USERNAME", "HTTPREQ_PASSWORD")

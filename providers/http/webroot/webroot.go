@@ -1,5 +1,5 @@
 // Package webroot implements a HTTP provider for solving the HTTP-01 challenge using web server's root path.
-package webroot // import "github.com/xenolf/lego/providers/http/webroot"
+package webroot
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/xenolf/lego/challenge/http01"
+	"github.com/go-acme/lego/challenge/http01"
 )
 
 // HTTPProvider implements ChallengeProvider for `http-01` challenge

@@ -1,8 +1,8 @@
-package cmd // import "github.com/xenolf/lego/cmd"
+package cmd
 
 import (
+	"github.com/go-acme/lego/lego"
 	"github.com/urfave/cli"
-	"github.com/xenolf/lego/lego"
 )
 
 func CreateFlags(defaultPath string) []cli.Flag {

@@ -1,4 +1,4 @@
-package certificate // import "github.com/xenolf/lego/certificate"
+package certificate
 
 import (
 	"crypto/rand"
@@ -7,12 +7,12 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/go-acme/lego/acme"
+	"github.com/go-acme/lego/acme/api"
+	"github.com/go-acme/lego/certcrypto"
+	"github.com/go-acme/lego/platform/tester"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/acme"
-	"github.com/xenolf/lego/acme/api"
-	"github.com/xenolf/lego/certcrypto"
-	"github.com/xenolf/lego/platform/tester"
 )
 
 const certResponseMock = `-----BEGIN CERTIFICATE-----

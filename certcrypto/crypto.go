@@ -1,4 +1,4 @@
-package certcrypto // import "github.com/xenolf/lego/certcrypto"
+package certcrypto
 
 import (
 	"crypto"

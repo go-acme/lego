@@ -1,4 +1,4 @@
-package lightsail // import "github.com/xenolf/lego/providers/dns/lightsail"
+package lightsail
 
 import (
 	"net/http/httptest"
@@ -9,8 +9,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/lightsail"
+	"github.com/go-acme/lego/platform/tester"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/platform/tester"
 )
 
 var envTest = tester.NewEnvTest(

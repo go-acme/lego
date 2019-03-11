@@ -1,12 +1,12 @@
-package dns // import "github.com/xenolf/lego/providers/dns"
+package dns
 
 import (
 	"testing"
 
+	"github.com/go-acme/lego/platform/tester"
+	"github.com/go-acme/lego/providers/dns/exec"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/platform/tester"
-	"github.com/xenolf/lego/providers/dns/exec"
 )
 
 var envTest = tester.NewEnvTest("EXEC_PATH")

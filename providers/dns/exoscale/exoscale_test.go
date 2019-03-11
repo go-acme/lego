@@ -1,12 +1,12 @@
-package exoscale // import "github.com/xenolf/lego/providers/dns/exoscale"
+package exoscale
 
 import (
 	"testing"
 	"time"
 
+	"github.com/go-acme/lego/platform/tester"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/platform/tester"
 )
 
 var envTest = tester.NewEnvTest(

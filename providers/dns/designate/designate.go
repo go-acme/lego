@@ -1,5 +1,5 @@
 // Package designate implements a DNS provider for solving the DNS-01 challenge using the Designate DNSaaS for Openstack.
-package designate // import "github.com/xenolf/lego/providers/dns/designate"
+package designate
 
 import (
 	"errors"
@@ -9,12 +9,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/platform/config/env"
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/gophercloud/openstack/dns/v2/recordsets"
 	"github.com/gophercloud/gophercloud/openstack/dns/v2/zones"
-	"github.com/xenolf/lego/challenge/dns01"
-	"github.com/xenolf/lego/platform/config/env"
 )
 
 // Config is used to configure the creation of the DNSProvider

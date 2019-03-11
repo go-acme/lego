@@ -1,12 +1,12 @@
-package tester_test // import "github.com/xenolf/lego/platform/tester"
+package tester_test
 
 import (
 	"os"
 	"strings"
 	"testing"
 
+	"github.com/go-acme/lego/platform/tester"
 	"github.com/stretchr/testify/assert"
-	"github.com/xenolf/lego/platform/tester"
 )
 
 const (

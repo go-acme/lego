@@ -7,7 +7,7 @@ draft: false
 ## CLI Examples
 
 Assumes the `lego` binary has permission to bind to ports 80 and 443.
-You can get a pre-built binary from the [releases](https://github.com/xenolf/lego/releases) page.
+You can get a pre-built binary from the [releases](https://github.com/go-acme/lego/releases) page.
 If your environment does not allow you to bind to these ports, please read [Port Usage](usage/cli#port-usage).
 
 ### Obtain a certificate

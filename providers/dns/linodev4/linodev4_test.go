@@ -1,4 +1,4 @@
-package linodev4 // import "github.com/xenolf/lego/providers/dns/linodev4"
+package linodev4
 
 import (
 	"encoding/json"
@@ -9,10 +9,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-acme/lego/platform/tester"
 	"github.com/linode/linodego"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/platform/tester"
 )
 
 type (

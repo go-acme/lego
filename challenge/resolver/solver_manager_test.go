@@ -1,4 +1,4 @@
-package resolver // import "github.com/xenolf/lego/challenge/resolver"
+package resolver
 
 import (
 	"crypto/rand"
@@ -9,11 +9,11 @@ import (
 	"sort"
 	"testing"
 
+	"github.com/go-acme/lego/acme"
+	"github.com/go-acme/lego/acme/api"
+	"github.com/go-acme/lego/platform/tester"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/acme"
-	"github.com/xenolf/lego/acme/api"
-	"github.com/xenolf/lego/platform/tester"
 	jose "gopkg.in/square/go-jose.v2"
 )
 

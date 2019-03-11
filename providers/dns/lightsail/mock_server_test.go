@@ -1,4 +1,4 @@
-package lightsail // import "github.com/xenolf/lego/providers/dns/lightsail"
+package lightsail
 
 import (
 	"fmt"

@@ -1,4 +1,4 @@
-package gcloud // import "github.com/xenolf/lego/providers/dns/gcloud"
+package gcloud
 
 import (
 	"encoding/json"
@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-acme/lego/platform/tester"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/platform/tester"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/dns/v1"

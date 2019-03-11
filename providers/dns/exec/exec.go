@@ -1,5 +1,5 @@
 // Package exec implements a DNS provider which runs a program for adding/removing the DNS record.
-package exec // import "github.com/xenolf/lego/providers/dns/exec"
+package exec
 
 import (
 	"errors"
@@ -8,9 +8,9 @@ import (
 	"os/exec"
 	"time"
 
-	"github.com/xenolf/lego/challenge/dns01"
-	"github.com/xenolf/lego/log"
-	"github.com/xenolf/lego/platform/config/env"
+	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/log"
+	"github.com/go-acme/lego/platform/config/env"
 )
 
 // Config Provider configuration.

@@ -1,4 +1,4 @@
-baseURL = "https://xenolf.github.io/lego/"
+baseURL = "https://go-acme.github.io/lego/"
 languageCode = "en-us"
 title = "Lego"
 
@@ -55,12 +55,12 @@ pygmentsUseClasses = true
 [[Languages.en.menu.shortcuts]]
   name = "<i class='fab fa-fw fa-github'></i> Github repo"
   identifier = "ds"
-  url = "https://github.com/xenof/lego"
+  url = "https://github.com/go-acme/lego"
   weight = 10
 
 [[Languages.en.menu.shortcuts]]
   name = "<i class='fas fa-fw fa-bug'></i> Issues"
-  url = "https://github.com/xenolf/lego/issues"
+  url = "https://github.com/go-acme/lego/issues"
   weight = 11
 
 [outputs]

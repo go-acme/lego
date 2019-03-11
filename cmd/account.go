@@ -1,9 +1,9 @@
-package cmd // import "github.com/xenolf/lego/cmd"
+package cmd
 
 import (
 	"crypto"
 
-	"github.com/xenolf/lego/registration"
+	"github.com/go-acme/lego/registration"
 )
 
 // Account represents a users local saved credentials

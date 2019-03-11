@@ -1,5 +1,5 @@
 // Package iij implements a DNS provider for solving the DNS-01 challenge using IIJ DNS.
-package iij // import "github.com/xenolf/lego/providers/dns/iij"
+package iij
 
 import (
 	"fmt"
@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/platform/config/env"
 	"github.com/iij/doapi"
 	"github.com/iij/doapi/protocol"
-	"github.com/xenolf/lego/challenge/dns01"
-	"github.com/xenolf/lego/platform/config/env"
 )
 
 // Config is used to configure the creation of the DNSProvider

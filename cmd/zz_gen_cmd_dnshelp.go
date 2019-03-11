@@ -9,7 +9,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/xenolf/lego/log"
+	"github.com/go-acme/lego/log"
 )
 
 func allDNSCodes() string {
@@ -86,7 +86,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/acme-dns`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/acme-dns`)
 
 	case "alidns":
 		// generated from: providers/dns/alidns/alidns.toml
@@ -106,7 +106,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "ALICLOUD_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/alidns`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/alidns`)
 
 	case "auroradns":
 		// generated from: providers/dns/auroradns/auroradns.toml
@@ -126,7 +126,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "AURORA_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/auroradns`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/auroradns`)
 
 	case "azure":
 		// generated from: providers/dns/azure/azure.toml
@@ -150,7 +150,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "AZURE_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/azure`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/azure`)
 
 	case "bluecat":
 		// generated from: providers/dns/bluecat/bluecat.toml
@@ -173,7 +173,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "BLUECAT_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/bluecat`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/bluecat`)
 
 	case "cloudflare":
 		// generated from: providers/dns/cloudflare/cloudflare.toml
@@ -193,7 +193,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "CLOUDFLARE_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/cloudflare`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/cloudflare`)
 
 	case "cloudns":
 		// generated from: providers/dns/cloudns/cloudns.toml
@@ -213,7 +213,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "CLOUDNS_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/cloudns`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/cloudns`)
 
 	case "cloudxns":
 		// generated from: providers/dns/cloudxns/cloudxns.toml
@@ -233,7 +233,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "CLOUDXNS_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/cloudxns`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/cloudxns`)
 
 	case "conoha":
 		// generated from: providers/dns/conoha/conoha.toml
@@ -255,7 +255,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "CONOHA_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/conoha`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/conoha`)
 
 	case "designate":
 		// generated from: providers/dns/designate/designate.toml
@@ -277,7 +277,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "DESIGNATE_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/designate`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/designate`)
 
 	case "digitalocean":
 		// generated from: providers/dns/digitalocean/digitalocean.toml
@@ -296,7 +296,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "DO_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/digitalocean`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/digitalocean`)
 
 	case "dnsimple":
 		// generated from: providers/dns/dnsimple/dnsimple.toml
@@ -315,7 +315,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "DNSIMPLE_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/dnsimple`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/dnsimple`)
 
 	case "dnsmadeeasy":
 		// generated from: providers/dns/dnsmadeeasy/dnsmadeeasy.toml
@@ -336,7 +336,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "DNSMADEEASY_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/dnsmadeeasy`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/dnsmadeeasy`)
 
 	case "dnspod":
 		// generated from: providers/dns/dnspod/dnspod.toml
@@ -355,7 +355,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "DNSPOD_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/dnspod`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/dnspod`)
 
 	case "dreamhost":
 		// generated from: providers/dns/dreamhost/dreamhost.toml
@@ -374,7 +374,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "DREAMHOST_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/dreamhost`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/dreamhost`)
 
 	case "duckdns":
 		// generated from: providers/dns/duckdns/duckdns.toml
@@ -394,7 +394,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "DUCKDNS_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/duckdns`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/duckdns`)
 
 	case "dyn":
 		// generated from: providers/dns/dyn/dyn.toml
@@ -415,7 +415,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "DYN_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/dyn`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/dyn`)
 
 	case "exec":
 		// generated from: providers/dns/exec/exec.toml
@@ -424,7 +424,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/exec`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/exec`)
 
 	case "exoscale":
 		// generated from: providers/dns/exoscale/exoscale.toml
@@ -445,7 +445,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "EXOSCALE_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/exoscale`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/exoscale`)
 
 	case "fastdns":
 		// generated from: providers/dns/fastdns/fastdns.toml
@@ -466,7 +466,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "AKAMAI_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/fastdns`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/fastdns`)
 
 	case "gandi":
 		// generated from: providers/dns/gandi/gandi.toml
@@ -485,7 +485,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "GANDI_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/gandi`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/gandi`)
 
 	case "gandiv5":
 		// generated from: providers/dns/gandiv5/gandiv5.toml
@@ -504,7 +504,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "GANDIV5_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/gandiv5`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/gandiv5`)
 
 	case "gcloud":
 		// generated from: providers/dns/gcloud/gcloud.toml
@@ -525,7 +525,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "GCE_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/gcloud`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/gcloud`)
 
 	case "glesys":
 		// generated from: providers/dns/glesys/glesys.toml
@@ -545,7 +545,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "GLESYS_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/glesys`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/glesys`)
 
 	case "godaddy":
 		// generated from: providers/dns/godaddy/godaddy.toml
@@ -566,7 +566,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "GODADDY_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/godaddy`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/godaddy`)
 
 	case "hostingde":
 		// generated from: providers/dns/hostingde/hostingde.toml
@@ -586,7 +586,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "HOSTINGDE_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/hostingde`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/hostingde`)
 
 	case "httpreq":
 		// generated from: providers/dns/httpreq/httpreq.toml
@@ -607,7 +607,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "HTTPREQ_USERNAME": **TODO**`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/httpreq`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/httpreq`)
 
 	case "iij":
 		// generated from: providers/dns/iij/iij.toml
@@ -627,7 +627,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "IIJ_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/iij`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/iij`)
 
 	case "inwx":
 		// generated from: providers/dns/inwx/inwx.toml
@@ -647,7 +647,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "INWX_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/inwx`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/inwx`)
 
 	case "lightsail":
 		// generated from: providers/dns/lightsail/lightsail.toml
@@ -666,7 +666,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "LIGHTSAIL_PROPAGATION_TIMEOUT": Maximum waiting time for DNS propagation`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/lightsail`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/lightsail`)
 
 	case "linode":
 		// generated from: providers/dns/linode/linode.toml
@@ -684,7 +684,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "LINODE_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/linode`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/linode`)
 
 	case "linodev4":
 		// generated from: providers/dns/linodev4/linodev4.toml
@@ -702,7 +702,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "LINODE_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/linodev4`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/linodev4`)
 
 	case "mydnsjp":
 		// generated from: providers/dns/mydnsjp/mydnsjp.toml
@@ -722,7 +722,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "MYDNSJP_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/mydnsjp`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/mydnsjp`)
 
 	case "namecheap":
 		// generated from: providers/dns/namecheap/namecheap.toml
@@ -742,7 +742,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "NAMECHEAP_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/namecheap`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/namecheap`)
 
 	case "namedotcom":
 		// generated from: providers/dns/namedotcom/namedotcom.toml
@@ -762,7 +762,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "NAMECOM_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/namedotcom`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/namedotcom`)
 
 	case "netcup":
 		// generated from: providers/dns/netcup/netcup.toml
@@ -783,7 +783,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "NETCUP_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/netcup`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/netcup`)
 
 	case "nifcloud":
 		// generated from: providers/dns/nifcloud/nifcloud.toml
@@ -803,7 +803,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "NIFCLOUD_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/nifcloud`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/nifcloud`)
 
 	case "ns1":
 		// generated from: providers/dns/ns1/ns1.toml
@@ -822,7 +822,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "NS1_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/ns1`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/ns1`)
 
 	case "oraclecloud":
 		// generated from: providers/dns/oraclecloud/oraclecloud.toml
@@ -846,7 +846,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "OCI_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/oraclecloud`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/oraclecloud`)
 
 	case "otc":
 		// generated from: providers/dns/otc/otc.toml
@@ -869,7 +869,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "OTC_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/otc`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/otc`)
 
 	case "ovh":
 		// generated from: providers/dns/ovh/ovh.toml
@@ -891,7 +891,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "OVH_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/ovh`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/ovh`)
 
 	case "pdns":
 		// generated from: providers/dns/pdns/pdns.toml
@@ -911,7 +911,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "PDNS_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/pdns`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/pdns`)
 
 	case "rackspace":
 		// generated from: providers/dns/rackspace/rackspace.toml
@@ -931,7 +931,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "RACKSPACE_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/rackspace`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/rackspace`)
 
 	case "rfc2136":
 		// generated from: providers/dns/rfc2136/rfc2136.toml
@@ -954,7 +954,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "RFC2136_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/rfc2136`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/rfc2136`)
 
 	case "route53":
 		// generated from: providers/dns/route53/route53.toml
@@ -975,7 +975,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "AWS_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/route53`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/route53`)
 
 	case "sakuracloud":
 		// generated from: providers/dns/sakuracloud/sakuracloud.toml
@@ -994,7 +994,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "SAKURACLOUD_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/sakuracloud`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/sakuracloud`)
 
 	case "selectel":
 		// generated from: providers/dns/selectel/selectel.toml
@@ -1014,7 +1014,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "SELECTEL_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/selectel`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/selectel`)
 
 	case "stackpath":
 		// generated from: providers/dns/stackpath/stackpath.toml
@@ -1034,7 +1034,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "STACKPATH_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/stackpath`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/stackpath`)
 
 	case "transip":
 		// generated from: providers/dns/transip/transip.toml
@@ -1053,7 +1053,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "TRANSIP_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/transip`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/transip`)
 
 	case "vegadns":
 		// generated from: providers/dns/vegadns/vegadns.toml
@@ -1073,7 +1073,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "VEGADNS_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/vegadns`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/vegadns`)
 
 	case "vscale":
 		// generated from: providers/dns/vscale/vscale.toml
@@ -1093,7 +1093,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "VSCALE_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/vscale`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/vscale`)
 
 	case "vultr":
 		// generated from: providers/dns/vultr/vultr.toml
@@ -1112,7 +1112,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "VULTR_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/vultr`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/vultr`)
 
 	case "zoneee":
 		// generated from: providers/dns/zoneee/zoneee.toml
@@ -1133,7 +1133,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "ZONEEE_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/zoneee`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/zoneee`)
 
 	case "manual":
 		fmt.Fprintln(w, `Solving the DNS-01 challenge using CLI prompt.`)

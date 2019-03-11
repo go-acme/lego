@@ -1,4 +1,4 @@
-package pdns // import "github.com/xenolf/lego/providers/dns/pdns"
+package pdns
 
 import (
 	"encoding/json"
@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/xenolf/lego/challenge/dns01"
+	"github.com/go-acme/lego/challenge/dns01"
 )
 
 type Record struct {

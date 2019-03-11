@@ -1,5 +1,5 @@
 // Package otc implements a DNS provider for solving the DNS-01 challenge using Open Telekom Cloud Managed DNS.
-package otc // import "github.com/xenolf/lego/providers/dns/otc"
+package otc
 
 import (
 	"errors"
@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/xenolf/lego/challenge/dns01"
-	"github.com/xenolf/lego/platform/config/env"
+	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/platform/config/env"
 )
 
 const defaultIdentityEndpoint = "https://iam.eu-de.otc.t-systems.com:443/v3/auth/tokens"

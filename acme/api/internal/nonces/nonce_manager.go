@@ -1,4 +1,4 @@
-package nonces // import "github.com/xenolf/lego/acme/api/internal/nonces"
+package nonces
 
 import (
 	"errors"
@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/xenolf/lego/acme/api/internal/sender"
+	"github.com/go-acme/lego/acme/api/internal/sender"
 )
 
 // Manager Manages nonces.

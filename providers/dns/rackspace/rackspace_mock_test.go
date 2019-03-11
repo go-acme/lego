@@ -1,4 +1,4 @@
-package rackspace // import "github.com/xenolf/lego/providers/dns/rackspace"
+package rackspace
 
 const recordDeleteMock = `
 {

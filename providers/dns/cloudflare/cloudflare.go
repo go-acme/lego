@@ -1,5 +1,5 @@
 // Package cloudflare implements a DNS provider for solving the DNS-01 challenge using cloudflare DNS.
-package cloudflare // import "github.com/xenolf/lego/providers/dns/cloudflare"
+package cloudflare
 
 import (
 	"errors"
@@ -8,9 +8,9 @@ import (
 	"time"
 
 	cloudflare "github.com/cloudflare/cloudflare-go"
-	"github.com/xenolf/lego/challenge/dns01"
-	"github.com/xenolf/lego/log"
-	"github.com/xenolf/lego/platform/config/env"
+	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/log"
+	"github.com/go-acme/lego/platform/config/env"
 )
 
 const (

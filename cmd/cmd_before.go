@@ -1,8 +1,8 @@
-package cmd // import "github.com/xenolf/lego/cmd"
+package cmd
 
 import (
+	"github.com/go-acme/lego/log"
 	"github.com/urfave/cli"
-	"github.com/xenolf/lego/log"
 )
 
 func Before(ctx *cli.Context) error {

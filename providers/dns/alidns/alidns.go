@@ -1,5 +1,5 @@
 // Package alidns implements a DNS provider for solving the DNS-01 challenge using Alibaba Cloud DNS.
-package alidns // import "github.com/xenolf/lego/providers/dns/alidns"
+package alidns
 
 import (
 	"errors"
@@ -11,8 +11,8 @@ import (
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth/credentials"
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/alidns"
-	"github.com/xenolf/lego/challenge/dns01"
-	"github.com/xenolf/lego/platform/config/env"
+	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/platform/config/env"
 )
 
 const defaultRegionID = "cn-hangzhou"

@@ -1,15 +1,15 @@
-package cmd // import "github.com/xenolf/lego/cmd"
+package cmd
 
 import (
 	"crypto"
 	"crypto/x509"
 	"time"
 
+	"github.com/go-acme/lego/certcrypto"
+	"github.com/go-acme/lego/certificate"
+	"github.com/go-acme/lego/lego"
+	"github.com/go-acme/lego/log"
 	"github.com/urfave/cli"
-	"github.com/xenolf/lego/certcrypto"
-	"github.com/xenolf/lego/certificate"
-	"github.com/xenolf/lego/lego"
-	"github.com/xenolf/lego/log"
 )
 
 func createRenew() cli.Command {

@@ -1,4 +1,4 @@
-package cmd // import "github.com/xenolf/lego/cmd"
+package cmd
 
 import (
 	"fmt"

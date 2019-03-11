@@ -1,4 +1,4 @@
-package auroradns // import "github.com/xenolf/lego/providers/dns/auroradns"
+package auroradns
 
 import (
 	"fmt"
@@ -7,9 +7,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/go-acme/lego/platform/tester"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/platform/tester"
 )
 
 var envTest = tester.NewEnvTest(

@@ -1,4 +1,4 @@
-package rackspace // import "github.com/xenolf/lego/providers/dns/rackspace"
+package rackspace
 
 import (
 	"bytes"
@@ -7,7 +7,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/xenolf/lego/challenge/dns01"
+	"github.com/go-acme/lego/challenge/dns01"
 )
 
 // APIKeyCredentials API credential

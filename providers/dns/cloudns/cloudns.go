@@ -1,5 +1,5 @@
 // Package cloudns implements a DNS provider for solving the DNS-01 challenge using ClouDNS DNS.
-package cloudns // import "github.com/xenolf/lego/providers/dns/cloudns"
+package cloudns
 
 import (
 	"errors"
@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/xenolf/lego/challenge/dns01"
-	"github.com/xenolf/lego/platform/config/env"
-	"github.com/xenolf/lego/providers/dns/cloudns/internal"
+	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/platform/config/env"
+	"github.com/go-acme/lego/providers/dns/cloudns/internal"
 )
 
 // Config is used to configure the creation of the DNSProvider

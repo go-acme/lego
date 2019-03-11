@@ -1,4 +1,4 @@
-package tlsalpn01 // import "github.com/xenolf/lego/challenge/tlsalpn01"
+package tlsalpn01
 
 import (
 	"crypto/tls"
@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/xenolf/lego/log"
+	"github.com/go-acme/lego/log"
 )
 
 const (

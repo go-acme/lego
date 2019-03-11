@@ -1,12 +1,12 @@
-package netcup // import "github.com/xenolf/lego/providers/dns/netcup"
+package netcup
 
 import (
 	"fmt"
 	"testing"
 
+	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/platform/tester"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/challenge/dns01"
-	"github.com/xenolf/lego/platform/tester"
 )
 
 var envTest = tester.NewEnvTest(

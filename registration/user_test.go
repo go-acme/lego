@@ -1,4 +1,4 @@
-package registration // import "github.com/xenolf/lego/registration"
+package registration
 
 import (
 	"crypto"

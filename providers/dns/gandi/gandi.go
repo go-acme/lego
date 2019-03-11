@@ -1,5 +1,5 @@
 // Package gandi implements a DNS provider for solving the DNS-01 challenge using Gandi DNS.
-package gandi // import "github.com/xenolf/lego/providers/dns/gandi"
+package gandi
 
 import (
 	"errors"
@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/xenolf/lego/challenge/dns01"
-	"github.com/xenolf/lego/platform/config/env"
+	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/platform/config/env"
 )
 
 // Gandi API reference:       http://doc.rpc.gandi.net/index.html

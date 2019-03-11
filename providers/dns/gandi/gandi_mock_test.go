@@ -1,4 +1,4 @@
-package gandi // import "github.com/xenolf/lego/providers/dns/gandi"
+package gandi
 
 // CleanUp Request->Response 1 (setZone)
 const cleanup1RequestMock = `<?xml version="1.0"?>

@@ -1,10 +1,10 @@
-package api // import "github.com/xenolf/lego/acme/api"
+package api
 
 import (
 	"encoding/base64"
 	"errors"
 
-	"github.com/xenolf/lego/acme"
+	"github.com/go-acme/lego/acme"
 )
 
 type OrderService service

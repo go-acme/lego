@@ -1,4 +1,4 @@
-package internal // import "github.com/xenolf/lego/providers/dns/cloudxns/internal"
+package internal
 
 import (
 	"encoding/json"

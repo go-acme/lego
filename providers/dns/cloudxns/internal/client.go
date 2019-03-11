@@ -1,4 +1,4 @@
-package internal // import "github.com/xenolf/lego/providers/dns/cloudxns/internal"
+package internal
 
 import (
 	"bytes"
@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/xenolf/lego/challenge/dns01"
+	"github.com/go-acme/lego/challenge/dns01"
 )
 
 const defaultBaseURL = "https://www.cloudxns.net/api2/"

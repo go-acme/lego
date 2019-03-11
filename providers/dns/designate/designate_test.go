@@ -1,4 +1,4 @@
-package designate
+package designate // import "github.com/xenolf/lego/providers/dns/designate"
 
 import (
 	"net/http"

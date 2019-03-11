@@ -1,5 +1,5 @@
 // Package ovh implements a DNS provider for solving the DNS-01 challenge using OVH DNS.
-package ovh
+package ovh // import "github.com/xenolf/lego/providers/dns/ovh"
 
 import (
 	"errors"

@@ -1,5 +1,5 @@
 // Package lightsail implements a DNS provider for solving the DNS-01 challenge using AWS Lightsail DNS.
-package lightsail
+package lightsail // import "github.com/xenolf/lego/providers/dns/lightsail"
 
 import (
 	"errors"

@@ -1,4 +1,4 @@
-package lego
+package lego // import "github.com/xenolf/lego/lego"
 
 import (
 	"errors"

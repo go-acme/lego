@@ -1,4 +1,4 @@
-package webroot
+package webroot // import "github.com/xenolf/lego/providers/http/webroot"
 
 import (
 	"io/ioutil"

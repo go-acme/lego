@@ -1,5 +1,5 @@
 // Package iij implements a DNS provider for solving the DNS-01 challenge using IIJ DNS.
-package iij
+package iij // import "github.com/xenolf/lego/providers/dns/iij"
 
 import (
 	"fmt"

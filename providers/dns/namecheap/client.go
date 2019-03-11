@@ -1,4 +1,4 @@
-package namecheap
+package namecheap // import "github.com/xenolf/lego/providers/dns/namecheap"
 
 import (
 	"encoding/xml"

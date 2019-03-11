@@ -1,4 +1,4 @@
-package iij
+package iij // import "github.com/xenolf/lego/providers/dns/iij"
 
 import (
 	"testing"

@@ -1,4 +1,4 @@
-package bluecat
+package bluecat // import "github.com/xenolf/lego/providers/dns/bluecat"
 
 import (
 	"bytes"

@@ -1,4 +1,4 @@
-package sender
+package sender // import "github.com/xenolf/lego/acme/api/internal/sender"
 
 import (
 	"encoding/json"

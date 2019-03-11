@@ -1,6 +1,6 @@
 // Package stackpath implements a DNS provider for solving the DNS-01 challenge using Stackpath DNS.
 // https://developer.stackpath.com/en/api/dns/
-package stackpath
+package stackpath // import "github.com/xenolf/lego/providers/dns/stackpath"
 
 import (
 	"context"

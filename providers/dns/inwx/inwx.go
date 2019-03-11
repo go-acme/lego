@@ -1,5 +1,5 @@
 // Package inwx implements a DNS provider for solving the DNS-01 challenge using inwx dom robot
-package inwx
+package inwx // import "github.com/xenolf/lego/providers/dns/inwx"
 
 import (
 	"errors"

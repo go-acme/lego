@@ -1,4 +1,4 @@
-package dnsimple
+package dnsimple // import "github.com/xenolf/lego/providers/dns/dnsimple"
 
 import (
 	"os"

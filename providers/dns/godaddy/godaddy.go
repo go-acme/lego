@@ -1,5 +1,5 @@
 // Package godaddy implements a DNS provider for solving the DNS-01 challenge using godaddy DNS.
-package godaddy
+package godaddy // import "github.com/xenolf/lego/providers/dns/godaddy"
 
 import (
 	"errors"

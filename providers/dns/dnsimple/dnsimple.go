@@ -1,5 +1,5 @@
 // Package dnsimple implements a DNS provider for solving the DNS-01 challenge using dnsimple DNS.
-package dnsimple
+package dnsimple // import "github.com/xenolf/lego/providers/dns/dnsimple"
 
 import (
 	"context"

@@ -1,4 +1,4 @@
-package cmd
+package cmd // import "github.com/xenolf/lego/cmd"
 
 import (
 	"bufio"
@@ -47,6 +47,7 @@ func run(ctx *cli.Context) error {
 	accountsStorage := NewAccountsStorage(ctx)
 
 	account, client := setup(ctx, accountsStorage)
+	setupChallenges(ctx, client)
 
 	if account.Registration == nil {
 		reg, err := register(ctx, client)

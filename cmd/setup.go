@@ -1,4 +1,4 @@
-package cmd
+package cmd // import "github.com/xenolf/lego/cmd"
 
 import (
 	"crypto/x509"
@@ -52,8 +52,6 @@ func newClient(ctx *cli.Context, acc registration.User, keyType certcrypto.KeyTy
 	if err != nil {
 		log.Fatalf("Could not create client: %v", err)
 	}
-
-	setupChallenges(ctx, client)
 
 	if client.GetExternalAccountRequired() && !ctx.GlobalIsSet("eab") {
 		log.Fatal("Server requires External Account Binding. Use --eab with --kid and --hmac.")

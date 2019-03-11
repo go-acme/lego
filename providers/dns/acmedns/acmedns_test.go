@@ -1,4 +1,4 @@
-package acmedns
+package acmedns // import "github.com/xenolf/lego/providers/dns/acmedns"
 
 import (
 	"errors"

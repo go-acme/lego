@@ -1,5 +1,5 @@
 // Package otc implements a DNS provider for solving the DNS-01 challenge using Open Telekom Cloud Managed DNS.
-package otc
+package otc // import "github.com/xenolf/lego/providers/dns/otc"
 
 import (
 	"errors"

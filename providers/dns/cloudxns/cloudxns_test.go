@@ -1,4 +1,4 @@
-package cloudxns
+package cloudxns // import "github.com/xenolf/lego/providers/dns/cloudxns"
 
 import (
 	"testing"

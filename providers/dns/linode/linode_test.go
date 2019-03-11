@@ -1,4 +1,4 @@
-package linode
+package linode // import "github.com/xenolf/lego/providers/dns/linode"
 
 import (
 	"encoding/json"

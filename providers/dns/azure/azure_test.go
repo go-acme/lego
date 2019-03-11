@@ -1,4 +1,4 @@
-package azure
+package azure // import "github.com/xenolf/lego/providers/dns/azure"
 
 import (
 	"net/http"

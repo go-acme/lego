@@ -1,5 +1,5 @@
 // Package netcup implements a DNS Provider for solving the DNS-01 challenge using the netcup DNS API.
-package netcup
+package netcup // import "github.com/xenolf/lego/providers/dns/netcup"
 
 import (
 	"errors"

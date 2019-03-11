@@ -1,4 +1,4 @@
-package exec
+package exec // import "github.com/xenolf/lego/providers/dns/exec"
 
 import (
 	"fmt"

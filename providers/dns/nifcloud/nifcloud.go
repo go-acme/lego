@@ -1,5 +1,5 @@
 // Package nifcloud implements a DNS provider for solving the DNS-01 challenge using NIFCLOUD DNS.
-package nifcloud
+package nifcloud // import "github.com/xenolf/lego/providers/dns/nifcloud"
 
 import (
 	"errors"

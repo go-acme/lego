@@ -1,4 +1,4 @@
-package acme
+package acme // import "github.com/xenolf/lego/acme"
 
 import (
 	"fmt"

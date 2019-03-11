@@ -1,4 +1,4 @@
-package linodev4
+package linodev4 // import "github.com/xenolf/lego/providers/dns/linodev4"
 
 import (
 	"encoding/json"

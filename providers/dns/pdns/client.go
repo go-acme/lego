@@ -1,4 +1,4 @@
-package pdns
+package pdns // import "github.com/xenolf/lego/providers/dns/pdns"
 
 import (
 	"encoding/json"

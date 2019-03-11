@@ -1,4 +1,4 @@
-package inwx
+package inwx // import "github.com/xenolf/lego/providers/dns/inwx"
 
 import (
 	"testing"

@@ -1,4 +1,4 @@
-package gcloud
+package gcloud // import "github.com/xenolf/lego/providers/dns/gcloud"
 
 import (
 	"encoding/json"

@@ -1,4 +1,4 @@
-package env
+package env // import "github.com/xenolf/lego/platform/config/env"
 
 import (
 	"io/ioutil"

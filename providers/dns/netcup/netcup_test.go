@@ -1,4 +1,4 @@
-package netcup
+package netcup // import "github.com/xenolf/lego/providers/dns/netcup"
 
 import (
 	"fmt"

@@ -1,5 +1,5 @@
 // Package namecheap implements a DNS provider for solving the DNS-01 challenge using namecheap DNS.
-package namecheap
+package namecheap // import "github.com/xenolf/lego/providers/dns/namecheap"
 
 import (
 	"errors"

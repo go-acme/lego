@@ -1,4 +1,4 @@
-package ovh
+package ovh // import "github.com/xenolf/lego/providers/dns/ovh"
 
 import (
 	"testing"

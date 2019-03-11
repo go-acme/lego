@@ -1,5 +1,5 @@
 // Package rackspace implements a DNS provider for solving the DNS-01 challenge using rackspace DNS.
-package rackspace
+package rackspace // import "github.com/xenolf/lego/providers/dns/rackspace"
 
 import (
 	"bytes"

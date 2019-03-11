@@ -1,5 +1,5 @@
 // Package webroot implements a HTTP provider for solving the HTTP-01 challenge using web server's root path.
-package webroot
+package webroot // import "github.com/xenolf/lego/providers/http/webroot"
 
 import (
 	"fmt"

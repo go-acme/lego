@@ -1,5 +1,5 @@
 // Package designate implements a DNS provider for solving the DNS-01 challenge using the Designate DNSaaS for Openstack.
-package designate
+package designate // import "github.com/xenolf/lego/providers/dns/designate"
 
 import (
 	"errors"

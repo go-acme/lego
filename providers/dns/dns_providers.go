@@ -1,4 +1,4 @@
-package dns
+package dns // import "github.com/xenolf/lego/providers/dns"
 
 import (
 	"fmt"

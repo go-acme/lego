@@ -1,4 +1,4 @@
-package certificate
+package certificate // import "github.com/xenolf/lego/certificate"
 
 import (
 	"bytes"

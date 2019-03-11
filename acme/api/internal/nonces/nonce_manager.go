@@ -1,4 +1,4 @@
-package nonces
+package nonces // import "github.com/xenolf/lego/acme/api/internal/nonces"
 
 import (
 	"errors"

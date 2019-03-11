@@ -1,5 +1,5 @@
 // Package gandi implements a DNS provider for solving the DNS-01 challenge using Gandi DNS.
-package gandi
+package gandi // import "github.com/xenolf/lego/providers/dns/gandi"
 
 import (
 	"errors"

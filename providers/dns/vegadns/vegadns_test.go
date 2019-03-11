@@ -1,6 +1,6 @@
 // Package vegadns implements a DNS provider for solving the DNS-01
 // challenge using VegaDNS.
-package vegadns
+package vegadns // import "github.com/xenolf/lego/providers/dns/vegadns"
 
 import (
 	"fmt"

@@ -1,6 +1,6 @@
 // Package acmedns implements a DNS provider for solving DNS-01 challenges using Joohoi's acme-dns project.
 // For more information see the ACME-DNS homepage: https://github.com/joohoi/acme-dns
-package acmedns
+package acmedns // import "github.com/xenolf/lego/providers/dns/acmedns"
 
 import (
 	"errors"

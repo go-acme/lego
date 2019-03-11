@@ -1,4 +1,4 @@
-package cmd
+package cmd // import "github.com/xenolf/lego/cmd"
 
 import (
 	"crypto"

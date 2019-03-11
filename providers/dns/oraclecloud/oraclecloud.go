@@ -1,4 +1,4 @@
-package oraclecloud
+package oraclecloud // import "github.com/xenolf/lego/providers/dns/oraclecloud"
 
 import (
 	"context"

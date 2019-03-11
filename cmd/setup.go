@@ -53,8 +53,6 @@ func newClient(ctx *cli.Context, acc registration.User, keyType certcrypto.KeyTy
 		log.Fatalf("Could not create client: %v", err)
 	}
 
-	setupChallenges(ctx, client)
-
 	if client.GetExternalAccountRequired() && !ctx.GlobalIsSet("eab") {
 		log.Fatal("Server requires External Account Binding. Use --eab with --kid and --hmac.")
 	}

@@ -47,6 +47,7 @@ func run(ctx *cli.Context) error {
 	accountsStorage := NewAccountsStorage(ctx)
 
 	account, client := setup(ctx, accountsStorage)
+	setupChallenges(ctx, client)
 
 	if account.Registration == nil {
 		reg, err := register(ctx, client)

@@ -53,6 +53,7 @@ func createRenew() cli.Command {
 
 func renew(ctx *cli.Context) error {
 	account, client := setup(ctx, NewAccountsStorage(ctx))
+	setupChallenges(ctx, client)
 
 	if account.Registration == nil {
 		log.Fatalf("Account %s is not registered. Use 'run' to register a new account.\n", account.Email)

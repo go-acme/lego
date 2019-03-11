@@ -1,11 +1,11 @@
-package conoha // import "github.com/xenolf/lego/providers/dns/conoha"
+package conoha
 
 import (
 	"testing"
 	"time"
 
+	"github.com/go-acme/lego/platform/tester"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/platform/tester"
 )
 
 var envTest = tester.NewEnvTest(

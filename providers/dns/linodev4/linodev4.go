@@ -1,5 +1,5 @@
 // Package linodev4 implements a DNS provider for solving the DNS-01 challenge using Linode DNS and Linode's APIv4
-package linodev4 // import "github.com/xenolf/lego/providers/dns/linodev4"
+package linodev4
 
 import (
 	"context"
@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/platform/config/env"
 	"github.com/linode/linodego"
-	"github.com/xenolf/lego/challenge/dns01"
-	"github.com/xenolf/lego/platform/config/env"
 	"golang.org/x/oauth2"
 )
 

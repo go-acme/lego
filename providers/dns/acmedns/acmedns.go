@@ -1,14 +1,14 @@
 // Package acmedns implements a DNS provider for solving DNS-01 challenges using Joohoi's acme-dns project.
 // For more information see the ACME-DNS homepage: https://github.com/joohoi/acme-dns
-package acmedns // import "github.com/xenolf/lego/providers/dns/acmedns"
+package acmedns
 
 import (
 	"errors"
 	"fmt"
 
 	"github.com/cpu/goacmedns"
-	"github.com/xenolf/lego/challenge/dns01"
-	"github.com/xenolf/lego/platform/config/env"
+	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/platform/config/env"
 )
 
 const (

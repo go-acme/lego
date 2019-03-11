@@ -1,11 +1,11 @@
-package nifcloud // import "github.com/xenolf/lego/providers/dns/nifcloud"
+package nifcloud
 
 import (
 	"testing"
 	"time"
 
+	"github.com/go-acme/lego/platform/tester"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/platform/tester"
 )
 
 var envTest = tester.NewEnvTest(

@@ -1,5 +1,5 @@
 // Package auroradns implements a DNS provider for solving the DNS-01 challenge using Aurora DNS.
-package auroradns // import "github.com/xenolf/lego/providers/dns/auroradns"
+package auroradns
 
 import (
 	"errors"
@@ -7,9 +7,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/platform/config/env"
 	"github.com/nrdcg/auroradns"
-	"github.com/xenolf/lego/challenge/dns01"
-	"github.com/xenolf/lego/platform/config/env"
 )
 
 const defaultBaseURL = "https://api.auroradns.eu"

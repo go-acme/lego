@@ -1,5 +1,5 @@
 // Package exoscale implements a DNS provider for solving the DNS-01 challenge using exoscale DNS.
-package exoscale // import "github.com/xenolf/lego/providers/dns/exoscale"
+package exoscale
 
 import (
 	"context"
@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/exoscale/egoscale"
-	"github.com/xenolf/lego/challenge/dns01"
-	"github.com/xenolf/lego/platform/config/env"
+	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/platform/config/env"
 )
 
 const defaultBaseURL = "https://api.exoscale.com/dns"

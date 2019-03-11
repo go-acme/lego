@@ -1,5 +1,5 @@
 // Package namedotcom implements a DNS provider for solving the DNS-01 challenge using Name.com's DNS service.
-package namedotcom // import "github.com/xenolf/lego/providers/dns/namedotcom"
+package namedotcom
 
 import (
 	"errors"
@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/platform/config/env"
 	"github.com/namedotcom/go/namecom"
-	"github.com/xenolf/lego/challenge/dns01"
-	"github.com/xenolf/lego/platform/config/env"
 )
 
 // according to https://www.name.com/api-docs/DNS#CreateRecord

@@ -1,4 +1,4 @@
-package namecheap // import "github.com/xenolf/lego/providers/dns/namecheap"
+package namecheap
 
 import (
 	"fmt"

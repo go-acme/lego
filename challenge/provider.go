@@ -1,4 +1,4 @@
-package challenge // import "github.com/xenolf/lego/challenge"
+package challenge
 
 import "time"
 

@@ -1,10 +1,10 @@
-package resolver // import "github.com/xenolf/lego/challenge/resolver"
+package resolver
 
 import (
 	"time"
 
-	"github.com/xenolf/lego/acme"
-	"github.com/xenolf/lego/challenge"
+	"github.com/go-acme/lego/acme"
+	"github.com/go-acme/lego/challenge"
 )
 
 type preSolverMock struct {

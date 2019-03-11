@@ -1,4 +1,4 @@
-package secure // import "github.com/xenolf/lego/acme/api/internal/secure"
+package secure
 
 import (
 	"crypto"
@@ -9,7 +9,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/xenolf/lego/acme/api/internal/nonces"
+	"github.com/go-acme/lego/acme/api/internal/nonces"
 	jose "gopkg.in/square/go-jose.v2"
 )
 

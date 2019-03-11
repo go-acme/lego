@@ -1,13 +1,13 @@
-package lego // import "github.com/xenolf/lego/lego"
+package lego
 
 import (
 	"errors"
 	"net/url"
 
-	"github.com/xenolf/lego/acme/api"
-	"github.com/xenolf/lego/certificate"
-	"github.com/xenolf/lego/challenge/resolver"
-	"github.com/xenolf/lego/registration"
+	"github.com/go-acme/lego/acme/api"
+	"github.com/go-acme/lego/certificate"
+	"github.com/go-acme/lego/challenge/resolver"
+	"github.com/go-acme/lego/registration"
 )
 
 // Client is the user-friendly way to ACME

@@ -1,5 +1,5 @@
 // Package ovh implements a DNS provider for solving the DNS-01 challenge using OVH DNS.
-package ovh // import "github.com/xenolf/lego/providers/dns/ovh"
+package ovh
 
 import (
 	"errors"
@@ -9,9 +9,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/platform/config/env"
 	"github.com/ovh/go-ovh/ovh"
-	"github.com/xenolf/lego/challenge/dns01"
-	"github.com/xenolf/lego/platform/config/env"
 )
 
 // OVH API reference:       https://eu.api.ovh.com/

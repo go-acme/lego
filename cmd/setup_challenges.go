@@ -1,20 +1,20 @@
-package cmd // import "github.com/xenolf/lego/cmd"
+package cmd
 
 import (
 	"net"
 	"strings"
 	"time"
 
+	"github.com/go-acme/lego/challenge"
+	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/challenge/http01"
+	"github.com/go-acme/lego/challenge/tlsalpn01"
+	"github.com/go-acme/lego/lego"
+	"github.com/go-acme/lego/log"
+	"github.com/go-acme/lego/providers/dns"
+	"github.com/go-acme/lego/providers/http/memcached"
+	"github.com/go-acme/lego/providers/http/webroot"
 	"github.com/urfave/cli"
-	"github.com/xenolf/lego/challenge"
-	"github.com/xenolf/lego/challenge/dns01"
-	"github.com/xenolf/lego/challenge/http01"
-	"github.com/xenolf/lego/challenge/tlsalpn01"
-	"github.com/xenolf/lego/lego"
-	"github.com/xenolf/lego/log"
-	"github.com/xenolf/lego/providers/dns"
-	"github.com/xenolf/lego/providers/http/memcached"
-	"github.com/xenolf/lego/providers/http/webroot"
 )
 
 func setupChallenges(ctx *cli.Context, client *lego.Client) {

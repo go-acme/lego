@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/go-acme/lego/challenge/dns01"
 	"github.com/miekg/dns"
-	"github.com/xenolf/lego/challenge/dns01"
 )
 
 // updateTxtRecord Update the domains TXT record

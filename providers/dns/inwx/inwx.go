@@ -1,15 +1,15 @@
 // Package inwx implements a DNS provider for solving the DNS-01 challenge using inwx dom robot
-package inwx // import "github.com/xenolf/lego/providers/dns/inwx"
+package inwx
 
 import (
 	"errors"
 	"fmt"
 	"time"
 
+	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/log"
+	"github.com/go-acme/lego/platform/config/env"
 	"github.com/nrdcg/goinwx"
-	"github.com/xenolf/lego/challenge/dns01"
-	"github.com/xenolf/lego/log"
-	"github.com/xenolf/lego/platform/config/env"
 )
 
 // Config is used to configure the creation of the DNSProvider

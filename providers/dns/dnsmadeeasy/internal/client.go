@@ -1,4 +1,4 @@
-package internal // import "github.com/xenolf/lego/providers/dns/dnsmadeeasy/internal"
+package internal
 
 import (
 	"bytes"

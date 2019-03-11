@@ -1,4 +1,4 @@
-package wait // import "github.com/xenolf/lego/platform/wait"
+package wait
 
 import (
 	"testing"

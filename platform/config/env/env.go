@@ -1,4 +1,4 @@
-package env // import "github.com/xenolf/lego/platform/config/env"
+package env
 
 import (
 	"errors"
@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/xenolf/lego/log"
+	"github.com/go-acme/lego/log"
 )
 
 // Get environment variables

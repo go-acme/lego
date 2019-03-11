@@ -1,4 +1,4 @@
-package transip // import "github.com/xenolf/lego/providers/dns/transip"
+package transip
 
 import (
 	"encoding/xml"
@@ -9,12 +9,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-acme/lego/log"
+	"github.com/go-acme/lego/platform/tester"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/transip/gotransip"
 	"github.com/transip/gotransip/domain"
-	"github.com/xenolf/lego/log"
-	"github.com/xenolf/lego/platform/tester"
 )
 
 type argDNSEntries struct {

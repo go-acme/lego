@@ -1,4 +1,4 @@
-package resolver // import "github.com/xenolf/lego/challenge/resolver"
+package resolver
 
 import (
 	"bytes"

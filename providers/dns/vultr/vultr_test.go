@@ -1,11 +1,11 @@
-package vultr // import "github.com/xenolf/lego/providers/dns/vultr"
+package vultr
 
 import (
 	"testing"
 	"time"
 
+	"github.com/go-acme/lego/platform/tester"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/platform/tester"
 )
 
 var envTest = tester.NewEnvTest("VULTR_API_KEY").

@@ -1,6 +1,6 @@
 // Package vultr implements a DNS provider for solving the DNS-01 challenge using the vultr DNS.
 // See https://www.vultr.com/api/#dns
-package vultr // import "github.com/xenolf/lego/providers/dns/vultr"
+package vultr
 
 import (
 	"crypto/tls"
@@ -11,8 +11,8 @@ import (
 	"time"
 
 	vultr "github.com/JamesClonk/vultr/lib"
-	"github.com/xenolf/lego/challenge/dns01"
-	"github.com/xenolf/lego/platform/config/env"
+	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/platform/config/env"
 )
 
 // Config is used to configure the creation of the DNSProvider

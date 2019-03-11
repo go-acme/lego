@@ -1,5 +1,5 @@
 // Package zoneee implements a DNS provider for solving the DNS-01 challenge through zone.ee.
-package zoneee // import "github.com/xenolf/lego/providers/dns/zoneee"
+package zoneee
 
 import (
 	"errors"
@@ -8,8 +8,8 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/xenolf/lego/challenge/dns01"
-	"github.com/xenolf/lego/platform/config/env"
+	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/platform/config/env"
 )
 
 // Config is used to configure the creation of the DNSProvider

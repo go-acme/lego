@@ -1,6 +1,6 @@
 // Package vegadns implements a DNS provider for solving the DNS-01
 // challenge using VegaDNS.
-package vegadns // import "github.com/xenolf/lego/providers/dns/vegadns"
+package vegadns
 
 import (
 	"fmt"
@@ -11,9 +11,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-acme/lego/platform/tester"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/platform/tester"
 )
 
 const testDomain = "example.com"

@@ -1,5 +1,5 @@
 // Package lightsail implements a DNS provider for solving the DNS-01 challenge using AWS Lightsail DNS.
-package lightsail // import "github.com/xenolf/lego/providers/dns/lightsail"
+package lightsail
 
 import (
 	"errors"
@@ -12,8 +12,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/lightsail"
-	"github.com/xenolf/lego/challenge/dns01"
-	"github.com/xenolf/lego/platform/config/env"
+	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/platform/config/env"
 )
 
 const (

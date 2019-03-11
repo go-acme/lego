@@ -1,4 +1,4 @@
-package godaddy // import "github.com/xenolf/lego/providers/dns/godaddy"
+package godaddy
 
 import (
 	"bytes"

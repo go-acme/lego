@@ -1,5 +1,5 @@
 // Package vegadns implements a DNS provider for solving the DNS-01 challenge using VegaDNS.
-package vegadns // import "github.com/xenolf/lego/providers/dns/vegadns"
+package vegadns
 
 import (
 	"errors"
@@ -8,8 +8,8 @@ import (
 	"time"
 
 	vegaClient "github.com/OpenDNS/vegadns2client"
-	"github.com/xenolf/lego/challenge/dns01"
-	"github.com/xenolf/lego/platform/config/env"
+	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/platform/config/env"
 )
 
 // Config is used to configure the creation of the DNSProvider

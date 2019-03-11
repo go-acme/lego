@@ -1,4 +1,4 @@
-package tester // import "github.com/xenolf/lego/platform/tester"
+package tester
 
 import (
 	"fmt"

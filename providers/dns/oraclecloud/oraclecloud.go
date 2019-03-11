@@ -1,4 +1,4 @@
-package oraclecloud // import "github.com/xenolf/lego/providers/dns/oraclecloud"
+package oraclecloud
 
 import (
 	"context"
@@ -7,10 +7,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/platform/config/env"
 	"github.com/oracle/oci-go-sdk/common"
 	"github.com/oracle/oci-go-sdk/dns"
-	"github.com/xenolf/lego/challenge/dns01"
-	"github.com/xenolf/lego/platform/config/env"
 )
 
 // Config is used to configure the creation of the DNSProvider

@@ -9,7 +9,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/xenolf/lego/log"
+	"github.com/go-acme/lego/log"
 )
 
 func allDNSCodes() string {
@@ -42,7 +42,7 @@ func displayDNSHelp(name string) {
 {{- end}}
 {{end}}{{end}}
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://xenolf.github.io/lego/dns/{{ $provider.Code }}`)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/{{ $provider.Code }}`)
 {{end}}
     case "manual":
 		fmt.Fprintln(w, `Solving the DNS-01 challenge using CLI prompt.`)

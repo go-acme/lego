@@ -1,4 +1,4 @@
-package nonces // import "github.com/xenolf/lego/acme/api/internal/nonces"
+package nonces
 
 import (
 	"net/http"
@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/xenolf/lego/acme"
-	"github.com/xenolf/lego/acme/api/internal/sender"
-	"github.com/xenolf/lego/platform/tester"
+	"github.com/go-acme/lego/acme"
+	"github.com/go-acme/lego/acme/api/internal/sender"
+	"github.com/go-acme/lego/platform/tester"
 )
 
 func TestNotHoldingLockWhileMakingHTTPRequests(t *testing.T) {

@@ -1,4 +1,4 @@
-package sender // import "github.com/xenolf/lego/acme/api/internal/sender"
+package sender
 
 import (
 	"net/http"

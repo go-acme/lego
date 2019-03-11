@@ -1,6 +1,6 @@
 // Package acme contains all objects related the ACME endpoints.
 // https://tools.ietf.org/html/draft-ietf-acme-acme-16
-package acme // import "github.com/xenolf/lego/acme"
+package acme
 
 import (
 	"encoding/json"

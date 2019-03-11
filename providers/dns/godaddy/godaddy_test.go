@@ -1,10 +1,10 @@
-package godaddy // import "github.com/xenolf/lego/providers/dns/godaddy"
+package godaddy
 
 import (
 	"testing"
 
+	"github.com/go-acme/lego/platform/tester"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/platform/tester"
 )
 
 var envTest = tester.NewEnvTest(

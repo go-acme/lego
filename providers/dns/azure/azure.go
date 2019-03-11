@@ -1,6 +1,6 @@
 // Package azure implements a DNS provider for solving the DNS-01 challenge using azure DNS.
 // Azure doesn't like trailing dots on domain names, most of the acme code does.
-package azure // import "github.com/xenolf/lego/providers/dns/azure"
+package azure
 
 import (
 	"context"
@@ -17,8 +17,8 @@ import (
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/Azure/go-autorest/autorest/to"
-	"github.com/xenolf/lego/challenge/dns01"
-	"github.com/xenolf/lego/platform/config/env"
+	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/platform/config/env"
 )
 
 const defaultMetadataEndpoint = "http://169.254.169.254"

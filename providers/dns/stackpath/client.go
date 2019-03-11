@@ -1,4 +1,4 @@
-package stackpath // import "github.com/xenolf/lego/providers/dns/stackpath"
+package stackpath
 
 import (
 	"bytes"
@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"path"
 
-	"github.com/xenolf/lego/challenge/dns01"
+	"github.com/go-acme/lego/challenge/dns01"
 	"golang.org/x/net/publicsuffix"
 )
 

@@ -1,4 +1,4 @@
-package api // import "github.com/xenolf/lego/acme/api"
+package api
 
 import (
 	"bytes"
@@ -11,11 +11,11 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff"
-	"github.com/xenolf/lego/acme"
-	"github.com/xenolf/lego/acme/api/internal/nonces"
-	"github.com/xenolf/lego/acme/api/internal/secure"
-	"github.com/xenolf/lego/acme/api/internal/sender"
-	"github.com/xenolf/lego/log"
+	"github.com/go-acme/lego/acme"
+	"github.com/go-acme/lego/acme/api/internal/nonces"
+	"github.com/go-acme/lego/acme/api/internal/secure"
+	"github.com/go-acme/lego/acme/api/internal/sender"
+	"github.com/go-acme/lego/log"
 )
 
 // Core ACME/LE core API.

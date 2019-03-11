@@ -1,4 +1,4 @@
-package registration // import "github.com/xenolf/lego/registration"
+package registration
 
 import (
 	"crypto/rand"
@@ -6,11 +6,11 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/go-acme/lego/acme"
+	"github.com/go-acme/lego/acme/api"
+	"github.com/go-acme/lego/platform/tester"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/acme"
-	"github.com/xenolf/lego/acme/api"
-	"github.com/xenolf/lego/platform/tester"
 )
 
 func TestRegistrar_ResolveAccountByKey(t *testing.T) {

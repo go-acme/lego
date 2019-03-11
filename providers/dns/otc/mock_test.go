@@ -1,4 +1,4 @@
-package otc // import "github.com/xenolf/lego/providers/dns/otc"
+package otc
 
 import (
 	"fmt"

@@ -1,5 +1,5 @@
 // Package bluecat implements a DNS provider for solving the DNS-01 challenge using a self-hosted Bluecat Address Manager.
-package bluecat // import "github.com/xenolf/lego/providers/dns/bluecat"
+package bluecat
 
 import (
 	"encoding/json"
@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/xenolf/lego/challenge/dns01"
-	"github.com/xenolf/lego/platform/config/env"
+	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/platform/config/env"
 )
 
 const (

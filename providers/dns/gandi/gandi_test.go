@@ -1,4 +1,4 @@
-package gandi // import "github.com/xenolf/lego/providers/dns/gandi"
+package gandi
 
 import (
 	"io"
@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/go-acme/lego/platform/tester"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/platform/tester"
 )
 
 var envTest = tester.NewEnvTest("GANDI_API_KEY")

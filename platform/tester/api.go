@@ -1,11 +1,11 @@
-package tester // import "github.com/xenolf/lego/platform/tester"
+package tester
 
 import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 
-	"github.com/xenolf/lego/acme"
+	"github.com/go-acme/lego/acme"
 )
 
 // SetupFakeAPI Minimal stub ACME server for validation.

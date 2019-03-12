@@ -6,6 +6,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 	"text/tabwriter"
 
@@ -13,7 +14,8 @@ import (
 )
 
 func allDNSCodes() string {
-	return strings.Join([]string{
+	providers := []string{
+		"manual",
 		"acme-dns",
 		"alidns",
 		"auroradns",
@@ -67,7 +69,9 @@ func allDNSCodes() string {
 		"vscale",
 		"vultr",
 		"zoneee",
-	}, ", ")
+	}
+	sort.Strings(providers)
+	return strings.Join(providers, ", ")
 }
 
 func displayDNSHelp(name string) {

@@ -6,6 +6,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 	"text/tabwriter"
 
@@ -13,11 +14,14 @@ import (
 )
 
 func allDNSCodes() string {
-	return strings.Join([]string{
+	providers := []string{
+		"manual",
 {{- range $provider := .Providers }}
 		"{{ $provider.Code }}",
 {{- end}}
-	}, ", ")
+	}
+	sort.Strings(providers)
+	return strings.Join(providers, ", ")
 }
 
 func displayDNSHelp(name string) {

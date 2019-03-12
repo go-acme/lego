@@ -46,6 +46,7 @@ func allDNSCodes() string {
 		"lightsail",
 		"linode",
 		"linodev4",
+		"manual",
 		"mydnsjp",
 		"namecheap",
 		"namedotcom",

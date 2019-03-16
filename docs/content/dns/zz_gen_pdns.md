@@ -31,6 +31,9 @@ _Please contribute by adding a CLI example._
 | `PDNS_API_KEY` | API key |
 | `PDNS_API_URL` | API url |
 
+The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
+More information [here](/lego/dns/#configuration-and-credentials).
+
 
 ## Additional Configuration
 
@@ -40,6 +43,9 @@ _Please contribute by adding a CLI example._
 | `PDNS_POLLING_INTERVAL` | Time between DNS propagation check |
 | `PDNS_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
 | `PDNS_TTL` | The TTL of the TXT record used for the DNS challenge |
+
+The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
+More information [here](/lego/dns/#configuration-and-credentials).
 
 ## Information
 

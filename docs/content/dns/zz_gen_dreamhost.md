@@ -30,6 +30,9 @@ _Please contribute by adding a CLI example._
 |-----------------------|-------------|
 | `DREAMHOST_API_KEY` | The API key |
 
+The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
+More information [here](/lego/dns/#configuration-and-credentials).
+
 
 ## Additional Configuration
 
@@ -39,6 +42,9 @@ _Please contribute by adding a CLI example._
 | `DREAMHOST_POLLING_INTERVAL` | Time between DNS propagation check |
 | `DREAMHOST_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
 | `DREAMHOST_TTL` | The TTL of the TXT record used for the DNS challenge |
+
+The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
+More information [here](/lego/dns/#configuration-and-credentials).
 
 
 

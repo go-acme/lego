@@ -33,6 +33,9 @@ _Please contribute by adding a CLI example._
 | `OVH_CONSUMER_KEY` | Consumer key |
 | `OVH_ENDPOINT` | Endpoint URL (ovh-eu or ovh-ca) |
 
+The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
+More information [here](/lego/dns/#configuration-and-credentials).
+
 
 ## Additional Configuration
 
@@ -42,6 +45,9 @@ _Please contribute by adding a CLI example._
 | `OVH_POLLING_INTERVAL` | Time between DNS propagation check |
 | `OVH_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
 | `OVH_TTL` | The TTL of the TXT record used for the DNS challenge |
+
+The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
+More information [here](/lego/dns/#configuration-and-credentials).
 
 
 

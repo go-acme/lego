@@ -34,6 +34,9 @@ lego --dns httpreq --domains my.domain.com --email my@email.com run
 | `HTTPREQ_ENDPOINT` | The URL of the server |
 | `HTTPREQ_MODE` | `RAW`, none |
 
+The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
+More information [here](/lego/dns/#configuration-and-credentials).
+
 
 ## Additional Configuration
 
@@ -44,6 +47,9 @@ lego --dns httpreq --domains my.domain.com --email my@email.com run
 | `HTTPREQ_POLLING_INTERVAL` | Time between DNS propagation check |
 | `HTTPREQ_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
 | `HTTPREQ_USERNAME` | **TODO** |
+
+The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
+More information [here](/lego/dns/#configuration-and-credentials).
 
 ## Description
 

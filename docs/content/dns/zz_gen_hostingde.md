@@ -31,6 +31,9 @@ _Please contribute by adding a CLI example._
 | `HOSTINGDE_API_KEY` | **TODO** |
 | `HOSTINGDE_ZONE_NAME` | **TODO** |
 
+The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
+More information [here](/lego/dns/#configuration-and-credentials).
+
 
 ## Additional Configuration
 
@@ -40,6 +43,9 @@ _Please contribute by adding a CLI example._
 | `HOSTINGDE_POLLING_INTERVAL` | Time between DNS propagation check |
 | `HOSTINGDE_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
 | `HOSTINGDE_TTL` | The TTL of the TXT record used for the DNS challenge |
+
+The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
+More information [here](/lego/dns/#configuration-and-credentials).
 
 
 

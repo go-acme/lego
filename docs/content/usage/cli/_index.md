@@ -22,7 +22,7 @@ COMMANDS:
      run      Register an account, then create and install a certificate
      revoke   Revoke a certificate
      renew    Renew a certificate
-     dnshelp  Shows additional help for the --dns global option
+     dnshelp  Shows additional help for the '--dns' global option
      list     Display certificates and accounts information.
      help, h  Shows a list of commands or help for one command
 
@@ -35,7 +35,7 @@ GLOBAL OPTIONS:
    --eab                        Use External Account Binding for account registration. Requires --kid and --hmac.
    --kid value                  Key identifier from External CA. Used for External Account Binding.
    --hmac value                 MAC key from External CA. Should be in Base64 URL Encoding without padding format. Used for External Account Binding.
-   --key-type value, -k value   Key type to use for private keys. Supported: rsa2048, rsa4096, rsa8192, ec256, ec384. (default: "rsa2048")
+   --key-type value, -k value   Key type to use for private keys. Supported: rsa2048, rsa4096, rsa8192, ec256, ec384. (default: "ec384")
    --filename value             (deprecated) Filename of the generated certificate.
    --path value                 Directory to use for storing the data. (default: "./.lego")
    --http                       Use the HTTP challenge to solve challenges. Can be mixed with other types of challenges.

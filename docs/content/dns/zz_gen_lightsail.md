@@ -32,6 +32,9 @@ _Please contribute by adding a CLI example._
 | `AWS_SECRET_ACCESS_KEY` | Secret access key |
 | `DNS_ZONE` | DNS zone |
 
+The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
+More information [here](/lego/dns/#configuration-and-credentials).
+
 
 ## Additional Configuration
 
@@ -39,6 +42,9 @@ _Please contribute by adding a CLI example._
 |--------------------------------|-------------|
 | `LIGHTSAIL_POLLING_INTERVAL` | Time between DNS propagation check |
 | `LIGHTSAIL_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
+
+The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
+More information [here](/lego/dns/#configuration-and-credentials).
 
 
 

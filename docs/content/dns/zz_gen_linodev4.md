@@ -30,6 +30,9 @@ _Please contribute by adding a CLI example._
 |-----------------------|-------------|
 | `LINODE_TOKEN` | API token |
 
+The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
+More information [here](/lego/dns/#configuration-and-credentials).
+
 
 ## Additional Configuration
 
@@ -38,6 +41,9 @@ _Please contribute by adding a CLI example._
 | `LINODE_HTTP_TIMEOUT` | API request timeout |
 | `LINODE_POLLING_INTERVAL` | Time between DNS propagation check |
 | `LINODE_TTL` | The TTL of the TXT record used for the DNS challenge |
+
+The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
+More information [here](/lego/dns/#configuration-and-credentials).
 
 
 

@@ -35,6 +35,9 @@ lego --dns cloudflare --domains my.domain.com --email my@email.com run
 | `CLOUDFLARE_API_KEY` | API key |
 | `CLOUDFLARE_EMAIL` | Account email |
 
+The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
+More information [here](/lego/dns/#configuration-and-credentials).
+
 
 ## Additional Configuration
 
@@ -44,6 +47,9 @@ lego --dns cloudflare --domains my.domain.com --email my@email.com run
 | `CLOUDFLARE_POLLING_INTERVAL` | Time between DNS propagation check |
 | `CLOUDFLARE_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
 | `CLOUDFLARE_TTL` | The TTL of the TXT record used for the DNS challenge |
+
+The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
+More information [here](/lego/dns/#configuration-and-credentials).
 
 
 

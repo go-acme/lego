@@ -32,6 +32,9 @@ _Please contribute by adding a CLI example._
 | `NETCUP_API_PASSWORD` | API password |
 | `NETCUP_CUSTOMER_NUMBER` | Customer number |
 
+The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
+More information [here](/lego/dns/#configuration-and-credentials).
+
 
 ## Additional Configuration
 
@@ -41,6 +44,9 @@ _Please contribute by adding a CLI example._
 | `NETCUP_POLLING_INTERVAL` | Time between DNS propagation check |
 | `NETCUP_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
 | `NETCUP_TTL` | The TTL of the TXT record used for the DNS challenge |
+
+The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
+More information [here](/lego/dns/#configuration-and-credentials).
 
 
 

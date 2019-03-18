@@ -34,6 +34,9 @@ _Please contribute by adding a CLI example._
 | `BLUECAT_SERVER_URL` | The server URL, should have scheme, hostname, and port (if required) of the authoritative Bluecat BAM serve |
 | `BLUECAT_USER_NAME` | API username |
 
+The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
+More information [here](/lego/dns/#configuration-and-credentials).
+
 
 ## Additional Configuration
 
@@ -43,6 +46,9 @@ _Please contribute by adding a CLI example._
 | `BLUECAT_POLLING_INTERVAL` | Time between DNS propagation check |
 | `BLUECAT_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
 | `BLUECAT_TTL` | The TTL of the TXT record used for the DNS challenge |
+
+The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
+More information [here](/lego/dns/#configuration-and-credentials).
 
 
 

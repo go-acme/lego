@@ -34,6 +34,9 @@ _Please contribute by adding a CLI example._
 | `OS_TENANT_NAME` | Tenant name |
 | `OS_USERNAME` | Username |
 
+The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
+More information [here](/lego/dns/#configuration-and-credentials).
+
 
 ## Additional Configuration
 
@@ -42,6 +45,9 @@ _Please contribute by adding a CLI example._
 | `DESIGNATE_POLLING_INTERVAL` | Time between DNS propagation check |
 | `DESIGNATE_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
 | `DESIGNATE_TTL` | The TTL of the TXT record used for the DNS challenge |
+
+The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
+More information [here](/lego/dns/#configuration-and-credentials).
 
 
 

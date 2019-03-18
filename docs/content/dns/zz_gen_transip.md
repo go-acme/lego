@@ -31,6 +31,9 @@ _Please contribute by adding a CLI example._
 | `TRANSIP_ACCOUNT_NAME` | Account name |
 | `TRANSIP_PRIVATE_KEY_PATH` | Private key path |
 
+The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
+More information [here](/lego/dns/#configuration-and-credentials).
+
 
 ## Additional Configuration
 
@@ -39,6 +42,9 @@ _Please contribute by adding a CLI example._
 | `TRANSIP_POLLING_INTERVAL` | Time between DNS propagation check |
 | `TRANSIP_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
 | `TRANSIP_TTL` | The TTL of the TXT record used for the DNS challenge |
+
+The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
+More information [here](/lego/dns/#configuration-and-credentials).
 
 
 

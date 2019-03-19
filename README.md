@@ -31,7 +31,7 @@ How to [install](https://go-acme.github.io/lego/installation/).
 ## Usage
 
 - as a [CLI](https://go-acme.github.io/lego/usage/cli)
-- as a [library](https://go-acme.github.io/lego/usage/lib)
+- as a [library](https://go-acme.github.io/lego/usage/library)
 
 ## Documentation
 

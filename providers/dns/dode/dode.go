@@ -1,6 +1,4 @@
 // Package dode implements a DNS provider for solving the DNS-01 challenge using do.de.
-// See https://www.do.de/wiki/LetsEncrypt_-_Entwickler for more info on updating TXT records.
-// Modeled after the DuckDNS provider
 package dode
 
 import (
@@ -68,13 +66,14 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	_, txtRecord := dns01.GetRecord(domain, keyAuth)
-	return d.updateTxtRecord(domain, d.config.Token, txtRecord, false)
+	fqdn, txtRecord := dns01.GetRecord(domain, keyAuth)
+	return d.updateTxtRecord(fqdn, d.config.Token, txtRecord, false)
 }
 
 // CleanUp clears TXT record
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	return d.updateTxtRecord(domain, d.config.Token, "", true)
+	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	return d.updateTxtRecord(fqdn, d.config.Token, "", true)
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.

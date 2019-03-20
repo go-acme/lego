@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/url"
+
+	"github.com/go-acme/lego/challenge/dns01"
 )
 
 type apiResponse struct {
@@ -14,15 +16,12 @@ type apiResponse struct {
 
 // updateTxtRecord Update the domains TXT record
 // To update the TXT record we just need to make one simple get request.
-func (d *DNSProvider) updateTxtRecord(domain, token, txt string, clear bool) error {
+func (d *DNSProvider) updateTxtRecord(fqdn, token, txt string, clear bool) error {
 	u, _ := url.Parse("https://www.do.de/api/letsencrypt")
-
-	// api only accepts domains with challenge prefix
-	domain = "_acme-challenge." + domain
 
 	query := u.Query()
 	query.Set("token", token)
-	query.Set("domain", domain)
+	query.Set("domain", dns01.UnFqdn(fqdn))
 
 	// api call differs per set/delete
 	if clear {

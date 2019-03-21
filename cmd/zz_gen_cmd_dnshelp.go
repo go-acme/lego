@@ -30,6 +30,7 @@ func allDNSCodes() string {
 		"dnsimple",
 		"dnsmadeeasy",
 		"dnspod",
+		"dode",
 		"dreamhost",
 		"duckdns",
 		"dyn",
@@ -360,6 +361,26 @@ func displayDNSHelp(name string) {
 
 		fmt.Fprintln(w)
 		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/dnspod`)
+
+	case "dode":
+		// generated from: providers/dns/dode/dode.toml
+		fmt.Fprintln(w, `Configuration for Domain Offensive (do.de).`)
+		fmt.Fprintln(w, `Code: 'dode'`)
+		fmt.Fprintln(w)
+
+		fmt.Fprintln(w, `Credentials:`)
+		fmt.Fprintln(w, `	- "DODE_TOKEN": API token`)
+		fmt.Fprintln(w)
+
+		fmt.Fprintln(w, `Additional Configuration:`)
+		fmt.Fprintln(w, `	- "DODE_HTTP_TIMEOUT": API request timeout`)
+		fmt.Fprintln(w, `	- "DODE_POLLING_INTERVAL": Time between DNS propagation check`)
+		fmt.Fprintln(w, `	- "DODE_PROPAGATION_TIMEOUT": Maximum waiting time for DNS propagation`)
+		fmt.Fprintln(w, `	- "DODE_SEQUENCE_INTERVAL": Interval between iteration`)
+		fmt.Fprintln(w, `	- "DODE_TTL": The TTL of the TXT record used for the DNS challenge`)
+
+		fmt.Fprintln(w)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/dode`)
 
 	case "dreamhost":
 		// generated from: providers/dns/dreamhost/dreamhost.toml

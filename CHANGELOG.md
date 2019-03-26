@@ -1,5 +1,18 @@
 # Changelog
 
+## [v2.4.0] - 2019-03-25
+
+- Migrate from xenolf/lego to go-acme/lego.
+
+### Added:
+- **[dnsprovider]** Add DNS Provider for Domain Offensive (do.de)
+- **[dnsprovider]** Adds information about '_FILE' suffix.
+
+### Fixed:
+- **[cli,dnsprovider]** Add 'manual' provider to the output of dnshelp
+- **[dnsprovider]** hostingde: Use provided ZoneName instead of domain
+- **[dnsprovider]** pdns: fix wildcard with SANs
+
 ## [v2.3.0] - 2019-03-11
 
 ### Added:

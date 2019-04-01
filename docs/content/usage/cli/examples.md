@@ -30,6 +30,14 @@ lego --email="foo@bar.com" --domains="example.com" --http renew
 lego --email="foo@bar.com" --domains="example.com" --http renew --days 45
 ```
 
+### To renew the certificate (and hook)
+
+The hook is executed only when the certificates are effectively renewed.
+
+```bash
+lego --email="foo@bar.com" --domains="example.com" --http renew --renew-hook="./myscript.sh"
+```
+
 ### Obtain a certificate using the DNS challenge
 
 ```bash

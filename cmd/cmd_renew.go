@@ -212,7 +212,7 @@ func renewHook(ctx *cli.Context) error {
 	ctxCmd, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	parts := strings.Split(hook, " ")
+	parts := strings.Fields(hook)
 	output, err := exec.CommandContext(ctxCmd, parts[0], parts[1:]...).CombinedOutput()
 	if len(output) > 0 {
 		fmt.Println(string(output))

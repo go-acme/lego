@@ -132,5 +132,4 @@ func generateCLIHelp(models *Providers) error {
 
 	_, err = file.Write(source)
 	return err
-
 }

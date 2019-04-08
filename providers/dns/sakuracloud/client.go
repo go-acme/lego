@@ -10,6 +10,8 @@ import (
 	"github.com/sacloud/libsacloud/sacloud"
 )
 
+const sacloudAPILockKey = "lego/dns/sacloud"
+
 type sacloudDNSAPI interface {
 	update(id int64, value *sacloud.DNS) (*sacloud.DNS, error)
 	find(zoneName string) (*api.SearchDNSResponse, error)
@@ -40,6 +42,9 @@ func newSacloudClient(token, secret string) *sacloudClient {
 }
 
 func (d *sacloudClient) AddTXTRecord(fqdn, domain, value string, ttl int) error {
+	sacloud.LockByKey(sacloudAPILockKey)
+	defer sacloud.UnlockByKey(sacloudAPILockKey)
+
 	zone, err := d.getHostedZone(domain)
 	if err != nil {
 		return fmt.Errorf("sakuracloud: %v", err)
@@ -57,6 +62,9 @@ func (d *sacloudClient) AddTXTRecord(fqdn, domain, value string, ttl int) error 
 }
 
 func (d *sacloudClient) CleanupTXTRecord(fqdn, domain string) error {
+	sacloud.LockByKey(sacloudAPILockKey)
+	defer sacloud.UnlockByKey(sacloudAPILockKey)
+
 	zone, err := d.getHostedZone(domain)
 	if err != nil {
 		return fmt.Errorf("sakuracloud: %v", err)

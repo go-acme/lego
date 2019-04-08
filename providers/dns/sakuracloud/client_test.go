@@ -1,6 +1,8 @@
 package sakuracloud
 
 import (
+	"fmt"
+	"sync"
 	"testing"
 
 	"github.com/sacloud/libsacloud/api"
@@ -55,6 +57,71 @@ func TestSacloudClient_CleanupTXTRecord(t *testing.T) {
 	require.NoError(t, err)
 
 	updZone, err := testClient.getHostedZone("example.com")
+	require.NoError(t, err)
+	require.NotNil(t, updZone)
+
+	require.Len(t, updZone.Settings.DNS.ResourceRecordSets, 0)
+}
+
+func TestSacloudClient_AddTXTRecord_concurrent(t *testing.T) {
+	dummyRecordCount := 10
+
+	fakeZone := sacloud.CreateNewDNS("example.com")
+	fakeZone.ID = 123456789012
+	fakeClient := &fakeClient{fakeValues: map[int64]*sacloud.DNS{fakeZone.ID: fakeZone}}
+
+	var testClients []*sacloudClient
+	for i := 0; i < dummyRecordCount; i++ {
+		testClients = append(testClients, &sacloudClient{client: fakeClient})
+	}
+
+	var wg sync.WaitGroup
+	wg.Add(len(testClients))
+
+	for i, testClient := range testClients {
+		go func(index int, client *sacloudClient) {
+			err := client.AddTXTRecord(fmt.Sprintf("test%d.example.com", index), "example.com", "dummyValue", 10)
+			require.NoError(t, err)
+			wg.Done()
+		}(i, testClient)
+	}
+
+	wg.Wait()
+
+	updZone, err := testClients[0].getHostedZone("example.com")
+	require.NoError(t, err)
+	require.NotNil(t, updZone)
+
+	require.Len(t, updZone.Settings.DNS.ResourceRecordSets, dummyRecordCount)
+}
+
+func TestSacloudClient_CleanupTXTRecord_concurrent(t *testing.T) {
+	dummyRecordCount := 10
+	fakeZone := sacloud.CreateNewDNS("example.com")
+	for i := 0; i < dummyRecordCount; i++ {
+		fakeZone.AddRecord(fakeZone.CreateNewRecord(fmt.Sprintf("test%d", i), "TXT", "dummyValue", 10))
+	}
+	fakeZone.ID = 123456789012
+	fakeClient := &fakeClient{fakeValues: map[int64]*sacloud.DNS{fakeZone.ID: fakeZone}}
+	var testClients []*sacloudClient
+	for i := 0; i < dummyRecordCount; i++ {
+		testClients = append(testClients, &sacloudClient{client: fakeClient})
+	}
+
+	var wg sync.WaitGroup
+	wg.Add(len(testClients))
+
+	for i, testClient := range testClients {
+		go func(index int, client *sacloudClient) {
+			err := client.CleanupTXTRecord(fmt.Sprintf("test%d.example.com", index), "example.com")
+			require.NoError(t, err)
+			wg.Done()
+		}(i, testClient)
+	}
+
+	wg.Wait()
+
+	updZone, err := testClients[0].getHostedZone("example.com")
 	require.NoError(t, err)
 	require.NotNil(t, updZone)
 

@@ -181,7 +181,9 @@ type DatabaseReplicationSetting struct {
 	// Model レプリケーションモデル
 	Model DatabaseReplicationModels `json:",omitempty"`
 	// Appliance マスター側アプライアンス
-	Appliance *Resource `json:",omitempty"`
+	Appliance *struct {
+		ID string
+	} `json:",omitempty"`
 	// IPAddress IPアドレス
 	IPAddress string `json:",omitempty"`
 	// Port ポート
@@ -456,7 +458,7 @@ func NewSlaveDatabaseValue(values *SlaveDatabaseValue) *Database {
 				// Replication
 				Replication: &DatabaseReplicationSetting{
 					Model:     DatabaseReplicationModelAsyncReplica,
-					Appliance: NewResource(values.MasterApplianceID),
+					Appliance: &struct{ ID string }{ID: fmt.Sprintf("%d", values.MasterApplianceID)},
 					IPAddress: values.MasterIPAddress,
 					Port:      values.MasterPort,
 					User:      "replica",
@@ -504,5 +506,68 @@ func (s *Database) DeleteSourceNetwork(nw string) {
 
 // IsReplicationMaster レプリケーションが有効かつマスターとして構成されているか
 func (s *Database) IsReplicationMaster() bool {
-	return s.Settings.DBConf.Replication != nil && s.Settings.DBConf.Replication.Model == DatabaseReplicationModelMasterSlave
+	return s.IsReplicationEnabled() && s.Settings.DBConf.Replication.Model == DatabaseReplicationModelMasterSlave
+}
+
+// IsReplicationEnabled レプリケーションが有効な場合はTrueを返す
+func (s *Database) IsReplicationEnabled() bool {
+	return s.Settings.DBConf.Replication != nil
+}
+
+// DatabaseName MariaDB or PostgreSQLの何れかを返す
+func (s *Database) DatabaseName() string {
+	return s.Remark.DBConf.Common.DatabaseName
+}
+
+// DatabaseRevision データベースのリビジョンを返す
+//
+// 例: MariaDBの場合 => 10.2.15 / PostgreSQLの場合 => 10.3
+func (s *Database) DatabaseRevision() string {
+	return s.Remark.DBConf.Common.DatabaseRevision
+}
+
+// DatabaseVersion データベースのバージョンを返す
+//
+// 例: MariaDBの場合 => 10.2 / PostgreSQLの場合 => 10
+func (s *Database) DatabaseVersion() string {
+	return s.Remark.DBConf.Common.DatabaseVersion
+}
+
+// WebUIAddress WebUIが有効な場合、IPアドレス or FQDNを返す、無効な場合は空文字を返す
+func (s *Database) WebUIAddress() string {
+	webUI := s.Settings.DBConf.Common.WebUI
+	if webUI != nil {
+		if v, ok := webUI.(string); ok {
+			return v
+		}
+	}
+	return ""
+}
+
+// IPAddress IPアドレスを取得
+func (s *Database) IPAddress() string {
+	if len(s.Remark.Servers) < 1 {
+		return ""
+	}
+	v, ok := s.Remark.Servers[0].(map[string]string)
+	if !ok {
+		return ""
+	}
+	return v["IPAddress"]
+}
+
+// NetworkMaskLen ネットワークマスク長を取得
+func (s *Database) NetworkMaskLen() int {
+	if s.Remark.Network == nil {
+		return -1
+	}
+	return s.Remark.Network.NetworkMaskLen
+}
+
+// DefaultRoute デフォルトゲートウェイアドレスを取得
+func (s *Database) DefaultRoute() string {
+	if s.Remark.Network == nil {
+		return ""
+	}
+	return s.Remark.Network.DefaultRoute
 }

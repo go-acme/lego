@@ -278,6 +278,7 @@ type API struct {
 	Bill          *BillAPI          // 請求情報API
 	Bridge        *BridgeAPI        // ブリッジAPi
 	CDROM         *CDROMAPI         // ISOイメージAPI
+	Coupon        *CouponAPI        // クーポンAPI
 	Database      *DatabaseAPI      // データベースAPI
 	Disk          *DiskAPI          // ディスクAPI
 	DNS           *DNSAPI           // DNS API
@@ -296,6 +297,7 @@ type API struct {
 	NFS           *NFSAPI           // NFS API
 	Note          *NoteAPI          // スタートアップスクリプトAPI
 	PacketFilter  *PacketFilterAPI  // パケットフィルタAPI
+	ProxyLB       *ProxyLBAPI       // プロキシLBAPI
 	PrivateHost   *PrivateHostAPI   // 専有ホストAPI
 	Product       *ProductAPI       // 製品情報API
 	Server        *ServerAPI        // サーバーAPI
@@ -336,6 +338,11 @@ func (api *API) GetBridgeAPI() *BridgeAPI {
 // GetCDROMAPI ISOイメージAPI取得
 func (api *API) GetCDROMAPI() *CDROMAPI {
 	return api.CDROM
+}
+
+// GetCouponAPI クーポン情報API取得
+func (api *API) GetCouponAPI() *CouponAPI {
+	return api.Coupon
 }
 
 // GetDatabaseAPI データベースAPI取得
@@ -431,6 +438,11 @@ func (api *API) GetNoteAPI() *NoteAPI {
 // GetPacketFilterAPI パケットフィルタAPI取得
 func (api *API) GetPacketFilterAPI() *PacketFilterAPI {
 	return api.PacketFilter
+}
+
+// GetProxyLBAPI プロキシLBAPI取得
+func (api *API) GetProxyLBAPI() *ProxyLBAPI {
+	return api.ProxyLB
 }
 
 // GetPrivateHostAPI 専有ホストAPI取得
@@ -567,6 +579,7 @@ func newAPI(client *Client) *API {
 		Bill:       NewBillAPI(client),
 		Bridge:     NewBridgeAPI(client),
 		CDROM:      NewCDROMAPI(client),
+		Coupon:     NewCouponAPI(client),
 		Database:   NewDatabaseAPI(client),
 		Disk:       NewDiskAPI(client),
 		DNS:        NewDNSAPI(client),
@@ -588,6 +601,7 @@ func newAPI(client *Client) *API {
 		NFS:           NewNFSAPI(client),
 		Note:          NewNoteAPI(client),
 		PacketFilter:  NewPacketFilterAPI(client),
+		ProxyLB:       NewProxyLBAPI(client),
 		PrivateHost:   NewPrivateHostAPI(client),
 		Product: &ProductAPI{
 			Server:      NewProductServerAPI(client),

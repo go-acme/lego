@@ -53,6 +53,8 @@ const (
 	Windows2016SQLServerStandardAll
 	// Windows2016SQLServer2017StandardAll OS種別:Windows Server 2016 SQLServer 2017(Standard) + RDS + Office
 	Windows2016SQLServer2017StandardAll
+	// Windows2019 OS種別:Windows Server 2019 Datacenter Edition
+	Windows2019
 	// Custom OS種別:カスタム
 	Custom
 )
@@ -66,6 +68,7 @@ var OSTypeShortNames = []string{
 	"windows2016", "windows2016-rds", "windows2016-rds-office",
 	"windows2016-sql-web", "windows2016-sql-standard", "windows2016-sql-standard-all",
 	"windows2016-sql2017-standard", "windows2016-sql2017-standard-all",
+	"windows2019",
 }
 
 // IsWindows Windowsか
@@ -74,7 +77,8 @@ func (o ArchiveOSTypes) IsWindows() bool {
 	case Windows2012, Windows2012RDS, Windows2012RDSOffice,
 		Windows2016, Windows2016RDS, Windows2016RDSOffice,
 		Windows2016SQLServerWeb, Windows2016SQLServerStandard, Windows2016SQLServerStandardAll,
-		Windows2016SQLServer2017Standard, Windows2016SQLServer2017StandardAll:
+		Windows2016SQLServer2017Standard, Windows2016SQLServer2017StandardAll,
+		Windows2019:
 		return true
 	default:
 		return false
@@ -140,6 +144,8 @@ func StrToOSType(osType string) ArchiveOSTypes {
 		return Windows2016SQLServerStandardAll
 	case "windows2016-sql2017-standard-all":
 		return Windows2016SQLServer2017StandardAll
+	case "windows2019":
+		return Windows2019
 	default:
 		return Custom
 	}

@@ -305,8 +305,12 @@ func (d *DNSProvider) getHostedZone(domain string) (string, error) {
 	if len(zones.ManagedZones) == 0 {
 		return "", fmt.Errorf("no matching domain found for domain %s", authZone)
 	}
-
-	return zones.ManagedZones[0].Name, nil
+	for _, z := range zones.ManagedZones {
+		if z.Visibility == "public" {
+			return z.Name, nil
+		}
+	}
+	return "", fmt.Errorf("no public zone found for domain %s", authZone)
 }
 
 func (d *DNSProvider) findTxtRecords(zone, fqdn string) ([]*dns.ResourceRecordSet, error) {

@@ -4,6 +4,7 @@ package sakuracloud
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/go-acme/lego/challenge/dns01"
@@ -17,6 +18,7 @@ type Config struct {
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
+	HTTPClient         *http.Client
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider
@@ -25,6 +27,9 @@ func NewDefaultConfig() *Config {
 		TTL:                env.GetOrDefaultInt("SAKURACLOUD_TTL", dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond("SAKURACLOUD_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond("SAKURACLOUD_POLLING_INTERVAL", dns01.DefaultPollingInterval),
+		HTTPClient: &http.Client{
+			Timeout: env.GetOrDefaultSecond("SAKURACLOUD_HTTP_TIMEOUT", 10*time.Second),
+		},
 	}
 }
 
@@ -64,7 +69,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	return &DNSProvider{
-		client: newSacloudClient(config.Token, config.Secret),
+		client: newSacloudClient(config.Token, config.Secret, config.HTTPClient),
 		config: config,
 	}, nil
 }

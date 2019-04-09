@@ -33,10 +33,12 @@ type sacloudClient struct {
 	client sacloudDNSAPI
 }
 
-func newSacloudClient(token, secret string) *sacloudClient {
+func newSacloudClient(token, secret string, httpClient *http.Client) *sacloudClient {
+	apiClient := api.NewClient(token, secret, "is1a")
+	apiClient.HTTPClient = httpClient
 	return &sacloudClient{
 		client: &defaultSacloudDNSAPI{
-			client: api.NewClient(token, secret, "is1a").GetDNSAPI(),
+			client: apiClient.GetDNSAPI(),
 		},
 	}
 }

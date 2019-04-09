@@ -431,7 +431,7 @@
   revision = "1031fa0ce2f20c1c0e1e1b51951d8ea02c84fa05"
 
 [[projects]]
-  digest = "1:6101c7ee9aaf351ca846561137804ce11b6a4cac1e98d1b8e50bfd34bdef1c51"
+  digest = "1:5a632dc3d841d803524bd442976a52e390e4294826ece65722cb77020879d156"
   name = "github.com/sacloud/libsacloud"
   packages = [
     ".",
@@ -441,8 +441,8 @@
     "utils/mutexkv",
   ]
   pruneopts = "NUT"
-  revision = "1a2bbdbd3a76beef393c06103e0e56464054aede"
-  version = "v1.18.2"
+  revision = "a949b57af53e809207587f8c41571d81f140276e"
+  version = "v1.19.0"
 
 [[projects]]
   digest = "1:6bc0652ea6e39e22ccd522458b8bdd8665bf23bdc5a20eec90056e4dc7e273ca"

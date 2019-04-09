@@ -78,3 +78,6 @@
   [[issues.exclude-rules]]
     path = "providers/http/memcached/memcached_test.go"
     text = "`memcachedHosts` is a global variable"
+  [[issues.exclude-rules]]
+    path = "providers/dns/sakuracloud/client_test.go"
+    text = "cyclomatic complexity 13 of func `(TestDNSProvider_cleanupTXTRecord_concurrent|TestDNSProvider_addTXTRecord_concurrent)` is high"

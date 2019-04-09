@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-acme/lego/challenge/dns01"
 	"github.com/go-acme/lego/platform/config/env"
+	"github.com/sacloud/libsacloud/api"
 )
 
 // Config is used to configure the creation of the DNSProvider
@@ -36,7 +37,7 @@ func NewDefaultConfig() *Config {
 // DNSProvider is an implementation of the acme.ChallengeProvider interface.
 type DNSProvider struct {
 	config *Config
-	client *sacloudClient
+	client *api.DNSAPI
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for SakuraCloud.
@@ -68,8 +69,15 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("sakuracloud: AccessSecret is missing")
 	}
 
+	apiClient := api.NewClient(config.Token, config.Secret, "is1a")
+	if config.HTTPClient == nil {
+		apiClient.HTTPClient = http.DefaultClient
+	} else {
+		apiClient.HTTPClient = config.HTTPClient
+	}
+
 	return &DNSProvider{
-		client: newSacloudClient(config.Token, config.Secret, config.HTTPClient),
+		client: apiClient.GetDNSAPI(),
 		config: config,
 	}, nil
 }
@@ -77,13 +85,13 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
-	return d.client.AddTXTRecord(fqdn, domain, value, d.config.TTL)
+	return d.addTXTRecord(fqdn, domain, value, d.config.TTL)
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
-	return d.client.CleanupTXTRecord(fqdn, domain)
+	return d.cleanupTXTRecord(fqdn, domain)
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.

@@ -12,38 +12,7 @@ import (
 
 const sacloudAPILockKey = "lego/dns/sacloud"
 
-type sacloudDNSAPI interface {
-	update(id int64, value *sacloud.DNS) (*sacloud.DNS, error)
-	find(zoneName string) (*api.SearchDNSResponse, error)
-}
-
-type defaultSacloudDNSAPI struct {
-	client *api.DNSAPI
-}
-
-func (d *defaultSacloudDNSAPI) update(id int64, value *sacloud.DNS) (*sacloud.DNS, error) {
-	return d.client.Update(id, value)
-}
-
-func (d *defaultSacloudDNSAPI) find(zoneName string) (*api.SearchDNSResponse, error) {
-	return d.client.Reset().WithNameLike(zoneName).Find()
-}
-
-type sacloudClient struct {
-	client sacloudDNSAPI
-}
-
-func newSacloudClient(token, secret string, httpClient *http.Client) *sacloudClient {
-	apiClient := api.NewClient(token, secret, "is1a")
-	apiClient.HTTPClient = httpClient
-	return &sacloudClient{
-		client: &defaultSacloudDNSAPI{
-			client: apiClient.GetDNSAPI(),
-		},
-	}
-}
-
-func (d *sacloudClient) AddTXTRecord(fqdn, domain, value string, ttl int) error {
+func (d *DNSProvider) addTXTRecord(fqdn, domain, value string, ttl int) error {
 	sacloud.LockByKey(sacloudAPILockKey)
 	defer sacloud.UnlockByKey(sacloudAPILockKey)
 
@@ -55,7 +24,7 @@ func (d *sacloudClient) AddTXTRecord(fqdn, domain, value string, ttl int) error 
 	name := d.extractRecordName(fqdn, zone.Name)
 
 	zone.AddRecord(zone.CreateNewRecord(name, "TXT", value, ttl))
-	_, err = d.client.update(zone.ID, zone)
+	_, err = d.client.Update(zone.ID, zone)
 	if err != nil {
 		return fmt.Errorf("sakuracloud: API call failed: %v", err)
 	}
@@ -63,7 +32,7 @@ func (d *sacloudClient) AddTXTRecord(fqdn, domain, value string, ttl int) error 
 	return nil
 }
 
-func (d *sacloudClient) CleanupTXTRecord(fqdn, domain string) error {
+func (d *DNSProvider) cleanupTXTRecord(fqdn, domain string) error {
 	sacloud.LockByKey(sacloudAPILockKey)
 	defer sacloud.UnlockByKey(sacloudAPILockKey)
 
@@ -84,14 +53,14 @@ func (d *sacloudClient) CleanupTXTRecord(fqdn, domain string) error {
 		zone.Settings.DNS.ResourceRecordSets = updRecords
 	}
 
-	_, err = d.client.update(zone.ID, zone)
+	_, err = d.client.Update(zone.ID, zone)
 	if err != nil {
 		return fmt.Errorf("sakuracloud: API call failed: %v", err)
 	}
 	return nil
 }
 
-func (d *sacloudClient) getHostedZone(domain string) (*sacloud.DNS, error) {
+func (d *DNSProvider) getHostedZone(domain string) (*sacloud.DNS, error) {
 	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
 	if err != nil {
 		return nil, err
@@ -99,7 +68,7 @@ func (d *sacloudClient) getHostedZone(domain string) (*sacloud.DNS, error) {
 
 	zoneName := dns01.UnFqdn(authZone)
 
-	res, err := d.client.find(zoneName)
+	res, err := d.client.Reset().WithNameLike(zoneName).Find()
 	if err != nil {
 		if notFound, ok := err.(api.Error); ok && notFound.ResponseCode() == http.StatusNotFound {
 			return nil, fmt.Errorf("zone %s not found on SakuraCloud DNS: %v", zoneName, err)
@@ -116,7 +85,7 @@ func (d *sacloudClient) getHostedZone(domain string) (*sacloud.DNS, error) {
 	return nil, fmt.Errorf("zone %s not found", zoneName)
 }
 
-func (d *sacloudClient) findTxtRecords(fqdn string, zone *sacloud.DNS) []sacloud.DNSRecordSet {
+func (d *DNSProvider) findTxtRecords(fqdn string, zone *sacloud.DNS) []sacloud.DNSRecordSet {
 	recordName := d.extractRecordName(fqdn, zone.Name)
 
 	var res []sacloud.DNSRecordSet
@@ -128,7 +97,7 @@ func (d *sacloudClient) findTxtRecords(fqdn string, zone *sacloud.DNS) []sacloud
 	return res
 }
 
-func (d *sacloudClient) extractRecordName(fqdn, domain string) string {
+func (d *DNSProvider) extractRecordName(fqdn, domain string) string {
 	name := dns01.UnFqdn(fqdn)
 	if idx := strings.Index(name, "."+domain); idx != -1 {
 		return name[:idx]

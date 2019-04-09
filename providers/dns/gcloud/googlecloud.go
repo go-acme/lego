@@ -141,6 +141,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("googlecloud: the configuration of the DNS provider is nil")
 	}
+	if config.HTTPClient == nil {
+		return nil, fmt.Errorf("googlecloud: unable to create Google Cloud DNS service: client is nil")
+	}
 
 	svc, err := dns.NewService(context.Background(), option.WithHTTPClient(config.HTTPClient))
 	if err != nil {

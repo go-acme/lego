@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"google.golang.org/api/option"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -140,7 +141,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("googlecloud: the configuration of the DNS provider is nil")
 	}
 
-	svc, err := dns.New(config.HTTPClient)
+	svc, err := dns.NewService(context.Background(), option.WithHTTPClient(config.HTTPClient))
 	if err != nil {
 		return nil, fmt.Errorf("googlecloud: unable to create Google Cloud DNS service: %v", err)
 	}

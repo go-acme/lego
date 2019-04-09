@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"google.golang.org/api/option"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
+
+	"google.golang.org/api/option"
 
 	"github.com/go-acme/lego/challenge/dns01"
 	"github.com/go-acme/lego/log"

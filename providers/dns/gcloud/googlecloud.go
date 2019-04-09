@@ -10,8 +10,6 @@ import (
 	"strconv"
 	"time"
 
-	"google.golang.org/api/option"
-
 	"github.com/go-acme/lego/challenge/dns01"
 	"github.com/go-acme/lego/log"
 	"github.com/go-acme/lego/platform/config/env"
@@ -20,6 +18,7 @@ import (
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/dns/v1"
 	"google.golang.org/api/googleapi"
+	"google.golang.org/api/option"
 )
 
 const (
@@ -310,11 +309,13 @@ func (d *DNSProvider) getHostedZone(domain string) (string, error) {
 	if len(zones.ManagedZones) == 0 {
 		return "", fmt.Errorf("no matching domain found for domain %s", authZone)
 	}
+
 	for _, z := range zones.ManagedZones {
 		if z.Visibility == "public" {
 			return z.Name, nil
 		}
 	}
+
 	return "", fmt.Errorf("no public zone found for domain %s", authZone)
 }
 

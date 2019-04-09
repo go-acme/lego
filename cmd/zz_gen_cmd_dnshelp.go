@@ -1014,6 +1014,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Additional Configuration:`)
+		fmt.Fprintln(w, `	- "SAKURACLOUD_HTTP_TIMEOUT": API request timeout`)
 		fmt.Fprintln(w, `	- "SAKURACLOUD_POLLING_INTERVAL": Time between DNS propagation check`)
 		fmt.Fprintln(w, `	- "SAKURACLOUD_PROPAGATION_TIMEOUT": Maximum waiting time for DNS propagation`)
 		fmt.Fprintln(w, `	- "SAKURACLOUD_TTL": The TTL of the TXT record used for the DNS challenge`)

@@ -1,5 +1,7 @@
 package sacloud
 
+import "time"
+
 // SimpleMonitor シンプル監視
 type SimpleMonitor struct {
 	*Resource        // ID
@@ -68,6 +70,33 @@ type SimpleMonitorNotify struct {
 	Enabled             string `json:",omitempty"` // 有効/無効
 	HTML                string `json:",omitempty"` // メール通知の場合のHTMLメール有効フラグ
 	IncomingWebhooksURL string `json:",omitempty"` // Slack通知の場合のWebhook URL
+}
+
+// ESimpleMonitorHealth シンプル監視ステータス
+type ESimpleMonitorHealth string
+
+var (
+	// EHealthUp Up
+	EHealthUp = ESimpleMonitorHealth("UP")
+	// EHealthDown Down
+	EHealthDown = ESimpleMonitorHealth("DOWN")
+)
+
+// IsUp アップ
+func (e ESimpleMonitorHealth) IsUp() bool {
+	return e == EHealthUp
+}
+
+// IsDown ダウン
+func (e ESimpleMonitorHealth) IsDown() bool {
+	return e == EHealthDown
+}
+
+// SimpleMonitorHealthCheckStatus シンプル監視ステータス
+type SimpleMonitorHealthCheckStatus struct {
+	LastCheckedAt       time.Time
+	LastHealthChangedAt time.Time
+	Health              ESimpleMonitorHealth
 }
 
 // CreateNewSimpleMonitor シンプル監視作成

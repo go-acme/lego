@@ -7,6 +7,15 @@ import (
 	"time"
 )
 
+const (
+	// SIMOperatorsKDDI KDDI
+	SIMOperatorsKDDI = "KDDI"
+	// SIMOperatorsDOCOMO Docomo
+	SIMOperatorsDOCOMO = "NTT DOCOMO"
+	// SIMOperatorsSoftBank SoftBank
+	SIMOperatorsSoftBank = "SoftBank"
+)
+
 // SIM SIM(CommonServiceItem)
 type SIM struct {
 	*Resource        // ID
@@ -99,6 +108,18 @@ type SIMLog struct {
 	ResourceID    string     `json:"resource_id,omitempty"`
 	IMEI          string     `json:"imei,omitempty"`
 	IMSI          string     `json:"imsi,omitempty"`
+}
+
+// SIMNetworkOperatorConfig SIM通信キャリア設定
+type SIMNetworkOperatorConfig struct {
+	Allow       bool   `json:"allow,omitempty"`
+	CountryCode string `json:"country_code,omitempty"`
+	Name        string `json:"name,omitempty"`
+}
+
+// SIMNetworkOperatorConfigs SIM通信キャリア設定 リクエストパラメータ
+type SIMNetworkOperatorConfigs struct {
+	NetworkOperatorConfigs []*SIMNetworkOperatorConfig `json:"network_operator_config,omitempty"`
 }
 
 // CreateNewSIM SIM作成

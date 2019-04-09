@@ -431,17 +431,18 @@
   revision = "1031fa0ce2f20c1c0e1e1b51951d8ea02c84fa05"
 
 [[projects]]
-  branch = "master"
-  digest = "1:180e8ec2d3734b269a8a30b51dbca47fede2ce274fa76da2f00e664481cfb39e"
+  digest = "1:5a632dc3d841d803524bd442976a52e390e4294826ece65722cb77020879d156"
   name = "github.com/sacloud/libsacloud"
   packages = [
     ".",
     "api",
     "sacloud",
     "sacloud/ostype",
+    "utils/mutexkv",
   ]
   pruneopts = "NUT"
-  revision = "108b1efe4b4d106fee6760bdf1847c4f92e1a92e"
+  revision = "a949b57af53e809207587f8c41571d81f140276e"
+  version = "v1.19.0"
 
 [[projects]]
   digest = "1:6bc0652ea6e39e22ccd522458b8bdd8665bf23bdc5a20eec90056e4dc7e273ca"

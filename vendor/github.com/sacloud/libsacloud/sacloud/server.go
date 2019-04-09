@@ -86,6 +86,119 @@ func (s *Server) CIDRIPAddress() string {
 	return ""
 }
 
+// UpstreamType 1番目(0番目)のNICの上流ネットワーク種別
+func (s *Server) UpstreamType() EUpstreamNetworkType {
+	return s.UpstreamTypeAt(0)
+}
+
+// UpstreamTypeAt 指定インデックスのNICの上流ネットワーク種別
+func (s *Server) UpstreamTypeAt(index int) EUpstreamNetworkType {
+	if len(s.Interfaces) <= index {
+		return EUpstreamNetworkUnknown
+	}
+	return s.Interfaces[index].UpstreamType()
+}
+
+// SwitchID 上流のスイッチのID
+//
+// NICがない、上流スイッチが見つからない、上流が共有セグメントの場合は-1を返す
+func (s *Server) SwitchID() int64 {
+	return s.SwitchIDAt(0)
+}
+
+// SwitchIDAt 上流ネットワークのスイッチのID
+//
+// NICがない、上流スイッチが見つからない、上流が共有セグメントの場合は-1を返す
+func (s *Server) SwitchIDAt(index int) int64 {
+	if len(s.Interfaces) <= index {
+		return -1
+	}
+
+	nic := s.Interfaces[index]
+	if nic.Switch == nil || nic.Switch.Scope == ESCopeShared {
+		return -1
+	}
+	return nic.Switch.ID
+}
+
+// SwitchName 上流のスイッチのID
+//
+// NICがない、上流スイッチが見つからない、上流が共有セグメントの場合は空文字を返す
+func (s *Server) SwitchName() string {
+	return s.SwitchNameAt(0)
+}
+
+// SwitchNameAt 上流ネットワークのスイッチのID
+//
+// NICがない、上流スイッチが見つからない、上流が共有セグメントの場合は空文字を返す
+func (s *Server) SwitchNameAt(index int) string {
+	if len(s.Interfaces) <= index {
+		return ""
+	}
+
+	nic := s.Interfaces[index]
+	if nic.Switch == nil || nic.Switch.Scope == ESCopeShared {
+		return ""
+	}
+	return nic.Switch.Name
+}
+
+// Bandwidth 上流ネットワークの帯域幅(単位:Mbps)
+//
+// -1: 1番目(0番目)のNICが存在しない場合 or 切断されている場合
+// 0 : 制限なしの場合
+// 以外: 帯域幅(Mbps)
+func (s *Server) Bandwidth() int {
+	return s.BandwidthAt(0)
+}
+
+// BandwidthAt 上流ネットワークの帯域幅(単位:Mbps)
+//
+// -1: 存在しないインデックスを取得した場合 or 切断されている場合
+// 0 : 制限なしの場合
+// 以外: 帯域幅(Mbps)
+func (s *Server) BandwidthAt(index int) int {
+	if len(s.Interfaces) <= index {
+		return -1
+	}
+
+	nic := s.Interfaces[index]
+
+	switch nic.UpstreamType() {
+	case EUpstreamNetworkNone:
+		return -1
+	case EUpstreamNetworkShared:
+		return 100
+	case EUpstreamNetworkSwitch, EUpstreamNetworkRouter:
+		//
+		// 上流ネットワークがスイッチだった場合の帯域制限
+		// https://manual.sakura.ad.jp/cloud/support/technical/network.html#support-network-03
+		//
+
+		// 専有ホストの場合は制限なし
+		if s.PrivateHost != nil {
+			return 0
+		}
+
+		// メモリに応じた制限
+		memory := s.GetMemoryGB()
+		switch {
+		case memory < 32:
+			return 1000
+		case 32 <= memory && memory < 128:
+			return 2000
+		case 128 <= memory && memory < 224:
+			return 5000
+		case 224 <= memory:
+			return 10000
+		default:
+			return -1
+		}
+	default:
+		return -1
+	}
+}
+
 const (
 	// ServerMaxInterfaceLen サーバーに接続できるNICの最大数
 	ServerMaxInterfaceLen = 10

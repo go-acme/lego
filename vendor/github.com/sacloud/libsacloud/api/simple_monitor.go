@@ -118,6 +118,25 @@ func (api *SimpleMonitorAPI) Delete(id int64) (*sacloud.SimpleMonitor, error) {
 	})
 }
 
+// Health ヘルスチェック
+//
+// まだチェックが行われていない場合nilを返す
+func (api *SimpleMonitorAPI) Health(id int64) (*sacloud.SimpleMonitorHealthCheckStatus, error) {
+	var (
+		method = "GET"
+		uri    = fmt.Sprintf("%s/%d/health", api.getResourceURL(), id)
+	)
+	res := struct {
+		SimpleMonitor *sacloud.SimpleMonitorHealthCheckStatus `json:",omitempty"`
+	}{}
+
+	err := api.baseAPI.request(method, uri, nil, &res)
+	if err != nil {
+		return nil, err
+	}
+	return res.SimpleMonitor, nil
+}
+
 // MonitorResponseTimeSec アクティビティーモニター(レスポンスタイム)取得
 func (api *SimpleMonitorAPI) MonitorResponseTimeSec(id int64, body *sacloud.ResourceMonitorRequest) (*sacloud.MonitorValues, error) {
 	var (

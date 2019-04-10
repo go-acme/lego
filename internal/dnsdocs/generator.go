@@ -26,6 +26,7 @@ const (
 type Model struct {
 	Name          string         // Real name of the DNS provider
 	Code          string         // DNS code
+	Since         string         // First lego version
 	URL           string         // DNS provider URL
 	Description   string         // Provider summary
 	Example       string         // CLI example

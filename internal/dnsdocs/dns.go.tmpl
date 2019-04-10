@@ -32,6 +32,7 @@ func displayDNSHelp(name string) {
 		// generated from: {{ .GeneratedFrom }}
 		fmt.Fprintln(w, `Configuration for {{ $provider.Name }}.`)
 		fmt.Fprintln(w, `Code: '{{ $provider.Code }}'`)
+		fmt.Fprintln(w, `Since: '{{ $provider.Since }}'`)
 		fmt.Fprintln(w)
 {{if $provider.Configuration }}{{if $provider.Configuration.Credentials }}
 		fmt.Fprintln(w, `Credentials:`)

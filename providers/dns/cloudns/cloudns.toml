@@ -2,6 +2,7 @@ Name = "ClouDNS"
 Description = ''''''
 URL = "https://www.cloudns.net"
 Code = "cloudns"
+Since = "v2.3.0"
 
 Example = ''''''
 

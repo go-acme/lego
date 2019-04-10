@@ -2,6 +2,7 @@ Name = "Cloudflare"
 Description = ''''''
 URL = "https://www.cloudflare.com/dns/"
 Code = "cloudflare"
+Since = "v0.3.0"
 
 Example = '''
 CLOUDFLARE_EMAIL=foo@bar.com \

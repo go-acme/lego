@@ -2,6 +2,7 @@ Name = "Zone.ee"
 Description = ''''''
 URL = "https://www.zone.ee/"
 Code = "zoneee"
+Since = "v2.1.0"
 
 Example = ''''''
 

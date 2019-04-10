@@ -2,6 +2,7 @@ Name = "DNSimple"
 Description = ''''''
 URL = "https://dnsimple.com/"
 Code = "dnsimple"
+Since = "v0.3.0"
 
 Example = ''''''
 

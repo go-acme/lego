@@ -2,6 +2,7 @@ Name = "Amazon Route 53"
 Description = ''''''
 URL = "https://aws.amazon.com/route53/"
 Code = "route53"
+Since = "v0.3.0"
 
 Example = ''''''
 

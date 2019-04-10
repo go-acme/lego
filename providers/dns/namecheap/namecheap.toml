@@ -2,6 +2,7 @@ Name = "Namecheap"
 Description = ''''''
 URL = "https://www.namecheap.com"
 Code = "namecheap"
+Since = "v0.3.0"
 
 Example = ''''''
 

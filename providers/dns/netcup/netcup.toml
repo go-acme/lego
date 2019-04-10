@@ -2,6 +2,7 @@ Name = "Netcup"
 Description = ''''''
 URL = "https://www.netcup.eu/"
 Code = "netcup"
+Since = "v1.1.0"
 
 Example = ''''''
 

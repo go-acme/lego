@@ -2,6 +2,7 @@ Name = "HTTP request"
 Description = ''''''
 URL = "/dns/httpreq/"
 Code = "httpreq"
+Since = "v2.0.0"
 
 Example = '''
 HTTPREQ_ENDPOINT=http://my.server.com:9090 \

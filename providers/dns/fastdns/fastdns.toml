@@ -2,6 +2,7 @@ Name = "FastDNS"
 Description = ''''''
 URL = "https://www.akamai.com/us/en/products/security/fast-dns.jsp"
 Code = "fastdns"
+Since = "v0.5.0"
 
 Example = ''''''
 

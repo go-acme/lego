@@ -2,6 +2,7 @@ Name = "Oracle Cloud"
 Description = ''''''
 URL = "https://cloud.oracle.com/home"
 Code = "oraclecloud"
+Since = "v2.3.0"
 
 Example = '''
 OCI_PRIVKEY_FILE="~/.oci/oci_api_key.pem" \

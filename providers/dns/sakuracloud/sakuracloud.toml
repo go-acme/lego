@@ -2,6 +2,7 @@ Name = "Sakura Cloud"
 Description = ''''''
 URL = "https://cloud.sakura.ad.jp/"
 Code = "sakuracloud"
+Since = "v1.1.0"
 
 Example = ''''''
 

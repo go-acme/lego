@@ -2,6 +2,7 @@ Name = "INWX"
 Description = ''''''
 URL = "https://www.inwx.de/en"
 Code = "inwx"
+Since = "v2.0.0"
 
 Example = ''''''
 

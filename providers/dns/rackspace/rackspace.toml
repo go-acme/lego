@@ -2,6 +2,7 @@ Name = "Rackspace"
 Description = ''''''
 URL = "https://www.rackspace.com/"
 Code = "rackspace"
+Since = "v0.4.0"
 
 Example = ''''''
 

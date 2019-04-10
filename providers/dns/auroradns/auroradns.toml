@@ -2,6 +2,7 @@ Name = "Aurora DNS"
 Description = ''''''
 URL = "https://www.pcextreme.com/aurora/dns"
 Code = "auroradns"
+Since = "v0.4.0"
 
 Example = ''''''
 

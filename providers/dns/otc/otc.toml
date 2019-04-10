@@ -2,6 +2,7 @@ Name = "Open Telekom Cloud"
 Description = ''''''
 URL = "https://cloud.telekom.de/en"
 Code = "otc"
+Since = "v0.4.1"
 
 Example = ''''''
 

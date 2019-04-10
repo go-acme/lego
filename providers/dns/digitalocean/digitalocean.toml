@@ -2,6 +2,7 @@ Name = "Digital Ocean"
 Description = ''''''
 URL = "https://www.digitalocean.com/docs/networking/dns/"
 Code = "digitalocean"
+Since = "v0.3.0"
 
 Example = ''''''
 

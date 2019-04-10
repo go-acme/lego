@@ -2,6 +2,7 @@ Name = "Selectel"
 Description = ''''''
 URL = "https://kb.selectel.com/"
 Code = "selectel"
+Since = "v1.2.0"
 
 Example = ''''''
 

@@ -2,6 +2,7 @@ Name = "DNS Made Easy"
 Description = ''''''
 URL = "https://dnsmadeeasy.com/"
 Code = "dnsmadeeasy"
+Since = "v0.4.0"
 
 Example = ''''''
 

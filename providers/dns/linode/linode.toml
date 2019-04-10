@@ -2,6 +2,7 @@ Name = "Linode (deprecated)"
 Description = ''''''
 URL = "https://www.linode.com/"
 Code = "linode"
+Since = "v0.4.0"
 
 Example = ''''''
 

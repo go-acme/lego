@@ -9,6 +9,7 @@ slug: exoscale
 <!-- providers/dns/exoscale/exoscale.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
+Since: v0.4.0
 
 Configuration for [Exoscale](https://www.exoscale.com/).
 

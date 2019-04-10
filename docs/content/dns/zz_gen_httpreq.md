@@ -9,6 +9,7 @@ slug: httpreq
 <!-- providers/dns/httpreq/httpreq.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
+Since: v2.0.0
 
 Configuration for [HTTP request](/dns/httpreq/).
 

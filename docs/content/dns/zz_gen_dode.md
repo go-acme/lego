@@ -9,6 +9,7 @@ slug: dode
 <!-- providers/dns/dode/dode.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
+Since: v2.4.0
 
 Configuration for [Domain Offensive (do.de)](https://www.do.de/).
 

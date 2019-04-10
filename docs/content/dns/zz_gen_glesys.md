@@ -9,6 +9,7 @@ slug: glesys
 <!-- providers/dns/glesys/glesys.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
+Since: v0.5.0
 
 Configuration for [Glesys](https://glesys.com/).
 

@@ -9,6 +9,7 @@ slug: vscale
 <!-- providers/dns/vscale/vscale.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
+Since: v2.0.0
 
 Configuration for [Vscale](https://vscale.io/).
 

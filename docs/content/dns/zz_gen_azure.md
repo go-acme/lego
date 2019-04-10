@@ -9,6 +9,7 @@ slug: azure
 <!-- providers/dns/azure/azure.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
+Since: v0.4.0
 
 Configuration for [Azure](https://azure.microsoft.com/services/dns/).
 

@@ -9,6 +9,7 @@ slug: dreamhost
 <!-- providers/dns/dreamhost/dreamhost.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
+Since: v1.1.0
 
 Configuration for [DreamHost](https://www.dreamhost.com).
 

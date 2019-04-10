@@ -9,6 +9,7 @@ slug: iij
 <!-- providers/dns/iij/iij.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
+Since: v1.1.0
 
 Configuration for [Internet Initiative Japan](https://www.iij.ad.jp/en/).
 

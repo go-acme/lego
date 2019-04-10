@@ -9,6 +9,7 @@ slug: namecheap
 <!-- providers/dns/namecheap/namecheap.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
+Since: v0.3.0
 
 Configuration for [Namecheap](https://www.namecheap.com).
 

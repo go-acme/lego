@@ -9,6 +9,7 @@ slug: rfc2136
 <!-- providers/dns/rfc2136/rfc2136.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
+Since: v0.3.0
 
 Configuration for [RFC2136](https://tools.ietf.org/html/rfc2136).
 

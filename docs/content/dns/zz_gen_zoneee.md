@@ -9,6 +9,7 @@ slug: zoneee
 <!-- providers/dns/zoneee/zoneee.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
+Since: v2.1.0
 
 Configuration for [Zone.ee](https://www.zone.ee/).
 

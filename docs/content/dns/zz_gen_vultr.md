@@ -9,6 +9,7 @@ slug: vultr
 <!-- providers/dns/vultr/vultr.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
+Since: v0.3.1
 
 Configuration for [Vultr](https://www.vultr.com/).
 

@@ -242,7 +242,7 @@ func TestDNSProvider_Cleanup_DeletesTxtRecord(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestGetHost(t *testing.T) {
+func TestSplitFqdn(t *testing.T) {
 	testCases := []struct {
 		desc           string
 		fqdn           string
@@ -250,19 +250,19 @@ func TestGetHost(t *testing.T) {
 		expectedDoamin string
 	}{
 		{
+			desc:           "domain only",
+			fqdn:           "domain.com.",
+			expectedHost:   "",
+			expectedDoamin: "domain.com",
+		},
+		{
 			desc:           "single-part host",
-			fqdn:           "_acme-challenge.domain.com",
+			fqdn:           "_acme-challenge.domain.com.",
 			expectedHost:   "_acme-challenge",
 			expectedDoamin: "domain.com",
 		},
 		{
 			desc:           "multi-part host",
-			fqdn:           "_acme-challenge.sub.domain.com",
-			expectedHost:   "_acme-challenge.sub",
-			expectedDoamin: "domain.com",
-		},
-		{
-			desc:           "trailing dot",
 			fqdn:           "_acme-challenge.sub.domain.com.",
 			expectedHost:   "_acme-challenge.sub",
 			expectedDoamin: "domain.com",
@@ -271,7 +271,7 @@ func TestGetHost(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			actualHost, actualDomain := getHost(test.fqdn)
+			actualHost, actualDomain := splitFqdn(test.fqdn)
 
 			require.Equal(t, test.expectedHost, actualHost)
 			require.Equal(t, test.expectedDoamin, actualDomain)

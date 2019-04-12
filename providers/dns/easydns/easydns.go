@@ -126,7 +126,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, challenge := dns01.GetRecord(domain, keyAuth)
 
-	apiHost, apiDomain := getHost(fqdn)
+	apiHost, apiDomain := splitFqdn(fqdn)
 	record := &zoneRecord{
 		Domain: apiDomain,
 		Host:   apiHost,
@@ -164,7 +164,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
-	_, apiDomain := getHost(fqdn)
+	_, apiDomain := splitFqdn(fqdn)
 	err := d.deleteRecord(apiDomain, d.recordID)
 	if err != nil {
 		return fmt.Errorf("easydns: %v", err)
@@ -269,19 +269,11 @@ func (d *DNSProvider) executeRequest(method, path string, requestMsg, responseMs
 	return nil
 }
 
-func getHost(fqdn string) (host, domain string) {
+func splitFqdn(fqdn string) (host, domain string) {
 	parts := strings.Split(fqdn, ".")
+	length := len(parts)
 
-	separatorIndex := 2
-	lastIndex := len(parts)
-
-	if parts[len(parts)-1] == "" {
-		//Trailing '.' in fqdn; adjust indexes to ignore empty part
-		separatorIndex = 3
-		lastIndex--
-	}
-
-	host = strings.Join(parts[0:len(parts)-separatorIndex], ".")
-	domain = strings.Join(parts[len(parts)-separatorIndex:lastIndex], ".")
+	host = strings.Join(parts[0:length-3], ".")
+	domain = strings.Join(parts[length-3:length-1], ".")
 	return
 }

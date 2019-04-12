@@ -29,9 +29,10 @@ type MobileGatewaySettings struct {
 
 // MobileGatewaySetting モバイルゲートウェイ設定
 type MobileGatewaySetting struct {
-	InternetConnection *MGWInternetConnection `json:",omitempty"` // インターネット接続
-	Interfaces         []*MGWInterface        `json:",omitempty"` // インターフェース
-	StaticRoutes       []*MGWStaticRoute      `json:",omitempty"` // スタティックルート
+	InternetConnection       *MGWInternetConnection       `json:",omitempty"` // インターネット接続
+	InterDeviceCommunication *MGWInterDeviceCommunication `json:",omitempty"` // デバイス間通信
+	Interfaces               []*MGWInterface              `json:",omitempty"` // インターフェース
+	StaticRoutes             []*MGWStaticRoute            `json:",omitempty"` // スタティックルート
 }
 
 // HasStaticRoutes スタティックルートを保持しているか
@@ -88,6 +89,11 @@ func (m *MobileGatewaySetting) FindStaticRoute(prefix string, nextHop string) (i
 		}
 	}
 	return -1, nil
+}
+
+// MGWInterDeviceCommunication デバイス間通信
+type MGWInterDeviceCommunication struct {
+	Enabled string `json:",omitempty"`
 }
 
 // MGWInternetConnection インターネット接続
@@ -186,6 +192,58 @@ func (m *MobileGateway) HasSetting() bool {
 // HasStaticRoutes スタティックルートを保持しているか
 func (m *MobileGateway) HasStaticRoutes() bool {
 	return m.HasSetting() && m.Settings.MobileGateway.HasStaticRoutes()
+}
+
+// InternetConnection インターネット接続が有効な場合にTrueを返す
+func (m *MobileGateway) InternetConnection() bool {
+	return m.HasSetting() &&
+		m.Settings.MobileGateway.InternetConnection != nil &&
+		m.Settings.MobileGateway.InternetConnection.Enabled == "True"
+}
+
+// InterDeviceCommunication デバイス間通信が有効な場合にTrueを返す
+func (m *MobileGateway) InterDeviceCommunication() bool {
+	return m.HasSetting() &&
+		m.Settings.MobileGateway.InterDeviceCommunication != nil &&
+		m.Settings.MobileGateway.InterDeviceCommunication.Enabled == "True"
+}
+
+// IPAddress 0番目のNICのIPアドレスを取得
+func (m *MobileGateway) IPAddress() string {
+	return m.IPAddressAt(0)
+}
+
+// IPAddressAt IPアドレスを取得
+func (m *MobileGateway) IPAddressAt(index int) string {
+	if len(m.Interfaces) <= index {
+		return ""
+	}
+	if index == 0 {
+		return m.Interfaces[0].IPAddress
+	}
+
+	ipaddresses := m.Settings.MobileGateway.Interfaces[index].IPAddress
+	if len(ipaddresses) < 1 {
+		return ""
+	}
+	return ipaddresses[0]
+}
+
+// NetworkMaskLen 0番目のNICのネットワークマスク長を取得
+func (m *MobileGateway) NetworkMaskLen() int {
+	return m.NetworkMaskLenAt(0)
+}
+
+// NetworkMaskLenAt ネットワークマスク長を取得
+func (m *MobileGateway) NetworkMaskLenAt(index int) int {
+	if len(m.Interfaces) <= index {
+		return -1
+	}
+	if index == 0 {
+		return m.Interfaces[0].Switch.UserSubnet.NetworkMaskLen
+	}
+
+	return m.Settings.MobileGateway.Interfaces[0].NetworkMaskLen
 }
 
 // NewMobileGatewayResolver DNS登録用パラメータ作成

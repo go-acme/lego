@@ -82,7 +82,7 @@
   name = "gopkg.in/ns1/ns1-go.v2"
 
 [[constraint]]
-  branch = "master"
+  version = "1.19.0"
   name = "github.com/sacloud/libsacloud"
 
 [[constraint]]

@@ -39,6 +39,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
+| `SAKURACLOUD_HTTP_TIMEOUT` | API request timeout |
 | `SAKURACLOUD_POLLING_INTERVAL` | Time between DNS propagation check |
 | `SAKURACLOUD_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
 | `SAKURACLOUD_TTL` | The TTL of the TXT record used for the DNS challenge |

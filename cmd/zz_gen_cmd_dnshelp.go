@@ -468,7 +468,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
-		fmt.Fprintln(w, `	- "EASYDNS_SECRET": API Secret`)
+		fmt.Fprintln(w, `	- "EASYDNS_KEY": API Key`)
 		fmt.Fprintln(w, `	- "EASYDNS_TOKEN": API Token`)
 		fmt.Fprintln(w)
 

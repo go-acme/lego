@@ -21,7 +21,7 @@ Here is an example bash command using the EasyDNS provider:
 
 ```bash
 EASYDNS_TOKEN=<your token> \
-EASYDNS_SECRET=<your secret> \
+EASYDNS_KEY=<your key> \
 lego --dns easydns --domains my.domain.com --email my@email.com run
 ```
 
@@ -32,7 +32,7 @@ lego --dns easydns --domains my.domain.com --email my@email.com run
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `EASYDNS_SECRET` | API Secret |
+| `EASYDNS_KEY` | API Key |
 | `EASYDNS_TOKEN` | API Token |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.

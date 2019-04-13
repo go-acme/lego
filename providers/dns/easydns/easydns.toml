@@ -5,7 +5,7 @@ Code = "easydns"
 
 Example = '''
 EASYDNS_TOKEN=<your token> \
-EASYDNS_SECRET=<your secret> \
+EASYDNS_KEY=<your key> \
 lego --dns easydns --domains my.domain.com --email my@email.com run
 '''
 
@@ -14,7 +14,7 @@ Additional = ''''''
 [Configuration]
   [Configuration.Credentials]
     EASYDNS_TOKEN = "API Token"
-    EASYDNS_SECRET = "API Secret"
+    EASYDNS_KEY = "API Key"
   [Configuration.Additional]
     EASYDNS_HOSTNAME = "The hostname of the API Server"
     EASYDNS_POLLING_INTERVAL = "Time between DNS propagation check"

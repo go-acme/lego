@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var envTest = tester.NewEnvTest("EASYDNS_HOSTNAME", "EASYDNS_TOKEN", "EASYDNS_SECRET")
+var envTest = tester.NewEnvTest("EASYDNS_HOSTNAME", "EASYDNS_TOKEN", "EASYDNS_KEY")
 
 func setup() (*DNSProvider, *http.ServeMux, func()) {
 	handler := http.NewServeMux()
@@ -26,7 +26,7 @@ func setup() (*DNSProvider, *http.ServeMux, func()) {
 
 	config := NewDefaultConfig()
 	config.Token = "TOKEN"
-	config.Secret = "SECRET"
+	config.Key = "SECRET"
 	config.URL = url
 
 	provider, err := NewDNSProviderConfig(config)
@@ -46,14 +46,14 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"EASYDNS_TOKEN":  "TOKEN",
-				"EASYDNS_SECRET": "SECRET",
+				"EASYDNS_TOKEN": "TOKEN",
+				"EASYDNS_KEY":   "SECRET",
 			},
 		},
 		{
 			desc: "missing token",
 			envVars: map[string]string{
-				"EASYDNS_SECRET": "SECRET",
+				"EASYDNS_KEY": "SECRET",
 			},
 			expected: "easydns: the API token is missing: EASYDNS_TOKEN",
 		},
@@ -62,7 +62,7 @@ func TestNewDNSProvider(t *testing.T) {
 			envVars: map[string]string{
 				"EASYDNS_TOKEN": "TOKEN",
 			},
-			expected: "easydns: the API secret is missing: EASYDNS_SECRET",
+			expected: "easydns: the API key is missing: EASYDNS_KEY",
 		},
 	}
 

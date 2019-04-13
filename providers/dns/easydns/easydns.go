@@ -56,7 +56,7 @@ type addRecordResponse struct {
 type Config struct {
 	Hostname           string
 	Token              string
-	Secret             string
+	Key                string
 	TTL                int
 	URL                *url.URL
 	HTTPClient         *http.Client
@@ -94,7 +94,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 	config.URL = url
 	config.Token = os.Getenv("EASYDNS_TOKEN")
-	config.Secret = os.Getenv("EASYDNS_SECRET")
+	config.Key = os.Getenv("EASYDNS_KEY")
 
 	return NewDNSProviderConfig(config)
 }
@@ -109,8 +109,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("easydns: the API token is missing: EASYDNS_TOKEN")
 	}
 
-	if config.Secret == "" {
-		return nil, errors.New("easydns: the API secret is missing: EASYDNS_SECRET")
+	if config.Key == "" {
+		return nil, errors.New("easydns: the API key is missing: EASYDNS_KEY")
 	}
 
 	return &DNSProvider{config: config}, nil
@@ -242,10 +242,7 @@ func (d *DNSProvider) executeRequest(method, path string, requestMsg, responseMs
 
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("Accept", "application/json")
-
-	if len(d.config.Token) > 0 && len(d.config.Secret) > 0 {
-		request.SetBasicAuth(d.config.Token, d.config.Secret)
-	}
+	request.SetBasicAuth(d.config.Token, d.config.Key)
 
 	response, err := d.config.HTTPClient.Do(request)
 	if err != nil {

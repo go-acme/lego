@@ -32,8 +32,6 @@ type TXTRecord struct {
 	Status   int    `json:"status"`
 }
 
-type TXTRecords map[string]TXTRecord
-
 // NewClient creates a ClouDNS client
 func NewClient(authID string, authPassword string) (*Client, error) {
 	if authID == "" {
@@ -119,9 +117,9 @@ func (c *Client) FindTxtRecord(zoneName, fqdn string) (*TXTRecord, error) {
 		return nil, err
 	}
 
-	var records TXTRecords
+	var records []TXTRecord
 	if err = json.Unmarshal(result, &records); err != nil {
-		return nil, fmt.Errorf("ClouDNS: TXT record unmarshaling error: %v", err)
+		return nil, fmt.Errorf("ClouDNS: TXT record unmarshaling error: %v: %s", err, string(result))
 	}
 
 	for _, record := range records {

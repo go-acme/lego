@@ -95,7 +95,7 @@ func TestClientFindTxtRecord(t *testing.T) {
 			desc:        "record found",
 			authFQDN:    "_acme-challenge.foo.com.",
 			zoneName:    "foo.com",
-			apiResponse: []byte(`{"1":{"id":"1","type":"TXT","host":"_acme-challenge","record":"txtTXTtxtTXTtxtTXTtxtTXT","failover":"1","ttl":"30","status":1}}`),
+			apiResponse: []byte(`[{"id":"1","type":"TXT","host":"_acme-challenge","record":"txtTXTtxtTXTtxtTXTtxtTXT","failover":"1","ttl":"30","status":1}]`),
 			expected: result{
 				txtRecord: &TXTRecord{
 					ID:       1,

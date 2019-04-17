@@ -119,6 +119,11 @@ func (c *Client) FindTxtRecord(zoneName, fqdn string) (*TXTRecord, error) {
 		return nil, err
 	}
 
+	// the API returns [] when there is no records.
+	if string(result) == "[]" {
+		return nil, nil
+	}
+
 	var records TXTRecords
 	if err = json.Unmarshal(result, &records); err != nil {
 		return nil, fmt.Errorf("ClouDNS: TXT record unmarshaling error: %v: %s", err, string(result))
@@ -130,7 +135,7 @@ func (c *Client) FindTxtRecord(zoneName, fqdn string) (*TXTRecord, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("ClouDNS: no existing record found for %q", fqdn)
+	return nil, nil
 }
 
 // AddTxtRecord add a TXT record

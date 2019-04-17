@@ -131,8 +131,8 @@ func TestClientFindTxtRecord(t *testing.T) {
 			desc:        "record not found",
 			authFQDN:    "_acme-challenge.foo.com.",
 			zoneName:    "test-zone",
-			apiResponse: []byte(``),
-			expected:    result{error: true},
+			apiResponse: []byte(`[]`),
+			expected:    result{txtRecord: nil},
 		},
 	}
 

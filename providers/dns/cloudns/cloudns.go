@@ -98,6 +98,10 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return err
 	}
 
+	if record == nil {
+		return nil
+	}
+
 	return d.client.RemoveTxtRecord(record.ID, zone.Name)
 }
 

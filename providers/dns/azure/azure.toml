@@ -2,6 +2,7 @@ Name = "Azure"
 Description = ''''''
 URL = "https://azure.microsoft.com/services/dns/"
 Code = "azure"
+Since = "v0.4.0"
 
 Example = ''''''
 

@@ -2,6 +2,7 @@ Name = "Alibaba Cloud DNS"
 Description = ''''''
 URL = "https://www.alibabacloud.com/product/dns"
 Code = "alidns"
+Since = "v1.1.0"
 
 Example = ''''''
 

@@ -2,6 +2,7 @@ Name = "VegaDNS"
 Description = ''''''
 URL = "https://github.com/shupp/VegaDNS-API"
 Code = "vegadns"
+Since = "v1.1.0"
 
 Example = ''''''
 

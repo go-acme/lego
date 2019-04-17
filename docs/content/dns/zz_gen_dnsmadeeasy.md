@@ -9,6 +9,7 @@ slug: dnsmadeeasy
 <!-- providers/dns/dnsmadeeasy/dnsmadeeasy.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
+Since: v0.4.0
 
 Configuration for [DNS Made Easy](https://dnsmadeeasy.com/).
 

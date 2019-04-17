@@ -2,6 +2,7 @@ Name = "Vultr"
 Description = ''''''
 URL = "https://www.vultr.com/"
 Code = "vultr"
+Since = "v0.3.1"
 
 Example = ''''''
 

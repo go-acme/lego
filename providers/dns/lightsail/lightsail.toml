@@ -2,6 +2,7 @@ Name = "Amazon Lightsail"
 Description = ''''''
 URL = "https://aws.amazon.com/lightsail/"
 Code = "lightsail"
+Since = "v0.5.0"
 
 Example = ''''''
 

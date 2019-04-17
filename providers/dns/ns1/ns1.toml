@@ -2,6 +2,7 @@ Name = "NS1"
 Description = ''''''
 URL = "https://ns1.com"
 Code = "ns1"
+Since = "v0.4.0"
 
 Example = ''''''
 

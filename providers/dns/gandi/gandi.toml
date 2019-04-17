@@ -2,6 +2,7 @@ Name = "Gandi"
 Description = """"""
 URL = "https://www.gandi.net"
 Code = "gandi"
+Since = "v0.3.0"
 
 Example = ''''''
 

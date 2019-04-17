@@ -2,6 +2,7 @@ Name = "CloudXNS"
 Description = """"""
 URL = "https://www.cloudxns.net/"
 Code = "cloudxns"
+Since = "v0.5.0"
 
 Example = ''''''
 

@@ -9,6 +9,7 @@ slug: sakuracloud
 <!-- providers/dns/sakuracloud/sakuracloud.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
+Since: v1.1.0
 
 Configuration for [Sakura Cloud](https://cloud.sakura.ad.jp/).
 

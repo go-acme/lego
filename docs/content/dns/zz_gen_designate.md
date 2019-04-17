@@ -9,6 +9,7 @@ slug: designate
 <!-- providers/dns/designate/designate.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
+Since: v2.2.0
 
 Configuration for [Designate DNSaaS for Openstack](https://docs.openstack.org/designate/latest/).
 

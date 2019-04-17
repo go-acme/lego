@@ -2,6 +2,7 @@ Name = "Designate DNSaaS for Openstack"
 Description = ''''''
 URL = "https://docs.openstack.org/designate/latest/"
 Code = "designate"
+Since = "v2.2.0"
 
 Example = ''''''
 

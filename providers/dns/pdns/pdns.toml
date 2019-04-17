@@ -2,6 +2,7 @@ Name = "PowerDNS"
 Description = ''''''
 URL = "https://www.powerdns.com/"
 Code = "pdns"
+Since = "v0.4.0"
 
 Example = ''''''
 

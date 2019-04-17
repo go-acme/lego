@@ -9,6 +9,7 @@ slug: cloudflare
 <!-- providers/dns/cloudflare/cloudflare.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
+Since: v0.3.0
 
 Configuration for [Cloudflare](https://www.cloudflare.com/dns/).
 

@@ -2,6 +2,7 @@ Name = "Hosting.de"
 Description = ''''''
 URL = "https://www.hosting.de/"
 Code = "hostingde"
+Since = "v1.1.0"
 
 [Configuration]
   [Configuration.Credentials]

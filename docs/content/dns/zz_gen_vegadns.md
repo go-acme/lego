@@ -9,6 +9,7 @@ slug: vegadns
 <!-- providers/dns/vegadns/vegadns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
+Since: v1.1.0
 
 Configuration for [VegaDNS](https://github.com/shupp/VegaDNS-API).
 

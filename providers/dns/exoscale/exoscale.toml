@@ -2,6 +2,7 @@ Name = "Exoscale"
 Description = ''''''
 URL = "https://www.exoscale.com/"
 Code = "exoscale"
+Since = "v0.4.0"
 
 Example = ''''''
 

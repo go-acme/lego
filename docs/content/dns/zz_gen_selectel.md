@@ -9,6 +9,7 @@ slug: selectel
 <!-- providers/dns/selectel/selectel.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
+Since: v1.2.0
 
 Configuration for [Selectel](https://kb.selectel.com/).
 

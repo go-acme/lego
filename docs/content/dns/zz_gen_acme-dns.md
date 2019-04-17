@@ -9,6 +9,7 @@ slug: acme-dns
 <!-- providers/dns/acmedns/acmedns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
+Since: v1.1.0
 
 Configuration for [Joohoi's ACME-DNS](https://github.com/joohoi/acme-dns).
 

@@ -83,6 +83,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/acmedns/acmedns.toml
 		fmt.Fprintln(w, `Configuration for Joohoi's ACME-DNS.`)
 		fmt.Fprintln(w, `Code: 'acme-dns'`)
+		fmt.Fprintln(w, `Since: 'v1.1.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -97,6 +98,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/alidns/alidns.toml
 		fmt.Fprintln(w, `Configuration for Alibaba Cloud DNS.`)
 		fmt.Fprintln(w, `Code: 'alidns'`)
+		fmt.Fprintln(w, `Since: 'v1.1.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -117,6 +119,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/auroradns/auroradns.toml
 		fmt.Fprintln(w, `Configuration for Aurora DNS.`)
 		fmt.Fprintln(w, `Code: 'auroradns'`)
+		fmt.Fprintln(w, `Since: 'v0.4.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -137,6 +140,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/azure/azure.toml
 		fmt.Fprintln(w, `Configuration for Azure.`)
 		fmt.Fprintln(w, `Code: 'azure'`)
+		fmt.Fprintln(w, `Since: 'v0.4.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -161,6 +165,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/bluecat/bluecat.toml
 		fmt.Fprintln(w, `Configuration for Bluecat.`)
 		fmt.Fprintln(w, `Code: 'bluecat'`)
+		fmt.Fprintln(w, `Since: 'v0.5.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -184,6 +189,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/cloudflare/cloudflare.toml
 		fmt.Fprintln(w, `Configuration for Cloudflare.`)
 		fmt.Fprintln(w, `Code: 'cloudflare'`)
+		fmt.Fprintln(w, `Since: 'v0.3.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -204,6 +210,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/cloudns/cloudns.toml
 		fmt.Fprintln(w, `Configuration for ClouDNS.`)
 		fmt.Fprintln(w, `Code: 'cloudns'`)
+		fmt.Fprintln(w, `Since: 'v2.3.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -224,6 +231,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/cloudxns/cloudxns.toml
 		fmt.Fprintln(w, `Configuration for CloudXNS.`)
 		fmt.Fprintln(w, `Code: 'cloudxns'`)
+		fmt.Fprintln(w, `Since: 'v0.5.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -244,6 +252,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/conoha/conoha.toml
 		fmt.Fprintln(w, `Configuration for ConoHa.`)
 		fmt.Fprintln(w, `Code: 'conoha'`)
+		fmt.Fprintln(w, `Since: 'v1.2.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -266,6 +275,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/designate/designate.toml
 		fmt.Fprintln(w, `Configuration for Designate DNSaaS for Openstack.`)
 		fmt.Fprintln(w, `Code: 'designate'`)
+		fmt.Fprintln(w, `Since: 'v2.2.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -288,6 +298,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/digitalocean/digitalocean.toml
 		fmt.Fprintln(w, `Configuration for Digital Ocean.`)
 		fmt.Fprintln(w, `Code: 'digitalocean'`)
+		fmt.Fprintln(w, `Since: 'v0.3.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -307,6 +318,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/dnsimple/dnsimple.toml
 		fmt.Fprintln(w, `Configuration for DNSimple.`)
 		fmt.Fprintln(w, `Code: 'dnsimple'`)
+		fmt.Fprintln(w, `Since: 'v0.3.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -326,6 +338,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/dnsmadeeasy/dnsmadeeasy.toml
 		fmt.Fprintln(w, `Configuration for DNS Made Easy.`)
 		fmt.Fprintln(w, `Code: 'dnsmadeeasy'`)
+		fmt.Fprintln(w, `Since: 'v0.4.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -347,6 +360,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/dnspod/dnspod.toml
 		fmt.Fprintln(w, `Configuration for DNSPod.`)
 		fmt.Fprintln(w, `Code: 'dnspod'`)
+		fmt.Fprintln(w, `Since: 'v0.4.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -366,6 +380,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/dode/dode.toml
 		fmt.Fprintln(w, `Configuration for Domain Offensive (do.de).`)
 		fmt.Fprintln(w, `Code: 'dode'`)
+		fmt.Fprintln(w, `Since: 'v2.4.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -386,6 +401,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/dreamhost/dreamhost.toml
 		fmt.Fprintln(w, `Configuration for DreamHost.`)
 		fmt.Fprintln(w, `Code: 'dreamhost'`)
+		fmt.Fprintln(w, `Since: 'v1.1.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -405,6 +421,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/duckdns/duckdns.toml
 		fmt.Fprintln(w, `Configuration for Duck DNS.`)
 		fmt.Fprintln(w, `Code: 'duckdns'`)
+		fmt.Fprintln(w, `Since: 'v0.5.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -425,6 +442,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/dyn/dyn.toml
 		fmt.Fprintln(w, `Configuration for Dyn.`)
 		fmt.Fprintln(w, `Code: 'dyn'`)
+		fmt.Fprintln(w, `Since: 'v0.3.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -446,6 +464,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/exec/exec.toml
 		fmt.Fprintln(w, `Configuration for External program.`)
 		fmt.Fprintln(w, `Code: 'exec'`)
+		fmt.Fprintln(w, `Since: 'v0.5.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w)
@@ -455,6 +474,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/exoscale/exoscale.toml
 		fmt.Fprintln(w, `Configuration for Exoscale.`)
 		fmt.Fprintln(w, `Code: 'exoscale'`)
+		fmt.Fprintln(w, `Since: 'v0.4.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -476,6 +496,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/fastdns/fastdns.toml
 		fmt.Fprintln(w, `Configuration for FastDNS.`)
 		fmt.Fprintln(w, `Code: 'fastdns'`)
+		fmt.Fprintln(w, `Since: 'v0.5.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -497,6 +518,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/gandi/gandi.toml
 		fmt.Fprintln(w, `Configuration for Gandi.`)
 		fmt.Fprintln(w, `Code: 'gandi'`)
+		fmt.Fprintln(w, `Since: 'v0.3.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -516,6 +538,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/gandiv5/gandiv5.toml
 		fmt.Fprintln(w, `Configuration for Gandi Live DNS (v5).`)
 		fmt.Fprintln(w, `Code: 'gandiv5'`)
+		fmt.Fprintln(w, `Since: 'v0.5.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -535,6 +558,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/gcloud/gcloud.toml
 		fmt.Fprintln(w, `Configuration for Google Cloud.`)
 		fmt.Fprintln(w, `Code: 'gcloud'`)
+		fmt.Fprintln(w, `Since: 'v0.3.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -556,6 +580,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/glesys/glesys.toml
 		fmt.Fprintln(w, `Configuration for Glesys.`)
 		fmt.Fprintln(w, `Code: 'glesys'`)
+		fmt.Fprintln(w, `Since: 'v0.5.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -576,6 +601,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/godaddy/godaddy.toml
 		fmt.Fprintln(w, `Configuration for Go Daddy.`)
 		fmt.Fprintln(w, `Code: 'godaddy'`)
+		fmt.Fprintln(w, `Since: 'v0.5.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -597,6 +623,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/hostingde/hostingde.toml
 		fmt.Fprintln(w, `Configuration for Hosting.de.`)
 		fmt.Fprintln(w, `Code: 'hostingde'`)
+		fmt.Fprintln(w, `Since: 'v1.1.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -617,6 +644,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/httpreq/httpreq.toml
 		fmt.Fprintln(w, `Configuration for HTTP request.`)
 		fmt.Fprintln(w, `Code: 'httpreq'`)
+		fmt.Fprintln(w, `Since: 'v2.0.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -638,6 +666,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/iij/iij.toml
 		fmt.Fprintln(w, `Configuration for Internet Initiative Japan.`)
 		fmt.Fprintln(w, `Code: 'iij'`)
+		fmt.Fprintln(w, `Since: 'v1.1.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -658,6 +687,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/inwx/inwx.toml
 		fmt.Fprintln(w, `Configuration for INWX.`)
 		fmt.Fprintln(w, `Code: 'inwx'`)
+		fmt.Fprintln(w, `Since: 'v2.0.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -678,6 +708,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/lightsail/lightsail.toml
 		fmt.Fprintln(w, `Configuration for Amazon Lightsail.`)
 		fmt.Fprintln(w, `Code: 'lightsail'`)
+		fmt.Fprintln(w, `Since: 'v0.5.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -697,6 +728,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/linode/linode.toml
 		fmt.Fprintln(w, `Configuration for Linode (deprecated).`)
 		fmt.Fprintln(w, `Code: 'linode'`)
+		fmt.Fprintln(w, `Since: 'v0.4.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -715,6 +747,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/linodev4/linodev4.toml
 		fmt.Fprintln(w, `Configuration for Linode (v4).`)
 		fmt.Fprintln(w, `Code: 'linodev4'`)
+		fmt.Fprintln(w, `Since: 'v1.1.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -733,6 +766,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/mydnsjp/mydnsjp.toml
 		fmt.Fprintln(w, `Configuration for MyDNS.jp.`)
 		fmt.Fprintln(w, `Code: 'mydnsjp'`)
+		fmt.Fprintln(w, `Since: 'v1.2.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -753,6 +787,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/namecheap/namecheap.toml
 		fmt.Fprintln(w, `Configuration for Namecheap.`)
 		fmt.Fprintln(w, `Code: 'namecheap'`)
+		fmt.Fprintln(w, `Since: 'v0.3.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -773,6 +808,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/namedotcom/namedotcom.toml
 		fmt.Fprintln(w, `Configuration for Name.com.`)
 		fmt.Fprintln(w, `Code: 'namedotcom'`)
+		fmt.Fprintln(w, `Since: 'v0.5.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -793,6 +829,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/netcup/netcup.toml
 		fmt.Fprintln(w, `Configuration for Netcup.`)
 		fmt.Fprintln(w, `Code: 'netcup'`)
+		fmt.Fprintln(w, `Since: 'v1.1.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -814,6 +851,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/nifcloud/nifcloud.toml
 		fmt.Fprintln(w, `Configuration for NIFCloud.`)
 		fmt.Fprintln(w, `Code: 'nifcloud'`)
+		fmt.Fprintln(w, `Since: 'v1.1.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -834,6 +872,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/ns1/ns1.toml
 		fmt.Fprintln(w, `Configuration for NS1.`)
 		fmt.Fprintln(w, `Code: 'ns1'`)
+		fmt.Fprintln(w, `Since: 'v0.4.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -853,6 +892,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/oraclecloud/oraclecloud.toml
 		fmt.Fprintln(w, `Configuration for Oracle Cloud.`)
 		fmt.Fprintln(w, `Code: 'oraclecloud'`)
+		fmt.Fprintln(w, `Since: 'v2.3.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -877,6 +917,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/otc/otc.toml
 		fmt.Fprintln(w, `Configuration for Open Telekom Cloud.`)
 		fmt.Fprintln(w, `Code: 'otc'`)
+		fmt.Fprintln(w, `Since: 'v0.4.1'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -900,6 +941,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/ovh/ovh.toml
 		fmt.Fprintln(w, `Configuration for OVH.`)
 		fmt.Fprintln(w, `Code: 'ovh'`)
+		fmt.Fprintln(w, `Since: 'v0.4.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -922,6 +964,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/pdns/pdns.toml
 		fmt.Fprintln(w, `Configuration for PowerDNS.`)
 		fmt.Fprintln(w, `Code: 'pdns'`)
+		fmt.Fprintln(w, `Since: 'v0.4.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -942,6 +985,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/rackspace/rackspace.toml
 		fmt.Fprintln(w, `Configuration for Rackspace.`)
 		fmt.Fprintln(w, `Code: 'rackspace'`)
+		fmt.Fprintln(w, `Since: 'v0.4.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -962,6 +1006,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/rfc2136/rfc2136.toml
 		fmt.Fprintln(w, `Configuration for RFC2136.`)
 		fmt.Fprintln(w, `Code: 'rfc2136'`)
+		fmt.Fprintln(w, `Since: 'v0.3.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -985,6 +1030,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/route53/route53.toml
 		fmt.Fprintln(w, `Configuration for Amazon Route 53.`)
 		fmt.Fprintln(w, `Code: 'route53'`)
+		fmt.Fprintln(w, `Since: 'v0.3.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -1007,6 +1053,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/sakuracloud/sakuracloud.toml
 		fmt.Fprintln(w, `Configuration for Sakura Cloud.`)
 		fmt.Fprintln(w, `Code: 'sakuracloud'`)
+		fmt.Fprintln(w, `Since: 'v1.1.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -1027,6 +1074,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/selectel/selectel.toml
 		fmt.Fprintln(w, `Configuration for Selectel.`)
 		fmt.Fprintln(w, `Code: 'selectel'`)
+		fmt.Fprintln(w, `Since: 'v1.2.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -1047,6 +1095,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/stackpath/stackpath.toml
 		fmt.Fprintln(w, `Configuration for Stackpath.`)
 		fmt.Fprintln(w, `Code: 'stackpath'`)
+		fmt.Fprintln(w, `Since: 'v1.1.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -1067,6 +1116,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/transip/transip.toml
 		fmt.Fprintln(w, `Configuration for TransIP.`)
 		fmt.Fprintln(w, `Code: 'transip'`)
+		fmt.Fprintln(w, `Since: 'v2.0.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -1086,6 +1136,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/vegadns/vegadns.toml
 		fmt.Fprintln(w, `Configuration for VegaDNS.`)
 		fmt.Fprintln(w, `Code: 'vegadns'`)
+		fmt.Fprintln(w, `Since: 'v1.1.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -1106,6 +1157,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/vscale/vscale.toml
 		fmt.Fprintln(w, `Configuration for Vscale.`)
 		fmt.Fprintln(w, `Code: 'vscale'`)
+		fmt.Fprintln(w, `Since: 'v2.0.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -1126,6 +1178,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/vultr/vultr.toml
 		fmt.Fprintln(w, `Configuration for Vultr.`)
 		fmt.Fprintln(w, `Code: 'vultr'`)
+		fmt.Fprintln(w, `Since: 'v0.3.1'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -1145,6 +1198,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/zoneee/zoneee.toml
 		fmt.Fprintln(w, `Configuration for Zone.ee.`)
 		fmt.Fprintln(w, `Code: 'zoneee'`)
+		fmt.Fprintln(w, `Since: 'v2.1.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)

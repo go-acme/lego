@@ -9,6 +9,7 @@ slug: netcup
 <!-- providers/dns/netcup/netcup.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
+Since: v1.1.0
 
 Configuration for [Netcup](https://www.netcup.eu/).
 

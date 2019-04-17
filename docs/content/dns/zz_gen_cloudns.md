@@ -9,6 +9,7 @@ slug: cloudns
 <!-- providers/dns/cloudns/cloudns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
+Since: v2.3.0
 
 Configuration for [ClouDNS](https://www.cloudns.net).
 

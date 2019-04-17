@@ -9,6 +9,7 @@ slug: mydnsjp
 <!-- providers/dns/mydnsjp/mydnsjp.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
+Since: v1.2.0
 
 Configuration for [MyDNS.jp](https://www.mydns.jp).
 

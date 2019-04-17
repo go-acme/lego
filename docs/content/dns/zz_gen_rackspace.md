@@ -9,6 +9,7 @@ slug: rackspace
 <!-- providers/dns/rackspace/rackspace.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
+Since: v0.4.0
 
 Configuration for [Rackspace](https://www.rackspace.com/).
 

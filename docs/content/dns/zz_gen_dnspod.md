@@ -9,6 +9,7 @@ slug: dnspod
 <!-- providers/dns/dnspod/dnspod.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
+Since: v0.4.0
 
 Configuration for [DNSPod](http://www.dnspod.com/).
 

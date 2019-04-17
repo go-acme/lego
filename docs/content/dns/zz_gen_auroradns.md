@@ -9,6 +9,7 @@ slug: auroradns
 <!-- providers/dns/auroradns/auroradns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
+Since: v0.4.0
 
 Configuration for [Aurora DNS](https://www.pcextreme.com/aurora/dns).
 

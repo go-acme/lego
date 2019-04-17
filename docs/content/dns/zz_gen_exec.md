@@ -9,6 +9,7 @@ slug: exec
 <!-- providers/dns/exec/exec.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
+Since: v0.5.0
 Solving the DNS-01 challenge using an external program.
 
 

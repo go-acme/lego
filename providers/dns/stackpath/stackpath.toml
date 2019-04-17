@@ -2,6 +2,7 @@ Name = "Stackpath"
 Description = ''''''
 URL = "https://www.stackpath.com/"
 Code = "stackpath"
+Since = "v1.1.0"
 
 Example = ''''''
 

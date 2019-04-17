@@ -9,6 +9,7 @@ slug: alidns
 <!-- providers/dns/alidns/alidns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
+Since: v1.1.0
 
 Configuration for [Alibaba Cloud DNS](https://www.alibabacloud.com/product/dns).
 

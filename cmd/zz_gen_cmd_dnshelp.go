@@ -988,13 +988,14 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
-		fmt.Fprintln(w, `	- "AWS_ACCESS_KEY_ID": `)
-		fmt.Fprintln(w, `	- "AWS_HOSTED_ZONE_ID": `)
-		fmt.Fprintln(w, `	- "AWS_REGION": `)
-		fmt.Fprintln(w, `	- "AWS_SECRET_ACCESS_KEY": `)
+		fmt.Fprintln(w, `	- "AWS_ACCESS_KEY_ID": Managed by the AWS client`)
+		fmt.Fprintln(w, `	- "AWS_HOSTED_ZONE_ID": Override the hosted zone ID`)
+		fmt.Fprintln(w, `	- "AWS_REGION": Managed by the AWS client`)
+		fmt.Fprintln(w, `	- "AWS_SECRET_ACCESS_KEY": Managed by the AWS client`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Additional Configuration:`)
+		fmt.Fprintln(w, `	- "AWS_MAX_RETRIES": The number of maximum returns the service will use to make an individual API request`)
 		fmt.Fprintln(w, `	- "AWS_POLLING_INTERVAL": Time between DNS propagation check`)
 		fmt.Fprintln(w, `	- "AWS_PROPAGATION_TIMEOUT": Maximum waiting time for DNS propagation`)
 		fmt.Fprintln(w, `	- "AWS_TTL": The TTL of the TXT record used for the DNS challenge`)

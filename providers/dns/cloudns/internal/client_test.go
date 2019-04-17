@@ -92,18 +92,37 @@ func TestClientFindTxtRecord(t *testing.T) {
 		expected    result
 	}{
 		{
-			desc:        "record found",
-			authFQDN:    "_acme-challenge.foo.com.",
-			zoneName:    "foo.com",
-			apiResponse: []byte(`[{"id":"1","type":"TXT","host":"_acme-challenge","record":"txtTXTtxtTXTtxtTXTtxtTXT","failover":"1","ttl":"30","status":1}]`),
+			desc:     "record found",
+			authFQDN: "_acme-challenge.foo.com.",
+			zoneName: "foo.com",
+			apiResponse: []byte(`{
+  "5769228": {
+    "id": "5769228",
+    "type": "TXT",
+    "host": "_acme-challenge",
+    "record": "txtTXTtxtTXTtxtTXTtxtTXT",
+    "failover": "0",
+    "ttl": "3600",
+    "status": 1
+  },
+  "181805209": {
+    "id": "181805209",
+    "type": "TXT",
+    "host": "_github-challenge",
+    "record": "b66b8324b5",
+    "failover": "0",
+    "ttl": "300",
+    "status": 1
+  }
+}`),
 			expected: result{
 				txtRecord: &TXTRecord{
-					ID:       1,
+					ID:       5769228,
 					Type:     "TXT",
 					Host:     "_acme-challenge",
 					Record:   "txtTXTtxtTXTtxtTXTtxtTXT",
-					Failover: 1,
-					TTL:      30,
+					Failover: 0,
+					TTL:      3600,
 					Status:   1,
 				},
 			},

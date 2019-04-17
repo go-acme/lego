@@ -92,18 +92,37 @@ func TestClientFindTxtRecord(t *testing.T) {
 		expected    result
 	}{
 		{
-			desc:        "record found",
-			authFQDN:    "_acme-challenge.foo.com.",
-			zoneName:    "foo.com",
-			apiResponse: []byte(`{"1":{"id":"1","type":"TXT","host":"_acme-challenge","record":"txtTXTtxtTXTtxtTXTtxtTXT","failover":"1","ttl":"30","status":1}}`),
+			desc:     "record found",
+			authFQDN: "_acme-challenge.foo.com.",
+			zoneName: "foo.com",
+			apiResponse: []byte(`{
+  "5769228": {
+    "id": "5769228",
+    "type": "TXT",
+    "host": "_acme-challenge",
+    "record": "txtTXTtxtTXTtxtTXTtxtTXT",
+    "failover": "0",
+    "ttl": "3600",
+    "status": 1
+  },
+  "181805209": {
+    "id": "181805209",
+    "type": "TXT",
+    "host": "_github-challenge",
+    "record": "b66b8324b5",
+    "failover": "0",
+    "ttl": "300",
+    "status": 1
+  }
+}`),
 			expected: result{
 				txtRecord: &TXTRecord{
-					ID:       1,
+					ID:       5769228,
 					Type:     "TXT",
 					Host:     "_acme-challenge",
 					Record:   "txtTXTtxtTXTtxtTXTtxtTXT",
-					Failover: 1,
-					TTL:      30,
+					Failover: 0,
+					TTL:      3600,
 					Status:   1,
 				},
 			},
@@ -112,8 +131,8 @@ func TestClientFindTxtRecord(t *testing.T) {
 			desc:        "record not found",
 			authFQDN:    "_acme-challenge.foo.com.",
 			zoneName:    "test-zone",
-			apiResponse: []byte(``),
-			expected:    result{error: true},
+			apiResponse: []byte(`[]`),
+			expected:    result{txtRecord: nil},
 		},
 	}
 
@@ -138,13 +157,19 @@ func TestClientFindTxtRecord(t *testing.T) {
 }
 
 func TestClientAddTxtRecord(t *testing.T) {
+	type expected struct {
+		Query string
+		Error string
+	}
+
 	testCases := []struct {
-		desc     string
-		zone     *Zone
-		authFQDN string
-		value    string
-		ttl      int
-		expected string
+		desc        string
+		zone        *Zone
+		authFQDN    string
+		value       string
+		ttl         int
+		apiResponse []byte
+		expected    expected
 	}{
 		{
 			desc: "sub-zone",
@@ -154,10 +179,13 @@ func TestClientAddTxtRecord(t *testing.T) {
 				Zone:   "domain",
 				Status: "1",
 			},
-			authFQDN: "_acme-challenge.foo.bar.com.",
-			value:    "txtTXTtxtTXTtxtTXTtxtTXT",
-			ttl:      60,
-			expected: `auth-id=myAuthID&auth-password=myAuthPassword&domain-name=bar.com&host=_acme-challenge.foo&record=txtTXTtxtTXTtxtTXTtxtTXT&record-type=TXT&ttl=60`,
+			authFQDN:    "_acme-challenge.foo.bar.com.",
+			value:       "txtTXTtxtTXTtxtTXTtxtTXT",
+			ttl:         60,
+			apiResponse: []byte(`{"status":"Success","statusDescription":"The record was added successfully."}`),
+			expected: expected{
+				Query: `auth-id=myAuthID&auth-password=myAuthPassword&domain-name=bar.com&host=_acme-challenge.foo&record=txtTXTtxtTXTtxtTXTtxtTXT&record-type=TXT&ttl=60`,
+			},
 		},
 		{
 			desc: "main zone",
@@ -167,10 +195,30 @@ func TestClientAddTxtRecord(t *testing.T) {
 				Zone:   "domain",
 				Status: "1",
 			},
-			authFQDN: "_acme-challenge.bar.com.",
-			value:    "TXTtxtTXTtxtTXTtxtTXTtxt",
-			ttl:      60,
-			expected: `auth-id=myAuthID&auth-password=myAuthPassword&domain-name=bar.com&host=_acme-challenge&record=TXTtxtTXTtxtTXTtxtTXTtxt&record-type=TXT&ttl=60`,
+			authFQDN:    "_acme-challenge.bar.com.",
+			value:       "TXTtxtTXTtxtTXTtxtTXTtxt",
+			ttl:         60,
+			apiResponse: []byte(`{"status":"Success","statusDescription":"The record was added successfully."}`),
+			expected: expected{
+				Query: `auth-id=myAuthID&auth-password=myAuthPassword&domain-name=bar.com&host=_acme-challenge&record=TXTtxtTXTtxtTXTtxtTXTtxt&record-type=TXT&ttl=60`,
+			},
+		},
+		{
+			desc: "invalid status",
+			zone: &Zone{
+				Name:   "bar.com",
+				Type:   "master",
+				Zone:   "domain",
+				Status: "1",
+			},
+			authFQDN:    "_acme-challenge.bar.com.",
+			value:       "TXTtxtTXTtxtTXTtxtTXTtxt",
+			ttl:         120,
+			apiResponse: []byte(`{"status":"Failed","statusDescription":"Invalid TTL. Choose from the list of the values we support."}`),
+			expected: expected{
+				Query: `auth-id=myAuthID&auth-password=myAuthPassword&domain-name=bar.com&host=_acme-challenge&record=TXTtxtTXTtxtTXTtxtTXTtxt&record-type=TXT&ttl=300`,
+				Error: "fail to add TXT record: Failed Invalid TTL. Choose from the list of the values we support.",
+			},
 		},
 	}
 
@@ -178,9 +226,9 @@ func TestClientAddTxtRecord(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 				assert.NotNil(t, req.URL.RawQuery)
-				assert.Equal(t, test.expected, req.URL.RawQuery)
+				assert.Equal(t, test.expected.Query, req.URL.RawQuery)
 
-				handlerMock(http.MethodPost, nil).ServeHTTP(rw, req)
+				handlerMock(http.MethodPost, test.apiResponse).ServeHTTP(rw, req)
 			}))
 
 			client, _ := NewClient("myAuthID", "myAuthPassword")
@@ -188,7 +236,12 @@ func TestClientAddTxtRecord(t *testing.T) {
 			client.BaseURL = mockBaseURL
 
 			err := client.AddTxtRecord(test.zone.Name, test.authFQDN, test.value, test.ttl)
-			require.NoError(t, err)
+
+			if test.expected.Error != "" {
+				require.EqualError(t, err, test.expected.Error)
+			} else {
+				require.NoError(t, err)
+			}
 		})
 	}
 }

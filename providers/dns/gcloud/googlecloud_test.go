@@ -139,7 +139,7 @@ func TestPresentNoExistingRR(t *testing.T) {
 
 		mzlrs := &dns.ManagedZonesListResponse{
 			ManagedZones: []*dns.ManagedZone{
-				{Name: "test"},
+				{Name: "test", Visibility: "public"},
 			},
 		}
 
@@ -219,7 +219,7 @@ func TestPresentWithExistingRR(t *testing.T) {
 
 		mzlrs := &dns.ManagedZonesListResponse{
 			ManagedZones: []*dns.ManagedZone{
-				{Name: "test"},
+				{Name: "test", Visibility: "public"},
 			},
 		}
 
@@ -319,7 +319,7 @@ func TestPresentSkipExistingRR(t *testing.T) {
 
 		mzlrs := &dns.ManagedZonesListResponse{
 			ManagedZones: []*dns.ManagedZone{
-				{Name: "test"},
+				{Name: "test", Visibility: "public"},
 			},
 		}
 

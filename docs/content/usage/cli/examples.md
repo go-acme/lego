@@ -16,7 +16,7 @@ If your environment does not allow you to bind to these ports, please read [Port
 lego --email="foo@bar.com" --domains="example.com" --http run
 ```
 
-(Find your certificate in the `.lego` folder of current working directory.)
+(Find your certificate in the `.lego` folder of current working directory. If run from Docker, the certificate is stored in `/home/.lego` within the container's filesystem.)
 
 ### To renew the certificate
 

@@ -16,6 +16,8 @@ lego does not assume anything about the location you run it from.
 docker run goacme/lego -h
 ```
 
+**Note**: you need to map the `/home` directory to your local filesystem so you can retrieve the certificates. Example, with `-v /tmp/lego:/home` you would have access to your certificate at `/tmp/lego/.lego`.
+
 ## From package managers
 
 - [ArchLinux (AUR)](https://aur.archlinux.org/packages/lego):

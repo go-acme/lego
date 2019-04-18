@@ -1,5 +1,21 @@
 # Changelog
 
+## [v2.5.0] - 2019-04-17
+
+### Added:
+- **[cli]** Adds renew hook
+- **[dnsprovider]** Adds 'Since' to DNS providers documentation
+
+### Changed:
+- **[dnsprovider]** gcloud: use public DNS zones
+- **[dnsprovider]** route53: enhance documentation.
+
+### Fixed:
+- **[dnsprovider]** cloudns: fix TTL and status validation
+- **[dnsprovider]** sakuracloud: supports concurrent update
+- **[dnsprovider]** Disable authz when solve fail.
+- Add tzdata to the Docker image.
+
 ## [v2.4.0] - 2019-03-25
 
 - Migrate from xenolf/lego to go-acme/lego.

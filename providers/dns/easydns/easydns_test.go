@@ -7,13 +7,15 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"testing"
+	"time"
 
+	"github.com/go-acme/lego/challenge/dns01"
 	"github.com/go-acme/lego/platform/tester"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-var envTest = tester.NewEnvTest("EASYDNS_HOSTNAME", "EASYDNS_TOKEN", "EASYDNS_KEY")
+var envTest = tester.NewEnvTest("EASYDNS_HOSTNAME", "EASYDNS_TOKEN", "EASYDNS_KEY", "EASYDNS_PROPAGATION_TIMEOUT", "EASYDNS_POLLING_INTERVAL")
 
 func setup() (*DNSProvider, *http.ServeMux, func()) {
 	handler := http.NewServeMux()
@@ -58,7 +60,7 @@ func TestNewDNSProvider(t *testing.T) {
 			expected: "easydns: the API token is missing: EASYDNS_TOKEN",
 		},
 		{
-			desc: "missing secret",
+			desc: "missing key",
 			envVars: map[string]string{
 				"EASYDNS_TOKEN": "TOKEN",
 			},
@@ -74,6 +76,55 @@ func TestNewDNSProvider(t *testing.T) {
 			envTest.Apply(test.envVars)
 
 			p, err := NewDNSProvider()
+
+			if len(test.expected) == 0 {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
+}
+
+func TestNewDNSProviderConfig(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		config   *Config
+		expected string
+	}{
+		{
+			desc: "success",
+			config: &Config{
+				Token: "TOKEN",
+				Key:   "KEY",
+			},
+		},
+		{
+			desc:     "nil config",
+			config:   nil,
+			expected: "easydns: the configuration of the DNS provider is nil",
+		},
+		{
+			desc: "missing token",
+			config: &Config{
+				Key: "KEY",
+			},
+			expected: "easydns: the API token is missing: EASYDNS_TOKEN",
+		},
+		{
+			desc: "missing key",
+			config: &Config{
+				Token: "TOKEN",
+			},
+			expected: "easydns: the API key is missing: EASYDNS_KEY",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			p, err := NewDNSProviderConfig(test.config)
 
 			if len(test.expected) == 0 {
 				require.NoError(t, err)
@@ -215,7 +266,39 @@ func TestDNSProvider_Present_WhenTxtRecordFound_UpdatesTxtRecord(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestDNSProvider_Cleanup_DeletesTxtRecord(t *testing.T) {
+func TestDNSProvider_Present_WhenHttpError_ReturnsError(t *testing.T) {
+	provider, mux, tearDown := setup()
+	defer tearDown()
+
+	mux.HandleFunc("/zones/records/all/example.com", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodGet, r.Method, "method")
+		assert.Equal(t, "format=json", r.URL.RawQuery, "query")
+
+		w.WriteHeader(http.StatusForbidden)
+		_, err := fmt.Fprintf(w, `{
+			"error": {
+				"code": 403,
+				"message": "Access to resource denied due to permissions"
+			}
+		}`)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	})
+
+	err := provider.Present("example.com", "token", "keyAuth")
+	require.Error(t, err)
+}
+
+func TestDNSProvider_Cleanup_WhenRecordIdNotSet_NoOp(t *testing.T) {
+	provider, _, tearDown := setup()
+	defer tearDown()
+
+	err := provider.CleanUp("example.com", "token", "keyAuth")
+	require.NoError(t, err)
+}
+
+func TestDNSProvider_Cleanup_WhenRecordIdSet_DeletesTxtRecord(t *testing.T) {
 	provider, mux, tearDown := setup()
 	defer tearDown()
 
@@ -238,8 +321,65 @@ func TestDNSProvider_Cleanup_DeletesTxtRecord(t *testing.T) {
 		}
 	})
 
+	provider.recordID = "123456"
 	err := provider.CleanUp("example.com", "token", "keyAuth")
 	require.NoError(t, err)
+}
+
+func TestDNSProvider_Timeout(t *testing.T) {
+	testCases := []struct {
+		desc                       string
+		envVars                    map[string]string
+		expectedPropagationTimeout time.Duration
+		expectedPollingInterval    time.Duration
+	}{
+		{
+			desc: "defaults",
+			envVars: map[string]string{
+				"EASYDNS_TOKEN": "TOKEN",
+				"EASYDNS_KEY":   "SECRET",
+			},
+			expectedPropagationTimeout: dns01.DefaultPropagationTimeout,
+			expectedPollingInterval:    dns01.DefaultPollingInterval,
+		},
+		{
+			desc: "custom propagation timeout",
+			envVars: map[string]string{
+				"EASYDNS_TOKEN":               "TOKEN",
+				"EASYDNS_KEY":                 "SECRET",
+				"EASYDNS_PROPAGATION_TIMEOUT": "1",
+			},
+			expectedPropagationTimeout: 1000000000,
+			expectedPollingInterval:    dns01.DefaultPollingInterval,
+		},
+		{
+			desc: "custom polling interval",
+			envVars: map[string]string{
+				"EASYDNS_TOKEN":            "TOKEN",
+				"EASYDNS_KEY":              "SECRET",
+				"EASYDNS_POLLING_INTERVAL": "1",
+			},
+			expectedPropagationTimeout: dns01.DefaultPropagationTimeout,
+			expectedPollingInterval:    1000000000,
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
+			envTest.Apply(test.envVars)
+
+			p, err := NewDNSProvider()
+			actualPropagationTimeout, actualPollingInterval := p.Timeout()
+
+			require.NoError(t, err)
+			require.NotNil(t, p)
+			require.Equal(t, test.expectedPropagationTimeout, actualPropagationTimeout)
+			require.Equal(t, test.expectedPollingInterval, actualPollingInterval)
+		})
+	}
 }
 
 func TestSplitFqdn(t *testing.T) {

@@ -1,0 +1,22 @@
+Name = "Joker"
+Description = ''''''
+URL = "https://joker.com"
+Code = "joker"
+Since = "v2.6.0"
+
+Example = '''
+JOKER_API_KEY=<your API key> \
+lego --dns joker --domains my.domain.com --email my@email.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    JOKER_API_KEY = "API key"
+  [Configuration.Additional]
+    JOKER_POLLING_INTERVAL = "Time between DNS propagation check"
+    JOKER_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
+    JOKER_TTL = "The TTL of the TXT record used for the DNS challenge"
+    JOKER_HTTP_TIMEOUT = "API request timeout"
+
+[Links]
+  API = "https://joker.com/faq/category/39/22-dmapi.html"

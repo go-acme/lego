@@ -15,7 +15,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var envTest = tester.NewEnvTest("EASYDNS_HOSTNAME", "EASYDNS_TOKEN", "EASYDNS_KEY", "EASYDNS_PROPAGATION_TIMEOUT", "EASYDNS_POLLING_INTERVAL")
+var envTest = tester.NewEnvTest(
+	"EASYDNS_HOSTNAME",
+	"EASYDNS_TOKEN",
+	"EASYDNS_KEY",
+	"EASYDNS_PROPAGATION_TIMEOUT",
+	"EASYDNS_POLLING_INTERVAL").
+	WithDomain("EASYDNS_DOMAIN")
 
 func setup() (*DNSProvider, *http.ServeMux, func()) {
 	handler := http.NewServeMux()
@@ -290,6 +296,19 @@ func TestDNSProvider_Present_WhenHttpError_ReturnsError(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestDNSProvider_Present_Live(t *testing.T) {
+	if !envTest.IsLiveTest() {
+		t.Skip("skipping live test")
+	}
+
+	envTest.RestoreEnv()
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
+
+	err = provider.Present(envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
+}
+
 func TestDNSProvider_Cleanup_WhenRecordIdNotSet_NoOp(t *testing.T) {
 	provider, _, tearDown := setup()
 	defer tearDown()
@@ -323,6 +342,21 @@ func TestDNSProvider_Cleanup_WhenRecordIdSet_DeletesTxtRecord(t *testing.T) {
 
 	provider.recordID = "123456"
 	err := provider.CleanUp("example.com", "token", "keyAuth")
+	require.NoError(t, err)
+}
+
+func TestDNSProvider_Cleanup_Live(t *testing.T) {
+	if !envTest.IsLiveTest() {
+		t.Skip("skipping live test")
+	}
+
+	envTest.RestoreEnv()
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
+
+	time.Sleep(2 * time.Second)
+
+	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 

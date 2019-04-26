@@ -57,7 +57,7 @@ func TestNewDNSProvider(t *testing.T) {
 				require.NoError(t, err)
 				require.NotNil(t, p)
 				require.NotNil(t, p.config)
-				require.NotNil(t, p.client)
+				require.NotNil(t, p.bindmanClient)
 			} else {
 				require.EqualError(t, err, test.expected)
 			}
@@ -152,8 +152,8 @@ func TestDNSProvider_Present(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &DNSProvider{
-				config: tt.fields.config,
-				client: tt.fields.client,
+				config:        tt.fields.config,
+				bindmanClient: tt.fields.client,
 			}
 			if err := d.Present(tt.args.domain, tt.args.token, tt.args.keyAuth); (err != nil) != tt.wantErr {
 				t.Errorf("DNSProvider.Present() error = %v, wantErr %v", err, tt.wantErr)
@@ -208,8 +208,8 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := &DNSProvider{
-				config: tt.fields.config,
-				client: tt.fields.client,
+				config:        tt.fields.config,
+				bindmanClient: tt.fields.client,
 			}
 			if err := d.CleanUp(tt.args.domain, tt.args.token, tt.args.keyAuth); (err != nil) != tt.wantErr {
 				t.Errorf("DNSProvider.CleanUp() error = %v, wantErr %v", err, tt.wantErr)

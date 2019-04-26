@@ -20,6 +20,7 @@ func allDNSCodes() string {
 		"alidns",
 		"auroradns",
 		"azure",
+		"bindman",
 		"bluecat",
 		"cloudflare",
 		"cloudns",
@@ -160,6 +161,25 @@ func displayDNSHelp(name string) {
 
 		fmt.Fprintln(w)
 		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/azure`)
+
+	case "bindman":
+		// generated from: providers/dns/bindman/bindman.toml
+		fmt.Fprintln(w, `Configuration for Bindman.`)
+		fmt.Fprintln(w, `Code: 'bindman'`)
+		fmt.Fprintln(w, `Since: 'v2.6.0'`)
+		fmt.Fprintln(w)
+
+		fmt.Fprintln(w, `Credentials:`)
+		fmt.Fprintln(w, `	- "BINDMAN_MANAGER_ADDRESS": The server URL, should have scheme, hostname, and port (if required) of the Bindman-DNS Manager server`)
+		fmt.Fprintln(w)
+
+		fmt.Fprintln(w, `Additional Configuration:`)
+		fmt.Fprintln(w, `	- "BINDMAN_HTTP_TIMEOUT": API request timeout`)
+		fmt.Fprintln(w, `	- "BINDMAN_POLLING_INTERVAL": Time between DNS propagation check`)
+		fmt.Fprintln(w, `	- "BINDMAN_PROPAGATION_TIMEOUT": Maximum waiting time for DNS propagation`)
+
+		fmt.Fprintln(w)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/bindman`)
 
 	case "bluecat":
 		// generated from: providers/dns/bluecat/bluecat.toml

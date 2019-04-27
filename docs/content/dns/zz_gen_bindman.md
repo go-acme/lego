@@ -52,6 +52,10 @@ More information [here](/lego/dns/#configuration-and-credentials).
 
 
 
+## More information
+
+- [API documentation](https://gitlab.isc.org/isc-projects/bind9)
+- [Go client](https://github.com/labbsr0x/bindman-dns-webhook)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/bindman/bindman.toml -->

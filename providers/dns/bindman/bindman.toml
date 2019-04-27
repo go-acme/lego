@@ -16,3 +16,7 @@ lego --dns bindman --domains my.domain.com --email my@email.com run
     BINDMAN_POLLING_INTERVAL = "Time between DNS propagation check"
     BINDMAN_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
     BINDMAN_HTTP_TIMEOUT = "API request timeout"
+
+[Links]
+  API = "https://gitlab.isc.org/isc-projects/bind9"
+  GoClient = "https://github.com/labbsr0x/bindman-dns-webhook"

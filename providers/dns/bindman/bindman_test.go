@@ -12,9 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var envTest = tester.NewEnvTest(
-	"BINDMAN_MANAGER_ADDRESS").
-	WithDomain("BINDMAN_DOMAIN")
+var envTest = tester.NewEnvTest("BINDMAN_MANAGER_ADDRESS").WithDomain("BINDMAN_DOMAIN")
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -57,7 +55,7 @@ func TestNewDNSProvider(t *testing.T) {
 				require.NoError(t, err)
 				require.NotNil(t, p)
 				require.NotNil(t, p.config)
-				require.NotNil(t, p.bindmanClient)
+				require.NotNil(t, p.client)
 			} else {
 				require.EqualError(t, err, test.expected)
 			}
@@ -107,112 +105,84 @@ func TestNewDNSProviderConfig(t *testing.T) {
 }
 
 func TestDNSProvider_Present(t *testing.T) {
-	type fields struct {
-		config *Config
-		client *bindmanClient.DNSWebhookClient
-	}
-	type args struct {
-		domain  string
-		token   string
-		keyAuth string
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr bool
+	testCases := []struct {
+		name        string
+		client      *bindmanClient.DNSWebhookClient
+		domain      string
+		token       string
+		keyAuth     string
+		expectError bool
 	}{
 		{
 			name: "success when add record function return no error",
-			fields: fields{
-				client: &bindmanClient.DNSWebhookClient{
-					ClientAPI: &MockHTTPClientAPI{Status: http.StatusNoContent},
-				},
+			client: &bindmanClient.DNSWebhookClient{
+				ClientAPI: &MockHTTPClientAPI{Status: http.StatusNoContent},
 			},
-			args: args{
-				domain:  "hello.test.com",
-				keyAuth: "szDTG4zmM0GsKG91QAGO2M4UYOJMwU8oFpWOP7eTjCw",
-			},
-			wantErr: false,
+			domain:      "hello.test.com",
+			keyAuth:     "szDTG4zmM0GsKG91QAGO2M4UYOJMwU8oFpWOP7eTjCw",
+			expectError: false,
 		},
 		{
 			name: "error when add record function return an error",
-			fields: fields{
-				client: &bindmanClient.DNSWebhookClient{
-					ClientAPI: &MockHTTPClientAPI{Error: errors.New("error adding record")},
-				},
+			client: &bindmanClient.DNSWebhookClient{
+				ClientAPI: &MockHTTPClientAPI{Error: errors.New("error adding record")},
 			},
-			args: args{
-				domain:  "hello.test.com",
-				keyAuth: "szDTG4zmM0GsKG91QAGO2M4UYOJMwU8oFpWOP7eTjCw",
-			},
-			wantErr: true,
+			domain:      "hello.test.com",
+			keyAuth:     "szDTG4zmM0GsKG91QAGO2M4UYOJMwU8oFpWOP7eTjCw",
+			expectError: true,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			d := &DNSProvider{
-				config:        tt.fields.config,
-				bindmanClient: tt.fields.client,
-			}
-			if err := d.Present(tt.args.domain, tt.args.token, tt.args.keyAuth); (err != nil) != tt.wantErr {
-				t.Errorf("DNSProvider.Present() error = %v, wantErr %v", err, tt.wantErr)
+	for _, test := range testCases {
+		t.Run(test.name, func(t *testing.T) {
+			d := &DNSProvider{client: test.client}
+
+			err := d.Present(test.domain, test.token, test.keyAuth)
+			if test.expectError {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
 			}
 		})
 	}
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
-	type fields struct {
-		config *Config
-		client *bindmanClient.DNSWebhookClient
-	}
-	type args struct {
-		domain  string
-		token   string
-		keyAuth string
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		wantErr bool
+	testCases := []struct {
+		name        string
+		client      *bindmanClient.DNSWebhookClient
+		domain      string
+		token       string
+		keyAuth     string
+		expectError bool
 	}{
 		{
 			name: "success when remove record function return no error",
-			fields: fields{
-				client: &bindmanClient.DNSWebhookClient{
-					ClientAPI: &MockHTTPClientAPI{Status: http.StatusNoContent},
-				},
+			client: &bindmanClient.DNSWebhookClient{
+				ClientAPI: &MockHTTPClientAPI{Status: http.StatusNoContent},
 			},
-			args: args{
-				domain:  "hello.test.com",
-				keyAuth: "szDTG4zmM0GsKG91QAGO2M4UYOJMwU8oFpWOP7eTjCw",
-			},
-			wantErr: false,
+			domain:      "hello.test.com",
+			keyAuth:     "szDTG4zmM0GsKG91QAGO2M4UYOJMwU8oFpWOP7eTjCw",
+			expectError: false,
 		},
 		{
 			name: "error when remove record function return an error",
-			fields: fields{
-				client: &bindmanClient.DNSWebhookClient{
-					ClientAPI: &MockHTTPClientAPI{Error: errors.New("error adding record")},
-				},
+			client: &bindmanClient.DNSWebhookClient{
+				ClientAPI: &MockHTTPClientAPI{Error: errors.New("error adding record")},
 			},
-			args: args{
-				domain:  "hello.test.com",
-				keyAuth: "szDTG4zmM0GsKG91QAGO2M4UYOJMwU8oFpWOP7eTjCw",
-			},
-			wantErr: true,
+			domain:      "hello.test.com",
+			keyAuth:     "szDTG4zmM0GsKG91QAGO2M4UYOJMwU8oFpWOP7eTjCw",
+			expectError: true,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			d := &DNSProvider{
-				config:        tt.fields.config,
-				bindmanClient: tt.fields.client,
-			}
-			if err := d.CleanUp(tt.args.domain, tt.args.token, tt.args.keyAuth); (err != nil) != tt.wantErr {
-				t.Errorf("DNSProvider.CleanUp() error = %v, wantErr %v", err, tt.wantErr)
+	for _, test := range testCases {
+		t.Run(test.name, func(t *testing.T) {
+			d := &DNSProvider{client: test.client}
+
+			err := d.CleanUp(test.domain, test.token, test.keyAuth)
+			if test.expectError {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
 			}
 		})
 	}

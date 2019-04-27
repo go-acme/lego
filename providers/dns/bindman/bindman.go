@@ -34,8 +34,8 @@ func NewDefaultConfig() *Config {
 // DNSProvider is an implementation of the acme.ChallengeProvider interface that uses
 // Bindman's Address Manager REST API to manage TXT records for a domain.
 type DNSProvider struct {
-	config        *Config
-	bindmanClient *client.DNSWebhookClient
+	config *Config
+	client *client.DNSWebhookClient
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Bindman.
@@ -62,29 +62,31 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("bindman: bindman manager address missing")
 	}
 
-	bindmanClient, err := client.New(config.BaseURL, config.HTTPClient)
+	bClient, err := client.New(config.BaseURL, config.HTTPClient)
 	if err != nil {
 		return nil, fmt.Errorf("bindman: %v", err)
 	}
 
-	return &DNSProvider{config: config, bindmanClient: bindmanClient}, nil
+	return &DNSProvider{config: config, client: bClient}, nil
 }
 
-// Present creates a TXT record using the specified parameters
+// Present creates a TXT record using the specified parameters.
 // This will *not* create a subzone to contain the TXT record,
 // so make sure the FQDN specified is within an extant zone.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
-	if err := d.bindmanClient.AddRecord(fqdn, "TXT", value); err != nil {
+
+	if err := d.client.AddRecord(fqdn, "TXT", value); err != nil {
 		return fmt.Errorf("bindman: %v", err)
 	}
 	return nil
 }
 
-// CleanUp removes the TXT record matching the specified parameters
+// CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
-	if err := d.bindmanClient.RemoveRecord(fqdn, "TXT"); err != nil {
+
+	if err := d.client.RemoveRecord(fqdn, "TXT"); err != nil {
 		return fmt.Errorf("bindman: %v", err)
 	}
 	return nil

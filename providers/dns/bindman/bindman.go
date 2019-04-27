@@ -75,7 +75,6 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 // so make sure the FQDN specified is within an extant zone.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
-	fmt.Println(fqdn, value)
 	if err := d.bindmanClient.AddRecord(fqdn, "TXT", value); err != nil {
 		return fmt.Errorf("bindman: %v", err)
 	}

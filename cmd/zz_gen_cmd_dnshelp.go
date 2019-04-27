@@ -465,6 +465,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers\dns\easydns\easydns.toml
 		fmt.Fprintln(w, `Configuration for EasyDNS.`)
 		fmt.Fprintln(w, `Code: 'easydns'`)
+		fmt.Fprintln(w, `Since: ''`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
@@ -473,7 +474,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Additional Configuration:`)
-		fmt.Fprintln(w, `	- "EASYDNS_HOSTNAME": The hostname of the API Server`)
+		fmt.Fprintln(w, `	- "EASYDNS_ENDPOINT": The endpoint URL of the API Server`)
 		fmt.Fprintln(w, `	- "EASYDNS_HTTP_TIMEOUT": API request timeout`)
 		fmt.Fprintln(w, `	- "EASYDNS_POLLING_INTERVAL": Time between DNS propagation check`)
 		fmt.Fprintln(w, `	- "EASYDNS_PROPAGATION_TIMEOUT": Maximum waiting time for DNS propagation`)

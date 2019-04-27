@@ -16,7 +16,7 @@ import (
 )
 
 var envTest = tester.NewEnvTest(
-	"EASYDNS_HOSTNAME",
+	"EASYDNS_ENDPOINT",
 	"EASYDNS_TOKEN",
 	"EASYDNS_KEY",
 	"EASYDNS_PROPAGATION_TIMEOUT",
@@ -421,25 +421,25 @@ func TestSplitFqdn(t *testing.T) {
 		desc           string
 		fqdn           string
 		expectedHost   string
-		expectedDoamin string
+		expectedDomain string
 	}{
 		{
 			desc:           "domain only",
 			fqdn:           "domain.com.",
 			expectedHost:   "",
-			expectedDoamin: "domain.com",
+			expectedDomain: "domain.com",
 		},
 		{
 			desc:           "single-part host",
 			fqdn:           "_acme-challenge.domain.com.",
 			expectedHost:   "_acme-challenge",
-			expectedDoamin: "domain.com",
+			expectedDomain: "domain.com",
 		},
 		{
 			desc:           "multi-part host",
 			fqdn:           "_acme-challenge.sub.domain.com.",
 			expectedHost:   "_acme-challenge.sub",
-			expectedDoamin: "domain.com",
+			expectedDomain: "domain.com",
 		},
 	}
 
@@ -448,7 +448,7 @@ func TestSplitFqdn(t *testing.T) {
 			actualHost, actualDomain := splitFqdn(test.fqdn)
 
 			require.Equal(t, test.expectedHost, actualHost)
-			require.Equal(t, test.expectedDoamin, actualDomain)
+			require.Equal(t, test.expectedDomain, actualDomain)
 		})
 	}
 }

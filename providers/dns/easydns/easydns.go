@@ -15,11 +15,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/miekg/dns"
+
 	"github.com/go-acme/lego/challenge/dns01"
 	"github.com/go-acme/lego/platform/config/env"
 )
 
-const defaultHostname = "rest.easydns.net"
+const defaultEndpoint = "https://rest.easydns.net"
 const dnsRecordType = "TXT"
 
 type zoneRecord struct {
@@ -54,7 +56,7 @@ type addRecordResponse struct {
 
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
-	Hostname           string
+	Endpoint           string
 	Token              string
 	Key                string
 	TTL                int
@@ -67,7 +69,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		Hostname:           env.GetOrDefaultString("EASYDNS_HOSTNAME", defaultHostname),
+		Endpoint:           env.GetOrDefaultString("EASYDNS_ENDPOINT", defaultEndpoint),
 		PropagationTimeout: env.GetOrDefaultSecond("EASYDNS_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond("EASYDNS_POLLING_INTERVAL", dns01.DefaultPollingInterval),
 		TTL:                env.GetOrDefaultInt("EASYDNS_TTL", dns01.DefaultTTL),
@@ -87,7 +89,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
 
-	url, err := url.Parse("https://" + config.Hostname)
+	url, err := url.Parse(config.Endpoint)
 	if err != nil {
 		return nil, fmt.Errorf("easydns: %v", err)
 	}
@@ -267,10 +269,10 @@ func (d *DNSProvider) executeRequest(method, path string, requestMsg, responseMs
 }
 
 func splitFqdn(fqdn string) (host, domain string) {
-	parts := strings.Split(fqdn, ".")
+	parts := dns.SplitDomainName(fqdn)
 	length := len(parts)
 
-	host = strings.Join(parts[0:length-3], ".")
-	domain = strings.Join(parts[length-3:length-1], ".")
+	host = strings.Join(parts[0:length-2], ".")
+	domain = strings.Join(parts[length-2:length], ".")
 	return
 }

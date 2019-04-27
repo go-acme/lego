@@ -9,6 +9,7 @@ slug: easydns
 <!-- providers\dns\easydns\easydns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
+Since: 
 
 Configuration for [EasyDNS](https://easydns.com/).
 
@@ -43,7 +44,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `EASYDNS_HOSTNAME` | The hostname of the API Server |
+| `EASYDNS_ENDPOINT` | The endpoint URL of the API Server |
 | `EASYDNS_HTTP_TIMEOUT` | API request timeout |
 | `EASYDNS_POLLING_INTERVAL` | Time between DNS propagation check |
 | `EASYDNS_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
@@ -52,9 +53,13 @@ More information [here](/lego/dns/#configuration-and-credentials).
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).
 
+To test with the sandbox environment set ```EASYDNS_ENDPOINT=https://sandbox.rest.easydns.net```
 
 
 
+## More information
+
+- [API documentation](http://docs.sandbox.rest.easydns.net)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers\dns\easydns\easydns.toml -->

@@ -77,6 +77,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("joker: credentials missing")
 	}
 
+	if !strings.HasSuffix(config.BaseURL, "/") {
+		config.BaseURL += "/"
+	}
+
 	return &DNSProvider{config: config}, nil
 }
 

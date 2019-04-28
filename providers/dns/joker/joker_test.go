@@ -1,6 +1,9 @@
 package joker
 
 import (
+	"net/http"
+	"net/http/httptest"
+	"net/url"
 	"testing"
 	"time"
 
@@ -54,17 +57,33 @@ func TestNewDNSProvider(t *testing.T) {
 
 func TestNewDNSProviderConfig(t *testing.T) {
 	testCases := []struct {
-		desc     string
-		authKey  string
-		expected string
+		desc            string
+		authKey         string
+		baseURL         string
+		expected        string
+		expectedBaseURL string
 	}{
 		{
-			desc:    "success",
-			authKey: "123",
+			desc:            "success",
+			authKey:         "123",
+			expectedBaseURL: defaultBaseURL,
 		},
 		{
-			desc:     "missing credentials",
-			expected: "joker: credentials missing",
+			desc:            "missing credentials",
+			expected:        "joker: credentials missing",
+			expectedBaseURL: defaultBaseURL,
+		},
+		{
+			desc:            "Base URL should ends with /",
+			authKey:         "123",
+			baseURL:         "http://example.com",
+			expectedBaseURL: "http://example.com/",
+		},
+		{
+			desc:            "Base URL already ends with /",
+			authKey:         "123",
+			baseURL:         "http://example.com/",
+			expectedBaseURL: "http://example.com/",
 		},
 	}
 
@@ -72,6 +91,9 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			config := NewDefaultConfig()
 			config.APIKey = test.authKey
+			if test.baseURL != "" {
+				config.BaseURL = test.baseURL
+			}
 
 			p, err := NewDNSProviderConfig(config)
 
@@ -79,6 +101,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 				require.NoError(t, err)
 				require.NotNil(t, p)
 				assert.NotNil(t, p.config)
+				assert.Equal(t, test.expectedBaseURL, p.config.BaseURL)
 			} else {
 				require.EqualError(t, err, test.expected)
 			}
@@ -161,7 +184,6 @@ func TestRemoveTxtEntryFromZone(t *testing.T) {
 			assert.Equal(t, modified, test.modified)
 		})
 	}
-
 }
 
 func TestAddTxtEntryToZone(t *testing.T) {
@@ -194,7 +216,6 @@ func TestAddTxtEntryToZone(t *testing.T) {
 			assert.Equal(t, zone, test.expected)
 		})
 	}
-
 }
 
 func TestFixTxtLines(t *testing.T) {
@@ -237,5 +258,298 @@ func TestFixTxtLines(t *testing.T) {
 			assert.Equal(t, line, test.expected)
 		})
 	}
+}
 
+func TestParseJokerResponse(t *testing.T) {
+	testCases := []struct {
+		desc               string
+		input              string
+		expectedHeaders    url.Values
+		expectedBody       string
+		expectedStatusCode int
+		expectedStatusText string
+		expectedAuthSid    string
+	}{
+		{
+			desc:               "Empty response",
+			input:              "",
+			expectedBody:       "",
+			expectedHeaders:    url.Values{},
+			expectedStatusText: "",
+			expectedStatusCode: -1,
+		},
+		{
+			desc:            "No headers, just body",
+			input:           "\n\nTest body",
+			expectedBody:    "Test body",
+			expectedHeaders: url.Values{},
+		},
+		{
+			desc:            "Headers and body",
+			input:           "Test-Header: value\n\nTest body",
+			expectedBody:    "Test body",
+			expectedHeaders: url.Values{"Test-Header": {"value"}},
+		},
+		{
+			desc:            "Headers and body + Auth-Sid",
+			input:           "Test-Header: value\nAuth-Sid: 123\n\nTest body",
+			expectedBody:    "Test body",
+			expectedHeaders: url.Values{"Test-Header": {"value"}, "Auth-Sid": {"123"}},
+			expectedAuthSid: "123",
+		},
+		{
+			desc:               "Headers and body + Status-Text",
+			input:              "Test-Header: value\nStatus-Text: OK\n\nTest body",
+			expectedBody:       "Test body",
+			expectedHeaders:    url.Values{"Test-Header": {"value"}, "Status-Text": {"OK"}},
+			expectedStatusText: "OK",
+		},
+		{
+			desc:               "Headers and body + Status-Code",
+			input:              "Test-Header: value\nStatus-Code: 2020\n\nTest body",
+			expectedBody:       "Test body",
+			expectedHeaders:    url.Values{"Test-Header": {"value"}, "Status-Code": {"2020"}},
+			expectedStatusCode: 2020,
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+
+			response := parseJokerResponse(test.input)
+			assert.Equal(t, test.expectedHeaders, response.Headers)
+			assert.Equal(t, test.expectedBody, response.Body)
+			assert.Equal(t, test.expectedAuthSid, response.AuthSid)
+			assert.Equal(t, test.expectedStatusText, response.StatusText)
+
+			if test.expectedStatusCode != 0 {
+				assert.Equal(t, test.expectedStatusCode, response.StatusCode)
+			}
+		})
+	}
+}
+
+func setup() (*http.ServeMux, *httptest.Server) {
+	mux := http.NewServeMux()
+	server := httptest.NewServer(mux)
+	return mux, server
+}
+
+const (
+	correctAuth     = "123"
+	incorrectAuth   = "321"
+	serverErrorAuth = "500"
+)
+
+func TestJokerLogin(t *testing.T) {
+	testCases := []struct {
+		desc               string
+		authKey            string
+		expectedError      bool
+		expectedStatusCode int
+		expectedAuthSid    string
+	}{
+		{
+			desc:               "correct key",
+			authKey:            correctAuth,
+			expectedStatusCode: 0,
+			expectedAuthSid:    correctAuth,
+		},
+		{
+			desc:               "incorrect key",
+			authKey:            incorrectAuth,
+			expectedStatusCode: 2200,
+			expectedError:      true,
+		},
+		{
+			desc:               "server error",
+			authKey:            serverErrorAuth,
+			expectedStatusCode: -500,
+			expectedError:      true,
+		},
+		{
+			desc:               "non-ok status code",
+			authKey:            "333",
+			expectedStatusCode: 2202,
+			expectedError:      true,
+		},
+	}
+	mux, server := setup()
+	defer server.Close()
+
+	mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "POST", r.Method)
+		switch r.FormValue("api-key") {
+		case correctAuth:
+			http.Error(w, "Status-Code: 0\nStatus-Text: OK\nAuth-Sid: 123\n\ncom\nnet", http.StatusOK)
+		case incorrectAuth:
+			http.Error(w, "Status-Code: 2200\nStatus-Text: Authentication error", http.StatusOK)
+		case serverErrorAuth:
+			http.Error(w, "Unknown", http.StatusNotFound)
+		default:
+			http.Error(w, "Status-Code: 2202\nStatus-Text: OK\n\ncom\nnet", http.StatusOK)
+		}
+	})
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			config := NewDefaultConfig()
+			config.BaseURL = server.URL
+			config.APIKey = test.authKey
+
+			p, err := NewDNSProviderConfig(config)
+			require.NoError(t, err)
+			require.NotNil(t, p)
+			response, err := p.jokerLogin()
+			if test.expectedError {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				require.NotNil(t, response)
+				assert.Equal(t, test.expectedStatusCode, response.StatusCode)
+				assert.Equal(t, test.expectedAuthSid, response.AuthSid)
+			}
+		})
+	}
+}
+
+func TestJokerLogout(t *testing.T) {
+	testCases := []struct {
+		desc               string
+		authSid            string
+		expectedError      bool
+		expectedStatusCode int
+	}{
+		{
+			desc:               "correct auth-sid",
+			authSid:            correctAuth,
+			expectedStatusCode: 0,
+		},
+		{
+			desc:               "incorrect auth-sid",
+			authSid:            incorrectAuth,
+			expectedStatusCode: 2200,
+		},
+		{
+			desc:          "already logged out",
+			authSid:       "",
+			expectedError: true,
+		},
+		{
+			desc:          "server error",
+			authSid:       serverErrorAuth,
+			expectedError: true,
+		},
+	}
+	mux, server := setup()
+	defer server.Close()
+
+	mux.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "POST", r.Method)
+		switch r.FormValue("auth-sid") {
+		case correctAuth:
+			http.Error(w, "Status-Code: 0\nStatus-Text: OK\n", http.StatusOK)
+		case incorrectAuth:
+			http.Error(w, "Status-Code: 2200\nStatus-Text: Authentication error", http.StatusOK)
+		default:
+			http.Error(w, "Unknown", http.StatusNotFound)
+		}
+	})
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			config := NewDefaultConfig()
+			config.BaseURL = server.URL
+			config.APIKey = "12345"
+			config.AuthSid = test.authSid
+
+			p, err := NewDNSProviderConfig(config)
+			require.NoError(t, err)
+			require.NotNil(t, p)
+			response, err := p.jokerLogout()
+			if test.expectedError {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				require.NotNil(t, response)
+				assert.Equal(t, test.expectedStatusCode, response.StatusCode)
+			}
+		})
+	}
+}
+
+func TestJokerGetZone(t *testing.T) {
+	const testZone = "@ A 0 192.0.2.2 3600"
+	testCases := []struct {
+		desc               string
+		authSid            string
+		domain             string
+		zone               string
+		expectedError      bool
+		expectedStatusCode int
+	}{
+		{
+			desc:               "correct auth-sid, known domain",
+			authSid:            correctAuth,
+			domain:             "known",
+			zone:               testZone,
+			expectedStatusCode: 0,
+		},
+		{
+			desc:               "incorrect auth-sid, known domain",
+			authSid:            incorrectAuth,
+			domain:             "known",
+			expectedStatusCode: 2202,
+		},
+		{
+			desc:               "correct auth-sid, unknown domain",
+			authSid:            correctAuth,
+			domain:             "unknown",
+			expectedStatusCode: 2202,
+		},
+		{
+			desc:          "server error",
+			authSid:       "500",
+			expectedError: true,
+		},
+	}
+	mux, server := setup()
+	defer server.Close()
+
+	mux.HandleFunc("/dns-zone-get", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "POST", r.Method)
+		authSid := r.FormValue("auth-sid")
+		domain := r.FormValue("domain")
+
+		switch {
+		case authSid == correctAuth && domain == "known":
+			http.Error(w, "Status-Code: 0\nStatus-Text: OK\n\n"+testZone, http.StatusOK)
+		case authSid == incorrectAuth || (authSid == correctAuth && domain == "unknown"):
+			http.Error(w, "Status-Code: 2202\nStatus-Text: Authorization error", http.StatusOK)
+		default:
+			http.Error(w, "Unknown", http.StatusNotFound)
+		}
+	})
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			config := NewDefaultConfig()
+			config.BaseURL = server.URL
+			config.APIKey = "12345"
+			config.AuthSid = test.authSid
+
+			p, err := NewDNSProviderConfig(config)
+			require.NoError(t, err)
+			require.NotNil(t, p)
+			response, err := p.jokerGetZone(test.domain)
+			if test.expectedError {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				require.NotNil(t, response)
+				assert.Equal(t, test.expectedStatusCode, response.StatusCode)
+				assert.Equal(t, test.zone, response.Body)
+			}
+		})
+	}
 }

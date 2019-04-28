@@ -9,7 +9,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/challenge/dns01"
 	"github.com/go-acme/lego/platform/tester"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -18,17 +17,14 @@ import (
 var envTest = tester.NewEnvTest(
 	"EASYDNS_ENDPOINT",
 	"EASYDNS_TOKEN",
-	"EASYDNS_KEY",
-	"EASYDNS_PROPAGATION_TIMEOUT",
-	"EASYDNS_POLLING_INTERVAL",
-	"EASYDNS_SEQUENCE_INTERVAL").
+	"EASYDNS_KEY").
 	WithDomain("EASYDNS_DOMAIN")
 
 func setup() (*DNSProvider, *http.ServeMux, func()) {
 	handler := http.NewServeMux()
 	server := httptest.NewServer(handler)
 
-	url, err := url.Parse(server.URL)
+	endpoint, err := url.Parse(server.URL)
 	if err != nil {
 		panic(err)
 	}
@@ -36,7 +32,7 @@ func setup() (*DNSProvider, *http.ServeMux, func()) {
 	config := NewDefaultConfig()
 	config.Token = "TOKEN"
 	config.Key = "SECRET"
-	config.URL = url
+	config.Endpoint = endpoint
 
 	provider, err := NewDNSProviderConfig(config)
 	if err != nil {
@@ -64,14 +60,14 @@ func TestNewDNSProvider(t *testing.T) {
 			envVars: map[string]string{
 				"EASYDNS_KEY": "SECRET",
 			},
-			expected: "easydns: the API token is missing: EASYDNS_TOKEN",
+			expected: "easydns: some credentials information are missing: EASYDNS_TOKEN",
 		},
 		{
 			desc: "missing key",
 			envVars: map[string]string{
 				"EASYDNS_TOKEN": "TOKEN",
 			},
-			expected: "easydns: the API key is missing: EASYDNS_KEY",
+			expected: "easydns: some credentials information are missing: EASYDNS_KEY",
 		},
 	}
 
@@ -118,14 +114,14 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			config: &Config{
 				Key: "KEY",
 			},
-			expected: "easydns: the API token is missing: EASYDNS_TOKEN",
+			expected: "easydns: the API token is missing",
 		},
 		{
 			desc: "missing key",
 			config: &Config{
 				Token: "TOKEN",
 			},
-			expected: "easydns: the API key is missing: EASYDNS_KEY",
+			expected: "easydns: the API key is missing",
 		},
 	}
 
@@ -144,7 +140,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}
 }
 
-func TestDNSProvider_Present_CreatesTxtRecord(t *testing.T) {
+func TestDNSProvider_Present(t *testing.T) {
 	provider, mux, tearDown := setup()
 	defer tearDown()
 
@@ -159,7 +155,8 @@ func TestDNSProvider_Present_CreatesTxtRecord(t *testing.T) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 
-		expectedReqBody := "{\"domain\":\"example.com\",\"host\":\"_acme-challenge\",\"ttl\":\"120\",\"prio\":\"0\",\"type\":\"TXT\",\"rdata\":\"pW9ZKG0xz_PCriK-nCMOjADy9eJcgGWIzkkj2fN4uZM\"}\n"
+		expectedReqBody := `{"domain":"example.com","host":"_acme-challenge","ttl":"120","prio":"0","type":"TXT","rdata":"pW9ZKG0xz_PCriK-nCMOjADy9eJcgGWIzkkj2fN4uZM"}
+`
 		assert.Equal(t, expectedReqBody, string(reqBody))
 
 		w.WriteHeader(http.StatusCreated)
@@ -186,19 +183,6 @@ func TestDNSProvider_Present_CreatesTxtRecord(t *testing.T) {
 	err := provider.Present("example.com", "token", "keyAuth")
 	require.NoError(t, err)
 	require.Contains(t, provider.recordIDs, "_acme-challenge.example.com.|pW9ZKG0xz_PCriK-nCMOjADy9eJcgGWIzkkj2fN4uZM")
-}
-
-func TestDNSProvider_Present_Live(t *testing.T) {
-	if !envTest.IsLiveTest() {
-		t.Skip("skipping live test")
-	}
-
-	envTest.RestoreEnv()
-	provider, err := NewDNSProvider()
-	require.NoError(t, err)
-
-	err = provider.Present(envTest.GetDomain(), "", "123d==")
-	require.NoError(t, err)
 }
 
 func TestDNSProvider_Cleanup_WhenRecordIdNotSet_NoOp(t *testing.T) {
@@ -265,119 +249,6 @@ func TestDNSProvider_Cleanup_WhenHttpError_ReturnsError(t *testing.T) {
 	require.EqualError(t, err, expectedError)
 }
 
-func TestDNSProvider_Cleanup_Live(t *testing.T) {
-	if !envTest.IsLiveTest() {
-		t.Skip("skipping live test")
-	}
-
-	envTest.RestoreEnv()
-	provider, err := NewDNSProvider()
-	require.NoError(t, err)
-
-	time.Sleep(2 * time.Second)
-
-	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
-	require.NoError(t, err)
-}
-
-func TestDNSProvider_Timeout(t *testing.T) {
-	testCases := []struct {
-		desc                       string
-		envVars                    map[string]string
-		expectedPropagationTimeout time.Duration
-		expectedPollingInterval    time.Duration
-	}{
-		{
-			desc: "defaults",
-			envVars: map[string]string{
-				"EASYDNS_TOKEN": "TOKEN",
-				"EASYDNS_KEY":   "SECRET",
-			},
-			expectedPropagationTimeout: dns01.DefaultPropagationTimeout,
-			expectedPollingInterval:    dns01.DefaultPollingInterval,
-		},
-		{
-			desc: "custom propagation timeout",
-			envVars: map[string]string{
-				"EASYDNS_TOKEN":               "TOKEN",
-				"EASYDNS_KEY":                 "SECRET",
-				"EASYDNS_PROPAGATION_TIMEOUT": "1",
-			},
-			expectedPropagationTimeout: 1000000000,
-			expectedPollingInterval:    dns01.DefaultPollingInterval,
-		},
-		{
-			desc: "custom polling interval",
-			envVars: map[string]string{
-				"EASYDNS_TOKEN":            "TOKEN",
-				"EASYDNS_KEY":              "SECRET",
-				"EASYDNS_POLLING_INTERVAL": "1",
-			},
-			expectedPropagationTimeout: dns01.DefaultPropagationTimeout,
-			expectedPollingInterval:    1000000000,
-		},
-	}
-
-	for _, test := range testCases {
-		t.Run(test.desc, func(t *testing.T) {
-			defer envTest.RestoreEnv()
-			envTest.ClearEnv()
-
-			envTest.Apply(test.envVars)
-
-			p, err := NewDNSProvider()
-			actualPropagationTimeout, actualPollingInterval := p.Timeout()
-
-			require.NoError(t, err)
-			require.NotNil(t, p)
-			require.Equal(t, test.expectedPropagationTimeout, actualPropagationTimeout)
-			require.Equal(t, test.expectedPollingInterval, actualPollingInterval)
-		})
-	}
-}
-
-func TestDNSProvider_Sequential(t *testing.T) {
-	testCases := []struct {
-		desc     string
-		envVars  map[string]string
-		expected time.Duration
-	}{
-		{
-			desc: "defaults",
-			envVars: map[string]string{
-				"EASYDNS_TOKEN": "TOKEN",
-				"EASYDNS_KEY":   "SECRET",
-			},
-			expected: dns01.DefaultPropagationTimeout,
-		},
-		{
-			desc: "custom sequence interval",
-			envVars: map[string]string{
-				"EASYDNS_TOKEN":             "TOKEN",
-				"EASYDNS_KEY":               "SECRET",
-				"EASYDNS_SEQUENCE_INTERVAL": "1",
-			},
-			expected: 1000000000,
-		},
-	}
-
-	for _, test := range testCases {
-		t.Run(test.desc, func(t *testing.T) {
-			defer envTest.RestoreEnv()
-			envTest.ClearEnv()
-
-			envTest.Apply(test.envVars)
-
-			p, err := NewDNSProvider()
-			actual := p.Sequential()
-
-			require.NoError(t, err)
-			require.NotNil(t, p)
-			require.Equal(t, test.expected, actual)
-		})
-	}
-}
-
 func TestSplitFqdn(t *testing.T) {
 	testCases := []struct {
 		desc           string
@@ -413,4 +284,32 @@ func TestSplitFqdn(t *testing.T) {
 			require.Equal(t, test.expectedDomain, actualDomain)
 		})
 	}
+}
+
+func TestLivePresent(t *testing.T) {
+	if !envTest.IsLiveTest() {
+		t.Skip("skipping live test")
+	}
+
+	envTest.RestoreEnv()
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
+
+	err = provider.Present(envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
+}
+
+func TestLiveCleanUp(t *testing.T) {
+	if !envTest.IsLiveTest() {
+		t.Skip("skipping live test")
+	}
+
+	envTest.RestoreEnv()
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
+
+	time.Sleep(2 * time.Second)
+
+	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
 }

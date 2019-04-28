@@ -19,11 +19,10 @@ import (
 
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
-	Endpoint           string
+	Endpoint           *url.URL
 	Token              string
 	Key                string
 	TTL                int
-	URL                *url.URL
 	HTTPClient         *http.Client
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -33,7 +32,6 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		Endpoint:           env.GetOrDefaultString("EASYDNS_ENDPOINT", defaultEndpoint),
 		PropagationTimeout: env.GetOrDefaultSecond("EASYDNS_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
 		SequenceInterval:   env.GetOrDefaultSecond("EASYDNS_SEQUENCE_INTERVAL", dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond("EASYDNS_POLLING_INTERVAL", dns01.DefaultPollingInterval),
@@ -55,17 +53,17 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
 
-	endpoint, err := url.Parse(config.Endpoint)
+	endpoint, err := url.Parse(env.GetOrDefaultString("EASYDNS_ENDPOINT", defaultEndpoint))
 	if err != nil {
 		return nil, fmt.Errorf("easydns: %v", err)
 	}
+	config.Endpoint = endpoint
 
 	values, err := env.Get("EASYDNS_TOKEN", "EASYDNS_KEY")
 	if err != nil {
 		return nil, fmt.Errorf("easydns: %v", err)
 	}
 
-	config.URL = endpoint
 	config.Token = values["EASYDNS_TOKEN"]
 	config.Key = values["EASYDNS_KEY"]
 
@@ -79,11 +77,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.Token == "" {
-		return nil, errors.New("easydns: the API token is missing: EASYDNS_TOKEN")
+		return nil, errors.New("easydns: the API token is missing")
 	}
 
 	if config.Key == "" {
-		return nil, errors.New("easydns: the API key is missing: EASYDNS_KEY")
+		return nil, errors.New("easydns: the API key is missing")
 	}
 
 	return &DNSProvider{config: config, recordIDs: map[string]string{}}, nil

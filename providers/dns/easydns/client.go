@@ -60,7 +60,7 @@ func (d *DNSProvider) doRequest(method, path string, requestMsg, responseMsg int
 		}
 	}
 
-	endpoint, err := d.config.URL.Parse(path + "?format=json")
+	endpoint, err := d.config.Endpoint.Parse(path + "?format=json")
 	if err != nil {
 		return err
 	}

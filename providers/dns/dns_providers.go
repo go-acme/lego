@@ -9,6 +9,7 @@ import (
 	"github.com/go-acme/lego/providers/dns/alidns"
 	"github.com/go-acme/lego/providers/dns/auroradns"
 	"github.com/go-acme/lego/providers/dns/azure"
+	"github.com/go-acme/lego/providers/dns/bindman"
 	"github.com/go-acme/lego/providers/dns/bluecat"
 	"github.com/go-acme/lego/providers/dns/cloudflare"
 	"github.com/go-acme/lego/providers/dns/cloudns"
@@ -36,6 +37,7 @@ import (
 	"github.com/go-acme/lego/providers/dns/httpreq"
 	"github.com/go-acme/lego/providers/dns/iij"
 	"github.com/go-acme/lego/providers/dns/inwx"
+	"github.com/go-acme/lego/providers/dns/joker"
 	"github.com/go-acme/lego/providers/dns/lightsail"
 	"github.com/go-acme/lego/providers/dns/linode"
 	"github.com/go-acme/lego/providers/dns/linodev4"
@@ -73,6 +75,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return azure.NewDNSProvider()
 	case "auroradns":
 		return auroradns.NewDNSProvider()
+	case "bindman":
+		return bindman.NewDNSProvider()
 	case "bluecat":
 		return bluecat.NewDNSProvider()
 	case "cloudflare":
@@ -127,6 +131,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return iij.NewDNSProvider()
 	case "inwx":
 		return inwx.NewDNSProvider()
+	case "joker":
+		return joker.NewDNSProvider()
 	case "lightsail":
 		return lightsail.NewDNSProvider()
 	case "linode":

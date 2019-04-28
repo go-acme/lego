@@ -143,24 +143,9 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}
 }
 
-func TestDNSProvider_Present_WhenTxtRecordNotFound_CreatesTxtRecord(t *testing.T) {
+func TestDNSProvider_Present_CreatesTxtRecord(t *testing.T) {
 	provider, mux, tearDown := setup()
 	defer tearDown()
-
-	mux.HandleFunc("/zones/records/all/example.com", func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, http.MethodGet, r.Method, "method")
-		assert.Equal(t, "format=json", r.URL.RawQuery, "query")
-		assert.Equal(t, "Basic VE9LRU46U0VDUkVU", r.Header.Get("Authorization"), "Authorization")
-
-		w.WriteHeader(http.StatusOK)
-		_, err := fmt.Fprintf(w, `{
-			"data": [],
-			"status": 200
-		}`)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-	})
 
 	mux.HandleFunc("/zones/records/add/example.com/TXT", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodPut, r.Method, "method")
@@ -199,101 +184,7 @@ func TestDNSProvider_Present_WhenTxtRecordNotFound_CreatesTxtRecord(t *testing.T
 
 	err := provider.Present("example.com", "token", "keyAuth")
 	require.NoError(t, err)
-}
-
-func TestDNSProvider_Present_WhenTxtRecordFound_UpdatesTxtRecord(t *testing.T) {
-	provider, mux, tearDown := setup()
-	defer tearDown()
-
-	mux.HandleFunc("/zones/records/all/example.com", func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, http.MethodGet, r.Method, "method")
-		assert.Equal(t, "format=json", r.URL.RawQuery, "query")
-		assert.Equal(t, "Basic VE9LRU46U0VDUkVU", r.Header.Get("Authorization"), "Authorization")
-
-		w.WriteHeader(http.StatusOK)
-		_, err := fmt.Fprintf(w, `{
-			"data": [
-				{
-					"id": "123456",
-					"domain": "example.com",
-					"host": "_acme-challenge",
-					"ttl": "300",
-					"prio": "0",
-					"type": "TXT",
-					"rdata": "",
-					"geozone_id": "0",
-					"last_mod": "2019-04-08 00:59:37"
-				}
-			],
-			"status": 200
-		}`)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-	})
-
-	mux.HandleFunc("/zones/records/123456", func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, http.MethodPost, r.Method, "method")
-		assert.Equal(t, "format=json", r.URL.RawQuery, "query")
-		assert.Equal(t, "application/json", r.Header.Get("Content-Type"), "Content-Type")
-		assert.Equal(t, "Basic VE9LRU46U0VDUkVU", r.Header.Get("Authorization"), "Authorization")
-
-		reqBody, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-
-		expectedReqBody := "{\"domain\":\"example.com\",\"host\":\"_acme-challenge\",\"ttl\":\"120\",\"prio\":\"0\",\"type\":\"TXT\",\"rdata\":\"pW9ZKG0xz_PCriK-nCMOjADy9eJcgGWIzkkj2fN4uZM\"}\n"
-		assert.Equal(t, expectedReqBody, string(reqBody))
-
-		w.WriteHeader(http.StatusOK)
-		_, err = fmt.Fprintf(w, `{
-			"msg": "Record updated successfully.",
-			"tm": 1554685520,
-			"data": {
-				"id": "123456",
-				"domain": "example.com",
-				"host": "_acme-challenge-test",
-				"ttl": "300",
-				"prio": "0",
-				"type": "TXT",
-				"rdata": "update",
-				"geozone_id": "0",
-				"last_mod": "2019-04-08 01:05:20"
-			},
-			"status": 200
-		}`)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-	})
-
-	err := provider.Present("example.com", "token", "keyAuth")
-	require.NoError(t, err)
-}
-
-func TestDNSProvider_Present_WhenHttpError_ReturnsError(t *testing.T) {
-	provider, mux, tearDown := setup()
-	defer tearDown()
-
-	mux.HandleFunc("/zones/records/all/example.com", func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, http.MethodGet, r.Method, "method")
-		assert.Equal(t, "format=json", r.URL.RawQuery, "query")
-
-		w.WriteHeader(http.StatusForbidden)
-		_, err := fmt.Fprintf(w, `{
-			"error": {
-				"code": 403,
-				"message": "Access to resource denied due to permissions"
-			}
-		}`)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-	})
-
-	err := provider.Present("example.com", "token", "keyAuth")
-	require.Error(t, err)
+	require.Contains(t, provider.recordIDs, "_acme-challenge.example.com.|pW9ZKG0xz_PCriK-nCMOjADy9eJcgGWIzkkj2fN4uZM")
 }
 
 func TestDNSProvider_Present_Live(t *testing.T) {
@@ -340,9 +231,37 @@ func TestDNSProvider_Cleanup_WhenRecordIdSet_DeletesTxtRecord(t *testing.T) {
 		}
 	})
 
-	provider.recordID = "123456"
+	provider.recordIDs["_acme-challenge.example.com.|pW9ZKG0xz_PCriK-nCMOjADy9eJcgGWIzkkj2fN4uZM"] = "123456"
 	err := provider.CleanUp("example.com", "token", "keyAuth")
 	require.NoError(t, err)
+}
+
+func TestDNSProvider_Cleanup_WhenHttpError_ReturnsError(t *testing.T) {
+	provider, mux, tearDown := setup()
+	defer tearDown()
+
+	errorMessage := `{
+		"error": {
+			"code": 406,
+			"message": "Provided id is invalid or you do not have permission to access it."
+		}
+	}`
+	mux.HandleFunc("/zones/records/example.com/123456", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodDelete, r.Method, "method")
+		assert.Equal(t, "format=json", r.URL.RawQuery, "query")
+		assert.Equal(t, "Basic VE9LRU46U0VDUkVU", r.Header.Get("Authorization"), "Authorization")
+
+		w.WriteHeader(http.StatusNotAcceptable)
+		_, err := fmt.Fprintf(w, errorMessage)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	})
+
+	provider.recordIDs["_acme-challenge.example.com.|pW9ZKG0xz_PCriK-nCMOjADy9eJcgGWIzkkj2fN4uZM"] = "123456"
+	err := provider.CleanUp("example.com", "token", "keyAuth")
+	expectedError := fmt.Sprintf("easydns: 406: request failed: %v", errorMessage)
+	require.EqualError(t, err, expectedError)
 }
 
 func TestDNSProvider_Cleanup_Live(t *testing.T) {

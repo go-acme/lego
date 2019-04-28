@@ -81,8 +81,8 @@ func NewDefaultConfig() *Config {
 
 // DNSProvider describes a provider for acme-proxy
 type DNSProvider struct {
-	config   *Config
-	recordID string
+	config    *Config
+	recordIDs map[string]string
 }
 
 // NewDNSProvider returns a DNSProvider instance.
@@ -115,7 +115,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("easydns: the API key is missing: EASYDNS_KEY")
 	}
 
-	return &DNSProvider{config: config}, nil
+	return &DNSProvider{config: config, recordIDs: map[string]string{}}, nil
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
@@ -138,58 +138,34 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Prio:   "0",
 	}
 
-	recordID, err := d.getRecordID(apiHost, apiDomain)
+	recordID, err := d.addRecord(apiDomain, record)
 	if err != nil {
-		return fmt.Errorf("easydns: error getting zone record: %v", err)
+		return fmt.Errorf("easydns: error adding zone record: %v", err)
 	}
-
-	if recordID == "" {
-		recordID, err = d.addRecord(apiDomain, record)
-		if err != nil {
-			return fmt.Errorf("easydns: error adding zone record: %v", err)
-		}
-	} else {
-		err := d.updateRecord(recordID, record)
-		if err != nil {
-			return fmt.Errorf("easydns: error updating zone record: %v", err)
-		}
-	}
-	d.recordID = recordID
+	key := getMapKey(fqdn, challenge)
+	d.recordIDs[key] = recordID
 
 	return nil
 }
 
 // CleanUp removes the TXT record matching the specified parameters
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	if d.recordID == "" {
+	fqdn, challenge := dns01.GetRecord(domain, keyAuth)
+
+	key := getMapKey(fqdn, challenge)
+	recordID, exists := d.recordIDs[key]
+	if !exists {
 		return nil
 	}
 
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 	_, apiDomain := splitFqdn(fqdn)
-	err := d.deleteRecord(apiDomain, d.recordID)
+	err := d.deleteRecord(apiDomain, recordID)
+	defer delete(d.recordIDs, key)
 	if err != nil {
 		return fmt.Errorf("easydns: %v", err)
 	}
 
 	return nil
-}
-
-func (d *DNSProvider) getRecordID(host, domain string) (string, error) {
-	path := path.Join("/zones/records/all", domain)
-	response := &allRecordsResponse{}
-	err := d.executeRequest(http.MethodGet, path, nil, response)
-	if err != nil {
-		return "", err
-	}
-
-	for _, record := range response.Data {
-		if record.Host == host && record.Type == dnsRecordType {
-			return record.ID, nil
-		}
-	}
-
-	return "", nil
 }
 
 func (d *DNSProvider) addRecord(domain string, record interface{}) (string, error) {
@@ -204,17 +180,6 @@ func (d *DNSProvider) addRecord(domain string, record interface{}) (string, erro
 	recordID := response.Data.ID
 
 	return recordID, nil
-}
-
-func (d *DNSProvider) updateRecord(recordID string, record interface{}) error {
-	path := path.Join("/zones/records", recordID)
-
-	err := d.executeRequest(http.MethodPost, path, record, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (d *DNSProvider) deleteRecord(domain, recordID string) error {
@@ -275,4 +240,8 @@ func splitFqdn(fqdn string) (host, domain string) {
 	host = strings.Join(parts[0:length-2], ".")
 	domain = strings.Join(parts[length-2:length], ".")
 	return
+}
+
+func getMapKey(fqdn, value string) string {
+	return fqdn + "|" + value
 }

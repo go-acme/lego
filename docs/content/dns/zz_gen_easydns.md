@@ -6,10 +6,10 @@ slug: easydns
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers\dns\easydns\easydns.toml -->
+<!-- providers/dns/easydns/easydns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: 
+Since: v2.6.0
 
 Configuration for [EasyDNS](https://easydns.com/).
 
@@ -63,5 +63,5 @@ To test with the sandbox environment set ```EASYDNS_ENDPOINT=https://sandbox.res
 - [API documentation](http://docs.sandbox.rest.easydns.net)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers\dns\easydns\easydns.toml -->
+<!-- providers/dns/easydns/easydns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

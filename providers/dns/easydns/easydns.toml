@@ -2,6 +2,7 @@ Name = "EasyDNS"
 Description = ''''''
 URL = "https://easydns.com/"
 Code = "easydns"
+Since = "v2.6.0"
 
 Example = '''
 EASYDNS_TOKEN=<your token> \

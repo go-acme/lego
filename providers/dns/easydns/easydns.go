@@ -2,17 +2,13 @@
 package easydns
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
-	"os"
-	"path"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/miekg/dns"
@@ -20,29 +16,6 @@ import (
 	"github.com/go-acme/lego/challenge/dns01"
 	"github.com/go-acme/lego/platform/config/env"
 )
-
-const defaultEndpoint = "https://rest.easydns.net"
-const dnsRecordType = "TXT"
-
-type zoneRecord struct {
-	ID      string `json:"id,omitempty"`
-	Domain  string `json:"domain"`
-	Host    string `json:"host"`
-	TTL     string `json:"ttl"`
-	Prio    string `json:"prio"`
-	Type    string `json:"type"`
-	Rdata   string `json:"rdata"`
-	LastMod string `json:"last_mod,omitempty"`
-	Revoked int    `json:"revoked,omitempty"`
-	NewHost string `json:"new_host,omitempty"`
-}
-
-type addRecordResponse struct {
-	Msg    string     `json:"msg"`
-	Tm     int        `json:"tm"`
-	Data   zoneRecord `json:"data"`
-	Status int        `json:"status"`
-}
 
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
@@ -73,22 +46,28 @@ func NewDefaultConfig() *Config {
 
 // DNSProvider describes a provider for acme-proxy
 type DNSProvider struct {
-	config    *Config
-	recordIDs map[string]string
+	config      *Config
+	recordIDs   map[string]string
+	recordIDsMu sync.Mutex
 }
 
 // NewDNSProvider returns a DNSProvider instance.
 func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
 
-	url, err := url.Parse(config.Endpoint)
+	endpoint, err := url.Parse(config.Endpoint)
 	if err != nil {
 		return nil, fmt.Errorf("easydns: %v", err)
 	}
 
-	config.URL = url
-	config.Token = os.Getenv("EASYDNS_TOKEN")
-	config.Key = os.Getenv("EASYDNS_KEY")
+	values, err := env.Get("EASYDNS_TOKEN", "EASYDNS_KEY")
+	if err != nil {
+		return nil, fmt.Errorf("easydns: %v", err)
+	}
+
+	config.URL = endpoint
+	config.Token = values["EASYDNS_TOKEN"]
+	config.Key = values["EASYDNS_KEY"]
 
 	return NewDNSProviderConfig(config)
 }
@@ -110,28 +89,16 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	return &DNSProvider{config: config, recordIDs: map[string]string{}}, nil
 }
 
-// Timeout returns the timeout and interval to use when checking for DNS propagation.
-// Adjusting here to cope with spikes in propagation times.
-func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
-	return d.config.PropagationTimeout, d.config.PollingInterval
-}
-
-// Sequential All DNS challenges for this provider will be resolved sequentially.
-// Returns the interval between each iteration.
-func (d *DNSProvider) Sequential() time.Duration {
-	return d.config.SequenceInterval
-}
-
 // Present creates a TXT record to fulfill the dns-01 challenge
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, challenge := dns01.GetRecord(domain, keyAuth)
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
 	apiHost, apiDomain := splitFqdn(fqdn)
 	record := &zoneRecord{
 		Domain: apiDomain,
 		Host:   apiHost,
-		Type:   dnsRecordType,
-		Rdata:  challenge,
+		Type:   "TXT",
+		Rdata:  value,
 		TTL:    strconv.Itoa(d.config.TTL),
 		Prio:   "0",
 	}
@@ -140,8 +107,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("easydns: error adding zone record: %v", err)
 	}
-	key := getMapKey(fqdn, challenge)
+
+	key := getMapKey(fqdn, value)
+
+	d.recordIDsMu.Lock()
 	d.recordIDs[key] = recordID
+	d.recordIDsMu.Unlock()
 
 	return nil
 }
@@ -158,7 +129,11 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	_, apiDomain := splitFqdn(fqdn)
 	err := d.deleteRecord(apiDomain, recordID)
+
+	d.recordIDsMu.Lock()
 	defer delete(d.recordIDs, key)
+	d.recordIDsMu.Unlock()
+
 	if err != nil {
 		return fmt.Errorf("easydns: %v", err)
 	}
@@ -166,69 +141,16 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-func (d *DNSProvider) addRecord(domain string, record interface{}) (string, error) {
-	path := path.Join("/zones/records/add", domain, dnsRecordType)
-
-	response := &addRecordResponse{}
-	err := d.executeRequest(http.MethodPut, path, record, response)
-	if err != nil {
-		return "", err
-	}
-
-	recordID := response.Data.ID
-
-	return recordID, nil
+// Timeout returns the timeout and interval to use when checking for DNS propagation.
+// Adjusting here to cope with spikes in propagation times.
+func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
+	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-func (d *DNSProvider) deleteRecord(domain, recordID string) error {
-	path := path.Join("/zones/records", domain, recordID)
-
-	return d.executeRequest(http.MethodDelete, path, nil, nil)
-}
-
-func (d *DNSProvider) executeRequest(method, path string, requestMsg, responseMsg interface{}) error {
-	reqBody := &bytes.Buffer{}
-	if requestMsg != nil {
-		err := json.NewEncoder(reqBody).Encode(requestMsg)
-		if err != nil {
-			return err
-		}
-	}
-
-	endpoint, err := d.config.URL.Parse(path + "?format=json")
-	if err != nil {
-		return err
-	}
-
-	request, err := http.NewRequest(method, endpoint.String(), reqBody)
-	if err != nil {
-		return err
-	}
-
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Accept", "application/json")
-	request.SetBasicAuth(d.config.Token, d.config.Key)
-
-	response, err := d.config.HTTPClient.Do(request)
-	if err != nil {
-		return err
-	}
-	defer response.Body.Close()
-
-	if response.StatusCode >= http.StatusBadRequest {
-		body, err := ioutil.ReadAll(response.Body)
-		if err != nil {
-			return fmt.Errorf("%d: failed to read response body: %v", response.StatusCode, err)
-		}
-
-		return fmt.Errorf("%d: request failed: %v", response.StatusCode, string(body))
-	}
-
-	if responseMsg != nil {
-		return json.NewDecoder(response.Body).Decode(responseMsg)
-	}
-
-	return nil
+// Sequential All DNS challenges for this provider will be resolved sequentially.
+// Returns the interval between each iteration.
+func (d *DNSProvider) Sequential() time.Duration {
+	return d.config.SequenceInterval
 }
 
 func splitFqdn(fqdn string) (host, domain string) {

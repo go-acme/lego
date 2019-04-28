@@ -37,16 +37,6 @@ type zoneRecord struct {
 	NewHost string `json:"new_host,omitempty"`
 }
 
-type allRecordsResponse struct {
-	Tm     int          `json:"tm"`
-	Data   []zoneRecord `json:"data"`
-	Count  int          `json:"count"`
-	Total  int          `json:"total"`
-	Start  int          `json:"start"`
-	Max    int          `json:"max"`
-	Status int          `json:"status"`
-}
-
 type addRecordResponse struct {
 	Msg    string     `json:"msg"`
 	Tm     int        `json:"tm"`
@@ -64,6 +54,7 @@ type Config struct {
 	HTTPClient         *http.Client
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
+	SequenceInterval   time.Duration
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider
@@ -71,6 +62,7 @@ func NewDefaultConfig() *Config {
 	return &Config{
 		Endpoint:           env.GetOrDefaultString("EASYDNS_ENDPOINT", defaultEndpoint),
 		PropagationTimeout: env.GetOrDefaultSecond("EASYDNS_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
+		SequenceInterval:   env.GetOrDefaultSecond("EASYDNS_SEQUENCE_INTERVAL", dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond("EASYDNS_POLLING_INTERVAL", dns01.DefaultPollingInterval),
 		TTL:                env.GetOrDefaultInt("EASYDNS_TTL", dns01.DefaultTTL),
 		HTTPClient: &http.Client{
@@ -122,6 +114,12 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
+}
+
+// Sequential All DNS challenges for this provider will be resolved sequentially.
+// Returns the interval between each iteration.
+func (d *DNSProvider) Sequential() time.Duration {
+	return d.config.SequenceInterval
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge

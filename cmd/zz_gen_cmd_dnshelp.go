@@ -478,6 +478,7 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w, `	- "EASYDNS_HTTP_TIMEOUT": API request timeout`)
 		fmt.Fprintln(w, `	- "EASYDNS_POLLING_INTERVAL": Time between DNS propagation check`)
 		fmt.Fprintln(w, `	- "EASYDNS_PROPAGATION_TIMEOUT": Maximum waiting time for DNS propagation`)
+		fmt.Fprintln(w, `	- "EASYDNS_SEQUENCE_INTERVAL": Time between sequential requests`)
 		fmt.Fprintln(w, `	- "EASYDNS_TTL": The TTL of the TXT record used for the DNS challenge`)
 
 		fmt.Fprintln(w)

@@ -20,7 +20,8 @@ var envTest = tester.NewEnvTest(
 	"EASYDNS_TOKEN",
 	"EASYDNS_KEY",
 	"EASYDNS_PROPAGATION_TIMEOUT",
-	"EASYDNS_POLLING_INTERVAL").
+	"EASYDNS_POLLING_INTERVAL",
+	"EASYDNS_SEQUENCE_INTERVAL").
 	WithDomain("EASYDNS_DOMAIN")
 
 func setup() (*DNSProvider, *http.ServeMux, func()) {
@@ -331,6 +332,48 @@ func TestDNSProvider_Timeout(t *testing.T) {
 			require.NotNil(t, p)
 			require.Equal(t, test.expectedPropagationTimeout, actualPropagationTimeout)
 			require.Equal(t, test.expectedPollingInterval, actualPollingInterval)
+		})
+	}
+}
+
+func TestDNSProvider_Sequential(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		envVars  map[string]string
+		expected time.Duration
+	}{
+		{
+			desc: "defaults",
+			envVars: map[string]string{
+				"EASYDNS_TOKEN": "TOKEN",
+				"EASYDNS_KEY":   "SECRET",
+			},
+			expected: dns01.DefaultPropagationTimeout,
+		},
+		{
+			desc: "custom sequence interval",
+			envVars: map[string]string{
+				"EASYDNS_TOKEN":             "TOKEN",
+				"EASYDNS_KEY":               "SECRET",
+				"EASYDNS_SEQUENCE_INTERVAL": "1",
+			},
+			expected: 1000000000,
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
+			envTest.Apply(test.envVars)
+
+			p, err := NewDNSProvider()
+			actual := p.Sequential()
+
+			require.NoError(t, err)
+			require.NotNil(t, p)
+			require.Equal(t, test.expected, actual)
 		})
 	}
 }

@@ -35,6 +35,7 @@ func allDNSCodes() string {
 		"dreamhost",
 		"duckdns",
 		"dyn",
+		"easydns",
 		"exec",
 		"exoscale",
 		"fastdns",
@@ -480,6 +481,29 @@ func displayDNSHelp(name string) {
 
 		fmt.Fprintln(w)
 		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/dyn`)
+
+	case "easydns":
+		// generated from: providers/dns/easydns/easydns.toml
+		fmt.Fprintln(w, `Configuration for EasyDNS.`)
+		fmt.Fprintln(w, `Code: 'easydns'`)
+		fmt.Fprintln(w, `Since: 'v2.6.0'`)
+		fmt.Fprintln(w)
+
+		fmt.Fprintln(w, `Credentials:`)
+		fmt.Fprintln(w, `	- "EASYDNS_KEY": API Key`)
+		fmt.Fprintln(w, `	- "EASYDNS_TOKEN": API Token`)
+		fmt.Fprintln(w)
+
+		fmt.Fprintln(w, `Additional Configuration:`)
+		fmt.Fprintln(w, `	- "EASYDNS_ENDPOINT": The endpoint URL of the API Server`)
+		fmt.Fprintln(w, `	- "EASYDNS_HTTP_TIMEOUT": API request timeout`)
+		fmt.Fprintln(w, `	- "EASYDNS_POLLING_INTERVAL": Time between DNS propagation check`)
+		fmt.Fprintln(w, `	- "EASYDNS_PROPAGATION_TIMEOUT": Maximum waiting time for DNS propagation`)
+		fmt.Fprintln(w, `	- "EASYDNS_SEQUENCE_INTERVAL": Time between sequential requests`)
+		fmt.Fprintln(w, `	- "EASYDNS_TTL": The TTL of the TXT record used for the DNS challenge`)
+
+		fmt.Fprintln(w)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/easydns`)
 
 	case "exec":
 		// generated from: providers/dns/exec/exec.toml

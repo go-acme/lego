@@ -298,7 +298,7 @@ func TestGetOrFile_ReadsFiles(t *testing.T) {
 	require.NoError(t, err)
 	defer os.Remove(file.Name())
 
-	err = ioutil.WriteFile(file.Name(), []byte("lego_file"), 0644)
+	err = ioutil.WriteFile(file.Name(), []byte("lego_file\n"), 0644)
 	require.NoError(t, err)
 
 	err = os.Setenv(varEnvFileName, file.Name())

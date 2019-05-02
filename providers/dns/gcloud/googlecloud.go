@@ -311,7 +311,7 @@ func (d *DNSProvider) getHostedZone(domain string) (string, error) {
 	}
 
 	for _, z := range zones.ManagedZones {
-		if z.Visibility == "public" {
+		if z.Visibility == "public" || z.Visibility == "" {
 			return z.Name, nil
 		}
 	}

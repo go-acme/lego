@@ -105,3 +105,7 @@
   version = "4.0.0"
   name = "github.com/oracle/oci-go-sdk"
 
+
+[[constraint]]
+  name = "github.com/labbsr0x/bindman-dns-webhook"
+  version = "1.0.0"

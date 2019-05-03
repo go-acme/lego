@@ -4,7 +4,11 @@ SRCS = $(shell git ls-files '*.go' | grep -v '^vendor/')
 
 LEGO_IMAGE := go-acme/lego
 MAIN_DIRECTORY := ./cmd/lego/
-BIN_OUTPUT := dist/lego
+ifeq (${GOOS}, windows)
+    BIN_OUTPUT := dist/lego.exe
+else
+    BIN_OUTPUT := dist/lego
+endif
 
 TAG_NAME := $(shell git tag -l --contains HEAD)
 SHA := $(shell git rev-parse HEAD)

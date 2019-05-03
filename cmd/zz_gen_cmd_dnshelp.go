@@ -650,8 +650,8 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
-		fmt.Fprintln(w, `	- "GODADDY_API_KEY": **TODO**`)
-		fmt.Fprintln(w, `	- "GODADDY_API_SECRET": **TODO**`)
+		fmt.Fprintln(w, `	- "GODADDY_API_KEY": API key`)
+		fmt.Fprintln(w, `	- "GODADDY_API_SECRET": API secret`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Additional Configuration:`)
@@ -672,8 +672,8 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
-		fmt.Fprintln(w, `	- "HOSTINGDE_API_KEY": **TODO**`)
-		fmt.Fprintln(w, `	- "HOSTINGDE_ZONE_NAME": **TODO**`)
+		fmt.Fprintln(w, `	- "HOSTINGDE_API_KEY": API key`)
+		fmt.Fprintln(w, `	- "HOSTINGDE_ZONE_NAME": Zone name in ACE format`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Additional Configuration:`)
@@ -699,10 +699,10 @@ func displayDNSHelp(name string) {
 
 		fmt.Fprintln(w, `Additional Configuration:`)
 		fmt.Fprintln(w, `	- "HTTPREQ_HTTP_TIMEOUT": API request timeout`)
-		fmt.Fprintln(w, `	- "HTTPREQ_PASSWORD": **TODO**`)
+		fmt.Fprintln(w, `	- "HTTPREQ_PASSWORD": Basic authentication password`)
 		fmt.Fprintln(w, `	- "HTTPREQ_POLLING_INTERVAL": Time between DNS propagation check`)
 		fmt.Fprintln(w, `	- "HTTPREQ_PROPAGATION_TIMEOUT": Maximum waiting time for DNS propagation`)
-		fmt.Fprintln(w, `	- "HTTPREQ_USERNAME": **TODO**`)
+		fmt.Fprintln(w, `	- "HTTPREQ_USERNAME": Basic authentication username`)
 
 		fmt.Fprintln(w)
 		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/httpreq`)

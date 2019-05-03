@@ -107,7 +107,7 @@ func setupDNS(ctx *cli.Context, client *lego.Client) {
 	err = client.Challenge.SetDNS01Provider(provider,
 		dns01.CondOption(len(servers) > 0,
 			dns01.AddRecursiveNameservers(dns01.ParseNameservers(ctx.GlobalStringSlice("dns.resolvers")))),
-		dns01.CondOption(ctx.GlobalIsSet("dns.disable-cp"),
+		dns01.CondOption(ctx.GlobalBool("dns.disable-cp"),
 			dns01.DisableCompletePropagationRequirement()),
 		dns01.CondOption(ctx.GlobalIsSet("dns-timeout"),
 			dns01.AddDNSTimeout(time.Duration(ctx.GlobalInt("dns-timeout"))*time.Second)),

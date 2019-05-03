@@ -65,9 +65,11 @@ func (maintenance *RunstatusMaintenance) FakeID() error {
 	return nil
 }
 
-//RunstatusMaintenanceList is a list of incident
+// RunstatusMaintenanceList is a list of incident
 type RunstatusMaintenanceList struct {
-	Maintenances []RunstatusMaintenance `json:"maintenances"`
+	Next         string                 `json:"next"`
+	Previous     string                 `json:"previous"`
+	Maintenances []RunstatusMaintenance `json:"results"`
 }
 
 // GetRunstatusMaintenance retrieves the details of a specific maintenance.
@@ -85,14 +87,13 @@ func (client *Client) GetRunstatusMaintenance(ctx context.Context, maintenance R
 		return nil, err
 	}
 
-	ms, err := client.ListRunstatusMaintenances(ctx, *page)
-	if err != nil {
-		return nil, err
-	}
-
-	for i := range ms {
-		if ms[i].Match(maintenance) {
-			return &ms[i], nil
+	for i := range page.Maintenances {
+		m := &page.Maintenances[i]
+		if m.Match(maintenance) {
+			if err := m.FakeID(); err != nil {
+				log.Printf("bad fake ID for %#v, %s", m, err)
+			}
+			return m, nil
 		}
 	}
 
@@ -118,25 +119,54 @@ func (client *Client) ListRunstatusMaintenances(ctx context.Context, page Runsta
 		return nil, fmt.Errorf("empty Maintenances URL for %#v", page)
 	}
 
-	resp, err := client.runstatusRequest(ctx, page.MaintenancesURL, nil, "GET")
-	if err != nil {
-		return nil, err
-	}
+	results := make([]RunstatusMaintenance, 0)
 
-	var p *RunstatusMaintenanceList
-	if err := json.Unmarshal(resp, &p); err != nil {
-		return nil, err
-	}
-
-	// NOTE: fix the missing IDs
-	for i := range p.Maintenances {
-		if err := p.Maintenances[i].FakeID(); err != nil {
-			log.Printf("bad fake ID for %#v, %s", p.Maintenances[i], err)
+	var err error
+	client.PaginateRunstatusMaintenances(ctx, page, func(maintenance *RunstatusMaintenance, e error) bool {
+		if e != nil {
+			err = e
+			return false
 		}
+
+		results = append(results, *maintenance)
+		return true
+	})
+
+	return results, err
+}
+
+// PaginateRunstatusMaintenances paginate Maintenances
+func (client *Client) PaginateRunstatusMaintenances(ctx context.Context, page RunstatusPage, callback func(*RunstatusMaintenance, error) bool) { // nolint: dupl
+	if page.MaintenancesURL == "" {
+		callback(nil, fmt.Errorf("empty Maintenances URL for %#v", page))
+		return
 	}
 
-	// NOTE: the list of maintenances doesn't have any pagination
-	return p.Maintenances, nil
+	maintenancesURL := page.MaintenancesURL
+	for maintenancesURL != "" {
+		resp, err := client.runstatusRequest(ctx, maintenancesURL, nil, "GET")
+		if err != nil {
+			callback(nil, err)
+			return
+		}
+
+		var ms *RunstatusMaintenanceList
+		if err := json.Unmarshal(resp, &ms); err != nil {
+			callback(nil, err)
+			return
+		}
+
+		for i := range ms.Maintenances {
+			if err := ms.Maintenances[i].FakeID(); err != nil {
+				log.Printf("bad fake ID for %#v, %s", ms.Maintenances[i], err)
+			}
+			if cont := callback(&ms.Maintenances[i], nil); !cont {
+				return
+			}
+		}
+
+		maintenancesURL = ms.Next
+	}
 }
 
 // CreateRunstatusMaintenance create runstatus Maintenance

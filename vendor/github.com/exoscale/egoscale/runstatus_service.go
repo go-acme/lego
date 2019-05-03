@@ -58,7 +58,9 @@ func (service RunstatusService) Match(other RunstatusService) bool {
 
 // RunstatusServiceList service list
 type RunstatusServiceList struct {
-	Services []RunstatusService `json:"services"`
+	Next     string             `json:"next"`
+	Previous string             `json:"previous"`
+	Services []RunstatusService `json:"results"`
 }
 
 // DeleteRunstatusService delete runstatus service
@@ -110,14 +112,13 @@ func (client *Client) GetRunstatusService(ctx context.Context, service Runstatus
 		return nil, err
 	}
 
-	ss, err := client.ListRunstatusServices(ctx, *page)
-	if err != nil {
-		return nil, err
-	}
-
-	for i := range ss {
-		if ss[i].Match(service) {
-			return &ss[i], nil
+	for i := range page.Services {
+		s := &page.Services[i]
+		if s.Match(service) {
+			if err := s.FakeID(); err != nil {
+				log.Printf("bad fake ID for %#v, %s", s, err)
+			}
+			return s, nil
 		}
 	}
 
@@ -148,23 +149,53 @@ func (client *Client) ListRunstatusServices(ctx context.Context, page RunstatusP
 		return nil, fmt.Errorf("empty Services URL for %#v", page)
 	}
 
-	resp, err := client.runstatusRequest(ctx, page.ServicesURL, nil, "GET")
-	if err != nil {
-		return nil, err
-	}
+	results := make([]RunstatusService, 0)
 
-	var p *RunstatusServiceList
-	if err := json.Unmarshal(resp, &p); err != nil {
-		return nil, err
-	}
-
-	// NOTE: fix the missing IDs
-	for i := range p.Services {
-		if err := p.Services[i].FakeID(); err != nil {
-			log.Printf("bad fake ID for %#v, %s", p.Services[i], err)
+	var err error
+	client.PaginateRunstatusServices(ctx, page, func(service *RunstatusService, e error) bool {
+		if e != nil {
+			err = e
+			return false
 		}
+
+		results = append(results, *service)
+		return true
+	})
+
+	return results, err
+}
+
+// PaginateRunstatusServices paginates Services
+func (client *Client) PaginateRunstatusServices(ctx context.Context, page RunstatusPage, callback func(*RunstatusService, error) bool) { // nolint: dupl
+	if page.ServicesURL == "" {
+		callback(nil, fmt.Errorf("empty Services URL for %#v", page))
+		return
 	}
 
-	// NOTE: no pagination
-	return p.Services, nil
+	servicesURL := page.ServicesURL
+	for servicesURL != "" {
+		resp, err := client.runstatusRequest(ctx, servicesURL, nil, "GET")
+		if err != nil {
+			callback(nil, err)
+			return
+		}
+
+		var ss *RunstatusServiceList
+		if err := json.Unmarshal(resp, &ss); err != nil {
+			callback(nil, err)
+			return
+		}
+
+		for i := range ss.Services {
+			if err := ss.Services[i].FakeID(); err != nil {
+				log.Printf("bad fake ID for %#v, %s", ss.Services[i], err)
+			}
+
+			if cont := callback(&ss.Services[i], nil); !cont {
+				return
+			}
+		}
+
+		servicesURL = ss.Next
+	}
 }

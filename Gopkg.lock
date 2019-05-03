@@ -63,7 +63,7 @@
   revision = "a3fa4a771d87bda2514a90a157e1fed1b6897d2e"
 
 [[projects]]
-  digest = "1:47071ecf8d840dd357ede1b2aed46576bdd0a866adecef3c9e85a00db9672202"
+  digest = "1:dddee1f9ce7caecc95ae089c721a65ed42b35f8cc8a8b8a3ee6e3758ec93ec4b"
   name = "github.com/akamai/AkamaiOPEN-edgegrid-golang"
   packages = [
     "client-v1",
@@ -72,8 +72,8 @@
     "jsonhooks-v1",
   ]
   pruneopts = "NUT"
-  revision = "1471ce9c14c6d8c007516e129262962a628fecdf"
-  version = "v0.7.3"
+  revision = "009960c8b2c7c57a0c5c488a3c8c778c16f3f586"
+  version = "v0.7.4"
 
 [[projects]]
   digest = "1:823e87ae25170339e2bfd1d6f7c2e27554c6bb5655f91c67b37bd5be45bb6b32"
@@ -168,12 +168,12 @@
   version = "v1.1.1"
 
 [[projects]]
-  branch = "master"
-  digest = "1:981e5cf3c23056668c447439e90d3a441358eb68e5189b1952c909772383b944"
+  digest = "1:fa62421bd924623ac10a160686cc55d529f7274b2caedf7d2c607d14bc50c118"
   name = "github.com/decker502/dnspod-go"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "83a3ba562b048c9fc88229408e593494b7774684"
+  revision = "71fbbdbdf1a7eeac949586de15bf96d416d3dd63"
+  version = "v0.2.0"
 
 [[projects]]
   digest = "1:7a6852b35eb5bbc184561443762d225116ae630c26a7c4d90546619f1e7d2ad2"
@@ -192,20 +192,20 @@
   revision = "5448fe645cb1964ba70ac8f9f2ffe975e61a536c"
 
 [[projects]]
-  digest = "1:e856fc44ab196970612bdc8c15e65ccf92ed8d4ccb3a2e65b88dc240a2fe5d0b"
+  digest = "1:5ec1feea329f68f736c43e81a218c18e4e83779fb96d118becb97a9f2f7d6fc4"
   name = "github.com/dnsimple/dnsimple-go"
   packages = ["dnsimple"]
   pruneopts = "NUT"
-  revision = "f5ead9c20763fd925dea1362f2af5d671ed2a459"
-  version = "v0.21.0"
+  revision = "8f70b647443816578a776f6c6d3e84deb11e1731"
+  version = "v0.23.0"
 
 [[projects]]
-  digest = "1:9013e4c7a6ff077dcb478aa75524aa73b5763136efb4efe8949b18d9b90dd212"
+  digest = "1:e73fd806b49d0e5c5d81776f8b33e1c35918cdd6c02dea4f1c2d91e70c8aa378"
   name = "github.com/exoscale/egoscale"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "4acc53d7aa0960f007acf1daedef69a6d24d8d1f"
-  version = "v0.14.0"
+  revision = "4e527724b8225e8315d580accd1c4e860202d41b"
+  version = "v0.17.1"
 
 [[projects]]
   digest = "1:aa3ed0a71c4e66e4ae6486bf97a3f4cab28edc78df2e50c5ad01dc7d91604b88"
@@ -232,12 +232,12 @@
   version = "v1.38.2"
 
 [[projects]]
-  digest = "1:ed6fe3cdb5ccb17387b5cb11c0cbd125699f5f5d23626ccf78a7c5859183e063"
-  name = "github.com/go-resty/resty"
+  digest = "1:bde9f189072512ba353f3641d4839cb4c9c7edf421e467f2c03f267b402bd16c"
+  name = "github.com/gofrs/uuid"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "97a15579492cd5f35632499f315d7a8df94160a1"
-  version = "v1.8.0"
+  revision = "6b08a5c5172ba18946672b49749cde22873dd7c2"
+  version = "v3.2.0"
 
 [[projects]]
   digest = "1:63ccdfbd20f7ccd2399d0647a7d100b122f79c13bb83da9660b1598396fd9f62"
@@ -357,20 +357,20 @@
   revision = "8b16b4848295edda07b9a828e5a3b285c25c2b9c"
 
 [[projects]]
-  digest = "1:111ff5a09a32895248270bfaef9b8b6ac163a8cde9cdd603fed64b3e4b59e8ab"
+  digest = "1:a0181b662584429828ccdd68d4dbe09ba7ba7414ef01d54b96f152002802ed72"
   name = "github.com/linode/linodego"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "d0d31d8ca62fa3f7e4526ca0ce95de81e4ed001e"
-  version = "v0.5.1"
+  revision = "42d84d42f3f28fe1fe1823c58c11715241eda24e"
+  version = "v0.7.1"
 
 [[projects]]
-  digest = "1:6676c63cef61a47c84eae578bcd8fe8352908ccfe3ea663c16797617a29e3c44"
+  digest = "1:bcc0ec1552cdcd95ee76052a01273eb35917df74825420b3e3df12c3b8d5e6ed"
   name = "github.com/miekg/dns"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "a220737569d8137d4c610f80bd33f1dc762522e5"
-  version = "v1.1.0"
+  revision = "8aa92d4e02c501ba21e26fb92cf2fb9f23f56917"
+  version = "v1.1.9"
 
 [[projects]]
   digest = "1:a4df73029d2c42fabcb6b41e327d2f87e685284ec03edf76921c267d9cfc9c23"
@@ -429,23 +429,23 @@
   version = "v0.6.0"
 
 [[projects]]
-  digest = "1:c665ac9fd8cedb7bea85380a441dec4e5de3c7d4574e18c6ba53dfe04cf50878"
+  digest = "1:50ba4638005d50396250b601811becb6b11ab13b0b7fa8ccbe119e21ce08a4fa"
   name = "github.com/oracle/oci-go-sdk"
   packages = [
     "common",
     "dns",
   ]
   pruneopts = "NUT"
-  revision = "f1ecb80f81a9cfa7dbfc964a34a3c62323277a9d"
-  version = "v4.0.0"
+  revision = "9ed9700756ebdedc96eaefcccf9322afbd4009ef"
+  version = "v5.4.0"
 
 [[projects]]
   branch = "master"
-  digest = "1:02584222c11b07d1d61cd76cc73e78cbc72810384a7ea69c543246d60d3335f7"
+  digest = "1:f703c1f05c29329026c4f49bd6c71442537e1f964d3a4f310982702a293f28c6"
   name = "github.com/ovh/go-ovh"
   packages = ["ovh"]
   pruneopts = "NUT"
-  revision = "c3e61035ea66f5c637719c90140da4e3ac3b1bf0"
+  revision = "ba5adb4cf0148a3dbdbd30586f075266256a77b1"
 
 [[projects]]
   digest = "1:5cf3f025cbee5951a4ee961de067c8a89fc95a5adabead774f82822efabab121"
@@ -472,7 +472,7 @@
   revision = "1031fa0ce2f20c1c0e1e1b51951d8ea02c84fa05"
 
 [[projects]]
-  digest = "1:5a632dc3d841d803524bd442976a52e390e4294826ece65722cb77020879d156"
+  digest = "1:253f275bd72c42f8d234712d1574c8b222fe9b72838bfaca11b21ace9c0e3d0a"
   name = "github.com/sacloud/libsacloud"
   packages = [
     ".",
@@ -482,8 +482,8 @@
     "utils/mutexkv",
   ]
   pruneopts = "NUT"
-  revision = "a949b57af53e809207587f8c41571d81f140276e"
-  version = "v1.19.0"
+  revision = "41c392dee98a83260abbe0fcd5c13beb7c75d103"
+  version = "v1.21.1"
 
 [[projects]]
   digest = "1:6bc0652ea6e39e22ccd522458b8bdd8665bf23bdc5a20eec90056e4dc7e273ca"
@@ -534,8 +534,7 @@
   revision = "37e84520dcf74488f67654f9c775b9752c232dc1"
 
 [[projects]]
-  branch = "master"
-  digest = "1:3b236e8930d31aeb375fe405c15c2afc581e04bd6cb68da4723e1aa8d2e2da37"
+  digest = "1:21ef4b12d6b6c6dfe389caa82f859d1e35eeb24ce61c60d09db57addb6a95781"
   name = "github.com/transip/gotransip"
   packages = [
     ".",
@@ -543,7 +542,8 @@
     "util",
   ]
   pruneopts = "NUT"
-  revision = "1dc93a7db3567a5ccf865106afac88278ba940cf"
+  revision = "c6e2ce0bbb4a601a909e3b7a773358d6b503e663"
+  version = "v5.8.2"
 
 [[projects]]
   digest = "1:5dba68a1600a235630e208cb7196b24e58fcbb77bb7a6bec08fcd23f081b0a58"
@@ -577,6 +577,17 @@
   pruneopts = "NUT"
   revision = "8930459677fde1e11e3e1b50bbed1acc850b5665"
   version = "v0.20.1"
+
+[[projects]]
+  branch = "master"
+  digest = "1:02fe59517e10f9b400b500af8ac228c74cecb0cba7a5f438d8283edb97e14270"
+  name = "go.uber.org/ratelimit"
+  packages = [
+    ".",
+    "internal/clock",
+  ]
+  pruneopts = "NUT"
+  revision = "c15da02342779cb6dc027fc95ee2277787698f36"
 
 [[projects]]
   branch = "master"
@@ -769,7 +780,7 @@
 
 [[projects]]
   branch = "v2"
-  digest = "1:f15af196d07dbb28a0633599eba0fb872acd0b24426001520dd6cb9944c7ad1a"
+  digest = "1:96d26da4d68299289c40ad10cd588648472fdc96ebbcdac82c04738363ee02fa"
   name = "gopkg.in/ns1/ns1-go.v2"
   packages = [
     "rest",
@@ -780,7 +791,15 @@
     "rest/model/monitor",
   ]
   pruneopts = "NUT"
-  revision = "028658c6d9be774b6d103a923d8c4b2715135c3f"
+  revision = "6c599e5e57901a8e58e1729f444de1edeb77bf97"
+
+[[projects]]
+  digest = "1:0942599d1f614d9ca4dfe052db1f60d4547b1b581206006be352f629a8b37d8d"
+  name = "gopkg.in/resty.v1"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "fa5875c0caa5c260ab78acec5a244215a730247f"
+  version = "v1.12.0"
 
 [[projects]]
   digest = "1:a50fabe7a46692dc7c656310add3d517abe7914df02afd151ef84da884605dc8"

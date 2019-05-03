@@ -84,7 +84,7 @@ type ZoneSecondary struct {
 	PrimaryPort int    `json:"primary_port,omitempty"`
 	Enabled     bool   `json:"enabled"`
 
-	TSIG *TSIG `json:"tsig"`
+	TSIG *TSIG `json:"tsig,omitempty"`
 }
 
 // TSIG is a zones transaction signature.

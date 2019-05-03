@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/go-resty/resty"
+	"gopkg.in/resty.v1"
 )
 
 const (

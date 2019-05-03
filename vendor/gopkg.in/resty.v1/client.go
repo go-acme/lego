@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2018 Jeevanandam M (jeeva@myjeeva.com), All rights reserved.
+// Copyright (c) 2015-2019 Jeevanandam M (jeeva@myjeeva.com), All rights reserved.
 // resty source code and usage is governed by a MIT style
 // license that can be found in the LICENSE file.
 
@@ -58,10 +58,10 @@ var (
 	jsonContentType = "application/json; charset=utf-8"
 	formContentType = "application/x-www-form-urlencoded"
 
-	jsonCheck = regexp.MustCompile(`(?i:(application|text)/(problem\+json|json))`)
-	xmlCheck  = regexp.MustCompile(`(?i:(application|text)/(problem\+xml|xml))`)
+	jsonCheck = regexp.MustCompile(`(?i:(application|text)/(json|.*\+json|json\-.*)(;|$))`)
+	xmlCheck  = regexp.MustCompile(`(?i:(application|text)/(xml|.*\+xml)(;|$))`)
 
-	hdrUserAgentValue = "go-resty v%s - https://github.com/go-resty/resty"
+	hdrUserAgentValue = "go-resty/%s (https://github.com/go-resty/resty)"
 	bufPool           = &sync.Pool{New: func() interface{} { return &bytes.Buffer{} }}
 )
 
@@ -87,6 +87,7 @@ type Client struct {
 	JSONMarshal           func(v interface{}) ([]byte, error)
 	JSONUnmarshal         func(data []byte, v interface{}) error
 
+	jsonEscapeHTML     bool
 	httpClient         *http.Client
 	setContentLength   bool
 	isHTTPMode         bool
@@ -102,6 +103,8 @@ type Client struct {
 	udBeforeRequest    []func(*Client, *Request) error
 	preReqHook         func(*Client, *Request) error
 	afterResponse      []func(*Client, *Response) error
+	requestLog         func(*RequestLog) error
+	responseLog        func(*ResponseLog) error
 }
 
 // User type is to hold an username and password information
@@ -308,8 +311,9 @@ func (c *Client) R() *Request {
 
 		client:          c,
 		multipartFiles:  []*File{},
-		multipartFields: []*multipartField{},
+		multipartFields: []*MultipartField{},
 		pathParams:      map[string]string{},
+		jsonEscapeHTML:  true,
 	}
 
 	return r
@@ -378,6 +382,26 @@ func (c *Client) SetDebug(d bool) *Client {
 //
 func (c *Client) SetDebugBodyLimit(sl int64) *Client {
 	c.debugBodySizeLimit = sl
+	return c
+}
+
+// OnRequestLog method used to set request log callback into resty. Registered callback gets
+// called before the resty actually logs the information.
+func (c *Client) OnRequestLog(rl func(*RequestLog) error) *Client {
+	if c.requestLog != nil {
+		c.Log.Printf("Overwriting an existing on-request-log callback from=%s to=%s", functionName(c.requestLog), functionName(rl))
+	}
+	c.requestLog = rl
+	return c
+}
+
+// OnResponseLog method used to set response log callback into resty. Registered callback gets
+// called before the resty actually logs the information.
+func (c *Client) OnResponseLog(rl func(*ResponseLog) error) *Client {
+	if c.responseLog != nil {
+		c.Log.Printf("Overwriting an existing on-response-log callback from=%s to=%s", functionName(c.responseLog), functionName(rl))
+	}
+	c.responseLog = rl
 	return c
 }
 
@@ -737,6 +761,14 @@ func (c *Client) SetPathParams(params map[string]string) *Client {
 	return c
 }
 
+// SetJSONEscapeHTML method is to enable/disable the HTML escape on JSON marshal.
+//
+// NOTE: This option only applicable to standard JSON Marshaller.
+func (c *Client) SetJSONEscapeHTML(b bool) *Client {
+	c.jsonEscapeHTML = b
+	return c
+}
+
 // IsProxySet method returns the true if proxy is set on client otherwise false.
 func (c *Client) IsProxySet() bool {
 	return c.proxyURL != nil
@@ -783,6 +815,10 @@ func (c *Client) execute(req *Request) (*Response, error) {
 		req.RawRequest.Host = hostHeader
 	}
 
+	if err = requestLogger(c, req); err != nil {
+		return nil, err
+	}
+
 	req.Time = time.Now()
 	resp, err := c.httpClient.Do(req.RawRequest)
 
@@ -800,8 +836,8 @@ func (c *Client) execute(req *Request) (*Response, error) {
 		defer closeq(resp.Body)
 		body := resp.Body
 
-		// GitHub #142
-		if strings.EqualFold(resp.Header.Get(hdrContentEncodingKey), "gzip") && resp.ContentLength > 0 {
+		// GitHub #142 & #187
+		if strings.EqualFold(resp.Header.Get(hdrContentEncodingKey), "gzip") && resp.ContentLength != 0 {
 			if _, ok := body.(*gzip.Reader); !ok {
 				body, err = gzip.NewReader(body)
 				if err != nil {
@@ -881,8 +917,8 @@ func (f *File) String() string {
 	return fmt.Sprintf("ParamName: %v; FileName: %v", f.ParamName, f.Name)
 }
 
-// multipartField represent custom data part for multipart request
-type multipartField struct {
+// MultipartField represent custom data part for multipart request
+type MultipartField struct {
 	Param       string
 	FileName    string
 	ContentType string

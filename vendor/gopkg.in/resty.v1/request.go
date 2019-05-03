@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2018 Jeevanandam M (jeeva@myjeeva.com), All rights reserved.
+// Copyright (c) 2015-2019 Jeevanandam M (jeeva@myjeeva.com), All rights reserved.
 // resty source code and usage is governed by a MIT style
 // license that can be found in the LICENSE file.
 
@@ -159,10 +159,12 @@ func (r *Request) SetMultiValueFormData(params url.Values) *Request {
 	return r
 }
 
-// SetBody method sets the request body for the request. It supports various realtime need easy.
-// We can say its quite handy or powerful. Supported request body data types is `string`, `[]byte`,
-// `struct` and `map`. Body value can be pointer or non-pointer. Automatic marshalling
-// for JSON and XML content type, if it is `struct` or `map`.
+// SetBody method sets the request body for the request. It supports various realtime needs as easy.
+// We can say its quite handy or powerful. Supported request body data types is `string`,
+// `[]byte`, `struct`, `map`, `slice` and `io.Reader`. Body value can be pointer or non-pointer.
+// Automatic marshalling for JSON and XML content type, if it is `struct`, `map`, or `slice`.
+//
+// Note: `io.Reader` is processed as bufferless mode while sending request.
 //
 // Example:
 //
@@ -242,7 +244,6 @@ func (r *Request) SetError(err interface{}) *Request {
 func (r *Request) SetFile(param, filePath string) *Request {
 	r.isMultiPart = true
 	r.FormData.Set("@"+param, filePath)
-
 	return r
 }
 
@@ -271,27 +272,47 @@ func (r *Request) SetFiles(files map[string]string) *Request {
 //
 func (r *Request) SetFileReader(param, fileName string, reader io.Reader) *Request {
 	r.isMultiPart = true
-
 	r.multipartFiles = append(r.multipartFiles, &File{
 		Name:      fileName,
 		ParamName: param,
 		Reader:    reader,
 	})
-
 	return r
 }
 
 // SetMultipartField method is to set custom data using io.Reader for multipart upload.
 func (r *Request) SetMultipartField(param, fileName, contentType string, reader io.Reader) *Request {
 	r.isMultiPart = true
-
-	r.multipartFields = append(r.multipartFields, &multipartField{
+	r.multipartFields = append(r.multipartFields, &MultipartField{
 		Param:       param,
 		FileName:    fileName,
 		ContentType: contentType,
 		Reader:      reader,
 	})
+	return r
+}
 
+// SetMultipartFields method is to set multiple data fields using io.Reader for multipart upload.
+// Example:
+// 	resty.R().SetMultipartFields(
+// 		&resty.MultipartField{
+//			Param:       "uploadManifest1",
+//			FileName:    "upload-file-1.json",
+//			ContentType: "application/json",
+//			Reader:      strings.NewReader(`{"input": {"name": "Uploaded document 1", "_filename" : ["file1.txt"]}}`),
+//		},
+//		&resty.MultipartField{
+//			Param:       "uploadManifest2",
+//			FileName:    "upload-file-2.json",
+//			ContentType: "application/json",
+//			Reader:      strings.NewReader(`{"input": {"name": "Uploaded document 2", "_filename" : ["file2.txt"]}}`),
+//		})
+//
+// If you have slice already, then simply call-
+// 	resty.R().SetMultipartFields(fields...)
+func (r *Request) SetMultipartFields(fields ...*MultipartField) *Request {
+	r.isMultiPart = true
+	r.multipartFields = append(r.multipartFields, fields...)
 	return r
 }
 
@@ -302,7 +323,6 @@ func (r *Request) SetMultipartField(param, fileName, contentType string, reader 
 //
 func (r *Request) SetContentLength(l bool) *Request {
 	r.setContentLength = true
-
 	return r
 }
 
@@ -393,6 +413,14 @@ func (r *Request) SetPathParams(params map[string]string) *Request {
 // when `Content-Type` response header is unavailable.
 func (r *Request) ExpectContentType(contentType string) *Request {
 	r.fallbackContentType = contentType
+	return r
+}
+
+// SetJSONEscapeHTML method is to enable/disable the HTML escape on JSON marshal.
+//
+// NOTE: This option only applicable to standard JSON Marshaller.
+func (r *Request) SetJSONEscapeHTML(b bool) *Request {
+	r.jsonEscapeHTML = b
 	return r
 }
 

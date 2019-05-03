@@ -36,21 +36,23 @@ type Instance struct {
 	CreatedStr string `json:"created"`
 	UpdatedStr string `json:"updated"`
 
-	ID         int             `json:"id"`
-	Created    *time.Time      `json:"-"`
-	Updated    *time.Time      `json:"-"`
-	Region     string          `json:"region"`
-	Alerts     *InstanceAlert  `json:"alerts"`
-	Backups    *InstanceBackup `json:"backups"`
-	Image      string          `json:"image"`
-	Group      string          `json:"group"`
-	IPv4       []*net.IP       `json:"ipv4"`
-	IPv6       string          `json:"ipv6"`
-	Label      string          `json:"label"`
-	Type       string          `json:"type"`
-	Status     InstanceStatus  `json:"status"`
-	Hypervisor string          `json:"hypervisor"`
-	Specs      *InstanceSpec   `json:"specs"`
+	ID              int             `json:"id"`
+	Created         *time.Time      `json:"-"`
+	Updated         *time.Time      `json:"-"`
+	Region          string          `json:"region"`
+	Alerts          *InstanceAlert  `json:"alerts"`
+	Backups         *InstanceBackup `json:"backups"`
+	Image           string          `json:"image"`
+	Group           string          `json:"group"`
+	IPv4            []*net.IP       `json:"ipv4"`
+	IPv6            string          `json:"ipv6"`
+	Label           string          `json:"label"`
+	Type            string          `json:"type"`
+	Status          InstanceStatus  `json:"status"`
+	Hypervisor      string          `json:"hypervisor"`
+	Specs           *InstanceSpec   `json:"specs"`
+	WatchdogEnabled bool            `json:"watchdog_enabled"`
+	Tags            []string        `json:"tags"`
 }
 
 // InstanceSpec represents a linode spec
@@ -94,6 +96,7 @@ type InstanceCreateOptions struct {
 	Image           string            `json:"image,omitempty"`
 	BackupsEnabled  bool              `json:"backups_enabled,omitempty"`
 	PrivateIP       bool              `json:"private_ip,omitempty"`
+	Tags            []string          `json:"tags,omitempty"`
 
 	// Creation fields that need to be set explicitly false, "", or 0 use pointers
 	SwapSize *int  `json:"swap_size,omitempty"`
@@ -107,6 +110,19 @@ type InstanceUpdateOptions struct {
 	Backups         *InstanceBackup `json:"backups,omitempty"`
 	Alerts          *InstanceAlert  `json:"alerts,omitempty"`
 	WatchdogEnabled *bool           `json:"watchdog_enabled,omitempty"`
+	Tags            *[]string       `json:"tags,omitempty"`
+}
+
+// GetUpdateOptions converts an Instance to InstanceUpdateOptions for use in UpdateInstance
+func (l *Instance) GetUpdateOptions() InstanceUpdateOptions {
+	return InstanceUpdateOptions{
+		Label:           l.Label,
+		Group:           l.Group,
+		Backups:         l.Backups,
+		Alerts:          l.Alerts,
+		WatchdogEnabled: &l.WatchdogEnabled,
+		Tags:            &l.Tags,
+	}
 }
 
 // InstanceCloneOptions is an options struct sent when Cloning an Instance

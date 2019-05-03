@@ -4,7 +4,7 @@
 // DNS API
 //
 // API for the DNS service. Use this API to manage DNS zones, records, and other DNS resources.
-// For more information, see Overview of the DNS Service (https://docs.us-phoenix-1.oraclecloud.com/iaas/Content/DNS/Concepts/dnszonemanagement.htm).
+// For more information, see Overview of the DNS Service (https://docs.cloud.oracle.com/iaas/Content/DNS/Concepts/dnszonemanagement.htm).
 //
 
 package dns

@@ -69,8 +69,17 @@ docs-serve: generate-dns
 docs-themes:
 	@make -C ./docs hugo-themes
 
-# Generate DNS
-.PHONY: generate-dns
+# DNS Documentation
+.PHONY: generate-dns validate-doc
 
 generate-dns:
 	go generate ./...
+
+validate-doc: generate-dns
+ifneq ($(shell git status --porcelain -- ./docs/ ./cmd/ 2>/dev/null),)
+	@echo 'The documentation must be regenerated, please use `make generate-dns`.'
+	@git status --porcelain -- ./docs/ ./cmd/ 2>/dev/null
+	@exit 2
+else
+	@echo 'All documentation changes are done the right way.'
+endif

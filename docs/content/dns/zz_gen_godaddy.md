@@ -29,8 +29,8 @@ _Please contribute by adding a CLI example._
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `GODADDY_API_KEY` | **TODO** |
-| `GODADDY_API_SECRET` | **TODO** |
+| `GODADDY_API_KEY` | API key |
+| `GODADDY_API_SECRET` | API secret |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).

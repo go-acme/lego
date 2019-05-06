@@ -54,8 +54,8 @@ Basic authentication (optional) can be set with some environment variables:
     HTTPREQ_MODE = "`RAW`, none"
     HTTPREQ_ENDPOINT = "The URL of the server"
   [Configuration.Additional]
-    HTTPREQ_USERNAME = "**TODO**"
-    HTTPREQ_PASSWORD = "**TODO**"
+    HTTPREQ_USERNAME = "Basic authentication username"
+    HTTPREQ_PASSWORD = "Basic authentication password"
     HTTPREQ_POLLING_INTERVAL = "Time between DNS propagation check"
     HTTPREQ_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
     HTTPREQ_HTTP_TIMEOUT = "API request timeout"

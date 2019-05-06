@@ -30,18 +30,18 @@ lego --dns exec --domains my.domain.com --email my@email.com run
 
 ## Base Configuration
 
-| Environment Variable Name | Description |
-|-----------------------|-------------|
-| `EXEC_MODE` | `RAW`, none |
-| `EXEC_PATH` | TODO |
+| Environment Variable Name | Description                           |
+|---------------------------|---------------------------------------|
+| `EXEC_MODE`               | `RAW`, none                           |
+| `EXEC_PATH`               | The path of the the external program. |
 
 
 ## Additional Configuration
 
-| Environment Variable Name | Description |
-|--------------------------------|-------------|
-| `EXEC_POLLING_INTERVAL` | Time between DNS propagation check |
-| `EXEC_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
+| Environment Variable Name  | Description                               |
+|----------------------------|-------------------------------------------|
+| `EXEC_POLLING_INTERVAL`    | Time between DNS propagation check.       |
+| `EXEC_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation. |
 
 
 ## Description

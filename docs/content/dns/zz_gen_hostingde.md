@@ -29,8 +29,8 @@ _Please contribute by adding a CLI example._
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `HOSTINGDE_API_KEY` | **TODO** |
-| `HOSTINGDE_ZONE_NAME` | **TODO** |
+| `HOSTINGDE_API_KEY` | API key |
+| `HOSTINGDE_ZONE_NAME` | Zone name in ACE format |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).

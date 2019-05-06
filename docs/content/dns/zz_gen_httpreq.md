@@ -44,10 +44,10 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
 | `HTTPREQ_HTTP_TIMEOUT` | API request timeout |
-| `HTTPREQ_PASSWORD` | **TODO** |
+| `HTTPREQ_PASSWORD` | Basic authentication password |
 | `HTTPREQ_POLLING_INTERVAL` | Time between DNS propagation check |
 | `HTTPREQ_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
-| `HTTPREQ_USERNAME` | **TODO** |
+| `HTTPREQ_USERNAME` | Basic authentication username |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).

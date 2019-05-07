@@ -78,9 +78,14 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-// Present creates a TXT record to fulfill the dns-01 challenge
+// CleanUp gets the TXT record and calls to RemoveRecord to remove it 
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	return d.CreateRecord(fqdn, value)
+}
+
+// Present creates a TXT record to fulfill the dns-01 challenge
+func (d *DNSProvider) CreateRecord(fqdn, value string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
@@ -99,7 +104,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	// get all DNS entries
 	info, err := transipdomain.GetInfo(d.client, domainName)
 	if err != nil {
-		return fmt.Errorf("transip: error for %s in Present: %v", domain, err)
+		return fmt.Errorf("transip: error for %s in Present: %v", fqdn, err)
 	}
 
 	// include the new DNS entry
@@ -118,10 +123,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	return nil
 }
 
-// CleanUp removes the TXT record matching the specified parameters
+// CleanUp gets the TXT record and calls to RemoveRecord to remove it 
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	return d.RemoveRecord(fqdn, value)
+}
 
+// RemoveRecord removes the TXT record matching the specified parameters
+func (d *DNSProvider) RemoveRecord(fqdn, value string) error {
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
 		return err

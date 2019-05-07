@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/xenolf/lego/challenge/dns01"
-	"github.com/xenolf/lego/platform/config/env"
-	"github.com/xenolf/lego/providers/dns/conoha/internal"
+	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/platform/config/env"
+	"github.com/go-acme/lego/providers/dns/conoha/internal"
 )
 
 // Config is used to configure the creation of the DNSProvider

@@ -9,17 +9,18 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-acme/lego/certcrypto"
+	"github.com/go-acme/lego/lego"
+	"github.com/go-acme/lego/log"
+	"github.com/go-acme/lego/registration"
 	"github.com/urfave/cli"
-	"github.com/xenolf/lego/certcrypto"
-	"github.com/xenolf/lego/lego"
-	"github.com/xenolf/lego/log"
-	"github.com/xenolf/lego/registration"
 )
 
 const filePerm os.FileMode = 0600
 
 func setup(ctx *cli.Context, accountsStorage *AccountsStorage) (*Account, *lego.Client) {
-	privateKey := accountsStorage.GetPrivateKey()
+	keyType := getKeyType(ctx)
+	privateKey := accountsStorage.GetPrivateKey(keyType)
 
 	var account *Account
 	if accountsStorage.ExistsAccountFilePath() {
@@ -28,17 +29,17 @@ func setup(ctx *cli.Context, accountsStorage *AccountsStorage) (*Account, *lego.
 		account = &Account{Email: accountsStorage.GetUserID(), key: privateKey}
 	}
 
-	client := newClient(ctx, account)
+	client := newClient(ctx, account, keyType)
 
 	return account, client
 }
 
-func newClient(ctx *cli.Context, acc registration.User) *lego.Client {
+func newClient(ctx *cli.Context, acc registration.User, keyType certcrypto.KeyType) *lego.Client {
 	config := lego.NewConfig(acc)
 	config.CADirURL = ctx.GlobalString("server")
 
 	config.Certificate = lego.CertificateConfig{
-		KeyType: getKeyType(ctx),
+		KeyType: keyType,
 		Timeout: time.Duration(ctx.GlobalInt("cert.timeout")) * time.Second,
 	}
 	config.UserAgent = fmt.Sprintf("lego-cli/%s", ctx.App.Version)
@@ -51,8 +52,6 @@ func newClient(ctx *cli.Context, acc registration.User) *lego.Client {
 	if err != nil {
 		log.Fatalf("Could not create client: %v", err)
 	}
-
-	setupChallenges(ctx, client)
 
 	if client.GetExternalAccountRequired() && !ctx.GlobalIsSet("eab") {
 		log.Fatal("Server requires External Account Binding. Use --eab with --kid and --hmac.")

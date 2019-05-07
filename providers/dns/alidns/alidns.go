@@ -11,8 +11,8 @@ import (
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth/credentials"
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/alidns"
-	"github.com/xenolf/lego/challenge/dns01"
-	"github.com/xenolf/lego/platform/config/env"
+	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/platform/config/env"
 )
 
 const defaultRegionID = "cn-hangzhou"
@@ -150,7 +150,7 @@ func (d *DNSProvider) getHostedZone(domain string) (string, string, error) {
 
 		domains = append(domains, response.Domains.Domain...)
 
-		if response.PageNumber >= response.PageSize {
+		if response.PageNumber*response.PageSize >= response.TotalCount {
 			break
 		}
 

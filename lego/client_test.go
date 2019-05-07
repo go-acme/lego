@@ -6,10 +6,10 @@ import (
 	"crypto/rsa"
 	"testing"
 
+	"github.com/go-acme/lego/platform/tester"
+	"github.com/go-acme/lego/registration"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/platform/tester"
-	"github.com/xenolf/lego/registration"
 )
 
 func TestNewClient(t *testing.T) {

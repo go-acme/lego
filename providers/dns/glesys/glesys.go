@@ -9,11 +9,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/xenolf/lego/challenge/dns01"
-	"github.com/xenolf/lego/platform/config/env"
+	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/platform/config/env"
 )
-
-// GleSYS API reference: https://github.com/GleSYS/API/wiki/API-Documentation
 
 const (
 	// defaultBaseURL is the GleSYS API endpoint used by Present and CleanUp.

@@ -1,0 +1,19 @@
+Name = "Go Daddy"
+Description = ''''''
+URL = "https://godaddy.com"
+Code = "godaddy"
+Since = "v0.5.0"
+
+[Configuration]
+  [Configuration.Credentials]
+    GODADDY_API_KEY = "API key"
+    GODADDY_API_SECRET = "API secret"
+  [Configuration.Additional]
+    GODADDY_POLLING_INTERVAL = "Time between DNS propagation check"
+    GODADDY_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
+    GODADDY_TTL = "The TTL of the TXT record used for the DNS challenge"
+    GODADDY_HTTP_TIMEOUT = "API request timeout"
+    GODADDY_SEQUENCE_INTERVAL = "Interval between iteration"
+
+[Links]
+  API = "https://developer.godaddy.com/doc/endpoint/domains"

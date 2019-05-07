@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
 // Domain represents domain name.
@@ -65,7 +66,9 @@ func NewClient(opts ClientOpts) *Client {
 	}
 }
 
-// GetDomainByName gets Domain object by its name.
+// GetDomainByName gets Domain object by its name. If `domainName` level > 2 and there is
+// no such domain on the account - it'll recursively search for the first
+// which is exists in Vscale Domains API.
 func (c *Client) GetDomainByName(domainName string) (*Domain, error) {
 	uri := fmt.Sprintf("/%s", domainName)
 	req, err := c.newRequest(http.MethodGet, uri, nil)
@@ -74,9 +77,16 @@ func (c *Client) GetDomainByName(domainName string) (*Domain, error) {
 	}
 
 	domain := &Domain{}
-	_, err = c.do(req, domain)
+	resp, err := c.do(req, domain)
 	if err != nil {
-		return nil, err
+		switch {
+		case resp.StatusCode == http.StatusNotFound && strings.Count(domainName, ".") > 1:
+			// Look up for the next sub domain
+			subIndex := strings.Index(domainName, ".")
+			return c.GetDomainByName(domainName[subIndex+1:])
+		default:
+			return nil, err
+		}
 	}
 
 	return domain, nil

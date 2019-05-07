@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/xenolf/lego/challenge/dns01"
-	"github.com/xenolf/lego/platform/config/env"
-	"github.com/xenolf/lego/providers/dns/cloudxns/internal"
+	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/platform/config/env"
+	"github.com/go-acme/lego/providers/dns/cloudxns/internal"
 )
 
 // Config is used to configure the creation of the DNSProvider
@@ -29,7 +29,7 @@ func NewDefaultConfig() *Config {
 		PollingInterval:    env.GetOrDefaultSecond("CLOUDXNS_POLLING_INTERVAL", dns01.DefaultPollingInterval),
 		TTL:                env.GetOrDefaultInt("CLOUDXNS_TTL", dns01.DefaultTTL),
 		HTTPClient: &http.Client{
-			Timeout: time.Second * time.Duration(env.GetOrDefaultInt("CLOUDXNS_HTTP_TIMEOUT", 30)),
+			Timeout: env.GetOrDefaultSecond("CLOUDXNS_HTTP_TIMEOUT", 30*time.Second),
 		},
 	}
 }

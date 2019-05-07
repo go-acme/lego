@@ -8,9 +8,9 @@ import (
 	"os/exec"
 	"time"
 
-	"github.com/xenolf/lego/challenge/dns01"
-	"github.com/xenolf/lego/log"
-	"github.com/xenolf/lego/platform/config/env"
+	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/log"
+	"github.com/go-acme/lego/platform/config/env"
 )
 
 // Config Provider configuration.
@@ -104,4 +104,10 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
+}
+
+// Sequential All DNS challenges for this provider will be resolved sequentially.
+// Returns the interval between each iteration.
+func (d *DNSProvider) Sequential() time.Duration {
+	return d.config.PropagationTimeout
 }

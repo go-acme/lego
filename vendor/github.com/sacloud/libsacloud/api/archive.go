@@ -39,6 +39,7 @@ var (
 	archiveLatestStableWindows2016SQLServer2017Standard    = []string{"os-windows", "distro-ver-2016", "windows-sqlserver", "sqlserver-2017", "edition-standard"}
 	archiveLatestStableWindows2016SQLServerStandardAll     = []string{"os-windows", "distro-ver-2016", "windows-sqlserver", "sqlserver-2016", "edition-standard", "windows-rds", "with-office"}
 	archiveLatestStableWindows2016SQLServer2017StandardAll = []string{"os-windows", "distro-ver-2016", "windows-sqlserver", "sqlserver-2017", "edition-standard", "windows-rds", "with-office"}
+	archiveLatestStableWindows2019Tags                     = []string{"os-windows", "distro-ver-2019"}
 )
 
 // NewArchiveAPI アーカイブAPI作成
@@ -358,6 +359,13 @@ func (api *ArchiveAPI) FindLatestStableWindows2016SQLServerStandardAll() (*saclo
 func (api *ArchiveAPI) FindLatestStableWindows2016SQLServer2017StandardAll() (*sacloud.Archive, error) {
 	return api.findByOSTags(archiveLatestStableWindows2016SQLServer2017StandardAll, map[string]interface{}{
 		"Name": "Windows Server 2016 for MS SQL 2017(Std) with RDS / MS Office",
+	})
+}
+
+// FindLatestStableWindows2019 安定版最新のWindows2019パブリックアーカイブを取得
+func (api *ArchiveAPI) FindLatestStableWindows2019() (*sacloud.Archive, error) {
+	return api.findByOSTags(archiveLatestStableWindows2019Tags, map[string]interface{}{
+		"Name": "Windows Server 2019 Datacenter Edition",
 	})
 }
 

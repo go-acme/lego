@@ -3,10 +3,10 @@ package http01
 import (
 	"fmt"
 
-	"github.com/xenolf/lego/acme"
-	"github.com/xenolf/lego/acme/api"
-	"github.com/xenolf/lego/challenge"
-	"github.com/xenolf/lego/log"
+	"github.com/go-acme/lego/acme"
+	"github.com/go-acme/lego/acme/api"
+	"github.com/go-acme/lego/challenge"
+	"github.com/go-acme/lego/log"
 )
 
 type ValidateFunc func(core *api.Core, domain string, chlng acme.Challenge) error
@@ -61,5 +61,5 @@ func (c *Challenge) Solve(authz acme.Authorization) error {
 	}()
 
 	chlng.KeyAuthorization = keyAuth
-	return c.validate(c.core, authz.Identifier.Value, chlng)
+	return c.validate(c.core, domain, chlng)
 }

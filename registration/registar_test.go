@@ -6,18 +6,18 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/go-acme/lego/acme"
+	"github.com/go-acme/lego/acme/api"
+	"github.com/go-acme/lego/platform/tester"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/acme"
-	"github.com/xenolf/lego/acme/api"
-	"github.com/xenolf/lego/platform/tester"
 )
 
 func TestRegistrar_ResolveAccountByKey(t *testing.T) {
 	mux, apiURL, tearDown := tester.SetupFakeAPI()
 	defer tearDown()
 
-	mux.HandleFunc("/account", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/account", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Location", apiURL+"/account_recovery")
 		_, err := w.Write([]byte("{}"))
 		if err != nil {
@@ -25,7 +25,7 @@ func TestRegistrar_ResolveAccountByKey(t *testing.T) {
 		}
 	})
 
-	mux.HandleFunc("/account_recovery", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/account_recovery", func(w http.ResponseWriter, _ *http.Request) {
 		err := tester.WriteJSONResponse(w, acme.Account{
 			Status: "valid",
 		})

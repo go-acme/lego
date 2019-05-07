@@ -6,14 +6,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/xenolf/lego/acme"
-	"github.com/xenolf/lego/acme/api/internal/nonces"
-	"github.com/xenolf/lego/acme/api/internal/sender"
-	"github.com/xenolf/lego/platform/tester"
+	"github.com/go-acme/lego/acme"
+	"github.com/go-acme/lego/acme/api/internal/nonces"
+	"github.com/go-acme/lego/acme/api/internal/sender"
+	"github.com/go-acme/lego/platform/tester"
 )
 
 func TestNotHoldingLockWhileMakingHTTPRequests(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		time.Sleep(250 * time.Millisecond)
 		w.Header().Add("Replay-Nonce", "12345")
 		w.Header().Add("Retry-After", "0")

@@ -138,6 +138,36 @@ var (
 // EDiskConnection ディスク接続方法
 type EDiskConnection string
 
+// EUpstreamNetworkType 上流ネットワーク種別
+type EUpstreamNetworkType string
+
+// String EUpstreamNetworkTypeの文字列表現
+func (t EUpstreamNetworkType) String() string {
+	return string(t)
+}
+
+var (
+	// EUpstreamNetworkUnknown 不明
+	EUpstreamNetworkUnknown = EUpstreamNetworkType("unknown")
+	// EUpstreamNetworkShared 共有セグメント
+	EUpstreamNetworkShared = EUpstreamNetworkType("shared")
+	// EUpstreamNetworkSwitch スイッチ(非スイッチ+ルータ)
+	EUpstreamNetworkSwitch = EUpstreamNetworkType("switch")
+	// EUpstreamNetworkRouter ルータ(スイッチ+ルータのスイッチ)
+	EUpstreamNetworkRouter = EUpstreamNetworkType("router")
+	// EUpstreamNetworkNone 接続なし
+	EUpstreamNetworkNone = EUpstreamNetworkType("none")
+
+	// UpstreamNetworks 文字列とEUpstreamNetworkTypeのマッピング
+	UpstreamNetworks = map[string]EUpstreamNetworkType{
+		"unknown": EUpstreamNetworkUnknown,
+		"shared":  EUpstreamNetworkShared,
+		"switch":  EUpstreamNetworkSwitch,
+		"router":  EUpstreamNetworkRouter,
+		"none":    EUpstreamNetworkNone,
+	}
+)
+
 // SakuraCloudResources さくらのクラウド上のリソース種別一覧
 type SakuraCloudResources struct {
 	Server          *Server             `json:",omitempty"`     // サーバー

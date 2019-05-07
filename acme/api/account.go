@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/xenolf/lego/acme"
+	"github.com/go-acme/lego/acme"
 )
 
 type AccountService service

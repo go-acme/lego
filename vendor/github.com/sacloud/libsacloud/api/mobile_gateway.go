@@ -473,3 +473,8 @@ func (api *MobileGatewayAPI) GetTrafficStatus(id int64) (*sacloud.TrafficStatus,
 	}
 	return res.TrafficStatus, nil
 }
+
+// MonitorBy 指定位置のインターフェースのアクティビティーモニター取得
+func (api *MobileGatewayAPI) MonitorBy(id int64, nicIndex int, body *sacloud.ResourceMonitorRequest) (*sacloud.MonitorValues, error) {
+	return api.baseAPI.applianceMonitorBy(id, "interface", nicIndex, body)
+}

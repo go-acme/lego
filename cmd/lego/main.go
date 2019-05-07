@@ -8,9 +8,9 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/go-acme/lego/cmd"
+	"github.com/go-acme/lego/log"
 	"github.com/urfave/cli"
-	"github.com/xenolf/lego/cmd"
-	"github.com/xenolf/lego/log"
 )
 
 var (

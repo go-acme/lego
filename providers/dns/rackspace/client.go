@@ -7,7 +7,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/xenolf/lego/challenge/dns01"
+	"github.com/go-acme/lego/challenge/dns01"
 )
 
 // APIKeyCredentials API credential

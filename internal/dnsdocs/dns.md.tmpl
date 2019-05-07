@@ -1,0 +1,78 @@
+---
+title: "{{ .Name }}"
+date: 2019-03-03T16:39:46+01:00
+draft: false
+slug: {{ .Code }}
+---
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+<!-- {{ .GeneratedFrom }} -->
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+Since: {{ .Since }}
+{{if .Description -}}
+{{ .Description }}
+{{else}}
+Configuration for [{{ .Name }}]({{ .URL }}).
+{{end}}
+
+<!--more-->
+
+- Code: `{{ .Code }}`
+{{if .Example }}
+Here is an example bash command using the {{ .Name }} provider:
+
+```bash
+{{ .Example -}}
+```
+{{else}}
+{{ "{{" }}% notice note %}}
+_Please contribute by adding a CLI example._
+{{ "{{" }}% /notice %}}
+{{end}}
+
+{{if .Configuration }}
+{{if .Configuration.Credentials }}
+## Credentials
+
+| Environment Variable Name | Description |
+|-----------------------|-------------|
+{{- range $k, $v := .Configuration.Credentials }}
+| `{{$k}}` | {{$v}} |
+{{- end}}
+
+The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
+More information [here](/lego/dns/#configuration-and-credentials).
+{{- end}}
+
+{{if .Configuration.Additional }}
+## Additional Configuration
+
+| Environment Variable Name | Description |
+|--------------------------------|-------------|
+{{- range $k, $v := .Configuration.Additional }}
+| `{{$k}}` | {{$v}} |
+{{- end}}
+
+The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
+More information [here](/lego/dns/#configuration-and-credentials).
+{{- end}}
+{{- end}}
+
+{{ .Additional }}
+
+{{if .Links }}
+## More information
+
+{{if .Links.API -}}
+- [API documentation]({{ .Links.API }})
+{{- end}}
+{{- if .Links.GoClient }}
+- [Go client]({{ .Links.GoClient }})
+{{- end}}
+
+{{- end}}
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+<!-- {{ .GeneratedFrom }} -->
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

@@ -6,10 +6,9 @@ import (
 	"crypto/elliptic"
 	"crypto/rsa"
 	"encoding/base64"
-	"errors"
 	"fmt"
 
-	"github.com/xenolf/lego/acme/api/internal/nonces"
+	"github.com/go-acme/lego/acme/api/internal/nonces"
 	jose "gopkg.in/square/go-jose.v2"
 )
 
@@ -118,9 +117,6 @@ func (j *JWS) GetKeyAuthorization(token string) (string, error) {
 
 	// Generate the Key Authorization for the challenge
 	jwk := &jose.JSONWebKey{Key: publicKey}
-	if jwk == nil {
-		return "", errors.New("could not generate JWK from key")
-	}
 
 	thumbBytes, err := jwk.Thumbprint(crypto.SHA256)
 	if err != nil {

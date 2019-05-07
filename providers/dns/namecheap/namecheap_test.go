@@ -208,10 +208,10 @@ func mockServer(tc *testCase, t *testing.T) http.Handler {
 			case "namecheap.domains.dns.getHosts":
 				assertHdr(tc, t, &values)
 				w.WriteHeader(http.StatusOK)
-				fmt.Fprintf(w, tc.getHostsResponse)
+				fmt.Fprint(w, tc.getHostsResponse)
 			case "namecheap.domains.getTldList":
 				w.WriteHeader(http.StatusOK)
-				fmt.Fprintf(w, responseGetTlds)
+				fmt.Fprint(w, responseGetTlds)
 			default:
 				t.Errorf("Unexpected GET command: %s", cmd)
 			}

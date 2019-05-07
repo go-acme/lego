@@ -9,8 +9,8 @@ import (
 
 	configdns "github.com/akamai/AkamaiOPEN-edgegrid-golang/configdns-v1"
 	"github.com/akamai/AkamaiOPEN-edgegrid-golang/edgegrid"
-	"github.com/xenolf/lego/challenge/dns01"
-	"github.com/xenolf/lego/platform/config/env"
+	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/platform/config/env"
 )
 
 // Config is used to configure the creation of the DNSProvider
@@ -89,15 +89,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	_ = record.SetField("target", value)
 	_ = record.SetField("active", true)
 
-	existingRecord := d.findExistingRecord(zone, recordName)
-
-	if existingRecord != nil {
-		if reflect.DeepEqual(existingRecord.ToMap(), record.ToMap()) {
+	for _, r := range zone.Zone.Txt {
+		if r != nil && reflect.DeepEqual(r.ToMap(), record.ToMap()) {
 			return nil
-		}
-		err = zone.RemoveRecord(existingRecord)
-		if err != nil {
-			return fmt.Errorf("fastdns: %v", err)
 		}
 	}
 
@@ -119,13 +113,17 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("fastdns: %v", err)
 	}
 
-	existingRecord := d.findExistingRecord(zone, recordName)
-
-	if existingRecord != nil {
-		err := zone.RemoveRecord(existingRecord)
-		if err != nil {
-			return fmt.Errorf("fastdns: %v", err)
+	var removed bool
+	for _, r := range zone.Zone.Txt {
+		if r != nil && r.Name == recordName {
+			if zone.RemoveRecord(r) != nil {
+				return fmt.Errorf("fastdns: %v", err)
+			}
+			removed = true
 		}
+	}
+
+	if removed {
 		return zone.Save()
 	}
 
@@ -148,16 +146,6 @@ func (d *DNSProvider) findZoneAndRecordName(fqdn, domain string) (string, string
 	name = name[:len(name)-len("."+zone)]
 
 	return zone, name, nil
-}
-
-func (d *DNSProvider) findExistingRecord(zone *configdns.Zone, recordName string) *configdns.TxtRecord {
-	for _, r := range zone.Zone.Txt {
-		if r.Name == recordName {
-			return r
-		}
-	}
-
-	return nil
 }
 
 func (d *DNSProvider) createRecord(zone *configdns.Zone, record *configdns.TxtRecord) error {

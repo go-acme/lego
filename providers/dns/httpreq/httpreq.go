@@ -10,10 +10,11 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path"
 	"time"
 
-	"github.com/xenolf/lego/challenge/dns01"
-	"github.com/xenolf/lego/platform/config/env"
+	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/platform/config/env"
 )
 
 type message struct {
@@ -158,7 +159,8 @@ func (d *DNSProvider) doPost(uri string, msg interface{}) error {
 		return err
 	}
 
-	endpoint, err := d.config.Endpoint.Parse(uri)
+	newURI := path.Join(d.config.Endpoint.EscapedPath(), uri)
+	endpoint, err := d.config.Endpoint.Parse(newURI)
 	if err != nil {
 		return err
 	}

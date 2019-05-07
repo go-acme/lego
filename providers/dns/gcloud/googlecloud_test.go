@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-acme/lego/platform/tester"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/platform/tester"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/dns/v1"
@@ -19,7 +19,8 @@ import (
 var envTest = tester.NewEnvTest(
 	"GCE_PROJECT",
 	"GCE_SERVICE_ACCOUNT_FILE",
-	"GOOGLE_APPLICATION_CREDENTIALS").
+	"GOOGLE_APPLICATION_CREDENTIALS",
+	"GCE_SERVICE_ACCOUNT").
 	WithDomain("GCE_DOMAIN").
 	WithLiveTestExtra(func() bool {
 		_, err := google.DefaultClient(context.Background(), dns.NdevClouddnsReadwriteScope)
@@ -51,10 +52,17 @@ func TestNewDNSProvider(t *testing.T) {
 			expected: "googlecloud: project name missing",
 		},
 		{
-			desc: "success",
+			desc: "success key file",
 			envVars: map[string]string{
 				"GCE_PROJECT":              "",
 				"GCE_SERVICE_ACCOUNT_FILE": "fixtures/gce_account_service_file.json",
+			},
+		},
+		{
+			desc: "success key",
+			envVars: map[string]string{
+				"GCE_PROJECT":         "",
+				"GCE_SERVICE_ACCOUNT": `{"project_id": "A","type": "service_account","client_email": "foo@bar.com","private_key_id": "pki","private_key": "pk","token_uri": "/token","client_secret": "secret","client_id": "C","refresh_token": "D"}`,
 			},
 		},
 	}
@@ -131,7 +139,7 @@ func TestPresentNoExistingRR(t *testing.T) {
 
 		mzlrs := &dns.ManagedZonesListResponse{
 			ManagedZones: []*dns.ManagedZone{
-				{Name: "test"},
+				{Name: "test", Visibility: "public"},
 			},
 		}
 
@@ -211,7 +219,7 @@ func TestPresentWithExistingRR(t *testing.T) {
 
 		mzlrs := &dns.ManagedZonesListResponse{
 			ManagedZones: []*dns.ManagedZone{
-				{Name: "test"},
+				{Name: "test", Visibility: "public"},
 			},
 		}
 
@@ -311,7 +319,7 @@ func TestPresentSkipExistingRR(t *testing.T) {
 
 		mzlrs := &dns.ManagedZonesListResponse{
 			ManagedZones: []*dns.ManagedZone{
-				{Name: "test"},
+				{Name: "test", Visibility: "public"},
 			},
 		}
 

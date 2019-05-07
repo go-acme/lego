@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/xenolf/lego/challenge/http01"
+	"github.com/go-acme/lego/challenge/http01"
 )
 
 // HTTPProvider implements ChallengeProvider for `http-01` challenge

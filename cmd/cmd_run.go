@@ -6,11 +6,11 @@ import (
 	"os"
 	"strings"
 
+	"github.com/go-acme/lego/certificate"
+	"github.com/go-acme/lego/lego"
+	"github.com/go-acme/lego/log"
+	"github.com/go-acme/lego/registration"
 	"github.com/urfave/cli"
-	"github.com/xenolf/lego/certificate"
-	"github.com/xenolf/lego/lego"
-	"github.com/xenolf/lego/log"
-	"github.com/xenolf/lego/registration"
 )
 
 func createRun() cli.Command {
@@ -47,6 +47,7 @@ func run(ctx *cli.Context) error {
 	accountsStorage := NewAccountsStorage(ctx)
 
 	account, client := setup(ctx, accountsStorage)
+	setupChallenges(ctx, client)
 
 	if account.Registration == nil {
 		reg, err := register(ctx, client)
@@ -106,7 +107,7 @@ func handleTOS(ctx *cli.Context, client *lego.Client) bool {
 		case "", "y", "Y":
 			return true
 		case "n", "N":
-			log.Fatal("You did not accept the TOS. Unable to proceed.")
+			return false
 		default:
 			fmt.Println("Your input was invalid. Please answer with one of Y/y, n/N or by pressing enter.")
 		}

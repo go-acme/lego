@@ -138,7 +138,7 @@ func (api *baseAPI) filterBy(key string, value interface{}, multiple bool) *base
 			if f, ok := state.Filter[key]; ok {
 				if s, ok := f.(string); ok && s != "" {
 					if v, ok := value.(string); ok {
-						state.Filter[key] = fmt.Sprintf("%s %s", s, v)
+						state.Filter[key] = fmt.Sprintf("%s%%20%s", s, v)
 						return
 					}
 				}

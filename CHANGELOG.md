@@ -1,5 +1,86 @@
 # Changelog
 
+## [v2.5.0] - 2019-04-17
+
+### Added:
+- **[cli]** Adds renew hook
+- **[dnsprovider]** Adds 'Since' to DNS providers documentation
+
+### Changed:
+- **[dnsprovider]** gcloud: use public DNS zones
+- **[dnsprovider]** route53: enhance documentation.
+
+### Fixed:
+- **[dnsprovider]** cloudns: fix TTL and status validation
+- **[dnsprovider]** sakuracloud: supports concurrent update
+- **[dnsprovider]** Disable authz when solve fail.
+- Add tzdata to the Docker image.
+
+## [v2.4.0] - 2019-03-25
+
+- Migrate from xenolf/lego to go-acme/lego.
+
+### Added:
+- **[dnsprovider]** Add DNS Provider for Domain Offensive (do.de)
+- **[dnsprovider]** Adds information about '_FILE' suffix.
+
+### Fixed:
+- **[cli,dnsprovider]** Add 'manual' provider to the output of dnshelp
+- **[dnsprovider]** hostingde: Use provided ZoneName instead of domain
+- **[dnsprovider]** pdns: fix wildcard with SANs
+
+## [v2.3.0] - 2019-03-11
+
+### Added:
+- **[dnsprovider]** Add DNS Provider for ClouDNS.net
+- **[dnsprovider]** Add DNS Provider for Oracle Cloud
+
+### Changed:
+- **[cli]** Adds log when no renewal.
+- **[dnsprovider,lib]** Add a mechanism to wrap a PreCheckFunc
+- **[dnsprovider]** oraclecloud: better way to get private key.
+- **[dnsprovider]** exoscale: update library
+
+### Fixed:
+- **[dnsprovider]** OVH: Refresh zone after deleting challenge record
+- **[dnsprovider]** oraclecloud: ttl config and timeout 
+- **[dnsprovider]** hostingde: fix client fails if customer has no access to dns-groups
+- **[dnsprovider]** vscale: getting sub-domain
+- **[dnsprovider]** selectel: getting sub-domain
+- **[dnsprovider]** vscale: fix TXT records clean up
+- **[dnsprovider]** selectel: fix TXT records clean up
+
+## [v2.2.0] - 2019-02-08
+
+### Added:
+- **[dnsprovider]** Add support for Openstack Designate as a DNS provider
+- **[dnsprovider]** gcloud: Option to specify gcloud service account json by env as string
+- **[experimental feature]** Resolve CNAME when creating dns-01 challenge. To enable: set `LEGO_EXPERIMENTAL_CNAME_SUPPORT` to `true`.
+ 
+### Changed:
+- **[cli]** Applies Let’s Encrypt’s recommendation about renew. The option `--days` of the command `renew` has a new default value (`30`)
+- **[lib]** Uses a jittered exponential backoff
+
+### Fixed:
+- **[cli]** CLI and key type.
+- **[dnsprovider]** httpreq: Endpoint with path.
+- **[dnsprovider]** fastdns: Do not overwrite existing TXT records
+- Log wildcard domain correctly in validation
+
+## [v2.1.0] - 2019-01-24
+
+### Added:
+- **[dnsprovider]** Add support for zone.ee as a DNS provider.
+
+### Changed:
+- **[dnsprovider]** nifcloud: Change DNS base url.
+- **[dnsprovider]** gcloud: More detailed information about Google Cloud DNS.
+
+### Fixed:
+- **[lib]** fix: OCSP, set HTTP client.
+- **[dnsprovider]** alicloud: fix pagination.
+- **[dnsprovider]** namecheap: fix panic.
+
 ## [v2.0.0] - 2019-01-09
 
 ### Added:
@@ -31,6 +112,7 @@
 - **[cli]** `--tls`: enable TLS challenge **important**
 - **[cli]** `--tls.port`:  previously named `--tls`
 - **[cli]** `--dns.resolvers`: previously named `--dns-resolvers`
+- **[cli]** the option `--days` of the command `renew` has default value (`15`)
 - **[dnsprovider]** gcloud: Use GCE_PROJECT for project always, if specified
 
 ### Removed:
@@ -284,8 +366,8 @@
 ## [0.1.0] - 2015-12-03
 - Initial release
 
-[0.3.1]: https://github.com/xenolf/lego/compare/v0.3.0...v0.3.1
-[0.3.0]: https://github.com/xenolf/lego/compare/v0.2.0...v0.3.0
-[0.2.0]: https://github.com/xenolf/lego/compare/v0.1.1...v0.2.0
-[0.1.1]: https://github.com/xenolf/lego/compare/v0.1.0...v0.1.1
-[0.1.0]: https://github.com/xenolf/lego/tree/v0.1.0
+[0.3.1]: https://github.com/go-acme/lego/compare/v0.3.0...v0.3.1
+[0.3.0]: https://github.com/go-acme/lego/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/go-acme/lego/compare/v0.1.1...v0.2.0
+[0.1.1]: https://github.com/go-acme/lego/compare/v0.1.0...v0.1.1
+[0.1.0]: https://github.com/go-acme/lego/tree/v0.1.0

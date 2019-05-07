@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-acme/lego/platform/tester"
 	"github.com/stretchr/testify/require"
-	"github.com/xenolf/lego/platform/tester"
 )
 
 var envTest = tester.NewEnvTest(
@@ -111,7 +111,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			tenantID:       "C",
 			subscriptionID: "",
 			resourceGroup:  "",
-			handler: func(w http.ResponseWriter, r *http.Request) {
+			handler: func(w http.ResponseWriter, _ *http.Request) {
 				_, err := w.Write([]byte("foo"))
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)

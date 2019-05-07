@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/smueller18/goinwx"
-	"github.com/xenolf/lego/challenge/dns01"
-	"github.com/xenolf/lego/log"
-	"github.com/xenolf/lego/platform/config/env"
+	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/log"
+	"github.com/go-acme/lego/platform/config/env"
+	"github.com/nrdcg/goinwx"
 )
 
 // Config is used to configure the creation of the DNSProvider
@@ -99,7 +99,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Name:    dns01.UnFqdn(fqdn),
 		Type:    "TXT",
 		Content: value,
-		Ttl:     d.config.TTL,
+		TTL:     d.config.TTL,
 	}
 
 	_, err = d.client.Nameservers.CreateRecord(request)
@@ -150,7 +150,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	var lastErr error
 	for _, record := range response.Records {
-		err = d.client.Nameservers.DeleteRecord(record.Id)
+		err = d.client.Nameservers.DeleteRecord(record.ID)
 		if err != nil {
 			lastErr = fmt.Errorf("inwx: %v", err)
 		}

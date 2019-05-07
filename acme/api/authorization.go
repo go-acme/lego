@@ -3,7 +3,7 @@ package api
 import (
 	"errors"
 
-	"github.com/xenolf/lego/acme"
+	"github.com/go-acme/lego/acme"
 )
 
 type AuthorizationService service

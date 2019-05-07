@@ -5,16 +5,16 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-acme/lego/challenge"
+	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/challenge/http01"
+	"github.com/go-acme/lego/challenge/tlsalpn01"
+	"github.com/go-acme/lego/lego"
+	"github.com/go-acme/lego/log"
+	"github.com/go-acme/lego/providers/dns"
+	"github.com/go-acme/lego/providers/http/memcached"
+	"github.com/go-acme/lego/providers/http/webroot"
 	"github.com/urfave/cli"
-	"github.com/xenolf/lego/challenge"
-	"github.com/xenolf/lego/challenge/dns01"
-	"github.com/xenolf/lego/challenge/http01"
-	"github.com/xenolf/lego/challenge/tlsalpn01"
-	"github.com/xenolf/lego/lego"
-	"github.com/xenolf/lego/log"
-	"github.com/xenolf/lego/providers/dns"
-	"github.com/xenolf/lego/providers/http/memcached"
-	"github.com/xenolf/lego/providers/http/webroot"
 )
 
 func setupChallenges(ctx *cli.Context, client *lego.Client) {
@@ -107,7 +107,7 @@ func setupDNS(ctx *cli.Context, client *lego.Client) {
 	err = client.Challenge.SetDNS01Provider(provider,
 		dns01.CondOption(len(servers) > 0,
 			dns01.AddRecursiveNameservers(dns01.ParseNameservers(ctx.GlobalStringSlice("dns.resolvers")))),
-		dns01.CondOption(ctx.GlobalIsSet("dns.disable-cp"),
+		dns01.CondOption(ctx.GlobalBool("dns.disable-cp"),
 			dns01.DisableCompletePropagationRequirement()),
 		dns01.CondOption(ctx.GlobalIsSet("dns-timeout"),
 			dns01.AddDNSTimeout(time.Duration(ctx.GlobalInt("dns-timeout"))*time.Second)),

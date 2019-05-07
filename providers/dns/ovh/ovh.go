@@ -9,9 +9,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/platform/config/env"
 	"github.com/ovh/go-ovh/ovh"
-	"github.com/xenolf/lego/challenge/dns01"
-	"github.com/xenolf/lego/platform/config/env"
 )
 
 // OVH API reference:       https://eu.api.ovh.com/
@@ -171,6 +171,13 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	err = d.client.Delete(reqURL, nil)
 	if err != nil {
 		return fmt.Errorf("ovh: error when call OVH api to delete challenge record (%s): %v", reqURL, err)
+	}
+
+	// Apply the change
+	reqURL = fmt.Sprintf("/domain/zone/%s/refresh", authZone)
+	err = d.client.Post(reqURL, nil, nil)
+	if err != nil {
+		return fmt.Errorf("ovh: error when call api to refresh zone (%s): %v", reqURL, err)
 	}
 
 	// Delete record ID from map

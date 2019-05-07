@@ -1,8 +1,8 @@
 package cmd
 
 import (
+	"github.com/go-acme/lego/lego"
 	"github.com/urfave/cli"
-	"github.com/xenolf/lego/lego"
 )
 
 func CreateFlags(defaultPath string) []cli.Flag {
@@ -42,7 +42,7 @@ func CreateFlags(defaultPath string) []cli.Flag {
 		},
 		cli.StringFlag{
 			Name:  "key-type, k",
-			Value: "rsa2048",
+			Value: "ec384",
 			Usage: "Key type to use for private keys. Supported: rsa2048, rsa4096, rsa8192, ec256, ec384.",
 		},
 		cli.StringFlag{

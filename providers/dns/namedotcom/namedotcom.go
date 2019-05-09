@@ -174,8 +174,7 @@ func (d *DNSProvider) extractRecordName(fqdn string) (string, string, error) {
 	parts := strings.Split(name, ".")
 	if len(parts) > 2 {
 		cutoff := len(parts) - 2
-		return strings.Join(parts[0:cutoff], "."), strings.Join(parts[cutoff:len(parts)], "."), nil
-	} else {
-		return "", "", fmt.Errorf("namedotcom: extractRecordName unable to parse fqdn=%s", fqdn)
+		return strings.Join(parts[0:cutoff], "."), strings.Join(parts[cutoff:], "."), nil
 	}
+	return "", "", fmt.Errorf("namedotcom: extractRecordName unable to parse fqdn=%s", fqdn)
 }

@@ -43,6 +43,9 @@ install:
   - echo "TRAVIS_GO_VERSION=$TRAVIS_GO_VERSION"
   - dep status -v
 
+before_script:
+  - make validate-doc
+
 after_success:
   - make clean
 

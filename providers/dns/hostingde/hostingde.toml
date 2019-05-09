@@ -6,8 +6,8 @@ Since = "v1.1.0"
 
 [Configuration]
   [Configuration.Credentials]
-    HOSTINGDE_API_KEY = "**TODO**"
-    HOSTINGDE_ZONE_NAME = "**TODO**"
+    HOSTINGDE_API_KEY = "API key"
+    HOSTINGDE_ZONE_NAME = "Zone name in ACE format"
   [Configuration.Additional]
     HOSTINGDE_POLLING_INTERVAL = "Time between DNS propagation check"
     HOSTINGDE_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"

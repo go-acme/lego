@@ -94,15 +94,20 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
+	host, baseDomain, err := d.extractRecordName(fqdn)
+	if err != nil {
+		return err
+	}
+
 	request := &namecom.Record{
-		DomainName: domain,
-		Host:       d.extractRecordName(fqdn, domain),
+		DomainName: baseDomain,
+		Host:       host,
 		Type:       "TXT",
 		TTL:        uint32(d.config.TTL),
 		Answer:     value,
 	}
 
-	_, err := d.client.CreateRecord(request)
+	_, err = d.client.CreateRecord(request)
 	if err != nil {
 		return fmt.Errorf("namedotcom: API call failed: %v", err)
 	}
@@ -161,10 +166,16 @@ func (d *DNSProvider) getRecords(domain string) ([]*namecom.Record, error) {
 	return records, nil
 }
 
-func (d *DNSProvider) extractRecordName(fqdn, domain string) string {
+// extractRecordName parses fqdn into the hostname and baseDomain portions
+// for example, given fqdn: "_acme-challenge.foo.example.com" it returns:
+// "_acme-challenge.foo", "example.com"
+func (d *DNSProvider) extractRecordName(fqdn string) (string, string, error) {
 	name := dns01.UnFqdn(fqdn)
-	if idx := strings.Index(name, "."+domain); idx != -1 {
-		return name[:idx]
+	parts := strings.Split(name, ".")
+	if len(parts) > 2 {
+		cutoff := len(parts) - 2
+		return strings.Join(parts[0:cutoff], "."), strings.Join(parts[cutoff:len(parts)], "."), nil
+	} else {
+		return "", "", fmt.Errorf("namedotcom: extractRecordName unable to parse fqdn=%s", fqdn)
 	}
-	return name
 }

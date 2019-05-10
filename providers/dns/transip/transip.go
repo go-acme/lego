@@ -78,13 +78,13 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-// CleanUp gets the TXT record and calls to RemoveRecord to remove it 
+// Present gets the TXT record and calls to CreateRecord to create it 
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 	return d.CreateRecord(fqdn, value)
 }
 
-// Present creates a TXT record to fulfill the dns-01 challenge
+// CreateRecord creates a TXT record to fulfill the dns-01 challenge
 func (d *DNSProvider) CreateRecord(fqdn, value string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(fqdn)

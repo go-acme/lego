@@ -78,7 +78,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-// Present gets the TXT record and calls to CreateRecord to create it 
+// Present gets the TXT record and calls to CreateRecord to create it
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 	return d.CreateRecord(fqdn, value)
@@ -123,7 +123,7 @@ func (d *DNSProvider) CreateRecord(fqdn, value string) error {
 	return nil
 }
 
-// CleanUp gets the TXT record and calls to RemoveRecord to remove it 
+// CleanUp gets the TXT record and calls to RemoveRecord to remove it
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 	return d.RemoveRecord(fqdn, value)

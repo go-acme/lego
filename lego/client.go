@@ -72,3 +72,8 @@ func (c *Client) GetToSURL() string {
 func (c *Client) GetExternalAccountRequired() bool {
 	return c.core.GetDirectory().Meta.ExternalAccountRequired
 }
+
+// Core exposes the low-level core API for this client.
+func (c *Client) Core() *api.Core {
+	return c.core
+}

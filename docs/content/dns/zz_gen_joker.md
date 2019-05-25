@@ -1,26 +1,29 @@
 ---
-title: "Hosting.de"
+title: "Joker"
 date: 2019-03-03T16:39:46+01:00
 draft: false
-slug: hostingde
+slug: joker
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/hostingde/hostingde.toml -->
+<!-- providers/dns/joker/joker.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v1.1.0
+Since: v2.6.0
 
-Configuration for [Hosting.de](https://www.hosting.de/).
+Configuration for [Joker](https://joker.com).
 
 
 <!--more-->
 
-- Code: `hostingde`
+- Code: `joker`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the Joker provider:
+
+```bash
+JOKER_API_KEY=<your API key> \
+lego --dns joker --domains my.domain.com --email my@email.com run
+```
 
 
 
@@ -29,8 +32,7 @@ _Please contribute by adding a CLI example._
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `HOSTINGDE_API_KEY` | API key |
-| `HOSTINGDE_ZONE_NAME` | Zone name in ACE format |
+| `JOKER_API_KEY` | API key |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).
@@ -40,10 +42,10 @@ More information [here](/lego/dns/#configuration-and-credentials).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `HOSTINGDE_HTTP_TIMEOUT` | API request timeout |
-| `HOSTINGDE_POLLING_INTERVAL` | Time between DNS propagation check |
-| `HOSTINGDE_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
-| `HOSTINGDE_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `JOKER_HTTP_TIMEOUT` | API request timeout |
+| `JOKER_POLLING_INTERVAL` | Time between DNS propagation check |
+| `JOKER_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
+| `JOKER_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).
@@ -53,8 +55,8 @@ More information [here](/lego/dns/#configuration-and-credentials).
 
 ## More information
 
-- [API documentation](https://www.hosting.de/api/#dns)
+- [API documentation](https://joker.com/faq/category/39/22-dmapi.html)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/hostingde/hostingde.toml -->
+<!-- providers/dns/joker/joker.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

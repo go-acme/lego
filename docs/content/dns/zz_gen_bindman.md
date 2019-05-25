@@ -1,26 +1,29 @@
 ---
-title: "Hosting.de"
+title: "Bindman"
 date: 2019-03-03T16:39:46+01:00
 draft: false
-slug: hostingde
+slug: bindman
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/hostingde/hostingde.toml -->
+<!-- providers/dns/bindman/bindman.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v1.1.0
+Since: v2.6.0
 
-Configuration for [Hosting.de](https://www.hosting.de/).
+Configuration for [Bindman](https://github.com/labbsr0x/bindman-dns-webhook).
 
 
 <!--more-->
 
-- Code: `hostingde`
+- Code: `bindman`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the Bindman provider:
+
+```bash
+BINDMAN_MANAGER_ADDRESS=<your bindman manager address> \
+lego --dns bindman --domains my.domain.com --email my@email.com run
+```
 
 
 
@@ -29,8 +32,7 @@ _Please contribute by adding a CLI example._
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `HOSTINGDE_API_KEY` | API key |
-| `HOSTINGDE_ZONE_NAME` | Zone name in ACE format |
+| `BINDMAN_MANAGER_ADDRESS` | The server URL, should have scheme, hostname, and port (if required) of the Bindman-DNS Manager server |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).
@@ -40,10 +42,9 @@ More information [here](/lego/dns/#configuration-and-credentials).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `HOSTINGDE_HTTP_TIMEOUT` | API request timeout |
-| `HOSTINGDE_POLLING_INTERVAL` | Time between DNS propagation check |
-| `HOSTINGDE_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
-| `HOSTINGDE_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `BINDMAN_HTTP_TIMEOUT` | API request timeout |
+| `BINDMAN_POLLING_INTERVAL` | Time between DNS propagation check |
+| `BINDMAN_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).
@@ -53,8 +54,9 @@ More information [here](/lego/dns/#configuration-and-credentials).
 
 ## More information
 
-- [API documentation](https://www.hosting.de/api/#dns)
+- [API documentation](https://gitlab.isc.org/isc-projects/bind9)
+- [Go client](https://github.com/labbsr0x/bindman-dns-webhook)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
-<!-- providers/dns/hostingde/hostingde.toml -->
+<!-- providers/dns/bindman/bindman.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

@@ -289,25 +289,44 @@ func TestGetOrFile_ReadsFiles(t *testing.T) {
 	varEnvFileName := "TEST_LEGO_ENV_VAR_FILE"
 	varEnvName := "TEST_LEGO_ENV_VAR"
 
-	err := os.Unsetenv(varEnvFileName)
-	require.NoError(t, err)
-	err = os.Unsetenv(varEnvName)
-	require.NoError(t, err)
+	testCases := []struct {
+		desc        string
+		fileContent []byte
+	}{
+		{
+			desc:        "simple",
+			fileContent: []byte("lego_file"),
+		},
+		{
+			desc:        "with an empty last line",
+			fileContent: []byte("lego_file\n"),
+		},
+	}
 
-	file, err := ioutil.TempFile("", "lego")
-	require.NoError(t, err)
-	defer os.Remove(file.Name())
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
 
-	err = ioutil.WriteFile(file.Name(), []byte("lego_file"), 0644)
-	require.NoError(t, err)
+			err := os.Unsetenv(varEnvFileName)
+			require.NoError(t, err)
+			err = os.Unsetenv(varEnvName)
+			require.NoError(t, err)
 
-	err = os.Setenv(varEnvFileName, file.Name())
-	require.NoError(t, err)
-	defer os.Unsetenv(varEnvFileName)
+			file, err := ioutil.TempFile("", "lego")
+			require.NoError(t, err)
+			defer os.Remove(file.Name())
 
-	value := GetOrFile(varEnvName)
+			err = ioutil.WriteFile(file.Name(), []byte("lego_file\n"), 0644)
+			require.NoError(t, err)
 
-	assert.Equal(t, "lego_file", value)
+			err = os.Setenv(varEnvFileName, file.Name())
+			require.NoError(t, err)
+			defer os.Unsetenv(varEnvFileName)
+
+			value := GetOrFile(varEnvName)
+
+			assert.Equal(t, "lego_file", value)
+		})
+	}
 }
 
 func TestGetOrFile_PrefersEnvVars(t *testing.T) {

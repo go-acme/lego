@@ -4,7 +4,11 @@ SRCS = $(shell git ls-files '*.go' | grep -v '^vendor/')
 
 LEGO_IMAGE := go-acme/lego
 MAIN_DIRECTORY := ./cmd/lego/
-BIN_OUTPUT := dist/lego
+ifeq (${GOOS}, windows)
+    BIN_OUTPUT := dist/lego.exe
+else
+    BIN_OUTPUT := dist/lego
+endif
 
 TAG_NAME := $(shell git tag -l --contains HEAD)
 SHA := $(shell git rev-parse HEAD)
@@ -65,8 +69,17 @@ docs-serve: generate-dns
 docs-themes:
 	@make -C ./docs hugo-themes
 
-# Generate DNS
-.PHONY: generate-dns
+# DNS Documentation
+.PHONY: generate-dns validate-doc
 
 generate-dns:
 	go generate ./...
+
+validate-doc: generate-dns
+ifneq ($(shell git status --porcelain -- ./docs/ ./cmd/ 2>/dev/null),)
+	@echo 'The documentation must be regenerated, please use `make generate-dns`.'
+	@git status --porcelain -- ./docs/ ./cmd/ 2>/dev/null
+	@exit 2
+else
+	@echo 'All documentation changes are done the right way.'
+endif

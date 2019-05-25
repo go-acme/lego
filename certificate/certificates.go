@@ -464,23 +464,19 @@ func (c *Certifier) GetOCSP(bundle []byte) ([]byte, *ocsp.Response, error) {
 	return ocspResBytes, ocspRes, nil
 }
 
-// Get attempts to fetch the certificate at the supplied URL. The URL
-// is the same as what would normally be supplied at the Resource's
-// CertURL.
+// Get attempts to fetch the certificate at the supplied URL.
+// The URL is the same as what would normally be supplied at the Resource's CertURL.
 //
-// The returned Resource will not have the PrivateKey and CSR fields
-// populated as these will not be available.
+// The returned Resource will not have the PrivateKey and CSR fields populated as these will not be available.
 //
-// If bundle is true, the Certificate field in the returned Resource
-// includes the issuer certificate.
+// If bundle is true, the Certificate field in the returned Resource includes the issuer certificate.
 func (c *Certifier) Get(url string, bundle bool) (*Resource, error) {
 	cert, issuer, err := c.core.Certificates.Get(url, bundle)
 	if err != nil {
 		return nil, err
 	}
 
-	// Parse the returned cert bundle so that we can grab the domain
-	// from the common name.
+	// Parse the returned cert bundle so that we can grab the domain from the common name.
 	x509Certs, err := certcrypto.ParsePEMBundle(cert)
 	if err != nil {
 		return nil, err
@@ -488,10 +484,10 @@ func (c *Certifier) Get(url string, bundle bool) (*Resource, error) {
 
 	return &Resource{
 		Domain:            x509Certs[0].Subject.CommonName,
-		CertURL:           url,
-		CertStableURL:     url,
 		Certificate:       cert,
 		IssuerCertificate: issuer,
+		CertURL:           url,
+		CertStableURL:     url,
 	}, nil
 }
 

@@ -223,6 +223,7 @@ func Test_Get(t *testing.T) {
 
 	certRes, err := certifier.Get(apiURL+"/acme/cert/test-cert", false)
 	require.NoError(t, err)
+
 	assert.NotNil(t, certRes)
 	assert.Equal(t, "acme.wtf", certRes.Domain)
 	assert.Equal(t, apiURL+"/acme/cert/test-cert", certRes.CertStableURL)

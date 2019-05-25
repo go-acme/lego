@@ -202,6 +202,38 @@ func Test_checkResponse_embeddedIssuer(t *testing.T) {
 	assert.Equal(t, issuerMock, string(certRes.IssuerCertificate), "IssuerCertificate")
 }
 
+func Test_Get(t *testing.T) {
+	mux, apiURL, tearDown := tester.SetupFakeAPI()
+	defer tearDown()
+
+	mux.HandleFunc("/acme/cert/test-cert", func(w http.ResponseWriter, _ *http.Request) {
+		_, err := w.Write([]byte(certResponseMock))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	})
+
+	key, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err, "Could not generate test key")
+
+	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", key)
+	require.NoError(t, err)
+
+	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
+
+	certRes, err := certifier.Get(apiURL+"/acme/cert/test-cert", false)
+	require.NoError(t, err)
+
+	assert.NotNil(t, certRes)
+	assert.Equal(t, "acme.wtf", certRes.Domain)
+	assert.Equal(t, apiURL+"/acme/cert/test-cert", certRes.CertStableURL)
+	assert.Equal(t, apiURL+"/acme/cert/test-cert", certRes.CertURL)
+	assert.Nil(t, certRes.CSR)
+	assert.Nil(t, certRes.PrivateKey)
+	assert.Equal(t, certResponseMock, string(certRes.Certificate), "Certificate")
+	assert.Equal(t, issuerMock, string(certRes.IssuerCertificate), "IssuerCertificate")
+}
+
 type resolverMock struct {
 	error error
 }

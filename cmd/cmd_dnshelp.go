@@ -26,7 +26,7 @@ func createDNSHelp() cli.Command {
 func dnsHelp(ctx *cli.Context) error {
 	code := ctx.String("code")
 	if code == "" {
-		w := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', 0)
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 
 		fmt.Fprintln(w, `Credentials for DNS providers must be passed through environment variables.`)
 		fmt.Fprintln(w)

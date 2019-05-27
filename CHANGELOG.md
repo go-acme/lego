@@ -1,5 +1,24 @@
 # Changelog
 
+## [v2.6.0] - 2019-05-27
+
+### Added:
+- **[dnsprovider]** Add support for Joker.com DMAPI
+- **[dnsprovider]** Add support for Bindman DNS provider
+- **[dnsprovider]** Add support for EasyDNS
+- **[lib]** Get an existing certificate by URL
+
+### Changed:
+- **[dnsprovider]** digitalocean: LEGO_EXPERIMENTAL_CNAME_SUPPORT support
+- **[dnsprovider]** gcloud: Use fqdn to get zone Present/CleanUp
+- **[dnsprovider]** exec: serial behavior
+- **[dnsprovider]** manual: serial behavior.
+- **[dnsprovider]** Strip newlines when reading environment variables from `_FILE` suffixed files.
+
+### Fixed:
+- **[cli]** fix: cli disable-cp option.
+- **[dnsprovider]** gcloud: fix zone visibility.
+
 ## [v2.5.0] - 2019-04-17
 
 ### Added:

@@ -227,10 +227,17 @@ func (d *DNSProvider) deleteRecordSet(zoneID, recordID string) error {
 	return err
 }
 
+func getBody(payload interface{}) ([]byte, error) {
+	if payload != nil {
+		return json.Marshal(payload)
+	}
+	return nil, nil
+}
+
 func (d *DNSProvider) sendRequest(method, resource string, payload interface{}) (io.Reader, error) {
 	url := fmt.Sprintf("%s/%s", d.baseURL, resource)
 
-	body, err := json.Marshal(payload)
+	body, err := getBody(payload)
 	if err != nil {
 		return nil, err
 	}

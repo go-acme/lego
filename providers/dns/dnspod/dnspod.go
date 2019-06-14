@@ -137,7 +137,7 @@ func (d *DNSProvider) getHostedZone(domain string) (string, string, error) {
 		}
 	}
 
-	if hostedZone.ID == 0 {
+	if id, _ := hostedZone.ID.Int64(); id == 0 {
 		return "", "", fmt.Errorf("zone %s not found in dnspod for domain %s", authZone, domain)
 
 	}

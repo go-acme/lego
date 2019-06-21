@@ -68,13 +68,13 @@ func (d *DNSProvider) postDNSRecords(domain string, msg interface{}) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= http.StatusBadRequest {
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
+		body, berr := ioutil.ReadAll(resp.Body)
+		if berr != nil {
 			return fmt.Errorf("%d: failed to read response body: %v", resp.StatusCode, err)
 		}
 
 		respError := &dnsErrorResponse{}
-		err = json.Unmarshal(body, respError)
+		_ = json.Unmarshal(body, respError)
 		return fmt.Errorf("%d: request failed: %v", resp.StatusCode, respError.Error.Message)
 	}
 
@@ -108,13 +108,13 @@ func (d *DNSProvider) getDNSRecords(domain string) (*dnsRecordsResponse, error) 
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= http.StatusBadRequest {
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
+		body, berr := ioutil.ReadAll(resp.Body)
+		if berr != nil {
 			return nil, fmt.Errorf("%d: failed to read response body: %v", resp.StatusCode, err)
 		}
 
 		respError := &dnsErrorResponse{}
-		err = json.Unmarshal(body, respError)
+		_ = json.Unmarshal(body, respError)
 		return nil, fmt.Errorf("%d: request failed: %v", resp.StatusCode, respError.Error.Message)
 	}
 

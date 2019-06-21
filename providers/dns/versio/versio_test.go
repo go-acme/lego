@@ -20,12 +20,6 @@ const testDomain = "example.com"
 
 const ipPort = "127.0.0.1:2112"
 
-var envVars = map[string]string{
-	"VERSIO_USERNAME": "me@example.com",
-	"VERSIO_PASSWORD": "secret",
-	"VERSIO_ENDPOINT": "http://127.0.0.1:2112",
-}
-
 var envTest = tester.NewEnvTest("VERSIO_USERNAME", "VERSIO_PASSWORD", "VERSIO_ENDPOINT")
 
 type muxCallback func() *http.ServeMux
@@ -131,6 +125,11 @@ func TestNewDNSProviderConfig(t *testing.T) {
 func TestDNSProvider_TimeoutSuccess(t *testing.T) {
 	defer envTest.RestoreEnv()
 	envTest.ClearEnv()
+	envVars := map[string]string{
+		"VERSIO_USERNAME": "me@example.com",
+		"VERSIO_PASSWORD": "secret",
+		"VERSIO_ENDPOINT": "http://127.0.0.1:2112",
+	}
 
 	ts, err := startTestServer(muxSuccess)
 	require.NoError(t, err)
@@ -149,6 +148,11 @@ func TestDNSProvider_TimeoutSuccess(t *testing.T) {
 func TestDNSProvider_SequentialSuccess(t *testing.T) {
 	defer envTest.RestoreEnv()
 	envTest.ClearEnv()
+	envVars := map[string]string{
+		"VERSIO_USERNAME": "me@example.com",
+		"VERSIO_PASSWORD": "secret",
+		"VERSIO_ENDPOINT": "http://127.0.0.1:2112",
+	}
 
 	ts, err := startTestServer(muxSuccess)
 	require.NoError(t, err)
@@ -189,6 +193,11 @@ func TestDNSProvider_Present(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			defer envTest.RestoreEnv()
 			envTest.ClearEnv()
+			envVars := map[string]string{
+				"VERSIO_USERNAME": "me@example.com",
+				"VERSIO_PASSWORD": "secret",
+				"VERSIO_ENDPOINT": "http://127.0.0.1:2112",
+			}
 
 			ts, err := startTestServer(test.callback)
 			require.NoError(t, err)
@@ -230,6 +239,11 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			defer envTest.RestoreEnv()
 			envTest.ClearEnv()
+			envVars := map[string]string{
+				"VERSIO_USERNAME": "me@example.com",
+				"VERSIO_PASSWORD": "secret",
+				"VERSIO_ENDPOINT": "http://127.0.0.1:2112",
+			}
 
 			ts, err := startTestServer(test.callback)
 			require.NoError(t, err)

@@ -1,15 +1,10 @@
-// Package vegadns implements a DNS provider for solving the DNS-01
-// challenge using VegaDNS.
 package versio
 
 import (
 	"fmt"
-	"net"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
-	"time"
 
 	"github.com/go-acme/lego/platform/tester"
 	"github.com/stretchr/testify/assert"
@@ -18,11 +13,7 @@ import (
 
 const testDomain = "example.com"
 
-const ipPort = "127.0.0.1:2112"
-
 var envTest = tester.NewEnvTest("VERSIO_USERNAME", "VERSIO_PASSWORD", "VERSIO_ENDPOINT")
-
-type muxCallback func() *http.ServeMux
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -50,6 +41,11 @@ func TestNewDNSProvider(t *testing.T) {
 				"VERSIO_USERNAME": "TOKEN",
 			},
 			expected: "versio: some credentials information are missing: VERSIO_PASSWORD",
+		},
+		{
+			desc:     "missing credentials",
+			envVars:  map[string]string{},
+			expected: "versio: some credentials information are missing: VERSIO_USERNAME,VERSIO_PASSWORD",
 		},
 	}
 
@@ -122,70 +118,25 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}
 }
 
-func TestDNSProvider_TimeoutSuccess(t *testing.T) {
-	defer envTest.RestoreEnv()
-	envTest.ClearEnv()
-	envVars := map[string]string{
-		"VERSIO_USERNAME": "me@example.com",
-		"VERSIO_PASSWORD": "secret",
-		"VERSIO_ENDPOINT": "http://127.0.0.1:2112",
-	}
-
-	ts, err := startTestServer(muxSuccess)
-	require.NoError(t, err)
-
-	defer ts.Close()
-
-	envTest.Apply(envVars)
-	provider, err := NewDNSProvider()
-	require.NoError(t, err)
-
-	timeout, interval := provider.Timeout()
-	assert.Equal(t, timeout, time.Duration(60000000000))
-	assert.Equal(t, interval, time.Duration(5000000000))
-}
-
-func TestDNSProvider_SequentialSuccess(t *testing.T) {
-	defer envTest.RestoreEnv()
-	envTest.ClearEnv()
-	envVars := map[string]string{
-		"VERSIO_USERNAME": "me@example.com",
-		"VERSIO_PASSWORD": "secret",
-		"VERSIO_ENDPOINT": "http://127.0.0.1:2112",
-	}
-
-	ts, err := startTestServer(muxSuccess)
-	require.NoError(t, err)
-
-	defer ts.Close()
-
-	envTest.Apply(envVars)
-	provider, err := NewDNSProvider()
-	require.NoError(t, err)
-
-	sequential := provider.Sequential()
-	assert.Equal(t, sequential, time.Duration(60000000000))
-}
-
 func TestDNSProvider_Present(t *testing.T) {
 	testCases := []struct {
 		desc          string
-		callback      muxCallback
+		handler       http.Handler
 		expectedError string
 	}{
 		{
-			desc:     "Success",
-			callback: muxSuccess,
+			desc:    "Success",
+			handler: muxSuccess(),
 		},
 		{
 			desc:          "FailToFindZone",
-			callback:      muxFailToFindZone,
-			expectedError: "versio: 401: request failed: ObjectDoesNotExist|Domain not found",
+			handler:       muxFailToFindZone(),
+			expectedError: `versio: 401: request failed: ObjectDoesNotExist|Domain not found`,
 		},
 		{
 			desc:          "FailToCreateTXT",
-			callback:      muxFailToCreateTXT,
-			expectedError: "versio: 400: request failed: ProcessError|DNS record invalid type _acme-challenge.fjmk.eu. TST",
+			handler:       muxFailToCreateTXT(),
+			expectedError: `versio: 400: request failed: ProcessError|DNS record invalid type _acme-challenge.fjmk.eu. TST`,
 		},
 	}
 
@@ -193,24 +144,21 @@ func TestDNSProvider_Present(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			defer envTest.RestoreEnv()
 			envTest.ClearEnv()
-			envVars := map[string]string{
+
+			baseURL, tearDown := startTestServer(test.handler)
+			defer tearDown()
+
+			envTest.Apply(map[string]string{
 				"VERSIO_USERNAME": "me@example.com",
 				"VERSIO_PASSWORD": "secret",
-				"VERSIO_ENDPOINT": "http://127.0.0.1:2112",
-			}
-
-			ts, err := startTestServer(test.callback)
-			require.NoError(t, err)
-
-			defer ts.Close()
-
-			envTest.Apply(envVars)
+				"VERSIO_ENDPOINT": baseURL,
+			})
 			provider, err := NewDNSProvider()
 			require.NoError(t, err)
 
 			err = provider.Present(testDomain, "token", "keyAuth")
 			if len(test.expectedError) == 0 {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 			} else {
 				assert.EqualError(t, err, test.expectedError)
 			}
@@ -221,17 +169,17 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	testCases := []struct {
 		desc          string
-		callback      muxCallback
+		handler       http.Handler
 		expectedError string
 	}{
 		{
-			desc:     "Success",
-			callback: muxSuccess,
+			desc:    "Success",
+			handler: muxSuccess(),
 		},
 		{
 			desc:          "FailToFindZone",
-			callback:      muxFailToFindZone,
-			expectedError: "versio: 401: request failed: ObjectDoesNotExist|Domain not found",
+			handler:       muxFailToFindZone(),
+			expectedError: `versio: 401: request failed: ObjectDoesNotExist|Domain not found`,
 		},
 	}
 
@@ -239,26 +187,24 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			defer envTest.RestoreEnv()
 			envTest.ClearEnv()
-			envVars := map[string]string{
+
+			baseURL, tearDown := startTestServer(test.handler)
+			defer tearDown()
+
+			envTest.Apply(map[string]string{
 				"VERSIO_USERNAME": "me@example.com",
 				"VERSIO_PASSWORD": "secret",
-				"VERSIO_ENDPOINT": "http://127.0.0.1:2112",
-			}
+				"VERSIO_ENDPOINT": baseURL,
+			})
 
-			ts, err := startTestServer(test.callback)
-			require.NoError(t, err)
-
-			defer ts.Close()
-
-			envTest.Apply(envVars)
 			provider, err := NewDNSProvider()
 			require.NoError(t, err)
 
 			err = provider.CleanUp(testDomain, "token", "keyAuth")
 			if len(test.expectedError) == 0 {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 			} else {
-				assert.EqualError(t, err, test.expectedError)
+				require.EqualError(t, err, test.expectedError)
 			}
 		})
 	}
@@ -328,32 +274,9 @@ func muxFailToCreateTXT() *http.ServeMux {
 	return mux
 }
 
-// Starts and returns a test server using a custom ip/port. Defer close() afterwards.
-func startTestServer(callback muxCallback) (*httptest.Server, error) {
-	err := os.Setenv("SECRET_VEGADNS_KEY", "key")
-	if err != nil {
-		return nil, err
+func startTestServer(handler http.Handler) (string, func()) {
+	ts := httptest.NewServer(handler)
+	return ts.URL, func() {
+		ts.Close()
 	}
-
-	err = os.Setenv("SECRET_VEGADNS_SECRET", "secret")
-	if err != nil {
-		return nil, err
-	}
-
-	err = os.Setenv("VEGADNS_URL", "http://"+ipPort)
-	if err != nil {
-		return nil, err
-	}
-
-	ts := httptest.NewUnstartedServer(callback())
-
-	l, err := net.Listen("tcp", ipPort)
-	if err != nil {
-		return nil, err
-	}
-
-	ts.Listener = l
-	ts.Start()
-
-	return ts, nil
 }

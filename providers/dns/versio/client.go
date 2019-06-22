@@ -32,12 +32,11 @@ type dnsErrorResponse struct {
 }
 
 type errorMessage struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
+	Code    int    `json:"code,omitempty"`
+	Message string `json:"message,omitempty"`
 }
 
 func (d *DNSProvider) postDNSRecords(domain string, msg interface{}) error {
-
 	reqBody := &bytes.Buffer{}
 	err := json.NewEncoder(reqBody).Encode(msg)
 	if err != nil {
@@ -62,20 +61,26 @@ func (d *DNSProvider) postDNSRecords(domain string, msg interface{}) error {
 	}
 
 	resp, err := d.config.HTTPClient.Do(req)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
 
 	if resp.StatusCode >= http.StatusBadRequest {
-		body, berr := ioutil.ReadAll(resp.Body)
-		if berr != nil {
+		var body []byte
+		body, err = ioutil.ReadAll(resp.Body)
+		if err != nil {
 			return fmt.Errorf("%d: failed to read response body: %v", resp.StatusCode, err)
 		}
 
 		respError := &dnsErrorResponse{}
-		_ = json.Unmarshal(body, respError)
-		return fmt.Errorf("%d: request failed: %v", resp.StatusCode, respError.Error.Message)
+		err = json.Unmarshal(body, respError)
+		if err != nil {
+			return fmt.Errorf("%d: request failed: %v", resp.StatusCode, err)
+		}
+		return fmt.Errorf("%d: request failed: %s", resp.StatusCode, respError.Error.Message)
 	}
 
 	return nil
@@ -114,14 +119,18 @@ func (d *DNSProvider) getDNSRecords(domain string) (*dnsRecordsResponse, error) 
 		}
 
 		respError := &dnsErrorResponse{}
-		_ = json.Unmarshal(body, respError)
-		return nil, fmt.Errorf("%d: request failed: %v", resp.StatusCode, respError.Error.Message)
+		err = json.Unmarshal(body, respError)
+		if err != nil {
+			return nil, fmt.Errorf("%d: request failed: %v", resp.StatusCode, err)
+		}
+		return nil, fmt.Errorf("%d: request failed: %s", resp.StatusCode, respError.Error.Message)
 	}
 
 	content, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("request failed: Body: %s Err: %v", string(content), err)
 	}
+
 	// Everything looks good; we'll need all the dns_records to add the new TXT record
 	respData := &dnsRecordsResponse{}
 	err = json.Unmarshal(content, respData)

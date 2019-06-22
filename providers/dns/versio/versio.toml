@@ -2,7 +2,7 @@ Name = "Versio.[nl|eu|uk]"
 Description = ''''''
 URL = "https://www.versio.nl/domeinnamen"
 Code = "versio"
-Since = "v2.6.0"
+Since = "v2.7.0"
 
 Example = '''
 VERSIO_USERNAME=<your login> \

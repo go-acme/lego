@@ -27,10 +27,13 @@ type Config struct {
 
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
-	baseURL := env.GetOrDefaultString("VERSIO_ENDPOINT", defaultBaseURL)
-	baseurl, _ := url.Parse(baseURL)
+	baseURL, err := url.Parse(env.GetOrDefaultString("VERSIO_ENDPOINT", defaultBaseURL))
+	if err != nil {
+		baseURL, _ = url.Parse(defaultBaseURL)
+	}
+
 	return &Config{
-		BaseURL:            baseurl,
+		BaseURL:            baseURL,
 		TTL:                env.GetOrDefaultInt("VERSIO_TTL", 300),
 		PropagationTimeout: env.GetOrDefaultSecond("VERSIO_PROPAGATION_TIMEOUT", 60*time.Second),
 		PollingInterval:    env.GetOrDefaultSecond("VERSIO_POLLING_INTERVAL", 5*time.Second),
@@ -49,18 +52,13 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance.
 func NewDNSProvider() (*DNSProvider, error) {
+	values, err := env.Get("VERSIO_USERNAME", "VERSIO_PASSWORD")
+	if err != nil {
+		return nil, fmt.Errorf("versio: %v", err)
+	}
+
 	config := NewDefaultConfig()
-
-	values, err := env.Get("VERSIO_USERNAME")
-	if err != nil {
-		return nil, fmt.Errorf("versio: %v", err)
-	}
 	config.Username = values["VERSIO_USERNAME"]
-
-	values, err = env.Get("VERSIO_PASSWORD")
-	if err != nil {
-		return nil, fmt.Errorf("versio: %v", err)
-	}
 	config.Password = values["VERSIO_PASSWORD"]
 
 	return NewDNSProviderConfig(config)
@@ -96,12 +94,6 @@ func (d *DNSProvider) Sequential() time.Duration {
 // Present creates a TXT record to fulfill the dns-01 challenge
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
-	txtRecord := record{
-		Type:  "TXT",
-		Name:  fqdn,
-		Value: "\"" + value + "\"",
-		TTL:   d.config.TTL,
-	}
 
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
@@ -117,6 +109,13 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("versio: %v", err)
 	}
+
+	txtRecord := record{
+		Type:  "TXT",
+		Name:  fqdn,
+		Value: `"` + value + `"`,
+		TTL:   d.config.TTL,
+	}
 	// Add new txtRercord to existing array of DNSRecords
 	msg := &domains.Record
 	msg.DNSRecords = append(msg.DNSRecords, txtRecord)
@@ -125,7 +124,6 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("versio: %v", err)
 	}
-
 	return nil
 }
 

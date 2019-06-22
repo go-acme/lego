@@ -9,7 +9,7 @@ slug: versio
 <!-- providers/dns/versio/versio.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v2.6.0
+Since: v2.7.0
 
 Configuration for [Versio.[nl|eu|uk]](https://www.versio.nl/domeinnamen).
 

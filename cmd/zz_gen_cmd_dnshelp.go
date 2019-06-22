@@ -1223,7 +1223,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/versio/versio.toml
 		fmt.Fprintln(w, `Configuration for Versio.[nl|eu|uk].`)
 		fmt.Fprintln(w, `Code:	'versio'`)
-		fmt.Fprintln(w, `Since:	'v2.6.0'`)
+		fmt.Fprintln(w, `Since:	'v2.7.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)

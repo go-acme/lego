@@ -13,7 +13,7 @@ import (
 
 const testDomain = "example.com"
 
-var envTest = tester.NewEnvTest("VERSIO_USERNAME", "VERSIO_PASSWORD", "VERSIO_ENDPOINT")
+var envTest = tester.NewEnvTest("VERSIO_USERNAME", "VERSIO_PASSWORD", "VERSIO_ENDPOINT").WithDomain("VERSIO_DOMAIN")
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -279,4 +279,30 @@ func startTestServer(handler http.Handler) (string, func()) {
 	return ts.URL, func() {
 		ts.Close()
 	}
+}
+
+func TestLivePresent(t *testing.T) {
+	if !envTest.IsLiveTest() {
+		t.Skip("skipping live test")
+	}
+
+	envTest.RestoreEnv()
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
+
+	err = provider.Present(envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
+}
+
+func TestLiveCleanUp(t *testing.T) {
+	if !envTest.IsLiveTest() {
+		t.Skip("skipping live test")
+	}
+
+	envTest.RestoreEnv()
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
+
+	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
 }

@@ -85,12 +85,6 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-// Sequential All DNS challenges for this provider will be resolved sequentially.
-// Returns the interval between each iteration.
-func (d *DNSProvider) Sequential() time.Duration {
-	return d.config.SequenceInterval
-}
-
 // Present creates a TXT record to fulfill the dns-01 challenge
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)

@@ -136,7 +136,7 @@ func TestDNSProvider_Present(t *testing.T) {
 		{
 			desc:          "FailToCreateTXT",
 			handler:       muxFailToCreateTXT(),
-			expectedError: `versio: 400: request failed: ProcessError|DNS record invalid type _acme-challenge.fjmk.eu. TST`,
+			expectedError: `versio: 400: request failed: ProcessError|DNS record invalid type _acme-challenge.example.eu. TST`,
 		},
 	}
 

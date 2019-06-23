@@ -10,4 +10,4 @@ const tokenResponseMock = `
 
 const tokenFailToFindZoneMock = `{"error":{"code":401,"message":"ObjectDoesNotExist|Domain not found"}}`
 
-const tokenFailToCreateTXTMock = `{"error":{"code":400,"message":"ProcessError|DNS record invalid type _acme-challenge.fjmk.eu. TST"}}`
+const tokenFailToCreateTXTMock = `{"error":{"code":400,"message":"ProcessError|DNS record invalid type _acme-challenge.example.eu. TST"}}`

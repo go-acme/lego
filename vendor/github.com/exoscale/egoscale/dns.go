@@ -14,9 +14,6 @@ import (
 // DNSDomain represents a domain
 type DNSDomain struct {
 	ID             int64  `json:"id"`
-	AccountID      int64  `json:"account_id,omitempty"`
-	UserID         int64  `json:"user_id,omitempty"`
-	RegistrantID   int64  `json:"registrant_id,omitempty"`
 	Name           string `json:"name"`
 	UnicodeName    string `json:"unicode_name"`
 	Token          string `json:"token"`

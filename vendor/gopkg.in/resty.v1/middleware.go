@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2018 Jeevanandam M (jeeva@myjeeva.com), All rights reserved.
+// Copyright (c) 2015-2019 Jeevanandam M (jeeva@myjeeva.com), All rights reserved.
 // resty source code and usage is governed by a MIT style
 // license that can be found in the LICENSE file.
 
@@ -28,12 +28,12 @@ func parseRequestURL(c *Client, r *Request) error {
 	// GitHub #103 Path Params
 	if len(r.pathParams) > 0 {
 		for p, v := range r.pathParams {
-			r.URL = strings.Replace(r.URL, "{"+p+"}", v, -1)
+			r.URL = strings.Replace(r.URL, "{"+p+"}", url.PathEscape(v), -1)
 		}
 	}
 	if len(c.pathParams) > 0 {
 		for p, v := range c.pathParams {
-			r.URL = strings.Replace(r.URL, "{"+p+"}", v, -1)
+			r.URL = strings.Replace(r.URL, "{"+p+"}", url.PathEscape(v), -1)
 		}
 	}
 
@@ -223,12 +223,19 @@ func addCredentials(c *Client, r *Request) error {
 func requestLogger(c *Client, r *Request) error {
 	if c.Debug {
 		rr := r.RawRequest
+		rl := &RequestLog{Header: copyHeaders(rr.Header), Body: r.fmtBodyString()}
+		if c.requestLog != nil {
+			if err := c.requestLog(rl); err != nil {
+				return err
+			}
+		}
+
 		reqLog := "\n---------------------- REQUEST LOG -----------------------\n" +
 			fmt.Sprintf("%s  %s  %s\n", r.Method, rr.URL.RequestURI(), rr.Proto) +
 			fmt.Sprintf("HOST   : %s\n", rr.URL.Host) +
 			fmt.Sprintf("HEADERS:\n") +
-			composeHeaders(rr.Header) + "\n" +
-			fmt.Sprintf("BODY   :\n%v\n", r.fmtBodyString()) +
+			composeHeaders(rl.Header) + "\n" +
+			fmt.Sprintf("BODY   :\n%v\n", rl.Body) +
 			"----------------------------------------------------------\n"
 
 		c.Log.Print(reqLog)
@@ -243,17 +250,23 @@ func requestLogger(c *Client, r *Request) error {
 
 func responseLogger(c *Client, res *Response) error {
 	if c.Debug {
+		rl := &ResponseLog{Header: copyHeaders(res.Header()), Body: res.fmtBodyString(c.debugBodySizeLimit)}
+		if c.responseLog != nil {
+			if err := c.responseLog(rl); err != nil {
+				return err
+			}
+		}
+
 		resLog := "\n---------------------- RESPONSE LOG -----------------------\n" +
 			fmt.Sprintf("STATUS 		: %s\n", res.Status()) +
 			fmt.Sprintf("RECEIVED AT	: %v\n", res.ReceivedAt().Format(time.RFC3339Nano)) +
 			fmt.Sprintf("RESPONSE TIME	: %v\n", res.Time()) +
 			"HEADERS:\n" +
-			composeHeaders(res.Header()) + "\n"
-
+			composeHeaders(rl.Header) + "\n"
 		if res.Request.isSaveResponse {
 			resLog += fmt.Sprintf("BODY   :\n***** RESPONSE WRITTEN INTO FILE *****\n")
 		} else {
-			resLog += fmt.Sprintf("BODY   :\n%v\n", res.fmtBodyString(c.debugBodySizeLimit))
+			resLog += fmt.Sprintf("BODY   :\n%v\n", rl.Body)
 		}
 		resLog += "----------------------------------------------------------\n"
 
@@ -264,6 +277,9 @@ func responseLogger(c *Client, res *Response) error {
 }
 
 func parseResponseBody(c *Client, res *Response) (err error) {
+	if res.StatusCode() == http.StatusNoContent {
+		return
+	}
 	// Handles only JSON or XML content type
 	ct := firstNonEmpty(res.Header().Get(hdrContentTypeKey), res.Request.fallbackContentType)
 	if IsJSONType(ct) || IsXMLType(ct) {
@@ -396,7 +412,7 @@ func handleRequestBody(c *Client, r *Request) (err error) {
 		bodyBytes = []byte(s)
 	} else if IsJSONType(contentType) &&
 		(kind == reflect.Struct || kind == reflect.Map || kind == reflect.Slice) {
-		bodyBytes, err = c.JSONMarshal(r.Body)
+		bodyBytes, err = jsonMarshal(c, r, r.Body)
 	} else if IsXMLType(contentType) && (kind == reflect.Struct) {
 		bodyBytes, err = xml.Marshal(r.Body)
 	}

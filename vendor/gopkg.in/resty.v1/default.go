@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2018 Jeevanandam M (jeeva@myjeeva.com), All rights reserved.
+// Copyright (c) 2015-2019 Jeevanandam M (jeeva@myjeeva.com), All rights reserved.
 // resty source code and usage is governed by a MIT style
 // license that can be found in the LICENSE file.
 
@@ -288,6 +288,7 @@ func createClient(hc *http.Client) *Client {
 		RetryMaxWaitTime:   defaultMaxWaitTime,
 		JSONMarshal:        json.Marshal,
 		JSONUnmarshal:      json.Unmarshal,
+		jsonEscapeHTML:     true,
 		httpClient:         hc,
 		debugBodySizeLimit: math.MaxInt32,
 		pathParams:         make(map[string]string),
@@ -306,7 +307,6 @@ func createClient(hc *http.Client) *Client {
 		parseRequestBody,
 		createHTTPRequest,
 		addCredentials,
-		requestLogger,
 	}
 
 	// user defined request middlewares

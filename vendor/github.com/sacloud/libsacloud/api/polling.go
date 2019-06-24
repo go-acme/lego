@@ -65,9 +65,9 @@ type hasFailed interface {
 func waitingForAvailableFunc(readFunc func() (hasAvailable, error), maxRetry int) func() (bool, interface{}, error) {
 	counter := 0
 	return func() (bool, interface{}, error) {
-		counter++
 		v, err := readFunc()
 		if err != nil {
+			counter++
 			if maxRetry > 0 && counter < maxRetry {
 				return false, nil, nil
 			}
@@ -96,9 +96,9 @@ type hasUpDown interface {
 func waitingForUpFunc(readFunc func() (hasUpDown, error), maxRetry int) func() (bool, interface{}, error) {
 	counter := 0
 	return func() (bool, interface{}, error) {
-		counter++
 		v, err := readFunc()
 		if err != nil {
+			counter++
 			if maxRetry > 0 && counter < maxRetry {
 				return false, nil, nil
 			}
@@ -118,9 +118,9 @@ func waitingForUpFunc(readFunc func() (hasUpDown, error), maxRetry int) func() (
 func waitingForDownFunc(readFunc func() (hasUpDown, error), maxRetry int) func() (bool, interface{}, error) {
 	counter := 0
 	return func() (bool, interface{}, error) {
-		counter++
 		v, err := readFunc()
 		if err != nil {
+			counter++
 			if maxRetry > 0 && counter < maxRetry {
 				return false, nil, nil
 			}
@@ -140,9 +140,9 @@ func waitingForDownFunc(readFunc func() (hasUpDown, error), maxRetry int) func()
 func waitingForReadFunc(readFunc func() (interface{}, error), maxRetry int) func() (bool, interface{}, error) {
 	counter := 0
 	return func() (bool, interface{}, error) {
-		counter++
 		v, err := readFunc()
 		if err != nil {
+			counter++
 			if maxRetry > 0 && counter < maxRetry {
 				return false, nil, nil
 			}

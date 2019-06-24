@@ -11,12 +11,12 @@ import (
 // Affinity and Anti-Affinity groups provide a way to influence where VMs should run.
 // See: http://docs.cloudstack.apache.org/projects/cloudstack-administration/en/stable/virtual_machines.html#affinity-groups
 type AffinityGroup struct {
-	Account           string   `json:"account,omitempty" doc:"the account owning the affinity group"`
-	Description       string   `json:"description,omitempty" doc:"the description of the affinity group"`
-	ID                *UUID    `json:"id,omitempty" doc:"the ID of the affinity group"`
-	Name              string   `json:"name,omitempty" doc:"the name of the affinity group"`
-	Type              string   `json:"type,omitempty" doc:"the type of the affinity group"`
-	VirtualMachineIDs []string `json:"virtualmachineIds,omitempty" doc:"virtual machine Ids associated with this affinity group"`
+	Account           string `json:"account,omitempty" doc:"the account owning the affinity group"`
+	Description       string `json:"description,omitempty" doc:"the description of the affinity group"`
+	ID                *UUID  `json:"id,omitempty" doc:"the ID of the affinity group"`
+	Name              string `json:"name,omitempty" doc:"the name of the affinity group"`
+	Type              string `json:"type,omitempty" doc:"the type of the affinity group"`
+	VirtualMachineIDs []UUID `json:"virtualmachineIds,omitempty" doc:"virtual machine Ids associated with this affinity group"`
 }
 
 // ListRequest builds the ListAffinityGroups request

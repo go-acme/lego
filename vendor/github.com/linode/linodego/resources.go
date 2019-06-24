@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"text/template"
 
-	"github.com/go-resty/resty"
+	"gopkg.in/resty.v1"
 )
 
 const (
@@ -33,14 +33,18 @@ const (
 	nodebalancersName         = "nodebalancers"
 	nodebalancerconfigsName   = "nodebalancerconfigs"
 	nodebalancernodesName     = "nodebalancernodes"
+	notificationsName         = "notifications"
 	sshkeysName               = "sshkeys"
 	ticketsName               = "tickets"
+	tokensName                = "tokens"
 	accountName               = "account"
 	eventsName                = "events"
 	invoicesName              = "invoices"
 	invoiceItemsName          = "invoiceitems"
 	profileName               = "profile"
 	managedName               = "managed"
+	tagsName                  = "tags"
+	usersName                 = "users"
 	// notificationsName = "notifications"
 
 	stackscriptsEndpoint          = "linode/stackscripts"
@@ -51,9 +55,9 @@ const (
 	instanceSnapshotsEndpoint     = "linode/instances/{{ .ID }}/backups"
 	instanceIPsEndpoint           = "linode/instances/{{ .ID }}/ips"
 	instanceVolumesEndpoint       = "linode/instances/{{ .ID }}/volumes"
-	ipaddressesEndpoint           = "network/ips"
-	ipv6poolsEndpoint             = "network/ipv6/pools"
-	ipv6rangesEndpoint            = "network/ipv6/ranges"
+	ipaddressesEndpoint           = "networking/ips"
+	ipv6poolsEndpoint             = "networking/ipv6/pools"
+	ipv6rangesEndpoint            = "networking/ipv6/ranges"
 	regionsEndpoint               = "regions"
 	volumesEndpoint               = "volumes"
 	kernelsEndpoint               = "linode/kernels"
@@ -72,13 +76,16 @@ const (
 	nodebalancernodesEndpoint   = "nodebalancers/{{ .ID }}/configs/{{ .SecondID }}/nodes"
 	sshkeysEndpoint             = "profile/sshkeys"
 	ticketsEndpoint             = "support/tickets"
+	tokensEndpoint              = "profile/tokens"
 	accountEndpoint             = "account"
 	eventsEndpoint              = "account/events"
 	invoicesEndpoint            = "account/invoices"
 	invoiceItemsEndpoint        = "account/invoices/{{ .ID }}/items"
 	profileEndpoint             = "profile"
 	managedEndpoint             = "managed"
-	// notificationsEndpoint       = "account/notifications"
+	tagsEndpoint                = "tags"
+	usersEndpoint               = "account/users"
+	notificationsEndpoint       = "account/notifications"
 )
 
 // Resource represents a linode API resource

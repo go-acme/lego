@@ -76,8 +76,11 @@ func (c *Client) Clone() *Client {
 		DefaultTimeoutDuration: c.DefaultTimeoutDuration,
 		UserAgent:              c.UserAgent,
 		AcceptLanguage:         c.AcceptLanguage,
+		RequestTracer:          c.RequestTracer,
+		ResponseTracer:         c.ResponseTracer,
 		RetryMax:               c.RetryMax,
 		RetryInterval:          c.RetryInterval,
+		HTTPClient:             c.HTTPClient,
 	}
 	n.API = newAPI(n)
 	return n

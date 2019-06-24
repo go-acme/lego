@@ -79,7 +79,7 @@ func NewGeofenceRegional(rmNoGeo bool) *Filter {
 // NewGeotargetCountry returns a filter that sorts answers by distance
 // to requester by country, US state, and/or Canadian province.
 func NewGeotargetCountry() *Filter {
-	return &Filter{Type: "geofence_country", Config: Config{}}
+	return &Filter{Type: "geotarget_country", Config: Config{}}
 }
 
 // NewGeotargetLatLong returns a filter that sorts answers by distance

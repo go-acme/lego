@@ -263,6 +263,11 @@ func addToBody(request *http.Request, value reflect.Value, field reflect.StructF
 	if e != nil {
 		return
 	}
+
+	if defaultLogger.LogLevel() == verboseLogging {
+		Debugf("Marshaled body is: %s\n", string(marshaled))
+	}
+
 	bodyBytes := bytes.NewReader(marshaled)
 	request.ContentLength = int64(bodyBytes.Len())
 	request.Header.Set(requestHeaderContentLength, strconv.FormatInt(request.ContentLength, 10))

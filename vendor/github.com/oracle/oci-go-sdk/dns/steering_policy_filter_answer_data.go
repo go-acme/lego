@@ -4,7 +4,7 @@
 // DNS API
 //
 // API for the DNS service. Use this API to manage DNS zones, records, and other DNS resources.
-// For more information, see Overview of the DNS Service (https://docs.us-phoenix-1.oraclecloud.com/iaas/Content/DNS/Concepts/dnszonemanagement.htm).
+// For more information, see Overview of the DNS Service (https://docs.cloud.oracle.com/iaas/Content/DNS/Concepts/dnszonemanagement.htm).
 //
 
 package dns
@@ -15,9 +15,11 @@ import (
 
 // SteeringPolicyFilterAnswerData The representation of SteeringPolicyFilterAnswerData
 type SteeringPolicyFilterAnswerData struct {
+
+	// An expression that is used to select a set of answers that match a condition. For example, answers with matching pool properties.
 	AnswerCondition *string `mandatory:"false" json:"answerCondition"`
 
-	// Keep the answer if the value is `true`.
+	// Keeps the answer only if the value is `true`.
 	ShouldKeep *bool `mandatory:"false" json:"shouldKeep"`
 }
 

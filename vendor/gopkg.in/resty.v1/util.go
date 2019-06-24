@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2018 Jeevanandam M (jeeva@myjeeva.com), All rights reserved.
+// Copyright (c) 2015-2019 Jeevanandam M (jeeva@myjeeva.com), All rights reserved.
 // resty source code and usage is governed by a MIT style
 // license that can be found in the LICENSE file.
 
@@ -85,8 +85,38 @@ func Unmarshalc(c *Client, ct string, b []byte, d interface{}) (err error) {
 }
 
 //‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+// RequestLog and ResponseLog type
+//___________________________________
+
+// RequestLog struct is used to collected information from resty request
+// instance for debug logging. It sent to request log callback before resty
+// actually logs the information.
+type RequestLog struct {
+	Header http.Header
+	Body   string
+}
+
+// ResponseLog struct is used to collected information from resty response
+// instance for debug logging. It sent to response log callback before resty
+// actually logs the information.
+type ResponseLog struct {
+	Header http.Header
+	Body   string
+}
+
+//‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 // Package Unexported methods
 //___________________________________
+
+// way to disable the HTML escape as opt-in
+func jsonMarshal(c *Client, r *Request, d interface{}) ([]byte, error) {
+	if !r.jsonEscapeHTML {
+		return noescapeJSONMarshal(d)
+	} else if !c.jsonEscapeHTML {
+		return noescapeJSONMarshal(d)
+	}
+	return c.JSONMarshal(d)
+}
 
 func firstNonEmpty(v ...string) string {
 	for _, s := range v {
@@ -115,7 +145,7 @@ func createMultipartHeader(param, fileName, contentType string) textproto.MIMEHe
 	return hdr
 }
 
-func addMultipartFormField(w *multipart.Writer, mf *multipartField) error {
+func addMultipartFormField(w *multipart.Writer, mf *MultipartField) error {
 	partWriter, err := w.CreatePart(createMultipartHeader(mf.Param, mf.FileName, mf.ContentType))
 	if err != nil {
 		return err
@@ -199,7 +229,7 @@ func createDirectory(dir string) (err error) {
 }
 
 func canJSONMarshal(contentType string, kind reflect.Kind) bool {
-	return IsJSONType(contentType) && (kind == reflect.Struct || kind == reflect.Map)
+	return IsJSONType(contentType) && (kind == reflect.Struct || kind == reflect.Map || kind == reflect.Slice)
 }
 
 func functionName(i interface{}) string {
@@ -240,4 +270,12 @@ func sortHeaderKeys(hdrs http.Header) []string {
 	}
 	sort.Strings(keys)
 	return keys
+}
+
+func copyHeaders(hdrs http.Header) http.Header {
+	nh := http.Header{}
+	for k, v := range hdrs {
+		nh[k] = v
+	}
+	return nh
 }

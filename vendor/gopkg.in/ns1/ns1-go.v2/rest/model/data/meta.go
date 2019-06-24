@@ -157,7 +157,7 @@ func (meta *Meta) StringMap() map[string]interface{} {
 	return m
 }
 
-// FormatInterface takes an interface of types: string, bool, int, float64, []string, and FeedPtr, and returns a string representation of said interface
+// FormatInterface takes an interface of types: string, bool, int, float64, []string, map[string]interface{} and FeedPtr, and returns a string representation of said interface
 func FormatInterface(i interface{}) string {
 	switch v := i.(type) {
 	case string:
@@ -179,6 +179,15 @@ func FormatInterface(i interface{}) string {
 			slc = append(slc, s.(string))
 		}
 		return strings.Join(slc, ",")
+	case map[string]interface{}:
+		// Required for Terraform workaround to allow users to submit raw json of feed pointer
+		// as value for metadata.  See https://github.com/terraform-providers/terraform-provider-ns1/issues/35
+		if val, ok := v["feed"].(string); ok {
+			feedPtr := FeedPtr{FeedID: val}
+			data, _ := json.Marshal(feedPtr)
+			return string(data)
+		}
+		panic(fmt.Sprintf("expected map to contain 'feed' key to marshal as feedPtr, got: %+v", v))
 	case FeedPtr:
 		data, _ := json.Marshal(v)
 		return string(data)
@@ -240,10 +249,12 @@ func MetaFromMap(m map[string]interface{}) *Meta {
 		if _, ok := mt.FieldByName(name); ok {
 			fv := mv.FieldByName(name)
 			if name == "Up" {
-				if v.(string) == "1" {
+				if v.(string) == "1" || strings.ToLower(v.(string)) == "true" {
 					fv.Set(reflect.ValueOf(true))
-				} else {
+				} else if v.(string) == "0" || strings.ToLower(v.(string)) == "false" {
 					fv.Set(reflect.ValueOf(false))
+				} else {
+					fv.Set(reflect.ValueOf(ParseType(v.(string))))
 				}
 			} else {
 				fv.Set(reflect.ValueOf(ParseType(v.(string))))

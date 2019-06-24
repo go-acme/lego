@@ -1,13 +1,9 @@
-// Package vegadns implements a DNS provider for solving the DNS-01
-// challenge using VegaDNS.
 package vegadns
 
 import (
 	"fmt"
-	"net"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 	"time"
 
@@ -18,11 +14,7 @@ import (
 
 const testDomain = "example.com"
 
-const ipPort = "127.0.0.1:2112"
-
 var envTest = tester.NewEnvTest("SECRET_VEGADNS_KEY", "SECRET_VEGADNS_SECRET", "VEGADNS_URL")
-
-type muxCallback func() *http.ServeMux
 
 func TestNewDNSProvider_Fail(t *testing.T) {
 	defer envTest.RestoreEnv()
@@ -36,37 +28,35 @@ func TestDNSProvider_TimeoutSuccess(t *testing.T) {
 	defer envTest.RestoreEnv()
 	envTest.ClearEnv()
 
-	ts, err := startTestServer(muxSuccess)
-	require.NoError(t, err)
-
-	defer ts.Close()
+	tearDown := startTestServer(muxSuccess())
+	defer tearDown()
 
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
 	timeout, interval := provider.Timeout()
-	assert.Equal(t, timeout, time.Duration(720000000000))
-	assert.Equal(t, interval, time.Duration(60000000000))
+	assert.Equal(t, timeout, 12*time.Minute)
+	assert.Equal(t, interval, 1*time.Minute)
 }
 
 func TestDNSProvider_Present(t *testing.T) {
 	testCases := []struct {
 		desc          string
-		callback      muxCallback
+		handler       http.Handler
 		expectedError string
 	}{
 		{
-			desc:     "Success",
-			callback: muxSuccess,
+			desc:    "Success",
+			handler: muxSuccess(),
 		},
 		{
 			desc:          "FailToFindZone",
-			callback:      muxFailToFindZone,
+			handler:       muxFailToFindZone(),
 			expectedError: "vegadns: can't find Authoritative Zone for _acme-challenge.example.com. in Present: Unable to find auth zone for fqdn _acme-challenge.example.com",
 		},
 		{
 			desc:          "FailToCreateTXT",
-			callback:      muxFailToCreateTXT,
+			handler:       muxFailToCreateTXT(),
 			expectedError: "vegadns: Got bad answer from VegaDNS on CreateTXT. Code: 400. Message: ",
 		},
 	}
@@ -76,10 +66,8 @@ func TestDNSProvider_Present(t *testing.T) {
 			defer envTest.RestoreEnv()
 			envTest.ClearEnv()
 
-			ts, err := startTestServer(test.callback)
-			require.NoError(t, err)
-
-			defer ts.Close()
+			tearDown := startTestServer(test.handler)
+			defer tearDown()
 
 			provider, err := NewDNSProvider()
 			require.NoError(t, err)
@@ -97,21 +85,21 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	testCases := []struct {
 		desc          string
-		callback      muxCallback
+		handler       http.Handler
 		expectedError string
 	}{
 		{
-			desc:     "Success",
-			callback: muxSuccess,
+			desc:    "Success",
+			handler: muxSuccess(),
 		},
 		{
 			desc:          "FailToFindZone",
-			callback:      muxFailToFindZone,
+			handler:       muxFailToFindZone(),
 			expectedError: "vegadns: can't find Authoritative Zone for _acme-challenge.example.com. in CleanUp: Unable to find auth zone for fqdn _acme-challenge.example.com",
 		},
 		{
 			desc:          "FailToGetRecordID",
-			callback:      muxFailToGetRecordID,
+			handler:       muxFailToGetRecordID(),
 			expectedError: "vegadns: couldn't get Record ID in CleanUp: Got bad answer from VegaDNS on GetRecordID. Code: 404. Message: ",
 		},
 	}
@@ -121,10 +109,8 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 			defer envTest.RestoreEnv()
 			envTest.ClearEnv()
 
-			ts, err := startTestServer(test.callback)
-			require.NoError(t, err)
-
-			defer ts.Close()
+			tearDown := startTestServer(test.handler)
+			defer tearDown()
 
 			provider, err := NewDNSProvider()
 			require.NoError(t, err)
@@ -287,32 +273,16 @@ func muxFailToGetRecordID() *http.ServeMux {
 	return mux
 }
 
-// Starts and returns a test server using a custom ip/port. Defer close() afterwards.
-func startTestServer(callback muxCallback) (*httptest.Server, error) {
-	err := os.Setenv("SECRET_VEGADNS_KEY", "key")
-	if err != nil {
-		return nil, err
+func startTestServer(handler http.Handler) func() {
+	ts := httptest.NewServer(handler)
+
+	envTest.Apply(map[string]string{
+		"SECRET_VEGADNS_KEY":    "key",
+		"SECRET_VEGADNS_SECRET": "secret",
+		"VEGADNS_URL":           ts.URL,
+	})
+
+	return func() {
+		ts.Close()
 	}
-
-	err = os.Setenv("SECRET_VEGADNS_SECRET", "secret")
-	if err != nil {
-		return nil, err
-	}
-
-	err = os.Setenv("VEGADNS_URL", "http://"+ipPort)
-	if err != nil {
-		return nil, err
-	}
-
-	ts := httptest.NewUnstartedServer(callback())
-
-	l, err := net.Listen("tcp", ipPort)
-	if err != nil {
-		return nil, err
-	}
-
-	ts.Listener = l
-	ts.Start()
-
-	return ts, nil
 }

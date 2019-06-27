@@ -187,6 +187,6 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 	case "zoneee":
 		return zoneee.NewDNSProvider()
 	default:
-		return nil, fmt.Errorf("unrecognised DNS provider: %s", name)
+		return nil, fmt.Errorf("unrecognized DNS provider: %s", name)
 	}
 }

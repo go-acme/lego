@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/go-acme/lego/log"
 	"github.com/go-acme/lego/platform/tester"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -215,7 +216,6 @@ func muxSuccess() *http.ServeMux {
 
 	mux.HandleFunc("/domains/example.com", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet && r.URL.Query().Get("show_dns_records") == "true" {
-			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, tokenResponseMock)
 			return
 		}
@@ -224,7 +224,6 @@ func muxSuccess() *http.ServeMux {
 
 	mux.HandleFunc("/domains/example.com/update", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
-			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, tokenResponseMock)
 			return
 		}
@@ -232,8 +231,8 @@ func muxSuccess() *http.ServeMux {
 	})
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusNotFound)
-		fmt.Printf("Not Found for Request: (%+v)\n\n", r)
+		log.Printf("Not Found for Request: (%+v)\n\n", r)
+		http.NotFound(w, r)
 	})
 
 	return mux
@@ -243,8 +242,7 @@ func muxFailToFindZone() *http.ServeMux {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/domains/example.com", func(w http.ResponseWriter, _ *http.Request) {
-		w.WriteHeader(http.StatusUnauthorized)
-		fmt.Fprint(w, tokenFailToFindZoneMock)
+		http.Error(w, tokenFailToFindZoneMock, http.StatusUnauthorized)
 	})
 
 	return mux
@@ -255,7 +253,6 @@ func muxFailToCreateTXT() *http.ServeMux {
 
 	mux.HandleFunc("/domains/example.com", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet && r.URL.Query().Get("show_dns_records") == "true" {
-			w.WriteHeader(http.StatusOK)
 			fmt.Fprint(w, tokenResponseMock)
 			return
 		}
@@ -264,8 +261,7 @@ func muxFailToCreateTXT() *http.ServeMux {
 
 	mux.HandleFunc("/domains/example.com/update", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost {
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprint(w, tokenFailToCreateTXTMock)
+			http.Error(w, tokenFailToCreateTXTMock, http.StatusBadRequest)
 			return
 		}
 		w.WriteHeader(http.StatusBadRequest)

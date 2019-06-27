@@ -70,6 +70,7 @@ func allDNSCodes() string {
 		"stackpath",
 		"transip",
 		"vegadns",
+		"versio",
 		"vscale",
 		"vultr",
 		"zoneee",
@@ -1217,6 +1218,29 @@ func displayDNSHelp(name string) {
 
 		fmt.Fprintln(w)
 		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/vegadns`)
+
+	case "versio":
+		// generated from: providers/dns/versio/versio.toml
+		fmt.Fprintln(w, `Configuration for Versio.[nl|eu|uk].`)
+		fmt.Fprintln(w, `Code:	'versio'`)
+		fmt.Fprintln(w, `Since:	'v2.7.0'`)
+		fmt.Fprintln(w)
+
+		fmt.Fprintln(w, `Credentials:`)
+		fmt.Fprintln(w, `	- "VERSIO_PASSWORD":	Basic authentication password`)
+		fmt.Fprintln(w, `	- "VERSIO_USERNAME":	Basic authentication username`)
+		fmt.Fprintln(w)
+
+		fmt.Fprintln(w, `Additional Configuration:`)
+		fmt.Fprintln(w, `	- "VERSIO_ENDPOINT":	The endpoint URL of the API Server`)
+		fmt.Fprintln(w, `	- "VERSIO_HTTP_TIMEOUT":	API request timeout`)
+		fmt.Fprintln(w, `	- "VERSIO_POLLING_INTERVAL":	Time between DNS propagation check`)
+		fmt.Fprintln(w, `	- "VERSIO_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		fmt.Fprintln(w, `	- "VERSIO_SEQUENCE_INTERVAL":	Interval between iteration, default 60s`)
+		fmt.Fprintln(w, `	- "VERSIO_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		fmt.Fprintln(w)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/versio`)
 
 	case "vscale":
 		// generated from: providers/dns/vscale/vscale.toml

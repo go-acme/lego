@@ -32,7 +32,7 @@ before_install:
   - go get -u github.com/letsencrypt/pebble/...
 
   # Install linters and misspell
-  - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | bash -s -- -b $GOPATH/bin v1.16.0
+  - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | bash -s -- -b $GOPATH/bin v1.17.1
   - golangci-lint --version
 
   # Hugo - documentation

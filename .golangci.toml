@@ -29,6 +29,7 @@
     "dupl",
     "prealloc",
     "scopelint",
+    "bodyclose", # https://github.com/timakin/bodyclose/pull/14
   ]
 
 [issues]

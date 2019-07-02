@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/Azure/go-autorest/autorest"
+	"github.com/Azure/go-autorest/tracing"
 )
 
 const (
@@ -44,24 +45,14 @@ var pollingCodes = [...]int{http.StatusNoContent, http.StatusAccepted, http.Stat
 // Future provides a mechanism to access the status and results of an asynchronous request.
 // Since futures are stateful they should be passed by value to avoid race conditions.
 type Future struct {
-	req *http.Request // legacy
-	pt  pollingTracker
-}
-
-// NewFuture returns a new Future object initialized with the specified request.
-// Deprecated: Please use NewFutureFromResponse instead.
-func NewFuture(req *http.Request) Future {
-	return Future{req: req}
+	pt pollingTracker
 }
 
 // NewFutureFromResponse returns a new Future object initialized
 // with the initial response from an asynchronous operation.
 func NewFutureFromResponse(resp *http.Response) (Future, error) {
 	pt, err := createPollingTracker(resp)
-	if err != nil {
-		return Future{}, err
-	}
-	return Future{pt: pt}, nil
+	return Future{pt: pt}, err
 }
 
 // Response returns the last HTTP response.
@@ -88,29 +79,25 @@ func (f Future) PollingMethod() PollingMethodType {
 	return f.pt.pollingMethod()
 }
 
-// Done queries the service to see if the operation has completed.
-func (f *Future) Done(sender autorest.Sender) (bool, error) {
-	// support for legacy Future implementation
-	if f.req != nil {
-		resp, err := sender.Do(f.req)
-		if err != nil {
-			return false, err
+// DoneWithContext queries the service to see if the operation has completed.
+func (f *Future) DoneWithContext(ctx context.Context, sender autorest.Sender) (done bool, err error) {
+	ctx = tracing.StartSpan(ctx, "github.com/Azure/go-autorest/autorest/azure/async.DoneWithContext")
+	defer func() {
+		sc := -1
+		resp := f.Response()
+		if resp != nil {
+			sc = resp.StatusCode
 		}
-		pt, err := createPollingTracker(resp)
-		if err != nil {
-			return false, err
-		}
-		f.pt = pt
-		f.req = nil
-	}
-	// end legacy
+		tracing.EndSpan(ctx, sc, err)
+	}()
+
 	if f.pt == nil {
 		return false, autorest.NewError("Future", "Done", "future is not initialized")
 	}
 	if f.pt.hasTerminated() {
 		return true, f.pt.pollingError()
 	}
-	if err := f.pt.pollForStatus(sender); err != nil {
+	if err := f.pt.pollForStatus(ctx, sender); err != nil {
 		return false, err
 	}
 	if err := f.pt.checkForErrors(); err != nil {
@@ -119,7 +106,10 @@ func (f *Future) Done(sender autorest.Sender) (bool, error) {
 	if err := f.pt.updatePollingState(f.pt.provisioningStateApplicable()); err != nil {
 		return false, err
 	}
-	if err := f.pt.updateHeaders(); err != nil {
+	if err := f.pt.initPollingMethod(); err != nil {
+		return false, err
+	}
+	if err := f.pt.updatePollingMethod(); err != nil {
 		return false, err
 	}
 	return f.pt.hasTerminated(), f.pt.pollingError()
@@ -151,24 +141,35 @@ func (f Future) GetPollingDelay() (time.Duration, bool) {
 	return d, true
 }
 
-// WaitForCompletion will return when one of the following conditions is met: the long
-// running operation has completed, the provided context is cancelled, or the client's
-// polling duration has been exceeded.  It will retry failed polling attempts based on
-// the retry value defined in the client up to the maximum retry attempts.
-// Deprecated: Please use WaitForCompletionRef() instead.
-func (f Future) WaitForCompletion(ctx context.Context, client autorest.Client) error {
-	return f.WaitForCompletionRef(ctx, client)
-}
-
 // WaitForCompletionRef will return when one of the following conditions is met: the long
 // running operation has completed, the provided context is cancelled, or the client's
 // polling duration has been exceeded.  It will retry failed polling attempts based on
 // the retry value defined in the client up to the maximum retry attempts.
-func (f *Future) WaitForCompletionRef(ctx context.Context, client autorest.Client) error {
-	ctx, cancel := context.WithTimeout(ctx, client.PollingDuration)
-	defer cancel()
-	done, err := f.Done(client)
-	for attempts := 0; !done; done, err = f.Done(client) {
+// If no deadline is specified in the context then the client.PollingDuration will be
+// used to determine if a default deadline should be used.
+// If PollingDuration is greater than zero the value will be used as the context's timeout.
+// If PollingDuration is zero then no default deadline will be used.
+func (f *Future) WaitForCompletionRef(ctx context.Context, client autorest.Client) (err error) {
+	ctx = tracing.StartSpan(ctx, "github.com/Azure/go-autorest/autorest/azure/async.WaitForCompletionRef")
+	defer func() {
+		sc := -1
+		resp := f.Response()
+		if resp != nil {
+			sc = resp.StatusCode
+		}
+		tracing.EndSpan(ctx, sc, err)
+	}()
+	cancelCtx := ctx
+	// if the provided context already has a deadline don't override it
+	_, hasDeadline := ctx.Deadline()
+	if d := client.PollingDuration; !hasDeadline && d != 0 {
+		var cancel context.CancelFunc
+		cancelCtx, cancel = context.WithTimeout(ctx, d)
+		defer cancel()
+	}
+
+	done, err := f.DoneWithContext(ctx, client)
+	for attempts := 0; !done; done, err = f.DoneWithContext(ctx, client) {
 		if attempts >= client.RetryAttempts {
 			return autorest.NewErrorWithError(err, "Future", "WaitForCompletion", f.pt.latestResponse(), "the number of retries has been exceeded")
 		}
@@ -192,12 +193,12 @@ func (f *Future) WaitForCompletionRef(ctx context.Context, client autorest.Clien
 			attempts++
 		}
 		// wait until the delay elapses or the context is cancelled
-		delayElapsed := autorest.DelayForBackoff(delay, delayAttempt, ctx.Done())
+		delayElapsed := autorest.DelayForBackoff(delay, delayAttempt, cancelCtx.Done())
 		if !delayElapsed {
-			return autorest.NewErrorWithError(ctx.Err(), "Future", "WaitForCompletion", f.pt.latestResponse(), "context has been cancelled")
+			return autorest.NewErrorWithError(cancelCtx.Err(), "Future", "WaitForCompletion", f.pt.latestResponse(), "context has been cancelled")
 		}
 	}
-	return err
+	return
 }
 
 // MarshalJSON implements the json.Marshaler interface.
@@ -264,7 +265,7 @@ type pollingTracker interface {
 	// these methods can differ per tracker
 
 	// checks the response headers and status code to determine the polling mechanism
-	updateHeaders() error
+	updatePollingMethod() error
 
 	// checks the response for tracker-specific error conditions
 	checkForErrors() error
@@ -274,11 +275,15 @@ type pollingTracker interface {
 
 	// methods common to all trackers
 
+	// initializes a tracker's polling URL and method, called for each iteration.
+	// these values can be overridden by each polling tracker as required.
+	initPollingMethod() error
+
 	// initializes the tracker's internal state, call this when the tracker is created
 	initializeState() error
 
 	// makes an HTTP request to check the status of the LRO
-	pollForStatus(sender autorest.Sender) error
+	pollForStatus(ctx context.Context, sender autorest.Sender) error
 
 	// updates internal tracker state, call this after each call to pollForStatus
 	updatePollingState(provStateApl bool) error
@@ -370,7 +375,7 @@ func (pt *pollingTrackerBase) initializeState() error {
 		pt.updateErrorFromResponse()
 		return pt.pollingError()
 	}
-	return nil
+	return pt.initPollingMethod()
 }
 
 func (pt pollingTrackerBase) getProvisioningState() *string {
@@ -392,6 +397,10 @@ func (pt *pollingTrackerBase) updateRawBody() error {
 		if err != nil {
 			return autorest.NewErrorWithError(err, "pollingTrackerBase", "updateRawBody", nil, "failed to read response body")
 		}
+		// observed in 204 responses over HTTP/2.0; the content length is -1 but body is empty
+		if len(b) == 0 {
+			return nil
+		}
 		// put the body back so it's available to other callers
 		pt.resp.Body = ioutil.NopCloser(bytes.NewReader(b))
 		if err = json.Unmarshal(b, &pt.rawBody); err != nil {
@@ -401,15 +410,13 @@ func (pt *pollingTrackerBase) updateRawBody() error {
 	return nil
 }
 
-func (pt *pollingTrackerBase) pollForStatus(sender autorest.Sender) error {
+func (pt *pollingTrackerBase) pollForStatus(ctx context.Context, sender autorest.Sender) error {
 	req, err := http.NewRequest(http.MethodGet, pt.URI, nil)
 	if err != nil {
 		return autorest.NewErrorWithError(err, "pollingTrackerBase", "pollForStatus", nil, "failed to create HTTP request")
 	}
-	// attach the context from the original request if available (it will be absent for deserialized futures)
-	if pt.resp != nil {
-		req = req.WithContext(pt.resp.Request.Context())
-	}
+
+	req = req.WithContext(ctx)
 	pt.resp, err = sender.Do(req)
 	if err != nil {
 		return autorest.NewErrorWithError(err, "pollingTrackerBase", "pollForStatus", nil, "failed to send HTTP request")
@@ -421,6 +428,7 @@ func (pt *pollingTrackerBase) pollForStatus(sender autorest.Sender) error {
 	} else {
 		// check response body for error content
 		pt.updateErrorFromResponse()
+		err = pt.pollingError()
 	}
 	return err
 }
@@ -437,7 +445,7 @@ func (pt *pollingTrackerBase) updateErrorFromResponse() {
 		re := respErr{}
 		defer pt.resp.Body.Close()
 		var b []byte
-		if b, err = ioutil.ReadAll(pt.resp.Body); err != nil {
+		if b, err = ioutil.ReadAll(pt.resp.Body); err != nil || len(b) == 0 {
 			goto Default
 		}
 		if err = json.Unmarshal(b, &re); err != nil {
@@ -552,13 +560,33 @@ func (pt pollingTrackerBase) baseCheckForErrors() error {
 	return nil
 }
 
+// default initialization of polling URL/method.  each verb tracker will update this as required.
+func (pt *pollingTrackerBase) initPollingMethod() error {
+	if ao, err := getURLFromAsyncOpHeader(pt.resp); err != nil {
+		return err
+	} else if ao != "" {
+		pt.URI = ao
+		pt.Pm = PollingAsyncOperation
+		return nil
+	}
+	if lh, err := getURLFromLocationHeader(pt.resp); err != nil {
+		return err
+	} else if lh != "" {
+		pt.URI = lh
+		pt.Pm = PollingLocation
+		return nil
+	}
+	// it's ok if we didn't find a polling header, this will be handled elsewhere
+	return nil
+}
+
 // DELETE
 
 type pollingTrackerDelete struct {
 	pollingTrackerBase
 }
 
-func (pt *pollingTrackerDelete) updateHeaders() error {
+func (pt *pollingTrackerDelete) updatePollingMethod() error {
 	// for 201 the Location header is required
 	if pt.resp.StatusCode == http.StatusCreated {
 		if lh, err := getURLFromLocationHeader(pt.resp); err != nil {
@@ -614,7 +642,7 @@ type pollingTrackerPatch struct {
 	pollingTrackerBase
 }
 
-func (pt *pollingTrackerPatch) updateHeaders() error {
+func (pt *pollingTrackerPatch) updatePollingMethod() error {
 	// by default we can use the original URL for polling and final GET
 	if pt.URI == "" {
 		pt.URI = pt.resp.Request.URL.String()
@@ -635,7 +663,7 @@ func (pt *pollingTrackerPatch) updateHeaders() error {
 		}
 	}
 	// for 202 prefer the Azure-AsyncOperation header but fall back to Location if necessary
-	// note the absense of the "final GET" mechanism for PATCH
+	// note the absence of the "final GET" mechanism for PATCH
 	if pt.resp.StatusCode == http.StatusAccepted {
 		ao, err := getURLFromAsyncOpHeader(pt.resp)
 		if err != nil {
@@ -672,7 +700,7 @@ type pollingTrackerPost struct {
 	pollingTrackerBase
 }
 
-func (pt *pollingTrackerPost) updateHeaders() error {
+func (pt *pollingTrackerPost) updatePollingMethod() error {
 	// 201 requires Location header
 	if pt.resp.StatusCode == http.StatusCreated {
 		if lh, err := getURLFromLocationHeader(pt.resp); err != nil {
@@ -728,7 +756,7 @@ type pollingTrackerPut struct {
 	pollingTrackerBase
 }
 
-func (pt *pollingTrackerPut) updateHeaders() error {
+func (pt *pollingTrackerPut) updatePollingMethod() error {
 	// by default we can use the original URL for polling and final GET
 	if pt.URI == "" {
 		pt.URI = pt.resp.Request.URL.String()
@@ -766,8 +794,6 @@ func (pt *pollingTrackerPut) updateHeaders() error {
 				pt.URI = lh
 				pt.Pm = PollingLocation
 			}
-			// when both headers are returned we use the value in the Location header for the final GET
-			pt.FinalGetURI = lh
 		}
 		// make sure a polling URL was found
 		if pt.URI == "" {
@@ -822,7 +848,7 @@ func createPollingTracker(resp *http.Response) (pollingTracker, error) {
 	// this initializes the polling header values, we do this during creation in case the
 	// initial response send us invalid values; this way the API call will return a non-nil
 	// error (not doing this means the error shows up in Future.Done)
-	return pt, pt.updateHeaders()
+	return pt, pt.updatePollingMethod()
 }
 
 // gets the polling URL from the Azure-AsyncOperation header.
@@ -855,43 +881,6 @@ func getURLFromLocationHeader(resp *http.Response) (string, error) {
 func isValidURL(s string) bool {
 	u, err := url.Parse(s)
 	return err == nil && u.IsAbs()
-}
-
-// DoPollForAsynchronous returns a SendDecorator that polls if the http.Response is for an Azure
-// long-running operation. It will delay between requests for the duration specified in the
-// RetryAfter header or, if the header is absent, the passed delay. Polling may be canceled via
-// the context associated with the http.Request.
-// Deprecated: Prefer using Futures to allow for non-blocking async operations.
-func DoPollForAsynchronous(delay time.Duration) autorest.SendDecorator {
-	return func(s autorest.Sender) autorest.Sender {
-		return autorest.SenderFunc(func(r *http.Request) (*http.Response, error) {
-			resp, err := s.Do(r)
-			if err != nil {
-				return resp, err
-			}
-			if !autorest.ResponseHasStatusCode(resp, pollingCodes[:]...) {
-				return resp, nil
-			}
-			future, err := NewFutureFromResponse(resp)
-			if err != nil {
-				return resp, err
-			}
-			// retry until either the LRO completes or we receive an error
-			var done bool
-			for done, err = future.Done(s); !done && err == nil; done, err = future.Done(s) {
-				// check for Retry-After delay, if not present use the specified polling delay
-				if pd, ok := future.GetPollingDelay(); ok {
-					delay = pd
-				}
-				// wait until the delay elapses or the context is cancelled
-				if delayElapsed := autorest.DelayForBackoff(delay, 0, r.Context().Done()); !delayElapsed {
-					return future.Response(),
-						autorest.NewErrorWithError(r.Context().Err(), "azure", "DoPollForAsynchronous", future.Response(), "context has been cancelled")
-				}
-			}
-			return future.Response(), err
-		})
-	}
 }
 
 // PollingMethodType defines a type used for enumerating polling mechanisms.

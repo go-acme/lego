@@ -76,9 +76,9 @@ func (client *Client) DescribeDomainRecordInfoWithCallback(request *DescribeDoma
 // DescribeDomainRecordInfoRequest is the request struct for api DescribeDomainRecordInfo
 type DescribeDomainRecordInfoRequest struct {
 	*requests.RpcRequest
-	Lang         string `position:"Query" name:"Lang"`
-	UserClientIp string `position:"Query" name:"UserClientIp"`
 	RecordId     string `position:"Query" name:"RecordId"`
+	UserClientIp string `position:"Query" name:"UserClientIp"`
+	Lang         string `position:"Query" name:"Lang"`
 }
 
 // DescribeDomainRecordInfoResponse is the response struct for api DescribeDomainRecordInfo
@@ -106,7 +106,7 @@ func CreateDescribeDomainRecordInfoRequest() (request *DescribeDomainRecordInfoR
 	request = &DescribeDomainRecordInfoRequest{
 		RpcRequest: &requests.RpcRequest{},
 	}
-	request.InitWithApiInfo("Alidns", "2015-01-09", "DescribeDomainRecordInfo", "", "")
+	request.InitWithApiInfo("Alidns", "2015-01-09", "DescribeDomainRecordInfo", "alidns", "openAPI")
 	return
 }
 

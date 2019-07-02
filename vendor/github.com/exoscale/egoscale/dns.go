@@ -329,7 +329,7 @@ func (client *Client) dnsRequest(ctx context.Context, uri string, urlValues url.
 
 	var hdr = make(http.Header)
 	hdr.Add("X-DNS-TOKEN", client.APIKey+":"+client.apiSecret)
-	hdr.Add("User-Agent", fmt.Sprintf("exoscale/egoscale (%v)", Version))
+	hdr.Add("User-Agent", UserAgent)
 	hdr.Add("Accept", "application/json")
 	if params != "" {
 		hdr.Add("Content-Type", "application/json")

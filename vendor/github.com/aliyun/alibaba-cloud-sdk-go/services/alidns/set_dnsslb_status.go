@@ -76,9 +76,9 @@ func (client *Client) SetDNSSLBStatusWithCallback(request *SetDNSSLBStatusReques
 // SetDNSSLBStatusRequest is the request struct for api SetDNSSLBStatus
 type SetDNSSLBStatusRequest struct {
 	*requests.RpcRequest
-	Lang         string           `position:"Query" name:"Lang"`
 	UserClientIp string           `position:"Query" name:"UserClientIp"`
 	SubDomain    string           `position:"Query" name:"SubDomain"`
+	Lang         string           `position:"Query" name:"Lang"`
 	Open         requests.Boolean `position:"Query" name:"Open"`
 }
 
@@ -95,7 +95,7 @@ func CreateSetDNSSLBStatusRequest() (request *SetDNSSLBStatusRequest) {
 	request = &SetDNSSLBStatusRequest{
 		RpcRequest: &requests.RpcRequest{},
 	}
-	request.InitWithApiInfo("Alidns", "2015-01-09", "SetDNSSLBStatus", "", "")
+	request.InitWithApiInfo("Alidns", "2015-01-09", "SetDNSSLBStatus", "alidns", "openAPI")
 	return
 }
 

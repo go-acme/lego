@@ -76,16 +76,18 @@ func (client *Client) DescribeDomainRecordsWithCallback(request *DescribeDomainR
 // DescribeDomainRecordsRequest is the request struct for api DescribeDomainRecords
 type DescribeDomainRecordsRequest struct {
 	*requests.RpcRequest
-	Lang         string           `position:"Query" name:"Lang"`
-	UserClientIp string           `position:"Query" name:"UserClientIp"`
-	DomainName   string           `position:"Query" name:"DomainName"`
-	PageNumber   requests.Integer `position:"Query" name:"PageNumber"`
-	PageSize     requests.Integer `position:"Query" name:"PageSize"`
-	KeyWord      string           `position:"Query" name:"KeyWord"`
-	RRKeyWord    string           `position:"Query" name:"RRKeyWord"`
-	TypeKeyWord  string           `position:"Query" name:"TypeKeyWord"`
 	ValueKeyWord string           `position:"Query" name:"ValueKeyWord"`
+	GroupId      requests.Integer `position:"Query" name:"GroupId"`
+	DomainName   string           `position:"Query" name:"DomainName"`
 	OrderBy      string           `position:"Query" name:"OrderBy"`
+	PageNumber   requests.Integer `position:"Query" name:"PageNumber"`
+	UserClientIp string           `position:"Query" name:"UserClientIp"`
+	PageSize     requests.Integer `position:"Query" name:"PageSize"`
+	SearchMode   string           `position:"Query" name:"SearchMode"`
+	Lang         string           `position:"Query" name:"Lang"`
+	KeyWord      string           `position:"Query" name:"KeyWord"`
+	TypeKeyWord  string           `position:"Query" name:"TypeKeyWord"`
+	RRKeyWord    string           `position:"Query" name:"RRKeyWord"`
 	Direction    string           `position:"Query" name:"Direction"`
 }
 
@@ -104,7 +106,7 @@ func CreateDescribeDomainRecordsRequest() (request *DescribeDomainRecordsRequest
 	request = &DescribeDomainRecordsRequest{
 		RpcRequest: &requests.RpcRequest{},
 	}
-	request.InitWithApiInfo("Alidns", "2015-01-09", "DescribeDomainRecords", "", "")
+	request.InitWithApiInfo("Alidns", "2015-01-09", "DescribeDomainRecords", "alidns", "openAPI")
 	return
 }
 

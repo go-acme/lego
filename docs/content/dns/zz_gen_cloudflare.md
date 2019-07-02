@@ -33,8 +33,10 @@ lego --dns cloudflare --domains my.domain.com --email my@email.com run
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `CLOUDFLARE_API_KEY` | API key |
-| `CLOUDFLARE_EMAIL` | Account email |
+| `CF_API_EMAIL` | Account email |
+| `CF_API_KEY` | API key |
+| `CLOUDFLARE_API_KEY` | Alias to CLOUDFLARE_API_KEY |
+| `CLOUDFLARE_EMAIL` | Alias to CF_API_EMAIL |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).
@@ -52,6 +54,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).
 
+The Global API Key needs to be used, not the Origin CA Key.
 
 
 

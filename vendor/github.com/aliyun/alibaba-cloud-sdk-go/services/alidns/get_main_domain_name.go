@@ -76,9 +76,9 @@ func (client *Client) GetMainDomainNameWithCallback(request *GetMainDomainNameRe
 // GetMainDomainNameRequest is the request struct for api GetMainDomainName
 type GetMainDomainNameRequest struct {
 	*requests.RpcRequest
-	Lang         string `position:"Query" name:"Lang"`
-	UserClientIp string `position:"Query" name:"UserClientIp"`
 	InputString  string `position:"Query" name:"InputString"`
+	UserClientIp string `position:"Query" name:"UserClientIp"`
+	Lang         string `position:"Query" name:"Lang"`
 }
 
 // GetMainDomainNameResponse is the response struct for api GetMainDomainName
@@ -95,7 +95,7 @@ func CreateGetMainDomainNameRequest() (request *GetMainDomainNameRequest) {
 	request = &GetMainDomainNameRequest{
 		RpcRequest: &requests.RpcRequest{},
 	}
-	request.InitWithApiInfo("Alidns", "2015-01-09", "GetMainDomainName", "", "")
+	request.InitWithApiInfo("Alidns", "2015-01-09", "GetMainDomainName", "alidns", "openAPI")
 	return
 }
 

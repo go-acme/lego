@@ -21,6 +21,8 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/Azure/go-autorest/tracing"
 )
 
 // Sender is the interface that wraps the Do method to send HTTP requests.
@@ -38,7 +40,7 @@ func (sf SenderFunc) Do(r *http.Request) (*http.Response, error) {
 	return sf(r)
 }
 
-// SendDecorator takes and possibily decorates, by wrapping, a Sender. Decorators may affect the
+// SendDecorator takes and possibly decorates, by wrapping, a Sender. Decorators may affect the
 // http.Request and pass it along or, first, pass the http.Request along then react to the
 // http.Response result.
 type SendDecorator func(Sender) Sender
@@ -68,7 +70,7 @@ func DecorateSender(s Sender, decorators ...SendDecorator) Sender {
 //
 // Send will not poll or retry requests.
 func Send(r *http.Request, decorators ...SendDecorator) (*http.Response, error) {
-	return SendWithSender(&http.Client{}, r, decorators...)
+	return SendWithSender(&http.Client{Transport: tracing.Transport}, r, decorators...)
 }
 
 // SendWithSender sends the passed http.Request, through the provided Sender, returning the
@@ -216,8 +218,7 @@ func DoRetryForStatusCodes(attempts int, backoff time.Duration, codes ...int) Se
 		return SenderFunc(func(r *http.Request) (resp *http.Response, err error) {
 			rr := NewRetriableRequest(r)
 			// Increment to add the first call (attempts denotes number of retries)
-			attempts++
-			for attempt := 0; attempt < attempts; {
+			for attempt := 0; attempt < attempts+1; {
 				err = rr.Prepare()
 				if err != nil {
 					return resp, err
@@ -234,7 +235,7 @@ func DoRetryForStatusCodes(attempts int, backoff time.Duration, codes ...int) Se
 				}
 				delayed := DelayWithRetryAfter(resp, r.Context().Done())
 				if !delayed && !DelayForBackoff(backoff, attempt, r.Context().Done()) {
-					return nil, r.Context().Err()
+					return resp, r.Context().Err()
 				}
 				// don't count a 429 against the number of attempts
 				// so that we continue to retry until it succeeds
@@ -247,16 +248,24 @@ func DoRetryForStatusCodes(attempts int, backoff time.Duration, codes ...int) Se
 	}
 }
 
-// DelayWithRetryAfter invokes time.After for the duration specified in the "Retry-After" header in
-// responses with status code 429
+// DelayWithRetryAfter invokes time.After for the duration specified in the "Retry-After" header.
+// The value of Retry-After can be either the number of seconds or a date in RFC1123 format.
+// The function returns true after successfully waiting for the specified duration.  If there is
+// no Retry-After header or the wait is cancelled the return value is false.
 func DelayWithRetryAfter(resp *http.Response, cancel <-chan struct{}) bool {
 	if resp == nil {
 		return false
 	}
-	retryAfter, _ := strconv.Atoi(resp.Header.Get("Retry-After"))
-	if resp.StatusCode == http.StatusTooManyRequests && retryAfter > 0 {
+	var dur time.Duration
+	ra := resp.Header.Get("Retry-After")
+	if retryAfter, _ := strconv.Atoi(ra); retryAfter > 0 {
+		dur = time.Duration(retryAfter) * time.Second
+	} else if t, err := time.Parse(time.RFC1123, ra); err == nil {
+		dur = t.Sub(time.Now())
+	}
+	if dur > 0 {
 		select {
-		case <-time.After(time.Duration(retryAfter) * time.Second):
+		case <-time.After(dur):
 			return true
 		case <-cancel:
 			return false

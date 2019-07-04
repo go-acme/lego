@@ -76,9 +76,9 @@ func (client *Client) DescribeDnsProductInstanceWithCallback(request *DescribeDn
 // DescribeDnsProductInstanceRequest is the request struct for api DescribeDnsProductInstance
 type DescribeDnsProductInstanceRequest struct {
 	*requests.RpcRequest
-	Lang         string `position:"Query" name:"Lang"`
-	UserClientIp string `position:"Query" name:"UserClientIp"`
 	InstanceId   string `position:"Query" name:"InstanceId"`
+	UserClientIp string `position:"Query" name:"UserClientIp"`
+	Lang         string `position:"Query" name:"Lang"`
 }
 
 // DescribeDnsProductInstanceResponse is the response struct for api DescribeDnsProductInstance
@@ -113,6 +113,9 @@ type DescribeDnsProductInstanceResponse struct {
 	Gslb                  bool                                   `json:"Gslb" xml:"Gslb"`
 	InClean               bool                                   `json:"InClean" xml:"InClean"`
 	InBlackHole           bool                                   `json:"InBlackHole" xml:"InBlackHole"`
+	BindDomainCount       int                                    `json:"BindDomainCount" xml:"BindDomainCount"`
+	BindDomainUsedCount   int                                    `json:"BindDomainUsedCount" xml:"BindDomainUsedCount"`
+	DnsSecurity           string                                 `json:"DnsSecurity" xml:"DnsSecurity"`
 	DnsServers            DnsServersInDescribeDnsProductInstance `json:"DnsServers" xml:"DnsServers"`
 }
 
@@ -121,7 +124,7 @@ func CreateDescribeDnsProductInstanceRequest() (request *DescribeDnsProductInsta
 	request = &DescribeDnsProductInstanceRequest{
 		RpcRequest: &requests.RpcRequest{},
 	}
-	request.InitWithApiInfo("Alidns", "2015-01-09", "DescribeDnsProductInstance", "", "")
+	request.InitWithApiInfo("Alidns", "2015-01-09", "DescribeDnsProductInstance", "alidns", "openAPI")
 	return
 }
 

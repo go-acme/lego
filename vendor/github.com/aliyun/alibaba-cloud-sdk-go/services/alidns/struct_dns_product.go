@@ -45,4 +45,7 @@ type DnsProduct struct {
 	Gslb                  bool   `json:"Gslb" xml:"Gslb"`
 	InClean               bool   `json:"InClean" xml:"InClean"`
 	InBlackHole           bool   `json:"InBlackHole" xml:"InBlackHole"`
+	BindDomainCount       int    `json:"BindDomainCount" xml:"BindDomainCount"`
+	BindDomainUsedCount   int    `json:"BindDomainUsedCount" xml:"BindDomainUsedCount"`
+	DnsSecurity           string `json:"DnsSecurity" xml:"DnsSecurity"`
 }

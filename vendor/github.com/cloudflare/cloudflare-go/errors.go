@@ -6,6 +6,7 @@ const (
 	errMakeRequestError     = "error from makeRequest"
 	errUnmarshalError       = "error unmarshalling the JSON response"
 	errRequestNotSuccessful = "error reported by API"
+	errMissingAccountID     = "account ID is empty and must be provided"
 )
 
 var _ Error = &UserError{}

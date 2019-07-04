@@ -144,7 +144,6 @@ type RegisterCustomTemplate struct {
 	Checksum        string            `json:"checksum" doc:"the MD5 checksum value of this template"`
 	Details         map[string]string `json:"details,omitempty" doc:"Template details in key/value pairs"`
 	Displaytext     string            `json:"displaytext" doc:"the display text of the template"`
-	IsFeatured      *bool             `json:"isfeatured,omitempty" doc:"true if this template is a featured template, default is false"`
 	Name            string            `json:"name" doc:"the name of the template"`
 	PasswordEnabled *bool             `json:"passwordenabled,omitempty" doc:"true if the template supports the password reset feature; default is false"`
 	SSHKeyEnabled   *bool             `json:"sshkeyenabled,omitempty" doc:"true if the template supports the sshkey upload feature; default is false"`

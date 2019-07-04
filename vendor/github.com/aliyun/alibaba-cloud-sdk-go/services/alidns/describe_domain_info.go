@@ -76,9 +76,9 @@ func (client *Client) DescribeDomainInfoWithCallback(request *DescribeDomainInfo
 // DescribeDomainInfoRequest is the request struct for api DescribeDomainInfo
 type DescribeDomainInfoRequest struct {
 	*requests.RpcRequest
-	Lang                 string           `position:"Query" name:"Lang"`
 	UserClientIp         string           `position:"Query" name:"UserClientIp"`
 	DomainName           string           `position:"Query" name:"DomainName"`
+	Lang                 string           `position:"Query" name:"Lang"`
 	NeedDetailAttributes requests.Boolean `position:"Query" name:"NeedDetailAttributes"`
 }
 
@@ -100,6 +100,9 @@ type DescribeDomainInfoResponse struct {
 	RecordLineTreeJson string                          `json:"RecordLineTreeJson" xml:"RecordLineTreeJson"`
 	LineType           string                          `json:"LineType" xml:"LineType"`
 	RegionLines        bool                            `json:"RegionLines" xml:"RegionLines"`
+	InBlackHole        bool                            `json:"InBlackHole" xml:"InBlackHole"`
+	InClean            bool                            `json:"InClean" xml:"InClean"`
+	SlaveDns           bool                            `json:"SlaveDns" xml:"SlaveDns"`
 	DnsServers         DnsServersInDescribeDomainInfo  `json:"DnsServers" xml:"DnsServers"`
 	AvailableTtls      AvailableTtls                   `json:"AvailableTtls" xml:"AvailableTtls"`
 	RecordLines        RecordLinesInDescribeDomainInfo `json:"RecordLines" xml:"RecordLines"`
@@ -110,7 +113,7 @@ func CreateDescribeDomainInfoRequest() (request *DescribeDomainInfoRequest) {
 	request = &DescribeDomainInfoRequest{
 		RpcRequest: &requests.RpcRequest{},
 	}
-	request.InitWithApiInfo("Alidns", "2015-01-09", "DescribeDomainInfo", "", "")
+	request.InitWithApiInfo("Alidns", "2015-01-09", "DescribeDomainInfo", "alidns", "openAPI")
 	return
 }
 

@@ -70,7 +70,7 @@ func (s *RegistrarService) EnableWhoisPrivacy(accountID string, domainName strin
 	return privacyResponse, nil
 }
 
-// DisablePrivacy disables the whois privacy for the domain.
+// DisableWhoisPrivacy disables the whois privacy for the domain.
 //
 // See https://developer.dnsimple.com/v2/registrar/whois-privacy/#enable
 func (s *RegistrarService) DisableWhoisPrivacy(accountID string, domainName string) (*whoisPrivacyResponse, error) {

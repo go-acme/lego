@@ -54,6 +54,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("namesilo: the configuration of the DNS provider is nil")
 	}
 
+	if config.TTL < 3600 || config.TTL > 2592000 {
+		return nil, errors.New("namesilo: TTL should be in [3600, 2592000]")
+	}
+
 	transport, err := namesilo.NewTokenTransport(config.APIKey)
 	if err != nil {
 		return nil, fmt.Errorf("namesilo: %v", err)

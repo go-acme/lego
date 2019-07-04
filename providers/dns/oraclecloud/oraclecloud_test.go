@@ -203,7 +203,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		expected              string
 	}{
 		{
-			desc:                  "invalid configuration",
+			desc: "invalid configuration",
 			configurationProvider: &configProvider{},
 			compartmentID:         "123",
 			expected:              "oraclecloud: can not create client, bad configuration: x509: decryption password incorrect",

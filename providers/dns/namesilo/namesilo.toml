@@ -1,7 +1,7 @@
 Name = "Namesilo"
 Description = ''''''
 URL = "https://www.namesilo.com/"
-Code = ""namesilo
+Code = "namesilo"
 Since = "v2.6.0"
 
 Example = ''''''
@@ -16,3 +16,4 @@ Example = ''''''
 
 [Links]
   API = "https://www.namesilo.com/api_reference.php"
+  GoClient = "https://github.com/nrdcg/namesilo"

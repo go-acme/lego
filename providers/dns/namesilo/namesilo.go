@@ -54,10 +54,6 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("namesilo: the configuration of the DNS provider is nil")
 	}
 
-	if config.TTL < 3600 || config.TTL > 2592000 {
-		return nil, errors.New("namesilo: TTL should be in [3600, 2592000]")
-	}
-
 	transport, err := namesilo.NewTokenTransport(config.APIKey)
 	if err != nil {
 		return nil, fmt.Errorf("namesilo: %v", err)
@@ -75,36 +71,13 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("namesilo: failed to find zone %v", err)
 	}
 
-	resp, err := d.client.DnsListRecords(&namesilo.DnsListRecordsParams{Domain: zoneName})
-	if err != nil {
-		return err
-	}
-
-	name := getRecordName(fqdn, zoneName)
-	var record namesilo.ResourceRecord
-	for _, r := range resp.Reply.ResourceRecord {
-		if r.Type == "TXT" && r.Host == name {
-			record = r
-		}
-	}
-	if record.RecordID == "" {
-		_, err = d.client.DnsAddRecord(&namesilo.DnsAddRecordParams{
-			Domain: zoneName,
-			Type:   "TXT",
-			Host:   name,
-			Value:  value,
-			TTL:    d.config.TTL,
-		})
-	} else {
-		_, err = d.client.DnsUpdateRecord(&namesilo.DnsUpdateRecordParams{
-			Domain: zoneName,
-			ID:     record.RecordID,
-			Host:   name,
-			Value:  value,
-			TTL:    d.config.TTL,
-		})
-	}
-	if err != nil {
+	if _, err := d.client.DnsAddRecord(&namesilo.DnsAddRecordParams{
+		Domain: zoneName,
+		Type:   "TXT",
+		Host:   getRecordName(fqdn, zoneName),
+		Value:  value,
+		TTL:    d.config.TTL,
+	}); err != nil {
 		return err
 	}
 	return nil

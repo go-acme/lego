@@ -475,6 +475,14 @@
   version = "v0.6.0"
 
 [[projects]]
+  digest = "1:a1e8eda841bca324a6b4d88824d625b3ba8d86bf9ec68677d595c02d7502918b"
+  name = "github.com/nrdcg/namesilo"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "a9d275011759a070d795b7d0ea99cc590915823f"
+  version = "v0.2.0"
+
+[[projects]]
   digest = "1:482e6a8662dcfd8dc7ebf28b8a1a293b6d453f71bda13e370b3949cb487e6dd6"
   name = "github.com/oracle/oci-go-sdk"
   packages = [
@@ -910,6 +918,7 @@
     "github.com/namedotcom/go/namecom",
     "github.com/nrdcg/auroradns",
     "github.com/nrdcg/goinwx",
+    "github.com/nrdcg/namesilo",
     "github.com/oracle/oci-go-sdk/common",
     "github.com/oracle/oci-go-sdk/dns",
     "github.com/ovh/go-ovh/ovh",

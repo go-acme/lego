@@ -898,7 +898,7 @@ func displayDNSHelp(name string) {
 		// generated from: providers/dns/namesilo/namesilo.toml
 		fmt.Fprintln(w, `Configuration for Namesilo.`)
 		fmt.Fprintln(w, `Code:	'namesilo'`)
-		fmt.Fprintln(w, `Since:	'v2.6.0'`)
+		fmt.Fprintln(w, `Since:	'v2.7.0'`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)

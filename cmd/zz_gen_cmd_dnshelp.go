@@ -216,8 +216,10 @@ func displayDNSHelp(name string) {
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Credentials:`)
-		fmt.Fprintln(w, `	- "CLOUDFLARE_API_KEY":	API key`)
-		fmt.Fprintln(w, `	- "CLOUDFLARE_EMAIL":	Account email`)
+		fmt.Fprintln(w, `	- "CF_API_EMAIL":	Account email`)
+		fmt.Fprintln(w, `	- "CF_API_KEY":	API key`)
+		fmt.Fprintln(w, `	- "CLOUDFLARE_API_KEY":	Alias to CLOUDFLARE_API_KEY`)
+		fmt.Fprintln(w, `	- "CLOUDFLARE_EMAIL":	Alias to CF_API_EMAIL`)
 		fmt.Fprintln(w)
 
 		fmt.Fprintln(w, `Additional Configuration:`)

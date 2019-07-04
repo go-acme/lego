@@ -2,7 +2,7 @@ Name = "Namesilo"
 Description = ''''''
 URL = "https://www.namesilo.com/"
 Code = "namesilo"
-Since = "v2.6.0"
+Since = "v2.7.0"
 
 Example = ''''''
 

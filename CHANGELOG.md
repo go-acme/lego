@@ -1,5 +1,19 @@
 # Changelog
 
+## [v2.7.0] - 2019-07-17
+
+### Added:
+- **[dnsprovider]** Add DNS provider for namesilo
+- **[dnsprovider]** Add DNS provider for versio.nl
+
+### Changed:
+- **[dnsprovider]** Update DNS providers libs.
+- **[dnsprovider]** joker: support username and password.
+- **[dnsprovider]** Vultr: Switch to official client
+
+### Fixed:
+- **[dnsprovider]** otc: Prevent sending empty body.
+
 ## [v2.6.0] - 2019-05-27
 
 ### Added:

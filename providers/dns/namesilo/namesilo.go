@@ -12,6 +12,11 @@ import (
 	"github.com/nrdcg/namesilo"
 )
 
+const (
+	defaultTTL = 3600
+	maxTTL     = 2592000
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	APIKey             string
@@ -20,14 +25,12 @@ type Config struct {
 	TTL                int
 }
 
-const namesiloURL = "https://www.namesilo.com"
-
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
 		PropagationTimeout: env.GetOrDefaultSecond("NAMESILO_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond("NAMESILO_POLLING_INTERVAL", dns01.DefaultPollingInterval),
-		TTL:                env.GetOrDefaultInt("NAMESILO_TTL", dns01.DefaultTTL),
+		TTL:                env.GetOrDefaultInt("NAMESILO_TTL", defaultTTL),
 	}
 }
 
@@ -42,8 +45,13 @@ type DNSProvider struct {
 //
 // See: https://www.namesilo.com/api_reference.php
 func NewDNSProvider() (*DNSProvider, error) {
+	values, err := env.Get("NAMESILO_API_KEY")
+	if err != nil {
+		return nil, fmt.Errorf("namesilo: %v", err)
+	}
+
 	config := NewDefaultConfig()
-	config.APIKey = env.GetOrFile("NAMESILO_API_KEY")
+	config.APIKey = values["NAMESILO_API_KEY"]
 
 	return NewDNSProviderConfig(config)
 }
@@ -54,8 +62,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("namesilo: the configuration of the DNS provider is nil")
 	}
 
-	if config.TTL < 3600 || config.TTL > 2592000 {
-		return nil, errors.New("namesilo: TTL should be in [3600, 2592000]")
+	if config.TTL < defaultTTL || config.TTL > maxTTL {
+		return nil, fmt.Errorf("namesilo: TTL should be in [%d, %d]", defaultTTL, maxTTL)
 	}
 
 	transport, err := namesilo.NewTokenTransport(config.APIKey)
@@ -72,17 +80,18 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zoneName, err := getZoneNameByDomain(domain)
 	if err != nil {
-		return fmt.Errorf("namesilo: failed to find zone %v", err)
+		return fmt.Errorf("namesilo: %v", err)
 	}
 
-	if _, err := d.client.DnsAddRecord(&namesilo.DnsAddRecordParams{
+	_, err = d.client.DnsAddRecord(&namesilo.DnsAddRecordParams{
 		Domain: zoneName,
 		Type:   "TXT",
 		Host:   getRecordName(fqdn, zoneName),
 		Value:  value,
 		TTL:    d.config.TTL,
-	}); err != nil {
-		return err
+	})
+	if err != nil {
+		return fmt.Errorf("namesilo: failed to add record %v", err)
 	}
 	return nil
 }
@@ -93,20 +102,21 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	zoneName, err := getZoneNameByDomain(domain)
 	if err != nil {
-		return err
+		return fmt.Errorf("namesilo: %v", err)
 	}
 
 	resp, err := d.client.DnsListRecords(&namesilo.DnsListRecordsParams{Domain: zoneName})
 	if err != nil {
-		return err
+		return fmt.Errorf("namesilo: %v", err)
 	}
 
 	var lastErr error
 	name := getRecordName(fqdn, zoneName)
 	for _, r := range resp.Reply.ResourceRecord {
 		if r.Type == "TXT" && r.Host == name {
-			if _, err := d.client.DnsDeleteRecord(&namesilo.DnsDeleteRecordParams{Domain: zoneName, ID: r.RecordID}); err != nil {
-				lastErr = err
+			_, err := d.client.DnsDeleteRecord(&namesilo.DnsDeleteRecordParams{Domain: zoneName, ID: r.RecordID})
+			if err != nil {
+				lastErr = fmt.Errorf("namesilo: %v", err)
 			}
 		}
 	}
@@ -122,7 +132,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func getZoneNameByDomain(domain string) (string, error) {
 	zone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
 	if err != nil {
-		return "", fmt.Errorf("namesilo: failed to find zone for domain: %s, %v", domain, err)
+		return "", fmt.Errorf("failed to find zone for domain: %s, %v", domain, err)
 	}
 	return dns01.UnFqdn(zone), nil
 }

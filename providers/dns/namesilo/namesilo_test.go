@@ -23,20 +23,18 @@ func TestNewDNSProvider(t *testing.T) {
 			desc: "success",
 			envVars: map[string]string{
 				"NAMESILO_API_KEY": "A",
-				"NAMESILO_TTL":     "3600",
 			},
 		},
 		{
-			desc: "missing API key",
-			envVars: map[string]string{
-				"NAMESILO_TTL": "3600",
-			},
-			expected: "namesilo: credentials missing: API key",
+			desc:     "missing API key",
+			envVars:  map[string]string{},
+			expected: "namesilo: some credentials information are missing: NAMESILO_API_KEY",
 		},
 		{
-			desc: "unavailable TTL",
+			desc: "unsupported TTL",
 			envVars: map[string]string{
 				"NAMESILO_API_KEY": "A",
+				"NAMESILO_TTL":     "180",
 			},
 			expected: "namesilo: TTL should be in [3600, 2592000]",
 		},
@@ -72,11 +70,11 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		{
 			desc:   "success",
 			apiKey: "A",
-			ttl:    3600,
+			ttl:    defaultTTL,
 		},
 		{
 			desc:     "missing API key",
-			ttl:      3600,
+			ttl:      defaultTTL,
 			expected: "namesilo: credentials missing: API key",
 		},
 		{

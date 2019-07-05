@@ -55,6 +55,7 @@ func allDNSCodes() string {
 		"mydnsjp",
 		"namecheap",
 		"namedotcom",
+		"namesilo",
 		"netcup",
 		"nifcloud",
 		"ns1",
@@ -892,6 +893,25 @@ func displayDNSHelp(name string) {
 
 		fmt.Fprintln(w)
 		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/namedotcom`)
+
+	case "namesilo":
+		// generated from: providers/dns/namesilo/namesilo.toml
+		fmt.Fprintln(w, `Configuration for Namesilo.`)
+		fmt.Fprintln(w, `Code:	'namesilo'`)
+		fmt.Fprintln(w, `Since:	'v2.7.0'`)
+		fmt.Fprintln(w)
+
+		fmt.Fprintln(w, `Credentials:`)
+		fmt.Fprintln(w, `	- "NAMESILO_API_KEY":	Client ID`)
+		fmt.Fprintln(w)
+
+		fmt.Fprintln(w, `Additional Configuration:`)
+		fmt.Fprintln(w, `	- "NAMESILO_POLLING_INTERVAL":	Time between DNS propagation check`)
+		fmt.Fprintln(w, `	- "NAMESILO_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation, it is better to set larger than 15m`)
+		fmt.Fprintln(w, `	- "NAMESILO_TTL":	The TTL of the TXT record used for the DNS challenge, should be in [3600, 2592000]`)
+
+		fmt.Fprintln(w)
+		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/namesilo`)
 
 	case "netcup":
 		// generated from: providers/dns/netcup/netcup.toml

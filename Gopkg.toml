@@ -128,3 +128,7 @@
 [[constraint]]
   name = "github.com/cpu/goacmedns"
   branch = "master"
+
+[[constraint]]
+  name = "github.com/nrdcg/namesilo"
+  version = "0.2.0"

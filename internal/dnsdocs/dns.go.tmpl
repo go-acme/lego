@@ -9,8 +9,6 @@ import (
 	"sort"
 	"strings"
 	"text/tabwriter"
-
-	"github.com/go-acme/lego/log"
 )
 
 func allDNSCodes() string {
@@ -24,35 +22,42 @@ func allDNSCodes() string {
 	return strings.Join(providers, ", ")
 }
 
-func displayDNSHelp(name string) {
+func displayDNSHelp(name string) error {
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+	ew := &errWriter{w: w}
+
 	switch name {
 {{ range $provider := .Providers }}
 	case "{{ $provider.Code }}":
 		// generated from: {{ .GeneratedFrom }}
-		fmt.Fprintln(w, `Configuration for {{ $provider.Name }}.`)
-		fmt.Fprintln(w, `Code:	'{{ $provider.Code }}'`)
-		fmt.Fprintln(w, `Since:	'{{ $provider.Since }}'`)
-		fmt.Fprintln(w)
+		ew.writeln(`Configuration for {{ $provider.Name }}.`)
+		ew.writeln(`Code:	'{{ $provider.Code }}'`)
+		ew.writeln(`Since:	'{{ $provider.Since }}'`)
+		ew.writeln()
 {{if $provider.Configuration }}{{if $provider.Configuration.Credentials }}
-		fmt.Fprintln(w, `Credentials:`)
+		ew.writeln(`Credentials:`)
 {{- range $k, $v := $provider.Configuration.Credentials }}
-		fmt.Fprintln(w,`	- "{{ $k }}":	{{ safe $v }}`)
+		ew.writeln(`	- "{{ $k }}":	{{ safe $v }}`)
 {{- end}}
-		fmt.Fprintln(w)
+		ew.writeln()
 {{end}}{{if $provider.Configuration.Additional }}
-		fmt.Fprintln(w, `Additional Configuration:`)
+		ew.writeln(`Additional Configuration:`)
 {{- range $k, $v := $provider.Configuration.Additional }}
-		fmt.Fprintln(w, `	- "{{ $k }}":	{{ safe $v }}`)
+		ew.writeln(`	- "{{ $k }}":	{{ safe $v }}`)
 {{- end}}
 {{end}}{{end}}
-		fmt.Fprintln(w)
-		fmt.Fprintln(w, `More information: https://go-acme.github.io/lego/dns/{{ $provider.Code }}`)
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/{{ $provider.Code }}`)
 {{end}}
     case "manual":
-		fmt.Fprintln(w, `Solving the DNS-01 challenge using CLI prompt.`)
+		ew.writeln(`Solving the DNS-01 challenge using CLI prompt.`)
 	default:
-		log.Fatalf("%q is not yet supported.", name)
+		return fmt.Errorf("%q is not yet supported", name)
 	}
-	w.Flush()
+
+	if ew.err != nil {
+		return fmt.Errorf("error: %v", ew.err)
+	}
+
+	return w.Flush()
 }

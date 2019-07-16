@@ -762,6 +762,8 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "JOKER_API_KEY":	API key`)
+		ew.writeln(`	- "JOKER_PASSWORD":	Joker.com password`)
+		ew.writeln(`	- "JOKER_USERNAME":	Joker.com username (email address)`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)

@@ -53,7 +53,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 ## More information
 
 - [API documentation](https://www.vultr.com/api/#dns)
-- [Go client](https://github.com/JamesClonk/vultr)
+- [Go client](https://github.com/vultr/govultr)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/vultr/vultr.toml -->

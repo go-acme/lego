@@ -132,3 +132,7 @@
 [[constraint]]
   name = "github.com/nrdcg/namesilo"
   version = "0.2.0"
+
+[[constraint]]
+  name = "github.com/vultr/govultr"
+  version = "0.1.4"

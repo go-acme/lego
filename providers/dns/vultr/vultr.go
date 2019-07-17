@@ -89,7 +89,6 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	name := d.extractRecordName(fqdn, zoneDomain)
 
 	err = d.client.DNSRecord.Create(context.Background(), zoneDomain, name, "TXT", value, d.config.TTL, 0)
-	//err = d.client.CreateDNSRecord(zoneDomain, name, "TXT", `"`+value+`"`, 0, d.config.TTL)
 	if err != nil {
 		return fmt.Errorf("vultr: API call failed: %v", err)
 	}

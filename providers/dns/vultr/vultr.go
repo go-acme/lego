@@ -1,4 +1,4 @@
-// Package Vultr implements a DNS provider for solving the DNS-01 challenge using the Vultr DNS.
+// Package vultr implements a DNS provider for solving the DNS-01 challenge using the Vultr DNS.
 // See https://www.vultr.com/api/#dns
 package vultr
 

@@ -1,18 +1,20 @@
-// Package vultr implements a DNS provider for solving the DNS-01 challenge using the vultr DNS.
+// Package vultr implements a DNS provider for solving the DNS-01 challenge using the Vultr DNS.
 // See https://www.vultr.com/api/#dns
 package vultr
 
 import (
+	"context"
 	"crypto/tls"
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
-	vultr "github.com/JamesClonk/vultr/lib"
 	"github.com/go-acme/lego/challenge/dns01"
 	"github.com/go-acme/lego/platform/config/env"
+	"github.com/vultr/govultr"
 )
 
 // Config is used to configure the creation of the DNSProvider
@@ -43,7 +45,7 @@ func NewDefaultConfig() *Config {
 // DNSProvider is an implementation of the acme.ChallengeProvider interface.
 type DNSProvider struct {
 	config *Config
-	client *vultr.Client
+	client *govultr.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance with a configured Vultr client.
@@ -70,10 +72,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("vultr: credentials missing")
 	}
 
-	options := &vultr.Options{
-		HTTPClient: config.HTTPClient,
-	}
-	client := vultr.NewClient(config.APIKey, options)
+	client := govultr.NewClient(config.HTTPClient, config.APIKey)
 
 	return &DNSProvider{client: client, config: config}, nil
 }
@@ -89,7 +88,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	name := d.extractRecordName(fqdn, zoneDomain)
 
-	err = d.client.CreateDNSRecord(zoneDomain, name, "TXT", `"`+value+`"`, 0, d.config.TTL)
+	err = d.client.DNSRecord.Create(context.Background(), zoneDomain, name, "TXT", value, d.config.TTL, 0)
 	if err != nil {
 		return fmt.Errorf("vultr: API call failed: %v", err)
 	}
@@ -108,7 +107,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	var allErr []string
 	for _, rec := range records {
-		err := d.client.DeleteDNSRecord(zoneDomain, rec.RecordID)
+		err := d.client.DNSRecord.Delete(context.Background(), zoneDomain, strconv.Itoa(rec.RecordID))
 		if err != nil {
 			allErr = append(allErr, err.Error())
 		}
@@ -128,12 +127,12 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 func (d *DNSProvider) getHostedZone(domain string) (string, error) {
-	domains, err := d.client.GetDNSDomains()
+	domains, err := d.client.DNSDomain.List(context.Background())
 	if err != nil {
 		return "", fmt.Errorf("API call failed: %v", err)
 	}
 
-	var hostedDomain vultr.DNSDomain
+	var hostedDomain govultr.DNSDomain
 	for _, dom := range domains {
 		if strings.HasSuffix(domain, dom.Domain) {
 			if len(dom.Domain) > len(hostedDomain.Domain) {
@@ -148,14 +147,14 @@ func (d *DNSProvider) getHostedZone(domain string) (string, error) {
 	return hostedDomain.Domain, nil
 }
 
-func (d *DNSProvider) findTxtRecords(domain, fqdn string) (string, []vultr.DNSRecord, error) {
+func (d *DNSProvider) findTxtRecords(domain, fqdn string) (string, []govultr.DNSRecord, error) {
 	zoneDomain, err := d.getHostedZone(domain)
 	if err != nil {
 		return "", nil, err
 	}
 
-	var records []vultr.DNSRecord
-	result, err := d.client.GetDNSRecords(zoneDomain)
+	var records []govultr.DNSRecord
+	result, err := d.client.DNSRecord.List(context.Background(), zoneDomain)
 	if err != nil {
 		return "", records, fmt.Errorf("API call has failed: %v", err)
 	}

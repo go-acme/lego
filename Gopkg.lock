@@ -56,14 +56,6 @@
   version = "v0.3.1"
 
 [[projects]]
-  digest = "1:ed3fc9992df610d07c85c24e0b792268cc1ce226dd9bf8cb2e6ad9a377b35415"
-  name = "github.com/JamesClonk/vultr"
-  packages = ["lib"]
-  pruneopts = "NUT"
-  revision = "fa1c0367800db75e4d10d0ec90c49a8731670224"
-  version = "1.15.0"
-
-[[projects]]
   branch = "master"
   digest = "1:a4068a93355ba3cff0a719425713123d23c90010cb4d023b40c679a22465736d"
   name = "github.com/OpenDNS/vegadns2client"
@@ -368,14 +360,6 @@
   version = "v1.1.5"
 
 [[projects]]
-  digest = "1:8b3234b10eacd5edea45bf0c13a585b608749da23f94aaf29b46d9ef8a8babf4"
-  name = "github.com/juju/ratelimit"
-  packages = ["."]
-  pruneopts = "NUT"
-  revision = "59fac5042749a5afb9af70e813da1dd5474f0167"
-  version = "1.0.1"
-
-[[projects]]
   branch = "master"
   digest = "1:ec142582cd3bb5cc29a2bc7181a6e67367b90b19f6a957ce506dcd7d1500bf95"
   name = "github.com/kolo/xmlrpc"
@@ -598,6 +582,14 @@
   pruneopts = "NUT"
   revision = "cfb38830724cc34fedffe9a2a29fb54fa9169cd1"
   version = "v1.20.0"
+
+[[projects]]
+  digest = "1:b1d2c51a689eef501cb5726f8d9997c0ca4415cbfa7105fe6e64b1844eddf1fb"
+  name = "github.com/vultr/govultr"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "ca447e056e08d93aa6e5b09e6ae3565dd1825281"
+  version = "v0.1.4"
 
 [[projects]]
   digest = "1:58f2854b50ff8862eb6a347f20dedaac83e1166f4040472e17bc37736841a12f"
@@ -885,7 +877,6 @@
     "github.com/Azure/go-autorest/autorest/azure/auth",
     "github.com/Azure/go-autorest/autorest/to",
     "github.com/BurntSushi/toml",
-    "github.com/JamesClonk/vultr/lib",
     "github.com/OpenDNS/vegadns2client",
     "github.com/akamai/AkamaiOPEN-edgegrid-golang/configdns-v1",
     "github.com/akamai/AkamaiOPEN-edgegrid-golang/edgegrid",
@@ -934,6 +925,7 @@
     "github.com/transip/gotransip",
     "github.com/transip/gotransip/domain",
     "github.com/urfave/cli",
+    "github.com/vultr/govultr",
     "golang.org/x/crypto/ocsp",
     "golang.org/x/net/context",
     "golang.org/x/net/idna",

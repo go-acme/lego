@@ -9,7 +9,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var envTest = tester.NewEnvTest("JOKER_API_KEY").WithDomain("JOKER_DOMAIN")
+var envTest = tester.NewEnvTest("JOKER_API_KEY", "JOKER_USERNAME", "JOKER_PASSWORD").
+	WithDomain("JOKER_DOMAIN")
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -18,17 +19,44 @@ func TestNewDNSProvider(t *testing.T) {
 		expected string
 	}{
 		{
-			desc: "success",
+			desc: "success API key",
 			envVars: map[string]string{
 				"JOKER_API_KEY": "123",
 			},
 		},
 		{
-			desc: "missing key",
+			desc: "success username password",
 			envVars: map[string]string{
-				"JOKER_API_KEY": "",
+				"JOKER_USERNAME": "123",
+				"JOKER_PASSWORD": "123",
 			},
-			expected: "joker: some credentials information are missing: JOKER_API_KEY",
+		},
+		{
+			desc: "missing credentials",
+			envVars: map[string]string{
+				"JOKER_API_KEY":  "",
+				"JOKER_USERNAME": "",
+				"JOKER_PASSWORD": "",
+			},
+			expected: "joker: some credentials information are missing: JOKER_USERNAME,JOKER_PASSWORD or some credentials information are missing: JOKER_API_KEY",
+		},
+		{
+			desc: "missing password",
+			envVars: map[string]string{
+				"JOKER_API_KEY":  "",
+				"JOKER_USERNAME": "123",
+				"JOKER_PASSWORD": "",
+			},
+			expected: "joker: some credentials information are missing: JOKER_PASSWORD or some credentials information are missing: JOKER_API_KEY",
+		},
+		{
+			desc: "missing username",
+			envVars: map[string]string{
+				"JOKER_API_KEY":  "",
+				"JOKER_USERNAME": "",
+				"JOKER_PASSWORD": "123",
+			},
+			expected: "joker: some credentials information are missing: JOKER_USERNAME or some credentials information are missing: JOKER_API_KEY",
 		},
 	}
 
@@ -55,14 +83,22 @@ func TestNewDNSProvider(t *testing.T) {
 func TestNewDNSProviderConfig(t *testing.T) {
 	testCases := []struct {
 		desc            string
-		authKey         string
+		apiKey          string
+		username        string
+		password        string
 		baseURL         string
 		expected        string
 		expectedBaseURL string
 	}{
 		{
-			desc:            "success",
-			authKey:         "123",
+			desc:            "success api key",
+			apiKey:          "123",
+			expectedBaseURL: defaultBaseURL,
+		},
+		{
+			desc:            "success username and password",
+			username:        "123",
+			password:        "123",
 			expectedBaseURL: defaultBaseURL,
 		},
 		{
@@ -71,14 +107,26 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			expectedBaseURL: defaultBaseURL,
 		},
 		{
+			desc:            "missing credentials: username",
+			expected:        "joker: credentials missing",
+			username:        "123",
+			expectedBaseURL: defaultBaseURL,
+		},
+		{
+			desc:            "missing credentials: password",
+			expected:        "joker: credentials missing",
+			password:        "123",
+			expectedBaseURL: defaultBaseURL,
+		},
+		{
 			desc:            "Base URL should ends with /",
-			authKey:         "123",
+			apiKey:          "123",
 			baseURL:         "http://example.com",
 			expectedBaseURL: "http://example.com/",
 		},
 		{
 			desc:            "Base URL already ends with /",
-			authKey:         "123",
+			apiKey:          "123",
 			baseURL:         "http://example.com/",
 			expectedBaseURL: "http://example.com/",
 		},
@@ -87,7 +135,10 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			config := NewDefaultConfig()
-			config.APIKey = test.authKey
+			config.APIKey = test.apiKey
+			config.Username = test.username
+			config.Password = test.password
+
 			if test.baseURL != "" {
 				config.BaseURL = test.baseURL
 			}

@@ -12,9 +12,15 @@ import (
 )
 
 const (
-	correctAuth     = "123"
-	incorrectAuth   = "321"
-	serverErrorAuth = "500"
+	correctAPIKey     = "123"
+	incorrectAPIKey   = "321"
+	serverErrorAPIKey = "500"
+)
+
+const (
+	correctUsername     = "lego"
+	incorrectUsername   = "not_lego"
+	serverErrorUsername = "error"
 )
 
 func setup() (*http.ServeMux, *httptest.Server) {
@@ -23,35 +29,35 @@ func setup() (*http.ServeMux, *httptest.Server) {
 	return mux, server
 }
 
-func TestDNSProvider_login(t *testing.T) {
+func TestDNSProvider_login_api_key(t *testing.T) {
 	testCases := []struct {
 		desc               string
-		authKey            string
+		apiKey             string
 		expectedError      bool
 		expectedStatusCode int
 		expectedAuthSid    string
 	}{
 		{
 			desc:               "correct key",
-			authKey:            correctAuth,
+			apiKey:             correctAPIKey,
 			expectedStatusCode: 0,
-			expectedAuthSid:    correctAuth,
+			expectedAuthSid:    correctAPIKey,
 		},
 		{
 			desc:               "incorrect key",
-			authKey:            incorrectAuth,
+			apiKey:             incorrectAPIKey,
 			expectedStatusCode: 2200,
 			expectedError:      true,
 		},
 		{
 			desc:               "server error",
-			authKey:            serverErrorAuth,
+			apiKey:             serverErrorAPIKey,
 			expectedStatusCode: -500,
 			expectedError:      true,
 		},
 		{
 			desc:               "non-ok status code",
-			authKey:            "333",
+			apiKey:             "333",
 			expectedStatusCode: 2202,
 			expectedError:      true,
 		},
@@ -64,11 +70,11 @@ func TestDNSProvider_login(t *testing.T) {
 		require.Equal(t, "POST", r.Method)
 
 		switch r.FormValue("api-key") {
-		case correctAuth:
+		case correctAPIKey:
 			_, _ = io.WriteString(w, "Status-Code: 0\nStatus-Text: OK\nAuth-Sid: 123\n\ncom\nnet")
-		case incorrectAuth:
+		case incorrectAPIKey:
 			_, _ = io.WriteString(w, "Status-Code: 2200\nStatus-Text: Authentication error")
-		case serverErrorAuth:
+		case serverErrorAPIKey:
 			http.NotFound(w, r)
 		default:
 			_, _ = io.WriteString(w, "Status-Code: 2202\nStatus-Text: OK\n\ncom\nnet")
@@ -79,7 +85,89 @@ func TestDNSProvider_login(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			config := NewDefaultConfig()
 			config.BaseURL = server.URL
-			config.APIKey = test.authKey
+			config.APIKey = test.apiKey
+
+			p, err := NewDNSProviderConfig(config)
+			require.NoError(t, err)
+			require.NotNil(t, p)
+
+			response, err := p.login()
+			if test.expectedError {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				require.NotNil(t, response)
+				assert.Equal(t, test.expectedStatusCode, response.StatusCode)
+				assert.Equal(t, test.expectedAuthSid, response.AuthSid)
+			}
+		})
+	}
+}
+
+func TestDNSProvider_login_username(t *testing.T) {
+	testCases := []struct {
+		desc               string
+		username           string
+		password           string
+		expectedError      bool
+		expectedStatusCode int
+		expectedAuthSid    string
+	}{
+		{
+			desc:               "correct username and password",
+			username:           correctUsername,
+			password:           "go-acme",
+			expectedError:      false,
+			expectedStatusCode: 0,
+			expectedAuthSid:    correctAPIKey,
+		},
+		{
+			desc:               "incorrect username",
+			username:           incorrectUsername,
+			password:           "go-acme",
+			expectedStatusCode: 2200,
+			expectedError:      true,
+		},
+		{
+			desc:               "server error",
+			username:           serverErrorUsername,
+			password:           "go-acme",
+			expectedStatusCode: -500,
+			expectedError:      true,
+		},
+		{
+			desc:               "non-ok status code",
+			username:           "random",
+			password:           "go-acme",
+			expectedStatusCode: 2202,
+			expectedError:      true,
+		},
+	}
+
+	mux, server := setup()
+	defer server.Close()
+
+	mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+		require.Equal(t, "POST", r.Method)
+
+		switch r.FormValue("username") {
+		case correctUsername:
+			_, _ = io.WriteString(w, "Status-Code: 0\nStatus-Text: OK\nAuth-Sid: 123\n\ncom\nnet")
+		case incorrectUsername:
+			_, _ = io.WriteString(w, "Status-Code: 2200\nStatus-Text: Authentication error")
+		case serverErrorUsername:
+			http.NotFound(w, r)
+		default:
+			_, _ = io.WriteString(w, "Status-Code: 2202\nStatus-Text: OK\n\ncom\nnet")
+		}
+	})
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			config := NewDefaultConfig()
+			config.BaseURL = server.URL
+			config.Username = test.username
+			config.Password = test.password
 
 			p, err := NewDNSProviderConfig(config)
 			require.NoError(t, err)
@@ -107,12 +195,12 @@ func TestDNSProvider_logout(t *testing.T) {
 	}{
 		{
 			desc:               "correct auth-sid",
-			authSid:            correctAuth,
+			authSid:            correctAPIKey,
 			expectedStatusCode: 0,
 		},
 		{
 			desc:               "incorrect auth-sid",
-			authSid:            incorrectAuth,
+			authSid:            incorrectAPIKey,
 			expectedStatusCode: 2200,
 		},
 		{
@@ -122,7 +210,7 @@ func TestDNSProvider_logout(t *testing.T) {
 		},
 		{
 			desc:          "server error",
-			authSid:       serverErrorAuth,
+			authSid:       serverErrorAPIKey,
 			expectedError: true,
 		},
 	}
@@ -134,9 +222,9 @@ func TestDNSProvider_logout(t *testing.T) {
 		require.Equal(t, "POST", r.Method)
 
 		switch r.FormValue("auth-sid") {
-		case correctAuth:
+		case correctAPIKey:
 			_, _ = io.WriteString(w, "Status-Code: 0\nStatus-Text: OK\n")
-		case incorrectAuth:
+		case incorrectAPIKey:
 			_, _ = io.WriteString(w, "Status-Code: 2200\nStatus-Text: Authentication error")
 		default:
 			http.NotFound(w, r)
@@ -179,20 +267,20 @@ func TestDNSProvider_getZone(t *testing.T) {
 	}{
 		{
 			desc:               "correct auth-sid, known domain",
-			authSid:            correctAuth,
+			authSid:            correctAPIKey,
 			domain:             "known",
 			zone:               testZone,
 			expectedStatusCode: 0,
 		},
 		{
 			desc:               "incorrect auth-sid, known domain",
-			authSid:            incorrectAuth,
+			authSid:            incorrectAPIKey,
 			domain:             "known",
 			expectedStatusCode: 2202,
 		},
 		{
 			desc:               "correct auth-sid, unknown domain",
-			authSid:            correctAuth,
+			authSid:            correctAPIKey,
 			domain:             "unknown",
 			expectedStatusCode: 2202,
 		},
@@ -213,9 +301,9 @@ func TestDNSProvider_getZone(t *testing.T) {
 		domain := r.FormValue("domain")
 
 		switch {
-		case authSid == correctAuth && domain == "known":
+		case authSid == correctAPIKey && domain == "known":
 			_, _ = io.WriteString(w, "Status-Code: 0\nStatus-Text: OK\n\n"+testZone)
-		case authSid == incorrectAuth || (authSid == correctAuth && domain == "unknown"):
+		case authSid == incorrectAPIKey || (authSid == correctAPIKey && domain == "unknown"):
 			_, _ = io.WriteString(w, "Status-Code: 2202\nStatus-Text: Authorization error")
 		default:
 			http.NotFound(w, r)

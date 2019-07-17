@@ -5,6 +5,10 @@ Code = "joker"
 Since = "v2.6.0"
 
 Example = '''
+JOKER_USERNAME=<your email> \
+JOKER_PASSWORD=<your password> \
+lego --dns joker --domains my.domain.com --email my@email.com run
+# or
 JOKER_API_KEY=<your API key> \
 lego --dns joker --domains my.domain.com --email my@email.com run
 '''
@@ -12,6 +16,8 @@ lego --dns joker --domains my.domain.com --email my@email.com run
 [Configuration]
   [Configuration.Credentials]
     JOKER_API_KEY = "API key"
+    JOKER_USERNAME = "Joker.com username (email address)"
+    JOKER_PASSWORD = "Joker.com password"
   [Configuration.Additional]
     JOKER_POLLING_INTERVAL = "Time between DNS propagation check"
     JOKER_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"

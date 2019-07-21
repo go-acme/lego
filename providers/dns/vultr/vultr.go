@@ -79,16 +79,18 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the DNS-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+	ctx := context.Background()
+
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	zoneDomain, err := d.getHostedZone(domain)
+	zoneDomain, err := d.getHostedZone(ctx, domain)
 	if err != nil {
 		return fmt.Errorf("vultr: %v", err)
 	}
 
 	name := d.extractRecordName(fqdn, zoneDomain)
 
-	err = d.client.DNSRecord.Create(context.Background(), zoneDomain, name, "TXT", value, d.config.TTL, 0)
+	err = d.client.DNSRecord.Create(ctx, zoneDomain, "TXT", name, value, d.config.TTL, 0)
 	if err != nil {
 		return fmt.Errorf("vultr: API call failed: %v", err)
 	}
@@ -98,16 +100,18 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+	ctx := context.Background()
+
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 
-	zoneDomain, records, err := d.findTxtRecords(domain, fqdn)
+	zoneDomain, records, err := d.findTxtRecords(ctx, domain, fqdn)
 	if err != nil {
 		return fmt.Errorf("vultr: %v", err)
 	}
 
 	var allErr []string
 	for _, rec := range records {
-		err := d.client.DNSRecord.Delete(context.Background(), zoneDomain, strconv.Itoa(rec.RecordID))
+		err := d.client.DNSRecord.Delete(ctx, zoneDomain, strconv.Itoa(rec.RecordID))
 		if err != nil {
 			allErr = append(allErr, err.Error())
 		}
@@ -126,8 +130,8 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-func (d *DNSProvider) getHostedZone(domain string) (string, error) {
-	domains, err := d.client.DNSDomain.List(context.Background())
+func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (string, error) {
+	domains, err := d.client.DNSDomain.List(ctx)
 	if err != nil {
 		return "", fmt.Errorf("API call failed: %v", err)
 	}
@@ -147,14 +151,14 @@ func (d *DNSProvider) getHostedZone(domain string) (string, error) {
 	return hostedDomain.Domain, nil
 }
 
-func (d *DNSProvider) findTxtRecords(domain, fqdn string) (string, []govultr.DNSRecord, error) {
-	zoneDomain, err := d.getHostedZone(domain)
+func (d *DNSProvider) findTxtRecords(ctx context.Context, domain, fqdn string) (string, []govultr.DNSRecord, error) {
+	zoneDomain, err := d.getHostedZone(ctx, domain)
 	if err != nil {
 		return "", nil, err
 	}
 
 	var records []govultr.DNSRecord
-	result, err := d.client.DNSRecord.List(context.Background(), zoneDomain)
+	result, err := d.client.DNSRecord.List(ctx, zoneDomain)
 	if err != nil {
 		return "", records, fmt.Errorf("API call has failed: %v", err)
 	}

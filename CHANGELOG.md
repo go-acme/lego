@@ -1,5 +1,10 @@
 # Changelog
 
+## [v2.7.1] - 2019-07-22
+
+### Fixed:
+- **[dnsprovider]** vultr: invalid record type.
+
 ## [v2.7.0] - 2019-07-17
 
 ### Added:

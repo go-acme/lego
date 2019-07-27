@@ -26,6 +26,18 @@ yay -S lego
 
 **Note**: only the package manager for Arch Linux is officially supported by the lego team.
 
+- [FreeBSD (Ports)](https://www.freshports.org/security/lego):
+
+```bash
+cd /usr/ports/security/lego && make install clean
+```
+
+or
+
+```bash
+pkg install lego
+```
+
 ## From sources
 
 To install from sources, just run:

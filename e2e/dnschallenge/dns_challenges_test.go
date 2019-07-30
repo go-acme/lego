@@ -8,12 +8,12 @@ import (
 	"os"
 	"testing"
 
-	"github.com/go-acme/lego/certificate"
-	"github.com/go-acme/lego/challenge/dns01"
-	"github.com/go-acme/lego/e2e/loader"
-	"github.com/go-acme/lego/lego"
-	"github.com/go-acme/lego/providers/dns"
-	"github.com/go-acme/lego/registration"
+	"github.com/go-acme/lego/v3/certificate"
+	"github.com/go-acme/lego/v3/challenge/dns01"
+	"github.com/go-acme/lego/v3/e2e/loader"
+	"github.com/go-acme/lego/v3/lego"
+	"github.com/go-acme/lego/v3/providers/dns"
+	"github.com/go-acme/lego/v3/registration"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

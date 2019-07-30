@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"github.com/go-acme/lego/acme"
+	"github.com/go-acme/lego/v3/acme"
 )
 
 // SetupFakeAPI Minimal stub ACME server for validation.

@@ -3,8 +3,8 @@ package certificate
 import (
 	"time"
 
-	"github.com/go-acme/lego/acme"
-	"github.com/go-acme/lego/log"
+	"github.com/go-acme/lego/v3/acme"
+	"github.com/go-acme/lego/v3/log"
 )
 
 const (

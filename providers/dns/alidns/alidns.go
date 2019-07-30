@@ -11,8 +11,8 @@ import (
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth/credentials"
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/alidns"
-	"github.com/go-acme/lego/challenge/dns01"
-	"github.com/go-acme/lego/platform/config/env"
+	"github.com/go-acme/lego/v3/challenge/dns01"
+	"github.com/go-acme/lego/v3/platform/config/env"
 )
 
 const defaultRegionID = "cn-hangzhou"

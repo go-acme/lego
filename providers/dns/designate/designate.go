@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-acme/lego/challenge/dns01"
-	"github.com/go-acme/lego/platform/config/env"
+	"github.com/go-acme/lego/v3/challenge/dns01"
+	"github.com/go-acme/lego/v3/platform/config/env"
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/gophercloud/openstack/dns/v2/recordsets"
@@ -203,7 +203,7 @@ func (d *DNSProvider) updateRecord(record *recordsets.RecordSet, value string) e
 
 	updateOpts := recordsets.UpdateOpts{
 		Description: &record.Description,
-		TTL:         record.TTL,
+		TTL:         &record.TTL,
 		Records:     values,
 	}
 

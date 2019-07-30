@@ -1,5 +1,10 @@
 # Changelog
 
+## [v2.7.2] - 2019-07-30
+
+### Fixed:
+- **[dnsprovider]** vultr: quote TXT record
+
 ## [v2.7.1] - 2019-07-22
 
 ### Fixed:

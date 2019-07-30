@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/log"
-	"github.com/go-acme/lego/platform/tester"
+	"github.com/go-acme/lego/v3/log"
+	"github.com/go-acme/lego/v3/platform/tester"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/transip/gotransip"

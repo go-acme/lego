@@ -4,10 +4,10 @@ import (
 	"errors"
 	"net/url"
 
-	"github.com/go-acme/lego/acme/api"
-	"github.com/go-acme/lego/certificate"
-	"github.com/go-acme/lego/challenge/resolver"
-	"github.com/go-acme/lego/registration"
+	"github.com/go-acme/lego/v3/acme/api"
+	"github.com/go-acme/lego/v3/certificate"
+	"github.com/go-acme/lego/v3/challenge/resolver"
+	"github.com/go-acme/lego/v3/registration"
 )
 
 // Client is the user-friendly way to ACME

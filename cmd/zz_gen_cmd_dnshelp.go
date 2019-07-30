@@ -307,8 +307,9 @@ func displayDNSHelp(name string) error {
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "OS_AUTH_URL":	Identity endpoint URL`)
 		ew.writeln(`	- "OS_PASSWORD":	Password`)
+		ew.writeln(`	- "OS_PROJECT_NAME":	Project name`)
 		ew.writeln(`	- "OS_REGION_NAME":	Region name`)
-		ew.writeln(`	- "OS_TENANT_NAME":	Tenant name`)
+		ew.writeln(`	- "OS_TENANT_NAME":	Tenant name (deprecated see OS_PROJECT_NAME and OS_PROJECT_ID)`)
 		ew.writeln(`	- "OS_USERNAME":	Username`)
 		ew.writeln()
 
@@ -316,6 +317,7 @@ func displayDNSHelp(name string) error {
 		ew.writeln(`	- "DESIGNATE_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "DESIGNATE_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
 		ew.writeln(`	- "DESIGNATE_TTL":	The TTL of the TXT record used for the DNS challenge`)
+		ew.writeln(`	- "OS_PROJECT_ID":	Project ID`)
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/designate`)

@@ -1,5 +1,11 @@
 # Changelog
 
+## [v3.0.0] - 2019-08-05
+
+### Changed:
+- migrate to go module (new import github.com/go-acme/lego/v3/)
+- update DNS clients
+
 ## [v2.7.2] - 2019-07-30
 
 ### Fixed:

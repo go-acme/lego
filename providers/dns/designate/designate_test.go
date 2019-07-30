@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/platform/tester"
+	"github.com/go-acme/lego/v3/platform/tester"
 	"github.com/stretchr/testify/require"
 )
 
@@ -15,7 +15,8 @@ var envTest = tester.NewEnvTest(
 	"OS_USERNAME",
 	"OS_PASSWORD",
 	"OS_TENANT_NAME",
-	"OS_REGION_NAME").
+	"OS_REGION_NAME",
+	"OS_PROJECT_ID").
 	WithDomain("DESIGNATE_DOMAIN")
 
 func TestNewDNSProvider(t *testing.T) {
@@ -35,6 +36,7 @@ func TestNewDNSProvider(t *testing.T) {
 				"OS_PASSWORD":    "C",
 				"OS_REGION_NAME": "D",
 				"OS_TENANT_NAME": "E",
+				"OS_PROJECT_ID":  "F",
 			},
 		},
 		{

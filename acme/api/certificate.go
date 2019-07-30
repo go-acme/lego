@@ -7,9 +7,9 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/go-acme/lego/acme"
-	"github.com/go-acme/lego/certcrypto"
-	"github.com/go-acme/lego/log"
+	"github.com/go-acme/lego/v3/acme"
+	"github.com/go-acme/lego/v3/certcrypto"
+	"github.com/go-acme/lego/v3/log"
 )
 
 // maxBodySize is the maximum size of body that we will read.

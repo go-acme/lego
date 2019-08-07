@@ -50,3 +50,11 @@ require (
 	gopkg.in/ns1/ns1-go.v2 v2.0.0-20190430170845-6c599e5e5790
 	gopkg.in/square/go-jose.v2 v2.3.1
 )
+
+// related to invalid pseudo version used by some dependencies
+// https://github.com/cloudflare/cloudflare-go/pull/334
+// https://github.com/cloudflare/cloudflare-go/pull/333
+replace (
+	golang.org/x/lint => golang.org/x/lint v0.0.0-20190409202823-959b441ac422
+	golang.org/x/time => golang.org/x/time v0.0.0-20190308202827-9d24e82272b4
+)

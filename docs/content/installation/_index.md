@@ -40,6 +40,11 @@ pkg install lego
 
 ## From sources
 
+Requirements:
+
+- `go` v1.12+
+- environment variable: `GO111MODULE=on`
+
 To install from sources, just run:
 
 ```bash

@@ -19,7 +19,9 @@ addons:
   - xn--lg-bja9b.wtf
 
 env:
-  - MEMCACHED_HOSTS=localhost:11211 GO111MODULE=on
+  global:
+    - MEMCACHED_HOSTS=localhost:11211
+    - GO111MODULE=on
 
 before_install:
   - '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && openssl aes-256-cbc -K $encrypted_26c593b079d9_key -iv $encrypted_26c593b079d9_iv -in .gitcookies.enc -out .gitcookies -d || true'
@@ -74,6 +76,3 @@ deploy:
     local_dir: docs/public
     skip_cleanup: true
     github_token: ${GITHUB_TOKEN}
-    on:
-      tags: true
-      condition: $TRAVIS_GO_VERSION =~ ^1\.x$

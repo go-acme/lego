@@ -33,6 +33,11 @@ owners to license your work under the terms of the [MIT License](LICENSE).
 
 ### How to create a pull request
 
+Requirements:
+
+- `go` v1.12+
+- environment variable: `GO111MODULE=on`
+
 First, you have to install [GoLang](https://golang.org/doc/install) and [golangci-lint](https://github.com/golangci/golangci-lint#install).
 
 ```bash

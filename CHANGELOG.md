@@ -1,5 +1,10 @@
 # Changelog
 
+## [v3.0.1] - 2019-08-14
+
+### Fixed:
+- Invalid pseudo version (related to Cloudflare client).
+
 ## [v3.0.0] - 2019-08-05
 
 ### Changed:

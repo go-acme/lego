@@ -1,9 +1,13 @@
 # Changelog
 
-## [v3.0.1] - 2019-08-14
+## [v3.0.2] - 2019-08-15
 
 ### Fixed:
 - Invalid pseudo version (related to Cloudflare client).
+
+## [v3.0.1] - 2019-08-14
+
+There was a problem when creating the tag v3.0.1, this tag has been invalidate.
 
 ## [v3.0.0] - 2019-08-05
 

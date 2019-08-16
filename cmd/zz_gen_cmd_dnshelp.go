@@ -50,6 +50,7 @@ func allDNSCodes() string {
 		"lightsail",
 		"linode",
 		"linodev4",
+		"liquidweb",
 		"mydnsjp",
 		"namecheap",
 		"namedotcom",
@@ -834,6 +835,25 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/linodev4`)
+
+	case "liquidweb":
+		// generated from: providers/dns/liquidweb/liquidweb.toml
+		ew.writeln(`Configuration for Liquid Web.`)
+		ew.writeln(`Code:	'liquidweb'`)
+		ew.writeln(`Since:	'v3.1.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "LW_PASSWORD":	Storm API Password`)
+		ew.writeln(`	- "LW_USERNAME":	Storm API Username`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "LW_TIMEOUT":	Maximum waiting time for the DNS records to be created (not verified)`)
+		ew.writeln(`	- "LW_URL":	Storm API endpoint`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/liquidweb`)
 
 	case "mydnsjp":
 		// generated from: providers/dns/mydnsjp/mydnsjp.toml

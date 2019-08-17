@@ -47,12 +47,21 @@ func TestNewDNSProvider(t *testing.T) {
 			},
 		},
 		{
-			desc: "missing credentials",
-			envVars: map[string]string{
-				"DO_AUTH_TOKEN": "",
-			},
-			expected: "digitalocean: some credentials information are missing: DO_AUTH_TOKEN",
+			desc: "missing url",
+			envVars: map[string]string{},
+			expected: "liquidweb: url is missing",
 		},
+				{
+			desc: "missing username",
+			envVars: map[string]string{},
+			expected: "liquidweb: username is missing",
+				},
+				{
+			desc: "missing password",
+			envVars: map[string]string{},
+			expected: "liquidweb: password is missing",
+				},
+		
 	}
 
 	for _, test := range testCases {

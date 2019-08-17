@@ -47,21 +47,24 @@ func TestNewDNSProvider(t *testing.T) {
 			},
 		},
 		{
-			desc: "missing url",
-			envVars: map[string]string{},
+			desc:     "missing url",
+			envVars:  map[string]string{},
 			expected: "liquidweb: url is missing",
 		},
-				{
+		{
 			desc: "missing username",
-			envVars: map[string]string{},
+			envVars: map[string]string{
+				"LW_URL": "https://storm.com",
+			},
 			expected: "liquidweb: username is missing",
-				},
-				{
+		},
+		{
 			desc: "missing password",
-			envVars: map[string]string{},
-			expected: "liquidweb: password is missing",
-				},
-		
+			envVars: map[string]string{
+				"LW_URL":      "https://storm.com",
+				"LW_USERNAME": "blars",
+			}, expected: "liquidweb: password is missing",
+		},
 	}
 
 	for _, test := range testCases {
@@ -87,22 +90,46 @@ func TestNewDNSProvider(t *testing.T) {
 
 func TestNewDNSProviderConfig(t *testing.T) {
 	testCases := []struct {
-		desc      string
-		authToken string
-		expected  string
+		desc     string
+		envVars  map[string]string
+		expected string
 	}{
 		{
-			desc:      "success",
-			authToken: "123",
+			desc: "success",
+			envVars: map[string]string{
+				"LW_URL":      "https://storm.com",
+				"LW_USERNAME": "blars",
+				"LW_PASSWORD": "tacoman",
+			},
 		},
 		{
-			desc:     "missing credentials",
-			expected: "digitalocean: credentials missing",
+			desc:     "missing url",
+			envVars:  map[string]string{},
+			expected: "liquidweb: url is missing",
+		},
+		{
+			desc: "missing username",
+			envVars: map[string]string{
+				"LW_URL": "https://storm.com",
+			},
+			expected: "liquidweb: username is missing",
+		},
+		{
+			desc: "missing password",
+			envVars: map[string]string{
+				"LW_URL":      "https://storm.com",
+				"LW_USERNAME": "blars",
+			}, expected: "liquidweb: password is missing",
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
+			envTest.Apply(test.envVars)
+
 			config := NewDefaultConfig()
 
 			p, err := NewDNSProviderConfig(config)

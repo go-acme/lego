@@ -94,7 +94,6 @@ func TestDNSProvider_Present(t *testing.T) {
 	mux.HandleFunc("/v1/Network/DNS/Record/create", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodPost, r.Method, "method")
 
-		//assert.Equal(t, "application/json", r.Header.Get("Content-Type"), "Content-Type")
 		assert.Equal(t, "Basic YmxhcnM6dGFjb21hbg==", r.Header.Get("Authorization"), "Authorization")
 
 		reqBody, err := ioutil.ReadAll(r.Body)

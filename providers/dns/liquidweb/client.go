@@ -7,8 +7,6 @@ import (
 	"github.com/liquidweb/liquidweb-go/network"
 )
 
-const defaultBaseURL = "https://api.digitalocean.com"
-
 // txtRecordResponse represents a response from DO's API after making a TXT record
 type txtRecordResponse struct {
 	DomainRecord record `json:"domain_record"`

@@ -30,7 +30,7 @@ func NewDefaultConfig() *Config {
 		URL:                env.GetOrDefaultString("LW_URL", ""),
 		Username:           env.GetOrDefaultString("LW_USERNAME", ""),
 		Password:           env.GetOrDefaultString("LW_PASSWORD", ""),
-		Zone:               env.GetOrDefaultString("LW_Zone", ""),
+		Zone:               env.GetOrDefaultString("LW_ZONE", ""),
 		Timeout:            time.Second * time.Duration(env.GetOrDefaultInt("LW_TIMEOUT", 60)),
 		PropagationTimeout: time.Minute * 5,
 	}
@@ -96,7 +96,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 	params := &network.DNSRecordParams{
-		Name:  fqdn,
+		Name:  fqdn[0 : len(fqdn)-1],
 		RData: strconv.Quote(value),
 		Type:  "TXT",
 		Zone:  d.config.Zone,

@@ -12,6 +12,7 @@ Example = ''''''
     LW_PASSWORD = "Storm API Password"
   [Configuration.Additional]
     LW_URL = "Storm API endpoint"
+    LW_ZONE = "DNS Zone"
     LW_TIMEOUT = "Maximum waiting time for the DNS records to be created (not verified)"
 
 [Links]

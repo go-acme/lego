@@ -107,7 +107,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	dnsEntry, err := d.client.NetworkDNS.Create(params)
 	if err != nil {
-		return fmt.Errorf("could not create TXT record: %v", err)
+		return fmt.Errorf("liquidweb: could not create TXT record: %v", err)
 	}
 
 	d.recordIDsMu.Lock()
@@ -124,14 +124,13 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	recordID, ok := d.recordIDs[token]
 	d.recordIDsMu.Unlock()
 	if !ok {
-		return fmt.Errorf("unknown record ID for '%s'", domain)
+		return fmt.Errorf("liquidweb: unknown record ID for '%s'", domain)
 	}
-	fmt.Printf("%+v", d.recordIDs)
 
 	params := &network.DNSRecordParams{ID: recordID}
 	_, err := d.client.NetworkDNS.Delete(params)
 	if err != nil {
-		return fmt.Errorf("could not remove TXT record: %v", err)
+		return fmt.Errorf("liquidweb: could not remove TXT record: %v", err)
 	}
 	// Delete record ID from map
 	d.recordIDsMu.Lock()

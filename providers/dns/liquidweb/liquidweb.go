@@ -75,7 +75,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("liquidweb: password is missing")
 	}
 
-	// Initial new LW go client.
+	// Initialize LW client.
 	client, err := lw.NewAPI(config.Username, config.Password, config.URL, int(config.HTTPTimeout.Seconds()))
 
 	if err != nil {

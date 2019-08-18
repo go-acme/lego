@@ -6,13 +6,14 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/go-acme/lego/v3/platform/tester"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-var envTest = tester.NewEnvTest("LIQUID_WEB_URL", "LIQUID_WEB_USERNAME", "LIQUID_WEB_PASSWORD", "LIQUID_WEB_TIMEOUT")
+var envTest = tester.NewEnvTest("LIQUID_WEB_URL", "LIQUID_WEB_USERNAME", "LIQUID_WEB_PASSWORD", "LIQUID_WEB_TIMEOUT", "LIQUID_WEB_ZONE").WithDomain("LIQUID_WEB_DOMAIN")
 
 func setupTest() (*DNSProvider, *http.ServeMux, func()) {
 	handler := http.NewServeMux()
@@ -145,4 +146,32 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 
 	err := provider.CleanUp("tacoman.com.", "123", "")
 	require.NoError(t, err, "fail to remove TXT record")
+}
+
+func TestLivePresent(t *testing.T) {
+	if !envTest.IsLiveTest() {
+		t.Skip("skipping live test")
+	}
+
+	envTest.RestoreEnv()
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
+
+	err = provider.Present(envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
+}
+
+func TestLiveCleanUp(t *testing.T) {
+	if !envTest.IsLiveTest() {
+		t.Skip("skipping live test")
+	}
+
+	envTest.RestoreEnv()
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
+
+	time.Sleep(2 * time.Second)
+
+	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
 }

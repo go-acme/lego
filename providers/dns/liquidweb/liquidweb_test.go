@@ -44,26 +44,27 @@ func TestNewDNSProvider(t *testing.T) {
 				"LIQUID_WEB_URL":      "https://storm.com",
 				"LIQUID_WEB_USERNAME": "blars",
 				"LIQUID_WEB_PASSWORD": "tacoman",
+				"LIQUID_WEB_ZONE":     "blars.com",
 			},
 		},
 		{
 			desc:     "missing url",
 			envVars:  map[string]string{},
-			expected: "liquidweb: url is missing",
+			expected: "liquidweb: some credentials information are missing: LIQUID_WEB_URL,LIQUID_WEB_USERNAME,LIQUID_WEB_PASSWORD,LIQUID_WEB_ZONE",
 		},
 		{
 			desc: "missing username",
 			envVars: map[string]string{
 				"LIQUID_WEB_URL": "https://storm.com",
 			},
-			expected: "liquidweb: username is missing",
+			expected: "liquidweb: some credentials information are missing: LIQUID_WEB_USERNAME,LIQUID_WEB_PASSWORD,LIQUID_WEB_ZONE",
 		},
 		{
 			desc: "missing password",
 			envVars: map[string]string{
 				"LIQUID_WEB_URL":      "https://storm.com",
 				"LIQUID_WEB_USERNAME": "blars",
-			}, expected: "liquidweb: password is missing",
+			}, expected: "liquidweb: some credentials information are missing: LIQUID_WEB_PASSWORD,LIQUID_WEB_ZONE",
 		},
 	}
 

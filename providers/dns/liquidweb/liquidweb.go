@@ -26,11 +26,9 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	config := &Config{
-		Timeout:         env.GetOrDefaultSecond("LIQUID_WEB_TIMEOUT", 1*time.Minute),
-		PollingInterval: env.GetOrDefaultSecond("LIQUID_WEB_POLLING_INTERVAL", 2*time.Second),
-		PropagationTimeout: env.GetOrDefaultSecond("LIQUID_WEB_PROPAGATION_TIMEOUT",
-
-			2*time.Minute),
+		Timeout:            env.GetOrDefaultSecond("LIQUID_WEB_TIMEOUT", 1*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond("LIQUID_WEB_POLLING_INTERVAL", 2*time.Second),
+		PropagationTimeout: env.GetOrDefaultSecond("LIQUID_WEB_PROPAGATION_TIMEOUT", 2*time.Minute),
 	}
 
 	return config
@@ -46,11 +44,15 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for Liquid Web.
 func NewDNSProvider() (*DNSProvider, error) {
+	values, err := env.Get("LIQUID_WEB_URL", "LIQUID_WEB_USERNAME", "LIQUID_WEB_PASSWORD", "LIQUID_WEB_ZONE")
+	if err != nil {
+		return nil, fmt.Errorf("liquidweb: %v", err)
+	}
 	config := NewDefaultConfig()
-	config.URL = env.GetOrDefaultString("LIQUID_WEB_URL", "")
-	config.Username = env.GetOrDefaultString("LIQUID_WEB_USERNAME", "")
-	config.Password = env.GetOrDefaultString("LIQUID_WEB_PASSWORD", "")
-	config.Zone = env.GetOrDefaultString("LIQUID_WEB_ZONE", "")
+	config.URL = values["LIQUID_WEB_URL"]
+	config.Username = values["LIQUID_WEB_USERNAME"]
+	config.Password = values["LIQUID_WEB_PASSWORD"]
+	config.Zone = values["LIQUID_WEB_ZONE"]
 
 	return NewDNSProviderConfig(config)
 }

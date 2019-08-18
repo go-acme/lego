@@ -57,7 +57,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 // NewDNSProviderConfig return a DNSProvider instance configured for Liquid Web.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
-		return nil, errors.New("the configuration of the DNS provider is nil")
+		return nil, errors.New("liquidweb: the configuration of the DNS provider is nil")
 	}
 
 	if config.URL == "" {

@@ -20,14 +20,18 @@ type Config struct {
 	Password           string
 	Zone               string
 	Timeout            time.Duration
+	PollingInterval    time.Duration
 	PropagationTimeout time.Duration
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	config := &Config{
-		Timeout:            env.GetOrDefaultSecond("LIQUID_WEB_TIMEOUT", 1*time.Minute),
-		PropagationTimeout: env.GetOrDefaultSecond("LIQUID_WEB_PROPAGATION_TIMEOUT", 2*time.Minute),
+		Timeout:         env.GetOrDefaultSecond("LIQUID_WEB_TIMEOUT", 1*time.Minute),
+		PollingInterval: env.GetOrDefaultSecond("LIQUID_WEB_POLLING_INTERVAL", 2*time.Second),
+		PropagationTimeout: env.GetOrDefaultSecond("LIQUID_WEB_PROPAGATION_TIMEOUT",
+
+			2*time.Minute),
 	}
 
 	return config
@@ -87,8 +91,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
 // Adjusting here to cope with spikes in propagation times.
-func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
-	return d.config.Timeout, d.config.PropagationTimeout
+func (d *DNSProvider) Timeout() (time.Duration, time.Duration) {
+	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
 // Present creates a TXT record using the specified parameters

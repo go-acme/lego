@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-acme/lego/v3/challenge/dns01"
 	"github.com/go-acme/lego/v3/platform/config/env"
-	lwclient "github.com/liquidweb/liquidweb-go/client"
+	lw "github.com/liquidweb/liquidweb-go/client"
 	"github.com/liquidweb/liquidweb-go/network"
 )
 
@@ -40,7 +40,7 @@ type DNSProvider struct {
 	config      *Config
 	recordIDs   map[string]int
 	recordIDsMu sync.Mutex
-	client      *lwclient.API
+	client      *lw.API
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Liquid Web.
@@ -73,7 +73,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	// Initial new LW go client.
-	lwAPI, err := lwclient.NewAPI(config.Username, config.Password, config.URL, int(config.Timeout.Seconds()))
+	client, err := lw.NewAPI(config.Username, config.Password, config.URL, int(config.Timeout.Seconds()))
 
 	if err != nil {
 		log.Fatalf("Could not create Liquid Web API client: %v", err)
@@ -82,7 +82,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	return &DNSProvider{
 		config:    config,
 		recordIDs: make(map[string]int),
-		client:    lwAPI,
+		client:    client,
 	}, nil
 }
 

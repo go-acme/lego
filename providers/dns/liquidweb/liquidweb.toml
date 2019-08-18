@@ -24,6 +24,7 @@ lego --dns liquidweb --email someaccount@email.com --domains "foo.email.com" run
     LIQUID_WEB_HTTP_TIMEOUT = "Maximum waiting time for the DNS records to be created (not verified)"
     LIQUID_WEB_POLLING_INTERVAL = "Time between DNS propagation check"
     LIQUID_WEB_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
+    LIQUID_WEB_TTL = "The TTL of the TXT record used for the DNS challenge"
 
 [Links]
   API = "https://cart.liquidweb.com/storm/api/docs/v1/"

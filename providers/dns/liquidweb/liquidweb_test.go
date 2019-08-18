@@ -102,7 +102,7 @@ func TestDNSProvider_Present(t *testing.T) {
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
-		expectedReqBody := `{"params":{"name":"_acme-challenge.tacoman.com","rdata":"\"47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU\"","type":"TXT","zone":"tacoman.com"}}`
+		expectedReqBody := `{"params":{"name":"_acme-challenge.tacoman.com","rdata":"\"47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU\"","ttl":300,"type":"TXT","zone":"tacoman.com"}}`
 		assert.Equal(t, expectedReqBody, string(reqBody))
 
 		w.WriteHeader(http.StatusOK)
@@ -110,6 +110,7 @@ func TestDNSProvider_Present(t *testing.T) {
 			"type": "TXT",
 			"name": "_acme-challenge.tacoman.com",
 			"rdata": "47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU",
+			"ttl": 300,
 			"id": 1234567,
 			"prio": null
 		}`)

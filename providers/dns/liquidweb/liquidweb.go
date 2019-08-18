@@ -21,6 +21,7 @@ type Config struct {
 	HTTPTimeout        time.Duration
 	PollingInterval    time.Duration
 	PropagationTimeout time.Duration
+	TTL                int
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider
@@ -29,6 +30,7 @@ func NewDefaultConfig() *Config {
 		HTTPTimeout:        env.GetOrDefaultSecond("LIQUID_WEB_HTTP_TIMEOUT", 1*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond("LIQUID_WEB_POLLING_INTERVAL", 2*time.Second),
 		PropagationTimeout: env.GetOrDefaultSecond("LIQUID_WEB_PROPAGATION_TIMEOUT", 2*time.Minute),
+		TTL:                env.GetOrDefaultInt("LIQUID_WEB_TTL", 300),
 	}
 
 	return config
@@ -103,6 +105,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		RData: strconv.Quote(value),
 		Type:  "TXT",
 		Zone:  d.config.Zone,
+		TTL:   d.config.TTL,
 	}
 
 	dnsEntry, err := d.client.NetworkDNS.Create(params)

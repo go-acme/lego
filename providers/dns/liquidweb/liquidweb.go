@@ -59,7 +59,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("The configuration of the DNS provider is nil")
 	}
-	fmt.Printf("%+v", *config)
+
 	if config.URL == "" {
 		return nil, fmt.Errorf("liquidweb: url is missing")
 	}

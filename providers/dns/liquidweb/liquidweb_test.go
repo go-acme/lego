@@ -17,7 +17,6 @@ var envTest = tester.NewEnvTest("LW_URL", "LW_USERNAME", "LW_PASSWORD", "LW_TIME
 func setupTest() (*DNSProvider, *http.ServeMux, func()) {
 	handler := http.NewServeMux()
 	server := httptest.NewServer(handler)
-
 	config := NewDefaultConfig()
 	config.Username = "blars"
 	config.Password = "tacoman"
@@ -150,38 +149,34 @@ func TestDNSProvider_Present(t *testing.T) {
 	provider, mux, tearDown := setupTest()
 	defer tearDown()
 
-	mux.HandleFunc("/v2/domains/example.com/records", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/v1/Network/DNS/Record/create", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodPost, r.Method, "method")
 
-		assert.Equal(t, "application/json", r.Header.Get("Content-Type"), "Content-Type")
-		assert.Equal(t, "Bearer asdf1234", r.Header.Get("Authorization"), "Authorization")
+		//assert.Equal(t, "application/json", r.Header.Get("Content-Type"), "Content-Type")
+		assert.Equal(t, "Basic YmxhcnM6dGFjb21hbg==", r.Header.Get("Authorization"), "Authorization")
 
 		reqBody, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
-
-		expectedReqBody := `{"type":"TXT","name":"_acme-challenge.example.com.","data":"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI","ttl":30}`
+		expectedReqBody := `{"params":{"name":"_acme-challenge.tacoman.com.","rdata":"\"47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU\"","type":"TXT","zone":"tacoman.com"}}`
 		assert.Equal(t, expectedReqBody, string(reqBody))
 
-		w.WriteHeader(http.StatusCreated)
+		w.WriteHeader(http.StatusOK)
 		_, err = fmt.Fprintf(w, `{
-			"domain_record": {
-				"id": 1234567,
-				"type": "TXT",
-				"name": "_acme-challenge",
-				"data": "w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI",
-				"priority": null,
-				"port": null,
-				"weight": null
-			}
+			"type": "TXT",
+			"name": "_acme-challenge.tacoman.com",
+			"rdata": "47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU",
+			"id": 1234567,
+			"prio": null
 		}`)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 	})
 
-	err := provider.Present("example.com", "", "foobar")
+	err := provider.Present("tacoman.com", "", "")
+	fmt.Printf("%+v", err)
 	require.NoError(t, err)
 }
 

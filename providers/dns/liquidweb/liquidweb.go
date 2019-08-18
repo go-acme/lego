@@ -18,7 +18,7 @@ type Config struct {
 	Username           string
 	Password           string
 	Zone               string
-	Timeout            time.Duration
+	HTTPTimeout        time.Duration
 	PollingInterval    time.Duration
 	PropagationTimeout time.Duration
 }
@@ -26,7 +26,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	config := &Config{
-		Timeout:            env.GetOrDefaultSecond("LIQUID_WEB_TIMEOUT", 1*time.Minute),
+		HTTPTimeout:        env.GetOrDefaultSecond("LIQUID_WEB_HTTP_TIMEOUT", 1*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond("LIQUID_WEB_POLLING_INTERVAL", 2*time.Second),
 		PropagationTimeout: env.GetOrDefaultSecond("LIQUID_WEB_PROPAGATION_TIMEOUT", 2*time.Minute),
 	}
@@ -76,7 +76,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	// Initial new LW go client.
-	client, err := lw.NewAPI(config.Username, config.Password, config.URL, int(config.Timeout.Seconds()))
+	client, err := lw.NewAPI(config.Username, config.Password, config.URL, int(config.HTTPTimeout.Seconds()))
 
 	if err != nil {
 		return nil, fmt.Errorf("liquidweb: could not create Liquid Web API client: %v", err)

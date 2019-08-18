@@ -27,11 +27,11 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	config := &Config{
-		URL:                env.GetOrDefaultString("LW_URL", ""),
-		Username:           env.GetOrDefaultString("LW_USERNAME", ""),
-		Password:           env.GetOrDefaultString("LW_PASSWORD", ""),
-		Zone:               env.GetOrDefaultString("LW_ZONE", ""),
-		Timeout:            time.Second * time.Duration(env.GetOrDefaultInt("LW_TIMEOUT", 60)),
+		URL:                env.GetOrDefaultString("LIQUID_WEB_URL", ""),
+		Username:           env.GetOrDefaultString("LIQUID_WEB_USERNAME", ""),
+		Password:           env.GetOrDefaultString("LIQUID_WEB_PASSWORD", ""),
+		Zone:               env.GetOrDefaultString("LIQUID_WEB_ZONE", ""),
+		Timeout:            time.Second * time.Duration(env.GetOrDefaultInt("LIQUIDWEB_TIMEOUT", 60)),
 		PropagationTimeout: time.Minute * 5,
 	}
 

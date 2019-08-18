@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var envTest = tester.NewEnvTest("LW_URL", "LW_USERNAME", "LW_PASSWORD", "LW_TIMEOUT")
+var envTest = tester.NewEnvTest("LIQUID_WEB_URL", "LIQUID_WEB_USERNAME", "LIQUID_WEB_PASSWORD", "LIQUID_WEB_TIMEOUT")
 
 func setupTest() (*DNSProvider, *http.ServeMux, func()) {
 	handler := http.NewServeMux()
@@ -40,9 +40,9 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"LW_URL":      "https://storm.com",
-				"LW_USERNAME": "blars",
-				"LW_PASSWORD": "tacoman",
+				"LIQUID_WEB_URL":      "https://storm.com",
+				"LIQUID_WEB_USERNAME": "blars",
+				"LIQUID_WEB_PASSWORD": "tacoman",
 			},
 		},
 		{
@@ -53,15 +53,15 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "missing username",
 			envVars: map[string]string{
-				"LW_URL": "https://storm.com",
+				"LIQUID_WEB_URL": "https://storm.com",
 			},
 			expected: "liquidweb: username is missing",
 		},
 		{
 			desc: "missing password",
 			envVars: map[string]string{
-				"LW_URL":      "https://storm.com",
-				"LW_USERNAME": "blars",
+				"LIQUID_WEB_URL":      "https://storm.com",
+				"LIQUID_WEB_USERNAME": "blars",
 			}, expected: "liquidweb: password is missing",
 		},
 	}
@@ -96,9 +96,9 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"LW_URL":      "https://storm.com",
-				"LW_USERNAME": "blars",
-				"LW_PASSWORD": "tacoman",
+				"LIQUID_WEB_URL":      "https://storm.com",
+				"LIQUID_WEB_USERNAME": "blars",
+				"LIQUID_WEB_PASSWORD": "tacoman",
 			},
 		},
 		{
@@ -109,15 +109,15 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		{
 			desc: "missing username",
 			envVars: map[string]string{
-				"LW_URL": "https://storm.com",
+				"LIQUID_WEB_URL": "https://storm.com",
 			},
 			expected: "liquidweb: username is missing",
 		},
 		{
 			desc: "missing password",
 			envVars: map[string]string{
-				"LW_URL":      "https://storm.com",
-				"LW_USERNAME": "blars",
+				"LIQUID_WEB_URL":      "https://storm.com",
+				"LIQUID_WEB_USERNAME": "blars",
 			}, expected: "liquidweb: password is missing",
 		},
 	}

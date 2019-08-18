@@ -3,7 +3,6 @@ package liquidweb
 import (
 	"errors"
 	"fmt"
-	"log"
 	"strconv"
 	"sync"
 	"time"
@@ -76,7 +75,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	client, err := lw.NewAPI(config.Username, config.Password, config.URL, int(config.Timeout.Seconds()))
 
 	if err != nil {
-		log.Fatalf("Could not create Liquid Web API client: %v", err)
+		return nil, fmt.Errorf("liquidweb: could not create Liquid Web API client: %v", err)
 	}
 
 	return &DNSProvider{

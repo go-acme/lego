@@ -57,7 +57,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 // NewDNSProviderConfig return a DNSProvider instance configured for Liquid Web.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
-		return nil, errors.New("The configuration of the DNS provider is nil")
+		return nil, errors.New("the configuration of the DNS provider is nil")
 	}
 
 	if config.URL == "" {
@@ -104,7 +104,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	dnsEntry, err := d.client.NetworkDNS.Create(params)
 	if err != nil {
-		return fmt.Errorf("Could not create TXT record: %v", err)
+		return fmt.Errorf("could not create TXT record: %v", err)
 	}
 
 	d.recordIDsMu.Lock()
@@ -121,14 +121,14 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	recordID, ok := d.recordIDs[token]
 	d.recordIDsMu.Unlock()
 	if !ok {
-		return fmt.Errorf("Unknown record ID for '%s'", domain)
+		return fmt.Errorf("unknown record ID for '%s'", domain)
 	}
 	fmt.Printf("%+v", d.recordIDs)
 
 	params := &network.DNSRecordParams{ID: recordID}
 	_, err := d.client.NetworkDNS.Delete(params)
 	if err != nil {
-		return fmt.Errorf("Could not remove TXT record: %v", err)
+		return fmt.Errorf("could not remove TXT record: %v", err)
 	}
 	// Delete record ID from map
 	d.recordIDsMu.Lock()

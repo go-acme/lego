@@ -851,6 +851,7 @@ func displayDNSHelp(name string) error {
 		ew.writeln(`Additional Configuration:`)
 		ew.writeln(`	- "LW_TIMEOUT":	Maximum waiting time for the DNS records to be created (not verified)`)
 		ew.writeln(`	- "LW_URL":	Storm API endpoint`)
+		ew.writeln(`	- "LW_ZONE":	DNS Zone`)
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/liquidweb`)

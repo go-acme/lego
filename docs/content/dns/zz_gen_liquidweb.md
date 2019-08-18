@@ -18,9 +18,15 @@ Configuration for [Liquid Web](https://cart.liquidweb.com/storm/api/docs/v1/).
 
 - Code: `liquidweb`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the Liquid Web provider:
+
+```bash
+LIQUID_WEB_URL="https://api.stormondemand.com" \
+LIQUID_WEB_USERNAME=someuser \
+LIQUID_WEB_PASSWORD="somepass" \
+LIQUID_ZONE=tacoman.com.net \
+lego --dns liquidweb --email someaccount@email.com --domains "foo.email.com" run
+```
 
 
 
@@ -29,8 +35,8 @@ _Please contribute by adding a CLI example._
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `LW_PASSWORD` | Storm API Password |
-| `LW_USERNAME` | Storm API Username |
+| `LIQUID_WEB_PASSWORD` | Storm API Password |
+| `LIQUID_WEB_USERNAME` | Storm API Username |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).
@@ -40,9 +46,10 @@ More information [here](/lego/dns/#configuration-and-credentials).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `LW_TIMEOUT` | Maximum waiting time for the DNS records to be created (not verified) |
-| `LW_URL` | Storm API endpoint |
-| `LW_ZONE` | DNS Zone |
+| `LIQUID_WEB_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
+| `LIQUID_WEB_TIMEOUT` | Maximum waiting time for the DNS records to be created (not verified) |
+| `LIQUID_WEB_URL` | Storm API endpoint |
+| `LIQUID_WEB_ZONE` | DNS Zone |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).

@@ -844,14 +844,15 @@ func displayDNSHelp(name string) error {
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "LW_PASSWORD":	Storm API Password`)
-		ew.writeln(`	- "LW_USERNAME":	Storm API Username`)
+		ew.writeln(`	- "LIQUID_WEB_PASSWORD":	Storm API Password`)
+		ew.writeln(`	- "LIQUID_WEB_USERNAME":	Storm API Username`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "LW_TIMEOUT":	Maximum waiting time for the DNS records to be created (not verified)`)
-		ew.writeln(`	- "LW_URL":	Storm API endpoint`)
-		ew.writeln(`	- "LW_ZONE":	DNS Zone`)
+		ew.writeln(`	- "LIQUID_WEB_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "LIQUID_WEB_TIMEOUT":	Maximum waiting time for the DNS records to be created (not verified)`)
+		ew.writeln(`	- "LIQUID_WEB_URL":	Storm API endpoint`)
+		ew.writeln(`	- "LIQUID_WEB_ZONE":	DNS Zone`)
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/liquidweb`)

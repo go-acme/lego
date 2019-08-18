@@ -137,6 +137,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 		}`)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	})
 

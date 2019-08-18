@@ -10,8 +10,8 @@ slug: liquidweb
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 Since: v3.1.0
+A DNS solver using Liquid Web's Storm API. 
 
-Configuration for [Liquid Web](https://cart.liquidweb.com/storm/api/docs/v1/).
 
 
 <!--more-->
@@ -46,8 +46,10 @@ More information [here](/lego/dns/#configuration-and-credentials).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
+| `LIQUID_WEB_HTTP_TIMEOUT` | Maximum waiting time for the DNS records to be created (not verified) |
+| `LIQUID_WEB_POLLING_INTERVAL` | Time between DNS propagation check |
 | `LIQUID_WEB_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
-| `LIQUID_WEB_TIMEOUT` | Maximum waiting time for the DNS records to be created (not verified) |
+| `LIQUID_WEB_TTL` | The TTL of the TXT record used for the DNS challenge |
 | `LIQUID_WEB_URL` | Storm API endpoint |
 | `LIQUID_WEB_ZONE` | DNS Zone |
 

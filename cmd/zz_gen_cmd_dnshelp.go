@@ -849,8 +849,10 @@ func displayDNSHelp(name string) error {
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "LIQUID_WEB_HTTP_TIMEOUT":	Maximum waiting time for the DNS records to be created (not verified)`)
+		ew.writeln(`	- "LIQUID_WEB_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "LIQUID_WEB_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
-		ew.writeln(`	- "LIQUID_WEB_TIMEOUT":	Maximum waiting time for the DNS records to be created (not verified)`)
+		ew.writeln(`	- "LIQUID_WEB_TTL":	The TTL of the TXT record used for the DNS challenge`)
 		ew.writeln(`	- "LIQUID_WEB_URL":	Storm API endpoint`)
 		ew.writeln(`	- "LIQUID_WEB_ZONE":	DNS Zone`)
 

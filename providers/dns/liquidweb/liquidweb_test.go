@@ -87,64 +87,6 @@ func TestNewDNSProvider(t *testing.T) {
 	}
 }
 
-func TestNewDNSProviderConfig(t *testing.T) {
-	testCases := []struct {
-		desc     string
-		envVars  map[string]string
-		expected string
-	}{
-		{
-			desc: "success",
-			envVars: map[string]string{
-				"LIQUID_WEB_URL":      "https://storm.com",
-				"LIQUID_WEB_USERNAME": "blars",
-				"LIQUID_WEB_PASSWORD": "tacoman",
-			},
-		},
-		{
-			desc:     "missing url",
-			envVars:  map[string]string{},
-			expected: "liquidweb: url is missing",
-		},
-		{
-			desc: "missing username",
-			envVars: map[string]string{
-				"LIQUID_WEB_URL": "https://storm.com",
-			},
-			expected: "liquidweb: username is missing",
-		},
-		{
-			desc: "missing password",
-			envVars: map[string]string{
-				"LIQUID_WEB_URL":      "https://storm.com",
-				"LIQUID_WEB_USERNAME": "blars",
-			}, expected: "liquidweb: password is missing",
-		},
-	}
-
-	for _, test := range testCases {
-		t.Run(test.desc, func(t *testing.T) {
-			defer envTest.RestoreEnv()
-			envTest.ClearEnv()
-
-			envTest.Apply(test.envVars)
-
-			config := NewDefaultConfig()
-
-			p, err := NewDNSProviderConfig(config)
-
-			if len(test.expected) == 0 {
-				require.NoError(t, err)
-				require.NotNil(t, p)
-				require.NotNil(t, p.config)
-				require.NotNil(t, p.recordIDs)
-			} else {
-				require.EqualError(t, err, test.expected)
-			}
-		})
-	}
-}
-
 func TestDNSProvider_Present(t *testing.T) {
 	provider, mux, tearDown := setupTest()
 	defer tearDown()

@@ -1,5 +1,7 @@
 Name = "Liquid Web"
-Description = ''''''
+Description = '''
+A DNS solver using Liquid Web's Storm API. 
+'''
 URL = "https://cart.liquidweb.com/storm/api/docs/v1/"
 Code = "liquidweb"
 Since = "v3.1.0"

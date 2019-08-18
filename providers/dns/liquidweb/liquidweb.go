@@ -31,8 +31,8 @@ func NewDefaultConfig() *Config {
 		Username:           env.GetOrDefaultString("LIQUID_WEB_USERNAME", ""),
 		Password:           env.GetOrDefaultString("LIQUID_WEB_PASSWORD", ""),
 		Zone:               env.GetOrDefaultString("LIQUID_WEB_ZONE", ""),
-		Timeout:            time.Second * time.Duration(env.GetOrDefaultInt("LIQUIDWEB_TIMEOUT", 60)),
-		PropagationTimeout: time.Minute * 5,
+		Timeout:            env.GetOrDefaultSecond("LIQUID_WEB_TIMEOUT", 1*time.Minute),
+		PropagationTimeout: env.GetOrDefaultSecond("LIQUID_WEB_PROPAGATION_TIMEOUT", 2*time.Minute),
 	}
 
 	return config

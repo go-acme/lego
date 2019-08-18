@@ -101,7 +101,7 @@ func (d *DNSProvider) Timeout() (time.Duration, time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 	params := &network.DNSRecordParams{
-		Name:  fqdn[0 : len(fqdn)-1],
+		Name:  dns01.UnFqdn(fqdn),
 		RData: strconv.Quote(value),
 		Type:  "TXT",
 		Zone:  d.config.Zone,

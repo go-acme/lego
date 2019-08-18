@@ -123,13 +123,13 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	if !ok {
 		return fmt.Errorf("Unknown record ID for '%s'", domain)
 	}
+	fmt.Printf("%+v", d.recordIDs)
 
 	params := &network.DNSRecordParams{ID: recordID}
 	_, err := d.client.NetworkDNS.Delete(params)
 	if err != nil {
 		return fmt.Errorf("Could not remove TXT record: %v", err)
 	}
-
 	// Delete record ID from map
 	d.recordIDsMu.Lock()
 	delete(d.recordIDs, domain)

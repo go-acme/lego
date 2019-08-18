@@ -184,22 +184,25 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 	provider, mux, tearDown := setupTest()
 	defer tearDown()
 
-	mux.HandleFunc("/v2/domains/example.com/records/1234567", func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, http.MethodDelete, r.Method, "method")
+	mux.HandleFunc("/v1/Network/DNS/Record/delete", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodPost, r.Method, "method")
 
-		assert.Equal(t, "/v2/domains/example.com/records/1234567", r.URL.Path, "Path")
+		assert.Equal(t, "/v1/Network/DNS/Record/delete", r.URL.Path, "Path")
+		assert.Equal(t, "Basic YmxhcnM6dGFjb21hbg==", r.Header.Get("Authorization"), "Authorization")
 
-		// NOTE: Even though the body is empty, DigitalOcean API docs still show setting this Content-Type...
-		assert.Equal(t, "application/json", r.Header.Get("Content-Type"), "Content-Type")
-		assert.Equal(t, "Bearer asdf1234", r.Header.Get("Authorization"), "Authorization")
-
-		w.WriteHeader(http.StatusNoContent)
+		w.WriteHeader(http.StatusOK)
+		_, err := fmt.Fprintf(w, `{
+			"deleted": "123"
+		}`)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 	})
 
 	provider.recordIDsMu.Lock()
-	provider.recordIDs["_acme-challenge.example.com."] = 1234567
+	provider.recordIDs["123"] = 1234567
 	provider.recordIDsMu.Unlock()
 
-	err := provider.CleanUp("example.com", "", "")
+	err := provider.CleanUp("tacoman.com.", "123", "")
 	require.NoError(t, err, "fail to remove TXT record")
 }

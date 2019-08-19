@@ -14,6 +14,7 @@ import (
 
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
+	DomainName         string
 	Token              string
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -24,6 +25,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
+		DomainName: env.GetOrDefaultString("DUCKDNS_DOMAIN",""),
 		PropagationTimeout: env.GetOrDefaultSecond("DUCKDNS_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond("DUCKDNS_POLLING_INTERVAL", dns01.DefaultPollingInterval),
 		SequenceInterval:   env.GetOrDefaultSecond("DUCKDNS_SEQUENCE_INTERVAL", dns01.DefaultPropagationTimeout),
@@ -67,13 +69,18 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	_, txtRecord := dns01.GetRecord(domain, keyAuth)
-	return d.updateTxtRecord(domain, d.config.Token, txtRecord, false)
+	// get the duckdns domain name
+	duckDnsDomain := GetDomain(d.config.DomainName,domain)
+
+	_, txtRecord := dns01.GetRecord(duckDnsDomain, keyAuth)
+	return d.updateTxtRecord(duckDnsDomain, d.config.Token, txtRecord, false)
 }
 
 // CleanUp clears DuckDNS TXT record
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	return d.updateTxtRecord(domain, d.config.Token, "", true)
+	// get the duckdns domain name
+	duckDnsDomain := GetDomain(d.config.DomainName,domain)
+	return d.updateTxtRecord(duckDnsDomain, d.config.Token, "", true)
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
@@ -86,4 +93,14 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 // Returns the interval between each iteration.
 func (d *DNSProvider) Sequential() time.Duration {
 	return d.config.SequenceInterval
+}
+
+// Check whether the domain named in the configuration value DUCKDNS_DOMAIN
+// is empty. If it is empty the requested domain is used, otherwise the configured domain.
+// This is needed when the CNAME validation takes place.
+func GetDomain(configDomain string, dnsDomain string)  string {
+	if configDomain != "" {
+		return configDomain
+	}
+	return dnsDomain
 }

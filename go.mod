@@ -28,6 +28,7 @@ require (
 	github.com/labbsr0x/bindman-dns-webhook v1.0.0
 	github.com/labbsr0x/goh v0.0.0-20190417202808-8b16b4848295 // indirect
 	github.com/linode/linodego v0.10.0
+	github.com/liquidweb/liquidweb-go v1.6.0
 	github.com/miekg/dns v1.1.15
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
 	github.com/nrdcg/auroradns v1.0.0

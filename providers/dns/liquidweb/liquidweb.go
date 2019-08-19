@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/go-acme/lego/v3/challenge/dns01"
@@ -39,9 +40,10 @@ func NewDefaultConfig() *Config {
 // DNSProvider is an implementation of the acme.ChallengeProvider interface
 // that uses Liquid Web's REST API to manage TXT records for a domain.
 type DNSProvider struct {
-	config    *Config
-	recordIDs map[string]int
-	client    *lw.API
+	config      *Config
+	recordIDs   map[string]int
+	recordIDsMu sync.Mutex
+	client      *lw.API
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Liquid Web.
@@ -113,7 +115,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("liquidweb: could not create TXT record: %v", err)
 	}
 
+	d.recordIDsMu.Lock()
 	d.recordIDs[token] = int(dnsEntry.ID)
+	d.recordIDsMu.Unlock()
 
 	return nil
 }
@@ -131,8 +135,11 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("liquidweb: could not remove TXT record: %v", err)
 	}
+
 	// Delete record ID from map
+	d.recordIDsMu.Lock()
 	delete(d.recordIDs, domain)
+	d.recordIDsMu.Unlock()
 
 	return nil
 }

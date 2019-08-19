@@ -22,7 +22,6 @@ require (
 	github.com/exoscale/egoscale v0.18.1
 	github.com/go-errors/errors v1.0.1 // indirect
 	github.com/gophercloud/gophercloud v0.3.0
-	github.com/grpc-ecosystem/grpc-gateway v1.9.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/iij/doapi v0.0.0-20190504054126-0bbf12d6d7df
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
@@ -44,12 +43,10 @@ require (
 	github.com/transip/gotransip v0.0.0-20190812104329-6d8d9179b66f
 	github.com/urfave/cli v1.21.0
 	github.com/vultr/govultr v0.1.4
-	go.uber.org/atomic v1.4.0 // indirect
 	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4
-	golang.org/x/net v0.0.0-20190522155817-f3200d17e092
+	golang.org/x/net v0.0.0-20190503192946-f4e77d36d62c
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 	google.golang.org/api v0.8.0
-	google.golang.org/grpc v1.21.0 // indirect
 	gopkg.in/ns1/ns1-go.v2 v2.0.0-20190730140822-b51389932cbc
 	gopkg.in/square/go-jose.v2 v2.3.1
 )

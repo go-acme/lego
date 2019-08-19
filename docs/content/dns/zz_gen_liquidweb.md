@@ -10,8 +10,8 @@ slug: liquidweb
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 Since: v3.1.0
-A DNS solver using Liquid Web's Storm API. 
 
+Configuration for [Liquid Web](https://cart.liquidweb.com/storm/api/docs/v1/).
 
 
 <!--more-->
@@ -21,7 +21,6 @@ A DNS solver using Liquid Web's Storm API.
 Here is an example bash command using the Liquid Web provider:
 
 ```bash
-LIQUID_WEB_URL="https://api.stormondemand.com" \
 LIQUID_WEB_USERNAME=someuser \
 LIQUID_WEB_PASSWORD="somepass" \
 LIQUID_ZONE=tacoman.com.net \
@@ -37,6 +36,7 @@ lego --dns liquidweb --email someaccount@email.com --domains "foo.email.com" run
 |-----------------------|-------------|
 | `LIQUID_WEB_PASSWORD` | Storm API Password |
 | `LIQUID_WEB_USERNAME` | Storm API Username |
+| `LIQUID_WEB_ZONE` | DNS Zone |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).
@@ -51,7 +51,6 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `LIQUID_WEB_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
 | `LIQUID_WEB_TTL` | The TTL of the TXT record used for the DNS challenge |
 | `LIQUID_WEB_URL` | Storm API endpoint |
-| `LIQUID_WEB_ZONE` | DNS Zone |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).

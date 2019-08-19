@@ -13,15 +13,21 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var envTest = tester.NewEnvTest("LIQUID_WEB_URL", "LIQUID_WEB_USERNAME", "LIQUID_WEB_PASSWORD", "LIQUID_WEB_TIMEOUT", "LIQUID_WEB_ZONE").WithDomain("LIQUID_WEB_DOMAIN")
+var envTest = tester.NewEnvTest(
+	"LIQUID_WEB_URL",
+	"LIQUID_WEB_USERNAME",
+	"LIQUID_WEB_PASSWORD",
+	"LIQUID_WEB_ZONE").
+	WithDomain("LIQUID_WEB_DOMAIN")
 
 func setupTest() (*DNSProvider, *http.ServeMux, func()) {
 	handler := http.NewServeMux()
 	server := httptest.NewServer(handler)
+
 	config := NewDefaultConfig()
 	config.Username = "blars"
 	config.Password = "tacoman"
-	config.URL = server.URL
+	config.BaseURL = server.URL
 	config.Zone = "tacoman.com"
 
 	provider, err := NewDNSProviderConfig(config)
@@ -48,23 +54,31 @@ func TestNewDNSProvider(t *testing.T) {
 			},
 		},
 		{
-			desc:     "missing url",
+			desc:     "missing credentials",
 			envVars:  map[string]string{},
-			expected: "liquidweb: some credentials information are missing: LIQUID_WEB_URL,LIQUID_WEB_USERNAME,LIQUID_WEB_PASSWORD,LIQUID_WEB_ZONE",
+			expected: "liquidweb: some credentials information are missing: LIQUID_WEB_USERNAME,LIQUID_WEB_PASSWORD,LIQUID_WEB_ZONE",
 		},
 		{
 			desc: "missing username",
 			envVars: map[string]string{
-				"LIQUID_WEB_URL": "https://storm.com",
+				"LIQUID_WEB_PASSWORD": "tacoman",
+				"LIQUID_WEB_ZONE":     "blars.com",
 			},
-			expected: "liquidweb: some credentials information are missing: LIQUID_WEB_USERNAME,LIQUID_WEB_PASSWORD,LIQUID_WEB_ZONE",
+			expected: "liquidweb: some credentials information are missing: LIQUID_WEB_USERNAME",
 		},
 		{
 			desc: "missing password",
 			envVars: map[string]string{
-				"LIQUID_WEB_URL":      "https://storm.com",
 				"LIQUID_WEB_USERNAME": "blars",
-			}, expected: "liquidweb: some credentials information are missing: LIQUID_WEB_PASSWORD,LIQUID_WEB_ZONE",
+				"LIQUID_WEB_ZONE":     "blars.com",
+			}, expected: "liquidweb: some credentials information are missing: LIQUID_WEB_PASSWORD",
+		},
+		{
+			desc: "missing zone",
+			envVars: map[string]string{
+				"LIQUID_WEB_USERNAME": "blars",
+				"LIQUID_WEB_PASSWORD": "tacoman",
+			}, expected: "liquidweb: some credentials information are missing: LIQUID_WEB_ZONE",
 		},
 	}
 
@@ -81,6 +95,73 @@ func TestNewDNSProvider(t *testing.T) {
 				require.NoError(t, err)
 				require.NotNil(t, p)
 				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
+				require.NotNil(t, p.recordIDs)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
+}
+
+func TestNewDNSProviderConfig(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		username string
+		password string
+		zone     string
+		expected string
+	}{
+		{
+			desc:     "success",
+			username: "acme",
+			password: "secret",
+			zone:     "example.com",
+		},
+		{
+			desc:     "missing credentials",
+			username: "",
+			password: "",
+			zone:     "",
+			expected: "liquidweb: zone is missing",
+		},
+		{
+			desc:     "missing username",
+			username: "",
+			password: "secret",
+			zone:     "example.com",
+			expected: "liquidweb: username is missing",
+		},
+		{
+			desc:     "missing password",
+			username: "acme",
+			password: "",
+			zone:     "example.com",
+			expected: "liquidweb: password is missing",
+		},
+		{
+			desc:     "missing zone",
+			username: "acme",
+			password: "secret",
+			zone:     "",
+			expected: "liquidweb: zone is missing",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			config := NewDefaultConfig()
+			config.Username = test.username
+			config.Password = test.password
+			config.Zone = test.zone
+
+			p, err := NewDNSProviderConfig(config)
+
+			if len(test.expected) == 0 {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
 				require.NotNil(t, p.recordIDs)
 			} else {
 				require.EqualError(t, err, test.expected)
@@ -94,22 +175,36 @@ func TestDNSProvider_Present(t *testing.T) {
 	defer tearDown()
 
 	mux.HandleFunc("/v1/Network/DNS/Record/create", func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, http.MethodPost, r.Method, "method")
+		assert.Equal(t, http.MethodPost, r.Method)
 
-		assert.Equal(t, "Basic YmxhcnM6dGFjb21hbg==", r.Header.Get("Authorization"), "Authorization")
+		username, password, ok := r.BasicAuth()
+		assert.Equal(t, "blars", username)
+		assert.Equal(t, "tacoman", password)
+		assert.True(t, ok)
 
 		reqBody, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
-		expectedReqBody := `{"params":{"name":"_acme-challenge.tacoman.com","rdata":"\"47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU\"","ttl":300,"type":"TXT","zone":"tacoman.com"}}`
-		assert.Equal(t, expectedReqBody, string(reqBody))
+
+		expectedReqBody := `
+			{
+				"params": {
+					"name": "_acme-challenge.tacoman.com",
+					"rdata": "\"47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU\"",
+					"ttl": 300,
+					"type": "TXT",
+					"zone": "tacoman.com"
+				}
+			}`
+		assert.JSONEq(t, expectedReqBody, string(reqBody))
 
 		w.WriteHeader(http.StatusOK)
 		_, err = fmt.Fprintf(w, `{
 			"type": "TXT",
 			"name": "_acme-challenge.tacoman.com",
-			"rdata": "47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU",
+			"rdata": "\"47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU\"",
 			"ttl": 300,
 			"id": 1234567,
 			"prio": null
@@ -120,7 +215,6 @@ func TestDNSProvider_Present(t *testing.T) {
 	})
 
 	err := provider.Present("tacoman.com", "", "")
-	fmt.Printf("%+v", err)
 	require.NoError(t, err)
 }
 
@@ -129,15 +223,14 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 	defer tearDown()
 
 	mux.HandleFunc("/v1/Network/DNS/Record/delete", func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, http.MethodPost, r.Method, "method")
+		assert.Equal(t, http.MethodPost, r.Method)
 
-		assert.Equal(t, "/v1/Network/DNS/Record/delete", r.URL.Path, "Path")
-		assert.Equal(t, "Basic YmxhcnM6dGFjb21hbg==", r.Header.Get("Authorization"), "Authorization")
+		username, password, ok := r.BasicAuth()
+		assert.Equal(t, "blars", username)
+		assert.Equal(t, "tacoman", password)
+		assert.True(t, ok)
 
-		w.WriteHeader(http.StatusOK)
-		_, err := fmt.Fprintf(w, `{
-			"deleted": "123"
-		}`)
+		_, err := fmt.Fprintf(w, `{"deleted": "123"}`)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -156,6 +249,7 @@ func TestLivePresent(t *testing.T) {
 	}
 
 	envTest.RestoreEnv()
+
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
@@ -169,6 +263,7 @@ func TestLiveCleanUp(t *testing.T) {
 	}
 
 	envTest.RestoreEnv()
+
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 

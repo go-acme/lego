@@ -1,3 +1,4 @@
+// Package liquidweb implements a DNS provider for solving the DNS-01 challenge using Liquid Web.
 package liquidweb
 
 import (
@@ -13,25 +14,28 @@ import (
 	"github.com/liquidweb/liquidweb-go/network"
 )
 
+const defaultBaseURL = "https://api.stormondemand.com"
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
-	URL                string
+	BaseURL            string
 	Username           string
 	Password           string
 	Zone               string
-	HTTPTimeout        time.Duration
+	TTL                int
 	PollingInterval    time.Duration
 	PropagationTimeout time.Duration
-	TTL                int
+	HTTPTimeout        time.Duration
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	config := &Config{
-		HTTPTimeout:        env.GetOrDefaultSecond("LIQUID_WEB_HTTP_TIMEOUT", 1*time.Minute),
+		BaseURL:            defaultBaseURL,
+		TTL:                env.GetOrDefaultInt("LIQUID_WEB_TTL", 300),
 		PollingInterval:    env.GetOrDefaultSecond("LIQUID_WEB_POLLING_INTERVAL", 2*time.Second),
 		PropagationTimeout: env.GetOrDefaultSecond("LIQUID_WEB_PROPAGATION_TIMEOUT", 2*time.Minute),
-		TTL:                env.GetOrDefaultInt("LIQUID_WEB_TTL", 300),
+		HTTPTimeout:        env.GetOrDefaultSecond("LIQUID_WEB_HTTP_TIMEOUT", 1*time.Minute),
 	}
 
 	return config
@@ -41,19 +45,20 @@ func NewDefaultConfig() *Config {
 // that uses Liquid Web's REST API to manage TXT records for a domain.
 type DNSProvider struct {
 	config      *Config
+	client      *lw.API
 	recordIDs   map[string]int
 	recordIDsMu sync.Mutex
-	client      *lw.API
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Liquid Web.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("LIQUID_WEB_URL", "LIQUID_WEB_USERNAME", "LIQUID_WEB_PASSWORD", "LIQUID_WEB_ZONE")
+	values, err := env.Get("LIQUID_WEB_USERNAME", "LIQUID_WEB_PASSWORD", "LIQUID_WEB_ZONE")
 	if err != nil {
 		return nil, fmt.Errorf("liquidweb: %v", err)
 	}
+
 	config := NewDefaultConfig()
-	config.URL = values["LIQUID_WEB_URL"]
+	config.BaseURL = env.GetOrFile("LIQUID_WEB_URL")
 	config.Username = values["LIQUID_WEB_USERNAME"]
 	config.Password = values["LIQUID_WEB_PASSWORD"]
 	config.Zone = values["LIQUID_WEB_ZONE"]
@@ -67,8 +72,12 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("liquidweb: the configuration of the DNS provider is nil")
 	}
 
-	if config.URL == "" {
-		return nil, fmt.Errorf("liquidweb: url is missing")
+	if config.BaseURL == "" {
+		config.BaseURL = defaultBaseURL
+	}
+
+	if config.Zone == "" {
+		return nil, fmt.Errorf("liquidweb: zone is missing")
 	}
 
 	if config.Username == "" {
@@ -80,8 +89,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	// Initialize LW client.
-	client, err := lw.NewAPI(config.Username, config.Password, config.URL, int(config.HTTPTimeout.Seconds()))
-
+	client, err := lw.NewAPI(config.Username, config.Password, config.BaseURL, int(config.HTTPTimeout.Seconds()))
 	if err != nil {
 		return nil, fmt.Errorf("liquidweb: could not create Liquid Web API client: %v", err)
 	}
@@ -102,6 +110,7 @@ func (d *DNSProvider) Timeout() (time.Duration, time.Duration) {
 // Present creates a TXT record using the specified parameters
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
+
 	params := &network.DNSRecordParams{
 		Name:  dns01.UnFqdn(fqdn),
 		RData: strconv.Quote(value),
@@ -124,8 +133,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	// get the record's unique ID from when we created it
+	d.recordIDsMu.Lock()
 	recordID, ok := d.recordIDs[token]
+	d.recordIDsMu.Unlock()
+
 	if !ok {
 		return fmt.Errorf("liquidweb: unknown record ID for '%s'", domain)
 	}
@@ -136,9 +147,8 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("liquidweb: could not remove TXT record: %v", err)
 	}
 
-	// Delete record ID from map
 	d.recordIDsMu.Lock()
-	delete(d.recordIDs, domain)
+	delete(d.recordIDs, token)
 	d.recordIDsMu.Unlock()
 
 	return nil

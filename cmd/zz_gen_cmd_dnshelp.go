@@ -846,6 +846,7 @@ func displayDNSHelp(name string) error {
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "LIQUID_WEB_PASSWORD":	Storm API Password`)
 		ew.writeln(`	- "LIQUID_WEB_USERNAME":	Storm API Username`)
+		ew.writeln(`	- "LIQUID_WEB_ZONE":	DNS Zone`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
@@ -854,7 +855,6 @@ func displayDNSHelp(name string) error {
 		ew.writeln(`	- "LIQUID_WEB_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
 		ew.writeln(`	- "LIQUID_WEB_TTL":	The TTL of the TXT record used for the DNS challenge`)
 		ew.writeln(`	- "LIQUID_WEB_URL":	Storm API endpoint`)
-		ew.writeln(`	- "LIQUID_WEB_ZONE":	DNS Zone`)
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/liquidweb`)

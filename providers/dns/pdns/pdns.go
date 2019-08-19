@@ -37,7 +37,7 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider is an implementation of the acme.ChallengeProvider interface
+// DNSProvider is an implementation of the challenge.Provider interface
 type DNSProvider struct {
 	apiVersion int
 	config     *Config

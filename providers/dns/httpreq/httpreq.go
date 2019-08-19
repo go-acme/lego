@@ -75,7 +75,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderConfig return a DNSProvider .
+// NewDNSProviderConfig return a DNSProvider.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("httpreq: the configuration of the DNS provider is nil")

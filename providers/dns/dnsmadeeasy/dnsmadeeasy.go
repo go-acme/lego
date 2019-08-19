@@ -41,7 +41,7 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider is an implementation of the acme.ChallengeProvider interface that uses
+// DNSProvider is an implementation of the challenge.Provider interface that uses
 // DNSMadeEasy's DNS API to manage TXT records for a domain.
 type DNSProvider struct {
 	config *Config

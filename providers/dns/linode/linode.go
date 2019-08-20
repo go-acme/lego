@@ -38,7 +38,7 @@ type hostedZoneInfo struct {
 	resourceName string
 }
 
-// DNSProvider implements the acme.ChallengeProvider interface.
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
 	client *dns.DNS

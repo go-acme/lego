@@ -38,7 +38,7 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider is an implementation of the acme.ChallengeProvider interface that
+// DNSProvider is an implementation of the challenge.Provider interface that
 // uses dynamic DNS updates (RFC 2136) to create TXT records on a nameserver.
 type DNSProvider struct {
 	config *Config

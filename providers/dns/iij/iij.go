@@ -32,7 +32,7 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider implements the acme.ChallengeProvider interface
+// DNSProvider implements the challenge.Provider interface
 type DNSProvider struct {
 	api    *doapi.API
 	config *Config

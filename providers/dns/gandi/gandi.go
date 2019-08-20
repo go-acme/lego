@@ -52,7 +52,7 @@ type inProgressInfo struct {
 }
 
 // DNSProvider is an implementation of the
-// acme.ChallengeProviderTimeout interface that uses Gandi's XML-RPC
+// challenge.ProviderTimeout interface that uses Gandi's XML-RPC
 // API to manage TXT records for a domain.
 type DNSProvider struct {
 	inProgressFQDNs     map[string]inProgressInfo

@@ -11,10 +11,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/miekg/dns"
-
 	"github.com/go-acme/lego/v3/challenge/dns01"
 	"github.com/go-acme/lego/v3/platform/config/env"
+	"github.com/miekg/dns"
 )
 
 // Config is used to configure the creation of the DNSProvider
@@ -70,7 +69,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderConfig return a DNSProvider .
+// NewDNSProviderConfig return a DNSProvider instance configured for EasyDNS.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("easydns: the configuration of the DNS provider is nil")

@@ -41,7 +41,7 @@ func NewDefaultConfig() *Config {
 	return config
 }
 
-// DNSProvider is an implementation of the acme.ChallengeProvider interface
+// DNSProvider is an implementation of the challenge.Provider interface
 // that uses Liquid Web's REST API to manage TXT records for a domain.
 type DNSProvider struct {
 	config      *Config

@@ -25,3 +25,4 @@ lego --dns liquidweb --email someaccount@email.com --domains "foo.email.com" run
 
 [Links]
   API = "https://cart.liquidweb.com/storm/api/docs/v1/"
+  GoClient = "https://github.com/liquidweb/liquidweb-go"

@@ -50,7 +50,7 @@ func NewDefaultConfig() *Config {
 }
 
 // DNSProvider is an implementation of the
-// acme.ChallengeProviderTimeout interface that uses Gandi's LiveDNS
+// challenge.ProviderTimeout interface that uses Gandi's LiveDNS
 // API to manage TXT records for a domain.
 type DNSProvider struct {
 	config          *Config

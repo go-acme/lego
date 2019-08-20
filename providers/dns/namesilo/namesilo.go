@@ -34,7 +34,7 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider is an implementation of the acme.ChallengeProvider interface.
+// DNSProvider is an implementation of the challenge.Provider interface.
 type DNSProvider struct {
 	client *namesilo.Client
 	config *Config
@@ -56,7 +56,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderConfig return a DNSProvider instance configured for DNSimple.
+// NewDNSProviderConfig return a DNSProvider instance configured for Namesilo.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("namesilo: the configuration of the DNS provider is nil")

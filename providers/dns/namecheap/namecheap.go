@@ -94,7 +94,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderConfig return a DNSProvider instance configured for namecheap.
+// NewDNSProviderConfig return a DNSProvider instance configured for Namecheap.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("namecheap: the configuration of the DNS provider is nil")

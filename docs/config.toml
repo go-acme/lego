@@ -53,7 +53,7 @@ pygmentsUseClasses = true
   languageName = "English"
 
 [[Languages.en.menu.shortcuts]]
-  name = "<i class='fab fa-fw fa-github'></i> Github repo"
+  name = "<i class='fab fa-fw fa-github'></i> GitHub repo"
   identifier = "ds"
   url = "https://github.com/go-acme/lego"
   weight = 10

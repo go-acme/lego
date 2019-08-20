@@ -76,5 +76,5 @@ make build
 # push your branch
 git push -u origin my-feature
 
-## create a pull request on Github ##
+## create a pull request on GitHub ##
 ```

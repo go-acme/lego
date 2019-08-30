@@ -17,6 +17,7 @@ func allDNSCodes() string {
 		"acme-dns",
 		"alidns",
 		"auroradns",
+		"autodns",
 		"azure",
 		"bindman",
 		"bluecat",
@@ -141,6 +142,22 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/auroradns`)
+
+	case "autodns":
+		// generated from: providers/dns/autodns/autodns.toml
+		ew.writeln(`Configuration for Autodns.`)
+		ew.writeln(`Code:	'autodns'`)
+		ew.writeln(`Since:	'v3.1.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "AUTODNS_API_PASSWORD":	User Password`)
+		ew.writeln(`	- "AUTODNS_API_USER":	User ID`)
+		ew.writeln(`	- "AUTODNS_ENDPOINT":	API endpoint URL`)
+		ew.writeln()
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/autodns`)
 
 	case "azure":
 		// generated from: providers/dns/azure/azure.toml

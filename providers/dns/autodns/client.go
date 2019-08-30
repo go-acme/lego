@@ -63,14 +63,15 @@ type ResourceRecord struct {
 	TTL   int64  `json:"ttl"`
 	Type  string `json:"type"`
 	Value string `json:"value"`
-	Pref  int32  `json:"pref"`
+	Pref  int32  `json:"pref,omitempty"`
 }
 
 // Zone is an autodns zone record with all for us relevant fields
 type Zone struct {
-	Name            string            `json:"origin"`
-	ResourceRecords []*ResourceRecord `json:"resourceRecords"`
-	Action          string            `json:"action"`
+	Name              string            `json:"origin"`
+	ResourceRecords   []*ResourceRecord `json:"resourceRecords"`
+	Action            string            `json:"action"`
+	VirtualNameServer string            `json:"virtualNameServer"`
 }
 
 // txtRecord holds a simplified version of a zone entry
@@ -145,16 +146,32 @@ func checkResponse(resp *http.Response) error {
 	return fmt.Errorf("status code=%d: %s", resp.StatusCode, string(raw))
 }
 
+func (d *DNSProvider) makeZoneUpdateRequest(zone *Zone, domain string) (*Zone, error) {
+	reqBody := &bytes.Buffer{}
+	if err := json.NewEncoder(reqBody).Encode(zone); err != nil {
+		return nil, err
+	}
+
+	req, err := d.makeRequest(http.MethodPut, path.Join("zone", domain, d.zoneNameservers[domain]), reqBody)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp *Zone
+	if err := d.sendRequest(req, &resp); err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
 func (d *DNSProvider) addTxtRecord(domain, name, value string) (*Zone, error) {
-
-	// TODO: find the zone & nameserver to update somewhere... maybe we can just take it from the domain
-
+	fmt.Println(domain, name, value)
 	zone := &Zone{
-		Name: domain,
+		Name: name,
 		ResourceRecords: []*ResourceRecord{
 			{
-				Name:  domain,
-				TTL:   600,
+				Name:  name,
+				TTL:   120,
 				Type:  "TXT",
 				Value: value,
 			},
@@ -162,17 +179,27 @@ func (d *DNSProvider) addTxtRecord(domain, name, value string) (*Zone, error) {
 		Action: ActionComplete,
 	}
 
-	reqBody := &bytes.Buffer{}
-	if err := json.NewEncoder(reqBody).Encode(zone); err != nil {
-		return nil, err
+	return d.makeZoneUpdateRequest(zone, domain)
+}
+
+func (d *DNSProvider) removeTxtRecord(domain, id string) error {
+	zone := &Zone{
+		Name:            domain,
+		ResourceRecords: []*ResourceRecord{},
+		Action:          ActionComplete,
 	}
 
-	req, err := d.makeRequest(http.MethodPost, path.Join("zone", "{name}/{nameserver}"), reqBody)
+	_, err := d.makeZoneUpdateRequest(zone, domain)
+	return err
+}
+
+func (d *DNSProvider) getTxtRecords(domain string) (*DataZoneResponse, error) {
+	req, err := d.makeRequest(http.MethodGet, path.Join("zone", domain, d.zoneNameservers[domain]), nil)
 	if err != nil {
 		return nil, err
 	}
 
-	var resp *Zone
+	var resp *DataZoneResponse
 	if err := d.sendRequest(req, &resp); err != nil {
 		return nil, err
 	}

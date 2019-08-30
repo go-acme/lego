@@ -1,0 +1,16 @@
+Name = "Autodns"
+Description = ''''''
+URL = "https://www.internetx.com/domains/autodns/"
+Code = "autodns"
+Since = "v3.1.0"
+
+Example = ''''''
+
+[Configuration]
+  [Configuration.Credentials]
+    AUTODNS_API_USER = "User ID"
+    AUTODNS_API_PASSWORD = "User Password"
+    AUTODNS_ENDPOINT = "API endpoint URL"
+
+[Links]
+  API = "https://help.internetx.com/display/APIJSONEN"

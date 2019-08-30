@@ -10,6 +10,10 @@ import (
 )
 
 const (
+	envApiUser     = `AUTODNS_API_USER`
+	envApiPassword = `AUTODNS_API_PASSWORD`
+	envApiEndpoint = `AUTODNS_ENDPOINT`
+
 	defaultEndpoint string = `https://api.autodns.com/v1/`
 	demoEndpoint    string = `https://api.demo.autodns.com/v1/`
 
@@ -42,20 +46,20 @@ type DNSProvider struct {
 }
 
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("AUTODNS_API_USER", "AUTODNS_API_PASSWORD")
+	values, err := env.Get(envApiUser, envApiPassword)
 	if err != nil {
 		return nil, fmt.Errorf("autodns: %v", err)
 	}
 
-	rawEndpoint := env.GetOrDefaultString("AUTODNS_ENDPOINT", defaultEndpoint)
+	rawEndpoint := env.GetOrDefaultString(envApiEndpoint, defaultEndpoint)
 	endpoint, err := url.Parse(rawEndpoint)
 	if err != nil {
 		return nil, fmt.Errorf("autodns: %v", err)
 	}
 
 	config := NewDefaultConfig()
-	config.Username = values["AUTODNS_API_USER"]
-	config.Password = values["AUTODNS_API_PASSWORD"]
+	config.Username = values[envApiUser]
+	config.Password = values[envApiPassword]
 	config.Endpoint = endpoint
 
 	provider := &DNSProvider{config: config}

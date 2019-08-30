@@ -6,7 +6,6 @@ import (
 	"github.com/go-acme/lego/v3/platform/config/env"
 	"net/http"
 	"net/url"
-	"path"
 )
 
 const (
@@ -66,7 +65,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 	// Because autodns needs the nameservers for each request, we query them all here and put them
 	// in our state to avoid making a lot of requests later.
-	req, err := provider.makeRequest(http.MethodPost, path.Join("zone", "_search"), nil)
+	/*req, err := provider.makeRequest(http.MethodPost, path.Join("zone", "_search"), nil)
 	if err != nil {
 		return nil, fmt.Errorf("autodns: %v", err)
 	}
@@ -80,26 +79,14 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 	for _, zone := range resp.Data {
 		provider.zoneNameservers[zone.Name] = zone.VirtualNameServer
-	}
+	}*/
 
 	return provider, nil
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+func (d *DNSProvider) Present(domain, token, keyAuth string) (err error) {
 
-	// Get all current records for this domain to be able to restore them later and not clear everything
-	// since the api does not support adding/removing single txt records.
-	resp, err := d.getRecords(domain)
-	if err != nil {
-		return fmt.Errorf("autodns: getRecords: %v", err)
-	}
-
-	if len(resp.Data) > 0 {
-		d.currentRecords = resp.Data[0].ResourceRecords
-	}
-
-	// Add the actual record
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 	_, err = d.addTxtRecord(domain, fqdn, value)
 	if err != nil {
@@ -110,8 +97,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record previously created
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	if err := d.restoreRecords(domain, "_acme-challenge"); err != nil {
-		return fmt.Errorf("autodns: restoreRecords: %v", err)
+	if err := d.removeTXTRecord(domain, "_acme-challenge"); err != nil {
+		return fmt.Errorf("autodns: removeTXTRecord: %v", err)
 	}
 
 	return nil

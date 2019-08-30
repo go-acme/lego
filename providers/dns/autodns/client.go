@@ -74,11 +74,9 @@ type Zone struct {
 	VirtualNameServer string            `json:"virtualNameServer"`
 }
 
-// txtRecord holds a simplified version of a zone entry
-type txtRecord struct {
-	Name  string
-	TTL   int64
-	Value string
+type ZoneStream struct {
+	Adds    []*ResourceRecord `json:"adds"`
+	Removes []*ResourceRecord `json:"rems"`
 }
 
 func (d *DNSProvider) makeRequest(method, resource string, body io.Reader) (*http.Request, error) {
@@ -146,13 +144,13 @@ func checkResponse(resp *http.Response) error {
 	return fmt.Errorf("status code=%d: %s", resp.StatusCode, string(raw))
 }
 
-func (d *DNSProvider) makeZoneUpdateRequest(zone *Zone, domain string) (*Zone, error) {
+func (d *DNSProvider) makeZoneUpdateRequest(zoneStream *ZoneStream, domain string) (*Zone, error) {
 	reqBody := &bytes.Buffer{}
-	if err := json.NewEncoder(reqBody).Encode(zone); err != nil {
+	if err := json.NewEncoder(reqBody).Encode(zoneStream); err != nil {
 		return nil, err
 	}
 
-	req, err := d.makeRequest(http.MethodPut, path.Join("zone", domain, d.zoneNameservers[domain]), reqBody)
+	req, err := d.makeRequest(http.MethodPost, path.Join("zone", domain, "_stream"), reqBody)
 	if err != nil {
 		return nil, err
 	}
@@ -165,42 +163,31 @@ func (d *DNSProvider) makeZoneUpdateRequest(zone *Zone, domain string) (*Zone, e
 }
 
 func (d *DNSProvider) addTxtRecord(domain, name, value string) (*Zone, error) {
-	zone := &Zone{
-		Name: name,
-		ResourceRecords: append(
-			d.currentRecords,
+	zoneStream := &ZoneStream{
+		Adds: []*ResourceRecord{
 			&ResourceRecord{
 				Name:  name,
 				TTL:   120,
 				Type:  "TXT",
 				Value: value,
-			}),
-		Action: ActionComplete,
+			},
+		},
 	}
 
-	return d.makeZoneUpdateRequest(zone, domain)
+	return d.makeZoneUpdateRequest(zoneStream, domain)
 }
 
-func (d *DNSProvider) restoreRecords(domain, id string) error {
-	zone := &Zone{
-		Name:            domain,
-		ResourceRecords: d.currentRecords, // Restore the records from before
-		Action:          ActionComplete,
+func (d *DNSProvider) removeTXTRecord(domain, name string) error {
+	zoneStream := &ZoneStream{
+		Removes: []*ResourceRecord{
+			&ResourceRecord{
+				Name: name,
+				TTL:  120,
+				Type: "TXT",
+			},
+		},
 	}
 
-	_, err := d.makeZoneUpdateRequest(zone, domain)
+	_, err := d.makeZoneUpdateRequest(zoneStream, domain)
 	return err
-}
-
-func (d *DNSProvider) getRecords(domain string) (*DataZoneResponse, error) {
-	req, err := d.makeRequest(http.MethodGet, path.Join("zone", domain, d.zoneNameservers[domain]), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	var resp *DataZoneResponse
-	if err := d.sendRequest(req, &resp); err != nil {
-		return nil, err
-	}
-	return resp, nil
 }

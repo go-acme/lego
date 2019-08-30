@@ -165,27 +165,26 @@ func (d *DNSProvider) makeZoneUpdateRequest(zone *Zone, domain string) (*Zone, e
 }
 
 func (d *DNSProvider) addTxtRecord(domain, name, value string) (*Zone, error) {
-	fmt.Println(domain, name, value)
 	zone := &Zone{
 		Name: name,
-		ResourceRecords: []*ResourceRecord{
-			{
+		ResourceRecords: append(
+			d.currentRecords,
+			&ResourceRecord{
 				Name:  name,
 				TTL:   120,
 				Type:  "TXT",
 				Value: value,
-			},
-		},
+			}),
 		Action: ActionComplete,
 	}
 
 	return d.makeZoneUpdateRequest(zone, domain)
 }
 
-func (d *DNSProvider) removeTxtRecord(domain, id string) error {
+func (d *DNSProvider) restoreRecords(domain, id string) error {
 	zone := &Zone{
 		Name:            domain,
-		ResourceRecords: []*ResourceRecord{},
+		ResourceRecords: d.currentRecords, // Restore the records from before
 		Action:          ActionComplete,
 	}
 
@@ -193,7 +192,7 @@ func (d *DNSProvider) removeTxtRecord(domain, id string) error {
 	return err
 }
 
-func (d *DNSProvider) getTxtRecords(domain string) (*DataZoneResponse, error) {
+func (d *DNSProvider) getRecords(domain string) (*DataZoneResponse, error) {
 	req, err := d.makeRequest(http.MethodGet, path.Join("zone", domain, d.zoneNameservers[domain]), nil)
 	if err != nil {
 		return nil, err

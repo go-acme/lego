@@ -38,6 +38,7 @@ func NewDefaultConfig() *Config {
 type DNSProvider struct {
 	config          *Config
 	zoneNameservers map[string]string
+	currentRecords  []*ResourceRecord
 }
 
 func NewDNSProvider() (*DNSProvider, error) {
@@ -77,15 +78,26 @@ func NewDNSProvider() (*DNSProvider, error) {
 		provider.zoneNameservers[zone.Name] = zone.VirtualNameServer
 	}
 
-	// TODO: get all current records for this domain to be able to restore them later and not clear everything
-
 	return provider, nil
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+
+	// Get all current records for this domain to be able to restore them later and not clear everything
+	// since the api does not support adding/removing single txt records.
+	resp, err := d.getRecords(domain)
+	if err != nil {
+		return fmt.Errorf("autodns: getRecords: %v", err)
+	}
+
+	if len(resp.Data) > 0 {
+		d.currentRecords = resp.Data[0].ResourceRecords
+	}
+
+	// Add the actual record
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
-	_, err := d.addTxtRecord(domain, fqdn, value)
+	_, err = d.addTxtRecord(domain, fqdn, value)
 	if err != nil {
 		return fmt.Errorf("autodns: %v", err)
 	}
@@ -94,30 +106,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record previously created
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
-
-	zoneResponse, err := d.getTxtRecords(domain)
-	if err != nil {
-		return fmt.Errorf("autodns: getTxtRecords: %v", err)
-	}
-
-	var found bool
-outer:
-	for _, zone := range zoneResponse.Data {
-		for _, record := range zone.ResourceRecords {
-			if fqdn == record.Name {
-				found = true
-				break outer
-			}
-		}
-	}
-
-	if !found {
-		return fmt.Errorf("autodns: txt record does not exist for %v", value)
-	}
-
-	if err = d.removeTxtRecord(domain, fqdn); err != nil {
-		return fmt.Errorf("autodns: removeTxtRecord: %v", err)
+	if err := d.restoreRecords(domain, "_acme-challenge"); err != nil {
+		return fmt.Errorf("autodns: restoreRecords: %v", err)
 	}
 
 	return nil

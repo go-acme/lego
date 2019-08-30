@@ -10,11 +10,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var envTest = tester.NewEnvTest(envApiEndpoint, envApiUser, envApiPassword)
+var envTest = tester.NewEnvTest(envAPIEndpoint, envAPIUser, envAPIPassword)
 
 func TestNewDNSProvider(t *testing.T) {
 	defaultEndpointURL, _ := url.Parse(defaultEndpoint)
-	examplEndpointUrl, _ := url.Parse(demoEndpoint)
+	examplEndpointURL, _ := url.Parse(demoEndpoint)
 
 	tests := []struct {
 		name    string
@@ -29,30 +29,30 @@ func TestNewDNSProvider(t *testing.T) {
 					Endpoint:   defaultEndpointURL,
 					Username:   "test",
 					Password:   "1234",
-					Context:    4,
+					Context:    defaultEndpointContext,
 					HTTPClient: &http.Client{},
 				},
 			},
 			env: map[string]string{
-				envApiUser:     "test",
-				envApiPassword: "1234",
+				envAPIUser:     "test",
+				envAPIPassword: "1234",
 			},
 		},
 		{
 			name: "different endpoint url",
 			want: &DNSProvider{
 				config: &Config{
-					Endpoint:   examplEndpointUrl,
+					Endpoint:   examplEndpointURL,
 					Username:   "test",
 					Password:   "1234",
-					Context:    4,
+					Context:    defaultEndpointContext,
 					HTTPClient: &http.Client{},
 				},
 			},
 			env: map[string]string{
-				envApiUser:     "test",
-				envApiPassword: "1234",
-				envApiEndpoint: demoEndpoint,
+				envAPIUser:     "test",
+				envAPIPassword: "1234",
+				envAPIEndpoint: demoEndpoint,
 			},
 		},
 	}

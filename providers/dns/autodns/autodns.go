@@ -2,22 +2,22 @@ package autodns
 
 import (
 	"fmt"
-	"github.com/go-acme/lego/v3/challenge/dns01"
-	"github.com/go-acme/lego/v3/platform/config/env"
 	"net/http"
 	"net/url"
+
+	"github.com/go-acme/lego/v3/challenge/dns01"
+	"github.com/go-acme/lego/v3/platform/config/env"
 )
 
 const (
-	envApiUser     = `AUTODNS_API_USER`
-	envApiPassword = `AUTODNS_API_PASSWORD`
-	envApiEndpoint = `AUTODNS_ENDPOINT`
+	envAPIUser     = `AUTODNS_API_USER`
+	envAPIPassword = `AUTODNS_API_PASSWORD`
+	envAPIEndpoint = `AUTODNS_ENDPOINT`
 
-	defaultEndpoint string = `https://api.autodns.com/v1/`
-	demoEndpoint    string = `https://api.demo.autodns.com/v1/`
+	defaultEndpoint = `https://api.autodns.com/v1/`
+	demoEndpoint    = `https://api.demo.autodns.com/v1/`
 
 	defaultEndpointContext int = 4
-	demoEndpointContext    int = 1
 )
 
 type Config struct {
@@ -39,32 +39,33 @@ func NewDefaultConfig() *Config {
 }
 
 type DNSProvider struct {
-	config          *Config
-	zoneNameservers map[string]string
-	currentRecords  []*ResourceRecord
+	config *Config
+	//zoneNameservers map[string]string
+	//currentRecords  []*ResourceRecord
 }
 
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(envApiUser, envApiPassword)
+	values, err := env.Get(envAPIUser, envAPIPassword)
 	if err != nil {
 		return nil, fmt.Errorf("autodns: %v", err)
 	}
 
-	rawEndpoint := env.GetOrDefaultString(envApiEndpoint, defaultEndpoint)
+	rawEndpoint := env.GetOrDefaultString(envAPIEndpoint, defaultEndpoint)
 	endpoint, err := url.Parse(rawEndpoint)
 	if err != nil {
 		return nil, fmt.Errorf("autodns: %v", err)
 	}
 
 	config := NewDefaultConfig()
-	config.Username = values[envApiUser]
-	config.Password = values[envApiPassword]
+	config.Username = values[envAPIUser]
+	config.Password = values[envAPIPassword]
 	config.Endpoint = endpoint
 
 	provider := &DNSProvider{config: config}
 
 	// Because autodns needs the nameservers for each request, we query them all here and put them
 	// in our state to avoid making a lot of requests later.
+	// FIXME: This should become obsolete once I figure out how the _stream endpoint works.
 	/*req, err := provider.makeRequest(http.MethodPost, path.Join("zone", "_search"), nil)
 	if err != nil {
 		return nil, fmt.Errorf("autodns: %v", err)

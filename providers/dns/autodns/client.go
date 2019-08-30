@@ -13,6 +13,7 @@ import (
 
 type ResponseStatusCode string
 
+// All Response stauses which are supported by the api
 const (
 	ResponseStatusSuccess      ResponseStatusCode = `SUCCESS`
 	ResponseStatusError                           = `ERROR`

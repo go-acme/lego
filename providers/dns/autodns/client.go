@@ -16,10 +16,10 @@ type ResponseStatusCode string
 // All Response stauses which are supported by the api
 const (
 	ResponseStatusSuccess      ResponseStatusCode = `SUCCESS`
-	ResponseStatusError                           = `ERROR`
-	ResponseStatusNotify                          = `NOTIFY`
-	ResponseStatusNotice                          = `NOTICE`
-	ResponseStatusNiccomNotify                    = `NICCOM_NOTIFY`
+	ResponseStatusError        ResponseStatusCode = `ERROR`
+	ResponseStatusNotify       ResponseStatusCode = `NOTIFY`
+	ResponseStatusNotice       ResponseStatusCode = `NOTICE`
+	ResponseStatusNiccomNotify ResponseStatusCode = `NICCOM_NOTIFY`
 )
 
 type ResponseMessage struct {
@@ -166,7 +166,7 @@ func (d *DNSProvider) makeZoneUpdateRequest(zoneStream *ZoneStream, domain strin
 func (d *DNSProvider) addTxtRecord(domain, name, value string) (*Zone, error) {
 	zoneStream := &ZoneStream{
 		Adds: []*ResourceRecord{
-			&ResourceRecord{
+			{
 				Name:  name,
 				TTL:   120,
 				Type:  "TXT",
@@ -181,7 +181,7 @@ func (d *DNSProvider) addTxtRecord(domain, name, value string) (*Zone, error) {
 func (d *DNSProvider) removeTXTRecord(domain, name string) error {
 	zoneStream := &ZoneStream{
 		Removes: []*ResourceRecord{
-			&ResourceRecord{
+			{
 				Name: name,
 				TTL:  120,
 				Type: "TXT",

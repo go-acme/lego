@@ -220,7 +220,9 @@ func displayDNSHelp(name string) error {
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "CF_API_EMAIL":	Account email`)
 		ew.writeln(`	- "CF_API_KEY":	API key`)
-		ew.writeln(`	- "CLOUDFLARE_API_KEY":	Alias to CLOUDFLARE_API_KEY`)
+		ew.writeln(`	- "CF_API_TOKEN":	API token`)
+		ew.writeln(`	- "CLOUDFLARE_API_KEY":	Alias to CF_API_KEY`)
+		ew.writeln(`	- "CLOUDFLARE_API_TOKEN":	Alias to CF_API_TOKEN`)
 		ew.writeln(`	- "CLOUDFLARE_EMAIL":	Alias to CF_API_EMAIL`)
 		ew.writeln()
 

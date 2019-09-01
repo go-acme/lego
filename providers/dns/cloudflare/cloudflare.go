@@ -21,6 +21,7 @@ const (
 type Config struct {
 	AuthEmail          string
 	AuthKey            string
+	AuthToken          string
 	TTL                int
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -47,18 +48,26 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for Cloudflare.
 // Credentials must be passed in the environment variables:
-// CLOUDFLARE_EMAIL and CLOUDFLARE_API_KEY.
+// CLOUDFLARE_EMAIL, CLOUDFLARE_API_KEY, CLOUDFLARE_API_TOKEN.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.GetWithFallback(
 		[]string{"CLOUDFLARE_EMAIL", "CF_API_EMAIL"},
-		[]string{"CLOUDFLARE_API_KEY", "CF_API_KEY"})
+		[]string{"CLOUDFLARE_API_KEY", "CF_API_KEY"},
+	)
 	if err != nil {
-		return nil, fmt.Errorf("cloudflare: %v", err)
+		var errT error
+		values, errT = env.GetWithFallback(
+			[]string{"CLOUDFLARE_API_TOKEN", "CF_API_TOKEN"},
+		)
+		if errT != nil {
+			return nil, fmt.Errorf("cloudflare: %v or %v", err, errT)
+		}
 	}
 
 	config := NewDefaultConfig()
 	config.AuthEmail = values["CLOUDFLARE_EMAIL"]
 	config.AuthKey = values["CLOUDFLARE_API_KEY"]
+	config.AuthToken = values["CLOUDFLARE_API_TOKEN"]
 
 	return NewDNSProviderConfig(config)
 }
@@ -73,12 +82,20 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("cloudflare: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL)
 	}
 
-	client, err := cloudflare.New(config.AuthKey, config.AuthEmail, cloudflare.HTTPClient(config.HTTPClient))
+	client, err := getClient(config)
 	if err != nil {
 		return nil, err
 	}
 
 	return &DNSProvider{client: client, config: config}, nil
+}
+
+func getClient(config *Config) (*cloudflare.API, error) {
+	if config.AuthToken == "" {
+		return cloudflare.New(config.AuthKey, config.AuthEmail, cloudflare.HTTPClient(config.HTTPClient))
+	}
+
+	return cloudflare.NewWithAPIToken(config.AuthToken, cloudflare.HTTPClient(config.HTTPClient))
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.

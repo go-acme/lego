@@ -11,7 +11,8 @@ import (
 
 var envTest = tester.NewEnvTest(
 	"CLOUDFLARE_EMAIL",
-	"CLOUDFLARE_API_KEY").
+	"CLOUDFLARE_API_KEY",
+	"CLOUDFLARE_API_TOKEN").
 	WithDomain("CLOUDFLARE_DOMAIN")
 
 func TestNewDNSProvider(t *testing.T) {
@@ -21,19 +22,26 @@ func TestNewDNSProvider(t *testing.T) {
 		expected string
 	}{
 		{
-			desc: "success",
+			desc: "success email, API key",
 			envVars: map[string]string{
 				"CLOUDFLARE_EMAIL":   "test@example.com",
 				"CLOUDFLARE_API_KEY": "123",
 			},
 		},
 		{
+			desc: "success API token",
+			envVars: map[string]string{
+				"CLOUDFLARE_API_TOKEN": "012345abcdef",
+			},
+		},
+		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				"CLOUDFLARE_EMAIL":   "",
-				"CLOUDFLARE_API_KEY": "",
+				"CLOUDFLARE_EMAIL":     "",
+				"CLOUDFLARE_API_KEY":   "",
+				"CLOUDFLARE_API_TOKEN": "",
 			},
-			expected: "cloudflare: some credentials information are missing: CLOUDFLARE_EMAIL,CLOUDFLARE_API_KEY",
+			expected: "cloudflare: some credentials information are missing: CLOUDFLARE_EMAIL,CLOUDFLARE_API_KEY or some credentials information are missing: CLOUDFLARE_API_TOKEN",
 		},
 		{
 			desc: "missing email",
@@ -41,7 +49,7 @@ func TestNewDNSProvider(t *testing.T) {
 				"CLOUDFLARE_EMAIL":   "",
 				"CLOUDFLARE_API_KEY": "key",
 			},
-			expected: "cloudflare: some credentials information are missing: CLOUDFLARE_EMAIL",
+			expected: "cloudflare: some credentials information are missing: CLOUDFLARE_EMAIL or some credentials information are missing: CLOUDFLARE_API_TOKEN",
 		},
 		{
 			desc: "missing api key",
@@ -49,7 +57,7 @@ func TestNewDNSProvider(t *testing.T) {
 				"CLOUDFLARE_EMAIL":   "awesome@possum.com",
 				"CLOUDFLARE_API_KEY": "",
 			},
-			expected: "cloudflare: some credentials information are missing: CLOUDFLARE_API_KEY",
+			expected: "cloudflare: some credentials information are missing: CLOUDFLARE_API_KEY or some credentials information are missing: CLOUDFLARE_API_TOKEN",
 		},
 	}
 
@@ -79,10 +87,21 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		desc      string
 		authEmail string
 		authKey   string
+		authToken string
 		expected  string
 	}{
 		{
-			desc:      "success",
+			desc:      "success with email and api key",
+			authEmail: "test@example.com",
+			authKey:   "123",
+		},
+		{
+			desc:      "success with api token",
+			authToken: "012345abcdef",
+		},
+		{
+			desc:      "prefer api token",
+			authToken: "012345abcdef",
 			authEmail: "test@example.com",
 			authKey:   "123",
 		},
@@ -100,6 +119,11 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			authEmail: "test@example.com",
 			expected:  "invalid credentials: key & email must not be empty",
 		},
+		{
+			desc:      "missing api token, fallback to api key/email",
+			authToken: "",
+			expected:  "invalid credentials: key & email must not be empty",
+		},
 	}
 
 	for _, test := range testCases {
@@ -107,6 +131,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			config := NewDefaultConfig()
 			config.AuthEmail = test.authEmail
 			config.AuthKey = test.authKey
+			config.AuthToken = test.authToken
 
 			p, err := NewDNSProviderConfig(config)
 

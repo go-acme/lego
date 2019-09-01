@@ -78,24 +78,24 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("cloudflare: the configuration of the DNS provider is nil")
 	}
 
-	var client *cloudflare.API
-	var err error
-
 	if config.TTL < minTTL {
 		return nil, fmt.Errorf("cloudflare: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL)
 	}
 
-	if config.AuthToken != "" {
-		client, err = cloudflare.NewWithAPIToken(config.AuthToken, cloudflare.HTTPClient(config.HTTPClient))
-	} else {
-		client, err = cloudflare.New(config.AuthKey, config.AuthEmail, cloudflare.HTTPClient(config.HTTPClient))
-	}
-
+	client, err := getClient(config)
 	if err != nil {
 		return nil, err
 	}
 
 	return &DNSProvider{client: client, config: config}, nil
+}
+
+func getClient(config *Config) (*cloudflare.API, error) {
+	if config.AuthToken == "" {
+		return cloudflare.New(config.AuthKey, config.AuthEmail, cloudflare.HTTPClient(config.HTTPClient))
+	}
+
+	return cloudflare.NewWithAPIToken(config.AuthToken, cloudflare.HTTPClient(config.HTTPClient))
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.

@@ -8,7 +8,9 @@ Example = '''
 CLOUDFLARE_EMAIL=foo@bar.com \
 CLOUDFLARE_API_KEY=b9841238feb177a84330febba8a83208921177bffe733 \
 lego --dns cloudflare --domains my.domain.com --email my@email.com run
+
 # or
+
 CLOUDFLARE_API_TOKEN=1234567890abcdefghijklmnopqrstuvwxyz \
 lego --dns cloudflare --domains my.domain.com --email my@email.com run
 '''
@@ -16,14 +18,18 @@ lego --dns cloudflare --domains my.domain.com --email my@email.com run
 Additional = '''
 ## Description
 
-You may use `CF_API_EMAIL` and `CF_API_KEY` to authenticate, or `CF_API_TOKEN` (currently in open beta, subject to change).
+You may use `CF_API_EMAIL` and `CF_API_KEY` to authenticate, or `CF_API_TOKEN`.
+
+### API keys
+
+If using API keys (`CF_API_EMAIL` and `CF_API_KEY`), the Global API Key needs to be used, not the Origin CA Key.
+
+### API tokens
 
 If using [API tokens](https://api.cloudflare.com/#getting-started-endpoints) (`CF_API_TOKEN`), the following permissions are required:
 
-* Zone:Read
-* DNS:Edit
-
-If using API keys (`CF_API_EMAIL` and `CF_API_KEY`), the Global API Key needs to be used, not the Origin CA Key.
+* `Zone:Read`
+* `DNS:Edit`
 '''
 
 [Configuration]

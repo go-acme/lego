@@ -2,11 +2,11 @@ package autodns
 
 import (
 	"fmt"
-	"github.com/go-acme/lego/v3/platform/config/env"
 	"net/http"
 	"net/url"
 
 	"github.com/go-acme/lego/v3/challenge/dns01"
+	"github.com/go-acme/lego/v3/platform/config/env"
 )
 
 const (
@@ -20,7 +20,7 @@ const (
 	demoEndpoint    = `https://api.demo.autodns.com/v1/`
 
 	defaultEndpointContext int = 4
-	defaultTTL                 = 600
+	defaultTTL             int = 600
 )
 
 type Config struct {

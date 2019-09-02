@@ -152,8 +152,10 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "AUTODNS_API_PASSWORD":	User Password`)
-		ew.writeln(`	- "AUTODNS_API_USER":	User ID`)
+		ew.writeln(`	- "AUTODNS_API_USER":	Username`)
+		ew.writeln(`	- "AUTODNS_CONTEXT":	API context (4 for production, 1 for testing. Defaults to 4)`)
 		ew.writeln(`	- "AUTODNS_ENDPOINT":	API endpoint URL`)
+		ew.writeln(`	- "AUTODNS_TTL":	The TTL of the TXT record used for the DNS challenge`)
 		ew.writeln()
 
 		ew.writeln()

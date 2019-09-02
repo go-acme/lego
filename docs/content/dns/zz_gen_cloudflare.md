@@ -24,6 +24,11 @@ Here is an example bash command using the Cloudflare provider:
 CLOUDFLARE_EMAIL=foo@bar.com \
 CLOUDFLARE_API_KEY=b9841238feb177a84330febba8a83208921177bffe733 \
 lego --dns cloudflare --domains my.domain.com --email my@email.com run
+
+# or
+
+CLOUDFLARE_API_TOKEN=1234567890abcdefghijklmnopqrstuvwxyz \
+lego --dns cloudflare --domains my.domain.com --email my@email.com run
 ```
 
 
@@ -35,7 +40,9 @@ lego --dns cloudflare --domains my.domain.com --email my@email.com run
 |-----------------------|-------------|
 | `CF_API_EMAIL` | Account email |
 | `CF_API_KEY` | API key |
-| `CLOUDFLARE_API_KEY` | Alias to CLOUDFLARE_API_KEY |
+| `CF_API_TOKEN` | API token |
+| `CLOUDFLARE_API_KEY` | Alias to CF_API_KEY |
+| `CLOUDFLARE_API_TOKEN` | Alias to CF_API_TOKEN |
 | `CLOUDFLARE_EMAIL` | Alias to CF_API_EMAIL |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
@@ -54,7 +61,20 @@ More information [here](/lego/dns/#configuration-and-credentials).
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).
 
-The Global API Key needs to be used, not the Origin CA Key.
+## Description
+
+You may use `CF_API_EMAIL` and `CF_API_KEY` to authenticate, or `CF_API_TOKEN`.
+
+### API keys
+
+If using API keys (`CF_API_EMAIL` and `CF_API_KEY`), the Global API Key needs to be used, not the Origin CA Key.
+
+### API tokens
+
+If using [API tokens](https://api.cloudflare.com/#getting-started-endpoints) (`CF_API_TOKEN`), the following permissions are required:
+
+* `Zone:Read`
+* `DNS:Edit`
 
 
 

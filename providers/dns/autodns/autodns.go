@@ -2,22 +2,25 @@ package autodns
 
 import (
 	"fmt"
+	"github.com/go-acme/lego/v3/platform/config/env"
 	"net/http"
 	"net/url"
 
 	"github.com/go-acme/lego/v3/challenge/dns01"
-	"github.com/go-acme/lego/v3/platform/config/env"
 )
 
 const (
-	envAPIUser     = `AUTODNS_API_USER`
-	envAPIPassword = `AUTODNS_API_PASSWORD`
-	envAPIEndpoint = `AUTODNS_ENDPOINT`
+	envAPIUser            = `AUTODNS_API_USER`
+	envAPIPassword        = `AUTODNS_API_PASSWORD`
+	envAPIEndpoint        = `AUTODNS_ENDPOINT`
+	envAPIEndpointContext = `AUTODNS_CONTEXT`
+	envTTL                = `AUTODNS_TTL`
 
 	defaultEndpoint = `https://api.autodns.com/v1/`
 	demoEndpoint    = `https://api.demo.autodns.com/v1/`
 
 	defaultEndpointContext int = 4
+	defaultTTL                 = 600
 )
 
 type Config struct {
@@ -25,6 +28,7 @@ type Config struct {
 	Username   string `json:"username"`
 	Password   string `json:"password"`
 	Context    int    `json:"-"`
+	TTL        int    `json:"-"`
 	HTTPClient *http.Client
 }
 
@@ -56,10 +60,16 @@ func NewDNSProvider() (*DNSProvider, error) {
 		return nil, fmt.Errorf("autodns: %v", err)
 	}
 
+	endpointContext := env.GetOrDefaultInt(envAPIEndpointContext, defaultEndpointContext)
+
+	ttl := env.GetOrDefaultInt(envTTL, defaultTTL)
+
 	config := NewDefaultConfig()
 	config.Username = values[envAPIUser]
 	config.Password = values[envAPIPassword]
 	config.Endpoint = endpoint
+	config.Context = endpointContext
+	config.TTL = ttl
 
 	provider := &DNSProvider{config: config}
 

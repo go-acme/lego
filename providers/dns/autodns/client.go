@@ -168,7 +168,7 @@ func (d *DNSProvider) addTxtRecord(domain, name, value string) (*Zone, error) {
 		Adds: []*ResourceRecord{
 			{
 				Name:  name,
-				TTL:   120,
+				TTL:   int64(d.config.TTL),
 				Type:  "TXT",
 				Value: value,
 			},
@@ -183,7 +183,7 @@ func (d *DNSProvider) removeTXTRecord(domain, name string) error {
 		Removes: []*ResourceRecord{
 			{
 				Name: name,
-				TTL:  120,
+				TTL:  int64(d.config.TTL),
 				Type: "TXT",
 			},
 		},

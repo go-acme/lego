@@ -74,7 +74,7 @@ func TestNewDNSProvider(t *testing.T) {
 	}
 }
 
-func TestDNSProvider_Present(t *testing.T) {
+func TestLivePresent(t *testing.T) {
 	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
@@ -87,7 +87,7 @@ func TestDNSProvider_Present(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestDNSProvider_CleanUp(t *testing.T) {
+func TestLiveCleanUp(t *testing.T) {
 	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}

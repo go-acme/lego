@@ -18,6 +18,7 @@ const (
 	envTTL                = `AUTODNS_TTL`
 	envPropagationTimeout = `AUTODNS_PROPAGATION_TIMEOUT`
 	envPollingInterval    = `AUTODNS_POLLING_INTERVAL`
+	envHTTPTimeout        = `AUTODNS_HTTP_TIMEOUT`
 
 	defaultEndpoint = `https://api.autodns.com/v1/`
 	demoEndpoint    = `https://api.demo.autodns.com/v1/`
@@ -46,7 +47,9 @@ func NewDefaultConfig() *Config {
 		TTL:                env.GetOrDefaultInt(envTTL, defaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(envPropagationTimeout, 2*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond(envPollingInterval, 2*time.Second),
-		HTTPClient:         &http.Client{},
+		HTTPClient: &http.Client{
+			Timeout: env.GetOrDefaultSecond(envHTTPTimeout, 30*time.Second),
+		},
 	}
 }
 

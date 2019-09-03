@@ -73,6 +73,10 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config.Username = values[envAPIUser]
 	config.Password = values[envAPIPassword]
 
+	return NewDNSProviderConfig(config)
+}
+
+func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	provider := &DNSProvider{config: config}
 
 	// Because autodns needs the nameservers for each request, we query them all here and put them

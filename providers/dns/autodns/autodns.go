@@ -38,11 +38,12 @@ type Config struct {
 }
 
 func NewDefaultConfig() *Config {
-	endpoint, _ := url.Parse(defaultEndpoint)
+	endpoint, _ := url.Parse(env.GetOrDefaultString(envAPIEndpoint, defaultEndpoint))
 
 	return &Config{
 		Endpoint:           endpoint,
-		Context:            defaultEndpointContext,
+		Context:            env.GetOrDefaultInt(envAPIEndpointContext, defaultEndpointContext),
+		TTL:                env.GetOrDefaultInt(envTTL, defaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(envPropagationTimeout, 2*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond(envPollingInterval, 2*time.Second),
 		HTTPClient:         &http.Client{},
@@ -65,22 +66,9 @@ func NewDNSProvider() (*DNSProvider, error) {
 		return nil, fmt.Errorf("autodns: %v", err)
 	}
 
-	rawEndpoint := env.GetOrDefaultString(envAPIEndpoint, defaultEndpoint)
-	endpoint, err := url.Parse(rawEndpoint)
-	if err != nil {
-		return nil, fmt.Errorf("autodns: %v", err)
-	}
-
-	endpointContext := env.GetOrDefaultInt(envAPIEndpointContext, defaultEndpointContext)
-
-	ttl := env.GetOrDefaultInt(envTTL, defaultTTL)
-
 	config := NewDefaultConfig()
 	config.Username = values[envAPIUser]
 	config.Password = values[envAPIPassword]
-	config.Endpoint = endpoint
-	config.Context = endpointContext
-	config.TTL = ttl
 
 	provider := &DNSProvider{config: config}
 

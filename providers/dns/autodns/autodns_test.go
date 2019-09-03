@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/go-acme/lego/v3/platform/tester"
 	"github.com/stretchr/testify/assert"
@@ -26,11 +27,16 @@ func TestNewDNSProvider(t *testing.T) {
 			name: "complete, no errors",
 			want: &DNSProvider{
 				config: &Config{
-					Endpoint:   defaultEndpointURL,
-					Username:   "test",
-					Password:   "1234",
-					Context:    defaultEndpointContext,
-					HTTPClient: &http.Client{},
+					Endpoint:           defaultEndpointURL,
+					Username:           "test",
+					Password:           "1234",
+					Context:            defaultEndpointContext,
+					TTL:                defaultTTL,
+					PropagationTimeout: 2 * time.Minute,
+					PollingInterval:    2 * time.Second,
+					HTTPClient: &http.Client{
+						Timeout: 30 * time.Second,
+					},
 				},
 			},
 			env: map[string]string{
@@ -42,11 +48,16 @@ func TestNewDNSProvider(t *testing.T) {
 			name: "different endpoint url",
 			want: &DNSProvider{
 				config: &Config{
-					Endpoint:   examplEndpointURL,
-					Username:   "test",
-					Password:   "1234",
-					Context:    defaultEndpointContext,
-					HTTPClient: &http.Client{},
+					Endpoint:           examplEndpointURL,
+					Username:           "test",
+					Password:           "1234",
+					Context:            defaultEndpointContext,
+					TTL:                defaultTTL,
+					PropagationTimeout: 2 * time.Minute,
+					PollingInterval:    2 * time.Second,
+					HTTPClient: &http.Client{
+						Timeout: 30 * time.Second,
+					},
 				},
 			},
 			env: map[string]string{

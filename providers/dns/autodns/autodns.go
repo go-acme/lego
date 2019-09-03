@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/go-acme/lego/v3/challenge/dns01"
 	"github.com/go-acme/lego/v3/platform/config/env"
@@ -15,6 +16,8 @@ const (
 	envAPIEndpoint        = `AUTODNS_ENDPOINT`
 	envAPIEndpointContext = `AUTODNS_CONTEXT`
 	envTTL                = `AUTODNS_TTL`
+	envPropagationTimeout = `AUTODNS_PROPAGATION_TIMEOUT`
+	envPollingInterval    = `AUTODNS_POLLING_INTERVAL`
 
 	defaultEndpoint = `https://api.autodns.com/v1/`
 	demoEndpoint    = `https://api.demo.autodns.com/v1/`
@@ -24,21 +27,25 @@ const (
 )
 
 type Config struct {
-	Endpoint   *url.URL
-	Username   string `json:"username"`
-	Password   string `json:"password"`
-	Context    int    `json:"-"`
-	TTL        int    `json:"-"`
-	HTTPClient *http.Client
+	Endpoint           *url.URL
+	Username           string        `json:"username"`
+	Password           string        `json:"password"`
+	Context            int           `json:"-"`
+	TTL                int           `json:"-"`
+	PropagationTimeout time.Duration `json:"-"`
+	PollingInterval    time.Duration `json:"-"`
+	HTTPClient         *http.Client
 }
 
 func NewDefaultConfig() *Config {
 	endpoint, _ := url.Parse(defaultEndpoint)
 
 	return &Config{
-		Endpoint:   endpoint,
-		Context:    defaultEndpointContext,
-		HTTPClient: &http.Client{},
+		Endpoint:           endpoint,
+		Context:            defaultEndpointContext,
+		PropagationTimeout: env.GetOrDefaultSecond(envPropagationTimeout, 2*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(envPollingInterval, 2*time.Second),
+		HTTPClient:         &http.Client{},
 	}
 }
 
@@ -46,6 +53,10 @@ type DNSProvider struct {
 	config *Config
 	//zoneNameservers map[string]string
 	//currentRecords  []*ResourceRecord
+}
+
+func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
+	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
 func NewDNSProvider() (*DNSProvider, error) {

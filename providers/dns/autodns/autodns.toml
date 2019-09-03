@@ -10,9 +10,11 @@ Example = ''''''
   [Configuration.Credentials]
     AUTODNS_API_USER = "Username"
     AUTODNS_API_PASSWORD = "User Password"
+  [Configuration.Additional]
     AUTODNS_ENDPOINT = "API endpoint URL"
     AUTODNS_CONTEXT = "API context (4 for production, 1 for testing. Defaults to 4)"
     AUTODNS_TTL = "The TTL of the TXT record used for the DNS challenge"
-
+    AUTODNS_POLLING_INTERVAL = "Time between DNS propagation check"
+    AUTODNS_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
 [Links]
   API = "https://help.internetx.com/display/APIJSONEN"

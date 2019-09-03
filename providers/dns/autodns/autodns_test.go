@@ -18,10 +18,11 @@ func TestNewDNSProvider(t *testing.T) {
 	examplEndpointURL, _ := url.Parse(demoEndpoint)
 
 	tests := []struct {
-		name    string
-		want    *DNSProvider
-		wantErr bool
-		env     map[string]string
+		name        string
+		want        *DNSProvider
+		wantErr     bool
+		expectedErr string
+		env         map[string]string
 	}{
 		{
 			name: "complete, no errors",
@@ -66,6 +67,33 @@ func TestNewDNSProvider(t *testing.T) {
 				envAPIEndpoint: demoEndpoint,
 			},
 		},
+		{
+			name: "missing credentials",
+			env: map[string]string{
+				envAPIUser:     "",
+				envAPIPassword: "",
+			},
+			wantErr:     true,
+			expectedErr: "autodns: some credentials information are missing: AUTODNS_API_USER,AUTODNS_API_PASSWORD",
+		},
+		{
+			name: "missing username",
+			env: map[string]string{
+				envAPIUser:     "",
+				envAPIPassword: "1234",
+			},
+			wantErr:     true,
+			expectedErr: "autodns: some credentials information are missing: AUTODNS_API_USER",
+		},
+		{
+			name: "missing password",
+			env: map[string]string{
+				envAPIUser:     "user",
+				envAPIPassword: "",
+			},
+			wantErr:     true,
+			expectedErr: "autodns: some credentials information are missing: AUTODNS_API_PASSWORD",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -77,6 +105,9 @@ func TestNewDNSProvider(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewDNSProvider() error = %v, wantErr %v", err, tt.wantErr)
 				return
+			}
+			if (err != nil) && tt.wantErr {
+				assert.EqualError(t, err, tt.expectedErr)
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewDNSProvider() got = %v, want %v", got, tt.want)

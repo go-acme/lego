@@ -55,8 +55,6 @@ func NewDefaultConfig() *Config {
 
 type DNSProvider struct {
 	config *Config
-	//zoneNameservers map[string]string
-	//currentRecords  []*ResourceRecord
 }
 
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
@@ -77,28 +75,19 @@ func NewDNSProvider() (*DNSProvider, error) {
 }
 
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
-	provider := &DNSProvider{config: config}
-
-	// Because autodns needs the nameservers for each request, we query them all here and put them
-	// in our state to avoid making a lot of requests later.
-	// FIXME: This should become obsolete once I figure out how the _stream endpoint works.
-	/*req, err := provider.makeRequest(http.MethodPost, path.Join("zone", "_search"), nil)
-	if err != nil {
-		return nil, fmt.Errorf("autodns: %v", err)
+	if config == nil {
+		return nil, fmt.Errorf("autodns: NewDNSProviderConfig: config is nil")
 	}
 
-	var resp *DataZoneResponse
-	if err := provider.sendRequest(req, &resp); err != nil {
-		return nil, fmt.Errorf("autodns: %v", err)
+	if config.Username == "" {
+		return nil, fmt.Errorf("autodns: NewDNSProviderConfig: missing user")
 	}
 
-	provider.zoneNameservers = make(map[string]string, len(resp.Data))
+	if config.Password == "" {
+		return nil, fmt.Errorf("autodns: NewDNSProviderConfig: missing password")
+	}
 
-	for _, zone := range resp.Data {
-		provider.zoneNameservers[zone.Name] = zone.VirtualNameServer
-	}*/
-
-	return provider, nil
+	return &DNSProvider{config: config}, nil
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge

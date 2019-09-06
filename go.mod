@@ -1,6 +1,6 @@
 module github.com/go-acme/lego/v3
 
-go 1.12
+go 1.13
 
 require (
 	github.com/Azure/azure-sdk-for-go v32.4.0+incompatible

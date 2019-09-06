@@ -30,6 +30,7 @@
     "prealloc",
     "scopelint",
     "bodyclose", # https://github.com/timakin/bodyclose/pull/14
+    "typecheck", # v1.17.1 and Go1.13 => bug
   ]
 
 [issues]

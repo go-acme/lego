@@ -30,7 +30,6 @@
     "prealloc",
     "scopelint",
     "bodyclose", # https://github.com/timakin/bodyclose/pull/14
-    "typecheck", # v1.17.1 and Go1.13 => bug
   ]
 
 [issues]
@@ -41,6 +40,9 @@
     "Error return value of .((os\\.)?std(out|err)\\..*|.*Close|.*Flush|os\\.Remove(All)?|.*printf?|os\\.(Un)?Setenv). is not checked",
     "exported (type|method|function) (.+) should have comment or be unexported",
   ]
+  [[issues.exclude-rules]]
+    path = "(.+)_test.go"
+    linters = ["funlen"]
   [[issues.exclude-rules]]
     path = "providers/dns/dns_providers.go"
     linters = ["gocyclo"]
@@ -83,3 +85,18 @@
   [[issues.exclude-rules]]
     path = "providers/dns/sakuracloud/client_test.go"
     text = "cyclomatic complexity 13 of func `(TestDNSProvider_cleanupTXTRecord_concurrent|TestDNSProvider_addTXTRecord_concurrent)` is high"
+  [[issues.exclude-rules]]
+    path = "providers/dns/dns_providers.go"
+    text = "Function 'NewDNSChallengeProviderByName' has too many statements"
+  [[issues.exclude-rules]]
+    path = "cmd/flags.go"
+    text = "Function 'CreateFlags' is too long"
+  [[issues.exclude-rules]]
+    path = "certificate/certificates.go"
+    text = "Function 'GetOCSP' is too long"
+  [[issues.exclude-rules]]
+    path = "providers/dns/otc/client.go"
+    text = "Function 'loginRequest' is too long"
+  [[issues.exclude-rules]]
+    path = "providers/dns/gandi/gandi.go"
+    text = "Function 'Present' is too long"

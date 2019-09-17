@@ -41,6 +41,9 @@
     "exported (type|method|function) (.+) should have comment or be unexported",
   ]
   [[issues.exclude-rules]]
+    path = "(.+)_test.go"
+    linters = ["funlen"]
+  [[issues.exclude-rules]]
     path = "providers/dns/dns_providers.go"
     linters = ["gocyclo"]
   [[issues.exclude-rules]]
@@ -82,3 +85,18 @@
   [[issues.exclude-rules]]
     path = "providers/dns/sakuracloud/client_test.go"
     text = "cyclomatic complexity 13 of func `(TestDNSProvider_cleanupTXTRecord_concurrent|TestDNSProvider_addTXTRecord_concurrent)` is high"
+  [[issues.exclude-rules]]
+    path = "providers/dns/dns_providers.go"
+    text = "Function 'NewDNSChallengeProviderByName' has too many statements"
+  [[issues.exclude-rules]]
+    path = "cmd/flags.go"
+    text = "Function 'CreateFlags' is too long"
+  [[issues.exclude-rules]]
+    path = "certificate/certificates.go"
+    text = "Function 'GetOCSP' is too long"
+  [[issues.exclude-rules]]
+    path = "providers/dns/otc/client.go"
+    text = "Function 'loginRequest' is too long"
+  [[issues.exclude-rules]]
+    path = "providers/dns/gandi/gandi.go"
+    text = "Function 'Present' is too long"

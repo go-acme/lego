@@ -1,6 +1,6 @@
 module github.com/go-acme/lego/v3
 
-go 1.12
+go 1.13
 
 require (
 	github.com/Azure/azure-sdk-for-go v32.4.0+incompatible
@@ -26,7 +26,7 @@ require (
 	github.com/iij/doapi v0.0.0-20190504054126-0bbf12d6d7df
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/labbsr0x/bindman-dns-webhook v1.0.0
-	github.com/labbsr0x/goh v0.0.0-20190417202808-8b16b4848295 // indirect
+	github.com/labbsr0x/goh v0.0.0-20190830205702-3d6988c73e10 // indirect
 	github.com/linode/linodego v0.10.0
 	github.com/liquidweb/liquidweb-go v1.6.0
 	github.com/miekg/dns v1.1.15

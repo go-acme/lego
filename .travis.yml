@@ -1,13 +1,28 @@
 language: go
 
-go:
-  - 1.12.x
-  - 1.x
+cache:
+  directories:
+    - $GOPATH/pkg/mod
+
+matrix:
+  fast_finish: true
+  include:
+    - go: 1.13.x
+      env: STABLE=true
+    - go: 1.x
+    - go: tip
+  allow_failures:
+    - go: tip
+
+go_import_path: github.com/go-acme/lego
+
+env:
+  global:
+    - MEMCACHED_HOSTS=localhost:11211
+    - GO111MODULE=on
 
 services:
   - memcached
-
-go_import_path: github.com/go-acme/lego
 
 addons:
   hosts:
@@ -18,11 +33,6 @@ addons:
   - légô.wtf
   - xn--lg-bja9b.wtf
 
-env:
-  global:
-    - MEMCACHED_HOSTS=localhost:11211
-    - GO111MODULE=on
-
 before_install:
   - '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && openssl aes-256-cbc -K $encrypted_26c593b079d9_key -iv $encrypted_26c593b079d9_iv -in .gitcookies.enc -out .gitcookies -d || true'
 
@@ -30,7 +40,7 @@ before_install:
   - GO111MODULE=off go get -u github.com/letsencrypt/pebble/...
 
   # Install linters and misspell
-  - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | bash -s -- -b $GOPATH/bin v1.17.1
+  - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | bash -s -- -b $GOPATH/bin ${GOLANGCI_LINT_VERSION}
   - golangci-lint --version
 
   # Hugo - documentation
@@ -38,7 +48,9 @@ before_install:
   - sudo dpkg -i /tmp/hugo.deb
 
 install:
-  - echo "TRAVIS_GO_VERSION=$TRAVIS_GO_VERSION"
+  - go mod tidy
+  - git diff --exit-code go.mod
+  - git diff --exit-code go.sum
   - go mod download
 
 before_script:
@@ -60,7 +72,7 @@ deploy:
     script: curl -sL https://git.io/goreleaser | bash
     on:
       tags: true
-      condition: $TRAVIS_GO_VERSION =~ ^1\.x$
+      condition: $STABLE = true
 
   - provider: releases
     api_key: ${GITHUB_TOKEN}
@@ -70,7 +82,7 @@ deploy:
     file_glob: true
     on:
       tags: true
-      condition: $TRAVIS_GO_VERSION =~ ^1\.x$
+      condition: $STABLE = true
 
   - provider: pages
     local_dir: docs/public

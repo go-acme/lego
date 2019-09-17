@@ -24,18 +24,20 @@ const (
 
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
-	Token           string
-	PollingInterval time.Duration
-	TTL             int
-	HTTPTimeout     time.Duration
+	Token              string
+	PropagationTimeout time.Duration
+	PollingInterval    time.Duration
+	TTL                int
+	HTTPTimeout        time.Duration
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		PollingInterval: env.GetOrDefaultSecond("LINODE_POLLING_INTERVAL", 15*time.Second),
-		TTL:             env.GetOrDefaultInt("LINODE_TTL", minTTL),
-		HTTPTimeout:     env.GetOrDefaultSecond("LINODE_HTTP_TIMEOUT", 0),
+		PropagationTimeout: env.GetOrDefaultSecond("LINODE_PROPAGATION_TIMEOUT", 0),
+		PollingInterval:    env.GetOrDefaultSecond("LINODE_POLLING_INTERVAL", 15*time.Second),
+		TTL:                env.GetOrDefaultInt("LINODE_TTL", minTTL),
+		HTTPTimeout:        env.GetOrDefaultSecond("LINODE_HTTP_TIMEOUT", 0),
 	}
 }
 
@@ -97,19 +99,22 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Timeout returns the timeout and interval to use when checking for DNS
 // propagation.  Adjusting here to cope with spikes in propagation times.
-func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
-	// Since Linode only updates their zone files every X minutes, we need
-	// to figure out how many minutes we have to wait until we hit the next
-	// interval of X.  We then wait another couple of minutes, just to be
-	// safe.  Hopefully at some point during all of this, the record will
-	// have propagated throughout Linode's network.
-	minsRemaining := dnsUpdateFreqMins - (time.Now().Minute() % dnsUpdateFreqMins)
+func (d *DNSProvider) Timeout() (time.Duration, time.Duration) {
+	timeout := d.config.PropagationTimeout
+	if d.config.PropagationTimeout <= 0 {
+		// Since Linode only updates their zone files every X minutes, we need
+		// to figure out how many minutes we have to wait until we hit the next
+		// interval of X.  We then wait another couple of minutes, just to be
+		// safe.  Hopefully at some point during all of this, the record will
+		// have propagated throughout Linode's network.
+		minsRemaining := dnsUpdateFreqMins - (time.Now().Minute() % dnsUpdateFreqMins)
 
-	timeout = (time.Duration(minsRemaining) * time.Minute) +
-		(minTTL * time.Second) +
-		(dnsUpdateFudgeSecs * time.Second)
-	interval = d.config.PollingInterval
-	return
+		timeout = (time.Duration(minsRemaining) * time.Minute) +
+			(minTTL * time.Second) +
+			(dnsUpdateFudgeSecs * time.Second)
+	}
+
+	return timeout, d.config.PollingInterval
 }
 
 // Present creates a TXT record using the specified parameters.

@@ -19,7 +19,7 @@ import (
 
 // Record a DNS record
 type Record struct {
-	ID        int    `json:"id,omitempty"`
+	ID        int64  `json:"id,omitempty"`
 	FieldType string `json:"fieldType,omitempty"`
 	SubDomain string `json:"subDomain,omitempty"`
 	Target    string `json:"target,omitempty"`
@@ -56,7 +56,7 @@ func NewDefaultConfig() *Config {
 type DNSProvider struct {
 	config      *Config
 	client      *ovh.Client
-	recordIDs   map[string]int
+	recordIDs   map[string]int64
 	recordIDsMu sync.Mutex
 }
 
@@ -106,7 +106,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	return &DNSProvider{
 		config:    config,
 		client:    client,
-		recordIDs: make(map[string]int),
+		recordIDs: make(map[string]int64),
 	}, nil
 }
 

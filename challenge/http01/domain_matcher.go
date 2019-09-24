@@ -22,6 +22,16 @@ import (
 // RFC 7239 has standardized the different forwarding headers into a single header named
 // Forwarded. The header value has a different format, so you should use forwardedMatcher
 // when the http01.ProviderServer operates behind a RFC7239 compatible proxy.
+//
+// Note: RFC7239 also reminds us, "that an HTTP list [...] may be split over multiple
+// header fields" (section 7.1), meaning that
+//   X-Header: a
+//   X-Header: b
+// is equal to
+//   X-Header: a, b
+//
+// All matcher implementations (explicitly not excluding arbitraryMatcher!) have in common
+// that they only match against the first value in such lists.
 type domainMatcher interface {
 	// matches checks whether the request is valid for the given domain.
 	matches(request *http.Request, domain string) bool
@@ -69,16 +79,11 @@ func (m *forwardedMatcher) matches(r *http.Request, domain string) bool {
 		// TODO: log?
 		return false
 	}
-	for _, fwd := range fwds {
-		host := fwd["host"]
-		if host == "" {
-			continue
-		}
-		if strings.HasPrefix(host, domain) {
-			return true
-		}
+	if len(fwds) == 0 {
+		return false
 	}
-	return false
+	host := fwds[0]["host"]
+	return strings.HasPrefix(host, domain)
 }
 
 func isWS(r rune) bool {
@@ -156,7 +161,6 @@ func parseForwardedHeader(s string) (elements []map[string]string, err error) {
 			pos = i + 1
 		case tchar(r) || isWS(r): // valid token character or whitespace
 			continue
-
 		default:
 			return nil, fmt.Errorf("invalid token character at pos %d: %c", i, r)
 		}

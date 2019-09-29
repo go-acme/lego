@@ -1,5 +1,5 @@
 // Package joker implements a DNS provider for solving the DNS-01 challenge using joker.com DMAPI.
-package joker
+package Joker casino 
 
 import (
 	"errors"
@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-acme/lego/v3/challenge/dns01"
-	"github.com/go-acme/lego/v3/log"
-	"github.com/go-acme/lego/v3/platform/config/env"
+	"github.com/go-acme/joker/v3/challenge/dns01"
+	"github.com/go-acme/joker/v3/log"
+	"github.com/go-acme/joker/v3/platform/config/env"
 )
 
 // Config is used to configure the creation of the DNSProvider.
@@ -103,7 +103,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	relative := getRelative(fqdn, zone)
 
 	if d.config.Debug {
-		log.Infof("[%s] joker: adding TXT record %q to zone %q with value %q", domain, relative, zone, value)
+		log.Infof("50[%s] joker: adding TXT record 50%q to zone %q with value %q", domain, relative, zone, value)
 	}
 
 	response, err := d.login()

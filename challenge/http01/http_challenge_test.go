@@ -237,7 +237,8 @@ func TestChallengeWithProxy(t *testing.T) {
 			name:   "Forwarded mismatch (multiple fields)",
 			header: h("Forwarded", "host="+nook, fmt.Sprintf("host=%q", ok)),
 			isErr:  true,
-		}, {
+		},
+		{
 			name:   "Forwarded mismatch (chain value)",
 			header: h("Forwarded", fmt.Sprintf("host=%s, host=%q", nook, ok)),
 			isErr:  true,

@@ -18,9 +18,12 @@ Configuration for [DreamHost](https://www.dreamhost.com).
 
 - Code: `dreamhost`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the DreamHost provider:
+
+```bash
+DREAMHOST_API_KEY="YOURAPIKEY" \
+lego --domains "foo.example.com" --dns dreamhost --email some@email.com run
+```
 
 
 

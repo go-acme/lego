@@ -135,20 +135,25 @@ func TestChallengeWithProxy(t *testing.T) {
 		// tests for hostMatcher
 		{
 			name: "no proxy",
-		}, {
+		},
+		{
 			name:   "empty string",
 			header: h(""),
-		}, {
+		},
+		{
 			name:   "empty Host",
 			header: h("host"),
-		}, {
+		},
+		{
 			name:   "matching Host",
 			header: h("host", ok),
-		}, {
+		},
+		{
 			name:   "Host mismatch",
 			header: h("host", nook),
 			isErr:  true,
-		}, {
+		},
+		{
 			name:   "Host mismatch (ignoring forwarding header)",
 			header: h("host", nook),
 			extra:  h("X-Forwarded-Host", ok),
@@ -158,39 +163,49 @@ func TestChallengeWithProxy(t *testing.T) {
 		{
 			name:   "matching X-Forwarded-Host",
 			header: h("X-Forwarded-Host", ok),
-		}, {
+		},
+		{
 			name:   "matching X-Forwarded-Host (multiple fields)",
 			header: h("X-Forwarded-Host", ok, nook),
-		}, {
+		},
+		{
 			name:   "matching X-Forwarded-Host (chain value)",
 			header: h("X-Forwarded-Host", ok+", "+nook),
-		}, {
+		},
+		{
 			name:   "X-Forwarded-Host mismatch",
 			header: h("X-Forwarded-Host", nook),
 			extra:  h("host", ok),
 			isErr:  true,
-		}, {
+		},
+		{
 			name:   "X-Forwarded-Host mismatch (multiple fields)",
 			header: h("X-Forwarded-Host", nook, ok),
 			isErr:  true,
-		}, {
+		},
+		{
 			name:   "matching X-Something-Else",
 			header: h("X-Something-Else", ok),
-		}, {
+		},
+		{
 			name:   "matching X-Something-Else (multiple fields)",
 			header: h("X-Something-Else", ok, nook),
-		}, {
+		},
+		{
 			name:   "matching X-Something-Else (chain value)",
 			header: h("X-Something-Else", ok+", "+nook),
-		}, {
+		},
+		{
 			name:   "X-Something-Else mismatch",
 			header: h("X-Something-Else", nook),
 			isErr:  true,
-		}, {
+		},
+		{
 			name:   "X-Something-Else mismatch (multiple fields)",
 			header: h("X-Something-Else", nook, ok),
 			isErr:  true,
-		}, {
+		},
+		{
 			name:   "X-Something-Else mismatch (chain value)",
 			header: h("X-Something-Else", nook+", "+ok),
 			isErr:  true,
@@ -199,21 +214,26 @@ func TestChallengeWithProxy(t *testing.T) {
 		{
 			name:   "matching Forwarded",
 			header: h("Forwarded", fmt.Sprintf("host=%q;foo=bar", ok)),
-		}, {
+		},
+		{
 			name:   "matching Forwarded (multiple fields)",
 			header: h("Forwarded", fmt.Sprintf("host=%q", ok), "host="+nook),
-		}, {
+		},
+		{
 			name:   "matching Forwarded (chain value)",
 			header: h("Forwarded", fmt.Sprintf("host=%q, host=%s", ok, nook)),
-		}, {
+		},
+		{
 			name:   "Forwarded mismatch",
 			header: h("Forwarded", "host="+nook),
 			isErr:  true,
-		}, {
+		},
+		{
 			name:   "Forwarded mismatch (missing information)",
 			header: h("Forwarded", "for=127.0.0.1"),
 			isErr:  true,
-		}, {
+		},
+		{
 			name:   "Forwarded mismatch (multiple fields)",
 			header: h("Forwarded", "host="+nook, fmt.Sprintf("host=%q", ok)),
 			isErr:  true,

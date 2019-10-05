@@ -21,7 +21,7 @@ func TestChallenge(t *testing.T) {
 	_, apiURL, tearDown := tester.SetupFakeAPI()
 	defer tearDown()
 
-	providerServer := &ProviderServer{port: "23457"}
+	providerServer := NewProviderServer("", "23457")
 
 	validate := func(_ *api.Core, _ string, chlng acme.Challenge) error {
 		uri := "http://localhost" + providerServer.GetAddress() + ChallengePath(chlng.Token)
@@ -82,7 +82,7 @@ func TestChallengeInvalidPort(t *testing.T) {
 
 	validate := func(_ *api.Core, _ string, _ acme.Challenge) error { return nil }
 
-	solver := NewChallenge(core, validate, &ProviderServer{port: "123456"})
+	solver := NewChallenge(core, validate, NewProviderServer("", "123456"))
 
 	authz := acme.Authorization{
 		Identifier: acme.Identifier{
@@ -237,7 +237,7 @@ func testServeWithProxy(t *testing.T, header, extra *testProxyHeader, expectErro
 	_, apiURL, tearDown := tester.SetupFakeAPI()
 	defer tearDown()
 
-	providerServer := &ProviderServer{iface: "localhost", port: "23457"}
+	providerServer := NewProviderServer("localhost", "23457")
 	if header != nil {
 		providerServer.SetProxyHeader(header.name)
 	}

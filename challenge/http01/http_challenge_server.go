@@ -25,18 +25,15 @@ type ProviderServer struct {
 // Setting iface and / or port to an empty string will make the server fall back to
 // the "any" interface and port 80 respectively.
 func NewProviderServer(iface, port string) *ProviderServer {
-	return &ProviderServer{iface: iface, port: port}
+	if port == "" {
+		port = "80"
+	}
+
+	return &ProviderServer{iface: iface, port: port, matcher: &hostMatcher{}}
 }
 
 // Present starts a web server and makes the token available at `ChallengePath(token)` for web requests.
 func (s *ProviderServer) Present(domain, token, keyAuth string) error {
-	if s.port == "" {
-		s.port = "80"
-	}
-	if s.matcher == nil {
-		s.matcher = &hostMatcher{}
-	}
-
 	var err error
 	s.listener, err = net.Listen("tcp", s.GetAddress())
 	if err != nil {
@@ -62,20 +59,17 @@ func (s *ProviderServer) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-// SetProxyHeader changes the validation of incoming requests. By default,
-// s matches the "Host" header value to the domain name.
+// SetProxyHeader changes the validation of incoming requests.
+// By default, s matches the "Host" header value to the domain name.
 //
-// When the server runs behind a proxy server, this is not the correct
-// place to look at; Apache and NGINX have traditionally moved the
-// original Host header into a new header named "X-Forwarded-Host". Other
-// webservers might use different names; and RFC7239 has standadized a
-// new header named "Forwarded" (with slightly different semantics).
+// When the server runs behind a proxy server, this is not the correct place to look at;
+// Apache and NGINX have traditionally moved the original Host header into a new header named "X-Forwarded-Host".
+// Other webservers might use different names;
+// and RFC7239 has standadized a new header named "Forwarded" (with slightly different semantics).
 //
 // The exact behavior depends on the value of headerName:
-// - "" (the empty string) and "Host" will restore the default and only
-//   check the Host header
-// - "Forwarded" will look for a Forwarded header, and inspect it according
-//   to RFC7239
+// - "" (the empty string) and "Host" will restore the default and only check the Host header
+// - "Forwarded" will look for a Forwarded header, and inspect it according to https://tools.ietf.org/html/rfc7239
 // - any other value will check the header value with the same name
 func (s *ProviderServer) SetProxyHeader(headerName string) {
 	switch h := textproto.CanonicalMIMEHeaderKey(headerName); h {
@@ -93,8 +87,7 @@ func (s *ProviderServer) serve(domain, token, keyAuth string) {
 
 	// The incoming request must will be validated to prevent DNS rebind attacks.
 	// We only respond with the keyAuth, when we're receiving a GET requests with
-	// the "Host" header matching the domain (the latter is configurable though
-	// SetProxyHeader).
+	// the "Host" header matching the domain (the latter is configurable though SetProxyHeader).
 	mux := http.NewServeMux()
 	mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet && s.matcher.matches(r, domain) {

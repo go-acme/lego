@@ -59,6 +59,15 @@
     path = "challenge/dns01/nameserver.go"
     text = "`(defaultNameservers|recursiveNameservers|dnsTimeout|fqdnToZone|muFqdnToZone)` is a global variable"
   [[issues.exclude-rules]]
+    path = "challenge/http01/domain_matcher.go"
+    text = "string `Host` has \\d occurrences, make it a constant"
+  [[issues.exclude-rules]]
+    path = "challenge/http01/domain_matcher.go"
+    text = "cyclomatic complexity \\d+ of func `parseForwardedHeader` is high"
+  [[issues.exclude-rules]]
+    path = "challenge/http01/domain_matcher.go"
+    text = "Function 'parseForwardedHeader' has too many statements"
+  [[issues.exclude-rules]]
     path = "challenge/tlsalpn01/tls_alpn_challenge.go"
     text = "`idPeAcmeIdentifierV1` is a global variable"
   [[issues.exclude-rules]]

@@ -4,7 +4,10 @@ URL = "https://www.dreamhost.com"
 Code = "dreamhost"
 Since = "v1.1.0"
 
-Example = ''''''
+Example = '''
+DREAMHOST_API_KEY="YOURAPIKEY" \
+lego --domains "foo.example.com" --dns dreamhost --email some@email.com run
+'''
 
 [Configuration]
   [Configuration.Credentials]

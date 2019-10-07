@@ -19,12 +19,12 @@ USAGE:
    lego [global options] command [command options] [arguments...]
 
 COMMANDS:
-     run      Register an account, then create and install a certificate
-     revoke   Revoke a certificate
-     renew    Renew a certificate
-     dnshelp  Shows additional help for the '--dns' global option
-     list     Display certificates and accounts information.
-     help, h  Shows a list of commands or help for one command
+   run      Register an account, then create and install a certificate
+   revoke   Revoke a certificate
+   renew    Renew a certificate
+   dnshelp  Shows additional help for the '--dns' global option
+   list     Display certificates and accounts information.
+   help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
    --domains value, -d value    Add a domain to the process. Can be specified multiple times.
@@ -40,6 +40,7 @@ GLOBAL OPTIONS:
    --path value                 Directory to use for storing the data. (default: "./.lego")
    --http                       Use the HTTP challenge to solve challenges. Can be mixed with other types of challenges.
    --http.port value            Set the port and interface to use for HTTP based challenges to listen on.Supported: interface:port or :port. (default: ":80")
+   --http.proxy-header value    Validate against this HTTP header when solving HTTP based challenges behind a reverse proxy. (default: "Host")
    --http.webroot value         Set the webroot folder to use for HTTP based challenges to write directly in a file in .well-known/acme-challenge.
    --http.memcached-host value  Set the memcached host(s) to use for HTTP based challenges. Challenges will be written to all specified hosts.
    --tls                        Use the TLS challenge to solve challenges. Can be mixed with other types of challenges.
@@ -87,8 +88,10 @@ lego to listen on that interface:port for any incoming challenges.
 
 If you are using this option, make sure you proxy all of the following traffic to these ports.
 
-**HTTP Port:** All plaintext HTTP requests to port **80** which begin with a request path of `/.well-known/acme-challenge/` for the HTTP challenge.
+**HTTP Port:** All plaintext HTTP requests to port **80** which begin with a request path of `/.well-known/acme-challenge/` for the HTTP challenge.[^header]
 
 **TLS Port:** All TLS handshakes on port **443** for the TLS-ALPN challenge.
 
 This traffic redirection is only needed as long as lego solves challenges. As soon as you have received your certificates you can deactivate the forwarding.
+
+[^header]: You must ensure that incoming validation requests containt the correct value for the HTTP `Host` header. If you operate lego behind a non-transparent reverse proxy (such as Apache or NGINX), you might need to alter the header field using `--http.proxy-header X-Forwarded-Host`.

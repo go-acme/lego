@@ -15,7 +15,7 @@ require (
 	github.com/aliyun/alibaba-cloud-sdk-go v0.0.0-20190808125512-07798873deee
 	github.com/aws/aws-sdk-go v1.23.0
 	github.com/cenkalti/backoff/v3 v3.0.0
-	github.com/cloudflare/cloudflare-go v0.10.0
+	github.com/cloudflare/cloudflare-go v0.10.2
 	github.com/cpu/goacmedns v0.0.1
 	github.com/decker502/dnspod-go v0.2.0
 	github.com/dnsimple/dnsimple-go v0.30.0
@@ -36,13 +36,13 @@ require (
 	github.com/ovh/go-ovh v0.0.0-20181109152953-ba5adb4cf014
 	github.com/rainycape/memcache v0.0.0-20150622160815-1031fa0ce2f2
 	github.com/sacloud/libsacloud v1.26.1
-	github.com/stretchr/testify v1.3.0
+	github.com/stretchr/testify v1.4.0
 	github.com/timewasted/linode v0.0.0-20160829202747-37e84520dcf7
 	github.com/transip/gotransip v0.0.0-20190812104329-6d8d9179b66f
-	github.com/urfave/cli v1.21.0
+	github.com/urfave/cli v1.22.1
 	github.com/vultr/govultr v0.1.4
 	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4
-	golang.org/x/net v0.0.0-20190613194153-d28f0bde5980
+	golang.org/x/net v0.0.0-20190930134127-c5a3c61f89f3
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 	google.golang.org/api v0.8.0
 	gopkg.in/ns1/ns1-go.v2 v2.0.0-20190730140822-b51389932cbc

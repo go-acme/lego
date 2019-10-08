@@ -140,13 +140,32 @@ func TestNewDNSProviderWithToken(t *testing.T) {
 			zoneToken:  "abc",
 			sameClient: false,
 		},
+		{
+			desc: "aliases work as expected", // CLOUDFLARE_* takes precedence over CF_*
+			envVars: map[string]string{
+				"CLOUDFLARE_DNS_API_TOKEN":  "123",
+				"CF_DNS_API_TOKEN":          "456",
+				"CLOUDFLARE_ZONE_API_TOKEN": "abc",
+				"CF_ZONE_API_TOKEN":         "def",
+			},
+			dnsToken:   "123",
+			zoneToken:  "abc",
+			sameClient: false,
+		},
 	}
+
+	defer envTest.RestoreEnv()
+	localEnvTest := tester.NewEnvTest(
+		"CLOUDFLARE_DNS_API_TOKEN", "CF_DNS_API_TOKEN",
+		"CLOUDFLARE_ZONE_API_TOKEN", "CF_ZONE_API_TOKEN",
+	).WithDomain("CLOUDFLARE_DOMAIN")
+	envTest.ClearEnv()
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer envTest.RestoreEnv()
-			envTest.ClearEnv()
-			envTest.Apply(test.envVars)
+			defer localEnvTest.RestoreEnv()
+			localEnvTest.ClearEnv()
+			localEnvTest.Apply(test.envVars)
 
 			p, err := NewDNSProvider()
 

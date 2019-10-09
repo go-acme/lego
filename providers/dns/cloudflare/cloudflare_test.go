@@ -225,22 +225,22 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		},
 		{
 			desc:     "missing credentials",
-			expected: "invalid credentials: key & email must not be empty",
+			expected: "cloudflare: invalid credentials: key & email must not be empty",
 		},
 		{
 			desc:     "missing email",
 			authKey:  "123",
-			expected: "invalid credentials: key & email must not be empty",
+			expected: "cloudflare: invalid credentials: key & email must not be empty",
 		},
 		{
 			desc:      "missing api key",
 			authEmail: "test@example.com",
-			expected:  "invalid credentials: key & email must not be empty",
+			expected:  "cloudflare: invalid credentials: key & email must not be empty",
 		},
 		{
 			desc:      "missing api token, fallback to api key/email",
 			authToken: "",
-			expected:  "invalid credentials: key & email must not be empty",
+			expected:  "cloudflare: invalid credentials: key & email must not be empty",
 		},
 	}
 

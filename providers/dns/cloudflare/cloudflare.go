@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"sync"
 	"time"
 
 	cloudflare "github.com/cloudflare/cloudflare-go"
@@ -48,9 +47,6 @@ func NewDefaultConfig() *Config {
 type DNSProvider struct {
 	client *metaClient
 	config *Config
-
-	zones   map[string]string // caches calls to ZoneIDByName, see lookupZoneID()
-	zonesMu *sync.RWMutex
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Cloudflare.
@@ -105,12 +101,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("cloudflare: %v", err)
 	}
 
-	return &DNSProvider{
-		client:  client,
-		config:  config,
-		zones:   make(map[string]string),
-		zonesMu: &sync.RWMutex{},
-	}, nil
+	return &DNSProvider{client: client, config: config}, nil
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
@@ -128,7 +119,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("cloudflare: %v", err)
 	}
 
-	zoneID, err := d.lookupZoneID(authZone)
+	zoneID, err := d.client.ZoneIDByName(authZone)
 	if err != nil {
 		return fmt.Errorf("cloudflare: failed to find zone %s: %v", authZone, err)
 	}
@@ -163,7 +154,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("cloudflare: %v", err)
 	}
 
-	zoneID, err := d.lookupZoneID(authZone)
+	zoneID, err := d.client.ZoneIDByName(authZone)
 	if err != nil {
 		return fmt.Errorf("cloudflare: failed to find zone %s: %v", authZone, err)
 	}
@@ -186,24 +177,4 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	return nil
-}
-
-func (d *DNSProvider) lookupZoneID(fdqn string) (string, error) {
-	d.zonesMu.RLock()
-	id := d.zones[fdqn]
-	d.zonesMu.RUnlock()
-
-	if id != "" {
-		return id, nil
-	}
-
-	id, err := d.client.ZoneIDByName(dns01.UnFqdn(fdqn))
-	if err != nil {
-		return "", err
-	}
-
-	d.zonesMu.Lock()
-	d.zones[fdqn] = id
-	d.zonesMu.Unlock()
-	return id, nil
 }

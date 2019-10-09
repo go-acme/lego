@@ -1,5 +1,20 @@
 # Changelog
 
+## [v3.1.0] - 2019-10-07
+
+### Added:
+- **[dnsprovider]** Add DNS provider for Liquid Web
+- **[dnsprovider]** cloudflare: add support for API tokens
+- **[cli]** feat: ease operation behind proxy servers
+
+### Changed:
+- **[dnsprovider]** cloudflare: update client
+- **[dnsprovider]** linodev4: propagation timeout configuration.
+
+### Fixed:
+- **[dnsprovider]** ovh: fix int overflow.
+- **[dnsprovider]** bindman: fix client version.
+
 ## [v3.0.2] - 2019-08-15
 
 ### Fixed:

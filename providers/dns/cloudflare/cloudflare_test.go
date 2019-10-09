@@ -49,7 +49,7 @@ func TestNewDNSProvider(t *testing.T) {
 				"CLOUDFLARE_API_KEY":       "",
 				"CLOUDFLARE_DNS_API_TOKEN": "",
 			},
-			expected: "cloudflare: some credentials information are missing: CLOUDFLARE_EMAIL,CLOUDFLARE_API_KEY or some credentials information are missing: CLOUDFLARE_DNS_API_TOKEN",
+			expected: "cloudflare: some credentials information are missing: CLOUDFLARE_EMAIL,CLOUDFLARE_API_KEY or some credentials information are missing: CLOUDFLARE_DNS_API_TOKEN,CLOUDFLARE_ZONE_API_TOKEN",
 		},
 		{
 			desc: "missing email",
@@ -57,7 +57,7 @@ func TestNewDNSProvider(t *testing.T) {
 				"CLOUDFLARE_EMAIL":   "",
 				"CLOUDFLARE_API_KEY": "key",
 			},
-			expected: "cloudflare: some credentials information are missing: CLOUDFLARE_EMAIL or some credentials information are missing: CLOUDFLARE_DNS_API_TOKEN",
+			expected: "cloudflare: some credentials information are missing: CLOUDFLARE_EMAIL or some credentials information are missing: CLOUDFLARE_DNS_API_TOKEN,CLOUDFLARE_ZONE_API_TOKEN",
 		},
 		{
 			desc: "missing api key",
@@ -65,7 +65,7 @@ func TestNewDNSProvider(t *testing.T) {
 				"CLOUDFLARE_EMAIL":   "awesome@possum.com",
 				"CLOUDFLARE_API_KEY": "",
 			},
-			expected: "cloudflare: some credentials information are missing: CLOUDFLARE_API_KEY or some credentials information are missing: CLOUDFLARE_DNS_API_TOKEN",
+			expected: "cloudflare: some credentials information are missing: CLOUDFLARE_API_KEY or some credentials information are missing: CLOUDFLARE_DNS_API_TOKEN,CLOUDFLARE_ZONE_API_TOKEN",
 		},
 	}
 
@@ -82,8 +82,7 @@ func TestNewDNSProvider(t *testing.T) {
 				require.NoError(t, err)
 				require.NotNil(t, p)
 				assert.NotNil(t, p.config)
-				assert.NotNil(t, p.dns)
-				assert.NotNil(t, p.zone)
+				assert.NotNil(t, p.client)
 			} else {
 				require.EqualError(t, err, test.expected)
 			}
@@ -92,6 +91,13 @@ func TestNewDNSProvider(t *testing.T) {
 }
 
 func TestNewDNSProviderWithToken(t *testing.T) {
+	type expected struct {
+		dnsToken   string
+		zoneToken  string
+		sameClient bool
+		error      string
+	}
+
 	testCases := []struct {
 		desc string
 
@@ -99,19 +105,18 @@ func TestNewDNSProviderWithToken(t *testing.T) {
 		envVars map[string]string
 
 		// expectations
-		dnsToken    string
-		zoneToken   string
-		sameClient  bool
-		expectError string
+		expected expected
 	}{
 		{
 			desc: "same client when zone token is missing",
 			envVars: map[string]string{
 				"CLOUDFLARE_DNS_API_TOKEN": "123",
 			},
-			dnsToken:   "123",
-			zoneToken:  "",
-			sameClient: true,
+			expected: expected{
+				dnsToken:   "123",
+				zoneToken:  "123",
+				sameClient: true,
+			},
 		},
 		{
 			desc: "same client when zone token equals dns token",
@@ -119,16 +124,20 @@ func TestNewDNSProviderWithToken(t *testing.T) {
 				"CLOUDFLARE_DNS_API_TOKEN":  "123",
 				"CLOUDFLARE_ZONE_API_TOKEN": "123",
 			},
-			dnsToken:   "123",
-			zoneToken:  "123",
-			sameClient: true,
+			expected: expected{
+				dnsToken:   "123",
+				zoneToken:  "123",
+				sameClient: true,
+			},
 		},
 		{
 			desc: "failure when only zone api given",
 			envVars: map[string]string{
 				"CLOUDFLARE_ZONE_API_TOKEN": "123",
 			},
-			expectError: "cloudflare: some credentials information are missing: CLOUDFLARE_EMAIL,CLOUDFLARE_API_KEY or some credentials information are missing: CLOUDFLARE_DNS_API_TOKEN",
+			expected: expected{
+				error: "cloudflare: some credentials information are missing: CLOUDFLARE_EMAIL,CLOUDFLARE_API_KEY or some credentials information are missing: CLOUDFLARE_DNS_API_TOKEN",
+			},
 		},
 		{
 			desc: "different clients when zone and dns token differ",
@@ -136,9 +145,11 @@ func TestNewDNSProviderWithToken(t *testing.T) {
 				"CLOUDFLARE_DNS_API_TOKEN":  "123",
 				"CLOUDFLARE_ZONE_API_TOKEN": "abc",
 			},
-			dnsToken:   "123",
-			zoneToken:  "abc",
-			sameClient: false,
+			expected: expected{
+				dnsToken:   "123",
+				zoneToken:  "abc",
+				sameClient: false,
+			},
 		},
 		{
 			desc: "aliases work as expected", // CLOUDFLARE_* takes precedence over CF_*
@@ -148,9 +159,11 @@ func TestNewDNSProviderWithToken(t *testing.T) {
 				"CLOUDFLARE_ZONE_API_TOKEN": "abc",
 				"CF_ZONE_API_TOKEN":         "def",
 			},
-			dnsToken:   "123",
-			zoneToken:  "abc",
-			sameClient: false,
+			expected: expected{
+				dnsToken:   "123",
+				zoneToken:  "abc",
+				sameClient: false,
+			},
 		},
 	}
 
@@ -169,19 +182,19 @@ func TestNewDNSProviderWithToken(t *testing.T) {
 
 			p, err := NewDNSProvider()
 
-			if test.expectError != "" {
-				require.EqualError(t, err, test.expectError)
+			if test.expected.error != "" {
+				require.EqualError(t, err, test.expected.error)
 				return
 			}
 
 			require.NoError(t, err)
 			require.NotNil(t, p)
-			assert.Equal(t, test.dnsToken, p.config.AuthToken)
-			assert.Equal(t, test.zoneToken, p.config.ZoneToken)
-			if test.sameClient {
-				assert.Equal(t, p.zone, p.dns)
+			assert.Equal(t, test.expected.dnsToken, p.config.AuthToken)
+			assert.Equal(t, test.expected.zoneToken, p.config.ZoneToken)
+			if test.expected.sameClient {
+				assert.Equal(t, p.client.clientRead, p.client.clientEdit)
 			} else {
-				assert.NotEqual(t, p.zone, p.dns)
+				assert.NotEqual(t, p.client.clientRead, p.client.clientEdit)
 			}
 		})
 	}
@@ -244,7 +257,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 				require.NoError(t, err)
 				require.NotNil(t, p)
 				assert.NotNil(t, p.config)
-				assert.NotNil(t, p.dns)
+				assert.NotNil(t, p.client)
 			} else {
 				require.EqualError(t, err, test.expected)
 			}

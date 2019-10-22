@@ -45,8 +45,8 @@ Requirements:
 - `go` v1.12+
 - environment variable: `GO111MODULE=on`
 
-To install from sources, just run:
+To install the latest development version from sources, just run:
 
 ```bash
-go get -u github.com/go-acme/lego/cmd/lego
+go get -u github.com/go-acme/lego/v3/cmd/lego
 ```

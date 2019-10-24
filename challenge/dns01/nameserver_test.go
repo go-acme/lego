@@ -68,68 +68,74 @@ func TestLookupNameserversErr(t *testing.T) {
 	}
 }
 
-func TestFindZoneByFqdnCustom(t *testing.T) {
-	testCases := []struct {
-		desc          string
-		fqdn          string
-		zone          string
-		nameservers   []string
-		expectedError string
-	}{
-		{
-			desc:        "domain is a CNAME",
-			fqdn:        "mail.google.com.",
-			zone:        "google.com.",
-			nameservers: recursiveNameservers,
-		},
-		{
-			desc:        "domain is a non-existent subdomain",
-			fqdn:        "foo.google.com.",
-			zone:        "google.com.",
-			nameservers: recursiveNameservers,
-		},
-		{
-			desc:        "domain is a eTLD",
-			fqdn:        "example.com.ac.",
-			zone:        "ac.",
-			nameservers: recursiveNameservers,
-		},
-		{
-			desc:        "domain is a cross-zone CNAME",
-			fqdn:        "cross-zone-example.assets.sh.",
-			zone:        "assets.sh.",
-			nameservers: recursiveNameservers,
-		},
-		{
-			desc:          "NXDOMAIN",
-			fqdn:          "test.loho.jkl.",
-			zone:          "loho.jkl.",
-			nameservers:   []string{"1.1.1.1:53"},
-			expectedError: "could not find the start of authority for test.loho.jkl.: NXDOMAIN",
-		},
-		{
-			desc:        "several non existent nameservers",
-			fqdn:        "mail.google.com.",
-			zone:        "google.com.",
-			nameservers: []string{":7053", ":8053", "1.1.1.1:53"},
-		},
-		{
-			desc:          "only non existent nameservers",
-			fqdn:          "mail.google.com.",
-			zone:          "google.com.",
-			nameservers:   []string{":7053", ":8053", ":9053"},
-			expectedError: "could not find the start of authority for mail.google.com.: read udp",
-		},
-		{
-			desc:          "no nameservers",
-			fqdn:          "test.ldez.com.",
-			zone:          "ldez.com.",
-			nameservers:   []string{},
-			expectedError: "could not find the start of authority for test.ldez.com.",
-		},
-	}
+var findXByFqdnTestCases = []struct {
+	desc          string
+	fqdn          string
+	zone          string
+	primaryNs     string
+	nameservers   []string
+	expectedError string
+}{
+	{
+		desc:        "domain is a CNAME",
+		fqdn:        "mail.google.com.",
+		zone:        "google.com.",
+		primaryNs:   "ns1.google.com.",
+		nameservers: recursiveNameservers,
+	},
+	{
+		desc:        "domain is a non-existent subdomain",
+		fqdn:        "foo.google.com.",
+		zone:        "google.com.",
+		primaryNs:   "ns1.google.com.",
+		nameservers: recursiveNameservers,
+	},
+	{
+		desc:        "domain is a eTLD",
+		fqdn:        "example.com.ac.",
+		zone:        "ac.",
+		primaryNs:   "a0.nic.ac.",
+		nameservers: recursiveNameservers,
+	},
+	{
+		desc:        "domain is a cross-zone CNAME",
+		fqdn:        "cross-zone-example.assets.sh.",
+		zone:        "assets.sh.",
+		primaryNs:   "gina.ns.cloudflare.com.",
+		nameservers: recursiveNameservers,
+	},
+	{
+		desc:          "NXDOMAIN",
+		fqdn:          "test.loho.jkl.",
+		zone:          "loho.jkl.",
+		nameservers:   []string{"1.1.1.1:53"},
+		expectedError: "could not find the start of authority for test.loho.jkl.: NXDOMAIN",
+	},
+	{
+		desc:        "several non existent nameservers",
+		fqdn:        "mail.google.com.",
+		zone:        "google.com.",
+		primaryNs:   "ns1.google.com.",
+		nameservers: []string{":7053", ":8053", "1.1.1.1:53"},
+	},
+	{
+		desc:          "only non existent nameservers",
+		fqdn:          "mail.google.com.",
+		zone:          "google.com.",
+		nameservers:   []string{":7053", ":8053", ":9053"},
+		expectedError: "could not find the start of authority for mail.google.com.: read udp",
+	},
+	{
+		desc:          "no nameservers",
+		fqdn:          "test.ldez.com.",
+		zone:          "ldez.com.",
+		nameservers:   []string{},
+		expectedError: "could not find the start of authority for test.ldez.com.",
+	},
+}
 
-	for _, test := range testCases {
+func TestFindZoneByFqdnCustom(t *testing.T) {
+	for _, test := range findXByFqdnTestCases {
 		t.Run(test.desc, func(t *testing.T) {
 			ClearFqdnCache()
 
@@ -140,6 +146,23 @@ func TestFindZoneByFqdnCustom(t *testing.T) {
 			} else {
 				require.NoError(t, err)
 				assert.Equal(t, test.zone, zone)
+			}
+		})
+	}
+}
+
+func TestFindPrimayNsByFqdnCustom(t *testing.T) {
+	for _, test := range findXByFqdnTestCases {
+		t.Run(test.desc, func(t *testing.T) {
+			ClearFqdnCache()
+
+			ns, err := FindPrimaryNsByFqdnCustom(test.fqdn, test.nameservers)
+			if test.expectedError != "" {
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), test.expectedError)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, test.primaryNs, ns)
 			}
 		})
 	}

@@ -199,7 +199,6 @@ func TestSplitDomain(t *testing.T) {
 			assert.Equal(t, test.expectedZone, zone)
 		})
 	}
-
 }
 
 func TestLivePresent(t *testing.T) {

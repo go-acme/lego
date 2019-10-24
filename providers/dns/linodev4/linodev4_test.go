@@ -209,7 +209,6 @@ func TestDNSProvider_Present(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-
 			server := newMockServer(test.mockResponses)
 			defer server.Close()
 

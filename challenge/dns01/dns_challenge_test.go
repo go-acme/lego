@@ -93,7 +93,6 @@ func TestChallenge_PreSolve(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-
 			chlg := NewChallenge(core, test.validate, test.provider, WrapPreCheck(test.preCheck))
 
 			authz := acme.Authorization{
@@ -178,7 +177,6 @@ func TestChallenge_Solve(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-
 			var options []ChallengeOption
 			if test.preCheck != nil {
 				options = append(options, WrapPreCheck(test.preCheck))
@@ -266,7 +264,6 @@ func TestChallenge_CleanUp(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-
 			chlg := NewChallenge(core, test.validate, test.provider, WrapPreCheck(test.preCheck))
 
 			authz := acme.Authorization{

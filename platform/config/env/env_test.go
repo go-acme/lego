@@ -304,7 +304,6 @@ func TestGetOrFile_ReadsFiles(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-
 			err := os.Unsetenv(varEnvFileName)
 			require.NoError(t, err)
 			err = os.Unsetenv(varEnvName)

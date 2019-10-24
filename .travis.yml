@@ -88,3 +88,5 @@ deploy:
     local_dir: docs/public
     skip_cleanup: true
     github_token: ${GITHUB_TOKEN}
+    on:
+      condition: $STABLE = true

@@ -84,7 +84,6 @@ func displayDNSHelp(name string) error {
 	ew := &errWriter{w: w}
 
 	switch name {
-
 	case "acme-dns":
 		// generated from: providers/dns/acmedns/acmedns.toml
 		ew.writeln(`Configuration for Joohoi's ACME-DNS.`)

@@ -106,7 +106,6 @@ func TestClientGetDomainInformation(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-
 			server := httptest.NewServer(handlerMock(http.MethodGet, test.response, test.data))
 
 			client, _ := NewClient("myKey", "mySecret")
@@ -210,7 +209,6 @@ func TestClientFindTxtRecord(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-
 			server := httptest.NewServer(handlerMock(http.MethodGet, test.response, test.txtRecords))
 
 			client, _ := NewClient("myKey", "mySecret")

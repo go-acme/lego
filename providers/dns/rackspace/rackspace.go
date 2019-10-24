@@ -98,7 +98,6 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		token:            identity.Access.Token.ID,
 		cloudDNSEndpoint: dnsEndpoint,
 	}, nil
-
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge

@@ -226,7 +226,6 @@ func (c *Client) GetDNSRecords(hostname, apiSessionID string) ([]DNSRecord, erro
 	}
 
 	return responseData.DNSRecords, nil
-
 }
 
 // doRequest marshals given body to JSON, send the request to netcup API

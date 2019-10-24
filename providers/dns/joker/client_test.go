@@ -485,7 +485,6 @@ func Test_addTxtEntryToZone(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-
 			zone := addTxtEntryToZone(test.input, "_acme-challenge", "test", 120)
 			assert.Equal(t, zone, test.expected)
 		})
@@ -527,7 +526,6 @@ func Test_fixTxtLines(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-
 			line := fixTxtLines(test.input)
 			assert.Equal(t, line, test.expected)
 		})

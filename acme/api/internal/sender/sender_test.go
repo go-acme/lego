@@ -44,7 +44,6 @@ func TestDo_UserAgentOnAllHTTPMethod(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.method, func(t *testing.T) {
-
 			_, err := test.call(ts.URL)
 			require.NoError(t, err)
 

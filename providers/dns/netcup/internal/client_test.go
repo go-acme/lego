@@ -515,7 +515,6 @@ func TestLiveClientAuth(t *testing.T) {
 			require.NoError(t, err)
 		})
 	}
-
 }
 
 func TestLiveClientGetDnsRecords(t *testing.T) {

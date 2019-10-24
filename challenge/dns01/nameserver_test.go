@@ -188,7 +188,6 @@ func TestResolveConfServers(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.fixture, func(t *testing.T) {
-
 			result := getNameservers(test.fixture, test.defaults)
 
 			sort.Strings(result)

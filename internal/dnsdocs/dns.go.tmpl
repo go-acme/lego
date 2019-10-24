@@ -27,7 +27,7 @@ func displayDNSHelp(name string) error {
 	ew := &errWriter{w: w}
 
 	switch name {
-{{ range $provider := .Providers }}
+{{- range $provider := .Providers }}
 	case "{{ $provider.Code }}":
 		// generated from: {{ .GeneratedFrom }}
 		ew.writeln(`Configuration for {{ $provider.Name }}.`)

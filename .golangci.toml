@@ -29,7 +29,10 @@
     "dupl",
     "prealloc",
     "scopelint",
-    "bodyclose", # https://github.com/timakin/bodyclose/pull/14
+    "bodyclose",
+    "wsl",
+    "stylecheck",
+    "godox",
   ]
 
 [issues]
@@ -112,3 +115,6 @@
   [[issues.exclude-rules]]
     path = "providers/dns/gandi/gandi.go"
     text = "Function 'Present' is too long"
+  [[issues.exclude-rules]]
+    path = "cmd/zz_gen_cmd_dnshelp.go"
+    linters = ["gocyclo", "funlen"]

@@ -112,7 +112,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 				if test.baseURL != "" {
 					assert.Equal(t, test.baseURL, p.client.BaseURL)
 				}
-
 			} else {
 				require.EqualError(t, err, test.expected)
 			}

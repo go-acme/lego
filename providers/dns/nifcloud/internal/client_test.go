@@ -81,7 +81,6 @@ func TestChangeResourceRecordSetsErrors(t *testing.T) {
 	for _, test := range testCases {
 		test := test
 		t.Run(test.desc, func(t *testing.T) {
-
 			server := runTestServer(test.responseBody, test.statusCode)
 			defer server.Close()
 
@@ -161,7 +160,6 @@ func TestGetChangeErrors(t *testing.T) {
 	for _, test := range testCases {
 		test := test
 		t.Run(test.desc, func(t *testing.T) {
-
 			server := runTestServer(test.responseBody, test.statusCode)
 			defer server.Close()
 
@@ -175,5 +173,4 @@ func TestGetChangeErrors(t *testing.T) {
 			assert.EqualError(t, err, test.expected)
 		})
 	}
-
 }

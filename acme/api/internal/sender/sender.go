@@ -120,7 +120,6 @@ func (d *Doer) formatUserAgent() string {
 
 func checkError(req *http.Request, resp *http.Response) error {
 	if resp.StatusCode >= http.StatusBadRequest {
-
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return fmt.Errorf("%d :: %s :: %s :: %v", resp.StatusCode, req.Method, req.URL, err)

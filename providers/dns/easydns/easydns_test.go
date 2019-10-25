@@ -237,7 +237,7 @@ func TestDNSProvider_Cleanup_WhenHttpError_ReturnsError(t *testing.T) {
 		assert.Equal(t, "Basic VE9LRU46U0VDUkVU", r.Header.Get("Authorization"), "Authorization")
 
 		w.WriteHeader(http.StatusNotAcceptable)
-		_, err := fmt.Fprintf(w, errorMessage)
+		_, err := fmt.Fprint(w, errorMessage)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}

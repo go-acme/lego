@@ -78,8 +78,8 @@ func (m *forwardedMatcher) matches(r *http.Request, domain string) bool {
 	if err != nil {
 		return false
 	}
-	if len(fwds) == 0 {
 
+	if len(fwds) == 0 {
 		return false
 	}
 

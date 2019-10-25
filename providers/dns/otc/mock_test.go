@@ -79,7 +79,6 @@ func (m *DNSServerMock) HandleListZonesSuccessfully() {
 		    "id":"123123"
 		  }]}
 		`)
-
 	})
 }
 

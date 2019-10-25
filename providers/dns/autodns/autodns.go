@@ -103,7 +103,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) (err error) {
 
 // CleanUp removes the TXT record previously created
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	if err := d.removeTXTRecord(domain, "_acme-challenge"); err != nil {
+	fqdn, token := dns01.GetRecord(domain, keyAuth)
+	if err := d.removeTXTRecord(domain, fqdn, token); err != nil {
 		return fmt.Errorf("autodns: removeTXTRecord: %v", err)
 	}
 

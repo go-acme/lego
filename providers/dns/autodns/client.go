@@ -178,13 +178,14 @@ func (d *DNSProvider) addTxtRecord(domain, name, value string) (*Zone, error) {
 	return d.makeZoneUpdateRequest(zoneStream, domain)
 }
 
-func (d *DNSProvider) removeTXTRecord(domain, name string) error {
+func (d *DNSProvider) removeTXTRecord(domain, name, value string) error {
 	zoneStream := &ZoneStream{
 		Removes: []*ResourceRecord{
 			{
-				Name: name,
-				TTL:  int64(d.config.TTL),
-				Type: "TXT",
+				Name:  name,
+				TTL:   int64(d.config.TTL),
+				Type:  "TXT",
+				Value: value,
 			},
 		},
 	}

@@ -92,7 +92,6 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge
 func (d *DNSProvider) Present(domain, token, keyAuth string) (err error) {
-
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 	_, err = d.addTxtRecord(domain, fqdn, value)
 	if err != nil {
@@ -103,8 +102,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) (err error) {
 
 // CleanUp removes the TXT record previously created
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, token := dns01.GetRecord(domain, keyAuth)
-	if err := d.removeTXTRecord(domain, fqdn, token); err != nil {
+	fqdn, realToken := dns01.GetRecord(domain, keyAuth)
+	if err := d.removeTXTRecord(domain, fqdn, realToken); err != nil {
 		return fmt.Errorf("autodns: removeTXTRecord: %v", err)
 	}
 

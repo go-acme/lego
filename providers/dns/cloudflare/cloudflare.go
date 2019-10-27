@@ -28,7 +28,7 @@ type Config struct {
 	TTL                int
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
-        SequenceInterval   time.Duration
+	SequenceInterval   time.Duration
 	HTTPClient         *http.Client
 }
 

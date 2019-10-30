@@ -1,116 +1,120 @@
 package autodns
 
 import (
-	"net/http"
-	"net/url"
-	"reflect"
 	"testing"
-	"time"
 
 	"github.com/go-acme/lego/v3/platform/tester"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var envTest = tester.NewEnvTest(envAPIEndpoint, envAPIUser, envAPIPassword)
 
 func TestNewDNSProvider(t *testing.T) {
-	defaultEndpointURL, _ := url.Parse(defaultEndpoint)
-	demoEndpointURL, _ := url.Parse(demoEndpoint)
-
 	testCases := []struct {
-		name        string
-		want        *DNSProvider
-		wantErr     bool
-		expectedErr string
-		env         map[string]string
+		desc     string
+		envVars  map[string]string
+		expected string
 	}{
 		{
-			name: "complete, no errors",
-			want: &DNSProvider{
-				config: &Config{
-					Endpoint:           defaultEndpointURL,
-					Username:           "test",
-					Password:           "1234",
-					Context:            defaultEndpointContext,
-					TTL:                defaultTTL,
-					PropagationTimeout: 2 * time.Minute,
-					PollingInterval:    2 * time.Second,
-					HTTPClient: &http.Client{
-						Timeout: 30 * time.Second,
-					},
-				},
-			},
-			env: map[string]string{
-				envAPIUser:     "test",
-				envAPIPassword: "1234",
+			desc: "success",
+			envVars: map[string]string{
+				envAPIUser:     "123",
+				envAPIPassword: "456",
 			},
 		},
 		{
-			name: "different endpoint url",
-			want: &DNSProvider{
-				config: &Config{
-					Endpoint:           demoEndpointURL,
-					Username:           "test",
-					Password:           "1234",
-					Context:            defaultEndpointContext,
-					TTL:                defaultTTL,
-					PropagationTimeout: 2 * time.Minute,
-					PollingInterval:    2 * time.Second,
-					HTTPClient: &http.Client{
-						Timeout: 30 * time.Second,
-					},
-				},
-			},
-			env: map[string]string{
-				envAPIUser:     "test",
-				envAPIPassword: "1234",
-				envAPIEndpoint: demoEndpoint,
-			},
-		},
-		{
-			name: "missing credentials",
-			env: map[string]string{
+			desc: "missing credentials",
+			envVars: map[string]string{
 				envAPIUser:     "",
 				envAPIPassword: "",
 			},
-			wantErr:     true,
-			expectedErr: "autodns: some credentials information are missing: AUTODNS_API_USER,AUTODNS_API_PASSWORD",
+			expected: "autodns: some credentials information are missing: AUTODNS_API_USER,AUTODNS_API_PASSWORD",
 		},
 		{
-			name: "missing username",
-			env: map[string]string{
+			desc: "missing user id",
+			envVars: map[string]string{
 				envAPIUser:     "",
-				envAPIPassword: "1234",
+				envAPIPassword: "456",
 			},
-			wantErr:     true,
-			expectedErr: "autodns: some credentials information are missing: AUTODNS_API_USER",
+			expected: "autodns: some credentials information are missing: AUTODNS_API_USER",
 		},
 		{
-			name: "missing password",
-			env: map[string]string{
-				envAPIUser:     "user",
+			desc: "missing key",
+			envVars: map[string]string{
+				envAPIUser:     "123",
 				envAPIPassword: "",
 			},
-			wantErr:     true,
-			expectedErr: "autodns: some credentials information are missing: AUTODNS_API_PASSWORD",
+			expected: "autodns: some credentials information are missing: AUTODNS_API_PASSWORD",
 		},
 	}
-	for _, tt := range testCases {
-		t.Run(tt.name, func(t *testing.T) {
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
 			defer envTest.RestoreEnv()
 			envTest.ClearEnv()
-			envTest.Apply(tt.env)
 
-			got, err := NewDNSProvider()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("NewDNSProvider() error = %v, wantErr %v", err, tt.wantErr)
-				return
+			envTest.Apply(test.envVars)
+
+			p, err := NewDNSProvider()
+
+			if len(test.expected) == 0 {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+			} else {
+				require.EqualError(t, err, test.expected)
 			}
-			if (err != nil) && tt.wantErr {
-				assert.EqualError(t, err, tt.expectedErr)
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewDNSProvider() got = %v, want %v", got, tt.want)
+		})
+	}
+}
+
+func TestNewDNSProviderConfig(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		username string
+		password string
+		expected string
+	}{
+		{
+			desc:     "success",
+			username: "123",
+			password: "456",
+		},
+		{
+			desc:     "missing credentials",
+			username: "",
+			password: "",
+			expected: "autodns: missing user",
+		},
+		{
+			desc:     "missing user id",
+			username: "",
+			password: "456",
+			expected: "autodns: missing user",
+		},
+		{
+			desc:     "missing key",
+			username: "123",
+			password: "",
+			expected: "autodns: missing password",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			config := NewDefaultConfig()
+			config.Username = test.username
+			config.Password = test.password
+
+			p, err := NewDNSProviderConfig(config)
+
+			if len(test.expected) == 0 {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+			} else {
+				require.EqualError(t, err, test.expected)
 			}
 		})
 	}

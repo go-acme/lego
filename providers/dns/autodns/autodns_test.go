@@ -15,9 +15,9 @@ var envTest = tester.NewEnvTest(envAPIEndpoint, envAPIUser, envAPIPassword)
 
 func TestNewDNSProvider(t *testing.T) {
 	defaultEndpointURL, _ := url.Parse(defaultEndpoint)
-	examplEndpointURL, _ := url.Parse(demoEndpoint)
+	demoEndpointURL, _ := url.Parse(demoEndpoint)
 
-	tests := []struct {
+	testCases := []struct {
 		name        string
 		want        *DNSProvider
 		wantErr     bool
@@ -49,7 +49,7 @@ func TestNewDNSProvider(t *testing.T) {
 			name: "different endpoint url",
 			want: &DNSProvider{
 				config: &Config{
-					Endpoint:           examplEndpointURL,
+					Endpoint:           demoEndpointURL,
 					Username:           "test",
 					Password:           "1234",
 					Context:            defaultEndpointContext,
@@ -95,7 +95,7 @@ func TestNewDNSProvider(t *testing.T) {
 			expectedErr: "autodns: some credentials information are missing: AUTODNS_API_PASSWORD",
 		},
 	}
-	for _, tt := range tests {
+	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
 			defer envTest.RestoreEnv()
 			envTest.ClearEnv()

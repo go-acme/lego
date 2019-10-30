@@ -9,7 +9,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"os"
 	"path"
 	"time"
 
@@ -68,9 +67,9 @@ func NewDNSProvider() (*DNSProvider, error) {
 	}
 
 	config := NewDefaultConfig()
-	config.Mode = os.Getenv("HTTPREQ_MODE")
-	config.Username = os.Getenv("HTTPREQ_USERNAME")
-	config.Password = os.Getenv("HTTPREQ_PASSWORD")
+	config.Mode = env.GetOrFile("HTTPREQ_MODE")
+	config.Username = env.GetOrFile("HTTPREQ_USERNAME")
+	config.Password = env.GetOrFile("HTTPREQ_PASSWORD")
 	config.Endpoint = endpoint
 	return NewDNSProviderConfig(config)
 }

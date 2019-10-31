@@ -21,5 +21,6 @@ lego --dns autodns --domains my.domain.com --email my@email.com run
     AUTODNS_POLLING_INTERVAL = "Time between DNS propagation check"
     AUTODNS_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
     AUTODNS_HTTP_TIMEOUT = "API request timeout, defaults to 30 seconds"
+
 [Links]
   API = "https://help.internetx.com/display/APIJSONEN"

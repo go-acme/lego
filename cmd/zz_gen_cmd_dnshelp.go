@@ -152,10 +152,15 @@ func displayDNSHelp(name string) error {
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "AUTODNS_API_PASSWORD":	User Password`)
 		ew.writeln(`	- "AUTODNS_API_USER":	Username`)
-		ew.writeln(`	- "AUTODNS_CONTEXT":	API context (4 for production, 1 for testing. Defaults to 4)`)
-		ew.writeln(`	- "AUTODNS_ENDPOINT":	API endpoint URL`)
-		ew.writeln(`	- "AUTODNS_TTL":	The TTL of the TXT record used for the DNS challenge`)
 		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "AUTODNS_CONTEXT":	API context (4 for production, 1 for testing. Defaults to 4)`)
+		ew.writeln(`	- "AUTODNS_ENDPOINT":	API endpoint URL, defaults to https://api.autodns.com/v1/`)
+		ew.writeln(`	- "AUTODNS_HTTP_TIMEOUT":	API request timeout, defaults to 30 seconds`)
+		ew.writeln(`	- "AUTODNS_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "AUTODNS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "AUTODNS_TTL":	The TTL of the TXT record used for the DNS challenge`)
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/autodns`)

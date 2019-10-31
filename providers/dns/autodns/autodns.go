@@ -11,30 +11,29 @@ import (
 )
 
 const (
-	envAPIUser            = `AUTODNS_API_USER`
-	envAPIPassword        = `AUTODNS_API_PASSWORD`
-	envAPIEndpoint        = `AUTODNS_ENDPOINT`
-	envAPIEndpointContext = `AUTODNS_CONTEXT`
-	envTTL                = `AUTODNS_TTL`
-	envPropagationTimeout = `AUTODNS_PROPAGATION_TIMEOUT`
-	envPollingInterval    = `AUTODNS_POLLING_INTERVAL`
-	envHTTPTimeout        = `AUTODNS_HTTP_TIMEOUT`
+	envAPIUser            = "AUTODNS_API_USER"
+	envAPIPassword        = "AUTODNS_API_PASSWORD"
+	envAPIEndpoint        = "AUTODNS_ENDPOINT"
+	envAPIEndpointContext = "AUTODNS_CONTEXT"
+	envTTL                = "AUTODNS_TTL"
+	envPropagationTimeout = "AUTODNS_PROPAGATION_TIMEOUT"
+	envPollingInterval    = "AUTODNS_POLLING_INTERVAL"
+	envHTTPTimeout        = "AUTODNS_HTTP_TIMEOUT"
+)
 
-	defaultEndpoint = `https://api.autodns.com/v1/`
-	demoEndpoint    = `https://api.demo.autodns.com/v1/`
-
+const (
 	defaultEndpointContext int = 4
 	defaultTTL             int = 600
 )
 
 type Config struct {
 	Endpoint           *url.URL
-	Username           string        `json:"username"`
-	Password           string        `json:"password"`
-	Context            int           `json:"-"`
-	TTL                int           `json:"-"`
-	PropagationTimeout time.Duration `json:"-"`
-	PollingInterval    time.Duration `json:"-"`
+	Username           string
+	Password           string
+	Context            int
+	TTL                int
+	PropagationTimeout time.Duration
+	PollingInterval    time.Duration
 	HTTPClient         *http.Client
 }
 
@@ -76,35 +75,52 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
-		return nil, fmt.Errorf("autodns: NewDNSProviderConfig: config is nil")
+		return nil, fmt.Errorf("autodns: config is nil")
 	}
 
 	if config.Username == "" {
-		return nil, fmt.Errorf("autodns: NewDNSProviderConfig: missing user")
+		return nil, fmt.Errorf("autodns: missing user")
 	}
 
 	if config.Password == "" {
-		return nil, fmt.Errorf("autodns: NewDNSProviderConfig: missing password")
+		return nil, fmt.Errorf("autodns: missing password")
 	}
 
 	return &DNSProvider{config: config}, nil
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge
-func (d *DNSProvider) Present(domain, token, keyAuth string) (err error) {
+func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
-	_, err = d.addTxtRecord(domain, fqdn, value)
+
+	records := []*ResourceRecord{{
+		Name:  fqdn,
+		TTL:   int64(d.config.TTL),
+		Type:  "TXT",
+		Value: value,
+	}}
+
+	_, err := d.addTxtRecord(domain, records)
 	if err != nil {
 		return fmt.Errorf("autodns: %v", err)
 	}
+
 	return nil
 }
 
 // CleanUp removes the TXT record previously created
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, realToken := dns01.GetRecord(domain, keyAuth)
-	if err := d.removeTXTRecord(domain, fqdn, realToken); err != nil {
-		return fmt.Errorf("autodns: removeTXTRecord: %v", err)
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
+
+	records := []*ResourceRecord{{
+		Name:  fqdn,
+		TTL:   int64(d.config.TTL),
+		Type:  "TXT",
+		Value: value,
+	}}
+
+	if err := d.removeTXTRecord(domain, records); err != nil {
+		return fmt.Errorf("autodns: %v", err)
 	}
 
 	return nil

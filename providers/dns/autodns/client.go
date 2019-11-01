@@ -13,7 +13,6 @@ import (
 
 const (
 	defaultEndpoint = "https://api.autodns.com/v1/"
-	demoEndpoint    = "https://api.demo.autodns.com/v1/"
 )
 
 type ResponseMessage struct {

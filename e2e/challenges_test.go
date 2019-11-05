@@ -32,6 +32,7 @@ var load = loader.EnvLoader{
 }
 
 func TestMain(m *testing.M) {
+	os.Setenv("LEGO_E2E_TESTS", "LEGO_E2E_TESTS")
 	os.Exit(load.MainTest(m))
 }
 
@@ -258,10 +259,14 @@ func TestChallengeTLS_Client_Obtain(t *testing.T) {
 	require.NoError(t, err)
 	user.registration = reg
 
+	// https://github.com/letsencrypt/pebble/issues/285
+	privateKeyCSR, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err, "Could not generate test key")
+
 	request := certificate.ObtainRequest{
 		Domains:    []string{"acme.wtf"},
 		Bundle:     true,
-		PrivateKey: privateKey,
+		PrivateKey: privateKeyCSR,
 	}
 	resource, err := client.Certificate.Obtain(request)
 	require.NoError(t, err)

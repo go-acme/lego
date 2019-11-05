@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"sync"
 	"time"
 
 	cloudflare "github.com/cloudflare/cloudflare-go"
@@ -47,6 +48,9 @@ func NewDefaultConfig() *Config {
 type DNSProvider struct {
 	client *metaClient
 	config *Config
+
+	recordIDs   map[string]string
+	recordIDsMu sync.Mutex
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Cloudflare.
@@ -140,6 +144,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("cloudflare: failed to create TXT record: %+v %+v", response.Errors, response.Messages)
 	}
 
+	d.recordIDsMu.Lock()
+	d.recordIDs[token] = response.Result.ID
+	d.recordIDsMu.Unlock()
+
 	log.Infof("cloudflare: new record for %s, ID %s", domain, response.Result.ID)
 
 	return nil
@@ -159,22 +167,23 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("cloudflare: failed to find zone %s: %v", authZone, err)
 	}
 
-	dnsRecord := cloudflare.DNSRecord{
-		Type: "TXT",
-		Name: dns01.UnFqdn(fqdn),
+	// get the record's unique ID from when we created it
+	d.recordIDsMu.Lock()
+	recordID, ok := d.recordIDs[token]
+	d.recordIDsMu.Unlock()
+	if !ok {
+		return fmt.Errorf("cloudflare: unknown record ID for '%s'", fqdn)
 	}
 
-	records, err := d.client.DNSRecords(zoneID, dnsRecord)
+	err = d.client.DeleteDNSRecord(zoneID, recordID)
 	if err != nil {
-		return fmt.Errorf("cloudflare: failed to find TXT records: %v", err)
+		log.Printf("cloudflare: failed to delete TXT record: %v", err)
 	}
 
-	for _, record := range records {
-		err = d.client.DeleteDNSRecord(zoneID, record.ID)
-		if err != nil {
-			log.Printf("cloudflare: failed to delete TXT record: %v", err)
-		}
-	}
+	// Delete record ID from map
+	d.recordIDsMu.Lock()
+	delete(d.recordIDs, token)
+	d.recordIDsMu.Unlock()
 
 	return nil
 }

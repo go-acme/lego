@@ -163,9 +163,9 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 	})
 
 	provider.recordIDsMu.Lock()
-	provider.recordIDs["_acme-challenge.example.com."] = 1234567
+	provider.recordIDs["token"] = 1234567
 	provider.recordIDsMu.Unlock()
 
-	err := provider.CleanUp("example.com", "", "")
+	err := provider.CleanUp("example.com", "token", "")
 	require.NoError(t, err, "fail to remove TXT record")
 }

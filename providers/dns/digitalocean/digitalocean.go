@@ -94,7 +94,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	d.recordIDsMu.Lock()
-	d.recordIDs[fqdn] = respData.DomainRecord.ID
+	d.recordIDs[token] = respData.DomainRecord.ID
 	d.recordIDsMu.Unlock()
 
 	return nil
@@ -111,7 +111,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	// get the record's unique ID from when we created it
 	d.recordIDsMu.Lock()
-	recordID, ok := d.recordIDs[fqdn]
+	recordID, ok := d.recordIDs[token]
 	d.recordIDsMu.Unlock()
 	if !ok {
 		return fmt.Errorf("digitalocean: unknown record ID for '%s'", fqdn)
@@ -124,7 +124,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	// Delete record ID from map
 	d.recordIDsMu.Lock()
-	delete(d.recordIDs, fqdn)
+	delete(d.recordIDs, token)
 	d.recordIDsMu.Unlock()
 
 	return nil

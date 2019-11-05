@@ -71,7 +71,7 @@ func (a *Core) post(uri string, reqBody, response interface{}) (*http.Response, 
 }
 
 // postAsGet performs an HTTP POST ("POST-as-GET") request.
-// https://tools.ietf.org/html/draft-ietf-acme-acme-16#section-6.3
+// https://tools.ietf.org/html/rfc8555#section-6.3
 func (a *Core) postAsGet(uri string, response interface{}) (*http.Response, error) {
 	return a.retrievablePost(uri, []byte{}, response)
 }

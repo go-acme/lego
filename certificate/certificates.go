@@ -210,7 +210,7 @@ func (c *Certifier) getForOrder(domains []string, order acme.ExtendedOrder, bund
 	// Determine certificate name(s) based on the authorization resources
 	commonName := domains[0]
 
-	// ACME draft Section 7.4 "Applying for Certificate Issuance"
+	// RFC8555 Section 7.4 "Applying for Certificate Issuance"
 	// https://tools.ietf.org/html/rfc8555#section-7.4
 	// says:
 	//   Clients SHOULD NOT make any assumptions about the sort order of

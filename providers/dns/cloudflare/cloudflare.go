@@ -105,7 +105,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("cloudflare: %v", err)
 	}
 
-	return &DNSProvider{client: client, config: config}, nil
+	return &DNSProvider{
+		client:    client,
+		config:    config,
+		recordIDs: make(map[string]string),
+	}, nil
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.

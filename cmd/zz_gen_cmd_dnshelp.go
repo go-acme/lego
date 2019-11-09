@@ -146,7 +146,7 @@ func displayDNSHelp(name string) error {
 		// generated from: providers/dns/autodns/autodns.toml
 		ew.writeln(`Configuration for Autodns.`)
 		ew.writeln(`Code:	'autodns'`)
-		ew.writeln(`Since:	'v3.1.0'`)
+		ew.writeln(`Since:	'v3.2.0'`)
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)

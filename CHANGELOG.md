@@ -1,5 +1,18 @@
 # Changelog
 
+## [v3.2.0] - 2019-11-10
+
+### Added:
+- **[dnsprovider]** Add support for autodns
+
+### Changed:
+- **[dnsprovider]** httpreq: Allow use environment vars from a `_FILE` file
+- **[lib]** Don&#39;t deactivate valid authorizations
+- **[lib]** Expose more SOA fields found by dns01.FindZoneByFqdn
+
+### Fixed:
+- **[dnsprovider]** use token as unique ID.
+
 ## [v3.1.0] - 2019-10-07
 
 ### Added:

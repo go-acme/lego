@@ -19,7 +19,7 @@ import (
 
 // Record a DNS record
 type Record struct {
-	ID        int    `json:"id,omitempty"`
+	ID        int64  `json:"id,omitempty"`
 	FieldType string `json:"fieldType,omitempty"`
 	SubDomain string `json:"subDomain,omitempty"`
 	Target    string `json:"target,omitempty"`
@@ -56,7 +56,7 @@ func NewDefaultConfig() *Config {
 type DNSProvider struct {
 	config      *Config
 	client      *ovh.Client
-	recordIDs   map[string]int
+	recordIDs   map[string]int64
 	recordIDsMu sync.Mutex
 }
 
@@ -106,7 +106,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	return &DNSProvider{
 		config:    config,
 		client:    client,
-		recordIDs: make(map[string]int),
+		recordIDs: make(map[string]int64),
 	}, nil
 }
 
@@ -141,7 +141,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	d.recordIDsMu.Lock()
-	d.recordIDs[fqdn] = respData.ID
+	d.recordIDs[token] = respData.ID
 	d.recordIDsMu.Unlock()
 
 	return nil
@@ -153,7 +153,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	// get the record's unique ID from when we created it
 	d.recordIDsMu.Lock()
-	recordID, ok := d.recordIDs[fqdn]
+	recordID, ok := d.recordIDs[token]
 	d.recordIDsMu.Unlock()
 	if !ok {
 		return fmt.Errorf("ovh: unknown record ID for '%s'", fqdn)
@@ -182,7 +182,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	// Delete record ID from map
 	d.recordIDsMu.Lock()
-	delete(d.recordIDs, fqdn)
+	delete(d.recordIDs, token)
 	d.recordIDsMu.Unlock()
 
 	return nil

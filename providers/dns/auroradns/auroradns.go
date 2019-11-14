@@ -127,7 +127,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	d.recordIDsMu.Lock()
-	d.recordIDs[fqdn] = newRecord.ID
+	d.recordIDs[token] = newRecord.ID
 	d.recordIDsMu.Unlock()
 
 	return nil
@@ -138,7 +138,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 
 	d.recordIDsMu.Lock()
-	recordID, ok := d.recordIDs[fqdn]
+	recordID, ok := d.recordIDs[token]
 	d.recordIDsMu.Unlock()
 
 	if !ok {
@@ -163,7 +163,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	d.recordIDsMu.Lock()
-	delete(d.recordIDs, fqdn)
+	delete(d.recordIDs, token)
 	d.recordIDsMu.Unlock()
 
 	return nil

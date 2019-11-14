@@ -103,10 +103,14 @@ func TestChallengeDNS_Client_Obtain(t *testing.T) {
 
 	domains := []string{"*.légo.acme", "légo.acme"}
 
+	// https://github.com/letsencrypt/pebble/issues/285
+	privateKeyCSR, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err, "Could not generate test key")
+
 	request := certificate.ObtainRequest{
 		Domains:    domains,
 		Bundle:     true,
-		PrivateKey: privateKey,
+		PrivateKey: privateKeyCSR,
 	}
 	resource, err := client.Certificate.Obtain(request)
 	require.NoError(t, err)

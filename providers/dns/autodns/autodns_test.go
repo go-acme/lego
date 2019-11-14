@@ -1,22 +1,14 @@
-package dnsimple
+package autodns
 
 import (
-	"os"
 	"testing"
-	"time"
 
 	"github.com/go-acme/lego/v3/platform/tester"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-const sandboxURL = "https://api.sandbox.fake.com"
-
-var envTest = tester.NewEnvTest(
-	"DNSIMPLE_OAUTH_TOKEN",
-	"DNSIMPLE_BASE_URL").
-	WithDomain("DNSIMPLE_DOMAIN").
-	WithLiveTestRequirements("DNSIMPLE_OAUTH_TOKEN", "DNSIMPLE_DOMAIN")
+var envTest = tester.NewEnvTest(envAPIEndpoint, envAPIUser, envAPIPassword)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -27,22 +19,33 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"DNSIMPLE_OAUTH_TOKEN": "my_token",
+				envAPIUser:     "123",
+				envAPIPassword: "456",
 			},
 		},
 		{
-			desc: "success: base url",
+			desc: "missing credentials",
 			envVars: map[string]string{
-				"DNSIMPLE_OAUTH_TOKEN": "my_token",
-				"DNSIMPLE_BASE_URL":    "https://api.dnsimple.test",
+				envAPIUser:     "",
+				envAPIPassword: "",
 			},
+			expected: "autodns: some credentials information are missing: AUTODNS_API_USER,AUTODNS_API_PASSWORD",
 		},
 		{
-			desc: "missing oauth token",
+			desc: "missing user id",
 			envVars: map[string]string{
-				"DNSIMPLE_OAUTH_TOKEN": "",
+				envAPIUser:     "",
+				envAPIPassword: "456",
 			},
-			expected: "dnsimple: OAuth token is missing",
+			expected: "autodns: some credentials information are missing: AUTODNS_API_USER",
+		},
+		{
+			desc: "missing key",
+			envVars: map[string]string{
+				envAPIUser:     "123",
+				envAPIPassword: "",
+			},
+			expected: "autodns: some credentials information are missing: AUTODNS_API_PASSWORD",
 		},
 	}
 
@@ -59,12 +62,6 @@ func TestNewDNSProvider(t *testing.T) {
 				require.NoError(t, err)
 				require.NotNil(t, p)
 				require.NotNil(t, p.config)
-				require.NotNil(t, p.client)
-
-				baseURL := os.Getenv("DNSIMPLE_BASE_URL")
-				if baseURL != "" {
-					assert.Equal(t, baseURL, p.client.BaseURL)
-				}
 			} else {
 				require.EqualError(t, err, test.expected)
 			}
@@ -74,32 +71,41 @@ func TestNewDNSProvider(t *testing.T) {
 
 func TestNewDNSProviderConfig(t *testing.T) {
 	testCases := []struct {
-		desc        string
-		accessToken string
-		baseURL     string
-		expected    string
+		desc     string
+		username string
+		password string
+		expected string
 	}{
 		{
-			desc:        "success",
-			accessToken: "my_token",
-			baseURL:     "",
+			desc:     "success",
+			username: "123",
+			password: "456",
 		},
 		{
-			desc:        "success: base url",
-			accessToken: "my_token",
-			baseURL:     "https://api.dnsimple.test",
+			desc:     "missing credentials",
+			username: "",
+			password: "",
+			expected: "autodns: missing user",
 		},
 		{
-			desc:     "missing oauth token",
-			expected: "dnsimple: OAuth token is missing",
+			desc:     "missing user id",
+			username: "",
+			password: "456",
+			expected: "autodns: missing user",
+		},
+		{
+			desc:     "missing key",
+			username: "123",
+			password: "",
+			expected: "autodns: missing password",
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			config := NewDefaultConfig()
-			config.AccessToken = test.accessToken
-			config.BaseURL = test.baseURL
+			config.Username = test.username
+			config.Password = test.password
 
 			p, err := NewDNSProviderConfig(config)
 
@@ -107,11 +113,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 				require.NoError(t, err)
 				require.NotNil(t, p)
 				require.NotNil(t, p.config)
-				require.NotNil(t, p.client)
-
-				if test.baseURL != "" {
-					assert.Equal(t, test.baseURL, p.client.BaseURL)
-				}
 			} else {
 				require.EqualError(t, err, test.expected)
 			}
@@ -125,16 +126,11 @@ func TestLivePresent(t *testing.T) {
 	}
 
 	envTest.RestoreEnv()
-
-	if len(os.Getenv("DNSIMPLE_BASE_URL")) == 0 {
-		os.Setenv("DNSIMPLE_BASE_URL", sandboxURL)
-	}
-
 	provider, err := NewDNSProvider()
-	require.NoError(t, err)
+	assert.NoError(t, err)
 
 	err = provider.Present(envTest.GetDomain(), "", "123d==")
-	require.NoError(t, err)
+	assert.NoError(t, err)
 }
 
 func TestLiveCleanUp(t *testing.T) {
@@ -143,16 +139,9 @@ func TestLiveCleanUp(t *testing.T) {
 	}
 
 	envTest.RestoreEnv()
-
-	if len(os.Getenv("DNSIMPLE_BASE_URL")) == 0 {
-		os.Setenv("DNSIMPLE_BASE_URL", sandboxURL)
-	}
-
 	provider, err := NewDNSProvider()
-	require.NoError(t, err)
-
-	time.Sleep(1 * time.Second)
+	assert.NoError(t, err)
 
 	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
-	require.NoError(t, err)
+	assert.NoError(t, err)
 }

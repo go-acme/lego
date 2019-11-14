@@ -64,6 +64,11 @@ func CreateFlags(defaultPath string) []cli.Flag {
 			Value: ":80",
 		},
 		cli.StringFlag{
+			Name:  "http.proxy-header",
+			Usage: "Validate against this HTTP header when solving HTTP based challenges behind a reverse proxy.",
+			Value: "Host",
+		},
+		cli.StringFlag{
 			Name:  "http.webroot",
 			Usage: "Set the webroot folder to use for HTTP based challenges to write directly in a file in .well-known/acme-challenge.",
 		},

@@ -210,8 +210,8 @@ func (c *Certifier) getForOrder(domains []string, order acme.ExtendedOrder, bund
 	// Determine certificate name(s) based on the authorization resources
 	commonName := domains[0]
 
-	// ACME draft Section 7.4 "Applying for Certificate Issuance"
-	// https://tools.ietf.org/html/draft-ietf-acme-acme-12#section-7.4
+	// RFC8555 Section 7.4 "Applying for Certificate Issuance"
+	// https://tools.ietf.org/html/rfc8555#section-7.4
 	// says:
 	//   Clients SHOULD NOT make any assumptions about the sort order of
 	//   "identifiers" or "authorizations" elements in the returned order
@@ -502,7 +502,7 @@ func checkOrderStatus(order acme.Order) (bool, error) {
 	}
 }
 
-// https://tools.ietf.org/html/draft-ietf-acme-acme-16#section-7.1.4
+// https://tools.ietf.org/html/rfc8555#section-7.1.4
 // The domain name MUST be encoded
 //   in the form in which it would appear in a certificate.  That is, it
 //   MUST be encoded according to the rules in Section 7 of [RFC5280].

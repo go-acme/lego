@@ -32,7 +32,6 @@ var load = loader.EnvLoader{
 }
 
 func TestMain(m *testing.M) {
-	os.Setenv("LEGO_E2E_TESTS", "LEGO_E2E_TESTS")
 	os.Exit(load.MainTest(m))
 }
 

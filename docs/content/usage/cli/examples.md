@@ -59,9 +59,9 @@ lego --email="foo@bar.com" --http --csr=/path/to/csr.pem run
 
 ### Write HTTP-01 challenge to already "served" directory
 
-If you have an existing server running on port 80 the `--http` option needs to also use the `--http.webroot` option. This just writes the token to the given directory and does not start a server.
+If you have an existing server running on port 80 the `--http` option needs to also use the `--http.webroot` option. This just writes the token to the given directory in the folder `.well-known/acme-challenge` and does not start a server.
 
-The given directory __MUST__ be publicly served at `/.well-known/acme-challenge/` for the validation to complete.
+The given directory __MUST__ be publicly served as `/` on the domain(s) for the validation to complete. 
 
 You should be able to run an existing webserver on port :80 and have Lego write the token file with the HTTP-01 challenge key authorization to <webroot dir>/.well-known/acme-challenge/ by running something like:
 

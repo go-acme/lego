@@ -199,37 +199,6 @@ func TestChallengeTLS_Run_Revoke_Non_ASCII(t *testing.T) {
 	}
 }
 
-func TestRegistrar_UpdateAccount(t *testing.T) {
-	err := os.Setenv("LEGO_CA_CERTIFICATES", "./fixtures/certs/pebble.minica.pem")
-	require.NoError(t, err)
-	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
-
-	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
-	require.NoError(t, err, "Could not generate test key")
-
-	user := &fakeUser{
-		privateKey: privateKey,
-		email:      "foo@example.com",
-	}
-	config := lego.NewConfig(user)
-	config.CADirURL = load.PebbleOptions.HealthCheckURL
-
-	client, err := lego.NewClient(config)
-	require.NoError(t, err)
-
-	regOptions := registration.RegisterOptions{TermsOfServiceAgreed: true}
-	reg, err := client.Registration.Register(regOptions)
-	require.NoError(t, err)
-	require.Equal(t, reg.Body.Contact, []string{"mailto:foo@example.com"})
-	user.registration = reg
-
-	user.email = "bar@example.com"
-	new, err := client.Registration.UpdateRegistration(regOptions)
-	require.NoError(t, err)
-	require.Equal(t, new.Body.Contact, []string{"mailto:bar@example.com"})
-	require.Equal(t, new.URI, "")
-}
-
 func TestChallengeHTTP_Client_Obtain(t *testing.T) {
 	err := os.Setenv("LEGO_CA_CERTIFICATES", "./fixtures/certs/pebble.minica.pem")
 	require.NoError(t, err)
@@ -349,6 +318,37 @@ func TestChallengeTLS_Client_ObtainForCSR(t *testing.T) {
 	assert.NotEmpty(t, resource.Certificate)
 	assert.NotEmpty(t, resource.IssuerCertificate)
 	assert.NotEmpty(t, resource.CSR)
+}
+
+func TestRegistrar_UpdateAccount(t *testing.T) {
+	err := os.Setenv("LEGO_CA_CERTIFICATES", "./fixtures/certs/pebble.minica.pem")
+	require.NoError(t, err)
+	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
+
+	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err, "Could not generate test key")
+
+	user := &fakeUser{
+		privateKey: privateKey,
+		email:      "foo@example.com",
+	}
+	config := lego.NewConfig(user)
+	config.CADirURL = load.PebbleOptions.HealthCheckURL
+
+	client, err := lego.NewClient(config)
+	require.NoError(t, err)
+
+	regOptions := registration.RegisterOptions{TermsOfServiceAgreed: true}
+	reg, err := client.Registration.Register(regOptions)
+	require.NoError(t, err)
+	require.Equal(t, reg.Body.Contact, []string{"mailto:foo@example.com"})
+	user.registration = reg
+
+	user.email = "bar@example.com"
+	resource, err := client.Registration.UpdateRegistration(regOptions)
+	require.NoError(t, err)
+	require.Equal(t, resource.Body.Contact, []string{"mailto:bar@example.com"})
+	require.Empty(t, resource.URI)
 }
 
 type fakeUser struct {

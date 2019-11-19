@@ -70,7 +70,7 @@ func CreateFlags(defaultPath string) []cli.Flag {
 		},
 		cli.StringFlag{
 			Name:  "http.webroot",
-			Usage: "Set the webroot folder to use for HTTP based challenges to write directly in a file in .well-known/acme-challenge.",
+			Usage: "Set the webroot folder to use for HTTP based challenges to write directly in a file in .well-known/acme-challenge. This disables the built-in server and expects the given directory to be publicly served with access to .well-known/acme-challenge",
 		},
 		cli.StringSliceFlag{
 			Name:  "http.memcached-host",

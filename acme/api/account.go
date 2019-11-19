@@ -57,6 +57,20 @@ func (a *AccountService) Get(accountURL string) (acme.Account, error) {
 	return account, nil
 }
 
+// Update Updates an account.
+func (a *AccountService) Update(accountURL string, req acme.Account) (acme.ExtendedAccount, error) {
+	if len(accountURL) == 0 {
+		return acme.ExtendedAccount{}, errors.New("account[update]: empty URL")
+	}
+
+	var account acme.ExtendedAccount
+	_, err := a.core.post(accountURL, req, &account)
+	if err != nil {
+		return acme.ExtendedAccount{}, err
+	}
+	return account, nil
+}
+
 // Deactivate Deactivates an account.
 func (a *AccountService) Deactivate(accountURL string) error {
 	if len(accountURL) == 0 {

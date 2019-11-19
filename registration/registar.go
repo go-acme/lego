@@ -115,6 +115,30 @@ func (r *Registrar) QueryRegistration() (*Resource, error) {
 	}, nil
 }
 
+// UpdateRegistration update the user registration on the ACME server.
+func (r *Registrar) UpdateRegistration(options RegisterOptions) (*Resource, error) {
+	if r == nil || r.user == nil {
+		return nil, errors.New("acme: cannot update a nil client or user")
+	}
+
+	accMsg := acme.Account{
+		TermsOfServiceAgreed: options.TermsOfServiceAgreed,
+		Contact:              []string{},
+	}
+
+	if r.user.GetEmail() != "" {
+		log.Infof("acme: Registering account for %s", r.user.GetEmail())
+		accMsg.Contact = []string{"mailto:" + r.user.GetEmail()}
+	}
+
+	account, err := r.core.Accounts.Update(r.user.GetRegistration().URI, accMsg)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Resource{URI: account.Location, Body: account.Account}, nil
+}
+
 // DeleteRegistration deletes the client's user registration from the ACME server.
 func (r *Registrar) DeleteRegistration() error {
 	if r == nil || r.user == nil {

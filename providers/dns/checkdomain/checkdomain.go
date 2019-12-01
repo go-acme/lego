@@ -29,22 +29,20 @@ type Config struct {
 	Endpoint           *url.URL
 	Token              string
 	TTL                int
-	Timeout            time.Duration
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
+	HTTPClient         *http.Client
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
-	endpoint, _ := url.Parse(env.GetOrDefaultString(envEndpoint, defaultEndpoint))
-
 	return &Config{
-		Endpoint:           endpoint,
-		Token:              env.GetOrDefaultString(envToken, ""),
 		TTL:                env.GetOrDefaultInt(envTTL, defaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(envPropagationTimeout, 3*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond(envPollingInterval, 5*time.Second),
-		Timeout:            env.GetOrDefaultSecond(envHTTPTimeout, 30*time.Second),
+		HTTPClient: &http.Client{
+			Timeout: env.GetOrDefaultSecond(envHTTPTimeout, 30*time.Second),
+		},
 	}
 }
 
@@ -52,20 +50,23 @@ func NewDefaultConfig() *Config {
 // specified at https://developer.checkdomain.de/reference/.
 type DNSProvider struct {
 	config          *Config
-	httpClient      *http.Client
 	domainIDMapping map[string]int
 }
 
 func NewDNSProvider() (*DNSProvider, error) {
+	values, err := env.Get(envToken)
+	if err != nil {
+		return nil, fmt.Errorf("checkdomain: %v", err)
+	}
+
 	config := NewDefaultConfig()
+	config.Token = values[envToken]
 
-	if config.Endpoint == nil {
-		return nil, fmt.Errorf("checkdomain: some information are invalid: CHECKDOMAIN_ENDPOINT")
+	endpoint, err := url.Parse(env.GetOrDefaultString(envEndpoint, defaultEndpoint))
+	if err != nil {
+		return nil, fmt.Errorf("checkdomain: invalid %s: %v", envEndpoint, err)
 	}
-
-	if config.Token == "" {
-		return nil, fmt.Errorf("checkdomain: some information are missing: CHECKDOMAIN_TOKEN")
-	}
+	config.Endpoint = endpoint
 
 	return NewDNSProviderConfig(config)
 }
@@ -79,46 +80,36 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("checkdomain: missing token")
 	}
 
+	if config.HTTPClient == nil {
+		config.HTTPClient = http.DefaultClient
+	}
+
 	return &DNSProvider{
-		config: config,
-		httpClient: &http.Client{
-			Timeout: config.Timeout,
-		},
+		config:          config,
 		domainIDMapping: make(map[string]int),
 	}, nil
 }
 
-func (p *DNSProvider) present(present bool, domain, keyAuth string) error {
+// Present creates a TXT record to fulfill the dns-01 challenge
+func (p *DNSProvider) Present(domain, token, keyAuth string) error {
 	domainID, err := p.getDomainIDByName(domain)
 	if err != nil {
 		return fmt.Errorf("checkdomain: %v", err)
 	}
 
-	if domainID == -1 {
-		return fmt.Errorf("checkdomain: domain not found")
-	}
-
-	using, err := p.isUsingCheckdomainNameservers(domainID)
+	err = p.checkNameservers(domainID)
 	if err != nil {
 		return fmt.Errorf("checkdomain: %v", err)
 	}
 
-	if !using {
-		return fmt.Errorf("checkdomain: not using checkdomain nameservers, can not update records")
-	}
-
 	name, value := dns01.GetRecord(domain, keyAuth)
-	if present {
-		err = p.createRecord(domainID, &Record{
-			Name:  name,
-			TTL:   p.config.TTL,
-			Type:  "TXT",
-			Value: value,
-		})
-	} else {
-		// absent
-		err = p.deleteRecord(domainID, "TXT", name, value)
-	}
+
+	err = p.createRecord(domainID, &Record{
+		Name:  name,
+		TTL:   p.config.TTL,
+		Type:  "TXT",
+		Value: value,
+	})
 
 	if err != nil {
 		return fmt.Errorf("checkdomain: %v", err)
@@ -127,14 +118,26 @@ func (p *DNSProvider) present(present bool, domain, keyAuth string) error {
 	return nil
 }
 
-// Present creates a TXT record to fulfill the dns-01 challenge
-func (p *DNSProvider) Present(domain, token, keyAuth string) error {
-	return p.present(true, domain, keyAuth)
-}
-
 // CleanUp removes the TXT record previously created
 func (p *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	return p.present(false, domain, keyAuth)
+	domainID, err := p.getDomainIDByName(domain)
+	if err != nil {
+		return fmt.Errorf("checkdomain: %v", err)
+	}
+
+	err = p.checkNameservers(domainID)
+	if err != nil {
+		return fmt.Errorf("checkdomain: %v", err)
+	}
+
+	name, value := dns01.GetRecord(domain, keyAuth)
+
+	err = p.deleteTXTRecord(domainID, name, value)
+	if err != nil {
+		return fmt.Errorf("checkdomain: %v", err)
+	}
+
+	return nil
 }
 
 func (p *DNSProvider) Timeout() (timeout, interval time.Duration) {

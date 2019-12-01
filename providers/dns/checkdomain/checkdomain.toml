@@ -2,7 +2,7 @@ Name = "Checkdomain"
 Description = ''''''
 URL = "https://checkdomain.de/"
 Code = "checkdomain"
-Since = "v3.2.0"
+Since = "v3.3.0"
 
 Example = '''
 CHECKDOMAIN_TOKEN=yoursecrettoken \
@@ -20,6 +20,6 @@ lego --dns checkdomain --domains my.domain.com --email my@email.com run
     CHECKDOMAIN_HTTP_TIMEOUT = "API request timeout, defaults to 30 seconds"
 
 [Links]
+  API = "https://developer.checkdomain.de/reference/"
   Guide = "https://developer.checkdomain.de/guide/"
-  Reference = "https://developer.checkdomain.de/reference/"
   Settings = "https://www.checkdomain.net/en/login/data/api/"

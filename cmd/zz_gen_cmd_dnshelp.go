@@ -238,7 +238,7 @@ func displayDNSHelp(name string) error {
 		// generated from: providers/dns/checkdomain/checkdomain.toml
 		ew.writeln(`Configuration for Checkdomain.`)
 		ew.writeln(`Code:	'checkdomain'`)
-		ew.writeln(`Since:	'v3.2.0'`)
+		ew.writeln(`Since:	'v3.3.0'`)
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)

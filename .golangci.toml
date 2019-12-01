@@ -118,3 +118,6 @@
   [[issues.exclude-rules]]
     path = "cmd/zz_gen_cmd_dnshelp.go"
     linters = ["gocyclo", "funlen"]
+  [[issues.exclude-rules]]
+    path = "providers/dns/checkdomain/client.go"
+    text = "`payed` is a misspelling of `paid`"

@@ -9,7 +9,7 @@ slug: checkdomain
 <!-- providers/dns/checkdomain/checkdomain.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v3.2.0
+Since: v3.3.0
 
 Configuration for [Checkdomain](https://checkdomain.de/).
 
@@ -56,7 +56,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 
 ## More information
 
-
+- [API documentation](https://developer.checkdomain.de/reference/)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/checkdomain/checkdomain.toml -->

@@ -1,6 +1,7 @@
 package checkdomain
 
 import (
+	"net/url"
 	"testing"
 
 	"github.com/go-acme/lego/v3/platform/tester"
@@ -25,14 +26,15 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc:     "no token",
 			envVars:  map[string]string{},
-			expected: "checkdomain: some information are missing: CHECKDOMAIN_TOKEN",
+			expected: "checkdomain: some credentials information are missing: CHECKDOMAIN_TOKEN",
 		},
 		{
 			desc: "invalid endpoint",
 			envVars: map[string]string{
-				envEndpoint: "\x01 i am an invalid url",
+				envToken:    "dummy",
+				envEndpoint: ":",
 			},
-			expected: "checkdomain: some information are invalid: CHECKDOMAIN_ENDPOINT",
+			expected: "checkdomain: invalid CHECKDOMAIN_ENDPOINT: parse :: missing protocol scheme",
 		},
 	}
 
@@ -75,11 +77,8 @@ func TestNewDNSProviderConfig(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			envTest.Apply(map[string]string{
-				envEndpoint: "",
-			})
-
 			config := NewDefaultConfig()
+			config.Endpoint, _ = url.Parse(defaultEndpoint)
 
 			if test.token != "" {
 				config.Token = test.token

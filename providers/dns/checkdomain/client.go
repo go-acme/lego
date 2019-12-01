@@ -11,6 +11,13 @@ import (
 	"strings"
 )
 
+const (
+	ns1 = "ns.checkdomain.de"
+	ns2 = "ns2.checkdomain.de"
+)
+
+const domainNotFound = -1
+
 // max page limit that the checkdomain api allows
 const maxLimit = 100
 
@@ -42,7 +49,7 @@ type (
 		ID      int    `json:"id"`
 		Name    string `json:"name"`
 		Created string `json:"created"`
-		PaidUp  string `json:"payed_up"` //nolint
+		PaidUp  string `json:"payed_up"`
 		Active  bool   `json:"active"`
 	}
 
@@ -97,11 +104,9 @@ func (p *DNSProvider) listDomains() ([]*Domain, error) {
 		return nil, fmt.Errorf("failed to make request: %v", err)
 	}
 
-	// Checkdomain also provides a query param 'query' which allows filtering
-	// domains for a string. But that functionality is kinda broken, so we scan
-	// through the whole list of registered domains to later find the one that is
-	// of interest to us.
-
+	// Checkdomain also provides a query param 'query' which allows filtering domains for a string.
+	// But that functionality is kinda broken,
+	// so we scan through the whole list of registered domains to later find the one that is of interest to us.
 	q := req.URL.Query()
 	q.Set("limit", strconv.Itoa(maxLimit))
 
@@ -169,7 +174,7 @@ func (p *DNSProvider) getDomainIDByName(name string) (int, error) {
 		}
 	}
 
-	return -1, nil
+	return domainNotFound, fmt.Errorf("domain not found")
 }
 
 func (p *DNSProvider) getNameserverInfo(domainID int) (*NameserverResponse, error) {
@@ -178,38 +183,35 @@ func (p *DNSProvider) getNameserverInfo(domainID int) (*NameserverResponse, erro
 		return nil, err
 	}
 
-	var res NameserverResponse
-	if err := p.sendRequest(req, &res); err != nil {
+	res := &NameserverResponse{}
+	if err := p.sendRequest(req, res); err != nil {
 		return nil, err
 	}
 
-	return &res, nil
+	return res, nil
 }
 
-func (p *DNSProvider) isUsingCheckdomainNameservers(domainID int) (bool, error) {
-	const (
-		ns1 = "ns.checkdomain.de"
-		ns2 = "ns2.checkdomain.de"
-	)
-
+func (p *DNSProvider) checkNameservers(domainID int) error {
 	info, err := p.getNameserverInfo(domainID)
 	if err != nil {
-		return false, err
+		return err
 	}
 
-	var (
-		found1 = false
-		found2 = false
-	)
+	var found1, found2 bool
 	for _, item := range info.Nameservers {
-		if item.Name == ns1 {
+		switch item.Name {
+		case ns1:
 			found1 = true
-		} else if item.Name == ns2 {
+		case ns2:
 			found2 = true
 		}
 	}
 
-	return found1 && found2, nil
+	if !found1 || !found2 {
+		return fmt.Errorf("checkdomain: not using checkdomain nameservers, can not update records")
+	}
+
+	return nil
 }
 
 func (p *DNSProvider) listRecords(domainID int, recordType string) ([]*Record, error) {
@@ -239,8 +241,7 @@ func (p *DNSProvider) listRecords(domainID int, recordType string) ([]*Record, e
 			return nil, fmt.Errorf("failed to send record listing request: %v", err)
 		}
 
-		// This is the first response, so we update
-		// totalPages and allocate the slice memory.
+		// This is the first response, so we update totalPages and allocate the slice memory.
 		if totalPages == maxInt {
 			totalPages = res.Pages
 			recordList = make([]*Record, 0, res.Total)
@@ -281,15 +282,10 @@ func (p *DNSProvider) createRecord(domainID int, record *Record) error {
 	return p.sendRequest(req, nil)
 }
 
-//nolint
-func (p *DNSProvider) deleteRecord(domainID int, recordType, recordName, recordValue string) error {
-	// Checkdomain doesn't seem provide a way to delete records
-	// but one can replace all records at once.
-	// The current solution is to fetch all records and
-	// then use that list minus the record deleted as the new
-	// record list.
-	// TODO: Simplify this function once they do provide the functionality.
-
+// Checkdomain doesn't seem provide a way to delete records but one can replace all records at once.
+// The current solution is to fetch all records and then use that list minus the record deleted as the new record list.
+// TODO: Simplify this function once Checkdomain do provide the functionality.
+func (p *DNSProvider) deleteTXTRecord(domainID int, recordName, recordValue string) error {
 	domainInfo, err := p.getDomainInfo(domainID)
 	if err != nil {
 		return err
@@ -309,39 +305,11 @@ func (p *DNSProvider) deleteRecord(domainID int, recordType, recordName, recordV
 		return err
 	}
 
-	recordsToKeep := make([]*Record, 0, len(allRecords))
+	var recordsToKeep []*Record
+
 	// Find and delete matching records
 	for _, record := range allRecords {
-		var (
-			typeMatch  = true
-			nameMatch  = true
-			valueMatch = true
-		)
-
-		if recordType != "" {
-			typeMatch = record.Type == recordType
-		}
-
-		if recordName != "" {
-			nameMatch = record.Name == recordName
-		}
-
-		if recordValue != "" {
-			valueMatch = record.Value == recordValue
-		}
-
-		// Skip empty records
-		if record.Value == "" {
-			continue
-		}
-
-		// Skip our matching record
-		if typeMatch && nameMatch && valueMatch {
-			continue
-		}
-
-		// Skip some special records, otherwise we would get a "Nameserver update failed"
-		if record.Type == "SOA" || record.Type == "NS" || record.Name == "@" || (nsInfo.General.IncludeWWW && record.Name == "www") {
+		if skipRecord(recordName, recordValue, record, nsInfo) {
 			continue
 		}
 
@@ -356,6 +324,28 @@ func (p *DNSProvider) deleteRecord(domainID int, recordType, recordName, recordV
 	}
 
 	return p.replaceRecords(domainID, recordsToKeep)
+}
+
+func skipRecord(recordName, recordValue string, record *Record, nsInfo *NameserverResponse) bool {
+	// Skip empty records
+	if record.Value == "" {
+		return true
+	}
+
+	// Skip some special records, otherwise we would get a "Nameserver update failed"
+	if record.Type == "SOA" || record.Type == "NS" || record.Name == "@" || (nsInfo.General.IncludeWWW && record.Name == "www") {
+		return true
+	}
+
+	nameMatch := recordName == "" || record.Name == recordName
+	valueMatch := recordValue == "" || record.Value == recordValue
+
+	// Skip our matching record
+	if record.Type == "TXT" && nameMatch && valueMatch {
+		return true
+	}
+
+	return false
 }
 
 func (p *DNSProvider) makeRequest(method, resource string, body io.Reader) (*http.Request, error) {
@@ -379,7 +369,7 @@ func (p *DNSProvider) makeRequest(method, resource string, body io.Reader) (*htt
 }
 
 func (p *DNSProvider) sendRequest(req *http.Request, result interface{}) error {
-	resp, err := p.httpClient.Do(req)
+	resp, err := p.config.HTTPClient.Do(req)
 	if err != nil {
 		return err
 	}
@@ -403,7 +393,7 @@ func (p *DNSProvider) sendRequest(req *http.Request, result interface{}) error {
 	if err != nil {
 		return fmt.Errorf("unmarshaling %T error [status code=%d]: %v: %s", result, resp.StatusCode, err, string(raw))
 	}
-	return err
+	return nil
 }
 
 func checkResponse(resp *http.Response) error {

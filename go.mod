@@ -8,7 +8,6 @@ require (
 	github.com/Azure/go-autorest/autorest/adal v0.2.0
 	github.com/Azure/go-autorest/autorest/azure/auth v0.1.0
 	github.com/Azure/go-autorest/autorest/to v0.2.0
-	github.com/Azure/go-autorest/autorest/validation v0.1.0 // indirect
 	github.com/BurntSushi/toml v0.3.1
 	github.com/OpenDNS/vegadns2client v0.0.0-20180418235048-a3fa4a771d87
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v0.9.0
@@ -20,10 +19,9 @@ require (
 	github.com/decker502/dnspod-go v0.2.0
 	github.com/dnsimple/dnsimple-go v0.30.0
 	github.com/exoscale/egoscale v0.18.1
+	github.com/go-acme/lego/v3 v3.2.0
 	github.com/gophercloud/gophercloud v0.3.0
-	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/iij/doapi v0.0.0-20190504054126-0bbf12d6d7df
-	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/labbsr0x/bindman-dns-webhook v1.0.2
 	github.com/linode/linodego v0.10.0
 	github.com/liquidweb/liquidweb-go v1.6.0

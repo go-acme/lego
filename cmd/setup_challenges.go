@@ -5,15 +5,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-acme/lego/challenge"
-	"github.com/go-acme/lego/challenge/dns01"
-	"github.com/go-acme/lego/challenge/http01"
-	"github.com/go-acme/lego/challenge/tlsalpn01"
-	"github.com/go-acme/lego/lego"
-	"github.com/go-acme/lego/log"
-	"github.com/go-acme/lego/providers/dns"
-	"github.com/go-acme/lego/providers/http/memcached"
-	"github.com/go-acme/lego/providers/http/webroot"
+	"github.com/go-acme/lego/v3/challenge"
+	"github.com/go-acme/lego/v3/challenge/dns01"
+	"github.com/go-acme/lego/v3/challenge/http01"
+	"github.com/go-acme/lego/v3/challenge/tlsalpn01"
+	"github.com/go-acme/lego/v3/lego"
+	"github.com/go-acme/lego/v3/log"
+	"github.com/go-acme/lego/v3/providers/dns"
+	"github.com/go-acme/lego/v3/providers/http/memcached"
+	"github.com/go-acme/lego/v3/providers/http/webroot"
 	"github.com/urfave/cli"
 )
 
@@ -66,9 +66,17 @@ func setupHTTPProvider(ctx *cli.Context) challenge.Provider {
 			log.Fatal(err)
 		}
 
-		return http01.NewProviderServer(host, port)
+		srv := http01.NewProviderServer(host, port)
+		if header := ctx.GlobalString("http.proxy-header"); header != "" {
+			srv.SetProxyHeader(header)
+		}
+		return srv
 	case ctx.GlobalBool("http"):
-		return http01.NewProviderServer("", "")
+		srv := http01.NewProviderServer("", "")
+		if header := ctx.GlobalString("http.proxy-header"); header != "" {
+			srv.SetProxyHeader(header)
+		}
+		return srv
 	default:
 		log.Fatal("Invalid HTTP challenge options.")
 		return nil

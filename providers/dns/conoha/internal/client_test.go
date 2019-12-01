@@ -136,7 +136,6 @@ func TestClient_GetDomainID(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestClient_CreateRecord(t *testing.T) {
@@ -203,8 +202,6 @@ func TestClient_CreateRecord(t *testing.T) {
 			} else {
 				require.NoError(t, err)
 			}
-
 		})
 	}
-
 }

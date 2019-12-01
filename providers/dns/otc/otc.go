@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-acme/lego/challenge/dns01"
-	"github.com/go-acme/lego/platform/config/env"
+	"github.com/go-acme/lego/v3/challenge/dns01"
+	"github.com/go-acme/lego/v3/platform/config/env"
 )
 
 const defaultIdentityEndpoint = "https://iam.eu-de.otc.t-systems.com:443/v3/auth/tokens"
@@ -58,7 +58,7 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider is an implementation of the acme.ChallengeProvider interface that uses
+// DNSProvider is an implementation of the challenge.Provider interface that uses
 // OTC's Managed DNS API to manage TXT records for a domain.
 type DNSProvider struct {
 	config  *Config

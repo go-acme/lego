@@ -9,9 +9,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/go-acme/lego/platform/tester"
+	"github.com/go-acme/lego/v3/platform/tester"
 
-	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/v3/challenge/dns01"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -515,7 +515,6 @@ func TestLiveClientAuth(t *testing.T) {
 			require.NoError(t, err)
 		})
 	}
-
 }
 
 func TestLiveClientGetDnsRecords(t *testing.T) {

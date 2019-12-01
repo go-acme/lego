@@ -1,6 +1,6 @@
 ---
 title: "Examples"
-date: 2019-03-03T16:39:46+01:00
+date: 2019-11-15T23:25:46+01:00
 draft: false
 ---
 
@@ -54,3 +54,22 @@ lego --email="foo@bar.com" --http --csr=/path/to/csr.pem run
 ```
 
 (lego will infer the domains to be validated based on the contents of the CSR, so make sure the CSR's Common Name and optional SubjectAltNames are set correctly.)
+
+## Misc HTTP-01 CLI Examples
+
+### Write HTTP-01 token to already "served" directory
+
+If you have an existing server running on port 80 the `--http` option needs to also use the `--http.webroot` option.
+This just writes the token to the given directory in the folder `.well-known/acme-challenge` and does not start a server.
+
+The given directory **should** be publicly served as `/` on the domain(s) for the validation to complete. 
+
+If the given directory is not publicly served you will have to support rewriting the request to the directory;
+
+You could also implement a rewrite to rewrite `.well-known/acme-challenge` to the given directory `.well-known/acme-challenge`.
+
+You should be able to run an existing webserver on port 80 and have lego write the token file with the HTTP-01 challenge key authorization to `<webroot dir>/.well-known/acme-challenge/` by running something like:
+
+```bash
+lego --accept-tos -m foo@bar.com --http --http.webroot /path/to/webroot -d example.com run
+```

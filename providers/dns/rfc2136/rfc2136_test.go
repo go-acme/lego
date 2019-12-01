@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/v3/challenge/dns01"
 	"github.com/miekg/dns"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

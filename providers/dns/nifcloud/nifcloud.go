@@ -7,11 +7,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-acme/lego/providers/dns/nifcloud/internal"
+	"github.com/go-acme/lego/v3/providers/dns/nifcloud/internal"
 
-	"github.com/go-acme/lego/challenge/dns01"
-	"github.com/go-acme/lego/platform/config/env"
-	"github.com/go-acme/lego/platform/wait"
+	"github.com/go-acme/lego/v3/challenge/dns01"
+	"github.com/go-acme/lego/v3/platform/config/env"
+	"github.com/go-acme/lego/v3/platform/wait"
 )
 
 // Config is used to configure the creation of the DNSProvider
@@ -37,7 +37,7 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider implements the acme.ChallengeProvider interface
+// DNSProvider implements the challenge.Provider interface
 type DNSProvider struct {
 	client *internal.Client
 	config *Config

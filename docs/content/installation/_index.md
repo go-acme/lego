@@ -26,10 +26,27 @@ yay -S lego
 
 **Note**: only the package manager for Arch Linux is officially supported by the lego team.
 
-## From sources
-
-To install from sources, just run:
+- [FreeBSD (Ports)](https://www.freshports.org/security/lego):
 
 ```bash
-go get -u github.com/go-acme/lego/cmd/lego
+cd /usr/ports/security/lego && make install clean
+```
+
+or
+
+```bash
+pkg install lego
+```
+
+## From sources
+
+Requirements:
+
+- `go` v1.12+
+- environment variable: `GO111MODULE=on`
+
+To install the latest development version from sources, just run:
+
+```bash
+go get -u github.com/go-acme/lego/v3/cmd/lego
 ```

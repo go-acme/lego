@@ -8,12 +8,12 @@ import (
 	"os"
 	"testing"
 
-	"github.com/go-acme/lego/certificate"
-	"github.com/go-acme/lego/challenge/dns01"
-	"github.com/go-acme/lego/e2e/loader"
-	"github.com/go-acme/lego/lego"
-	"github.com/go-acme/lego/providers/dns"
-	"github.com/go-acme/lego/registration"
+	"github.com/go-acme/lego/v3/certificate"
+	"github.com/go-acme/lego/v3/challenge/dns01"
+	"github.com/go-acme/lego/v3/e2e/loader"
+	"github.com/go-acme/lego/v3/lego"
+	"github.com/go-acme/lego/v3/providers/dns"
+	"github.com/go-acme/lego/v3/registration"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -103,10 +103,14 @@ func TestChallengeDNS_Client_Obtain(t *testing.T) {
 
 	domains := []string{"*.légo.acme", "légo.acme"}
 
+	// https://github.com/letsencrypt/pebble/issues/285
+	privateKeyCSR, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err, "Could not generate test key")
+
 	request := certificate.ObtainRequest{
 		Domains:    domains,
 		Bundle:     true,
-		PrivateKey: privateKey,
+		PrivateKey: privateKeyCSR,
 	}
 	resource, err := client.Certificate.Obtain(request)
 	require.NoError(t, err)

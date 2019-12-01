@@ -9,7 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/v3/challenge/dns01"
 )
 
 const defaultBaseURL = "https://api.digitalocean.com"
@@ -57,10 +57,10 @@ func (d *DNSProvider) removeTxtRecord(domain string, recordID int) error {
 	return nil
 }
 
-func (d *DNSProvider) addTxtRecord(domain, fqdn, value string) (*txtRecordResponse, error) {
-	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
+func (d *DNSProvider) addTxtRecord(fqdn, value string) (*txtRecordResponse, error) {
+	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(fqdn))
 	if err != nil {
-		return nil, fmt.Errorf("could not determine zone for domain: '%s'. %s", domain, err)
+		return nil, fmt.Errorf("could not determine zone for domain: '%s'. %s", fqdn, err)
 	}
 
 	reqData := record{Type: "TXT", Name: fqdn, Data: value, TTL: d.config.TTL}

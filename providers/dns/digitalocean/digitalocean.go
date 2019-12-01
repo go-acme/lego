@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-acme/lego/challenge/dns01"
-	"github.com/go-acme/lego/platform/config/env"
+	"github.com/go-acme/lego/v3/challenge/dns01"
+	"github.com/go-acme/lego/v3/platform/config/env"
 )
 
 // Config is used to configure the creation of the DNSProvider
@@ -35,7 +35,7 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider is an implementation of the acme.ChallengeProvider interface
+// DNSProvider is an implementation of the challenge.Provider interface
 // that uses DigitalOcean's REST API to manage TXT records for a domain.
 type DNSProvider struct {
 	config      *Config
@@ -88,13 +88,13 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	respData, err := d.addTxtRecord(domain, fqdn, value)
+	respData, err := d.addTxtRecord(fqdn, value)
 	if err != nil {
 		return fmt.Errorf("digitalocean: %v", err)
 	}
 
 	d.recordIDsMu.Lock()
-	d.recordIDs[fqdn] = respData.DomainRecord.ID
+	d.recordIDs[token] = respData.DomainRecord.ID
 	d.recordIDsMu.Unlock()
 
 	return nil
@@ -104,22 +104,27 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 
+	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	if err != nil {
+		return fmt.Errorf("digitalocean: %v", err)
+	}
+
 	// get the record's unique ID from when we created it
 	d.recordIDsMu.Lock()
-	recordID, ok := d.recordIDs[fqdn]
+	recordID, ok := d.recordIDs[token]
 	d.recordIDsMu.Unlock()
 	if !ok {
 		return fmt.Errorf("digitalocean: unknown record ID for '%s'", fqdn)
 	}
 
-	err := d.removeTxtRecord(domain, recordID)
+	err = d.removeTxtRecord(authZone, recordID)
 	if err != nil {
 		return fmt.Errorf("digitalocean: %v", err)
 	}
 
 	// Delete record ID from map
 	d.recordIDsMu.Lock()
-	delete(d.recordIDs, fqdn)
+	delete(d.recordIDs, token)
 	d.recordIDsMu.Unlock()
 
 	return nil

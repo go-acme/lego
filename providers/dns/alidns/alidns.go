@@ -11,8 +11,8 @@ import (
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth/credentials"
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/alidns"
-	"github.com/go-acme/lego/challenge/dns01"
-	"github.com/go-acme/lego/platform/config/env"
+	"github.com/go-acme/lego/v3/challenge/dns01"
+	"github.com/go-acme/lego/v3/platform/config/env"
 )
 
 const defaultRegionID = "cn-hangzhou"
@@ -38,7 +38,7 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider is an implementation of the acme.ChallengeProvider interface
+// DNSProvider is an implementation of the challenge.Provider interface
 type DNSProvider struct {
 	config *Config
 	client *alidns.Client
@@ -95,7 +95,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	_, zoneName, err := d.getHostedZone(domain)
+	zoneName, err := d.getHostedZone(domain)
 	if err != nil {
 		return fmt.Errorf("alicloud: %v", err)
 	}
@@ -118,7 +118,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("alicloud: %v", err)
 	}
 
-	_, _, err = d.getHostedZone(domain)
+	_, err = d.getHostedZone(domain)
 	if err != nil {
 		return fmt.Errorf("alicloud: %v", err)
 	}
@@ -134,7 +134,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-func (d *DNSProvider) getHostedZone(domain string) (string, string, error) {
+func (d *DNSProvider) getHostedZone(domain string) (string, error) {
 	request := alidns.CreateDescribeDomainsRequest()
 
 	var domains []alidns.Domain
@@ -145,7 +145,7 @@ func (d *DNSProvider) getHostedZone(domain string) (string, string, error) {
 
 		response, err := d.client.DescribeDomains(request)
 		if err != nil {
-			return "", "", fmt.Errorf("API call failed: %v", err)
+			return "", fmt.Errorf("API call failed: %v", err)
 		}
 
 		domains = append(domains, response.Domains.Domain...)
@@ -159,7 +159,7 @@ func (d *DNSProvider) getHostedZone(domain string) (string, string, error) {
 
 	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
 
 	var hostedZone alidns.Domain
@@ -170,9 +170,10 @@ func (d *DNSProvider) getHostedZone(domain string) (string, string, error) {
 	}
 
 	if hostedZone.DomainId == "" {
-		return "", "", fmt.Errorf("zone %s not found in AliDNS for domain %s", authZone, domain)
+		return "", fmt.Errorf("zone %s not found in AliDNS for domain %s", authZone, domain)
 	}
-	return fmt.Sprintf("%v", hostedZone.DomainId), hostedZone.DomainName, nil
+
+	return hostedZone.DomainName, nil
 }
 
 func (d *DNSProvider) newTxtRecord(zone, fqdn, value string) *alidns.AddDomainRecordRequest {
@@ -186,7 +187,7 @@ func (d *DNSProvider) newTxtRecord(zone, fqdn, value string) *alidns.AddDomainRe
 }
 
 func (d *DNSProvider) findTxtRecords(domain, fqdn string) ([]alidns.Record, error) {
-	_, zoneName, err := d.getHostedZone(domain)
+	zoneName, err := d.getHostedZone(domain)
 	if err != nil {
 		return nil, err
 	}

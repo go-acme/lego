@@ -7,8 +7,8 @@ import (
 	"fmt"
 
 	"github.com/cpu/goacmedns"
-	"github.com/go-acme/lego/challenge/dns01"
-	"github.com/go-acme/lego/platform/config/env"
+	"github.com/go-acme/lego/v3/challenge/dns01"
+	"github.com/go-acme/lego/v3/platform/config/env"
 )
 
 const (
@@ -33,7 +33,7 @@ type acmeDNSClient interface {
 	RegisterAccount([]string) (goacmedns.Account, error)
 }
 
-// DNSProvider is an implementation of the acme.ChallengeProvider interface for
+// DNSProvider is an implementation of the challenge.Provider interface for
 // an ACME-DNS server.
 type DNSProvider struct {
 	client  acmeDNSClient

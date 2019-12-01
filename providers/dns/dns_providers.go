@@ -3,65 +3,69 @@ package dns
 import (
 	"fmt"
 
-	"github.com/go-acme/lego/challenge"
-	"github.com/go-acme/lego/challenge/dns01"
-	"github.com/go-acme/lego/providers/dns/acmedns"
-	"github.com/go-acme/lego/providers/dns/alidns"
-	"github.com/go-acme/lego/providers/dns/auroradns"
-	"github.com/go-acme/lego/providers/dns/azure"
-	"github.com/go-acme/lego/providers/dns/bindman"
-	"github.com/go-acme/lego/providers/dns/bluecat"
-	"github.com/go-acme/lego/providers/dns/cloudflare"
-	"github.com/go-acme/lego/providers/dns/cloudns"
-	"github.com/go-acme/lego/providers/dns/cloudxns"
-	"github.com/go-acme/lego/providers/dns/conoha"
-	"github.com/go-acme/lego/providers/dns/designate"
-	"github.com/go-acme/lego/providers/dns/digitalocean"
-	"github.com/go-acme/lego/providers/dns/dnsimple"
-	"github.com/go-acme/lego/providers/dns/dnsmadeeasy"
-	"github.com/go-acme/lego/providers/dns/dnspod"
-	"github.com/go-acme/lego/providers/dns/dode"
-	"github.com/go-acme/lego/providers/dns/dreamhost"
-	"github.com/go-acme/lego/providers/dns/duckdns"
-	"github.com/go-acme/lego/providers/dns/dyn"
-	"github.com/go-acme/lego/providers/dns/easydns"
-	"github.com/go-acme/lego/providers/dns/exec"
-	"github.com/go-acme/lego/providers/dns/exoscale"
-	"github.com/go-acme/lego/providers/dns/fastdns"
-	"github.com/go-acme/lego/providers/dns/gandi"
-	"github.com/go-acme/lego/providers/dns/gandiv5"
-	"github.com/go-acme/lego/providers/dns/gcloud"
-	"github.com/go-acme/lego/providers/dns/glesys"
-	"github.com/go-acme/lego/providers/dns/godaddy"
-	"github.com/go-acme/lego/providers/dns/hostingde"
-	"github.com/go-acme/lego/providers/dns/httpreq"
-	"github.com/go-acme/lego/providers/dns/iij"
-	"github.com/go-acme/lego/providers/dns/inwx"
-	"github.com/go-acme/lego/providers/dns/joker"
-	"github.com/go-acme/lego/providers/dns/lightsail"
-	"github.com/go-acme/lego/providers/dns/linode"
-	"github.com/go-acme/lego/providers/dns/linodev4"
-	"github.com/go-acme/lego/providers/dns/mydnsjp"
-	"github.com/go-acme/lego/providers/dns/namecheap"
-	"github.com/go-acme/lego/providers/dns/namedotcom"
-	"github.com/go-acme/lego/providers/dns/netcup"
-	"github.com/go-acme/lego/providers/dns/nifcloud"
-	"github.com/go-acme/lego/providers/dns/ns1"
-	"github.com/go-acme/lego/providers/dns/oraclecloud"
-	"github.com/go-acme/lego/providers/dns/otc"
-	"github.com/go-acme/lego/providers/dns/ovh"
-	"github.com/go-acme/lego/providers/dns/pdns"
-	"github.com/go-acme/lego/providers/dns/rackspace"
-	"github.com/go-acme/lego/providers/dns/rfc2136"
-	"github.com/go-acme/lego/providers/dns/route53"
-	"github.com/go-acme/lego/providers/dns/sakuracloud"
-	"github.com/go-acme/lego/providers/dns/selectel"
-	"github.com/go-acme/lego/providers/dns/stackpath"
-	"github.com/go-acme/lego/providers/dns/transip"
-	"github.com/go-acme/lego/providers/dns/vegadns"
-	"github.com/go-acme/lego/providers/dns/vscale"
-	"github.com/go-acme/lego/providers/dns/vultr"
-	"github.com/go-acme/lego/providers/dns/zoneee"
+	"github.com/go-acme/lego/v3/challenge"
+	"github.com/go-acme/lego/v3/challenge/dns01"
+	"github.com/go-acme/lego/v3/providers/dns/acmedns"
+	"github.com/go-acme/lego/v3/providers/dns/alidns"
+	"github.com/go-acme/lego/v3/providers/dns/auroradns"
+	"github.com/go-acme/lego/v3/providers/dns/autodns"
+	"github.com/go-acme/lego/v3/providers/dns/azure"
+	"github.com/go-acme/lego/v3/providers/dns/bindman"
+	"github.com/go-acme/lego/v3/providers/dns/bluecat"
+	"github.com/go-acme/lego/v3/providers/dns/cloudflare"
+	"github.com/go-acme/lego/v3/providers/dns/cloudns"
+	"github.com/go-acme/lego/v3/providers/dns/cloudxns"
+	"github.com/go-acme/lego/v3/providers/dns/conoha"
+	"github.com/go-acme/lego/v3/providers/dns/designate"
+	"github.com/go-acme/lego/v3/providers/dns/digitalocean"
+	"github.com/go-acme/lego/v3/providers/dns/dnsimple"
+	"github.com/go-acme/lego/v3/providers/dns/dnsmadeeasy"
+	"github.com/go-acme/lego/v3/providers/dns/dnspod"
+	"github.com/go-acme/lego/v3/providers/dns/dode"
+	"github.com/go-acme/lego/v3/providers/dns/dreamhost"
+	"github.com/go-acme/lego/v3/providers/dns/duckdns"
+	"github.com/go-acme/lego/v3/providers/dns/dyn"
+	"github.com/go-acme/lego/v3/providers/dns/easydns"
+	"github.com/go-acme/lego/v3/providers/dns/exec"
+	"github.com/go-acme/lego/v3/providers/dns/exoscale"
+	"github.com/go-acme/lego/v3/providers/dns/fastdns"
+	"github.com/go-acme/lego/v3/providers/dns/gandi"
+	"github.com/go-acme/lego/v3/providers/dns/gandiv5"
+	"github.com/go-acme/lego/v3/providers/dns/gcloud"
+	"github.com/go-acme/lego/v3/providers/dns/glesys"
+	"github.com/go-acme/lego/v3/providers/dns/godaddy"
+	"github.com/go-acme/lego/v3/providers/dns/hostingde"
+	"github.com/go-acme/lego/v3/providers/dns/httpreq"
+	"github.com/go-acme/lego/v3/providers/dns/iij"
+	"github.com/go-acme/lego/v3/providers/dns/inwx"
+	"github.com/go-acme/lego/v3/providers/dns/joker"
+	"github.com/go-acme/lego/v3/providers/dns/lightsail"
+	"github.com/go-acme/lego/v3/providers/dns/linode"
+	"github.com/go-acme/lego/v3/providers/dns/linodev4"
+	"github.com/go-acme/lego/v3/providers/dns/liquidweb"
+	"github.com/go-acme/lego/v3/providers/dns/mydnsjp"
+	"github.com/go-acme/lego/v3/providers/dns/namecheap"
+	"github.com/go-acme/lego/v3/providers/dns/namedotcom"
+	"github.com/go-acme/lego/v3/providers/dns/namesilo"
+	"github.com/go-acme/lego/v3/providers/dns/netcup"
+	"github.com/go-acme/lego/v3/providers/dns/nifcloud"
+	"github.com/go-acme/lego/v3/providers/dns/ns1"
+	"github.com/go-acme/lego/v3/providers/dns/oraclecloud"
+	"github.com/go-acme/lego/v3/providers/dns/otc"
+	"github.com/go-acme/lego/v3/providers/dns/ovh"
+	"github.com/go-acme/lego/v3/providers/dns/pdns"
+	"github.com/go-acme/lego/v3/providers/dns/rackspace"
+	"github.com/go-acme/lego/v3/providers/dns/rfc2136"
+	"github.com/go-acme/lego/v3/providers/dns/route53"
+	"github.com/go-acme/lego/v3/providers/dns/sakuracloud"
+	"github.com/go-acme/lego/v3/providers/dns/selectel"
+	"github.com/go-acme/lego/v3/providers/dns/stackpath"
+	"github.com/go-acme/lego/v3/providers/dns/transip"
+	"github.com/go-acme/lego/v3/providers/dns/vegadns"
+	"github.com/go-acme/lego/v3/providers/dns/versio"
+	"github.com/go-acme/lego/v3/providers/dns/vscale"
+	"github.com/go-acme/lego/v3/providers/dns/vultr"
+	"github.com/go-acme/lego/v3/providers/dns/zoneee"
 )
 
 // NewDNSChallengeProviderByName Factory for DNS providers
@@ -75,6 +79,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return azure.NewDNSProvider()
 	case "auroradns":
 		return auroradns.NewDNSProvider()
+	case "autodns":
+		return autodns.NewDNSProvider()
 	case "bindman":
 		return bindman.NewDNSProvider()
 	case "bluecat":
@@ -139,6 +145,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return linode.NewDNSProvider()
 	case "linodev4":
 		return linodev4.NewDNSProvider()
+	case "liquidweb":
+		return liquidweb.NewDNSProvider()
 	case "manual":
 		return dns01.NewDNSProviderManual()
 	case "mydnsjp":
@@ -147,6 +155,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return namecheap.NewDNSProvider()
 	case "namedotcom":
 		return namedotcom.NewDNSProvider()
+	case "namesilo":
+		return namesilo.NewDNSProvider()
 	case "netcup":
 		return netcup.NewDNSProvider()
 	case "nifcloud":
@@ -177,6 +187,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return transip.NewDNSProvider()
 	case "vegadns":
 		return vegadns.NewDNSProvider()
+	case "versio":
+		return versio.NewDNSProvider()
 	case "vultr":
 		return vultr.NewDNSProvider()
 	case "vscale":
@@ -184,6 +196,6 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 	case "zoneee":
 		return zoneee.NewDNSProvider()
 	default:
-		return nil, fmt.Errorf("unrecognised DNS provider: %s", name)
+		return nil, fmt.Errorf("unrecognized DNS provider: %s", name)
 	}
 }

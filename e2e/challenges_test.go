@@ -10,12 +10,12 @@ import (
 	"os"
 	"testing"
 
-	"github.com/go-acme/lego/certificate"
-	"github.com/go-acme/lego/challenge/http01"
-	"github.com/go-acme/lego/challenge/tlsalpn01"
-	"github.com/go-acme/lego/e2e/loader"
-	"github.com/go-acme/lego/lego"
-	"github.com/go-acme/lego/registration"
+	"github.com/go-acme/lego/v3/certificate"
+	"github.com/go-acme/lego/v3/challenge/http01"
+	"github.com/go-acme/lego/v3/challenge/tlsalpn01"
+	"github.com/go-acme/lego/v3/e2e/loader"
+	"github.com/go-acme/lego/v3/lego"
+	"github.com/go-acme/lego/v3/registration"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -258,10 +258,14 @@ func TestChallengeTLS_Client_Obtain(t *testing.T) {
 	require.NoError(t, err)
 	user.registration = reg
 
+	// https://github.com/letsencrypt/pebble/issues/285
+	privateKeyCSR, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err, "Could not generate test key")
+
 	request := certificate.ObtainRequest{
 		Domains:    []string{"acme.wtf"},
 		Bundle:     true,
-		PrivateKey: privateKey,
+		PrivateKey: privateKeyCSR,
 	}
 	resource, err := client.Certificate.Obtain(request)
 	require.NoError(t, err)
@@ -313,6 +317,37 @@ func TestChallengeTLS_Client_ObtainForCSR(t *testing.T) {
 	assert.NotEmpty(t, resource.Certificate)
 	assert.NotEmpty(t, resource.IssuerCertificate)
 	assert.NotEmpty(t, resource.CSR)
+}
+
+func TestRegistrar_UpdateAccount(t *testing.T) {
+	err := os.Setenv("LEGO_CA_CERTIFICATES", "./fixtures/certs/pebble.minica.pem")
+	require.NoError(t, err)
+	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
+
+	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err, "Could not generate test key")
+
+	user := &fakeUser{
+		privateKey: privateKey,
+		email:      "foo@example.com",
+	}
+	config := lego.NewConfig(user)
+	config.CADirURL = load.PebbleOptions.HealthCheckURL
+
+	client, err := lego.NewClient(config)
+	require.NoError(t, err)
+
+	regOptions := registration.RegisterOptions{TermsOfServiceAgreed: true}
+	reg, err := client.Registration.Register(regOptions)
+	require.NoError(t, err)
+	require.Equal(t, reg.Body.Contact, []string{"mailto:foo@example.com"})
+	user.registration = reg
+
+	user.email = "bar@example.com"
+	resource, err := client.Registration.UpdateRegistration(regOptions)
+	require.NoError(t, err)
+	require.Equal(t, resource.Body.Contact, []string{"mailto:bar@example.com"})
+	require.Empty(t, resource.URI)
 }
 
 type fakeUser struct {

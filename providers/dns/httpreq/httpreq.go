@@ -9,12 +9,11 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"os"
 	"path"
 	"time"
 
-	"github.com/go-acme/lego/challenge/dns01"
-	"github.com/go-acme/lego/platform/config/env"
+	"github.com/go-acme/lego/v3/challenge/dns01"
+	"github.com/go-acme/lego/v3/platform/config/env"
 )
 
 type message struct {
@@ -68,14 +67,14 @@ func NewDNSProvider() (*DNSProvider, error) {
 	}
 
 	config := NewDefaultConfig()
-	config.Mode = os.Getenv("HTTPREQ_MODE")
-	config.Username = os.Getenv("HTTPREQ_USERNAME")
-	config.Password = os.Getenv("HTTPREQ_PASSWORD")
+	config.Mode = env.GetOrFile("HTTPREQ_MODE")
+	config.Username = env.GetOrFile("HTTPREQ_USERNAME")
+	config.Password = env.GetOrFile("HTTPREQ_PASSWORD")
 	config.Endpoint = endpoint
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderConfig return a DNSProvider .
+// NewDNSProviderConfig return a DNSProvider.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("httpreq: the configuration of the DNS provider is nil")

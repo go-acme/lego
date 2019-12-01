@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/go-acme/lego/acme"
+	"github.com/go-acme/lego/v3/acme"
 )
 
 type AccountService service
@@ -53,6 +53,20 @@ func (a *AccountService) Get(accountURL string) (acme.Account, error) {
 	_, err := a.core.post(accountURL, acme.Account{}, &account)
 	if err != nil {
 		return acme.Account{}, err
+	}
+	return account, nil
+}
+
+// Update Updates an account.
+func (a *AccountService) Update(accountURL string, req acme.Account) (acme.ExtendedAccount, error) {
+	if len(accountURL) == 0 {
+		return acme.ExtendedAccount{}, errors.New("account[update]: empty URL")
+	}
+
+	var account acme.ExtendedAccount
+	_, err := a.core.post(accountURL, req, &account)
+	if err != nil {
+		return acme.ExtendedAccount{}, err
 	}
 	return account, nil
 }

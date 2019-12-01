@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-acme/lego/challenge/dns01"
-	"github.com/go-acme/lego/platform/config/env"
+	"github.com/go-acme/lego/v3/challenge/dns01"
+	"github.com/go-acme/lego/v3/platform/config/env"
 )
 
 // defaultBaseURL represents the Identity API endpoint to call
@@ -40,7 +40,7 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider is an implementation of the acme.ChallengeProvider interface
+// DNSProvider is an implementation of the challenge.Provider interface
 // used to store the reusable token and DNS API endpoint
 type DNSProvider struct {
 	config           *Config
@@ -98,7 +98,6 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		token:            identity.Access.Token.ID,
 		cloudDNSEndpoint: dnsEndpoint,
 	}, nil
-
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge

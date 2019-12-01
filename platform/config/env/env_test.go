@@ -85,7 +85,7 @@ func TestGetWithFallback(t *testing.T) {
 			},
 		},
 		{
-			desc:   "only all env vars have a value",
+			desc:   "all env vars in a groups have a value",
 			groups: [][]string{{"TEST_LEGO_VAR_EXIST_1", "TEST_LEGO_VAR_EXIST_2"}},
 			expected: expected{
 				value: map[string]string{"TEST_LEGO_VAR_EXIST_1": "VAR1"},
@@ -104,7 +104,6 @@ func TestGetWithFallback(t *testing.T) {
 			}
 		})
 	}
-
 }
 
 func TestGetOrDefaultInt(t *testing.T) {
@@ -305,7 +304,6 @@ func TestGetOrFile_ReadsFiles(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-
 			err := os.Unsetenv(varEnvFileName)
 			require.NoError(t, err)
 			err = os.Unsetenv(varEnvName)

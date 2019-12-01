@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/go-acme/lego/log"
+	"github.com/go-acme/lego/v3/log"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"

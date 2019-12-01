@@ -9,7 +9,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/go-acme/lego/acme"
+	"github.com/go-acme/lego/v3/acme"
 )
 
 type RequestOption func(*http.Request) error
@@ -120,7 +120,6 @@ func (d *Doer) formatUserAgent() string {
 
 func checkError(req *http.Request, resp *http.Response) error {
 	if resp.StatusCode >= http.StatusBadRequest {
-
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return fmt.Errorf("%d :: %s :: %s :: %v", resp.StatusCode, req.Method, req.URL, err)

@@ -7,9 +7,9 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/go-acme/lego/acme"
-	"github.com/go-acme/lego/certcrypto"
-	"github.com/go-acme/lego/log"
+	"github.com/go-acme/lego/v3/acme"
+	"github.com/go-acme/lego/v3/certcrypto"
+	"github.com/go-acme/lego/v3/log"
 )
 
 // maxBodySize is the maximum size of body that we will read.
@@ -71,7 +71,7 @@ func (c *CertificateService) get(certURL string) ([]byte, string, error) {
 
 	// The issuer certificate link may be supplied via an "up" link
 	// in the response headers of a new certificate.
-	// See https://tools.ietf.org/html/draft-ietf-acme-acme-12#section-7.4.2
+	// See https://tools.ietf.org/html/rfc8555#section-7.4.2
 	up := getLink(resp.Header, "up")
 
 	return cert, up, err

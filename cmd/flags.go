@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/go-acme/lego/lego"
+	"github.com/go-acme/lego/v3/lego"
 	"github.com/urfave/cli"
 )
 
@@ -64,8 +64,13 @@ func CreateFlags(defaultPath string) []cli.Flag {
 			Value: ":80",
 		},
 		cli.StringFlag{
+			Name:  "http.proxy-header",
+			Usage: "Validate against this HTTP header when solving HTTP based challenges behind a reverse proxy.",
+			Value: "Host",
+		},
+		cli.StringFlag{
 			Name:  "http.webroot",
-			Usage: "Set the webroot folder to use for HTTP based challenges to write directly in a file in .well-known/acme-challenge.",
+			Usage: "Set the webroot folder to use for HTTP based challenges to write directly in a file in .well-known/acme-challenge. This disables the built-in server and expects the given directory to be publicly served with access to .well-known/acme-challenge",
 		},
 		cli.StringSliceFlag{
 			Name:  "http.memcached-host",

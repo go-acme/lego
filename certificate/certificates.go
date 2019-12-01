@@ -12,12 +12,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-acme/lego/acme"
-	"github.com/go-acme/lego/acme/api"
-	"github.com/go-acme/lego/certcrypto"
-	"github.com/go-acme/lego/challenge"
-	"github.com/go-acme/lego/log"
-	"github.com/go-acme/lego/platform/wait"
+	"github.com/go-acme/lego/v3/acme"
+	"github.com/go-acme/lego/v3/acme/api"
+	"github.com/go-acme/lego/v3/certcrypto"
+	"github.com/go-acme/lego/v3/challenge"
+	"github.com/go-acme/lego/v3/log"
+	"github.com/go-acme/lego/v3/platform/wait"
 	"golang.org/x/crypto/ocsp"
 	"golang.org/x/net/idna"
 )
@@ -210,8 +210,8 @@ func (c *Certifier) getForOrder(domains []string, order acme.ExtendedOrder, bund
 	// Determine certificate name(s) based on the authorization resources
 	commonName := domains[0]
 
-	// ACME draft Section 7.4 "Applying for Certificate Issuance"
-	// https://tools.ietf.org/html/draft-ietf-acme-acme-12#section-7.4
+	// RFC8555 Section 7.4 "Applying for Certificate Issuance"
+	// https://tools.ietf.org/html/rfc8555#section-7.4
 	// says:
 	//   Clients SHOULD NOT make any assumptions about the sort order of
 	//   "identifiers" or "authorizations" elements in the returned order
@@ -464,6 +464,33 @@ func (c *Certifier) GetOCSP(bundle []byte) ([]byte, *ocsp.Response, error) {
 	return ocspResBytes, ocspRes, nil
 }
 
+// Get attempts to fetch the certificate at the supplied URL.
+// The URL is the same as what would normally be supplied at the Resource's CertURL.
+//
+// The returned Resource will not have the PrivateKey and CSR fields populated as these will not be available.
+//
+// If bundle is true, the Certificate field in the returned Resource includes the issuer certificate.
+func (c *Certifier) Get(url string, bundle bool) (*Resource, error) {
+	cert, issuer, err := c.core.Certificates.Get(url, bundle)
+	if err != nil {
+		return nil, err
+	}
+
+	// Parse the returned cert bundle so that we can grab the domain from the common name.
+	x509Certs, err := certcrypto.ParsePEMBundle(cert)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Resource{
+		Domain:            x509Certs[0].Subject.CommonName,
+		Certificate:       cert,
+		IssuerCertificate: issuer,
+		CertURL:           url,
+		CertStableURL:     url,
+	}, nil
+}
+
 func checkOrderStatus(order acme.Order) (bool, error) {
 	switch order.Status {
 	case acme.StatusValid:
@@ -475,7 +502,7 @@ func checkOrderStatus(order acme.Order) (bool, error) {
 	}
 }
 
-// https://tools.ietf.org/html/draft-ietf-acme-acme-16#section-7.1.4
+// https://tools.ietf.org/html/rfc8555#section-7.1.4
 // The domain name MUST be encoded
 //   in the form in which it would appear in a certificate.  That is, it
 //   MUST be encoded according to the rules in Section 7 of [RFC5280].

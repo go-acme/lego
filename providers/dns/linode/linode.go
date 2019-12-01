@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-acme/lego/challenge/dns01"
-	"github.com/go-acme/lego/platform/config/env"
+	"github.com/go-acme/lego/v3/challenge/dns01"
+	"github.com/go-acme/lego/v3/platform/config/env"
 	"github.com/timewasted/linode/dns"
 )
 
@@ -38,7 +38,7 @@ type hostedZoneInfo struct {
 	resourceName string
 }
 
-// DNSProvider implements the acme.ChallengeProvider interface.
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
 	client *dns.DNS

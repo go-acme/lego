@@ -10,9 +10,9 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/go-acme/lego/challenge/dns01"
-	"github.com/go-acme/lego/log"
-	"github.com/go-acme/lego/platform/config/env"
+	"github.com/go-acme/lego/v3/challenge/dns01"
+	"github.com/go-acme/lego/v3/log"
+	"github.com/go-acme/lego/v3/platform/config/env"
 )
 
 // Config is used to configure the creation of the DNSProvider
@@ -37,7 +37,7 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider is an implementation of the acme.ChallengeProvider interface
+// DNSProvider is an implementation of the challenge.Provider interface
 type DNSProvider struct {
 	apiVersion int
 	config     *Config

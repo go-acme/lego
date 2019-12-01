@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-acme/lego/log"
+	"github.com/go-acme/lego/v3/log"
 )
 
 // Get environment variables

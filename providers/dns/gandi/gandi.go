@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-acme/lego/challenge/dns01"
-	"github.com/go-acme/lego/platform/config/env"
+	"github.com/go-acme/lego/v3/challenge/dns01"
+	"github.com/go-acme/lego/v3/platform/config/env"
 )
 
 // Gandi API reference:       http://doc.rpc.gandi.net/index.html
@@ -52,7 +52,7 @@ type inProgressInfo struct {
 }
 
 // DNSProvider is an implementation of the
-// acme.ChallengeProviderTimeout interface that uses Gandi's XML-RPC
+// challenge.ProviderTimeout interface that uses Gandi's XML-RPC
 // API to manage TXT records for a domain.
 type DNSProvider struct {
 	inProgressFQDNs     map[string]inProgressInfo

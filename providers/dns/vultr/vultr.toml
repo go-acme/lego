@@ -17,4 +17,4 @@ Example = ''''''
 
 [Links]
   API = "https://www.vultr.com/api/#dns"
-  GoClient = "https://github.com/JamesClonk/vultr"
+  GoClient = "https://github.com/vultr/govultr"

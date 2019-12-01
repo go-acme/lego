@@ -10,12 +10,12 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/cenkalti/backoff"
-	"github.com/go-acme/lego/acme"
-	"github.com/go-acme/lego/acme/api/internal/nonces"
-	"github.com/go-acme/lego/acme/api/internal/secure"
-	"github.com/go-acme/lego/acme/api/internal/sender"
-	"github.com/go-acme/lego/log"
+	"github.com/cenkalti/backoff/v3"
+	"github.com/go-acme/lego/v3/acme"
+	"github.com/go-acme/lego/v3/acme/api/internal/nonces"
+	"github.com/go-acme/lego/v3/acme/api/internal/secure"
+	"github.com/go-acme/lego/v3/acme/api/internal/sender"
+	"github.com/go-acme/lego/v3/log"
 )
 
 // Core ACME/LE core API.
@@ -71,7 +71,7 @@ func (a *Core) post(uri string, reqBody, response interface{}) (*http.Response, 
 }
 
 // postAsGet performs an HTTP POST ("POST-as-GET") request.
-// https://tools.ietf.org/html/draft-ietf-acme-acme-16#section-6.3
+// https://tools.ietf.org/html/rfc8555#section-6.3
 func (a *Core) postAsGet(uri string, response interface{}) (*http.Response, error) {
 	return a.retrievablePost(uri, []byte{}, response)
 }

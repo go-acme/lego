@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-acme/lego/challenge/dns01"
-	"github.com/go-acme/lego/log"
-	"github.com/go-acme/lego/platform/config/env"
+	"github.com/go-acme/lego/v3/challenge/dns01"
+	"github.com/go-acme/lego/v3/log"
+	"github.com/go-acme/lego/v3/platform/config/env"
 )
 
 // Notes about namecheap's tool API:
@@ -94,7 +94,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderConfig return a DNSProvider instance configured for namecheap.
+// NewDNSProviderConfig return a DNSProvider instance configured for Namecheap.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("namecheap: the configuration of the DNS provider is nil")

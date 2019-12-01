@@ -21,6 +21,10 @@ Configuration for [Joker](https://joker.com).
 Here is an example bash command using the Joker provider:
 
 ```bash
+JOKER_USERNAME=<your email> \
+JOKER_PASSWORD=<your password> \
+lego --dns joker --domains my.domain.com --email my@email.com run
+# or
 JOKER_API_KEY=<your API key> \
 lego --dns joker --domains my.domain.com --email my@email.com run
 ```
@@ -33,6 +37,8 @@ lego --dns joker --domains my.domain.com --email my@email.com run
 | Environment Variable Name | Description |
 |-----------------------|-------------|
 | `JOKER_API_KEY` | API key |
+| `JOKER_PASSWORD` | Joker.com password |
+| `JOKER_USERNAME` | Joker.com username (email address) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).

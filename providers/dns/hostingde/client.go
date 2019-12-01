@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/cenkalti/backoff"
+	"github.com/cenkalti/backoff/v3"
 )
 
 const defaultBaseURL = "https://secure.hosting.de/api/dns/v1/json"

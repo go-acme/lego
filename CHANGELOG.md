@@ -1,5 +1,91 @@
 # Changelog
 
+## [v3.2.0] - 2019-11-10
+
+### Added:
+- **[dnsprovider]** Add support for autodns
+
+### Changed:
+- **[dnsprovider]** httpreq: Allow use environment vars from a `_FILE` file
+- **[lib]** Don&#39;t deactivate valid authorizations
+- **[lib]** Expose more SOA fields found by dns01.FindZoneByFqdn
+
+### Fixed:
+- **[dnsprovider]** use token as unique ID.
+
+## [v3.1.0] - 2019-10-07
+
+### Added:
+- **[dnsprovider]** Add DNS provider for Liquid Web
+- **[dnsprovider]** cloudflare: add support for API tokens
+- **[cli]** feat: ease operation behind proxy servers
+
+### Changed:
+- **[dnsprovider]** cloudflare: update client
+- **[dnsprovider]** linodev4: propagation timeout configuration.
+
+### Fixed:
+- **[dnsprovider]** ovh: fix int overflow.
+- **[dnsprovider]** bindman: fix client version.
+
+## [v3.0.2] - 2019-08-15
+
+### Fixed:
+- Invalid pseudo version (related to Cloudflare client).
+
+## [v3.0.1] - 2019-08-14
+
+There was a problem when creating the tag v3.0.1, this tag has been invalidate.
+
+## [v3.0.0] - 2019-08-05
+
+### Changed:
+- migrate to go module (new import github.com/go-acme/lego/v3/)
+- update DNS clients
+
+## [v2.7.2] - 2019-07-30
+
+### Fixed:
+- **[dnsprovider]** vultr: quote TXT record
+
+## [v2.7.1] - 2019-07-22
+
+### Fixed:
+- **[dnsprovider]** vultr: invalid record type.
+
+## [v2.7.0] - 2019-07-17
+
+### Added:
+- **[dnsprovider]** Add DNS provider for namesilo
+- **[dnsprovider]** Add DNS provider for versio.nl
+
+### Changed:
+- **[dnsprovider]** Update DNS providers libs.
+- **[dnsprovider]** joker: support username and password.
+- **[dnsprovider]** Vultr: Switch to official client
+
+### Fixed:
+- **[dnsprovider]** otc: Prevent sending empty body.
+
+## [v2.6.0] - 2019-05-27
+
+### Added:
+- **[dnsprovider]** Add support for Joker.com DMAPI
+- **[dnsprovider]** Add support for Bindman DNS provider
+- **[dnsprovider]** Add support for EasyDNS
+- **[lib]** Get an existing certificate by URL
+
+### Changed:
+- **[dnsprovider]** digitalocean: LEGO_EXPERIMENTAL_CNAME_SUPPORT support
+- **[dnsprovider]** gcloud: Use fqdn to get zone Present/CleanUp
+- **[dnsprovider]** exec: serial behavior
+- **[dnsprovider]** manual: serial behavior.
+- **[dnsprovider]** Strip newlines when reading environment variables from `_FILE` suffixed files.
+
+### Fixed:
+- **[cli]** fix: cli disable-cp option.
+- **[dnsprovider]** gcloud: fix zone visibility.
+
 ## [v2.5.0] - 2019-04-17
 
 ### Added:

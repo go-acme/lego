@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/platform/tester"
+	"github.com/go-acme/lego/v3/platform/tester"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -112,7 +112,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 				if test.baseURL != "" {
 					assert.Equal(t, test.baseURL, p.client.BaseURL)
 				}
-
 			} else {
 				require.EqualError(t, err, test.expected)
 			}

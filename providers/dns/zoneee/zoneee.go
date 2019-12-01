@@ -8,8 +8,8 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/go-acme/lego/challenge/dns01"
-	"github.com/go-acme/lego/platform/config/env"
+	"github.com/go-acme/lego/v3/challenge/dns01"
+	"github.com/go-acme/lego/v3/platform/config/env"
 )
 
 // Config is used to configure the creation of the DNSProvider
@@ -63,7 +63,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderConfig return a DNSProvider .
+// NewDNSProviderConfig return a DNSProvider instance configured for Zone.ee
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("zoneee: the configuration of the DNS provider is nil")

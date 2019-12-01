@@ -3,7 +3,7 @@ package iij
 import (
 	"testing"
 
-	"github.com/go-acme/lego/platform/tester"
+	"github.com/go-acme/lego/v3/platform/tester"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -199,7 +199,6 @@ func TestSplitDomain(t *testing.T) {
 			assert.Equal(t, test.expectedZone, zone)
 		})
 	}
-
 }
 
 func TestLivePresent(t *testing.T) {

@@ -3,8 +3,8 @@ package certificate
 import (
 	"time"
 
-	"github.com/go-acme/lego/acme"
-	"github.com/go-acme/lego/log"
+	"github.com/go-acme/lego/v3/acme"
+	"github.com/go-acme/lego/v3/log"
 )
 
 const (
@@ -61,9 +61,21 @@ func (c *Certifier) getAuthorizations(order acme.ExtendedOrder) ([]acme.Authoriz
 }
 
 func (c *Certifier) deactivateAuthorizations(order acme.ExtendedOrder) {
-	for _, auth := range order.Authorizations {
-		if err := c.core.Authorizations.Deactivate(auth); err != nil {
-			log.Infof("Unable to deactivated authorizations: %s", auth)
+	for _, authzURL := range order.Authorizations {
+		auth, err := c.core.Authorizations.Get(authzURL)
+		if err != nil {
+			log.Infof("Unable to get the authorization for: %s", authzURL)
+			continue
+		}
+
+		if auth.Status == acme.StatusValid {
+			log.Infof("Skipping deactivating of valid auth: %s", authzURL)
+			continue
+		}
+
+		log.Infof("Deactivating auth: %s", authzURL)
+		if c.core.Authorizations.Deactivate(authzURL) != nil {
+			log.Infof("Unable to deactivate the authorization: %s", authzURL)
 		}
 	}
 }

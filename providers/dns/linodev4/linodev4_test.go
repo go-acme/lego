@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/platform/tester"
+	"github.com/go-acme/lego/v3/platform/tester"
 	"github.com/linode/linodego"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -209,7 +209,6 @@ func TestDNSProvider_Present(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-
 			server := newMockServer(test.mockResponses)
 			defer server.Close()
 

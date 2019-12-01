@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/go-acme/lego/challenge/dns01"
-	"github.com/go-acme/lego/log"
+	"github.com/go-acme/lego/v3/challenge/dns01"
+	"github.com/go-acme/lego/v3/log"
 )
 
 const defaultBaseURL = "https://dmapi.joker.com/request/"
@@ -70,7 +70,20 @@ func (d *DNSProvider) login() (*response, error) {
 		return nil, nil
 	}
 
-	response, err := d.postRequest("login", url.Values{"api-key": {d.config.APIKey}})
+	var values url.Values
+	switch {
+	case d.config.Username != "" && d.config.Password != "":
+		values = url.Values{
+			"username": {d.config.Username},
+			"password": {d.config.Password},
+		}
+	case d.config.APIKey != "":
+		values = url.Values{"api-key": {d.config.APIKey}}
+	default:
+		return nil, fmt.Errorf("no username and password or api-key")
+	}
+
+	response, err := d.postRequest("login", values)
 	if err != nil {
 		return response, err
 	}

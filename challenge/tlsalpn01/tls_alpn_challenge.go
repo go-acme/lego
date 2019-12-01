@@ -8,15 +8,15 @@ import (
 	"encoding/asn1"
 	"fmt"
 
-	"github.com/go-acme/lego/acme"
-	"github.com/go-acme/lego/acme/api"
-	"github.com/go-acme/lego/certcrypto"
-	"github.com/go-acme/lego/challenge"
-	"github.com/go-acme/lego/log"
+	"github.com/go-acme/lego/v3/acme"
+	"github.com/go-acme/lego/v3/acme/api"
+	"github.com/go-acme/lego/v3/certcrypto"
+	"github.com/go-acme/lego/v3/challenge"
+	"github.com/go-acme/lego/v3/log"
 )
 
 // idPeAcmeIdentifierV1 is the SMI Security for PKIX Certification Extension OID referencing the ACME extension.
-// Reference: https://tools.ietf.org/html/draft-ietf-acme-tls-alpn-05#section-5.1
+// Reference: https://tools.ietf.org/html/draft-ietf-acme-tls-alpn-07#section-6.1
 var idPeAcmeIdentifierV1 = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 1, 31}
 
 type ValidateFunc func(core *api.Core, domain string, chlng acme.Challenge) error
@@ -83,7 +83,7 @@ func ChallengeBlocks(domain, keyAuth string) ([]byte, []byte, error) {
 
 	// Add the keyAuth digest as the acmeValidation-v1 extension
 	// (marked as critical such that it won't be used by non-ACME software).
-	// Reference: https://tools.ietf.org/html/draft-ietf-acme-tls-alpn-05#section-3
+	// Reference: https://tools.ietf.org/html/draft-ietf-acme-tls-alpn-07#section-3
 	extensions := []pkix.Extension{
 		{
 			Id:       idPeAcmeIdentifierV1,

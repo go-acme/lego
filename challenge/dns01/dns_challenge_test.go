@@ -8,10 +8,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/acme"
-	"github.com/go-acme/lego/acme/api"
-	"github.com/go-acme/lego/challenge"
-	"github.com/go-acme/lego/platform/tester"
+	"github.com/go-acme/lego/v3/acme"
+	"github.com/go-acme/lego/v3/acme/api"
+	"github.com/go-acme/lego/v3/challenge"
+	"github.com/go-acme/lego/v3/platform/tester"
 	"github.com/stretchr/testify/require"
 )
 
@@ -93,7 +93,6 @@ func TestChallenge_PreSolve(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-
 			chlg := NewChallenge(core, test.validate, test.provider, WrapPreCheck(test.preCheck))
 
 			authz := acme.Authorization{
@@ -178,7 +177,6 @@ func TestChallenge_Solve(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-
 			var options []ChallengeOption
 			if test.preCheck != nil {
 				options = append(options, WrapPreCheck(test.preCheck))
@@ -266,7 +264,6 @@ func TestChallenge_CleanUp(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-
 			chlg := NewChallenge(core, test.validate, test.provider, WrapPreCheck(test.preCheck))
 
 			authz := acme.Authorization{

@@ -140,6 +140,10 @@ func (p *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("checkdomain: %v", err)
 	}
 
+	p.domainIDMu.Lock()
+	delete(p.domainIDMapping, name)
+	p.domainIDMu.Unlock()
+
 	return nil
 }
 

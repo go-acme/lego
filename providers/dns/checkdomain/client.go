@@ -156,20 +156,26 @@ func (p *DNSProvider) getDomainInfo(domainID int) (*DomainResponse, error) {
 
 func (p *DNSProvider) getDomainIDByName(name string) (int, error) {
 	// Load from cache if exists
-	if id, ok := p.domainIDMapping[name]; ok {
+	p.domainIDMu.Lock()
+	id, ok := p.domainIDMapping[name]
+	p.domainIDMu.Unlock()
+	if ok {
 		return id, nil
 	}
 
 	// Find out by querying API
 	domains, err := p.listDomains()
 	if err != nil {
-		return -1, err
+		return domainNotFound, err
 	}
 
 	// Linear search over all registered domains
 	for _, domain := range domains {
 		if domain.Name == name || strings.HasSuffix(name, "."+domain.Name) {
+			p.domainIDMu.Lock()
 			p.domainIDMapping[name] = domain.ID
+			p.domainIDMu.Unlock()
+
 			return domain.ID, nil
 		}
 	}

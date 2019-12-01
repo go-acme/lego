@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"sync"
 	"time"
 
 	"github.com/go-acme/lego/v3/challenge/dns01"
@@ -49,7 +50,9 @@ func NewDefaultConfig() *Config {
 // DNSProvider implements challenge.Provider for the checkdomain API
 // specified at https://developer.checkdomain.de/reference/.
 type DNSProvider struct {
-	config          *Config
+	config *Config
+
+	domainIDMu      sync.Mutex
 	domainIDMapping map[string]int
 }
 

@@ -98,6 +98,35 @@ type (
 	}
 )
 
+func (p *DNSProvider) getDomainIDByName(name string) (int, error) {
+	// Load from cache if exists
+	p.domainIDMu.Lock()
+	id, ok := p.domainIDMapping[name]
+	p.domainIDMu.Unlock()
+	if ok {
+		return id, nil
+	}
+
+	// Find out by querying API
+	domains, err := p.listDomains()
+	if err != nil {
+		return domainNotFound, err
+	}
+
+	// Linear search over all registered domains
+	for _, domain := range domains {
+		if domain.Name == name || strings.HasSuffix(name, "."+domain.Name) {
+			p.domainIDMu.Lock()
+			p.domainIDMapping[name] = domain.ID
+			p.domainIDMu.Unlock()
+
+			return domain.ID, nil
+		}
+	}
+
+	return domainNotFound, fmt.Errorf("domain not found")
+}
+
 func (p *DNSProvider) listDomains() ([]*Domain, error) {
 	req, err := p.makeRequest(http.MethodGet, "/v1/domains", http.NoBody)
 	if err != nil {
@@ -139,50 +168,6 @@ func (p *DNSProvider) listDomains() ([]*Domain, error) {
 	return domainList, nil
 }
 
-func (p *DNSProvider) getDomainInfo(domainID int) (*DomainResponse, error) {
-	req, err := p.makeRequest(http.MethodGet, fmt.Sprintf("/v1/domains/%d", domainID), http.NoBody)
-	if err != nil {
-		return nil, err
-	}
-
-	var res DomainResponse
-	err = p.sendRequest(req, &res)
-	if err != nil {
-		return nil, err
-	}
-
-	return &res, nil
-}
-
-func (p *DNSProvider) getDomainIDByName(name string) (int, error) {
-	// Load from cache if exists
-	p.domainIDMu.Lock()
-	id, ok := p.domainIDMapping[name]
-	p.domainIDMu.Unlock()
-	if ok {
-		return id, nil
-	}
-
-	// Find out by querying API
-	domains, err := p.listDomains()
-	if err != nil {
-		return domainNotFound, err
-	}
-
-	// Linear search over all registered domains
-	for _, domain := range domains {
-		if domain.Name == name || strings.HasSuffix(name, "."+domain.Name) {
-			p.domainIDMu.Lock()
-			p.domainIDMapping[name] = domain.ID
-			p.domainIDMu.Unlock()
-
-			return domain.ID, nil
-		}
-	}
-
-	return domainNotFound, fmt.Errorf("domain not found")
-}
-
 func (p *DNSProvider) getNameserverInfo(domainID int) (*NameserverResponse, error) {
 	req, err := p.makeRequest(http.MethodGet, fmt.Sprintf("/v1/domains/%d/nameservers", domainID), http.NoBody)
 	if err != nil {
@@ -218,6 +203,77 @@ func (p *DNSProvider) checkNameservers(domainID int) error {
 	}
 
 	return nil
+}
+
+func (p *DNSProvider) createRecord(domainID int, record *Record) error {
+	bs, err := json.Marshal(record)
+	if err != nil {
+		return fmt.Errorf("encoding record failed: %v", err)
+	}
+
+	req, err := p.makeRequest(http.MethodPost, fmt.Sprintf("/v1/domains/%d/nameservers/records", domainID), bytes.NewReader(bs))
+	if err != nil {
+		return err
+	}
+
+	return p.sendRequest(req, nil)
+}
+
+// Checkdomain doesn't seem provide a way to delete records but one can replace all records at once.
+// The current solution is to fetch all records and then use that list minus the record deleted as the new record list.
+// TODO: Simplify this function once Checkdomain do provide the functionality.
+func (p *DNSProvider) deleteTXTRecord(domainID int, recordName, recordValue string) error {
+	domainInfo, err := p.getDomainInfo(domainID)
+	if err != nil {
+		return err
+	}
+
+	nsInfo, err := p.getNameserverInfo(domainID)
+	if err != nil {
+		return err
+	}
+
+	allRecords, err := p.listRecords(domainID, "")
+	if err != nil {
+		return err
+	}
+
+	recordName = strings.TrimSuffix(recordName, "."+domainInfo.Name+".")
+
+	var recordsToKeep []*Record
+
+	// Find and delete matching records
+	for _, record := range allRecords {
+		if skipRecord(recordName, recordValue, record, nsInfo) {
+			continue
+		}
+
+		// Checkdomain API can return records without any TTL set (indicated by the value of 0).
+		// The API Call to replace the records would fail if we wouldn't specify a value.
+		// Thus, we use the default TTL queried beforehand
+		if record.TTL == 0 {
+			record.TTL = nsInfo.SOA.TTL
+		}
+
+		recordsToKeep = append(recordsToKeep, record)
+	}
+
+	return p.replaceRecords(domainID, recordsToKeep)
+}
+
+func (p *DNSProvider) getDomainInfo(domainID int) (*DomainResponse, error) {
+	req, err := p.makeRequest(http.MethodGet, fmt.Sprintf("/v1/domains/%d", domainID), http.NoBody)
+	if err != nil {
+		return nil, err
+	}
+
+	var res DomainResponse
+	err = p.sendRequest(req, &res)
+	if err != nil {
+		return nil, err
+	}
+
+	return &res, nil
 }
 
 func (p *DNSProvider) listRecords(domainID int, recordType string) ([]*Record, error) {
@@ -272,64 +328,6 @@ func (p *DNSProvider) replaceRecords(domainID int, records []*Record) error {
 	}
 
 	return p.sendRequest(req, nil)
-}
-
-func (p *DNSProvider) createRecord(domainID int, record *Record) error {
-	bs, err := json.Marshal(record)
-	if err != nil {
-		return fmt.Errorf("encoding record failed: %v", err)
-	}
-
-	req, err := p.makeRequest(http.MethodPost, fmt.Sprintf("/v1/domains/%d/nameservers/records", domainID), bytes.NewReader(bs))
-	if err != nil {
-		return err
-	}
-
-	return p.sendRequest(req, nil)
-}
-
-// Checkdomain doesn't seem provide a way to delete records but one can replace all records at once.
-// The current solution is to fetch all records and then use that list minus the record deleted as the new record list.
-// TODO: Simplify this function once Checkdomain do provide the functionality.
-func (p *DNSProvider) deleteTXTRecord(domainID int, recordName, recordValue string) error {
-	domainInfo, err := p.getDomainInfo(domainID)
-	if err != nil {
-		return err
-	}
-
-	if strings.HasSuffix(recordName, "."+domainInfo.Name+".") {
-		recordName = recordName[:len(recordName)-len(domainInfo.Name)-2]
-	}
-
-	nsInfo, err := p.getNameserverInfo(domainID)
-	if err != nil {
-		return err
-	}
-
-	allRecords, err := p.listRecords(domainID, "")
-	if err != nil {
-		return err
-	}
-
-	var recordsToKeep []*Record
-
-	// Find and delete matching records
-	for _, record := range allRecords {
-		if skipRecord(recordName, recordValue, record, nsInfo) {
-			continue
-		}
-
-		// Checkdomain API can return records without any TTL set (indicated by the value of 0).
-		// The API Call to replace the records would fail if we wouldn't specify a value.
-		// Thus, we use the default TTL queried beforehand
-		if record.TTL == 0 {
-			record.TTL = nsInfo.SOA.TTL
-		}
-
-		recordsToKeep = append(recordsToKeep, record)
-	}
-
-	return p.replaceRecords(domainID, recordsToKeep)
 }
 
 func skipRecord(recordName, recordValue string, record *Record, nsInfo *NameserverResponse) bool {

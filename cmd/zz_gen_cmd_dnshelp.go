@@ -21,6 +21,7 @@ func allDNSCodes() string {
 		"azure",
 		"bindman",
 		"bluecat",
+		"checkdomain",
 		"cloudflare",
 		"cloudns",
 		"cloudxns",
@@ -232,6 +233,27 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/bluecat`)
+
+	case "checkdomain":
+		// generated from: providers/dns/checkdomain/checkdomain.toml
+		ew.writeln(`Configuration for Checkdomain.`)
+		ew.writeln(`Code:	'checkdomain'`)
+		ew.writeln(`Since:	'v3.3.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "CHECKDOMAIN_TOKEN":	API token`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "CHECKDOMAIN_ENDPOINT":	API endpoint URL, defaults to https://api.checkdomain.de`)
+		ew.writeln(`	- "CHECKDOMAIN_HTTP_TIMEOUT":	API request timeout, defaults to 30 seconds`)
+		ew.writeln(`	- "CHECKDOMAIN_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "CHECKDOMAIN_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "CHECKDOMAIN_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/checkdomain`)
 
 	case "cloudflare":
 		// generated from: providers/dns/cloudflare/cloudflare.toml

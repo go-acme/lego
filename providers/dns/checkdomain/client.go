@@ -197,7 +197,7 @@ func (p *DNSProvider) checkNameservers(domainID int) error {
 	}
 
 	if !found1 || !found2 {
-		return fmt.Errorf("checkdomain: not using checkdomain nameservers, can not update records")
+		return fmt.Errorf("not using checkdomain nameservers, can not update records")
 	}
 
 	return nil

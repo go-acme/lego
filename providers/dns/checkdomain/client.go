@@ -139,10 +139,8 @@ func (p *DNSProvider) listDomains() ([]*Domain, error) {
 	q := req.URL.Query()
 	q.Set("limit", strconv.Itoa(maxLimit))
 
-	var (
-		currentPage = 1
-		totalPages  = maxInt
-	)
+	currentPage := 1
+	totalPages := maxInt
 
 	var domainList []*Domain
 	for currentPage <= totalPages {
@@ -154,8 +152,8 @@ func (p *DNSProvider) listDomains() ([]*Domain, error) {
 			return nil, fmt.Errorf("failed to send domain listing request: %v", err)
 		}
 
-		// This is the first response, so we update
-		// totalPages and allocate the slice memory.
+		// This is the first response,
+		// so we update totalPages and allocate the slice memory.
 		if totalPages == maxInt {
 			totalPages = res.Pages
 			domainList = make([]*Domain, 0, res.Total)
@@ -288,10 +286,8 @@ func (p *DNSProvider) listRecords(domainID int, recordType string) ([]*Record, e
 		q.Set("type", recordType)
 	}
 
-	var (
-		currentPage = 1
-		totalPages  = maxInt
-	)
+	currentPage := 1
+	totalPages := maxInt
 
 	var recordList []*Record
 	for currentPage <= totalPages {

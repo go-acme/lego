@@ -21,8 +21,8 @@ const (
 )
 
 const (
-	defaultEndpoint string = "https://api.checkdomain.de"
-	defaultTTL      int    = 300
+	defaultEndpoint = "https://api.checkdomain.de"
+	defaultTTL      = 300
 )
 
 // Config is used to configure the creation of the DNSProvider

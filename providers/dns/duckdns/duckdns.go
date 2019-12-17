@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-acme/lego/v3/challenge/dns01"
-	"github.com/go-acme/lego/v3/platform/config/env"
+	"github.com/go-acme/lego/tree/master/challenge/dns01"
+	"github.com/go-acme/lego/tree/master/platform/config/env"
 )
 
 // Config is used to configure the creation of the DNSProvider

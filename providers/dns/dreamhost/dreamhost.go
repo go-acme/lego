@@ -40,7 +40,7 @@ type DNSProvider struct {
 }
 
 // NewDNSProvider returns a new DNS provider using
-// environment variable DREAMHOST_TOKEN for adding and removing the DNS record.
+// environment variable DREAMHOST_API_KEY for adding and removing the DNS record.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("DREAMHOST_API_KEY")
 	if err != nil {

@@ -53,9 +53,8 @@ type DNSProvider struct {
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Google Cloud DNS.
-// it autodetects the projectID using the metadata service, but can be overridden
-// using environment variables.
-// Project name can be passed in the environment variable: GCE_PROJECT.
+// By default, the project name is auto-detected by using the metadata service,
+// it can be overridden using the GCE_PROJECT environment variable.
 // A Service Account can be passed in the environment variable: GCE_SERVICE_ACCOUNT
 // or by specifying the keyfile location: GCE_SERVICE_ACCOUNT_FILE
 func NewDNSProvider() (*DNSProvider, error) {

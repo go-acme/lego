@@ -30,7 +30,7 @@ _Please contribute by adding a CLI example._
 | Environment Variable Name | Description |
 |-----------------------|-------------|
 | `Application Default Credentials` | [Documentation](https://cloud.google.com/docs/authentication/production#providing_credentials_to_your_application) |
-| `GCE_PROJECT` | Project name |
+| `GCE_PROJECT` | Project name (by default, the project name is auto-detected by using the metadata service) |
 | `GCE_SERVICE_ACCOUNT` | Account |
 | `GCE_SERVICE_ACCOUNT_FILE` | Account file path |
 

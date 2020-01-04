@@ -8,7 +8,7 @@ Example = ''''''
 
 [Configuration]
   [Configuration.Credentials]
-    GCE_PROJECT = "Project name"
+    GCE_PROJECT = "Project name (by default, the project name is auto-detected by using the metadata service)"
     'Application Default Credentials' = "[Documentation](https://cloud.google.com/docs/authentication/production#providing_credentials_to_your_application)"
     GCE_SERVICE_ACCOUNT_FILE = "Account file path"
     GCE_SERVICE_ACCOUNT = "Account"

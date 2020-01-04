@@ -20,6 +20,7 @@ var envTest = tester.NewEnvTest(
 	"GCE_PROJECT",
 	"GCE_SERVICE_ACCOUNT_FILE",
 	"GOOGLE_APPLICATION_CREDENTIALS",
+	"GCE_METADATA_HOST",
 	"GCE_SERVICE_ACCOUNT").
 	WithDomain("GCE_DOMAIN").
 	WithLiveTestExtra(func() bool {
@@ -40,6 +41,7 @@ func TestNewDNSProvider(t *testing.T) {
 				"GCE_SERVICE_ACCOUNT_FILE": "",
 				// as Travis run on GCE, we have to alter env
 				"GOOGLE_APPLICATION_CREDENTIALS": "not-a-secret-file",
+				"GCE_METADATA_HOST":              "http://lego.wtf", // defined here to avoid the client cache.
 			},
 			expected: "googlecloud: unable to get Google Cloud client: google: error getting credentials using GOOGLE_APPLICATION_CREDENTIALS environment variable: open not-a-secret-file: no such file or directory",
 		},
@@ -48,6 +50,8 @@ func TestNewDNSProvider(t *testing.T) {
 			envVars: map[string]string{
 				"GCE_PROJECT":              "",
 				"GCE_SERVICE_ACCOUNT_FILE": "",
+				// as Travis run on GCE, we have to alter env
+				"GCE_METADATA_HOST": "http://lego.wtf",
 			},
 			expected: "googlecloud: project name missing",
 		},

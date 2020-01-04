@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"time"
 
+	"cloud.google.com/go/compute/metadata"
 	"github.com/go-acme/lego/v3/challenge/dns01"
 	"github.com/go-acme/lego/v3/log"
 	"github.com/go-acme/lego/v3/platform/config/env"
@@ -52,7 +53,9 @@ type DNSProvider struct {
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Google Cloud DNS.
-// Project name must be passed in the environment variable: GCE_PROJECT.
+// it autodetects the projectID using the metadata service, but can be overridden
+// using environment variables.
+// Project name can be passed in the environment variable: GCE_PROJECT.
 // A Service Account can be passed in the environment variable: GCE_SERVICE_ACCOUNT
 // or by specifying the keyfile location: GCE_SERVICE_ACCOUNT_FILE
 func NewDNSProvider() (*DNSProvider, error) {
@@ -62,7 +65,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	}
 
 	// Use default credentials.
-	project := env.GetOrDefaultString("GCE_PROJECT", "")
+	project := env.GetOrDefaultString("GCE_PROJECT", autodetectProjectID())
 	return NewDNSProviderCredentials(project)
 }
 
@@ -334,4 +337,12 @@ func mustUnquote(raw string) string {
 		return raw
 	}
 	return clean
+}
+
+func autodetectProjectID() string {
+	if pid, err := metadata.ProjectID(); err == nil {
+		return pid
+	}
+
+	return ""
 }

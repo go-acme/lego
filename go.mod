@@ -3,6 +3,7 @@ module github.com/go-acme/lego/v3
 go 1.13
 
 require (
+	cloud.google.com/go v0.50.0
 	github.com/Azure/azure-sdk-for-go v32.4.0+incompatible
 	github.com/Azure/go-autorest/autorest v0.5.0
 	github.com/Azure/go-autorest/autorest/adal v0.2.0
@@ -41,10 +42,10 @@ require (
 	github.com/transip/gotransip v0.0.0-20190812104329-6d8d9179b66f
 	github.com/urfave/cli v1.22.1
 	github.com/vultr/govultr v0.1.4
-	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4
+	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
 	golang.org/x/net v0.0.0-20191027093000-83d349e8ac1a
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
-	google.golang.org/api v0.8.0
+	google.golang.org/api v0.14.0
 	gopkg.in/ns1/ns1-go.v2 v2.0.0-20190730140822-b51389932cbc
 	gopkg.in/square/go-jose.v2 v2.3.1
 )

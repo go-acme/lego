@@ -3,6 +3,7 @@ package certcrypto
 import (
 	"crypto"
 	"crypto/ecdsa"
+	"crypto/ed25519"
 	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/rsa"
@@ -13,6 +14,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"strings"
 	"time"
 
 	"golang.org/x/crypto/ocsp"
@@ -77,17 +79,33 @@ func ParsePEMBundle(bundle []byte) ([]*x509.Certificate, error) {
 	return certificates, nil
 }
 
+// ParsePEMPrivateKey parses a private key from key, which is a PEM block.
 func ParsePEMPrivateKey(key []byte) (crypto.PrivateKey, error) {
-	keyBlock, _ := pem.Decode(key)
+	// borrowed from Go standard library, to handle various private key and PEM block types; see
+	// https://sourcegraph.com/github.com/golang/go@8adc1e00aa1a92a85b9d6f3526419d49dd7859dd/-/blob/src/crypto/tls/tls.go
 
-	switch keyBlock.Type {
-	case "RSA PRIVATE KEY":
-		return x509.ParsePKCS1PrivateKey(keyBlock.Bytes)
-	case "EC PRIVATE KEY":
-		return x509.ParseECPrivateKey(keyBlock.Bytes)
-	default:
-		return nil, errors.New("unknown PEM header value")
+	keyBlockDER, _ := pem.Decode(key)
+
+	if keyBlockDER.Type != "PRIVATE KEY" && !strings.HasSuffix(keyBlockDER.Type, " PRIVATE KEY") {
+		return nil, fmt.Errorf("unknown PEM header '%s'", keyBlockDER.Type)
 	}
+
+	if key, err := x509.ParsePKCS1PrivateKey(keyBlockDER.Bytes); err == nil {
+		return key, nil
+	}
+	if key, err := x509.ParsePKCS8PrivateKey(keyBlockDER.Bytes); err == nil {
+		switch key := key.(type) {
+		case *rsa.PrivateKey, *ecdsa.PrivateKey, ed25519.PrivateKey:
+			return key, nil
+		default:
+			return nil, fmt.Errorf("found unknown private key type in PKCS#8 wrapping: %T", key)
+		}
+	}
+	if key, err := x509.ParseECPrivateKey(keyBlockDER.Bytes); err == nil {
+		return key, nil
+	}
+
+	return nil, errors.New("failed to parse private key")
 }
 
 func GeneratePrivateKey(keyType KeyType) (crypto.PrivateKey, error) {

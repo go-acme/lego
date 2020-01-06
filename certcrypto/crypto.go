@@ -80,19 +80,20 @@ func ParsePEMBundle(bundle []byte) ([]*x509.Certificate, error) {
 }
 
 // ParsePEMPrivateKey parses a private key from key, which is a PEM block.
+// Borrowed from Go standard library, to handle various private key and PEM block types.
+// https://github.com/golang/go/blob/693748e9fa385f1e2c3b91ca9acbb6c0ad2d133d/src/crypto/tls/tls.go#L291-L308
+// https://github.com/golang/go/blob/693748e9fa385f1e2c3b91ca9acbb6c0ad2d133d/src/crypto/tls/tls.go#L238)
 func ParsePEMPrivateKey(key []byte) (crypto.PrivateKey, error) {
-	// borrowed from Go standard library, to handle various private key and PEM block types; see
-	// https://sourcegraph.com/github.com/golang/go@8adc1e00aa1a92a85b9d6f3526419d49dd7859dd/-/blob/src/crypto/tls/tls.go
-
 	keyBlockDER, _ := pem.Decode(key)
 
 	if keyBlockDER.Type != "PRIVATE KEY" && !strings.HasSuffix(keyBlockDER.Type, " PRIVATE KEY") {
-		return nil, fmt.Errorf("unknown PEM header '%s'", keyBlockDER.Type)
+		return nil, fmt.Errorf("unknown PEM header %q", keyBlockDER.Type)
 	}
 
 	if key, err := x509.ParsePKCS1PrivateKey(keyBlockDER.Bytes); err == nil {
 		return key, nil
 	}
+
 	if key, err := x509.ParsePKCS8PrivateKey(keyBlockDER.Bytes); err == nil {
 		switch key := key.(type) {
 		case *rsa.PrivateKey, *ecdsa.PrivateKey, ed25519.PrivateKey:
@@ -101,6 +102,7 @@ func ParsePEMPrivateKey(key []byte) (crypto.PrivateKey, error) {
 			return nil, fmt.Errorf("found unknown private key type in PKCS#8 wrapping: %T", key)
 		}
 	}
+
 	if key, err := x509.ParseECPrivateKey(keyBlockDER.Bytes); err == nil {
 		return key, nil
 	}

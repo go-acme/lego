@@ -18,7 +18,6 @@ require (
 	github.com/cenkalti/backoff/v3 v3.0.0
 	github.com/cloudflare/cloudflare-go v0.10.2
 	github.com/cpu/goacmedns v0.0.1
-	github.com/decker502/dnspod-go v0.2.0
 	github.com/dnsimple/dnsimple-go v0.30.0
 	github.com/exoscale/egoscale v0.18.1
 	github.com/gophercloud/gophercloud v0.3.0
@@ -31,6 +30,7 @@ require (
 	github.com/miekg/dns v1.1.15
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
 	github.com/nrdcg/auroradns v1.0.0
+	github.com/nrdcg/dnspod-go v0.3.0
 	github.com/nrdcg/goinwx v0.6.1
 	github.com/nrdcg/namesilo v0.2.1
 	github.com/oracle/oci-go-sdk v7.0.0+incompatible

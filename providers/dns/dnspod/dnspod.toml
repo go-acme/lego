@@ -17,4 +17,4 @@ Example = ''''''
 
 [Links]
   API = "https://www.dnspod.com/docs/index.html"
-  GoClient = "https://github.com/decker502/dnspod-go"
+  GoClient = "https://github.com/nrdcg/dnspod-go"

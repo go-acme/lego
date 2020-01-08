@@ -1,5 +1,18 @@
 # Changelog
 
+## [v3.3.0] - 2020-01-08
+
+### Added:
+- **[dnsprovider]** Add DNS provider for Checkdomain
+- **[lib]** Add support to update account
+
+### Changed:
+- **[dnsprovider]** gcloud: Auto-detection of the project ID.
+- **[lib]** Successfully parse private key PEM blocks
+
+### Fixed:
+- **[dnsprovider]** Update dnspod, because of API breaking changes.
+
 ## [v3.2.0] - 2019-11-10
 
 ### Added:

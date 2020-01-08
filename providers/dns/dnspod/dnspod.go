@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	dnspod "github.com/decker502/dnspod-go"
 	"github.com/go-acme/lego/v3/challenge/dns01"
 	"github.com/go-acme/lego/v3/platform/config/env"
+	"github.com/nrdcg/dnspod-go"
 )
 
 // Config is used to configure the creation of the DNSProvider
@@ -68,7 +68,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	params := dnspod.CommonParams{LoginToken: config.LoginToken, Format: "json"}
 
 	client := dnspod.NewClient(params)
-	client.HttpClient = config.HTTPClient
+	client.HTTPClient = config.HTTPClient
 
 	return &DNSProvider{client: client, config: config}, nil
 }

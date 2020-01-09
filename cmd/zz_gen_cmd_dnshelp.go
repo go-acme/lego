@@ -1200,10 +1200,10 @@ func displayDNSHelp(name string) error {
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "AWS_ACCESS_KEY_ID":	Managed by the AWS client`)
+		ew.writeln(`	- "AWS_ACCESS_KEY_ID":	Managed by the AWS client ('AWS_ACCESS_KEY_ID_FILE' is not supported)`)
 		ew.writeln(`	- "AWS_HOSTED_ZONE_ID":	Override the hosted zone ID`)
-		ew.writeln(`	- "AWS_REGION":	Managed by the AWS client`)
-		ew.writeln(`	- "AWS_SECRET_ACCESS_KEY":	Managed by the AWS client`)
+		ew.writeln(`	- "AWS_REGION":	Managed by the AWS client ('AWS_REGION_FILE' is not supported)`)
+		ew.writeln(`	- "AWS_SECRET_ACCESS_KEY":	Managed by the AWS client ('AWS_SECRET_ACCESS_KEY_FILE' is not supported)`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)

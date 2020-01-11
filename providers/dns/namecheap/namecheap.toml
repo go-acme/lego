@@ -4,7 +4,11 @@ URL = "https://www.namecheap.com"
 Code = "namecheap"
 Since = "v0.3.0"
 
-Example = ''''''
+Example = '''
+NAMECHEAP_API_USER=user \
+NAMECHEAP_API_KEY=key \
+lego --dns namecheap --email someaccount@email.com --domains "foo.email.com" run
+'''
 
 [Configuration]
   [Configuration.Credentials]
@@ -15,6 +19,7 @@ Example = ''''''
     NAMECHEAP_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
     NAMECHEAP_TTL = "The TTL of the TXT record used for the DNS challenge"
     NAMECHEAP_HTTP_TIMEOUT = "API request timeout"
+    NAMECHEAP_SANDBOX = "Activate the sandbox (boolean)"
 
 [Links]
   API = "https://www.namecheap.com/support/api/methods.aspx"

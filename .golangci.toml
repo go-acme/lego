@@ -90,7 +90,7 @@
     text = "`envTest` is a global variable"
   [[issues.exclude-rules]]
     path = "providers/dns/namecheap/namecheap_test.go"
-    text = "`(tldsMock|testCases)` is a global variable"
+    text = "`testCases` is a global variable"
   [[issues.exclude-rules]]
     path = "providers/dns/acmedns/acmedns_test.go"
     text = "`(errorClientErr|errorStorageErr|egTestAccount)` is a global variable"

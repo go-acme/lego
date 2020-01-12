@@ -30,6 +30,7 @@ import (
 
 const (
 	defaultBaseURL = "https://api.namecheap.com/xml.response"
+	sandboxBaseURL = "https://api.sandbox.namecheap.com/xml.response"
 	getIPURL       = "https://dynamicdns.park-your-domain.com/getip"
 )
 
@@ -60,8 +61,13 @@ type Config struct {
 
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
+	baseURL := defaultBaseURL
+	if env.GetOrDefaultBool("NAMECHEAP_SANDBOX", false) {
+		baseURL = sandboxBaseURL
+	}
+
 	return &Config{
-		BaseURL:            defaultBaseURL,
+		BaseURL:            baseURL,
 		Debug:              env.GetOrDefaultBool("NAMECHEAP_DEBUG", false),
 		TTL:                env.GetOrDefaultInt("NAMECHEAP_TTL", dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond("NAMECHEAP_PROPAGATION_TIMEOUT", 60*time.Minute),

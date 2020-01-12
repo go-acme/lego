@@ -946,6 +946,7 @@ func displayDNSHelp(name string) error {
 		ew.writeln(`	- "NAMECHEAP_HTTP_TIMEOUT":	API request timeout`)
 		ew.writeln(`	- "NAMECHEAP_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "NAMECHEAP_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "NAMECHEAP_SANDBOX":	Activate the sandbox (boolean)`)
 		ew.writeln(`	- "NAMECHEAP_TTL":	The TTL of the TXT record used for the DNS challenge`)
 
 		ew.writeln()

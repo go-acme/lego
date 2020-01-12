@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/cenkalti/backoff/v3"
+	"github.com/cenkalti/backoff/v4"
 	"github.com/go-acme/lego/v3/acme"
 	"github.com/go-acme/lego/v3/acme/api"
 	"github.com/go-acme/lego/v3/challenge"

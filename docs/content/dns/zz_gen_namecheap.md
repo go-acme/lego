@@ -18,9 +18,13 @@ Configuration for [Namecheap](https://www.namecheap.com).
 
 - Code: `namecheap`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the Namecheap provider:
+
+```bash
+NAMECHEAP_API_USER=user \
+NAMECHEAP_API_KEY=key \
+lego --dns namecheap --email someaccount@email.com --domains "foo.email.com" run
+```
 
 
 
@@ -43,6 +47,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `NAMECHEAP_HTTP_TIMEOUT` | API request timeout |
 | `NAMECHEAP_POLLING_INTERVAL` | Time between DNS propagation check |
 | `NAMECHEAP_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
+| `NAMECHEAP_SANDBOX` | Activate the sandbox (boolean) |
 | `NAMECHEAP_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.

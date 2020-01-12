@@ -82,7 +82,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	recordAttributes := d.newTxtRecord(zoneName, fqdn, value, d.config.TTL)
-	_, _, err = d.client.Domains.CreateRecord(zoneID, *recordAttributes)
+	_, _, err = d.client.Records.Create(zoneID, *recordAttributes)
 	if err != nil {
 		return fmt.Errorf("API call failed: %v", err)
 	}
@@ -105,7 +105,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	for _, rec := range records {
-		_, err := d.client.Domains.DeleteRecord(zoneID, rec.ID)
+		_, err := d.client.Records.Delete(zoneID, rec.ID)
 		if err != nil {
 			return err
 		}
@@ -163,7 +163,7 @@ func (d *DNSProvider) findTxtRecords(domain, fqdn string) ([]dnspod.Record, erro
 	}
 
 	var records []dnspod.Record
-	result, _, err := d.client.Domains.ListRecords(zoneID, "")
+	result, _, err := d.client.Records.List(zoneID, "")
 	if err != nil {
 		return records, fmt.Errorf("API call has failed: %v", err)
 	}

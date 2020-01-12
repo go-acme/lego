@@ -30,7 +30,7 @@ require (
 	github.com/miekg/dns v1.1.15
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
 	github.com/nrdcg/auroradns v1.0.0
-	github.com/nrdcg/dnspod-go v0.3.0
+	github.com/nrdcg/dnspod-go v0.4.0
 	github.com/nrdcg/goinwx v0.6.1
 	github.com/nrdcg/namesilo v0.2.1
 	github.com/oracle/oci-go-sdk v7.0.0+incompatible

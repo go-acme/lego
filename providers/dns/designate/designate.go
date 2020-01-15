@@ -240,7 +240,7 @@ func (d *DNSProvider) getRecord(zoneID string, wanted string) (*recordsets.Recor
 	}
 
 	for _, record := range allRecords {
-		if record.Name == wanted {
+		if record.Name == wanted && record.Type == "TXT" {
 			return &record, nil
 		}
 	}

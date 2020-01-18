@@ -211,8 +211,7 @@ func getClientIP(client *http.Client, debug bool) (addr string, err error) {
 	return string(clientIP), nil
 }
 
-// newChallenge builds a challenge record from a domain name and a challenge
-// authentication key.
+// newChallenge builds a challenge record from a domain name and a challenge authentication key.
 func newChallenge(domain, keyAuth string) (*challenge, error) {
 	domain = dns01.UnFqdn(domain)
 
@@ -222,7 +221,7 @@ func newChallenge(domain, keyAuth string) (*challenge, error) {
 	}
 
 	parts := strings.Split(domain, ".")
-	longest := len(parts) - (strings.Count(tld, ".") + 1)
+	longest := len(parts) - strings.Count(tld, ".") - 1
 	sld := parts[longest-1]
 
 	var host string

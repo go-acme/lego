@@ -161,30 +161,26 @@ func TestDomainSplit(t *testing.T) {
 			}
 
 			if test.valid && valid {
-				assertEq(t, "domain", ch.domain, test.domain)
-				assertEq(t, "tld", ch.tld, test.tld)
-				assertEq(t, "sld", ch.sld, test.sld)
-				assertEq(t, "host", ch.host, test.host)
+				require.NotNil(t, ch)
+				assert.Equal(t, test.domain, ch.domain, "domain")
+				assert.Equal(t, test.tld, ch.tld, "tld")
+				assert.Equal(t, test.sld, ch.sld, "sld")
+				assert.Equal(t, test.host, ch.host, "host")
 			}
 		})
 	}
 }
 
-func assertEq(t *testing.T, variable, got, want string) {
-	if got != want {
-		t.Errorf("Expected %s to be '%s' but got '%s'", variable, want, got)
-	}
-}
-
 func assertHdr(tc *testCase, t *testing.T, values *url.Values) {
-	ch, _ := newChallenge(tc.domain, "")
+	t.Helper()
 
-	assertEq(t, "ApiUser", values.Get("ApiUser"), envTestUser)
-	assertEq(t, "ApiKey", values.Get("ApiKey"), envTestKey)
-	assertEq(t, "UserName", values.Get("UserName"), envTestUser)
-	assertEq(t, "ClientIp", values.Get("ClientIp"), envTestClientIP)
-	assertEq(t, "SLD", values.Get("SLD"), ch.sld)
-	assertEq(t, "TLD", values.Get("TLD"), ch.tld)
+	ch, _ := newChallenge(tc.domain, "")
+	assert.Equal(t, envTestUser, values.Get("ApiUser"), "ApiUser")
+	assert.Equal(t, envTestKey, values.Get("ApiKey"), "ApiKey")
+	assert.Equal(t, envTestUser, values.Get("UserName"), "UserName")
+	assert.Equal(t, envTestClientIP, values.Get("ClientIp"), "ClientIp")
+	assert.Equal(t, ch.sld, values.Get("SLD"), "SLD")
+	assert.Equal(t, ch.tld, values.Get("TLD"), "TLD")
 }
 
 func mockServer(tc *testCase, t *testing.T) http.Handler {

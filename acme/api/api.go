@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/cenkalti/backoff/v3"
+	"github.com/cenkalti/backoff/v4"
 	"github.com/go-acme/lego/v3/acme"
 	"github.com/go-acme/lego/v3/acme/api/internal/nonces"
 	"github.com/go-acme/lego/v3/acme/api/internal/secure"

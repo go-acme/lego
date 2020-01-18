@@ -18,16 +18,6 @@ const (
 	envTestClientIP = "10.0.0.1"
 )
 
-var tldsMock = map[string]string{
-	"com.au": "com.au",
-	"com":    "com",
-	"co.uk":  "co.uk",
-	"uk":     "uk",
-	"edu":    "edu",
-	"co.com": "co.com",
-	"za.com": "za.com",
-}
-
 func TestDNSProvider_getHosts(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
@@ -36,7 +26,7 @@ func TestDNSProvider_getHosts(t *testing.T) {
 
 			provider := mockDNSProvider(mock.URL)
 
-			ch, err := newChallenge(test.domain, "", tldsMock)
+			ch, err := newChallenge(test.domain, "")
 			require.NoError(t, err)
 
 			hosts, err := provider.getHosts(ch.sld, ch.tld)
@@ -77,7 +67,7 @@ func TestDNSProvider_setHosts(t *testing.T) {
 
 			prov := mockDNSProvider(mock.URL)
 
-			ch, err := newChallenge(test.domain, "", tldsMock)
+			ch, err := newChallenge(test.domain, "")
 			require.NoError(t, err)
 
 			hosts, err := prov.getHosts(ch.sld, ch.tld)
@@ -144,23 +134,22 @@ func TestDomainSplit(t *testing.T) {
 		{domain: "test.co.com", valid: true, tld: "co.com", sld: "test"},
 		{domain: "www.test.com.au", valid: true, tld: "com.au", sld: "test", host: "www"},
 		{domain: "www.za.com", valid: true, tld: "za.com", sld: "www"},
+		{domain: "my.test.tf", valid: true, tld: "tf", sld: "test", host: "my"},
 		{},
 		{domain: "a"},
 		{domain: "com"},
+		{domain: "com.au"},
 		{domain: "co.com"},
 		{domain: "co.uk"},
-		{domain: "test.au"},
+		{domain: "tf"},
 		{domain: "za.com"},
-		{domain: "www.za"},
-		{domain: "www.test.au"},
-		{domain: "www.test.unk"},
 	}
 
 	for _, test := range tests {
 		test := test
 		t.Run(test.domain, func(t *testing.T) {
 			valid := true
-			ch, err := newChallenge(test.domain, "", tldsMock)
+			ch, err := newChallenge(test.domain, "")
 			if err != nil {
 				valid = false
 			}
@@ -172,30 +161,26 @@ func TestDomainSplit(t *testing.T) {
 			}
 
 			if test.valid && valid {
-				assertEq(t, "domain", ch.domain, test.domain)
-				assertEq(t, "tld", ch.tld, test.tld)
-				assertEq(t, "sld", ch.sld, test.sld)
-				assertEq(t, "host", ch.host, test.host)
+				require.NotNil(t, ch)
+				assert.Equal(t, test.domain, ch.domain, "domain")
+				assert.Equal(t, test.tld, ch.tld, "tld")
+				assert.Equal(t, test.sld, ch.sld, "sld")
+				assert.Equal(t, test.host, ch.host, "host")
 			}
 		})
 	}
 }
 
-func assertEq(t *testing.T, variable, got, want string) {
-	if got != want {
-		t.Errorf("Expected %s to be '%s' but got '%s'", variable, want, got)
-	}
-}
-
 func assertHdr(tc *testCase, t *testing.T, values *url.Values) {
-	ch, _ := newChallenge(tc.domain, "", tldsMock)
+	t.Helper()
 
-	assertEq(t, "ApiUser", values.Get("ApiUser"), envTestUser)
-	assertEq(t, "ApiKey", values.Get("ApiKey"), envTestKey)
-	assertEq(t, "UserName", values.Get("UserName"), envTestUser)
-	assertEq(t, "ClientIp", values.Get("ClientIp"), envTestClientIP)
-	assertEq(t, "SLD", values.Get("SLD"), ch.sld)
-	assertEq(t, "TLD", values.Get("TLD"), ch.tld)
+	ch, _ := newChallenge(tc.domain, "")
+	assert.Equal(t, envTestUser, values.Get("ApiUser"), "ApiUser")
+	assert.Equal(t, envTestKey, values.Get("ApiKey"), "ApiKey")
+	assert.Equal(t, envTestUser, values.Get("UserName"), "UserName")
+	assert.Equal(t, envTestClientIP, values.Get("ClientIp"), "ClientIp")
+	assert.Equal(t, ch.sld, values.Get("SLD"), "SLD")
+	assert.Equal(t, ch.tld, values.Get("TLD"), "TLD")
 }
 
 func mockServer(tc *testCase, t *testing.T) http.Handler {
@@ -209,9 +194,6 @@ func mockServer(tc *testCase, t *testing.T) http.Handler {
 				assertHdr(tc, t, &values)
 				w.WriteHeader(http.StatusOK)
 				fmt.Fprint(w, tc.getHostsResponse)
-			case "namecheap.domains.getTldList":
-				w.WriteHeader(http.StatusOK)
-				fmt.Fprint(w, responseGetTlds)
 			default:
 				t.Errorf("Unexpected GET command: %s", cmd)
 			}
@@ -372,19 +354,4 @@ const responseGetHostsErrorBadAPIKey1 = `<?xml version="1.0" encoding="utf-8"?>
   <Server>PHX01SBAPI01</Server>
   <GMTTimeDifference>--5:00</GMTTimeDifference>
   <ExecutionTime>0</ExecutionTime>
-</ApiResponse>`
-
-const responseGetTlds = `<?xml version="1.0" encoding="utf-8"?>
-<ApiResponse Status="OK" xmlns="http://api.namecheap.com/xml.response">
-  <Errors />
-  <Warnings />
-  <RequestedCommand>namecheap.domains.getTldList</RequestedCommand>
-  <CommandResponse Type="namecheap.domains.getTldList">
-    <Tlds>
-      <Tld Name="com" NonRealTime="false" MinRegisterYears="1" MaxRegisterYears="10" MinRenewYears="1" MaxRenewYears="10" RenewalMinDays="0" RenewalMaxDays="4000" ReactivateMaxDays="27" MinTransferYears="1" MaxTransferYears="1" IsApiRegisterable="true" IsApiRenewable="true" IsApiTransferable="true" IsEppRequired="true" IsDisableModContact="false" IsDisableWGAllot="false" IsIncludeInExtendedSearchOnly="false" SequenceNumber="10" Type="GTLD" SubType="" IsSupportsIDN="true" Category="A" SupportsRegistrarLock="true" AddGracePeriodDays="5" WhoisVerification="false" ProviderApiDelete="true" TldState="" SearchGroup="" Registry="">Most recognized top level domain<Categories><TldCategory Name="popular" SequenceNumber="10" /></Categories></Tld>
-    </Tlds>
-  </CommandResponse>
-  <Server>PHX01SBAPI01</Server>
-  <GMTTimeDifference>--5:00</GMTTimeDifference>
-  <ExecutionTime>0.004</ExecutionTime>
 </ApiResponse>`

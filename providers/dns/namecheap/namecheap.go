@@ -13,6 +13,7 @@ import (
 	"github.com/go-acme/lego/v3/challenge/dns01"
 	"github.com/go-acme/lego/v3/log"
 	"github.com/go-acme/lego/v3/platform/config/env"
+	"golang.org/x/net/publicsuffix"
 )
 
 // Notes about namecheap's tool API:
@@ -129,12 +130,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present installs a TXT record for the DNS challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	tlds, err := d.getTLDs()
-	if err != nil {
-		return fmt.Errorf("namecheap: %v", err)
-	}
-
-	ch, err := newChallenge(domain, keyAuth, tlds)
+	ch, err := newChallenge(domain, keyAuth)
 	if err != nil {
 		return fmt.Errorf("namecheap: %v", err)
 	}
@@ -169,12 +165,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes a TXT record used for a previous DNS challenge.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	tlds, err := d.getTLDs()
-	if err != nil {
-		return fmt.Errorf("namecheap: %v", err)
-	}
-
-	ch, err := newChallenge(domain, keyAuth, tlds)
+	ch, err := newChallenge(domain, keyAuth)
 	if err != nil {
 		return fmt.Errorf("namecheap: %v", err)
 	}
@@ -226,25 +217,17 @@ func getClientIP(client *http.Client, debug bool) (addr string, err error) {
 	return string(clientIP), nil
 }
 
-// newChallenge builds a challenge record from a domain name, a challenge
-// authentication key, and a map of available TLDs.
-func newChallenge(domain, keyAuth string, tlds map[string]string) (*challenge, error) {
+// newChallenge builds a challenge record from a domain name and a challenge authentication key.
+func newChallenge(domain, keyAuth string) (*challenge, error) {
 	domain = dns01.UnFqdn(domain)
-	parts := strings.Split(domain, ".")
 
-	// Find the longest matching TLD.
-	longest := -1
-	for i := len(parts); i > 0; i-- {
-		t := strings.Join(parts[i-1:], ".")
-		if _, found := tlds[t]; found {
-			longest = i - 1
-		}
-	}
-	if longest < 1 {
+	tld, _ := publicsuffix.PublicSuffix(domain)
+	if tld == domain {
 		return nil, fmt.Errorf("invalid domain name %q", domain)
 	}
 
-	tld := strings.Join(parts[longest:], ".")
+	parts := strings.Split(domain, ".")
+	longest := len(parts) - strings.Count(tld, ".") - 1
 	sld := parts[longest-1]
 
 	var host string

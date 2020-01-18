@@ -42,39 +42,6 @@ type getHostsResponse struct {
 	Hosts   []Record   `xml:"CommandResponse>DomainDNSGetHostsResult>host"`
 }
 
-type getTldsResponse struct {
-	XMLName xml.Name   `xml:"ApiResponse"`
-	Errors  []apiError `xml:"Errors>Error"`
-	Result  []struct {
-		Name string `xml:",attr"`
-	} `xml:"CommandResponse>Tlds>Tld"`
-}
-
-// getTLDs requests the list of available TLDs.
-// https://www.namecheap.com/support/api/methods/domains/get-tld-list.aspx
-func (d *DNSProvider) getTLDs() (map[string]string, error) {
-	request, err := d.newRequestGet("namecheap.domains.getTldList")
-	if err != nil {
-		return nil, err
-	}
-
-	var gtr getTldsResponse
-	err = d.do(request, &gtr)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(gtr.Errors) > 0 {
-		return nil, fmt.Errorf("%s [%d]", gtr.Errors[0].Description, gtr.Errors[0].Number)
-	}
-
-	tlds := make(map[string]string)
-	for _, t := range gtr.Result {
-		tlds[t.Name] = t.Name
-	}
-	return tlds, nil
-}
-
 // getHosts reads the full list of DNS host records.
 // https://www.namecheap.com/support/api/methods/domains-dns/get-hosts.aspx
 func (d *DNSProvider) getHosts(sld, tld string) ([]Record, error) {

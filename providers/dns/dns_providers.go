@@ -183,12 +183,12 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return rfc2136.NewDNSProvider()
 	case "sakuracloud":
 		return sakuracloud.NewDNSProvider()
-	case "stackpath":
-		return stackpath.NewDNSProvider()
 	case "scaleway":
 		return scaleway.NewDNSProvider()
 	case "selectel":
 		return selectel.NewDNSProvider()
+	case "stackpath":
+		return stackpath.NewDNSProvider()
 	case "transip":
 		return transip.NewDNSProvider()
 	case "vegadns":

@@ -17,8 +17,8 @@ const (
 	defaultBaseURL            = "https://api.scaleway.com"
 	defaultVersion            = "v2alpha2"
 	minTTL                    = 60
-	defaultpollingInterval    = 10 * time.Second
-	defaultpropagationTimeout = 120 * time.Second
+	defaultPollingInterval    = 10 * time.Second
+	defaultPropagationTimeout = 120 * time.Second
 )
 
 const (
@@ -47,8 +47,8 @@ func NewDefaultConfig() *Config {
 		BaseURL:            env.GetOrDefaultString(baseURLEnvVar, defaultBaseURL),
 		Version:            env.GetOrDefaultString(apiVersionEnvVar, defaultVersion),
 		TTL:                env.GetOrDefaultInt(ttlEnvVar, minTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(propagationTimeoutEnvVar, defaultpropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(pollingIntervalEnvVar, defaultpollingInterval),
+		PropagationTimeout: env.GetOrDefaultSecond(propagationTimeoutEnvVar, defaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(pollingIntervalEnvVar, defaultPollingInterval),
 	}
 }
 
@@ -63,7 +63,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(apiTokenEnvVar)
 	if err != nil {
-		return nil, fmt.Errorf("scaleway: %v", err)
+		return nil, fmt.Errorf("scaleway: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -108,11 +108,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Type: "TXT",
 		TTL:  uint32(d.config.TTL),
 		Name: fqdn,
-		Data: fmt.Sprintf("\"%s\"", value),
+		Data: fmt.Sprintf(`"%s"`, value),
 	}
+
 	err := d.client.AddRecord(domain, txtRecord)
 	if err != nil {
-		return fmt.Errorf("scaleway: %v", err)
+		return fmt.Errorf("scaleway: %w", err)
 	}
 	return nil
 }
@@ -125,11 +126,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		Type: "TXT",
 		TTL:  uint32(d.config.TTL),
 		Name: fqdn,
-		Data: fmt.Sprintf("\"%s\"", value),
+		Data: fmt.Sprintf(`"%s"`, value),
 	}
+
 	err := d.client.DeleteRecord(domain, txtRecord)
 	if err != nil {
-		return fmt.Errorf("scaleway: %v", err)
+		return fmt.Errorf("scaleway: %w", err)
 	}
 	return nil
 }

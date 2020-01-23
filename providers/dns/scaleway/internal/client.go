@@ -21,6 +21,10 @@ type APIError struct {
 	Message string `json:"message"`
 }
 
+func (a APIError) Error() string {
+	return a.Message
+}
+
 // Record represents a DNS record
 type Record struct {
 	Data     string `json:"data,omitempty"`
@@ -74,10 +78,11 @@ type Client struct {
 
 // NewClient returns a client instance.
 func NewClient(opts ClientOpts) *Client {
-	var baseURL = defaultEndpoint
+	baseURL := defaultEndpoint
 	if opts.BaseURL != "" {
 		baseURL = opts.BaseURL
 	}
+
 	return &Client{
 		token:      opts.Token,
 		baseURL:    baseURL,
@@ -87,66 +92,75 @@ func NewClient(opts ClientOpts) *Client {
 
 // AddRecord adds Record for given zone.
 func (c *Client) AddRecord(zone string, record Record) error {
-	setRecord := make(map[string]interface{})
-	setRecord[operationAdd] = RecordChangeAdd{
-		Records: []*Record{&record},
+	changes := map[string]RecordChangeAdd{
+		operationAdd: {
+			Records: []*Record{&record},
+		},
 	}
+
 	request := UpdateDNSZoneRecordsRequest{
 		DNSZone:          zone,
-		Changes:          []interface{}{setRecord},
+		Changes:          []interface{}{changes},
 		ReturnAllRecords: false,
 	}
+
 	uri := fmt.Sprintf(uriUpdateRecords, zone)
 	req, err := c.newRequest(http.MethodPatch, uri, request)
 	if err != nil {
 		return err
 	}
-	err = c.do(req, nil)
-	return err
+
+	return c.do(req, nil)
 }
 
 // SetRecord sets a unique Record for given zone.
 func (c *Client) SetRecord(zone string, record Record) error {
-	setRecord := make(map[string]interface{})
-	setRecord[operationSet] = RecordChangeSet{
-		Name:    record.Name,
-		Type:    record.Type,
-		Records: []*Record{&record},
+	changes := map[string]RecordChangeSet{
+		operationSet: {
+			Name:    record.Name,
+			Type:    record.Type,
+			Records: []*Record{&record},
+		},
 	}
+
 	request := UpdateDNSZoneRecordsRequest{
 		DNSZone:          zone,
-		Changes:          []interface{}{setRecord},
+		Changes:          []interface{}{changes},
 		ReturnAllRecords: false,
 	}
+
 	uri := fmt.Sprintf(uriUpdateRecords, zone)
 	req, err := c.newRequest(http.MethodPatch, uri, request)
 	if err != nil {
 		return err
 	}
-	err = c.do(req, nil)
-	return err
+
+	return c.do(req, nil)
 }
 
 // DeleteRecord deletes a Record for given zone.
 func (c *Client) DeleteRecord(zone string, record Record) error {
-	delRecord := make(map[string]interface{})
-	delRecord[operationDelete] = RecordChangeDelete{
-		Name: record.Name,
-		Type: record.Type,
-		Data: record.Data,
+	delRecord := map[string]RecordChangeDelete{
+		operationDelete: {
+			Name: record.Name,
+			Type: record.Type,
+			Data: record.Data,
+		},
 	}
+
 	request := UpdateDNSZoneRecordsRequest{
 		DNSZone:          zone,
 		Changes:          []interface{}{delRecord},
 		ReturnAllRecords: false,
 	}
+
 	uri := fmt.Sprintf(uriUpdateRecords, zone)
 	req, err := c.newRequest(http.MethodPatch, uri, request)
 	if err != nil {
 		return err
 	}
-	err = c.do(req, nil)
-	return err
+
+	return c.do(req, nil)
 }
 
 func (c *Client) newRequest(method, uri string, body interface{}) (*http.Request, error) {
@@ -155,13 +169,13 @@ func (c *Client) newRequest(method, uri string, body interface{}) (*http.Request
 	if body != nil {
 		err := json.NewEncoder(buf).Encode(body)
 		if err != nil {
-			return nil, fmt.Errorf("failed to encode request body with error: %v", err)
+			return nil, fmt.Errorf("failed to encode request body with error: %w", err)
 		}
 	}
 
 	req, err := http.NewRequest(method, c.baseURL+uri, buf)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create new http request with error: %v", err)
+		return nil, fmt.Errorf("failed to create new http request with error: %w", err)
 	}
 
 	req.Header.Add("X-auth-token", c.token)
@@ -174,7 +188,7 @@ func (c *Client) newRequest(method, uri string, body interface{}) (*http.Request
 func (c *Client) do(req *http.Request, to interface{}) error {
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("request failed with error: %v", err)
+		return fmt.Errorf("request failed with error: %w", err)
 	}
 
 	err = checkResponse(resp)
@@ -209,7 +223,7 @@ func checkResponse(resp *http.Response) error {
 			return fmt.Errorf("request failed with status code %d, response body: %s", resp.StatusCode, string(body))
 		}
 
-		return fmt.Errorf("request failed with status code %d: %v", resp.StatusCode, apiError)
+		return fmt.Errorf("request failed with status code %d: %w", resp.StatusCode, apiError)
 	}
 
 	return nil
@@ -224,7 +238,7 @@ func unmarshalBody(resp *http.Response, to interface{}) error {
 
 	err = json.Unmarshal(body, to)
 	if err != nil {
-		return fmt.Errorf("unmarshaling error: %v: %s", err, string(body))
+		return fmt.Errorf("unmarshaling error: %w: %s", err, string(body))
 	}
 
 	return nil

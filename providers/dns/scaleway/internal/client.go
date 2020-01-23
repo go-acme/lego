@@ -206,7 +206,7 @@ func (c *Client) do(req *http.Request, to interface{}) error {
 }
 
 func checkResponse(resp *http.Response) error {
-	if resp.StatusCode >= http.StatusBadRequest && resp.StatusCode <= http.StatusNetworkAuthenticationRequired {
+	if resp.StatusCode >= http.StatusBadRequest || resp.StatusCode < http.StatusOK {
 		if resp.Body == nil {
 			return fmt.Errorf("request failed with status code %d and empty body", resp.StatusCode)
 		}

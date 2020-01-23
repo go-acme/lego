@@ -110,7 +110,7 @@ func (c *Client) AddRecord(zone string, record Record) error {
 		return err
 	}
 
-	return c.do(req, nil)
+	return c.do(req)
 }
 
 // SetRecord sets a unique Record for given zone.
@@ -135,7 +135,7 @@ func (c *Client) SetRecord(zone string, record Record) error {
 		return err
 	}
 
-	return c.do(req, nil)
+	return c.do(req)
 }
 
 // DeleteRecord deletes a Record for given zone.
@@ -160,7 +160,7 @@ func (c *Client) DeleteRecord(zone string, record Record) error {
 		return err
 	}
 
-	return c.do(req, nil)
+	return c.do(req)
 }
 
 func (c *Client) newRequest(method, uri string, body interface{}) (*http.Request, error) {
@@ -185,7 +185,7 @@ func (c *Client) newRequest(method, uri string, body interface{}) (*http.Request
 	return req, nil
 }
 
-func (c *Client) do(req *http.Request, to interface{}) error {
+func (c *Client) do(req *http.Request) error {
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("request failed with error: %w", err)
@@ -196,13 +196,7 @@ func (c *Client) do(req *http.Request, to interface{}) error {
 		return err
 	}
 
-	if to != nil {
-		if err = unmarshalBody(resp, to); err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return checkResponse(resp)
 }
 
 func checkResponse(resp *http.Response) error {
@@ -224,21 +218,6 @@ func checkResponse(resp *http.Response) error {
 		}
 
 		return fmt.Errorf("request failed with status code %d: %w", resp.StatusCode, apiError)
-	}
-
-	return nil
-}
-
-func unmarshalBody(resp *http.Response, to interface{}) error {
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	err = json.Unmarshal(body, to)
-	if err != nil {
-		return fmt.Errorf("unmarshaling error: %w: %s", err, string(body))
 	}
 
 	return nil

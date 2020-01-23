@@ -9,7 +9,7 @@ slug: scaleway
 <!-- providers/dns/scaleway/scaleway.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v3.3.0
+Since: v3.4.0
 
 Configuration for [Scaleway](https://developers.scaleway.com/).
 

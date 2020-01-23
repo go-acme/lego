@@ -1242,7 +1242,7 @@ func displayDNSHelp(name string) error {
 		// generated from: providers/dns/scaleway/scaleway.toml
 		ew.writeln(`Configuration for Scaleway.`)
 		ew.writeln(`Code:	'scaleway'`)
-		ew.writeln(`Since:	'v3.3.0'`)
+		ew.writeln(`Since:	'v3.4.0'`)
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)

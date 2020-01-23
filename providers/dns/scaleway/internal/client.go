@@ -77,16 +77,20 @@ type Client struct {
 }
 
 // NewClient returns a client instance.
-func NewClient(opts ClientOpts) *Client {
+func NewClient(opts ClientOpts, httpClient *http.Client) *Client {
 	baseURL := defaultEndpoint
 	if opts.BaseURL != "" {
 		baseURL = opts.BaseURL
 	}
 
+	if httpClient == nil {
+		httpClient = &http.Client{}
+	}
+
 	return &Client{
 		token:      opts.Token,
 		baseURL:    baseURL,
-		httpClient: &http.Client{},
+		httpClient: httpClient,
 	}
 }
 

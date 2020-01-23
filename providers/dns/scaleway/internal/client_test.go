@@ -22,7 +22,7 @@ func setupTest() (*Client, *http.ServeMux, func()) {
 		BaseURL: svr.URL,
 		Token:   fakeToken,
 	}
-	client := NewClient(opts)
+	client := NewClient(opts, nil)
 
 	return client, mux, func() {
 		svr.Close()

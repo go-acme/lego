@@ -18,6 +18,7 @@ lego --dns scaleway.com --domains my.domain.com --email my@email.com run
     SCALEWAY_POLLING_INTERVAL = "Time between DNS propagation check"
     SCALEWAY_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
     SCALEWAY_TTL = "The TTL of the TXT record used for the DNS challenge"
+    SCALEWAY_HTTP_TIMEOUT = "API request timeout"
 
 [Links]
   API = "https://developers.scaleway.com/en/products/domain/api/"

@@ -44,6 +44,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 |--------------------------------|-------------|
 | `SCALEWAY_API_VERSION` | API version |
 | `SCALEWAY_BASE_URL` | API endpoint URL |
+| `SCALEWAY_HTTP_TIMEOUT` | API request timeout |
 | `SCALEWAY_POLLING_INTERVAL` | Time between DNS propagation check |
 | `SCALEWAY_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
 | `SCALEWAY_TTL` | The TTL of the TXT record used for the DNS challenge |

@@ -6,6 +6,7 @@ package scaleway
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/go-acme/lego/v3/challenge/dns01"
@@ -29,6 +30,7 @@ const (
 	ttlEnvVar                = envNamespace + "TTL"
 	propagationTimeoutEnvVar = envNamespace + "PROPAGATION_TIMEOUT"
 	pollingIntervalEnvVar    = envNamespace + "POLLING_INTERVAL"
+	httpTimeoutEnvVar        = envNamespace + "HTTP_TIMEOUT"
 )
 
 // Config is used to configure the creation of the DNSProvider.
@@ -39,6 +41,7 @@ type Config struct {
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
+	HTTPClient         *http.Client
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
@@ -49,6 +52,9 @@ func NewDefaultConfig() *Config {
 		TTL:                env.GetOrDefaultInt(ttlEnvVar, minTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(propagationTimeoutEnvVar, defaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(pollingIntervalEnvVar, defaultPollingInterval),
+		HTTPClient: &http.Client{
+			Timeout: env.GetOrDefaultSecond(httpTimeoutEnvVar, 30*time.Second),
+		},
 	}
 }
 
@@ -89,7 +95,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	client := internal.NewClient(internal.ClientOpts{
 		BaseURL: fmt.Sprintf("%s/domain/%s", config.BaseURL, config.Version),
 		Token:   config.Token,
-	})
+	}, config.HTTPClient)
 
 	return &DNSProvider{config: config, client: client}, nil
 }

@@ -68,6 +68,7 @@ func allDNSCodes() string {
 		"rfc2136",
 		"route53",
 		"sakuracloud",
+		"scaleway",
 		"selectel",
 		"stackpath",
 		"transip",
@@ -1236,6 +1237,28 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/sakuracloud`)
+
+	case "scaleway":
+		// generated from: providers/dns/scaleway/scaleway.toml
+		ew.writeln(`Configuration for Scaleway.`)
+		ew.writeln(`Code:	'scaleway'`)
+		ew.writeln(`Since:	'v3.4.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "SCALEWAY_API_TOKEN":	API token`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "SCALEWAY_API_VERSION":	API version`)
+		ew.writeln(`	- "SCALEWAY_BASE_URL":	API endpoint URL`)
+		ew.writeln(`	- "SCALEWAY_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "SCALEWAY_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "SCALEWAY_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "SCALEWAY_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/scaleway`)
 
 	case "selectel":
 		// generated from: providers/dns/selectel/selectel.toml

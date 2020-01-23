@@ -1,0 +1,24 @@
+Name = "Scaleway"
+Description = ''''''
+URL = "https://developers.scaleway.com/"
+Code = "scaleway"
+Since = "v3.4.0"
+
+Example = '''
+SCALEWAY_API_TOKEN=xxxxxxx-xxxxx-xxxx-xxx-xxxxxx \
+lego --dns scaleway.com --domains my.domain.com --email my@email.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    SCALEWAY_API_TOKEN = "API token"
+  [Configuration.Additional]
+    SCALEWAY_BASE_URL = "API endpoint URL"
+    SCALEWAY_API_VERSION = "API version"
+    SCALEWAY_POLLING_INTERVAL = "Time between DNS propagation check"
+    SCALEWAY_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
+    SCALEWAY_TTL = "The TTL of the TXT record used for the DNS challenge"
+    SCALEWAY_HTTP_TIMEOUT = "API request timeout"
+
+[Links]
+  API = "https://developers.scaleway.com/en/products/domain/api/"

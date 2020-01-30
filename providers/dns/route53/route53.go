@@ -13,7 +13,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/route53"
-	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"github.com/go-acme/lego/v3/challenge/dns01"
 	"github.com/go-acme/lego/v3/platform/config/env"
 	"github.com/go-acme/lego/v3/platform/wait"
@@ -26,7 +25,7 @@ type Config struct {
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	HostedZoneID       string
-	Client             route53iface.Route53API
+	Client             *route53.Route53
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider
@@ -42,7 +41,7 @@ func NewDefaultConfig() *Config {
 
 // DNSProvider implements the challenge.Provider interface
 type DNSProvider struct {
-	client route53iface.Route53API
+	client *route53.Route53
 	config *Config
 }
 

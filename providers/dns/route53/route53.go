@@ -25,6 +25,7 @@ type Config struct {
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	HostedZoneID       string
+	Client             *route53.Route53
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider
@@ -84,6 +85,10 @@ func NewDNSProvider() (*DNSProvider, error) {
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("route53: the configuration of the Route53 DNS provider is nil")
+	}
+
+	if config.Client != nil {
+		return &DNSProvider{client: config.Client, config: config}, nil
 	}
 
 	retry := customRetryer{}

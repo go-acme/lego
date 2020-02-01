@@ -87,20 +87,20 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("route53: the configuration of the Route53 DNS provider is nil")
 	}
 
-	cl := config.Client
-	if cl == nil {
-		retry := customRetryer{}
-		retry.NumMaxRetries = config.MaxRetries
-		sessionCfg := request.WithRetryer(aws.NewConfig(), retry)
-
-		sess, err := session.NewSessionWithOptions(session.Options{Config: *sessionCfg})
-		if err != nil {
-			return nil, err
-		}
-
-		cl = route53.New(sess)
+	if config.Client != nil {
+		return &DNSProvider{client: config.Client, config: config}, nil
 	}
-	
+
+	retry := customRetryer{}
+	retry.NumMaxRetries = config.MaxRetries
+	sessionCfg := request.WithRetryer(aws.NewConfig(), retry)
+
+	sess, err := session.NewSessionWithOptions(session.Options{Config: *sessionCfg})
+	if err != nil {
+		return nil, err
+	}
+
+	cl := route53.New(sess)
 	return &DNSProvider{client: cl, config: config}, nil
 }
 

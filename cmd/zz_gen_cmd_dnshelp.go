@@ -26,6 +26,7 @@ func allDNSCodes() string {
 		"cloudns",
 		"cloudxns",
 		"conoha",
+		"constellix",
 		"designate",
 		"digitalocean",
 		"dnsimple",
@@ -348,6 +349,27 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/conoha`)
+
+	case "constellix":
+		// generated from: providers/dns/constellix/constellix.toml
+		ew.writeln(`Configuration for Constellix.`)
+		ew.writeln(`Code:	'constellix'`)
+		ew.writeln(`Since:	'v0.3.4'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "CONSTELLIX_API_KEY":	User API key`)
+		ew.writeln(`	- "CONSTELLIX_SECRET_KEY":	User secret key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "CONSTELLIX_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "CONSTELLIX_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "CONSTELLIX_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "CONSTELLIX_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/constellix`)
 
 	case "designate":
 		// generated from: providers/dns/designate/designate.toml

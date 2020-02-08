@@ -99,7 +99,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Destination: value,
 	}
 
-	_, err := d.addTxtRecord(domain, record)
+	authZone, err := getHostedZone(domain)
+	if err != nil {
+		return fmt.Errorf("zoneee: %v", err)
+	}
+
+	_, err = d.addTxtRecord(authZone, record)
 	if err != nil {
 		return fmt.Errorf("zoneee: %v", err)
 	}
@@ -110,7 +115,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	_, value := dns01.GetRecord(domain, keyAuth)
 
-	records, err := d.getTxtRecords(domain)
+	authZone, err := getHostedZone(domain)
+	if err != nil {
+		return fmt.Errorf("zoneee: %v", err)
+	}
+
+	records, err := d.getTxtRecords(authZone)
 	if err != nil {
 		return fmt.Errorf("zoneee: %v", err)
 	}
@@ -126,9 +136,19 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("zoneee: txt record does not exist for %v", value)
 	}
 
-	if err = d.removeTxtRecord(domain, id); err != nil {
+	if err = d.removeTxtRecord(authZone, id); err != nil {
 		return fmt.Errorf("zoneee: %v", err)
 	}
 
 	return nil
+}
+
+func getHostedZone(domain string) (string, error) {
+	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
+	if err != nil {
+		return "", err
+	}
+
+	zoneName := dns01.UnFqdn(authZone)
+	return zoneName, nil
 }

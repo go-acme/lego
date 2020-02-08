@@ -138,7 +138,8 @@ func TestNewDNSProviderConfig(t *testing.T) {
 }
 
 func TestDNSProvider_Present(t *testing.T) {
-	domain := "prefix.example.com"
+	hostedZone := "example.com"
+	domain := "prefix." + hostedZone
 
 	testCases := []struct {
 		desc          string
@@ -152,7 +153,10 @@ func TestDNSProvider_Present(t *testing.T) {
 			username: "bar",
 			apiKey:   "foo",
 			handlers: map[string]http.HandlerFunc{
-				"/" + domain + "/txt": mockHandlerCreateRecord,
+				"/": http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+					fmt.Println(req.URL)
+				}),
+				"/" + hostedZone + "/txt": mockHandlerCreateRecord,
 			},
 		},
 		{
@@ -160,7 +164,7 @@ func TestDNSProvider_Present(t *testing.T) {
 			username: "nope",
 			apiKey:   "foo",
 			handlers: map[string]http.HandlerFunc{
-				"/" + domain + "/txt": mockHandlerCreateRecord,
+				"/" + hostedZone + "/txt": mockHandlerCreateRecord,
 			},
 			expectedError: "zoneee: status code=401: Unauthorized\n",
 		},
@@ -203,7 +207,8 @@ func TestDNSProvider_Present(t *testing.T) {
 }
 
 func TestDNSProvider_Cleanup(t *testing.T) {
-	domain := "prefix.example.com"
+	hostedZone := "example.com"
+	domain := "prefix." + hostedZone
 
 	testCases := []struct {
 		desc          string
@@ -217,14 +222,14 @@ func TestDNSProvider_Cleanup(t *testing.T) {
 			username: "bar",
 			apiKey:   "foo",
 			handlers: map[string]http.HandlerFunc{
-				"/" + domain + "/txt": mockHandlerGetRecords([]txtRecord{{
+				"/" + hostedZone + "/txt": mockHandlerGetRecords([]txtRecord{{
 					ID:          "1234",
 					Name:        domain,
 					Destination: "LHDhK3oGRvkiefQnx7OOczTY5Tic_xZ6HcMOc_gmtoM",
 					Delete:      true,
 					Modify:      true,
 				}}),
-				"/" + domain + "/txt/1234": mockHandlerDeleteRecord,
+				"/" + hostedZone + "/txt/1234": mockHandlerDeleteRecord,
 			},
 		},
 		{
@@ -232,8 +237,8 @@ func TestDNSProvider_Cleanup(t *testing.T) {
 			username: "bar",
 			apiKey:   "foo",
 			handlers: map[string]http.HandlerFunc{
-				"/" + domain + "/txt":      mockHandlerGetRecords([]txtRecord{}),
-				"/" + domain + "/txt/1234": mockHandlerDeleteRecord,
+				"/" + hostedZone + "/txt":      mockHandlerGetRecords([]txtRecord{}),
+				"/" + hostedZone + "/txt/1234": mockHandlerDeleteRecord,
 			},
 			expectedError: "zoneee: txt record does not exist for LHDhK3oGRvkiefQnx7OOczTY5Tic_xZ6HcMOc_gmtoM",
 		},
@@ -242,14 +247,14 @@ func TestDNSProvider_Cleanup(t *testing.T) {
 			username: "nope",
 			apiKey:   "foo",
 			handlers: map[string]http.HandlerFunc{
-				"/" + domain + "/txt": mockHandlerGetRecords([]txtRecord{{
+				"/" + hostedZone + "/txt": mockHandlerGetRecords([]txtRecord{{
 					ID:          "1234",
 					Name:        domain,
 					Destination: "LHDhK3oGRvkiefQnx7OOczTY5Tic_xZ6HcMOc_gmtoM",
 					Delete:      true,
 					Modify:      true,
 				}}),
-				"/" + domain + "/txt/1234": mockHandlerDeleteRecord,
+				"/" + hostedZone + "/txt/1234": mockHandlerDeleteRecord,
 			},
 			expectedError: "zoneee: status code=401: Unauthorized\n",
 		},

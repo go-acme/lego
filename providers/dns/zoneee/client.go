@@ -92,7 +92,6 @@ func (d *DNSProvider) getHostedZone(domain string) (string, error) {
 	return zoneName, nil
 }
 
-
 func (d *DNSProvider) makeRequest(method, resource string, body io.Reader) (*http.Request, error) {
 	uri, err := d.config.Endpoint.Parse(resource)
 	if err != nil {

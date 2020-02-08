@@ -8,6 +8,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"path"
+
+	"github.com/go-acme/lego/v3/challenge/dns01"
 )
 
 const defaultEndpoint = "https://api.zone.eu/v2/dns/"
@@ -33,7 +35,12 @@ func (d *DNSProvider) addTxtRecord(domain string, record txtRecord) ([]txtRecord
 		return nil, err
 	}
 
-	req, err := d.makeRequest(http.MethodPost, path.Join(domain, "txt"), reqBody)
+	zoneName, err := d.getHostedZone(domain)
+	if err != nil {
+		return nil, fmt.Errorf("zoneee: %v", err)
+	}
+
+	req, err := d.makeRequest(http.MethodPost, path.Join(zoneName, "txt"), reqBody)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +53,11 @@ func (d *DNSProvider) addTxtRecord(domain string, record txtRecord) ([]txtRecord
 }
 
 func (d *DNSProvider) getTxtRecords(domain string) ([]txtRecord, error) {
-	req, err := d.makeRequest(http.MethodGet, path.Join(domain, "txt"), nil)
+	zoneName, err := d.getHostedZone(domain)
+	if err != nil {
+		return nil, fmt.Errorf("zoneee: %v", err)
+	}
+	req, err := d.makeRequest(http.MethodGet, path.Join(zoneName, "txt"), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -59,13 +70,28 @@ func (d *DNSProvider) getTxtRecords(domain string) ([]txtRecord, error) {
 }
 
 func (d *DNSProvider) removeTxtRecord(domain, id string) error {
-	req, err := d.makeRequest(http.MethodDelete, path.Join(domain, "txt", id), nil)
+	zoneName, err := d.getHostedZone(domain)
+	if err != nil {
+		return fmt.Errorf("zoneee: %v", err)
+	}
+	req, err := d.makeRequest(http.MethodDelete, path.Join(zoneName, "txt", id), nil)
 	if err != nil {
 		return err
 	}
 
 	return d.sendRequest(req, nil)
 }
+
+func (d *DNSProvider) getHostedZone(domain string) (string, error) {
+	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
+	if err != nil {
+		return "", err
+	}
+
+	zoneName := dns01.UnFqdn(authZone)
+	return zoneName, nil
+}
+
 
 func (d *DNSProvider) makeRequest(method, resource string, body io.Reader) (*http.Request, error) {
 	uri, err := d.config.Endpoint.Parse(resource)

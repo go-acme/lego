@@ -28,6 +28,7 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt("OCI_TTL", dns01.DefaultTTL),
+		ZoneID :            env.GetOrDefaultString("OCI_ZONE_OCID",""),
 		PropagationTimeout: env.GetOrDefaultSecond("OCI_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond("OCI_POLLING_INTERVAL", dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
@@ -44,14 +45,13 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for OracleCloud.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(ociPrivkey, ociTenancyOCID, ociUserOCID, ociPubkeyFingerprint, ociRegion, "OCI_COMPARTMENT_OCID","OCI_ZONE_OCID")
+	values, err := env.Get(ociPrivkey, ociTenancyOCID, ociUserOCID, ociPubkeyFingerprint, ociRegion, "OCI_COMPARTMENT_OCID")
 	if err != nil {
 		return nil, fmt.Errorf("oraclecloud: %v", err)
 	}
 
 	config := NewDefaultConfig()
 	config.CompartmentID = values["OCI_COMPARTMENT_OCID"]
-	config.ZoneID = values["OCI_ZONE_OCID"]
 	config.OCIConfigProvider = newConfigProvider(values)
 
 	return NewDNSProviderConfig(config)

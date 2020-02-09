@@ -18,9 +18,15 @@ Configuration for [OVH](https://www.ovh.com/).
 
 - Code: `ovh`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the OVH provider:
+
+```bash
+OVH_APPLICATION_KEY=1234567898765432 \
+OVH_APPLICATION_SECRET=b9841238feb177a84330febba8a832089 \
+OVH_CONSUMER_KEY=256vfsd347245sdfg \
+OVH_ENDPOINT=ovh-eu \
+lego --dns autodns --domains my.domain.com --email my@email.com run
+```
 
 
 
@@ -50,6 +56,26 @@ More information [here](/lego/dns/#configuration-and-credentials).
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).
 
+## Application Key and Secret
+
+Application key and secret can be created by following the [OVH guide](https://docs.ovh.com/gb/en/customer/first-steps-with-ovh-api/).
+
+When requesting the consumer key, the following configuration can be use to define access rights:
+
+```json
+{
+  "accessRules": [
+    {
+      "method": "POST",
+      "path": "/domain/zone/*"
+    },
+    {
+      "method": "DELETE",
+      "path": "/domain/zone/*"
+    }
+  ]
+}
+```
 
 
 

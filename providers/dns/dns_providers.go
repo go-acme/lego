@@ -61,6 +61,7 @@ import (
 	"github.com/go-acme/lego/v3/providers/dns/sakuracloud"
 	"github.com/go-acme/lego/v3/providers/dns/scaleway"
 	"github.com/go-acme/lego/v3/providers/dns/selectel"
+	"github.com/go-acme/lego/v3/providers/dns/servercow"
 	"github.com/go-acme/lego/v3/providers/dns/stackpath"
 	"github.com/go-acme/lego/v3/providers/dns/transip"
 	"github.com/go-acme/lego/v3/providers/dns/vegadns"
@@ -187,6 +188,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return scaleway.NewDNSProvider()
 	case "selectel":
 		return selectel.NewDNSProvider()
+	case "servercow":
+		return servercow.NewDNSProvider()
 	case "stackpath":
 		return stackpath.NewDNSProvider()
 	case "transip":

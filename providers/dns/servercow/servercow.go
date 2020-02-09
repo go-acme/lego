@@ -108,6 +108,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		request := internal.Record{
 			Name:    record.Name,
 			TTL:     record.TTL,
+			Type:    record.Type,
 			Content: append(record.Content, value),
 		}
 
@@ -119,6 +120,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	request := internal.Record{
+		Type:    "TXT",
 		Name:    recordName,
 		TTL:     d.config.TTL,
 		Content: internal.Value{value},
@@ -168,6 +170,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	request := internal.Record{
 		Name: record.Name,
+		Type: record.Type,
 		TTL:  record.TTL,
 	}
 

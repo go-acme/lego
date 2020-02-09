@@ -32,6 +32,28 @@ type Config struct {
 	HTTPClient         *http.Client
 }
 
+// NewConfigFromEnv returns a new config that is populated from environment variables.
+func NewConfigFromEnv() *Config {
+	values, err := env.GetWithFallback(
+		[]string{"CLOUDFLARE_EMAIL", "CF_API_EMAIL"},
+		[]string{"CLOUDFLARE_API_KEY", "CF_API_KEY"},
+	)
+	if err != nil {
+		values, _ = env.GetWithFallback(
+			[]string{"CLOUDFLARE_DNS_API_TOKEN", "CF_DNS_API_TOKEN"},
+			[]string{"CLOUDFLARE_ZONE_API_TOKEN", "CF_ZONE_API_TOKEN", "CLOUDFLARE_DNS_API_TOKEN", "CF_DNS_API_TOKEN"},
+		)
+	}
+
+	config := NewDefaultConfig()
+	config.AuthEmail = values["CLOUDFLARE_EMAIL"]
+	config.AuthKey = values["CLOUDFLARE_API_KEY"]
+	config.AuthToken = values["CLOUDFLARE_DNS_API_TOKEN"]
+	config.ZoneToken = values["CLOUDFLARE_ZONE_API_TOKEN"]
+
+	return config
+}
+
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
@@ -66,28 +88,7 @@ type DNSProvider struct {
 // You can split the Zone:Read and DNS:Edit permissions across multiple API tokens:
 // in this case pass both CLOUDFLARE_ZONE_API_TOKEN and CLOUDFLARE_DNS_API_TOKEN accordingly.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.GetWithFallback(
-		[]string{"CLOUDFLARE_EMAIL", "CF_API_EMAIL"},
-		[]string{"CLOUDFLARE_API_KEY", "CF_API_KEY"},
-	)
-	if err != nil {
-		var errT error
-		values, errT = env.GetWithFallback(
-			[]string{"CLOUDFLARE_DNS_API_TOKEN", "CF_DNS_API_TOKEN"},
-			[]string{"CLOUDFLARE_ZONE_API_TOKEN", "CF_ZONE_API_TOKEN", "CLOUDFLARE_DNS_API_TOKEN", "CF_DNS_API_TOKEN"},
-		)
-		if errT != nil {
-			return nil, fmt.Errorf("cloudflare: %v or %v", err, errT)
-		}
-	}
-
-	config := NewDefaultConfig()
-	config.AuthEmail = values["CLOUDFLARE_EMAIL"]
-	config.AuthKey = values["CLOUDFLARE_API_KEY"]
-	config.AuthToken = values["CLOUDFLARE_DNS_API_TOKEN"]
-	config.ZoneToken = values["CLOUDFLARE_ZONE_API_TOKEN"]
-
-	return NewDNSProviderConfig(config)
+	return NewDNSProviderConfig(NewConfigFromEnv())
 }
 
 // NewDNSProviderConfig return a DNSProvider instance configured for Cloudflare.

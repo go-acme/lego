@@ -24,6 +24,14 @@ type Config struct {
 	TTL                int
 }
 
+// NewConfigFromEnv returns a new config that is populated from environment variables.
+func NewConfigFromEnv() *Config {
+	config := NewDefaultConfig()
+	config.AccessToken = env.GetOrFile("DNSIMPLE_OAUTH_TOKEN")
+	config.BaseURL = env.GetOrFile("DNSIMPLE_BASE_URL")
+	return config
+}
+
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
@@ -44,11 +52,7 @@ type DNSProvider struct {
 //
 // See: https://developer.dnsimple.com/v2/#authentication
 func NewDNSProvider() (*DNSProvider, error) {
-	config := NewDefaultConfig()
-	config.AccessToken = env.GetOrFile("DNSIMPLE_OAUTH_TOKEN")
-	config.BaseURL = env.GetOrFile("DNSIMPLE_BASE_URL")
-
-	return NewDNSProviderConfig(config)
+	return NewDNSProviderConfig(NewConfigFromEnv())
 }
 
 // NewDNSProviderConfig return a DNSProvider instance configured for DNSimple.

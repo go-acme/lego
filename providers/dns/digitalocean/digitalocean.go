@@ -22,6 +22,13 @@ type Config struct {
 	HTTPClient         *http.Client
 }
 
+// NewConfigFromEnv returns a new config that is populated from environment variables.
+func NewConfigFromEnv() *Config {
+	config := NewDefaultConfig()
+	config.AuthToken = env.GetOrFile("DO_AUTH_TOKEN")
+	return config
+}
+
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
@@ -47,15 +54,7 @@ type DNSProvider struct {
 // Ocean. Credentials must be passed in the environment variable:
 // DO_AUTH_TOKEN.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("DO_AUTH_TOKEN")
-	if err != nil {
-		return nil, fmt.Errorf("digitalocean: %v", err)
-	}
-
-	config := NewDefaultConfig()
-	config.AuthToken = values["DO_AUTH_TOKEN"]
-
-	return NewDNSProviderConfig(config)
+	return NewDNSProviderConfig(NewConfigFromEnv())
 }
 
 // NewDNSProviderConfig return a DNSProvider instance configured for Digital Ocean.

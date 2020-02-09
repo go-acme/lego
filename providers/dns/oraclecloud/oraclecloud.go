@@ -89,7 +89,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	
 	zoneNameOrId := d.config.ZoneID
 	if zoneNameOrId == "" {
-		zoneNameOrId := domain  // set the zone to domain if not provided
+		zoneNameOrId = domain  // set the zone to domain if not provided
 	}	
 
 	// generate request to dns.PatchDomainRecordsRequest
@@ -125,7 +125,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	
 	zoneNameOrId := d.config.ZoneID
 	if zoneNameOrId == "" {
-		zoneNameOrId := domain  // set the zone to domain if not provided
+		zoneNameOrId = domain  // set the zone to domain if not provided
 	}	
 
 

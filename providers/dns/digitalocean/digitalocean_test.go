@@ -42,13 +42,6 @@ func TestNewDNSProvider(t *testing.T) {
 				"DO_AUTH_TOKEN": "123",
 			},
 		},
-		{
-			desc: "missing credentials",
-			envVars: map[string]string{
-				"DO_AUTH_TOKEN": "",
-			},
-			expected: "digitalocean: some credentials information are missing: DO_AUTH_TOKEN",
-		},
 	}
 
 	for _, test := range testCases {

@@ -42,31 +42,6 @@ func TestNewDNSProvider(t *testing.T) {
 				"CLOUDFLARE_ZONE_API_TOKEN": "abcdef012345",
 			},
 		},
-		{
-			desc: "missing credentials",
-			envVars: map[string]string{
-				"CLOUDFLARE_EMAIL":         "",
-				"CLOUDFLARE_API_KEY":       "",
-				"CLOUDFLARE_DNS_API_TOKEN": "",
-			},
-			expected: "cloudflare: some credentials information are missing: CLOUDFLARE_EMAIL,CLOUDFLARE_API_KEY or some credentials information are missing: CLOUDFLARE_DNS_API_TOKEN,CLOUDFLARE_ZONE_API_TOKEN",
-		},
-		{
-			desc: "missing email",
-			envVars: map[string]string{
-				"CLOUDFLARE_EMAIL":   "",
-				"CLOUDFLARE_API_KEY": "key",
-			},
-			expected: "cloudflare: some credentials information are missing: CLOUDFLARE_EMAIL or some credentials information are missing: CLOUDFLARE_DNS_API_TOKEN,CLOUDFLARE_ZONE_API_TOKEN",
-		},
-		{
-			desc: "missing api key",
-			envVars: map[string]string{
-				"CLOUDFLARE_EMAIL":   "awesome@possum.com",
-				"CLOUDFLARE_API_KEY": "",
-			},
-			expected: "cloudflare: some credentials information are missing: CLOUDFLARE_API_KEY or some credentials information are missing: CLOUDFLARE_DNS_API_TOKEN,CLOUDFLARE_ZONE_API_TOKEN",
-		},
 	}
 
 	for _, test := range testCases {
@@ -128,15 +103,6 @@ func TestNewDNSProviderWithToken(t *testing.T) {
 				dnsToken:   "123",
 				zoneToken:  "123",
 				sameClient: true,
-			},
-		},
-		{
-			desc: "failure when only zone api given",
-			envVars: map[string]string{
-				"CLOUDFLARE_ZONE_API_TOKEN": "123",
-			},
-			expected: expected{
-				error: "cloudflare: some credentials information are missing: CLOUDFLARE_EMAIL,CLOUDFLARE_API_KEY or some credentials information are missing: CLOUDFLARE_DNS_API_TOKEN",
 			},
 		},
 		{

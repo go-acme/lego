@@ -16,6 +16,7 @@ import (
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	CompartmentID      string
+	ZoneID           string
 	OCIConfigProvider  common.ConfigurationProvider
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -43,13 +44,14 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for OracleCloud.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(ociPrivkey, ociTenancyOCID, ociUserOCID, ociPubkeyFingerprint, ociRegion, "OCI_COMPARTMENT_OCID")
+	values, err := env.Get(ociPrivkey, ociTenancyOCID, ociUserOCID, ociPubkeyFingerprint, ociRegion, "OCI_COMPARTMENT_OCID","OCI_ZONE_OCID")
 	if err != nil {
 		return nil, fmt.Errorf("oraclecloud: %v", err)
 	}
 
 	config := NewDefaultConfig()
 	config.CompartmentID = values["OCI_COMPARTMENT_OCID"]
+	config.ZoneID = values["OCI_ZONE_OCID"]
 	config.OCIConfigProvider = newConfigProvider(values)
 
 	return NewDNSProviderConfig(config)
@@ -84,6 +86,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 // Present creates a TXT record to fulfill the dns-01 challenge
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	
+	zoneNameOrId := d.config.ZoneID
+	if zoneNameOrId == nil {
+		zoneNameOrID := domain  // set the zone to domain if not provided
+	}	
 
 	// generate request to dns.PatchDomainRecordsRequest
 	recordOperation := dns.RecordOperation{
@@ -96,7 +103,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	request := dns.PatchDomainRecordsRequest{
 		CompartmentId: common.String(d.config.CompartmentID),
-		ZoneNameOrId:  common.String(domain),
+		ZoneNameOrId:  common.String(zoneNameOrId),
 		Domain:        common.String(dns01.UnFqdn(fqdn)),
 		PatchDomainRecordsDetails: dns.PatchDomainRecordsDetails{
 			Items: []dns.RecordOperation{recordOperation},
@@ -114,10 +121,17 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 // CleanUp removes the TXT record matching the specified parameters
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	
+	
+	zoneNameOrId := d.config.ZoneID
+	if zoneNameOrId == nil {
+		zoneNameOrID := domain  // set the zone to domain if not provided
+	}	
+
 
 	// search to TXT record's hash to delete
 	getRequest := dns.GetDomainRecordsRequest{
-		ZoneNameOrId:  common.String(domain),
+		ZoneNameOrId:  common.String(zoneNameOrId),
 		Domain:        common.String(dns01.UnFqdn(fqdn)),
 		CompartmentId: common.String(d.config.CompartmentID),
 		Rtype:         common.String("TXT"),
@@ -152,7 +166,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	patchRequest := dns.PatchDomainRecordsRequest{
-		ZoneNameOrId: common.String(domain),
+		ZoneNameOrId: common.String(zoneNameOrId),
 		Domain:       common.String(dns01.UnFqdn(fqdn)),
 		PatchDomainRecordsDetails: dns.PatchDomainRecordsDetails{
 			Items: []dns.RecordOperation{recordOperation},

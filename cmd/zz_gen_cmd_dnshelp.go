@@ -70,6 +70,7 @@ func allDNSCodes() string {
 		"sakuracloud",
 		"scaleway",
 		"selectel",
+		"servercow",
 		"stackpath",
 		"transip",
 		"vegadns",
@@ -1280,6 +1281,27 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/selectel`)
+
+	case "servercow":
+		// generated from: providers/dns/servercow/servercow.toml
+		ew.writeln(`Configuration for Servercow.`)
+		ew.writeln(`Code:	'servercow'`)
+		ew.writeln(`Since:	'v3.4.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "SERVERCOW_PASSWORD":	API password`)
+		ew.writeln(`	- "SERVERCOW_USERNAME":	API username`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "SERVERCOW_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "SERVERCOW_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "SERVERCOW_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "SERVERCOW_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/servercow`)
 
 	case "stackpath":
 		// generated from: providers/dns/stackpath/stackpath.toml

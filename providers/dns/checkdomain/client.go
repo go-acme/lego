@@ -98,17 +98,17 @@ type (
 	}
 )
 
-func (p *DNSProvider) getDomainIDByName(name string) (int, error) {
+func (d *DNSProvider) getDomainIDByName(name string) (int, error) {
 	// Load from cache if exists
-	p.domainIDMu.Lock()
-	id, ok := p.domainIDMapping[name]
-	p.domainIDMu.Unlock()
+	d.domainIDMu.Lock()
+	id, ok := d.domainIDMapping[name]
+	d.domainIDMu.Unlock()
 	if ok {
 		return id, nil
 	}
 
 	// Find out by querying API
-	domains, err := p.listDomains()
+	domains, err := d.listDomains()
 	if err != nil {
 		return domainNotFound, err
 	}
@@ -116,9 +116,9 @@ func (p *DNSProvider) getDomainIDByName(name string) (int, error) {
 	// Linear search over all registered domains
 	for _, domain := range domains {
 		if domain.Name == name || strings.HasSuffix(name, "."+domain.Name) {
-			p.domainIDMu.Lock()
-			p.domainIDMapping[name] = domain.ID
-			p.domainIDMu.Unlock()
+			d.domainIDMu.Lock()
+			d.domainIDMapping[name] = domain.ID
+			d.domainIDMu.Unlock()
 
 			return domain.ID, nil
 		}
@@ -127,8 +127,8 @@ func (p *DNSProvider) getDomainIDByName(name string) (int, error) {
 	return domainNotFound, fmt.Errorf("domain not found")
 }
 
-func (p *DNSProvider) listDomains() ([]*Domain, error) {
-	req, err := p.makeRequest(http.MethodGet, "/v1/domains", http.NoBody)
+func (d *DNSProvider) listDomains() ([]*Domain, error) {
+	req, err := d.makeRequest(http.MethodGet, "/v1/domains", http.NoBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to make request: %v", err)
 	}
@@ -148,7 +148,7 @@ func (p *DNSProvider) listDomains() ([]*Domain, error) {
 		req.URL.RawQuery = q.Encode()
 
 		var res DomainListingResponse
-		if err := p.sendRequest(req, &res); err != nil {
+		if err := d.sendRequest(req, &res); err != nil {
 			return nil, fmt.Errorf("failed to send domain listing request: %v", err)
 		}
 
@@ -166,22 +166,22 @@ func (p *DNSProvider) listDomains() ([]*Domain, error) {
 	return domainList, nil
 }
 
-func (p *DNSProvider) getNameserverInfo(domainID int) (*NameserverResponse, error) {
-	req, err := p.makeRequest(http.MethodGet, fmt.Sprintf("/v1/domains/%d/nameservers", domainID), http.NoBody)
+func (d *DNSProvider) getNameserverInfo(domainID int) (*NameserverResponse, error) {
+	req, err := d.makeRequest(http.MethodGet, fmt.Sprintf("/v1/domains/%d/nameservers", domainID), http.NoBody)
 	if err != nil {
 		return nil, err
 	}
 
 	res := &NameserverResponse{}
-	if err := p.sendRequest(req, res); err != nil {
+	if err := d.sendRequest(req, res); err != nil {
 		return nil, err
 	}
 
 	return res, nil
 }
 
-func (p *DNSProvider) checkNameservers(domainID int) error {
-	info, err := p.getNameserverInfo(domainID)
+func (d *DNSProvider) checkNameservers(domainID int) error {
+	info, err := d.getNameserverInfo(domainID)
 	if err != nil {
 		return err
 	}
@@ -203,35 +203,35 @@ func (p *DNSProvider) checkNameservers(domainID int) error {
 	return nil
 }
 
-func (p *DNSProvider) createRecord(domainID int, record *Record) error {
+func (d *DNSProvider) createRecord(domainID int, record *Record) error {
 	bs, err := json.Marshal(record)
 	if err != nil {
 		return fmt.Errorf("encoding record failed: %v", err)
 	}
 
-	req, err := p.makeRequest(http.MethodPost, fmt.Sprintf("/v1/domains/%d/nameservers/records", domainID), bytes.NewReader(bs))
+	req, err := d.makeRequest(http.MethodPost, fmt.Sprintf("/v1/domains/%d/nameservers/records", domainID), bytes.NewReader(bs))
 	if err != nil {
 		return err
 	}
 
-	return p.sendRequest(req, nil)
+	return d.sendRequest(req, nil)
 }
 
 // Checkdomain doesn't seem provide a way to delete records but one can replace all records at once.
 // The current solution is to fetch all records and then use that list minus the record deleted as the new record list.
 // TODO: Simplify this function once Checkdomain do provide the functionality.
-func (p *DNSProvider) deleteTXTRecord(domainID int, recordName, recordValue string) error {
-	domainInfo, err := p.getDomainInfo(domainID)
+func (d *DNSProvider) deleteTXTRecord(domainID int, recordName, recordValue string) error {
+	domainInfo, err := d.getDomainInfo(domainID)
 	if err != nil {
 		return err
 	}
 
-	nsInfo, err := p.getNameserverInfo(domainID)
+	nsInfo, err := d.getNameserverInfo(domainID)
 	if err != nil {
 		return err
 	}
 
-	allRecords, err := p.listRecords(domainID, "")
+	allRecords, err := d.listRecords(domainID, "")
 	if err != nil {
 		return err
 	}
@@ -256,17 +256,17 @@ func (p *DNSProvider) deleteTXTRecord(domainID int, recordName, recordValue stri
 		recordsToKeep = append(recordsToKeep, record)
 	}
 
-	return p.replaceRecords(domainID, recordsToKeep)
+	return d.replaceRecords(domainID, recordsToKeep)
 }
 
-func (p *DNSProvider) getDomainInfo(domainID int) (*DomainResponse, error) {
-	req, err := p.makeRequest(http.MethodGet, fmt.Sprintf("/v1/domains/%d", domainID), http.NoBody)
+func (d *DNSProvider) getDomainInfo(domainID int) (*DomainResponse, error) {
+	req, err := d.makeRequest(http.MethodGet, fmt.Sprintf("/v1/domains/%d", domainID), http.NoBody)
 	if err != nil {
 		return nil, err
 	}
 
 	var res DomainResponse
-	err = p.sendRequest(req, &res)
+	err = d.sendRequest(req, &res)
 	if err != nil {
 		return nil, err
 	}
@@ -274,8 +274,8 @@ func (p *DNSProvider) getDomainInfo(domainID int) (*DomainResponse, error) {
 	return &res, nil
 }
 
-func (p *DNSProvider) listRecords(domainID int, recordType string) ([]*Record, error) {
-	req, err := p.makeRequest(http.MethodGet, fmt.Sprintf("/v1/domains/%d/nameservers/records", domainID), http.NoBody)
+func (d *DNSProvider) listRecords(domainID int, recordType string) ([]*Record, error) {
+	req, err := d.makeRequest(http.MethodGet, fmt.Sprintf("/v1/domains/%d/nameservers/records", domainID), http.NoBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to make request: %v", err)
 	}
@@ -295,7 +295,7 @@ func (p *DNSProvider) listRecords(domainID int, recordType string) ([]*Record, e
 		req.URL.RawQuery = q.Encode()
 
 		var res RecordListingResponse
-		if err := p.sendRequest(req, &res); err != nil {
+		if err := d.sendRequest(req, &res); err != nil {
 			return nil, fmt.Errorf("failed to send record listing request: %v", err)
 		}
 
@@ -312,18 +312,18 @@ func (p *DNSProvider) listRecords(domainID int, recordType string) ([]*Record, e
 	return recordList, nil
 }
 
-func (p *DNSProvider) replaceRecords(domainID int, records []*Record) error {
+func (d *DNSProvider) replaceRecords(domainID int, records []*Record) error {
 	bs, err := json.Marshal(records)
 	if err != nil {
 		return fmt.Errorf("encoding record failed: %v", err)
 	}
 
-	req, err := p.makeRequest(http.MethodPut, fmt.Sprintf("/v1/domains/%d/nameservers/records", domainID), bytes.NewReader(bs))
+	req, err := d.makeRequest(http.MethodPut, fmt.Sprintf("/v1/domains/%d/nameservers/records", domainID), bytes.NewReader(bs))
 	if err != nil {
 		return err
 	}
 
-	return p.sendRequest(req, nil)
+	return d.sendRequest(req, nil)
 }
 
 func skipRecord(recordName, recordValue string, record *Record, nsInfo *NameserverResponse) bool {
@@ -348,8 +348,8 @@ func skipRecord(recordName, recordValue string, record *Record, nsInfo *Nameserv
 	return false
 }
 
-func (p *DNSProvider) makeRequest(method, resource string, body io.Reader) (*http.Request, error) {
-	uri, err := p.config.Endpoint.Parse(resource)
+func (d *DNSProvider) makeRequest(method, resource string, body io.Reader) (*http.Request, error) {
+	uri, err := d.config.Endpoint.Parse(resource)
 	if err != nil {
 		return nil, err
 	}
@@ -360,7 +360,7 @@ func (p *DNSProvider) makeRequest(method, resource string, body io.Reader) (*htt
 	}
 
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Authorization", "Bearer "+p.config.Token)
+	req.Header.Set("Authorization", "Bearer "+d.config.Token)
 	if method != http.MethodGet {
 		req.Header.Set("Content-Type", "application/json")
 	}
@@ -368,8 +368,8 @@ func (p *DNSProvider) makeRequest(method, resource string, body io.Reader) (*htt
 	return req, nil
 }
 
-func (p *DNSProvider) sendRequest(req *http.Request, result interface{}) error {
-	resp, err := p.config.HTTPClient.Do(req)
+func (d *DNSProvider) sendRequest(req *http.Request, result interface{}) error {
+	resp, err := d.config.HTTPClient.Do(req)
 	if err != nil {
 		return err
 	}

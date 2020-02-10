@@ -93,7 +93,6 @@ func (a *Core) retrievablePost(uri string, content []byte, response interface{})
 			switch err.(type) {
 			// Retry if the nonce was invalidated
 			case *acme.NonceError:
-				log.Infof("nonce error retry: %s", err)
 				return err
 			default:
 				cancel()
@@ -104,7 +103,11 @@ func (a *Core) retrievablePost(uri string, content []byte, response interface{})
 		return nil
 	}
 
-	err := backoff.Retry(operation, backoff.WithContext(bo, ctx))
+	notify := func(err error, duration time.Duration) {
+		log.Infof("retry due to: %v", err)
+	}
+
+	err := backoff.RetryNotify(operation, backoff.WithContext(bo, ctx), notify)
 	if err != nil {
 		return nil, err
 	}

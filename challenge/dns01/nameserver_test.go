@@ -1,6 +1,7 @@
 package dns01
 
 import (
+	"os"
 	"sort"
 	"testing"
 
@@ -11,28 +12,37 @@ import (
 func TestLookupNameserversOK(t *testing.T) {
 	testCases := []struct {
 		fqdn string
+		env  string
 		nss  []string
 	}{
 		{
 			fqdn: "books.google.com.ng.",
+			env:  "",
 			nss:  []string{"ns1.google.com.", "ns2.google.com.", "ns3.google.com.", "ns4.google.com."},
 		},
 		{
 			fqdn: "www.google.com.",
+			env:  "",
 			nss:  []string{"ns1.google.com.", "ns2.google.com.", "ns3.google.com.", "ns4.google.com."},
 		},
 		{
 			fqdn: "physics.georgetown.edu.",
+			env:  "",
 			nss:  []string{"ns4.georgetown.edu.", "ns5.georgetown.edu.", "ns6.georgetown.edu."},
+		},
+		{
+			fqdn: "physics.georgetown.edu.",
+			env:  "127.0.0.1:8053",
+			nss:  []string{"127.0.0.1:8053"},
 		},
 	}
 
 	for _, test := range testCases {
 		test := test
 		t.Run(test.fqdn, func(t *testing.T) {
-			t.Parallel()
-
+			os.Setenv("LEGO_NAMESERVER", test.env)
 			nss, err := lookupNameservers(test.fqdn)
+			os.Unsetenv("LEGO_NAMESERVER")
 			require.NoError(t, err)
 
 			sort.Strings(nss)
@@ -171,24 +181,35 @@ func TestFindPrimayNsByFqdnCustom(t *testing.T) {
 func TestResolveConfServers(t *testing.T) {
 	var testCases = []struct {
 		fixture  string
+		env      string
 		expected []string
 		defaults []string
 	}{
 		{
 			fixture:  "fixtures/resolv.conf.1",
+			env:      "",
 			defaults: []string{"127.0.0.1:53"},
 			expected: []string{"10.200.3.249:53", "10.200.3.250:5353", "[2001:4860:4860::8844]:53", "[10.0.0.1]:5353"},
 		},
 		{
 			fixture:  "fixtures/resolv.conf.nonexistant",
+			env:      "",
 			defaults: []string{"127.0.0.1:53"},
 			expected: []string{"127.0.0.1:53"},
+		},
+		{
+			fixture:  "fixtures/resolv.conf.nonexistant",
+			env:      "127.0.0.1:8053",
+			defaults: []string{"127.0.0.1:53"},
+			expected: []string{"127.0.0.1:8053"},
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.fixture, func(t *testing.T) {
+			os.Setenv("LEGO_NAMESERVER", test.env)
 			result := getNameservers(test.fixture, test.defaults)
+			os.Unsetenv("LEGO_NAMESERVER")
 
 			sort.Strings(result)
 			sort.Strings(test.expected)

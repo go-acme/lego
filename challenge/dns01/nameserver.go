@@ -3,6 +3,7 @@ package dns01
 import (
 	"fmt"
 	"net"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -71,6 +72,12 @@ func AddRecursiveNameservers(nameservers []string) ChallengeOption {
 
 // getNameservers attempts to get systems nameservers before falling back to the defaults
 func getNameservers(path string, defaults []string) []string {
+	// The LEGO_NAMESERVER environment variable can be used to use a specific
+	// nameserver for testing purpose.
+	if server := os.Getenv("LEGO_NAMESERVER"); server != "" {
+		return []string{server}
+	}
+
 	config, err := dns.ClientConfigFromFile(path)
 	if err != nil || len(config.Servers) == 0 {
 		return defaults
@@ -95,6 +102,9 @@ func ParseNameservers(servers []string) []string {
 // lookupNameservers returns the authoritative nameservers for the given fqdn.
 func lookupNameservers(fqdn string) ([]string, error) {
 	var authoritativeNss []string
+	if server := os.Getenv("LEGO_NAMESERVER"); server != "" {
+		return []string{server}, nil
+	}
 
 	zone, err := FindZoneByFqdn(fqdn)
 	if err != nil {

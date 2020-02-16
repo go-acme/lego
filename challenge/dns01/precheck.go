@@ -95,7 +95,11 @@ func (p preCheck) checkDNSPropagation(fqdn, value string) (bool, error) {
 // checkAuthoritativeNss queries each of the given nameservers for the expected TXT record.
 func checkAuthoritativeNss(fqdn, value string, nameservers []string) (bool, error) {
 	for _, ns := range nameservers {
-		r, err := dnsQuery(fqdn, dns.TypeTXT, []string{net.JoinHostPort(ns, "53")}, false)
+		// If the address has a port, use it, otherwise default to 53
+		if _, _, err := net.SplitHostPort(ns); err != nil {
+			ns = net.JoinHostPort(ns, "53")
+		}
+		r, err := dnsQuery(fqdn, dns.TypeTXT, []string{ns}, false)
 		if err != nil {
 			return false, err
 		}

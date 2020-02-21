@@ -199,7 +199,10 @@ func ParsePEMCertificate(cert []byte) (*x509.Certificate, error) {
 }
 
 func ExtractDomains(cert *x509.Certificate) []string {
-	domains := []string{cert.Subject.CommonName}
+	var domains []string
+	if cert.Subject.CommonName != "" {
+		domains = append(domains, cert.Subject.CommonName)
+	}
 
 	// Check for SAN certificate
 	for _, sanDomain := range cert.DNSNames {
@@ -213,7 +216,10 @@ func ExtractDomains(cert *x509.Certificate) []string {
 }
 
 func ExtractDomainsCSR(csr *x509.CertificateRequest) []string {
-	domains := []string{csr.Subject.CommonName}
+	var domains []string
+	if csr.Subject.CommonName != "" {
+		domains = append(domains, csr.Subject.CommonName)
+	}
 
 	// loop over the SubjectAltName DNS names
 	for _, sanName := range csr.DNSNames {

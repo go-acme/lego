@@ -94,22 +94,22 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge
-func (p *DNSProvider) Present(domain, token, keyAuth string) error {
-	domainID, err := p.getDomainIDByName(domain)
+func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+	domainID, err := d.getDomainIDByName(domain)
 	if err != nil {
 		return fmt.Errorf("checkdomain: %v", err)
 	}
 
-	err = p.checkNameservers(domainID)
+	err = d.checkNameservers(domainID)
 	if err != nil {
 		return fmt.Errorf("checkdomain: %v", err)
 	}
 
 	name, value := dns01.GetRecord(domain, keyAuth)
 
-	err = p.createRecord(domainID, &Record{
+	err = d.createRecord(domainID, &Record{
 		Name:  name,
-		TTL:   p.config.TTL,
+		TTL:   d.config.TTL,
 		Type:  "TXT",
 		Value: value,
 	})
@@ -122,31 +122,31 @@ func (p *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record previously created
-func (p *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	domainID, err := p.getDomainIDByName(domain)
+func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+	domainID, err := d.getDomainIDByName(domain)
 	if err != nil {
 		return fmt.Errorf("checkdomain: %v", err)
 	}
 
-	err = p.checkNameservers(domainID)
+	err = d.checkNameservers(domainID)
 	if err != nil {
 		return fmt.Errorf("checkdomain: %v", err)
 	}
 
 	name, value := dns01.GetRecord(domain, keyAuth)
 
-	err = p.deleteTXTRecord(domainID, name, value)
+	err = d.deleteTXTRecord(domainID, name, value)
 	if err != nil {
 		return fmt.Errorf("checkdomain: %v", err)
 	}
 
-	p.domainIDMu.Lock()
-	delete(p.domainIDMapping, name)
-	p.domainIDMu.Unlock()
+	d.domainIDMu.Lock()
+	delete(d.domainIDMapping, name)
+	d.domainIDMu.Unlock()
 
 	return nil
 }
 
-func (p *DNSProvider) Timeout() (timeout, interval time.Duration) {
-	return p.config.PropagationTimeout, p.config.PollingInterval
+func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
+	return d.config.PropagationTimeout, d.config.PollingInterval
 }

@@ -86,19 +86,19 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		},
 		{
 			desc:     "missing credentials",
-			expected: "servercow: some credentials information are missing",
+			expected: "servercow: incomplete credentials, missing username and/or password",
 		},
 		{
 			desc:     "missing api key",
 			username: "",
 			password: "api_password",
-			expected: "servercow: some credentials information are missing",
+			expected: "servercow: incomplete credentials, missing username and/or password",
 		},
 		{
 			desc:     "missing secret key",
 			username: "api_username",
 			password: "",
-			expected: "servercow: some credentials information are missing",
+			expected: "servercow: incomplete credentials, missing username and/or password",
 		},
 	}
 

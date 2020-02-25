@@ -61,7 +61,7 @@ func TestNewDNSProvider(t *testing.T) {
 				"ZONEEE_API_KEY":  "456",
 				"ZONEEE_ENDPOINT": ":",
 			},
-			expected: "zoneee: parse :: missing protocol scheme",
+			expected: `zoneee: parse ":": missing protocol scheme`,
 		},
 	}
 

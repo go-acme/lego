@@ -7,12 +7,11 @@ cache:
 matrix:
   fast_finish: true
   include:
-    - go: 1.13.x
+    - go: 1.14.x
       env: STABLE=true
     - go: 1.x
     - go: tip
   allow_failures:
-    - go: 1.x # FIXME currently golangci-lint doesn't work with go1.14
     - go: tip
 
 go_import_path: github.com/go-acme/lego

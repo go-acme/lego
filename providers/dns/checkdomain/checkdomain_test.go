@@ -34,7 +34,7 @@ func TestNewDNSProvider(t *testing.T) {
 				envToken:    "dummy",
 				envEndpoint: ":",
 			},
-			expected: "checkdomain: invalid CHECKDOMAIN_ENDPOINT: parse :: missing protocol scheme",
+			expected: `checkdomain: invalid CHECKDOMAIN_ENDPOINT: parse ":": missing protocol scheme`,
 		},
 	}
 

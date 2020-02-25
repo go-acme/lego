@@ -1,0 +1,125 @@
+[
+  {
+    "name": "letsencrypt",
+    "ttl": 120,
+    "type": "A",
+    "content": "1.1.1.1"
+  },
+  {
+    "name": "diskover",
+    "ttl": 120,
+    "type": "CAA",
+    "content": "0 issue \"letsencrypt.org\""
+  },
+  {
+    "name": "diskover",
+    "ttl": 120,
+    "type": "AAAA",
+    "content": ":::::"
+  },
+  {
+    "name": "diskover",
+    "ttl": 120,
+    "type": "A",
+    "content": "1.1.1.1"
+  },
+  {
+    "name": "portainer",
+    "ttl": 120,
+    "type": "CAA",
+    "content": "0 issue \"letsencrypt.org\""
+  },
+  {
+    "name": "portainer",
+    "ttl": 120,
+    "type": "AAAA",
+    "content": ":::::"
+  },
+  {
+    "name": "portainer",
+    "ttl": 120,
+    "type": "A",
+    "content": "1.1.1.1"
+  },
+  {
+    "name": "lego",
+    "ttl": 120,
+    "type": "A",
+    "content": "1.1.1.1"
+  },
+  {
+    "name": "traefik",
+    "ttl": 120,
+    "type": "CAA",
+    "content": "0 issue \"letsencrypt.org\""
+  },
+  {
+    "name": "traefik",
+    "ttl": 120,
+    "type": "AAAA",
+    "content": ":::::"
+  },
+  {
+    "name": "traefik",
+    "ttl": 120,
+    "type": "A",
+    "content": "1.1.1.1"
+  },
+  {
+    "name": "spaghetti",
+    "ttl": 120,
+    "type": "CAA",
+    "content": "0 issue \"letsencrypt.org\""
+  },
+  {
+    "name": "spaghetti",
+    "ttl": 120,
+    "type": "AAAA",
+    "content": ":::::"
+  },
+  {
+    "name": "spaghetti",
+    "ttl": 120,
+    "type": "A",
+    "content": "1.1.1.1"
+  },
+  {
+    "name": "dragonstone",
+    "ttl": 120,
+    "type": "CAA",
+    "content": "0 issue \"letsencrypt.org\""
+  },
+  {
+    "name": "dragonstone",
+    "ttl": 120,
+    "type": "A",
+    "content": "1.1.1.1"
+  },
+  {
+    "name": "_acme-challenge.sample",
+    "ttl": 20,
+    "type": "TXT",
+    "content": [
+      "txtxtxtxtxtxtxt",
+      "acbdefghijklmnopqrstuvwxyz"
+    ]
+  },
+  {
+    "name": "",
+    "ttl": 120,
+    "type": "CAA",
+    "content": "0 issue \"letsencrypt.org\""
+  },
+  {
+    "name": "",
+    "ttl": 120,
+    "type": "AAAA",
+    "content": ":::::"
+  },
+  {
+    "name": "",
+    "ttl": 120,
+    "type": "A",
+    "content": "1.1.1.1"
+  }
+]

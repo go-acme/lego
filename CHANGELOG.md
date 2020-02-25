@@ -1,5 +1,30 @@
 # Changelog
 
+## [v3.4.0] - 2020-02-25
+
+### Added:
+
+- **[dnsprovider]** Add DNS provider for Constellix
+- **[dnsprovider]** Add DNS provider for Servercow.
+- **[dnsprovider]** Add DNS provider for Scaleway
+- **[cli]** Add &#34;LEGO_PATH&#34; environment variable
+
+### Changed:
+
+- **[dnsprovider]** route53: allow custom client to be provided
+- **[dnsprovider]** namecheap: allow external domains
+- **[dnsprovider]** namecheap: add sandbox support.
+- **[dnsprovider]** ovh: Improve provider documentation
+- **[dnsprovider]** route53: Improve provider documentation
+
+### Fixed:
+
+- **[dnsprovider]** zoneee: fix subdomains.
+- **[dnsprovider]** designate: Don&#39;t clean up managed records like SOA and NS
+- **[dnsprovider]** dnspod: update lib.
+- **[lib]** crypto: Treat CommonName as optional
+- **[lib]** chore: update cenkalti/backoff to v4.
+
 ## [v3.3.0] - 2020-01-08
 
 ### Added:

@@ -12,6 +12,7 @@ matrix:
     - go: 1.x
     - go: tip
   allow_failures:
+    - go: 1.x # FIXME currently golangci-lint doesn't work with go1.14
     - go: tip
 
 go_import_path: github.com/go-acme/lego

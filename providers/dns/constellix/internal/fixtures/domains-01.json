@@ -1,0 +1,37 @@
+[
+  {
+    "id": 273302,
+    "name": "lego.wtf",
+    "soa": {
+      "primaryNameserver": "ns11.constellix.com.",
+      "email": "dns.constellix.com.",
+      "ttl": 86400,
+      "serial": 2015010110,
+      "refresh": 43200,
+      "retry": 3600,
+      "expire": 1209600,
+      "negCache": 180
+    },
+    "createdTs": "2020-02-04T22:42:10Z",
+    "modifiedTs": "2020-02-05T09:23:17Z",
+    "typeId": 1,
+    "domainTags": [],
+    "folder": null,
+    "hasGtdRegions": false,
+    "hasGeoIP": false,
+    "nameserverGroup": 1,
+    "nameservers": [
+      "ns11.constellix.com.",
+      "ns21.constellix.com.",
+      "ns31.constellix.com.",
+      "ns41.constellix.net.",
+      "ns51.constellix.net.",
+      "ns61.constellix.net."
+    ],
+    "note": "",
+    "version": 9,
+    "status": "ACTIVE",
+    "tags": null,
+    "contactIds": []
+  }
+]

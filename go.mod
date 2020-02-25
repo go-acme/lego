@@ -20,6 +20,7 @@ require (
 	github.com/cpu/goacmedns v0.0.1
 	github.com/dnsimple/dnsimple-go v0.30.0
 	github.com/exoscale/egoscale v0.18.1
+	github.com/google/go-querystring v1.0.0
 	github.com/gophercloud/gophercloud v0.3.0
 	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/iij/doapi v0.0.0-20190504054126-0bbf12d6d7df

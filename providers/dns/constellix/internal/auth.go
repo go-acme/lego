@@ -72,6 +72,7 @@ func (t *TokenTransport) Wrap(client *http.Client) *http.Client {
 
 	return client
 }
+
 func createCnsSecurityToken(apiKey, secretKey string) string {
 	timestamp := time.Now().Round(time.Millisecond).UnixNano() / int64(time.Millisecond)
 

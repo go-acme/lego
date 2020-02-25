@@ -63,7 +63,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.SecretKey == "" || config.APIKey == "" {
-		return nil, errors.New("constellix: some credentials information are missing")
+		return nil, errors.New("constellix: incomplete credentials, missing secret key and/or API key")
 	}
 
 	tr, err := internal.NewTokenTransport(config.APIKey, config.SecretKey)

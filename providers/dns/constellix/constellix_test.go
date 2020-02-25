@@ -86,19 +86,19 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		},
 		{
 			desc:     "missing credentials",
-			expected: "constellix: some credentials information are missing",
+			expected: "constellix: incomplete credentials, missing secret key and/or API key",
 		},
 		{
 			desc:      "missing api key",
 			apiKey:    "",
 			secretKey: "api_secret",
-			expected:  "constellix: some credentials information are missing",
+			expected:  "constellix: incomplete credentials, missing secret key and/or API key",
 		},
 		{
 			desc:      "missing secret key",
 			apiKey:    "api_key",
 			secretKey: "",
-			expected:  "constellix: some credentials information are missing",
+			expected:  "constellix: incomplete credentials, missing secret key and/or API key",
 		},
 	}
 

@@ -32,7 +32,7 @@ type APIError struct {
 	Field       string `json:"field"`
 }
 
-func (a *APIError) Error() string {
+func (a APIError) Error() string {
 	return fmt.Sprintf("API error: %d - %s - %s", a.Code, a.Description, a.Field)
 }
 
@@ -143,13 +143,13 @@ func (c *Client) newRequest(method, uri string, body interface{}) (*http.Request
 	if body != nil {
 		err := json.NewEncoder(buf).Encode(body)
 		if err != nil {
-			return nil, fmt.Errorf("failed to encode request body with error: %v", err)
+			return nil, fmt.Errorf("failed to encode request body with error: %w", err)
 		}
 	}
 
 	req, err := http.NewRequest(method, c.baseURL+uri, buf)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create new http request with error: %v", err)
+		return nil, fmt.Errorf("failed to create new http request with error: %w", err)
 	}
 
 	req.Header.Add("X-Token", c.token)
@@ -162,7 +162,7 @@ func (c *Client) newRequest(method, uri string, body interface{}) (*http.Request
 func (c *Client) do(req *http.Request, to interface{}) (*http.Response, error) {
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("request failed with error: %v", err)
+		return nil, fmt.Errorf("request failed with error: %w", err)
 	}
 
 	err = checkResponse(resp)
@@ -197,7 +197,7 @@ func checkResponse(resp *http.Response) error {
 			return fmt.Errorf("request failed with status code %d, response body: %s", resp.StatusCode, string(body))
 		}
 
-		return fmt.Errorf("request failed with status code %d: %v", resp.StatusCode, apiError)
+		return fmt.Errorf("request failed with status code %d: %w", resp.StatusCode, apiError)
 	}
 
 	return nil
@@ -212,7 +212,7 @@ func unmarshalBody(resp *http.Response, to interface{}) error {
 
 	err = json.Unmarshal(body, to)
 	if err != nil {
-		return fmt.Errorf("unmarshaling error: %v: %s", err, string(body))
+		return fmt.Errorf("unmarshaling error: %w: %s", err, string(body))
 	}
 
 	return nil

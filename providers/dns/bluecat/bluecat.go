@@ -61,7 +61,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("BLUECAT_SERVER_URL", "BLUECAT_USER_NAME", "BLUECAT_PASSWORD", "BLUECAT_CONFIG_NAME", "BLUECAT_DNS_VIEW")
 	if err != nil {
-		return nil, fmt.Errorf("bluecat: %v", err)
+		return nil, fmt.Errorf("bluecat: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -81,7 +81,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.BaseURL == "" || config.UserName == "" || config.Password == "" || config.ConfigName == "" || config.DNSView == "" {
-		return nil, fmt.Errorf("bluecat: credentials missing")
+		return nil, errors.New("bluecat: credentials missing")
 	}
 
 	return &DNSProvider{config: config}, nil
@@ -174,7 +174,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	var txtRec entityResponse
 	err = json.NewDecoder(resp.Body).Decode(&txtRec)
 	if err != nil {
-		return fmt.Errorf("bluecat: %v", err)
+		return fmt.Errorf("bluecat: %w", err)
 	}
 	queryArgs = map[string]string{
 		"objectId": strconv.FormatUint(uint64(txtRec.ID), 10),

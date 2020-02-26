@@ -49,7 +49,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("LINODE_API_KEY")
 	if err != nil {
-		return nil, fmt.Errorf("linode: %v", err)
+		return nil, fmt.Errorf("linode: %w", err)
 	}
 
 	config := NewDefaultConfig()

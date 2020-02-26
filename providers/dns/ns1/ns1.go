@@ -47,7 +47,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("NS1_API_KEY")
 	if err != nil {
-		return nil, fmt.Errorf("ns1: %v", err)
+		return nil, fmt.Errorf("ns1: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -63,7 +63,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.APIKey == "" {
-		return nil, fmt.Errorf("ns1: credentials missing")
+		return nil, errors.New("ns1: credentials missing")
 	}
 
 	client := rest.NewClient(config.HTTPClient, rest.SetAPIKey(config.APIKey))
@@ -77,7 +77,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zone, err := d.getHostedZone(fqdn)
 	if err != nil {
-		return fmt.Errorf("ns1: %v", err)
+		return fmt.Errorf("ns1: %w", err)
 	}
 
 	record, _, err := d.client.Records.Get(zone.Zone, dns01.UnFqdn(fqdn), "TXT")
@@ -92,14 +92,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 		_, err = d.client.Records.Create(record)
 		if err != nil {
-			return fmt.Errorf("ns1: failed to create record [zone: %q, fqdn: %q]: %v", zone.Zone, fqdn, err)
+			return fmt.Errorf("ns1: failed to create record [zone: %q, fqdn: %q]: %w", zone.Zone, fqdn, err)
 		}
 
 		return nil
 	}
 
 	if err != nil {
-		return fmt.Errorf("ns1: failed to get the existing record: %v", err)
+		return fmt.Errorf("ns1: failed to get the existing record: %w", err)
 	}
 
 	// Update the existing records
@@ -109,7 +109,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	_, err = d.client.Records.Update(record)
 	if err != nil {
-		return fmt.Errorf("ns1: failed to update record [zone: %q, fqdn: %q]: %v", zone.Zone, fqdn, err)
+		return fmt.Errorf("ns1: failed to update record [zone: %q, fqdn: %q]: %w", zone.Zone, fqdn, err)
 	}
 
 	return nil
@@ -121,13 +121,13 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	zone, err := d.getHostedZone(fqdn)
 	if err != nil {
-		return fmt.Errorf("ns1: %v", err)
+		return fmt.Errorf("ns1: %w", err)
 	}
 
 	name := dns01.UnFqdn(fqdn)
 	_, err = d.client.Records.Delete(zone.Zone, name, "TXT")
 	if err != nil {
-		return fmt.Errorf("ns1: failed to delete record [zone: %q, domain: %q]: %v", zone.Zone, name, err)
+		return fmt.Errorf("ns1: failed to delete record [zone: %q, domain: %q]: %w", zone.Zone, name, err)
 	}
 	return nil
 }
@@ -141,12 +141,12 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) getHostedZone(fqdn string) (*dns.Zone, error) {
 	authZone, err := getAuthZone(fqdn)
 	if err != nil {
-		return nil, fmt.Errorf("failed to extract auth zone from fqdn %q: %v", fqdn, err)
+		return nil, fmt.Errorf("failed to extract auth zone from fqdn %q: %w", fqdn, err)
 	}
 
 	zone, _, err := d.client.Zones.Get(authZone)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get zone [authZone: %q, fqdn: %q]: %v", authZone, fqdn, err)
+		return nil, fmt.Errorf("failed to get zone [authZone: %q, fqdn: %q]: %w", authZone, fqdn, err)
 	}
 
 	return zone, nil

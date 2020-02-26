@@ -53,7 +53,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("GODADDY_API_KEY", "GODADDY_API_SECRET")
 	if err != nil {
-		return nil, fmt.Errorf("godaddy: %v", err)
+		return nil, fmt.Errorf("godaddy: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -70,7 +70,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.APIKey == "" || config.APISecret == "" {
-		return nil, fmt.Errorf("godaddy: credentials missing")
+		return nil, errors.New("godaddy: credentials missing")
 	}
 
 	if config.TTL < minTTL {

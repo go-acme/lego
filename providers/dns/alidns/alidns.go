@@ -49,7 +49,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("ALICLOUD_ACCESS_KEY", "ALICLOUD_SECRET_KEY")
 	if err != nil {
-		return nil, fmt.Errorf("alicloud: %v", err)
+		return nil, fmt.Errorf("alicloud: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -79,7 +79,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	client, err := alidns.NewClientWithOptions(config.RegionID, conf, credential)
 	if err != nil {
-		return nil, fmt.Errorf("alicloud: credentials failed: %v", err)
+		return nil, fmt.Errorf("alicloud: credentials failed: %w", err)
 	}
 
 	return &DNSProvider{config: config, client: client}, nil
@@ -97,14 +97,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zoneName, err := d.getHostedZone(domain)
 	if err != nil {
-		return fmt.Errorf("alicloud: %v", err)
+		return fmt.Errorf("alicloud: %w", err)
 	}
 
 	recordAttributes := d.newTxtRecord(zoneName, fqdn, value)
 
 	_, err = d.client.AddDomainRecord(recordAttributes)
 	if err != nil {
-		return fmt.Errorf("alicloud: API call failed: %v", err)
+		return fmt.Errorf("alicloud: API call failed: %w", err)
 	}
 	return nil
 }
@@ -115,12 +115,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	records, err := d.findTxtRecords(domain, fqdn)
 	if err != nil {
-		return fmt.Errorf("alicloud: %v", err)
+		return fmt.Errorf("alicloud: %w", err)
 	}
 
 	_, err = d.getHostedZone(domain)
 	if err != nil {
-		return fmt.Errorf("alicloud: %v", err)
+		return fmt.Errorf("alicloud: %w", err)
 	}
 
 	for _, rec := range records {
@@ -128,7 +128,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		request.RecordId = rec.RecordId
 		_, err = d.client.DeleteDomainRecord(request)
 		if err != nil {
-			return fmt.Errorf("alicloud: %v", err)
+			return fmt.Errorf("alicloud: %w", err)
 		}
 	}
 	return nil
@@ -145,7 +145,7 @@ func (d *DNSProvider) getHostedZone(domain string) (string, error) {
 
 		response, err := d.client.DescribeDomains(request)
 		if err != nil {
-			return "", fmt.Errorf("API call failed: %v", err)
+			return "", fmt.Errorf("API call failed: %w", err)
 		}
 
 		domains = append(domains, response.Domains.Domain...)
@@ -200,7 +200,7 @@ func (d *DNSProvider) findTxtRecords(domain, fqdn string) ([]alidns.Record, erro
 
 	result, err := d.client.DescribeDomainRecords(request)
 	if err != nil {
-		return records, fmt.Errorf("API call has failed: %v", err)
+		return records, fmt.Errorf("API call has failed: %w", err)
 	}
 
 	recordName := d.extractRecordName(fqdn, zoneName)

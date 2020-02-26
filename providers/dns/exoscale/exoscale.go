@@ -49,7 +49,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("EXOSCALE_API_KEY", "EXOSCALE_API_SECRET")
 	if err != nil {
-		return nil, fmt.Errorf("exoscale: %v", err)
+		return nil, fmt.Errorf("exoscale: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -67,7 +67,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.APIKey == "" || config.APISecret == "" {
-		return nil, fmt.Errorf("exoscale: credentials missing")
+		return nil, errors.New("exoscale: credentials missing")
 	}
 
 	if config.Endpoint == "" {

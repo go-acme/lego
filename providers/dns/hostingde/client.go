@@ -27,7 +27,7 @@ func (d *DNSProvider) listZoneConfigs(findRequest ZoneConfigsFindRequest) (*Zone
 	}
 
 	if len(findResponse.Response.Data) == 0 {
-		return nil, fmt.Errorf("%v: %s", err, toUnreadableBodyMessage(uri, rawResp))
+		return nil, fmt.Errorf("%w: %s", err, toUnreadableBodyMessage(uri, rawResp))
 	}
 
 	if findResponse.Status != "success" && findResponse.Status != "pending" {
@@ -104,7 +104,7 @@ func (d *DNSProvider) post(uri string, request interface{}, response interface{}
 
 	resp, err := d.config.HTTPClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("error querying API: %v", err)
+		return nil, fmt.Errorf("error querying API: %w", err)
 	}
 
 	defer resp.Body.Close()
@@ -116,7 +116,7 @@ func (d *DNSProvider) post(uri string, request interface{}, response interface{}
 
 	err = json.Unmarshal(content, response)
 	if err != nil {
-		return nil, fmt.Errorf("%v: %s", err, toUnreadableBodyMessage(uri, content))
+		return nil, fmt.Errorf("%w: %s", err, toUnreadableBodyMessage(uri, content))
 	}
 
 	return content, nil

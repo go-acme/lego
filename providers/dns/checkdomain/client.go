@@ -3,6 +3,7 @@ package checkdomain
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -124,13 +125,13 @@ func (d *DNSProvider) getDomainIDByName(name string) (int, error) {
 		}
 	}
 
-	return domainNotFound, fmt.Errorf("domain not found")
+	return domainNotFound, errors.New("domain not found")
 }
 
 func (d *DNSProvider) listDomains() ([]*Domain, error) {
 	req, err := d.makeRequest(http.MethodGet, "/v1/domains", http.NoBody)
 	if err != nil {
-		return nil, fmt.Errorf("failed to make request: %v", err)
+		return nil, fmt.Errorf("failed to make request: %w", err)
 	}
 
 	// Checkdomain also provides a query param 'query' which allows filtering domains for a string.
@@ -149,7 +150,7 @@ func (d *DNSProvider) listDomains() ([]*Domain, error) {
 
 		var res DomainListingResponse
 		if err := d.sendRequest(req, &res); err != nil {
-			return nil, fmt.Errorf("failed to send domain listing request: %v", err)
+			return nil, fmt.Errorf("failed to send domain listing request: %w", err)
 		}
 
 		// This is the first response,
@@ -197,7 +198,7 @@ func (d *DNSProvider) checkNameservers(domainID int) error {
 	}
 
 	if !found1 || !found2 {
-		return fmt.Errorf("not using checkdomain nameservers, can not update records")
+		return errors.New("not using checkdomain nameservers, can not update records")
 	}
 
 	return nil
@@ -206,7 +207,7 @@ func (d *DNSProvider) checkNameservers(domainID int) error {
 func (d *DNSProvider) createRecord(domainID int, record *Record) error {
 	bs, err := json.Marshal(record)
 	if err != nil {
-		return fmt.Errorf("encoding record failed: %v", err)
+		return fmt.Errorf("encoding record failed: %w", err)
 	}
 
 	req, err := d.makeRequest(http.MethodPost, fmt.Sprintf("/v1/domains/%d/nameservers/records", domainID), bytes.NewReader(bs))
@@ -277,7 +278,7 @@ func (d *DNSProvider) getDomainInfo(domainID int) (*DomainResponse, error) {
 func (d *DNSProvider) listRecords(domainID int, recordType string) ([]*Record, error) {
 	req, err := d.makeRequest(http.MethodGet, fmt.Sprintf("/v1/domains/%d/nameservers/records", domainID), http.NoBody)
 	if err != nil {
-		return nil, fmt.Errorf("failed to make request: %v", err)
+		return nil, fmt.Errorf("failed to make request: %w", err)
 	}
 
 	q := req.URL.Query()
@@ -296,7 +297,7 @@ func (d *DNSProvider) listRecords(domainID int, recordType string) ([]*Record, e
 
 		var res RecordListingResponse
 		if err := d.sendRequest(req, &res); err != nil {
-			return nil, fmt.Errorf("failed to send record listing request: %v", err)
+			return nil, fmt.Errorf("failed to send record listing request: %w", err)
 		}
 
 		// This is the first response, so we update totalPages and allocate the slice memory.
@@ -315,7 +316,7 @@ func (d *DNSProvider) listRecords(domainID int, recordType string) ([]*Record, e
 func (d *DNSProvider) replaceRecords(domainID int, records []*Record) error {
 	bs, err := json.Marshal(records)
 	if err != nil {
-		return fmt.Errorf("encoding record failed: %v", err)
+		return fmt.Errorf("encoding record failed: %w", err)
 	}
 
 	req, err := d.makeRequest(http.MethodPut, fmt.Sprintf("/v1/domains/%d/nameservers/records", domainID), bytes.NewReader(bs))
@@ -391,7 +392,7 @@ func (d *DNSProvider) sendRequest(req *http.Request, result interface{}) error {
 
 	err = json.Unmarshal(raw, result)
 	if err != nil {
-		return fmt.Errorf("unmarshaling %T error [status code=%d]: %v: %s", result, resp.StatusCode, err, string(raw))
+		return fmt.Errorf("unmarshaling %T error [status code=%d]: %w: %s", result, resp.StatusCode, err, string(raw))
 	}
 	return nil
 }
@@ -409,7 +410,7 @@ func checkResponse(resp *http.Response) error {
 
 	raw, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("unable to read body: status code=%d, error=%v", resp.StatusCode, err)
+		return fmt.Errorf("unable to read body: status code=%d, error=%w", resp.StatusCode, err)
 	}
 
 	return fmt.Errorf("status code=%d: %s", resp.StatusCode, string(raw))

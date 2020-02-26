@@ -101,7 +101,7 @@ func (d *DNSProvider) do(req *http.Request, result interface{}) error {
 		var body []byte
 		body, err = ioutil.ReadAll(resp.Body)
 		if err != nil {
-			return fmt.Errorf("%d: failed to read response body: %v", resp.StatusCode, err)
+			return fmt.Errorf("%d: failed to read response body: %w", resp.StatusCode, err)
 		}
 
 		respError := &dnsErrorResponse{}
@@ -115,11 +115,11 @@ func (d *DNSProvider) do(req *http.Request, result interface{}) error {
 	if result != nil {
 		content, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			return fmt.Errorf("request failed: %v", err)
+			return fmt.Errorf("request failed: %w", err)
 		}
 
 		if err = json.Unmarshal(content, result); err != nil {
-			return fmt.Errorf("%v: %s", err, content)
+			return fmt.Errorf("%w: %s", err, content)
 		}
 	}
 

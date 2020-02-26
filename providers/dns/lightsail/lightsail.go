@@ -108,7 +108,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	err := d.newTxtRecord(fqdn, `"`+value+`"`)
 	if err != nil {
-		return fmt.Errorf("lightsail: %v", err)
+		return fmt.Errorf("lightsail: %w", err)
 	}
 	return nil
 }
@@ -128,7 +128,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	_, err := d.client.DeleteDomainEntry(params)
 	if err != nil {
-		return fmt.Errorf("lightsail: %v", err)
+		return fmt.Errorf("lightsail: %w", err)
 	}
 	return nil
 }

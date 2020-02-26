@@ -68,7 +68,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("GANDI_API_KEY")
 	if err != nil {
-		return nil, fmt.Errorf("gandi: %v", err)
+		return nil, fmt.Errorf("gandi: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -84,7 +84,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.APIKey == "" {
-		return nil, fmt.Errorf("gandi: no API Key given")
+		return nil, errors.New("gandi: no API Key given")
 	}
 
 	if config.BaseURL == "" {
@@ -112,12 +112,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	// find authZone and Gandi zone_id for fqdn
 	authZone, err := d.findZoneByFqdn(fqdn)
 	if err != nil {
-		return fmt.Errorf("gandi: findZoneByFqdn failure: %v", err)
+		return fmt.Errorf("gandi: findZoneByFqdn failure: %w", err)
 	}
 
 	zoneID, err := d.getZoneID(authZone)
 	if err != nil {
-		return fmt.Errorf("gandi: %v", err)
+		return fmt.Errorf("gandi: %w", err)
 	}
 
 	// determine name of TXT record
@@ -147,22 +147,22 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	newZoneVersion, err := d.newZoneVersion(newZoneID)
 	if err != nil {
-		return fmt.Errorf("gandi: %v", err)
+		return fmt.Errorf("gandi: %w", err)
 	}
 
 	err = d.addTXTRecord(newZoneID, newZoneVersion, name, value, d.config.TTL)
 	if err != nil {
-		return fmt.Errorf("gandi: %v", err)
+		return fmt.Errorf("gandi: %w", err)
 	}
 
 	err = d.setZoneVersion(newZoneID, newZoneVersion)
 	if err != nil {
-		return fmt.Errorf("gandi: %v", err)
+		return fmt.Errorf("gandi: %w", err)
 	}
 
 	err = d.setZone(authZone, newZoneID)
 	if err != nil {
-		return fmt.Errorf("gandi: %v", err)
+		return fmt.Errorf("gandi: %w", err)
 	}
 
 	// save data necessary for CleanUp
@@ -200,7 +200,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	// perform API actions to restore old gandi zone for authZone
 	err := d.setZone(authZone, zoneID)
 	if err != nil {
-		return fmt.Errorf("gandi: %v", err)
+		return fmt.Errorf("gandi: %w", err)
 	}
 
 	return d.deleteZone(newZoneID)

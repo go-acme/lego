@@ -48,7 +48,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("CONOHA_TENANT_ID", "CONOHA_API_USERNAME", "CONOHA_API_PASSWORD")
 	if err != nil {
-		return nil, fmt.Errorf("conoha: %v", err)
+		return nil, fmt.Errorf("conoha: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -79,7 +79,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	client, err := internal.NewClient(config.Region, auth, config.HTTPClient)
 	if err != nil {
-		return nil, fmt.Errorf("conoha: failed to create client: %v", err)
+		return nil, fmt.Errorf("conoha: failed to create client: %w", err)
 	}
 
 	return &DNSProvider{config: config, client: client}, nil
@@ -96,7 +96,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	id, err := d.client.GetDomainID(authZone)
 	if err != nil {
-		return fmt.Errorf("conoha: failed to get domain ID: %v", err)
+		return fmt.Errorf("conoha: failed to get domain ID: %w", err)
 	}
 
 	record := internal.Record{
@@ -108,7 +108,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	err = d.client.CreateRecord(id, record)
 	if err != nil {
-		return fmt.Errorf("conoha: failed to create record: %v", err)
+		return fmt.Errorf("conoha: failed to create record: %w", err)
 	}
 
 	return nil
@@ -125,17 +125,17 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	domID, err := d.client.GetDomainID(authZone)
 	if err != nil {
-		return fmt.Errorf("conoha: failed to get domain ID: %v", err)
+		return fmt.Errorf("conoha: failed to get domain ID: %w", err)
 	}
 
 	recID, err := d.client.GetRecordID(domID, fqdn, "TXT", value)
 	if err != nil {
-		return fmt.Errorf("conoha: failed to get record ID: %v", err)
+		return fmt.Errorf("conoha: failed to get record ID: %w", err)
 	}
 
 	err = d.client.DeleteRecord(domID, recID)
 	if err != nil {
-		return fmt.Errorf("conoha: failed to delete record: %v", err)
+		return fmt.Errorf("conoha: failed to delete record: %w", err)
 	}
 
 	return nil

@@ -45,7 +45,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(apiBaseEnvVar, storagePathEnvVar)
 	if err != nil {
-		return nil, fmt.Errorf("acme-dns: %v", err)
+		return nil, fmt.Errorf("acme-dns: %w", err)
 	}
 
 	client := goacmedns.NewClient(values[apiBaseEnvVar])

@@ -46,7 +46,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("CLOUDXNS_API_KEY", "CLOUDXNS_SECRET_KEY")
 	if err != nil {
-		return nil, fmt.Errorf("CloudXNS: %v", err)
+		return nil, fmt.Errorf("CloudXNS: %w", err)
 	}
 
 	config := NewDefaultConfig()

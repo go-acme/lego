@@ -49,7 +49,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("DO_AUTH_TOKEN")
 	if err != nil {
-		return nil, fmt.Errorf("digitalocean: %v", err)
+		return nil, fmt.Errorf("digitalocean: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -65,7 +65,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.AuthToken == "" {
-		return nil, fmt.Errorf("digitalocean: credentials missing")
+		return nil, errors.New("digitalocean: credentials missing")
 	}
 
 	if config.BaseURL == "" {
@@ -90,7 +90,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	respData, err := d.addTxtRecord(fqdn, value)
 	if err != nil {
-		return fmt.Errorf("digitalocean: %v", err)
+		return fmt.Errorf("digitalocean: %w", err)
 	}
 
 	d.recordIDsMu.Lock()
@@ -106,7 +106,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return fmt.Errorf("digitalocean: %v", err)
+		return fmt.Errorf("digitalocean: %w", err)
 	}
 
 	// get the record's unique ID from when we created it
@@ -119,7 +119,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	err = d.removeTxtRecord(authZone, recordID)
 	if err != nil {
-		return fmt.Errorf("digitalocean: %v", err)
+		return fmt.Errorf("digitalocean: %w", err)
 	}
 
 	// Delete record ID from map

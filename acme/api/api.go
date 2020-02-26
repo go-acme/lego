@@ -118,7 +118,7 @@ func (a *Core) retrievablePost(uri string, content []byte, response interface{})
 func (a *Core) signedPost(uri string, content []byte, response interface{}) (*http.Response, error) {
 	signedContent, err := a.jws.SignContent(uri, content)
 	if err != nil {
-		return nil, fmt.Errorf("failed to post JWS message -> failed to sign content -> %v", err)
+		return nil, fmt.Errorf("failed to post JWS message -> failed to sign content -> %w", err)
 	}
 
 	signedBody := bytes.NewBuffer([]byte(signedContent.FullSerialize()))
@@ -155,7 +155,7 @@ func (a *Core) GetDirectory() acme.Directory {
 func getDirectory(do *sender.Doer, caDirURL string) (acme.Directory, error) {
 	var dir acme.Directory
 	if _, err := do.Get(caDirURL, &dir); err != nil {
-		return dir, fmt.Errorf("get directory at '%s': %v", caDirURL, err)
+		return dir, fmt.Errorf("get directory at '%s': %w", caDirURL, err)
 	}
 
 	if dir.NewAccountURL == "" {

@@ -102,7 +102,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	client, err := newClient(config)
 	if err != nil {
-		return nil, fmt.Errorf("cloudflare: %v", err)
+		return nil, fmt.Errorf("cloudflare: %w", err)
 	}
 
 	return &DNSProvider{
@@ -124,12 +124,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return fmt.Errorf("cloudflare: %v", err)
+		return fmt.Errorf("cloudflare: %w", err)
 	}
 
 	zoneID, err := d.client.ZoneIDByName(authZone)
 	if err != nil {
-		return fmt.Errorf("cloudflare: failed to find zone %s: %v", authZone, err)
+		return fmt.Errorf("cloudflare: failed to find zone %s: %w", authZone, err)
 	}
 
 	dnsRecord := cloudflare.DNSRecord{
@@ -141,7 +141,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	response, err := d.client.CreateDNSRecord(zoneID, dnsRecord)
 	if err != nil {
-		return fmt.Errorf("cloudflare: failed to create TXT record: %v", err)
+		return fmt.Errorf("cloudflare: failed to create TXT record: %w", err)
 	}
 
 	if !response.Success {
@@ -163,12 +163,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return fmt.Errorf("cloudflare: %v", err)
+		return fmt.Errorf("cloudflare: %w", err)
 	}
 
 	zoneID, err := d.client.ZoneIDByName(authZone)
 	if err != nil {
-		return fmt.Errorf("cloudflare: failed to find zone %s: %v", authZone, err)
+		return fmt.Errorf("cloudflare: failed to find zone %s: %w", authZone, err)
 	}
 
 	// get the record's unique ID from when we created it
@@ -181,7 +181,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	err = d.client.DeleteDNSRecord(zoneID, recordID)
 	if err != nil {
-		log.Printf("cloudflare: failed to delete TXT record: %v", err)
+		log.Printf("cloudflare: failed to delete TXT record: %w", err)
 	}
 
 	// Delete record ID from map

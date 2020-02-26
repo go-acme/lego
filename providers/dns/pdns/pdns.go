@@ -49,12 +49,12 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("PDNS_API_KEY", "PDNS_API_URL")
 	if err != nil {
-		return nil, fmt.Errorf("pdns: %v", err)
+		return nil, fmt.Errorf("pdns: %w", err)
 	}
 
 	hostURL, err := url.Parse(values["PDNS_API_URL"])
 	if err != nil {
-		return nil, fmt.Errorf("pdns: %v", err)
+		return nil, fmt.Errorf("pdns: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -71,11 +71,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.APIKey == "" {
-		return nil, fmt.Errorf("pdns: API key missing")
+		return nil, errors.New("pdns: API key missing")
 	}
 
 	if config.Host == nil || config.Host.Host == "" {
-		return nil, fmt.Errorf("pdns: API URL missing")
+		return nil, errors.New("pdns: API URL missing")
 	}
 
 	d := &DNSProvider{config: config}
@@ -101,7 +101,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zone, err := d.getHostedZone(fqdn)
 	if err != nil {
-		return fmt.Errorf("pdns: %v", err)
+		return fmt.Errorf("pdns: %w", err)
 	}
 
 	name := fqdn
@@ -124,7 +124,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	// Look for existing records.
 	existingRrSet, err := d.findTxtRecord(fqdn)
 	if err != nil {
-		return fmt.Errorf("pdns: %v", err)
+		return fmt.Errorf("pdns: %w", err)
 	}
 
 	// merge the existing and new records
@@ -149,12 +149,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	body, err := json.Marshal(rrsets)
 	if err != nil {
-		return fmt.Errorf("pdns: %v", err)
+		return fmt.Errorf("pdns: %w", err)
 	}
 
 	_, err = d.sendRequest(http.MethodPatch, zone.URL, bytes.NewReader(body))
 	if err != nil {
-		return fmt.Errorf("pdns: %v", err)
+		return fmt.Errorf("pdns: %w", err)
 	}
 	return nil
 }
@@ -165,12 +165,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	zone, err := d.getHostedZone(fqdn)
 	if err != nil {
-		return fmt.Errorf("pdns: %v", err)
+		return fmt.Errorf("pdns: %w", err)
 	}
 
 	set, err := d.findTxtRecord(fqdn)
 	if err != nil {
-		return fmt.Errorf("pdns: %v", err)
+		return fmt.Errorf("pdns: %w", err)
 	}
 	if set == nil {
 		return fmt.Errorf("pdns: no existing record found for %s", fqdn)
@@ -187,12 +187,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 	body, err := json.Marshal(rrsets)
 	if err != nil {
-		return fmt.Errorf("pdns: %v", err)
+		return fmt.Errorf("pdns: %w", err)
 	}
 
 	_, err = d.sendRequest(http.MethodPatch, zone.URL, bytes.NewReader(body))
 	if err != nil {
-		return fmt.Errorf("pdns: %v", err)
+		return fmt.Errorf("pdns: %w", err)
 	}
 	return nil
 }

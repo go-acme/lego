@@ -47,7 +47,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("AURORA_USER_ID", "AURORA_KEY")
 	if err != nil {
-		return nil, fmt.Errorf("aurora: %v", err)
+		return nil, fmt.Errorf("aurora: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -74,12 +74,12 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	tr, err := auroradns.NewTokenTransport(config.UserID, config.Key)
 	if err != nil {
-		return nil, fmt.Errorf("aurora: %v", err)
+		return nil, fmt.Errorf("aurora: %w", err)
 	}
 
 	client, err := auroradns.NewClient(tr.Client(), auroradns.WithBaseURL(config.BaseURL))
 	if err != nil {
-		return nil, fmt.Errorf("aurora: %v", err)
+		return nil, fmt.Errorf("aurora: %w", err)
 	}
 
 	return &DNSProvider{
@@ -95,7 +95,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
 	if err != nil {
-		return fmt.Errorf("aurora: could not determine zone for domain: '%s'. %s", domain, err)
+		return fmt.Errorf("aurora: could not determine zone for domain %q: %w", domain, err)
 	}
 
 	// 1. Aurora will happily create the TXT record when it is provided a fqdn,
@@ -111,7 +111,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zone, err := d.getZoneInformationByName(authZone)
 	if err != nil {
-		return fmt.Errorf("aurora: could not create record: %v", err)
+		return fmt.Errorf("aurora: could not create record: %w", err)
 	}
 
 	record := auroradns.Record{
@@ -123,7 +123,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	newRecord, _, err := d.client.CreateRecord(zone.ID, record)
 	if err != nil {
-		return fmt.Errorf("aurora: could not create record: %v", err)
+		return fmt.Errorf("aurora: could not create record: %w", err)
 	}
 
 	d.recordIDsMu.Lock()
@@ -147,7 +147,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
 	if err != nil {
-		return fmt.Errorf("could not determine zone for domain: %q. %v", domain, err)
+		return fmt.Errorf("could not determine zone for domain %q: %w", domain, err)
 	}
 
 	authZone = dns01.UnFqdn(authZone)
@@ -187,5 +187,5 @@ func (d *DNSProvider) getZoneInformationByName(name string) (auroradns.Zone, err
 		}
 	}
 
-	return auroradns.Zone{}, fmt.Errorf("could not find Zone record")
+	return auroradns.Zone{}, errors.New("could not find Zone record")
 }

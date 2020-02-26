@@ -3,6 +3,7 @@ package gandiv5
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -50,7 +51,7 @@ func (d *DNSProvider) addTXTRecord(domain string, name string, value string, ttl
 	message := apiResponse{}
 	err = d.do(req, &message)
 	if err != nil {
-		return fmt.Errorf("unable to create TXT record for domain %s and name %s: %v", domain, name, err)
+		return fmt.Errorf("unable to create TXT record for domain %s and name %s: %w", domain, name, err)
 	}
 
 	if len(message.Message) > 0 {
@@ -73,7 +74,7 @@ func (d *DNSProvider) getTXTRecord(domain, name string) (*Record, error) {
 	txtRecord := &Record{}
 	err = d.do(req, txtRecord)
 	if err != nil {
-		return nil, fmt.Errorf("unable to get TXT records for domain %s and name %s: %v", domain, name, err)
+		return nil, fmt.Errorf("unable to get TXT records for domain %s and name %s: %w", domain, name, err)
 	}
 
 	return txtRecord, nil
@@ -90,7 +91,7 @@ func (d *DNSProvider) deleteTXTRecord(domain string, name string) error {
 	message := apiResponse{}
 	err = d.do(req, &message)
 	if err != nil {
-		return fmt.Errorf("unable to delete TXT record for domain %s and name %s: %v", domain, name, err)
+		return fmt.Errorf("unable to delete TXT record for domain %s and name %s: %w", domain, name, err)
 	}
 
 	if len(message.Message) > 0 {
@@ -148,13 +149,13 @@ func (d *DNSProvider) do(req *http.Request, v interface{}) error {
 
 	raw, err := readBody(resp)
 	if err != nil {
-		return fmt.Errorf("failed to read body: %v", err)
+		return fmt.Errorf("failed to read body: %w", err)
 	}
 
 	if len(raw) > 0 {
 		err = json.Unmarshal(raw, v)
 		if err != nil {
-			return fmt.Errorf("unmarshaling error: %v: %s", err, string(raw))
+			return fmt.Errorf("unmarshaling error: %w: %s", err, string(raw))
 		}
 	}
 
@@ -169,13 +170,13 @@ func checkResponse(resp *http.Response) error {
 	if resp.StatusCode >= 400 {
 		data, err := readBody(resp)
 		if err != nil {
-			return fmt.Errorf("%d [%s] request failed: %v", resp.StatusCode, http.StatusText(resp.StatusCode), err)
+			return fmt.Errorf("%d [%s] request failed: %w", resp.StatusCode, http.StatusText(resp.StatusCode), err)
 		}
 
 		message := &apiResponse{}
 		err = json.Unmarshal(data, message)
 		if err != nil {
-			return fmt.Errorf("%d [%s] request failed: %v: %s", resp.StatusCode, http.StatusText(resp.StatusCode), err, data)
+			return fmt.Errorf("%d [%s] request failed: %w: %s", resp.StatusCode, http.StatusText(resp.StatusCode), err, data)
 		}
 		return fmt.Errorf("%d [%s] request failed: %s", resp.StatusCode, http.StatusText(resp.StatusCode), message.Message)
 	}
@@ -185,7 +186,7 @@ func checkResponse(resp *http.Response) error {
 
 func readBody(resp *http.Response) ([]byte, error) {
 	if resp.Body == nil {
-		return nil, fmt.Errorf("response body is nil")
+		return nil, errors.New("response body is nil")
 	}
 
 	defer resp.Body.Close()

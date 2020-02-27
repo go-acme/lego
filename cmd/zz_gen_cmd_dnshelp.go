@@ -1480,7 +1480,7 @@ func displayDNSHelp(name string) error {
 	}
 
 	if ew.err != nil {
-		return fmt.Errorf("error: %v", ew.err)
+		return fmt.Errorf("error: %w", ew.err)
 	}
 
 	return w.Flush()

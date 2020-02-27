@@ -46,7 +46,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("CLOUDNS_AUTH_ID", "CLOUDNS_AUTH_PASSWORD")
 	if err != nil {
-		return nil, fmt.Errorf("ClouDNS: %v", err)
+		return nil, fmt.Errorf("ClouDNS: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -64,7 +64,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	client, err := internal.NewClient(config.AuthID, config.AuthPassword)
 	if err != nil {
-		return nil, fmt.Errorf("ClouDNS: %v", err)
+		return nil, fmt.Errorf("ClouDNS: %w", err)
 	}
 
 	client.HTTPClient = config.HTTPClient
@@ -78,12 +78,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zone, err := d.client.GetZone(fqdn)
 	if err != nil {
-		return fmt.Errorf("ClouDNS: %v", err)
+		return fmt.Errorf("ClouDNS: %w", err)
 	}
 
 	err = d.client.AddTxtRecord(zone.Name, fqdn, value, d.config.TTL)
 	if err != nil {
-		return fmt.Errorf("ClouDNS: %v", err)
+		return fmt.Errorf("ClouDNS: %w", err)
 	}
 
 	return nil
@@ -95,12 +95,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	zone, err := d.client.GetZone(fqdn)
 	if err != nil {
-		return fmt.Errorf("ClouDNS: %v", err)
+		return fmt.Errorf("ClouDNS: %w", err)
 	}
 
 	record, err := d.client.FindTxtRecord(zone.Name, fqdn)
 	if err != nil {
-		return fmt.Errorf("ClouDNS: %v", err)
+		return fmt.Errorf("ClouDNS: %w", err)
 	}
 
 	if record == nil {
@@ -109,7 +109,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	err = d.client.RemoveTxtRecord(record.ID, zone.Name)
 	if err != nil {
-		return fmt.Errorf("ClouDNS: %v", err)
+		return fmt.Errorf("ClouDNS: %w", err)
 	}
 	return nil
 }

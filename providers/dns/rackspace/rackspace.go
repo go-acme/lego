@@ -54,7 +54,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("RACKSPACE_USER", "RACKSPACE_API_KEY")
 	if err != nil {
-		return nil, fmt.Errorf("rackspace: %v", err)
+		return nil, fmt.Errorf("rackspace: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -72,12 +72,12 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.APIUser == "" || config.APIKey == "" {
-		return nil, fmt.Errorf("rackspace: credentials missing")
+		return nil, errors.New("rackspace: credentials missing")
 	}
 
 	identity, err := login(config)
 	if err != nil {
-		return nil, fmt.Errorf("rackspace: %v", err)
+		return nil, fmt.Errorf("rackspace: %w", err)
 	}
 
 	// Iterate through the Service Catalog to get the DNS Endpoint
@@ -90,7 +90,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if dnsEndpoint == "" {
-		return nil, fmt.Errorf("rackspace: failed to populate DNS endpoint, check Rackspace API for changes")
+		return nil, errors.New("rackspace: failed to populate DNS endpoint, check Rackspace API for changes")
 	}
 
 	return &DNSProvider{
@@ -106,7 +106,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zoneID, err := d.getHostedZoneID(fqdn)
 	if err != nil {
-		return fmt.Errorf("rackspace: %v", err)
+		return fmt.Errorf("rackspace: %w", err)
 	}
 
 	rec := Records{
@@ -120,12 +120,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	body, err := json.Marshal(rec)
 	if err != nil {
-		return fmt.Errorf("rackspace: %v", err)
+		return fmt.Errorf("rackspace: %w", err)
 	}
 
 	_, err = d.makeRequest(http.MethodPost, fmt.Sprintf("/domains/%d/records", zoneID), bytes.NewReader(body))
 	if err != nil {
-		return fmt.Errorf("rackspace: %v", err)
+		return fmt.Errorf("rackspace: %w", err)
 	}
 	return nil
 }
@@ -136,17 +136,17 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	zoneID, err := d.getHostedZoneID(fqdn)
 	if err != nil {
-		return fmt.Errorf("rackspace: %v", err)
+		return fmt.Errorf("rackspace: %w", err)
 	}
 
 	record, err := d.findTxtRecord(fqdn, zoneID)
 	if err != nil {
-		return fmt.Errorf("rackspace: %v", err)
+		return fmt.Errorf("rackspace: %w", err)
 	}
 
 	_, err = d.makeRequest(http.MethodDelete, fmt.Sprintf("/domains/%d/records?id=%s", zoneID, record.ID), nil)
 	if err != nil {
-		return fmt.Errorf("rackspace: %v", err)
+		return fmt.Errorf("rackspace: %w", err)
 	}
 	return nil
 }

@@ -44,7 +44,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("INWX_USERNAME", "INWX_PASSWORD")
 	if err != nil {
-		return nil, fmt.Errorf("inwx: %v", err)
+		return nil, fmt.Errorf("inwx: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -61,7 +61,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.Username == "" || config.Password == "" {
-		return nil, fmt.Errorf("inwx: credentials missing")
+		return nil, errors.New("inwx: credentials missing")
 	}
 
 	if config.Sandbox {
@@ -79,12 +79,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return fmt.Errorf("inwx: %v", err)
+		return fmt.Errorf("inwx: %w", err)
 	}
 
 	err = d.client.Account.Login()
 	if err != nil {
-		return fmt.Errorf("inwx: %v", err)
+		return fmt.Errorf("inwx: %w", err)
 	}
 
 	defer func() {
@@ -109,9 +109,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 			if er.Message == "Object exists" {
 				return nil
 			}
-			return fmt.Errorf("inwx: %v", err)
+			return fmt.Errorf("inwx: %w", err)
 		default:
-			return fmt.Errorf("inwx: %v", err)
+			return fmt.Errorf("inwx: %w", err)
 		}
 	}
 
@@ -124,12 +124,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return fmt.Errorf("inwx: %v", err)
+		return fmt.Errorf("inwx: %w", err)
 	}
 
 	err = d.client.Account.Login()
 	if err != nil {
-		return fmt.Errorf("inwx: %v", err)
+		return fmt.Errorf("inwx: %w", err)
 	}
 
 	defer func() {
@@ -145,14 +145,14 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		Type:   "TXT",
 	})
 	if err != nil {
-		return fmt.Errorf("inwx: %v", err)
+		return fmt.Errorf("inwx: %w", err)
 	}
 
 	var lastErr error
 	for _, record := range response.Records {
 		err = d.client.Nameservers.DeleteRecord(record.ID)
 		if err != nil {
-			lastErr = fmt.Errorf("inwx: %v", err)
+			lastErr = fmt.Errorf("inwx: %w", err)
 		}
 	}
 

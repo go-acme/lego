@@ -4,6 +4,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha1"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -25,10 +26,10 @@ type TokenTransport struct {
 // NewTokenTransport Creates a HTTP transport for API authentication.
 func NewTokenTransport(apiKey, secretKey string) (*TokenTransport, error) {
 	if apiKey == "" {
-		return nil, fmt.Errorf("credentials missing: API key")
+		return nil, errors.New("credentials missing: API key")
 	}
 	if secretKey == "" {
-		return nil, fmt.Errorf("credentials missing: secret key")
+		return nil, errors.New("credentials missing: secret key")
 	}
 
 	return &TokenTransport{apiKey: apiKey, secretKey: secretKey}, nil

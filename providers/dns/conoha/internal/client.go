@@ -90,7 +90,7 @@ func NewClient(region string, auth Auth, httpClient *http.Client) (*Client, erro
 
 	identity, err := c.getIdentity(auth)
 	if err != nil {
-		return nil, fmt.Errorf("failed to login: %v", err)
+		return nil, fmt.Errorf("failed to login: %w", err)
 	}
 
 	c.token = identity.Access.Token.ID

@@ -43,7 +43,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("DUCKDNS_TOKEN")
 	if err != nil {
-		return nil, fmt.Errorf("duckdns: %v", err)
+		return nil, fmt.Errorf("duckdns: %w", err)
 	}
 
 	config := NewDefaultConfig()

@@ -1,6 +1,7 @@
 package autodns
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -63,7 +64,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(envAPIUser, envAPIPassword)
 	if err != nil {
-		return nil, fmt.Errorf("autodns: %v", err)
+		return nil, fmt.Errorf("autodns: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -75,15 +76,15 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
-		return nil, fmt.Errorf("autodns: config is nil")
+		return nil, errors.New("autodns: config is nil")
 	}
 
 	if config.Username == "" {
-		return nil, fmt.Errorf("autodns: missing user")
+		return nil, errors.New("autodns: missing user")
 	}
 
 	if config.Password == "" {
-		return nil, fmt.Errorf("autodns: missing password")
+		return nil, errors.New("autodns: missing password")
 	}
 
 	return &DNSProvider{config: config}, nil
@@ -102,7 +103,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	_, err := d.addTxtRecord(domain, records)
 	if err != nil {
-		return fmt.Errorf("autodns: %v", err)
+		return fmt.Errorf("autodns: %w", err)
 	}
 
 	return nil
@@ -120,7 +121,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}}
 
 	if err := d.removeTXTRecord(domain, records); err != nil {
-		return fmt.Errorf("autodns: %v", err)
+		return fmt.Errorf("autodns: %w", err)
 	}
 
 	return nil

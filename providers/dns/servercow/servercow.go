@@ -2,6 +2,7 @@
 package servercow
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -59,7 +60,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 // NewDNSProviderConfig return a DNSProvider instance configured for Servercow.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config.Username == "" || config.Password == "" {
-		return nil, fmt.Errorf("servercow: incomplete credentials, missing username and/or password")
+		return nil, errors.New("servercow: incomplete credentials, missing username and/or password")
 	}
 
 	if config.HTTPClient == nil {

@@ -40,7 +40,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("AKAMAI_HOST", "AKAMAI_CLIENT_TOKEN", "AKAMAI_CLIENT_SECRET", "AKAMAI_ACCESS_TOKEN")
 	if err != nil {
-		return nil, fmt.Errorf("fastdns: %v", err)
+		return nil, fmt.Errorf("fastdns: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -62,7 +62,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.ClientToken == "" || config.ClientSecret == "" || config.AccessToken == "" || config.Host == "" {
-		return nil, fmt.Errorf("fastdns: credentials are missing")
+		return nil, errors.New("fastdns: credentials are missing")
 	}
 
 	return &DNSProvider{config: config}, nil
@@ -73,14 +73,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 	zoneName, recordName, err := d.findZoneAndRecordName(fqdn, domain)
 	if err != nil {
-		return fmt.Errorf("fastdns: %v", err)
+		return fmt.Errorf("fastdns: %w", err)
 	}
 
 	configdns.Init(d.config.Config)
 
 	zone, err := configdns.GetZone(zoneName)
 	if err != nil {
-		return fmt.Errorf("fastdns: %v", err)
+		return fmt.Errorf("fastdns: %w", err)
 	}
 
 	record := configdns.NewTxtRecord()
@@ -103,21 +103,21 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 	zoneName, recordName, err := d.findZoneAndRecordName(fqdn, domain)
 	if err != nil {
-		return fmt.Errorf("fastdns: %v", err)
+		return fmt.Errorf("fastdns: %w", err)
 	}
 
 	configdns.Init(d.config.Config)
 
 	zone, err := configdns.GetZone(zoneName)
 	if err != nil {
-		return fmt.Errorf("fastdns: %v", err)
+		return fmt.Errorf("fastdns: %w", err)
 	}
 
 	var removed bool
 	for _, r := range zone.Zone.Txt {
 		if r != nil && r.Name == recordName {
 			if zone.RemoveRecord(r) != nil {
-				return fmt.Errorf("fastdns: %v", err)
+				return fmt.Errorf("fastdns: %w", err)
 			}
 			removed = true
 		}

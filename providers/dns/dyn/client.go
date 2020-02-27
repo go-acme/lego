@@ -3,6 +3,7 @@ package dyn
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 )
@@ -134,7 +135,7 @@ func (d *DNSProvider) sendRequest(method, resource string, payload interface{}) 
 		return nil, fmt.Errorf("API request failed with HTTP status code %d: %s", resp.StatusCode, dynRes.Messages)
 	} else if resp.StatusCode == 307 {
 		// TODO add support for HTTP 307 response and long running jobs
-		return nil, fmt.Errorf("API request returned HTTP 307. This is currently unsupported")
+		return nil, errors.New("API request returned HTTP 307. This is currently unsupported")
 	}
 
 	if dynRes.Status == "failure" {

@@ -47,12 +47,12 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	_, err := env.Get("OS_AUTH_URL", "OS_USERNAME", "OS_PASSWORD", "OS_TENANT_NAME", "OS_REGION_NAME")
 	if err != nil {
-		return nil, fmt.Errorf("designate: %v", err)
+		return nil, fmt.Errorf("designate: %w", err)
 	}
 
 	opts, err := openstack.AuthOptionsFromEnv()
 	if err != nil {
-		return nil, fmt.Errorf("designate: %v", err)
+		return nil, fmt.Errorf("designate: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -69,14 +69,14 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	provider, err := openstack.AuthenticatedClient(config.opts)
 	if err != nil {
-		return nil, fmt.Errorf("designate: failed to authenticate: %v", err)
+		return nil, fmt.Errorf("designate: failed to authenticate: %w", err)
 	}
 
 	dnsClient, err := openstack.NewDNSV2(provider, gophercloud.EndpointOpts{
 		Region: os.Getenv("OS_REGION_NAME"),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("designate: failed to get DNS provider: %v", err)
+		return nil, fmt.Errorf("designate: failed to get DNS provider: %w", err)
 	}
 
 	return &DNSProvider{client: dnsClient, config: config}, nil
@@ -94,12 +94,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return fmt.Errorf("designate: couldn't get zone ID in Present: %v", err)
+		return fmt.Errorf("designate: couldn't get zone ID in Present: %w", err)
 	}
 
 	zoneID, err := d.getZoneID(authZone)
 	if err != nil {
-		return fmt.Errorf("designate: %v", err)
+		return fmt.Errorf("designate: %w", err)
 	}
 
 	// use mutex to prevent race condition between creating the record and verifying it
@@ -108,7 +108,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	existingRecord, err := d.getRecord(zoneID, fqdn)
 	if err != nil {
-		return fmt.Errorf("designate: %v", err)
+		return fmt.Errorf("designate: %w", err)
 	}
 
 	if existingRecord != nil {
@@ -122,7 +122,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	err = d.createRecord(zoneID, fqdn, value)
 	if err != nil {
-		return fmt.Errorf("designate: %v", err)
+		return fmt.Errorf("designate: %w", err)
 	}
 
 	return nil
@@ -139,7 +139,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	zoneID, err := d.getZoneID(authZone)
 	if err != nil {
-		return fmt.Errorf("designate: couldn't get zone ID in CleanUp: %v", err)
+		return fmt.Errorf("designate: couldn't get zone ID in CleanUp: %w", err)
 	}
 
 	// use mutex to prevent race condition between getting the record and deleting it
@@ -148,7 +148,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	record, err := d.getRecord(zoneID, fqdn)
 	if err != nil {
-		return fmt.Errorf("designate: couldn't get Record ID in CleanUp: %v", err)
+		return fmt.Errorf("designate: couldn't get Record ID in CleanUp: %w", err)
 	}
 
 	if record == nil {
@@ -158,7 +158,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	err = recordsets.Delete(d.client, zoneID, record.ID).ExtractErr()
 	if err != nil {
-		return fmt.Errorf("designate: error for %s in CleanUp: %v", fqdn, err)
+		return fmt.Errorf("designate: error for %s in CleanUp: %w", fqdn, err)
 	}
 	return nil
 }
@@ -183,11 +183,11 @@ func (d *DNSProvider) createRecord(zoneID, fqdn, value string) error {
 
 	actual, err := recordsets.Create(d.client, zoneID, createOpts).Extract()
 	if err != nil {
-		return fmt.Errorf("error for %s in Present while creating record: %v", fqdn, err)
+		return fmt.Errorf("error for %s in Present while creating record: %w", fqdn, err)
 	}
 
 	if actual.Name != fqdn || actual.TTL != d.config.TTL {
-		return fmt.Errorf("the created record doesn't match what we wanted to create")
+		return errors.New("the created record doesn't match what we wanted to create")
 	}
 
 	return nil

@@ -18,7 +18,7 @@ func (d *DNSProvider) addTXTRecord(fqdn, domain, value string, ttl int) error {
 
 	zone, err := d.getHostedZone(domain)
 	if err != nil {
-		return fmt.Errorf("sakuracloud: %v", err)
+		return fmt.Errorf("sakuracloud: %w", err)
 	}
 
 	name := d.extractRecordName(fqdn, zone.Name)
@@ -26,7 +26,7 @@ func (d *DNSProvider) addTXTRecord(fqdn, domain, value string, ttl int) error {
 	zone.AddRecord(zone.CreateNewRecord(name, "TXT", value, ttl))
 	_, err = d.client.Update(zone.ID, zone)
 	if err != nil {
-		return fmt.Errorf("sakuracloud: API call failed: %v", err)
+		return fmt.Errorf("sakuracloud: API call failed: %w", err)
 	}
 
 	return nil
@@ -38,7 +38,7 @@ func (d *DNSProvider) cleanupTXTRecord(fqdn, domain string) error {
 
 	zone, err := d.getHostedZone(domain)
 	if err != nil {
-		return fmt.Errorf("sakuracloud: %v", err)
+		return fmt.Errorf("sakuracloud: %w", err)
 	}
 
 	records := d.findTxtRecords(fqdn, zone)
@@ -55,7 +55,7 @@ func (d *DNSProvider) cleanupTXTRecord(fqdn, domain string) error {
 
 	_, err = d.client.Update(zone.ID, zone)
 	if err != nil {
-		return fmt.Errorf("sakuracloud: API call failed: %v", err)
+		return fmt.Errorf("sakuracloud: API call failed: %w", err)
 	}
 	return nil
 }
@@ -71,9 +71,9 @@ func (d *DNSProvider) getHostedZone(domain string) (*sacloud.DNS, error) {
 	res, err := d.client.Reset().WithNameLike(zoneName).Find()
 	if err != nil {
 		if notFound, ok := err.(api.Error); ok && notFound.ResponseCode() == http.StatusNotFound {
-			return nil, fmt.Errorf("zone %s not found on SakuraCloud DNS: %v", zoneName, err)
+			return nil, fmt.Errorf("zone %s not found on SakuraCloud DNS: %w", zoneName, err)
 		}
-		return nil, fmt.Errorf("API call failed: %v", err)
+		return nil, fmt.Errorf("API call failed: %w", err)
 	}
 
 	for _, zone := range res.CommonServiceDNSItems {

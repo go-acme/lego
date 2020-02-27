@@ -42,7 +42,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("DODE_TOKEN")
 	if err != nil {
-		return nil, fmt.Errorf("do.de: %v", err)
+		return nil, fmt.Errorf("do.de: %w", err)
 	}
 
 	config := NewDefaultConfig()

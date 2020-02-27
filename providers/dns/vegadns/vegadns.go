@@ -43,7 +43,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("VEGADNS_URL")
 	if err != nil {
-		return nil, fmt.Errorf("vegadns: %v", err)
+		return nil, fmt.Errorf("vegadns: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -79,12 +79,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	_, domainID, err := d.client.GetAuthZone(fqdn)
 	if err != nil {
-		return fmt.Errorf("vegadns: can't find Authoritative Zone for %s in Present: %v", fqdn, err)
+		return fmt.Errorf("vegadns: can't find Authoritative Zone for %s in Present: %w", fqdn, err)
 	}
 
 	err = d.client.CreateTXT(domainID, fqdn, value, d.config.TTL)
 	if err != nil {
-		return fmt.Errorf("vegadns: %v", err)
+		return fmt.Errorf("vegadns: %w", err)
 	}
 	return nil
 }
@@ -95,19 +95,19 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	_, domainID, err := d.client.GetAuthZone(fqdn)
 	if err != nil {
-		return fmt.Errorf("vegadns: can't find Authoritative Zone for %s in CleanUp: %v", fqdn, err)
+		return fmt.Errorf("vegadns: can't find Authoritative Zone for %s in CleanUp: %w", fqdn, err)
 	}
 
 	txt := strings.TrimSuffix(fqdn, ".")
 
 	recordID, err := d.client.GetRecordID(domainID, txt, "TXT")
 	if err != nil {
-		return fmt.Errorf("vegadns: couldn't get Record ID in CleanUp: %s", err)
+		return fmt.Errorf("vegadns: couldn't get Record ID in CleanUp: %w", err)
 	}
 
 	err = d.client.DeleteRecord(recordID)
 	if err != nil {
-		return fmt.Errorf("vegadns: %v", err)
+		return fmt.Errorf("vegadns: %w", err)
 	}
 	return nil
 }

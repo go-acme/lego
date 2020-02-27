@@ -65,7 +65,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("GANDIV5_API_KEY")
 	if err != nil {
-		return nil, fmt.Errorf("gandi: %v", err)
+		return nil, fmt.Errorf("gandi: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -81,7 +81,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.APIKey == "" {
-		return nil, fmt.Errorf("gandiv5: no API Key given")
+		return nil, errors.New("gandiv5: no API Key given")
 	}
 
 	if config.BaseURL == "" {
@@ -106,7 +106,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	// find authZone
 	authZone, err := d.findZoneByFqdn(fqdn)
 	if err != nil {
-		return fmt.Errorf("gandiv5: findZoneByFqdn failure: %v", err)
+		return fmt.Errorf("gandiv5: findZoneByFqdn failure: %w", err)
 	}
 
 	// determine name of TXT record
@@ -154,7 +154,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	// delete TXT record from authZone
 	err := d.deleteTXTRecord(dns01.UnFqdn(authZone), fieldName)
 	if err != nil {
-		return fmt.Errorf("gandiv5: %v", err)
+		return fmt.Errorf("gandiv5: %w", err)
 	}
 	return nil
 }

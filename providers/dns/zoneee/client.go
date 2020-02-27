@@ -107,7 +107,7 @@ func (d *DNSProvider) sendRequest(req *http.Request, result interface{}) error {
 
 	err = json.Unmarshal(raw, result)
 	if err != nil {
-		return fmt.Errorf("unmarshaling %T error [status code=%d]: %v: %s", result, resp.StatusCode, err, string(raw))
+		return fmt.Errorf("unmarshaling %T error [status code=%d]: %w: %s", result, resp.StatusCode, err, string(raw))
 	}
 	return err
 }
@@ -125,7 +125,7 @@ func checkResponse(resp *http.Response) error {
 
 	raw, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("unable to read body: status code=%d, error=%v", resp.StatusCode, err)
+		return fmt.Errorf("unable to read body: status code=%d, error=%w", resp.StatusCode, err)
 	}
 
 	return fmt.Errorf("status code=%d: %s", resp.StatusCode, string(raw))

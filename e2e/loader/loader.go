@@ -288,7 +288,7 @@ func goTool() (string, error) {
 
 	goBin, err := exec.LookPath("go" + exeSuffix)
 	if err != nil {
-		return "", fmt.Errorf("cannot find go tool: %v", err)
+		return "", fmt.Errorf("cannot find go tool: %w", err)
 	}
 
 	return goBin, nil

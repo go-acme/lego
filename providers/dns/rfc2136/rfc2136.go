@@ -56,7 +56,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("RFC2136_NAMESERVER")
 	if err != nil {
-		return nil, fmt.Errorf("rfc2136: %v", err)
+		return nil, fmt.Errorf("rfc2136: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -74,7 +74,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.Nameserver == "" {
-		return nil, fmt.Errorf("rfc2136: nameserver missing")
+		return nil, errors.New("rfc2136: nameserver missing")
 	}
 
 	if config.TSIGAlgorithm == "" {
@@ -86,7 +86,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		if strings.Contains(err.Error(), "missing port") {
 			config.Nameserver = net.JoinHostPort(config.Nameserver, "53")
 		} else {
-			return nil, fmt.Errorf("rfc2136: %v", err)
+			return nil, fmt.Errorf("rfc2136: %w", err)
 		}
 	}
 
@@ -117,7 +117,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	err := d.changeRecord("INSERT", fqdn, value, d.config.TTL)
 	if err != nil {
-		return fmt.Errorf("rfc2136: failed to insert: %v", err)
+		return fmt.Errorf("rfc2136: failed to insert: %w", err)
 	}
 	return nil
 }
@@ -128,7 +128,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	err := d.changeRecord("REMOVE", fqdn, value, d.config.TTL)
 	if err != nil {
-		return fmt.Errorf("rfc2136: failed to remove: %v", err)
+		return fmt.Errorf("rfc2136: failed to remove: %w", err)
 	}
 	return nil
 }
@@ -173,7 +173,7 @@ func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 	// Send the query
 	reply, _, err := c.Exchange(m, d.config.Nameserver)
 	if err != nil {
-		return fmt.Errorf("DNS update failed: %v", err)
+		return fmt.Errorf("DNS update failed: %w", err)
 	}
 	if reply != nil && reply.Rcode != dns.RcodeSuccess {
 		return fmt.Errorf("DNS update failed: server replied: %s", dns.RcodeToString[reply.Rcode])

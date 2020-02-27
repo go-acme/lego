@@ -51,7 +51,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("NAMECOM_USERNAME", "NAMECOM_API_TOKEN")
 	if err != nil {
-		return nil, fmt.Errorf("namedotcom: %v", err)
+		return nil, fmt.Errorf("namedotcom: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -69,11 +69,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.Username == "" {
-		return nil, fmt.Errorf("namedotcom: username is required")
+		return nil, errors.New("namedotcom: username is required")
 	}
 
 	if config.APIToken == "" {
-		return nil, fmt.Errorf("namedotcom: API token is required")
+		return nil, errors.New("namedotcom: API token is required")
 	}
 
 	if config.TTL < minTTL {
@@ -104,7 +104,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	_, err := d.client.CreateRecord(request)
 	if err != nil {
-		return fmt.Errorf("namedotcom: API call failed: %v", err)
+		return fmt.Errorf("namedotcom: API call failed: %w", err)
 	}
 
 	return nil
@@ -116,7 +116,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	records, err := d.getRecords(domain)
 	if err != nil {
-		return fmt.Errorf("namedotcom: %v", err)
+		return fmt.Errorf("namedotcom: %w", err)
 	}
 
 	for _, rec := range records {
@@ -127,7 +127,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 			}
 			_, err := d.client.DeleteRecord(request)
 			if err != nil {
-				return fmt.Errorf("namedotcom: %v", err)
+				return fmt.Errorf("namedotcom: %w", err)
 			}
 		}
 	}

@@ -54,7 +54,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("LIQUID_WEB_USERNAME", "LIQUID_WEB_PASSWORD", "LIQUID_WEB_ZONE")
 	if err != nil {
-		return nil, fmt.Errorf("liquidweb: %v", err)
+		return nil, fmt.Errorf("liquidweb: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -77,21 +77,21 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.Zone == "" {
-		return nil, fmt.Errorf("liquidweb: zone is missing")
+		return nil, errors.New("liquidweb: zone is missing")
 	}
 
 	if config.Username == "" {
-		return nil, fmt.Errorf("liquidweb: username is missing")
+		return nil, errors.New("liquidweb: username is missing")
 	}
 
 	if config.Password == "" {
-		return nil, fmt.Errorf("liquidweb: password is missing")
+		return nil, errors.New("liquidweb: password is missing")
 	}
 
 	// Initialize LW client.
 	client, err := lw.NewAPI(config.Username, config.Password, config.BaseURL, int(config.HTTPTimeout.Seconds()))
 	if err != nil {
-		return nil, fmt.Errorf("liquidweb: could not create Liquid Web API client: %v", err)
+		return nil, fmt.Errorf("liquidweb: could not create Liquid Web API client: %w", err)
 	}
 
 	return &DNSProvider{
@@ -121,7 +121,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	dnsEntry, err := d.client.NetworkDNS.Create(params)
 	if err != nil {
-		return fmt.Errorf("liquidweb: could not create TXT record: %v", err)
+		return fmt.Errorf("liquidweb: could not create TXT record: %w", err)
 	}
 
 	d.recordIDsMu.Lock()
@@ -144,7 +144,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	params := &network.DNSRecordParams{ID: recordID}
 	_, err := d.client.NetworkDNS.Delete(params)
 	if err != nil {
-		return fmt.Errorf("liquidweb: could not remove TXT record: %v", err)
+		return fmt.Errorf("liquidweb: could not remove TXT record: %w", err)
 	}
 
 	d.recordIDsMu.Lock()

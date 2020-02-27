@@ -3,6 +3,7 @@ package stackpath
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -172,12 +173,12 @@ func (d *DNSProvider) do(req *http.Request, v interface{}) error {
 
 	raw, err := readBody(resp)
 	if err != nil {
-		return fmt.Errorf("failed to read body: %v", err)
+		return fmt.Errorf("failed to read body: %w", err)
 	}
 
 	err = json.Unmarshal(raw, v)
 	if err != nil {
-		return fmt.Errorf("unmarshaling error: %v: %s", err, string(raw))
+		return fmt.Errorf("unmarshaling error: %w: %s", err, string(raw))
 	}
 
 	return nil
@@ -203,7 +204,7 @@ func checkResponse(resp *http.Response) error {
 
 func readBody(resp *http.Response) ([]byte, error) {
 	if resp.Body == nil {
-		return nil, fmt.Errorf("response body is nil")
+		return nil, errors.New("response body is nil")
 	}
 
 	defer resp.Body.Close()

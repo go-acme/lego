@@ -81,7 +81,7 @@ func getPrivateKey(envVar string) ([]byte, error) {
 	if envVarValue != "" {
 		bytes, err := base64.StdEncoding.DecodeString(envVarValue)
 		if err != nil {
-			return nil, fmt.Errorf("failed to read base64 value %s (defined by env var %s): %s", envVarValue, envVar, err)
+			return nil, fmt.Errorf("failed to read base64 value %s (defined by env var %s): %w", envVarValue, envVar, err)
 		}
 		return bytes, nil
 	}
@@ -94,7 +94,7 @@ func getPrivateKey(envVar string) ([]byte, error) {
 
 	fileContents, err := ioutil.ReadFile(fileVarValue)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read the file %s (defined by env var %s): %s", fileVarValue, fileVar, err)
+		return nil, fmt.Errorf("failed to read the file %s (defined by env var %s): %w", fileVarValue, fileVar, err)
 	}
 
 	return fileContents, nil

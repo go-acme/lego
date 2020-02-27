@@ -40,7 +40,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("EXEC_PATH")
 	if err != nil {
-		return nil, fmt.Errorf("exec: %v", err)
+		return nil, fmt.Errorf("exec: %w", err)
 	}
 
 	config := NewDefaultConfig()

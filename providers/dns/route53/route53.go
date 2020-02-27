@@ -116,12 +116,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	hostedZoneID, err := d.getHostedZoneID(fqdn)
 	if err != nil {
-		return fmt.Errorf("route53: failed to determine hosted zone ID: %v", err)
+		return fmt.Errorf("route53: failed to determine hosted zone ID: %w", err)
 	}
 
 	records, err := d.getExistingRecordSets(hostedZoneID, fqdn)
 	if err != nil {
-		return fmt.Errorf("route53: %v", err)
+		return fmt.Errorf("route53: %w", err)
 	}
 
 	realValue := `"` + value + `"`
@@ -146,7 +146,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	err = d.changeRecord(route53.ChangeActionUpsert, hostedZoneID, recordSet)
 	if err != nil {
-		return fmt.Errorf("route53: %v", err)
+		return fmt.Errorf("route53: %w", err)
 	}
 	return nil
 }
@@ -157,12 +157,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	hostedZoneID, err := d.getHostedZoneID(fqdn)
 	if err != nil {
-		return fmt.Errorf("failed to determine Route 53 hosted zone ID: %v", err)
+		return fmt.Errorf("failed to determine Route 53 hosted zone ID: %w", err)
 	}
 
 	records, err := d.getExistingRecordSets(hostedZoneID, fqdn)
 	if err != nil {
-		return fmt.Errorf("route53: %v", err)
+		return fmt.Errorf("route53: %w", err)
 	}
 
 	if len(records) == 0 {
@@ -178,7 +178,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	err = d.changeRecord(route53.ChangeActionDelete, hostedZoneID, recordSet)
 	if err != nil {
-		return fmt.Errorf("route53: %v", err)
+		return fmt.Errorf("route53: %w", err)
 	}
 	return nil
 }
@@ -197,7 +197,7 @@ func (d *DNSProvider) changeRecord(action, hostedZoneID string, recordSet *route
 
 	resp, err := d.client.ChangeResourceRecordSets(recordSetInput)
 	if err != nil {
-		return fmt.Errorf("failed to change record set: %v", err)
+		return fmt.Errorf("failed to change record set: %w", err)
 	}
 
 	changeID := resp.ChangeInfo.Id
@@ -207,7 +207,7 @@ func (d *DNSProvider) changeRecord(action, hostedZoneID string, recordSet *route
 
 		resp, err := d.client.GetChange(reqParams)
 		if err != nil {
-			return false, fmt.Errorf("failed to query change status: %v", err)
+			return false, fmt.Errorf("failed to query change status: %w", err)
 		}
 
 		if aws.StringValue(resp.ChangeInfo.Status) == route53.ChangeStatusInsync {

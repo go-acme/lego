@@ -49,7 +49,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("NIFCLOUD_ACCESS_KEY_ID", "NIFCLOUD_SECRET_ACCESS_KEY")
 	if err != nil {
-		return nil, fmt.Errorf("nifcloud: %v", err)
+		return nil, fmt.Errorf("nifcloud: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -68,7 +68,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	client, err := internal.NewClient(config.AccessKey, config.SecretKey)
 	if err != nil {
-		return nil, fmt.Errorf("nifcloud: %v", err)
+		return nil, fmt.Errorf("nifcloud: %w", err)
 	}
 
 	if config.HTTPClient != nil {
@@ -88,7 +88,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	err := d.changeRecord("CREATE", fqdn, value, domain, d.config.TTL)
 	if err != nil {
-		return fmt.Errorf("nifcloud: %v", err)
+		return fmt.Errorf("nifcloud: %w", err)
 	}
 	return err
 }
@@ -99,7 +99,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	err := d.changeRecord("DELETE", fqdn, value, domain, d.config.TTL)
 	if err != nil {
-		return fmt.Errorf("nifcloud: %v", err)
+		return fmt.Errorf("nifcloud: %w", err)
 	}
 	return err
 }
@@ -141,7 +141,7 @@ func (d *DNSProvider) changeRecord(action, fqdn, value, domain string, ttl int) 
 
 	resp, err := d.client.ChangeResourceRecordSets(domain, reqParams)
 	if err != nil {
-		return fmt.Errorf("failed to change NIFCLOUD record set: %v", err)
+		return fmt.Errorf("failed to change NIFCLOUD record set: %w", err)
 	}
 
 	statusID := resp.ChangeInfo.ID
@@ -149,7 +149,7 @@ func (d *DNSProvider) changeRecord(action, fqdn, value, domain string, ttl int) 
 	return wait.For("nifcloud", 120*time.Second, 4*time.Second, func() (bool, error) {
 		resp, err := d.client.GetChange(statusID)
 		if err != nil {
-			return false, fmt.Errorf("failed to query NIFCLOUD DNS change status: %v", err)
+			return false, fmt.Errorf("failed to query NIFCLOUD DNS change status: %w", err)
 		}
 		return resp.ChangeInfo.Status == "INSYNC", nil
 	})

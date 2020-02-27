@@ -89,7 +89,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config.SubscriptionID == "" {
 		subsID, err := getMetadata(config, "subscriptionId")
 		if err != nil {
-			return nil, fmt.Errorf("azure: %v", err)
+			return nil, fmt.Errorf("azure: %w", err)
 		}
 
 		if subsID == "" {
@@ -101,7 +101,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config.ResourceGroup == "" {
 		resGroup, err := getMetadata(config, "resourceGroupName")
 		if err != nil {
-			return nil, fmt.Errorf("azure: %v", err)
+			return nil, fmt.Errorf("azure: %w", err)
 		}
 
 		if resGroup == "" {
@@ -126,7 +126,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zone, err := d.getHostedZoneID(ctx, fqdn)
 	if err != nil {
-		return fmt.Errorf("azure: %v", err)
+		return fmt.Errorf("azure: %w", err)
 	}
 
 	rsc := dns.NewRecordSetsClient(d.config.SubscriptionID)
@@ -139,7 +139,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if err != nil {
 		detailedError, ok := err.(autorest.DetailedError)
 		if !ok || detailedError.StatusCode != http.StatusNotFound {
-			return fmt.Errorf("azure: %v", err)
+			return fmt.Errorf("azure: %w", err)
 		}
 	}
 
@@ -169,7 +169,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	_, err = rsc.CreateOrUpdate(ctx, d.config.ResourceGroup, zone, relative, dns.TXT, rec, "", "")
 	if err != nil {
-		return fmt.Errorf("azure: %v", err)
+		return fmt.Errorf("azure: %w", err)
 	}
 	return nil
 }
@@ -181,7 +181,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	zone, err := d.getHostedZoneID(ctx, fqdn)
 	if err != nil {
-		return fmt.Errorf("azure: %v", err)
+		return fmt.Errorf("azure: %w", err)
 	}
 
 	relative := toRelativeRecord(fqdn, dns01.ToFqdn(zone))
@@ -190,7 +190,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	_, err = rsc.Delete(ctx, d.config.ResourceGroup, zone, relative, dns.TXT, "")
 	if err != nil {
-		return fmt.Errorf("azure: %v", err)
+		return fmt.Errorf("azure: %w", err)
 	}
 	return nil
 }

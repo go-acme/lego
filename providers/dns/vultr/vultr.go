@@ -53,7 +53,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("VULTR_API_KEY")
 	if err != nil {
-		return nil, fmt.Errorf("vultr: %v", err)
+		return nil, fmt.Errorf("vultr: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -69,7 +69,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.APIKey == "" {
-		return nil, fmt.Errorf("vultr: credentials missing")
+		return nil, errors.New("vultr: credentials missing")
 	}
 
 	client := govultr.NewClient(config.HTTPClient, config.APIKey)
@@ -85,14 +85,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zoneDomain, err := d.getHostedZone(ctx, domain)
 	if err != nil {
-		return fmt.Errorf("vultr: %v", err)
+		return fmt.Errorf("vultr: %w", err)
 	}
 
 	name := d.extractRecordName(fqdn, zoneDomain)
 
 	err = d.client.DNSRecord.Create(ctx, zoneDomain, "TXT", name, `"`+value+`"`, d.config.TTL, 0)
 	if err != nil {
-		return fmt.Errorf("vultr: API call failed: %v", err)
+		return fmt.Errorf("vultr: API call failed: %w", err)
 	}
 
 	return nil
@@ -106,7 +106,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	zoneDomain, records, err := d.findTxtRecords(ctx, domain, fqdn)
 	if err != nil {
-		return fmt.Errorf("vultr: %v", err)
+		return fmt.Errorf("vultr: %w", err)
 	}
 
 	var allErr []string
@@ -133,7 +133,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (string, error) {
 	domains, err := d.client.DNSDomain.List(ctx)
 	if err != nil {
-		return "", fmt.Errorf("API call failed: %v", err)
+		return "", fmt.Errorf("API call failed: %w", err)
 	}
 
 	var hostedDomain govultr.DNSDomain
@@ -160,7 +160,7 @@ func (d *DNSProvider) findTxtRecords(ctx context.Context, domain, fqdn string) (
 	var records []govultr.DNSRecord
 	result, err := d.client.DNSRecord.List(ctx, zoneDomain)
 	if err != nil {
-		return "", records, fmt.Errorf("API call has failed: %v", err)
+		return "", records, fmt.Errorf("API call has failed: %w", err)
 	}
 
 	recordName := d.extractRecordName(fqdn, zoneDomain)

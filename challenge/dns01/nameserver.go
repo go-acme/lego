@@ -1,6 +1,7 @@
 package dns01
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"strings"
@@ -98,7 +99,7 @@ func lookupNameservers(fqdn string) ([]string, error) {
 
 	zone, err := FindZoneByFqdn(fqdn)
 	if err != nil {
-		return nil, fmt.Errorf("could not determine the zone: %v", err)
+		return nil, fmt.Errorf("could not determine the zone: %w", err)
 	}
 
 	r, err := dnsQuery(zone, dns.TypeNS, recursiveNameservers, true)
@@ -115,7 +116,7 @@ func lookupNameservers(fqdn string) ([]string, error) {
 	if len(authoritativeNss) > 0 {
 		return authoritativeNss, nil
 	}
-	return nil, fmt.Errorf("could not determine authoritative nameservers")
+	return nil, errors.New("could not determine authoritative nameservers")
 }
 
 // FindPrimaryNsByFqdn determines the primary nameserver of the zone apex for the given fqdn

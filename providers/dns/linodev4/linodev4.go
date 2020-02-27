@@ -57,7 +57,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("LINODE_TOKEN")
 	if err != nil {
-		return nil, fmt.Errorf("linodev4: %v", err)
+		return nil, fmt.Errorf("linodev4: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -185,7 +185,7 @@ func (d *DNSProvider) getHostedZoneInfo(fqdn string) (*hostedZoneInfo, error) {
 	}
 
 	if len(domains) == 0 {
-		return nil, fmt.Errorf("domain not found")
+		return nil, errors.New("domain not found")
 	}
 
 	return &hostedZoneInfo{

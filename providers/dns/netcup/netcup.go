@@ -50,7 +50,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("NETCUP_CUSTOMER_NUMBER", "NETCUP_API_KEY", "NETCUP_API_PASSWORD")
 	if err != nil {
-		return nil, fmt.Errorf("netcup: %v", err)
+		return nil, fmt.Errorf("netcup: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -69,7 +69,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	client, err := internal.NewClient(config.Customer, config.Key, config.Password)
 	if err != nil {
-		return nil, fmt.Errorf("netcup: %v", err)
+		return nil, fmt.Errorf("netcup: %w", err)
 	}
 
 	client.HTTPClient = config.HTTPClient
@@ -83,12 +83,12 @@ func (d *DNSProvider) Present(domainName, token, keyAuth string) error {
 
 	zone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return fmt.Errorf("netcup: failed to find DNSZone, %v", err)
+		return fmt.Errorf("netcup: failed to find DNSZone, %w", err)
 	}
 
 	sessionID, err := d.client.Login()
 	if err != nil {
-		return fmt.Errorf("netcup: %v", err)
+		return fmt.Errorf("netcup: %w", err)
 	}
 
 	defer func() {
@@ -118,7 +118,7 @@ func (d *DNSProvider) Present(domainName, token, keyAuth string) error {
 
 	err = d.client.UpdateDNSRecord(sessionID, zone, records)
 	if err != nil {
-		return fmt.Errorf("netcup: failed to add TXT-Record: %v", err)
+		return fmt.Errorf("netcup: failed to add TXT-Record: %w", err)
 	}
 
 	return nil
@@ -130,12 +130,12 @@ func (d *DNSProvider) CleanUp(domainName, token, keyAuth string) error {
 
 	zone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return fmt.Errorf("netcup: failed to find DNSZone, %v", err)
+		return fmt.Errorf("netcup: failed to find DNSZone, %w", err)
 	}
 
 	sessionID, err := d.client.Login()
 	if err != nil {
-		return fmt.Errorf("netcup: %v", err)
+		return fmt.Errorf("netcup: %w", err)
 	}
 
 	defer func() {
@@ -151,7 +151,7 @@ func (d *DNSProvider) CleanUp(domainName, token, keyAuth string) error {
 
 	records, err := d.client.GetDNSRecords(zone, sessionID)
 	if err != nil {
-		return fmt.Errorf("netcup: %v", err)
+		return fmt.Errorf("netcup: %w", err)
 	}
 
 	record := internal.DNSRecord{
@@ -162,14 +162,14 @@ func (d *DNSProvider) CleanUp(domainName, token, keyAuth string) error {
 
 	idx, err := internal.GetDNSRecordIdx(records, record)
 	if err != nil {
-		return fmt.Errorf("netcup: %v", err)
+		return fmt.Errorf("netcup: %w", err)
 	}
 
 	records[idx].DeleteRecord = true
 
 	err = d.client.UpdateDNSRecord(sessionID, zone, []internal.DNSRecord{records[idx]})
 	if err != nil {
-		return fmt.Errorf("netcup: %v", err)
+		return fmt.Errorf("netcup: %w", err)
 	}
 
 	return nil

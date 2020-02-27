@@ -91,7 +91,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("NAMECHEAP_API_USER", "NAMECHEAP_API_KEY")
 	if err != nil {
-		return nil, fmt.Errorf("namecheap: %v", err)
+		return nil, fmt.Errorf("namecheap: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -108,13 +108,13 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.APIUser == "" || config.APIKey == "" {
-		return nil, fmt.Errorf("namecheap: credentials missing")
+		return nil, errors.New("namecheap: credentials missing")
 	}
 
 	if len(config.ClientIP) == 0 {
 		clientIP, err := getClientIP(config.HTTPClient, config.Debug)
 		if err != nil {
-			return nil, fmt.Errorf("namecheap: %v", err)
+			return nil, fmt.Errorf("namecheap: %w", err)
 		}
 		config.ClientIP = clientIP
 	}
@@ -132,12 +132,12 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ch, err := newChallenge(domain, keyAuth)
 	if err != nil {
-		return fmt.Errorf("namecheap: %v", err)
+		return fmt.Errorf("namecheap: %w", err)
 	}
 
 	records, err := d.getHosts(ch.sld, ch.tld)
 	if err != nil {
-		return fmt.Errorf("namecheap: %v", err)
+		return fmt.Errorf("namecheap: %w", err)
 	}
 
 	record := Record{
@@ -158,7 +158,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	err = d.setHosts(ch.sld, ch.tld, records)
 	if err != nil {
-		return fmt.Errorf("namecheap: %v", err)
+		return fmt.Errorf("namecheap: %w", err)
 	}
 	return nil
 }
@@ -167,12 +167,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ch, err := newChallenge(domain, keyAuth)
 	if err != nil {
-		return fmt.Errorf("namecheap: %v", err)
+		return fmt.Errorf("namecheap: %w", err)
 	}
 
 	records, err := d.getHosts(ch.sld, ch.tld)
 	if err != nil {
-		return fmt.Errorf("namecheap: %v", err)
+		return fmt.Errorf("namecheap: %w", err)
 	}
 
 	// Find the challenge TXT record and remove it if found.
@@ -192,7 +192,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	err = d.setHosts(ch.sld, ch.tld, newRecords)
 	if err != nil {
-		return fmt.Errorf("namecheap: %v", err)
+		return fmt.Errorf("namecheap: %w", err)
 	}
 	return nil
 }

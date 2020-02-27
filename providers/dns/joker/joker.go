@@ -75,7 +75,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	if config.APIKey == "" {
 		if config.Username == "" || config.Password == "" {
-			return nil, fmt.Errorf("joker: credentials missing")
+			return nil, errors.New("joker: credentials missing")
 		}
 	}
 
@@ -97,7 +97,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return fmt.Errorf("joker: %v", err)
+		return fmt.Errorf("joker: %w", err)
 	}
 
 	relative := getRelative(fqdn, zone)
@@ -132,7 +132,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	zone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return fmt.Errorf("joker: %v", err)
+		return fmt.Errorf("joker: %w", err)
 	}
 
 	relative := getRelative(fqdn, zone)
@@ -178,7 +178,7 @@ func getRelative(fqdn, zone string) string {
 // formatResponseError formats error with optional details from DMAPI response
 func formatResponseError(response *response, err error) error {
 	if response != nil {
-		return fmt.Errorf("joker: DMAPI error: %v Response: %v", err, response.Headers)
+		return fmt.Errorf("joker: DMAPI error: %w Response: %v", err, response.Headers)
 	}
-	return fmt.Errorf("joker: DMAPI error: %v", err)
+	return fmt.Errorf("joker: DMAPI error: %w", err)
 }

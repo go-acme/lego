@@ -1,6 +1,7 @@
 package joker
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -80,7 +81,7 @@ func (d *DNSProvider) login() (*response, error) {
 	case d.config.APIKey != "":
 		values = url.Values{"api-key": {d.config.APIKey}}
 	default:
-		return nil, fmt.Errorf("no username and password or api-key")
+		return nil, errors.New("no username and password or api-key")
 	}
 
 	response, err := d.postRequest("login", values)
@@ -89,11 +90,11 @@ func (d *DNSProvider) login() (*response, error) {
 	}
 
 	if response == nil {
-		return nil, fmt.Errorf("login returned nil response")
+		return nil, errors.New("login returned nil response")
 	}
 
 	if response.AuthSid == "" {
-		return response, fmt.Errorf("login did not return valid Auth-Sid")
+		return response, errors.New("login did not return valid Auth-Sid")
 	}
 
 	d.config.AuthSid = response.AuthSid
@@ -104,7 +105,7 @@ func (d *DNSProvider) login() (*response, error) {
 // logout closes authenticated session with Joker's DMAPI
 func (d *DNSProvider) logout() (*response, error) {
 	if d.config.AuthSid == "" {
-		return nil, fmt.Errorf("already logged out")
+		return nil, errors.New("already logged out")
 	}
 
 	response, err := d.postRequest("logout", url.Values{})
@@ -117,7 +118,7 @@ func (d *DNSProvider) logout() (*response, error) {
 // getZone returns content of DNS zone for domain
 func (d *DNSProvider) getZone(domain string) (*response, error) {
 	if d.config.AuthSid == "" {
-		return nil, fmt.Errorf("must be logged in to get zone")
+		return nil, errors.New("must be logged in to get zone")
 	}
 
 	return d.postRequest("dns-zone-get", url.Values{"domain": {dns01.UnFqdn(domain)}})
@@ -126,7 +127,7 @@ func (d *DNSProvider) getZone(domain string) (*response, error) {
 // putZone uploads DNS zone to Joker DMAPI
 func (d *DNSProvider) putZone(domain, zone string) (*response, error) {
 	if d.config.AuthSid == "" {
-		return nil, fmt.Errorf("must be logged in to put zone")
+		return nil, errors.New("must be logged in to put zone")
 	}
 
 	return d.postRequest("dns-zone-put", url.Values{"domain": {dns01.UnFqdn(domain)}, "zone": {strings.TrimSpace(zone)}})

@@ -54,7 +54,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("VERSIO_USERNAME", "VERSIO_PASSWORD")
 	if err != nil {
-		return nil, fmt.Errorf("versio: %v", err)
+		return nil, fmt.Errorf("versio: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -91,7 +91,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return fmt.Errorf("versio: %v", err)
+		return fmt.Errorf("versio: %w", err)
 	}
 
 	// use mutex to prevent race condition from getDNSRecords until postDNSRecords
@@ -101,7 +101,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	zoneName := dns01.UnFqdn(authZone)
 	domains, err := d.getDNSRecords(zoneName)
 	if err != nil {
-		return fmt.Errorf("versio: %v", err)
+		return fmt.Errorf("versio: %w", err)
 	}
 
 	txtRecord := record{
@@ -116,7 +116,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	err = d.postDNSRecords(zoneName, msg)
 	if err != nil {
-		return fmt.Errorf("versio: %v", err)
+		return fmt.Errorf("versio: %w", err)
 	}
 	return nil
 }
@@ -126,7 +126,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return fmt.Errorf("versio: %v", err)
+		return fmt.Errorf("versio: %w", err)
 	}
 
 	// use mutex to prevent race condition from getDNSRecords until postDNSRecords
@@ -136,7 +136,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	zoneName := dns01.UnFqdn(authZone)
 	domains, err := d.getDNSRecords(zoneName)
 	if err != nil {
-		return fmt.Errorf("versio: %v", err)
+		return fmt.Errorf("versio: %w", err)
 	}
 
 	// loop through the existing entries and remove the specific record
@@ -149,7 +149,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	err = d.postDNSRecords(zoneName, msg)
 	if err != nil {
-		return fmt.Errorf("versio: %v", err)
+		return fmt.Errorf("versio: %w", err)
 	}
 	return nil
 }

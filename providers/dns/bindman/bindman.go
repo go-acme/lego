@@ -43,7 +43,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("BINDMAN_MANAGER_ADDRESS")
 	if err != nil {
-		return nil, fmt.Errorf("bindman: %v", err)
+		return nil, fmt.Errorf("bindman: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -59,12 +59,12 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.BaseURL == "" {
-		return nil, fmt.Errorf("bindman: bindman manager address missing")
+		return nil, errors.New("bindman: bindman manager address missing")
 	}
 
 	bClient, err := client.New(config.BaseURL, config.HTTPClient)
 	if err != nil {
-		return nil, fmt.Errorf("bindman: %v", err)
+		return nil, fmt.Errorf("bindman: %w", err)
 	}
 
 	return &DNSProvider{config: config, client: bClient}, nil
@@ -77,7 +77,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
 	if err := d.client.AddRecord(fqdn, "TXT", value); err != nil {
-		return fmt.Errorf("bindman: %v", err)
+		return fmt.Errorf("bindman: %w", err)
 	}
 	return nil
 }
@@ -87,7 +87,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 
 	if err := d.client.RemoveRecord(fqdn, "TXT"); err != nil {
-		return fmt.Errorf("bindman: %v", err)
+		return fmt.Errorf("bindman: %w", err)
 	}
 	return nil
 }

@@ -37,7 +37,7 @@ func (s *ProviderServer) Present(domain, token, keyAuth string) error {
 	var err error
 	s.listener, err = net.Listen("tcp", s.GetAddress())
 	if err != nil {
-		return fmt.Errorf("could not start HTTP server for challenge -> %v", err)
+		return fmt.Errorf("could not start HTTP server for challenge -> %w", err)
 	}
 
 	s.done = make(chan bool)

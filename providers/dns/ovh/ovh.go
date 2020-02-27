@@ -69,7 +69,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("OVH_ENDPOINT", "OVH_APPLICATION_KEY", "OVH_APPLICATION_SECRET", "OVH_CONSUMER_KEY")
 	if err != nil {
-		return nil, fmt.Errorf("ovh: %v", err)
+		return nil, fmt.Errorf("ovh: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -88,7 +88,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.APIEndpoint == "" || config.ApplicationKey == "" || config.ApplicationSecret == "" || config.ConsumerKey == "" {
-		return nil, fmt.Errorf("ovh: credentials missing")
+		return nil, errors.New("ovh: credentials missing")
 	}
 
 	client, err := ovh.NewClient(
@@ -98,7 +98,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		config.ConsumerKey,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("ovh: %v", err)
+		return nil, fmt.Errorf("ovh: %w", err)
 	}
 
 	client.Client = config.HTTPClient
@@ -117,7 +117,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	// Parse domain name
 	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
 	if err != nil {
-		return fmt.Errorf("ovh: could not determine zone for domain: '%s'. %s", domain, err)
+		return fmt.Errorf("ovh: could not determine zone for domain %q: %w", domain, err)
 	}
 
 	authZone = dns01.UnFqdn(authZone)
@@ -130,14 +130,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	var respData Record
 	err = d.client.Post(reqURL, reqData, &respData)
 	if err != nil {
-		return fmt.Errorf("ovh: error when call api to add record (%s): %v", reqURL, err)
+		return fmt.Errorf("ovh: error when call api to add record (%s): %w", reqURL, err)
 	}
 
 	// Apply the change
 	reqURL = fmt.Sprintf("/domain/zone/%s/refresh", authZone)
 	err = d.client.Post(reqURL, nil, nil)
 	if err != nil {
-		return fmt.Errorf("ovh: error when call api to refresh zone (%s): %v", reqURL, err)
+		return fmt.Errorf("ovh: error when call api to refresh zone (%s): %w", reqURL, err)
 	}
 
 	d.recordIDsMu.Lock()
@@ -161,7 +161,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
 	if err != nil {
-		return fmt.Errorf("ovh: could not determine zone for domain: '%s'. %s", domain, err)
+		return fmt.Errorf("ovh: could not determine zone for domain %q: %w", domain, err)
 	}
 
 	authZone = dns01.UnFqdn(authZone)
@@ -170,14 +170,14 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	err = d.client.Delete(reqURL, nil)
 	if err != nil {
-		return fmt.Errorf("ovh: error when call OVH api to delete challenge record (%s): %v", reqURL, err)
+		return fmt.Errorf("ovh: error when call OVH api to delete challenge record (%s): %w", reqURL, err)
 	}
 
 	// Apply the change
 	reqURL = fmt.Sprintf("/domain/zone/%s/refresh", authZone)
 	err = d.client.Post(reqURL, nil, nil)
 	if err != nil {
-		return fmt.Errorf("ovh: error when call api to refresh zone (%s): %v", reqURL, err)
+		return fmt.Errorf("ovh: error when call api to refresh zone (%s): %w", reqURL, err)
 	}
 
 	// Delete record ID from map

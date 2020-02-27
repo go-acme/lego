@@ -51,7 +51,7 @@ func (c *Challenge) Solve(authz acme.Authorization) error {
 
 	err = c.provider.Present(authz.Identifier.Value, chlng.Token, keyAuth)
 	if err != nil {
-		return fmt.Errorf("[%s] acme: error presenting token: %v", domain, err)
+		return fmt.Errorf("[%s] acme: error presenting token: %w", domain, err)
 	}
 	defer func() {
 		err := c.provider.CleanUp(authz.Identifier.Value, chlng.Token, keyAuth)

@@ -2,6 +2,7 @@ package namecheap
 
 import (
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -97,7 +98,7 @@ func (d *DNSProvider) setHosts(sld, tld string, hosts []Record) error {
 		return fmt.Errorf("%s [%d]", shr.Errors[0].Description, shr.Errors[0].Number)
 	}
 	if shr.Result.IsSuccess != "true" {
-		return fmt.Errorf("setHosts failed")
+		return errors.New("setHosts failed")
 	}
 
 	return nil
@@ -113,7 +114,7 @@ func (d *DNSProvider) do(req *http.Request, out interface{}) error {
 		var body []byte
 		body, err = readBody(resp)
 		if err != nil {
-			return fmt.Errorf("HTTP error %d [%s]: %v", resp.StatusCode, http.StatusText(resp.StatusCode), err)
+			return fmt.Errorf("HTTP error %d [%s]: %w", resp.StatusCode, http.StatusText(resp.StatusCode), err)
 		}
 		return fmt.Errorf("HTTP error %d [%s]: %s", resp.StatusCode, http.StatusText(resp.StatusCode), string(body))
 	}
@@ -178,7 +179,7 @@ func addParam(key, value string) func(url.Values) {
 
 func readBody(resp *http.Response) ([]byte, error) {
 	if resp.Body == nil {
-		return nil, fmt.Errorf("response body is nil")
+		return nil, errors.New("response body is nil")
 	}
 
 	defer resp.Body.Close()

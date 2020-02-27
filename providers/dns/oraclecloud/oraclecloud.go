@@ -45,7 +45,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(ociPrivkey, ociTenancyOCID, ociUserOCID, ociPubkeyFingerprint, ociRegion, "OCI_COMPARTMENT_OCID")
 	if err != nil {
-		return nil, fmt.Errorf("oraclecloud: %v", err)
+		return nil, fmt.Errorf("oraclecloud: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -71,7 +71,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	client, err := dns.NewDnsClientWithConfigurationProvider(config.OCIConfigProvider)
 	if err != nil {
-		return nil, fmt.Errorf("oraclecloud: %v", err)
+		return nil, fmt.Errorf("oraclecloud: %w", err)
 	}
 
 	if config.HTTPClient != nil {
@@ -105,7 +105,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	_, err := d.client.PatchDomainRecords(context.Background(), request)
 	if err != nil {
-		return fmt.Errorf("oraclecloud: %v", err)
+		return fmt.Errorf("oraclecloud: %w", err)
 	}
 
 	return nil
@@ -127,11 +127,11 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	domainRecords, err := d.client.GetDomainRecords(ctx, getRequest)
 	if err != nil {
-		return fmt.Errorf("oraclecloud: %v", err)
+		return fmt.Errorf("oraclecloud: %w", err)
 	}
 
 	if *domainRecords.OpcTotalItems == 0 {
-		return fmt.Errorf("oraclecloud: no record to CleanUp")
+		return errors.New("oraclecloud: no record to CleanUp")
 	}
 
 	var deleteHash *string
@@ -143,7 +143,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	if deleteHash == nil {
-		return fmt.Errorf("oraclecloud: no record to CleanUp")
+		return errors.New("oraclecloud: no record to CleanUp")
 	}
 
 	recordOperation := dns.RecordOperation{
@@ -162,7 +162,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	_, err = d.client.PatchDomainRecords(ctx, patchRequest)
 	if err != nil {
-		return fmt.Errorf("oraclecloud: %v", err)
+		return fmt.Errorf("oraclecloud: %w", err)
 	}
 
 	return nil

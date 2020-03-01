@@ -47,6 +47,10 @@ before_install:
   - wget -O /tmp/hugo.deb https://github.com/gohugoio/hugo/releases/download/v0.54.0/hugo_0.54.0_Linux-64bit.deb
   - sudo dpkg -i /tmp/hugo.deb
 
+  # Install Docker image multi-arch builder
+  - curl -sfL https://raw.githubusercontent.com/ldez/seihon/master/godownloader.sh | bash -s -- -b "${GOPATH}/bin" ${SEIHON_VERSION}
+  - seihon --version
+
 install:
   - go mod tidy
   - git diff --exit-code go.mod
@@ -63,10 +67,18 @@ before_deploy:
   - >
     if ! [ "$BEFORE_DEPLOY_RUN" ]; then
       export BEFORE_DEPLOY_RUN=1;
-      make docs-build
+      make docs-build;
+      echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin;
     fi
 
 deploy:
+  - provider: pages
+    local_dir: docs/public
+    skip_cleanup: true
+    github_token: ${GITHUB_TOKEN}
+    on:
+      condition: $STABLE = true
+
   - provider: script
     skip_cleanup: true
     script: curl -sL https://git.io/goreleaser | bash
@@ -84,9 +96,9 @@ deploy:
       tags: true
       condition: $STABLE = true
 
-  - provider: pages
-    local_dir: docs/public
+  - provider: script
     skip_cleanup: true
-    github_token: ${GITHUB_TOKEN}
+    script: make publish-images
     on:
+      tags: true
       condition: $STABLE = true

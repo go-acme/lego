@@ -3,7 +3,7 @@ module github.com/go-acme/lego/v3
 go 1.14
 
 require (
-	cloud.google.com/go v0.50.0
+	cloud.google.com/go v0.53.0
 	github.com/Azure/azure-sdk-for-go v32.4.0+incompatible
 	github.com/Azure/go-autorest/autorest v0.5.0
 	github.com/Azure/go-autorest/autorest/adal v0.2.0
@@ -22,7 +22,6 @@ require (
 	github.com/exoscale/egoscale v0.18.1
 	github.com/google/go-querystring v1.0.0
 	github.com/gophercloud/gophercloud v0.3.0
-	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/iij/doapi v0.0.0-20190504054126-0bbf12d6d7df
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/labbsr0x/bindman-dns-webhook v1.0.2
@@ -44,9 +43,9 @@ require (
 	github.com/urfave/cli v1.22.1
 	github.com/vultr/govultr v0.1.4
 	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
-	golang.org/x/net v0.0.0-20191027093000-83d349e8ac1a
-	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
-	google.golang.org/api v0.14.0
+	golang.org/x/net v0.0.0-20200202094626-16171245cfb2
+	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
+	google.golang.org/api v0.17.0
 	gopkg.in/ns1/ns1-go.v2 v2.0.0-20190730140822-b51389932cbc
 	gopkg.in/square/go-jose.v2 v2.3.1
 )

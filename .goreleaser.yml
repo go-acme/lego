@@ -25,6 +25,8 @@ builds:
       - arm64
     goarm:
       - 7
+      - 6
+      - 5
 
     ignore:
       - goos: darwin

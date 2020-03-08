@@ -4,6 +4,10 @@ builds:
   - binary: lego
 
     main: ./cmd/lego/main.go
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
     ldflags:
       - -s -w -X main.version={{.Version}}
 

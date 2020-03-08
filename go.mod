@@ -28,9 +28,9 @@ require (
 	github.com/labbsr0x/bindman-dns-webhook v1.0.2
 	github.com/linode/linodego v0.10.0
 	github.com/liquidweb/liquidweb-go v1.6.0
-	github.com/miekg/dns v1.1.15
+	github.com/miekg/dns v1.1.27
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
-	github.com/nrdcg/auroradns v1.0.0
+	github.com/nrdcg/auroradns v1.0.1
 	github.com/nrdcg/dnspod-go v0.4.0
 	github.com/nrdcg/goinwx v0.6.1
 	github.com/nrdcg/namesilo v0.2.1
@@ -38,15 +38,19 @@ require (
 	github.com/ovh/go-ovh v0.0.0-20181109152953-ba5adb4cf014
 	github.com/rainycape/memcache v0.0.0-20150622160815-1031fa0ce2f2
 	github.com/sacloud/libsacloud v1.26.1
-	github.com/stretchr/testify v1.4.0
+	github.com/stretchr/testify v1.5.1
 	github.com/timewasted/linode v0.0.0-20160829202747-37e84520dcf7
 	github.com/transip/gotransip v0.0.0-20190812104329-6d8d9179b66f
 	github.com/urfave/cli v1.22.1
 	github.com/vultr/govultr v0.1.4
-	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
-	golang.org/x/net v0.0.0-20191027093000-83d349e8ac1a
-	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+	golang.org/x/crypto v0.0.0-20200302210943-78000ba7a073
+	golang.org/x/net v0.0.0-20200301022130-244492dfa37a
+	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
+	golang.org/x/sys v0.0.0-20200302150141-5c8b2ff67527 // indirect
 	google.golang.org/api v0.14.0
 	gopkg.in/ns1/ns1-go.v2 v2.0.0-20190730140822-b51389932cbc
 	gopkg.in/square/go-jose.v2 v2.3.1
 )
+
+// golang.org/x/sys is explicitly define only to get the fix from:
+// https://github.com/golang/sys/commit/33540a1f603772f9d4b761f416f5c10dade23e96

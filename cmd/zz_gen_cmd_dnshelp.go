@@ -66,6 +66,7 @@ func allDNSCodes() string {
 		"ovh",
 		"pdns",
 		"rackspace",
+		"regru",
 		"rfc2136",
 		"route53",
 		"sakuracloud",
@@ -1192,6 +1193,27 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/rackspace`)
+
+	case "regru":
+		// generated from: providers/dns/regru/regru.toml
+		ew.writeln(`Configuration for reg.ru.`)
+		ew.writeln(`Code:	'regru'`)
+		ew.writeln(`Since:	'v3.5.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "REGRU_PASSWORD":	API password`)
+		ew.writeln(`	- "REGRU_USERNAME":	API username`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "REGRU_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "REGRU_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "REGRU_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "REGRU_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/regru`)
 
 	case "rfc2136":
 		// generated from: providers/dns/rfc2136/rfc2136.toml

@@ -45,8 +45,7 @@ type Answer struct {
 type DomainResponse struct {
 	Result string `json:"result"`
 
-	DName     string `json:"dname"`
-	ServiceID int64  `json:"service_id,omitempty"`
+	DName string `json:"dname"`
 
 	ErrorCode   string            `json:"error_code,omitempty"`
 	ErrorParams map[string]string `json:"error_params,omitempty"`

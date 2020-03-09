@@ -56,7 +56,7 @@ func (c *Challenge) Solve(authz acme.Authorization) error {
 	defer func() {
 		err := c.provider.CleanUp(authz.Identifier.Value, chlng.Token, keyAuth)
 		if err != nil {
-			log.Warnf("[%s] acme: error cleaning up: %v", domain, err)
+			log.Warnf("[%s] acme: cleaning up failed: %v", domain, err)
 		}
 	}()
 

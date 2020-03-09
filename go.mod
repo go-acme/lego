@@ -3,7 +3,7 @@ module github.com/go-acme/lego/v3
 go 1.14
 
 require (
-	cloud.google.com/go v0.53.0
+	cloud.google.com/go v0.54.0
 	github.com/Azure/azure-sdk-for-go v32.4.0+incompatible
 	github.com/Azure/go-autorest/autorest v0.5.0
 	github.com/Azure/go-autorest/autorest/adal v0.2.0
@@ -45,11 +45,7 @@ require (
 	golang.org/x/crypto v0.0.0-20200302210943-78000ba7a073
 	golang.org/x/net v0.0.0-20200301022130-244492dfa37a
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
-	golang.org/x/sys v0.0.0-20200302150141-5c8b2ff67527 // indirect
-	google.golang.org/api v0.17.0
+	google.golang.org/api v0.20.0
 	gopkg.in/ns1/ns1-go.v2 v2.0.0-20190730140822-b51389932cbc
 	gopkg.in/square/go-jose.v2 v2.3.1
 )
-
-// golang.org/x/sys is explicitly define only to get the fix from:
-// https://github.com/golang/sys/commit/33540a1f603772f9d4b761f416f5c10dade23e96

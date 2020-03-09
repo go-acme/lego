@@ -235,7 +235,7 @@ func extractTableData(models *Providers) (int, [][]string) {
 			lines = append(lines, line)
 			line = []string{item}
 
-		case i == len(models.Providers)-1:
+		case i == len(items)-1:
 			line = append(line, item)
 			for j := len(line); j < nbCol; j++ {
 				line = append(line, "")

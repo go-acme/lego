@@ -57,6 +57,7 @@ import (
 	"github.com/go-acme/lego/v3/providers/dns/ovh"
 	"github.com/go-acme/lego/v3/providers/dns/pdns"
 	"github.com/go-acme/lego/v3/providers/dns/rackspace"
+	"github.com/go-acme/lego/v3/providers/dns/regru"
 	"github.com/go-acme/lego/v3/providers/dns/rfc2136"
 	"github.com/go-acme/lego/v3/providers/dns/route53"
 	"github.com/go-acme/lego/v3/providers/dns/sakuracloud"
@@ -181,6 +182,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return pdns.NewDNSProvider()
 	case "rackspace":
 		return rackspace.NewDNSProvider()
+	case "regru":
+		return regru.NewDNSProvider()
 	case "route53":
 		return route53.NewDNSProvider()
 	case "rfc2136":

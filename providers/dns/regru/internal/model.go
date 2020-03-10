@@ -10,9 +10,8 @@ type APIResponse struct {
 
 	Answer *Answer `json:"answer,omitempty"`
 
-	ErrorCode   string            `json:"error_code,omitempty"`
-	ErrorParams map[string]string `json:"error_params,omitempty"`
-	ErrorText   string            `json:"error_text,omitempty"`
+	ErrorCode string `json:"error_code,omitempty"`
+	ErrorText string `json:"error_text,omitempty"`
 }
 
 func (a APIResponse) Error() string {
@@ -47,9 +46,8 @@ type DomainResponse struct {
 
 	DName string `json:"dname"`
 
-	ErrorCode   string            `json:"error_code,omitempty"`
-	ErrorParams map[string]string `json:"error_params,omitempty"`
-	ErrorText   string            `json:"error_text,omitempty"`
+	ErrorCode string `json:"error_code,omitempty"`
+	ErrorText string `json:"error_text,omitempty"`
 }
 
 func (d DomainResponse) Error() string {

@@ -108,13 +108,7 @@ func (c Client) GetRootDomain(hostname string) (*DNSHostname, error) {
 		return nil, err
 	}
 
-	// req, err := http.NewRequest(http.MethodGet, endpoint.String(), nil)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
 	apiResp := DNSHostname{}
-	// err = c.do(req, &apiResp)
 	err = c.doRetry(http.MethodGet, endpoint.String(), nil, &apiResp)
 	if err != nil {
 		return nil, err

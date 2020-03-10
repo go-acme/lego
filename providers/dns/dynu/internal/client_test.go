@@ -193,21 +193,6 @@ func TestGetRecords(t *testing.T) {
 			assert.Equal(t, test.expected.records, records)
 		})
 	}
-
-	t.Skip("now")
-	client := NewClient()
-
-	// {"statusCode":200,"dnsRecords":[{"id":6041417,"domainId":9007481,"domainName":"ldez.freeddns.org","nodeName":"_acme-challenge","hostname":"_acme-challenge.ldez.freeddns.org","recordType":"TXT","ttl":300,"state":true,"content":"_acme-challenge.ldez.freeddns.org. 300 IN TXT \"txt_txt_txt_txt_txt_txt_txt\"","updatedOn":"2020-03-10T04:00:36.923","textData":"txt_txt_txt_txt_txt_txt_txt"},{"id":6041422,"domainId":9007481,"domainName":"ldez.freeddns.org","nodeName":"_acme-challenge","hostname":"_acme-challenge.ldez.freeddns.org","recordType":"TXT","ttl":300,"state":true,"content":"_acme-challenge.ldez.freeddns.org. 300 IN TXT \"txt_txt_txt_txt_txt_txt_txt_2\"","updatedOn":"2020-03-10T04:03:17.563","textData":"txt_txt_txt_txt_txt_txt_txt_2"}]}
-
-	// {"statusCode":200,"dnsRecords":[]}
-
-	// {"statusCode":501,"type":"Argument Exception","message":"Invalid."}
-
-	record, err := client.GetRecords("challengeldez.freeddns.org", "TXT")
-	// record, err := client.GetRecords("_acme-challenge.ldez.freeddns.org", "TXT")
-	require.NoError(t, err)
-
-	fmt.Println(record)
 }
 
 func TestAddNewRecord(t *testing.T) {

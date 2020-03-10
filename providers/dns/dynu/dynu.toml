@@ -1,7 +1,7 @@
-Name = "Dyn"
+Name = "Dynu"
 Description = ''''''
 URL = "https://www.dynu.com/"
-Code = "dyn"
+Code = "dynu"
 Since = "v3.5.0"
 
 Example = '''

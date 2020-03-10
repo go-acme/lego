@@ -59,7 +59,7 @@ func TestGetRootDomain(t *testing.T) {
 	}{
 		{
 			desc:    "success",
-			pattern: "/dns/getroot/gh.ldez.freeddns.org",
+			pattern: "/dns/getroot/test.lego.freeddns.org",
 			status:  http.StatusOK,
 			file:    "./fixtures/get_root_domain.json",
 			expected: expected{
@@ -68,15 +68,15 @@ func TestGetRootDomain(t *testing.T) {
 						StatusCode: 200,
 					},
 					ID:         9007481,
-					DomainName: "ldez.freeddns.org",
-					Hostname:   "gh.ldez.freeddns.org",
-					Node:       "gh",
+					DomainName: "lego.freeddns.org",
+					Hostname:   "test.lego.freeddns.org",
+					Node:       "test",
 				},
 			},
 		},
 		{
 			desc:    "invalid",
-			pattern: "/dns/getroot/gh.ldez.freeddns.org",
+			pattern: "/dns/getroot/test.lego.freeddns.org",
 			status:  http.StatusNotImplemented,
 			file:    "./fixtures/get_root_domain_invalid.json",
 			expected: expected{
@@ -92,7 +92,7 @@ func TestGetRootDomain(t *testing.T) {
 
 			client := setupTest(http.MethodGet, test.pattern, test.status, test.file)
 
-			domain, err := client.GetRootDomain("gh.ldez.freeddns.org")
+			domain, err := client.GetRootDomain("test.lego.freeddns.org")
 
 			if test.expected.error != "" {
 				assert.EqualError(t, err, test.expected.error)
@@ -122,7 +122,7 @@ func TestGetRecords(t *testing.T) {
 	}{
 		{
 			desc:    "success",
-			pattern: "/dns/record/_acme-challenge.ldez.freeddns.org",
+			pattern: "/dns/record/_acme-challenge.lego.freeddns.org",
 			status:  http.StatusOK,
 			file:    "./fixtures/get_records.json",
 			expected: expected{
@@ -130,11 +130,11 @@ func TestGetRecords(t *testing.T) {
 					ID:         6041417,
 					Type:       "TXT",
 					DomainID:   9007481,
-					DomainName: "ldez.freeddns.org",
+					DomainName: "lego.freeddns.org",
 					NodeName:   "_acme-challenge",
-					Hostname:   "_acme-challenge.ldez.freeddns.org",
+					Hostname:   "_acme-challenge.lego.freeddns.org",
 					State:      true,
-					Content:    `_acme-challenge.ldez.freeddns.org. 300 IN TXT "txt_txt_txt_txt_txt_txt_txt"`,
+					Content:    `_acme-challenge.lego.freeddns.org. 300 IN TXT "txt_txt_txt_txt_txt_txt_txt"`,
 					TextData:   "txt_txt_txt_txt_txt_txt_txt",
 					TTL:        300,
 				},
@@ -142,11 +142,11 @@ func TestGetRecords(t *testing.T) {
 						ID:         6041422,
 						Type:       "TXT",
 						DomainID:   9007481,
-						DomainName: "ldez.freeddns.org",
+						DomainName: "lego.freeddns.org",
 						NodeName:   "_acme-challenge",
-						Hostname:   "_acme-challenge.ldez.freeddns.org",
+						Hostname:   "_acme-challenge.lego.freeddns.org",
 						State:      true,
-						Content:    `_acme-challenge.ldez.freeddns.org. 300 IN TXT "txt_txt_txt_txt_txt_txt_txt_2"`,
+						Content:    `_acme-challenge.lego.freeddns.org. 300 IN TXT "txt_txt_txt_txt_txt_txt_txt_2"`,
 						TextData:   "txt_txt_txt_txt_txt_txt_txt_2",
 						TTL:        300,
 					},
@@ -155,7 +155,7 @@ func TestGetRecords(t *testing.T) {
 		},
 		{
 			desc:    "empty",
-			pattern: "/dns/record/_acme-challenge.ldez.freeddns.org",
+			pattern: "/dns/record/_acme-challenge.lego.freeddns.org",
 			status:  http.StatusOK,
 			file:    "./fixtures/get_records_empty.json",
 			expected: expected{
@@ -164,7 +164,7 @@ func TestGetRecords(t *testing.T) {
 		},
 		{
 			desc:    "invalid",
-			pattern: "/dns/record/_acme-challenge.ldez.freeddns.org",
+			pattern: "/dns/record/_acme-challenge.lego.freeddns.org",
 			status:  http.StatusNotImplemented,
 			file:    "./fixtures/get_records_invalid.json",
 			expected: expected{
@@ -180,7 +180,7 @@ func TestGetRecords(t *testing.T) {
 
 			client := setupTest(http.MethodGet, test.pattern, test.status, test.file)
 
-			records, err := client.GetRecords("_acme-challenge.ldez.freeddns.org", "TXT")
+			records, err := client.GetRecords("_acme-challenge.lego.freeddns.org", "TXT")
 
 			if test.expected.error != "" {
 				assert.EqualError(t, err, test.expected.error)
@@ -233,8 +233,8 @@ func TestAddNewRecord(t *testing.T) {
 
 			record := DNSRecord{
 				Type:       "TXT",
-				DomainName: "ldez.freeddns.org",
-				Hostname:   "_acme-challenge.ldez.freeddns.org",
+				DomainName: "lego.freeddns.org",
+				Hostname:   "_acme-challenge.lego.freeddns.org",
 				NodeName:   "_acme-challenge",
 				TextData:   "txt_txt_txt_txt_txt_txt_txt_2",
 				State:      true,

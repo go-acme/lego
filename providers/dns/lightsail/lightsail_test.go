@@ -13,13 +13,22 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const (
+	envAwsNamespace = "AWS_"
+
+	envAwsAccessKeyID     = envAwsNamespace + "ACCESS_KEY_ID"
+	envAwsSecretAccessKey = envAwsNamespace + "SECRET_ACCESS_KEY"
+	envAwsRegion          = envAwsNamespace + "REGION"
+	envAwsHostedZoneID    = envAwsNamespace + "HOSTED_ZONE_ID"
+)
+
 var envTest = tester.NewEnvTest(
-	"AWS_ACCESS_KEY_ID",
-	"AWS_SECRET_ACCESS_KEY",
-	"AWS_REGION",
-	"AWS_HOSTED_ZONE_ID").
-	WithDomain("DNS_ZONE").
-	WithLiveTestRequirements("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "DNS_ZONE")
+	envAwsAccessKeyID,
+	envAwsSecretAccessKey,
+	envAwsRegion,
+	envAwsHostedZoneID).
+	WithDomain(EnvDNSZone).
+	WithLiveTestRequirements(envAwsAccessKeyID, envAwsSecretAccessKey, EnvDNSZone)
 
 func makeProvider(ts *httptest.Server) (*DNSProvider, error) {
 	config := &aws.Config{
@@ -44,9 +53,9 @@ func TestCredentialsFromEnv(t *testing.T) {
 	defer envTest.RestoreEnv()
 	envTest.ClearEnv()
 
-	os.Setenv("AWS_ACCESS_KEY_ID", "123")
-	os.Setenv("AWS_SECRET_ACCESS_KEY", "123")
-	os.Setenv("AWS_REGION", "us-east-1")
+	os.Setenv(envAwsAccessKeyID, "123")
+	os.Setenv(envAwsSecretAccessKey, "123")
+	os.Setenv(envAwsRegion, "us-east-1")
 
 	config := &aws.Config{
 		CredentialsChainVerboseErrors: aws.Bool(true),

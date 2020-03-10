@@ -8,11 +8,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const envDomain = envNamespace + "DOMAIN"
+
 var envTest = tester.NewEnvTest(
-	"CONOHA_TENANT_ID",
-	"CONOHA_API_USERNAME",
-	"CONOHA_API_PASSWORD").
-	WithDomain("CONOHA_DOMAIN")
+	EnvTenantID,
+	EnvAPIUsername,
+	EnvAPIPassword).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -23,45 +25,45 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "complete credentials, but login failed",
 			envVars: map[string]string{
-				"CONOHA_TENANT_ID":    "tenant_id",
-				"CONOHA_API_USERNAME": "api_username",
-				"CONOHA_API_PASSWORD": "api_password",
+				EnvTenantID:    "tenant_id",
+				EnvAPIUsername: "api_username",
+				EnvAPIPassword: "api_password",
 			},
 			expected: `conoha: failed to create client: failed to login: HTTP request failed with status code 401: {"unauthorized":{"message":"Invalid user: api_username","code":401}}`,
 		},
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				"CONOHA_TENANT_ID":    "",
-				"CONOHA_API_USERNAME": "",
-				"CONOHA_API_PASSWORD": "",
+				EnvTenantID:    "",
+				EnvAPIUsername: "",
+				EnvAPIPassword: "",
 			},
 			expected: "conoha: some credentials information are missing: CONOHA_TENANT_ID,CONOHA_API_USERNAME,CONOHA_API_PASSWORD",
 		},
 		{
 			desc: "missing tenant id",
 			envVars: map[string]string{
-				"CONOHA_TENANT_ID":    "",
-				"CONOHA_API_USERNAME": "api_username",
-				"CONOHA_API_PASSWORD": "api_password",
+				EnvTenantID:    "",
+				EnvAPIUsername: "api_username",
+				EnvAPIPassword: "api_password",
 			},
 			expected: "conoha: some credentials information are missing: CONOHA_TENANT_ID",
 		},
 		{
 			desc: "missing api username",
 			envVars: map[string]string{
-				"CONOHA_TENANT_ID":    "tenant_id",
-				"CONOHA_API_USERNAME": "",
-				"CONOHA_API_PASSWORD": "api_password",
+				EnvTenantID:    "tenant_id",
+				EnvAPIUsername: "",
+				EnvAPIPassword: "api_password",
 			},
 			expected: "conoha: some credentials information are missing: CONOHA_API_USERNAME",
 		},
 		{
 			desc: "missing api password",
 			envVars: map[string]string{
-				"CONOHA_TENANT_ID":    "tenant_id",
-				"CONOHA_API_USERNAME": "api_username",
-				"CONOHA_API_PASSWORD": "",
+				EnvTenantID:    "tenant_id",
+				EnvAPIUsername: "api_username",
+				EnvAPIPassword: "",
 			},
 			expected: "conoha: some credentials information are missing: CONOHA_API_PASSWORD",
 		},

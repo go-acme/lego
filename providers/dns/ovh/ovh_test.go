@@ -8,12 +8,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const envDomain = envNamespace + "DOMAIN"
+
 var envTest = tester.NewEnvTest(
-	"OVH_ENDPOINT",
-	"OVH_APPLICATION_KEY",
-	"OVH_APPLICATION_SECRET",
-	"OVH_CONSUMER_KEY").
-	WithDomain("OVH_DOMAIN")
+	EnvEndpoint,
+	EnvApplicationKey,
+	EnvApplicationSecret,
+	EnvConsumerKey).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -24,69 +26,69 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"OVH_ENDPOINT":           "ovh-eu",
-				"OVH_APPLICATION_KEY":    "B",
-				"OVH_APPLICATION_SECRET": "C",
-				"OVH_CONSUMER_KEY":       "D",
+				EnvEndpoint:          "ovh-eu",
+				EnvApplicationKey:    "B",
+				EnvApplicationSecret: "C",
+				EnvConsumerKey:       "D",
 			},
 		},
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				"OVH_ENDPOINT":           "",
-				"OVH_APPLICATION_KEY":    "",
-				"OVH_APPLICATION_SECRET": "",
-				"OVH_CONSUMER_KEY":       "",
+				EnvEndpoint:          "",
+				EnvApplicationKey:    "",
+				EnvApplicationSecret: "",
+				EnvConsumerKey:       "",
 			},
 			expected: "ovh: some credentials information are missing: OVH_ENDPOINT,OVH_APPLICATION_KEY,OVH_APPLICATION_SECRET,OVH_CONSUMER_KEY",
 		},
 		{
 			desc: "missing endpoint",
 			envVars: map[string]string{
-				"OVH_ENDPOINT":           "",
-				"OVH_APPLICATION_KEY":    "B",
-				"OVH_APPLICATION_SECRET": "C",
-				"OVH_CONSUMER_KEY":       "D",
+				EnvEndpoint:          "",
+				EnvApplicationKey:    "B",
+				EnvApplicationSecret: "C",
+				EnvConsumerKey:       "D",
 			},
 			expected: "ovh: some credentials information are missing: OVH_ENDPOINT",
 		},
 		{
 			desc: "missing invalid endpoint",
 			envVars: map[string]string{
-				"OVH_ENDPOINT":           "foobar",
-				"OVH_APPLICATION_KEY":    "B",
-				"OVH_APPLICATION_SECRET": "C",
-				"OVH_CONSUMER_KEY":       "D",
+				EnvEndpoint:          "foobar",
+				EnvApplicationKey:    "B",
+				EnvApplicationSecret: "C",
+				EnvConsumerKey:       "D",
 			},
 			expected: "ovh: unknown endpoint 'foobar', consider checking 'Endpoints' list of using an URL",
 		},
 		{
 			desc: "missing application key",
 			envVars: map[string]string{
-				"OVH_ENDPOINT":           "ovh-eu",
-				"OVH_APPLICATION_KEY":    "",
-				"OVH_APPLICATION_SECRET": "C",
-				"OVH_CONSUMER_KEY":       "D",
+				EnvEndpoint:          "ovh-eu",
+				EnvApplicationKey:    "",
+				EnvApplicationSecret: "C",
+				EnvConsumerKey:       "D",
 			},
 			expected: "ovh: some credentials information are missing: OVH_APPLICATION_KEY",
 		},
 		{
 			desc: "missing application secret",
 			envVars: map[string]string{
-				"OVH_ENDPOINT":           "ovh-eu",
-				"OVH_APPLICATION_KEY":    "B",
-				"OVH_APPLICATION_SECRET": "",
-				"OVH_CONSUMER_KEY":       "D",
+				EnvEndpoint:          "ovh-eu",
+				EnvApplicationKey:    "B",
+				EnvApplicationSecret: "",
+				EnvConsumerKey:       "D",
 			},
 			expected: "ovh: some credentials information are missing: OVH_APPLICATION_SECRET",
 		},
 		{
 			desc: "missing consumer key",
 			envVars: map[string]string{
-				"OVH_ENDPOINT":           "ovh-eu",
-				"OVH_APPLICATION_KEY":    "B",
-				"OVH_APPLICATION_SECRET": "C",
-				"OVH_CONSUMER_KEY":       "",
+				EnvEndpoint:          "ovh-eu",
+				EnvApplicationKey:    "B",
+				EnvApplicationSecret: "C",
+				EnvConsumerKey:       "",
 			},
 			expected: "ovh: some credentials information are missing: OVH_CONSUMER_KEY",
 		},

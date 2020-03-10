@@ -9,8 +9,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var envTest = tester.NewEnvTest("DUCKDNS_TOKEN").
-	WithDomain("DUCKDNS_DOMAIN")
+const envDomain = envNamespace + "DOMAIN"
+
+var envTest = tester.NewEnvTest(EnvToken).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -21,13 +23,13 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"DUCKDNS_TOKEN": "123",
+				EnvToken: "123",
 			},
 		},
 		{
 			desc: "missing api key",
 			envVars: map[string]string{
-				"DUCKDNS_TOKEN": "",
+				EnvToken: "",
 			},
 			expected: "duckdns: some credentials information are missing: DUCKDNS_TOKEN",
 		},

@@ -13,6 +13,21 @@ import (
 	"github.com/go-acme/lego/v3/platform/config/env"
 )
 
+// Environment variables names.
+const (
+	envNamespace = "JOKER_"
+
+	EnvAPIKey   = envNamespace + "API_KEY"
+	EnvUsername = envNamespace + "USERNAME"
+	EnvPassword = envNamespace + "PASSWORD"
+	EnvDebug    = envNamespace + "DEBUG"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	Debug              bool
@@ -31,12 +46,12 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		BaseURL:            defaultBaseURL,
-		Debug:              env.GetOrDefaultBool("JOKER_DEBUG", false),
-		TTL:                env.GetOrDefaultInt("JOKER_TTL", dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond("JOKER_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("JOKER_POLLING_INTERVAL", dns01.DefaultPollingInterval),
+		Debug:              env.GetOrDefaultBool(EnvDebug, false),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("JOKER_HTTP_TIMEOUT", 60*time.Second),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 60*time.Second),
 		},
 	}
 }
@@ -50,19 +65,19 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for Joker DMAPI.
 // Credentials must be passed in the environment variable JOKER_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("JOKER_API_KEY")
+	values, err := env.Get(EnvAPIKey)
 	if err != nil {
 		var errU error
-		values, errU = env.Get("JOKER_USERNAME", "JOKER_PASSWORD")
+		values, errU = env.Get(EnvUsername, EnvPassword)
 		if errU != nil {
 			return nil, fmt.Errorf("joker: %v or %v", errU, err)
 		}
 	}
 
 	config := NewDefaultConfig()
-	config.APIKey = values["JOKER_API_KEY"]
-	config.Username = values["JOKER_USERNAME"]
-	config.Password = values["JOKER_PASSWORD"]
+	config.APIKey = values[EnvAPIKey]
+	config.Username = values[EnvUsername]
+	config.Password = values[EnvPassword]
 
 	return NewDNSProviderConfig(config)
 }

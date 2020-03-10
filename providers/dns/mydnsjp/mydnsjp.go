@@ -13,6 +13,18 @@ import (
 
 const defaultBaseURL = "https://www.mydns.jp/directedit.html"
 
+// Environment variables names.
+const (
+	envNamespace = "MYDNSJP_"
+
+	EnvMasterID = envNamespace + "MASTER_ID"
+	EnvPassword = envNamespace + "PASSWORD"
+
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	MasterID           string
@@ -25,10 +37,10 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		PropagationTimeout: env.GetOrDefaultSecond("MYDNSJP_PROPAGATION_TIMEOUT", 2*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond("MYDNSJP_POLLING_INTERVAL", 2*time.Second),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("MYDNSJP_HTTP_TIMEOUT", 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -41,14 +53,14 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for MyDNS.jp.
 // Credentials must be passed in the environment variables: MYDNSJP_MASTER_ID and MYDNSJP_PASSWORD.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("MYDNSJP_MASTER_ID", "MYDNSJP_PASSWORD")
+	values, err := env.Get(EnvMasterID, EnvPassword)
 	if err != nil {
 		return nil, fmt.Errorf("mydnsjp: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.MasterID = values["MYDNSJP_MASTER_ID"]
-	config.Password = values["MYDNSJP_PASSWORD"]
+	config.MasterID = values[EnvMasterID]
+	config.Password = values[EnvPassword]
 
 	return NewDNSProviderConfig(config)
 }

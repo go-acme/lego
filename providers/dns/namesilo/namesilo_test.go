@@ -8,10 +8,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const envDomain = envNamespace + "DOMAIN"
+
 var envTest = tester.NewEnvTest(
-	"NAMESILO_TTL",
-	"NAMESILO_API_KEY").
-	WithDomain("NAMESILO_DOMAIN")
+	EnvTTL,
+	EnvAPIKey).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -22,7 +24,7 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"NAMESILO_API_KEY": "A",
+				EnvAPIKey: "A",
 			},
 		},
 		{
@@ -33,8 +35,8 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "unsupported TTL",
 			envVars: map[string]string{
-				"NAMESILO_API_KEY": "A",
-				"NAMESILO_TTL":     "180",
+				EnvAPIKey: "A",
+				EnvTTL:    "180",
 			},
 			expected: "namesilo: TTL should be in [3600, 2592000]",
 		},

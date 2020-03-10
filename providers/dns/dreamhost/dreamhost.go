@@ -13,6 +13,17 @@ import (
 	"github.com/go-acme/lego/v3/platform/config/env"
 )
 
+// Environment variables names.
+const (
+	envNamespace = "DREAMHOST_"
+
+	EnvAPIKey = envNamespace + "API_KEY"
+
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	BaseURL            string
@@ -26,10 +37,10 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		BaseURL:            defaultBaseURL,
-		PropagationTimeout: env.GetOrDefaultSecond("DREAMHOST_PROPAGATION_TIMEOUT", 60*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond("DREAMHOST_POLLING_INTERVAL", 1*time.Minute),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 60*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 1*time.Minute),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("DREAMHOST_HTTP_TIMEOUT", 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -42,13 +53,13 @@ type DNSProvider struct {
 // NewDNSProvider returns a new DNS provider using
 // environment variable DREAMHOST_API_KEY for adding and removing the DNS record.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("DREAMHOST_API_KEY")
+	values, err := env.Get(EnvAPIKey)
 	if err != nil {
 		return nil, fmt.Errorf("dreamhost: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.APIKey = values["DREAMHOST_API_KEY"]
+	config.APIKey = values[EnvAPIKey]
 
 	return NewDNSProviderConfig(config)
 }

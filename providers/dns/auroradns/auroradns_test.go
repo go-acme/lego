@@ -12,10 +12,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const envDomain = envNamespace + "DOMAIN"
+
 var envTest = tester.NewEnvTest(
-	"AURORA_USER_ID",
-	"AURORA_KEY",
-)
+	EnvUserID,
+	EnvKey).
+	WithDomain(envDomain)
 
 func setupTest() (*DNSProvider, *http.ServeMux, func()) {
 	handler := http.NewServeMux()
@@ -43,31 +45,31 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"AURORA_USER_ID": "123",
-				"AURORA_KEY":     "456",
+				EnvUserID: "123",
+				EnvKey:    "456",
 			},
 		},
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				"AURORA_USER_ID": "",
-				"AURORA_KEY":     "",
+				EnvUserID: "",
+				EnvKey:    "",
 			},
 			expected: "aurora: some credentials information are missing: AURORA_USER_ID,AURORA_KEY",
 		},
 		{
 			desc: "missing user id",
 			envVars: map[string]string{
-				"AURORA_USER_ID": "",
-				"AURORA_KEY":     "456",
+				EnvUserID: "",
+				EnvKey:    "456",
 			},
 			expected: "aurora: some credentials information are missing: AURORA_USER_ID",
 		},
 		{
 			desc: "missing key",
 			envVars: map[string]string{
-				"AURORA_USER_ID": "123",
-				"AURORA_KEY":     "",
+				EnvUserID: "123",
+				EnvKey:    "",
 			},
 			expected: "aurora: some credentials information are missing: AURORA_KEY",
 		},

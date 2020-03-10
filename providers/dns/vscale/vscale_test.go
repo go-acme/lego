@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var envTest = tester.NewEnvTest(apiTokenEnvVar, ttlEnvVar)
+var envTest = tester.NewEnvTest(EnvAPIToken, EnvTTL)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -21,15 +21,15 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				apiTokenEnvVar: "123",
+				EnvAPIToken: "123",
 			},
 		},
 		{
 			desc: "missing api key",
 			envVars: map[string]string{
-				apiTokenEnvVar: "",
+				EnvAPIToken: "",
 			},
-			expected: fmt.Sprintf("vscale: some credentials information are missing: %s", apiTokenEnvVar),
+			expected: fmt.Sprintf("vscale: some credentials information are missing: %s", EnvAPIToken),
 		},
 	}
 

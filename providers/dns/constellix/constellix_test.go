@@ -8,10 +8,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const envDomain = envNamespace + "DOMAIN"
+
 var envTest = tester.NewEnvTest(
-	"CONSTELLIX_API_KEY",
-	"CONSTELLIX_SECRET_KEY").
-	WithDomain("CONSTELLIX_DOMAIN")
+	EnvAPIKey,
+	EnvSecretKey).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -22,31 +24,31 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"CONSTELLIX_API_KEY":    "123",
-				"CONSTELLIX_SECRET_KEY": "456",
+				EnvAPIKey:    "123",
+				EnvSecretKey: "456",
 			},
 		},
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				"CONSTELLIX_API_KEY":    "",
-				"CONSTELLIX_SECRET_KEY": "",
+				EnvAPIKey:    "",
+				EnvSecretKey: "",
 			},
 			expected: "constellix: some credentials information are missing: CONSTELLIX_API_KEY,CONSTELLIX_SECRET_KEY",
 		},
 		{
 			desc: "missing api key",
 			envVars: map[string]string{
-				"CONSTELLIX_API_KEY":    "",
-				"CONSTELLIX_SECRET_KEY": "api_password",
+				EnvAPIKey:    "",
+				EnvSecretKey: "api_password",
 			},
 			expected: "constellix: some credentials information are missing: CONSTELLIX_API_KEY",
 		},
 		{
 			desc: "missing secret key",
 			envVars: map[string]string{
-				"CONSTELLIX_API_KEY":    "api_username",
-				"CONSTELLIX_SECRET_KEY": "",
+				EnvAPIKey:    "api_username",
+				EnvSecretKey: "",
 			},
 			expected: "constellix: some credentials information are missing: CONSTELLIX_SECRET_KEY",
 		},

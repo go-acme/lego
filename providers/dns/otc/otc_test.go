@@ -19,11 +19,11 @@ func (s *OTCSuite) SetupTest() {
 	s.Mock = NewDNSServerMock(s.T())
 	s.Mock.HandleAuthSuccessfully()
 	s.envTest = tester.NewEnvTest(
-		"OTC_DOMAIN_NAME",
-		"OTC_USER_NAME",
-		"OTC_PASSWORD",
-		"OTC_PROJECT_NAME",
-		"OTC_IDENTITY_ENDPOINT",
+		EnvDomainName,
+		EnvUserName,
+		EnvPassword,
+		EnvProjectName,
+		EnvIdentityEndpoint,
 	)
 }
 
@@ -62,11 +62,11 @@ func (s *OTCSuite) TestLoginEnv() {
 	s.envTest.ClearEnv()
 
 	s.envTest.Apply(map[string]string{
-		"OTC_DOMAIN_NAME":       "unittest1",
-		"OTC_USER_NAME":         "unittest2",
-		"OTC_PASSWORD":          "unittest3",
-		"OTC_PROJECT_NAME":      "unittest4",
-		"OTC_IDENTITY_ENDPOINT": "unittest5",
+		EnvDomainName:       "unittest1",
+		EnvUserName:         "unittest2",
+		EnvPassword:         "unittest3",
+		EnvProjectName:      "unittest4",
+		EnvIdentityEndpoint: "unittest5",
 	})
 
 	provider, err := NewDNSProvider()
@@ -78,7 +78,7 @@ func (s *OTCSuite) TestLoginEnv() {
 	s.Equal(provider.config.ProjectName, "unittest4")
 	s.Equal(provider.config.IdentityEndpoint, "unittest5")
 
-	os.Setenv("OTC_IDENTITY_ENDPOINT", "")
+	os.Setenv(EnvIdentityEndpoint, "")
 
 	provider, err = NewDNSProvider()
 	s.Require().NoError(err)

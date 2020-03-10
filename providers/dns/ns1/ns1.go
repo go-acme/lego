@@ -15,6 +15,18 @@ import (
 	"gopkg.in/ns1/ns1-go.v2/rest/model/dns"
 )
 
+// Environment variables names.
+const (
+	envNamespace = "NS1_"
+
+	EnvAPIKey = envNamespace + "API_KEY"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	APIKey             string
@@ -27,11 +39,11 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("NS1_TTL", dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond("NS1_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("NS1_POLLING_INTERVAL", dns01.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("NS1_HTTP_TIMEOUT", 10*time.Second),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 10*time.Second),
 		},
 	}
 }
@@ -45,13 +57,13 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for NS1.
 // Credentials must be passed in the environment variables: NS1_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("NS1_API_KEY")
+	values, err := env.Get(EnvAPIKey)
 	if err != nil {
 		return nil, fmt.Errorf("ns1: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.APIKey = values["NS1_API_KEY"]
+	config.APIKey = values[EnvAPIKey]
 
 	return NewDNSProviderConfig(config)
 }

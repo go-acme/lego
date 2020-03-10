@@ -12,6 +12,19 @@ import (
 	"github.com/go-acme/lego/v3/platform/config/env"
 )
 
+// Environment variables names.
+const (
+	envNamespace = "VEGADNS_"
+
+	EnvKey    = "SECRET_VEGADNS_KEY"
+	EnvSecret = "SECRET_VEGADNS_SECRET"
+	EnvURL    = envNamespace + "URL"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	BaseURL            string
@@ -25,9 +38,9 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("VEGADNS_TTL", 10),
-		PropagationTimeout: env.GetOrDefaultSecond("VEGADNS_PROPAGATION_TIMEOUT", 12*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond("VEGADNS_POLLING_INTERVAL", 1*time.Minute),
+		TTL:                env.GetOrDefaultInt(EnvTTL, 10),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 12*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 1*time.Minute),
 	}
 }
 
@@ -41,15 +54,15 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables:
 // VEGADNS_URL, SECRET_VEGADNS_KEY, SECRET_VEGADNS_SECRET.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("VEGADNS_URL")
+	values, err := env.Get(EnvURL)
 	if err != nil {
 		return nil, fmt.Errorf("vegadns: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.BaseURL = values["VEGADNS_URL"]
-	config.APIKey = env.GetOrFile("SECRET_VEGADNS_KEY")
-	config.APISecret = env.GetOrFile("SECRET_VEGADNS_SECRET")
+	config.BaseURL = values[EnvURL]
+	config.APIKey = env.GetOrFile(EnvKey)
+	config.APISecret = env.GetOrFile(EnvSecret)
 
 	return NewDNSProviderConfig(config)
 }

@@ -12,13 +12,17 @@ import (
 	"github.com/go-acme/lego/v3/platform/config/env"
 )
 
+// Environment variables names.
 const (
-	envEndpoint           = "CHECKDOMAIN_ENDPOINT"
-	envToken              = "CHECKDOMAIN_TOKEN"
-	envTTL                = "CHECKDOMAIN_TTL"
-	envHTTPTimeout        = "CHECKDOMAIN_HTTP_TIMEOUT"
-	envPropagationTimeout = "CHECKDOMAIN_PROPAGATION_TIMEOUT"
-	envPollingInterval    = "CHECKDOMAIN_POLLING_INTERVAL"
+	envNamespace = "CHECKDOMAIN_"
+
+	EnvEndpoint = envNamespace + "ENDPOINT"
+	EnvToken    = envNamespace + "TOKEN"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
 const (
@@ -39,11 +43,11 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(envTTL, defaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(envPropagationTimeout, 5*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond(envPollingInterval, 7*time.Second),
+		TTL:                env.GetOrDefaultInt(EnvTTL, defaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 5*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 7*time.Second),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(envHTTPTimeout, 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -58,17 +62,17 @@ type DNSProvider struct {
 }
 
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(envToken)
+	values, err := env.Get(EnvToken)
 	if err != nil {
 		return nil, fmt.Errorf("checkdomain: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.Token = values[envToken]
+	config.Token = values[EnvToken]
 
-	endpoint, err := url.Parse(env.GetOrDefaultString(envEndpoint, defaultEndpoint))
+	endpoint, err := url.Parse(env.GetOrDefaultString(EnvEndpoint, defaultEndpoint))
 	if err != nil {
-		return nil, fmt.Errorf("checkdomain: invalid %s: %w", envEndpoint, err)
+		return nil, fmt.Errorf("checkdomain: invalid %s: %w", EnvEndpoint, err)
 	}
 	config.Endpoint = endpoint
 

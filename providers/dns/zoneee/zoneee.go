@@ -12,6 +12,19 @@ import (
 	"github.com/go-acme/lego/v3/platform/config/env"
 )
 
+// Environment variables names.
+const (
+	envNamespace = "ZONEEE_"
+
+	EnvEndpoint = envNamespace + "ENDPOINT"
+	EnvAPIUser  = envNamespace + "API_USER"
+	EnvAPIKey   = envNamespace + "API_KEY"
+
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	Endpoint           *url.URL
@@ -29,10 +42,10 @@ func NewDefaultConfig() *Config {
 	return &Config{
 		Endpoint: endpoint,
 		// zone.ee can take up to 5min to propagate according to the support
-		PropagationTimeout: env.GetOrDefaultSecond("ZONEEE_PROPAGATION_TIMEOUT", 5*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond("ZONEEE_POLLING_INTERVAL", 5*time.Second),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 5*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 5*time.Second),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("ZONEEE_HTTP_TIMEOUT", 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -44,20 +57,20 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("ZONEEE_API_USER", "ZONEEE_API_KEY")
+	values, err := env.Get(EnvAPIUser, EnvAPIKey)
 	if err != nil {
 		return nil, fmt.Errorf("zoneee: %w", err)
 	}
 
-	rawEndpoint := env.GetOrDefaultString("ZONEEE_ENDPOINT", defaultEndpoint)
+	rawEndpoint := env.GetOrDefaultString(EnvEndpoint, defaultEndpoint)
 	endpoint, err := url.Parse(rawEndpoint)
 	if err != nil {
 		return nil, fmt.Errorf("zoneee: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.Username = values["ZONEEE_API_USER"]
-	config.APIKey = values["ZONEEE_API_KEY"]
+	config.Username = values[EnvAPIUser]
+	config.APIKey = values[EnvAPIKey]
 	config.Endpoint = endpoint
 
 	return NewDNSProviderConfig(config)

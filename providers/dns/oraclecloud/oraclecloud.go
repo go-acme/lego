@@ -13,6 +13,25 @@ import (
 	"github.com/oracle/oci-go-sdk/dns"
 )
 
+// Environment variables names.
+const (
+	envNamespace = "OCI_"
+
+	EnvCompartmentOCID   = envNamespace + "COMPARTMENT_OCID"
+	envPrivKey           = envNamespace + "PRIVKEY"
+	EnvPrivKeyFile       = envPrivKey + "_FILE"
+	EnvPrivKeyPass       = envPrivKey + "_PASS"
+	EnvTenancyOCID       = envNamespace + "TENANCY_OCID"
+	EnvUserOCID          = envNamespace + "USER_OCID"
+	EnvPubKeyFingerprint = envNamespace + "PUBKEY_FINGERPRINT"
+	EnvRegion            = envNamespace + "REGION"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	CompartmentID      string
@@ -26,11 +45,11 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("OCI_TTL", dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond("OCI_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("OCI_POLLING_INTERVAL", dns01.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("OCI_HTTP_TIMEOUT", 60*time.Second),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 60*time.Second),
 		},
 	}
 }
@@ -43,13 +62,13 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for OracleCloud.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(ociPrivkey, ociTenancyOCID, ociUserOCID, ociPubkeyFingerprint, ociRegion, "OCI_COMPARTMENT_OCID")
+	values, err := env.Get(envPrivKey, EnvTenancyOCID, EnvUserOCID, EnvPubKeyFingerprint, EnvRegion, EnvCompartmentOCID)
 	if err != nil {
 		return nil, fmt.Errorf("oraclecloud: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.CompartmentID = values["OCI_COMPARTMENT_OCID"]
+	config.CompartmentID = values[EnvCompartmentOCID]
 	config.OCIConfigProvider = newConfigProvider(values)
 
 	return NewDNSProviderConfig(config)

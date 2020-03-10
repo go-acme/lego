@@ -15,6 +15,18 @@ import (
 	"golang.org/x/oauth2"
 )
 
+// Environment variables names.
+const (
+	envNamespace = "DNSIMPLE_"
+
+	EnvOAuthToken = envNamespace + "OAUTH_TOKEN"
+	EnvBaseURL    = envNamespace + "BASE_URL"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	AccessToken        string
@@ -27,9 +39,9 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("DNSIMPLE_TTL", dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond("DNSIMPLE_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("DNSIMPLE_POLLING_INTERVAL", dns01.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 	}
 }
 
@@ -45,8 +57,8 @@ type DNSProvider struct {
 // See: https://developer.dnsimple.com/v2/#authentication
 func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
-	config.AccessToken = env.GetOrFile("DNSIMPLE_OAUTH_TOKEN")
-	config.BaseURL = env.GetOrFile("DNSIMPLE_BASE_URL")
+	config.AccessToken = env.GetOrFile(EnvOAuthToken)
+	config.BaseURL = env.GetOrFile(EnvBaseURL)
 
 	return NewDNSProviderConfig(config)
 }

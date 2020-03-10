@@ -8,10 +8,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const envDomain = envNamespace + "DOMAIN"
+
 var envTest = tester.NewEnvTest(
-	"CLOUDNS_AUTH_ID",
-	"CLOUDNS_AUTH_PASSWORD").
-	WithDomain("CLOUDNS_DOMAIN")
+	EnvAuthID,
+	EnvAuthPassword).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -22,31 +24,31 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"CLOUDNS_AUTH_ID":       "123",
-				"CLOUDNS_AUTH_PASSWORD": "456",
+				EnvAuthID:       "123",
+				EnvAuthPassword: "456",
 			},
 		},
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				"CLOUDNS_AUTH_ID":       "",
-				"CLOUDNS_AUTH_PASSWORD": "",
+				EnvAuthID:       "",
+				EnvAuthPassword: "",
 			},
 			expected: "ClouDNS: some credentials information are missing: CLOUDNS_AUTH_ID,CLOUDNS_AUTH_PASSWORD",
 		},
 		{
 			desc: "missing auth-id",
 			envVars: map[string]string{
-				"CLOUDNS_AUTH_ID":       "",
-				"CLOUDNS_AUTH_PASSWORD": "456",
+				EnvAuthID:       "",
+				EnvAuthPassword: "456",
 			},
 			expected: "ClouDNS: some credentials information are missing: CLOUDNS_AUTH_ID",
 		},
 		{
 			desc: "missing auth-password",
 			envVars: map[string]string{
-				"CLOUDNS_AUTH_ID":       "123",
-				"CLOUDNS_AUTH_PASSWORD": "",
+				EnvAuthID:       "123",
+				EnvAuthPassword: "",
 			},
 			expected: "ClouDNS: some credentials information are missing: CLOUDNS_AUTH_PASSWORD",
 		},

@@ -7,13 +7,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const envDomain = envNamespace + "DOMAIN"
+
 var envTest = tester.NewEnvTest(
-	"INWX_USERNAME",
-	"INWX_PASSWORD",
-	"INWX_SANDBOX",
-	"INWX_TTL").
-	WithDomain("INWX_DOMAIN").
-	WithLiveTestRequirements("INWX_USERNAME", "INWX_PASSWORD", "INWX_DOMAIN")
+	EnvUsername,
+	EnvPassword,
+	EnvSandbox,
+	EnvTTL).
+	WithDomain(envDomain).
+	WithLiveTestRequirements(EnvUsername, EnvPassword, envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -24,31 +26,31 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"INWX_USERNAME": "123",
-				"INWX_PASSWORD": "456",
+				EnvUsername: "123",
+				EnvPassword: "456",
 			},
 		},
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				"INWX_USERNAME": "",
-				"INWX_PASSWORD": "",
+				EnvUsername: "",
+				EnvPassword: "",
 			},
 			expected: "inwx: some credentials information are missing: INWX_USERNAME,INWX_PASSWORD",
 		},
 		{
 			desc: "missing username",
 			envVars: map[string]string{
-				"INWX_USERNAME": "",
-				"INWX_PASSWORD": "456",
+				EnvUsername: "",
+				EnvPassword: "456",
 			},
 			expected: "inwx: some credentials information are missing: INWX_USERNAME",
 		},
 		{
 			desc: "missing password",
 			envVars: map[string]string{
-				"INWX_USERNAME": "123",
-				"INWX_PASSWORD": "",
+				EnvUsername: "123",
+				EnvPassword: "",
 			},
 			expected: "inwx: some credentials information are missing: INWX_PASSWORD",
 		},
@@ -120,8 +122,8 @@ func TestLivePresentAndCleanup(t *testing.T) {
 
 	envTest.RestoreEnv()
 	envTest.Apply(map[string]string{
-		"INWX_SANDBOX": "true",
-		"INWX_TTL":     "3600", // In sandbox mode, the minimum allowed TTL is 3600
+		EnvSandbox: "true",
+		EnvTTL:     "3600", // In sandbox mode, the minimum allowed TTL is 3600
 	})
 	defer envTest.RestoreEnv()
 

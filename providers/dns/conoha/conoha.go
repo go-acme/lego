@@ -12,6 +12,21 @@ import (
 	"github.com/go-acme/lego/v3/providers/dns/conoha/internal"
 )
 
+// Environment variables names.
+const (
+	envNamespace = "CONOHA_"
+
+	EnvRegion      = envNamespace + "REGION"
+	EnvTenantID    = envNamespace + "TENANT_ID"
+	EnvAPIUsername = envNamespace + "API_USERNAME"
+	EnvAPIPassword = envNamespace + "API_PASSWORD"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	Region             string
@@ -27,12 +42,12 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		Region:             env.GetOrDefaultString("CONOHA_REGION", "tyo1"),
-		TTL:                env.GetOrDefaultInt("CONOHA_TTL", 60),
-		PropagationTimeout: env.GetOrDefaultSecond("CONOHA_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("CONOHA_POLLING_INTERVAL", dns01.DefaultPollingInterval),
+		Region:             env.GetOrDefaultString(EnvRegion, "tyo1"),
+		TTL:                env.GetOrDefaultInt(EnvTTL, 60),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("CONOHA_HTTP_TIMEOUT", 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -46,15 +61,15 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for ConoHa DNS.
 // Credentials must be passed in the environment variables: CONOHA_TENANT_ID, CONOHA_API_USERNAME, CONOHA_API_PASSWORD
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("CONOHA_TENANT_ID", "CONOHA_API_USERNAME", "CONOHA_API_PASSWORD")
+	values, err := env.Get(EnvTenantID, EnvAPIUsername, EnvAPIPassword)
 	if err != nil {
 		return nil, fmt.Errorf("conoha: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.TenantID = values["CONOHA_TENANT_ID"]
-	config.Username = values["CONOHA_API_USERNAME"]
-	config.Password = values["CONOHA_API_PASSWORD"]
+	config.TenantID = values[EnvTenantID]
+	config.Username = values[EnvAPIUsername]
+	config.Password = values[EnvAPIPassword]
 
 	return NewDNSProviderConfig(config)
 }

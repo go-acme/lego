@@ -17,6 +17,17 @@ const (
 	maxTTL     = 2592000
 )
 
+// Environment variables names.
+const (
+	envNamespace = "NAMESILO_"
+
+	EnvAPIKey = envNamespace + "API_KEY"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	APIKey             string
@@ -28,9 +39,9 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		PropagationTimeout: env.GetOrDefaultSecond("NAMESILO_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("NAMESILO_POLLING_INTERVAL", dns01.DefaultPollingInterval),
-		TTL:                env.GetOrDefaultInt("NAMESILO_TTL", defaultTTL),
+		TTL:                env.GetOrDefaultInt(EnvTTL, defaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 	}
 }
 
@@ -45,13 +56,13 @@ type DNSProvider struct {
 //
 // See: https://www.namesilo.com/api_reference.php
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("NAMESILO_API_KEY")
+	values, err := env.Get(EnvAPIKey)
 	if err != nil {
 		return nil, fmt.Errorf("namesilo: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.APIKey = values["NAMESILO_API_KEY"]
+	config.APIKey = values[EnvAPIKey]
 
 	return NewDNSProviderConfig(config)
 }

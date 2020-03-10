@@ -11,6 +11,18 @@ import (
 	"github.com/go-acme/lego/v3/platform/config/env"
 )
 
+// Environment variables names.
+const (
+	envNamespace = "DODE_"
+
+	EnvToken = envNamespace + "TOKEN"
+
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+	EnvSequenceInterval   = envNamespace + "SEQUENCE_INTERVAL"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	Token              string
@@ -23,11 +35,11 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		PropagationTimeout: env.GetOrDefaultSecond("DODE_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("DODE_POLLING_INTERVAL", dns01.DefaultPollingInterval),
-		SequenceInterval:   env.GetOrDefaultSecond("DODE_SEQUENCE_INTERVAL", dns01.DefaultPropagationTimeout),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		SequenceInterval:   env.GetOrDefaultSecond(EnvSequenceInterval, dns01.DefaultPropagationTimeout),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("DODE_HTTP_TIMEOUT", 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -40,13 +52,13 @@ type DNSProvider struct {
 // NewDNSProvider returns a new DNS provider using
 // environment variable DODE_TOKEN for adding and removing the DNS record.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("DODE_TOKEN")
+	values, err := env.Get(EnvToken)
 	if err != nil {
 		return nil, fmt.Errorf("do.de: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.Token = values["DODE_TOKEN"]
+	config.Token = values[EnvToken]
 
 	return NewDNSProviderConfig(config)
 }

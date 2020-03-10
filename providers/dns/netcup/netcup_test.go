@@ -9,11 +9,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const envDomain = envNamespace + "DOMAIN"
+
 var envTest = tester.NewEnvTest(
-	"NETCUP_CUSTOMER_NUMBER",
-	"NETCUP_API_KEY",
-	"NETCUP_API_PASSWORD").
-	WithDomain("NETCUP_DOMAIN")
+	EnvCustomerNumber,
+	EnvAPIKey,
+	EnvAPIPassword).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -24,44 +26,44 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"NETCUP_CUSTOMER_NUMBER": "A",
-				"NETCUP_API_KEY":         "B",
-				"NETCUP_API_PASSWORD":    "C",
+				EnvCustomerNumber: "A",
+				EnvAPIKey:         "B",
+				EnvAPIPassword:    "C",
 			},
 		},
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				"NETCUP_CUSTOMER_NUMBER": "",
-				"NETCUP_API_KEY":         "",
-				"NETCUP_API_PASSWORD":    "",
+				EnvCustomerNumber: "",
+				EnvAPIKey:         "",
+				EnvAPIPassword:    "",
 			},
 			expected: "netcup: some credentials information are missing: NETCUP_CUSTOMER_NUMBER,NETCUP_API_KEY,NETCUP_API_PASSWORD",
 		},
 		{
 			desc: "missing customer number",
 			envVars: map[string]string{
-				"NETCUP_CUSTOMER_NUMBER": "",
-				"NETCUP_API_KEY":         "B",
-				"NETCUP_API_PASSWORD":    "C",
+				EnvCustomerNumber: "",
+				EnvAPIKey:         "B",
+				EnvAPIPassword:    "C",
 			},
 			expected: "netcup: some credentials information are missing: NETCUP_CUSTOMER_NUMBER",
 		},
 		{
 			desc: "missing API key",
 			envVars: map[string]string{
-				"NETCUP_CUSTOMER_NUMBER": "A",
-				"NETCUP_API_KEY":         "",
-				"NETCUP_API_PASSWORD":    "C",
+				EnvCustomerNumber: "A",
+				EnvAPIKey:         "",
+				EnvAPIPassword:    "C",
 			},
 			expected: "netcup: some credentials information are missing: NETCUP_API_KEY",
 		},
 		{
 			desc: "missing api password",
 			envVars: map[string]string{
-				"NETCUP_CUSTOMER_NUMBER": "A",
-				"NETCUP_API_KEY":         "B",
-				"NETCUP_API_PASSWORD":    "",
+				EnvCustomerNumber: "A",
+				EnvAPIKey:         "B",
+				EnvAPIPassword:    "",
 			},
 			expected: "netcup: some credentials information are missing: NETCUP_API_PASSWORD",
 		},

@@ -14,6 +14,20 @@ import (
 	"github.com/go-acme/lego/v3/providers/dns/dnsmadeeasy/internal"
 )
 
+// Environment variables names.
+const (
+	envNamespace = "DNSMADEEASY_"
+
+	EnvAPIKey    = envNamespace + "API_KEY"
+	EnvAPISecret = envNamespace + "API_SECRET"
+	EnvSandbox   = envNamespace + "SANDBOX"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	BaseURL            string
@@ -29,11 +43,11 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("DNSMADEEASY_TTL", dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond("DNSMADEEASY_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("DNSMADEEASY_POLLING_INTERVAL", dns01.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("DNSMADEEASY_HTTP_TIMEOUT", 10*time.Second),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 10*time.Second),
 			Transport: &http.Transport{
 				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 			},
@@ -52,15 +66,15 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables:
 // DNSMADEEASY_API_KEY and DNSMADEEASY_API_SECRET.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("DNSMADEEASY_API_KEY", "DNSMADEEASY_API_SECRET")
+	values, err := env.Get(EnvAPIKey, EnvAPISecret)
 	if err != nil {
 		return nil, fmt.Errorf("dnsmadeeasy: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.Sandbox = env.GetOrDefaultBool("DNSMADEEASY_SANDBOX", false)
-	config.APIKey = values["DNSMADEEASY_API_KEY"]
-	config.APISecret = values["DNSMADEEASY_API_SECRET"]
+	config.Sandbox = env.GetOrDefaultBool(EnvSandbox, false)
+	config.APIKey = values[EnvAPIKey]
+	config.APISecret = values[EnvAPISecret]
 
 	return NewDNSProviderConfig(config)
 }

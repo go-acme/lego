@@ -8,10 +8,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const envDomain = envNamespace + "DOMAIN"
+
 var envTest = tester.NewEnvTest(
-	"NAMECOM_USERNAME",
-	"NAMECOM_API_TOKEN").
-	WithDomain("NAMEDOTCOM_DOMAIN")
+	EnvUsername,
+	EnvAPIToken).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -22,31 +24,31 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"NAMECOM_USERNAME":  "A",
-				"NAMECOM_API_TOKEN": "B",
+				EnvUsername: "A",
+				EnvAPIToken: "B",
 			},
 		},
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				"NAMECOM_USERNAME":  "",
-				"NAMECOM_API_TOKEN": "",
+				EnvUsername: "",
+				EnvAPIToken: "",
 			},
 			expected: "namedotcom: some credentials information are missing: NAMECOM_USERNAME,NAMECOM_API_TOKEN",
 		},
 		{
 			desc: "missing username",
 			envVars: map[string]string{
-				"NAMECOM_USERNAME":  "",
-				"NAMECOM_API_TOKEN": "B",
+				EnvUsername: "",
+				EnvAPIToken: "B",
 			},
 			expected: "namedotcom: some credentials information are missing: NAMECOM_USERNAME",
 		},
 		{
 			desc: "missing api token",
 			envVars: map[string]string{
-				"NAMECOM_USERNAME":  "A",
-				"NAMECOM_API_TOKEN": "",
+				EnvUsername: "A",
+				EnvAPIToken: "",
 			},
 			expected: "namedotcom: some credentials information are missing: NAMECOM_API_TOKEN",
 		},

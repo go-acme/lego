@@ -29,7 +29,7 @@ type (
 	MockResponseMap map[string]MockResponse
 )
 
-var envTest = tester.NewEnvTest("LINODE_API_KEY")
+var envTest = tester.NewEnvTest(EnvAPIKey)
 
 func newMockServer(responses MockResponseMap) *httptest.Server {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -77,13 +77,13 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"LINODE_API_KEY": "123",
+				EnvAPIKey: "123",
 			},
 		},
 		{
 			desc: "missing api key",
 			envVars: map[string]string{
-				"LINODE_API_KEY": "",
+				EnvAPIKey: "",
 			},
 			expected: "linode: some credentials information are missing: LINODE_API_KEY",
 		},
@@ -147,7 +147,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 
 func TestDNSProvider_Present(t *testing.T) {
 	defer envTest.RestoreEnv()
-	os.Setenv("LINODE_API_KEY", "testing")
+	os.Setenv(EnvAPIKey, "testing")
 
 	p, err := NewDNSProvider()
 	require.NoError(t, err)
@@ -234,7 +234,7 @@ func TestDNSProvider_Present(t *testing.T) {
 
 func TestDNSProvider_CleanUp(t *testing.T) {
 	defer envTest.RestoreEnv()
-	os.Setenv("LINODE_API_KEY", "testing")
+	os.Setenv(EnvAPIKey, "testing")
 
 	p, err := NewDNSProvider()
 	require.NoError(t, err)

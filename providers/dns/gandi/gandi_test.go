@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var envTest = tester.NewEnvTest("GANDI_API_KEY")
+var envTest = tester.NewEnvTest(EnvAPIKey)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -24,13 +24,13 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"GANDI_API_KEY": "123",
+				EnvAPIKey: "123",
 			},
 		},
 		{
 			desc: "missing api key",
 			envVars: map[string]string{
-				"GANDI_API_KEY": "",
+				EnvAPIKey: "",
 			},
 			expected: "gandi: some credentials information are missing: GANDI_API_KEY",
 		},

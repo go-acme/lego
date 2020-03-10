@@ -8,8 +8,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var envTest = tester.NewEnvTest("DNSPOD_API_KEY").
-	WithDomain("DNSPOD_DOMAIN")
+const envDomain = envNamespace + "DOMAIN"
+
+var envTest = tester.NewEnvTest(EnvAPIKey).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -20,13 +22,13 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"DNSPOD_API_KEY": "123",
+				EnvAPIKey: "123",
 			},
 		},
 		{
 			desc: "missing api key",
 			envVars: map[string]string{
-				"DNSPOD_API_KEY": "",
+				EnvAPIKey: "",
 			},
 			expected: "dnspod: some credentials information are missing: DNSPOD_API_KEY",
 		},

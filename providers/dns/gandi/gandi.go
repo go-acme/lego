@@ -22,6 +22,18 @@ const (
 	minTTL         = 300
 )
 
+// Environment variables names.
+const (
+	envNamespace = "GANDI_"
+
+	EnvAPIKey = envNamespace + "API_KEY"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	BaseURL            string
@@ -35,11 +47,11 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("GANDI_TTL", minTTL),
-		PropagationTimeout: env.GetOrDefaultSecond("GANDI_PROPAGATION_TIMEOUT", 40*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond("GANDI_POLLING_INTERVAL", 60*time.Second),
+		TTL:                env.GetOrDefaultInt(EnvTTL, minTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 40*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 60*time.Second),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("GANDI_HTTP_TIMEOUT", 60*time.Second),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 60*time.Second),
 		},
 	}
 }
@@ -66,13 +78,13 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for Gandi.
 // Credentials must be passed in the environment variable: GANDI_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("GANDI_API_KEY")
+	values, err := env.Get(EnvAPIKey)
 	if err != nil {
 		return nil, fmt.Errorf("gandi: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.APIKey = values["GANDI_API_KEY"]
+	config.APIKey = values[EnvAPIKey]
 
 	return NewDNSProviderConfig(config)
 }

@@ -13,6 +13,21 @@ import (
 	"github.com/go-acme/lego/v3/platform/config/env"
 )
 
+// Environment variables names.
+const (
+	envNamespace = "VERSIO_"
+
+	EnvUsername = envNamespace + "USERNAME"
+	EnvPassword = envNamespace + "PASSWORD"
+	EnvEndpoint = envNamespace + "ENDPOINT"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvSequenceInterval   = envNamespace + "SEQUENCE_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	BaseURL            *url.URL
@@ -27,19 +42,19 @@ type Config struct {
 
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
-	baseURL, err := url.Parse(env.GetOrDefaultString("VERSIO_ENDPOINT", defaultBaseURL))
+	baseURL, err := url.Parse(env.GetOrDefaultString(EnvEndpoint, defaultBaseURL))
 	if err != nil {
 		baseURL, _ = url.Parse(defaultBaseURL)
 	}
 
 	return &Config{
 		BaseURL:            baseURL,
-		TTL:                env.GetOrDefaultInt("VERSIO_TTL", 300),
-		PropagationTimeout: env.GetOrDefaultSecond("VERSIO_PROPAGATION_TIMEOUT", 60*time.Second),
-		PollingInterval:    env.GetOrDefaultSecond("VERSIO_POLLING_INTERVAL", 5*time.Second),
-		SequenceInterval:   env.GetOrDefaultSecond("VERSIO_SEQUENCE_INTERVAL", dns01.DefaultPropagationTimeout),
+		TTL:                env.GetOrDefaultInt(EnvTTL, 300),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 60*time.Second),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 5*time.Second),
+		SequenceInterval:   env.GetOrDefaultSecond(EnvSequenceInterval, dns01.DefaultPropagationTimeout),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("VERSIO_HTTP_TIMEOUT", 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -52,14 +67,14 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("VERSIO_USERNAME", "VERSIO_PASSWORD")
+	values, err := env.Get(EnvUsername, EnvPassword)
 	if err != nil {
 		return nil, fmt.Errorf("versio: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.Username = values["VERSIO_USERNAME"]
-	config.Password = values["VERSIO_PASSWORD"]
+	config.Username = values[EnvUsername]
+	config.Password = values[EnvPassword]
 
 	return NewDNSProviderConfig(config)
 }

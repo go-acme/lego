@@ -17,6 +17,18 @@ import (
 	"github.com/vultr/govultr"
 )
 
+// Environment variables names.
+const (
+	envNamespace = "VULTR_"
+
+	EnvAPIKey = envNamespace + "API_KEY"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	APIKey             string
@@ -29,11 +41,11 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("VULTR_TTL", dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond("VULTR_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("VULTR_POLLING_INTERVAL", dns01.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("VULTR_HTTP_TIMEOUT", 0),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30),
 			// from Vultr Client
 			Transport: &http.Transport{
 				TLSNextProto: make(map[string]func(string, *tls.Conn) http.RoundTripper),
@@ -51,13 +63,13 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance with a configured Vultr client.
 // Authentication uses the VULTR_API_KEY environment variable.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("VULTR_API_KEY")
+	values, err := env.Get(EnvAPIKey)
 	if err != nil {
 		return nil, fmt.Errorf("vultr: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.APIKey = values["VULTR_API_KEY"]
+	config.APIKey = values[EnvAPIKey]
 
 	return NewDNSProviderConfig(config)
 }

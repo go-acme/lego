@@ -22,15 +22,18 @@ const (
 	defaultPropagationTimeout = 120 * time.Second
 )
 
+// Environment variables names.
 const (
-	envNamespace             = "SCALEWAY_"
-	baseURLEnvVar            = envNamespace + "BASE_URL"
-	apiTokenEnvVar           = envNamespace + "API_TOKEN"
-	apiVersionEnvVar         = envNamespace + "API_VERSION"
-	ttlEnvVar                = envNamespace + "TTL"
-	propagationTimeoutEnvVar = envNamespace + "PROPAGATION_TIMEOUT"
-	pollingIntervalEnvVar    = envNamespace + "POLLING_INTERVAL"
-	httpTimeoutEnvVar        = envNamespace + "HTTP_TIMEOUT"
+	envNamespace = "SCALEWAY_"
+
+	EnvBaseURL    = envNamespace + "BASE_URL"
+	EnvAPIToken   = envNamespace + "API_TOKEN"
+	EnvAPIVersion = envNamespace + "API_VERSION"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
 // Config is used to configure the creation of the DNSProvider.
@@ -47,13 +50,13 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		BaseURL:            env.GetOrDefaultString(baseURLEnvVar, defaultBaseURL),
-		Version:            env.GetOrDefaultString(apiVersionEnvVar, defaultVersion),
-		TTL:                env.GetOrDefaultInt(ttlEnvVar, minTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(propagationTimeoutEnvVar, defaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(pollingIntervalEnvVar, defaultPollingInterval),
+		BaseURL:            env.GetOrDefaultString(EnvBaseURL, defaultBaseURL),
+		Version:            env.GetOrDefaultString(EnvAPIVersion, defaultVersion),
+		TTL:                env.GetOrDefaultInt(EnvTTL, minTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, defaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, defaultPollingInterval),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(httpTimeoutEnvVar, 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -67,13 +70,13 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for Scaleway Domains API.
 // API token must be passed in the environment variable SCALEWAY_API_TOKEN.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(apiTokenEnvVar)
+	values, err := env.Get(EnvAPIToken)
 	if err != nil {
 		return nil, fmt.Errorf("scaleway: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.Token = values[apiTokenEnvVar]
+	config.Token = values[EnvAPIToken]
 
 	return NewDNSProviderConfig(config)
 }

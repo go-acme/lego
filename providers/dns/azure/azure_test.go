@@ -10,13 +10,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const envDomain = envNamespace + "DOMAIN"
+
 var envTest = tester.NewEnvTest(
-	"AZURE_CLIENT_ID",
-	"AZURE_CLIENT_SECRET",
-	"AZURE_SUBSCRIPTION_ID",
-	"AZURE_TENANT_ID",
-	"AZURE_RESOURCE_GROUP").
-	WithDomain("AZURE_DOMAIN")
+	EnvClientID,
+	EnvClientSecret,
+	EnvSubscriptionID,
+	EnvTenantID,
+	EnvResourceGroup).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -27,21 +29,21 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"AZURE_CLIENT_ID":       "A",
-				"AZURE_CLIENT_SECRET":   "B",
-				"AZURE_TENANT_ID":       "C",
-				"AZURE_SUBSCRIPTION_ID": "D",
-				"AZURE_RESOURCE_GROUP":  "E",
+				EnvClientID:       "A",
+				EnvClientSecret:   "B",
+				EnvTenantID:       "C",
+				EnvSubscriptionID: "D",
+				EnvResourceGroup:  "E",
 			},
 		},
 		{
 			desc: "missing client ID",
 			envVars: map[string]string{
-				"AZURE_CLIENT_ID":       "",
-				"AZURE_CLIENT_SECRET":   "B",
-				"AZURE_TENANT_ID":       "C",
-				"AZURE_SUBSCRIPTION_ID": "D",
-				"AZURE_RESOURCE_GROUP":  "E",
+				EnvClientID:       "",
+				EnvClientSecret:   "B",
+				EnvTenantID:       "C",
+				EnvSubscriptionID: "D",
+				EnvResourceGroup:  "E",
 			},
 			expected: "failed to get oauth token from client credentials: parameter 'clientID' cannot be empty",
 		},

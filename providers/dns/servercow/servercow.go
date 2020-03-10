@@ -14,6 +14,19 @@ import (
 
 const defaultTTL = 120
 
+// Environment variables names.
+const (
+	envNamespace = "SERVERCOW_"
+
+	EnvUsername = envNamespace + "USERNAME"
+	EnvPassword = envNamespace + "PASSWORD"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	Username string
@@ -28,11 +41,11 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("SERVERCOW_TTL", defaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond("SERVERCOW_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("SERVERCOW_POLLING_INTERVAL", dns01.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(EnvTTL, defaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("SERVERCOW_HTTP_TIMEOUT", 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -45,14 +58,14 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("SERVERCOW_USERNAME", "SERVERCOW_PASSWORD")
+	values, err := env.Get(EnvUsername, EnvPassword)
 	if err != nil {
 		return nil, fmt.Errorf("servercow: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.Username = values["SERVERCOW_USERNAME"]
-	config.Password = values["SERVERCOW_PASSWORD"]
+	config.Username = values[EnvUsername]
+	config.Password = values[EnvPassword]
 
 	return NewDNSProviderConfig(config)
 }

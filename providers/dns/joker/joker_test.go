@@ -9,8 +9,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var envTest = tester.NewEnvTest("JOKER_API_KEY", "JOKER_USERNAME", "JOKER_PASSWORD").
-	WithDomain("JOKER_DOMAIN")
+const envDomain = envNamespace + "DOMAIN"
+
+var envTest = tester.NewEnvTest(EnvAPIKey, EnvUsername, EnvPassword).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -21,40 +23,40 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success API key",
 			envVars: map[string]string{
-				"JOKER_API_KEY": "123",
+				EnvAPIKey: "123",
 			},
 		},
 		{
 			desc: "success username password",
 			envVars: map[string]string{
-				"JOKER_USERNAME": "123",
-				"JOKER_PASSWORD": "123",
+				EnvUsername: "123",
+				EnvPassword: "123",
 			},
 		},
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				"JOKER_API_KEY":  "",
-				"JOKER_USERNAME": "",
-				"JOKER_PASSWORD": "",
+				EnvAPIKey:   "",
+				EnvUsername: "",
+				EnvPassword: "",
 			},
 			expected: "joker: some credentials information are missing: JOKER_USERNAME,JOKER_PASSWORD or some credentials information are missing: JOKER_API_KEY",
 		},
 		{
 			desc: "missing password",
 			envVars: map[string]string{
-				"JOKER_API_KEY":  "",
-				"JOKER_USERNAME": "123",
-				"JOKER_PASSWORD": "",
+				EnvAPIKey:   "",
+				EnvUsername: "123",
+				EnvPassword: "",
 			},
 			expected: "joker: some credentials information are missing: JOKER_PASSWORD or some credentials information are missing: JOKER_API_KEY",
 		},
 		{
 			desc: "missing username",
 			envVars: map[string]string{
-				"JOKER_API_KEY":  "",
-				"JOKER_USERNAME": "",
-				"JOKER_PASSWORD": "123",
+				EnvAPIKey:   "",
+				EnvUsername: "",
+				EnvPassword: "123",
 			},
 			expected: "joker: some credentials information are missing: JOKER_USERNAME or some credentials information are missing: JOKER_API_KEY",
 		},

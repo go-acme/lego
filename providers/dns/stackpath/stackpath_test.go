@@ -12,11 +12,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const envDomain = envNamespace + "DOMAIN"
+
 var envTest = tester.NewEnvTest(
-	"STACKPATH_CLIENT_ID",
-	"STACKPATH_CLIENT_SECRET",
-	"STACKPATH_STACK_ID").
-	WithDomain("STACKPATH_DOMAIN")
+	EnvClientID,
+	EnvClientSecret,
+	EnvStackID).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -27,44 +29,44 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"STACKPATH_CLIENT_ID":     "test@example.com",
-				"STACKPATH_CLIENT_SECRET": "123",
-				"STACKPATH_STACK_ID":      "ID",
+				EnvClientID:     "test@example.com",
+				EnvClientSecret: "123",
+				EnvStackID:      "ID",
 			},
 		},
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				"STACKPATH_CLIENT_ID":     "",
-				"STACKPATH_CLIENT_SECRET": "",
-				"STACKPATH_STACK_ID":      "",
+				EnvClientID:     "",
+				EnvClientSecret: "",
+				EnvStackID:      "",
 			},
 			expected: "stackpath: some credentials information are missing: STACKPATH_CLIENT_ID,STACKPATH_CLIENT_SECRET,STACKPATH_STACK_ID",
 		},
 		{
 			desc: "missing client id",
 			envVars: map[string]string{
-				"STACKPATH_CLIENT_ID":     "",
-				"STACKPATH_CLIENT_SECRET": "123",
-				"STACKPATH_STACK_ID":      "ID",
+				EnvClientID:     "",
+				EnvClientSecret: "123",
+				EnvStackID:      "ID",
 			},
 			expected: "stackpath: some credentials information are missing: STACKPATH_CLIENT_ID",
 		},
 		{
 			desc: "missing client secret",
 			envVars: map[string]string{
-				"STACKPATH_CLIENT_ID":     "test@example.com",
-				"STACKPATH_CLIENT_SECRET": "",
-				"STACKPATH_STACK_ID":      "ID",
+				EnvClientID:     "test@example.com",
+				EnvClientSecret: "",
+				EnvStackID:      "ID",
 			},
 			expected: "stackpath: some credentials information are missing: STACKPATH_CLIENT_SECRET",
 		},
 		{
 			desc: "missing stack id",
 			envVars: map[string]string{
-				"STACKPATH_CLIENT_ID":     "test@example.com",
-				"STACKPATH_CLIENT_SECRET": "123",
-				"STACKPATH_STACK_ID":      "",
+				EnvClientID:     "test@example.com",
+				EnvClientSecret: "123",
+				EnvStackID:      "",
 			},
 			expected: "stackpath: some credentials information are missing: STACKPATH_STACK_ID",
 		},

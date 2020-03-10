@@ -18,7 +18,7 @@ var envTest = tester.NewEnvTest(
 	EnvPassword,
 	EnvTenantName,
 	EnvRegionName,
-	EnvProjectId).
+	EnvProjectID).
 	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
@@ -38,7 +38,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvPassword:   "C",
 				EnvRegionName: "D",
 				EnvTenantName: "E",
-				EnvProjectId:  "F",
+				EnvProjectID:  "F",
 			},
 		},
 		{

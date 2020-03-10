@@ -22,10 +22,10 @@ import (
 const (
 	envNamespace = "AWS_"
 
-	EnvAccessKeyId     = envNamespace + "ACCESS_KEY_ID"
+	EnvAccessKeyID     = envNamespace + "ACCESS_KEY_ID"
 	EnvSecretAccessKey = envNamespace + "SECRET_ACCESS_KEY"
 	EnvRegion          = envNamespace + "REGION"
-	EnvHostedZoneId    = envNamespace + "HOSTED_ZONE_ID"
+	EnvHostedZoneID    = envNamespace + "HOSTED_ZONE_ID"
 	EnvMaxRetries      = envNamespace + "MAX_RETRIES"
 
 	EnvTTL                = envNamespace + "TTL"
@@ -50,7 +50,7 @@ func NewDefaultConfig() *Config {
 		TTL:                env.GetOrDefaultInt(EnvTTL, 10),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 4*time.Second),
-		HostedZoneID:       env.GetOrFile(EnvHostedZoneId),
+		HostedZoneID:       env.GetOrFile(EnvHostedZoneID),
 	}
 }
 

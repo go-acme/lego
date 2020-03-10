@@ -25,7 +25,7 @@ const (
 const (
 	envNamespace = "BLUECAT_"
 
-	EnvServerUrl  = envNamespace + "SERVER_URL"
+	EnvServerURL  = envNamespace + "SERVER_URL"
 	EnvUserName   = envNamespace + "USER_NAME"
 	EnvPassword   = envNamespace + "PASSWORD"
 	EnvConfigName = envNamespace + "CONFIG_NAME"
@@ -75,13 +75,13 @@ type DNSProvider struct {
 // The REST endpoint will be appended.
 // In addition, the Configuration name and external DNS View Name must be passed in BLUECAT_CONFIG_NAME and BLUECAT_DNS_VIEW
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvServerUrl, EnvUserName, EnvPassword, EnvConfigName, EnvDNSView)
+	values, err := env.Get(EnvServerURL, EnvUserName, EnvPassword, EnvConfigName, EnvDNSView)
 	if err != nil {
 		return nil, fmt.Errorf("bluecat: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.BaseURL = values[EnvServerUrl]
+	config.BaseURL = values[EnvServerURL]
 	config.UserName = values[EnvUserName]
 	config.Password = values[EnvPassword]
 	config.ConfigName = values[EnvConfigName]

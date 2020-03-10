@@ -18,16 +18,16 @@ import (
 const envDomain = "R53_DOMAIN"
 
 var envTest = tester.NewEnvTest(
-	EnvAccessKeyId,
+	EnvAccessKeyID,
 	EnvSecretAccessKey,
 	EnvRegion,
-	EnvHostedZoneId,
+	EnvHostedZoneID,
 	EnvMaxRetries,
 	EnvTTL,
 	EnvPropagationTimeout,
 	EnvPollingInterval).
 	WithDomain(envDomain).
-	WithLiveTestRequirements(EnvAccessKeyId, EnvSecretAccessKey, EnvRegion, envDomain)
+	WithLiveTestRequirements(EnvAccessKeyID, EnvSecretAccessKey, EnvRegion, envDomain)
 
 func makeTestProvider(ts *httptest.Server) *DNSProvider {
 	config := &aws.Config{
@@ -50,7 +50,7 @@ func Test_loadCredentials_FromEnv(t *testing.T) {
 	defer envTest.RestoreEnv()
 	envTest.ClearEnv()
 
-	os.Setenv(EnvAccessKeyId, "123")
+	os.Setenv(EnvAccessKeyID, "123")
 	os.Setenv(EnvSecretAccessKey, "456")
 	os.Setenv(EnvRegion, "us-east-1")
 
@@ -92,7 +92,7 @@ func Test_getHostedZoneID_FromEnv(t *testing.T) {
 
 	expectedZoneID := "zoneID"
 
-	os.Setenv(EnvHostedZoneId, expectedZoneID)
+	os.Setenv(EnvHostedZoneID, expectedZoneID)
 
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
@@ -127,7 +127,7 @@ func TestNewDefaultConfig(t *testing.T) {
 				EnvTTL:                "99",
 				EnvPropagationTimeout: "60",
 				EnvPollingInterval:    "60",
-				EnvHostedZoneId:       "abc123",
+				EnvHostedZoneID:       "abc123",
 			},
 			expected: &Config{
 				MaxRetries:         10,

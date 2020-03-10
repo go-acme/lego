@@ -11,7 +11,7 @@ import (
 const envDomain = envNamespace + "DOMAIN"
 
 var envTest = tester.NewEnvTest(
-	EnvServerUrl,
+	EnvServerURL,
 	EnvUserName,
 	EnvPassword,
 	EnvConfigName,
@@ -27,7 +27,7 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				EnvServerUrl:  "http://localhost",
+				EnvServerURL:  "http://localhost",
 				EnvUserName:   "A",
 				EnvPassword:   "B",
 				EnvConfigName: "C",
@@ -37,7 +37,7 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				EnvServerUrl:  "",
+				EnvServerURL:  "",
 				EnvUserName:   "",
 				EnvPassword:   "",
 				EnvConfigName: "",
@@ -48,7 +48,7 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "missing server url",
 			envVars: map[string]string{
-				EnvServerUrl:  "",
+				EnvServerURL:  "",
 				EnvUserName:   "A",
 				EnvPassword:   "B",
 				EnvConfigName: "C",
@@ -59,7 +59,7 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "missing username",
 			envVars: map[string]string{
-				EnvServerUrl:  "http://localhost",
+				EnvServerURL:  "http://localhost",
 				EnvUserName:   "",
 				EnvPassword:   "B",
 				EnvConfigName: "C",
@@ -70,7 +70,7 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "missing password",
 			envVars: map[string]string{
-				EnvServerUrl:  "http://localhost",
+				EnvServerURL:  "http://localhost",
 				EnvUserName:   "A",
 				EnvPassword:   "",
 				EnvConfigName: "C",
@@ -81,7 +81,7 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "missing config name",
 			envVars: map[string]string{
-				EnvServerUrl:  "http://localhost",
+				EnvServerURL:  "http://localhost",
 				EnvUserName:   "A",
 				EnvPassword:   "B",
 				EnvConfigName: "",
@@ -92,7 +92,7 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "missing DNS view",
 			envVars: map[string]string{
-				EnvServerUrl:  "http://localhost",
+				EnvServerURL:  "http://localhost",
 				EnvUserName:   "A",
 				EnvPassword:   "B",
 				EnvConfigName: "C",

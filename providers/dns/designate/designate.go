@@ -32,7 +32,7 @@ const (
 	EnvPassword   = envNamespaceClient + "PASSWORD"
 	EnvTenantName = envNamespaceClient + "TENANT_NAME"
 	EnvRegionName = envNamespaceClient + "REGION_NAME"
-	EnvProjectId  = envNamespaceClient + "PROJECT_ID"
+	EnvProjectID  = envNamespaceClient + "PROJECT_ID"
 )
 
 // Config is used to configure the creation of the DNSProvider

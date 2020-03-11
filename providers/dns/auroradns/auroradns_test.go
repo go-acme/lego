@@ -12,12 +12,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const envDomain = envNamespace + "DOMAIN"
-
 var envTest = tester.NewEnvTest(
 	EnvUserID,
-	EnvKey).
-	WithDomain(envDomain)
+	EnvKey)
 
 func setupTest() (*DNSProvider, *http.ServeMux, func()) {
 	handler := http.NewServeMux()

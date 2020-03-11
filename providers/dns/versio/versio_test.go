@@ -14,7 +14,9 @@ import (
 
 const testDomain = "example.com"
 
-var envTest = tester.NewEnvTest(EnvUsername, EnvPassword, EnvEndpoint).WithDomain("VERSIO_DOMAIN")
+const envDomain = envNamespace + "DOMAIN"
+
+var envTest = tester.NewEnvTest(EnvUsername, EnvPassword, EnvEndpoint).WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {

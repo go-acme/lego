@@ -16,7 +16,6 @@ import (
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	CompartmentID      string
-	ZoneID             string
 	OCIConfigProvider  common.ConfigurationProvider
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -28,7 +27,6 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt("OCI_TTL", dns01.DefaultTTL),
-		ZoneID:             env.GetOrDefaultString("OCI_ZONE_OCID", ""),
 		PropagationTimeout: env.GetOrDefaultSecond("OCI_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond("OCI_POLLING_INTERVAL", dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
@@ -87,9 +85,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	zoneNameOrID := d.config.ZoneID
-	if zoneNameOrID == "" {
-		zoneNameOrID = domain // set the zone to domain if not provided
+	zoneNameOrID, err1 := dns01.FindZoneByFqdn(fqdn)
+	if err1 != nil {
+		return fmt.Errorf("oraclecloud: could not find zone for domain %q and fqdn %q : %w", domain, fqdn, err1)
 	}
 
 	// generate request to dns.PatchDomainRecordsRequest
@@ -122,9 +120,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	zoneNameOrID := d.config.ZoneID
-	if zoneNameOrID == "" {
-		zoneNameOrID = domain // set the zone to domain if not provided
+	zoneNameOrID, err1 := dns01.FindZoneByFqdn(fqdn)
+	if err1 != nil {
+		return fmt.Errorf("oraclecloud: could not find zone for domain %q and fqdn %q : %w", domain, fqdn, err1)
 	}
 
 	// search to TXT record's hash to delete

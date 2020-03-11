@@ -28,7 +28,6 @@ lego --dns oraclecloud --domains my.domain.com --email my@email.com run
     OCI_POLLING_INTERVAL = "Time between DNS propagation check"
     OCI_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
     OCI_TTL = "The TTL of the TXT record used for the DNS challenge"
-    OCI_ZONE_OCID = "The OCID of the OCI DNS Zone. If not set the zone is resolved by name , equalling the requested domain. This OCID must be set when requesting certificates for subdomains of the zone"
 
 [Links]
   API = "https://docs.cloud.oracle.com/iaas/Content/DNS/Concepts/dnszonemanagement.htm"

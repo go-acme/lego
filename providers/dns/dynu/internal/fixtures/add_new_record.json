@@ -1,0 +1,14 @@
+{
+  "statusCode": 200,
+  "id": 6041417,
+  "domainId": 9007481,
+  "domainName": "lego.freeddns.org",
+  "nodeName": "_acme-challenge",
+  "hostname": "_acme-challenge.lego.freeddns.org",
+  "recordType": "TXT",
+  "ttl": 300,
+  "state": true,
+  "content": "_acme-challenge.lego.freeddns.org. 300 IN TXT \"txt_txt_txt_txt_txt_txt_txt\"",
+  "updatedOn": "2020-03-10T04:00:36.923",
+  "textData": "txt_txt_txt_txt_txt_txt_txt"
+}

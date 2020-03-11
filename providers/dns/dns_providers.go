@@ -27,6 +27,7 @@ import (
 	"github.com/go-acme/lego/v3/providers/dns/dreamhost"
 	"github.com/go-acme/lego/v3/providers/dns/duckdns"
 	"github.com/go-acme/lego/v3/providers/dns/dyn"
+	"github.com/go-acme/lego/v3/providers/dns/dynu"
 	"github.com/go-acme/lego/v3/providers/dns/easydns"
 	"github.com/go-acme/lego/v3/providers/dns/exec"
 	"github.com/go-acme/lego/v3/providers/dns/exoscale"
@@ -57,6 +58,7 @@ import (
 	"github.com/go-acme/lego/v3/providers/dns/ovh"
 	"github.com/go-acme/lego/v3/providers/dns/pdns"
 	"github.com/go-acme/lego/v3/providers/dns/rackspace"
+	"github.com/go-acme/lego/v3/providers/dns/regru"
 	"github.com/go-acme/lego/v3/providers/dns/rfc2136"
 	"github.com/go-acme/lego/v3/providers/dns/route53"
 	"github.com/go-acme/lego/v3/providers/dns/sakuracloud"
@@ -119,6 +121,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return duckdns.NewDNSProvider()
 	case "dyn":
 		return dyn.NewDNSProvider()
+	case "dynu":
+		return dynu.NewDNSProvider()
 	case "fastdns":
 		return fastdns.NewDNSProvider()
 	case "easydns":
@@ -181,6 +185,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return pdns.NewDNSProvider()
 	case "rackspace":
 		return rackspace.NewDNSProvider()
+	case "regru":
+		return regru.NewDNSProvider()
 	case "route53":
 		return route53.NewDNSProvider()
 	case "rfc2136":

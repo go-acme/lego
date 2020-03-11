@@ -1,6 +1,7 @@
 .PHONY: clean checks test build image e2e fmt
 
 export GO111MODULE=on
+export CGO_ENABLED=0
 
 SRCS = $(shell git ls-files '*.go' | grep -v '^vendor/')
 
@@ -21,7 +22,7 @@ clean:
 
 build: clean
 	@echo Version: $(VERSION)
-	go build -v -ldflags '-X "main.version=${VERSION}"' -o ${BIN_OUTPUT} ${MAIN_DIRECTORY}
+	go build -v -trimpath -ldflags '-X "main.version=${VERSION}"' -o ${BIN_OUTPUT} ${MAIN_DIRECTORY}
 
 image:
 	@echo Version: $(VERSION)

@@ -3,7 +3,7 @@ module github.com/go-acme/lego/v3
 go 1.14
 
 require (
-	cloud.google.com/go v0.50.0
+	cloud.google.com/go v0.54.0
 	github.com/Azure/azure-sdk-for-go v32.4.0+incompatible
 	github.com/Azure/go-autorest/autorest v0.5.0
 	github.com/Azure/go-autorest/autorest/adal v0.2.0
@@ -22,15 +22,14 @@ require (
 	github.com/exoscale/egoscale v0.18.1
 	github.com/google/go-querystring v1.0.0
 	github.com/gophercloud/gophercloud v0.3.0
-	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/iij/doapi v0.0.0-20190504054126-0bbf12d6d7df
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/labbsr0x/bindman-dns-webhook v1.0.2
 	github.com/linode/linodego v0.10.0
 	github.com/liquidweb/liquidweb-go v1.6.0
-	github.com/miekg/dns v1.1.15
+	github.com/miekg/dns v1.1.27
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
-	github.com/nrdcg/auroradns v1.0.0
+	github.com/nrdcg/auroradns v1.0.1
 	github.com/nrdcg/dnspod-go v0.4.0
 	github.com/nrdcg/goinwx v0.6.1
 	github.com/nrdcg/namesilo v0.2.1
@@ -38,15 +37,15 @@ require (
 	github.com/ovh/go-ovh v0.0.0-20181109152953-ba5adb4cf014
 	github.com/rainycape/memcache v0.0.0-20150622160815-1031fa0ce2f2
 	github.com/sacloud/libsacloud v1.26.1
-	github.com/stretchr/testify v1.4.0
+	github.com/stretchr/testify v1.5.1
 	github.com/timewasted/linode v0.0.0-20160829202747-37e84520dcf7
 	github.com/transip/gotransip v0.0.0-20190812104329-6d8d9179b66f
 	github.com/urfave/cli v1.22.1
 	github.com/vultr/govultr v0.1.4
-	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
-	golang.org/x/net v0.0.0-20191027093000-83d349e8ac1a
-	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
-	google.golang.org/api v0.14.0
+	golang.org/x/crypto v0.0.0-20200302210943-78000ba7a073
+	golang.org/x/net v0.0.0-20200301022130-244492dfa37a
+	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
+	google.golang.org/api v0.20.0
 	gopkg.in/ns1/ns1-go.v2 v2.0.0-20190730140822-b51389932cbc
 	gopkg.in/square/go-jose.v2 v2.3.1
 )

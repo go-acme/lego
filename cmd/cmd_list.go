@@ -41,13 +41,14 @@ func list(ctx *cli.Context) error {
 }
 
 func listCertificates(ctx *cli.Context) error {
-	names := ctx.Bool("names")
 	certsStorage := NewCertificatesStorage(ctx)
 
 	matches, err := filepath.Glob(filepath.Join(certsStorage.GetRootPath(), "*.crt"))
 	if err != nil {
 		return err
 	}
+
+	names := ctx.Bool("names")
 
 	if len(matches) == 0 {
 		if !names {
@@ -59,6 +60,7 @@ func listCertificates(ctx *cli.Context) error {
 	if !names {
 		fmt.Println("Found the following certs:")
 	}
+
 	for _, filename := range matches {
 		if strings.HasSuffix(filename, ".issuer.crt") {
 			continue

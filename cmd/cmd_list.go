@@ -22,12 +22,16 @@ func createList() cli.Command {
 				Name:  "accounts, a",
 				Usage: "Display accounts.",
 			},
+			cli.BoolFlag{
+				Name:  "names, n",
+				Usage: "Display certificate common names only.",
+			},
 		},
 	}
 }
 
 func list(ctx *cli.Context) error {
-	if ctx.Bool("accounts") {
+	if ctx.Bool("accounts") && !ctx.Bool("names") {
 		if err := listAccount(ctx); err != nil {
 			return err
 		}
@@ -44,12 +48,19 @@ func listCertificates(ctx *cli.Context) error {
 		return err
 	}
 
+	names := ctx.Bool("names")
+
 	if len(matches) == 0 {
-		fmt.Println("No certificates found.")
+		if !names {
+			fmt.Println("No certificates found.")
+		}
 		return nil
 	}
 
-	fmt.Println("Found the following certs:")
+	if !names {
+		fmt.Println("Found the following certs:")
+	}
+
 	for _, filename := range matches {
 		if strings.HasSuffix(filename, ".issuer.crt") {
 			continue
@@ -65,11 +76,15 @@ func listCertificates(ctx *cli.Context) error {
 			return err
 		}
 
-		fmt.Println("  Certificate Name:", pCert.Subject.CommonName)
-		fmt.Println("    Domains:", strings.Join(pCert.DNSNames, ", "))
-		fmt.Println("    Expiry Date:", pCert.NotAfter)
-		fmt.Println("    Certificate Path:", filename)
-		fmt.Println()
+		if names {
+			fmt.Println(pCert.Subject.CommonName)
+		} else {
+			fmt.Println("  Certificate Name:", pCert.Subject.CommonName)
+			fmt.Println("    Domains:", strings.Join(pCert.DNSNames, ", "))
+			fmt.Println("    Expiry Date:", pCert.NotAfter)
+			fmt.Println("    Certificate Path:", filename)
+			fmt.Println()
+		}
 	}
 
 	return nil

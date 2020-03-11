@@ -104,6 +104,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
+	zoneNameOrID, err1 := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
+	if err1 != nil {
+		return fmt.Errorf("oraclecloud: could not find zone for domain %q and fqdn %q : %w", domain, fqdn, err1)
+	}
+
 	// generate request to dns.PatchDomainRecordsRequest
 	recordOperation := dns.RecordOperation{
 		Domain:      common.String(dns01.UnFqdn(fqdn)),
@@ -115,7 +120,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	request := dns.PatchDomainRecordsRequest{
 		CompartmentId: common.String(d.config.CompartmentID),
-		ZoneNameOrId:  common.String(domain),
+		ZoneNameOrId:  common.String(zoneNameOrID),
 		Domain:        common.String(dns01.UnFqdn(fqdn)),
 		PatchDomainRecordsDetails: dns.PatchDomainRecordsDetails{
 			Items: []dns.RecordOperation{recordOperation},
@@ -134,9 +139,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
+	zoneNameOrID, err1 := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
+	if err1 != nil {
+		return fmt.Errorf("oraclecloud: could not find zone for domain %q and fqdn %q : %w", domain, fqdn, err1)
+	}
+
 	// search to TXT record's hash to delete
 	getRequest := dns.GetDomainRecordsRequest{
-		ZoneNameOrId:  common.String(domain),
+		ZoneNameOrId:  common.String(zoneNameOrID),
 		Domain:        common.String(dns01.UnFqdn(fqdn)),
 		CompartmentId: common.String(d.config.CompartmentID),
 		Rtype:         common.String("TXT"),
@@ -171,7 +181,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	patchRequest := dns.PatchDomainRecordsRequest{
-		ZoneNameOrId: common.String(domain),
+		ZoneNameOrId: common.String(zoneNameOrID),
 		Domain:       common.String(dns01.UnFqdn(fqdn)),
 		PatchDomainRecordsDetails: dns.PatchDomainRecordsDetails{
 			Items: []dns.RecordOperation{recordOperation},

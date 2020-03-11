@@ -54,7 +54,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("STACKPATH_CLIENT_ID", "STACKPATH_CLIENT_SECRET", "STACKPATH_STACK_ID")
 	if err != nil {
-		return nil, fmt.Errorf("stackpath: %v", err)
+		return nil, fmt.Errorf("stackpath: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -102,7 +102,7 @@ func getOathClient(config *Config) *http.Client {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	zone, err := d.getZones(domain)
 	if err != nil {
-		return fmt.Errorf("stackpath: %v", err)
+		return fmt.Errorf("stackpath: %w", err)
 	}
 
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
@@ -122,7 +122,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	zone, err := d.getZones(domain)
 	if err != nil {
-		return fmt.Errorf("stackpath: %v", err)
+		return fmt.Errorf("stackpath: %w", err)
 	}
 
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)

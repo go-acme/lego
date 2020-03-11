@@ -46,7 +46,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("DNSPOD_API_KEY")
 	if err != nil {
-		return nil, fmt.Errorf("dnspod: %v", err)
+		return nil, fmt.Errorf("dnspod: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -62,7 +62,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.LoginToken == "" {
-		return nil, fmt.Errorf("dnspod: credentials missing")
+		return nil, errors.New("dnspod: credentials missing")
 	}
 
 	params := dnspod.CommonParams{LoginToken: config.LoginToken, Format: "json"}
@@ -84,7 +84,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	recordAttributes := d.newTxtRecord(zoneName, fqdn, value, d.config.TTL)
 	_, _, err = d.client.Records.Create(zoneID, *recordAttributes)
 	if err != nil {
-		return fmt.Errorf("API call failed: %v", err)
+		return fmt.Errorf("API call failed: %w", err)
 	}
 
 	return nil
@@ -122,7 +122,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) getHostedZone(domain string) (string, string, error) {
 	zones, _, err := d.client.Domains.List()
 	if err != nil {
-		return "", "", fmt.Errorf("API call failed: %v", err)
+		return "", "", fmt.Errorf("API call failed: %w", err)
 	}
 
 	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
@@ -165,7 +165,7 @@ func (d *DNSProvider) findTxtRecords(domain, fqdn string) ([]dnspod.Record, erro
 	var records []dnspod.Record
 	result, _, err := d.client.Records.List(zoneID, "")
 	if err != nil {
-		return records, fmt.Errorf("API call has failed: %v", err)
+		return records, fmt.Errorf("API call has failed: %w", err)
 	}
 
 	recordName := d.extractRecordName(fqdn, zoneName)

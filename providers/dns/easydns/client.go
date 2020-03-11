@@ -83,7 +83,7 @@ func (d *DNSProvider) doRequest(method, path string, requestMsg, responseMsg int
 	if response.StatusCode >= http.StatusBadRequest {
 		body, err := ioutil.ReadAll(response.Body)
 		if err != nil {
-			return fmt.Errorf("%d: failed to read response body: %v", response.StatusCode, err)
+			return fmt.Errorf("%d: failed to read response body: %w", response.StatusCode, err)
 		}
 
 		return fmt.Errorf("%d: request failed: %v", response.StatusCode, string(body))

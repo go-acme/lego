@@ -56,7 +56,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("GLESYS_API_USER", "GLESYS_API_KEY")
 	if err != nil {
-		return nil, fmt.Errorf("glesys: %v", err)
+		return nil, fmt.Errorf("glesys: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -73,7 +73,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.APIUser == "" || config.APIKey == "" {
-		return nil, fmt.Errorf("glesys: incomplete credentials provided")
+		return nil, errors.New("glesys: incomplete credentials provided")
 	}
 
 	if config.TTL < minTTL {
@@ -93,7 +93,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	// find authZone
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return fmt.Errorf("glesys: findZoneByFqdn failure: %v", err)
+		return fmt.Errorf("glesys: findZoneByFqdn failure: %w", err)
 	}
 
 	// determine name of TXT record

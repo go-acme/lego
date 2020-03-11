@@ -58,7 +58,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.AccessToken == "" {
-		return nil, fmt.Errorf("dnsimple: OAuth token is missing")
+		return nil, errors.New("dnsimple: OAuth token is missing")
 	}
 
 	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: config.AccessToken})
@@ -77,18 +77,18 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zoneName, err := d.getHostedZone(domain)
 	if err != nil {
-		return fmt.Errorf("dnsimple: %v", err)
+		return fmt.Errorf("dnsimple: %w", err)
 	}
 
 	accountID, err := d.getAccountID()
 	if err != nil {
-		return fmt.Errorf("dnsimple: %v", err)
+		return fmt.Errorf("dnsimple: %w", err)
 	}
 
 	recordAttributes := newTxtRecord(zoneName, fqdn, value, d.config.TTL)
 	_, err = d.client.Zones.CreateRecord(accountID, zoneName, recordAttributes)
 	if err != nil {
-		return fmt.Errorf("dnsimple: API call failed: %v", err)
+		return fmt.Errorf("dnsimple: API call failed: %w", err)
 	}
 
 	return nil
@@ -100,19 +100,19 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	records, err := d.findTxtRecords(domain, fqdn)
 	if err != nil {
-		return fmt.Errorf("dnsimple: %v", err)
+		return fmt.Errorf("dnsimple: %w", err)
 	}
 
 	accountID, err := d.getAccountID()
 	if err != nil {
-		return fmt.Errorf("dnsimple: %v", err)
+		return fmt.Errorf("dnsimple: %w", err)
 	}
 
 	var lastErr error
 	for _, rec := range records {
 		_, err := d.client.Zones.DeleteRecord(accountID, rec.ZoneID, rec.ID)
 		if err != nil {
-			lastErr = fmt.Errorf("dnsimple: %v", err)
+			lastErr = fmt.Errorf("dnsimple: %w", err)
 		}
 	}
 
@@ -140,7 +140,7 @@ func (d *DNSProvider) getHostedZone(domain string) (string, error) {
 
 	zones, err := d.client.Zones.ListZones(accountID, &dnsimple.ZoneListOptions{NameLike: zoneName})
 	if err != nil {
-		return "", fmt.Errorf("API call failed: %v", err)
+		return "", fmt.Errorf("API call failed: %w", err)
 	}
 
 	var hostedZone dnsimple.Zone
@@ -172,7 +172,7 @@ func (d *DNSProvider) findTxtRecords(domain, fqdn string) ([]dnsimple.ZoneRecord
 
 	result, err := d.client.Zones.ListRecords(accountID, zoneName, &dnsimple.ZoneRecordListOptions{Name: recordName, Type: "TXT", ListOptions: dnsimple.ListOptions{}})
 	if err != nil {
-		return nil, fmt.Errorf("API call has failed: %v", err)
+		return nil, fmt.Errorf("API call has failed: %w", err)
 	}
 
 	return result.Data, nil
@@ -204,7 +204,7 @@ func (d *DNSProvider) getAccountID() (string, error) {
 	}
 
 	if whoamiResponse.Data.Account == nil {
-		return "", fmt.Errorf("user tokens are not supported, please use an account token")
+		return "", errors.New("user tokens are not supported, please use an account token")
 	}
 
 	return strconv.FormatInt(whoamiResponse.Data.Account.ID, 10), nil

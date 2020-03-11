@@ -43,7 +43,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("MYDNSJP_MASTER_ID", "MYDNSJP_PASSWORD")
 	if err != nil {
-		return nil, fmt.Errorf("mydnsjp: %v", err)
+		return nil, fmt.Errorf("mydnsjp: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -77,7 +77,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	_, value := dns01.GetRecord(domain, keyAuth)
 	err := d.doRequest(domain, value, "REGIST")
 	if err != nil {
-		return fmt.Errorf("mydnsjp: %v", err)
+		return fmt.Errorf("mydnsjp: %w", err)
 	}
 	return nil
 }
@@ -87,7 +87,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	_, value := dns01.GetRecord(domain, keyAuth)
 	err := d.doRequest(domain, value, "DELETE")
 	if err != nil {
-		return fmt.Errorf("mydnsjp: %v", err)
+		return fmt.Errorf("mydnsjp: %w", err)
 	}
 	return nil
 }

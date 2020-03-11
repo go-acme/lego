@@ -1,6 +1,7 @@
 package checkdomain
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -59,7 +60,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(envToken)
 	if err != nil {
-		return nil, fmt.Errorf("checkdomain: %v", err)
+		return nil, fmt.Errorf("checkdomain: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -67,7 +68,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 	endpoint, err := url.Parse(env.GetOrDefaultString(envEndpoint, defaultEndpoint))
 	if err != nil {
-		return nil, fmt.Errorf("checkdomain: invalid %s: %v", envEndpoint, err)
+		return nil, fmt.Errorf("checkdomain: invalid %s: %w", envEndpoint, err)
 	}
 	config.Endpoint = endpoint
 
@@ -76,11 +77,11 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config.Endpoint == nil {
-		return nil, fmt.Errorf("checkdomain: invalid endpoint")
+		return nil, errors.New("checkdomain: invalid endpoint")
 	}
 
 	if config.Token == "" {
-		return nil, fmt.Errorf("checkdomain: missing token")
+		return nil, errors.New("checkdomain: missing token")
 	}
 
 	if config.HTTPClient == nil {
@@ -94,59 +95,59 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge
-func (p *DNSProvider) Present(domain, token, keyAuth string) error {
-	domainID, err := p.getDomainIDByName(domain)
+func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+	domainID, err := d.getDomainIDByName(domain)
 	if err != nil {
-		return fmt.Errorf("checkdomain: %v", err)
+		return fmt.Errorf("checkdomain: %w", err)
 	}
 
-	err = p.checkNameservers(domainID)
+	err = d.checkNameservers(domainID)
 	if err != nil {
-		return fmt.Errorf("checkdomain: %v", err)
+		return fmt.Errorf("checkdomain: %w", err)
 	}
 
 	name, value := dns01.GetRecord(domain, keyAuth)
 
-	err = p.createRecord(domainID, &Record{
+	err = d.createRecord(domainID, &Record{
 		Name:  name,
-		TTL:   p.config.TTL,
+		TTL:   d.config.TTL,
 		Type:  "TXT",
 		Value: value,
 	})
 
 	if err != nil {
-		return fmt.Errorf("checkdomain: %v", err)
+		return fmt.Errorf("checkdomain: %w", err)
 	}
 
 	return nil
 }
 
 // CleanUp removes the TXT record previously created
-func (p *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	domainID, err := p.getDomainIDByName(domain)
+func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+	domainID, err := d.getDomainIDByName(domain)
 	if err != nil {
-		return fmt.Errorf("checkdomain: %v", err)
+		return fmt.Errorf("checkdomain: %w", err)
 	}
 
-	err = p.checkNameservers(domainID)
+	err = d.checkNameservers(domainID)
 	if err != nil {
-		return fmt.Errorf("checkdomain: %v", err)
+		return fmt.Errorf("checkdomain: %w", err)
 	}
 
 	name, value := dns01.GetRecord(domain, keyAuth)
 
-	err = p.deleteTXTRecord(domainID, name, value)
+	err = d.deleteTXTRecord(domainID, name, value)
 	if err != nil {
-		return fmt.Errorf("checkdomain: %v", err)
+		return fmt.Errorf("checkdomain: %w", err)
 	}
 
-	p.domainIDMu.Lock()
-	delete(p.domainIDMapping, name)
-	p.domainIDMu.Unlock()
+	d.domainIDMu.Lock()
+	delete(d.domainIDMapping, name)
+	d.domainIDMu.Unlock()
 
 	return nil
 }
 
-func (p *DNSProvider) Timeout() (timeout, interval time.Duration) {
-	return p.config.PropagationTimeout, p.config.PollingInterval
+func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
+	return d.config.PropagationTimeout, d.config.PollingInterval
 }

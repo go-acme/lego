@@ -167,7 +167,7 @@ func PEMBlock(data interface{}) *pem.Block {
 func pemDecode(data []byte) (*pem.Block, error) {
 	pemBlock, _ := pem.Decode(data)
 	if pemBlock == nil {
-		return nil, fmt.Errorf("PEM decode did not yield a valid block. Is the certificate in the right format?")
+		return nil, errors.New("PEM decode did not yield a valid block. Is the certificate in the right format?")
 	}
 
 	return pemBlock, nil
@@ -180,7 +180,7 @@ func PemDecodeTox509CSR(pem []byte) (*x509.CertificateRequest, error) {
 	}
 
 	if pemBlock.Type != "CERTIFICATE REQUEST" {
-		return nil, fmt.Errorf("PEM block is not a certificate request")
+		return nil, errors.New("PEM block is not a certificate request")
 	}
 
 	return x509.ParseCertificateRequest(pemBlock.Bytes)
@@ -199,7 +199,10 @@ func ParsePEMCertificate(cert []byte) (*x509.Certificate, error) {
 }
 
 func ExtractDomains(cert *x509.Certificate) []string {
-	domains := []string{cert.Subject.CommonName}
+	var domains []string
+	if cert.Subject.CommonName != "" {
+		domains = append(domains, cert.Subject.CommonName)
+	}
 
 	// Check for SAN certificate
 	for _, sanDomain := range cert.DNSNames {
@@ -213,7 +216,10 @@ func ExtractDomains(cert *x509.Certificate) []string {
 }
 
 func ExtractDomainsCSR(csr *x509.CertificateRequest) []string {
-	domains := []string{csr.Subject.CommonName}
+	var domains []string
+	if csr.Subject.CommonName != "" {
+		domains = append(domains, csr.Subject.CommonName)
+	}
 
 	// loop over the SubjectAltName DNS names
 	for _, sanName := range csr.DNSNames {

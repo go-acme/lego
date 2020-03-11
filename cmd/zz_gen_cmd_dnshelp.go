@@ -26,6 +26,7 @@ func allDNSCodes() string {
 		"cloudns",
 		"cloudxns",
 		"conoha",
+		"constellix",
 		"designate",
 		"digitalocean",
 		"dnsimple",
@@ -35,6 +36,7 @@ func allDNSCodes() string {
 		"dreamhost",
 		"duckdns",
 		"dyn",
+		"dynu",
 		"easydns",
 		"exec",
 		"exoscale",
@@ -65,11 +67,13 @@ func allDNSCodes() string {
 		"ovh",
 		"pdns",
 		"rackspace",
+		"regru",
 		"rfc2136",
 		"route53",
 		"sakuracloud",
 		"scaleway",
 		"selectel",
+		"servercow",
 		"stackpath",
 		"transip",
 		"vegadns",
@@ -348,6 +352,27 @@ func displayDNSHelp(name string) error {
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/conoha`)
 
+	case "constellix":
+		// generated from: providers/dns/constellix/constellix.toml
+		ew.writeln(`Configuration for Constellix.`)
+		ew.writeln(`Code:	'constellix'`)
+		ew.writeln(`Since:	'v0.3.4'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "CONSTELLIX_API_KEY":	User API key`)
+		ew.writeln(`	- "CONSTELLIX_SECRET_KEY":	User secret key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "CONSTELLIX_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "CONSTELLIX_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "CONSTELLIX_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "CONSTELLIX_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/constellix`)
+
 	case "designate":
 		// generated from: providers/dns/designate/designate.toml
 		ew.writeln(`Configuration for Designate DNSaaS for Openstack.`)
@@ -538,6 +563,26 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/dyn`)
+
+	case "dynu":
+		// generated from: providers/dns/dynu/dynu.toml
+		ew.writeln(`Configuration for Dynu.`)
+		ew.writeln(`Code:	'dynu'`)
+		ew.writeln(`Since:	'v3.5.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "DYNU_API_KEY":	API key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "DYNU_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "DYNU_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "DYNU_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "DYNU_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/dynu`)
 
 	case "easydns":
 		// generated from: providers/dns/easydns/easydns.toml
@@ -1170,6 +1215,27 @@ func displayDNSHelp(name string) error {
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/rackspace`)
 
+	case "regru":
+		// generated from: providers/dns/regru/regru.toml
+		ew.writeln(`Configuration for reg.ru.`)
+		ew.writeln(`Code:	'regru'`)
+		ew.writeln(`Since:	'v3.5.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "REGRU_PASSWORD":	API password`)
+		ew.writeln(`	- "REGRU_USERNAME":	API username`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "REGRU_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "REGRU_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "REGRU_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "REGRU_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/regru`)
+
 	case "rfc2136":
 		// generated from: providers/dns/rfc2136/rfc2136.toml
 		ew.writeln(`Configuration for RFC2136.`)
@@ -1280,6 +1346,27 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/selectel`)
+
+	case "servercow":
+		// generated from: providers/dns/servercow/servercow.toml
+		ew.writeln(`Configuration for Servercow.`)
+		ew.writeln(`Code:	'servercow'`)
+		ew.writeln(`Since:	'v3.4.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "SERVERCOW_PASSWORD":	API password`)
+		ew.writeln(`	- "SERVERCOW_USERNAME":	API username`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "SERVERCOW_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "SERVERCOW_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "SERVERCOW_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "SERVERCOW_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/servercow`)
 
 	case "stackpath":
 		// generated from: providers/dns/stackpath/stackpath.toml
@@ -1436,7 +1523,7 @@ func displayDNSHelp(name string) error {
 	}
 
 	if ew.err != nil {
-		return fmt.Errorf("error: %v", ew.err)
+		return fmt.Errorf("error: %w", ew.err)
 	}
 
 	return w.Flush()

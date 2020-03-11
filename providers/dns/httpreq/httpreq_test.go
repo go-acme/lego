@@ -32,7 +32,7 @@ func TestNewDNSProvider(t *testing.T) {
 			envVars: map[string]string{
 				"HTTPREQ_ENDPOINT": ":",
 			},
-			expected: "httpreq: parse :: missing protocol scheme",
+			expected: `httpreq: parse ":": missing protocol scheme`,
 		},
 		{
 			desc: "missing endpoint",

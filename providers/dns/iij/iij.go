@@ -2,6 +2,7 @@
 package iij
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -42,7 +43,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("IIJ_API_ACCESS_KEY", "IIJ_API_SECRET_KEY", "IIJ_DO_SERVICE_CODE")
 	if err != nil {
-		return nil, fmt.Errorf("iij: %v", err)
+		return nil, fmt.Errorf("iij: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -57,7 +58,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 // and returns a custom configured DNSProvider instance
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config.SecretKey == "" || config.AccessKey == "" || config.DoServiceCode == "" {
-		return nil, fmt.Errorf("iij: credentials missing")
+		return nil, errors.New("iij: credentials missing")
 	}
 
 	return &DNSProvider{
@@ -77,7 +78,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	err := d.addTxtRecord(domain, value)
 	if err != nil {
-		return fmt.Errorf("iij: %v", err)
+		return fmt.Errorf("iij: %w", err)
 	}
 	return nil
 }
@@ -88,7 +89,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	err := d.deleteTxtRecord(domain, value)
 	if err != nil {
-		return fmt.Errorf("iij: %v", err)
+		return fmt.Errorf("iij: %w", err)
 	}
 	return nil
 }

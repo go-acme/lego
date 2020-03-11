@@ -61,7 +61,7 @@ func TestNewDNSProvider(t *testing.T) {
 				"ZONEEE_API_KEY":  "456",
 				"ZONEEE_ENDPOINT": ":",
 			},
-			expected: "zoneee: parse :: missing protocol scheme",
+			expected: `zoneee: parse ":": missing protocol scheme`,
 		},
 	}
 
@@ -153,9 +153,6 @@ func TestDNSProvider_Present(t *testing.T) {
 			username: "bar",
 			apiKey:   "foo",
 			handlers: map[string]http.HandlerFunc{
-				"/": http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-					fmt.Println(req.URL)
-				}),
 				"/" + hostedZone + "/txt": mockHandlerCreateRecord,
 			},
 		},

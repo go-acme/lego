@@ -1,8 +1,16 @@
-FROM golang:1.13-alpine3.10 as builder
+FROM golang:1-alpine as builder
 
 RUN apk --no-cache --no-progress add make git
 
-WORKDIR /go/src/github.com/go-acme/lego
+WORKDIR /go/lego
+
+ENV GO111MODULE on
+
+# Download go modules
+COPY go.mod .
+COPY go.sum .
+RUN go mod download
+
 COPY . .
 RUN make build
 
@@ -11,5 +19,6 @@ RUN apk update \
     && apk add --no-cache ca-certificates tzdata \
     && update-ca-certificates
 
-COPY --from=builder /go/src/github.com/go-acme/lego/dist/lego /usr/bin/lego
+COPY --from=builder /go/lego/dist/lego /usr/bin/lego
+
 ENTRYPOINT [ "/usr/bin/lego" ]

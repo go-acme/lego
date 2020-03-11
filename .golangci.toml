@@ -33,6 +33,7 @@
     "wsl",
     "stylecheck",
     "godox",
+    "gomnd",
   ]
 
 [issues]
@@ -121,3 +122,6 @@
   [[issues.exclude-rules]]
     path = "providers/dns/checkdomain/client.go"
     text = "`payed` is a misspelling of `paid`"
+  [[issues.exclude-rules]]
+    path = "providers/dns/namecheap/namecheap_test.go"
+    text = "cognitive complexity (\\d+) of func `TestDNSProvider_getHosts` is high"

@@ -66,7 +66,7 @@ func (s *ProviderServer) Present(domain, token, keyAuth string) error {
 	// Create the listener with the created tls.Config.
 	s.listener, err = tls.Listen("tcp", s.GetAddress(), tlsConf)
 	if err != nil {
-		return fmt.Errorf("could not start HTTPS server for challenge -> %v", err)
+		return fmt.Errorf("could not start HTTPS server for challenge -> %w", err)
 	}
 
 	// Shut the server down when we're finished.

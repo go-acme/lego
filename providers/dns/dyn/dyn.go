@@ -48,7 +48,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("DYN_CUSTOMER_NAME", "DYN_USER_NAME", "DYN_PASSWORD")
 	if err != nil {
-		return nil, fmt.Errorf("dyn: %v", err)
+		return nil, fmt.Errorf("dyn: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -66,7 +66,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.CustomerName == "" || config.UserName == "" || config.Password == "" {
-		return nil, fmt.Errorf("dyn: credentials missing")
+		return nil, errors.New("dyn: credentials missing")
 	}
 
 	return &DNSProvider{config: config}, nil
@@ -78,12 +78,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return fmt.Errorf("dyn: %v", err)
+		return fmt.Errorf("dyn: %w", err)
 	}
 
 	err = d.login()
 	if err != nil {
-		return fmt.Errorf("dyn: %v", err)
+		return fmt.Errorf("dyn: %w", err)
 	}
 
 	data := map[string]interface{}{
@@ -96,12 +96,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	resource := fmt.Sprintf("TXTRecord/%s/%s/", authZone, fqdn)
 	_, err = d.sendRequest(http.MethodPost, resource, data)
 	if err != nil {
-		return fmt.Errorf("dyn: %v", err)
+		return fmt.Errorf("dyn: %w", err)
 	}
 
 	err = d.publish(authZone, "Added TXT record for ACME dns-01 challenge using lego client")
 	if err != nil {
-		return fmt.Errorf("dyn: %v", err)
+		return fmt.Errorf("dyn: %w", err)
 	}
 
 	return d.logout()
@@ -113,12 +113,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return fmt.Errorf("dyn: %v", err)
+		return fmt.Errorf("dyn: %w", err)
 	}
 
 	err = d.login()
 	if err != nil {
-		return fmt.Errorf("dyn: %v", err)
+		return fmt.Errorf("dyn: %w", err)
 	}
 
 	resource := fmt.Sprintf("TXTRecord/%s/%s/", authZone, fqdn)
@@ -126,7 +126,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	req, err := http.NewRequest(http.MethodDelete, url, nil)
 	if err != nil {
-		return fmt.Errorf("dyn: %v", err)
+		return fmt.Errorf("dyn: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -134,7 +134,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	resp, err := d.config.HTTPClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("dyn: %v", err)
+		return fmt.Errorf("dyn: %w", err)
 	}
 	resp.Body.Close()
 
@@ -144,7 +144,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	err = d.publish(authZone, "Removed TXT record for ACME dns-01 challenge using lego client")
 	if err != nil {
-		return fmt.Errorf("dyn: %v", err)
+		return fmt.Errorf("dyn: %w", err)
 	}
 
 	return d.logout()

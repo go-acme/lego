@@ -45,7 +45,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("SAKURACLOUD_ACCESS_TOKEN", "SAKURACLOUD_ACCESS_TOKEN_SECRET")
 	if err != nil {
-		return nil, fmt.Errorf("sakuracloud: %v", err)
+		return nil, fmt.Errorf("sakuracloud: %w", err)
 	}
 
 	config := NewDefaultConfig()

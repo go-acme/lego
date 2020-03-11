@@ -3,6 +3,7 @@ package gandi
 import (
 	"bytes"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -102,7 +103,7 @@ func (d *DNSProvider) rpcCall(call *methodCall, resp response) error {
 	// marshal
 	b, err := xml.MarshalIndent(call, "", "  ")
 	if err != nil {
-		return fmt.Errorf("marshal error: %v", err)
+		return fmt.Errorf("marshal error: %w", err)
 	}
 
 	// post
@@ -115,7 +116,7 @@ func (d *DNSProvider) rpcCall(call *methodCall, resp response) error {
 	// unmarshal
 	err = xml.Unmarshal(respBody, resp)
 	if err != nil {
-		return fmt.Errorf("unmarshal error: %v", err)
+		return fmt.Errorf("unmarshal error: %w", err)
 	}
 	if resp.faultCode() != 0 {
 		return rpcError{
@@ -181,7 +182,7 @@ func (d *DNSProvider) cloneZone(zoneID int, name string) (int, error) {
 	}
 
 	if newZoneID == 0 {
-		return 0, fmt.Errorf("could not determine cloned zone_id")
+		return 0, errors.New("could not determine cloned zone_id")
 	}
 	return newZoneID, nil
 }
@@ -200,7 +201,7 @@ func (d *DNSProvider) newZoneVersion(zoneID int) (int, error) {
 	}
 
 	if resp.Value == 0 {
-		return 0, fmt.Errorf("could not create new zone version")
+		return 0, errors.New("could not create new zone version")
 	}
 	return resp.Value, nil
 }
@@ -249,7 +250,7 @@ func (d *DNSProvider) setZoneVersion(zoneID int, version int) error {
 	}
 
 	if !resp.Value {
-		return fmt.Errorf("could not set zone version")
+		return errors.New("could not set zone version")
 	}
 	return nil
 }
@@ -295,7 +296,7 @@ func (d *DNSProvider) deleteZone(zoneID int) error {
 	}
 
 	if !resp.Value {
-		return fmt.Errorf("could not delete zone_id")
+		return errors.New("could not delete zone_id")
 	}
 	return nil
 }
@@ -303,13 +304,13 @@ func (d *DNSProvider) deleteZone(zoneID int) error {
 func (d *DNSProvider) httpPost(url string, bodyType string, body io.Reader) ([]byte, error) {
 	resp, err := d.config.HTTPClient.Post(url, bodyType, body)
 	if err != nil {
-		return nil, fmt.Errorf("HTTP Post Error: %v", err)
+		return nil, fmt.Errorf("HTTP Post Error: %w", err)
 	}
 	defer resp.Body.Close()
 
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("HTTP Post Error: %v", err)
+		return nil, fmt.Errorf("HTTP Post Error: %w", err)
 	}
 
 	return b, nil

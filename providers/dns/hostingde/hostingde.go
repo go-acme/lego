@@ -47,7 +47,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("HOSTINGDE_API_KEY", "HOSTINGDE_ZONE_NAME")
 	if err != nil {
-		return nil, fmt.Errorf("hostingde: %v", err)
+		return nil, fmt.Errorf("hostingde: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -100,7 +100,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zoneConfig, err := d.getZone(zonesFind)
 	if err != nil {
-		return fmt.Errorf("hostingde: %v", err)
+		return fmt.Errorf("hostingde: %w", err)
 	}
 	zoneConfig.Name = d.config.ZoneName
 
@@ -119,7 +119,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	resp, err := d.updateZone(req)
 	if err != nil {
-		return fmt.Errorf("hostingde: %v", err)
+		return fmt.Errorf("hostingde: %w", err)
 	}
 
 	for _, record := range resp.Response.Records {
@@ -160,7 +160,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	zoneConfig, err := d.getZone(zonesFind)
 	if err != nil {
-		return fmt.Errorf("hostingde: %v", err)
+		return fmt.Errorf("hostingde: %w", err)
 	}
 	zoneConfig.Name = d.config.ZoneName
 
@@ -177,7 +177,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	_, err = d.updateZone(req)
 	if err != nil {
-		return fmt.Errorf("hostingde: %v", err)
+		return fmt.Errorf("hostingde: %w", err)
 	}
 	return nil
 }

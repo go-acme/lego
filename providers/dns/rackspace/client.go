@@ -145,7 +145,7 @@ func (d *DNSProvider) makeRequest(method, uri string, body io.Reader) (json.RawM
 
 	resp, err := d.config.HTTPClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("error querying DNS API: %v", err)
+		return nil, fmt.Errorf("error querying DNS API: %w", err)
 	}
 
 	defer resp.Body.Close()
@@ -187,7 +187,7 @@ func login(config *Config) (*Identity, error) {
 
 	resp, err := config.HTTPClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("error querying Identity API: %v", err)
+		return nil, fmt.Errorf("error querying Identity API: %w", err)
 	}
 	defer resp.Body.Close()
 

@@ -54,7 +54,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("DNSMADEEASY_API_KEY", "DNSMADEEASY_API_SECRET")
 	if err != nil {
-		return nil, fmt.Errorf("dnsmadeeasy: %v", err)
+		return nil, fmt.Errorf("dnsmadeeasy: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -84,7 +84,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	client, err := internal.NewClient(config.APIKey, config.APISecret)
 	if err != nil {
-		return nil, fmt.Errorf("dnsmadeeasy: %v", err)
+		return nil, fmt.Errorf("dnsmadeeasy: %w", err)
 	}
 
 	client.HTTPClient = config.HTTPClient
@@ -102,13 +102,13 @@ func (d *DNSProvider) Present(domainName, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return fmt.Errorf("dnsmadeeasy: unable to find zone for %s: %v", fqdn, err)
+		return fmt.Errorf("dnsmadeeasy: unable to find zone for %s: %w", fqdn, err)
 	}
 
 	// fetch the domain details
 	domain, err := d.client.GetDomain(authZone)
 	if err != nil {
-		return fmt.Errorf("dnsmadeeasy: unable to get domain for zone %s: %v", authZone, err)
+		return fmt.Errorf("dnsmadeeasy: unable to get domain for zone %s: %w", authZone, err)
 	}
 
 	// create the TXT record
@@ -117,7 +117,7 @@ func (d *DNSProvider) Present(domainName, token, keyAuth string) error {
 
 	err = d.client.CreateRecord(domain, record)
 	if err != nil {
-		return fmt.Errorf("dnsmadeeasy: unable to create record for %s: %v", name, err)
+		return fmt.Errorf("dnsmadeeasy: unable to create record for %s: %w", name, err)
 	}
 	return nil
 }
@@ -128,20 +128,20 @@ func (d *DNSProvider) CleanUp(domainName, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return fmt.Errorf("dnsmadeeasy: unable to find zone for %s: %v", fqdn, err)
+		return fmt.Errorf("dnsmadeeasy: unable to find zone for %s: %w", fqdn, err)
 	}
 
 	// fetch the domain details
 	domain, err := d.client.GetDomain(authZone)
 	if err != nil {
-		return fmt.Errorf("dnsmadeeasy: unable to get domain for zone %s: %v", authZone, err)
+		return fmt.Errorf("dnsmadeeasy: unable to get domain for zone %s: %w", authZone, err)
 	}
 
 	// find matching records
 	name := strings.Replace(fqdn, "."+authZone, "", 1)
 	records, err := d.client.GetRecords(domain, name, "TXT")
 	if err != nil {
-		return fmt.Errorf("dnsmadeeasy: unable to get records for domain %s: %v", domain.Name, err)
+		return fmt.Errorf("dnsmadeeasy: unable to get records for domain %s: %w", domain.Name, err)
 	}
 
 	// delete records
@@ -149,7 +149,7 @@ func (d *DNSProvider) CleanUp(domainName, token, keyAuth string) error {
 	for _, record := range *records {
 		err = d.client.DeleteRecord(record)
 		if err != nil {
-			lastError = fmt.Errorf("dnsmadeeasy: unable to delete record [id=%d, name=%s]: %v", record.ID, record.Name, err)
+			lastError = fmt.Errorf("dnsmadeeasy: unable to delete record [id=%d, name=%s]: %w", record.ID, record.Name, err)
 		}
 	}
 

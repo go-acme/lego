@@ -45,7 +45,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("TRANSIP_ACCOUNT_NAME", "TRANSIP_PRIVATE_KEY_PATH")
 	if err != nil {
-		return nil, fmt.Errorf("transip: %v", err)
+		return nil, fmt.Errorf("transip: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -66,7 +66,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		PrivateKeyPath: config.PrivateKeyPath,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("transip: %v", err)
+		return nil, fmt.Errorf("transip: %w", err)
 	}
 
 	return &DNSProvider{client: client, config: config}, nil
@@ -99,7 +99,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	// get all DNS entries
 	info, err := transipdomain.GetInfo(d.client, domainName)
 	if err != nil {
-		return fmt.Errorf("transip: error for %s in Present: %v", domain, err)
+		return fmt.Errorf("transip: error for %s in Present: %w", domain, err)
 	}
 
 	// include the new DNS entry
@@ -113,7 +113,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	// set the updated DNS entries
 	err = transipdomain.SetDNSEntries(d.client, domainName, dnsEntries)
 	if err != nil {
-		return fmt.Errorf("transip: %v", err)
+		return fmt.Errorf("transip: %w", err)
 	}
 	return nil
 }
@@ -139,7 +139,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	// get all DNS entries
 	info, err := transipdomain.GetInfo(d.client, domainName)
 	if err != nil {
-		return fmt.Errorf("transip: error for %s in CleanUp: %v", fqdn, err)
+		return fmt.Errorf("transip: error for %s in CleanUp: %w", fqdn, err)
 	}
 
 	// loop through the existing entries and remove the specific record
@@ -153,7 +153,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	// set the updated DNS entries
 	err = transipdomain.SetDNSEntries(d.client, domainName, updatedEntries)
 	if err != nil {
-		return fmt.Errorf("transip: couldn't get Record ID in CleanUp: %sv", err)
+		return fmt.Errorf("transip: couldn't get Record ID in CleanUp: %w", err)
 	}
 
 	return nil

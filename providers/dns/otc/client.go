@@ -3,6 +3,7 @@ package otc
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -138,7 +139,7 @@ func (d *DNSProvider) loginRequest() error {
 	d.token = resp.Header.Get("X-Subject-Token")
 
 	if d.token == "" {
-		return fmt.Errorf("unable to get auth token")
+		return errors.New("unable to get auth token")
 	}
 
 	var endpointResp endpointResponse
@@ -158,7 +159,7 @@ func (d *DNSProvider) loginRequest() error {
 	if len(endpoints) > 0 {
 		d.baseURL = fmt.Sprintf("%s/v2", endpoints[0].URL)
 	} else {
-		return fmt.Errorf("unable to get dns endpoint")
+		return errors.New("unable to get dns endpoint")
 	}
 
 	return nil
@@ -182,11 +183,11 @@ func (d *DNSProvider) getZoneID(zone string) (string, error) {
 	}
 
 	if len(zonesRes.Zones) > 1 {
-		return "", fmt.Errorf("to many zones found")
+		return "", errors.New("to many zones found")
 	}
 
 	if zonesRes.Zones[0].ID == "" {
-		return "", fmt.Errorf("id not found")
+		return "", errors.New("id not found")
 	}
 
 	return zonesRes.Zones[0].ID, nil
@@ -206,15 +207,15 @@ func (d *DNSProvider) getRecordSetID(zoneID string, fqdn string) (string, error)
 	}
 
 	if len(recordSetsRes.RecordSets) < 1 {
-		return "", fmt.Errorf("record not found")
+		return "", errors.New("record not found")
 	}
 
 	if len(recordSetsRes.RecordSets) > 1 {
-		return "", fmt.Errorf("to many records found")
+		return "", errors.New("to many records found")
 	}
 
 	if recordSetsRes.RecordSets[0].ID == "" {
-		return "", fmt.Errorf("id not found")
+		return "", errors.New("id not found")
 	}
 
 	return recordSetsRes.RecordSets[0].ID, nil

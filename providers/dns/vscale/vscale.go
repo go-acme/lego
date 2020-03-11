@@ -64,7 +64,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(apiTokenEnvVar)
 	if err != nil {
-		return nil, fmt.Errorf("vscale: %v", err)
+		return nil, fmt.Errorf("vscale: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -108,7 +108,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	domainObj, err := d.client.GetDomainByName(domain)
 	if err != nil {
-		return fmt.Errorf("vscale: %v", err)
+		return fmt.Errorf("vscale: %w", err)
 	}
 
 	txtRecord := internal.Record{
@@ -119,7 +119,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 	_, err = d.client.AddRecord(domainObj.ID, txtRecord)
 	if err != nil {
-		return fmt.Errorf("vscale: %v", err)
+		return fmt.Errorf("vscale: %w", err)
 	}
 
 	return nil
@@ -132,12 +132,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	domainObj, err := d.client.GetDomainByName(domain)
 	if err != nil {
-		return fmt.Errorf("vscale: %v", err)
+		return fmt.Errorf("vscale: %w", err)
 	}
 
 	records, err := d.client.ListRecords(domainObj.ID)
 	if err != nil {
-		return fmt.Errorf("vscale: %v", err)
+		return fmt.Errorf("vscale: %w", err)
 	}
 
 	// Delete records with specific FQDN
@@ -146,7 +146,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		if record.Name == recordName {
 			err = d.client.DeleteRecord(domainObj.ID, record.ID)
 			if err != nil {
-				lastErr = fmt.Errorf("vscale: %v", err)
+				lastErr = fmt.Errorf("vscale: %w", err)
 			}
 		}
 	}

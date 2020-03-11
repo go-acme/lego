@@ -317,7 +317,7 @@ func (c *Certifier) Revoke(cert []byte) error {
 
 	x509Cert := certificates[0]
 	if x509Cert.IsCA {
-		return fmt.Errorf("certificate bundle starts with a CA certificate")
+		return errors.New("certificate bundle starts with a CA certificate")
 	}
 
 	revokeMsg := acme.RevokeCertMessage{

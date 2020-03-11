@@ -47,7 +47,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("NAMESILO_API_KEY")
 	if err != nil {
-		return nil, fmt.Errorf("namesilo: %v", err)
+		return nil, fmt.Errorf("namesilo: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -68,7 +68,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	transport, err := namesilo.NewTokenTransport(config.APIKey)
 	if err != nil {
-		return nil, fmt.Errorf("namesilo: %v", err)
+		return nil, fmt.Errorf("namesilo: %w", err)
 	}
 
 	return &DNSProvider{client: namesilo.NewClient(transport.Client()), config: config}, nil
@@ -80,7 +80,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zoneName, err := getZoneNameByDomain(domain)
 	if err != nil {
-		return fmt.Errorf("namesilo: %v", err)
+		return fmt.Errorf("namesilo: %w", err)
 	}
 
 	_, err = d.client.DnsAddRecord(&namesilo.DnsAddRecordParams{
@@ -91,7 +91,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		TTL:    d.config.TTL,
 	})
 	if err != nil {
-		return fmt.Errorf("namesilo: failed to add record %v", err)
+		return fmt.Errorf("namesilo: failed to add record %w", err)
 	}
 	return nil
 }
@@ -102,12 +102,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	zoneName, err := getZoneNameByDomain(domain)
 	if err != nil {
-		return fmt.Errorf("namesilo: %v", err)
+		return fmt.Errorf("namesilo: %w", err)
 	}
 
 	resp, err := d.client.DnsListRecords(&namesilo.DnsListRecordsParams{Domain: zoneName})
 	if err != nil {
-		return fmt.Errorf("namesilo: %v", err)
+		return fmt.Errorf("namesilo: %w", err)
 	}
 
 	var lastErr error
@@ -116,7 +116,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		if r.Type == "TXT" && r.Host == name {
 			_, err := d.client.DnsDeleteRecord(&namesilo.DnsDeleteRecordParams{Domain: zoneName, ID: r.RecordID})
 			if err != nil {
-				lastErr = fmt.Errorf("namesilo: %v", err)
+				lastErr = fmt.Errorf("namesilo: %w", err)
 			}
 		}
 	}
@@ -132,7 +132,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func getZoneNameByDomain(domain string) (string, error) {
 	zone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
 	if err != nil {
-		return "", fmt.Errorf("failed to find zone for domain: %s, %v", domain, err)
+		return "", fmt.Errorf("failed to find zone for domain: %s, %w", domain, err)
 	}
 	return dns01.UnFqdn(zone), nil
 }

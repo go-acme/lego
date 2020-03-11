@@ -72,7 +72,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("OTC_DOMAIN_NAME", "OTC_USER_NAME", "OTC_PASSWORD", "OTC_PROJECT_NAME")
 	if err != nil {
-		return nil, fmt.Errorf("otc: %v", err)
+		return nil, fmt.Errorf("otc: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -91,7 +91,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.DomainName == "" || config.UserName == "" || config.Password == "" || config.ProjectName == "" {
-		return nil, fmt.Errorf("otc: credentials missing")
+		return nil, errors.New("otc: credentials missing")
 	}
 
 	if config.TTL < minTTL {
@@ -111,17 +111,17 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return fmt.Errorf("otc: %v", err)
+		return fmt.Errorf("otc: %w", err)
 	}
 
 	err = d.login()
 	if err != nil {
-		return fmt.Errorf("otc: %v", err)
+		return fmt.Errorf("otc: %w", err)
 	}
 
 	zoneID, err := d.getZoneID(authZone)
 	if err != nil {
-		return fmt.Errorf("otc: unable to get zone: %s", err)
+		return fmt.Errorf("otc: unable to get zone: %w", err)
 	}
 
 	resource := fmt.Sprintf("zones/%s/recordsets", zoneID)
@@ -136,7 +136,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	_, err = d.sendRequest(http.MethodPost, resource, r1)
 	if err != nil {
-		return fmt.Errorf("otc: %v", err)
+		return fmt.Errorf("otc: %w", err)
 	}
 	return nil
 }
@@ -147,27 +147,27 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return fmt.Errorf("otc: %v", err)
+		return fmt.Errorf("otc: %w", err)
 	}
 
 	err = d.login()
 	if err != nil {
-		return fmt.Errorf("otc: %v", err)
+		return fmt.Errorf("otc: %w", err)
 	}
 
 	zoneID, err := d.getZoneID(authZone)
 	if err != nil {
-		return fmt.Errorf("otc: %v", err)
+		return fmt.Errorf("otc: %w", err)
 	}
 
 	recordID, err := d.getRecordSetID(zoneID, fqdn)
 	if err != nil {
-		return fmt.Errorf("otc: unable go get record %s for zone %s: %s", fqdn, domain, err)
+		return fmt.Errorf("otc: unable go get record %s for zone %s: %w", fqdn, domain, err)
 	}
 
 	err = d.deleteRecordSet(zoneID, recordID)
 	if err != nil {
-		return fmt.Errorf("otc: %v", err)
+		return fmt.Errorf("otc: %w", err)
 	}
 	return nil
 }

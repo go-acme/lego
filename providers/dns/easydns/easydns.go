@@ -54,13 +54,13 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 	endpoint, err := url.Parse(env.GetOrDefaultString("EASYDNS_ENDPOINT", defaultEndpoint))
 	if err != nil {
-		return nil, fmt.Errorf("easydns: %v", err)
+		return nil, fmt.Errorf("easydns: %w", err)
 	}
 	config.Endpoint = endpoint
 
 	values, err := env.Get("EASYDNS_TOKEN", "EASYDNS_KEY")
 	if err != nil {
-		return nil, fmt.Errorf("easydns: %v", err)
+		return nil, fmt.Errorf("easydns: %w", err)
 	}
 
 	config.Token = values["EASYDNS_TOKEN"]
@@ -102,7 +102,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	recordID, err := d.addRecord(apiDomain, record)
 	if err != nil {
-		return fmt.Errorf("easydns: error adding zone record: %v", err)
+		return fmt.Errorf("easydns: error adding zone record: %w", err)
 	}
 
 	key := getMapKey(fqdn, value)
@@ -132,7 +132,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	d.recordIDsMu.Unlock()
 
 	if err != nil {
-		return fmt.Errorf("easydns: %v", err)
+		return fmt.Errorf("easydns: %w", err)
 	}
 
 	return nil

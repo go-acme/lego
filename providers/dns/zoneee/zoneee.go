@@ -46,13 +46,13 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("ZONEEE_API_USER", "ZONEEE_API_KEY")
 	if err != nil {
-		return nil, fmt.Errorf("zoneee: %v", err)
+		return nil, fmt.Errorf("zoneee: %w", err)
 	}
 
 	rawEndpoint := env.GetOrDefaultString("ZONEEE_ENDPOINT", defaultEndpoint)
 	endpoint, err := url.Parse(rawEndpoint)
 	if err != nil {
-		return nil, fmt.Errorf("zoneee: %v", err)
+		return nil, fmt.Errorf("zoneee: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -70,11 +70,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.Username == "" {
-		return nil, fmt.Errorf("zoneee: credentials missing: username")
+		return nil, errors.New("zoneee: credentials missing: username")
 	}
 
 	if config.APIKey == "" {
-		return nil, fmt.Errorf("zoneee: credentials missing: API key")
+		return nil, errors.New("zoneee: credentials missing: API key")
 	}
 
 	if config.Endpoint == nil {
@@ -101,12 +101,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := getHostedZone(domain)
 	if err != nil {
-		return fmt.Errorf("zoneee: %v", err)
+		return fmt.Errorf("zoneee: %w", err)
 	}
 
 	_, err = d.addTxtRecord(authZone, record)
 	if err != nil {
-		return fmt.Errorf("zoneee: %v", err)
+		return fmt.Errorf("zoneee: %w", err)
 	}
 	return nil
 }
@@ -117,12 +117,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := getHostedZone(domain)
 	if err != nil {
-		return fmt.Errorf("zoneee: %v", err)
+		return fmt.Errorf("zoneee: %w", err)
 	}
 
 	records, err := d.getTxtRecords(authZone)
 	if err != nil {
-		return fmt.Errorf("zoneee: %v", err)
+		return fmt.Errorf("zoneee: %w", err)
 	}
 
 	var id string
@@ -133,11 +133,11 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	if id == "" {
-		return fmt.Errorf("zoneee: txt record does not exist for %v", value)
+		return fmt.Errorf("zoneee: txt record does not exist for %s", value)
 	}
 
 	if err = d.removeTxtRecord(authZone, id); err != nil {
-		return fmt.Errorf("zoneee: %v", err)
+		return fmt.Errorf("zoneee: %w", err)
 	}
 
 	return nil

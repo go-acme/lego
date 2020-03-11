@@ -44,7 +44,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("DREAMHOST_API_KEY")
 	if err != nil {
-		return nil, fmt.Errorf("dreamhost: %v", err)
+		return nil, fmt.Errorf("dreamhost: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -77,12 +77,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	u, err := d.buildQuery(cmdAddRecord, record, value)
 	if err != nil {
-		return fmt.Errorf("dreamhost: %v", err)
+		return fmt.Errorf("dreamhost: %w", err)
 	}
 
 	err = d.updateTxtRecord(u)
 	if err != nil {
-		return fmt.Errorf("dreamhost: %v", err)
+		return fmt.Errorf("dreamhost: %w", err)
 	}
 	return nil
 }
@@ -94,12 +94,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	u, err := d.buildQuery(cmdRemoveRecord, record, value)
 	if err != nil {
-		return fmt.Errorf("dreamhost: %v", err)
+		return fmt.Errorf("dreamhost: %w", err)
 	}
 
 	err = d.updateTxtRecord(u)
 	if err != nil {
-		return fmt.Errorf("dreamhost: %v", err)
+		return fmt.Errorf("dreamhost: %w", err)
 	}
 	return nil
 }

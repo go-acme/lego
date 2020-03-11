@@ -58,12 +58,12 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get("HTTPREQ_ENDPOINT")
 	if err != nil {
-		return nil, fmt.Errorf("httpreq: %v", err)
+		return nil, fmt.Errorf("httpreq: %w", err)
 	}
 
 	endpoint, err := url.Parse(values["HTTPREQ_ENDPOINT"])
 	if err != nil {
-		return nil, fmt.Errorf("httpreq: %v", err)
+		return nil, fmt.Errorf("httpreq: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -104,7 +104,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 		err := d.doPost("/present", msg)
 		if err != nil {
-			return fmt.Errorf("httpreq: %v", err)
+			return fmt.Errorf("httpreq: %w", err)
 		}
 		return nil
 	}
@@ -117,7 +117,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	err := d.doPost("/present", msg)
 	if err != nil {
-		return fmt.Errorf("httpreq: %v", err)
+		return fmt.Errorf("httpreq: %w", err)
 	}
 	return nil
 }
@@ -133,7 +133,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 		err := d.doPost("/cleanup", msg)
 		if err != nil {
-			return fmt.Errorf("httpreq: %v", err)
+			return fmt.Errorf("httpreq: %w", err)
 		}
 		return nil
 	}
@@ -146,7 +146,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	err := d.doPost("/cleanup", msg)
 	if err != nil {
-		return fmt.Errorf("httpreq: %v", err)
+		return fmt.Errorf("httpreq: %w", err)
 	}
 	return nil
 }
@@ -184,7 +184,7 @@ func (d *DNSProvider) doPost(uri string, msg interface{}) error {
 	if resp.StatusCode >= http.StatusBadRequest {
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			return fmt.Errorf("%d: failed to read response body: %v", resp.StatusCode, err)
+			return fmt.Errorf("%d: failed to read response body: %w", resp.StatusCode, err)
 		}
 
 		return fmt.Errorf("%d: request failed: %v", resp.StatusCode, string(body))

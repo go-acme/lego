@@ -18,6 +18,20 @@ const (
 	minTTL         = 600
 )
 
+// Environment variables names.
+const (
+	envNamespace = "GODADDY_"
+
+	EnvAPIKey    = envNamespace + "API_KEY"
+	EnvAPISecret = envNamespace + "API_SECRET"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+	EnvSequenceInterval   = envNamespace + "SEQUENCE_INTERVAL"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	APIKey             string
@@ -32,12 +46,12 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("GODADDY_TTL", minTTL),
-		PropagationTimeout: env.GetOrDefaultSecond("GODADDY_PROPAGATION_TIMEOUT", 120*time.Second),
-		PollingInterval:    env.GetOrDefaultSecond("GODADDY_POLLING_INTERVAL", 2*time.Second),
-		SequenceInterval:   env.GetOrDefaultSecond("GODADDY_SEQUENCE_INTERVAL", dns01.DefaultPropagationTimeout),
+		TTL:                env.GetOrDefaultInt(EnvTTL, minTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 120*time.Second),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
+		SequenceInterval:   env.GetOrDefaultSecond(EnvSequenceInterval, dns01.DefaultPropagationTimeout),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("GODADDY_HTTP_TIMEOUT", 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -51,14 +65,14 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables:
 // GODADDY_API_KEY and GODADDY_API_SECRET.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("GODADDY_API_KEY", "GODADDY_API_SECRET")
+	values, err := env.Get(EnvAPIKey, EnvAPISecret)
 	if err != nil {
 		return nil, fmt.Errorf("godaddy: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.APIKey = values["GODADDY_API_KEY"]
-	config.APISecret = values["GODADDY_API_SECRET"]
+	config.APIKey = values[EnvAPIKey]
+	config.APISecret = values[EnvAPISecret]
 
 	return NewDNSProviderConfig(config)
 }

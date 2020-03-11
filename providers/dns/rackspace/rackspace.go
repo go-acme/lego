@@ -16,6 +16,19 @@ import (
 // defaultBaseURL represents the Identity API endpoint to call
 const defaultBaseURL = "https://identity.api.rackspacecloud.com/v2.0/tokens"
 
+// Environment variables names.
+const (
+	envNamespace = "RACKSPACE_"
+
+	EnvUser   = envNamespace + "USER"
+	EnvAPIKey = envNamespace + "API_KEY"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	BaseURL            string
@@ -31,11 +44,11 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		BaseURL:            defaultBaseURL,
-		TTL:                env.GetOrDefaultInt("RACKSPACE_TTL", 300),
-		PropagationTimeout: env.GetOrDefaultSecond("RACKSPACE_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("RACKSPACE_POLLING_INTERVAL", dns01.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(EnvTTL, 300),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("RACKSPACE_HTTP_TIMEOUT", 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -52,14 +65,14 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables:
 // RACKSPACE_USER and RACKSPACE_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("RACKSPACE_USER", "RACKSPACE_API_KEY")
+	values, err := env.Get(EnvUser, EnvAPIKey)
 	if err != nil {
 		return nil, fmt.Errorf("rackspace: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.APIUser = values["RACKSPACE_USER"]
-	config.APIKey = values["RACKSPACE_API_KEY"]
+	config.APIUser = values[EnvUser]
+	config.APIKey = values[EnvAPIKey]
 
 	return NewDNSProviderConfig(config)
 }

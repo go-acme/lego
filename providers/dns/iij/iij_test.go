@@ -8,11 +8,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const envDomain = envNamespace + "TESTDOMAIN"
+
 var envTest = tester.NewEnvTest(
-	"IIJ_API_ACCESS_KEY",
-	"IIJ_API_SECRET_KEY",
-	"IIJ_DO_SERVICE_CODE").
-	WithDomain("IIJ_API_TESTDOMAIN")
+	EnvAPIAccessKey,
+	EnvAPISecretKey,
+	EnvDoServiceCode).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -23,44 +25,44 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"IIJ_API_ACCESS_KEY":  "A",
-				"IIJ_API_SECRET_KEY":  "B",
-				"IIJ_DO_SERVICE_CODE": "C",
+				EnvAPIAccessKey:  "A",
+				EnvAPISecretKey:  "B",
+				EnvDoServiceCode: "C",
 			},
 		},
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				"IIJ_API_ACCESS_KEY":  "",
-				"IIJ_API_SECRET_KEY":  "",
-				"IIJ_DO_SERVICE_CODE": "",
+				EnvAPIAccessKey:  "",
+				EnvAPISecretKey:  "",
+				EnvDoServiceCode: "",
 			},
 			expected: "iij: some credentials information are missing: IIJ_API_ACCESS_KEY,IIJ_API_SECRET_KEY,IIJ_DO_SERVICE_CODE",
 		},
 		{
 			desc: "missing api access key",
 			envVars: map[string]string{
-				"IIJ_API_ACCESS_KEY":  "",
-				"IIJ_API_SECRET_KEY":  "B",
-				"IIJ_DO_SERVICE_CODE": "C",
+				EnvAPIAccessKey:  "",
+				EnvAPISecretKey:  "B",
+				EnvDoServiceCode: "C",
 			},
 			expected: "iij: some credentials information are missing: IIJ_API_ACCESS_KEY",
 		},
 		{
 			desc: "missing secret key",
 			envVars: map[string]string{
-				"IIJ_API_ACCESS_KEY":  "A",
-				"IIJ_API_SECRET_KEY":  "",
-				"IIJ_DO_SERVICE_CODE": "C",
+				EnvAPIAccessKey:  "A",
+				EnvAPISecretKey:  "",
+				EnvDoServiceCode: "C",
 			},
 			expected: "iij: some credentials information are missing: IIJ_API_SECRET_KEY",
 		},
 		{
 			desc: "missing do service code",
 			envVars: map[string]string{
-				"IIJ_API_ACCESS_KEY":  "A",
-				"IIJ_API_SECRET_KEY":  "B",
-				"IIJ_DO_SERVICE_CODE": "",
+				EnvAPIAccessKey:  "A",
+				EnvAPISecretKey:  "B",
+				EnvDoServiceCode: "",
 			},
 			expected: "iij: some credentials information are missing: IIJ_DO_SERVICE_CODE",
 		},

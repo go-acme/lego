@@ -15,6 +15,19 @@ import (
 	"github.com/go-acme/lego/v3/platform/config/env"
 )
 
+// Environment variables names.
+const (
+	envNamespace = "PDNS_"
+
+	EnvAPIKey = envNamespace + "API_KEY"
+	EnvAPIURL = envNamespace + "API_URL"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	APIKey             string
@@ -28,11 +41,11 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("PDNS_TTL", dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond("PDNS_PROPAGATION_TIMEOUT", 120*time.Second),
-		PollingInterval:    env.GetOrDefaultSecond("PDNS_POLLING_INTERVAL", 2*time.Second),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 120*time.Second),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("PDNS_HTTP_TIMEOUT", 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -47,19 +60,19 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variable:
 // PDNS_API_URL and PDNS_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("PDNS_API_KEY", "PDNS_API_URL")
+	values, err := env.Get(EnvAPIKey, EnvAPIURL)
 	if err != nil {
 		return nil, fmt.Errorf("pdns: %w", err)
 	}
 
-	hostURL, err := url.Parse(values["PDNS_API_URL"])
+	hostURL, err := url.Parse(values[EnvAPIURL])
 	if err != nil {
 		return nil, fmt.Errorf("pdns: %w", err)
 	}
 
 	config := NewDefaultConfig()
 	config.Host = hostURL
-	config.APIKey = values["PDNS_API_KEY"]
+	config.APIKey = values[EnvAPIKey]
 
 	return NewDNSProviderConfig(config)
 }

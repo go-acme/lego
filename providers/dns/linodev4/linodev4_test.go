@@ -15,11 +15,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type (
-	MockResponseMap map[string]interface{}
-)
+type MockResponseMap map[string]interface{}
 
-var envTest = tester.NewEnvTest("LINODE_TOKEN")
+var envTest = tester.NewEnvTest(EnvToken)
 
 func newMockServer(responses MockResponseMap) *httptest.Server {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -68,13 +66,13 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"LINODE_TOKEN": "123",
+				EnvToken: "123",
 			},
 		},
 		{
 			desc: "missing api key",
 			envVars: map[string]string{
-				"LINODE_TOKEN": "",
+				EnvToken: "",
 			},
 			expected: "linodev4: some credentials information are missing: LINODE_TOKEN",
 		},
@@ -138,7 +136,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 
 func TestDNSProvider_Present(t *testing.T) {
 	defer envTest.RestoreEnv()
-	os.Setenv("LINODE_TOKEN", "testing")
+	os.Setenv(EnvToken, "testing")
 
 	p, err := NewDNSProvider()
 	require.NoError(t, err)
@@ -227,7 +225,7 @@ func TestDNSProvider_Present(t *testing.T) {
 
 func TestDNSProvider_CleanUp(t *testing.T) {
 	defer envTest.RestoreEnv()
-	os.Setenv("LINODE_TOKEN", "testing")
+	os.Setenv(EnvToken, "testing")
 
 	p, err := NewDNSProvider()
 	require.NoError(t, err)

@@ -23,6 +23,22 @@ import (
 
 const defaultMetadataEndpoint = "http://169.254.169.254"
 
+// Environment variables names.
+const (
+	envNamespace = "AZURE_"
+
+	EnvMetadataEndpoint = envNamespace + "METADATA_ENDPOINT"
+	EnvSubscriptionID   = envNamespace + "SUBSCRIPTION_ID"
+	EnvResourceGroup    = envNamespace + "RESOURCE_GROUP"
+	EnvTenantID         = envNamespace + "TENANT_ID"
+	EnvClientID         = envNamespace + "CLIENT_ID"
+	EnvClientSecret     = envNamespace + "CLIENT_SECRET"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	// optional if using instance metadata service
@@ -44,10 +60,10 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("AZURE_TTL", 60),
-		PropagationTimeout: env.GetOrDefaultSecond("AZURE_PROPAGATION_TIMEOUT", 2*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond("AZURE_POLLING_INTERVAL", 2*time.Second),
-		MetadataEndpoint:   env.GetOrFile("AZURE_METADATA_ENDPOINT"),
+		TTL:                env.GetOrDefaultInt(EnvTTL, 60),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
+		MetadataEndpoint:   env.GetOrFile(EnvMetadataEndpoint),
 	}
 }
 
@@ -65,8 +81,8 @@ type DNSProvider struct {
 // see: https://github.com/Azure/go-autorest/blob/v10.14.0/autorest/azure/auth/auth.go#L38-L42
 func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
-	config.SubscriptionID = env.GetOrFile("AZURE_SUBSCRIPTION_ID")
-	config.ResourceGroup = env.GetOrFile("AZURE_RESOURCE_GROUP")
+	config.SubscriptionID = env.GetOrFile(EnvSubscriptionID)
+	config.ResourceGroup = env.GetOrFile(EnvResourceGroup)
 
 	return NewDNSProviderConfig(config)
 }

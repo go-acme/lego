@@ -14,6 +14,18 @@ import (
 	"github.com/nrdcg/dnspod-go"
 )
 
+// Environment variables names.
+const (
+	envNamespace = "DNSPOD_"
+
+	EnvAPIKey = envNamespace + "API_KEY"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	LoginToken         string
@@ -26,11 +38,11 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("DNSPOD_TTL", 600),
-		PropagationTimeout: env.GetOrDefaultSecond("DNSPOD_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("DNSPOD_POLLING_INTERVAL", dns01.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(EnvTTL, 600),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("DNSPOD_HTTP_TIMEOUT", 0),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30),
 		},
 	}
 }
@@ -44,13 +56,13 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for dnspod.
 // Credentials must be passed in the environment variables: DNSPOD_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("DNSPOD_API_KEY")
+	values, err := env.Get(EnvAPIKey)
 	if err != nil {
 		return nil, fmt.Errorf("dnspod: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.LoginToken = values["DNSPOD_API_KEY"]
+	config.LoginToken = values[EnvAPIKey]
 
 	return NewDNSProviderConfig(config)
 }

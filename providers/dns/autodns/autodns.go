@@ -11,15 +11,19 @@ import (
 	"github.com/go-acme/lego/v3/platform/config/env"
 )
 
+// Environment variables names.
 const (
-	envAPIUser            = "AUTODNS_API_USER"
-	envAPIPassword        = "AUTODNS_API_PASSWORD"
-	envAPIEndpoint        = "AUTODNS_ENDPOINT"
-	envAPIEndpointContext = "AUTODNS_CONTEXT"
-	envTTL                = "AUTODNS_TTL"
-	envPropagationTimeout = "AUTODNS_PROPAGATION_TIMEOUT"
-	envPollingInterval    = "AUTODNS_POLLING_INTERVAL"
-	envHTTPTimeout        = "AUTODNS_HTTP_TIMEOUT"
+	envNamespace = "AUTODNS_"
+
+	EnvAPIUser            = envNamespace + "API_USER"
+	EnvAPIPassword        = envNamespace + "API_PASSWORD"
+	EnvAPIEndpoint        = envNamespace + "ENDPOINT"
+	EnvAPIEndpointContext = envNamespace + "CONTEXT"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
 const (
@@ -39,16 +43,16 @@ type Config struct {
 }
 
 func NewDefaultConfig() *Config {
-	endpoint, _ := url.Parse(env.GetOrDefaultString(envAPIEndpoint, defaultEndpoint))
+	endpoint, _ := url.Parse(env.GetOrDefaultString(EnvAPIEndpoint, defaultEndpoint))
 
 	return &Config{
 		Endpoint:           endpoint,
-		Context:            env.GetOrDefaultInt(envAPIEndpointContext, defaultEndpointContext),
-		TTL:                env.GetOrDefaultInt(envTTL, defaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(envPropagationTimeout, 2*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond(envPollingInterval, 2*time.Second),
+		Context:            env.GetOrDefaultInt(EnvAPIEndpointContext, defaultEndpointContext),
+		TTL:                env.GetOrDefaultInt(EnvTTL, defaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(envHTTPTimeout, 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -62,14 +66,14 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(envAPIUser, envAPIPassword)
+	values, err := env.Get(EnvAPIUser, EnvAPIPassword)
 	if err != nil {
 		return nil, fmt.Errorf("autodns: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.Username = values[envAPIUser]
-	config.Password = values[envAPIPassword]
+	config.Username = values[EnvAPIUser]
+	config.Password = values[EnvAPIPassword]
 
 	return NewDNSProviderConfig(config)
 }

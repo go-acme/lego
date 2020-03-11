@@ -11,15 +11,6 @@ import (
 	"github.com/oracle/oci-go-sdk/common"
 )
 
-const (
-	ociPrivkey           = "OCI_PRIVKEY"
-	ociPrivkeyPass       = "OCI_PRIVKEY_PASS"
-	ociTenancyOCID       = "OCI_TENANCY_OCID"
-	ociUserOCID          = "OCI_USER_OCID"
-	ociPubkeyFingerprint = "OCI_PUBKEY_FINGERPRINT"
-	ociRegion            = "OCI_REGION"
-)
-
 type configProvider struct {
 	values               map[string]string
 	privateKeyPassphrase string
@@ -28,12 +19,12 @@ type configProvider struct {
 func newConfigProvider(values map[string]string) *configProvider {
 	return &configProvider{
 		values:               values,
-		privateKeyPassphrase: env.GetOrFile(ociPrivkeyPass),
+		privateKeyPassphrase: env.GetOrFile(EnvPrivKeyPass),
 	}
 }
 
 func (p *configProvider) PrivateRSAKey() (*rsa.PrivateKey, error) {
-	privateKey, err := getPrivateKey(ociPrivkey)
+	privateKey, err := getPrivateKey(envPrivKey)
 	if err != nil {
 		return nil, err
 	}
@@ -61,19 +52,19 @@ func (p *configProvider) KeyID() (string, error) {
 }
 
 func (p *configProvider) TenancyOCID() (value string, err error) {
-	return p.values[ociTenancyOCID], nil
+	return p.values[EnvTenancyOCID], nil
 }
 
 func (p *configProvider) UserOCID() (string, error) {
-	return p.values[ociUserOCID], nil
+	return p.values[EnvUserOCID], nil
 }
 
 func (p *configProvider) KeyFingerprint() (string, error) {
-	return p.values[ociPubkeyFingerprint], nil
+	return p.values[EnvPubKeyFingerprint], nil
 }
 
 func (p *configProvider) Region() (string, error) {
-	return p.values[ociRegion], nil
+	return p.values[EnvRegion], nil
 }
 
 func getPrivateKey(envVar string) ([]byte, error) {

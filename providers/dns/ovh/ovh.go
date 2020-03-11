@@ -17,6 +17,21 @@ import (
 // OVH API reference:       https://eu.api.ovh.com/
 // Create a Token:					https://eu.api.ovh.com/createToken/
 
+// Environment variables names.
+const (
+	envNamespace = "OVH_"
+
+	EnvEndpoint          = envNamespace + "ENDPOINT"
+	EnvApplicationKey    = envNamespace + "APPLICATION_KEY"
+	EnvApplicationSecret = envNamespace + "APPLICATION_SECRET"
+	EnvConsumerKey       = envNamespace + "CONSUMER_KEY"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
 // Record a DNS record
 type Record struct {
 	ID        int64  `json:"id,omitempty"`
@@ -42,11 +57,11 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("OVH_TTL", dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond("OVH_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("OVH_POLLING_INTERVAL", dns01.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("OVH_HTTP_TIMEOUT", ovh.DefaultTimeout),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, ovh.DefaultTimeout),
 		},
 	}
 }
@@ -67,16 +82,16 @@ type DNSProvider struct {
 // OVH_APPLICATION_SECRET
 // OVH_CONSUMER_KEY
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("OVH_ENDPOINT", "OVH_APPLICATION_KEY", "OVH_APPLICATION_SECRET", "OVH_CONSUMER_KEY")
+	values, err := env.Get(EnvEndpoint, EnvApplicationKey, EnvApplicationSecret, EnvConsumerKey)
 	if err != nil {
 		return nil, fmt.Errorf("ovh: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.APIEndpoint = values["OVH_ENDPOINT"]
-	config.ApplicationKey = values["OVH_APPLICATION_KEY"]
-	config.ApplicationSecret = values["OVH_APPLICATION_SECRET"]
-	config.ConsumerKey = values["OVH_CONSUMER_KEY"]
+	config.APIEndpoint = values[EnvEndpoint]
+	config.ApplicationKey = values[EnvApplicationKey]
+	config.ApplicationSecret = values[EnvApplicationSecret]
+	config.ConsumerKey = values[EnvConsumerKey]
 
 	return NewDNSProviderConfig(config)
 }

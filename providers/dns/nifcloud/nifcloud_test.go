@@ -8,10 +8,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const envDomain = envNamespace + "DOMAIN"
+
 var envTest = tester.NewEnvTest(
-	"NIFCLOUD_ACCESS_KEY_ID",
-	"NIFCLOUD_SECRET_ACCESS_KEY").
-	WithDomain("NIFCLOUD_DOMAIN")
+	EnvAccessKeyID,
+	EnvSecretAccessKey).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -22,31 +24,31 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"NIFCLOUD_ACCESS_KEY_ID":     "123",
-				"NIFCLOUD_SECRET_ACCESS_KEY": "456",
+				EnvAccessKeyID:     "123",
+				EnvSecretAccessKey: "456",
 			},
 		},
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				"NIFCLOUD_ACCESS_KEY_ID":     "",
-				"NIFCLOUD_SECRET_ACCESS_KEY": "",
+				EnvAccessKeyID:     "",
+				EnvSecretAccessKey: "",
 			},
 			expected: "nifcloud: some credentials information are missing: NIFCLOUD_ACCESS_KEY_ID,NIFCLOUD_SECRET_ACCESS_KEY",
 		},
 		{
 			desc: "missing access key",
 			envVars: map[string]string{
-				"NIFCLOUD_ACCESS_KEY_ID":     "",
-				"NIFCLOUD_SECRET_ACCESS_KEY": "456",
+				EnvAccessKeyID:     "",
+				EnvSecretAccessKey: "456",
 			},
 			expected: "nifcloud: some credentials information are missing: NIFCLOUD_ACCESS_KEY_ID",
 		},
 		{
 			desc: "missing secret key",
 			envVars: map[string]string{
-				"NIFCLOUD_ACCESS_KEY_ID":     "123",
-				"NIFCLOUD_SECRET_ACCESS_KEY": "",
+				EnvAccessKeyID:     "123",
+				EnvSecretAccessKey: "",
 			},
 			expected: "nifcloud: some credentials information are missing: NIFCLOUD_SECRET_ACCESS_KEY",
 		},

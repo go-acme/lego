@@ -15,6 +15,20 @@ import (
 	"github.com/go-acme/lego/v3/platform/config/env"
 )
 
+// Environment variables names.
+const (
+	envNamespace = "NETCUP_"
+
+	EnvCustomerNumber = envNamespace + "CUSTOMER_NUMBER"
+	EnvAPIKey         = envNamespace + "API_KEY"
+	EnvAPIPassword    = envNamespace + "API_PASSWORD"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	Key                string
@@ -29,11 +43,11 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("NETCUP_TTL", dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond("NETCUP_PROPAGATION_TIMEOUT", 120*time.Second),
-		PollingInterval:    env.GetOrDefaultSecond("NETCUP_POLLING_INTERVAL", 5*time.Second),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 120*time.Second),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 5*time.Second),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("NETCUP_HTTP_TIMEOUT", 10*time.Second),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 10*time.Second),
 		},
 	}
 }
@@ -48,15 +62,15 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables:
 // NETCUP_CUSTOMER_NUMBER, NETCUP_API_KEY, NETCUP_API_PASSWORD
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("NETCUP_CUSTOMER_NUMBER", "NETCUP_API_KEY", "NETCUP_API_PASSWORD")
+	values, err := env.Get(EnvCustomerNumber, EnvAPIKey, EnvAPIPassword)
 	if err != nil {
 		return nil, fmt.Errorf("netcup: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.Customer = values["NETCUP_CUSTOMER_NUMBER"]
-	config.Key = values["NETCUP_API_KEY"]
-	config.Password = values["NETCUP_API_PASSWORD"]
+	config.Customer = values[EnvCustomerNumber]
+	config.Key = values[EnvAPIKey]
+	config.Password = values[EnvAPIPassword]
 
 	return NewDNSProviderConfig(config)
 }

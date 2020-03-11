@@ -16,6 +16,21 @@ import (
 	"github.com/miekg/dns"
 )
 
+// Environment variables names.
+const (
+	envNamespace = "EASYDNS_"
+
+	EnvEndpoint = envNamespace + "ENDPOINT"
+	EnvToken    = envNamespace + "TOKEN"
+	EnvKey      = envNamespace + "KEY"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+	EnvSequenceInterval   = envNamespace + "SEQUENCE_INTERVAL"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	Endpoint           *url.URL
@@ -31,12 +46,12 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		PropagationTimeout: env.GetOrDefaultSecond("EASYDNS_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
-		SequenceInterval:   env.GetOrDefaultSecond("EASYDNS_SEQUENCE_INTERVAL", dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("EASYDNS_POLLING_INTERVAL", dns01.DefaultPollingInterval),
-		TTL:                env.GetOrDefaultInt("EASYDNS_TTL", dns01.DefaultTTL),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		SequenceInterval:   env.GetOrDefaultSecond(EnvSequenceInterval, dns01.DefaultPropagationTimeout),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("EASYDNS_HTTP_TIMEOUT", 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -52,19 +67,19 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
 
-	endpoint, err := url.Parse(env.GetOrDefaultString("EASYDNS_ENDPOINT", defaultEndpoint))
+	endpoint, err := url.Parse(env.GetOrDefaultString(EnvEndpoint, defaultEndpoint))
 	if err != nil {
 		return nil, fmt.Errorf("easydns: %w", err)
 	}
 	config.Endpoint = endpoint
 
-	values, err := env.Get("EASYDNS_TOKEN", "EASYDNS_KEY")
+	values, err := env.Get(EnvToken, EnvKey)
 	if err != nil {
 		return nil, fmt.Errorf("easydns: %w", err)
 	}
 
-	config.Token = values["EASYDNS_TOKEN"]
-	config.Key = values["EASYDNS_KEY"]
+	config.Token = values[EnvToken]
+	config.Key = values[EnvKey]
 
 	return NewDNSProviderConfig(config)
 }

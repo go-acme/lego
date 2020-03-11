@@ -26,6 +26,19 @@ const (
 	changeStatusDone = "done"
 )
 
+// Environment variables names.
+const (
+	envNamespace = "GCE_"
+
+	EnvServiceAccount = envNamespace + "SERVICE_ACCOUNT"
+	EnvProject        = envNamespace + "PROJECT"
+	EnvDebug          = envNamespace + "DEBUG"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	Debug              bool
@@ -39,10 +52,10 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		Debug:              env.GetOrDefaultBool("GCE_DEBUG", false),
-		TTL:                env.GetOrDefaultInt("GCE_TTL", dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond("GCE_PROPAGATION_TIMEOUT", 180*time.Second),
-		PollingInterval:    env.GetOrDefaultSecond("GCE_POLLING_INTERVAL", 5*time.Second),
+		Debug:              env.GetOrDefaultBool(EnvDebug, false),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 180*time.Second),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 5*time.Second),
 	}
 }
 
@@ -59,12 +72,12 @@ type DNSProvider struct {
 // or by specifying the keyfile location: GCE_SERVICE_ACCOUNT_FILE
 func NewDNSProvider() (*DNSProvider, error) {
 	// Use a service account file if specified via environment variable.
-	if saKey := env.GetOrFile("GCE_SERVICE_ACCOUNT"); len(saKey) > 0 {
+	if saKey := env.GetOrFile(EnvServiceAccount); len(saKey) > 0 {
 		return NewDNSProviderServiceAccountKey([]byte(saKey))
 	}
 
 	// Use default credentials.
-	project := env.GetOrDefaultString("GCE_PROJECT", autodetectProjectID())
+	project := env.GetOrDefaultString(EnvProject, autodetectProjectID())
 	return NewDNSProviderCredentials(project)
 }
 
@@ -96,7 +109,7 @@ func NewDNSProviderServiceAccountKey(saKey []byte) (*DNSProvider, error) {
 
 	// If GCE_PROJECT is non-empty it overrides the project in the service
 	// account file.
-	project := env.GetOrDefaultString("GCE_PROJECT", "")
+	project := env.GetOrDefaultString(EnvProject, "")
 	if project == "" {
 		// read project id from service account file
 		var datJSON struct {

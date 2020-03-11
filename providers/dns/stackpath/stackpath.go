@@ -22,6 +22,19 @@ const (
 	defaultAuthURL = "https://gateway.stackpath.com/identity/v1/oauth2/token"
 )
 
+// Environment variables names.
+const (
+	envNamespace = "STACKPATH_"
+
+	EnvClientID     = envNamespace + "CLIENT_ID"
+	EnvClientSecret = envNamespace + "CLIENT_SECRET"
+	EnvStackID      = envNamespace + "STACK_ID"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	ClientID           string
@@ -35,9 +48,9 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("STACKPATH_TTL", 120),
-		PropagationTimeout: env.GetOrDefaultSecond("STACKPATH_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("STACKPATH_POLLING_INTERVAL", dns01.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(EnvTTL, 120),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 	}
 }
 
@@ -52,15 +65,15 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables:
 // STACKPATH_CLIENT_ID, STACKPATH_CLIENT_SECRET, and STACKPATH_STACK_ID.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("STACKPATH_CLIENT_ID", "STACKPATH_CLIENT_SECRET", "STACKPATH_STACK_ID")
+	values, err := env.Get(EnvClientID, EnvClientSecret, EnvStackID)
 	if err != nil {
 		return nil, fmt.Errorf("stackpath: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.ClientID = values["STACKPATH_CLIENT_ID"]
-	config.ClientSecret = values["STACKPATH_CLIENT_SECRET"]
-	config.StackID = values["STACKPATH_STACK_ID"]
+	config.ClientID = values[EnvClientID]
+	config.ClientSecret = values[EnvClientSecret]
+	config.StackID = values[EnvStackID]
 
 	return NewDNSProviderConfig(config)
 }

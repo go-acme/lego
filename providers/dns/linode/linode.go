@@ -18,6 +18,16 @@ const (
 	dnsUpdateFudgeSecs = 120
 )
 
+// Environment variables names.
+const (
+	envNamespace = "LINODE_"
+
+	EnvAPIKey = envNamespace + "API_KEY"
+
+	EnvTTL             = envNamespace + "TTL"
+	EnvPollingInterval = envNamespace + "POLLING_INTERVAL"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	APIKey          string
@@ -28,8 +38,8 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		PollingInterval: env.GetOrDefaultSecond("LINODE_POLLING_INTERVAL", 15*time.Second),
-		TTL:             env.GetOrDefaultInt("LINODE_TTL", minTTL),
+		TTL:             env.GetOrDefaultInt(EnvTTL, minTTL),
+		PollingInterval: env.GetOrDefaultSecond(EnvPollingInterval, 15*time.Second),
 	}
 }
 
@@ -47,13 +57,13 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for Linode.
 // Credentials must be passed in the environment variable: LINODE_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("LINODE_API_KEY")
+	values, err := env.Get(EnvAPIKey)
 	if err != nil {
 		return nil, fmt.Errorf("linode: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.APIKey = values["LINODE_API_KEY"]
+	config.APIKey = values[EnvAPIKey]
 
 	return NewDNSProviderConfig(config)
 }

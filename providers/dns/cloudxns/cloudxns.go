@@ -12,6 +12,19 @@ import (
 	"github.com/go-acme/lego/v3/providers/dns/cloudxns/internal"
 )
 
+// Environment variables names.
+const (
+	envNamespace = "CLOUDXNS_"
+
+	EnvAPIKey    = envNamespace + "API_KEY"
+	EnvSecretKey = envNamespace + "SECRET_KEY"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	APIKey             string
@@ -25,11 +38,11 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		PropagationTimeout: env.GetOrDefaultSecond("CLOUDXNS_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("CLOUDXNS_POLLING_INTERVAL", dns01.DefaultPollingInterval),
-		TTL:                env.GetOrDefaultInt("CLOUDXNS_TTL", dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("CLOUDXNS_HTTP_TIMEOUT", 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -44,14 +57,14 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables:
 // CLOUDXNS_API_KEY and CLOUDXNS_SECRET_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("CLOUDXNS_API_KEY", "CLOUDXNS_SECRET_KEY")
+	values, err := env.Get(EnvAPIKey, EnvSecretKey)
 	if err != nil {
 		return nil, fmt.Errorf("CloudXNS: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.APIKey = values["CLOUDXNS_API_KEY"]
-	config.SecretKey = values["CLOUDXNS_SECRET_KEY"]
+	config.APIKey = values[EnvAPIKey]
+	config.SecretKey = values[EnvSecretKey]
 
 	return NewDNSProviderConfig(config)
 }

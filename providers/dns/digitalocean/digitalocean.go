@@ -12,6 +12,18 @@ import (
 	"github.com/go-acme/lego/v3/platform/config/env"
 )
 
+// Environment variables names.
+const (
+	envNamespace = "DO_"
+
+	EnvAuthToken = envNamespace + "AUTH_TOKEN"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	BaseURL            string
@@ -26,11 +38,11 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		BaseURL:            defaultBaseURL,
-		TTL:                env.GetOrDefaultInt("DO_TTL", 30),
-		PropagationTimeout: env.GetOrDefaultSecond("DO_PROPAGATION_TIMEOUT", 60*time.Second),
-		PollingInterval:    env.GetOrDefaultSecond("DO_POLLING_INTERVAL", 5*time.Second),
+		TTL:                env.GetOrDefaultInt(EnvTTL, 30),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 60*time.Second),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 5*time.Second),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("DO_HTTP_TIMEOUT", 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -47,13 +59,13 @@ type DNSProvider struct {
 // Ocean. Credentials must be passed in the environment variable:
 // DO_AUTH_TOKEN.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("DO_AUTH_TOKEN")
+	values, err := env.Get(EnvAuthToken)
 	if err != nil {
 		return nil, fmt.Errorf("digitalocean: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.AuthToken = values["DO_AUTH_TOKEN"]
+	config.AuthToken = values[EnvAuthToken]
 
 	return NewDNSProviderConfig(config)
 }

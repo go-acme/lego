@@ -123,7 +123,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		NodeName:   dns01.UnFqdn(strings.TrimSuffix(fqdn, dns.Fqdn(domain))),
 		TextData:   value,
 		State:      true,
-		TTL:        300,
+		TTL:        d.config.TTL,
 	}
 
 	err = d.client.AddNewRecord(rootDomain.ID, record)

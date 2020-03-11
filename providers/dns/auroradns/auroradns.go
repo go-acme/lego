@@ -14,6 +14,19 @@ import (
 
 const defaultBaseURL = "https://api.auroradns.eu"
 
+// Environment variables names.
+const (
+	envNamespace = "AURORA_"
+
+	EnvUserID   = envNamespace + "USER_ID"
+	EnvKey      = envNamespace + "KEY"
+	EnvEndpoint = envNamespace + "ENDPOINT"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	BaseURL            string
@@ -27,9 +40,9 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("AURORA_TTL", 300),
-		PropagationTimeout: env.GetOrDefaultSecond("AURORA_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("AURORA_POLLING_INTERVAL", dns01.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(EnvTTL, 300),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 	}
 }
 
@@ -45,15 +58,15 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables:
 // AURORA_USER_ID and AURORA_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("AURORA_USER_ID", "AURORA_KEY")
+	values, err := env.Get(EnvUserID, EnvKey)
 	if err != nil {
 		return nil, fmt.Errorf("aurora: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.BaseURL = env.GetOrFile("AURORA_ENDPOINT")
-	config.UserID = values["AURORA_USER_ID"]
-	config.Key = values["AURORA_KEY"]
+	config.BaseURL = env.GetOrFile(EnvEndpoint)
+	config.UserID = values[EnvUserID]
+	config.Key = values[EnvKey]
 
 	return NewDNSProviderConfig(config)
 }

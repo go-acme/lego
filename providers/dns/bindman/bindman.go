@@ -12,6 +12,17 @@ import (
 	"github.com/labbsr0x/bindman-dns-webhook/src/client"
 )
 
+// Environment variables names.
+const (
+	envNamespace = "BINDMAN_"
+
+	EnvManagerAddress = envNamespace + "MANAGER_ADDRESS"
+
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	PropagationTimeout time.Duration
@@ -23,10 +34,10 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		PropagationTimeout: env.GetOrDefaultSecond("BINDMAN_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("BINDMAN_POLLING_INTERVAL", dns01.DefaultPollingInterval),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("BINDMAN_HTTP_TIMEOUT", time.Minute),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, time.Minute),
 		},
 	}
 }
@@ -41,13 +52,13 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for Bindman.
 // BINDMAN_MANAGER_ADDRESS should have the scheme, hostname, and port (if required) of the authoritative Bindman Manager server.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("BINDMAN_MANAGER_ADDRESS")
+	values, err := env.Get(EnvManagerAddress)
 	if err != nil {
 		return nil, fmt.Errorf("bindman: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.BaseURL = values["BINDMAN_MANAGER_ADDRESS"]
+	config.BaseURL = values[EnvManagerAddress]
 
 	return NewDNSProviderConfig(config)
 }

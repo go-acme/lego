@@ -20,6 +20,17 @@ const (
 	maxRetries = 5
 )
 
+// Environment variables names.
+const (
+	envNamespace = "LIGHTSAIL_"
+
+	EnvRegion  = envNamespace + "LIGHTSAIL_REGION"
+	EnvDNSZone = "DNS_ZONE"
+
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+)
+
 // customRetryer implements the client.Retryer interface by composing the DefaultRetryer.
 // It controls the logic for retrying recoverable request errors (e.g. when rate limits are exceeded).
 type customRetryer struct {
@@ -52,10 +63,10 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		DNSZone:            env.GetOrFile("DNS_ZONE"),
-		PropagationTimeout: env.GetOrDefaultSecond("LIGHTSAIL_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("LIGHTSAIL_POLLING_INTERVAL", dns01.DefaultPollingInterval),
-		Region:             env.GetOrDefaultString("LIGHTSAIL_REGION", "us-east-1"),
+		DNSZone:            env.GetOrFile(EnvDNSZone),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		Region:             env.GetOrDefaultString(EnvRegion, "us-east-1"),
 	}
 }
 

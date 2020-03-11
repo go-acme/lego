@@ -9,7 +9,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var envTest = tester.NewEnvTest(envEndpoint, envToken)
+const envDomain = envNamespace + "DOMAIN"
+
+var envTest = tester.NewEnvTest(
+	EnvEndpoint,
+	EnvToken).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -20,7 +25,7 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				envToken: "dummy",
+				EnvToken: "dummy",
 			},
 		},
 		{
@@ -31,8 +36,8 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "invalid endpoint",
 			envVars: map[string]string{
-				envToken:    "dummy",
-				envEndpoint: ":",
+				EnvToken:    "dummy",
+				EnvEndpoint: ":",
 			},
 			expected: `checkdomain: invalid CHECKDOMAIN_ENDPOINT: parse ":": missing protocol scheme`,
 		},

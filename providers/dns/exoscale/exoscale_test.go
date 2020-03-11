@@ -9,10 +9,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const envDomain = envNamespace + "DOMAIN"
+
 var envTest = tester.NewEnvTest(
-	"EXOSCALE_API_SECRET",
-	"EXOSCALE_API_KEY").
-	WithDomain("EXOSCALE_DOMAIN")
+	EnvAPISecret,
+	EnvAPIKey).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -23,31 +25,31 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"EXOSCALE_API_KEY":    "123",
-				"EXOSCALE_API_SECRET": "456",
+				EnvAPIKey:    "123",
+				EnvAPISecret: "456",
 			},
 		},
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				"EXOSCALE_API_KEY":    "",
-				"EXOSCALE_API_SECRET": "",
+				EnvAPIKey:    "",
+				EnvAPISecret: "",
 			},
 			expected: "exoscale: some credentials information are missing: EXOSCALE_API_KEY,EXOSCALE_API_SECRET",
 		},
 		{
 			desc: "missing access key",
 			envVars: map[string]string{
-				"EXOSCALE_API_KEY":    "",
-				"EXOSCALE_API_SECRET": "456",
+				EnvAPIKey:    "",
+				EnvAPISecret: "456",
 			},
 			expected: "exoscale: some credentials information are missing: EXOSCALE_API_KEY",
 		},
 		{
 			desc: "missing secret key",
 			envVars: map[string]string{
-				"EXOSCALE_API_KEY":    "123",
-				"EXOSCALE_API_SECRET": "",
+				EnvAPIKey:    "123",
+				EnvAPISecret: "",
 			},
 			expected: "exoscale: some credentials information are missing: EXOSCALE_API_SECRET",
 		},

@@ -17,6 +17,20 @@ import (
 
 const defaultRegionID = "cn-hangzhou"
 
+// Environment variables names.
+const (
+	envNamespace = "ALICLOUD_"
+
+	EnvAccessKey = envNamespace + "ACCESS_KEY"
+	EnvSecretKey = envNamespace + "SECRET_KEY"
+	EnvRegionID  = envNamespace + "REGION_ID"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	APIKey             string
@@ -31,10 +45,10 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("ALICLOUD_TTL", 600),
-		PropagationTimeout: env.GetOrDefaultSecond("ALICLOUD_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("ALICLOUD_POLLING_INTERVAL", dns01.DefaultPollingInterval),
-		HTTPTimeout:        env.GetOrDefaultSecond("ALICLOUD_HTTP_TIMEOUT", 10*time.Second),
+		TTL:                env.GetOrDefaultInt(EnvTTL, 600),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		HTTPTimeout:        env.GetOrDefaultSecond(EnvHTTPTimeout, 10*time.Second),
 	}
 }
 
@@ -47,15 +61,15 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for Alibaba Cloud DNS.
 // Credentials must be passed in the environment variables: ALICLOUD_ACCESS_KEY and ALICLOUD_SECRET_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("ALICLOUD_ACCESS_KEY", "ALICLOUD_SECRET_KEY")
+	values, err := env.Get(EnvAccessKey, EnvSecretKey)
 	if err != nil {
 		return nil, fmt.Errorf("alicloud: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.APIKey = values["ALICLOUD_ACCESS_KEY"]
-	config.SecretKey = values["ALICLOUD_SECRET_KEY"]
-	config.RegionID = env.GetOrFile("ALICLOUD_REGION_ID")
+	config.APIKey = values[EnvAccessKey]
+	config.SecretKey = values[EnvSecretKey]
+	config.RegionID = env.GetOrFile(EnvRegionID)
 
 	return NewDNSProviderConfig(config)
 }

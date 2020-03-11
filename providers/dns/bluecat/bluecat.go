@@ -21,6 +21,22 @@ const (
 	txtType    = "TXTRecord"
 )
 
+// Environment variables names.
+const (
+	envNamespace = "BLUECAT_"
+
+	EnvServerURL  = envNamespace + "SERVER_URL"
+	EnvUserName   = envNamespace + "USER_NAME"
+	EnvPassword   = envNamespace + "PASSWORD"
+	EnvConfigName = envNamespace + "CONFIG_NAME"
+	EnvDNSView    = envNamespace + "DNS_VIEW"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	BaseURL            string
@@ -37,11 +53,11 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("BLUECAT_TTL", dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond("BLUECAT_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("BLUECAT_POLLING_INTERVAL", dns01.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("BLUECAT_HTTP_TIMEOUT", 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -59,17 +75,17 @@ type DNSProvider struct {
 // The REST endpoint will be appended.
 // In addition, the Configuration name and external DNS View Name must be passed in BLUECAT_CONFIG_NAME and BLUECAT_DNS_VIEW
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("BLUECAT_SERVER_URL", "BLUECAT_USER_NAME", "BLUECAT_PASSWORD", "BLUECAT_CONFIG_NAME", "BLUECAT_DNS_VIEW")
+	values, err := env.Get(EnvServerURL, EnvUserName, EnvPassword, EnvConfigName, EnvDNSView)
 	if err != nil {
 		return nil, fmt.Errorf("bluecat: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.BaseURL = values["BLUECAT_SERVER_URL"]
-	config.UserName = values["BLUECAT_USER_NAME"]
-	config.Password = values["BLUECAT_PASSWORD"]
-	config.ConfigName = values["BLUECAT_CONFIG_NAME"]
-	config.DNSView = values["BLUECAT_DNS_VIEW"]
+	config.BaseURL = values[EnvServerURL]
+	config.UserName = values[EnvUserName]
+	config.Password = values[EnvPassword]
+	config.ConfigName = values[EnvConfigName]
+	config.DNSView = values[EnvDNSView]
 
 	return NewDNSProviderConfig(config)
 }

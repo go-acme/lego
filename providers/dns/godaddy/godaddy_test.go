@@ -7,10 +7,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const envDomain = envNamespace + "DOMAIN"
+
 var envTest = tester.NewEnvTest(
-	"GODADDY_API_KEY",
-	"GODADDY_API_SECRET").
-	WithDomain("GODADDY_DOMAIN")
+	EnvAPIKey,
+	EnvAPISecret).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -21,31 +23,31 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"GODADDY_API_KEY":    "123",
-				"GODADDY_API_SECRET": "456",
+				EnvAPIKey:    "123",
+				EnvAPISecret: "456",
 			},
 		},
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				"GODADDY_API_KEY":    "",
-				"GODADDY_API_SECRET": "",
+				EnvAPIKey:    "",
+				EnvAPISecret: "",
 			},
 			expected: "godaddy: some credentials information are missing: GODADDY_API_KEY,GODADDY_API_SECRET",
 		},
 		{
 			desc: "missing access key",
 			envVars: map[string]string{
-				"GODADDY_API_KEY":    "",
-				"GODADDY_API_SECRET": "456",
+				EnvAPIKey:    "",
+				EnvAPISecret: "456",
 			},
 			expected: "godaddy: some credentials information are missing: GODADDY_API_KEY",
 		},
 		{
 			desc: "missing secret key",
 			envVars: map[string]string{
-				"GODADDY_API_KEY":    "123",
-				"GODADDY_API_SECRET": "",
+				EnvAPIKey:    "123",
+				EnvAPISecret: "",
 			},
 			expected: "godaddy: some credentials information are missing: GODADDY_API_SECRET",
 		},

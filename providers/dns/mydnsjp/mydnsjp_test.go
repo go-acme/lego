@@ -9,8 +9,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var envTest = tester.NewEnvTest("MYDNSJP_MASTER_ID", "MYDNSJP_PASSWORD").
-	WithDomain("MYDNSJP_DOMAIN")
+const envDomain = envNamespace + "DOMAIN"
+
+var envTest = tester.NewEnvTest(EnvMasterID, EnvPassword).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -21,31 +23,31 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"MYDNSJP_MASTER_ID": "test@example.com",
-				"MYDNSJP_PASSWORD":  "123",
+				EnvMasterID: "test@example.com",
+				EnvPassword: "123",
 			},
 		},
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				"MYDNSJP_MASTER_ID": "",
-				"MYDNSJP_PASSWORD":  "",
+				EnvMasterID: "",
+				EnvPassword: "",
 			},
 			expected: "mydnsjp: some credentials information are missing: MYDNSJP_MASTER_ID,MYDNSJP_PASSWORD",
 		},
 		{
 			desc: "missing email",
 			envVars: map[string]string{
-				"MYDNSJP_MASTER_ID": "",
-				"MYDNSJP_PASSWORD":  "key",
+				EnvMasterID: "",
+				EnvPassword: "key",
 			},
 			expected: "mydnsjp: some credentials information are missing: MYDNSJP_MASTER_ID",
 		},
 		{
 			desc: "missing api key",
 			envVars: map[string]string{
-				"MYDNSJP_MASTER_ID": "awesome@possum.com",
-				"MYDNSJP_PASSWORD":  "",
+				EnvMasterID: "awesome@possum.com",
+				EnvPassword: "",
 			},
 			expected: "mydnsjp: some credentials information are missing: MYDNSJP_PASSWORD",
 		},

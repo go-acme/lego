@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var envTest = tester.NewEnvTest("DO_AUTH_TOKEN")
+var envTest = tester.NewEnvTest(EnvAuthToken)
 
 func setupTest() (*DNSProvider, *http.ServeMux, func()) {
 	handler := http.NewServeMux()
@@ -39,13 +39,13 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"DO_AUTH_TOKEN": "123",
+				EnvAuthToken: "123",
 			},
 		},
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				"DO_AUTH_TOKEN": "",
+				EnvAuthToken: "",
 			},
 			expected: "digitalocean: some credentials information are missing: DO_AUTH_TOKEN",
 		},

@@ -19,6 +19,19 @@ const (
 	minTTL         = 60
 )
 
+// Environment variables names.
+const (
+	envNamespace = "GLESYS_"
+
+	EnvAPIUser = envNamespace + "API_USER"
+	EnvAPIKey  = envNamespace + "API_KEY"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	APIUser            string
@@ -32,11 +45,11 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("GLESYS_TTL", minTTL),
-		PropagationTimeout: env.GetOrDefaultSecond("GLESYS_PROPAGATION_TIMEOUT", 20*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond("GLESYS_POLLING_INTERVAL", 20*time.Second),
+		TTL:                env.GetOrDefaultInt(EnvTTL, minTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 20*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 20*time.Second),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("GLESYS_HTTP_TIMEOUT", 10*time.Second),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 10*time.Second),
 		},
 	}
 }
@@ -54,14 +67,14 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables:
 // GLESYS_API_USER and GLESYS_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("GLESYS_API_USER", "GLESYS_API_KEY")
+	values, err := env.Get(EnvAPIUser, EnvAPIKey)
 	if err != nil {
 		return nil, fmt.Errorf("glesys: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.APIUser = values["GLESYS_API_USER"]
-	config.APIKey = values["GLESYS_API_KEY"]
+	config.APIUser = values[EnvAPIUser]
+	config.APIKey = values[EnvAPIKey]
 
 	return NewDNSProviderConfig(config)
 }

@@ -14,10 +14,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const envDomain = envNamespace + "DOMAIN"
+
 var envTest = tester.NewEnvTest(
-	"RACKSPACE_USER",
-	"RACKSPACE_API_KEY").
-	WithDomain("RACKSPACE_DOMAIN")
+	EnvUser,
+	EnvAPIKey).
+	WithDomain(envDomain)
 
 func TestNewDNSProviderConfig(t *testing.T) {
 	config, tearDown := setupTest()

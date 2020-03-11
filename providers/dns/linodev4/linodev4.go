@@ -22,6 +22,18 @@ const (
 	dnsUpdateFudgeSecs = 120
 )
 
+// Environment variables names.
+const (
+	envNamespace = "LINODE_"
+
+	EnvToken = envNamespace + "TOKEN"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	Token              string
@@ -34,10 +46,10 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		PropagationTimeout: env.GetOrDefaultSecond("LINODE_PROPAGATION_TIMEOUT", 0),
-		PollingInterval:    env.GetOrDefaultSecond("LINODE_POLLING_INTERVAL", 15*time.Second),
-		TTL:                env.GetOrDefaultInt("LINODE_TTL", minTTL),
-		HTTPTimeout:        env.GetOrDefaultSecond("LINODE_HTTP_TIMEOUT", 0),
+		TTL:                env.GetOrDefaultInt(EnvTTL, minTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 0),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 15*time.Second),
+		HTTPTimeout:        env.GetOrDefaultSecond(EnvHTTPTimeout, 0),
 	}
 }
 
@@ -55,13 +67,13 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for Linode.
 // Credentials must be passed in the environment variable: LINODE_TOKEN.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("LINODE_TOKEN")
+	values, err := env.Get(EnvToken)
 	if err != nil {
 		return nil, fmt.Errorf("linodev4: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.Token = values["LINODE_TOKEN"]
+	config.Token = values[EnvToken]
 
 	return NewDNSProviderConfig(config)
 }

@@ -14,7 +14,7 @@ import (
 
 const testDomain = "example.com"
 
-var envTest = tester.NewEnvTest("SECRET_VEGADNS_KEY", "SECRET_VEGADNS_SECRET", "VEGADNS_URL")
+var envTest = tester.NewEnvTest(EnvKey, EnvSecret, EnvURL)
 
 func TestNewDNSProvider_Fail(t *testing.T) {
 	defer envTest.RestoreEnv()
@@ -277,9 +277,9 @@ func startTestServer(handler http.Handler) func() {
 	ts := httptest.NewServer(handler)
 
 	envTest.Apply(map[string]string{
-		"SECRET_VEGADNS_KEY":    "key",
-		"SECRET_VEGADNS_SECRET": "secret",
-		"VEGADNS_URL":           ts.URL,
+		EnvKey:    "key",
+		EnvSecret: "secret",
+		EnvURL:    ts.URL,
 	})
 
 	return func() {

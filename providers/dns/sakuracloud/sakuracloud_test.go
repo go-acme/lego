@@ -8,10 +8,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const envDomain = envNamespace + "DOMAIN"
+
 var envTest = tester.NewEnvTest(
-	"SAKURACLOUD_ACCESS_TOKEN",
-	"SAKURACLOUD_ACCESS_TOKEN_SECRET").
-	WithDomain("SAKURACLOUD_DOMAIN")
+	EnvAccessToken,
+	EnvAccessTokenSecret).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -22,31 +24,31 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"SAKURACLOUD_ACCESS_TOKEN":        "123",
-				"SAKURACLOUD_ACCESS_TOKEN_SECRET": "456",
+				EnvAccessToken:       "123",
+				EnvAccessTokenSecret: "456",
 			},
 		},
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				"SAKURACLOUD_ACCESS_TOKEN":        "",
-				"SAKURACLOUD_ACCESS_TOKEN_SECRET": "",
+				EnvAccessToken:       "",
+				EnvAccessTokenSecret: "",
 			},
 			expected: "sakuracloud: some credentials information are missing: SAKURACLOUD_ACCESS_TOKEN,SAKURACLOUD_ACCESS_TOKEN_SECRET",
 		},
 		{
 			desc: "missing access token",
 			envVars: map[string]string{
-				"SAKURACLOUD_ACCESS_TOKEN":        "",
-				"SAKURACLOUD_ACCESS_TOKEN_SECRET": "456",
+				EnvAccessToken:       "",
+				EnvAccessTokenSecret: "456",
 			},
 			expected: "sakuracloud: some credentials information are missing: SAKURACLOUD_ACCESS_TOKEN",
 		},
 		{
 			desc: "missing token secret",
 			envVars: map[string]string{
-				"SAKURACLOUD_ACCESS_TOKEN":        "123",
-				"SAKURACLOUD_ACCESS_TOKEN_SECRET": "",
+				EnvAccessToken:       "123",
+				EnvAccessTokenSecret: "",
 			},
 			expected: "sakuracloud: some credentials information are missing: SAKURACLOUD_ACCESS_TOKEN_SECRET",
 		},

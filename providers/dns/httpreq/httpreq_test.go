@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var envTest = tester.NewEnvTest("HTTPREQ_ENDPOINT", "HTTPREQ_MODE", "HTTPREQ_USERNAME", "HTTPREQ_PASSWORD")
+var envTest = tester.NewEnvTest(EnvEndpoint, EnvMode, EnvUsername, EnvPassword)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -24,20 +24,20 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"HTTPREQ_ENDPOINT": "http://localhost:8090",
+				EnvEndpoint: "http://localhost:8090",
 			},
 		},
 		{
 			desc: "invalid URL",
 			envVars: map[string]string{
-				"HTTPREQ_ENDPOINT": ":",
+				EnvEndpoint: ":",
 			},
 			expected: `httpreq: parse ":": missing protocol scheme`,
 		},
 		{
 			desc: "missing endpoint",
 			envVars: map[string]string{
-				"HTTPREQ_ENDPOINT": "",
+				EnvEndpoint: "",
 			},
 			expected: "httpreq: some credentials information are missing: HTTPREQ_ENDPOINT",
 		},

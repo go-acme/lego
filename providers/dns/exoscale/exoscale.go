@@ -15,6 +15,20 @@ import (
 
 const defaultBaseURL = "https://api.exoscale.com/dns"
 
+// Environment variables names.
+const (
+	envNamespace = "EXOSCALE_"
+
+	EnvAPISecret = envNamespace + "API_SECRET"
+	EnvAPIKey    = envNamespace + "API_KEY"
+	EnvEndpoint  = envNamespace + "ENDPOINT"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	APIKey             string
@@ -29,11 +43,11 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("EXOSCALE_TTL", dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond("EXOSCALE_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("EXOSCALE_POLLING_INTERVAL", dns01.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("EXOSCALE_HTTP_TIMEOUT", 0),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30),
 		},
 	}
 }
@@ -47,15 +61,15 @@ type DNSProvider struct {
 // NewDNSProvider Credentials must be passed in the environment variables:
 // EXOSCALE_API_KEY, EXOSCALE_API_SECRET, EXOSCALE_ENDPOINT.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("EXOSCALE_API_KEY", "EXOSCALE_API_SECRET")
+	values, err := env.Get(EnvAPIKey, EnvAPISecret)
 	if err != nil {
 		return nil, fmt.Errorf("exoscale: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.APIKey = values["EXOSCALE_API_KEY"]
-	config.APISecret = values["EXOSCALE_API_SECRET"]
-	config.Endpoint = env.GetOrFile("EXOSCALE_ENDPOINT")
+	config.APIKey = values[EnvAPIKey]
+	config.APISecret = values[EnvAPISecret]
+	config.Endpoint = env.GetOrFile(EnvEndpoint)
 
 	return NewDNSProviderConfig(config)
 }

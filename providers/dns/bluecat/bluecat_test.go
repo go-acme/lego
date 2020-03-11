@@ -8,13 +8,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const envDomain = envNamespace + "DOMAIN"
+
 var envTest = tester.NewEnvTest(
-	"BLUECAT_SERVER_URL",
-	"BLUECAT_USER_NAME",
-	"BLUECAT_PASSWORD",
-	"BLUECAT_CONFIG_NAME",
-	"BLUECAT_DNS_VIEW").
-	WithDomain("BLUECAT_DOMAIN")
+	EnvServerURL,
+	EnvUserName,
+	EnvPassword,
+	EnvConfigName,
+	EnvDNSView).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -25,76 +27,76 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"BLUECAT_SERVER_URL":  "http://localhost",
-				"BLUECAT_USER_NAME":   "A",
-				"BLUECAT_PASSWORD":    "B",
-				"BLUECAT_CONFIG_NAME": "C",
-				"BLUECAT_DNS_VIEW":    "D",
+				EnvServerURL:  "http://localhost",
+				EnvUserName:   "A",
+				EnvPassword:   "B",
+				EnvConfigName: "C",
+				EnvDNSView:    "D",
 			},
 		},
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				"BLUECAT_SERVER_URL":  "",
-				"BLUECAT_USER_NAME":   "",
-				"BLUECAT_PASSWORD":    "",
-				"BLUECAT_CONFIG_NAME": "",
-				"BLUECAT_DNS_VIEW":    "",
+				EnvServerURL:  "",
+				EnvUserName:   "",
+				EnvPassword:   "",
+				EnvConfigName: "",
+				EnvDNSView:    "",
 			},
 			expected: "bluecat: some credentials information are missing: BLUECAT_SERVER_URL,BLUECAT_USER_NAME,BLUECAT_PASSWORD,BLUECAT_CONFIG_NAME,BLUECAT_DNS_VIEW",
 		},
 		{
 			desc: "missing server url",
 			envVars: map[string]string{
-				"BLUECAT_SERVER_URL":  "",
-				"BLUECAT_USER_NAME":   "A",
-				"BLUECAT_PASSWORD":    "B",
-				"BLUECAT_CONFIG_NAME": "C",
-				"BLUECAT_DNS_VIEW":    "D",
+				EnvServerURL:  "",
+				EnvUserName:   "A",
+				EnvPassword:   "B",
+				EnvConfigName: "C",
+				EnvDNSView:    "D",
 			},
 			expected: "bluecat: some credentials information are missing: BLUECAT_SERVER_URL",
 		},
 		{
 			desc: "missing username",
 			envVars: map[string]string{
-				"BLUECAT_SERVER_URL":  "http://localhost",
-				"BLUECAT_USER_NAME":   "",
-				"BLUECAT_PASSWORD":    "B",
-				"BLUECAT_CONFIG_NAME": "C",
-				"BLUECAT_DNS_VIEW":    "D",
+				EnvServerURL:  "http://localhost",
+				EnvUserName:   "",
+				EnvPassword:   "B",
+				EnvConfigName: "C",
+				EnvDNSView:    "D",
 			},
 			expected: "bluecat: some credentials information are missing: BLUECAT_USER_NAME",
 		},
 		{
 			desc: "missing password",
 			envVars: map[string]string{
-				"BLUECAT_SERVER_URL":  "http://localhost",
-				"BLUECAT_USER_NAME":   "A",
-				"BLUECAT_PASSWORD":    "",
-				"BLUECAT_CONFIG_NAME": "C",
-				"BLUECAT_DNS_VIEW":    "D",
+				EnvServerURL:  "http://localhost",
+				EnvUserName:   "A",
+				EnvPassword:   "",
+				EnvConfigName: "C",
+				EnvDNSView:    "D",
 			},
 			expected: "bluecat: some credentials information are missing: BLUECAT_PASSWORD",
 		},
 		{
 			desc: "missing config name",
 			envVars: map[string]string{
-				"BLUECAT_SERVER_URL":  "http://localhost",
-				"BLUECAT_USER_NAME":   "A",
-				"BLUECAT_PASSWORD":    "B",
-				"BLUECAT_CONFIG_NAME": "",
-				"BLUECAT_DNS_VIEW":    "D",
+				EnvServerURL:  "http://localhost",
+				EnvUserName:   "A",
+				EnvPassword:   "B",
+				EnvConfigName: "",
+				EnvDNSView:    "D",
 			},
 			expected: "bluecat: some credentials information are missing: BLUECAT_CONFIG_NAME",
 		},
 		{
 			desc: "missing DNS view",
 			envVars: map[string]string{
-				"BLUECAT_SERVER_URL":  "http://localhost",
-				"BLUECAT_USER_NAME":   "A",
-				"BLUECAT_PASSWORD":    "B",
-				"BLUECAT_CONFIG_NAME": "C",
-				"BLUECAT_DNS_VIEW":    "",
+				EnvServerURL:  "http://localhost",
+				EnvUserName:   "A",
+				EnvPassword:   "B",
+				EnvConfigName: "C",
+				EnvDNSView:    "",
 			},
 			expected: "bluecat: some credentials information are missing: BLUECAT_DNS_VIEW",
 		},

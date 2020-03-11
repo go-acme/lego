@@ -17,6 +17,24 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/dns/v2/zones"
 )
 
+// Environment variables names.
+const (
+	envNamespace = "DESIGNATE_"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+
+	envNamespaceClient = "OS_"
+
+	EnvAuthURL    = envNamespaceClient + "AUTH_URL"
+	EnvUsername   = envNamespaceClient + "USERNAME"
+	EnvPassword   = envNamespaceClient + "PASSWORD"
+	EnvTenantName = envNamespaceClient + "TENANT_NAME"
+	EnvRegionName = envNamespaceClient + "REGION_NAME"
+	EnvProjectID  = envNamespaceClient + "PROJECT_ID"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	PropagationTimeout time.Duration
@@ -28,9 +46,9 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("DESIGNATE_TTL", 10),
-		PropagationTimeout: env.GetOrDefaultSecond("DESIGNATE_PROPAGATION_TIMEOUT", 10*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond("DESIGNATE_POLLING_INTERVAL", 10*time.Second),
+		TTL:                env.GetOrDefaultInt(EnvTTL, 10),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 10*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 10*time.Second),
 	}
 }
 
@@ -45,7 +63,7 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables:
 // OS_AUTH_URL, OS_USERNAME, OS_PASSWORD, OS_TENANT_NAME, OS_REGION_NAME.
 func NewDNSProvider() (*DNSProvider, error) {
-	_, err := env.Get("OS_AUTH_URL", "OS_USERNAME", "OS_PASSWORD", "OS_TENANT_NAME", "OS_REGION_NAME")
+	_, err := env.Get(EnvAuthURL, EnvUsername, EnvPassword, EnvTenantName, EnvRegionName)
 	if err != nil {
 		return nil, fmt.Errorf("designate: %w", err)
 	}

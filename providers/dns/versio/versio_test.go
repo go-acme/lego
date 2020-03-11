@@ -14,7 +14,9 @@ import (
 
 const testDomain = "example.com"
 
-var envTest = tester.NewEnvTest("VERSIO_USERNAME", "VERSIO_PASSWORD", "VERSIO_ENDPOINT").WithDomain("VERSIO_DOMAIN")
+const envDomain = envNamespace + "DOMAIN"
+
+var envTest = tester.NewEnvTest(EnvUsername, EnvPassword, EnvEndpoint).WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -25,21 +27,21 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"VERSIO_USERNAME": "me@example.com",
-				"VERSIO_PASSWORD": "SECRET",
+				EnvUsername: "me@example.com",
+				EnvPassword: "SECRET",
 			},
 		},
 		{
 			desc: "missing token",
 			envVars: map[string]string{
-				"VERSIO_PASSWORD": "me@example.com",
+				EnvPassword: "me@example.com",
 			},
 			expected: "versio: some credentials information are missing: VERSIO_USERNAME",
 		},
 		{
 			desc: "missing key",
 			envVars: map[string]string{
-				"VERSIO_USERNAME": "TOKEN",
+				EnvUsername: "TOKEN",
 			},
 			expected: "versio: some credentials information are missing: VERSIO_PASSWORD",
 		},
@@ -150,9 +152,9 @@ func TestDNSProvider_Present(t *testing.T) {
 			defer tearDown()
 
 			envTest.Apply(map[string]string{
-				"VERSIO_USERNAME": "me@example.com",
-				"VERSIO_PASSWORD": "secret",
-				"VERSIO_ENDPOINT": baseURL,
+				EnvUsername: "me@example.com",
+				EnvPassword: "secret",
+				EnvEndpoint: baseURL,
 			})
 			provider, err := NewDNSProvider()
 			require.NoError(t, err)
@@ -193,9 +195,9 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 			defer tearDown()
 
 			envTest.Apply(map[string]string{
-				"VERSIO_USERNAME": "me@example.com",
-				"VERSIO_PASSWORD": "secret",
-				"VERSIO_ENDPOINT": baseURL,
+				EnvUsername: "me@example.com",
+				EnvPassword: "secret",
+				EnvEndpoint: baseURL,
 			})
 
 			provider, err := NewDNSProvider()

@@ -21,6 +21,18 @@ const (
 	minTTL         = 300
 )
 
+// Environment variables names.
+const (
+	envNamespace = "GANDIV5_"
+
+	EnvAPIKey = envNamespace + "API_KEY"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
 // inProgressInfo contains information about an in-progress challenge
 type inProgressInfo struct {
 	fieldName string
@@ -40,11 +52,11 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("GANDIV5_TTL", minTTL),
-		PropagationTimeout: env.GetOrDefaultSecond("GANDIV5_PROPAGATION_TIMEOUT", 20*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond("GANDIV5_POLLING_INTERVAL", 20*time.Second),
+		TTL:                env.GetOrDefaultInt(EnvTTL, minTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 20*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 20*time.Second),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("GANDIV5_HTTP_TIMEOUT", 10*time.Second),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 10*time.Second),
 		},
 	}
 }
@@ -63,13 +75,13 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for Gandi.
 // Credentials must be passed in the environment variable: GANDIV5_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("GANDIV5_API_KEY")
+	values, err := env.Get(EnvAPIKey)
 	if err != nil {
 		return nil, fmt.Errorf("gandi: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.APIKey = values["GANDIV5_API_KEY"]
+	config.APIKey = values[EnvAPIKey]
 
 	return NewDNSProviderConfig(config)
 }

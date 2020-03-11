@@ -20,14 +20,17 @@ const (
 	minTTL         = 60
 )
 
+// Environment variables names.
 const (
-	envNamespace             = "VSCALE_"
-	baseURLEnvVar            = envNamespace + "BASE_URL"
-	apiTokenEnvVar           = envNamespace + "API_TOKEN"
-	ttlEnvVar                = envNamespace + "TTL"
-	propagationTimeoutEnvVar = envNamespace + "PROPAGATION_TIMEOUT"
-	pollingIntervalEnvVar    = envNamespace + "POLLING_INTERVAL"
-	httpTimeoutEnvVar        = envNamespace + "HTTP_TIMEOUT"
+	envNamespace = "VSCALE_"
+
+	EnvBaseURL  = envNamespace + "BASE_URL"
+	EnvAPIToken = envNamespace + "API_TOKEN"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
 // Config is used to configure the creation of the DNSProvider.
@@ -43,12 +46,12 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		BaseURL:            env.GetOrDefaultString(baseURLEnvVar, defaultBaseURL),
-		TTL:                env.GetOrDefaultInt(ttlEnvVar, minTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(propagationTimeoutEnvVar, 120*time.Second),
-		PollingInterval:    env.GetOrDefaultSecond(pollingIntervalEnvVar, 2*time.Second),
+		BaseURL:            env.GetOrDefaultString(EnvBaseURL, defaultBaseURL),
+		TTL:                env.GetOrDefaultInt(EnvTTL, minTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 120*time.Second),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(httpTimeoutEnvVar, 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -62,13 +65,13 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for Vscale Domains API.
 // API token must be passed in the environment variable VSCALE_API_TOKEN.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(apiTokenEnvVar)
+	values, err := env.Get(EnvAPIToken)
 	if err != nil {
 		return nil, fmt.Errorf("vscale: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.Token = values[apiTokenEnvVar]
+	config.Token = values[EnvAPIToken]
 
 	return NewDNSProviderConfig(config)
 }

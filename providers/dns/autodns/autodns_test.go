@@ -8,7 +8,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var envTest = tester.NewEnvTest(envAPIEndpoint, envAPIUser, envAPIPassword)
+const envDomain = envNamespace + "DOMAIN"
+
+var envTest = tester.NewEnvTest(
+	EnvAPIEndpoint,
+	EnvAPIUser,
+	EnvAPIPassword).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -19,31 +25,31 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				envAPIUser:     "123",
-				envAPIPassword: "456",
+				EnvAPIUser:     "123",
+				EnvAPIPassword: "456",
 			},
 		},
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				envAPIUser:     "",
-				envAPIPassword: "",
+				EnvAPIUser:     "",
+				EnvAPIPassword: "",
 			},
 			expected: "autodns: some credentials information are missing: AUTODNS_API_USER,AUTODNS_API_PASSWORD",
 		},
 		{
 			desc: "missing user id",
 			envVars: map[string]string{
-				envAPIUser:     "",
-				envAPIPassword: "456",
+				EnvAPIUser:     "",
+				EnvAPIPassword: "456",
 			},
 			expected: "autodns: some credentials information are missing: AUTODNS_API_USER",
 		},
 		{
 			desc: "missing key",
 			envVars: map[string]string{
-				envAPIUser:     "123",
-				envAPIPassword: "",
+				EnvAPIUser:     "123",
+				EnvAPIPassword: "",
 			},
 			expected: "autodns: some credentials information are missing: AUTODNS_API_PASSWORD",
 		},

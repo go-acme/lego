@@ -13,9 +13,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var envTest = tester.NewEnvTest("ZONEEE_ENDPOINT", "ZONEEE_API_USER", "ZONEEE_API_KEY").
-	WithLiveTestRequirements("ZONEEE_API_USER", "ZONEEE_API_KEY").
-	WithDomain("ZONEE_DOMAIN")
+const envDomain = envNamespace + "DOMAIN"
+
+var envTest = tester.NewEnvTest(EnvEndpoint, EnvAPIUser, EnvAPIKey).
+	WithLiveTestRequirements(EnvAPIUser, EnvAPIKey).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -26,40 +28,40 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"ZONEEE_API_USER": "123",
-				"ZONEEE_API_KEY":  "456",
+				EnvAPIUser: "123",
+				EnvAPIKey:  "456",
 			},
 		},
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				"ZONEEE_API_USER": "",
-				"ZONEEE_API_KEY":  "",
+				EnvAPIUser: "",
+				EnvAPIKey:  "",
 			},
 			expected: "zoneee: some credentials information are missing: ZONEEE_API_USER,ZONEEE_API_KEY",
 		},
 		{
 			desc: "missing username",
 			envVars: map[string]string{
-				"ZONEEE_API_USER": "",
-				"ZONEEE_API_KEY":  "456",
+				EnvAPIUser: "",
+				EnvAPIKey:  "456",
 			},
 			expected: "zoneee: some credentials information are missing: ZONEEE_API_USER",
 		},
 		{
 			desc: "missing API key",
 			envVars: map[string]string{
-				"ZONEEE_API_USER": "123",
-				"ZONEEE_API_KEY":  "",
+				EnvAPIUser: "123",
+				EnvAPIKey:  "",
 			},
 			expected: "zoneee: some credentials information are missing: ZONEEE_API_KEY",
 		},
 		{
 			desc: "invalid URL",
 			envVars: map[string]string{
-				"ZONEEE_API_USER": "123",
-				"ZONEEE_API_KEY":  "456",
-				"ZONEEE_ENDPOINT": ":",
+				EnvAPIUser:  "123",
+				EnvAPIKey:   "456",
+				EnvEndpoint: ":",
 			},
 			expected: `zoneee: parse ":": missing protocol scheme`,
 		},

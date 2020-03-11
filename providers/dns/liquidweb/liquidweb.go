@@ -16,6 +16,21 @@ import (
 
 const defaultBaseURL = "https://api.stormondemand.com"
 
+// Environment variables names.
+const (
+	envNamespace = "LIQUID_WEB_"
+
+	EnvURL      = envNamespace + "URL"
+	EnvUsername = envNamespace + "USERNAME"
+	EnvPassword = envNamespace + "PASSWORD"
+	EnvZone     = envNamespace + "ZONE"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	BaseURL            string
@@ -32,10 +47,10 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	config := &Config{
 		BaseURL:            defaultBaseURL,
-		TTL:                env.GetOrDefaultInt("LIQUID_WEB_TTL", 300),
-		PollingInterval:    env.GetOrDefaultSecond("LIQUID_WEB_POLLING_INTERVAL", 2*time.Second),
-		PropagationTimeout: env.GetOrDefaultSecond("LIQUID_WEB_PROPAGATION_TIMEOUT", 2*time.Minute),
-		HTTPTimeout:        env.GetOrDefaultSecond("LIQUID_WEB_HTTP_TIMEOUT", 1*time.Minute),
+		TTL:                env.GetOrDefaultInt(EnvTTL, 300),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
+		HTTPTimeout:        env.GetOrDefaultSecond(EnvHTTPTimeout, 1*time.Minute),
 	}
 
 	return config
@@ -52,16 +67,16 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for Liquid Web.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("LIQUID_WEB_USERNAME", "LIQUID_WEB_PASSWORD", "LIQUID_WEB_ZONE")
+	values, err := env.Get(EnvUsername, EnvPassword, EnvZone)
 	if err != nil {
 		return nil, fmt.Errorf("liquidweb: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.BaseURL = env.GetOrFile("LIQUID_WEB_URL")
-	config.Username = values["LIQUID_WEB_USERNAME"]
-	config.Password = values["LIQUID_WEB_PASSWORD"]
-	config.Zone = values["LIQUID_WEB_ZONE"]
+	config.BaseURL = env.GetOrFile(EnvURL)
+	config.Username = values[EnvUsername]
+	config.Password = values[EnvPassword]
+	config.Zone = values[EnvZone]
 
 	return NewDNSProviderConfig(config)
 }

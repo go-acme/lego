@@ -12,6 +12,19 @@ import (
 	"github.com/go-acme/lego/v3/providers/dns/cloudns/internal"
 )
 
+// Environment variables names.
+const (
+	envNamespace = "CLOUDNS_"
+
+	EnvAuthID       = envNamespace + "AUTH_ID"
+	EnvAuthPassword = envNamespace + "AUTH_PASSWORD"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	AuthID             string
@@ -25,11 +38,11 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		PropagationTimeout: env.GetOrDefaultSecond("CLOUDNS_PROPAGATION_TIMEOUT", 120*time.Second),
-		PollingInterval:    env.GetOrDefaultSecond("CLOUDNS_POLLING_INTERVAL", 4*time.Second),
-		TTL:                env.GetOrDefaultInt("CLOUDNS_TTL", 60),
+		TTL:                env.GetOrDefaultInt(EnvTTL, 60),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 120*time.Second),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 4*time.Second),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("CLOUDNS_HTTP_TIMEOUT", 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -44,14 +57,14 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables:
 // CLOUDNS_AUTH_ID and CLOUDNS_AUTH_PASSWORD.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("CLOUDNS_AUTH_ID", "CLOUDNS_AUTH_PASSWORD")
+	values, err := env.Get(EnvAuthID, EnvAuthPassword)
 	if err != nil {
 		return nil, fmt.Errorf("ClouDNS: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.AuthID = values["CLOUDNS_AUTH_ID"]
-	config.AuthPassword = values["CLOUDNS_AUTH_PASSWORD"]
+	config.AuthID = values[EnvAuthID]
+	config.AuthPassword = values[EnvAuthPassword]
 
 	return NewDNSProviderConfig(config)
 }

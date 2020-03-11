@@ -17,6 +17,22 @@ const defaultIdentityEndpoint = "https://iam.eu-de.otc.t-systems.com:443/v3/auth
 // minTTL 300 is otc minimum value for ttl
 const minTTL = 300
 
+// Environment variables names.
+const (
+	envNamespace = "OTC_"
+
+	EnvDomainName       = envNamespace + "DOMAIN_NAME"
+	EnvUserName         = envNamespace + "USER_NAME"
+	EnvPassword         = envNamespace + "PASSWORD"
+	EnvProjectName      = envNamespace + "PROJECT_NAME"
+	EnvIdentityEndpoint = envNamespace + "IDENTITY_ENDPOINT"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	IdentityEndpoint   string
@@ -33,12 +49,12 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		IdentityEndpoint:   env.GetOrDefaultString("OTC_IDENTITY_ENDPOINT", defaultIdentityEndpoint),
-		PropagationTimeout: env.GetOrDefaultSecond("OTC_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("OTC_POLLING_INTERVAL", dns01.DefaultPollingInterval),
-		TTL:                env.GetOrDefaultInt("OTC_TTL", minTTL),
+		TTL:                env.GetOrDefaultInt(EnvTTL, minTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		IdentityEndpoint:   env.GetOrDefaultString(EnvIdentityEndpoint, defaultIdentityEndpoint),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("OTC_HTTP_TIMEOUT", 10*time.Second),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 10*time.Second),
 			Transport: &http.Transport{
 				Proxy: http.ProxyFromEnvironment,
 				DialContext: (&net.Dialer{
@@ -70,16 +86,16 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables: OTC_USER_NAME,
 // OTC_DOMAIN_NAME, OTC_PASSWORD OTC_PROJECT_NAME and OTC_IDENTITY_ENDPOINT.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("OTC_DOMAIN_NAME", "OTC_USER_NAME", "OTC_PASSWORD", "OTC_PROJECT_NAME")
+	values, err := env.Get(EnvDomainName, EnvUserName, EnvPassword, EnvProjectName)
 	if err != nil {
 		return nil, fmt.Errorf("otc: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.DomainName = values["OTC_DOMAIN_NAME"]
-	config.UserName = values["OTC_USER_NAME"]
-	config.Password = values["OTC_PASSWORD"]
-	config.ProjectName = values["OTC_PROJECT_NAME"]
+	config.DomainName = values[EnvDomainName]
+	config.UserName = values[EnvUserName]
+	config.Password = values[EnvPassword]
+	config.ProjectName = values[EnvProjectName]
 
 	return NewDNSProviderConfig(config)
 }

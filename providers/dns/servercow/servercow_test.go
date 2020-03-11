@@ -8,10 +8,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const envDomain = envNamespace + "DOMAIN"
+
 var envTest = tester.NewEnvTest(
-	"SERVERCOW_USERNAME",
-	"SERVERCOW_PASSWORD").
-	WithDomain("SERVERCOW_DOMAIN")
+	EnvUsername,
+	EnvPassword).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -22,31 +24,31 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"SERVERCOW_USERNAME": "123",
-				"SERVERCOW_PASSWORD": "456",
+				EnvUsername: "123",
+				EnvPassword: "456",
 			},
 		},
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				"SERVERCOW_USERNAME": "",
-				"SERVERCOW_PASSWORD": "",
+				EnvUsername: "",
+				EnvPassword: "",
 			},
 			expected: "servercow: some credentials information are missing: SERVERCOW_USERNAME,SERVERCOW_PASSWORD",
 		},
 		{
 			desc: "missing username",
 			envVars: map[string]string{
-				"SERVERCOW_USERNAME": "",
-				"SERVERCOW_PASSWORD": "api_password",
+				EnvUsername: "",
+				EnvPassword: "api_password",
 			},
 			expected: "servercow: some credentials information are missing: SERVERCOW_USERNAME",
 		},
 		{
 			desc: "missing password",
 			envVars: map[string]string{
-				"SERVERCOW_USERNAME": "api_username",
-				"SERVERCOW_PASSWORD": "",
+				EnvUsername: "api_username",
+				EnvPassword: "",
 			},
 			expected: "servercow: some credentials information are missing: SERVERCOW_PASSWORD",
 		},

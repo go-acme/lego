@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const envDomain = envNamespace + "_DOMAIN"
+const envDomain = envNamespace + "DOMAIN"
 
 var envTest = tester.NewEnvTest(
 	EnvAPIKey).

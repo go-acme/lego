@@ -16,13 +16,22 @@ import (
 	"google.golang.org/api/dns/v1"
 )
 
+const (
+	envDomain = envNamespace + "DOMAIN"
+
+	envServiceAccountFile = envNamespace + "SERVICE_ACCOUNT_FILE"
+	envMetadataHost       = envNamespace + "METADATA_HOST"
+
+	envGoogleApplicationCredentials = "GOOGLE_APPLICATION_CREDENTIALS"
+)
+
 var envTest = tester.NewEnvTest(
-	"GCE_PROJECT",
-	"GCE_SERVICE_ACCOUNT_FILE",
-	"GOOGLE_APPLICATION_CREDENTIALS",
-	"GCE_METADATA_HOST",
-	"GCE_SERVICE_ACCOUNT").
-	WithDomain("GCE_DOMAIN").
+	EnvProject,
+	envServiceAccountFile,
+	envGoogleApplicationCredentials,
+	envMetadataHost,
+	EnvServiceAccount).
+	WithDomain(envDomain).
 	WithLiveTestExtra(func() bool {
 		_, err := google.DefaultClient(context.Background(), dns.NdevClouddnsReadwriteScope)
 		return err == nil
@@ -37,36 +46,36 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "invalid credentials",
 			envVars: map[string]string{
-				"GCE_PROJECT":              "123",
-				"GCE_SERVICE_ACCOUNT_FILE": "",
+				EnvProject:            "123",
+				envServiceAccountFile: "",
 				// as Travis run on GCE, we have to alter env
-				"GOOGLE_APPLICATION_CREDENTIALS": "not-a-secret-file",
-				"GCE_METADATA_HOST":              "http://lego.wtf", // defined here to avoid the client cache.
+				envGoogleApplicationCredentials: "not-a-secret-file",
+				envMetadataHost:                 "http://lego.wtf", // defined here to avoid the client cache.
 			},
 			expected: "googlecloud: unable to get Google Cloud client: google: error getting credentials using GOOGLE_APPLICATION_CREDENTIALS environment variable: open not-a-secret-file: no such file or directory",
 		},
 		{
 			desc: "missing project",
 			envVars: map[string]string{
-				"GCE_PROJECT":              "",
-				"GCE_SERVICE_ACCOUNT_FILE": "",
+				EnvProject:            "",
+				envServiceAccountFile: "",
 				// as Travis run on GCE, we have to alter env
-				"GCE_METADATA_HOST": "http://lego.wtf",
+				envMetadataHost: "http://lego.wtf",
 			},
 			expected: "googlecloud: project name missing",
 		},
 		{
 			desc: "success key file",
 			envVars: map[string]string{
-				"GCE_PROJECT":              "",
-				"GCE_SERVICE_ACCOUNT_FILE": "fixtures/gce_account_service_file.json",
+				EnvProject:            "",
+				envServiceAccountFile: "fixtures/gce_account_service_file.json",
 			},
 		},
 		{
 			desc: "success key",
 			envVars: map[string]string{
-				"GCE_PROJECT":         "",
-				"GCE_SERVICE_ACCOUNT": `{"project_id": "A","type": "service_account","client_email": "foo@bar.com","private_key_id": "pki","private_key": "pk","token_uri": "/token","client_secret": "secret","client_id": "C","refresh_token": "D"}`,
+				EnvProject:        "",
+				EnvServiceAccount: `{"project_id": "A","type": "service_account","client_email": "foo@bar.com","private_key_id": "pki","private_key": "pk","token_uri": "/token","client_secret": "secret","client_id": "C","refresh_token": "D"}`,
 			},
 		},
 	}
@@ -381,7 +390,7 @@ func TestLivePresent(t *testing.T) {
 
 	envTest.RestoreEnv()
 
-	provider, err := NewDNSProviderCredentials(envTest.GetValue("GCE_PROJECT"))
+	provider, err := NewDNSProviderCredentials(envTest.GetValue(EnvProject))
 	require.NoError(t, err)
 
 	err = provider.Present(envTest.GetDomain(), "", "123d==")
@@ -395,7 +404,7 @@ func TestLivePresentMultiple(t *testing.T) {
 
 	envTest.RestoreEnv()
 
-	provider, err := NewDNSProviderCredentials(envTest.GetValue("GCE_PROJECT"))
+	provider, err := NewDNSProviderCredentials(envTest.GetValue(EnvProject))
 	require.NoError(t, err)
 
 	// Check that we're able to create multiple entries
@@ -413,7 +422,7 @@ func TestLiveCleanUp(t *testing.T) {
 
 	envTest.RestoreEnv()
 
-	provider, err := NewDNSProviderCredentials(envTest.GetValue("GCE_PROJECT"))
+	provider, err := NewDNSProviderCredentials(envTest.GetValue(EnvProject))
 	require.NoError(t, err)
 
 	time.Sleep(1 * time.Second)

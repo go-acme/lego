@@ -14,11 +14,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const envDomain = envNamespace + "DOMAIN"
+
 var envTest = tester.NewEnvTest(
-	"EASYDNS_ENDPOINT",
-	"EASYDNS_TOKEN",
-	"EASYDNS_KEY").
-	WithDomain("EASYDNS_DOMAIN")
+	EnvEndpoint,
+	EnvToken,
+	EnvKey).
+	WithDomain(envDomain)
 
 func setup() (*DNSProvider, *http.ServeMux, func()) {
 	handler := http.NewServeMux()
@@ -51,21 +53,21 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"EASYDNS_TOKEN": "TOKEN",
-				"EASYDNS_KEY":   "SECRET",
+				EnvToken: "TOKEN",
+				EnvKey:   "SECRET",
 			},
 		},
 		{
 			desc: "missing token",
 			envVars: map[string]string{
-				"EASYDNS_KEY": "SECRET",
+				EnvKey: "SECRET",
 			},
 			expected: "easydns: some credentials information are missing: EASYDNS_TOKEN",
 		},
 		{
 			desc: "missing key",
 			envVars: map[string]string{
-				"EASYDNS_TOKEN": "TOKEN",
+				EnvToken: "TOKEN",
 			},
 			expected: "easydns: some credentials information are missing: EASYDNS_KEY",
 		},

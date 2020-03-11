@@ -7,10 +7,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const envDomain = envNamespace + "DOMAIN"
+
 var envTest = tester.NewEnvTest(
-	"GLESYS_API_USER",
-	"GLESYS_API_KEY").
-	WithDomain("GLESYS_DOMAIN")
+	EnvAPIUser,
+	EnvAPIKey).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -21,31 +23,31 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"GLESYS_API_USER": "A",
-				"GLESYS_API_KEY":  "B",
+				EnvAPIUser: "A",
+				EnvAPIKey:  "B",
 			},
 		},
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				"GLESYS_API_USER": "",
-				"GLESYS_API_KEY":  "",
+				EnvAPIUser: "",
+				EnvAPIKey:  "",
 			},
 			expected: "glesys: some credentials information are missing: GLESYS_API_USER,GLESYS_API_KEY",
 		},
 		{
 			desc: "missing api user",
 			envVars: map[string]string{
-				"GLESYS_API_USER": "",
-				"GLESYS_API_KEY":  "B",
+				EnvAPIUser: "",
+				EnvAPIKey:  "B",
 			},
 			expected: "glesys: some credentials information are missing: GLESYS_API_USER",
 		},
 		{
 			desc: "missing api key",
 			envVars: map[string]string{
-				"GLESYS_API_USER": "A",
-				"GLESYS_API_KEY":  "",
+				EnvAPIUser: "A",
+				EnvAPIKey:  "",
 			},
 			expected: "glesys: some credentials information are missing: GLESYS_API_KEY",
 		},

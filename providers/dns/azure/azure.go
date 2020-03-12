@@ -83,6 +83,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
 	config.SubscriptionID = env.GetOrFile(EnvSubscriptionID)
 	config.ResourceGroup = env.GetOrFile(EnvResourceGroup)
+	config.ClientSecret = env.GetOrFile(EnvClientSecret)
 
 	return NewDNSProviderConfig(config)
 }

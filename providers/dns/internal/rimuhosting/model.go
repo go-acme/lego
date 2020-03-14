@@ -38,15 +38,13 @@ func (a APIError) Error() string {
 }
 
 type DNSAPIResult struct {
-	XMLName xml.Name `xml:"dnsapi_result"`
-	// Text         string       `xml:",chardata"`
+	XMLName      xml.Name     `xml:"dnsapi_result"`
 	IsOk         string       `xml:"is_ok"`
 	ResultCounts ResultCounts `xml:"result_counts"`
 	Actions      Actions      `xml:"actions"`
 }
 
 type ResultCounts struct {
-	// Text      string `xml:",chardata"`
 	Added     string `xml:"added,attr"`
 	Changed   string `xml:"changed,attr"`
 	Unchanged string `xml:"unchanged,attr"`
@@ -54,12 +52,10 @@ type ResultCounts struct {
 }
 
 type Actions struct {
-	// Text   string `xml:",chardata"`
 	Action Action `xml:"action"`
 }
 
 type Action struct {
-	// Text    string   `xml:",chardata"`
 	Action  string   `xml:"action,attr"`
 	Host    string   `xml:"host,attr"`
 	Type    string   `xml:"type,attr"`
@@ -67,7 +63,6 @@ type Action struct {
 }
 
 type Record struct {
-	// Text     string `xml:",chardata"`
 	Name     string `xml:"name,attr"`
 	Type     string `xml:"type,attr"`
 	Content  string `xml:"content,attr"`

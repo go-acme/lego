@@ -1,4 +1,4 @@
-package internal
+package rimuhosting
 
 import (
 	"encoding/xml"
@@ -51,7 +51,6 @@ func TestClient_FindTXTRecords(t *testing.T) {
 			domain: "example.com",
 			expected: []Record{
 				{
-					Text:     "",
 					Name:     "example.org",
 					Type:     "TXT",
 					Content:  "txttxtx",
@@ -65,16 +64,13 @@ func TestClient_FindTXTRecords(t *testing.T) {
 			domain: "**.example.com",
 			expected: []Record{
 				{
-					Text:     "",
 					Name:     "_test.example.org",
 					Type:     "TXT",
 					Content:  "txttxtx",
 					TTL:      "3600 seconds",
 					Priority: "0",
 				},
-
 				{
-					Text:     "",
 					Name:     "example.org",
 					Type:     "TXT",
 					Content:  "txttxtx",
@@ -134,18 +130,14 @@ func TestClient_DoActions(t *testing.T) {
 				Query: "action=SET&api_key=apikeyvaluehere&name=example.org&type=TXT&value=txttxtx",
 				Resp: &DNSAPIResult{
 					XMLName:      xml.Name{Space: "", Local: "dnsapi_result"},
-					Text:         "\n    \n    ",
 					IsOk:         "OK:",
-					ResultCounts: ResultCounts{Text: "", Added: "1", Changed: "0", Unchanged: "0", Deleted: "0"},
+					ResultCounts: ResultCounts{Added: "1", Changed: "0", Unchanged: "0", Deleted: "0"},
 					Actions: Actions{
-						Text: "\n\n        ",
 						Action: Action{
-							Text:   "\n            \t",
 							Action: "SET",
 							Host:   "example.org",
 							Type:   "TXT",
 							Records: []Record{{
-								Text:     "",
 								Name:     "example.org",
 								Type:     "TXT",
 								Content:  "txttxtx",
@@ -167,31 +159,29 @@ func TestClient_DoActions(t *testing.T) {
 				Query: "action[0]=SET&action[1]=SET&api_key=apikeyvaluehere&name[0]=example.org&name[1]=example.org&ttl[0]=0&ttl[1]=0&type[0]=TXT&type[1]=TXT&value[0]=txttxtx&value[1]=sample",
 				Resp: &DNSAPIResult{
 					XMLName:      xml.Name{Space: "", Local: "dnsapi_result"},
-					Text:         "\n    \n    ",
 					IsOk:         "OK:",
-					ResultCounts: ResultCounts{Text: "", Added: "2", Changed: "0", Unchanged: "0", Deleted: "0"},
+					ResultCounts: ResultCounts{Added: "2", Changed: "0", Unchanged: "0", Deleted: "0"},
 					Actions: Actions{
-						Text: "\n\n        \n        ",
 						Action: Action{
-							Text:   "\n            \t",
 							Action: "SET",
 							Host:   "example.org",
 							Type:   "TXT",
-							Records: []Record{{
-								Text:     "",
-								Name:     "example.org",
-								Type:     "TXT",
-								Content:  "txttxtx",
-								TTL:      "0 seconds",
-								Priority: "0",
-							}, {
-								Text:     "",
-								Name:     "example.org",
-								Type:     "TXT",
-								Content:  "sample",
-								TTL:      "0 seconds",
-								Priority: "0",
-							}},
+							Records: []Record{
+								{
+									Name:     "example.org",
+									Type:     "TXT",
+									Content:  "txttxtx",
+									TTL:      "0 seconds",
+									Priority: "0",
+								},
+								{
+									Name:     "example.org",
+									Type:     "TXT",
+									Content:  "sample",
+									TTL:      "0 seconds",
+									Priority: "0",
+								},
+							},
 						}}},
 			},
 		},
@@ -215,13 +205,11 @@ func TestClient_DoActions(t *testing.T) {
 			expected: expected{
 				Query: "action=DELETE&api_key=apikeyvaluehere&name=example.org&type=TXT&value=nothing",
 				Resp: &DNSAPIResult{
-					XMLName: xml.Name{Space: "", Local: "dnsapi_result"},
-					Text:    "\n    \n    ", IsOk: "OK:",
-					ResultCounts: ResultCounts{Text: "", Added: "0", Changed: "0", Unchanged: "0", Deleted: "0"},
+					XMLName:      xml.Name{Space: "", Local: "dnsapi_result"},
+					IsOk:         "OK:",
+					ResultCounts: ResultCounts{Added: "0", Changed: "0", Unchanged: "0", Deleted: "0"},
 					Actions: Actions{
-						Text: "\n\n        ",
 						Action: Action{
-							Text:    "",
 							Action:  "DELETE",
 							Host:    "example.org",
 							Type:    "TXT",
@@ -239,18 +227,14 @@ func TestClient_DoActions(t *testing.T) {
 				Query: "action=DELETE&api_key=apikeyvaluehere&name=example.org&type=TXT&value=txttxtx",
 				Resp: &DNSAPIResult{
 					XMLName:      xml.Name{Space: "", Local: "dnsapi_result"},
-					Text:         "\n    \n    ",
 					IsOk:         "OK:",
-					ResultCounts: ResultCounts{Text: "", Added: "0", Changed: "0", Unchanged: "0", Deleted: "1"},
+					ResultCounts: ResultCounts{Added: "0", Changed: "0", Unchanged: "0", Deleted: "1"},
 					Actions: Actions{
-						Text: "\n\n        ",
 						Action: Action{
-							Text:   "\n            \t",
 							Action: "DELETE",
 							Host:   "example.org",
 							Type:   "TXT",
 							Records: []Record{{
-								Text:     "",
 								Name:     "example.org",
 								Type:     "TXT",
 								Content:  "txttxtx",

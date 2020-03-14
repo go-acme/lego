@@ -1,4 +1,4 @@
-package internal
+package rimuhosting
 
 import (
 	"encoding/xml"
@@ -11,7 +11,10 @@ import (
 	querystring "github.com/google/go-querystring/query"
 )
 
-const defaultBaseURL = "https://rimuhosting.com/app/dns/dyndns.jsp"
+const (
+	DefaultZonomiBaseURL      = "https://zonomi.com/app/dns/dyndns.jsp"
+	DefaultRimuHostingBaseURL = "https://rimuhosting.com/app/dns/dyndns.jsp"
+)
 
 // Action names.
 const (
@@ -20,7 +23,7 @@ const (
 	DeleteAction = "DELETE"
 )
 
-// Client the RimuHosting client.
+// Client the RimuHosting/Zonomi client.
 type Client struct {
 	apiKey string
 
@@ -28,19 +31,19 @@ type Client struct {
 	BaseURL    string
 }
 
-// NewClient Creates a RimuHosting client.
+// NewClient Creates a RimuHosting/Zonomi client.
 func NewClient(apiKey string) *Client {
 	return &Client{
 		HTTPClient: http.DefaultClient,
-		BaseURL:    defaultBaseURL,
+		BaseURL:    DefaultZonomiBaseURL,
 		apiKey:     apiKey,
 	}
 }
 
 // FindTXTRecords Finds TXT records.
 // ex:
-// - https://rimuhosting.com/app/dns/dyndns.jsp?action=QUERY&name=example.com&api_key=apikeyvaluehere
-// - https://rimuhosting.com/app/dns/dyndns.jsp?action=QUERY&name=**.example.com&api_key=apikeyvaluehere
+// - https://zonomi.com/app/dns/dyndns.jsp?action=QUERY&name=example.com&api_key=apikeyvaluehere
+// - https://zonomi.com/app/dns/dyndns.jsp?action=QUERY&name=**.example.com&api_key=apikeyvaluehere
 func (c Client) FindTXTRecords(domain string) ([]Record, error) {
 	action := ActionParameter{
 		Action: QueryAction,

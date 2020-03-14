@@ -9,7 +9,7 @@ import (
 
 	"github.com/go-acme/lego/v3/challenge/dns01"
 	"github.com/go-acme/lego/v3/platform/config/env"
-	"github.com/go-acme/lego/v3/providers/dns/zonomi/internal"
+	"github.com/go-acme/lego/v3/providers/dns/internal/rimuhosting"
 )
 
 // Environment variables names.
@@ -49,7 +49,7 @@ func NewDefaultConfig() *Config {
 // DNSProvider is an implementation of the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
-	client *internal.Client
+	client *rimuhosting.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Zonomi.
@@ -76,7 +76,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("zonomi: incomplete credentials, missing API key")
 	}
 
-	client := internal.NewClient(config.APIKey)
+	client := rimuhosting.NewClient(config.APIKey)
+	client.BaseURL = rimuhosting.DefaultZonomiBaseURL
 
 	return &DNSProvider{config: config, client: client}, nil
 }
@@ -96,12 +97,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("zonomi: failed to find record(s) for %s: %w", domain, err)
 	}
 
-	actions := []internal.ActionParameter{
-		internal.AddRecord(dns01.UnFqdn(fqdn), value, d.config.TTL),
+	actions := []rimuhosting.ActionParameter{
+		rimuhosting.AddRecord(dns01.UnFqdn(fqdn), value, d.config.TTL),
 	}
 
 	for _, record := range records {
-		actions = append(actions, internal.AddRecord(record.Name, record.Content, d.config.TTL))
+		actions = append(actions, rimuhosting.AddRecord(record.Name, record.Content, d.config.TTL))
 	}
 
 	_, err = d.client.DoActions(actions...)
@@ -116,7 +117,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	action := internal.DeleteRecord(dns01.UnFqdn(fqdn), value)
+	action := rimuhosting.DeleteRecord(dns01.UnFqdn(fqdn), value)
 
 	_, err := d.client.DoActions(action)
 	if err != nil {

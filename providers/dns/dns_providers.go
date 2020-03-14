@@ -60,6 +60,7 @@ import (
 	"github.com/go-acme/lego/v3/providers/dns/rackspace"
 	"github.com/go-acme/lego/v3/providers/dns/regru"
 	"github.com/go-acme/lego/v3/providers/dns/rfc2136"
+	"github.com/go-acme/lego/v3/providers/dns/rimuhosting"
 	"github.com/go-acme/lego/v3/providers/dns/route53"
 	"github.com/go-acme/lego/v3/providers/dns/sakuracloud"
 	"github.com/go-acme/lego/v3/providers/dns/scaleway"
@@ -72,6 +73,7 @@ import (
 	"github.com/go-acme/lego/v3/providers/dns/vscale"
 	"github.com/go-acme/lego/v3/providers/dns/vultr"
 	"github.com/go-acme/lego/v3/providers/dns/zoneee"
+	"github.com/go-acme/lego/v3/providers/dns/zonomi"
 )
 
 // NewDNSChallengeProviderByName Factory for DNS providers
@@ -187,10 +189,12 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return rackspace.NewDNSProvider()
 	case "regru":
 		return regru.NewDNSProvider()
-	case "route53":
-		return route53.NewDNSProvider()
 	case "rfc2136":
 		return rfc2136.NewDNSProvider()
+	case "rimuhosting":
+		return rimuhosting.NewDNSProvider()
+	case "route53":
+		return route53.NewDNSProvider()
 	case "sakuracloud":
 		return sakuracloud.NewDNSProvider()
 	case "scaleway":
@@ -213,6 +217,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return vscale.NewDNSProvider()
 	case "zoneee":
 		return zoneee.NewDNSProvider()
+	case "zonomi":
+		return zonomi.NewDNSProvider()
 	default:
 		return nil, fmt.Errorf("unrecognized DNS provider: %s", name)
 	}

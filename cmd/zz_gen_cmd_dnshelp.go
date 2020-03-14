@@ -69,6 +69,7 @@ func allDNSCodes() string {
 		"rackspace",
 		"regru",
 		"rfc2136",
+		"rimuhosting",
 		"route53",
 		"sakuracloud",
 		"scaleway",
@@ -81,6 +82,7 @@ func allDNSCodes() string {
 		"vscale",
 		"vultr",
 		"zoneee",
+		"zonomi",
 	}
 	sort.Strings(providers)
 	return strings.Join(providers, ", ")
@@ -1260,6 +1262,26 @@ func displayDNSHelp(name string) error {
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/rfc2136`)
 
+	case "rimuhosting":
+		// generated from: providers/dns/rimuhosting/rimuhosting.toml
+		ew.writeln(`Configuration for RimuHosting.`)
+		ew.writeln(`Code:	'rimuhosting'`)
+		ew.writeln(`Since:	'v0.3.5'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "RIMUHOSTING_API_KEY":	User API key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "RIMUHOSTING_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "RIMUHOSTING_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "RIMUHOSTING_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "RIMUHOSTING_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/rimuhosting`)
+
 	case "route53":
 		// generated from: providers/dns/route53/route53.toml
 		ew.writeln(`Configuration for Amazon Route 53.`)
@@ -1515,6 +1537,26 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/zoneee`)
+
+	case "zonomi":
+		// generated from: providers/dns/zonomi/zonomi.toml
+		ew.writeln(`Configuration for Zonomi.`)
+		ew.writeln(`Code:	'zonomi'`)
+		ew.writeln(`Since:	'v0.3.5'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "ZONOMI_API_KEY":	User API key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "ZONOMI_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "ZONOMI_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "ZONOMI_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "ZONOMI_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/zonomi`)
 
 	case "manual":
 		ew.writeln(`Solving the DNS-01 challenge using CLI prompt.`)

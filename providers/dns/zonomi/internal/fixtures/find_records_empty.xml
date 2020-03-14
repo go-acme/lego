@@ -1,0 +1,12 @@
+<?xml version ="1.0"  ?><!DOCTYPE html [<!ENTITY nbsp '&#160;'><!ENTITY trade '&#8482;'><!ENTITY copy '&#169;'>]><dnsapi_result><is_ok>OK:</is_ok>
+    <result_counts
+            added="0"
+            changed="0"
+            unchanged="0"
+            deleted="0"/>
+    <actions>
+
+        <action
+                action="QUERY"
+                host="example.org"
+                type="TXT"></action></actions></dnsapi_result>

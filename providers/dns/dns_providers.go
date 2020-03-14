@@ -72,6 +72,7 @@ import (
 	"github.com/go-acme/lego/v3/providers/dns/vscale"
 	"github.com/go-acme/lego/v3/providers/dns/vultr"
 	"github.com/go-acme/lego/v3/providers/dns/zoneee"
+	"github.com/go-acme/lego/v3/providers/dns/zonomi"
 )
 
 // NewDNSChallengeProviderByName Factory for DNS providers
@@ -213,6 +214,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return vscale.NewDNSProvider()
 	case "zoneee":
 		return zoneee.NewDNSProvider()
+	case "zonomi":
+		return zonomi.NewDNSProvider()
 	default:
 		return nil, fmt.Errorf("unrecognized DNS provider: %s", name)
 	}

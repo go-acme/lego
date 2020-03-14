@@ -69,6 +69,7 @@ func allDNSCodes() string {
 		"rackspace",
 		"regru",
 		"rfc2136",
+		"rimuhosting",
 		"route53",
 		"sakuracloud",
 		"scaleway",
@@ -1260,6 +1261,26 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/rfc2136`)
+
+	case "rimuhosting":
+		// generated from: providers/dns/rimuhosting/rimuhosting.toml
+		ew.writeln(`Configuration for RimuHosting.`)
+		ew.writeln(`Code:	'rimuhosting'`)
+		ew.writeln(`Since:	'v0.3.5'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "RIMUHOSTING_API_KEY":	User API key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "RIMUHOSTING_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "RIMUHOSTING_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "RIMUHOSTING_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "RIMUHOSTING_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/rimuhosting`)
 
 	case "route53":
 		// generated from: providers/dns/route53/route53.toml

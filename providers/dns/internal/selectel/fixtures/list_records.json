@@ -1,0 +1,26 @@
+[
+  {
+    "id": 123,
+    "name": "example.com",
+    "type": "TXT",
+    "ttl": 60,
+    "email": "email@example.com",
+    "content": "txttxttxtA"
+  },
+  {
+    "id": 1234,
+    "name": "example.org",
+    "type": "TXT",
+    "ttl": 60,
+    "email": "email@example.org",
+    "content": "txttxttxtB"
+  },
+  {
+    "id": 12345,
+    "name": "example.net",
+    "type": "TXT",
+    "ttl": 60,
+    "email": "email@example.net",
+    "content": "txttxttxtC"
+  }
+]

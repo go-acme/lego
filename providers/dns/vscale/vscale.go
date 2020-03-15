@@ -10,15 +10,11 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v3/challenge/dns01"
-	"github.com/go-acme/lego/v3/providers/dns/vscale/internal"
-
 	"github.com/go-acme/lego/v3/platform/config/env"
+	"github.com/go-acme/lego/v3/providers/dns/internal/selectel"
 )
 
-const (
-	defaultBaseURL = "https://api.vscale.io/v1/domains"
-	minTTL         = 60
-)
+const minTTL = 60
 
 // Environment variables names.
 const (
@@ -46,7 +42,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		BaseURL:            env.GetOrDefaultString(EnvBaseURL, defaultBaseURL),
+		BaseURL:            env.GetOrDefaultString(EnvBaseURL, selectel.DefaultVScaleBaseURL),
 		TTL:                env.GetOrDefaultInt(EnvTTL, minTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 120*time.Second),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
@@ -59,7 +55,7 @@ func NewDefaultConfig() *Config {
 // DNSProvider is an implementation of the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
-	client *internal.Client
+	client *selectel.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Vscale Domains API.
@@ -90,11 +86,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("vscale: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL)
 	}
 
-	client := internal.NewClient(internal.ClientOpts{
-		BaseURL:    config.BaseURL,
-		Token:      config.Token,
-		HTTPClient: config.HTTPClient,
-	})
+	client := selectel.NewClient(config.Token)
+	client.BaseURL = config.BaseURL
+	client.HTTPClient = config.HTTPClient
 
 	return &DNSProvider{config: config, client: client}, nil
 }
@@ -114,7 +108,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("vscale: %w", err)
 	}
 
-	txtRecord := internal.Record{
+	txtRecord := selectel.Record{
 		Type:    "TXT",
 		TTL:     d.config.TTL,
 		Name:    fqdn,

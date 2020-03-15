@@ -1,5 +1,28 @@
 # Changelog
 
+## [v3.5.0] - 2020-03-15
+
+### Added:
+
+- **[dnsprovider]** Add DNS provider for Dynu.
+- **[dnsprovider]** Add DNS provider for reg.ru
+- **[dnsprovider]** Add DNS provider for Zonomi and RimuHosting.
+- **[cli]** Building binaries for arm 6 and 5
+- **[cli]** Uses CGO_ENABLED=0
+- **[cli]** Multi-arch Docker image.
+- **[cli]** Adds `--name` flag to list command.
+
+### Changed:
+
+- **[lib]** lib: Improve cleanup log messages.
+- **[lib]** Wrap errors.
+
+### Fixed:
+
+- **[dnsprovider]** azure: pass AZURE_CLIENT_SECRET_FILE to autorest.Authorizer
+- **[dnsprovider]** gcloud: fixes issues when used with GKE Workload Identity
+- **[dnsprovider]** oraclecloud: fix subdomain support
+
 ## [v3.4.0] - 2020-02-25
 
 ### Added:

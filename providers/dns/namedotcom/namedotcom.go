@@ -108,15 +108,20 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
+	domainDetails, err := d.client.GetDomain(&namecom.GetDomainRequest{DomainName: domain})
+	if err != nil {
+		return fmt.Errorf("namedotcom API call failed: %v", err)
+	}
+
 	request := &namecom.Record{
 		DomainName: domain,
-		Host:       d.extractRecordName(fqdn, domain),
+		Host:       d.extractRecordName(fqdn, domainDetails.DomainName),
 		Type:       "TXT",
 		TTL:        uint32(d.config.TTL),
 		Answer:     value,
 	}
 
-	_, err := d.client.CreateRecord(request)
+	_, err = d.client.CreateRecord(request)
 	if err != nil {
 		return fmt.Errorf("namedotcom: API call failed: %w", err)
 	}

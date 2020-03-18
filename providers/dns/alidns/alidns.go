@@ -7,6 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"golang.org/x/net/idna"
+
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk"
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth/credentials"
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
@@ -114,7 +116,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("alicloud: %w", err)
 	}
 
-	recordAttributes := d.newTxtRecord(zoneName, fqdn, value)
+	recordAttributes, err := d.newTxtRecord(zoneName, fqdn, value)
+	if err != nil {
+		return err
+	}
 
 	_, err = d.client.AddDomainRecord(recordAttributes)
 	if err != nil {
@@ -178,7 +183,7 @@ func (d *DNSProvider) getHostedZone(domain string) (string, error) {
 
 	var hostedZone alidns.Domain
 	for _, zone := range domains {
-		if zone.DomainName == dns01.UnFqdn(authZone) {
+		if zone.DomainName == dns01.UnFqdn(authZone) || zone.PunyCode == dns01.UnFqdn(authZone) {
 			hostedZone = zone
 		}
 	}
@@ -190,14 +195,18 @@ func (d *DNSProvider) getHostedZone(domain string) (string, error) {
 	return hostedZone.DomainName, nil
 }
 
-func (d *DNSProvider) newTxtRecord(zone, fqdn, value string) *alidns.AddDomainRecordRequest {
+func (d *DNSProvider) newTxtRecord(zone, fqdn, value string) (*alidns.AddDomainRecordRequest, error) {
 	request := alidns.CreateAddDomainRecordRequest()
 	request.Type = "TXT"
 	request.DomainName = zone
-	request.RR = d.extractRecordName(fqdn, zone)
+	punycodeName, err := idna.ToASCII(zone)
+	if err != nil {
+		return nil, err
+	}
+	request.RR = d.extractRecordName(fqdn, punycodeName)
 	request.Value = value
 	request.TTL = requests.NewInteger(d.config.TTL)
-	return request
+	return request, nil
 }
 
 func (d *DNSProvider) findTxtRecords(domain, fqdn string) ([]alidns.Record, error) {
@@ -217,7 +226,11 @@ func (d *DNSProvider) findTxtRecords(domain, fqdn string) ([]alidns.Record, erro
 		return records, fmt.Errorf("API call has failed: %w", err)
 	}
 
-	recordName := d.extractRecordName(fqdn, zoneName)
+	punycodeName, err := idna.ToASCII(zoneName)
+	recordName := d.extractRecordName(fqdn, punycodeName)
+	if err != nil {
+		return nil, err
+	}
 	for _, record := range result.DomainRecords.Record {
 		if record.RR == recordName {
 			records = append(records, record)

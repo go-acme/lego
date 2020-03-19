@@ -7,14 +7,13 @@ import (
 	"strings"
 	"time"
 
-	"golang.org/x/net/idna"
-
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk"
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth/credentials"
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/alidns"
 	"github.com/go-acme/lego/v3/challenge/dns01"
 	"github.com/go-acme/lego/v3/platform/config/env"
+	"golang.org/x/net/idna"
 )
 
 const defaultRegionID = "cn-hangzhou"
@@ -199,13 +198,16 @@ func (d *DNSProvider) newTxtRecord(zone, fqdn, value string) (*alidns.AddDomainR
 	request := alidns.CreateAddDomainRecordRequest()
 	request.Type = "TXT"
 	request.DomainName = zone
-	punycodeName, err := idna.ToASCII(zone)
+
+	var err error
+	request.RR, err = d.extractRecordName(fqdn, zone)
 	if err != nil {
 		return nil, err
 	}
-	request.RR = d.extractRecordName(fqdn, punycodeName)
+
 	request.Value = value
 	request.TTL = requests.NewInteger(d.config.TTL)
+
 	return request, nil
 }
 
@@ -226,11 +228,11 @@ func (d *DNSProvider) findTxtRecords(domain, fqdn string) ([]alidns.Record, erro
 		return records, fmt.Errorf("API call has failed: %w", err)
 	}
 
-	punycodeName, err := idna.ToASCII(zoneName)
-	recordName := d.extractRecordName(fqdn, punycodeName)
+	recordName, err := d.extractRecordName(fqdn, zoneName)
 	if err != nil {
 		return nil, err
 	}
+
 	for _, record := range result.DomainRecords.Record {
 		if record.RR == recordName {
 			records = append(records, record)
@@ -239,10 +241,15 @@ func (d *DNSProvider) findTxtRecords(domain, fqdn string) ([]alidns.Record, erro
 	return records, nil
 }
 
-func (d *DNSProvider) extractRecordName(fqdn, domain string) string {
-	name := dns01.UnFqdn(fqdn)
-	if idx := strings.Index(name, "."+domain); idx != -1 {
-		return name[:idx]
+func (d *DNSProvider) extractRecordName(fqdn, domain string) (string, error) {
+	asciiDomain, err := idna.ToASCII(domain)
+	if err != nil {
+		return "", fmt.Errorf("fail to convert punycode: %w", err)
 	}
-	return name
+
+	name := dns01.UnFqdn(fqdn)
+	if idx := strings.Index(name, "."+asciiDomain); idx != -1 {
+		return name[:idx], nil
+	}
+	return name, nil
 }

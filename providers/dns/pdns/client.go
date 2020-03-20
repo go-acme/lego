@@ -160,7 +160,7 @@ func (d *DNSProvider) sendRequest(method, uri string, body io.Reader) (json.RawM
 
 	resp, err := d.config.HTTPClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("error talking to PDNS API -> %w", err)
+		return nil, fmt.Errorf("error talking to PDNS API: %w", err)
 	}
 
 	defer resp.Body.Close()
@@ -188,7 +188,7 @@ func (d *DNSProvider) sendRequest(method, uri string, body io.Reader) (json.RawM
 			return nil, err
 		}
 		if errInfo.ShortMsg != "" {
-			return nil, fmt.Errorf("error talking to PDNS API -> %w", errInfo)
+			return nil, fmt.Errorf("error talking to PDNS API: %w", errInfo)
 		}
 	}
 	return msg, nil

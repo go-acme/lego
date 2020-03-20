@@ -128,13 +128,13 @@ func (s *AccountsStorage) Save(account *Account) error {
 func (s *AccountsStorage) LoadAccount(privateKey crypto.PrivateKey) *Account {
 	fileBytes, err := ioutil.ReadFile(s.accountFilePath)
 	if err != nil {
-		log.Fatalf("Could not load file for account %s -> %v", s.userID, err)
+		log.Fatalf("Could not load file for account %s: %v", s.userID, err)
 	}
 
 	var account Account
 	err = json.Unmarshal(fileBytes, &account)
 	if err != nil {
-		log.Fatalf("Could not parse file for account %s -> %v", s.userID, err)
+		log.Fatalf("Could not parse file for account %s: %v", s.userID, err)
 	}
 
 	account.key = privateKey
@@ -142,13 +142,13 @@ func (s *AccountsStorage) LoadAccount(privateKey crypto.PrivateKey) *Account {
 	if account.Registration == nil || account.Registration.Body.Status == "" {
 		reg, err := tryRecoverRegistration(s.ctx, privateKey)
 		if err != nil {
-			log.Fatalf("Could not load account for %s. Registration is nil -> %#v", s.userID, err)
+			log.Fatalf("Could not load account for %s. Registration is nil: %#v", s.userID, err)
 		}
 
 		account.Registration = reg
 		err = s.Save(&account)
 		if err != nil {
-			log.Fatalf("Could not save account for %s. Registration is nil -> %#v", s.userID, err)
+			log.Fatalf("Could not save account for %s. Registration is nil: %#v", s.userID, err)
 		}
 	}
 

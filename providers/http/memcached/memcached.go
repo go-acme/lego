@@ -48,7 +48,7 @@ func (w *HTTPProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	if len(errs) == len(w.hosts) {
-		return fmt.Errorf("unable to store key in any of the memcache hosts -> %v", errs)
+		return fmt.Errorf("unable to store key in any of the memcache hosts: %v", errs)
 	}
 
 	return nil

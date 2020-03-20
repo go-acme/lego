@@ -57,7 +57,7 @@ func (n *Manager) Nonce() (string, error) {
 func (n *Manager) getNonce() (string, error) {
 	resp, err := n.do.Head(n.nonceURL)
 	if err != nil {
-		return "", fmt.Errorf("failed to get nonce from HTTP HEAD -> %w", err)
+		return "", fmt.Errorf("failed to get nonce from HTTP HEAD: %w", err)
 	}
 
 	return GetFromResponse(resp)

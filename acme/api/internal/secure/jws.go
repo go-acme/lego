@@ -65,12 +65,12 @@ func (j *JWS) SignContent(url string, content []byte) (*jose.JSONWebSignature, e
 
 	signer, err := jose.NewSigner(signKey, &options)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create jose signer -> %w", err)
+		return nil, fmt.Errorf("failed to create jose signer: %w", err)
 	}
 
 	signed, err := signer.Sign(content)
 	if err != nil {
-		return nil, fmt.Errorf("failed to sign content -> %w", err)
+		return nil, fmt.Errorf("failed to sign content: %w", err)
 	}
 	return signed, nil
 }
@@ -94,12 +94,12 @@ func (j *JWS) SignEABContent(url, kid string, hmac []byte) (*jose.JSONWebSignatu
 		},
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create External Account Binding jose signer -> %w", err)
+		return nil, fmt.Errorf("failed to create External Account Binding jose signer: %w", err)
 	}
 
 	signed, err := signer.Sign(jwkJSON)
 	if err != nil {
-		return nil, fmt.Errorf("failed to External Account Binding sign content -> %w", err)
+		return nil, fmt.Errorf("failed to External Account Binding sign content: %w", err)
 	}
 
 	return signed, nil

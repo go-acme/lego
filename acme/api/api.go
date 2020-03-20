@@ -118,7 +118,7 @@ func (a *Core) retrievablePost(uri string, content []byte, response interface{})
 func (a *Core) signedPost(uri string, content []byte, response interface{}) (*http.Response, error) {
 	signedContent, err := a.jws.SignContent(uri, content)
 	if err != nil {
-		return nil, fmt.Errorf("failed to post JWS message -> failed to sign content -> %w", err)
+		return nil, fmt.Errorf("failed to post JWS message: failed to sign content: %w", err)
 	}
 
 	signedBody := bytes.NewBuffer([]byte(signedContent.FullSerialize()))

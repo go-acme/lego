@@ -76,7 +76,7 @@ The CLI does not require root permissions but needs to bind to port 80 and 443 f
 To run the CLI without sudo, you have four options:
 
 - Use setcap 'cap_net_bind_service=+ep' /path/to/program
-- Pass the `--http.port` or/and the `--tls.port` option and specify a custom port to bind to. In this case you have to forward port 80/443 to these custom ports (see [Port Usage](usage/cli#port-usage)).
+- Pass the `--http.port` or/and the `--tls.port` option and specify a custom port to bind to. In this case you have to forward port 80/443 to these custom ports (see [Port Usage](#port-usage)).
 - Pass the `--http.webroot` option and specify the path to your webroot folder. In this case the challenge will be written in a file in `.well-known/acme-challenge/` inside your webroot.
 - Pass the `--dns` option and specify a DNS provider.
 

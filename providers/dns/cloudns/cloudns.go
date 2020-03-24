@@ -17,6 +17,7 @@ const (
 	envNamespace = "CLOUDNS_"
 
 	EnvAuthID       = envNamespace + "AUTH_ID"
+	EnvSubAuthID    = envNamespace + "SUB_AUTH_ID"
 	EnvAuthPassword = envNamespace + "AUTH_PASSWORD"
 
 	EnvTTL                = envNamespace + "TTL"
@@ -28,6 +29,7 @@ const (
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	AuthID             string
+	SubAuthID          string
 	AuthPassword       string
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -57,13 +59,14 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables:
 // CLOUDNS_AUTH_ID and CLOUDNS_AUTH_PASSWORD.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvAuthID, EnvAuthPassword)
+	values, err := env.Get(EnvAuthID, EnvSubAuthID, EnvAuthPassword)
 	if err != nil {
 		return nil, fmt.Errorf("ClouDNS: %w", err)
 	}
 
 	config := NewDefaultConfig()
 	config.AuthID = values[EnvAuthID]
+	config.SubAuthID = values[EnvSubAuthID]
 	config.AuthPassword = values[EnvAuthPassword]
 
 	return NewDNSProviderConfig(config)
@@ -75,7 +78,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("ClouDNS: the configuration of the DNS provider is nil")
 	}
 
-	client, err := internal.NewClient(config.AuthID, config.AuthPassword)
+	client, err := internal.NewClient(config.AuthID, config.SubAuthID, config.AuthPassword)
 	if err != nil {
 		return nil, fmt.Errorf("ClouDNS: %w", err)
 	}

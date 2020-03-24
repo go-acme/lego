@@ -299,6 +299,7 @@ func displayDNSHelp(name string) error {
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "CLOUDNS_AUTH_ID":	The API user ID`)
 		ew.writeln(`	- "CLOUDNS_AUTH_PASSWORD":	The password for API user ID`)
+		ew.writeln(`	- "CLOUDNS_SUB_AUTH_ID":	The API sub user ID`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)

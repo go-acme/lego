@@ -62,7 +62,7 @@ func TestClientGetZone(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			server := httptest.NewServer(handlerMock(http.MethodGet, test.apiResponse))
 
-			client, _ := NewClient("myAuthID", "myAuthPassword")
+			client, _ := NewClient("myAuthID", "", "myAuthPassword")
 			mockBaseURL, _ := url.Parse(fmt.Sprintf("%s/", server.URL))
 			client.BaseURL = mockBaseURL
 
@@ -140,7 +140,7 @@ func TestClientFindTxtRecord(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			server := httptest.NewServer(handlerMock(http.MethodGet, test.apiResponse))
 
-			client, _ := NewClient("myAuthID", "myAuthPassword")
+			client, _ := NewClient("myAuthID", "", "myAuthPassword")
 			mockBaseURL, _ := url.Parse(fmt.Sprintf("%s/", server.URL))
 			client.BaseURL = mockBaseURL
 
@@ -231,7 +231,7 @@ func TestClientAddTxtRecord(t *testing.T) {
 				handlerMock(http.MethodPost, test.apiResponse).ServeHTTP(rw, req)
 			}))
 
-			client, _ := NewClient("myAuthID", "myAuthPassword")
+			client, _ := NewClient("myAuthID", "", "myAuthPassword")
 			mockBaseURL, _ := url.Parse(fmt.Sprintf("%s/", server.URL))
 			client.BaseURL = mockBaseURL
 

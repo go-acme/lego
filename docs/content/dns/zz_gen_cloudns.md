@@ -31,6 +31,7 @@ _Please contribute by adding a CLI example._
 |-----------------------|-------------|
 | `CLOUDNS_AUTH_ID` | The API user ID |
 | `CLOUDNS_AUTH_PASSWORD` | The password for API user ID |
+| `CLOUDNS_SUB_AUTH_ID` | The API sub user ID |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).

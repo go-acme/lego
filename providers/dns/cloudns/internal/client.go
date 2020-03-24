@@ -42,8 +42,8 @@ type TXTRecords map[string]TXTRecord
 
 // NewClient creates a ClouDNS client
 func NewClient(authID string, subAuthID string, authPassword string) (*Client, error) {
-	if authID == "" || subAuthID == "" {
-		return nil, errors.New("credentials missing: authID")
+	if authID == "" && subAuthID == "" {
+		return nil, errors.New("credentials missing: authID or subAuthID")
 	}
 
 	if authPassword == "" {
@@ -232,12 +232,14 @@ func (c *Client) doRequest(method string, url *url.URL) (json.RawMessage, error)
 func (c *Client) buildRequest(method string, url *url.URL) (*http.Request, error) {
 	q := url.Query()
 
-	if c.subAuthID != "" {
-		q.Add("sub-auth-id", c.subAuthID)
-	} else {
+	if c.authID != "" {
 		q.Add("auth-id", c.authID)
+	} else {
+		q.Add("sub-auth-id", c.subAuthID)
 	}
+
 	q.Add("auth-password", c.authPassword)
+
 	url.RawQuery = q.Encode()
 
 	req, err := http.NewRequest(method, url.String(), nil)

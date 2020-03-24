@@ -12,6 +12,7 @@ const envDomain = envNamespace + "DOMAIN"
 
 var envTest = tester.NewEnvTest(
 	EnvAuthID,
+	EnvSubAuthID,
 	EnvAuthPassword).
 	WithDomain(envDomain)
 
@@ -22,9 +23,18 @@ func TestNewDNSProvider(t *testing.T) {
 		expected string
 	}{
 		{
-			desc: "success",
+			desc: "success auth-id",
 			envVars: map[string]string{
 				EnvAuthID:       "123",
+				EnvSubAuthID:    "",
+				EnvAuthPassword: "456",
+			},
+		},
+		{
+			desc: "success sub-auth-id",
+			envVars: map[string]string{
+				EnvAuthID:       "",
+				EnvSubAuthID:    "123",
 				EnvAuthPassword: "456",
 			},
 		},
@@ -32,22 +42,34 @@ func TestNewDNSProvider(t *testing.T) {
 			desc: "missing credentials",
 			envVars: map[string]string{
 				EnvAuthID:       "",
+				EnvSubAuthID:    "",
 				EnvAuthPassword: "",
 			},
-			expected: "ClouDNS: some credentials information are missing: CLOUDNS_AUTH_ID,CLOUDNS_AUTH_PASSWORD",
+			expected: "ClouDNS: some credentials information are missing: CLOUDNS_AUTH_ID or CLOUDNS_SUB_AUTH_ID",
 		},
 		{
 			desc: "missing auth-id",
 			envVars: map[string]string{
 				EnvAuthID:       "",
+				EnvSubAuthID:    "",
 				EnvAuthPassword: "456",
 			},
-			expected: "ClouDNS: some credentials information are missing: CLOUDNS_AUTH_ID",
+			expected: "ClouDNS: some credentials information are missing: CLOUDNS_AUTH_ID or CLOUDNS_SUB_AUTH_ID",
+		},
+		{
+			desc: "missing sub-auth-id",
+			envVars: map[string]string{
+				EnvAuthID:       "",
+				EnvSubAuthID:    "",
+				EnvAuthPassword: "456",
+			},
+			expected: "ClouDNS: some credentials information are missing: CLOUDNS_AUTH_ID or CLOUDNS_SUB_AUTH_ID",
 		},
 		{
 			desc: "missing auth-password",
 			envVars: map[string]string{
 				EnvAuthID:       "123",
+				EnvSubAuthID:    "",
 				EnvAuthPassword: "",
 			},
 			expected: "ClouDNS: some credentials information are missing: CLOUDNS_AUTH_PASSWORD",
@@ -79,22 +101,39 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	testCases := []struct {
 		desc         string
 		authID       string
+		subAuthID    string
 		authPassword string
 		expected     string
 	}{
 		{
-			desc:         "success",
+			desc:         "success auth-id",
 			authID:       "123",
+			subAuthID:    "",
+			authPassword: "456",
+		},
+		{
+			desc:         "success sub-auth-id",
+			authID:       "",
+			subAuthID:    "123",
 			authPassword: "456",
 		},
 		{
 			desc:     "missing credentials",
-			expected: "ClouDNS: credentials missing: authID",
+			expected: "ClouDNS: credentials missing: authID or subAuthID",
 		},
 		{
 			desc:         "missing auth-id",
+			authID:       "",
+			subAuthID:    "",
 			authPassword: "456",
-			expected:     "ClouDNS: credentials missing: authID",
+			expected:     "ClouDNS: credentials missing: authID or subAuthID",
+		},
+		{
+			desc:         "missing sub-auth-id",
+			authID:       "",
+			subAuthID:    "",
+			authPassword: "456",
+			expected:     "ClouDNS: credentials missing: authID or subAuthID",
 		},
 		{
 			desc:     "missing auth-password",
@@ -107,6 +146,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			config := NewDefaultConfig()
 			config.AuthID = test.authID
+			config.SubAuthID = test.subAuthID
 			config.AuthPassword = test.authPassword
 
 			p, err := NewDNSProviderConfig(config)

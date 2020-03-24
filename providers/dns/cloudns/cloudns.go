@@ -59,14 +59,24 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables:
 // CLOUDNS_AUTH_ID and CLOUDNS_AUTH_PASSWORD.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvAuthID, EnvSubAuthID, EnvAuthPassword)
+	var subAuthID string
+	authID := env.GetOrFile(EnvAuthID)
+	if authID == "" {
+		subAuthID = env.GetOrFile(EnvSubAuthID)
+	}
+
+	if authID == "" && subAuthID == "" {
+		return nil, fmt.Errorf("ClouDNS: some credentials information are missing: %s or %s", EnvAuthID, EnvSubAuthID)
+	}
+
+	values, err := env.Get(EnvAuthPassword)
 	if err != nil {
 		return nil, fmt.Errorf("ClouDNS: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.AuthID = values[EnvAuthID]
-	config.SubAuthID = values[EnvSubAuthID]
+	config.AuthID = authID
+	config.SubAuthID = subAuthID
 	config.AuthPassword = values[EnvAuthPassword]
 
 	return NewDNSProviderConfig(config)

@@ -62,7 +62,7 @@ func TestClientGetZone(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			server := httptest.NewServer(handlerMock(http.MethodGet, test.apiResponse))
 
-			client, _ := NewClient("myAuthID", "myAuthPassword")
+			client, _ := NewClient("myAuthID", "", "myAuthPassword")
 			mockBaseURL, _ := url.Parse(fmt.Sprintf("%s/", server.URL))
 			client.BaseURL = mockBaseURL
 
@@ -140,7 +140,9 @@ func TestClientFindTxtRecord(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			server := httptest.NewServer(handlerMock(http.MethodGet, test.apiResponse))
 
-			client, _ := NewClient("myAuthID", "myAuthPassword")
+			client, err := NewClient("myAuthID", "", "myAuthPassword")
+			require.NoError(t, err)
+
 			mockBaseURL, _ := url.Parse(fmt.Sprintf("%s/", server.URL))
 			client.BaseURL = mockBaseURL
 
@@ -164,6 +166,8 @@ func TestClientAddTxtRecord(t *testing.T) {
 
 	testCases := []struct {
 		desc        string
+		authID      string
+		subAuthID   string
 		zone        *Zone
 		authFQDN    string
 		value       string
@@ -172,7 +176,8 @@ func TestClientAddTxtRecord(t *testing.T) {
 		expected    expected
 	}{
 		{
-			desc: "sub-zone",
+			desc:   "sub-zone",
+			authID: "myAuthID",
 			zone: &Zone{
 				Name:   "bar.com",
 				Type:   "master",
@@ -188,7 +193,8 @@ func TestClientAddTxtRecord(t *testing.T) {
 			},
 		},
 		{
-			desc: "main zone",
+			desc:   "main zone (authID)",
+			authID: "myAuthID",
 			zone: &Zone{
 				Name:   "bar.com",
 				Type:   "master",
@@ -204,7 +210,26 @@ func TestClientAddTxtRecord(t *testing.T) {
 			},
 		},
 		{
-			desc: "invalid status",
+			desc:      "main zone (subAuthID)",
+			authID:    "myAuthID",
+			subAuthID: "mySubAuthID",
+			zone: &Zone{
+				Name:   "bar.com",
+				Type:   "master",
+				Zone:   "domain",
+				Status: "1",
+			},
+			authFQDN:    "_acme-challenge.bar.com.",
+			value:       "TXTtxtTXTtxtTXTtxtTXTtxt",
+			ttl:         60,
+			apiResponse: []byte(`{"status":"Success","statusDescription":"The record was added successfully."}`),
+			expected: expected{
+				Query: `auth-password=myAuthPassword&domain-name=bar.com&host=_acme-challenge&record=TXTtxtTXTtxtTXTtxtTXTtxt&record-type=TXT&sub-auth-id=mySubAuthID&ttl=60`,
+			},
+		},
+		{
+			desc:   "invalid status",
+			authID: "myAuthID",
 			zone: &Zone{
 				Name:   "bar.com",
 				Type:   "master",
@@ -231,11 +256,13 @@ func TestClientAddTxtRecord(t *testing.T) {
 				handlerMock(http.MethodPost, test.apiResponse).ServeHTTP(rw, req)
 			}))
 
-			client, _ := NewClient("myAuthID", "myAuthPassword")
+			client, err := NewClient(test.authID, test.subAuthID, "myAuthPassword")
+			require.NoError(t, err)
+
 			mockBaseURL, _ := url.Parse(fmt.Sprintf("%s/", server.URL))
 			client.BaseURL = mockBaseURL
 
-			err := client.AddTxtRecord(test.zone.Name, test.authFQDN, test.value, test.ttl)
+			err = client.AddTxtRecord(test.zone.Name, test.authFQDN, test.value, test.ttl)
 
 			if test.expected.Error != "" {
 				require.EqualError(t, err, test.expected.Error)

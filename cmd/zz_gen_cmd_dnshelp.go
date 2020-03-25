@@ -299,13 +299,13 @@ func displayDNSHelp(name string) error {
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "CLOUDNS_AUTH_ID":	The API user ID`)
 		ew.writeln(`	- "CLOUDNS_AUTH_PASSWORD":	The password for API user ID`)
-		ew.writeln(`	- "CLOUDNS_SUB_AUTH_ID":	The API sub user ID`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
 		ew.writeln(`	- "CLOUDNS_HTTP_TIMEOUT":	API request timeout`)
 		ew.writeln(`	- "CLOUDNS_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "CLOUDNS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "CLOUDNS_SUB_AUTH_ID":	The API sub user ID`)
 		ew.writeln(`	- "CLOUDNS_TTL":	The TTL of the TXT record used for the DNS challenge`)
 
 		ew.writeln()

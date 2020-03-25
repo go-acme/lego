@@ -232,10 +232,10 @@ func (c *Client) doRequest(method string, url *url.URL) (json.RawMessage, error)
 func (c *Client) buildRequest(method string, url *url.URL) (*http.Request, error) {
 	q := url.Query()
 
-	if c.authID != "" {
-		q.Add("auth-id", c.authID)
-	} else {
+	if c.subAuthID != "" {
 		q.Add("sub-auth-id", c.subAuthID)
+	} else {
+		q.Add("auth-id", c.authID)
 	}
 
 	q.Add("auth-password", c.authPassword)

@@ -3,11 +3,12 @@ package transip
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/transip/gotransip/v6/rest"
 	"strings"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/transip/gotransip/v6/rest"
 
 	"github.com/go-acme/lego/v3/platform/tester"
 	"github.com/stretchr/testify/assert"

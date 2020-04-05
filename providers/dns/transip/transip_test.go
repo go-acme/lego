@@ -95,7 +95,6 @@ func (f *fakeClient) Delete(request rest.Request) error {
 
 	switch request.Endpoint {
 	case fmt.Sprintf("/domains/%s/dns", f.domainName):
-		fmt.Println("removing dns entry")
 		body, err := request.GetJSONBody()
 		if err != nil {
 			return fmt.Errorf("unable get request body")
@@ -106,13 +105,14 @@ func (f *fakeClient) Delete(request rest.Request) error {
 			return fmt.Errorf("unable to decode request body")
 		}
 
-		cp := f.dnsEntries
+		cp := make([]domain.DNSEntry, 0)
 
-		for i, e := range f.dnsEntries {
+		for _, e := range f.dnsEntries {
 			if e.Name == entry.DNSEntry.Name {
-				fmt.Printf("found match %s\n", e.Name)
-				cp = append(f.dnsEntries[:i], f.dnsEntries[i+1:]...)
+				continue
 			}
+
+			cp = append(cp, e)
 		}
 
 		f.dnsEntries = cp

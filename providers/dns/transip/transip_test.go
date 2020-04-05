@@ -1,80 +1,134 @@
 package transip
 
 import (
-	"encoding/xml"
+	"encoding/json"
 	"fmt"
-	"reflect"
+	"github.com/transip/gotransip/v6/rest"
 	"strings"
 	"sync"
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/v3/log"
 	"github.com/go-acme/lego/v3/platform/tester"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/transip/gotransip"
-	"github.com/transip/gotransip/domain"
+	"github.com/transip/gotransip/v6/domain"
 )
-
-type argDNSEntries struct {
-	Items domain.DNSEntries `xml:"item"`
-}
-
-type argDomainName struct {
-	DomainName string `xml:",chardata"`
-}
 
 type fakeClient struct {
 	dnsEntries           []domain.DNSEntry
 	setDNSEntriesLatency time.Duration
 	getInfoLatency       time.Duration
+	domainName           string
 }
 
-func (f *fakeClient) Call(r gotransip.SoapRequest, b interface{}) error {
-	switch r.Method {
-	case "getInfo":
-		d := b.(*domain.Domain)
+type dnsEntryWrapper struct {
+	DNSEntry domain.DNSEntry `json:"dnsEntry"`
+}
+
+type dnsEntriesWrapper struct {
+	DNSEntries []domain.DNSEntry `json:"dnsEntries"`
+}
+
+func (f *fakeClient) Get(request rest.Request, dest interface{}) error {
+	if f.getInfoLatency != 0 {
+		time.Sleep(f.getInfoLatency)
+	}
+
+	switch request.Endpoint {
+	case fmt.Sprintf("/domains/%s/dns", f.domainName):
+		entries := dnsEntriesWrapper{DNSEntries: f.dnsEntries}
+		body, err := json.Marshal(entries)
+
+		if err != nil {
+			return fmt.Errorf("can't encode json: %w", err)
+		}
+
+		err = json.Unmarshal(body, dest)
+
+		if err != nil {
+			return fmt.Errorf("can't decode json: %w", err)
+		}
+	default:
+		return fmt.Errorf("function GET for endpoint %s not implemented", request.Endpoint)
+	}
+
+	return nil
+}
+
+func (f *fakeClient) Put(request rest.Request) error {
+	if f.getInfoLatency != 0 {
+		time.Sleep(f.getInfoLatency)
+	}
+
+	return fmt.Errorf("function PUT for endpoint %s not implemented", request.Endpoint)
+}
+
+func (f *fakeClient) Post(request rest.Request) error {
+	if f.getInfoLatency != 0 {
+		time.Sleep(f.getInfoLatency)
+	}
+	switch request.Endpoint {
+	case fmt.Sprintf("/domains/%s/dns", f.domainName):
+		body, err := request.GetJSONBody()
+		if err != nil {
+			return fmt.Errorf("unable get request body")
+		}
+
+		var entry dnsEntryWrapper
+		if err := json.Unmarshal(body, &entry); err != nil {
+			return fmt.Errorf("unable to decode request body")
+		}
+
+		f.dnsEntries = append(f.dnsEntries, entry.DNSEntry)
+	default:
+		return fmt.Errorf("function POST for endpoint %s not implemented", request.Endpoint)
+	}
+
+	return nil
+}
+
+func (f *fakeClient) Delete(request rest.Request) error {
+	if f.getInfoLatency != 0 {
+		time.Sleep(f.getInfoLatency)
+	}
+
+	switch request.Endpoint {
+	case fmt.Sprintf("/domains/%s/dns", f.domainName):
+		fmt.Println("removing dns entry")
+		body, err := request.GetJSONBody()
+		if err != nil {
+			return fmt.Errorf("unable get request body")
+		}
+
+		var entry dnsEntryWrapper
+		if err := json.Unmarshal(body, &entry); err != nil {
+			return fmt.Errorf("unable to decode request body")
+		}
+
 		cp := f.dnsEntries
 
-		if f.getInfoLatency != 0 {
-			time.Sleep(f.getInfoLatency)
-		}
-		d.DNSEntries = cp
-
-		log.Printf("getInfo: %+v\n", d.DNSEntries)
-		return nil
-	case "setDnsEntries":
-		var domainName argDomainName
-		var dnsEntries argDNSEntries
-
-		args := readArgs(r)
-		for _, arg := range args {
-			if strings.HasPrefix(arg, "<domainName") {
-				err := xml.Unmarshal([]byte(arg), &domainName)
-				if err != nil {
-					panic(err)
-				}
-			} else if strings.HasPrefix(arg, "<dnsEntries") {
-				err := xml.Unmarshal([]byte(arg), &dnsEntries)
-				if err != nil {
-					panic(err)
-				}
+		for i, e := range f.dnsEntries {
+			if e.Name == entry.DNSEntry.Name {
+				fmt.Printf("found match %s\n", e.Name)
+				cp = append(f.dnsEntries[:i], f.dnsEntries[i+1:]...)
 			}
 		}
 
-		log.Printf("setDnsEntries domainName: %+v\n", domainName)
-		log.Printf("setDnsEntries dnsEntries: %+v\n", dnsEntries)
-
-		if f.setDNSEntriesLatency != 0 {
-			time.Sleep(f.setDNSEntriesLatency)
-		}
-
-		f.dnsEntries = dnsEntries.Items
-		return nil
+		f.dnsEntries = cp
 	default:
-		return nil
+		return fmt.Errorf("function DELETE for endpoint %s not implemented", request.Endpoint)
 	}
+
+	return nil
+}
+
+func (f *fakeClient) Patch(request rest.Request) error {
+	if f.getInfoLatency != 0 {
+		time.Sleep(f.getInfoLatency)
+	}
+
+	return fmt.Errorf("function PATCH for endpoint %s not implemented", request.Endpoint)
 }
 
 const envDomain = envNamespace + "DOMAIN"
@@ -127,7 +181,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvAccountName:    "johndoe",
 				EnvPrivateKeyPath: "./fixtures/non/existent/private.key",
 			},
-			expected: "transip: could not open private key: stat ./fixtures/non/existent/private.key: no such file or directory",
+			expected: "transip: error while opening private key file: open ./fixtures/non/existent/private.key: The system cannot find the path specified.",
 		},
 	}
 
@@ -144,7 +198,7 @@ func TestNewDNSProvider(t *testing.T) {
 				require.NoError(t, err)
 				require.NotNil(t, p)
 				require.NotNil(t, p.config)
-				require.NotNil(t, p.client)
+				require.NotNil(t, p.repository)
 			} else {
 				require.EqualError(t, err, test.expected)
 			}
@@ -176,13 +230,13 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		{
 			desc:        "missing private key path",
 			accountName: "johndoe",
-			expected:    "transip: PrivateKeyPath or PrivateKeyBody is required",
+			expected:    "transip: PrivateKeyReader, token or PrivateKeyReader is required",
 		},
 		{
 			desc:           "could not open private key path",
 			accountName:    "johndoe",
 			privateKeyPath: "./fixtures/non/existent/private.key",
-			expected:       "transip: could not open private key: stat ./fixtures/non/existent/private.key: no such file or directory",
+			expected:       "transip: error while opening private key file: open ./fixtures/non/existent/private.key: The system cannot find the path specified.",
 		},
 	}
 
@@ -198,7 +252,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 				require.NoError(t, err)
 				require.NotNil(t, p)
 				require.NotNil(t, p.config)
-				require.NotNil(t, p.client)
+				require.NotNil(t, p.repository)
 			} else {
 				require.EqualError(t, err, test.expected)
 			}
@@ -210,11 +264,14 @@ func TestDNSProvider_concurrentGetInfo(t *testing.T) {
 	client := &fakeClient{
 		getInfoLatency:       50 * time.Millisecond,
 		setDNSEntriesLatency: 500 * time.Millisecond,
+		domainName:           "lego.wtf",
 	}
 
+	repo := domain.Repository{Client: client}
+
 	p := &DNSProvider{
-		config: NewDefaultConfig(),
-		client: client,
+		config:     NewDefaultConfig(),
+		repository: repo,
 	}
 
 	var wg sync.WaitGroup
@@ -260,11 +317,14 @@ func TestDNSProvider_concurrentGetInfo(t *testing.T) {
 }
 
 func TestDNSProvider_concurrentSetDNSEntries(t *testing.T) {
-	client := &fakeClient{}
+	client := &fakeClient{
+		domainName: "lego.wtf",
+	}
+	repo := domain.Repository{Client: client}
 
 	p := &DNSProvider{
-		config: NewDefaultConfig(),
-		client: client,
+		config:     NewDefaultConfig(),
+		repository: repo,
 	}
 
 	var wg sync.WaitGroup
@@ -296,18 +356,6 @@ func TestDNSProvider_concurrentSetDNSEntries(t *testing.T) {
 	wg.Wait()
 
 	assert.Empty(t, client.dnsEntries)
-}
-
-func readArgs(req gotransip.SoapRequest) []string {
-	v := reflect.ValueOf(req)
-	f := v.FieldByName("args")
-
-	var args []string
-	for i := 0; i < f.Len(); i++ {
-		args = append(args, f.Slice(0, f.Len()).Index(i).String())
-	}
-
-	return args
 }
 
 func TestLivePresent(t *testing.T) {

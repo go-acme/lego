@@ -3,6 +3,7 @@ package transip
 import (
 	"encoding/json"
 	"fmt"
+	"runtime"
 	"strings"
 	"sync"
 	"testing"
@@ -182,7 +183,17 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvAccountName:    "johndoe",
 				EnvPrivateKeyPath: "./fixtures/non/existent/private.key",
 			},
-			expected: "transip: error while opening private key file: open ./fixtures/non/existent/private.key: The system cannot find the path specified.",
+			expected: func() string {
+				errorMsg := "no such file or directory"
+
+				// windows path errors are different than unix. Preferably we would use errors.Is(err, os.ErrNotExists),
+				// which is possible because the error is wrapped correctly by go-transip. Unfortunately the require
+				// library can only check error strings
+				if runtime.GOOS == "windows" {
+					errorMsg = "The system cannot find the path specified."
+				}
+				return fmt.Sprintf("transip: error while opening private key file: open ./fixtures/non/existent/private.key: %s", errorMsg)
+			}(),
 		},
 	}
 
@@ -237,7 +248,17 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			desc:           "could not open private key path",
 			accountName:    "johndoe",
 			privateKeyPath: "./fixtures/non/existent/private.key",
-			expected:       "transip: error while opening private key file: open ./fixtures/non/existent/private.key: The system cannot find the path specified.",
+			expected: func() string {
+				errorMsg := "no such file or directory"
+
+				// windows path errors are different than unix. Preferably we would use errors.Is(err, os.ErrNotExists),
+				// which is possible because the error is wrapped correctly by go-transip. Unfortunately the require
+				// library can only check error strings
+				if runtime.GOOS == "windows" {
+					errorMsg = "The system cannot find the path specified."
+				}
+				return fmt.Sprintf("transip: error while opening private key file: open ./fixtures/non/existent/private.key: %s", errorMsg)
+			}(),
 		},
 	}
 

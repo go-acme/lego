@@ -67,10 +67,6 @@ func NewDNSProvider() (*DNSProvider, error) {
 	}
 
 	config := NewDefaultConfig()
-	if config == nil {
-		return nil, errors.New("clouddns: the configuration of the DNS provider is nil")
-	}
-
 	config.ClientID = values[EnvClientID]
 	config.Email = values[EnvEmail]
 	config.Password = values[EnvPassword]

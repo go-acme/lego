@@ -19,8 +19,8 @@ type AuthResponse struct {
 }
 
 type Auth struct {
-	AccessToken  string `json:"accessToken"`
-	RefreshToken string `json:"refreshToken"`
+	AccessToken  string `json:"accessToken,omitempty"`
+	RefreshToken string `json:"refreshToken,omitempty"`
 }
 
 type SearchQuery struct {
@@ -32,28 +32,28 @@ type SearchQuery struct {
 
 // Search used for searches in the CloudDNS API.
 type Search struct {
-	Name     string `json:"name"`
-	Operator string `json:"operator"`
-	Type     string `json:"type"`
-	Value    string `json:"value"`
+	Name     string `json:"name,omitempty"`
+	Operator string `json:"operator,omitempty"`
+	Type     string `json:"type,omitempty"`
+	Value    string `json:"value,omitempty"`
 }
 
 type Sort struct {
-	Ascending bool   `json:"ascending"`
-	Name      string `json:"name"`
+	Ascending bool   `json:"ascending,omitempty"`
+	Name      string `json:"name,omitempty"`
 }
 
 type SearchResponse struct {
-	Items     []Domain `json:"items"`
-	Limit     int      `json:"limit"`
-	Offset    int      `json:"offset"`
-	TotalHits int      `json:"totalHits"`
+	Items     []Domain `json:"items,omitempty"`
+	Limit     int      `json:"limit,omitempty"`
+	Offset    int      `json:"offset,omitempty"`
+	TotalHits int      `json:"totalHits,omitempty"`
 }
 
 type Domain struct {
-	ID         string `json:"id"`
-	DomainName string `json:"domainName"`
-	Status     string `json:"status"`
+	ID         string `json:"id,omitempty"`
+	DomainName string `json:"domainName,omitempty"`
+	Status     string `json:"status,omitempty"`
 }
 
 // Record represents a DNS record.

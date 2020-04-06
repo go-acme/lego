@@ -9,11 +9,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const envDomain = envNamespace + "DOMAIN"
+
 var envTest = tester.NewEnvTest(
-	"CLOUDDNS_CLIENT_ID",
-	"CLOUDDNS_EMAIL",
-	"CLOUDDNS_PASSWORD").
-	WithDomain("CLOUDDNS_DOMAIN")
+	EnvClientID,
+	EnvEmail,
+	EnvPassword).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -22,37 +24,37 @@ func TestNewDNSProvider(t *testing.T) {
 		expected string
 	}{
 		{
-			desc: "success client_id, email, password",
+			desc: "success",
 			envVars: map[string]string{
-				"CLOUDDNS_CLIENT_ID": "client123",
-				"CLOUDDNS_EMAIL":     "test@example.com",
-				"CLOUDDNS_PASSWORD":  "password123",
+				EnvClientID: "client123",
+				EnvEmail:    "test@example.com",
+				EnvPassword: "password123",
 			},
 		},
 		{
 			desc: "missing clientId",
 			envVars: map[string]string{
-				"CLOUDDNS_CLIENT_ID": "",
-				"CLOUDDNS_EMAIL":     "test@example.com",
-				"CLOUDDNS_PASSWORD":  "password123",
+				EnvClientID: "",
+				EnvEmail:    "test@example.com",
+				EnvPassword: "password123",
 			},
 			expected: "clouddns: some credentials information are missing: CLOUDDNS_CLIENT_ID",
 		},
 		{
 			desc: "missing email",
 			envVars: map[string]string{
-				"CLOUDDNS_CLIENT_ID": "client123",
-				"CLOUDDNS_EMAIL":     "",
-				"CLOUDDNS_PASSWORD":  "password123",
+				EnvClientID: "client123",
+				EnvEmail:    "",
+				EnvPassword: "password123",
 			},
 			expected: "clouddns: some credentials information are missing: CLOUDDNS_EMAIL",
 		},
 		{
 			desc: "missing password",
 			envVars: map[string]string{
-				"CLOUDDNS_CLIENT_ID": "client123",
-				"CLOUDDNS_EMAIL":     "test@example.com",
-				"CLOUDDNS_PASSWORD":  "",
+				EnvClientID: "client123",
+				EnvEmail:    "test@example.com",
+				EnvPassword: "",
 			},
 			expected: "clouddns: some credentials information are missing: CLOUDDNS_PASSWORD",
 		},
@@ -62,6 +64,7 @@ func TestNewDNSProvider(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			defer envTest.RestoreEnv()
 			envTest.ClearEnv()
+
 			envTest.Apply(test.envVars)
 
 			p, err := NewDNSProvider()
@@ -81,63 +84,57 @@ func TestNewDNSProvider(t *testing.T) {
 func TestNewDNSProviderConfig(t *testing.T) {
 	testCases := []struct {
 		desc     string
-		envVars  map[string]string
+		clientID string
+		email    string
+		password string
 		expected string
 	}{
 		{
-			desc: "success client_id, email, password",
-			envVars: map[string]string{
-				"CLOUDDNS_CLIENT_ID": "client123",
-				"CLOUDDNS_EMAIL":     "test@example.com",
-				"CLOUDDNS_PASSWORD":  "password123",
-			},
+			desc:     "success",
+			clientID: "ID",
+			email:    "test@example.com",
+			password: "secret",
 		},
 		{
-			desc: "missing clientId",
-			envVars: map[string]string{
-				"CLOUDDNS_CLIENT_ID": "",
-				"CLOUDDNS_EMAIL":     "test@example.com",
-				"CLOUDDNS_PASSWORD":  "password123",
-			},
-			expected: "clouddns: some credentials information are missing: CLOUDDNS_CLIENT_ID",
+			desc:     "missing credentials",
+			expected: "clouddns: credentials missing",
 		},
 		{
-			desc: "missing email",
-			envVars: map[string]string{
-				"CLOUDDNS_CLIENT_ID": "client123",
-				"CLOUDDNS_EMAIL":     "",
-				"CLOUDDNS_PASSWORD":  "password123",
-			},
-			expected: "clouddns: some credentials information are missing: CLOUDDNS_EMAIL",
+			desc:     "missing client ID",
+			clientID: "",
+			email:    "test@example.com",
+			password: "secret",
+			expected: "clouddns: credentials missing",
 		},
 		{
-			desc: "missing password",
-			envVars: map[string]string{
-				"CLOUDDNS_CLIENT_ID": "client123",
-				"CLOUDDNS_EMAIL":     "test@example.com",
-				"CLOUDDNS_PASSWORD":  "",
-			},
-			expected: "clouddns: some credentials information are missing: CLOUDDNS_PASSWORD",
+			desc:     "missing email",
+			clientID: "ID",
+			email:    "",
+			password: "secret",
+			expected: "clouddns: credentials missing",
+		},
+		{
+			desc:     "missing password",
+			clientID: "ID",
+			email:    "test@example.com",
+			password: "",
+			expected: "clouddns: credentials missing",
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer envTest.RestoreEnv()
-			envTest.ClearEnv()
-			envTest.Apply(test.envVars)
+			config := NewDefaultConfig()
+			config.ClientID = test.clientID
+			config.Email = test.email
+			config.Password = test.password
 
-			p, err := NewDNSProviderConfig()
+			p, err := NewDNSProviderConfig(config)
 
 			if len(test.expected) == 0 {
 				require.NoError(t, err)
 				require.NotNil(t, p)
-				require.NotNil(t, p.ClientID)
-				require.NotNil(t, p.Email)
-				require.NotNil(t, p.Password)
-				require.NotNil(t, p.TTL)
-				require.NotNil(t, p.PropagationTimeout)
-				require.NotNil(t, p.PollingInterval)
+				require.NotNil(t, p.config)
 			} else {
 				require.EqualError(t, err, test.expected)
 			}

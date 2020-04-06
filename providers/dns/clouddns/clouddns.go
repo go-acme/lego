@@ -4,10 +4,26 @@ package clouddns
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/go-acme/lego/v3/challenge/dns01"
 	"github.com/go-acme/lego/v3/platform/config/env"
+	"github.com/go-acme/lego/v3/providers/dns/clouddns/internal"
+)
+
+// Environment variables names.
+const (
+	envNamespace = "CLOUDDNS_"
+
+	EnvClientID = envNamespace + "CLIENT_ID"
+	EnvEmail    = envNamespace + "EMAIL"
+	EnvPassword = envNamespace + "PASSWORD"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
 // Config is used to configure the DNSProvider.
@@ -19,21 +35,25 @@ type Config struct {
 	TTL                int
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
+	HTTPClient         *http.Client
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("CLOUDDNS_TTL", 300),
-		PropagationTimeout: env.GetOrDefaultSecond("CLOUDDNS_PROPAGATION_TIMEOUT", 120*time.Second),
-		PollingInterval:    env.GetOrDefaultSecond("CLOUDDNS_POLLING_INTERVAL", 5*time.Second),
+		TTL:                env.GetOrDefaultInt(EnvTTL, 300),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 120*time.Second),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 5*time.Second),
+		HTTPClient: &http.Client{
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+		},
 	}
 }
 
 // DNSProvider is an implementation of the challenge. Provider interface
 // that uses CloudDNS API to manage TXT records for a domain.
 type DNSProvider struct {
-	client *Client
+	client *internal.Client
 	config *Config
 }
 
@@ -41,22 +61,9 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables:
 // CLOUDDNS_CLIENT_ID, CLOUDDNS_EMAIL, CLOUDDNS_PASSWORD.
 func NewDNSProvider() (*DNSProvider, error) {
-	config, err := NewDNSProviderConfig()
+	values, err := env.Get(EnvClientID, EnvEmail, EnvPassword)
 	if err != nil {
-		return nil, err
-	}
-	client := NewClient(config.ClientID, config.Email, config.Password, config.TTL)
-	return &DNSProvider{
-		client: client,
-		config: config,
-	}, nil
-}
-
-// NewDNSProviderConfig returns a DNSProvider configuration for CloudDNS.
-func NewDNSProviderConfig() (*Config, error) {
-	values, err := env.Get("CLOUDDNS_CLIENT_ID", "CLOUDDNS_EMAIL", "CLOUDDNS_PASSWORD")
-	if err != nil {
-		return nil, fmt.Errorf("clouddns: %v", err)
+		return nil, fmt.Errorf("clouddns: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -64,10 +71,33 @@ func NewDNSProviderConfig() (*Config, error) {
 		return nil, errors.New("clouddns: the configuration of the DNS provider is nil")
 	}
 
-	config.ClientID = values["CLOUDDNS_CLIENT_ID"]
-	config.Email = values["CLOUDDNS_EMAIL"]
-	config.Password = values["CLOUDDNS_PASSWORD"]
-	return config, nil
+	config.ClientID = values[EnvClientID]
+	config.Email = values[EnvEmail]
+	config.Password = values[EnvPassword]
+
+	return NewDNSProviderConfig(config)
+}
+
+// NewDNSProviderConfig return a DNSProvider instance configured for CloudDNS
+func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
+	if config == nil {
+		return nil, errors.New("clouddns: the configuration of the DNS provider is nil")
+	}
+
+	if config.ClientID == "" || config.Email == "" || config.Password == "" {
+		return nil, errors.New("clouddns: credentials missing")
+	}
+
+	client := internal.NewClient(config.ClientID, config.Email, config.Password, config.TTL)
+
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
+	}
+
+	return &DNSProvider{
+		client: client,
+		config: config,
+	}, nil
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
@@ -82,12 +112,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return fmt.Errorf("clouddns: %v", err)
+		return fmt.Errorf("clouddns: %w", err)
 	}
 
 	err = d.client.AddRecord(authZone, fqdn, value)
 	if err != nil {
-		return fmt.Errorf("clouddns: %v", err)
+		return fmt.Errorf("clouddns: %w", err)
 	}
 
 	return nil
@@ -99,12 +129,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return fmt.Errorf("clouddns: %v", err)
+		return fmt.Errorf("clouddns: %w", err)
 	}
 
 	err = d.client.DeleteRecord(authZone, fqdn)
 	if err != nil {
-		return fmt.Errorf("clouddns: %v", err)
+		return fmt.Errorf("clouddns: %w", err)
 	}
 
 	return nil

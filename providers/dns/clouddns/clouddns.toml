@@ -1,20 +1,14 @@
 Name = "CloudDNS"
 Description = ''''''
-URL = "https://github.com/vshosting/clouddns"
+URL = "https://vshosting.eu/"
 Code = "clouddns"
-Since = "v3.4.0"
+Since = "v3.6.0"
 
 Example = '''
 CLOUDDNS_CLIENT_ID=bLsdFAks23429841238feb177a572aX \
 CLOUDDNS_EMAIL=foo@bar.com \
 CLOUDDNS_PASSWORD=b9841238feb177a84330f \
 lego --dns clouddns --domains my.domain.com --email my@email.com run
-'''
-
-Additional = '''
-## Description
-
-You need to use `CLOUDDNS_CLIENT_ID`, `CLOUDNS_EMAIL` and `CLOUDDNS_PASSWORD` to authenticate.
 '''
 
 [Configuration]
@@ -29,4 +23,5 @@ You need to use `CLOUDDNS_CLIENT_ID`, `CLOUDNS_EMAIL` and `CLOUDDNS_PASSWORD` to
     CLOUDDNS_HTTP_TIMEOUT = "API request timeout"
 
 [Links]
-  API = "https://github.com/vshosting/clouddns"
+  API = "https://admin.vshosting.cloud/clouddns/swagger/"
+  Guide = "https://github.com/vshosting/clouddns"

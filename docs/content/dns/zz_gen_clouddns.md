@@ -9,9 +9,9 @@ slug: clouddns
 <!-- providers/dns/clouddns/clouddns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v3.4.0
+Since: v3.6.0
 
-Configuration for [CloudDNS](https://github.com/vshosting/clouddns).
+Configuration for [CloudDNS](https://vshosting.eu/).
 
 
 <!--more-->
@@ -54,15 +54,12 @@ More information [here](/lego/dns/#configuration-and-credentials).
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).
 
-## Description
-
-You need to use `CLOUDDNS_CLIENT_ID`, `CLOUDNS_EMAIL` and `CLOUDDNS_PASSWORD` to authenticate.
 
 
 
 ## More information
 
-- [API documentation](https://github.com/vshosting/clouddns)
+- [API documentation](https://admin.vshosting.cloud/clouddns/swagger/)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/clouddns/clouddns.toml -->

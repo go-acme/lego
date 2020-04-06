@@ -156,9 +156,9 @@ func (c *Client) publishRecords(domainID string) error {
 }
 
 func (c *Client) login() error {
-	reqData := authorization{Email: c.Email, Password: c.Password}
+	authorization := Authorization{Email: c.Email, Password: c.Password}
 
-	body, err := json.Marshal(reqData)
+	body, err := json.Marshal(authorization)
 	if err != nil {
 		return err
 	}
@@ -167,6 +167,7 @@ func (c *Client) login() error {
 	if err != nil {
 		return err
 	}
+
 	req.Header.Set("Content-Type", "application/json")
 
 	content, err := c.doRequest(req)
@@ -174,14 +175,13 @@ func (c *Client) login() error {
 		return err
 	}
 
-	var result map[string]interface{}
+	var result AuthResponse
 	err = json.Unmarshal(content, &result)
 	if err != nil {
 		return err
 	}
 
-	authBlock := result["auth"].(map[string]interface{})
-	c.AccessToken = authBlock["accessToken"].(string)
+	c.AccessToken = result.Auth.AccessToken
 
 	return nil
 }

@@ -24,4 +24,5 @@ lego --dns clouddns --domains my.domain.com --email my@email.com run
 
 [Links]
   API = "https://admin.vshosting.cloud/clouddns/swagger/"
-  Guide = "https://github.com/vshosting/clouddns"
+  APIAdmin = "https://admin.vshosting.cloud/api/public/swagger/"
+  Documentation = "https://github.com/vshosting/clouddns"

@@ -9,9 +9,18 @@ type ErrorContent struct {
 	Message string `json:"message,omitempty"`
 }
 
-type authorization struct {
+type Authorization struct {
 	Email    string `json:"email,omitempty"`
 	Password string `json:"password,omitempty"`
+}
+
+type AuthResponse struct {
+	Auth Auth `json:"auth,omitempty"`
+}
+
+type Auth struct {
+	AccessToken  string `json:"accessToken"`
+	RefreshToken string `json:"refreshToken"`
 }
 
 type SearchQuery struct {

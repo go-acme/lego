@@ -133,8 +133,7 @@ func (s *CertificatesStorage) ReadResource(domain string) certificate.Resource {
 }
 
 func (s *CertificatesStorage) ExistsFile(domain, extension string) bool {
-	filename := sanitizedDomain(domain) + extension
-	filePath := filepath.Join(s.rootPath, filename)
+	filePath := s.GetFileName(domain, extension)
 
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		return false
@@ -145,10 +144,12 @@ func (s *CertificatesStorage) ExistsFile(domain, extension string) bool {
 }
 
 func (s *CertificatesStorage) ReadFile(domain, extension string) ([]byte, error) {
-	filename := sanitizedDomain(domain) + extension
-	filePath := filepath.Join(s.rootPath, filename)
+	return ioutil.ReadFile(s.GetFileName(domain, extension))
+}
 
-	return ioutil.ReadFile(filePath)
+func (s *CertificatesStorage) GetFileName(domain, extension string) string {
+	filename := sanitizedDomain(domain) + extension
+	return filepath.Join(s.rootPath, filename)
 }
 
 func (s *CertificatesStorage) ReadCertificate(domain, extension string) ([]*x509.Certificate, error) {

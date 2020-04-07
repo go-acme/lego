@@ -6,6 +6,7 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 	"time"
@@ -74,14 +75,14 @@ func renew(ctx *cli.Context) error {
 
 	// CSR
 	if ctx.GlobalIsSet("csr") {
-		return renewForCSR(ctx, client, certsStorage, bundle)
+		return renewForCSR(ctx, client, certsStorage, account, bundle)
 	}
 
 	// Domains
-	return renewForDomains(ctx, client, certsStorage, bundle)
+	return renewForDomains(ctx, client, certsStorage, account, bundle)
 }
 
-func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *CertificatesStorage, bundle bool) error {
+func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *CertificatesStorage, account *Account, bundle bool) error {
 	domains := ctx.GlobalStringSlice("domains")
 	domain := domains[0]
 
@@ -131,10 +132,10 @@ func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *Certif
 
 	certsStorage.SaveResource(certRes)
 
-	return renewHook(ctx)
+	return renewHook(ctx, domain, account, certsStorage)
 }
 
-func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *CertificatesStorage, bundle bool) error {
+func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *CertificatesStorage, account *Account, bundle bool) error {
 	csr, err := readCSRFile(ctx.GlobalString("csr"))
 	if err != nil {
 		log.Fatal(err)
@@ -167,7 +168,7 @@ func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *Certificat
 
 	certsStorage.SaveResource(certRes)
 
-	return renewHook(ctx)
+	return renewHook(ctx, domain, account, certsStorage)
 }
 
 func needRenewal(x509Cert *x509.Certificate, domain string, days int) bool {
@@ -203,17 +204,27 @@ func merge(prevDomains []string, nextDomains []string) []string {
 	return prevDomains
 }
 
-func renewHook(ctx *cli.Context) error {
+func renewHook(ctx *cli.Context, domain string, account *Account, certsStorage *CertificatesStorage) error {
 	hook := ctx.String("renew-hook")
 	if hook == "" {
 		return nil
 	}
 
-	ctxCmd, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctxCmd, cancel := context.WithTimeout(context.Background(), 120*time.Second)
 	defer cancel()
 
 	parts := strings.Fields(hook)
-	output, err := exec.CommandContext(ctxCmd, parts[0], parts[1:]...).CombinedOutput()
+
+	cmdCtx := exec.CommandContext(ctxCmd, parts[0], parts[1:]...)
+	cmdCtx.Env = append(
+		os.Environ(),
+		"LEGO_CERT_DOMAIN="+domain,
+		"LEGO_CERT_EMAIL="+account.Email,
+		"LEGO_CERT_PATH="+certsStorage.GetFileName(domain, "crt"),
+		"LEGO_CERT_KEY_PATH="+certsStorage.GetFileName(domain, "key"))
+
+	output, err := cmdCtx.CombinedOutput()
+
 	if len(output) > 0 {
 		fmt.Println(string(output))
 	}

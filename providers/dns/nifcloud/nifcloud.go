@@ -14,6 +14,20 @@ import (
 	"github.com/go-acme/lego/v3/platform/wait"
 )
 
+// Environment variables names.
+const (
+	envNamespace = "NIFCLOUD_"
+
+	EnvAccessKeyID     = envNamespace + "ACCESS_KEY_ID"
+	EnvSecretAccessKey = envNamespace + "SECRET_ACCESS_KEY"
+	EnvDNSEndpoint     = envNamespace + "DNS_ENDPOINT"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	BaseURL            string
@@ -28,11 +42,11 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("NIFCLOUD_TTL", dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond("NIFCLOUD_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("NIFCLOUD_POLLING_INTERVAL", dns01.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("NIFCLOUD_HTTP_TIMEOUT", 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -47,15 +61,15 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables:
 // NIFCLOUD_ACCESS_KEY_ID and NIFCLOUD_SECRET_ACCESS_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("NIFCLOUD_ACCESS_KEY_ID", "NIFCLOUD_SECRET_ACCESS_KEY")
+	values, err := env.Get(EnvAccessKeyID, EnvSecretAccessKey)
 	if err != nil {
-		return nil, fmt.Errorf("nifcloud: %v", err)
+		return nil, fmt.Errorf("nifcloud: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.BaseURL = env.GetOrFile("NIFCLOUD_DNS_ENDPOINT")
-	config.AccessKey = values["NIFCLOUD_ACCESS_KEY_ID"]
-	config.SecretKey = values["NIFCLOUD_SECRET_ACCESS_KEY"]
+	config.BaseURL = env.GetOrFile(EnvDNSEndpoint)
+	config.AccessKey = values[EnvAccessKeyID]
+	config.SecretKey = values[EnvSecretAccessKey]
 
 	return NewDNSProviderConfig(config)
 }
@@ -68,7 +82,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	client, err := internal.NewClient(config.AccessKey, config.SecretKey)
 	if err != nil {
-		return nil, fmt.Errorf("nifcloud: %v", err)
+		return nil, fmt.Errorf("nifcloud: %w", err)
 	}
 
 	if config.HTTPClient != nil {
@@ -88,7 +102,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	err := d.changeRecord("CREATE", fqdn, value, domain, d.config.TTL)
 	if err != nil {
-		return fmt.Errorf("nifcloud: %v", err)
+		return fmt.Errorf("nifcloud: %w", err)
 	}
 	return err
 }
@@ -99,7 +113,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	err := d.changeRecord("DELETE", fqdn, value, domain, d.config.TTL)
 	if err != nil {
-		return fmt.Errorf("nifcloud: %v", err)
+		return fmt.Errorf("nifcloud: %w", err)
 	}
 	return err
 }
@@ -141,7 +155,7 @@ func (d *DNSProvider) changeRecord(action, fqdn, value, domain string, ttl int) 
 
 	resp, err := d.client.ChangeResourceRecordSets(domain, reqParams)
 	if err != nil {
-		return fmt.Errorf("failed to change NIFCLOUD record set: %v", err)
+		return fmt.Errorf("failed to change NIFCLOUD record set: %w", err)
 	}
 
 	statusID := resp.ChangeInfo.ID
@@ -149,7 +163,7 @@ func (d *DNSProvider) changeRecord(action, fqdn, value, domain string, ttl int) 
 	return wait.For("nifcloud", 120*time.Second, 4*time.Second, func() (bool, error) {
 		resp, err := d.client.GetChange(statusID)
 		if err != nil {
-			return false, fmt.Errorf("failed to query NIFCLOUD DNS change status: %v", err)
+			return false, fmt.Errorf("failed to query NIFCLOUD DNS change status: %w", err)
 		}
 		return resp.ChangeInfo.Status == "INSYNC", nil
 	})

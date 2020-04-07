@@ -23,6 +23,22 @@ import (
 
 const defaultMetadataEndpoint = "http://169.254.169.254"
 
+// Environment variables names.
+const (
+	envNamespace = "AZURE_"
+
+	EnvMetadataEndpoint = envNamespace + "METADATA_ENDPOINT"
+	EnvSubscriptionID   = envNamespace + "SUBSCRIPTION_ID"
+	EnvResourceGroup    = envNamespace + "RESOURCE_GROUP"
+	EnvTenantID         = envNamespace + "TENANT_ID"
+	EnvClientID         = envNamespace + "CLIENT_ID"
+	EnvClientSecret     = envNamespace + "CLIENT_SECRET"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	// optional if using instance metadata service
@@ -44,10 +60,10 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("AZURE_TTL", 60),
-		PropagationTimeout: env.GetOrDefaultSecond("AZURE_PROPAGATION_TIMEOUT", 2*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond("AZURE_POLLING_INTERVAL", 2*time.Second),
-		MetadataEndpoint:   env.GetOrFile("AZURE_METADATA_ENDPOINT"),
+		TTL:                env.GetOrDefaultInt(EnvTTL, 60),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
+		MetadataEndpoint:   env.GetOrFile(EnvMetadataEndpoint),
 	}
 }
 
@@ -65,8 +81,11 @@ type DNSProvider struct {
 // see: https://github.com/Azure/go-autorest/blob/v10.14.0/autorest/azure/auth/auth.go#L38-L42
 func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
-	config.SubscriptionID = env.GetOrFile("AZURE_SUBSCRIPTION_ID")
-	config.ResourceGroup = env.GetOrFile("AZURE_RESOURCE_GROUP")
+	config.SubscriptionID = env.GetOrFile(EnvSubscriptionID)
+	config.ResourceGroup = env.GetOrFile(EnvResourceGroup)
+	config.ClientSecret = env.GetOrFile(EnvClientSecret)
+	config.ClientID = env.GetOrFile(EnvClientID)
+	config.TenantID = env.GetOrFile(EnvTenantID)
 
 	return NewDNSProviderConfig(config)
 }
@@ -89,7 +108,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config.SubscriptionID == "" {
 		subsID, err := getMetadata(config, "subscriptionId")
 		if err != nil {
-			return nil, fmt.Errorf("azure: %v", err)
+			return nil, fmt.Errorf("azure: %w", err)
 		}
 
 		if subsID == "" {
@@ -101,7 +120,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config.ResourceGroup == "" {
 		resGroup, err := getMetadata(config, "resourceGroupName")
 		if err != nil {
-			return nil, fmt.Errorf("azure: %v", err)
+			return nil, fmt.Errorf("azure: %w", err)
 		}
 
 		if resGroup == "" {
@@ -126,7 +145,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zone, err := d.getHostedZoneID(ctx, fqdn)
 	if err != nil {
-		return fmt.Errorf("azure: %v", err)
+		return fmt.Errorf("azure: %w", err)
 	}
 
 	rsc := dns.NewRecordSetsClient(d.config.SubscriptionID)
@@ -139,7 +158,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if err != nil {
 		detailedError, ok := err.(autorest.DetailedError)
 		if !ok || detailedError.StatusCode != http.StatusNotFound {
-			return fmt.Errorf("azure: %v", err)
+			return fmt.Errorf("azure: %w", err)
 		}
 	}
 
@@ -169,7 +188,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	_, err = rsc.CreateOrUpdate(ctx, d.config.ResourceGroup, zone, relative, dns.TXT, rec, "", "")
 	if err != nil {
-		return fmt.Errorf("azure: %v", err)
+		return fmt.Errorf("azure: %w", err)
 	}
 	return nil
 }
@@ -181,7 +200,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	zone, err := d.getHostedZoneID(ctx, fqdn)
 	if err != nil {
-		return fmt.Errorf("azure: %v", err)
+		return fmt.Errorf("azure: %w", err)
 	}
 
 	relative := toRelativeRecord(fqdn, dns01.ToFqdn(zone))
@@ -190,7 +209,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	_, err = rsc.Delete(ctx, d.config.ResourceGroup, zone, relative, dns.TXT, "")
 	if err != nil {
-		return fmt.Errorf("azure: %v", err)
+		return fmt.Errorf("azure: %w", err)
 	}
 	return nil
 }

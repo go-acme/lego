@@ -16,14 +16,14 @@ import (
 )
 
 const (
-	envTestDomain     = "123456789.www.example.com"
-	envTestKeyAuth    = "123d=="
-	envTestValue      = "Now36o-3BmlB623-0c1qCIUmgWVVmDJb88KGl24pqpo"
-	envTestFqdn       = "_acme-challenge.123456789.www.example.com."
-	envTestZone       = "example.com."
-	envTestTTL        = 120
-	envTestTsigKey    = "example.com."
-	envTestTsigSecret = "IwBTJx9wrDp4Y1RyC3H0gA=="
+	fakeDomain     = "123456789.www.example.com"
+	fakeKeyAuth    = "123d=="
+	fakeValue      = "Now36o-3BmlB623-0c1qCIUmgWVVmDJb88KGl24pqpo"
+	fakeFqdn       = "_acme-challenge.123456789.www.example.com."
+	fakeZone       = "example.com."
+	fakeTTL        = 120
+	fakeTsigKey    = "example.com."
+	fakeTsigSecret = "IwBTJx9wrDp4Y1RyC3H0gA=="
 )
 
 func TestCanaryLocalTestServer(t *testing.T) {
@@ -50,8 +50,8 @@ func TestCanaryLocalTestServer(t *testing.T) {
 
 func TestServerSuccess(t *testing.T) {
 	dns01.ClearFqdnCache()
-	dns.HandleFunc(envTestZone, serverHandlerReturnSuccess)
-	defer dns.HandleRemove(envTestZone)
+	dns.HandleFunc(fakeZone, serverHandlerReturnSuccess)
+	defer dns.HandleRemove(fakeZone)
 
 	server, addr, err := runLocalDNSTestServer(false)
 	require.NoError(t, err, "Failed to start test server")
@@ -63,14 +63,14 @@ func TestServerSuccess(t *testing.T) {
 	provider, err := NewDNSProviderConfig(config)
 	require.NoError(t, err)
 
-	err = provider.Present(envTestDomain, "", envTestKeyAuth)
+	err = provider.Present(fakeDomain, "", fakeKeyAuth)
 	require.NoError(t, err)
 }
 
 func TestServerError(t *testing.T) {
 	dns01.ClearFqdnCache()
-	dns.HandleFunc(envTestZone, serverHandlerReturnErr)
-	defer dns.HandleRemove(envTestZone)
+	dns.HandleFunc(fakeZone, serverHandlerReturnErr)
+	defer dns.HandleRemove(fakeZone)
 
 	server, addr, err := runLocalDNSTestServer(false)
 	require.NoError(t, err, "Failed to start test server")
@@ -82,7 +82,7 @@ func TestServerError(t *testing.T) {
 	provider, err := NewDNSProviderConfig(config)
 	require.NoError(t, err)
 
-	err = provider.Present(envTestDomain, "", envTestKeyAuth)
+	err = provider.Present(fakeDomain, "", fakeKeyAuth)
 	require.Error(t, err)
 	if !strings.Contains(err.Error(), "NOTZONE") {
 		t.Errorf("Expected Present() to return an error with the 'NOTZONE' rcode string but it did not: %v", err)
@@ -91,8 +91,8 @@ func TestServerError(t *testing.T) {
 
 func TestTsigClient(t *testing.T) {
 	dns01.ClearFqdnCache()
-	dns.HandleFunc(envTestZone, serverHandlerReturnSuccess)
-	defer dns.HandleRemove(envTestZone)
+	dns.HandleFunc(fakeZone, serverHandlerReturnSuccess)
+	defer dns.HandleRemove(fakeZone)
 
 	server, addr, err := runLocalDNSTestServer(true)
 	require.NoError(t, err, "Failed to start test server")
@@ -100,13 +100,13 @@ func TestTsigClient(t *testing.T) {
 
 	config := NewDefaultConfig()
 	config.Nameserver = addr
-	config.TSIGKey = envTestTsigKey
-	config.TSIGSecret = envTestTsigSecret
+	config.TSIGKey = fakeTsigKey
+	config.TSIGSecret = fakeTsigSecret
 
 	provider, err := NewDNSProviderConfig(config)
 	require.NoError(t, err)
 
-	err = provider.Present(envTestDomain, "", envTestKeyAuth)
+	err = provider.Present(fakeDomain, "", fakeKeyAuth)
 	require.NoError(t, err)
 }
 
@@ -114,17 +114,17 @@ func TestValidUpdatePacket(t *testing.T) {
 	var reqChan = make(chan *dns.Msg, 10)
 
 	dns01.ClearFqdnCache()
-	dns.HandleFunc(envTestZone, serverHandlerPassBackRequest(reqChan))
-	defer dns.HandleRemove(envTestZone)
+	dns.HandleFunc(fakeZone, serverHandlerPassBackRequest(reqChan))
+	defer dns.HandleRemove(fakeZone)
 
 	server, addr, err := runLocalDNSTestServer(false)
 	require.NoError(t, err, "Failed to start test server")
 	defer func() { _ = server.Shutdown() }()
 
-	txtRR, _ := dns.NewRR(fmt.Sprintf("%s %d IN TXT %s", envTestFqdn, envTestTTL, envTestValue))
+	txtRR, _ := dns.NewRR(fmt.Sprintf("%s %d IN TXT %s", fakeFqdn, fakeTTL, fakeValue))
 	rrs := []dns.RR{txtRR}
 	m := new(dns.Msg)
-	m.SetUpdate(envTestZone)
+	m.SetUpdate(fakeZone)
 	m.RemoveRRset(rrs)
 	m.Insert(rrs)
 	expectStr := m.String()
@@ -138,7 +138,7 @@ func TestValidUpdatePacket(t *testing.T) {
 	provider, err := NewDNSProviderConfig(config)
 	require.NoError(t, err)
 
-	err = provider.Present(envTestDomain, "", "1234d==")
+	err = provider.Present(fakeDomain, "", "1234d==")
 	require.NoError(t, err)
 
 	rcvMsg := <-reqChan
@@ -173,7 +173,7 @@ func runLocalDNSTestServer(tsig bool) (*dns.Server, string, error) {
 		}}
 
 	if tsig {
-		server.TsigSecret = map[string]string{envTestTsigKey: envTestTsigSecret}
+		server.TsigSecret = map[string]string{fakeTsigKey: fakeTsigSecret}
 	}
 
 	waitLock := sync.Mutex{}
@@ -205,14 +205,14 @@ func serverHandlerReturnSuccess(w dns.ResponseWriter, req *dns.Msg) {
 	m.SetReply(req)
 	if req.Opcode == dns.OpcodeQuery && req.Question[0].Qtype == dns.TypeSOA && req.Question[0].Qclass == dns.ClassINET {
 		// Return SOA to appease findZoneByFqdn()
-		soaRR, _ := dns.NewRR(fmt.Sprintf("%s %d IN SOA ns1.%s admin.%s 2016022801 28800 7200 2419200 1200", envTestZone, envTestTTL, envTestZone, envTestZone))
+		soaRR, _ := dns.NewRR(fmt.Sprintf("%s %d IN SOA ns1.%s admin.%s 2016022801 28800 7200 2419200 1200", fakeZone, fakeTTL, fakeZone, fakeZone))
 		m.Answer = []dns.RR{soaRR}
 	}
 
 	if t := req.IsTsig(); t != nil {
 		if w.TsigStatus() == nil {
 			// Validated
-			m.SetTsig(envTestZone, dns.HmacMD5, 300, time.Now().Unix())
+			m.SetTsig(fakeZone, dns.HmacMD5, 300, time.Now().Unix())
 		}
 	}
 
@@ -231,14 +231,14 @@ func serverHandlerPassBackRequest(reqChan chan *dns.Msg) func(w dns.ResponseWrit
 		m.SetReply(req)
 		if req.Opcode == dns.OpcodeQuery && req.Question[0].Qtype == dns.TypeSOA && req.Question[0].Qclass == dns.ClassINET {
 			// Return SOA to appease findZoneByFqdn()
-			soaRR, _ := dns.NewRR(fmt.Sprintf("%s %d IN SOA ns1.%s admin.%s 2016022801 28800 7200 2419200 1200", envTestZone, envTestTTL, envTestZone, envTestZone))
+			soaRR, _ := dns.NewRR(fmt.Sprintf("%s %d IN SOA ns1.%s admin.%s 2016022801 28800 7200 2419200 1200", fakeZone, fakeTTL, fakeZone, fakeZone))
 			m.Answer = []dns.RR{soaRR}
 		}
 
 		if t := req.IsTsig(); t != nil {
 			if w.TsigStatus() == nil {
 				// Validated
-				m.SetTsig(envTestZone, dns.HmacMD5, 300, time.Now().Unix())
+				m.SetTsig(fakeZone, dns.HmacMD5, 300, time.Now().Unix())
 			}
 		}
 

@@ -42,7 +42,7 @@ func (d *DNSProvider) login() error {
 
 	authBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("bluecat: %v", err)
+		return fmt.Errorf("bluecat: %w", err)
 	}
 	authResp := string(authBytes)
 
@@ -106,7 +106,7 @@ func (d *DNSProvider) lookupConfID() (uint, error) {
 	var conf entityResponse
 	err = json.NewDecoder(resp.Body).Decode(&conf)
 	if err != nil {
-		return 0, fmt.Errorf("bluecat: %v", err)
+		return 0, fmt.Errorf("bluecat: %w", err)
 	}
 	return conf.ID, nil
 }
@@ -133,7 +133,7 @@ func (d *DNSProvider) lookupViewID(viewName string) (uint, error) {
 	var view entityResponse
 	err = json.NewDecoder(resp.Body).Decode(&view)
 	if err != nil {
-		return 0, fmt.Errorf("bluecat: %v", err)
+		return 0, fmt.Errorf("bluecat: %w", err)
 	}
 
 	return view.ID, nil
@@ -187,7 +187,7 @@ func (d *DNSProvider) getZone(parentID uint, name string) (uint, error) {
 	var zone entityResponse
 	err = json.NewDecoder(resp.Body).Decode(&zone)
 	if err != nil {
-		return 0, fmt.Errorf("bluecat: %v", err)
+		return 0, fmt.Errorf("bluecat: %w", err)
 	}
 
 	return zone.ID, nil
@@ -215,12 +215,12 @@ func (d *DNSProvider) sendRequest(method, resource string, payload interface{}, 
 
 	body, err := json.Marshal(payload)
 	if err != nil {
-		return nil, fmt.Errorf("bluecat: %v", err)
+		return nil, fmt.Errorf("bluecat: %w", err)
 	}
 
 	req, err := http.NewRequest(method, url, bytes.NewReader(body))
 	if err != nil {
-		return nil, fmt.Errorf("bluecat: %v", err)
+		return nil, fmt.Errorf("bluecat: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	if len(d.token) > 0 {
@@ -235,7 +235,7 @@ func (d *DNSProvider) sendRequest(method, resource string, payload interface{}, 
 	req.URL.RawQuery = q.Encode()
 	resp, err := d.config.HTTPClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("bluecat: %v", err)
+		return nil, fmt.Errorf("bluecat: %w", err)
 	}
 
 	if resp.StatusCode >= 400 {

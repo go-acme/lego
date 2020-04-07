@@ -13,6 +13,7 @@ import (
 	"github.com/go-acme/lego/v3/challenge/dns01"
 	"github.com/go-acme/lego/v3/log"
 	"github.com/go-acme/lego/v3/platform/config/env"
+	"golang.org/x/net/publicsuffix"
 )
 
 // Notes about namecheap's tool API:
@@ -30,7 +31,24 @@ import (
 
 const (
 	defaultBaseURL = "https://api.namecheap.com/xml.response"
+	sandboxBaseURL = "https://api.sandbox.namecheap.com/xml.response"
 	getIPURL       = "https://dynamicdns.park-your-domain.com/getip"
+)
+
+// Environment variables names.
+const (
+	envNamespace = "NAMECHEAP_"
+
+	EnvAPIUser = envNamespace + "API_USER"
+	EnvAPIKey  = envNamespace + "API_KEY"
+
+	EnvSandbox = envNamespace + "SANDBOX"
+	EnvDebug   = envNamespace + "DEBUG"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
 // A challenge represents all the data needed to specify a dns-01 challenge
@@ -60,14 +78,19 @@ type Config struct {
 
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
+	baseURL := defaultBaseURL
+	if env.GetOrDefaultBool(EnvSandbox, false) {
+		baseURL = sandboxBaseURL
+	}
+
 	return &Config{
-		BaseURL:            defaultBaseURL,
-		Debug:              env.GetOrDefaultBool("NAMECHEAP_DEBUG", false),
-		TTL:                env.GetOrDefaultInt("NAMECHEAP_TTL", dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond("NAMECHEAP_PROPAGATION_TIMEOUT", 60*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond("NAMECHEAP_POLLING_INTERVAL", 15*time.Second),
+		BaseURL:            baseURL,
+		Debug:              env.GetOrDefaultBool(EnvDebug, false),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 60*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 15*time.Second),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("NAMECHEAP_HTTP_TIMEOUT", 60*time.Second),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 60*time.Second),
 		},
 	}
 }
@@ -82,14 +105,14 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables:
 // NAMECHEAP_API_USER and NAMECHEAP_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("NAMECHEAP_API_USER", "NAMECHEAP_API_KEY")
+	values, err := env.Get(EnvAPIUser, EnvAPIKey)
 	if err != nil {
-		return nil, fmt.Errorf("namecheap: %v", err)
+		return nil, fmt.Errorf("namecheap: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.APIUser = values["NAMECHEAP_API_USER"]
-	config.APIKey = values["NAMECHEAP_API_KEY"]
+	config.APIUser = values[EnvAPIUser]
+	config.APIKey = values[EnvAPIKey]
 
 	return NewDNSProviderConfig(config)
 }
@@ -101,13 +124,13 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.APIUser == "" || config.APIKey == "" {
-		return nil, fmt.Errorf("namecheap: credentials missing")
+		return nil, errors.New("namecheap: credentials missing")
 	}
 
 	if len(config.ClientIP) == 0 {
 		clientIP, err := getClientIP(config.HTTPClient, config.Debug)
 		if err != nil {
-			return nil, fmt.Errorf("namecheap: %v", err)
+			return nil, fmt.Errorf("namecheap: %w", err)
 		}
 		config.ClientIP = clientIP
 	}
@@ -123,19 +146,14 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present installs a TXT record for the DNS challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	tlds, err := d.getTLDs()
+	ch, err := newChallenge(domain, keyAuth)
 	if err != nil {
-		return fmt.Errorf("namecheap: %v", err)
-	}
-
-	ch, err := newChallenge(domain, keyAuth, tlds)
-	if err != nil {
-		return fmt.Errorf("namecheap: %v", err)
+		return fmt.Errorf("namecheap: %w", err)
 	}
 
 	records, err := d.getHosts(ch.sld, ch.tld)
 	if err != nil {
-		return fmt.Errorf("namecheap: %v", err)
+		return fmt.Errorf("namecheap: %w", err)
 	}
 
 	record := Record{
@@ -156,26 +174,21 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	err = d.setHosts(ch.sld, ch.tld, records)
 	if err != nil {
-		return fmt.Errorf("namecheap: %v", err)
+		return fmt.Errorf("namecheap: %w", err)
 	}
 	return nil
 }
 
 // CleanUp removes a TXT record used for a previous DNS challenge.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	tlds, err := d.getTLDs()
+	ch, err := newChallenge(domain, keyAuth)
 	if err != nil {
-		return fmt.Errorf("namecheap: %v", err)
-	}
-
-	ch, err := newChallenge(domain, keyAuth, tlds)
-	if err != nil {
-		return fmt.Errorf("namecheap: %v", err)
+		return fmt.Errorf("namecheap: %w", err)
 	}
 
 	records, err := d.getHosts(ch.sld, ch.tld)
 	if err != nil {
-		return fmt.Errorf("namecheap: %v", err)
+		return fmt.Errorf("namecheap: %w", err)
 	}
 
 	// Find the challenge TXT record and remove it if found.
@@ -195,7 +208,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	err = d.setHosts(ch.sld, ch.tld, newRecords)
 	if err != nil {
-		return fmt.Errorf("namecheap: %v", err)
+		return fmt.Errorf("namecheap: %w", err)
 	}
 	return nil
 }
@@ -220,25 +233,17 @@ func getClientIP(client *http.Client, debug bool) (addr string, err error) {
 	return string(clientIP), nil
 }
 
-// newChallenge builds a challenge record from a domain name, a challenge
-// authentication key, and a map of available TLDs.
-func newChallenge(domain, keyAuth string, tlds map[string]string) (*challenge, error) {
+// newChallenge builds a challenge record from a domain name and a challenge authentication key.
+func newChallenge(domain, keyAuth string) (*challenge, error) {
 	domain = dns01.UnFqdn(domain)
-	parts := strings.Split(domain, ".")
 
-	// Find the longest matching TLD.
-	longest := -1
-	for i := len(parts); i > 0; i-- {
-		t := strings.Join(parts[i-1:], ".")
-		if _, found := tlds[t]; found {
-			longest = i - 1
-		}
-	}
-	if longest < 1 {
+	tld, _ := publicsuffix.PublicSuffix(domain)
+	if tld == domain {
 		return nil, fmt.Errorf("invalid domain name %q", domain)
 	}
 
-	tld := strings.Join(parts[longest:], ".")
+	parts := strings.Split(domain, ".")
+	longest := len(parts) - strings.Count(tld, ".") - 1
 	sld := parts[longest-1]
 
 	var host string

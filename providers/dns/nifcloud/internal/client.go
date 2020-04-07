@@ -129,7 +129,7 @@ func (c *Client) ChangeResourceRecordSets(hostedZoneID string, input ChangeResou
 
 	err = c.sign(req)
 	if err != nil {
-		return nil, fmt.Errorf("an error occurred during the creation of the signature: %v", err)
+		return nil, fmt.Errorf("an error occurred during the creation of the signature: %w", err)
 	}
 
 	res, err := c.HTTPClient.Do(req)
@@ -146,7 +146,7 @@ func (c *Client) ChangeResourceRecordSets(hostedZoneID string, input ChangeResou
 		errResp := &ErrorResponse{}
 		err = xml.NewDecoder(res.Body).Decode(errResp)
 		if err != nil {
-			return nil, fmt.Errorf("an error occurred while unmarshaling the error body to XML: %v", err)
+			return nil, fmt.Errorf("an error occurred while unmarshaling the error body to XML: %w", err)
 		}
 
 		return nil, fmt.Errorf("an error occurred: %s", errResp.Error.Message)
@@ -155,7 +155,7 @@ func (c *Client) ChangeResourceRecordSets(hostedZoneID string, input ChangeResou
 	output := &ChangeResourceRecordSetsResponse{}
 	err = xml.NewDecoder(res.Body).Decode(output)
 	if err != nil {
-		return nil, fmt.Errorf("an error occurred while unmarshaling the response body to XML: %v", err)
+		return nil, fmt.Errorf("an error occurred while unmarshaling the response body to XML: %w", err)
 	}
 
 	return output, err
@@ -172,7 +172,7 @@ func (c *Client) GetChange(statusID string) (*GetChangeResponse, error) {
 
 	err = c.sign(req)
 	if err != nil {
-		return nil, fmt.Errorf("an error occurred during the creation of the signature: %v", err)
+		return nil, fmt.Errorf("an error occurred during the creation of the signature: %w", err)
 	}
 
 	res, err := c.HTTPClient.Do(req)
@@ -189,7 +189,7 @@ func (c *Client) GetChange(statusID string) (*GetChangeResponse, error) {
 		errResp := &ErrorResponse{}
 		err = xml.NewDecoder(res.Body).Decode(errResp)
 		if err != nil {
-			return nil, fmt.Errorf("an error occurred while unmarshaling the error body to XML: %v", err)
+			return nil, fmt.Errorf("an error occurred while unmarshaling the error body to XML: %w", err)
 		}
 
 		return nil, fmt.Errorf("an error occurred: %s", errResp.Error.Message)
@@ -198,7 +198,7 @@ func (c *Client) GetChange(statusID string) (*GetChangeResponse, error) {
 	output := &GetChangeResponse{}
 	err = xml.NewDecoder(res.Body).Decode(output)
 	if err != nil {
-		return nil, fmt.Errorf("an error occurred while unmarshaling the response body to XML: %v", err)
+		return nil, fmt.Errorf("an error occurred while unmarshaling the response body to XML: %w", err)
 	}
 
 	return output, nil

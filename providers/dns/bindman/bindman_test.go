@@ -12,7 +12,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var envTest = tester.NewEnvTest("BINDMAN_MANAGER_ADDRESS").WithDomain("BINDMAN_DOMAIN")
+const envDomain = envNamespace + "DOMAIN"
+
+var envTest = tester.NewEnvTest(EnvManagerAddress).WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -23,20 +25,20 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"BINDMAN_MANAGER_ADDRESS": "http://localhost",
+				EnvManagerAddress: "http://localhost",
 			},
 		},
 		{
 			desc: "missing bindman manager address",
 			envVars: map[string]string{
-				"BINDMAN_MANAGER_ADDRESS": "",
+				EnvManagerAddress: "",
 			},
 			expected: "bindman: some credentials information are missing: BINDMAN_MANAGER_ADDRESS",
 		},
 		{
 			desc: "empty bindman manager address",
 			envVars: map[string]string{
-				"BINDMAN_MANAGER_ADDRESS": "  ",
+				EnvManagerAddress: "  ",
 			},
 			expected: "bindman: managerAddress parameter must be a non-empty string",
 		},

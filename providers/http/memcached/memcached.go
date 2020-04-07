@@ -3,6 +3,7 @@
 package memcached
 
 import (
+	"errors"
 	"fmt"
 	"path"
 
@@ -18,7 +19,7 @@ type HTTPProvider struct {
 // NewMemcachedProvider returns a HTTPProvider instance with a configured webroot path
 func NewMemcachedProvider(hosts []string) (*HTTPProvider, error) {
 	if len(hosts) == 0 {
-		return nil, fmt.Errorf("no memcached hosts provided")
+		return nil, errors.New("no memcached hosts provided")
 	}
 
 	c := &HTTPProvider{
@@ -47,7 +48,7 @@ func (w *HTTPProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	if len(errs) == len(w.hosts) {
-		return fmt.Errorf("unable to store key in any of the memcache hosts -> %v", errs)
+		return fmt.Errorf("unable to store key in any of the memcache hosts: %v", errs)
 	}
 
 	return nil

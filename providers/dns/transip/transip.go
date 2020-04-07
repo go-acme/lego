@@ -14,6 +14,18 @@ import (
 	transipdomain "github.com/transip/gotransip/domain"
 )
 
+// Environment variables names.
+const (
+	envNamespace = "TRANSIP_"
+
+	EnvAccountName    = envNamespace + "ACCOUNT_NAME"
+	EnvPrivateKeyPath = envNamespace + "PRIVATE_KEY_PATH"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	AccountName        string
@@ -26,9 +38,9 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                int64(env.GetOrDefaultInt("TRANSIP_TTL", 10)),
-		PropagationTimeout: env.GetOrDefaultSecond("TRANSIP_PROPAGATION_TIMEOUT", 10*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond("TRANSIP_POLLING_INTERVAL", 10*time.Second),
+		TTL:                int64(env.GetOrDefaultInt(EnvTTL, 10)),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 10*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 10*time.Second),
 	}
 }
 
@@ -43,14 +55,14 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables:
 // TRANSIP_ACCOUNTNAME, TRANSIP_PRIVATEKEYPATH.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("TRANSIP_ACCOUNT_NAME", "TRANSIP_PRIVATE_KEY_PATH")
+	values, err := env.Get(EnvAccountName, EnvPrivateKeyPath)
 	if err != nil {
-		return nil, fmt.Errorf("transip: %v", err)
+		return nil, fmt.Errorf("transip: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.AccountName = values["TRANSIP_ACCOUNT_NAME"]
-	config.PrivateKeyPath = values["TRANSIP_PRIVATE_KEY_PATH"]
+	config.AccountName = values[EnvAccountName]
+	config.PrivateKeyPath = values[EnvPrivateKeyPath]
 
 	return NewDNSProviderConfig(config)
 }
@@ -66,7 +78,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		PrivateKeyPath: config.PrivateKeyPath,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("transip: %v", err)
+		return nil, fmt.Errorf("transip: %w", err)
 	}
 
 	return &DNSProvider{client: client, config: config}, nil
@@ -99,7 +111,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	// get all DNS entries
 	info, err := transipdomain.GetInfo(d.client, domainName)
 	if err != nil {
-		return fmt.Errorf("transip: error for %s in Present: %v", domain, err)
+		return fmt.Errorf("transip: error for %s in Present: %w", domain, err)
 	}
 
 	// include the new DNS entry
@@ -113,7 +125,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	// set the updated DNS entries
 	err = transipdomain.SetDNSEntries(d.client, domainName, dnsEntries)
 	if err != nil {
-		return fmt.Errorf("transip: %v", err)
+		return fmt.Errorf("transip: %w", err)
 	}
 	return nil
 }
@@ -139,7 +151,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	// get all DNS entries
 	info, err := transipdomain.GetInfo(d.client, domainName)
 	if err != nil {
-		return fmt.Errorf("transip: error for %s in CleanUp: %v", fqdn, err)
+		return fmt.Errorf("transip: error for %s in CleanUp: %w", fqdn, err)
 	}
 
 	// loop through the existing entries and remove the specific record
@@ -153,7 +165,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	// set the updated DNS entries
 	err = transipdomain.SetDNSEntries(d.client, domainName, updatedEntries)
 	if err != nil {
-		return fmt.Errorf("transip: couldn't get Record ID in CleanUp: %sv", err)
+		return fmt.Errorf("transip: couldn't get Record ID in CleanUp: %w", err)
 	}
 
 	return nil

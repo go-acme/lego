@@ -12,10 +12,12 @@ import (
 	"github.com/go-acme/lego/v3/providers/dns/azure"
 	"github.com/go-acme/lego/v3/providers/dns/bindman"
 	"github.com/go-acme/lego/v3/providers/dns/bluecat"
+	"github.com/go-acme/lego/v3/providers/dns/checkdomain"
 	"github.com/go-acme/lego/v3/providers/dns/cloudflare"
 	"github.com/go-acme/lego/v3/providers/dns/cloudns"
 	"github.com/go-acme/lego/v3/providers/dns/cloudxns"
 	"github.com/go-acme/lego/v3/providers/dns/conoha"
+	"github.com/go-acme/lego/v3/providers/dns/constellix"
 	"github.com/go-acme/lego/v3/providers/dns/designate"
 	"github.com/go-acme/lego/v3/providers/dns/digitalocean"
 	"github.com/go-acme/lego/v3/providers/dns/dnsimple"
@@ -25,6 +27,7 @@ import (
 	"github.com/go-acme/lego/v3/providers/dns/dreamhost"
 	"github.com/go-acme/lego/v3/providers/dns/duckdns"
 	"github.com/go-acme/lego/v3/providers/dns/dyn"
+	"github.com/go-acme/lego/v3/providers/dns/dynu"
 	"github.com/go-acme/lego/v3/providers/dns/easydns"
 	"github.com/go-acme/lego/v3/providers/dns/exec"
 	"github.com/go-acme/lego/v3/providers/dns/exoscale"
@@ -55,10 +58,14 @@ import (
 	"github.com/go-acme/lego/v3/providers/dns/ovh"
 	"github.com/go-acme/lego/v3/providers/dns/pdns"
 	"github.com/go-acme/lego/v3/providers/dns/rackspace"
+	"github.com/go-acme/lego/v3/providers/dns/regru"
 	"github.com/go-acme/lego/v3/providers/dns/rfc2136"
+	"github.com/go-acme/lego/v3/providers/dns/rimuhosting"
 	"github.com/go-acme/lego/v3/providers/dns/route53"
 	"github.com/go-acme/lego/v3/providers/dns/sakuracloud"
+	"github.com/go-acme/lego/v3/providers/dns/scaleway"
 	"github.com/go-acme/lego/v3/providers/dns/selectel"
+	"github.com/go-acme/lego/v3/providers/dns/servercow"
 	"github.com/go-acme/lego/v3/providers/dns/stackpath"
 	"github.com/go-acme/lego/v3/providers/dns/transip"
 	"github.com/go-acme/lego/v3/providers/dns/vegadns"
@@ -66,6 +73,7 @@ import (
 	"github.com/go-acme/lego/v3/providers/dns/vscale"
 	"github.com/go-acme/lego/v3/providers/dns/vultr"
 	"github.com/go-acme/lego/v3/providers/dns/zoneee"
+	"github.com/go-acme/lego/v3/providers/dns/zonomi"
 )
 
 // NewDNSChallengeProviderByName Factory for DNS providers
@@ -85,6 +93,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return bindman.NewDNSProvider()
 	case "bluecat":
 		return bluecat.NewDNSProvider()
+	case "checkdomain":
+		return checkdomain.NewDNSProvider()
 	case "cloudflare":
 		return cloudflare.NewDNSProvider()
 	case "cloudns":
@@ -93,6 +103,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return cloudxns.NewDNSProvider()
 	case "conoha":
 		return conoha.NewDNSProvider()
+	case "constellix":
+		return constellix.NewDNSProvider()
 	case "designate":
 		return designate.NewDNSProvider()
 	case "digitalocean":
@@ -111,6 +123,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return duckdns.NewDNSProvider()
 	case "dyn":
 		return dyn.NewDNSProvider()
+	case "dynu":
+		return dynu.NewDNSProvider()
 	case "fastdns":
 		return fastdns.NewDNSProvider()
 	case "easydns":
@@ -173,16 +187,24 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return pdns.NewDNSProvider()
 	case "rackspace":
 		return rackspace.NewDNSProvider()
-	case "route53":
-		return route53.NewDNSProvider()
+	case "regru":
+		return regru.NewDNSProvider()
 	case "rfc2136":
 		return rfc2136.NewDNSProvider()
+	case "rimuhosting":
+		return rimuhosting.NewDNSProvider()
+	case "route53":
+		return route53.NewDNSProvider()
 	case "sakuracloud":
 		return sakuracloud.NewDNSProvider()
-	case "stackpath":
-		return stackpath.NewDNSProvider()
+	case "scaleway":
+		return scaleway.NewDNSProvider()
 	case "selectel":
 		return selectel.NewDNSProvider()
+	case "servercow":
+		return servercow.NewDNSProvider()
+	case "stackpath":
+		return stackpath.NewDNSProvider()
 	case "transip":
 		return transip.NewDNSProvider()
 	case "vegadns":
@@ -195,6 +217,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return vscale.NewDNSProvider()
 	case "zoneee":
 		return zoneee.NewDNSProvider()
+	case "zonomi":
+		return zonomi.NewDNSProvider()
 	default:
 		return nil, fmt.Errorf("unrecognized DNS provider: %s", name)
 	}

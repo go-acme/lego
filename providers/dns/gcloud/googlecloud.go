@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"time"
 
+	"cloud.google.com/go/compute/metadata"
 	"github.com/go-acme/lego/v3/challenge/dns01"
 	"github.com/go-acme/lego/v3/log"
 	"github.com/go-acme/lego/v3/platform/config/env"
@@ -25,6 +26,19 @@ const (
 	changeStatusDone = "done"
 )
 
+// Environment variables names.
+const (
+	envNamespace = "GCE_"
+
+	EnvServiceAccount = envNamespace + "SERVICE_ACCOUNT"
+	EnvProject        = envNamespace + "PROJECT"
+	EnvDebug          = envNamespace + "DEBUG"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	Debug              bool
@@ -38,10 +52,10 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		Debug:              env.GetOrDefaultBool("GCE_DEBUG", false),
-		TTL:                env.GetOrDefaultInt("GCE_TTL", dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond("GCE_PROPAGATION_TIMEOUT", 180*time.Second),
-		PollingInterval:    env.GetOrDefaultSecond("GCE_POLLING_INTERVAL", 5*time.Second),
+		Debug:              env.GetOrDefaultBool(EnvDebug, false),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 180*time.Second),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 5*time.Second),
 	}
 }
 
@@ -52,17 +66,18 @@ type DNSProvider struct {
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Google Cloud DNS.
-// Project name must be passed in the environment variable: GCE_PROJECT.
+// By default, the project name is auto-detected by using the metadata service,
+// it can be overridden using the GCE_PROJECT environment variable.
 // A Service Account can be passed in the environment variable: GCE_SERVICE_ACCOUNT
 // or by specifying the keyfile location: GCE_SERVICE_ACCOUNT_FILE
 func NewDNSProvider() (*DNSProvider, error) {
 	// Use a service account file if specified via environment variable.
-	if saKey := env.GetOrFile("GCE_SERVICE_ACCOUNT"); len(saKey) > 0 {
+	if saKey := env.GetOrFile(EnvServiceAccount); len(saKey) > 0 {
 		return NewDNSProviderServiceAccountKey([]byte(saKey))
 	}
 
 	// Use default credentials.
-	project := env.GetOrDefaultString("GCE_PROJECT", "")
+	project := env.GetOrDefaultString(EnvProject, autodetectProjectID())
 	return NewDNSProviderCredentials(project)
 }
 
@@ -70,12 +85,12 @@ func NewDNSProvider() (*DNSProvider, error) {
 // to return a DNSProvider instance configured for Google Cloud DNS.
 func NewDNSProviderCredentials(project string) (*DNSProvider, error) {
 	if project == "" {
-		return nil, fmt.Errorf("googlecloud: project name missing")
+		return nil, errors.New("googlecloud: project name missing")
 	}
 
 	client, err := google.DefaultClient(context.Background(), dns.NdevClouddnsReadwriteScope)
 	if err != nil {
-		return nil, fmt.Errorf("googlecloud: unable to get Google Cloud client: %v", err)
+		return nil, fmt.Errorf("googlecloud: unable to get Google Cloud client: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -89,12 +104,12 @@ func NewDNSProviderCredentials(project string) (*DNSProvider, error) {
 // to return a DNSProvider instance configured for Google Cloud DNS.
 func NewDNSProviderServiceAccountKey(saKey []byte) (*DNSProvider, error) {
 	if len(saKey) == 0 {
-		return nil, fmt.Errorf("googlecloud: Service Account is missing")
+		return nil, errors.New("googlecloud: Service Account is missing")
 	}
 
 	// If GCE_PROJECT is non-empty it overrides the project in the service
 	// account file.
-	project := env.GetOrDefaultString("GCE_PROJECT", "")
+	project := env.GetOrDefaultString(EnvProject, "")
 	if project == "" {
 		// read project id from service account file
 		var datJSON struct {
@@ -102,14 +117,14 @@ func NewDNSProviderServiceAccountKey(saKey []byte) (*DNSProvider, error) {
 		}
 		err := json.Unmarshal(saKey, &datJSON)
 		if err != nil || datJSON.ProjectID == "" {
-			return nil, fmt.Errorf("googlecloud: project ID not found in Google Cloud Service Account file")
+			return nil, errors.New("googlecloud: project ID not found in Google Cloud Service Account file")
 		}
 		project = datJSON.ProjectID
 	}
 
 	conf, err := google.JWTConfigFromJSON(saKey, dns.NdevClouddnsReadwriteScope)
 	if err != nil {
-		return nil, fmt.Errorf("googlecloud: unable to acquire config: %v", err)
+		return nil, fmt.Errorf("googlecloud: unable to acquire config: %w", err)
 	}
 	client := conf.Client(context.Background())
 
@@ -124,12 +139,12 @@ func NewDNSProviderServiceAccountKey(saKey []byte) (*DNSProvider, error) {
 // to return a DNSProvider instance configured for Google Cloud DNS.
 func NewDNSProviderServiceAccount(saFile string) (*DNSProvider, error) {
 	if saFile == "" {
-		return nil, fmt.Errorf("googlecloud: Service Account file missing")
+		return nil, errors.New("googlecloud: Service Account file missing")
 	}
 
 	saKey, err := ioutil.ReadFile(saFile)
 	if err != nil {
-		return nil, fmt.Errorf("googlecloud: unable to read Service Account file: %v", err)
+		return nil, fmt.Errorf("googlecloud: unable to read Service Account file: %w", err)
 	}
 
 	return NewDNSProviderServiceAccountKey(saKey)
@@ -141,12 +156,12 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("googlecloud: the configuration of the DNS provider is nil")
 	}
 	if config.HTTPClient == nil {
-		return nil, fmt.Errorf("googlecloud: unable to create Google Cloud DNS service: client is nil")
+		return nil, errors.New("googlecloud: unable to create Google Cloud DNS service: client is nil")
 	}
 
 	svc, err := dns.NewService(context.Background(), option.WithHTTPClient(config.HTTPClient))
 	if err != nil {
-		return nil, fmt.Errorf("googlecloud: unable to create Google Cloud DNS service: %v", err)
+		return nil, fmt.Errorf("googlecloud: unable to create Google Cloud DNS service: %w", err)
 	}
 
 	return &DNSProvider{config: config, client: svc}, nil
@@ -158,13 +173,13 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zone, err := d.getHostedZone(fqdn)
 	if err != nil {
-		return fmt.Errorf("googlecloud: %v", err)
+		return fmt.Errorf("googlecloud: %w", err)
 	}
 
 	// Look for existing records.
 	existingRrSet, err := d.findTxtRecords(zone, fqdn)
 	if err != nil {
-		return fmt.Errorf("googlecloud: %v", err)
+		return fmt.Errorf("googlecloud: %w", err)
 	}
 
 	for _, rrSet := range existingRrSet {
@@ -184,7 +199,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	// Attempt to delete the existing records before adding the new one.
 	if len(existingRrSet) > 0 {
 		if err = d.applyChanges(zone, &dns.Change{Deletions: existingRrSet}); err != nil {
-			return fmt.Errorf("googlecloud: %v", err)
+			return fmt.Errorf("googlecloud: %w", err)
 		}
 	}
 
@@ -209,7 +224,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	if err = d.applyChanges(zone, change); err != nil {
-		return fmt.Errorf("googlecloud: %v", err)
+		return fmt.Errorf("googlecloud: %w", err)
 	}
 
 	return nil
@@ -230,7 +245,7 @@ func (d *DNSProvider) applyChanges(zone string, change *dns.Change) error {
 		}
 
 		data, _ := json.Marshal(change)
-		return fmt.Errorf("failed to perform changes [zone %s, change %s]: %v", zone, string(data), err)
+		return fmt.Errorf("failed to perform changes [zone %s, change %s]: %w", zone, string(data), err)
 	}
 
 	if chg.Status == changeStatusDone {
@@ -249,7 +264,7 @@ func (d *DNSProvider) applyChanges(zone string, change *dns.Change) error {
 		chg, err = d.client.Changes.Get(d.config.Project, zone, chgID).Do()
 		if err != nil {
 			data, _ := json.Marshal(change)
-			return false, fmt.Errorf("failed to get changes [zone %s, change %s]: %v", zone, string(data), err)
+			return false, fmt.Errorf("failed to get changes [zone %s, change %s]: %w", zone, string(data), err)
 		}
 
 		if chg.Status == changeStatusDone {
@@ -266,12 +281,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	zone, err := d.getHostedZone(fqdn)
 	if err != nil {
-		return fmt.Errorf("googlecloud: %v", err)
+		return fmt.Errorf("googlecloud: %w", err)
 	}
 
 	records, err := d.findTxtRecords(zone, fqdn)
 	if err != nil {
-		return fmt.Errorf("googlecloud: %v", err)
+		return fmt.Errorf("googlecloud: %w", err)
 	}
 
 	if len(records) == 0 {
@@ -280,7 +295,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	_, err = d.client.Changes.Create(d.config.Project, zone, &dns.Change{Deletions: records}).Do()
 	if err != nil {
-		return fmt.Errorf("googlecloud: %v", err)
+		return fmt.Errorf("googlecloud: %w", err)
 	}
 	return nil
 }
@@ -303,7 +318,7 @@ func (d *DNSProvider) getHostedZone(domain string) (string, error) {
 		DnsName(authZone).
 		Do()
 	if err != nil {
-		return "", fmt.Errorf("API call failed: %v", err)
+		return "", fmt.Errorf("API call failed: %w", err)
 	}
 
 	if len(zones.ManagedZones) == 0 {
@@ -334,4 +349,12 @@ func mustUnquote(raw string) string {
 		return raw
 	}
 	return clean
+}
+
+func autodetectProjectID() string {
+	if pid, err := metadata.ProjectID(); err == nil {
+		return pid
+	}
+
+	return ""
 }

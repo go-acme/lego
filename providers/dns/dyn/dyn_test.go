@@ -8,11 +8,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const envDomain = envNamespace + "DOMAIN"
+
 var envTest = tester.NewEnvTest(
-	"DYN_CUSTOMER_NAME",
-	"DYN_USER_NAME",
-	"DYN_PASSWORD").
-	WithDomain("DYN_DOMAIN")
+	EnvCustomerName,
+	EnvUserName,
+	EnvPassword).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -23,44 +25,44 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"DYN_CUSTOMER_NAME": "A",
-				"DYN_USER_NAME":     "B",
-				"DYN_PASSWORD":      "C",
+				EnvCustomerName: "A",
+				EnvUserName:     "B",
+				EnvPassword:     "C",
 			},
 		},
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				"DYN_CUSTOMER_NAME": "",
-				"DYN_USER_NAME":     "",
-				"DYN_PASSWORD":      "",
+				EnvCustomerName: "",
+				EnvUserName:     "",
+				EnvPassword:     "",
 			},
 			expected: "dyn: some credentials information are missing: DYN_CUSTOMER_NAME,DYN_USER_NAME,DYN_PASSWORD",
 		},
 		{
 			desc: "missing customer name",
 			envVars: map[string]string{
-				"DYN_CUSTOMER_NAME": "",
-				"DYN_USER_NAME":     "B",
-				"DYN_PASSWORD":      "C",
+				EnvCustomerName: "",
+				EnvUserName:     "B",
+				EnvPassword:     "C",
 			},
 			expected: "dyn: some credentials information are missing: DYN_CUSTOMER_NAME",
 		},
 		{
 			desc: "missing password",
 			envVars: map[string]string{
-				"DYN_CUSTOMER_NAME": "A",
-				"DYN_USER_NAME":     "",
-				"DYN_PASSWORD":      "C",
+				EnvCustomerName: "A",
+				EnvUserName:     "",
+				EnvPassword:     "C",
 			},
 			expected: "dyn: some credentials information are missing: DYN_USER_NAME",
 		},
 		{
 			desc: "missing username",
 			envVars: map[string]string{
-				"DYN_CUSTOMER_NAME": "A",
-				"DYN_USER_NAME":     "B",
-				"DYN_PASSWORD":      "",
+				EnvCustomerName: "A",
+				EnvUserName:     "B",
+				EnvPassword:     "",
 			},
 			expected: "dyn: some credentials information are missing: DYN_PASSWORD",
 		},

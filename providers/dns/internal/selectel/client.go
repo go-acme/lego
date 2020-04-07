@@ -1,4 +1,4 @@
-package internal
+package selectel
 
 import (
 	"bytes"
@@ -9,66 +9,31 @@ import (
 	"strings"
 )
 
-// Domain represents domain name.
-type Domain struct {
-	ID   int    `json:"id,omitempty"`
-	Name string `json:"name,omitempty"`
-}
-
-// Record represents DNS record.
-type Record struct {
-	ID      int    `json:"id,omitempty"`
-	Name    string `json:"name,omitempty"`
-	Type    string `json:"type,omitempty"` // Record type (SOA, NS, A/AAAA, CNAME, SRV, MX, TXT, SPF)
-	TTL     int    `json:"ttl,omitempty"`
-	Email   string `json:"email,omitempty"`   // Email of domain's admin (only for SOA records)
-	Content string `json:"content,omitempty"` // Record content (not for SRV)
-}
-
-// APIError API error message
-type APIError struct {
-	Description string `json:"error"`
-	Code        int    `json:"code"`
-	Field       string `json:"field"`
-}
-
-func (a *APIError) Error() string {
-	return fmt.Sprintf("API error: %d - %s - %s", a.Code, a.Description, a.Field)
-}
-
-// ClientOpts represents options to init client.
-type ClientOpts struct {
-	BaseURL    string
-	Token      string
-	UserAgent  string
-	HTTPClient *http.Client
-}
+// Base URL for the Selectel/VScale DNS services.
+const (
+	DefaultSelectelBaseURL = "https://api.selectel.ru/domains/v1"
+	DefaultVScaleBaseURL   = "https://api.vscale.io/v1/domains"
+)
 
 // Client represents DNS client.
 type Client struct {
-	baseURL    string
+	BaseURL    string
+	HTTPClient *http.Client
 	token      string
-	userAgent  string
-	httpClient *http.Client
 }
 
 // NewClient returns a client instance.
-func NewClient(opts ClientOpts) *Client {
-	if opts.HTTPClient == nil {
-		opts.HTTPClient = &http.Client{}
-	}
-
+func NewClient(token string) *Client {
 	return &Client{
-		token:      opts.Token,
-		baseURL:    opts.BaseURL,
-		httpClient: opts.HTTPClient,
-		userAgent:  opts.UserAgent,
+		token:      token,
+		BaseURL:    DefaultVScaleBaseURL,
+		HTTPClient: &http.Client{},
 	}
 }
 
 // GetDomainByName gets Domain object by its name. If `domainName` level > 2 and there is
 // no such domain on the account - it'll recursively search for the first
-// which is exists in Vscale Domains API.
+// which is exists in Selectel Domain API.
 func (c *Client) GetDomainByName(domainName string) (*Domain, error) {
 	uri := fmt.Sprintf("/%s", domainName)
 	req, err := c.newRequest(http.MethodGet, uri, nil)
@@ -79,14 +44,13 @@ func (c *Client) GetDomainByName(domainName string) (*Domain, error) {
 	domain := &Domain{}
 	resp, err := c.do(req, domain)
 	if err != nil {
-		switch {
-		case resp.StatusCode == http.StatusNotFound && strings.Count(domainName, ".") > 1:
+		if resp != nil && resp.StatusCode == http.StatusNotFound && strings.Count(domainName, ".") > 1 {
 			// Look up for the next sub domain
 			subIndex := strings.Index(domainName, ".")
 			return c.GetDomainByName(domainName[subIndex+1:])
-		default:
-			return nil, err
 		}
+
+		return nil, err
 	}
 
 	return domain, nil
@@ -110,14 +74,14 @@ func (c *Client) AddRecord(domainID int, body Record) (*Record, error) {
 }
 
 // ListRecords returns list records for specific domain.
-func (c *Client) ListRecords(domainID int) ([]*Record, error) {
+func (c *Client) ListRecords(domainID int) ([]Record, error) {
 	uri := fmt.Sprintf("/%d/records/", domainID)
 	req, err := c.newRequest(http.MethodGet, uri, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	var records []*Record
+	var records []Record
 	_, err = c.do(req, &records)
 	if err != nil {
 		return nil, err
@@ -143,13 +107,13 @@ func (c *Client) newRequest(method, uri string, body interface{}) (*http.Request
 	if body != nil {
 		err := json.NewEncoder(buf).Encode(body)
 		if err != nil {
-			return nil, fmt.Errorf("failed to encode request body with error: %v", err)
+			return nil, fmt.Errorf("failed to encode request body with error: %w", err)
 		}
 	}
 
-	req, err := http.NewRequest(method, c.baseURL+uri, buf)
+	req, err := http.NewRequest(method, c.BaseURL+uri, buf)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create new http request with error: %v", err)
+		return nil, fmt.Errorf("failed to create new http request with error: %w", err)
 	}
 
 	req.Header.Add("X-Token", c.token)
@@ -160,9 +124,9 @@ func (c *Client) newRequest(method, uri string, body interface{}) (*http.Request
 }
 
 func (c *Client) do(req *http.Request, to interface{}) (*http.Response, error) {
-	resp, err := c.httpClient.Do(req)
+	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("request failed with error: %v", err)
+		return nil, fmt.Errorf("request failed with error: %w", err)
 	}
 
 	err = checkResponse(resp)
@@ -180,7 +144,7 @@ func (c *Client) do(req *http.Request, to interface{}) (*http.Response, error) {
 }
 
 func checkResponse(resp *http.Response) error {
-	if resp.StatusCode >= http.StatusBadRequest && resp.StatusCode <= http.StatusNetworkAuthenticationRequired {
+	if resp.StatusCode >= http.StatusBadRequest {
 		if resp.Body == nil {
 			return fmt.Errorf("request failed with status code %d and empty body", resp.StatusCode)
 		}
@@ -197,7 +161,7 @@ func checkResponse(resp *http.Response) error {
 			return fmt.Errorf("request failed with status code %d, response body: %s", resp.StatusCode, string(body))
 		}
 
-		return fmt.Errorf("request failed with status code %d: %v", resp.StatusCode, apiError)
+		return fmt.Errorf("request failed with status code %d: %w", resp.StatusCode, apiError)
 	}
 
 	return nil
@@ -212,7 +176,7 @@ func unmarshalBody(resp *http.Response, to interface{}) error {
 
 	err = json.Unmarshal(body, to)
 	if err != nil {
-		return fmt.Errorf("unmarshaling error: %v: %s", err, string(body))
+		return fmt.Errorf("unmarshaling error: %w: %s", err, string(body))
 	}
 
 	return nil

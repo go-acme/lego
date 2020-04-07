@@ -12,8 +12,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var envTest = tester.NewEnvTest("DREAMHOST_API_KEY").
-	WithDomain("DREAMHOST_TEST_DOMAIN")
+const envDomain = envNamespace + "DOMAIN"
+
+var envTest = tester.NewEnvTest(EnvAPIKey).
+	WithDomain(envDomain)
 
 const (
 	fakeAPIKey         = "asdf1234"
@@ -46,13 +48,13 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"DREAMHOST_API_KEY": "123",
+				EnvAPIKey: "123",
 			},
 		},
 		{
 			desc: "missing API key",
 			envVars: map[string]string{
-				"DREAMHOST_API_KEY": "",
+				EnvAPIKey: "",
 			},
 			expected: "dreamhost: some credentials information are missing: DREAMHOST_API_KEY",
 		},

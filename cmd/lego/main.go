@@ -29,11 +29,12 @@ func main() {
 		fmt.Printf("lego version %s %s/%s\n", c.App.Version, runtime.GOOS, runtime.GOARCH)
 	}
 
-	defaultPath := ""
+	var defaultPath string
 	cwd, err := os.Getwd()
 	if err == nil {
 		defaultPath = filepath.Join(cwd, ".lego")
 	}
+
 	app.Flags = cmd.CreateFlags(defaultPath)
 
 	app.Before = cmd.Before

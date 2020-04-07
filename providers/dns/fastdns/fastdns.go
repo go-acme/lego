@@ -13,6 +13,20 @@ import (
 	"github.com/go-acme/lego/v3/platform/config/env"
 )
 
+// Environment variables names.
+const (
+	envNamespace = "AKAMAI_"
+
+	EnvHost         = envNamespace + "HOST"
+	EnvClientToken  = envNamespace + "CLIENT_TOKEN"
+	EnvClientSecret = envNamespace + "CLIENT_SECRET"
+	EnvAccessToken  = envNamespace + "ACCESS_TOKEN"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	edgegrid.Config
@@ -24,9 +38,9 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		PropagationTimeout: env.GetOrDefaultSecond("AKAMAI_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("AKAMAI_POLLING_INTERVAL", dns01.DefaultPollingInterval),
-		TTL:                env.GetOrDefaultInt("AKAMAI_TTL", dns01.DefaultTTL),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 	}
 }
 
@@ -38,17 +52,17 @@ type DNSProvider struct {
 // NewDNSProvider uses the supplied environment variables to return a DNSProvider instance:
 // AKAMAI_HOST, AKAMAI_CLIENT_TOKEN, AKAMAI_CLIENT_SECRET, AKAMAI_ACCESS_TOKEN
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("AKAMAI_HOST", "AKAMAI_CLIENT_TOKEN", "AKAMAI_CLIENT_SECRET", "AKAMAI_ACCESS_TOKEN")
+	values, err := env.Get(EnvHost, EnvClientToken, EnvClientSecret, EnvAccessToken)
 	if err != nil {
-		return nil, fmt.Errorf("fastdns: %v", err)
+		return nil, fmt.Errorf("fastdns: %w", err)
 	}
 
 	config := NewDefaultConfig()
 	config.Config = edgegrid.Config{
-		Host:         values["AKAMAI_HOST"],
-		ClientToken:  values["AKAMAI_CLIENT_TOKEN"],
-		ClientSecret: values["AKAMAI_CLIENT_SECRET"],
-		AccessToken:  values["AKAMAI_ACCESS_TOKEN"],
+		Host:         values[EnvHost],
+		ClientToken:  values[EnvClientToken],
+		ClientSecret: values[EnvClientSecret],
+		AccessToken:  values[EnvAccessToken],
 		MaxBody:      131072,
 	}
 
@@ -62,7 +76,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.ClientToken == "" || config.ClientSecret == "" || config.AccessToken == "" || config.Host == "" {
-		return nil, fmt.Errorf("fastdns: credentials are missing")
+		return nil, errors.New("fastdns: credentials are missing")
 	}
 
 	return &DNSProvider{config: config}, nil
@@ -73,14 +87,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 	zoneName, recordName, err := d.findZoneAndRecordName(fqdn, domain)
 	if err != nil {
-		return fmt.Errorf("fastdns: %v", err)
+		return fmt.Errorf("fastdns: %w", err)
 	}
 
 	configdns.Init(d.config.Config)
 
 	zone, err := configdns.GetZone(zoneName)
 	if err != nil {
-		return fmt.Errorf("fastdns: %v", err)
+		return fmt.Errorf("fastdns: %w", err)
 	}
 
 	record := configdns.NewTxtRecord()
@@ -103,21 +117,21 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 	zoneName, recordName, err := d.findZoneAndRecordName(fqdn, domain)
 	if err != nil {
-		return fmt.Errorf("fastdns: %v", err)
+		return fmt.Errorf("fastdns: %w", err)
 	}
 
 	configdns.Init(d.config.Config)
 
 	zone, err := configdns.GetZone(zoneName)
 	if err != nil {
-		return fmt.Errorf("fastdns: %v", err)
+		return fmt.Errorf("fastdns: %w", err)
 	}
 
 	var removed bool
 	for _, r := range zone.Zone.Txt {
 		if r != nil && r.Name == recordName {
 			if zone.RemoveRecord(r) != nil {
-				return fmt.Errorf("fastdns: %v", err)
+				return fmt.Errorf("fastdns: %w", err)
 			}
 			removed = true
 		}

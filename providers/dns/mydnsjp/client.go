@@ -16,7 +16,7 @@ func (d *DNSProvider) doRequest(domain, value string, cmd string) error {
 
 	resp, err := d.config.HTTPClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("error querying API: %v", err)
+		return fmt.Errorf("error querying API: %w", err)
 	}
 
 	defer resp.Body.Close()
@@ -42,7 +42,7 @@ func (d *DNSProvider) buildRequest(domain, value string, cmd string) (*http.Requ
 
 	req, err := http.NewRequest(http.MethodPost, defaultBaseURL, strings.NewReader(params.Encode()))
 	if err != nil {
-		return nil, fmt.Errorf("invalid request: %v", err)
+		return nil, fmt.Errorf("invalid request: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")

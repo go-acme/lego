@@ -13,12 +13,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const envDomain = envNamespace + "DOMAIN"
+
 var envTest = tester.NewEnvTest(
-	"LIQUID_WEB_URL",
-	"LIQUID_WEB_USERNAME",
-	"LIQUID_WEB_PASSWORD",
-	"LIQUID_WEB_ZONE").
-	WithDomain("LIQUID_WEB_DOMAIN")
+	EnvURL,
+	EnvUsername,
+	EnvPassword,
+	EnvZone).
+	WithDomain(envDomain)
 
 func setupTest() (*DNSProvider, *http.ServeMux, func()) {
 	handler := http.NewServeMux()
@@ -47,10 +49,10 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"LIQUID_WEB_URL":      "https://storm.com",
-				"LIQUID_WEB_USERNAME": "blars",
-				"LIQUID_WEB_PASSWORD": "tacoman",
-				"LIQUID_WEB_ZONE":     "blars.com",
+				EnvURL:      "https://storm.com",
+				EnvUsername: "blars",
+				EnvPassword: "tacoman",
+				EnvZone:     "blars.com",
 			},
 		},
 		{
@@ -61,23 +63,23 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "missing username",
 			envVars: map[string]string{
-				"LIQUID_WEB_PASSWORD": "tacoman",
-				"LIQUID_WEB_ZONE":     "blars.com",
+				EnvPassword: "tacoman",
+				EnvZone:     "blars.com",
 			},
 			expected: "liquidweb: some credentials information are missing: LIQUID_WEB_USERNAME",
 		},
 		{
 			desc: "missing password",
 			envVars: map[string]string{
-				"LIQUID_WEB_USERNAME": "blars",
-				"LIQUID_WEB_ZONE":     "blars.com",
+				EnvUsername: "blars",
+				EnvZone:     "blars.com",
 			}, expected: "liquidweb: some credentials information are missing: LIQUID_WEB_PASSWORD",
 		},
 		{
 			desc: "missing zone",
 			envVars: map[string]string{
-				"LIQUID_WEB_USERNAME": "blars",
-				"LIQUID_WEB_PASSWORD": "tacoman",
+				EnvUsername: "blars",
+				EnvPassword: "tacoman",
 			}, expected: "liquidweb: some credentials information are missing: LIQUID_WEB_ZONE",
 		},
 	}

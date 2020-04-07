@@ -10,14 +10,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const envDomain = envNamespace + "DOMAIN"
+
 var envTest = tester.NewEnvTest(
-	"OS_AUTH_URL",
-	"OS_USERNAME",
-	"OS_PASSWORD",
-	"OS_TENANT_NAME",
-	"OS_REGION_NAME",
-	"OS_PROJECT_ID").
-	WithDomain("DESIGNATE_DOMAIN")
+	EnvAuthURL,
+	EnvUsername,
+	EnvPassword,
+	EnvTenantName,
+	EnvRegionName,
+	EnvProjectID).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	server := getServer()
@@ -31,77 +33,77 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"OS_AUTH_URL":    server.URL + "/v2.0/",
-				"OS_USERNAME":    "B",
-				"OS_PASSWORD":    "C",
-				"OS_REGION_NAME": "D",
-				"OS_TENANT_NAME": "E",
-				"OS_PROJECT_ID":  "F",
+				EnvAuthURL:    server.URL + "/v2.0/",
+				EnvUsername:   "B",
+				EnvPassword:   "C",
+				EnvRegionName: "D",
+				EnvTenantName: "E",
+				EnvProjectID:  "F",
 			},
 		},
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				"OS_AUTH_URL":    "",
-				"OS_USERNAME":    "",
-				"OS_PASSWORD":    "",
-				"OS_REGION_NAME": "",
-				"OS_TENANT_NAME": "",
+				EnvAuthURL:    "",
+				EnvUsername:   "",
+				EnvPassword:   "",
+				EnvRegionName: "",
+				EnvTenantName: "",
 			},
 			expected: "designate: some credentials information are missing: OS_AUTH_URL,OS_USERNAME,OS_PASSWORD,OS_TENANT_NAME,OS_REGION_NAME",
 		},
 		{
 			desc: "missing auth url",
 			envVars: map[string]string{
-				"OS_AUTH_URL":    "",
-				"OS_USERNAME":    "B",
-				"OS_PASSWORD":    "C",
-				"OS_REGION_NAME": "D",
-				"OS_TENANT_NAME": "E",
+				EnvAuthURL:    "",
+				EnvUsername:   "B",
+				EnvPassword:   "C",
+				EnvRegionName: "D",
+				EnvTenantName: "E",
 			},
 			expected: "designate: some credentials information are missing: OS_AUTH_URL",
 		},
 		{
 			desc: "missing username",
 			envVars: map[string]string{
-				"OS_AUTH_URL":    server.URL + "/v2.0/",
-				"OS_USERNAME":    "",
-				"OS_PASSWORD":    "C",
-				"OS_REGION_NAME": "D",
-				"OS_TENANT_NAME": "E",
+				EnvAuthURL:    server.URL + "/v2.0/",
+				EnvUsername:   "",
+				EnvPassword:   "C",
+				EnvRegionName: "D",
+				EnvTenantName: "E",
 			},
 			expected: "designate: some credentials information are missing: OS_USERNAME",
 		},
 		{
 			desc: "missing password",
 			envVars: map[string]string{
-				"OS_AUTH_URL":    server.URL + "/v2.0/",
-				"OS_USERNAME":    "B",
-				"OS_PASSWORD":    "",
-				"OS_REGION_NAME": "D",
-				"OS_TENANT_NAME": "E",
+				EnvAuthURL:    server.URL + "/v2.0/",
+				EnvUsername:   "B",
+				EnvPassword:   "",
+				EnvRegionName: "D",
+				EnvTenantName: "E",
 			},
 			expected: "designate: some credentials information are missing: OS_PASSWORD",
 		},
 		{
 			desc: "missing region name",
 			envVars: map[string]string{
-				"OS_AUTH_URL":    server.URL + "/v2.0/",
-				"OS_USERNAME":    "B",
-				"OS_PASSWORD":    "C",
-				"OS_REGION_NAME": "",
-				"OS_TENANT_NAME": "E",
+				EnvAuthURL:    server.URL + "/v2.0/",
+				EnvUsername:   "B",
+				EnvPassword:   "C",
+				EnvRegionName: "",
+				EnvTenantName: "E",
 			},
 			expected: "designate: some credentials information are missing: OS_REGION_NAME",
 		},
 		{
 			desc: "missing tenant name",
 			envVars: map[string]string{
-				"OS_AUTH_URL":    server.URL + "/v2.0/",
-				"OS_USERNAME":    "B",
-				"OS_PASSWORD":    "C",
-				"OS_REGION_NAME": "D",
-				"OS_TENANT_NAME": "",
+				EnvAuthURL:    server.URL + "/v2.0/",
+				EnvUsername:   "B",
+				EnvPassword:   "C",
+				EnvRegionName: "D",
+				EnvTenantName: "",
 			},
 			expected: "designate: some credentials information are missing: OS_TENANT_NAME",
 		},

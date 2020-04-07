@@ -8,10 +8,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const envDomain = envNamespace + "DOMAIN"
+
 var envTest = tester.NewEnvTest(
-	"PDNS_API_URL",
-	"PDNS_API_KEY").
-	WithDomain("PDNS_DOMAIN")
+	EnvAPIURL,
+	EnvAPIKey).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -22,31 +24,31 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"PDNS_API_KEY": "123",
-				"PDNS_API_URL": "http://example.com",
+				EnvAPIKey: "123",
+				EnvAPIURL: "http://example.com",
 			},
 		},
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				"PDNS_API_KEY": "",
-				"PDNS_API_URL": "",
+				EnvAPIKey: "",
+				EnvAPIURL: "",
 			},
 			expected: "pdns: some credentials information are missing: PDNS_API_KEY,PDNS_API_URL",
 		},
 		{
 			desc: "missing api key",
 			envVars: map[string]string{
-				"PDNS_API_KEY": "",
-				"PDNS_API_URL": "http://example.com",
+				EnvAPIKey: "",
+				EnvAPIURL: "http://example.com",
 			},
 			expected: "pdns: some credentials information are missing: PDNS_API_KEY",
 		},
 		{
 			desc: "missing API URL",
 			envVars: map[string]string{
-				"PDNS_API_KEY": "123",
-				"PDNS_API_URL": "",
+				EnvAPIKey: "123",
+				EnvAPIURL: "",
 			},
 			expected: "pdns: some credentials information are missing: PDNS_API_URL",
 		},

@@ -8,10 +8,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const envDomain = envNamespace + "DOMAIN"
+
 var envTest = tester.NewEnvTest(
-	"ALICLOUD_ACCESS_KEY",
-	"ALICLOUD_SECRET_KEY").
-	WithDomain("ALICLOUD_DOMAIN")
+	EnvAccessKey,
+	EnvSecretKey).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -22,31 +24,31 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"ALICLOUD_ACCESS_KEY": "123",
-				"ALICLOUD_SECRET_KEY": "456",
+				EnvAccessKey: "123",
+				EnvSecretKey: "456",
 			},
 		},
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				"ALICLOUD_ACCESS_KEY": "",
-				"ALICLOUD_SECRET_KEY": "",
+				EnvAccessKey: "",
+				EnvSecretKey: "",
 			},
 			expected: "alicloud: some credentials information are missing: ALICLOUD_ACCESS_KEY,ALICLOUD_SECRET_KEY",
 		},
 		{
 			desc: "missing access key",
 			envVars: map[string]string{
-				"ALICLOUD_ACCESS_KEY": "",
-				"ALICLOUD_SECRET_KEY": "456",
+				EnvAccessKey: "",
+				EnvSecretKey: "456",
 			},
 			expected: "alicloud: some credentials information are missing: ALICLOUD_ACCESS_KEY",
 		},
 		{
 			desc: "missing secret key",
 			envVars: map[string]string{
-				"ALICLOUD_ACCESS_KEY": "123",
-				"ALICLOUD_SECRET_KEY": "",
+				EnvAccessKey: "123",
+				EnvSecretKey: "",
 			},
 			expected: "alicloud: some credentials information are missing: ALICLOUD_SECRET_KEY",
 		},

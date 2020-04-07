@@ -17,6 +17,18 @@ import (
 	"github.com/vultr/govultr"
 )
 
+// Environment variables names.
+const (
+	envNamespace = "VULTR_"
+
+	EnvAPIKey = envNamespace + "API_KEY"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	APIKey             string
@@ -29,11 +41,11 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("VULTR_TTL", dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond("VULTR_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("VULTR_POLLING_INTERVAL", dns01.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("VULTR_HTTP_TIMEOUT", 0),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30),
 			// from Vultr Client
 			Transport: &http.Transport{
 				TLSNextProto: make(map[string]func(string, *tls.Conn) http.RoundTripper),
@@ -51,13 +63,13 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance with a configured Vultr client.
 // Authentication uses the VULTR_API_KEY environment variable.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("VULTR_API_KEY")
+	values, err := env.Get(EnvAPIKey)
 	if err != nil {
-		return nil, fmt.Errorf("vultr: %v", err)
+		return nil, fmt.Errorf("vultr: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.APIKey = values["VULTR_API_KEY"]
+	config.APIKey = values[EnvAPIKey]
 
 	return NewDNSProviderConfig(config)
 }
@@ -69,7 +81,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.APIKey == "" {
-		return nil, fmt.Errorf("vultr: credentials missing")
+		return nil, errors.New("vultr: credentials missing")
 	}
 
 	client := govultr.NewClient(config.HTTPClient, config.APIKey)
@@ -85,14 +97,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zoneDomain, err := d.getHostedZone(ctx, domain)
 	if err != nil {
-		return fmt.Errorf("vultr: %v", err)
+		return fmt.Errorf("vultr: %w", err)
 	}
 
 	name := d.extractRecordName(fqdn, zoneDomain)
 
 	err = d.client.DNSRecord.Create(ctx, zoneDomain, "TXT", name, `"`+value+`"`, d.config.TTL, 0)
 	if err != nil {
-		return fmt.Errorf("vultr: API call failed: %v", err)
+		return fmt.Errorf("vultr: API call failed: %w", err)
 	}
 
 	return nil
@@ -106,7 +118,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	zoneDomain, records, err := d.findTxtRecords(ctx, domain, fqdn)
 	if err != nil {
-		return fmt.Errorf("vultr: %v", err)
+		return fmt.Errorf("vultr: %w", err)
 	}
 
 	var allErr []string
@@ -133,7 +145,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (string, error) {
 	domains, err := d.client.DNSDomain.List(ctx)
 	if err != nil {
-		return "", fmt.Errorf("API call failed: %v", err)
+		return "", fmt.Errorf("API call failed: %w", err)
 	}
 
 	var hostedDomain govultr.DNSDomain
@@ -160,7 +172,7 @@ func (d *DNSProvider) findTxtRecords(ctx context.Context, domain, fqdn string) (
 	var records []govultr.DNSRecord
 	result, err := d.client.DNSRecord.List(ctx, zoneDomain)
 	if err != nil {
-		return "", records, fmt.Errorf("API call has failed: %v", err)
+		return "", records, fmt.Errorf("API call has failed: %w", err)
 	}
 
 	recordName := d.extractRecordName(fqdn, zoneDomain)

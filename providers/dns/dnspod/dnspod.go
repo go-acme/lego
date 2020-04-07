@@ -9,9 +9,21 @@ import (
 	"strings"
 	"time"
 
-	dnspod "github.com/decker502/dnspod-go"
 	"github.com/go-acme/lego/v3/challenge/dns01"
 	"github.com/go-acme/lego/v3/platform/config/env"
+	"github.com/nrdcg/dnspod-go"
+)
+
+// Environment variables names.
+const (
+	envNamespace = "DNSPOD_"
+
+	EnvAPIKey = envNamespace + "API_KEY"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
 // Config is used to configure the creation of the DNSProvider
@@ -26,11 +38,11 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("DNSPOD_TTL", 600),
-		PropagationTimeout: env.GetOrDefaultSecond("DNSPOD_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("DNSPOD_POLLING_INTERVAL", dns01.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(EnvTTL, 600),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("DNSPOD_HTTP_TIMEOUT", 0),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30),
 		},
 	}
 }
@@ -44,13 +56,13 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for dnspod.
 // Credentials must be passed in the environment variables: DNSPOD_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("DNSPOD_API_KEY")
+	values, err := env.Get(EnvAPIKey)
 	if err != nil {
-		return nil, fmt.Errorf("dnspod: %v", err)
+		return nil, fmt.Errorf("dnspod: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.LoginToken = values["DNSPOD_API_KEY"]
+	config.LoginToken = values[EnvAPIKey]
 
 	return NewDNSProviderConfig(config)
 }
@@ -62,13 +74,13 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.LoginToken == "" {
-		return nil, fmt.Errorf("dnspod: credentials missing")
+		return nil, errors.New("dnspod: credentials missing")
 	}
 
 	params := dnspod.CommonParams{LoginToken: config.LoginToken, Format: "json"}
 
 	client := dnspod.NewClient(params)
-	client.HttpClient = config.HTTPClient
+	client.HTTPClient = config.HTTPClient
 
 	return &DNSProvider{client: client, config: config}, nil
 }
@@ -82,9 +94,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	recordAttributes := d.newTxtRecord(zoneName, fqdn, value, d.config.TTL)
-	_, _, err = d.client.Domains.CreateRecord(zoneID, *recordAttributes)
+	_, _, err = d.client.Records.Create(zoneID, *recordAttributes)
 	if err != nil {
-		return fmt.Errorf("API call failed: %v", err)
+		return fmt.Errorf("API call failed: %w", err)
 	}
 
 	return nil
@@ -105,7 +117,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	for _, rec := range records {
-		_, err := d.client.Domains.DeleteRecord(zoneID, rec.ID)
+		_, err := d.client.Records.Delete(zoneID, rec.ID)
 		if err != nil {
 			return err
 		}
@@ -122,7 +134,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) getHostedZone(domain string) (string, string, error) {
 	zones, _, err := d.client.Domains.List()
 	if err != nil {
-		return "", "", fmt.Errorf("API call failed: %v", err)
+		return "", "", fmt.Errorf("API call failed: %w", err)
 	}
 
 	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
@@ -163,9 +175,9 @@ func (d *DNSProvider) findTxtRecords(domain, fqdn string) ([]dnspod.Record, erro
 	}
 
 	var records []dnspod.Record
-	result, _, err := d.client.Domains.ListRecords(zoneID, "")
+	result, _, err := d.client.Records.List(zoneID, "")
 	if err != nil {
-		return records, fmt.Errorf("API call has failed: %v", err)
+		return records, fmt.Errorf("API call has failed: %w", err)
 	}
 
 	recordName := d.extractRecordName(fqdn, zoneName)

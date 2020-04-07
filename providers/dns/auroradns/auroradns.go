@@ -14,6 +14,19 @@ import (
 
 const defaultBaseURL = "https://api.auroradns.eu"
 
+// Environment variables names.
+const (
+	envNamespace = "AURORA_"
+
+	EnvUserID   = envNamespace + "USER_ID"
+	EnvKey      = envNamespace + "KEY"
+	EnvEndpoint = envNamespace + "ENDPOINT"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	BaseURL            string
@@ -27,9 +40,9 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("AURORA_TTL", 300),
-		PropagationTimeout: env.GetOrDefaultSecond("AURORA_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("AURORA_POLLING_INTERVAL", dns01.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(EnvTTL, 300),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 	}
 }
 
@@ -45,15 +58,15 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables:
 // AURORA_USER_ID and AURORA_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("AURORA_USER_ID", "AURORA_KEY")
+	values, err := env.Get(EnvUserID, EnvKey)
 	if err != nil {
-		return nil, fmt.Errorf("aurora: %v", err)
+		return nil, fmt.Errorf("aurora: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.BaseURL = env.GetOrFile("AURORA_ENDPOINT")
-	config.UserID = values["AURORA_USER_ID"]
-	config.Key = values["AURORA_KEY"]
+	config.BaseURL = env.GetOrFile(EnvEndpoint)
+	config.UserID = values[EnvUserID]
+	config.Key = values[EnvKey]
 
 	return NewDNSProviderConfig(config)
 }
@@ -74,12 +87,12 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	tr, err := auroradns.NewTokenTransport(config.UserID, config.Key)
 	if err != nil {
-		return nil, fmt.Errorf("aurora: %v", err)
+		return nil, fmt.Errorf("aurora: %w", err)
 	}
 
 	client, err := auroradns.NewClient(tr.Client(), auroradns.WithBaseURL(config.BaseURL))
 	if err != nil {
-		return nil, fmt.Errorf("aurora: %v", err)
+		return nil, fmt.Errorf("aurora: %w", err)
 	}
 
 	return &DNSProvider{
@@ -95,7 +108,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
 	if err != nil {
-		return fmt.Errorf("aurora: could not determine zone for domain: '%s'. %s", domain, err)
+		return fmt.Errorf("aurora: could not determine zone for domain %q: %w", domain, err)
 	}
 
 	// 1. Aurora will happily create the TXT record when it is provided a fqdn,
@@ -111,7 +124,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zone, err := d.getZoneInformationByName(authZone)
 	if err != nil {
-		return fmt.Errorf("aurora: could not create record: %v", err)
+		return fmt.Errorf("aurora: could not create record: %w", err)
 	}
 
 	record := auroradns.Record{
@@ -123,7 +136,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	newRecord, _, err := d.client.CreateRecord(zone.ID, record)
 	if err != nil {
-		return fmt.Errorf("aurora: could not create record: %v", err)
+		return fmt.Errorf("aurora: could not create record: %w", err)
 	}
 
 	d.recordIDsMu.Lock()
@@ -147,7 +160,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
 	if err != nil {
-		return fmt.Errorf("could not determine zone for domain: %q. %v", domain, err)
+		return fmt.Errorf("could not determine zone for domain %q: %w", domain, err)
 	}
 
 	authZone = dns01.UnFqdn(authZone)
@@ -187,5 +200,5 @@ func (d *DNSProvider) getZoneInformationByName(name string) (auroradns.Zone, err
 		}
 	}
 
-	return auroradns.Zone{}, fmt.Errorf("could not find Zone record")
+	return auroradns.Zone{}, errors.New("could not find Zone record")
 }

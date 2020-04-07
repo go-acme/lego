@@ -8,8 +8,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var envTest = tester.NewEnvTest("VULTR_API_KEY").
-	WithDomain("VULTR_TEST_DOMAIN")
+const envDomain = envNamespace + "TEST_DOMAIN"
+
+var envTest = tester.NewEnvTest(EnvAPIKey).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -20,13 +22,13 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"VULTR_API_KEY": "123",
+				EnvAPIKey: "123",
 			},
 		},
 		{
 			desc: "missing api key",
 			envVars: map[string]string{
-				"VULTR_API_KEY": "",
+				EnvAPIKey: "",
 			},
 			expected: "vultr: some credentials information are missing: VULTR_API_KEY",
 		},

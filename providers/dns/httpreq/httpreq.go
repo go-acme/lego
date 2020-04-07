@@ -16,6 +16,20 @@ import (
 	"github.com/go-acme/lego/v3/platform/config/env"
 )
 
+// Environment variables names.
+const (
+	envNamespace = "HTTPREQ_"
+
+	EnvEndpoint = envNamespace + "ENDPOINT"
+	EnvMode     = envNamespace + "MODE"
+	EnvUsername = envNamespace + "USERNAME"
+	EnvPassword = envNamespace + "PASSWORD"
+
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
 type message struct {
 	FQDN  string `json:"fqdn"`
 	Value string `json:"value"`
@@ -41,10 +55,10 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		PropagationTimeout: env.GetOrDefaultSecond("HTTPREQ_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("HTTPREQ_POLLING_INTERVAL", dns01.DefaultPollingInterval),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("HTTPREQ_HTTP_TIMEOUT", 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -56,20 +70,20 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("HTTPREQ_ENDPOINT")
+	values, err := env.Get(EnvEndpoint)
 	if err != nil {
-		return nil, fmt.Errorf("httpreq: %v", err)
+		return nil, fmt.Errorf("httpreq: %w", err)
 	}
 
-	endpoint, err := url.Parse(values["HTTPREQ_ENDPOINT"])
+	endpoint, err := url.Parse(values[EnvEndpoint])
 	if err != nil {
-		return nil, fmt.Errorf("httpreq: %v", err)
+		return nil, fmt.Errorf("httpreq: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.Mode = env.GetOrFile("HTTPREQ_MODE")
-	config.Username = env.GetOrFile("HTTPREQ_USERNAME")
-	config.Password = env.GetOrFile("HTTPREQ_PASSWORD")
+	config.Mode = env.GetOrFile(EnvMode)
+	config.Username = env.GetOrFile(EnvUsername)
+	config.Password = env.GetOrFile(EnvPassword)
 	config.Endpoint = endpoint
 	return NewDNSProviderConfig(config)
 }
@@ -104,7 +118,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 		err := d.doPost("/present", msg)
 		if err != nil {
-			return fmt.Errorf("httpreq: %v", err)
+			return fmt.Errorf("httpreq: %w", err)
 		}
 		return nil
 	}
@@ -117,7 +131,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	err := d.doPost("/present", msg)
 	if err != nil {
-		return fmt.Errorf("httpreq: %v", err)
+		return fmt.Errorf("httpreq: %w", err)
 	}
 	return nil
 }
@@ -133,7 +147,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 		err := d.doPost("/cleanup", msg)
 		if err != nil {
-			return fmt.Errorf("httpreq: %v", err)
+			return fmt.Errorf("httpreq: %w", err)
 		}
 		return nil
 	}
@@ -146,7 +160,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	err := d.doPost("/cleanup", msg)
 	if err != nil {
-		return fmt.Errorf("httpreq: %v", err)
+		return fmt.Errorf("httpreq: %w", err)
 	}
 	return nil
 }
@@ -184,7 +198,7 @@ func (d *DNSProvider) doPost(uri string, msg interface{}) error {
 	if resp.StatusCode >= http.StatusBadRequest {
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			return fmt.Errorf("%d: failed to read response body: %v", resp.StatusCode, err)
+			return fmt.Errorf("%d: failed to read response body: %w", resp.StatusCode, err)
 		}
 
 		return fmt.Errorf("%d: request failed: %v", resp.StatusCode, string(body))

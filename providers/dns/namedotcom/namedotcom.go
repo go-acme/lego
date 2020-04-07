@@ -16,6 +16,20 @@ import (
 // according to https://www.name.com/api-docs/DNS#CreateRecord
 const minTTL = 300
 
+// Environment variables names.
+const (
+	envNamespace = "NAMECOM_"
+
+	EnvUsername = envNamespace + "USERNAME"
+	EnvAPIToken = envNamespace + "API_TOKEN"
+	EnvServer   = envNamespace + "SERVER"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	Username           string
@@ -30,11 +44,11 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("NAMECOM_TTL", minTTL),
-		PropagationTimeout: env.GetOrDefaultSecond("NAMECOM_PROPAGATION_TIMEOUT", 15*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond("NAMECOM_POLLING_INTERVAL", 20*time.Second),
+		TTL:                env.GetOrDefaultInt(EnvTTL, minTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 15*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 20*time.Second),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("NAMECOM_HTTP_TIMEOUT", 10*time.Second),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 10*time.Second),
 		},
 	}
 }
@@ -49,15 +63,15 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables:
 // NAMECOM_USERNAME and NAMECOM_API_TOKEN
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("NAMECOM_USERNAME", "NAMECOM_API_TOKEN")
+	values, err := env.Get(EnvUsername, EnvAPIToken)
 	if err != nil {
-		return nil, fmt.Errorf("namedotcom: %v", err)
+		return nil, fmt.Errorf("namedotcom: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.Username = values["NAMECOM_USERNAME"]
-	config.APIToken = values["NAMECOM_API_TOKEN"]
-	config.Server = env.GetOrFile("NAMECOM_SERVER")
+	config.Username = values[EnvUsername]
+	config.APIToken = values[EnvAPIToken]
+	config.Server = env.GetOrFile(EnvServer)
 
 	return NewDNSProviderConfig(config)
 }
@@ -69,11 +83,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.Username == "" {
-		return nil, fmt.Errorf("namedotcom: username is required")
+		return nil, errors.New("namedotcom: username is required")
 	}
 
 	if config.APIToken == "" {
-		return nil, fmt.Errorf("namedotcom: API token is required")
+		return nil, errors.New("namedotcom: API token is required")
 	}
 
 	if config.TTL < minTTL {
@@ -94,17 +108,22 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
+	domainDetails, err := d.client.GetDomain(&namecom.GetDomainRequest{DomainName: domain})
+	if err != nil {
+		return fmt.Errorf("namedotcom API call failed: %v", err)
+	}
+
 	request := &namecom.Record{
 		DomainName: domain,
-		Host:       d.extractRecordName(fqdn, domain),
+		Host:       d.extractRecordName(fqdn, domainDetails.DomainName),
 		Type:       "TXT",
 		TTL:        uint32(d.config.TTL),
 		Answer:     value,
 	}
 
-	_, err := d.client.CreateRecord(request)
+	_, err = d.client.CreateRecord(request)
 	if err != nil {
-		return fmt.Errorf("namedotcom: API call failed: %v", err)
+		return fmt.Errorf("namedotcom: API call failed: %w", err)
 	}
 
 	return nil
@@ -116,7 +135,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	records, err := d.getRecords(domain)
 	if err != nil {
-		return fmt.Errorf("namedotcom: %v", err)
+		return fmt.Errorf("namedotcom: %w", err)
 	}
 
 	for _, rec := range records {
@@ -127,7 +146,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 			}
 			_, err := d.client.DeleteRecord(request)
 			if err != nil {
-				return fmt.Errorf("namedotcom: %v", err)
+				return fmt.Errorf("namedotcom: %w", err)
 			}
 		}
 	}

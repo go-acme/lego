@@ -1,5 +1,66 @@
 # Changelog
 
+## [v3.5.0] - 2020-03-15
+
+### Added:
+
+- **[dnsprovider]** Add DNS provider for Dynu.
+- **[dnsprovider]** Add DNS provider for reg.ru
+- **[dnsprovider]** Add DNS provider for Zonomi and RimuHosting.
+- **[cli]** Building binaries for arm 6 and 5
+- **[cli]** Uses CGO_ENABLED=0
+- **[cli]** Multi-arch Docker image.
+- **[cli]** Adds `--name` flag to list command.
+
+### Changed:
+
+- **[lib]** lib: Improve cleanup log messages.
+- **[lib]** Wrap errors.
+
+### Fixed:
+
+- **[dnsprovider]** azure: pass AZURE_CLIENT_SECRET_FILE to autorest.Authorizer
+- **[dnsprovider]** gcloud: fixes issues when used with GKE Workload Identity
+- **[dnsprovider]** oraclecloud: fix subdomain support
+
+## [v3.4.0] - 2020-02-25
+
+### Added:
+
+- **[dnsprovider]** Add DNS provider for Constellix
+- **[dnsprovider]** Add DNS provider for Servercow.
+- **[dnsprovider]** Add DNS provider for Scaleway
+- **[cli]** Add &#34;LEGO_PATH&#34; environment variable
+
+### Changed:
+
+- **[dnsprovider]** route53: allow custom client to be provided
+- **[dnsprovider]** namecheap: allow external domains
+- **[dnsprovider]** namecheap: add sandbox support.
+- **[dnsprovider]** ovh: Improve provider documentation
+- **[dnsprovider]** route53: Improve provider documentation
+
+### Fixed:
+
+- **[dnsprovider]** zoneee: fix subdomains.
+- **[dnsprovider]** designate: Don&#39;t clean up managed records like SOA and NS
+- **[dnsprovider]** dnspod: update lib.
+- **[lib]** crypto: Treat CommonName as optional
+- **[lib]** chore: update cenkalti/backoff to v4.
+
+## [v3.3.0] - 2020-01-08
+
+### Added:
+- **[dnsprovider]** Add DNS provider for Checkdomain
+- **[lib]** Add support to update account
+
+### Changed:
+- **[dnsprovider]** gcloud: Auto-detection of the project ID.
+- **[lib]** Successfully parse private key PEM blocks
+
+### Fixed:
+- **[dnsprovider]** Update dnspod, because of API breaking changes.
+
 ## [v3.2.0] - 2019-11-10
 
 ### Added:

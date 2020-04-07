@@ -66,7 +66,7 @@ func TestProber_Solve(t *testing.T) {
 				createStubAuthorizationHTTP01("lego.wtf", acme.StatusProcessing),
 				createStubAuthorizationHTTP01("mydomain.wtf", acme.StatusProcessing),
 			},
-			expectedError: `acme: Error -> One or more domains had a problem:
+			expectedError: `error: one or more domains had a problem:
 [acme.wtf] preSolve error acme.wtf
 `,
 		},
@@ -91,7 +91,7 @@ func TestProber_Solve(t *testing.T) {
 				createStubAuthorizationHTTP01("lego.wtf", acme.StatusProcessing),
 				createStubAuthorizationHTTP01("mydomain.wtf", acme.StatusProcessing),
 			},
-			expectedError: `acme: Error -> One or more domains had a problem:
+			expectedError: `error: one or more domains had a problem:
 [acme.wtf] preSolve error acme.wtf
 [lego.wtf] solve error lego.wtf
 `,

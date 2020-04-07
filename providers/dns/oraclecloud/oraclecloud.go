@@ -13,6 +13,25 @@ import (
 	"github.com/oracle/oci-go-sdk/dns"
 )
 
+// Environment variables names.
+const (
+	envNamespace = "OCI_"
+
+	EnvCompartmentOCID   = envNamespace + "COMPARTMENT_OCID"
+	envPrivKey           = envNamespace + "PRIVKEY"
+	EnvPrivKeyFile       = envPrivKey + "_FILE"
+	EnvPrivKeyPass       = envPrivKey + "_PASS"
+	EnvTenancyOCID       = envNamespace + "TENANCY_OCID"
+	EnvUserOCID          = envNamespace + "USER_OCID"
+	EnvPubKeyFingerprint = envNamespace + "PUBKEY_FINGERPRINT"
+	EnvRegion            = envNamespace + "REGION"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	CompartmentID      string
@@ -26,11 +45,11 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("OCI_TTL", dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond("OCI_PROPAGATION_TIMEOUT", dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond("OCI_POLLING_INTERVAL", dns01.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("OCI_HTTP_TIMEOUT", 60*time.Second),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 60*time.Second),
 		},
 	}
 }
@@ -43,13 +62,13 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for OracleCloud.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(ociPrivkey, ociTenancyOCID, ociUserOCID, ociPubkeyFingerprint, ociRegion, "OCI_COMPARTMENT_OCID")
+	values, err := env.Get(envPrivKey, EnvTenancyOCID, EnvUserOCID, EnvPubKeyFingerprint, EnvRegion, EnvCompartmentOCID)
 	if err != nil {
-		return nil, fmt.Errorf("oraclecloud: %v", err)
+		return nil, fmt.Errorf("oraclecloud: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.CompartmentID = values["OCI_COMPARTMENT_OCID"]
+	config.CompartmentID = values[EnvCompartmentOCID]
 	config.OCIConfigProvider = newConfigProvider(values)
 
 	return NewDNSProviderConfig(config)
@@ -71,7 +90,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	client, err := dns.NewDnsClientWithConfigurationProvider(config.OCIConfigProvider)
 	if err != nil {
-		return nil, fmt.Errorf("oraclecloud: %v", err)
+		return nil, fmt.Errorf("oraclecloud: %w", err)
 	}
 
 	if config.HTTPClient != nil {
@@ -85,6 +104,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
+	zoneNameOrID, err1 := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
+	if err1 != nil {
+		return fmt.Errorf("oraclecloud: could not find zone for domain %q and fqdn %q : %w", domain, fqdn, err1)
+	}
+
 	// generate request to dns.PatchDomainRecordsRequest
 	recordOperation := dns.RecordOperation{
 		Domain:      common.String(dns01.UnFqdn(fqdn)),
@@ -96,7 +120,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	request := dns.PatchDomainRecordsRequest{
 		CompartmentId: common.String(d.config.CompartmentID),
-		ZoneNameOrId:  common.String(domain),
+		ZoneNameOrId:  common.String(zoneNameOrID),
 		Domain:        common.String(dns01.UnFqdn(fqdn)),
 		PatchDomainRecordsDetails: dns.PatchDomainRecordsDetails{
 			Items: []dns.RecordOperation{recordOperation},
@@ -105,7 +129,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	_, err := d.client.PatchDomainRecords(context.Background(), request)
 	if err != nil {
-		return fmt.Errorf("oraclecloud: %v", err)
+		return fmt.Errorf("oraclecloud: %w", err)
 	}
 
 	return nil
@@ -115,9 +139,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
+	zoneNameOrID, err1 := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
+	if err1 != nil {
+		return fmt.Errorf("oraclecloud: could not find zone for domain %q and fqdn %q : %w", domain, fqdn, err1)
+	}
+
 	// search to TXT record's hash to delete
 	getRequest := dns.GetDomainRecordsRequest{
-		ZoneNameOrId:  common.String(domain),
+		ZoneNameOrId:  common.String(zoneNameOrID),
 		Domain:        common.String(dns01.UnFqdn(fqdn)),
 		CompartmentId: common.String(d.config.CompartmentID),
 		Rtype:         common.String("TXT"),
@@ -127,11 +156,11 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	domainRecords, err := d.client.GetDomainRecords(ctx, getRequest)
 	if err != nil {
-		return fmt.Errorf("oraclecloud: %v", err)
+		return fmt.Errorf("oraclecloud: %w", err)
 	}
 
 	if *domainRecords.OpcTotalItems == 0 {
-		return fmt.Errorf("oraclecloud: no record to CleanUp")
+		return errors.New("oraclecloud: no record to CleanUp")
 	}
 
 	var deleteHash *string
@@ -143,7 +172,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	if deleteHash == nil {
-		return fmt.Errorf("oraclecloud: no record to CleanUp")
+		return errors.New("oraclecloud: no record to CleanUp")
 	}
 
 	recordOperation := dns.RecordOperation{
@@ -152,7 +181,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	patchRequest := dns.PatchDomainRecordsRequest{
-		ZoneNameOrId: common.String(domain),
+		ZoneNameOrId: common.String(zoneNameOrID),
 		Domain:       common.String(dns01.UnFqdn(fqdn)),
 		PatchDomainRecordsDetails: dns.PatchDomainRecordsDetails{
 			Items: []dns.RecordOperation{recordOperation},
@@ -162,7 +191,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	_, err = d.client.PatchDomainRecords(ctx, patchRequest)
 	if err != nil {
-		return fmt.Errorf("oraclecloud: %v", err)
+		return fmt.Errorf("oraclecloud: %w", err)
 	}
 
 	return nil

@@ -15,17 +15,19 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const envDomain = "R53_DOMAIN"
+
 var envTest = tester.NewEnvTest(
-	"AWS_ACCESS_KEY_ID",
-	"AWS_SECRET_ACCESS_KEY",
-	"AWS_REGION",
-	"AWS_HOSTED_ZONE_ID",
-	"AWS_MAX_RETRIES",
-	"AWS_TTL",
-	"AWS_PROPAGATION_TIMEOUT",
-	"AWS_POLLING_INTERVAL").
-	WithDomain("R53_DOMAIN").
-	WithLiveTestRequirements("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_REGION", "R53_DOMAIN")
+	EnvAccessKeyID,
+	EnvSecretAccessKey,
+	EnvRegion,
+	EnvHostedZoneID,
+	EnvMaxRetries,
+	EnvTTL,
+	EnvPropagationTimeout,
+	EnvPollingInterval).
+	WithDomain(envDomain).
+	WithLiveTestRequirements(EnvAccessKeyID, EnvSecretAccessKey, EnvRegion, envDomain)
 
 func makeTestProvider(ts *httptest.Server) *DNSProvider {
 	config := &aws.Config{
@@ -48,9 +50,9 @@ func Test_loadCredentials_FromEnv(t *testing.T) {
 	defer envTest.RestoreEnv()
 	envTest.ClearEnv()
 
-	os.Setenv("AWS_ACCESS_KEY_ID", "123")
-	os.Setenv("AWS_SECRET_ACCESS_KEY", "456")
-	os.Setenv("AWS_REGION", "us-east-1")
+	os.Setenv(EnvAccessKeyID, "123")
+	os.Setenv(EnvSecretAccessKey, "456")
+	os.Setenv(EnvRegion, "us-east-1")
 
 	config := &aws.Config{
 		CredentialsChainVerboseErrors: aws.Bool(true),
@@ -75,7 +77,7 @@ func Test_loadRegion_FromEnv(t *testing.T) {
 	defer envTest.RestoreEnv()
 	envTest.ClearEnv()
 
-	os.Setenv("AWS_REGION", route53.CloudWatchRegionUsEast1)
+	os.Setenv(EnvRegion, route53.CloudWatchRegionUsEast1)
 
 	sess, err := session.NewSession(aws.NewConfig())
 	require.NoError(t, err)
@@ -90,7 +92,7 @@ func Test_getHostedZoneID_FromEnv(t *testing.T) {
 
 	expectedZoneID := "zoneID"
 
-	os.Setenv("AWS_HOSTED_ZONE_ID", expectedZoneID)
+	os.Setenv(EnvHostedZoneID, expectedZoneID)
 
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
@@ -121,11 +123,11 @@ func TestNewDefaultConfig(t *testing.T) {
 		{
 			desc: "",
 			envVars: map[string]string{
-				"AWS_MAX_RETRIES":         "10",
-				"AWS_TTL":                 "99",
-				"AWS_PROPAGATION_TIMEOUT": "60",
-				"AWS_POLLING_INTERVAL":    "60",
-				"AWS_HOSTED_ZONE_ID":      "abc123",
+				EnvMaxRetries:         "10",
+				EnvTTL:                "99",
+				EnvPropagationTimeout: "60",
+				EnvPollingInterval:    "60",
+				EnvHostedZoneID:       "abc123",
 			},
 			expected: &Config{
 				MaxRetries:         10,

@@ -29,10 +29,10 @@ _Please contribute by adding a CLI example._
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `AWS_ACCESS_KEY_ID` | Managed by the AWS client |
+| `AWS_ACCESS_KEY_ID` | Managed by the AWS client (`AWS_ACCESS_KEY_ID_FILE` is not supported) |
 | `AWS_HOSTED_ZONE_ID` | Override the hosted zone ID |
-| `AWS_REGION` | Managed by the AWS client |
-| `AWS_SECRET_ACCESS_KEY` | Managed by the AWS client |
+| `AWS_REGION` | Managed by the AWS client (`AWS_REGION_FILE` is not supported) |
+| `AWS_SECRET_ACCESS_KEY` | Managed by the AWS client (`AWS_SECRET_ACCESS_KEY_FILE` is not supported) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).
@@ -60,7 +60,10 @@ AWS Credentials are automatically detected in the following locations and priori
 
 If `AWS_HOSTED_ZONE_ID` is not set, Lego tries to determine the correct public hosted zone via the FQDN.
 
-See also: [sessions](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/sessions.html)
+See also:
+
+- [sessions](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/sessions.html)
+- [Setting AWS Credentials](https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-credentials.html#setup-credentials-setting)
 
 ## Policy
 

@@ -1,0 +1,34 @@
+<?xml version ="1.0"  ?><!DOCTYPE html [<!ENTITY nbsp '&#160;'><!ENTITY trade '&#8482;'><!ENTITY copy '&#169;'>]><dnsapi_result><is_ok>OK:</is_ok>
+    <result_counts
+            added="2"
+            changed="0"
+            unchanged="0"
+            deleted="0"/>
+    <actions>
+
+        <action
+                action="SET"
+                host="example.org"
+                type="TXT"
+                value="txttxtx"
+                ttl="0">
+            <record
+                    name="example.org"
+                    type="TXT"
+                    content="txttxtx"
+                    ttl="0 seconds"
+                    prio="0"
+                    added=""/>	</action>
+        <action
+                action="SET"
+                host="example.org"
+                type="TXT"
+                value="sample"
+                ttl="0">
+            <record
+                    name="example.org"
+                    type="TXT"
+                    content="sample"
+                    ttl="0 seconds"
+                    prio="0"
+                    added=""/>	</action></actions></dnsapi_result>

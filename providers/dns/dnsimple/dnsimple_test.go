@@ -12,11 +12,13 @@ import (
 
 const sandboxURL = "https://api.sandbox.fake.com"
 
+const envDomain = envNamespace + "DOMAIN"
+
 var envTest = tester.NewEnvTest(
-	"DNSIMPLE_OAUTH_TOKEN",
-	"DNSIMPLE_BASE_URL").
-	WithDomain("DNSIMPLE_DOMAIN").
-	WithLiveTestRequirements("DNSIMPLE_OAUTH_TOKEN", "DNSIMPLE_DOMAIN")
+	EnvOAuthToken,
+	EnvBaseURL).
+	WithDomain(envDomain).
+	WithLiveTestRequirements(EnvOAuthToken, envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -27,20 +29,20 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"DNSIMPLE_OAUTH_TOKEN": "my_token",
+				EnvOAuthToken: "my_token",
 			},
 		},
 		{
 			desc: "success: base url",
 			envVars: map[string]string{
-				"DNSIMPLE_OAUTH_TOKEN": "my_token",
-				"DNSIMPLE_BASE_URL":    "https://api.dnsimple.test",
+				EnvOAuthToken: "my_token",
+				EnvBaseURL:    "https://api.dnsimple.test",
 			},
 		},
 		{
 			desc: "missing oauth token",
 			envVars: map[string]string{
-				"DNSIMPLE_OAUTH_TOKEN": "",
+				EnvOAuthToken: "",
 			},
 			expected: "dnsimple: OAuth token is missing",
 		},
@@ -61,7 +63,7 @@ func TestNewDNSProvider(t *testing.T) {
 				require.NotNil(t, p.config)
 				require.NotNil(t, p.client)
 
-				baseURL := os.Getenv("DNSIMPLE_BASE_URL")
+				baseURL := os.Getenv(EnvBaseURL)
 				if baseURL != "" {
 					assert.Equal(t, baseURL, p.client.BaseURL)
 				}
@@ -126,8 +128,8 @@ func TestLivePresent(t *testing.T) {
 
 	envTest.RestoreEnv()
 
-	if len(os.Getenv("DNSIMPLE_BASE_URL")) == 0 {
-		os.Setenv("DNSIMPLE_BASE_URL", sandboxURL)
+	if len(os.Getenv(EnvBaseURL)) == 0 {
+		os.Setenv(EnvBaseURL, sandboxURL)
 	}
 
 	provider, err := NewDNSProvider()
@@ -144,8 +146,8 @@ func TestLiveCleanUp(t *testing.T) {
 
 	envTest.RestoreEnv()
 
-	if len(os.Getenv("DNSIMPLE_BASE_URL")) == 0 {
-		os.Setenv("DNSIMPLE_BASE_URL", sandboxURL)
+	if len(os.Getenv(EnvBaseURL)) == 0 {
+		os.Setenv(EnvBaseURL, sandboxURL)
 	}
 
 	provider, err := NewDNSProvider()

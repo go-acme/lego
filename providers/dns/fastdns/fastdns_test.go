@@ -9,12 +9,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const envDomain = envNamespace + "TEST_DOMAIN"
+
 var envTest = tester.NewEnvTest(
-	"AKAMAI_HOST",
-	"AKAMAI_CLIENT_TOKEN",
-	"AKAMAI_CLIENT_SECRET",
-	"AKAMAI_ACCESS_TOKEN").
-	WithDomain("AKAMAI_TEST_DOMAIN")
+	EnvHost,
+	EnvClientToken,
+	EnvClientSecret,
+	EnvAccessToken).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -25,59 +27,59 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"AKAMAI_HOST":          "A",
-				"AKAMAI_CLIENT_TOKEN":  "B",
-				"AKAMAI_CLIENT_SECRET": "C",
-				"AKAMAI_ACCESS_TOKEN":  "D",
+				EnvHost:         "A",
+				EnvClientToken:  "B",
+				EnvClientSecret: "C",
+				EnvAccessToken:  "D",
 			},
 		},
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				"AKAMAI_HOST":          "",
-				"AKAMAI_CLIENT_TOKEN":  "",
-				"AKAMAI_CLIENT_SECRET": "",
-				"AKAMAI_ACCESS_TOKEN":  "",
+				EnvHost:         "",
+				EnvClientToken:  "",
+				EnvClientSecret: "",
+				EnvAccessToken:  "",
 			},
 			expected: "fastdns: some credentials information are missing: AKAMAI_HOST,AKAMAI_CLIENT_TOKEN,AKAMAI_CLIENT_SECRET,AKAMAI_ACCESS_TOKEN",
 		},
 		{
 			desc: "missing host",
 			envVars: map[string]string{
-				"AKAMAI_HOST":          "",
-				"AKAMAI_CLIENT_TOKEN":  "B",
-				"AKAMAI_CLIENT_SECRET": "C",
-				"AKAMAI_ACCESS_TOKEN":  "D",
+				EnvHost:         "",
+				EnvClientToken:  "B",
+				EnvClientSecret: "C",
+				EnvAccessToken:  "D",
 			},
 			expected: "fastdns: some credentials information are missing: AKAMAI_HOST",
 		},
 		{
 			desc: "missing client token",
 			envVars: map[string]string{
-				"AKAMAI_HOST":          "A",
-				"AKAMAI_CLIENT_TOKEN":  "",
-				"AKAMAI_CLIENT_SECRET": "C",
-				"AKAMAI_ACCESS_TOKEN":  "D",
+				EnvHost:         "A",
+				EnvClientToken:  "",
+				EnvClientSecret: "C",
+				EnvAccessToken:  "D",
 			},
 			expected: "fastdns: some credentials information are missing: AKAMAI_CLIENT_TOKEN",
 		},
 		{
 			desc: "missing client secret",
 			envVars: map[string]string{
-				"AKAMAI_HOST":          "A",
-				"AKAMAI_CLIENT_TOKEN":  "B",
-				"AKAMAI_CLIENT_SECRET": "",
-				"AKAMAI_ACCESS_TOKEN":  "D",
+				EnvHost:         "A",
+				EnvClientToken:  "B",
+				EnvClientSecret: "",
+				EnvAccessToken:  "D",
 			},
 			expected: "fastdns: some credentials information are missing: AKAMAI_CLIENT_SECRET",
 		},
 		{
 			desc: "missing access token",
 			envVars: map[string]string{
-				"AKAMAI_HOST":          "A",
-				"AKAMAI_CLIENT_TOKEN":  "B",
-				"AKAMAI_CLIENT_SECRET": "C",
-				"AKAMAI_ACCESS_TOKEN":  "",
+				EnvHost:         "A",
+				EnvClientToken:  "B",
+				EnvClientSecret: "C",
+				EnvAccessToken:  "",
 			},
 			expected: "fastdns: some credentials information are missing: AKAMAI_ACCESS_TOKEN",
 		},

@@ -8,10 +8,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const envDomain = envNamespace + "DOMAIN"
+
 var envTest = tester.NewEnvTest(
-	"HOSTINGDE_API_KEY",
-	"HOSTINGDE_ZONE_NAME").
-	WithDomain("HOSTINGDE_DOMAIN")
+	EnvAPIKey,
+	EnvZoneName).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -22,31 +24,31 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"HOSTINGDE_API_KEY":   "123",
-				"HOSTINGDE_ZONE_NAME": "456",
+				EnvAPIKey:   "123",
+				EnvZoneName: "456",
 			},
 		},
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				"HOSTINGDE_API_KEY":   "",
-				"HOSTINGDE_ZONE_NAME": "",
+				EnvAPIKey:   "",
+				EnvZoneName: "",
 			},
 			expected: "hostingde: some credentials information are missing: HOSTINGDE_API_KEY,HOSTINGDE_ZONE_NAME",
 		},
 		{
 			desc: "missing access key",
 			envVars: map[string]string{
-				"HOSTINGDE_API_KEY":   "",
-				"HOSTINGDE_ZONE_NAME": "456",
+				EnvAPIKey:   "",
+				EnvZoneName: "456",
 			},
 			expected: "hostingde: some credentials information are missing: HOSTINGDE_API_KEY",
 		},
 		{
 			desc: "missing zone name",
 			envVars: map[string]string{
-				"HOSTINGDE_API_KEY":   "123",
-				"HOSTINGDE_ZONE_NAME": "",
+				EnvAPIKey:   "123",
+				EnvZoneName: "",
 			},
 			expected: "hostingde: some credentials information are missing: HOSTINGDE_ZONE_NAME",
 		},

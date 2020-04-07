@@ -3,6 +3,7 @@ package internal
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -123,7 +124,7 @@ type Client struct {
 // NewClient creates a netcup DNS client
 func NewClient(customerNumber string, apiKey string, apiPassword string) (*Client, error) {
 	if customerNumber == "" || apiKey == "" || apiPassword == "" {
-		return nil, fmt.Errorf("credentials missing")
+		return nil, errors.New("credentials missing")
 	}
 
 	return &Client{
@@ -154,7 +155,7 @@ func (c *Client) Login() (string, error) {
 	var responseData LoginResponse
 	err := c.doRequest(payload, &responseData)
 	if err != nil {
-		return "", fmt.Errorf("loging error: %v", err)
+		return "", fmt.Errorf("loging error: %w", err)
 	}
 
 	return responseData.APISessionID, nil
@@ -175,7 +176,7 @@ func (c *Client) Logout(sessionID string) error {
 
 	err := c.doRequest(payload, nil)
 	if err != nil {
-		return fmt.Errorf("logout error: %v", err)
+		return fmt.Errorf("logout error: %w", err)
 	}
 
 	return nil
@@ -198,7 +199,7 @@ func (c *Client) UpdateDNSRecord(sessionID, domainName string, records []DNSReco
 
 	err := c.doRequest(payload, nil)
 	if err != nil {
-		return fmt.Errorf("error when sending the request: %v", err)
+		return fmt.Errorf("error when sending the request: %w", err)
 	}
 
 	return nil
@@ -222,7 +223,7 @@ func (c *Client) GetDNSRecords(hostname, apiSessionID string) ([]DNSRecord, erro
 	var responseData InfoDNSRecordsResponse
 	err := c.doRequest(payload, &responseData)
 	if err != nil {
-		return nil, fmt.Errorf("error when sending the request: %v", err)
+		return nil, fmt.Errorf("error when sending the request: %w", err)
 	}
 
 	return responseData.DNSRecords, nil
@@ -265,7 +266,7 @@ func (c *Client) doRequest(payload interface{}, responseData interface{}) error 
 	if responseData != nil {
 		err = json.Unmarshal(respMsg.ResponseData, responseData)
 		if err != nil {
-			return fmt.Errorf("%v: unmarshaling %T error: %v: %s",
+			return fmt.Errorf("%v: unmarshaling %T error: %w: %s",
 				respMsg, responseData, err, string(respMsg.ResponseData))
 		}
 	}
@@ -283,7 +284,7 @@ func checkResponse(resp *http.Response) error {
 
 		raw, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			return fmt.Errorf("unable to read body: status code=%d, error=%v", resp.StatusCode, err)
+			return fmt.Errorf("unable to read body: status code=%d, error=%w", resp.StatusCode, err)
 		}
 
 		return fmt.Errorf("status code=%d: %s", resp.StatusCode, string(raw))
@@ -301,13 +302,13 @@ func decodeResponseMsg(resp *http.Response) (*ResponseMsg, error) {
 
 	raw, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("unable to read body: status code=%d, error=%v", resp.StatusCode, err)
+		return nil, fmt.Errorf("unable to read body: status code=%d, error=%w", resp.StatusCode, err)
 	}
 
 	var respMsg ResponseMsg
 	err = json.Unmarshal(raw, &respMsg)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshaling %T error [status code=%d]: %v: %s", respMsg, resp.StatusCode, err, string(raw))
+		return nil, fmt.Errorf("unmarshaling %T error [status code=%d]: %w: %s", respMsg, resp.StatusCode, err, string(raw))
 	}
 
 	return &respMsg, nil
@@ -322,5 +323,5 @@ func GetDNSRecordIdx(records []DNSRecord, record DNSRecord) (int, error) {
 			return index, nil
 		}
 	}
-	return -1, fmt.Errorf("no DNS Record found")
+	return -1, errors.New("no DNS Record found")
 }

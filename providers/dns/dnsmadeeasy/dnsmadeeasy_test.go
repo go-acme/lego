@@ -8,13 +8,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const envDomain = envNamespace + "DOMAIN"
+
 var envTest = tester.NewEnvTest(
-	"DNSMADEEASY_API_KEY",
-	"DNSMADEEASY_API_SECRET").
-	WithDomain("DNSMADEEASY_DOMAIN")
+	EnvAPIKey,
+	EnvAPISecret).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
-	os.Setenv("DNSMADEEASY_SANDBOX", "true")
+	os.Setenv(EnvSandbox, "true")
 
 	testCases := []struct {
 		desc     string
@@ -24,31 +26,31 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"DNSMADEEASY_API_KEY":    "123",
-				"DNSMADEEASY_API_SECRET": "456",
+				EnvAPIKey:    "123",
+				EnvAPISecret: "456",
 			},
 		},
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				"DNSMADEEASY_API_KEY":    "",
-				"DNSMADEEASY_API_SECRET": "",
+				EnvAPIKey:    "",
+				EnvAPISecret: "",
 			},
 			expected: "dnsmadeeasy: some credentials information are missing: DNSMADEEASY_API_KEY,DNSMADEEASY_API_SECRET",
 		},
 		{
 			desc: "missing access key",
 			envVars: map[string]string{
-				"DNSMADEEASY_API_KEY":    "",
-				"DNSMADEEASY_API_SECRET": "456",
+				EnvAPIKey:    "",
+				EnvAPISecret: "456",
 			},
 			expected: "dnsmadeeasy: some credentials information are missing: DNSMADEEASY_API_KEY",
 		},
 		{
 			desc: "missing secret key",
 			envVars: map[string]string{
-				"DNSMADEEASY_API_KEY":    "123",
-				"DNSMADEEASY_API_SECRET": "",
+				EnvAPIKey:    "123",
+				EnvAPISecret: "",
 			},
 			expected: "dnsmadeeasy: some credentials information are missing: DNSMADEEASY_API_SECRET",
 		},
@@ -76,7 +78,7 @@ func TestNewDNSProvider(t *testing.T) {
 }
 
 func TestNewDNSProviderConfig(t *testing.T) {
-	os.Setenv("DNSMADEEASY_SANDBOX", "true")
+	os.Setenv(EnvSandbox, "true")
 
 	testCases := []struct {
 		desc      string
@@ -130,7 +132,7 @@ func TestLivePresentAndCleanup(t *testing.T) {
 		t.Skip("skipping live test")
 	}
 
-	os.Setenv("DNSMADEEASY_SANDBOX", "true")
+	os.Setenv(EnvSandbox, "true")
 
 	envTest.RestoreEnv()
 	provider, err := NewDNSProvider()

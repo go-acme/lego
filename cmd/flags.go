@@ -50,9 +50,10 @@ func CreateFlags(defaultPath string) []cli.Flag {
 			Usage: "(deprecated) Filename of the generated certificate.",
 		},
 		cli.StringFlag{
-			Name:  "path",
-			Usage: "Directory to use for storing the data.",
-			Value: defaultPath,
+			Name:   "path",
+			EnvVar: "LEGO_PATH",
+			Usage:  "Directory to use for storing the data.",
+			Value:  defaultPath,
 		},
 		cli.BoolFlag{
 			Name:  "http",

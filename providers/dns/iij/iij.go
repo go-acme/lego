@@ -2,6 +2,7 @@
 package iij
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -11,6 +12,19 @@ import (
 	"github.com/go-acme/lego/v3/platform/config/env"
 	"github.com/iij/doapi"
 	"github.com/iij/doapi/protocol"
+)
+
+// Environment variables names.
+const (
+	envNamespace = "IIJ_"
+
+	EnvAPIAccessKey  = envNamespace + "API_ACCESS_KEY"
+	EnvAPISecretKey  = envNamespace + "API_SECRET_KEY"
+	EnvDoServiceCode = envNamespace + "DO_SERVICE_CODE"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 )
 
 // Config is used to configure the creation of the DNSProvider
@@ -26,9 +40,9 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("IIJ_TTL", 300),
-		PropagationTimeout: env.GetOrDefaultSecond("IIJ_PROPAGATION_TIMEOUT", 2*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond("IIJ_POLLING_INTERVAL", 4*time.Second),
+		TTL:                env.GetOrDefaultInt(EnvTTL, 300),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 4*time.Second),
 	}
 }
 
@@ -40,15 +54,15 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for IIJ DO
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("IIJ_API_ACCESS_KEY", "IIJ_API_SECRET_KEY", "IIJ_DO_SERVICE_CODE")
+	values, err := env.Get(EnvAPIAccessKey, EnvAPISecretKey, EnvDoServiceCode)
 	if err != nil {
-		return nil, fmt.Errorf("iij: %v", err)
+		return nil, fmt.Errorf("iij: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.AccessKey = values["IIJ_API_ACCESS_KEY"]
-	config.SecretKey = values["IIJ_API_SECRET_KEY"]
-	config.DoServiceCode = values["IIJ_DO_SERVICE_CODE"]
+	config.AccessKey = values[EnvAPIAccessKey]
+	config.SecretKey = values[EnvAPISecretKey]
+	config.DoServiceCode = values[EnvDoServiceCode]
 
 	return NewDNSProviderConfig(config)
 }
@@ -57,7 +71,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 // and returns a custom configured DNSProvider instance
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config.SecretKey == "" || config.AccessKey == "" || config.DoServiceCode == "" {
-		return nil, fmt.Errorf("iij: credentials missing")
+		return nil, errors.New("iij: credentials missing")
 	}
 
 	return &DNSProvider{
@@ -77,7 +91,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	err := d.addTxtRecord(domain, value)
 	if err != nil {
-		return fmt.Errorf("iij: %v", err)
+		return fmt.Errorf("iij: %w", err)
 	}
 	return nil
 }
@@ -88,7 +102,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	err := d.deleteTxtRecord(domain, value)
 	if err != nil {
-		return fmt.Errorf("iij: %v", err)
+		return fmt.Errorf("iij: %w", err)
 	}
 	return nil
 }

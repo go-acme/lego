@@ -77,10 +77,12 @@ func (f *fakeClient) Call(r gotransip.SoapRequest, b interface{}) error {
 	}
 }
 
+const envDomain = envNamespace + "DOMAIN"
+
 var envTest = tester.NewEnvTest(
-	"TRANSIP_ACCOUNT_NAME",
-	"TRANSIP_PRIVATE_KEY_PATH").
-	WithDomain("TRANSIP_DOMAIN")
+	EnvAccountName,
+	EnvPrivateKeyPath).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -91,39 +93,39 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"TRANSIP_ACCOUNT_NAME":     "johndoe",
-				"TRANSIP_PRIVATE_KEY_PATH": "./fixtures/private.key",
+				EnvAccountName:    "johndoe",
+				EnvPrivateKeyPath: "./fixtures/private.key",
 			},
 		},
 		{
 			desc: "missing all credentials",
 			envVars: map[string]string{
-				"TRANSIP_ACCOUNT_NAME":     "",
-				"TRANSIP_PRIVATE_KEY_PATH": "",
+				EnvAccountName:    "",
+				EnvPrivateKeyPath: "",
 			},
 			expected: "transip: some credentials information are missing: TRANSIP_ACCOUNT_NAME,TRANSIP_PRIVATE_KEY_PATH",
 		},
 		{
 			desc: "missing account name",
 			envVars: map[string]string{
-				"TRANSIP_ACCOUNT_NAME":     "",
-				"TRANSIP_PRIVATE_KEY_PATH": "./fixtures/private.key",
+				EnvAccountName:    "",
+				EnvPrivateKeyPath: "./fixtures/private.key",
 			},
 			expected: "transip: some credentials information are missing: TRANSIP_ACCOUNT_NAME",
 		},
 		{
 			desc: "missing private key path",
 			envVars: map[string]string{
-				"TRANSIP_ACCOUNT_NAME":     "johndoe",
-				"TRANSIP_PRIVATE_KEY_PATH": "",
+				EnvAccountName:    "johndoe",
+				EnvPrivateKeyPath: "",
 			},
 			expected: "transip: some credentials information are missing: TRANSIP_PRIVATE_KEY_PATH",
 		},
 		{
 			desc: "could not open private key path",
 			envVars: map[string]string{
-				"TRANSIP_ACCOUNT_NAME":     "johndoe",
-				"TRANSIP_PRIVATE_KEY_PATH": "./fixtures/non/existent/private.key",
+				EnvAccountName:    "johndoe",
+				EnvPrivateKeyPath: "./fixtures/non/existent/private.key",
 			},
 			expected: "transip: could not open private key: stat ./fixtures/non/existent/private.key: no such file or directory",
 		},

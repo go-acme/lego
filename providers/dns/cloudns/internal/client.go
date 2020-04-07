@@ -41,13 +41,13 @@ type TXTRecord struct {
 type TXTRecords map[string]TXTRecord
 
 // NewClient creates a ClouDNS client
-func NewClient(authID string, authPassword string) (*Client, error) {
-	if authID == "" {
-		return nil, fmt.Errorf("credentials missing: authID")
+func NewClient(authID string, subAuthID string, authPassword string) (*Client, error) {
+	if authID == "" && subAuthID == "" {
+		return nil, errors.New("credentials missing: authID or subAuthID")
 	}
 
 	if authPassword == "" {
-		return nil, fmt.Errorf("credentials missing: authPassword")
+		return nil, errors.New("credentials missing: authPassword")
 	}
 
 	baseURL, err := url.Parse(defaultBaseURL)
@@ -57,6 +57,7 @@ func NewClient(authID string, authPassword string) (*Client, error) {
 
 	return &Client{
 		authID:       authID,
+		subAuthID:    subAuthID,
 		authPassword: authPassword,
 		HTTPClient:   &http.Client{},
 		BaseURL:      baseURL,
@@ -66,6 +67,7 @@ func NewClient(authID string, authPassword string) (*Client, error) {
 // Client ClouDNS client
 type Client struct {
 	authID       string
+	subAuthID    string
 	authPassword string
 	HTTPClient   *http.Client
 	BaseURL      *url.URL
@@ -96,7 +98,7 @@ func (c *Client) GetZone(authFQDN string) (*Zone, error) {
 
 	if len(result) > 0 {
 		if err = json.Unmarshal(result, &zone); err != nil {
-			return nil, fmt.Errorf("zone unmarshaling error: %v", err)
+			return nil, fmt.Errorf("zone unmarshaling error: %w", err)
 		}
 	}
 
@@ -132,7 +134,7 @@ func (c *Client) FindTxtRecord(zoneName, fqdn string) (*TXTRecord, error) {
 
 	var records TXTRecords
 	if err = json.Unmarshal(result, &records); err != nil {
-		return nil, fmt.Errorf("TXT record unmarshaling error: %v: %s", err, string(result))
+		return nil, fmt.Errorf("TXT record unmarshaling error: %w: %s", err, string(result))
 	}
 
 	for _, record := range records {
@@ -166,7 +168,7 @@ func (c *Client) AddTxtRecord(zoneName string, fqdn, value string, ttl int) erro
 
 	resp := apiResponse{}
 	if err = json.Unmarshal(raw, &resp); err != nil {
-		return fmt.Errorf("apiResponse unmarshaling error: %v: %s", err, string(raw))
+		return fmt.Errorf("apiResponse unmarshaling error: %w: %s", err, string(raw))
 	}
 
 	if resp.Status != "Success" {
@@ -193,7 +195,7 @@ func (c *Client) RemoveTxtRecord(recordID int, zoneName string) error {
 
 	resp := apiResponse{}
 	if err = json.Unmarshal(raw, &resp); err != nil {
-		return fmt.Errorf("apiResponse unmarshaling error: %v: %s", err, string(raw))
+		return fmt.Errorf("apiResponse unmarshaling error: %w: %s", err, string(raw))
 	}
 
 	if resp.Status != "Success" {
@@ -229,13 +231,20 @@ func (c *Client) doRequest(method string, url *url.URL) (json.RawMessage, error)
 
 func (c *Client) buildRequest(method string, url *url.URL) (*http.Request, error) {
 	q := url.Query()
-	q.Add("auth-id", c.authID)
+
+	if c.subAuthID != "" {
+		q.Add("sub-auth-id", c.subAuthID)
+	} else {
+		q.Add("auth-id", c.authID)
+	}
+
 	q.Add("auth-password", c.authPassword)
+
 	url.RawQuery = q.Encode()
 
 	req, err := http.NewRequest(method, url.String(), nil)
 	if err != nil {
-		return nil, fmt.Errorf("invalid request: %v", err)
+		return nil, fmt.Errorf("invalid request: %w", err)
 	}
 
 	return req, nil

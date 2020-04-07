@@ -18,6 +18,21 @@ import (
 	"github.com/go-acme/lego/v3/platform/wait"
 )
 
+// Environment variables names.
+const (
+	envNamespace = "AWS_"
+
+	EnvAccessKeyID     = envNamespace + "ACCESS_KEY_ID"
+	EnvSecretAccessKey = envNamespace + "SECRET_ACCESS_KEY"
+	EnvRegion          = envNamespace + "REGION"
+	EnvHostedZoneID    = envNamespace + "HOSTED_ZONE_ID"
+	EnvMaxRetries      = envNamespace + "MAX_RETRIES"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	MaxRetries         int
@@ -25,16 +40,17 @@ type Config struct {
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	HostedZoneID       string
+	Client             *route53.Route53
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		MaxRetries:         env.GetOrDefaultInt("AWS_MAX_RETRIES", 5),
-		TTL:                env.GetOrDefaultInt("AWS_TTL", 10),
-		PropagationTimeout: env.GetOrDefaultSecond("AWS_PROPAGATION_TIMEOUT", 2*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond("AWS_POLLING_INTERVAL", 4*time.Second),
-		HostedZoneID:       env.GetOrFile("AWS_HOSTED_ZONE_ID"),
+		MaxRetries:         env.GetOrDefaultInt(EnvMaxRetries, 5),
+		TTL:                env.GetOrDefaultInt(EnvTTL, 10),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 4*time.Second),
+		HostedZoneID:       env.GetOrFile(EnvHostedZoneID),
 	}
 }
 
@@ -86,6 +102,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("route53: the configuration of the Route53 DNS provider is nil")
 	}
 
+	if config.Client != nil {
+		return &DNSProvider{client: config.Client, config: config}, nil
+	}
+
 	retry := customRetryer{}
 	retry.NumMaxRetries = config.MaxRetries
 	sessionCfg := request.WithRetryer(aws.NewConfig(), retry)
@@ -111,12 +131,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	hostedZoneID, err := d.getHostedZoneID(fqdn)
 	if err != nil {
-		return fmt.Errorf("route53: failed to determine hosted zone ID: %v", err)
+		return fmt.Errorf("route53: failed to determine hosted zone ID: %w", err)
 	}
 
 	records, err := d.getExistingRecordSets(hostedZoneID, fqdn)
 	if err != nil {
-		return fmt.Errorf("route53: %v", err)
+		return fmt.Errorf("route53: %w", err)
 	}
 
 	realValue := `"` + value + `"`
@@ -141,7 +161,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	err = d.changeRecord(route53.ChangeActionUpsert, hostedZoneID, recordSet)
 	if err != nil {
-		return fmt.Errorf("route53: %v", err)
+		return fmt.Errorf("route53: %w", err)
 	}
 	return nil
 }
@@ -152,12 +172,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	hostedZoneID, err := d.getHostedZoneID(fqdn)
 	if err != nil {
-		return fmt.Errorf("failed to determine Route 53 hosted zone ID: %v", err)
+		return fmt.Errorf("failed to determine Route 53 hosted zone ID: %w", err)
 	}
 
 	records, err := d.getExistingRecordSets(hostedZoneID, fqdn)
 	if err != nil {
-		return fmt.Errorf("route53: %v", err)
+		return fmt.Errorf("route53: %w", err)
 	}
 
 	if len(records) == 0 {
@@ -173,7 +193,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	err = d.changeRecord(route53.ChangeActionDelete, hostedZoneID, recordSet)
 	if err != nil {
-		return fmt.Errorf("route53: %v", err)
+		return fmt.Errorf("route53: %w", err)
 	}
 	return nil
 }
@@ -192,7 +212,7 @@ func (d *DNSProvider) changeRecord(action, hostedZoneID string, recordSet *route
 
 	resp, err := d.client.ChangeResourceRecordSets(recordSetInput)
 	if err != nil {
-		return fmt.Errorf("failed to change record set: %v", err)
+		return fmt.Errorf("failed to change record set: %w", err)
 	}
 
 	changeID := resp.ChangeInfo.Id
@@ -202,7 +222,7 @@ func (d *DNSProvider) changeRecord(action, hostedZoneID string, recordSet *route
 
 		resp, err := d.client.GetChange(reqParams)
 		if err != nil {
-			return false, fmt.Errorf("failed to query change status: %v", err)
+			return false, fmt.Errorf("failed to query change status: %w", err)
 		}
 
 		if aws.StringValue(resp.ChangeInfo.Status) == route53.ChangeStatusInsync {

@@ -167,7 +167,7 @@ func cleanUp(solvr solver, authz acme.Authorization) {
 		domain := challenge.GetTargetedDomain(authz)
 		err := solvr.CleanUp(authz)
 		if err != nil {
-			log.Warnf("[%s] acme: error cleaning up: %v ", domain, err)
+			log.Warnf("[%s] acme: cleaning up failed: %v ", domain, err)
 		}
 	}
 }

@@ -12,6 +12,19 @@ import (
 	"github.com/go-acme/lego/v3/platform/config/env"
 )
 
+// Environment variables names.
+const (
+	envNamespace = "HOSTINGDE_"
+
+	EnvAPIKey   = envNamespace + "API_KEY"
+	EnvZoneName = envNamespace + "ZONE_NAME"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
 // Config is used to configure the creation of the DNSProvider
 type Config struct {
 	APIKey             string
@@ -25,11 +38,11 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("HOSTINGDE_TTL", dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond("HOSTINGDE_PROPAGATION_TIMEOUT", 2*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond("HOSTINGDE_POLLING_INTERVAL", 2*time.Second),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("HOSTINGDE_HTTP_TIMEOUT", 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -45,14 +58,14 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables:
 // HOSTINGDE_ZONE_NAME and HOSTINGDE_API_KEY
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get("HOSTINGDE_API_KEY", "HOSTINGDE_ZONE_NAME")
+	values, err := env.Get(EnvAPIKey, EnvZoneName)
 	if err != nil {
-		return nil, fmt.Errorf("hostingde: %v", err)
+		return nil, fmt.Errorf("hostingde: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.APIKey = values["HOSTINGDE_API_KEY"]
-	config.ZoneName = values["HOSTINGDE_ZONE_NAME"]
+	config.APIKey = values[EnvAPIKey]
+	config.ZoneName = values[EnvZoneName]
 
 	return NewDNSProviderConfig(config)
 }
@@ -100,7 +113,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zoneConfig, err := d.getZone(zonesFind)
 	if err != nil {
-		return fmt.Errorf("hostingde: %v", err)
+		return fmt.Errorf("hostingde: %w", err)
 	}
 	zoneConfig.Name = d.config.ZoneName
 
@@ -119,7 +132,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	resp, err := d.updateZone(req)
 	if err != nil {
-		return fmt.Errorf("hostingde: %v", err)
+		return fmt.Errorf("hostingde: %w", err)
 	}
 
 	for _, record := range resp.Response.Records {
@@ -160,7 +173,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	zoneConfig, err := d.getZone(zonesFind)
 	if err != nil {
-		return fmt.Errorf("hostingde: %v", err)
+		return fmt.Errorf("hostingde: %w", err)
 	}
 	zoneConfig.Name = d.config.ZoneName
 
@@ -177,7 +190,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	_, err = d.updateZone(req)
 	if err != nil {
-		return fmt.Errorf("hostingde: %v", err)
+		return fmt.Errorf("hostingde: %w", err)
 	}
 	return nil
 }

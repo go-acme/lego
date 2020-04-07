@@ -35,7 +35,7 @@ type apiError struct {
 func (d *DNSProvider) removeTxtRecord(domain string, recordID int) error {
 	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
 	if err != nil {
-		return fmt.Errorf("could not determine zone for domain: '%s'. %s", domain, err)
+		return fmt.Errorf("could not determine zone for domain %q: %w", domain, err)
 	}
 
 	reqURL := fmt.Sprintf("%s/v2/domains/%s/records/%d", d.config.BaseURL, dns01.UnFqdn(authZone), recordID)
@@ -60,7 +60,7 @@ func (d *DNSProvider) removeTxtRecord(domain string, recordID int) error {
 func (d *DNSProvider) addTxtRecord(fqdn, value string) (*txtRecordResponse, error) {
 	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(fqdn))
 	if err != nil {
-		return nil, fmt.Errorf("could not determine zone for domain: '%s'. %s", fqdn, err)
+		return nil, fmt.Errorf("could not determine zone for domain %q: %w", fqdn, err)
 	}
 
 	reqData := record{Type: "TXT", Name: fqdn, Data: value, TTL: d.config.TTL}
@@ -94,7 +94,7 @@ func (d *DNSProvider) addTxtRecord(fqdn, value string) (*txtRecordResponse, erro
 	respData := &txtRecordResponse{}
 	err = json.Unmarshal(content, respData)
 	if err != nil {
-		return nil, fmt.Errorf("%v: %s", err, toUnreadableBodyMessage(req, content))
+		return nil, fmt.Errorf("%w: %s", err, toUnreadableBodyMessage(req, content))
 	}
 
 	return respData, nil
@@ -121,7 +121,7 @@ func readError(req *http.Request, resp *http.Response) error {
 	var errInfo apiError
 	err = json.Unmarshal(content, &errInfo)
 	if err != nil {
-		return fmt.Errorf("apiError unmarshaling error: %v: %s", err, toUnreadableBodyMessage(req, content))
+		return fmt.Errorf("apiError unmarshaling error: %w: %s", err, toUnreadableBodyMessage(req, content))
 	}
 
 	return fmt.Errorf("HTTP %d: %s: %s", resp.StatusCode, errInfo.ID, errInfo.Message)

@@ -11,22 +11,22 @@ import (
 
 	"github.com/go-acme/lego/v3/challenge/dns01"
 	"github.com/go-acme/lego/v3/platform/config/env"
-	"github.com/go-acme/lego/v3/providers/dns/selectel/internal"
+	"github.com/go-acme/lego/v3/providers/dns/internal/selectel"
 )
 
-const (
-	defaultBaseURL = "https://api.selectel.ru/domains/v1"
-	minTTL         = 60
-)
+const minTTL = 60
 
+// Environment variables names.
 const (
-	envNamespace             = "SELECTEL_"
-	baseURLEnvVar            = envNamespace + "BASE_URL"
-	apiTokenEnvVar           = envNamespace + "API_TOKEN"
-	ttlEnvVar                = envNamespace + "TTL"
-	propagationTimeoutEnvVar = envNamespace + "PROPAGATION_TIMEOUT"
-	pollingIntervalEnvVar    = envNamespace + "POLLING_INTERVAL"
-	httpTimeoutEnvVar        = envNamespace + "HTTP_TIMEOUT"
+	envNamespace = "SELECTEL_"
+
+	EnvBaseURL  = envNamespace + "BASE_URL"
+	EnvAPIToken = envNamespace + "API_TOKEN"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
 // Config is used to configure the creation of the DNSProvider.
@@ -42,12 +42,12 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		BaseURL:            env.GetOrDefaultString(baseURLEnvVar, defaultBaseURL),
-		TTL:                env.GetOrDefaultInt(ttlEnvVar, minTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(propagationTimeoutEnvVar, 120*time.Second),
-		PollingInterval:    env.GetOrDefaultSecond(pollingIntervalEnvVar, 2*time.Second),
+		BaseURL:            env.GetOrDefaultString(EnvBaseURL, selectel.DefaultSelectelBaseURL),
+		TTL:                env.GetOrDefaultInt(EnvTTL, minTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 120*time.Second),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(httpTimeoutEnvVar, 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -55,19 +55,19 @@ func NewDefaultConfig() *Config {
 // DNSProvider is an implementation of the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
-	client *internal.Client
+	client *selectel.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Selectel Domains API.
 // API token must be passed in the environment variable SELECTEL_API_TOKEN.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(apiTokenEnvVar)
+	values, err := env.Get(EnvAPIToken)
 	if err != nil {
-		return nil, fmt.Errorf("selectel: %v", err)
+		return nil, fmt.Errorf("selectel: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.Token = values[apiTokenEnvVar]
+	config.Token = values[EnvAPIToken]
 
 	return NewDNSProviderConfig(config)
 }
@@ -86,11 +86,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("selectel: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL)
 	}
 
-	client := internal.NewClient(internal.ClientOpts{
-		BaseURL:    config.BaseURL,
-		Token:      config.Token,
-		HTTPClient: config.HTTPClient,
-	})
+	client := selectel.NewClient(config.Token)
+	client.BaseURL = config.BaseURL
+	client.HTTPClient = config.HTTPClient
 
 	return &DNSProvider{config: config, client: client}, nil
 }
@@ -107,10 +105,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	domainObj, err := d.client.GetDomainByName(domain)
 	if err != nil {
-		return fmt.Errorf("selectel: %v", err)
+		return fmt.Errorf("selectel: %w", err)
 	}
 
-	txtRecord := internal.Record{
+	txtRecord := selectel.Record{
 		Type:    "TXT",
 		TTL:     d.config.TTL,
 		Name:    fqdn,
@@ -118,7 +116,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 	_, err = d.client.AddRecord(domainObj.ID, txtRecord)
 	if err != nil {
-		return fmt.Errorf("selectel: %v", err)
+		return fmt.Errorf("selectel: %w", err)
 	}
 
 	return nil
@@ -131,12 +129,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	domainObj, err := d.client.GetDomainByName(domain)
 	if err != nil {
-		return fmt.Errorf("selectel: %v", err)
+		return fmt.Errorf("selectel: %w", err)
 	}
 
 	records, err := d.client.ListRecords(domainObj.ID)
 	if err != nil {
-		return fmt.Errorf("selectel: %v", err)
+		return fmt.Errorf("selectel: %w", err)
 	}
 
 	// Delete records with specific FQDN
@@ -145,7 +143,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		if record.Name == recordName {
 			err = d.client.DeleteRecord(domainObj.ID, record.ID)
 			if err != nil {
-				lastErr = fmt.Errorf("selectel: %v", err)
+				lastErr = fmt.Errorf("selectel: %w", err)
 			}
 		}
 	}

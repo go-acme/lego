@@ -8,10 +8,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const envDomain = envNamespace + "DOMAIN"
+
 var envTest = tester.NewEnvTest(
-	"CLOUDXNS_API_KEY",
-	"CLOUDXNS_SECRET_KEY").
-	WithDomain("CLOUDXNS_DOMAIN")
+	EnvAPIKey,
+	EnvSecretKey).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -22,31 +24,31 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"CLOUDXNS_API_KEY":    "123",
-				"CLOUDXNS_SECRET_KEY": "456",
+				EnvAPIKey:    "123",
+				EnvSecretKey: "456",
 			},
 		},
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				"CLOUDXNS_API_KEY":    "",
-				"CLOUDXNS_SECRET_KEY": "",
+				EnvAPIKey:    "",
+				EnvSecretKey: "",
 			},
 			expected: "CloudXNS: some credentials information are missing: CLOUDXNS_API_KEY,CLOUDXNS_SECRET_KEY",
 		},
 		{
 			desc: "missing API key",
 			envVars: map[string]string{
-				"CLOUDXNS_API_KEY":    "",
-				"CLOUDXNS_SECRET_KEY": "456",
+				EnvAPIKey:    "",
+				EnvSecretKey: "456",
 			},
 			expected: "CloudXNS: some credentials information are missing: CLOUDXNS_API_KEY",
 		},
 		{
 			desc: "missing secret key",
 			envVars: map[string]string{
-				"CLOUDXNS_API_KEY":    "123",
-				"CLOUDXNS_SECRET_KEY": "",
+				EnvAPIKey:    "123",
+				EnvSecretKey: "",
 			},
 			expected: "CloudXNS: some credentials information are missing: CLOUDXNS_SECRET_KEY",
 		},

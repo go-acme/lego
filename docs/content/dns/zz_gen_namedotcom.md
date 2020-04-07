@@ -18,9 +18,20 @@ Configuration for [Name.com](https://www.name.com).
 
 - Code: `namedotcom`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the Name.com provider:
+
+```bash
+NAMECOM_USERNAME=foo.bar \
+NAMECOM_API_TOKEN=a379a6f6eeafb9a55e378c118034e2751e682fab \
+lego --dns="namedotcom" --domains="my.domain.com" --email="my@email.com" run
+
+# or
+
+NAMECOM_USERNAME=foo.bar \
+NAMECOM_API_TOKEN=a379a6f6eeafb9a55e378c118034e2751e682fab \
+lego --server="https://acme-staging-v02.api.letsencrypt.org/directory" \
+--dns="namedotcom" --domains="my.domain.com" --email="my@email.com" run
+```
 
 
 

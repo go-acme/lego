@@ -18,6 +18,13 @@ import (
 	"github.com/urfave/cli"
 )
 
+const (
+	renewEnvAccountEmail = "LEGO_ACCOUNT_EMAIL"
+	renewEnvCertDomain   = "LEGO_CERT_DOMAIN"
+	renewEnvCertPath     = "LEGO_CERT_PATH"
+	renewEnvCertKeyPath  = "LEGO_CERT_KEY_PATH"
+)
+
 func createRenew() cli.Command {
 	return cli.Command{
 		Name:   "renew",
@@ -73,16 +80,18 @@ func renew(ctx *cli.Context) error {
 
 	bundle := !ctx.Bool("no-bundle")
 
+	meta := map[string]string{renewEnvAccountEmail: account.Email}
+
 	// CSR
 	if ctx.GlobalIsSet("csr") {
-		return renewForCSR(ctx, client, certsStorage, account, bundle)
+		return renewForCSR(ctx, client, certsStorage, bundle, meta)
 	}
 
 	// Domains
-	return renewForDomains(ctx, client, certsStorage, account, bundle)
+	return renewForDomains(ctx, client, certsStorage, bundle, meta)
 }
 
-func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *CertificatesStorage, account *Account, bundle bool) error {
+func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *CertificatesStorage, bundle bool, meta map[string]string) error {
 	domains := ctx.GlobalStringSlice("domains")
 	domain := domains[0]
 
@@ -132,10 +141,14 @@ func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *Certif
 
 	certsStorage.SaveResource(certRes)
 
-	return renewHook(ctx, domain, account, certsStorage)
+	meta[renewEnvCertDomain] = domain
+	meta[renewEnvCertPath] = certsStorage.GetFileName(domain, "crt")
+	meta[renewEnvCertKeyPath] = certsStorage.GetFileName(domain, "key")
+
+	return renewHook(ctx, meta)
 }
 
-func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *CertificatesStorage, account *Account, bundle bool) error {
+func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *CertificatesStorage, bundle bool, meta map[string]string) error {
 	csr, err := readCSRFile(ctx.GlobalString("csr"))
 	if err != nil {
 		log.Fatal(err)
@@ -168,7 +181,11 @@ func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *Certificat
 
 	certsStorage.SaveResource(certRes)
 
-	return renewHook(ctx, domain, account, certsStorage)
+	meta[renewEnvCertDomain] = domain
+	meta[renewEnvCertPath] = certsStorage.GetFileName(domain, "crt")
+	meta[renewEnvCertKeyPath] = certsStorage.GetFileName(domain, "key")
+
+	return renewHook(ctx, meta)
 }
 
 func needRenewal(x509Cert *x509.Certificate, domain string, days int) bool {
@@ -204,7 +221,7 @@ func merge(prevDomains []string, nextDomains []string) []string {
 	return prevDomains
 }
 
-func renewHook(ctx *cli.Context, domain string, account *Account, certsStorage *CertificatesStorage) error {
+func renewHook(ctx *cli.Context, meta map[string]string) error {
 	hook := ctx.String("renew-hook")
 	if hook == "" {
 		return nil
@@ -216,12 +233,7 @@ func renewHook(ctx *cli.Context, domain string, account *Account, certsStorage *
 	parts := strings.Fields(hook)
 
 	cmdCtx := exec.CommandContext(ctxCmd, parts[0], parts[1:]...)
-	cmdCtx.Env = append(
-		os.Environ(),
-		"LEGO_CERT_DOMAIN="+domain,
-		"LEGO_CERT_EMAIL="+account.Email,
-		"LEGO_CERT_PATH="+certsStorage.GetFileName(domain, "crt"),
-		"LEGO_CERT_KEY_PATH="+certsStorage.GetFileName(domain, "key"))
+	cmdCtx.Env = append(os.Environ(), metaToEnv(meta)...)
 
 	output, err := cmdCtx.CombinedOutput()
 
@@ -234,4 +246,14 @@ func renewHook(ctx *cli.Context, domain string, account *Account, certsStorage *
 	}
 
 	return err
+}
+
+func metaToEnv(meta map[string]string) []string {
+	var envs []string
+
+	for k, v := range meta {
+		envs = append(envs, k+"="+v)
+	}
+
+	return envs
 }

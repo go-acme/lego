@@ -6,6 +6,7 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 	"time"
@@ -15,6 +16,13 @@ import (
 	"github.com/go-acme/lego/v3/lego"
 	"github.com/go-acme/lego/v3/log"
 	"github.com/urfave/cli"
+)
+
+const (
+	renewEnvAccountEmail = "LEGO_ACCOUNT_EMAIL"
+	renewEnvCertDomain   = "LEGO_CERT_DOMAIN"
+	renewEnvCertPath     = "LEGO_CERT_PATH"
+	renewEnvCertKeyPath  = "LEGO_CERT_KEY_PATH"
 )
 
 func createRenew() cli.Command {
@@ -72,16 +80,18 @@ func renew(ctx *cli.Context) error {
 
 	bundle := !ctx.Bool("no-bundle")
 
+	meta := map[string]string{renewEnvAccountEmail: account.Email}
+
 	// CSR
 	if ctx.GlobalIsSet("csr") {
-		return renewForCSR(ctx, client, certsStorage, bundle)
+		return renewForCSR(ctx, client, certsStorage, bundle, meta)
 	}
 
 	// Domains
-	return renewForDomains(ctx, client, certsStorage, bundle)
+	return renewForDomains(ctx, client, certsStorage, bundle, meta)
 }
 
-func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *CertificatesStorage, bundle bool) error {
+func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *CertificatesStorage, bundle bool, meta map[string]string) error {
 	domains := ctx.GlobalStringSlice("domains")
 	domain := domains[0]
 
@@ -131,10 +141,14 @@ func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *Certif
 
 	certsStorage.SaveResource(certRes)
 
-	return renewHook(ctx)
+	meta[renewEnvCertDomain] = domain
+	meta[renewEnvCertPath] = certsStorage.GetFileName(domain, "crt")
+	meta[renewEnvCertKeyPath] = certsStorage.GetFileName(domain, "key")
+
+	return renewHook(ctx, meta)
 }
 
-func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *CertificatesStorage, bundle bool) error {
+func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *CertificatesStorage, bundle bool, meta map[string]string) error {
 	csr, err := readCSRFile(ctx.GlobalString("csr"))
 	if err != nil {
 		log.Fatal(err)
@@ -167,7 +181,11 @@ func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *Certificat
 
 	certsStorage.SaveResource(certRes)
 
-	return renewHook(ctx)
+	meta[renewEnvCertDomain] = domain
+	meta[renewEnvCertPath] = certsStorage.GetFileName(domain, "crt")
+	meta[renewEnvCertKeyPath] = certsStorage.GetFileName(domain, "key")
+
+	return renewHook(ctx, meta)
 }
 
 func needRenewal(x509Cert *x509.Certificate, domain string, days int) bool {
@@ -203,17 +221,22 @@ func merge(prevDomains []string, nextDomains []string) []string {
 	return prevDomains
 }
 
-func renewHook(ctx *cli.Context) error {
+func renewHook(ctx *cli.Context, meta map[string]string) error {
 	hook := ctx.String("renew-hook")
 	if hook == "" {
 		return nil
 	}
 
-	ctxCmd, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctxCmd, cancel := context.WithTimeout(context.Background(), 120*time.Second)
 	defer cancel()
 
 	parts := strings.Fields(hook)
-	output, err := exec.CommandContext(ctxCmd, parts[0], parts[1:]...).CombinedOutput()
+
+	cmdCtx := exec.CommandContext(ctxCmd, parts[0], parts[1:]...)
+	cmdCtx.Env = append(os.Environ(), metaToEnv(meta)...)
+
+	output, err := cmdCtx.CombinedOutput()
+
 	if len(output) > 0 {
 		fmt.Println(string(output))
 	}
@@ -223,4 +246,14 @@ func renewHook(ctx *cli.Context) error {
 	}
 
 	return err
+}
+
+func metaToEnv(meta map[string]string) []string {
+	var envs []string
+
+	for k, v := range meta {
+		envs = append(envs, k+"="+v)
+	}
+
+	return envs
 }

@@ -4,7 +4,11 @@ URL = "https://www.name.com"
 Code = "namedotcom"
 Since = "v0.5.0"
 
-Example = ''''''
+Example = '''
+NAMECOM_USERNAME=foo.bar \
+NAMECOM_API_TOKEN=a379a6f6eeafb9a55e378c118034e2751e682fab \
+lego --dns="namedotcom" --domains="my.domain.com" --email="my@email.com" run
+'''
 
 [Configuration]
   [Configuration.Credentials]

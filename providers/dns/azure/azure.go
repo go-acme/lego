@@ -238,7 +238,16 @@ func toRelativeRecord(domain, zone string) string {
 
 func getAuthorizer(config *Config) (autorest.Authorizer, error) {
 	if config.ClientID != "" && config.ClientSecret != "" && config.TenantID != "" {
-		return auth.NewClientCredentialsConfig(config.ClientID, config.ClientSecret, config.TenantID).Authorizer()
+		credentialsConfig := auth.NewClientCredentialsConfig(config.ClientID, config.ClientSecret, config.TenantID)
+
+		spToken, err := credentialsConfig.ServicePrincipalToken()
+		if err != nil {
+			return nil, fmt.Errorf("failed to get oauth token from client credentials: %v", err)
+		}
+
+		spToken.SetSender(config.HTTPClient)
+
+		return autorest.NewBearerAuthorizer(spToken), nil
 	}
 	return auth.NewAuthorizerFromEnvironment()
 }

@@ -79,6 +79,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	client := rimuhosting.NewClient(config.APIKey)
 	client.BaseURL = rimuhosting.DefaultZonomiBaseURL
 
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
+	}
+
 	return &DNSProvider{config: config, client: client}, nil
 }
 

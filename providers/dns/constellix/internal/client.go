@@ -96,11 +96,20 @@ func checkResponse(resp *http.Response) error {
 
 	data, err := ioutil.ReadAll(resp.Body)
 	if err == nil && data != nil {
-		msg := APIError{}
-		if json.Unmarshal(data, &msg) != nil {
+		msg := &APIError{StatusCode: resp.StatusCode}
+
+		if json.Unmarshal(data, msg) != nil {
 			return fmt.Errorf("API error: status code: %d: %v", resp.StatusCode, string(data))
 		}
-		return msg
+
+		switch resp.StatusCode {
+		case http.StatusNotFound:
+			return &NotFound{APIError: msg}
+		case http.StatusBadRequest:
+			return &BadRequest{APIError: msg}
+		default:
+			return msg
+		}
 	}
 
 	return fmt.Errorf("API error, status code: %d", resp.StatusCode)

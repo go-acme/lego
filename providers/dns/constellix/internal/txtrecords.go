@@ -3,6 +3,7 @@ package internal
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -129,4 +130,34 @@ func (s *TxtRecordService) Delete(domainID, recordID int64) (*SuccessMessage, er
 	}
 
 	return msg, nil
+}
+
+// Search searches for a TXT record by name.
+// https://api-docs.constellix.com/?version=latest#81003e4f-bd3f-413f-a18d-6d9d18f10201
+func (s *TxtRecordService) Search(domainID int64, filter searchFilter, value string) ([]Record, error) {
+	endpoint, err := s.client.createEndpoint(defaultVersion, "domains", strconv.FormatInt(domainID, 10), "records", "txt", "search")
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request endpoint: %w", err)
+	}
+
+	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	query := req.URL.Query()
+	query.Set(string(filter), value)
+	req.URL.RawQuery = query.Encode()
+
+	var records []Record
+
+	err = s.client.do(req, &records)
+	if err != nil {
+		var nf *NotFound
+		if !errors.As(err, &nf) {
+			return nil, err
+		}
+	}
+
+	return records, nil
 }

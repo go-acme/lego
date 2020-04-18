@@ -2,8 +2,9 @@ package transip
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
-	"runtime"
+	"os"
 	"strings"
 	"sync"
 	"testing"
@@ -177,24 +178,6 @@ func TestNewDNSProvider(t *testing.T) {
 			},
 			expected: "transip: some credentials information are missing: TRANSIP_PRIVATE_KEY_PATH",
 		},
-		{
-			desc: "could not open private key path",
-			envVars: map[string]string{
-				EnvAccountName:    "johndoe",
-				EnvPrivateKeyPath: "./fixtures/non/existent/private.key",
-			},
-			expected: func() string {
-				errorMsg := "no such file or directory"
-
-				// windows path errors are different than unix. Preferably we would use errors.Is(err, os.ErrNotExists),
-				// which is possible because the error is wrapped correctly by go-transip. Unfortunately the require
-				// library can only check error strings
-				if runtime.GOOS == "windows" {
-					errorMsg = "The system cannot find the path specified."
-				}
-				return fmt.Sprintf("transip: error while opening private key file: open ./fixtures/non/existent/private.key: %s", errorMsg)
-			}(),
-		},
 	}
 
 	for _, test := range testCases {
@@ -216,6 +199,23 @@ func TestNewDNSProvider(t *testing.T) {
 			}
 		})
 	}
+
+	// The error message for a file not existing is different on Windows and Linux. Therefore we test if the error
+	// type is the same
+	t.Run("could not open private key path", func(t *testing.T) {
+		defer envTest.RestoreEnv()
+		envTest.ClearEnv()
+
+		envTest.Apply(map[string]string{
+			EnvAccountName:    "johndoe",
+			EnvPrivateKeyPath: "./fixtures/non/existent/private.key",
+		})
+
+		_, err := NewDNSProvider()
+		if !errors.Is(err, os.ErrNotExist) {
+			t.Fatalf("Expected an os.ErrNotExists error\nActual: %v", err)
+		}
+	})
 }
 
 func TestNewDNSProviderConfig(t *testing.T) {
@@ -244,22 +244,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			accountName: "johndoe",
 			expected:    "transip: PrivateKeyReader, token or PrivateKeyReader is required",
 		},
-		{
-			desc:           "could not open private key path",
-			accountName:    "johndoe",
-			privateKeyPath: "./fixtures/non/existent/private.key",
-			expected: func() string {
-				errorMsg := "no such file or directory"
-
-				// windows path errors are different than unix. Preferably we would use errors.Is(err, os.ErrNotExists),
-				// which is possible because the error is wrapped correctly by go-transip. Unfortunately the require
-				// library can only check error strings
-				if runtime.GOOS == "windows" {
-					errorMsg = "The system cannot find the path specified."
-				}
-				return fmt.Sprintf("transip: error while opening private key file: open ./fixtures/non/existent/private.key: %s", errorMsg)
-			}(),
-		},
 	}
 
 	for _, test := range testCases {
@@ -280,6 +264,20 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			}
 		})
 	}
+
+	// The error message for a file not existing is different on Windows and Linux. Therefore we test if the error
+	// type is the same
+	t.Run("could not open private key path", func(t *testing.T) {
+		config := NewDefaultConfig()
+		config.AccountName = "johndoe"
+		config.PrivateKeyPath = "./fixtures/non/existent/private.key"
+
+		_, err := NewDNSProviderConfig(config)
+
+		if !errors.Is(err, os.ErrNotExist) {
+			t.Fatalf("Expected an os.ErrNotExists error\nActual: %v", err)
+		}
+	})
 }
 
 func TestDNSProvider_concurrentGetInfo(t *testing.T) {

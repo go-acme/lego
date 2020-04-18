@@ -31,7 +31,7 @@ func TestDomainService_GetAll(t *testing.T) {
 			return
 		}
 
-		file, err := os.Open("./fixtures/domains-01.json")
+		file, err := os.Open("./fixtures/domains-GetAll.json")
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
 			return
@@ -49,23 +49,26 @@ func TestDomainService_GetAll(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := []Domain{
-		{ID: 273302, Name: "lego.wtf", TypeID: 1, Version: 9, Status: "ACTIVE"},
+		{ID: 273301, Name: "aaa.wtf", TypeID: 1, Version: 9, Status: "ACTIVE"},
+		{ID: 273302, Name: "bbb.wtf", TypeID: 1, Version: 9, Status: "ACTIVE"},
+		{ID: 273303, Name: "ccc.wtf", TypeID: 1, Version: 9, Status: "ACTIVE"},
+		{ID: 273304, Name: "ddd.wtf", TypeID: 1, Version: 9, Status: "ACTIVE"},
 	}
 
 	assert.Equal(t, expected, data)
 }
 
-func TestDomainService_GetID(t *testing.T) {
+func TestDomainService_Search(t *testing.T) {
 	client, handler, tearDown := setupAPIMock()
 	defer tearDown()
 
-	handler.HandleFunc("/v1/domains", func(rw http.ResponseWriter, req *http.Request) {
+	handler.HandleFunc("/v1/domains/search", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
 			http.Error(rw, "invalid method: "+req.Method, http.StatusBadRequest)
 			return
 		}
 
-		file, err := os.Open("./fixtures/domains-02.json")
+		file, err := os.Open("./fixtures/domains-Search.json")
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
 			return
@@ -79,8 +82,12 @@ func TestDomainService_GetID(t *testing.T) {
 		}
 	})
 
-	data, err := client.Domains.GetID("ddd.wtf")
+	data, err := client.Domains.Search(Exact, "lego.wtf")
 	require.NoError(t, err)
 
-	assert.EqualValues(t, 273304, data)
+	expected := []Domain{
+		{ID: 273302, Name: "lego.wtf", TypeID: 1, Version: 9, Status: "ACTIVE"},
+	}
+
+	assert.Equal(t, expected, data)
 }

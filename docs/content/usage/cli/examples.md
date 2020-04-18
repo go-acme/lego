@@ -38,6 +38,13 @@ The hook is executed only when the certificates are effectively renewed.
 lego --email="foo@bar.com" --domains="example.com" --http renew --renew-hook="./myscript.sh"
 ```
 
+Some information are added to the environment variables when the hook is used:
+
+- `LEGO_ACCOUNT_EMAIL`: the email of the account.
+- `LEGO_CERT_DOMAIN`: the main domain of the certificate.
+- `LEGO_CERT_PATH`: the path of the certificate.
+- `LEGO_CERT_KEY_PATH`: the path of the certificate key.
+
 ### Obtain a certificate using the DNS challenge
 
 ```bash

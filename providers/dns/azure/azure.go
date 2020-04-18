@@ -13,8 +13,6 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2017-09-01/dns"
 	"github.com/Azure/go-autorest/autorest"
-	"github.com/Azure/go-autorest/autorest/adal"
-	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/go-acme/lego/v3/challenge/dns01"
@@ -240,20 +238,17 @@ func toRelativeRecord(domain, zone string) string {
 
 func getAuthorizer(config *Config) (autorest.Authorizer, error) {
 	if config.ClientID != "" && config.ClientSecret != "" && config.TenantID != "" {
-		oauthConfig, err := adal.NewOAuthConfig(azure.PublicCloud.ActiveDirectoryEndpoint, config.TenantID)
+		credentialsConfig := auth.NewClientCredentialsConfig(config.ClientID, config.ClientSecret, config.TenantID)
+
+		spToken, err := credentialsConfig.ServicePrincipalToken()
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to get oauth token from client credentials: %v", err)
 		}
 
-		spt, err := adal.NewServicePrincipalToken(*oauthConfig, config.ClientID, config.ClientSecret, azure.PublicCloud.ResourceManagerEndpoint)
-		if err != nil {
-			return nil, err
-		}
+		spToken.SetSender(config.HTTPClient)
 
-		spt.SetSender(config.HTTPClient)
-		return autorest.NewBearerAuthorizer(spt), nil
+		return autorest.NewBearerAuthorizer(spToken), nil
 	}
-
 	return auth.NewAuthorizerFromEnvironment()
 }
 

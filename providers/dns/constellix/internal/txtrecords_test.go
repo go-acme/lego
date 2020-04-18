@@ -22,7 +22,7 @@ func TestTxtRecordService_Create(t *testing.T) {
 			return
 		}
 
-		file, err := os.Open("./fixtures/records-01.json")
+		file, err := os.Open("./fixtures/records-Create.json")
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
 			return
@@ -42,7 +42,7 @@ func TestTxtRecordService_Create(t *testing.T) {
 	recordsJSON, err := json.Marshal(records)
 	require.NoError(t, err)
 
-	expectedContent, err := ioutil.ReadFile("./fixtures/records-01.json")
+	expectedContent, err := ioutil.ReadFile("./fixtures/records-Create.json")
 	require.NoError(t, err)
 
 	assert.JSONEq(t, string(expectedContent), string(recordsJSON))
@@ -58,7 +58,7 @@ func TestTxtRecordService_GetAll(t *testing.T) {
 			return
 		}
 
-		file, err := os.Open("./fixtures/records-01.json")
+		file, err := os.Open("./fixtures/records-GetAll.json")
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
 			return
@@ -78,7 +78,7 @@ func TestTxtRecordService_GetAll(t *testing.T) {
 	recordsJSON, err := json.Marshal(records)
 	require.NoError(t, err)
 
-	expectedContent, err := ioutil.ReadFile("./fixtures/records-01.json")
+	expectedContent, err := ioutil.ReadFile("./fixtures/records-GetAll.json")
 	require.NoError(t, err)
 
 	assert.JSONEq(t, string(expectedContent), string(recordsJSON))
@@ -94,7 +94,7 @@ func TestTxtRecordService_Get(t *testing.T) {
 			return
 		}
 
-		file, err := os.Open("./fixtures/records-02.json")
+		file, err := os.Open("./fixtures/records-Get.json")
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
 			return
@@ -179,4 +179,40 @@ func TestTxtRecordService_Delete(t *testing.T) {
 
 	expected := &SuccessMessage{Success: "Record  deleted successfully"}
 	assert.Equal(t, expected, msg)
+}
+
+func TestTxtRecordService_Search(t *testing.T) {
+	client, handler, tearDown := setupAPIMock()
+	defer tearDown()
+
+	handler.HandleFunc("/v1/domains/12345/records/txt/search", func(rw http.ResponseWriter, req *http.Request) {
+		if req.Method != http.MethodGet {
+			http.Error(rw, "invalid method: "+req.Method, http.StatusBadRequest)
+			return
+		}
+
+		file, err := os.Open("./fixtures/records-Search.json")
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer func() { _ = file.Close() }()
+
+		_, err = io.Copy(rw, file)
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	})
+
+	records, err := client.TxtRecords.Search(12345, Exact, "test")
+	require.NoError(t, err)
+
+	recordsJSON, err := json.Marshal(records)
+	require.NoError(t, err)
+
+	expectedContent, err := ioutil.ReadFile("./fixtures/records-Search.json")
+	require.NoError(t, err)
+
+	assert.JSONEq(t, string(expectedContent), string(recordsJSON))
 }

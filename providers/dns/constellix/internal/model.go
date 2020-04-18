@@ -1,16 +1,46 @@
 package internal
 
 import (
+	"fmt"
 	"strings"
 )
 
+// Search filters
+const (
+	StartsWith searchFilter = "startswith"
+	Exact      searchFilter = "exact"
+	EndsWith   searchFilter = "endswith"
+	Contains   searchFilter = "contains"
+)
+
+type searchFilter string
+
+// NotFound Not found error.
+type NotFound struct {
+	*APIError
+}
+
+func (e *NotFound) Unwrap() error {
+	return e.APIError
+}
+
+// BadRequest Bad request error.
+type BadRequest struct {
+	*APIError
+}
+
+func (e *BadRequest) Unwrap() error {
+	return e.APIError
+}
+
 // APIError is the representation of an API error.
 type APIError struct {
-	Errors []string `json:"errors"`
+	StatusCode int      `json:"statusCode"`
+	Errors     []string `json:"errors"`
 }
 
 func (a APIError) Error() string {
-	return strings.Join(a.Errors, ": ")
+	return fmt.Sprintf("%d: %s", a.StatusCode, strings.Join(a.Errors, ": "))
 }
 
 // SuccessMessage is the representation of a success message.

@@ -4,7 +4,11 @@ URL = "https://www.transip.nl/"
 Code = "transip"
 Since = "v2.0.0"
 
-Example = ''''''
+Example = '''
+TRANSIP_ACCOUNT_NAME = "Account name" \
+TRANSIP_PRIVATE_KEY_PATH = "transip.key" \
+lego --dns transip --domains my.domain.com --email my@email.com run
+'''
 
 [Configuration]
   [Configuration.Credentials]
@@ -16,6 +20,6 @@ Example = ''''''
     TRANSIP_TTL = "The TTL of the TXT record used for the DNS challenge"
 
 [Links]
-  API = "https://api.transip.nl/docs/transip.nl/package-Transip.html"
+  API = "https://api.transip.eu/rest/docs.html"
   GoClient = "https://github.com/transip/gotransip"
 

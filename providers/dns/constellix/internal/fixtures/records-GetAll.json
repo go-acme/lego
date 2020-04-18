@@ -1,0 +1,25 @@
+[
+  {
+    "id": 3557066,
+    "type": "TXT",
+    "recordType": "txt",
+    "name": "test",
+    "recordOption": "roundRobin",
+    "ttl": 300,
+    "gtdRegion": 1,
+    "parentId": 273302,
+    "parent": "domain",
+    "source": "Domain",
+    "modifiedTs": 1580908547865,
+    "value": [
+      {
+        "value": "\"test\""
+      }
+    ],
+    "roundRobin": [
+      {
+        "value": "\"test\""
+      }
+    ]
+  }
+]

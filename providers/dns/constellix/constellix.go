@@ -104,22 +104,26 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("constellix: could not find zone for domain %q and fqdn %q : %w", domain, fqdn, err)
 	}
 
-	domainID, err := d.client.Domains.GetID(dns01.UnFqdn(authZone))
+	dom, err := d.client.Domains.GetByName(dns01.UnFqdn(authZone))
 	if err != nil {
-		return fmt.Errorf("constellix: failed to get domain ID: %w", err)
-	}
-
-	records, err := d.client.TxtRecords.GetAll(domainID)
-	if err != nil {
-		return fmt.Errorf("constellix: failed to get TXT records: %w", err)
+		return fmt.Errorf("constellix: failed to get domain: %w", err)
 	}
 
 	recordName := getRecordName(fqdn, authZone)
 
-	record := findRecords(records, recordName)
+	records, err := d.client.TxtRecords.Search(dom.ID, internal.Exact, recordName)
+	if err != nil {
+		return fmt.Errorf("constellix: failed to get TXT records: %w", err)
+	}
+
+	if len(records) > 1 {
+		return errors.New("constellix: failed to get TXT records")
+	}
 
 	// TXT record entry already existing
-	if record != nil {
+	if len(records) == 1 {
+		record := records[0]
+
 		if containsValue(record, value) {
 			return nil
 		}
@@ -130,7 +134,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 			RoundRobin: append(record.RoundRobin, internal.RecordValue{Value: fmt.Sprintf(`"%s"`, value)}),
 		}
 
-		_, err = d.client.TxtRecords.Update(domainID, record.ID, request)
+		_, err = d.client.TxtRecords.Update(dom.ID, record.ID, request)
 		if err != nil {
 			return fmt.Errorf("constellix: failed to update TXT records: %w", err)
 		}
@@ -145,7 +149,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		},
 	}
 
-	_, err = d.client.TxtRecords.Create(domainID, request)
+	_, err = d.client.TxtRecords.Create(dom.ID, request)
 	if err != nil {
 		return fmt.Errorf("constellix: failed to create TXT record %s: %w", fqdn, err)
 	}
@@ -162,22 +166,27 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("constellix: could not find zone for domain %q and fqdn %q : %w", domain, fqdn, err)
 	}
 
-	domainID, err := d.client.Domains.GetID(dns01.UnFqdn(authZone))
+	dom, err := d.client.Domains.GetByName(dns01.UnFqdn(authZone))
 	if err != nil {
-		return fmt.Errorf("constellix: failed to get domain ID: %w", err)
-	}
-
-	records, err := d.client.TxtRecords.GetAll(domainID)
-	if err != nil {
-		return fmt.Errorf("constellix: failed to get TXT records: %w", err)
+		return fmt.Errorf("constellix: failed to get domain: %w", err)
 	}
 
 	recordName := getRecordName(fqdn, authZone)
 
-	record := findRecords(records, recordName)
-	if record == nil {
+	records, err := d.client.TxtRecords.Search(dom.ID, internal.Exact, recordName)
+	if err != nil {
+		return fmt.Errorf("constellix: failed to get TXT records: %w", err)
+	}
+
+	if len(records) > 1 {
+		return errors.New("constellix: failed to get TXT records")
+	}
+
+	if len(records) == 0 {
 		return nil
 	}
+
+	record := records[0]
 
 	if !containsValue(record, value) {
 		return nil
@@ -185,7 +194,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	// only 1 record value, the whole record must be deleted.
 	if len(record.Value) == 1 {
-		_, err = d.client.TxtRecords.Delete(domainID, record.ID)
+		_, err = d.client.TxtRecords.Delete(dom.ID, record.ID)
 		if err != nil {
 			return fmt.Errorf("constellix: failed to delete TXT records: %w", err)
 		}
@@ -203,7 +212,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		}
 	}
 
-	_, err = d.client.TxtRecords.Update(domainID, record.ID, request)
+	_, err = d.client.TxtRecords.Update(dom.ID, record.ID, request)
 	if err != nil {
 		return fmt.Errorf("constellix: failed to update TXT records: %w", err)
 	}
@@ -211,17 +220,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-func findRecords(records []internal.Record, name string) *internal.Record {
-	for _, r := range records {
-		if r.Name == name {
-			return &r
-		}
-	}
-
-	return nil
-}
-
-func containsValue(record *internal.Record, value string) bool {
+func containsValue(record internal.Record, value string) bool {
 	for _, val := range record.Value {
 		if val.Value == fmt.Sprintf(`"%s"`, value) {
 			return true

@@ -18,9 +18,13 @@ Configuration for [TransIP](https://www.transip.nl/).
 
 - Code: `transip`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the TransIP provider:
+
+```bash
+TRANSIP_ACCOUNT_NAME = "Account name" \
+TRANSIP_PRIVATE_KEY_PATH = "transip.key" \
+lego --dns transip --domains my.domain.com --email my@email.com run
+```
 
 
 
@@ -52,7 +56,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 
 ## More information
 
-- [API documentation](https://api.transip.nl/docs/transip.nl/package-Transip.html)
+- [API documentation](https://api.transip.eu/rest/docs.html)
 - [Go client](https://github.com/transip/gotransip)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

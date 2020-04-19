@@ -11,7 +11,7 @@ slug: liquidweb
 
 Since: v3.1.0
 
-Configuration for [Liquid Web](https://cart.liquidweb.com/storm/api/docs/v1/).
+Configuration for [Liquid Web](https://liquidweb.com).
 
 
 <!--more-->

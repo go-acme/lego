@@ -54,7 +54,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 
 ## More information
 
-- [API documentation](https://community.exoscale.com/documentation/dns/api/)
+- [API documentation](https://cloud.google.com/dns/api/v1/)
 - [Go client](https://github.com/googleapis/google-api-go-client)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

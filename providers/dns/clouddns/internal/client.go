@@ -55,8 +55,7 @@ func (c *Client) AddRecord(zone, recordName, recordValue string) error {
 		return err
 	}
 
-	err = c.publishRecords(domain.ID)
-	return err
+	return c.publishRecords(domain.ID)
 }
 
 // DeleteRecord is a high level method to remove a record from zone.
@@ -76,8 +75,7 @@ func (c *Client) DeleteRecord(zone, recordName string) error {
 		return err
 	}
 
-	err = c.publishRecords(domain.ID)
-	return err
+	return c.publishRecords(domain.ID)
 }
 
 func (c *Client) addTxtRecord(record Record) error {

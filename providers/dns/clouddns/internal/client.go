@@ -23,6 +23,9 @@ type Client struct {
 	Password    string
 	TTL         int
 	HTTPClient  *http.Client
+
+	apiBaseURL string
+	loginURL   string
 }
 
 // NewClient returns a Client instance configured to handle CloudDNS API communication.
@@ -33,6 +36,8 @@ func NewClient(clientID string, email string, password string, ttl int) *Client 
 		Password:   password,
 		TTL:        ttl,
 		HTTPClient: &http.Client{},
+		apiBaseURL: apiBaseURL,
+		loginURL:   loginURL,
 	}
 }
 
@@ -163,7 +168,7 @@ func (c *Client) login() error {
 		return err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, loginURL, bytes.NewReader(body))
+	req, err := http.NewRequest(http.MethodPost, c.loginURL, bytes.NewReader(body))
 	if err != nil {
 		return err
 	}
@@ -194,7 +199,7 @@ func (c *Client) doAPIRequest(method, endpoint string, body io.Reader) ([]byte, 
 		}
 	}
 
-	url := fmt.Sprintf("%s/%s", apiBaseURL, endpoint)
+	url := fmt.Sprintf("%s/%s", c.apiBaseURL, endpoint)
 
 	req, err := c.newRequest(method, url, body)
 	if err != nil {

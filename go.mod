@@ -6,14 +6,13 @@ require (
 	cloud.google.com/go v0.54.0
 	github.com/Azure/azure-sdk-for-go v32.4.0+incompatible
 	github.com/Azure/go-autorest/autorest v0.5.0
-	github.com/Azure/go-autorest/autorest/adal v0.2.0
 	github.com/Azure/go-autorest/autorest/azure/auth v0.1.0
 	github.com/Azure/go-autorest/autorest/to v0.2.0
 	github.com/Azure/go-autorest/autorest/validation v0.1.0 // indirect
 	github.com/BurntSushi/toml v0.3.1
 	github.com/OpenDNS/vegadns2client v0.0.0-20180418235048-a3fa4a771d87
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v0.9.8
-	github.com/aliyun/alibaba-cloud-sdk-go v0.0.0-20190808125512-07798873deee
+	github.com/aliyun/alibaba-cloud-sdk-go v1.61.112
 	github.com/aws/aws-sdk-go v1.23.0
 	github.com/cenkalti/backoff/v4 v4.0.0
 	github.com/cloudflare/cloudflare-go v0.10.2
@@ -39,7 +38,7 @@ require (
 	github.com/sacloud/libsacloud v1.26.1
 	github.com/stretchr/testify v1.5.1
 	github.com/timewasted/linode v0.0.0-20160829202747-37e84520dcf7
-	github.com/transip/gotransip v0.0.0-20190812104329-6d8d9179b66f
+	github.com/transip/gotransip/v6 v6.0.2
 	github.com/urfave/cli v1.22.1
 	github.com/vultr/govultr v0.1.4
 	golang.org/x/crypto v0.0.0-20200302210943-78000ba7a073

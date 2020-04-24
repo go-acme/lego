@@ -1,6 +1,6 @@
 Name = "Liquid Web"
 Description = ''''''
-URL = "https://cart.liquidweb.com/storm/api/docs/v1/"
+URL = "https://liquidweb.com"
 Code = "liquidweb"
 Since = "v3.1.0"
 

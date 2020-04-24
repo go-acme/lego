@@ -18,5 +18,5 @@ Example = ''''''
     GCE_TTL = "The TTL of the TXT record used for the DNS challenge"
 
 [Links]
-  API = "https://community.exoscale.com/documentation/dns/api/"
+  API = "https://cloud.google.com/dns/api/v1/"
   GoClient = "https://github.com/googleapis/google-api-go-client"

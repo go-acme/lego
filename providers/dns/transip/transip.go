@@ -5,13 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/go-acme/lego/v3/challenge/dns01"
 	"github.com/go-acme/lego/v3/platform/config/env"
-	"github.com/transip/gotransip"
-	transipdomain "github.com/transip/gotransip/domain"
+	"github.com/transip/gotransip/v6"
+	transipdomain "github.com/transip/gotransip/v6/domain"
 )
 
 // Environment variables names.
@@ -46,9 +45,8 @@ func NewDefaultConfig() *Config {
 
 // DNSProvider describes a provider for TransIP
 type DNSProvider struct {
-	config       *Config
-	client       gotransip.Client
-	dnsEntriesMu sync.Mutex
+	config     *Config
+	repository transipdomain.Repository
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for TransIP.
@@ -73,7 +71,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("transip: the configuration of the DNS provider is nil")
 	}
 
-	client, err := gotransip.NewSOAPClient(gotransip.ClientConfig{
+	client, err := gotransip.NewClient(gotransip.ClientConfiguration{
 		AccountName:    config.AccountName,
 		PrivateKeyPath: config.PrivateKeyPath,
 	})
@@ -81,7 +79,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("transip: %w", err)
 	}
 
-	return &DNSProvider{client: client, config: config}, nil
+	repo := transipdomain.Repository{Client: client}
+
+	return &DNSProvider{repository: repo, config: config}, nil
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
@@ -104,35 +104,24 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	// get the subDomain
 	subDomain := strings.TrimSuffix(dns01.UnFqdn(fqdn), "."+domainName)
 
-	// use mutex to prevent race condition from GetInfo until SetDNSEntries
-	d.dnsEntriesMu.Lock()
-	defer d.dnsEntriesMu.Unlock()
-
-	// get all DNS entries
-	info, err := transipdomain.GetInfo(d.client, domainName)
-	if err != nil {
-		return fmt.Errorf("transip: error for %s in Present: %w", domain, err)
+	entry := transipdomain.DNSEntry{
+		Name:    subDomain,
+		Expire:  int(d.config.TTL),
+		Type:    "TXT",
+		Content: value,
 	}
 
-	// include the new DNS entry
-	dnsEntries := append(info.DNSEntries, transipdomain.DNSEntry{
-		Name:    subDomain,
-		TTL:     d.config.TTL,
-		Type:    transipdomain.DNSEntryTypeTXT,
-		Content: value,
-	})
-
-	// set the updated DNS entries
-	err = transipdomain.SetDNSEntries(d.client, domainName, dnsEntries)
+	err = d.repository.AddDNSEntry(domainName, entry)
 	if err != nil {
 		return fmt.Errorf("transip: %w", err)
 	}
+
 	return nil
 }
 
 // CleanUp removes the TXT record matching the specified parameters
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
@@ -144,28 +133,20 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	// get the subDomain
 	subDomain := strings.TrimSuffix(dns01.UnFqdn(fqdn), "."+domainName)
 
-	// use mutex to prevent race condition from GetInfo until SetDNSEntries
-	d.dnsEntriesMu.Lock()
-	defer d.dnsEntriesMu.Unlock()
-
 	// get all DNS entries
-	info, err := transipdomain.GetInfo(d.client, domainName)
+	dnsEntries, err := d.repository.GetDNSEntries(domainName)
 	if err != nil {
 		return fmt.Errorf("transip: error for %s in CleanUp: %w", fqdn, err)
 	}
 
 	// loop through the existing entries and remove the specific record
-	updatedEntries := info.DNSEntries[:0]
-	for _, e := range info.DNSEntries {
-		if e.Name != subDomain {
-			updatedEntries = append(updatedEntries, e)
+	for _, entry := range dnsEntries {
+		if entry.Name == subDomain && entry.Content == value {
+			if err = d.repository.RemoveDNSEntry(domainName, entry); err != nil {
+				return fmt.Errorf("transip: couldn't get Record ID in CleanUp: %w", err)
+			}
+			return nil
 		}
-	}
-
-	// set the updated DNS entries
-	err = transipdomain.SetDNSEntries(d.client, domainName, updatedEntries)
-	if err != nil {
-		return fmt.Errorf("transip: couldn't get Record ID in CleanUp: %w", err)
 	}
 
 	return nil

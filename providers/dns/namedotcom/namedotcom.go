@@ -110,7 +110,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	domainDetails, err := d.client.GetDomain(&namecom.GetDomainRequest{DomainName: domain})
 	if err != nil {
-		return fmt.Errorf("namedotcom API call failed: %v", err)
+		return fmt.Errorf("namedotcom API call failed: %w", err)
 	}
 
 	request := &namecom.Record{

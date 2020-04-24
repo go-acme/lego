@@ -22,6 +22,7 @@ func allDNSCodes() string {
 		"bindman",
 		"bluecat",
 		"checkdomain",
+		"clouddns",
 		"cloudflare",
 		"cloudns",
 		"cloudxns",
@@ -261,6 +262,28 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/checkdomain`)
+
+	case "clouddns":
+		// generated from: providers/dns/clouddns/clouddns.toml
+		ew.writeln(`Configuration for CloudDNS.`)
+		ew.writeln(`Code:	'clouddns'`)
+		ew.writeln(`Since:	'v3.6.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "CLOUDDNS_CLIENT_ID":	Client ID`)
+		ew.writeln(`	- "CLOUDDNS_EMAIL":	Account email`)
+		ew.writeln(`	- "CLOUDDNS_PASSWORD":	Account password`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "CLOUDDNS_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "CLOUDDNS_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "CLOUDDNS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "CLOUDDNS_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/clouddns`)
 
 	case "cloudflare":
 		// generated from: providers/dns/cloudflare/cloudflare.toml

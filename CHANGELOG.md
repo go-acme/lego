@@ -1,5 +1,29 @@
 # Changelog
 
+## [v3.6.0] - 2020-04-24
+
+### Added:
+
+- **[dnsprovider]** Add DNS provider for CloudDNS.
+- **[dnsprovider]** alicloud: add support for domain with punycode
+- **[dnsprovider]** cloudns: Add subuser support
+- **[cli]** Information about renewed certificates are now passed to the renew hook
+
+### Changed:
+
+- **[dnsprovider]** acmedns: Update cpu/goacmedns v0.0.1 -&gt; v0.0.2
+- **[dnsprovider]** alicloud: update sdk dependency version to v1.61.112
+- **[dnsprovider]** azure: Allow for the use of MSI
+- **[dnsprovider]** constellix: improve challenge.
+- **[dnsprovider]** godaddy: allow parallel solve.
+- **[dnsprovider]** namedotcom: get the actual registered domain so we can remove just that from the hostname to be created
+- **[dnsprovider]** transip: updated the client to v6
+
+### Fixed:
+
+- **[dnsprovider]** ns1: fix missing domain in log 
+- **[dnsprovider]** rimuhosting: use HTTP client from config.
+
 ## [v3.5.0] - 2020-03-15
 
 ### Added:

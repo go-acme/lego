@@ -4,7 +4,12 @@ URL = "https://www.do.de/"
 Code = "dode"
 Since = "v2.4.0"
 
-Example = ''''''
+Example = '''export DODE=1234567890abcdefghij\
+lego -d myserver.mydomain.com -a --dns dode --email its.me@yahoo.com run
+
+In case the local DNS server (e.g. 10.1.1.1) is not reachable from the internet one might want to add the do.de DNS server as resolver DNS:
+export DODE=1234567890abcdefghij \
+lego -d myserver.mydomain.com -a --dns dode --email its.me@yahoo.com --dns.resolvers ns1.domainoffensive.de run'''
 
 [Configuration]
   [Configuration.Credentials]

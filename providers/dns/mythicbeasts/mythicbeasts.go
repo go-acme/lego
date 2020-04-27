@@ -1,3 +1,4 @@
+// Package mythicbeasts implements a DNS provider for solving the DNS-01 challenge using Mythic Beasts API.
 package mythicbeasts
 
 import (
@@ -15,15 +16,15 @@ import (
 const (
 	envNamespace = "MYTHICBEASTS_"
 
-	EnvUserName = envNamespace + "USERNAME"
-	EnvPassword = envNamespace + "PASSWORD"
+	EnvUserName        = envNamespace + "USERNAME"
+	EnvPassword        = envNamespace + "PASSWORD"
+	EnvAPIEndpoint     = envNamespace + "API_ENDPOINT"
+	EnvAuthAPIEndpoint = envNamespace + "AUTH_API_ENDPOINT"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
-	EnvAPIEndpoint        = envNamespace + "API_ENDPOINT"
-	EnvAuthAPIEndpoint    = envNamespace + "AUTH_API_ENDPOINT"
 )
 
 // Config is used to configure the creation of the DNSProvider
@@ -40,11 +41,12 @@ type Config struct {
 
 // NewDefaultConfig returns a default configuration for the DNSProvider
 func NewDefaultConfig() (*Config, error) {
-	apiep, err := url.Parse(env.GetOrDefaultString(EnvAPIEndpoint, "https://api.mythic-beasts.com/beta/dns"))
+	apiEndpoint, err := url.Parse(env.GetOrDefaultString(EnvAPIEndpoint, apiBaseURL))
 	if err != nil {
 		return nil, fmt.Errorf("mythicbeasts: Unable to parse API URL: %w", err)
 	}
-	authapiep, err := url.Parse(env.GetOrDefaultString(EnvAuthAPIEndpoint, "https://auth.mythic-beasts.com/login"))
+
+	authEndpoint, err := url.Parse(env.GetOrDefaultString(EnvAuthAPIEndpoint, authBaseURL))
 	if err != nil {
 		return nil, fmt.Errorf("mythicbeasts: Unable to parse AUTH API URL: %w", err)
 	}
@@ -53,8 +55,8 @@ func NewDefaultConfig() (*Config, error) {
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
-		APIEndpoint:        apiep,
-		AuthAPIEndpoint:    authapiep,
+		APIEndpoint:        apiEndpoint,
+		AuthAPIEndpoint:    authEndpoint,
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 10*time.Second),
 		},

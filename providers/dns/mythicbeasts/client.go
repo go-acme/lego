@@ -3,11 +3,17 @@ package mythicbeasts
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"path"
 	"strings"
+)
+
+const (
+	apiBaseURL  = "https://api.mythic-beasts.com/beta/dns"
+	authBaseURL = "https://auth.mythic-beasts.com/login"
 )
 
 type authResponse struct {
@@ -22,10 +28,12 @@ type authResponse struct {
 }
 
 type authResponseError struct {
-	// The error
-	Error string `json:"error"`
-	// A description of the error
+	ErrorMsg         string `json:"error"`
 	ErrorDescription string `json:"error_description"`
+}
+
+func (a authResponseError) Error() string {
+	return fmt.Sprintf("%s: %s", a.ErrorMsg, a.ErrorDescription)
 }
 
 type createTXTRequest struct {
@@ -50,90 +58,93 @@ type deleteTXTResponse struct {
 	Message string `json:"message"`
 }
 
-// Logs into mythic beasts and acquires a bearer token for use in future
-// API calls
+// Logs into mythic beasts and acquires a bearer token for use in future API calls.
+// https://www.mythic-beasts.com/support/api/auth#sec-obtaining-a-token
 func (d *DNSProvider) login() error {
 	if d.token != "" {
 		// Already authenticated, stop now
 		return nil
 	}
-	sendbody := strings.NewReader("grant_type=client_credentials")
 
-	req, err := http.NewRequest("POST", d.config.AuthAPIEndpoint.String(), sendbody)
+	reqBody := strings.NewReader("grant_type=client_credentials")
+
+	req, err := http.NewRequest(http.MethodPost, d.config.AuthAPIEndpoint.String(), reqBody)
 	if err != nil {
 		return err
 	}
 
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-
 	req.SetBasicAuth(d.config.UserName, d.config.Password)
 
 	resp, err := d.config.HTTPClient.Do(req)
-
 	if err != nil {
 		return err
 	}
 
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
+	defer func() { _ = resp.Body.Close() }()
 
-	body, readErr := ioutil.ReadAll(resp.Body)
-
-	if readErr != nil {
-		return fmt.Errorf("login: %w", readErr)
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("login: %w", err)
 	}
 
 	if resp.StatusCode != 200 {
-		if resp.StatusCode >= 400 && resp.StatusCode <= 499 {
-			// Returned body should be a JSON thing
-			err := authResponseError{}
-			jsonErr := json.Unmarshal(body, &err)
-			if jsonErr != nil {
-				return fmt.Errorf("login: Error parsing error: %w", jsonErr)
-			}
-			return fmt.Errorf("login: %d: %s: %s", resp.StatusCode, err.Error, err.ErrorDescription)
+		if resp.StatusCode < 400 || resp.StatusCode > 499 {
+			return fmt.Errorf("login: unknown error in auth API: %d", resp.StatusCode)
 		}
-		return fmt.Errorf("login: Unknown error in auth API: %d", resp.StatusCode)
+
+		// Returned body should be a JSON thing
+		errResp := &authResponseError{}
+		err = json.Unmarshal(body, errResp)
+		if err != nil {
+			return fmt.Errorf("login: error parsing error: %w", err)
+		}
+
+		return fmt.Errorf("login: %d: %w", resp.StatusCode, errResp)
 	}
 
-	authresp := authResponse{}
-	jsonErr := json.Unmarshal(body, &authresp)
-	if jsonErr != nil {
-		return fmt.Errorf("login: Error parsing response: %w", jsonErr)
+	authResp := authResponse{}
+	err = json.Unmarshal(body, &authResp)
+	if err != nil {
+		return fmt.Errorf("login: error parsing response: %w", err)
 	}
 
-	if authresp.TokenType != "bearer" {
-		return fmt.Errorf("login: Received unexpected token type: %s", authresp.TokenType)
+	if authResp.TokenType != "bearer" {
+		return fmt.Errorf("login: received unexpected token type: %s", authResp.TokenType)
 	}
 
-	d.token = authresp.Token
-	return nil // Success
+	d.token = authResp.Token
+
+	// Success
+	return nil
 }
 
+// https://www.mythic-beasts.com/support/api/dnsv2#ep-get-zoneszonerecords
 func (d *DNSProvider) createTXTRecord(zone string, leaf string, value string) error {
 	if d.token == "" {
-		return fmt.Errorf("createTXTRecord: Not logged in")
+		return fmt.Errorf("createTXTRecord: not logged in")
 	}
 
-	createbody := createTXTRequest{
-		Records: []createTXTRecord{
-			{
-				Host: leaf,
-				TTL:  d.config.TTL,
-				Type: "TXT",
-				Data: value,
-			},
-		},
+	createReq := createTXTRequest{
+		Records: []createTXTRecord{{
+			Host: leaf,
+			TTL:  d.config.TTL,
+			Type: "TXT",
+			Data: value,
+		}},
 	}
 
-	sendbody, err := json.Marshal(createbody)
+	reqBody, err := json.Marshal(createReq)
 	if err != nil {
-		return fmt.Errorf("createTXTRecord: Marshaling request body failed: %w", err)
+		return fmt.Errorf("createTXTRecord: marshaling request body failed: %w", err)
 	}
 
-	req, err := http.NewRequest("POST", d.txtURL(zone, leaf), bytes.NewReader(sendbody))
+	endpoint, err := d.config.APIEndpoint.Parse(path.Join(d.config.APIEndpoint.Path, "zones", zone, "records", leaf, "TXT"))
+	if err != nil {
+		return fmt.Errorf("createTXTRecord: failed to parse URL: %w", err)
+	}
 
+	req, err := http.NewRequest(http.MethodPost, endpoint.String(), bytes.NewReader(reqBody))
 	if err != nil {
 		return fmt.Errorf("createTXTRecord: %w", err)
 	}
@@ -143,43 +154,50 @@ func (d *DNSProvider) createTXTRecord(zone string, leaf string, value string) er
 
 	resp, err := d.config.HTTPClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("createTXTRecord: Unable to perform HTTP request: %w", err)
+		return fmt.Errorf("createTXTRecord: unable to perform HTTP request: %w", err)
 	}
 
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
+	defer func() { _ = resp.Body.Close() }()
 
-	body, readErr := ioutil.ReadAll(resp.Body)
-
-	if readErr != nil {
-		return fmt.Errorf("createTXTRecord: %w", readErr)
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("createTXTRecord: %w", err)
 	}
 
 	if resp.StatusCode != 200 {
-		return fmt.Errorf("createTXTRecord: Error in API: %d", resp.StatusCode)
+		return fmt.Errorf("createTXTRecord: error in API: %d", resp.StatusCode)
 	}
 
-	createresp := createTXTResponse{}
-	jsonErr := json.Unmarshal(body, &createresp)
-	if jsonErr != nil {
-		return fmt.Errorf("createTXTRecord: Error parsing response: %w", jsonErr)
+	createResp := createTXTResponse{}
+	err = json.Unmarshal(body, &createResp)
+	if err != nil {
+		return fmt.Errorf("createTXTRecord: error parsing response: %w", err)
 	}
 
-	if createresp.Added != 1 {
-		return fmt.Errorf("mythicbeasts: Did not add TXT record for some reason")
+	if createResp.Added != 1 {
+		return errors.New("createTXTRecord: did not add TXT record for some reason")
 	}
 
-	return nil // Success
+	// Success
+	return nil
 }
 
+// https://www.mythic-beasts.com/support/api/dnsv2#ep-delete-zoneszonerecords
 func (d *DNSProvider) removeTXTRecord(zone string, leaf string, value string) error {
 	if d.token == "" {
-		return fmt.Errorf("removeTXTRecord: Not logged in")
+		return fmt.Errorf("removeTXTRecord: not logged in")
 	}
 
-	req, err := http.NewRequest("DELETE", d.txtURL(zone, leaf)+"?data="+value, nil)
+	endpoint, err := d.config.APIEndpoint.Parse(path.Join(d.config.APIEndpoint.Path, "zones", zone, "records", leaf, "TXT"))
+	if err != nil {
+		return fmt.Errorf("createTXTRecord: failed to parse URL: %w", err)
+	}
 
+	query := endpoint.Query()
+	query.Add("data", value)
+	endpoint.RawQuery = query.Encode()
+
+	req, err := http.NewRequest(http.MethodDelete, endpoint.String(), nil)
 	if err != nil {
 		return fmt.Errorf("removeTXTRecord: %w", err)
 	}
@@ -188,39 +206,30 @@ func (d *DNSProvider) removeTXTRecord(zone string, leaf string, value string) er
 
 	resp, err := d.config.HTTPClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("removeTXTRecord: Unable to perform HTTP request: %w", err)
+		return fmt.Errorf("removeTXTRecord: unable to perform HTTP request: %w", err)
 	}
 
-	if resp.Body != nil {
-		defer resp.Body.Close()
-	}
+	defer func() { _ = resp.Body.Close() }()
 
-	body, readErr := ioutil.ReadAll(resp.Body)
-
-	if readErr != nil {
-		return fmt.Errorf("removeTXTRecord: %w", readErr)
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("removeTXTRecord: %w", err)
 	}
 
 	if resp.StatusCode != 200 {
-		return fmt.Errorf("removeTXTRecord: Error in API: %d", resp.StatusCode)
+		return fmt.Errorf("removeTXTRecord: error in API: %d", resp.StatusCode)
 	}
 
-	deleteresp := deleteTXTResponse{}
-	jsonErr := json.Unmarshal(body, &deleteresp)
-	if jsonErr != nil {
-		return fmt.Errorf("removeTXTRecord: Error parsing response: %w", jsonErr)
+	deleteResp := deleteTXTResponse{}
+	err = json.Unmarshal(body, &deleteResp)
+	if err != nil {
+		return fmt.Errorf("removeTXTRecord: error parsing response: %w", err)
 	}
 
-	if deleteresp.Removed != 1 {
-		return fmt.Errorf("mythicbeasts: deleteTXTRecord: Did not add TXT record for some reason")
+	if deleteResp.Removed != 1 {
+		return errors.New("deleteTXTRecord: did not add TXT record for some reason")
 	}
 
-	return nil // Success
-}
-
-// Internal function to determine the full URL for a given zone+leaf
-func (d *DNSProvider) txtURL(zone string, leaf string) string {
-	u := *d.config.APIEndpoint
-	u.Path = path.Join(u.Path, "zones", zone, "records", leaf, "TXT")
-	return u.String()
+	// Success
+	return nil
 }

@@ -57,6 +57,7 @@ func allDNSCodes() string {
 		"linodev4",
 		"liquidweb",
 		"mydnsjp",
+		"mythicbeasts",
 		"namecheap",
 		"namedotcom",
 		"namesilo",
@@ -1002,6 +1003,29 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/mydnsjp`)
+
+	case "mythicbeasts":
+		// generated from: providers/dns/mythicbeasts/mythicbeasts.toml
+		ew.writeln(`Configuration for MythicBeasts.`)
+		ew.writeln(`Code:	'mythicbeasts'`)
+		ew.writeln(`Since:	'v0.3.7'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "MYTHICBEASTS_PASSWORD":	Paswword`)
+		ew.writeln(`	- "MYTHICBEASTS_USERNAME":	User name`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "MYTHICBEASTS_API_ENDPOINT":	The endpoint for the API (must implement v2)`)
+		ew.writeln(`	- "MYTHICBEASTS_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "MYTHICBEASTS_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "MYTHICBEASTS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "MYTHICBEASTS_TTL":	The TTL of the TXT record used for the DNS challenge`)
+		ew.writeln(`	- "MYTHICBEASYS_AUTH_API_ENDPOINT":	The endpoint for Mythic Beasts' Authentication`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/mythicbeasts`)
 
 	case "namecheap":
 		// generated from: providers/dns/namecheap/namecheap.toml

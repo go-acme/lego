@@ -1545,7 +1545,7 @@ func displayDNSHelp(name string) error {
 		// generated from: providers/dns/yandex/yandex.toml
 		ew.writeln(`Configuration for Yandex.`)
 		ew.writeln(`Code:	'yandex'`)
-		ew.writeln(`Since:	'v3.1.0'`)
+		ew.writeln(`Since:	'v3.7.0'`)
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)

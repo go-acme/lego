@@ -9,7 +9,7 @@ slug: yandex
 <!-- providers/dns/yandex/yandex.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v3.1.0
+Since: v3.7.0
 
 Configuration for [Yandex](https://yandex.com/).
 

@@ -1,0 +1,23 @@
+Name = "Yandex"
+Description = ''''''
+URL = "https://yandex.com/"
+Code = "yandex"
+Since = "v3.7.0"
+
+Example = '''
+YANDEX_PDD_TOKEN=<your PDD Token> \
+lego --dns yandex --domains my.domain.com --email my@email.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    YANDEX_PDD_TOKEN = "Basic authentication username"
+  [Configuration.Additional]
+    YANDEX_POLLING_INTERVAL = "Time between DNS propagation check"
+    YANDEX_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
+    YANDEX_HTTP_TIMEOUT = "API request timeout"
+    YANDEX_SEQUENCE_INTERVAL = "Interval between iteration, default 60s"
+    YANDEX_TTL = "The TTL of the TXT record used for the DNS challenge"
+
+[Links]
+  API = "https://tech.yandex.com/domain/doc/concepts/api-dns-docpage/"

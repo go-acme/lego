@@ -82,6 +82,7 @@ func allDNSCodes() string {
 		"versio",
 		"vscale",
 		"vultr",
+		"yandex",
 		"zoneee",
 		"zonomi",
 	}
@@ -1539,6 +1540,27 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/vultr`)
+
+	case "yandex":
+		// generated from: providers/dns/yandex/yandex.toml
+		ew.writeln(`Configuration for Yandex.`)
+		ew.writeln(`Code:	'yandex'`)
+		ew.writeln(`Since:	'v3.7.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "YANDEX_PDD_TOKEN":	Basic authentication username`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "YANDEX_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "YANDEX_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "YANDEX_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "YANDEX_SEQUENCE_INTERVAL":	Interval between iteration, default 60s`)
+		ew.writeln(`	- "YANDEX_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/yandex`)
 
 	case "zoneee":
 		// generated from: providers/dns/zoneee/zoneee.toml

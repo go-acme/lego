@@ -43,6 +43,17 @@ func createRun() cli.Command {
 	}
 }
 
+const rootPathWarningMessage = `!!!! HEADS UP !!!!
+
+Your account credentials have been saved in your Let's Encrypt
+configuration directory at "%s".
+
+You should make a secure backup of this folder now. This
+configuration directory will also contain certificates and
+private keys obtained from Let's Encrypt so making regular
+backups of this folder is ideal.
+`
+
 func run(ctx *cli.Context) error {
 	accountsStorage := NewAccountsStorage(ctx)
 
@@ -56,19 +67,11 @@ func run(ctx *cli.Context) error {
 		}
 
 		account.Registration = reg
-
 		if err = accountsStorage.Save(account); err != nil {
 			log.Fatal(err)
 		}
 
-		fmt.Println("!!!! HEADS UP !!!!")
-		fmt.Printf(`
-		Your account credentials have been saved in your Let's Encrypt
-		configuration directory at "%s".
-		You should make a secure backup	of this folder now. This
-		configuration directory will also contain certificates and
-		private keys obtained from Let's Encrypt so making regular
-		backups of this folder is ideal.`, accountsStorage.GetRootPath())
+		fmt.Printf(rootPathWarningMessage, accountsStorage.GetRootPath())
 	}
 
 	certsStorage := NewCertificatesStorage(ctx)

@@ -11,12 +11,12 @@ import (
 	"github.com/rainycape/memcache"
 )
 
-// HTTPProvider implements HTTPProvider for `http-01` challenge
+// HTTPProvider implements HTTPProvider for `http-01` challenge.
 type HTTPProvider struct {
 	hosts []string
 }
 
-// NewMemcachedProvider returns a HTTPProvider instance with a configured webroot path
+// NewMemcachedProvider returns a HTTPProvider instance with a configured webroot path.
 func NewMemcachedProvider(hosts []string) (*HTTPProvider, error) {
 	if len(hosts) == 0 {
 		return nil, errors.New("no memcached hosts provided")
@@ -29,7 +29,7 @@ func NewMemcachedProvider(hosts []string) (*HTTPProvider, error) {
 	return c, nil
 }
 
-// Present makes the token available at `HTTP01ChallengePath(token)` by creating a file in the given webroot path
+// Present makes the token available at `HTTP01ChallengePath(token)` by creating a file in the given webroot path.
 func (w *HTTPProvider) Present(domain, token, keyAuth string) error {
 	var errs []error
 
@@ -54,7 +54,7 @@ func (w *HTTPProvider) Present(domain, token, keyAuth string) error {
 	return nil
 }
 
-// CleanUp removes the file created for the challenge
+// CleanUp removes the file created for the challenge.
 func (w *HTTPProvider) CleanUp(domain, token, keyAuth string) error {
 	// Memcached will clean up itself, that's what expiration is for.
 	return nil

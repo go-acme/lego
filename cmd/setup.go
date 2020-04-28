@@ -60,7 +60,7 @@ func newClient(ctx *cli.Context, acc registration.User, keyType certcrypto.KeyTy
 	return client
 }
 
-// getKeyType the type from which private keys should be generated
+// getKeyType the type from which private keys should be generated.
 func getKeyType(ctx *cli.Context) certcrypto.KeyType {
 	keyType := ctx.GlobalString("key-type")
 	switch strings.ToUpper(keyType) {

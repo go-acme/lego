@@ -25,7 +25,7 @@ const (
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
-// Config is used to configure the creation of the DNSProvider
+// Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	Token              string
 	Secret             string
@@ -35,7 +35,7 @@ type Config struct {
 	HTTPClient         *http.Client
 }
 
-// NewDefaultConfig returns a default configuration for the DNSProvider
+// NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
@@ -54,7 +54,8 @@ type DNSProvider struct {
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for SakuraCloud.
-// Credentials must be passed in the environment variables: SAKURACLOUD_ACCESS_TOKEN & SAKURACLOUD_ACCESS_TOKEN_SECRET
+// Credentials must be passed in the environment variables:
+// SAKURACLOUD_ACCESS_TOKEN & SAKURACLOUD_ACCESS_TOKEN_SECRET.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvAccessToken, EnvAccessTokenSecret)
 	if err != nil {

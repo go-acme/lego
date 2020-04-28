@@ -11,12 +11,12 @@ import (
 	"github.com/go-acme/lego/v3/challenge/http01"
 )
 
-// HTTPProvider implements ChallengeProvider for `http-01` challenge
+// HTTPProvider implements ChallengeProvider for `http-01` challenge.
 type HTTPProvider struct {
 	path string
 }
 
-// NewHTTPProvider returns a HTTPProvider instance with a configured webroot path
+// NewHTTPProvider returns a HTTPProvider instance with a configured webroot path.
 func NewHTTPProvider(path string) (*HTTPProvider, error) {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return nil, errors.New("webroot path does not exist")
@@ -25,7 +25,7 @@ func NewHTTPProvider(path string) (*HTTPProvider, error) {
 	return &HTTPProvider{path: path}, nil
 }
 
-// Present makes the token available at `HTTP01ChallengePath(token)` by creating a file in the given webroot path
+// Present makes the token available at `HTTP01ChallengePath(token)` by creating a file in the given webroot path.
 func (w *HTTPProvider) Present(domain, token, keyAuth string) error {
 	var err error
 
@@ -43,7 +43,7 @@ func (w *HTTPProvider) Present(domain, token, keyAuth string) error {
 	return nil
 }
 
-// CleanUp removes the file created for the challenge
+// CleanUp removes the file created for the challenge.
 func (w *HTTPProvider) CleanUp(domain, token, keyAuth string) error {
 	err := os.Remove(filepath.Join(w.path, http01.ChallengePath(token)))
 	if err != nil {

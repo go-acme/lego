@@ -27,7 +27,7 @@ const (
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 )
 
-// Config is used to configure the creation of the DNSProvider
+// Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	AccessKey          string
 	SecretKey          string
@@ -37,7 +37,7 @@ type Config struct {
 	TTL                int
 }
 
-// NewDefaultConfig returns a default configuration for the DNSProvider
+// NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, 300),
@@ -46,13 +46,13 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider implements the challenge.Provider interface
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	api    *doapi.API
 	config *Config
 }
 
-// NewDNSProvider returns a DNSProvider instance configured for IIJ DO
+// NewDNSProvider returns a DNSProvider instance configured for IIJ DNS.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvAPIAccessKey, EnvAPISecretKey, EnvDoServiceCode)
 	if err != nil {
@@ -68,7 +68,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 }
 
 // NewDNSProviderConfig takes a given config
-// and returns a custom configured DNSProvider instance
+// and returns a custom configured DNSProvider instance.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config.SecretKey == "" || config.AccessKey == "" || config.DoServiceCode == "" {
 		return nil, errors.New("iij: credentials missing")
@@ -85,7 +85,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-// Present creates a TXT record using the specified parameters
+// Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	_, value := dns01.GetRecord(domain, keyAuth)
 
@@ -96,7 +96,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	return nil
 }
 
-// CleanUp removes the TXT record matching the specified parameters
+// CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	_, value := dns01.GetRecord(domain, keyAuth)
 

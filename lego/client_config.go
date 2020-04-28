@@ -61,7 +61,7 @@ type CertificateConfig struct {
 
 // createDefaultHTTPClient Creates an HTTP client with a reasonable timeout value
 // and potentially a custom *x509.CertPool
-// based on the caCertificatesEnvVar environment variable (see the `initCertPool` function)
+// based on the caCertificatesEnvVar environment variable (see the `initCertPool` function).
 func createDefaultHTTPClient() *http.Client {
 	return &http.Client{
 		Transport: &http.Transport{

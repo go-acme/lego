@@ -28,7 +28,7 @@ const (
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
-// Config is used to configure the creation of the DNSProvider
+// Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	BaseURL            string
 	AccessKey          string
@@ -39,7 +39,7 @@ type Config struct {
 	HTTPClient         *http.Client
 }
 
-// NewDefaultConfig returns a default configuration for the DNSProvider
+// NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
@@ -51,7 +51,7 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider implements the challenge.Provider interface
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	client *internal.Client
 	config *Config
@@ -96,7 +96,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	return &DNSProvider{client: client, config: config}, nil
 }
 
-// Present creates a TXT record using the specified parameters
+// Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
@@ -107,7 +107,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	return err
 }
 
-// CleanUp removes the TXT record matching the specified parameters
+// CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 

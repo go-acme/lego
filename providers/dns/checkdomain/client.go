@@ -19,10 +19,10 @@ const (
 
 const domainNotFound = -1
 
-// max page limit that the checkdomain api allows
+// max page limit that the checkdomain api allows.
 const maxLimit = 100
 
-// max integer value
+// max integer value.
 const maxInt = int((^uint(0)) >> 1)
 
 type (

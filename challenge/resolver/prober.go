@@ -29,7 +29,7 @@ type sequential interface {
 	Sequential() (bool, time.Duration)
 }
 
-// an authz with the solver we have chosen and the index of the challenge associated with it
+// an authz with the solver we have chosen and the index of the challenge associated with it.
 type selectedAuthSolver struct {
 	authz  acme.Authorization
 	solver solver

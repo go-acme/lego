@@ -45,7 +45,7 @@ type DataZoneResponse struct {
 	Data     []*Zone            `json:"data"`
 }
 
-// ResourceRecord holds a resource record
+// ResourceRecord holds a resource record.
 type ResourceRecord struct {
 	Name  string `json:"name"`
 	TTL   int64  `json:"ttl"`
@@ -54,7 +54,7 @@ type ResourceRecord struct {
 	Pref  int32  `json:"pref,omitempty"`
 }
 
-// Zone is an autodns zone record with all for us relevant fields
+// Zone is an autodns zone record with all for us relevant fields.
 type Zone struct {
 	Name              string            `json:"origin"`
 	ResourceRecords   []*ResourceRecord `json:"resourceRecords"`

@@ -33,7 +33,7 @@ const (
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 )
 
-// Config is used to configure the creation of the DNSProvider
+// Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	MaxRetries         int
 	TTL                int
@@ -43,7 +43,7 @@ type Config struct {
 	Client             *route53.Route53
 }
 
-// NewDefaultConfig returns a default configuration for the DNSProvider
+// NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
 		MaxRetries:         env.GetOrDefaultInt(EnvMaxRetries, 5),
@@ -54,7 +54,7 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider implements the challenge.Provider interface
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	client *route53.Route53
 	config *Config
@@ -96,7 +96,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderConfig(NewDefaultConfig())
 }
 
-// NewDNSProviderConfig takes a given config ans returns a custom configured DNSProvider instance
+// NewDNSProviderConfig takes a given config ans returns a custom configured DNSProvider instance.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("route53: the configuration of the Route53 DNS provider is nil")
@@ -119,13 +119,12 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	return &DNSProvider{client: cl, config: config}, nil
 }
 
-// Timeout returns the timeout and interval to use when checking for DNS
-// propagation.
+// Timeout returns the timeout and interval to use when checking for DNS propagation.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-// Present creates a TXT record using the specified parameters
+// Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
@@ -166,7 +165,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	return nil
 }
 
-// CleanUp removes the TXT record matching the specified parameters
+// CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 

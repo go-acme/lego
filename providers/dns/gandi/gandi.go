@@ -34,7 +34,7 @@ const (
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
-// Config is used to configure the creation of the DNSProvider
+// Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	BaseURL            string
 	APIKey             string
@@ -44,7 +44,7 @@ type Config struct {
 	HTTPClient         *http.Client
 }
 
-// NewDefaultConfig returns a default configuration for the DNSProvider
+// NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, minTTL),
@@ -56,7 +56,7 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// inProgressInfo contains information about an in-progress challenge
+// inProgressInfo contains information about an in-progress challenge.
 type inProgressInfo struct {
 	zoneID    int    // zoneID of gandi zone to restore in CleanUp
 	newZoneID int    // zoneID of temporary gandi zone containing TXT record

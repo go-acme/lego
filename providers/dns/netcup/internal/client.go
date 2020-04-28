@@ -10,21 +10,21 @@ import (
 	"time"
 )
 
-// defaultBaseURL for reaching the jSON-based API-Endpoint of netcup
+// defaultBaseURL for reaching the jSON-based API-Endpoint of netcup.
 const defaultBaseURL = "https://ccp.netcup.net/run/webservice/servers/endpoint.php?JSON"
 
-// success response status
+// success response status.
 const success = "success"
 
 // Request wrapper as specified in netcup wiki
-// needed for every request to netcup API around *Msg
+// needed for every request to netcup API around *Msg.
 // https://www.netcup-wiki.de/wiki/CCP_API#Anmerkungen_zu_JSON-Requests
 type Request struct {
 	Action string      `json:"action"`
 	Param  interface{} `json:"param"`
 }
 
-// LoginRequest as specified in netcup WSDL
+// LoginRequest as specified in netcup WSDL.
 // https://ccp.netcup.net/run/webservice/servers/endpoint.php#login
 type LoginRequest struct {
 	CustomerNumber  string `json:"customernumber"`
@@ -33,7 +33,7 @@ type LoginRequest struct {
 	ClientRequestID string `json:"clientrequestid,omitempty"`
 }
 
-// LogoutRequest as specified in netcup WSDL
+// LogoutRequest as specified in netcup WSDL.
 // https://ccp.netcup.net/run/webservice/servers/endpoint.php#logout
 type LogoutRequest struct {
 	CustomerNumber  string `json:"customernumber"`
@@ -42,7 +42,7 @@ type LogoutRequest struct {
 	ClientRequestID string `json:"clientrequestid,omitempty"`
 }
 
-// UpdateDNSRecordsRequest as specified in netcup WSDL
+// UpdateDNSRecordsRequest as specified in netcup WSDL.
 // https://ccp.netcup.net/run/webservice/servers/endpoint.php#updateDnsRecords
 type UpdateDNSRecordsRequest struct {
 	DomainName      string       `json:"domainname"`
@@ -53,14 +53,14 @@ type UpdateDNSRecordsRequest struct {
 	DNSRecordSet    DNSRecordSet `json:"dnsrecordset"`
 }
 
-// DNSRecordSet as specified in netcup WSDL
+// DNSRecordSet as specified in netcup WSDL.
 // needed in UpdateDNSRecordsRequest
 // https://ccp.netcup.net/run/webservice/servers/endpoint.php#Dnsrecordset
 type DNSRecordSet struct {
 	DNSRecords []DNSRecord `json:"dnsrecords"`
 }
 
-// InfoDNSRecordsRequest as specified in netcup WSDL
+// InfoDNSRecordsRequest as specified in netcup WSDL.
 // https://ccp.netcup.net/run/webservice/servers/endpoint.php#infoDnsRecords
 type InfoDNSRecordsRequest struct {
 	DomainName      string `json:"domainname"`
@@ -70,7 +70,7 @@ type InfoDNSRecordsRequest struct {
 	ClientRequestID string `json:"clientrequestid,omitempty"`
 }
 
-// DNSRecord as specified in netcup WSDL
+// DNSRecord as specified in netcup WSDL.
 // https://ccp.netcup.net/run/webservice/servers/endpoint.php#Dnsrecord
 type DNSRecord struct {
 	ID           int    `json:"id,string,omitempty"`
@@ -83,7 +83,7 @@ type DNSRecord struct {
 	TTL          int    `json:"ttl,omitempty"`
 }
 
-// ResponseMsg as specified in netcup WSDL
+// ResponseMsg as specified in netcup WSDL.
 // https://ccp.netcup.net/run/webservice/servers/endpoint.php#Responsemessage
 type ResponseMsg struct {
 	ServerRequestID string          `json:"serverrequestid"`
@@ -112,7 +112,7 @@ type InfoDNSRecordsResponse struct {
 	DNSRecords   []DNSRecord `json:"dnsrecords,omitempty"`
 }
 
-// Client netcup DNS client
+// Client netcup DNS client.
 type Client struct {
 	customerNumber string
 	apiKey         string
@@ -121,7 +121,7 @@ type Client struct {
 	BaseURL        string
 }
 
-// NewClient creates a netcup DNS client
+// NewClient creates a netcup DNS client.
 func NewClient(customerNumber string, apiKey string, apiPassword string) (*Client, error) {
 	if customerNumber == "" || apiKey == "" || apiPassword == "" {
 		return nil, errors.New("credentials missing")
@@ -139,7 +139,7 @@ func NewClient(customerNumber string, apiKey string, apiPassword string) (*Clien
 }
 
 // Login performs the login as specified by the netcup WSDL
-// returns sessionID needed to perform remaining actions
+// returns sessionID needed to perform remaining actions.
 // https://ccp.netcup.net/run/webservice/servers/endpoint.php
 func (c *Client) Login() (string, error) {
 	payload := &Request{
@@ -161,7 +161,7 @@ func (c *Client) Login() (string, error) {
 	return responseData.APISessionID, nil
 }
 
-// Logout performs the logout with the supplied sessionID as specified by the netcup WSDL
+// Logout performs the logout with the supplied sessionID as specified by the netcup WSDL.
 // https://ccp.netcup.net/run/webservice/servers/endpoint.php
 func (c *Client) Logout(sessionID string) error {
 	payload := &Request{
@@ -182,7 +182,7 @@ func (c *Client) Logout(sessionID string) error {
 	return nil
 }
 
-// UpdateDNSRecord performs an update of the DNSRecords as specified by the netcup WSDL
+// UpdateDNSRecord performs an update of the DNSRecords as specified by the netcup WSDL.
 // https://ccp.netcup.net/run/webservice/servers/endpoint.php
 func (c *Client) UpdateDNSRecord(sessionID, domainName string, records []DNSRecord) error {
 	payload := &Request{
@@ -206,7 +206,7 @@ func (c *Client) UpdateDNSRecord(sessionID, domainName string, records []DNSReco
 }
 
 // GetDNSRecords retrieves all dns records of an DNS-Zone as specified by the netcup WSDL
-// returns an array of DNSRecords
+// returns an array of DNSRecords.
 // https://ccp.netcup.net/run/webservice/servers/endpoint.php
 func (c *Client) GetDNSRecords(hostname, apiSessionID string) ([]DNSRecord, error) {
 	payload := &Request{
@@ -230,7 +230,7 @@ func (c *Client) GetDNSRecords(hostname, apiSessionID string) ([]DNSRecord, erro
 }
 
 // doRequest marshals given body to JSON, send the request to netcup API
-// and returns body of response
+// and returns body of response.
 func (c *Client) doRequest(payload interface{}, responseData interface{}) error {
 	body, err := json.Marshal(payload)
 	if err != nil {
@@ -316,7 +316,7 @@ func decodeResponseMsg(resp *http.Response) (*ResponseMsg, error) {
 
 // GetDNSRecordIdx searches a given array of DNSRecords for a given DNSRecord
 // equivalence is determined by Destination and RecortType attributes
-// returns index of given DNSRecord in given array of DNSRecords
+// returns index of given DNSRecord in given array of DNSRecords.
 func GetDNSRecordIdx(records []DNSRecord, record DNSRecord) (int, error) {
 	for index, element := range records {
 		if record.Destination == element.Destination && record.RecordType == element.RecordType {

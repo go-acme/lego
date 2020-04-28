@@ -10,68 +10,68 @@ import (
 	"github.com/go-acme/lego/v3/challenge/dns01"
 )
 
-// APIKeyCredentials API credential
+// APIKeyCredentials API credential.
 type APIKeyCredentials struct {
 	Username string `json:"username"`
 	APIKey   string `json:"apiKey"`
 }
 
-// Auth auth credentials
+// Auth auth credentials.
 type Auth struct {
 	APIKeyCredentials `json:"RAX-KSKEY:apiKeyCredentials"`
 }
 
-// AuthData Auth data
+// AuthData Auth data.
 type AuthData struct {
 	Auth `json:"auth"`
 }
 
-// Identity Identity
+// Identity Identity.
 type Identity struct {
 	Access Access `json:"access"`
 }
 
-// Access Access
+// Access Access.
 type Access struct {
 	ServiceCatalog []ServiceCatalog `json:"serviceCatalog"`
 	Token          Token            `json:"token"`
 }
 
-// Token Token
+// Token Token.
 type Token struct {
 	ID string `json:"id"`
 }
 
-// ServiceCatalog ServiceCatalog
+// ServiceCatalog ServiceCatalog.
 type ServiceCatalog struct {
 	Endpoints []Endpoint `json:"endpoints"`
 	Name      string     `json:"name"`
 }
 
-// Endpoint Endpoint
+// Endpoint Endpoint.
 type Endpoint struct {
 	PublicURL string `json:"publicURL"`
 	TenantID  string `json:"tenantId"`
 }
 
-// ZoneSearchResponse represents the response when querying Rackspace DNS zones
+// ZoneSearchResponse represents the response when querying Rackspace DNS zones.
 type ZoneSearchResponse struct {
 	TotalEntries int          `json:"totalEntries"`
 	HostedZones  []HostedZone `json:"domains"`
 }
 
-// HostedZone HostedZone
+// HostedZone HostedZone.
 type HostedZone struct {
 	ID   int    `json:"id"`
 	Name string `json:"name"`
 }
 
-// Records is the list of records sent/received from the DNS API
+// Records is the list of records sent/received from the DNS API.
 type Records struct {
 	Record []Record `json:"records"`
 }
 
-// Record represents a Rackspace DNS record
+// Record represents a Rackspace DNS record.
 type Record struct {
 	Name string `json:"name"`
 	Type string `json:"type"`
@@ -81,7 +81,7 @@ type Record struct {
 }
 
 // getHostedZoneID performs a lookup to get the DNS zone which needs
-// modifying for a given FQDN
+// modifying for a given FQDN.
 func (d *DNSProvider) getHostedZoneID(fqdn string) (int, error) {
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
@@ -107,7 +107,7 @@ func (d *DNSProvider) getHostedZoneID(fqdn string) (int, error) {
 	return zoneSearchResponse.HostedZones[0].ID, nil
 }
 
-// findTxtRecord searches a DNS zone for a TXT record with a specific name
+// findTxtRecord searches a DNS zone for a TXT record with a specific name.
 func (d *DNSProvider) findTxtRecord(fqdn string, zoneID int) (*Record, error) {
 	result, err := d.makeRequest(http.MethodGet, fmt.Sprintf("/domains/%d/records?type=TXT&name=%s", zoneID, dns01.UnFqdn(fqdn)), nil)
 	if err != nil {
@@ -131,7 +131,7 @@ func (d *DNSProvider) findTxtRecord(fqdn string, zoneID int) (*Record, error) {
 	return &records.Record[0], nil
 }
 
-// makeRequest is a wrapper function used for making DNS API requests
+// makeRequest is a wrapper function used for making DNS API requests.
 func (d *DNSProvider) makeRequest(method, uri string, body io.Reader) (json.RawMessage, error) {
 	url := d.cloudDNSEndpoint + uri
 

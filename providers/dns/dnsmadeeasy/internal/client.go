@@ -13,13 +13,13 @@ import (
 	"time"
 )
 
-// Domain holds the DNSMadeEasy API representation of a Domain
+// Domain holds the DNSMadeEasy API representation of a Domain.
 type Domain struct {
 	ID   int    `json:"id"`
 	Name string `json:"name"`
 }
 
-// Record holds the DNSMadeEasy API representation of a Domain Record
+// Record holds the DNSMadeEasy API representation of a Domain Record.
 type Record struct {
 	ID       int    `json:"id"`
 	Type     string `json:"type"`
@@ -33,7 +33,7 @@ type recordsResponse struct {
 	Records *[]Record `json:"data"`
 }
 
-// Client DNSMadeEasy client
+// Client DNSMadeEasy client.
 type Client struct {
 	apiKey     string
 	apiSecret  string
@@ -41,7 +41,7 @@ type Client struct {
 	HTTPClient *http.Client
 }
 
-// NewClient creates a DNSMadeEasy client
+// NewClient creates a DNSMadeEasy client.
 func NewClient(apiKey string, apiSecret string) (*Client, error) {
 	if apiKey == "" {
 		return nil, errors.New("credentials missing: API key")
@@ -58,7 +58,7 @@ func NewClient(apiKey string, apiSecret string) (*Client, error) {
 	}, nil
 }
 
-// GetDomain gets a domain
+// GetDomain gets a domain.
 func (c *Client) GetDomain(authZone string) (*Domain, error) {
 	domainName := authZone[0 : len(authZone)-1]
 	resource := fmt.Sprintf("%s%s", "/dns/managed/name?domainname=", domainName)
@@ -78,7 +78,7 @@ func (c *Client) GetDomain(authZone string) (*Domain, error) {
 	return domain, nil
 }
 
-// GetRecords gets all TXT records
+// GetRecords gets all TXT records.
 func (c *Client) GetRecords(domain *Domain, recordName, recordType string) (*[]Record, error) {
 	resource := fmt.Sprintf("%s/%d/%s%s%s%s", "/dns/managed", domain.ID, "records?recordName=", recordName, "&type=", recordType)
 
@@ -97,7 +97,7 @@ func (c *Client) GetRecords(domain *Domain, recordName, recordType string) (*[]R
 	return records.Records, nil
 }
 
-// CreateRecord creates a TXT records
+// CreateRecord creates a TXT records.
 func (c *Client) CreateRecord(domain *Domain, record *Record) error {
 	url := fmt.Sprintf("%s/%d/%s", "/dns/managed", domain.ID, "records")
 
@@ -110,7 +110,7 @@ func (c *Client) CreateRecord(domain *Domain, record *Record) error {
 	return nil
 }
 
-// DeleteRecord deletes a TXT records
+// DeleteRecord deletes a TXT records.
 func (c *Client) DeleteRecord(record Record) error {
 	resource := fmt.Sprintf("%s/%d/%s/%d", "/dns/managed", record.SourceID, "records", record.ID)
 

@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-// Errors types
+// Errors types.
 const (
 	errNS       = "urn:ietf:params:acme:error:"
 	BadNonceErr = errNS + "badNonce"

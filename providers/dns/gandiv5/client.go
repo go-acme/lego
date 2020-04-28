@@ -13,13 +13,13 @@ import (
 
 const apiKeyHeader = "X-Api-Key"
 
-// types for JSON responses with only a message
+// types for JSON responses with only a message.
 type apiResponse struct {
 	Message string `json:"message"`
 	UUID    string `json:"uuid,omitempty"`
 }
 
-// Record TXT record representation
+// Record TXT record representation.
 type Record struct {
 	RRSetTTL    int      `json:"rrset_ttl"`
 	RRSetValues []string `json:"rrset_values"`

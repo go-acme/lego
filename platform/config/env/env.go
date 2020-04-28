@@ -12,7 +12,7 @@ import (
 	"github.com/go-acme/lego/v3/log"
 )
 
-// Get environment variables
+// Get environment variables.
 func Get(names ...string) (map[string]string, error) {
 	values := map[string]string{}
 

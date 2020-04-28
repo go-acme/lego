@@ -41,7 +41,7 @@ func (d *DNSProvider) buildQuery(action, domain, txt string) (*url.URL, error) {
 }
 
 // updateTxtRecord will either add or remove a TXT record.
-// action is either cmdAddRecord or cmdRemoveRecord
+// action is either cmdAddRecord or cmdRemoveRecord.
 func (d *DNSProvider) updateTxtRecord(u fmt.Stringer) error {
 	resp, err := d.config.HTTPClient.Get(u.String())
 	if err != nil {

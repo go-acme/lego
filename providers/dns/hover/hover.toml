@@ -1,0 +1,28 @@
+Name = "Hover"
+Description = '''Hover DNS Hosting (tucows)'''
+URL = "https://hover.com"
+Code = "hover"
+Since = "v4.0.1"
+
+Example = '''
+HOVER_USERNAME=scott \
+HOVER_PASSWORD=tiger \
+lego --dns hover --domains my.domain.com --email scott@example.com run
+
+HOVER_PASSFILE=$(mktemp) \
+echo '{"username": "scott", "password": "tiger"}' > ${HOVER_PASSFILE} \
+lego --dns hover --domains my.domain.com --email scott@example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    HOVER_USERNAME = "Username"
+    HOVER_PASSWORD = "Password (plaintext)"
+    HOVER_PASSFILE = "/some/absolute/file.json"
+  [Configuration.Additional]
+    HOVER_POLLING_INTERVAL = "Time between DNS propagation check"
+    HOVER_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
+    HOVER_TTL = "The TTL of the TXT record used for the DNS challenge"
+    HOVER_HTTP_TIMEOUT = "API request timeout"
+
+[Links]

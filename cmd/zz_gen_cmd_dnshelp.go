@@ -51,6 +51,7 @@ func allDNSCodes() string {
 		"godaddy",
 		"hetzner",
 		"hostingde",
+		"hover",
 		"httpreq",
 		"hyperone",
 		"iij",
@@ -882,6 +883,28 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/hostingde`)
+
+	case "hover":
+		// generated from: providers/dns/hover/hover.toml
+		ew.writeln(`Configuration for Hover.`)
+		ew.writeln(`Code:	'hover'`)
+		ew.writeln(`Since:	'v3.6.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "HOVER_PASSFILE":	/some/absolute/file.json`)
+		ew.writeln(`	- "HOVER_PASSWORD":	Password (plaintext)`)
+		ew.writeln(`	- "HOVER_USERNAME":	Username`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "HOVER_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "HOVER_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "HOVER_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "HOVER_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/hover`)
 
 	case "httpreq":
 		// generated from: providers/dns/httpreq/httpreq.toml

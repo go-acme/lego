@@ -58,6 +58,7 @@ func allDNSCodes() string {
 		"linode",
 		"linodev4",
 		"liquidweb",
+		"luadns",
 		"mydnsjp",
 		"mythicbeasts",
 		"namecheap",
@@ -1026,6 +1027,28 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/liquidweb`)
+
+	case "luadns":
+		// generated from: providers/dns/luadns/luadns.toml
+		ew.writeln(`Configuration for LuaDNS.`)
+		ew.writeln(`Code:	'luadns'`)
+		ew.writeln(`Since:	'v3.7.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "LUADNS_API_TOKEN":	API token`)
+		ew.writeln(`	- "LUADNS_API_USERNAME":	Username (your email)`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "LUADNS_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "LUADNS_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "LUADNS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "LUADNS_SEQUENCE_INTERVAL":	Interval between iteration`)
+		ew.writeln(`	- "LUADNS_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/luadns`)
 
 	case "mydnsjp":
 		// generated from: providers/dns/mydnsjp/mydnsjp.toml

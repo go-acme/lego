@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	apiBaseURL  = "https://api.mythic-beasts.com/beta/dns"
+	apiBaseURL  = "https://api.mythic-beasts.com/dns/v2"
 	authBaseURL = "https://auth.mythic-beasts.com/login"
 )
 

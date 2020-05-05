@@ -74,7 +74,7 @@ func (d *DNSProvider) addTxtRecord(domain string, records []*ResourceRecord) (*Z
 }
 
 func (d *DNSProvider) removeTXTRecord(domain string, records []*ResourceRecord) error {
-	zoneStream := &ZoneStream{Adds: records}
+	zoneStream := &ZoneStream{Removes: records}
 
 	_, err := d.makeZoneUpdateRequest(zoneStream, domain)
 	return err

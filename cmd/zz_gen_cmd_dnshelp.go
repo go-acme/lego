@@ -28,6 +28,7 @@ func allDNSCodes() string {
 		"cloudxns",
 		"conoha",
 		"constellix",
+		"desec",
 		"designate",
 		"digitalocean",
 		"dnsimple",
@@ -400,6 +401,26 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/constellix`)
+
+	case "desec":
+		// generated from: providers/dns/desec/desec.toml
+		ew.writeln(`Configuration for deSEC.io.`)
+		ew.writeln(`Code:	'desec'`)
+		ew.writeln(`Since:	'v0.3.7'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "DESEC_TOKEN":	Domain token`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "DESEC_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "DESEC_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "DESEC_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "DESEC_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/desec`)
 
 	case "designate":
 		// generated from: providers/dns/designate/designate.toml

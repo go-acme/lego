@@ -19,6 +19,7 @@ import (
 	"github.com/go-acme/lego/v3/providers/dns/cloudxns"
 	"github.com/go-acme/lego/v3/providers/dns/conoha"
 	"github.com/go-acme/lego/v3/providers/dns/constellix"
+	"github.com/go-acme/lego/v3/providers/dns/desec"
 	"github.com/go-acme/lego/v3/providers/dns/designate"
 	"github.com/go-acme/lego/v3/providers/dns/digitalocean"
 	"github.com/go-acme/lego/v3/providers/dns/dnsimple"
@@ -110,6 +111,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return conoha.NewDNSProvider()
 	case "constellix":
 		return constellix.NewDNSProvider()
+	case "desec":
+		return desec.NewDNSProvider()
 	case "designate":
 		return designate.NewDNSProvider()
 	case "digitalocean":

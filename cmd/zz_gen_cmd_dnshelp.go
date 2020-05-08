@@ -63,6 +63,7 @@ func allDNSCodes() string {
 		"namedotcom",
 		"namesilo",
 		"netcup",
+		"netlify",
 		"nifcloud",
 		"ns1",
 		"oraclecloud",
@@ -1131,6 +1132,26 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/netcup`)
+
+	case "netlify":
+		// generated from: providers/dns/netlify/netlify.toml
+		ew.writeln(`Configuration for Netlify.`)
+		ew.writeln(`Code:	'netlify'`)
+		ew.writeln(`Since:	'v0.3.7'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "NETLIFY_TOKEN":	Token`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "NETLIFY_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "NETLIFY_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "NETLIFY_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "NETLIFY_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/netlify`)
 
 	case "nifcloud":
 		// generated from: providers/dns/nifcloud/nifcloud.toml

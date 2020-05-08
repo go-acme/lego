@@ -1,0 +1,16 @@
+{
+  "hostname": "test.example.org",
+  "type": "TXT",
+  "ttl": 300,
+  "priority": null,
+  "weight": null,
+  "port": null,
+  "flag": null,
+  "tag": null,
+  "id": "u6b4764216f272872ac0ff71",
+  "site_id": null,
+  "dns_zone_id": "u6b4336178f002e0a06bb0b6",
+  "errors": [],
+  "managed": false,
+  "value": "txtxtxtxtxtxt"
+}

@@ -10,13 +10,10 @@ import (
 
 	"github.com/go-acme/lego/v3/challenge/dns01"
 	"github.com/go-acme/lego/v3/platform/config/env"
+	"github.com/go-acme/lego/v3/providers/dns/hetzner/internal"
 )
 
-const (
-	// defaultBaseURL represents the API endpoint to call.
-	defaultBaseURL = "https://dns.hetzner.com"
-	minTTL         = 600
-)
+const minTTL = 600
 
 // Environment variables names.
 const (
@@ -30,7 +27,7 @@ const (
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
-// Config is used to configure the creation of the DNSProvider
+// Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	APIKey             string
 	PropagationTimeout time.Duration
@@ -51,9 +48,10 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider is an implementation of the challenge.Provider interface
+// DNSProvider is an implementation of the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
+	client *internal.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for hetzner.
@@ -84,7 +82,13 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("hetzner: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL)
 	}
 
-	return &DNSProvider{config: config}, nil
+	client := internal.NewClient(config.APIKey)
+
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
+	}
+
+	return &DNSProvider{config: config, client: client}, nil
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS
@@ -99,15 +103,15 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zone, err := d.getZone(fqdn)
 	if err != nil {
-		return err
+		return fmt.Errorf("hetzner: failed to find zone: fqdn=%s: %w", fqdn, err)
 	}
 
-	zoneID, err := d.getZoneID(zone)
+	zoneID, err := d.client.GetZoneID(zone)
 	if err != nil {
-		return err
+		return fmt.Errorf("hetzner: %w", err)
 	}
 
-	record := DNSRecord{
+	record := internal.DNSRecord{
 		Type:   "TXT",
 		Name:   d.extractRecordName(fqdn, domain),
 		Value:  value,
@@ -115,36 +119,36 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		ZoneID: zoneID,
 	}
 
-	if err := d.createTxtRecord(record); err != nil {
-		return fmt.Errorf("hetzner: failed to add TXT record: %w", err)
+	if err := d.client.CreateRecord(record); err != nil {
+		return fmt.Errorf("hetzner: failed to add TXT record: fqdn=%s, zoneID=%s: %w", fqdn, zoneID, err)
 	}
 
 	return nil
 }
 
-// CleanUp remove the created record.
+// CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
 	zone, err := d.getZone(fqdn)
 	if err != nil {
-		return err
+		return fmt.Errorf("hetzner: failed to find zone: fqdn=%s: %w", fqdn, err)
 	}
 
-	zoneID, err := d.getZoneID(zone)
+	zoneID, err := d.client.GetZoneID(zone)
 	if err != nil {
-		return err
+		return fmt.Errorf("hetzner: %w", err)
 	}
 
 	recordName := d.extractRecordName(fqdn, domain)
 
-	record, err := d.getTxtRecord(recordName, value, zoneID)
+	record, err := d.client.GetTxtRecord(recordName, value, zoneID)
 	if err != nil {
-		return err
+		return fmt.Errorf("hetzner: %w", err)
 	}
 
-	if err := d.deleteTxtRecord(domain, *record); err != nil {
-		return err
+	if err := d.client.DeleteRecord(record.ID); err != nil {
+		return fmt.Errorf("hetzner: failed to delate TXT record: id=%s, name=%s: %w", record.ID, record.Name, err)
 	}
 
 	return nil

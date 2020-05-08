@@ -1,0 +1,32 @@
+{
+  "records": [
+    {
+      "type": "A",
+      "id": "1a",
+      "created": "2020-05-08T10:49:18Z",
+      "modified": "2020-05-08T10:49:18Z",
+      "zone_id": "zoneA",
+      "name": "test",
+      "value": "10.10.10.10",
+      "ttl": 600
+    },
+    {
+      "type": "TXT",
+      "id": "1b",
+      "created": "2020-05-08T10:49:19Z",
+      "modified": "2020-05-08T10:49:19Z",
+      "zone_id": "zoneA",
+      "name": "test1",
+      "value": "txttxttxt",
+      "ttl": 600
+    }
+  ],
+  "meta": {
+    "pagination": {
+      "page": 1,
+      "per_page": 20,
+      "last_page": 1,
+      "total_entries": 2
+    }
+  }
+}

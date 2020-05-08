@@ -58,15 +58,24 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	testCases := []struct {
 		desc     string
 		apiKey   string
+		ttl      int
 		expected string
 	}{
 		{
 			desc:   "success",
+			ttl:    minTTL,
 			apiKey: "123",
 		},
 		{
 			desc:     "missing credentials",
+			ttl:      minTTL,
 			expected: "hetzner: credentials missing",
+		},
+		{
+			desc:     "invalid TTL",
+			apiKey:   "123",
+			ttl:      60,
+			expected: "hetzner: invalid TTL, TTL (60) must be greater than 600",
 		},
 	}
 
@@ -74,6 +83,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			config := NewDefaultConfig()
 			config.APIKey = test.apiKey
+			config.TTL = test.ttl
 
 			p, err := NewDNSProviderConfig(config)
 

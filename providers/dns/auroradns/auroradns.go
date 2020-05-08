@@ -46,7 +46,7 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider describes a provider for AuroraDNS.
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	recordIDs   map[string]string
 	recordIDsMu sync.Mutex

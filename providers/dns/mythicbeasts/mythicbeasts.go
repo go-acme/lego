@@ -63,7 +63,7 @@ func NewDefaultConfig() (*Config, error) {
 	}, nil
 }
 
-// DNSProvider is an implementation of the challenge.Provider interface.
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
 	token  string

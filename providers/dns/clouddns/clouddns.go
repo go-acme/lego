@@ -50,8 +50,7 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider is an implementation of the challenge. Provider interface
-// that uses CloudDNS API to manage TXT records for a domain.
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	client *internal.Client
 	config *Config

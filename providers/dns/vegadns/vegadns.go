@@ -44,7 +44,7 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider describes a provider for VegaDNS.
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
 	client vegaClient.VegaDNSClient

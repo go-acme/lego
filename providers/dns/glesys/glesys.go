@@ -54,9 +54,7 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider is an implementation of the
-// challenge.ProviderTimeout interface that uses GleSYS
-// API to manage TXT records for a domain.
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config        *Config
 	activeRecords map[string]int

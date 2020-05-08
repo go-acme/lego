@@ -43,7 +43,7 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider describes a provider for TransIP.
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config     *Config
 	repository transipdomain.Repository

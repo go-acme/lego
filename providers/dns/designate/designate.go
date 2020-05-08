@@ -52,7 +52,7 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider describes a provider for Designate.
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config       *Config
 	client       *gophercloud.ServiceClient

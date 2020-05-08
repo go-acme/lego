@@ -53,8 +53,7 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider implements challenge.Provider for the CheckDomain API
-// specified at https://developer.checkdomain.de/reference/.
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
 

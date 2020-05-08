@@ -40,8 +40,7 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider adds and removes the record for the DNS challenge by calling a
-// program with command-line parameters.
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
 }

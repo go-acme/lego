@@ -63,9 +63,7 @@ type inProgressInfo struct {
 	authZone  string // the domain name registered at gandi with trailing "."
 }
 
-// DNSProvider is an implementation of the
-// challenge.ProviderTimeout interface that uses Gandi's XML-RPC
-// API to manage TXT records for a domain.
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	inProgressFQDNs     map[string]inProgressInfo
 	inProgressAuthZones map[string]struct{}

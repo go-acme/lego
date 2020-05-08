@@ -1,3 +1,4 @@
+// Package autodns implements a DNS provider for solving the DNS-01 challenge using auto DNS.
 package autodns
 
 import (
@@ -31,6 +32,7 @@ const (
 	defaultTTL             int = 600
 )
 
+// Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	Endpoint           *url.URL
 	Username           string
@@ -42,6 +44,7 @@ type Config struct {
 	HTTPClient         *http.Client
 }
 
+// NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	endpoint, _ := url.Parse(env.GetOrDefaultString(EnvAPIEndpoint, defaultEndpoint))
 
@@ -57,14 +60,13 @@ func NewDefaultConfig() *Config {
 	}
 }
 
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
 }
 
-func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
-	return d.config.PropagationTimeout, d.config.PollingInterval
-}
-
+// NewDNSProvider returns a DNSProvider instance configured for autoDNS.
+// Credentials must be passed in the environment variables.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvAPIUser, EnvAPIPassword)
 	if err != nil {
@@ -78,6 +80,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderConfig(config)
 }
 
+// NewDNSProviderConfig return a DNSProvider instance configured for autoDNS.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("autodns: config is nil")
@@ -94,7 +97,13 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	return &DNSProvider{config: config}, nil
 }
 
-// Present creates a TXT record to fulfill the dns-01 challenge
+// Timeout returns the timeout and interval to use when checking for DNS propagation.
+// Adjusting here to cope with spikes in propagation times.
+func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
+	return d.config.PropagationTimeout, d.config.PollingInterval
+}
+
+// Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
@@ -113,7 +122,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	return nil
 }
 
-// CleanUp removes the TXT record previously created
+// CleanUp removes the TXT record previously created.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 

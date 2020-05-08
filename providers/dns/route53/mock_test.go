@@ -10,13 +10,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// MockResponse represents a predefined response used by a mock server
+// MockResponse represents a predefined response used by a mock server.
 type MockResponse struct {
 	StatusCode int
 	Body       string
 }
 
-// MockResponseMap maps request paths to responses
+// MockResponseMap maps request paths to responses.
 type MockResponseMap map[string]MockResponse
 
 func newMockServer(t *testing.T, responses MockResponseMap) *httptest.Server {

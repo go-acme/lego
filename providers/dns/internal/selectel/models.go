@@ -18,7 +18,7 @@ type Record struct {
 	Content string `json:"content,omitempty"` // Record content (not for SRV)
 }
 
-// APIError API error message
+// APIError API error message.
 type APIError struct {
 	Description string `json:"error"`
 	Code        int    `json:"code"`

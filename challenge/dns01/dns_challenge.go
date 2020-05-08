@@ -42,7 +42,7 @@ func CondOption(condition bool, opt ChallengeOption) ChallengeOption {
 	return opt
 }
 
-// Challenge implements the dns-01 challenge
+// Challenge implements the dns-01 challenge.
 type Challenge struct {
 	core       *api.Core
 	validate   ValidateFunc
@@ -169,7 +169,7 @@ type sequential interface {
 	Sequential() time.Duration
 }
 
-// GetRecord returns a DNS record which will fulfill the `dns-01` challenge
+// GetRecord returns a DNS record which will fulfill the `dns-01` challenge.
 func GetRecord(domain, keyAuth string) (fqdn string, value string) {
 	keyAuthShaBytes := sha256.Sum256([]byte(keyAuth))
 	// base64URL encoding without padding

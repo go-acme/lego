@@ -27,7 +27,7 @@ const (
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
-// Config is used to configure the creation of the DNSProvider
+// Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	Region             string
 	TenantID           string
@@ -39,7 +39,7 @@ type Config struct {
 	HTTPClient         *http.Client
 }
 
-// NewDefaultConfig returns a default configuration for the DNSProvider
+// NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
 		Region:             env.GetOrDefaultString(EnvRegion, "tyo1"),
@@ -52,14 +52,15 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider is an implementation of the challenge.Provider interface
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
 	client *internal.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for ConoHa DNS.
-// Credentials must be passed in the environment variables: CONOHA_TENANT_ID, CONOHA_API_USERNAME, CONOHA_API_PASSWORD
+// Credentials must be passed in the environment variables:
+// CONOHA_TENANT_ID, CONOHA_API_USERNAME, CONOHA_API_PASSWORD.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvTenantID, EnvAPIUsername, EnvAPIPassword)
 	if err != nil {
@@ -129,7 +130,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	return nil
 }
 
-// CleanUp clears ConoHa DNS TXT record
+// CleanUp clears ConoHa DNS TXT record.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 

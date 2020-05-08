@@ -87,7 +87,7 @@ type ChangeInfo struct {
 	SubmittedAt string `xml:"SubmittedAt"`
 }
 
-// NewClient Creates a new client of NIFCLOUD DNS
+// NewClient Creates a new client of NIFCLOUD DNS.
 func NewClient(accessKey string, secretKey string) (*Client, error) {
 	if len(accessKey) == 0 || len(secretKey) == 0 {
 		return nil, errors.New("credentials missing")
@@ -101,7 +101,7 @@ func NewClient(accessKey string, secretKey string) (*Client, error) {
 	}, nil
 }
 
-// Client client of NIFCLOUD DNS
+// Client client of NIFCLOUD DNS.
 type Client struct {
 	accessKey  string
 	secretKey  string

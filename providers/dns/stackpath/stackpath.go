@@ -35,7 +35,7 @@ const (
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 )
 
-// Config is used to configure the creation of the DNSProvider
+// Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	ClientID           string
 	ClientSecret       string
@@ -45,7 +45,7 @@ type Config struct {
 	PollingInterval    time.Duration
 }
 
-// NewDefaultConfig returns a default configuration for the DNSProvider
+// NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, 120),
@@ -54,7 +54,7 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider is an implementation of the challenge.Provider interface.
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	BaseURL *url.URL
 	client  *http.Client
@@ -111,7 +111,7 @@ func getOathClient(config *Config) *http.Client {
 	return oathConfig.Client(context.Background())
 }
 
-// Present creates a TXT record to fulfill the dns-01 challenge
+// Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	zone, err := d.getZones(domain)
 	if err != nil {
@@ -131,7 +131,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	return d.createZoneRecord(zone, record)
 }
 
-// CleanUp removes the TXT record matching the specified parameters
+// CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	zone, err := d.getZones(domain)
 	if err != nil {

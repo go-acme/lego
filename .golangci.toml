@@ -34,6 +34,9 @@
     "stylecheck",
     "godox",
     "gomnd",
+    "testpackage", # not relevant
+    "nestif", # too many false-positive
+    "goerr113", # not relevant
   ]
 
 [issues]

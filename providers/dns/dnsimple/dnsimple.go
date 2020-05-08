@@ -27,7 +27,7 @@ const (
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 )
 
-// Config is used to configure the creation of the DNSProvider
+// Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	AccessToken        string
 	BaseURL            string
@@ -36,7 +36,7 @@ type Config struct {
 	TTL                int
 }
 
-// NewDefaultConfig returns a default configuration for the DNSProvider
+// NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
@@ -45,14 +45,14 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider is an implementation of the challenge.Provider interface.
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
 	client *dnsimple.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for dnsimple.
-// Credentials must be passed in the environment variables: DNSIMPLE_OAUTH_TOKEN.
+// Credentials must be passed in the environment variable: DNSIMPLE_OAUTH_TOKEN.
 //
 // See: https://developer.dnsimple.com/v2/#authentication
 func NewDNSProvider() (*DNSProvider, error) {

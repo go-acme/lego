@@ -29,7 +29,7 @@ const (
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
-// Config is used to configure the creation of the DNSProvider
+// Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	Key                string
 	Password           string
@@ -40,7 +40,7 @@ type Config struct {
 	HTTPClient         *http.Client
 }
 
-// NewDefaultConfig returns a default configuration for the DNSProvider
+// NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
@@ -52,7 +52,7 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider is an implementation of the challenge.Provider interface
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	client *internal.Client
 	config *Config
@@ -60,7 +60,7 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for netcup.
 // Credentials must be passed in the environment variables:
-// NETCUP_CUSTOMER_NUMBER, NETCUP_API_KEY, NETCUP_API_PASSWORD
+// NETCUP_CUSTOMER_NUMBER, NETCUP_API_KEY, NETCUP_API_PASSWORD.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvCustomerNumber, EnvAPIKey, EnvAPIPassword)
 	if err != nil {
@@ -91,7 +91,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	return &DNSProvider{client: client, config: config}, nil
 }
 
-// Present creates a TXT record to fulfill the dns-01 challenge
+// Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domainName, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domainName, keyAuth)
 
@@ -138,7 +138,7 @@ func (d *DNSProvider) Present(domainName, token, keyAuth string) error {
 	return nil
 }
 
-// CleanUp removes the TXT record matching the specified parameters
+// CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domainName, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domainName, keyAuth)
 

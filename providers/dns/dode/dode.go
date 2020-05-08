@@ -23,7 +23,7 @@ const (
 	EnvSequenceInterval   = envNamespace + "SEQUENCE_INTERVAL"
 )
 
-// Config is used to configure the creation of the DNSProvider
+// Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	Token              string
 	PropagationTimeout time.Duration
@@ -32,7 +32,7 @@ type Config struct {
 	HTTPClient         *http.Client
 }
 
-// NewDefaultConfig returns a default configuration for the DNSProvider
+// NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
@@ -44,7 +44,7 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider adds and removes the record for the DNS challenge
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
 }
@@ -82,7 +82,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	return d.updateTxtRecord(fqdn, d.config.Token, txtRecord, false)
 }
 
-// CleanUp clears TXT record
+// CleanUp clears TXT record.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 	return d.updateTxtRecord(fqdn, d.config.Token, "", true)

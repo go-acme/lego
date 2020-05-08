@@ -12,7 +12,7 @@ type Record struct {
 }
 
 // Value is the value of a record.
-// Allows to handle dynamic type (string and string array)
+// Allows to handle dynamic type (string and string array).
 type Value []string
 
 func (v Value) MarshalJSON() ([]byte, error) {

@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// MockResponse represents a predefined response used by a mock server
+// MockResponse represents a predefined response used by a mock server.
 type MockResponse struct {
 	StatusCode int
 	Body       string

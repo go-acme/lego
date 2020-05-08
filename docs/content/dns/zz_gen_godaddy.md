@@ -18,9 +18,13 @@ Configuration for [Go Daddy](https://godaddy.com).
 
 - Code: `godaddy`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the Go Daddy provider:
+
+```bash
+GODADDY_API_KEY=xxxxxxxx \
+GODADDY_API_SECRET=yyyyyyyy \
+lego --dns godaddy --domains my.domain.com --email my@email.com run
+```
 
 
 

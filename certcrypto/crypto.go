@@ -40,7 +40,7 @@ const (
 	OCSPServerFailed = ocsp.ServerFailed
 )
 
-// Constants for OCSP must staple
+// Constants for OCSP must staple.
 var (
 	tlsFeatureExtensionOID = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 1, 24}
 	ocspMustStapleFeature  = []byte{0x30, 0x03, 0x02, 0x01, 0x05}

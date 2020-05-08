@@ -143,7 +143,7 @@ func (a *Core) signEABContent(newAccountURL, kid string, hmac []byte) ([]byte, e
 	return []byte(eabJWS.FullSerialize()), nil
 }
 
-// GetKeyAuthorization Gets the key authorization
+// GetKeyAuthorization Gets the key authorization.
 func (a *Core) GetKeyAuthorization(token string) (string, error) {
 	return a.jws.GetKeyAuthorization(token)
 }

@@ -39,7 +39,7 @@ const (
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 )
 
-// Config is used to configure the creation of the DNSProvider
+// Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	Debug              bool
 	Project            string
@@ -49,7 +49,7 @@ type Config struct {
 	HTTPClient         *http.Client
 }
 
-// NewDefaultConfig returns a default configuration for the DNSProvider
+// NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
 		Debug:              env.GetOrDefaultBool(EnvDebug, false),
@@ -59,7 +59,7 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider is an implementation of the DNSProvider interface.
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
 	client *dns.Service
@@ -69,7 +69,7 @@ type DNSProvider struct {
 // By default, the project name is auto-detected by using the metadata service,
 // it can be overridden using the GCE_PROJECT environment variable.
 // A Service Account can be passed in the environment variable: GCE_SERVICE_ACCOUNT
-// or by specifying the keyfile location: GCE_SERVICE_ACCOUNT_FILE
+// or by specifying the keyfile location: GCE_SERVICE_ACCOUNT_FILE.
 func NewDNSProvider() (*DNSProvider, error) {
 	// Use a service account file if specified via environment variable.
 	if saKey := env.GetOrFile(EnvServiceAccount); len(saKey) > 0 {
@@ -306,7 +306,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-// getHostedZone returns the managed-zone
+// getHostedZone returns the managed-zone.
 func (d *DNSProvider) getHostedZone(domain string) (string, error) {
 	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
 	if err != nil {

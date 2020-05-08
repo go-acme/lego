@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// Search filters
+// Search filters.
 const (
 	StartsWith searchFilter = "startswith"
 	Exact      searchFilter = "exact"

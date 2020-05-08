@@ -34,8 +34,7 @@ type acmeDNSClient interface {
 	RegisterAccount([]string) (goacmedns.Account, error)
 }
 
-// DNSProvider is an implementation of the challenge.Provider interface for
-// an ACME-DNS server.
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	client  acmeDNSClient
 	storage goacmedns.Storage

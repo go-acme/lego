@@ -32,7 +32,7 @@ const (
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
-// Record a DNS record
+// Record a DNS record.
 type Record struct {
 	ID        int64  `json:"id,omitempty"`
 	FieldType string `json:"fieldType,omitempty"`
@@ -42,7 +42,7 @@ type Record struct {
 	Zone      string `json:"zone,omitempty"`
 }
 
-// Config is used to configure the creation of the DNSProvider
+// Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	APIEndpoint        string
 	ApplicationKey     string
@@ -54,7 +54,7 @@ type Config struct {
 	HTTPClient         *http.Client
 }
 
-// NewDefaultConfig returns a default configuration for the DNSProvider
+// NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
@@ -66,8 +66,7 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider is an implementation of the challenge.Provider interface
-// that uses OVH's REST API to manage TXT records for a domain.
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config      *Config
 	client      *ovh.Client
@@ -76,11 +75,8 @@ type DNSProvider struct {
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for OVH
-// Credentials must be passed in the environment variable:
-// OVH_ENDPOINT : it must be ovh-eu or ovh-ca
-// OVH_APPLICATION_KEY
-// OVH_APPLICATION_SECRET
-// OVH_CONSUMER_KEY
+// Credentials must be passed in the environment variables:
+// OVH_ENDPOINT (must be either "ovh-eu" or "ovh-ca"), OVH_APPLICATION_KEY, OVH_APPLICATION_SECRET, OVH_CONSUMER_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvEndpoint, EnvApplicationKey, EnvApplicationSecret, EnvConsumerKey)
 	if err != nil {
@@ -162,7 +158,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	return nil
 }
 
-// CleanUp removes the TXT record matching the specified parameters
+// CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 

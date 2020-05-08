@@ -77,7 +77,7 @@ func (c *CertificateService) get(certURL string) ([]byte, string, error) {
 	return cert, up, err
 }
 
-// getIssuerFromLink requests the issuer certificate
+// getIssuerFromLink requests the issuer certificate.
 func (c *CertificateService) getIssuerFromLink(up string) ([]byte, error) {
 	if len(up) == 0 {
 		return nil, nil

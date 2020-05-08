@@ -42,7 +42,7 @@ type Config struct {
 	AuthSid            string
 }
 
-// NewDefaultConfig returns a default configuration for the DNSProvider
+// NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
 		BaseURL:            defaultBaseURL,
@@ -56,8 +56,7 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider is an implementation of the ChallengeProviderTimeout interface
-// that uses Joker's DMAPI to manage TXT records for a domain.
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
 }
@@ -190,7 +189,7 @@ func getRelative(fqdn, zone string) string {
 	return dns01.UnFqdn(strings.TrimSuffix(fqdn, dns01.ToFqdn(zone)))
 }
 
-// formatResponseError formats error with optional details from DMAPI response
+// formatResponseError formats error with optional details from DMAPI response.
 func formatResponseError(response *response, err error) error {
 	if response != nil {
 		return fmt.Errorf("joker: DMAPI error: %w Response: %v", err, response.Headers)

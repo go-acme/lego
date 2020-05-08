@@ -32,7 +32,7 @@ const (
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
-// Config is used to configure the creation of the DNSProvider
+// Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	APIKey             string
 	SecretKey          string
@@ -43,7 +43,7 @@ type Config struct {
 	HTTPTimeout        time.Duration
 }
 
-// NewDefaultConfig returns a default configuration for the DNSProvider
+// NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, 600),
@@ -53,14 +53,15 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider is an implementation of the challenge.Provider interface
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
 	client *alidns.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Alibaba Cloud DNS.
-// Credentials must be passed in the environment variables: ALICLOUD_ACCESS_KEY and ALICLOUD_SECRET_KEY.
+// Credentials must be passed in the environment variables:
+// ALICLOUD_ACCESS_KEY and ALICLOUD_SECRET_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvAccessKey, EnvSecretKey)
 	if err != nil {

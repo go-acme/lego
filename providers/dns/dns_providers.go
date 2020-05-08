@@ -82,7 +82,7 @@ import (
 	"github.com/go-acme/lego/v3/providers/dns/zonomi"
 )
 
-// NewDNSChallengeProviderByName Factory for DNS providers
+// NewDNSChallengeProviderByName Factory for DNS providers.
 func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 	switch name {
 	case "acme-dns":

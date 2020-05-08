@@ -29,7 +29,7 @@ const (
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
-// Config is used to configure the creation of the DNSProvider
+// Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	APIKey             string
 	APISecret          string
@@ -40,7 +40,7 @@ type Config struct {
 	TTL                int
 }
 
-// NewDefaultConfig returns a default configuration for the DNSProvider
+// NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
@@ -52,7 +52,7 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider is an implementation of the challenge.Provider interface.
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
 	client *egoscale.Client
@@ -169,7 +169,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 // FindExistingRecordID Query Exoscale to find an existing record for this name.
-// Returns nil if no record could be found
+// Returns nil if no record could be found.
 func (d *DNSProvider) FindExistingRecordID(zone, recordName string) (int64, error) {
 	ctx := context.Background()
 	records, err := d.client.GetRecords(ctx, zone)
@@ -184,7 +184,7 @@ func (d *DNSProvider) FindExistingRecordID(zone, recordName string) (int64, erro
 	return 0, nil
 }
 
-// FindZoneAndRecordName Extract DNS zone and DNS entry name
+// FindZoneAndRecordName Extract DNS zone and DNS entry name.
 func (d *DNSProvider) FindZoneAndRecordName(fqdn, domain string) (string, string, error) {
 	zone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
 	if err != nil {

@@ -1,3 +1,4 @@
+// Package checkdomain implements a DNS provider for solving the DNS-01 challenge using CheckDomain DNS.
 package checkdomain
 
 import (
@@ -30,7 +31,7 @@ const (
 	defaultTTL      = 300
 )
 
-// Config is used to configure the creation of the DNSProvider
+// Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	Endpoint           *url.URL
 	Token              string
@@ -40,7 +41,7 @@ type Config struct {
 	HTTPClient         *http.Client
 }
 
-// NewDefaultConfig returns a default configuration for the DNSProvider
+// NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, defaultTTL),
@@ -52,8 +53,7 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider implements challenge.Provider for the checkdomain API
-// specified at https://developer.checkdomain.de/reference/.
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
 
@@ -61,6 +61,7 @@ type DNSProvider struct {
 	domainIDMapping map[string]int
 }
 
+// NewDNSProvider returns a DNSProvider instance configured for CheckDomain.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvToken)
 	if err != nil {
@@ -98,7 +99,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}, nil
 }
 
-// Present creates a TXT record to fulfill the dns-01 challenge
+// Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	domainID, err := d.getDomainIDByName(domain)
 	if err != nil {
@@ -126,7 +127,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	return nil
 }
 
-// CleanUp removes the TXT record previously created
+// CleanUp removes the TXT record previously created.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	domainID, err := d.getDomainIDByName(domain)
 	if err != nil {
@@ -152,6 +153,8 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
+// Timeout returns the timeout and interval to use when checking for DNS propagation.
+// Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }

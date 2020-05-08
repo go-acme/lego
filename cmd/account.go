@@ -6,7 +6,7 @@ import (
 	"github.com/go-acme/lego/v3/registration"
 )
 
-// Account represents a users local saved credentials
+// Account represents a users local saved credentials.
 type Account struct {
 	Email        string                 `json:"email"`
 	Registration *registration.Resource `json:"registration"`
@@ -15,7 +15,7 @@ type Account struct {
 
 /** Implementation of the registration.User interface **/
 
-// GetEmail returns the email address for the account
+// GetEmail returns the email address for the account.
 func (a *Account) GetEmail() string {
 	return a.Email
 }
@@ -25,7 +25,7 @@ func (a *Account) GetPrivateKey() crypto.PrivateKey {
 	return a.key
 }
 
-// GetRegistration returns the server registration
+// GetRegistration returns the server registration.
 func (a *Account) GetRegistration() *registration.Resource {
 	return a.Registration
 }

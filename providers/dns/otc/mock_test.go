@@ -12,14 +12,14 @@ import (
 
 const fakeOTCToken = "62244bc21da68d03ebac94e6636ff01f"
 
-// DNSServerMock mock
+// DNSServerMock mock.
 type DNSServerMock struct {
 	t      *testing.T
 	server *httptest.Server
 	Mux    *http.ServeMux
 }
 
-// NewDNSServerMock create a new DNSServerMock
+// NewDNSServerMock create a new DNSServerMock.
 func NewDNSServerMock(t *testing.T) *DNSServerMock {
 	mux := http.NewServeMux()
 
@@ -34,12 +34,12 @@ func (m *DNSServerMock) GetServerURL() string {
 	return m.server.URL
 }
 
-// ShutdownServer creates the mock server
+// ShutdownServer creates the mock server.
 func (m *DNSServerMock) ShutdownServer() {
 	m.server.Close()
 }
 
-// HandleAuthSuccessfully Handle auth successfully
+// HandleAuthSuccessfully Handle auth successfully.
 func (m *DNSServerMock) HandleAuthSuccessfully() {
 	m.Mux.HandleFunc("/v3/auth/token", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("X-Subject-Token", fakeOTCToken)
@@ -66,7 +66,7 @@ func (m *DNSServerMock) HandleAuthSuccessfully() {
 	})
 }
 
-// HandleListZonesSuccessfully Handle list zones successfully
+// HandleListZonesSuccessfully Handle list zones successfully.
 func (m *DNSServerMock) HandleListZonesSuccessfully() {
 	m.Mux.HandleFunc("/v2/zones", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(m.t, r.Method, http.MethodGet)
@@ -82,7 +82,7 @@ func (m *DNSServerMock) HandleListZonesSuccessfully() {
 	})
 }
 
-// HandleListZonesEmpty Handle list zones empty
+// HandleListZonesEmpty Handle list zones empty.
 func (m *DNSServerMock) HandleListZonesEmpty() {
 	m.Mux.HandleFunc("/v2/zones", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(m.t, r.Method, http.MethodGet)
@@ -97,7 +97,7 @@ func (m *DNSServerMock) HandleListZonesEmpty() {
 	})
 }
 
-// HandleDeleteRecordsetsSuccessfully Handle delete recordsets successfully
+// HandleDeleteRecordsetsSuccessfully Handle delete recordsets successfully.
 func (m *DNSServerMock) HandleDeleteRecordsetsSuccessfully() {
 	m.Mux.HandleFunc("/v2/zones/123123/recordsets/321321", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(m.t, r.Method, http.MethodDelete)
@@ -112,7 +112,7 @@ func (m *DNSServerMock) HandleDeleteRecordsetsSuccessfully() {
 	})
 }
 
-// HandleListRecordsetsEmpty Handle list recordsets empty
+// HandleListRecordsetsEmpty Handle list recordsets empty.
 func (m *DNSServerMock) HandleListRecordsetsEmpty() {
 	m.Mux.HandleFunc("/v2/zones/123123/recordsets", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(m.t, r.URL.Path, "/v2/zones/123123/recordsets")
@@ -125,7 +125,7 @@ func (m *DNSServerMock) HandleListRecordsetsEmpty() {
 	})
 }
 
-// HandleListRecordsetsSuccessfully Handle list recordsets successfully
+// HandleListRecordsetsSuccessfully Handle list recordsets successfully.
 func (m *DNSServerMock) HandleListRecordsetsSuccessfully() {
 	m.Mux.HandleFunc("/v2/zones/123123/recordsets", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {

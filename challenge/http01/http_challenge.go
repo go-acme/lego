@@ -11,7 +11,7 @@ import (
 
 type ValidateFunc func(core *api.Core, domain string, chlng acme.Challenge) error
 
-// ChallengePath returns the URL path for the `http-01` challenge
+// ChallengePath returns the URL path for the `http-01` challenge.
 func ChallengePath(token string) string {
 	return "/.well-known/acme-challenge/" + token
 }

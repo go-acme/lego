@@ -33,13 +33,13 @@ const (
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
-// inProgressInfo contains information about an in-progress challenge
+// inProgressInfo contains information about an in-progress challenge.
 type inProgressInfo struct {
 	fieldName string
 	authZone  string
 }
 
-// Config is used to configure the creation of the DNSProvider
+// Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	BaseURL            string
 	APIKey             string
@@ -49,7 +49,7 @@ type Config struct {
 	HTTPClient         *http.Client
 }
 
-// NewDefaultConfig returns a default configuration for the DNSProvider
+// NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, minTTL),
@@ -61,9 +61,7 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider is an implementation of the
-// challenge.ProviderTimeout interface that uses Gandi's LiveDNS
-// API to manage TXT records for a domain.
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config          *Config
 	inProgressFQDNs map[string]inProgressInfo
@@ -171,9 +169,8 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-// Timeout returns the values (20*time.Minute, 20*time.Second) which
-// are used by the acme package as timeout and check interval values
-// when checking for DNS record propagation with Gandi.
+// Timeout returns the timeout and interval to use when checking for DNS propagation.
+// Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }

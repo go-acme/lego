@@ -87,7 +87,7 @@ func (m *forwardedMatcher) matches(r *http.Request, domain string) bool {
 	return strings.HasPrefix(host, domain)
 }
 
-// parsing requires some form of state machine
+// parsing requires some form of state machine.
 func parseForwardedHeader(s string) (elements []map[string]string, err error) {
 	cur := make(map[string]string)
 	key := ""

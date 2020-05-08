@@ -32,7 +32,7 @@ type Config struct {
 	PollingInterval    time.Duration
 }
 
-// NewDefaultConfig returns a default configuration for the DNSProvider
+// NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
@@ -40,8 +40,7 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider adds and removes the record for the DNS challenge by calling a
-// program with command-line parameters.
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
 }
@@ -91,7 +90,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	return err
 }
 
-// CleanUp removes the TXT record matching the specified parameters
+// CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	var args []string
 	if d.config.Mode == "RAW" {

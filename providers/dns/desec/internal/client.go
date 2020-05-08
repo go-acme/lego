@@ -20,7 +20,7 @@ type Client struct {
 	token string
 }
 
-// NewClient creats a new Client.
+// NewClient creates a new Client.
 func NewClient(token string) *Client {
 	return &Client{
 		HTTPClient: http.DefaultClient,

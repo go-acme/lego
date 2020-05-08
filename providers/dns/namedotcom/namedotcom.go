@@ -30,7 +30,7 @@ const (
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
-// Config is used to configure the creation of the DNSProvider
+// Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	Username           string
 	APIToken           string
@@ -41,7 +41,7 @@ type Config struct {
 	HTTPClient         *http.Client
 }
 
-// NewDefaultConfig returns a default configuration for the DNSProvider
+// NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, minTTL),
@@ -53,7 +53,7 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider is an implementation of the challenge.Provider interface.
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	client *namecom.NameCom
 	config *Config
@@ -61,7 +61,7 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for namedotcom.
 // Credentials must be passed in the environment variables:
-// NAMECOM_USERNAME and NAMECOM_API_TOKEN
+// NAMECOM_USERNAME and NAMECOM_API_TOKEN.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvUsername, EnvAPIToken)
 	if err != nil {

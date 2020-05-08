@@ -25,7 +25,7 @@ func (a APIError) Error() string {
 	return a.Message
 }
 
-// Record represents a DNS record
+// Record represents a DNS record.
 type Record struct {
 	Data     string `json:"data,omitempty"`
 	Name     string `json:"name,omitempty"`

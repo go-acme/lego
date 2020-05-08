@@ -51,8 +51,7 @@ const (
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
-// A challenge represents all the data needed to specify a dns-01 challenge
-// to lets-encrypt.
+// A challenge represents all the data needed to specify a dns-01 challenge to lets-encrypt.
 type challenge struct {
 	domain   string
 	key      string
@@ -63,7 +62,7 @@ type challenge struct {
 	host     string
 }
 
-// Config is used to configure the creation of the DNSProvider
+// Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	Debug              bool
 	BaseURL            string
@@ -76,7 +75,7 @@ type Config struct {
 	HTTPClient         *http.Client
 }
 
-// NewDefaultConfig returns a default configuration for the DNSProvider
+// NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	baseURL := defaultBaseURL
 	if env.GetOrDefaultBool(EnvSandbox, false) {
@@ -95,8 +94,7 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider is an implementation of the ChallengeProviderTimeout interface
-// that uses Namecheap's tool API to manage TXT records for a domain.
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
 }

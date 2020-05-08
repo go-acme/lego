@@ -26,10 +26,10 @@ var defaultNameservers = []string{
 	"google-public-dns-b.google.com:53",
 }
 
-// recursiveNameservers are used to pre-check DNS propagation
+// recursiveNameservers are used to pre-check DNS propagation.
 var recursiveNameservers = getNameservers(defaultResolvConf, defaultNameservers)
 
-// soaCacheEntry holds a cached SOA record (only selected fields)
+// soaCacheEntry holds a cached SOA record (only selected fields).
 type soaCacheEntry struct {
 	zone      string    // zone apex (a domain name)
 	primaryNs string    // primary nameserver for the zone apex
@@ -70,7 +70,7 @@ func AddRecursiveNameservers(nameservers []string) ChallengeOption {
 	}
 }
 
-// getNameservers attempts to get systems nameservers before falling back to the defaults
+// getNameservers attempts to get systems nameservers before falling back to the defaults.
 func getNameservers(path string, defaults []string) []string {
 	config, err := dns.ClientConfigFromFile(path)
 	if err != nil || len(config.Servers) == 0 {
@@ -215,7 +215,7 @@ func fetchSoaByFqdn(fqdn string, nameservers []string) (*soaCacheEntry, error) {
 	return nil, fmt.Errorf("could not find the start of authority for %s%s", fqdn, formatDNSError(in, err))
 }
 
-// dnsMsgContainsCNAME checks for a CNAME answer in msg
+// dnsMsgContainsCNAME checks for a CNAME answer in msg.
 func dnsMsgContainsCNAME(msg *dns.Msg) bool {
 	for _, ans := range msg.Answer {
 		if _, ok := ans.(*dns.CNAME); ok {

@@ -10,7 +10,7 @@ import (
 	"path"
 )
 
-// DNSRecord a DNS record
+// DNSRecord a DNS record.
 type DNSRecord struct {
 	Name     string `json:"name,omitempty"`
 	Type     string `json:"type,omitempty"`

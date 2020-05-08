@@ -48,9 +48,9 @@ func (d *DNSProvider) updateTxtRecord(domain, token, txt string, clear bool) err
 }
 
 // DuckDNS only lets you write to your subdomain.
-// So it must be in format subdomain.duckdns.org
-// not in format subsubdomain.subdomain.duckdns.org
-// so strip off everything that is not top 3 levels.
+// It must be in format subdomain.duckdns.org,
+// not in format subsubdomain.subdomain.duckdns.org.
+// So strip off everything that is not top 3 levels.
 func getMainDomain(domain string) string {
 	domain = dns01.UnFqdn(domain)
 

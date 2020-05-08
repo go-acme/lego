@@ -103,21 +103,21 @@ func TestDNSProvider(t *testing.T) {
 	// anonymizing the RPC data.
 	var serverResponses = map[string]string{
 		// Present Request->Response 1 (getZoneID)
-		present1RequestMock: present1ResponseMock,
+		presentGetZoneIDRequestMock: presentGetZoneIDResponseMock,
 		// Present Request->Response 2 (cloneZone)
-		present2RequestMock: present2ResponseMock,
+		presentCloneZoneRequestMock: presentCloneZoneResponseMock,
 		// Present Request->Response 3 (newZoneVersion)
-		present3RequestMock: present3ResponseMock,
+		presentNewZoneVersionRequestMock: presentNewZoneVersionResponseMock,
 		// Present Request->Response 4 (addTXTRecord)
-		present4RequestMock: present4ResponseMock,
+		presentAddTXTRecordRequestMock: presentAddTXTRecordResponseMock,
 		// Present Request->Response 5 (setZoneVersion)
-		present5RequestMock: present5ResponseMock,
+		presentSetZoneVersionRequestMock: presentSetZoneVersionResponseMock,
 		// Present Request->Response 6 (setZone)
-		present6RequestMock: present6ResponseMock,
+		presentSetZoneRequestMock: presentSetZoneResponseMock,
 		// CleanUp Request->Response 1 (setZone)
-		cleanup1RequestMock: cleanup1ResponseMock,
+		cleanupSetZoneRequestMock: cleanupSetZoneResponseMock,
 		// CleanUp Request->Response 2 (deleteZone)
-		cleanup2RequestMock: cleanup2ResponseMock,
+		cleanupDeleteZoneRequestMock: cleanupDeleteZoneResponseMock,
 	}
 
 	fakeKeyAuth := "XXXX"

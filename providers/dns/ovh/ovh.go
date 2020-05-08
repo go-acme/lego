@@ -77,7 +77,7 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for OVH
 // Credentials must be passed in the environment variables:
-// OVH_ENDPOINT (it must be ovh-eu or ovh-ca), OVH_APPLICATION_KEY, OVH_APPLICATION_SECRET, OVH_CONSUMER_KEY.
+// OVH_ENDPOINT (must be either "ovh-eu" or "ovh-ca"), OVH_APPLICATION_KEY, OVH_APPLICATION_SECRET, OVH_CONSUMER_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvEndpoint, EnvApplicationKey, EnvApplicationSecret, EnvConsumerKey)
 	if err != nil {

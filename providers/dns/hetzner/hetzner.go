@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v3/challenge/dns01"
@@ -36,7 +37,6 @@ type Config struct {
 	PollingInterval    time.Duration
 	TTL                int
 	HTTPClient         *http.Client
-	record             Record
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
@@ -98,7 +98,13 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	if err := d.getZoneID(domain); err != nil {
+	zone, err := d.getZone(fqdn)
+	if err != nil {
+		return err
+	}
+
+	zoneID, err := d.getZoneID(zone)
+	if err != nil {
 		return err
 	}
 
@@ -107,7 +113,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Name:   d.extractRecordName(fqdn, domain),
 		Value:  value,
 		TTL:    d.config.TTL,
-		ZoneID: d.config.record.Record.ZoneID,
+		ZoneID: zoneID,
 	}
 
 	if err := d.createTxtRecord(record); err != nil {
@@ -119,8 +125,45 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp remove the created record.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	if err := d.deleteTxtRecord(domain); err != nil {
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
+
+	zone, err := d.getZone(fqdn)
+	if err != nil {
 		return err
 	}
+
+	zoneID, err := d.getZoneID(zone)
+	if err != nil {
+		return err
+	}
+
+	recordName := d.extractRecordName(fqdn, domain)
+
+	record, err := d.getTxtRecord(recordName, value, zoneID)
+	if err != nil {
+		return err
+	}
+
+	if err := d.deleteTxtRecord(domain, *record); err != nil {
+		return err
+	}
+
 	return nil
+}
+
+func (d *DNSProvider) extractRecordName(fqdn, domain string) string {
+	name := dns01.UnFqdn(fqdn)
+	if idx := strings.Index(name, "."+domain); idx != -1 {
+		return name[:idx]
+	}
+	return name
+}
+
+func (d *DNSProvider) getZone(fqdn string) (string, error) {
+	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	if err != nil {
+		return "", err
+	}
+
+	return dns01.UnFqdn(authZone), nil
 }

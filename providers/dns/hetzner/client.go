@@ -37,7 +37,7 @@ type Zones struct {
 func (d *DNSProvider) getTxtRecord(name, value, zoneID string) (*DNSRecord, error) {
 	resource := path.Clean(fmt.Sprintf("/api/v1/records?zone_id=%s", zoneID))
 
-	resp, err := d.makeRequest(http.MethodGet, resource, nil)
+	resp, err := d.do(http.MethodGet, resource, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -68,8 +68,7 @@ func (d *DNSProvider) getTxtRecord(name, value, zoneID string) (*DNSRecord, erro
 func (d *DNSProvider) deleteTxtRecord(domain string, record DNSRecord) error {
 	resource := path.Clean(fmt.Sprintf("/api/v1/records/%s", record.ID))
 
-	var resp *http.Response
-	resp, err := d.makeRequest(http.MethodDelete, resource, nil)
+	resp, err := d.do(http.MethodDelete, resource, nil)
 	if err != nil {
 		return err
 	}
@@ -87,10 +86,8 @@ func (d *DNSProvider) createTxtRecord(record DNSRecord) error {
 		return err
 	}
 
-	resource := path.Clean("/api/v1/records")
-
 	var resp *http.Response
-	resp, err = d.makeRequest(http.MethodPost, resource, bytes.NewReader(body))
+	resp, err = d.do(http.MethodPost, "/api/v1/records", bytes.NewReader(body))
 	if err != nil {
 		return err
 	}
@@ -103,24 +100,8 @@ func (d *DNSProvider) createTxtRecord(record DNSRecord) error {
 	return nil
 }
 
-func (d *DNSProvider) makeRequest(method, uri string, body io.Reader) (*http.Response, error) {
-	req, err := http.NewRequest(method, fmt.Sprintf("%s%s", defaultBaseURL, uri), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Auth-API-Token", d.config.APIKey)
-
-	return d.config.HTTPClient.Do(req)
-}
-
-func (d *DNSProvider) getZoneID(domain string) (zoneID string, err error) {
-	resource := path.Clean("/api/v1/zones")
-
-	var resp *http.Response
-	resp, err = d.makeRequest(http.MethodGet, resource, nil)
+func (d *DNSProvider) getZoneID(domain string) (string, error) {
+	resp, err := d.do(http.MethodGet, "/api/v1/zones", nil)
 	if err != nil {
 		return "", fmt.Errorf("could not get zones Domain %v: %v", domain, err)
 	}
@@ -142,4 +123,17 @@ func (d *DNSProvider) getZoneID(domain string) (zoneID string, err error) {
 	}
 
 	return "", fmt.Errorf("could not get zones Domain %v: zone for domain%v not found", domain, domain)
+}
+
+func (d *DNSProvider) do(method, uri string, body io.Reader) (*http.Response, error) {
+	req, err := http.NewRequest(method, fmt.Sprintf("%s%s", defaultBaseURL, uri), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Auth-API-Token", d.config.APIKey)
+
+	return d.config.HTTPClient.Do(req)
 }

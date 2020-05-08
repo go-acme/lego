@@ -1,4 +1,4 @@
-// Package hetzner implements a DNS provider for solving the DNS-01 challenge using hetzner DNS.
+// Package hetzner implements a DNS provider for solving the DNS-01 challenge using Hetzner DNS.
 package hetzner
 
 import (
@@ -57,8 +57,7 @@ type DNSProvider struct {
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for hetzner.
-// Credentials must be passed in the environment variables:
-// HETZNER_API_KEY.
+// Credentials must be passed in the environment variable: HETZNER_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvAPIKey)
 	if err != nil {

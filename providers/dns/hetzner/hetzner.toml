@@ -2,7 +2,12 @@ Name = "Hetzner"
 Description = ''''''
 URL = "https://hetzner.com"
 Code = "hetzner"
-Since = ""
+Since = "v3.7.0"
+
+Example = '''
+HETZNER_API_KEY=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx \
+lego --dns hetzner --domains my.domain.com --email my@email.com run
+'''
 
 [Configuration]
   [Configuration.Credentials]

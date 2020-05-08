@@ -1,0 +1,12 @@
+{
+  "record": {
+    "type": "A",
+    "id": "string",
+    "created": "2020-05-08T10:49:18Z",
+    "modified": "2020-05-08T10:49:18Z",
+    "zone_id": "string",
+    "name": "string",
+    "value": "string",
+    "ttl": 0
+  }
+}

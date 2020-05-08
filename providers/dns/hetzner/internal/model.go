@@ -2,12 +2,12 @@ package internal
 
 // DNSRecord a DNS record.
 type DNSRecord struct {
+	ID       string `json:"id,omitempty"`
 	Name     string `json:"name,omitempty"`
 	Type     string `json:"type,omitempty"`
 	Value    string `json:"value"`
 	Priority int    `json:"priority,omitempty"`
 	TTL      int    `json:"ttl,omitempty"`
-	ID       string
 	ZoneID   string `json:"zone_id,omitempty"`
 }
 

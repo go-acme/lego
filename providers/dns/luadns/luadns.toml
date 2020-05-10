@@ -5,7 +5,8 @@ Code = "luadns"
 Since = "v3.7.0"
 
 Example = '''
-LUADNS_API_USERNAME=youremail LUADNS_API_TOKEN=xxxxxxxx \
+LUADNS_API_USERNAME=youremail \
+LUADNS_API_TOKEN=xxxxxxxx \
 lego --dns luadns --email me@example.com --domains test.example.com run
 '''
 

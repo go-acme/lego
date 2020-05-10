@@ -11,13 +11,10 @@ import (
 
 	"github.com/go-acme/lego/v3/challenge/dns01"
 	"github.com/go-acme/lego/v3/platform/config/env"
+	"github.com/go-acme/lego/v3/providers/dns/luadns/internal"
 )
 
-const (
-	// defaultBaseURL represents the API endpoint to call.
-	defaultBaseURL = "https://api.luadns.com"
-	minTTL         = 60
-)
+const minTTL = 300
 
 // Environment variables names.
 const (
@@ -54,11 +51,13 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-// DNSProvider is an implementation of the challenge.Provider interface.
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	config           *Config
-	createdRecords   map[string]*DNSRecord
-	createdRecordsMu sync.Mutex
+	config *Config
+	client *internal.Client
+
+	recordsMu sync.Mutex
+	records   map[string]*internal.DNSRecord
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for LuaDNS.
@@ -91,84 +90,95 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("luadns: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL)
 	}
 
-	return &DNSProvider{config: config, createdRecords: make(map[string]*DNSRecord)}, nil
+	client := internal.NewClient(config.APIUsername, config.APIToken)
+
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
+	}
+
+	return &DNSProvider{
+		config:    config,
+		client:    client,
+		recordsMu: sync.Mutex{},
+		records:   make(map[string]*internal.DNSRecord),
+	}, nil
 }
 
-// Timeout returns the timeout and interval to use when checking for DNS
-// propagation. Adjusting here to cope with spikes in propagation times.
+// Timeout returns the timeout and interval to use when checking for DNS propagation.
+// Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-// Present creates a TXT record to fulfill the dns-01 challenge.
+// Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	zone, err := d.getHostedZone(domain)
+	zones, err := d.client.ListZones()
 	if err != nil {
-		return fmt.Errorf("luadns: %w", err)
+		return fmt.Errorf("luadns: failed to get zones: %w", err)
 	}
 
-	newRecord := NewDNSRecord{
+	zone := findZone(zones, domain)
+	if zone == nil {
+		return fmt.Errorf("luadns: no matching zone found for domain %s", domain)
+	}
+
+	newRecord := internal.DNSRecord{
 		Name:    fqdn,
 		Type:    "TXT",
 		Content: value,
 		TTL:     d.config.TTL,
 	}
 
-	record, err := d.createRecord(*zone, newRecord)
+	record, err := d.client.CreateRecord(*zone, newRecord)
 	if err != nil {
-		return fmt.Errorf("luadns: API call failed: %w", err)
+		return fmt.Errorf("luadns: failed to create record: %w", err)
 	}
 
-	d.createdRecordsMu.Lock()
-	d.createdRecords[token] = record
-	d.createdRecordsMu.Unlock()
+	d.recordsMu.Lock()
+	d.records[token] = record
+	d.recordsMu.Unlock()
 
 	return nil
 }
 
-// CleanUp deletes the TXT record created by Present.
+// CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 
-	d.createdRecordsMu.Lock()
-	record, ok := d.createdRecords[token]
-	d.createdRecordsMu.Unlock()
+	d.recordsMu.Lock()
+	record, ok := d.records[token]
+	d.recordsMu.Unlock()
+
 	if !ok {
 		return fmt.Errorf("luadns: unknown record ID for '%s'", fqdn)
 	}
 
-	err := d.deleteRecord(record)
+	err := d.client.DeleteRecord(record)
 	if err != nil {
-		return fmt.Errorf("luadns: error deleting record: %w", err)
+		return fmt.Errorf("luadns: failed to delete record: %w", err)
 	}
 
 	// Delete record from map
-	d.createdRecordsMu.Lock()
-	delete(d.createdRecords, token)
-	d.createdRecordsMu.Unlock()
+	d.recordsMu.Lock()
+	delete(d.records, token)
+	d.recordsMu.Unlock()
 
 	return nil
 }
 
-func (d *DNSProvider) getHostedZone(domain string) (*DNSZone, error) {
-	zones, err := d.listZones(domain)
-	if err != nil {
-		return nil, fmt.Errorf("API call failed: %w", err)
-	}
+func findZone(zones []internal.DNSZone, domain string) *internal.DNSZone {
+	var result *internal.DNSZone
 
-	var zone *DNSZone = nil
-	for i, z := range zones {
-		if strings.HasSuffix(domain, z.Name) {
-			if zone == nil || len(z.Name) > len(zone.Name) {
-				zone = &zones[i]
+	for _, zone := range zones {
+		zone := zone
+		if zone.Name != "" && strings.HasSuffix(domain, zone.Name) {
+			if result == nil || len(zone.Name) > len(result.Name) {
+				result = &zone
 			}
 		}
 	}
-	if zone == nil {
-		return nil, fmt.Errorf("no matching LuaDNS zone found for domain %s", domain)
-	}
 
-	return zone, nil
+	return result
 }

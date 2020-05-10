@@ -4,6 +4,8 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v3/platform/tester"
+	"github.com/go-acme/lego/v3/providers/dns/luadns/internal"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -66,6 +68,7 @@ func TestNewDNSProvider(t *testing.T) {
 				require.NoError(t, err)
 				require.NotNil(t, p)
 				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
 			} else {
 				require.EqualError(t, err, test.expected)
 			}
@@ -78,26 +81,38 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		desc      string
 		apiKey    string
 		apiSecret string
+		tll       int
 		expected  string
 	}{
 		{
 			desc:      "success",
 			apiKey:    "123",
 			apiSecret: "456",
+			tll:       minTTL,
 		},
 		{
 			desc:     "missing credentials",
+			tll:      minTTL,
 			expected: "luadns: credentials missing",
 		},
 		{
 			desc:      "missing username",
 			apiSecret: "456",
+			tll:       minTTL,
 			expected:  "luadns: credentials missing",
 		},
 		{
 			desc:     "missing api token",
 			apiKey:   "123",
+			tll:      minTTL,
 			expected: "luadns: credentials missing",
+		},
+		{
+			desc:      "invalid TTL",
+			apiKey:    "123",
+			apiSecret: "456",
+			tll:       30,
+			expected:  "luadns: invalid TTL, TTL (30) must be greater than 300",
 		},
 	}
 
@@ -106,6 +121,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			config := NewDefaultConfig()
 			config.APIUsername = test.apiKey
 			config.APIToken = test.apiSecret
+			config.TTL = test.tll
 
 			p, err := NewDNSProviderConfig(config)
 
@@ -113,9 +129,67 @@ func TestNewDNSProviderConfig(t *testing.T) {
 				require.NoError(t, err)
 				require.NotNil(t, p)
 				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
 			} else {
 				require.EqualError(t, err, test.expected)
 			}
+		})
+	}
+}
+
+func TestDNSProvider_findZone(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		domain   string
+		zones    []internal.DNSZone
+		expected *internal.DNSZone
+	}{
+		{
+			desc:   "simple domain",
+			domain: "example.org",
+			zones: []internal.DNSZone{
+				{Name: "example.org"},
+				{Name: "example.com"},
+			},
+			expected: &internal.DNSZone{Name: "example.org"},
+		},
+		{
+			desc:   "sub domain",
+			domain: "aaa.example.org",
+			zones: []internal.DNSZone{
+				{Name: "example.org"},
+				{Name: "aaa.example.org"},
+				{Name: "bbb.example.org"},
+				{Name: "example.com"},
+			},
+			expected: &internal.DNSZone{Name: "aaa.example.org"},
+		},
+		{
+			desc:   "empty zone name",
+			domain: "example.org",
+			zones: []internal.DNSZone{
+				{},
+			},
+		},
+		{
+			desc:   "not found",
+			domain: "example.org",
+			zones: []internal.DNSZone{
+				{Name: "example.net"},
+				{Name: "aaa.example.net"},
+				{Name: "bbb.example.net"},
+				{Name: "example.com"},
+			},
+		},
+	}
+
+	for _, test := range testCases {
+		test := test
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			zone := findZone(test.zones, test.domain)
+			assert.Equal(t, test.expected, zone)
 		})
 	}
 }

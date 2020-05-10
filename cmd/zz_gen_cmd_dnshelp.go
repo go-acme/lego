@@ -478,11 +478,11 @@ func displayDNSHelp(name string) error {
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "DNSIMPLE_BASE_URL":	API endpoint URL`)
 		ew.writeln(`	- "DNSIMPLE_OAUTH_TOKEN":	OAuth token`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "DNSIMPLE_BASE_URL":	API endpoint URL`)
 		ew.writeln(`	- "DNSIMPLE_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "DNSIMPLE_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
 		ew.writeln(`	- "DNSIMPLE_TTL":	The TTL of the TXT record used for the DNS challenge`)

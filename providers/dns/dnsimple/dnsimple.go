@@ -75,6 +75,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: config.AccessToken})
 	client := dnsimple.NewClient(oauth2.NewClient(context.Background(), ts))
+	client.SetUserAgent("go-acme/lego")
 
 	if config.BaseURL != "" {
 		client.BaseURL = config.BaseURL
@@ -98,7 +99,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	recordAttributes := newTxtRecord(zoneName, fqdn, value, d.config.TTL)
-	_, err = d.client.Zones.CreateRecord(accountID, zoneName, recordAttributes)
+	_, err = d.client.Zones.CreateRecord(context.Background(), accountID, zoneName, recordAttributes)
 	if err != nil {
 		return fmt.Errorf("dnsimple: API call failed: %w", err)
 	}
@@ -122,7 +123,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	var lastErr error
 	for _, rec := range records {
-		_, err := d.client.Zones.DeleteRecord(accountID, rec.ZoneID, rec.ID)
+		_, err := d.client.Zones.DeleteRecord(context.Background(), accountID, rec.ZoneID, rec.ID)
 		if err != nil {
 			lastErr = fmt.Errorf("dnsimple: %w", err)
 		}
@@ -150,7 +151,7 @@ func (d *DNSProvider) getHostedZone(domain string) (string, error) {
 
 	zoneName := dns01.UnFqdn(authZone)
 
-	zones, err := d.client.Zones.ListZones(accountID, &dnsimple.ZoneListOptions{NameLike: zoneName})
+	zones, err := d.client.Zones.ListZones(context.Background(), accountID, &dnsimple.ZoneListOptions{NameLike: &zoneName})
 	if err != nil {
 		return "", fmt.Errorf("API call failed: %w", err)
 	}
@@ -182,7 +183,7 @@ func (d *DNSProvider) findTxtRecords(domain, fqdn string) ([]dnsimple.ZoneRecord
 
 	recordName := extractRecordName(fqdn, zoneName)
 
-	result, err := d.client.Zones.ListRecords(accountID, zoneName, &dnsimple.ZoneRecordListOptions{Name: recordName, Type: "TXT", ListOptions: dnsimple.ListOptions{}})
+	result, err := d.client.Zones.ListRecords(context.Background(), accountID, zoneName, &dnsimple.ZoneRecordListOptions{Name: &recordName, Type: dnsimple.String("TXT"), ListOptions: dnsimple.ListOptions{}})
 	if err != nil {
 		return nil, fmt.Errorf("API call has failed: %w", err)
 	}
@@ -190,12 +191,12 @@ func (d *DNSProvider) findTxtRecords(domain, fqdn string) ([]dnsimple.ZoneRecord
 	return result.Data, nil
 }
 
-func newTxtRecord(zoneName, fqdn, value string, ttl int) dnsimple.ZoneRecord {
+func newTxtRecord(zoneName, fqdn, value string, ttl int) dnsimple.ZoneRecordAttributes {
 	name := extractRecordName(fqdn, zoneName)
 
-	return dnsimple.ZoneRecord{
+	return dnsimple.ZoneRecordAttributes{
 		Type:    "TXT",
-		Name:    name,
+		Name:    &name,
 		Content: value,
 		TTL:     ttl,
 	}
@@ -210,7 +211,7 @@ func extractRecordName(fqdn, domain string) string {
 }
 
 func (d *DNSProvider) getAccountID() (string, error) {
-	whoamiResponse, err := d.client.Identity.Whoami()
+	whoamiResponse, err := d.client.Identity.Whoami(context.Background())
 	if err != nil {
 		return "", err
 	}

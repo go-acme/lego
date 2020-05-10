@@ -1,0 +1,24 @@
+[
+  {
+    "id": 1,
+    "name": "example.com",
+    "synced": false,
+    "queries_count": 0,
+    "records_count": 3,
+    "aliases_count": 0,
+    "redirects_count": 0,
+    "forwards_count": 0,
+    "template_id": 0
+  },
+  {
+    "id": 2,
+    "name": "example.net",
+    "synced": false,
+    "queries_count": 0,
+    "records_count": 3,
+    "aliases_count": 0,
+    "redirects_count": 0,
+    "forwards_count": 0,
+    "template_id": 0
+  }
+]

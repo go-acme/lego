@@ -75,7 +75,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: config.AccessToken})
 	client := dnsimple.NewClient(oauth2.NewClient(context.Background(), ts))
-	client.SetUserAgent("lego-cli")
+	client.SetUserAgent("go-acme/lego")
 
 	if config.BaseURL != "" {
 		client.BaseURL = config.BaseURL

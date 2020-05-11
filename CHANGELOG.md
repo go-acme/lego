@@ -1,5 +1,28 @@
 # Changelog
 
+## [v3.7.0] - 2020-05-11
+
+### Added:
+
+- **[dnsprovider]** Add DNS provider for Netlify.
+- **[dnsprovider]** Add DNS provider for deSEC.io
+- **[dnsprovider]** Add DNS provider for LuaDNS
+- **[dnsprovider]** Adding Hetzner DNS provider
+- **[dnsprovider]** Add DNS provider for Mythic beasts DNSv2
+- **[dnsprovider]** Add DNS provider for Yandex.
+
+### Changed:
+
+- **[dnsprovider]** Upgrade DNSimple client to 0.60.0
+- **[dnsprovider]** update aws sdk
+
+### Fixed:
+
+- **[dnsprovider]** autodns: removes TXT records during CleanUp.
+- **[dnsprovider]** Fix exoscale HTTP timeout
+- **[cli]** fix: renew path information.
+- **[cli]** Fix account storage location warning message
+
 ## [v3.6.0] - 2020-04-24
 
 ### Added:

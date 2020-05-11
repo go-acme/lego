@@ -142,8 +142,8 @@ func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *Certif
 	certsStorage.SaveResource(certRes)
 
 	meta[renewEnvCertDomain] = domain
-	meta[renewEnvCertPath] = certsStorage.GetFileName(domain, "crt")
-	meta[renewEnvCertKeyPath] = certsStorage.GetFileName(domain, "key")
+	meta[renewEnvCertPath] = certsStorage.GetFileName(domain, ".crt")
+	meta[renewEnvCertKeyPath] = certsStorage.GetFileName(domain, ".key")
 
 	return renewHook(ctx, meta)
 }
@@ -182,8 +182,8 @@ func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *Certificat
 	certsStorage.SaveResource(certRes)
 
 	meta[renewEnvCertDomain] = domain
-	meta[renewEnvCertPath] = certsStorage.GetFileName(domain, "crt")
-	meta[renewEnvCertKeyPath] = certsStorage.GetFileName(domain, "key")
+	meta[renewEnvCertPath] = certsStorage.GetFileName(domain, ".crt")
+	meta[renewEnvCertKeyPath] = certsStorage.GetFileName(domain, ".key")
 
 	return renewHook(ctx, meta)
 }

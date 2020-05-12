@@ -62,13 +62,20 @@ func (a *AccountService) Update(accountURL string, req acme.Account) (acme.Exten
 	if len(accountURL) == 0 {
 		return acme.ExtendedAccount{}, errors.New("account[update]: empty URL")
 	}
+	
+	var account acme.Account
+	resp, err := a.core.post(accountURL, req, &account)
+	location := getLocation(resp)
 
-	var account acme.ExtendedAccount
-	_, err := a.core.post(accountURL, req, &account)
-	if err != nil {
-		return acme.ExtendedAccount{}, err
+	if len(location) > 0 {
+		a.core.jws.SetKid(location)
 	}
-	return account, nil
+
+	if err != nil {
+		return acme.ExtendedAccount{Location: location}, err
+	}
+
+	return acme.ExtendedAccount{Account: account, Location: location}, nil
 }
 
 // Deactivate Deactivates an account.

@@ -62,7 +62,7 @@ func (a *AccountService) Update(accountURL string, req acme.Account) (acme.Exten
 	if len(accountURL) == 0 {
 		return acme.ExtendedAccount{}, errors.New("account[update]: empty URL")
 	}
-	
+
 	var account acme.Account
 	resp, err := a.core.post(accountURL, req, &account)
 	location := getLocation(resp)

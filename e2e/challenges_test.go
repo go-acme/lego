@@ -347,7 +347,7 @@ func TestRegistrar_UpdateAccount(t *testing.T) {
 	resource, err := client.Registration.UpdateRegistration(regOptions)
 	require.NoError(t, err)
 	require.Equal(t, resource.Body.Contact, []string{"mailto:bar@example.com"})
-	require.Empty(t, resource.URI)
+	require.Equal(t, resource.URI, reg.URI)
 }
 
 type fakeUser struct {

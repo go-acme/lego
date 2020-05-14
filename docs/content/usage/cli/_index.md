@@ -37,11 +37,11 @@ GLOBAL OPTIONS:
    --hmac value                 MAC key from External CA. Should be in Base64 URL Encoding without padding format. Used for External Account Binding.
    --key-type value, -k value   Key type to use for private keys. Supported: rsa2048, rsa4096, rsa8192, ec256, ec384. (default: "ec384")
    --filename value             (deprecated) Filename of the generated certificate.
-   --path value                 Directory to use for storing the data. (default: "./.lego")
+   --path value                 Directory to use for storing the data. (default: "./.lego") [$LEGO_PATH]
    --http                       Use the HTTP challenge to solve challenges. Can be mixed with other types of challenges.
    --http.port value            Set the port and interface to use for HTTP based challenges to listen on.Supported: interface:port or :port. (default: ":80")
    --http.proxy-header value    Validate against this HTTP header when solving HTTP based challenges behind a reverse proxy. (default: "Host")
-   --http.webroot value         Set the webroot folder to use for HTTP based challenges to write directly in a file in .well-known/acme-challenge. This disables the built-in server and expects the given directory to be served at /.well-known/acme-challenge
+   --http.webroot value         Set the webroot folder to use for HTTP based challenges to write directly in a file in .well-known/acme-challenge. This disables the built-in server and expects the given directory to be publicly served with access to .well-known/acme-challenge
    --http.memcached-host value  Set the memcached host(s) to use for HTTP based challenges. Challenges will be written to all specified hosts.
    --tls                        Use the TLS challenge to solve challenges. Can be mixed with other types of challenges.
    --tls.port value             Set the port and interface to use for TLS based challenges to listen on. Supported: interface:port or :port. (default: ":443")

@@ -1,14 +1,8 @@
 package cmd
 
 import (
-	"context"
 	"crypto"
 	"crypto/x509"
-	"errors"
-	"fmt"
-	"os"
-	"os/exec"
-	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v3/certcrypto"
@@ -145,7 +139,7 @@ func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *Certif
 	meta[renewEnvCertPath] = certsStorage.GetFileName(domain, ".crt")
 	meta[renewEnvCertKeyPath] = certsStorage.GetFileName(domain, ".key")
 
-	return renewHook(ctx, meta)
+	return launchHook(ctx.String("renew-hook"), meta)
 }
 
 func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *CertificatesStorage, bundle bool, meta map[string]string) error {
@@ -185,7 +179,7 @@ func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *Certificat
 	meta[renewEnvCertPath] = certsStorage.GetFileName(domain, ".crt")
 	meta[renewEnvCertKeyPath] = certsStorage.GetFileName(domain, ".key")
 
-	return renewHook(ctx, meta)
+	return launchHook(ctx.String("renew-hook"), meta)
 }
 
 func needRenewal(x509Cert *x509.Certificate, domain string, days int) bool {
@@ -219,41 +213,4 @@ func merge(prevDomains []string, nextDomains []string) []string {
 		}
 	}
 	return prevDomains
-}
-
-func renewHook(ctx *cli.Context, meta map[string]string) error {
-	hook := ctx.String("renew-hook")
-	if hook == "" {
-		return nil
-	}
-
-	ctxCmd, cancel := context.WithTimeout(context.Background(), 120*time.Second)
-	defer cancel()
-
-	parts := strings.Fields(hook)
-
-	cmdCtx := exec.CommandContext(ctxCmd, parts[0], parts[1:]...)
-	cmdCtx.Env = append(os.Environ(), metaToEnv(meta)...)
-
-	output, err := cmdCtx.CombinedOutput()
-
-	if len(output) > 0 {
-		fmt.Println(string(output))
-	}
-
-	if ctxCmd.Err() == context.DeadlineExceeded {
-		return errors.New("hook timed out")
-	}
-
-	return err
-}
-
-func metaToEnv(meta map[string]string) []string {
-	var envs []string
-
-	for k, v := range meta {
-		envs = append(envs, k+"="+v)
-	}
-
-	return envs
 }

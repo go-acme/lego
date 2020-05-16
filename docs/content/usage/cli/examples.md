@@ -18,6 +18,21 @@ lego --email="foo@bar.com" --domains="example.com" --http run
 
 (Find your certificate in the `.lego` folder of current working directory.)
 
+### Obtain a certificate (and hook)
+
+The hook is executed only when the certificates are effectively created.
+
+```bash
+lego --email="foo@bar.com" --domains="example.com" --http run --run-hook="./myscript.sh"
+```
+
+Some information are added to the environment variables when the hook is used:
+
+- `LEGO_ACCOUNT_EMAIL`: the email of the account.
+- `LEGO_CERT_DOMAIN`: the main domain of the certificate.
+- `LEGO_CERT_PATH`: the path of the certificate.
+- `LEGO_CERT_KEY_PATH`: the path of the certificate key.
+
 ### To renew the certificate
 
 ```bash

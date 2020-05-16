@@ -156,14 +156,14 @@ func (c *Client) UpdateTxtRRSet(domainName string, subName string, records []str
 		return nil, fmt.Errorf("failed to call API: %w", err)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %w", err)
-	}
-
 	// when a RRSet is deleted (empty records)
 	if resp.StatusCode == http.StatusNoContent {
 		return nil, nil
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
@@ -204,12 +204,8 @@ func (c *Client) DeleteTxtRRSet(domainName string, subName string) error {
 		return fmt.Errorf("failed to call API: %w", err)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return fmt.Errorf("failed to read response body: %w", err)
-	}
-
 	if resp.StatusCode != http.StatusNoContent {
+		body, _ := ioutil.ReadAll(resp.Body)
 		return fmt.Errorf("error: %d: %s", resp.StatusCode, string(body))
 	}
 

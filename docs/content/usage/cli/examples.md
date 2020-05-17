@@ -77,7 +77,7 @@ lego --email="foo@bar.com" --http --csr=/path/to/csr.pem run
 
 (lego will infer the domains to be validated based on the contents of the CSR, so make sure the CSR's Common Name and optional SubjectAltNames are set correctly.)
 
-### Obtail a certificate of type rsa instead of the default ec keys
+### Obtain a certificate of type rsa instead of the default ec keys
 
 Elliptic curve keys are not supported by old systems, so you want to fall back on rsa:
 

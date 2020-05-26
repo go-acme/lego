@@ -42,11 +42,19 @@ pkg install lego
 
 Requirements:
 
-- `go` v1.12+
+- `go` v1.14+
 - environment variable: `GO111MODULE=on`
 
 To install the latest development version from sources, just run:
 
 ```bash
 go get -u github.com/go-acme/lego/v3/cmd/lego
+```
+
+or
+
+```bash
+git clone git@github.com:go-acme/lego.git
+make        # tests + doc + build
+make build  # only build
 ```

@@ -35,7 +35,7 @@ owners to license your work under the terms of the [MIT License](LICENSE).
 
 Requirements:
 
-- `go` v1.12+
+- `go` v1.14+
 - environment variable: `GO111MODULE=on`
 
 First, you have to install [GoLang](https://golang.org/doc/install) and [golangci-lint](https://github.com/golangci/golangci-lint#install).

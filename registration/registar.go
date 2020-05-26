@@ -156,15 +156,10 @@ func (r *Registrar) ResolveAccountByKey() (*Resource, error) {
 	log.Infof("acme: Trying to resolve account by key")
 
 	accMsg := acme.Account{OnlyReturnExisting: true}
-	accountTransit, err := r.core.Accounts.New(accMsg)
+	account, err := r.core.Accounts.New(accMsg)
 	if err != nil {
 		return nil, err
 	}
 
-	account, err := r.core.Accounts.Get(accountTransit.Location)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Resource{URI: accountTransit.Location, Body: account}, nil
+	return &Resource{URI: account.Location, Body: account.Account}, nil
 }

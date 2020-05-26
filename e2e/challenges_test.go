@@ -340,14 +340,14 @@ func TestRegistrar_UpdateAccount(t *testing.T) {
 	regOptions := registration.RegisterOptions{TermsOfServiceAgreed: true}
 	reg, err := client.Registration.Register(regOptions)
 	require.NoError(t, err)
-	require.Equal(t, reg.Body.Contact, []string{"mailto:foo@example.com"})
+	require.Equal(t, []string{"mailto:foo@example.com"}, reg.Body.Contact)
 	user.registration = reg
 
 	user.email = "bar@example.com"
 	resource, err := client.Registration.UpdateRegistration(regOptions)
 	require.NoError(t, err)
-	require.Equal(t, resource.Body.Contact, []string{"mailto:bar@example.com"})
-	require.Empty(t, resource.URI)
+	require.Equal(t, []string{"mailto:bar@example.com"}, resource.Body.Contact)
+	require.Equal(t, reg.URI, resource.URI)
 }
 
 type fakeUser struct {

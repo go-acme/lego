@@ -58,18 +58,16 @@ func (a *AccountService) Get(accountURL string) (acme.Account, error) {
 }
 
 // Update Updates an account.
-func (a *AccountService) Update(accountURL string, req acme.Account) (acme.ExtendedAccount, error) {
+func (a *AccountService) Update(accountURL string, req acme.Account) (acme.Account, error) {
 	if len(accountURL) == 0 {
-		return acme.ExtendedAccount{}, errors.New("account[update]: empty URL")
+		return acme.Account{}, errors.New("account[update]: empty URL")
 	}
 
-	var account acme.ExtendedAccount
+	var account acme.Account
 	_, err := a.core.post(accountURL, req, &account)
 	if err != nil {
-		return acme.ExtendedAccount{Location: accountURL}, err
+		return acme.Account{}, err
 	}
-
-	account.Location = accountURL
 
 	return account, nil
 }

@@ -131,12 +131,14 @@ func (r *Registrar) UpdateRegistration(options RegisterOptions) (*Resource, erro
 		accMsg.Contact = []string{"mailto:" + r.user.GetEmail()}
 	}
 
-	account, err := r.core.Accounts.Update(r.user.GetRegistration().URI, accMsg)
+	accountURL := r.user.GetRegistration().URI
+
+	account, err := r.core.Accounts.Update(accountURL, accMsg)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Resource{URI: account.Location, Body: account.Account}, nil
+	return &Resource{URI: accountURL, Body: account}, nil
 }
 
 // DeleteRegistration deletes the client's user registration from the ACME server.

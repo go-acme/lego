@@ -63,7 +63,8 @@ If `AWS_HOSTED_ZONE_ID` is not set, Lego tries to determine the correct public h
 See also:
 
 - [sessions](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/sessions.html)
-- [Setting AWS Credentials](https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-credentials.html#setup-credentials-setting)
+- [Setting AWS Credentials](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials)
+- [Setting AWS Region](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-the-region)
 
 ## Policy
 

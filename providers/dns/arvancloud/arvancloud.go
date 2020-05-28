@@ -101,15 +101,15 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
 	record := internal.DNSRecord{
-		Type:   "txt",
-		Name:   d.extractRecordName(fqdn, domain),
-		Value:  internal.TxtValue{Text: value},
-		TTL:    d.config.TTL,
+		Type:          "txt",
+		Name:          d.extractRecordName(fqdn, domain),
+		Value:         internal.TxtValue{Text: value},
+		TTL:           d.config.TTL,
 		UpstreamHTTPS: "default",
 		IPFilterMode: internal.IPFilterMode{
-			Count: "single",
+			Count:     "single",
 			GeoFilter: "none",
-			Order: "none",
+			Order:     "none",
 		},
 	}
 

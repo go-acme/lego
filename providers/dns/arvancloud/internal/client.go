@@ -18,10 +18,10 @@ const authHeader = "Authorization"
 
 // Client the ArvanCloud client.
 type Client struct {
-	HTTPClient	*http.Client
-	BaseURL		string
+	HTTPClient *http.Client
+	BaseURL    string
 
-	apiKey		string
+	apiKey string
 }
 
 // NewClient Creates a new ArvanCloud client.
@@ -39,7 +39,7 @@ func (c *Client) GetTxtRecord(domain, name, value string) (*DNSRecord, error) {
 	if err != nil {
 		return nil, err
 	}
-		
+
 	for _, record := range records.Records {
 		if record.Type == "txt" && record.Name == name && equalValue(record.Value, value) {
 			return &record, nil
@@ -78,7 +78,6 @@ func (c *Client) getRecords(domain string) (*DNSRecords, error) {
 	return records, nil
 }
 
-
 // CreateRecord creates a DNS record.
 // https://napi.arvancloud.com/cdn/4.0/domains/{domain}/dns-records
 func (c *Client) CreateRecord(domain string, record DNSRecord) error {
@@ -96,7 +95,7 @@ func (c *Client) CreateRecord(domain string, record DNSRecord) error {
 	if err != nil {
 		return err
 	}
-	
+
 	fmt.Println(resp)
 	if resp.StatusCode != http.StatusCreated {
 		bodyBytes, _ := ioutil.ReadAll(resp.Body)
@@ -150,7 +149,7 @@ func (c *Client) createEndpoint(parts ...string) (*url.URL, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	endpoint, err := baseURL.Parse(path.Join(parts...))
 	if err != nil {
 		return nil, err
@@ -159,13 +158,13 @@ func (c *Client) createEndpoint(parts ...string) (*url.URL, error) {
 	return endpoint, nil
 }
 
-func equalValue (in interface{}, value string) bool{
+func equalValue(in interface{}, value string) bool {
 	v, ok := in.(map[string]interface{})
 	if !ok {
 		return false
 	}
 	for key, val := range v {
-		if key == "text" &&  val == value {
+		if key == "text" && val == value {
 			return true
 		}
 	}

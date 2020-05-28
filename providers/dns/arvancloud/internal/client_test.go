@@ -89,22 +89,21 @@ func TestClient_CreateRecord(t *testing.T) {
 	//client.BaseURL = server.URL
 
 	record := DNSRecord{
-		Type:   "txt",
-		Name:   "TEST_NAME",
-		Value:  TxtValue{Text: "TEST_VALUE"},
-		TTL:    120,
+		Type:          "txt",
+		Name:          "TEST_NAME",
+		Value:         TxtValue{Text: "TEST_VALUE"},
+		TTL:           120,
 		UpstreamHTTPS: "default",
 		IPFilterMode: IPFilterMode{
-			Count: "single",
+			Count:     "single",
 			GeoFilter: "none",
-			Order: "none",
+			Order:     "none",
 		},
 	}
 
 	err := client.CreateRecord(domain, record)
 	require.NoError(t, err)
 }
-
 
 func TestClient_DeleteRecord(t *testing.T) {
 	mux := http.NewServeMux()

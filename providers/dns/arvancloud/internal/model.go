@@ -21,7 +21,7 @@ type TxtValue struct {
 	Text string `json:"text"`
 }
 
-// IPFilterMode a DNS ip_filter_mode
+// IPFilterMode a DNS ip_filter_mode.
 type IPFilterMode struct {
 	Count     string `json:"count"`
 	Order     string `json:"order"`

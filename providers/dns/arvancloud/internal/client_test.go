@@ -87,29 +87,32 @@ func TestClient_CreateRecord(t *testing.T) {
 		}
 		rw.Header().Set("Content-Type", "application/json")
 		rw.WriteHeader(http.StatusCreated)
-		json.NewEncoder(rw).Encode(response)
+		err = json.NewEncoder(rw).Encode(response)
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	})
 
 	client := NewClient(apiKey)
 	client.BaseURL = server.URL
 
 	record := DNSRecord{
-		Type:   "txt",
-		Name:   "TEST_NAME",
-		Value:  TxtValue{Text: "TEST_VALUE"},
-		TTL:    120,
+		Type:          "txt",
+		Name:          "TEST_NAME",
+		Value:         TxtValue{Text: "TEST_VALUE"},
+		TTL:           120,
 		UpstreamHTTPS: "default",
 		IPFilterMode: IPFilterMode{
-			Count: "single",
+			Count:     "single",
 			GeoFilter: "none",
-			Order: "none",
+			Order:     "none",
 		},
 	}
 
 	err := client.CreateRecord(domain, record)
 	require.NoError(t, err)
 }
-
 
 func TestClient_DeleteRecord(t *testing.T) {
 	mux := http.NewServeMux()

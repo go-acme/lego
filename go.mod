@@ -14,11 +14,13 @@ require (
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v0.9.8
 	github.com/aliyun/alibaba-cloud-sdk-go v1.61.112
 	github.com/aws/aws-sdk-go v1.30.20
+	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/cenkalti/backoff/v4 v4.0.0
 	github.com/cloudflare/cloudflare-go v0.10.2
 	github.com/cpu/goacmedns v0.0.2
 	github.com/dnsimple/dnsimple-go v0.60.0
 	github.com/exoscale/egoscale v0.18.1
+	github.com/go-acme/lego v2.7.2+incompatible
 	github.com/google/go-querystring v1.0.0
 	github.com/gophercloud/gophercloud v0.3.0
 	github.com/iij/doapi v0.0.0-20190504054126-0bbf12d6d7df

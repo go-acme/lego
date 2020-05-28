@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/http/httptest"
 	"os"
 	"testing"
 
@@ -13,7 +12,7 @@ import (
 
 func TestClient_GetTxtRecord(t *testing.T) {
 	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
+	//server := httptest.NewServer(mux)
 
 	const domain = "example.com"
 	const apiKey = "Apikey XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
@@ -45,7 +44,7 @@ func TestClient_GetTxtRecord(t *testing.T) {
 	})
 
 	client := NewClient(apiKey)
-	client.BaseURL = server.URL
+	//client.BaseURL = server.URL
 
 	record, err := client.GetTxtRecord(domain, "TEST_NAME", "TEST_VALUE")
 	require.NoError(t, err)
@@ -55,7 +54,7 @@ func TestClient_GetTxtRecord(t *testing.T) {
 
 func TestClient_CreateRecord(t *testing.T) {
 	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
+	//server := httptest.NewServer(mux)
 
 	const domain = "example.com"
 	const apiKey = "Apikey XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
@@ -87,7 +86,7 @@ func TestClient_CreateRecord(t *testing.T) {
 	})
 
 	client := NewClient(apiKey)
-	client.BaseURL = server.URL
+	//client.BaseURL = server.URL
 
 	record := DNSRecord{
 		Type:   "txt",
@@ -109,7 +108,7 @@ func TestClient_CreateRecord(t *testing.T) {
 
 func TestClient_DeleteRecord(t *testing.T) {
 	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
+	//server := httptest.NewServer(mux)
 
 	const domain = "example.com"
 	const recordID = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
@@ -129,7 +128,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 	})
 
 	client := NewClient(apiKey)
-	client.BaseURL = server.URL
+	//client.BaseURL = server.URL
 
 	err := client.DeleteRecord(domain, recordID)
 	require.NoError(t, err)

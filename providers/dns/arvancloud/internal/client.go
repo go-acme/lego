@@ -165,7 +165,7 @@ func (c *Client) do(method, endpoint string, body io.Reader) (*http.Response, er
 	}
 
 	req.Header.Set("Accept", "application/json")
-	if body == nil {
+	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
 	req.Header.Set(authHeader, c.apiKey)

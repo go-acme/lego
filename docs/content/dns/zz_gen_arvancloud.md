@@ -56,7 +56,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 
 ## More information
 
-- [API documentation](https://napi.arvancloud.com/cdn/4.0/domains)
+- [API documentation](https://www.arvancloud.com/docs/api/cdn/4.0)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/arvancloud/arvancloud.toml -->

@@ -1,26 +1,31 @@
 package internal
 
-// DNSRecordTextValue represents a TXT record value.
-type DNSRecordTextValue struct {
-	Text string `json:"text,omitempty"`
+import "encoding/json"
+
+type apiResponse struct {
+	Message string          `json:"message"`
+	Data    json.RawMessage `json:"data"`
 }
 
 // DNSRecord a DNS record.
 type DNSRecord struct {
-	ID    string      `json:"id,omitempty"`
-	Type  string      `json:"type,omitempty"`
-	Value interface{} `json:"value,omitempty"`
-	Name  string      `json:"name,omitempty"`
-	TTL   int         `json:"ttl,omitempty"`
+	ID            string        `json:"id,omitempty"`
+	Type          string        `json:"type"`
+	Value         interface{}   `json:"value,omitempty"`
+	Name          string        `json:"name,omitempty"`
+	TTL           int           `json:"ttl,omitempty"`
+	UpstreamHTTPS string        `json:"upstream_https,omitempty"`
+	IPFilterMode  *IPFilterMode `json:"ip_filter_mode,omitempty"`
 }
 
-// TxtDNSRecord a DNS record.
-type TxtDNSRecord struct {
-	DNSRecord
-	Value DNSRecordTextValue `json:"value,omitempty"`
+// TXTRecordValue represents a TXT record value.
+type TXTRecordValue struct {
+	Text string `json:"text,omitempty"` // only for TXT Record.
 }
 
-// DNSRecords a set of DNS record.
-type DNSRecords struct {
-	Records []DNSRecord `json:"data,omitempty"`
+// IPFilterMode a DNS ip_filter_mode.
+type IPFilterMode struct {
+	Count     string `json:"count,omitempty"`
+	Order     string `json:"order,omitempty"`
+	GeoFilter string `json:"geo_filter,omitempty"`
 }

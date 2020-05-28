@@ -33,22 +33,24 @@ func NewClient(apiKey string) *Client {
 	}
 }
 
-// TxtRecord gets a TXT record.
-func (c *Client) TxtRecord(domain, name, value string) (*DNSRecord, error) {
-	records, err := c.records(domain, value)
+// GetTxtRecord gets a TXT record.
+func (c *Client) GetTxtRecord(domain, name, value string) (*DNSRecord, error) {
+	records, err := c.getRecords(domain, value)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(records.Records) == 1 {
-		record := records.Records[0]
-		return &record, nil
+	for _, record := range records {
+		if equalsTXTRecord(record, name, value) {
+			return &record, nil
+		}
 	}
 
 	return nil, fmt.Errorf("could not find record: Domain: %s; Record: %s", domain, name)
 }
 
-func (c *Client) records(domain, search string) (*DNSRecords, error) {
+// https://www.arvancloud.com/docs/api/cdn/4.0#operation/dns_records.list
+func (c *Client) getRecords(domain, search string) ([]DNSRecord, error) {
 	endpoint, err := c.createEndpoint("cdn", "4.0", "domains", domain, "dns-records")
 	if err != nil {
 		return nil, fmt.Errorf("failed to create endpoint: %w", err)
@@ -65,47 +67,75 @@ func (c *Client) records(domain, search string) (*DNSRecords, error) {
 
 	defer func() { _ = resp.Body.Close() }()
 
-	if resp.StatusCode != http.StatusOK {
-		bodyBytes, _ := ioutil.ReadAll(resp.Body)
-		return nil, fmt.Errorf("could not get records %s: Domain: %s; Status: %s; Body: %s",
-			search, domain, resp.Status, string(bodyBytes))
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
-	records := &DNSRecords{}
-	err = json.NewDecoder(resp.Body).Decode(records)
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("could not get records %s: Domain: %s; Status: %s; Body: %s",
+			search, domain, resp.Status, string(body))
+	}
+
+	response := &apiResponse{}
+	err = json.Unmarshal(body, response)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode response body: %w", err)
+	}
+
+	var records []DNSRecord
+	err = json.Unmarshal(response.Data, &records)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode records: %w", err)
 	}
 
 	return records, nil
 }
 
 // CreateRecord creates a DNS record.
-func (c *Client) CreateRecord(domain string, record DNSRecord) error {
-	body, err := json.Marshal(record)
+// https://www.arvancloud.com/docs/api/cdn/4.0#operation/dns_records.create
+func (c *Client) CreateRecord(domain string, record DNSRecord) (*DNSRecord, error) {
+	reqBody, err := json.Marshal(record)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	endpoint, err := c.createEndpoint("cdn", "4.0", "domains", domain, "dns-records")
 	if err != nil {
-		return fmt.Errorf("failed to create endpoint: %w", err)
+		return nil, fmt.Errorf("failed to create endpoint: %w", err)
 	}
 
-	resp, err := c.do(http.MethodPost, endpoint.String(), bytes.NewReader(body))
+	resp, err := c.do(http.MethodPost, endpoint.String(), bytes.NewReader(reqBody))
 	if err != nil {
-		return err
+		return nil, err
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
 	if resp.StatusCode != http.StatusCreated {
-		bodyBytes, _ := ioutil.ReadAll(resp.Body)
-		return fmt.Errorf("could not create record %s; Domain: %s; Status: %s; Body: %s", string(body), domain, resp.Status, string(bodyBytes))
+		return nil, fmt.Errorf("could not create record %s; Domain: %s; Status: %s; Body: %s", string(reqBody), domain, resp.Status, string(body))
 	}
 
-	return nil
+	response := &apiResponse{}
+	err = json.Unmarshal(body, response)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode response body: %w", err)
+	}
+
+	var newRecord DNSRecord
+	err = json.Unmarshal(response.Data, &newRecord)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode record: %w", err)
+	}
+
+	return &newRecord, nil
 }
 
 // DeleteRecord deletes a DNS record.
+// https://www.arvancloud.com/docs/api/cdn/4.0#operation/dns_records.remove
 func (c *Client) DeleteRecord(domain, id string) error {
 	endpoint, err := c.createEndpoint("cdn", "4.0", "domains", domain, "dns-records", id)
 	if err != nil {
@@ -149,4 +179,21 @@ func (c *Client) createEndpoint(parts ...string) (*url.URL, error) {
 	}
 
 	return endpoint, nil
+}
+
+func equalsTXTRecord(record DNSRecord, name, value string) bool {
+	if record.Type != "txt" {
+		return false
+	}
+
+	if record.Name != name {
+		return false
+	}
+
+	data, ok := record.Value.(map[string]interface{})
+	if !ok {
+		return false
+	}
+
+	return data["text"] == value
 }

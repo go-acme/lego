@@ -8,14 +8,15 @@ import (
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestClient_TxtRecord(t *testing.T) {
+func TestClient_GetTxtRecord(t *testing.T) {
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
 
-	const domain = "mydomain.tld"
+	const domain = "example.com"
 	const apiKey = "myKeyA"
 
 	mux.HandleFunc("/cdn/4.0/domains/"+domain+"/dns-records", func(rw http.ResponseWriter, req *http.Request) {
@@ -47,7 +48,7 @@ func TestClient_TxtRecord(t *testing.T) {
 	client := NewClient(apiKey)
 	client.BaseURL = server.URL
 
-	_, err := client.TxtRecord(domain, "test1", "xxxx")
+	_, err := client.GetTxtRecord(domain, "_acme-challenge", "txtxtxt")
 	require.NoError(t, err)
 }
 
@@ -55,7 +56,7 @@ func TestClient_CreateRecord(t *testing.T) {
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
 
-	const domain = "mydomain.tld"
+	const domain = "example.com"
 	const apiKey = "myKeyB"
 
 	mux.HandleFunc("/cdn/4.0/domains/"+domain+"/dns-records", func(rw http.ResponseWriter, req *http.Request) {
@@ -89,21 +90,37 @@ func TestClient_CreateRecord(t *testing.T) {
 	client.BaseURL = server.URL
 
 	record := DNSRecord{
-		Name:  "test",
+		Name:  "_acme-challenge",
 		Type:  "txt",
-		Value: DNSRecordTextValue{"txttxttxt"},
+		Value: &TXTRecordValue{Text: "txtxtxt"},
 		TTL:   600,
 	}
 
-	err := client.CreateRecord(domain, record)
+	newRecord, err := client.CreateRecord(domain, record)
 	require.NoError(t, err)
+
+	expected := &DNSRecord{
+		ID:            "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+		Type:          "txt",
+		Value:         map[string]interface{}{"text": "txtxtxt"},
+		Name:          "_acme-challenge",
+		TTL:           120,
+		UpstreamHTTPS: "default",
+		IPFilterMode: &IPFilterMode{
+			Count:     "single",
+			Order:     "none",
+			GeoFilter: "none",
+		},
+	}
+
+	assert.Equal(t, expected, newRecord)
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
 
-	const domain = "mydomain.tld"
+	const domain = "example.com"
 	const apiKey = "myKeyC"
 	const recordID = "recordId"
 

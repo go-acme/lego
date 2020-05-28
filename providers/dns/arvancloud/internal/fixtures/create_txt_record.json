@@ -1,0 +1,18 @@
+{
+  "data": {
+    "type": "a",
+    "id": "string",
+    "created_at": "2020-05-08T10:49:18Z",
+    "updated_at": "2020-05-08T10:49:18Z",
+    "name": "string",
+    "value": [
+      {
+        "ip": "0.0.0.0",
+        "port": null,
+        "weight": 100,
+        "country": ""
+      }
+    ],
+    "ttl": 0
+  }
+}

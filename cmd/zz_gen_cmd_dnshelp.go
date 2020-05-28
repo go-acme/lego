@@ -16,6 +16,7 @@ func allDNSCodes() string {
 		"manual",
 		"acme-dns",
 		"alidns",
+		"arvancloud",
 		"auroradns",
 		"autodns",
 		"azure",
@@ -135,6 +136,27 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/alidns`)
+
+	case "arvancloud":
+		// generated from: providers/dns/arvancloud/arvancloud.toml
+		ew.writeln(`Configuration for ArvanCloud.`)
+		ew.writeln(`Code:	'arvancloud'`)
+		ew.writeln(`Since:	'v3.8.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "ARVANCLOUD_API_KEY":	API key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "ARVANCLOUD_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "ARVANCLOUD_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "ARVANCLOUD_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "ARVANCLOUD_SEQUENCE_INTERVAL":	Interval between iteration`)
+		ew.writeln(`	- "ARVANCLOUD_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/arvancloud`)
 
 	case "auroradns":
 		// generated from: providers/dns/auroradns/auroradns.toml

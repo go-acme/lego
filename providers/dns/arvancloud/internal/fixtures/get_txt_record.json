@@ -205,7 +205,7 @@
       "type": "txt",
       "name": "TEST_NAME",
       "value": {
-        "text": "TETS_VALUE"
+        "text": "TEST_VALUE"
       },
       "ttl": 120,
       "cloud": false,

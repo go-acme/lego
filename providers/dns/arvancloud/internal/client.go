@@ -96,13 +96,10 @@ func (c *Client) CreateRecord(domain string, record DNSRecord) error {
 		return err
 	}
 
-	fmt.Println(resp)
 	if resp.StatusCode != http.StatusCreated {
 		bodyBytes, _ := ioutil.ReadAll(resp.Body)
 		return fmt.Errorf("could not create record %s; Status: %s; Body: %s", string(body), resp.Status, string(bodyBytes))
 	}
-
-	//return fmt.Errorf("could not create record %s", resp.Status)
 
 	return nil
 }

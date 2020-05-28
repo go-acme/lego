@@ -1,9 +1,12 @@
 package internal
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
+	"net/http/httptest"
 	"os"
 	"testing"
 
@@ -12,7 +15,7 @@ import (
 
 func TestClient_GetTxtRecord(t *testing.T) {
 	mux := http.NewServeMux()
-	//server := httptest.NewServer(mux)
+	server := httptest.NewServer(mux)
 
 	const domain = "example.com"
 	const apiKey = "Apikey XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
@@ -44,7 +47,7 @@ func TestClient_GetTxtRecord(t *testing.T) {
 	})
 
 	client := NewClient(apiKey)
-	//client.BaseURL = server.URL
+	client.BaseURL = server.URL
 
 	record, err := client.GetTxtRecord(domain, "TEST_NAME", "TEST_VALUE")
 	require.NoError(t, err)
@@ -54,7 +57,7 @@ func TestClient_GetTxtRecord(t *testing.T) {
 
 func TestClient_CreateRecord(t *testing.T) {
 	mux := http.NewServeMux()
-	//server := httptest.NewServer(mux)
+	server := httptest.NewServer(mux)
 
 	const domain = "example.com"
 	const apiKey = "Apikey XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
@@ -71,33 +74,35 @@ func TestClient_CreateRecord(t *testing.T) {
 			return
 		}
 
-		file, err := os.Open("./fixtures/create_txt_record.json")
+		data, err := ioutil.ReadFile("./fixtures/create_txt_record.json")
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		defer func() { _ = file.Close() }()
-
-		_, err = io.Copy(rw, file)
+		var response interface{}
+		err = json.Unmarshal(data, &response)
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		rw.Header().Set("Content-Type", "application/json")
+		rw.WriteHeader(http.StatusCreated)
+		json.NewEncoder(rw).Encode(response)
 	})
 
 	client := NewClient(apiKey)
-	//client.BaseURL = server.URL
+	client.BaseURL = server.URL
 
 	record := DNSRecord{
-		Type:          "txt",
-		Name:          "TEST_NAME",
-		Value:         TxtValue{Text: "TEST_VALUE"},
-		TTL:           120,
+		Type:   "txt",
+		Name:   "TEST_NAME",
+		Value:  TxtValue{Text: "TEST_VALUE"},
+		TTL:    120,
 		UpstreamHTTPS: "default",
 		IPFilterMode: IPFilterMode{
-			Count:     "single",
+			Count: "single",
 			GeoFilter: "none",
-			Order:     "none",
+			Order: "none",
 		},
 	}
 
@@ -105,9 +110,10 @@ func TestClient_CreateRecord(t *testing.T) {
 	require.NoError(t, err)
 }
 
+
 func TestClient_DeleteRecord(t *testing.T) {
 	mux := http.NewServeMux()
-	//server := httptest.NewServer(mux)
+	server := httptest.NewServer(mux)
 
 	const domain = "example.com"
 	const recordID = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
@@ -127,7 +133,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 	})
 
 	client := NewClient(apiKey)
-	//client.BaseURL = server.URL
+	client.BaseURL = server.URL
 
 	err := client.DeleteRecord(domain, recordID)
 	require.NoError(t, err)

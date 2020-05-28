@@ -148,7 +148,8 @@ func (c *Client) DeleteRecord(domain, id string) error {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("could not delete record %s; Domain: %s; Status: %s", id, domain, resp.Status)
+		body, _ := ioutil.ReadAll(resp.Body)
+		return fmt.Errorf("could not delete record %s; Domain: %s; Status: %s; Body: %s", id, domain, resp.Status, string(body))
 	}
 
 	return nil

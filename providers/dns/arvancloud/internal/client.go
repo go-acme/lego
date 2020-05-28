@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strings"
 )
 
 // defaultBaseURL represents the API endpoint to call.
@@ -35,7 +36,7 @@ func NewClient(apiKey string) *Client {
 
 // GetTxtRecord gets a TXT record.
 func (c *Client) GetTxtRecord(domain, name, value string) (*DNSRecord, error) {
-	records, err := c.getRecords(domain, value)
+	records, err := c.getRecords(domain, name)
 	if err != nil {
 		return nil, err
 	}
@@ -56,9 +57,11 @@ func (c *Client) getRecords(domain, search string) ([]DNSRecord, error) {
 		return nil, fmt.Errorf("failed to create endpoint: %w", err)
 	}
 
-	query := endpoint.Query()
-	query.Set("search", search)
-	endpoint.RawQuery = query.Encode()
+	if search != "" {
+		query := endpoint.Query()
+		query.Set("search", strings.ReplaceAll(search, "_", ""))
+		endpoint.RawQuery = query.Encode()
+	}
 
 	resp, err := c.do(http.MethodGet, endpoint.String(), nil)
 	if err != nil {
@@ -162,7 +165,9 @@ func (c *Client) do(method, endpoint string, body io.Reader) (*http.Response, er
 	}
 
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Content-Type", "application/json")
+	if body == nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
 	req.Header.Set(authHeader, c.apiKey)
 
 	return c.HTTPClient.Do(req)

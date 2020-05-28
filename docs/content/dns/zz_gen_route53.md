@@ -32,6 +32,7 @@ _Please contribute by adding a CLI example._
 | `AWS_ACCESS_KEY_ID` | Managed by the AWS client (`AWS_ACCESS_KEY_ID_FILE` is not supported) |
 | `AWS_HOSTED_ZONE_ID` | Override the hosted zone ID |
 | `AWS_REGION` | Managed by the AWS client (`AWS_REGION_FILE` is not supported) |
+| `AWS_SDK_LOAD_CONFIG` | Retrieve the region from the CLI config file (`AWS_SDK_LOAD_CONFIG_FILE` is not supported) |
 | `AWS_SECRET_ACCESS_KEY` | Managed by the AWS client (`AWS_SECRET_ACCESS_KEY_FILE` is not supported) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
@@ -61,6 +62,7 @@ AWS Credentials are automatically detected in the following locations and priori
 The AWS Region is automatically detected in the following locations and prioritized in the following order:
 
 1. Environment variables: `AWS_REGION`
+2. Shared configuration file if `AWS_SDK_LOAD_CONFIG` is set (defaults to `~/.aws/config`)
 
 If `AWS_HOSTED_ZONE_ID` is not set, Lego tries to determine the correct public hosted zone via the FQDN.
 

@@ -1,0 +1,23 @@
+Name = "ArvanCloud"
+Description = ''''''
+URL = "https://arvancloud.com"
+Code = "arvancloud"
+Since = "v3.8.0"
+
+Example = '''
+ARVANCLOUD_API_KEY=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx \
+lego --dns arvancloud --domains my.domain.com --email my@email.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    ARVANCLOUD_API_KEY = "API key"
+  [Configuration.Additional]
+    ARVANCLOUD_POLLING_INTERVAL = "Time between DNS propagation check"
+    ARVANCLOUD_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
+    ARVANCLOUD_TTL = "The TTL of the TXT record used for the DNS challenge"
+    ARVANCLOUD_HTTP_TIMEOUT = "API request timeout"
+    ARVANCLOUD_SEQUENCE_INTERVAL = "Interval between iteration"
+
+[Links]
+  API = "https://www.arvancloud.com/docs/api/cdn/4.0"

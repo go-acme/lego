@@ -1,0 +1,28 @@
+{
+  "data": {
+    "id": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+    "type": "txt",
+    "name": "_acme-challenge",
+    "value": {
+      "text": "txtxtxt"
+    },
+    "ttl": 120,
+    "cloud": false,
+    "upstream_https": "default",
+    "ip_filter_mode": {
+      "count": "single",
+      "order": "none",
+      "geo_filter": "none"
+    },
+    "can_delete": true,
+    "health_check_status": false,
+    "health_check_setting": {
+      "protocol": "http",
+      "port": "",
+      "uri": ""
+    },
+    "created_at": "2020-05-27T23:57:02Z",
+    "updated_at": "2020-05-27T23:57:02Z"
+  },
+  "message": "DNS record created successfully"
+}

@@ -12,6 +12,7 @@ const envDomain = envNamespace + "DOMAIN"
 var envTest = tester.NewEnvTest(
 	EnvUsername,
 	EnvPassword,
+	EnvSharedSecret,
 	EnvSandbox,
 	EnvTTL).
 	WithDomain(envDomain).

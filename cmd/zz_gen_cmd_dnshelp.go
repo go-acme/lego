@@ -941,6 +941,7 @@ func displayDNSHelp(name string) error {
 		ew.writeln(`	- "INWX_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "INWX_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
 		ew.writeln(`	- "INWX_SANDBOX":	Activate the sandbox (boolean)`)
+		ew.writeln(`	- "INWX_SHARED_SECRET":	shared secret related to 2FA`)
 		ew.writeln(`	- "INWX_TTL":	The TTL of the TXT record used for the DNS challenge`)
 
 		ew.writeln()

@@ -1,8 +1,8 @@
-# lego
+# ![lego](./docs/static/images/logo.png)
 
 Let's Encrypt client and ACME library written in Go.
 
-[![GoDoc](https://godoc.org/github.com/go-acme/lego?status.svg)](https://godoc.org/github.com/go-acme/lego/acme)
+[![GoDoc](https://godoc.org/github.com/go-acme/lego?status.svg)](https://pkg.go.dev/mod/github.com/go-acme/lego/v3)
 [![Build Status](https://travis-ci.com/go-acme/lego.svg?branch=master)](https://travis-ci.com/go-acme/lego)
 [![Docker Pulls](https://img.shields.io/docker/pulls/goacme/lego.svg)](https://hub.docker.com/r/goacme/lego/)
 

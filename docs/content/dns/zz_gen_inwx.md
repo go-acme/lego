@@ -18,9 +18,19 @@ Configuration for [INWX](https://www.inwx.de/en).
 
 - Code: `inwx`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the INWX provider:
+
+```bash
+INWX_USERNAME=xxxxxxxxxx \
+INWX_PASSWORD=yyyyyyyyyy \
+lego --dns inwx --domains my.domain.com --email my@email.com run
+
+# 2FA
+INWX_USERNAME=xxxxxxxxxx \
+INWX_PASSWORD=yyyyyyyyyy \
+INWX_SHARED_SECRET=zzzzzzzzzz \
+lego --dns inwx --domains my.domain.com --email my@email.com run
+```
 
 
 
@@ -43,6 +53,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `INWX_POLLING_INTERVAL` | Time between DNS propagation check |
 | `INWX_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
 | `INWX_SANDBOX` | Activate the sandbox (boolean) |
+| `INWX_SHARED_SECRET` | shared secret related to 2FA |
 | `INWX_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.

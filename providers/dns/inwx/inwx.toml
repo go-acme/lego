@@ -4,13 +4,24 @@ URL = "https://www.inwx.de/en"
 Code = "inwx"
 Since = "v2.0.0"
 
-Example = ''''''
+Example = '''
+INWX_USERNAME=xxxxxxxxxx \
+INWX_PASSWORD=yyyyyyyyyy \
+lego --dns inwx --domains my.domain.com --email my@email.com run
+
+# 2FA
+INWX_USERNAME=xxxxxxxxxx \
+INWX_PASSWORD=yyyyyyyyyy \
+INWX_SHARED_SECRET=zzzzzzzzzz \
+lego --dns inwx --domains my.domain.com --email my@email.com run
+'''
 
 [Configuration]
   [Configuration.Credentials]
     INWX_USERNAME = "Username"
     INWX_PASSWORD = "Password"
   [Configuration.Additional]
+    INWX_SHARED_SECRET = "shared secret related to 2FA"
     INWX_POLLING_INTERVAL = "Time between DNS propagation check"
     INWX_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
     INWX_TTL = "The TTL of the TXT record used for the DNS challenge"

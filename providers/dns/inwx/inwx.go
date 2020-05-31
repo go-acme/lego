@@ -10,15 +10,17 @@ import (
 	"github.com/go-acme/lego/v3/log"
 	"github.com/go-acme/lego/v3/platform/config/env"
 	"github.com/nrdcg/goinwx"
+	"github.com/pquerna/otp/totp"
 )
 
 // Environment variables names.
 const (
 	envNamespace = "INWX_"
 
-	EnvUsername = envNamespace + "USERNAME"
-	EnvPassword = envNamespace + "PASSWORD"
-	EnvSandbox  = envNamespace + "SANDBOX"
+	EnvUsername     = envNamespace + "USERNAME"
+	EnvPassword     = envNamespace + "PASSWORD"
+	EnvSharedSecret = envNamespace + "SHARED_SECRET"
+	EnvSandbox      = envNamespace + "SANDBOX"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -29,6 +31,7 @@ const (
 type Config struct {
 	Username           string
 	Password           string
+	SharedSecret       string
 	Sandbox            bool
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -53,7 +56,7 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for Dyn DNS.
 // Credentials must be passed in the environment variables:
-// INWX_USERNAME and INWX_PASSWORD.
+// INWX_USERNAME, INWX_PASSWORD, and INWX_SHARED_SECRET.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvUsername, EnvPassword)
 	if err != nil {
@@ -63,6 +66,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
 	config.Username = values[EnvUsername]
 	config.Password = values[EnvPassword]
+	config.SharedSecret = env.GetOrFile(EnvSharedSecret)
 
 	return NewDNSProviderConfig(config)
 }
@@ -95,7 +99,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("inwx: %w", err)
 	}
 
-	err = d.client.Account.Login()
+	info, err := d.client.Account.Login()
 	if err != nil {
 		return fmt.Errorf("inwx: %w", err)
 	}
@@ -106,6 +110,11 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 			log.Infof("inwx: failed to logout: %v", errL)
 		}
 	}()
+
+	err = d.twoFactorAuth(info)
+	if err != nil {
+		return fmt.Errorf("inwx: %w", err)
+	}
 
 	var request = &goinwx.NameserverRecordRequest{
 		Domain:  dns01.UnFqdn(authZone),
@@ -140,7 +149,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("inwx: %w", err)
 	}
 
-	err = d.client.Account.Login()
+	info, err := d.client.Account.Login()
 	if err != nil {
 		return fmt.Errorf("inwx: %w", err)
 	}
@@ -151,6 +160,11 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 			log.Infof("inwx: failed to logout: %v", errL)
 		}
 	}()
+
+	err = d.twoFactorAuth(info)
+	if err != nil {
+		return fmt.Errorf("inwx: %w", err)
+	}
 
 	response, err := d.client.Nameservers.Info(&goinwx.NameserverInfoRequest{
 		Domain: dns01.UnFqdn(authZone),
@@ -176,4 +190,21 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
+}
+
+func (d *DNSProvider) twoFactorAuth(info *goinwx.LoginResponse) error {
+	if info.TFA != "GOOGLE-AUTH" {
+		return nil
+	}
+
+	if d.config.SharedSecret == "" {
+		return errors.New("two factor authentication but no shared secret is given")
+	}
+
+	tan, err := totp.GenerateCode(d.config.SharedSecret, time.Now())
+	if err != nil {
+		return err
+	}
+
+	return d.client.Account.Unlock(tan)
 }

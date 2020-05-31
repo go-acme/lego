@@ -111,21 +111,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		}
 	}()
 
-	if info.TFA == "GOOGLE-AUTH" {
-		if d.config.SharedSecret == "" {
-			return errors.New("two factor authentication but no shared secret is given")
-		}
-
-		var tan string
-		tan, err = totp.GenerateCode(d.config.SharedSecret, time.Now())
-		if err != nil {
-			return fmt.Errorf("inwx: %w", err)
-		}
-
-		err = d.client.Account.Unlock(tan)
-		if err != nil {
-			return fmt.Errorf("inwx: %w", err)
-		}
+	err = d.twoFactorAuth(info)
+	if err != nil {
+		return fmt.Errorf("inwx: %w", err)
 	}
 
 	var request = &goinwx.NameserverRecordRequest{
@@ -173,21 +161,9 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		}
 	}()
 
-	if info.TFA == "GOOGLE-AUTH" {
-		if d.config.SharedSecret == "" {
-			return errors.New("two factor authentication but no shared secret is given")
-		}
-
-		var tan string
-		tan, err = totp.GenerateCode("SHARED_SECRET", time.Now())
-		if err != nil {
-			return fmt.Errorf("inwx: %w", err)
-		}
-
-		err = d.client.Account.Unlock(tan)
-		if err != nil {
-			return fmt.Errorf("inwx: %w", err)
-		}
+	err = d.twoFactorAuth(info)
+	if err != nil {
+		return fmt.Errorf("inwx: %w", err)
 	}
 
 	response, err := d.client.Nameservers.Info(&goinwx.NameserverInfoRequest{
@@ -214,4 +190,21 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
+}
+
+func (d *DNSProvider) twoFactorAuth(info *goinwx.LoginResponse) error {
+	if info.TFA != "GOOGLE-AUTH" {
+		return nil
+	}
+
+	if d.config.SharedSecret == "" {
+		return errors.New("two factor authentication but no shared secret is given")
+	}
+
+	tan, err := totp.GenerateCode(d.config.SharedSecret, time.Now())
+	if err != nil {
+		return err
+	}
+
+	return d.client.Account.Unlock(tan)
 }

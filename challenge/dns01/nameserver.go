@@ -178,6 +178,13 @@ func fetchSoaByFqdn(fqdn string, nameservers []string) (*soaCacheEntry, error) {
 		domain := fqdn[index:]
 
 		in, err = dnsQuery(domain, dns.TypeSOA, nameservers, true)
+
+		retry := 3
+		for err != nil && retry > 0 {
+			in, err = dnsQuery(domain, dns.TypeSOA, nameservers, true)
+			retry--
+		}
+
 		if err != nil {
 			continue
 		}

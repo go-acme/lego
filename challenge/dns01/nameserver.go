@@ -8,6 +8,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cenkalti/backoff/v4"
+	"github.com/go-acme/lego/v3/log"
 	"github.com/miekg/dns"
 )
 
@@ -229,15 +231,39 @@ func dnsQuery(fqdn string, rtype uint16, nameservers []string, recursive bool) (
 	m := createDNSMsg(fqdn, rtype, recursive)
 
 	var in *dns.Msg
-	var err error
+	var errG error
 
 	for _, ns := range nameservers {
-		in, err = sendDNSQuery(m, ns)
-		if err == nil && len(in.Answer) > 0 {
+		bo := backoff.NewExponentialBackOff()
+		bo.Multiplier = 1.2
+		bo.InitialInterval = dnsTimeout
+		bo.MaxInterval = 2 * bo.InitialInterval
+		bo.MaxElapsedTime = 4 * bo.InitialInterval
+
+		operation := func() error {
+			var err error
+			in, err = sendDNSQuery(m, ns)
+
+			// errors from miekg/dns package and some errors from the net package must stop the retry.
+			var e *dns.Error
+			if err != nil &&
+				(strings.Contains(err.Error(), "connection refused") || errors.As(err, &e)) {
+				return backoff.Permanent(err)
+			}
+
+			return err
+		}
+
+		notify := func(err error, d time.Duration) {
+			log.Infof("dnsQuery retry %v: fqdn=%s, ns=%s: %v", d, fqdn, ns, err)
+		}
+
+		errG = backoff.RetryNotify(operation, bo, notify)
+		if errG == nil && len(in.Answer) > 0 {
 			break
 		}
 	}
-	return in, err
+	return in, errG
 }
 
 func createDNSMsg(fqdn string, rtype uint16, recursive bool) *dns.Msg {

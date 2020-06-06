@@ -41,7 +41,7 @@ $ cat /the/path/to/my/email
 foo@bar.com
 
 $ CLOUDFLARE_EMAIL_FILE=/the/path/to/my/email \
-CLOUDFLARE_API_KEY=/the/path/to/my/key \
+CLOUDFLARE_API_KEY_FILE=/the/path/to/my/key \
 lego --dns cloudflare --domains www.example.com --email me@bar.com run
 ```
 

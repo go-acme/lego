@@ -231,7 +231,7 @@ func dnsQuery(fqdn string, rtype uint16, nameservers []string, recursive bool) (
 	m := createDNSMsg(fqdn, rtype, recursive)
 
 	var in *dns.Msg
-	var errG error
+	var lastErr error
 
 	for _, ns := range nameservers {
 		bo := backoff.NewExponentialBackOff()
@@ -258,12 +258,12 @@ func dnsQuery(fqdn string, rtype uint16, nameservers []string, recursive bool) (
 			log.Infof("dnsQuery retry %v: fqdn=%s, ns=%s: %v", d, fqdn, ns, err)
 		}
 
-		errG = backoff.RetryNotify(operation, bo, notify)
-		if errG == nil && len(in.Answer) > 0 {
+		lastErr = backoff.RetryNotify(operation, bo, notify)
+		if lastErr == nil && len(in.Answer) > 0 {
 			break
 		}
 	}
-	return in, errG
+	return in, lastErr
 }
 
 func createDNSMsg(fqdn string, rtype uint16, recursive bool) *dns.Msg {

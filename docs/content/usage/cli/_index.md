@@ -10,7 +10,6 @@ Lego can be use as a CLI.
 
 ## Usage
 
-{{%expand "CLI help" %}}
 ```slim
 NAME:
    lego - Let's Encrypt client written in Go
@@ -55,8 +54,6 @@ GLOBAL OPTIONS:
    --help, -h                   show help
    --version, -v                print the version
 ```
-{{% /expand%}}
-
 
 When using the standard `--path` option, all certificates and account configurations are saved to a folder `.lego` in the current working directory.
 

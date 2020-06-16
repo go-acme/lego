@@ -44,6 +44,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 |--------------------------------|-------------|
 | `RFC2136_DNS_TIMEOUT` | API request timeout |
 | `RFC2136_POLLING_INTERVAL` | Time between DNS propagation check |
+| `RFC2136_PRIMARY` | Network address of the primary server for the DNS Update requests. If unset, Lego will automatically find the zone apex for the update. |
 | `RFC2136_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
 | `RFC2136_SEQUENCE_INTERVAL` | Interval between iteration |
 | `RFC2136_TTL` | The TTL of the TXT record used for the DNS challenge |

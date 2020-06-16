@@ -27,11 +27,13 @@ const (
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvSequenceInterval   = envNamespace + "SEQUENCE_INTERVAL"
+	EnvPrimary            = envNamespace + "PRIMARY"
 )
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	Nameserver         string
+	Primary            string
 	TSIGAlgorithm      string
 	TSIGKey            string
 	TSIGSecret         string
@@ -68,6 +70,8 @@ type DNSProvider struct {
 // RFC2136_TSIG_SECRET: Secret key payload.
 // RFC2136_PROPAGATION_TIMEOUT: DNS propagation timeout in time.ParseDuration format. (60s)
 // To disable TSIG authentication, leave the RFC2136_TSIG* variables unset.
+// RFC2136_PRIMARY: Network name of the primary DNS server receiving the DNS Update request.
+// If unset, Lego will automatically find the zone apex for the update.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvNameserver)
 	if err != nil {
@@ -78,6 +82,10 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config.Nameserver = values[EnvNameserver]
 	config.TSIGKey = env.GetOrFile(EnvTSIGKey)
 	config.TSIGSecret = env.GetOrFile(EnvTSIGSecret)
+
+	if primary := env.GetOrDefaultString(EnvPrimary, ""); primary != "" {
+		config.Primary = dns.Fqdn(primary)
+	}
 
 	return NewDNSProviderConfig(config)
 }
@@ -150,9 +158,13 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 	// Find the zone for the given fqdn
-	zone, err := dns01.FindZoneByFqdnCustom(fqdn, []string{d.config.Nameserver})
-	if err != nil {
-		return err
+	zone := d.config.Primary
+	if zone == "" {
+		z, err := dns01.FindZoneByFqdnCustom(fqdn, []string{d.config.Nameserver})
+		if err != nil {
+			return err
+		}
+		zone = z
 	}
 
 	// Create RR

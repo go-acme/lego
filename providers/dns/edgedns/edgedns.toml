@@ -1,10 +1,8 @@
-Name = "FastDNS (DEPRECATED)"
+Name = "EdgeDNS"
 Description = ''''''
-URL = "https://www.akamai.com/us/en/products/security/fast-dns.jsp"
-Code = "fastdns"
-Since = "v0.5.0"
-
-Notice = "FastDNS has been DEPRECATED. Provider invocation will redirect to EdgeDNS"
+URL = "https://www.akamai.com/us/en/products/security/edge-dns.jsp"
+Code = "edgedns"
+Since = "v3.8.0"
 
 Example = ''''''
 
@@ -20,7 +18,7 @@ Example = ''''''
     AKAMAI_TTL = "The TTL of the TXT record used for the DNS challenge"
 
 [Links]
-  API = "https://developer.akamai.com/api/web_performance/fast_dns_record_management/v1.html"
+  API = "https://developer.akamai.com/api/cloud_security/edge_dns_zone_management/v2.html"
   GoClient = "https://github.com/akamai/AkamaiOPEN-edgegrid-golang"
 
 

@@ -1,5 +1,13 @@
 # Changelog
 
+### Added: 
+
+- **[dnsprovider]** Added DNS provider for EdgeDNS
+
+### Changed:
+
+- **[dnsprovider]** Deprecated FastDNS. Redirects to EdgeDNS.
+
 ## [v3.7.0] - 2020-05-11
 
 ### Added:

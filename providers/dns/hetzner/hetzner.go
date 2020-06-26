@@ -113,7 +113,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	record := internal.DNSRecord{
 		Type:   "TXT",
-		Name:   d.extractRecordName(fqdn, domain),
+		Name:   d.extractRecordName(fqdn, zone),
 		Value:  value,
 		TTL:    d.config.TTL,
 		ZoneID: zoneID,
@@ -140,7 +140,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("hetzner: %w", err)
 	}
 
-	recordName := d.extractRecordName(fqdn, domain)
+	recordName := d.extractRecordName(fqdn, zone)
 
 	record, err := d.client.GetTxtRecord(recordName, value, zoneID)
 	if err != nil {

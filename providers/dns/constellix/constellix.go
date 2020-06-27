@@ -122,40 +122,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	// TXT record entry already existing
 	if len(records) == 1 {
-		record, err := d.client.TxtRecords.Get(dom.ID, records[0].ID)
-		if err != nil {
-			return fmt.Errorf("constellix: failed to get TXT records: %w", err)
-		}
-
-		if containsValue(record, value) {
-			return nil
-		}
-
-		request := internal.RecordRequest{
-			Name:       record.Name,
-			TTL:        record.TTL,
-			RoundRobin: append(record.RoundRobin, internal.RecordValue{Value: fmt.Sprintf(`"%s"`, value)}),
-		}
-
-		_, err = d.client.TxtRecords.Update(dom.ID, record.ID, request)
-		if err != nil {
-			return fmt.Errorf("constellix: failed to update TXT records: %w", err)
-		}
-
-		return nil
+		return d.appendRecordValue(dom, records[0].ID, value)
 	}
 
-	request := internal.RecordRequest{
-		Name: recordName,
-		TTL:  d.config.TTL,
-		RoundRobin: []internal.RecordValue{
-			{Value: fmt.Sprintf(`"%s"`, value)},
-		},
-	}
-
-	_, err = d.client.TxtRecords.Create(dom.ID, request)
+	err = d.createRecord(dom, fqdn, recordName, value)
 	if err != nil {
-		return fmt.Errorf("constellix: failed to create TXT record %s: %w", fqdn, err)
+		return fmt.Errorf("constellix: %w", err)
 	}
 
 	return nil
@@ -208,6 +180,56 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return nil
 	}
 
+	err = d.removeRecordValue(dom, record, value)
+	if err != nil {
+		return fmt.Errorf("constellix: %w", err)
+	}
+
+	return nil
+}
+
+func (d *DNSProvider) createRecord(dom internal.Domain, fqdn string, recordName string, value string) error {
+	request := internal.RecordRequest{
+		Name: recordName,
+		TTL:  d.config.TTL,
+		RoundRobin: []internal.RecordValue{
+			{Value: fmt.Sprintf(`"%s"`, value)},
+		},
+	}
+
+	_, err := d.client.TxtRecords.Create(dom.ID, request)
+	if err != nil {
+		return fmt.Errorf("failed to create TXT record %s: %w", fqdn, err)
+	}
+
+	return nil
+}
+
+func (d *DNSProvider) appendRecordValue(dom internal.Domain, recordID int64, value string) error {
+	record, err := d.client.TxtRecords.Get(dom.ID, recordID)
+	if err != nil {
+		return fmt.Errorf("failed to get TXT records: %w", err)
+	}
+
+	if containsValue(record, value) {
+		return nil
+	}
+
+	request := internal.RecordRequest{
+		Name:       record.Name,
+		TTL:        record.TTL,
+		RoundRobin: append(record.RoundRobin, internal.RecordValue{Value: fmt.Sprintf(`"%s"`, value)}),
+	}
+
+	_, err = d.client.TxtRecords.Update(dom.ID, record.ID, request)
+	if err != nil {
+		return fmt.Errorf("failed to update TXT records: %w", err)
+	}
+
+	return nil
+}
+
+func (d *DNSProvider) removeRecordValue(dom internal.Domain, record *internal.Record, value string) error {
 	request := internal.RecordRequest{
 		Name: record.Name,
 		TTL:  record.TTL,
@@ -219,9 +241,9 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		}
 	}
 
-	_, err = d.client.TxtRecords.Update(dom.ID, record.ID, request)
+	_, err := d.client.TxtRecords.Update(dom.ID, record.ID, request)
 	if err != nil {
-		return fmt.Errorf("constellix: failed to update TXT records: %w", err)
+		return fmt.Errorf("failed to update TXT records: %w", err)
 	}
 
 	return nil

@@ -116,7 +116,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	record := internal.DNSRecord{
 		Type:          "txt",
-		Name:          d.extractRecordName(fqdn, domain),
+		Name:          extractRecordName(fqdn, authZone),
 		Value:         internal.TXTRecordValue{Text: value},
 		TTL:           d.config.TTL,
 		UpstreamHTTPS: "default",
@@ -177,9 +177,9 @@ func getZone(fqdn string) (string, error) {
 	return dns01.UnFqdn(authZone), nil
 }
 
-func (d *DNSProvider) extractRecordName(fqdn, domain string) string {
+func extractRecordName(fqdn, zone string) string {
 	name := dns01.UnFqdn(fqdn)
-	if idx := strings.Index(name, "."+domain); idx != -1 {
+	if idx := strings.Index(name, "."+zone); idx != -1 {
 		return name[:idx]
 	}
 	return name

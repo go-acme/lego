@@ -202,9 +202,9 @@ func newTxtRecord(zoneName, fqdn, value string, ttl int) dnsimple.ZoneRecordAttr
 	}
 }
 
-func extractRecordName(fqdn, domain string) string {
+func extractRecordName(fqdn, zone string) string {
 	name := dns01.UnFqdn(fqdn)
-	if idx := strings.Index(name, "."+domain); idx != -1 {
+	if idx := strings.Index(name, "."+zone); idx != -1 {
 		return name[:idx]
 	}
 	return name

@@ -101,12 +101,12 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	domainZone, err := d.getZone(fqdn)
+	domainZone, err := getZone(fqdn)
 	if err != nil {
 		return fmt.Errorf("godaddy: failed to get zone: %w", err)
 	}
 
-	recordName := d.extractRecordName(fqdn, domainZone)
+	recordName := extractRecordName(fqdn, domainZone)
 
 	records, err := d.getRecords(domainZone, "TXT", recordName)
 	if err != nil {
@@ -140,12 +140,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	domainZone, err := d.getZone(fqdn)
+	domainZone, err := getZone(fqdn)
 	if err != nil {
 		return fmt.Errorf("godaddy: failed to get zone: %w", err)
 	}
 
-	recordName := d.extractRecordName(fqdn, domainZone)
+	recordName := extractRecordName(fqdn, domainZone)
 
 	records, err := d.getRecords(domainZone, "TXT", recordName)
 	if err != nil {
@@ -182,15 +182,15 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-func (d *DNSProvider) extractRecordName(fqdn, domain string) string {
+func extractRecordName(fqdn, zone string) string {
 	name := dns01.UnFqdn(fqdn)
-	if idx := strings.Index(name, "."+domain); idx != -1 {
+	if idx := strings.Index(name, "."+zone); idx != -1 {
 		return name[:idx]
 	}
 	return name
 }
 
-func (d *DNSProvider) getZone(fqdn string) (string, error) {
+func getZone(fqdn string) (string, error) {
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
 		return "", err

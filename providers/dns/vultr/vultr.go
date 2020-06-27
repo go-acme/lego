@@ -100,7 +100,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("vultr: %w", err)
 	}
 
-	name := d.extractRecordName(fqdn, zoneDomain)
+	name := extractRecordName(fqdn, zoneDomain)
 
 	err = d.client.DNSRecord.Create(ctx, zoneDomain, "TXT", name, `"`+value+`"`, d.config.TTL, 0)
 	if err != nil {
@@ -175,7 +175,7 @@ func (d *DNSProvider) findTxtRecords(ctx context.Context, domain, fqdn string) (
 		return "", records, fmt.Errorf("API call has failed: %w", err)
 	}
 
-	recordName := d.extractRecordName(fqdn, zoneDomain)
+	recordName := extractRecordName(fqdn, zoneDomain)
 	for _, record := range result {
 		if record.Type == "TXT" && record.Name == recordName {
 			records = append(records, record)
@@ -185,9 +185,9 @@ func (d *DNSProvider) findTxtRecords(ctx context.Context, domain, fqdn string) (
 	return zoneDomain, records, nil
 }
 
-func (d *DNSProvider) extractRecordName(fqdn, domain string) string {
+func extractRecordName(fqdn, zone string) string {
 	name := dns01.UnFqdn(fqdn)
-	if idx := strings.Index(name, "."+domain); idx != -1 {
+	if idx := strings.Index(name, "."+zone); idx != -1 {
 		return name[:idx]
 	}
 	return name

@@ -21,7 +21,7 @@ func (d *DNSProvider) addTXTRecord(fqdn, domain, value string, ttl int) error {
 		return fmt.Errorf("sakuracloud: %w", err)
 	}
 
-	name := d.extractRecordName(fqdn, zone.Name)
+	name := extractRecordName(fqdn, zone.Name)
 
 	zone.AddRecord(zone.CreateNewRecord(name, "TXT", value, ttl))
 	_, err = d.client.Update(zone.ID, zone)
@@ -41,7 +41,7 @@ func (d *DNSProvider) cleanupTXTRecord(fqdn, domain string) error {
 		return fmt.Errorf("sakuracloud: %w", err)
 	}
 
-	records := d.findTxtRecords(fqdn, zone)
+	records := findTxtRecords(fqdn, zone)
 
 	for _, record := range records {
 		var updRecords []sacloud.DNSRecordSet
@@ -85,8 +85,8 @@ func (d *DNSProvider) getHostedZone(domain string) (*sacloud.DNS, error) {
 	return nil, fmt.Errorf("zone %s not found", zoneName)
 }
 
-func (d *DNSProvider) findTxtRecords(fqdn string, zone *sacloud.DNS) []sacloud.DNSRecordSet {
-	recordName := d.extractRecordName(fqdn, zone.Name)
+func findTxtRecords(fqdn string, zone *sacloud.DNS) []sacloud.DNSRecordSet {
+	recordName := extractRecordName(fqdn, zone.Name)
 
 	var res []sacloud.DNSRecordSet
 	for _, record := range zone.Settings.DNS.ResourceRecordSets {
@@ -97,9 +97,9 @@ func (d *DNSProvider) findTxtRecords(fqdn string, zone *sacloud.DNS) []sacloud.D
 	return res
 }
 
-func (d *DNSProvider) extractRecordName(fqdn, domain string) string {
+func extractRecordName(fqdn, zone string) string {
 	name := dns01.UnFqdn(fqdn)
-	if idx := strings.Index(name, "."+domain); idx != -1 {
+	if idx := strings.Index(name, "."+zone); idx != -1 {
 		return name[:idx]
 	}
 	return name

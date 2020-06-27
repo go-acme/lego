@@ -101,7 +101,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	zone, err := d.getZone(fqdn)
+	zone, err := getZone(fqdn)
 	if err != nil {
 		return fmt.Errorf("hetzner: failed to find zone: fqdn=%s: %w", fqdn, err)
 	}
@@ -113,7 +113,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	record := internal.DNSRecord{
 		Type:   "TXT",
-		Name:   d.extractRecordName(fqdn, domain),
+		Name:   extractRecordName(fqdn, zone),
 		Value:  value,
 		TTL:    d.config.TTL,
 		ZoneID: zoneID,
@@ -130,7 +130,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	zone, err := d.getZone(fqdn)
+	zone, err := getZone(fqdn)
 	if err != nil {
 		return fmt.Errorf("hetzner: failed to find zone: fqdn=%s: %w", fqdn, err)
 	}
@@ -140,7 +140,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("hetzner: %w", err)
 	}
 
-	recordName := d.extractRecordName(fqdn, domain)
+	recordName := extractRecordName(fqdn, zone)
 
 	record, err := d.client.GetTxtRecord(recordName, value, zoneID)
 	if err != nil {
@@ -154,15 +154,15 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-func (d *DNSProvider) extractRecordName(fqdn, domain string) string {
+func extractRecordName(fqdn, zone string) string {
 	name := dns01.UnFqdn(fqdn)
-	if idx := strings.Index(name, "."+domain); idx != -1 {
+	if idx := strings.Index(name, "."+zone); idx != -1 {
 		return name[:idx]
 	}
 	return name
 }
 
-func (d *DNSProvider) getZone(fqdn string) (string, error) {
+func getZone(fqdn string) (string, error) {
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
 		return "", err

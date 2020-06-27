@@ -201,7 +201,7 @@ func (d *DNSProvider) newTxtRecord(zone, fqdn, value string) (*alidns.AddDomainR
 	request.DomainName = zone
 
 	var err error
-	request.RR, err = d.extractRecordName(fqdn, zone)
+	request.RR, err = extractRecordName(fqdn, zone)
 	if err != nil {
 		return nil, err
 	}
@@ -229,7 +229,7 @@ func (d *DNSProvider) findTxtRecords(domain, fqdn string) ([]alidns.Record, erro
 		return records, fmt.Errorf("API call has failed: %w", err)
 	}
 
-	recordName, err := d.extractRecordName(fqdn, zoneName)
+	recordName, err := extractRecordName(fqdn, zoneName)
 	if err != nil {
 		return nil, err
 	}
@@ -242,8 +242,8 @@ func (d *DNSProvider) findTxtRecords(domain, fqdn string) ([]alidns.Record, erro
 	return records, nil
 }
 
-func (d *DNSProvider) extractRecordName(fqdn, domain string) (string, error) {
-	asciiDomain, err := idna.ToASCII(domain)
+func extractRecordName(fqdn, zone string) (string, error) {
+	asciiDomain, err := idna.ToASCII(zone)
 	if err != nil {
 		return "", fmt.Errorf("fail to convert punycode: %w", err)
 	}

@@ -157,7 +157,7 @@ func (d *DNSProvider) getHostedZone(domain string) (string, string, error) {
 }
 
 func (d *DNSProvider) newTxtRecord(zone, fqdn, value string, ttl int) *dnspod.Record {
-	name := d.extractRecordName(fqdn, zone)
+	name := extractRecordName(fqdn, zone)
 
 	return &dnspod.Record{
 		Type:  "TXT",
@@ -180,7 +180,7 @@ func (d *DNSProvider) findTxtRecords(domain, fqdn string) ([]dnspod.Record, erro
 		return records, fmt.Errorf("API call has failed: %w", err)
 	}
 
-	recordName := d.extractRecordName(fqdn, zoneName)
+	recordName := extractRecordName(fqdn, zoneName)
 
 	for _, record := range result {
 		if record.Name == recordName {
@@ -191,9 +191,9 @@ func (d *DNSProvider) findTxtRecords(domain, fqdn string) ([]dnspod.Record, erro
 	return records, nil
 }
 
-func (d *DNSProvider) extractRecordName(fqdn, domain string) string {
+func extractRecordName(fqdn, zone string) string {
 	name := dns01.UnFqdn(fqdn)
-	if idx := strings.Index(name, "."+domain); idx != -1 {
+	if idx := strings.Index(name, "."+zone); idx != -1 {
 		return name[:idx]
 	}
 	return name

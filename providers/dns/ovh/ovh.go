@@ -132,7 +132,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	authZone = dns01.UnFqdn(authZone)
-	subDomain := d.extractRecordName(fqdn, authZone)
+	subDomain := extractRecordName(fqdn, authZone)
 
 	reqURL := fmt.Sprintf("/domain/zone/%s/record", authZone)
 	reqData := Record{FieldType: "TXT", SubDomain: subDomain, Target: value, TTL: d.config.TTL}
@@ -205,9 +205,9 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-func (d *DNSProvider) extractRecordName(fqdn, domain string) string {
+func extractRecordName(fqdn, zone string) string {
 	name := dns01.UnFqdn(fqdn)
-	if idx := strings.Index(name, "."+domain); idx != -1 {
+	if idx := strings.Index(name, "."+zone); idx != -1 {
 		return name[:idx]
 	}
 	return name

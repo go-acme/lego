@@ -126,6 +126,8 @@ func (c *Challenge) Solve(authz acme.Authorization) error {
 
 	log.Infof("[%s] acme: Checking DNS record propagation using %+v", domain, recursiveNameservers)
 
+	time.Sleep(interval)
+
 	err = wait.For("propagation", timeout, interval, func() (bool, error) {
 		stop, errP := c.preCheck.call(domain, fqdn, value)
 		if !stop || errP != nil {

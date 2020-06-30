@@ -1,3 +1,4 @@
+// Package oraclecloud implements a DNS provider for solving the DNS-01 challenge using Oracle Cloud DNS.
 package oraclecloud
 
 import (

@@ -119,10 +119,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
-	parts := strings.Split(fqdn, ".")
 
 	record := Record{
-		Name: parts[0],
+		Name: extractRecordName(fqdn, zone.Domain),
 		Type: "TXT",
 		TTL:  d.config.TTL,
 		Data: value,
@@ -139,9 +138,9 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
-	parts := strings.Split(fqdn, ".")
+	recordName := extractRecordName(fqdn, zone.Domain)
 
-	records, err := d.getZoneRecords(parts[0], zone)
+	records, err := d.getZoneRecords(recordName, zone)
 	if err != nil {
 		return err
 	}
@@ -160,4 +159,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
+}
+
+func extractRecordName(fqdn, zone string) string {
+	name := dns01.UnFqdn(fqdn)
+	if idx := strings.Index(name, "."+zone); idx != -1 {
+		return name[:idx]
+	}
+	return name
 }

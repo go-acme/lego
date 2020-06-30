@@ -115,7 +115,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	request := &namecom.Record{
 		DomainName: domain,
-		Host:       d.extractRecordName(fqdn, domainDetails.DomainName),
+		Host:       extractRecordName(fqdn, domainDetails.DomainName),
 		Type:       "TXT",
 		TTL:        uint32(d.config.TTL),
 		Answer:     value,
@@ -180,9 +180,9 @@ func (d *DNSProvider) getRecords(domain string) ([]*namecom.Record, error) {
 	return records, nil
 }
 
-func (d *DNSProvider) extractRecordName(fqdn, domain string) string {
+func extractRecordName(fqdn, zone string) string {
 	name := dns01.UnFqdn(fqdn)
-	if idx := strings.Index(name, "."+domain); idx != -1 {
+	if idx := strings.Index(name, "."+zone); idx != -1 {
 		return name[:idx]
 	}
 	return name

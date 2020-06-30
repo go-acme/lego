@@ -2,11 +2,11 @@
 
 ### Added: 
 
-- **[dnsprovider]** Added DNS provider for EdgeDNS
+- **[dnsprovider]** Added DNS provider for Akamai EdgeDNS
 
 ### Changed:
 
-- **[dnsprovider]** Deprecated FastDNS. Redirects to EdgeDNS.
+- **[dnsprovider]** Deprecated FastDNS.
 
 ## [v3.7.0] - 2020-05-11
 

@@ -41,6 +41,7 @@ func allDNSCodes() string {
 		"dyn",
 		"dynu",
 		"easydns",
+		"edgedns",
 		"exec",
 		"exoscale",
 		"fastdns",
@@ -681,6 +682,28 @@ func displayDNSHelp(name string) error {
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/easydns`)
 
+	case "edgedns":
+		// generated from: providers/dns/edgedns/edgedns.toml
+		ew.writeln(`Configuration for EdgeDNS.`)
+		ew.writeln(`Code:	'edgedns'`)
+		ew.writeln(`Since:	'v3.8.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "AKAMAI_ACCESS_TOKEN":	Access token`)
+		ew.writeln(`	- "AKAMAI_CLIENT_SECRET":	Client secret`)
+		ew.writeln(`	- "AKAMAI_CLIENT_TOKEN":	Client token`)
+		ew.writeln(`	- "AKAMAI_HOST":	API host`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "AKAMAI_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "AKAMAI_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "AKAMAI_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/edgedns`)
+
 	case "exec":
 		// generated from: providers/dns/exec/exec.toml
 		ew.writeln(`Configuration for External program.`)
@@ -715,7 +738,7 @@ func displayDNSHelp(name string) error {
 
 	case "fastdns":
 		// generated from: providers/dns/fastdns/fastdns.toml
-		ew.writeln(`Configuration for FastDNS.`)
+		ew.writeln(`Configuration for FastDNS (DEPRECATED).`)
 		ew.writeln(`Code:	'fastdns'`)
 		ew.writeln(`Since:	'v0.5.0'`)
 		ew.writeln()

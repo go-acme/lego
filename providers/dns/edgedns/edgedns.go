@@ -1,4 +1,4 @@
-// Package edgedns replaces edgedns and implements a DNS provider for solving the DNS-01 challenge using EdgeDNS.
+// Package edgedns replaces fastdns, implementing a DNS provider for solving the DNS-01 challenge using Akamai EdgeDNS.
 package edgedns
 
 import (
@@ -24,6 +24,9 @@ const (
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+
+	AkamaiDefaultPropagationTimeout = 3 * time.Minute  // 3 minutes
+	AkamaiDefaultPollInterval       = 15 * time.Second // 15 seconds
 )
 
 // Config is used to configure the creation of the DNSProvider.
@@ -38,8 +41,8 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, AkamaiDefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, AkamaiDefaultPollInterval),
 	}
 }
 

@@ -1,5 +1,5 @@
 ---
-title: "FastDNS"
+title: "FastDNS (DEPRECATED)"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: fastdns
@@ -11,7 +11,7 @@ slug: fastdns
 
 Since: v0.5.0
 
-Configuration for [FastDNS](https://www.akamai.com/us/en/products/security/fast-dns.jsp).
+Configuration for [FastDNS (DEPRECATED)](https://www.akamai.com/us/en/products/security/fast-dns.jsp).
 
 
 <!--more-->

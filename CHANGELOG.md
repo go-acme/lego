@@ -1,5 +1,26 @@
 # Changelog
 
+## [v3.8.0] - 2020-07-02
+
+### Added:
+- **[cli]** cli: add hook on the run command.
+- **[dnsprovider]** inwx: Two-Factor-Authentication
+- **[dnsprovider]** Add DNS provider for ArvanCloud
+
+### Changed:
+- **[dnsprovider]** vultr: bumping govultr version
+- **[dnsprovider]** desec: improve error logs.
+- **[lib]** Ensures the return of a location during account updates
+- **[dnsprovider]** route53: Document all AWS credential environment variables
+
+### Fixed:
+- **[dnsprovider]** stackpath: fix subdomain support.
+- **[dnsprovider]** arvandcloud: fix record name.
+- **[dnsprovider]** fix: multi-va.
+- **[dnsprovider]** constellix: fix search records API call.
+- **[dnsprovider]** hetzner: fix record name.
+- **[lib]** Registrar.ResolveAccountByKey: Fix malformed request
+
 ## [v3.7.0] - 2020-05-11
 
 ### Added:

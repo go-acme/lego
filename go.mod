@@ -26,7 +26,6 @@ require (
 	github.com/labbsr0x/bindman-dns-webhook v1.0.2
 	github.com/linode/linodego v0.10.0
 	github.com/liquidweb/liquidweb-go v1.6.0
-	github.com/maratori/testpackage v1.0.1 // indirect
 	github.com/miekg/dns v1.1.27
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
 	github.com/nrdcg/auroradns v1.0.1
@@ -44,10 +43,8 @@ require (
 	github.com/urfave/cli v1.22.1
 	github.com/vultr/govultr v0.4.2
 	golang.org/x/crypto v0.0.0-20200302210943-78000ba7a073
-	golang.org/x/mod v0.3.0 // indirect
 	golang.org/x/net v0.0.0-20200301022130-244492dfa37a
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
-	golang.org/x/tools v0.0.0-20200625163451-727c06e3f111 // indirect
 	google.golang.org/api v0.20.0
 	gopkg.in/ns1/ns1-go.v2 v2.0.0-20190730140822-b51389932cbc
 	gopkg.in/square/go-jose.v2 v2.3.1

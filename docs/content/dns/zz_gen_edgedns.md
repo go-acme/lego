@@ -10,17 +10,23 @@ slug: edgedns
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 Since: v3.8.0
+Akamai edgedns supercedes fastdns; implementing a DNS provider for solving the DNS-01 challenge using Akamai EdgeDNS
 
-Configuration for [EdgeDNS](https://www.akamai.com/us/en/products/security/edge-dns.jsp).
 
 
 <!--more-->
 
 - Code: `edgedns`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the EdgeDNS provider:
+
+```bash
+AKAMAI_CLIENT_SECRET=abcdefghijklmnopqrstuvwxyz1234567890ABCDEFG= \
+AKAMAI_CLIENT_TOKEN=akab-mnbvcxzlkjhgfdsapoiuytrewq1234567 \
+AKAMAI_HOST=akab-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.luna.akamaiapis.net \
+AKAMAI_ACCESS_TOKEN=akab-1234567890qwerty-asdfghjklzxcvtnu \
+lego --domains="example.zone" --email="testuser@mail.me" --dns="edgedns" -a run
+```
 
 
 
@@ -42,8 +48,9 @@ More information [here](/lego/dns/#configuration-and-credentials).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `AKAMAI_POLLING_INTERVAL` | Time between DNS propagation check |
-| `AKAMAI_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
+| `AKAMAI_POLLING_INTERVAL` | Time between DNS propagation check. Default: 15 seconds |
+| `AKAMAI_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation. Default: 3 minutes |
+| `AKAMAI_SEQUENCE_INTERVAL` | Interval between Challenges. Default: 3 minutes |
 | `AKAMAI_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.

@@ -255,7 +255,7 @@ func TestDNSProvider_logout(t *testing.T) {
 }
 
 func TestDNSProvider_getZone(t *testing.T) {
-	var testZone = "@ A 0 192.0.2.2 3600"
+	testZone := "@ A 0 192.0.2.2 3600"
 
 	testCases := []struct {
 		desc               string

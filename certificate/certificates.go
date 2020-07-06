@@ -232,7 +232,7 @@ func (c *Certifier) getForOrder(domains []string, order acme.ExtendedOrder, bund
 	return c.getForCSR(domains, order, bundle, csr, certcrypto.PEMEncode(privateKey))
 }
 
-func (c *Certifier) getForCSR(domains []string, order acme.ExtendedOrder, bundle bool, csr []byte, privateKeyPem []byte) (*Resource, error) {
+func (c *Certifier) getForCSR(domains []string, order acme.ExtendedOrder, bundle bool, csr, privateKeyPem []byte) (*Resource, error) {
 	respOrder, err := c.core.Orders.UpdateForCSR(order.Finalize, csr)
 	if err != nil {
 		return nil, err

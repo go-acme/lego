@@ -120,7 +120,7 @@ func (d *DNSProvider) login() error {
 }
 
 // https://www.mythic-beasts.com/support/api/dnsv2#ep-get-zoneszonerecords
-func (d *DNSProvider) createTXTRecord(zone string, leaf string, value string) error {
+func (d *DNSProvider) createTXTRecord(zone, leaf, value string) error {
 	if d.token == "" {
 		return fmt.Errorf("createTXTRecord: not logged in")
 	}
@@ -183,7 +183,7 @@ func (d *DNSProvider) createTXTRecord(zone string, leaf string, value string) er
 }
 
 // https://www.mythic-beasts.com/support/api/dnsv2#ep-delete-zoneszonerecords
-func (d *DNSProvider) removeTXTRecord(zone string, leaf string, value string) error {
+func (d *DNSProvider) removeTXTRecord(zone, leaf, value string) error {
 	if d.token == "" {
 		return fmt.Errorf("removeTXTRecord: not logged in")
 	}

@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func (d *DNSProvider) doRequest(domain, value string, cmd string) error {
+func (d *DNSProvider) doRequest(domain, value, cmd string) error {
 	req, err := d.buildRequest(domain, value, cmd)
 	if err != nil {
 		return err
@@ -34,7 +34,7 @@ func (d *DNSProvider) doRequest(domain, value string, cmd string) error {
 	return nil
 }
 
-func (d *DNSProvider) buildRequest(domain, value string, cmd string) (*http.Request, error) {
+func (d *DNSProvider) buildRequest(domain, value, cmd string) (*http.Request, error) {
 	params := url.Values{}
 	params.Set("CERTBOT_DOMAIN", domain)
 	params.Set("CERTBOT_VALIDATION", value)

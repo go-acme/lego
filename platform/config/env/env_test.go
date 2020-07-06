@@ -186,7 +186,7 @@ func TestGetOrDefaultSecond(t *testing.T) {
 		},
 	}
 
-	var key = "LEGO_ENV_TC"
+	key := "LEGO_ENV_TC"
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
@@ -220,7 +220,7 @@ func TestGetOrDefaultString(t *testing.T) {
 		},
 	}
 
-	var key = "LEGO_ENV_TC"
+	key := "LEGO_ENV_TC"
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
@@ -260,7 +260,7 @@ func TestGetOrDefaultBool(t *testing.T) {
 		},
 	}
 
-	var key = "LEGO_ENV_TC"
+	key := "LEGO_ENV_TC"
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
@@ -313,7 +313,7 @@ func TestGetOrFile_ReadsFiles(t *testing.T) {
 			require.NoError(t, err)
 			defer os.Remove(file.Name())
 
-			err = ioutil.WriteFile(file.Name(), []byte("lego_file\n"), 0644)
+			err = ioutil.WriteFile(file.Name(), []byte("lego_file\n"), 0o644)
 			require.NoError(t, err)
 
 			err = os.Setenv(varEnvFileName, file.Name())
@@ -340,7 +340,7 @@ func TestGetOrFile_PrefersEnvVars(t *testing.T) {
 	require.NoError(t, err)
 	defer os.Remove(file.Name())
 
-	err = ioutil.WriteFile(file.Name(), []byte("lego_file"), 0644)
+	err = ioutil.WriteFile(file.Name(), []byte("lego_file"), 0o644)
 	require.NoError(t, err)
 
 	err = os.Setenv(varEnvFileName, file.Name())

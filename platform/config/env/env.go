@@ -118,7 +118,7 @@ func GetOrDefaultSecond(envVar string, defaultValue time.Duration) time.Duration
 
 // GetOrDefaultString returns the given environment variable value as a string.
 // Returns the default if the envvar cannot be find.
-func GetOrDefaultString(envVar string, defaultValue string) string {
+func GetOrDefaultString(envVar, defaultValue string) string {
 	v := GetOrFile(envVar)
 	if len(v) == 0 {
 		return defaultValue

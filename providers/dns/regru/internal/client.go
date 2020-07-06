@@ -21,7 +21,7 @@ type Client struct {
 }
 
 // NewClient Creates a reg.ru client.
-func NewClient(username string, password string) *Client {
+func NewClient(username, password string) *Client {
 	return &Client{
 		username:   username,
 		password:   password,
@@ -32,7 +32,7 @@ func NewClient(username string, password string) *Client {
 
 // RemoveTxtRecord removes a TXT record.
 // https://www.reg.ru/support/help/api2#zone_remove_record
-func (c Client) RemoveTxtRecord(domain, subDomain string, content string) error {
+func (c Client) RemoveTxtRecord(domain, subDomain, content string) error {
 	request := RemoveRecordRequest{
 		Username: c.username,
 		Password: c.password,
@@ -55,7 +55,7 @@ func (c Client) RemoveTxtRecord(domain, subDomain string, content string) error 
 
 // AddTXTRecord adds a TXT record.
 // https://www.reg.ru/support/help/api2#zone_add_txt
-func (c Client) AddTXTRecord(domain, subDomain string, content string) error {
+func (c Client) AddTXTRecord(domain, subDomain, content string) error {
 	request := AddTxtRequest{
 		Username: c.username,
 		Password: c.password,

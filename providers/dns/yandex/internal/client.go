@@ -81,7 +81,6 @@ func (c *Client) GetRecords(domain string) ([]Record, error) {
 	resp, err := c.get("/list", struct {
 		Domain string `url:"domain"`
 	}{Domain: domain})
-
 	if err != nil {
 		return nil, err
 	}

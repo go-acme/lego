@@ -231,7 +231,7 @@ func (d *DNSProvider) changeRecord(action, hostedZoneID string, recordSet *route
 	})
 }
 
-func (d *DNSProvider) getExistingRecordSets(hostedZoneID string, fqdn string) ([]*route53.ResourceRecord, error) {
+func (d *DNSProvider) getExistingRecordSets(hostedZoneID, fqdn string) ([]*route53.ResourceRecord, error) {
 	listInput := &route53.ListResourceRecordSetsInput{
 		HostedZoneId:    aws.String(hostedZoneID),
 		StartRecordName: aws.String(fqdn),

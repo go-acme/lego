@@ -41,7 +41,7 @@ type TXTRecord struct {
 type TXTRecords map[string]TXTRecord
 
 // NewClient creates a ClouDNS client.
-func NewClient(authID string, subAuthID string, authPassword string) (*Client, error) {
+func NewClient(authID, subAuthID, authPassword string) (*Client, error) {
 	if authID == "" && subAuthID == "" {
 		return nil, errors.New("credentials missing: authID or subAuthID")
 	}
@@ -147,7 +147,7 @@ func (c *Client) FindTxtRecord(zoneName, fqdn string) (*TXTRecord, error) {
 }
 
 // AddTxtRecord add a TXT record.
-func (c *Client) AddTxtRecord(zoneName string, fqdn, value string, ttl int) error {
+func (c *Client) AddTxtRecord(zoneName, fqdn, value string, ttl int) error {
 	host := dns01.UnFqdn(strings.TrimSuffix(dns01.UnFqdn(fqdn), zoneName))
 
 	reqURL := *c.BaseURL

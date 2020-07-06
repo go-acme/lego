@@ -235,6 +235,7 @@ func (m *MockHTTPClientAPI) Post(url string, data []byte) (*http.Response, []byt
 func (m *MockHTTPClientAPI) Get(url string) (*http.Response, []byte, error) {
 	return &http.Response{StatusCode: m.Status}, m.Data, m.Error
 }
+
 func (m *MockHTTPClientAPI) Delete(url string) (*http.Response, []byte, error) {
 	return &http.Response{StatusCode: m.Status}, m.Data, m.Error
 }

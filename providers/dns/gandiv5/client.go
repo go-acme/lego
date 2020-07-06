@@ -27,7 +27,7 @@ type Record struct {
 	RRSetType   string   `json:"rrset_type,omitempty"`
 }
 
-func (d *DNSProvider) addTXTRecord(domain string, name string, value string, ttl int) error {
+func (d *DNSProvider) addTXTRecord(domain, name, value string, ttl int) error {
 	// Get exiting values for the TXT records
 	// Needed to create challenges for both wildcard and base name domains
 	txtRecord, err := d.getTXTRecord(domain, name)
@@ -80,7 +80,7 @@ func (d *DNSProvider) getTXTRecord(domain, name string) (*Record, error) {
 	return txtRecord, nil
 }
 
-func (d *DNSProvider) deleteTXTRecord(domain string, name string) error {
+func (d *DNSProvider) deleteTXTRecord(domain, name string) error {
 	target := fmt.Sprintf("domains/%s/records/%s/TXT", domain, name)
 
 	req, err := d.newRequest(http.MethodDelete, target, nil)

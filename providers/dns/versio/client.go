@@ -68,7 +68,7 @@ func (d *DNSProvider) getDNSRecords(domain string) (*dnsRecordsResponse, error) 
 	return respData, nil
 }
 
-func (d *DNSProvider) makeRequest(method string, uri string, body io.Reader) (*http.Request, error) {
+func (d *DNSProvider) makeRequest(method, uri string, body io.Reader) (*http.Request, error) {
 	endpoint, err := d.config.BaseURL.Parse(path.Join(d.config.BaseURL.EscapedPath(), uri))
 	if err != nil {
 		return nil, err

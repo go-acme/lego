@@ -16,7 +16,7 @@ func TestHTTPProvider(t *testing.T) {
 	keyAuth := "keyAuth"
 	challengeFilePath := webroot + "/.well-known/acme-challenge/" + token
 
-	require.NoError(t, os.MkdirAll(webroot+"/.well-known/acme-challenge", 0777))
+	require.NoError(t, os.MkdirAll(webroot+"/.well-known/acme-challenge", 0o777))
 	defer os.RemoveAll(webroot)
 
 	provider, err := NewHTTPProvider(webroot)

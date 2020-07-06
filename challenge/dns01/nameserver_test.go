@@ -169,7 +169,7 @@ func TestFindPrimayNsByFqdnCustom(t *testing.T) {
 }
 
 func TestResolveConfServers(t *testing.T) {
-	var testCases = []struct {
+	testCases := []struct {
 		fixture  string
 		expected []string
 		defaults []string

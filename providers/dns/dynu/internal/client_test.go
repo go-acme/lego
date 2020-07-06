@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(method string, pattern string, status int, file string) *Client {
+func setupTest(method, pattern string, status int, file string) *Client {
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
 
@@ -126,18 +126,19 @@ func TestGetRecords(t *testing.T) {
 			status:  http.StatusOK,
 			file:    "./fixtures/get_records.json",
 			expected: expected{
-				records: []DNSRecord{{
-					ID:         6041417,
-					Type:       "TXT",
-					DomainID:   9007481,
-					DomainName: "lego.freeddns.org",
-					NodeName:   "_acme-challenge",
-					Hostname:   "_acme-challenge.lego.freeddns.org",
-					State:      true,
-					Content:    `_acme-challenge.lego.freeddns.org. 300 IN TXT "txt_txt_txt_txt_txt_txt_txt"`,
-					TextData:   "txt_txt_txt_txt_txt_txt_txt",
-					TTL:        300,
-				},
+				records: []DNSRecord{
+					{
+						ID:         6041417,
+						Type:       "TXT",
+						DomainID:   9007481,
+						DomainName: "lego.freeddns.org",
+						NodeName:   "_acme-challenge",
+						Hostname:   "_acme-challenge.lego.freeddns.org",
+						State:      true,
+						Content:    `_acme-challenge.lego.freeddns.org. 300 IN TXT "txt_txt_txt_txt_txt_txt_txt"`,
+						TextData:   "txt_txt_txt_txt_txt_txt_txt",
+						TTL:        300,
+					},
 					{
 						ID:         6041422,
 						Type:       "TXT",

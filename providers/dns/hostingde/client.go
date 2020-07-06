@@ -91,7 +91,7 @@ func (d *DNSProvider) getZone(findRequest ZoneConfigsFindRequest) (*ZoneConfig, 
 	return zoneConfig, nil
 }
 
-func (d *DNSProvider) post(uri string, request interface{}, response interface{}) ([]byte, error) {
+func (d *DNSProvider) post(uri string, request, response interface{}) ([]byte, error) {
 	body, err := json.Marshal(request)
 	if err != nil {
 		return nil, err

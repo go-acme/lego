@@ -28,14 +28,17 @@ type paramInt struct {
 type structMember interface {
 	structMember()
 }
+
 type structMemberString struct {
 	Name  string `xml:"name"`
 	Value string `xml:"value>string"`
 }
+
 type structMemberInt struct {
 	Name  string `xml:"name"`
 	Value int    `xml:"value>int"`
 }
+
 type paramStruct struct {
 	XMLName       xml.Name       `xml:"param"`
 	StructMembers []structMember `xml:"value>struct>member"`
@@ -120,7 +123,8 @@ func (d *DNSProvider) rpcCall(call *methodCall, resp response) error {
 	}
 	if resp.faultCode() != 0 {
 		return rpcError{
-			faultCode: resp.faultCode(), faultString: resp.faultString()}
+			faultCode: resp.faultCode(), faultString: resp.faultString(),
+		}
 	}
 	return nil
 }
@@ -166,7 +170,8 @@ func (d *DNSProvider) cloneZone(zoneID int, name string) (int, error) {
 					structMemberString{
 						Name:  "name",
 						Value: name,
-					}},
+					},
+				},
 			},
 		},
 	}, resp)
@@ -206,7 +211,7 @@ func (d *DNSProvider) newZoneVersion(zoneID int) (int, error) {
 	return resp.Value, nil
 }
 
-func (d *DNSProvider) addTXTRecord(zoneID int, version int, name string, value string, ttl int) error {
+func (d *DNSProvider) addTXTRecord(zoneID, version int, name, value string, ttl int) error {
 	resp := &responseStruct{}
 	err := d.rpcCall(&methodCall{
 		MethodName: "domain.zone.record.add",
@@ -228,14 +233,15 @@ func (d *DNSProvider) addTXTRecord(zoneID int, version int, name string, value s
 					}, structMemberInt{
 						Name:  "ttl",
 						Value: ttl,
-					}},
+					},
+				},
 			},
 		},
 	}, resp)
 	return err
 }
 
-func (d *DNSProvider) setZoneVersion(zoneID int, version int) error {
+func (d *DNSProvider) setZoneVersion(zoneID, version int) error {
 	resp := &responseBool{}
 	err := d.rpcCall(&methodCall{
 		MethodName: "domain.zone.version.set",
@@ -301,7 +307,7 @@ func (d *DNSProvider) deleteZone(zoneID int) error {
 	return nil
 }
 
-func (d *DNSProvider) httpPost(url string, bodyType string, body io.Reader) ([]byte, error) {
+func (d *DNSProvider) httpPost(url, bodyType string, body io.Reader) ([]byte, error) {
 	resp, err := d.config.HTTPClient.Post(url, bodyType, body)
 	if err != nil {
 		return nil, fmt.Errorf("HTTP Post Error: %w", err)

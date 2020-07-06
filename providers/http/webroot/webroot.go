@@ -30,12 +30,12 @@ func (w *HTTPProvider) Present(domain, token, keyAuth string) error {
 	var err error
 
 	challengeFilePath := filepath.Join(w.path, http01.ChallengePath(token))
-	err = os.MkdirAll(filepath.Dir(challengeFilePath), 0755)
+	err = os.MkdirAll(filepath.Dir(challengeFilePath), 0o755)
 	if err != nil {
 		return fmt.Errorf("could not create required directories in webroot for HTTP challenge: %w", err)
 	}
 
-	err = ioutil.WriteFile(challengeFilePath, []byte(keyAuth), 0644)
+	err = ioutil.WriteFile(challengeFilePath, []byte(keyAuth), 0o644)
 	if err != nil {
 		return fmt.Errorf("could not write file in webroot for HTTP challenge: %w", err)
 	}

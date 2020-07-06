@@ -193,7 +193,7 @@ func (d *DNSProvider) getZoneID(zone string) (string, error) {
 	return zonesRes.Zones[0].ID, nil
 }
 
-func (d *DNSProvider) getRecordSetID(zoneID string, fqdn string) (string, error) {
+func (d *DNSProvider) getRecordSetID(zoneID, fqdn string) (string, error) {
 	resource := fmt.Sprintf("zones/%s/recordsets?type=TXT&name=%s", zoneID, fqdn)
 	resp, err := d.sendRequest(http.MethodGet, resource, nil)
 	if err != nil {

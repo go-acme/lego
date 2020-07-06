@@ -686,7 +686,7 @@ func displayDNSHelp(name string) error {
 		// generated from: providers/dns/edgedns/edgedns.toml
 		ew.writeln(`Configuration for EdgeDNS.`)
 		ew.writeln(`Code:	'edgedns'`)
-		ew.writeln(`Since:	'v3.8.0'`)
+		ew.writeln(`Since:	'v3.9.0'`)
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)

@@ -4,7 +4,7 @@ Akamai edgedns supercedes fastdns; implementing a DNS provider for solving the D
 '''
 URL = "https://www.akamai.com/us/en/products/security/edge-dns.jsp"
 Code = "edgedns"
-Since = "v3.8.0"
+Since = "v3.9.0"
 
 Example = '''
 AKAMAI_CLIENT_SECRET=abcdefghijklmnopqrstuvwxyz1234567890ABCDEFG= \

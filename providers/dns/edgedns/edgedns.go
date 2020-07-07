@@ -93,52 +93,78 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
+
 	zoneName, recordName, err := d.findZoneAndRecordName(fqdn, domain)
 	if err != nil {
 		return fmt.Errorf("edgedns: %w", err)
 	}
+
 	recordName = recordName + "." + zoneName
+
 	record, err := configdns.GetRecord(zoneName, recordName, "TXT")
-	if err == nil {
-		if record == nil {
-			return fmt.Errorf("edgedns: Unknown error")
-		}
-	} else {
-		if !configdns.IsConfigDNSError(err) || !err.(configdns.ConfigDNSError).NotFound() {
-			return fmt.Errorf("edgedns: %w", err)
-		}
+	if err != nil &&
+		!configdns.IsConfigDNSError(err) || !err.(configdns.ConfigDNSError).NotFound() {
+		return fmt.Errorf("edgedns: %w", err)
 	}
+
+	if err == nil && record == nil {
+		return fmt.Errorf("edgedns: unknown error")
+	}
+
 	if record != nil {
 		log.Infof("TXT record already exists. Updating target")
-		if len(record.Target) == 0 || strings.Trim(record.Target[0], "\"") == "" {
-			return fmt.Errorf("Txt record is invalid")
+
+		if len(record.Target) == 0 || strings.Trim(record.Target[0], `"`) == "" {
+			return fmt.Errorf("TXT record is invalid")
 		}
-		targ0 := strings.Trim(record.Target[0], "\"")
-		if strings.Contains(targ0, value) {
-			return nil // have a record and have entry already
+
+		target0 := strings.Trim(record.Target[0], `"`)
+
+		if strings.Contains(target0, value) {
+			// have a record and have entry already
+			return nil
 		}
-		record.Target[0] = "\"" + targ0 + " " + value + "\""
+
+		record.Target[0] = `"` + target0 + " " + value + `"`
+
 		log.Infof("[DEBUG] Update target: [%s]", record.Target[0])
+
 		record.TTL = d.config.TTL
-		return record.Update(zoneName)
+
+		err = record.Update(zoneName)
+		if err != nil {
+			return fmt.Errorf("edgedns: %w", err)
+		}
+
+		return nil
 	}
-	target := make([]string, 0, 1)
-	target = append(target, value)
-	record = &configdns.RecordBody{Name: recordName,
+
+	record = &configdns.RecordBody{
+		Name:       recordName,
 		RecordType: "TXT",
 		TTL:        d.config.TTL,
-		Target:     target}
-	return record.Save(zoneName)
+		Target:     []string{value},
+	}
+
+	err = record.Save(zoneName)
+	if err != nil {
+		return fmt.Errorf("edgedns: %w", err)
+	}
+
+	return nil
 }
 
 // CleanUp removes the record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
+
 	zoneName, recordName, err := d.findZoneAndRecordName(fqdn, domain)
 	if err != nil {
 		return fmt.Errorf("edgedns: %w", err)
 	}
+
 	recordName = recordName + "." + zoneName
+
 	existingRec, err := configdns.GetRecord(zoneName, recordName, "TXT")
 	if err != nil {
 		if configdns.IsConfigDNSError(err) && err.(configdns.ConfigDNSError).NotFound() {
@@ -146,32 +172,47 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		}
 		return fmt.Errorf("edgedns: %w", err)
 	}
+
 	if existingRec == nil {
-		return fmt.Errorf("edgedns: Unknown failure")
+		return fmt.Errorf("edgedns: unknown failure")
 	}
+
 	if len(existingRec.Target) == 0 {
-		return fmt.Errorf("Txt record is invalid")
+		return fmt.Errorf("edgedns: TXT record is invalid")
 	}
-	target0 := strings.Trim(existingRec.Target[0], "\"")
+
+	target0 := strings.Trim(existingRec.Target[0], `"`)
 	targets := strings.Split(target0, " ")
-	newtarget := ""
+
+	newTarget := ""
 	for _, entry := range targets {
-		if entry == value {
-			continue
-		} else {
-			newtarget += entry + " "
+		if entry != value {
+			newTarget += entry + " "
 		}
 	}
-	newtarget = strings.TrimRight(newtarget, " ")
-	if len(newtarget) > 0 {
-		log.Infof("[DEBUG] Updating TXT Record with: %s", newtarget)
-		existingRec.Target[0] = newtarget
+
+	newTarget = strings.TrimRight(newTarget, " ")
+	if len(newTarget) > 0 {
+		log.Infof("[DEBUG] Updating TXT Record with: %s", newTarget)
+
+		existingRec.Target[0] = newTarget
+
 		err := existingRec.Update(zoneName)
-		return err
+		if err != nil {
+			return fmt.Errorf("edgedns: %w", err)
+		}
+
+		return nil
 	}
 
 	log.Infof("[DEBUG] Deleting TxtRecord")
-	return existingRec.Delete(zoneName)
+
+	err = existingRec.Delete(zoneName)
+	if err != nil {
+		return fmt.Errorf("edgedns: %w", err)
+	}
+
+	return nil
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
@@ -191,7 +232,9 @@ func (d *DNSProvider) findZoneAndRecordName(fqdn, domain string) (string, string
 	if err != nil {
 		return "", "", err
 	}
+
 	zone = dns01.UnFqdn(zone)
+
 	name := dns01.UnFqdn(fqdn)
 	name = name[:len(name)-len("."+zone)]
 

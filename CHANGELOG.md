@@ -1,13 +1,5 @@
 # Changelog
 
-### Added: 
-
-- **[dnsprovider]** Added DNS provider for Akamai EdgeDNS
-
-### Changed:
-
-- **[dnsprovider]** Deprecated FastDNS.
-
 ## [v3.8.0] - 2020-07-02
 
 ### Added:

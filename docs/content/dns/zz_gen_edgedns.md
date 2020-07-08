@@ -1,5 +1,5 @@
 ---
-title: "EdgeDNS"
+title: "Akamai EdgeDNS"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: edgedns
@@ -18,7 +18,7 @@ Akamai edgedns supercedes fastdns; implementing a DNS provider for solving the D
 
 - Code: `edgedns`
 
-Here is an example bash command using the EdgeDNS provider:
+Here is an example bash command using the Akamai EdgeDNS provider:
 
 ```bash
 AKAMAI_CLIENT_SECRET=abcdefghijklmnopqrstuvwxyz1234567890ABCDEFG= \

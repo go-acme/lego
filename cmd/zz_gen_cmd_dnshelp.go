@@ -684,7 +684,7 @@ func displayDNSHelp(name string) error {
 
 	case "edgedns":
 		// generated from: providers/dns/edgedns/edgedns.toml
-		ew.writeln(`Configuration for EdgeDNS.`)
+		ew.writeln(`Configuration for Akamai EdgeDNS.`)
 		ew.writeln(`Code:	'edgedns'`)
 		ew.writeln(`Since:	'v3.9.0'`)
 		ew.writeln()
@@ -738,7 +738,7 @@ func displayDNSHelp(name string) error {
 
 	case "fastdns":
 		// generated from: providers/dns/fastdns/fastdns.toml
-		ew.writeln(`Configuration for FastDNS (DEPRECATED).`)
+		ew.writeln(`Configuration for FastDNS (Deprecated).`)
 		ew.writeln(`Code:	'fastdns'`)
 		ew.writeln(`Since:	'v0.5.0'`)
 		ew.writeln()

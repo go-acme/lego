@@ -50,7 +50,6 @@ More information [here](/lego/dns/#configuration-and-credentials).
 |--------------------------------|-------------|
 | `AKAMAI_POLLING_INTERVAL` | Time between DNS propagation check. Default: 15 seconds |
 | `AKAMAI_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation. Default: 3 minutes |
-| `AKAMAI_SEQUENCE_INTERVAL` | Interval between Challenges. Default: 3 minutes |
 | `AKAMAI_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.

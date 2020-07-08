@@ -26,7 +26,6 @@ const (
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
-	EnvSequenceInterval   = envNamespace + "SEQUENCE_INTERVAL"
 
 	AkamaiDefaultPropagationTimeout = 3 * time.Minute  // 3 minutes
 	AkamaiDefaultPollInterval       = 15 * time.Second // 15 seconds
@@ -37,7 +36,6 @@ type Config struct {
 	edgegrid.Config
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
-	SequenceInterval   time.Duration
 	TTL                int
 }
 
@@ -47,7 +45,6 @@ func NewDefaultConfig() *Config {
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, AkamaiDefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, AkamaiDefaultPollInterval),
-		SequenceInterval:   env.GetOrDefaultSecond(EnvSequenceInterval, env.GetOrDefaultSecond(EnvPropagationTimeout, AkamaiDefaultPropagationTimeout)),
 	}
 }
 
@@ -102,8 +99,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	recordName = recordName + "." + zoneName
 
 	record, err := configdns.GetRecord(zoneName, recordName, "TXT")
-	if err != nil &&
-		!configdns.IsConfigDNSError(err) || !err.(configdns.ConfigDNSError).NotFound() {
+	if err != nil && (!configdns.IsConfigDNSError(err) || !err.(configdns.ConfigDNSError).NotFound()) {
 		return fmt.Errorf("edgedns: %w", err)
 	}
 
@@ -114,36 +110,22 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if record != nil {
 		log.Infof("TXT record already exists. Updating target")
 
-		if len(record.Target) == 0 || strings.Trim(record.Target[0], `"`) == "" {
-			return fmt.Errorf("TXT record is invalid")
-		}
-
-		target0 := strings.Trim(record.Target[0], `"`)
-
-		if strings.Contains(target0, value) {
+		if containsValue(record.Target, value) {
 			// have a record and have entry already
 			return nil
 		}
 
-		record.Target[0] = `"` + target0 + " " + value + `"`
-
-		log.Infof("[DEBUG] Update target: [%s]", record.Target[0])
-
+		record.Target = append(record.Target, `"`+value+`"`)
 		record.TTL = d.config.TTL
 
-		err = record.Update(zoneName)
-		if err != nil {
-			return fmt.Errorf("edgedns: %w", err)
-		}
-
-		return nil
+		return updateRecordset(record, zoneName)
 	}
 
 	record = &configdns.RecordBody{
 		Name:       recordName,
 		RecordType: "TXT",
 		TTL:        d.config.TTL,
-		Target:     []string{value},
+		Target:     []string{`"` + value + `"`},
 	}
 
 	err = record.Save(zoneName)
@@ -181,28 +163,22 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("edgedns: TXT record is invalid")
 	}
 
-	target0 := strings.Trim(existingRec.Target[0], `"`)
-	targets := strings.Split(target0, " ")
-
-	newTarget := ""
-	for _, entry := range targets {
-		if entry != value {
-			newTarget += entry + " "
-		}
+	if !containsValue(existingRec.Target, value) {
+		return nil
 	}
 
-	newTarget = strings.TrimRight(newTarget, " ")
-	if len(newTarget) > 0 {
-		log.Infof("[DEBUG] Updating TXT Record with: %s", newTarget)
-
-		existingRec.Target[0] = newTarget
-
-		err := existingRec.Update(zoneName)
-		if err != nil {
-			return fmt.Errorf("edgedns: %w", err)
+	var newRData []string
+	for _, val := range existingRec.Target {
+		val = strings.Trim(val, `"`)
+		if val == value {
+			continue
 		}
+		newRData = append(newRData, val)
+	}
 
-		return nil
+	if len(newRData) > 0 {
+		existingRec.Target = newRData
+		return updateRecordset(existingRec, zoneName)
 	}
 
 	log.Infof("[DEBUG] Deleting TxtRecord")
@@ -215,16 +191,21 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
+func updateRecordset(rec *configdns.RecordBody, zoneName string) error {
+	log.Infof("[DEBUG] Updating TxtRecord: %v", rec.Target)
+
+	err := rec.Update(zoneName)
+	if err != nil {
+		return fmt.Errorf("edgedns: %w", err)
+	}
+
+	return nil
+}
+
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
-}
-
-// Sequential All DNS challenges for this provider will be resolved sequentially.
-// Returns the interval between each iteration.
-func (d *DNSProvider) Sequential() time.Duration {
-	return d.config.SequenceInterval
 }
 
 func (d *DNSProvider) findZoneAndRecordName(fqdn, domain string) (string, string, error) {
@@ -239,4 +220,18 @@ func (d *DNSProvider) findZoneAndRecordName(fqdn, domain string) (string, string
 	name = name[:len(name)-len("."+zone)]
 
 	return zone, name, nil
+}
+
+func containsValue(tslice []string, value string) bool {
+	if len(tslice) == 0 {
+		return false
+	}
+
+	for _, val := range tslice {
+		if val == fmt.Sprintf(`"%s"`, value) {
+			return true
+		}
+	}
+
+	return false
 }

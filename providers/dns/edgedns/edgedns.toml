@@ -23,7 +23,6 @@ lego --domains="example.zone" --email="testuser@mail.me" --dns="edgedns" -a run
   [Configuration.Additional]
     AKAMAI_POLLING_INTERVAL = "Time between DNS propagation check. Default: 15 seconds"
     AKAMAI_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation. Default: 3 minutes"
-    AKAMAI_SEQUENCE_INTERVAL = "Interval between Challenges. Default: 3 minutes"
     AKAMAI_TTL = "The TTL of the TXT record used for the DNS challenge"
 
 [Links]

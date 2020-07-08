@@ -699,7 +699,6 @@ func displayDNSHelp(name string) error {
 		ew.writeln(`Additional Configuration:`)
 		ew.writeln(`	- "AKAMAI_POLLING_INTERVAL":	Time between DNS propagation check. Default: 15 seconds`)
 		ew.writeln(`	- "AKAMAI_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation. Default: 3 minutes`)
-		ew.writeln(`	- "AKAMAI_SEQUENCE_INTERVAL":	Interval between Challenges. Default: 3 minutes`)
 		ew.writeln(`	- "AKAMAI_TTL":	The TTL of the TXT record used for the DNS challenge`)
 
 		ew.writeln()

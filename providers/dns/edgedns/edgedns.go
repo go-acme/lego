@@ -121,7 +121,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		record.Target = append(record.Target, `"`+value+`"`)
 		record.TTL = d.config.TTL
 
-		err := record.Update(zone)
+		err = record.Update(zone)
 		if err != nil {
 			return fmt.Errorf("edgedns: %w", err)
 		}
@@ -183,7 +183,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	if len(newRData) > 0 {
 		existingRec.Target = newRData
 
-		err := existingRec.Update(zone)
+		err = existingRec.Update(zone)
 		if err != nil {
 			return fmt.Errorf("edgedns: %w", err)
 		}

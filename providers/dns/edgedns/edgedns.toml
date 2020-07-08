@@ -1,0 +1,32 @@
+Name = "Akamai EdgeDNS"
+Description = '''
+Akamai edgedns supercedes fastdns; implementing a DNS provider for solving the DNS-01 challenge using Akamai EdgeDNS
+'''
+URL = "https://www.akamai.com/us/en/products/security/edge-dns.jsp"
+Code = "edgedns"
+Since = "v3.9.0"
+
+Example = '''
+AKAMAI_CLIENT_SECRET=abcdefghijklmnopqrstuvwxyz1234567890ABCDEFG= \
+AKAMAI_CLIENT_TOKEN=akab-mnbvcxzlkjhgfdsapoiuytrewq1234567 \
+AKAMAI_HOST=akab-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.luna.akamaiapis.net \
+AKAMAI_ACCESS_TOKEN=akab-1234567890qwerty-asdfghjklzxcvtnu \
+lego --domains="example.zone" --email="testuser@mail.me" --dns="edgedns" -a run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    AKAMAI_HOST = "API host"
+    AKAMAI_CLIENT_TOKEN = "Client token"
+    AKAMAI_CLIENT_SECRET = "Client secret"
+    AKAMAI_ACCESS_TOKEN = "Access token"
+  [Configuration.Additional]
+    AKAMAI_POLLING_INTERVAL = "Time between DNS propagation check. Default: 15 seconds"
+    AKAMAI_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation. Default: 3 minutes"
+    AKAMAI_TTL = "The TTL of the TXT record used for the DNS challenge"
+
+[Links]
+  API = "https://developer.akamai.com/api/cloud_security/edge_dns_zone_management/v2.html"
+  GoClient = "https://github.com/akamai/AkamaiOPEN-edgegrid-golang"
+
+

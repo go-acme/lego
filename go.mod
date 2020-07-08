@@ -11,7 +11,7 @@ require (
 	github.com/Azure/go-autorest/autorest/validation v0.1.0 // indirect
 	github.com/BurntSushi/toml v0.3.1
 	github.com/OpenDNS/vegadns2client v0.0.0-20180418235048-a3fa4a771d87
-	github.com/akamai/AkamaiOPEN-edgegrid-golang v0.9.8
+	github.com/akamai/AkamaiOPEN-edgegrid-golang v0.9.17
 	github.com/aliyun/alibaba-cloud-sdk-go v1.61.112
 	github.com/aws/aws-sdk-go v1.30.20
 	github.com/cenkalti/backoff/v4 v4.0.0

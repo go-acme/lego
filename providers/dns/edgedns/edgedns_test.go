@@ -180,44 +180,21 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}
 }
 
-func TestDNSProvider_findZoneAndRecordName(t *testing.T) {
-	config := NewDefaultConfig()
-	config.Host = "somehost"
-	config.ClientToken = "someclienttoken"
-	config.ClientSecret = "someclientsecret"
-	config.AccessToken = "someaccesstoken"
-
-	provider, err := NewDNSProviderConfig(config)
-	require.NoError(t, err)
-
-	type expected struct {
-		zone       string
-		recordName string
-	}
-
+func TestDNSProvider_findZone(t *testing.T) {
 	testCases := []struct {
 		desc     string
-		fqdn     string
 		domain   string
-		expected expected
+		expected string
 	}{
 		{
-			desc:   "Extract root record name",
-			fqdn:   "_acme-challenge.bar.com.",
-			domain: "bar.com",
-			expected: expected{
-				zone:       "bar.com",
-				recordName: "_acme-challenge",
-			},
+			desc:     "Extract root record name",
+			domain:   "bar.com",
+			expected: "bar.com",
 		},
 		{
-			desc:   "Extract sub record name",
-			fqdn:   "_acme-challenge.foo.bar.com.",
-			domain: "foo.bar.com",
-			expected: expected{
-				zone:       "bar.com",
-				recordName: "_acme-challenge.foo",
-			},
+			desc:     "Extract sub record name",
+			domain:   "foo.bar.com",
+			expected: "bar.com",
 		},
 	}
 
@@ -226,10 +203,9 @@ func TestDNSProvider_findZoneAndRecordName(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			zone, recordName, err := provider.findZoneAndRecordName(test.fqdn, test.domain)
+			zone, err := findZone(test.domain)
 			require.NoError(t, err)
-			assert.Equal(t, test.expected.zone, zone)
-			assert.Equal(t, test.expected.recordName, recordName)
+			assert.Equal(t, test.expected, zone)
 		})
 	}
 }

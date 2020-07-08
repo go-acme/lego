@@ -1,4 +1,4 @@
-Name = "EdgeDNS"
+Name = "Akamai EdgeDNS"
 Description = '''
 Akamai edgedns supercedes fastdns; implementing a DNS provider for solving the DNS-01 challenge using Akamai EdgeDNS
 '''

@@ -27,8 +27,8 @@ const (
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 
-	AkamaiDefaultPropagationTimeout = 3 * time.Minute  // 3 minutes
-	AkamaiDefaultPollInterval       = 15 * time.Second // 15 seconds
+	DefaultPropagationTimeout = 3 * time.Minute
+	DefaultPollInterval       = 15 * time.Second
 )
 
 // Config is used to configure the creation of the DNSProvider.
@@ -43,8 +43,11 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, AkamaiDefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, AkamaiDefaultPollInterval),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, DefaultPollInterval),
+		Config: edgegrid.Config{
+			MaxBody: 131072,
+		},
 	}
 }
 
@@ -62,14 +65,10 @@ func NewDNSProvider() (*DNSProvider, error) {
 	}
 
 	config := NewDefaultConfig()
-	config.Config = edgegrid.Config{
-		Host:         values[EnvHost],
-		ClientToken:  values[EnvClientToken],
-		ClientSecret: values[EnvClientSecret],
-		AccessToken:  values[EnvAccessToken],
-		MaxBody:      131072,
-	}
-	configdns.Init(config.Config)
+	config.Config.Host = values[EnvHost]
+	config.Config.ClientToken = values[EnvClientToken]
+	config.Config.ClientSecret = values[EnvClientSecret]
+	config.Config.AccessToken = values[EnvAccessToken]
 
 	return NewDNSProviderConfig(config)
 }
@@ -87,19 +86,23 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	return &DNSProvider{config: config}, nil
 }
 
+// Timeout returns the timeout and interval to use when checking for DNS propagation.
+// Adjusting here to cope with spikes in propagation times.
+func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
+	return d.config.PropagationTimeout, d.config.PollingInterval
+}
+
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	zoneName, recordName, err := d.findZoneAndRecordName(fqdn, domain)
+	zone, err := findZone(domain)
 	if err != nil {
 		return fmt.Errorf("edgedns: %w", err)
 	}
 
-	recordName = recordName + "." + zoneName
-
-	record, err := configdns.GetRecord(zoneName, recordName, "TXT")
-	if err != nil && (!configdns.IsConfigDNSError(err) || !err.(configdns.ConfigDNSError).NotFound()) {
+	record, err := configdns.GetRecord(zone, fqdn, "TXT")
+	if err != nil && !isNotFound(err) {
 		return fmt.Errorf("edgedns: %w", err)
 	}
 
@@ -118,17 +121,20 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		record.Target = append(record.Target, `"`+value+`"`)
 		record.TTL = d.config.TTL
 
-		return updateRecordset(record, zoneName)
+		err := record.Update(zone)
+		if err != nil {
+			return fmt.Errorf("edgedns: %w", err)
+		}
 	}
 
 	record = &configdns.RecordBody{
-		Name:       recordName,
+		Name:       fqdn,
 		RecordType: "TXT",
 		TTL:        d.config.TTL,
 		Target:     []string{`"` + value + `"`},
 	}
 
-	err = record.Save(zoneName)
+	err = record.Save(zone)
 	if err != nil {
 		return fmt.Errorf("edgedns: %w", err)
 	}
@@ -140,16 +146,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	zoneName, recordName, err := d.findZoneAndRecordName(fqdn, domain)
+	zone, err := findZone(domain)
 	if err != nil {
 		return fmt.Errorf("edgedns: %w", err)
 	}
 
-	recordName = recordName + "." + zoneName
-
-	existingRec, err := configdns.GetRecord(zoneName, recordName, "TXT")
+	existingRec, err := configdns.GetRecord(zone, fqdn, "TXT")
 	if err != nil {
-		if configdns.IsConfigDNSError(err) && err.(configdns.ConfigDNSError).NotFound() {
+		if isNotFound(err) {
 			return nil
 		}
 		return fmt.Errorf("edgedns: %w", err)
@@ -178,12 +182,14 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	if len(newRData) > 0 {
 		existingRec.Target = newRData
-		return updateRecordset(existingRec, zoneName)
+
+		err := existingRec.Update(zone)
+		if err != nil {
+			return fmt.Errorf("edgedns: %w", err)
+		}
 	}
 
-	log.Infof("[DEBUG] Deleting TxtRecord")
-
-	err = existingRec.Delete(zoneName)
+	err = existingRec.Delete(zone)
 	if err != nil {
 		return fmt.Errorf("edgedns: %w", err)
 	}
@@ -191,47 +197,30 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-func updateRecordset(rec *configdns.RecordBody, zoneName string) error {
-	log.Infof("[DEBUG] Updating TxtRecord: %v", rec.Target)
-
-	err := rec.Update(zoneName)
-	if err != nil {
-		return fmt.Errorf("edgedns: %w", err)
-	}
-
-	return nil
-}
-
-// Timeout returns the timeout and interval to use when checking for DNS propagation.
-// Adjusting here to cope with spikes in propagation times.
-func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
-	return d.config.PropagationTimeout, d.config.PollingInterval
-}
-
-func (d *DNSProvider) findZoneAndRecordName(fqdn, domain string) (string, string, error) {
+func findZone(domain string) (string, error) {
 	zone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
 
-	zone = dns01.UnFqdn(zone)
-
-	name := dns01.UnFqdn(fqdn)
-	name = name[:len(name)-len("."+zone)]
-
-	return zone, name, nil
+	return dns01.UnFqdn(zone), nil
 }
 
-func containsValue(tslice []string, value string) bool {
-	if len(tslice) == 0 {
-		return false
-	}
-
-	for _, val := range tslice {
-		if val == fmt.Sprintf(`"%s"`, value) {
+func containsValue(values []string, value string) bool {
+	for _, val := range values {
+		if strings.Trim(val, `"`) == value {
 			return true
 		}
 	}
 
 	return false
+}
+
+func isNotFound(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	e, ok := err.(configdns.ConfigDNSError)
+	return ok && e.NotFound()
 }

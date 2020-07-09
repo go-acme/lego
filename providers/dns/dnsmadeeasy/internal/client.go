@@ -42,7 +42,7 @@ type Client struct {
 }
 
 // NewClient creates a DNSMadeEasy client.
-func NewClient(apiKey string, apiSecret string) (*Client, error) {
+func NewClient(apiKey, apiSecret string) (*Client, error) {
 	if apiKey == "" {
 		return nil, errors.New("credentials missing: API key")
 	}
@@ -163,7 +163,7 @@ func (c *Client) sendRequest(method, resource string, payload interface{}) (*htt
 	return resp, nil
 }
 
-func computeHMAC(message string, secret string) (string, error) {
+func computeHMAC(message, secret string) (string, error) {
 	key := []byte(secret)
 	h := hmac.New(sha1.New, key)
 	_, err := h.Write([]byte(message))

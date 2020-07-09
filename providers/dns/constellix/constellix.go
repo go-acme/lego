@@ -188,7 +188,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-func (d *DNSProvider) createRecord(dom internal.Domain, fqdn string, recordName string, value string) error {
+func (d *DNSProvider) createRecord(dom internal.Domain, fqdn, recordName, value string) error {
 	request := internal.RecordRequest{
 		Name: recordName,
 		TTL:  d.config.TTL,

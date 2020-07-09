@@ -16,7 +16,7 @@ import (
 	"github.com/urfave/cli"
 )
 
-const filePerm os.FileMode = 0600
+const filePerm os.FileMode = 0o600
 
 func setup(ctx *cli.Context, accountsStorage *AccountsStorage) (*Account, *lego.Client) {
 	keyType := getKeyType(ctx)
@@ -90,7 +90,7 @@ func getEmail(ctx *cli.Context) string {
 
 func createNonExistingFolder(path string) error {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		return os.MkdirAll(path, 0700)
+		return os.MkdirAll(path, 0o700)
 	} else if err != nil {
 		return err
 	}

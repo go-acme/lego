@@ -122,7 +122,7 @@ type Client struct {
 }
 
 // NewClient creates a netcup DNS client.
-func NewClient(customerNumber string, apiKey string, apiPassword string) (*Client, error) {
+func NewClient(customerNumber, apiKey, apiPassword string) (*Client, error) {
 	if customerNumber == "" || apiKey == "" || apiPassword == "" {
 		return nil, errors.New("credentials missing")
 	}
@@ -231,7 +231,7 @@ func (c *Client) GetDNSRecords(hostname, apiSessionID string) ([]DNSRecord, erro
 
 // doRequest marshals given body to JSON, send the request to netcup API
 // and returns body of response.
-func (c *Client) doRequest(payload interface{}, responseData interface{}) error {
+func (c *Client) doRequest(payload, responseData interface{}) error {
 	body, err := json.Marshal(payload)
 	if err != nil {
 		return err

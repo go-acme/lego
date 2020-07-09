@@ -195,7 +195,7 @@ func (d *DNSProvider) sendRequest(method, uri string, body io.Reader) (json.RawM
 }
 
 func (d *DNSProvider) makeRequest(method, uri string, body io.Reader) (*http.Request, error) {
-	var path = ""
+	path := ""
 	if d.config.Host.Path != "/" {
 		path = d.config.Host.Path
 	}

@@ -199,7 +199,7 @@ func needRenewal(x509Cert *x509.Certificate, domain string, days int) bool {
 	return true
 }
 
-func merge(prevDomains []string, nextDomains []string) []string {
+func merge(prevDomains, nextDomains []string) []string {
 	for _, next := range nextDomains {
 		var found bool
 		for _, prev := range prevDomains {

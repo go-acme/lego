@@ -247,7 +247,7 @@ func (d *DNSProvider) getZoneID(wanted string) (string, error) {
 	return "", fmt.Errorf("zone id not found for %s", wanted)
 }
 
-func (d *DNSProvider) getRecord(zoneID string, wanted string) (*recordsets.RecordSet, error) {
+func (d *DNSProvider) getRecord(zoneID, wanted string) (*recordsets.RecordSet, error) {
 	allPages, err := recordsets.ListByZone(d.client, zoneID, nil).AllPages()
 	if err != nil {
 		return nil, err

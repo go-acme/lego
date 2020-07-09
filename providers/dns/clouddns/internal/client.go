@@ -29,7 +29,7 @@ type Client struct {
 }
 
 // NewClient returns a Client instance configured to handle CloudDNS API communication.
-func NewClient(clientID string, email string, password string, ttl int) *Client {
+func NewClient(clientID, email, password string, ttl int) *Client {
 	return &Client{
 		ClientID:   clientID,
 		Email:      email,

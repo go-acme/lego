@@ -37,6 +37,7 @@
     "testpackage", # not relevant
     "nestif", # too many false-positive
     "goerr113", # not relevant
+    "noctx",
   ]
 
 [issues]
@@ -49,7 +50,7 @@
   ]
   [[issues.exclude-rules]]
     path = "(.+)_test.go"
-    linters = ["funlen"]
+    linters = ["funlen", "goconst"]
   [[issues.exclude-rules]]
     path = "providers/dns/dns_providers.go"
     linters = ["gocyclo"]

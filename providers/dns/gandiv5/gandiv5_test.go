@@ -97,7 +97,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 func TestDNSProvider(t *testing.T) {
 	// serverResponses is the JSON Request->Response map used by the
 	// fake JSON server.
-	var serverResponses = map[string]map[string]string{
+	serverResponses := map[string]map[string]string{
 		http.MethodGet: {
 			``: `{"rrset_ttl":300,"rrset_values":[],"rrset_name":"_acme-challenge.abc.def","rrset_type":"TXT"}`,
 		},

@@ -166,7 +166,7 @@ func readUserAgentFile(filename string) (map[string]string, error) {
 	return v.data, nil
 }
 
-func writeUserAgentFile(filename string, version string, comment string) error {
+func writeUserAgentFile(filename, version, comment string) error {
 	tmpl, err := template.New("ua").Parse(uaTemplate)
 	if err != nil {
 		return err
@@ -186,10 +186,10 @@ func writeUserAgentFile(filename string, version string, comment string) error {
 		return err
 	}
 
-	return ioutil.WriteFile(filename, source, 0644)
+	return ioutil.WriteFile(filename, source, 0o644)
 }
 
-func bumpVersion(userAgent string, mode string) (string, error) {
+func bumpVersion(userAgent, mode string) (string, error) {
 	prevVersion := strings.TrimPrefix(userAgent, "xenolf-acme/")
 
 	allString := regexp.MustCompile(`(\d+)\.(\d+)\.(\d+)`).FindStringSubmatch(prevVersion)

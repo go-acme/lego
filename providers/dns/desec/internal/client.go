@@ -31,7 +31,7 @@ func NewClient(token string) *Client {
 
 // GetTxtRRSet gets a RRSet.
 // https://desec.readthedocs.io/en/latest/dns/rrsets.html#retrieving-a-specific-rrset
-func (c *Client) GetTxtRRSet(domainName string, subName string) (*RRSet, error) {
+func (c *Client) GetTxtRRSet(domainName, subName string) (*RRSet, error) {
 	if subName == "" {
 		subName = "@"
 	}
@@ -128,7 +128,7 @@ func (c *Client) AddTxtRRSet(rrSet RRSet) (*RRSet, error) {
 
 // UpdateTxtRRSet updates RRSet records.
 // https://desec.readthedocs.io/en/latest/dns/rrsets.html#modifying-an-rrset
-func (c *Client) UpdateTxtRRSet(domainName string, subName string, records []string) (*RRSet, error) {
+func (c *Client) UpdateTxtRRSet(domainName, subName string, records []string) (*RRSet, error) {
 	if subName == "" {
 		subName = "@"
 	}
@@ -181,7 +181,7 @@ func (c *Client) UpdateTxtRRSet(domainName string, subName string, records []str
 
 // DeleteTxtRRSet deletes a RRset.
 // https://desec.readthedocs.io/en/latest/dns/rrsets.html#deleting-an-rrset
-func (c *Client) DeleteTxtRRSet(domainName string, subName string) error {
+func (c *Client) DeleteTxtRRSet(domainName, subName string) error {
 	if subName == "" {
 		subName = "@"
 	}

@@ -49,7 +49,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	}
 
 	client := goacmedns.NewClient(values[EnvAPIBase])
-	storage := goacmedns.NewFileStorage(values[EnvStoragePath], 0600)
+	storage := goacmedns.NewFileStorage(values[EnvStoragePath], 0o600)
 	return NewDNSProviderClient(client, storage)
 }
 

@@ -116,7 +116,7 @@ func (c *Client) CreateRecord(zoneID string, record DNSRecord) (*DNSRecord, erro
 }
 
 // RemoveRecord removes a DNS records.
-func (c *Client) RemoveRecord(zoneID string, recordID string) error {
+func (c *Client) RemoveRecord(zoneID, recordID string) error {
 	endpoint, err := c.createEndpoint("dns_zones", zoneID, "dns_records", recordID)
 	if err != nil {
 		return fmt.Errorf("failed to parse endpoint: %w", err)

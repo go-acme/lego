@@ -28,7 +28,7 @@ func (a *AccountService) New(req acme.Account) (acme.ExtendedAccount, error) {
 }
 
 // NewEAB Creates a new account with an External Account Binding.
-func (a *AccountService) NewEAB(accMsg acme.Account, kid string, hmacEncoded string) (acme.ExtendedAccount, error) {
+func (a *AccountService) NewEAB(accMsg acme.Account, kid, hmacEncoded string) (acme.ExtendedAccount, error) {
 	hmac, err := base64.RawURLEncoding.DecodeString(hmacEncoded)
 	if err != nil {
 		return acme.ExtendedAccount{}, fmt.Errorf("acme: could not decode hmac key: %w", err)

@@ -11,7 +11,7 @@ type service struct {
 
 // getLink get a rel into the Link header.
 func getLink(header http.Header, rel string) string {
-	var linkExpr = regexp.MustCompile(`<(.+?)>;\s*rel="(.+?)"`)
+	linkExpr := regexp.MustCompile(`<(.+?)>;\s*rel="(.+?)"`)
 
 	for _, link := range header["Link"] {
 		for _, m := range linkExpr.FindAllStringSubmatch(link, -1) {

@@ -13,7 +13,7 @@ import (
 const cleanUpDelay = 2 * time.Second
 
 func TestNewDNSProvider(t *testing.T) {
-	var envTest = tester.NewEnvTest(EnvAPIToken, EnvTTL)
+	envTest := tester.NewEnvTest(EnvAPIToken, EnvTTL)
 
 	testCases := []struct {
 		desc     string
@@ -97,7 +97,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 }
 
 func TestLivePresent(t *testing.T) {
-	var envTest = tester.NewEnvTest(EnvAPIToken, EnvTTL)
+	envTest := tester.NewEnvTest(EnvAPIToken, EnvTTL)
 
 	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
@@ -112,7 +112,7 @@ func TestLivePresent(t *testing.T) {
 }
 
 func TestLiveCleanUp(t *testing.T) {
-	var envTest = tester.NewEnvTest(EnvAPIToken, EnvTTL)
+	envTest := tester.NewEnvTest(EnvAPIToken, EnvTTL)
 
 	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")

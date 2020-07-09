@@ -172,7 +172,7 @@ type sequential interface {
 }
 
 // GetRecord returns a DNS record which will fulfill the `dns-01` challenge.
-func GetRecord(domain, keyAuth string) (fqdn string, value string) {
+func GetRecord(domain, keyAuth string) (fqdn, value string) {
 	keyAuthShaBytes := sha256.Sum256([]byte(keyAuth))
 	// base64URL encoding without padding
 	value = base64.RawURLEncoding.EncodeToString(keyAuthShaBytes[:sha256.Size])

@@ -19,7 +19,7 @@ type DNSRecord struct {
 	TTL      int    `json:"ttl,omitempty"`
 }
 
-func (d *DNSProvider) getRecords(domainZone string, rType string, recordName string) ([]DNSRecord, error) {
+func (d *DNSProvider) getRecords(domainZone, rType, recordName string) ([]DNSRecord, error) {
 	resource := path.Clean(fmt.Sprintf("/v1/domains/%s/records/%s/%s", domainZone, rType, recordName))
 
 	resp, err := d.makeRequest(http.MethodGet, resource, nil)
@@ -44,7 +44,7 @@ func (d *DNSProvider) getRecords(domainZone string, rType string, recordName str
 	return records, nil
 }
 
-func (d *DNSProvider) updateTxtRecords(records []DNSRecord, domainZone string, recordName string) error {
+func (d *DNSProvider) updateTxtRecords(records []DNSRecord, domainZone, recordName string) error {
 	body, err := json.Marshal(records)
 	if err != nil {
 		return err

@@ -150,7 +150,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-func (d *DNSProvider) newTxtRecord(fqdn string, value string) error {
+func (d *DNSProvider) newTxtRecord(fqdn, value string) error {
 	params := &lightsail.CreateDomainEntryInput{
 		DomainName: aws.String(d.config.DNSZone),
 		DomainEntry: &lightsail.DomainEntry{

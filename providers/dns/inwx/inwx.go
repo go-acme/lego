@@ -116,7 +116,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("inwx: %w", err)
 	}
 
-	var request = &goinwx.NameserverRecordRequest{
+	request := &goinwx.NameserverRecordRequest{
 		Domain:  dns01.UnFqdn(authZone),
 		Name:    dns01.UnFqdn(fqdn),
 		Type:    "TXT",

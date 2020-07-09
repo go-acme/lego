@@ -32,7 +32,7 @@ type responseStruct struct {
 	} `json:"response"`
 }
 
-func (d *DNSProvider) addTXTRecord(fqdn string, domain string, name string, value string, ttl int) (int, error) {
+func (d *DNSProvider) addTXTRecord(fqdn, domain, name, value string, ttl int) (int, error) {
 	response, err := d.sendRequest(http.MethodPost, "addrecord", addRecordRequest{
 		DomainName: domain,
 		Host:       name,
@@ -58,7 +58,7 @@ func (d *DNSProvider) deleteTXTRecord(fqdn string, recordid int) error {
 	return err
 }
 
-func (d *DNSProvider) sendRequest(method string, resource string, payload interface{}) (*responseStruct, error) {
+func (d *DNSProvider) sendRequest(method, resource string, payload interface{}) (*responseStruct, error) {
 	url := fmt.Sprintf("%s/%s", defaultBaseURL, resource)
 
 	body, err := json.Marshal(payload)

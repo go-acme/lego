@@ -201,7 +201,7 @@ func generateReadMe(models *Providers) error {
 		return errors.New("missing end tag")
 	}
 
-	return ioutil.WriteFile(readmePath, buffer.Bytes(), 0666)
+	return ioutil.WriteFile(readmePath, buffer.Bytes(), 0o666)
 }
 
 func extractTableData(models *Providers) (int, [][]string) {

@@ -126,7 +126,7 @@ func TestChallengeWithProxy(t *testing.T) {
 		nook = "example.com"
 	)
 
-	var testCases = []struct {
+	testCases := []struct {
 		name   string
 		header *testProxyHeader
 		extra  *testProxyHeader

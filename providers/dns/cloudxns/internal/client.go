@@ -44,7 +44,7 @@ type TXTRecord struct {
 }
 
 // NewClient creates a CloudXNS client.
-func NewClient(apiKey string, secretKey string) (*Client, error) {
+func NewClient(apiKey, secretKey string) (*Client, error) {
 	if apiKey == "" {
 		return nil, errors.New("CloudXNS: credentials missing: apiKey")
 	}

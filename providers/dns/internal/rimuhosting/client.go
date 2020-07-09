@@ -105,7 +105,7 @@ func (c Client) toMultiParameters(params []ActionParameter) multiActionParameter
 	return multi
 }
 
-func (c Client) do(params interface{}, data interface{}) error {
+func (c Client) do(params, data interface{}) error {
 	baseURL, err := url.Parse(c.BaseURL)
 	if err != nil {
 		return err
@@ -157,7 +157,7 @@ func (c Client) do(params interface{}, data interface{}) error {
 }
 
 // AddRecord helper to create an action to add a TXT record.
-func AddRecord(domain string, content string, ttl int) ActionParameter {
+func AddRecord(domain, content string, ttl int) ActionParameter {
 	return ActionParameter{
 		Action: SetAction,
 		Name:   domain,
@@ -168,7 +168,7 @@ func AddRecord(domain string, content string, ttl int) ActionParameter {
 }
 
 // DeleteRecord helper to create an action to delete a TXT record.
-func DeleteRecord(domain string, content string) ActionParameter {
+func DeleteRecord(domain, content string) ActionParameter {
 	return ActionParameter{
 		Action: DeleteAction,
 		Name:   domain,

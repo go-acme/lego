@@ -432,7 +432,7 @@ func displayDNSHelp(name string) error {
 		// generated from: providers/dns/desec/desec.toml
 		ew.writeln(`Configuration for deSEC.io.`)
 		ew.writeln(`Code:	'desec'`)
-		ew.writeln(`Since:	'v0.3.7'`)
+		ew.writeln(`Since:	'v3.7.0'`)
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)

@@ -9,7 +9,7 @@ slug: desec
 <!-- providers/dns/desec/desec.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v0.3.7
+Since: v3.7.0
 
 Configuration for [deSEC.io](https://desec.io).
 

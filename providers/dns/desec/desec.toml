@@ -2,7 +2,7 @@ Name = "deSEC.io"
 Description = ''''''
 URL = "https://desec.io"
 Code = "desec"
-Since = "v0.3.7"
+Since = "v3.7.0"
 
 Example = '''
 DESEC_TOKEN=x-xxxxxxxxxxxxxxxxxxxxxxxxxx \

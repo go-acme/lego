@@ -15,6 +15,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack"
 	"github.com/gophercloud/gophercloud/openstack/dns/v2/recordsets"
 	"github.com/gophercloud/gophercloud/openstack/dns/v2/zones"
+	"github.com/gophercloud/utils/openstack/clientconfig"
 )
 
 // Environment variables names.
@@ -33,6 +34,7 @@ const (
 	EnvTenantName = envNamespaceClient + "TENANT_NAME"
 	EnvRegionName = envNamespaceClient + "REGION_NAME"
 	EnvProjectID  = envNamespaceClient + "PROJECT_ID"
+	EnvCloud      = envNamespaceClient + "CLOUD"
 )
 
 // Config is used to configure the creation of the DNSProvider.
@@ -62,15 +64,32 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for Designate.
 // Credentials must be passed in the environment variables:
 // OS_AUTH_URL, OS_USERNAME, OS_PASSWORD, OS_TENANT_NAME, OS_REGION_NAME.
+// Or you can specify OS_CLOUD to read the credentials from the according cloud entry.
 func NewDNSProvider() (*DNSProvider, error) {
-	_, err := env.Get(EnvAuthURL, EnvUsername, EnvPassword, EnvTenantName, EnvRegionName)
-	if err != nil {
-		return nil, fmt.Errorf("designate: %w", err)
-	}
+	var opts gophercloud.AuthOptions
+	val, err := env.Get(EnvCloud)
 
-	opts, err := openstack.AuthOptionsFromEnv()
-	if err != nil {
-		return nil, fmt.Errorf("designate: %w", err)
+	if err == nil {
+		cloudOpts, erro := clientconfig.AuthOptions(&clientconfig.ClientOpts{
+			Cloud: val[EnvCloud],
+		})
+
+		if erro != nil {
+			return nil, fmt.Errorf("designate: %w", erro)
+		}
+
+		opts = *cloudOpts
+	} else {
+		// TODO this is broken -> variables in _FILE will be ignored!
+		_, err = env.Get(EnvAuthURL, EnvUsername, EnvPassword, EnvTenantName, EnvRegionName)
+		if err != nil {
+			return nil, fmt.Errorf("designate: %w", err)
+		}
+
+		opts, err = openstack.AuthOptionsFromEnv()
+		if err != nil {
+			return nil, fmt.Errorf("designate: %w", err)
+		}
 	}
 
 	config := NewDefaultConfig()

@@ -1,13 +1,18 @@
 package designate
 
 import (
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 
+	"github.com/go-acme/lego/v3/platform/config/env"
 	"github.com/go-acme/lego/v3/platform/tester"
+	"github.com/gophercloud/utils/openstack/clientconfig"
 	"github.com/stretchr/testify/require"
+	"gopkg.in/yaml.v2"
 )
 
 const envDomain = envNamespace + "DOMAIN"
@@ -21,7 +26,7 @@ var envTest = tester.NewEnvTest(
 	EnvProjectID).
 	WithDomain(envDomain)
 
-func TestNewDNSProvider(t *testing.T) {
+func TestNewDNSProviderFromEnv(t *testing.T) {
 	server := getServer()
 	defer server.Close()
 
@@ -109,6 +114,14 @@ func TestNewDNSProvider(t *testing.T) {
 		},
 	}
 
+	// unset the OS_CLOUD environment variable otherwise the information will be read from
+	// the clouds.yaml
+	var cloud string
+	if vals, err := env.Get(EnvCloud); err == nil {
+		cloud = vals[EnvCloud]
+		_ = os.Unsetenv(EnvCloud)
+	}
+
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			defer envTest.RestoreEnv()
@@ -125,6 +138,132 @@ func TestNewDNSProvider(t *testing.T) {
 			} else {
 				require.EqualError(t, err, test.expected)
 			}
+		})
+	}
+
+	if cloud != "" {
+		_ = os.Setenv(EnvCloud, cloud)
+	}
+}
+
+// Create a temporary cloud file for testing purpose.
+func createCloudsYaml(cloudName string, cloud clientconfig.Cloud) (string, error) {
+	file, err := ioutil.TempFile("", "lego_test")
+	if err != nil {
+		return "", err
+	}
+
+	clouds := clientconfig.Clouds{
+		Clouds: map[string]clientconfig.Cloud{
+			cloudName: cloud,
+		},
+	}
+
+	d, err := yaml.Marshal(&clouds)
+	if err != nil {
+		return "", err
+	}
+
+	_, err = file.Write(d)
+	if err != nil {
+		return "", err
+	}
+
+	return file.Name(), nil
+}
+
+func TestNewDNSProviderFromCloud(t *testing.T) {
+	server := getServer()
+	defer server.Close()
+	configFileEnv := "OS_CLIENT_CONFIG_FILE"
+
+	testCases := []struct {
+		desc     string
+		osCloud  string
+		cloud    clientconfig.Cloud
+		expected string
+	}{
+		{
+			desc:    "success",
+			osCloud: "good_cloud",
+			cloud: clientconfig.Cloud{
+				AuthInfo: &clientconfig.AuthInfo{
+					AuthURL:     server.URL + "/v2.0/",
+					Username:    "B",
+					Password:    "C",
+					ProjectName: "E",
+					ProjectID:   "F",
+				},
+				RegionName: "D",
+			},
+		},
+		{
+			desc:    "missing auth url",
+			osCloud: "missing_auth_url",
+			cloud: clientconfig.Cloud{
+				AuthInfo: &clientconfig.AuthInfo{
+					Username:    "B",
+					Password:    "C",
+					ProjectName: "E",
+					ProjectID:   "F",
+				},
+				RegionName: "D",
+			},
+			expected: "designate: Missing input for argument [auth_url]",
+		},
+		{
+			desc:    "missing username",
+			osCloud: "missing_username",
+			cloud: clientconfig.Cloud{
+				AuthInfo: &clientconfig.AuthInfo{
+					AuthURL:     server.URL + "/v2.0/",
+					Password:    "C",
+					ProjectName: "E",
+					ProjectID:   "F",
+				},
+				RegionName: "D",
+			},
+			expected: "designate: failed to authenticate: Missing input for argument [Username]",
+		},
+		{
+			desc:    "missing password",
+			osCloud: "missing_auth_url",
+			cloud: clientconfig.Cloud{
+				AuthInfo: &clientconfig.AuthInfo{
+					AuthURL:     server.URL + "/v2.0/",
+					Username:    "B",
+					ProjectName: "E",
+					ProjectID:   "F",
+				},
+				RegionName: "D",
+			},
+			expected: "designate: failed to authenticate: Exactly one of PasswordCredentials and TokenCredentials must be provided",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
+			f, err := createCloudsYaml(test.osCloud, test.cloud)
+			require.NoError(t, err)
+
+			_ = os.Setenv(EnvCloud, test.osCloud)
+			_ = os.Setenv(configFileEnv, f)
+			p, err := NewDNSProvider()
+
+			if len(test.expected) == 0 {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+
+			_ = os.Unsetenv(EnvCloud)
+			_ = os.Unsetenv(configFileEnv)
+			_ = os.Remove(f)
 		})
 	}
 }

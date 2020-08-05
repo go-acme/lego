@@ -13,6 +13,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2017-09-01/dns"
 	"github.com/Azure/go-autorest/autorest"
+	autorest_azure "github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/go-acme/lego/v3/challenge/dns01"
@@ -25,6 +26,7 @@ const defaultMetadataEndpoint = "http://169.254.169.254"
 const (
 	envNamespace = "AZURE_"
 
+	EnvEnvironment      = envNamespace + "ENVIRONMENT"
 	EnvMetadataEndpoint = envNamespace + "METADATA_ENDPOINT"
 	EnvSubscriptionID   = envNamespace + "SUBSCRIPTION_ID"
 	EnvResourceGroup    = envNamespace + "RESOURCE_GROUP"
@@ -37,6 +39,14 @@ const (
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 )
 
+// Azure Environments mapping.
+var environments = map[string]autorest_azure.Environment{
+	"china":        autorest_azure.ChinaCloud,
+	"german":       autorest_azure.GermanCloud,
+	"public":       autorest_azure.PublicCloud,
+	"usgovernment": autorest_azure.USGovernmentCloud,
+}
+
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	// optional if using instance metadata service
@@ -47,7 +57,9 @@ type Config struct {
 	SubscriptionID string
 	ResourceGroup  string
 
-	MetadataEndpoint string
+	MetadataEndpoint        string
+	ResourceManagerEndpoint string
+	ActiveDirectoryEndpoint string
 
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -58,10 +70,12 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, 60),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
-		MetadataEndpoint:   env.GetOrFile(EnvMetadataEndpoint),
+		TTL:                     env.GetOrDefaultInt(EnvTTL, 60),
+		PropagationTimeout:      env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
+		PollingInterval:         env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
+		MetadataEndpoint:        env.GetOrFile(EnvMetadataEndpoint),
+		ResourceManagerEndpoint: autorest_azure.PublicCloud.ResourceManagerEndpoint,
+		ActiveDirectoryEndpoint: autorest_azure.PublicCloud.ActiveDirectoryEndpoint,
 	}
 }
 
@@ -73,12 +87,25 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for azure.
 // Credentials can be passed in the environment variables:
-// AZURE_CLIENT_ID, AZURE_CLIENT_SECRET, AZURE_SUBSCRIPTION_ID, AZURE_TENANT_ID, AZURE_RESOURCE_GROUP
+// AZURE_ENVIRONMENT, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET,
+// AZURE_SUBSCRIPTION_ID, AZURE_TENANT_ID, AZURE_RESOURCE_GROUP
 // If the credentials are _not_ set via the environment,
 // then it will attempt to get a bearer token via the instance metadata service.
 // see: https://github.com/Azure/go-autorest/blob/v10.14.0/autorest/azure/auth/auth.go#L38-L42
 func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
+
+	environmentStr := env.GetOrFile(EnvEnvironment)
+	if environmentStr != "" {
+		environment, environmentOk := environments[environmentStr]
+		if !environmentOk {
+			return nil, fmt.Errorf("azure: unknown environment %s", environmentStr)
+		}
+
+		config.ResourceManagerEndpoint = environment.ResourceManagerEndpoint
+		config.ActiveDirectoryEndpoint = environment.ActiveDirectoryEndpoint
+	}
+
 	config.SubscriptionID = env.GetOrFile(EnvSubscriptionID)
 	config.ResourceGroup = env.GetOrFile(EnvResourceGroup)
 	config.ClientSecret = env.GetOrFile(EnvClientSecret)
@@ -146,7 +173,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("azure: %w", err)
 	}
 
-	rsc := dns.NewRecordSetsClient(d.config.SubscriptionID)
+	rsc := dns.NewRecordSetsClientWithBaseURI(d.config.ResourceManagerEndpoint, d.config.SubscriptionID)
 	rsc.Authorizer = d.authorizer
 
 	relative := toRelativeRecord(fqdn, dns01.ToFqdn(zone))
@@ -202,7 +229,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	relative := toRelativeRecord(fqdn, dns01.ToFqdn(zone))
-	rsc := dns.NewRecordSetsClient(d.config.SubscriptionID)
+	rsc := dns.NewRecordSetsClientWithBaseURI(d.config.ResourceManagerEndpoint, d.config.SubscriptionID)
 	rsc.Authorizer = d.authorizer
 
 	_, err = rsc.Delete(ctx, d.config.ResourceGroup, zone, relative, dns.TXT, "")
@@ -219,7 +246,7 @@ func (d *DNSProvider) getHostedZoneID(ctx context.Context, fqdn string) (string,
 		return "", err
 	}
 
-	dc := dns.NewZonesClient(d.config.SubscriptionID)
+	dc := dns.NewZonesClientWithBaseURI(d.config.ResourceManagerEndpoint, d.config.SubscriptionID)
 	dc.Authorizer = d.authorizer
 
 	zone, err := dc.Get(ctx, d.config.ResourceGroup, dns01.UnFqdn(authZone))
@@ -238,7 +265,13 @@ func toRelativeRecord(domain, zone string) string {
 
 func getAuthorizer(config *Config) (autorest.Authorizer, error) {
 	if config.ClientID != "" && config.ClientSecret != "" && config.TenantID != "" {
-		credentialsConfig := auth.NewClientCredentialsConfig(config.ClientID, config.ClientSecret, config.TenantID)
+		credentialsConfig := auth.ClientCredentialsConfig{
+			ClientID:     config.ClientID,
+			ClientSecret: config.ClientSecret,
+			TenantID:     config.TenantID,
+			Resource:     config.ResourceManagerEndpoint,
+			AADEndpoint:  config.ActiveDirectoryEndpoint,
+		}
 
 		spToken, err := credentialsConfig.ServicePrincipalToken()
 		if err != nil {

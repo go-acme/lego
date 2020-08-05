@@ -8,6 +8,7 @@ Example = ''''''
 
 [Configuration]
   [Configuration.Credentials]
+    AZURE_ENVIRONMENT = "Azure environment, one of: public, usgovernment, german, and china"
     AZURE_CLIENT_ID = "Client ID"
     AZURE_CLIENT_SECRET = "Client secret"
     AZURE_SUBSCRIPTION_ID = "Subscription ID"

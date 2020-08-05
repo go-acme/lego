@@ -39,14 +39,6 @@ const (
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 )
 
-// Azure Environments mapping.
-var environments = map[string]autorest_azure.Environment{
-	"china":        autorest_azure.ChinaCloud,
-	"german":       autorest_azure.GermanCloud,
-	"public":       autorest_azure.PublicCloud,
-	"usgovernment": autorest_azure.USGovernmentCloud,
-}
-
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	// optional if using instance metadata service
@@ -94,6 +86,14 @@ type DNSProvider struct {
 // see: https://github.com/Azure/go-autorest/blob/v10.14.0/autorest/azure/auth/auth.go#L38-L42
 func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
+
+	// Azure Environments mapping.
+	environments := map[string]autorest_azure.Environment{
+		"china":        autorest_azure.ChinaCloud,
+		"german":       autorest_azure.GermanCloud,
+		"public":       autorest_azure.PublicCloud,
+		"usgovernment": autorest_azure.USGovernmentCloud,
+	}
 
 	environmentStr := env.GetOrFile(EnvEnvironment)
 	if environmentStr != "" {

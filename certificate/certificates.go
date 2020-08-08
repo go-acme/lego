@@ -146,7 +146,7 @@ func (c *Certifier) Obtain(request ObtainRequest) (*Resource, error) {
 //
 // This function will never return a partial certificate.
 // If one domain in the list fails, the whole certificate will fail.
-func (c *Certifier) ObtainForCSR(csr x509.CertificateRequest, bundle bool) (*Resource, error) {
+func (c *Certifier) ObtainForCSR(csr x509.CertificateRequest, bundle bool, preferredChain string) (*Resource, error) {
 	// figure out what domains it concerns
 	// start with the common name
 	domains := certcrypto.ExtractDomainsCSR(&csr)
@@ -179,7 +179,7 @@ func (c *Certifier) ObtainForCSR(csr x509.CertificateRequest, bundle bool) (*Res
 	log.Infof("[%s] acme: Validations succeeded; requesting certificates", strings.Join(domains, ", "))
 
 	failures := make(obtainError)
-	cert, err := c.getForCSR(domains, order, bundle, csr.Raw, nil, "")
+	cert, err := c.getForCSR(domains, order, bundle, csr.Raw, nil, preferredChain)
 	if err != nil {
 		for _, auth := range authz {
 			failures[challenge.GetTargetedDomain(auth)] = err
@@ -350,7 +350,7 @@ func (c *Certifier) Revoke(cert []byte) error {
 // If bundle is true, the []byte contains both the issuer certificate and your issued certificate as a bundle.
 //
 // For private key reuse the PrivateKey property of the passed in Resource should be non-nil.
-func (c *Certifier) Renew(certRes Resource, bundle, mustStaple bool) (*Resource, error) {
+func (c *Certifier) Renew(certRes Resource, bundle, mustStaple bool, preferredChain string) (*Resource, error) {
 	// Input certificate is PEM encoded.
 	// Decode it here as we may need the decoded cert later on in the renewal process.
 	// The input may be a bundle or a single certificate.
@@ -377,7 +377,7 @@ func (c *Certifier) Renew(certRes Resource, bundle, mustStaple bool) (*Resource,
 			return nil, errP
 		}
 
-		return c.ObtainForCSR(*csr, bundle)
+		return c.ObtainForCSR(*csr, bundle, preferredChain)
 	}
 
 	var privateKey crypto.PrivateKey

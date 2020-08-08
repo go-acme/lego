@@ -52,7 +52,7 @@ func (o *OrderService) UpdateForCSR(orderURL string, csr []byte) (acme.Order, er
 	}
 
 	var order acme.Order
-	_, err := o.core.post(orderURL, csrMsg, &order)
+	resp, err := o.core.post(orderURL, csrMsg, &order)
 	if err != nil {
 		return acme.Order{}, err
 	}
@@ -60,6 +60,6 @@ func (o *OrderService) UpdateForCSR(orderURL string, csr []byte) (acme.Order, er
 	if order.Status == acme.StatusInvalid {
 		return acme.Order{}, order.Error
 	}
-
+	order.AlternateChainLinks = getLinks(resp.Header, "alternate")
 	return order, nil
 }

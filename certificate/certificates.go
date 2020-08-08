@@ -51,10 +51,11 @@ type Resource struct {
 //
 // If bundle is true, the []byte contains both the issuer certificate and your issued certificate as a bundle.
 type ObtainRequest struct {
-	Domains    []string
-	Bundle     bool
-	PrivateKey crypto.PrivateKey
-	MustStaple bool
+	Domains        []string
+	Bundle         bool
+	PrivateKey     crypto.PrivateKey
+	MustStaple     bool
+	PreferredChain string
 }
 
 type resolver interface {
@@ -121,7 +122,7 @@ func (c *Certifier) Obtain(request ObtainRequest) (*Resource, error) {
 	log.Infof("[%s] acme: Validations succeeded; requesting certificates", strings.Join(domains, ", "))
 
 	failures := make(obtainError)
-	cert, err := c.getForOrder(domains, order, request.Bundle, request.PrivateKey, request.MustStaple)
+	cert, err := c.getForOrder(domains, order, request.Bundle, request.PrivateKey, request.MustStaple, request.PreferredChain)
 	if err != nil {
 		for _, auth := range authz {
 			failures[challenge.GetTargetedDomain(auth)] = err
@@ -178,7 +179,7 @@ func (c *Certifier) ObtainForCSR(csr x509.CertificateRequest, bundle bool) (*Res
 	log.Infof("[%s] acme: Validations succeeded; requesting certificates", strings.Join(domains, ", "))
 
 	failures := make(obtainError)
-	cert, err := c.getForCSR(domains, order, bundle, csr.Raw, nil)
+	cert, err := c.getForCSR(domains, order, bundle, csr.Raw, nil, "")
 	if err != nil {
 		for _, auth := range authz {
 			failures[challenge.GetTargetedDomain(auth)] = err
@@ -198,7 +199,7 @@ func (c *Certifier) ObtainForCSR(csr x509.CertificateRequest, bundle bool) (*Res
 	return cert, nil
 }
 
-func (c *Certifier) getForOrder(domains []string, order acme.ExtendedOrder, bundle bool, privateKey crypto.PrivateKey, mustStaple bool) (*Resource, error) {
+func (c *Certifier) getForOrder(domains []string, order acme.ExtendedOrder, bundle bool, privateKey crypto.PrivateKey, mustStaple bool, preferredChain string) (*Resource, error) {
 	if privateKey == nil {
 		var err error
 		privateKey, err = certcrypto.GeneratePrivateKey(c.options.KeyType)
@@ -229,10 +230,10 @@ func (c *Certifier) getForOrder(domains []string, order acme.ExtendedOrder, bund
 		return nil, err
 	}
 
-	return c.getForCSR(domains, order, bundle, csr, certcrypto.PEMEncode(privateKey))
+	return c.getForCSR(domains, order, bundle, csr, certcrypto.PEMEncode(privateKey), preferredChain)
 }
 
-func (c *Certifier) getForCSR(domains []string, order acme.ExtendedOrder, bundle bool, csr, privateKeyPem []byte) (*Resource, error) {
+func (c *Certifier) getForCSR(domains []string, order acme.ExtendedOrder, bundle bool, csr, privateKeyPem []byte, preferredChain string) (*Resource, error) {
 	respOrder, err := c.core.Orders.UpdateForCSR(order.Finalize, csr)
 	if err != nil {
 		return nil, err

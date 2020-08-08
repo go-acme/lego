@@ -161,6 +161,8 @@ type Order struct {
 	// certificate (optional, string):
 	// A URL for the certificate that has been issued in response to this order
 	Certificate string `json:"certificate,omitempty"`
+
+	AlternateChainLinks []string `json:"-"`
 }
 
 // Authorization the ACME authorization object.

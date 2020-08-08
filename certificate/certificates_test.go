@@ -102,7 +102,7 @@ func Test_checkResponse(t *testing.T) {
 	certRes := &Resource{}
 	bundle := false
 
-	valid, err := certifier.checkResponse(order, certRes, bundle)
+	valid, err := certifier.checkResponse(order, certRes, bundle, "")
 	require.NoError(t, err)
 	assert.True(t, valid)
 	assert.NotNil(t, certRes)
@@ -150,7 +150,7 @@ func Test_checkResponse_issuerRelUp(t *testing.T) {
 	certRes := &Resource{}
 	bundle := false
 
-	valid, err := certifier.checkResponse(order, certRes, bundle)
+	valid, err := certifier.checkResponse(order, certRes, bundle, "")
 	require.NoError(t, err)
 	assert.True(t, valid)
 	assert.NotNil(t, certRes)
@@ -189,7 +189,7 @@ func Test_checkResponse_embeddedIssuer(t *testing.T) {
 	certRes := &Resource{}
 	bundle := false
 
-	valid, err := certifier.checkResponse(order, certRes, bundle)
+	valid, err := certifier.checkResponse(order, certRes, bundle, "")
 	require.NoError(t, err)
 	assert.True(t, valid)
 	assert.NotNil(t, certRes)

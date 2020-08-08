@@ -248,7 +248,7 @@ func (c *Certifier) getForCSR(domains []string, order acme.ExtendedOrder, bundle
 
 	if respOrder.Status == acme.StatusValid {
 		// if the certificate is available right away, short cut!
-		ok, errR := c.checkResponse(respOrder, certRes, bundle)
+		ok, errR := c.checkResponse(respOrder, certRes, bundle, preferredChain)
 		if errR != nil {
 			return nil, errR
 		}
@@ -269,7 +269,7 @@ func (c *Certifier) getForCSR(domains []string, order acme.ExtendedOrder, bundle
 			return false, errW
 		}
 
-		done, errW := c.checkResponse(ord, certRes, bundle)
+		done, errW := c.checkResponse(ord, certRes, bundle, preferredChain)
 		if errW != nil {
 			return false, errW
 		}
@@ -288,25 +288,37 @@ func (c *Certifier) getForCSR(domains []string, order acme.ExtendedOrder, bundle
 // The certRes input should already have the Domain (common name) field populated.
 //
 // If bundle is true, the certificate will be bundled with the issuer's cert.
-func (c *Certifier) checkResponse(order acme.Order, certRes *Resource, bundle bool) (bool, error) {
+func (c *Certifier) checkResponse(order acme.Order, certRes *Resource, bundle bool, preferredChain string) (bool, error) {
 	valid, err := checkOrderStatus(order)
 	if err != nil || !valid {
 		return valid, err
 	}
+	links := append([]string{order.Certificate}, order.AlternateChainLinks...)
 
-	cert, issuer, err := c.core.Certificates.Get(order.Certificate, bundle)
-	if err != nil {
-		return false, err
+	for _, link := range links {
+		cert, issuer, err := c.core.Certificates.Get(link, bundle)
+		if err != nil {
+			return false, err
+		}
+
+		if preferredChain != "" {
+			x509Certs, err := certcrypto.ParsePEMBundle(issuer)
+			if err != nil {
+				return false, err
+			}
+			if x509Certs[0].Subject.CommonName != preferredChain {
+				continue
+			}
+		}
+		log.Infof("[%s] Server responded with a certificate.", certRes.Domain)
+		certRes.IssuerCertificate = issuer
+		certRes.Certificate = cert
+		certRes.CertURL = link
+		certRes.CertStableURL = order.Certificate
+		return true, nil
 	}
 
-	log.Infof("[%s] Server responded with a certificate.", certRes.Domain)
-
-	certRes.IssuerCertificate = issuer
-	certRes.Certificate = cert
-	certRes.CertURL = order.Certificate
-	certRes.CertStableURL = order.Certificate
-
-	return true, nil
+	return false, fmt.Errorf("[%s] could not get certificate of preferredChain: %q", certRes.Domain, preferredChain)
 }
 
 // Revoke takes a PEM encoded certificate or bundle and tries to revoke it at the CA.

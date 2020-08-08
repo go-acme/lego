@@ -37,10 +37,11 @@ func (o *OrderService) Get(orderURL string) (acme.Order, error) {
 	}
 
 	var order acme.Order
-	_, err := o.core.postAsGet(orderURL, &order)
+	resp, err := o.core.postAsGet(orderURL, &order)
 	if err != nil {
 		return acme.Order{}, err
 	}
+	order.AlternateChainLinks = getLinks(resp.Header, "alternate")
 
 	return order, nil
 }

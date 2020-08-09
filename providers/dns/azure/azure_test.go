@@ -13,6 +13,7 @@ import (
 const envDomain = envNamespace + "DOMAIN"
 
 var envTest = tester.NewEnvTest(
+	EnvEnvironment,
 	EnvClientID,
 	EnvClientSecret,
 	EnvSubscriptionID,

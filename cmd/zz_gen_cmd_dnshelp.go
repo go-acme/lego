@@ -213,6 +213,7 @@ func displayDNSHelp(name string) error {
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "AZURE_CLIENT_ID":	Client ID`)
 		ew.writeln(`	- "AZURE_CLIENT_SECRET":	Client secret`)
+		ew.writeln(`	- "AZURE_ENVIRONMENT":	Azure environment, one of: public, usgovernment, german, and china`)
 		ew.writeln(`	- "AZURE_RESOURCE_GROUP":	Resource group`)
 		ew.writeln(`	- "AZURE_SUBSCRIPTION_ID":	Subscription ID`)
 		ew.writeln(`	- "AZURE_TENANT_ID":	Tenant ID`)

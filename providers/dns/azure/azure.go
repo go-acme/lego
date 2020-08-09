@@ -13,7 +13,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2017-09-01/dns"
 	"github.com/Azure/go-autorest/autorest"
-	autorest_azure "github.com/Azure/go-autorest/autorest/azure"
+	aazure "github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/go-acme/lego/v3/challenge/dns01"
@@ -66,8 +66,8 @@ func NewDefaultConfig() *Config {
 		PropagationTimeout:      env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
 		PollingInterval:         env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
 		MetadataEndpoint:        env.GetOrFile(EnvMetadataEndpoint),
-		ResourceManagerEndpoint: autorest_azure.PublicCloud.ResourceManagerEndpoint,
-		ActiveDirectoryEndpoint: autorest_azure.PublicCloud.ActiveDirectoryEndpoint,
+		ResourceManagerEndpoint: aazure.PublicCloud.ResourceManagerEndpoint,
+		ActiveDirectoryEndpoint: aazure.PublicCloud.ActiveDirectoryEndpoint,
 	}
 }
 
@@ -87,19 +87,20 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
 
-	// Azure Environments mapping.
-	environments := map[string]autorest_azure.Environment{
-		"china":        autorest_azure.ChinaCloud,
-		"german":       autorest_azure.GermanCloud,
-		"public":       autorest_azure.PublicCloud,
-		"usgovernment": autorest_azure.USGovernmentCloud,
-	}
-
-	environmentStr := env.GetOrFile(EnvEnvironment)
-	if environmentStr != "" {
-		environment, environmentOk := environments[environmentStr]
-		if !environmentOk {
-			return nil, fmt.Errorf("azure: unknown environment %s", environmentStr)
+	environmentName := env.GetOrFile(EnvEnvironment)
+	if environmentName != "" {
+		var environment aazure.Environment
+		switch environmentName {
+		case "china":
+			environment = aazure.ChinaCloud
+		case "german":
+			environment = aazure.GermanCloud
+		case "public":
+			environment = aazure.PublicCloud
+		case "usgovernment":
+			environment = aazure.USGovernmentCloud
+		default:
+			return nil, fmt.Errorf("azure: unknown environment %s", environmentName)
 		}
 
 		config.ResourceManagerEndpoint = environment.ResourceManagerEndpoint
@@ -282,6 +283,7 @@ func getAuthorizer(config *Config) (autorest.Authorizer, error) {
 
 		return autorest.NewBearerAuthorizer(spToken), nil
 	}
+
 	return auth.NewAuthorizerFromEnvironment()
 }
 

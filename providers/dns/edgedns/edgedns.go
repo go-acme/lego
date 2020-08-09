@@ -83,6 +83,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("edgedns: credentials are missing")
 	}
 
+	configdns.Init(config.Config)
+
 	return &DNSProvider{config: config}, nil
 }
 
@@ -95,8 +97,6 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
-
-	configdns.Init(d.config.Config)
 
 	zone, err := findZone(domain)
 	if err != nil {
@@ -147,8 +147,6 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 // CleanUp removes the record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
-
-	configdns.Init(d.config.Config)
 
 	zone, err := findZone(domain)
 	if err != nil {

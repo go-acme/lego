@@ -1,29 +1,37 @@
 package designate
 
 import (
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 
 	"github.com/go-acme/lego/v3/platform/tester"
+	"github.com/gophercloud/utils/openstack/clientconfig"
 	"github.com/stretchr/testify/require"
+	"gopkg.in/yaml.v2"
 )
 
-const envDomain = envNamespace + "DOMAIN"
+const (
+	envDomain             = envNamespace + "DOMAIN"
+	envOSClientConfigFile = "OS_CLIENT_CONFIG_FILE"
+)
 
 var envTest = tester.NewEnvTest(
+	EnvCloud,
 	EnvAuthURL,
 	EnvUsername,
 	EnvPassword,
 	EnvTenantName,
 	EnvRegionName,
-	EnvProjectID).
+	EnvProjectID,
+	envOSClientConfigFile).
 	WithDomain(envDomain)
 
-func TestNewDNSProvider(t *testing.T) {
-	server := getServer()
-	defer server.Close()
+func TestNewDNSProvider_fromEnv(t *testing.T) {
+	server := getServer(t)
 
 	testCases := []struct {
 		desc     string
@@ -129,9 +137,98 @@ func TestNewDNSProvider(t *testing.T) {
 	}
 }
 
+func TestNewDNSProvider_fromCloud(t *testing.T) {
+	server := getServer(t)
+
+	testCases := []struct {
+		desc     string
+		osCloud  string
+		cloud    clientconfig.Cloud
+		expected string
+	}{
+		{
+			desc:    "success",
+			osCloud: "good_cloud",
+			cloud: clientconfig.Cloud{
+				AuthInfo: &clientconfig.AuthInfo{
+					AuthURL:     server.URL + "/v2.0/",
+					Username:    "B",
+					Password:    "C",
+					ProjectName: "E",
+					ProjectID:   "F",
+				},
+				RegionName: "D",
+			},
+		},
+		{
+			desc:    "missing auth url",
+			osCloud: "missing_auth_url",
+			cloud: clientconfig.Cloud{
+				AuthInfo: &clientconfig.AuthInfo{
+					Username:    "B",
+					Password:    "C",
+					ProjectName: "E",
+					ProjectID:   "F",
+				},
+				RegionName: "D",
+			},
+			expected: "designate: Missing input for argument [auth_url]",
+		},
+		{
+			desc:    "missing username",
+			osCloud: "missing_username",
+			cloud: clientconfig.Cloud{
+				AuthInfo: &clientconfig.AuthInfo{
+					AuthURL:     server.URL + "/v2.0/",
+					Password:    "C",
+					ProjectName: "E",
+					ProjectID:   "F",
+				},
+				RegionName: "D",
+			},
+			expected: "designate: failed to authenticate: Missing input for argument [Username]",
+		},
+		{
+			desc:    "missing password",
+			osCloud: "missing_auth_url",
+			cloud: clientconfig.Cloud{
+				AuthInfo: &clientconfig.AuthInfo{
+					AuthURL:     server.URL + "/v2.0/",
+					Username:    "B",
+					ProjectName: "E",
+					ProjectID:   "F",
+				},
+				RegionName: "D",
+			},
+			expected: "designate: failed to authenticate: Exactly one of PasswordCredentials and TokenCredentials must be provided",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
+			envTest.Apply(map[string]string{
+				EnvCloud:              test.osCloud,
+				envOSClientConfigFile: createCloudsYaml(t, test.osCloud, test.cloud),
+			})
+
+			p, err := NewDNSProvider()
+
+			if len(test.expected) == 0 {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
+}
+
 func TestNewDNSProviderConfig(t *testing.T) {
-	server := getServer()
-	defer server.Close()
+	server := getServer(t)
 
 	testCases := []struct {
 		desc       string
@@ -179,7 +276,26 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}
 }
 
-func getServer() *httptest.Server {
+// createCloudsYaml creates a temporary cloud file for testing purpose.
+func createCloudsYaml(t *testing.T, cloudName string, cloud clientconfig.Cloud) string {
+	file, err := ioutil.TempFile("", "lego_test")
+	require.NoError(t, err)
+
+	t.Cleanup(func() { _ = os.RemoveAll(file.Name()) })
+
+	clouds := clientconfig.Clouds{
+		Clouds: map[string]clientconfig.Cloud{
+			cloudName: cloud,
+		},
+	}
+
+	err = yaml.NewEncoder(file).Encode(&clouds)
+	require.NoError(t, err)
+
+	return file.Name()
+}
+
+func getServer(t *testing.T) *httptest.Server {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
 		_, _ = w.Write([]byte(`{
@@ -213,7 +329,12 @@ func getServer() *httptest.Server {
 }`))
 		w.WriteHeader(200)
 	})
-	return httptest.NewServer(mux)
+
+	server := httptest.NewServer(mux)
+
+	t.Cleanup(server.Close)
+
+	return server
 }
 
 func TestLivePresent(t *testing.T) {

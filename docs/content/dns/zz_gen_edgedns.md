@@ -10,6 +10,7 @@ slug: edgedns
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 Since: v3.9.0
+
 Akamai edgedns supercedes fastdns; implementing a DNS provider for solving the DNS-01 challenge using Akamai EdgeDNS
 
 

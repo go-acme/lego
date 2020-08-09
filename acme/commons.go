@@ -162,6 +162,9 @@ type Order struct {
 	// A URL for the certificate that has been issued in response to this order
 	Certificate string `json:"certificate,omitempty"`
 
+	// AlternateChainLinks (optional, array of string):
+	// URLs of "alternate" link relation
+	// - https://tools.ietf.org/html/rfc8555#section-7.4.2
 	AlternateChainLinks []string `json:"-"`
 }
 

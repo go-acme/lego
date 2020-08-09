@@ -9,7 +9,7 @@ type service struct {
 	core *Core
 }
 
-var linkExpr = regexp.MustCompile(`<(.+?)>;\s*rel="(.+?)"`)
+var linkExpr = regexp.MustCompile(`<(.+?)>(?:;[^;]+)*?;\s*rel="(.+?)"`)
 
 // getLink get a rel into the Link header.
 func getLink(header http.Header, rel string) string {

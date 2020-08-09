@@ -23,6 +23,7 @@ func (o *OrderService) New(domains []string) (acme.ExtendedOrder, error) {
 	if err != nil {
 		return acme.ExtendedOrder{}, err
 	}
+	order.AlternateChainLinks = getLinks(resp.Header, "alternate")
 
 	return acme.ExtendedOrder{
 		Location: resp.Header.Get("Location"),

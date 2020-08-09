@@ -83,6 +83,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("edgedns: credentials are missing")
 	}
 
+	configdns.Init(config.Config)
+
 	return &DNSProvider{config: config}, nil
 }
 

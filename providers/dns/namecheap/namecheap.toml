@@ -10,6 +10,12 @@ NAMECHEAP_API_KEY=key \
 lego --dns namecheap --email someaccount@email.com --domains "foo.email.com" run
 '''
 
+Additional = '''
+As of Aug. 2020, to enable API access on the Namecheap production environment, some opaque requirements must be met.
+
+More information in the section [Enabling API Access](https://www.namecheap.com/support/api/intro/) of the Namecheap documentation.
+'''
+
 [Configuration]
   [Configuration.Credentials]
     NAMECHEAP_API_USER = "API user"

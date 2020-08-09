@@ -31,6 +31,7 @@ _Please contribute by adding a CLI example._
 |-----------------------|-------------|
 | `AZURE_CLIENT_ID` | Client ID |
 | `AZURE_CLIENT_SECRET` | Client secret |
+| `AZURE_ENVIRONMENT` | Azure environment, one of: public, usgovernment, german, and china |
 | `AZURE_RESOURCE_GROUP` | Resource group |
 | `AZURE_SUBSCRIPTION_ID` | Subscription ID |
 | `AZURE_TENANT_ID` | Tenant ID |

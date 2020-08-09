@@ -17,13 +17,13 @@ import (
 )
 
 const (
-	// DefaultPropagationTimeout default propagation timeout
+	// DefaultPropagationTimeout default propagation timeout.
 	DefaultPropagationTimeout = 60 * time.Second
 
-	// DefaultPollingInterval default polling interval
+	// DefaultPollingInterval default polling interval.
 	DefaultPollingInterval = 2 * time.Second
 
-	// DefaultTTL default TTL
+	// DefaultTTL default TTL.
 	DefaultTTL = 120
 )
 

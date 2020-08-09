@@ -27,10 +27,10 @@ const (
 	// the system-wide trusted root list.
 	caServerNameEnvVar = "LEGO_CA_SERVER_NAME"
 
-	// LEDirectoryProduction URL to the Let's Encrypt production
+	// LEDirectoryProduction URL to the Let's Encrypt production.
 	LEDirectoryProduction = "https://acme-v02.api.letsencrypt.org/directory"
 
-	// LEDirectoryStaging URL to the Let's Encrypt staging
+	// LEDirectoryStaging URL to the Let's Encrypt staging.
 	LEDirectoryStaging = "https://acme-staging-v02.api.letsencrypt.org/directory"
 )
 

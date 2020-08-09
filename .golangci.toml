@@ -38,6 +38,7 @@
     "nestif", # too many false-positive
     "goerr113", # not relevant
     "noctx",
+    "nlreturn",
   ]
 
 [issues]

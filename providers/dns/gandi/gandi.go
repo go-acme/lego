@@ -17,7 +17,7 @@ import (
 // Gandi API domain examples: http://doc.rpc.gandi.net/domain/faq.html
 
 const (
-	// defaultBaseURL Gandi XML-RPC endpoint used by Present and CleanUp
+	// defaultBaseURL Gandi XML-RPC endpoint used by Present and CleanUp.
 	defaultBaseURL = "https://rpc.gandi.net/xmlrpc/"
 	minTTL         = 300
 )

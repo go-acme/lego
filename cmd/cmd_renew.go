@@ -60,7 +60,7 @@ func createRenew() cli.Command {
 			},
 			cli.StringFlag{
 				Name:  "preferred-chain",
-				Usage: "If the CA offers multiple certificate chains, prefer the chain with an issuer matching this Subject Common Name.",
+				Usage: "If the CA offers multiple certificate chains, prefer the chain with an issuer matching this Subject Common Name. If no match, the default offered chain will be used.",
 			},
 		},
 	}

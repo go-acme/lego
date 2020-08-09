@@ -293,14 +293,24 @@ func (c *Certifier) checkResponse(order acme.Order, certRes *Resource, bundle bo
 	if err != nil || !valid {
 		return valid, err
 	}
-	links := append([]string{order.Certificate}, order.AlternateChainLinks...)
 
+	var (
+		links      = append([]string{order.Certificate}, order.AlternateChainLinks...)
+		defaultRes *Resource
+	)
 	for _, link := range links {
 		cert, issuer, err := c.core.Certificates.Get(link, bundle)
 		if err != nil {
 			return false, err
 		}
-
+		if defaultRes == nil {
+			defaultRes = &Resource{
+				IssuerCertificate: issuer,
+				Certificate:       cert,
+				CertURL:           link,
+				CertStableURL:     link,
+			}
+		}
 		if preferredChain != "" {
 			x509Certs, err := certcrypto.ParsePEMBundle(issuer)
 			if err != nil {
@@ -314,11 +324,16 @@ func (c *Certifier) checkResponse(order acme.Order, certRes *Resource, bundle bo
 		certRes.IssuerCertificate = issuer
 		certRes.Certificate = cert
 		certRes.CertURL = link
-		certRes.CertStableURL = order.Certificate
+		certRes.CertStableURL = link
 		return true, nil
 	}
 
-	return false, fmt.Errorf("[%s] could not get certificate of preferredChain: %q", certRes.Domain, preferredChain)
+	log.Infof("lego has been configured to prefer certificate chains with issuer %q, but no chain from the CA matched this issuer. Using the default certificate chain instead.", preferredChain)
+	certRes.IssuerCertificate = defaultRes.IssuerCertificate
+	certRes.Certificate = defaultRes.Certificate
+	certRes.CertURL = defaultRes.CertURL
+	certRes.CertStableURL = defaultRes.CertStableURL
+	return true, nil
 }
 
 // Revoke takes a PEM encoded certificate or bundle and tries to revoke it at the CA.

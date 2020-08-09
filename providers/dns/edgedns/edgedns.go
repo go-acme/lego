@@ -96,6 +96,8 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
+	configdns.Init(d.config.Config)
+
 	zone, err := findZone(domain)
 	if err != nil {
 		return fmt.Errorf("edgedns: %w", err)
@@ -145,6 +147,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 // CleanUp removes the record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
+
+	configdns.Init(d.config.Config)
 
 	zone, err := findZone(domain)
 	if err != nil {

@@ -20,7 +20,7 @@ require (
 	github.com/dnsimple/dnsimple-go v0.60.0
 	github.com/exoscale/egoscale v0.18.1
 	github.com/google/go-querystring v1.0.0
-	github.com/gophercloud/gophercloud v0.6.1-0.20191122030953-d8ac278c1c9d
+	github.com/gophercloud/gophercloud v0.7.0
 	github.com/gophercloud/utils v0.0.0-20200508015959-b0167b94122c
 	github.com/iij/doapi v0.0.0-20190504054126-0bbf12d6d7df
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect

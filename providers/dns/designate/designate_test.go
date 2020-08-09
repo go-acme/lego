@@ -8,27 +8,30 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/v3/platform/config/env"
 	"github.com/go-acme/lego/v3/platform/tester"
 	"github.com/gophercloud/utils/openstack/clientconfig"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v2"
 )
 
-const envDomain = envNamespace + "DOMAIN"
+const (
+	envDomain             = envNamespace + "DOMAIN"
+	envOSClientConfigFile = "OS_CLIENT_CONFIG_FILE"
+)
 
 var envTest = tester.NewEnvTest(
+	EnvCloud,
 	EnvAuthURL,
 	EnvUsername,
 	EnvPassword,
 	EnvTenantName,
 	EnvRegionName,
-	EnvProjectID).
+	EnvProjectID,
+	envOSClientConfigFile).
 	WithDomain(envDomain)
 
-func TestNewDNSProviderFromEnv(t *testing.T) {
-	server := getServer()
-	defer server.Close()
+func TestNewDNSProvider_fromEnv(t *testing.T) {
+	server := getServer(t)
 
 	testCases := []struct {
 		desc     string
@@ -114,14 +117,6 @@ func TestNewDNSProviderFromEnv(t *testing.T) {
 		},
 	}
 
-	// unset the OS_CLOUD environment variable otherwise the information will be read from
-	// the clouds.yaml
-	var cloud string
-	if vals, err := env.Get(EnvCloud); err == nil {
-		cloud = vals[EnvCloud]
-		_ = os.Unsetenv(EnvCloud)
-	}
-
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			defer envTest.RestoreEnv()
@@ -140,42 +135,10 @@ func TestNewDNSProviderFromEnv(t *testing.T) {
 			}
 		})
 	}
-
-	if cloud != "" {
-		_ = os.Setenv(EnvCloud, cloud)
-	}
 }
 
-// Create a temporary cloud file for testing purpose.
-func createCloudsYaml(cloudName string, cloud clientconfig.Cloud) (string, error) {
-	file, err := ioutil.TempFile("", "lego_test")
-	if err != nil {
-		return "", err
-	}
-
-	clouds := clientconfig.Clouds{
-		Clouds: map[string]clientconfig.Cloud{
-			cloudName: cloud,
-		},
-	}
-
-	d, err := yaml.Marshal(&clouds)
-	if err != nil {
-		return "", err
-	}
-
-	_, err = file.Write(d)
-	if err != nil {
-		return "", err
-	}
-
-	return file.Name(), nil
-}
-
-func TestNewDNSProviderFromCloud(t *testing.T) {
-	server := getServer()
-	defer server.Close()
-	configFileEnv := "OS_CLIENT_CONFIG_FILE"
+func TestNewDNSProvider_fromCloud(t *testing.T) {
+	server := getServer(t)
 
 	testCases := []struct {
 		desc     string
@@ -246,11 +209,11 @@ func TestNewDNSProviderFromCloud(t *testing.T) {
 			defer envTest.RestoreEnv()
 			envTest.ClearEnv()
 
-			f, err := createCloudsYaml(test.osCloud, test.cloud)
-			require.NoError(t, err)
+			envTest.Apply(map[string]string{
+				EnvCloud:              test.osCloud,
+				envOSClientConfigFile: createCloudsYaml(t, test.osCloud, test.cloud),
+			})
 
-			_ = os.Setenv(EnvCloud, test.osCloud)
-			_ = os.Setenv(configFileEnv, f)
 			p, err := NewDNSProvider()
 
 			if len(test.expected) == 0 {
@@ -260,17 +223,12 @@ func TestNewDNSProviderFromCloud(t *testing.T) {
 			} else {
 				require.EqualError(t, err, test.expected)
 			}
-
-			_ = os.Unsetenv(EnvCloud)
-			_ = os.Unsetenv(configFileEnv)
-			_ = os.Remove(f)
 		})
 	}
 }
 
 func TestNewDNSProviderConfig(t *testing.T) {
-	server := getServer()
-	defer server.Close()
+	server := getServer(t)
 
 	testCases := []struct {
 		desc       string
@@ -318,7 +276,26 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}
 }
 
-func getServer() *httptest.Server {
+// createCloudsYaml creates a temporary cloud file for testing purpose.
+func createCloudsYaml(t *testing.T, cloudName string, cloud clientconfig.Cloud) string {
+	file, err := ioutil.TempFile("", "lego_test")
+	require.NoError(t, err)
+
+	t.Cleanup(func() { _ = os.RemoveAll(file.Name()) })
+
+	clouds := clientconfig.Clouds{
+		Clouds: map[string]clientconfig.Cloud{
+			cloudName: cloud,
+		},
+	}
+
+	err = yaml.NewEncoder(file).Encode(&clouds)
+	require.NoError(t, err)
+
+	return file.Name()
+}
+
+func getServer(t *testing.T) *httptest.Server {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
 		_, _ = w.Write([]byte(`{
@@ -352,7 +329,12 @@ func getServer() *httptest.Server {
 }`))
 		w.WriteHeader(200)
 	})
-	return httptest.NewServer(mux)
+
+	server := httptest.NewServer(mux)
+
+	t.Cleanup(server.Close)
+
+	return server
 }
 
 func TestLivePresent(t *testing.T) {

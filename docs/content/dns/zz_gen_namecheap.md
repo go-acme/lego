@@ -13,6 +13,9 @@ Since: v0.3.0
 
 Configuration for [Namecheap](https://www.namecheap.com).
 
+**To enable API access on the Namecheap production environment, some opaque requirements must be met.** More information in the section [Enabling API Access](https://www.namecheap.com/support/api/intro/) of the Namecheap documentation. (2020-08: Account balance of $50+, 20+ domains in your account, or purchases totaling $50+ within the last 2 years.)
+
+
 
 <!--more-->
 

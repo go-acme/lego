@@ -37,11 +37,11 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(conf, EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, dns01.DefaultPollingInterval),
 	}
 }
 
@@ -55,10 +55,10 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variable: DNSIMPLE_OAUTH_TOKEN.
 //
 // See: https://developer.dnsimple.com/v2/#authentication
-func NewDNSProvider() (*DNSProvider, error) {
-	config := NewDefaultConfig()
-	config.AccessToken = env.GetOrFile(EnvOAuthToken)
-	config.BaseURL = env.GetOrFile(EnvBaseURL)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	config := NewDefaultConfig(conf)
+	config.AccessToken = env.GetOrFile(conf, EnvOAuthToken)
+	config.BaseURL = env.GetOrFile(conf, EnvBaseURL)
 
 	return NewDNSProviderConfig(config)
 }

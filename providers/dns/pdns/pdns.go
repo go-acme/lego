@@ -39,13 +39,13 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 120*time.Second),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
+		TTL:                env.GetOrDefaultInt(conf, EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, 120*time.Second),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, 2*time.Second),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(conf, EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -59,8 +59,8 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for pdns.
 // Credentials must be passed in the environment variable:
 // PDNS_API_URL and PDNS_API_KEY.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvAPIKey, EnvAPIURL)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.Get(conf, EnvAPIKey, EnvAPIURL)
 	if err != nil {
 		return nil, fmt.Errorf("pdns: %w", err)
 	}
@@ -70,7 +70,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 		return nil, fmt.Errorf("pdns: %w", err)
 	}
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(conf)
 	config.Host = hostURL
 	config.APIKey = values[EnvAPIKey]
 

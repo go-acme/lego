@@ -40,25 +40,25 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() (*Config, error) {
-	apiEndpoint, err := url.Parse(env.GetOrDefaultString(EnvAPIEndpoint, apiBaseURL))
+func NewDefaultConfig(conf map[string]string) (*Config, error) {
+	apiEndpoint, err := url.Parse(env.GetOrDefaultString(conf, EnvAPIEndpoint, apiBaseURL))
 	if err != nil {
 		return nil, fmt.Errorf("mythicbeasts: Unable to parse API URL: %w", err)
 	}
 
-	authEndpoint, err := url.Parse(env.GetOrDefaultString(EnvAuthAPIEndpoint, authBaseURL))
+	authEndpoint, err := url.Parse(env.GetOrDefaultString(conf, EnvAuthAPIEndpoint, authBaseURL))
 	if err != nil {
 		return nil, fmt.Errorf("mythicbeasts: Unable to parse AUTH API URL: %w", err)
 	}
 
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(conf, EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, dns01.DefaultPollingInterval),
 		APIEndpoint:        apiEndpoint,
 		AuthAPIEndpoint:    authEndpoint,
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 10*time.Second),
+			Timeout: env.GetOrDefaultSecond(conf, EnvHTTPTimeout, 10*time.Second),
 		},
 	}, nil
 }
@@ -72,13 +72,13 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for mythicbeasts DNSv2 API.
 // Credentials must be passed in the environment variables:
 // MYTHICBEASTS_USER_NAME and MYTHICBEASTS_PASSWORD.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvUserName, EnvPassword)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.Get(conf, EnvUserName, EnvPassword)
 	if err != nil {
 		return nil, fmt.Errorf("mythicbeasts: %w", err)
 	}
 
-	config, err := NewDefaultConfig()
+	config, err := NewDefaultConfig(conf)
 	if err != nil {
 		return nil, fmt.Errorf("mythicbeasts: %w", err)
 	}

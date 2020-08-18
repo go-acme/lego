@@ -35,13 +35,13 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, 3600),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(conf, EnvTTL, 3600),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(conf, EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -54,13 +54,13 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for Zonomi.
 // Credentials must be passed in the environment variables.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvAPIKey)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.Get(conf, EnvAPIKey)
 	if err != nil {
 		return nil, fmt.Errorf("zonomi: %w", err)
 	}
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(conf)
 	config.APIKey = values[EnvAPIKey]
 
 	return NewDNSProviderConfig(config)

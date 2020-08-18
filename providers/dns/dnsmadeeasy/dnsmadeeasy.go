@@ -41,13 +41,13 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(conf, EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 10*time.Second),
+			Timeout: env.GetOrDefaultSecond(conf, EnvHTTPTimeout, 10*time.Second),
 			Transport: &http.Transport{
 				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 			},
@@ -64,14 +64,14 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for DNSMadeEasy DNS.
 // Credentials must be passed in the environment variables:
 // DNSMADEEASY_API_KEY and DNSMADEEASY_API_SECRET.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvAPIKey, EnvAPISecret)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.Get(conf, EnvAPIKey, EnvAPISecret)
 	if err != nil {
 		return nil, fmt.Errorf("dnsmadeeasy: %w", err)
 	}
 
-	config := NewDefaultConfig()
-	config.Sandbox = env.GetOrDefaultBool(EnvSandbox, false)
+	config := NewDefaultConfig(conf)
+	config.Sandbox = env.GetOrDefaultBool(conf, EnvSandbox, false)
 	config.APIKey = values[EnvAPIKey]
 	config.APISecret = values[EnvAPISecret]
 

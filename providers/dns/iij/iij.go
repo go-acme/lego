@@ -38,11 +38,11 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, 300),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 4*time.Second),
+		TTL:                env.GetOrDefaultInt(conf, EnvTTL, 300),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, 2*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, 4*time.Second),
 	}
 }
 
@@ -53,13 +53,13 @@ type DNSProvider struct {
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for IIJ DNS.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvAPIAccessKey, EnvAPISecretKey, EnvDoServiceCode)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.Get(conf, EnvAPIAccessKey, EnvAPISecretKey, EnvDoServiceCode)
 	if err != nil {
 		return nil, fmt.Errorf("iij: %w", err)
 	}
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(conf)
 	config.AccessKey = values[EnvAPIAccessKey]
 	config.SecretKey = values[EnvAPISecretKey]
 	config.DoServiceCode = values[EnvDoServiceCode]

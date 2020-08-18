@@ -40,14 +40,14 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
-		BaseURL:            env.GetOrDefaultString(EnvBaseURL, selectel.DefaultVScaleBaseURL),
-		TTL:                env.GetOrDefaultInt(EnvTTL, minTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 120*time.Second),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
+		BaseURL:            env.GetOrDefaultString(conf, EnvBaseURL, selectel.DefaultVScaleBaseURL),
+		TTL:                env.GetOrDefaultInt(conf, EnvTTL, minTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, 120*time.Second),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, 2*time.Second),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(conf, EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -60,13 +60,13 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for Vscale Domains API.
 // API token must be passed in the environment variable VSCALE_API_TOKEN.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvAPIToken)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.Get(conf, EnvAPIToken)
 	if err != nil {
 		return nil, fmt.Errorf("vscale: %w", err)
 	}
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(conf)
 	config.Token = values[EnvAPIToken]
 
 	return NewDNSProviderConfig(config)

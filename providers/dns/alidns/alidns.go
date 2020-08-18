@@ -44,12 +44,12 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, 600),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
-		HTTPTimeout:        env.GetOrDefaultSecond(EnvHTTPTimeout, 10*time.Second),
+		TTL:                env.GetOrDefaultInt(conf, EnvTTL, 600),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, dns01.DefaultPollingInterval),
+		HTTPTimeout:        env.GetOrDefaultSecond(conf, EnvHTTPTimeout, 10*time.Second),
 	}
 }
 
@@ -62,16 +62,16 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for Alibaba Cloud DNS.
 // Credentials must be passed in the environment variables:
 // ALICLOUD_ACCESS_KEY and ALICLOUD_SECRET_KEY.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvAccessKey, EnvSecretKey)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.Get(conf, EnvAccessKey, EnvSecretKey)
 	if err != nil {
 		return nil, fmt.Errorf("alicloud: %w", err)
 	}
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(conf)
 	config.APIKey = values[EnvAccessKey]
 	config.SecretKey = values[EnvSecretKey]
-	config.RegionID = env.GetOrFile(EnvRegionID)
+	config.RegionID = env.GetOrFile(conf, EnvRegionID)
 
 	return NewDNSProviderConfig(config)
 }

@@ -40,13 +40,13 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, minTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 120*time.Second),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
+		TTL:                env.GetOrDefaultInt(conf, EnvTTL, minTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, 120*time.Second),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, 2*time.Second),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(conf, EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -63,13 +63,13 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for LuaDNS.
 // Credentials must be passed in the environment variables:
 // LUADNS_API_USERNAME and LUADNS_API_TOKEN.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvAPIUsername, EnvAPIToken)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.Get(conf, EnvAPIUsername, EnvAPIToken)
 	if err != nil {
 		return nil, fmt.Errorf("luadns: %w", err)
 	}
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(conf)
 	config.APIUsername = values[EnvAPIUsername]
 	config.APIToken = values[EnvAPIToken]
 

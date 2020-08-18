@@ -55,7 +55,7 @@ func TestNewDNSProvider(t *testing.T) {
 
 			envTest.Apply(test.envVars)
 
-			p, err := NewDNSProvider()
+			p, err := NewDNSProvider(nil)
 
 			if len(test.expected) == 0 {
 				require.NoError(t, err)
@@ -99,7 +99,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			config := NewDefaultConfig()
+			config := NewDefaultConfig(nil)
 			config.AccessToken = test.accessToken
 			config.BaseURL = test.baseURL
 
@@ -132,7 +132,7 @@ func TestLivePresent(t *testing.T) {
 		os.Setenv(EnvBaseURL, sandboxURL)
 	}
 
-	provider, err := NewDNSProvider()
+	provider, err := NewDNSProvider(nil)
 	require.NoError(t, err)
 
 	err = provider.Present(envTest.GetDomain(), "", "123d==")
@@ -150,7 +150,7 @@ func TestLiveCleanUp(t *testing.T) {
 		os.Setenv(EnvBaseURL, sandboxURL)
 	}
 
-	provider, err := NewDNSProvider()
+	provider, err := NewDNSProvider(nil)
 	require.NoError(t, err)
 
 	time.Sleep(1 * time.Second)

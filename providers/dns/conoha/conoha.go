@@ -40,14 +40,14 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
-		Region:             env.GetOrDefaultString(EnvRegion, "tyo1"),
-		TTL:                env.GetOrDefaultInt(EnvTTL, 60),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		Region:             env.GetOrDefaultString(conf, EnvRegion, "tyo1"),
+		TTL:                env.GetOrDefaultInt(conf, EnvTTL, 60),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(conf, EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -61,13 +61,13 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for ConoHa DNS.
 // Credentials must be passed in the environment variables:
 // CONOHA_TENANT_ID, CONOHA_API_USERNAME, CONOHA_API_PASSWORD.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvTenantID, EnvAPIUsername, EnvAPIPassword)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.Get(conf, EnvTenantID, EnvAPIUsername, EnvAPIPassword)
 	if err != nil {
 		return nil, fmt.Errorf("conoha: %w", err)
 	}
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(conf)
 	config.TenantID = values[EnvTenantID]
 	config.Username = values[EnvAPIUsername]
 	config.Password = values[EnvAPIPassword]

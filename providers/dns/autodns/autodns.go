@@ -45,17 +45,17 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
-	endpoint, _ := url.Parse(env.GetOrDefaultString(EnvAPIEndpoint, defaultEndpoint))
+func NewDefaultConfig(conf map[string]string) *Config {
+	endpoint, _ := url.Parse(env.GetOrDefaultString(conf, EnvAPIEndpoint, defaultEndpoint))
 
 	return &Config{
 		Endpoint:           endpoint,
-		Context:            env.GetOrDefaultInt(EnvAPIEndpointContext, defaultEndpointContext),
-		TTL:                env.GetOrDefaultInt(EnvTTL, defaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
+		Context:            env.GetOrDefaultInt(conf, EnvAPIEndpointContext, defaultEndpointContext),
+		TTL:                env.GetOrDefaultInt(conf, EnvTTL, defaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, 2*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, 2*time.Second),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(conf, EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -67,13 +67,13 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for autoDNS.
 // Credentials must be passed in the environment variables.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvAPIUser, EnvAPIPassword)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.Get(conf, EnvAPIUser, EnvAPIPassword)
 	if err != nil {
 		return nil, fmt.Errorf("autodns: %w", err)
 	}
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(conf)
 	config.Username = values[EnvAPIUser]
 	config.Password = values[EnvAPIPassword]
 

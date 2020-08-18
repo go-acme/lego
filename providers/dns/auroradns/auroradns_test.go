@@ -20,7 +20,7 @@ func setupTest() (*DNSProvider, *http.ServeMux, func()) {
 	handler := http.NewServeMux()
 	server := httptest.NewServer(handler)
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(nil)
 	config.UserID = "asdf1234"
 	config.Key = "key"
 	config.BaseURL = server.URL
@@ -79,7 +79,7 @@ func TestNewDNSProvider(t *testing.T) {
 
 			envTest.Apply(test.envVars)
 
-			p, err := NewDNSProvider()
+			p, err := NewDNSProvider(nil)
 
 			if len(test.expected) == 0 {
 				require.NoError(t, err)
@@ -127,7 +127,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			config := NewDefaultConfig()
+			config := NewDefaultConfig(nil)
 			config.UserID = test.userID
 			config.Key = test.key
 

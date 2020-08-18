@@ -15,7 +15,7 @@ const (
 type DNSProviderManual struct{}
 
 // NewDNSProviderManual returns a DNSProviderManual instance.
-func NewDNSProviderManual() (*DNSProviderManual, error) {
+func NewDNSProviderManual(conf map[string]string) (*DNSProviderManual, error) {
 	return &DNSProviderManual{}, nil
 }
 

@@ -13,12 +13,12 @@ import (
 )
 
 // Get environment variables.
-func Get(names ...string) (map[string]string, error) {
+func Get(config map[string]string, names ...string) (map[string]string, error) {
 	values := map[string]string{}
 
 	var missingEnvVars []string
 	for _, envVar := range names {
-		value := GetOrFile(envVar)
+		value := GetOrFile(config, envVar)
 		if value == "" {
 			missingEnvVars = append(missingEnvVars, envVar)
 		}
@@ -54,7 +54,7 @@ func Get(names ...string) (map[string]string, error) {
 //	env.GetWithFallback([]string{"LEGO_ONE", "LEGO_TWO"})
 //	// => error
 //
-func GetWithFallback(groups ...[]string) (map[string]string, error) {
+func GetWithFallback(config map[string]string, groups ...[]string) (map[string]string, error) {
 	values := map[string]string{}
 
 	var missingEnvVars []string
@@ -63,7 +63,7 @@ func GetWithFallback(groups ...[]string) (map[string]string, error) {
 			return nil, errors.New("undefined environment variable names")
 		}
 
-		value, envVar := getOneWithFallback(names[0], names[1:]...)
+		value, envVar := getOneWithFallback(config, names[0], names[1:]...)
 		if len(value) == 0 {
 			missingEnvVars = append(missingEnvVars, envVar)
 			continue
@@ -78,14 +78,14 @@ func GetWithFallback(groups ...[]string) (map[string]string, error) {
 	return values, nil
 }
 
-func getOneWithFallback(main string, names ...string) (string, string) {
-	value := GetOrFile(main)
+func getOneWithFallback(config map[string]string, main string, names ...string) (string, string) {
+	value := GetOrFile(config, main)
 	if len(value) > 0 {
 		return value, main
 	}
 
 	for _, name := range names {
-		value := GetOrFile(name)
+		value := GetOrFile(config, name)
 		if len(value) > 0 {
 			return value, main
 		}
@@ -96,8 +96,8 @@ func getOneWithFallback(main string, names ...string) (string, string) {
 
 // GetOrDefaultInt returns the given environment variable value as an integer.
 // Returns the default if the envvar cannot be coopered to an int, or is not found.
-func GetOrDefaultInt(envVar string, defaultValue int) int {
-	v, err := strconv.Atoi(GetOrFile(envVar))
+func GetOrDefaultInt(config map[string]string, envVar string, defaultValue int) int {
+	v, err := strconv.Atoi(GetOrFile(config, envVar))
 	if err != nil {
 		return defaultValue
 	}
@@ -107,8 +107,8 @@ func GetOrDefaultInt(envVar string, defaultValue int) int {
 
 // GetOrDefaultSecond returns the given environment variable value as an time.Duration (second).
 // Returns the default if the envvar cannot be coopered to an int, or is not found.
-func GetOrDefaultSecond(envVar string, defaultValue time.Duration) time.Duration {
-	v := GetOrDefaultInt(envVar, -1)
+func GetOrDefaultSecond(config map[string]string, envVar string, defaultValue time.Duration) time.Duration {
+	v := GetOrDefaultInt(config, envVar, -1)
 	if v < 0 {
 		return defaultValue
 	}
@@ -118,8 +118,8 @@ func GetOrDefaultSecond(envVar string, defaultValue time.Duration) time.Duration
 
 // GetOrDefaultString returns the given environment variable value as a string.
 // Returns the default if the envvar cannot be find.
-func GetOrDefaultString(envVar, defaultValue string) string {
-	v := GetOrFile(envVar)
+func GetOrDefaultString(config map[string]string, envVar, defaultValue string) string {
+	v := GetOrFile(config, envVar)
 	if len(v) == 0 {
 		return defaultValue
 	}
@@ -129,8 +129,8 @@ func GetOrDefaultString(envVar, defaultValue string) string {
 
 // GetOrDefaultBool returns the given environment variable value as a boolean.
 // Returns the default if the envvar cannot be coopered to a boolean, or is not found.
-func GetOrDefaultBool(envVar string, defaultValue bool) bool {
-	v, err := strconv.ParseBool(GetOrFile(envVar))
+func GetOrDefaultBool(config map[string]string, envVar string, defaultValue bool) bool {
+	v, err := strconv.ParseBool(GetOrFile(config, envVar))
 	if err != nil {
 		return defaultValue
 	}
@@ -141,7 +141,11 @@ func GetOrDefaultBool(envVar string, defaultValue bool) bool {
 // GetOrFile Attempts to resolve 'key' as an environment variable.
 // Failing that, it will check to see if '<key>_FILE' exists.
 // If so, it will attempt to read from the referenced file to populate a value.
-func GetOrFile(envVar string) string {
+func GetOrFile(config map[string]string, envVar string) string {
+	if v, present := config[envVar]; present {
+		return v
+	}
+
 	envVarValue := os.Getenv(envVar)
 	if envVarValue != "" {
 		return envVarValue

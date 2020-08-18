@@ -16,7 +16,7 @@ func TestLiveTTL(t *testing.T) {
 
 	envTest.RestoreEnv()
 
-	provider, err := NewDNSProvider()
+	provider, err := NewDNSProvider(nil)
 	require.NoError(t, err)
 
 	domain := envTest.GetDomain()

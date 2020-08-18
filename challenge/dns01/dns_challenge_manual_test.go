@@ -44,7 +44,7 @@ func TestDNSProviderManual(t *testing.T) {
 
 			os.Stdin = file
 
-			manualProvider, err := NewDNSProviderManual()
+			manualProvider, err := NewDNSProviderManual(nil)
 			require.NoError(t, err)
 
 			err = manualProvider.Present("example.com", "", "")

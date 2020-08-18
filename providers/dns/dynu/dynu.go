@@ -37,13 +37,13 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, 300),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 3*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 10*time.Second),
+		TTL:                env.GetOrDefaultInt(conf, EnvTTL, 300),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, 3*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, 10*time.Second),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(conf, EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -56,13 +56,13 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for Dynu.
 // Credentials must be passed in the environment variables.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvAPIKey)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.Get(conf, EnvAPIKey)
 	if err != nil {
 		return nil, fmt.Errorf("dynu: %w", err)
 	}
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(conf)
 	config.APIKey = values[EnvAPIKey]
 
 	return NewDNSProviderConfig(config)

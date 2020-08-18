@@ -57,7 +57,7 @@ func TestServerSuccess(t *testing.T) {
 	require.NoError(t, err, "Failed to start test server")
 	defer func() { _ = server.Shutdown() }()
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(nil)
 	config.Nameserver = addr
 
 	provider, err := NewDNSProviderConfig(config)
@@ -76,7 +76,7 @@ func TestServerError(t *testing.T) {
 	require.NoError(t, err, "Failed to start test server")
 	defer func() { _ = server.Shutdown() }()
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(nil)
 	config.Nameserver = addr
 
 	provider, err := NewDNSProviderConfig(config)
@@ -98,7 +98,7 @@ func TestTsigClient(t *testing.T) {
 	require.NoError(t, err, "Failed to start test server")
 	defer func() { _ = server.Shutdown() }()
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(nil)
 	config.Nameserver = addr
 	config.TSIGKey = fakeTsigKey
 	config.TSIGSecret = fakeTsigSecret
@@ -132,7 +132,7 @@ func TestValidUpdatePacket(t *testing.T) {
 	expect, err := m.Pack()
 	require.NoError(t, err, "error packing")
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(nil)
 	config.Nameserver = addr
 
 	provider, err := NewDNSProviderConfig(config)

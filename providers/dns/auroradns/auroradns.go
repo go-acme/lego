@@ -38,11 +38,11 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, 300),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(conf, EnvTTL, 300),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, dns01.DefaultPollingInterval),
 	}
 }
 
@@ -57,14 +57,14 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for AuroraDNS.
 // Credentials must be passed in the environment variables:
 // AURORA_USER_ID and AURORA_KEY.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvUserID, EnvKey)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.Get(conf, EnvUserID, EnvKey)
 	if err != nil {
 		return nil, fmt.Errorf("aurora: %w", err)
 	}
 
-	config := NewDefaultConfig()
-	config.BaseURL = env.GetOrFile(EnvEndpoint)
+	config := NewDefaultConfig(conf)
+	config.BaseURL = env.GetOrFile(conf, EnvEndpoint)
 	config.UserID = values[EnvUserID]
 	config.Key = values[EnvKey]
 

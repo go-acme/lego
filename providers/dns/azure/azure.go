@@ -60,12 +60,12 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
-		TTL:                     env.GetOrDefaultInt(EnvTTL, 60),
-		PropagationTimeout:      env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
-		PollingInterval:         env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
-		MetadataEndpoint:        env.GetOrFile(EnvMetadataEndpoint),
+		TTL:                     env.GetOrDefaultInt(conf, EnvTTL, 60),
+		PropagationTimeout:      env.GetOrDefaultSecond(conf, EnvPropagationTimeout, 2*time.Minute),
+		PollingInterval:         env.GetOrDefaultSecond(conf, EnvPollingInterval, 2*time.Second),
+		MetadataEndpoint:        env.GetOrFile(conf, EnvMetadataEndpoint),
 		ResourceManagerEndpoint: aazure.PublicCloud.ResourceManagerEndpoint,
 		ActiveDirectoryEndpoint: aazure.PublicCloud.ActiveDirectoryEndpoint,
 	}
@@ -84,10 +84,10 @@ type DNSProvider struct {
 // If the credentials are _not_ set via the environment,
 // then it will attempt to get a bearer token via the instance metadata service.
 // see: https://github.com/Azure/go-autorest/blob/v10.14.0/autorest/azure/auth/auth.go#L38-L42
-func NewDNSProvider() (*DNSProvider, error) {
-	config := NewDefaultConfig()
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	config := NewDefaultConfig(conf)
 
-	environmentName := env.GetOrFile(EnvEnvironment)
+	environmentName := env.GetOrFile(conf, EnvEnvironment)
 	if environmentName != "" {
 		var environment aazure.Environment
 		switch environmentName {
@@ -107,11 +107,11 @@ func NewDNSProvider() (*DNSProvider, error) {
 		config.ActiveDirectoryEndpoint = environment.ActiveDirectoryEndpoint
 	}
 
-	config.SubscriptionID = env.GetOrFile(EnvSubscriptionID)
-	config.ResourceGroup = env.GetOrFile(EnvResourceGroup)
-	config.ClientSecret = env.GetOrFile(EnvClientSecret)
-	config.ClientID = env.GetOrFile(EnvClientID)
-	config.TenantID = env.GetOrFile(EnvTenantID)
+	config.SubscriptionID = env.GetOrFile(conf, EnvSubscriptionID)
+	config.ResourceGroup = env.GetOrFile(conf, EnvResourceGroup)
+	config.ClientSecret = env.GetOrFile(conf, EnvClientSecret)
+	config.ClientID = env.GetOrFile(conf, EnvClientID)
+	config.TenantID = env.GetOrFile(conf, EnvTenantID)
 
 	return NewDNSProviderConfig(config)
 }

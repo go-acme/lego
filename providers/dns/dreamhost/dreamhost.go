@@ -34,13 +34,13 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
 		BaseURL:            defaultBaseURL,
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 60*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 1*time.Minute),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, 60*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, 1*time.Minute),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(conf, EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -52,13 +52,13 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a new DNS provider using
 // environment variable DREAMHOST_API_KEY for adding and removing the DNS record.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvAPIKey)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.Get(conf, EnvAPIKey)
 	if err != nil {
 		return nil, fmt.Errorf("dreamhost: %w", err)
 	}
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(conf)
 	config.APIKey = values[EnvAPIKey]
 
 	return NewDNSProviderConfig(config)

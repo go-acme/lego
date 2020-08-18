@@ -32,12 +32,12 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, time.Minute),
+			Timeout: env.GetOrDefaultSecond(conf, EnvHTTPTimeout, time.Minute),
 		},
 	}
 }
@@ -50,13 +50,13 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for Bindman.
 // BINDMAN_MANAGER_ADDRESS should have the scheme, hostname, and port (if required) of the authoritative Bindman Manager server.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvManagerAddress)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.Get(conf, EnvManagerAddress)
 	if err != nil {
 		return nil, fmt.Errorf("bindman: %w", err)
 	}
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(conf)
 	config.BaseURL = values[EnvManagerAddress]
 
 	return NewDNSProviderConfig(config)

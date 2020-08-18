@@ -44,12 +44,12 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, minTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 0),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 15*time.Second),
-		HTTPTimeout:        env.GetOrDefaultSecond(EnvHTTPTimeout, 0),
+		TTL:                env.GetOrDefaultInt(conf, EnvTTL, minTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, 0),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, 15*time.Second),
+		HTTPTimeout:        env.GetOrDefaultSecond(conf, EnvHTTPTimeout, 0),
 	}
 }
 
@@ -66,13 +66,13 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for Linode.
 // Credentials must be passed in the environment variable: LINODE_TOKEN.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvToken)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.Get(conf, EnvToken)
 	if err != nil {
 		return nil, fmt.Errorf("linodev4: %w", err)
 	}
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(conf)
 	config.Token = values[EnvToken]
 
 	return NewDNSProviderConfig(config)

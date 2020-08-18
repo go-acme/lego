@@ -38,13 +38,13 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(conf, EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 10*time.Second),
+			Timeout: env.GetOrDefaultSecond(conf, EnvHTTPTimeout, 10*time.Second),
 		},
 	}
 }
@@ -58,13 +58,13 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for Dyn DNS.
 // Credentials must be passed in the environment variables:
 // DYN_CUSTOMER_NAME, DYN_USER_NAME and DYN_PASSWORD.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvCustomerName, EnvUserName, EnvPassword)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.Get(conf, EnvCustomerName, EnvUserName, EnvPassword)
 	if err != nil {
 		return nil, fmt.Errorf("dyn: %w", err)
 	}
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(conf)
 	config.CustomerName = values[EnvCustomerName]
 	config.UserName = values[EnvUserName]
 	config.Password = values[EnvPassword]

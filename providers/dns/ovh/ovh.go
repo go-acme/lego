@@ -55,13 +55,13 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(conf, EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, ovh.DefaultTimeout),
+			Timeout: env.GetOrDefaultSecond(conf, EnvHTTPTimeout, ovh.DefaultTimeout),
 		},
 	}
 }
@@ -77,13 +77,13 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for OVH
 // Credentials must be passed in the environment variables:
 // OVH_ENDPOINT (must be either "ovh-eu" or "ovh-ca"), OVH_APPLICATION_KEY, OVH_APPLICATION_SECRET, OVH_CONSUMER_KEY.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvEndpoint, EnvApplicationKey, EnvApplicationSecret, EnvConsumerKey)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.Get(conf, EnvEndpoint, EnvApplicationKey, EnvApplicationSecret, EnvConsumerKey)
 	if err != nil {
 		return nil, fmt.Errorf("ovh: %w", err)
 	}
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(conf)
 	config.APIEndpoint = values[EnvEndpoint]
 	config.ApplicationKey = values[EnvApplicationKey]
 	config.ApplicationSecret = values[EnvApplicationSecret]

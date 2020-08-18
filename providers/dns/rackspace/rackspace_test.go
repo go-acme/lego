@@ -33,7 +33,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 }
 
 func TestNewDNSProviderConfig_MissingCredErr(t *testing.T) {
-	_, err := NewDNSProviderConfig(NewDefaultConfig())
+	_, err := NewDNSProviderConfig(NewDefaultConfig(nil))
 	assert.EqualError(t, err, "rackspace: credentials missing")
 }
 
@@ -67,7 +67,7 @@ func TestLiveNewDNSProvider_ValidEnv(t *testing.T) {
 	}
 
 	envTest.RestoreEnv()
-	provider, err := NewDNSProvider()
+	provider, err := NewDNSProvider(nil)
 	require.NoError(t, err)
 
 	assert.Contains(t, provider.cloudDNSEndpoint, "https://dns.api.rackspacecloud.com/v1.0/", "The endpoint URL should contain the base")
@@ -79,7 +79,7 @@ func TestLivePresent(t *testing.T) {
 	}
 
 	envTest.RestoreEnv()
-	provider, err := NewDNSProvider()
+	provider, err := NewDNSProvider(nil)
 	require.NoError(t, err)
 
 	err = provider.Present(envTest.GetDomain(), "", "112233445566==")
@@ -92,7 +92,7 @@ func TestLiveCleanUp(t *testing.T) {
 	}
 
 	envTest.RestoreEnv()
-	provider, err := NewDNSProvider()
+	provider, err := NewDNSProvider(nil)
 	require.NoError(t, err)
 
 	time.Sleep(15 * time.Second)
@@ -104,7 +104,7 @@ func TestLiveCleanUp(t *testing.T) {
 func setupTest() (*Config, func()) {
 	apiURL, tearDown := startTestServers()
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(nil)
 	config.APIUser = "testUser"
 	config.APIKey = "testKey"
 	config.BaseURL = apiURL

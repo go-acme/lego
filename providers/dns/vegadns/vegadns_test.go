@@ -20,7 +20,7 @@ func TestNewDNSProvider_Fail(t *testing.T) {
 	defer envTest.RestoreEnv()
 	envTest.ClearEnv()
 
-	_, err := NewDNSProvider()
+	_, err := NewDNSProvider(nil)
 	assert.Error(t, err, "VEGADNS_URL env missing")
 }
 
@@ -31,7 +31,7 @@ func TestDNSProvider_TimeoutSuccess(t *testing.T) {
 	tearDown := startTestServer(muxSuccess())
 	defer tearDown()
 
-	provider, err := NewDNSProvider()
+	provider, err := NewDNSProvider(nil)
 	require.NoError(t, err)
 
 	timeout, interval := provider.Timeout()
@@ -69,7 +69,7 @@ func TestDNSProvider_Present(t *testing.T) {
 			tearDown := startTestServer(test.handler)
 			defer tearDown()
 
-			provider, err := NewDNSProvider()
+			provider, err := NewDNSProvider(nil)
 			require.NoError(t, err)
 
 			err = provider.Present(testDomain, "token", "keyAuth")
@@ -112,7 +112,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 			tearDown := startTestServer(test.handler)
 			defer tearDown()
 
-			provider, err := NewDNSProvider()
+			provider, err := NewDNSProvider(nil)
 			require.NoError(t, err)
 
 			err = provider.CleanUp(testDomain, "token", "keyAuth")

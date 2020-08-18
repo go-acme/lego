@@ -68,7 +68,7 @@ func TestNewDNSProvider(t *testing.T) {
 
 			envTest.Apply(test.envVars)
 
-			p, err := NewDNSProvider()
+			p, err := NewDNSProvider(nil)
 
 			if len(test.expected) == 0 {
 				require.NoError(t, err)
@@ -92,7 +92,7 @@ func TestNewDNSProvider(t *testing.T) {
 			EnvPrivateKeyPath: "./fixtures/non/existent/private.key",
 		})
 
-		_, err := NewDNSProvider()
+		_, err := NewDNSProvider(nil)
 		if !errors.Is(err, os.ErrNotExist) {
 			t.Fatalf("Expected an os.ErrNotExists error, actual: %v", err)
 		}
@@ -129,7 +129,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			config := NewDefaultConfig()
+			config := NewDefaultConfig(nil)
 			config.AccountName = test.accountName
 			config.PrivateKeyPath = test.privateKeyPath
 
@@ -149,7 +149,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	// The error message for a file not existing is different on Windows and Linux.
 	// Therefore we test if the error type is the same.
 	t.Run("could not open private key path", func(t *testing.T) {
-		config := NewDefaultConfig()
+		config := NewDefaultConfig(nil)
 		config.AccountName = "johndoe"
 		config.PrivateKeyPath = "./fixtures/non/existent/private.key"
 
@@ -171,7 +171,7 @@ func TestDNSProvider_concurrentGetDNSEntries(t *testing.T) {
 	repo := domain.Repository{Client: client}
 
 	p := &DNSProvider{
-		config:     NewDefaultConfig(),
+		config:     NewDefaultConfig(nil),
 		repository: repo,
 	}
 
@@ -227,7 +227,7 @@ func TestDNSProvider_concurrentAddDNSEntry(t *testing.T) {
 	repo := domain.Repository{Client: client}
 
 	p := &DNSProvider{
-		config:     NewDefaultConfig(),
+		config:     NewDefaultConfig(nil),
 		repository: repo,
 	}
 
@@ -268,7 +268,7 @@ func TestLivePresent(t *testing.T) {
 	}
 
 	envTest.RestoreEnv()
-	provider, err := NewDNSProvider()
+	provider, err := NewDNSProvider(nil)
 	require.NoError(t, err)
 
 	err = provider.Present(envTest.GetDomain(), "", "123d==")
@@ -281,7 +281,7 @@ func TestLiveCleanUp(t *testing.T) {
 	}
 
 	envTest.RestoreEnv()
-	provider, err := NewDNSProvider()
+	provider, err := NewDNSProvider(nil)
 	require.NoError(t, err)
 
 	time.Sleep(1 * time.Second)

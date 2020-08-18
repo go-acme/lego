@@ -81,7 +81,7 @@ func TestDNSProvider_addTXTRecord(t *testing.T) {
 	})
 	defer tearDown()
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(nil)
 	config.Token = "token1"
 	config.Secret = "secret1"
 
@@ -144,7 +144,7 @@ func TestDNSProvider_cleanupTXTRecord(t *testing.T) {
 	})
 	defer tearDown()
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(nil)
 	config.Token = "token2"
 	config.Secret = "secret2"
 
@@ -210,7 +210,7 @@ func TestDNSProvider_addTXTRecord_concurrent(t *testing.T) {
 
 	var providers []*DNSProvider
 	for i := 0; i < dummyRecordCount; i++ {
-		config := NewDefaultConfig()
+		config := NewDefaultConfig(nil)
 		config.Token = "token3"
 		config.Secret = "secret3"
 
@@ -290,7 +290,7 @@ func TestDNSProvider_cleanupTXTRecord_concurrent(t *testing.T) {
 
 	var providers []*DNSProvider
 	for i := 0; i < dummyRecordCount; i++ {
-		config := NewDefaultConfig()
+		config := NewDefaultConfig(nil)
 		config.Token = "token4"
 		config.Secret = "secret4"
 

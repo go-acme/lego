@@ -33,13 +33,13 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt("CLOUDFLARE_TTL", minTTL),
-		PropagationTimeout: env.GetOrDefaultSecond("CLOUDFLARE_PROPAGATION_TIMEOUT", 2*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond("CLOUDFLARE_POLLING_INTERVAL", 2*time.Second),
+		TTL:                env.GetOrDefaultInt(conf, "CLOUDFLARE_TTL", minTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, "CLOUDFLARE_PROPAGATION_TIMEOUT", 2*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(conf, "CLOUDFLARE_POLLING_INTERVAL", 2*time.Second),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("CLOUDFLARE_HTTP_TIMEOUT", 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(conf, "CLOUDFLARE_HTTP_TIMEOUT", 30*time.Second),
 		},
 	}
 }
@@ -65,14 +65,14 @@ type DNSProvider struct {
 // Instead setup a API token with both Zone:Read and DNS:Edit permission, and pass the CLOUDFLARE_DNS_API_TOKEN environment variable.
 // You can split the Zone:Read and DNS:Edit permissions across multiple API tokens:
 // in this case pass both CLOUDFLARE_ZONE_API_TOKEN and CLOUDFLARE_DNS_API_TOKEN accordingly.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.GetWithFallback(
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.GetWithFallback(conf,
 		[]string{"CLOUDFLARE_EMAIL", "CF_API_EMAIL"},
 		[]string{"CLOUDFLARE_API_KEY", "CF_API_KEY"},
 	)
 	if err != nil {
 		var errT error
-		values, errT = env.GetWithFallback(
+		values, errT = env.GetWithFallback(conf,
 			[]string{"CLOUDFLARE_DNS_API_TOKEN", "CF_DNS_API_TOKEN"},
 			[]string{"CLOUDFLARE_ZONE_API_TOKEN", "CF_ZONE_API_TOKEN", "CLOUDFLARE_DNS_API_TOKEN", "CF_DNS_API_TOKEN"},
 		)
@@ -81,7 +81,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 		}
 	}
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(conf)
 	config.AuthEmail = values["CLOUDFLARE_EMAIL"]
 	config.AuthKey = values["CLOUDFLARE_API_KEY"]
 	config.AuthToken = values["CLOUDFLARE_DNS_API_TOKEN"]

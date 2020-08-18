@@ -87,7 +87,7 @@ func TestNewDNSProvider(t *testing.T) {
 
 			envTest.Apply(test.envVars)
 
-			p, err := NewDNSProvider()
+			p, err := NewDNSProvider(nil)
 
 			if len(test.expected) == 0 {
 				require.NoError(t, err)
@@ -123,7 +123,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			defer envTest.RestoreEnv()
 			envTest.ClearEnv()
 
-			config := NewDefaultConfig()
+			config := NewDefaultConfig(nil)
 			config.Project = test.project
 
 			p, err := NewDNSProviderConfig(config)
@@ -205,7 +205,7 @@ func TestPresentNoExistingRR(t *testing.T) {
 
 	server := httptest.NewServer(mux)
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(nil)
 	config.HTTPClient = &http.Client{}
 	config.Project = "manhattan"
 
@@ -305,7 +305,7 @@ func TestPresentWithExistingRR(t *testing.T) {
 
 	server := httptest.NewServer(mux)
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(nil)
 	config.HTTPClient = &http.Client{}
 	config.Project = "manhattan"
 
@@ -368,7 +368,7 @@ func TestPresentSkipExistingRR(t *testing.T) {
 
 	server := httptest.NewServer(mux)
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(nil)
 	config.HTTPClient = &http.Client{}
 	config.Project = "manhattan"
 
@@ -390,7 +390,7 @@ func TestLivePresent(t *testing.T) {
 
 	envTest.RestoreEnv()
 
-	provider, err := NewDNSProviderCredentials(envTest.GetValue(EnvProject))
+	provider, err := NewDNSProviderCredentials(envTest.GetValue(EnvProject), nil)
 	require.NoError(t, err)
 
 	err = provider.Present(envTest.GetDomain(), "", "123d==")
@@ -404,7 +404,7 @@ func TestLivePresentMultiple(t *testing.T) {
 
 	envTest.RestoreEnv()
 
-	provider, err := NewDNSProviderCredentials(envTest.GetValue(EnvProject))
+	provider, err := NewDNSProviderCredentials(envTest.GetValue(EnvProject), nil)
 	require.NoError(t, err)
 
 	// Check that we're able to create multiple entries
@@ -422,7 +422,7 @@ func TestLiveCleanUp(t *testing.T) {
 
 	envTest.RestoreEnv()
 
-	provider, err := NewDNSProviderCredentials(envTest.GetValue(EnvProject))
+	provider, err := NewDNSProviderCredentials(envTest.GetValue(EnvProject), nil)
 	require.NoError(t, err)
 
 	time.Sleep(1 * time.Second)

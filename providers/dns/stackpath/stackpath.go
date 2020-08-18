@@ -46,11 +46,11 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, 120),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(conf, EnvTTL, 120),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, dns01.DefaultPollingInterval),
 	}
 }
 
@@ -64,13 +64,13 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for Stackpath.
 // Credentials must be passed in the environment variables:
 // STACKPATH_CLIENT_ID, STACKPATH_CLIENT_SECRET, and STACKPATH_STACK_ID.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvClientID, EnvClientSecret, EnvStackID)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.Get(conf, EnvClientID, EnvClientSecret, EnvStackID)
 	if err != nil {
 		return nil, fmt.Errorf("stackpath: %w", err)
 	}
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(conf)
 	config.ClientID = values[EnvClientID]
 	config.ClientSecret = values[EnvClientSecret]
 	config.StackID = values[EnvStackID]

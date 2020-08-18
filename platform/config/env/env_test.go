@@ -95,7 +95,7 @@ func TestGetWithFallback(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			value, err := GetWithFallback(test.groups...)
+			value, err := GetWithFallback(nil, test.groups...)
 			if len(test.expected.error) > 0 {
 				assert.EqualError(t, err, test.expected.error)
 			} else {
@@ -147,7 +147,7 @@ func TestGetOrDefaultInt(t *testing.T) {
 			err := os.Setenv(key, test.envValue)
 			require.NoError(t, err)
 
-			result := GetOrDefaultInt(key, test.defaultValue)
+			result := GetOrDefaultInt(nil, key, test.defaultValue)
 			assert.Equal(t, test.expected, result)
 		})
 	}
@@ -194,7 +194,7 @@ func TestGetOrDefaultSecond(t *testing.T) {
 			err := os.Setenv(key, test.envValue)
 			require.NoError(t, err)
 
-			result := GetOrDefaultSecond(key, test.defaultValue)
+			result := GetOrDefaultSecond(nil, key, test.defaultValue)
 			assert.Equal(t, test.expected, result)
 		})
 	}
@@ -228,7 +228,7 @@ func TestGetOrDefaultString(t *testing.T) {
 			err := os.Setenv(key, test.envValue)
 			require.NoError(t, err)
 
-			actual := GetOrDefaultString(key, test.defaultValue)
+			actual := GetOrDefaultString(nil, key, test.defaultValue)
 			assert.Equal(t, test.expected, actual)
 		})
 	}
@@ -268,7 +268,7 @@ func TestGetOrDefaultBool(t *testing.T) {
 			err := os.Setenv(key, test.envValue)
 			require.NoError(t, err)
 
-			actual := GetOrDefaultBool(key, test.defaultValue)
+			actual := GetOrDefaultBool(nil, key, test.defaultValue)
 			assert.Equal(t, test.expected, actual)
 		})
 	}
@@ -279,7 +279,7 @@ func TestGetOrFile_ReadsEnvVars(t *testing.T) {
 	require.NoError(t, err)
 	defer os.Unsetenv("TEST_LEGO_ENV_VAR")
 
-	value := GetOrFile("TEST_LEGO_ENV_VAR")
+	value := GetOrFile(nil, "TEST_LEGO_ENV_VAR")
 
 	assert.Equal(t, "lego_env", value)
 }
@@ -320,7 +320,7 @@ func TestGetOrFile_ReadsFiles(t *testing.T) {
 			require.NoError(t, err)
 			defer os.Unsetenv(varEnvFileName)
 
-			value := GetOrFile(varEnvName)
+			value := GetOrFile(nil, varEnvName)
 
 			assert.Equal(t, "lego_file", value)
 		})
@@ -351,7 +351,38 @@ func TestGetOrFile_PrefersEnvVars(t *testing.T) {
 	require.NoError(t, err)
 	defer os.Unsetenv(varEnvName)
 
-	value := GetOrFile(varEnvName)
+	value := GetOrFile(nil, varEnvName)
 
 	assert.Equal(t, "lego_env", value)
+}
+
+func TestExtraConfig(t *testing.T) {
+	config := map[string]string{
+		"STRING": "test_extra_config",
+		"INT":    "42",
+		"BOOL":   "true",
+	}
+
+	res, err := Get(config, "STRING")
+	require.NoError(t, err)
+	require.Equal(t, res, map[string]string{"STRING": "test_extra_config"})
+
+	res, err = GetWithFallback(config, []string{"STRING"})
+	require.NoError(t, err)
+	require.Equal(t, res, map[string]string{"STRING": "test_extra_config"})
+
+	i := GetOrDefaultInt(config, "INT", -1)
+	require.Equal(t, i, 42)
+
+	time := GetOrDefaultSecond(config, "INT", 3)
+	require.Equal(t, time.Seconds(), 42.0)
+
+	s := GetOrDefaultString(config, "STRING", "DEFAULT")
+	require.Equal(t, s, "test_extra_config")
+
+	b := GetOrDefaultBool(config, "BOOL", false)
+	require.Equal(t, b, true)
+
+	s = GetOrFile(config, "STRING")
+	require.Equal(t, s, "test_extra_config")
 }

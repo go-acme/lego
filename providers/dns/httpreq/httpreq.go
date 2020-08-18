@@ -53,12 +53,12 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(conf, EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -69,8 +69,8 @@ type DNSProvider struct {
 }
 
 // NewDNSProvider returns a DNSProvider instance.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvEndpoint)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.Get(conf, EnvEndpoint)
 	if err != nil {
 		return nil, fmt.Errorf("httpreq: %w", err)
 	}
@@ -80,10 +80,10 @@ func NewDNSProvider() (*DNSProvider, error) {
 		return nil, fmt.Errorf("httpreq: %w", err)
 	}
 
-	config := NewDefaultConfig()
-	config.Mode = env.GetOrFile(EnvMode)
-	config.Username = env.GetOrFile(EnvUsername)
-	config.Password = env.GetOrFile(EnvPassword)
+	config := NewDefaultConfig(conf)
+	config.Mode = env.GetOrFile(conf, EnvMode)
+	config.Username = env.GetOrFile(conf, EnvUsername)
+	config.Password = env.GetOrFile(conf, EnvPassword)
 	config.Endpoint = endpoint
 	return NewDNSProviderConfig(config)
 }

@@ -89,7 +89,7 @@ func TestChallengeDNS_Client_Obtain(t *testing.T) {
 	client, err := lego.NewClient(config)
 	require.NoError(t, err)
 
-	provider, err := dns.NewDNSChallengeProviderByName("exec")
+	provider, err := dns.NewDNSChallengeProviderByName("exec", nil)
 	require.NoError(t, err)
 
 	err = client.Challenge.SetDNS01Provider(provider,

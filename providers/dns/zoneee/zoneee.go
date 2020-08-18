@@ -36,16 +36,16 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	endpoint, _ := url.Parse(defaultEndpoint)
 
 	return &Config{
 		Endpoint: endpoint,
 		// zone.ee can take up to 5min to propagate according to the support
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 5*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 5*time.Second),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, 5*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, 5*time.Second),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(conf, EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -56,19 +56,19 @@ type DNSProvider struct {
 }
 
 // NewDNSProvider returns a DNSProvider instance.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvAPIUser, EnvAPIKey)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.Get(conf, EnvAPIUser, EnvAPIKey)
 	if err != nil {
 		return nil, fmt.Errorf("zoneee: %w", err)
 	}
 
-	rawEndpoint := env.GetOrDefaultString(EnvEndpoint, defaultEndpoint)
+	rawEndpoint := env.GetOrDefaultString(conf, EnvEndpoint, defaultEndpoint)
 	endpoint, err := url.Parse(rawEndpoint)
 	if err != nil {
 		return nil, fmt.Errorf("zoneee: %w", err)
 	}
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(conf)
 	config.Username = values[EnvAPIUser]
 	config.APIKey = values[EnvAPIKey]
 	config.Endpoint = endpoint

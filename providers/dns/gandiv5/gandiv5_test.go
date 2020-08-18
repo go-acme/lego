@@ -43,7 +43,7 @@ func TestNewDNSProvider(t *testing.T) {
 
 			envTest.Apply(test.envVars)
 
-			p, err := NewDNSProvider()
+			p, err := NewDNSProvider(nil)
 
 			if len(test.expected) == 0 {
 				require.NoError(t, err)
@@ -75,7 +75,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			config := NewDefaultConfig()
+			config := NewDefaultConfig(nil)
 			config.APIKey = test.apiKey
 
 			p, err := NewDNSProviderConfig(config)
@@ -163,7 +163,7 @@ func TestDNSProvider(t *testing.T) {
 		return "example.com.", nil
 	}
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(nil)
 	config.APIKey = "123412341234123412341234"
 	config.BaseURL = server.URL
 

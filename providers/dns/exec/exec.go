@@ -33,10 +33,10 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, dns01.DefaultPollingInterval),
 	}
 }
 
@@ -47,13 +47,13 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a new DNS provider which runs the program in the
 // environment variable EXEC_PATH for adding and removing the DNS record.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvPath)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.Get(conf, EnvPath)
 	if err != nil {
 		return nil, fmt.Errorf("exec: %w", err)
 	}
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(conf)
 	config.Program = values[EnvPath]
 	config.Mode = os.Getenv(EnvMode)
 

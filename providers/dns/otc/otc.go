@@ -47,14 +47,14 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, minTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
-		IdentityEndpoint:   env.GetOrDefaultString(EnvIdentityEndpoint, defaultIdentityEndpoint),
+		TTL:                env.GetOrDefaultInt(conf, EnvTTL, minTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, dns01.DefaultPollingInterval),
+		IdentityEndpoint:   env.GetOrDefaultString(conf, EnvIdentityEndpoint, defaultIdentityEndpoint),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 10*time.Second),
+			Timeout: env.GetOrDefaultSecond(conf, EnvHTTPTimeout, 10*time.Second),
 			Transport: &http.Transport{
 				Proxy: http.ProxyFromEnvironment,
 				DialContext: (&net.Dialer{
@@ -84,13 +84,13 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for OTC DNS.
 // Credentials must be passed in the environment variables: OTC_USER_NAME,
 // OTC_DOMAIN_NAME, OTC_PASSWORD OTC_PROJECT_NAME and OTC_IDENTITY_ENDPOINT.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvDomainName, EnvUserName, EnvPassword, EnvProjectName)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.Get(conf, EnvDomainName, EnvUserName, EnvPassword, EnvProjectName)
 	if err != nil {
 		return nil, fmt.Errorf("otc: %w", err)
 	}
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(conf)
 	config.DomainName = values[EnvDomainName]
 	config.UserName = values[EnvUserName]
 	config.Password = values[EnvPassword]

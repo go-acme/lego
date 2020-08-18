@@ -40,13 +40,13 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 120*time.Second),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 5*time.Second),
+		TTL:                env.GetOrDefaultInt(conf, EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, 120*time.Second),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, 5*time.Second),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 10*time.Second),
+			Timeout: env.GetOrDefaultSecond(conf, EnvHTTPTimeout, 10*time.Second),
 		},
 	}
 }
@@ -60,13 +60,13 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for netcup.
 // Credentials must be passed in the environment variables:
 // NETCUP_CUSTOMER_NUMBER, NETCUP_API_KEY, NETCUP_API_PASSWORD.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvCustomerNumber, EnvAPIKey, EnvAPIPassword)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.Get(conf, EnvCustomerNumber, EnvAPIKey, EnvAPIPassword)
 	if err != nil {
 		return nil, fmt.Errorf("netcup: %w", err)
 	}
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(conf)
 	config.Customer = values[EnvCustomerNumber]
 	config.Key = values[EnvAPIKey]
 	config.Password = values[EnvAPIPassword]

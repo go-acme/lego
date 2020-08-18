@@ -43,7 +43,7 @@ func makeProvider(ts *httptest.Server) (*DNSProvider, error) {
 		return nil, err
 	}
 
-	conf := NewDefaultConfig()
+	conf := NewDefaultConfig(nil)
 
 	client := lightsail.New(sess)
 	return &DNSProvider{client: client, config: conf}, nil

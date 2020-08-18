@@ -42,8 +42,8 @@ type DNSProvider struct {
 
 // NewDNSProvider creates an ACME-DNS provider using file based account storage.
 // Its configuration is loaded from the environment by reading EnvAPIBase and EnvStoragePath.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvAPIBase, EnvStoragePath)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.Get(conf, EnvAPIBase, EnvStoragePath)
 	if err != nil {
 		return nil, fmt.Errorf("acme-dns: %w", err)
 	}

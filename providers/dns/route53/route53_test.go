@@ -42,7 +42,7 @@ func makeTestProvider(ts *httptest.Server) *DNSProvider {
 		panic(err)
 	}
 	client := route53.New(sess)
-	cfg := NewDefaultConfig()
+	cfg := NewDefaultConfig(nil)
 	return &DNSProvider{client: client, config: cfg}
 }
 
@@ -94,7 +94,7 @@ func Test_getHostedZoneID_FromEnv(t *testing.T) {
 
 	os.Setenv(EnvHostedZoneID, expectedZoneID)
 
-	provider, err := NewDNSProvider()
+	provider, err := NewDNSProvider(nil)
 	require.NoError(t, err)
 
 	hostedZoneID, err := provider.getHostedZoneID("whatever")
@@ -146,7 +146,7 @@ func TestNewDefaultConfig(t *testing.T) {
 				os.Setenv(key, value)
 			}
 
-			config := NewDefaultConfig()
+			config := NewDefaultConfig(nil)
 
 			assert.Equal(t, test.expected, config)
 		})

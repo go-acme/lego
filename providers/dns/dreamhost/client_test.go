@@ -40,7 +40,7 @@ func TestDNSProvider_buildQuery(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			config := NewDefaultConfig()
+			config := NewDefaultConfig(nil)
 			config.APIKey = test.apiKey
 			if test.baseURL != "" {
 				config.BaseURL = test.baseURL

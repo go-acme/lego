@@ -19,7 +19,7 @@ func setupTestProvider(t *testing.T) (*DNSProvider, *http.ServeMux, func()) {
 	handler := http.NewServeMux()
 	svr := httptest.NewServer(handler)
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(nil)
 	config.Endpoint, _ = url.Parse(svr.URL)
 	config.Token = "secret"
 

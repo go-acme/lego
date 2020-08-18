@@ -41,20 +41,20 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
-	baseURL, err := url.Parse(env.GetOrDefaultString(EnvEndpoint, defaultBaseURL))
+func NewDefaultConfig(conf map[string]string) *Config {
+	baseURL, err := url.Parse(env.GetOrDefaultString(conf, EnvEndpoint, defaultBaseURL))
 	if err != nil {
 		baseURL, _ = url.Parse(defaultBaseURL)
 	}
 
 	return &Config{
 		BaseURL:            baseURL,
-		TTL:                env.GetOrDefaultInt(EnvTTL, 300),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 60*time.Second),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 5*time.Second),
-		SequenceInterval:   env.GetOrDefaultSecond(EnvSequenceInterval, dns01.DefaultPropagationTimeout),
+		TTL:                env.GetOrDefaultInt(conf, EnvTTL, 300),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, 60*time.Second),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, 5*time.Second),
+		SequenceInterval:   env.GetOrDefaultSecond(conf, EnvSequenceInterval, dns01.DefaultPropagationTimeout),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(conf, EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -66,13 +66,13 @@ type DNSProvider struct {
 }
 
 // NewDNSProvider returns a DNSProvider instance.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvUsername, EnvPassword)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.Get(conf, EnvUsername, EnvPassword)
 	if err != nil {
 		return nil, fmt.Errorf("versio: %w", err)
 	}
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(conf)
 	config.Username = values[EnvUsername]
 	config.Password = values[EnvPassword]
 

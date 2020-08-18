@@ -44,14 +44,14 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
-		SequenceInterval:   env.GetOrDefaultSecond(EnvSequenceInterval, dns01.DefaultPropagationTimeout),
+		TTL:                env.GetOrDefaultInt(conf, EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, dns01.DefaultPollingInterval),
+		SequenceInterval:   env.GetOrDefaultSecond(conf, EnvSequenceInterval, dns01.DefaultPropagationTimeout),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(conf, EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -64,16 +64,16 @@ type DNSProvider struct {
 }
 
 // NewDNSProvider returns a DNSProvider instance.
-func NewDNSProvider() (*DNSProvider, error) {
-	config := NewDefaultConfig()
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	config := NewDefaultConfig(conf)
 
-	endpoint, err := url.Parse(env.GetOrDefaultString(EnvEndpoint, defaultEndpoint))
+	endpoint, err := url.Parse(env.GetOrDefaultString(conf, EnvEndpoint, defaultEndpoint))
 	if err != nil {
 		return nil, fmt.Errorf("easydns: %w", err)
 	}
 	config.Endpoint = endpoint
 
-	values, err := env.Get(EnvToken, EnvKey)
+	values, err := env.Get(conf, EnvToken, EnvKey)
 	if err != nil {
 		return nil, fmt.Errorf("easydns: %w", err)
 	}

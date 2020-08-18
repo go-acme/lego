@@ -48,15 +48,15 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
-		BaseURL:            env.GetOrDefaultString(EnvBaseURL, defaultBaseURL),
-		Version:            env.GetOrDefaultString(EnvAPIVersion, defaultVersion),
-		TTL:                env.GetOrDefaultInt(EnvTTL, minTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, defaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, defaultPollingInterval),
+		BaseURL:            env.GetOrDefaultString(conf, EnvBaseURL, defaultBaseURL),
+		Version:            env.GetOrDefaultString(conf, EnvAPIVersion, defaultVersion),
+		TTL:                env.GetOrDefaultInt(conf, EnvTTL, minTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, defaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, defaultPollingInterval),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(conf, EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -69,13 +69,13 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for Scaleway Domains API.
 // API token must be passed in the environment variable SCALEWAY_API_TOKEN.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvAPIToken)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.Get(conf, EnvAPIToken)
 	if err != nil {
 		return nil, fmt.Errorf("scaleway: %w", err)
 	}
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(conf)
 	config.Token = values[EnvAPIToken]
 
 	return NewDNSProviderConfig(config)

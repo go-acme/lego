@@ -76,20 +76,20 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	baseURL := defaultBaseURL
-	if env.GetOrDefaultBool(EnvSandbox, false) {
+	if env.GetOrDefaultBool(conf, EnvSandbox, false) {
 		baseURL = sandboxBaseURL
 	}
 
 	return &Config{
 		BaseURL:            baseURL,
-		Debug:              env.GetOrDefaultBool(EnvDebug, false),
-		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 60*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 15*time.Second),
+		Debug:              env.GetOrDefaultBool(conf, EnvDebug, false),
+		TTL:                env.GetOrDefaultInt(conf, EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, 60*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, 15*time.Second),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 60*time.Second),
+			Timeout: env.GetOrDefaultSecond(conf, EnvHTTPTimeout, 60*time.Second),
 		},
 	}
 }
@@ -102,13 +102,13 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for namecheap.
 // Credentials must be passed in the environment variables:
 // NAMECHEAP_API_USER and NAMECHEAP_API_KEY.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvAPIUser, EnvAPIKey)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.Get(conf, EnvAPIUser, EnvAPIKey)
 	if err != nil {
 		return nil, fmt.Errorf("namecheap: %w", err)
 	}
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(conf)
 	config.APIUser = values[EnvAPIUser]
 	config.APIKey = values[EnvAPIKey]
 

@@ -61,12 +61,12 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
-		DNSZone:            env.GetOrFile(EnvDNSZone),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
-		Region:             env.GetOrDefaultString(EnvRegion, "us-east-1"),
+		DNSZone:            env.GetOrFile(conf, EnvDNSZone),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, dns01.DefaultPollingInterval),
+		Region:             env.GetOrDefaultString(conf, EnvRegion, "us-east-1"),
 	}
 }
 
@@ -88,8 +88,8 @@ type DNSProvider struct {
 // public hosted zone via the FQDN.
 //
 // See also: https://github.com/aws/aws-sdk-go/wiki/configuring-sdk
-func NewDNSProvider() (*DNSProvider, error) {
-	return NewDNSProviderConfig(NewDefaultConfig())
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	return NewDNSProviderConfig(NewDefaultConfig(conf))
 }
 
 // NewDNSProviderConfig return a DNSProvider instance configured for AWS Lightsail.

@@ -37,7 +37,7 @@ func TestTestSuite(t *testing.T) {
 }
 
 func (s *OTCSuite) createDNSProvider() (*DNSProvider, error) {
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(nil)
 	config.UserName = "UserName"
 	config.Password = "Password"
 	config.DomainName = "DomainName"
@@ -69,7 +69,7 @@ func (s *OTCSuite) TestLoginEnv() {
 		EnvIdentityEndpoint: "unittest5",
 	})
 
-	provider, err := NewDNSProvider()
+	provider, err := NewDNSProvider(nil)
 	s.Require().NoError(err)
 
 	s.Equal(provider.config.DomainName, "unittest1")
@@ -80,7 +80,7 @@ func (s *OTCSuite) TestLoginEnv() {
 
 	os.Setenv(EnvIdentityEndpoint, "")
 
-	provider, err = NewDNSProvider()
+	provider, err = NewDNSProvider(nil)
 	s.Require().NoError(err)
 
 	s.Equal(provider.config.IdentityEndpoint, "https://iam.eu-de.otc.t-systems.com:443/v3/auth/tokens")
@@ -89,7 +89,7 @@ func (s *OTCSuite) TestLoginEnv() {
 func (s *OTCSuite) TestLoginEnvEmpty() {
 	s.envTest.ClearEnv()
 
-	_, err := NewDNSProvider()
+	_, err := NewDNSProvider(nil)
 	s.EqualError(err, "otc: some credentials information are missing: OTC_DOMAIN_NAME,OTC_USER_NAME,OTC_PASSWORD,OTC_PROJECT_NAME")
 }
 

@@ -39,13 +39,13 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		TTL:                env.GetOrDefaultInt(conf, EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(conf, EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -59,14 +59,14 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for the NIFCLOUD DNS service.
 // Credentials must be passed in the environment variables:
 // NIFCLOUD_ACCESS_KEY_ID and NIFCLOUD_SECRET_ACCESS_KEY.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvAccessKeyID, EnvSecretAccessKey)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.Get(conf, EnvAccessKeyID, EnvSecretAccessKey)
 	if err != nil {
 		return nil, fmt.Errorf("nifcloud: %w", err)
 	}
 
-	config := NewDefaultConfig()
-	config.BaseURL = env.GetOrFile(EnvDNSEndpoint)
+	config := NewDefaultConfig(conf)
+	config.BaseURL = env.GetOrFile(conf, EnvDNSEndpoint)
 	config.AccessKey = values[EnvAccessKeyID]
 	config.SecretKey = values[EnvSecretAccessKey]
 

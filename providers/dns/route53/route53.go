@@ -44,13 +44,13 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
-		MaxRetries:         env.GetOrDefaultInt(EnvMaxRetries, 5),
-		TTL:                env.GetOrDefaultInt(EnvTTL, 10),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 4*time.Second),
-		HostedZoneID:       env.GetOrFile(EnvHostedZoneID),
+		MaxRetries:         env.GetOrDefaultInt(conf, EnvMaxRetries, 5),
+		TTL:                env.GetOrDefaultInt(conf, EnvTTL, 10),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, 2*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, 4*time.Second),
+		HostedZoneID:       env.GetOrFile(conf, EnvHostedZoneID),
 	}
 }
 
@@ -92,8 +92,8 @@ func (d customRetryer) RetryRules(r *request.Request) time.Duration {
 // If AWS_HOSTED_ZONE_ID is not set, Lego tries to determine the correct public hosted zone via the FQDN.
 //
 // See also: https://github.com/aws/aws-sdk-go/wiki/configuring-sdk
-func NewDNSProvider() (*DNSProvider, error) {
-	return NewDNSProviderConfig(NewDefaultConfig())
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	return NewDNSProviderConfig(NewDefaultConfig(conf))
 }
 
 // NewDNSProviderConfig takes a given config ans returns a custom configured DNSProvider instance.

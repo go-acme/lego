@@ -79,7 +79,7 @@ func TestNewDNSProvider(t *testing.T) {
 
 			envTest.Apply(test.envVars)
 
-			p, err := NewDNSProvider()
+			p, err := NewDNSProvider(nil)
 
 			if len(test.expected) == 0 {
 				require.NoError(t, err)
@@ -139,7 +139,7 @@ func setupMockAPITest() (*DNSProvider, *http.ServeMux, func()) {
 	apiHandler := http.NewServeMux()
 	server := httptest.NewServer(apiHandler)
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(nil)
 	config.ClientID = "CLIENT_ID"
 	config.ClientSecret = "CLIENT_SECRET"
 	config.StackID = "STACK_ID"
@@ -269,7 +269,7 @@ func TestLivePresent(t *testing.T) {
 	}
 
 	envTest.RestoreEnv()
-	provider, err := NewDNSProvider()
+	provider, err := NewDNSProvider(nil)
 	require.NoError(t, err)
 
 	err = provider.Present(envTest.GetDomain(), "", "123d==")
@@ -282,7 +282,7 @@ func TestLiveCleanUp(t *testing.T) {
 	}
 
 	envTest.RestoreEnv()
-	provider, err := NewDNSProvider()
+	provider, err := NewDNSProvider(nil)
 	require.NoError(t, err)
 
 	time.Sleep(1 * time.Second)

@@ -42,13 +42,13 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, defaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 5*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 7*time.Second),
+		TTL:                env.GetOrDefaultInt(conf, EnvTTL, defaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, 5*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, 7*time.Second),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(conf, EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -62,16 +62,16 @@ type DNSProvider struct {
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for CheckDomain.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvToken)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.Get(conf, EnvToken)
 	if err != nil {
 		return nil, fmt.Errorf("checkdomain: %w", err)
 	}
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(conf)
 	config.Token = values[EnvToken]
 
-	endpoint, err := url.Parse(env.GetOrDefaultString(EnvEndpoint, defaultEndpoint))
+	endpoint, err := url.Parse(env.GetOrDefaultString(conf, EnvEndpoint, defaultEndpoint))
 	if err != nil {
 		return nil, fmt.Errorf("checkdomain: invalid %s: %w", EnvEndpoint, err)
 	}

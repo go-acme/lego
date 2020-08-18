@@ -83,7 +83,7 @@ func TestDNSProvider_login_api_key(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			config := NewDefaultConfig()
+			config := NewDefaultConfig(nil)
 			config.BaseURL = server.URL
 			config.APIKey = test.apiKey
 
@@ -164,7 +164,7 @@ func TestDNSProvider_login_username(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			config := NewDefaultConfig()
+			config := NewDefaultConfig(nil)
 			config.BaseURL = server.URL
 			config.Username = test.username
 			config.Password = test.password
@@ -233,7 +233,7 @@ func TestDNSProvider_logout(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			config := NewDefaultConfig()
+			config := NewDefaultConfig(nil)
 			config.BaseURL = server.URL
 			config.APIKey = "12345"
 			config.AuthSid = test.authSid
@@ -312,7 +312,7 @@ func TestDNSProvider_getZone(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			config := NewDefaultConfig()
+			config := NewDefaultConfig(nil)
 			config.BaseURL = server.URL
 			config.APIKey = "12345"
 			config.AuthSid = test.authSid

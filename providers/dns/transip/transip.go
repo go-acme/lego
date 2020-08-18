@@ -35,11 +35,11 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
-		TTL:                int64(env.GetOrDefaultInt(EnvTTL, 10)),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 10*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 10*time.Second),
+		TTL:                int64(env.GetOrDefaultInt(conf, EnvTTL, 10)),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, 10*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, 10*time.Second),
 	}
 }
 
@@ -52,13 +52,13 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for TransIP.
 // Credentials must be passed in the environment variables:
 // TRANSIP_ACCOUNTNAME, TRANSIP_PRIVATEKEYPATH.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvAccountName, EnvPrivateKeyPath)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.Get(conf, EnvAccountName, EnvPrivateKeyPath)
 	if err != nil {
 		return nil, fmt.Errorf("transip: %w", err)
 	}
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(conf)
 	config.AccountName = values[EnvAccountName]
 	config.PrivateKeyPath = values[EnvPrivateKeyPath]
 

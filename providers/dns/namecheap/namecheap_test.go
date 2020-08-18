@@ -222,7 +222,7 @@ func mockServer(tc *testCase, t *testing.T) http.Handler {
 }
 
 func mockDNSProvider(url string) *DNSProvider {
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(nil)
 	config.BaseURL = url
 	config.APIUser = envTestUser
 	config.APIKey = envTestKey

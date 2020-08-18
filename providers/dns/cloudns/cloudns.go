@@ -38,13 +38,13 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, 60),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 120*time.Second),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 4*time.Second),
+		TTL:                env.GetOrDefaultInt(conf, EnvTTL, 60),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, 120*time.Second),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, 4*time.Second),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(conf, EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
@@ -58,23 +58,23 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for ClouDNS.
 // Credentials must be passed in the environment variables:
 // CLOUDNS_AUTH_ID and CLOUDNS_AUTH_PASSWORD.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
 	var subAuthID string
-	authID := env.GetOrFile(EnvAuthID)
+	authID := env.GetOrFile(conf, EnvAuthID)
 	if authID == "" {
-		subAuthID = env.GetOrFile(EnvSubAuthID)
+		subAuthID = env.GetOrFile(conf, EnvSubAuthID)
 	}
 
 	if authID == "" && subAuthID == "" {
 		return nil, fmt.Errorf("ClouDNS: some credentials information are missing: %s or %s", EnvAuthID, EnvSubAuthID)
 	}
 
-	values, err := env.Get(EnvAuthPassword)
+	values, err := env.Get(conf, EnvAuthPassword)
 	if err != nil {
 		return nil, fmt.Errorf("ClouDNS: %w", err)
 	}
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(conf)
 	config.AuthID = authID
 	config.SubAuthID = subAuthID
 	config.AuthPassword = values[EnvAuthPassword]

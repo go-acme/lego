@@ -43,14 +43,14 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
-		TSIGAlgorithm:      env.GetOrDefaultString(EnvTSIGAlgorithm, dns.HmacMD5),
-		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, env.GetOrDefaultSecond("RFC2136_TIMEOUT", 60*time.Second)),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
-		SequenceInterval:   env.GetOrDefaultSecond(EnvSequenceInterval, dns01.DefaultPropagationTimeout),
-		DNSTimeout:         env.GetOrDefaultSecond(EnvDNSTimeout, 10*time.Second),
+		TSIGAlgorithm:      env.GetOrDefaultString(conf, EnvTSIGAlgorithm, dns.HmacMD5),
+		TTL:                env.GetOrDefaultInt(conf, EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, env.GetOrDefaultSecond(conf, "RFC2136_TIMEOUT", 60*time.Second)),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, 2*time.Second),
+		SequenceInterval:   env.GetOrDefaultSecond(conf, EnvSequenceInterval, dns01.DefaultPropagationTimeout),
+		DNSTimeout:         env.GetOrDefaultSecond(conf, EnvDNSTimeout, 10*time.Second),
 	}
 }
 
@@ -68,16 +68,16 @@ type DNSProvider struct {
 // RFC2136_TSIG_SECRET: Secret key payload.
 // RFC2136_PROPAGATION_TIMEOUT: DNS propagation timeout in time.ParseDuration format. (60s)
 // To disable TSIG authentication, leave the RFC2136_TSIG* variables unset.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvNameserver)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.Get(conf, EnvNameserver)
 	if err != nil {
 		return nil, fmt.Errorf("rfc2136: %w", err)
 	}
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(conf)
 	config.Nameserver = values[EnvNameserver]
-	config.TSIGKey = env.GetOrFile(EnvTSIGKey)
-	config.TSIGSecret = env.GetOrFile(EnvTSIGSecret)
+	config.TSIGKey = env.GetOrFile(conf, EnvTSIGKey)
+	config.TSIGSecret = env.GetOrFile(conf, EnvTSIGSecret)
 
 	return NewDNSProviderConfig(config)
 }

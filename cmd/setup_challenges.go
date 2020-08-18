@@ -106,7 +106,7 @@ func setupTLSProvider(ctx *cli.Context) challenge.Provider {
 }
 
 func setupDNS(ctx *cli.Context, client *lego.Client) {
-	provider, err := dns.NewDNSChallengeProviderByName(ctx.GlobalString("dns"))
+	provider, err := dns.NewDNSChallengeProviderByName(ctx.GlobalString("dns"), nil)
 	if err != nil {
 		log.Fatal(err)
 	}

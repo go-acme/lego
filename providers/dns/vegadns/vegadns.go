@@ -36,11 +36,11 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, 10),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 12*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 1*time.Minute),
+		TTL:                env.GetOrDefaultInt(conf, EnvTTL, 10),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, 12*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, 1*time.Minute),
 	}
 }
 
@@ -53,16 +53,16 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for VegaDNS.
 // Credentials must be passed in the environment variables:
 // VEGADNS_URL, SECRET_VEGADNS_KEY, SECRET_VEGADNS_SECRET.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvURL)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.Get(conf, EnvURL)
 	if err != nil {
 		return nil, fmt.Errorf("vegadns: %w", err)
 	}
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(conf)
 	config.BaseURL = values[EnvURL]
-	config.APIKey = env.GetOrFile(EnvKey)
-	config.APISecret = env.GetOrFile(EnvSecret)
+	config.APIKey = env.GetOrFile(conf, EnvKey)
+	config.APISecret = env.GetOrFile(conf, EnvSecret)
 
 	return NewDNSProviderConfig(config)
 }

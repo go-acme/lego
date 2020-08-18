@@ -16,10 +16,10 @@ type configProvider struct {
 	privateKeyPassphrase string
 }
 
-func newConfigProvider(values map[string]string) *configProvider {
+func newConfigProvider(values map[string]string, conf map[string]string) *configProvider {
 	return &configProvider{
 		values:               values,
-		privateKeyPassphrase: env.GetOrFile(EnvPrivKeyPass),
+		privateKeyPassphrase: env.GetOrFile(conf, EnvPrivKeyPass),
 	}
 }
 

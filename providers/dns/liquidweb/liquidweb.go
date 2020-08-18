@@ -44,13 +44,13 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	config := &Config{
 		BaseURL:            defaultBaseURL,
-		TTL:                env.GetOrDefaultInt(EnvTTL, 300),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
-		HTTPTimeout:        env.GetOrDefaultSecond(EnvHTTPTimeout, 1*time.Minute),
+		TTL:                env.GetOrDefaultInt(conf, EnvTTL, 300),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, 2*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, 2*time.Second),
+		HTTPTimeout:        env.GetOrDefaultSecond(conf, EnvHTTPTimeout, 1*time.Minute),
 	}
 
 	return config
@@ -65,14 +65,14 @@ type DNSProvider struct {
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Liquid Web.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvUsername, EnvPassword, EnvZone)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.Get(conf, EnvUsername, EnvPassword, EnvZone)
 	if err != nil {
 		return nil, fmt.Errorf("liquidweb: %w", err)
 	}
 
-	config := NewDefaultConfig()
-	config.BaseURL = env.GetOrFile(EnvURL)
+	config := NewDefaultConfig(conf)
+	config.BaseURL = env.GetOrFile(conf, EnvURL)
 	config.Username = values[EnvUsername]
 	config.Password = values[EnvPassword]
 	config.Zone = values[EnvZone]

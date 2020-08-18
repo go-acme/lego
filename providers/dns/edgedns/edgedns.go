@@ -40,11 +40,11 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, DefaultPollInterval),
+		TTL:                env.GetOrDefaultInt(conf, EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, DefaultPollInterval),
 		Config: edgegrid.Config{
 			MaxBody: 131072,
 		},
@@ -58,13 +58,13 @@ type DNSProvider struct {
 
 // NewDNSProvider uses the supplied environment variables to return a DNSProvider instance:
 // AKAMAI_HOST, AKAMAI_CLIENT_TOKEN, AKAMAI_CLIENT_SECRET, AKAMAI_ACCESS_TOKEN.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvHost, EnvClientToken, EnvClientSecret, EnvAccessToken)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.Get(conf, EnvHost, EnvClientToken, EnvClientSecret, EnvAccessToken)
 	if err != nil {
 		return nil, fmt.Errorf("edgedns: %w", err)
 	}
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(conf)
 	config.Config.Host = values[EnvHost]
 	config.Config.ClientToken = values[EnvClientToken]
 	config.Config.ClientSecret = values[EnvClientSecret]

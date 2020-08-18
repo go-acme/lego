@@ -43,15 +43,15 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
 		BaseURL:            defaultBaseURL,
-		Debug:              env.GetOrDefaultBool(EnvDebug, false),
-		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		Debug:              env.GetOrDefaultBool(conf, EnvDebug, false),
+		TTL:                env.GetOrDefaultInt(conf, EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 60*time.Second),
+			Timeout: env.GetOrDefaultSecond(conf, EnvHTTPTimeout, 60*time.Second),
 		},
 	}
 }
@@ -63,17 +63,17 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for Joker DMAPI.
 // Credentials must be passed in the environment variable JOKER_API_KEY.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvAPIKey)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.Get(conf, EnvAPIKey)
 	if err != nil {
 		var errU error
-		values, errU = env.Get(EnvUsername, EnvPassword)
+		values, errU = env.Get(conf, EnvUsername, EnvPassword)
 		if errU != nil {
 			return nil, fmt.Errorf("joker: %v or %v", errU, err)
 		}
 	}
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(conf)
 	config.APIKey = values[EnvAPIKey]
 	config.Username = values[EnvUsername]
 	config.Password = values[EnvPassword]

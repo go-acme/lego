@@ -86,166 +86,166 @@ import (
 )
 
 // NewDNSChallengeProviderByName Factory for DNS providers.
-func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
+func NewDNSChallengeProviderByName(name string, config map[string]string) (challenge.Provider, error) {
 	switch name {
 	case "acme-dns":
-		return acmedns.NewDNSProvider()
+		return acmedns.NewDNSProvider(config)
 	case "alidns":
-		return alidns.NewDNSProvider()
+		return alidns.NewDNSProvider(config)
 	case "arvancloud":
-		return arvancloud.NewDNSProvider()
+		return arvancloud.NewDNSProvider(config)
 	case "azure":
-		return azure.NewDNSProvider()
+		return azure.NewDNSProvider(config)
 	case "auroradns":
-		return auroradns.NewDNSProvider()
+		return auroradns.NewDNSProvider(config)
 	case "autodns":
-		return autodns.NewDNSProvider()
+		return autodns.NewDNSProvider(config)
 	case "bindman":
-		return bindman.NewDNSProvider()
+		return bindman.NewDNSProvider(config)
 	case "bluecat":
-		return bluecat.NewDNSProvider()
+		return bluecat.NewDNSProvider(config)
 	case "checkdomain":
-		return checkdomain.NewDNSProvider()
+		return checkdomain.NewDNSProvider(config)
 	case "clouddns":
-		return clouddns.NewDNSProvider()
+		return clouddns.NewDNSProvider(config)
 	case "cloudflare":
-		return cloudflare.NewDNSProvider()
+		return cloudflare.NewDNSProvider(config)
 	case "cloudns":
-		return cloudns.NewDNSProvider()
+		return cloudns.NewDNSProvider(config)
 	case "cloudxns":
-		return cloudxns.NewDNSProvider()
+		return cloudxns.NewDNSProvider(config)
 	case "conoha":
-		return conoha.NewDNSProvider()
+		return conoha.NewDNSProvider(config)
 	case "constellix":
-		return constellix.NewDNSProvider()
+		return constellix.NewDNSProvider(config)
 	case "desec":
-		return desec.NewDNSProvider()
+		return desec.NewDNSProvider(config)
 	case "designate":
-		return designate.NewDNSProvider()
+		return designate.NewDNSProvider(config)
 	case "digitalocean":
-		return digitalocean.NewDNSProvider()
+		return digitalocean.NewDNSProvider(config)
 	case "dnsimple":
-		return dnsimple.NewDNSProvider()
+		return dnsimple.NewDNSProvider(config)
 	case "dnsmadeeasy":
-		return dnsmadeeasy.NewDNSProvider()
+		return dnsmadeeasy.NewDNSProvider(config)
 	case "dnspod":
-		return dnspod.NewDNSProvider()
+		return dnspod.NewDNSProvider(config)
 	case "dode":
-		return dode.NewDNSProvider()
+		return dode.NewDNSProvider(config)
 	case "dreamhost":
-		return dreamhost.NewDNSProvider()
+		return dreamhost.NewDNSProvider(config)
 	case "duckdns":
-		return duckdns.NewDNSProvider()
+		return duckdns.NewDNSProvider(config)
 	case "dyn":
-		return dyn.NewDNSProvider()
+		return dyn.NewDNSProvider(config)
 	case "dynu":
-		return dynu.NewDNSProvider()
+		return dynu.NewDNSProvider(config)
 	case "edgedns":
-		return edgedns.NewDNSProvider()
+		return edgedns.NewDNSProvider(config)
 	case "fastdns":
-		return fastdns.NewDNSProvider()
+		return fastdns.NewDNSProvider(config)
 	case "easydns":
-		return easydns.NewDNSProvider()
+		return easydns.NewDNSProvider(config)
 	case "exec":
-		return exec.NewDNSProvider()
+		return exec.NewDNSProvider(config)
 	case "exoscale":
-		return exoscale.NewDNSProvider()
+		return exoscale.NewDNSProvider(config)
 	case "gandi":
-		return gandi.NewDNSProvider()
+		return gandi.NewDNSProvider(config)
 	case "gandiv5":
-		return gandiv5.NewDNSProvider()
+		return gandiv5.NewDNSProvider(config)
 	case "glesys":
-		return glesys.NewDNSProvider()
+		return glesys.NewDNSProvider(config)
 	case "gcloud":
-		return gcloud.NewDNSProvider()
+		return gcloud.NewDNSProvider(config)
 	case "godaddy":
-		return godaddy.NewDNSProvider()
+		return godaddy.NewDNSProvider(config)
 	case "hetzner":
-		return hetzner.NewDNSProvider()
+		return hetzner.NewDNSProvider(config)
 	case "hostingde":
-		return hostingde.NewDNSProvider()
+		return hostingde.NewDNSProvider(config)
 	case "httpreq":
-		return httpreq.NewDNSProvider()
+		return httpreq.NewDNSProvider(config)
 	case "iij":
-		return iij.NewDNSProvider()
+		return iij.NewDNSProvider(config)
 	case "inwx":
-		return inwx.NewDNSProvider()
+		return inwx.NewDNSProvider(config)
 	case "joker":
-		return joker.NewDNSProvider()
+		return joker.NewDNSProvider(config)
 	case "lightsail":
-		return lightsail.NewDNSProvider()
+		return lightsail.NewDNSProvider(config)
 	case "linode":
-		return linode.NewDNSProvider()
+		return linode.NewDNSProvider(config)
 	case "linodev4":
-		return linodev4.NewDNSProvider()
+		return linodev4.NewDNSProvider(config)
 	case "liquidweb":
-		return liquidweb.NewDNSProvider()
+		return liquidweb.NewDNSProvider(config)
 	case "luadns":
-		return luadns.NewDNSProvider()
+		return luadns.NewDNSProvider(config)
 	case "manual":
-		return dns01.NewDNSProviderManual()
+		return dns01.NewDNSProviderManual(config)
 	case "mydnsjp":
-		return mydnsjp.NewDNSProvider()
+		return mydnsjp.NewDNSProvider(config)
 	case "mythicbeasts":
-		return mythicbeasts.NewDNSProvider()
+		return mythicbeasts.NewDNSProvider(config)
 	case "namecheap":
-		return namecheap.NewDNSProvider()
+		return namecheap.NewDNSProvider(config)
 	case "namedotcom":
-		return namedotcom.NewDNSProvider()
+		return namedotcom.NewDNSProvider(config)
 	case "namesilo":
-		return namesilo.NewDNSProvider()
+		return namesilo.NewDNSProvider(config)
 	case "netcup":
-		return netcup.NewDNSProvider()
+		return netcup.NewDNSProvider(config)
 	case "netlify":
-		return netlify.NewDNSProvider()
+		return netlify.NewDNSProvider(config)
 	case "nifcloud":
-		return nifcloud.NewDNSProvider()
+		return nifcloud.NewDNSProvider(config)
 	case "ns1":
-		return ns1.NewDNSProvider()
+		return ns1.NewDNSProvider(config)
 	case "oraclecloud":
-		return oraclecloud.NewDNSProvider()
+		return oraclecloud.NewDNSProvider(config)
 	case "otc":
-		return otc.NewDNSProvider()
+		return otc.NewDNSProvider(config)
 	case "ovh":
-		return ovh.NewDNSProvider()
+		return ovh.NewDNSProvider(config)
 	case "pdns":
-		return pdns.NewDNSProvider()
+		return pdns.NewDNSProvider(config)
 	case "rackspace":
-		return rackspace.NewDNSProvider()
+		return rackspace.NewDNSProvider(config)
 	case "regru":
-		return regru.NewDNSProvider()
+		return regru.NewDNSProvider(config)
 	case "rfc2136":
-		return rfc2136.NewDNSProvider()
+		return rfc2136.NewDNSProvider(config)
 	case "rimuhosting":
-		return rimuhosting.NewDNSProvider()
+		return rimuhosting.NewDNSProvider(config)
 	case "route53":
-		return route53.NewDNSProvider()
+		return route53.NewDNSProvider(config)
 	case "sakuracloud":
-		return sakuracloud.NewDNSProvider()
+		return sakuracloud.NewDNSProvider(config)
 	case "scaleway":
-		return scaleway.NewDNSProvider()
+		return scaleway.NewDNSProvider(config)
 	case "selectel":
-		return selectel.NewDNSProvider()
+		return selectel.NewDNSProvider(config)
 	case "servercow":
-		return servercow.NewDNSProvider()
+		return servercow.NewDNSProvider(config)
 	case "stackpath":
-		return stackpath.NewDNSProvider()
+		return stackpath.NewDNSProvider(config)
 	case "transip":
-		return transip.NewDNSProvider()
+		return transip.NewDNSProvider(config)
 	case "vegadns":
-		return vegadns.NewDNSProvider()
+		return vegadns.NewDNSProvider(config)
 	case "versio":
-		return versio.NewDNSProvider()
+		return versio.NewDNSProvider(config)
 	case "vultr":
-		return vultr.NewDNSProvider()
+		return vultr.NewDNSProvider(config)
 	case "vscale":
-		return vscale.NewDNSProvider()
+		return vscale.NewDNSProvider(config)
 	case "yandex":
-		return yandex.NewDNSProvider()
+		return yandex.NewDNSProvider(config)
 	case "zoneee":
-		return zoneee.NewDNSProvider()
+		return zoneee.NewDNSProvider(config)
 	case "zonomi":
-		return zonomi.NewDNSProvider()
+		return zonomi.NewDNSProvider(config)
 	default:
 		return nil, fmt.Errorf("unrecognized DNS provider: %s", name)
 	}

@@ -50,12 +50,12 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
-		Debug:              env.GetOrDefaultBool(EnvDebug, false),
-		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 180*time.Second),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 5*time.Second),
+		Debug:              env.GetOrDefaultBool(conf, EnvDebug, false),
+		TTL:                env.GetOrDefaultInt(conf, EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, 180*time.Second),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, 5*time.Second),
 	}
 }
 
@@ -70,20 +70,20 @@ type DNSProvider struct {
 // it can be overridden using the GCE_PROJECT environment variable.
 // A Service Account can be passed in the environment variable: GCE_SERVICE_ACCOUNT
 // or by specifying the keyfile location: GCE_SERVICE_ACCOUNT_FILE.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
 	// Use a service account file if specified via environment variable.
-	if saKey := env.GetOrFile(EnvServiceAccount); len(saKey) > 0 {
-		return NewDNSProviderServiceAccountKey([]byte(saKey))
+	if saKey := env.GetOrFile(conf, EnvServiceAccount); len(saKey) > 0 {
+		return NewDNSProviderServiceAccountKey([]byte(saKey), conf)
 	}
 
 	// Use default credentials.
-	project := env.GetOrDefaultString(EnvProject, autodetectProjectID())
-	return NewDNSProviderCredentials(project)
+	project := env.GetOrDefaultString(conf, EnvProject, autodetectProjectID())
+	return NewDNSProviderCredentials(project, conf)
 }
 
 // NewDNSProviderCredentials uses the supplied credentials
 // to return a DNSProvider instance configured for Google Cloud DNS.
-func NewDNSProviderCredentials(project string) (*DNSProvider, error) {
+func NewDNSProviderCredentials(project string, conf map[string]string) (*DNSProvider, error) {
 	if project == "" {
 		return nil, errors.New("googlecloud: project name missing")
 	}
@@ -93,7 +93,7 @@ func NewDNSProviderCredentials(project string) (*DNSProvider, error) {
 		return nil, fmt.Errorf("googlecloud: unable to get Google Cloud client: %w", err)
 	}
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(conf)
 	config.Project = project
 	config.HTTPClient = client
 
@@ -102,14 +102,14 @@ func NewDNSProviderCredentials(project string) (*DNSProvider, error) {
 
 // NewDNSProviderServiceAccountKey uses the supplied service account JSON
 // to return a DNSProvider instance configured for Google Cloud DNS.
-func NewDNSProviderServiceAccountKey(saKey []byte) (*DNSProvider, error) {
+func NewDNSProviderServiceAccountKey(saKey []byte, conf map[string]string) (*DNSProvider, error) {
 	if len(saKey) == 0 {
 		return nil, errors.New("googlecloud: Service Account is missing")
 	}
 
 	// If GCE_PROJECT is non-empty it overrides the project in the service
 	// account file.
-	project := env.GetOrDefaultString(EnvProject, "")
+	project := env.GetOrDefaultString(conf, EnvProject, "")
 	if project == "" {
 		// read project id from service account file
 		var datJSON struct {
@@ -122,13 +122,13 @@ func NewDNSProviderServiceAccountKey(saKey []byte) (*DNSProvider, error) {
 		project = datJSON.ProjectID
 	}
 
-	conf, err := google.JWTConfigFromJSON(saKey, dns.NdevClouddnsReadwriteScope)
+	clientConf, err := google.JWTConfigFromJSON(saKey, dns.NdevClouddnsReadwriteScope)
 	if err != nil {
 		return nil, fmt.Errorf("googlecloud: unable to acquire config: %w", err)
 	}
-	client := conf.Client(context.Background())
+	client := clientConf.Client(context.Background())
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(conf)
 	config.Project = project
 	config.HTTPClient = client
 
@@ -137,7 +137,7 @@ func NewDNSProviderServiceAccountKey(saKey []byte) (*DNSProvider, error) {
 
 // NewDNSProviderServiceAccount uses the supplied service account JSON file
 // to return a DNSProvider instance configured for Google Cloud DNS.
-func NewDNSProviderServiceAccount(saFile string) (*DNSProvider, error) {
+func NewDNSProviderServiceAccount(saFile string, conf map[string]string) (*DNSProvider, error) {
 	if saFile == "" {
 		return nil, errors.New("googlecloud: Service Account file missing")
 	}
@@ -147,7 +147,7 @@ func NewDNSProviderServiceAccount(saFile string) (*DNSProvider, error) {
 		return nil, fmt.Errorf("googlecloud: unable to read Service Account file: %w", err)
 	}
 
-	return NewDNSProviderServiceAccountKey(saKey)
+	return NewDNSProviderServiceAccountKey(saKey, conf)
 }
 
 // NewDNSProviderConfig return a DNSProvider instance configured for Google Cloud DNS.

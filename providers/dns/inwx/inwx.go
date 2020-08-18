@@ -39,12 +39,12 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, 300),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
-		Sandbox:            env.GetOrDefaultBool(EnvSandbox, false),
+		TTL:                env.GetOrDefaultInt(conf, EnvTTL, 300),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, dns01.DefaultPollingInterval),
+		Sandbox:            env.GetOrDefaultBool(conf, EnvSandbox, false),
 	}
 }
 
@@ -57,16 +57,16 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for Dyn DNS.
 // Credentials must be passed in the environment variables:
 // INWX_USERNAME, INWX_PASSWORD, and INWX_SHARED_SECRET.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvUsername, EnvPassword)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.Get(conf, EnvUsername, EnvPassword)
 	if err != nil {
 		return nil, fmt.Errorf("inwx: %w", err)
 	}
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(conf)
 	config.Username = values[EnvUsername]
 	config.Password = values[EnvPassword]
-	config.SharedSecret = env.GetOrFile(EnvSharedSecret)
+	config.SharedSecret = env.GetOrFile(conf, EnvSharedSecret)
 
 	return NewDNSProviderConfig(config)
 }

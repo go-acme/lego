@@ -42,13 +42,13 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, minTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 15*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 20*time.Second),
+		TTL:                env.GetOrDefaultInt(conf, EnvTTL, minTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, 15*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, 20*time.Second),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 10*time.Second),
+			Timeout: env.GetOrDefaultSecond(conf, EnvHTTPTimeout, 10*time.Second),
 		},
 	}
 }
@@ -62,16 +62,16 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for namedotcom.
 // Credentials must be passed in the environment variables:
 // NAMECOM_USERNAME and NAMECOM_API_TOKEN.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvUsername, EnvAPIToken)
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	values, err := env.Get(conf, EnvUsername, EnvAPIToken)
 	if err != nil {
 		return nil, fmt.Errorf("namedotcom: %w", err)
 	}
 
-	config := NewDefaultConfig()
+	config := NewDefaultConfig(conf)
 	config.Username = values[EnvUsername]
 	config.APIToken = values[EnvAPIToken]
-	config.Server = env.GetOrFile(EnvServer)
+	config.Server = env.GetOrFile(conf, EnvServer)
 
 	return NewDNSProviderConfig(config)
 }

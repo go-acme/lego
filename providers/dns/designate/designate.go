@@ -46,11 +46,11 @@ type Config struct {
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
+func NewDefaultConfig(conf map[string]string) *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, 10),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 10*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 10*time.Second),
+		TTL:                env.GetOrDefaultInt(conf, EnvTTL, 10),
+		PropagationTimeout: env.GetOrDefaultSecond(conf, EnvPropagationTimeout, 10*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(conf, EnvPollingInterval, 10*time.Second),
 	}
 }
 
@@ -65,10 +65,10 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables:
 // OS_AUTH_URL, OS_USERNAME, OS_PASSWORD, OS_TENANT_NAME, OS_REGION_NAME.
 // Or you can specify OS_CLOUD to read the credentials from the according cloud entry.
-func NewDNSProvider() (*DNSProvider, error) {
-	config := NewDefaultConfig()
+func NewDNSProvider(conf map[string]string) (*DNSProvider, error) {
+	config := NewDefaultConfig(conf)
 
-	val, err := env.Get(EnvCloud)
+	val, err := env.Get(conf, EnvCloud)
 	if err == nil {
 		opts, erro := clientconfig.AuthOptions(&clientconfig.ClientOpts{
 			Cloud: val[EnvCloud],
@@ -80,7 +80,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 		config.opts = *opts
 	} else {
-		_, err = env.Get(EnvAuthURL, EnvUsername, EnvPassword, EnvTenantName, EnvRegionName)
+		_, err = env.Get(conf, EnvAuthURL, EnvUsername, EnvPassword, EnvTenantName, EnvRegionName)
 		if err != nil {
 			return nil, fmt.Errorf("designate: %w", err)
 		}

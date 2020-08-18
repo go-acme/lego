@@ -102,7 +102,11 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 // Present creates a TXT record to fulfill DNS-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	return d.CreateRecord(domain, token, fqdn, value)
+}
 
+// CreateRecord creates a TXT record to fulfill the DNS-01 challenge.
+func (d *DNSProvider) CreateRecord(domain, token, fqdn, value string) error {
 	domainObj, err := d.client.GetDomainByName(domain)
 	if err != nil {
 		return fmt.Errorf("selectel: %w", err)
@@ -122,9 +126,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	return nil
 }
 
-// CleanUp removes a TXT record used for DNS-01 challenge.
+// CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	return d.DeleteRecord(domain, token, fqdn, value)
+}
+
+// DeleteRecord removes the record matching the specified parameters.
+func (d *DNSProvider) DeleteRecord(domain, token, fqdn, value string) error {
 	recordName := dns01.UnFqdn(fqdn)
 
 	domainObj, err := d.client.GetDomainByName(domain)

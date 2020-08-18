@@ -101,11 +101,13 @@ func (e ErrCNAMERequired) Error() string {
 // If there is not an account for the given domain present in the DNSProvider storage
 // one will be created and registered with the ACME DNS server and an ErrCNAMERequired error is returned.
 // This will halt issuance and indicate to the user that a one-time manual setup is required for the domain.
-func (d *DNSProvider) Present(domain, _, keyAuth string) error {
-	// Compute the challenge response FQDN and TXT value for the domain based
-	// on the keyAuth.
+func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	return d.CreateRecord(domain, token, fqdn, value)
+}
 
+// Present creates a TXT record to fulfill the DNS-01 challenge.
+func (d *DNSProvider) CreateRecord(domain, token, fqdn, value string) error {
 	// Check if credentials were previously saved for this domain.
 	account, err := d.storage.Fetch(domain)
 	// Errors other than goacmeDNS.ErrDomainNotFound are unexpected.
@@ -122,11 +124,17 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	return d.client.UpdateTXTRecord(account, value)
 }
 
-// CleanUp removes the record matching the specified parameters. It is not
+// CleanUp removes the TXT record matching the specified parameters. It is not
 // implemented for the ACME-DNS provider.
 func (d *DNSProvider) CleanUp(_, _, _ string) error {
 	// ACME-DNS doesn't support the notion of removing a record.
 	// For users of ACME-DNS it is expected the stale records remain in-place.
+	return nil
+}
+
+// DeleteRecord removes a creates a TXT record from the provider. It is not
+// implemented for the ACME-DNS provider.
+func (d *DNSProvider) DeleteRecord(domain, token, fqdn, value string) error {
 	return nil
 }
 

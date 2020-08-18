@@ -85,7 +85,7 @@ import (
 )
 
 // NewDNSChallengeProviderByName Factory for DNS providers.
-func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
+func NewDNSChallengeProviderByName(name string) (challenge.DNSProvider, error) {
 	switch name {
 	case "acme-dns":
 		return acmedns.NewDNSProvider()

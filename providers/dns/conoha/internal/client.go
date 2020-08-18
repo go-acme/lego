@@ -151,7 +151,7 @@ func (c *Client) CreateRecord(domainID string, record Record) error {
 	return c.do(http.MethodPost, fmt.Sprintf("/v1/domains/%s/records", domainID), record, nil)
 }
 
-// DeleteRecord removes specified record.
+// DeleteRecord removes a creates a TXT record from the provider.
 func (c *Client) DeleteRecord(domainID, recordID string) error {
 	return c.do(http.MethodDelete, fmt.Sprintf("/v1/domains/%s/records/%s", domainID, recordID), nil, nil)
 }

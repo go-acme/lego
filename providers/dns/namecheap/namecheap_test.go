@@ -26,7 +26,7 @@ func TestDNSProvider_getHosts(t *testing.T) {
 
 			provider := mockDNSProvider(mock.URL)
 
-			ch, err := newChallenge(test.domain, "")
+			ch, err := newChallenge(test.domain, "", "")
 			require.NoError(t, err)
 
 			hosts, err := provider.getHosts(ch.sld, ch.tld)
@@ -67,7 +67,7 @@ func TestDNSProvider_setHosts(t *testing.T) {
 
 			prov := mockDNSProvider(mock.URL)
 
-			ch, err := newChallenge(test.domain, "")
+			ch, err := newChallenge(test.domain, "", "")
 			require.NoError(t, err)
 
 			hosts, err := prov.getHosts(ch.sld, ch.tld)
@@ -149,7 +149,7 @@ func TestDomainSplit(t *testing.T) {
 		test := test
 		t.Run(test.domain, func(t *testing.T) {
 			valid := true
-			ch, err := newChallenge(test.domain, "")
+			ch, err := newChallenge(test.domain, "", "")
 			if err != nil {
 				valid = false
 			}
@@ -174,7 +174,7 @@ func TestDomainSplit(t *testing.T) {
 func assertHdr(tc *testCase, t *testing.T, values *url.Values) {
 	t.Helper()
 
-	ch, _ := newChallenge(tc.domain, "")
+	ch, _ := newChallenge(tc.domain, "", "")
 	assert.Equal(t, envTestUser, values.Get("ApiUser"), "ApiUser")
 	assert.Equal(t, envTestKey, values.Get("ApiKey"), "ApiKey")
 	assert.Equal(t, envTestUser, values.Get("UserName"), "UserName")

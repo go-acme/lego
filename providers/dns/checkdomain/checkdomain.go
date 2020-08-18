@@ -101,6 +101,12 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	return d.CreateRecord(domain, token, fqdn, value)
+}
+
+// CreateRecord creates a TXT record to fulfill the DNS-01 challenge.
+func (d *DNSProvider) CreateRecord(domain, token, fqdn, value string) error {
 	domainID, err := d.getDomainIDByName(domain)
 	if err != nil {
 		return fmt.Errorf("checkdomain: %w", err)
@@ -111,10 +117,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("checkdomain: %w", err)
 	}
 
-	name, value := dns01.GetRecord(domain, keyAuth)
-
 	err = d.createRecord(domainID, &Record{
-		Name:  name,
+		Name:  fqdn,
 		TTL:   d.config.TTL,
 		Type:  "TXT",
 		Value: value,
@@ -127,8 +131,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	return nil
 }
 
-// CleanUp removes the TXT record previously created.
+// CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	return d.DeleteRecord(domain, token, fqdn, value)
+}
+
+// DeleteRecord removes a creates a TXT record from the provider.
+func (d *DNSProvider) DeleteRecord(domain, token, name, value string) error {
 	domainID, err := d.getDomainIDByName(domain)
 	if err != nil {
 		return fmt.Errorf("checkdomain: %w", err)
@@ -138,8 +148,6 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("checkdomain: %w", err)
 	}
-
-	name, value := dns01.GetRecord(domain, keyAuth)
 
 	err = d.deleteTXTRecord(domainID, name, value)
 	if err != nil {

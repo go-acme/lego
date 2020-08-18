@@ -16,20 +16,28 @@ import (
 )
 
 type providerMock struct {
-	present, cleanUp error
+	present, cleanUp, createRecord, deleteRecord error
 }
 
-func (p *providerMock) Present(domain, token, keyAuth string) error { return p.present }
-func (p *providerMock) CleanUp(domain, token, keyAuth string) error { return p.cleanUp }
+func (p *providerMock) Present(domain, token, keyAuth string) error          { return p.present }
+func (p *providerMock) CleanUp(domain, token, keyAuth string) error          { return p.cleanUp }
+func (p *providerMock) CreateRecord(domain, token, fqdn, value string) error { return p.createRecord }
+func (p *providerMock) DeleteRecord(domain, token, fqdn, value string) error { return p.deleteRecord }
 
 type providerTimeoutMock struct {
-	present, cleanUp  error
-	timeout, interval time.Duration
+	present, cleanUp, createRecord, deleteRecord error
+	timeout, interval                            time.Duration
 }
 
 func (p *providerTimeoutMock) Present(domain, token, keyAuth string) error { return p.present }
 func (p *providerTimeoutMock) CleanUp(domain, token, keyAuth string) error { return p.cleanUp }
-func (p *providerTimeoutMock) Timeout() (time.Duration, time.Duration)     { return p.timeout, p.interval }
+func (p *providerTimeoutMock) CreateRecord(domain, token, fqdn, value string) error {
+	return p.createRecord
+}
+func (p *providerTimeoutMock) DeleteRecord(domain, token, fqdn, value string) error {
+	return p.deleteRecord
+}
+func (p *providerTimeoutMock) Timeout() (time.Duration, time.Duration) { return p.timeout, p.interval }
 
 func TestChallenge_PreSolve(t *testing.T) {
 	_, apiURL, tearDown := tester.SetupFakeAPI()
@@ -59,8 +67,10 @@ func TestChallenge_PreSolve(t *testing.T) {
 			validate: func(_ *api.Core, _ string, _ acme.Challenge) error { return errors.New("OOPS") },
 			preCheck: func(_, _, _ string, _ PreCheckFunc) (bool, error) { return true, nil },
 			provider: &providerMock{
-				present: nil,
-				cleanUp: nil,
+				present:      nil,
+				cleanUp:      nil,
+				createRecord: nil,
+				deleteRecord: nil,
 			},
 		},
 		{
@@ -87,6 +97,22 @@ func TestChallenge_PreSolve(t *testing.T) {
 			preCheck: func(_, _, _ string, _ PreCheckFunc) (bool, error) { return true, nil },
 			provider: &providerMock{
 				cleanUp: errors.New("OOPS"),
+			},
+		},
+		{
+			desc:     "createRecord fail",
+			validate: func(_ *api.Core, _ string, _ acme.Challenge) error { return nil },
+			preCheck: func(_, _, _ string, _ PreCheckFunc) (bool, error) { return true, nil },
+			provider: &providerMock{
+				createRecord: errors.New("OOPS"),
+			},
+		},
+		{
+			desc:     "deleteRecord fail",
+			validate: func(_ *api.Core, _ string, _ acme.Challenge) error { return nil },
+			preCheck: func(_, _, _ string, _ PreCheckFunc) (bool, error) { return true, nil },
+			provider: &providerMock{
+				deleteRecord: errors.New("OOPS"),
 			},
 		},
 	}
@@ -142,8 +168,10 @@ func TestChallenge_Solve(t *testing.T) {
 			validate: func(_ *api.Core, _ string, _ acme.Challenge) error { return errors.New("OOPS") },
 			preCheck: func(_, _, _ string, _ PreCheckFunc) (bool, error) { return true, nil },
 			provider: &providerMock{
-				present: nil,
-				cleanUp: nil,
+				present:      nil,
+				cleanUp:      nil,
+				createRecord: nil,
+				deleteRecord: nil,
 			},
 			expectError: true,
 		},
@@ -171,6 +199,22 @@ func TestChallenge_Solve(t *testing.T) {
 			preCheck: func(_, _, _ string, _ PreCheckFunc) (bool, error) { return true, nil },
 			provider: &providerMock{
 				cleanUp: errors.New("OOPS"),
+			},
+		},
+		{
+			desc:     "createRecord fail",
+			validate: func(_ *api.Core, _ string, _ acme.Challenge) error { return nil },
+			preCheck: func(_, _, _ string, _ PreCheckFunc) (bool, error) { return true, nil },
+			provider: &providerMock{
+				createRecord: errors.New("OOPS"),
+			},
+		},
+		{
+			desc:     "deleteRecord fail",
+			validate: func(_ *api.Core, _ string, _ acme.Challenge) error { return nil },
+			preCheck: func(_, _, _ string, _ PreCheckFunc) (bool, error) { return true, nil },
+			provider: &providerMock{
+				deleteRecord: errors.New("OOPS"),
 			},
 		},
 	}
@@ -230,8 +274,10 @@ func TestChallenge_CleanUp(t *testing.T) {
 			validate: func(_ *api.Core, _ string, _ acme.Challenge) error { return errors.New("OOPS") },
 			preCheck: func(_, _, _ string, _ PreCheckFunc) (bool, error) { return true, nil },
 			provider: &providerMock{
-				present: nil,
-				cleanUp: nil,
+				present:      nil,
+				cleanUp:      nil,
+				createRecord: nil,
+				deleteRecord: nil,
 			},
 		},
 		{
@@ -259,6 +305,22 @@ func TestChallenge_CleanUp(t *testing.T) {
 				cleanUp: errors.New("OOPS"),
 			},
 			expectError: true,
+		},
+		{
+			desc:     "createRecord fail",
+			validate: func(_ *api.Core, _ string, _ acme.Challenge) error { return nil },
+			preCheck: func(_, _, _ string, _ PreCheckFunc) (bool, error) { return true, nil },
+			provider: &providerMock{
+				createRecord: errors.New("OOPS"),
+			},
+		},
+		{
+			desc:     "deleteRecord fail",
+			validate: func(_ *api.Core, _ string, _ acme.Challenge) error { return nil },
+			preCheck: func(_, _, _ string, _ PreCheckFunc) (bool, error) { return true, nil },
+			provider: &providerMock{
+				deleteRecord: errors.New("OOPS"),
+			},
 		},
 	}
 

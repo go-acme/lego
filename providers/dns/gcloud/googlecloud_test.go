@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"runtime"
 	"sort"
 	"testing"
 	"time"
@@ -38,6 +39,11 @@ var envTest = tester.NewEnvTest(
 	})
 
 func TestNewDNSProvider(t *testing.T) {
+	fileNotFoundMessage := "no such file or directory"
+	if runtime.GOOS == "windows" {
+		fileNotFoundMessage = "The system cannot find the file specified."
+	}
+
 	testCases := []struct {
 		desc     string
 		envVars  map[string]string
@@ -52,7 +58,7 @@ func TestNewDNSProvider(t *testing.T) {
 				envGoogleApplicationCredentials: "not-a-secret-file",
 				envMetadataHost:                 "http://lego.wtf", // defined here to avoid the client cache.
 			},
-			expected: "googlecloud: unable to get Google Cloud client: google: error getting credentials using GOOGLE_APPLICATION_CREDENTIALS environment variable: open not-a-secret-file: no such file or directory",
+			expected: "googlecloud: unable to get Google Cloud client: google: error getting credentials using GOOGLE_APPLICATION_CREDENTIALS environment variable: open not-a-secret-file: " + fileNotFoundMessage,
 		},
 		{
 			desc: "missing project",

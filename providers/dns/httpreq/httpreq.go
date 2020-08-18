@@ -136,6 +136,11 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	return nil
 }
 
+// CreateRecord creates a TXT record to fulfill the DNS-01 challenge.
+func (d *DNSProvider) CreateRecord(domain, token, fqdn, value string) error {
+	return errors.New("not implemented. Use Present() instead")
+}
+
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	if d.config.Mode == "RAW" {
@@ -163,6 +168,11 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("httpreq: %w", err)
 	}
 	return nil
+}
+
+// DeleteRecord removes the record matching the specified parameters.
+func (d *DNSProvider) DeleteRecord(domain, token, fqdn, value string) error {
+	return errors.New("not implemented. Use CleanUp() instead")
 }
 
 func (d *DNSProvider) doPost(uri string, msg interface{}) error {

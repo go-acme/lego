@@ -170,10 +170,14 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	return &DNSProvider{config: config, client: svc}, nil
 }
 
-// Present creates a TXT record to fulfill the dns-01 challenge.
+// Present creates a TXT record to fulfill the DNS-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	return d.CreateRecord(domain, token, fqdn, value)
+}
 
+// Present creates a TXT record to fulfill the DNS-01 challenge.
+func (d *DNSProvider) CreateRecord(domain, token, fqdn, value string) error {
 	zone, err := d.getHostedZone(fqdn)
 	if err != nil {
 		return fmt.Errorf("googlecloud: %w", err)
@@ -280,8 +284,12 @@ func (d *DNSProvider) applyChanges(zone string, change *dns.Change) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	return d.DeleteRecord(domain, token, fqdn, value)
+}
 
+// DeleteRecord removes the record matching the specified parameters.
+func (d *DNSProvider) DeleteRecord(domain, token, fqdn, value string) error {
 	zone, err := d.getHostedZone(fqdn)
 	if err != nil {
 		return fmt.Errorf("googlecloud: %w", err)

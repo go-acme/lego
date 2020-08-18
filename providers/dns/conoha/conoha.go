@@ -101,10 +101,14 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	return &DNSProvider{config: config, client: client}, nil
 }
 
-// Present creates a TXT record to fulfill the dns-01 challenge.
+// Present creates a TXT record to fulfill the DNS-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	return d.CreateRecord(domain, token, fqdn, value)
+}
 
+// Present creates a TXT record to fulfill the DNS-01 challenge.
+func (d *DNSProvider) CreateRecord(domain, token, fqdn, value string) error {
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
 		return err
@@ -133,7 +137,11 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 // CleanUp clears ConoHa DNS TXT record.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	return d.DeleteRecord(domain, token, fqdn, value)
+}
 
+// DeleteRecord removes a creates a TXT record from the provider.
+func (d *DNSProvider) DeleteRecord(domain, token, fqdn, value string) error {
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
 		return err

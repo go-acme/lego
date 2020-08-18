@@ -101,10 +101,14 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	return &DNSProvider{config: config, recordIDs: map[string]string{}}, nil
 }
 
-// Present creates a TXT record to fulfill the dns-01 challenge.
+// Present creates a TXT record to fulfill the DNS-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	return d.CreateRecord(domain, token, fqdn, value)
+}
 
+// Present creates a TXT record to fulfill the DNS-01 challenge.
+func (d *DNSProvider) CreateRecord(domain, token, fqdn, value string) error {
 	apiHost, apiDomain := splitFqdn(fqdn)
 	record := &zoneRecord{
 		Domain: apiDomain,
@@ -131,9 +135,13 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, challenge := dns01.GetRecord(domain, keyAuth)
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	return d.DeleteRecord(domain, token, fqdn, value)
+}
 
-	key := getMapKey(fqdn, challenge)
+// DeleteRecord removes a creates a TXT record from the provider.
+func (d *DNSProvider) DeleteRecord(domain, token, fqdn, value string) error {
+	key := getMapKey(fqdn, value)
 	recordID, exists := d.recordIDs[key]
 	if !exists {
 		return nil

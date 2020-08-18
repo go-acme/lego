@@ -95,10 +95,14 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	return &DNSProvider{client: client, config: config}, nil
 }
 
-// Present creates a TXT record using the specified parameters.
+// Present creates a TXT record to fulfill the DNS-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	return d.CreateRecord(domain, token, fqdn, value)
+}
 
+// Present creates a TXT record to fulfill the DNS-01 challenge.
+func (d *DNSProvider) CreateRecord(domain, token, fqdn, value string) error {
 	err := d.changeRecord("CREATE", fqdn, value, domain, d.config.TTL)
 	if err != nil {
 		return fmt.Errorf("nifcloud: %w", err)
@@ -109,7 +113,11 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	return d.DeleteRecord(domain, token, fqdn, value)
+}
 
+// DeleteRecord removes the record matching the specified parameters.
+func (d *DNSProvider) DeleteRecord(domain, token, fqdn, value string) error {
 	err := d.changeRecord("DELETE", fqdn, value, domain, d.config.TTL)
 	if err != nil {
 		return fmt.Errorf("nifcloud: %w", err)

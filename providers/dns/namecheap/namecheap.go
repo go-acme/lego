@@ -144,7 +144,13 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present installs a TXT record for the DNS challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	ch, err := newChallenge(domain, keyAuth)
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	return d.CreateRecord(domain, token, fqdn, value)
+}
+
+// CreateRecord installs a TXT record for the DNS challenge.
+func (d *DNSProvider) CreateRecord(domain, token, fqdn, value string) error {
+	ch, err := newChallenge(domain, fqdn, value)
 	if err != nil {
 		return fmt.Errorf("namecheap: %w", err)
 	}
@@ -177,9 +183,15 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	return nil
 }
 
-// CleanUp removes a TXT record used for a previous DNS challenge.
+// CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	ch, err := newChallenge(domain, keyAuth)
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	return d.DeleteRecord(domain, token, fqdn, value)
+}
+
+// DeleteRecord removes the record matching the specified parameters.
+func (d *DNSProvider) DeleteRecord(domain, token, fqdn, value string) error {
+	ch, err := newChallenge(domain, fqdn, value)
 	if err != nil {
 		return fmt.Errorf("namecheap: %w", err)
 	}
@@ -232,7 +244,7 @@ func getClientIP(client *http.Client, debug bool) (addr string, err error) {
 }
 
 // newChallenge builds a challenge record from a domain name and a challenge authentication key.
-func newChallenge(domain, keyAuth string) (*challenge, error) {
+func newChallenge(domain, fqdn, value string) (*challenge, error) {
 	domain = dns01.UnFqdn(domain)
 
 	tld, _ := publicsuffix.PublicSuffix(domain)
@@ -248,8 +260,6 @@ func newChallenge(domain, keyAuth string) (*challenge, error) {
 	if longest >= 1 {
 		host = strings.Join(parts[:longest-1], ".")
 	}
-
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
 	return &challenge{
 		domain:   domain,

@@ -79,12 +79,22 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	_, txtRecord := dns01.GetRecord(domain, keyAuth)
-	return d.updateTxtRecord(domain, d.config.Token, txtRecord, false)
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	return d.CreateRecord(domain, token, fqdn, value)
 }
 
-// CleanUp clears DuckDNS TXT record.
+// CreateRecord creates a TXT record to fulfill the DNS-01 challenge.
+func (d *DNSProvider) CreateRecord(domain, token, fqdn, value string) error {
+	return d.updateTxtRecord(domain, d.config.Token, value, false)
+}
+
+// CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+	return d.updateTxtRecord(domain, d.config.Token, "", true)
+}
+
+// DeleteRecord removes a creates a TXT record from the provider.
+func (d *DNSProvider) DeleteRecord(domain, token, fqdn, value string) error {
 	return d.updateTxtRecord(domain, d.config.Token, "", true)
 }
 

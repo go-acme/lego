@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path/filepath"
 	"regexp"
 )
 
@@ -15,15 +14,6 @@ type Passport struct {
 	Issuer        string `json:"issuer"`
 	PrivateKey    string `json:"private_key"`
 	PublicKey     string `json:"public_key"`
-}
-
-func GetDefaultPassportLocation() string {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return ""
-	}
-
-	return filepath.Join(homeDir, ".h1", "passport.json")
 }
 
 func LoadPassportFile(location string) (*Passport, error) {

@@ -943,7 +943,6 @@ func displayDNSHelp(name string) error {
 		ew.writeln(`	- "HYPERONE_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "HYPERONE_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
 		ew.writeln(`	- "HYPERONE_TTL":	The TTL of the TXT record used for the DNS challenge`)
-		ew.writeln(`	- "HYPERONE_ZONE_URI":	Specifies zone where records are being set (if not set detected automatically)`)
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/hyperone`)

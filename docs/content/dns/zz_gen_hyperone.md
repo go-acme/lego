@@ -39,7 +39,6 @@ lego --dns hyperone --domains my.domain.com --email my@email.com run
 | `HYPERONE_POLLING_INTERVAL` | Time between DNS propagation check |
 | `HYPERONE_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
 | `HYPERONE_TTL` | The TTL of the TXT record used for the DNS challenge |
-| `HYPERONE_ZONE_URI` | Specifies zone where records are being set (if not set detected automatically) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).

@@ -4,11 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"os/user"
-	"path"
+	"os"
+	"path/filepath"
 	"regexp"
-	"strings"
 )
 
 type Passport struct {
@@ -20,29 +18,31 @@ type Passport struct {
 }
 
 func GetDefaultPassportLocation() string {
-	usr, err := user.Current()
+	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return ""
 	}
 
-	return path.Join(usr.HomeDir, ".h1/passport.json")
+	return filepath.Join(homeDir, ".h1", "passport.json")
 }
 
 func LoadPassportFile(location string) (*Passport, error) {
-	byteFileValue, err := ioutil.ReadFile(location)
+	file, err := os.Open(location)
 	if err != nil {
-		return nil, fmt.Errorf("Error when opening passport file:%+v", err)
+		return nil, fmt.Errorf("failed to open passport file: %w", err)
 	}
 
+	defer func() { _ = file.Close() }()
+
 	var passport Passport
-	err = json.Unmarshal(byteFileValue, &passport)
+	err = json.NewDecoder(file).Decode(&passport)
 	if err != nil {
-		return nil, fmt.Errorf("Error when parsing passport file:%+v", err)
+		return nil, fmt.Errorf("failed to parse passport file: %w", err)
 	}
 
 	err = passport.validate()
 	if err != nil {
-		return nil, fmt.Errorf("Error when validating passport file:%+v", err)
+		return nil, fmt.Errorf("passport file validation failed: %w", err)
 	}
 
 	return &passport, nil
@@ -50,32 +50,31 @@ func LoadPassportFile(location string) (*Passport, error) {
 
 func (passport *Passport) validate() error {
 	if passport.Issuer == "" {
-		return errors.New("Issuer can't be empty")
+		return errors.New("issuer is empty")
 	}
 
 	if passport.CertificateID == "" {
-		return errors.New("CertificateID can't be empty")
+		return errors.New("certificate ID is empty")
 	}
 
 	if passport.PrivateKey == "" {
-		return errors.New("Private key must be present")
+		return errors.New("private key is missing")
 	}
 
 	if passport.SubjectID == "" {
-		return errors.New("Subject can't be empty")
+		return errors.New("subject is empty")
 	}
 
 	return nil
 }
 
 func (passport *Passport) ExtractProjectID() (string, error) {
-	re := regexp.MustCompile("iam/project/[a-zA-Z0-9]+")
-	byteProjectIam := re.Find([]byte(passport.SubjectID))
-	if len(byteProjectIam) == 0 {
-		return "", errors.New("Error when extracting projectID")
+	re := regexp.MustCompile("iam/project/([a-zA-Z0-9]+)")
+
+	parts := re.FindStringSubmatch(passport.SubjectID)
+	if len(parts) != 2 {
+		return "", fmt.Errorf("failed to extract project ID from subject ID: %s", passport.SubjectID)
 	}
-	projectIamString := string(byteProjectIam)
-	segments := strings.Split(projectIamString, "/")
-	projectID := segments[len(segments)-1]
-	return projectID, nil
+
+	return parts[1], nil
 }

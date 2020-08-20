@@ -6,7 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/google/go-cmp/cmp"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const privateKey = `-----BEGIN RSA PRIVATE KEY-----
@@ -25,54 +26,40 @@ Y1W+IO7l4iW3G6xhAkACNwtqxSRRbVsNCUMENpKmYhsyN8QXJ8V+o2A9s+pl21Kz
 HIIm179mUYCgO6iAHmkqxlFHFwprUBKdPrmP8qF9
 -----END RSA PRIVATE KEY-----`
 
-func TestTokenBuilding(t *testing.T) {
-	payload := Payload{IssuedAt: 1234, Expiry: 4321, Audience: "api.url", Issuer: "issuer", Subject: "subject"}
-	keyID := "sampleKeyId"
-
-	signer, err := getRSASigner(privateKey, keyID)
-	if err != nil {
-		t.Errorf("Error when getting RSA Signer:%+v", err)
-	}
-	token, err := payload.buildToken(&signer)
-	if err != nil {
-		t.Errorf("Error when building token:%+v", err)
-	}
-
-	segments := strings.Split(token, ".")
-	headerString, err := base64.RawStdEncoding.DecodeString(segments[0])
-	if err != nil {
-		t.Errorf("Error when decoding header segment:%+v", err)
-	}
-	payloadString, err := base64.RawStdEncoding.DecodeString(segments[1])
-	if err != nil {
-		t.Errorf("Error when decoding payload segment:%+v", err)
-	}
-
-	var headerStruct Header
-	var payloadStruct Payload
-	err = json.Unmarshal(headerString, &headerStruct)
-	if err != nil {
-		t.Errorf("Can't parse received header JSON:%+v", err)
-	}
-	err = json.Unmarshal(payloadString, &payloadStruct)
-	if err != nil {
-		t.Errorf("Can't parse received payload JSON:%+v", err)
-	}
-
-	expectedHeader := Header{Alghoritm: "RS256", Type: "JWT", KeyID: "sampleKeyId"}
-	headerValid := cmp.Equal(headerStruct, expectedHeader)
-	if !headerValid {
-		t.Errorf("Header struct is different than expected. Expected: %+v, got: %+v", expectedHeader, headerStruct)
-	}
-
-	payloadValid := cmp.Equal(payloadStruct, payload)
-	if !payloadValid {
-		t.Errorf("Payload struct is different than expected. Expected: %+v, got: %+v", payload, payloadStruct)
-	}
-}
-
 type Header struct {
-	Alghoritm string `json:"alg"`
+	Algorithm string `json:"alg"`
 	Type      string `json:"typ"`
 	KeyID     string `json:"kid"`
+}
+
+func TestPayload_buildToken(t *testing.T) {
+	signer, err := getRSASigner(privateKey, "sampleKeyId")
+	require.NoError(t, err)
+
+	payload := Payload{IssuedAt: 1234, Expiry: 4321, Audience: "api.url", Issuer: "issuer", Subject: "subject"}
+
+	token, err := payload.buildToken(&signer)
+	require.NoError(t, err)
+
+	segments := strings.Split(token, ".")
+	require.Len(t, segments, 3)
+
+	headerString, err := base64.RawStdEncoding.DecodeString(segments[0])
+	require.NoError(t, err)
+
+	var headerStruct Header
+	err = json.Unmarshal(headerString, &headerStruct)
+	require.NoError(t, err)
+
+	payloadString, err := base64.RawStdEncoding.DecodeString(segments[1])
+	require.NoError(t, err)
+
+	var payloadStruct Payload
+	err = json.Unmarshal(payloadString, &payloadStruct)
+	require.NoError(t, err)
+
+	expectedHeader := Header{Algorithm: "RS256", Type: "JWT", KeyID: "sampleKeyId"}
+
+	assert.Equal(t, expectedHeader, headerStruct)
+	assert.Equal(t, payload, payloadStruct)
 }

@@ -24,7 +24,7 @@ const (
 	DefaultPollingInterval = 2 * time.Second
 
 	// DefaultTTL default TTL.
-	DefaultTTL = 120
+	DefaultTTL = 30
 )
 
 type ValidateFunc func(core *api.Core, domain string, chlng acme.Challenge) error

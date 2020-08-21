@@ -90,7 +90,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	client, err := internal.NewClient(config.APIEndpoint, config.LocationID, passport)
 	if err != nil {
-		return nil, fmt.Errorf("hyperone: %w", err)
+		return nil, fmt.Errorf("hyperone: failed to create client: %w", err)
 	}
 
 	if config.HTTPClient != nil {
@@ -112,46 +112,48 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zone, err := d.getHostedZone(fqdn)
 	if err != nil {
-		return fmt.Errorf("hyperone: %w", err)
+		return fmt.Errorf("hyperone: failed to get zone for fqdn=%s: %w", fqdn, err)
 	}
 
 	recordset, err := d.client.FindRecordset(zone.ID, "TXT", fqdn)
 	if err != nil {
-		return fmt.Errorf("hyperone: %w", err)
+		return fmt.Errorf("hyperone: fqdn=%s, zone ID=%s: %w", fqdn, zone.ID, err)
 	}
 
 	if recordset == nil {
 		_, err = d.client.CreateRecordset(zone.ID, "TXT", fqdn, value, d.config.TTL)
-		return fmt.Errorf("hyperone: %w", err)
+		if err != nil {
+			return fmt.Errorf("hyperone: failed to create recordset: fqdn=%s, zone ID=%s, value=%s: %w", fqdn, zone.ID, value, err)
+		}
+
+		return nil
 	}
 
 	_, err = d.client.CreateRecord(zone.ID, recordset.ID, value)
 	if err != nil {
-		return fmt.Errorf("hyperone: %w", err)
+		return fmt.Errorf("hyperone: failed to create record: fqdn=%s, zone ID=%s, recordset ID=%s: %w", fqdn, zone.ID, recordset.ID, err)
 	}
 
 	return nil
 }
 
-// CleanUp removes the TXT record matching the specified parameters
-// and recordset if no other records are remaining.
-// There is a small possibility that race will cause to delete
-// recordset with records for other DNS Challenges.
+// CleanUp removes the TXT record matching the specified parameters and recordset if no other records are remaining.
+// There is a small possibility that race will cause to delete recordset with records for other DNS Challenges.
 func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
 	zone, err := d.getHostedZone(fqdn)
 	if err != nil {
-		return fmt.Errorf("hyperone: %w", err)
+		return fmt.Errorf("hyperone: failed to get zone for fqdn=%s: %w", fqdn, err)
 	}
 
 	recordset, err := d.client.FindRecordset(zone.ID, "TXT", fqdn)
 	if err != nil {
-		return fmt.Errorf("hyperone: %w", err)
+		return fmt.Errorf("hyperone: fqdn=%s, zone ID=%s: %w", fqdn, zone.ID, err)
 	}
 
 	if recordset == nil {
-		return errors.New("hyperone: recordset to remove not found")
+		return fmt.Errorf("hyperone: recordset to remove not found: fqdn=%s", fqdn)
 	}
 
 	records, err := d.client.GetRecords(zone.ID, recordset.ID)
@@ -161,12 +163,12 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 
 	if len(records) == 1 {
 		if records[0].Content != value {
-			return errors.New("hyperone: record with given content not found")
+			return fmt.Errorf("hyperone: record with content %s not found: fqdn=%s", value, fqdn)
 		}
 
 		err = d.client.DeleteRecordset(zone.ID, recordset.ID)
 		if err != nil {
-			return fmt.Errorf("hyperone: %w", err)
+			return fmt.Errorf("hyperone: failed to delete record: fqdn=%s, zone ID=%s, recordset ID=%s: %w", fqdn, zone.ID, recordset.ID, err)
 		}
 
 		return nil
@@ -176,14 +178,14 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 		if record.Content == value {
 			err = d.client.DeleteRecord(zone.ID, recordset.ID, record.ID)
 			if err != nil {
-				return fmt.Errorf("hyperone: %w", err)
+				return fmt.Errorf("hyperone: fqdn=%s, zone ID=%s, recordset ID=%s, record ID=%s: %w", fqdn, zone.ID, recordset.ID, record.ID, err)
 			}
 
 			return nil
 		}
 	}
 
-	return errors.New("hyperone: railed to find record with given value")
+	return fmt.Errorf("hyperone: fqdn=%s, failed to find record with given value", fqdn)
 }
 
 // getHostedZone gets the hosted zone.

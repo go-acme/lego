@@ -20,17 +20,8 @@ func (s signerMock) GetJWT() (string, error) {
 }
 
 func TestClient_GetZones(t *testing.T) {
-	server := createTestServer("GET", "/dns/loc123/project/proj123/zone", "zones.json")
-	t.Cleanup(server.Close)
-
-	passport := &Passport{
-		SubjectID: "/iam/project/proj123/sa/xxxxxxx",
-	}
-
-	client, err := NewClient(server.URL, "loc123", passport)
-	require.NoError(t, err)
-
-	client.signer = signerMock{}
+	server := createTestServer(t, "GET", "/dns/loc123/project/proj123/zone", "zones.json")
+	client := getTestClient(t, server.URL)
 
 	zones, err := client.GetZones()
 	require.NoError(t, err)
@@ -55,7 +46,7 @@ func TestClient_GetZones(t *testing.T) {
 	assert.Equal(t, expected, zones)
 }
 
-func createTestServer(method, path, fixtureName string) *httptest.Server {
+func createTestServer(t *testing.T, method, path, fixtureName string) *httptest.Server {
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
 
@@ -78,5 +69,20 @@ func createTestServer(method, path, fixtureName string) *httptest.Server {
 		}
 	}))
 
+	t.Cleanup(server.Close)
+
 	return server
+}
+
+func getTestClient(t *testing.T, serverURL string) *Client {
+	passport := &Passport{
+		SubjectID: "/iam/project/proj123/sa/xxxxxxx",
+	}
+
+	client, err := NewClient(serverURL, "loc123", passport)
+	require.NoError(t, err)
+
+	client.signer = signerMock{}
+
+	return client
 }

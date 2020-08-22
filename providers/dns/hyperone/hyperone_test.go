@@ -42,7 +42,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvAPIUrl:           "",
 				EnvLocationID:       "",
 			},
-			expected: "hyperone: failed to open passport file: open ./internal/fixtures/non-existing.json: no such file or directory",
+			expected: "hyperone: failed to open passport file: open ./internal/fixtures/non-existing.json:",
 		},
 	}
 
@@ -60,7 +60,8 @@ func TestNewDNSProvider(t *testing.T) {
 				require.NotNil(t, p)
 				require.NotNil(t, p.config)
 			} else {
-				require.EqualError(t, err, test.expected)
+				require.Error(t, err)
+				require.Contains(t, err.Error(), test.expected)
 			}
 		})
 	}
@@ -92,7 +93,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			passportLocation: "./internal/fixtures/non-existing.json",
 			apiEndpoint:      "",
 			locationID:       "",
-			expected:         "hyperone: failed to open passport file: open ./internal/fixtures/non-existing.json: no such file or directory",
+			expected:         "hyperone: failed to open passport file: open ./internal/fixtures/non-existing.json:",
 		},
 	}
 
@@ -110,7 +111,8 @@ func TestNewDNSProviderConfig(t *testing.T) {
 				require.NotNil(t, p)
 				require.NotNil(t, p.config)
 			} else {
-				require.EqualError(t, err, test.expected)
+				require.Error(t, err)
+				require.Contains(t, err.Error(), test.expected)
 			}
 		})
 	}

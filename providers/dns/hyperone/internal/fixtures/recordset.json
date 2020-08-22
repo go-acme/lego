@@ -1,0 +1,20 @@
+[
+  {
+    "id": "123456789abcd",
+    "name": "example.com.",
+    "type": "SOA",
+    "ttl": 1800
+  },
+  {
+    "id": "123456789abcde",
+    "name": "example.com.",
+    "type": "NS",
+    "ttl": 3600
+  },
+  {
+    "id": "123456789abcdf",
+    "name": "example.com.",
+    "type": "CNAME",
+    "ttl": 3600
+  }
+]

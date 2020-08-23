@@ -2,7 +2,6 @@
 package hyperone
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -71,10 +70,6 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 // NewDNSProviderConfig return a DNSProvider instance configured for HyperOne.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
-	if config.PassportLocation == "" {
-		return nil, errors.New("hyperone: passport location is missing")
-	}
-
 	if config.PassportLocation == "" {
 		var err error
 		config.PassportLocation, err = GetDefaultPassportLocation()

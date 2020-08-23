@@ -44,9 +44,9 @@ func NewClient(apiEndpoint, locationID string, passport *Passport) (*Client, err
 		return nil, err
 	}
 
-	baseURL := apiEndpoint
-	if baseURL == "" {
-		baseURL = defaultBaseURL
+	baseURL := defaultBaseURL
+	if apiEndpoint != "" {
+		baseURL = apiEndpoint
 	}
 
 	tokenSigner := &TokenSigner{

@@ -23,8 +23,7 @@ func (s signerMock) GetJWT() (string, error) {
 }
 
 func TestClient_FindRecordset(t *testing.T) {
-	server := createTestServer(t, http.MethodGet, "/dns/loc123/project/proj123/zone/zone321/recordset", fromFile("recordset.json"))
-	client := getTestClient(t, server.URL)
+	client := setupTest(t, http.MethodGet, "/dns/loc123/project/proj123/zone/zone321/recordset", respFromFile("recordset.json"))
 
 	recordset, err := client.FindRecordset("zone321", "SOA", "example.com.")
 	require.NoError(t, err)
@@ -47,9 +46,8 @@ func TestClient_CreateRecordset(t *testing.T) {
 		Record:     &Record{Content: "value"},
 	}
 
-	server := createTestServer(t, http.MethodPost, "/dns/loc123/project/proj123/zone/zone123/recordset",
-		hasReqBody(expectedReqBody), fromFile("createRecordset.json"))
-	client := getTestClient(t, server.URL)
+	client := setupTest(t, http.MethodPost, "/dns/loc123/project/proj123/zone/zone123/recordset",
+		hasReqBody(expectedReqBody), respFromFile("createRecordset.json"))
 
 	rs, err := client.CreateRecordset("zone123", "TXT", "test.example.com.", "value", 3600)
 	require.NoError(t, err)
@@ -59,16 +57,14 @@ func TestClient_CreateRecordset(t *testing.T) {
 }
 
 func TestClient_DeleteRecordset(t *testing.T) {
-	server := createTestServer(t, http.MethodDelete, "/dns/loc123/project/proj123/zone/zone321/recordset/rs322")
-	client := getTestClient(t, server.URL)
+	client := setupTest(t, http.MethodDelete, "/dns/loc123/project/proj123/zone/zone321/recordset/rs322")
 
 	err := client.DeleteRecordset("zone321", "rs322")
 	require.NoError(t, err)
 }
 
 func TestClient_GetRecords(t *testing.T) {
-	server := createTestServer(t, http.MethodGet, "/dns/loc123/project/proj123/zone/321/recordset/322/record", fromFile("record.json"))
-	client := getTestClient(t, server.URL)
+	client := setupTest(t, http.MethodGet, "/dns/loc123/project/proj123/zone/321/recordset/322/record", respFromFile("record.json"))
 
 	records, err := client.GetRecords("321", "322")
 	require.NoError(t, err)
@@ -89,9 +85,8 @@ func TestClient_CreateRecord(t *testing.T) {
 		Content: "value",
 	}
 
-	server := createTestServer(t, http.MethodPost, "/dns/loc123/project/proj123/zone/z123/recordset/rs325/record",
-		hasReqBody(expectedReqBody), fromFile("createRecord.json"))
-	client := getTestClient(t, server.URL)
+	client := setupTest(t, http.MethodPost, "/dns/loc123/project/proj123/zone/z123/recordset/rs325/record",
+		hasReqBody(expectedReqBody), respFromFile("createRecord.json"))
 
 	rs, err := client.CreateRecord("z123", "rs325", "value")
 	require.NoError(t, err)
@@ -101,16 +96,14 @@ func TestClient_CreateRecord(t *testing.T) {
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
-	server := createTestServer(t, http.MethodDelete, "/dns/loc123/project/proj123/zone/321/recordset/322/record/323")
-	client := getTestClient(t, server.URL)
+	client := setupTest(t, http.MethodDelete, "/dns/loc123/project/proj123/zone/321/recordset/322/record/323")
 
 	err := client.DeleteRecord("321", "322", "323")
 	require.NoError(t, err)
 }
 
 func TestClient_FindZone(t *testing.T) {
-	server := createTestServer(t, http.MethodGet, "/dns/loc123/project/proj123/zone", fromFile("zones.json"))
-	client := getTestClient(t, server.URL)
+	client := setupTest(t, http.MethodGet, "/dns/loc123/project/proj123/zone", respFromFile("zones.json"))
 
 	zone, err := client.FindZone("example.com")
 	require.NoError(t, err)
@@ -127,8 +120,7 @@ func TestClient_FindZone(t *testing.T) {
 }
 
 func TestClient_GetZones(t *testing.T) {
-	server := createTestServer(t, http.MethodGet, "/dns/loc123/project/proj123/zone", fromFile("zones.json"))
-	client := getTestClient(t, server.URL)
+	client := setupTest(t, http.MethodGet, "/dns/loc123/project/proj123/zone", respFromFile("zones.json"))
 
 	zones, err := client.GetZones()
 	require.NoError(t, err)
@@ -153,9 +145,7 @@ func TestClient_GetZones(t *testing.T) {
 	assert.Equal(t, expected, zones)
 }
 
-type assertHandler func(http.ResponseWriter, *http.Request) (int, error)
-
-func createTestServer(t *testing.T, method, path string, handlers ...assertHandler) *httptest.Server {
+func setupTest(t *testing.T, method, path string, handlers ...assertHandler) *Client {
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
 
@@ -178,8 +168,19 @@ func createTestServer(t *testing.T, method, path string, handlers ...assertHandl
 
 	t.Cleanup(server.Close)
 
-	return server
+	passport := &Passport{
+		SubjectID: "/iam/project/proj123/sa/xxxxxxx",
+	}
+
+	client, err := NewClient(server.URL, "loc123", passport)
+	require.NoError(t, err)
+
+	client.signer = signerMock{}
+
+	return client
 }
+
+type assertHandler func(http.ResponseWriter, *http.Request) (int, error)
 
 func hasReqBody(v interface{}) assertHandler {
 	return func(rw http.ResponseWriter, req *http.Request) (int, error) {
@@ -201,7 +202,7 @@ func hasReqBody(v interface{}) assertHandler {
 	}
 }
 
-func fromFile(fixtureName string) assertHandler {
+func respFromFile(fixtureName string) assertHandler {
 	return func(rw http.ResponseWriter, req *http.Request) (int, error) {
 		file, err := os.Open(filepath.Join(".", "fixtures", fixtureName))
 		if err != nil {
@@ -215,17 +216,4 @@ func fromFile(fixtureName string) assertHandler {
 
 		return http.StatusOK, nil
 	}
-}
-
-func getTestClient(t *testing.T, serverURL string) *Client {
-	passport := &Passport{
-		SubjectID: "/iam/project/proj123/sa/xxxxxxx",
-	}
-
-	client, err := NewClient(serverURL, "loc123", passport)
-	require.NoError(t, err)
-
-	client.signer = signerMock{}
-
-	return client
 }

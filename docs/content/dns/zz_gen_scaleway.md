@@ -22,7 +22,7 @@ Here is an example bash command using the Scaleway provider:
 
 ```bash
 SCALEWAY_API_TOKEN=xxxxxxx-xxxxx-xxxx-xxx-xxxxxx \
-lego --dns scaleway.com --domains my.domain.com --email my@email.com run
+lego --dns scaleway --domains my.domain.com --email my@email.com run
 ```
 
 

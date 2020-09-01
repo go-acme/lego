@@ -124,7 +124,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	var lastErr error
 	name := getRecordName(fqdn, zoneName)
 	for _, r := range resp.Reply.ResourceRecord {
-		if r.Type == "TXT" && r.Host == name {
+		if r.Type == "TXT" && (r.Host == name || r.Host == dns01.UnFqdn(fqdn)) {
 			_, err := d.client.DnsDeleteRecord(&namesilo.DnsDeleteRecordParams{Domain: zoneName, ID: r.RecordID})
 			if err != nil {
 				lastErr = fmt.Errorf("namesilo: %w", err)

@@ -295,51 +295,45 @@ func (c *Certifier) checkResponse(order acme.ExtendedOrder, certRes *Resource, b
 	}
 
 	links := append([]string{order.Certificate}, order.AlternateChainLinks...)
-	var defaultRes *Resource
 
-	for _, link := range links {
+	for i, link := range links {
 		cert, issuer, err := c.core.Certificates.Get(link, bundle)
 		if err != nil {
 			return false, err
 		}
 
-		if defaultRes == nil {
-			defaultRes = &Resource{
-				IssuerCertificate: issuer,
-				Certificate:       cert,
-				CertURL:           link,
-				CertStableURL:     link,
-			}
+		// Set the default certificate
+		if i == 0 {
+			certRes.IssuerCertificate = issuer
+			certRes.Certificate = cert
+			certRes.CertURL = link
+			certRes.CertStableURL = link
 		}
 
-		if preferredChain != "" {
-			x509Certs, err := certcrypto.ParsePEMBundle(issuer)
-			if err != nil {
-				return false, err
-			}
+		if preferredChain == "" {
+			log.Infof("[%s] Server responded with a certificate.", certRes.Domain)
 
-			if x509Certs[0].Issuer.CommonName != preferredChain {
-				continue
-			}
+			return true, nil
 		}
 
-		log.Infof("[%s] Server responded with a certificate.", certRes.Domain)
+		ok, err := hasPreferredChain(issuer, preferredChain)
+		if err != nil {
+			return false, err
+		}
 
-		certRes.IssuerCertificate = issuer
-		certRes.Certificate = cert
-		certRes.CertURL = link
-		certRes.CertStableURL = link
+		if ok {
+			log.Infof("[%s] Server responded with a certificate for the preferred certificate chains %q.", certRes.Domain, preferredChain)
 
-		return true, nil
+			certRes.IssuerCertificate = issuer
+			certRes.Certificate = cert
+			certRes.CertURL = link
+			certRes.CertStableURL = link
+
+			return true, nil
+		}
 	}
 
 	log.Infof("lego has been configured to prefer certificate chains with issuer %q, but no chain from the CA matched this issuer. Using the default certificate chain instead.", preferredChain)
-
-	// FIXME check defaultRes
-	certRes.IssuerCertificate = defaultRes.IssuerCertificate
-	certRes.Certificate = defaultRes.Certificate
-	certRes.CertURL = defaultRes.CertURL
-	certRes.CertStableURL = defaultRes.CertStableURL
 
 	return true, nil
 }
@@ -525,6 +519,21 @@ func (c *Certifier) Get(url string, bundle bool) (*Resource, error) {
 		CertURL:           url,
 		CertStableURL:     url,
 	}, nil
+}
+
+func hasPreferredChain(issuer []byte, preferredChain string) (bool, error) {
+	certs, err := certcrypto.ParsePEMBundle(issuer)
+	if err != nil {
+		return false, err
+	}
+
+	for _, cert := range certs {
+		if cert.Issuer.CommonName == preferredChain {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
 
 func checkOrderStatus(order acme.ExtendedOrder) (bool, error) {

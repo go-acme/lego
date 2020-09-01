@@ -15,11 +15,13 @@ func getLink(header http.Header, rel string) string {
 	if len(links) < 1 {
 		return ""
 	}
+
 	return links[0]
 }
 
 func getLinks(header http.Header, rel string) []string {
 	linkExpr := regexp.MustCompile(`<(.+?)>(?:;[^;]+)*?;\s*rel="(.+?)"`)
+
 	var links []string
 	for _, link := range header["Link"] {
 		for _, m := range linkExpr.FindAllStringSubmatch(link, -1) {
@@ -31,6 +33,7 @@ func getLinks(header http.Header, rel string) []string {
 			}
 		}
 	}
+
 	return links
 }
 

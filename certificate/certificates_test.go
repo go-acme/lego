@@ -171,9 +171,11 @@ func Test_checkResponse(t *testing.T) {
 
 	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
 
-	order := acme.Order{
-		Status:      acme.StatusValid,
-		Certificate: apiURL + "/certificate",
+	order := acme.ExtendedOrder{
+		Order: acme.Order{
+			Status:      acme.StatusValid,
+			Certificate: apiURL + "/certificate",
+		},
 	}
 	certRes := &Resource{}
 	bundle := false
@@ -219,9 +221,11 @@ func Test_checkResponse_issuerRelUp(t *testing.T) {
 
 	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
 
-	order := acme.Order{
-		Status:      acme.StatusValid,
-		Certificate: apiURL + "/certificate",
+	order := acme.ExtendedOrder{
+		Order: acme.Order{
+			Status:      acme.StatusValid,
+			Certificate: apiURL + "/certificate",
+		},
 	}
 	certRes := &Resource{}
 	bundle := false
@@ -258,9 +262,11 @@ func Test_checkResponse_embeddedIssuer(t *testing.T) {
 
 	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
 
-	order := acme.Order{
-		Status:      acme.StatusValid,
-		Certificate: apiURL + "/certificate",
+	order := acme.ExtendedOrder{
+		Order: acme.Order{
+			Status:      acme.StatusValid,
+			Certificate: apiURL + "/certificate",
+		},
 	}
 	certRes := &Resource{}
 	bundle := false
@@ -303,9 +309,11 @@ func Test_checkResponse_alternate(t *testing.T) {
 
 	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
 
-	order := acme.Order{
-		Status:              acme.StatusValid,
-		Certificate:         apiURL + "/certificate",
+	order := acme.ExtendedOrder{
+		Order: acme.Order{
+			Status:      acme.StatusValid,
+			Certificate: apiURL + "/certificate",
+		},
 		AlternateChainLinks: []string{apiURL + "/certificate2"},
 	}
 	certRes := &Resource{}
@@ -313,6 +321,7 @@ func Test_checkResponse_alternate(t *testing.T) {
 
 	valid, err := certifier.checkResponse(order, certRes, bundle, "DST Root CA X3")
 	require.NoError(t, err)
+
 	assert.True(t, valid)
 	assert.NotNil(t, certRes)
 	assert.Equal(t, "", certRes.Domain)

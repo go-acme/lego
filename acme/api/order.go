@@ -23,32 +23,34 @@ func (o *OrderService) New(domains []string) (acme.ExtendedOrder, error) {
 	if err != nil {
 		return acme.ExtendedOrder{}, err
 	}
-	order.AlternateChainLinks = getLinks(resp.Header, "alternate")
 
 	return acme.ExtendedOrder{
-		Location: resp.Header.Get("Location"),
-		Order:    order,
+		Order:               order,
+		Location:            resp.Header.Get("Location"),
+		AlternateChainLinks: getLinks(resp.Header, "alternate"),
 	}, nil
 }
 
 // Get Gets an order.
-func (o *OrderService) Get(orderURL string) (acme.Order, error) {
+func (o *OrderService) Get(orderURL string) (acme.ExtendedOrder, error) {
 	if len(orderURL) == 0 {
-		return acme.Order{}, errors.New("order[get]: empty URL")
+		return acme.ExtendedOrder{}, errors.New("order[get]: empty URL")
 	}
 
 	var order acme.Order
 	resp, err := o.core.postAsGet(orderURL, &order)
 	if err != nil {
-		return acme.Order{}, err
+		return acme.ExtendedOrder{}, err
 	}
-	order.AlternateChainLinks = getLinks(resp.Header, "alternate")
 
-	return order, nil
+	return acme.ExtendedOrder{
+		Order:               order,
+		AlternateChainLinks: getLinks(resp.Header, "alternate"),
+	}, nil
 }
 
 // UpdateForCSR Updates an order for a CSR.
-func (o *OrderService) UpdateForCSR(orderURL string, csr []byte) (acme.Order, error) {
+func (o *OrderService) UpdateForCSR(orderURL string, csr []byte) (acme.ExtendedOrder, error) {
 	csrMsg := acme.CSRMessage{
 		Csr: base64.RawURLEncoding.EncodeToString(csr),
 	}
@@ -56,12 +58,15 @@ func (o *OrderService) UpdateForCSR(orderURL string, csr []byte) (acme.Order, er
 	var order acme.Order
 	resp, err := o.core.post(orderURL, csrMsg, &order)
 	if err != nil {
-		return acme.Order{}, err
+		return acme.ExtendedOrder{}, err
 	}
 
 	if order.Status == acme.StatusInvalid {
-		return acme.Order{}, order.Error
+		return acme.ExtendedOrder{}, order.Error
 	}
-	order.AlternateChainLinks = getLinks(resp.Header, "alternate")
-	return order, nil
+
+	return acme.ExtendedOrder{
+		Order:               order,
+		AlternateChainLinks: getLinks(resp.Header, "alternate"),
+	}, nil
 }

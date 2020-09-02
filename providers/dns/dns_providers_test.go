@@ -3,8 +3,8 @@ package dns
 import (
 	"testing"
 
-	"github.com/go-acme/lego/v3/platform/tester"
-	"github.com/go-acme/lego/v3/providers/dns/exec"
+	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/go-acme/lego/v4/providers/dns/exec"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

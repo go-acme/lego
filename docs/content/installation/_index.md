@@ -48,7 +48,7 @@ Requirements:
 To install the latest development version from sources, just run:
 
 ```bash
-go get -u github.com/go-acme/lego/v3/cmd/lego
+go get -u github.com/go-acme/lego/v4/cmd/lego
 ```
 
 or

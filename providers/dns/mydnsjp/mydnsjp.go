@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-acme/lego/v3/challenge/dns01"
-	"github.com/go-acme/lego/v3/platform/config/env"
+	"github.com/go-acme/lego/v4/challenge/dns01"
+	"github.com/go-acme/lego/v4/platform/config/env"
 )
 
 const defaultBaseURL = "https://www.mydns.jp/directedit.html"

@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"net/url"
 
-	"github.com/go-acme/lego/v3/challenge/dns01"
+	"github.com/go-acme/lego/v4/challenge/dns01"
 )
 
 type apiResponse struct {

@@ -12,12 +12,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-acme/lego/v3/acme"
-	"github.com/go-acme/lego/v3/acme/api"
-	"github.com/go-acme/lego/v3/certcrypto"
-	"github.com/go-acme/lego/v3/challenge"
-	"github.com/go-acme/lego/v3/log"
-	"github.com/go-acme/lego/v3/platform/wait"
+	"github.com/go-acme/lego/v4/acme"
+	"github.com/go-acme/lego/v4/acme/api"
+	"github.com/go-acme/lego/v4/certcrypto"
+	"github.com/go-acme/lego/v4/challenge"
+	"github.com/go-acme/lego/v4/log"
+	"github.com/go-acme/lego/v4/platform/wait"
 	"golang.org/x/crypto/ocsp"
 	"golang.org/x/net/idna"
 )

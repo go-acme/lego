@@ -4,7 +4,7 @@ import (
 	"encoding/base64"
 	"errors"
 
-	"github.com/go-acme/lego/v3/acme"
+	"github.com/go-acme/lego/v4/acme"
 )
 
 type OrderService service

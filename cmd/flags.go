@@ -42,7 +42,7 @@ func CreateFlags(defaultPath string) []cli.Flag {
 		},
 		cli.StringFlag{
 			Name:  "key-type, k",
-			Value: "ec384",
+			Value: "ec256",
 			Usage: "Key type to use for private keys. Supported: rsa2048, rsa4096, rsa8192, ec256, ec384.",
 		},
 		cli.StringFlag{

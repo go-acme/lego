@@ -30,6 +30,7 @@ require (
 	github.com/miekg/dns v1.1.27
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
 	github.com/nrdcg/auroradns v1.0.1
+	github.com/nrdcg/desec v0.5.0
 	github.com/nrdcg/dnspod-go v0.4.0
 	github.com/nrdcg/goinwx v0.7.0
 	github.com/nrdcg/namesilo v0.2.1
@@ -38,7 +39,7 @@ require (
 	github.com/pquerna/otp v1.2.0
 	github.com/rainycape/memcache v0.0.0-20150622160815-1031fa0ce2f2
 	github.com/sacloud/libsacloud v1.26.1
-	github.com/stretchr/testify v1.5.1
+	github.com/stretchr/testify v1.6.1
 	github.com/timewasted/linode v0.0.0-20160829202747-37e84520dcf7
 	github.com/transip/gotransip/v6 v6.0.2
 	github.com/urfave/cli v1.22.1

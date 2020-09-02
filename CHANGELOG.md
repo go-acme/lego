@@ -1,19 +1,39 @@
 # Changelog
 
+## [v3.9.0] - 2020-09-01
+
+### Added:
+
+- **[dnsprovider]** Add Akamai Edgedns. Deprecate FastDNS
+- **[dnsprovider]** Add DNS provider for HyperOne
+
+### Changed:
+
+- **[dnsprovider]** designate: add support for Openstack clouds.yaml
+- **[dnsprovider]** azure: allow selecting environments
+- **[dnsprovider]** desec: applies API rate limits.
+
+### Fixed:
+
+- **[dnsprovider]** namesilo: fix cleanup.
+
 ## [v3.8.0] - 2020-07-02
 
 ### Added:
+
 - **[cli]** cli: add hook on the run command.
 - **[dnsprovider]** inwx: Two-Factor-Authentication
 - **[dnsprovider]** Add DNS provider for ArvanCloud
 
 ### Changed:
+
 - **[dnsprovider]** vultr: bumping govultr version
 - **[dnsprovider]** desec: improve error logs.
 - **[lib]** Ensures the return of a location during account updates
 - **[dnsprovider]** route53: Document all AWS credential environment variables
 
 ### Fixed:
+
 - **[dnsprovider]** stackpath: fix subdomain support.
 - **[dnsprovider]** arvandcloud: fix record name.
 - **[dnsprovider]** fix: multi-va.

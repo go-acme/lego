@@ -9,7 +9,7 @@ import (
 
 	"github.com/go-acme/lego/v3/challenge/dns01"
 	"github.com/go-acme/lego/v3/platform/config/env"
-	"github.com/go-acme/lego/v3/providers/dns/desec/internal"
+	"github.com/nrdcg/desec"
 )
 
 // Environment variables names.
@@ -48,7 +48,7 @@ func NewDefaultConfig() *Config {
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
-	client *internal.Client
+	client *desec.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for deSEC.
@@ -75,11 +75,12 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("desec: incomplete credentials, missing token")
 	}
 
-	client := internal.NewClient(config.Token)
-
+	opts := desec.NewDefaultClientOptions()
 	if config.HTTPClient != nil {
-		client.HTTPClient = config.HTTPClient
+		opts.HTTPClient = config.HTTPClient
 	}
+
+	client := desec.New(config.Token, opts)
 
 	return &DNSProvider{config: config, client: client}, nil
 }
@@ -104,15 +105,15 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	domainName := dns01.UnFqdn(authZone)
 
-	rrSet, err := d.client.GetTxtRRSet(domainName, recordName)
+	rrSet, err := d.client.Records.Get(domainName, recordName, "TXT")
 	if err != nil {
-		var nf *internal.NotFound
+		var nf *desec.NotFound
 		if !errors.As(err, &nf) {
 			return fmt.Errorf("desec: failed to get records: domainName=%s, recordName=%s: %w", domainName, recordName, err)
 		}
 
 		// Not found case -> create
-		_, err = d.client.AddTxtRRSet(internal.RRSet{
+		_, err = d.client.Records.Create(desec.RRSet{
 			Domain:  domainName,
 			SubName: recordName,
 			Type:    "TXT",
@@ -129,7 +130,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	// update
 	records := append(rrSet.Records, quotedValue)
 
-	_, err = d.client.UpdateTxtRRSet(domainName, recordName, records)
+	_, err = d.client.Records.Update(domainName, recordName, "TXT", desec.RRSet{Records: records})
 	if err != nil {
 		return fmt.Errorf("desec: failed to update records: domainName=%s, recordName=%s: %w", domainName, recordName, err)
 	}
@@ -150,7 +151,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	domainName := dns01.UnFqdn(authZone)
 
-	rrSet, err := d.client.GetTxtRRSet(domainName, recordName)
+	rrSet, err := d.client.Records.Get(domainName, recordName, "TXT")
 	if err != nil {
 		return fmt.Errorf("desec: failed to get records: domainName=%s, recordName=%s: %w", domainName, recordName, err)
 	}
@@ -162,7 +163,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		}
 	}
 
-	_, err = d.client.UpdateTxtRRSet(domainName, recordName, records)
+	_, err = d.client.Records.Update(domainName, recordName, "TXT", desec.RRSet{Records: records})
 	if err != nil {
 		return fmt.Errorf("desec: failed to update records: domainName=%s, recordName=%s: %w", domainName, recordName, err)
 	}

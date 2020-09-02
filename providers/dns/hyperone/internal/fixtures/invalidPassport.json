@@ -1,0 +1,5 @@
+{
+  "subject_id": "/iam/project/projectId/sa/serviceAccountId",
+  "certificate_id": "certificateID",
+  "issuer": "https://api.hyperone.com/v2/iam/project/projectId/sa/serviceAccountId"
+}

@@ -1,0 +1,16 @@
+[
+  {
+    "id": "zoneA",
+    "name": "example.org",
+    "dnsName": "example.org",
+    "fqdn": "example.org.",
+    "uri": ""
+  },
+  {
+    "id": "zoneB",
+    "name": "example.com",
+    "dnsName": "example.com",
+    "fqdn": "example.com.",
+    "uri": ""
+  }
+]

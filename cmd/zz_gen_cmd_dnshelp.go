@@ -53,6 +53,7 @@ func allDNSCodes() string {
 		"hetzner",
 		"hostingde",
 		"httpreq",
+		"hyperone",
 		"iij",
 		"inwx",
 		"joker",
@@ -927,6 +928,24 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/httpreq`)
+
+	case "hyperone":
+		// generated from: providers/dns/hyperone/hyperone.toml
+		ew.writeln(`Configuration for HyperOne.`)
+		ew.writeln(`Code:	'hyperone'`)
+		ew.writeln(`Since:	''`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "HYPERONE_API_URL":	Allows to pass custom API Endpoint to be used in the challenge (default https://api.hyperone.com/v2)`)
+		ew.writeln(`	- "HYPERONE_LOCATION_ID":	Specifies location (region) to be used in API calls. (default pl-waw-1)`)
+		ew.writeln(`	- "HYPERONE_PASSPORT_LOCATION":	Allows to pass custom passport file location (default ~/.h1/passport.json)`)
+		ew.writeln(`	- "HYPERONE_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "HYPERONE_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "HYPERONE_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/hyperone`)
 
 	case "iij":
 		// generated from: providers/dns/iij/iij.toml

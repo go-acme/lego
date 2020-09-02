@@ -1,5 +1,22 @@
 # Changelog
 
+## [v4.0.0] - 2020-09-02
+
+### Added:
+
+- **[cli], [lib]** Support "alternate" certificate links for selecting different signing Chains
+
+### Changed:
+
+- **[cli]** Replaces `ec384` by `ec256` as default key-type
+- **[lib]** Changes `ObtainForCSR` method signature
+
+### Removed:
+
+- **[dnsprovider]** Replaces FastDNS by EdgeDNS
+- **[dnsprovider]** Removes old Linode provider
+- **[lib]** Removes `AddPreCheck` function
+
 ## [v3.9.0] - 2020-09-01
 
 ### Added:

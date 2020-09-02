@@ -40,7 +40,6 @@ require (
 	github.com/rainycape/memcache v0.0.0-20150622160815-1031fa0ce2f2
 	github.com/sacloud/libsacloud v1.26.1
 	github.com/stretchr/testify v1.6.1
-	github.com/timewasted/linode v0.0.0-20160829202747-37e84520dcf7
 	github.com/transip/gotransip/v6 v6.0.2
 	github.com/urfave/cli v1.22.1
 	github.com/vultr/govultr v0.4.2

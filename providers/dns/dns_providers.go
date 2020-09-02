@@ -50,7 +50,6 @@ import (
 	"github.com/go-acme/lego/v3/providers/dns/joker"
 	"github.com/go-acme/lego/v3/providers/dns/lightsail"
 	"github.com/go-acme/lego/v3/providers/dns/linode"
-	"github.com/go-acme/lego/v3/providers/dns/linodev4"
 	"github.com/go-acme/lego/v3/providers/dns/liquidweb"
 	"github.com/go-acme/lego/v3/providers/dns/luadns"
 	"github.com/go-acme/lego/v3/providers/dns/mydnsjp"
@@ -177,10 +176,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return joker.NewDNSProvider()
 	case "lightsail":
 		return lightsail.NewDNSProvider()
-	case "linode":
+	case "linode", "linodev4": // "linodev4" is for compatibility with v3, must be dropped in v5
 		return linode.NewDNSProvider()
-	case "linodev4":
-		return linodev4.NewDNSProvider()
 	case "liquidweb":
 		return liquidweb.NewDNSProvider()
 	case "luadns":

@@ -9,9 +9,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-acme/lego/v3/challenge/dns01"
-	"github.com/go-acme/lego/v3/platform/config/env"
-	"github.com/go-acme/lego/v3/providers/dns/netlify/internal"
+	"github.com/go-acme/lego/v4/challenge/dns01"
+	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/netlify/internal"
 )
 
 // Environment variables names.

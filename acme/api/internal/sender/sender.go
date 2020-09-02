@@ -9,7 +9,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/go-acme/lego/v3/acme"
+	"github.com/go-acme/lego/v4/acme"
 )
 
 type RequestOption func(*http.Request) error

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-acme/lego/v3/log"
+	"github.com/go-acme/lego/v4/log"
 )
 
 // For polls the given function 'f', once every 'interval', up to 'timeout'.

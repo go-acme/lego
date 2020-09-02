@@ -15,7 +15,7 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
-	"github.com/go-acme/lego/v3/log"
+	"github.com/go-acme/lego/v4/log"
 )
 
 const defaultBaseURL = "https://api.dynu.com/v2"

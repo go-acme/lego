@@ -101,7 +101,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	client := linodego.NewClient(oauth2Client)
-	client.SetUserAgent(fmt.Sprintf("lego-dns linodego/%s", linodego.Version))
+	client.SetUserAgent("lego-dns https://github.com/linode/linodego")
 
 	return &DNSProvider{
 		config: config,

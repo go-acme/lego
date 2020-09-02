@@ -108,6 +108,11 @@ type ExtendedOrder struct {
 	Order
 	// The order URL, contains the value of the response header `Location`
 	Location string `json:"-"`
+
+	// AlternateChainLinks (optional, array of string):
+	// URLs of "alternate" link relation
+	// - https://tools.ietf.org/html/rfc8555#section-7.4.2
+	AlternateChainLinks []string `json:"-"`
 }
 
 // Order the ACME order Object.

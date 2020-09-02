@@ -51,10 +51,11 @@ type Resource struct {
 //
 // If bundle is true, the []byte contains both the issuer certificate and your issued certificate as a bundle.
 type ObtainRequest struct {
-	Domains    []string
-	Bundle     bool
-	PrivateKey crypto.PrivateKey
-	MustStaple bool
+	Domains        []string
+	Bundle         bool
+	PrivateKey     crypto.PrivateKey
+	MustStaple     bool
+	PreferredChain string
 }
 
 type resolver interface {
@@ -121,7 +122,7 @@ func (c *Certifier) Obtain(request ObtainRequest) (*Resource, error) {
 	log.Infof("[%s] acme: Validations succeeded; requesting certificates", strings.Join(domains, ", "))
 
 	failures := make(obtainError)
-	cert, err := c.getForOrder(domains, order, request.Bundle, request.PrivateKey, request.MustStaple)
+	cert, err := c.getForOrder(domains, order, request.Bundle, request.PrivateKey, request.MustStaple, request.PreferredChain)
 	if err != nil {
 		for _, auth := range authz {
 			failures[challenge.GetTargetedDomain(auth)] = err
@@ -145,7 +146,7 @@ func (c *Certifier) Obtain(request ObtainRequest) (*Resource, error) {
 //
 // This function will never return a partial certificate.
 // If one domain in the list fails, the whole certificate will fail.
-func (c *Certifier) ObtainForCSR(csr x509.CertificateRequest, bundle bool) (*Resource, error) {
+func (c *Certifier) ObtainForCSR(csr x509.CertificateRequest, bundle bool, preferredChain string) (*Resource, error) {
 	// figure out what domains it concerns
 	// start with the common name
 	domains := certcrypto.ExtractDomainsCSR(&csr)
@@ -178,7 +179,7 @@ func (c *Certifier) ObtainForCSR(csr x509.CertificateRequest, bundle bool) (*Res
 	log.Infof("[%s] acme: Validations succeeded; requesting certificates", strings.Join(domains, ", "))
 
 	failures := make(obtainError)
-	cert, err := c.getForCSR(domains, order, bundle, csr.Raw, nil)
+	cert, err := c.getForCSR(domains, order, bundle, csr.Raw, nil, preferredChain)
 	if err != nil {
 		for _, auth := range authz {
 			failures[challenge.GetTargetedDomain(auth)] = err
@@ -198,7 +199,7 @@ func (c *Certifier) ObtainForCSR(csr x509.CertificateRequest, bundle bool) (*Res
 	return cert, nil
 }
 
-func (c *Certifier) getForOrder(domains []string, order acme.ExtendedOrder, bundle bool, privateKey crypto.PrivateKey, mustStaple bool) (*Resource, error) {
+func (c *Certifier) getForOrder(domains []string, order acme.ExtendedOrder, bundle bool, privateKey crypto.PrivateKey, mustStaple bool, preferredChain string) (*Resource, error) {
 	if privateKey == nil {
 		var err error
 		privateKey, err = certcrypto.GeneratePrivateKey(c.options.KeyType)
@@ -229,10 +230,10 @@ func (c *Certifier) getForOrder(domains []string, order acme.ExtendedOrder, bund
 		return nil, err
 	}
 
-	return c.getForCSR(domains, order, bundle, csr, certcrypto.PEMEncode(privateKey))
+	return c.getForCSR(domains, order, bundle, csr, certcrypto.PEMEncode(privateKey), preferredChain)
 }
 
-func (c *Certifier) getForCSR(domains []string, order acme.ExtendedOrder, bundle bool, csr, privateKeyPem []byte) (*Resource, error) {
+func (c *Certifier) getForCSR(domains []string, order acme.ExtendedOrder, bundle bool, csr, privateKeyPem []byte, preferredChain string) (*Resource, error) {
 	respOrder, err := c.core.Orders.UpdateForCSR(order.Finalize, csr)
 	if err != nil {
 		return nil, err
@@ -247,7 +248,7 @@ func (c *Certifier) getForCSR(domains []string, order acme.ExtendedOrder, bundle
 
 	if respOrder.Status == acme.StatusValid {
 		// if the certificate is available right away, short cut!
-		ok, errR := c.checkResponse(respOrder, certRes, bundle)
+		ok, errR := c.checkResponse(respOrder, certRes, bundle, preferredChain)
 		if errR != nil {
 			return nil, errR
 		}
@@ -268,7 +269,7 @@ func (c *Certifier) getForCSR(domains []string, order acme.ExtendedOrder, bundle
 			return false, errW
 		}
 
-		done, errW := c.checkResponse(ord, certRes, bundle)
+		done, errW := c.checkResponse(ord, certRes, bundle, preferredChain)
 		if errW != nil {
 			return false, errW
 		}
@@ -287,23 +288,52 @@ func (c *Certifier) getForCSR(domains []string, order acme.ExtendedOrder, bundle
 // The certRes input should already have the Domain (common name) field populated.
 //
 // If bundle is true, the certificate will be bundled with the issuer's cert.
-func (c *Certifier) checkResponse(order acme.Order, certRes *Resource, bundle bool) (bool, error) {
+func (c *Certifier) checkResponse(order acme.ExtendedOrder, certRes *Resource, bundle bool, preferredChain string) (bool, error) {
 	valid, err := checkOrderStatus(order)
 	if err != nil || !valid {
 		return valid, err
 	}
 
-	cert, issuer, err := c.core.Certificates.Get(order.Certificate, bundle)
-	if err != nil {
-		return false, err
+	links := append([]string{order.Certificate}, order.AlternateChainLinks...)
+
+	for i, link := range links {
+		cert, issuer, err := c.core.Certificates.Get(link, bundle)
+		if err != nil {
+			return false, err
+		}
+
+		// Set the default certificate
+		if i == 0 {
+			certRes.IssuerCertificate = issuer
+			certRes.Certificate = cert
+			certRes.CertURL = link
+			certRes.CertStableURL = link
+		}
+
+		if preferredChain == "" {
+			log.Infof("[%s] Server responded with a certificate.", certRes.Domain)
+
+			return true, nil
+		}
+
+		ok, err := hasPreferredChain(issuer, preferredChain)
+		if err != nil {
+			return false, err
+		}
+
+		if ok {
+			log.Infof("[%s] Server responded with a certificate for the preferred certificate chains %q.", certRes.Domain, preferredChain)
+
+			certRes.IssuerCertificate = issuer
+			certRes.Certificate = cert
+			certRes.CertURL = link
+			certRes.CertStableURL = link
+
+			return true, nil
+		}
 	}
 
-	log.Infof("[%s] Server responded with a certificate.", certRes.Domain)
-
-	certRes.IssuerCertificate = issuer
-	certRes.Certificate = cert
-	certRes.CertURL = order.Certificate
-	certRes.CertStableURL = order.Certificate
+	log.Infof("lego has been configured to prefer certificate chains with issuer %q, but no chain from the CA matched this issuer. Using the default certificate chain instead.", preferredChain)
 
 	return true, nil
 }
@@ -337,7 +367,7 @@ func (c *Certifier) Revoke(cert []byte) error {
 // If bundle is true, the []byte contains both the issuer certificate and your issued certificate as a bundle.
 //
 // For private key reuse the PrivateKey property of the passed in Resource should be non-nil.
-func (c *Certifier) Renew(certRes Resource, bundle, mustStaple bool) (*Resource, error) {
+func (c *Certifier) Renew(certRes Resource, bundle, mustStaple bool, preferredChain string) (*Resource, error) {
 	// Input certificate is PEM encoded.
 	// Decode it here as we may need the decoded cert later on in the renewal process.
 	// The input may be a bundle or a single certificate.
@@ -364,7 +394,7 @@ func (c *Certifier) Renew(certRes Resource, bundle, mustStaple bool) (*Resource,
 			return nil, errP
 		}
 
-		return c.ObtainForCSR(*csr, bundle)
+		return c.ObtainForCSR(*csr, bundle, preferredChain)
 	}
 
 	var privateKey crypto.PrivateKey
@@ -491,7 +521,22 @@ func (c *Certifier) Get(url string, bundle bool) (*Resource, error) {
 	}, nil
 }
 
-func checkOrderStatus(order acme.Order) (bool, error) {
+func hasPreferredChain(issuer []byte, preferredChain string) (bool, error) {
+	certs, err := certcrypto.ParsePEMBundle(issuer)
+	if err != nil {
+		return false, err
+	}
+
+	for _, cert := range certs {
+		if cert.Issuer.CommonName == preferredChain {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+func checkOrderStatus(order acme.ExtendedOrder) (bool, error) {
 	switch order.Status {
 	case acme.StatusValid:
 		return true, nil

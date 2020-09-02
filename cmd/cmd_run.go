@@ -43,6 +43,10 @@ func createRun() cli.Command {
 				Name:  "run-hook",
 				Usage: "Define a hook. The hook is executed when the certificates are effectively created.",
 			},
+			cli.StringFlag{
+				Name:  "preferred-chain",
+				Usage: "If the CA offers multiple certificate chains, prefer the chain with an issuer matching this Subject Common Name. If no match, the default offered chain will be used.",
+			},
 		},
 	}
 }
@@ -159,9 +163,10 @@ func obtainCertificate(ctx *cli.Context, client *lego.Client) (*certificate.Reso
 	if len(domains) > 0 {
 		// obtain a certificate, generating a new private key
 		request := certificate.ObtainRequest{
-			Domains:    domains,
-			Bundle:     bundle,
-			MustStaple: ctx.Bool("must-staple"),
+			Domains:        domains,
+			Bundle:         bundle,
+			MustStaple:     ctx.Bool("must-staple"),
+			PreferredChain: ctx.String("preferred-chain"),
 		}
 		return client.Certificate.Obtain(request)
 	}
@@ -173,5 +178,5 @@ func obtainCertificate(ctx *cli.Context, client *lego.Client) (*certificate.Reso
 	}
 
 	// obtain a certificate for this CSR
-	return client.Certificate.ObtainForCSR(*csr, bundle)
+	return client.Certificate.ObtainForCSR(*csr, bundle, ctx.String("preferred-chain"))
 }

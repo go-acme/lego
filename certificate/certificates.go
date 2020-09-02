@@ -58,6 +58,15 @@ type ObtainRequest struct {
 	PreferredChain string
 }
 
+// ObtainForCSRRequest The request to obtain a certificate matching the CSR passed into it.
+//
+// If bundle is true, the []byte contains both the issuer certificate and your issued certificate as a bundle.
+type ObtainForCSRRequest struct {
+	CSR            *x509.CertificateRequest
+	Bundle         bool
+	PreferredChain string
+}
+
 type resolver interface {
 	Solve(authorizations []acme.Authorization) error
 }
@@ -146,12 +155,16 @@ func (c *Certifier) Obtain(request ObtainRequest) (*Resource, error) {
 //
 // This function will never return a partial certificate.
 // If one domain in the list fails, the whole certificate will fail.
-func (c *Certifier) ObtainForCSR(csr x509.CertificateRequest, bundle bool, preferredChain string) (*Resource, error) {
+func (c *Certifier) ObtainForCSR(request ObtainForCSRRequest) (*Resource, error) {
+	if request.CSR == nil {
+		return nil, errors.New("cannot obtain resource for CSR: CSR is missing")
+	}
+
 	// figure out what domains it concerns
 	// start with the common name
-	domains := certcrypto.ExtractDomainsCSR(&csr)
+	domains := certcrypto.ExtractDomainsCSR(request.CSR)
 
-	if bundle {
+	if request.Bundle {
 		log.Infof("[%s] acme: Obtaining bundled SAN certificate given a CSR", strings.Join(domains, ", "))
 	} else {
 		log.Infof("[%s] acme: Obtaining SAN certificate given a CSR", strings.Join(domains, ", "))
@@ -179,7 +192,7 @@ func (c *Certifier) ObtainForCSR(csr x509.CertificateRequest, bundle bool, prefe
 	log.Infof("[%s] acme: Validations succeeded; requesting certificates", strings.Join(domains, ", "))
 
 	failures := make(obtainError)
-	cert, err := c.getForCSR(domains, order, bundle, csr.Raw, nil, preferredChain)
+	cert, err := c.getForCSR(domains, order, request.Bundle, request.CSR.Raw, nil, request.PreferredChain)
 	if err != nil {
 		for _, auth := range authz {
 			failures[challenge.GetTargetedDomain(auth)] = err
@@ -188,7 +201,7 @@ func (c *Certifier) ObtainForCSR(csr x509.CertificateRequest, bundle bool, prefe
 
 	if cert != nil {
 		// Add the CSR to the certificate so that it can be used for renewals.
-		cert.CSR = certcrypto.PEMEncode(&csr)
+		cert.CSR = certcrypto.PEMEncode(request.CSR)
 	}
 
 	// Do not return an empty failures map,
@@ -394,7 +407,11 @@ func (c *Certifier) Renew(certRes Resource, bundle, mustStaple bool, preferredCh
 			return nil, errP
 		}
 
-		return c.ObtainForCSR(*csr, bundle, preferredChain)
+		return c.ObtainForCSR(ObtainForCSRRequest{
+			CSR:            csr,
+			Bundle:         bundle,
+			PreferredChain: preferredChain,
+		})
 	}
 
 	var privateKey crypto.PrivateKey

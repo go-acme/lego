@@ -173,7 +173,11 @@ func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *Certificat
 	timeLeft := cert.NotAfter.Sub(time.Now().UTC())
 	log.Infof("[%s] acme: Trying renewal with %d hours remaining", domain, int(timeLeft.Hours()))
 
-	certRes, err := client.Certificate.ObtainForCSR(*csr, bundle, ctx.String("preferred-chain"))
+	certRes, err := client.Certificate.ObtainForCSR(certificate.ObtainForCSRRequest{
+		CSR:            csr,
+		Bundle:         bundle,
+		PreferredChain: ctx.String("preferred-chain"),
+	})
 	if err != nil {
 		log.Fatal(err)
 	}

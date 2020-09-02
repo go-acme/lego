@@ -35,7 +35,6 @@ import (
 	"github.com/go-acme/lego/v3/providers/dns/edgedns"
 	"github.com/go-acme/lego/v3/providers/dns/exec"
 	"github.com/go-acme/lego/v3/providers/dns/exoscale"
-	"github.com/go-acme/lego/v3/providers/dns/fastdns"
 	"github.com/go-acme/lego/v3/providers/dns/gandi"
 	"github.com/go-acme/lego/v3/providers/dns/gandiv5"
 	"github.com/go-acme/lego/v3/providers/dns/gcloud"
@@ -140,12 +139,10 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return dyn.NewDNSProvider()
 	case "dynu":
 		return dynu.NewDNSProvider()
-	case "edgedns":
-		return edgedns.NewDNSProvider()
-	case "fastdns":
-		return fastdns.NewDNSProvider()
 	case "easydns":
 		return easydns.NewDNSProvider()
+	case "edgedns", "fastdns": // "fastdns" is for compatibility with v3, must be dropped in v5
+		return edgedns.NewDNSProvider()
 	case "exec":
 		return exec.NewDNSProvider()
 	case "exoscale":

@@ -307,7 +307,10 @@ func TestChallengeTLS_Client_ObtainForCSR(t *testing.T) {
 	csr, err := x509.ParseCertificateRequest(csrRaw)
 	require.NoError(t, err)
 
-	resource, err := client.Certificate.ObtainForCSR(*csr, true, "")
+	resource, err := client.Certificate.ObtainForCSR(certificate.ObtainForCSRRequest{
+		CSR:    csr,
+		Bundle: true,
+	})
 	require.NoError(t, err)
 
 	require.NotNil(t, resource)

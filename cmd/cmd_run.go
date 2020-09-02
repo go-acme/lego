@@ -178,5 +178,9 @@ func obtainCertificate(ctx *cli.Context, client *lego.Client) (*certificate.Reso
 	}
 
 	// obtain a certificate for this CSR
-	return client.Certificate.ObtainForCSR(*csr, bundle, ctx.String("preferred-chain"))
+	return client.Certificate.ObtainForCSR(certificate.ObtainForCSRRequest{
+		CSR:            csr,
+		Bundle:         bundle,
+		PreferredChain: ctx.String("preferred-chain"),
+	})
 }

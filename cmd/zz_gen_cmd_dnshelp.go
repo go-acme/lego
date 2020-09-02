@@ -59,7 +59,6 @@ func allDNSCodes() string {
 		"joker",
 		"lightsail",
 		"linode",
-		"linodev4",
 		"liquidweb",
 		"luadns",
 		"mydnsjp",
@@ -1034,27 +1033,8 @@ func displayDNSHelp(name string) error {
 
 	case "linode":
 		// generated from: providers/dns/linode/linode.toml
-		ew.writeln(`Configuration for Linode (deprecated).`)
-		ew.writeln(`Code:	'linode'`)
-		ew.writeln(`Since:	'v0.4.0'`)
-		ew.writeln()
-
-		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "LINODE_API_KEY":	API key`)
-		ew.writeln()
-
-		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "LINODE_HTTP_TIMEOUT":	API request timeout`)
-		ew.writeln(`	- "LINODE_POLLING_INTERVAL":	Time between DNS propagation check`)
-		ew.writeln(`	- "LINODE_TTL":	The TTL of the TXT record used for the DNS challenge`)
-
-		ew.writeln()
-		ew.writeln(`More information: https://go-acme.github.io/lego/dns/linode`)
-
-	case "linodev4":
-		// generated from: providers/dns/linodev4/linodev4.toml
 		ew.writeln(`Configuration for Linode (v4).`)
-		ew.writeln(`Code:	'linodev4'`)
+		ew.writeln(`Code:	'linode'`)
 		ew.writeln(`Since:	'v1.1.0'`)
 		ew.writeln()
 
@@ -1069,7 +1049,7 @@ func displayDNSHelp(name string) error {
 		ew.writeln(`	- "LINODE_TTL":	The TTL of the TXT record used for the DNS challenge`)
 
 		ew.writeln()
-		ew.writeln(`More information: https://go-acme.github.io/lego/dns/linodev4`)
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/linode`)
 
 	case "liquidweb":
 		// generated from: providers/dns/liquidweb/liquidweb.toml

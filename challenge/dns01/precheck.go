@@ -1,7 +1,6 @@
 package dns01
 
 import (
-	"errors"
 	"fmt"
 	"net"
 	"strings"
@@ -20,22 +19,6 @@ type WrapPreCheckFunc func(domain, fqdn, value string, check PreCheckFunc) (bool
 func WrapPreCheck(wrap WrapPreCheckFunc) ChallengeOption {
 	return func(chlg *Challenge) error {
 		chlg.preCheck.checkFunc = wrap
-		return nil
-	}
-}
-
-// AddPreCheck Allow to define checks before notifying ACME that the DNS challenge is ready.
-// Deprecated: use WrapPreCheck instead.
-func AddPreCheck(preCheck PreCheckFunc) ChallengeOption {
-	// Prevent race condition
-	check := preCheck
-	return func(chlg *Challenge) error {
-		chlg.preCheck.checkFunc = func(_, fqdn, value string, _ PreCheckFunc) (bool, error) {
-			if check == nil {
-				return false, errors.New("invalid preCheck: preCheck is nil")
-			}
-			return check(fqdn, value)
-		}
 		return nil
 	}
 }

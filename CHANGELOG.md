@@ -1,5 +1,11 @@
 # Changelog
 
+## [v4.0.1] - 2020-09-03
+
+### Fixed:
+
+- **[dnsprovider]** exoscale: change dependency version.
+
 ## [v4.0.0] - 2020-09-02
 
 ### Added:

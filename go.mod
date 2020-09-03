@@ -18,7 +18,7 @@ require (
 	github.com/cloudflare/cloudflare-go v0.13.2
 	github.com/cpu/goacmedns v0.0.3
 	github.com/dnsimple/dnsimple-go v0.63.0
-	github.com/exoscale/egoscale v1.19.0
+	github.com/exoscale/egoscale v0.23.0
 	github.com/google/go-querystring v1.0.0
 	github.com/gophercloud/gophercloud v0.7.0
 	github.com/gophercloud/utils v0.0.0-20200508015959-b0167b94122c

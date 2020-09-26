@@ -13,19 +13,16 @@ require (
 	github.com/OpenDNS/vegadns2client v0.0.0-20180418235048-a3fa4a771d87
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v0.9.18
 	github.com/aliyun/alibaba-cloud-sdk-go v1.61.458
-	github.com/aws/aws-sdk-go v1.30.29
+	github.com/aws/aws-sdk-go v1.30.20
 	github.com/cenkalti/backoff/v4 v4.0.2
 	github.com/cloudflare/cloudflare-go v0.13.2
 	github.com/cpu/goacmedns v0.0.3
-	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
 	github.com/dnsimple/dnsimple-go v0.63.0
 	github.com/exoscale/egoscale v0.23.0
 	github.com/google/go-querystring v1.0.0
 	github.com/gophercloud/gophercloud v0.7.0
 	github.com/gophercloud/utils v0.0.0-20200508015959-b0167b94122c
-	github.com/grpc-ecosystem/grpc-gateway v1.12.1 // indirect
 	github.com/iij/doapi v0.0.0-20190504054126-0bbf12d6d7df
-	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/labbsr0x/bindman-dns-webhook v1.0.2
 	github.com/linode/linodego v0.21.0
@@ -42,13 +39,11 @@ require (
 	github.com/pquerna/otp v1.2.0
 	github.com/rainycape/memcache v0.0.0-20150622160815-1031fa0ce2f2
 	github.com/sacloud/libsacloud v1.36.2
-	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/stretchr/testify v1.6.1
 	github.com/transip/gotransip/v6 v6.2.0
 	github.com/urfave/cli v1.22.4
 	github.com/vultr/govultr v0.5.0
-	go.uber.org/atomic v1.5.1 // indirect
-	golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de
+	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	golang.org/x/net v0.0.0-20200822124328-c89045814202
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	google.golang.org/api v0.20.0

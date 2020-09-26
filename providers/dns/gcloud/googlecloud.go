@@ -30,14 +30,14 @@ const (
 const (
 	envNamespace = "GCE_"
 
-	EnvServiceAccount = envNamespace + "SERVICE_ACCOUNT"
-	EnvProject        = envNamespace + "PROJECT"
-	EnvDebug          = envNamespace + "DEBUG"
+	EnvServiceAccount   = envNamespace + "SERVICE_ACCOUNT"
+	EnvProject          = envNamespace + "PROJECT"
+	EnvAllowPrivateZone = envNamespace + "ALLOW_PRIVATE_ZONE"
+	EnvDebug            = envNamespace + "DEBUG"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
-	EnvAllowPrivateZone   = envNamespace + "ALLOW_PRIVATE_ZONE"
 )
 
 // Config is used to configure the creation of the DNSProvider.

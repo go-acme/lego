@@ -37,6 +37,7 @@ const (
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvAllowPrivateZone   = envNamespace + "ALLOW_PRIVATE_ZONE"
 )
 
 // Config is used to configure the creation of the DNSProvider.
@@ -47,6 +48,7 @@ type Config struct {
 	PollingInterval    time.Duration
 	TTL                int
 	HTTPClient         *http.Client
+	AllowPrivateZone   bool
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
@@ -56,6 +58,7 @@ func NewDefaultConfig() *Config {
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 180*time.Second),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 5*time.Second),
+		AllowPrivateZone:   env.GetOrDefaultBool(EnvAllowPrivateZone, false),
 	}
 }
 
@@ -326,12 +329,16 @@ func (d *DNSProvider) getHostedZone(domain string) (string, error) {
 	}
 
 	for _, z := range zones.ManagedZones {
-		if z.Visibility == "public" || z.Visibility == "" {
+		if z.Visibility == "public" || z.Visibility == "" || (z.Visibility == "private" && d.config.AllowPrivateZone) {
 			return z.Name, nil
 		}
 	}
 
-	return "", fmt.Errorf("no public zone found for domain %s", authZone)
+	if d.config.AllowPrivateZone {
+		return "", fmt.Errorf("no public or private zone found for domain %s", authZone)
+	} else {
+		return "", fmt.Errorf("no public zone found for domain %s", authZone)
+	}
 }
 
 func (d *DNSProvider) findTxtRecords(zone, fqdn string) ([]*dns.ResourceRecordSet, error) {

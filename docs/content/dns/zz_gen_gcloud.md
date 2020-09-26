@@ -42,10 +42,10 @@ More information [here](/lego/dns/#configuration-and-credentials).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
+| `GCE_ALLOW_PRIVATE_ZONE` | Allow requested domain to be in private DNS zone in case of DNS challenges (by default: false) |
 | `GCE_POLLING_INTERVAL` | Time between DNS propagation check |
 | `GCE_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
 | `GCE_TTL` | The TTL of the TXT record used for the DNS challenge |
-| GCE_ALLOW_PRIVATE_ZONE | Allow requested domain to be in private DNS zone in case of DNS challenges (by default: false) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).

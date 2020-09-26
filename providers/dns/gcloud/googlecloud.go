@@ -44,21 +44,21 @@ const (
 type Config struct {
 	Debug              bool
 	Project            string
+	AllowPrivateZone   bool
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
 	HTTPClient         *http.Client
-	AllowPrivateZone   bool
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
 		Debug:              env.GetOrDefaultBool(EnvDebug, false),
+		AllowPrivateZone:   env.GetOrDefaultBool(EnvAllowPrivateZone, false),
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 180*time.Second),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 5*time.Second),
-		AllowPrivateZone:   env.GetOrDefaultBool(EnvAllowPrivateZone, false),
 	}
 }
 
@@ -337,6 +337,7 @@ func (d *DNSProvider) getHostedZone(domain string) (string, error) {
 	if d.config.AllowPrivateZone {
 		return "", fmt.Errorf("no public or private zone found for domain %s", authZone)
 	}
+
 	return "", fmt.Errorf("no public zone found for domain %s", authZone)
 }
 

@@ -791,6 +791,7 @@ func displayDNSHelp(name string) error {
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "GCE_ALLOW_PRIVATE_ZONE":	Allows requested domain to be in private DNS zone, works only with a private ACME server (by default: false)`)
 		ew.writeln(`	- "GCE_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "GCE_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
 		ew.writeln(`	- "GCE_TTL":	The TTL of the TXT record used for the DNS challenge`)

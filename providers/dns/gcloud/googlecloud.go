@@ -30,9 +30,10 @@ const (
 const (
 	envNamespace = "GCE_"
 
-	EnvServiceAccount = envNamespace + "SERVICE_ACCOUNT"
-	EnvProject        = envNamespace + "PROJECT"
-	EnvDebug          = envNamespace + "DEBUG"
+	EnvServiceAccount   = envNamespace + "SERVICE_ACCOUNT"
+	EnvProject          = envNamespace + "PROJECT"
+	EnvAllowPrivateZone = envNamespace + "ALLOW_PRIVATE_ZONE"
+	EnvDebug            = envNamespace + "DEBUG"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -43,6 +44,7 @@ const (
 type Config struct {
 	Debug              bool
 	Project            string
+	AllowPrivateZone   bool
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
@@ -53,6 +55,7 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		Debug:              env.GetOrDefaultBool(EnvDebug, false),
+		AllowPrivateZone:   env.GetOrDefaultBool(EnvAllowPrivateZone, false),
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 180*time.Second),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 5*time.Second),
@@ -326,9 +329,13 @@ func (d *DNSProvider) getHostedZone(domain string) (string, error) {
 	}
 
 	for _, z := range zones.ManagedZones {
-		if z.Visibility == "public" || z.Visibility == "" {
+		if z.Visibility == "public" || z.Visibility == "" || (z.Visibility == "private" && d.config.AllowPrivateZone) {
 			return z.Name, nil
 		}
+	}
+
+	if d.config.AllowPrivateZone {
+		return "", fmt.Errorf("no public or private zone found for domain %s", authZone)
 	}
 
 	return "", fmt.Errorf("no public zone found for domain %s", authZone)

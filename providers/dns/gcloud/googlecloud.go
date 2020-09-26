@@ -336,9 +336,8 @@ func (d *DNSProvider) getHostedZone(domain string) (string, error) {
 
 	if d.config.AllowPrivateZone {
 		return "", fmt.Errorf("no public or private zone found for domain %s", authZone)
-	} else {
-		return "", fmt.Errorf("no public zone found for domain %s", authZone)
 	}
+	return "", fmt.Errorf("no public zone found for domain %s", authZone)
 }
 
 func (d *DNSProvider) findTxtRecords(zone, fqdn string) ([]*dns.ResourceRecordSet, error) {

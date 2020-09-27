@@ -181,7 +181,9 @@ func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 
 	// TSIG authentication / msg signing
 	if len(d.config.TSIGKey) > 0 && len(d.config.TSIGSecret) > 0 {
-		m.SetTsig(dns.Fqdn(d.config.TSIGKey), d.config.TSIGAlgorithm, 300, time.Now().Unix())
+		key := dns.Fqdn(d.config.TSIGKey)
+		alg := dns.Fqdn(d.config.TSIGAlgorithm)
+		m.SetTsig(key, alg, 300, time.Now().Unix())
 		c.TsigSecret = map[string]string{dns.Fqdn(d.config.TSIGKey): d.config.TSIGSecret}
 	}
 

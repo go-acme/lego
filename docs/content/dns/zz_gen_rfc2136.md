@@ -30,7 +30,7 @@ _Please contribute by adding a CLI example._
 | Environment Variable Name | Description |
 |-----------------------|-------------|
 | `RFC2136_NAMESERVER` | Network address in the form "host" or "host:port" |
-| `RFC2136_TSIG_ALGORITHM` | TSIG algorythm. See [miekg/dns#tsig.go](https://github.com/miekg/dns/blob/master/tsig.go) for supported values. To disable TSIG authentication, leave the `RFC2136_TSIG*` variables unset. |
+| `RFC2136_TSIG_ALGORITHM` | TSIG algorithm. See [miekg/dns#tsig.go](https://github.com/miekg/dns/blob/master/tsig.go) for supported values. To disable TSIG authentication, leave the `RFC2136_TSIG*` variables unset. |
 | `RFC2136_TSIG_KEY` | Name of the secret key as defined in DNS server configuration. To disable TSIG authentication, leave the `RFC2136_TSIG*` variables unset. |
 | `RFC2136_TSIG_SECRET` | Secret key payload. To disable TSIG authentication, leave the` RFC2136_TSIG*` variables unset. |
 

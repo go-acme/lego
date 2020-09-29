@@ -43,7 +43,7 @@ lego --dns oraclecloud --domains my.domain.com --email my@email.com run
 | `OCI_PRIVKEY_PASS` | Private key password |
 | `OCI_PUBKEY_FINGERPRINT` | Public key fingerprint |
 | `OCI_REGION` | Region |
-| `OCI_TENANCY_OCID` | Tenanct OCID |
+| `OCI_TENANCY_OCID` | Tenancy OCID |
 | `OCI_USER_OCID` | User OCID |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.

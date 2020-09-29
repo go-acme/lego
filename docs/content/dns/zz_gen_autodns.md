@@ -21,7 +21,7 @@ Configuration for [Autodns](https://www.internetx.com/domains/autodns/).
 Here is an example bash command using the Autodns provider:
 
 ```bash
-AUTODNS_API_USER=usernam \
+AUTODNS_API_USER=username \
 AUTODNS_API_PASSWORD=supersecretpassword \
 lego --dns autodns --domains my.domain.com --email my@email.com run
 ```

@@ -30,7 +30,7 @@ _Please contribute by adding a CLI example._
 | Environment Variable Name | Description |
 |-----------------------|-------------|
 | `CLOUDXNS_API_KEY` | The API key |
-| `CLOUDXNS_SECRET_KEY` | THe API secret key |
+| `CLOUDXNS_SECRET_KEY` | The API secret key |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).

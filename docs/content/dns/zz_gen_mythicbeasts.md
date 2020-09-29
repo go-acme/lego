@@ -33,7 +33,7 @@ lego --dns mythicbeasts --domains my.domain.com --email my@email.com run
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `MYTHICBEASTS_PASSWORD` | Paswword |
+| `MYTHICBEASTS_PASSWORD` | Password |
 | `MYTHICBEASTS_USERNAME` | User name |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.

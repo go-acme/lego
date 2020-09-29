@@ -9,7 +9,7 @@ Example = ''''''
 [Configuration]
   [Configuration.Credentials]
     CLOUDXNS_API_KEY = "The API key"
-    CLOUDXNS_SECRET_KEY = "THe API secret key"
+    CLOUDXNS_SECRET_KEY = "The API secret key"
   [Configuration.Additional]
     CLOUDXNS_POLLING_INTERVAL = "Time between DNS propagation check"
     CLOUDXNS_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"

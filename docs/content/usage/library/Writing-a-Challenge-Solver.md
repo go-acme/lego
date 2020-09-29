@@ -60,7 +60,7 @@ For DNS-01, we'll just use `domain` and `keyAuth`.
 ```go
 func (d *DNSProviderBestDNS) Present(domain, token, keyAuth string) error {
     fqdn, value := dns01.GetRecord(domain, keyAuth)
-    // make API request to set a TXT record on fqdn with value and ttl
+    // make API request to set a TXT record on fqdn with value and TTL
     return nil
 }
 ```

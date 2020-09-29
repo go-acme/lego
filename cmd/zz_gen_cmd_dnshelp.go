@@ -372,7 +372,7 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "CLOUDXNS_API_KEY":	The API key`)
-		ew.writeln(`	- "CLOUDXNS_SECRET_KEY":	THe API secret key`)
+		ew.writeln(`	- "CLOUDXNS_SECRET_KEY":	The API secret key`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
@@ -626,7 +626,7 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "DYN_CUSTOMER_NAME":	Customer name`)
-		ew.writeln(`	- "DYN_PASSWORD":	Paswword`)
+		ew.writeln(`	- "DYN_PASSWORD":	Password`)
 		ew.writeln(`	- "DYN_USER_NAME":	User name`)
 		ew.writeln()
 
@@ -1103,7 +1103,7 @@ func displayDNSHelp(name string) error {
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "MYTHICBEASTS_PASSWORD":	Paswword`)
+		ew.writeln(`	- "MYTHICBEASTS_PASSWORD":	Password`)
 		ew.writeln(`	- "MYTHICBEASTS_USERNAME":	User name`)
 		ew.writeln()
 
@@ -1276,7 +1276,7 @@ func displayDNSHelp(name string) error {
 		ew.writeln(`	- "OCI_PRIVKEY_PASS":	Private key password`)
 		ew.writeln(`	- "OCI_PUBKEY_FINGERPRINT":	Public key fingerprint`)
 		ew.writeln(`	- "OCI_REGION":	Region`)
-		ew.writeln(`	- "OCI_TENANCY_OCID":	Tenanct OCID`)
+		ew.writeln(`	- "OCI_TENANCY_OCID":	Tenancy OCID`)
 		ew.writeln(`	- "OCI_USER_OCID":	User OCID`)
 		ew.writeln()
 
@@ -1344,7 +1344,7 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "PDNS_API_KEY":	API key`)
-		ew.writeln(`	- "PDNS_API_URL":	API url`)
+		ew.writeln(`	- "PDNS_API_URL":	API URL`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
@@ -1407,7 +1407,7 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "RFC2136_NAMESERVER":	Network address in the form "host" or "host:port"`)
-		ew.writeln(`	- "RFC2136_TSIG_ALGORITHM":	TSIG algorythm. See [miekg/dns#tsig.go](https://github.com/miekg/dns/blob/master/tsig.go) for supported values. To disable TSIG authentication, leave the 'RFC2136_TSIG*' variables unset.`)
+		ew.writeln(`	- "RFC2136_TSIG_ALGORITHM":	TSIG algorithm. See [miekg/dns#tsig.go](https://github.com/miekg/dns/blob/master/tsig.go) for supported values. To disable TSIG authentication, leave the 'RFC2136_TSIG*' variables unset.`)
 		ew.writeln(`	- "RFC2136_TSIG_KEY":	Name of the secret key as defined in DNS server configuration. To disable TSIG authentication, leave the 'RFC2136_TSIG*' variables unset.`)
 		ew.writeln(`	- "RFC2136_TSIG_SECRET":	Secret key payload. To disable TSIG authentication, leave the' RFC2136_TSIG*' variables unset.`)
 		ew.writeln()
@@ -1649,7 +1649,7 @@ func displayDNSHelp(name string) error {
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "VSCALE_BASE_URL":	API enddpoint URL`)
+		ew.writeln(`	- "VSCALE_BASE_URL":	API endpoint URL`)
 		ew.writeln(`	- "VSCALE_HTTP_TIMEOUT":	API request timeout`)
 		ew.writeln(`	- "VSCALE_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "VSCALE_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)

@@ -19,7 +19,7 @@ PowerDNS Notes:
 [Configuration]
   [Configuration.Credentials]
     PDNS_API_KEY = "API key"
-    PDNS_API_URL = "API url"
+    PDNS_API_URL = "API URL"
   [Configuration.Additional]
     PDNS_POLLING_INTERVAL = "Time between DNS propagation check"
     PDNS_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"

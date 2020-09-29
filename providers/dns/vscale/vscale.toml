@@ -10,7 +10,7 @@ Example = ''''''
   [Configuration.Credentials]
     VSCALE_API_TOKEN = "API token"
   [Configuration.Additional]
-    VSCALE_BASE_URL = "API enddpoint URL"
+    VSCALE_BASE_URL = "API endpoint URL"
     VSCALE_POLLING_INTERVAL = "Time between DNS propagation check"
     VSCALE_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
     VSCALE_TTL = "The TTL of the TXT record used for the DNS challenge"

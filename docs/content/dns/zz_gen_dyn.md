@@ -30,7 +30,7 @@ _Please contribute by adding a CLI example._
 | Environment Variable Name | Description |
 |-----------------------|-------------|
 | `DYN_CUSTOMER_NAME` | Customer name |
-| `DYN_PASSWORD` | Paswword |
+| `DYN_PASSWORD` | Password |
 | `DYN_USER_NAME` | User name |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.

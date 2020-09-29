@@ -19,7 +19,7 @@ Your API key name is not needed to operate lego.
 [Configuration]
   [Configuration.Credentials]
     MYTHICBEASTS_USERNAME = "User name"
-    MYTHICBEASTS_PASSWORD = "Paswword"
+    MYTHICBEASTS_PASSWORD = "Password"
   [Configuration.Additional]
     MYTHICBEASTS_API_ENDPOINT = "The endpoint for the API (must implement v2)"
     MYTHICBEASYS_AUTH_API_ENDPOINT = "The endpoint for Mythic Beasts' Authentication"

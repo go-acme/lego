@@ -77,7 +77,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// We specify an http port of 5002 and an tls port of 5001 on all interfaces
+	// We specify an HTTP port of 5002 and an TLS port of 5001 on all interfaces
 	// because we aren't running as root and can't bind a listener to port 80 and 443
 	// (used later when we attempt to pass challenges). Keep in mind that you still
 	// need to proxy challenge traffic to port 5002 and 5001.

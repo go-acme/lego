@@ -10,7 +10,7 @@ Example = ''''''
   [Configuration.Credentials]
     DYN_CUSTOMER_NAME = "Customer name"
     DYN_USER_NAME = "User name"
-    DYN_PASSWORD = "Paswword"
+    DYN_PASSWORD = "Password"
   [Configuration.Additional]
     DYN_POLLING_INTERVAL = "Time between DNS propagation check"
     DYN_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"

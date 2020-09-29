@@ -30,7 +30,7 @@ _Please contribute by adding a CLI example._
 | Environment Variable Name | Description |
 |-----------------------|-------------|
 | `PDNS_API_KEY` | API key |
-| `PDNS_API_URL` | API url |
+| `PDNS_API_URL` | API URL |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).

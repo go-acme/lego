@@ -13,7 +13,7 @@ Credentials and DNS configuration for DNS providers must be passed through envir
 
 The environment variables can reference a value.
 
-Here is an example bash command using the CloudFlare DNS provider:
+Here is an example bash command using the Cloudflare DNS provider:
 
 ```bash
 $ CLOUDFLARE_EMAIL=foo@bar.com \

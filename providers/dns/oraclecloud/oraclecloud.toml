@@ -19,7 +19,7 @@ lego --dns oraclecloud --domains my.domain.com --email my@email.com run
   [Configuration.Credentials]
     OCI_PRIVKEY_FILE = "Private key file"
     OCI_PRIVKEY_PASS = "Private key password"
-    OCI_TENANCY_OCID = "Tenanct OCID"
+    OCI_TENANCY_OCID = "Tenancy OCID"
     OCI_USER_OCID = "User OCID"
     OCI_PUBKEY_FINGERPRINT = "Public key fingerprint"
     OCI_REGION = "Region"

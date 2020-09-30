@@ -1,6 +1,9 @@
 # Hover DNS Provider
 
-Hover has no formal API, so this mimicks a http client.  Therefore, it uses a plaintext password, which is generally a very bad idea.  I would recommend where possible, and not protected by some sort of configmap or such, to put those plaintext creds in a file, and reference that file from the lego process
+Hover has no formal API, so this mimicks a http client.  Therefore, it uses a plaintext password,
+which is generally a very bad idea.  I would recommend where possible, and not protected by some
+sort of configmap or such, to put those plaintext creds in a file, and reference that file from the
+lego process
 
 ```bash
 HOVER_PASSFILE=/private/hover.passwd lego ...
@@ -17,7 +20,7 @@ I really don't recommend using this, but if your username is "scott" and passwor
 ```bash
 export HOVER_USERNAME="scott"
 export HOVER_PASSWORD="tiger"
-lego -a -m chickenandpork@github.com -d example.com --dns hover run 
+lego -a -m chickenandpork@github.com -d example.com --dns hover run
 ```
 
 Really, if you cannot protect visibility of the environment, use a file to further restrict access,
@@ -38,7 +41,7 @@ initial release is JSON, however.
 ```bash
 export HOVER_PASSFILE=<some-temp-file>
 echo '{"username": "scott", "plaintextpassword": "tiger"}' > "${HOVER_PASSFILE}"
-lego -a -m chickenandpork@github.com -d example.com --dns hover run 
+lego -a -m chickenandpork@github.com -d example.com --dns hover run
 ```
 
 This initial version of the underlying library does spam a lot of logs; this is intended to offer
@@ -51,6 +54,6 @@ Testing is done similar to the recommended usage above:
 ```bash
 HOVER_PASSFILE=$(mktemp)
 echo '{"username": "scott", "plaintextpassword": "tiger"}' > "${HOVER_PASSFILE}" && \
-	go run ./cmd/lego/ -a -m chickenandpork@github.com -d example.com --dns hover run 
+	go run ./cmd/lego/ -a -m chickenandpork@github.com -d example.com --dns hover run
 rm -f "${HOVER_PASSFILE}"
 ```

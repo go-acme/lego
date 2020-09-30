@@ -9,10 +9,10 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/chickenandpork/hoverdnsapi"
 	"github.com/go-acme/lego/v3/challenge/dns01"
 	"github.com/go-acme/lego/v3/log"
 	"github.com/go-acme/lego/v3/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/hover/internal"
 )
 
 // Environment variables names.
@@ -40,7 +40,7 @@ type Config struct {
 	PollingInterval    time.Duration
 	HTTPTimeout        time.Duration
 	ttl                uint
-	hover              *hoverdnsapi.Client
+	hover              *internal.Client
 	parsed             *url.URL
 }
 
@@ -59,7 +59,7 @@ func NewDefaultConfig(u, p string) *Config {
 // DNSProvider is an implementation of the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
-	client *hoverdnsapi.Client
+	client *internal.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Hover DNS.
@@ -78,7 +78,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 		}
 		log.Infof("username (%s) and/or password (%s) environment variables not populated; reading from %s (%s)", EnvUsername, EnvPassword, EnvFilename, filename)
 
-		if pta, err := hoverdnsapi.ReadConfigFile(filename); err == nil {
+		if pta, err := internal.ReadConfigFile(filename); err == nil {
 			log.Infof("username (%s) and/or password read from %s", pta.Username, filename)
 			return NewDNSProviderConfig(NewDefaultConfig(pta.Username, pta.PlaintextPassword))
 		}
@@ -103,7 +103,7 @@ func NewDNSProviderConfig(config *Config) (d *DNSProvider, err error) {
 		return nil, errors.New("hover: incomplete credentials, missing Hover Password")
 	}
 
-	config.hover = hoverdnsapi.NewClient(config.Username, config.Password, "", config.HTTPTimeout)
+	config.hover = internal.NewClient(config.Username, config.Password, "", config.HTTPTimeout)
 
 	return &DNSProvider{config: config, client: config.hover}, nil
 }

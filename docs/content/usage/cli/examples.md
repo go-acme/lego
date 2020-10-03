@@ -16,7 +16,29 @@ If your environment does not allow you to bind to these ports, please read [Port
 lego --email="foo@bar.com" --domains="example.com" --http run
 ```
 
-(Find your certificate in the `.lego` folder of current working directory.)
+You will find your certificate in the `.lego` folder of the current working directory:
+
+```console
+$ ls -1 ./.lego/certificates
+example.com.crt
+example.com.issuer.crt
+example.com.json
+example.com.key
+[maybe more files for different domains...]
+```
+
+where
+
+- `example.com.crt` is the server certificate (including the CA certificate),
+- `example.com.key` is the private key needed for the server certificate,
+- `example.com.issuer.crt` is the CA certificate, and
+- `example.com.json` contains some JSON encoded meta information.
+
+For each domain, you will have a set of these four files.
+Please note, that for wildcard certificates (`*.example.com`), the filenames will look like `_.example.com.crt`.
+The `.crt` and `.key` files are PEM encoded x509 certificates and private keys.
+If you're looking for a `cert.pem` and `privkey.pem`, you can just use `example.com.crt` and `example.com.key`.
+
 
 ### Obtain a certificate (and hook)
 
@@ -84,7 +106,7 @@ lego --email="foo@bar.com" --http --csr=/path/to/csr.pem run
 If you have an existing server running on port 80 the `--http` option needs to also use the `--http.webroot` option.
 This just writes the token to the given directory in the folder `.well-known/acme-challenge` and does not start a server.
 
-The given directory **should** be publicly served as `/` on the domain(s) for the validation to complete. 
+The given directory **should** be publicly served as `/` on the domain(s) for the validation to complete.
 
 If the given directory is not publicly served you will have to support rewriting the request to the directory;
 

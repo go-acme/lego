@@ -84,53 +84,34 @@ func TestNewDNSProvider(t *testing.T) {
 
 func TestNewDNSProviderConfig(t *testing.T) {
 	testCases := []struct {
-		desc            string
-		apiKey          string
-		username        string
-		password        string
-		baseURL         string
-		expected        string
-		expectedBaseURL string
+		desc     string
+		apiKey   string
+		username string
+		password string
+		expected string
 	}{
 		{
-			desc:            "success api key",
-			apiKey:          "123",
-			expectedBaseURL: defaultBaseURL,
+			desc:   "success api key",
+			apiKey: "123",
 		},
 		{
-			desc:            "success username and password",
-			username:        "123",
-			password:        "123",
-			expectedBaseURL: defaultBaseURL,
+			desc:     "success username and password",
+			username: "123",
+			password: "123",
 		},
 		{
-			desc:            "missing credentials",
-			expected:        "joker: credentials missing",
-			expectedBaseURL: defaultBaseURL,
+			desc:     "missing credentials",
+			expected: "joker: credentials missing",
 		},
 		{
-			desc:            "missing credentials: username",
-			expected:        "joker: credentials missing",
-			username:        "123",
-			expectedBaseURL: defaultBaseURL,
+			desc:     "missing credentials: username",
+			expected: "joker: credentials missing",
+			username: "123",
 		},
 		{
-			desc:            "missing credentials: password",
-			expected:        "joker: credentials missing",
-			password:        "123",
-			expectedBaseURL: defaultBaseURL,
-		},
-		{
-			desc:            "Base URL should ends with /",
-			apiKey:          "123",
-			baseURL:         "http://example.com",
-			expectedBaseURL: "http://example.com/",
-		},
-		{
-			desc:            "Base URL already ends with /",
-			apiKey:          "123",
-			baseURL:         "http://example.com/",
-			expectedBaseURL: "http://example.com/",
+			desc:     "missing credentials: password",
+			expected: "joker: credentials missing",
+			password: "123",
 		},
 	}
 
@@ -141,17 +122,12 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			config.Username = test.username
 			config.Password = test.password
 
-			if test.baseURL != "" {
-				config.BaseURL = test.baseURL
-			}
-
 			p, err := NewDNSProviderConfig(config)
 
 			if len(test.expected) == 0 {
 				require.NoError(t, err)
 				require.NotNil(t, p)
 				assert.NotNil(t, p.config)
-				assert.Equal(t, test.expectedBaseURL, p.config.BaseURL)
 			} else {
 				require.EqualError(t, err, test.expected)
 			}

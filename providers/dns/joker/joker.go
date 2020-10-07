@@ -11,6 +11,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/joker/internal/dmapi"
 )
 
 // Environment variables names.
@@ -31,7 +32,6 @@ const (
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	Debug              bool
-	BaseURL            string
 	APIKey             string
 	Username           string
 	Password           string
@@ -39,13 +39,11 @@ type Config struct {
 	PollingInterval    time.Duration
 	TTL                int
 	HTTPClient         *http.Client
-	AuthSid            string
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		BaseURL:            defaultBaseURL,
 		Debug:              env.GetOrDefaultBool(EnvDebug, false),
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
@@ -59,6 +57,7 @@ func NewDefaultConfig() *Config {
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
+	client *dmapi.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Joker DMAPI.
@@ -93,11 +92,19 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		}
 	}
 
-	if !strings.HasSuffix(config.BaseURL, "/") {
-		config.BaseURL += "/"
+	client := dmapi.NewClient(dmapi.AuthInfo{
+		APIKey:   config.APIKey,
+		Username: config.Username,
+		Password: config.Password,
+	})
+
+	client.Debug = config.Debug
+
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
 	}
 
-	return &DNSProvider{config: config}, nil
+	return &DNSProvider{config: config, client: client}, nil
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
@@ -120,19 +127,19 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		log.Infof("[%s] joker: adding TXT record %q to zone %q with value %q", domain, relative, zone, value)
 	}
 
-	response, err := d.login()
+	response, err := d.client.Login()
 	if err != nil {
 		return formatResponseError(response, err)
 	}
 
-	response, err = d.getZone(zone)
+	response, err = d.client.GetZone(zone)
 	if err != nil || response.StatusCode != 0 {
 		return formatResponseError(response, err)
 	}
 
-	dnsZone := addTxtEntryToZone(response.Body, relative, value, d.config.TTL)
+	dnsZone := dmapi.AddTxtEntryToZone(response.Body, relative, value, d.config.TTL)
 
-	response, err = d.putZone(zone, dnsZone)
+	response, err = d.client.PutZone(zone, dnsZone)
 	if err != nil || response.StatusCode != 0 {
 		return formatResponseError(response, err)
 	}
@@ -155,30 +162,30 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		log.Infof("[%s] joker: removing entry %q from zone %q", domain, relative, zone)
 	}
 
-	response, err := d.login()
+	response, err := d.client.Login()
 	if err != nil {
 		return formatResponseError(response, err)
 	}
 
 	defer func() {
 		// Try to logout in case of errors
-		_, _ = d.logout()
+		_, _ = d.client.Logout()
 	}()
 
-	response, err = d.getZone(zone)
+	response, err = d.client.GetZone(zone)
 	if err != nil || response.StatusCode != 0 {
 		return formatResponseError(response, err)
 	}
 
-	dnsZone, modified := removeTxtEntryFromZone(response.Body, relative)
+	dnsZone, modified := dmapi.RemoveTxtEntryFromZone(response.Body, relative)
 	if modified {
-		response, err = d.putZone(zone, dnsZone)
+		response, err = d.client.PutZone(zone, dnsZone)
 		if err != nil || response.StatusCode != 0 {
 			return formatResponseError(response, err)
 		}
 	}
 
-	response, err = d.logout()
+	response, err = d.client.Logout()
 	if err != nil {
 		return formatResponseError(response, err)
 	}
@@ -190,7 +197,7 @@ func getRelative(fqdn, zone string) string {
 }
 
 // formatResponseError formats error with optional details from DMAPI response.
-func formatResponseError(response *response, err error) error {
+func formatResponseError(response *dmapi.Response, err error) error {
 	if response != nil {
 		return fmt.Errorf("joker: DMAPI error: %w Response: %v", err, response.Headers)
 	}

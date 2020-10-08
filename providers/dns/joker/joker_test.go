@@ -1,6 +1,8 @@
 package joker
 
 import (
+	"fmt"
+	"os"
 	"testing"
 	"time"
 
@@ -11,54 +13,40 @@ import (
 
 const envDomain = envNamespace + "DOMAIN"
 
-var envTest = tester.NewEnvTest(EnvAPIKey, EnvUsername, EnvPassword).
+var envTest = tester.NewEnvTest(EnvAPIKey, EnvUsername, EnvPassword, EnvMode).
 	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
 		desc     string
 		envVars  map[string]string
-		expected string
+		expected interface{}
 	}{
 		{
-			desc: "success API key",
-			envVars: map[string]string{
-				EnvAPIKey: "123",
-			},
-		},
-		{
-			desc: "success username password",
+			desc: "mode DMAPI (default)",
 			envVars: map[string]string{
 				EnvUsername: "123",
 				EnvPassword: "123",
 			},
+			expected: &dmapiProvider{},
 		},
 		{
-			desc: "missing credentials",
+			desc: "mode DMAPI",
 			envVars: map[string]string{
-				EnvAPIKey:   "",
-				EnvUsername: "",
-				EnvPassword: "",
-			},
-			expected: "joker: some credentials information are missing: JOKER_USERNAME,JOKER_PASSWORD or some credentials information are missing: JOKER_API_KEY",
-		},
-		{
-			desc: "missing password",
-			envVars: map[string]string{
-				EnvAPIKey:   "",
+				EnvMode:     modeDMAPI,
 				EnvUsername: "123",
-				EnvPassword: "",
-			},
-			expected: "joker: some credentials information are missing: JOKER_PASSWORD or some credentials information are missing: JOKER_API_KEY",
-		},
-		{
-			desc: "missing username",
-			envVars: map[string]string{
-				EnvAPIKey:   "",
-				EnvUsername: "",
 				EnvPassword: "123",
 			},
-			expected: "joker: some credentials information are missing: JOKER_USERNAME or some credentials information are missing: JOKER_API_KEY",
+			expected: &dmapiProvider{},
+		},
+		{
+			desc: "mode SVC",
+			envVars: map[string]string{
+				EnvMode:     modeSVC,
+				EnvUsername: "123",
+				EnvPassword: "123",
+			},
+			expected: &svcProvider{},
 		},
 	}
 
@@ -69,15 +57,13 @@ func TestNewDNSProvider(t *testing.T) {
 
 			envTest.Apply(test.envVars)
 
-			p, err := NewDNSProvider()
+			fmt.Println(os.Getenv(EnvMode))
 
-			if len(test.expected) == 0 {
-				require.NoError(t, err)
-				require.NotNil(t, p)
-				assert.NotNil(t, p.config)
-			} else {
-				require.EqualError(t, err, test.expected)
-			}
+			p, err := NewDNSProvider()
+			require.NoError(t, err)
+			require.NotNil(t, p)
+
+			assert.IsType(t, test.expected, p)
 		})
 	}
 }
@@ -85,52 +71,37 @@ func TestNewDNSProvider(t *testing.T) {
 func TestNewDNSProviderConfig(t *testing.T) {
 	testCases := []struct {
 		desc     string
-		apiKey   string
-		username string
-		password string
-		expected string
+		mode     string
+		expected interface{}
 	}{
 		{
-			desc:   "success api key",
-			apiKey: "123",
+			desc:     "mode DMAPI (default)",
+			expected: &dmapiProvider{},
 		},
 		{
-			desc:     "success username and password",
-			username: "123",
-			password: "123",
+			desc:     "mode DMAPI",
+			mode:     modeDMAPI,
+			expected: &dmapiProvider{},
 		},
 		{
-			desc:     "missing credentials",
-			expected: "joker: credentials missing",
-		},
-		{
-			desc:     "missing credentials: username",
-			expected: "joker: credentials missing",
-			username: "123",
-		},
-		{
-			desc:     "missing credentials: password",
-			expected: "joker: credentials missing",
-			password: "123",
+			desc:     "mode SVC",
+			mode:     modeSVC,
+			expected: &svcProvider{},
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			config := NewDefaultConfig()
-			config.APIKey = test.apiKey
-			config.Username = test.username
-			config.Password = test.password
+			config.Username = "123"
+			config.Password = "123"
+			config.APIMode = test.mode
 
 			p, err := NewDNSProviderConfig(config)
+			require.NoError(t, err)
+			require.NotNil(t, p)
 
-			if len(test.expected) == 0 {
-				require.NoError(t, err)
-				require.NotNil(t, p)
-				assert.NotNil(t, p.config)
-			} else {
-				require.EqualError(t, err, test.expected)
-			}
+			assert.IsType(t, test.expected, p)
 		})
 	}
 }

@@ -63,7 +63,7 @@ func (d *svcProvider) Present(domain, token, keyAuth string) error {
 
 	relative := getRelative(fqdn, zone)
 
-	return d.client.Send(zone, relative, value)
+	return d.client.Send(dns01.UnFqdn(zone), relative, value)
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
@@ -77,7 +77,7 @@ func (d *svcProvider) CleanUp(domain, token, keyAuth string) error {
 
 	relative := getRelative(fqdn, zone)
 
-	return d.client.Send(zone, relative, "")
+	return d.client.Send(dns01.UnFqdn(zone), relative, "")
 }
 
 // Sequential All DNS challenges for this provider will be resolved sequentially.

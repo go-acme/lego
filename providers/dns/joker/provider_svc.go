@@ -79,3 +79,9 @@ func (d *svcProvider) CleanUp(domain, token, keyAuth string) error {
 
 	return d.client.Send(zone, relative, "")
 }
+
+// Sequential All DNS challenges for this provider will be resolved sequentially.
+// Returns the interval between each iteration.
+func (d *svcProvider) Sequential() time.Duration {
+	return d.config.SequenceInterval
+}

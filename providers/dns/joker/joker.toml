@@ -5,19 +5,29 @@ Code = "joker"
 Since = "v2.6.0"
 
 Example = '''
+# SVC
+JOKER_API_MODE=SVC \
 JOKER_USERNAME=<your email> \
 JOKER_PASSWORD=<your password> \
 lego --dns joker --domains my.domain.com --email my@email.com run
-# or
+
+# DMAPI
+JOKER_API_MODE=DMAPI \
+JOKER_USERNAME=<your email> \
+JOKER_PASSWORD=<your password> \
+lego --dns joker --domains my.domain.com --email my@email.com run
+## or
+JOKER_API_MODE=DMAPI \
 JOKER_API_KEY=<your API key> \
 lego --dns joker --domains my.domain.com --email my@email.com run
 '''
 
 [Configuration]
   [Configuration.Credentials]
-    JOKER_API_KEY = "API key"
+    JOKER_API_MODE = "'DMAPI' or 'SVC'. DMAPI is for resellers accounts. (Default: DMAPI)"
     JOKER_USERNAME = "Joker.com username (email address)"
     JOKER_PASSWORD = "Joker.com password"
+    JOKER_API_KEY = "API key (only with DMAPI mode)"
   [Configuration.Additional]
     JOKER_POLLING_INTERVAL = "Time between DNS propagation check"
     JOKER_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
@@ -26,3 +36,4 @@ lego --dns joker --domains my.domain.com --email my@email.com run
 
 [Links]
   API = "https://joker.com/faq/category/39/22-dmapi.html"
+  API_SVC = "https://joker.com/faq/content/6/496/en/let_s-encrypt-support.html"

@@ -975,7 +975,8 @@ func displayDNSHelp(name string) error {
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "JOKER_API_KEY":	API key`)
+		ew.writeln(`	- "JOKER_API_KEY":	API key (only with DMAPI mode)`)
+		ew.writeln(`	- "JOKER_API_MODE":	'DMAPI' or 'SVC'. DMAPI is for resellers accounts. (Default: DMAPI)`)
 		ew.writeln(`	- "JOKER_PASSWORD":	Joker.com password`)
 		ew.writeln(`	- "JOKER_USERNAME":	Joker.com username (email address)`)
 		ew.writeln()

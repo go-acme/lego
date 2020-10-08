@@ -1,4 +1,4 @@
-package joker
+package dmapi
 
 import (
 	"io"
@@ -23,10 +23,13 @@ const (
 	serverErrorUsername = "error"
 )
 
-func setup() (*http.ServeMux, *httptest.Server) {
+func setup(t *testing.T) (*http.ServeMux, string) {
 	mux := http.NewServeMux()
+
 	server := httptest.NewServer(mux)
-	return mux, server
+	t.Cleanup(server.Close)
+
+	return mux, server.URL
 }
 
 func TestDNSProvider_login_api_key(t *testing.T) {
@@ -63,11 +66,10 @@ func TestDNSProvider_login_api_key(t *testing.T) {
 		},
 	}
 
-	mux, server := setup()
-	defer server.Close()
+	mux, serverURL := setup(t)
 
 	mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-		require.Equal(t, "POST", r.Method)
+		require.Equal(t, http.MethodPost, r.Method)
 
 		switch r.FormValue("api-key") {
 		case correctAPIKey:
@@ -83,15 +85,10 @@ func TestDNSProvider_login_api_key(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			config := NewDefaultConfig()
-			config.BaseURL = server.URL
-			config.APIKey = test.apiKey
+			client := NewClient(AuthInfo{APIKey: test.apiKey})
+			client.BaseURL = serverURL
 
-			p, err := NewDNSProviderConfig(config)
-			require.NoError(t, err)
-			require.NotNil(t, p)
-
-			response, err := p.login()
+			response, err := client.Login()
 			if test.expectedError {
 				require.Error(t, err)
 			} else {
@@ -144,11 +141,10 @@ func TestDNSProvider_login_username(t *testing.T) {
 		},
 	}
 
-	mux, server := setup()
-	defer server.Close()
+	mux, serverURL := setup(t)
 
 	mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-		require.Equal(t, "POST", r.Method)
+		require.Equal(t, http.MethodPost, r.Method)
 
 		switch r.FormValue("username") {
 		case correctUsername:
@@ -164,16 +160,10 @@ func TestDNSProvider_login_username(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			config := NewDefaultConfig()
-			config.BaseURL = server.URL
-			config.Username = test.username
-			config.Password = test.password
+			client := NewClient(AuthInfo{Username: test.username, Password: test.password})
+			client.BaseURL = serverURL
 
-			p, err := NewDNSProviderConfig(config)
-			require.NoError(t, err)
-			require.NotNil(t, p)
-
-			response, err := p.login()
+			response, err := client.Login()
 			if test.expectedError {
 				require.Error(t, err)
 			} else {
@@ -215,11 +205,10 @@ func TestDNSProvider_logout(t *testing.T) {
 		},
 	}
 
-	mux, server := setup()
-	defer server.Close()
+	mux, serverURL := setup(t)
 
 	mux.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
-		require.Equal(t, "POST", r.Method)
+		require.Equal(t, http.MethodPost, r.Method)
 
 		switch r.FormValue("auth-sid") {
 		case correctAPIKey:
@@ -233,16 +222,10 @@ func TestDNSProvider_logout(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			config := NewDefaultConfig()
-			config.BaseURL = server.URL
-			config.APIKey = "12345"
-			config.AuthSid = test.authSid
+			client := NewClient(AuthInfo{APIKey: "12345", authSid: test.authSid})
+			client.BaseURL = serverURL
 
-			p, err := NewDNSProviderConfig(config)
-			require.NoError(t, err)
-			require.NotNil(t, p)
-
-			response, err := p.logout()
+			response, err := client.Logout()
 			if test.expectedError {
 				require.Error(t, err)
 			} else {
@@ -291,11 +274,10 @@ func TestDNSProvider_getZone(t *testing.T) {
 		},
 	}
 
-	mux, server := setup()
-	defer server.Close()
+	mux, serverURL := setup(t)
 
 	mux.HandleFunc("/dns-zone-get", func(w http.ResponseWriter, r *http.Request) {
-		require.Equal(t, "POST", r.Method)
+		require.Equal(t, http.MethodPost, r.Method)
 
 		authSid := r.FormValue("auth-sid")
 		domain := r.FormValue("domain")
@@ -312,16 +294,10 @@ func TestDNSProvider_getZone(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			config := NewDefaultConfig()
-			config.BaseURL = server.URL
-			config.APIKey = "12345"
-			config.AuthSid = test.authSid
+			client := NewClient(AuthInfo{APIKey: "12345", authSid: test.authSid})
+			client.BaseURL = serverURL
 
-			p, err := NewDNSProviderConfig(config)
-			require.NoError(t, err)
-			require.NotNil(t, p)
-
-			response, err := p.getZone(test.domain)
+			response, err := client.GetZone(test.domain)
 			if test.expectedError {
 				require.Error(t, err)
 			} else {
@@ -338,12 +314,12 @@ func Test_parseResponse(t *testing.T) {
 	testCases := []struct {
 		desc     string
 		input    string
-		expected *response
+		expected *Response
 	}{
 		{
 			desc:  "Empty response",
 			input: "",
-			expected: &response{
+			expected: &Response{
 				Headers:    url.Values{},
 				StatusCode: -1,
 			},
@@ -351,7 +327,7 @@ func Test_parseResponse(t *testing.T) {
 		{
 			desc:  "No headers, just body",
 			input: "\n\nTest body",
-			expected: &response{
+			expected: &Response{
 				Headers:    url.Values{},
 				Body:       "Test body",
 				StatusCode: -1,
@@ -360,7 +336,7 @@ func Test_parseResponse(t *testing.T) {
 		{
 			desc:  "Headers and body",
 			input: "Test-Header: value\n\nTest body",
-			expected: &response{
+			expected: &Response{
 				Headers:    url.Values{"Test-Header": {"value"}},
 				Body:       "Test body",
 				StatusCode: -1,
@@ -369,7 +345,7 @@ func Test_parseResponse(t *testing.T) {
 		{
 			desc:  "Headers and body + Auth-Sid",
 			input: "Test-Header: value\nAuth-Sid: 123\n\nTest body",
-			expected: &response{
+			expected: &Response{
 				Headers:    url.Values{"Test-Header": {"value"}, "Auth-Sid": {"123"}},
 				Body:       "Test body",
 				StatusCode: -1,
@@ -379,7 +355,7 @@ func Test_parseResponse(t *testing.T) {
 		{
 			desc:  "Headers and body + Status-Text",
 			input: "Test-Header: value\nStatus-Text: OK\n\nTest body",
-			expected: &response{
+			expected: &Response{
 				Headers:    url.Values{"Test-Header": {"value"}, "Status-Text": {"OK"}},
 				Body:       "Test body",
 				StatusText: "OK",
@@ -389,7 +365,7 @@ func Test_parseResponse(t *testing.T) {
 		{
 			desc:  "Headers and body + Status-Code",
 			input: "Test-Header: value\nStatus-Code: 2020\n\nTest body",
-			expected: &response{
+			expected: &Response{
 				Headers:    url.Values{"Test-Header": {"value"}, "Status-Code": {"2020"}},
 				Body:       "Test body",
 				StatusCode: 2020,
@@ -453,7 +429,7 @@ func Test_removeTxtEntryFromZone(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			zone, modified := removeTxtEntryFromZone(test.input, "_acme-challenge")
+			zone, modified := RemoveTxtEntryFromZone(test.input, "_acme-challenge")
 			assert.Equal(t, zone, test.expected)
 			assert.Equal(t, modified, test.modified)
 		})
@@ -485,7 +461,7 @@ func Test_addTxtEntryToZone(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			zone := addTxtEntryToZone(test.input, "_acme-challenge", "test", 120)
+			zone := AddTxtEntryToZone(test.input, "_acme-challenge", "test", 120)
 			assert.Equal(t, zone, test.expected)
 		})
 	}

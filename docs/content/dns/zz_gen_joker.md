@@ -21,10 +21,19 @@ Configuration for [Joker](https://joker.com).
 Here is an example bash command using the Joker provider:
 
 ```bash
+# SVC
+JOKER_API_MODE=SVC \
 JOKER_USERNAME=<your email> \
 JOKER_PASSWORD=<your password> \
 lego --dns joker --domains my.domain.com --email my@email.com run
-# or
+
+# DMAPI
+JOKER_API_MODE=DMAPI \
+JOKER_USERNAME=<your email> \
+JOKER_PASSWORD=<your password> \
+lego --dns joker --domains my.domain.com --email my@email.com run
+## or
+JOKER_API_MODE=DMAPI \
 JOKER_API_KEY=<your API key> \
 lego --dns joker --domains my.domain.com --email my@email.com run
 ```
@@ -36,7 +45,8 @@ lego --dns joker --domains my.domain.com --email my@email.com run
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `JOKER_API_KEY` | API key |
+| `JOKER_API_KEY` | API key (only with DMAPI mode) |
+| `JOKER_API_MODE` | 'DMAPI' or 'SVC'. DMAPI is for resellers accounts. (Default: DMAPI) |
 | `JOKER_PASSWORD` | Joker.com password |
 | `JOKER_USERNAME` | Joker.com username (email address) |
 

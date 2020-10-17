@@ -47,7 +47,7 @@ func (t *TokenTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 
 	if t.apiKey != "" && t.secretKey != "" {
 		securityToken := createCnsSecurityToken(t.apiKey, t.secretKey)
-		enrichedReq.Header.Add(securityTokenHeader, securityToken)
+		enrichedReq.Header.Set(securityTokenHeader, securityToken)
 	}
 
 	return t.transport().RoundTrip(enrichedReq)

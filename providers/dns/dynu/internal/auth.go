@@ -36,7 +36,7 @@ func (t *TokenTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	if t.apiKey != "" {
-		enrichedReq.Header.Add(apiKeyHeader, t.apiKey)
+		enrichedReq.Header.Set(apiKeyHeader, t.apiKey)
 	}
 
 	return t.transport().RoundTrip(enrichedReq)

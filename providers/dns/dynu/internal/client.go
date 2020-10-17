@@ -138,8 +138,8 @@ func (c Client) doRetry(method, url string, body []byte, data interface{}) error
 			return err
 		}
 
-		req.Header.Add("Content-Type", "application/json")
-		req.Header.Add("Accept", "application/json")
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Accept", "application/json")
 
 		resp, err = c.HTTPClient.Do(req)
 		if errors.Is(err, io.EOF) {

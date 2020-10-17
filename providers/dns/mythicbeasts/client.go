@@ -73,7 +73,7 @@ func (d *DNSProvider) login() error {
 		return err
 	}
 
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.SetBasicAuth(d.config.UserName, d.config.Password)
 
 	resp, err := d.config.HTTPClient.Do(req)
@@ -149,8 +149,8 @@ func (d *DNSProvider) createTXTRecord(zone, leaf, value string) error {
 		return fmt.Errorf("createTXTRecord: %w", err)
 	}
 
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", d.token))
-	req.Header.Add("Content-Type", "application/json")
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", d.token))
+	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := d.config.HTTPClient.Do(req)
 	if err != nil {
@@ -202,7 +202,7 @@ func (d *DNSProvider) removeTXTRecord(zone, leaf, value string) error {
 		return fmt.Errorf("removeTXTRecord: %w", err)
 	}
 
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", d.token))
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", d.token))
 
 	resp, err := d.config.HTTPClient.Do(req)
 	if err != nil {

@@ -91,7 +91,7 @@ func (s *ProviderServer) serve(domain, token, keyAuth string) {
 	mux := http.NewServeMux()
 	mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet && s.matcher.matches(r, domain) {
-			w.Header().Add("Content-Type", "text/plain")
+			w.Header().Set("Content-Type", "text/plain")
 			_, err := w.Write([]byte(keyAuth))
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)

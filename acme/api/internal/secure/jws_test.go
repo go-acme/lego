@@ -15,8 +15,8 @@ import (
 func TestNotHoldingLockWhileMakingHTTPRequests(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		time.Sleep(250 * time.Millisecond)
-		w.Header().Add("Replay-Nonce", "12345")
-		w.Header().Add("Retry-After", "0")
+		w.Header().Set("Replay-Nonce", "12345")
+		w.Header().Set("Retry-After", "0")
 		err := tester.WriteJSONResponse(w, &acme.Challenge{Type: "http-01", Status: "Valid", URL: "http://example.com/", Token: "token"})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

@@ -301,7 +301,7 @@ func getMetadata(config *Config, field string) (string, error) {
 		return "", err
 	}
 
-	req.Header.Add("Metadata", "True")
+	req.Header.Set("Metadata", "True")
 
 	q := req.URL.Query()
 	q.Add("format", "text")

@@ -33,8 +33,8 @@ func SetupFakeAPI() (*http.ServeMux, string, func()) {
 				return
 			}
 
-			w.Header().Add("Replay-Nonce", "12345")
-			w.Header().Add("Retry-After", "0")
+			w.Header().Set("Replay-Nonce", "12345")
+			w.Header().Set("Retry-After", "0")
 		})
 
 		if err != nil {

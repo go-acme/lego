@@ -273,7 +273,7 @@ func formatDNSError(msg *dns.Msg, err error) string {
 	}
 
 	if err != nil {
-		parts = append(parts, fmt.Sprintf("%v", err))
+		parts = append(parts, err.Error())
 	}
 
 	if len(parts) > 0 {

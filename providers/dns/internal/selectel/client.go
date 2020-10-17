@@ -116,9 +116,9 @@ func (c *Client) newRequest(method, uri string, body interface{}) (*http.Request
 		return nil, fmt.Errorf("failed to create new http request with error: %w", err)
 	}
 
-	req.Header.Add("X-Token", c.token)
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Accept", "application/json")
+	req.Header.Set("X-Token", c.token)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
 
 	return req, nil
 }

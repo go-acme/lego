@@ -197,7 +197,7 @@ func (s *CertificatesStorage) MoveToArchive(domain string) error {
 
 // sanitizedDomain Make sure no funny chars are in the cert names (like wildcards ;)).
 func sanitizedDomain(domain string) string {
-	safe, err := idna.ToASCII(strings.Replace(domain, "*", "_", -1))
+	safe, err := idna.ToASCII(strings.ReplaceAll(domain, "*", "_"))
 	if err != nil {
 		log.Fatal(err)
 	}

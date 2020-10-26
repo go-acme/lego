@@ -182,8 +182,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	// Get existing record set
 	rset, err := rsc.Get(ctx, d.config.ResourceGroup, zone, relative, dns.TXT)
 	if err != nil {
-		detailedError, ok := err.(autorest.DetailedError)
-		if !ok || detailedError.StatusCode != http.StatusNotFound {
+		var detailed *autorest.DetailedError
+		if !errors.As(err, detailed) || detailed.StatusCode != http.StatusNotFound {
 			return fmt.Errorf("azure: %w", err)
 		}
 	}
@@ -276,7 +276,7 @@ func getAuthorizer(config *Config) (autorest.Authorizer, error) {
 
 		spToken, err := credentialsConfig.ServicePrincipalToken()
 		if err != nil {
-			return nil, fmt.Errorf("failed to get oauth token from client credentials: %v", err)
+			return nil, fmt.Errorf("failed to get oauth token from client credentials: %w", err)
 		}
 
 		spToken.SetSender(config.HTTPClient)

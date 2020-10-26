@@ -2,6 +2,7 @@ package pdns
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -172,7 +173,7 @@ func (d *DNSProvider) sendRequest(method, uri string, body io.Reader) (json.RawM
 	var msg json.RawMessage
 	err = json.NewDecoder(resp.Body).Decode(&msg)
 	if err != nil {
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			// empty body
 			return nil, nil
 		}

@@ -223,6 +223,6 @@ func isNotFound(err error) bool {
 		return false
 	}
 
-	e, ok := err.(configdns.ConfigDNSError)
-	return ok && e.NotFound()
+	var e configdns.ConfigDNSError
+	return errors.As(err, &e) && e.NotFound()
 }

@@ -241,10 +241,9 @@ func (d *DNSProvider) applyChanges(zone string, change *dns.Change) error {
 
 	chg, err := d.client.Changes.Create(d.config.Project, zone, change).Do()
 	if err != nil {
-		if v, ok := err.(*googleapi.Error); ok {
-			if v.Code == http.StatusNotFound {
-				return nil
-			}
+		var v *googleapi.Error
+		if errors.As(err, &v) && v.Code == http.StatusNotFound {
+			return nil
 		}
 
 		data, _ := json.Marshal(change)

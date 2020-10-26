@@ -38,7 +38,10 @@
     "nestif", # too many false-positive
     "goerr113", # not relevant
     "noctx",
-    "nlreturn",
+    "nlreturn", # not relevant
+    "wrapcheck",
+    "tparallel", # not relevant
+    "exhaustivestruct", # too many false-positive
   ]
 
 [issues]
@@ -63,13 +66,13 @@
     text = "string `(bar|foo)` has (\\d+) occurrences, make it a constant"
   [[issues.exclude-rules]]
     path = "certcrypto/crypto.go"
-    text = "`(tlsFeatureExtensionOID|ocspMustStapleFeature)` is a global variable"
+    text = "(tlsFeatureExtensionOID|ocspMustStapleFeature) is a global variable"
   [[issues.exclude-rules]]
     path = "challenge/dns01/nameserver.go"
-    text = "`(defaultNameservers|recursiveNameservers|dnsTimeout|fqdnSoaCache|muFqdnSoaCache)` is a global variable"
+    text = "(defaultNameservers|recursiveNameservers|dnsTimeout|fqdnSoaCache|muFqdnSoaCache) is a global variable"
   [[issues.exclude-rules]]
     path = "challenge/dns01/nameserver_test.go"
-    text = "`findXByFqdnTestCases` is a global variable"
+    text = "findXByFqdnTestCases is a global variable"
   [[issues.exclude-rules]]
     path = "challenge/http01/domain_matcher.go"
     text = "string `Host` has \\d occurrences, make it a constant"
@@ -81,28 +84,25 @@
     text = "Function 'parseForwardedHeader' has too many statements"
   [[issues.exclude-rules]]
     path = "challenge/tlsalpn01/tls_alpn_challenge.go"
-    text = "`idPeAcmeIdentifierV1` is a global variable"
+    text = "idPeAcmeIdentifierV1 is a global variable"
   [[issues.exclude-rules]]
     path = "log/logger.go"
-    text = "`Logger` is a global variable"
-  [[issues.exclude-rules]]
-    path = "cmd/lego/main.go"
-    text = "`version` is a global variable"
+    text = "Logger is a global variable"
   [[issues.exclude-rules]]
     path = "e2e/(dnschallenge/)?[\\d\\w]+_test.go"
-    text = "`load` is a global variable"
+    text = "load is a global variable"
   [[issues.exclude-rules]]
     path = "providers/dns/([\\d\\w]+/)*[\\d\\w]+_test.go"
-    text = "`envTest` is a global variable"
+    text = "envTest is a global variable"
   [[issues.exclude-rules]]
     path = "providers/dns/namecheap/namecheap_test.go"
-    text = "`testCases` is a global variable"
+    text = "testCases is a global variable"
   [[issues.exclude-rules]]
     path = "providers/dns/acmedns/acmedns_test.go"
-    text = "`(errorClientErr|errorStorageErr|egTestAccount)` is a global variable"
+    text = "egTestAccount is a global variable"
   [[issues.exclude-rules]]
     path = "providers/http/memcached/memcached_test.go"
-    text = "`memcachedHosts` is a global variable"
+    text = "memcachedHosts is a global variable"
   [[issues.exclude-rules]]
     path = "providers/dns/sakuracloud/client_test.go"
     text = "cyclomatic complexity 13 of func `(TestDNSProvider_cleanupTXTRecord_concurrent|TestDNSProvider_addTXTRecord_concurrent)` is high"

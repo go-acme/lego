@@ -21,7 +21,7 @@ type svcProvider struct {
 func newSvcProvider() (*svcProvider, error) {
 	values, err := env.Get(EnvUsername, EnvPassword)
 	if err != nil {
-		return nil, fmt.Errorf("joker: %v", err)
+		return nil, fmt.Errorf("joker: %w", err)
 	}
 
 	config := NewDefaultConfig()

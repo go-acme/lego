@@ -109,10 +109,10 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	// Check if credentials were previously saved for this domain.
 	account, err := d.storage.Fetch(domain)
 	// Errors other than goacmeDNS.ErrDomainNotFound are unexpected.
-	if err != nil && err != goacmedns.ErrDomainNotFound {
+	if err != nil && !errors.Is(err, goacmedns.ErrDomainNotFound) {
 		return err
 	}
-	if err == goacmedns.ErrDomainNotFound {
+	if errors.Is(err, goacmedns.ErrDomainNotFound) {
 		// The account did not exist. Create a new one and return an error
 		// indicating the required one-time manual CNAME setup.
 		return d.register(domain, fqdn)

@@ -43,6 +43,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
 | `INFOMANIAK_ENDPOINT` | https://api.infomaniak.com |
+| `INFOMANIAK_HTTP_TIMEOUT` | API request timeout |
 | `INFOMANIAK_POLLING_INTERVAL` | Time between DNS propagation check |
 | `INFOMANIAK_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
 | `INFOMANIAK_TTL` | The TTL of the TXT record used for the DNS challenge in seconds |

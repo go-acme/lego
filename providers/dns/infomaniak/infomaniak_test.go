@@ -24,22 +24,12 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				EnvEndpoint:    "https://api.infomaniak.com",
-				EnvAccessToken: "B",
+				EnvAccessToken: "123",
 			},
-		},
-		{
-			desc: "missing credentials",
-			envVars: map[string]string{
-				EnvEndpoint:    "",
-				EnvAccessToken: "",
-			},
-			expected: "infomaniak: some credentials information are missing: INFOMANIAK_ACCESS_TOKEN",
 		},
 		{
 			desc: "missing access token",
 			envVars: map[string]string{
-				EnvEndpoint:    "https://api.infomaniak.com",
 				EnvAccessToken: "",
 			},
 			expected: "infomaniak: some credentials information are missing: INFOMANIAK_ACCESS_TOKEN",
@@ -71,31 +61,23 @@ func TestNewDNSProvider(t *testing.T) {
 func TestNewDNSProviderConfig(t *testing.T) {
 	testCases := []struct {
 		desc        string
-		apiEndpoint string
 		accessToken string
 		expected    string
 	}{
 		{
 			desc:        "success",
-			apiEndpoint: "https://api.infomaniak.com",
-			accessToken: "B",
-		},
-		{
-			desc:     "missing credentials",
-			expected: "infomaniak: credentials missing",
+			accessToken: "123",
 		},
 		{
 			desc:        "missing access token",
-			apiEndpoint: "https://api.infomaniak.com",
 			accessToken: "",
-			expected:    "infomaniak: credentials missing",
+			expected:    "infomaniak: missing access token",
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			config := NewDefaultConfig()
-			config.APIEndpoint = test.apiEndpoint
 			config.AccessToken = test.accessToken
 
 			p, err := NewDNSProviderConfig(config)

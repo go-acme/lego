@@ -9,7 +9,7 @@ slug: infomaniak
 <!-- providers/dns/infomaniak/infomaniak.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.0.2
+Since: v4.1.0
 
 Configuration for [Infomaniak](https://www.infomaniak.com/).
 

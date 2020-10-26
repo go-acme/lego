@@ -950,7 +950,7 @@ func displayDNSHelp(name string) error {
 		// generated from: providers/dns/infomaniak/infomaniak.toml
 		ew.writeln(`Configuration for Infomaniak.`)
 		ew.writeln(`Code:	'infomaniak'`)
-		ew.writeln(`Since:	'v4.0.2'`)
+		ew.writeln(`Since:	'v4.1.0'`)
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)

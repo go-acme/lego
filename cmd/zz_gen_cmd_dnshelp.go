@@ -54,6 +54,7 @@ func allDNSCodes() string {
 		"httpreq",
 		"hyperone",
 		"iij",
+		"infomaniak",
 		"inwx",
 		"joker",
 		"lightsail",
@@ -944,6 +945,27 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/iij`)
+
+	case "infomaniak":
+		// generated from: providers/dns/infomaniak/infomaniak.toml
+		ew.writeln(`Configuration for Infomaniak.`)
+		ew.writeln(`Code:	'infomaniak'`)
+		ew.writeln(`Since:	'v4.1.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "INFOMANIAK_ACCESS_TOKEN":	Access token`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "INFOMANIAK_ENDPOINT":	https://api.infomaniak.com`)
+		ew.writeln(`	- "INFOMANIAK_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "INFOMANIAK_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "INFOMANIAK_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "INFOMANIAK_TTL":	The TTL of the TXT record used for the DNS challenge in seconds`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/infomaniak`)
 
 	case "inwx":
 		// generated from: providers/dns/inwx/inwx.toml

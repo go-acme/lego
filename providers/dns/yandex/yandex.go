@@ -58,7 +58,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvPddToken)
 	if err != nil {
-		return nil, fmt.Errorf("yandex: %v", err)
+		return nil, fmt.Errorf("yandex: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -79,7 +79,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	client, err := internal.NewClient(config.PddToken)
 	if err != nil {
-		return nil, fmt.Errorf("yandex: %v", err)
+		return nil, fmt.Errorf("yandex: %w", err)
 	}
 
 	if config.HTTPClient != nil {
@@ -95,7 +95,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	rootDomain, subDomain, err := splitDomain(fqdn)
 	if err != nil {
-		return fmt.Errorf("yandex: %v", err)
+		return fmt.Errorf("yandex: %w", err)
 	}
 
 	data := internal.Record{
@@ -108,7 +108,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	_, err = d.client.AddRecord(data)
 	if err != nil {
-		return fmt.Errorf("yandex: %v", err)
+		return fmt.Errorf("yandex: %w", err)
 	}
 
 	return nil
@@ -120,12 +120,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	rootDomain, subDomain, err := splitDomain(fqdn)
 	if err != nil {
-		return fmt.Errorf("yandex: %v", err)
+		return fmt.Errorf("yandex: %w", err)
 	}
 
 	records, err := d.client.GetRecords(rootDomain)
 	if err != nil {
-		return fmt.Errorf("yandex: %v", err)
+		return fmt.Errorf("yandex: %w", err)
 	}
 
 	var record *internal.Record
@@ -148,7 +148,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	_, err = d.client.RemoveRecord(data)
 	if err != nil {
-		return fmt.Errorf("yandex: %v", err)
+		return fmt.Errorf("yandex: %w", err)
 	}
 	return nil
 }

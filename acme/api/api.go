@@ -90,14 +90,14 @@ func (a *Core) retrievablePost(uri string, content []byte, response interface{})
 		var err error
 		resp, err = a.signedPost(uri, content, response)
 		if err != nil {
-			switch err.(type) {
 			// Retry if the nonce was invalidated
-			case *acme.NonceError:
-				return err
-			default:
-				cancel()
+			var e *acme.NonceError
+			if errors.As(err, &e) {
 				return err
 			}
+
+			cancel()
+			return err
 		}
 
 		return nil
@@ -109,7 +109,7 @@ func (a *Core) retrievablePost(uri string, content []byte, response interface{})
 
 	err := backoff.RetryNotify(operation, backoff.WithContext(bo, ctx), notify)
 	if err != nil {
-		return nil, err
+		return resp, err
 	}
 
 	return resp, nil

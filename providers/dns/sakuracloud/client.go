@@ -1,6 +1,7 @@
 package sakuracloud
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -70,9 +71,11 @@ func (d *DNSProvider) getHostedZone(domain string) (*sacloud.DNS, error) {
 
 	res, err := d.client.Reset().WithNameLike(zoneName).Find()
 	if err != nil {
-		if notFound, ok := err.(api.Error); ok && notFound.ResponseCode() == http.StatusNotFound {
+		var notFound api.Error
+		if errors.As(err, &notFound) && notFound.ResponseCode() == http.StatusNotFound {
 			return nil, fmt.Errorf("zone %s not found on SakuraCloud DNS: %w", zoneName, err)
 		}
+
 		return nil, fmt.Errorf("API call failed: %w", err)
 	}
 

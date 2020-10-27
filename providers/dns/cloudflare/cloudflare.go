@@ -77,6 +77,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 			[]string{"CLOUDFLARE_ZONE_API_TOKEN", "CF_ZONE_API_TOKEN", "CLOUDFLARE_DNS_API_TOKEN", "CF_DNS_API_TOKEN"},
 		)
 		if errT != nil {
+			// nolint:errorlint
 			return nil, fmt.Errorf("cloudflare: %v or %v", err, errT)
 		}
 	}

@@ -38,6 +38,7 @@ func (a *AccountService) NewEAB(accMsg acme.Account, kid, hmacEncoded string) (a
 	if err != nil {
 		return acme.ExtendedAccount{}, fmt.Errorf("acme: error signing eab content: %w", err)
 	}
+
 	accMsg.ExternalAccountBinding = eabJWS
 
 	return a.New(accMsg)

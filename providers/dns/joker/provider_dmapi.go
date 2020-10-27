@@ -26,6 +26,7 @@ func newDmapiProvider() (*dmapiProvider, error) {
 		var errU error
 		values, errU = env.Get(EnvUsername, EnvPassword)
 		if errU != nil {
+			// nolint:errorlint
 			return nil, fmt.Errorf("joker: %v or %v", errU, err)
 		}
 	}

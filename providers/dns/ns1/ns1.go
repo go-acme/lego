@@ -95,7 +95,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	record, _, err := d.client.Records.Get(zone.Zone, dns01.UnFqdn(fqdn), "TXT")
 
 	// Create a new record
-	if err == rest.ErrRecordMissing || record == nil {
+	if errors.Is(err, rest.ErrRecordMissing) || record == nil {
 		log.Infof("Create a new record for [zone: %s, fqdn: %s, domain: %s]", zone.Zone, fqdn, domain)
 
 		record = dns.NewRecord(zone.Zone, dns01.UnFqdn(fqdn), "TXT")

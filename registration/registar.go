@@ -58,8 +58,8 @@ func (r *Registrar) Register(options RegisterOptions) (*Resource, error) {
 	account, err := r.core.Accounts.New(accMsg)
 	if err != nil {
 		// FIXME seems impossible
-		errorDetails, ok := err.(acme.ProblemDetails)
-		if !ok || errorDetails.HTTPStatus != http.StatusConflict {
+		var errorDetails acme.ProblemDetails
+		if !errors.As(err, &errorDetails) || errorDetails.HTTPStatus != http.StatusConflict {
 			return nil, err
 		}
 	}
@@ -81,9 +81,9 @@ func (r *Registrar) RegisterWithExternalAccountBinding(options RegisterEABOption
 
 	account, err := r.core.Accounts.NewEAB(accMsg, options.Kid, options.HmacEncoded)
 	if err != nil {
-		errorDetails, ok := err.(acme.ProblemDetails)
 		// FIXME seems impossible
-		if !ok || errorDetails.HTTPStatus != http.StatusConflict {
+		var errorDetails acme.ProblemDetails
+		if !errors.As(err, &errorDetails) || errorDetails.HTTPStatus != http.StatusConflict {
 			return nil, err
 		}
 	}
@@ -96,7 +96,7 @@ func (r *Registrar) RegisterWithExternalAccountBinding(options RegisterEABOption
 // This is similar to the Register function,
 // but acting on an existing registration link and resource.
 func (r *Registrar) QueryRegistration() (*Resource, error) {
-	if r == nil || r.user == nil {
+	if r == nil || r.user == nil || r.user.GetRegistration() == nil {
 		return nil, errors.New("acme: cannot query the registration of a nil client or user")
 	}
 

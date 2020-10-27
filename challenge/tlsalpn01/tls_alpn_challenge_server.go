@@ -2,6 +2,7 @@ package tlsalpn01
 
 import (
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -87,7 +88,7 @@ func (s *ProviderServer) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	// Server was created, close it.
-	if err := s.listener.Close(); err != nil && err != http.ErrServerClosed {
+	if err := s.listener.Close(); err != nil && errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
 

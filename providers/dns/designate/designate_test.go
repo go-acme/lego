@@ -102,7 +102,7 @@ func TestNewDNSProvider_fromEnv(t *testing.T) {
 				EnvTenantName: "E",
 			},
 			expected: "designate: some credentials information are missing: OS_REGION_NAME",
-		}
+		},
 	}
 
 	for _, test := range testCases {

@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"time"
 
@@ -154,7 +155,35 @@ func (a *Core) GetDirectory() acme.Directory {
 
 func getDirectory(do *sender.Doer, caDirURL string) (acme.Directory, error) {
 	var dir acme.Directory
-	if _, err := do.Get(caDirURL, &dir); err != nil {
+
+	bo := backoff.NewExponentialBackOff()
+	bo.InitialInterval = 200 * time.Millisecond
+	bo.MaxInterval = 5 * time.Second
+	bo.MaxElapsedTime = 20 * time.Second
+
+	ctx, cancel := context.WithCancel(context.Background())
+	operation := func() error {
+		var err error
+		_, err = do.Get(caDirURL, &dir)
+		if err != nil {
+			var e *net.DNSError
+			if errors.As(err, &e) {
+				return err
+			}
+
+			cancel()
+			return err
+		}
+
+		return nil
+	}
+
+	notify := func(err error, duration time.Duration) {
+		log.Infof("retry due do: %v", err)
+	}
+
+	err := backoff.RetryNotify(operation, backoff.WithContext(bo, ctx), notify)
+	if err != nil {
 		return dir, fmt.Errorf("get directory at '%s': %w", caDirURL, err)
 	}
 

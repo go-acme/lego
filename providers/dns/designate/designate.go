@@ -63,7 +63,7 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for Designate.
 // Credentials must be passed in the environment variables:
-// OS_AUTH_URL, OS_USERNAME, OS_PASSWORD, OS_TENANT_NAME, OS_REGION_NAME.
+// OS_AUTH_URL, OS_USERNAME, OS_PASSWORD, OS_REGION_NAME.
 // Or you can specify OS_CLOUD to read the credentials from the according cloud entry.
 func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
@@ -80,7 +80,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 		config.opts = *opts
 	} else {
-		_, err = env.Get(EnvAuthURL, EnvUsername, EnvPassword, EnvTenantName, EnvRegionName)
+		_, err = env.Get(EnvAuthURL, EnvUsername, EnvPassword, EnvRegionName)
 		if err != nil {
 			return nil, fmt.Errorf("designate: %w", err)
 		}

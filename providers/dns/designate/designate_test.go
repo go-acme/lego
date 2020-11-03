@@ -56,9 +56,8 @@ func TestNewDNSProvider_fromEnv(t *testing.T) {
 				EnvUsername:   "",
 				EnvPassword:   "",
 				EnvRegionName: "",
-				EnvTenantName: "",
 			},
-			expected: "designate: some credentials information are missing: OS_AUTH_URL,OS_USERNAME,OS_PASSWORD,OS_TENANT_NAME,OS_REGION_NAME",
+			expected: "designate: some credentials information are missing: OS_AUTH_URL,OS_USERNAME,OS_PASSWORD,OS_REGION_NAME",
 		},
 		{
 			desc: "missing auth url",
@@ -103,18 +102,7 @@ func TestNewDNSProvider_fromEnv(t *testing.T) {
 				EnvTenantName: "E",
 			},
 			expected: "designate: some credentials information are missing: OS_REGION_NAME",
-		},
-		{
-			desc: "missing tenant name",
-			envVars: map[string]string{
-				EnvAuthURL:    server.URL + "/v2.0/",
-				EnvUsername:   "B",
-				EnvPassword:   "C",
-				EnvRegionName: "D",
-				EnvTenantName: "",
-			},
-			expected: "designate: some credentials information are missing: OS_TENANT_NAME",
-		},
+		}
 	}
 
 	for _, test := range testCases {
@@ -307,7 +295,7 @@ func getServer(t *testing.T) *httptest.Server {
 		"user": {
 			"name": "a",
 			"roles": [ ],
-			"role_links": [ ] 
+			"role_links": [ ]
 		},
 		"serviceCatalog": [
 			{

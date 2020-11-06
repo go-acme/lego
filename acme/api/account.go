@@ -51,7 +51,7 @@ func (a *AccountService) Get(accountURL string) (acme.Account, error) {
 	}
 
 	var account acme.Account
-	_, err := a.core.post(accountURL, acme.Account{}, &account)
+	_, err := a.core.postAsGet(accountURL, &account)
 	if err != nil {
 		return acme.Account{}, err
 	}

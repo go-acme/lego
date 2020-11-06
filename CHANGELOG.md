@@ -1,5 +1,23 @@
 # Changelog
 
+## [v4.1.0] - 2020-11-06
+
+### Added:
+
+- **[dnsprovider]** Add DNS provider for Infomaniak
+- **[dnsprovider]** joker: add support for SVC API
+- **[dnsprovider]** gcloud: add an option to allow the use of private zones
+
+### Changed:
+
+- **[dnsprovider]** rfc2136: ensure TSIG algorithm is fully qualified
+- **[dnsprovider]** designate: Deprecate OS_TENANT_NAME as required field
+
+### Fixed:
+
+- **[lib]** acme/api: use postAsGet instead of post for AccountService.Get
+- **[lib]** fix: use http.Header.Set method instead of Add.
+
 ## [v4.0.1] - 2020-09-03
 
 ### Fixed:

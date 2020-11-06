@@ -41,6 +41,9 @@ builds:
       - goos: openbsd
         goarch: arm
 
+checksum:
+  name_template: checksums.txt
+
 archives:
   - id: lego
     name_template: '{{ .ProjectName }}_v{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}'
@@ -51,6 +54,15 @@ archives:
     files:
       - LICENSE
       - CHANGELOG.md
+
+nfpms:
+  - homepage: https://go-acme.github.io/lego/
+    description: Let's Encrypt client and ACME library written in Go.
+    license: MIT
+    formats:
+      - deb
+      - rpm
+    bindir: /usr/bin
 
 release:
   disable: true

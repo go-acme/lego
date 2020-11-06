@@ -236,6 +236,38 @@ func TestChallengeHTTP_Client_Obtain(t *testing.T) {
 	assert.Empty(t, resource.CSR)
 }
 
+func TestChallengeHTTP_Client_Registration_QueryRegistration(t *testing.T) {
+	err := os.Setenv("LEGO_CA_CERTIFICATES", "./fixtures/certs/pebble.minica.pem")
+	require.NoError(t, err)
+	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
+
+	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err, "Could not generate test key")
+
+	user := &fakeUser{privateKey: privateKey}
+	config := lego.NewConfig(user)
+	config.CADirURL = load.PebbleOptions.HealthCheckURL
+
+	client, err := lego.NewClient(config)
+	require.NoError(t, err)
+
+	err = client.Challenge.SetHTTP01Provider(http01.NewProviderServer("", "5002"))
+	require.NoError(t, err)
+
+	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
+	require.NoError(t, err)
+	user.registration = reg
+
+	resource, err := client.Registration.QueryRegistration()
+	require.NoError(t, err)
+
+	require.NotNil(t, resource)
+
+	assert.Equal(t, "valid", resource.Body.Status)
+	assert.Regexp(t, `https://localhost:14000/list-orderz/\d+`, resource.Body.Orders)
+	assert.Regexp(t, `https://localhost:14000/my-account/\d+`, resource.URI)
+}
+
 func TestChallengeTLS_Client_Obtain(t *testing.T) {
 	err := os.Setenv("LEGO_CA_CERTIFICATES", "./fixtures/certs/pebble.minica.pem")
 	require.NoError(t, err)

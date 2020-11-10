@@ -41,6 +41,22 @@ func Test_getLink(t *testing.T) {
 			relName:  "up",
 			expected: "",
 		},
+		{
+			desc: "success with multiple values without <> around the auth url",
+			header: http.Header{
+				"Link": []string{`https://acme-staging-v02.api.letsencrypt.org/next; rel="next", https://acme-staging-v02.api.letsencrypt.org/up?query; rel="up"`},
+			},
+			relName:  "up",
+			expected: "https://acme-staging-v02.api.letsencrypt.org/up?query",
+		},
+		{
+			desc: "success with multiple headers without <> around the auth url",
+			header: http.Header{
+				"Link": []string{`https://acme-staging-v02.api.letsencrypt.org/next; rel="next"`, `https://acme-staging-v02.api.letsencrypt.org/up?query; rel="up"`},
+			},
+			relName:  "up",
+			expected: "https://acme-staging-v02.api.letsencrypt.org/up?query",
+		},
 	}
 
 	for _, test := range testCases {

@@ -20,7 +20,7 @@ func getLink(header http.Header, rel string) string {
 }
 
 func getLinks(header http.Header, rel string) []string {
-	linkExpr := regexp.MustCompile(`<(.+?)>(?:;[^;]+)*?;\s*rel="(.+?)"`)
+	linkExpr := regexp.MustCompile(`<?(\S+?)>?(?:;[^;]+)*?;\s*rel="(.+?)"`)
 
 	var links []string
 	for _, link := range header["Link"] {

@@ -68,7 +68,8 @@ type endpoint struct {
 }
 
 type zoneItem struct {
-	ID string `json:"id"`
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
 type zonesResponse struct {
@@ -182,15 +183,13 @@ func (d *DNSProvider) getZoneID(zone string) (string, error) {
 		return "", fmt.Errorf("zone %s not found", zone)
 	}
 
-	if len(zonesRes.Zones) > 1 {
-		return "", errors.New("to many zones found")
+	for _, z := range zonesRes.Zones {
+		if z.Name == zone {
+			return z.ID, nil
+		}
 	}
 
-	if zonesRes.Zones[0].ID == "" {
-		return "", errors.New("id not found")
-	}
-
-	return zonesRes.Zones[0].ID, nil
+	return "", fmt.Errorf("zone %s not found", zone)
 }
 
 func (d *DNSProvider) getRecordSetID(zoneID, fqdn string) (string, error) {

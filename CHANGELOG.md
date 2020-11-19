@@ -1,5 +1,12 @@
 # Changelog
 
+## [v4.1.1] - 2020-11-19
+
+### Fixed:
+
+- **[dnsprovider]** otc: select correct zone if multiple returned
+- **[dnsprovider]** azure: fix target must be a non-nil pointer
+
 ## [v4.1.0] - 2020-11-06
 
 ### Added:

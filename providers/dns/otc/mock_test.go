@@ -76,7 +76,8 @@ func (m *DNSServerMock) HandleListZonesSuccessfully() {
 
 		fmt.Fprintf(w, `{
 		  "zones":[{
-		    "id":"123123"
+		    "id":"123123",
+		    "name":"example.com."
 		  }]}
 		`)
 	})

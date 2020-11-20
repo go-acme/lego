@@ -66,27 +66,8 @@ func (d *DNSProvider) getHostedZone(fqdn string) (*hostedZone, error) {
 		return nil, err
 	}
 
-	u := "/servers/localhost/zones"
+	u := fmt.Sprintf("/servers/localhost/zones/%s.", dns01.UnFqdn(authZone))
 	result, err := d.sendRequest(http.MethodGet, u, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	var zones []hostedZone
-	err = json.Unmarshal(result, &zones)
-	if err != nil {
-		return nil, err
-	}
-
-	u = ""
-	for _, zone := range zones {
-		if dns01.UnFqdn(zone.Name) == dns01.UnFqdn(authZone) {
-			u = zone.URL
-			break
-		}
-	}
-
-	result, err = d.sendRequest(http.MethodGet, u, nil)
 	if err != nil {
 		return nil, err
 	}

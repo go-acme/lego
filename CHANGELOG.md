@@ -1,5 +1,11 @@
 # Changelog
 
+## [v4.1.2] - 2020-11-21
+
+### Fixed:
+
+- **[lib]** fix: preferred chain support.
+
 ## [v4.1.1] - 2020-11-19
 
 ### Fixed:

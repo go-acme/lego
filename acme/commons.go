@@ -106,13 +106,9 @@ type Account struct {
 // ExtendedOrder a extended Order.
 type ExtendedOrder struct {
 	Order
+
 	// The order URL, contains the value of the response header `Location`
 	Location string `json:"-"`
-
-	// AlternateChainLinks (optional, array of string):
-	// URLs of "alternate" link relation
-	// - https://tools.ietf.org/html/rfc8555#section-7.4.2
-	AlternateChainLinks []string `json:"-"`
 }
 
 // Order the ACME order Object.
@@ -286,4 +282,10 @@ type RevokeCertMessage struct {
 	// If a request contains a disallowed reasonCode the server MUST reject it with the error type "urn:ietf:params:acme:error:badRevocationReason".
 	// The problem document detail SHOULD indicate which reasonCodes are allowed.
 	Reason *uint `json:"reason,omitempty"`
+}
+
+// RawCertificate raw data of a certificate.
+type RawCertificate struct {
+	Cert   []byte
+	Issuer []byte
 }

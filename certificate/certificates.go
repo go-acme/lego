@@ -307,29 +307,25 @@ func (c *Certifier) checkResponse(order acme.ExtendedOrder, certRes *Resource, b
 		return valid, err
 	}
 
-	links := append([]string{order.Certificate}, order.AlternateChainLinks...)
+	certs, err := c.core.Certificates.GetAll(order.Certificate, bundle)
+	if err != nil {
+		return false, err
+	}
 
-	for i, link := range links {
-		cert, issuer, err := c.core.Certificates.Get(link, bundle)
-		if err != nil {
-			return false, err
-		}
+	// Set the default certificate
+	certRes.IssuerCertificate = certs[order.Certificate].Issuer
+	certRes.Certificate = certs[order.Certificate].Cert
+	certRes.CertURL = order.Certificate
+	certRes.CertStableURL = order.Certificate
 
-		// Set the default certificate
-		if i == 0 {
-			certRes.IssuerCertificate = issuer
-			certRes.Certificate = cert
-			certRes.CertURL = link
-			certRes.CertStableURL = link
-		}
+	if preferredChain == "" {
+		log.Infof("[%s] Server responded with a certificate.", certRes.Domain)
 
-		if preferredChain == "" {
-			log.Infof("[%s] Server responded with a certificate.", certRes.Domain)
+		return true, nil
+	}
 
-			return true, nil
-		}
-
-		ok, err := hasPreferredChain(issuer, preferredChain)
+	for link, cert := range certs {
+		ok, err := hasPreferredChain(cert.Issuer, preferredChain)
 		if err != nil {
 			return false, err
 		}
@@ -337,8 +333,8 @@ func (c *Certifier) checkResponse(order acme.ExtendedOrder, certRes *Resource, b
 		if ok {
 			log.Infof("[%s] Server responded with a certificate for the preferred certificate chains %q.", certRes.Domain, preferredChain)
 
-			certRes.IssuerCertificate = issuer
-			certRes.Certificate = cert
+			certRes.IssuerCertificate = cert.Issuer
+			certRes.Certificate = cert.Cert
 			certRes.CertURL = link
 			certRes.CertStableURL = link
 

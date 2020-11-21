@@ -25,9 +25,8 @@ func (o *OrderService) New(domains []string) (acme.ExtendedOrder, error) {
 	}
 
 	return acme.ExtendedOrder{
-		Order:               order,
-		Location:            resp.Header.Get("Location"),
-		AlternateChainLinks: getLinks(resp.Header, "alternate"),
+		Order:    order,
+		Location: resp.Header.Get("Location"),
 	}, nil
 }
 
@@ -38,15 +37,12 @@ func (o *OrderService) Get(orderURL string) (acme.ExtendedOrder, error) {
 	}
 
 	var order acme.Order
-	resp, err := o.core.postAsGet(orderURL, &order)
+	_, err := o.core.postAsGet(orderURL, &order)
 	if err != nil {
 		return acme.ExtendedOrder{}, err
 	}
 
-	return acme.ExtendedOrder{
-		Order:               order,
-		AlternateChainLinks: getLinks(resp.Header, "alternate"),
-	}, nil
+	return acme.ExtendedOrder{Order: order}, nil
 }
 
 // UpdateForCSR Updates an order for a CSR.
@@ -56,7 +52,7 @@ func (o *OrderService) UpdateForCSR(orderURL string, csr []byte) (acme.ExtendedO
 	}
 
 	var order acme.Order
-	resp, err := o.core.post(orderURL, csrMsg, &order)
+	_, err := o.core.post(orderURL, csrMsg, &order)
 	if err != nil {
 		return acme.ExtendedOrder{}, err
 	}
@@ -65,8 +61,5 @@ func (o *OrderService) UpdateForCSR(orderURL string, csr []byte) (acme.ExtendedO
 		return acme.ExtendedOrder{}, order.Error
 	}
 
-	return acme.ExtendedOrder{
-		Order:               order,
-		AlternateChainLinks: getLinks(resp.Header, "alternate"),
-	}, nil
+	return acme.ExtendedOrder{Order: order}, nil
 }

@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"encoding/pem"
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -289,12 +290,15 @@ func Test_checkResponse_alternate(t *testing.T) {
 	defer tearDown()
 
 	mux.HandleFunc("/certificate", func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Add("Link", fmt.Sprintf(`<%s/certificate/1>;title="foo";rel="alternate"`, apiURL))
+
 		_, err := w.Write([]byte(certResponseMock))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 	})
-	mux.HandleFunc("/certificate2", func(w http.ResponseWriter, _ *http.Request) {
+
+	mux.HandleFunc("/certificate/1", func(w http.ResponseWriter, _ *http.Request) {
 		_, err := w.Write([]byte(certResponseMock2))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -314,9 +318,10 @@ func Test_checkResponse_alternate(t *testing.T) {
 			Status:      acme.StatusValid,
 			Certificate: apiURL + "/certificate",
 		},
-		AlternateChainLinks: []string{apiURL + "/certificate2"},
 	}
-	certRes := &Resource{}
+	certRes := &Resource{
+		Domain: "example.com",
+	}
 	bundle := false
 
 	valid, err := certifier.checkResponse(order, certRes, bundle, "DST Root CA X3")
@@ -324,9 +329,9 @@ func Test_checkResponse_alternate(t *testing.T) {
 
 	assert.True(t, valid)
 	assert.NotNil(t, certRes)
-	assert.Equal(t, "", certRes.Domain)
-	assert.Contains(t, certRes.CertStableURL, "/certificate2")
-	assert.Contains(t, certRes.CertURL, "/certificate2")
+	assert.Equal(t, "example.com", certRes.Domain)
+	assert.Contains(t, certRes.CertStableURL, "/certificate/1")
+	assert.Contains(t, certRes.CertURL, "/certificate/1")
 	assert.Nil(t, certRes.CSR)
 	assert.Nil(t, certRes.PrivateKey)
 	assert.Equal(t, certResponseMock2, string(certRes.Certificate), "Certificate")

@@ -41,10 +41,6 @@ func TestOrderService_New(t *testing.T) {
 			return
 		}
 
-		w.Header().Add("Link", `<https://example.com/acme/cert/1>;rel="alternate"`)
-		w.Header().Add("Link", `<https://example.com/acme/cert/2>;title="foo";rel="alternate"`)
-		w.Header().Add("Link", `<https://example.com/acme/cert/3>;title="foo";rel="alternate", <https://example.com/acme/cert/4>;rel="alternate"`)
-
 		err = tester.WriteJSONResponse(w, acme.Order{
 			Status:      acme.StatusValid,
 			Identifiers: order.Identifiers,
@@ -65,12 +61,6 @@ func TestOrderService_New(t *testing.T) {
 		Order: acme.Order{
 			Status:      "valid",
 			Identifiers: []acme.Identifier{{Type: "dns", Value: "example.com"}},
-		},
-		AlternateChainLinks: []string{
-			"https://example.com/acme/cert/1",
-			"https://example.com/acme/cert/2",
-			"https://example.com/acme/cert/3",
-			"https://example.com/acme/cert/4",
 		},
 	}
 	assert.Equal(t, expected, order)

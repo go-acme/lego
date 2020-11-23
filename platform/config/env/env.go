@@ -32,22 +32,24 @@ func Get(names ...string) (map[string]string, error) {
 	return values, nil
 }
 
-// GetWithFallback Get environment variable values
-// The first name in each group is use as key in the result map
+// GetWithFallback Get environment variable values.
+// The first name in each group is use as key in the result map.
+//
+// case 1:
 //
 //	// LEGO_ONE="ONE"
 //	// LEGO_TWO="TWO"
 //	env.GetWithFallback([]string{"LEGO_ONE", "LEGO_TWO"})
 //	// => "LEGO_ONE" = "ONE"
 //
-// ----
+// case 2:
 //
 //	// LEGO_ONE=""
 //	// LEGO_TWO="TWO"
 //	env.GetWithFallback([]string{"LEGO_ONE", "LEGO_TWO"})
 //	// => "LEGO_ONE" = "TWO"
 //
-// ----
+// case 3:
 //
 //	// LEGO_ONE=""
 //	// LEGO_TWO=""

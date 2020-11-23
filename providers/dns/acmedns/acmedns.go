@@ -15,7 +15,7 @@ const (
 	// envNamespace is the prefix for ACME-DNS environment variables.
 	envNamespace = "ACME_DNS_"
 
-	// EnvAPIBase is the environment variable name for the ACME-DNS API address
+	// EnvAPIBase is the environment variable name for the ACME-DNS API address.
 	// (e.g. https://acmedns.your-domain.com).
 	EnvAPIBase = envNamespace + "API_BASE"
 	// EnvStoragePath is the environment variable name for the ACME-DNS JSON account data file.

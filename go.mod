@@ -42,7 +42,7 @@ require (
 	github.com/stretchr/testify v1.6.1
 	github.com/transip/gotransip/v6 v6.2.0
 	github.com/urfave/cli v1.22.4
-	github.com/vultr/govultr v0.5.0
+	github.com/vultr/govultr/v2 v2.0.0
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	golang.org/x/net v0.0.0-20200822124328-c89045814202
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d

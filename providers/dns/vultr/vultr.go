@@ -4,17 +4,16 @@ package vultr
 
 import (
 	"context"
-	"crypto/tls"
 	"errors"
 	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/vultr/govultr"
+	"github.com/vultr/govultr/v2"
+	"golang.org/x/oauth2"
 )
 
 // Environment variables names.
@@ -35,7 +34,7 @@ type Config struct {
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
-	HTTPClient         *http.Client
+	HTTPTimeout        time.Duration
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
@@ -44,13 +43,7 @@ func NewDefaultConfig() *Config {
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
-		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30),
-			// from Vultr Client
-			Transport: &http.Transport{
-				TLSNextProto: make(map[string]func(string, *tls.Conn) http.RoundTripper),
-			},
-		},
+		HTTPTimeout:        env.GetOrDefaultSecond(EnvHTTPTimeout, 30),
 	}
 }
 
@@ -84,7 +77,15 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("vultr: credentials missing")
 	}
 
-	client := govultr.NewClient(config.HTTPClient, config.APIKey)
+	tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: config.APIKey})
+	oauth2Client := &http.Client{
+		Timeout: config.HTTPTimeout,
+		Transport: &oauth2.Transport{
+			Source: tokenSource,
+		},
+	}
+
+	client := govultr.NewClient(oauth2Client)
 
 	return &DNSProvider{client: client, config: config}, nil
 }
@@ -102,7 +103,15 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	name := extractRecordName(fqdn, zoneDomain)
 
-	err = d.client.DNSRecord.Create(ctx, zoneDomain, "TXT", name, `"`+value+`"`, d.config.TTL, 0)
+	prio := 0
+	req := govultr.DomainRecordReq{
+		Name:     name,
+		Type:     "TXT",
+		Data:     `"` + value + `"`,
+		TTL:      d.config.TTL,
+		Priority: &prio,
+	}
+	_, err = d.client.DomainRecord.Create(ctx, zoneDomain, &req)
 	if err != nil {
 		return fmt.Errorf("vultr: API call failed: %w", err)
 	}
@@ -123,7 +132,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	var allErr []string
 	for _, rec := range records {
-		err := d.client.DNSRecord.Delete(ctx, zoneDomain, strconv.Itoa(rec.RecordID))
+		err := d.client.DomainRecord.Delete(ctx, zoneDomain, rec.ID)
 		if err != nil {
 			allErr = append(allErr, err.Error())
 		}
@@ -143,12 +152,12 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (string, error) {
-	domains, err := d.client.DNSDomain.List(ctx)
+	domains, _, err := d.client.Domain.List(ctx, nil)
 	if err != nil {
 		return "", fmt.Errorf("API call failed: %w", err)
 	}
 
-	var hostedDomain govultr.DNSDomain
+	var hostedDomain govultr.Domain
 	for _, dom := range domains {
 		if strings.HasSuffix(domain, dom.Domain) {
 			if len(dom.Domain) > len(hostedDomain.Domain) {
@@ -163,14 +172,14 @@ func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (string,
 	return hostedDomain.Domain, nil
 }
 
-func (d *DNSProvider) findTxtRecords(ctx context.Context, domain, fqdn string) (string, []govultr.DNSRecord, error) {
+func (d *DNSProvider) findTxtRecords(ctx context.Context, domain, fqdn string) (string, []govultr.DomainRecord, error) {
 	zoneDomain, err := d.getHostedZone(ctx, domain)
 	if err != nil {
 		return "", nil, err
 	}
 
-	var records []govultr.DNSRecord
-	result, err := d.client.DNSRecord.List(ctx, zoneDomain)
+	var records []govultr.DomainRecord
+	result, _, err := d.client.DomainRecord.List(ctx, zoneDomain, nil)
 	if err != nil {
 		return "", records, fmt.Errorf("API call has failed: %w", err)
 	}

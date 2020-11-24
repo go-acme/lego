@@ -152,18 +152,28 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (string, error) {
-	domains, _, err := d.client.Domain.List(ctx, nil)
-	if err != nil {
-		return "", fmt.Errorf("API call failed: %w", err)
-	}
-
+	listOptions := &govultr.ListOptions{PerPage: 25}
 	var hostedDomain govultr.Domain
-	for _, dom := range domains {
-		if strings.HasSuffix(domain, dom.Domain) {
-			if len(dom.Domain) > len(hostedDomain.Domain) {
-				hostedDomain = dom
+	for {
+		domains, meta, err := d.client.Domain.List(ctx, listOptions)
+		if err != nil {
+			return "", fmt.Errorf("API call failed: %w", err)
+		}
+		for _, dom := range domains {
+			if strings.HasSuffix(domain, dom.Domain) {
+				if len(dom.Domain) > len(hostedDomain.Domain) {
+					hostedDomain = dom
+					break
+				}
 			}
 		}
+		if hostedDomain.Domain != "" {
+			break
+		}
+		if meta.Links.Next == "" {
+			break
+		}
+		listOptions.Cursor = meta.Links.Next
 	}
 	if hostedDomain.Domain == "" {
 		return "", fmt.Errorf("no matching Vultr domain found for domain %s", domain)
@@ -178,17 +188,24 @@ func (d *DNSProvider) findTxtRecords(ctx context.Context, domain, fqdn string) (
 		return "", nil, err
 	}
 
+	listOptions := &govultr.ListOptions{PerPage: 25}
 	var records []govultr.DomainRecord
-	result, _, err := d.client.DomainRecord.List(ctx, zoneDomain, nil)
-	if err != nil {
-		return "", records, fmt.Errorf("API call has failed: %w", err)
-	}
-
-	recordName := extractRecordName(fqdn, zoneDomain)
-	for _, record := range result {
-		if record.Type == "TXT" && record.Name == recordName {
-			records = append(records, record)
+	for {
+		result, meta, err := d.client.DomainRecord.List(ctx, zoneDomain, listOptions)
+		if err != nil {
+			return "", records, fmt.Errorf("API call has failed: %w", err)
 		}
+
+		recordName := extractRecordName(fqdn, zoneDomain)
+		for _, record := range result {
+			if record.Type == "TXT" && record.Name == recordName {
+				records = append(records, record)
+			}
+		}
+		if meta.Links.Next == "" {
+			break
+		}
+		listOptions.Cursor = meta.Links.Next
 	}
 
 	return zoneDomain, records, nil

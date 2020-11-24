@@ -561,9 +561,8 @@ func checkOrderStatus(order acme.ExtendedOrder) (bool, error) {
 }
 
 // https://tools.ietf.org/html/rfc8555#section-7.1.4
-// The domain name MUST be encoded
-//   in the form in which it would appear in a certificate.  That is, it
-//   MUST be encoded according to the rules in Section 7 of [RFC5280].
+// The domain name MUST be encoded in the form in which it would appear in a certificate.
+// That is, it MUST be encoded according to the rules in Section 7 of [RFC5280].
 //
 // https://tools.ietf.org/html/rfc5280#section-7
 func sanitizeDomain(domains []string) []string {

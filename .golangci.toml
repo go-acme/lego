@@ -41,6 +41,7 @@
     "nlreturn", # not relevant
     "wrapcheck",
     "tparallel", # not relevant
+    "paralleltest", # not relevant
     "exhaustivestruct", # too many false-positive
   ]
 

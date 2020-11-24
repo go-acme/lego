@@ -54,7 +54,7 @@ type UpdateDNSRecordsRequest struct {
 }
 
 // DNSRecordSet as specified in netcup WSDL.
-// needed in UpdateDNSRecordsRequest
+// needed in UpdateDNSRecordsRequest.
 // https://ccp.netcup.net/run/webservice/servers/endpoint.php#Dnsrecordset
 type DNSRecordSet struct {
 	DNSRecords []DNSRecord `json:"dnsrecords"`

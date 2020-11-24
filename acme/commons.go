@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// Challenge statuses
+// Challenge statuses.
 // https://tools.ietf.org/html/rfc8555#section-7.1.6
 const (
 	StatusPending     = "pending"
@@ -256,7 +256,7 @@ type Identifier struct {
 	Value string `json:"value"`
 }
 
-// CSRMessage Certificate Signing Request
+// CSRMessage Certificate Signing Request.
 // - https://tools.ietf.org/html/rfc8555#section-7.4
 type CSRMessage struct {
 	// csr (required, string):
@@ -266,7 +266,7 @@ type CSRMessage struct {
 	Csr string `json:"csr"`
 }
 
-// RevokeCertMessage a certificate revocation message
+// RevokeCertMessage a certificate revocation message.
 // - https://tools.ietf.org/html/rfc8555#section-7.6
 // - https://tools.ietf.org/html/rfc5280#section-5.3.1
 type RevokeCertMessage struct {

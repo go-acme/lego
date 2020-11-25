@@ -1,5 +1,11 @@
 # Changelog
 
+## [v4.1.3] - 2020-11-25
+
+### Fixed:
+
+- **[dnsprovider]** azure: fix error handling.
+
 ## [v4.1.2] - 2020-11-21
 
 ### Fixed:

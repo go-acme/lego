@@ -182,7 +182,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	// Get existing record set
 	rset, err := rsc.Get(ctx, d.config.ResourceGroup, zone, relative, dns.TXT)
 	if err != nil {
-		var detailed *autorest.DetailedError
+		var detailed autorest.DetailedError
 		if !errors.As(err, &detailed) || detailed.StatusCode != http.StatusNotFound {
 			return fmt.Errorf("azure: %w", err)
 		}

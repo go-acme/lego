@@ -34,7 +34,7 @@ type Config struct {
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
-	HTTPTimeout        time.Duration
+	HTTPClient         *http.Client
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
@@ -43,7 +43,6 @@ func NewDefaultConfig() *Config {
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
-		HTTPTimeout:        env.GetOrDefaultSecond(EnvHTTPTimeout, 30),
 	}
 }
 
@@ -63,6 +62,12 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 	config := NewDefaultConfig()
 	config.APIKey = values[EnvAPIKey]
+	config.HTTPClient = &http.Client{
+		Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30),
+		Transport: &oauth2.Transport{
+			Source: oauth2.StaticTokenSource(&oauth2.Token{AccessToken: config.APIKey}),
+		},
+	}
 
 	return NewDNSProviderConfig(config)
 }
@@ -77,15 +82,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("vultr: credentials missing")
 	}
 
-	tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: config.APIKey})
-	oauth2Client := &http.Client{
-		Timeout: config.HTTPTimeout,
-		Transport: &oauth2.Transport{
-			Source: tokenSource,
-		},
-	}
-
-	client := govultr.NewClient(oauth2Client)
+	client := govultr.NewClient(config.HTTPClient)
 
 	return &DNSProvider{client: client, config: config}, nil
 }

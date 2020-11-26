@@ -103,13 +103,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	name := extractRecordName(fqdn, zoneDomain)
 
-	prio := 0
 	req := govultr.DomainRecordReq{
 		Name:     name,
 		Type:     "TXT",
 		Data:     `"` + value + `"`,
 		TTL:      d.config.TTL,
-		Priority: &prio,
+		Priority: func(v int) *int { return &v }(0),
 	}
 	_, err = d.client.DomainRecord.Create(ctx, zoneDomain, &req)
 	if err != nil {
@@ -153,30 +152,30 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (string, error) {
 	listOptions := &govultr.ListOptions{PerPage: 25}
+
 	var hostedDomain govultr.Domain
-	for {
+
+	for hostedDomain.Domain == "" {
 		domains, meta, err := d.client.Domain.List(ctx, listOptions)
 		if err != nil {
 			return "", fmt.Errorf("API call failed: %w", err)
 		}
+
 		for _, dom := range domains {
-			if strings.HasSuffix(domain, dom.Domain) {
-				if len(dom.Domain) > len(hostedDomain.Domain) {
-					hostedDomain = dom
-					break
-				}
+			if strings.HasSuffix(domain, dom.Domain) && len(dom.Domain) > len(hostedDomain.Domain) {
+				hostedDomain = dom
 			}
 		}
-		if hostedDomain.Domain != "" {
-			break
-		}
+
 		if meta.Links.Next == "" {
 			break
 		}
+
 		listOptions.Cursor = meta.Links.Next
 	}
+
 	if hostedDomain.Domain == "" {
-		return "", fmt.Errorf("no matching Vultr domain found for domain %s", domain)
+		return "", fmt.Errorf("no matching domain found for domain %s", domain)
 	}
 
 	return hostedDomain.Domain, nil
@@ -189,6 +188,7 @@ func (d *DNSProvider) findTxtRecords(ctx context.Context, domain, fqdn string) (
 	}
 
 	listOptions := &govultr.ListOptions{PerPage: 25}
+
 	var records []govultr.DomainRecord
 	for {
 		result, meta, err := d.client.DomainRecord.List(ctx, zoneDomain, listOptions)
@@ -202,9 +202,11 @@ func (d *DNSProvider) findTxtRecords(ctx context.Context, domain, fqdn string) (
 				records = append(records, record)
 			}
 		}
+
 		if meta.Links.Next == "" {
 			break
 		}
+
 		listOptions.Cursor = meta.Links.Next
 	}
 

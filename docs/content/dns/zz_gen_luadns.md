@@ -23,7 +23,7 @@ Here is an example bash command using the LuaDNS provider:
 ```bash
 LUADNS_API_USERNAME=youremail \
 LUADNS_API_TOKEN=xxxxxxxx \
-lego --dns luadns --email me@example.com --domains test.example.com run
+lego --email myemail@example.com --dns luadns --domains my.example.org run
 ```
 
 

@@ -22,7 +22,7 @@ Here is an example bash command using the Hetzner provider:
 
 ```bash
 HETZNER_API_KEY=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx \
-lego --dns hetzner --domains my.domain.com --email my@email.com run
+lego -email myemail@example.com --dns hetzner --domains my.example.org -run
 ```
 
 

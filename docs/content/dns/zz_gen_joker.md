@@ -25,17 +25,17 @@ Here is an example bash command using the Joker provider:
 JOKER_API_MODE=SVC \
 JOKER_USERNAME=<your email> \
 JOKER_PASSWORD=<your password> \
-lego --dns joker --domains my.domain.com --email my@email.com run
+lego --email myemail@example.com --dns joker --domains my.example.org run
 
 # DMAPI
 JOKER_API_MODE=DMAPI \
 JOKER_USERNAME=<your email> \
 JOKER_PASSWORD=<your password> \
-lego --dns joker --domains my.domain.com --email my@email.com run
+lego --email myemail@example.com --dns joker --domains my.example.org run
 ## or
 JOKER_API_MODE=DMAPI \
 JOKER_API_KEY=<your API key> \
-lego --dns joker --domains my.domain.com --email my@email.com run
+lego --email myemail@example.com --dns joker --domains my.example.org run
 ```
 
 
@@ -48,7 +48,7 @@ lego --dns joker --domains my.domain.com --email my@email.com run
 | `JOKER_API_KEY` | API key (only with DMAPI mode) |
 | `JOKER_API_MODE` | 'DMAPI' or 'SVC'. DMAPI is for resellers accounts. (Default: DMAPI) |
 | `JOKER_PASSWORD` | Joker.com password |
-| `JOKER_USERNAME` | Joker.com username (email address) |
+| `JOKER_USERNAME` | Joker.com username |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).

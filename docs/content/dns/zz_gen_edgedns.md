@@ -26,7 +26,7 @@ AKAMAI_CLIENT_SECRET=abcdefghijklmnopqrstuvwxyz1234567890ABCDEFG= \
 AKAMAI_CLIENT_TOKEN=akab-mnbvcxzlkjhgfdsapoiuytrewq1234567 \
 AKAMAI_HOST=akab-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.luna.akamaiapis.net \
 AKAMAI_ACCESS_TOKEN=akab-1234567890qwerty-asdfghjklzxcvtnu \
-lego --domains="example.zone" --email="testuser@mail.me" --dns="edgedns" -a run
+lego --email myemail@example.com --dns edgedns --domains my.example.org run
 ```
 
 

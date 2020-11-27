@@ -18,9 +18,14 @@ Configuration for [Internet Initiative Japan](https://www.iij.ad.jp/en/).
 
 - Code: `iij`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the Internet Initiative Japan provider:
+
+```bash
+IIJ_API_ACCESS_KEY=xxxxxxxx \
+IIJ_API_SECRET_KEY=yyyyyy \
+IIJ_DO_SERVICE_CODE=zzzzzz \
+lego -email myemail@example.com --dns iij --domains my.example.org -run
+```
 
 
 

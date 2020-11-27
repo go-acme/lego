@@ -9,7 +9,7 @@ slug: netlify
 <!-- providers/dns/netlify/netlify.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v0.3.7
+Since: v3.7.0
 
 Configuration for [Netlify](https://www.netlify.com).
 
@@ -22,7 +22,7 @@ Here is an example bash command using the Netlify provider:
 
 ```bash
 NETLIFY_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \
-lego --dns netlify --domains my.domain.com --email my@email.com run
+lego --email myemail@example.com --dns netlify --domains my.example.org run
 ```
 
 

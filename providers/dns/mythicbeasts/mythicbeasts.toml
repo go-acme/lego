@@ -7,7 +7,7 @@ Since = "v0.3.7"
 Example = '''
 MYTHICBEASTS_USER_NAME=myuser \
 MYTHICBEASTS_PASSWORD=mypass \
-lego --dns mythicbeasts --domains my.domain.com --email my@email.com run
+lego --email myemail@example.com --dns mythicbeasts --domains my.example.org run
 '''
 
 Additional = '''

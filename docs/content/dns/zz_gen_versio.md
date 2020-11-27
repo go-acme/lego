@@ -23,7 +23,7 @@ Here is an example bash command using the Versio.[nl|eu|uk] provider:
 ```bash
 VERSIO_USERNAME=<your login> \
 VERSIO_PASSWORD=<your password> \
-lego --dns versio --domains my.domain.com --email my@email.com run
+lego --email myemail@example.com --dns versio --domains my.example.org run
 ```
 
 

@@ -21,7 +21,7 @@ Here is an example bash command using the External program provider:
 
 ```bash
 EXEC_PATH=/the/path/to/myscript.sh \
-lego --dns exec --domains my.domain.com --email my@email.com run
+lego --email myemail@example.com --dns exec --domains my.example.org run
 ```
 
 
@@ -51,19 +51,19 @@ The file name of the external program is specified in the environment variable `
 When it is run by lego, three command-line parameters are passed to it:
 The action ("present" or "cleanup"), the fully-qualified domain name and the value for the record.
 
-For example, requesting a certificate for the domain 'foo.example.com' can be achieved by calling lego as follows:
+For example, requesting a certificate for the domain 'my.example.org' can be achieved by calling lego as follows:
 
 ```bash
 EXEC_PATH=./update-dns.sh \
-	lego --dns exec \
-	--domains foo.example.com \
-	--email invalid@example.com run
+	lego --email myemail@example.com \
+	--dns exec \
+	--domains my.example.org run
 ```
 
 It will then call the program './update-dns.sh' with like this:
 
 ```bash
-./update-dns.sh "present" "_acme-challenge.foo.example.com." "MsijOYZxqyjGnFGwhjrhfg-Xgbl5r68WPda0J9EgqqI"
+./update-dns.sh "present" "_acme-challenge.my.example.org." "MsijOYZxqyjGnFGwhjrhfg-Xgbl5r68WPda0J9EgqqI"
 ```
 
 The program then needs to make sure the record is inserted.
@@ -77,15 +77,15 @@ If you want to use the raw domain, token, and keyAuth values with your program, 
 ```bash
 EXEC_MODE=RAW \
 EXEC_PATH=./update-dns.sh \
-	lego --dns exec \
-	--domains foo.example.com \
-	--email invalid@example.com run
+	lego --email myemail@example.com \
+	--dns exec \
+	--domains my.example.org run
 ```
 
 It will then call the program `./update-dns.sh` like this:
 
 ```bash
-./update-dns.sh "present" "foo.example.com." "--" "some-token" "KxAy-J3NwUmg9ZQuM-gP_Mq1nStaYSaP9tYQs5_-YsE.ksT-qywTd8058G-SHHWA3RAN72Pr0yWtPYmmY5UBpQ8"
+./update-dns.sh "present" "my.example.org." "--" "some-token" "KxAy-J3NwUmg9ZQuM-gP_Mq1nStaYSaP9tYQs5_-YsE.ksT-qywTd8058G-SHHWA3RAN72Pr0yWtPYmmY5UBpQ8"
 ```
 
 ## Commands

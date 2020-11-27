@@ -18,9 +18,12 @@ Configuration for [Gandi Live DNS (v5)](https://www.gandi.net).
 
 - Code: `gandiv5`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the Gandi Live DNS (v5) provider:
+
+```bash
+GANDIV5_API_KEY=abcdefghijklmnopqrstuvwx \
+lego --email myemail@example.com --dns gandiv5 --domains my.example.org run
+```
 
 
 
@@ -52,7 +55,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 
 ## More information
 
-- [API documentation](http://doc.livedns.gandi.net)
+- [API documentation](https://api.gandi.net/docs/livedns/)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/gandiv5/gandiv5.toml -->

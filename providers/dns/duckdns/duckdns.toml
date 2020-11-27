@@ -4,7 +4,10 @@ URL = "https://www.duckdns.org/"
 Code = "duckdns"
 Since = "v0.5.0"
 
-Example = ''''''
+Example = '''
+DUCKDNS_TOKEN=xxxxxx \
+lego --email myemail@example.com --dns duckdns --domains my.example.org run
+'''
 
 [Configuration]
   [Configuration.Credentials]

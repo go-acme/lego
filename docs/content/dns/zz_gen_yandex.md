@@ -22,7 +22,7 @@ Here is an example bash command using the Yandex provider:
 
 ```bash
 YANDEX_PDD_TOKEN=<your PDD Token> \
-lego --dns yandex --domains my.domain.com --email my@email.com run
+lego --email myemail@example.com --dns yandex --domains my.example.org run
 ```
 
 

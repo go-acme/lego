@@ -18,9 +18,14 @@ Configuration for [Netcup](https://www.netcup.eu/).
 
 - Code: `netcup`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the Netcup provider:
+
+```bash
+NETCUP_CUSTOMER_NUMBER=xxxx \
+NETCUP_API_KEY=yyyy \
+NETCUP_API_PASSWORD=zzzz \
+lego --email myemail@example.com --dns netcup --domains my.example.org run
+```
 
 
 

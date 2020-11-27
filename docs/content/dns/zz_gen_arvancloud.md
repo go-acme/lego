@@ -22,7 +22,7 @@ Here is an example bash command using the ArvanCloud provider:
 
 ```bash
 ARVANCLOUD_API_KEY=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx \
-lego --dns arvancloud --domains my.domain.com --email my@email.com run
+lego --email myemail@example.com --dns arvancloud --domains my.example.org run
 ```
 
 

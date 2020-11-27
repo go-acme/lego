@@ -4,7 +4,11 @@ URL = "https://www.cloudxns.net/"
 Code = "cloudxns"
 Since = "v0.5.0"
 
-Example = ''''''
+Example = '''
+CLOUDXNS_API_KEY=xxxx \
+CLOUDXNS_SECRET_KEY=yyyy \
+lego --email myemail@example.com --dns cloudxns --domains my.example.org run
+'''
 
 [Configuration]
   [Configuration.Credentials]

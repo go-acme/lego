@@ -4,7 +4,12 @@ URL = "https://www.conoha.jp/"
 Code = "conoha"
 Since = "v1.2.0"
 
-Example = ''''''
+Example = '''
+CONOHA_TENANT_ID=487727e3921d44e3bfe7ebb337bf085e \
+CONOHA_API_USERNAME=xxxx \
+CONOHA_API_PASSWORD=yyyy \
+lego --email myemail@example.com --dns conoha --domains my.example.org run
+'''
 
 [Configuration]
   [Configuration.Credentials]

@@ -4,14 +4,18 @@ URL = "https://www.exoscale.com/"
 Code = "exoscale"
 Since = "v0.4.0"
 
-Example = ''''''
+Example = '''
+EXOSCALE_API_KEY=abcdefghijklmnopqrstuvwx \
+EXOSCALE_API_SECRET=xxxxxxx \
+lego --email myemail@example.com --dns exoscale --domains my.example.org run
+'''
 
 [Configuration]
   [Configuration.Credentials]
     EXOSCALE_API_KEY = "API key"
     EXOSCALE_API_SECRET = "API secret"
-    EXOSCALE_ENDPOINT = "API endpoint URL"
   [Configuration.Additional]
+    EXOSCALE_ENDPOINT = "API endpoint URL"
     EXOSCALE_POLLING_INTERVAL = "Time between DNS propagation check"
     EXOSCALE_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
     EXOSCALE_TTL = "The TTL of the TXT record used for the DNS challenge"

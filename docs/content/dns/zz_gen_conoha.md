@@ -18,9 +18,14 @@ Configuration for [ConoHa](https://www.conoha.jp/).
 
 - Code: `conoha`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the ConoHa provider:
+
+```bash
+CONOHA_TENANT_ID=487727e3921d44e3bfe7ebb337bf085e \
+CONOHA_API_USERNAME=xxxx \
+CONOHA_API_PASSWORD=yyyy \
+lego --email myemail@example.com --dns conoha --domains my.example.org run
+```
 
 
 

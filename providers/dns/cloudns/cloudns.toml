@@ -4,7 +4,11 @@ URL = "https://www.cloudns.net"
 Code = "cloudns"
 Since = "v2.3.0"
 
-Example = ''''''
+Example = '''
+CLOUDNS_AUTH_ID=xxxx \
+CLOUDNS_AUTH_PASSWORD=yyyy \
+lego --email myemail@example.com --dns cloudns --domains my.example.org run
+'''
 
 [Configuration]
   [Configuration.Credentials]

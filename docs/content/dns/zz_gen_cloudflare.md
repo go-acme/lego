@@ -23,12 +23,12 @@ Here is an example bash command using the Cloudflare provider:
 ```bash
 CLOUDFLARE_EMAIL=foo@bar.com \
 CLOUDFLARE_API_KEY=b9841238feb177a84330febba8a83208921177bffe733 \
-lego --dns cloudflare --domains my.domain.com --email my@email.com run
+lego --email myemail@example.com --dns cloudflare --domains my.example.org run
 
 # or
 
 CLOUDFLARE_DNS_API_TOKEN=1234567890abcdefghijklmnopqrstuvwxyz \
-lego --dns cloudflare --domains my.domain.com --email my@email.com run
+lego --email myemail@example.com --dns cloudflare --domains my.example.org run
 ```
 
 

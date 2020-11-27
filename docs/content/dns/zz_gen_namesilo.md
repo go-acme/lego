@@ -22,7 +22,7 @@ Here is an example bash command using the Namesilo provider:
 
 ```bash
 NAMESILO_API_KEY=b9841238feb177a84330febba8a83208921177bffe733 \
-lego --dns namesilo --domains my.domain.com --email my@email.com run
+lego --email myemail@example.com --dns namesilo --domains my.example.org run
 ```
 
 

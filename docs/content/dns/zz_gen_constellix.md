@@ -9,7 +9,7 @@ slug: constellix
 <!-- providers/dns/constellix/constellix.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v0.3.4
+Since: v3.4.0
 
 Configuration for [Constellix](https://constellix.com).
 
@@ -23,7 +23,7 @@ Here is an example bash command using the Constellix provider:
 ```bash
 CONSTELLIX_API_KEY=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx \
 CONSTELLIX_SECRET_KEY=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx \
-lego --dns constellix --domains my.domain.com --email my@email.com run
+lego --email myemail@example.com --dns constellix --domains my.example.org run
 ```
 
 

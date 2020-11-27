@@ -18,9 +18,13 @@ Configuration for [Alibaba Cloud DNS](https://www.alibabacloud.com/product/dns).
 
 - Code: `alidns`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the Alibaba Cloud DNS provider:
+
+```bash
+ALICLOUD_ACCESS_KEY=abcdefghijklmnopqrstuvwx \
+ALICLOUD_SECRET_KEY=xxxxxxx \
+lego --email myemail@example.com --dns alidns --domains my.example.org run
+```
 
 
 

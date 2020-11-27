@@ -18,9 +18,13 @@ Configuration for [Sakura Cloud](https://cloud.sakura.ad.jp/).
 
 - Code: `sakuracloud`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the Sakura Cloud provider:
+
+```bash
+SAKURACLOUD_ACCESS_TOKEN=xxxxx \
+SAKURACLOUD_ACCESS_TOKEN_SECRET=yyyyy \
+lego --email myemail@example.com --dns sakuracloud --domains my.example.org run
+```
 
 
 

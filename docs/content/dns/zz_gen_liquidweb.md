@@ -22,9 +22,9 @@ Here is an example bash command using the Liquid Web provider:
 
 ```bash
 LIQUID_WEB_USERNAME=someuser \
-LIQUID_WEB_PASSWORD="somepass" \
+LIQUID_WEB_PASSWORD=somepass \
 LIQUID_ZONE=tacoman.com.net \
-lego --dns liquidweb --email someaccount@email.com --domains "foo.email.com" run
+lego --email myemail@example.com --dns liquidweb --domains my.example.org run
 ```
 
 

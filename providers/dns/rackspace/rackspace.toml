@@ -4,7 +4,11 @@ URL = "https://www.rackspace.com/"
 Code = "rackspace"
 Since = "v0.4.0"
 
-Example = ''''''
+Example = '''
+RACKSPACE_USER=xxxx \
+RACKSPACE_API_KEY=yyyy \
+lego --email myemail@example.com --dns rackspace --domains my.example.org run
+'''
 
 [Configuration]
   [Configuration.Credentials]

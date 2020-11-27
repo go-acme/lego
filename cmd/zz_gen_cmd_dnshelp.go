@@ -167,12 +167,12 @@ func displayDNSHelp(name string) error {
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "AURORA_ENDPOINT":	API endpoint URL`)
 		ew.writeln(`	- "AURORA_KEY":	User API key`)
 		ew.writeln(`	- "AURORA_USER_ID":	User ID`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "AURORA_ENDPOINT":	API endpoint URL`)
 		ew.writeln(`	- "AURORA_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "AURORA_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
 		ew.writeln(`	- "AURORA_TTL":	The TTL of the TXT record used for the DNS challenge`)
@@ -412,7 +412,7 @@ func displayDNSHelp(name string) error {
 		// generated from: providers/dns/constellix/constellix.toml
 		ew.writeln(`Configuration for Constellix.`)
 		ew.writeln(`Code:	'constellix'`)
-		ew.writeln(`Since:	'v0.3.4'`)
+		ew.writeln(`Since:	'v3.4.0'`)
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
@@ -725,10 +725,10 @@ func displayDNSHelp(name string) error {
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "EXOSCALE_API_KEY":	API key`)
 		ew.writeln(`	- "EXOSCALE_API_SECRET":	API secret`)
-		ew.writeln(`	- "EXOSCALE_ENDPOINT":	API endpoint URL`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "EXOSCALE_ENDPOINT":	API endpoint URL`)
 		ew.writeln(`	- "EXOSCALE_HTTP_TIMEOUT":	API request timeout`)
 		ew.writeln(`	- "EXOSCALE_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "EXOSCALE_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
@@ -1000,7 +1000,7 @@ func displayDNSHelp(name string) error {
 		ew.writeln(`	- "JOKER_API_KEY":	API key (only with DMAPI mode)`)
 		ew.writeln(`	- "JOKER_API_MODE":	'DMAPI' or 'SVC'. DMAPI is for resellers accounts. (Default: DMAPI)`)
 		ew.writeln(`	- "JOKER_PASSWORD":	Joker.com password`)
-		ew.writeln(`	- "JOKER_USERNAME":	Joker.com username (email address)`)
+		ew.writeln(`	- "JOKER_USERNAME":	Joker.com username`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
@@ -1229,7 +1229,7 @@ func displayDNSHelp(name string) error {
 		// generated from: providers/dns/netlify/netlify.toml
 		ew.writeln(`Configuration for Netlify.`)
 		ew.writeln(`Code:	'netlify'`)
-		ew.writeln(`Since:	'v0.3.7'`)
+		ew.writeln(`Since:	'v3.7.0'`)
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
@@ -1748,7 +1748,7 @@ func displayDNSHelp(name string) error {
 		// generated from: providers/dns/zonomi/zonomi.toml
 		ew.writeln(`Configuration for Zonomi.`)
 		ew.writeln(`Code:	'zonomi'`)
-		ew.writeln(`Since:	'v0.3.5'`)
+		ew.writeln(`Since:	'v3.5.0'`)
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)

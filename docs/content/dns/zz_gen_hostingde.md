@@ -18,9 +18,13 @@ Configuration for [Hosting.de](https://www.hosting.de/).
 
 - Code: `hostingde`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the Hosting.de provider:
+
+```bash
+HOSTINGDE_API_KEY=xxxxxxxx \
+HOSTINGDE_ZONE_NAME=yyyyy \
+lego -email myemail@example.com --dns hostingde --domains my.example.org -run
+```
 
 
 

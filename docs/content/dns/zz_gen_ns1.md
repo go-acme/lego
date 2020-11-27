@@ -18,9 +18,12 @@ Configuration for [NS1](https://ns1.com).
 
 - Code: `ns1`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the NS1 provider:
+
+```bash
+NS1_API_KEY=xxxx \
+lego --email myemail@example.com --dns ns1 --domains my.example.org run
+```
 
 
 

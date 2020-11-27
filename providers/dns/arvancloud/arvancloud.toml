@@ -6,7 +6,7 @@ Since = "v3.8.0"
 
 Example = '''
 ARVANCLOUD_API_KEY=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx \
-lego --dns arvancloud --domains my.domain.com --email my@email.com run
+lego --email myemail@example.com --dns arvancloud --domains my.example.org run
 '''
 
 [Configuration]

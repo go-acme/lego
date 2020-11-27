@@ -18,9 +18,13 @@ Configuration for [Rackspace](https://www.rackspace.com/).
 
 - Code: `rackspace`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the Rackspace provider:
+
+```bash
+RACKSPACE_USER=xxxx \
+RACKSPACE_API_KEY=yyyy \
+lego --email myemail@example.com --dns rackspace --domains my.example.org run
+```
 
 
 

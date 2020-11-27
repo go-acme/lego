@@ -18,9 +18,13 @@ Configuration for [ClouDNS](https://www.cloudns.net).
 
 - Code: `cloudns`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the ClouDNS provider:
+
+```bash
+CLOUDNS_AUTH_ID=xxxx \
+CLOUDNS_AUTH_PASSWORD=yyyy \
+lego --email myemail@example.com --dns cloudns --domains my.example.org run
+```
 
 
 

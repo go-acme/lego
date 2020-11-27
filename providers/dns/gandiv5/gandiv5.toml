@@ -4,7 +4,10 @@ URL = "https://www.gandi.net"
 Code = "gandiv5"
 Since = "v0.5.0"
 
-Example = ''''''
+Example = '''
+GANDIV5_API_KEY=abcdefghijklmnopqrstuvwx \
+lego --email myemail@example.com --dns gandiv5 --domains my.example.org run
+'''
 
 [Configuration]
   [Configuration.Credentials]
@@ -16,4 +19,4 @@ Example = ''''''
     GANDIV5_HTTP_TIMEOUT = "API request timeout"
 
 [Links]
-  API = "http://doc.livedns.gandi.net"
+  API = "https://api.gandi.net/docs/livedns/"

@@ -4,7 +4,11 @@ URL = "https://www.alibabacloud.com/product/dns"
 Code = "alidns"
 Since = "v1.1.0"
 
-Example = ''''''
+Example = '''
+ALICLOUD_ACCESS_KEY=abcdefghijklmnopqrstuvwx \
+ALICLOUD_SECRET_KEY=xxxxxxx \
+lego --email myemail@example.com --dns alidns --domains my.example.org run
+'''
 
 [Configuration]
   [Configuration.Credentials]

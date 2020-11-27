@@ -4,7 +4,10 @@ URL = "https://www.digitalocean.com/docs/networking/dns/"
 Code = "digitalocean"
 Since = "v0.3.0"
 
-Example = ''''''
+Example = '''
+DO_AUTH_TOKEN=xxxxxx \
+lego --email myemail@example.com --dns digitalocean --domains my.example.org run
+'''
 
 [Configuration]
   [Configuration.Credentials]

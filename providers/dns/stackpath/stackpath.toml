@@ -4,7 +4,12 @@ URL = "https://www.stackpath.com/"
 Code = "stackpath"
 Since = "v1.1.0"
 
-Example = ''''''
+Example = '''
+STACKPATH_CLIENT_ID=xxxxx \
+STACKPATH_CLIENT_SECRET=yyyyy \
+STACKPATH_STACK_ID=zzzzz \
+lego --email myemail@example.com --dns stackpath --domains my.example.org run
+'''
 
 [Configuration]
   [Configuration.Credentials]

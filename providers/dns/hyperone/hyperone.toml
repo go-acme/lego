@@ -4,7 +4,7 @@ URL = "https://www.hyperone.com"
 Code = "hyperone"
 
 Example = '''
-lego --dns hyperone --domains my.domain.com --email my@email.com run
+lego --email myemail@example.com --dns hyperone --domains my.example.org run
 '''
 
 Additional = '''

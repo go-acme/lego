@@ -4,7 +4,10 @@ URL = "https://www.linode.com/"
 Code = "linode"
 Since = "v1.1.0"
 
-Example = ''''''
+Example = '''
+LINODE_TOKEN=xxxxx \
+lego --email myemail@example.com --dns linode --domains my.example.org run
+'''
 
 [Configuration]
   [Configuration.Credentials]

@@ -12,7 +12,7 @@ OCI_USER_OCID="ocid1.user.oc1..secret" \
 OCI_PUBKEY_FINGERPRINT="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" \
 OCI_REGION="us-phoenix-1" \
 OCI_COMPARTMENT_OCID="ocid1.tenancy.oc1..secret" \
-lego --dns oraclecloud --domains my.domain.com --email my@email.com run
+lego --email myemail@example.com --dns oraclecloud --domains my.example.org run
 '''
 
 [Configuration]

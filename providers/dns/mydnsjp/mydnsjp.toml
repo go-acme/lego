@@ -4,7 +4,11 @@ URL = "https://www.mydns.jp"
 Code = "mydnsjp"
 Since = "v1.2.0"
 
-Example = ''''''
+Example = '''
+MYDNSJP_MASTER_ID=xxxxx \
+MYDNSJP_PASSWORD=xxxxx \
+lego --email myemail@example.com --dns mydnsjp --domains my.example.org run
+'''
 
 [Configuration]
   [Configuration.Credentials]

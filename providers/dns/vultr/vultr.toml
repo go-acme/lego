@@ -4,7 +4,10 @@ URL = "https://www.vultr.com/"
 Code = "vultr"
 Since = "v0.3.1"
 
-Example = ''''''
+Example = '''
+VULTR_API_KEY=xxxxx \
+lego --email myemail@example.com --dns vultr --domains my.example.org run
+'''
 
 [Configuration]
   [Configuration.Credentials]

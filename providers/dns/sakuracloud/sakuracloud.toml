@@ -4,7 +4,11 @@ URL = "https://cloud.sakura.ad.jp/"
 Code = "sakuracloud"
 Since = "v1.1.0"
 
-Example = ''''''
+Example = '''
+SAKURACLOUD_ACCESS_TOKEN=xxxxx \
+SAKURACLOUD_ACCESS_TOKEN_SECRET=yyyyy \
+lego --email myemail@example.com --dns sakuracloud --domains my.example.org run
+'''
 
 [Configuration]
   [Configuration.Credentials]

@@ -2,11 +2,11 @@ Name = "Netlify"
 Description = ''''''
 URL = "https://www.netlify.com"
 Code = "netlify"
-Since = "v0.3.7"
+Since = "v3.7.0"
 
 Example = '''
 NETLIFY_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \
-lego --dns netlify --domains my.domain.com --email my@email.com run
+lego --email myemail@example.com --dns netlify --domains my.example.org run
 '''
 
 [Configuration]

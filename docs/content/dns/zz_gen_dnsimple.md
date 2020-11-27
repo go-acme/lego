@@ -22,7 +22,7 @@ Here is an example bash command using the DNSimple provider:
 
 ```bash
 DNSIMPLE_OAUTH_TOKEN=1234567890abcdefghijklmnopqrstuvwxyz \
-lego --dns dnsimple --domains my.domain.com --email my@email.com run
+lego --email myemail@example.com --dns dnsimple --domains my.example.org run
 ```
 
 

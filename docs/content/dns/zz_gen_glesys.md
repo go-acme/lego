@@ -18,9 +18,13 @@ Configuration for [Glesys](https://glesys.com/).
 
 - Code: `glesys`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the Glesys provider:
+
+```bash
+GLESYS_API_USER=xxxxx \
+GLESYS_API_KEY=yyyyy \
+lego --email myemail@example.com --dns glesys --domains my.example.org run
+```
 
 
 

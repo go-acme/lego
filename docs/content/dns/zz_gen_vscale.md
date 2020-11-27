@@ -18,9 +18,12 @@ Configuration for [Vscale](https://vscale.io/).
 
 - Code: `vscale`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the Vscale provider:
+
+```bash
+VSCALE_API_TOKEN=xxxxx \
+lego --email myemail@example.com --dns vscale --domains my.example.org run
+```
 
 
 

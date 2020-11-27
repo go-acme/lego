@@ -18,9 +18,13 @@ Configuration for [CloudXNS](https://www.cloudxns.net/).
 
 - Code: `cloudxns`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the CloudXNS provider:
+
+```bash
+CLOUDXNS_API_KEY=xxxx \
+CLOUDXNS_SECRET_KEY=yyyy \
+lego --email myemail@example.com --dns cloudxns --domains my.example.org run
+```
 
 
 

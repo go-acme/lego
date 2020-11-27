@@ -18,9 +18,14 @@ Configuration for [Stackpath](https://www.stackpath.com/).
 
 - Code: `stackpath`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the Stackpath provider:
+
+```bash
+STACKPATH_CLIENT_ID=xxxxx \
+STACKPATH_CLIENT_SECRET=yyyyy \
+STACKPATH_STACK_ID=zzzzz \
+lego --email myemail@example.com --dns stackpath --domains my.example.org run
+```
 
 
 

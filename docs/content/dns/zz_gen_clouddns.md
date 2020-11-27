@@ -24,7 +24,7 @@ Here is an example bash command using the CloudDNS provider:
 CLOUDDNS_CLIENT_ID=bLsdFAks23429841238feb177a572aX \
 CLOUDDNS_EMAIL=foo@bar.com \
 CLOUDDNS_PASSWORD=b9841238feb177a84330f \
-lego --dns clouddns --domains my.domain.com --email my@email.com run
+lego --email myemail@example.com --dns clouddns --domains my.example.org run
 ```
 
 

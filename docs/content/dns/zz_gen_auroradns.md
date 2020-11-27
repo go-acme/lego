@@ -18,9 +18,13 @@ Configuration for [Aurora DNS](https://www.pcextreme.com/aurora/dns).
 
 - Code: `auroradns`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the Aurora DNS provider:
+
+```bash
+AURORA_USER_ID=xxxxx \
+AURORA_KEY=yyyyyy \
+lego --email myemail@example.com --dns auroradns --domains my.example.org run
+```
 
 
 
@@ -29,7 +33,6 @@ _Please contribute by adding a CLI example._
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `AURORA_ENDPOINT` | API endpoint URL |
 | `AURORA_KEY` | User API key |
 | `AURORA_USER_ID` | User ID |
 
@@ -41,6 +44,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
+| `AURORA_ENDPOINT` | API endpoint URL |
 | `AURORA_POLLING_INTERVAL` | Time between DNS propagation check |
 | `AURORA_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
 | `AURORA_TTL` | The TTL of the TXT record used for the DNS challenge |

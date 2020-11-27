@@ -22,7 +22,7 @@ Here is an example bash command using the HTTP request provider:
 
 ```bash
 HTTPREQ_ENDPOINT=http://my.server.com:9090 \
-lego --dns httpreq --domains my.domain.com --email my@email.com run
+lego --email myemail@example.com --dns httpreq --domains my.example.org run
 ```
 
 

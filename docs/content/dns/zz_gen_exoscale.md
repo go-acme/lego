@@ -18,9 +18,13 @@ Configuration for [Exoscale](https://www.exoscale.com/).
 
 - Code: `exoscale`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the Exoscale provider:
+
+```bash
+EXOSCALE_API_KEY=abcdefghijklmnopqrstuvwx \
+EXOSCALE_API_SECRET=xxxxxxx \
+lego --email myemail@example.com --dns exoscale --domains my.example.org run
+```
 
 
 
@@ -31,7 +35,6 @@ _Please contribute by adding a CLI example._
 |-----------------------|-------------|
 | `EXOSCALE_API_KEY` | API key |
 | `EXOSCALE_API_SECRET` | API secret |
-| `EXOSCALE_ENDPOINT` | API endpoint URL |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).
@@ -41,6 +44,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
+| `EXOSCALE_ENDPOINT` | API endpoint URL |
 | `EXOSCALE_HTTP_TIMEOUT` | API request timeout |
 | `EXOSCALE_POLLING_INTERVAL` | Time between DNS propagation check |
 | `EXOSCALE_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |

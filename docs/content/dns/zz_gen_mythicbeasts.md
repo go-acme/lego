@@ -23,7 +23,7 @@ Here is an example bash command using the MythicBeasts provider:
 ```bash
 MYTHICBEASTS_USER_NAME=myuser \
 MYTHICBEASTS_PASSWORD=mypass \
-lego --dns mythicbeasts --domains my.domain.com --email my@email.com run
+lego --email myemail@example.com --dns mythicbeasts --domains my.example.org run
 ```
 
 

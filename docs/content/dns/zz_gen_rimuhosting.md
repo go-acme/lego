@@ -22,7 +22,7 @@ Here is an example bash command using the RimuHosting provider:
 
 ```bash
 RIMUHOSTING_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \
-lego --dns rimuhosting --domains my.domain.com --email my@email.com run
+lego --email myemail@example.com --dns rimuhosting --domains my.example.org run
 ```
 
 

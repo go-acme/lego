@@ -18,9 +18,12 @@ Configuration for [DNSPod](http://www.dnspod.com/).
 
 - Code: `dnspod`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the DNSPod provider:
+
+```bash
+DNSPOD_API_KEY=xxxxxx \
+lego --email myemail@example.com --dns dnspod --domains my.example.org run
+```
 
 
 

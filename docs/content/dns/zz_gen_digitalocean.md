@@ -18,9 +18,12 @@ Configuration for [Digital Ocean](https://www.digitalocean.com/docs/networking/d
 
 - Code: `digitalocean`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the Digital Ocean provider:
+
+```bash
+DO_AUTH_TOKEN=xxxxxx \
+lego --email myemail@example.com --dns digitalocean --domains my.example.org run
+```
 
 
 

@@ -22,7 +22,7 @@ Here is an example bash command using the Dynu provider:
 
 ```bash
 DYNU_API_KEY=1234567890abcdefghijklmnopqrstuvwxyz \
-lego --dns dynu --domains my.domain.com --email my@email.com run
+lego --email myemail@example.com --dns dynu --domains my.example.org run
 ```
 
 

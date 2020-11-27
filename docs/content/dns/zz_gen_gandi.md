@@ -18,9 +18,12 @@ Configuration for [Gandi](https://www.gandi.net).
 
 - Code: `gandi`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the Gandi provider:
+
+```bash
+GANDI_API_KEY=abcdefghijklmnopqrstuvwx \
+lego --email myemail@example.com --dns gandi --domains my.example.org run
+```
 
 
 

@@ -22,7 +22,7 @@ Here is an example bash command using the Infomaniak provider:
 
 ```bash
 INFOMANIAK_ACCESS_TOKEN=1234567898765432 \
-lego --dns infomaniak --domains my.domain.com --email my@email.com run
+lego --email myemail@example.com --dns infomaniak --domains my.example.org run
 ```
 
 

@@ -23,7 +23,7 @@ Here is an example bash command using the TransIP provider:
 ```bash
 TRANSIP_ACCOUNT_NAME = "Account name" \
 TRANSIP_PRIVATE_KEY_PATH = "transip.key" \
-lego --dns transip --domains my.domain.com --email my@email.com run
+lego --email myemail@example.com --dns transip --domains my.example.org run
 ```
 
 

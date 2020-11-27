@@ -22,7 +22,7 @@ Here is an example bash command using the Bindman provider:
 
 ```bash
 BINDMAN_MANAGER_ADDRESS=<your bindman manager address> \
-lego --dns bindman --domains my.domain.com --email my@email.com run
+lego --email myemail@example.com --dns bindman --domains my.example.org run
 ```
 
 

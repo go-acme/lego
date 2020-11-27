@@ -18,9 +18,13 @@ Configuration for [Zone.ee](https://www.zone.ee/).
 
 - Code: `zoneee`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the Zone.ee provider:
+
+```bash
+ZONEEE_API_USER=xxxxx \
+ZONEEE_API_KEY=yyyyy \
+lego --email myemail@example.com --dns zoneee --domains my.example.org run
+```
 
 
 

@@ -9,7 +9,7 @@ slug: zonomi
 <!-- providers/dns/zonomi/zonomi.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v0.3.5
+Since: v3.5.0
 
 Configuration for [Zonomi](https://zonomi.com).
 
@@ -22,7 +22,7 @@ Here is an example bash command using the Zonomi provider:
 
 ```bash
 ZONOMI_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \
-lego --dns zonomi --domains my.domain.com --email my@email.com run
+lego --email myemail@example.com --dns zonomi --domains my.example.org run
 ```
 
 

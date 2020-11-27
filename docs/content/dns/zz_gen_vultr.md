@@ -18,9 +18,12 @@ Configuration for [Vultr](https://www.vultr.com/).
 
 - Code: `vultr`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the Vultr provider:
+
+```bash
+VULTR_API_KEY=xxxxx \
+lego --email myemail@example.com --dns vultr --domains my.example.org run
+```
 
 
 

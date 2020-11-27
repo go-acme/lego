@@ -18,9 +18,12 @@ Configuration for [Duck DNS](https://www.duckdns.org/).
 
 - Code: `duckdns`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the Duck DNS provider:
+
+```bash
+DUCKDNS_TOKEN=xxxxxx \
+lego --email myemail@example.com --dns duckdns --domains my.example.org run
+```
 
 
 

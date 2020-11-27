@@ -18,9 +18,12 @@ Configuration for [Linode (v4)](https://www.linode.com/).
 
 - Code: `linode`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the Linode (v4) provider:
+
+```bash
+LINODE_TOKEN=xxxxx \
+lego --email myemail@example.com --dns linode --domains my.example.org run
+```
 
 
 

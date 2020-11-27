@@ -23,7 +23,7 @@ Here is an example bash command using the Name.com provider:
 ```bash
 NAMECOM_USERNAME=foo.bar \
 NAMECOM_API_TOKEN=a379a6f6eeafb9a55e378c118034e2751e682fab \
-lego --dns="namedotcom" --domains="my.domain.com" --email="my@email.com" run
+lego --email myemail@example.com --dns namedotcom --domains my.example.org run
 ```
 
 

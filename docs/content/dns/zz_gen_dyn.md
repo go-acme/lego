@@ -18,9 +18,14 @@ Configuration for [Dyn](https://dyn.com/).
 
 - Code: `dyn`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the Dyn provider:
+
+```bash
+DYN_CUSTOMER_NAME=xxxxxx \
+DYN_USER_NAME=yyyyy \
+DYN_PASSWORD=zzzz \
+lego --email myemail@example.com --dns dyn --domains my.example.org run
+```
 
 
 

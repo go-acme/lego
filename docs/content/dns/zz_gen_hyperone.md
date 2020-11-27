@@ -21,7 +21,7 @@ Configuration for [HyperOne](https://www.hyperone.com).
 Here is an example bash command using the HyperOne provider:
 
 ```bash
-lego --dns hyperone --domains my.domain.com --email my@email.com run
+lego --email myemail@example.com --dns hyperone --domains my.example.org run
 ```
 
 

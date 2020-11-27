@@ -23,7 +23,7 @@ Here is an example bash command using the Servercow provider:
 ```bash
 SERVERCOW_USERNAME=xxxxxxxx \
 SERVERCOW_PASSWORD=xxxxxxxx \
-lego --dns servercow --domains my.domain.com --email my@email.com run
+lego --email myemail@example.com --dns servercow --domains my.example.org run
 ```
 
 

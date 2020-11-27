@@ -18,9 +18,12 @@ Configuration for [Domain Offensive (do.de)](https://www.do.de/).
 
 - Code: `dode`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the Domain Offensive (do.de) provider:
+
+```bash
+DODE_TOKEN=xxxxxx \
+lego --email myemail@example.com --dns dode --domains my.example.org run
+```
 
 
 

@@ -18,9 +18,13 @@ Configuration for [NIFCloud](https://www.nifcloud.com/).
 
 - Code: `nifcloud`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the NIFCloud provider:
+
+```bash
+NIFCLOUD_ACCESS_KEY_ID=xxxx \
+NIFCLOUD_SECRET_ACCESS_KEY=yyyy \
+lego --email myemail@example.com --dns nifcloud --domains my.example.org run
+```
 
 
 

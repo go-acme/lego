@@ -158,7 +158,7 @@ func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (string,
 
 	var hostedDomain govultr.Domain
 
-	for hostedDomain.Domain == "" {
+	for {
 		domains, meta, err := d.client.Domain.List(ctx, listOptions)
 		if err != nil {
 			return "", fmt.Errorf("API call failed: %w", err)
@@ -168,6 +168,10 @@ func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (string,
 			if strings.HasSuffix(domain, dom.Domain) && len(dom.Domain) > len(hostedDomain.Domain) {
 				hostedDomain = dom
 			}
+		}
+
+		if domain == hostedDomain.Domain {
+			break
 		}
 
 		if meta.Links.Next == "" {

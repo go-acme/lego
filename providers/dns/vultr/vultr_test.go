@@ -137,6 +137,25 @@ func TestDNSProvider_getHostedZone(t *testing.T) {
 		},
 	}
 
+	domains := []govultr.Domain{{Domain: "example.com"}, {Domain: "example.org"}, {Domain: "example.net"}}
+
+	for i := 0; i < 50; i++ {
+		domains = append(domains, govultr.Domain{Domain: fmt.Sprintf("my%02d.example.com", i)})
+	}
+
+	domains = append(domains, govultr.Domain{Domain: "my.example.com"}, govultr.Domain{Domain: "my.example.net"})
+
+	for i := 50; i < 100; i++ {
+		domains = append(domains, govultr.Domain{Domain: fmt.Sprintf("my%02d.example.com", i)})
+	}
+
+	domains = append(domains, govultr.Domain{Domain: "test.my.example.com"})
+
+	type domainsBase struct {
+		Domains []govultr.Domain `json:"domains"`
+		Meta    *govultr.Meta    `json:"meta"`
+	}
+
 	for _, test := range testCases {
 		test := test
 		t.Run(test.desc, func(t *testing.T) {
@@ -151,25 +170,6 @@ func TestDNSProvider_getHostedZone(t *testing.T) {
 			require.NoError(t, err)
 
 			p := &DNSProvider{client: client}
-
-			domains := []govultr.Domain{{Domain: "example.com"}, {Domain: "example.org"}, {Domain: "example.net"}}
-
-			for i := 0; i < 50; i++ {
-				domains = append(domains, govultr.Domain{Domain: fmt.Sprintf("my%02d.example.com", i)})
-			}
-
-			domains = append(domains, govultr.Domain{Domain: "my.example.com"}, govultr.Domain{Domain: "my.example.net"})
-
-			for i := 50; i < 100; i++ {
-				domains = append(domains, govultr.Domain{Domain: fmt.Sprintf("my%02d.example.com", i)})
-			}
-
-			domains = append(domains, govultr.Domain{Domain: "test.my.example.com"})
-
-			type domainsBase struct {
-				Domains []govultr.Domain `json:"domains"`
-				Meta    *govultr.Meta    `json:"meta"`
-			}
 
 			var pageCount int
 

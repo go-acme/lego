@@ -9,7 +9,7 @@ slug: hyperone
 <!-- providers/dns/hyperone/hyperone.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: 
+Since: v3.9.0
 
 Configuration for [HyperOne](https://www.hyperone.com).
 

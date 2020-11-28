@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
+	"github.com/miekg/dns"
 )
 
 type Record struct {
@@ -60,18 +61,19 @@ type apiVersion struct {
 }
 
 func (d *DNSProvider) getHostedZone(fqdn string) (*hostedZone, error) {
-	var zone hostedZone
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
 		return nil, err
 	}
 
-	u := fmt.Sprintf("/servers/localhost/zones/%s.", dns01.UnFqdn(authZone))
-	result, err := d.sendRequest(http.MethodGet, u, nil)
+	p := path.Join("/servers/localhost/zones/", dns.Fqdn(authZone))
+
+	result, err := d.sendRequest(http.MethodGet, p, nil)
 	if err != nil {
 		return nil, err
 	}
 
+	var zone hostedZone
 	err = json.Unmarshal(result, &zone)
 	if err != nil {
 		return nil, err

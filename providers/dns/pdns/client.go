@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"path"
 	"strconv"
 	"strings"
 
@@ -123,7 +124,7 @@ func (d *DNSProvider) findTxtRecord(fqdn string) (*rrSet, error) {
 	}
 
 	for _, set := range zone.RRSets {
-		if (set.Name == dns01.UnFqdn(fqdn) || set.Name == fqdn) && set.Type == "TXT" {
+		if set.Type == "TXT" && (set.Name == dns01.UnFqdn(fqdn) || set.Name == fqdn) {
 			return &set, nil
 		}
 	}
@@ -196,21 +197,18 @@ func (d *DNSProvider) sendRequest(method, uri string, body io.Reader) (json.RawM
 }
 
 func (d *DNSProvider) makeRequest(method, uri string, body io.Reader) (*http.Request, error) {
-	path := ""
-	if d.config.Host.Path != "/" {
-		path = d.config.Host.Path
+	p := path.Join("/", uri)
+
+	if p != "/api" && d.apiVersion > 0 && !strings.HasPrefix(p, "/api/v") {
+		p = path.Join("/api", "v"+strconv.Itoa(d.apiVersion), p)
 	}
 
-	if !strings.HasPrefix(uri, "/") {
-		uri = "/" + uri
+	u, err := d.config.Host.Parse(path.Join(d.config.Host.Path, p))
+	if err != nil {
+		return nil, err
 	}
 
-	if d.apiVersion > 0 && !strings.HasPrefix(uri, "/api/v") {
-		uri = "/api/v" + strconv.Itoa(d.apiVersion) + uri
-	}
-
-	u := d.config.Host.Scheme + "://" + d.config.Host.Host + path + uri
-	req, err := http.NewRequest(method, u, body)
+	req, err := http.NewRequest(method, u.String(), body)
 	if err != nil {
 		return nil, err
 	}

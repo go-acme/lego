@@ -4,17 +4,16 @@ package vultr
 
 import (
 	"context"
-	"crypto/tls"
 	"errors"
 	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/vultr/govultr"
+	"github.com/vultr/govultr/v2"
+	"golang.org/x/oauth2"
 )
 
 // Environment variables names.
@@ -36,6 +35,7 @@ type Config struct {
 	PollingInterval    time.Duration
 	TTL                int
 	HTTPClient         *http.Client
+	HTTPTimeout        time.Duration
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
@@ -44,13 +44,7 @@ func NewDefaultConfig() *Config {
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
-		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30),
-			// from Vultr Client
-			Transport: &http.Transport{
-				TLSNextProto: make(map[string]func(string, *tls.Conn) http.RoundTripper),
-			},
-		},
+		HTTPTimeout:        env.GetOrDefaultSecond(EnvHTTPTimeout, 30),
 	}
 }
 
@@ -84,7 +78,17 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("vultr: credentials missing")
 	}
 
-	client := govultr.NewClient(config.HTTPClient, config.APIKey)
+	httpClient := config.HTTPClient
+	if httpClient == nil {
+		httpClient = &http.Client{
+			Timeout: config.HTTPTimeout,
+			Transport: &oauth2.Transport{
+				Source: oauth2.StaticTokenSource(&oauth2.Token{AccessToken: config.APIKey}),
+			},
+		}
+	}
+
+	client := govultr.NewClient(httpClient)
 
 	return &DNSProvider{client: client, config: config}, nil
 }
@@ -102,7 +106,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	name := extractRecordName(fqdn, zoneDomain)
 
-	err = d.client.DNSRecord.Create(ctx, zoneDomain, "TXT", name, `"`+value+`"`, d.config.TTL, 0)
+	req := govultr.DomainRecordReq{
+		Name:     name,
+		Type:     "TXT",
+		Data:     `"` + value + `"`,
+		TTL:      d.config.TTL,
+		Priority: func(v int) *int { return &v }(0),
+	}
+	_, err = d.client.DomainRecord.Create(ctx, zoneDomain, &req)
 	if err != nil {
 		return fmt.Errorf("vultr: API call failed: %w", err)
 	}
@@ -123,7 +134,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	var allErr []string
 	for _, rec := range records {
-		err := d.client.DNSRecord.Delete(ctx, zoneDomain, strconv.Itoa(rec.RecordID))
+		err := d.client.DomainRecord.Delete(ctx, zoneDomain, rec.ID)
 		if err != nil {
 			allErr = append(allErr, err.Error())
 		}
@@ -143,43 +154,67 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (string, error) {
-	domains, err := d.client.DNSDomain.List(ctx)
-	if err != nil {
-		return "", fmt.Errorf("API call failed: %w", err)
-	}
+	listOptions := &govultr.ListOptions{PerPage: 25}
 
-	var hostedDomain govultr.DNSDomain
-	for _, dom := range domains {
-		if strings.HasSuffix(domain, dom.Domain) {
-			if len(dom.Domain) > len(hostedDomain.Domain) {
+	var hostedDomain govultr.Domain
+
+	for {
+		domains, meta, err := d.client.Domain.List(ctx, listOptions)
+		if err != nil {
+			return "", fmt.Errorf("API call failed: %w", err)
+		}
+
+		for _, dom := range domains {
+			if strings.HasSuffix(domain, dom.Domain) && len(dom.Domain) > len(hostedDomain.Domain) {
 				hostedDomain = dom
 			}
 		}
+
+		if domain == hostedDomain.Domain {
+			break
+		}
+
+		if meta.Links.Next == "" {
+			break
+		}
+
+		listOptions.Cursor = meta.Links.Next
 	}
+
 	if hostedDomain.Domain == "" {
-		return "", fmt.Errorf("no matching Vultr domain found for domain %s", domain)
+		return "", fmt.Errorf("no matching domain found for domain %s", domain)
 	}
 
 	return hostedDomain.Domain, nil
 }
 
-func (d *DNSProvider) findTxtRecords(ctx context.Context, domain, fqdn string) (string, []govultr.DNSRecord, error) {
+func (d *DNSProvider) findTxtRecords(ctx context.Context, domain, fqdn string) (string, []govultr.DomainRecord, error) {
 	zoneDomain, err := d.getHostedZone(ctx, domain)
 	if err != nil {
 		return "", nil, err
 	}
 
-	var records []govultr.DNSRecord
-	result, err := d.client.DNSRecord.List(ctx, zoneDomain)
-	if err != nil {
-		return "", records, fmt.Errorf("API call has failed: %w", err)
-	}
+	listOptions := &govultr.ListOptions{PerPage: 25}
 
-	recordName := extractRecordName(fqdn, zoneDomain)
-	for _, record := range result {
-		if record.Type == "TXT" && record.Name == recordName {
-			records = append(records, record)
+	var records []govultr.DomainRecord
+	for {
+		result, meta, err := d.client.DomainRecord.List(ctx, zoneDomain, listOptions)
+		if err != nil {
+			return "", records, fmt.Errorf("API call has failed: %w", err)
 		}
+
+		recordName := extractRecordName(fqdn, zoneDomain)
+		for _, record := range result {
+			if record.Type == "TXT" && record.Name == recordName {
+				records = append(records, record)
+			}
+		}
+
+		if meta.Links.Next == "" {
+			break
+		}
+
+		listOptions.Cursor = meta.Links.Next
 	}
 
 	return zoneDomain, records, nil

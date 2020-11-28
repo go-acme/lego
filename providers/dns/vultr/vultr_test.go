@@ -1,11 +1,19 @@
 package vultr
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"strconv"
 	"testing"
 	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/vultr/govultr/v2"
 )
 
 const envDomain = envNamespace + "TEST_DOMAIN"
@@ -86,6 +94,127 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			} else {
 				require.EqualError(t, err, test.expected)
 			}
+		})
+	}
+}
+
+func TestDNSProvider_getHostedZone(t *testing.T) {
+	testCases := []struct {
+		desc              string
+		domain            string
+		expected          string
+		expectedPageCount int
+	}{
+		{
+			desc:              "exact match, in latest page",
+			domain:            "test.my.example.com",
+			expected:          "test.my.example.com",
+			expectedPageCount: 5,
+		},
+		{
+			desc:              "exact match, in the middle",
+			domain:            "my.example.com",
+			expected:          "my.example.com",
+			expectedPageCount: 3,
+		},
+		{
+			desc:              "exact match, first page",
+			domain:            "example.com",
+			expected:          "example.com",
+			expectedPageCount: 1,
+		},
+		{
+			desc:              "match on apex",
+			domain:            "test.example.org",
+			expected:          "example.org",
+			expectedPageCount: 5,
+		},
+		{
+			desc:              "match on parent",
+			domain:            "test.my.example.net",
+			expected:          "my.example.net",
+			expectedPageCount: 5,
+		},
+	}
+
+	domains := []govultr.Domain{{Domain: "example.com"}, {Domain: "example.org"}, {Domain: "example.net"}}
+
+	for i := 0; i < 50; i++ {
+		domains = append(domains, govultr.Domain{Domain: fmt.Sprintf("my%02d.example.com", i)})
+	}
+
+	domains = append(domains, govultr.Domain{Domain: "my.example.com"}, govultr.Domain{Domain: "my.example.net"})
+
+	for i := 50; i < 100; i++ {
+		domains = append(domains, govultr.Domain{Domain: fmt.Sprintf("my%02d.example.com", i)})
+	}
+
+	domains = append(domains, govultr.Domain{Domain: "test.my.example.com"})
+
+	type domainsBase struct {
+		Domains []govultr.Domain `json:"domains"`
+		Meta    *govultr.Meta    `json:"meta"`
+	}
+
+	for _, test := range testCases {
+		test := test
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			mux := http.NewServeMux()
+			server := httptest.NewServer(mux)
+			t.Cleanup(server.Close)
+
+			client := govultr.NewClient(nil)
+			err := client.SetBaseURL(server.URL)
+			require.NoError(t, err)
+
+			p := &DNSProvider{client: client}
+
+			var pageCount int
+
+			mux.HandleFunc("/v2/domains", func(rw http.ResponseWriter, req *http.Request) {
+				pageCount++
+
+				query := req.URL.Query()
+				cursor, _ := strconv.Atoi(query.Get("cursor"))
+				perPage, _ := strconv.Atoi(query.Get("per_page"))
+
+				var next string
+				if len(domains)/perPage > cursor {
+					next = strconv.Itoa(cursor + 1)
+				}
+
+				start := cursor * perPage
+				if len(domains) < start {
+					start = cursor * len(domains)
+				}
+
+				end := (cursor + 1) * perPage
+				if len(domains) < end {
+					end = len(domains)
+				}
+
+				db := domainsBase{
+					Domains: domains[start:end],
+					Meta: &govultr.Meta{
+						Total: len(domains),
+						Links: &govultr.Links{Next: next},
+					},
+				}
+
+				err = json.NewEncoder(rw).Encode(db)
+				if err != nil {
+					http.Error(rw, err.Error(), http.StatusInternalServerError)
+					return
+				}
+			})
+
+			zone, err := p.getHostedZone(context.Background(), test.domain)
+			require.NoError(t, err)
+
+			assert.Equal(t, test.expected, zone)
+			assert.Equal(t, test.expectedPageCount, pageCount)
 		})
 	}
 }

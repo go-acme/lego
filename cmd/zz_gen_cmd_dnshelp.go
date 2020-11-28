@@ -911,7 +911,7 @@ func displayDNSHelp(name string) error {
 		// generated from: providers/dns/hyperone/hyperone.toml
 		ew.writeln(`Configuration for HyperOne.`)
 		ew.writeln(`Code:	'hyperone'`)
-		ew.writeln(`Since:	''`)
+		ew.writeln(`Since:	'v3.9.0'`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)

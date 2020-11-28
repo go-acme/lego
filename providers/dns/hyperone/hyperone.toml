@@ -2,6 +2,7 @@ Name = "HyperOne"
 Description = ''''''
 URL = "https://www.hyperone.com"
 Code = "hyperone"
+Since = "v3.9.0"
 
 Example = '''
 lego --email myemail@example.com --dns hyperone --domains my.example.org run

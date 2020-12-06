@@ -51,7 +51,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
 | `INWX_POLLING_INTERVAL` | Time between DNS propagation check |
-| `INWX_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
+| `INWX_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation (default 360s) |
 | `INWX_SANDBOX` | Activate the sandbox (boolean) |
 | `INWX_SHARED_SECRET` | shared secret related to 2FA |
 | `INWX_TTL` | The TTL of the TXT record used for the DNS challenge |

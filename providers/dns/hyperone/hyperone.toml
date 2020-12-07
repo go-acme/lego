@@ -19,7 +19,7 @@ just a passport file in `~/.h1/passport.json` location.
 To use this application you have to generate passport file for `sa`:
 
 ```
-h1 sa credential generate --name my-passport --sa <sa ID> --passport-output-file ~/.h1/passport.json
+h1 iam project sa credential generate --name my-passport --project <project ID> --sa <sa ID> --passport-output-file ~/.h1/passport.json
 ```
 
 ### Required permissions

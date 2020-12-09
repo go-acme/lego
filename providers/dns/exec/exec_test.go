@@ -3,6 +3,7 @@ package exec
 import (
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/go-acme/lego/v4/log"
@@ -37,7 +38,7 @@ func TestDNSProvider_Present(t *testing.T) {
 				Mode:    "",
 			},
 			expected: expected{
-				args: "present _acme-challenge.domain. pW9ZKG0xz_PCriK-nCMOjADy9eJcgGWIzkkj2fN4uZM\n",
+				args: "present _acme-challenge.domain. pW9ZKG0xz_PCriK-nCMOjADy9eJcgGWIzkkj2fN4uZM",
 			},
 		},
 		{
@@ -55,7 +56,7 @@ func TestDNSProvider_Present(t *testing.T) {
 				Mode:    "RAW",
 			},
 			expected: expected{
-				args: "present -- domain token keyAuth\n",
+				args: "present -- domain token keyAuth",
 			},
 		},
 	}
@@ -78,7 +79,7 @@ func TestDNSProvider_Present(t *testing.T) {
 				require.Error(t, err)
 			} else {
 				require.NoError(t, err)
-				assert.Equal(t, test.expected.args, message)
+				assert.Equal(t, test.expected.args, strings.TrimSpace(message))
 			}
 		})
 	}
@@ -110,7 +111,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 				Mode:    "",
 			},
 			expected: expected{
-				args: "cleanup _acme-challenge.domain. pW9ZKG0xz_PCriK-nCMOjADy9eJcgGWIzkkj2fN4uZM\n",
+				args: "cleanup _acme-challenge.domain. pW9ZKG0xz_PCriK-nCMOjADy9eJcgGWIzkkj2fN4uZM",
 			},
 		},
 		{
@@ -128,7 +129,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 				Mode:    "RAW",
 			},
 			expected: expected{
-				args: "cleanup -- domain token keyAuth\n",
+				args: "cleanup -- domain token keyAuth",
 			},
 		},
 	}
@@ -151,7 +152,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 				require.Error(t, err)
 			} else {
 				require.NoError(t, err)
-				assert.Equal(t, test.expected.args, message)
+				assert.Equal(t, test.expected.args, strings.TrimSpace(message))
 			}
 		})
 	}

@@ -3,8 +3,6 @@
 export GO111MODULE=on
 export CGO_ENABLED=0
 
-SRCS = $(shell git ls-files '*.go' | grep -v '^vendor/')
-
 LEGO_IMAGE := goacme/lego
 MAIN_DIRECTORY := ./cmd/lego/
 
@@ -39,9 +37,6 @@ e2e: clean
 
 checks:
 	golangci-lint run
-
-fmt:
-	gofmt -s -l -w $(SRCS)
 
 # Release helper
 .PHONY: patch minor major detach

@@ -38,9 +38,8 @@ type EnvLoader struct {
 }
 
 func (l *EnvLoader) MainTest(m *testing.M) int {
-	_, force := os.LookupEnv("LEGO_E2E_TESTS")
-	if _, ci := os.LookupEnv("CI"); !ci && !force {
-		fmt.Fprintln(os.Stderr, "skipping test: e2e tests are disabled. (no 'CI' or 'LEGO_E2E_TESTS' env var)")
+	if _, e2e := os.LookupEnv("LEGO_E2E_TESTS"); !e2e {
+		fmt.Fprintln(os.Stderr, "skipping test: e2e tests are disabled. (no 'LEGO_E2E_TESTS' env var)")
 		fmt.Println("PASS")
 		return 0
 	}

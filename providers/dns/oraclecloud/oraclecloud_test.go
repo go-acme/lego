@@ -101,7 +101,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvRegion:            "us-phoenix-1",
 				EnvCompartmentOCID:   "123",
 			},
-			expected: "oraclecloud: can not create client, bad configuration: x509: decryption password incorrect",
+			expected: "oraclecloud: can not create client, bad configuration: ",
 		},
 		{
 			desc: "missing OCI_TENANCY_OCID",
@@ -191,7 +191,8 @@ func TestNewDNSProvider(t *testing.T) {
 				require.NotNil(t, p.config)
 				require.NotNil(t, p.client)
 			} else {
-				require.EqualError(t, err, test.expected)
+				require.Error(t, err)
+				require.Contains(t, err.Error(), test.expected)
 			}
 		})
 	}

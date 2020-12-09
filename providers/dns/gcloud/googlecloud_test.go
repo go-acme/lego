@@ -52,7 +52,8 @@ func TestNewDNSProvider(t *testing.T) {
 				envGoogleApplicationCredentials: "not-a-secret-file",
 				envMetadataHost:                 "http://lego.wtf", // defined here to avoid the client cache.
 			},
-			expected: "googlecloud: unable to get Google Cloud client: google: error getting credentials using GOOGLE_APPLICATION_CREDENTIALS environment variable: open not-a-secret-file: no such file or directory",
+			// the error message varies according to the OS used.
+			expected: "googlecloud: unable to get Google Cloud client: google: error getting credentials using GOOGLE_APPLICATION_CREDENTIALS environment variable: ",
 		},
 		{
 			desc: "missing project",
@@ -95,7 +96,8 @@ func TestNewDNSProvider(t *testing.T) {
 				require.NotNil(t, p.config)
 				require.NotNil(t, p.client)
 			} else {
-				require.EqualError(t, err, test.expected)
+				require.Error(t, err)
+				require.Contains(t, err.Error(), test.expected)
 			}
 		})
 	}

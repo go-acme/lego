@@ -53,19 +53,21 @@ just a passport file in `~/.h1/passport.json` location.
 To use this application you have to generate passport file for `sa`:
 
 ```
-h1 sa credential generate --name my-passport --sa <sa ID> --passport-output-file ~/.h1/passport.json
+h1 iam project sa credential generate --name my-passport --project <project ID> --sa <sa ID> --passport-output-file ~/.h1/passport.json
 ```
 
 ### Required permissions
 
-Depending of environment variables usage, the application requires different permissions:
--  `dns/zone/list` if `HYPERONE_ZONE_URI` is not specified
+The application requires following permissions:
+-  `dns/zone/list`
 -  `dns/zone.recordset/list`
 -  `dns/zone.recordset/create`
 -  `dns/zone.recordset/delete`
 -  `dns/zone.record/create`
 -  `dns/zone.record/list`
 -  `dns/zone.record/delete`
+
+All required permissions are available via platform role `tool.lego`.
 
 
 

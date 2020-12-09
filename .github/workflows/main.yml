@@ -3,8 +3,7 @@ name: Main
 on:
   push:
     branches:
-      - gh-actions
-#      - master
+      - master
     tags:
       - v*
   pull_request:

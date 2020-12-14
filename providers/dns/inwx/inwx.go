@@ -41,8 +41,9 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, 300),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		TTL: env.GetOrDefaultInt(EnvTTL, 300),
+		// INWX has rather unstable propagation delays, thus using a larger default value
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 360*time.Second),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		Sandbox:            env.GetOrDefaultBool(EnvSandbox, false),
 	}

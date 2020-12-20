@@ -177,6 +177,7 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 			if err != nil {
 				return fmt.Errorf("ionos: failed to remove record: %w", err)
 			}
+			return nil
 		}
 	}
 

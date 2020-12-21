@@ -117,7 +117,7 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 
 	zone := findZone(zones, domain)
 	if zone == nil {
-		return fmt.Errorf("ionos: no matching zone found for domain %s", domain)
+		return errors.New("ionos: no matching zone found for domain")
 	}
 
 	filter := &internal.RecordsFilter{
@@ -127,7 +127,7 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 
 	records, err := d.client.GetRecords(ctx, zone.ID, filter)
 	if err != nil {
-		return fmt.Errorf("ionos: failed to get records: %w", err)
+		return fmt.Errorf("ionos: failed to get records (zone=%s): %w", zone.ID, err)
 	}
 
 	records = append(records, internal.Record{
@@ -139,7 +139,7 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 
 	err = d.client.ReplaceRecords(ctx, zone.ID, records)
 	if err != nil {
-		return fmt.Errorf("ionos: failed to create/update records: %w", err)
+		return fmt.Errorf("ionos: failed to create/update records (zone=%s): %w", zone.ID, err)
 	}
 
 	return nil
@@ -158,7 +158,7 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 
 	zone := findZone(zones, domain)
 	if zone == nil {
-		return fmt.Errorf("ionos: no matching zone found for domain %s", domain)
+		return errors.New("ionos: no matching zone found for domain")
 	}
 
 	filter := &internal.RecordsFilter{
@@ -168,14 +168,14 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 
 	records, err := d.client.GetRecords(ctx, zone.ID, filter)
 	if err != nil {
-		return fmt.Errorf("ionos: failed to get records: %w", err)
+		return fmt.Errorf("ionos: failed to get records (zone=%s): %w", zone.ID, err)
 	}
 
 	for _, record := range records {
 		if record.Name == dns01.UnFqdn(fqdn) && record.Content == value {
 			err := d.client.RemoveRecord(ctx, zone.ID, record.ID)
 			if err != nil {
-				return fmt.Errorf("ionos: failed to remove record: %w", err)
+				return fmt.Errorf("ionos: failed to remove record (zone=%s, record=%s): %w", zone.ID, record.ID, err)
 			}
 			return nil
 		}

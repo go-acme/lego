@@ -1,6 +1,56 @@
 package internal
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+)
+
+// ClientError a detailed error.
+type ClientError struct {
+	errors     []Error
+	StatusCode int
+	message    string
+}
+
+func (f ClientError) Error() string {
+	msg := strconv.Itoa(f.StatusCode) + ": "
+
+	if f.message != "" {
+		msg += f.message + ": "
+	}
+
+	for i, e := range f.errors {
+		if i != 0 {
+			msg += ", "
+		}
+
+		msg += e.Error()
+	}
+
+	return msg
+}
+
+func (f ClientError) Unwrap() error {
+	if len(f.errors) == 0 {
+		return nil
+	}
+
+	return &f.errors[0]
+}
+
+// Error defines model for error.
+type Error struct {
+
+	// The error code.
+	Code string `json:"code,omitempty"`
+
+	// The error message.
+	Message string `json:"message,omitempty"`
+}
+
+func (e Error) Error() string {
+	return fmt.Sprintf("%s: %s", e.Code, e.Message)
+}
 
 // Zone defines model for zone.
 type Zone struct {
@@ -27,29 +77,6 @@ type CustomerZone struct {
 
 	// Represents the possible zone types.
 	Type string `json:"type,omitempty"`
-}
-
-// Error defines model for error.
-type Error struct {
-
-	// The error code.
-	Code string `json:"code,omitempty"`
-
-	// The error message.
-	Message string `json:"message,omitempty"`
-}
-
-func (e Error) Error() string {
-	return fmt.Sprintf("%s: %s", e.Code, e.Message)
-}
-
-// Errors defines model for errors.
-type Errors []struct {
-	ErrorRecord    *Record  `json:"errorRecord,omitempty"`
-	InputRecord    *Record  `json:"inputRecord,omitempty"`
-	Invalid        []string `json:"invalid,omitempty"`
-	InvalidFields  []string `json:"invalidFields,omitempty"`
-	RequiredFields []string `json:"requiredFields,omitempty"`
 }
 
 // Record defines model for record.

@@ -170,16 +170,13 @@ func (c *Client) makeRequest(ctx context.Context, method, uri string, body io.Re
 func readError(body io.Reader, statusCode int) error {
 	bodyBytes, _ := ioutil.ReadAll(body)
 
-	var errorsResp []Error
-	err := json.Unmarshal(bodyBytes, &errorsResp)
+	cErr := &ClientError{StatusCode: statusCode}
+
+	err := json.Unmarshal(bodyBytes, &cErr.errors)
 	if err != nil {
-		return fmt.Errorf("error: Status=%d: %s", statusCode, string(bodyBytes))
+		cErr.message = string(bodyBytes)
+		return cErr
 	}
 
-	errMsg := "error"
-	for _, e := range errorsResp {
-		errMsg += ": " + e.Error()
-	}
-
-	return fmt.Errorf("error: Status=%d: %s", statusCode, errMsg)
+	return cErr
 }

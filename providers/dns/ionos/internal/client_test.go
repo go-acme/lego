@@ -2,6 +2,7 @@ package internal
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -42,6 +43,10 @@ func TestClient_ListZones_error(t *testing.T) {
 	require.Error(t, err)
 
 	assert.Nil(t, zones)
+
+	var cErr *ClientError
+	assert.True(t, errors.As(err, &cErr))
+	assert.Equal(t, http.StatusUnauthorized, cErr.StatusCode)
 }
 
 func TestClient_GetRecords(t *testing.T) {
@@ -71,6 +76,10 @@ func TestClient_GetRecords_error(t *testing.T) {
 	require.Error(t, err)
 
 	assert.Nil(t, records)
+
+	var cErr *ClientError
+	assert.True(t, errors.As(err, &cErr))
+	assert.Equal(t, http.StatusUnauthorized, cErr.StatusCode)
 }
 
 func TestClient_RemoveRecord(t *testing.T) {
@@ -89,6 +98,10 @@ func TestClient_RemoveRecord_error(t *testing.T) {
 
 	err := client.RemoveRecord(context.Background(), "azone01", "arecord01")
 	require.Error(t, err)
+
+	var cErr *ClientError
+	assert.True(t, errors.As(err, &cErr))
+	assert.Equal(t, http.StatusInternalServerError, cErr.StatusCode)
 }
 
 func TestClient_ReplaceRecords(t *testing.T) {
@@ -102,6 +115,7 @@ func TestClient_ReplaceRecords(t *testing.T) {
 		Content: "string",
 		Type:    "A",
 	}}
+
 	err := client.ReplaceRecords(context.Background(), "azone01", records)
 	require.NoError(t, err)
 }
@@ -117,8 +131,13 @@ func TestClient_ReplaceRecords_error(t *testing.T) {
 		Content: "string",
 		Type:    "A",
 	}}
+
 	err := client.ReplaceRecords(context.Background(), "azone01", records)
 	require.Error(t, err)
+
+	var cErr *ClientError
+	assert.True(t, errors.As(err, &cErr))
+	assert.Equal(t, http.StatusBadRequest, cErr.StatusCode)
 }
 
 func setupTest(t *testing.T) (*http.ServeMux, *Client) {

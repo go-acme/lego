@@ -12,9 +12,9 @@ import (
 )
 
 const (
-	exampleDomain = "example.com"
-	exampleRdata  = "LHDhK3oGRvkiefQnx7OOczTY5Tic_xZ6HcMOc_gmtoM"
-	acmeChallenge = "_acme-challenge"
+	exampleDomain    = "example.com"
+	exampleSubDomain = "_acme-challenge"
+	exampleRdata     = "LHDhK3oGRvkiefQnx7OOczTY5Tic_xZ6HcMOc_gmtoM"
 )
 
 func TestDNSProvider_Present(t *testing.T) {
@@ -85,11 +85,11 @@ func TestDNSProvider_Present(t *testing.T) {
 			provider.client = client
 
 			if test.callAddTXTRecord {
-				client.On("AddTXTRecord", exampleDomain, acmeChallenge, config.TTL, exampleRdata).Return(test.addTXTRecordError)
+				client.On("AddTXTRecord", exampleDomain, exampleSubDomain, config.TTL, exampleRdata).Return(test.addTXTRecordError)
 			}
 
 			if test.callGetTXTRecords {
-				client.On("GetTXTRecords", exampleDomain, acmeChallenge).Return(test.getTXTRecordsReturn, test.getTXTRecordsError)
+				client.On("GetTXTRecords", exampleDomain, exampleSubDomain).Return(test.getTXTRecordsReturn, test.getTXTRecordsError)
 			}
 
 			err = provider.Present(exampleDomain, "token", "key")

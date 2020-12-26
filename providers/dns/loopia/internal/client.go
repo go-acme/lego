@@ -15,11 +15,6 @@ import (
 // DefaultBaseURL is url to the XML-RPC api.
 const DefaultBaseURL = "https://api.loopia.se/RPCSERV"
 
-const (
-	returnOk        = "OK"
-	returnAuthError = "AUTH_ERROR"
-)
-
 // Client the Loopia client.
 type Client struct {
 	APIUser     string
@@ -76,14 +71,7 @@ func (c *Client) AddTXTRecord(domain string, subdomain string, ttl int, value st
 		return err
 	}
 
-	switch v := strings.TrimSpace(resp.Value); v {
-	case returnOk:
-		return nil
-	case returnAuthError:
-		return errors.New("authentication error")
-	default:
-		return fmt.Errorf("unknown error: %q", v)
-	}
+	return checkResponse(resp.Value)
 }
 
 // RemoveTXTRecord removes a TXT record.
@@ -105,14 +93,7 @@ func (c *Client) RemoveTXTRecord(domain string, subdomain string, recordID int) 
 		return err
 	}
 
-	switch v := strings.TrimSpace(resp.Value); v {
-	case returnOk:
-		return nil
-	case returnAuthError:
-		return fmt.Errorf("authentication error")
-	default:
-		return fmt.Errorf("unknown error: %q", v)
-	}
+	return checkResponse(resp.Value)
 }
 
 // GetTXTRecords gets TXT records.
@@ -151,14 +132,7 @@ func (c *Client) RemoveSubdomain(domain, subdomain string) error {
 		return err
 	}
 
-	switch v := strings.TrimSpace(resp.Value); v {
-	case returnOk:
-		return nil
-	case returnAuthError:
-		return errors.New("authentication error")
-	default:
-		return fmt.Errorf("unknown error: %q", v)
-	}
+	return checkResponse(resp.Value)
 }
 
 // rpcCall makes an XML-RPC call to Loopia's RPC endpoint
@@ -198,7 +172,7 @@ func (c *Client) httpPost(url string, bodyType string, body io.Reader) ([]byte, 
 		return nil, fmt.Errorf("HTTP Post Error: %w", err)
 	}
 
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("HTTP Post Error: %d", resp.StatusCode)
@@ -210,4 +184,15 @@ func (c *Client) httpPost(url string, bodyType string, body io.Reader) ([]byte, 
 	}
 
 	return b, nil
+}
+
+func checkResponse(value string) error {
+	switch v := strings.TrimSpace(value); v {
+	case "OK":
+		return nil
+	case "AUTH_ERROR":
+		return errors.New("authentication error")
+	default:
+		return fmt.Errorf("unknown error: %q", v)
+	}
 }

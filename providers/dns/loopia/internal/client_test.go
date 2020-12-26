@@ -59,7 +59,7 @@ func TestClient_AddZoneRecord(t *testing.T) {
 			client.BaseURL = server.URL + "/"
 			client.HTTPClient = server.Client()
 
-			err := client.AddTXTRecord(test.domain, acmeChallenge, 123, "TXTrecord")
+			err := client.AddTXTRecord(test.domain, exampleSubDomain, 123, "TXTrecord")
 			if len(test.err) == 0 {
 				require.NoError(t, err)
 			} else {
@@ -117,7 +117,7 @@ func TestClient_RemoveSubdomain(t *testing.T) {
 			client.BaseURL = server.URL + "/"
 			client.HTTPClient = server.Client()
 
-			err := client.RemoveSubdomain(test.domain, acmeChallenge)
+			err := client.RemoveSubdomain(test.domain, exampleSubDomain)
 			if len(test.err) == 0 {
 				require.NoError(t, err)
 			} else {
@@ -174,7 +174,7 @@ func TestClient_RemoveZoneRecord(t *testing.T) {
 			client := NewClient("apiuser", test.password)
 			client.BaseURL = server.URL + "/"
 			client.HTTPClient = server.Client()
-			err := client.RemoveTXTRecord(test.domain, acmeChallenge, 12345678)
+			err := client.RemoveTXTRecord(test.domain, exampleSubDomain, 12345678)
 			if len(test.err) == 0 {
 				require.NoError(t, err)
 			} else {
@@ -196,7 +196,7 @@ func TestClient_GetZoneRecord(t *testing.T) {
 	client.BaseURL = server.URL + "/"
 	client.HTTPClient = server.Client()
 
-	recordObjs, err := client.GetTXTRecords(exampleDomain, acmeChallenge)
+	recordObjs, err := client.GetTXTRecords(exampleDomain, exampleSubDomain)
 	require.NoError(t, err)
 
 	expected := []RecordObj{

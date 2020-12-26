@@ -1,9 +1,9 @@
 package internal
 
 const (
-	exampleDomain = "example.com"
-	exampleRdata  = "LHDhK3oGRvkiefQnx7OOczTY5Tic_xZ6HcMOc_gmtoM"
-	acmeChallenge = "_acme-challenge"
+	exampleDomain    = "example.com"
+	exampleSubDomain = "_acme-challenge"
+	exampleRdata     = "LHDhK3oGRvkiefQnx7OOczTY5Tic_xZ6HcMOc_gmtoM"
 )
 
 // Testdata based on real traffic between an xml-rpc client and the api.

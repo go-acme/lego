@@ -60,6 +60,7 @@ func allDNSCodes() string {
 		"lightsail",
 		"linode",
 		"liquidweb",
+		"loopia",
 		"luadns",
 		"mydnsjp",
 		"mythicbeasts",
@@ -1074,6 +1075,27 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/liquidweb`)
+
+	case "loopia":
+		// generated from: providers/dns/loopia/loopia.toml
+		ew.writeln(`Configuration for Loopia.`)
+		ew.writeln(`Code:	'loopia'`)
+		ew.writeln(`Since:	'v4.2.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "LOOPIA_API_PASSWORD":	API password`)
+		ew.writeln(`	- "LOOPIA_API_USER":	API username`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "LOOPIA_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "LOOPIA_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "LOOPIA_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "LOOPIA_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/loopia`)
 
 	case "luadns":
 		// generated from: providers/dns/luadns/luadns.toml

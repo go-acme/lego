@@ -83,7 +83,7 @@ type rpcError struct {
 }
 
 func (e rpcError) Error() string {
-	return fmt.Sprintf("Loopia DNS: RPC Error: (%d) %s", e.faultCode, e.faultString)
+	return fmt.Sprintf("RPC Error: (%d) %s", e.faultCode, e.faultString)
 }
 
 type recordObjectsResponse struct {

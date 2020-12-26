@@ -49,7 +49,7 @@ func TestClient_AddZoneRecord(t *testing.T) {
 			desc:     "empty response",
 			password: "goodpassword",
 			domain:   "empty.com",
-			err:      "unmarshal error: EOF",
+			err:      "error during unmarshalling the response body: EOF",
 		},
 	}
 
@@ -107,7 +107,7 @@ func TestClient_RemoveSubdomain(t *testing.T) {
 			desc:     "empty response",
 			password: "goodpassword",
 			domain:   "empty.com",
-			err:      "unmarshal error: EOF",
+			err:      "error during unmarshalling the response body: EOF",
 		},
 	}
 
@@ -165,7 +165,7 @@ func TestClient_RemoveZoneRecord(t *testing.T) {
 			desc:     "empty response",
 			password: "goodpassword",
 			domain:   "empty.com",
-			err:      "unmarshal error: EOF",
+			err:      "error during unmarshalling the response body: EOF",
 		},
 	}
 
@@ -174,6 +174,7 @@ func TestClient_RemoveZoneRecord(t *testing.T) {
 			client := NewClient("apiuser", test.password)
 			client.BaseURL = server.URL + "/"
 			client.HTTPClient = server.Client()
+
 			err := client.RemoveTXTRecord(test.domain, exampleSubDomain, 12345678)
 			if len(test.err) == 0 {
 				require.NoError(t, err)
@@ -274,7 +275,7 @@ func TestClient_rpcCall_RPCError(t *testing.T) {
 	client.HTTPClient = server.Client()
 
 	err := client.rpcCall(call, &responseString{})
-	assert.EqualError(t, err, "Loopia DNS: RPC Error: (201) Method signature error: 42")
+	assert.EqualError(t, err, "RPC Error: (201) Method signature error: 42")
 }
 
 func TestUnmarshallFaultyRecordObject(t *testing.T) {

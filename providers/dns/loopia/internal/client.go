@@ -139,21 +139,21 @@ func (c *Client) RemoveSubdomain(domain, subdomain string) error {
 // by marshaling the data given in the call argument to XML and sending that via HTTP Post to Loopia.
 // The response is then unmarshalled into the resp argument.
 func (c *Client) rpcCall(call *methodCall, resp response) error {
-	b, err := xml.MarshalIndent(call, "", "  ")
+	body, err := xml.MarshalIndent(call, "", "  ")
 	if err != nil {
-		return fmt.Errorf("marshal error: %w", err)
+		return fmt.Errorf("error during unmarshalling the request body: %w", err)
 	}
 
-	b = append([]byte(`<?xml version="1.0"?>`+"\n"), b...)
+	body = append([]byte(`<?xml version="1.0"?>`+"\n"), body...)
 
-	respBody, err := c.httpPost(c.BaseURL, "text/xml", bytes.NewReader(b))
+	respBody, err := c.httpPost(c.BaseURL, "text/xml", bytes.NewReader(body))
 	if err != nil {
 		return err
 	}
 
 	err = xml.Unmarshal(respBody, resp)
 	if err != nil {
-		return fmt.Errorf("unmarshal error: %w", err)
+		return fmt.Errorf("error during unmarshalling the response body: %w", err)
 	}
 
 	if resp.faultCode() != 0 {

@@ -29,6 +29,13 @@ const (
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
+type dnsClient interface {
+	AddTXTRecord(domain string, subdomain string, ttl int, value string) error
+	RemoveTXTRecord(domain string, subdomain string, recordID int) error
+	GetTXTRecords(domain string, subdomain string) ([]internal.RecordObj, error)
+	RemoveSubdomain(domain, subdomain string) error
+}
+
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	BaseURL            string
@@ -56,7 +63,7 @@ func NewDefaultConfig() *Config {
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
-	client *internal.Client
+	client dnsClient
 
 	inProgressInfo map[string]int
 	inProgressMu   sync.Mutex
@@ -97,8 +104,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	client := internal.NewClient(config.APIUser, config.APIPassword)
 
-	// FIXME
-	client.HTTPClient = config.HTTPClient
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
+	}
 
 	return &DNSProvider{
 		config:         config,
@@ -122,12 +130,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	err := d.client.AddTXTRecord(authZone, subdomain, d.config.TTL, value)
 	if err != nil {
-		return fmt.Errorf("loopia: %w", err)
+		return fmt.Errorf("loopia: failed to add TXT record: %w", err)
 	}
 
 	txtRecords, err := d.client.GetTXTRecords(authZone, subdomain)
 	if err != nil {
-		return fmt.Errorf("loopia: %w", err)
+		return fmt.Errorf("loopia: failed to get TXT records: %w", err)
 	}
 
 	d.inProgressMu.Lock()
@@ -140,7 +148,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		}
 	}
 
-	return errors.New("loopia: Failed to get id for TXT record")
+	return errors.New("loopia: failed to find the stored TXT record")
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
@@ -154,12 +162,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	err := d.client.RemoveTXTRecord(authZone, subdomain, d.inProgressInfo[token])
 	if err != nil {
-		return fmt.Errorf("loopia: %w", err)
+		return fmt.Errorf("loopia: failed to remove TXT record: %w", err)
 	}
 
 	records, err := d.client.GetTXTRecords(authZone, subdomain)
 	if err != nil {
-		return fmt.Errorf("loopia: %w", err)
+		return fmt.Errorf("loopia: failed to get TXT records: %w", err)
 	}
 
 	if len(records) > 0 {
@@ -168,7 +176,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	err = d.client.RemoveSubdomain(authZone, subdomain)
 	if err != nil {
-		return fmt.Errorf("loopia: %w", err)
+		return fmt.Errorf("loopia: failed to remove sub-domain: %w", err)
 	}
 
 	return nil

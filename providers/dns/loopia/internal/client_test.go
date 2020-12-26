@@ -12,72 +12,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestClient_rpcCall_404(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		_, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		w.WriteHeader(http.StatusNotFound)
-
-		_, err = fmt.Fprintf(w, "<?xml version='1.0' encoding='UTF-8'?>")
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}))
-
-	t.Cleanup(server.Close)
-
-	call := &methodCall{
-		MethodName: "dummyMethod",
-		Params: []param{
-			paramString{Value: "test1"},
-		},
-	}
-
-	client := NewClient("apiuser", "apipassword")
-	client.BaseURL = server.URL + "/"
-	client.HTTPClient = server.Client()
-
-	err := client.rpcCall(call, &responseString{})
-	assert.EqualError(t, err, "HTTP Post Error: 404")
-}
-
-func TestClient_rpcCall_RPCError(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		_, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		_, err = fmt.Fprintf(w, responseRPCError)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}))
-
-	t.Cleanup(server.Close)
-
-	call := &methodCall{
-		MethodName: "getDomains",
-		Params: []param{
-			paramString{Value: "test1"},
-		},
-	}
-
-	client := NewClient("apiuser", "apipassword")
-	client.BaseURL = server.URL + "/"
-	client.HTTPClient = server.Client()
-
-	err := client.rpcCall(call, &responseString{})
-	assert.EqualError(t, err, "Loopia DNS: RPC Error: (201) Method signature error: 42")
-}
-
 func TestClient_AddZoneRecord(t *testing.T) {
 	serverResponses := map[string]string{
 		addZoneRecordGoodAuth:       responseOk,
@@ -89,30 +23,30 @@ func TestClient_AddZoneRecord(t *testing.T) {
 	server := createFakeServer(t, serverResponses)
 
 	testCases := []struct {
-		name     string
+		desc     string
 		password string
 		domain   string
 		err      string
 	}{
 		{
-			name:     "auth ok",
+			desc:     "auth ok",
 			password: "goodpassword",
 			domain:   exampleDomain,
 		},
 		{
-			name:     "auth error",
+			desc:     "auth error",
 			password: "badpassword",
 			domain:   exampleDomain,
 			err:      "authentication error",
 		},
 		{
-			name:     "unknown error",
+			desc:     "unknown error",
 			password: "goodpassword",
 			domain:   "badexample.com",
 			err:      `unknown error: "UNKNOWN_ERROR"`,
 		},
 		{
-			name:     "empty response",
+			desc:     "empty response",
 			password: "goodpassword",
 			domain:   "empty.com",
 			err:      "unmarshal error: EOF",
@@ -120,7 +54,7 @@ func TestClient_AddZoneRecord(t *testing.T) {
 	}
 
 	for _, test := range testCases {
-		t.Run(test.name, func(t *testing.T) {
+		t.Run(test.desc, func(t *testing.T) {
 			client := NewClient("apiuser", test.password)
 			client.BaseURL = server.URL + "/"
 			client.HTTPClient = server.Client()
@@ -147,30 +81,30 @@ func TestClient_RemoveSubdomain(t *testing.T) {
 	server := createFakeServer(t, serverResponses)
 
 	testCases := []struct {
-		name     string
+		desc     string
 		password string
 		domain   string
 		err      string
 	}{
 		{
-			name:     "auth ok",
+			desc:     "auth ok",
 			password: "goodpassword",
 			domain:   exampleDomain,
 		},
 		{
-			name:     "auth error",
+			desc:     "auth error",
 			password: "badpassword",
 			domain:   exampleDomain,
 			err:      "authentication error",
 		},
 		{
-			name:     "unknown error",
+			desc:     "unknown error",
 			password: "goodpassword",
 			domain:   "badexample.com",
 			err:      `unknown error: "UNKNOWN_ERROR"`,
 		},
 		{
-			name:     "empty response",
+			desc:     "empty response",
 			password: "goodpassword",
 			domain:   "empty.com",
 			err:      "unmarshal error: EOF",
@@ -178,7 +112,7 @@ func TestClient_RemoveSubdomain(t *testing.T) {
 	}
 
 	for _, test := range testCases {
-		t.Run(test.name, func(t *testing.T) {
+		t.Run(test.desc, func(t *testing.T) {
 			client := NewClient("apiuser", test.password)
 			client.BaseURL = server.URL + "/"
 			client.HTTPClient = server.Client()
@@ -205,30 +139,30 @@ func TestClient_RemoveZoneRecord(t *testing.T) {
 	server := createFakeServer(t, serverResponses)
 
 	testCases := []struct {
-		name     string
+		desc     string
 		password string
 		domain   string
 		err      string
 	}{
 		{
-			name:     "auth ok",
+			desc:     "auth ok",
 			password: "goodpassword",
 			domain:   exampleDomain,
 		},
 		{
-			name:     "auth error",
+			desc:     "auth error",
 			password: "badpassword",
 			domain:   exampleDomain,
 			err:      "authentication error",
 		},
 		{
-			name:     "uknown error",
+			desc:     "uknown error",
 			password: "goodpassword",
 			domain:   "badexample.com",
 			err:      `unknown error: "UNKNOWN_ERROR"`,
 		},
 		{
-			name:     "empty response",
+			desc:     "empty response",
 			password: "goodpassword",
 			domain:   "empty.com",
 			err:      "unmarshal error: EOF",
@@ -236,7 +170,7 @@ func TestClient_RemoveZoneRecord(t *testing.T) {
 	}
 
 	for _, test := range testCases {
-		t.Run(test.name, func(t *testing.T) {
+		t.Run(test.desc, func(t *testing.T) {
 			client := NewClient("apiuser", test.password)
 			client.BaseURL = server.URL + "/"
 			client.HTTPClient = server.Client()
@@ -277,27 +211,93 @@ func TestClient_GetZoneRecord(t *testing.T) {
 	assert.EqualValues(t, expected, recordObjs)
 }
 
+func TestClient_rpcCall_404(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		w.WriteHeader(http.StatusNotFound)
+
+		_, err = fmt.Fprint(w, "<?xml version='1.0' encoding='UTF-8'?>")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}))
+
+	t.Cleanup(server.Close)
+
+	call := &methodCall{
+		MethodName: "dummyMethod",
+		Params: []param{
+			paramString{Value: "test1"},
+		},
+	}
+
+	client := NewClient("apiuser", "apipassword")
+	client.BaseURL = server.URL + "/"
+	client.HTTPClient = server.Client()
+
+	err := client.rpcCall(call, &responseString{})
+	assert.EqualError(t, err, "HTTP Post Error: 404")
+}
+
+func TestClient_rpcCall_RPCError(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		_, err = fmt.Fprint(w, responseRPCError)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}))
+
+	t.Cleanup(server.Close)
+
+	call := &methodCall{
+		MethodName: "getDomains",
+		Params: []param{
+			paramString{Value: "test1"},
+		},
+	}
+
+	client := NewClient("apiuser", "apipassword")
+	client.BaseURL = server.URL + "/"
+	client.HTTPClient = server.Client()
+
+	err := client.rpcCall(call, &responseString{})
+	assert.EqualError(t, err, "Loopia DNS: RPC Error: (201) Method signature error: 42")
+}
+
 func TestUnmarshallFaultyRecordObject(t *testing.T) {
 	testCases := []struct {
-		name string
+		desc string
 		xml  string
 	}{
 		{
-			name: "faulty name",
+			desc: "faulty name",
 			xml:  "<name>name<name>",
 		},
 		{
-			name: "faulty string",
+			desc: "faulty string",
 			xml:  "<value><string>foo<string></value>",
 		},
 		{
-			name: "faulty int",
+			desc: "faulty int",
 			xml:  "<value><int>1<int></value>",
 		},
 	}
 
 	for _, test := range testCases {
-		t.Run(test.name, func(t *testing.T) {
+		t.Run(test.desc, func(t *testing.T) {
 			resp := &RecordObj{}
 
 			err := xml.Unmarshal([]byte(test.xml), resp)
@@ -325,7 +325,7 @@ func createFakeServer(t *testing.T, serverResponses map[string]string) *httptest
 			return
 		}
 
-		_, err = fmt.Fprintf(w, resp)
+		_, err = fmt.Fprint(w, resp)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

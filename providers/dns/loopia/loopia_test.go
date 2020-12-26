@@ -1,7 +1,6 @@
 package loopia
 
 import (
-	"net/http"
 	"testing"
 	"time"
 
@@ -21,151 +20,43 @@ var envTest = tester.NewEnvTest(
 	EnvHTTPTimeout).
 	WithDomain(envDomain)
 
-func TestNewDefaultConfig(t *testing.T) {
-	testCases := []struct {
-		name     string
-		envVars  map[string]string
-		expected Config
-	}{
-		{
-			name: "default",
-			expected: Config{
-				TTL:                minTTL,
-				PropagationTimeout: 40 * time.Minute,
-				PollingInterval:    60 * time.Second,
-				HTTPClient: &http.Client{
-					Timeout: 60 * time.Second,
-				},
-			},
-		},
-		{
-			name: "overridden values",
-			envVars: map[string]string{
-				EnvTTL:                "3600",
-				EnvPropagationTimeout: "60",
-				EnvPollingInterval:    "120",
-				EnvHTTPTimeout:        "120",
-			},
-			expected: Config{
-				TTL:                3600,
-				PropagationTimeout: time.Minute,
-				PollingInterval:    120 * time.Second,
-				HTTPClient: &http.Client{
-					Timeout: 120 * time.Second,
-				},
-			},
-		},
-	}
-
-	for _, test := range testCases {
-		t.Run(test.name, func(t *testing.T) {
-			defer envTest.RestoreEnv()
-			envTest.ClearEnv()
-			envTest.Apply(test.envVars)
-			p := NewDefaultConfig()
-			assert.Equal(t, test.expected.TTL, p.TTL)
-			assert.Equal(t, test.expected.PropagationTimeout, p.PropagationTimeout)
-			assert.Equal(t, test.expected.PollingInterval, p.PollingInterval)
-			assert.Equal(t, test.expected.HTTPClient.Timeout, p.HTTPClient.Timeout)
-		})
-	}
-}
-
-func TestNewDNSProviderConfig(t *testing.T) {
-	testCases := []struct {
-		name             string
-		config           *Config
-		expectedTTL      int
-		expectedErrorMsg string
-	}{
-		{
-			name:             "nil config user",
-			config:           nil,
-			expectedErrorMsg: "loopia: the configuration of the DNS provider is nil",
-		},
-		{
-			name: "empty user",
-			config: &Config{
-				APIUser:     "",
-				APIPassword: "PASSWORD",
-				TTL:         3600,
-			},
-			expectedErrorMsg: "loopia: credentials missing",
-		},
-
-		{
-			name: "empty password",
-			config: &Config{
-				APIUser:     "USER",
-				APIPassword: "",
-				TTL:         3600,
-			},
-			expectedTTL:      3600,
-			expectedErrorMsg: "loopia: credentials missing",
-		},
-		{
-			name: "to low ttl",
-			config: &Config{
-				APIUser:     "USER",
-				APIPassword: "PASSWORD",
-				TTL:         299,
-			},
-			expectedTTL:      300,
-			expectedErrorMsg: "",
-		},
-	}
-	for _, test := range testCases {
-		t.Run(test.name, func(t *testing.T) {
-			p, err := NewDNSProviderConfig(test.config)
-			if len(test.expectedErrorMsg) == 0 {
-				require.NoError(t, err)
-				require.NotNil(t, p)
-				assert.Equal(t, test.expectedTTL, p.config.TTL)
-			} else {
-				require.Error(t, err)
-				assert.EqualError(t, err, test.expectedErrorMsg)
-			}
-		})
-	}
-}
-
 func TestSplitDomain(t *testing.T) {
-	mockedFindZoneByFqdn := func(fqdn string) (string, error) {
-		return "example.com.", nil
-	}
-
 	provider := &DNSProvider{
-		findZoneByFqdn: mockedFindZoneByFqdn,
+		findZoneByFqdn: func(fqdn string) (string, error) {
+			return "example.com.", nil
+		},
 	}
 
 	testCases := []struct {
-		name      string
+		desc      string
 		fqdn      string
 		subdomain string
 		domain    string
 	}{
 		{
-			name:      "single subdomain",
+			desc:      "single subdomain",
 			fqdn:      "subdomain.example.com",
 			subdomain: "subdomain",
 			domain:    "example.com",
 		},
 		{
-			name:      "double subdomain",
+			desc:      "double subdomain",
 			fqdn:      "sub.domain.example.com",
 			subdomain: "sub.domain",
 			domain:    "example.com",
 		},
 		{
-			name:      "asterisk subdomain",
+			desc:      "asterisk subdomain",
 			fqdn:      "*.example.com",
 			subdomain: "*",
 			domain:    "example.com",
 		},
 	}
+
 	for _, test := range testCases {
-		t.Run(test.name, func(t *testing.T) {
+		t.Run(test.desc, func(t *testing.T) {
 			subdomain, domain := provider.splitDomain(test.fqdn)
+
 			assert.Equal(t, test.subdomain, subdomain)
 			assert.Equal(t, test.domain, domain)
 		})
@@ -174,52 +65,124 @@ func TestSplitDomain(t *testing.T) {
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
-		name             string
-		envVars          map[string]string
-		expectedErrorMsg string
+		desc          string
+		envVars       map[string]string
+		expectedError string
 	}{
 		{
-			name: "success",
+			desc: "success",
 			envVars: map[string]string{
-				EnvAPIUser:     "API_USER",
-				EnvAPIPassword: "API_PASSWORD",
+				EnvAPIUser:     "user",
+				EnvAPIPassword: "secret",
 			},
 		},
 		{
-			name:             "missing credentials key",
-			envVars:          map[string]string{},
-			expectedErrorMsg: "loopia: some credentials information are missing: LOOPIA_API_USER,LOOPIA_API_PASSWORD",
+			desc: "missing API user",
+			envVars: map[string]string{
+				EnvAPIUser:     "",
+				EnvAPIPassword: "secret",
+			},
+			expectedError: "loopia: some credentials information are missing: LOOPIA_API_USER",
+		},
+		{
+			desc: "missing API password",
+			envVars: map[string]string{
+				EnvAPIUser:     "user",
+				EnvAPIPassword: "",
+			},
+			expectedError: "loopia: some credentials information are missing: LOOPIA_API_PASSWORD",
+		},
+		{
+			desc:          "missing credentials",
+			envVars:       map[string]string{},
+			expectedError: "loopia: some credentials information are missing: LOOPIA_API_USER,LOOPIA_API_PASSWORD",
 		},
 	}
+
 	for _, test := range testCases {
-		t.Run(test.name, func(t *testing.T) {
+		t.Run(test.desc, func(t *testing.T) {
 			defer envTest.RestoreEnv()
 			envTest.ClearEnv()
+
 			envTest.Apply(test.envVars)
 
 			p, err := NewDNSProvider()
-			if len(test.expectedErrorMsg) == 0 {
+
+			if len(test.expectedError) == 0 {
 				require.NoError(t, err)
 				require.NotNil(t, p)
 			} else {
 				require.Error(t, err)
-				require.EqualError(t, err, test.expectedErrorMsg)
+				require.EqualError(t, err, test.expectedError)
 			}
 		})
 	}
 }
 
-func TestDNSProvider_Timeout(t *testing.T) {
-	config := &Config{
-		PropagationTimeout: 5 * time.Minute,
-		PollingInterval:    120 * time.Second,
+func TestNewDNSProviderConfig(t *testing.T) {
+	testCases := []struct {
+		desc          string
+		config        *Config
+		expectedTTL   int
+		expectedError string
+	}{
+		{
+			desc: "success",
+			config: &Config{
+				APIUser:     "user",
+				APIPassword: "secret",
+				TTL:         3600,
+			},
+			expectedTTL: 3600,
+		},
+		{
+			desc:          "nil config user",
+			expectedError: "loopia: the configuration of the DNS provider is nil",
+		},
+		{
+			desc: "empty user",
+			config: &Config{
+				APIUser:     "",
+				APIPassword: "secret",
+				TTL:         3600,
+			},
+			expectedError: "loopia: credentials missing",
+		},
+		{
+			desc: "empty password",
+			config: &Config{
+				APIUser:     "user",
+				APIPassword: "",
+				TTL:         3600,
+			},
+			expectedTTL:   3600,
+			expectedError: "loopia: credentials missing",
+		},
+		{
+			desc: "too low TTL",
+			config: &Config{
+				APIUser:     "user",
+				APIPassword: "secret",
+				TTL:         299,
+			},
+			expectedTTL: 300,
+		},
 	}
-	provider := &DNSProvider{
-		config: config,
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			p, err := NewDNSProviderConfig(test.config)
+
+			if len(test.expectedError) == 0 {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				assert.Equal(t, test.expectedTTL, p.config.TTL)
+			} else {
+				require.Error(t, err)
+				assert.EqualError(t, err, test.expectedError)
+			}
+		})
 	}
-	timeout, polling := provider.Timeout()
-	assert.Equal(t, timeout, 5*time.Minute)
-	assert.Equal(t, polling, 120*time.Second)
 }
 
 func TestLivePresent(t *testing.T) {

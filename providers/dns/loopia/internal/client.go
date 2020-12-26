@@ -12,6 +12,7 @@ import (
 	"time"
 )
 
+// DefaultBaseURL is url to the XML-RPC api.
 const DefaultBaseURL = "https://api.loopia.se/RPCSERV"
 
 const (

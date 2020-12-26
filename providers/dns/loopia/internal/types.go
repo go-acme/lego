@@ -17,10 +17,14 @@ type paramString struct {
 	Value   string   `xml:"value>string"`
 }
 
+func (p paramString) param() {}
+
 type paramInt struct {
 	XMLName xml.Name `xml:"param"`
 	Value   int      `xml:"value>int"`
 }
+
+func (p paramInt) param() {}
 
 type structMember interface {
 	structMember()
@@ -31,21 +35,21 @@ type structMemberString struct {
 	Value string `xml:"value>string"`
 }
 
+func (m structMemberString) structMember() {}
+
 type structMemberInt struct {
 	Name  string `xml:"name"`
 	Value int    `xml:"value>int"`
 }
+
+func (m structMemberInt) structMember() {}
 
 type paramStruct struct {
 	XMLName       xml.Name       `xml:"param"`
 	StructMembers []structMember `xml:"value>struct>member"`
 }
 
-func (p paramString) param()               {}
-func (p paramInt) param()                  {}
-func (m structMemberString) structMember() {}
-func (m structMemberInt) structMember()    {}
-func (p paramStruct) param()               {}
+func (p paramStruct) param() {}
 
 type methodCall struct {
 	XMLName    xml.Name `xml:"methodCall"`
@@ -78,6 +82,10 @@ type rpcError struct {
 	faultString string
 }
 
+func (e rpcError) Error() string {
+	return fmt.Sprintf("Loopia DNS: RPC Error: (%d) %s", e.faultCode, e.faultString)
+}
+
 type recordObjectsResponse struct {
 	responseFault
 	XMLName xml.Name    `xml:"methodResponse"`
@@ -99,6 +107,7 @@ func (r *RecordObj) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 		if err != nil {
 			return err
 		}
+
 		switch tt := t.(type) {
 		case xml.StartElement:
 			switch tt.Name.Local {
@@ -107,11 +116,14 @@ func (r *RecordObj) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 				if err = d.DecodeElement(&s, &start); err != nil {
 					return err
 				}
+
 				name = strings.TrimSpace(s)
+
 			case "string": // A string value of the record object: <value><string>
 				if err = r.decodeValueString(name, d, start); err != nil {
 					return err
 				}
+
 			case "int": // An int value of the record object: <value><int>
 				if err = r.decodeValueInt(name, d, start); err != nil {
 					return err
@@ -130,6 +142,7 @@ func (r *RecordObj) decodeValueString(name string, d *xml.Decoder, start xml.Sta
 	if err := d.DecodeElement(&s, &start); err != nil {
 		return err
 	}
+
 	s = strings.TrimSpace(s)
 	switch name {
 	case "type":
@@ -137,6 +150,7 @@ func (r *RecordObj) decodeValueString(name string, d *xml.Decoder, start xml.Sta
 	case "rdata":
 		r.Rdata = s
 	}
+
 	return nil
 }
 
@@ -145,6 +159,7 @@ func (r *RecordObj) decodeValueInt(name string, d *xml.Decoder, start xml.StartE
 	if err := d.DecodeElement(&i, &start); err != nil {
 		return err
 	}
+
 	switch name {
 	case "record_id":
 		r.RecordID = i
@@ -153,9 +168,6 @@ func (r *RecordObj) decodeValueInt(name string, d *xml.Decoder, start xml.StartE
 	case "priority":
 		r.Priority = i
 	}
-	return nil
-}
 
-func (e rpcError) Error() string {
-	return fmt.Sprintf("Loopia DNS: RPC Error: (%d) %s", e.faultCode, e.faultString)
+	return nil
 }

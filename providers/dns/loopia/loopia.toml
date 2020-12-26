@@ -2,7 +2,7 @@ Name = "Loopia"
 Description = ''''''
 URL = "https://loopia.com"
 Code = "loopia"
-Since = "v4.1.4"
+Since = "v4.2.0"
 
 Example = '''
 LOOPIA_API_USER=xxxxxxxx \

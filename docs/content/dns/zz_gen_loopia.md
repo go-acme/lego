@@ -9,7 +9,7 @@ slug: loopia
 <!-- providers/dns/loopia/loopia.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.1.4
+Since: v4.2.0
 
 Configuration for [Loopia](https://loopia.com).
 

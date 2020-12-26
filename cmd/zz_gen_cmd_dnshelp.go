@@ -1080,7 +1080,7 @@ func displayDNSHelp(name string) error {
 		// generated from: providers/dns/loopia/loopia.toml
 		ew.writeln(`Configuration for Loopia.`)
 		ew.writeln(`Code:	'loopia'`)
-		ew.writeln(`Since:	'v4.1.4'`)
+		ew.writeln(`Since:	'v4.2.0'`)
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)

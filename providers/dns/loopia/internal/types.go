@@ -26,6 +26,13 @@ type paramInt struct {
 
 func (p paramInt) param() {}
 
+type paramStruct struct {
+	XMLName       xml.Name       `xml:"param"`
+	StructMembers []structMember `xml:"value>struct>member"`
+}
+
+func (p paramStruct) param() {}
+
 type structMember interface {
 	structMember()
 }
@@ -44,13 +51,6 @@ type structMemberInt struct {
 
 func (m structMemberInt) structMember() {}
 
-type paramStruct struct {
-	XMLName       xml.Name       `xml:"param"`
-	StructMembers []structMember `xml:"value>struct>member"`
-}
-
-func (p paramStruct) param() {}
-
 type methodCall struct {
 	XMLName    xml.Name `xml:"methodCall"`
 	MethodName string   `xml:"methodName"`
@@ -64,6 +64,11 @@ type response interface {
 	faultString() string
 }
 
+type responseString struct {
+	responseFault
+	Value string `xml:"params>param>value>string"`
+}
+
 type responseFault struct {
 	FaultCode   int    `xml:"fault>value>struct>member>value>int"`
 	FaultString string `xml:"fault>value>struct>member>value>string"`
@@ -71,11 +76,6 @@ type responseFault struct {
 
 func (r responseFault) faultCode() int      { return r.FaultCode }
 func (r responseFault) faultString() string { return r.FaultString }
-
-type responseString struct {
-	responseFault
-	Value string `xml:"params>param>value>string"`
-}
 
 type rpcError struct {
 	faultCode   int

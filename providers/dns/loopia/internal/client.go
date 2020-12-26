@@ -44,22 +44,11 @@ func (c *Client) AddTXTRecord(domain string, subdomain string, ttl int, value st
 			paramString{Value: subdomain},
 			paramStruct{
 				StructMembers: []structMember{
-					structMemberString{
-						Name:  "type",
-						Value: "TXT",
-					}, structMemberInt{
-						Name:  "ttl",
-						Value: ttl,
-					}, structMemberInt{
-						Name:  "priority",
-						Value: 0,
-					}, structMemberString{
-						Name:  "rdata",
-						Value: value,
-					}, structMemberInt{
-						Name:  "record_id",
-						Value: 0,
-					},
+					structMemberString{Name: "type", Value: "TXT"},
+					structMemberInt{Name: "ttl", Value: ttl},
+					structMemberInt{Name: "priority", Value: 0},
+					structMemberString{Name: "rdata", Value: value},
+					structMemberInt{Name: "record_id", Value: 0},
 				},
 			},
 		},

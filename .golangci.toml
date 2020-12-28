@@ -43,6 +43,8 @@
     "tparallel", # not relevant
     "paralleltest", # not relevant
     "exhaustivestruct", # too many false-positive
+    "makezero", # not relevant
+    "forbidigo", # not relevant
   ]
 
 [issues]

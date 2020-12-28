@@ -24,6 +24,8 @@ const (
 )
 
 func setup(t *testing.T) (*http.ServeMux, string) {
+	t.Helper()
+
 	mux := http.NewServeMux()
 
 	server := httptest.NewServer(mux)

@@ -20,7 +20,7 @@ func TestClient_AddZoneRecord(t *testing.T) {
 		addZoneRecordEmptyResponse:  "",
 	}
 
-	server := createFakeServer(t, serverResponses)
+	serverURL := createFakeServer(t, serverResponses)
 
 	testCases := []struct {
 		desc     string
@@ -56,8 +56,7 @@ func TestClient_AddZoneRecord(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			client := NewClient("apiuser", test.password)
-			client.BaseURL = server.URL + "/"
-			client.HTTPClient = server.Client()
+			client.BaseURL = serverURL + "/"
 
 			err := client.AddTXTRecord(test.domain, exampleSubDomain, 123, "TXTrecord")
 			if len(test.err) == 0 {
@@ -78,7 +77,7 @@ func TestClient_RemoveSubdomain(t *testing.T) {
 		removeSubdomainEmptyResponse:  "",
 	}
 
-	server := createFakeServer(t, serverResponses)
+	serverURL := createFakeServer(t, serverResponses)
 
 	testCases := []struct {
 		desc     string
@@ -114,8 +113,7 @@ func TestClient_RemoveSubdomain(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			client := NewClient("apiuser", test.password)
-			client.BaseURL = server.URL + "/"
-			client.HTTPClient = server.Client()
+			client.BaseURL = serverURL + "/"
 
 			err := client.RemoveSubdomain(test.domain, exampleSubDomain)
 			if len(test.err) == 0 {
@@ -136,7 +134,7 @@ func TestClient_RemoveZoneRecord(t *testing.T) {
 		removeRecordEmptyResponse:  "",
 	}
 
-	server := createFakeServer(t, serverResponses)
+	serverURL := createFakeServer(t, serverResponses)
 
 	testCases := []struct {
 		desc     string
@@ -172,8 +170,7 @@ func TestClient_RemoveZoneRecord(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			client := NewClient("apiuser", test.password)
-			client.BaseURL = server.URL + "/"
-			client.HTTPClient = server.Client()
+			client.BaseURL = serverURL + "/"
 
 			err := client.RemoveTXTRecord(test.domain, exampleSubDomain, 12345678)
 			if len(test.err) == 0 {
@@ -191,11 +188,10 @@ func TestClient_GetZoneRecord(t *testing.T) {
 		getZoneRecords: getZoneRecordsResponse,
 	}
 
-	server := createFakeServer(t, serverResponses)
+	serverURL := createFakeServer(t, serverResponses)
 
 	client := NewClient("apiuser", "goodpassword")
-	client.BaseURL = server.URL + "/"
-	client.HTTPClient = server.Client()
+	client.BaseURL = serverURL + "/"
 
 	recordObjs, err := client.GetTXTRecords(exampleDomain, exampleSubDomain)
 	require.NoError(t, err)
@@ -240,7 +236,6 @@ func TestClient_rpcCall_404(t *testing.T) {
 
 	client := NewClient("apiuser", "apipassword")
 	client.BaseURL = server.URL + "/"
-	client.HTTPClient = server.Client()
 
 	err := client.rpcCall(call, &responseString{})
 	assert.EqualError(t, err, "HTTP Post Error: 404")
@@ -272,7 +267,6 @@ func TestClient_rpcCall_RPCError(t *testing.T) {
 
 	client := NewClient("apiuser", "apipassword")
 	client.BaseURL = server.URL + "/"
-	client.HTTPClient = server.Client()
 
 	err := client.rpcCall(call, &responseString{})
 	assert.EqualError(t, err, "RPC Error: (201) Method signature error: 42")
@@ -307,7 +301,9 @@ func TestUnmarshallFaultyRecordObject(t *testing.T) {
 	}
 }
 
-func createFakeServer(t *testing.T, serverResponses map[string]string) *httptest.Server {
+func createFakeServer(t *testing.T, serverResponses map[string]string) string {
+	t.Helper()
+
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("Content-Type") != "text/xml" {
 			http.Error(w, fmt.Sprintf("invalid content type: %s", r.Header.Get("Content-Type")), http.StatusBadRequest)
@@ -335,5 +331,5 @@ func createFakeServer(t *testing.T, serverResponses map[string]string) *httptest
 
 	t.Cleanup(server.Close)
 
-	return server
+	return server.URL
 }

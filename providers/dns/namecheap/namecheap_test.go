@@ -21,10 +21,9 @@ const (
 func TestDNSProvider_getHosts(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
-			mock := httptest.NewServer(mockServer(&test, t))
-			defer mock.Close()
+			serverURL := mockServer(t, &test)
 
-			provider := mockDNSProvider(mock.URL)
+			provider := mockDNSProvider(serverURL)
 
 			ch, err := newChallenge(test.domain, "")
 			require.NoError(t, err)
@@ -62,10 +61,9 @@ func TestDNSProvider_getHosts(t *testing.T) {
 func TestDNSProvider_setHosts(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
-			mock := httptest.NewServer(mockServer(&test, t))
-			defer mock.Close()
+			serverURL := mockServer(t, &test)
 
-			prov := mockDNSProvider(mock.URL)
+			prov := mockDNSProvider(serverURL)
 
 			ch, err := newChallenge(test.domain, "")
 			require.NoError(t, err)
@@ -89,10 +87,9 @@ func TestDNSProvider_setHosts(t *testing.T) {
 func TestDNSProvider_Present(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
-			mock := httptest.NewServer(mockServer(&test, t))
-			defer mock.Close()
+			serverURL := mockServer(t, &test)
 
-			prov := mockDNSProvider(mock.URL)
+			prov := mockDNSProvider(serverURL)
 			err := prov.Present(test.domain, "", "dummyKey")
 			if test.errString != "" {
 				assert.EqualError(t, err, "namecheap: "+test.errString)
@@ -106,10 +103,9 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_CleanUp(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
-			mock := httptest.NewServer(mockServer(&test, t))
-			defer mock.Close()
+			serverURL := mockServer(t, &test)
 
-			prov := mockDNSProvider(mock.URL)
+			prov := mockDNSProvider(serverURL)
 			err := prov.CleanUp(test.domain, "", "dummyKey")
 			if test.errString != "" {
 				assert.EqualError(t, err, "namecheap: "+test.errString)
@@ -171,7 +167,7 @@ func TestDomainSplit(t *testing.T) {
 	}
 }
 
-func assertHdr(tc *testCase, t *testing.T, values *url.Values) {
+func assertHdr(t *testing.T, tc *testCase, values *url.Values) {
 	t.Helper()
 
 	ch, _ := newChallenge(tc.domain, "")
@@ -183,15 +179,17 @@ func assertHdr(tc *testCase, t *testing.T, values *url.Values) {
 	assert.Equal(t, ch.tld, values.Get("TLD"), "TLD")
 }
 
-func mockServer(tc *testCase, t *testing.T) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func mockServer(t *testing.T, tc *testCase) string {
+	t.Helper()
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
 			values := r.URL.Query()
 			cmd := values.Get("Command")
 			switch cmd {
 			case "namecheap.domains.dns.getHosts":
-				assertHdr(tc, t, &values)
+				assertHdr(t, tc, &values)
 				w.WriteHeader(http.StatusOK)
 				fmt.Fprint(w, tc.getHostsResponse)
 			default:
@@ -208,7 +206,7 @@ func mockServer(tc *testCase, t *testing.T) http.Handler {
 			cmd := values.Get("Command")
 			switch cmd {
 			case "namecheap.domains.dns.setHosts":
-				assertHdr(tc, t, &values)
+				assertHdr(t, tc, &values)
 				w.WriteHeader(http.StatusOK)
 				fmt.Fprint(w, tc.setHostsResponse)
 			default:
@@ -218,7 +216,11 @@ func mockServer(tc *testCase, t *testing.T) http.Handler {
 		default:
 			t.Errorf("Unexpected http method: %s", r.Method)
 		}
-	})
+	}))
+
+	t.Cleanup(server.Close)
+
+	return server.URL
 }
 
 func mockDNSProvider(url string) *DNSProvider {

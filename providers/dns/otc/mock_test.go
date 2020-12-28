@@ -21,6 +21,8 @@ type DNSServerMock struct {
 
 // NewDNSServerMock create a new DNSServerMock.
 func NewDNSServerMock(t *testing.T) *DNSServerMock {
+	t.Helper()
+
 	mux := http.NewServeMux()
 
 	return &DNSServerMock{

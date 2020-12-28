@@ -31,7 +31,7 @@ var envTest = tester.NewEnvTest(
 	WithDomain(envDomain)
 
 func TestNewDNSProvider_fromEnv(t *testing.T) {
-	server := getServer(t)
+	serverURL := setupTestProvider(t)
 
 	testCases := []struct {
 		desc     string
@@ -41,7 +41,7 @@ func TestNewDNSProvider_fromEnv(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				EnvAuthURL:    server.URL + "/v2.0/",
+				EnvAuthURL:    serverURL + "/v2.0/",
 				EnvUsername:   "B",
 				EnvPassword:   "C",
 				EnvRegionName: "D",
@@ -71,7 +71,7 @@ func TestNewDNSProvider_fromEnv(t *testing.T) {
 		{
 			desc: "missing username",
 			envVars: map[string]string{
-				EnvAuthURL:    server.URL + "/v2.0/",
+				EnvAuthURL:    serverURL + "/v2.0/",
 				EnvUsername:   "",
 				EnvPassword:   "C",
 				EnvRegionName: "D",
@@ -81,7 +81,7 @@ func TestNewDNSProvider_fromEnv(t *testing.T) {
 		{
 			desc: "missing password",
 			envVars: map[string]string{
-				EnvAuthURL:    server.URL + "/v2.0/",
+				EnvAuthURL:    serverURL + "/v2.0/",
 				EnvUsername:   "B",
 				EnvPassword:   "",
 				EnvRegionName: "D",
@@ -91,7 +91,7 @@ func TestNewDNSProvider_fromEnv(t *testing.T) {
 		{
 			desc: "missing region name",
 			envVars: map[string]string{
-				EnvAuthURL:    server.URL + "/v2.0/",
+				EnvAuthURL:    serverURL + "/v2.0/",
 				EnvUsername:   "B",
 				EnvPassword:   "C",
 				EnvRegionName: "",
@@ -121,7 +121,7 @@ func TestNewDNSProvider_fromEnv(t *testing.T) {
 }
 
 func TestNewDNSProvider_fromCloud(t *testing.T) {
-	server := getServer(t)
+	serverURL := setupTestProvider(t)
 
 	testCases := []struct {
 		desc     string
@@ -134,7 +134,7 @@ func TestNewDNSProvider_fromCloud(t *testing.T) {
 			osCloud: "good_cloud",
 			cloud: clientconfig.Cloud{
 				AuthInfo: &clientconfig.AuthInfo{
-					AuthURL:     server.URL + "/v2.0/",
+					AuthURL:     serverURL + "/v2.0/",
 					Username:    "B",
 					Password:    "C",
 					ProjectName: "E",
@@ -162,7 +162,7 @@ func TestNewDNSProvider_fromCloud(t *testing.T) {
 			osCloud: "missing_username",
 			cloud: clientconfig.Cloud{
 				AuthInfo: &clientconfig.AuthInfo{
-					AuthURL:     server.URL + "/v2.0/",
+					AuthURL:     serverURL + "/v2.0/",
 					Password:    "C",
 					ProjectName: "E",
 					ProjectID:   "F",
@@ -176,7 +176,7 @@ func TestNewDNSProvider_fromCloud(t *testing.T) {
 			osCloud: "missing_auth_url",
 			cloud: clientconfig.Cloud{
 				AuthInfo: &clientconfig.AuthInfo{
-					AuthURL:     server.URL + "/v2.0/",
+					AuthURL:     serverURL + "/v2.0/",
 					Username:    "B",
 					ProjectName: "E",
 					ProjectID:   "F",
@@ -211,7 +211,7 @@ func TestNewDNSProvider_fromCloud(t *testing.T) {
 }
 
 func TestNewDNSProviderConfig(t *testing.T) {
-	server := getServer(t)
+	serverURL := setupTestProvider(t)
 
 	testCases := []struct {
 		desc       string
@@ -226,15 +226,15 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			tenantName: "A",
 			password:   "B",
 			userName:   "C",
-			authURL:    server.URL + "/v2.0/",
+			authURL:    serverURL + "/v2.0/",
 		},
 		{
 			desc:       "wrong auth url",
 			tenantName: "A",
 			password:   "B",
 			userName:   "C",
-			authURL:    server.URL,
-			expected:   "designate: failed to authenticate: No supported version available from endpoint " + server.URL + "/",
+			authURL:    serverURL,
+			expected:   "designate: failed to authenticate: No supported version available from endpoint " + serverURL + "/",
 		},
 	}
 
@@ -261,6 +261,8 @@ func TestNewDNSProviderConfig(t *testing.T) {
 
 // createCloudsYaml creates a temporary cloud file for testing purpose.
 func createCloudsYaml(t *testing.T, cloudName string, cloud clientconfig.Cloud) string {
+	t.Helper()
+
 	file, err := ioutil.TempFile("", "lego_test")
 	require.NoError(t, err)
 
@@ -278,7 +280,9 @@ func createCloudsYaml(t *testing.T, cloudName string, cloud clientconfig.Cloud) 
 	return file.Name()
 }
 
-func getServer(t *testing.T) *httptest.Server {
+func setupTestProvider(t *testing.T) string {
+	t.Helper()
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
 		_, _ = w.Write([]byte(`{
@@ -317,7 +321,7 @@ func getServer(t *testing.T) *httptest.Server {
 
 	t.Cleanup(server.Close)
 
-	return server
+	return server.URL
 }
 
 func TestLivePresent(t *testing.T) {

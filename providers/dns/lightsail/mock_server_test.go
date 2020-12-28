@@ -16,8 +16,10 @@ type MockResponse struct {
 	Body       string
 }
 
-func newMockServer(t *testing.T, responses map[string]MockResponse) *httptest.Server {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func newMockServer(t *testing.T, responses map[string]MockResponse) string {
+	t.Helper()
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path
 		resp, ok := responses[path]
 		if !ok {
@@ -34,6 +36,9 @@ func newMockServer(t *testing.T, responses map[string]MockResponse) *httptest.Se
 		}
 	}))
 
+	t.Cleanup(server.Close)
+
 	time.Sleep(100 * time.Millisecond)
-	return ts
+
+	return server.URL
 }

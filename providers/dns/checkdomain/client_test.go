@@ -15,9 +15,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func setupTestProvider(t *testing.T) (*DNSProvider, *http.ServeMux, func()) {
+func setupTestProvider(t *testing.T) (*DNSProvider, *http.ServeMux) {
+	t.Helper()
+
 	handler := http.NewServeMux()
 	svr := httptest.NewServer(handler)
+
+	t.Cleanup(svr.Close)
 
 	config := NewDefaultConfig()
 	config.Endpoint, _ = url.Parse(svr.URL)
@@ -26,12 +30,11 @@ func setupTestProvider(t *testing.T) (*DNSProvider, *http.ServeMux, func()) {
 	prd, err := NewDNSProviderConfig(config)
 	require.NoError(t, err)
 
-	return prd, handler, svr.Close
+	return prd, handler
 }
 
 func Test_getDomainIDByName(t *testing.T) {
-	prd, handler, tearDown := setupTestProvider(t)
-	defer tearDown()
+	prd, handler := setupTestProvider(t)
 
 	handler.HandleFunc("/v1/domains", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
@@ -59,8 +62,7 @@ func Test_getDomainIDByName(t *testing.T) {
 }
 
 func Test_checkNameservers(t *testing.T) {
-	prd, handler, tearDown := setupTestProvider(t)
-	defer tearDown()
+	prd, handler := setupTestProvider(t)
 
 	handler.HandleFunc("/v1/domains/1/nameservers", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
@@ -87,8 +89,7 @@ func Test_checkNameservers(t *testing.T) {
 }
 
 func Test_createRecord(t *testing.T) {
-	prd, handler, tearDown := setupTestProvider(t)
-	defer tearDown()
+	prd, handler := setupTestProvider(t)
 
 	handler.HandleFunc("/v1/domains/1/nameservers/records", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodPost {
@@ -119,8 +120,7 @@ func Test_createRecord(t *testing.T) {
 }
 
 func Test_deleteTXTRecord(t *testing.T) {
-	prd, handler, tearDown := setupTestProvider(t)
-	defer tearDown()
+	prd, handler := setupTestProvider(t)
 
 	domainName := "lego.test"
 	recordValue := "test"

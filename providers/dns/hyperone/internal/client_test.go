@@ -146,6 +146,8 @@ func TestClient_GetZones(t *testing.T) {
 }
 
 func setupTest(t *testing.T, method, path string, handlers ...assertHandler) *Client {
+	t.Helper()
+
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
 

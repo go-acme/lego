@@ -1,7 +1,6 @@
 package lightsail
 
 import (
-	"net/http/httptest"
 	"os"
 	"testing"
 
@@ -30,10 +29,10 @@ var envTest = tester.NewEnvTest(
 	WithDomain(EnvDNSZone).
 	WithLiveTestRequirements(envAwsAccessKeyID, envAwsSecretAccessKey, EnvDNSZone)
 
-func makeProvider(ts *httptest.Server) (*DNSProvider, error) {
+func makeProvider(serverURL string) (*DNSProvider, error) {
 	config := &aws.Config{
 		Credentials: credentials.NewStaticCredentials("abc", "123", " "),
-		Endpoint:    aws.String(ts.URL),
+		Endpoint:    aws.String(serverURL),
 		Region:      aws.String("mock-region"),
 		MaxRetries:  aws.Int(1),
 	}
@@ -53,9 +52,9 @@ func TestCredentialsFromEnv(t *testing.T) {
 	defer envTest.RestoreEnv()
 	envTest.ClearEnv()
 
-	os.Setenv(envAwsAccessKeyID, "123")
-	os.Setenv(envAwsSecretAccessKey, "123")
-	os.Setenv(envAwsRegion, "us-east-1")
+	_ = os.Setenv(envAwsAccessKeyID, "123")
+	_ = os.Setenv(envAwsSecretAccessKey, "123")
+	_ = os.Setenv(envAwsRegion, "us-east-1")
 
 	config := &aws.Config{
 		CredentialsChainVerboseErrors: aws.Bool(true),
@@ -73,10 +72,9 @@ func TestDNSProvider_Present(t *testing.T) {
 		"/": {StatusCode: 200, Body: ""},
 	}
 
-	ts := newMockServer(t, mockResponses)
-	defer ts.Close()
+	serverURL := newMockServer(t, mockResponses)
 
-	provider, err := makeProvider(ts)
+	provider, err := makeProvider(serverURL)
 	require.NoError(t, err)
 
 	domain := "example.com"

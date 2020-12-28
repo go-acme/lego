@@ -1,7 +1,6 @@
 package route53
 
 import (
-	"net/http/httptest"
 	"os"
 	"testing"
 	"time"
@@ -29,10 +28,10 @@ var envTest = tester.NewEnvTest(
 	WithDomain(envDomain).
 	WithLiveTestRequirements(EnvAccessKeyID, EnvSecretAccessKey, EnvRegion, envDomain)
 
-func makeTestProvider(ts *httptest.Server) *DNSProvider {
+func makeTestProvider(serverURL string) *DNSProvider {
 	config := &aws.Config{
 		Credentials: credentials.NewStaticCredentials("abc", "123", " "),
-		Endpoint:    aws.String(ts.URL),
+		Endpoint:    aws.String(serverURL),
 		Region:      aws.String("mock-region"),
 		MaxRetries:  aws.Int(1),
 	}
@@ -41,18 +40,20 @@ func makeTestProvider(ts *httptest.Server) *DNSProvider {
 	if err != nil {
 		panic(err)
 	}
-	client := route53.New(sess)
-	cfg := NewDefaultConfig()
-	return &DNSProvider{client: client, config: cfg}
+
+	return &DNSProvider{
+		client: route53.New(sess),
+		config: NewDefaultConfig(),
+	}
 }
 
 func Test_loadCredentials_FromEnv(t *testing.T) {
 	defer envTest.RestoreEnv()
 	envTest.ClearEnv()
 
-	os.Setenv(EnvAccessKeyID, "123")
-	os.Setenv(EnvSecretAccessKey, "456")
-	os.Setenv(EnvRegion, "us-east-1")
+	_ = os.Setenv(EnvAccessKeyID, "123")
+	_ = os.Setenv(EnvSecretAccessKey, "456")
+	_ = os.Setenv(EnvRegion, "us-east-1")
 
 	config := &aws.Config{
 		CredentialsChainVerboseErrors: aws.Bool(true),
@@ -164,12 +165,11 @@ func TestDNSProvider_Present(t *testing.T) {
 		},
 	}
 
-	ts := newMockServer(t, mockResponses)
-	defer ts.Close()
+	serverURL := newMockServer(t, mockResponses)
 
 	defer envTest.RestoreEnv()
 	envTest.ClearEnv()
-	provider := makeTestProvider(ts)
+	provider := makeTestProvider(serverURL)
 
 	domain := "example.com"
 	keyAuth := "123456d=="

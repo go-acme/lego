@@ -107,6 +107,11 @@ func (m mockStorage) Fetch(domain string) (goacmedns.Account, error) {
 	return goacmedns.Account{}, goacmedns.ErrDomainNotFound
 }
 
+// FetchAll returns all of m.accounts.
+func (m mockStorage) FetchAll() map[string]goacmedns.Account {
+	return m.accounts
+}
+
 // errorPutStorage is a mock implementing the goacmedns.Storage interface that
 // always returns errors from Put.
 type errorPutStorage struct {
@@ -138,6 +143,11 @@ type errorFetchStorage struct {
 // Fetch always errors.
 func (e errorFetchStorage) Fetch(_ string) (goacmedns.Account, error) {
 	return goacmedns.Account{}, errorStorageErr
+}
+
+// FetchAll is a nop for errorFetchStorage.
+func (e errorFetchStorage) FetchAll() map[string]goacmedns.Account {
+	return nil
 }
 
 // TestPresent tests that the ACME-DNS Present function for updating a DNS-01

@@ -16,7 +16,7 @@ require (
 	github.com/aws/aws-sdk-go v1.30.20
 	github.com/cenkalti/backoff/v4 v4.0.2
 	github.com/cloudflare/cloudflare-go v0.13.2
-	github.com/cpu/goacmedns v0.0.3
+	github.com/cpu/goacmedns v0.1.1
 	github.com/dnsimple/dnsimple-go v0.63.0
 	github.com/exoscale/egoscale v0.23.0
 	github.com/google/go-querystring v1.0.0

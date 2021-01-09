@@ -44,7 +44,7 @@ func (p ProblemDetails) Error() string {
 		msg += fmt.Sprintf(", problem: %q :: %s", sub.Type, sub.Detail)
 	}
 
-	if len(p.Instance) == 0 {
+	if len(p.Instance) != 0 {
 		msg += ", url: " + p.Instance
 	}
 

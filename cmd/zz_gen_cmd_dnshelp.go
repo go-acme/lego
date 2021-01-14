@@ -999,7 +999,7 @@ func displayDNSHelp(name string) error {
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "IONOS_API_KEY":	API Key`)
+		ew.writeln(`	- "IONOS_API_KEY":	API key '<prefix>.<secret>' https://developer.hosting.ionos.com/docs/getstarted`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)

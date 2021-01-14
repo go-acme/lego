@@ -11,7 +11,7 @@ lego --email myemail@example.com --dns ionos --domains my.example.org run
 
 [Configuration]
   [Configuration.Credentials]
-    IONOS_API_KEY = "API Key"
+    IONOS_API_KEY = "API key `<prefix>.<secret>` https://developer.hosting.ionos.com/docs/getstarted"
   [Configuration.Additional]
     IONOS_POLLING_INTERVAL = "Time between DNS propagation check"
     IONOS_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"

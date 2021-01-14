@@ -32,7 +32,7 @@ lego --email myemail@example.com --dns ionos --domains my.example.org run
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `IONOS_API_KEY` | API Key |
+| `IONOS_API_KEY` | API key `<prefix>.<secret>` https://developer.hosting.ionos.com/docs/getstarted |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).

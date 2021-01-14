@@ -40,7 +40,6 @@ func (f ClientError) Unwrap() error {
 
 // Error defines model for error.
 type Error struct {
-
 	// The error code.
 	Code string `json:"code,omitempty"`
 
@@ -54,7 +53,6 @@ func (e Error) Error() string {
 
 // Zone defines model for zone.
 type Zone struct {
-
 	// The zone id.
 	ID string `json:"id,omitempty"`
 
@@ -67,7 +65,6 @@ type Zone struct {
 
 // CustomerZone defines model for customer-zone.
 type CustomerZone struct {
-
 	// The zone id.
 	ID string `json:"id,omitempty"`
 

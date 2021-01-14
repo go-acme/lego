@@ -1,0 +1,18 @@
+{
+  "id": "11af3414-ebba-11e9-8df5-66fbe8a334b4",
+  "name": "example-zone.de",
+  "type": "NATIVE",
+  "records": [
+    {
+      "id": "22af3414-abbe-9e11-5df5-66fbe8e334b4",
+      "name": "string",
+      "rootName": "string",
+      "type": "A",
+      "content": "string",
+      "changeDate": "string",
+      "ttl": 0,
+      "prio": 0,
+      "disabled": false
+    }
+  ]
+}

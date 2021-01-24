@@ -51,6 +51,3 @@ archives:
     files:
       - LICENSE
       - CHANGELOG.md
-
-release:
-  disable: true

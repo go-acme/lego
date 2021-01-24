@@ -1,5 +1,25 @@
 # Changelog
 
+## [v4.2.0] - 2021-01-24
+
+### Added:
+
+- **[dnsprovider]** Add DNS provider for Loopia
+- **[dnsprovider]** Add DNS provider for Ionos.
+
+### Changed:
+
+- **[dnsprovider]** acme-dns: update cpu/goacmedns to v0.1.1.
+- **[dnsprovider]** inwx: Increase propagation timeout to 360s to improve robustness
+- **[dnsprovider]** vultr: Update to govultr v2 API
+- **[dnsprovider]** pdns: get exact zone instead of all zones
+
+### Fixed:
+
+- **[dnsprovider]** vult, dnspod: fix default HTTP timeout.
+- **[dnsprovider]** pdns: URL request creation.
+- **[lib]** errors: Fix instance not being printed
+
 ## [v4.1.3] - 2020-11-25
 
 ### Fixed:

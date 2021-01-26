@@ -8,7 +8,9 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
+	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/platform/wait"
 	"github.com/go-acme/lego/v4/providers/dns/cloudns/internal"
 )
 
@@ -41,8 +43,8 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, 60),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 120*time.Second),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 4*time.Second),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 180*time.Second),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 10*time.Second),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
@@ -100,6 +102,12 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+	// We need an empty plate to start with, i.e we might have leftovers from a previously failed operation
+	err := d.CleanUp(domain, token, keyAuth)
+	if err != nil {
+		return fmt.Errorf("ClouDNS: %w", err)
+	}
+
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
 	zone, err := d.client.GetZone(fqdn)
@@ -112,10 +120,28 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("ClouDNS: %w", err)
 	}
 
+	// ClouDNS has more name servers than the ones checked in the Solve() phase of lego
+	// At the time of wrting 4 servers are found as authoritative, but 8 are reported during the sync
+	// If this is not done, the secondary verifcation done by let's encypt serever will fail quire a bit
+	timeout, interval := d.Timeout()
+	err = wait.For(fmt.Sprintf("Nameserver sync on %s", domain), timeout, interval, func() (bool, error) {
+		syncProgress, errSync := d.client.GetUpdateStatus(zone.Name)
+
+		if errSync != nil {
+			return false, errSync
+		}
+		log.Infof("[%s] Sync %d/%d complete", domain, syncProgress.Updated, syncProgress.Total)
+		return syncProgress.Complete, nil
+	})
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
-// CleanUp removes the TXT record matching the specified parameters.
+// CleanUp removes all the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 
@@ -124,20 +150,22 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("ClouDNS: %w", err)
 	}
 
-	record, err := d.client.FindTxtRecord(zone.Name, fqdn)
-	if err != nil {
-		return fmt.Errorf("ClouDNS: %w", err)
-	}
+	// ClouDNS correctly supports multiple entries for the same hostname and type
+	for {
+		record, err := d.client.FindTxtRecord(zone.Name, fqdn)
+		if err != nil {
+			return fmt.Errorf("ClouDNS: %w", err)
+		}
 
-	if record == nil {
-		return nil
-	}
+		if record == nil {
+			return nil
+		}
 
-	err = d.client.RemoveTxtRecord(record.ID, zone.Name)
-	if err != nil {
-		return fmt.Errorf("ClouDNS: %w", err)
+		err = d.client.RemoveTxtRecord(record.ID, zone.Name)
+		if err != nil {
+			return fmt.Errorf("ClouDNS: %w", err)
+		}
 	}
-	return nil
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.

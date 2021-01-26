@@ -20,6 +20,7 @@ type apiResponse struct {
 	StatusDescription string `json:"statusDescription"`
 }
 
+// Zone is a ClouDNS zone record.
 type Zone struct {
 	Name   string
 	Type   string
@@ -27,7 +28,7 @@ type Zone struct {
 	Status string // is an integer, but cast as string
 }
 
-// TXTRecord a TXT record.
+// TXTRecord is a ClouDNS TXT record.
 type TXTRecord struct {
 	ID       int    `json:"id,string"`
 	Type     string `json:"type"`
@@ -38,7 +39,23 @@ type TXTRecord struct {
 	Status   int    `json:"status"`
 }
 
-type TXTRecords map[string]TXTRecord
+type txtRecords map[string]TXTRecord
+
+// UpdateRecord is a ClouDNS Server Sync Record.
+type UpdateRecord struct {
+	Server  string `json:"server"`
+	IP4     string `json:"ip4"`
+	IP6     string `json:"ip6"`
+	Updated bool   `json:"updated"`
+}
+
+type updateRecords []UpdateRecord
+
+type SyncProgress struct {
+	Complete bool
+	Updated  int
+	Total    int
+}
 
 // NewClient creates a ClouDNS client.
 func NewClient(authID, subAuthID, authPassword string) (*Client, error) {
@@ -98,7 +115,7 @@ func (c *Client) GetZone(authFQDN string) (*Zone, error) {
 
 	if len(result) > 0 {
 		if err = json.Unmarshal(result, &zone); err != nil {
-			return nil, fmt.Errorf("zone unmarshaling error: %w", err)
+			return nil, fmt.Errorf("GetZone() unmarshaling error: %w", err)
 		}
 	}
 
@@ -132,9 +149,9 @@ func (c *Client) FindTxtRecord(zoneName, fqdn string) (*TXTRecord, error) {
 		return nil, nil
 	}
 
-	var records TXTRecords
+	var records txtRecords
 	if err = json.Unmarshal(result, &records); err != nil {
-		return nil, fmt.Errorf("TXT record unmarshaling error: %w: %s", err, string(result))
+		return nil, fmt.Errorf("FindTxtRecord() unmarshaling error: %w: %s", err, string(result))
 	}
 
 	for _, record := range records {
@@ -168,11 +185,11 @@ func (c *Client) AddTxtRecord(zoneName, fqdn, value string, ttl int) error {
 
 	resp := apiResponse{}
 	if err = json.Unmarshal(raw, &resp); err != nil {
-		return fmt.Errorf("apiResponse unmarshaling error: %w: %s", err, string(raw))
+		return fmt.Errorf("AddTxtRecord() unmarshaling error: %w: %s", err, string(raw))
 	}
 
 	if resp.Status != "Success" {
-		return fmt.Errorf("fail to add TXT record: %s %s", resp.Status, resp.StatusDescription)
+		return fmt.Errorf("failed to add TXT record: %s %s", resp.Status, resp.StatusDescription)
 	}
 
 	return nil
@@ -195,14 +212,51 @@ func (c *Client) RemoveTxtRecord(recordID int, zoneName string) error {
 
 	resp := apiResponse{}
 	if err = json.Unmarshal(raw, &resp); err != nil {
-		return fmt.Errorf("apiResponse unmarshaling error: %w: %s", err, string(raw))
+		return fmt.Errorf("RemoveTxtRecord() unmarshaling error: %w: %s", err, string(raw))
 	}
 
 	if resp.Status != "Success" {
-		return fmt.Errorf("fail to add TXT record: %s %s", resp.Status, resp.StatusDescription)
+		return fmt.Errorf("failed to remove TXT record: %s %s", resp.Status, resp.StatusDescription)
 	}
 
 	return nil
+}
+
+// GetUpdateStatus gets sync progress of all CloudDNS NS servers.
+func (c *Client) GetUpdateStatus(zoneName string) (SyncProgress, error) {
+	reqURL := *c.BaseURL
+	reqURL.Path += "update-status.json"
+
+	q := reqURL.Query()
+	q.Add("domain-name", zoneName)
+	reqURL.RawQuery = q.Encode()
+
+	NoResult := SyncProgress{false, 0, 0}
+
+	result, err := c.doRequest(http.MethodGet, &reqURL)
+	if err != nil {
+		return NoResult, err
+	}
+
+	// the API returns [] when there is no records.
+	if string(result) == "[]" {
+		return NoResult, fmt.Errorf("No nameservers records returned")
+	}
+
+	var records updateRecords
+	if err = json.Unmarshal(result, &records); err != nil {
+		return NoResult, fmt.Errorf("GetUpdateStatus() unmarshaling error: %w: %s", err, string(result))
+	}
+
+	recordCount := len(records)
+	updatedCount := 0
+	for _, record := range records {
+		if record.Updated {
+			updatedCount++
+		}
+	}
+
+	return SyncProgress{updatedCount == recordCount, updatedCount, recordCount}, nil
 }
 
 func (c *Client) doRequest(method string, url *url.URL) (json.RawMessage, error) {
@@ -268,7 +322,6 @@ func toUnreadableBodyMessage(req *http.Request, rawBody []byte) string {
 //  - 259200 = 3 days
 //  - 604800 = 1 week
 //  - 1209600 = 2 weeks
-//  - 2592000 = 1 month
 //  - 2592000 = 1 month
 // See https://www.cloudns.net/wiki/article/58/ for details.
 func ttlRounder(ttl int) int {

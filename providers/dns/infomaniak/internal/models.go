@@ -1,6 +1,9 @@
 package internal
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 // Record a DNS record.
 type Record struct {
@@ -27,4 +30,8 @@ type APIErrorResponse struct {
 	Description string             `json:"description,omitempty"`
 	Context     map[string]string  `json:"context,omitempty"`
 	Errors      []APIErrorResponse `json:"errors,omitempty"`
+}
+
+func (a APIErrorResponse) Error() string {
+	return fmt.Sprintf("code: %s, description: %s", a.Code, a.Description)
 }

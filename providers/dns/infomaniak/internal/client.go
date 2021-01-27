@@ -153,7 +153,7 @@ func (c *Client) do(req *http.Request) (*APIResponse, error) {
 	}
 
 	if resp.Result != "success" {
-		return nil, fmt.Errorf("unexpected API result (%s): %v", resp.Result, resp.ErrResponse)
+		return nil, fmt.Errorf("%d: unexpected API result (%s): %w", rawResp.StatusCode, resp.Result, resp.ErrResponse)
 	}
 
 	return &resp, nil

@@ -540,10 +540,10 @@ func hasPreferredChain(issuer []byte, preferredChain string) (bool, error) {
 		return false, err
 	}
 
-	for _, cert := range certs {
-		if cert.Issuer.CommonName == preferredChain {
-			return true, nil
-		}
+	topCert := certs[len(certs)-1]
+
+	if topCert.Issuer.CommonName == preferredChain {
+		return true, nil
 	}
 
 	return false, nil

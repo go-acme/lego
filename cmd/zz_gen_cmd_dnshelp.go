@@ -15,6 +15,7 @@ func allDNSCodes() string {
 	providers := []string{
 		"manual",
 		"acme-dns",
+		"afraid",
 		"alidns",
 		"arvancloud",
 		"auroradns",
@@ -118,6 +119,25 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/acme-dns`)
+
+	case "afraid":
+		// generated from: providers/dns/afraid/afraid.toml
+		ew.writeln(`Configuration for freedns.afraid.org.`)
+		ew.writeln(`Code:	'afraid'`)
+		ew.writeln(`Since:	'v4.2.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "AFRAID_LOGIN":	User login (email)`)
+		ew.writeln(`	- "AFRAID_PASSWORD":	User password`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "AFRAID_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "AFRAID_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/afraid`)
 
 	case "alidns":
 		// generated from: providers/dns/alidns/alidns.toml

@@ -1,0 +1,18 @@
+Name = "freedns.afraid.org"
+Description = ''''''
+URL = "https://freedns.afraid.org/"
+Code = "afraid"
+Since = "v4.2.0"
+
+Example = '''
+AFRAID_LOGIN=afraid@login
+AFRAID_PASSWORD=afraid_password \
+lego --email myemail@example.com --dns afraid --domains my.example.org run
+'''
+[Configuration]
+  [Configuration.Credentials]
+    AFRAID_LOGIN = "User login (email)"
+    AFRAID_PASSWORD = "User password"
+  [Configuration.Additional]
+    AFRAID_POLLING_INTERVAL = "Time between DNS propagation check"
+    AFRAID_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"

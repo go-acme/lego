@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"path"
 	"strconv"
 	"strings"
 
@@ -15,46 +16,13 @@ import (
 
 const defaultBaseURL = "https://api.cloudns.net/dns/"
 
-type apiResponse struct {
-	Status            string `json:"status"`
-	StatusDescription string `json:"statusDescription"`
-}
-
-// Zone is a ClouDNS zone record.
-type Zone struct {
-	Name   string
-	Type   string
-	Zone   string
-	Status string // is an integer, but cast as string
-}
-
-// TXTRecord is a ClouDNS TXT record.
-type TXTRecord struct {
-	ID       int    `json:"id,string"`
-	Type     string `json:"type"`
-	Host     string `json:"host"`
-	Record   string `json:"record"`
-	Failover int    `json:"failover,string"`
-	TTL      int    `json:"ttl,string"`
-	Status   int    `json:"status"`
-}
-
-type txtRecords map[string]TXTRecord
-
-// UpdateRecord is a ClouDNS Server Sync Record.
-type UpdateRecord struct {
-	Server  string `json:"server"`
-	IP4     string `json:"ip4"`
-	IP6     string `json:"ip6"`
-	Updated bool   `json:"updated"`
-}
-
-type updateRecords []UpdateRecord
-
-type SyncProgress struct {
-	Complete bool
-	Updated  int
-	Total    int
+// Client the ClouDNS client.
+type Client struct {
+	authID       string
+	subAuthID    string
+	authPassword string
+	HTTPClient   *http.Client
+	BaseURL      *url.URL
 }
 
 // NewClient creates a ClouDNS client.
@@ -81,15 +49,6 @@ func NewClient(authID, subAuthID, authPassword string) (*Client, error) {
 	}, nil
 }
 
-// Client ClouDNS client.
-type Client struct {
-	authID       string
-	subAuthID    string
-	authPassword string
-	HTTPClient   *http.Client
-	BaseURL      *url.URL
-}
-
 // GetZone Get domain name information for a FQDN.
 func (c *Client) GetZone(authFQDN string) (*Zone, error) {
 	authZone, err := dns01.FindZoneByFqdn(authFQDN)
@@ -99,14 +58,16 @@ func (c *Client) GetZone(authFQDN string) (*Zone, error) {
 
 	authZoneName := dns01.UnFqdn(authZone)
 
-	reqURL := *c.BaseURL
-	reqURL.Path += "get-zone-info.json"
+	endpoint, err := c.BaseURL.Parse(path.Join(c.BaseURL.Path, "get-zone-info.json"))
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse endpoint: %w", err)
+	}
 
-	q := reqURL.Query()
-	q.Add("domain-name", authZoneName)
-	reqURL.RawQuery = q.Encode()
+	q := endpoint.Query()
+	q.Set("domain-name", authZoneName)
+	endpoint.RawQuery = q.Encode()
 
-	result, err := c.doRequest(http.MethodGet, &reqURL)
+	result, err := c.doRequest(http.MethodGet, endpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +76,7 @@ func (c *Client) GetZone(authFQDN string) (*Zone, error) {
 
 	if len(result) > 0 {
 		if err = json.Unmarshal(result, &zone); err != nil {
-			return nil, fmt.Errorf("GetZone() unmarshaling error: %w", err)
+			return nil, fmt.Errorf("failed to unmarshal zone: %w", err)
 		}
 	}
 
@@ -130,16 +91,18 @@ func (c *Client) GetZone(authFQDN string) (*Zone, error) {
 func (c *Client) FindTxtRecord(zoneName, fqdn string) (*TXTRecord, error) {
 	host := dns01.UnFqdn(strings.TrimSuffix(dns01.UnFqdn(fqdn), zoneName))
 
-	reqURL := *c.BaseURL
-	reqURL.Path += "records.json"
+	reqURL, err := c.BaseURL.Parse(path.Join(c.BaseURL.Path, "records.json"))
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse endpoint: %w", err)
+	}
 
 	q := reqURL.Query()
-	q.Add("domain-name", zoneName)
-	q.Add("host", host)
-	q.Add("type", "TXT")
+	q.Set("domain-name", zoneName)
+	q.Set("host", host)
+	q.Set("type", "TXT")
 	reqURL.RawQuery = q.Encode()
 
-	result, err := c.doRequest(http.MethodGet, &reqURL)
+	result, err := c.doRequest(http.MethodGet, reqURL)
 	if err != nil {
 		return nil, err
 	}
@@ -149,9 +112,9 @@ func (c *Client) FindTxtRecord(zoneName, fqdn string) (*TXTRecord, error) {
 		return nil, nil
 	}
 
-	var records txtRecords
+	var records map[string]TXTRecord
 	if err = json.Unmarshal(result, &records); err != nil {
-		return nil, fmt.Errorf("FindTxtRecord() unmarshaling error: %w: %s", err, string(result))
+		return nil, fmt.Errorf("failed to unmarshall TXT records: %w: %s", err, string(result))
 	}
 
 	for _, record := range records {
@@ -167,25 +130,27 @@ func (c *Client) FindTxtRecord(zoneName, fqdn string) (*TXTRecord, error) {
 func (c *Client) AddTxtRecord(zoneName, fqdn, value string, ttl int) error {
 	host := dns01.UnFqdn(strings.TrimSuffix(dns01.UnFqdn(fqdn), zoneName))
 
-	reqURL := *c.BaseURL
-	reqURL.Path += "add-record.json"
+	reqURL, err := c.BaseURL.Parse(path.Join(c.BaseURL.Path, "add-record.json"))
+	if err != nil {
+		return fmt.Errorf("failed to parse endpoint: %w", err)
+	}
 
 	q := reqURL.Query()
-	q.Add("domain-name", zoneName)
-	q.Add("host", host)
-	q.Add("record", value)
-	q.Add("ttl", strconv.Itoa(ttlRounder(ttl)))
-	q.Add("record-type", "TXT")
+	q.Set("domain-name", zoneName)
+	q.Set("host", host)
+	q.Set("record", value)
+	q.Set("ttl", strconv.Itoa(ttlRounder(ttl)))
+	q.Set("record-type", "TXT")
 	reqURL.RawQuery = q.Encode()
 
-	raw, err := c.doRequest(http.MethodPost, &reqURL)
+	raw, err := c.doRequest(http.MethodPost, reqURL)
 	if err != nil {
 		return err
 	}
 
 	resp := apiResponse{}
 	if err = json.Unmarshal(raw, &resp); err != nil {
-		return fmt.Errorf("AddTxtRecord() unmarshaling error: %w: %s", err, string(raw))
+		return fmt.Errorf("failed to unmarshal API response: %w: %s", err, string(raw))
 	}
 
 	if resp.Status != "Success" {
@@ -197,22 +162,24 @@ func (c *Client) AddTxtRecord(zoneName, fqdn, value string, ttl int) error {
 
 // RemoveTxtRecord remove a TXT record.
 func (c *Client) RemoveTxtRecord(recordID int, zoneName string) error {
-	reqURL := *c.BaseURL
-	reqURL.Path += "delete-record.json"
+	reqURL, err := c.BaseURL.Parse(path.Join(c.BaseURL.Path, "delete-record.json"))
+	if err != nil {
+		return fmt.Errorf("failed to parse endpoint: %w", err)
+	}
 
 	q := reqURL.Query()
-	q.Add("domain-name", zoneName)
-	q.Add("record-id", strconv.Itoa(recordID))
+	q.Set("domain-name", zoneName)
+	q.Set("record-id", strconv.Itoa(recordID))
 	reqURL.RawQuery = q.Encode()
 
-	raw, err := c.doRequest(http.MethodPost, &reqURL)
+	raw, err := c.doRequest(http.MethodPost, reqURL)
 	if err != nil {
 		return err
 	}
 
 	resp := apiResponse{}
 	if err = json.Unmarshal(raw, &resp); err != nil {
-		return fmt.Errorf("RemoveTxtRecord() unmarshaling error: %w: %s", err, string(raw))
+		return fmt.Errorf("failed to unmarshal API response: %w: %s", err, string(raw))
 	}
 
 	if resp.Status != "Success" {
@@ -223,32 +190,31 @@ func (c *Client) RemoveTxtRecord(recordID int, zoneName string) error {
 }
 
 // GetUpdateStatus gets sync progress of all CloudDNS NS servers.
-func (c *Client) GetUpdateStatus(zoneName string) (SyncProgress, error) {
-	reqURL := *c.BaseURL
-	reqURL.Path += "update-status.json"
+func (c *Client) GetUpdateStatus(zoneName string) (*SyncProgress, error) {
+	reqURL, err := c.BaseURL.Parse(path.Join(c.BaseURL.Path, "update-status.json"))
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse endpoint: %w", err)
+	}
 
 	q := reqURL.Query()
-	q.Add("domain-name", zoneName)
+	q.Set("domain-name", zoneName)
 	reqURL.RawQuery = q.Encode()
 
-	NoResult := SyncProgress{false, 0, 0}
-
-	result, err := c.doRequest(http.MethodGet, &reqURL)
+	result, err := c.doRequest(http.MethodGet, reqURL)
 	if err != nil {
-		return NoResult, err
+		return nil, err
 	}
 
 	// the API returns [] when there is no records.
 	if string(result) == "[]" {
-		return NoResult, fmt.Errorf("No nameservers records returned")
+		return nil, errors.New("no nameservers records returned")
 	}
 
-	var records updateRecords
+	var records []UpdateRecord
 	if err = json.Unmarshal(result, &records); err != nil {
-		return NoResult, fmt.Errorf("GetUpdateStatus() unmarshaling error: %w: %s", err, string(result))
+		return nil, fmt.Errorf("failed to unmarshal UpdateRecord: %w: %s", err, string(result))
 	}
 
-	recordCount := len(records)
 	updatedCount := 0
 	for _, record := range records {
 		if record.Updated {
@@ -256,7 +222,7 @@ func (c *Client) GetUpdateStatus(zoneName string) (SyncProgress, error) {
 		}
 	}
 
-	return SyncProgress{updatedCount == recordCount, updatedCount, recordCount}, nil
+	return &SyncProgress{Complete: updatedCount == len(records), Updated: updatedCount, Total: len(records)}, nil
 }
 
 func (c *Client) doRequest(method string, url *url.URL) (json.RawMessage, error) {
@@ -278,8 +244,9 @@ func (c *Client) doRequest(method string, url *url.URL) (json.RawMessage, error)
 	}
 
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("invalid code (%v), error: %s", resp.StatusCode, content)
+		return nil, fmt.Errorf("invalid code (%d), error: %s", resp.StatusCode, content)
 	}
+
 	return content, nil
 }
 
@@ -287,12 +254,12 @@ func (c *Client) buildRequest(method string, url *url.URL) (*http.Request, error
 	q := url.Query()
 
 	if c.subAuthID != "" {
-		q.Add("sub-auth-id", c.subAuthID)
+		q.Set("sub-auth-id", c.subAuthID)
 	} else {
-		q.Add("auth-id", c.authID)
+		q.Set("auth-id", c.authID)
 	}
 
-	q.Add("auth-password", c.authPassword)
+	q.Set("auth-password", c.authPassword)
 
 	url.RawQuery = q.Encode()
 

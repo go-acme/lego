@@ -18,7 +18,6 @@
 
 - **[dnsprovider]** vult, dnspod: fix default HTTP timeout.
 - **[dnsprovider]** pdns: URL request creation.
-- **[dnsprovider]** cloudns: fix reliability
 - **[lib]** errors: Fix instance not being printed
 
 ## [v4.1.3] - 2020-11-25

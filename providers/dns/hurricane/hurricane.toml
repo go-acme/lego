@@ -1,0 +1,20 @@
+Name = "Hurricane Electric DNS"
+Description = ''''''
+URL = "https://dns.he.net/"
+Code = "hurricane"
+
+Example = '''
+HURRICANE_TOKEN=xxxxxx \
+lego --email myemail@example.com --dns he --domains my.example.org run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    HURRICANE_TOKEN = "Account token"
+  [Configuration.Addtional]
+    HURRICANE_POLLING_INTERVAL = "Time between DNS propagation checks"
+    HURRICANE_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation; defaults to 300s (5 minutes)"
+    HURRICANE_TTL = "The TTL of the TXT record being used for a DNS challenge; defaults to 300s"
+
+[Links]
+  API = "https://dns.he.org/"

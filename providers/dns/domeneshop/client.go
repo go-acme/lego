@@ -24,20 +24,11 @@ type Client struct {
 
 // Domain JSON data structure.
 type Domain struct {
-	Name           string   `json:"domain"`
-	ID             int      `json:"id"`
-	ExpiryDate     string   `json:"expiry_date"`
-	Nameservers    []string `json:"nameservers"`
-	RegisteredDate string   `json:"registered_date"`
-	Registrant     string   `json:"registrant"`
-	Renew          bool     `json:"renew"`
-	Services       struct {
-		DNS       bool   `json:"dns"`
-		Email     bool   `json:"email"`
-		Registrar bool   `json:"registrar"`
-		Webhotel  string `json:"webhotel"`
+	Name     string `json:"domain"`
+	ID       int    `json:"id"`
+	Services struct {
+		DNS bool `json:"dns"`
 	} `json:"services"`
-	Status string
 }
 
 // DNSRecord JSON data structure.

@@ -584,7 +584,7 @@ func displayDNSHelp(name string) error {
 		// generated from: providers/dns/domeneshop/domeneshop.toml
 		ew.writeln(`Configuration for Domeneshop.`)
 		ew.writeln(`Code:	'domeneshop'`)
-		ew.writeln(`Since:	'v4.2.0'`)
+		ew.writeln(`Since:	'v4.3.0'`)
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)

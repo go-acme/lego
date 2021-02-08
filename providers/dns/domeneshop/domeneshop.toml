@@ -2,7 +2,7 @@ Name = "Domeneshop"
 Description = ''''''
 URL = "https://domene.shop"
 Code = "domeneshop"
-Since = "v4.2.0"
+Since = "v4.3.0"
 
 Example = '''
 DOMENESHOP_API_TOKEN=<token> \

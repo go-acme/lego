@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/domeneshop/internal"
 )
 
 // Environment variables names.
@@ -26,7 +27,6 @@ const (
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	BaseURL            string
 	APIToken           string
 	APISecret          string
 	PropagationTimeout time.Duration
@@ -37,7 +37,6 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		BaseURL:            apiURL,
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 5*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 20*time.Second),
 		HTTPClient: &http.Client{
@@ -49,6 +48,7 @@ func NewDefaultConfig() *Config {
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
+	client *internal.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for domeneshop.
@@ -77,9 +77,13 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("domeneshop: credentials missing")
 	}
 
-	return &DNSProvider{
-		config: config,
-	}, nil
+	client := internal.NewClient(config.APIToken, config.APISecret)
+
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
+	}
+
+	return &DNSProvider{config: config, client: client}, nil
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
@@ -89,51 +93,49 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 // Present creates a TXT record using the specified parameters.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	client := NewClient(d.config.APIToken, d.config.APISecret, d.config.HTTPClient)
-
+func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
+
 	zone, host, err := d.splitDomain(fqdn)
 	if err != nil {
 		return fmt.Errorf("domeneshop: %w", err)
 	}
 
-	domainInstance, err := client.GetDomainByName(zone)
+	domainInstance, err := d.client.GetDomainByName(zone)
 	if err != nil {
 		return fmt.Errorf("domeneshop: %w", err)
 	}
 
-	err = client.CreateTXTRecord(domainInstance, host, value)
+	err = d.client.CreateTXTRecord(domainInstance, host, value)
 	if err != nil {
 		return fmt.Errorf("domeneshop: failed to create record: %w", err)
 	}
+
 	return nil
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	client := NewClient(d.config.APIToken, d.config.APISecret, d.config.HTTPClient)
-
+func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
+
 	zone, host, err := d.splitDomain(fqdn)
 	if err != nil {
 		return fmt.Errorf("domeneshop: %w", err)
 	}
 
-	domainInstance, err := client.GetDomainByName(zone)
+	domainInstance, err := d.client.GetDomainByName(zone)
 	if err != nil {
 		return fmt.Errorf("domeneshop: %w", err)
 	}
 
-	if err := client.DeleteTXTRecord(domainInstance, host, value); err != nil {
+	if err := d.client.DeleteTXTRecord(domainInstance, host, value); err != nil {
 		return fmt.Errorf("domeneshop: failed to create record: %w", err)
 	}
 
 	return nil
 }
 
-// splitDomain splits the hostname from the authoritative zone, and returns
-// both parts (non-fqdn).
+// splitDomain splits the hostname from the authoritative zone, and returns both parts (non-fqdn).
 func (d *DNSProvider) splitDomain(fqdn string) (string, string, error) {
 	zone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {

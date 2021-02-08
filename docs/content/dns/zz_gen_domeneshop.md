@@ -9,7 +9,7 @@ slug: domeneshop
 <!-- providers/dns/domeneshop/domeneshop.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.2.0
+Since: v4.3.0
 
 Configuration for [Domeneshop](https://domene.shop).
 

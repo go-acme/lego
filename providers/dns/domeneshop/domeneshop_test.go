@@ -77,14 +77,14 @@ func TestNewDNSProvider(t *testing.T) {
 func TestNewDNSProviderConfig(t *testing.T) {
 	testCases := []struct {
 		desc      string
-		APISecret string
-		APIToken  string
+		apiSecret string
+		apiToken  string
 		expected  string
 	}{
 		{
 			desc:      "success",
-			APIToken:  "A",
-			APISecret: "B",
+			apiToken:  "A",
+			apiSecret: "B",
 		},
 		{
 			desc:     "missing credentials",
@@ -92,14 +92,14 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		},
 		{
 			desc:      "missing api token",
-			APIToken:  "",
-			APISecret: "B",
+			apiToken:  "",
+			apiSecret: "B",
 			expected:  "domeneshop: credentials missing",
 		},
 		{
 			desc:      "missing api secret",
-			APIToken:  "A",
-			APISecret: "",
+			apiToken:  "A",
+			apiSecret: "",
 			expected:  "domeneshop: credentials missing",
 		},
 	}
@@ -108,8 +108,8 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			config := NewDefaultConfig()
 
-			config.APIToken = test.APIToken
-			config.APISecret = test.APISecret
+			config.APIToken = test.apiToken
+			config.APISecret = test.apiSecret
 
 			p, err := NewDNSProviderConfig(config)
 

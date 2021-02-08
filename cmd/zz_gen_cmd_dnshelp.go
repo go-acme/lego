@@ -36,6 +36,7 @@ func allDNSCodes() string {
 		"dnsmadeeasy",
 		"dnspod",
 		"dode",
+		"domeneshop",
 		"dreamhost",
 		"duckdns",
 		"dyn",
@@ -578,6 +579,26 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/dode`)
+
+	case "domeneshop":
+		// generated from: providers/dns/domeneshop/domeneshop.toml
+		ew.writeln(`Configuration for Domeneshop.`)
+		ew.writeln(`Code:	'domeneshop'`)
+		ew.writeln(`Since:	'v4.3.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "DOMENESHOP_API_PASSWORD":	API secret`)
+		ew.writeln(`	- "DOMENESHOP_API_TOKEN":	API token`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "DOMENESHOP_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "DOMENESHOP_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "DOMENESHOP_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/domeneshop`)
 
 	case "dreamhost":
 		// generated from: providers/dns/dreamhost/dreamhost.toml

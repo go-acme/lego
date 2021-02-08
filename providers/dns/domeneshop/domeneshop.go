@@ -93,7 +93,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	client := NewClient(d.config.APIToken, d.config.APISecret, d.config.HTTPClient)
 
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
-	zone, host, err := d.SplitDomain(fqdn)
+	zone, host, err := d.splitDomain(fqdn)
 	if err != nil {
 		return fmt.Errorf("domeneshop: %w", err)
 	}
@@ -115,7 +115,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	client := NewClient(d.config.APIToken, d.config.APISecret, d.config.HTTPClient)
 
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
-	zone, host, err := d.SplitDomain(fqdn)
+	zone, host, err := d.splitDomain(fqdn)
 	if err != nil {
 		return fmt.Errorf("domeneshop: %w", err)
 	}
@@ -132,9 +132,9 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-// SplitDomain splits the hostname from the authoritative zone, and returns
+// splitDomain splits the hostname from the authoritative zone, and returns
 // both parts (non-fqdn).
-func (d *DNSProvider) SplitDomain(fqdn string) (string, string, error) {
+func (d *DNSProvider) splitDomain(fqdn string) (string, string, error) {
 	zone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
 		return "", "", err

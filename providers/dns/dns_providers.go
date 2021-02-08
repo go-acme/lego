@@ -27,6 +27,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/dnsmadeeasy"
 	"github.com/go-acme/lego/v4/providers/dns/dnspod"
 	"github.com/go-acme/lego/v4/providers/dns/dode"
+	"github.com/go-acme/lego/v4/providers/dns/domeneshop"
 	"github.com/go-acme/lego/v4/providers/dns/dreamhost"
 	"github.com/go-acme/lego/v4/providers/dns/duckdns"
 	"github.com/go-acme/lego/v4/providers/dns/dyn"
@@ -134,6 +135,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return dnspod.NewDNSProvider()
 	case "dode":
 		return dode.NewDNSProvider()
+	case "domeneshop", "domainnameshop":
+		return domeneshop.NewDNSProvider()
 	case "dreamhost":
 		return dreamhost.NewDNSProvider()
 	case "duckdns":

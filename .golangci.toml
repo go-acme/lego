@@ -45,6 +45,7 @@
     "exhaustivestruct", # too many false-positive
     "makezero", # not relevant
     "forbidigo", # not relevant
+    "ifshort", # not relevant
   ]
 
 [issues]
@@ -133,3 +134,9 @@
   [[issues.exclude-rules]]
     path = "providers/dns/namecheap/namecheap_test.go"
     text = "cognitive complexity (\\d+) of func `TestDNSProvider_getHosts` is high"
+  [[issues.exclude-rules]]
+    path = "platform/tester/env_test.go"
+    linters = ["thelper"]
+  [[issues.exclude-rules]]
+    path = "providers/dns/oraclecloud/oraclecloud_test.go"
+    text = "SA1019: x509.EncryptPEMBlock is deprecated:"

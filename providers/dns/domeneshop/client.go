@@ -22,7 +22,7 @@ type Client struct {
 	HTTPClient *http.Client
 }
 
-// Domain JSON data structure
+// Domain JSON data structure.
 type Domain struct {
 	Name           string   `json:"domain"`
 	ID             int      `json:"id"`
@@ -40,7 +40,7 @@ type Domain struct {
 	Status string
 }
 
-// DNSRecord JSON data structure
+// DNSRecord JSON data structure.
 type DNSRecord struct {
 	Data string `json:"data"`
 	Host string `json:"host"`
@@ -49,7 +49,7 @@ type DNSRecord struct {
 	Type string `json:"type"`
 }
 
-// NewClient returns an instance of the Domeneshop API wrapper
+// NewClient returns an instance of the Domeneshop API wrapper.
 func NewClient(apiToken, apiSecret string, httpClient *http.Client) *Client {
 	client := Client{
 		APIToken:   apiToken,
@@ -61,10 +61,9 @@ func NewClient(apiToken, apiSecret string, httpClient *http.Client) *Client {
 }
 
 // Request makes a request against the API with an optional body, and makes sure
-// that the required Authorization header is set using `setBasicAuth`
+// that the required Authorization header is set using `setBasicAuth`.
 func (c *Client) Request(method string, endpoint string, reqBody []byte, v interface{}) error {
-
-	var buf = bytes.NewBuffer(reqBody)
+	buf := bytes.NewBuffer(reqBody)
 
 	req, err := http.NewRequest(method, fmt.Sprintf("%s/%s", apiURL, endpoint), buf)
 	if err != nil {
@@ -105,7 +104,7 @@ func (c *Client) GetDomainByName(domain string) (*Domain, error) {
 
 	for _, d := range domains {
 		if !d.Services.DNS {
-			// Domains without DNS service cannot have DNS record added
+			// Domains without DNS service cannot have DNS record added.
 			continue
 		}
 		if d.Name == domain {
@@ -132,19 +131,16 @@ func (c *Client) GetDNSRecordByHostData(domain Domain, host string, data string)
 	}
 
 	return nil, fmt.Errorf("failed to find record with host %s for domain %s", host, domain.Name)
-
 }
 
-// CreateTXTRecord creates a TXT record wih
+// CreateTXTRecord creates a TXT record with the provided host (subdomain) and data.
 func (c *Client) CreateTXTRecord(domain *Domain, host string, data string) error {
-
 	jsonRecord, err := json.Marshal(DNSRecord{
 		Data: data,
 		Host: host,
 		TTL:  300,
 		Type: "TXT",
 	})
-
 	if err != nil {
 		return err
 	}
@@ -152,9 +148,8 @@ func (c *Client) CreateTXTRecord(domain *Domain, host string, data string) error
 	return c.Request("POST", fmt.Sprintf("domains/%d/dns", domain.ID), jsonRecord, nil)
 }
 
-// DeleteTXTRecord deletes the DNS record matching the provided host and data
+// DeleteTXTRecord deletes the DNS record matching the provided host and data.
 func (c *Client) DeleteTXTRecord(domain *Domain, host string, data string) error {
-
 	record, err := c.GetDNSRecordByHostData(*domain, host, data)
 	if err != nil {
 		return err

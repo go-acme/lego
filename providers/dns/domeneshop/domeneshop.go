@@ -133,9 +133,8 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 }
 
 // SplitDomain splits the hostname from the authoritative zone, and returns
-// both parts (non-fqdn)
+// both parts (non-fqdn).
 func (d *DNSProvider) SplitDomain(fqdn string) (string, string, error) {
-
 	zone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
 		return "", "", err

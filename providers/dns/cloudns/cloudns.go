@@ -102,12 +102,6 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	// We need an empty plate to start with, i.e we might have leftovers from a previously failed operation
-	err := d.CleanUp(domain, token, keyAuth)
-	if err != nil {
-		return fmt.Errorf("ClouDNS: %w", err)
-	}
-
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
 	zone, err := d.client.GetZone(fqdn)

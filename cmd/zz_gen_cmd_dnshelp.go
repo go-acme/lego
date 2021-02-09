@@ -935,7 +935,7 @@ func displayDNSHelp(name string) error {
 		// generated from: providers/dns/hurricane/hurricane.toml
 		ew.writeln(`Configuration for Hurricane Electric DNS.`)
 		ew.writeln(`Code:	'hurricane'`)
-		ew.writeln(`Since:	''`)
+		ew.writeln(`Since:	'v4.3.0'`)
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)

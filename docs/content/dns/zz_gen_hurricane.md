@@ -9,7 +9,7 @@ slug: hurricane
 <!-- providers/dns/hurricane/hurricane.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: 
+Since: v4.3.0
 
 Configuration for [Hurricane Electric DNS](https://dns.he.net/).
 
@@ -22,7 +22,7 @@ Here is an example bash command using the Hurricane Electric DNS provider:
 
 ```bash
 HURRICANE_TOKEN=xxxxxx \
-lego --email myemail@example.com --dns he --domains my.example.org run
+lego --email myemail@example.com --dns hurricane --domains my.example.org run
 ```
 
 

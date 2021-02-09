@@ -2,10 +2,11 @@ Name = "Hurricane Electric DNS"
 Description = ''''''
 URL = "https://dns.he.net/"
 Code = "hurricane"
+Since = "v4.3.0"
 
 Example = '''
 HURRICANE_TOKEN=xxxxxx \
-lego --email myemail@example.com --dns he --domains my.example.org run
+lego --email myemail@example.com --dns hurricane --domains my.example.org run
 '''
 
 [Configuration]

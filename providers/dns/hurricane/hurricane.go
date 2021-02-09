@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/hurricane/internal"
 )
 
 // Environment variables names.
@@ -46,10 +47,11 @@ func NewDefaultConfig() *Config {
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
+	client *internal.Client
 }
 
-// NewDNSProvider returns a new DNS provider using
-// environment variable DUCKDNS_TOKEN for adding and removing the DNS record.
+// NewDNSProvider returns a DNSProvider instance configured for Hurricane Electric.
+// Credentials must be passed in the environment variable: HURRICANE_TOKEN.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvToken)
 	if err != nil {
@@ -71,18 +73,31 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("hurricane: credentials missing")
 	}
 
-	return &DNSProvider{config: config}, nil
+	client := internal.NewClient(config.Token)
+
+	return &DNSProvider{config: config, client: client}, nil
 }
 
-// Present creates a TXT record to fulfill the dns-01 challenge.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+// Present updates a TXT record to fulfill the dns-01 challenge.
+func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	_, txtRecord := dns01.GetRecord(domain, keyAuth)
-	return d.updateTxtRecord(domain, txtRecord)
+
+	err := d.client.UpdateTxtRecord(domain, txtRecord)
+	if err != nil {
+		return fmt.Errorf("hurricane: %w", err)
+	}
+
+	return nil
 }
 
-// CleanUp clears DuckDNS TXT record.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	return d.updateTxtRecord(domain, ".")
+// CleanUp updates the TXT record matching the specified parameters.
+func (d *DNSProvider) CleanUp(domain, _, _ string) error {
+	err := d.client.UpdateTxtRecord(domain, ".")
+	if err != nil {
+		return fmt.Errorf("hurricane: %w", err)
+	}
+
+	return nil
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.

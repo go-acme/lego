@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -15,7 +16,7 @@ import (
 const (
 	envNamespace = "HURRICANE_"
 
-	EnvToken = envNamespace + "TOKEN"
+	EnvTokens = envNamespace + "TOKENS"
 
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
@@ -25,7 +26,7 @@ const (
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	Token              string
+	Credentials        map[string]string
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	SequenceInterval   time.Duration
@@ -35,7 +36,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 300*time.Second),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		SequenceInterval:   env.GetOrDefaultSecond(EnvSequenceInterval, dns01.DefaultPropagationTimeout),
 		HTTPClient: &http.Client{
@@ -51,15 +52,24 @@ type DNSProvider struct {
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Hurricane Electric.
-// Credentials must be passed in the environment variable: HURRICANE_TOKEN.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvToken)
+	config := NewDefaultConfig()
+	values, err := env.Get(EnvTokens)
 	if err != nil {
 		return nil, fmt.Errorf("hurricane: %w", err)
 	}
 
-	config := NewDefaultConfig()
-	config.Token = values[EnvToken]
+	// parse tokens and create map
+	credStrings := strings.Split(values[EnvTokens], ",")
+	creds := make(map[string]string)
+	for _, credPair := range credStrings {
+		data := strings.Split(credPair, ":")
+		if len(data) != 2 {
+			return nil, fmt.Errorf("hurricane: Read incorrect credential pair %s", credPair)
+		}
+		creds[data[0]] = data[1]
+	}
+	config.Credentials = creds
 
 	return NewDNSProviderConfig(config)
 }
@@ -69,11 +79,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("hurricane: the configuration of the DNS provider is nil")
 	}
 
-	if config.Token == "" {
+	if config.Credentials == nil {
 		return nil, errors.New("hurricane: credentials missing")
 	}
 
-	client := internal.NewClient(config.Token)
+	client := internal.NewClient(config.Credentials)
 
 	return &DNSProvider{config: config, client: client}, nil
 }

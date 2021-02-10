@@ -10,7 +10,7 @@ import (
 const envDomain = envNamespace + "DOMAIN"
 
 var envTest = tester.NewEnvTest(
-	EnvToken).
+	EnvTokens).
 	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
@@ -22,15 +22,15 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				EnvToken: "123",
+				EnvTokens: "dom:123",
 			},
 		},
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				EnvToken: "",
+				EnvTokens: "",
 			},
-			expected: "hurricane: some credentials information are missing: HURRICANE_TOKEN",
+			expected: "hurricane: some credentials information are missing: HURRICANE_TOKENS",
 		},
 	}
 
@@ -57,12 +57,12 @@ func TestNewDNSProvider(t *testing.T) {
 func TestNewDNSProviderConfig(t *testing.T) {
 	testCases := []struct {
 		desc     string
-		token    string
+		creds    map[string]string
 		expected string
 	}{
 		{
 			desc:  "success",
-			token: "123",
+			creds: map[string]string{"domain": "123"},
 		},
 		{
 			desc:     "missing credentials",
@@ -73,7 +73,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			config := NewDefaultConfig()
-			config.Token = test.token
+			config.Credentials = test.creds
 
 			p, err := NewDNSProviderConfig(config)
 

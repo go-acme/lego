@@ -939,7 +939,7 @@ func displayDNSHelp(name string) error {
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "HURRICANE_TOKEN":	Account token`)
+		ew.writeln(`	- "HURRICANE_TOKENS":	TXT record names and tokens`)
 		ew.writeln()
 
 		ew.writeln()

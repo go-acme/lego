@@ -71,7 +71,7 @@ func TestClient_UpdateTxtRecord(t *testing.T) {
 			server := httptest.NewServer(handler)
 			t.Cleanup(server.Close)
 
-			client := NewClient("secret")
+			client := NewClient(map[string]string{"example.com": "secret"})
 			client.baseURL = server.URL
 
 			err := client.UpdateTxtRecord("example.com", "foo")

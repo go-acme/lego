@@ -24,26 +24,30 @@ const (
 
 // Client the Hurricane Electric client.
 type Client struct {
-	HTTPClient *http.Client
-	token      string
-	baseURL    string
+	HTTPClient  *http.Client
+	credentials map[string]string
+	baseURL     string
 }
 
 // NewClient Creates a new Client.
-func NewClient(token string) *Client {
+func NewClient(credentials map[string]string) *Client {
 	return &Client{
-		HTTPClient: &http.Client{Timeout: 5 * time.Second},
-		token:      token,
-		baseURL:    defaultBaseURL,
+		HTTPClient:  &http.Client{Timeout: 5 * time.Second},
+		credentials: credentials,
+		baseURL:     defaultBaseURL,
 	}
 }
 
 // UpdateTxtRecord updates a TXT record.
 func (c *Client) UpdateTxtRecord(domain string, txt string) error {
 	hostname := fmt.Sprintf("_acme-challenge.%s", domain)
+	token, ok := c.credentials[domain]
+	if !ok {
+		return fmt.Errorf("hurricane: Domain %s not found in credentials, check your credentials map", domain)
+	}
 
 	data := url.Values{}
-	data.Set("password", c.token)
+	data.Set("password", token)
 	data.Set("hostname", hostname)
 	data.Set("txt", txt)
 
@@ -65,6 +69,10 @@ func (c *Client) UpdateTxtRecord(domain string, txt string) error {
 		return fmt.Errorf("%d: attempt to change TXT record %s returned %s", resp.StatusCode, hostname, body)
 	}
 
+	return evaluateBody(body, hostname)
+}
+
+func evaluateBody(body string, hostname string) error {
 	switch body {
 	case codeGood:
 		return nil

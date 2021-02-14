@@ -9,9 +9,7 @@ import (
 
 const envDomain = envNamespace + "DOMAIN"
 
-var envTest = tester.NewEnvTest(
-	EnvTokens).
-	WithDomain(envDomain)
+var envTest = tester.NewEnvTest(EnvTokens).WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -22,8 +20,28 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				EnvTokens: "dom:123",
+				EnvTokens: "example.org:123",
 			},
+		},
+		{
+			desc: "success multiple domains",
+			envVars: map[string]string{
+				EnvTokens: "example.org:123,example.com:456,example.net:789",
+			},
+		},
+		{
+			desc: "invalid credentials",
+			envVars: map[string]string{
+				EnvTokens: ",",
+			},
+			expected: "hurricane: incorrect credential pair: ",
+		},
+		{
+			desc: "invalid credentials, partial",
+			envVars: map[string]string{
+				EnvTokens: "example.org:123,example.net",
+			},
+			expected: "hurricane: incorrect credential pair: example.net",
 		},
 		{
 			desc: "missing credentials",
@@ -62,7 +80,15 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}{
 		{
 			desc:  "success",
-			creds: map[string]string{"domain": "123"},
+			creds: map[string]string{"example.org": "123"},
+		},
+		{
+			desc: "success multiple domains",
+			creds: map[string]string{
+				"example.org": "123",
+				"example.com": "456",
+				"example.net": "789",
+			},
 		},
 		{
 			desc:     "missing credentials",

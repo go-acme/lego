@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"sync"
 	"time"
 )
 
@@ -24,24 +25,30 @@ const (
 
 // Client the Hurricane Electric client.
 type Client struct {
-	HTTPClient  *http.Client
+	HTTPClient *http.Client
+	baseURL    string
+
 	credentials map[string]string
-	baseURL     string
+	credMu      sync.Mutex
 }
 
 // NewClient Creates a new Client.
 func NewClient(credentials map[string]string) *Client {
 	return &Client{
 		HTTPClient:  &http.Client{Timeout: 5 * time.Second},
-		credentials: credentials,
 		baseURL:     defaultBaseURL,
+		credentials: credentials,
 	}
 }
 
 // UpdateTxtRecord updates a TXT record.
 func (c *Client) UpdateTxtRecord(domain string, txt string) error {
 	hostname := fmt.Sprintf("_acme-challenge.%s", domain)
+
+	c.credMu.Lock()
 	token, ok := c.credentials[domain]
+	c.credMu.Unlock()
+
 	if !ok {
 		return fmt.Errorf("hurricane: Domain %s not found in credentials, check your credentials map", domain)
 	}

@@ -59,17 +59,12 @@ func NewDNSProvider() (*DNSProvider, error) {
 		return nil, fmt.Errorf("hurricane: %w", err)
 	}
 
-	// parse tokens and create map
-	credStrings := strings.Split(values[EnvTokens], ",")
-	creds := make(map[string]string)
-	for _, credPair := range credStrings {
-		data := strings.Split(credPair, ":")
-		if len(data) != 2 {
-			return nil, fmt.Errorf("hurricane: Read incorrect credential pair %s", credPair)
-		}
-		creds[data[0]] = data[1]
+	credentials, err := parseCredentials(values[EnvTokens])
+	if err != nil {
+		return nil, fmt.Errorf("hurricane: %w", err)
 	}
-	config.Credentials = creds
+
+	config.Credentials = credentials
 
 	return NewDNSProviderConfig(config)
 }
@@ -79,7 +74,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("hurricane: the configuration of the DNS provider is nil")
 	}
 
-	if config.Credentials == nil {
+	if len(config.Credentials) == 0 {
 		return nil, errors.New("hurricane: credentials missing")
 	}
 
@@ -120,4 +115,20 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 // Returns the interval between each iteration.
 func (d *DNSProvider) Sequential() time.Duration {
 	return d.config.SequenceInterval
+}
+
+func parseCredentials(raw string) (map[string]string, error) {
+	credentials := make(map[string]string)
+
+	credStrings := strings.Split(strings.TrimSuffix(raw, ","), ",")
+	for _, credPair := range credStrings {
+		data := strings.Split(credPair, ":")
+		if len(data) != 2 {
+			return nil, fmt.Errorf("incorrect credential pair: %s", credPair)
+		}
+
+		credentials[strings.TrimSpace(data[0])] = strings.TrimSpace(data[1])
+	}
+
+	return credentials, nil
 }

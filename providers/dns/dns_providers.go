@@ -44,6 +44,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/hetzner"
 	"github.com/go-acme/lego/v4/providers/dns/hostingde"
 	"github.com/go-acme/lego/v4/providers/dns/httpreq"
+	"github.com/go-acme/lego/v4/providers/dns/hurricane"
 	"github.com/go-acme/lego/v4/providers/dns/hyperone"
 	"github.com/go-acme/lego/v4/providers/dns/iij"
 	"github.com/go-acme/lego/v4/providers/dns/infomaniak"
@@ -169,6 +170,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return hostingde.NewDNSProvider()
 	case "httpreq":
 		return httpreq.NewDNSProvider()
+	case "hurricane":
+		return hurricane.NewDNSProvider()
 	case "hyperone":
 		return hyperone.NewDNSProvider()
 	case "iij":

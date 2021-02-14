@@ -53,6 +53,7 @@ func allDNSCodes() string {
 		"hetzner",
 		"hostingde",
 		"httpreq",
+		"hurricane",
 		"hyperone",
 		"iij",
 		"infomaniak",
@@ -929,6 +930,20 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/httpreq`)
+
+	case "hurricane":
+		// generated from: providers/dns/hurricane/hurricane.toml
+		ew.writeln(`Configuration for Hurricane Electric DNS.`)
+		ew.writeln(`Code:	'hurricane'`)
+		ew.writeln(`Since:	'v4.3.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "HURRICANE_TOKENS":	TXT record names and tokens`)
+		ew.writeln()
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/hurricane`)
 
 	case "hyperone":
 		// generated from: providers/dns/hyperone/hyperone.toml

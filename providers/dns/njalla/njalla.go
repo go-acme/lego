@@ -118,7 +118,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	resp, err := d.client.AddRecord(record)
 	if err != nil {
-		return fmt.Errorf("njalla: failed to find zone: %w", err)
+		return fmt.Errorf("njalla: failed to add record: %w", err)
 	}
 
 	d.recordIDsMu.Lock()

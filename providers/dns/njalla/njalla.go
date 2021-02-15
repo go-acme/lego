@@ -11,6 +11,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/njalla/internal"
+	"github.com/miekg/dns"
 )
 
 // Environment variables names.
@@ -102,16 +103,14 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	rootDomain, subDomain, err := splitDomain(fqdn)
 	if err != nil {
-		return fmt.Errorf("netlify: failed to find zone: %w", err)
+		return fmt.Errorf("njalla: %w", err)
 	}
 
-	authZone = dns01.UnFqdn(authZone)
-
 	record := internal.Record{
-		Name:    authZone, // TODO need to be tested
-		Domain:  fqdn,     // TODO need to be tested
+		Name:    subDomain,  // TODO need to be tested
+		Domain:  rootDomain, // TODO need to be tested
 		Content: value,
 		TTL:     d.config.TTL,
 		Type:    "TXT",
@@ -133,12 +132,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	rootDomain, _, err := splitDomain(fqdn)
 	if err != nil {
-		return fmt.Errorf("njalla: failed to find zone: %w", err)
+		return fmt.Errorf("njalla: %w", err)
 	}
-
-	authZone = dns01.UnFqdn(authZone)
 
 	// gets the record's unique ID from when we created it
 	d.recordIDsMu.Lock()
@@ -148,9 +145,9 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("njalla: unknown record ID for '%s' '%s'", fqdn, token)
 	}
 
-	err = d.client.RemoveRecord(recordID, fqdn)
+	err = d.client.RemoveRecord(recordID, rootDomain)
 	if err != nil {
-		return fmt.Errorf("njalla: failed to delete TXT records: fqdn=%s, authZone=%s, recordID=%d: %w", fqdn, authZone, recordID, err)
+		return fmt.Errorf("njalla: failed to delete TXT records: fqdn=%s, recordID=%d: %w", fqdn, recordID, err)
 	}
 
 	// deletes record ID from map
@@ -159,4 +156,20 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	d.recordIDsMu.Unlock()
 
 	return nil
+}
+
+func splitDomain(full string) (string, string, error) {
+	split := dns.Split(full)
+	if len(split) < 2 {
+		return "", "", fmt.Errorf("unsupported domain: %s", full)
+	}
+
+	if len(split) == 2 {
+		return full, "", nil
+	}
+
+	domain := full[split[len(split)-2]:]
+	subDomain := full[:split[len(split)-2]-1]
+
+	return domain, subDomain, nil
 }

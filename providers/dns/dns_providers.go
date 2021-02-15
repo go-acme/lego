@@ -212,6 +212,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return netlify.NewDNSProvider()
 	case "nifcloud":
 		return nifcloud.NewDNSProvider()
+	case "njalla":
+		return namedotcom.NewDNSProvider()
 	case "ns1":
 		return ns1.NewDNSProvider()
 	case "oraclecloud":

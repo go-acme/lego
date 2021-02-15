@@ -64,6 +64,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/netcup"
 	"github.com/go-acme/lego/v4/providers/dns/netlify"
 	"github.com/go-acme/lego/v4/providers/dns/nifcloud"
+	"github.com/go-acme/lego/v4/providers/dns/njalla"
 	"github.com/go-acme/lego/v4/providers/dns/ns1"
 	"github.com/go-acme/lego/v4/providers/dns/oraclecloud"
 	"github.com/go-acme/lego/v4/providers/dns/otc"
@@ -213,7 +214,7 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 	case "nifcloud":
 		return nifcloud.NewDNSProvider()
 	case "njalla":
-		return namedotcom.NewDNSProvider()
+		return njalla.NewDNSProvider()
 	case "ns1":
 		return ns1.NewDNSProvider()
 	case "oraclecloud":

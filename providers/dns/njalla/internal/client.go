@@ -10,7 +10,7 @@ import (
 
 const apiEndpoint = "https://njal.la/api/1/"
 
-// Client is a Njallal API client.
+// Client is a Njalla API client.
 type Client struct {
 	HTTPClient  *http.Client
 	apiEndpoint string

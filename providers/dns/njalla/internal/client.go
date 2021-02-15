@@ -17,8 +17,8 @@ type Client struct {
 	token       string
 }
 
-// New creates a new Client.
-func New(token string) *Client {
+// NewClient creates a new Client.
+func NewClient(token string) *Client {
 	return &Client{
 		HTTPClient:  &http.Client{Timeout: 5 * time.Second},
 		apiEndpoint: apiEndpoint,

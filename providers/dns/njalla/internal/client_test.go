@@ -37,7 +37,7 @@ func setup(t *testing.T, handler func(http.ResponseWriter, *http.Request)) *Clie
 		}
 	})
 
-	client := New("secret")
+	client := NewClient("secret")
 	client.apiEndpoint = server.URL
 
 	return client

@@ -73,8 +73,8 @@ func TestClient_AddRecord(t *testing.T) {
 
 	record := Record{
 		Content: "foobar",
-		Domain:  "example.com",
-		Name:    "test",
+		Domain:  "test",
+		Name:    "example.com",
 		TTL:     300,
 		Type:    "TXT",
 	}
@@ -85,8 +85,8 @@ func TestClient_AddRecord(t *testing.T) {
 	expected := &Record{
 		ID:      123,
 		Content: "foobar",
-		Domain:  "example.com",
-		Name:    "test",
+		Domain:  "test",
+		Name:    "example.com",
 		TTL:     300,
 		Type:    "TXT",
 	}
@@ -99,8 +99,8 @@ func TestClient_AddRecord_error(t *testing.T) {
 
 	record := Record{
 		Content: "test",
-		Domain:  "example.com",
-		Name:    "test01",
+		Domain:  "test01",
+		Name:    "example.com",
 		TTL:     300,
 		Type:    "TXT",
 	}

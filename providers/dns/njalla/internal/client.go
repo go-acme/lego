@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 )
@@ -132,6 +133,8 @@ func (c *Client) createRequest(data APIRequest) (*http.Request, error) {
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Njalla "+c.token)
+
+	log.Println(req, string(reqBody))
 
 	return req, nil
 }

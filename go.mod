@@ -1,6 +1,6 @@
 module github.com/go-acme/lego/v4
 
-go 1.14
+go 1.15
 
 require (
 	cloud.google.com/go v0.54.0

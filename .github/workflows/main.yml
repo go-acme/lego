@@ -14,7 +14,7 @@ jobs:
     name: Main Process
     runs-on: ubuntu-latest
     env:
-      GO_VERSION: 1.15
+      GO_VERSION: 1.16
       GOLANGCI_LINT_VERSION: v1.36.0
       HUGO_VERSION: 0.54.0
       SEIHON_VERSION: v0.5.1

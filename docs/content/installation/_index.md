@@ -42,7 +42,7 @@ pkg install lego
 
 Requirements:
 
-- `go` v1.14+
+- `go` v1.15+
 - environment variable: `GO111MODULE=on`
 
 To install the latest development version from sources, just run:

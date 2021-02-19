@@ -109,8 +109,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	record := internal.Record{
-		Name:    subDomain,  // TODO need to be tested
-		Domain:  rootDomain, // TODO need to be tested
+		Name:    subDomain,                // TODO need to be tested
+		Domain:  dns01.UnFqdn(rootDomain), // TODO need to be tested
 		Content: value,
 		TTL:     d.config.TTL,
 		Type:    "TXT",
@@ -145,7 +145,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("njalla: unknown record ID for '%s' '%s'", fqdn, token)
 	}
 
-	err = d.client.RemoveRecord(recordID, rootDomain)
+	err = d.client.RemoveRecord(recordID, dns01.UnFqdn(rootDomain))
 	if err != nil {
 		return fmt.Errorf("njalla: failed to delete TXT records: fqdn=%s, recordID=%d: %w", fqdn, recordID, err)
 	}

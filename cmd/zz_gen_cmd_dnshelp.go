@@ -73,6 +73,7 @@ func allDNSCodes() string {
 		"netcup",
 		"netlify",
 		"nifcloud",
+		"njalla",
 		"ns1",
 		"oraclecloud",
 		"otc",
@@ -1344,6 +1345,26 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/nifcloud`)
+
+	case "njalla":
+		// generated from: providers/dns/njalla/njalla.toml
+		ew.writeln(`Configuration for Njalla.`)
+		ew.writeln(`Code:	'njalla'`)
+		ew.writeln(`Since:	'v4.3.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "NJALLA_TOKEN":	API token`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "NJALLA_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "NJALLA_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "NJALLA_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "NJALLA_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/njalla`)
 
 	case "ns1":
 		// generated from: providers/dns/ns1/ns1.toml

@@ -36,7 +36,7 @@ const (
 	defaultPollInterval       = 15 * time.Second
 )
 
-const gridMaxBody = 131072
+const maxBody = 131072
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
@@ -52,9 +52,7 @@ func NewDefaultConfig() *Config {
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, defaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, defaultPollInterval),
-		Config: edgegrid.Config{
-			MaxBody: gridMaxBody,
-		},
+		Config:             edgegrid.Config{MaxBody: maxBody},
 	}
 }
 
@@ -78,14 +76,14 @@ func NewDNSProvider() (*DNSProvider, error) {
 	rcPath := env.GetOrDefaultString(EnvEdgeRc, "")
 	rcSection := env.GetOrDefaultString(EnvEdgeRcSection, "")
 
-	grigConfig, err := edgegrid.Init(rcPath, rcSection)
+	conf, err := edgegrid.Init(rcPath, rcSection)
 	if err != nil {
 		return nil, fmt.Errorf("edgedns: %w", err)
 	}
 
-	grigConfig.MaxBody = gridMaxBody
+	conf.MaxBody = maxBody
 
-	config.Config = grigConfig
+	config.Config = conf
 
 	return NewDNSProviderConfig(config)
 }

@@ -54,7 +54,7 @@ func TestNewDNSProvider_FromEnv(t *testing.T) {
 				ClientToken:  "akab-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx",
 				ClientSecret: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 				AccessToken:  "akac-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx",
-				MaxBody:      gridMaxBody,
+				MaxBody:      maxBody,
 			},
 		},
 		{
@@ -71,7 +71,7 @@ func TestNewDNSProvider_FromEnv(t *testing.T) {
 				ClientToken:  "akab-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx",
 				ClientSecret: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 				AccessToken:  "akac-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx",
-				MaxBody:      gridMaxBody,
+				MaxBody:      maxBody,
 			},
 		},
 		{
@@ -195,7 +195,7 @@ func TestNewDefaultConfig(t *testing.T) {
 				PropagationTimeout: 3 * time.Minute,
 				PollingInterval:    15 * time.Second,
 				Config: edgegrid.Config{
-					MaxBody: gridMaxBody,
+					MaxBody: maxBody,
 				},
 			},
 		},
@@ -211,7 +211,7 @@ func TestNewDefaultConfig(t *testing.T) {
 				PropagationTimeout: 60 * time.Second,
 				PollingInterval:    60 * time.Second,
 				Config: edgegrid.Config{
-					MaxBody: gridMaxBody,
+					MaxBody: maxBody,
 				},
 			},
 		},

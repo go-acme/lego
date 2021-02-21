@@ -29,15 +29,18 @@ const (
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
-
-	DefaultPropagationTimeout = 3 * time.Minute
-	DefaultPollInterval       = 15 * time.Second
-
-	EdgeGridMaxBody = 131072
 )
+
+const (
+	defaultPropagationTimeout = 3 * time.Minute
+	defaultPollInterval       = 15 * time.Second
+)
+
+const gridMaxBody = 131072
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
+	edgegrid.Config
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
@@ -47,8 +50,11 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, DefaultPollInterval),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, defaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, defaultPollInterval),
+		Config: edgegrid.Config{
+			MaxBody: gridMaxBody,
+		},
 	}
 }
 
@@ -67,7 +73,21 @@ type DNSProvider struct {
 //
 // See also: https://developer.akamai.com/api/getting-started
 func NewDNSProvider() (*DNSProvider, error) {
-	return NewDNSProviderConfig(NewDefaultConfig())
+	config := NewDefaultConfig()
+
+	rcPath := env.GetOrDefaultString(EnvEdgeRc, "")
+	rcSection := env.GetOrDefaultString(EnvEdgeRcSection, "")
+
+	grigConfig, err := edgegrid.Init(rcPath, rcSection)
+	if err != nil {
+		return nil, fmt.Errorf("edgedns: %w", err)
+	}
+
+	grigConfig.MaxBody = gridMaxBody
+
+	config.Config = grigConfig
+
+	return NewDNSProviderConfig(config)
 }
 
 // NewDNSProviderConfig return a DNSProvider instance configured for EdgeDNS.
@@ -76,14 +96,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("edgedns: the configuration of the DNS provider is nil")
 	}
 
-	edgercPath := env.GetOrDefaultString(EnvEdgeRc, "")
-	edgercSection := env.GetOrDefaultString(EnvEdgeRcSection, "")
-	edgegrigConfig, err := edgegrid.Init(edgercPath, edgercSection)
-	if err != nil {
-		return nil, fmt.Errorf("edgedns: %w", err)
-	}
-	edgegrigConfig.MaxBody = EdgeGridMaxBody
-	configdns.Init(edgegrigConfig)
+	configdns.Init(config.Config)
 
 	return &DNSProvider{config: config}, nil
 }

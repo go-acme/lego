@@ -12,7 +12,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const envDomain = envNamespace + "TEST_DOMAIN"
+const (
+	envDomain           = envNamespace + "TEST_DOMAIN"
+	envTestHost         = envNamespace + "TEST_HOST"
+	envTestClientToken  = envNamespace + "TEST_CLIENT_TOKEN"
+	envTestClientSecret = envNamespace + "TEST_CLIENT_SECRET"
+	envTestAccessToken  = envNamespace + "TEST_ACCESS_TOKEN"
+)
 
 var envTest = tester.NewEnvTest(
 	EnvHost,
@@ -21,10 +27,10 @@ var envTest = tester.NewEnvTest(
 	EnvAccessToken,
 	EnvEdgeRc,
 	EnvEdgeRcSection,
-	"AKAMAI_TEST_HOST",
-	"AKAMAI_TEST_CLIENT_TOKEN",
-	"AKAMAI_TEST_CLIENT_SECRET",
-	"AKAMAI_TEST_ACCESS_TOKEN").
+	envTestHost,
+	envTestClientToken,
+	envTestClientSecret,
+	envTestAccessToken).
 	WithDomain(envDomain).
 	WithLiveTestRequirements(EnvHost, EnvClientToken, EnvClientSecret, EnvAccessToken, envDomain)
 
@@ -48,24 +54,24 @@ func TestNewDNSProvider_FromEnv(t *testing.T) {
 				ClientToken:  "akab-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx",
 				ClientSecret: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 				AccessToken:  "akac-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx",
-				MaxBody:      EdgeGridMaxBody,
+				MaxBody:      gridMaxBody,
 			},
 		},
 		{
 			desc: "with section",
 			envVars: map[string]string{
-				EnvEdgeRcSection:            "test",
-				"AKAMAI_TEST_HOST":          "akaa-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx.luna.akamaiapis.net",
-				"AKAMAI_TEST_CLIENT_TOKEN":  "akab-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx",
-				"AKAMAI_TEST_CLIENT_SECRET": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-				"AKAMAI_TEST_ACCESS_TOKEN":  "akac-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx",
+				EnvEdgeRcSection:    "test",
+				envTestHost:         "akaa-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx.luna.akamaiapis.net",
+				envTestClientToken:  "akab-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx",
+				envTestClientSecret: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+				envTestAccessToken:  "akac-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx",
 			},
 			expectedConfig: &edgegrid.Config{
 				Host:         "akaa-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx.luna.akamaiapis.net",
 				ClientToken:  "akab-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx",
 				ClientSecret: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
 				AccessToken:  "akac-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx",
-				MaxBody:      EdgeGridMaxBody,
+				MaxBody:      gridMaxBody,
 			},
 		},
 		{
@@ -113,12 +119,18 @@ func TestNewDNSProvider_FromEnv(t *testing.T) {
 			expectedErr: "edgedns: Fatal missing required environment variables: [AKAMAI_ACCESS_TOKEN]",
 		},
 	}
+
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			defer envTest.RestoreEnv()
 			envTest.ClearEnv()
+
+			if test.envVars == nil {
+				test.envVars = map[string]string{}
+			}
+			test.envVars[EnvEdgeRc] = "/dev/null"
+
 			envTest.Apply(test.envVars)
-			os.Setenv(EnvEdgeRc, "/dev/null")
 
 			p, err := NewDNSProvider()
 
@@ -182,10 +194,13 @@ func TestNewDefaultConfig(t *testing.T) {
 				TTL:                dns01.DefaultTTL,
 				PropagationTimeout: 3 * time.Minute,
 				PollingInterval:    15 * time.Second,
+				Config: edgegrid.Config{
+					MaxBody: gridMaxBody,
+				},
 			},
 		},
 		{
-			desc: "",
+			desc: "custom values",
 			envVars: map[string]string{
 				EnvTTL:                "99",
 				EnvPropagationTimeout: "60",
@@ -195,6 +210,9 @@ func TestNewDefaultConfig(t *testing.T) {
 				TTL:                99,
 				PropagationTimeout: 60 * time.Second,
 				PollingInterval:    60 * time.Second,
+				Config: edgegrid.Config{
+					MaxBody: gridMaxBody,
+				},
 			},
 		},
 	}
@@ -211,36 +229,4 @@ func TestNewDefaultConfig(t *testing.T) {
 			require.Equal(t, test.expected, config)
 		})
 	}
-}
-
-func TestLivePresent(t *testing.T) {
-	if !envTest.IsLiveTest() {
-		t.Skip("skipping live test")
-	}
-
-	envTest.RestoreEnv()
-	provider, err := NewDNSProvider()
-	require.NoError(t, err)
-
-	err = provider.Present(envTest.GetDomain(), "", "123d==")
-	require.NoError(t, err)
-
-	// Present Twice to handle create / update
-	err = provider.Present(envTest.GetDomain(), "", "123d==")
-	require.NoError(t, err)
-}
-
-func TestLiveCleanUp(t *testing.T) {
-	if !envTest.IsLiveTest() {
-		t.Skip("skipping live test")
-	}
-
-	envTest.RestoreEnv()
-	provider, err := NewDNSProvider()
-	require.NoError(t, err)
-
-	time.Sleep(1 * time.Second)
-
-	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
-	require.NoError(t, err)
 }

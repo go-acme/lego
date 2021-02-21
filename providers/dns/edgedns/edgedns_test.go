@@ -1,47 +1,82 @@
 package edgedns
 
 import (
+	"os"
 	"testing"
 	"time"
 
+	configdns "github.com/akamai/AkamaiOPEN-edgegrid-golang/configdns-v2"
+	"github.com/akamai/AkamaiOPEN-edgegrid-golang/edgegrid"
+	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-const envDomain = envNamespace + "TEST_DOMAIN"
+const (
+	envDomain           = envNamespace + "TEST_DOMAIN"
+	envTestHost         = envNamespace + "TEST_HOST"
+	envTestClientToken  = envNamespace + "TEST_CLIENT_TOKEN"
+	envTestClientSecret = envNamespace + "TEST_CLIENT_SECRET"
+	envTestAccessToken  = envNamespace + "TEST_ACCESS_TOKEN"
+)
 
 var envTest = tester.NewEnvTest(
 	EnvHost,
 	EnvClientToken,
 	EnvClientSecret,
-	EnvAccessToken).
-	WithDomain(envDomain)
+	EnvAccessToken,
+	EnvEdgeRc,
+	EnvEdgeRcSection,
+	envTestHost,
+	envTestClientToken,
+	envTestClientSecret,
+	envTestAccessToken).
+	WithDomain(envDomain).
+	WithLiveTestRequirements(EnvHost, EnvClientToken, EnvClientSecret, EnvAccessToken, envDomain)
 
-func TestNewDNSProvider(t *testing.T) {
+func TestNewDNSProvider_FromEnv(t *testing.T) {
 	testCases := []struct {
-		desc     string
-		envVars  map[string]string
-		expected string
+		desc           string
+		envVars        map[string]string
+		expectedConfig *edgegrid.Config
+		expectedErr    string
 	}{
 		{
 			desc: "success",
 			envVars: map[string]string{
-				EnvHost:         "A",
-				EnvClientToken:  "B",
-				EnvClientSecret: "C",
-				EnvAccessToken:  "D",
+				EnvHost:         "akaa-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx.luna.akamaiapis.net",
+				EnvClientToken:  "akab-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx",
+				EnvClientSecret: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+				EnvAccessToken:  "akac-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx",
+			},
+			expectedConfig: &edgegrid.Config{
+				Host:         "akaa-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx.luna.akamaiapis.net",
+				ClientToken:  "akab-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx",
+				ClientSecret: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+				AccessToken:  "akac-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx",
+				MaxBody:      maxBody,
 			},
 		},
 		{
-			desc: "missing credentials",
+			desc: "with section",
 			envVars: map[string]string{
-				EnvHost:         "",
-				EnvClientToken:  "",
-				EnvClientSecret: "",
-				EnvAccessToken:  "",
+				EnvEdgeRcSection:    "test",
+				envTestHost:         "akaa-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx.luna.akamaiapis.net",
+				envTestClientToken:  "akab-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx",
+				envTestClientSecret: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+				envTestAccessToken:  "akac-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx",
 			},
-			expected: "edgedns: some credentials information are missing: AKAMAI_HOST,AKAMAI_CLIENT_TOKEN,AKAMAI_CLIENT_SECRET,AKAMAI_ACCESS_TOKEN",
+			expectedConfig: &edgegrid.Config{
+				Host:         "akaa-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx.luna.akamaiapis.net",
+				ClientToken:  "akab-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx",
+				ClientSecret: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+				AccessToken:  "akac-xxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxx",
+				MaxBody:      maxBody,
+			},
+		},
+		{
+			desc:        "missing credentials",
+			expectedErr: "edgedns: Unable to create instance using environment or .edgerc file",
 		},
 		{
 			desc: "missing host",
@@ -51,7 +86,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvClientSecret: "C",
 				EnvAccessToken:  "D",
 			},
-			expected: "edgedns: some credentials information are missing: AKAMAI_HOST",
+			expectedErr: "edgedns: Unable to create instance using environment or .edgerc file",
 		},
 		{
 			desc: "missing client token",
@@ -61,7 +96,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvClientSecret: "C",
 				EnvAccessToken:  "D",
 			},
-			expected: "edgedns: some credentials information are missing: AKAMAI_CLIENT_TOKEN",
+			expectedErr: "edgedns: Fatal missing required environment variables: [AKAMAI_CLIENT_TOKEN]",
 		},
 		{
 			desc: "missing client secret",
@@ -71,7 +106,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvClientSecret: "",
 				EnvAccessToken:  "D",
 			},
-			expected: "edgedns: some credentials information are missing: AKAMAI_CLIENT_SECRET",
+			expectedErr: "edgedns: Fatal missing required environment variables: [AKAMAI_CLIENT_SECRET]",
 		},
 		{
 			desc: "missing access token",
@@ -81,7 +116,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvClientSecret: "C",
 				EnvAccessToken:  "",
 			},
-			expected: "edgedns: some credentials information are missing: AKAMAI_ACCESS_TOKEN",
+			expectedErr: "edgedns: Fatal missing required environment variables: [AKAMAI_ACCESS_TOKEN]",
 		},
 	}
 
@@ -90,91 +125,26 @@ func TestNewDNSProvider(t *testing.T) {
 			defer envTest.RestoreEnv()
 			envTest.ClearEnv()
 
+			if test.envVars == nil {
+				test.envVars = map[string]string{}
+			}
+			test.envVars[EnvEdgeRc] = "/dev/null"
+
 			envTest.Apply(test.envVars)
 
 			p, err := NewDNSProvider()
 
-			if len(test.expected) == 0 {
-				require.NoError(t, err)
-				require.NotNil(t, p)
-				require.NotNil(t, p.config)
-			} else {
-				require.EqualError(t, err, test.expected)
+			if test.expectedErr != "" {
+				require.EqualError(t, err, test.expectedErr)
+				return
 			}
-		})
-	}
-}
 
-func TestNewDNSProviderConfig(t *testing.T) {
-	testCases := []struct {
-		desc         string
-		host         string
-		clientToken  string
-		clientSecret string
-		accessToken  string
-		expected     string
-	}{
-		{
-			desc:         "success",
-			host:         "A",
-			clientToken:  "B",
-			clientSecret: "C",
-			accessToken:  "D",
-		},
-		{
-			desc:     "missing credentials",
-			expected: "edgedns: credentials are missing",
-		},
-		{
-			desc:         "missing host",
-			host:         "",
-			clientToken:  "B",
-			clientSecret: "C",
-			accessToken:  "D",
-			expected:     "edgedns: credentials are missing",
-		},
-		{
-			desc:         "missing client token",
-			host:         "A",
-			clientToken:  "",
-			clientSecret: "C",
-			accessToken:  "D",
-			expected:     "edgedns: credentials are missing",
-		},
-		{
-			desc:         "missing client secret",
-			host:         "A",
-			clientToken:  "B",
-			clientSecret: "",
-			accessToken:  "B",
-			expected:     "edgedns: credentials are missing",
-		},
-		{
-			desc:         "missing access token",
-			host:         "A",
-			clientToken:  "B",
-			clientSecret: "C",
-			accessToken:  "",
-			expected:     "edgedns: credentials are missing",
-		},
-	}
+			require.NoError(t, err)
+			require.NotNil(t, p)
+			require.NotNil(t, p.config)
 
-	for _, test := range testCases {
-		t.Run(test.desc, func(t *testing.T) {
-			config := NewDefaultConfig()
-			config.ClientToken = test.clientToken
-			config.ClientSecret = test.clientSecret
-			config.Host = test.host
-			config.AccessToken = test.accessToken
-
-			p, err := NewDNSProviderConfig(config)
-
-			if len(test.expected) == 0 {
-				require.NoError(t, err)
-				require.NotNil(t, p)
-				require.NotNil(t, p.config)
-			} else {
-				require.EqualError(t, err, test.expected)
+			if test.expectedConfig != nil {
+				require.Equal(t, *test.expectedConfig, configdns.Config)
 			}
 		})
 	}
@@ -205,39 +175,58 @@ func TestDNSProvider_findZone(t *testing.T) {
 
 			zone, err := findZone(test.domain)
 			require.NoError(t, err)
-			assert.Equal(t, test.expected, zone)
+			require.Equal(t, test.expected, zone)
 		})
 	}
 }
 
-func TestLivePresent(t *testing.T) {
-	if !envTest.IsLiveTest() {
-		t.Skip("skipping live test")
+func TestNewDefaultConfig(t *testing.T) {
+	defer envTest.RestoreEnv()
+
+	testCases := []struct {
+		desc     string
+		envVars  map[string]string
+		expected *Config
+	}{
+		{
+			desc: "default configuration",
+			expected: &Config{
+				TTL:                dns01.DefaultTTL,
+				PropagationTimeout: 3 * time.Minute,
+				PollingInterval:    15 * time.Second,
+				Config: edgegrid.Config{
+					MaxBody: maxBody,
+				},
+			},
+		},
+		{
+			desc: "custom values",
+			envVars: map[string]string{
+				EnvTTL:                "99",
+				EnvPropagationTimeout: "60",
+				EnvPollingInterval:    "60",
+			},
+			expected: &Config{
+				TTL:                99,
+				PropagationTimeout: 60 * time.Second,
+				PollingInterval:    60 * time.Second,
+				Config: edgegrid.Config{
+					MaxBody: maxBody,
+				},
+			},
+		},
 	}
 
-	envTest.RestoreEnv()
-	provider, err := NewDNSProvider()
-	require.NoError(t, err)
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			envTest.ClearEnv()
+			for key, value := range test.envVars {
+				os.Setenv(key, value)
+			}
 
-	err = provider.Present(envTest.GetDomain(), "", "123d==")
-	require.NoError(t, err)
+			config := NewDefaultConfig()
 
-	// Present Twice to handle create / update
-	err = provider.Present(envTest.GetDomain(), "", "123d==")
-	require.NoError(t, err)
-}
-
-func TestLiveCleanUp(t *testing.T) {
-	if !envTest.IsLiveTest() {
-		t.Skip("skipping live test")
+			require.Equal(t, test.expected, config)
+		})
 	}
-
-	envTest.RestoreEnv()
-	provider, err := NewDNSProvider()
-	require.NoError(t, err)
-
-	time.Sleep(1 * time.Second)
-
-	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
-	require.NoError(t, err)
 }

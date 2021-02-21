@@ -716,10 +716,12 @@ func displayDNSHelp(name string) error {
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "AKAMAI_ACCESS_TOKEN":	Access token`)
-		ew.writeln(`	- "AKAMAI_CLIENT_SECRET":	Client secret`)
-		ew.writeln(`	- "AKAMAI_CLIENT_TOKEN":	Client token`)
-		ew.writeln(`	- "AKAMAI_HOST":	API host`)
+		ew.writeln(`	- "AKAMAI_ACCESS_TOKEN":	Access token, managed by the Akamai EdgeGrid client`)
+		ew.writeln(`	- "AKAMAI_CLIENT_SECRET":	Client secret, managed by the Akamai EdgeGrid client`)
+		ew.writeln(`	- "AKAMAI_CLIENT_TOKEN":	Client token, managed by the Akamai EdgeGrid client`)
+		ew.writeln(`	- "AKAMAI_EDGERC":	Path to the .edgerc file, managed by the Akamai EdgeGrid client`)
+		ew.writeln(`	- "AKAMAI_EDGERC_SECTION":	Configuration section, managed by the Akamai EdgeGrid client`)
+		ew.writeln(`	- "AKAMAI_HOST":	API host, managed by the Akamai EdgeGrid client`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)

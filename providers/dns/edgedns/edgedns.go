@@ -18,6 +18,9 @@ import (
 const (
 	envNamespace = "AKAMAI_"
 
+	EnvEdgeRc        = envNamespace + "EDGERC"
+	EnvEdgeRcSection = envNamespace + "EDGERC_SECTION"
+
 	EnvHost         = envNamespace + "HOST"
 	EnvClientToken  = envNamespace + "CLIENT_TOKEN"
 	EnvClientSecret = envNamespace + "CLIENT_SECRET"
@@ -26,10 +29,14 @@ const (
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
-
-	DefaultPropagationTimeout = 3 * time.Minute
-	DefaultPollInterval       = 15 * time.Second
 )
+
+const (
+	defaultPropagationTimeout = 3 * time.Minute
+	defaultPollInterval       = 15 * time.Second
+)
+
+const maxBody = 131072
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
@@ -43,11 +50,9 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, DefaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, DefaultPollInterval),
-		Config: edgegrid.Config{
-			MaxBody: 131072,
-		},
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, defaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, defaultPollInterval),
+		Config:             edgegrid.Config{MaxBody: maxBody},
 	}
 }
 
@@ -56,19 +61,29 @@ type DNSProvider struct {
 	config *Config
 }
 
-// NewDNSProvider uses the supplied environment variables to return a DNSProvider instance:
-// AKAMAI_HOST, AKAMAI_CLIENT_TOKEN, AKAMAI_CLIENT_SECRET, AKAMAI_ACCESS_TOKEN.
+// NewDNSProvider returns a DNSProvider instance configured for Akamai EdgeDNS:
+// Akamai credentials are automatically detected in the following locations and prioritized in the following order:
+//
+// 1. Section-specific environment variables `AKAMAI_{SECTION}_HOST`, `AKAMAI_{SECTION}_ACCESS_TOKEN`, `AKAMAI_{SECTION}_CLIENT_TOKEN`, `AKAMAI_{SECTION}_CLIENT_SECRET` where `{SECTION}` is specified using `AKAMAI_EDGERC_SECTION`
+// 2. If `AKAMAI_EDGERC_SECTION` is not defined or is set to `default`: Environment variables `AKAMAI_HOST`, `AKAMAI_ACCESS_TOKEN`, `AKAMAI_CLIENT_TOKEN`, `AKAMAI_CLIENT_SECRET`
+// 3. .edgerc file located at `AKAMAI_EDGERC` (defaults to `~/.edgerc`, sections can be specified using `AKAMAI_EDGERC_SECTION`)
+// 4. Default environment variables: `AKAMAI_HOST`, `AKAMAI_ACCESS_TOKEN`, `AKAMAI_CLIENT_TOKEN`, `AKAMAI_CLIENT_SECRET`
+//
+// See also: https://developer.akamai.com/api/getting-started
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvHost, EnvClientToken, EnvClientSecret, EnvAccessToken)
+	config := NewDefaultConfig()
+
+	rcPath := env.GetOrDefaultString(EnvEdgeRc, "")
+	rcSection := env.GetOrDefaultString(EnvEdgeRcSection, "")
+
+	conf, err := edgegrid.Init(rcPath, rcSection)
 	if err != nil {
 		return nil, fmt.Errorf("edgedns: %w", err)
 	}
 
-	config := NewDefaultConfig()
-	config.Config.Host = values[EnvHost]
-	config.Config.ClientToken = values[EnvClientToken]
-	config.Config.ClientSecret = values[EnvClientSecret]
-	config.Config.AccessToken = values[EnvAccessToken]
+	conf.MaxBody = maxBody
+
+	config.Config = conf
 
 	return NewDNSProviderConfig(config)
 }
@@ -77,10 +92,6 @@ func NewDNSProvider() (*DNSProvider, error) {
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("edgedns: the configuration of the DNS provider is nil")
-	}
-
-	if config.ClientToken == "" || config.ClientSecret == "" || config.AccessToken == "" || config.Host == "" {
-		return nil, errors.New("edgedns: credentials are missing")
 	}
 
 	configdns.Init(config.Config)

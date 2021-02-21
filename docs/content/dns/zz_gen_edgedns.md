@@ -36,10 +36,12 @@ lego --email myemail@example.com --dns edgedns --domains my.example.org run
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `AKAMAI_ACCESS_TOKEN` | Access token |
-| `AKAMAI_CLIENT_SECRET` | Client secret |
-| `AKAMAI_CLIENT_TOKEN` | Client token |
-| `AKAMAI_HOST` | API host |
+| `AKAMAI_ACCESS_TOKEN` | Access token, managed by the Akamai EdgeGrid client |
+| `AKAMAI_CLIENT_SECRET` | Client secret, managed by the Akamai EdgeGrid client |
+| `AKAMAI_CLIENT_TOKEN` | Client token, managed by the Akamai EdgeGrid client |
+| `AKAMAI_EDGERC` | Path to the .edgerc file, managed by the Akamai EdgeGrid client |
+| `AKAMAI_EDGERC_SECTION` | Configuration section, managed by the Akamai EdgeGrid client |
+| `AKAMAI_HOST` | API host, managed by the Akamai EdgeGrid client |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).
@@ -56,6 +58,32 @@ More information [here](/lego/dns/#configuration-and-credentials).
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).
 
+Akamai credentials are automatically detected in the following locations and prioritized in the following order:
+
+1. Section-specific environment variables (where `{SECTION}` is specified using `AKAMAI_EDGERC_SECTION`):
+  - `AKAMAI_{SECTION}_HOST`
+  - `AKAMAI_{SECTION}_ACCESS_TOKEN`
+  - `AKAMAI_{SECTION}_CLIENT_TOKEN`
+  - `AKAMAI_{SECTION}_CLIENT_SECRET`
+2. If `AKAMAI_EDGERC_SECTION` is not defined or is set to `default`, environment variables:
+  - `AKAMAI_HOST`
+  - `AKAMAI_ACCESS_TOKEN`
+  - `AKAMAI_CLIENT_TOKEN`
+  - `AKAMAI_CLIENT_SECRET`
+3. `.edgerc` file located at `AKAMAI_EDGERC`
+  - defaults to `~/.edgerc`, sections can be specified using `AKAMAI_EDGERC_SECTION`
+4. Default environment variables:
+  - `AKAMAI_HOST`
+  - `AKAMAI_ACCESS_TOKEN`
+  - `AKAMAI_CLIENT_TOKEN`
+  - `AKAMAI_CLIENT_SECRET`
+
+See also:
+
+- [Setting up Akamai credentials](https://developer.akamai.com/api/getting-started)
+- [.edgerc Format](https://developer.akamai.com/legacy/introduction/Conf_Client.html#edgercformat)
+- [API Client Authentication](https://developer.akamai.com/legacy/introduction/Client_Auth.html)
+- [Config from Env](https://github.com/akamai/AkamaiOPEN-edgegrid-golang/blob/master/edgegrid/config.go#L118)
 
 
 

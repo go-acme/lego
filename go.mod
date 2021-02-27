@@ -20,8 +20,8 @@ require (
 	github.com/dnsimple/dnsimple-go v0.63.0
 	github.com/exoscale/egoscale v0.23.0
 	github.com/google/go-querystring v1.0.0
-	github.com/gophercloud/gophercloud v0.7.0
-	github.com/gophercloud/utils v0.0.0-20200508015959-b0167b94122c
+	github.com/gophercloud/gophercloud v0.16.0
+	github.com/gophercloud/utils v0.0.0-20210216074907-f6de111f2eae
 	github.com/iij/doapi v0.0.0-20190504054126-0bbf12d6d7df
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/labbsr0x/bindman-dns-webhook v1.0.2
@@ -43,11 +43,12 @@ require (
 	github.com/transip/gotransip/v6 v6.2.0
 	github.com/urfave/cli v1.22.4
 	github.com/vultr/govultr/v2 v2.0.0
-	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
 	golang.org/x/net v0.0.0-20200822124328-c89045814202
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	google.golang.org/api v0.20.0
+	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/ns1/ns1-go.v2 v2.4.2
 	gopkg.in/square/go-jose.v2 v2.5.1
-	gopkg.in/yaml.v2 v2.3.0
+	gopkg.in/yaml.v2 v2.4.0
 )

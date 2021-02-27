@@ -56,7 +56,7 @@ func TestNewDNSProvider_fromEnv(t *testing.T) {
 				EnvPassword:   "",
 				EnvRegionName: "",
 			},
-			expected: "designate: some credentials information are missing: OS_AUTH_URL,OS_USERNAME,OS_PASSWORD,OS_REGION_NAME",
+			expected: "designate: Missing environment variable [OS_AUTH_URL]",
 		},
 		{
 			desc: "missing auth url",
@@ -66,7 +66,7 @@ func TestNewDNSProvider_fromEnv(t *testing.T) {
 				EnvPassword:   "C",
 				EnvRegionName: "D",
 			},
-			expected: "designate: some credentials information are missing: OS_AUTH_URL",
+			expected: "designate: Missing environment variable [OS_AUTH_URL]",
 		},
 		{
 			desc: "missing username",
@@ -76,7 +76,7 @@ func TestNewDNSProvider_fromEnv(t *testing.T) {
 				EnvPassword:   "C",
 				EnvRegionName: "D",
 			},
-			expected: "designate: some credentials information are missing: OS_USERNAME",
+			expected: "designate: Missing one of the following environment variables [OS_USERID, OS_USERNAME]",
 		},
 		{
 			desc: "missing password",
@@ -86,17 +86,7 @@ func TestNewDNSProvider_fromEnv(t *testing.T) {
 				EnvPassword:   "",
 				EnvRegionName: "D",
 			},
-			expected: "designate: some credentials information are missing: OS_PASSWORD",
-		},
-		{
-			desc: "missing region name",
-			envVars: map[string]string{
-				EnvAuthURL:    serverURL + "/v2.0/",
-				EnvUsername:   "B",
-				EnvPassword:   "C",
-				EnvRegionName: "",
-			},
-			expected: "designate: some credentials information are missing: OS_REGION_NAME",
+			expected: "designate: Missing environment variable [OS_PASSWORD]",
 		},
 	}
 

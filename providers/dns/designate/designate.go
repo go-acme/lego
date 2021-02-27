@@ -80,11 +80,6 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 		config.opts = *opts
 	} else {
-		_, err = env.Get(EnvAuthURL, EnvUsername, EnvPassword, EnvRegionName)
-		if err != nil {
-			return nil, fmt.Errorf("designate: %w", err)
-		}
-
 		opts, err := openstack.AuthOptionsFromEnv()
 		if err != nil {
 			return nil, fmt.Errorf("designate: %w", err)

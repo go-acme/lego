@@ -71,7 +71,7 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for mythicbeasts DNSv2 API.
 // Credentials must be passed in the environment variables:
-// MYTHICBEASTS_USER_NAME and MYTHICBEASTS_PASSWORD.
+// MYTHICBEASTS_USERNAME and MYTHICBEASTS_PASSWORD.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvUserName, EnvPassword)
 	if err != nil {
@@ -151,4 +151,10 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	return nil
+}
+
+// Timeout returns the timeout and interval to use when checking for DNS propagation.
+// Adjusting here to cope with spikes in propagation times.
+func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
+	return d.config.PropagationTimeout, d.config.PollingInterval
 }

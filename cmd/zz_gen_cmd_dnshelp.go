@@ -462,11 +462,15 @@ func displayDNSHelp(name string) error {
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "OS_APPLICATION_CREDENTIAL_ID":	Application credential ID`)
+		ew.writeln(`	- "OS_APPLICATION_CREDENTIAL_NAME":	Application credential name`)
+		ew.writeln(`	- "OS_APPLICATION_CREDENTIAL_SECRET":	Application credential secret`)
 		ew.writeln(`	- "OS_AUTH_URL":	Identity endpoint URL`)
 		ew.writeln(`	- "OS_PASSWORD":	Password`)
 		ew.writeln(`	- "OS_PROJECT_NAME":	Project name`)
 		ew.writeln(`	- "OS_REGION_NAME":	Region name`)
 		ew.writeln(`	- "OS_USERNAME":	Username`)
+		ew.writeln(`	- "OS_USER_ID":	User ID`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)

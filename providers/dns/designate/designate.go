@@ -28,13 +28,17 @@ const (
 
 	envNamespaceClient = "OS_"
 
-	EnvAuthURL    = envNamespaceClient + "AUTH_URL"
-	EnvUsername   = envNamespaceClient + "USERNAME"
-	EnvPassword   = envNamespaceClient + "PASSWORD"
-	EnvTenantName = envNamespaceClient + "TENANT_NAME"
-	EnvRegionName = envNamespaceClient + "REGION_NAME"
-	EnvProjectID  = envNamespaceClient + "PROJECT_ID"
-	EnvCloud      = envNamespaceClient + "CLOUD"
+	EnvAuthURL       = envNamespaceClient + "AUTH_URL"
+	EnvUsername      = envNamespaceClient + "USERNAME"
+	EnvPassword      = envNamespaceClient + "PASSWORD"
+	EnvUserID        = envNamespaceClient + "USER_ID"
+	EnvAppCredID     = envNamespaceClient + "APPLICATION_CREDENTIAL_ID"
+	EnvAppCredName   = envNamespaceClient + "APPLICATION_CREDENTIAL_NAME"
+	EnvAppCredSecret = envNamespaceClient + "APPLICATION_CREDENTIAL_SECRET"
+	EnvTenantName    = envNamespaceClient + "TENANT_NAME"
+	EnvRegionName    = envNamespaceClient + "REGION_NAME"
+	EnvProjectID     = envNamespaceClient + "PROJECT_ID"
+	EnvCloud         = envNamespaceClient + "CLOUD"
 )
 
 // Config is used to configure the creation of the DNSProvider.
@@ -80,11 +84,6 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 		config.opts = *opts
 	} else {
-		_, err = env.Get(EnvAuthURL, EnvUsername, EnvPassword, EnvRegionName)
-		if err != nil {
-			return nil, fmt.Errorf("designate: %w", err)
-		}
-
 		opts, err := openstack.AuthOptionsFromEnv()
 		if err != nil {
 			return nil, fmt.Errorf("designate: %w", err)

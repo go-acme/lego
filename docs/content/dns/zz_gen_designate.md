@@ -88,7 +88,7 @@ There are three main ways of authenticating with Designate:
 
 For the username/password and application methods, the `OS_AUTH_URL` and `OS_REGION_NAME` environment variables are required.
 
-For more information, you can read about the different method of authentication with OpenStack in then Keystone's documentation and then gophercloud documentation:
+For more information, you can read about the different methods of authentication with OpenStack in the Keystone's documentation and the gophercloud documentation:
 
 - [Keystone username/password](https://docs.openstack.org/keystone/latest/user/supported_clients.html)
 - [Keystone application credentials](https://docs.openstack.org/keystone/latest/user/application_credentials.html)

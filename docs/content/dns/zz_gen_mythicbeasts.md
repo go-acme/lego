@@ -21,7 +21,7 @@ Configuration for [MythicBeasts](https://www.mythic-beasts.com/).
 Here is an example bash command using the MythicBeasts provider:
 
 ```bash
-MYTHICBEASTS_USER_NAME=myuser \
+MYTHICBEASTS_USERNAME=myuser \
 MYTHICBEASTS_PASSWORD=mypass \
 lego --email myemail@example.com --dns mythicbeasts --domains my.example.org run
 ```

@@ -29,11 +29,15 @@ _Please contribute by adding a CLI example._
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
+| `OS_APPLICATION_CREDENTIAL_ID` | Application credential ID |
+| `OS_APPLICATION_CREDENTIAL_NAME` | Application credential name |
+| `OS_APPLICATION_CREDENTIAL_SECRET` | Application credential secret |
 | `OS_AUTH_URL` | Identity endpoint URL |
 | `OS_PASSWORD` | Password |
 | `OS_PROJECT_NAME` | Project name |
 | `OS_REGION_NAME` | Region name |
 | `OS_USERNAME` | Username |
+| `OS_USER_ID` | User ID |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).
@@ -52,6 +56,28 @@ More information [here](/lego/dns/#configuration-and-credentials).
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).
 
+## Description
+
+There are three main ways of authenticating with Designate:
+
+The first one is by using the `OS_CLOUD` environment variable and a
+`clouds.yaml` file.
+
+The second one is using your username and password, via the `OS_USERNAME`,
+`OS_PASSWORD` and `OS_PROJECT_NAME` environment variables.
+
+The third one is by using an application credential, via the
+`OS_APPLICATION_CREDENTIAL_*` and `OS_USER_ID` environment variables.
+
+For the username/password and application methods, the `OS_AUTH_URL` and
+`OS_REGION_NAME` environment variables are required.
+
+For more information, you can read about the different method of authentication
+with OpenStack in then Keystone's documentation and then gophercloud
+documentation (links below).
+
+[Keystone username/password](https://docs.openstack.org/keystone/latest/user/supported_clients.html)
+[Keystone application credentials](https://docs.openstack.org/keystone/latest/user/application_credentials.html)
 
 
 

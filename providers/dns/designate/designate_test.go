@@ -24,6 +24,10 @@ var envTest = tester.NewEnvTest(
 	EnvAuthURL,
 	EnvUsername,
 	EnvPassword,
+	EnvUserID,
+	EnvAppCredID,
+	EnvAppCredName,
+	EnvAppCredSecret,
 	EnvTenantName,
 	EnvRegionName,
 	EnvProjectID,
@@ -87,6 +91,15 @@ func TestNewDNSProvider_fromEnv(t *testing.T) {
 				EnvRegionName: "D",
 			},
 			expected: "designate: Missing environment variable [OS_PASSWORD]",
+		},
+		{
+			desc: "missing application credential secret",
+			envVars: map[string]string{
+				EnvAuthURL:    serverURL + "/v2.0/",
+				EnvRegionName: "D",
+				EnvAppCredID:  "F",
+			},
+			expected: "designate: Missing environment variable [OS_APPLICATION_CREDENTIAL_SECRET]",
 		},
 	}
 

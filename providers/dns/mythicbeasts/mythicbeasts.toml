@@ -5,7 +5,7 @@ Code = "mythicbeasts"
 Since = "v0.3.7"
 
 Example = '''
-MYTHICBEASTS_USER_NAME=myuser \
+MYTHICBEASTS_USERNAME=myuser \
 MYTHICBEASTS_PASSWORD=mypass \
 lego --email myemail@example.com --dns mythicbeasts --domains my.example.org run
 '''

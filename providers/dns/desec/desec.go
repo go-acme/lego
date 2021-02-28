@@ -24,6 +24,10 @@ const (
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
+// https://github.com/desec-io/desec-stack/issues/216
+// https://desec.readthedocs.io/_/downloads/en/latest/pdf/
+const defaultTTL int = 3600
+
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	Token              string
@@ -36,7 +40,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, 300),
+		TTL:                env.GetOrDefaultInt(EnvTTL, defaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{

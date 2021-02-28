@@ -87,7 +87,7 @@ func (c *Client) GetZone(authFQDN string) (*Zone, error) {
 	return nil, fmt.Errorf("zone %s not found for authFQDN %s", authZoneName, authFQDN)
 }
 
-// FindTxtRecord return the TXT record a zone ID and a FQDN.
+// FindTxtRecord returns the TXT record a zone ID and a FQDN.
 func (c *Client) FindTxtRecord(zoneName, fqdn string) (*TXTRecord, error) {
 	host := dns01.UnFqdn(strings.TrimSuffix(dns01.UnFqdn(fqdn), zoneName))
 
@@ -126,7 +126,47 @@ func (c *Client) FindTxtRecord(zoneName, fqdn string) (*TXTRecord, error) {
 	return nil, nil
 }
 
-// AddTxtRecord add a TXT record.
+// ListTxtRecords returns the TXT records a zone ID and a FQDN.
+func (c *Client) ListTxtRecords(zoneName, fqdn string) ([]TXTRecord, error) {
+	host := dns01.UnFqdn(strings.TrimSuffix(dns01.UnFqdn(fqdn), zoneName))
+
+	reqURL, err := c.BaseURL.Parse(path.Join(c.BaseURL.Path, "records.json"))
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse endpoint: %w", err)
+	}
+
+	q := reqURL.Query()
+	q.Set("domain-name", zoneName)
+	q.Set("host", host)
+	q.Set("type", "TXT")
+	reqURL.RawQuery = q.Encode()
+
+	result, err := c.doRequest(http.MethodGet, reqURL)
+	if err != nil {
+		return nil, err
+	}
+
+	// the API returns [] when there is no records.
+	if string(result) == "[]" {
+		return nil, nil
+	}
+
+	var raw map[string]TXTRecord
+	if err = json.Unmarshal(result, &raw); err != nil {
+		return nil, fmt.Errorf("failed to unmarshall TXT records: %w: %s", err, string(result))
+	}
+
+	var records []TXTRecord
+	for _, record := range raw {
+		if record.Host == host && record.Type == "TXT" {
+			records = append(records, record)
+		}
+	}
+
+	return records, nil
+}
+
+// AddTxtRecord adds a TXT record.
 func (c *Client) AddTxtRecord(zoneName, fqdn, value string, ttl int) error {
 	host := dns01.UnFqdn(strings.TrimSuffix(dns01.UnFqdn(fqdn), zoneName))
 
@@ -160,7 +200,7 @@ func (c *Client) AddTxtRecord(zoneName, fqdn, value string, ttl int) error {
 	return nil
 }
 
-// RemoveTxtRecord remove a TXT record.
+// RemoveTxtRecord removes a TXT record.
 func (c *Client) RemoveTxtRecord(recordID int, zoneName string) error {
 	reqURL, err := c.BaseURL.Parse(path.Join(c.BaseURL.Path, "delete-record.json"))
 	if err != nil {

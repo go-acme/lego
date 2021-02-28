@@ -114,28 +114,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("ClouDNS: %w", err)
 	}
 
-	// ClouDNS has more name servers than the ones checked in the Solve() phase of lego
-	// At the time of wrting 4 servers are found as authoritative, but 8 are reported during the sync
-	// If this is not done, the secondary verifcation done by let's encypt serever will fail quire a bit
-	timeout, interval := d.Timeout()
-	err = wait.For(fmt.Sprintf("Nameserver sync on %s", domain), timeout, interval, func() (bool, error) {
-		syncProgress, errSync := d.client.GetUpdateStatus(zone.Name)
-
-		if errSync != nil {
-			return false, errSync
-		}
-		log.Infof("[%s] Sync %d/%d complete", domain, syncProgress.Updated, syncProgress.Total)
-		return syncProgress.Complete, nil
-	})
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return d.waitNameservers(domain, zone)
 }
 
-// CleanUp removes all the TXT record matching the specified parameters.
+// CleanUp removes the TXT records matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 
@@ -144,26 +126,42 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("ClouDNS: %w", err)
 	}
 
-	// ClouDNS correctly supports multiple entries for the same hostname and type
-	for {
-		record, err := d.client.FindTxtRecord(zone.Name, fqdn)
-		if err != nil {
-			return fmt.Errorf("ClouDNS: %w", err)
-		}
+	records, err := d.client.ListTxtRecords(zone.Name, fqdn)
+	if err != nil {
+		return fmt.Errorf("ClouDNS: %w", err)
+	}
 
-		if record == nil {
-			return nil
-		}
+	if len(records) == 0 {
+		return nil
+	}
 
+	for _, record := range records {
 		err = d.client.RemoveTxtRecord(record.ID, zone.Name)
 		if err != nil {
 			return fmt.Errorf("ClouDNS: %w", err)
 		}
 	}
+
+	return nil
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
+}
+
+// waitNameservers At the time of writing 4 servers are found as authoritative, but 8 are reported during the sync.
+// If this is not done, the secondary verification done by Let's Encrypt server will fail quire a bit.
+func (d *DNSProvider) waitNameservers(domain string, zone *internal.Zone) error {
+	return wait.For("Nameserver sync on "+domain, d.config.PropagationTimeout, d.config.PollingInterval, func() (bool, error) {
+		syncProgress, err := d.client.GetUpdateStatus(zone.Name)
+		if err != nil {
+			return false, err
+		}
+
+		log.Infof("[%s] Sync %d/%d complete", domain, syncProgress.Updated, syncProgress.Total)
+
+		return syncProgress.Complete, nil
+	})
 }

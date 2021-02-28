@@ -249,6 +249,121 @@ func TestClient_FindTxtRecord(t *testing.T) {
 	}
 }
 
+func TestClient_ListTxtRecord(t *testing.T) {
+	type expected struct {
+		txtRecords []TXTRecord
+		errorMsg   string
+	}
+
+	testCases := []struct {
+		desc        string
+		authFQDN    string
+		zoneName    string
+		apiResponse string
+		expected
+	}{
+		{
+			desc:     "record found",
+			authFQDN: "_acme-challenge.foo.com.",
+			zoneName: "foo.com",
+			apiResponse: `{
+  "5769228": {
+    "id": "5769228",
+    "type": "TXT",
+    "host": "_acme-challenge",
+    "record": "txtTXTtxtTXTtxtTXTtxtTXT",
+    "failover": "0",
+    "ttl": "3600",
+    "status": 1
+  },
+  "181805209": {
+    "id": "181805209",
+    "type": "TXT",
+    "host": "_github-challenge",
+    "record": "b66b8324b5",
+    "failover": "0",
+    "ttl": "300",
+    "status": 1
+  }
+}`,
+			expected: expected{
+				txtRecords: []TXTRecord{
+					{
+						ID:       5769228,
+						Type:     "TXT",
+						Host:     "_acme-challenge",
+						Record:   "txtTXTtxtTXTtxtTXTtxtTXT",
+						Failover: 0,
+						TTL:      3600,
+						Status:   1,
+					},
+				},
+			},
+		},
+		{
+			desc:     "no record found",
+			authFQDN: "_acme-challenge.foo.com.",
+			zoneName: "foo.com",
+			apiResponse: `{
+  "5769228": {
+    "id": "5769228",
+    "type": "TXT",
+    "host": "_other-challenge",
+    "record": "txtTXTtxtTXTtxtTXTtxtTXT",
+    "failover": "0",
+    "ttl": "3600",
+    "status": 1
+  },
+  "181805209": {
+    "id": "181805209",
+    "type": "TXT",
+    "host": "_github-challenge",
+    "record": "b66b8324b5",
+    "failover": "0",
+    "ttl": "300",
+    "status": 1
+  }
+}`,
+		},
+		{
+			desc:        "zero records",
+			authFQDN:    "_acme-challenge.foo.com.",
+			zoneName:    "test-zone",
+			apiResponse: `[]`,
+		},
+		{
+			desc:        "invalid json response",
+			authFQDN:    "_acme-challenge.foo.com.",
+			zoneName:    "test-zone",
+			apiResponse: `[{}]`,
+			expected: expected{
+				errorMsg: "failed to unmarshall TXT records: json: cannot unmarshal array into Go value of type map[string]internal.TXTRecord: [{}]",
+			},
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			server := httptest.NewServer(handlerMock(http.MethodGet, []byte(test.apiResponse)))
+			t.Cleanup(server.Close)
+
+			client, err := NewClient("myAuthID", "", "myAuthPassword")
+			require.NoError(t, err)
+
+			client.BaseURL, _ = url.Parse(server.URL)
+
+			txtRecords, err := client.ListTxtRecords(test.zoneName, test.authFQDN)
+
+			if test.expected.errorMsg != "" {
+				require.EqualError(t, err, test.expected.errorMsg)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, test.expected.txtRecords, txtRecords)
+			}
+		})
+	}
+}
+
 func TestClient_AddTxtRecord(t *testing.T) {
 	type expected struct {
 		query    string

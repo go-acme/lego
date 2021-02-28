@@ -17,7 +17,7 @@ import (
 func (d *DNSProvider) updateTxtRecord(domain, token, txt string, clear bool) error {
 	u, _ := url.Parse("https://www.duckdns.org/update")
 
-	mainDomain := getMainDomain(domain)
+	mainDomain := getMainDomain(domain, d.config.SubDomain)
 	if len(mainDomain) == 0 {
 		return fmt.Errorf("unable to find the main domain for: %s", domain)
 	}
@@ -51,7 +51,10 @@ func (d *DNSProvider) updateTxtRecord(domain, token, txt string, clear bool) err
 // It must be in format subdomain.duckdns.org,
 // not in format subsubdomain.subdomain.duckdns.org.
 // So strip off everything that is not top 3 levels.
-func getMainDomain(domain string) string {
+func getMainDomain(domain string, specifiedSubdomain string) string {
+	if len(specifiedSubdomain) > 0 {
+		return specifiedSubdomain
+	}
 	domain = dns01.UnFqdn(domain)
 
 	split := dns.Split(domain)

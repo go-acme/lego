@@ -22,6 +22,7 @@ const (
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 	EnvSequenceInterval   = envNamespace + "SEQUENCE_INTERVAL"
+	EnvSubDomain          = envNamespace + "SUBDOMAIN"
 )
 
 // Config is used to configure the creation of the DNSProvider.
@@ -31,6 +32,7 @@ type Config struct {
 	PollingInterval    time.Duration
 	SequenceInterval   time.Duration
 	HTTPClient         *http.Client
+	SubDomain          string
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
@@ -42,6 +44,7 @@ func NewDefaultConfig() *Config {
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
+		SubDomain: env.GetOrDefaultString(EnvSubDomain, ""),
 	}
 }
 

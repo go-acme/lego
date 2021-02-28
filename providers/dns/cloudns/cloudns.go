@@ -8,7 +8,9 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
+	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/platform/wait"
 	"github.com/go-acme/lego/v4/providers/dns/cloudns/internal"
 )
 
@@ -41,8 +43,8 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, 60),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 120*time.Second),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 4*time.Second),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 180*time.Second),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 10*time.Second),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
@@ -112,10 +114,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("ClouDNS: %w", err)
 	}
 
-	return nil
+	return d.waitNameservers(domain, zone)
 }
 
-// CleanUp removes the TXT record matching the specified parameters.
+// CleanUp removes the TXT records matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 
@@ -124,19 +126,22 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("ClouDNS: %w", err)
 	}
 
-	record, err := d.client.FindTxtRecord(zone.Name, fqdn)
+	records, err := d.client.ListTxtRecords(zone.Name, fqdn)
 	if err != nil {
 		return fmt.Errorf("ClouDNS: %w", err)
 	}
 
-	if record == nil {
+	if len(records) == 0 {
 		return nil
 	}
 
-	err = d.client.RemoveTxtRecord(record.ID, zone.Name)
-	if err != nil {
-		return fmt.Errorf("ClouDNS: %w", err)
+	for _, record := range records {
+		err = d.client.RemoveTxtRecord(record.ID, zone.Name)
+		if err != nil {
+			return fmt.Errorf("ClouDNS: %w", err)
+		}
 	}
+
 	return nil
 }
 
@@ -144,4 +149,19 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
+}
+
+// waitNameservers At the time of writing 4 servers are found as authoritative, but 8 are reported during the sync.
+// If this is not done, the secondary verification done by Let's Encrypt server will fail quire a bit.
+func (d *DNSProvider) waitNameservers(domain string, zone *internal.Zone) error {
+	return wait.For("Nameserver sync on "+domain, d.config.PropagationTimeout, d.config.PollingInterval, func() (bool, error) {
+		syncProgress, err := d.client.GetUpdateStatus(zone.Name)
+		if err != nil {
+			return false, err
+		}
+
+		log.Infof("[%s] Sync %d/%d complete", domain, syncProgress.Updated, syncProgress.Total)
+
+		return syncProgress.Complete, nil
+	})
 }

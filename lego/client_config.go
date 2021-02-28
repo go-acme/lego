@@ -64,6 +64,7 @@ type CertificateConfig struct {
 // based on the caCertificatesEnvVar environment variable (see the `initCertPool` function).
 func createDefaultHTTPClient() *http.Client {
 	return &http.Client{
+		Timeout: 2 * time.Minute,
 		Transport: &http.Transport{
 			Proxy: http.ProxyFromEnvironment,
 			DialContext: (&net.Dialer{
@@ -72,7 +73,6 @@ func createDefaultHTTPClient() *http.Client {
 			}).DialContext,
 			TLSHandshakeTimeout:   30 * time.Second,
 			ResponseHeaderTimeout: 30 * time.Second,
-			ExpectContinueTimeout: 30 * time.Second,
 			TLSClientConfig: &tls.Config{
 				ServerName: os.Getenv(caServerNameEnvVar),
 				RootCAs:    initCertPool(),

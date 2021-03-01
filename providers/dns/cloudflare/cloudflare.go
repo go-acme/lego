@@ -177,7 +177,13 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	recordID, ok := d.recordIDs[token]
 	d.recordIDsMu.Unlock()
 	if !ok {
-		return fmt.Errorf("cloudflare: unknown record ID for '%s'", fqdn)
+		recs, err := d.client.DNSRecords(zoneID, cloudflare.DNSRecord{Name: dns01.UnFqdn(fqdn), Type: "TXT"})
+		if err != nil || len(recs) < 1 {
+			return fmt.Errorf("cloudflare: unknown record ID for '%s'", fqdn)
+		} else if len(recs) > 1 {
+			return fmt.Errorf("cloudflare: multiple records for '%s'", fqdn)
+		}
+		recordID = recs[0].ID
 	}
 
 	err = d.client.DeleteDNSRecord(zoneID, recordID)

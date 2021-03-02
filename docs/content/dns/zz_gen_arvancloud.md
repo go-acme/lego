@@ -21,7 +21,7 @@ Configuration for [ArvanCloud](https://arvancloud.com).
 Here is an example bash command using the ArvanCloud provider:
 
 ```bash
-ARVANCLOUD_API_KEY=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx \
+ARVANCLOUD_API_KEY="Apikey xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" \
 lego --email myemail@example.com --dns arvancloud --domains my.example.org run
 ```
 

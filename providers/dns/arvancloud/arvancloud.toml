@@ -5,7 +5,7 @@ Code = "arvancloud"
 Since = "v3.8.0"
 
 Example = '''
-ARVANCLOUD_API_KEY=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx \
+ARVANCLOUD_API_KEY="Apikey xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" \
 lego --email myemail@example.com --dns arvancloud --domains my.example.org run
 '''
 

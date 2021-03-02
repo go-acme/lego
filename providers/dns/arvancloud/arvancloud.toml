@@ -5,13 +5,13 @@ Code = "arvancloud"
 Since = "v3.8.0"
 
 Example = '''
-ARVANCLOUD_API_KEY=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx \
+ARVANCLOUD_API_KEY="Apikey xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" \
 lego --email myemail@example.com --dns arvancloud --domains my.example.org run
 '''
 
 [Configuration]
   [Configuration.Credentials]
-    ARVANCLOUD_API_KEY = "API key"
+    ARVANCLOUD_API_KEY = "Apikey xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
   [Configuration.Additional]
     ARVANCLOUD_POLLING_INTERVAL = "Time between DNS propagation check"
     ARVANCLOUD_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"

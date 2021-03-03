@@ -62,7 +62,7 @@ func TestNewDNSProvider(t *testing.T) {
 
 			p, err := NewDNSProvider()
 
-			if len(test.expected) == 0 {
+			if test.expected == "" {
 				assert.NoError(t, err)
 				assert.NotNil(t, p)
 			} else {
@@ -108,7 +108,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 
 			p, err := NewDNSProviderConfig(config)
 
-			if len(test.expected) == 0 {
+			if test.expected == "" {
 				assert.NoError(t, err)
 				assert.NotNil(t, p)
 			} else {

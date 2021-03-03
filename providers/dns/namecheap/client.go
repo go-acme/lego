@@ -124,11 +124,7 @@ func (d *DNSProvider) do(req *http.Request, out interface{}) error {
 		return err
 	}
 
-	if err := xml.Unmarshal(body, out); err != nil {
-		return err
-	}
-
-	return nil
+	return xml.Unmarshal(body, out)
 }
 
 func (d *DNSProvider) newRequestGet(cmd string, params ...func(url.Values)) (*http.Request, error) {

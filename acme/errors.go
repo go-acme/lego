@@ -35,7 +35,7 @@ type SubProblem struct {
 
 func (p ProblemDetails) Error() string {
 	msg := fmt.Sprintf("acme: error: %d", p.HTTPStatus)
-	if len(p.Method) != 0 || len(p.URL) != 0 {
+	if p.Method != "" || p.URL != "" {
 		msg += fmt.Sprintf(" :: %s :: %s", p.Method, p.URL)
 	}
 	msg += fmt.Sprintf(" :: %s :: %s", p.Type, p.Detail)
@@ -44,7 +44,7 @@ func (p ProblemDetails) Error() string {
 		msg += fmt.Sprintf(", problem: %q :: %s", sub.Type, sub.Detail)
 	}
 
-	if len(p.Instance) != 0 {
+	if p.Instance != "" {
 		msg += ", url: " + p.Instance
 	}
 

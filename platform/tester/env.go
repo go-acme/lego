@@ -87,7 +87,7 @@ func (e *EnvTest) IsLiveTest() bool {
 
 	liveTest = liveTest && len(e.values) == len(e.keys)
 
-	if liveTest && len(e.domainKey) > 0 && len(e.domain) == 0 {
+	if liveTest && e.domainKey != "" && e.domain == "" {
 		return false
 	}
 
@@ -129,7 +129,7 @@ func (e *EnvTest) Apply(envVars map[string]string) {
 			panic(fmt.Sprintf("Unauthorized action, the env var %s is not managed.", key))
 		}
 
-		if len(value) == 0 {
+		if value == "" {
 			os.Unsetenv(key)
 		} else {
 			os.Setenv(key, value)

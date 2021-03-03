@@ -87,7 +87,7 @@ func TestNewDNSProvider(t *testing.T) {
 
 			p, err := NewDNSProvider()
 
-			if len(test.expected) == 0 {
+			if test.expected == "" {
 				require.NoError(t, err)
 				require.NotNil(t, p)
 				require.NotNil(t, p.config)
@@ -122,7 +122,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 
 			p, err := NewDNSProviderConfig(config)
 
-			if len(test.expected) == 0 {
+			if test.expected == "" {
 				require.NoError(t, err)
 				require.NotNil(t, p)
 				require.NotNil(t, p.config)
@@ -214,7 +214,7 @@ func TestDNSProvider_Present(t *testing.T) {
 			p.client.SetBaseURL(server.URL)
 
 			err = p.Present(domain, "", keyAuth)
-			if len(test.expectedError) == 0 {
+			if test.expectedError == "" {
 				assert.NoError(t, err)
 			} else {
 				assert.EqualError(t, err, test.expectedError)
@@ -329,7 +329,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 			p.client.SetBaseURL(server.URL)
 
 			err = p.CleanUp(domain, "", keyAuth)
-			if len(test.expectedError) == 0 {
+			if test.expectedError == "" {
 				assert.NoError(t, err)
 			} else {
 				assert.EqualError(t, err, test.expectedError)

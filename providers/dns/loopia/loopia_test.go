@@ -108,7 +108,7 @@ func TestNewDNSProvider(t *testing.T) {
 
 			p, err := NewDNSProvider()
 
-			if len(test.expectedError) == 0 {
+			if test.expectedError == "" {
 				require.NoError(t, err)
 				require.NotNil(t, p)
 			} else {
@@ -173,7 +173,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			p, err := NewDNSProviderConfig(test.config)
 
-			if len(test.expectedError) == 0 {
+			if test.expectedError == "" {
 				require.NoError(t, err)
 				require.NotNil(t, p)
 				assert.Equal(t, test.expectedTTL, p.config.TTL)

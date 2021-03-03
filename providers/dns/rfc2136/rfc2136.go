@@ -105,8 +105,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		}
 	}
 
-	if len(config.TSIGKey) == 0 && len(config.TSIGSecret) > 0 ||
-		len(config.TSIGKey) > 0 && len(config.TSIGSecret) == 0 {
+	if config.TSIGKey == "" || config.TSIGSecret == "" {
 		config.TSIGKey = ""
 		config.TSIGSecret = ""
 	}

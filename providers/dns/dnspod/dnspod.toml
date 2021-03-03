@@ -19,5 +19,5 @@ lego --email myemail@example.com --dns dnspod --domains my.example.org run
     DNSPOD_HTTP_TIMEOUT = "API request timeout"
 
 [Links]
-  API = "https://www.dnspod.com/docs/index.html"
+  API = "https://docs.dnspod.com/api/"
   GoClient = "https://github.com/nrdcg/dnspod-go"

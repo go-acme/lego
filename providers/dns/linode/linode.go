@@ -84,7 +84,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("linode: the configuration of the DNS provider is nil")
 	}
 
-	if len(config.Token) == 0 {
+	if config.Token == "" {
 		return nil, errors.New("linode: Linode Access Token missing")
 	}
 

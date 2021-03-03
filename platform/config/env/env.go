@@ -66,7 +66,7 @@ func GetWithFallback(groups ...[]string) (map[string]string, error) {
 		}
 
 		value, envVar := getOneWithFallback(names[0], names[1:]...)
-		if len(value) == 0 {
+		if value == "" {
 			missingEnvVars = append(missingEnvVars, envVar)
 			continue
 		}
@@ -122,7 +122,7 @@ func GetOrDefaultSecond(envVar string, defaultValue time.Duration) time.Duration
 // Returns the default if the envvar cannot be find.
 func GetOrDefaultString(envVar, defaultValue string) string {
 	v := GetOrFile(envVar)
-	if len(v) == 0 {
+	if v == "" {
 		return defaultValue
 	}
 

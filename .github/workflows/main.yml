@@ -47,10 +47,10 @@ jobs:
 
       - name: Check and get dependencies
         run: |
+          go mod download
           go mod tidy
           git diff --exit-code go.mod
           git diff --exit-code go.sum
-          go mod download
 
       - name: Documentation validation
         run: make validate-doc

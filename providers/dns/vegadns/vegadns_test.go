@@ -73,7 +73,7 @@ func TestDNSProvider_Present(t *testing.T) {
 			require.NoError(t, err)
 
 			err = provider.Present(testDomain, "token", "keyAuth")
-			if len(test.expectedError) == 0 {
+			if test.expectedError == "" {
 				assert.NoError(t, err)
 			} else {
 				assert.EqualError(t, err, test.expectedError)
@@ -116,7 +116,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 			require.NoError(t, err)
 
 			err = provider.CleanUp(testDomain, "token", "keyAuth")
-			if len(test.expectedError) == 0 {
+			if test.expectedError == "" {
 				assert.NoError(t, err)
 			} else {
 				assert.EqualError(t, err, test.expectedError)

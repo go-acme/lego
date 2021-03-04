@@ -57,7 +57,7 @@ func TestNewDNSProvider(t *testing.T) {
 
 			p, err := NewDNSProvider()
 
-			if len(test.expected) == 0 {
+			if test.expected == "" {
 				require.NoError(t, err)
 				require.NotNil(t, p)
 				require.NotNil(t, p.config)
@@ -105,7 +105,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 
 			p, err := NewDNSProviderConfig(config)
 
-			if len(test.expected) == 0 {
+			if test.expected == "" {
 				require.NoError(t, err)
 				require.NotNil(t, p)
 				require.NotNil(t, p.config)
@@ -128,7 +128,7 @@ func TestLivePresent(t *testing.T) {
 
 	envTest.RestoreEnv()
 
-	if len(os.Getenv(EnvBaseURL)) == 0 {
+	if os.Getenv(EnvBaseURL) == "" {
 		os.Setenv(EnvBaseURL, sandboxURL)
 	}
 
@@ -146,7 +146,7 @@ func TestLiveCleanUp(t *testing.T) {
 
 	envTest.RestoreEnv()
 
-	if len(os.Getenv(EnvBaseURL)) == 0 {
+	if os.Getenv(EnvBaseURL) == "" {
 		os.Setenv(EnvBaseURL, sandboxURL)
 	}
 

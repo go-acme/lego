@@ -59,7 +59,7 @@ func TestClient_AddZoneRecord(t *testing.T) {
 			client.BaseURL = serverURL + "/"
 
 			err := client.AddTXTRecord(test.domain, exampleSubDomain, 123, "TXTrecord")
-			if len(test.err) == 0 {
+			if test.err == "" {
 				require.NoError(t, err)
 			} else {
 				require.Error(t, err)
@@ -116,7 +116,7 @@ func TestClient_RemoveSubdomain(t *testing.T) {
 			client.BaseURL = serverURL + "/"
 
 			err := client.RemoveSubdomain(test.domain, exampleSubDomain)
-			if len(test.err) == 0 {
+			if test.err == "" {
 				require.NoError(t, err)
 			} else {
 				require.Error(t, err)
@@ -173,7 +173,7 @@ func TestClient_RemoveZoneRecord(t *testing.T) {
 			client.BaseURL = serverURL + "/"
 
 			err := client.RemoveTXTRecord(test.domain, exampleSubDomain, 12345678)
-			if len(test.err) == 0 {
+			if test.err == "" {
 				require.NoError(t, err)
 			} else {
 				require.Error(t, err)

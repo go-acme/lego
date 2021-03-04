@@ -223,9 +223,9 @@ func mockServer(t *testing.T, tc *testCase) string {
 	return server.URL
 }
 
-func mockDNSProvider(url string) *DNSProvider {
+func mockDNSProvider(baseURL string) *DNSProvider {
 	config := NewDefaultConfig()
-	config.BaseURL = url
+	config.BaseURL = baseURL
 	config.APIUser = envTestUser
 	config.APIKey = envTestKey
 	config.ClientIP = envTestClientIP

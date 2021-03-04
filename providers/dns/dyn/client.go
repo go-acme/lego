@@ -62,7 +62,7 @@ func (d *DNSProvider) login() error {
 
 // Destroys Dyn Session.
 func (d *DNSProvider) logout() error {
-	if len(d.token) == 0 {
+	if d.token == "" {
 		// nothing to do
 		return nil
 	}

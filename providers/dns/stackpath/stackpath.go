@@ -84,11 +84,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("stackpath: the configuration of the DNS provider is nil")
 	}
 
-	if len(config.ClientID) == 0 || len(config.ClientSecret) == 0 {
+	if config.ClientID == "" || config.ClientSecret == "" {
 		return nil, errors.New("stackpath: credentials missing")
 	}
 
-	if len(config.StackID) == 0 {
+	if config.StackID == "" {
 		return nil, errors.New("stackpath: stack id missing")
 	}
 

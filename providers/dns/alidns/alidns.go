@@ -86,7 +86,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("alicloud: credentials missing")
 	}
 
-	if len(config.RegionID) == 0 {
+	if config.RegionID == "" {
 		config.RegionID = defaultRegionID
 	}
 

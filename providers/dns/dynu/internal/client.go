@@ -122,7 +122,7 @@ func (c Client) GetRootDomain(hostname string) (*DNSHostname, error) {
 }
 
 // doRetry the API is really unstable so we need to retry on EOF.
-func (c Client) doRetry(method, url string, body []byte, data interface{}) error {
+func (c Client) doRetry(method, uri string, body []byte, data interface{}) error {
 	var resp *http.Response
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -133,7 +133,7 @@ func (c Client) doRetry(method, url string, body []byte, data interface{}) error
 			reqBody = bytes.NewReader(body)
 		}
 
-		req, err := http.NewRequest(method, url, reqBody)
+		req, err := http.NewRequest(method, uri, reqBody)
 		if err != nil {
 			return err
 		}

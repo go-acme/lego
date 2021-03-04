@@ -236,7 +236,7 @@ func splitDomain(domain string, zones []string) (string, string, error) {
 		}
 	}
 
-	if len(owner) == 0 {
+	if owner == "" {
 		return "", "", fmt.Errorf("%s not found", domain)
 	}
 

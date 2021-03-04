@@ -265,8 +265,8 @@ func (c *Client) GetUpdateStatus(zoneName string) (*SyncProgress, error) {
 	return &SyncProgress{Complete: updatedCount == len(records), Updated: updatedCount, Total: len(records)}, nil
 }
 
-func (c *Client) doRequest(method string, url *url.URL) (json.RawMessage, error) {
-	req, err := c.buildRequest(method, url)
+func (c *Client) doRequest(method string, uri *url.URL) (json.RawMessage, error) {
+	req, err := c.buildRequest(method, uri)
 	if err != nil {
 		return nil, err
 	}
@@ -290,8 +290,8 @@ func (c *Client) doRequest(method string, url *url.URL) (json.RawMessage, error)
 	return content, nil
 }
 
-func (c *Client) buildRequest(method string, url *url.URL) (*http.Request, error) {
-	q := url.Query()
+func (c *Client) buildRequest(method string, uri *url.URL) (*http.Request, error) {
+	q := uri.Query()
 
 	if c.subAuthID != "" {
 		q.Set("sub-auth-id", c.subAuthID)
@@ -301,9 +301,9 @@ func (c *Client) buildRequest(method string, url *url.URL) (*http.Request, error
 
 	q.Set("auth-password", c.authPassword)
 
-	url.RawQuery = q.Encode()
+	uri.RawQuery = q.Encode()
 
-	req, err := http.NewRequest(method, url.String(), nil)
+	req, err := http.NewRequest(method, uri.String(), nil)
 	if err != nil {
 		return nil, fmt.Errorf("invalid request: %w", err)
 	}

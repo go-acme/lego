@@ -6,7 +6,7 @@ import (
 )
 
 func Before(ctx *cli.Context) error {
-	if len(ctx.GlobalString("path")) == 0 {
+	if ctx.GlobalString("path") == "" {
 		log.Fatal("Could not determine current working directory. Please pass --path.")
 	}
 
@@ -15,7 +15,7 @@ func Before(ctx *cli.Context) error {
 		log.Fatalf("Could not check/create path: %v", err)
 	}
 
-	if len(ctx.GlobalString("server")) == 0 {
+	if ctx.GlobalString("server") == "" {
 		log.Fatal("Could not determine current working server. Please pass --server.")
 	}
 

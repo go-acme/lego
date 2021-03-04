@@ -82,7 +82,7 @@ func getKeyType(ctx *cli.Context) certcrypto.KeyType {
 
 func getEmail(ctx *cli.Context) string {
 	email := ctx.GlobalString("email")
-	if len(email) == 0 {
+	if email == "" {
 		log.Fatal("You have to pass an account (email address) to the program using --email or -m")
 	}
 	return email

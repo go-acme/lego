@@ -81,7 +81,7 @@ func TestNewDNSProvider(t *testing.T) {
 
 			p, err := NewDNSProvider()
 
-			if len(test.expected) == 0 {
+			if test.expected == "" {
 				require.NoError(t, err)
 				assert.NotNil(t, p)
 			} else {

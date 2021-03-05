@@ -66,7 +66,7 @@ func (d *DNSProvider) getHostedZone(fqdn string) (*hostedZone, error) {
 		return nil, err
 	}
 
-	p := path.Join("/servers/localhost/zones/", dns.Fqdn(authZone))
+	p := path.Join("/servers", d.config.ServerName, "/zones/", dns.Fqdn(authZone))
 
 	result, err := d.sendRequest(http.MethodGet, p, nil)
 	if err != nil {

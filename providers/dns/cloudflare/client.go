@@ -1,6 +1,7 @@
 package cloudflare
 
 import (
+	"context"
 	"sync"
 
 	"github.com/cloudflare/cloudflare-go"
@@ -58,16 +59,16 @@ func newClient(config *Config) (*metaClient, error) {
 	}, nil
 }
 
-func (m *metaClient) CreateDNSRecord(zoneID string, rr cloudflare.DNSRecord) (*cloudflare.DNSRecordResponse, error) {
-	return m.clientEdit.CreateDNSRecord(zoneID, rr)
+func (m *metaClient) CreateDNSRecord(ctx context.Context, zoneID string, rr cloudflare.DNSRecord) (*cloudflare.DNSRecordResponse, error) {
+	return m.clientEdit.CreateDNSRecord(ctx, zoneID, rr)
 }
 
-func (m *metaClient) DNSRecords(zoneID string, rr cloudflare.DNSRecord) ([]cloudflare.DNSRecord, error) {
-	return m.clientEdit.DNSRecords(zoneID, rr)
+func (m *metaClient) DNSRecords(ctx context.Context, zoneID string, rr cloudflare.DNSRecord) ([]cloudflare.DNSRecord, error) {
+	return m.clientEdit.DNSRecords(ctx, zoneID, rr)
 }
 
-func (m *metaClient) DeleteDNSRecord(zoneID, recordID string) error {
-	return m.clientEdit.DeleteDNSRecord(zoneID, recordID)
+func (m *metaClient) DeleteDNSRecord(ctx context.Context, zoneID, recordID string) error {
+	return m.clientEdit.DeleteDNSRecord(ctx, zoneID, recordID)
 }
 
 func (m *metaClient) ZoneIDByName(fdqn string) (string, error) {

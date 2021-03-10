@@ -1,7 +1,6 @@
 package transip
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -93,9 +92,7 @@ func TestNewDNSProvider(t *testing.T) {
 		})
 
 		_, err := NewDNSProvider()
-		if !errors.Is(err, os.ErrNotExist) {
-			t.Fatalf("Expected an os.ErrNotExists error, actual: %v", err)
-		}
+		assert.ErrorIs(t, err, os.ErrNotExist)
 	})
 }
 
@@ -154,10 +151,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		config.PrivateKeyPath = "./fixtures/non/existent/private.key"
 
 		_, err := NewDNSProviderConfig(config)
-
-		if !errors.Is(err, os.ErrNotExist) {
-			t.Fatalf("Expected an os.ErrNotExists error, actual: %v", err)
-		}
+		assert.ErrorIs(t, err, os.ErrNotExist)
 	})
 }
 

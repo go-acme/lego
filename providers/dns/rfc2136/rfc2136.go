@@ -45,7 +45,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TSIGAlgorithm:      env.GetOrDefaultString(EnvTSIGAlgorithm, dns.HmacMD5),
+		TSIGAlgorithm:      env.GetOrDefaultString(EnvTSIGAlgorithm, dns.HmacSHA1),
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, env.GetOrDefaultSecond("RFC2136_TIMEOUT", 60*time.Second)),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
@@ -93,7 +93,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.TSIGAlgorithm == "" {
-		config.TSIGAlgorithm = dns.HmacMD5
+		config.TSIGAlgorithm = dns.HmacSHA1
 	}
 
 	// Append the default DNS port if none is specified.

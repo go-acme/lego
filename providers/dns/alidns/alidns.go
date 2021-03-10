@@ -156,7 +156,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 func (d *DNSProvider) getHostedZone(domain string) (string, error) {
 	request := alidns.CreateDescribeDomainsRequest()
 
-	var domains []alidns.Domain
+	var domains []alidns.DomainInDescribeDomains
 	startPage := 1
 
 	for {
@@ -181,7 +181,7 @@ func (d *DNSProvider) getHostedZone(domain string) (string, error) {
 		return "", err
 	}
 
-	var hostedZone alidns.Domain
+	var hostedZone alidns.DomainInDescribeDomains
 	for _, zone := range domains {
 		if zone.DomainName == dns01.UnFqdn(authZone) || zone.PunyCode == dns01.UnFqdn(authZone) {
 			hostedZone = zone

@@ -2,6 +2,7 @@
 package cloudflare
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -140,7 +141,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		TTL:     d.config.TTL,
 	}
 
-	response, err := d.client.CreateDNSRecord(zoneID, dnsRecord)
+	response, err := d.client.CreateDNSRecord(context.Background(), zoneID, dnsRecord)
 	if err != nil {
 		return fmt.Errorf("cloudflare: failed to create TXT record: %w", err)
 	}
@@ -180,7 +181,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("cloudflare: unknown record ID for '%s'", fqdn)
 	}
 
-	err = d.client.DeleteDNSRecord(zoneID, recordID)
+	err = d.client.DeleteDNSRecord(context.Background(), zoneID, recordID)
 	if err != nil {
 		log.Printf("cloudflare: failed to delete TXT record: %w", err)
 	}

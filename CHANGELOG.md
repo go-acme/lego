@@ -1,5 +1,29 @@
 # Changelog
 
+## [v4.3.0] - 2021-03-10
+
+### Added:
+
+- **[dnsprovider]** Add DNS provider for Njalla
+- **[dnsprovider]** Add DNS provider for Domeneshop
+- **[dnsprovider]** Add DNS provider for Hurricane Electric
+- **[dnsprovider]** designate: support for Openstack Application Credentials
+- **[dnsprovider]** edgedns: support for .edgerc file
+
+### Changed:
+
+- **[dnsprovider]** infomaniak: Make error message more meaningful
+- **[dnsprovider]** cloudns: Improve reliability
+- **[dnsprovider]** rfc2163: Removed support for MD5 algorithm. The default algorithm is now SHA1.
+
+### Fixed:
+
+- **[dnsprovider]** desec: fix error with default TTL
+- **[dnsprovider]** mythicbeasts: implement `ProviderTimeout`
+- **[dnsprovider]** dnspod: improve search accuracy when a domain have more than 100 records
+- **[lib]** Increase HTTP client timeouts
+- **[lib]** preferred chain only match root name
+
 ## [v4.2.0] - 2021-01-24
 
 ### Added:

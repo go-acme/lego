@@ -2,6 +2,8 @@ module github.com/go-acme/lego/v4
 
 go 1.15
 
+// github.com/exoscale/egoscale v1.19.0 => It is an error, please don't use it.
+// github.com/linode/linodego v1.0.0 => It is an error, please don't use it.
 require (
 	cloud.google.com/go v0.54.0
 	github.com/Azure/azure-sdk-for-go v32.4.0+incompatible
@@ -18,7 +20,7 @@ require (
 	github.com/cloudflare/cloudflare-go v0.14.0
 	github.com/cpu/goacmedns v0.1.1
 	github.com/dnsimple/dnsimple-go v0.63.0
-	github.com/exoscale/egoscale v1.19.0
+	github.com/exoscale/egoscale v0.46.0
 	github.com/google/go-querystring v1.0.0
 	github.com/gophercloud/gophercloud v0.16.0
 	github.com/gophercloud/utils v0.0.0-20210216074907-f6de111f2eae

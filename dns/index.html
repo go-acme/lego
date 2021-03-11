@@ -1,0 +1,6212 @@
+<!DOCTYPE html>
+<html lang="en" class="js csstransforms3d">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="Hugo 0.54.0" />
+    <meta name="description" content="">
+<meta name="author" content="Lego Team">
+
+    <link rel="icon" href="/lego/images/favicon.png" type="image/png">
+
+    <title>DNS Providers :: Let’s Encrypt client and ACME library written in Go.</title>
+
+    
+    <link href="/lego/css/nucleus.css?1615506955" rel="stylesheet">
+    <link href="/lego/css/fontawesome-all.min.css?1615506955" rel="stylesheet">
+    <link href="/lego/css/hybrid.css?1615506955" rel="stylesheet">
+    <link href="/lego/css/featherlight.min.css?1615506955" rel="stylesheet">
+    <link href="/lego/css/perfect-scrollbar.min.css?1615506955" rel="stylesheet">
+    <link href="/lego/css/auto-complete.css?1615506955" rel="stylesheet">
+    <link href="/lego/css/atom-one-dark-reasonable.css?1615506955" rel="stylesheet">
+    <link href="/lego/css/theme.css?1615506955" rel="stylesheet">
+    <link href="/lego/css/hugo-theme.css?1615506955" rel="stylesheet">
+    
+    <link href="/lego/css/theme-blue.css?1615506955" rel="stylesheet">
+    
+    
+
+    <script src="/lego/js/jquery-3.3.1.min.js?1615506955"></script>
+
+    <style>
+      :root #header + #content > #left > #rlblock_left{
+          display:none !important;
+      }
+      
+    </style>
+    
+  </head>
+  <body class="" data-url="/lego/dns/">
+    <nav id="sidebar" class="showVisitedLinks">
+
+
+
+  <div id="header-wrapper">
+    <div id="header">
+      <a id="logo" href="/lego"><img src="/lego/images/logo-white.png"></a>
+
+    </div>
+    
+        <div class="searchbox">
+    <label for="search-by"><i class="fas fa-search"></i></label>
+    <input data-search-input id="search-by" type="search" placeholder="Search...">
+    <span data-search-clear=""><i class="fas fa-times"></i></span>
+</div>
+
+<script type="text/javascript" src="/lego/js/lunr.min.js?1615506955"></script>
+<script type="text/javascript" src="/lego/js/auto-complete.js?1615506955"></script>
+<script type="text/javascript">
+    
+        var baseurl = "https:\/\/go-acme.github.io\/lego\/";
+    
+</script>
+<script type="text/javascript" src="/lego/js/search.js?1615506955"></script>
+
+    
+  </div>
+  
+
+    <div class="highlightable">
+    <ul class="topics">
+
+        
+          
+          
+
+
+
+
+ 
+  
+    
+    <li data-nav-id="/lego/installation/" title="Installation" class="dd-item
+        
+        
+        
+        ">
+      <a href="/lego/installation/">
+          Installation
+          
+            <i class="fas fa-check read-icon"></i>
+          
+      </a>
+      
+      
+    </li>
+  
+ 
+
+          
+          
+
+
+
+
+ 
+  
+    
+    <li data-nav-id="/lego/usage/" title="Usage" class="dd-item
+        
+        
+        
+        ">
+      <a href="/lego/usage/">
+          Usage
+          
+            <i class="fas fa-check read-icon"></i>
+          
+      </a>
+      
+      
+        <ul>
+          
+          
+            
+          
+          
+
+        
+          
+            
+            
+
+
+
+
+ 
+  
+    
+    <li data-nav-id="/lego/usage/cli/" title="CLI" class="dd-item
+        
+        
+        
+        ">
+      <a href="/lego/usage/cli/">
+          CLI
+          
+            <i class="fas fa-check read-icon"></i>
+          
+      </a>
+      
+      
+        <ul>
+          
+          
+          
+
+        
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/usage/cli/examples/" title="Examples" class="dd-item ">
+        <a href="/lego/usage/cli/examples/">
+        Examples
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+        
+        </ul>
+      
+    </li>
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+    <li data-nav-id="/lego/usage/library/" title="Library" class="dd-item
+        
+        
+        
+        ">
+      <a href="/lego/usage/library/">
+          Library
+          
+            <i class="fas fa-check read-icon"></i>
+          
+      </a>
+      
+      
+        <ul>
+          
+          
+          
+
+        
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/usage/library/writing-a-challenge-solver/" title="Writing a Challenge Solver" class="dd-item ">
+        <a href="/lego/usage/library/writing-a-challenge-solver/">
+        Writing a Challenge Solver
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+        
+        </ul>
+      
+    </li>
+  
+ 
+
+            
+          
+        
+        </ul>
+      
+    </li>
+  
+ 
+
+          
+          
+
+
+
+
+ 
+  
+    
+    <li data-nav-id="/lego/dns/" title="DNS Providers" class="dd-item
+        parent
+        active
+        
+        ">
+      <a href="/lego/dns/">
+          DNS Providers
+          
+            <i class="fas fa-check read-icon"></i>
+          
+      </a>
+      
+      
+        <ul>
+          
+          
+          
+
+        
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/edgedns/" title="Akamai EdgeDNS" class="dd-item ">
+        <a href="/lego/dns/edgedns/">
+        Akamai EdgeDNS
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/alidns/" title="Alibaba Cloud DNS" class="dd-item ">
+        <a href="/lego/dns/alidns/">
+        Alibaba Cloud DNS
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/lightsail/" title="Amazon Lightsail" class="dd-item ">
+        <a href="/lego/dns/lightsail/">
+        Amazon Lightsail
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/route53/" title="Amazon Route 53" class="dd-item ">
+        <a href="/lego/dns/route53/">
+        Amazon Route 53
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/arvancloud/" title="ArvanCloud" class="dd-item ">
+        <a href="/lego/dns/arvancloud/">
+        ArvanCloud
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/auroradns/" title="Aurora DNS" class="dd-item ">
+        <a href="/lego/dns/auroradns/">
+        Aurora DNS
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/autodns/" title="Autodns" class="dd-item ">
+        <a href="/lego/dns/autodns/">
+        Autodns
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/azure/" title="Azure" class="dd-item ">
+        <a href="/lego/dns/azure/">
+        Azure
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/bindman/" title="Bindman" class="dd-item ">
+        <a href="/lego/dns/bindman/">
+        Bindman
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/bluecat/" title="Bluecat" class="dd-item ">
+        <a href="/lego/dns/bluecat/">
+        Bluecat
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/checkdomain/" title="Checkdomain" class="dd-item ">
+        <a href="/lego/dns/checkdomain/">
+        Checkdomain
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/cloudns/" title="ClouDNS" class="dd-item ">
+        <a href="/lego/dns/cloudns/">
+        ClouDNS
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/clouddns/" title="CloudDNS" class="dd-item ">
+        <a href="/lego/dns/clouddns/">
+        CloudDNS
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/cloudxns/" title="CloudXNS" class="dd-item ">
+        <a href="/lego/dns/cloudxns/">
+        CloudXNS
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/cloudflare/" title="Cloudflare" class="dd-item ">
+        <a href="/lego/dns/cloudflare/">
+        Cloudflare
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/conoha/" title="ConoHa" class="dd-item ">
+        <a href="/lego/dns/conoha/">
+        ConoHa
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/constellix/" title="Constellix" class="dd-item ">
+        <a href="/lego/dns/constellix/">
+        Constellix
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/dnsmadeeasy/" title="DNS Made Easy" class="dd-item ">
+        <a href="/lego/dns/dnsmadeeasy/">
+        DNS Made Easy
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/dnspod/" title="DNSPod" class="dd-item ">
+        <a href="/lego/dns/dnspod/">
+        DNSPod
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/dnsimple/" title="DNSimple" class="dd-item ">
+        <a href="/lego/dns/dnsimple/">
+        DNSimple
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/designate/" title="Designate DNSaaS for Openstack" class="dd-item ">
+        <a href="/lego/dns/designate/">
+        Designate DNSaaS for Openstack
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/digitalocean/" title="Digital Ocean" class="dd-item ">
+        <a href="/lego/dns/digitalocean/">
+        Digital Ocean
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/dode/" title="Domain Offensive (do.de)" class="dd-item ">
+        <a href="/lego/dns/dode/">
+        Domain Offensive (do.de)
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/domeneshop/" title="Domeneshop" class="dd-item ">
+        <a href="/lego/dns/domeneshop/">
+        Domeneshop
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/dreamhost/" title="DreamHost" class="dd-item ">
+        <a href="/lego/dns/dreamhost/">
+        DreamHost
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/duckdns/" title="Duck DNS" class="dd-item ">
+        <a href="/lego/dns/duckdns/">
+        Duck DNS
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/dyn/" title="Dyn" class="dd-item ">
+        <a href="/lego/dns/dyn/">
+        Dyn
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/dynu/" title="Dynu" class="dd-item ">
+        <a href="/lego/dns/dynu/">
+        Dynu
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/easydns/" title="EasyDNS" class="dd-item ">
+        <a href="/lego/dns/easydns/">
+        EasyDNS
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/exoscale/" title="Exoscale" class="dd-item ">
+        <a href="/lego/dns/exoscale/">
+        Exoscale
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/exec/" title="External program" class="dd-item ">
+        <a href="/lego/dns/exec/">
+        External program
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/gandi/" title="Gandi" class="dd-item ">
+        <a href="/lego/dns/gandi/">
+        Gandi
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/gandiv5/" title="Gandi Live DNS (v5)" class="dd-item ">
+        <a href="/lego/dns/gandiv5/">
+        Gandi Live DNS (v5)
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/glesys/" title="Glesys" class="dd-item ">
+        <a href="/lego/dns/glesys/">
+        Glesys
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/godaddy/" title="Go Daddy" class="dd-item ">
+        <a href="/lego/dns/godaddy/">
+        Go Daddy
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/gcloud/" title="Google Cloud" class="dd-item ">
+        <a href="/lego/dns/gcloud/">
+        Google Cloud
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/httpreq/" title="HTTP request" class="dd-item ">
+        <a href="/lego/dns/httpreq/">
+        HTTP request
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/hetzner/" title="Hetzner" class="dd-item ">
+        <a href="/lego/dns/hetzner/">
+        Hetzner
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/hostingde/" title="Hosting.de" class="dd-item ">
+        <a href="/lego/dns/hostingde/">
+        Hosting.de
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/hurricane/" title="Hurricane Electric DNS" class="dd-item ">
+        <a href="/lego/dns/hurricane/">
+        Hurricane Electric DNS
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/hyperone/" title="HyperOne" class="dd-item ">
+        <a href="/lego/dns/hyperone/">
+        HyperOne
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/inwx/" title="INWX" class="dd-item ">
+        <a href="/lego/dns/inwx/">
+        INWX
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/infomaniak/" title="Infomaniak" class="dd-item ">
+        <a href="/lego/dns/infomaniak/">
+        Infomaniak
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/iij/" title="Internet Initiative Japan" class="dd-item ">
+        <a href="/lego/dns/iij/">
+        Internet Initiative Japan
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/ionos/" title="Ionos" class="dd-item ">
+        <a href="/lego/dns/ionos/">
+        Ionos
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/joker/" title="Joker" class="dd-item ">
+        <a href="/lego/dns/joker/">
+        Joker
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/acme-dns/" title="Joohoi&#39;s ACME-DNS" class="dd-item ">
+        <a href="/lego/dns/acme-dns/">
+        Joohoi&#39;s ACME-DNS
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/linode/" title="Linode (v4)" class="dd-item ">
+        <a href="/lego/dns/linode/">
+        Linode (v4)
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/liquidweb/" title="Liquid Web" class="dd-item ">
+        <a href="/lego/dns/liquidweb/">
+        Liquid Web
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/loopia/" title="Loopia" class="dd-item ">
+        <a href="/lego/dns/loopia/">
+        Loopia
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/luadns/" title="LuaDNS" class="dd-item ">
+        <a href="/lego/dns/luadns/">
+        LuaDNS
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/manual/" title="Manual" class="dd-item ">
+        <a href="/lego/dns/manual/">
+        Manual
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/mydnsjp/" title="MyDNS.jp" class="dd-item ">
+        <a href="/lego/dns/mydnsjp/">
+        MyDNS.jp
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/mythicbeasts/" title="MythicBeasts" class="dd-item ">
+        <a href="/lego/dns/mythicbeasts/">
+        MythicBeasts
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/nifcloud/" title="NIFCloud" class="dd-item ">
+        <a href="/lego/dns/nifcloud/">
+        NIFCloud
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/ns1/" title="NS1" class="dd-item ">
+        <a href="/lego/dns/ns1/">
+        NS1
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/namedotcom/" title="Name.com" class="dd-item ">
+        <a href="/lego/dns/namedotcom/">
+        Name.com
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/namecheap/" title="Namecheap" class="dd-item ">
+        <a href="/lego/dns/namecheap/">
+        Namecheap
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/namesilo/" title="Namesilo" class="dd-item ">
+        <a href="/lego/dns/namesilo/">
+        Namesilo
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/netcup/" title="Netcup" class="dd-item ">
+        <a href="/lego/dns/netcup/">
+        Netcup
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/netlify/" title="Netlify" class="dd-item ">
+        <a href="/lego/dns/netlify/">
+        Netlify
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/njalla/" title="Njalla" class="dd-item ">
+        <a href="/lego/dns/njalla/">
+        Njalla
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/ovh/" title="OVH" class="dd-item ">
+        <a href="/lego/dns/ovh/">
+        OVH
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/otc/" title="Open Telekom Cloud" class="dd-item ">
+        <a href="/lego/dns/otc/">
+        Open Telekom Cloud
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/oraclecloud/" title="Oracle Cloud" class="dd-item ">
+        <a href="/lego/dns/oraclecloud/">
+        Oracle Cloud
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/pdns/" title="PowerDNS" class="dd-item ">
+        <a href="/lego/dns/pdns/">
+        PowerDNS
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/rfc2136/" title="RFC2136" class="dd-item ">
+        <a href="/lego/dns/rfc2136/">
+        RFC2136
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/rackspace/" title="Rackspace" class="dd-item ">
+        <a href="/lego/dns/rackspace/">
+        Rackspace
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/rimuhosting/" title="RimuHosting" class="dd-item ">
+        <a href="/lego/dns/rimuhosting/">
+        RimuHosting
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/sakuracloud/" title="Sakura Cloud" class="dd-item ">
+        <a href="/lego/dns/sakuracloud/">
+        Sakura Cloud
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/scaleway/" title="Scaleway" class="dd-item ">
+        <a href="/lego/dns/scaleway/">
+        Scaleway
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/selectel/" title="Selectel" class="dd-item ">
+        <a href="/lego/dns/selectel/">
+        Selectel
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/servercow/" title="Servercow" class="dd-item ">
+        <a href="/lego/dns/servercow/">
+        Servercow
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/stackpath/" title="Stackpath" class="dd-item ">
+        <a href="/lego/dns/stackpath/">
+        Stackpath
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/transip/" title="TransIP" class="dd-item ">
+        <a href="/lego/dns/transip/">
+        TransIP
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/vegadns/" title="VegaDNS" class="dd-item ">
+        <a href="/lego/dns/vegadns/">
+        VegaDNS
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/versio/" title="Versio.[nl|eu|uk]" class="dd-item ">
+        <a href="/lego/dns/versio/">
+        Versio.[nl|eu|uk]
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/vscale/" title="Vscale" class="dd-item ">
+        <a href="/lego/dns/vscale/">
+        Vscale
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/vultr/" title="Vultr" class="dd-item ">
+        <a href="/lego/dns/vultr/">
+        Vultr
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/yandex/" title="Yandex" class="dd-item ">
+        <a href="/lego/dns/yandex/">
+        Yandex
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/zoneee/" title="Zone.ee" class="dd-item ">
+        <a href="/lego/dns/zoneee/">
+        Zone.ee
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/zonomi/" title="Zonomi" class="dd-item ">
+        <a href="/lego/dns/zonomi/">
+        Zonomi
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/desec/" title="deSEC.io" class="dd-item ">
+        <a href="/lego/dns/desec/">
+        deSEC.io
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/regru/" title="reg.ru" class="dd-item ">
+        <a href="/lego/dns/regru/">
+        reg.ru
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+        
+        </ul>
+      
+    </li>
+  
+ 
+
+          
+        
+    </ul>
+
+    
+    
+      <section id="shortcuts">
+        <h3>More</h3>
+        <ul>
+          
+              <li>
+                  <a class="padding" href="https://github.com/go-acme/lego"><i class='fab fa-fw fa-github'></i> GitHub repo</a>
+              </li>
+          
+              <li>
+                  <a class="padding" href="https://github.com/go-acme/lego/issues"><i class='fas fa-fw fa-bug'></i> Issues</a>
+              </li>
+          
+        </ul>
+      </section>
+    
+
+    
+    <section id="prefooter">
+      <hr/>
+      <ul>
+      
+
+      
+        <li><a class="padding" href="#" data-clear-history-toggle=""><i class="fas fa-history fa-fw"></i> Clear History</a></li>
+      
+      </ul>
+    </section>
+    
+    <section id="footer">
+      <p>Built with <a href="https://github.com/matcornic/hugo-theme-learn"><i class="fas fa-heart"></i></a> from <a href="https://getgrav.org">Grav</a> and <a href="https://gohugo.io/">Hugo</a></p>
+
+    </section>
+  </div>
+</nav>
+
+
+
+
+        <section id="body">
+        <div id="overlay"></div>
+        <div class="padding highlightable">
+              
+              <div>
+                <div id="top-bar">
+                
+                
+                <div id="breadcrumbs" itemscope="" itemtype="http://data-vocabulary.org/Breadcrumb">
+                    <span id="sidebar-toggle-span">
+                        <a href="#" id="sidebar-toggle" data-sidebar-toggle="">
+                          <i class="fas fa-bars"></i>
+                        </a>
+                    </span>
+                  
+                  <span id="toc-menu"><i class="fas fa-list-alt"></i></span>
+                  
+                  <span class="links">
+                 
+                 
+                    
+          
+          
+            
+            
+          
+          
+            <a href='/lego/'>Welcome</a> > DNS Providers
+          
+        
+          
+        
+                 
+                  </span>
+                </div>
+                
+                    <div class="progress">
+    <div class="wrapper">
+<nav id="TableOfContents">
+<ul>
+<li>
+<ul>
+<li><a href="#configuration-and-credentials">Configuration and Credentials</a>
+<ul>
+<li><a href="#environment-variables-value">Environment Variables: Value</a></li>
+<li><a href="#environment-variables-file">Environment Variables: File</a></li>
+</ul></li>
+<li><a href="#experimental-features">Experimental Features</a></li>
+<li><a href="#dns-providers">DNS Providers</a></li>
+</ul></li>
+</ul>
+</nav>
+    </div>
+</div>
+
+                
+              </div>
+            </div>
+            
+        <div id="head-tags">
+        
+        </div>
+        
+        <div id="body-inner">
+          
+            <h1>
+              
+              DNS Providers
+            </h1>
+          
+
+        
+
+
+
+	
+
+<h2 id="configuration-and-credentials">Configuration and Credentials</h2>
+
+<p>Credentials and DNS configuration for DNS providers must be passed through environment variables.</p>
+
+<h3 id="environment-variables-value">Environment Variables: Value</h3>
+
+<p>The environment variables can reference a value.</p>
+
+<p>Here is an example bash command using the Cloudflare DNS provider:</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">$ <span class="nv">CLOUDFLARE_EMAIL</span><span class="o">=</span>foo@bar.com <span class="se">\
+</span><span class="se"></span><span class="nv">CLOUDFLARE_API_KEY</span><span class="o">=</span>b9841238feb177a84330febba8a83208921177bffe733 <span class="se">\
+</span><span class="se"></span>lego --dns cloudflare --domains www.example.com --email me@bar.com run</code></pre></div>
+<h3 id="environment-variables-file">Environment Variables: File</h3>
+
+<p>The environment variables can reference a path to file.</p>
+
+<p>In this case the name of environment variable must be suffixed by <code>_FILE</code>.</p>
+
+
+<div class="notices note" ><p>The file must contain only the value.</p>
+</div>
+
+
+<p>Here is an example bash command using the CloudFlare DNS provider:</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">$ cat /the/path/to/my/key
+b9841238feb177a84330febba8a83208921177bffe733
+
+$ cat /the/path/to/my/email
+foo@bar.com
+
+$ <span class="nv">CLOUDFLARE_EMAIL_FILE</span><span class="o">=</span>/the/path/to/my/email <span class="se">\
+</span><span class="se"></span><span class="nv">CLOUDFLARE_API_KEY_FILE</span><span class="o">=</span>/the/path/to/my/key <span class="se">\
+</span><span class="se"></span>lego --dns cloudflare --domains www.example.com --email me@bar.com run</code></pre></div>
+<h2 id="experimental-features">Experimental Features</h2>
+
+<p>To resolve CNAME when creating dns-01 challenge:
+set <code>LEGO_EXPERIMENTAL_CNAME_SUPPORT</code> to <code>true</code>.</p>
+
+<h2 id="dns-providers">DNS Providers</h2>
+
+
+
+
+
+
+
+
+<ul class="children children-h2">
+	
+
+	
+		
+	
+
+	
+
+	
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/edgedns/" >Akamai EdgeDNS</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/edgedns/edgedns.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v3.9.0</p>
+
+<p>Akamai edgedns supersedes FastDNS; implementing a DNS provider for solving the DNS-01 challenge using Akamai EdgeDNS</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/alidns/" >Alibaba Cloud DNS</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/alidns/alidns.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v1.1.0</p>
+
+<p>Configuration for <a href="https://www.alibabacloud.com/product/dns">Alibaba Cloud DNS</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/lightsail/" >Amazon Lightsail</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/lightsail/lightsail.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v0.5.0</p>
+
+<p>Configuration for <a href="https://aws.amazon.com/lightsail/">Amazon Lightsail</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/route53/" >Amazon Route 53</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/route53/route53.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v0.3.0</p>
+
+<p>Configuration for <a href="https://aws.amazon.com/route53/">Amazon Route 53</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/arvancloud/" >ArvanCloud</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/arvancloud/arvancloud.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v3.8.0</p>
+
+<p>Configuration for <a href="https://arvancloud.com">ArvanCloud</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/auroradns/" >Aurora DNS</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/auroradns/auroradns.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v0.4.0</p>
+
+<p>Configuration for <a href="https://www.pcextreme.com/aurora/dns">Aurora DNS</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/autodns/" >Autodns</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/autodns/autodns.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v3.2.0</p>
+
+<p>Configuration for <a href="https://www.internetx.com/domains/autodns/">Autodns</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/azure/" >Azure</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/azure/azure.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v0.4.0</p>
+
+<p>Configuration for <a href="https://azure.microsoft.com/services/dns/">Azure</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/bindman/" >Bindman</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/bindman/bindman.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v2.6.0</p>
+
+<p>Configuration for <a href="https://github.com/labbsr0x/bindman-dns-webhook">Bindman</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/bluecat/" >Bluecat</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/bluecat/bluecat.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v0.5.0</p>
+
+<p>Configuration for <a href="https://www.bluecatnetworks.com">Bluecat</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/checkdomain/" >Checkdomain</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/checkdomain/checkdomain.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v3.3.0</p>
+
+<p>Configuration for <a href="https://checkdomain.de/">Checkdomain</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/cloudns/" >ClouDNS</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/cloudns/cloudns.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v2.3.0</p>
+
+<p>Configuration for <a href="https://www.cloudns.net">ClouDNS</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/clouddns/" >CloudDNS</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/clouddns/clouddns.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v3.6.0</p>
+
+<p>Configuration for <a href="https://vshosting.eu/">CloudDNS</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/cloudxns/" >CloudXNS</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/cloudxns/cloudxns.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v0.5.0</p>
+
+<p>Configuration for <a href="https://www.cloudxns.net/">CloudXNS</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/cloudflare/" >Cloudflare</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/cloudflare/cloudflare.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v0.3.0</p>
+
+<p>Configuration for <a href="https://www.cloudflare.com/dns/">Cloudflare</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/conoha/" >ConoHa</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/conoha/conoha.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v1.2.0</p>
+
+<p>Configuration for <a href="https://www.conoha.jp/">ConoHa</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/constellix/" >Constellix</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/constellix/constellix.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v3.4.0</p>
+
+<p>Configuration for <a href="https://constellix.com">Constellix</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/dnsmadeeasy/" >DNS Made Easy</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/dnsmadeeasy/dnsmadeeasy.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v0.4.0</p>
+
+<p>Configuration for <a href="https://dnsmadeeasy.com/">DNS Made Easy</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/dnspod/" >DNSPod</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/dnspod/dnspod.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v0.4.0</p>
+
+<p>Configuration for <a href="http://www.dnspod.com/">DNSPod</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/dnsimple/" >DNSimple</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/dnsimple/dnsimple.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v0.3.0</p>
+
+<p>Configuration for <a href="https://dnsimple.com/">DNSimple</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/designate/" >Designate DNSaaS for Openstack</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/designate/designate.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v2.2.0</p>
+
+<p>Configuration for <a href="https://docs.openstack.org/designate/latest/">Designate DNSaaS for Openstack</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/digitalocean/" >Digital Ocean</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/digitalocean/digitalocean.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v0.3.0</p>
+
+<p>Configuration for <a href="https://www.digitalocean.com/docs/networking/dns/">Digital Ocean</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/dode/" >Domain Offensive (do.de)</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/dode/dode.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v2.4.0</p>
+
+<p>Configuration for <a href="https://www.do.de/">Domain Offensive (do.de)</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/domeneshop/" >Domeneshop</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/domeneshop/domeneshop.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v4.3.0</p>
+
+<p>Configuration for <a href="https://domene.shop">Domeneshop</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/dreamhost/" >DreamHost</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/dreamhost/dreamhost.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v1.1.0</p>
+
+<p>Configuration for <a href="https://www.dreamhost.com">DreamHost</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/duckdns/" >Duck DNS</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/duckdns/duckdns.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v0.5.0</p>
+
+<p>Configuration for <a href="https://www.duckdns.org/">Duck DNS</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/dyn/" >Dyn</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/dyn/dyn.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v0.3.0</p>
+
+<p>Configuration for <a href="https://dyn.com/">Dyn</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/dynu/" >Dynu</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/dynu/dynu.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v3.5.0</p>
+
+<p>Configuration for <a href="https://www.dynu.com/">Dynu</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/easydns/" >EasyDNS</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/easydns/easydns.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v2.6.0</p>
+
+<p>Configuration for <a href="https://easydns.com/">EasyDNS</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/exoscale/" >Exoscale</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/exoscale/exoscale.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v0.4.0</p>
+
+<p>Configuration for <a href="https://www.exoscale.com/">Exoscale</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/exec/" >External program</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/exec/exec.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v0.5.0
+Solving the DNS-01 challenge using an external program.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/gandi/" >Gandi</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/gandi/gandi.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v0.3.0</p>
+
+<p>Configuration for <a href="https://www.gandi.net">Gandi</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/gandiv5/" >Gandi Live DNS (v5)</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/gandiv5/gandiv5.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v0.5.0</p>
+
+<p>Configuration for <a href="https://www.gandi.net">Gandi Live DNS (v5)</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/glesys/" >Glesys</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/glesys/glesys.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v0.5.0</p>
+
+<p>Configuration for <a href="https://glesys.com/">Glesys</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/godaddy/" >Go Daddy</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/godaddy/godaddy.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v0.5.0</p>
+
+<p>Configuration for <a href="https://godaddy.com">Go Daddy</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/gcloud/" >Google Cloud</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/gcloud/gcloud.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v0.3.0</p>
+
+<p>Configuration for <a href="https://cloud.google.com">Google Cloud</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/httpreq/" >HTTP request</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/httpreq/httpreq.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v2.0.0</p>
+
+<p>Configuration for <a href="/dns/httpreq/">HTTP request</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/hetzner/" >Hetzner</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/hetzner/hetzner.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v3.7.0</p>
+
+<p>Configuration for <a href="https://hetzner.com">Hetzner</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/hostingde/" >Hosting.de</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/hostingde/hostingde.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v1.1.0</p>
+
+<p>Configuration for <a href="https://www.hosting.de/">Hosting.de</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/hurricane/" >Hurricane Electric DNS</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/hurricane/hurricane.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v4.3.0</p>
+
+<p>Configuration for <a href="https://dns.he.net/">Hurricane Electric DNS</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/hyperone/" >HyperOne</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/hyperone/hyperone.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v3.9.0</p>
+
+<p>Configuration for <a href="https://www.hyperone.com">HyperOne</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/inwx/" >INWX</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/inwx/inwx.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v2.0.0</p>
+
+<p>Configuration for <a href="https://www.inwx.de/en">INWX</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/infomaniak/" >Infomaniak</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/infomaniak/infomaniak.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v4.1.0</p>
+
+<p>Configuration for <a href="https://www.infomaniak.com/">Infomaniak</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/iij/" >Internet Initiative Japan</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/iij/iij.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v1.1.0</p>
+
+<p>Configuration for <a href="https://www.iij.ad.jp/en/">Internet Initiative Japan</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/ionos/" >Ionos</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/ionos/ionos.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v4.2.0</p>
+
+<p>Configuration for <a href="https://ionos.com">Ionos</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/joker/" >Joker</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/joker/joker.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v2.6.0</p>
+
+<p>Configuration for <a href="https://joker.com">Joker</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/acme-dns/" >Joohoi&#39;s ACME-DNS</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/acmedns/acmedns.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v1.1.0</p>
+
+<p>Configuration for <a href="https://github.com/joohoi/acme-dns">Joohoi&rsquo;s ACME-DNS</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/linode/" >Linode (v4)</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/linode/linode.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v1.1.0</p>
+
+<p>Configuration for <a href="https://www.linode.com/">Linode (v4)</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/liquidweb/" >Liquid Web</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/liquidweb/liquidweb.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v3.1.0</p>
+
+<p>Configuration for <a href="https://liquidweb.com">Liquid Web</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/loopia/" >Loopia</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/loopia/loopia.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v4.2.0</p>
+
+<p>Configuration for <a href="https://loopia.com">Loopia</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/luadns/" >LuaDNS</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/luadns/luadns.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v3.7.0</p>
+
+<p>Configuration for <a href="https://luadns.com">LuaDNS</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/manual/" >Manual</a>
+</h2>
+
+				
+
+				
+					
+<p><p>Solving the DNS-01 challenge using CLI prompt.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/mydnsjp/" >MyDNS.jp</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/mydnsjp/mydnsjp.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v1.2.0</p>
+
+<p>Configuration for <a href="https://www.mydns.jp">MyDNS.jp</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/mythicbeasts/" >MythicBeasts</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/mythicbeasts/mythicbeasts.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v0.3.7</p>
+
+<p>Configuration for <a href="https://www.mythic-beasts.com/">MythicBeasts</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/nifcloud/" >NIFCloud</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/nifcloud/nifcloud.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v1.1.0</p>
+
+<p>Configuration for <a href="https://www.nifcloud.com/">NIFCloud</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/ns1/" >NS1</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/ns1/ns1.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v0.4.0</p>
+
+<p>Configuration for <a href="https://ns1.com">NS1</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/namedotcom/" >Name.com</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/namedotcom/namedotcom.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v0.5.0</p>
+
+<p>Configuration for <a href="https://www.name.com">Name.com</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/namecheap/" >Namecheap</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/namecheap/namecheap.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v0.3.0</p>
+
+<p>Configuration for <a href="https://www.namecheap.com">Namecheap</a>.</p>
+
+<p><strong>To enable API access on the Namecheap production environment, some opaque requirements must be met.</strong> More information in the section <a href="https://www.namecheap.com/support/api/intro/">Enabling API Access</a> of the Namecheap documentation. (2020-08: Account balance of $50+, 20+ domains in your account, or purchases totaling $50+ within the last 2 years.)</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/namesilo/" >Namesilo</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/namesilo/namesilo.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v2.7.0</p>
+
+<p>Configuration for <a href="https://www.namesilo.com/">Namesilo</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/netcup/" >Netcup</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/netcup/netcup.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v1.1.0</p>
+
+<p>Configuration for <a href="https://www.netcup.eu/">Netcup</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/netlify/" >Netlify</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/netlify/netlify.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v3.7.0</p>
+
+<p>Configuration for <a href="https://www.netlify.com">Netlify</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/njalla/" >Njalla</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/njalla/njalla.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v4.3.0</p>
+
+<p>Configuration for <a href="https://njal.la">Njalla</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/ovh/" >OVH</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/ovh/ovh.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v0.4.0</p>
+
+<p>Configuration for <a href="https://www.ovh.com/">OVH</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/otc/" >Open Telekom Cloud</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/otc/otc.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v0.4.1</p>
+
+<p>Configuration for <a href="https://cloud.telekom.de/en">Open Telekom Cloud</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/oraclecloud/" >Oracle Cloud</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/oraclecloud/oraclecloud.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v2.3.0</p>
+
+<p>Configuration for <a href="https://cloud.oracle.com/home">Oracle Cloud</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/pdns/" >PowerDNS</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/pdns/pdns.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v0.4.0</p>
+
+<p>Configuration for <a href="https://www.powerdns.com/">PowerDNS</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/rfc2136/" >RFC2136</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/rfc2136/rfc2136.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v0.3.0</p>
+
+<p>Configuration for <a href="https://tools.ietf.org/html/rfc2136">RFC2136</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/rackspace/" >Rackspace</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/rackspace/rackspace.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v0.4.0</p>
+
+<p>Configuration for <a href="https://www.rackspace.com/">Rackspace</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/rimuhosting/" >RimuHosting</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/rimuhosting/rimuhosting.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v0.3.5</p>
+
+<p>Configuration for <a href="https://rimuhosting.com">RimuHosting</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/sakuracloud/" >Sakura Cloud</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/sakuracloud/sakuracloud.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v1.1.0</p>
+
+<p>Configuration for <a href="https://cloud.sakura.ad.jp/">Sakura Cloud</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/scaleway/" >Scaleway</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/scaleway/scaleway.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v3.4.0</p>
+
+<p>Configuration for <a href="https://developers.scaleway.com/">Scaleway</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/selectel/" >Selectel</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/selectel/selectel.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v1.2.0</p>
+
+<p>Configuration for <a href="https://kb.selectel.com/">Selectel</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/servercow/" >Servercow</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/servercow/servercow.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v3.4.0</p>
+
+<p>Configuration for <a href="https://servercow.de/">Servercow</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/stackpath/" >Stackpath</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/stackpath/stackpath.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v1.1.0</p>
+
+<p>Configuration for <a href="https://www.stackpath.com/">Stackpath</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/transip/" >TransIP</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/transip/transip.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v2.0.0</p>
+
+<p>Configuration for <a href="https://www.transip.nl/">TransIP</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/vegadns/" >VegaDNS</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/vegadns/vegadns.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v1.1.0</p>
+
+<p>Configuration for <a href="https://github.com/shupp/VegaDNS-API">VegaDNS</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/versio/" >Versio.[nl|eu|uk]</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/versio/versio.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v2.7.0</p>
+
+<p>Configuration for <a href="https://www.versio.nl/domeinnamen">Versio.[nl|eu|uk]</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/vscale/" >Vscale</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/vscale/vscale.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v2.0.0</p>
+
+<p>Configuration for <a href="https://vscale.io/">Vscale</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/vultr/" >Vultr</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/vultr/vultr.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v0.3.1</p>
+
+<p>Configuration for <a href="https://www.vultr.com/">Vultr</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/yandex/" >Yandex</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/yandex/yandex.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v3.7.0</p>
+
+<p>Configuration for <a href="https://yandex.com/">Yandex</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/zoneee/" >Zone.ee</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/zoneee/zoneee.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v2.1.0</p>
+
+<p>Configuration for <a href="https://www.zone.ee/">Zone.ee</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/zonomi/" >Zonomi</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/zonomi/zonomi.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v3.5.0</p>
+
+<p>Configuration for <a href="https://zonomi.com">Zonomi</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/desec/" >deSEC.io</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/desec/desec.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v3.7.0</p>
+
+<p>Configuration for <a href="https://desec.io">deSEC.io</a>.</p></p>
+					
+				
+			
+			
+		
+	
+		
+			
+				
+					
+					
+
+<h2>
+<a href="/lego/dns/regru/" >reg.ru</a>
+</h2>
+
+				
+
+				
+					
+<p><!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<!-- providers/dns/regru/regru.toml -->
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+<p>Since: v3.5.0</p>
+
+<p>Configuration for <a href="https://www.reg.ru/">reg.ru</a>.</p></p>
+					
+				
+			
+			
+		
+	
+
+	
+</ul>
+
+
+
+
+
+
+
+<footer class=" footline" >
+	
+</footer>
+
+        
+        </div>
+        
+
+      </div>
+
+    <div id="navigation">
+        
+        
+
+        
+            
+            
+                
+                    
+                    
+                
+                
+
+                    
+                    
+                        
+                    
+                    
+
+                    
+                        
+            
+            
+                
+                    
+                        
+                        
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                        
+                    
+                    
+
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+            
+        
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+                        
+            
+            
+                
+                    
+                        
+                        
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+            
+        
+                    
+            
+        
+
+        
+
+
+	 
+	 
+		
+			<a class="nav nav-prev" href="/lego/usage/library/writing-a-challenge-solver/" title="Writing a Challenge Solver"> <i class="fa fa-chevron-left"></i></a>
+		
+		
+			<a class="nav nav-next" href="/lego/dns/edgedns/" title="Akamai EdgeDNS" style="margin-right: 0px;"><i class="fa fa-chevron-right"></i></a>
+		
+	
+    </div>
+
+    </section>
+
+    <div style="left: -1000px; overflow: scroll; position: absolute; top: -1000px; border: none; box-sizing: content-box; height: 200px; margin: 0px; padding: 0px; width: 200px;">
+      <div style="border: none; box-sizing: content-box; height: 200px; margin: 0px; padding: 0px; width: 200px;"></div>
+    </div>
+    <script src="/lego/js/clipboard.min.js?1615506955"></script>
+    <script src="/lego/js/perfect-scrollbar.min.js?1615506955"></script>
+    <script src="/lego/js/perfect-scrollbar.jquery.min.js?1615506955"></script>
+    <script src="/lego/js/jquery.sticky.js?1615506955"></script>
+    <script src="/lego/js/featherlight.min.js?1615506955"></script>
+    <script src="/lego/js/highlight.pack.js?1615506955"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    <script src="/lego/js/modernizr.custom-3.6.0.js?1615506955"></script>
+    <script src="/lego/js/learn.js?1615506955"></script>
+    <script src="/lego/js/hugo-learn.js?1615506955"></script>
+    
+        
+            <script src="/lego/mermaid/mermaid.js?1615506955"></script>
+        
+        <script>
+            mermaid.initialize({ startOnLoad: true });
+        </script>
+    
+    
+
+  </body>
+</html>

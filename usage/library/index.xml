@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Library on Let’s Encrypt client and ACME library written in Go.</title>
+    <link>https://go-acme.github.io/lego/usage/library/</link>
+    <description>Recent content in Library on Let’s Encrypt client and ACME library written in Go.</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 03 Mar 2019 16:39:46 +0100</lastBuildDate>
+    
+	<atom:link href="https://go-acme.github.io/lego/usage/library/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Writing a Challenge Solver</title>
+      <link>https://go-acme.github.io/lego/usage/library/writing-a-challenge-solver/</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      
+      <guid>https://go-acme.github.io/lego/usage/library/writing-a-challenge-solver/</guid>
+      <description>&lt;p&gt;Lego can solve multiple ACME challenge types out of the box, but sometimes you have custom requirements.&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

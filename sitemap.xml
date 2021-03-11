@@ -1,0 +1,475 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/installation/</loc>
+    <lastmod>2021-02-17T09:02:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/usage/</loc>
+    <lastmod>2019-03-08T19:47:06+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/</loc>
+    <lastmod>2020-09-30T00:27:08+02:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/usage/cli/examples/</loc>
+    <lastmod>2020-10-03T21:36:56+02:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/edgedns/</loc>
+    <lastmod>2021-02-21T23:56:56+13:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/alidns/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/lightsail/</loc>
+    <lastmod>2019-04-17T21:32:38+02:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/route53/</loc>
+    <lastmod>2020-05-30T22:00:57+10:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/arvancloud/</loc>
+    <lastmod>2021-03-03T02:57:01+03:30</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/auroradns/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/autodns/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/azure/</loc>
+    <lastmod>2020-08-09T14:17:49+02:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/bindman/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/bluecat/</loc>
+    <lastmod>2019-04-17T21:32:38+02:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/usage/cli/</loc>
+    <lastmod>2020-10-03T21:36:56+02:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/checkdomain/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/cloudns/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/clouddns/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/cloudxns/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/cloudflare/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/conoha/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/constellix/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/dnsmadeeasy/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/dnspod/</loc>
+    <lastmod>2021-03-10T10:42:00+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/dnsimple/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/designate/</loc>
+    <lastmod>2021-02-28T00:45:58+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/digitalocean/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/dode/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/domeneshop/</loc>
+    <lastmod>2021-02-08T20:13:21+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/dreamhost/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/duckdns/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/dyn/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/dynu/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/easydns/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/exoscale/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/exec/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/gandi/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/gandiv5/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/glesys/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/godaddy/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/gcloud/</loc>
+    <lastmod>2020-09-26T13:29:42+02:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/httpreq/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/hetzner/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/hostingde/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/hurricane/</loc>
+    <lastmod>2021-02-14T07:33:52-08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/hyperone/</loc>
+    <lastmod>2020-12-09T21:31:54+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/inwx/</loc>
+    <lastmod>2020-12-14T22:57:19+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/infomaniak/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/iij/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/ionos/</loc>
+    <lastmod>2021-01-14T20:42:12+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/joker/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/acme-dns/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/usage/library/</loc>
+    <lastmod>2020-09-30T00:27:08+02:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/linode/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/liquidweb/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/loopia/</loc>
+    <lastmod>2020-12-26T17:22:01+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/luadns/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/manual/</loc>
+    <lastmod>2019-03-08T19:47:06+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/mydnsjp/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/mythicbeasts/</loc>
+    <lastmod>2021-02-27T14:32:58+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/nifcloud/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/ns1/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/namedotcom/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/namecheap/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/namesilo/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/netcup/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/netlify/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/njalla/</loc>
+    <lastmod>2021-02-19T21:23:48+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/ovh/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/otc/</loc>
+    <lastmod>2019-04-17T21:32:38+02:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/oraclecloud/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/pdns/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/rfc2136/</loc>
+    <lastmod>2020-12-19T16:48:31+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/rackspace/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/rimuhosting/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/sakuracloud/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/scaleway/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/selectel/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/servercow/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/stackpath/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/transip/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/vegadns/</loc>
+    <lastmod>2019-04-17T21:32:38+02:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/versio/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/vscale/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/vultr/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/</loc>
+    <lastmod>2019-03-11T17:56:48+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/usage/library/writing-a-challenge-solver/</loc>
+    <lastmod>2020-09-30T00:27:08+02:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/yandex/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/zoneee/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/zonomi/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/desec/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/dns/regru/</loc>
+    <lastmod>2020-11-27T20:40:44+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/categories/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://go-acme.github.io/lego/tags/</loc>
+    <priority>0</priority>
+  </url>
+  
+</urlset>

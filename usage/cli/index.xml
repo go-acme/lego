@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>CLI on Let’s Encrypt client and ACME library written in Go.</title>
+    <link>https://go-acme.github.io/lego/usage/cli/</link>
+    <description>Recent content in CLI on Let’s Encrypt client and ACME library written in Go.</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 03 Mar 2019 16:39:46 +0100</lastBuildDate>
+    
+	<atom:link href="https://go-acme.github.io/lego/usage/cli/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Examples</title>
+      <link>https://go-acme.github.io/lego/usage/cli/examples/</link>
+      <pubDate>Fri, 15 Nov 2019 23:25:46 +0100</pubDate>
+      
+      <guid>https://go-acme.github.io/lego/usage/cli/examples/</guid>
+      <description>CLI Examples Assumes the lego binary has permission to bind to ports 80 and 443. You can get a pre-built binary from the releases page. If your environment does not allow you to bind to these ports, please read Port Usage.
+Obtain a certificate lego --email=&amp;#34;foo@bar.com&amp;#34; --domains=&amp;#34;example.com&amp;#34; --http run You will find your certificate in the .lego folder of the current working directory:
+$ ls -1 ./.lego/certificates example.com.crt example.com.issuer.crt example.</description>
+    </item>
+    
+  </channel>
+</rss>

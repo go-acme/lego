@@ -1,5 +1,11 @@
 # Changelog
 
+## [v4.3.1] - 2021-03-12
+
+### Fixed:
+
+- **[dnsprovider]** exoscale: fix dependency version.
+
 ## [v4.3.0] - 2021-03-10
 
 ### Added:

@@ -39,7 +39,7 @@ type rrSet struct {
 	Type       string   `json:"type"`
 	Kind       string   `json:"kind"`
 	ChangeType string   `json:"changetype"`
-	Records    []Record `json:"records"`
+	Records    []Record `json:"records,omitempty"`
 	TTL        int      `json:"ttl,omitempty"`
 }
 

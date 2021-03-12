@@ -151,7 +151,7 @@ func (d *DNSProvider) sendRequest(method, uri string, body io.Reader) (json.RawM
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusUnprocessableEntity && (resp.StatusCode < 200 || resp.StatusCode >= 300) {
-		return nil, fmt.Errorf("unexpected HTTP status code %d when fetching '%s'", resp.StatusCode, req.URL)
+		return nil, fmt.Errorf("unexpected HTTP status code %d when %sing '%s'", resp.StatusCode, req.Method, req.URL)
 	}
 
 	var msg json.RawMessage

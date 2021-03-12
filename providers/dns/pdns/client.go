@@ -198,5 +198,9 @@ func (d *DNSProvider) makeRequest(method, uri string, body io.Reader) (*http.Req
 
 	req.Header.Set("X-API-Key", d.config.APIKey)
 
+	if method != http.MethodGet && method != http.MethodDelete {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
 	return req, nil
 }

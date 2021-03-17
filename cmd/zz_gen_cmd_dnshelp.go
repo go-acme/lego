@@ -1480,6 +1480,7 @@ func displayDNSHelp(name string) error {
 		ew.writeln(`	- "PDNS_HTTP_TIMEOUT":	API request timeout`)
 		ew.writeln(`	- "PDNS_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "PDNS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "PDNS_SERVER_NAME":	Name of the server in the URL, 'localhost' by default`)
 		ew.writeln(`	- "PDNS_TTL":	The TTL of the TXT record used for the DNS challenge`)
 
 		ew.writeln()

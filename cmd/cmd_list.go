@@ -91,8 +91,8 @@ func listCertificates(ctx *cli.Context) error {
 }
 
 func listAccount(ctx *cli.Context) error {
-	// fake email, needed by NewAccountsStorage
-	if err := ctx.GlobalSet("email", "unknown"); err != nil {
+	// fake userID, needed by NewAccountsStorage
+	if err := ctx.GlobalSet("user-id", "unknown"); err != nil {
 		return err
 	}
 

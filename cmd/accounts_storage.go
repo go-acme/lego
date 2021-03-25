@@ -71,8 +71,7 @@ type AccountsStorage struct {
 
 // NewAccountsStorage Creates a new AccountsStorage.
 func NewAccountsStorage(ctx *cli.Context) *AccountsStorage {
-	// TODO: move to account struct? Currently MUST pass email.
-	email := getEmail(ctx)
+	userID := getUserID(ctx)
 
 	serverURL, err := url.Parse(ctx.GlobalString("server"))
 	if err != nil {
@@ -82,10 +81,10 @@ func NewAccountsStorage(ctx *cli.Context) *AccountsStorage {
 	rootPath := filepath.Join(ctx.GlobalString("path"), baseAccountsRootFolderName)
 	serverPath := strings.NewReplacer(":", "_", "/", string(os.PathSeparator)).Replace(serverURL.Host)
 	accountsPath := filepath.Join(rootPath, serverPath)
-	rootUserPath := filepath.Join(accountsPath, email)
+	rootUserPath := filepath.Join(accountsPath, userID)
 
 	return &AccountsStorage{
-		userID:          email,
+		userID:          userID,
 		rootPath:        rootPath,
 		rootUserPath:    rootUserPath,
 		keysPath:        filepath.Join(rootUserPath, baseKeysFolderName),

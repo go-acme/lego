@@ -26,7 +26,8 @@ func setup(ctx *cli.Context, accountsStorage *AccountsStorage) (*Account, *lego.
 	if accountsStorage.ExistsAccountFilePath() {
 		account = accountsStorage.LoadAccount(privateKey)
 	} else {
-		account = &Account{Email: accountsStorage.GetUserID(), key: privateKey}
+		email := ctx.GlobalString("email")
+		account = &Account{Email: email, key: privateKey}
 	}
 
 	client := newClient(ctx, account, keyType)
@@ -80,12 +81,15 @@ func getKeyType(ctx *cli.Context) certcrypto.KeyType {
 	return ""
 }
 
-func getEmail(ctx *cli.Context) string {
-	email := ctx.GlobalString("email")
-	if email == "" {
-		log.Fatal("You have to pass an account (email address) to the program using --email or -m")
+func getUserID(ctx *cli.Context) string {
+	userID := ctx.GlobalString("user-id")
+	if userID == "" {
+		userID = ctx.GlobalString("email")
 	}
-	return email
+	if userID == "" {
+		log.Fatal("You have to pass an account to the program using --email or -m (email address) or --user-id")
+	}
+	return userID
 }
 
 func createNonExistingFolder(path string) error {

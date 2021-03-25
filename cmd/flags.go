@@ -25,6 +25,10 @@ func CreateFlags(defaultPath string) []cli.Flag {
 			Usage: "Email used for registration and recovery contact.",
 		},
 		cli.StringFlag{
+			Name:  "user-id",
+			Usage: "Local userID. The default is to use the given email.",
+		},
+		cli.StringFlag{
 			Name:  "csr, c",
 			Usage: "Certificate signing request filename, if an external CSR is to be used.",
 		},

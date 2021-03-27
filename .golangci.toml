@@ -46,29 +46,28 @@
   disable = [
     "interfacer", # deprecated
     "maligned", # deprecated
+    "scopelint", # deprecated
+    "cyclop", # duplicate of gocyclo
     "lll",
-    "gas",
-    "dupl",
-    "prealloc",
-    "scopelint",
-    "bodyclose",
-    "wsl",
-    "stylecheck",
+    "gosec",
+    "dupl", # not relevant
+    "prealloc", # too many false-positive
+    "bodyclose", # too many false-positive
     "gomnd",
     "testpackage", # not relevant
-    "nestif", # too many false-positive
-    "goerr113", # not relevant
-    "noctx",
-    "nlreturn", # not relevant
-    "wrapcheck",
     "tparallel", # not relevant
     "paralleltest", # not relevant
-    "exhaustivestruct", # too many false-positive
+    "nestif", # too many false-positive
+    "wrapcheck",
+    "goerr113", # not relevant
+    "nlreturn", # not relevant
+    "wsl", # not relevant
+    "exhaustive", # not relevant
+    "exhaustivestruct", # not relevant
     "makezero", # not relevant
-    "forbidigo", # not relevant
     "ifshort", # not relevant
-    "cyclop", # duplicate of gocyclo
-    "wastedassign", # false-positive https://github.com/sanposhiho/wastedassign/issues/21
+    "forbidigo", # not relevant
+    "noctx",
     "forcetypeassert",
   ]
 
@@ -79,6 +78,7 @@
   exclude = [
     "Error return value of .((os\\.)?std(out|err)\\..*|.*Close|.*Flush|os\\.Remove(All)?|.*printf?|os\\.(Un)?Setenv). is not checked",
     "exported (type|method|function) (.+) should have comment or be unexported",
+    "ST1000: at least one file in a package should have a package comment"
   ]
   [[issues.exclude-rules]]
     path = "(.+)_test.go"

@@ -149,8 +149,14 @@ func (m *DNSServerMock) HandleListRecordsetsSuccessfully() {
 
 			body, err := ioutil.ReadAll(r.Body)
 			assert.Nil(m.t, err)
-			exceptedString := "{\"name\":\"_acme-challenge.example.com.\",\"description\":\"Added TXT record for ACME dns-01 challenge using lego client\",\"type\":\"TXT\",\"ttl\":300,\"records\":[\"\\\"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI\\\"\"]}"
-			assert.Equal(m.t, string(body), exceptedString)
+			exceptedString := `{
+				"name": "_acme-challenge.example.com.",
+				"description": "Added TXT record for ACME dns-01 challenge using lego client",
+				"type": "TXT",
+				"ttl": 300,
+				"records": ["\"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI\""]
+			}`
+			assert.JSONEq(m.t, string(body), exceptedString)
 			fmt.Fprintf(w, `{
 			  "recordsets":[{
                             "id":"321321"

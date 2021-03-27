@@ -75,7 +75,7 @@ type Record struct {
 	ParentID     int           `json:"parentId,omitempty"`
 	Parent       string        `json:"parent,omitempty"`
 	Source       string        `json:"source,omitempty"`
-	ModifiedTs   int64         `json:"modifiedTs,omitempty"`
+	ModifiedTS   int64         `json:"modifiedTs,omitempty"`
 	Value        []RecordValue `json:"value,omitempty"`
 	RoundRobin   []RecordValue `json:"roundRobin,omitempty"`
 }

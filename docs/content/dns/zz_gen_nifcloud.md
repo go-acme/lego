@@ -44,6 +44,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
+| `NIFCLOUD_HOSETD_ZONE` | Hosted zone name |
 | `NIFCLOUD_HTTP_TIMEOUT` | API request timeout |
 | `NIFCLOUD_POLLING_INTERVAL` | Time between DNS propagation check |
 | `NIFCLOUD_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |

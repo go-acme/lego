@@ -1344,6 +1344,7 @@ func displayDNSHelp(name string) error {
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "NIFCLOUD_HOSETD_ZONE":	Hosted zone name`)
 		ew.writeln(`	- "NIFCLOUD_HTTP_TIMEOUT":	API request timeout`)
 		ew.writeln(`	- "NIFCLOUD_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "NIFCLOUD_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)

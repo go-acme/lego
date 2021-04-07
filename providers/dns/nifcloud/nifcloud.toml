@@ -15,6 +15,7 @@ lego --email myemail@example.com --dns nifcloud --domains my.example.org run
     NIFCLOUD_ACCESS_KEY_ID = "Access key"
     NIFCLOUD_SECRET_ACCESS_KEY = "Secret access key"
   [Configuration.Additional]
+    NIFCLOUD_HOSETD_ZONE = "Hosted zone name"
     NIFCLOUD_POLLING_INTERVAL = "Time between DNS propagation check"
     NIFCLOUD_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
     NIFCLOUD_TTL = "The TTL of the TXT record used for the DNS challenge"

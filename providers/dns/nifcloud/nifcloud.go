@@ -21,6 +21,7 @@ const (
 	EnvSecretAccessKey = envNamespace + "SECRET_ACCESS_KEY"
 	EnvDNSEndpoint     = envNamespace + "DNS_ENDPOINT"
 
+	EnvHostedZone         = envNamespace + "HOSTED_ZONE"
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
@@ -152,7 +153,8 @@ func (d *DNSProvider) changeRecord(action, fqdn, value, domain string, ttl int) 
 		},
 	}
 
-	resp, err := d.client.ChangeResourceRecordSets(domain, reqParams)
+	hostedZoneID := env.GetOrDefaultString(EnvHostedZone, domain)
+	resp, err := d.client.ChangeResourceRecordSets(hostedZoneID, reqParams)
 	if err != nil {
 		return fmt.Errorf("failed to change NIFCLOUD record set: %w", err)
 	}

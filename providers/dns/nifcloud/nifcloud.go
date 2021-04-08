@@ -99,7 +99,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	err := d.changeRecord("CREATE", fqdn, value, domain, d.config.TTL)
+	err := d.changeRecord("CREATE", fqdn, value, d.config.TTL)
 	if err != nil {
 		return fmt.Errorf("nifcloud: %w", err)
 	}
@@ -110,7 +110,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	err := d.changeRecord("DELETE", fqdn, value, domain, d.config.TTL)
+	err := d.changeRecord("DELETE", fqdn, value, d.config.TTL)
 	if err != nil {
 		return fmt.Errorf("nifcloud: %w", err)
 	}
@@ -123,7 +123,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-func (d *DNSProvider) changeRecord(action, fqdn, value, domain string, ttl int) error {
+func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 	name := dns01.UnFqdn(fqdn)
 
 	reqParams := internal.ChangeResourceRecordSetsRequest{

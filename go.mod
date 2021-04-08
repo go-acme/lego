@@ -42,9 +42,10 @@ require (
 	github.com/rainycape/memcache v0.0.0-20150622160815-1031fa0ce2f2
 	github.com/sacloud/libsacloud v1.36.2
 	github.com/stretchr/testify v1.7.0
-	github.com/transip/gotransip/v6 v6.6.0
-	github.com/urfave/cli v1.22.5
-	github.com/vultr/govultr/v2 v2.4.0
+	github.com/transip/gotransip/v6 v6.2.0
+	github.com/urfave/cli v1.22.4
+	github.com/vinyldns/go-vinyldns v0.0.0-20200917153823-148a5f6b8f14
+	github.com/vultr/govultr/v2 v2.0.0
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
 	golang.org/x/net v0.0.0-20210220033124-5f55cee0dc0d
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d

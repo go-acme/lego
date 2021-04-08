@@ -99,7 +99,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	err := d.changeRecord("CREATE", fqdn, value, domain, d.config.TTL)
+	err := d.changeRecord("CREATE", fqdn, value, d.config.TTL)
 	if err != nil {
 		return fmt.Errorf("nifcloud: %w", err)
 	}
@@ -110,7 +110,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	err := d.changeRecord("DELETE", fqdn, value, domain, d.config.TTL)
+	err := d.changeRecord("DELETE", fqdn, value, d.config.TTL)
 	if err != nil {
 		return fmt.Errorf("nifcloud: %w", err)
 	}
@@ -123,7 +123,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-func (d *DNSProvider) changeRecord(action, fqdn, value, domain string, ttl int) error {
+func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 	name := dns01.UnFqdn(fqdn)
 
 	reqParams := internal.ChangeResourceRecordSetsRequest{
@@ -152,9 +152,14 @@ func (d *DNSProvider) changeRecord(action, fqdn, value, domain string, ttl int) 
 		},
 	}
 
-	resp, err := d.client.ChangeResourceRecordSets(domain, reqParams)
+	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return fmt.Errorf("failed to change NIFCLOUD record set: %w", err)
+		return fmt.Errorf("failed to find zone: %w", err)
+	}
+
+	resp, err := d.client.ChangeResourceRecordSets(dns01.UnFqdn(authZone), reqParams)
+	if err != nil {
+		return fmt.Errorf("failed to change record set: %w", err)
 	}
 
 	statusID := resp.ChangeInfo.ID
@@ -162,7 +167,7 @@ func (d *DNSProvider) changeRecord(action, fqdn, value, domain string, ttl int) 
 	return wait.For("nifcloud", 120*time.Second, 4*time.Second, func() (bool, error) {
 		resp, err := d.client.GetChange(statusID)
 		if err != nil {
-			return false, fmt.Errorf("failed to query NIFCLOUD DNS change status: %w", err)
+			return false, fmt.Errorf("failed to query change status: %w", err)
 		}
 		return resp.ChangeInfo.Status == "INSYNC", nil
 	})

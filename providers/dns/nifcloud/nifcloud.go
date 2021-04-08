@@ -154,12 +154,12 @@ func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return fmt.Errorf("nifcloud: failed to find zone: %w", err)
+		return fmt.Errorf("failed to find zone: %w", err)
 	}
 
 	resp, err := d.client.ChangeResourceRecordSets(dns01.UnFqdn(authZone), reqParams)
 	if err != nil {
-		return fmt.Errorf("failed to change NIFCLOUD record set: %w", err)
+		return fmt.Errorf("failed to change record set: %w", err)
 	}
 
 	statusID := resp.ChangeInfo.ID
@@ -167,7 +167,7 @@ func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 	return wait.For("nifcloud", 120*time.Second, 4*time.Second, func() (bool, error) {
 		resp, err := d.client.GetChange(statusID)
 		if err != nil {
-			return false, fmt.Errorf("failed to query NIFCLOUD DNS change status: %w", err)
+			return false, fmt.Errorf("failed to query change status: %w", err)
 		}
 		return resp.ChangeInfo.Status == "INSYNC", nil
 	})

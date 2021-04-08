@@ -152,7 +152,15 @@ func (d *DNSProvider) changeRecord(action, fqdn, value, domain string, ttl int) 
 		},
 	}
 
-	resp, err := d.client.ChangeResourceRecordSets(domain, reqParams)
+	hostedZoneID, err := dns01.FindZoneByFqdn(fqdn)
+	if err != nil {
+		return fmt.Errorf("nifcloud: failed to find zone: %w", err)
+	}
+	size := len(hostedZoneID)
+	if size > 0 && hostedZoneID[size-1] == '.' {
+		hostedZoneID = hostedZoneID[:size-1]
+	}
+	resp, err := d.client.ChangeResourceRecordSets(hostedZoneID, reqParams)
 	if err != nil {
 		return fmt.Errorf("failed to change NIFCLOUD record set: %w", err)
 	}

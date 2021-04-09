@@ -15,7 +15,7 @@ import (
 const (
 	envDomain         = envNamespace + "DOMAIN"
 	targetHostname    = "host"
-	targetDomain      = "vinyldns.invalid"
+	targetDomain      = "vinyldns.io"
 	zoneID            = "00000000-0000-0000-0000-000000000000"
 	recordsetID       = "10000000-0000-0000-0000-000000000000"
 	newRecordSetID    = "11000000-0000-0000-0000-000000000000"

@@ -264,13 +264,15 @@ func (d *DNSProvider) getExistingRecordSet(fqdn string) (*vinyldns.RecordSet, er
 }
 
 func (d *DNSProvider) fqdnSplit(fqdn string) (string, string, error) {
-	s := strings.Split(fqdn, ".")
-	if len(s) < 3 {
+	primaryZone, err := dns01.FindZoneByFqdn(fqdn)
+	if err != nil {
+		return "", "", err
+	}
+	hostName := strings.TrimSuffix(fqdn, "."+primaryZone)
+	if hostName == "" || hostName == primaryZone {
 		return "", "", fmt.Errorf("invalid fqdn: %s", fqdn)
 	}
-	hostName := strings.Join(s[:2], ".")
-	domainName := strings.Join(s[2:], ".")
-	return hostName, domainName, nil
+	return hostName, primaryZone, nil
 }
 
 func (d *DNSProvider) getZone(domainName string) (*vinyldns.Zone, error) {

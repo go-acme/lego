@@ -13,7 +13,7 @@ const GetZoneResponse = `{
       "email": "Ops@company.invalid",
       "id": "00000000-0000-0000-0000-000000000000",
       "latestSync": "2020-07-15T21:15:36Z",
-      "name": "vinyldns.invalid.",
+      "name": "vinyldns.io.",
       "shared": false,
       "status": "Active",
       "updated": "2021-03-03T18:02:47Z"
@@ -36,7 +36,7 @@ const FindRRSetResponse = `{
            "accessLevel": "Delete",
            "account": "",
            "created": "2021-03-04T00:51:43Z",
-           "fqdn": "_acme-challenge.host.vinyldns.invalid.",
+           "fqdn": "_acme-challenge.host.vinyldns.io.",
            "id": "30000000-0000-0000-0000-000000000000",
            "name": "_acme-challenge.host",
            "records": [
@@ -86,7 +86,7 @@ const CreateRRSetResponse = `{
      "id": "00000000-0000-0000-0000-000000000000",
      "isTest": false,
      "latestSync": "2020-07-15T21:15:36Z",
-     "name": "vinyldns.invalid.",
+     "name": "vinyldns.io.",
      "shared": false,
      "status": "Active",
      "updated": "2021-03-03T18:02:47Z"
@@ -127,7 +127,7 @@ const GetCreateRRSetStatusResponse = `{
        "id": "00000000-0000-0000-0000-000000000000",
        "isTest": false,
        "latestSync": "2020-07-15T21:15:36Z",
-       "name": "vinyldns.invalid.",
+       "name": "vinyldns.io.",
        "shared": false,
        "status": "Active",
        "updated": "2021-03-03T18:02:47Z"
@@ -167,7 +167,7 @@ const DeleteRRSetResponse = `{
      "id": "00000000-0000-0000-0000-000000000000",
      "isTest": false,
      "latestSync": "2020-07-15T21:15:36Z",
-     "name": "vinyldns.invalid.",
+     "name": "vinyldns.io.",
      "shared": false,
      "status": "Active",
      "updated": "2021-03-03T18:02:47Z"
@@ -208,7 +208,7 @@ const GetDeleteRRSetStatusResponse = `{
        "id": "00000000-0000-0000-0000-000000000000",
        "isTest": false,
        "latestSync": "2020-07-15T21:15:36Z",
-       "name": "vinyldns.invalid.",
+       "name": "vinyldns.io.",
        "shared": false,
        "status": "Active",
        "updated": "2021-03-03T18:02:47Z"

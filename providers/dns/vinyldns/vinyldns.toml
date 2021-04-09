@@ -2,13 +2,13 @@ Name = "VinylDNS"
 Description = ''''''
 URL = "https://www.vinyldns.io"
 Code = "vinyldns"
-Since = "v4.3.1"
+Since = "v4.4.0"
 
 Example = '''
 VINYLDNS_ACCESS_KEY=xxxxxx \
 VINYLDNS_SECRET_KEY=yyyyy \
-VINYLDNS_HOST=https://api.vinyldns.company.invalid:9443 \
-lego --email myemail@company.invalid --dns vinyldns --domains my.company.invalid run
+VINYLDNS_HOST=https://api.vinyldns.example.org:9443 \
+lego --email myemail@example.com --dns vinyldns --domains my.example.org run
 '''
 
 Additional = '''
@@ -22,11 +22,10 @@ Users are required to have DELETE ACL level or zone admin permissions on the Vin
     VINYLDNS_SECRET_KEY = "The VinylDNS API Secret key"
     VINYLDNS_HOST = "The VinylDNS API URL"
   [Configuration.Additional]
-    VINYLDNS_POLLING_INTERVAL = "Time between DNS propagation check (default: 4)"
-    VINYLDNS_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation (default: 120)"
-    VINYLDNS_TTL = "The TTL of the TXT record used for the DNS challenge (default: 30)"
+    VINYLDNS_POLLING_INTERVAL = "Time between DNS propagation check"
+    VINYLDNS_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
+    VINYLDNS_TTL = "The TTL of the TXT record used for the DNS challenge"
 
 [Links]
-  Project = "https://www.vinyldns.io/"
-  Github = "https://github.com/vinyldns"
   API = "https://www.vinyldns.io/api/"
+  GoClient = "https://github.com/vinyldns/go-vinyldns"

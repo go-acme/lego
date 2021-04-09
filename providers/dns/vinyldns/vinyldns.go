@@ -35,15 +35,11 @@ type Config struct {
 	TTL                int
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
-	Client             *vinyldns.Client
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		AccessKey:          env.GetOrFile(EnvAccessKey),
-		SecretKey:          env.GetOrFile(EnvSecretKey),
-		Host:               env.GetOrFile(EnvHost),
 		TTL:                env.GetOrDefaultInt(EnvTTL, 30),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 4*time.Second),
@@ -56,53 +52,59 @@ type DNSProvider struct {
 	config *Config
 }
 
-// NewDNSProvider returns a DNSProvider instance configured for the VinylDNS service.
-//
-// VinylDNS Credentials are automatically detected in the following locations and prioritized in the following order:
-// 1. Environment variables: VINYLDNS_ACCESS_KEY, VINYLDNS_SECRET_KEY, VINYLDNS_HOST
-// 2. Environment variables of file paths to files containing the value only: VINYLDNS_ACCESS_KEY_FILE, VINYLDNS_SECRET_KEY_FILE, VINYLDNS_HOST_FILE.
-//
+// NewDNSProvider returns a DNSProvider instance configured for VinylDNS.
+// Credentials must be passed in the environment variables:
+// VINYLDNS_ACCESS_KEY, VINYLDNS_SECRET_KEY, VINYLDNS_HOST.
 func NewDNSProvider() (*DNSProvider, error) {
-	return NewDNSProviderConfig(NewDefaultConfig())
+	values, err := env.Get(EnvAccessKey, EnvSecretKey, EnvHost)
+	if err != nil {
+		return nil, fmt.Errorf("vinyldns: %w", err)
+	}
+
+	config := NewDefaultConfig()
+	config.AccessKey = values[EnvAccessKey]
+	config.SecretKey = values[EnvSecretKey]
+	config.Host = values[EnvHost]
+
+	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderConfig takes a given config ans returns a custom configured DNSProvider instance.
+// NewDNSProviderConfig return a DNSProvider instance configured for VinylDNS.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("vinyldns: the configuration of the VinylDNS DNS provider is nil")
 	}
 
-	if config.Client != nil {
-		return &DNSProvider{client: config.Client, config: config}, nil
+	if config.AccessKey == "" || config.SecretKey == "" {
+		return nil, errors.New("vinyldns: credentials are missing")
 	}
 
-	cc := vinyldns.ClientConfiguration{
+	if config.Host == "" {
+		return nil, errors.New("vinyldns: host is missing")
+	}
+
+	client := vinyldns.NewClient(vinyldns.ClientConfiguration{
 		AccessKey: config.AccessKey,
 		SecretKey: config.SecretKey,
 		Host:      config.Host,
 		UserAgent: "go-acme/lego",
-	}
+	})
 
-	return &DNSProvider{client: vinyldns.NewClient(cc), config: config}, nil
+	client.HTTPClient.Timeout = 30 * time.Second
+
+	return &DNSProvider{client: client, config: config}, nil
 }
 
-// Timeout returns the timeout and interval to use when checking for DNS propagation.
-func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
-	return d.config.PropagationTimeout, d.config.PollingInterval
-}
-
-// Present creates a TXT record using the specified parameters.
+// Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	existingRecord, err := d.getExistingRecordSet(fqdn)
+	existingRecord, err := d.getRecordSet(fqdn)
 	if err != nil {
-		return err
+		return fmt.Errorf("vinyldns: %w", err)
 	}
 
-	record := vinyldns.Record{
-		Text: value,
-	}
+	record := vinyldns.Record{Text: value}
 
 	if existingRecord.ID == "" {
 		err = d.createRecordSet(fqdn, []vinyldns.Record{record})
@@ -136,16 +138,16 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	existingRecord, err := d.getExistingRecordSet(fqdn)
+	existingRecord, err := d.getRecordSet(fqdn)
 	if err != nil {
-		return err
+		return fmt.Errorf("vinyldns: %w", err)
 	}
 
 	if existingRecord.ID == "" || len(existingRecord.Records) == 0 {
 		return nil
 	}
 
-	records := []vinyldns.Record{}
+	var records []vinyldns.Record
 	for _, i := range existingRecord.Records {
 		if i.Text != value {
 			records = append(records, i)
@@ -164,15 +166,23 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("vinyldns: %w", err)
 	}
+
 	return nil
 }
 
+// Timeout returns the timeout and interval to use when checking for DNS propagation.
+// Adjusting here to cope with spikes in propagation times.
+func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
+	return d.config.PropagationTimeout, d.config.PollingInterval
+}
+
 func (d *DNSProvider) createRecordSet(fqdn string, records []vinyldns.Record) error {
-	hostName, domainName, err := d.fqdnSplit(fqdn)
+	zoneName, hostName, err := splitDomain(fqdn)
 	if err != nil {
 		return err
 	}
-	zone, err := d.getZone(domainName)
+
+	zone, err := d.client.ZoneByName(zoneName)
 	if err != nil {
 		return err
 	}
@@ -184,23 +194,48 @@ func (d *DNSProvider) createRecordSet(fqdn string, records []vinyldns.Record) er
 		TTL:     d.config.TTL,
 		Records: records,
 	}
+
 	resp, err := d.client.RecordSetCreate(&recordSet)
 	if err != nil {
 		return err
 	}
-	return wait.For("vinyldns", d.config.PropagationTimeout, d.config.PollingInterval, func() (bool, error) {
-		return d.waitForPropagation("CreateRS", resp.Zone.ID, resp.RecordSet.ID, resp.ChangeID)
-	})
+
+	return d.waitForChanges("CreateRS", resp)
 }
 
-func (d *DNSProvider) deleteRecordSet(existingRecord *vinyldns.RecordSet) error {
-	resp, err := d.client.RecordSetDelete(existingRecord.ZoneID, existingRecord.ID)
+func (d *DNSProvider) getRecordSet(fqdn string) (*vinyldns.RecordSet, error) {
+	zoneName, hostName, err := splitDomain(fqdn)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return wait.For("vinyldns", d.config.PropagationTimeout, d.config.PollingInterval, func() (bool, error) {
-		return d.waitForPropagation("DeleteRS", resp.Zone.ID, resp.RecordSet.ID, resp.ChangeID)
-	})
+
+	zone, err := d.client.ZoneByName(zoneName)
+	if err != nil {
+		return nil, err
+	}
+
+	filter := vinyldns.ListFilter{NameFilter: hostName}
+
+	recordSetsOutputRaw, err := d.client.RecordSetsListAll(zone.ID, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	var recordSetsOutput []vinyldns.RecordSet
+	for _, i := range recordSetsOutputRaw {
+		if i.Type == "TXT" {
+			recordSetsOutput = append(recordSetsOutput, i)
+		}
+	}
+
+	switch {
+	case len(recordSetsOutput) > 1:
+		return nil, fmt.Errorf("ambiguous recordset definition of %s", fqdn)
+	case len(recordSetsOutput) == 1:
+		return &recordSetsOutput[0], nil
+	default:
+		return &vinyldns.RecordSet{}, nil
+	}
 }
 
 func (d *DNSProvider) updateRecordSet(recordSet *vinyldns.RecordSet, newRecords []vinyldns.Record) error {
@@ -208,6 +243,7 @@ func (d *DNSProvider) updateRecordSet(recordSet *vinyldns.RecordSet, newRecords 
 	if len(recordSet.Records) < len(newRecords) {
 		operation = "add"
 	}
+
 	recordSet.Records = newRecords
 	recordSet.TTL = d.config.TTL
 
@@ -215,82 +251,45 @@ func (d *DNSProvider) updateRecordSet(recordSet *vinyldns.RecordSet, newRecords 
 	if err != nil {
 		return err
 	}
-	return wait.For("vinyldns", d.config.PropagationTimeout, d.config.PollingInterval, func() (bool, error) {
-		return d.waitForPropagation("UpdateRS - "+operation, resp.Zone.ID, resp.RecordSet.ID, resp.ChangeID)
-	})
+
+	return d.waitForChanges("UpdateRS - "+operation, resp)
 }
 
-func (d *DNSProvider) getExistingRecordSet(fqdn string) (*vinyldns.RecordSet, error) {
-	hostName, domainName, err := d.fqdnSplit(fqdn)
+func (d *DNSProvider) deleteRecordSet(existingRecord *vinyldns.RecordSet) error {
+	resp, err := d.client.RecordSetDelete(existingRecord.ZoneID, existingRecord.ID)
 	if err != nil {
-		return nil, err
-	}
-	zone, err := d.getZone(domainName)
-	if err != nil {
-		return nil, err
+		return err
 	}
 
-	filter := vinyldns.ListFilter{
-		NameFilter: hostName,
-	}
-
-	recordSetsOutputRaw, err := d.client.RecordSetsListAll(zone.ID, filter)
-	if err != nil {
-		return nil, err
-	}
-	recordSetsOutput := []vinyldns.RecordSet{}
-	for _, i := range recordSetsOutputRaw {
-		if i.Type == "TXT" {
-			recordSetsOutput = append(recordSetsOutput, i)
-		}
-	}
-
-	if recordSetsOutput == nil {
-		return nil, nil
-	}
-
-	var record *vinyldns.RecordSet
-
-	switch {
-	case len(recordSetsOutput) > 1:
-		return nil, fmt.Errorf("ambiguous recordset definition of %s", fqdn)
-	case len(recordSetsOutput) == 1:
-		record = &recordSetsOutput[0]
-	default:
-		record = &vinyldns.RecordSet{}
-	}
-
-	return record, nil
+	return d.waitForChanges("DeleteRS", resp)
 }
 
-func (d *DNSProvider) fqdnSplit(fqdn string) (string, string, error) {
-	primaryZone, err := dns01.FindZoneByFqdn(fqdn)
+func (d *DNSProvider) waitForChanges(operation string, resp *vinyldns.RecordSetUpdateResponse) error {
+	return wait.For("vinyldns", d.config.PropagationTimeout, d.config.PollingInterval,
+		func() (bool, error) {
+			change, err := d.client.RecordSetChange(resp.Zone.ID, resp.RecordSet.ID, resp.ChangeID)
+			if err != nil {
+				return false, fmt.Errorf("failed to query change status: %w", err)
+			}
+
+			if change.Status == vinylDNSSuccessStatus {
+				return true, nil
+			}
+
+			return false, fmt.Errorf("waiting operation: %s, zoneID: %s, recordsetID: %s, changeID: %s",
+				operation, resp.Zone.ID, resp.RecordSet.ID, resp.ChangeID)
+		},
+	)
+}
+
+// splitDomain splits the hostname from the authoritative zone, and returns both parts.
+func splitDomain(fqdn string) (string, string, error) {
+	zone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
 		return "", "", err
 	}
-	hostName := strings.TrimSuffix(fqdn, "."+primaryZone)
-	if hostName == "" || hostName == primaryZone {
-		return "", "", fmt.Errorf("invalid fqdn: %s", fqdn)
-	}
-	return hostName, primaryZone, nil
-}
 
-func (d *DNSProvider) getZone(domainName string) (*vinyldns.Zone, error) {
-	zone, err := d.client.ZoneByName(domainName)
-	if err != nil {
-		return nil, err
-	}
-	return &zone, nil
-}
+	host := dns01.UnFqdn(strings.TrimSuffix(fqdn, zone))
 
-func (d *DNSProvider) waitForPropagation(operation, zoneID, recordsetID, changeID string) (bool, error) {
-	changeStatusResp, err := d.client.RecordSetChange(zoneID, recordsetID, changeID)
-	if err != nil {
-		return false, fmt.Errorf("failed to query change status: %w", err)
-	}
-	if changeStatusResp.Status == vinylDNSSuccessStatus {
-		return true, nil
-	}
-
-	return false, fmt.Errorf("waiting for propagation of change to authoritative zone servers; operation: %s, zoneID: %s, recordsetID: %s, changeID: %s", operation, zoneID, recordsetID, changeID)
+	return zone, host, nil
 }

@@ -13,7 +13,10 @@ import (
 )
 
 const (
-	envDomain         = envNamespace + "DOMAIN"
+	envDomain = envNamespace + "DOMAIN"
+)
+
+const (
 	targetHostname    = "host"
 	targetDomain      = "vinyldns.io"
 	zoneID            = "00000000-0000-0000-0000-000000000000"
@@ -24,29 +27,6 @@ const (
 	recordName        = "_acme-challenge" + targetHostname
 	recordID          = "30000000-0000-0000-0000-000000000000"
 )
-
-func getDefaultMockMapping() MockResponseMap {
-	defaultMockMapping := MockResponseMap{
-		"GET": {
-			"/zones/name/" + targetDomain + ".":                                                    {StatusCode: 200, Body: GetZoneResponse},
-			"/zones/" + zoneID + "/recordsets/" + newRecordSetID + "/changes/" + newCreateChangeID: {StatusCode: 200, Body: GetCreateRRSetStatusResponse},
-			"/zones/" + zoneID + "/recordsets/" + recordsetID + "/changes/" + deleteChangeID:       {StatusCode: 200, Body: GetDeleteRRSetStatusResponse},
-			"/zones/" + zoneID + "/recordsets?recordNameFilter=" + recordName:                      {StatusCode: 200, Body: FindRRSetResponse},
-			"/zones/" + zoneID + "/recordsets":                                                     {StatusCode: 200, Body: FindRRSetResponse},
-		},
-		"POST": {
-			"/zones/" + zoneID + "/recordsets": {StatusCode: 202, Body: CreateRRSetResponse},
-		},
-		"PUT": {
-			"/zones/" + zoneID + "/recordsets/" + recordID: {StatusCode: 202, Body: CreateRRSetResponse},
-		},
-		"DELETE": {
-			"/zones/" + zoneID + "/recordsets/" + recordID: {StatusCode: 202, Body: DeleteRRSetResponse},
-		},
-	}
-
-	return defaultMockMapping
-}
 
 var envTest = tester.NewEnvTest(
 	envDomain,
@@ -59,52 +39,19 @@ var envTest = tester.NewEnvTest(
 	WithDomain(envDomain).
 	WithLiveTestRequirements(EnvAccessKey, EnvSecretKey, EnvHost, envDomain)
 
-func makeTestProvider(serverURL string) *DNSProvider {
-	config := vinyldns.ClientConfiguration{
-		AccessKey: "foo",
-		SecretKey: "bar",
-		Host:      serverURL,
-		UserAgent: "go-acme/lego",
-	}
-
-	return &DNSProvider{
-		client: vinyldns.NewClient(config),
-		config: NewDefaultConfig(),
-	}
-}
-
-func makeTestProviderFull(accessKey, secretKey, host, userAgent string, ttl int, propagationTimeout, pollingInterval time.Duration) *DNSProvider {
-	vinyldnsConfig := vinyldns.ClientConfiguration{
-		AccessKey: accessKey,
-		SecretKey: secretKey,
-		Host:      host,
-		UserAgent: userAgent,
-	}
-	providerConfig := Config{
-		AccessKey:          accessKey,
-		SecretKey:          secretKey,
-		Host:               host,
-		PropagationTimeout: propagationTimeout,
-		PollingInterval:    pollingInterval,
-		TTL:                ttl,
-	}
-
-	return &DNSProvider{
-		client: vinyldns.NewClient(vinyldnsConfig),
-		config: &providerConfig,
-	}
-}
-
 func Test_loadConfig_fromEnv(t *testing.T) {
 	defer envTest.RestoreEnv()
 	envTest.ClearEnv()
 
-	_ = os.Setenv(EnvAccessKey, "123")
-	_ = os.Setenv(EnvSecretKey, "456")
-	_ = os.Setenv(EnvHost, "http://host.company.invalid")
-	_ = os.Setenv(EnvTTL, "60")
-	_ = os.Setenv(EnvPropagationTimeout, fmt.Sprintf("%.0f", (3*time.Minute).Seconds()))
-	_ = os.Setenv(EnvPollingInterval, fmt.Sprintf("%.0f", (5*time.Second).Seconds()))
+	envVars := map[string]string{
+		EnvAccessKey:          "123",
+		EnvSecretKey:          "456",
+		EnvHost:               "http://host.company.invalid",
+		EnvTTL:                "60",
+		EnvPropagationTimeout: fmt.Sprintf("%.0f", (3 * time.Minute).Seconds()),
+		EnvPollingInterval:    fmt.Sprintf("%.0f", (5 * time.Second).Seconds()),
+	}
+	envTest.Apply(envVars)
 
 	provider := makeTestProviderFull("123", "456", "http://host.company.invalid", "go-acme/lego", 60, 3*time.Minute, 5*time.Second)
 
@@ -219,4 +166,63 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 
 	err := provider.CleanUp(targetHostname+"."+targetDomain, "123456d==", "123456d==")
 	require.NoError(t, err, "Expected Present to return no error")
+}
+
+func makeTestProvider(serverURL string) *DNSProvider {
+	config := vinyldns.ClientConfiguration{
+		AccessKey: "foo",
+		SecretKey: "bar",
+		Host:      serverURL,
+		UserAgent: "go-acme/lego",
+	}
+
+	return &DNSProvider{
+		client: vinyldns.NewClient(config),
+		config: NewDefaultConfig(),
+	}
+}
+
+func makeTestProviderFull(accessKey, secretKey, host, userAgent string, ttl int, propagationTimeout, pollingInterval time.Duration) *DNSProvider {
+	vinyldnsConfig := vinyldns.ClientConfiguration{
+		AccessKey: accessKey,
+		SecretKey: secretKey,
+		Host:      host,
+		UserAgent: userAgent,
+	}
+	providerConfig := Config{
+		AccessKey:          accessKey,
+		SecretKey:          secretKey,
+		Host:               host,
+		PropagationTimeout: propagationTimeout,
+		PollingInterval:    pollingInterval,
+		TTL:                ttl,
+	}
+
+	return &DNSProvider{
+		client: vinyldns.NewClient(vinyldnsConfig),
+		config: &providerConfig,
+	}
+}
+
+func getDefaultMockMapping() MockResponseMap {
+	defaultMockMapping := MockResponseMap{
+		"GET": {
+			"/zones/name/" + targetDomain + ".":                                                    {StatusCode: 200, Body: GetZoneResponse},
+			"/zones/" + zoneID + "/recordsets/" + newRecordSetID + "/changes/" + newCreateChangeID: {StatusCode: 200, Body: GetCreateRRSetStatusResponse},
+			"/zones/" + zoneID + "/recordsets/" + recordsetID + "/changes/" + deleteChangeID:       {StatusCode: 200, Body: GetDeleteRRSetStatusResponse},
+			"/zones/" + zoneID + "/recordsets?recordNameFilter=" + recordName:                      {StatusCode: 200, Body: FindRRSetResponse},
+			"/zones/" + zoneID + "/recordsets":                                                     {StatusCode: 200, Body: FindRRSetResponse},
+		},
+		"POST": {
+			"/zones/" + zoneID + "/recordsets": {StatusCode: 202, Body: CreateRRSetResponse},
+		},
+		"PUT": {
+			"/zones/" + zoneID + "/recordsets/" + recordID: {StatusCode: 202, Body: CreateRRSetResponse},
+		},
+		"DELETE": {
+			"/zones/" + zoneID + "/recordsets/" + recordID: {StatusCode: 202, Body: DeleteRRSetResponse},
+		},
+	}
+
+	return defaultMockMapping
 }

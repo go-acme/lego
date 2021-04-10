@@ -1772,7 +1772,7 @@ func displayDNSHelp(name string) error {
 		// generated from: providers/dns/vinyldns/vinyldns.toml
 		ew.writeln(`Configuration for VinylDNS.`)
 		ew.writeln(`Code:	'vinyldns'`)
-		ew.writeln(`Since:	'v4.3.1'`)
+		ew.writeln(`Since:	'v4.4.0'`)
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
@@ -1782,9 +1782,9 @@ func displayDNSHelp(name string) error {
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "VINYLDNS_POLLING_INTERVAL":	Time between DNS propagation check (default: 4)`)
-		ew.writeln(`	- "VINYLDNS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation (default: 120)`)
-		ew.writeln(`	- "VINYLDNS_TTL":	The TTL of the TXT record used for the DNS challenge (default: 30)`)
+		ew.writeln(`	- "VINYLDNS_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "VINYLDNS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "VINYLDNS_TTL":	The TTL of the TXT record used for the DNS challenge`)
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/vinyldns`)

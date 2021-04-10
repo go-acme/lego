@@ -9,7 +9,7 @@ slug: vinyldns
 <!-- providers/dns/vinyldns/vinyldns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.3.1
+Since: v4.4.0
 
 Configuration for [VinylDNS](https://www.vinyldns.io).
 
@@ -23,8 +23,8 @@ Here is an example bash command using the VinylDNS provider:
 ```bash
 VINYLDNS_ACCESS_KEY=xxxxxx \
 VINYLDNS_SECRET_KEY=yyyyy \
-VINYLDNS_HOST=https://api.vinyldns.company.invalid:9443 \
-lego --email myemail@company.invalid --dns vinyldns --domains my.company.invalid run
+VINYLDNS_HOST=https://api.vinyldns.example.org:9443 \
+lego --email myemail@example.com --dns vinyldns --domains my.example.org run
 ```
 
 
@@ -46,9 +46,9 @@ More information [here](/lego/dns/#configuration-and-credentials).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `VINYLDNS_POLLING_INTERVAL` | Time between DNS propagation check (default: 4) |
-| `VINYLDNS_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation (default: 120) |
-| `VINYLDNS_TTL` | The TTL of the TXT record used for the DNS challenge (default: 30) |
+| `VINYLDNS_POLLING_INTERVAL` | Time between DNS propagation check |
+| `VINYLDNS_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
+| `VINYLDNS_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).
@@ -61,6 +61,7 @@ Users are required to have DELETE ACL level or zone admin permissions on the Vin
 ## More information
 
 - [API documentation](https://www.vinyldns.io/api/)
+- [Go client](https://github.com/vinyldns/go-vinyldns)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/vinyldns/vinyldns.toml -->

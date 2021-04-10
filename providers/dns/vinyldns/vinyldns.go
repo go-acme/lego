@@ -25,7 +25,6 @@ const (
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 )
-const vinylDNSSuccessStatus = "Complete"
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
@@ -106,29 +105,27 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	record := vinyldns.Record{Text: value}
 
-	if existingRecord.ID == "" {
+	if existingRecord == nil || existingRecord.ID == "" {
 		err = d.createRecordSet(fqdn, []vinyldns.Record{record})
 		if err != nil {
 			return fmt.Errorf("vinyldns: %w", err)
 		}
+
 		return nil
 	}
 
-	records := existingRecord.Records
-
-	var found bool
-	for _, i := range records {
+	for _, i := range existingRecord.Records {
 		if i.Text == value {
-			found = true
+			return nil
 		}
 	}
 
-	if !found {
-		records = append(records, record)
-		err = d.updateRecordSet(existingRecord, records)
-		if err != nil {
-			return fmt.Errorf("vinyldns: %w", err)
-		}
+	records := existingRecord.Records
+	records = append(records, record)
+
+	err = d.updateRecordSet(existingRecord, records)
+	if err != nil {
+		return fmt.Errorf("vinyldns: %w", err)
 	}
 
 	return nil
@@ -143,7 +140,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("vinyldns: %w", err)
 	}
 
-	if existingRecord.ID == "" || len(existingRecord.Records) == 0 {
+	if existingRecord == nil || existingRecord.ID == "" || len(existingRecord.Records) == 0 {
 		return nil
 	}
 
@@ -159,6 +156,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		if err != nil {
 			return fmt.Errorf("vinyldns: %w", err)
 		}
+
 		return nil
 	}
 
@@ -174,6 +172,39 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
+}
+
+func (d *DNSProvider) getRecordSet(fqdn string) (*vinyldns.RecordSet, error) {
+	zoneName, hostName, err := splitDomain(fqdn)
+	if err != nil {
+		return nil, err
+	}
+
+	zone, err := d.client.ZoneByName(zoneName)
+	if err != nil {
+		return nil, err
+	}
+
+	allRecordSets, err := d.client.RecordSetsListAll(zone.ID, vinyldns.ListFilter{NameFilter: hostName})
+	if err != nil {
+		return nil, err
+	}
+
+	var recordSets []vinyldns.RecordSet
+	for _, i := range allRecordSets {
+		if i.Type == "TXT" {
+			recordSets = append(recordSets, i)
+		}
+	}
+
+	switch {
+	case len(recordSets) > 1:
+		return nil, fmt.Errorf("ambiguous recordset definition of %s", fqdn)
+	case len(recordSets) == 1:
+		return &recordSets[0], nil
+	default:
+		return nil, nil
+	}
 }
 
 func (d *DNSProvider) createRecordSet(fqdn string, records []vinyldns.Record) error {
@@ -201,41 +232,6 @@ func (d *DNSProvider) createRecordSet(fqdn string, records []vinyldns.Record) er
 	}
 
 	return d.waitForChanges("CreateRS", resp)
-}
-
-func (d *DNSProvider) getRecordSet(fqdn string) (*vinyldns.RecordSet, error) {
-	zoneName, hostName, err := splitDomain(fqdn)
-	if err != nil {
-		return nil, err
-	}
-
-	zone, err := d.client.ZoneByName(zoneName)
-	if err != nil {
-		return nil, err
-	}
-
-	filter := vinyldns.ListFilter{NameFilter: hostName}
-
-	recordSetsOutputRaw, err := d.client.RecordSetsListAll(zone.ID, filter)
-	if err != nil {
-		return nil, err
-	}
-
-	var recordSetsOutput []vinyldns.RecordSet
-	for _, i := range recordSetsOutputRaw {
-		if i.Type == "TXT" {
-			recordSetsOutput = append(recordSetsOutput, i)
-		}
-	}
-
-	switch {
-	case len(recordSetsOutput) > 1:
-		return nil, fmt.Errorf("ambiguous recordset definition of %s", fqdn)
-	case len(recordSetsOutput) == 1:
-		return &recordSetsOutput[0], nil
-	default:
-		return &vinyldns.RecordSet{}, nil
-	}
 }
 
 func (d *DNSProvider) updateRecordSet(recordSet *vinyldns.RecordSet, newRecords []vinyldns.Record) error {
@@ -272,7 +268,7 @@ func (d *DNSProvider) waitForChanges(operation string, resp *vinyldns.RecordSetU
 				return false, fmt.Errorf("failed to query change status: %w", err)
 			}
 
-			if change.Status == vinylDNSSuccessStatus {
+			if change.Status == "Complete" {
 				return true, nil
 			}
 

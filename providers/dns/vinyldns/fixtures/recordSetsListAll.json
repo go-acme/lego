@@ -7,7 +7,7 @@
       "accessLevel": "Delete",
       "account": "",
       "created": "2021-03-04T00:51:43Z",
-      "fqdn": "_acme-challenge.host.vinyldns.io.",
+      "fqdn": "_acme-challenge.host.example.com.",
       "id": "30000000-0000-0000-0000-000000000000",
       "name": "_acme-challenge.host",
       "records": [

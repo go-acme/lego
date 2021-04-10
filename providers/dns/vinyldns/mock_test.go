@@ -30,6 +30,8 @@ func setup(t *testing.T) (*http.ServeMux, *DNSProvider) {
 }
 
 type mockRouter struct {
+	debug bool
+
 	mu     sync.Mutex
 	routes map[string]map[string]http.HandlerFunc
 }
@@ -45,6 +47,12 @@ func newMockRouter() *mockRouter {
 	return &mockRouter{
 		routes: routes,
 	}
+}
+
+func (h *mockRouter) Debug() *mockRouter {
+	h.debug = true
+
+	return h
 }
 
 func (h *mockRouter) Get(path string, statusCode int, filename string) *mockRouter {
@@ -70,6 +78,10 @@ func (h *mockRouter) Delete(path string, statusCode int, filename string) *mockR
 func (h *mockRouter) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
+
+	if h.debug {
+		fmt.Println(req)
+	}
 
 	rt := h.routes[req.Method]
 	if rt == nil {

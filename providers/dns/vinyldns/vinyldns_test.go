@@ -12,8 +12,8 @@ import (
 const envDomain = envNamespace + "DOMAIN"
 
 const (
-	targetHostname    = "host"
-	targetDomain      = "vinyldns.io"
+	targetRootDomain  = "example.com"
+	targetDomain      = "host." + targetRootDomain
 	zoneID            = "00000000-0000-0000-0000-000000000000"
 	newRecordSetID    = "11000000-0000-0000-0000-000000000000"
 	newCreateChangeID = "20000000-0000-0000-0000-000000000000"
@@ -37,13 +37,13 @@ func TestNewDNSProvider(t *testing.T) {
 			envVars: map[string]string{
 				EnvAccessKey: "123",
 				EnvSecretKey: "456",
-				EnvHost:      "https://example.com",
+				EnvHost:      "https://example.org",
 			},
 		},
 		{
 			desc: "missing all credentials",
 			envVars: map[string]string{
-				EnvHost: "https://example.com",
+				EnvHost: "https://example.org",
 			},
 			expected: "vinyldns: some credentials information are missing: VINYLDNS_ACCESS_KEY,VINYLDNS_SECRET_KEY",
 		},
@@ -51,7 +51,7 @@ func TestNewDNSProvider(t *testing.T) {
 			desc: "missing access key",
 			envVars: map[string]string{
 				EnvSecretKey: "456",
-				EnvHost:      "https://example.com",
+				EnvHost:      "https://example.org",
 			},
 			expected: "vinyldns: some credentials information are missing: VINYLDNS_ACCESS_KEY",
 		},
@@ -59,7 +59,7 @@ func TestNewDNSProvider(t *testing.T) {
 			desc: "missing secret key",
 			envVars: map[string]string{
 				EnvAccessKey: "123",
-				EnvHost:      "https://example.com",
+				EnvHost:      "https://example.org",
 			},
 			expected: "vinyldns: some credentials information are missing: VINYLDNS_SECRET_KEY",
 		},
@@ -106,23 +106,23 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			desc:      "success",
 			accessKey: "123",
 			secretKey: "456",
-			host:      "https://example.com",
+			host:      "https://example.org",
 		},
 		{
 			desc:     "missing all credentials",
-			host:     "https://example.com",
+			host:     "https://example.org",
 			expected: "vinyldns: credentials are missing",
 		},
 		{
 			desc:      "missing access key",
 			secretKey: "456",
-			host:      "https://example.com",
+			host:      "https://example.org",
 			expected:  "vinyldns: credentials are missing",
 		},
 		{
 			desc:      "missing secret key",
 			accessKey: "123",
-			host:      "https://example.com",
+			host:      "https://example.org",
 			expected:  "vinyldns: credentials are missing",
 		},
 		{
@@ -154,57 +154,64 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}
 }
 
-func TestDNSProvider_Present_new(t *testing.T) {
-	mux, p := setup(t)
+func TestDNSProvider_Present(t *testing.T) {
+	testCases := []struct {
+		desc    string
+		keyAuth string
+		handler http.Handler
+	}{
+		{
+			desc:    "new record",
+			keyAuth: "123456d==",
+			handler: newMockRouter().
+				Get("/zones/name/"+targetRootDomain+".", http.StatusOK, "zoneByName").
+				Get("/zones/"+zoneID+"/recordsets", http.StatusOK, "recordSetsListAll-empty").
+				Post("/zones/"+zoneID+"/recordsets", http.StatusAccepted, "recordSetUpdate-create").
+				Get("/zones/"+zoneID+"/recordsets/"+newRecordSetID+"/changes/"+newCreateChangeID, http.StatusOK, "recordSetChange-create"),
+		},
+		{
+			desc:    "existing record",
+			keyAuth: "123456d==",
+			handler: newMockRouter().
+				Get("/zones/name/"+targetRootDomain+".", http.StatusOK, "zoneByName").
+				Get("/zones/"+zoneID+"/recordsets", http.StatusOK, "recordSetsListAll"),
+		},
+		{
+			desc:    "duplicate key",
+			keyAuth: "abc123!!",
+			handler: newMockRouter().
+				Get("/zones/name/"+targetRootDomain+".", http.StatusOK, "zoneByName").
+				Get("/zones/"+zoneID+"/recordsets", http.StatusOK, "recordSetsListAll").
+				Put("/zones/"+zoneID+"/recordsets/"+recordID, http.StatusAccepted, "recordSetUpdate-create").
+				Get("/zones/"+zoneID+"/recordsets/"+newRecordSetID+"/changes/"+newCreateChangeID, http.StatusOK, "recordSetChange-create"),
+		},
+	}
 
-	mux.Handle("/", newMockRouter().
-		Get("/zones/name/"+targetDomain+".", http.StatusOK, "zoneByName").
-		Get("/zones/"+zoneID+"/recordsets", http.StatusOK, "recordSetsListAll-empty").
-		Post("/zones/"+zoneID+"/recordsets", http.StatusAccepted, "recordSetUpdate-create").
-		Get("/zones/"+zoneID+"/recordsets/"+newRecordSetID+"/changes/"+newCreateChangeID, http.StatusOK, "recordSetChange-create"),
-	)
+	for _, test := range testCases {
+		test := test
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
 
-	err := p.Present(targetHostname+"."+targetDomain, "123456d==", "123456d==")
-	require.NoError(t, err)
-}
+			mux, p := setup(t)
+			mux.Handle("/", test.handler)
 
-func TestDNSProvider_Present_existing(t *testing.T) {
-	mux, p := setup(t)
-
-	mux.Handle("/", newMockRouter().
-		Get("/zones/name/"+targetDomain+".", http.StatusOK, "zoneByName").
-		Get("/zones/"+zoneID+"/recordsets", http.StatusOK, "recordSetsListAll"),
-	)
-
-	err := p.Present(targetHostname+"."+targetDomain, "123456d==", "123456d==")
-	require.NoError(t, err)
-}
-
-func TestDNSProvider_Present_duplicateKey(t *testing.T) {
-	mux, p := setup(t)
-
-	mux.Handle("/", newMockRouter().
-		Get("/zones/name/"+targetDomain+".", http.StatusOK, "zoneByName").
-		Get("/zones/"+zoneID+"/recordsets", http.StatusOK, "recordSetsListAll").
-		Put("/zones/"+zoneID+"/recordsets/"+recordID, http.StatusAccepted, "recordSetUpdate-create").
-		Get("/zones/"+zoneID+"/recordsets/"+newRecordSetID+"/changes/"+newCreateChangeID, http.StatusOK, "recordSetChange-create"),
-	)
-
-	err := p.Present(targetHostname+"."+targetDomain, "abc123!!", "abc123!!")
-	require.NoError(t, err)
+			err := p.Present(targetDomain, "token"+test.keyAuth, test.keyAuth)
+			require.NoError(t, err)
+		})
+	}
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
 	mux, p := setup(t)
 
 	mux.Handle("/", newMockRouter().
-		Get("/zones/name/"+targetDomain+".", http.StatusOK, "zoneByName").
+		Get("/zones/name/"+targetRootDomain+".", http.StatusOK, "zoneByName").
 		Get("/zones/"+zoneID+"/recordsets", http.StatusOK, "recordSetsListAll").
 		Delete("/zones/"+zoneID+"/recordsets/"+recordID, http.StatusAccepted, "recordSetDelete").
 		Get("/zones/"+zoneID+"/recordsets/"+newRecordSetID+"/changes/"+newCreateChangeID, http.StatusOK, "recordSetChange-delete"),
 	)
 
-	err := p.CleanUp(targetHostname+"."+targetDomain, "123456d==", "123456d==")
+	err := p.CleanUp(targetDomain, "123456d==", "123456d==")
 	require.NoError(t, err)
 }
 

@@ -2,50 +2,101 @@ package vinyldns
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"sync"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/require"
 )
 
-// MockResponse represents a predefined response used by a mock server.
-type MockResponse struct {
-	StatusCode int
-	Body       string
-}
-
-// MockResponseMap maps request paths to responses.
-type MockResponseMap map[string]map[string]MockResponse
-
-func newMockServer(t *testing.T, responses MockResponseMap) string {
+func setup(t *testing.T) (*http.ServeMux, *DNSProvider) {
 	t.Helper()
 
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		path := r.RequestURI
-		method := r.Method
-		resp, ok := responses[method][path]
-		if !ok {
-			resp, ok = responses[method][r.URL.Path]
-			if !ok {
-				msg := fmt.Sprintf("Requested path not found in response map: %s using method: %s", path, method)
-				require.FailNow(t, msg)
-			}
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(resp.StatusCode)
-		_, err := w.Write([]byte(resp.Body))
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}))
-
+	mux := http.NewServeMux()
+	server := httptest.NewServer(mux)
 	t.Cleanup(server.Close)
 
-	time.Sleep(100 * time.Millisecond)
+	config := NewDefaultConfig()
+	config.AccessKey = "foo"
+	config.SecretKey = "bar"
+	config.Host = server.URL
 
-	return server.URL
+	p, err := NewDNSProviderConfig(config)
+	require.NoError(t, err)
+
+	return mux, p
+}
+
+type mockRouter struct {
+	mu     sync.Mutex
+	routes map[string]map[string]http.HandlerFunc
+}
+
+func newMockRouter() *mockRouter {
+	routes := map[string]map[string]http.HandlerFunc{
+		http.MethodGet:    {},
+		http.MethodPost:   {},
+		http.MethodPut:    {},
+		http.MethodDelete: {},
+	}
+
+	return &mockRouter{
+		routes: routes,
+	}
+}
+
+func (h *mockRouter) Get(path string, statusCode int, filename string) *mockRouter {
+	h.add(http.MethodGet, path, statusCode, filename)
+	return h
+}
+
+func (h *mockRouter) Post(path string, statusCode int, filename string) *mockRouter {
+	h.add(http.MethodPost, path, statusCode, filename)
+	return h
+}
+
+func (h *mockRouter) Put(path string, statusCode int, filename string) *mockRouter {
+	h.add(http.MethodPut, path, statusCode, filename)
+	return h
+}
+
+func (h *mockRouter) Delete(path string, statusCode int, filename string) *mockRouter {
+	h.add(http.MethodDelete, path, statusCode, filename)
+	return h
+}
+
+func (h *mockRouter) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+
+	rt := h.routes[req.Method]
+	if rt == nil {
+		http.NotFound(rw, req)
+		return
+	}
+
+	hdl := rt[req.URL.Path]
+	if hdl == nil {
+		http.NotFound(rw, req)
+		return
+	}
+
+	hdl(rw, req)
+}
+
+func (h *mockRouter) add(method, path string, statusCode int, filename string) {
+	h.routes[method][path] = func(rw http.ResponseWriter, req *http.Request) {
+		rw.WriteHeader(statusCode)
+
+		data, err := ioutil.ReadFile(fmt.Sprintf("./fixtures/%s.json", filename))
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		rw.Header().Set("Content-Type", "application/json")
+		_, _ = rw.Write(data)
+	}
 }

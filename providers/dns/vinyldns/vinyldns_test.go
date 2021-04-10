@@ -1,228 +1,237 @@
 package vinyldns
 
 import (
-	"fmt"
-	"os"
+	"net/http"
 	"testing"
 	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/vinyldns/go-vinyldns/vinyldns"
 )
 
-const (
-	envDomain = envNamespace + "DOMAIN"
-)
+const envDomain = envNamespace + "DOMAIN"
 
 const (
 	targetHostname    = "host"
 	targetDomain      = "vinyldns.io"
 	zoneID            = "00000000-0000-0000-0000-000000000000"
-	recordsetID       = "10000000-0000-0000-0000-000000000000"
 	newRecordSetID    = "11000000-0000-0000-0000-000000000000"
 	newCreateChangeID = "20000000-0000-0000-0000-000000000000"
-	deleteChangeID    = "21000000-0000-0000-0000-000000000000"
-	recordName        = "_acme-challenge" + targetHostname
 	recordID          = "30000000-0000-0000-0000-000000000000"
 )
 
 var envTest = tester.NewEnvTest(
-	envDomain,
 	EnvAccessKey,
 	EnvSecretKey,
-	EnvHost,
-	EnvTTL,
-	EnvPropagationTimeout,
-	EnvPollingInterval).
-	WithDomain(envDomain).
-	WithLiveTestRequirements(EnvAccessKey, EnvSecretKey, EnvHost, envDomain)
+	EnvHost).
+	WithDomain(envDomain)
 
-func Test_loadConfig_fromEnv(t *testing.T) {
-	defer envTest.RestoreEnv()
-	envTest.ClearEnv()
-
-	envVars := map[string]string{
-		EnvAccessKey:          "123",
-		EnvSecretKey:          "456",
-		EnvHost:               "http://host.company.invalid",
-		EnvTTL:                "60",
-		EnvPropagationTimeout: fmt.Sprintf("%.0f", (3 * time.Minute).Seconds()),
-		EnvPollingInterval:    fmt.Sprintf("%.0f", (5 * time.Second).Seconds()),
-	}
-	envTest.Apply(envVars)
-
-	provider := makeTestProviderFull("123", "456", "http://host.company.invalid", "go-acme/lego", 60, 3*time.Minute, 5*time.Second)
-
-	expected, _ := NewDNSProvider()
-	assert.Equal(t, expected.config.AccessKey, provider.config.AccessKey)
-	assert.Equal(t, expected.config.SecretKey, provider.config.SecretKey)
-	assert.Equal(t, expected.config.Host, provider.config.Host)
-	assert.Equal(t, expected.config.PollingInterval, provider.config.PollingInterval)
-	assert.Equal(t, expected.config.PropagationTimeout, provider.config.PropagationTimeout)
-	assert.Equal(t, expected.config.TTL, provider.config.TTL)
-	assert.Equal(t, expected.client.AccessKey, provider.client.AccessKey)
-	assert.Equal(t, expected.client.SecretKey, provider.client.SecretKey)
-	assert.Equal(t, expected.client.Host, provider.client.Host)
-	assert.Equal(t, expected.client.UserAgent, provider.client.UserAgent)
-}
-
-func TestNewDefaultConfig(t *testing.T) {
-	defer envTest.RestoreEnv()
-
+func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
 		desc     string
 		envVars  map[string]string
-		expected *Config
+		expected string
 	}{
 		{
-			desc: "default configuration",
-			expected: &Config{
-				TTL:                30,
-				PropagationTimeout: 2 * time.Minute,
-				PollingInterval:    4 * time.Second,
+			desc: "success",
+			envVars: map[string]string{
+				EnvAccessKey: "123",
+				EnvSecretKey: "456",
+				EnvHost:      "https://example.com",
 			},
 		},
 		{
-			desc: "non-default configuration",
+			desc: "missing all credentials",
 			envVars: map[string]string{
-				EnvTTL:                "99",
-				EnvPropagationTimeout: "60",
-				EnvPollingInterval:    "60",
+				EnvHost: "https://example.com",
 			},
-			expected: &Config{
-				TTL:                99,
-				PropagationTimeout: 60 * time.Second,
-				PollingInterval:    60 * time.Second,
+			expected: "vinyldns: some credentials information are missing: VINYLDNS_ACCESS_KEY,VINYLDNS_SECRET_KEY",
+		},
+		{
+			desc: "missing access key",
+			envVars: map[string]string{
+				EnvSecretKey: "456",
+				EnvHost:      "https://example.com",
 			},
+			expected: "vinyldns: some credentials information are missing: VINYLDNS_ACCESS_KEY",
+		},
+		{
+			desc: "missing secret key",
+			envVars: map[string]string{
+				EnvAccessKey: "123",
+				EnvHost:      "https://example.com",
+			},
+			expected: "vinyldns: some credentials information are missing: VINYLDNS_SECRET_KEY",
+		},
+		{
+			desc: "missing host",
+			envVars: map[string]string{
+				EnvAccessKey: "123",
+				EnvSecretKey: "456",
+			},
+			expected: "vinyldns: some credentials information are missing: VINYLDNS_HOST",
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
+			defer envTest.RestoreEnv()
 			envTest.ClearEnv()
-			for key, value := range test.envVars {
-				os.Setenv(key, value)
+
+			envTest.Apply(test.envVars)
+
+			p, err := NewDNSProvider()
+
+			if test.expected == "" {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
+			} else {
+				require.EqualError(t, err, test.expected)
 			}
-
-			config := NewDefaultConfig()
-
-			assert.Equal(t, test.expected, config)
 		})
 	}
 }
 
-func TestDNSProvider_Present_ExistingACME(t *testing.T) {
-	mockResponses := getDefaultMockMapping()
+func TestNewDNSProviderConfig(t *testing.T) {
+	testCases := []struct {
+		desc      string
+		accessKey string
+		secretKey string
+		host      string
+		expected  string
+	}{
+		{
+			desc:      "success",
+			accessKey: "123",
+			secretKey: "456",
+			host:      "https://example.com",
+		},
+		{
+			desc:     "missing all credentials",
+			host:     "https://example.com",
+			expected: "vinyldns: credentials are missing",
+		},
+		{
+			desc:      "missing access key",
+			secretKey: "456",
+			host:      "https://example.com",
+			expected:  "vinyldns: credentials are missing",
+		},
+		{
+			desc:      "missing secret key",
+			accessKey: "123",
+			host:      "https://example.com",
+			expected:  "vinyldns: credentials are missing",
+		},
+		{
+			desc:      "missing host",
+			accessKey: "123",
+			secretKey: "456",
+			expected:  "vinyldns: host is missing",
+		},
+	}
 
-	serverURL := newMockServer(t, mockResponses)
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			config := NewDefaultConfig()
+			config.AccessKey = test.accessKey
+			config.SecretKey = test.secretKey
+			config.Host = test.host
 
-	defer envTest.RestoreEnv()
-	envTest.ClearEnv()
-	provider := makeTestProvider(serverURL)
+			p, err := NewDNSProviderConfig(config)
 
-	err := provider.Present(targetHostname+"."+targetDomain, "123456d==", "123456d==")
-	require.NoError(t, err, "Expected Present to return no error")
+			if test.expected == "" {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
 }
 
-func TestDNSProvider_Present_DuplicateKeyACME(t *testing.T) {
-	mockResponses := getDefaultMockMapping()
+func TestDNSProvider_Present_new(t *testing.T) {
+	mux, p := setup(t)
 
-	serverURL := newMockServer(t, mockResponses)
+	mux.Handle("/", newMockRouter().
+		Get("/zones/name/"+targetDomain+".", http.StatusOK, "zoneByName").
+		Get("/zones/"+zoneID+"/recordsets", http.StatusOK, "recordSetsListAll-empty").
+		Post("/zones/"+zoneID+"/recordsets", http.StatusAccepted, "recordSetUpdate-create").
+		Get("/zones/"+zoneID+"/recordsets/"+newRecordSetID+"/changes/"+newCreateChangeID, http.StatusOK, "recordSetChange-create"),
+	)
 
-	defer envTest.RestoreEnv()
-	envTest.ClearEnv()
-	provider := makeTestProvider(serverURL)
-
-	err := provider.Present(targetHostname+"."+targetDomain, "abc123!!", "abc123!!")
-	require.NoError(t, err, "Expected Present to return no error")
+	err := p.Present(targetHostname+"."+targetDomain, "123456d==", "123456d==")
+	require.NoError(t, err)
 }
 
-func TestDNSProvider_Present_NewACME(t *testing.T) {
-	mockResponses := getDefaultMockMapping()
-	missingResponse := MockResponse{StatusCode: 200, Body: FindEmptyRRSetResponse}
-	mockResponses["GET"]["/zones/"+zoneID+"/recordsets?recordNameFilter="+recordName] = missingResponse
-	mockResponses["GET"]["/zones/"+zoneID+"/recordsets"] = missingResponse
+func TestDNSProvider_Present_existing(t *testing.T) {
+	mux, p := setup(t)
 
-	serverURL := newMockServer(t, mockResponses)
+	mux.Handle("/", newMockRouter().
+		Get("/zones/name/"+targetDomain+".", http.StatusOK, "zoneByName").
+		Get("/zones/"+zoneID+"/recordsets", http.StatusOK, "recordSetsListAll"),
+	)
 
-	defer envTest.RestoreEnv()
-	envTest.ClearEnv()
-	provider := makeTestProvider(serverURL)
+	err := p.Present(targetHostname+"."+targetDomain, "123456d==", "123456d==")
+	require.NoError(t, err)
+}
 
-	err := provider.Present(targetHostname+"."+targetDomain, "123456d==", "123456d==")
-	require.NoError(t, err, "Expected Present to return no error")
+func TestDNSProvider_Present_duplicateKey(t *testing.T) {
+	mux, p := setup(t)
+
+	mux.Handle("/", newMockRouter().
+		Get("/zones/name/"+targetDomain+".", http.StatusOK, "zoneByName").
+		Get("/zones/"+zoneID+"/recordsets", http.StatusOK, "recordSetsListAll").
+		Put("/zones/"+zoneID+"/recordsets/"+recordID, http.StatusAccepted, "recordSetUpdate-create").
+		Get("/zones/"+zoneID+"/recordsets/"+newRecordSetID+"/changes/"+newCreateChangeID, http.StatusOK, "recordSetChange-create"),
+	)
+
+	err := p.Present(targetHostname+"."+targetDomain, "abc123!!", "abc123!!")
+	require.NoError(t, err)
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
-	mockResponses := getDefaultMockMapping()
+	mux, p := setup(t)
 
-	serverURL := newMockServer(t, mockResponses)
+	mux.Handle("/", newMockRouter().
+		Get("/zones/name/"+targetDomain+".", http.StatusOK, "zoneByName").
+		Get("/zones/"+zoneID+"/recordsets", http.StatusOK, "recordSetsListAll").
+		Delete("/zones/"+zoneID+"/recordsets/"+recordID, http.StatusAccepted, "recordSetDelete").
+		Get("/zones/"+zoneID+"/recordsets/"+newRecordSetID+"/changes/"+newCreateChangeID, http.StatusOK, "recordSetChange-delete"),
+	)
 
-	defer envTest.RestoreEnv()
-	envTest.ClearEnv()
-	provider := makeTestProvider(serverURL)
-
-	err := provider.CleanUp(targetHostname+"."+targetDomain, "123456d==", "123456d==")
-	require.NoError(t, err, "Expected Present to return no error")
+	err := p.CleanUp(targetHostname+"."+targetDomain, "123456d==", "123456d==")
+	require.NoError(t, err)
 }
 
-func makeTestProvider(serverURL string) *DNSProvider {
-	config := vinyldns.ClientConfiguration{
-		AccessKey: "foo",
-		SecretKey: "bar",
-		Host:      serverURL,
-		UserAgent: "go-acme/lego",
+func TestLivePresent(t *testing.T) {
+	if !envTest.IsLiveTest() {
+		t.Skip("skipping live test")
 	}
 
-	return &DNSProvider{
-		client: vinyldns.NewClient(config),
-		config: NewDefaultConfig(),
-	}
+	envTest.RestoreEnv()
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
+
+	err = provider.Present(envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
 }
 
-func makeTestProviderFull(accessKey, secretKey, host, userAgent string, ttl int, propagationTimeout, pollingInterval time.Duration) *DNSProvider {
-	vinyldnsConfig := vinyldns.ClientConfiguration{
-		AccessKey: accessKey,
-		SecretKey: secretKey,
-		Host:      host,
-		UserAgent: userAgent,
-	}
-	providerConfig := Config{
-		AccessKey:          accessKey,
-		SecretKey:          secretKey,
-		Host:               host,
-		PropagationTimeout: propagationTimeout,
-		PollingInterval:    pollingInterval,
-		TTL:                ttl,
+func TestLiveCleanUp(t *testing.T) {
+	if !envTest.IsLiveTest() {
+		t.Skip("skipping live test")
 	}
 
-	return &DNSProvider{
-		client: vinyldns.NewClient(vinyldnsConfig),
-		config: &providerConfig,
-	}
-}
+	envTest.RestoreEnv()
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
 
-func getDefaultMockMapping() MockResponseMap {
-	defaultMockMapping := MockResponseMap{
-		"GET": {
-			"/zones/name/" + targetDomain + ".":                                                    {StatusCode: 200, Body: GetZoneResponse},
-			"/zones/" + zoneID + "/recordsets/" + newRecordSetID + "/changes/" + newCreateChangeID: {StatusCode: 200, Body: GetCreateRRSetStatusResponse},
-			"/zones/" + zoneID + "/recordsets/" + recordsetID + "/changes/" + deleteChangeID:       {StatusCode: 200, Body: GetDeleteRRSetStatusResponse},
-			"/zones/" + zoneID + "/recordsets?recordNameFilter=" + recordName:                      {StatusCode: 200, Body: FindRRSetResponse},
-			"/zones/" + zoneID + "/recordsets":                                                     {StatusCode: 200, Body: FindRRSetResponse},
-		},
-		"POST": {
-			"/zones/" + zoneID + "/recordsets": {StatusCode: 202, Body: CreateRRSetResponse},
-		},
-		"PUT": {
-			"/zones/" + zoneID + "/recordsets/" + recordID: {StatusCode: 202, Body: CreateRRSetResponse},
-		},
-		"DELETE": {
-			"/zones/" + zoneID + "/recordsets/" + recordID: {StatusCode: 202, Body: DeleteRRSetResponse},
-		},
-	}
+	time.Sleep(2 * time.Second)
 
-	return defaultMockMapping
+	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
 }

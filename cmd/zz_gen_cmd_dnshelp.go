@@ -92,6 +92,7 @@ func allDNSCodes() string {
 		"transip",
 		"vegadns",
 		"versio",
+		"vinyldns",
 		"vscale",
 		"vultr",
 		"yandex",
@@ -1766,6 +1767,27 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/versio`)
+
+	case "vinyldns":
+		// generated from: providers/dns/vinyldns/vinyldns.toml
+		ew.writeln(`Configuration for VinylDNS.`)
+		ew.writeln(`Code:	'vinyldns'`)
+		ew.writeln(`Since:	'v4.4.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "VINYLDNS_ACCESS_KEY":	The VinylDNS API key`)
+		ew.writeln(`	- "VINYLDNS_HOST":	The VinylDNS API URL`)
+		ew.writeln(`	- "VINYLDNS_SECRET_KEY":	The VinylDNS API Secret key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "VINYLDNS_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "VINYLDNS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "VINYLDNS_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/vinyldns`)
 
 	case "vscale":
 		// generated from: providers/dns/vscale/vscale.toml

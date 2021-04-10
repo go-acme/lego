@@ -1,0 +1,6 @@
+{
+  "maxItems": 100,
+  "nameSort": "ASC",
+  "recordNameFilter": "_acme-challenge.host",
+  "recordSets": []
+}

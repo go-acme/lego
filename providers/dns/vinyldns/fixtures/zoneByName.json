@@ -1,0 +1,19 @@
+{
+  "zone": {
+    "accessLevel": "Delete",
+    "account": "system",
+    "acl": {
+      "rules": []
+    },
+    "adminGroupId": "40000000-0000-0000-0000-000000000000",
+    "adminGroupName": "OpsTeam",
+    "created": "2020-07-15T21:15:36Z",
+    "email": "Ops@company.invalid",
+    "id": "00000000-0000-0000-0000-000000000000",
+    "latestSync": "2020-07-15T21:15:36Z",
+    "name": "example.com.",
+    "shared": false,
+    "status": "Active",
+    "updated": "2021-03-03T18:02:47Z"
+  }
+}

@@ -9,7 +9,7 @@ slug: wedos
 <!-- providers/dns/wedos/wedos.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.5.0
+Since: v4.4.0
 
 Configuration for [WEDOS](https://www.wedos.com).
 
@@ -46,7 +46,8 @@ More information [here](/lego/dns/#configuration-and-credentials).
 |--------------------------------|-------------|
 | `WEDOS_HTTP_TIMEOUT` | API request timeout |
 | `WEDOS_POLLING_INTERVAL` | Time between DNS propagation check |
-| `WEDOS__PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
+| `WEDOS_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
+| `WEDOS_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).

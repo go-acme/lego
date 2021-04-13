@@ -9,8 +9,7 @@ import (
 
 const envDomain = envNamespace + "DOMAIN"
 
-var envTest = tester.NewEnvTest(
-	EnvUsername, EnvPassword).
+var envTest = tester.NewEnvTest(EnvUsername, EnvPassword).
 	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
@@ -23,16 +22,16 @@ func TestNewDNSProvider(t *testing.T) {
 			desc: "success",
 			envVars: map[string]string{
 				EnvUsername: "admin@example.com",
-				EnvPassword: "xxxxxxxxxxxxxxxxx",
+				EnvPassword: "secret",
 			},
 		},
 		{
 			desc: "missing credentials: username",
 			envVars: map[string]string{
 				EnvUsername: "",
-				EnvPassword: "xxxxxxxxxxxxxxxxx",
+				EnvPassword: "secret",
 			},
-			expected: "wedos: some credentials information are missing",
+			expected: "wedos: some credentials information are missing: WEDOS_USERNAME",
 		},
 		{
 			desc: "missing credentials: password",
@@ -40,7 +39,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvUsername: "admin@example.com",
 				EnvPassword: "",
 			},
-			expected: "wedos: some credentials information are missing",
+			expected: "wedos: some credentials information are missing: WEDOS_WAPI_PASSWORD",
 		},
 		{
 			desc: "missing credentials: all",
@@ -48,7 +47,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvUsername: "",
 				EnvPassword: "",
 			},
-			expected: "wedos: some credentials information are missing",
+			expected: "wedos: some credentials information are missing: WEDOS_USERNAME,WEDOS_WAPI_PASSWORD",
 		},
 	}
 
@@ -82,11 +81,11 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		{
 			desc:     "success",
 			username: "admin@example.com",
-			password: "xxxxxxxxxxxxxxxxx",
+			password: "secret",
 		},
 		{
 			desc:     "missing username",
-			password: "xxxxxxxxxxxxxxxxx",
+			password: "secret",
 			expected: "wedos: some credentials information are missing",
 		},
 		{

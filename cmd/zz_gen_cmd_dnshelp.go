@@ -1835,7 +1835,7 @@ func displayDNSHelp(name string) error {
 		// generated from: providers/dns/wedos/wedos.toml
 		ew.writeln(`Configuration for WEDOS.`)
 		ew.writeln(`Code:	'wedos'`)
-		ew.writeln(`Since:	'v4.5.0'`)
+		ew.writeln(`Since:	'v4.4.0'`)
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
@@ -1846,7 +1846,8 @@ func displayDNSHelp(name string) error {
 		ew.writeln(`Additional Configuration:`)
 		ew.writeln(`	- "WEDOS_HTTP_TIMEOUT":	API request timeout`)
 		ew.writeln(`	- "WEDOS_POLLING_INTERVAL":	Time between DNS propagation check`)
-		ew.writeln(`	- "WEDOS__PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "WEDOS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "WEDOS_TTL":	The TTL of the TXT record used for the DNS challenge`)
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/wedos`)

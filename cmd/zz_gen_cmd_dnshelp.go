@@ -95,6 +95,7 @@ func allDNSCodes() string {
 		"vinyldns",
 		"vscale",
 		"vultr",
+		"wedos",
 		"yandex",
 		"zoneee",
 		"zonomi",
@@ -1829,6 +1830,27 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/vultr`)
+
+	case "wedos":
+		// generated from: providers/dns/wedos/wedos.toml
+		ew.writeln(`Configuration for WEDOS.`)
+		ew.writeln(`Code:	'wedos'`)
+		ew.writeln(`Since:	'v4.4.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "WEDOS_USERNAME":	Username is the same as for the admin account`)
+		ew.writeln(`	- "WEDOS_WAPI_PASSWORD":	Password needs to be generated and IP allowed in the admin interface`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "WEDOS_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "WEDOS_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "WEDOS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "WEDOS_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/wedos`)
 
 	case "yandex":
 		// generated from: providers/dns/yandex/yandex.toml

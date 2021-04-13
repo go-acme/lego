@@ -29,8 +29,10 @@ func (p *Provider) Ping(ctx context.Context) error {
 
 // Commit not really required, all changes will be auto-committed after 5 mintues.
 func (p *Provider) Commit(ctx context.Context, zone string) error {
+	p.lock.Lock()
+	defer p.lock.Unlock()
 	_, e := askWedos(ctx, p.HTTPClient, p.Username, p.WapiPassword, "dns-domain-commit", map[string]interface{}{
-		"domain": strings.TrimRight(zone, "."),
+		"name": strings.TrimRight(zone, "."),
 	})
 	return e
 }
@@ -185,8 +187,10 @@ func (p *Provider) FillRecordID(ctx context.Context, zone string, record libdns.
 	}
 	for _, candidate := range existing {
 		if candidate.Type == record.Type && candidate.Name == record.Name {
-			record.ID = candidate.ID
-			return record, nil
+			if (record.Value == "") || (record.Value == candidate.Value) {
+				record.ID = candidate.ID
+				return record, nil
+			}
 		}
 	}
 	return record, nil

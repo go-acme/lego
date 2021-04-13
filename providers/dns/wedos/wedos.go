@@ -65,6 +65,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("wedos: the configuration of the DNS provider is nil")
 	}
 
+	if config.Username == "" || config.Password == "" {
+		return nil, errors.New("wedos: some credentials information are missing")
+	}
+
 	api := Provider{
 		Username:     config.Username,
 		WapiPassword: config.Password,
@@ -105,7 +109,7 @@ func (d *DNSProvider) execute(domain, keyAuth string, doInsert bool) error {
 		Type:  "TXT",
 		Name:  subdomain,
 		Value: value,
-		TTL:   5 * time.Minute,
+		TTL:   5 * time.Minute, // wedos minimum
 	}
 	rec, err = d.wedos.FillRecordID(d.ctx, authZone, rec)
 	if err != nil {
@@ -113,12 +117,20 @@ func (d *DNSProvider) execute(domain, keyAuth string, doInsert bool) error {
 	}
 	if doInsert {
 		_, err = d.wedos.SetRecords(d.ctx, authZone, []libdns.Record{rec})
-	} else {
+		if err != nil {
+			return fmt.Errorf("wedos: could not set TXT record for domain %q: %w", domain, err)
+		}
+	} else if rec.ID != "" {
 		_, err = d.wedos.DeleteRecords(d.ctx, authZone, []libdns.Record{rec})
+		if err != nil {
+			return fmt.Errorf("wedos: could not remove TXT record for domain %q: %w", domain, err)
+		}
 	}
+
+	err = d.wedos.Commit(d.ctx, authZone)
 	if err != nil {
-		return fmt.Errorf("wedos: could not set or remove TXT record for domain %q: %w", domain, err)
+		return fmt.Errorf("wedos: could not commit TXT record for domain %q: %w", domain, err)
 	}
-	_ = d.wedos.Commit(d.ctx, authZone)
+
 	return nil
 }

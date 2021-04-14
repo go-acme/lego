@@ -596,7 +596,7 @@ func displayDNSHelp(name string) error {
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "DOMENESHOP_API_PASSWORD":	API secret`)
+		ew.writeln(`	- "DOMENESHOP_API_SECRET":	API secret`)
 		ew.writeln(`	- "DOMENESHOP_API_TOKEN":	API token`)
 		ew.writeln()
 

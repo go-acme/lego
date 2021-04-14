@@ -112,7 +112,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("wedos: could not determine zone for domain %q: %w", domain, err)
 	}
 
-	subDomain := strings.TrimSuffix(fqdn, authZone)
+	subDomain := dns01.UnFqdn(strings.TrimSuffix(fqdn, authZone))
 
 	record := internal.DNSRow{
 		Name: subDomain,
@@ -157,7 +157,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("wedos: could not determine zone for domain %q: %w", domain, err)
 	}
 
-	subDomain := strings.TrimSuffix(fqdn, authZone)
+	subDomain := dns01.UnFqdn(strings.TrimSuffix(fqdn, authZone))
 
 	records, err := d.client.GetRecords(ctx, authZone)
 	if err != nil {

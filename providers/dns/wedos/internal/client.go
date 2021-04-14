@@ -27,21 +27,28 @@ const (
 )
 
 type ResponsePayload struct {
-	Code        int             `json:"code,omitempty"`
-	Result      string          `json:"result,omitempty"`
-	Timestamp   int             `json:"timestamp,omitempty"`
-	SvTRID      string          `json:"svTRID,omitempty"`
-	Command     string          `json:"command,omitempty"`
-	Data        json.RawMessage `json:"data"`
-	DNSRowsList []DNSRow
+	Code      int             `json:"code,omitempty"`
+	Result    string          `json:"result,omitempty"`
+	Timestamp int             `json:"timestamp,omitempty"`
+	SvTRID    string          `json:"svTRID,omitempty"`
+	Command   string          `json:"command,omitempty"`
+	Data      json.RawMessage `json:"data"`
 }
 
 type DNSRow struct {
-	ID     string      `json:"ID,omitempty"`
+	ID   string      `json:"ID,omitempty"`
+	Name string      `json:"name,omitempty"`
+	TTL  json.Number `json:"ttl,omitempty" type:"integer"`
+	Type string      `json:"rdtype,omitempty"`
+	Data string      `json:"rdata"`
+}
+
+type DNSRowRequest struct {
+	ID     string      `json:"row_id,omitempty"`
 	Domain string      `json:"domain,omitempty"`
 	Name   string      `json:"name,omitempty"`
 	TTL    json.Number `json:"ttl,omitempty" type:"integer"`
-	Type   string      `json:"rdtype,omitempty"`
+	Type   string      `json:"type,omitempty"`
 	Data   string      `json:"rdata"`
 }
 
@@ -96,7 +103,7 @@ func (c *Client) GetRecords(ctx context.Context, zone string) ([]DNSRow, error) 
 // https://kb.wedos.com/en/wapi-api-interface/wapi-command-dns-add-row/
 // https://kb.wedos.com/en/wapi-api-interface/wapi-command-dns-row-update/
 func (c *Client) AddRecord(ctx context.Context, zone string, record DNSRow) error {
-	payload := DNSRow{
+	payload := DNSRowRequest{
 		Domain: dns01.UnFqdn(zone),
 		TTL:    record.TTL,
 		Type:   record.Type,
@@ -123,7 +130,7 @@ func (c *Client) AddRecord(ctx context.Context, zone string, record DNSRow) erro
 // If a record does not have an ID, it will be looked up.
 // https://kb.wedos.com/en/wapi-api-interface/wapi-command-dns-row-delete/
 func (c *Client) DeleteRecord(ctx context.Context, zone string, recordID string) error {
-	payload := DNSRow{
+	payload := DNSRowRequest{
 		Domain: dns01.UnFqdn(zone),
 		ID:     recordID,
 	}

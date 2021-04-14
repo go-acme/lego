@@ -95,17 +95,16 @@ func TestClient_GetRecords(t *testing.T) {
 }
 
 func TestClient_AddRecord(t *testing.T) {
-	expectedForm := `{"request":{"user":"user","auth":"xxx","command":"dns-row-add","data":{"domain":"example.com","name":"foo","ttl":1800,"rdtype":"TXT","rdata":"foobar"}}}`
+	expectedForm := `{"request":{"user":"user","auth":"xxx","command":"dns-row-add","data":{"domain":"example.com","name":"foo","ttl":1800,"type":"TXT","rdata":"foobar"}}}`
 
 	client := setupNew(t, expectedForm, commandDNSRowAdd)
 
 	record := DNSRow{
-		ID:     "",
-		Domain: "example.com",
-		Name:   "foo",
-		TTL:    "1800",
-		Type:   "TXT",
-		Data:   "foobar",
+		ID:   "",
+		Name: "foo",
+		TTL:  "1800",
+		Type: "TXT",
+		Data: "foobar",
 	}
 
 	err := client.AddRecord(context.Background(), "example.com.", record)
@@ -113,17 +112,16 @@ func TestClient_AddRecord(t *testing.T) {
 }
 
 func TestClient_AddRecord_update(t *testing.T) {
-	expectedForm := `{"request":{"user":"user","auth":"xxx","command":"dns-row-update","data":{"ID":"1","domain":"example.com","ttl":1800,"rdtype":"TXT","rdata":"foobar"}}}`
+	expectedForm := `{"request":{"user":"user","auth":"xxx","command":"dns-row-update","data":{"row_id":"1","domain":"example.com","ttl":1800,"type":"TXT","rdata":"foobar"}}}`
 
 	client := setupNew(t, expectedForm, commandDNSRowUpdate)
 
 	record := DNSRow{
-		ID:     "1",
-		Domain: "example.com",
-		Name:   "foo",
-		TTL:    "1800",
-		Type:   "TXT",
-		Data:   "foobar",
+		ID:   "1",
+		Name: "foo",
+		TTL:  "1800",
+		Type: "TXT",
+		Data: "foobar",
 	}
 
 	err := client.AddRecord(context.Background(), "example.com.", record)
@@ -131,7 +129,7 @@ func TestClient_AddRecord_update(t *testing.T) {
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
-	expectedForm := `{"request":{"user":"user","auth":"xxx","command":"dns-row-delete","data":{"ID":"1","domain":"example.com","rdata":""}}}`
+	expectedForm := `{"request":{"user":"user","auth":"xxx","command":"dns-row-delete","data":{"row_id":"1","domain":"example.com","rdata":""}}}`
 
 	client := setupNew(t, expectedForm, commandDNSRowDelete)
 

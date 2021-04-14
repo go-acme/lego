@@ -44,11 +44,11 @@ type DNSRow struct {
 }
 
 type DNSRowRequest struct {
-	ID     string      `json:"row_id,omitempty"` // <- this is different
+	ID     string      `json:"row_id,omitempty"`
 	Domain string      `json:"domain,omitempty"`
 	Name   string      `json:"name,omitempty"`
 	TTL    json.Number `json:"ttl,omitempty" type:"integer"`
-	Type   string      `json:"type,omitempty"` // <- this is different
+	Type   string      `json:"type,omitempty"`
 	Data   string      `json:"rdata"`
 }
 

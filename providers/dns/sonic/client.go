@@ -11,15 +11,15 @@ import (
 
 // Client Sonic client.
 type Client struct {
-	userId     string
+	userID     string
 	apiKey  string
 	HTTPClient *http.Client
 }
 
 // Record holds the Sonic API representation of a Domain Record.
 type Record struct {
-	UserId     string `json:"userid"`
-	ApiKey     string `json:"apikey"`
+	UserID     string `json:"userid"`
+	APIKey     string `json:"apikey"`
 	Hostname   string `json:"hostname"`
 	Value      string  `json:"value"`
 	TTL        int     `json:"ttl"`
@@ -27,10 +27,10 @@ type Record struct {
 }
 
 
-// NewClient creates a sonic client based on DNSMadeEasy's LEGO library
-func NewClient(userId, apiKey string) (*Client, error) {
-	if userId == "" {
-		return nil, errors.New("credentials missing: userId created via https://public-api.sonic.net/dyndns#requesting_an_api_key")
+// NewClient creates a sonic client based on DNSMadeEasy's LEGO library.
+func NewClient(userID, apiKey string) (*Client, error) {
+	if userID == "" {
+		return nil, errors.New("credentials missing: userID created via https://public-api.sonic.net/dyndns#requesting_an_api_key")
 	}
 
 	if apiKey == "" {
@@ -38,18 +38,18 @@ func NewClient(userId, apiKey string) (*Client, error) {
 	}
 
 	return &Client{
-		userId:     userId,
+		userID:     userID,
 		apiKey:  apiKey,
 		HTTPClient: &http.Client{},
 	}, nil
 }
 
 // CreateOrUpdateRecord creates or updates a TXT records.
-// Sonic does not provide a delete record API service
+// Sonic does not provide a delete record API service.
 // Example CURL from https://public-api.sonic.net/dyndns#updating_or_adding_host_records
 // # curl -X PUT -H "Content-Type: application/json" --data '{"userid":"12345","apikey":"4d6fbf2f9ab0fa11697470918d37625851fc0c51","hostname":"foo.example.com","value":"209.204.190.64","type":"A"}' https://public-api.sonic.net/dyndns/host
 func (c *Client) CreateOrUpdateRecord(hostname string, value string, ttl int) error {
-	resp, err := c.sendRequest(http.MethodPut, &Record{UserId: c.userId, ApiKey:c.apiKey, Hostname:hostname, Value:value, Type: "TXT", TTL: ttl})
+	resp, err := c.sendRequest(http.MethodPut, &Record{UserID: c.userID, APIKey:c.apiKey, Hostname:hostname, Value:value, Type: "TXT", TTL: ttl})
 	if err != nil {
 		return err
 	}

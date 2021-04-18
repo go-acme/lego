@@ -17,8 +17,8 @@ import (
 const (
 	envNamespace = "SONIC_"
 
-	EnvAPIUserId    = envNamespace + "USERID"
-	EnvAPIApiKey = envNamespace + "APIKEY"
+	EnvAPIUserID    = envNamespace + "USERID"
+	EnvAPIAPIKey = envNamespace + "APIKEY"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -28,8 +28,8 @@ const (
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	UserId          string
-	ApiKey             string
+	UserID          string
+	APIKey             string
 	HTTPClient         *http.Client
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -64,16 +64,16 @@ type DNSProvider struct {
 // https://public-api.sonic.net/dyndns#requesting_an_api_key for the specific hostname
 // NOTE: SONIC does not support `_` in DNS entries created via the API.
 // To get around this issue, a manual CNAME needs to be created
-// re-pointing _acme-challenge.hostname to acme-challenge.hostname
+// re-pointing _acme-challenge.hostname to acme-challenge.hostname.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvAPIUserId, EnvAPIApiKey)
+	values, err := env.Get(EnvAPIUserID, EnvAPIAPIKey)
 	if err != nil {
 		return nil, fmt.Errorf("sonic: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.UserId = values[EnvAPIUserId]
-	config.ApiKey = values[EnvAPIApiKey]
+	config.UserID = values[EnvAPIUserID]
+	config.APIKey = values[EnvAPIAPIKey]
 
 	return NewDNSProviderConfig(config)
 }
@@ -84,7 +84,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("sonic: the configuration of the DNS provider is nil")
 	}
 
-	client, err := NewClient(config.UserId, config.ApiKey)
+	client, err := NewClient(config.UserID, config.APIKey)
 	if err != nil {
 		return nil, fmt.Errorf("sonic: %w", err)
 	}

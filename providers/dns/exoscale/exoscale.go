@@ -47,7 +47,8 @@ func NewDefaultConfig() *Config {
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+			Timeout:   env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+			Transport: http.DefaultTransport,
 		},
 	}
 }
@@ -88,8 +89,12 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		config.Endpoint = defaultBaseURL
 	}
 
-	client := egoscale.NewClient(config.Endpoint, config.APIKey, config.APISecret)
-	client.HTTPClient = config.HTTPClient
+	client := egoscale.NewClient(
+		config.Endpoint,
+		config.APIKey,
+		config.APISecret,
+		egoscale.WithHTTPClient(config.HTTPClient),
+	)
 
 	return &DNSProvider{client: client, config: config}, nil
 }
@@ -174,7 +179,7 @@ func (d *DNSProvider) FindExistingRecordID(zone, recordName string) (int64, erro
 	ctx := context.Background()
 	records, err := d.client.GetRecords(ctx, zone)
 	if err != nil {
-		return -1, errors.New("Error while retrievening DNS records: " + err.Error())
+		return -1, errors.New("Error while retrieving DNS records: " + err.Error())
 	}
 	for _, record := range records {
 		if record.Name == recordName {

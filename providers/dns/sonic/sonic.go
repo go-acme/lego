@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -17,7 +16,7 @@ import (
 const (
 	envNamespace = "SONIC_"
 
-	EnvAPIUserID    = envNamespace + "USERID"
+	EnvAPIUserID = envNamespace + "USERID"
 	EnvAPIAPIKey = envNamespace + "APIKEY"
 
 	EnvTTL                = envNamespace + "TTL"
@@ -28,7 +27,7 @@ const (
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	UserID          string
+	UserID             string
 	APIKey             string
 	HTTPClient         *http.Client
 	PropagationTimeout time.Duration
@@ -62,9 +61,6 @@ type DNSProvider struct {
 // SONIC_USERID and SONIC_APIKEY.
 // Credentials are created by calling the API with a username/password pair
 // https://public-api.sonic.net/dyndns#requesting_an_api_key for the specific hostname
-// NOTE: SONIC does not support `_` in DNS entries created via the API.
-// To get around this issue, a manual CNAME needs to be created
-// re-pointing _acme-challenge.hostname to acme-challenge.hostname.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvAPIUserID, EnvAPIAPIKey)
 	if err != nil {
@@ -98,18 +94,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 }
 
 // Present creates a TXT record using the specified parameters.
-// NOTE: SONIC does not support `_` in DNS entries.
 func (d *DNSProvider) Present(domainName, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domainName, keyAuth)
 
-    fqdn = strings.Replace(fqdn, "_acme-challenge", "acme-challenge", 1)
-
-    if strings.Index(fqdn, "_") > 0 {
-		return fmt.Errorf("sonic: unable to create FQDNs with an _ like %s", fqdn)
-    }
-
-    // Sonic does not support trining . in hostname
-    fqdn = dns01.UnFqdn(fqdn)
+	// Sonic does not support trining . in hostname
+	fqdn = dns01.UnFqdn(fqdn)
 
 	err := d.client.CreateOrUpdateRecord(fqdn, value, d.config.TTL)
 	if err != nil {

@@ -12,20 +12,19 @@ import (
 // Client Sonic client.
 type Client struct {
 	userID     string
-	apiKey  string
+	apiKey     string
 	HTTPClient *http.Client
 }
 
 // Record holds the Sonic API representation of a Domain Record.
 type Record struct {
-	UserID     string `json:"userid"`
-	APIKey     string `json:"apikey"`
-	Hostname   string `json:"hostname"`
-	Value      string  `json:"value"`
-	TTL        int     `json:"ttl"`
-	Type       string  `json:"type"`
+	UserID   string `json:"userid"`
+	APIKey   string `json:"apikey"`
+	Hostname string `json:"hostname"`
+	Value    string `json:"value"`
+	TTL      int    `json:"ttl"`
+	Type     string `json:"type"`
 }
-
 
 // NewClient creates a sonic client based on DNSMadeEasy's LEGO library.
 func NewClient(userID, apiKey string) (*Client, error) {
@@ -39,7 +38,7 @@ func NewClient(userID, apiKey string) (*Client, error) {
 
 	return &Client{
 		userID:     userID,
-		apiKey:  apiKey,
+		apiKey:     apiKey,
 		HTTPClient: &http.Client{},
 	}, nil
 }
@@ -49,7 +48,7 @@ func NewClient(userID, apiKey string) (*Client, error) {
 // Example CURL from https://public-api.sonic.net/dyndns#updating_or_adding_host_records
 // # curl -X PUT -H "Content-Type: application/json" --data '{"userid":"12345","apikey":"4d6fbf2f9ab0fa11697470918d37625851fc0c51","hostname":"foo.example.com","value":"209.204.190.64","type":"A"}' https://public-api.sonic.net/dyndns/host
 func (c *Client) CreateOrUpdateRecord(hostname string, value string, ttl int) error {
-	resp, err := c.sendRequest(http.MethodPut, &Record{UserID: c.userID, APIKey:c.apiKey, Hostname:hostname, Value:value, Type: "TXT", TTL: ttl})
+	resp, err := c.sendRequest(http.MethodPut, &Record{UserID: c.userID, APIKey: c.apiKey, Hostname: hostname, Value: value, Type: "TXT", TTL: ttl})
 	if err != nil {
 		return err
 	}

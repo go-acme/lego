@@ -34,7 +34,7 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "no apikey",
 			envVars: map[string]string{
-				"SONIC_USERID":    "dummy",
+				"SONIC_USERID": "dummy",
 			},
 			expected: `sonic: some credentials information are missing: SONIC_APIKEY`,
 		},
@@ -68,7 +68,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		expected string
 	}{
 		{
-			desc:  "success",
+			desc:   "success",
 			userID: "dummy",
 			apiKey: "dummy",
 		},

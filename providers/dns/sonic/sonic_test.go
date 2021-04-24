@@ -8,10 +8,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var envTest = tester.NewEnvTest(
-	"SONIC_USERID",
-	"SONIC_APIKEY").
-	WithDomain("SONIC_DOMAIN")
+const envDomain = envNamespace + "DOMAIN"
+
+var envTest = tester.NewEnvTest(EnvAPIKey, EnvUserID).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -22,21 +22,28 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				"SONIC_USERID": "dummy",
-				"SONIC_APIKEY": "dummy",
+				EnvUserID: "dummy",
+				EnvAPIKey: "dummy",
 			},
 		},
 		{
-			desc:     "no userid",
+			desc:     "missing all credentials",
 			envVars:  map[string]string{},
-			expected: "sonic: some credentials information are missing: SONIC_USERID,SONIC_APIKEY",
+			expected: "sonic: some credentials information are missing: SONIC_USER_ID,SONIC_API_KEY",
+		},
+		{
+			desc: "no userid",
+			envVars: map[string]string{
+				EnvAPIKey: "dummy",
+			},
+			expected: "sonic: some credentials information are missing: SONIC_USER_ID",
 		},
 		{
 			desc: "no apikey",
 			envVars: map[string]string{
-				"SONIC_USERID": "dummy",
+				EnvUserID: "dummy",
 			},
-			expected: `sonic: some credentials information are missing: SONIC_APIKEY`,
+			expected: `sonic: some credentials information are missing: SONIC_API_KEY`,
 		},
 	}
 
@@ -73,26 +80,26 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			apiKey: "dummy",
 		},
 		{
+			desc:     "missing all credentials",
+			expected: "sonic: credentials are missing",
+		},
+		{
 			desc:     "missing userid",
-			expected: "sonic: credentials missing: userID created via https://public-api.sonic.net/dyndns#requesting_an_api_key",
+			apiKey:   "dummy",
+			expected: "sonic: credentials are missing",
 		},
 		{
 			desc:     "missing apikey",
 			userID:   "dummy",
-			expected: "sonic: credentials missing: apiKey created via https://public-api.sonic.net/dyndns#requesting_an_api_key",
+			expected: "sonic: credentials are missing",
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			config := NewDefaultConfig()
-
-			if test.userID != "" {
-				config.UserID = test.userID
-			}
-			if test.apiKey != "" {
-				config.APIKey = test.apiKey
-			}
+			config.UserID = test.userID
+			config.APIKey = test.apiKey
 
 			p, err := NewDNSProviderConfig(config)
 

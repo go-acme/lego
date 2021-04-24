@@ -1,8 +1,7 @@
-// Package sonic implements a DNS provider for solving the DNS-01 challenge using Sonic.net based on DNSMadeEasy
+// Package sonic implements a DNS provider for solving the DNS-01 challenge using  Sonic.
 package sonic
 
 import (
-	"crypto/tls"
 	"errors"
 	"fmt"
 	"net/http"
@@ -10,14 +9,15 @@ import (
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/sonic/internal"
 )
 
 // Environment variables names.
 const (
 	envNamespace = "SONIC_"
 
-	EnvAPIUserID = envNamespace + "USERID"
-	EnvAPIAPIKey = envNamespace + "APIKEY"
+	EnvUserID = envNamespace + "USER_ID"
+	EnvAPIKey = envNamespace + "API_KEY"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -46,9 +46,6 @@ func NewDefaultConfig() *Config {
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 10*time.Second),
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-			},
 		},
 	}
 }
@@ -56,23 +53,21 @@ func NewDefaultConfig() *Config {
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
-	client *Client
+	client *internal.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Sonic.
 // Credentials must be passed in the environment variables:
 // SONIC_USERID and SONIC_APIKEY.
-// Credentials are created by calling the API with a username/password pair
-// https://public-api.sonic.net/dyndns#requesting_an_api_key for the specific hostname
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvAPIUserID, EnvAPIAPIKey)
+	values, err := env.Get(EnvUserID, EnvAPIKey)
 	if err != nil {
 		return nil, fmt.Errorf("sonic: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.UserID = values[EnvAPIUserID]
-	config.APIKey = values[EnvAPIAPIKey]
+	config.UserID = values[EnvUserID]
+	config.APIKey = values[EnvAPIKey]
 
 	return NewDNSProviderConfig(config)
 }
@@ -83,7 +78,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("sonic: the configuration of the DNS provider is nil")
 	}
 
-	client, err := NewClient(config.UserID, config.APIKey)
+	client, err := internal.NewClient(config.UserID, config.APIKey)
 	if err != nil {
 		return nil, fmt.Errorf("sonic: %w", err)
 	}
@@ -100,18 +95,23 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domainName, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domainName, keyAuth)
 
-	// Sonic does not support trining . in hostname
-	fqdn = dns01.UnFqdn(fqdn)
-
-	err := d.client.CreateOrUpdateRecord(fqdn, value, d.config.TTL)
+	err := d.client.SetRecord(dns01.UnFqdn(fqdn), value, d.config.TTL)
 	if err != nil {
 		return fmt.Errorf("sonic: unable to create record for %s: %w", fqdn, err)
 	}
+
 	return nil
 }
 
 // CleanUp removes the TXT records matching the specified parameters.
 func (d *DNSProvider) CleanUp(domainName, token, keyAuth string) error {
+	fqdn, _ := dns01.GetRecord(domainName, keyAuth)
+
+	err := d.client.SetRecord(dns01.UnFqdn(fqdn), "_", d.config.TTL)
+	if err != nil {
+		return fmt.Errorf("sonic: unable to clean record for %s: %w", fqdn, err)
+	}
+
 	return nil
 }
 

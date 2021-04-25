@@ -19,4 +19,4 @@ lego --email myemail@example.com --dns scaleway --domains my.example.org run
     SCALEWAY_TTL = "The TTL of the TXT record used for the DNS challenge"
 
 [Links]
-  API = "https://developers.scaleway.com/en/products/domain/api/"
+  API = "https://developers.scaleway.com/en/products/domain/dns/api/"

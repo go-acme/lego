@@ -60,7 +60,7 @@ To test with the sandbox environment set ```EASYDNS_ENDPOINT=https://sandbox.res
 
 ## More information
 
-- [API documentation](http://docs.sandbox.rest.easydns.net)
+- [API documentation](https://docs.sandbox.rest.easydns.net)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/easydns/easydns.toml -->

@@ -11,7 +11,7 @@ slug: dnspod
 
 Since: v0.4.0
 
-Configuration for [DNSPod](http://www.dnspod.com/).
+Configuration for [DNSPod](https://www.dnspod.com/).
 
 
 <!--more-->

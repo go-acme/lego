@@ -161,7 +161,6 @@ func displayDNSHelp(name string) error {
 		ew.writeln(`	- "ARVANCLOUD_HTTP_TIMEOUT":	API request timeout`)
 		ew.writeln(`	- "ARVANCLOUD_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "ARVANCLOUD_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
-		ew.writeln(`	- "ARVANCLOUD_SEQUENCE_INTERVAL":	Interval between iteration`)
 		ew.writeln(`	- "ARVANCLOUD_TTL":	The TTL of the TXT record used for the DNS challenge`)
 
 		ew.writeln()
@@ -583,7 +582,7 @@ func displayDNSHelp(name string) error {
 		ew.writeln(`	- "DODE_HTTP_TIMEOUT":	API request timeout`)
 		ew.writeln(`	- "DODE_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "DODE_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
-		ew.writeln(`	- "DODE_SEQUENCE_INTERVAL":	Interval between iteration`)
+		ew.writeln(`	- "DODE_SEQUENCE_INTERVAL":	Time between sequential requests`)
 		ew.writeln(`	- "DODE_TTL":	The TTL of the TXT record used for the DNS challenge`)
 
 		ew.writeln()
@@ -644,7 +643,7 @@ func displayDNSHelp(name string) error {
 		ew.writeln(`	- "DUCKDNS_HTTP_TIMEOUT":	API request timeout`)
 		ew.writeln(`	- "DUCKDNS_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "DUCKDNS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
-		ew.writeln(`	- "DUCKDNS_SEQUENCE_INTERVAL":	Interval between iteration`)
+		ew.writeln(`	- "DUCKDNS_SEQUENCE_INTERVAL":	Time between sequential requests`)
 		ew.writeln(`	- "DUCKDNS_TTL":	The TTL of the TXT record used for the DNS challenge`)
 
 		ew.writeln()
@@ -871,7 +870,6 @@ func displayDNSHelp(name string) error {
 		ew.writeln(`	- "GODADDY_HTTP_TIMEOUT":	API request timeout`)
 		ew.writeln(`	- "GODADDY_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "GODADDY_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
-		ew.writeln(`	- "GODADDY_SEQUENCE_INTERVAL":	Interval between iteration`)
 		ew.writeln(`	- "GODADDY_TTL":	The TTL of the TXT record used for the DNS challenge`)
 
 		ew.writeln()
@@ -892,7 +890,6 @@ func displayDNSHelp(name string) error {
 		ew.writeln(`	- "HETZNER_HTTP_TIMEOUT":	API request timeout`)
 		ew.writeln(`	- "HETZNER_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "HETZNER_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
-		ew.writeln(`	- "HETZNER_SEQUENCE_INTERVAL":	Interval between iteration`)
 		ew.writeln(`	- "HETZNER_TTL":	The TTL of the TXT record used for the DNS challenge`)
 
 		ew.writeln()
@@ -1075,6 +1072,7 @@ func displayDNSHelp(name string) error {
 		ew.writeln(`	- "JOKER_HTTP_TIMEOUT":	API request timeout`)
 		ew.writeln(`	- "JOKER_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "JOKER_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "JOKER_SEQUENCE_INTERVAL":	Time between sequential requests (only with 'SVC' mode)`)
 		ew.writeln(`	- "JOKER_TTL":	The TTL of the TXT record used for the DNS challenge`)
 
 		ew.writeln()
@@ -1180,7 +1178,6 @@ func displayDNSHelp(name string) error {
 		ew.writeln(`	- "LUADNS_HTTP_TIMEOUT":	API request timeout`)
 		ew.writeln(`	- "LUADNS_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "LUADNS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
-		ew.writeln(`	- "LUADNS_SEQUENCE_INTERVAL":	Interval between iteration`)
 		ew.writeln(`	- "LUADNS_TTL":	The TTL of the TXT record used for the DNS challenge`)
 
 		ew.writeln()
@@ -1549,7 +1546,7 @@ func displayDNSHelp(name string) error {
 		ew.writeln(`	- "RFC2136_DNS_TIMEOUT":	API request timeout`)
 		ew.writeln(`	- "RFC2136_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "RFC2136_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
-		ew.writeln(`	- "RFC2136_SEQUENCE_INTERVAL":	Interval between iteration`)
+		ew.writeln(`	- "RFC2136_SEQUENCE_INTERVAL":	Time between sequential requests`)
 		ew.writeln(`	- "RFC2136_TTL":	The TTL of the TXT record used for the DNS challenge`)
 
 		ew.writeln()
@@ -1701,7 +1698,7 @@ func displayDNSHelp(name string) error {
 		ew.writeln(`	- "SONIC_HTTP_TIMEOUT":	API request timeout`)
 		ew.writeln(`	- "SONIC_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "SONIC_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
-		ew.writeln(`	- "SONIC_SEQUENCE_INTERVAL":	Interval between iteration`)
+		ew.writeln(`	- "SONIC_SEQUENCE_INTERVAL":	Time between sequential requests`)
 		ew.writeln(`	- "SONIC_TTL":	The TTL of the TXT record used for the DNS challenge`)
 
 		ew.writeln()
@@ -1786,7 +1783,7 @@ func displayDNSHelp(name string) error {
 		ew.writeln(`	- "VERSIO_HTTP_TIMEOUT":	API request timeout`)
 		ew.writeln(`	- "VERSIO_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "VERSIO_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
-		ew.writeln(`	- "VERSIO_SEQUENCE_INTERVAL":	Interval between iteration, default 60s`)
+		ew.writeln(`	- "VERSIO_SEQUENCE_INTERVAL":	Time between sequential requests, default 60s`)
 		ew.writeln(`	- "VERSIO_TTL":	The TTL of the TXT record used for the DNS challenge`)
 
 		ew.writeln()
@@ -1890,7 +1887,6 @@ func displayDNSHelp(name string) error {
 		ew.writeln(`	- "YANDEX_HTTP_TIMEOUT":	API request timeout`)
 		ew.writeln(`	- "YANDEX_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "YANDEX_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
-		ew.writeln(`	- "YANDEX_SEQUENCE_INTERVAL":	Interval between iteration, default 60s`)
 		ew.writeln(`	- "YANDEX_TTL":	The TTL of the TXT record used for the DNS challenge`)
 
 		ew.writeln()

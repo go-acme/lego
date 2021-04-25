@@ -1,6 +1,6 @@
 Name = "DNSPod"
 Description = ''''''
-URL = "http://www.dnspod.com/"
+URL = "https://www.dnspod.com/"
 Code = "dnspod"
 Since = "v0.4.0"
 

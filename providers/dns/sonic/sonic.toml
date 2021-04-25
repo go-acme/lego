@@ -38,7 +38,7 @@ Hostname should be the toplevel domain managed e.g `example.com` not `www.exampl
     SONIC_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
     SONIC_TTL = "The TTL of the TXT record used for the DNS challenge"
     SONIC_HTTP_TIMEOUT = "API request timeout"
-    SONIC_SEQUENCE_INTERVAL = "Interval between iteration"
+    SONIC_SEQUENCE_INTERVAL = "Time between sequential requests"
 
 [Links]
   API = "https://public-api.sonic.net/dyndns/"

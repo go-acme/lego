@@ -33,6 +33,7 @@ lego --email myemail@example.com --dns joker --domains my.example.org run
     JOKER_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
     JOKER_TTL = "The TTL of the TXT record used for the DNS challenge"
     JOKER_HTTP_TIMEOUT = "API request timeout"
+    JOKER_SEQUENCE_INTERVAL = "Time between sequential requests (only with 'SVC' mode)"
 
 [Links]
   API = "https://joker.com/faq/category/39/22-dmapi.html"

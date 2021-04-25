@@ -27,4 +27,4 @@ To test with the sandbox environment set ```EASYDNS_ENDPOINT=https://sandbox.res
     EASYDNS_HTTP_TIMEOUT = "API request timeout"
 
 [Links]
-  API = "http://docs.sandbox.rest.easydns.net"
+  API = "https://docs.sandbox.rest.easydns.net"

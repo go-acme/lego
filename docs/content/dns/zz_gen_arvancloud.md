@@ -45,7 +45,6 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `ARVANCLOUD_HTTP_TIMEOUT` | API request timeout |
 | `ARVANCLOUD_POLLING_INTERVAL` | Time between DNS propagation check |
 | `ARVANCLOUD_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
-| `ARVANCLOUD_SEQUENCE_INTERVAL` | Interval between iteration |
 | `ARVANCLOUD_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.

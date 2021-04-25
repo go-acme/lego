@@ -33,7 +33,7 @@ lego --email myemail@example.com --dns rfc2136 --domains my.example.org run
     RFC2136_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
     RFC2136_TTL = "The TTL of the TXT record used for the DNS challenge"
     RFC2136_DNS_TIMEOUT = "API request timeout"
-    RFC2136_SEQUENCE_INTERVAL = "Interval between iteration"
+    RFC2136_SEQUENCE_INTERVAL = "Time between sequential requests"
 
 [Links]
   API = "https://tools.ietf.org/html/rfc2136"

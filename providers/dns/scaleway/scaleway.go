@@ -6,17 +6,15 @@ package scaleway
 import (
 	"errors"
 	"fmt"
-	"net/http"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/scaleway/internal"
+	scalewayDNS "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
+	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
 const (
-	defaultBaseURL            = "https://api.scaleway.com"
-	defaultVersion            = "v2alpha2"
 	minTTL                    = 60
 	defaultPollingInterval    = 10 * time.Second
 	defaultPropagationTimeout = 120 * time.Second
@@ -26,45 +24,36 @@ const (
 const (
 	envNamespace = "SCALEWAY_"
 
-	EnvBaseURL    = envNamespace + "BASE_URL"
-	EnvAPIToken   = envNamespace + "API_TOKEN"
-	EnvAPIVersion = envNamespace + "API_VERSION"
+	EnvAPIToken  = envNamespace + "API_TOKEN"
+	EnvProjectID = envNamespace + "PROJECT_ID"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
-	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	BaseURL            string
-	Version            string
+	ProjectID          string
 	Token              string
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
-	HTTPClient         *http.Client
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		BaseURL:            env.GetOrDefaultString(EnvBaseURL, defaultBaseURL),
-		Version:            env.GetOrDefaultString(EnvAPIVersion, defaultVersion),
 		TTL:                env.GetOrDefaultInt(EnvTTL, minTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, defaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, defaultPollingInterval),
-		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
-		},
 	}
 }
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
-	client *internal.Client
+	client *scalewayDNS.API
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Scaleway Domains API.
@@ -77,6 +66,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 	config := NewDefaultConfig()
 	config.Token = values[EnvAPIToken]
+	config.ProjectID = values[EnvProjectID]
 
 	return NewDNSProviderConfig(config)
 }
@@ -95,12 +85,19 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		config.TTL = minTTL
 	}
 
-	client := internal.NewClient(internal.ClientOpts{
-		BaseURL: fmt.Sprintf("%s/domain/%s", config.BaseURL, config.Version),
-		Token:   config.Token,
-	}, config.HTTPClient)
+	configuration := []scw.ClientOption{scw.WithAuth("ACCESS_KEY", config.Token)}
 
-	return &DNSProvider{config: config, client: client}, nil
+	if config.ProjectID != "" {
+		configuration = append(configuration, scw.WithDefaultProjectID(config.ProjectID))
+	}
+
+	// Create a Scaleway client
+	clientScw, err := scw.NewClient(configuration...)
+	if err != nil {
+		return nil, err
+	}
+
+	return &DNSProvider{config: config, client: scalewayDNS.NewAPI(clientScw)}, nil
 }
 
 // Timeout returns the Timeout and interval to use when checking for DNS propagation.
@@ -109,18 +106,60 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
+func convertRecordType(recordType string) scalewayDNS.RecordType {
+
+	switch recordType {
+	case "A":
+		return scalewayDNS.RecordTypeA
+	case "AAAA":
+		return scalewayDNS.RecordTypeAAAA
+	case "CNAME":
+		return scalewayDNS.RecordTypeCNAME
+	case "TXT":
+		return scalewayDNS.RecordTypeTXT
+	case "SRV":
+		return scalewayDNS.RecordTypeSRV
+	case "TLSA":
+		return scalewayDNS.RecordTypeTLSA
+	case "MX":
+		return scalewayDNS.RecordTypeMX
+	case "CAA":
+		return scalewayDNS.RecordTypeCAA
+	case "ALIAS":
+		return scalewayDNS.RecordTypeALIAS
+	default:
+		return scalewayDNS.RecordTypeUnknown
+	}
+}
+
 // Present creates a TXT record to fulfill DNS-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	txtRecord := internal.Record{
-		Type: "TXT",
-		TTL:  uint32(d.config.TTL),
-		Name: fqdn,
-		Data: fmt.Sprintf(`"%s"`, value),
+	comment := "used by lego"
+	request := scalewayDNS.RecordChange{
+		Add: &scalewayDNS.RecordChangeAdd{
+			Records: []*scalewayDNS.Record{
+				&scalewayDNS.Record{
+					Data:    fmt.Sprintf(`"%s"`, value),
+					Name:    fqdn,
+					TTL:     uint32(d.config.TTL),
+					Type:    scalewayDNS.RecordTypeTXT,
+					Comment: &comment,
+				},
+			},
+		},
 	}
 
-	err := d.client.AddRecord(domain, txtRecord)
+	returnAllRecords := false
+	_, err := d.client.UpdateDNSZoneRecords(
+		&scalewayDNS.UpdateDNSZoneRecordsRequest{
+			DNSZone:          domain,
+			Changes:          []*scalewayDNS.RecordChange{&request},
+			ReturnAllRecords: &returnAllRecords,
+		},
+	)
+
 	if err != nil {
 		return fmt.Errorf("scaleway: %w", err)
 	}
@@ -130,15 +169,27 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 // CleanUp removes a TXT record used for DNS-01 challenge.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	data := fmt.Sprintf(`"%s"`, value)
 
-	txtRecord := internal.Record{
-		Type: "TXT",
-		TTL:  uint32(d.config.TTL),
-		Name: fqdn,
-		Data: fmt.Sprintf(`"%s"`, value),
+	request := scalewayDNS.RecordChange{
+		Delete: &scalewayDNS.RecordChangeDelete{
+			IDFields: &scalewayDNS.RecordIdentifier{
+				Name: fqdn,
+				Type: scalewayDNS.RecordTypeTXT,
+				Data: &data,
+			},
+		},
 	}
 
-	err := d.client.DeleteRecord(domain, txtRecord)
+	returnAllRecords := false
+	_, err := d.client.UpdateDNSZoneRecords(
+		&scalewayDNS.UpdateDNSZoneRecordsRequest{
+			DNSZone:          domain,
+			Changes:          []*scalewayDNS.RecordChange{&request},
+			ReturnAllRecords: &returnAllRecords,
+		},
+	)
+
 	if err != nil {
 		return fmt.Errorf("scaleway: %w", err)
 	}

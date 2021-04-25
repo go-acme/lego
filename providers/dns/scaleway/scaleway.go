@@ -59,7 +59,7 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for Scaleway Domains API.
 // API token must be passed in the environment variable SCALEWAY_API_TOKEN.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvAPIToken)
+	values, err := env.Get(EnvAPIToken, EnvProjectID)
 	if err != nil {
 		return nil, fmt.Errorf("scaleway: %w", err)
 	}
@@ -85,7 +85,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		config.TTL = minTTL
 	}
 
-	configuration := []scw.ClientOption{scw.WithAuth("ACCESS_KEY", config.Token)}
+	configuration := []scw.ClientOption{scw.WithAuth("SCWXXXXXXXXXXXXXXXXX", config.Token), scw.WithUserAgent("Scaleway Lego's provider")}
 
 	if config.ProjectID != "" {
 		configuration = append(configuration, scw.WithDefaultProjectID(config.ProjectID))

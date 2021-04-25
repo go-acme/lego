@@ -88,6 +88,7 @@ func allDNSCodes() string {
 		"scaleway",
 		"selectel",
 		"servercow",
+		"sonic",
 		"stackpath",
 		"transip",
 		"vegadns",
@@ -1683,6 +1684,28 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/servercow`)
+
+	case "sonic":
+		// generated from: providers/dns/sonic/sonic.toml
+		ew.writeln(`Configuration for Sonic.`)
+		ew.writeln(`Code:	'sonic'`)
+		ew.writeln(`Since:	'v4.4.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "SONIC_API_KEY":	API Key`)
+		ew.writeln(`	- "SONIC_USER_ID":	User ID`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "SONIC_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "SONIC_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "SONIC_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "SONIC_SEQUENCE_INTERVAL":	Interval between iteration`)
+		ew.writeln(`	- "SONIC_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/sonic`)
 
 	case "stackpath":
 		// generated from: providers/dns/stackpath/stackpath.toml

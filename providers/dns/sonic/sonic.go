@@ -83,12 +83,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("sonic: %w", err)
 	}
 
-	client.HTTPClient = config.HTTPClient
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
+	}
 
-	return &DNSProvider{
-		client: client,
-		config: config,
-	}, nil
+	return &DNSProvider{client: client, config: config}, nil
 }
 
 // Present creates a TXT record using the specified parameters.

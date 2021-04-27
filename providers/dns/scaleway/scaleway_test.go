@@ -13,7 +13,7 @@ import (
 const cleanUpDelay = 2 * time.Second
 
 func TestNewDNSProvider(t *testing.T) {
-	envTest := tester.NewEnvTest(EnvAPIToken, EnvTTL)
+	envTest := tester.NewEnvTest(EnvAPIToken, EnvTTL, EnvProjectID)
 
 	testCases := []struct {
 		desc     string
@@ -23,15 +23,17 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				EnvAPIToken: "123",
+				EnvAPIToken:  "00000000-0000-0000-0000-000000000000",
+				EnvProjectID: "00000000-0000-0000-0000-000000000000",
 			},
 		},
 		{
 			desc: "missing api key",
 			envVars: map[string]string{
-				EnvAPIToken: "",
+				EnvAPIToken:  "",
+				EnvProjectID: "",
 			},
-			expected: fmt.Sprintf("scaleway: some credentials information are missing: %s", EnvAPIToken),
+			expected: fmt.Sprintf("scaleway: some credentials information are missing: %s,%s", EnvAPIToken, EnvProjectID),
 		},
 	}
 
@@ -65,7 +67,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}{
 		{
 			desc:  "success",
-			token: "123",
+			token: "00000000-0000-0000-0000-000000000000",
 			ttl:   minTTL,
 		},
 		{

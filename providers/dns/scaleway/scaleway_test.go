@@ -24,7 +24,7 @@ func TestNewDNSProvider(t *testing.T) {
 			desc: "success",
 			envVars: map[string]string{
 				EnvAPIToken:  "00000000-0000-0000-0000-000000000000",
-				EnvProjectID: "00000000-0000-0000-0000-000000000000",
+				EnvProjectID: "",
 			},
 		},
 		{
@@ -33,7 +33,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvAPIToken:  "",
 				EnvProjectID: "",
 			},
-			expected: fmt.Sprintf("scaleway: some credentials information are missing: %s,%s", EnvAPIToken, EnvProjectID),
+			expected: fmt.Sprintf("scaleway: some credentials information are missing: %s", EnvAPIToken),
 		},
 	}
 

@@ -59,14 +59,14 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for Scaleway Domains API.
 // API token must be passed in the environment variable SCALEWAY_API_TOKEN.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvAPIToken, EnvProjectID)
+	values, err := env.Get(EnvAPIToken)
 	if err != nil {
 		return nil, fmt.Errorf("scaleway: %w", err)
 	}
 
 	config := NewDefaultConfig()
 	config.Token = values[EnvAPIToken]
-	config.ProjectID = values[EnvProjectID]
+	config.ProjectID = env.GetOrDefaultString(EnvProjectID, "")
 
 	return NewDNSProviderConfig(config)
 }

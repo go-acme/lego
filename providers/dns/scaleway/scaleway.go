@@ -106,32 +106,6 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-func convertRecordType(recordType string) scalewayDNS.RecordType {
-
-	switch recordType {
-	case "A":
-		return scalewayDNS.RecordTypeA
-	case "AAAA":
-		return scalewayDNS.RecordTypeAAAA
-	case "CNAME":
-		return scalewayDNS.RecordTypeCNAME
-	case "TXT":
-		return scalewayDNS.RecordTypeTXT
-	case "SRV":
-		return scalewayDNS.RecordTypeSRV
-	case "TLSA":
-		return scalewayDNS.RecordTypeTLSA
-	case "MX":
-		return scalewayDNS.RecordTypeMX
-	case "CAA":
-		return scalewayDNS.RecordTypeCAA
-	case "ALIAS":
-		return scalewayDNS.RecordTypeALIAS
-	default:
-		return scalewayDNS.RecordTypeUnknown
-	}
-}
-
 // Present creates a TXT record to fulfill DNS-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
@@ -140,7 +114,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	request := scalewayDNS.RecordChange{
 		Add: &scalewayDNS.RecordChangeAdd{
 			Records: []*scalewayDNS.Record{
-				&scalewayDNS.Record{
+				{
 					Data:    fmt.Sprintf(`"%s"`, value),
 					Name:    fqdn,
 					TTL:     uint32(d.config.TTL),
@@ -159,7 +133,6 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 			ReturnAllRecords: &returnAllRecords,
 		},
 	)
-
 	if err != nil {
 		return fmt.Errorf("scaleway: %w", err)
 	}
@@ -189,7 +162,6 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 			ReturnAllRecords: &returnAllRecords,
 		},
 	)
-
 	if err != nil {
 		return fmt.Errorf("scaleway: %w", err)
 	}

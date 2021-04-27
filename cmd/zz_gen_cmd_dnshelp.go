@@ -1627,12 +1627,10 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "SCALEWAY_API_TOKEN":	API token`)
+		ew.writeln(`	- "SCALEWAY_PROJECT_ID":	Project to use (optional)`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "SCALEWAY_API_VERSION":	API version`)
-		ew.writeln(`	- "SCALEWAY_BASE_URL":	API endpoint URL`)
-		ew.writeln(`	- "SCALEWAY_HTTP_TIMEOUT":	API request timeout`)
 		ew.writeln(`	- "SCALEWAY_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "SCALEWAY_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
 		ew.writeln(`	- "SCALEWAY_TTL":	The TTL of the TXT record used for the DNS challenge`)

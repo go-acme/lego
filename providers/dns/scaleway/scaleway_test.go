@@ -10,11 +10,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const cleanUpDelay = 2 * time.Second
+const envDomain = envNamespace + "DOMAIN"
+
+var envTest = tester.NewEnvTest(EnvAPIToken, EnvProjectID).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
-	envTest := tester.NewEnvTest(EnvAPIToken, EnvTTL, EnvProjectID)
-
 	testCases := []struct {
 		desc     string
 		envVars  map[string]string
@@ -99,8 +100,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 }
 
 func TestLivePresent(t *testing.T) {
-	envTest := tester.NewEnvTest(EnvAPIToken, EnvTTL)
-
 	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
@@ -114,8 +113,6 @@ func TestLivePresent(t *testing.T) {
 }
 
 func TestLiveCleanUp(t *testing.T) {
-	envTest := tester.NewEnvTest(EnvAPIToken, EnvTTL)
-
 	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
@@ -124,7 +121,7 @@ func TestLiveCleanUp(t *testing.T) {
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	time.Sleep(cleanUpDelay)
+	time.Sleep(2 * time.Second)
 
 	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)

@@ -1,5 +1,4 @@
 // Package scaleway implements a DNS provider for solving the DNS-01 challenge using Scaleway Domains API.
-// Scaleway Domain API reference: https://developers.scaleway.com/en/products/domain/api/
 // Token: https://www.scaleway.com/en/docs/generate-an-api-token/
 package scaleway
 
@@ -10,7 +9,7 @@ import (
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-	scalewayDNS "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
+	scwdomain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
 	"github.com/scaleway/scaleway-sdk-go/scw"
 )
 
@@ -53,11 +52,12 @@ func NewDefaultConfig() *Config {
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
-	client *scalewayDNS.API
+	client *scwdomain.API
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Scaleway Domains API.
-// API token must be passed in the environment variable SCALEWAY_API_TOKEN.
+// Credentials must be passed in the environment variables:
+// SCALEWAY_API_TOKEN, SCALEWAY_PROJECT_ID.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvAPIToken)
 	if err != nil {
@@ -66,7 +66,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 	config := NewDefaultConfig()
 	config.Token = values[EnvAPIToken]
-	config.ProjectID = env.GetOrDefaultString(EnvProjectID, "")
+	config.ProjectID = env.GetOrFile(EnvProjectID)
 
 	return NewDNSProviderConfig(config)
 }
@@ -85,7 +85,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		config.TTL = minTTL
 	}
 
-	configuration := []scw.ClientOption{scw.WithAuth("SCWXXXXXXXXXXXXXXXXX", config.Token), scw.WithUserAgent("Scaleway Lego's provider")}
+	configuration := []scw.ClientOption{
+		scw.WithAuth("SCWXXXXXXXXXXXXXXXXX", config.Token),
+		scw.WithUserAgent("Scaleway Lego's provider"),
+	}
 
 	if config.ProjectID != "" {
 		configuration = append(configuration, scw.WithDefaultProjectID(config.ProjectID))
@@ -94,10 +97,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	// Create a Scaleway client
 	clientScw, err := scw.NewClient(configuration...)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("scaleway: %w", err)
 	}
 
-	return &DNSProvider{config: config, client: scalewayDNS.NewAPI(clientScw)}, nil
+	return &DNSProvider{config: config, client: scwdomain.NewAPI(clientScw)}, nil
 }
 
 // Timeout returns the Timeout and interval to use when checking for DNS propagation.
@@ -110,60 +113,52 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	comment := "used by lego"
-	request := scalewayDNS.RecordChange{
-		Add: &scalewayDNS.RecordChangeAdd{
-			Records: []*scalewayDNS.Record{
-				{
-					Data:    fmt.Sprintf(`"%s"`, value),
-					Name:    fqdn,
-					TTL:     uint32(d.config.TTL),
-					Type:    scalewayDNS.RecordTypeTXT,
-					Comment: &comment,
-				},
-			},
-		},
+	records := []*scwdomain.Record{{
+		Data:    fmt.Sprintf(`"%s"`, value),
+		Name:    fqdn,
+		TTL:     uint32(d.config.TTL),
+		Type:    scwdomain.RecordTypeTXT,
+		Comment: scw.StringPtr("used by lego"),
+	}}
+
+	req := &scwdomain.UpdateDNSZoneRecordsRequest{
+		DNSZone: domain,
+		Changes: []*scwdomain.RecordChange{{
+			Add: &scwdomain.RecordChangeAdd{Records: records},
+		}},
+		ReturnAllRecords: scw.BoolPtr(false),
 	}
 
-	returnAllRecords := false
-	_, err := d.client.UpdateDNSZoneRecords(
-		&scalewayDNS.UpdateDNSZoneRecordsRequest{
-			DNSZone:          domain,
-			Changes:          []*scalewayDNS.RecordChange{&request},
-			ReturnAllRecords: &returnAllRecords,
-		},
-	)
+	_, err := d.client.UpdateDNSZoneRecords(req)
 	if err != nil {
 		return fmt.Errorf("scaleway: %w", err)
 	}
+
 	return nil
 }
 
 // CleanUp removes a TXT record used for DNS-01 challenge.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
-	data := fmt.Sprintf(`"%s"`, value)
 
-	request := scalewayDNS.RecordChange{
-		Delete: &scalewayDNS.RecordChangeDelete{
-			IDFields: &scalewayDNS.RecordIdentifier{
-				Name: fqdn,
-				Type: scalewayDNS.RecordTypeTXT,
-				Data: &data,
-			},
-		},
+	recordIdentifier := &scwdomain.RecordIdentifier{
+		Name: fqdn,
+		Type: scwdomain.RecordTypeTXT,
+		Data: scw.StringPtr(fmt.Sprintf(`"%s"`, value)),
 	}
 
-	returnAllRecords := false
-	_, err := d.client.UpdateDNSZoneRecords(
-		&scalewayDNS.UpdateDNSZoneRecordsRequest{
-			DNSZone:          domain,
-			Changes:          []*scalewayDNS.RecordChange{&request},
-			ReturnAllRecords: &returnAllRecords,
-		},
-	)
+	req := &scwdomain.UpdateDNSZoneRecordsRequest{
+		DNSZone: domain,
+		Changes: []*scwdomain.RecordChange{{
+			Delete: &scwdomain.RecordChangeDelete{IDFields: recordIdentifier},
+		}},
+		ReturnAllRecords: scw.BoolPtr(false),
+	}
+
+	_, err := d.client.UpdateDNSZoneRecords(req)
 	if err != nil {
 		return fmt.Errorf("scaleway: %w", err)
 	}
+
 	return nil
 }

@@ -10,11 +10,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const cleanUpDelay = 2 * time.Second
+const envDomain = envNamespace + "DOMAIN"
+
+var envTest = tester.NewEnvTest(EnvAPIToken, EnvProjectID).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
-	envTest := tester.NewEnvTest(EnvAPIToken, EnvTTL)
-
 	testCases := []struct {
 		desc     string
 		envVars  map[string]string
@@ -23,13 +24,15 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				EnvAPIToken: "123",
+				EnvAPIToken:  "00000000-0000-0000-0000-000000000000",
+				EnvProjectID: "",
 			},
 		},
 		{
 			desc: "missing api key",
 			envVars: map[string]string{
-				EnvAPIToken: "",
+				EnvAPIToken:  "",
+				EnvProjectID: "",
 			},
 			expected: fmt.Sprintf("scaleway: some credentials information are missing: %s", EnvAPIToken),
 		},
@@ -65,7 +68,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}{
 		{
 			desc:  "success",
-			token: "123",
+			token: "00000000-0000-0000-0000-000000000000",
 			ttl:   minTTL,
 		},
 		{
@@ -97,8 +100,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 }
 
 func TestLivePresent(t *testing.T) {
-	envTest := tester.NewEnvTest(EnvAPIToken, EnvTTL)
-
 	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
@@ -112,8 +113,6 @@ func TestLivePresent(t *testing.T) {
 }
 
 func TestLiveCleanUp(t *testing.T) {
-	envTest := tester.NewEnvTest(EnvAPIToken, EnvTTL)
-
 	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
@@ -122,7 +121,7 @@ func TestLiveCleanUp(t *testing.T) {
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	time.Sleep(cleanUpDelay)
+	time.Sleep(2 * time.Second)
 
 	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)

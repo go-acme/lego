@@ -58,7 +58,7 @@ type DNSProvider struct {
 	config *Config
 	client *porkbun.Client
 
-	recordIDs   map[string]string
+	recordIDs   map[string]int
 	recordIDsMu sync.Mutex
 }
 

@@ -125,7 +125,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	ctx := context.Background()
 
-	recordID, err := d.client.CreateRecord(ctx, zoneName, record)
+	recordID, err := d.client.CreateRecord(ctx, dns01.UnFqdn(zoneName), record)
 	if err != nil {
 		return fmt.Errorf("porkbun: failed to create record: %w", err)
 	}
@@ -156,7 +156,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	ctx := context.Background()
 
-	err = d.client.DeleteRecord(ctx, zoneName, recordID)
+	err = d.client.DeleteRecord(ctx, dns01.UnFqdn(zoneName), recordID)
 	if err != nil {
 		return fmt.Errorf("porkbun: failed to delete record: %w", err)
 	}

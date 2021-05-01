@@ -1495,7 +1495,7 @@ func displayDNSHelp(name string) error {
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "PORKBUN_PAPI_KEY":	API key`)
+		ew.writeln(`	- "PORKBUN_API_KEY":	API key`)
 		ew.writeln(`	- "PORKBUN_SECRET_API_KEY":	secret API key`)
 		ew.writeln()
 

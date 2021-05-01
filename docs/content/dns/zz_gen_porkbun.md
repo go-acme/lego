@@ -33,7 +33,7 @@ lego --email myemail@example.com --dns porkbun --domains my.example.org run
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `PORKBUN_PAPI_KEY` | API key |
+| `PORKBUN_API_KEY` | API key |
 | `PORKBUN_SECRET_API_KEY` | secret API key |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.

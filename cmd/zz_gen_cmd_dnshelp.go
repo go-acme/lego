@@ -79,6 +79,7 @@ func allDNSCodes() string {
 		"otc",
 		"ovh",
 		"pdns",
+		"porkbun",
 		"rackspace",
 		"regru",
 		"rfc2136",
@@ -1485,6 +1486,27 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/pdns`)
+
+	case "porkbun":
+		// generated from: providers/dns/porkbun/porkbun.toml
+		ew.writeln(`Configuration for Porkbun.`)
+		ew.writeln(`Code:	'porkbun'`)
+		ew.writeln(`Since:	'v4.4.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "PORKBUN_API_KEY":	API key`)
+		ew.writeln(`	- "PORKBUN_SECRET_API_KEY":	secret API key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "PORKBUN_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "PORKBUN_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "PORKBUN_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "PORKBUN_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/porkbun`)
 
 	case "rackspace":
 		// generated from: providers/dns/rackspace/rackspace.toml

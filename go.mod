@@ -36,6 +36,7 @@ require (
 	github.com/nrdcg/dnspod-go v0.4.0
 	github.com/nrdcg/goinwx v0.8.1
 	github.com/nrdcg/namesilo v0.2.1
+	github.com/nrdcg/porkbun v0.1.1
 	github.com/oracle/oci-go-sdk v24.3.0+incompatible
 	github.com/ovh/go-ovh v1.1.0
 	github.com/pquerna/otp v1.3.0

@@ -24,7 +24,7 @@ func TestMain(m *testing.M) {
 
 func applyEnv(envVars map[string]string) {
 	for key, value := range envVars {
-		if len(value) == 0 {
+		if value == "" {
 			os.Unsetenv(key)
 		} else {
 			os.Setenv(key, value)

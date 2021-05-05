@@ -213,7 +213,7 @@ func serverHandlerReturnSuccess(w dns.ResponseWriter, req *dns.Msg) {
 	if t := req.IsTsig(); t != nil {
 		if w.TsigStatus() == nil {
 			// Validated
-			m.SetTsig(fakeZone, dns.HmacMD5, 300, time.Now().Unix())
+			m.SetTsig(fakeZone, dns.HmacSHA1, 300, time.Now().Unix())
 		}
 	}
 
@@ -239,7 +239,7 @@ func serverHandlerPassBackRequest(reqChan chan *dns.Msg) func(w dns.ResponseWrit
 		if t := req.IsTsig(); t != nil {
 			if w.TsigStatus() == nil {
 				// Validated
-				m.SetTsig(fakeZone, dns.HmacMD5, 300, time.Now().Unix())
+				m.SetTsig(fakeZone, dns.HmacSHA1, 300, time.Now().Unix())
 			}
 		}
 

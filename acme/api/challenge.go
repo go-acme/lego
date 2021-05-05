@@ -10,7 +10,7 @@ type ChallengeService service
 
 // New Creates a challenge.
 func (c *ChallengeService) New(chlgURL string) (acme.ExtendedChallenge, error) {
-	if len(chlgURL) == 0 {
+	if chlgURL == "" {
 		return acme.ExtendedChallenge{}, errors.New("challenge[new]: empty URL")
 	}
 
@@ -29,7 +29,7 @@ func (c *ChallengeService) New(chlgURL string) (acme.ExtendedChallenge, error) {
 
 // Get Gets a challenge.
 func (c *ChallengeService) Get(chlgURL string) (acme.ExtendedChallenge, error) {
-	if len(chlgURL) == 0 {
+	if chlgURL == "" {
 		return acme.ExtendedChallenge{}, errors.New("challenge[get]: empty URL")
 	}
 

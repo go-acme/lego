@@ -125,7 +125,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("namecheap: credentials missing")
 	}
 
-	if len(config.ClientIP) == 0 {
+	if config.ClientIP == "" {
 		clientIP, err := getClientIP(config.HTTPClient, config.Debug)
 		if err != nil {
 			return nil, fmt.Errorf("namecheap: %w", err)

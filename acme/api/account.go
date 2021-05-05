@@ -46,7 +46,7 @@ func (a *AccountService) NewEAB(accMsg acme.Account, kid, hmacEncoded string) (a
 
 // Get Retrieves an account.
 func (a *AccountService) Get(accountURL string) (acme.Account, error) {
-	if len(accountURL) == 0 {
+	if accountURL == "" {
 		return acme.Account{}, errors.New("account[get]: empty URL")
 	}
 
@@ -60,7 +60,7 @@ func (a *AccountService) Get(accountURL string) (acme.Account, error) {
 
 // Update Updates an account.
 func (a *AccountService) Update(accountURL string, req acme.Account) (acme.Account, error) {
-	if len(accountURL) == 0 {
+	if accountURL == "" {
 		return acme.Account{}, errors.New("account[update]: empty URL")
 	}
 
@@ -75,7 +75,7 @@ func (a *AccountService) Update(accountURL string, req acme.Account) (acme.Accou
 
 // Deactivate Deactivates an account.
 func (a *AccountService) Deactivate(accountURL string) error {
-	if len(accountURL) == 0 {
+	if accountURL == "" {
 		return errors.New("account[deactivate]: empty URL")
 	}
 

@@ -58,7 +58,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 
 ## More information
 
-- [API documentation](http://manual.iij.jp/p2/pubapi/http://manual.iij.jp/p2/pubapi/)
+- [API documentation](https://manual.iij.jp/p2/pubapi/)
 - [Go client](https://github.com/iij/doapi)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

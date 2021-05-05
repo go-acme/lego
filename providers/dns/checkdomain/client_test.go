@@ -39,6 +39,7 @@ func Test_getDomainIDByName(t *testing.T) {
 	handler.HandleFunc("/v1/domains", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
 			http.Error(rw, "invalid method: "+req.Method, http.StatusBadRequest)
+			return
 		}
 
 		domainList := DomainListingResponse{
@@ -67,6 +68,7 @@ func Test_checkNameservers(t *testing.T) {
 	handler.HandleFunc("/v1/domains/1/nameservers", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
 			http.Error(rw, "invalid method: "+req.Method, http.StatusBadRequest)
+			return
 		}
 
 		nsResp := NameserverResponse{
@@ -94,6 +96,7 @@ func Test_createRecord(t *testing.T) {
 	handler.HandleFunc("/v1/domains/1/nameservers/records", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodPost {
 			http.Error(rw, "invalid method: "+req.Method, http.StatusBadRequest)
+			return
 		}
 
 		content, err := ioutil.ReadAll(req.Body)
@@ -172,6 +175,7 @@ func Test_deleteTXTRecord(t *testing.T) {
 	handler.HandleFunc("/v1/domains/1/nameservers", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
 			http.Error(rw, "invalid method: "+req.Method, http.StatusBadRequest)
+			return
 		}
 
 		nsResp := NameserverResponse{

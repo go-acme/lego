@@ -19,7 +19,6 @@ lego --email myemail@example.com --dns luadns --domains my.example.org run
     LUADNS_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
     LUADNS_TTL = "The TTL of the TXT record used for the DNS challenge"
     LUADNS_HTTP_TIMEOUT = "API request timeout"
-    LUADNS_SEQUENCE_INTERVAL = "Interval between iteration"
 
 [Links]
   API = "https://luadns.com/api.html"

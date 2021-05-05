@@ -45,7 +45,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `DODE_HTTP_TIMEOUT` | API request timeout |
 | `DODE_POLLING_INTERVAL` | Time between DNS propagation check |
 | `DODE_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
-| `DODE_SEQUENCE_INTERVAL` | Interval between iteration |
+| `DODE_SEQUENCE_INTERVAL` | Time between sequential requests |
 | `DODE_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.

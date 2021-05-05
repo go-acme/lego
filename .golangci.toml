@@ -20,32 +20,55 @@
   [linters-settings.misspell]
     locale = "US"
 
+  [linters-settings.depguard]
+    list-type = "blacklist"
+    include-go-root = false
+    packages = ["github.com/pkg/errors"]
+
+  [linters-settings.godox]
+    keywords = ["FIXME"]
+
+  [linters-settings.gocritic]
+    enabled-tags = ["diagnostic", "style", "performance"]
+    disabled-checks= [
+      "paramTypeCombine", # already handle by gofumpt.extra-rules
+      "whyNoLint", # already handle by nonolint
+      "unnamedResult",
+      "hugeParam",
+      "sloppyReassign",
+      "rangeValCopy",
+      "octalLiteral",
+      "ptrToRefParam",
+    ]
+
 [linters]
   enable-all = true
   disable = [
-    "maligned",
+    "interfacer", # deprecated
+    "maligned", # deprecated
+    "scopelint", # deprecated
+    "cyclop", # duplicate of gocyclo
     "lll",
-    "gas",
-    "dupl",
-    "prealloc",
-    "scopelint",
-    "bodyclose",
-    "wsl",
-    "stylecheck",
-    "godox",
+    "gosec",
+    "dupl", # not relevant
+    "prealloc", # too many false-positive
+    "bodyclose", # too many false-positive
     "gomnd",
     "testpackage", # not relevant
-    "nestif", # too many false-positive
-    "goerr113", # not relevant
-    "noctx",
-    "nlreturn", # not relevant
-    "wrapcheck",
     "tparallel", # not relevant
     "paralleltest", # not relevant
-    "exhaustivestruct", # too many false-positive
+    "nestif", # too many false-positive
+    "wrapcheck",
+    "goerr113", # not relevant
+    "nlreturn", # not relevant
+    "wsl", # not relevant
+    "exhaustive", # not relevant
+    "exhaustivestruct", # not relevant
     "makezero", # not relevant
-    "forbidigo", # not relevant
     "ifshort", # not relevant
+    "forbidigo", # not relevant
+    "noctx",
+    "forcetypeassert",
   ]
 
 [issues]
@@ -55,6 +78,7 @@
   exclude = [
     "Error return value of .((os\\.)?std(out|err)\\..*|.*Close|.*Flush|os\\.Remove(All)?|.*printf?|os\\.(Un)?Setenv). is not checked",
     "exported (type|method|function) (.+) should have comment or be unexported",
+    "ST1000: at least one file in a package should have a package comment"
   ]
   [[issues.exclude-rules]]
     path = "(.+)_test.go"
@@ -139,4 +163,7 @@
     linters = ["thelper"]
   [[issues.exclude-rules]]
     path = "providers/dns/oraclecloud/oraclecloud_test.go"
-    text = "SA1019: x509.EncryptPEMBlock is deprecated:"
+    text = "SA1019: x509.EncryptPEMBlock has been deprecated since Go 1.16"
+  [[issues.exclude-rules]]
+    path = "challenge/http01/domain_matcher.go"
+    text = "yodaStyleExpr"

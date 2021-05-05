@@ -62,7 +62,7 @@ func (c *CertificateService) Revoke(req acme.RevokeCertMessage) error {
 
 // get Returns the certificate and the "up" link.
 func (c *CertificateService) get(certURL string, bundle bool) (*acme.RawCertificate, http.Header, error) {
-	if len(certURL) == 0 {
+	if certURL == "" {
 		return nil, nil, errors.New("certificate[get]: empty URL")
 	}
 
@@ -112,7 +112,7 @@ func (c *CertificateService) getCertificateChain(cert []byte, headers http.Heade
 
 // getIssuerFromLink requests the issuer certificate.
 func (c *CertificateService) getIssuerFromLink(up string) ([]byte, error) {
-	if len(up) == 0 {
+	if up == "" {
 		return nil, nil
 	}
 

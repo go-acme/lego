@@ -61,6 +61,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `JOKER_HTTP_TIMEOUT` | API request timeout |
 | `JOKER_POLLING_INTERVAL` | Time between DNS propagation check |
 | `JOKER_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
+| `JOKER_SEQUENCE_INTERVAL` | Time between sequential requests (only with 'SVC' mode) |
 | `JOKER_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.

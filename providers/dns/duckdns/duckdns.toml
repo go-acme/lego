@@ -22,8 +22,7 @@ lego --email myemail@example.com --dns duckdns --domains *.example.com run
     DUCKDNS_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
     DUCKDNS_TTL = "The TTL of the TXT record used for the DNS challenge"
     DUCKDNS_HTTP_TIMEOUT = "API request timeout"
-    DUCKDNS_SEQUENCE_INTERVAL = "Interval between iteration"
-    DUCKDNS_SUBDOMAIN_MAP = "JSON text with own domain as key and Duck DNS sub domain as value"
+    DUCKDNS_SEQUENCE_INTERVAL = "Time between sequential requests"
 
 [Links]
   API = "https://www.duckdns.org/spec.jsp"

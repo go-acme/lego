@@ -39,7 +39,7 @@ type rrSet struct {
 	Type       string   `json:"type"`
 	Kind       string   `json:"kind"`
 	ChangeType string   `json:"changetype"`
-	Records    []Record `json:"records"`
+	Records    []Record `json:"records,omitempty"`
 	TTL        int      `json:"ttl,omitempty"`
 }
 
@@ -66,7 +66,7 @@ func (d *DNSProvider) getHostedZone(fqdn string) (*hostedZone, error) {
 		return nil, err
 	}
 
-	p := path.Join("/servers/localhost/zones/", dns.Fqdn(authZone))
+	p := path.Join("/servers", d.config.ServerName, "/zones/", dns.Fqdn(authZone))
 
 	result, err := d.sendRequest(http.MethodGet, p, nil)
 	if err != nil {
@@ -151,7 +151,7 @@ func (d *DNSProvider) sendRequest(method, uri string, body io.Reader) (json.RawM
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusUnprocessableEntity && (resp.StatusCode < 200 || resp.StatusCode >= 300) {
-		return nil, fmt.Errorf("unexpected HTTP status code %d when fetching '%s'", resp.StatusCode, req.URL)
+		return nil, fmt.Errorf("unexpected HTTP status code %d when %sing '%s'", resp.StatusCode, req.Method, req.URL)
 	}
 
 	var msg json.RawMessage
@@ -197,6 +197,10 @@ func (d *DNSProvider) makeRequest(method, uri string, body io.Reader) (*http.Req
 	}
 
 	req.Header.Set("X-API-Key", d.config.APIKey)
+
+	if method != http.MethodGet && method != http.MethodDelete {
+		req.Header.Set("Content-Type", "application/json")
+	}
 
 	return req, nil
 }

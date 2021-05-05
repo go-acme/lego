@@ -51,7 +51,7 @@ func (d *DNSProvider) deleteRecord(domain, recordID string) error {
 	return d.doRequest(http.MethodDelete, pathDelete, nil, nil)
 }
 
-func (d *DNSProvider) doRequest(method, path string, requestMsg, responseMsg interface{}) error {
+func (d *DNSProvider) doRequest(method, resource string, requestMsg, responseMsg interface{}) error {
 	reqBody := &bytes.Buffer{}
 	if requestMsg != nil {
 		err := json.NewEncoder(reqBody).Encode(requestMsg)
@@ -60,7 +60,7 @@ func (d *DNSProvider) doRequest(method, path string, requestMsg, responseMsg int
 		}
 	}
 
-	endpoint, err := d.config.Endpoint.Parse(path + "?format=json")
+	endpoint, err := d.config.Endpoint.Parse(resource + "?format=json")
 	if err != nil {
 		return err
 	}

@@ -12,13 +12,11 @@ lego --email myemail@example.com --dns scaleway --domains my.example.org run
 [Configuration]
   [Configuration.Credentials]
     SCALEWAY_API_TOKEN = "API token"
+    SCALEWAY_PROJECT_ID = "Project to use (optional)"
   [Configuration.Additional]
-    SCALEWAY_BASE_URL = "API endpoint URL"
-    SCALEWAY_API_VERSION = "API version"
     SCALEWAY_POLLING_INTERVAL = "Time between DNS propagation check"
     SCALEWAY_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
     SCALEWAY_TTL = "The TTL of the TXT record used for the DNS challenge"
-    SCALEWAY_HTTP_TIMEOUT = "API request timeout"
 
 [Links]
-  API = "https://developers.scaleway.com/en/products/domain/api/"
+  API = "https://developers.scaleway.com/en/products/domain/dns/api/"

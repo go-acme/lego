@@ -174,13 +174,13 @@ func (d *DNSProvider) findTxtRecords(domain, fqdn string) ([]dnspod.Record, erro
 		return nil, err
 	}
 
+	recordName := extractRecordName(fqdn, zoneName)
+
 	var records []dnspod.Record
-	result, _, err := d.client.Records.List(zoneID, "")
+	result, _, err := d.client.Records.List(zoneID, recordName)
 	if err != nil {
 		return records, fmt.Errorf("API call has failed: %w", err)
 	}
-
-	recordName := extractRecordName(fqdn, zoneName)
 
 	for _, record := range result {
 		if record.Name == recordName {

@@ -11,7 +11,7 @@ slug: dnspod
 
 Since: v0.4.0
 
-Configuration for [DNSPod](http://www.dnspod.com/).
+Configuration for [DNSPod](https://www.dnspod.com/).
 
 
 <!--more-->
@@ -55,7 +55,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 
 ## More information
 
-- [API documentation](https://www.dnspod.com/docs/index.html)
+- [API documentation](https://docs.dnspod.com/api/)
 - [Go client](https://github.com/nrdcg/dnspod-go)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

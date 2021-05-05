@@ -2,7 +2,6 @@ package internal
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -45,7 +44,7 @@ func TestClient_ListZones_error(t *testing.T) {
 	assert.Nil(t, zones)
 
 	var cErr *ClientError
-	assert.True(t, errors.As(err, &cErr))
+	assert.ErrorAs(t, err, &cErr)
 	assert.Equal(t, http.StatusUnauthorized, cErr.StatusCode)
 }
 
@@ -78,7 +77,7 @@ func TestClient_GetRecords_error(t *testing.T) {
 	assert.Nil(t, records)
 
 	var cErr *ClientError
-	assert.True(t, errors.As(err, &cErr))
+	assert.ErrorAs(t, err, &cErr)
 	assert.Equal(t, http.StatusUnauthorized, cErr.StatusCode)
 }
 
@@ -100,7 +99,7 @@ func TestClient_RemoveRecord_error(t *testing.T) {
 	require.Error(t, err)
 
 	var cErr *ClientError
-	assert.True(t, errors.As(err, &cErr))
+	assert.ErrorAs(t, err, &cErr)
 	assert.Equal(t, http.StatusInternalServerError, cErr.StatusCode)
 }
 
@@ -136,7 +135,7 @@ func TestClient_ReplaceRecords_error(t *testing.T) {
 	require.Error(t, err)
 
 	var cErr *ClientError
-	assert.True(t, errors.As(err, &cErr))
+	assert.ErrorAs(t, err, &cErr)
 	assert.Equal(t, http.StatusBadRequest, cErr.StatusCode)
 }
 

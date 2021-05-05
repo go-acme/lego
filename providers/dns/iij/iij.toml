@@ -22,5 +22,5 @@ lego -email myemail@example.com --dns iij --domains my.example.org -run
     IIJ_TTL = "The TTL of the TXT record used for the DNS challenge"
 
 [Links]
-  API = "http://manual.iij.jp/p2/pubapi/http://manual.iij.jp/p2/pubapi/"
+  API = "https://manual.iij.jp/p2/pubapi/"
   GoClient = "https://github.com/iij/doapi"

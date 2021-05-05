@@ -45,7 +45,6 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `YANDEX_HTTP_TIMEOUT` | API request timeout |
 | `YANDEX_POLLING_INTERVAL` | Time between DNS propagation check |
 | `YANDEX_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
-| `YANDEX_SEQUENCE_INTERVAL` | Interval between iteration, default 60s |
 | `YANDEX_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.

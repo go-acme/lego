@@ -55,7 +55,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 
 ## More information
 
-- [API documentation](http://doc.rpc.gandi.net/index.html)
+- [API documentation](https://doc.rpc.gandi.net/index.html)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/gandi/gandi.toml -->

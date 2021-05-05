@@ -122,7 +122,7 @@ func TestTxtRecordService_Get(t *testing.T) {
 		ParentID:     273302,
 		Parent:       "domain",
 		Source:       "Domain",
-		ModifiedTs:   1580908547863,
+		ModifiedTS:   1580908547863,
 		Value: []RecordValue{{
 			Value: `"test"`,
 		}},

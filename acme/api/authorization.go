@@ -10,7 +10,7 @@ type AuthorizationService service
 
 // Get Gets an authorization.
 func (c *AuthorizationService) Get(authzURL string) (acme.Authorization, error) {
-	if len(authzURL) == 0 {
+	if authzURL == "" {
 		return acme.Authorization{}, errors.New("authorization[get]: empty URL")
 	}
 
@@ -24,7 +24,7 @@ func (c *AuthorizationService) Get(authzURL string) (acme.Authorization, error) 
 
 // Deactivate Deactivates an authorization.
 func (c *AuthorizationService) Deactivate(authzURL string) error {
-	if len(authzURL) == 0 {
+	if authzURL == "" {
 		return errors.New("authorization[deactivate]: empty URL")
 	}
 

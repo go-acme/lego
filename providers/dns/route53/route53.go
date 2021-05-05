@@ -286,7 +286,7 @@ func (d *DNSProvider) getHostedZoneID(fqdn string) (string, error) {
 		}
 	}
 
-	if len(hostedZoneID) == 0 {
+	if hostedZoneID == "" {
 		return "", fmt.Errorf("zone %s not found for domain %s", authZone, fqdn)
 	}
 

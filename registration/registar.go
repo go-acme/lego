@@ -57,7 +57,7 @@ func (r *Registrar) Register(options RegisterOptions) (*Resource, error) {
 
 	account, err := r.core.Accounts.New(accMsg)
 	if err != nil {
-		// FIXME seems impossible
+		// seems impossible
 		var errorDetails acme.ProblemDetails
 		if !errors.As(err, &errorDetails) || errorDetails.HTTPStatus != http.StatusConflict {
 			return nil, err
@@ -81,7 +81,7 @@ func (r *Registrar) RegisterWithExternalAccountBinding(options RegisterEABOption
 
 	account, err := r.core.Accounts.NewEAB(accMsg, options.Kid, options.HmacEncoded)
 	if err != nil {
-		// FIXME seems impossible
+		// seems impossible
 		var errorDetails acme.ProblemDetails
 		if !errors.As(err, &errorDetails) || errorDetails.HTTPStatus != http.StatusConflict {
 			return nil, err

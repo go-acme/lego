@@ -15,9 +15,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GO_VERSION: 1.16
-      GOLANGCI_LINT_VERSION: v1.36.0
+      GOLANGCI_LINT_VERSION: v1.39.0
       HUGO_VERSION: 0.54.0
-      SEIHON_VERSION: v0.5.1
+      SEIHON_VERSION: v0.8.3
       CGO_ENABLED: 0
       LEGO_E2E_TESTS: CI
       MEMCACHED_HOSTS: localhost:11211
@@ -47,10 +47,10 @@ jobs:
 
       - name: Check and get dependencies
         run: |
+          go mod download
           go mod tidy
           git diff --exit-code go.mod
           git diff --exit-code go.sum
-          go mod download
 
       - name: Documentation validation
         run: make validate-doc

@@ -33,7 +33,7 @@ lego --email example@example.com --dns domeneshop --domains example.com run
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `DOMENESHOP_API_PASSWORD` | API secret |
+| `DOMENESHOP_API_SECRET` | API secret |
 | `DOMENESHOP_API_TOKEN` | API token |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.

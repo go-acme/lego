@@ -18,9 +18,31 @@ Configuration for [Designate DNSaaS for Openstack](https://docs.openstack.org/de
 
 - Code: `designate`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the Designate DNSaaS for Openstack provider:
+
+```bash
+# With a `clouds.yaml`
+OS_CLOUD=my_openstack \
+lego --email myemail@example.com --dns designate --domains my.example.org run
+
+# or
+
+OS_AUTH_URL=https://openstack.example.org \
+OS_REGION_NAME=RegionOne \
+OS_PROJECT_ID=23d4522a987d4ab529f722a007c27846
+OS_USERNAME=myuser \
+OS_PASSWORD=passw0rd \
+lego --email myemail@example.com --dns designate --domains my.example.org run
+
+# or
+
+OS_AUTH_URL=https://openstack.example.org \
+OS_REGION_NAME=RegionOne \
+OS_AUTH_TYPE=v3applicationcredential \
+OS_APPLICATION_CREDENTIAL_ID=imn74uq0or7dyzz20dwo1ytls4me8dry \
+OS_APPLICATION_CREDENTIAL_SECRET=68FuSPSdQqkFQYH5X1OoriEIJOwyLtQ8QSqXZOc9XxFK1A9tzZT6He2PfPw0OMja \
+lego --email myemail@example.com --dns designate --domains my.example.org run
+```
 
 
 
@@ -29,11 +51,15 @@ _Please contribute by adding a CLI example._
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
+| `OS_APPLICATION_CREDENTIAL_ID` | Application credential ID |
+| `OS_APPLICATION_CREDENTIAL_NAME` | Application credential name |
+| `OS_APPLICATION_CREDENTIAL_SECRET` | Application credential secret |
 | `OS_AUTH_URL` | Identity endpoint URL |
 | `OS_PASSWORD` | Password |
 | `OS_PROJECT_NAME` | Project name |
 | `OS_REGION_NAME` | Region name |
 | `OS_USERNAME` | Username |
+| `OS_USER_ID` | User ID |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).
@@ -52,6 +78,20 @@ More information [here](/lego/dns/#configuration-and-credentials).
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).
 
+## Description
+
+There are three main ways of authenticating with Designate:
+
+1. The first one is by using the `OS_CLOUD` environment variable and a `clouds.yaml` file.
+2. The second one is using your username and password, via the `OS_USERNAME`, `OS_PASSWORD` and `OS_PROJECT_NAME` environment variables.
+3. The third one is by using an application credential, via the `OS_APPLICATION_CREDENTIAL_*` and `OS_USER_ID` environment variables.
+
+For the username/password and application methods, the `OS_AUTH_URL` and `OS_REGION_NAME` environment variables are required.
+
+For more information, you can read about the different methods of authentication with OpenStack in the Keystone's documentation and the gophercloud documentation:
+
+- [Keystone username/password](https://docs.openstack.org/keystone/latest/user/supported_clients.html)
+- [Keystone application credentials](https://docs.openstack.org/keystone/latest/user/application_credentials.html)
 
 
 

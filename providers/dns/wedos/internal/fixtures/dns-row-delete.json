@@ -1,0 +1,9 @@
+{
+  "response": {
+    "code": 1000,
+    "result": "OK",
+    "timestamp": 1291370821,
+    "svTRID": "1291370821.1702.7371.1",
+    "command": "dns-row-delete"
+  }
+}

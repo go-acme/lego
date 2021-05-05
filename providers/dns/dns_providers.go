@@ -64,11 +64,13 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/netcup"
 	"github.com/go-acme/lego/v4/providers/dns/netlify"
 	"github.com/go-acme/lego/v4/providers/dns/nifcloud"
+	"github.com/go-acme/lego/v4/providers/dns/njalla"
 	"github.com/go-acme/lego/v4/providers/dns/ns1"
 	"github.com/go-acme/lego/v4/providers/dns/oraclecloud"
 	"github.com/go-acme/lego/v4/providers/dns/otc"
 	"github.com/go-acme/lego/v4/providers/dns/ovh"
 	"github.com/go-acme/lego/v4/providers/dns/pdns"
+	"github.com/go-acme/lego/v4/providers/dns/porkbun"
 	"github.com/go-acme/lego/v4/providers/dns/rackspace"
 	"github.com/go-acme/lego/v4/providers/dns/regru"
 	"github.com/go-acme/lego/v4/providers/dns/rfc2136"
@@ -78,12 +80,15 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/scaleway"
 	"github.com/go-acme/lego/v4/providers/dns/selectel"
 	"github.com/go-acme/lego/v4/providers/dns/servercow"
+	"github.com/go-acme/lego/v4/providers/dns/sonic"
 	"github.com/go-acme/lego/v4/providers/dns/stackpath"
 	"github.com/go-acme/lego/v4/providers/dns/transip"
 	"github.com/go-acme/lego/v4/providers/dns/vegadns"
 	"github.com/go-acme/lego/v4/providers/dns/versio"
+	"github.com/go-acme/lego/v4/providers/dns/vinyldns"
 	"github.com/go-acme/lego/v4/providers/dns/vscale"
 	"github.com/go-acme/lego/v4/providers/dns/vultr"
+	"github.com/go-acme/lego/v4/providers/dns/wedos"
 	"github.com/go-acme/lego/v4/providers/dns/yandex"
 	"github.com/go-acme/lego/v4/providers/dns/zoneee"
 	"github.com/go-acme/lego/v4/providers/dns/zonomi"
@@ -212,6 +217,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return netlify.NewDNSProvider()
 	case "nifcloud":
 		return nifcloud.NewDNSProvider()
+	case "njalla":
+		return njalla.NewDNSProvider()
 	case "ns1":
 		return ns1.NewDNSProvider()
 	case "oraclecloud":
@@ -222,6 +229,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return ovh.NewDNSProvider()
 	case "pdns":
 		return pdns.NewDNSProvider()
+	case "porkbun":
+		return porkbun.NewDNSProvider()
 	case "rackspace":
 		return rackspace.NewDNSProvider()
 	case "regru":
@@ -240,6 +249,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return selectel.NewDNSProvider()
 	case "servercow":
 		return servercow.NewDNSProvider()
+	case "sonic":
+		return sonic.NewDNSProvider()
 	case "stackpath":
 		return stackpath.NewDNSProvider()
 	case "transip":
@@ -248,10 +259,14 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return vegadns.NewDNSProvider()
 	case "versio":
 		return versio.NewDNSProvider()
+	case "vinyldns":
+		return vinyldns.NewDNSProvider()
 	case "vultr":
 		return vultr.NewDNSProvider()
 	case "vscale":
 		return vscale.NewDNSProvider()
+	case "wedos":
+		return wedos.NewDNSProvider()
 	case "yandex":
 		return yandex.NewDNSProvider()
 	case "zoneee":

@@ -33,6 +33,7 @@ lego --email myemail@example.com --dns scaleway --domains my.example.org run
 | Environment Variable Name | Description |
 |-----------------------|-------------|
 | `SCALEWAY_API_TOKEN` | API token |
+| `SCALEWAY_PROJECT_ID` | Project to use (optional) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).
@@ -42,9 +43,6 @@ More information [here](/lego/dns/#configuration-and-credentials).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `SCALEWAY_API_VERSION` | API version |
-| `SCALEWAY_BASE_URL` | API endpoint URL |
-| `SCALEWAY_HTTP_TIMEOUT` | API request timeout |
 | `SCALEWAY_POLLING_INTERVAL` | Time between DNS propagation check |
 | `SCALEWAY_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
 | `SCALEWAY_TTL` | The TTL of the TXT record used for the DNS challenge |
@@ -57,7 +55,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 
 ## More information
 
-- [API documentation](https://developers.scaleway.com/en/products/domain/api/)
+- [API documentation](https://developers.scaleway.com/en/products/domain/dns/api/)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/scaleway/scaleway.toml -->

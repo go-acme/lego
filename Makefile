@@ -72,10 +72,12 @@ generate-dns:
 	go generate ./...
 
 validate-doc: generate-dns
-ifneq ($(shell git status --porcelain -- ./docs/ ./cmd/ 2>/dev/null),)
-	@echo 'The documentation must be regenerated, please use `make generate-dns`.'
-	@git status --porcelain -- ./docs/ ./cmd/ 2>/dev/null
-	@exit 2
-else
-	@echo 'All documentation changes are done the right way.'
-endif
+validate-doc: DOC_DIRECTORIES := ./docs/ ./cmd/
+validate-doc:
+	if git diff --exit-code --quiet $(DOC_DIRECTORIES) 2>/dev/null; then \
+		echo 'All documentation changes are done the right way.'; \
+	else \
+		echo 'The documentation must be regenerated, please use `make generate-dns`.'; \
+		git status --porcelain -- $(DOC_DIRECTORIES) 2>/dev/null; \
+		exit 2; \
+	fi

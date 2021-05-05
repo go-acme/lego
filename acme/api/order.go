@@ -32,7 +32,7 @@ func (o *OrderService) New(domains []string) (acme.ExtendedOrder, error) {
 
 // Get Gets an order.
 func (o *OrderService) Get(orderURL string) (acme.ExtendedOrder, error) {
-	if len(orderURL) == 0 {
+	if orderURL == "" {
 		return acme.ExtendedOrder{}, errors.New("order[get]: empty URL")
 	}
 

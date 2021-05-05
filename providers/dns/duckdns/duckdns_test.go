@@ -155,6 +155,38 @@ func Test_getMainDomain(t *testing.T) {
 	}
 }
 
+func Test_jsonToSubdomainMap(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		json     string
+		expected map[string]string
+	}{
+		{
+			desc: "empty",
+		},
+		{
+			desc:     "simple",
+			json:     "{\"www.example.com\":\"my-subdomain\"}",
+			expected: map[string]string{"www.example.com": "my-subdomain"},
+		},
+		{
+			desc:     "wildcard",
+			json:     "{\"*.example.com\":\"my-subdomain\"}",
+			expected: map[string]string{"example.com": "my-subdomain"},
+		},
+	}
+
+	for _, test := range testCases {
+		test := test
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			subDomainMap := jsonToSubdomainMap(test.json)
+			assert.Equal(t, test.expected, subDomainMap)
+		})
+	}
+}
+
 func TestLivePresent(t *testing.T) {
 	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")

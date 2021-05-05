@@ -17,7 +17,7 @@ import (
 func (d *DNSProvider) updateTxtRecord(domain, token, txt string, clear bool) error {
 	u, _ := url.Parse("https://www.duckdns.org/update")
 
-	mainDomain := getMainDomain(domain, d.config.SubDomain)
+	mainDomain := getMainDomain(domain, d.config.SubDomainMap[domain])
 	if len(mainDomain) == 0 {
 		return fmt.Errorf("unable to find the main domain for: %s", domain)
 	}

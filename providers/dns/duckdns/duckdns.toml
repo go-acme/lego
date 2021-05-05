@@ -10,7 +10,7 @@ lego --email myemail@example.com --dns duckdns --domains my-subdomain.duckdns.or
 
 #own domain name,after set CNAME record _acme-challenge.example.com -> my-subdomain.duckdns.org
 DUCKDNS_TOKEN=xxxxxx \
-DUCKDNS_SUBDOMAIN=my-subdomain \
+DUCKDNS_SUBDOMAIN_MAP='{"*.example.com":"my-subdomain"}' \
 lego --email myemail@example.com --dns duckdns --domains *.example.com run
 '''
 
@@ -23,7 +23,7 @@ lego --email myemail@example.com --dns duckdns --domains *.example.com run
     DUCKDNS_TTL = "The TTL of the TXT record used for the DNS challenge"
     DUCKDNS_HTTP_TIMEOUT = "API request timeout"
     DUCKDNS_SEQUENCE_INTERVAL = "Interval between iteration"
-    DUCKDNS_SUBDOMAIN = "Duck DNS sub domain"
+    DUCKDNS_SUBDOMAIN_MAP = "JSON text with own domain as key and Duck DNS sub domain as value"
 
 [Links]
   API = "https://www.duckdns.org/spec.jsp"

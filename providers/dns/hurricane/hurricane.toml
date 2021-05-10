@@ -45,4 +45,4 @@ HURRICANE_TOKENS=example.org:token
     HURRICANE_HTTP_TIMEOUT = "API request timeout"
 
 [Links]
-  API = "https://dns.he.org/"
+  API = "https://dns.he.net/"

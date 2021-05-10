@@ -67,7 +67,7 @@ HURRICANE_TOKENS=example.org:token
 
 ## More information
 
-- [API documentation](https://dns.he.org/)
+- [API documentation](https://dns.he.net/)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/hurricane/hurricane.toml -->

@@ -905,7 +905,6 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "HOSTINGDE_API_KEY":	API key`)
-		ew.writeln(`	- "HOSTINGDE_ZONE_NAME":	Zone name in ACE format`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
@@ -913,6 +912,7 @@ func displayDNSHelp(name string) error {
 		ew.writeln(`	- "HOSTINGDE_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "HOSTINGDE_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
 		ew.writeln(`	- "HOSTINGDE_TTL":	The TTL of the TXT record used for the DNS challenge`)
+		ew.writeln(`	- "HOSTINGDE_ZONE_NAME":	Zone name in ACE format`)
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/hostingde`)

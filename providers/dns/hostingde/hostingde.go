@@ -58,14 +58,14 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables:
 // HOSTINGDE_ZONE_NAME and HOSTINGDE_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvAPIKey, EnvZoneName)
+	values, err := env.Get(EnvAPIKey)
 	if err != nil {
 		return nil, fmt.Errorf("hostingde: %w", err)
 	}
 
 	config := NewDefaultConfig()
 	config.APIKey = values[EnvAPIKey]
-	config.ZoneName = values[EnvZoneName]
+	config.ZoneName = env.GetOrFile(EnvZoneName)
 
 	return NewDNSProviderConfig(config)
 }
@@ -78,10 +78,6 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	if config.APIKey == "" {
 		return nil, errors.New("hostingde: API key missing")
-	}
-
-	if config.ZoneName == "" {
-		return nil, errors.New("hostingde: Zone Name missing")
 	}
 
 	return &DNSProvider{
@@ -100,14 +96,16 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
+	zoneName, err := d.getZoneName(fqdn)
+	if err != nil {
+		return fmt.Errorf("hostingde: could not determine zone for domain %q: %w", domain, err)
+	}
+
 	// get the ZoneConfig for that domain
 	zonesFind := ZoneConfigsFindRequest{
-		Filter: Filter{
-			Field: "zoneName",
-			Value: d.config.ZoneName,
-		},
-		Limit: 1,
-		Page:  1,
+		Filter: Filter{Field: "zoneName", Value: zoneName},
+		Limit:  1,
+		Page:   1,
 	}
 	zonesFind.AuthToken = d.config.APIKey
 
@@ -115,7 +113,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("hostingde: %w", err)
 	}
-	zoneConfig.Name = d.config.ZoneName
+	zoneConfig.Name = zoneName
 
 	rec := []DNSRecord{{
 		Type:    "TXT",
@@ -154,6 +152,11 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
+	zoneName, err := d.getZoneName(fqdn)
+	if err != nil {
+		return fmt.Errorf("hostingde: could not determine zone for domain %q: %w", domain, err)
+	}
+
 	rec := []DNSRecord{{
 		Type:    "TXT",
 		Name:    dns01.UnFqdn(fqdn),
@@ -162,12 +165,9 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	// get the ZoneConfig for that domain
 	zonesFind := ZoneConfigsFindRequest{
-		Filter: Filter{
-			Field: "zoneName",
-			Value: d.config.ZoneName,
-		},
-		Limit: 1,
-		Page:  1,
+		Filter: Filter{Field: "zoneName", Value: zoneName},
+		Limit:  1,
+		Page:   1,
 	}
 	zonesFind.AuthToken = d.config.APIKey
 
@@ -175,7 +175,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("hostingde: %w", err)
 	}
-	zoneConfig.Name = d.config.ZoneName
+	zoneConfig.Name = zoneName
 
 	req := ZoneUpdateRequest{
 		ZoneConfig:      *zoneConfig,
@@ -193,4 +193,21 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("hostingde: %w", err)
 	}
 	return nil
+}
+
+func (d *DNSProvider) getZoneName(fqdn string) (string, error) {
+	if d.config.ZoneName != "" {
+		return d.config.ZoneName, nil
+	}
+
+	zoneName, err := dns01.FindZoneByFqdn(fqdn)
+	if err != nil {
+		return "", err
+	}
+
+	if zoneName == "" {
+		return "", errors.New("empty zone name")
+	}
+
+	return dns01.UnFqdn(zoneName), nil
 }

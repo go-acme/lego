@@ -6,7 +6,7 @@ import (
 )
 
 // Logger is an optional custom logger.
-var Logger StdLogger = log.New(os.Stdout, "", log.LstdFlags)
+var Logger StdLogger = log.New(os.Stderr, "", log.LstdFlags)
 
 // StdLogger interface for Standard Logger.
 type StdLogger interface {

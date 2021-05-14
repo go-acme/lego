@@ -25,7 +25,7 @@ func TestNewDNSProvider(t *testing.T) {
 			desc: "success",
 			envVars: map[string]string{
 				EnvAPIKey:   "123",
-				EnvZoneName: "456",
+				EnvZoneName: "example.org",
 			},
 		},
 		{
@@ -34,7 +34,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvAPIKey:   "",
 				EnvZoneName: "",
 			},
-			expected: "hostingde: some credentials information are missing: HOSTINGDE_API_KEY,HOSTINGDE_ZONE_NAME",
+			expected: "hostingde: some credentials information are missing: HOSTINGDE_API_KEY",
 		},
 		{
 			desc: "missing access key",
@@ -43,14 +43,6 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvZoneName: "456",
 			},
 			expected: "hostingde: some credentials information are missing: HOSTINGDE_API_KEY",
-		},
-		{
-			desc: "missing zone name",
-			envVars: map[string]string{
-				EnvAPIKey:   "123",
-				EnvZoneName: "",
-			},
-			expected: "hostingde: some credentials information are missing: HOSTINGDE_ZONE_NAME",
 		},
 	}
 
@@ -85,7 +77,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		{
 			desc:     "success",
 			apiKey:   "123",
-			zoneName: "456",
+			zoneName: "example.org",
 		},
 		{
 			desc:     "missing credentials",
@@ -95,11 +87,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			desc:     "missing api key",
 			zoneName: "456",
 			expected: "hostingde: API key missing",
-		},
-		{
-			desc:     "missing zone name",
-			apiKey:   "123",
-			expected: "hostingde: Zone Name missing",
 		},
 	}
 

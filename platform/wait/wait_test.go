@@ -13,7 +13,7 @@ func TestForTimeout(t *testing.T) {
 		})
 	}()
 
-	timeout := time.After(5 * time.Second)
+	timeout := time.After(6 * time.Second)
 	select {
 	case <-timeout:
 		t.Fatal("timeout exceeded")
@@ -21,5 +21,6 @@ func TestForTimeout(t *testing.T) {
 		if err == nil {
 			t.Errorf("expected timeout error; got %v", err)
 		}
+		t.Logf("%v", err)
 	}
 }

@@ -63,27 +63,26 @@ The following AWS IAM policy document describes the minimum permissions required
 
 ```json
 {
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Action": [
-                "lightsail:DeleteDomainEntry",
-                "lightsail:CreateDomainEntry"
-            ],
-            "Resource": "<Lightsail DNS zone ARN>"
-        }
-    ]
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "lightsail:DeleteDomainEntry",
+        "lightsail:CreateDomainEntry"
+      ],
+      "Resource": "<Lightsail DNS zone ARN>"
+    }
+  ]
 }
 ```
 
-Replace the `Resource` value with your Lightsail DNS zone ARN. You can retrieve the ARN using aws cli by running
-`aws lightsail get-domains --region us-east-1` (Lightsail web console does not show the ARN, unfortunately). It should
-be in the format of `arn:aws:lightsail:global:<ACCOUNT ID>:Domain/<DOMAIN ID>`. You also need to replace the region
-in the ARN to `us-east-1` (instead of `global`).
+Replace the `Resource` value with your Lightsail DNS zone ARN.
+You can retrieve the ARN using aws cli by running `aws lightsail get-domains --region us-east-1` (Lightsail web console does not show the ARN, unfortunately).
+It should be in the format of `arn:aws:lightsail:global:<ACCOUNT ID>:Domain/<DOMAIN ID>`.
+You also need to replace the region in the ARN to `us-east-1` (instead of `global`).
 
-Alternatively, you can also set the `Resource` to `*` (wildcard), which allow to access all domain, but this is not
-recommended.
+Alternatively, you can also set the `Resource` to `*` (wildcard), which allow to access all domain, but this is not recommended.
 
 
 

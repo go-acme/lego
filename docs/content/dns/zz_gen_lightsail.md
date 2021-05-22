@@ -31,7 +31,7 @@ _Please contribute by adding a CLI example._
 |-----------------------|-------------|
 | `AWS_ACCESS_KEY_ID` | Access key ID |
 | `AWS_SECRET_ACCESS_KEY` | Secret access key |
-| `DNS_ZONE` | DNS zone |
+| `DNS_ZONE` | Domain name of the DNS zone |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).
@@ -47,13 +47,49 @@ More information [here](/lego/dns/#configuration-and-credentials).
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).
 
+## Description
+
+AWS Credentials are automatically detected in the following locations and prioritized in the following order:
+
+1. Environment variables: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, [`AWS_SESSION_TOKEN`]
+2. Shared credentials file (defaults to `~/.aws/credentials`, profiles can be specified using `AWS_PROFILE`)
+3. Amazon EC2 IAM role
+
+AWS region is not required to set as the Lightsail DNS zone is in global (us-east-1) region.
+
+## Policy
+
+The following AWS IAM policy document describes the minimum permissions required for lego to complete the DNS challenge.
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "lightsail:DeleteDomainEntry",
+        "lightsail:CreateDomainEntry"
+      ],
+      "Resource": "<Lightsail DNS zone ARN>"
+    }
+  ]
+}
+```
+
+Replace the `Resource` value with your Lightsail DNS zone ARN.
+You can retrieve the ARN using aws cli by running `aws lightsail get-domains --region us-east-1` (Lightsail web console does not show the ARN, unfortunately).
+It should be in the format of `arn:aws:lightsail:global:<ACCOUNT ID>:Domain/<DOMAIN ID>`.
+You also need to replace the region in the ARN to `us-east-1` (instead of `global`).
+
+Alternatively, you can also set the `Resource` to `*` (wildcard), which allow to access all domain, but this is not recommended.
 
 
 
 ## More information
 
 
-- [Go client](https://github.com/aws/aws-sdk-go/aws)
+- [Go client](https://github.com/aws/aws-sdk-go/)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/lightsail/lightsail.toml -->

@@ -1089,7 +1089,7 @@ func displayDNSHelp(name string) error {
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "AWS_ACCESS_KEY_ID":	Access key ID`)
 		ew.writeln(`	- "AWS_SECRET_ACCESS_KEY":	Secret access key`)
-		ew.writeln(`	- "DNS_ZONE":	DNS zone`)
+		ew.writeln(`	- "DNS_ZONE":	Domain name of the DNS zone`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)

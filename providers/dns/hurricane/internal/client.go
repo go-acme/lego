@@ -82,9 +82,6 @@ func (c *Client) UpdateTxtRecord(domain string, txt string) error {
 
 func evaluateBody(body string, hostname string) error {
 	words := strings.SplitN(body, " ", 2)
-	if len(words) == 0 {
-		return fmt.Errorf("attempt to change TXT record %s returned invalid body: %s", hostname, body)
-	}
 
 	switch words[0] {
 	case codeGood:

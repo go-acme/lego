@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strings"
 	"sync"
 	"time"
 )
@@ -80,7 +81,9 @@ func (c *Client) UpdateTxtRecord(domain string, txt string) error {
 }
 
 func evaluateBody(body string, hostname string) error {
-	switch body {
+	words := strings.SplitN(body, " ", 2)
+
+	switch words[0] {
 	case codeGood:
 		return nil
 	case codeNoChg:

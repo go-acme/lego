@@ -19,7 +19,7 @@ func TestClient_UpdateTxtRecord(t *testing.T) {
 			expected: assert.NoError,
 		},
 		{
-			code:     codeNoChg,
+			code:     codeNoChg + ` "0123456789abcdef"`,
 			expected: assert.NoError,
 		},
 		{

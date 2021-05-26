@@ -3,7 +3,7 @@
 Let's Encrypt client and ACME library written in Go.
 
 [![GoDoc](https://godoc.org/github.com/go-acme/lego?status.svg)](https://pkg.go.dev/mod/github.com/go-acme/lego/v4)
-[![Build Status](https://travis-ci.com/go-acme/lego.svg?branch=master)](https://travis-ci.com/go-acme/lego)
+[![Build Status](https://github.com//go-acme/lego/workflows/Main/badge.svg?branch=master)](https://github.com//go-acme/lego/actions)
 [![Docker Pulls](https://img.shields.io/docker/pulls/goacme/lego.svg)](https://hub.docker.com/r/goacme/lego/)
 
 ## Features

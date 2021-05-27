@@ -56,6 +56,7 @@ func allDNSCodes() string {
 		"hurricane",
 		"hyperone",
 		"iij",
+		"infoblox",
 		"infomaniak",
 		"inwx",
 		"ionos",
@@ -991,6 +992,29 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/iij`)
+
+	case "infoblox":
+		// generated from: providers/dns/infoblox/infoblox.toml
+		ew.writeln(`Configuration for Infoblox.`)
+		ew.writeln(`Code:	'infoblox'`)
+		ew.writeln(`Since:	'v4.3.1'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "INFOBLOX_HOST":	Infoblox Host URI`)
+		ew.writeln(`	- "INFOBLOX_PASSWORD":	Infoblox Account Password`)
+		ew.writeln(`	- "INFOBLOX_USER":	Infoblox Account Username`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "INFOBLOX_PORT":	The port for the infoblox grid manager, default: 443`)
+		ew.writeln(`	- "INFOBLOX_TTL":	The TTL of the TXT record used for the DNS challenge`)
+		ew.writeln(`	- "INFOBLOX_VIEW":	The view for the TXT records, default: External`)
+		ew.writeln(`	- "INFOBLOX_WAPI_VERSION":	The version of wapi being used, default: 2.11`)
+		ew.writeln(`	- "SSL_VERIFY":	Whether or not to verify the TLS certificate, default: true`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/infoblox`)
 
 	case "infomaniak":
 		// generated from: providers/dns/infomaniak/infomaniak.toml

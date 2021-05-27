@@ -47,6 +47,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/hurricane"
 	"github.com/go-acme/lego/v4/providers/dns/hyperone"
 	"github.com/go-acme/lego/v4/providers/dns/iij"
+	"github.com/go-acme/lego/v4/providers/dns/infoblox"
 	"github.com/go-acme/lego/v4/providers/dns/infomaniak"
 	"github.com/go-acme/lego/v4/providers/dns/inwx"
 	"github.com/go-acme/lego/v4/providers/dns/ionos"
@@ -273,6 +274,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return zoneee.NewDNSProvider()
 	case "zonomi":
 		return zonomi.NewDNSProvider()
+	case "infoblox":
+		return infoblox.NewDNSProvider()
 	default:
 		return nil, fmt.Errorf("unrecognized DNS provider: %s", name)
 	}

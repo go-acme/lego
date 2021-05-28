@@ -2,173 +2,182 @@
 package infoblox
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
-	"strings"
+	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-	ibclient "github.com/infobloxopen/infoblox-go-client"
+	infoblox "github.com/infobloxopen/infoblox-go-client"
 )
 
-const (
-	// DefaultIBClientWorkers is the number of workers the infoblox client uses for connections.
-	DefaultIBClientWorkers = 1
-	// DefaultHTTPRequestTimeout is the http timeout used by the infoblox client.
-	DefaultHTTPRequestTimeout = 30
-	// DefaultUserAgent is the user agent this package will use.
-	DefaultUserAgent = "lego-infoblox-provider-v1.0.0"
-)
-
+// Environment variables names.
 const (
 	envNamespace = "INFOBLOX_"
 
-	EnvUser        = envNamespace + "USER"
 	EnvHost        = envNamespace + "HOST"
-	EnvPassword    = envNamespace + "PASSWORD"
-	EnvTTL         = envNamespace + "TTL"
-	EnvView        = envNamespace + "View"
-	EnvWapiVersion = envNamespace + "WAPI_VERSION"
 	EnvPort        = envNamespace + "PORT"
-	SSL_VERIFY     = "SSL_VERIFY"
+	EnvUsername    = envNamespace + "USERNAME"
+	EnvPassword    = envNamespace + "PASSWORD"
+	EnvDNSView     = envNamespace + "DNS_VIEW"
+	EnvWApiVersion = envNamespace + "WAPI_VERSION"
+	EnvSSLVerify   = envNamespace + "SSL_VERIFY"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
+const (
+	defaultPoolConnections = 10
+	defaultUserAgent       = "go-acme/lego"
 )
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	// Host is the URL of the infoblox grid manager
+	// Host is the URL of the grid manager.
 	Host string
-	// Port is the Port for the grid manager
+	// Port is the Port for the grid manager.
 	Port string
-	// Username the user for accessing infoblox
+
+	// Username the user for accessing API.
 	Username string
-	// Password the password for accessing infoblox
+	// Password the password for accessing API.
 	Password string
-	// DNSView is the dns view to put new records and search from
+
+	// DNSView is the dns view to put new records and search from.
 	DNSView string
-	// WapiVersion is the version of web api used
+	// WapiVersion is the version of web api used.
 	WapiVersion string
-	// SSLVerify is whether or not to verify the ssl of the infoblox server being hit
+
+	// SSLVerify is whether or not to verify the ssl of the server being hit.
 	SSLVerify bool
 
-	// TTL for the created records
-	TTL int
+	PropagationTimeout time.Duration
+	PollingInterval    time.Duration
+	TTL                int
+	HTTPTimeout        int
 }
 
-// BuildConfigFromEnv build a config object, getting all values from the environment.
-func BuildConfigFromEnv() (Config, error) {
-	host := env.GetOrFile(EnvHost)
-	if host == "" {
-		return Config{}, fmt.Errorf("infoblox build config from env could not find value for " + EnvHost)
-	}
-	user := env.GetOrFile(EnvUser)
-	if user == "" {
-		return Config{}, fmt.Errorf("infoblox build config from env could not find value for " + EnvUser)
-	}
-	password := env.GetOrFile(EnvPassword)
-	if password == "" {
-		return Config{}, fmt.Errorf("infoblox build config from env could not find value for " + EnvPassword)
-	}
-
-	return Config{
-		Host:        host,
-		Username:    user,
-		Password:    password,
-		TTL:         env.GetOrDefaultInt(EnvTTL, 120),
-		DNSView:     env.GetOrDefaultString(EnvView, "External"),
-		WapiVersion: env.GetOrDefaultString(EnvWapiVersion, "2.11"),
+// NewDefaultConfig returns a default configuration for the DNSProvider.
+func NewDefaultConfig() *Config {
+	return &Config{
+		DNSView:     env.GetOrDefaultString(EnvDNSView, "External"),
+		WapiVersion: env.GetOrDefaultString(EnvWApiVersion, "2.11"),
 		Port:        env.GetOrDefaultString(EnvPort, "443"),
-		SSLVerify:   env.GetOrDefaultBool(SSL_VERIFY, true),
-	}, nil
+		SSLVerify:   env.GetOrDefaultBool(EnvSSLVerify, true),
+
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		HTTPTimeout:        env.GetOrDefaultInt(EnvHTTPTimeout, 30),
+	}
 }
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	Config Config
+	config *Config
+	// objectManager   *infoblox.ObjectManager
+	transportConfig infoblox.TransportConfig
+	ibConfig        infoblox.HostConfig
 }
 
-// NewDNSProvider returns a DNSProvider instance configured for Infoblox. Primarily used by the CLI.
-// See infoblox.toml for more information.
+// NewDNSProvider returns a DNSProvider instance configured for Infoblox.
+// Credentials must be passed in the environment variables:
+// INFOBLOX_USER, INFOBLOX_PASSWORD
+// INFOBLOX_HOST, INFOBLOX_PORT
+// INFOBLOX_VIEW, INFOBLOX_WAPI_VERSION
+// INFOBLOX_SSL_VERIFY.
 func NewDNSProvider() (*DNSProvider, error) {
-	config, err := BuildConfigFromEnv()
+	values, err := env.Get(EnvHost, EnvUsername, EnvPassword)
 	if err != nil {
-		return nil, fmt.Errorf("infoblox new dns provider could not get config from env: %v", err)
+		return nil, fmt.Errorf("infoblox: %w", err)
+	}
+
+	config := NewDefaultConfig()
+	config.Host = values[EnvHost]
+	config.Username = values[EnvUsername]
+	config.Password = values[EnvPassword]
+
+	return NewDNSProviderConfig(config)
+}
+
+// NewDNSProviderConfig return a DNSProvider instance configured for HyperOne.
+func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
+	if config == nil {
+		return nil, errors.New("infoblox: the configuration of the DNS provider is nil")
+	}
+
+	if config.Host == "" {
+		return nil, errors.New("infoblox: missing host")
+	}
+
+	if config.Username == "" || config.Password == "" {
+		return nil, errors.New("infoblox: missing credentials")
 	}
 
 	return &DNSProvider{
-		Config: config,
+		config:          config,
+		transportConfig: infoblox.NewTransportConfig(strconv.FormatBool(config.SSLVerify), config.HTTPTimeout, defaultPoolConnections),
+		ibConfig: infoblox.HostConfig{
+			Host:     config.Host,
+			Version:  config.WapiVersion,
+			Port:     config.Port,
+			Username: config.Username,
+			Password: config.Password,
+		},
 	}, nil
 }
 
-// buildConnection passes the config to the infoblox client go library and returns an authenticated connection to the host specified in the config. Be sure to close the connection when done.
-func (d *DNSProvider) buildConnection() (*ibclient.Connector, error) {
-	ibLibraryConfig := ibclient.HostConfig{
-		Host:     d.Config.Host,
-		Version:  d.Config.WapiVersion,
-		Port:     d.Config.Port,
-		Username: d.Config.Username,
-		Password: d.Config.Password,
-	}
-
-	transportConfig := ibclient.NewTransportConfig(strconv.FormatBool(d.Config.SSLVerify), DefaultHTTPRequestTimeout, DefaultIBClientWorkers)
-	requestBuilder := &ibclient.WapiRequestBuilder{}
-	requestor := &ibclient.WapiHttpRequestor{}
-
-	conn, err := ibclient.NewConnector(ibLibraryConfig, transportConfig, requestBuilder, requestor)
-	if err != nil {
-		return nil, err
-	}
-	return conn, nil
+// Timeout returns the timeout and interval to use when checking for DNS propagation.
+func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
+	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
-	fqdn = strings.TrimSuffix(fqdn, ".")
 
-	conn, err := d.buildConnection()
-	defer conn.Logout()
-
+	connector, err := infoblox.NewConnector(d.ibConfig, d.transportConfig, &infoblox.WapiRequestBuilder{}, &infoblox.WapiHttpRequestor{})
 	if err != nil {
-		return fmt.Errorf("infoblox present could not connect to infoblox with supplied config %v", err)
+		return fmt.Errorf("infoblox: %w", err)
 	}
 
-	objMgr := ibclient.NewObjectManager(conn, DefaultUserAgent, "")
+	defer func() { _ = connector.Logout() }()
 
-	_, err = objMgr.CreateTXTRecord(
-		fqdn,
-		value,
-		uint(d.Config.TTL),
-		d.Config.DNSView,
-	)
+	objectManager := infoblox.NewObjectManager(connector, defaultUserAgent, "")
+
+	_, err = objectManager.CreateTXTRecord(dns01.UnFqdn(fqdn), value, uint(d.config.TTL), d.config.DNSView)
 	if err != nil {
-		return fmt.Errorf("infoblox present could not manage txt record creation for %s: %v", domain, err)
+		return fmt.Errorf("infoblox: could not create TXT record for %s: %w", domain, err)
 	}
 
 	return nil
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
-	fqdn = strings.TrimSuffix(fqdn, ".")
 
-	conn, err := d.buildConnection()
-	defer conn.Logout()
-
+	connector, err := infoblox.NewConnector(d.ibConfig, d.transportConfig, &infoblox.WapiRequestBuilder{}, &infoblox.WapiHttpRequestor{})
 	if err != nil {
-		return fmt.Errorf("infoblox cleanup could not connect to infoblox with supplied config %v", err)
+		return fmt.Errorf("infoblox: %w", err)
 	}
 
-	objMgr := ibclient.NewObjectManager(conn, DefaultUserAgent, "")
+	defer func() { _ = connector.Logout() }()
 
-	record, err := objMgr.GetTXTRecord(fqdn)
+	objectManager := infoblox.NewObjectManager(connector, defaultUserAgent, "")
+
+	record, err := objectManager.GetTXTRecord(dns01.UnFqdn(fqdn))
 	if err != nil {
-		return fmt.Errorf("infoblox cleanup could not find txt record to delete %s: %v", domain, err)
+		return fmt.Errorf("infoblox: could not find TXT record to delete for %s: %w", domain, err)
 	}
 
-	_, err = objMgr.DeleteTXTRecord(record.Ref)
+	_, err = objectManager.DeleteTXTRecord(record.Ref)
 	if err != nil {
-		return fmt.Errorf("infoblox cleanup could not delete txt record %s: %v", domain, err)
+		return fmt.Errorf("infoblox: could not delete TXT record for %s: %w", domain, err)
 	}
 
 	return nil

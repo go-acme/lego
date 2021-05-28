@@ -182,6 +182,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return hyperone.NewDNSProvider()
 	case "iij":
 		return iij.NewDNSProvider()
+	case "infoblox":
+		return infoblox.NewDNSProvider()
 	case "infomaniak":
 		return infomaniak.NewDNSProvider()
 	case "inwx":
@@ -274,8 +276,6 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return zoneee.NewDNSProvider()
 	case "zonomi":
 		return zonomi.NewDNSProvider()
-	case "infoblox":
-		return infoblox.NewDNSProvider()
 	default:
 		return nil, fmt.Errorf("unrecognized DNS provider: %s", name)
 	}

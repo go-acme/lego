@@ -1,11 +1,5 @@
 # Changelog
 
-## [v4.4.0] - Unreleased
-
-### Added:
-
-- **[dnsprovider]** Added Infoblox provider
-
 ## [v4.3.1] - 2021-03-12
 
 ### Fixed:

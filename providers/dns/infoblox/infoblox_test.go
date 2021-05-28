@@ -5,16 +5,18 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
+const envDomain = envNamespace + "DOMAIN"
+
 var envTest = tester.NewEnvTest(
-	EnvUser,
 	EnvHost,
+	EnvPort,
+	EnvUsername,
 	EnvPassword,
-).
-	WithDomain("INFOBLOX_DOMAIN")
+	EnvSSLVerify,
+).WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -23,38 +25,43 @@ func TestNewDNSProvider(t *testing.T) {
 		expected string
 	}{
 		{
-			desc: "success email, password, host",
+			desc: "success",
 			envVars: map[string]string{
-				EnvUser:     "test@example.com",
-				EnvPassword: "123",
-				EnvHost:     "infoblox.yourorg.org",
+				EnvHost:      "example.com",
+				EnvUsername:  "user",
+				EnvPassword:  "secret",
+				EnvSSLVerify: "false",
 			},
 		},
 		{
 			desc: "missing host",
 			envVars: map[string]string{
-				EnvUser:     "",
-				EnvPassword: "",
+				EnvHost:      "",
+				EnvUsername:  "user",
+				EnvPassword:  "secret",
+				EnvSSLVerify: "false",
 			},
-			expected: "infoblox new dns provider could not get config from env: infoblox build config from env could not find value for " + EnvHost,
+			expected: "infoblox: some credentials information are missing: INFOBLOX_HOST",
 		},
 		{
-			desc: "missing user",
+			desc: "missing username",
 			envVars: map[string]string{
-				EnvUser:     "",
-				EnvPassword: "",
-				EnvHost:     "infoblox.yourorg.org",
+				EnvHost:      "example.com",
+				EnvUsername:  "",
+				EnvPassword:  "secret",
+				EnvSSLVerify: "false",
 			},
-			expected: "infoblox new dns provider could not get config from env: infoblox build config from env could not find value for " + EnvUser,
+			expected: "infoblox: some credentials information are missing: INFOBLOX_USERNAME",
 		},
 		{
 			desc: "missing password",
 			envVars: map[string]string{
-				EnvUser:     "user",
-				EnvPassword: "",
-				EnvHost:     "infoblox.yourorg.org",
+				EnvHost:      "example.com",
+				EnvUsername:  "user",
+				EnvPassword:  "",
+				EnvSSLVerify: "false",
 			},
-			expected: "infoblox new dns provider could not get config from env: infoblox build config from env could not find value for " + EnvPassword,
+			expected: "infoblox: some credentials information are missing: INFOBLOX_PASSWORD",
 		},
 	}
 
@@ -70,7 +77,65 @@ func TestNewDNSProvider(t *testing.T) {
 			if test.expected == "" {
 				require.NoError(t, err)
 				require.NotNil(t, p)
-				assert.NotNil(t, p.Config)
+				require.NotNil(t, p.config)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
+}
+
+func TestNewDNSProviderConfig(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		host     string
+		username string
+		password string
+		expected string
+	}{
+		{
+			desc:     "success",
+			host:     "example.com",
+			username: "user",
+			password: "secret",
+		},
+		{
+			desc:     "missing host",
+			host:     "",
+			username: "user",
+			password: "secret",
+			expected: "infoblox: missing host",
+		},
+		{
+			desc:     "missing username",
+			host:     "example.com",
+			username: "",
+			password: "secret",
+			expected: "infoblox: missing credentials",
+		},
+		{
+			desc:     "missing password",
+			host:     "example.com",
+			username: "user",
+			password: "",
+			expected: "infoblox: missing credentials",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			config := NewDefaultConfig()
+			config.Host = test.host
+			config.Username = test.username
+			config.Password = test.password
+			config.SSLVerify = false
+
+			p, err := NewDNSProviderConfig(config)
+
+			if test.expected == "" {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
 			} else {
 				require.EqualError(t, err, test.expected)
 			}

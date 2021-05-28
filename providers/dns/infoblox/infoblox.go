@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -78,10 +79,12 @@ func NewDefaultConfig() *Config {
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	config *Config
-	// objectManager   *infoblox.ObjectManager
+	config          *Config
 	transportConfig infoblox.TransportConfig
 	ibConfig        infoblox.HostConfig
+
+	recordRefs   map[string]string
+	recordRefsMu sync.Mutex
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Infoblox.
@@ -128,6 +131,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 			Username: config.Username,
 			Password: config.Password,
 		},
+		recordRefs: make(map[string]string),
 	}, nil
 }
 
@@ -137,7 +141,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
-func (d *DNSProvider) Present(domain, _, keyAuth string) error {
+func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
 	connector, err := infoblox.NewConnector(d.ibConfig, d.transportConfig, &infoblox.WapiRequestBuilder{}, &infoblox.WapiHttpRequestor{})
@@ -149,16 +153,20 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 
 	objectManager := infoblox.NewObjectManager(connector, defaultUserAgent, "")
 
-	_, err = objectManager.CreateTXTRecord(dns01.UnFqdn(fqdn), value, uint(d.config.TTL), d.config.DNSView)
+	record, err := objectManager.CreateTXTRecord(dns01.UnFqdn(fqdn), value, uint(d.config.TTL), d.config.DNSView)
 	if err != nil {
 		return fmt.Errorf("infoblox: could not create TXT record for %s: %w", domain, err)
 	}
+
+	d.recordRefsMu.Lock()
+	d.recordRefs[token] = record.Ref
+	d.recordRefsMu.Unlock()
 
 	return nil
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
+func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 
 	connector, err := infoblox.NewConnector(d.ibConfig, d.transportConfig, &infoblox.WapiRequestBuilder{}, &infoblox.WapiHttpRequestor{})
@@ -170,15 +178,23 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 
 	objectManager := infoblox.NewObjectManager(connector, defaultUserAgent, "")
 
-	record, err := objectManager.GetTXTRecord(dns01.UnFqdn(fqdn))
-	if err != nil {
-		return fmt.Errorf("infoblox: could not find TXT record to delete for %s: %w", domain, err)
+	// gets the record's unique ref from when we created it
+	d.recordRefsMu.Lock()
+	recordRef, ok := d.recordRefs[token]
+	d.recordRefsMu.Unlock()
+	if !ok {
+		return fmt.Errorf("infoblox: unknown record ID for '%s' '%s'", fqdn, token)
 	}
 
-	_, err = objectManager.DeleteTXTRecord(record.Ref)
+	_, err = objectManager.DeleteTXTRecord(recordRef)
 	if err != nil {
 		return fmt.Errorf("infoblox: could not delete TXT record for %s: %w", domain, err)
 	}
+
+	// Delete record ref from map
+	d.recordRefsMu.Lock()
+	delete(d.recordRefs, token)
+	d.recordRefsMu.Unlock()
 
 	return nil
 }

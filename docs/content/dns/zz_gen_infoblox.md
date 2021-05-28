@@ -9,7 +9,7 @@ slug: infoblox
 <!-- providers/dns/infoblox/infoblox.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.3.1
+Since: v4.4.0
 
 Configuration for [Infoblox](https://www.infoblox.com/).
 
@@ -34,9 +34,9 @@ lego --email myemail@example.com --dns infoblox --domains my.example.org run
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `INFOBLOX_HOST` | Infoblox Host URI |
-| `INFOBLOX_PASSWORD` | Infoblox Account Password |
-| `INFOBLOX_USER` | Infoblox Account Username |
+| `INFOBLOX_HOST` | Host URI |
+| `INFOBLOX_PASSWORD` | Account Password |
+| `INFOBLOX_USER` | Account Username |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).
@@ -46,16 +46,19 @@ More information [here](/lego/dns/#configuration-and-credentials).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
+| `INFOBLOX_HTTP_TIMEOUT` | HTTP request timeout |
+| `INFOBLOX_POLLING_INTERVAL` | Time between DNS propagation check |
 | `INFOBLOX_PORT` | The port for the infoblox grid manager, default: 443 |
+| `INFOBLOX_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
+| `INFOBLOX_SSL_VERIFY` | Whether or not to verify the TLS certificate, default: true |
 | `INFOBLOX_TTL` | The TTL of the TXT record used for the DNS challenge |
 | `INFOBLOX_VIEW` | The view for the TXT records, default: External |
-| `INFOBLOX_WAPI_VERSION` | The version of wapi being used, default: 2.11 |
-| `SSL_VERIFY` | Whether or not to verify the TLS certificate, default: true |
+| `INFOBLOX_WAPI_VERSION` | The version of WAPI being used, default: 2.11 |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).
 
-When creating an api user ensure it has the proper permissions for the view you are working with. 
+When creating an API's user ensure it has the proper permissions for the view you are working with.
 
 
 

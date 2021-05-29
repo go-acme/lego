@@ -25,6 +25,7 @@ require (
 	github.com/gophercloud/gophercloud v0.16.0
 	github.com/gophercloud/utils v0.0.0-20210216074907-f6de111f2eae
 	github.com/iij/doapi v0.0.0-20190504054126-0bbf12d6d7df
+	github.com/infobloxopen/infoblox-go-client v1.1.1
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/labbsr0x/bindman-dns-webhook v1.0.2
 	github.com/linode/linodego v0.25.3

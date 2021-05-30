@@ -26,7 +26,7 @@ const (
 )
 
 // Per-record update limits that will trigger "interval" responses until a
-// cooldown period has passed (values correct as of 2021-05-26)
+// cooldown period has passed (values correct as of 2021-05-26).
 const (
 	intervalLimit = 10
 	intervalSecs  = 120

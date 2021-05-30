@@ -20,8 +20,16 @@ const (
 	codeAbuse    = "abuse"
 	codeBadAgent = "badagent"
 	codeBadAuth  = "badauth"
+	codeInterval = "interval"
 	codeNoHost   = "nohost"
 	codeNotFqdn  = "notfqdn"
+)
+
+// Per-record update limits that will trigger "interval" responses until a
+// cooldown period has passed (values correct as of 2021-05-26)
+const (
+	intervalLimit = 10
+	intervalSecs  = 120
 )
 
 // Client the Hurricane Electric client.
@@ -95,6 +103,8 @@ func evaluateBody(body string, hostname string) error {
 		return fmt.Errorf("%s: user agent not sent or HTTP method not recognized; open an issue on go-acme/lego on Github", body)
 	case codeBadAuth:
 		return fmt.Errorf("%s: wrong authentication token provided for TXT record %s", body, hostname)
+	case codeInterval:
+		return fmt.Errorf("%s: TXT record %s has been updated more than %d times in %d seconds; try again later", body, hostname, intervalLimit, intervalSecs)
 	case codeNoHost:
 		return fmt.Errorf("%s: the record provided does not exist in this account: %s", body, hostname)
 	case codeNotFqdn:

@@ -2,6 +2,7 @@ package internal
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -10,6 +11,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"golang.org/x/time/rate"
 )
 
 const defaultBaseURL = "https://dyn.dns.he.net/nic/update"
@@ -20,14 +23,17 @@ const (
 	codeAbuse    = "abuse"
 	codeBadAgent = "badagent"
 	codeBadAuth  = "badauth"
+	codeInterval = "interval"
 	codeNoHost   = "nohost"
 	codeNotFqdn  = "notfqdn"
 )
 
 // Client the Hurricane Electric client.
 type Client struct {
-	HTTPClient *http.Client
-	baseURL    string
+	HTTPClient  *http.Client
+	rateLimiter *rate.Limiter
+
+	baseURL string
 
 	credentials map[string]string
 	credMu      sync.Mutex
@@ -36,14 +42,16 @@ type Client struct {
 // NewClient Creates a new Client.
 func NewClient(credentials map[string]string) *Client {
 	return &Client{
-		HTTPClient:  &http.Client{Timeout: 5 * time.Second},
+		HTTPClient: &http.Client{Timeout: 5 * time.Second},
+		// https://github.com/go-acme/lego/issues/1415
+		rateLimiter: rate.NewLimiter(rate.Every(120*time.Second), 10),
 		baseURL:     defaultBaseURL,
 		credentials: credentials,
 	}
 }
 
 // UpdateTxtRecord updates a TXT record.
-func (c *Client) UpdateTxtRecord(domain string, txt string) error {
+func (c *Client) UpdateTxtRecord(ctx context.Context, domain string, txt string) error {
 	hostname := fmt.Sprintf("_acme-challenge.%s", domain)
 
 	c.credMu.Lock()
@@ -58,6 +66,11 @@ func (c *Client) UpdateTxtRecord(domain string, txt string) error {
 	data.Set("password", token)
 	data.Set("hostname", hostname)
 	data.Set("txt", txt)
+
+	err := c.rateLimiter.Wait(ctx)
+	if err != nil {
+		return err
+	}
 
 	resp, err := c.HTTPClient.PostForm(c.baseURL, data)
 	if err != nil {
@@ -95,6 +108,8 @@ func evaluateBody(body string, hostname string) error {
 		return fmt.Errorf("%s: user agent not sent or HTTP method not recognized; open an issue on go-acme/lego on Github", body)
 	case codeBadAuth:
 		return fmt.Errorf("%s: wrong authentication token provided for TXT record %s", body, hostname)
+	case codeInterval:
+		return fmt.Errorf("%s: TXT records update exceeded API rate limit", body)
 	case codeNoHost:
 		return fmt.Errorf("%s: the record provided does not exist in this account: %s", body, hostname)
 	case codeNotFqdn:

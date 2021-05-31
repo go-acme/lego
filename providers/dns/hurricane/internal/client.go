@@ -30,8 +30,8 @@ const (
 
 // Client the Hurricane Electric client.
 type Client struct {
-	HTTPClient  *http.Client
-	rateLimiter *rate.Limiter
+	HTTPClient   *http.Client
+	rateLimiters sync.Map
 
 	baseURL string
 
@@ -42,9 +42,7 @@ type Client struct {
 // NewClient Creates a new Client.
 func NewClient(credentials map[string]string) *Client {
 	return &Client{
-		HTTPClient: &http.Client{Timeout: 5 * time.Second},
-		// https://github.com/go-acme/lego/issues/1415
-		rateLimiter: rate.NewLimiter(rate.Every(120*time.Second), 10),
+		HTTPClient:  &http.Client{Timeout: 5 * time.Second},
 		baseURL:     defaultBaseURL,
 		credentials: credentials,
 	}
@@ -67,7 +65,12 @@ func (c *Client) UpdateTxtRecord(ctx context.Context, domain string, txt string)
 	data.Set("hostname", hostname)
 	data.Set("txt", txt)
 
-	err := c.rateLimiter.Wait(ctx)
+	// https://github.com/go-acme/lego/issues/1415
+	// 10 reqs / 2 minutes = freq 1/12 (burst = 1)
+	// 6 reqs / 2 minutes = freq 1/20 (burt = 5)
+	rl, _ := c.rateLimiters.LoadOrStore(hostname, rate.NewLimiter(rate.Every(20*time.Second), 5))
+
+	err := rl.(*rate.Limiter).Wait(ctx)
 	if err != nil {
 		return err
 	}

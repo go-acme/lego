@@ -28,6 +28,8 @@ const (
 	codeNotFqdn  = "notfqdn"
 )
 
+const defaultBurst = 5
+
 // Client the Hurricane Electric client.
 type Client struct {
 	HTTPClient   *http.Client
@@ -65,10 +67,7 @@ func (c *Client) UpdateTxtRecord(ctx context.Context, domain string, txt string)
 	data.Set("hostname", hostname)
 	data.Set("txt", txt)
 
-	// https://github.com/go-acme/lego/issues/1415
-	// 10 reqs / 2 minutes = freq 1/12 (burst = 1)
-	// 6 reqs / 2 minutes = freq 1/20 (burt = 5)
-	rl, _ := c.rateLimiters.LoadOrStore(hostname, rate.NewLimiter(rate.Every(20*time.Second), 5))
+	rl, _ := c.rateLimiters.LoadOrStore(hostname, rate.NewLimiter(limit(defaultBurst), defaultBurst))
 
 	err := rl.(*rate.Limiter).Wait(ctx)
 	if err != nil {
@@ -121,4 +120,15 @@ func evaluateBody(body string, hostname string) error {
 		// This is basically only server errors.
 		return fmt.Errorf("attempt to change TXT record %s returned %s", hostname, body)
 	}
+}
+
+// limit computes the rate based on burst.
+// The API rate limit per-record is 10 reqs / 2 minutes.
+//
+//     10 reqs / 2 minutes = freq 1/12 (burst = 1)
+//     6 reqs / 2 minutes = freq 1/20 (burst = 5)
+//
+// https://github.com/go-acme/lego/issues/1415
+func limit(burst int) rate.Limit {
+	return 1 / rate.Limit(120/(10-burst+1))
 }

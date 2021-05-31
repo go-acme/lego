@@ -2,6 +2,7 @@ package internal
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -10,6 +11,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"golang.org/x/time/rate"
 )
 
 const defaultBaseURL = "https://dyn.dns.he.net/nic/update"
@@ -20,14 +23,19 @@ const (
 	codeAbuse    = "abuse"
 	codeBadAgent = "badagent"
 	codeBadAuth  = "badauth"
+	codeInterval = "interval"
 	codeNoHost   = "nohost"
 	codeNotFqdn  = "notfqdn"
 )
 
+const defaultBurst = 5
+
 // Client the Hurricane Electric client.
 type Client struct {
-	HTTPClient *http.Client
-	baseURL    string
+	HTTPClient   *http.Client
+	rateLimiters sync.Map
+
+	baseURL string
 
 	credentials map[string]string
 	credMu      sync.Mutex
@@ -43,7 +51,7 @@ func NewClient(credentials map[string]string) *Client {
 }
 
 // UpdateTxtRecord updates a TXT record.
-func (c *Client) UpdateTxtRecord(domain string, txt string) error {
+func (c *Client) UpdateTxtRecord(ctx context.Context, domain string, txt string) error {
 	hostname := fmt.Sprintf("_acme-challenge.%s", domain)
 
 	c.credMu.Lock()
@@ -58,6 +66,13 @@ func (c *Client) UpdateTxtRecord(domain string, txt string) error {
 	data.Set("password", token)
 	data.Set("hostname", hostname)
 	data.Set("txt", txt)
+
+	rl, _ := c.rateLimiters.LoadOrStore(hostname, rate.NewLimiter(limit(defaultBurst), defaultBurst))
+
+	err := rl.(*rate.Limiter).Wait(ctx)
+	if err != nil {
+		return err
+	}
 
 	resp, err := c.HTTPClient.PostForm(c.baseURL, data)
 	if err != nil {
@@ -95,6 +110,8 @@ func evaluateBody(body string, hostname string) error {
 		return fmt.Errorf("%s: user agent not sent or HTTP method not recognized; open an issue on go-acme/lego on Github", body)
 	case codeBadAuth:
 		return fmt.Errorf("%s: wrong authentication token provided for TXT record %s", body, hostname)
+	case codeInterval:
+		return fmt.Errorf("%s: TXT records update exceeded API rate limit", body)
 	case codeNoHost:
 		return fmt.Errorf("%s: the record provided does not exist in this account: %s", body, hostname)
 	case codeNotFqdn:
@@ -103,4 +120,15 @@ func evaluateBody(body string, hostname string) error {
 		// This is basically only server errors.
 		return fmt.Errorf("attempt to change TXT record %s returned %s", hostname, body)
 	}
+}
+
+// limit computes the rate based on burst.
+// The API rate limit per-record is 10 reqs / 2 minutes.
+//
+//     10 reqs / 2 minutes = freq 1/12 (burst = 1)
+//     6 reqs / 2 minutes = freq 1/20 (burst = 5)
+//
+// https://github.com/go-acme/lego/issues/1415
+func limit(burst int) rate.Limit {
+	return 1 / rate.Limit(120/(10-burst+1))
 }

@@ -1246,11 +1246,11 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln(`Additional Configuration:`)
 		ew.writeln(`	- "MYTHICBEASTS_API_ENDPOINT":	The endpoint for the API (must implement v2)`)
+		ew.writeln(`	- "MYTHICBEASTS_AUTH_API_ENDPOINT":	The endpoint for Mythic Beasts' Authentication`)
 		ew.writeln(`	- "MYTHICBEASTS_HTTP_TIMEOUT":	API request timeout`)
 		ew.writeln(`	- "MYTHICBEASTS_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "MYTHICBEASTS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
 		ew.writeln(`	- "MYTHICBEASTS_TTL":	The TTL of the TXT record used for the DNS challenge`)
-		ew.writeln(`	- "MYTHICBEASYS_AUTH_API_ENDPOINT":	The endpoint for Mythic Beasts' Authentication`)
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/mythicbeasts`)

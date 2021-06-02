@@ -1,0 +1,38 @@
+{
+  "status": 200,
+  "message": "success",
+  "records": [
+    {
+      "record_id": 1,
+      "name": "@",
+      "ttl": 3600,
+      "data": "ns1.simply.com",
+      "type": "NS",
+      "priority": 0
+    },
+    {
+      "record_id": 2,
+      "name": "@",
+      "ttl": 3600,
+      "data": "ns2.simply.com",
+      "type": "NS",
+      "priority": 0
+    },
+    {
+      "record_id": 3,
+      "name": "@",
+      "ttl": 3600,
+      "data": "ns3.simply.com",
+      "type": "NS",
+      "priority": 0
+    },
+    {
+      "record_id": 4,
+      "name": "@",
+      "ttl": 3600,
+      "data": "ns4.simply.com",
+      "type": "NS",
+      "priority": 0
+    }
+  ]
+}

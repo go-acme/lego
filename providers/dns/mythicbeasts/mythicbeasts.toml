@@ -30,4 +30,4 @@ Your API key name is not needed to operate lego.
 
 [Links]
   API = "https://www.mythic-beasts.com/support/api/dnsv2"
-  APIAuth = "https://www.mythic-beasts.com/support/api/auth"
+  APIAuth = "https://auth.mythic-beasts.com/login"

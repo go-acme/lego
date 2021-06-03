@@ -90,6 +90,7 @@ func allDNSCodes() string {
 		"scaleway",
 		"selectel",
 		"servercow",
+		"simply",
 		"sonic",
 		"stackpath",
 		"transip",
@@ -1728,6 +1729,27 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/servercow`)
+
+	case "simply":
+		// generated from: providers/dns/simply/simply.toml
+		ew.writeln(`Configuration for Simply.com.`)
+		ew.writeln(`Code:	'simply'`)
+		ew.writeln(`Since:	'v4.4.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "SIMPLY_ACCOUNT_NAME":	Account name`)
+		ew.writeln(`	- "SIMPLY_API_KEY":	API key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "SIMPLY_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "SIMPLY_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "SIMPLY_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "SIMPLY_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/simply`)
 
 	case "sonic":
 		// generated from: providers/dns/sonic/sonic.toml

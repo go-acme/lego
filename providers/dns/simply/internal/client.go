@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"time"
 )
 
 const defaultBaseURL = "https://api.simply.com/1/"
@@ -15,7 +16,7 @@ const defaultBaseURL = "https://api.simply.com/1/"
 // Client is a Simply.com API client.
 type Client struct {
 	HTTPClient  *http.Client
-	BaseURL     *url.URL
+	baseURL     *url.URL
 	accountName string
 	apiKey      string
 }
@@ -36,77 +37,69 @@ func NewClient(accountName string, apiKey string) (*Client, error) {
 	}
 
 	return &Client{
-		HTTPClient:  &http.Client{},
-		BaseURL:     baseURL,
+		HTTPClient:  &http.Client{Timeout: 5 * time.Second},
+		baseURL:     baseURL,
 		accountName: accountName,
 		apiKey:      apiKey,
 	}, nil
 }
 
-// apiResponse represents an API response.
-type apiResponse struct {
-	Status  int             `json:"status"`
-	Message string          `json:"message"`
-	Records json.RawMessage `json:"records,omitempty"`
-	Record  json.RawMessage `json:"record,omitempty"`
-}
-
 // GetRecords lists all the records in the zone.
-func (c *Client) GetRecords(zoneName string) (*[]Record, error) {
-	result, err := c.do(zoneName, "/", "GET", nil)
+func (c *Client) GetRecords(zoneName string) ([]Record, error) {
+	resp, err := c.do(zoneName, "/", http.MethodGet, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	var rcds []Record
-	err = json.Unmarshal(result.Records, &rcds)
+	var records []Record
+	err = json.Unmarshal(resp.Records, &records)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal response result: %w", err)
 	}
 
-	return &rcds, nil
+	return records, nil
 }
 
 // AddRecord adds a record.
-func (c *Client) AddRecord(zoneName string, recordBody RecordBody) (*RecordHeader, error) {
-	reqBody, err := json.Marshal(recordBody)
+func (c *Client) AddRecord(zoneName string, record Record) (int64, error) {
+	reqBody, err := json.Marshal(record)
 	if err != nil {
-		return nil, fmt.Errorf("failed to marshall request body: %w", err)
+		return 0, fmt.Errorf("failed to marshall request body: %w", err)
 	}
 
-	result, err := c.do(zoneName, "/", "POST", reqBody)
+	resp, err := c.do(zoneName, "/", http.MethodPost, reqBody)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 
-	var rcd RecordHeader
-	err = json.Unmarshal(result.Record, &rcd)
+	var rcd recordHeader
+	err = json.Unmarshal(resp.Record, &rcd)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal response result: %w", err)
+		return 0, fmt.Errorf("failed to unmarshal response result: %w", err)
 	}
 
-	return &rcd, nil
+	return rcd.ID, nil
 }
 
 // EditRecord updates a record.
-func (c *Client) EditRecord(zoneName string, id int64, recordBody RecordBody) error {
-	reqBody, err := json.Marshal(recordBody)
+func (c *Client) EditRecord(zoneName string, id int64, record Record) error {
+	reqBody, err := json.Marshal(record)
 	if err != nil {
 		return fmt.Errorf("failed to marshall request body: %w", err)
 	}
 
-	_, err = c.do(zoneName, fmt.Sprintf("/%d", id), "PUT", reqBody)
+	_, err = c.do(zoneName, fmt.Sprintf("%d", id), http.MethodPut, reqBody)
 	return err
 }
 
 // DeleteRecord deletes a record.
 func (c *Client) DeleteRecord(zoneName string, id int64) error {
-	_, err := c.do(zoneName, fmt.Sprintf("/%d", id), "DELETE", nil)
+	_, err := c.do(zoneName, fmt.Sprintf("%d", id), http.MethodDelete, nil)
 	return err
 }
 
 func (c *Client) do(zoneName string, endpoint string, reqMethod string, reqBody []byte) (*apiResponse, error) {
-	reqURL, err := c.BaseURL.Parse(path.Join(c.BaseURL.Path, fmt.Sprintf("%s/%s/my/products/%s/dns/records", c.accountName, c.apiKey, zoneName), endpoint))
+	reqURL, err := c.baseURL.Parse(path.Join(c.baseURL.Path, c.accountName, c.apiKey, "my", "products", zoneName, "dns", "records", endpoint))
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse endpoint: %w", err)
 	}
@@ -124,9 +117,9 @@ func (c *Client) do(zoneName string, endpoint string, reqMethod string, reqBody 
 		return nil, fmt.Errorf("failed to perform request: %w", err)
 	}
 
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
-	if resp.StatusCode > 499 {
+	if resp.StatusCode >= http.StatusInternalServerError {
 		return nil, fmt.Errorf("unexpected error: %d", resp.StatusCode)
 	}
 
@@ -136,7 +129,7 @@ func (c *Client) do(zoneName string, endpoint string, reqMethod string, reqBody 
 		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
 	}
 
-	if response.Status != 200 {
+	if response.Status != http.StatusOK {
 		return nil, fmt.Errorf("unexpected error: %s", response.Message)
 	}
 

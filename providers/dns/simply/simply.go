@@ -121,21 +121,20 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	subDomain := dns01.UnFqdn(strings.TrimSuffix(fqdn, authZone))
 
-	recordBody := internal.RecordBody{
-		Name:     subDomain,
-		Data:     value,
-		Type:     "TXT",
-		TTL:      d.config.TTL,
-		Priority: 0,
+	recordBody := internal.Record{
+		Name: subDomain,
+		Data: value,
+		Type: "TXT",
+		TTL:  d.config.TTL,
 	}
 
-	resp, err := d.client.AddRecord(authZone, recordBody)
+	recordID, err := d.client.AddRecord(authZone, recordBody)
 	if err != nil {
 		return fmt.Errorf("simply: failed to add record: %w", err)
 	}
 
 	d.recordIDsMu.Lock()
-	d.recordIDs[token] = resp.ID
+	d.recordIDs[token] = recordID
 	d.recordIDsMu.Unlock()
 
 	return nil

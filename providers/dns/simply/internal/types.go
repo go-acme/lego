@@ -1,25 +1,25 @@
 package internal
 
-// RecordBody represents the content of a DNS record.
-type RecordBody struct {
-	Name     string `json:"name"`
-	Data     string `json:"data"`
-	Type     string `json:"type"`
-	TTL      int    `json:"ttl"`
-	Priority int    `json:"priority"`
-}
+import "encoding/json"
 
-// Record represents a concrete DNS record.
+// Record represents the content of a DNS record.
 type Record struct {
-	ID       int64  `json:"record_id"`
-	Name     string `json:"name"`
-	Data     string `json:"data"`
-	Type     string `json:"type"`
-	TTL      int    `json:"ttl"`
-	Priority int    `json:"priority"`
+	ID       int64  `json:"record_id,omitempty"`
+	Name     string `json:"name,omitempty"`
+	Data     string `json:"data,omitempty"`
+	Type     string `json:"type,omitempty"`
+	TTL      int    `json:"ttl,omitempty"`
+	Priority int    `json:"priority,omitempty"`
 }
 
-// RecordHeader represents the identifying info of a concrete DNS record.
-type RecordHeader struct {
+// apiResponse represents an API response.
+type apiResponse struct {
+	Status  int             `json:"status"`
+	Message string          `json:"message"`
+	Records json.RawMessage `json:"records,omitempty"`
+	Record  json.RawMessage `json:"record,omitempty"`
+}
+
+type recordHeader struct {
 	ID int64 `json:"id"`
 }

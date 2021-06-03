@@ -23,7 +23,7 @@ func TestClient_GetRecords(t *testing.T) {
 	records, err := client.GetRecords("azone01")
 	require.NoError(t, err)
 
-	expected := &[]Record{
+	expected := []Record{
 		{
 			ID:       1,
 			Name:     "@",
@@ -77,7 +77,7 @@ func TestClient_AddRecord(t *testing.T) {
 
 	mux.HandleFunc("/accountname/apikey/my/products/azone01/dns/records", mockHandler(http.MethodPost, http.StatusOK, "add_record.json"))
 
-	record := RecordBody{
+	record := Record{
 		Name:     "arecord01",
 		Data:     "content",
 		Type:     "TXT",
@@ -85,14 +85,10 @@ func TestClient_AddRecord(t *testing.T) {
 		Priority: 0,
 	}
 
-	header, err := client.AddRecord("azone01", record)
+	recordID, err := client.AddRecord("azone01", record)
 	require.NoError(t, err)
 
-	expected := &RecordHeader{
-		ID: 123456789,
-	}
-
-	assert.Equal(t, expected, header)
+	assert.EqualValues(t, 123456789, recordID)
 }
 
 func TestClient_AddRecord_error(t *testing.T) {
@@ -100,7 +96,7 @@ func TestClient_AddRecord_error(t *testing.T) {
 
 	mux.HandleFunc("/accountname/apikey/my/products/azone01/dns/records", mockHandler(http.MethodPost, http.StatusNotFound, "bad_zone_error.json"))
 
-	record := RecordBody{
+	record := Record{
 		Name:     "arecord01",
 		Data:     "content",
 		Type:     "TXT",
@@ -108,10 +104,10 @@ func TestClient_AddRecord_error(t *testing.T) {
 		Priority: 0,
 	}
 
-	header, err := client.AddRecord("azone01", record)
+	recordID, err := client.AddRecord("azone01", record)
 	require.Error(t, err)
 
-	assert.Nil(t, header)
+	assert.Zero(t, recordID)
 }
 
 func TestClient_EditRecord(t *testing.T) {
@@ -119,7 +115,7 @@ func TestClient_EditRecord(t *testing.T) {
 
 	mux.HandleFunc("/accountname/apikey/my/products/azone01/dns/records/123456789", mockHandler(http.MethodPut, http.StatusOK, "success.json"))
 
-	record := RecordBody{
+	record := Record{
 		Name:     "arecord01",
 		Data:     "content",
 		Type:     "TXT",
@@ -136,7 +132,7 @@ func TestClient_EditRecord_error(t *testing.T) {
 
 	mux.HandleFunc("/accountname/apikey/my/products/azone01/dns/records/123456789", mockHandler(http.MethodPut, http.StatusNotFound, "invalid_record_id.json"))
 
-	record := RecordBody{
+	record := Record{
 		Name:     "arecord01",
 		Data:     "content",
 		Type:     "TXT",
@@ -176,7 +172,7 @@ func setupTest(t *testing.T) (*http.ServeMux, *Client) {
 	client, err := NewClient("accountname", "apikey")
 	require.NoError(t, err)
 
-	client.BaseURL, _ = url.Parse(server.URL)
+	client.baseURL, _ = url.Parse(server.URL)
 
 	return mux, client
 }

@@ -117,7 +117,7 @@ func readCSRFile(filename string) (*x509.CertificateRequest, error) {
 		}
 
 		// did we get a CSR?
-		if p.Type == "CERTIFICATE REQUEST" {
+		if p.Type == "CERTIFICATE REQUEST" || p.Type == "NEW CERTIFICATE REQUEST" {
 			raw = p.Bytes
 		}
 	}

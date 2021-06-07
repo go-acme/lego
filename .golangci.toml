@@ -39,6 +39,7 @@
       "rangeValCopy",
       "octalLiteral",
       "ptrToRefParam",
+      "appendAssign",
     ]
 
 [linters]
@@ -47,6 +48,7 @@
     "interfacer", # deprecated
     "maligned", # deprecated
     "scopelint", # deprecated
+    "golint", # deprecated
     "cyclop", # duplicate of gocyclo
     "lll",
     "gosec",
@@ -69,6 +71,7 @@
     "forbidigo", # not relevant
     "noctx",
     "forcetypeassert",
+    "tagliatelle",
   ]
 
 [issues]

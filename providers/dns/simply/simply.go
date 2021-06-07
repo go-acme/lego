@@ -58,8 +58,8 @@ type DNSProvider struct {
 	recordIDsMu sync.Mutex
 }
 
-// NewDNSProvider returns a DNSProvider instance configured for Njalla.
-// Credentials must be passed in the environment variable: NJALLA_TOKEN.
+// NewDNSProvider returns a DNSProvider instance configured for Simply.com.
+// Credentials must be passed in the environment variable: SIMPLY_ACCOUNT_NAME, SIMPLY_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvAccountName, EnvAPIKey)
 	if err != nil {
@@ -73,7 +73,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderConfig return a DNSProvider instance configured for Njalla.
+// NewDNSProviderConfig return a DNSProvider instance configured for Simply.com.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("simply: the configuration of the DNS provider is nil")

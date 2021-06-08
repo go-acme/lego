@@ -71,3 +71,5 @@ Detailed documentation is available [here](https://go-acme.github.io/lego/dns).
 | [Zone.ee](https://go-acme.github.io/lego/dns/zoneee/)                           | [Zonomi](https://go-acme.github.io/lego/dns/zonomi/)                            |                                                                                 |                                                                                 |
 
 <!-- END DNS PROVIDERS LIST -->
+
+If your DNS provider is not supported, please open an [issue](https://github.com/go-acme/lego/issues/new?assignees=&labels=enhancement%2C+new-provider&template=new_dns_provider.md).

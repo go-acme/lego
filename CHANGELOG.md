@@ -1,5 +1,33 @@
 # Changelog
 
+## [v4.4.0] - 2021-06-08
+
+### Added:
+
+- **[dnsprovider]** Add DNS provider for Infoblox
+- **[dnsprovider]** Add DNS provider for Porkbun
+- **[dnsprovider]** Add DNS provider for Simply.com
+- **[dnsprovider]** Add DNS provider for Sonic
+- **[dnsprovider]** Add DNS provider for VinylDNS
+- **[dnsprovider]** Add DNS provider for wedos
+
+### Changed:
+
+- **[cli]** log: Use stderr instead of stdout.
+- **[dnsprovider]** hostingde: autodetection of the zone name.
+- **[dnsprovider]** scaleway: use official SDK
+- **[dnsprovider]** powerdns: several improvements
+- **[lib]** lib: improve wait.For returns.
+
+### Fixed:
+
+- **[dnsprovider]** hurricane: add API rate limiter.
+- **[dnsprovider]** hurricane: only treat first word of response body as response code
+- **[dnsprovider]** exoscale: fix DNS provider debugging
+- **[dnsprovider]** wedos: fix api call parameters
+- **[dnsprovider]** nifcloud: Get zone info from dns01.FindZoneByFqdn
+- **[cli,lib]** csr: Support the type `NEW CERTIFICATE REQUEST`
+
 ## [v4.3.1] - 2021-03-12
 
 ### Fixed:

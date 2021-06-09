@@ -1,15 +1,24 @@
-FROM alpine:3.5
+FROM golang:1-alpine as builder
 
-ENV GOPATH /go
-ENV SYSROOT /go
+RUN apk --no-cache --no-progress add make git
 
-RUN apk update && apk add ca-certificates go git musl-dev && \
-    rm -rf /var/cache/apk/* && \
-    go get -u github.com/xenolf/lego && \
-    cd /go/src/github.com/xenolf/lego && \
-    go build -o /usr/bin/lego . && \
-    apk del go git && \
-    rm -rf /var/cache/apk/* && \
-    rm -rf /go
+WORKDIR /go/lego
+
+ENV GO111MODULE on
+
+# Download go modules
+COPY go.mod .
+COPY go.sum .
+RUN go mod download
+
+COPY . .
+RUN make build
+
+FROM alpine:3.12
+RUN apk update \
+    && apk add --no-cache ca-certificates tzdata \
+    && update-ca-certificates
+
+COPY --from=builder /go/lego/dist/lego /usr/bin/lego
 
 ENTRYPOINT [ "/usr/bin/lego" ]

@@ -1,8 +1,8 @@
-// Package route53 implements a DNS provider for solving the DNS-01 challenge
-// using AWS Route 53 DNS.
+// Package route53 implements a DNS provider for solving the DNS-01 challenge using AWS Route 53 DNS.
 package route53
 
 import (
+	"errors"
 	"fmt"
 	"math/rand"
 	"strings"
@@ -13,30 +13,63 @@ import (
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/route53"
-	"github.com/xenolf/lego/acme"
+	"github.com/go-acme/lego/v4/challenge/dns01"
+	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/platform/wait"
 )
 
+// Environment variables names.
 const (
-	maxRetries = 5
-	route53TTL = 10
+	envNamespace = "AWS_"
+
+	EnvAccessKeyID     = envNamespace + "ACCESS_KEY_ID"
+	EnvSecretAccessKey = envNamespace + "SECRET_ACCESS_KEY"
+	EnvRegion          = envNamespace + "REGION"
+	EnvHostedZoneID    = envNamespace + "HOSTED_ZONE_ID"
+	EnvMaxRetries      = envNamespace + "MAX_RETRIES"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 )
 
-// DNSProvider implements the acme.ChallengeProvider interface
-type DNSProvider struct {
-	client *route53.Route53
+// Config is used to configure the creation of the DNSProvider.
+type Config struct {
+	MaxRetries         int
+	TTL                int
+	PropagationTimeout time.Duration
+	PollingInterval    time.Duration
+	HostedZoneID       string
+	Client             *route53.Route53
 }
 
-// customRetryer implements the client.Retryer interface by composing the
-// DefaultRetryer. It controls the logic for retrying recoverable request
-// errors (e.g. when rate limits are exceeded).
+// NewDefaultConfig returns a default configuration for the DNSProvider.
+func NewDefaultConfig() *Config {
+	return &Config{
+		MaxRetries:         env.GetOrDefaultInt(EnvMaxRetries, 5),
+		TTL:                env.GetOrDefaultInt(EnvTTL, 10),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 4*time.Second),
+		HostedZoneID:       env.GetOrFile(EnvHostedZoneID),
+	}
+}
+
+// DNSProvider implements the challenge.Provider interface.
+type DNSProvider struct {
+	client *route53.Route53
+	config *Config
+}
+
+// customRetryer implements the client.Retryer interface by composing the DefaultRetryer.
+// It controls the logic for retrying recoverable request errors (e.g. when rate limits are exceeded).
 type customRetryer struct {
 	client.DefaultRetryer
 }
 
 // RetryRules overwrites the DefaultRetryer's method.
-// It uses a basic exponential backoff algorithm that returns an initial
-// delay of ~400ms with an upper limit of ~30 seconds which should prevent
-// causing a high number of consecutive throttling errors.
+// It uses a basic exponential backoff algorithm:
+// that returns an initial delay of ~400ms with an upper limit of ~30 seconds,
+// which should prevent causing a high number of consecutive throttling errors.
 // For reference: Route 53 enforces an account-wide(!) 5req/s query limit.
 func (d customRetryer) RetryRules(r *request.Request) time.Duration {
 	retryCount := r.RetryCount
@@ -48,93 +81,198 @@ func (d customRetryer) RetryRules(r *request.Request) time.Duration {
 	return time.Duration(delay) * time.Millisecond
 }
 
-// NewDNSProvider returns a DNSProvider instance configured for the AWS
-// Route 53 service.
+// NewDNSProvider returns a DNSProvider instance configured for the AWS Route 53 service.
 //
-// AWS Credentials are automatically detected in the following locations
-// and prioritized in the following order:
+// AWS Credentials are automatically detected in the following locations and prioritized in the following order:
 // 1. Environment variables: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY,
 //    AWS_REGION, [AWS_SESSION_TOKEN]
 // 2. Shared credentials file (defaults to ~/.aws/credentials)
 // 3. Amazon EC2 IAM role
 //
+// If AWS_HOSTED_ZONE_ID is not set, Lego tries to determine the correct public hosted zone via the FQDN.
+//
 // See also: https://github.com/aws/aws-sdk-go/wiki/configuring-sdk
 func NewDNSProvider() (*DNSProvider, error) {
-	r := customRetryer{}
-	r.NumMaxRetries = maxRetries
-	config := request.WithRetryer(aws.NewConfig(), r)
-	client := route53.New(session.New(config))
-
-	return &DNSProvider{client: client}, nil
+	return NewDNSProviderConfig(NewDefaultConfig())
 }
 
-// Present creates a TXT record using the specified parameters
-func (r *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
-	value = `"` + value + `"`
-	return r.changeRecord("UPSERT", fqdn, value, route53TTL)
-}
-
-// CleanUp removes the TXT record matching the specified parameters
-func (r *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
-	value = `"` + value + `"`
-	return r.changeRecord("DELETE", fqdn, value, route53TTL)
-}
-
-func (r *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
-	hostedZoneID, err := getHostedZoneID(fqdn, r.client)
-	if err != nil {
-		return fmt.Errorf("Failed to determine Route 53 hosted zone ID: %v", err)
+// NewDNSProviderConfig takes a given config ans returns a custom configured DNSProvider instance.
+func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
+	if config == nil {
+		return nil, errors.New("route53: the configuration of the Route53 DNS provider is nil")
 	}
 
-	recordSet := newTXTRecordSet(fqdn, value, ttl)
-	reqParams := &route53.ChangeResourceRecordSetsInput{
+	if config.Client != nil {
+		return &DNSProvider{client: config.Client, config: config}, nil
+	}
+
+	retry := customRetryer{}
+	retry.NumMaxRetries = config.MaxRetries
+	sessionCfg := request.WithRetryer(aws.NewConfig(), retry)
+
+	sess, err := session.NewSessionWithOptions(session.Options{Config: *sessionCfg})
+	if err != nil {
+		return nil, err
+	}
+
+	cl := route53.New(sess)
+	return &DNSProvider{client: cl, config: config}, nil
+}
+
+// Timeout returns the timeout and interval to use when checking for DNS propagation.
+func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
+	return d.config.PropagationTimeout, d.config.PollingInterval
+}
+
+// Present creates a TXT record using the specified parameters.
+func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
+
+	hostedZoneID, err := d.getHostedZoneID(fqdn)
+	if err != nil {
+		return fmt.Errorf("route53: failed to determine hosted zone ID: %w", err)
+	}
+
+	records, err := d.getExistingRecordSets(hostedZoneID, fqdn)
+	if err != nil {
+		return fmt.Errorf("route53: %w", err)
+	}
+
+	realValue := `"` + value + `"`
+
+	var found bool
+	for _, record := range records {
+		if aws.StringValue(record.Value) == realValue {
+			found = true
+		}
+	}
+
+	if !found {
+		records = append(records, &route53.ResourceRecord{Value: aws.String(realValue)})
+	}
+
+	recordSet := &route53.ResourceRecordSet{
+		Name:            aws.String(fqdn),
+		Type:            aws.String("TXT"),
+		TTL:             aws.Int64(int64(d.config.TTL)),
+		ResourceRecords: records,
+	}
+
+	err = d.changeRecord(route53.ChangeActionUpsert, hostedZoneID, recordSet)
+	if err != nil {
+		return fmt.Errorf("route53: %w", err)
+	}
+	return nil
+}
+
+// CleanUp removes the TXT record matching the specified parameters.
+func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+
+	hostedZoneID, err := d.getHostedZoneID(fqdn)
+	if err != nil {
+		return fmt.Errorf("failed to determine Route 53 hosted zone ID: %w", err)
+	}
+
+	records, err := d.getExistingRecordSets(hostedZoneID, fqdn)
+	if err != nil {
+		return fmt.Errorf("route53: %w", err)
+	}
+
+	if len(records) == 0 {
+		return nil
+	}
+
+	recordSet := &route53.ResourceRecordSet{
+		Name:            aws.String(fqdn),
+		Type:            aws.String("TXT"),
+		TTL:             aws.Int64(int64(d.config.TTL)),
+		ResourceRecords: records,
+	}
+
+	err = d.changeRecord(route53.ChangeActionDelete, hostedZoneID, recordSet)
+	if err != nil {
+		return fmt.Errorf("route53: %w", err)
+	}
+	return nil
+}
+
+func (d *DNSProvider) changeRecord(action, hostedZoneID string, recordSet *route53.ResourceRecordSet) error {
+	recordSetInput := &route53.ChangeResourceRecordSetsInput{
 		HostedZoneId: aws.String(hostedZoneID),
 		ChangeBatch: &route53.ChangeBatch{
 			Comment: aws.String("Managed by Lego"),
-			Changes: []*route53.Change{
-				{
-					Action:            aws.String(action),
-					ResourceRecordSet: recordSet,
-				},
-			},
+			Changes: []*route53.Change{{
+				Action:            aws.String(action),
+				ResourceRecordSet: recordSet,
+			}},
 		},
 	}
 
-	resp, err := r.client.ChangeResourceRecordSets(reqParams)
+	resp, err := d.client.ChangeResourceRecordSets(recordSetInput)
 	if err != nil {
-		return fmt.Errorf("Failed to change Route 53 record set: %v", err)
+		return fmt.Errorf("failed to change record set: %w", err)
 	}
 
-	statusID := resp.ChangeInfo.Id
+	changeID := resp.ChangeInfo.Id
 
-	return acme.WaitFor(120*time.Second, 4*time.Second, func() (bool, error) {
-		reqParams := &route53.GetChangeInput{
-			Id: statusID,
-		}
-		resp, err := r.client.GetChange(reqParams)
+	return wait.For("route53", d.config.PropagationTimeout, d.config.PollingInterval, func() (bool, error) {
+		reqParams := &route53.GetChangeInput{Id: changeID}
+
+		resp, err := d.client.GetChange(reqParams)
 		if err != nil {
-			return false, fmt.Errorf("Failed to query Route 53 change status: %v", err)
+			return false, fmt.Errorf("failed to query change status: %w", err)
 		}
-		if *resp.ChangeInfo.Status == route53.ChangeStatusInsync {
+
+		if aws.StringValue(resp.ChangeInfo.Status) == route53.ChangeStatusInsync {
 			return true, nil
 		}
-		return false, nil
+		return false, fmt.Errorf("unable to retrieve change: ID=%s", aws.StringValue(changeID))
 	})
 }
 
-func getHostedZoneID(fqdn string, client *route53.Route53) (string, error) {
-	authZone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameservers)
+func (d *DNSProvider) getExistingRecordSets(hostedZoneID, fqdn string) ([]*route53.ResourceRecord, error) {
+	listInput := &route53.ListResourceRecordSetsInput{
+		HostedZoneId:    aws.String(hostedZoneID),
+		StartRecordName: aws.String(fqdn),
+		StartRecordType: aws.String("TXT"),
+	}
+
+	recordSetsOutput, err := d.client.ListResourceRecordSets(listInput)
+	if err != nil {
+		return nil, err
+	}
+
+	if recordSetsOutput == nil {
+		return nil, nil
+	}
+
+	var records []*route53.ResourceRecord
+
+	for _, recordSet := range recordSetsOutput.ResourceRecordSets {
+		if aws.StringValue(recordSet.Name) == fqdn {
+			records = append(records, recordSet.ResourceRecords...)
+		}
+	}
+
+	return records, nil
+}
+
+func (d *DNSProvider) getHostedZoneID(fqdn string) (string, error) {
+	if d.config.HostedZoneID != "" {
+		return d.config.HostedZoneID, nil
+	}
+
+	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
 		return "", err
 	}
 
 	// .DNSName should not have a trailing dot
 	reqParams := &route53.ListHostedZonesByNameInput{
-		DNSName: aws.String(acme.UnFqdn(authZone)),
+		DNSName: aws.String(dns01.UnFqdn(authZone)),
 	}
-	resp, err := client.ListHostedZonesByName(reqParams)
+	resp, err := d.client.ListHostedZonesByName(reqParams)
 	if err != nil {
 		return "", err
 	}
@@ -142,14 +280,14 @@ func getHostedZoneID(fqdn string, client *route53.Route53) (string, error) {
 	var hostedZoneID string
 	for _, hostedZone := range resp.HostedZones {
 		// .Name has a trailing dot
-		if !*hostedZone.Config.PrivateZone && *hostedZone.Name == authZone {
-			hostedZoneID = *hostedZone.Id
+		if !aws.BoolValue(hostedZone.Config.PrivateZone) && aws.StringValue(hostedZone.Name) == authZone {
+			hostedZoneID = aws.StringValue(hostedZone.Id)
 			break
 		}
 	}
 
-	if len(hostedZoneID) == 0 {
-		return "", fmt.Errorf("Zone %s not found in Route 53 for domain %s", authZone, fqdn)
+	if hostedZoneID == "" {
+		return "", fmt.Errorf("zone %s not found for domain %s", authZone, fqdn)
 	}
 
 	if strings.HasPrefix(hostedZoneID, "/hostedzone/") {
@@ -157,15 +295,4 @@ func getHostedZoneID(fqdn string, client *route53.Route53) (string, error) {
 	}
 
 	return hostedZoneID, nil
-}
-
-func newTXTRecordSet(fqdn, value string, ttl int) *route53.ResourceRecordSet {
-	return &route53.ResourceRecordSet{
-		Name: aws.String(fqdn),
-		Type: aws.String("TXT"),
-		TTL:  aws.Int64(int64(ttl)),
-		ResourceRecords: []*route53.ResourceRecord{
-			{Value: aws.String(value)},
-		},
-	}
 }

@@ -1,0 +1,40 @@
+Name = "Joker"
+Description = ''''''
+URL = "https://joker.com"
+Code = "joker"
+Since = "v2.6.0"
+
+Example = '''
+# SVC
+JOKER_API_MODE=SVC \
+JOKER_USERNAME=<your email> \
+JOKER_PASSWORD=<your password> \
+lego --email myemail@example.com --dns joker --domains my.example.org run
+
+# DMAPI
+JOKER_API_MODE=DMAPI \
+JOKER_USERNAME=<your email> \
+JOKER_PASSWORD=<your password> \
+lego --email myemail@example.com --dns joker --domains my.example.org run
+## or
+JOKER_API_MODE=DMAPI \
+JOKER_API_KEY=<your API key> \
+lego --email myemail@example.com --dns joker --domains my.example.org run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    JOKER_API_MODE = "'DMAPI' or 'SVC'. DMAPI is for resellers accounts. (Default: DMAPI)"
+    JOKER_USERNAME = "Joker.com username"
+    JOKER_PASSWORD = "Joker.com password"
+    JOKER_API_KEY = "API key (only with DMAPI mode)"
+  [Configuration.Additional]
+    JOKER_POLLING_INTERVAL = "Time between DNS propagation check"
+    JOKER_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
+    JOKER_TTL = "The TTL of the TXT record used for the DNS challenge"
+    JOKER_HTTP_TIMEOUT = "API request timeout"
+    JOKER_SEQUENCE_INTERVAL = "Time between sequential requests (only with 'SVC' mode)"
+
+[Links]
+  API = "https://joker.com/faq/category/39/22-dmapi.html"
+  API_SVC = "https://joker.com/faq/content/6/496/en/let_s-encrypt-support.html"

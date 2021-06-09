@@ -1,74 +1,123 @@
-// Package dnspod implements a DNS provider for solving the DNS-01 challenge
-// using dnspod DNS.
+// Package dnspod implements a DNS provider for solving the DNS-01 challenge using dnspod DNS.
 package dnspod
 
 import (
+	"errors"
 	"fmt"
-	"os"
+	"net/http"
+	"strconv"
 	"strings"
+	"time"
 
-	"github.com/decker502/dnspod-go"
-	"github.com/xenolf/lego/acme"
+	"github.com/go-acme/lego/v4/challenge/dns01"
+	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/nrdcg/dnspod-go"
 )
 
-// DNSProvider is an implementation of the acme.ChallengeProvider interface.
+// Environment variables names.
+const (
+	envNamespace = "DNSPOD_"
+
+	EnvAPIKey = envNamespace + "API_KEY"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
+// Config is used to configure the creation of the DNSProvider.
+type Config struct {
+	LoginToken         string
+	TTL                int
+	PropagationTimeout time.Duration
+	PollingInterval    time.Duration
+	HTTPClient         *http.Client
+}
+
+// NewDefaultConfig returns a default configuration for the DNSProvider.
+func NewDefaultConfig() *Config {
+	return &Config{
+		TTL:                env.GetOrDefaultInt(EnvTTL, 600),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		HTTPClient: &http.Client{
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+		},
+	}
+}
+
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
+	config *Config
 	client *dnspod.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for dnspod.
 // Credentials must be passed in the environment variables: DNSPOD_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	key := os.Getenv("DNSPOD_API_KEY")
-	return NewDNSProviderCredentials(key)
-}
-
-// NewDNSProviderCredentials uses the supplied credentials to return a
-// DNSProvider instance configured for dnspod.
-func NewDNSProviderCredentials(key string) (*DNSProvider, error) {
-	if key == "" {
-		return nil, fmt.Errorf("dnspod credentials missing")
+	values, err := env.Get(EnvAPIKey)
+	if err != nil {
+		return nil, fmt.Errorf("dnspod: %w", err)
 	}
 
-	params := dnspod.CommonParams{LoginToken: key, Format: "json"}
-	return &DNSProvider{
-		client: dnspod.NewClient(params),
-	}, nil
+	config := NewDefaultConfig()
+	config.LoginToken = values[EnvAPIKey]
+
+	return NewDNSProviderConfig(config)
 }
 
-// Present creates a TXT record to fulfil the dns-01 challenge.
-func (c *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value, ttl := acme.DNS01Record(domain, keyAuth)
-	zoneID, zoneName, err := c.getHostedZone(domain)
+// NewDNSProviderConfig return a DNSProvider instance configured for dnspod.
+func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
+	if config == nil {
+		return nil, errors.New("dnspod: the configuration of the DNS provider is nil")
+	}
+
+	if config.LoginToken == "" {
+		return nil, errors.New("dnspod: credentials missing")
+	}
+
+	params := dnspod.CommonParams{LoginToken: config.LoginToken, Format: "json"}
+
+	client := dnspod.NewClient(params)
+	client.HTTPClient = config.HTTPClient
+
+	return &DNSProvider{client: client, config: config}, nil
+}
+
+// Present creates a TXT record to fulfill the dns-01 challenge.
+func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	zoneID, zoneName, err := d.getHostedZone(domain)
 	if err != nil {
 		return err
 	}
 
-	recordAttributes := c.newTxtRecord(zoneName, fqdn, value, ttl)
-	_, _, err = c.client.Domains.CreateRecord(zoneID, *recordAttributes)
+	recordAttributes := d.newTxtRecord(zoneName, fqdn, value, d.config.TTL)
+	_, _, err = d.client.Records.Create(zoneID, *recordAttributes)
 	if err != nil {
-		return fmt.Errorf("dnspod API call failed: %v", err)
+		return fmt.Errorf("API call failed: %w", err)
 	}
 
 	return nil
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
+func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 
-	records, err := c.findTxtRecords(domain, fqdn)
+	records, err := d.findTxtRecords(domain, fqdn)
 	if err != nil {
 		return err
 	}
 
-	zoneID, _, err := c.getHostedZone(domain)
+	zoneID, _, err := d.getHostedZone(domain)
 	if err != nil {
 		return err
 	}
 
 	for _, rec := range records {
-		_, err := c.client.Domains.DeleteRecord(zoneID, rec.ID)
+		_, err := d.client.Records.Delete(zoneID, rec.ID)
 		if err != nil {
 			return err
 		}
@@ -76,57 +125,62 @@ func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-func (c *DNSProvider) getHostedZone(domain string) (string, string, error) {
-	zones, _, err := c.client.Domains.List()
+// Timeout returns the timeout and interval to use when checking for DNS propagation.
+// Adjusting here to cope with spikes in propagation times.
+func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
+	return d.config.PropagationTimeout, d.config.PollingInterval
+}
+
+func (d *DNSProvider) getHostedZone(domain string) (string, string, error) {
+	zones, _, err := d.client.Domains.List()
 	if err != nil {
-		return "", "", fmt.Errorf("dnspod API call failed: %v", err)
+		return "", "", fmt.Errorf("API call failed: %w", err)
 	}
 
-	authZone, err := acme.FindZoneByFqdn(acme.ToFqdn(domain), acme.RecursiveNameservers)
+	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
 	if err != nil {
 		return "", "", err
 	}
 
 	var hostedZone dnspod.Domain
 	for _, zone := range zones {
-		if zone.Name == acme.UnFqdn(authZone) {
+		if zone.Name == dns01.UnFqdn(authZone) {
 			hostedZone = zone
 		}
 	}
 
-	if hostedZone.ID == 0 {
-		return "", "", fmt.Errorf("Zone %s not found in dnspod for domain %s", authZone, domain)
-
+	if hostedZone.ID == "" || hostedZone.ID == "0" {
+		return "", "", fmt.Errorf("zone %s not found in dnspod for domain %s", authZone, domain)
 	}
 
 	return fmt.Sprintf("%v", hostedZone.ID), hostedZone.Name, nil
 }
 
-func (c *DNSProvider) newTxtRecord(zone, fqdn, value string, ttl int) *dnspod.Record {
-	name := c.extractRecordName(fqdn, zone)
+func (d *DNSProvider) newTxtRecord(zone, fqdn, value string, ttl int) *dnspod.Record {
+	name := extractRecordName(fqdn, zone)
 
 	return &dnspod.Record{
 		Type:  "TXT",
 		Name:  name,
 		Value: value,
 		Line:  "默认",
-		TTL:   "600",
+		TTL:   strconv.Itoa(ttl),
 	}
 }
 
-func (c *DNSProvider) findTxtRecords(domain, fqdn string) ([]dnspod.Record, error) {
-	zoneID, zoneName, err := c.getHostedZone(domain)
+func (d *DNSProvider) findTxtRecords(domain, fqdn string) ([]dnspod.Record, error) {
+	zoneID, zoneName, err := d.getHostedZone(domain)
 	if err != nil {
 		return nil, err
 	}
 
-	var records []dnspod.Record
-	result, _, err := c.client.Domains.ListRecords(zoneID, "")
-	if err != nil {
-		return records, fmt.Errorf("dnspod API call has failed: %v", err)
-	}
+	recordName := extractRecordName(fqdn, zoneName)
 
-	recordName := c.extractRecordName(fqdn, zoneName)
+	var records []dnspod.Record
+	result, _, err := d.client.Records.List(zoneID, recordName)
+	if err != nil {
+		return records, fmt.Errorf("API call has failed: %w", err)
+	}
 
 	for _, record := range result {
 		if record.Name == recordName {
@@ -137,9 +191,9 @@ func (c *DNSProvider) findTxtRecords(domain, fqdn string) ([]dnspod.Record, erro
 	return records, nil
 }
 
-func (c *DNSProvider) extractRecordName(fqdn, domain string) string {
-	name := acme.UnFqdn(fqdn)
-	if idx := strings.Index(name, "."+domain); idx != -1 {
+func extractRecordName(fqdn, zone string) string {
+	name := dns01.UnFqdn(fqdn)
+	if idx := strings.Index(name, "."+zone); idx != -1 {
 		return name[:idx]
 	}
 	return name

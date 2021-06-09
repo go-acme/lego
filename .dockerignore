@@ -1,0 +1,8 @@
+lego.exe
+.lego
+.gitcookies
+.idea
+.vscode/
+dist/
+builds/
+docs/

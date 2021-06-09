@@ -1,137 +1,200 @@
-// Package pdns implements a DNS provider for solving the DNS-01
-// challenge using PowerDNS nameserver.
+// Package pdns implements a DNS provider for solving the DNS-01 challenge using PowerDNS nameserver.
 package pdns
 
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
-	"os"
-	"strconv"
-	"strings"
 	"time"
 
-	"github.com/xenolf/lego/acme"
+	"github.com/go-acme/lego/v4/challenge/dns01"
+	"github.com/go-acme/lego/v4/log"
+	"github.com/go-acme/lego/v4/platform/config/env"
 )
 
-// DNSProvider is an implementation of the acme.ChallengeProvider interface
+// Environment variables names.
+const (
+	envNamespace = "PDNS_"
+
+	EnvAPIKey = envNamespace + "API_KEY"
+	EnvAPIURL = envNamespace + "API_URL"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+	EnvServerName         = envNamespace + "SERVER_NAME"
+)
+
+// Config is used to configure the creation of the DNSProvider.
+type Config struct {
+	APIKey             string
+	Host               *url.URL
+	ServerName         string
+	PropagationTimeout time.Duration
+	PollingInterval    time.Duration
+	TTL                int
+	HTTPClient         *http.Client
+}
+
+// NewDefaultConfig returns a default configuration for the DNSProvider.
+func NewDefaultConfig() *Config {
+	return &Config{
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 120*time.Second),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
+		ServerName:         env.GetOrDefaultString(EnvServerName, "localhost"),
+		HTTPClient: &http.Client{
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+		},
+	}
+}
+
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	apiKey     string
-	host       *url.URL
 	apiVersion int
+	config     *Config
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for pdns.
 // Credentials must be passed in the environment variable:
 // PDNS_API_URL and PDNS_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	key := os.Getenv("PDNS_API_KEY")
-	hostUrl, err := url.Parse(os.Getenv("PDNS_API_URL"))
+	values, err := env.Get(EnvAPIKey, EnvAPIURL)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("pdns: %w", err)
 	}
 
-	return NewDNSProviderCredentials(hostUrl, key)
+	hostURL, err := url.Parse(values[EnvAPIURL])
+	if err != nil {
+		return nil, fmt.Errorf("pdns: %w", err)
+	}
+
+	config := NewDefaultConfig()
+	config.Host = hostURL
+	config.APIKey = values[EnvAPIKey]
+
+	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderCredentials uses the supplied credentials to return a
-// DNSProvider instance configured for pdns.
-func NewDNSProviderCredentials(host *url.URL, key string) (*DNSProvider, error) {
-	if key == "" {
-		return nil, fmt.Errorf("PDNS API key missing")
+// NewDNSProviderConfig return a DNSProvider instance configured for pdns.
+func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
+	if config == nil {
+		return nil, errors.New("pdns: the configuration of the DNS provider is nil")
 	}
 
-	if host == nil || host.Host == "" {
-		return nil, fmt.Errorf("PDNS API URL missing")
+	if config.APIKey == "" {
+		return nil, errors.New("pdns: API key missing")
 	}
 
-	provider := &DNSProvider{
-		host:   host,
-		apiKey: key,
+	if config.Host == nil || config.Host.Host == "" {
+		return nil, errors.New("pdns: API URL missing")
 	}
-	provider.getAPIVersion()
 
-	return provider, nil
+	d := &DNSProvider{config: config}
+
+	apiVersion, err := d.getAPIVersion()
+	if err != nil {
+		log.Warnf("pdns: failed to get API version %v", err)
+	}
+	d.apiVersion = apiVersion
+
+	return d, nil
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS
 // propagation. Adjusting here to cope with spikes in propagation times.
-func (c *DNSProvider) Timeout() (timeout, interval time.Duration) {
-	return 120 * time.Second, 2 * time.Second
+func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
+	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-// Present creates a TXT record to fulfil the dns-01 challenge
-func (c *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
-	zone, err := c.getHostedZone(fqdn)
+// Present creates a TXT record to fulfill the dns-01 challenge.
+func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
+
+	zone, err := d.getHostedZone(fqdn)
 	if err != nil {
-		return err
+		return fmt.Errorf("pdns: %w", err)
 	}
 
 	name := fqdn
 
 	// pre-v1 API wants non-fqdn
-	if c.apiVersion == 0 {
-		name = acme.UnFqdn(fqdn)
+	if d.apiVersion == 0 {
+		name = dns01.UnFqdn(fqdn)
 	}
 
-	rec := pdnsRecord{
+	rec := Record{
 		Content:  "\"" + value + "\"",
 		Disabled: false,
 
 		// pre-v1 API
 		Type: "TXT",
 		Name: name,
-		TTL:  120,
+		TTL:  d.config.TTL,
 	}
+
+	// Look for existing records.
+	existingRrSet, err := d.findTxtRecord(fqdn)
+	if err != nil {
+		return fmt.Errorf("pdns: %w", err)
+	}
+
+	// merge the existing and new records
+	var records []Record
+	if existingRrSet != nil {
+		records = existingRrSet.Records
+	}
+	records = append(records, rec)
 
 	rrsets := rrSets{
 		RRSets: []rrSet{
-			rrSet{
+			{
 				Name:       name,
 				ChangeType: "REPLACE",
 				Type:       "TXT",
 				Kind:       "Master",
-				TTL:        120,
-				Records:    []pdnsRecord{rec},
+				TTL:        d.config.TTL,
+				Records:    records,
 			},
 		},
 	}
 
 	body, err := json.Marshal(rrsets)
 	if err != nil {
-		return err
+		return fmt.Errorf("pdns: %w", err)
 	}
 
-	_, err = c.makeRequest("PATCH", zone.URL, bytes.NewReader(body))
+	_, err = d.sendRequest(http.MethodPatch, zone.URL, bytes.NewReader(body))
 	if err != nil {
-		fmt.Println("here")
-		return err
+		return fmt.Errorf("pdns: %w", err)
 	}
-
 	return nil
 }
 
-// CleanUp removes the TXT record matching the specified parameters
-func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
+// CleanUp removes the TXT record matching the specified parameters.
+func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 
-	zone, err := c.getHostedZone(fqdn)
+	zone, err := d.getHostedZone(fqdn)
 	if err != nil {
-		return err
+		return fmt.Errorf("pdns: %w", err)
 	}
 
-	set, err := c.findTxtRecord(fqdn)
+	set, err := d.findTxtRecord(fqdn)
 	if err != nil {
-		return err
+		return fmt.Errorf("pdns: %w", err)
+	}
+	if set == nil {
+		return fmt.Errorf("pdns: no existing record found for %s", fqdn)
 	}
 
 	rrsets := rrSets{
 		RRSets: []rrSet{
-			rrSet{
+			{
 				Name:       set.Name,
 				Type:       set.Type,
 				ChangeType: "DELETE",
@@ -140,204 +203,12 @@ func (c *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 	body, err := json.Marshal(rrsets)
 	if err != nil {
-		return err
+		return fmt.Errorf("pdns: %w", err)
 	}
 
-	_, err = c.makeRequest("PATCH", zone.URL, bytes.NewReader(body))
+	_, err = d.sendRequest(http.MethodPatch, zone.URL, bytes.NewReader(body))
 	if err != nil {
-		return err
+		return fmt.Errorf("pdns: %w", err)
 	}
-
 	return nil
-}
-
-func (c *DNSProvider) getHostedZone(fqdn string) (*hostedZone, error) {
-	var zone hostedZone
-	authZone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameservers)
-	if err != nil {
-		return nil, err
-	}
-
-	url := "/servers/localhost/zones"
-	result, err := c.makeRequest("GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	zones := []hostedZone{}
-	err = json.Unmarshal(result, &zones)
-	if err != nil {
-		return nil, err
-	}
-
-	url = ""
-	for _, zone := range zones {
-		if acme.UnFqdn(zone.Name) == acme.UnFqdn(authZone) {
-			url = zone.URL
-		}
-	}
-
-	result, err = c.makeRequest("GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	err = json.Unmarshal(result, &zone)
-	if err != nil {
-		return nil, err
-	}
-
-	// convert pre-v1 API result
-	if len(zone.Records) > 0 {
-		zone.RRSets = []rrSet{}
-		for _, record := range zone.Records {
-			set := rrSet{
-				Name:    record.Name,
-				Type:    record.Type,
-				Records: []pdnsRecord{record},
-			}
-			zone.RRSets = append(zone.RRSets, set)
-		}
-	}
-
-	return &zone, nil
-}
-
-func (c *DNSProvider) findTxtRecord(fqdn string) (*rrSet, error) {
-	zone, err := c.getHostedZone(fqdn)
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = c.makeRequest("GET", zone.URL, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, set := range zone.RRSets {
-		if (set.Name == acme.UnFqdn(fqdn) || set.Name == fqdn) && set.Type == "TXT" {
-			return &set, nil
-		}
-	}
-
-	return nil, fmt.Errorf("No existing record found for %s", fqdn)
-}
-
-func (c *DNSProvider) getAPIVersion() {
-	type APIVersion struct {
-		URL     string `json:"url"`
-		Version int    `json:"version"`
-	}
-
-	result, err := c.makeRequest("GET", "/api", nil)
-	if err != nil {
-		return
-	}
-
-	var versions []APIVersion
-	err = json.Unmarshal(result, &versions)
-	if err != nil {
-		return
-	}
-
-	latestVersion := 0
-	for _, v := range versions {
-		if v.Version > latestVersion {
-			latestVersion = v.Version
-		}
-	}
-	c.apiVersion = latestVersion
-}
-
-func (c *DNSProvider) makeRequest(method, uri string, body io.Reader) (json.RawMessage, error) {
-	type APIError struct {
-		Error string `json:"error"`
-	}
-	var path = ""
-	if c.host.Path != "/" {
-		path = c.host.Path
-	}
-	if c.apiVersion > 0 {
-		if !strings.HasPrefix(uri, "api/v") {
-			uri = "/api/v" + strconv.Itoa(c.apiVersion) + uri
-		} else {
-			uri = "/" + uri
-		}
-	}
-	url := c.host.Scheme + "://" + c.host.Host + path + uri
-	req, err := http.NewRequest(method, url, body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("X-API-Key", c.apiKey)
-
-	client := http.Client{Timeout: 30 * time.Second}
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("Error talking to PDNS API -> %v", err)
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode != 422 && (resp.StatusCode < 200 || resp.StatusCode >= 300) {
-		return nil, fmt.Errorf("Unexpected HTTP status code %d when fetching '%s'", resp.StatusCode, url)
-	}
-
-	var msg json.RawMessage
-	err = json.NewDecoder(resp.Body).Decode(&msg)
-	switch {
-	case err == io.EOF:
-		// empty body
-		return nil, nil
-	case err != nil:
-		// other error
-		return nil, err
-	}
-
-	// check for PowerDNS error message
-	if len(msg) > 0 && msg[0] == '{' {
-		var apiError APIError
-		err = json.Unmarshal(msg, &apiError)
-		if err != nil {
-			return nil, err
-		}
-		if apiError.Error != "" {
-			return nil, fmt.Errorf("Error talking to PDNS API -> %v", apiError.Error)
-		}
-	}
-	return msg, nil
-}
-
-type pdnsRecord struct {
-	Content  string `json:"content"`
-	Disabled bool   `json:"disabled"`
-
-	// pre-v1 API
-	Name string `json:"name"`
-	Type string `json:"type"`
-	TTL  int    `json:"ttl,omitempty"`
-}
-
-type hostedZone struct {
-	ID     string  `json:"id"`
-	Name   string  `json:"name"`
-	URL    string  `json:"url"`
-	RRSets []rrSet `json:"rrsets"`
-
-	// pre-v1 API
-	Records []pdnsRecord `json:"records"`
-}
-
-type rrSet struct {
-	Name       string       `json:"name"`
-	Type       string       `json:"type"`
-	Kind       string       `json:"kind"`
-	ChangeType string       `json:"changetype"`
-	Records    []pdnsRecord `json:"records"`
-	TTL        int          `json:"ttl,omitempty"`
-}
-
-type rrSets struct {
-	RRSets []rrSet `json:"rrsets"`
 }

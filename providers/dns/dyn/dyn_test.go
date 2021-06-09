@@ -1,53 +1,178 @@
 package dyn
 
 import (
-	"os"
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/stretchr/testify/require"
 )
 
-var (
-	dynLiveTest     bool
-	dynCustomerName string
-	dynUserName     string
-	dynPassword     string
-	dynDomain       string
-)
+const envDomain = envNamespace + "DOMAIN"
 
-func init() {
-	dynCustomerName = os.Getenv("DYN_CUSTOMER_NAME")
-	dynUserName = os.Getenv("DYN_USER_NAME")
-	dynPassword = os.Getenv("DYN_PASSWORD")
-	dynDomain = os.Getenv("DYN_DOMAIN")
-	if len(dynCustomerName) > 0 && len(dynUserName) > 0 && len(dynPassword) > 0 && len(dynDomain) > 0 {
-		dynLiveTest = true
+var envTest = tester.NewEnvTest(
+	EnvCustomerName,
+	EnvUserName,
+	EnvPassword).
+	WithDomain(envDomain)
+
+func TestNewDNSProvider(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		envVars  map[string]string
+		expected string
+	}{
+		{
+			desc: "success",
+			envVars: map[string]string{
+				EnvCustomerName: "A",
+				EnvUserName:     "B",
+				EnvPassword:     "C",
+			},
+		},
+		{
+			desc: "missing credentials",
+			envVars: map[string]string{
+				EnvCustomerName: "",
+				EnvUserName:     "",
+				EnvPassword:     "",
+			},
+			expected: "dyn: some credentials information are missing: DYN_CUSTOMER_NAME,DYN_USER_NAME,DYN_PASSWORD",
+		},
+		{
+			desc: "missing customer name",
+			envVars: map[string]string{
+				EnvCustomerName: "",
+				EnvUserName:     "B",
+				EnvPassword:     "C",
+			},
+			expected: "dyn: some credentials information are missing: DYN_CUSTOMER_NAME",
+		},
+		{
+			desc: "missing password",
+			envVars: map[string]string{
+				EnvCustomerName: "A",
+				EnvUserName:     "",
+				EnvPassword:     "C",
+			},
+			expected: "dyn: some credentials information are missing: DYN_USER_NAME",
+		},
+		{
+			desc: "missing username",
+			envVars: map[string]string{
+				EnvCustomerName: "A",
+				EnvUserName:     "B",
+				EnvPassword:     "",
+			},
+			expected: "dyn: some credentials information are missing: DYN_PASSWORD",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
+			envTest.Apply(test.envVars)
+
+			p, err := NewDNSProvider()
+
+			if test.expected == "" {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
 	}
 }
 
-func TestLiveDynPresent(t *testing.T) {
-	if !dynLiveTest {
-		t.Skip("skipping live test")
+func TestNewDNSProviderConfig(t *testing.T) {
+	testCases := []struct {
+		desc         string
+		customerName string
+		password     string
+		userName     string
+		expected     string
+	}{
+		{
+			desc:         "success",
+			customerName: "A",
+			password:     "B",
+			userName:     "C",
+		},
+		{
+			desc:     "missing credentials",
+			expected: "dyn: credentials missing",
+		},
+		{
+			desc:         "missing customer name",
+			customerName: "",
+			password:     "B",
+			userName:     "C",
+			expected:     "dyn: credentials missing",
+		},
+		{
+			desc:         "missing password",
+			customerName: "A",
+			password:     "",
+			userName:     "C",
+			expected:     "dyn: credentials missing",
+		},
+		{
+			desc:         "missing username",
+			customerName: "A",
+			password:     "B",
+			userName:     "",
+			expected:     "dyn: credentials missing",
+		},
 	}
 
-	provider, err := NewDNSProvider()
-	assert.NoError(t, err)
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			config := NewDefaultConfig()
+			config.CustomerName = test.customerName
+			config.Password = test.password
+			config.UserName = test.userName
 
-	err = provider.Present(dynDomain, "", "123d==")
-	assert.NoError(t, err)
+			p, err := NewDNSProviderConfig(config)
+
+			if test.expected == "" {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
 }
 
-func TestLiveDynCleanUp(t *testing.T) {
-	if !dynLiveTest {
+func TestLivePresent(t *testing.T) {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	time.Sleep(time.Second * 1)
-
+	envTest.RestoreEnv()
 	provider, err := NewDNSProvider()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
-	err = provider.CleanUp(dynDomain, "", "123d==")
-	assert.NoError(t, err)
+	err = provider.Present(envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
+}
+
+func TestLiveCleanUp(t *testing.T) {
+	if !envTest.IsLiveTest() {
+		t.Skip("skipping live test")
+	}
+
+	envTest.RestoreEnv()
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
+
+	time.Sleep(1 * time.Second)
+
+	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
 }

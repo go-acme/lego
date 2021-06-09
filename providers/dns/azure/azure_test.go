@@ -1,89 +1,184 @@
 package azure
 
 import (
-	"os"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/stretchr/testify/require"
 )
 
-var (
-	azureLiveTest       bool
-	azureClientID       string
-	azureClientSecret   string
-	azureSubscriptionID string
-	azureTenantID       string
-	azureResourceGroup  string
-	azureDomain         string
-)
+const envDomain = envNamespace + "DOMAIN"
 
-func init() {
-	azureClientID = os.Getenv("AZURE_CLIENT_ID")
-	azureClientSecret = os.Getenv("AZURE_CLIENT_SECRET")
-	azureSubscriptionID = os.Getenv("AZURE_SUBSCRIPTION_ID")
-	azureTenantID = os.Getenv("AZURE_TENANT_ID")
-	azureResourceGroup = os.Getenv("AZURE_RESOURCE_GROUP")
-	azureDomain = os.Getenv("AZURE_DOMAIN")
-	if len(azureClientID) > 0 && len(azureClientSecret) > 0 {
-		azureLiveTest = true
+var envTest = tester.NewEnvTest(
+	EnvEnvironment,
+	EnvClientID,
+	EnvClientSecret,
+	EnvSubscriptionID,
+	EnvTenantID,
+	EnvResourceGroup).
+	WithDomain(envDomain)
+
+func TestNewDNSProvider(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		envVars  map[string]string
+		expected string
+	}{
+		{
+			desc: "success",
+			envVars: map[string]string{
+				EnvClientID:       "A",
+				EnvClientSecret:   "B",
+				EnvTenantID:       "C",
+				EnvSubscriptionID: "D",
+				EnvResourceGroup:  "E",
+			},
+		},
+		{
+			desc: "missing client ID",
+			envVars: map[string]string{
+				EnvClientID:       "",
+				EnvClientSecret:   "B",
+				EnvTenantID:       "C",
+				EnvSubscriptionID: "D",
+				EnvResourceGroup:  "E",
+			},
+			expected: "failed to get oauth token from client credentials: parameter 'clientID' cannot be empty",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
+			envTest.Apply(test.envVars)
+
+			p, err := NewDNSProvider()
+
+			if test.expected == "" {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
 	}
 }
 
-func restoreAzureEnv() {
-	os.Setenv("AZURE_CLIENT_ID", azureClientID)
-	os.Setenv("AZURE_SUBSCRIPTION_ID", azureSubscriptionID)
-}
-
-func TestNewDNSProviderValid(t *testing.T) {
-	if !azureLiveTest {
-		t.Skip("skipping live test (requires credentials)")
+func TestNewDNSProviderConfig(t *testing.T) {
+	testCases := []struct {
+		desc           string
+		clientID       string
+		clientSecret   string
+		subscriptionID string
+		tenantID       string
+		resourceGroup  string
+		handler        func(w http.ResponseWriter, r *http.Request)
+		expected       string
+	}{
+		{
+			desc:           "success",
+			clientID:       "A",
+			clientSecret:   "B",
+			tenantID:       "C",
+			subscriptionID: "D",
+			resourceGroup:  "E",
+		},
+		{
+			desc:           "SubscriptionID missing",
+			clientID:       "A",
+			clientSecret:   "B",
+			tenantID:       "C",
+			subscriptionID: "",
+			resourceGroup:  "",
+			expected:       "azure: SubscriptionID is missing",
+		},
+		{
+			desc:           "ResourceGroup missing",
+			clientID:       "A",
+			clientSecret:   "B",
+			tenantID:       "C",
+			subscriptionID: "D",
+			resourceGroup:  "",
+			expected:       "azure: ResourceGroup is missing",
+		},
+		{
+			desc:           "use metadata",
+			clientID:       "A",
+			clientSecret:   "B",
+			tenantID:       "C",
+			subscriptionID: "",
+			resourceGroup:  "",
+			handler: func(w http.ResponseWriter, _ *http.Request) {
+				_, err := w.Write([]byte("foo"))
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+				}
+			},
+		},
 	}
-	os.Setenv("AZURE_CLIENT_ID", "")
-	_, err := NewDNSProviderCredentials(azureClientID, azureClientSecret, azureSubscriptionID, azureTenantID, azureResourceGroup)
-	assert.NoError(t, err)
-	restoreAzureEnv()
-}
 
-func TestNewDNSProviderValidEnv(t *testing.T) {
-	if !azureLiveTest {
-		t.Skip("skipping live test (requires credentials)")
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			config := NewDefaultConfig()
+			config.ClientID = test.clientID
+			config.ClientSecret = test.clientSecret
+			config.SubscriptionID = test.subscriptionID
+			config.TenantID = test.tenantID
+			config.ResourceGroup = test.resourceGroup
+
+			handler := http.NewServeMux()
+			server := httptest.NewServer(handler)
+			defer server.Close()
+			if test.handler == nil {
+				handler.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {})
+			} else {
+				handler.HandleFunc("/", test.handler)
+			}
+			config.MetadataEndpoint = server.URL
+
+			p, err := NewDNSProviderConfig(config)
+
+			if test.expected == "" {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
 	}
-	os.Setenv("AZURE_CLIENT_ID", "other")
-	_, err := NewDNSProvider()
-	assert.NoError(t, err)
-	restoreAzureEnv()
 }
 
-func TestNewDNSProviderMissingCredErr(t *testing.T) {
-	os.Setenv("AZURE_SUBSCRIPTION_ID", "")
-	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "Azure configuration missing")
-	restoreAzureEnv()
-}
-
-func TestLiveAzurePresent(t *testing.T) {
-	if !azureLiveTest {
+func TestLivePresent(t *testing.T) {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	provider, err := NewDNSProviderCredentials(azureClientID, azureClientSecret, azureSubscriptionID, azureTenantID, azureResourceGroup)
-	assert.NoError(t, err)
+	envTest.RestoreEnv()
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
 
-	err = provider.Present(azureDomain, "", "123d==")
-	assert.NoError(t, err)
+	err = provider.Present(envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
 }
 
-func TestLiveAzureCleanUp(t *testing.T) {
-	if !azureLiveTest {
+func TestLiveCleanUp(t *testing.T) {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	provider, err := NewDNSProviderCredentials(azureClientID, azureClientSecret, azureSubscriptionID, azureTenantID, azureResourceGroup)
-	time.Sleep(time.Second * 1)
+	envTest.RestoreEnv()
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
 
-	assert.NoError(t, err)
+	time.Sleep(1 * time.Second)
 
-	err = provider.CleanUp(azureDomain, "", "123d==")
-	assert.NoError(t, err)
+	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
 }

@@ -1,0 +1,63 @@
+package cmd
+
+// CODE GENERATED AUTOMATICALLY
+// THIS FILE MUST NOT BE EDITED BY HAND
+
+import (
+	"fmt"
+	"os"
+	"sort"
+	"strings"
+	"text/tabwriter"
+)
+
+func allDNSCodes() string {
+	providers := []string{
+		"manual",
+{{- range $provider := .Providers }}
+		"{{ $provider.Code }}",
+{{- end}}
+	}
+	sort.Strings(providers)
+	return strings.Join(providers, ", ")
+}
+
+func displayDNSHelp(name string) error {
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+	ew := &errWriter{w: w}
+
+	switch name {
+{{- range $provider := .Providers }}
+	case "{{ $provider.Code }}":
+		// generated from: {{ .GeneratedFrom }}
+		ew.writeln(`Configuration for {{ $provider.Name }}.`)
+		ew.writeln(`Code:	'{{ $provider.Code }}'`)
+		ew.writeln(`Since:	'{{ $provider.Since }}'`)
+		ew.writeln()
+{{if $provider.Configuration }}{{if $provider.Configuration.Credentials }}
+		ew.writeln(`Credentials:`)
+{{- range $k, $v := $provider.Configuration.Credentials }}
+		ew.writeln(`	- "{{ $k }}":	{{ safe $v }}`)
+{{- end}}
+		ew.writeln()
+{{end}}{{if $provider.Configuration.Additional }}
+		ew.writeln(`Additional Configuration:`)
+{{- range $k, $v := $provider.Configuration.Additional }}
+		ew.writeln(`	- "{{ $k }}":	{{ safe $v }}`)
+{{- end}}
+{{end}}{{end}}
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/{{ $provider.Code }}`)
+{{end}}
+    case "manual":
+		ew.writeln(`Solving the DNS-01 challenge using CLI prompt.`)
+	default:
+		return fmt.Errorf("%q is not yet supported", name)
+	}
+
+	if ew.err != nil {
+		return fmt.Errorf("error: %w", ew.err)
+	}
+
+	return w.Flush()
+}

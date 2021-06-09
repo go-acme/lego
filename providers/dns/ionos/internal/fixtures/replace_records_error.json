@@ -1,0 +1,35 @@
+[
+  {
+    "code": "INVALID_RECORD",
+    "message": "string",
+    "parameters": {
+      "errorRecord": {
+        "id": "string",
+        "name": "string",
+        "disabled": false,
+        "rootName": "string",
+        "changeDate": "string",
+        "type": "A",
+        "content": "string",
+        "ttl": 0,
+        "prio": 0
+      },
+      "requiredFields": [
+        "string"
+      ],
+      "invalid": [
+        "string"
+      ],
+      "invalidFields": [
+        "string"
+      ]
+    }
+  },
+  {
+    "code": "UNAUTHORIZED",
+    "message": "The customer is not authorized to do this operation."
+  },
+  {
+    "code": "INTERNAL_SERVER_ERROR"
+  }
+]

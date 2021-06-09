@@ -1,0 +1,817 @@
+package gandi
+
+// CleanUp Request->Response 1 (setZone).
+const cleanupSetZoneRequestMock = `<?xml version="1.0"?>
+<methodCall>
+  <methodName>domain.zone.set</methodName>
+  <param>
+    <value>
+      <string>123412341234123412341234</string>
+    </value>
+  </param>
+  <param>
+    <value>
+      <string>example.com.</string>
+    </value>
+  </param>
+  <param>
+    <value>
+      <int>1234567</int>
+    </value>
+  </param>
+</methodCall>`
+
+// CleanUp Request->Response 1 (setZone).
+const cleanupSetZoneResponseMock = `<?xml version='1.0'?>
+<methodResponse>
+<params>
+<param>
+<value><struct>
+<member>
+<name>date_updated</name>
+<value><dateTime.iso8601>20160216T16:24:38</dateTime.iso8601></value>
+</member>
+<member>
+<name>date_delete</name>
+<value><dateTime.iso8601>20170331T16:04:06</dateTime.iso8601></value>
+</member>
+<member>
+<name>is_premium</name>
+<value><boolean>0</boolean></value>
+</member>
+<member>
+<name>date_hold_begin</name>
+<value><dateTime.iso8601>20170215T02:04:06</dateTime.iso8601></value>
+</member>
+<member>
+<name>date_registry_end</name>
+<value><dateTime.iso8601>20170215T02:04:06</dateTime.iso8601></value>
+</member>
+<member>
+<name>authinfo_expiration_date</name>
+<value><dateTime.iso8601>20161211T21:31:20</dateTime.iso8601></value>
+</member>
+<member>
+<name>contacts</name>
+<value><struct>
+<member>
+<name>owner</name>
+<value><struct>
+<member>
+<name>handle</name>
+<value><string>LEGO-GANDI</string></value>
+</member>
+<member>
+<name>id</name>
+<value><int>111111</int></value>
+</member>
+</struct></value>
+</member>
+<member>
+<name>admin</name>
+<value><struct>
+<member>
+<name>handle</name>
+<value><string>LEGO-GANDI</string></value>
+</member>
+<member>
+<name>id</name>
+<value><int>111111</int></value>
+</member>
+</struct></value>
+</member>
+<member>
+<name>bill</name>
+<value><struct>
+<member>
+<name>handle</name>
+<value><string>LEGO-GANDI</string></value>
+</member>
+<member>
+<name>id</name>
+<value><int>111111</int></value>
+</member>
+</struct></value>
+</member>
+<member>
+<name>tech</name>
+<value><struct>
+<member>
+<name>handle</name>
+<value><string>LEGO-GANDI</string></value>
+</member>
+<member>
+<name>id</name>
+<value><int>111111</int></value>
+</member>
+</struct></value>
+</member>
+<member>
+<name>reseller</name>
+<value><nil/></value></member>
+</struct></value>
+</member>
+<member>
+<name>nameservers</name>
+<value><array><data>
+<value><string>a.dns.gandi.net</string></value>
+<value><string>b.dns.gandi.net</string></value>
+<value><string>c.dns.gandi.net</string></value>
+</data></array></value>
+</member>
+<member>
+<name>date_restore_end</name>
+<value><dateTime.iso8601>20170501T02:04:06</dateTime.iso8601></value>
+</member>
+<member>
+<name>id</name>
+<value><int>2222222</int></value>
+</member>
+<member>
+<name>authinfo</name>
+<value><string>ABCDABCDAB</string></value>
+</member>
+<member>
+<name>status</name>
+<value><array><data>
+<value><string>clientTransferProhibited</string></value>
+<value><string>serverTransferProhibited</string></value>
+</data></array></value>
+</member>
+<member>
+<name>tags</name>
+<value><array><data>
+</data></array></value>
+</member>
+<member>
+<name>date_hold_end</name>
+<value><dateTime.iso8601>20170401T02:04:06</dateTime.iso8601></value>
+</member>
+<member>
+<name>services</name>
+<value><array><data>
+<value><string>gandidns</string></value>
+<value><string>gandimail</string></value>
+</data></array></value>
+</member>
+<member>
+<name>date_pending_delete_end</name>
+<value><dateTime.iso8601>20170506T02:04:06</dateTime.iso8601></value>
+</member>
+<member>
+<name>zone_id</name>
+<value><int>1234567</int></value>
+</member>
+<member>
+<name>date_renew_begin</name>
+<value><dateTime.iso8601>20120101T00:00:00</dateTime.iso8601></value>
+</member>
+<member>
+<name>fqdn</name>
+<value><string>example.com</string></value>
+</member>
+<member>
+<name>autorenew</name>
+<value><nil/></value></member>
+<member>
+<name>date_registry_creation</name>
+<value><dateTime.iso8601>20150215T02:04:06</dateTime.iso8601></value>
+</member>
+<member>
+<name>tld</name>
+<value><string>org</string></value>
+</member>
+<member>
+<name>date_created</name>
+<value><dateTime.iso8601>20150215T03:04:06</dateTime.iso8601></value>
+</member>
+</struct></value>
+</param>
+</params>
+</methodResponse>
+`
+
+// CleanUp Request->Response 2 (deleteZone).
+const cleanupDeleteZoneRequestMock = `<?xml version="1.0"?>
+<methodCall>
+  <methodName>domain.zone.delete</methodName>
+  <param>
+    <value>
+      <string>123412341234123412341234</string>
+    </value>
+  </param>
+  <param>
+    <value>
+      <int>7654321</int>
+    </value>
+  </param>
+</methodCall>`
+
+// CleanUp Request->Response 2 (deleteZone).
+const cleanupDeleteZoneResponseMock = `<?xml version='1.0'?>
+<methodResponse>
+<params>
+<param>
+<value><boolean>1</boolean></value>
+</param>
+</params>
+</methodResponse>
+`
+
+// Present Request->Response 1 (getZoneID).
+const presentGetZoneIDRequestMock = `<?xml version="1.0"?>
+<methodCall>
+  <methodName>domain.info</methodName>
+  <param>
+    <value>
+      <string>123412341234123412341234</string>
+    </value>
+  </param>
+  <param>
+    <value>
+      <string>example.com.</string>
+    </value>
+  </param>
+</methodCall>`
+
+// Present Request->Response 1 (getZoneID).
+const presentGetZoneIDResponseMock = `<?xml version='1.0'?>
+<methodResponse>
+<params>
+<param>
+<value><struct>
+<member>
+<name>date_updated</name>
+<value><dateTime.iso8601>20160216T16:14:23</dateTime.iso8601></value>
+</member>
+<member>
+<name>date_delete</name>
+<value><dateTime.iso8601>20170331T16:04:06</dateTime.iso8601></value>
+</member>
+<member>
+<name>is_premium</name>
+<value><boolean>0</boolean></value>
+</member>
+<member>
+<name>date_hold_begin</name>
+<value><dateTime.iso8601>20170215T02:04:06</dateTime.iso8601></value>
+</member>
+<member>
+<name>date_registry_end</name>
+<value><dateTime.iso8601>20170215T02:04:06</dateTime.iso8601></value>
+</member>
+<member>
+<name>authinfo_expiration_date</name>
+<value><dateTime.iso8601>20161211T21:31:20</dateTime.iso8601></value>
+</member>
+<member>
+<name>contacts</name>
+<value><struct>
+<member>
+<name>owner</name>
+<value><struct>
+<member>
+<name>handle</name>
+<value><string>LEGO-GANDI</string></value>
+</member>
+<member>
+<name>id</name>
+<value><int>111111</int></value>
+</member>
+</struct></value>
+</member>
+<member>
+<name>admin</name>
+<value><struct>
+<member>
+<name>handle</name>
+<value><string>LEGO-GANDI</string></value>
+</member>
+<member>
+<name>id</name>
+<value><int>111111</int></value>
+</member>
+</struct></value>
+</member>
+<member>
+<name>bill</name>
+<value><struct>
+<member>
+<name>handle</name>
+<value><string>LEGO-GANDI</string></value>
+</member>
+<member>
+<name>id</name>
+<value><int>111111</int></value>
+</member>
+</struct></value>
+</member>
+<member>
+<name>tech</name>
+<value><struct>
+<member>
+<name>handle</name>
+<value><string>LEGO-GANDI</string></value>
+</member>
+<member>
+<name>id</name>
+<value><int>111111</int></value>
+</member>
+</struct></value>
+</member>
+<member>
+<name>reseller</name>
+<value><nil/></value></member>
+</struct></value>
+</member>
+<member>
+<name>nameservers</name>
+<value><array><data>
+<value><string>a.dns.gandi.net</string></value>
+<value><string>b.dns.gandi.net</string></value>
+<value><string>c.dns.gandi.net</string></value>
+</data></array></value>
+</member>
+<member>
+<name>date_restore_end</name>
+<value><dateTime.iso8601>20170501T02:04:06</dateTime.iso8601></value>
+</member>
+<member>
+<name>id</name>
+<value><int>2222222</int></value>
+</member>
+<member>
+<name>authinfo</name>
+<value><string>ABCDABCDAB</string></value>
+</member>
+<member>
+<name>status</name>
+<value><array><data>
+<value><string>clientTransferProhibited</string></value>
+<value><string>serverTransferProhibited</string></value>
+</data></array></value>
+</member>
+<member>
+<name>tags</name>
+<value><array><data>
+</data></array></value>
+</member>
+<member>
+<name>date_hold_end</name>
+<value><dateTime.iso8601>20170401T02:04:06</dateTime.iso8601></value>
+</member>
+<member>
+<name>services</name>
+<value><array><data>
+<value><string>gandidns</string></value>
+<value><string>gandimail</string></value>
+</data></array></value>
+</member>
+<member>
+<name>date_pending_delete_end</name>
+<value><dateTime.iso8601>20170506T02:04:06</dateTime.iso8601></value>
+</member>
+<member>
+<name>zone_id</name>
+<value><int>1234567</int></value>
+</member>
+<member>
+<name>date_renew_begin</name>
+<value><dateTime.iso8601>20120101T00:00:00</dateTime.iso8601></value>
+</member>
+<member>
+<name>fqdn</name>
+<value><string>example.com</string></value>
+</member>
+<member>
+<name>autorenew</name>
+<value><nil/></value></member>
+<member>
+<name>date_registry_creation</name>
+<value><dateTime.iso8601>20150215T02:04:06</dateTime.iso8601></value>
+</member>
+<member>
+<name>tld</name>
+<value><string>org</string></value>
+</member>
+<member>
+<name>date_created</name>
+<value><dateTime.iso8601>20150215T03:04:06</dateTime.iso8601></value>
+</member>
+</struct></value>
+</param>
+</params>
+</methodResponse>
+`
+
+// Present Request->Response 2 (cloneZone).
+const presentCloneZoneRequestMock = `<?xml version="1.0"?>
+<methodCall>
+  <methodName>domain.zone.clone</methodName>
+  <param>
+    <value>
+      <string>123412341234123412341234</string>
+    </value>
+  </param>
+  <param>
+    <value>
+      <int>1234567</int>
+    </value>
+  </param>
+  <param>
+    <value>
+      <int>0</int>
+    </value>
+  </param>
+  <param>
+    <value>
+      <struct>
+        <member>
+          <name>name</name>
+          <value>
+            <string>example.com [ACME Challenge 01 Jan 16 00:00 +0000]</string>
+          </value>
+        </member>
+      </struct>
+    </value>
+  </param>
+</methodCall>`
+
+// Present Request->Response 2 (cloneZone).
+const presentCloneZoneResponseMock = `<?xml version='1.0'?>
+<methodResponse>
+<params>
+<param>
+<value><struct>
+<member>
+<name>name</name>
+<value><string>example.com [ACME Challenge 01 Jan 16 00:00 +0000]</string></value>
+</member>
+<member>
+<name>versions</name>
+<value><array><data>
+<value><int>1</int></value>
+</data></array></value>
+</member>
+<member>
+<name>date_updated</name>
+<value><dateTime.iso8601>20160216T16:24:29</dateTime.iso8601></value>
+</member>
+<member>
+<name>id</name>
+<value><int>7654321</int></value>
+</member>
+<member>
+<name>owner</name>
+<value><string>LEGO-GANDI</string></value>
+</member>
+<member>
+<name>version</name>
+<value><int>1</int></value>
+</member>
+<member>
+<name>domains</name>
+<value><int>0</int></value>
+</member>
+<member>
+<name>public</name>
+<value><boolean>0</boolean></value>
+</member>
+</struct></value>
+</param>
+</params>
+</methodResponse>
+`
+
+// Present Request->Response 3 (newZoneVersion).
+const presentNewZoneVersionRequestMock = `<?xml version="1.0"?>
+<methodCall>
+  <methodName>domain.zone.version.new</methodName>
+  <param>
+    <value>
+      <string>123412341234123412341234</string>
+    </value>
+  </param>
+  <param>
+    <value>
+      <int>7654321</int>
+    </value>
+  </param>
+</methodCall>`
+
+// Present Request->Response 3 (newZoneVersion).
+const presentNewZoneVersionResponseMock = `<?xml version='1.0'?>
+<methodResponse>
+<params>
+<param>
+<value><int>2</int></value>
+</param>
+</params>
+</methodResponse>
+`
+
+// Present Request->Response 4 (addTXTRecord).
+const presentAddTXTRecordRequestMock = `<?xml version="1.0"?>
+<methodCall>
+  <methodName>domain.zone.record.add</methodName>
+  <param>
+    <value>
+      <string>123412341234123412341234</string>
+    </value>
+  </param>
+  <param>
+    <value>
+      <int>7654321</int>
+    </value>
+  </param>
+  <param>
+    <value>
+      <int>2</int>
+    </value>
+  </param>
+  <param>
+    <value>
+      <struct>
+        <member>
+          <name>type</name>
+          <value>
+            <string>TXT</string>
+          </value>
+        </member>
+        <member>
+          <name>name</name>
+          <value>
+            <string>_acme-challenge.abc.def</string>
+          </value>
+        </member>
+        <member>
+          <name>value</name>
+          <value>
+            <string>ezRpBPY8wH8djMLYjX2uCKPwiKDkFZ1SFMJ6ZXGlHrQ</string>
+          </value>
+        </member>
+        <member>
+          <name>ttl</name>
+          <value>
+            <int>300</int>
+          </value>
+        </member>
+      </struct>
+    </value>
+  </param>
+</methodCall>`
+
+// Present Request->Response 4 (addTXTRecord).
+const presentAddTXTRecordResponseMock = `<?xml version='1.0'?>
+<methodResponse>
+<params>
+<param>
+<value><struct>
+<member>
+<name>name</name>
+<value><string>_acme-challenge.abc.def</string></value>
+</member>
+<member>
+<name>type</name>
+<value><string>TXT</string></value>
+</member>
+<member>
+<name>id</name>
+<value><int>333333333</int></value>
+</member>
+<member>
+<name>value</name>
+<value><string>"ezRpBPY8wH8djMLYjX2uCKPwiKDkFZ1SFMJ6ZXGlHrQ"</string></value>
+</member>
+<member>
+<name>ttl</name>
+<value><int>300</int></value>
+</member>
+</struct></value>
+</param>
+</params>
+</methodResponse>
+`
+
+// Present Request->Response 5 (setZoneVersion).
+const presentSetZoneVersionRequestMock = `<?xml version="1.0"?>
+<methodCall>
+  <methodName>domain.zone.version.set</methodName>
+  <param>
+    <value>
+      <string>123412341234123412341234</string>
+    </value>
+  </param>
+  <param>
+    <value>
+      <int>7654321</int>
+    </value>
+  </param>
+  <param>
+    <value>
+      <int>2</int>
+    </value>
+  </param>
+</methodCall>`
+
+// Present Request->Response 5 (setZoneVersion).
+const presentSetZoneVersionResponseMock = `<?xml version='1.0'?>
+<methodResponse>
+<params>
+<param>
+<value><boolean>1</boolean></value>
+</param>
+</params>
+</methodResponse>
+`
+
+// Present Request->Response 6 (setZone).
+const presentSetZoneRequestMock = `<?xml version="1.0"?>
+<methodCall>
+  <methodName>domain.zone.set</methodName>
+  <param>
+    <value>
+      <string>123412341234123412341234</string>
+    </value>
+  </param>
+  <param>
+    <value>
+      <string>example.com.</string>
+    </value>
+  </param>
+  <param>
+    <value>
+      <int>7654321</int>
+    </value>
+  </param>
+</methodCall>`
+
+// Present Request->Response 6 (setZone).
+const presentSetZoneResponseMock = `<?xml version='1.0'?>
+<methodResponse>
+<params>
+<param>
+<value><struct>
+<member>
+<name>date_updated</name>
+<value><dateTime.iso8601>20160216T16:14:23</dateTime.iso8601></value>
+</member>
+<member>
+<name>date_delete</name>
+<value><dateTime.iso8601>20170331T16:04:06</dateTime.iso8601></value>
+</member>
+<member>
+<name>is_premium</name>
+<value><boolean>0</boolean></value>
+</member>
+<member>
+<name>date_hold_begin</name>
+<value><dateTime.iso8601>20170215T02:04:06</dateTime.iso8601></value>
+</member>
+<member>
+<name>date_registry_end</name>
+<value><dateTime.iso8601>20170215T02:04:06</dateTime.iso8601></value>
+</member>
+<member>
+<name>authinfo_expiration_date</name>
+<value><dateTime.iso8601>20161211T21:31:20</dateTime.iso8601></value>
+</member>
+<member>
+<name>contacts</name>
+<value><struct>
+<member>
+<name>owner</name>
+<value><struct>
+<member>
+<name>handle</name>
+<value><string>LEGO-GANDI</string></value>
+</member>
+<member>
+<name>id</name>
+<value><int>111111</int></value>
+</member>
+</struct></value>
+</member>
+<member>
+<name>admin</name>
+<value><struct>
+<member>
+<name>handle</name>
+<value><string>LEGO-GANDI</string></value>
+</member>
+<member>
+<name>id</name>
+<value><int>111111</int></value>
+</member>
+</struct></value>
+</member>
+<member>
+<name>bill</name>
+<value><struct>
+<member>
+<name>handle</name>
+<value><string>LEGO-GANDI</string></value>
+</member>
+<member>
+<name>id</name>
+<value><int>111111</int></value>
+</member>
+</struct></value>
+</member>
+<member>
+<name>tech</name>
+<value><struct>
+<member>
+<name>handle</name>
+<value><string>LEGO-GANDI</string></value>
+</member>
+<member>
+<name>id</name>
+<value><int>111111</int></value>
+</member>
+</struct></value>
+</member>
+<member>
+<name>reseller</name>
+<value><nil/></value></member>
+</struct></value>
+</member>
+<member>
+<name>nameservers</name>
+<value><array><data>
+<value><string>a.dns.gandi.net</string></value>
+<value><string>b.dns.gandi.net</string></value>
+<value><string>c.dns.gandi.net</string></value>
+</data></array></value>
+</member>
+<member>
+<name>date_restore_end</name>
+<value><dateTime.iso8601>20170501T02:04:06</dateTime.iso8601></value>
+</member>
+<member>
+<name>id</name>
+<value><int>2222222</int></value>
+</member>
+<member>
+<name>authinfo</name>
+<value><string>ABCDABCDAB</string></value>
+</member>
+<member>
+<name>status</name>
+<value><array><data>
+<value><string>clientTransferProhibited</string></value>
+<value><string>serverTransferProhibited</string></value>
+</data></array></value>
+</member>
+<member>
+<name>tags</name>
+<value><array><data>
+</data></array></value>
+</member>
+<member>
+<name>date_hold_end</name>
+<value><dateTime.iso8601>20170401T02:04:06</dateTime.iso8601></value>
+</member>
+<member>
+<name>services</name>
+<value><array><data>
+<value><string>gandidns</string></value>
+<value><string>gandimail</string></value>
+</data></array></value>
+</member>
+<member>
+<name>date_pending_delete_end</name>
+<value><dateTime.iso8601>20170506T02:04:06</dateTime.iso8601></value>
+</member>
+<member>
+<name>zone_id</name>
+<value><int>7654321</int></value>
+</member>
+<member>
+<name>date_renew_begin</name>
+<value><dateTime.iso8601>20120101T00:00:00</dateTime.iso8601></value>
+</member>
+<member>
+<name>fqdn</name>
+<value><string>example.com</string></value>
+</member>
+<member>
+<name>autorenew</name>
+<value><nil/></value></member>
+<member>
+<name>date_registry_creation</name>
+<value><dateTime.iso8601>20150215T02:04:06</dateTime.iso8601></value>
+</member>
+<member>
+<name>tld</name>
+<value><string>org</string></value>
+</member>
+<member>
+<name>date_created</name>
+<value><dateTime.iso8601>20150215T03:04:06</dateTime.iso8601></value>
+</member>
+</struct></value>
+</param>
+</params>
+</methodResponse>
+`

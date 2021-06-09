@@ -1,72 +1,119 @@
 package dnspod
 
 import (
-	"github.com/stretchr/testify/assert"
-	"os"
 	"testing"
 	"time"
+
+	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/stretchr/testify/require"
 )
 
-var (
-	dnspodLiveTest bool
-	dnspodAPIKey   string
-	dnspodDomain   string
-)
+const envDomain = envNamespace + "DOMAIN"
 
-func init() {
-	dnspodAPIKey = os.Getenv("DNSPOD_API_KEY")
-	dnspodDomain = os.Getenv("DNSPOD_DOMAIN")
-	if len(dnspodAPIKey) > 0 && len(dnspodDomain) > 0 {
-		dnspodLiveTest = true
+var envTest = tester.NewEnvTest(EnvAPIKey).
+	WithDomain(envDomain)
+
+func TestNewDNSProvider(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		envVars  map[string]string
+		expected string
+	}{
+		{
+			desc: "success",
+			envVars: map[string]string{
+				EnvAPIKey: "123",
+			},
+		},
+		{
+			desc: "missing api key",
+			envVars: map[string]string{
+				EnvAPIKey: "",
+			},
+			expected: "dnspod: some credentials information are missing: DNSPOD_API_KEY",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
+			envTest.Apply(test.envVars)
+
+			p, err := NewDNSProvider()
+
+			if test.expected == "" {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
 	}
 }
 
-func restorednspodEnv() {
-	os.Setenv("DNSPOD_API_KEY", dnspodAPIKey)
+func TestNewDNSProviderConfig(t *testing.T) {
+	testCases := []struct {
+		desc       string
+		loginToken string
+		expected   string
+	}{
+		{
+			desc:       "success",
+			loginToken: "123",
+		},
+		{
+			desc:     "missing credentials",
+			expected: "dnspod: credentials missing",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			config := NewDefaultConfig()
+			config.LoginToken = test.loginToken
+
+			p, err := NewDNSProviderConfig(config)
+
+			if test.expected == "" {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
 }
 
-func TestNewDNSProviderValid(t *testing.T) {
-	os.Setenv("DNSPOD_API_KEY", "")
-	_, err := NewDNSProviderCredentials("123")
-	assert.NoError(t, err)
-	restorednspodEnv()
-}
-func TestNewDNSProviderValidEnv(t *testing.T) {
-	os.Setenv("DNSPOD_API_KEY", "123")
-	_, err := NewDNSProvider()
-	assert.NoError(t, err)
-	restorednspodEnv()
-}
-
-func TestNewDNSProviderMissingCredErr(t *testing.T) {
-	os.Setenv("DNSPOD_API_KEY", "")
-	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "dnspod credentials missing")
-	restorednspodEnv()
-}
-
-func TestLivednspodPresent(t *testing.T) {
-	if !dnspodLiveTest {
+func TestLivePresent(t *testing.T) {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	provider, err := NewDNSProviderCredentials(dnspodAPIKey)
-	assert.NoError(t, err)
+	envTest.RestoreEnv()
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
 
-	err = provider.Present(dnspodDomain, "", "123d==")
-	assert.NoError(t, err)
+	err = provider.Present(envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
 }
 
-func TestLivednspodCleanUp(t *testing.T) {
-	if !dnspodLiveTest {
+func TestLiveCleanUp(t *testing.T) {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	time.Sleep(time.Second * 1)
+	envTest.RestoreEnv()
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
 
-	provider, err := NewDNSProviderCredentials(dnspodAPIKey)
-	assert.NoError(t, err)
+	time.Sleep(1 * time.Second)
 
-	err = provider.CleanUp(dnspodDomain, "", "123d==")
-	assert.NoError(t, err)
+	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
 }

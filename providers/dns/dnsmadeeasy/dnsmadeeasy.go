@@ -1,248 +1,176 @@
+// Package dnsmadeeasy implements a DNS provider for solving the DNS-01 challenge using DNS Made Easy.
 package dnsmadeeasy
 
 import (
-	"bytes"
-	"crypto/hmac"
-	"crypto/sha1"
 	"crypto/tls"
-	"encoding/hex"
-	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
-	"os"
-	"strconv"
 	"strings"
 	"time"
 
-	"github.com/xenolf/lego/acme"
+	"github.com/go-acme/lego/v4/challenge/dns01"
+	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/dnsmadeeasy/internal"
 )
 
-// DNSProvider is an implementation of the acme.ChallengeProvider interface that uses
-// DNSMadeEasy's DNS API to manage TXT records for a domain.
+// Environment variables names.
+const (
+	envNamespace = "DNSMADEEASY_"
+
+	EnvAPIKey    = envNamespace + "API_KEY"
+	EnvAPISecret = envNamespace + "API_SECRET"
+	EnvSandbox   = envNamespace + "SANDBOX"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
+// Config is used to configure the creation of the DNSProvider.
+type Config struct {
+	BaseURL            string
+	APIKey             string
+	APISecret          string
+	Sandbox            bool
+	HTTPClient         *http.Client
+	PropagationTimeout time.Duration
+	PollingInterval    time.Duration
+	TTL                int
+}
+
+// NewDefaultConfig returns a default configuration for the DNSProvider.
+func NewDefaultConfig() *Config {
+	return &Config{
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		HTTPClient: &http.Client{
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 10*time.Second),
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			},
+		},
+	}
+}
+
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	baseURL   string
-	apiKey    string
-	apiSecret string
-}
-
-// Domain holds the DNSMadeEasy API representation of a Domain
-type Domain struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
-}
-
-// Record holds the DNSMadeEasy API representation of a Domain Record
-type Record struct {
-	ID       int    `json:"id"`
-	Type     string `json:"type"`
-	Name     string `json:"name"`
-	Value    string `json:"value"`
-	TTL      int    `json:"ttl"`
-	SourceID int    `json:"sourceId"`
+	config *Config
+	client *internal.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for DNSMadeEasy DNS.
-// Credentials must be passed in the environment variables: DNSMADEEASY_API_KEY
-// and DNSMADEEASY_API_SECRET.
+// Credentials must be passed in the environment variables:
+// DNSMADEEASY_API_KEY and DNSMADEEASY_API_SECRET.
 func NewDNSProvider() (*DNSProvider, error) {
-	dnsmadeeasyAPIKey := os.Getenv("DNSMADEEASY_API_KEY")
-	dnsmadeeasyAPISecret := os.Getenv("DNSMADEEASY_API_SECRET")
-	dnsmadeeasySandbox := os.Getenv("DNSMADEEASY_SANDBOX")
-
-	var baseURL string
-
-	sandbox, _ := strconv.ParseBool(dnsmadeeasySandbox)
-	if sandbox {
-		baseURL = "https://api.sandbox.dnsmadeeasy.com/V2.0"
-	} else {
-		baseURL = "https://api.dnsmadeeasy.com/V2.0"
+	values, err := env.Get(EnvAPIKey, EnvAPISecret)
+	if err != nil {
+		return nil, fmt.Errorf("dnsmadeeasy: %w", err)
 	}
 
-	return NewDNSProviderCredentials(baseURL, dnsmadeeasyAPIKey, dnsmadeeasyAPISecret)
+	config := NewDefaultConfig()
+	config.Sandbox = env.GetOrDefaultBool(EnvSandbox, false)
+	config.APIKey = values[EnvAPIKey]
+	config.APISecret = values[EnvAPISecret]
+
+	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderCredentials uses the supplied credentials to return a
-// DNSProvider instance configured for DNSMadeEasy.
-func NewDNSProviderCredentials(baseURL, apiKey, apiSecret string) (*DNSProvider, error) {
-	if baseURL == "" || apiKey == "" || apiSecret == "" {
-		return nil, fmt.Errorf("DNS Made Easy credentials missing")
+// NewDNSProviderConfig return a DNSProvider instance configured for DNS Made Easy.
+func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
+	if config == nil {
+		return nil, errors.New("dnsmadeeasy: the configuration of the DNS provider is nil")
 	}
 
+	var baseURL string
+	if config.Sandbox {
+		baseURL = "https://api.sandbox.dnsmadeeasy.com/V2.0"
+	} else {
+		if len(config.BaseURL) > 0 {
+			baseURL = config.BaseURL
+		} else {
+			baseURL = "https://api.dnsmadeeasy.com/V2.0"
+		}
+	}
+
+	client, err := internal.NewClient(config.APIKey, config.APISecret)
+	if err != nil {
+		return nil, fmt.Errorf("dnsmadeeasy: %w", err)
+	}
+
+	client.HTTPClient = config.HTTPClient
+	client.BaseURL = baseURL
+
 	return &DNSProvider{
-		baseURL:   baseURL,
-		apiKey:    apiKey,
-		apiSecret: apiSecret,
+		client: client,
+		config: config,
 	}, nil
 }
 
-// Present creates a TXT record using the specified parameters
+// Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domainName, token, keyAuth string) error {
-	fqdn, value, ttl := acme.DNS01Record(domainName, keyAuth)
+	fqdn, value := dns01.GetRecord(domainName, keyAuth)
 
-	authZone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameservers)
+	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return err
+		return fmt.Errorf("dnsmadeeasy: unable to find zone for %s: %w", fqdn, err)
 	}
 
 	// fetch the domain details
-	domain, err := d.getDomain(authZone)
+	domain, err := d.client.GetDomain(authZone)
 	if err != nil {
-		return err
+		return fmt.Errorf("dnsmadeeasy: unable to get domain for zone %s: %w", authZone, err)
 	}
 
 	// create the TXT record
 	name := strings.Replace(fqdn, "."+authZone, "", 1)
-	record := &Record{Type: "TXT", Name: name, Value: value, TTL: ttl}
+	record := &internal.Record{Type: "TXT", Name: name, Value: value, TTL: d.config.TTL}
 
-	err = d.createRecord(domain, record)
+	err = d.client.CreateRecord(domain, record)
 	if err != nil {
-		return err
+		return fmt.Errorf("dnsmadeeasy: unable to create record for %s: %w", name, err)
 	}
-
 	return nil
 }
 
-// CleanUp removes the TXT records matching the specified parameters
+// CleanUp removes the TXT records matching the specified parameters.
 func (d *DNSProvider) CleanUp(domainName, token, keyAuth string) error {
-	fqdn, _, _ := acme.DNS01Record(domainName, keyAuth)
+	fqdn, _ := dns01.GetRecord(domainName, keyAuth)
 
-	authZone, err := acme.FindZoneByFqdn(fqdn, acme.RecursiveNameservers)
+	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return err
+		return fmt.Errorf("dnsmadeeasy: unable to find zone for %s: %w", fqdn, err)
 	}
 
 	// fetch the domain details
-	domain, err := d.getDomain(authZone)
+	domain, err := d.client.GetDomain(authZone)
 	if err != nil {
-		return err
+		return fmt.Errorf("dnsmadeeasy: unable to get domain for zone %s: %w", authZone, err)
 	}
 
 	// find matching records
 	name := strings.Replace(fqdn, "."+authZone, "", 1)
-	records, err := d.getRecords(domain, name, "TXT")
+	records, err := d.client.GetRecords(domain, name, "TXT")
 	if err != nil {
-		return err
+		return fmt.Errorf("dnsmadeeasy: unable to get records for domain %s: %w", domain.Name, err)
 	}
 
 	// delete records
+	var lastError error
 	for _, record := range *records {
-		err = d.deleteRecord(record)
+		err = d.client.DeleteRecord(record)
 		if err != nil {
-			return err
+			lastError = fmt.Errorf("dnsmadeeasy: unable to delete record [id=%d, name=%s]: %w", record.ID, record.Name, err)
 		}
 	}
 
-	return nil
+	return lastError
 }
 
-func (d *DNSProvider) getDomain(authZone string) (*Domain, error) {
-	domainName := authZone[0 : len(authZone)-1]
-	resource := fmt.Sprintf("%s%s", "/dns/managed/name?domainname=", domainName)
-
-	resp, err := d.sendRequest("GET", resource, nil)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	domain := &Domain{}
-	err = json.NewDecoder(resp.Body).Decode(&domain)
-	if err != nil {
-		return nil, err
-	}
-
-	return domain, nil
-}
-
-func (d *DNSProvider) getRecords(domain *Domain, recordName, recordType string) (*[]Record, error) {
-	resource := fmt.Sprintf("%s/%d/%s%s%s%s", "/dns/managed", domain.ID, "records?recordName=", recordName, "&type=", recordType)
-
-	resp, err := d.sendRequest("GET", resource, nil)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	type recordsResponse struct {
-		Records *[]Record `json:"data"`
-	}
-
-	records := &recordsResponse{}
-	err = json.NewDecoder(resp.Body).Decode(&records)
-	if err != nil {
-		return nil, err
-	}
-
-	return records.Records, nil
-}
-
-func (d *DNSProvider) createRecord(domain *Domain, record *Record) error {
-	url := fmt.Sprintf("%s/%d/%s", "/dns/managed", domain.ID, "records")
-
-	resp, err := d.sendRequest("POST", url, record)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	return nil
-}
-
-func (d *DNSProvider) deleteRecord(record Record) error {
-	resource := fmt.Sprintf("%s/%d/%s/%d", "/dns/managed", record.SourceID, "records", record.ID)
-
-	resp, err := d.sendRequest("DELETE", resource, nil)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	return nil
-}
-
-func (d *DNSProvider) sendRequest(method, resource string, payload interface{}) (*http.Response, error) {
-	url := fmt.Sprintf("%s%s", d.baseURL, resource)
-
-	body, err := json.Marshal(payload)
-	if err != nil {
-		return nil, err
-	}
-
-	timestamp := time.Now().UTC().Format(time.RFC1123)
-	signature := computeHMAC(timestamp, d.apiSecret)
-
-	req, err := http.NewRequest(method, url, bytes.NewReader(body))
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("x-dnsme-apiKey", d.apiKey)
-	req.Header.Set("x-dnsme-requestDate", timestamp)
-	req.Header.Set("x-dnsme-hmac", signature)
-	req.Header.Set("accept", "application/json")
-	req.Header.Set("content-type", "application/json")
-
-	transport := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
-	client := &http.Client{
-		Transport: transport,
-		Timeout:   time.Duration(10 * time.Second),
-	}
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode > 299 {
-		return nil, fmt.Errorf("DNSMadeEasy API request failed with HTTP status code %d", resp.StatusCode)
-	}
-
-	return resp, nil
-}
-
-func computeHMAC(message string, secret string) string {
-	key := []byte(secret)
-	h := hmac.New(sha1.New, key)
-	h.Write([]byte(message))
-	return hex.EncodeToString(h.Sum(nil))
+// Timeout returns the timeout and interval to use when checking for DNS propagation.
+// Adjusting here to cope with spikes in propagation times.
+func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
+	return d.config.PropagationTimeout, d.config.PollingInterval
 }

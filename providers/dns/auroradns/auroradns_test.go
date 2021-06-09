@@ -6,48 +6,166 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-var fakeAuroraDNSUserId = "asdf1234"
-var fakeAuroraDNSKey = "key"
+var envTest = tester.NewEnvTest(
+	EnvUserID,
+	EnvKey)
 
-func TestAuroraDNSPresent(t *testing.T) {
-	var requestReceived bool
+func setupTest() (*DNSProvider, *http.ServeMux, func()) {
+	handler := http.NewServeMux()
+	server := httptest.NewServer(handler)
 
-	mock := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == "GET" && r.URL.Path == "/zones" {
-			w.WriteHeader(http.StatusCreated)
-			fmt.Fprintf(w, `[{
+	config := NewDefaultConfig()
+	config.UserID = "asdf1234"
+	config.Key = "key"
+	config.BaseURL = server.URL
+
+	provider, err := NewDNSProviderConfig(config)
+	if err != nil {
+		panic(err)
+	}
+
+	return provider, handler, server.Close
+}
+
+func TestNewDNSProvider(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		envVars  map[string]string
+		expected string
+	}{
+		{
+			desc: "success",
+			envVars: map[string]string{
+				EnvUserID: "123",
+				EnvKey:    "456",
+			},
+		},
+		{
+			desc: "missing credentials",
+			envVars: map[string]string{
+				EnvUserID: "",
+				EnvKey:    "",
+			},
+			expected: "aurora: some credentials information are missing: AURORA_USER_ID,AURORA_KEY",
+		},
+		{
+			desc: "missing user id",
+			envVars: map[string]string{
+				EnvUserID: "",
+				EnvKey:    "456",
+			},
+			expected: "aurora: some credentials information are missing: AURORA_USER_ID",
+		},
+		{
+			desc: "missing key",
+			envVars: map[string]string{
+				EnvUserID: "123",
+				EnvKey:    "",
+			},
+			expected: "aurora: some credentials information are missing: AURORA_KEY",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
+			envTest.Apply(test.envVars)
+
+			p, err := NewDNSProvider()
+
+			if test.expected == "" {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
+}
+
+func TestNewDNSProviderConfig(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		userID   string
+		key      string
+		expected string
+	}{
+		{
+			desc:   "success",
+			userID: "123",
+			key:    "456",
+		},
+		{
+			desc:     "missing credentials",
+			userID:   "",
+			key:      "",
+			expected: "aurora: some credentials information are missing",
+		},
+		{
+			desc:     "missing user id",
+			userID:   "",
+			key:      "456",
+			expected: "aurora: some credentials information are missing",
+		},
+		{
+			desc:     "missing key",
+			userID:   "123",
+			key:      "",
+			expected: "aurora: some credentials information are missing",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			config := NewDefaultConfig()
+			config.UserID = test.userID
+			config.Key = test.key
+
+			p, err := NewDNSProviderConfig(config)
+
+			if test.expected == "" {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
+}
+
+func TestDNSProvider_Present(t *testing.T) {
+	provider, mux, tearDown := setupTest()
+	defer tearDown()
+
+	mux.HandleFunc("/zones", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodGet, r.Method, "method")
+
+		w.WriteHeader(http.StatusCreated)
+		fmt.Fprintf(w, `[{
 			        "id":   "c56a4180-65aa-42ec-a945-5fd21dec0538",
 			        "name": "example.com"
 			      }]`)
-			return
-		}
+	})
 
-		requestReceived = true
-
-		if got, want := r.Method, "POST"; got != want {
-			t.Errorf("Expected method to be '%s' but got '%s'", want, got)
-		}
-
-		if got, want := r.URL.Path, "/zones/c56a4180-65aa-42ec-a945-5fd21dec0538/records"; got != want {
-			t.Errorf("Expected path to be '%s' but got '%s'", want, got)
-		}
-
-		if got, want := r.Header.Get("Content-Type"), "application/json"; got != want {
-			t.Errorf("Expected Content-Type to be '%s' but got '%s'", want, got)
-		}
+	mux.HandleFunc("/zones/c56a4180-65aa-42ec-a945-5fd21dec0538/records", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodPost, r.Method)
+		assert.Equal(t, "application/json", r.Header.Get("Content-Type"), "Content-Type")
 
 		reqBody, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			t.Fatalf("Error reading request body: %v", err)
-		}
-
-		if got, want := string(reqBody),
-			`{"type":"TXT","name":"_acme-challenge","content":"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI","ttl":300}`; got != want {
-
-			t.Errorf("Expected body data to be: `%s` but got `%s`", want, got)
-		}
+		require.NoError(t, err)
+		assert.Equal(t, `{"type":"TXT","name":"_acme-challenge","content":"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI","ttl":300}`, string(reqBody))
 
 		w.WriteHeader(http.StatusCreated)
 		fmt.Fprintf(w, `{
@@ -56,93 +174,50 @@ func TestAuroraDNSPresent(t *testing.T) {
 		      "name": "_acme-challenge",
 		      "ttl":  300
 		    }`)
-	}))
+	})
 
-	defer mock.Close()
-
-	auroraProvider, err := NewDNSProviderCredentials(mock.URL, fakeAuroraDNSUserId, fakeAuroraDNSKey)
-	if auroraProvider == nil {
-		t.Fatal("Expected non-nil AuroraDNS provider, but was nil")
-	}
-
-	if err != nil {
-		t.Fatalf("Expected no error creating provider, but got: %v", err)
-	}
-
-	err = auroraProvider.Present("example.com", "", "foobar")
-	if err != nil {
-		t.Fatalf("Expected no error creating TXT record, but got: %v", err)
-	}
-
-	if !requestReceived {
-		t.Error("Expected request to be received by mock backend, but it wasn't")
-	}
+	err := provider.Present("example.com", "", "foobar")
+	require.NoError(t, err, "fail to create TXT record")
 }
 
-func TestAuroraDNSCleanUp(t *testing.T) {
-	var requestReceived bool
+func TestDNSProvider_CleanUp(t *testing.T) {
+	provider, mux, tearDown := setupTest()
+	defer tearDown()
 
-	mock := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == "GET" && r.URL.Path == "/zones" {
-			w.WriteHeader(http.StatusCreated)
-			fmt.Fprintf(w, `[{
+	mux.HandleFunc("/zones", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodGet, r.Method)
+
+		w.WriteHeader(http.StatusCreated)
+		fmt.Fprintf(w, `[{
 			        "id":   "c56a4180-65aa-42ec-a945-5fd21dec0538",
 			        "name": "example.com"
 			      }]`)
-			return
-		}
+	})
 
-		if r.Method == "POST" && r.URL.Path == "/zones/c56a4180-65aa-42ec-a945-5fd21dec0538/records" {
-			w.WriteHeader(http.StatusCreated)
-			fmt.Fprintf(w, `{
+	mux.HandleFunc("/zones/c56a4180-65aa-42ec-a945-5fd21dec0538/records", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodPost, r.Method)
+
+		w.WriteHeader(http.StatusCreated)
+		fmt.Fprintf(w, `{
 			        "id":   "ec56a4180-65aa-42ec-a945-5fd21dec0538",
 			        "type": "TXT",
 			        "name": "_acme-challenge",
 			        "ttl":  300
 			      }`)
-			return
-		}
+	})
 
-		requestReceived = true
+	mux.HandleFunc("/zones/c56a4180-65aa-42ec-a945-5fd21dec0538/records/ec56a4180-65aa-42ec-a945-5fd21dec0538", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodDelete, r.Method)
 
-		if got, want := r.Method, "DELETE"; got != want {
-			t.Errorf("Expected method to be '%s' but got '%s'", want, got)
-		}
-
-		if got, want := r.URL.Path,
-			"/zones/c56a4180-65aa-42ec-a945-5fd21dec0538/records/ec56a4180-65aa-42ec-a945-5fd21dec0538"; got != want {
-			t.Errorf("Expected path to be '%s' but got '%s'", want, got)
-		}
-
-		if got, want := r.Header.Get("Content-Type"), "application/json"; got != want {
-			t.Errorf("Expected Content-Type to be '%s' but got '%s'", want, got)
-		}
+		assert.Equal(t, "application/json", r.Header.Get("Content-Type"), "Content-Type")
 
 		w.WriteHeader(http.StatusCreated)
 		fmt.Fprintf(w, `{}`)
-	}))
-	defer mock.Close()
+	})
 
-	auroraProvider, err := NewDNSProviderCredentials(mock.URL, fakeAuroraDNSUserId, fakeAuroraDNSKey)
-	if auroraProvider == nil {
-		t.Fatal("Expected non-nil AuroraDNS provider, but was nil")
-	}
+	err := provider.Present("example.com", "", "foobar")
+	require.NoError(t, err, "fail to create TXT record")
 
-	if err != nil {
-		t.Fatalf("Expected no error creating provider, but got: %v", err)
-	}
-
-	err = auroraProvider.Present("example.com", "", "foobar")
-	if err != nil {
-		t.Fatalf("Expected no error creating TXT record, but got: %v", err)
-	}
-
-	err = auroraProvider.CleanUp("example.com", "", "foobar")
-	if err != nil {
-		t.Fatalf("Expected no error removing TXT record, but got: %v", err)
-	}
-
-	if !requestReceived {
-		t.Error("Expected request to be received by mock backend, but it wasn't")
-	}
+	err = provider.CleanUp("example.com", "", "foobar")
+	require.NoError(t, err, "fail to remove TXT record")
 }

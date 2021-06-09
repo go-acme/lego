@@ -1,166 +1,142 @@
-// Package digitalocean implements a DNS provider for solving the DNS-01
-// challenge using digitalocean DNS.
+// Package digitalocean implements a DNS provider for solving the DNS-01 challenge using digitalocean DNS.
 package digitalocean
 
 import (
-	"bytes"
-	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
-	"os"
 	"sync"
 	"time"
 
-	"github.com/xenolf/lego/acme"
+	"github.com/go-acme/lego/v4/challenge/dns01"
+	"github.com/go-acme/lego/v4/platform/config/env"
 )
 
-// DNSProvider is an implementation of the acme.ChallengeProvider interface
-// that uses DigitalOcean's REST API to manage TXT records for a domain.
+// Environment variables names.
+const (
+	envNamespace = "DO_"
+
+	EnvAuthToken = envNamespace + "AUTH_TOKEN"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
+// Config is used to configure the creation of the DNSProvider.
+type Config struct {
+	BaseURL            string
+	AuthToken          string
+	TTL                int
+	PropagationTimeout time.Duration
+	PollingInterval    time.Duration
+	HTTPClient         *http.Client
+}
+
+// NewDefaultConfig returns a default configuration for the DNSProvider.
+func NewDefaultConfig() *Config {
+	return &Config{
+		BaseURL:            defaultBaseURL,
+		TTL:                env.GetOrDefaultInt(EnvTTL, 30),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 60*time.Second),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 5*time.Second),
+		HTTPClient: &http.Client{
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+		},
+	}
+}
+
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	apiAuthToken string
-	recordIDs    map[string]int
-	recordIDsMu  sync.Mutex
+	config      *Config
+	recordIDs   map[string]int
+	recordIDsMu sync.Mutex
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Digital
 // Ocean. Credentials must be passed in the environment variable:
 // DO_AUTH_TOKEN.
 func NewDNSProvider() (*DNSProvider, error) {
-	apiAuthToken := os.Getenv("DO_AUTH_TOKEN")
-	return NewDNSProviderCredentials(apiAuthToken)
+	values, err := env.Get(EnvAuthToken)
+	if err != nil {
+		return nil, fmt.Errorf("digitalocean: %w", err)
+	}
+
+	config := NewDefaultConfig()
+	config.AuthToken = values[EnvAuthToken]
+
+	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderCredentials uses the supplied credentials to return a
-// DNSProvider instance configured for Digital Ocean.
-func NewDNSProviderCredentials(apiAuthToken string) (*DNSProvider, error) {
-	if apiAuthToken == "" {
-		return nil, fmt.Errorf("DigitalOcean credentials missing")
+// NewDNSProviderConfig return a DNSProvider instance configured for Digital Ocean.
+func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
+	if config == nil {
+		return nil, errors.New("digitalocean: the configuration of the DNS provider is nil")
 	}
+
+	if config.AuthToken == "" {
+		return nil, errors.New("digitalocean: credentials missing")
+	}
+
+	if config.BaseURL == "" {
+		config.BaseURL = defaultBaseURL
+	}
+
 	return &DNSProvider{
-		apiAuthToken: apiAuthToken,
-		recordIDs:    make(map[string]int),
+		config:    config,
+		recordIDs: make(map[string]int),
 	}, nil
 }
 
-// Present creates a TXT record using the specified parameters
+// Timeout returns the timeout and interval to use when checking for DNS propagation.
+// Adjusting here to cope with spikes in propagation times.
+func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
+	return d.config.PropagationTimeout, d.config.PollingInterval
+}
+
+// Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	// txtRecordRequest represents the request body to DO's API to make a TXT record
-	type txtRecordRequest struct {
-		RecordType string `json:"type"`
-		Name       string `json:"name"`
-		Data       string `json:"data"`
-	}
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	// txtRecordResponse represents a response from DO's API after making a TXT record
-	type txtRecordResponse struct {
-		DomainRecord struct {
-			ID   int    `json:"id"`
-			Type string `json:"type"`
-			Name string `json:"name"`
-			Data string `json:"data"`
-		} `json:"domain_record"`
-	}
-
-	fqdn, value, _ := acme.DNS01Record(domain, keyAuth)
-
-	authZone, err := acme.FindZoneByFqdn(acme.ToFqdn(domain), acme.RecursiveNameservers)
+	respData, err := d.addTxtRecord(fqdn, value)
 	if err != nil {
-		return fmt.Errorf("Could not determine zone for domain: '%s'. %s", domain, err)
+		return fmt.Errorf("digitalocean: %w", err)
 	}
 
-	authZone = acme.UnFqdn(authZone)
-
-	reqURL := fmt.Sprintf("%s/v2/domains/%s/records", digitalOceanBaseURL, authZone)
-	reqData := txtRecordRequest{RecordType: "TXT", Name: fqdn, Data: value}
-	body, err := json.Marshal(reqData)
-	if err != nil {
-		return err
-	}
-
-	req, err := http.NewRequest("POST", reqURL, bytes.NewReader(body))
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", d.apiAuthToken))
-
-	client := http.Client{Timeout: 30 * time.Second}
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode >= 400 {
-		var errInfo digitalOceanAPIError
-		json.NewDecoder(resp.Body).Decode(&errInfo)
-		return fmt.Errorf("HTTP %d: %s: %s", resp.StatusCode, errInfo.ID, errInfo.Message)
-	}
-
-	// Everything looks good; but we'll need the ID later to delete the record
-	var respData txtRecordResponse
-	err = json.NewDecoder(resp.Body).Decode(&respData)
-	if err != nil {
-		return err
-	}
 	d.recordIDsMu.Lock()
-	d.recordIDs[fqdn] = respData.DomainRecord.ID
+	d.recordIDs[token] = respData.DomainRecord.ID
 	d.recordIDsMu.Unlock()
 
 	return nil
 }
 
-// CleanUp removes the TXT record matching the specified parameters
+// CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _, _ := acme.DNS01Record(domain, keyAuth)
+	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+
+	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	if err != nil {
+		return fmt.Errorf("digitalocean: %w", err)
+	}
 
 	// get the record's unique ID from when we created it
 	d.recordIDsMu.Lock()
-	recordID, ok := d.recordIDs[fqdn]
+	recordID, ok := d.recordIDs[token]
 	d.recordIDsMu.Unlock()
 	if !ok {
-		return fmt.Errorf("unknown record ID for '%s'", fqdn)
+		return fmt.Errorf("digitalocean: unknown record ID for '%s'", fqdn)
 	}
 
-	authZone, err := acme.FindZoneByFqdn(acme.ToFqdn(domain), acme.RecursiveNameservers)
+	err = d.removeTxtRecord(authZone, recordID)
 	if err != nil {
-		return fmt.Errorf("Could not determine zone for domain: '%s'. %s", domain, err)
-	}
-
-	authZone = acme.UnFqdn(authZone)
-
-	reqURL := fmt.Sprintf("%s/v2/domains/%s/records/%d", digitalOceanBaseURL, authZone, recordID)
-	req, err := http.NewRequest("DELETE", reqURL, nil)
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", d.apiAuthToken))
-
-	client := http.Client{Timeout: 30 * time.Second}
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode >= 400 {
-		var errInfo digitalOceanAPIError
-		json.NewDecoder(resp.Body).Decode(&errInfo)
-		return fmt.Errorf("HTTP %d: %s: %s", resp.StatusCode, errInfo.ID, errInfo.Message)
+		return fmt.Errorf("digitalocean: %w", err)
 	}
 
 	// Delete record ID from map
 	d.recordIDsMu.Lock()
-	delete(d.recordIDs, fqdn)
+	delete(d.recordIDs, token)
 	d.recordIDsMu.Unlock()
 
 	return nil
 }
-
-type digitalOceanAPIError struct {
-	ID      string `json:"id"`
-	Message string `json:"message"`
-}
-
-var digitalOceanBaseURL = "https://api.digitalocean.com"

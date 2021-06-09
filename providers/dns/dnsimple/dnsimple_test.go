@@ -5,136 +5,156 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-acme/lego/v4/platform/tester"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-var (
-	dnsimpleLiveTest   bool
-	dnsimpleOauthToken string
-	dnsimpleDomain     string
-	dnsimpleBaseUrl    string
-)
+const sandboxURL = "https://api.sandbox.fake.com"
 
-func init() {
-	dnsimpleOauthToken = os.Getenv("DNSIMPLE_OAUTH_TOKEN")
-	dnsimpleDomain = os.Getenv("DNSIMPLE_DOMAIN")
-	dnsimpleBaseUrl = "https://api.sandbox.dnsimple.com"
+const envDomain = envNamespace + "DOMAIN"
 
-	if len(dnsimpleOauthToken) > 0 && len(dnsimpleDomain) > 0 {
-		baseUrl := os.Getenv("DNSIMPLE_BASE_URL")
+var envTest = tester.NewEnvTest(
+	EnvOAuthToken,
+	EnvBaseURL).
+	WithDomain(envDomain).
+	WithLiveTestRequirements(EnvOAuthToken, envDomain)
 
-		if baseUrl != "" {
-			dnsimpleBaseUrl = baseUrl
-		}
+func TestNewDNSProvider(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		envVars  map[string]string
+		expected string
+	}{
+		{
+			desc: "success",
+			envVars: map[string]string{
+				EnvOAuthToken: "my_token",
+			},
+		},
+		{
+			desc: "success: base url",
+			envVars: map[string]string{
+				EnvOAuthToken: "my_token",
+				EnvBaseURL:    "https://api.dnsimple.test",
+			},
+		},
+		{
+			desc: "missing oauth token",
+			envVars: map[string]string{
+				EnvOAuthToken: "",
+			},
+			expected: "dnsimple: OAuth token is missing",
+		},
+	}
 
-		dnsimpleLiveTest = true
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
+			envTest.Apply(test.envVars)
+
+			p, err := NewDNSProvider()
+
+			if test.expected == "" {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
+
+				baseURL := os.Getenv(EnvBaseURL)
+				if baseURL != "" {
+					assert.Equal(t, baseURL, p.client.BaseURL)
+				}
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
 	}
 }
 
-func restoreDNSimpleEnv() {
-	os.Setenv("DNSIMPLE_OAUTH_TOKEN", dnsimpleOauthToken)
-	os.Setenv("DNSIMPLE_BASE_URL", dnsimpleBaseUrl)
-}
-
-//
-// NewDNSProvider
-//
-
-func TestNewDNSProviderValid(t *testing.T) {
-	defer restoreDNSimpleEnv()
-
-	os.Setenv("DNSIMPLE_OAUTH_TOKEN", "123")
-	provider, err := NewDNSProvider()
-
-	assert.NotNil(t, provider)
-	assert.Equal(t, "lego", provider.client.UserAgent)
-	assert.NoError(t, err)
-}
-
-func TestNewDNSProviderValidWithBaseUrl(t *testing.T) {
-	defer restoreDNSimpleEnv()
-
-	os.Setenv("DNSIMPLE_OAUTH_TOKEN", "123")
-	os.Setenv("DNSIMPLE_BASE_URL", "https://api.dnsimple.test")
-	provider, err := NewDNSProvider()
-
-	assert.NotNil(t, provider)
-	assert.NoError(t, err)
-
-	assert.Equal(t, provider.client.BaseURL, "https://api.dnsimple.test")
-}
-
-func TestNewDNSProviderInvalidWithMissingOauthToken(t *testing.T) {
-	if dnsimpleLiveTest {
-		t.Skip("skipping test in live mode")
+func TestNewDNSProviderConfig(t *testing.T) {
+	testCases := []struct {
+		desc        string
+		accessToken string
+		baseURL     string
+		expected    string
+	}{
+		{
+			desc:        "success",
+			accessToken: "my_token",
+			baseURL:     "",
+		},
+		{
+			desc:        "success: base url",
+			accessToken: "my_token",
+			baseURL:     "https://api.dnsimple.test",
+		},
+		{
+			desc:     "missing oauth token",
+			expected: "dnsimple: OAuth token is missing",
+		},
 	}
 
-	defer restoreDNSimpleEnv()
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			config := NewDefaultConfig()
+			config.AccessToken = test.accessToken
+			config.BaseURL = test.baseURL
 
-	provider, err := NewDNSProvider()
+			p, err := NewDNSProviderConfig(config)
 
-	assert.Nil(t, provider)
-	assert.EqualError(t, err, "DNSimple OAuth token is missing")
+			if test.expected == "" {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
+
+				if test.baseURL != "" {
+					assert.Equal(t, test.baseURL, p.client.BaseURL)
+				}
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
 }
 
-//
-// NewDNSProviderCredentials
-//
-
-func TestNewDNSProviderCredentialsValid(t *testing.T) {
-	provider, err := NewDNSProviderCredentials("123", "")
-
-	assert.NotNil(t, provider)
-	assert.Equal(t, "lego", provider.client.UserAgent)
-	assert.NoError(t, err)
-}
-
-func TestNewDNSProviderCredentialsValidWithBaseUrl(t *testing.T) {
-	provider, err := NewDNSProviderCredentials("123", "https://api.dnsimple.test")
-
-	assert.NotNil(t, provider)
-	assert.NoError(t, err)
-
-	assert.Equal(t, provider.client.BaseURL, "https://api.dnsimple.test")
-}
-
-func TestNewDNSProviderCredentialsInvalidWithMissingOauthToken(t *testing.T) {
-	provider, err := NewDNSProviderCredentials("", "")
-
-	assert.Nil(t, provider)
-	assert.EqualError(t, err, "DNSimple OAuth token is missing")
-}
-
-//
-// Present
-//
-
-func TestLiveDNSimplePresent(t *testing.T) {
-	if !dnsimpleLiveTest {
+func TestLivePresent(t *testing.T) {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	provider, err := NewDNSProviderCredentials(dnsimpleOauthToken, dnsimpleBaseUrl)
-	assert.NoError(t, err)
+	envTest.RestoreEnv()
 
-	err = provider.Present(dnsimpleDomain, "", "123d==")
-	assert.NoError(t, err)
+	if os.Getenv(EnvBaseURL) == "" {
+		os.Setenv(EnvBaseURL, sandboxURL)
+	}
+
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
+
+	err = provider.Present(envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
 }
 
-//
-// Cleanup
-//
-
-func TestLiveDNSimpleCleanUp(t *testing.T) {
-	if !dnsimpleLiveTest {
+func TestLiveCleanUp(t *testing.T) {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	time.Sleep(time.Second * 1)
+	envTest.RestoreEnv()
 
-	provider, err := NewDNSProviderCredentials(dnsimpleOauthToken, dnsimpleBaseUrl)
-	assert.NoError(t, err)
+	if os.Getenv(EnvBaseURL) == "" {
+		os.Setenv(EnvBaseURL, sandboxURL)
+	}
 
-	err = provider.CleanUp(dnsimpleDomain, "", "123d==")
-	assert.NoError(t, err)
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
+
+	time.Sleep(1 * time.Second)
+
+	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
 }

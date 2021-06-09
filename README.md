@@ -1,261 +1,75 @@
-# lego
-Let's Encrypt client and ACME library written in Go
+# ![lego](./docs/static/images/logo.png)
 
-[![GoDoc](https://godoc.org/github.com/xenolf/lego/acme?status.svg)](https://godoc.org/github.com/xenolf/lego/acme)
-[![Build Status](https://travis-ci.org/xenolf/lego.svg?branch=master)](https://travis-ci.org/xenolf/lego)
-[![Dev Chat](https://img.shields.io/badge/dev%20chat-gitter-blue.svg?label=dev+chat)](https://gitter.im/xenolf/lego)
+Let's Encrypt client and ACME library written in Go.
 
-#### General
-This is a work in progress. Please do *NOT* run this on a production server and please report any bugs you find!
+[![GoDoc](https://godoc.org/github.com/go-acme/lego?status.svg)](https://pkg.go.dev/mod/github.com/go-acme/lego/v4)
+[![Build Status](https://github.com//go-acme/lego/workflows/Main/badge.svg?branch=master)](https://github.com//go-acme/lego/actions)
+[![Docker Pulls](https://img.shields.io/docker/pulls/goacme/lego.svg)](https://hub.docker.com/r/goacme/lego/)
 
-#### Installation
-lego supports both binary installs and install from source.
+## Features
 
-To get the binary just download the latest release for your OS/Arch from [the release page](https://github.com/xenolf/lego/releases)
-and put the binary somewhere convenient. lego does not assume anything about the location you run it from.
-
-To install from source, just run 
-```
-go get -u github.com/xenolf/lego
-```
-
-To build lego inside a Docker container, just run
-```
-docker build -t lego .
-```
-##### From the package manager
-- [ArchLinux (AUR)](https://aur.archlinux.org/packages/lego-git):
-```
-yaourt -S lego-git
-```
-#### Features
-
+- ACME v2 [RFC 8555](https://tools.ietf.org/html/rfc8555) 
 - Register with CA
 - Obtain certificates, both from scratch or with an existing CSR
 - Renew certificates
 - Revoke certificates
 - Robust implementation of all ACME challenges
   - HTTP (http-01)
-  - TLS with Server Name Indication (tls-sni-01)
   - DNS (dns-01)
+  - TLS (tls-alpn-01)
 - SAN certificate support
-- Comes with multiple optional [DNS providers](https://github.com/xenolf/lego/tree/master/providers/dns)
-- [Custom challenge solvers](https://github.com/xenolf/lego/wiki/Writing-a-Challenge-Solver)
+- Comes with multiple optional [DNS providers](https://go-acme.github.io/lego/dns)
+- [Custom challenge solvers](https://go-acme.github.io/lego/usage/library/writing-a-challenge-solver/)
 - Certificate bundling
 - OCSP helper function
 
-Please keep in mind that CLI switches and APIs are still subject to change.
+lego introduced support for ACME v2 in [v1.0.0](https://github.com/go-acme/lego/releases/tag/v1.0.0). If you still need to utilize ACME v1, you can do so by using the [v0.5.0](https://github.com/go-acme/lego/releases/tag/v0.5.0) version.
 
-When using the standard `--path` option, all certificates and account configurations are saved to a folder *.lego* in the current working directory.
+## Installation
 
-#### Sudo
-The CLI does not require root permissions but needs to bind to port 80 and 443 for certain challenges. 
-To run the CLI without sudo, you have four options:
+How to [install](https://go-acme.github.io/lego/installation/).
 
-- Use setcap 'cap_net_bind_service=+ep' /path/to/program
-- Pass the `--http` or/and the `--tls` option and specify a custom port to bind to. In this case you have to forward port 80/443 to these custom ports (see [Port Usage](#port-usage)).
-- Pass the `--webroot` option and specify the path to your webroot folder. In this case the challenge will be written in a file in `.well-known/acme-challenge/` inside your webroot.
-- Pass the `--dns` option and specify a DNS provider.
+## Usage
 
-#### Port Usage
-By default lego assumes it is able to bind to ports 80 and 443 to solve challenges.
-If this is not possible in your environment, you can use the `--http` and `--tls` options to instruct
-lego to listen on that interface:port for any incoming challenges.
+- as a [CLI](https://go-acme.github.io/lego/usage/cli)
+- as a [library](https://go-acme.github.io/lego/usage/library)
 
-If you are using this option, make sure you proxy all of the following traffic to these ports.
+## Documentation
 
-HTTP Port:
-- All plaintext HTTP requests to port 80 which begin with a request path of `/.well-known/acme-challenge/` for the HTTP challenge.
+Documentation is hosted live at https://go-acme.github.io/lego/.
 
-TLS Port:
-- All TLS handshakes on port 443 for the TLS-SNI challenge.
+## DNS providers
 
-This traffic redirection is only needed as long as lego solves challenges. As soon as you have received your certificates you can deactivate the forwarding.
+Detailed documentation is available [here](https://go-acme.github.io/lego/dns).
 
-#### Usage
+<!-- START DNS PROVIDERS LIST -->
 
-```
-NAME:
-   lego - Let's Encrypt client written in Go
+|                                                                                 |                                                                                 |                                                                                 |                                                                                 |
+|---------------------------------------------------------------------------------|---------------------------------------------------------------------------------|---------------------------------------------------------------------------------|---------------------------------------------------------------------------------|
+| [Akamai EdgeDNS](https://go-acme.github.io/lego/dns/edgedns/)                   | [Alibaba Cloud DNS](https://go-acme.github.io/lego/dns/alidns/)                 | [Amazon Lightsail](https://go-acme.github.io/lego/dns/lightsail/)               | [Amazon Route 53](https://go-acme.github.io/lego/dns/route53/)                  |
+| [ArvanCloud](https://go-acme.github.io/lego/dns/arvancloud/)                    | [Aurora DNS](https://go-acme.github.io/lego/dns/auroradns/)                     | [Autodns](https://go-acme.github.io/lego/dns/autodns/)                          | [Azure](https://go-acme.github.io/lego/dns/azure/)                              |
+| [Bindman](https://go-acme.github.io/lego/dns/bindman/)                          | [Bluecat](https://go-acme.github.io/lego/dns/bluecat/)                          | [Checkdomain](https://go-acme.github.io/lego/dns/checkdomain/)                  | [CloudDNS](https://go-acme.github.io/lego/dns/clouddns/)                        |
+| [Cloudflare](https://go-acme.github.io/lego/dns/cloudflare/)                    | [ClouDNS](https://go-acme.github.io/lego/dns/cloudns/)                          | [CloudXNS](https://go-acme.github.io/lego/dns/cloudxns/)                        | [ConoHa](https://go-acme.github.io/lego/dns/conoha/)                            |
+| [Constellix](https://go-acme.github.io/lego/dns/constellix/)                    | [deSEC.io](https://go-acme.github.io/lego/dns/desec/)                           | [Designate DNSaaS for Openstack](https://go-acme.github.io/lego/dns/designate/) | [Digital Ocean](https://go-acme.github.io/lego/dns/digitalocean/)               |
+| [DNS Made Easy](https://go-acme.github.io/lego/dns/dnsmadeeasy/)                | [DNSimple](https://go-acme.github.io/lego/dns/dnsimple/)                        | [DNSPod](https://go-acme.github.io/lego/dns/dnspod/)                            | [Domain Offensive (do.de)](https://go-acme.github.io/lego/dns/dode/)            |
+| [Domeneshop](https://go-acme.github.io/lego/dns/domeneshop/)                    | [DreamHost](https://go-acme.github.io/lego/dns/dreamhost/)                      | [Duck DNS](https://go-acme.github.io/lego/dns/duckdns/)                         | [Dyn](https://go-acme.github.io/lego/dns/dyn/)                                  |
+| [Dynu](https://go-acme.github.io/lego/dns/dynu/)                                | [EasyDNS](https://go-acme.github.io/lego/dns/easydns/)                          | [Exoscale](https://go-acme.github.io/lego/dns/exoscale/)                        | [External program](https://go-acme.github.io/lego/dns/exec/)                    |
+| [Gandi Live DNS (v5)](https://go-acme.github.io/lego/dns/gandiv5/)              | [Gandi](https://go-acme.github.io/lego/dns/gandi/)                              | [Glesys](https://go-acme.github.io/lego/dns/glesys/)                            | [Go Daddy](https://go-acme.github.io/lego/dns/godaddy/)                         |
+| [Google Cloud](https://go-acme.github.io/lego/dns/gcloud/)                      | [Hetzner](https://go-acme.github.io/lego/dns/hetzner/)                          | [Hosting.de](https://go-acme.github.io/lego/dns/hostingde/)                     | [HTTP request](https://go-acme.github.io/lego/dns/httpreq/)                     |
+| [Hurricane Electric DNS](https://go-acme.github.io/lego/dns/hurricane/)         | [HyperOne](https://go-acme.github.io/lego/dns/hyperone/)                        | [Infoblox](https://go-acme.github.io/lego/dns/infoblox/)                        | [Infomaniak](https://go-acme.github.io/lego/dns/infomaniak/)                    |
+| [Internet Initiative Japan](https://go-acme.github.io/lego/dns/iij/)            | [INWX](https://go-acme.github.io/lego/dns/inwx/)                                | [Ionos](https://go-acme.github.io/lego/dns/ionos/)                              | [Joker](https://go-acme.github.io/lego/dns/joker/)                              |
+| [Joohoi's ACME-DNS](https://go-acme.github.io/lego/dns/acme-dns/)               | [Linode (v4)](https://go-acme.github.io/lego/dns/linode/)                       | [Liquid Web](https://go-acme.github.io/lego/dns/liquidweb/)                     | [Loopia](https://go-acme.github.io/lego/dns/loopia/)                            |
+| [LuaDNS](https://go-acme.github.io/lego/dns/luadns/)                            | [Manual](https://go-acme.github.io/lego/dns/manual/)                            | [MyDNS.jp](https://go-acme.github.io/lego/dns/mydnsjp/)                         | [MythicBeasts](https://go-acme.github.io/lego/dns/mythicbeasts/)                |
+| [Name.com](https://go-acme.github.io/lego/dns/namedotcom/)                      | [Namecheap](https://go-acme.github.io/lego/dns/namecheap/)                      | [Namesilo](https://go-acme.github.io/lego/dns/namesilo/)                        | [Netcup](https://go-acme.github.io/lego/dns/netcup/)                            |
+| [Netlify](https://go-acme.github.io/lego/dns/netlify/)                          | [NIFCloud](https://go-acme.github.io/lego/dns/nifcloud/)                        | [Njalla](https://go-acme.github.io/lego/dns/njalla/)                            | [NS1](https://go-acme.github.io/lego/dns/ns1/)                                  |
+| [Open Telekom Cloud](https://go-acme.github.io/lego/dns/otc/)                   | [Oracle Cloud](https://go-acme.github.io/lego/dns/oraclecloud/)                 | [OVH](https://go-acme.github.io/lego/dns/ovh/)                                  | [Porkbun](https://go-acme.github.io/lego/dns/porkbun/)                          |
+| [PowerDNS](https://go-acme.github.io/lego/dns/pdns/)                            | [Rackspace](https://go-acme.github.io/lego/dns/rackspace/)                      | [reg.ru](https://go-acme.github.io/lego/dns/regru/)                             | [RFC2136](https://go-acme.github.io/lego/dns/rfc2136/)                          |
+| [RimuHosting](https://go-acme.github.io/lego/dns/rimuhosting/)                  | [Sakura Cloud](https://go-acme.github.io/lego/dns/sakuracloud/)                 | [Scaleway](https://go-acme.github.io/lego/dns/scaleway/)                        | [Selectel](https://go-acme.github.io/lego/dns/selectel/)                        |
+| [Servercow](https://go-acme.github.io/lego/dns/servercow/)                      | [Simply.com](https://go-acme.github.io/lego/dns/simply/)                        | [Sonic](https://go-acme.github.io/lego/dns/sonic/)                              | [Stackpath](https://go-acme.github.io/lego/dns/stackpath/)                      |
+| [TransIP](https://go-acme.github.io/lego/dns/transip/)                          | [VegaDNS](https://go-acme.github.io/lego/dns/vegadns/)                          | [Versio.[nl/eu/uk]](https://go-acme.github.io/lego/dns/versio/)                 | [VinylDNS](https://go-acme.github.io/lego/dns/vinyldns/)                        |
+| [Vscale](https://go-acme.github.io/lego/dns/vscale/)                            | [Vultr](https://go-acme.github.io/lego/dns/vultr/)                              | [WEDOS](https://go-acme.github.io/lego/dns/wedos/)                              | [Yandex](https://go-acme.github.io/lego/dns/yandex/)                            |
+| [Zone.ee](https://go-acme.github.io/lego/dns/zoneee/)                           | [Zonomi](https://go-acme.github.io/lego/dns/zonomi/)                            |                                                                                 |                                                                                 |
 
-USAGE:
-   lego [global options] command [command options] [arguments...]
-   
-VERSION:
-   0.3.1
-   
-COMMANDS:
-   run		Register an account, then create and install a certificate
-   revoke	Revoke a certificate
-   renew	Renew a certificate
-   dnshelp	Shows additional help for the --dns global option
-   help, h	Shows a list of commands or help for one command
-   
-GLOBAL OPTIONS:
-   --domains, -d [--domains option --domains option]			Add domains to the process
-   --csr, -c                Certificate signing request filename, if an external CSR is to be used
-   --server, -s "https://acme-v01.api.letsencrypt.org/directory"	CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client.
-   --email, -m 								Email used for registration and recovery contact.
-   --accept-tos, -a							By setting this flag to true you indicate that you accept the current Let's Encrypt terms of service.
-   --key-type, -k "rsa2048"						Key type to use for private keys. Supported: rsa2048, rsa4096, rsa8192, ec256, ec384
-   --path "${CWD}/.lego"	Directory to use for storing the data
-   --exclude, -x [--exclude option --exclude option]			Explicitly disallow solvers by name from being used. Solvers: "http-01", "tls-sni-01".
-   --webroot 								Set the webroot folder to use for HTTP based challenges to write directly in a file in .well-known/acme-challenge
-   --http 								Set the port and interface to use for HTTP based challenges to listen on. Supported: interface:port or :port
-   --tls 								Set the port and interface to use for TLS based challenges to listen on. Supported: interface:port or :port
-   --dns 								Solve a DNS challenge using the specified provider. Disables all other challenges. Run 'lego dnshelp' for help on usage.
-   --help, -h								show help
-   --version, -v							print the version
-```
+<!-- END DNS PROVIDERS LIST -->
 
-##### CLI Example
-
-Assumes the `lego` binary has permission to bind to ports 80 and 443. You can get a pre-built binary from the [releases](https://github.com/xenolf/lego/releases) page.
-If your environment does not allow you to bind to these ports, please read [Port Usage](#port-usage).
-
-Obtain a certificate:
-
-```bash
-$ lego --email="foo@bar.com" --domains="example.com" run
-```
-
-(Find your certificate in the `.lego` folder of current working directory.)
-
-To renew the certificate:
-
-```bash
-$ lego --email="foo@bar.com" --domains="example.com" renew
-```
-
-Obtain a certificate using the DNS challenge and AWS Route 53:
-
-```bash
-$ AWS_REGION=us-east-1 AWS_ACCESS_KEY_ID=my_id AWS_SECRET_ACCESS_KEY=my_key lego --email="foo@bar.com" --domains="example.com" --dns="route53" run
-```
-
-Note that `--dns=foo` implies `--exclude=http-01` and `--exclude=tls-sni-01`. lego will not attempt other challenges if you've told it to use DNS instead.
-
-Obtain a certificate given a certificate signing request (CSR) generated by something else:
-
-```bash
-$ lego --email="foo@bar.com" --csr=/path/to/csr.pem run
-```
-
-(lego will infer the domains to be validated based on the contents of the CSR, so make sure the CSR's Common Name and optional SubjectAltNames are set correctly.)
-
-lego defaults to communicating with the production Let's Encrypt ACME server. If you'd like to test something without issuing real certificates, consider using the staging endpoint instead:
-
-```bash
-$ lego --server=https://acme-staging.api.letsencrypt.org/directory …
-```
-
-#### DNS Challenge API Details
-
-##### AWS Route 53
-
-The following AWS IAM policy document describes the permissions required for lego to complete the DNS challenge.
-Replace `<INSERT_YOUR_HOSTED_ZONE_ID_HERE>` with the Route 53 zone ID of the domain you are authorizing.
-
-```json
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Action": [
-                "route53:GetChange",
-                "route53:ListHostedZonesByName"
-            ],
-            "Resource": [
-                "*"
-            ]
-        },
-        {
-            "Effect": "Allow",
-            "Action": [
-                "route53:ChangeResourceRecordSets"
-            ],
-            "Resource": [
-                "arn:aws:route53:::hostedzone/<INSERT_YOUR_HOSTED_ZONE_ID_HERE>"
-            ]
-        }
-    ]
-}
-```
-
-#### ACME Library Usage
-
-A valid, but bare-bones example use of the acme package:
-
-```go
-// You'll need a user or account type that implements acme.User
-type MyUser struct {
-	Email        string
-	Registration *acme.RegistrationResource
-	key          crypto.PrivateKey
-}
-func (u MyUser) GetEmail() string {
-	return u.Email
-}
-func (u MyUser) GetRegistration() *acme.RegistrationResource {
-	return u.Registration
-}
-func (u MyUser) GetPrivateKey() crypto.PrivateKey {
-	return u.key
-}
-
-// Create a user. New accounts need an email and private key to start.
-const rsaKeySize = 2048
-privateKey, err := rsa.GenerateKey(rand.Reader, rsaKeySize)
-if err != nil {
-	log.Fatal(err)
-}
-myUser := MyUser{
-	Email: "you@yours.com",
-	key: privateKey,
-}
-
-// A client facilitates communication with the CA server. This CA URL is
-// configured for a local dev instance of Boulder running in Docker in a VM.
-client, err := acme.NewClient("http://192.168.99.100:4000", &myUser, acme.RSA2048)
-if err != nil {
-  log.Fatal(err)
-}
-
-// We specify an http port of 5002 and an tls port of 5001 on all interfaces
-// because we aren't running as root and can't bind a listener to port 80 and 443 
-// (used later when we attempt to pass challenges). Keep in mind that we still
-// need to proxy challenge traffic to port 5002 and 5001.
-client.SetHTTPAddress(":5002")
-client.SetTLSAddress(":5001")
-
-// New users will need to register
-reg, err := client.Register()
-if err != nil {
-	log.Fatal(err)
-}
-myUser.Registration = reg
-
-// SAVE THE USER.
-
-// The client has a URL to the current Let's Encrypt Subscriber
-// Agreement. The user will need to agree to it.
-err = client.AgreeToTOS()
-if err != nil {
-	log.Fatal(err)
-}
-
-// The acme library takes care of completing the challenges to obtain the certificate(s).
-// The domains must resolve to this machine or you have to use the DNS challenge.
-bundle := false
-certificates, failures := client.ObtainCertificate([]string{"mydomain.com"}, bundle, nil, false)
-if len(failures) > 0 {
-	log.Fatal(failures)
-}
-
-// Each certificate comes back with the cert bytes, the bytes of the client's
-// private key, and a certificate URL. SAVE THESE TO DISK.
-fmt.Printf("%#v\n", certificates)
-
-// ... all done.
-```
+If your DNS provider is not supported, please open an [issue](https://github.com/go-acme/lego/issues/new?assignees=&labels=enhancement%2C+new-provider&template=new_dns_provider.md).

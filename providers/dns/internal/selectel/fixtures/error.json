@@ -1,0 +1,5 @@
+{
+  "error": "error description",
+  "code": 400,
+  "field": "field that the error occurred in"
+}

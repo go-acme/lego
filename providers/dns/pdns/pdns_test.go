@@ -2,79 +2,144 @@ package pdns
 
 import (
 	"net/url"
-	"os"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/stretchr/testify/require"
 )
 
-var (
-	pdnsLiveTest bool
-	pdnsURL      *url.URL
-	pdnsURLStr   string
-	pdnsAPIKey   string
-	pdnsDomain   string
-)
+const envDomain = envNamespace + "DOMAIN"
 
-func init() {
-	pdnsURLStr = os.Getenv("PDNS_API_URL")
-	pdnsURL, _ = url.Parse(pdnsURLStr)
-	pdnsAPIKey = os.Getenv("PDNS_API_KEY")
-	pdnsDomain = os.Getenv("PDNS_DOMAIN")
-	if len(pdnsURLStr) > 0 && len(pdnsAPIKey) > 0 && len(pdnsDomain) > 0 {
-		pdnsLiveTest = true
+var envTest = tester.NewEnvTest(
+	EnvAPIURL,
+	EnvAPIKey).
+	WithDomain(envDomain)
+
+func TestNewDNSProvider(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		envVars  map[string]string
+		expected string
+	}{
+		{
+			desc: "success",
+			envVars: map[string]string{
+				EnvAPIKey: "123",
+				EnvAPIURL: "http://example.com",
+			},
+		},
+		{
+			desc: "missing credentials",
+			envVars: map[string]string{
+				EnvAPIKey: "",
+				EnvAPIURL: "",
+			},
+			expected: "pdns: some credentials information are missing: PDNS_API_KEY,PDNS_API_URL",
+		},
+		{
+			desc: "missing api key",
+			envVars: map[string]string{
+				EnvAPIKey: "",
+				EnvAPIURL: "http://example.com",
+			},
+			expected: "pdns: some credentials information are missing: PDNS_API_KEY",
+		},
+		{
+			desc: "missing API URL",
+			envVars: map[string]string{
+				EnvAPIKey: "123",
+				EnvAPIURL: "",
+			},
+			expected: "pdns: some credentials information are missing: PDNS_API_URL",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
+			envTest.Apply(test.envVars)
+
+			p, err := NewDNSProvider()
+
+			if test.expected == "" {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
 	}
 }
 
-func restorePdnsEnv() {
-	os.Setenv("PDNS_API_URL", pdnsURLStr)
-	os.Setenv("PDNS_API_KEY", pdnsAPIKey)
+func TestNewDNSProviderConfig(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		apiKey   string
+		host     *url.URL
+		expected string
+	}{
+		{
+			desc:   "success",
+			apiKey: "123",
+			host: func() *url.URL {
+				u, _ := url.Parse("http://example.com")
+				return u
+			}(),
+		},
+		{
+			desc:     "missing credentials",
+			expected: "pdns: API key missing",
+		},
+		{
+			desc:   "missing API key",
+			apiKey: "",
+			host: func() *url.URL {
+				u, _ := url.Parse("http://example.com")
+				return u
+			}(),
+			expected: "pdns: API key missing",
+		},
+		{
+			desc:     "missing host",
+			apiKey:   "123",
+			expected: "pdns: API URL missing",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			config := NewDefaultConfig()
+			config.APIKey = test.apiKey
+			config.Host = test.host
+
+			p, err := NewDNSProviderConfig(config)
+
+			if test.expected == "" {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
 }
 
-func TestNewDNSProviderValid(t *testing.T) {
-	os.Setenv("PDNS_API_URL", "")
-	os.Setenv("PDNS_API_KEY", "")
-	tmpURL, _ := url.Parse("http://localhost:8081")
-	_, err := NewDNSProviderCredentials(tmpURL, "123")
-	assert.NoError(t, err)
-	restorePdnsEnv()
-}
-
-func TestNewDNSProviderValidEnv(t *testing.T) {
-	os.Setenv("PDNS_API_URL", "http://localhost:8081")
-	os.Setenv("PDNS_API_KEY", "123")
-	_, err := NewDNSProvider()
-	assert.NoError(t, err)
-	restorePdnsEnv()
-}
-
-func TestNewDNSProviderMissingHostErr(t *testing.T) {
-	os.Setenv("PDNS_API_URL", "")
-	os.Setenv("PDNS_API_KEY", "123")
-	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "PDNS API URL missing")
-	restorePdnsEnv()
-}
-
-func TestNewDNSProviderMissingKeyErr(t *testing.T) {
-	os.Setenv("PDNS_API_URL", pdnsURLStr)
-	os.Setenv("PDNS_API_KEY", "")
-	_, err := NewDNSProvider()
-	assert.EqualError(t, err, "PDNS API key missing")
-	restorePdnsEnv()
-}
-
-func TestPdnsPresentAndCleanup(t *testing.T) {
-	if !pdnsLiveTest {
+func TestLivePresentAndCleanup(t *testing.T) {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	provider, err := NewDNSProviderCredentials(pdnsURL, pdnsAPIKey)
-	assert.NoError(t, err)
+	envTest.RestoreEnv()
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
 
-	err = provider.Present(pdnsDomain, "", "123d==")
-	assert.NoError(t, err)
+	err = provider.Present(envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
 
-	err = provider.CleanUp(pdnsDomain, "", "123d==")
-	assert.NoError(t, err)
+	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
 }

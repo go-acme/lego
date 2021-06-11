@@ -1,7 +1,6 @@
 package resolver
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"sort"
@@ -128,7 +127,7 @@ func validate(core *api.Core, domain string, chlg acme.Challenge) error {
 		return errors.New("the server didn't respond to our request")
 	}
 
-	return backoff.Retry(operation, backoff.WithContext(bo, context.Background()))
+	return backoff.Retry(operation, bo)
 }
 
 func checkChallengeStatus(chlng acme.ExtendedChallenge) (bool, error) {

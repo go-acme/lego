@@ -1,0 +1,6 @@
+{
+  "transactid": "67e4689073df2f153e7184aeb47a98f9",
+  "status": "FAILURE",
+  "message": "Invalid value \"www.example.com.\" for parameter \"fullrecordname\"!",
+  "code": 100002
+}

@@ -58,6 +58,7 @@ func allDNSCodes() string {
 		"iij",
 		"infoblox",
 		"infomaniak",
+		"internetbs",
 		"inwx",
 		"ionos",
 		"joker",
@@ -1040,6 +1041,27 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/infomaniak`)
+
+	case "internetbs":
+		// generated from: providers/dns/internetbs/internetbs.toml
+		ew.writeln(`Configuration for Internet.bs.`)
+		ew.writeln(`Code:	'internetbs'`)
+		ew.writeln(`Since:	'v4.5.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "INTERNET_BS_API_KEY":	API key`)
+		ew.writeln(`	- "INTERNET_BS_PASSWORD":	API password`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "INTERNET_BS_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "INTERNET_BS_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "INTERNET_BS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "INTERNET_BS_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/internetbs`)
 
 	case "inwx":
 		// generated from: providers/dns/inwx/inwx.toml

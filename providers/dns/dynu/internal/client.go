@@ -2,7 +2,6 @@ package internal
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -125,8 +124,6 @@ func (c Client) GetRootDomain(hostname string) (*DNSHostname, error) {
 func (c Client) doRetry(method, uri string, body []byte, data interface{}) error {
 	var resp *http.Response
 
-	ctx, cancel := context.WithCancel(context.Background())
-
 	operation := func() error {
 		var reqBody io.Reader
 		if len(body) > 0 {
@@ -147,8 +144,7 @@ func (c Client) doRetry(method, uri string, body []byte, data interface{}) error
 		}
 
 		if err != nil {
-			cancel()
-			return fmt.Errorf("client error: %w", err)
+			return backoff.Permanent(fmt.Errorf("client error: %w", err))
 		}
 
 		return nil
@@ -161,7 +157,7 @@ func (c Client) doRetry(method, uri string, body []byte, data interface{}) error
 	bo := backoff.NewExponentialBackOff()
 	bo.InitialInterval = 1 * time.Second
 
-	err := backoff.RetryNotify(operation, backoff.WithContext(bo, ctx), notify)
+	err := backoff.RetryNotify(operation, bo, notify)
 	if err != nil {
 		return err
 	}

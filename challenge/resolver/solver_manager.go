@@ -1,7 +1,6 @@
 package resolver
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"sort"
@@ -107,21 +106,17 @@ func validate(core *api.Core, domain string, chlg acme.Challenge) error {
 	bo.MaxInterval = 10 * initialInterval
 	bo.MaxElapsedTime = 100 * initialInterval
 
-	ctx, cancel := context.WithCancel(context.Background())
-
 	// After the path is sent, the ACME server will access our server.
 	// Repeatedly check the server for an updated status on our request.
 	operation := func() error {
 		authz, err := core.Authorizations.Get(chlng.AuthorizationURL)
 		if err != nil {
-			cancel()
-			return err
+			return backoff.Permanent(err)
 		}
 
 		valid, err := checkAuthorizationStatus(authz)
 		if err != nil {
-			cancel()
-			return err
+			return backoff.Permanent(err)
 		}
 
 		if valid {
@@ -132,7 +127,7 @@ func validate(core *api.Core, domain string, chlg acme.Challenge) error {
 		return errors.New("the server didn't respond to our request")
 	}
 
-	return backoff.Retry(operation, backoff.WithContext(bo, ctx))
+	return backoff.Retry(operation, bo)
 }
 
 func checkChallengeStatus(chlng acme.ExtendedChallenge) (bool, error) {

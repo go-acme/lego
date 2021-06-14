@@ -1,0 +1,43 @@
+{
+  "transactid": "3d161c37da7c824c8b3463b25f461df0",
+  "status": "SUCCESS",
+  "total_records": 6,
+  "records": [
+    {
+      "name": "example.com",
+      "value": "ns-hongkong.internet.bs",
+      "ttl": 3600,
+      "type": "NS"
+    },
+    {
+      "name": "example.com",
+      "value": "ns-toronto.internet.bs",
+      "ttl": 3600,
+      "type": "NS"
+    },
+    {
+      "name": "example.com",
+      "value": "ns-london.internet.bs",
+      "ttl": 3600,
+      "type": "NS"
+    },
+    {
+      "name": "test.example.com",
+      "value": "example1.com",
+      "ttl": 3600,
+      "type": "CNAME"
+    },
+    {
+      "name": "www.example.com",
+      "value": "xxx",
+      "ttl": 36000,
+      "type": "TXT"
+    },
+    {
+      "name": "www.example.com",
+      "value": "yyy",
+      "ttl": 36000,
+      "type": "TXT"
+    }
+  ]
+}

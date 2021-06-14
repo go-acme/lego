@@ -1,0 +1,6 @@
+{
+  "transactid": "5d554e0a5d145feb316b1805aae50706",
+  "status": "FAILURE",
+  "message": "The domain www.example.com does not have a supported extension!",
+  "code": 100004
+}

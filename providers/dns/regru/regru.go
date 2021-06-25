@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/regru/internal"
@@ -58,7 +59,7 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for reg.ru.
 // Credentials must be passed in the environment variables:
 // REGRU_USERNAME and REGRU_PASSWORD.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	values, err := env.Get(EnvUsername, EnvPassword)
 	if err != nil {
 		return nil, fmt.Errorf("regru: %w", err)

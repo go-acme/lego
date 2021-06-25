@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/transip/gotransip/v6"
@@ -52,7 +53,7 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for TransIP.
 // Credentials must be passed in the environment variables:
 // TRANSIP_ACCOUNTNAME, TRANSIP_PRIVATEKEYPATH.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	values, err := env.Get(EnvAccountName, EnvPrivateKeyPath)
 	if err != nil {
 		return nil, fmt.Errorf("transip: %w", err)

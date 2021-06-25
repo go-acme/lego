@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/gophercloud/gophercloud"
@@ -69,7 +70,7 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables:
 // OS_AUTH_URL, OS_USERNAME, OS_PASSWORD, OS_REGION_NAME.
 // Or you can specify OS_CLOUD to read the credentials from the according cloud entry.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	config := NewDefaultConfig()
 
 	val, err := env.Get(EnvCloud)

@@ -37,7 +37,7 @@ func TestLiveTTL(t *testing.T) {
 		}
 	}()
 
-	zoneID, err := provider.getHostedZoneID(fqdn)
+	zoneID, err := provider.(*DNSProvider).getHostedZoneID(fqdn)
 	require.NoError(t, err)
 
 	params := &route53.ListResourceRecordSetsInput{

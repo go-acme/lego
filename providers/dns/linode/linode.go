@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/linode/linodego"
@@ -66,7 +67,7 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for Linode.
 // Credentials must be passed in the environment variable: LINODE_TOKEN.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	values, err := env.Get(EnvToken)
 	if err != nil {
 		return nil, fmt.Errorf("linode: %w", err)

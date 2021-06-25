@@ -60,12 +60,12 @@ func TestNewDNSProvider(t *testing.T) {
 			if test.expected == "" {
 				require.NoError(t, err)
 				require.NotNil(t, p)
-				require.NotNil(t, p.config)
-				require.NotNil(t, p.client)
+				require.NotNil(t, p.(*DNSProvider).config)
+				require.NotNil(t, p.(*DNSProvider).client)
 
 				baseURL := os.Getenv(EnvBaseURL)
 				if baseURL != "" {
-					assert.Equal(t, baseURL, p.client.BaseURL)
+					assert.Equal(t, baseURL, p.(*DNSProvider).client.BaseURL)
 				}
 			} else {
 				require.EqualError(t, err, test.expected)

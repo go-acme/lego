@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/platform/config/env"
@@ -58,7 +59,7 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for Dyn DNS.
 // Credentials must be passed in the environment variables:
 // INWX_USERNAME, INWX_PASSWORD, and INWX_SHARED_SECRET.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	values, err := env.Get(EnvUsername, EnvPassword)
 	if err != nil {
 		return nil, fmt.Errorf("inwx: %w", err)

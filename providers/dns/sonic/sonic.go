@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/sonic/internal"
@@ -59,7 +60,7 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for Sonic.
 // Credentials must be passed in the environment variables:
 // SONIC_USERID and SONIC_APIKEY.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	values, err := env.Get(EnvUserID, EnvAPIKey)
 	if err != nil {
 		return nil, fmt.Errorf("sonic: %w", err)

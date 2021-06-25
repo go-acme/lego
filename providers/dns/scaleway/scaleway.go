@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	scwdomain "github.com/scaleway/scaleway-sdk-go/api/domain/v2beta1"
@@ -58,7 +59,7 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for Scaleway Domains API.
 // Credentials must be passed in the environment variables:
 // SCALEWAY_API_TOKEN, SCALEWAY_PROJECT_ID.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	values, err := env.Get(EnvAPIToken)
 	if err != nil {
 		return nil, fmt.Errorf("scaleway: %w", err)

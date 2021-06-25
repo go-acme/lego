@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/simply/internal"
@@ -60,7 +61,7 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for Simply.com.
 // Credentials must be passed in the environment variable: SIMPLY_ACCOUNT_NAME, SIMPLY_API_KEY.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	values, err := env.Get(EnvAccountName, EnvAPIKey)
 	if err != nil {
 		return nil, fmt.Errorf("simply: %w", err)

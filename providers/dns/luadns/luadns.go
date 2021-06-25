@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/luadns/internal"
@@ -63,7 +64,7 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for LuaDNS.
 // Credentials must be passed in the environment variables:
 // LUADNS_API_USERNAME and LUADNS_API_TOKEN.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	values, err := env.Get(EnvAPIUsername, EnvAPIToken)
 	if err != nil {
 		return nil, fmt.Errorf("luadns: %w", err)

@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/nrdcg/porkbun"
@@ -65,7 +66,7 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for Porkbun.
 // Credentials must be passed in the environment variables:
 // PORKBUN_SECRET_API_KEY, PORKBUN_PAPI_KEY.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	values, err := env.Get(EnvSecretAPIKey, EnvAPIKey)
 	if err != nil {
 		return nil, fmt.Errorf("porkbun: %w", err)

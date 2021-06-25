@@ -10,6 +10,7 @@ import (
 	"time"
 
 	cloudflare "github.com/cloudflare/cloudflare-go"
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/platform/config/env"
@@ -66,7 +67,7 @@ type DNSProvider struct {
 // Instead setup a API token with both Zone:Read and DNS:Edit permission, and pass the CLOUDFLARE_DNS_API_TOKEN environment variable.
 // You can split the Zone:Read and DNS:Edit permissions across multiple API tokens:
 // in this case pass both CLOUDFLARE_ZONE_API_TOKEN and CLOUDFLARE_DNS_API_TOKEN accordingly.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	values, err := env.GetWithFallback(
 		[]string{"CLOUDFLARE_EMAIL", "CF_API_EMAIL"},
 		[]string{"CLOUDFLARE_API_KEY", "CF_API_KEY"},

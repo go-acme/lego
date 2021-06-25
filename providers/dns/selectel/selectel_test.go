@@ -45,8 +45,8 @@ func TestNewDNSProvider(t *testing.T) {
 			if test.expected == "" {
 				require.NoError(t, err)
 				require.NotNil(t, p)
-				assert.NotNil(t, p.config)
-				assert.NotNil(t, p.client)
+				assert.NotNil(t, p.(*DNSProvider).config)
+				assert.NotNil(t, p.(*DNSProvider).client)
 			} else {
 				require.EqualError(t, err, test.expected)
 			}

@@ -16,6 +16,7 @@ import (
 	aazure "github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 )
@@ -84,7 +85,7 @@ type DNSProvider struct {
 // If the credentials are _not_ set via the environment,
 // then it will attempt to get a bearer token via the instance metadata service.
 // see: https://github.com/Azure/go-autorest/blob/v10.14.0/autorest/azure/auth/auth.go#L38-L42
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	config := NewDefaultConfig()
 
 	environmentName := env.GetOrFile(EnvEnvironment)

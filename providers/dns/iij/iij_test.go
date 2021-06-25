@@ -80,8 +80,8 @@ func TestNewDNSProvider(t *testing.T) {
 			if test.expected == "" {
 				require.NoError(t, err)
 				require.NotNil(t, p)
-				require.NotNil(t, p.config)
-				require.NotNil(t, p.api)
+				require.NotNil(t, p.(*DNSProvider).config)
+				require.NotNil(t, p.(*DNSProvider).api)
 			} else {
 				require.EqualError(t, err, test.expected)
 			}

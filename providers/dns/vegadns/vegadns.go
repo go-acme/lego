@@ -8,6 +8,7 @@ import (
 	"time"
 
 	vegaClient "github.com/OpenDNS/vegadns2client"
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 )
@@ -53,7 +54,7 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for VegaDNS.
 // Credentials must be passed in the environment variables:
 // VEGADNS_URL, SECRET_VEGADNS_KEY, SECRET_VEGADNS_SECRET.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	values, err := env.Get(EnvURL)
 	if err != nil {
 		return nil, fmt.Errorf("vegadns: %w", err)

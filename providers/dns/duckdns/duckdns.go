@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 )
@@ -52,7 +53,7 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a new DNS provider using
 // environment variable DUCKDNS_TOKEN for adding and removing the DNS record.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	values, err := env.Get(EnvToken)
 	if err != nil {
 		return nil, fmt.Errorf("duckdns: %w", err)

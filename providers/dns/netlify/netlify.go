@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/netlify/internal"
@@ -58,7 +59,7 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for Netlify.
 // Credentials must be passed in the environment variable: NETLIFY_TOKEN.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	values, err := env.Get(EnvToken)
 	if err != nil {
 		return nil, fmt.Errorf("netlify: %w", err)

@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 )
@@ -56,7 +57,7 @@ type DNSProvider struct {
 }
 
 // NewDNSProvider returns a DNSProvider instance.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	values, err := env.Get(EnvAPIUser, EnvAPIKey)
 	if err != nil {
 		return nil, fmt.Errorf("zoneee: %w", err)

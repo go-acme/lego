@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/internal/selectel"
@@ -60,7 +61,7 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for Selectel Domains API.
 // API token must be passed in the environment variable SELECTEL_API_TOKEN.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	values, err := env.Get(EnvAPIToken)
 	if err != nil {
 		return nil, fmt.Errorf("selectel: %w", err)

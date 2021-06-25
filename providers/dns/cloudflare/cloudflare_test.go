@@ -81,8 +81,8 @@ func TestNewDNSProvider(t *testing.T) {
 			if test.expected == "" {
 				require.NoError(t, err)
 				require.NotNil(t, p)
-				assert.NotNil(t, p.config)
-				assert.NotNil(t, p.client)
+				assert.NotNil(t, p.(*DNSProvider).config)
+				assert.NotNil(t, p.(*DNSProvider).client)
 			} else {
 				require.EqualError(t, err, test.expected)
 			}
@@ -189,12 +189,12 @@ func TestNewDNSProviderWithToken(t *testing.T) {
 
 			require.NoError(t, err)
 			require.NotNil(t, p)
-			assert.Equal(t, test.expected.dnsToken, p.config.AuthToken)
-			assert.Equal(t, test.expected.zoneToken, p.config.ZoneToken)
+			assert.Equal(t, test.expected.dnsToken, p.(*DNSProvider).config.AuthToken)
+			assert.Equal(t, test.expected.zoneToken, p.(*DNSProvider).config.ZoneToken)
 			if test.expected.sameClient {
-				assert.Equal(t, p.client.clientRead, p.client.clientEdit)
+				assert.Equal(t, p.(*DNSProvider).client.clientRead, p.(*DNSProvider).client.clientEdit)
 			} else {
-				assert.NotEqual(t, p.client.clientRead, p.client.clientEdit)
+				assert.NotEqual(t, p.(*DNSProvider).client.clientRead, p.(*DNSProvider).client.clientEdit)
 			}
 		})
 	}

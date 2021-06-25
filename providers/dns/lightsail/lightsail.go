@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/lightsail"
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 )
@@ -88,7 +89,7 @@ type DNSProvider struct {
 // public hosted zone via the FQDN.
 //
 // See also: https://github.com/aws/aws-sdk-go/wiki/configuring-sdk
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	return NewDNSProviderConfig(NewDefaultConfig())
 }
 

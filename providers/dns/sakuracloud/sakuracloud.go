@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/sacloud/libsacloud/api"
@@ -56,7 +57,7 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for SakuraCloud.
 // Credentials must be passed in the environment variables:
 // SAKURACLOUD_ACCESS_TOKEN & SAKURACLOUD_ACCESS_TOKEN_SECRET.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	values, err := env.Get(EnvAccessToken, EnvAccessTokenSecret)
 	if err != nil {
 		return nil, fmt.Errorf("sakuracloud: %w", err)

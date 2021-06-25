@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/clouddns/internal"
@@ -59,7 +60,7 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for CloudDNS.
 // Credentials must be passed in the environment variables:
 // CLOUDDNS_CLIENT_ID, CLOUDDNS_EMAIL, CLOUDDNS_PASSWORD.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	values, err := env.Get(EnvClientID, EnvEmail, EnvPassword)
 	if err != nil {
 		return nil, fmt.Errorf("clouddns: %w", err)

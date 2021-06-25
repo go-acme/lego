@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/loopia/internal"
@@ -74,7 +75,7 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for Loopia.
 // Credentials must be passed in the environment variables:
 // LOOPIA_API_USER, LOOPIA_API_PASSWORD.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	values, err := env.Get(EnvAPIUser, EnvAPIPassword)
 	if err != nil {
 		return nil, fmt.Errorf("loopia: %w", err)

@@ -1,6 +1,8 @@
 package dns
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 
 	"github.com/go-acme/lego/v4/challenge"
@@ -98,191 +100,475 @@ import (
 )
 
 // NewDNSChallengeProviderByName Factory for DNS providers.
+// Return an ErrUnrecognizedProvider if name doesn't match a supported proivder.
 func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
-	switch name {
-	case "acme-dns":
-		return acmedns.NewDNSProvider()
-	case "alidns":
-		return alidns.NewDNSProvider()
-	case "arvancloud":
-		return arvancloud.NewDNSProvider()
-	case "azure":
-		return azure.NewDNSProvider()
-	case "auroradns":
-		return auroradns.NewDNSProvider()
-	case "autodns":
-		return autodns.NewDNSProvider()
-	case "bindman":
-		return bindman.NewDNSProvider()
-	case "bluecat":
-		return bluecat.NewDNSProvider()
-	case "checkdomain":
-		return checkdomain.NewDNSProvider()
-	case "clouddns":
-		return clouddns.NewDNSProvider()
-	case "cloudflare":
-		return cloudflare.NewDNSProvider()
-	case "cloudns":
-		return cloudns.NewDNSProvider()
-	case "cloudxns":
-		return cloudxns.NewDNSProvider()
-	case "conoha":
-		return conoha.NewDNSProvider()
-	case "constellix":
-		return constellix.NewDNSProvider()
-	case "desec":
-		return desec.NewDNSProvider()
-	case "designate":
-		return designate.NewDNSProvider()
-	case "digitalocean":
-		return digitalocean.NewDNSProvider()
-	case "dnsimple":
-		return dnsimple.NewDNSProvider()
-	case "dnsmadeeasy":
-		return dnsmadeeasy.NewDNSProvider()
-	case "dnspod":
-		return dnspod.NewDNSProvider()
-	case "dode":
-		return dode.NewDNSProvider()
-	case "domeneshop", "domainnameshop":
-		return domeneshop.NewDNSProvider()
-	case "dreamhost":
-		return dreamhost.NewDNSProvider()
-	case "duckdns":
-		return duckdns.NewDNSProvider()
-	case "dyn":
-		return dyn.NewDNSProvider()
-	case "dynu":
-		return dynu.NewDNSProvider()
-	case "easydns":
-		return easydns.NewDNSProvider()
-	case "edgedns", "fastdns": // "fastdns" is for compatibility with v3, must be dropped in v5
-		return edgedns.NewDNSProvider()
-	case "exec":
-		return exec.NewDNSProvider()
-	case "exoscale":
-		return exoscale.NewDNSProvider()
-	case "gandi":
-		return gandi.NewDNSProvider()
-	case "gandiv5":
-		return gandiv5.NewDNSProvider()
-	case "glesys":
-		return glesys.NewDNSProvider()
-	case "gcloud":
-		return gcloud.NewDNSProvider()
-	case "godaddy":
-		return godaddy.NewDNSProvider()
-	case "hetzner":
-		return hetzner.NewDNSProvider()
-	case "hostingde":
-		return hostingde.NewDNSProvider()
-	case "httpreq":
-		return httpreq.NewDNSProvider()
-	case "hurricane":
-		return hurricane.NewDNSProvider()
-	case "hyperone":
-		return hyperone.NewDNSProvider()
-	case "iij":
-		return iij.NewDNSProvider()
-	case "infoblox":
-		return infoblox.NewDNSProvider()
-	case "infomaniak":
-		return infomaniak.NewDNSProvider()
-	case "internetbs":
-		return internetbs.NewDNSProvider()
-	case "inwx":
-		return inwx.NewDNSProvider()
-	case "ionos":
-		return ionos.NewDNSProvider()
-	case "joker":
-		return joker.NewDNSProvider()
-	case "lightsail":
-		return lightsail.NewDNSProvider()
-	case "linode", "linodev4": // "linodev4" is for compatibility with v3, must be dropped in v5
-		return linode.NewDNSProvider()
-	case "liquidweb":
-		return liquidweb.NewDNSProvider()
-	case "luadns":
-		return luadns.NewDNSProvider()
-	case "loopia":
-		return loopia.NewDNSProvider()
-	case "manual":
-		return dns01.NewDNSProviderManual()
-	case "mydnsjp":
-		return mydnsjp.NewDNSProvider()
-	case "mythicbeasts":
-		return mythicbeasts.NewDNSProvider()
-	case "namecheap":
-		return namecheap.NewDNSProvider()
-	case "namedotcom":
-		return namedotcom.NewDNSProvider()
-	case "namesilo":
-		return namesilo.NewDNSProvider()
-	case "netcup":
-		return netcup.NewDNSProvider()
-	case "netlify":
-		return netlify.NewDNSProvider()
-	case "nifcloud":
-		return nifcloud.NewDNSProvider()
-	case "njalla":
-		return njalla.NewDNSProvider()
-	case "ns1":
-		return ns1.NewDNSProvider()
-	case "oraclecloud":
-		return oraclecloud.NewDNSProvider()
-	case "otc":
-		return otc.NewDNSProvider()
-	case "ovh":
-		return ovh.NewDNSProvider()
-	case "pdns":
-		return pdns.NewDNSProvider()
-	case "porkbun":
-		return porkbun.NewDNSProvider()
-	case "rackspace":
-		return rackspace.NewDNSProvider()
-	case "regru":
-		return regru.NewDNSProvider()
-	case "rfc2136":
-		return rfc2136.NewDNSProvider()
-	case "rimuhosting":
-		return rimuhosting.NewDNSProvider()
-	case "route53":
-		return route53.NewDNSProvider()
-	case "sakuracloud":
-		return sakuracloud.NewDNSProvider()
-	case "scaleway":
-		return scaleway.NewDNSProvider()
-	case "selectel":
-		return selectel.NewDNSProvider()
-	case "servercow":
-		return servercow.NewDNSProvider()
-	case "simply":
-		return simply.NewDNSProvider()
-	case "sonic":
-		return sonic.NewDNSProvider()
-	case "stackpath":
-		return stackpath.NewDNSProvider()
-	case "transip":
-		return transip.NewDNSProvider()
-	case "vegadns":
-		return vegadns.NewDNSProvider()
-	case "versio":
-		return versio.NewDNSProvider()
-	case "vinyldns":
-		return vinyldns.NewDNSProvider()
-	case "vultr":
-		return vultr.NewDNSProvider()
-	case "vscale":
-		return vscale.NewDNSProvider()
-	case "wedos":
-		return wedos.NewDNSProvider()
-	case "yandex":
-		return yandex.NewDNSProvider()
-	case "zoneee":
-		return zoneee.NewDNSProvider()
-	case "zonomi":
-		return zonomi.NewDNSProvider()
-	default:
-		return nil, fmt.Errorf("unrecognized DNS provider: %s", name)
+	var p SupportedProvider
+	if e := p.set(name); e != nil {
+		return nil, e
 	}
+
+	return _provider2func[p]()
+}
+
+type (
+	// SupportedProvider index the framework supported provider.
+	SupportedProvider int
+
+	providerFactory func() (challenge.Provider, error)
+)
+
+const (
+	ProviderAcmeDNS SupportedProvider = iota
+	ProviderAliDNS
+	ProviderArvanCloud
+	ProviderAzure
+	ProviderAuroraDNS
+	ProviderAutoDNS
+	ProviderBindman
+	ProviderBluecat
+	ProviderCheckDomain
+	ProviderCloudDNS
+	ProviderCloudflare
+	ProviderCloudns
+	ProviderCloudXns
+	ProviderConoha
+	ProviderConstellix
+	ProviderDesec
+	ProviderDesignate
+	ProviderDigitalOcean
+	ProviderDNSimple
+	ProviderDNSMadeEasy
+	ProviderDNSpod
+	ProviderDode
+	ProviderDomeneShop
+	ProviderDomainNameShop
+	ProviderDeamHost
+	ProviderDuckDNS
+	ProviderDyn
+	ProviderDynu
+	ProviderEasyDNS
+	ProviderEdgeDNS
+	ProviderExec
+	ProviderExoscale
+	ProviderFastDNS
+	ProviderGandi
+	ProviderGandiv5
+	ProviderGlesys
+	ProviderGcloud
+	ProviderGodaddy
+	ProviderHetzner
+	ProviderHostingde
+	ProviderHttpreq
+	ProviderHurricane
+	ProviderHypreone
+	ProviderIij
+	ProviderInfoblox
+	ProviderInfomaniak
+	ProviderInternetBs
+	ProviderInwx
+	ProviderIonos
+	ProviderJoker
+	ProviderLightSail
+	ProviderLinode
+	ProviderLinodEv4
+	ProviderLiquidWeb
+	ProviderLudDNS
+	ProviderLoopia
+	ProviderManual
+	ProviderMyDNSJp
+	ProviderMythicBeasts
+	ProviderNamecheap
+	ProviderNameDocCom
+	ProviderNamesilo
+	ProviderNetcup
+	ProviderNetlify
+	ProviderNifCloud
+	ProviderNialla
+	ProviderNs1
+	ProviderOracleCloud
+	ProviderOtc
+	ProviderOvh
+	ProviderPdns
+	ProviderPorkbun
+	ProviderRackSpace
+	ProviderRegru
+	ProviderRfc2136
+	ProviderRimuHosting
+	ProviderRoute53
+	ProviderSakuraCloud
+	ProviderScaleway
+	ProviderSelectEl
+	ProviderServerCow
+	ProviderSimply
+	ProviderSonic
+	ProviderStackPath
+	ProviderTansip
+	ProviderVegaDNS
+	ProviderVersio
+	ProviderVinylDNS
+	ProviderVultr
+	ProviderVscale
+	ProviderWedos
+	ProviderYandex
+	ProviderZonnee
+	ProviderZonomi
+)
+
+//nolint: gochecknoglobals
+var (
+	_str2provider = map[string]SupportedProvider{
+		"acme-dns":       ProviderAcmeDNS,
+		"alidns":         ProviderAliDNS,
+		"arvancloud":     ProviderArvanCloud,
+		"azure":          ProviderAzure,
+		"auroradns":      ProviderAuroraDNS,
+		"autodns":        ProviderAutoDNS,
+		"bindman":        ProviderBindman,
+		"bluecat":        ProviderBluecat,
+		"checkdomain":    ProviderCheckDomain,
+		"clouddns":       ProviderCloudDNS,
+		"cloudflare":     ProviderCloudflare,
+		"cloudns":        ProviderCloudns,
+		"cloudxns":       ProviderCloudXns,
+		"conoha":         ProviderConoha,
+		"constellix":     ProviderConstellix,
+		"desec":          ProviderDesec,
+		"designate":      ProviderDesignate,
+		"digitalocean":   ProviderDigitalOcean,
+		"dnsimple":       ProviderDNSimple,
+		"dnsmadeeasy":    ProviderDNSMadeEasy,
+		"dnspod":         ProviderDNSpod,
+		"dode":           ProviderDode,
+		"domeneshop":     ProviderDomeneShop,
+		"domainnameshop": ProviderDomainNameShop,
+		"dreamhost":      ProviderDeamHost,
+		"duckdns":        ProviderDuckDNS,
+		"dyn":            ProviderDyn,
+		"dynu":           ProviderDynu,
+		"easydns":        ProviderEasyDNS,
+		"edgedns":        ProviderEdgeDNS,
+		"exec":           ProviderExec,
+		"exoscale":       ProviderExoscale,
+		"fastdns":        ProviderFastDNS,
+		"gandi":          ProviderGandi,
+		"gandiv5":        ProviderGandiv5,
+		"glesys":         ProviderGlesys,
+		"gcloud":         ProviderGcloud,
+		"godaddy":        ProviderGodaddy,
+		"hetzner":        ProviderHetzner,
+		"hostingde":      ProviderHostingde,
+		"httpreq":        ProviderHttpreq,
+		"hurricane":      ProviderHurricane,
+		"hyperone":       ProviderHypreone,
+		"iij":            ProviderIij,
+		"infoblox":       ProviderInfoblox,
+		"infomaniak":     ProviderInfomaniak,
+		"internetbs":     ProviderInternetBs,
+		"inwx":           ProviderInwx,
+		"ionos":          ProviderIonos,
+		"joker":          ProviderJoker,
+		"lightsail":      ProviderLightSail,
+		"linode":         ProviderLinode,
+		"linodev4":       ProviderLinodEv4,
+		"liquidweb":      ProviderLiquidWeb,
+		"luadns":         ProviderLudDNS,
+		"loopia":         ProviderLoopia,
+		"manual":         ProviderManual,
+		"mydnsjp":        ProviderMyDNSJp,
+		"mythicbeasts":   ProviderMythicBeasts,
+		"namecheap":      ProviderNamecheap,
+		"namedotcom":     ProviderNameDocCom,
+		"namesilo":       ProviderNamesilo,
+		"netcup":         ProviderNetcup,
+		"netlify":        ProviderNetlify,
+		"nifcloud":       ProviderNifCloud,
+		"njalla":         ProviderNialla,
+		"ns1":            ProviderNs1,
+		"oraclecloud":    ProviderOracleCloud,
+		"otc":            ProviderOtc,
+		"ovh":            ProviderOvh,
+		"pdns":           ProviderPdns,
+		"porkbun":        ProviderPorkbun,
+		"rackspace":      ProviderRackSpace,
+		"regru":          ProviderRegru,
+		"rfc2136":        ProviderRfc2136,
+		"rimuhosting":    ProviderRimuHosting,
+		"route53":        ProviderRoute53,
+		"sakuracloud":    ProviderSakuraCloud,
+		"scaleway":       ProviderScaleway,
+		"selectel":       ProviderSelectEl,
+		"servercow":      ProviderServerCow,
+		"simply":         ProviderSimply,
+		"sonic":          ProviderSonic,
+		"stackpath":      ProviderStackPath,
+		"transip":        ProviderTansip,
+		"vegadns":        ProviderVegaDNS,
+		"versio":         ProviderVersio,
+		"vinyldns":       ProviderVinylDNS,
+		"vultr":          ProviderVultr,
+		"vscale":         ProviderVscale,
+		"wedos":          ProviderWedos,
+		"yandex":         ProviderYandex,
+		"zoneee":         ProviderZonnee,
+		"zonomi":         ProviderZonomi,
+	}
+
+	_provider2str = map[SupportedProvider]string{
+		ProviderAcmeDNS:        "acme-dns",
+		ProviderAliDNS:         "alidns",
+		ProviderArvanCloud:     "arvancloud",
+		ProviderAzure:          "azure",
+		ProviderAuroraDNS:      "auroradns",
+		ProviderAutoDNS:        "autodns",
+		ProviderBindman:        "bindman",
+		ProviderBluecat:        "bluecat",
+		ProviderCheckDomain:    "checkdomain",
+		ProviderCloudDNS:       "clouddns",
+		ProviderCloudflare:     "cloudflare",
+		ProviderCloudns:        "cloudns",
+		ProviderCloudXns:       "cloudxns",
+		ProviderConoha:         "conoha",
+		ProviderConstellix:     "constellix",
+		ProviderDesec:          "desec",
+		ProviderDesignate:      "designate",
+		ProviderDigitalOcean:   "digitalocean",
+		ProviderDNSimple:       "dnsimple",
+		ProviderDNSMadeEasy:    "dnsmadeeasy",
+		ProviderDNSpod:         "dnspod",
+		ProviderDode:           "dode",
+		ProviderDomeneShop:     "domeneshop",
+		ProviderDomainNameShop: "domainnameshop",
+		ProviderDeamHost:       "dreamhost",
+		ProviderDuckDNS:        "duckdns",
+		ProviderDyn:            "dyn",
+		ProviderDynu:           "dynu",
+		ProviderEasyDNS:        "easydns",
+		ProviderEdgeDNS:        "edgedns",
+		ProviderExec:           "exec",
+		ProviderExoscale:       "exoscale",
+		ProviderFastDNS:        "fastdns",
+		ProviderGandi:          "gandi",
+		ProviderGandiv5:        "gandiv5",
+		ProviderGlesys:         "glesys",
+		ProviderGcloud:         "gcloud",
+		ProviderGodaddy:        "godaddy",
+		ProviderHetzner:        "hetzner",
+		ProviderHostingde:      "hostingde",
+		ProviderHttpreq:        "httpreq",
+		ProviderHurricane:      "hurricane",
+		ProviderHypreone:       "hyperone",
+		ProviderIij:            "iij",
+		ProviderInfoblox:       "infoblox",
+		ProviderInfomaniak:     "infomaniak",
+		ProviderInternetBs:     "internetbs",
+		ProviderInwx:           "inwx",
+		ProviderIonos:          "ionos",
+		ProviderJoker:          "joker",
+		ProviderLightSail:      "lightsail",
+		ProviderLinode:         "linode",
+		ProviderLinodEv4:       "linodev4",
+		ProviderLiquidWeb:      "liquidweb",
+		ProviderLudDNS:         "luadns",
+		ProviderLoopia:         "loopia",
+		ProviderManual:         "manual",
+		ProviderMyDNSJp:        "mydnsjp",
+		ProviderMythicBeasts:   "mythicbeasts",
+		ProviderNamecheap:      "namecheap",
+		ProviderNameDocCom:     "namedotcom",
+		ProviderNamesilo:       "namesilo",
+		ProviderNetcup:         "netcup",
+		ProviderNetlify:        "netlify",
+		ProviderNifCloud:       "nifcloud",
+		ProviderNialla:         "njalla",
+		ProviderNs1:            "ns1",
+		ProviderOracleCloud:    "oraclecloud",
+		ProviderOtc:            "otc",
+		ProviderOvh:            "ovh",
+		ProviderPdns:           "pdns",
+		ProviderPorkbun:        "porkbun",
+		ProviderRackSpace:      "rackspace",
+		ProviderRegru:          "regru",
+		ProviderRfc2136:        "rfc2136",
+		ProviderRimuHosting:    "rimuhosting",
+		ProviderRoute53:        "route53",
+		ProviderSakuraCloud:    "sakuracloud",
+		ProviderScaleway:       "scaleway",
+		ProviderSelectEl:       "selectel",
+		ProviderServerCow:      "servercow",
+		ProviderSimply:         "simply",
+		ProviderSonic:          "sonic",
+		ProviderStackPath:      "stackpath",
+		ProviderTansip:         "transip",
+		ProviderVegaDNS:        "vegadns",
+		ProviderVersio:         "versio",
+		ProviderVinylDNS:       "vinyldns",
+		ProviderVultr:          "vultr",
+		ProviderVscale:         "vscale",
+		ProviderWedos:          "wedos",
+		ProviderYandex:         "yandex",
+		ProviderZonnee:         "zoneee",
+		ProviderZonomi:         "zonomi",
+	}
+
+	_provider2func = map[SupportedProvider]providerFactory{
+		ProviderAcmeDNS:        acmedns.NewDNSProvider,
+		ProviderAliDNS:         alidns.NewDNSProvider,
+		ProviderArvanCloud:     arvancloud.NewDNSProvider,
+		ProviderAzure:          azure.NewDNSProvider,
+		ProviderAuroraDNS:      auroradns.NewDNSProvider,
+		ProviderAutoDNS:        autodns.NewDNSProvider,
+		ProviderBindman:        bindman.NewDNSProvider,
+		ProviderBluecat:        bluecat.NewDNSProvider,
+		ProviderCheckDomain:    checkdomain.NewDNSProvider,
+		ProviderCloudDNS:       clouddns.NewDNSProvider,
+		ProviderCloudflare:     cloudflare.NewDNSProvider,
+		ProviderCloudns:        cloudns.NewDNSProvider,
+		ProviderCloudXns:       cloudxns.NewDNSProvider,
+		ProviderConoha:         conoha.NewDNSProvider,
+		ProviderConstellix:     constellix.NewDNSProvider,
+		ProviderDesec:          desec.NewDNSProvider,
+		ProviderDesignate:      designate.NewDNSProvider,
+		ProviderDigitalOcean:   digitalocean.NewDNSProvider,
+		ProviderDNSimple:       dnsimple.NewDNSProvider,
+		ProviderDNSMadeEasy:    dnsmadeeasy.NewDNSProvider,
+		ProviderDNSpod:         dnspod.NewDNSProvider,
+		ProviderDode:           dode.NewDNSProvider,
+		ProviderDomeneShop:     domeneshop.NewDNSProvider,
+		ProviderDomainNameShop: domeneshop.NewDNSProvider,
+		ProviderDeamHost:       dreamhost.NewDNSProvider,
+		ProviderDuckDNS:        duckdns.NewDNSProvider,
+		ProviderDyn:            dyn.NewDNSProvider,
+		ProviderDynu:           dynu.NewDNSProvider,
+		ProviderEasyDNS:        easydns.NewDNSProvider,
+		ProviderEdgeDNS:        edgedns.NewDNSProvider,
+		ProviderExec:           exec.NewDNSProvider,
+		ProviderExoscale:       exoscale.NewDNSProvider,
+		ProviderFastDNS:        edgedns.NewDNSProvider,
+		ProviderGandi:          gandi.NewDNSProvider,
+		ProviderGandiv5:        gandiv5.NewDNSProvider,
+		ProviderGlesys:         glesys.NewDNSProvider,
+		ProviderGcloud:         gcloud.NewDNSProvider,
+		ProviderGodaddy:        godaddy.NewDNSProvider,
+		ProviderHetzner:        hetzner.NewDNSProvider,
+		ProviderHostingde:      hostingde.NewDNSProvider,
+		ProviderHttpreq:        httpreq.NewDNSProvider,
+		ProviderHurricane:      hurricane.NewDNSProvider,
+		ProviderHypreone:       hyperone.NewDNSProvider,
+		ProviderIij:            iij.NewDNSProvider,
+		ProviderInfoblox:       infoblox.NewDNSProvider,
+		ProviderInfomaniak:     infomaniak.NewDNSProvider,
+		ProviderInternetBs:     internetbs.NewDNSProvider,
+		ProviderInwx:           inwx.NewDNSProvider,
+		ProviderIonos:          ionos.NewDNSProvider,
+		ProviderJoker:          joker.NewDNSProvider,
+		ProviderLightSail:      lightsail.NewDNSProvider,
+		ProviderLinode:         linode.NewDNSProvider,
+		ProviderLinodEv4:       linode.NewDNSProvider,
+		ProviderLiquidWeb:      liquidweb.NewDNSProvider,
+		ProviderLudDNS:         luadns.NewDNSProvider,
+		ProviderLoopia:         loopia.NewDNSProvider,
+		ProviderManual:         dns01.NewDNSProviderManual,
+		ProviderMyDNSJp:        mydnsjp.NewDNSProvider,
+		ProviderMythicBeasts:   mythicbeasts.NewDNSProvider,
+		ProviderNamecheap:      namecheap.NewDNSProvider,
+		ProviderNameDocCom:     namedotcom.NewDNSProvider,
+		ProviderNamesilo:       namesilo.NewDNSProvider,
+		ProviderNetcup:         netcup.NewDNSProvider,
+		ProviderNetlify:        netlify.NewDNSProvider,
+		ProviderNifCloud:       nifcloud.NewDNSProvider,
+		ProviderNialla:         njalla.NewDNSProvider,
+		ProviderNs1:            ns1.NewDNSProvider,
+		ProviderOracleCloud:    oraclecloud.NewDNSProvider,
+		ProviderOtc:            otc.NewDNSProvider,
+		ProviderOvh:            ovh.NewDNSProvider,
+		ProviderPdns:           pdns.NewDNSProvider,
+		ProviderPorkbun:        porkbun.NewDNSProvider,
+		ProviderRackSpace:      rackspace.NewDNSProvider,
+		ProviderRegru:          regru.NewDNSProvider,
+		ProviderRfc2136:        rfc2136.NewDNSProvider,
+		ProviderRimuHosting:    rimuhosting.NewDNSProvider,
+		ProviderRoute53:        route53.NewDNSProvider,
+		ProviderSakuraCloud:    sakuracloud.NewDNSProvider,
+		ProviderScaleway:       scaleway.NewDNSProvider,
+		ProviderSelectEl:       selectel.NewDNSProvider,
+		ProviderServerCow:      servercow.NewDNSProvider,
+		ProviderSimply:         simply.NewDNSProvider,
+		ProviderSonic:          sonic.NewDNSProvider,
+		ProviderStackPath:      stackpath.NewDNSProvider,
+		ProviderTansip:         transip.NewDNSProvider,
+		ProviderVegaDNS:        vegadns.NewDNSProvider,
+		ProviderVersio:         versio.NewDNSProvider,
+		ProviderVinylDNS:       vinyldns.NewDNSProvider,
+		ProviderVultr:          vultr.NewDNSProvider,
+		ProviderVscale:         vscale.NewDNSProvider,
+		ProviderWedos:          wedos.NewDNSProvider,
+		ProviderYandex:         yandex.NewDNSProvider,
+		ProviderZonnee:         zoneee.NewDNSProvider,
+		ProviderZonomi:         zonomi.NewDNSProvider,
+	}
+)
+
+// ErrUnsupportedProvider is yield in case of provider not supported by
+// the framework.
+type ErrUnsupportedProvider struct{ name string }
+
+// Error implemente the error interface.
+func (e ErrUnsupportedProvider) Error() string {
+	return fmt.Sprintf("unrecognized DNS provider: %s", e.name)
+}
+
+func (p *SupportedProvider) set(name string) error {
+	if v, ok := _str2provider[name]; ok {
+		*p = v
+		return nil
+	}
+
+	return ErrUnsupportedProvider{name}
+}
+
+// String implement the Stringer interface.
+func (p SupportedProvider) String() string {
+	if v, ok := _provider2str[p]; ok {
+		return v
+	}
+
+	return ``
+}
+
+// MarshalJSON implement the MashalJSON interface, allowing serialization to json.
+func (p SupportedProvider) MarshalJSON() ([]byte, error) {
+	b := bytes.NewBufferString(`"`)
+	b.WriteString(p.String())
+	b.WriteString(`"`)
+
+	return b.Bytes(), nil
+}
+
+// UnmarshalJSON Implement the UnmashalJSON interface, allowing deserialization from json.
+func (p *SupportedProvider) UnmarshalJSON(b []byte) error {
+	var j string
+	if err := json.Unmarshal(b, &j); err != nil {
+		return err
+	}
+
+	return p.set(j)
+}
+
+// IsProviderSupported return true if the name param match a
+// supported provider.
+func IsProviderSupported(name string) bool {
+	var p SupportedProvider
+
+	return p.set(name) == nil
+}
+
+// GetSupportedProvider return a list of supported provider name.
+func GetSupportedProvider() []string {
+	i, out := 0, make([]string, len(_str2provider))
+	for name := range _str2provider {
+		out[i] = name
+		i++
+	}
+
+	return out
 }

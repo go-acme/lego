@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 )
@@ -72,7 +73,7 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for mythicbeasts DNSv2 API.
 // Credentials must be passed in the environment variables:
 // MYTHICBEASTS_USERNAME and MYTHICBEASTS_PASSWORD.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	values, err := env.Get(EnvUserName, EnvPassword)
 	if err != nil {
 		return nil, fmt.Errorf("mythicbeasts: %w", err)

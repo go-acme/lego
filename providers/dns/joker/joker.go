@@ -64,7 +64,7 @@ func NewDefaultConfig() *Config {
 
 // NewDNSProvider returns a DNSProvider instance configured for Joker.
 // Credentials must be passed in the environment variable JOKER_API_KEY.
-func NewDNSProvider() (challenge.ProviderTimeout, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	if os.Getenv(EnvMode) == modeSVC {
 		return newSvcProvider()
 	}

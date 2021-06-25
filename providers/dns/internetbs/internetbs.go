@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/internetbs/internal"
@@ -55,7 +56,7 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for internet.bs.
 // Credentials must be passed in the environment variable: INTERNET_BS_API_KEY, INTERNET_BS_PASSWORD.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	values, err := env.Get(EnvAPIKey, EnvPassword)
 	if err != nil {
 		return nil, fmt.Errorf("internetbs: %w", err)

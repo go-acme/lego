@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/miekg/dns"
@@ -68,7 +69,7 @@ type DNSProvider struct {
 // RFC2136_TSIG_SECRET: Secret key payload.
 // RFC2136_PROPAGATION_TIMEOUT: DNS propagation timeout in time.ParseDuration format. (60s)
 // To disable TSIG authentication, leave the RFC2136_TSIG* variables unset.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	values, err := env.Get(EnvNameserver)
 	if err != nil {
 		return nil, fmt.Errorf("rfc2136: %w", err)

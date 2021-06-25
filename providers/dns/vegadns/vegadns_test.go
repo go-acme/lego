@@ -34,7 +34,7 @@ func TestDNSProvider_TimeoutSuccess(t *testing.T) {
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	timeout, interval := provider.Timeout()
+	timeout, interval := provider.(*DNSProvider).Timeout()
 	assert.Equal(t, timeout, 12*time.Minute)
 	assert.Equal(t, interval, 1*time.Minute)
 }

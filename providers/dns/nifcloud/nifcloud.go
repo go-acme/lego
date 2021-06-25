@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/platform/wait"
@@ -59,7 +60,7 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for the NIFCLOUD DNS service.
 // Credentials must be passed in the environment variables:
 // NIFCLOUD_ACCESS_KEY_ID and NIFCLOUD_SECRET_ACCESS_KEY.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	values, err := env.Get(EnvAccessKeyID, EnvSecretAccessKey)
 	if err != nil {
 		return nil, fmt.Errorf("nifcloud: %w", err)

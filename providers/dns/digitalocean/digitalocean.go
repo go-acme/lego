@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 )
@@ -57,7 +58,7 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for Digital
 // Ocean. Credentials must be passed in the environment variable:
 // DO_AUTH_TOKEN.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	values, err := env.Get(EnvAuthToken)
 	if err != nil {
 		return nil, fmt.Errorf("digitalocean: %w", err)

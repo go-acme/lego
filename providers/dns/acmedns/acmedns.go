@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/cpu/goacmedns"
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 )
@@ -42,7 +43,7 @@ type DNSProvider struct {
 
 // NewDNSProvider creates an ACME-DNS provider using file based account storage.
 // Its configuration is loaded from the environment by reading EnvAPIBase and EnvStoragePath.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	values, err := env.Get(EnvAPIBase, EnvStoragePath)
 	if err != nil {
 		return nil, fmt.Errorf("acme-dns: %w", err)

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"time"
+
+	"github.com/go-acme/lego/v4/challenge"
 )
 
 const (
@@ -15,7 +17,7 @@ const (
 type DNSProviderManual struct{}
 
 // NewDNSProviderManual returns a DNSProviderManual instance.
-func NewDNSProviderManual() (*DNSProviderManual, error) {
+func NewDNSProviderManual() (challenge.Provider, error) {
 	return &DNSProviderManual{}, nil
 }
 

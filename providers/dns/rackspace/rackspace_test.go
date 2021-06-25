@@ -70,7 +70,7 @@ func TestLiveNewDNSProvider_ValidEnv(t *testing.T) {
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	assert.Contains(t, provider.cloudDNSEndpoint, "https://dns.api.rackspacecloud.com/v1.0/", "The endpoint URL should contain the base")
+	assert.Contains(t, provider.(*DNSProvider).cloudDNSEndpoint, "https://dns.api.rackspacecloud.com/v1.0/", "The endpoint URL should contain the base")
 }
 
 func TestLivePresent(t *testing.T) {

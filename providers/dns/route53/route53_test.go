@@ -98,7 +98,7 @@ func Test_getHostedZoneID_FromEnv(t *testing.T) {
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	hostedZoneID, err := provider.getHostedZoneID("whatever")
+	hostedZoneID, err := provider.(*DNSProvider).getHostedZoneID("whatever")
 	require.NoError(t, err, "HostedZoneID")
 
 	assert.Equal(t, expectedZoneID, hostedZoneID)

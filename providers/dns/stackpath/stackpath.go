@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/platform/config/env"
@@ -64,7 +65,7 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for Stackpath.
 // Credentials must be passed in the environment variables:
 // STACKPATH_CLIENT_ID, STACKPATH_CLIENT_SECRET, and STACKPATH_STACK_ID.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	values, err := env.Get(EnvClientID, EnvClientSecret, EnvStackID)
 	if err != nil {
 		return nil, fmt.Errorf("stackpath: %w", err)

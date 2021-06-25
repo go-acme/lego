@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/platform/config/env"
@@ -62,7 +63,7 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for pdns.
 // Credentials must be passed in the environment variable:
 // PDNS_API_URL and PDNS_API_KEY.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	values, err := env.Get(EnvAPIKey, EnvAPIURL)
 	if err != nil {
 		return nil, fmt.Errorf("pdns: %w", err)

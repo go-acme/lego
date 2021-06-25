@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 )
@@ -63,7 +64,7 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for Rackspace.
 // Credentials must be passed in the environment variables:
 // RACKSPACE_USER and RACKSPACE_API_KEY.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	values, err := env.Get(EnvUser, EnvAPIKey)
 	if err != nil {
 		return nil, fmt.Errorf("rackspace: %w", err)

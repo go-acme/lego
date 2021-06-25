@@ -141,7 +141,7 @@ func TestNewDNSProvider_FromEnv(t *testing.T) {
 
 			require.NoError(t, err)
 			require.NotNil(t, p)
-			require.NotNil(t, p.config)
+			require.NotNil(t, p.(*DNSProvider).config)
 
 			if test.expectedConfig != nil {
 				require.Equal(t, *test.expectedConfig, configdns.Config)

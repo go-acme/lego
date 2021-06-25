@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 )
@@ -84,7 +85,7 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for OTC DNS.
 // Credentials must be passed in the environment variables: OTC_USER_NAME,
 // OTC_DOMAIN_NAME, OTC_PASSWORD OTC_PROJECT_NAME and OTC_IDENTITY_ENDPOINT.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	values, err := env.Get(EnvDomainName, EnvUserName, EnvPassword, EnvProjectName)
 	if err != nil {
 		return nil, fmt.Errorf("otc: %w", err)

@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/nrdcg/dnspod-go"
@@ -55,7 +56,7 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for dnspod.
 // Credentials must be passed in the environment variables: DNSPOD_API_KEY.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	values, err := env.Get(EnvAPIKey)
 	if err != nil {
 		return nil, fmt.Errorf("dnspod: %w", err)

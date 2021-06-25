@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/namedotcom/go/namecom"
@@ -62,7 +63,7 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for namedotcom.
 // Credentials must be passed in the environment variables:
 // NAMECOM_USERNAME and NAMECOM_API_TOKEN.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	values, err := env.Get(EnvUsername, EnvAPIToken)
 	if err != nil {
 		return nil, fmt.Errorf("namedotcom: %w", err)

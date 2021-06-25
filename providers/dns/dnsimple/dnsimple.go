@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/dnsimple/dnsimple-go/dnsimple"
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"golang.org/x/oauth2"
@@ -55,7 +56,7 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variable: DNSIMPLE_OAUTH_TOKEN.
 //
 // See: https://developer.dnsimple.com/v2/#authentication
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	config := NewDefaultConfig()
 	config.AccessToken = env.GetOrFile(EnvOAuthToken)
 	config.BaseURL = env.GetOrFile(EnvBaseURL)

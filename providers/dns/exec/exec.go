@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/platform/config/env"
@@ -47,7 +48,7 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a new DNS provider which runs the program in the
 // environment variable EXEC_PATH for adding and removing the DNS record.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	values, err := env.Get(EnvPath)
 	if err != nil {
 		return nil, fmt.Errorf("exec: %w", err)

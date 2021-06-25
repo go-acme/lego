@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/compute/metadata"
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/platform/config/env"
@@ -73,7 +74,7 @@ type DNSProvider struct {
 // it can be overridden using the GCE_PROJECT environment variable.
 // A Service Account can be passed in the environment variable: GCE_SERVICE_ACCOUNT
 // or by specifying the keyfile location: GCE_SERVICE_ACCOUNT_FILE.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	// Use a service account file if specified via environment variable.
 	if saKey := env.GetOrFile(EnvServiceAccount); len(saKey) > 0 {
 		return NewDNSProviderServiceAccountKey([]byte(saKey))

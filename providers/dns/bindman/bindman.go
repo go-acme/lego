@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/labbsr0x/bindman-dns-webhook/src/client"
@@ -50,7 +51,7 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for Bindman.
 // BINDMAN_MANAGER_ADDRESS should have the scheme, hostname, and port (if required) of the authoritative Bindman Manager server.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	values, err := env.Get(EnvManagerAddress)
 	if err != nil {
 		return nil, fmt.Errorf("bindman: %w", err)

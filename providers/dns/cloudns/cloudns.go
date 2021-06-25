@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/platform/config/env"
@@ -60,7 +61,7 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for ClouDNS.
 // Credentials must be passed in the environment variables:
 // CLOUDNS_AUTH_ID and CLOUDNS_AUTH_PASSWORD.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	var subAuthID string
 	authID := env.GetOrFile(EnvAuthID)
 	if authID == "" {

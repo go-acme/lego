@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	infoblox "github.com/infobloxopen/infoblox-go-client"
@@ -93,7 +94,7 @@ type DNSProvider struct {
 // INFOBLOX_HOST, INFOBLOX_PORT
 // INFOBLOX_VIEW, INFOBLOX_WAPI_VERSION
 // INFOBLOX_SSL_VERIFY.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	values, err := env.Get(EnvHost, EnvUsername, EnvPassword)
 	if err != nil {
 		return nil, fmt.Errorf("infoblox: %w", err)

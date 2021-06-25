@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/conoha/internal"
@@ -61,7 +62,7 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for ConoHa DNS.
 // Credentials must be passed in the environment variables:
 // CONOHA_TENANT_ID, CONOHA_API_USERNAME, CONOHA_API_PASSWORD.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	values, err := env.Get(EnvTenantID, EnvAPIUsername, EnvAPIPassword)
 	if err != nil {
 		return nil, fmt.Errorf("conoha: %w", err)

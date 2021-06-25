@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/exoscale/egoscale"
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 )
@@ -61,7 +62,7 @@ type DNSProvider struct {
 
 // NewDNSProvider Credentials must be passed in the environment variables:
 // EXOSCALE_API_KEY, EXOSCALE_API_SECRET, EXOSCALE_ENDPOINT.
-func NewDNSProvider() (*DNSProvider, error) {
+func NewDNSProvider() (challenge.Provider, error) {
 	values, err := env.Get(EnvAPIKey, EnvAPISecret)
 	if err != nil {
 		return nil, fmt.Errorf("exoscale: %w", err)

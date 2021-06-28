@@ -25,7 +25,7 @@ const (
 const (
 	envNamespace = "LIGHTSAIL_"
 
-	EnvRegion  = envNamespace + "LIGHTSAIL_REGION"
+	EnvRegion  = envNamespace + "REGION"
 	EnvDNSZone = "DNS_ZONE"
 
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"

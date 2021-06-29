@@ -58,6 +58,7 @@ func allDNSCodes() string {
 		"iij",
 		"infoblox",
 		"infomaniak",
+		"internetbs",
 		"inwx",
 		"ionos",
 		"joker",
@@ -1041,6 +1042,27 @@ func displayDNSHelp(name string) error {
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/infomaniak`)
 
+	case "internetbs":
+		// generated from: providers/dns/internetbs/internetbs.toml
+		ew.writeln(`Configuration for Internet.bs.`)
+		ew.writeln(`Code:	'internetbs'`)
+		ew.writeln(`Since:	'v4.5.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "INTERNET_BS_API_KEY":	API key`)
+		ew.writeln(`	- "INTERNET_BS_PASSWORD":	API password`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "INTERNET_BS_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "INTERNET_BS_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "INTERNET_BS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "INTERNET_BS_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/internetbs`)
+
 	case "inwx":
 		// generated from: providers/dns/inwx/inwx.toml
 		ew.writeln(`Configuration for INWX.`)
@@ -1115,12 +1137,13 @@ func displayDNSHelp(name string) error {
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "AWS_ACCESS_KEY_ID":	Access key ID`)
-		ew.writeln(`	- "AWS_SECRET_ACCESS_KEY":	Secret access key`)
+		ew.writeln(`	- "AWS_ACCESS_KEY_ID":	Managed by the AWS client. Access key ID ('AWS_ACCESS_KEY_ID_FILE' is not supported, use 'AWS_SHARED_CREDENTIALS_FILE' instead)`)
+		ew.writeln(`	- "AWS_SECRET_ACCESS_KEY":	Managed by the AWS client. Secret access key ('AWS_SECRET_ACCESS_KEY_FILE' is not supported, use 'AWS_SHARED_CREDENTIALS_FILE' instead)`)
 		ew.writeln(`	- "DNS_ZONE":	Domain name of the DNS zone`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "AWS_SHARED_CREDENTIALS_FILE":	Managed by the AWS client. Shared credentials file.`)
 		ew.writeln(`	- "LIGHTSAIL_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "LIGHTSAIL_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
 
@@ -1630,18 +1653,19 @@ func displayDNSHelp(name string) error {
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "AWS_ACCESS_KEY_ID":	Managed by the AWS client ('AWS_ACCESS_KEY_ID_FILE' is not supported)`)
-		ew.writeln(`	- "AWS_HOSTED_ZONE_ID":	Override the hosted zone ID`)
+		ew.writeln(`	- "AWS_ACCESS_KEY_ID":	Managed by the AWS client. Access key ID ('AWS_ACCESS_KEY_ID_FILE' is not supported, use 'AWS_SHARED_CREDENTIALS_FILE' instead)`)
+		ew.writeln(`	- "AWS_HOSTED_ZONE_ID":	Override the hosted zone ID.`)
 		ew.writeln(`	- "AWS_PROFILE":	Managed by the AWS client ('AWS_PROFILE_FILE' is not supported)`)
 		ew.writeln(`	- "AWS_REGION":	Managed by the AWS client ('AWS_REGION_FILE' is not supported)`)
-		ew.writeln(`	- "AWS_SDK_LOAD_CONFIG":	Retrieve the region from the CLI config file ('AWS_SDK_LOAD_CONFIG_FILE' is not supported)`)
-		ew.writeln(`	- "AWS_SECRET_ACCESS_KEY":	Managed by the AWS client ('AWS_SECRET_ACCESS_KEY_FILE' is not supported)`)
+		ew.writeln(`	- "AWS_SDK_LOAD_CONFIG":	Managed by the AWS client. Retrieve the region from the CLI config file ('AWS_SDK_LOAD_CONFIG_FILE' is not supported)`)
+		ew.writeln(`	- "AWS_SECRET_ACCESS_KEY":	Managed by the AWS client. Secret access key ('AWS_SECRET_ACCESS_KEY_FILE' is not supported, use 'AWS_SHARED_CREDENTIALS_FILE' instead)`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
 		ew.writeln(`	- "AWS_MAX_RETRIES":	The number of maximum returns the service will use to make an individual API request`)
 		ew.writeln(`	- "AWS_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "AWS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "AWS_SHARED_CREDENTIALS_FILE":	Managed by the AWS client. Shared credentials file.`)
 		ew.writeln(`	- "AWS_TTL":	The TTL of the TXT record used for the DNS challenge`)
 
 		ew.writeln()

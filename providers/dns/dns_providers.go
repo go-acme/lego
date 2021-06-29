@@ -49,6 +49,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/iij"
 	"github.com/go-acme/lego/v4/providers/dns/infoblox"
 	"github.com/go-acme/lego/v4/providers/dns/infomaniak"
+	"github.com/go-acme/lego/v4/providers/dns/internetbs"
 	"github.com/go-acme/lego/v4/providers/dns/inwx"
 	"github.com/go-acme/lego/v4/providers/dns/ionos"
 	"github.com/go-acme/lego/v4/providers/dns/joker"
@@ -187,6 +188,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return infoblox.NewDNSProvider()
 	case "infomaniak":
 		return infomaniak.NewDNSProvider()
+	case "internetbs":
+		return internetbs.NewDNSProvider()
 	case "inwx":
 		return inwx.NewDNSProvider()
 	case "ionos":

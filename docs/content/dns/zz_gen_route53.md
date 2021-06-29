@@ -29,12 +29,12 @@ _Please contribute by adding a CLI example._
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `AWS_ACCESS_KEY_ID` | Managed by the AWS client (`AWS_ACCESS_KEY_ID_FILE` is not supported) |
-| `AWS_HOSTED_ZONE_ID` | Override the hosted zone ID |
+| `AWS_ACCESS_KEY_ID` | Managed by the AWS client. Access key ID (`AWS_ACCESS_KEY_ID_FILE` is not supported, use `AWS_SHARED_CREDENTIALS_FILE` instead) |
+| `AWS_HOSTED_ZONE_ID` | Override the hosted zone ID. |
 | `AWS_PROFILE` | Managed by the AWS client (`AWS_PROFILE_FILE` is not supported) |
 | `AWS_REGION` | Managed by the AWS client (`AWS_REGION_FILE` is not supported) |
-| `AWS_SDK_LOAD_CONFIG` | Retrieve the region from the CLI config file (`AWS_SDK_LOAD_CONFIG_FILE` is not supported) |
-| `AWS_SECRET_ACCESS_KEY` | Managed by the AWS client (`AWS_SECRET_ACCESS_KEY_FILE` is not supported) |
+| `AWS_SDK_LOAD_CONFIG` | Managed by the AWS client. Retrieve the region from the CLI config file (`AWS_SDK_LOAD_CONFIG_FILE` is not supported) |
+| `AWS_SECRET_ACCESS_KEY` | Managed by the AWS client. Secret access key (`AWS_SECRET_ACCESS_KEY_FILE` is not supported, use `AWS_SHARED_CREDENTIALS_FILE` instead) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).
@@ -47,6 +47,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `AWS_MAX_RETRIES` | The number of maximum returns the service will use to make an individual API request |
 | `AWS_POLLING_INTERVAL` | Time between DNS propagation check |
 | `AWS_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
+| `AWS_SHARED_CREDENTIALS_FILE` | Managed by the AWS client. Shared credentials file. |
 | `AWS_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.

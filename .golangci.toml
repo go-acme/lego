@@ -19,6 +19,7 @@
 
   [linters-settings.misspell]
     locale = "US"
+    ignore-words = ["internetbs"]
 
   [linters-settings.depguard]
     list-type = "blacklist"

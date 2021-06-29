@@ -1,0 +1,44 @@
+name: New DNS provider support
+description: Request for the support of a new DNS provider.
+title: "Support for provider: "
+labels: [enhancement, new-provider]
+body:
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Welcome
+      options:
+        - label: Yes, I've searched similar issues on GitHub and didn't find any.
+          required: true
+        - label: Yes, the DNS provider exposes a public API.
+          required: true
+        - label: Yes, I know that the lego maintainers don't have an account in all DNS providers in the world.
+          required: true
+        - label: Yes, I'm able to create a pull request and be able to maintain the implementation.
+          required: false
+        - label: Yes, I'm able to test an implementation if someone creates a pull request to add the support of this DNS provider.
+          required: false
+
+  - type: input
+    id: provider-link
+    attributes:
+      label: Link to the DNS provider
+      placeholder: Put your link here.
+    validations:
+      required: true
+
+  - type: input
+    id: api-link
+    attributes:
+      label:  Link to the API documentation
+      placeholder: Put your link here.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Additional Notes
+      placeholder: Your notes.
+    validations:
+      required: false

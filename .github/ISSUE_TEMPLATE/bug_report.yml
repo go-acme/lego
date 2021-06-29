@@ -1,0 +1,75 @@
+name: Bug Report
+description: Create a report to help us improve.
+labels: [bug]
+body:
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Welcome
+      options:
+        - label: Yes, I'm using a binary release within 2 latest releases.
+          required: true
+        - label: Yes, I've searched similar issues on GitHub and didn't find any.
+          required: true
+        - label: Yes, I've included all information below (version, config, etc).
+          required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to see?
+      placeholder: Description.
+    validations:
+      required: true
+
+  - type: textarea
+    id: current
+    attributes:
+      label: What did you see instead?
+      placeholder: Description.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      description: "How do you trigger this bug? Please walk us through it step by step."
+      value: |
+        1. ...
+        2. ...
+        3. ...
+        ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: version
+    attributes:
+      label: Version of lego
+      value: |-
+        <details>
+
+        ```console
+        $ lego --version
+        # paste output here
+        ```
+
+        </details>
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      value: |-
+        <details>
+
+        ```console
+        # paste output here
+        ```
+
+        </details>
+    validations:
+      required: true

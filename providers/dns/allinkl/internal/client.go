@@ -28,6 +28,7 @@ type Client struct {
 	authEndpoint string
 	apiEndpoint  string
 	HTTPClient   *http.Client
+	floodTime    time.Time
 }
 
 // NewClient creates a new Client.
@@ -107,7 +108,7 @@ func (c Client) Authentication(sessionLifetime int, sessionUpdateLifetime bool) 
 // GetDNSSettings Reading out the DNS settings of a zone.
 // - zone: host zone.
 // - recordID: the ID of the resource record (optional).
-func (c Client) GetDNSSettings(credentialToken, zone, recordID string) ([]ReturnInfo, error) {
+func (c *Client) GetDNSSettings(credentialToken, zone, recordID string) ([]ReturnInfo, error) {
 	requestParams := map[string]string{"zone_host": zone}
 
 	if recordID != "" {
@@ -127,11 +128,13 @@ func (c Client) GetDNSSettings(credentialToken, zone, recordID string) ([]Return
 		return nil, fmt.Errorf("response struct decode: %w", err)
 	}
 
+	c.updateFloodTime(g.Response.KasFloodDelay)
+
 	return g.Response.ReturnInfo, nil
 }
 
 // AddDNSSettings Creation of a DNS resource record.
-func (c Client) AddDNSSettings(credentialToken string, record DNSRequest) (string, error) {
+func (c *Client) AddDNSSettings(credentialToken string, record DNSRequest) (string, error) {
 	item, err := c.do(credentialToken, "add_dns_settings", record)
 	if err != nil {
 		return "", err
@@ -145,11 +148,13 @@ func (c Client) AddDNSSettings(credentialToken string, record DNSRequest) (strin
 		return "", fmt.Errorf("response struct decode: %w", err)
 	}
 
+	c.updateFloodTime(g.Response.KasFloodDelay)
+
 	return g.Response.ReturnInfo, nil
 }
 
 // DeleteDNSSettings Deleting a DNS Resource Record.
-func (c Client) DeleteDNSSettings(credentialToken, recordID string) (bool, error) {
+func (c *Client) DeleteDNSSettings(credentialToken, recordID string) (bool, error) {
 	requestParams := map[string]string{"record_id": recordID}
 
 	item, err := c.do(credentialToken, "delete_dns_settings", requestParams)
@@ -165,10 +170,14 @@ func (c Client) DeleteDNSSettings(credentialToken, recordID string) (bool, error
 		return false, fmt.Errorf("response struct decode: %w", err)
 	}
 
+	c.updateFloodTime(g.Response.KasFloodDelay)
+
 	return g.Response.ReturnInfo, nil
 }
 
 func (c Client) do(credentialToken, action string, requestParams interface{}) (*Item, error) {
+	time.Sleep(time.Until(c.floodTime))
+
 	ar := KasRequest{
 		Login:         c.login,
 		AuthType:      "session",
@@ -218,6 +227,10 @@ func (c Client) do(credentialToken, action string, requestParams interface{}) (*
 	}
 
 	return e.Body.KasAPIResponse.Return, nil
+}
+
+func (c *Client) updateFloodTime(delay float64) {
+	c.floodTime = time.Now().Add(time.Duration(delay * float64(time.Second)))
 }
 
 func getValue(item *Item) interface{} {

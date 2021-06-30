@@ -58,7 +58,9 @@ type GetDNSSettingsAPIResponse struct {
 }
 
 type GetDNSSettingsResponse struct {
-	ReturnInfo []ReturnInfo `json:"ReturnInfo" mapstructure:"ReturnInfo"`
+	KasFloodDelay float64      `json:"KasFloodDelay" mapstructure:"KasFloodDelay"`
+	ReturnInfo    []ReturnInfo `json:"ReturnInfo" mapstructure:"ReturnInfo"`
+	ReturnString  string       `json:"ReturnString"`
 }
 
 type ReturnInfo struct {

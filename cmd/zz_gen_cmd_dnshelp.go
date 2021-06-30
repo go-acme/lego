@@ -16,6 +16,7 @@ func allDNSCodes() string {
 		"manual",
 		"acme-dns",
 		"alidns",
+		"allinkl",
 		"arvancloud",
 		"auroradns",
 		"autodns",
@@ -149,6 +150,26 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/alidns`)
+
+	case "allinkl":
+		// generated from: providers/dns/allinkl/allinkl.toml
+		ew.writeln(`Configuration for all-inkl.`)
+		ew.writeln(`Code:	'allinkl'`)
+		ew.writeln(`Since:	'v4.5.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "ALL_INKL_API_KEY":	API login`)
+		ew.writeln(`	- "ALL_INKL_PASSWORD":	API password`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "ALL_INKL_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "ALL_INKL_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "ALL_INKL_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/allinkl`)
 
 	case "arvancloud":
 		// generated from: providers/dns/arvancloud/arvancloud.toml

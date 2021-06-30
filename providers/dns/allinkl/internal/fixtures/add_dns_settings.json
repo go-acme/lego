@@ -1,0 +1,18 @@
+{
+  "Request": {
+    "KasRequestParams": {
+      "record_aux": 0,
+      "record_data": "abcdefgh",
+      "record_name": "lego",
+      "record_type": "TXT",
+      "zone_host": "example.org."
+    },
+    "KasRequestTime": 1625014992,
+    "KasRequestType": true
+  },
+  "Response": {
+    "KasFloodDelay": 0.5,
+    "ReturnInfo": "57347444",
+    "ReturnString": "TRUE"
+  }
+}

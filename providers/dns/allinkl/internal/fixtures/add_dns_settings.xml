@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+                   xmlns:ns1="https://kasapi.kasserver.com/soap/KasApi.php"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                   xmlns:ns2="http://xml.apache.org/xml-soap"
+                   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+    <SOAP-ENV:Body>
+        <ns1:KasApiResponse>
+            <return xsi:type="ns2:Map">
+                <item>
+                    <key xsi:type="xsd:string">Request</key>
+                    <value xsi:type="ns2:Map">
+                        <item>
+                            <key xsi:type="xsd:string">KasRequestTime</key>
+                            <value xsi:type="xsd:int">1625014992</value>
+                        </item>
+                        <item>
+                            <key xsi:type="xsd:string">KasRequestType</key>
+                            <value xsi:nil="true"/>
+                        </item>
+                        <item>
+                            <key xsi:type="xsd:string">KasRequestParams</key>
+                            <value xsi:type="ns2:Map">
+                                <item>
+                                    <key xsi:type="xsd:string">zone_host</key>
+                                    <value xsi:type="xsd:string">example.org.</value>
+                                </item>
+                                <item>
+                                    <key xsi:type="xsd:string">record_type</key>
+                                    <value xsi:type="xsd:string">TXT</value>
+                                </item>
+                                <item>
+                                    <key xsi:type="xsd:string">record_name</key>
+                                    <value xsi:type="xsd:string">lego</value>
+                                </item>
+                                <item>
+                                    <key xsi:type="xsd:string">record_data</key>
+                                    <value xsi:type="xsd:string">abcdefgh</value>
+                                </item>
+                                <item>
+                                    <key xsi:type="xsd:string">record_aux</key>
+                                    <value xsi:type="xsd:int">0</value>
+                                </item>
+                            </value>
+                        </item>
+                    </value>
+                </item>
+                <item>
+                    <key xsi:type="xsd:string">Response</key>
+                    <value xsi:type="ns2:Map">
+                        <item>
+                            <key xsi:type="xsd:string">KasFloodDelay</key>
+                            <value xsi:type="xsd:float">0.5</value>
+                        </item>
+                        <item>
+                            <key xsi:type="xsd:string">ReturnString</key>
+                            <value xsi:type="xsd:string">TRUE</value>
+                        </item>
+                        <item>
+                            <key xsi:type="xsd:string">ReturnInfo</key>
+                            <value xsi:type="xsd:string">57347444</value>
+                        </item>
+                    </value>
+                </item>
+            </return>
+        </ns1:KasApiResponse>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>

@@ -31,6 +31,7 @@ require (
 	github.com/linode/linodego v0.25.3
 	github.com/liquidweb/liquidweb-go v1.6.3
 	github.com/miekg/dns v1.1.40
+	github.com/mitchellh/mapstructure v1.4.1
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
 	github.com/nrdcg/auroradns v1.0.1
 	github.com/nrdcg/desec v0.5.0

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+                   xmlns:ns1="https://kasapi.kasserver.com/soap/KasAuth.php"
+                   xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+    <SOAP-ENV:Body>
+        <ns1:KasAuthResponse>
+            <return xsi:type="xsd:string">593959ca04f0de9689b586c6a647d15d</return>
+        </ns1:KasAuthResponse>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>

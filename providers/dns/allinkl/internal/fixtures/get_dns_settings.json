@@ -1,0 +1,78 @@
+{
+  "Request": {
+    "KasRequestParams": {
+      "zone_host": "example.org"
+    },
+    "KasRequestTime": 1625012975,
+    "KasRequestType": true
+  },
+  "Response": {
+    "KasFloodDelay": 0.5,
+    "ReturnInfo": [
+      {
+        "record_aux": 0,
+        "record_changeable": "Y",
+        "record_data": "10.0.0.1",
+        "record_id": "57297429",
+        "record_name": "",
+        "record_type": "A",
+        "record_zone": "example.org"
+      },
+      {
+        "record_aux": 0,
+        "record_changeable": "N",
+        "record_data": "ns5.kasserver.com.",
+        "record_id": 0,
+        "record_name": "",
+        "record_type": "NS",
+        "record_zone": "example.org"
+      },
+      {
+        "record_aux": 0,
+        "record_changeable": "N",
+        "record_data": "ns6.kasserver.com.",
+        "record_id": 0,
+        "record_name": "",
+        "record_type": "NS",
+        "record_zone": "example.org"
+      },
+      {
+        "record_aux": 0,
+        "record_changeable": "Y",
+        "record_data": "10.0.0.1",
+        "record_id": "57297479",
+        "record_name": "*",
+        "record_type": "A",
+        "record_zone": "example.org"
+      },
+      {
+        "record_aux": 10,
+        "record_changeable": "Y",
+        "record_data": "user.kasserver.com.",
+        "record_id": "57297481",
+        "record_name": "",
+        "record_type": "MX",
+        "record_zone": "example.org"
+      },
+      {
+        "record_aux": 0,
+        "record_changeable": "Y",
+        "record_data": "v=spf1 mx a ?all",
+        "record_id": "57297483",
+        "record_name": "",
+        "record_type": "TXT",
+        "record_zone": "example.org"
+      },
+      {
+        "record_aux": 0,
+        "record_changeable": "Y",
+        "record_data": "v=DMARC1; p=none;",
+        "record_id": "57297485",
+        "record_name": "_dmarc",
+        "record_type": "TXT",
+        "record_zone": "example.org"
+      }
+    ],
+    "ReturnString": "TRUE"
+  }
+}

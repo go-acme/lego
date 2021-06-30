@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+                   xmlns:ns1="https://kasapi.kasserver.com/soap/KasApi.php"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                   xmlns:ns2="http://xml.apache.org/xml-soap" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/"
+                   SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+    <SOAP-ENV:Body>
+        <ns1:KasApiResponse>
+            <return xsi:type="ns2:Map">
+                <item>
+                    <key xsi:type="xsd:string">Request</key>
+                    <value xsi:type="ns2:Map">
+                        <item>
+                            <key xsi:type="xsd:string">KasRequestTime</key>
+                            <value xsi:type="xsd:int">1624993260</value>
+                        </item>
+                        <item>
+                            <key xsi:type="xsd:string">KasRequestType</key>
+                            <value xsi:nil="true"/>
+                        </item>
+                        <item>
+                            <key xsi:type="xsd:string">KasRequestParams</key>
+                            <value xsi:type="ns2:Map">
+                                <item>
+                                    <key xsi:type="xsd:string">zone_host</key>
+                                    <value xsi:type="xsd:string">example.org</value>
+                                </item>
+                            </value>
+                        </item>
+                    </value>
+                </item>
+                <item>
+                    <key xsi:type="xsd:string">Response</key>
+                    <value xsi:type="ns2:Map">
+                        <item>
+                            <key xsi:type="xsd:string">KasFloodDelay</key>
+                            <value xsi:type="xsd:float">0.5</value>
+                        </item>
+                        <item>
+                            <key xsi:type="xsd:string">ReturnString</key>
+                            <value xsi:type="xsd:string">TRUE</value>
+                        </item>
+                        <item>
+                            <key xsi:type="xsd:string">ReturnInfo</key>
+                            <value SOAP-ENC:arrayType="ns2:Map[7]" xsi:type="SOAP-ENC:Array">
+                                <item xsi:type="ns2:Map">
+                                    <item>
+                                        <key xsi:type="xsd:string">record_zone</key>
+                                        <value xsi:type="xsd:string">example.org</value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_name</key>
+                                        <value xsi:type="xsd:string"></value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_type</key>
+                                        <value xsi:type="xsd:string">A</value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_data</key>
+                                        <value xsi:type="xsd:string">10.0.0.1</value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_aux</key>
+                                        <value xsi:type="xsd:int">0</value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_id</key>
+                                        <value xsi:type="xsd:string">57297429</value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_changeable</key>
+                                        <value xsi:type="xsd:string">Y</value>
+                                    </item>
+                                </item>
+                                <item xsi:type="ns2:Map">
+                                    <item>
+                                        <key xsi:type="xsd:string">record_zone</key>
+                                        <value xsi:type="xsd:string">example.org</value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_name</key>
+                                        <value xsi:type="xsd:string"></value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_type</key>
+                                        <value xsi:type="xsd:string">NS</value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_data</key>
+                                        <value xsi:type="xsd:string">ns5.kasserver.com.</value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_aux</key>
+                                        <value xsi:type="xsd:int">0</value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_id</key>
+                                        <value xsi:type="xsd:int">0</value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_changeable</key>
+                                        <value xsi:type="xsd:string">N</value>
+                                    </item>
+                                </item>
+                                <item xsi:type="ns2:Map">
+                                    <item>
+                                        <key xsi:type="xsd:string">record_zone</key>
+                                        <value xsi:type="xsd:string">example.org</value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_name</key>
+                                        <value xsi:type="xsd:string"></value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_type</key>
+                                        <value xsi:type="xsd:string">NS</value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_data</key>
+                                        <value xsi:type="xsd:string">ns6.kasserver.com.</value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_aux</key>
+                                        <value xsi:type="xsd:int">0</value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_id</key>
+                                        <value xsi:type="xsd:int">0</value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_changeable</key>
+                                        <value xsi:type="xsd:string">N</value>
+                                    </item>
+                                </item>
+                                <item xsi:type="ns2:Map">
+                                    <item>
+                                        <key xsi:type="xsd:string">record_zone</key>
+                                        <value xsi:type="xsd:string">example.org</value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_name</key>
+                                        <value xsi:type="xsd:string">*</value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_type</key>
+                                        <value xsi:type="xsd:string">A</value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_data</key>
+                                        <value xsi:type="xsd:string">10.0.0.1</value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_aux</key>
+                                        <value xsi:type="xsd:int">0</value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_id</key>
+                                        <value xsi:type="xsd:string">57297479</value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_changeable</key>
+                                        <value xsi:type="xsd:string">Y</value>
+                                    </item>
+                                </item>
+                                <item xsi:type="ns2:Map">
+                                    <item>
+                                        <key xsi:type="xsd:string">record_zone</key>
+                                        <value xsi:type="xsd:string">example.org</value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_name</key>
+                                        <value xsi:type="xsd:string"></value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_type</key>
+                                        <value xsi:type="xsd:string">MX</value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_data</key>
+                                        <value xsi:type="xsd:string">user.kasserver.com.</value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_aux</key>
+                                        <value xsi:type="xsd:int">10</value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_id</key>
+                                        <value xsi:type="xsd:string">57297481</value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_changeable</key>
+                                        <value xsi:type="xsd:string">Y</value>
+                                    </item>
+                                </item>
+                                <item xsi:type="ns2:Map">
+                                    <item>
+                                        <key xsi:type="xsd:string">record_zone</key>
+                                        <value xsi:type="xsd:string">example.org</value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_name</key>
+                                        <value xsi:type="xsd:string"></value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_type</key>
+                                        <value xsi:type="xsd:string">TXT</value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_data</key>
+                                        <value xsi:type="xsd:string">v=spf1 mx a ?all</value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_aux</key>
+                                        <value xsi:type="xsd:int">0</value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_id</key>
+                                        <value xsi:type="xsd:string">57297483</value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_changeable</key>
+                                        <value xsi:type="xsd:string">Y</value>
+                                    </item>
+                                </item>
+                                <item xsi:type="ns2:Map">
+                                    <item>
+                                        <key xsi:type="xsd:string">record_zone</key>
+                                        <value xsi:type="xsd:string">example.org</value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_name</key>
+                                        <value xsi:type="xsd:string">_dmarc</value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_type</key>
+                                        <value xsi:type="xsd:string">TXT</value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_data</key>
+                                        <value xsi:type="xsd:string">v=DMARC1; p=none;</value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_aux</key>
+                                        <value xsi:type="xsd:int">0</value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_id</key>
+                                        <value xsi:type="xsd:string">57297485</value>
+                                    </item>
+                                    <item>
+                                        <key xsi:type="xsd:string">record_changeable</key>
+                                        <value xsi:type="xsd:string">Y</value>
+                                    </item>
+                                </item>
+                            </value>
+                        </item>
+                    </value>
+                </item>
+            </return>
+        </ns1:KasApiResponse>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>

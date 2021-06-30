@@ -19,6 +19,20 @@ body:
         - label: Yes, I'm able to test an implementation if someone creates a pull request to add the support of this DNS provider.
           required: false
 
+  - type: dropdown
+    id: type
+    attributes:
+      label: How do you use lego?
+      options:
+        - Library
+        - Binary
+        - Docker image
+        - Through Traefik
+        - Through Caddy
+        - Other
+    validations:
+      required: true
+
   - type: input
     id: provider-link
     attributes:

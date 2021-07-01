@@ -257,7 +257,7 @@ func displayDNSHelp(name string) error {
 		ew.writeln(`	- "AZURE_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "AZURE_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
 		ew.writeln(`	- "AZURE_TTL":	The TTL of the TXT record used for the DNS challenge`)
-		ew.writeln(`	- "AZURE_ZONE_NAME":	The name of the zone to use inside Azure DNS service (will skip query for SOA record from DNS)`)
+		ew.writeln(`	- "AZURE_ZONE_NAME":	Zone name to use inside Azure DNS service to add the TXT record in`)
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/azure`)

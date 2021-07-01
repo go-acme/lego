@@ -1,0 +1,90 @@
+{
+  "data": [
+    {
+      "id": 10,
+      "type": "A",
+      "name": "www",
+      "ipv4": "1.2.3.4",
+      "ttl": 3600,
+      "comment": "my first record"
+    },
+    {
+      "id": 11,
+      "type": "AAAA",
+      "name": "www",
+      "ipv6": "2001:db8:1234::1",
+      "ttl": 3600,
+      "comment": "my first record"
+    },
+    {
+      "id": 12,
+      "type": "CAA",
+      "name": "",
+      "flag": "0",
+      "tag": "issue",
+      "value": "letsencrypt.org",
+      "ttl": 3600,
+      "comment": "my first record"
+    },
+    {
+      "id": 13,
+      "type": "CNAME",
+      "name": "www",
+      "cname": "site.example.com",
+      "ttl": 3600,
+      "comment": "my first record"
+    },
+    {
+      "id": 14,
+      "type": "MX",
+      "ownername": "",
+      "name": "mail.example.com",
+      "pref": 10,
+      "ttl": 3600,
+      "comment": "my first record"
+    },
+    {
+      "id": 14,
+      "type": "NS",
+      "ownername": "sub",
+      "name": "ns1.example.com",
+      "ttl": 3600,
+      "comment": "my first record"
+    },
+    {
+      "id": 15,
+      "type": "PTR",
+      "origin": "4.3.2.1",
+      "name": "smtp.example.com",
+      "ttl": 3600,
+      "comment": "my first record"
+    },
+    {
+      "id": 16,
+      "type": "SRV",
+      "service": "_autodiscover._tcp",
+      "priority": 0,
+      "weight": 0,
+      "port": 443,
+      "target": "exchange.example.com",
+      "ttl": 3600,
+      "comment": "my first record"
+    },
+    {
+      "id": 17,
+      "type": "TXT",
+      "name": "",
+      "text": "v=spf1 ip4:1.2.3.4/32 -all",
+      "ttl": 3600,
+      "comment": "my first record"
+    },
+    {
+      "id": 17,
+      "type": "TLSA",
+      "name": "",
+      "text": "0 0 1 d2abde240d7cd3ee6b4b28c54df034b97983a1d16e8a410e4561cb106618e971",
+      "ttl": 3600,
+      "comment": "my first record"
+    }
+  ]
+}

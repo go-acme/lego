@@ -30,12 +30,26 @@ body:
     validations:
       required: true
 
+  - type: dropdown
+    id: type
+    attributes:
+      label: How do you use lego?
+      options:
+        - Library
+        - Binary
+        - Docker image
+        - Through Traefik
+        - Through Caddy
+        - Other
+    validations:
+      required: true
+
   - type: textarea
     id: steps
     attributes:
       label: Reproduction steps
       description: "How do you trigger this bug? Please walk us through it step by step."
-      value: |
+      placeholder: |
         1. ...
         2. ...
         3. ...
@@ -47,15 +61,12 @@ body:
     id: version
     attributes:
       label: Version of lego
-      value: |-
-        <details>
-
+      description: |-
         ```console
         $ lego --version
-        # paste output here
         ```
-
-        </details>
+      placeholder: Paste output here
+      render: console
     validations:
       required: true
 
@@ -73,3 +84,19 @@ body:
         </details>
     validations:
       required: true
+
+  - type: textarea
+    id: go-env
+    attributes:
+      label: Go environment (if applicable)
+      value: |-
+        <details>
+
+        ```console
+        $ go version && go env
+        # paste output here
+        ```
+
+        </details>
+    validations:
+      required: false

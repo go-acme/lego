@@ -1,0 +1,14 @@
+{
+  "Request": {
+    "KasRequestParams": {
+      "record_id": "57347444"
+    },
+    "KasRequestTime": 1625016066,
+    "KasRequestType": true
+  },
+  "Response": {
+    "KasFloodDelay": 0.5,
+    "ReturnInfo": true,
+    "ReturnString": "TRUE"
+  }
+}

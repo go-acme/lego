@@ -21,7 +21,7 @@ require (
 	github.com/cpu/goacmedns v0.1.1
 	github.com/dnsimple/dnsimple-go v0.63.0
 	github.com/exoscale/egoscale v0.46.0
-	github.com/google/go-querystring v1.0.0
+	github.com/google/go-querystring v1.1.0
 	github.com/gophercloud/gophercloud v0.16.0
 	github.com/gophercloud/utils v0.0.0-20210216074907-f6de111f2eae
 	github.com/iij/doapi v0.0.0-20190504054126-0bbf12d6d7df
@@ -36,6 +36,7 @@ require (
 	github.com/nrdcg/auroradns v1.0.1
 	github.com/nrdcg/desec v0.5.0
 	github.com/nrdcg/dnspod-go v0.4.0
+	github.com/nrdcg/freemyip v0.2.0
 	github.com/nrdcg/goinwx v0.8.1
 	github.com/nrdcg/namesilo v0.2.1
 	github.com/nrdcg/porkbun v0.1.1

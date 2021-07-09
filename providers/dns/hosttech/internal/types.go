@@ -10,12 +10,17 @@ type apiResponse struct {
 }
 
 type APIError struct {
-	Message    string `json:"message"`
-	StatusCode int    `json:"-"`
+	Message    string                 `json:"message,omitempty"`
+	Errors     map[string]interface{} `json:"errors,omitempty"`
+	StatusCode int                    `json:"-"`
 }
 
 func (a APIError) Error() string {
-	return fmt.Sprintf("%d: %s", a.StatusCode, a.Message)
+	msg := fmt.Sprintf("%d: %s", a.StatusCode, a.Message)
+	for k, v := range a.Errors {
+		msg += fmt.Sprintf(" %s: %v", k, v)
+	}
+	return msg
 }
 
 type Zone struct {

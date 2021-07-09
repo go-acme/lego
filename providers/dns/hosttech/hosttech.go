@@ -88,8 +88,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	return &DNSProvider{
-		config: config,
-		client: client,
+		config:    config,
+		client:    client,
+		recordIDs: map[string]int{},
 	}, nil
 }
 

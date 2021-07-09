@@ -184,7 +184,7 @@ func TestClient_AddRecord(t *testing.T) {
 }
 
 func TestClient_AddRecord_error(t *testing.T) {
-	client := setupTest(t, "/user/v1/zones/123/records", testHandler(http.MethodPost, http.StatusUnauthorized, "error.json"))
+	client := setupTest(t, "/user/v1/zones/123/records", testHandler(http.MethodPost, http.StatusUnauthorized, "error-details.json"))
 
 	record := Record{
 		Type:    "TXT",

@@ -1,0 +1,8 @@
+{
+  "message": "The given data was invalid.",
+  "errors": {
+    "type": [
+      "Darf nicht leer sein."
+    ]
+  }
+}

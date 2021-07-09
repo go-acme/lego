@@ -186,6 +186,7 @@ func (c Client) DeleteRecord(zoneID, recordID string) error {
 }
 
 func (c Client) do(req *http.Request) (json.RawMessage, error) {
+	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.apiKey))
 

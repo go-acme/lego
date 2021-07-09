@@ -1,0 +1,10 @@
+{
+  "data": {
+    "id": 10,
+    "type": "TXT",
+    "name": "lego",
+    "Text": "content",
+    "ttl": 3600,
+    "comment": "example"
+  }
+}

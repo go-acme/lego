@@ -54,6 +54,7 @@ func allDNSCodes() string {
 		"godaddy",
 		"hetzner",
 		"hostingde",
+		"hosttech",
 		"httpreq",
 		"hurricane",
 		"hyperone",
@@ -962,6 +963,27 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/hostingde`)
+
+	case "hosttech":
+		// generated from: providers/dns/hosttech/hosttech.toml
+		ew.writeln(`Configuration for Hosttech.`)
+		ew.writeln(`Code:	'hosttech'`)
+		ew.writeln(`Since:	'v4.5.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "HOSTTECH_API_KEY":	API login`)
+		ew.writeln(`	- "HOSTTECH_PASSWORD":	API password`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "HOSTTECH_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "HOSTTECH_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "HOSTTECH_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "HOSTTECH_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/hosttech`)
 
 	case "httpreq":
 		// generated from: providers/dns/httpreq/httpreq.toml

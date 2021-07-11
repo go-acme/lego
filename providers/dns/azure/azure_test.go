@@ -46,7 +46,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvSubscriptionID: "D",
 				EnvResourceGroup:  "E",
 			},
-			expected: "failed to get oauth token from client credentials: parameter 'clientID' cannot be empty",
+			expected: "failed to get SPT from client credentials: parameter 'clientID' cannot be empty",
 		},
 	}
 

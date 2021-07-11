@@ -9,6 +9,20 @@ body:
         - label: Yes, I've searched similar issues on GitHub and didn't find any.
           required: true
 
+  - type: dropdown
+    id: type
+    attributes:
+      label: How do you use lego?
+      options:
+        - Library
+        - Binary
+        - Docker image
+        - Through Traefik
+        - Through Caddy
+        - Other
+    validations:
+      required: true
+
   - type: textarea
     id: description
     attributes:

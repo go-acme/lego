@@ -1,4 +1,4 @@
-package internetbs
+package hosttech
 
 import (
 	"testing"
@@ -10,7 +10,7 @@ import (
 
 const envDomain = envNamespace + "DOMAIN"
 
-var envTest = tester.NewEnvTest(EnvAPIKey, EnvPassword).WithDomain(envDomain)
+var envTest = tester.NewEnvTest(EnvAPIKey).WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -21,28 +21,12 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				EnvAPIKey:   "user",
-				EnvPassword: "secret",
+				EnvAPIKey: "secret",
 			},
 		},
 		{
-			desc: "missing API key",
-			envVars: map[string]string{
-				EnvPassword: "secret",
-			},
-			expected: "internetbs: some credentials information are missing: INTERNET_BS_API_KEY",
-		},
-		{
-			desc: "missing password",
-			envVars: map[string]string{
-				EnvAPIKey: "user",
-			},
-			expected: "internetbs: some credentials information are missing: INTERNET_BS_PASSWORD",
-		},
-		{
-			desc:     "missing credentials",
-			envVars:  map[string]string{},
-			expected: "internetbs: some credentials information are missing: INTERNET_BS_API_KEY,INTERNET_BS_PASSWORD",
+			desc:     "missing API key",
+			expected: "hosttech: some credentials information are missing: HOSTTECH_API_KEY",
 		},
 	}
 
@@ -71,27 +55,15 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	testCases := []struct {
 		desc     string
 		apiKey   string
-		password string
 		expected string
 	}{
 		{
-			desc:     "success",
-			apiKey:   "user",
-			password: "secret",
+			desc:   "success",
+			apiKey: "secret",
 		},
 		{
 			desc:     "missing API key",
-			expected: "internetbs: missing credentials",
-			password: "secret",
-		},
-		{
-			desc:     "missing password",
-			expected: "internetbs: missing credentials",
-			apiKey:   "user",
-		},
-		{
-			desc:     "missing credentials",
-			expected: "internetbs: missing credentials",
+			expected: "hosttech: missing credentials",
 		},
 	}
 
@@ -99,7 +71,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			config := NewDefaultConfig()
 			config.APIKey = test.apiKey
-			config.Password = test.password
 
 			p, err := NewDNSProviderConfig(config)
 

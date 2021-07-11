@@ -1,0 +1,13 @@
+{
+  "data": {
+    "id": 10,
+    "name": "user1.ch",
+    "email": "test@hosttech.ch",
+    "ttl": 10800,
+    "nameserver": "ns1.hosttech.ch",
+    "dnssec": false,
+    "dnssec_email": "test@hosttech.ch",
+    "ds_records": "[]",
+    "records": "[{'id': 10, 'type': 'A', 'name': 'www', 'ipv4': '1.2.3.4', 'ttl': 3600, 'comment': 'my first record'}]"
+  }
+}

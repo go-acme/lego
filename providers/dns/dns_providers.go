@@ -37,6 +37,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/edgedns"
 	"github.com/go-acme/lego/v4/providers/dns/exec"
 	"github.com/go-acme/lego/v4/providers/dns/exoscale"
+	"github.com/go-acme/lego/v4/providers/dns/freemyip"
 	"github.com/go-acme/lego/v4/providers/dns/gandi"
 	"github.com/go-acme/lego/v4/providers/dns/gandiv5"
 	"github.com/go-acme/lego/v4/providers/dns/gcloud"
@@ -44,6 +45,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/godaddy"
 	"github.com/go-acme/lego/v4/providers/dns/hetzner"
 	"github.com/go-acme/lego/v4/providers/dns/hostingde"
+	"github.com/go-acme/lego/v4/providers/dns/hosttech"
 	"github.com/go-acme/lego/v4/providers/dns/httpreq"
 	"github.com/go-acme/lego/v4/providers/dns/hurricane"
 	"github.com/go-acme/lego/v4/providers/dns/hyperone"
@@ -165,6 +167,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return exec.NewDNSProvider()
 	case "exoscale":
 		return exoscale.NewDNSProvider()
+	case "freemyip":
+		return freemyip.NewDNSProvider()
 	case "gandi":
 		return gandi.NewDNSProvider()
 	case "gandiv5":
@@ -179,6 +183,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return hetzner.NewDNSProvider()
 	case "hostingde":
 		return hostingde.NewDNSProvider()
+	case "hosttech":
+		return hosttech.NewDNSProvider()
 	case "httpreq":
 		return httpreq.NewDNSProvider()
 	case "hurricane":

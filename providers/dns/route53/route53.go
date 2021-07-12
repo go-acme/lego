@@ -290,9 +290,7 @@ func (d *DNSProvider) getHostedZoneID(fqdn string) (string, error) {
 		return "", fmt.Errorf("zone %s not found for domain %s", authZone, fqdn)
 	}
 
-	if strings.HasPrefix(hostedZoneID, "/hostedzone/") {
-		hostedZoneID = strings.TrimPrefix(hostedZoneID, "/hostedzone/")
-	}
+	hostedZoneID = strings.TrimPrefix(hostedZoneID, "/hostedzone/")
 
 	return hostedZoneID, nil
 }

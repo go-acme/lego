@@ -170,15 +170,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	var zone string
-	if env.GetOrFile(EnvZoneName) != "" {
-		zone = env.GetOrFile(EnvZoneName)
-	} else {
-		var err error
-		zone, err = d.getHostedZoneID(ctx, fqdn)
-		if err != nil {
-			return fmt.Errorf("azure: %w", err)
-		}
+    zone, err := d.getHostedZoneID(ctx, fqdn)
+    if err != nil {
+            return fmt.Errorf("azure: %w", err)
 	}
 
 	rsc := dns.NewRecordSetsClientWithBaseURI(d.config.ResourceManagerEndpoint, d.config.SubscriptionID)
@@ -232,15 +226,9 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 
 
-	var zone string
-	var err error
-	if env.GetOrFile(EnvZoneName) != "" {
-		zone = env.GetOrFile(EnvZoneName)
-	} else {
-		zone, err = d.getHostedZoneID(ctx, fqdn)
-		if err != nil {
-			return fmt.Errorf("azure: %w", err)
-		}
+    zone, err := d.getHostedZoneID(ctx, fqdn)
+    if err != nil {
+            return fmt.Errorf("azure: %w", err)
 	}
 
 	relative := toRelativeRecord(fqdn, dns01.ToFqdn(zone))
@@ -256,6 +244,10 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 // Checks that azure has a zone for this domain name.
 func (d *DNSProvider) getHostedZoneID(ctx context.Context, fqdn string) (string, error) {
+	if env.GetOrFile(EnvZoneName) != "" {
+	    return env.GetOrFile(EnvZoneName), nil
+	}
+
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
 		return "", err

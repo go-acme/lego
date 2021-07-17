@@ -244,8 +244,8 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 // Checks that azure has a zone for this domain name.
 func (d *DNSProvider) getHostedZoneID(ctx context.Context, fqdn string) (string, error) {
-	if env.GetOrFile(EnvZoneName) != "" {
-	    return env.GetOrFile(EnvZoneName), nil
+	if zone := env.GetOrFile(EnvZoneName); zone != "" {
+	    return zone, nil
 	}
 
 	authZone, err := dns01.FindZoneByFqdn(fqdn)

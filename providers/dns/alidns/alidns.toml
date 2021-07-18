@@ -14,6 +14,7 @@ lego --email myemail@example.com --dns alidns --domains my.example.org run
   [Configuration.Credentials]
     ALICLOUD_ACCESS_KEY = "Access key ID"
     ALICLOUD_SECRET_KEY = "Access Key secret"
+    ALICLOUD_SECURITY_TOKEN = "STS Security Token (optional)"
   [Configuration.Additional]
     ALICLOUD_POLLING_INTERVAL = "Time between DNS propagation check"
     ALICLOUD_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"

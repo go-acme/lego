@@ -2,6 +2,7 @@ package dns
 
 import (
 	"fmt"
+	"github.com/go-acme/lego/v4/providers/dns/gcore"
 
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -291,6 +292,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return zoneee.NewDNSProvider()
 	case "zonomi":
 		return zonomi.NewDNSProvider()
+	case gcore.ProviderCode:
+		return gcore.NewDNSProvider()
 	default:
 		return nil, fmt.Errorf("unrecognized DNS provider: %s", name)
 	}

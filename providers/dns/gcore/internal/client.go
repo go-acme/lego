@@ -3,6 +3,7 @@ package internal
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -17,6 +18,8 @@ const (
 type (
 	// ResponseErr representation.
 	ResponseErr string
+	// WrongStatusErr representation.
+	WrongStatusErr int
 	// ClientOpt for constructor of Client.
 	ClientOpt func(*Client)
 	// Client for DNS API.
@@ -30,6 +33,16 @@ type (
 // Error implementation of error contract.
 func (r ResponseErr) Error() string {
 	return string(r)
+}
+
+// Error implementation of error contract.
+func (r WrongStatusErr) Error() string {
+	return fmt.Sprintf("wrong status = %d", int(r))
+}
+
+// Status info from response
+func (r WrongStatusErr) Status() int {
+	return int(r)
 }
 
 // NewClient constructor of Client.
@@ -81,6 +94,11 @@ func (c *Client) RemoveTXTRecord(ctx context.Context, fqdn, _ string) error {
 		nil,
 	)
 	if err != nil {
+		// Support DELETE idempotence https://developer.mozilla.org/en-US/docs/Glossary/Idempotent
+		if statusErr := new(WrongStatusErr); errors.As(err, statusErr) == true &&
+			statusErr.Status() == http.StatusNotFound {
+			return nil
+		}
 		return fmt.Errorf("delete record request: %w", err)
 	}
 	return nil
@@ -145,7 +163,7 @@ func (c *Client) request(ctx context.Context, method, path string,
 	}
 	defer func() { _ = res.Body.Close() }()
 	if res.StatusCode >= http.StatusMultipleChoices {
-		return fmt.Errorf("response: %w", ResponseErr(fmt.Sprintf("wrong status = %d", res.StatusCode)))
+		return fmt.Errorf("response: %w", WrongStatusErr(res.StatusCode))
 	}
 	if dest == nil {
 		return nil

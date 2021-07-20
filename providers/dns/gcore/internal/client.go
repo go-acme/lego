@@ -40,7 +40,7 @@ func (r WrongStatusErr) Error() string {
 	return fmt.Sprintf("wrong status = %d", int(r))
 }
 
-// Status info from response
+// Status info from response.
 func (r WrongStatusErr) Status() int {
 	return int(r)
 }
@@ -60,17 +60,21 @@ func (c *Client) AddTXTRecord(ctx context.Context, fqdn, value string, ttl int) 
 	if err != nil {
 		return fmt.Errorf("find zone: %w", err)
 	}
+	rrset := strings.TrimRight(fqdn, ".")
+	method := http.MethodPost
+	resourceRecords := []resourceRecord{{Content: []string{value}}}
+	txt, err := c.zoneTxtRecords(ctx, zone, rrset)
+	if err == nil && len(txt.ResourceRecords) > 0 {
+		method = http.MethodPut
+		resourceRecords = append(resourceRecords, txt.ResourceRecords...)
+	}
 	err = c.request(
 		ctx,
-		http.MethodPost,
-		fmt.Sprintf("v2/zones/%s/%s/%s", zone, strings.TrimRight(fqdn, "."), recordType),
-		addRecordRequest{
-			TTL: ttl,
-			ResourceRecords: []resourceRecord{
-				{
-					Content: []string{value},
-				},
-			},
+		method,
+		fmt.Sprintf("v2/zones/%s/%s/%s", zone, rrset, recordType),
+		zoneRecord{
+			TTL:             ttl,
+			ResourceRecords: resourceRecords,
 		},
 		nil,
 	)
@@ -89,13 +93,13 @@ func (c *Client) RemoveTXTRecord(ctx context.Context, fqdn, _ string) error {
 	err = c.request(
 		ctx,
 		http.MethodDelete,
-		fmt.Sprintf("v2/zones/%s/%s/%s", zone, strings.TrimRight(fqdn, "."), recordType),
+		fmt.Sprintf("v2/zones/%s/%s/%s", zone, fqdn, recordType),
 		nil,
 		nil,
 	)
 	if err != nil {
 		// Support DELETE idempotence https://developer.mozilla.org/en-US/docs/Glossary/Idempotent
-		if statusErr := new(WrongStatusErr); errors.As(err, statusErr) == true &&
+		if statusErr := new(WrongStatusErr); errors.As(err, statusErr) &&
 			statusErr.Status() == http.StatusNotFound {
 			return nil
 		}
@@ -107,7 +111,7 @@ func (c *Client) RemoveTXTRecord(ctx context.Context, fqdn, _ string) error {
 func (c *Client) findZone(ctx context.Context, fqdn string) (dnsZone string, err error) {
 	possibleZones := extractAllZones(fqdn)
 	for _, zone := range possibleZones {
-		dnsZone, err = c.getZone(ctx, zone)
+		dnsZone, err = c.zone(ctx, zone)
 		if err == nil {
 			return dnsZone, nil
 		}
@@ -115,8 +119,22 @@ func (c *Client) findZone(ctx context.Context, fqdn string) (dnsZone string, err
 	return "", fmt.Errorf("zone not found: %w", err)
 }
 
-func (c *Client) getZone(ctx context.Context, zone string) (string, error) {
-	response := getZoneResponse{}
+func (c *Client) zoneTxtRecords(ctx context.Context, zone, rrset string) (result zoneRecord, err error) {
+	err = c.request(
+		ctx,
+		http.MethodGet,
+		fmt.Sprintf("v2/zones/%s/%s/%s", zone, rrset, recordType),
+		nil,
+		&result,
+	)
+	if err != nil {
+		return zoneRecord{}, fmt.Errorf("get zone txt records %s -> %s: %w", zone, rrset, err)
+	}
+	return result, nil
+}
+
+func (c *Client) zone(ctx context.Context, zone string) (string, error) {
+	response := zoneResponse{}
 	err := c.request(
 		ctx,
 		http.MethodGet,

@@ -147,7 +147,7 @@ func enrichMuxWithFindZone(mux *http.ServeMux, path, result string) {
 			if !validRequest(w, r, http.MethodGet, nil) {
 				return
 			}
-			sendResponse(w, getZoneResponse{Name: result})
+			sendResponse(w, zoneResponse{Name: result})
 		})
 }
 
@@ -155,7 +155,7 @@ func enrichMuxWithAddZoneRecord(mux *http.ServeMux, path string) {
 	mux.HandleFunc(
 		path,
 		func(w http.ResponseWriter, r *http.Request) {
-			body := addRecordRequest{}
+			body := zoneRecord{}
 			if !validRequest(w, r, http.MethodPost, &body) {
 				return
 			}

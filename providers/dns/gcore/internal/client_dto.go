@@ -1,10 +1,10 @@
 package internal
 
-type getZoneResponse struct {
+type zoneResponse struct {
 	Name string `json:"name"`
 }
 
-type addRecordRequest struct {
+type zoneRecord struct {
 	TTL             int              `json:"ttl"`
 	ResourceRecords []resourceRecord `json:"resource_records"`
 }

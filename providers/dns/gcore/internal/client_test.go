@@ -6,332 +6,251 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"reflect"
 	"testing"
-	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const (
-	testToken = "test"
+	testToken          = "test"
+	testRecordContent  = "acme"
+	testRecordContent2 = "foo"
+	testTTL            = 10
 )
 
-func clientForTest() (*http.ServeMux, *Client, func()) {
+func setupTest(t *testing.T) (*http.ServeMux, *Client) {
+	t.Helper()
+
 	mux := http.NewServeMux()
+
 	server := httptest.NewServer(mux)
-	client := NewClient(testToken, func(client *Client) {
-		client.BaseURL = server.URL
+	t.Cleanup(server.Close)
+
+	client := NewClient(testToken)
+	client.baseURL, _ = url.Parse(server.URL)
+
+	return mux, client
+}
+
+func TestClient_GetZone(t *testing.T) {
+	mux, client := setupTest(t)
+
+	expected := Zone{Name: "example.com"}
+
+	mux.Handle("/v2/zones/example.com", validationHandler{
+		method: http.MethodGet,
+		next:   handleJSONResponse(expected),
 	})
 
-	return mux, client, server.Close
+	zone, err := client.GetZone(context.Background(), "example.com")
+	require.NoError(t, err)
+
+	assert.Equal(t, expected, zone)
 }
 
-func Test_extractAllZones(t *testing.T) {
-	type args struct {
-		fqdn string
+func TestClient_GetZone_error(t *testing.T) {
+	mux, client := setupTest(t)
+
+	mux.Handle("/v2/zones/example.com", validationHandler{
+		method: http.MethodGet,
+		next:   handleAPIError(),
+	})
+
+	_, err := client.GetZone(context.Background(), "example.com")
+	require.Error(t, err)
+}
+
+func TestClient_GetRRSet(t *testing.T) {
+	mux, client := setupTest(t)
+
+	expected := RRSet{
+		TTL: testTTL,
+		Records: []Records{
+			{Content: []string{testRecordContent}},
+		},
 	}
-	tests := []struct {
-		name string
-		args args
-		want []string
+
+	mux.Handle("/v2/zones/example.com/foo.example.com/TXT", validationHandler{
+		method: http.MethodGet,
+		next:   handleJSONResponse(expected),
+	})
+
+	rrSet, err := client.GetRRSet(context.Background(), "example.com", "foo.example.com")
+	require.NoError(t, err)
+
+	assert.Equal(t, expected, rrSet)
+}
+
+func TestClient_GetRRSet_error(t *testing.T) {
+	mux, client := setupTest(t)
+
+	mux.Handle("/v2/zones/example.com/foo.example.com/TXT", validationHandler{
+		method: http.MethodGet,
+		next:   handleAPIError(),
+	})
+
+	_, err := client.GetRRSet(context.Background(), "example.com", "foo.example.com")
+	require.Error(t, err)
+}
+
+func TestClient_DeleteRRSet(t *testing.T) {
+	mux, client := setupTest(t)
+
+	mux.Handle("/v2/zones/test.example.com/my.test.example.com/"+txtRecordType,
+		validationHandler{method: http.MethodDelete})
+
+	err := client.DeleteRRSet(context.Background(), "test.example.com", "my.test.example.com.")
+	require.NoError(t, err)
+}
+
+func TestClient_DeleteRRSet_error(t *testing.T) {
+	mux, client := setupTest(t)
+
+	mux.Handle("/v2/zones/test.example.com/my.test.example.com/"+txtRecordType, validationHandler{
+		method: http.MethodDelete,
+		next:   handleAPIError(),
+	})
+
+	err := client.DeleteRRSet(context.Background(), "test.example.com", "my.test.example.com.")
+	require.NoError(t, err)
+}
+
+func TestClient_AddRRSet(t *testing.T) {
+	testCases := []struct {
+		desc          string
+		zone          string
+		recordName    string
+		value         string
+		handledDomain string
+		handlers      map[string]http.Handler
+		wantErr       bool
 	}{
 		{
-			name: "success",
-			args: args{
-				fqdn: "_acme-challenge.my.test.domain.com.",
+			desc:       "success add",
+			zone:       "test.example.com",
+			recordName: "my.test.example.com",
+			value:      testRecordContent,
+			handlers: map[string]http.Handler{
+				// createRRSet
+				"/v2/zones/test.example.com/my.test.example.com/" + txtRecordType: validationHandler{
+					method: http.MethodPost,
+					next:   handleAddRRSet([]Records{{Content: []string{testRecordContent}}}),
+				},
 			},
-			want: []string{"my.test.domain.com", "test.domain.com", "domain.com"},
 		},
 		{
-			name: "empty",
-			args: args{
-				fqdn: "_acme-challenge.com.",
+			desc:       "success update",
+			zone:       "test.example.com",
+			recordName: "my.test.example.com",
+			value:      testRecordContent,
+			handlers: map[string]http.Handler{
+				"/v2/zones/test.example.com/my.test.example.com/" + txtRecordType: http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+					switch req.Method {
+					case http.MethodGet: // GetRRSet
+						data := RRSet{
+							TTL:     testTTL,
+							Records: []Records{{Content: []string{testRecordContent2}}},
+						}
+						handleJSONResponse(data).ServeHTTP(rw, req)
+					case http.MethodPut: // updateRRSet
+						expected := []Records{
+							{Content: []string{testRecordContent}},
+							{Content: []string{testRecordContent2}},
+						}
+						handleAddRRSet(expected).ServeHTTP(rw, req)
+					default:
+						http.Error(rw, "wrong method", http.StatusMethodNotAllowed)
+					}
+				}),
 			},
-			want: []string{},
+		},
+		{
+			desc:       "not in the zone",
+			zone:       "test.example.com",
+			recordName: "notfound.example.com",
+			value:      testRecordContent,
+			wantErr:    true,
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := extractAllZones(tt.args.fqdn); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("extractAllZones() = %v, want %v", got, tt.want)
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			mux, cl := setupTest(t)
+
+			for pattern, handler := range test.handlers {
+				mux.Handle(pattern, handler)
 			}
+
+			err := cl.AddRRSet(context.Background(), test.zone, test.recordName, test.value, testTTL)
+			if test.wantErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
 		})
 	}
 }
 
-func TestNewClient(t *testing.T) {
-	type args struct {
-		token string
-		opts  []ClientOpt
-	}
-	tests := []struct {
-		name string
-		args args
-		want Client
-	}{
-		{
-			name: "without opts",
-			args: args{
-				token: "1",
-				opts:  nil,
-			},
-			want: Client{
-				HTTPClient: &http.Client{},
-				BaseURL:    defaultBaseURL,
-				Token:      "1",
-			},
-		},
-		{
-			name: "with opts",
-			args: args{
-				token: "1",
-				opts: []ClientOpt{
-					func(client *Client) {
-						client.BaseURL = "2"
-					},
-					func(client *Client) {
-						client.HTTPClient.Timeout = time.Second
-					},
-				},
-			},
-			want: Client{
-				HTTPClient: &http.Client{
-					Timeout: time.Second,
-				},
-				BaseURL: "2",
-				Token:   "1",
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewClient(tt.args.token, tt.args.opts...); !reflect.DeepEqual(*got, tt.want) {
-				t.Errorf("NewClient() = %+v, want %+v", *got, tt.want)
-			}
-		})
-	}
+type validationHandler struct {
+	method string
+	next   http.Handler
 }
 
-func validRequest(w http.ResponseWriter, r *http.Request, waitedMethod string, body interface{}) (ok bool) {
-	if r.Header.Get("Authorization") != fmt.Sprintf("%s %s", tokenHeader, testToken) {
-		http.Error(w, "wrong token", http.StatusForbidden)
-		return false
-	}
-	if r.Method != waitedMethod {
-		http.Error(w, "wrong method", http.StatusForbidden)
-		return false
-	}
-	if body == nil {
-		return true
-	}
-	defer func() { _ = r.Body.Close() }()
-	err := json.NewDecoder(r.Body).Decode(body)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return false
-	}
-	return true
-}
-
-func sendResponse(w http.ResponseWriter, resp interface{}) {
-	err := json.NewEncoder(w).Encode(resp)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+func (v validationHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	if req.Header.Get("Authorization") != fmt.Sprintf("%s %s", tokenHeader, testToken) {
+		rw.WriteHeader(http.StatusForbidden)
+		_ = json.NewEncoder(rw).Encode(APIError{Message: "token up for parsing was not passed through the context"})
 		return
 	}
-}
 
-func enrichMuxWithFindZone(mux *http.ServeMux, path, result string) {
-	mux.HandleFunc(
-		path,
-		func(w http.ResponseWriter, r *http.Request) {
-			if !validRequest(w, r, http.MethodGet, nil) {
-				return
-			}
-			sendResponse(w, zoneResponse{Name: result})
-		})
-}
-
-func enrichMuxWithAddZoneRecord(mux *http.ServeMux, path string) {
-	mux.HandleFunc(
-		path,
-		func(w http.ResponseWriter, r *http.Request) {
-			body := zoneRecord{}
-			if !validRequest(w, r, http.MethodPost, &body) {
-				return
-			}
-			if body.TTL != 10 {
-				http.Error(w, "wrong ttl", http.StatusInternalServerError)
-				return
-			}
-			if !reflect.DeepEqual(body.ResourceRecords, []resourceRecord{{Content: []string{"acme"}}}) {
-				http.Error(w, "wrong resource records", http.StatusInternalServerError)
-				return
-			}
-		})
-}
-
-func TestClient_AddTXTRecord(t *testing.T) {
-	type args struct {
-		ctx   context.Context
-		fqdn  string
-		value string
-		ttl   int
+	if req.Method != v.method {
+		http.Error(rw, "wrong method", http.StatusMethodNotAllowed)
+		return
 	}
-	tests := []struct {
-		name         string
-		clientGetter func() (*Client, func())
-		args         args
-		wantErr      bool
-	}{
-		{
-			name: "success",
-			clientGetter: func() (*Client, func()) {
-				mux, cl, cancel := clientForTest()
-				enrichMuxWithFindZone(mux, "/v2/zones/test.domain.com", "test.domain.com")
-				enrichMuxWithAddZoneRecord(mux,
-					"/v2/zones/test.domain.com/_acme-challenge.my.test.domain.com/"+recordType)
-				return cl, cancel
-			},
-			args: args{
-				ctx:   context.Background(),
-				fqdn:  "_acme-challenge.my.test.domain.com.",
-				value: "acme",
-				ttl:   10,
-			},
-			wantErr: false,
-		},
-		{
-			name: "no zone",
-			clientGetter: func() (*Client, func()) {
-				mux, cl, cancel := clientForTest()
-				enrichMuxWithFindZone(mux, "/v2/zones/not.found.com", "not.found.com")
-				enrichMuxWithAddZoneRecord(mux,
-					"/v2/zones/test.domain.com/_acme-challenge.my.test.domain.com/"+recordType)
-				return cl, cancel
-			},
-			args: args{
-				ctx:   context.Background(),
-				fqdn:  "_acme-challenge.my.test.domain.com.",
-				value: "acme",
-				ttl:   10,
-			},
-			wantErr: true,
-		},
-		{
-			name: "no add",
-			clientGetter: func() (*Client, func()) {
-				mux, cl, cancel := clientForTest()
-				enrichMuxWithFindZone(mux, "/v2/zones/domain.com", "domain.com")
-				enrichMuxWithAddZoneRecord(mux,
-					"/v2/zones/test.domain.com/_acme-challenge.my.test.domain.com/"+recordType)
-				return cl, cancel
-			},
-			args: args{
-				ctx:   context.Background(),
-				fqdn:  "_acme-challenge.my.test.domain.com.",
-				value: "acme",
-				ttl:   10,
-			},
-			wantErr: true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			cl, cancel := tt.clientGetter()
-			defer cancel()
-			if err := cl.AddTXTRecord(tt.args.ctx, tt.args.fqdn, tt.args.value, tt.args.ttl); (err != nil) != tt.wantErr {
-				t.Errorf("AddTXTRecord() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
+
+	if v.next != nil {
+		v.next.ServeHTTP(rw, req)
 	}
 }
 
-func TestClient_requestUrl(t *testing.T) {
-	type args struct {
-		path string
-	}
-	tests := []struct {
-		name   string
-		client *Client
-		args   args
-		want   string
-	}{
-		{
-			name:   "no trim",
-			client: &Client{BaseURL: defaultBaseURL},
-			args: args{
-				path: "path",
-			},
-			want: defaultBaseURL + "/path",
-		},
-		{
-			name:   "base url trim",
-			client: &Client{BaseURL: "http/"},
-			args: args{
-				path: "path",
-			},
-			want: "http/path",
-		},
-		{
-			name:   "booth trim",
-			client: &Client{BaseURL: "http/"},
-			args: args{
-				path: "/path",
-			},
-			want: "http/path",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			c := tt.client
-			if got := c.requestURL(tt.args.path); got != tt.want {
-				t.Errorf("requestUrl() = %v, want %v", got, tt.want)
-			}
-		})
+func handleAPIError() http.HandlerFunc {
+	return func(rw http.ResponseWriter, req *http.Request) {
+		rw.WriteHeader(http.StatusInternalServerError)
+		_ = json.NewEncoder(rw).Encode(APIError{Message: "oops"})
 	}
 }
 
-func TestClient_RemoveTXTRecord(t *testing.T) {
-	type args struct {
-		ctx  context.Context
-		fqdn string
-		txt  string
+func handleJSONResponse(data interface{}) http.HandlerFunc {
+	return func(rw http.ResponseWriter, req *http.Request) {
+		err := json.NewEncoder(rw).Encode(data)
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
-	tests := []struct {
-		name         string
-		clientGetter func() (*Client, func())
-		args         args
-		wantErr      bool
-	}{
-		{
-			name: "success",
-			clientGetter: func() (*Client, func()) {
-				mux, cl, cancel := clientForTest()
-				enrichMuxWithFindZone(mux, "/v2/zones/test.domain.com", "test.domain.com")
-				mux.HandleFunc(
-					"/v2/zones/test.domain.com/_acme-challenge.my.test.domain.com/"+recordType,
-					func(w http.ResponseWriter, r *http.Request) {
-						if !validRequest(w, r, http.MethodDelete, nil) {
-							return
-						}
-					})
-				return cl, cancel
-			},
-			args: args{
-				ctx:  context.Background(),
-				fqdn: "_acme-challenge.my.test.domain.com.",
-				txt:  "acme",
-			},
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			cl, cancel := tt.clientGetter()
-			defer cancel()
-			if err := cl.RemoveTXTRecord(tt.args.ctx, tt.args.fqdn, tt.args.txt); (err != nil) != tt.wantErr {
-				t.Errorf("RemoveTXTRecord() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
+}
+
+func handleAddRRSet(expected []Records) http.HandlerFunc {
+	return func(rw http.ResponseWriter, req *http.Request) {
+		body := RRSet{}
+
+		err := json.NewDecoder(req.Body).Decode(&body)
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if body.TTL != testTTL {
+			http.Error(rw, "wrong ttl", http.StatusInternalServerError)
+			return
+		}
+
+		if !reflect.DeepEqual(body.Records, expected) {
+			http.Error(rw, "wrong resource records", http.StatusInternalServerError)
+		}
 	}
 }

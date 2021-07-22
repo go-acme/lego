@@ -21,7 +21,7 @@ Configuration for [G-Core Labs](https://gcorelabs.com/dns/).
 Here is an example bash command using the G-Core Labs provider:
 
 ```bash
-GCORE_PERMANENT_API_TOKEN=<your Permanent API token (https://gcorelabs.com/blog/permanent-api-token-explained/)> \
+GCORE_PERMANENT_API_TOKEN=xxxxx \
 lego --email myemail@example.com --dns gcore --domains my.example.org run
 ```
 
@@ -42,7 +42,6 @@ More information [here](/lego/dns/#configuration-and-credentials).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `GCORE_API_URL` | G-Cole Labs DNS API URL (default: http://dnsapi.gcorelabs.com/) |
 | `GCORE_HTTP_TIMEOUT` | API request timeout |
 | `GCORE_POLLING_INTERVAL` | Time between DNS propagation check |
 | `GCORE_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |

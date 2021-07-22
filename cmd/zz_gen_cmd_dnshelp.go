@@ -894,7 +894,6 @@ func displayDNSHelp(name string) error {
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "GCORE_API_URL":	G-Cole Labs DNS API URL (default: http://dnsapi.gcorelabs.com/)`)
 		ew.writeln(`	- "GCORE_HTTP_TIMEOUT":	API request timeout`)
 		ew.writeln(`	- "GCORE_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "GCORE_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)

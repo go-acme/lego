@@ -50,6 +50,7 @@ func allDNSCodes() string {
 		"gandi",
 		"gandiv5",
 		"gcloud",
+		"gcore",
 		"glesys",
 		"godaddy",
 		"hetzner",
@@ -880,6 +881,26 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/gcloud`)
+
+	case "gcore":
+		// generated from: providers/dns/gcore/gcore.toml
+		ew.writeln(`Configuration for G-Core Labs.`)
+		ew.writeln(`Code:	'gcore'`)
+		ew.writeln(`Since:	'v4.5.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "GCORE_PERMANENT_API_TOKEN":	Permanent API tokene (https://gcorelabs.com/blog/permanent-api-token-explained/)`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "GCORE_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "GCORE_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "GCORE_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "GCORE_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/gcore`)
 
 	case "glesys":
 		// generated from: providers/dns/glesys/glesys.toml

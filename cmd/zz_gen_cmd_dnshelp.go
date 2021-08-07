@@ -143,6 +143,7 @@ func displayDNSHelp(name string) error {
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "ALICLOUD_ACCESS_KEY":	Access key ID`)
 		ew.writeln(`	- "ALICLOUD_SECRET_KEY":	Access Key secret`)
+		ew.writeln(`	- "ALICLOUD_SECURITY_TOKEN":	STS Security Token (optional)`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)

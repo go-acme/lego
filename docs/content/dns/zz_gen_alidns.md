@@ -35,6 +35,7 @@ lego --email myemail@example.com --dns alidns --domains my.example.org run
 |-----------------------|-------------|
 | `ALICLOUD_ACCESS_KEY` | Access key ID |
 | `ALICLOUD_SECRET_KEY` | Access Key secret |
+| `ALICLOUD_SECURITY_TOKEN` | STS Security Token (optional) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).

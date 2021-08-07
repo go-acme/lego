@@ -64,7 +64,7 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for Alibaba Cloud DNS.
 // Credentials must be passed in the environment variables:
-// ALICLOUD_ACCESS_KEY, ALICLOUD_SECRET_KEY and optional ALICLOUD_SECURITY_TOKEN.
+// ALICLOUD_ACCESS_KEY, ALICLOUD_SECRET_KEY, and optionally ALICLOUD_SECURITY_TOKEN.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvAccessKey, EnvSecretKey)
 	if err != nil {
@@ -75,11 +75,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config.APIKey = values[EnvAccessKey]
 	config.SecretKey = values[EnvSecretKey]
 	config.RegionID = env.GetOrFile(EnvRegionID)
-
-	values, err = env.Get(EnvSecurityToken)
-	if err == nil {
-		config.SecurityToken = values[EnvSecurityToken]
-	}
+	config.SecurityToken = env.GetOrFile(EnvSecurityToken)
 
 	return NewDNSProviderConfig(config)
 }
@@ -99,11 +95,12 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	conf := sdk.NewConfig().WithTimeout(config.HTTPTimeout)
+
 	var credential auth.Credential
-	if len(config.SecurityToken) > 0 {
-		credential = credentials.NewStsTokenCredential(config.APIKey, config.SecretKey, config.SecurityToken)
-	} else {
+	if config.SecurityToken == "" {
 		credential = credentials.NewAccessKeyCredential(config.APIKey, config.SecretKey)
+	} else {
+		credential = credentials.NewStsTokenCredential(config.APIKey, config.SecretKey, config.SecurityToken)
 	}
 
 	client, err := alidns.NewClientWithOptions(config.RegionID, conf, credential)

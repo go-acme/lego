@@ -20,6 +20,7 @@ Example = ''''''
     AZURE_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
     AZURE_TTL = "The TTL of the TXT record used for the DNS challenge"
     AZURE_METADATA_ENDPOINT = "Metadata Service endpoint URL"
+    AZURE_ZONE_NAME = "Zone name to use inside Azure DNS service to add the TXT record in"
 
 [Links]
   API = "https://docs.microsoft.com/en-us/go/azure/"

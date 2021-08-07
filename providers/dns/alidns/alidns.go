@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk"
+	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth"
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth/credentials"
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/alidns"
@@ -22,9 +23,10 @@ const defaultRegionID = "cn-hangzhou"
 const (
 	envNamespace = "ALICLOUD_"
 
-	EnvAccessKey = envNamespace + "ACCESS_KEY"
-	EnvSecretKey = envNamespace + "SECRET_KEY"
-	EnvRegionID  = envNamespace + "REGION_ID"
+	EnvAccessKey     = envNamespace + "ACCESS_KEY"
+	EnvSecretKey     = envNamespace + "SECRET_KEY"
+	EnvSecurityToken = envNamespace + "SECURITY_TOKEN"
+	EnvRegionID      = envNamespace + "REGION_ID"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -36,6 +38,7 @@ const (
 type Config struct {
 	APIKey             string
 	SecretKey          string
+	SecurityToken      string
 	RegionID           string
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -61,7 +64,7 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for Alibaba Cloud DNS.
 // Credentials must be passed in the environment variables:
-// ALICLOUD_ACCESS_KEY and ALICLOUD_SECRET_KEY.
+// ALICLOUD_ACCESS_KEY, ALICLOUD_SECRET_KEY, and optionally ALICLOUD_SECURITY_TOKEN.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvAccessKey, EnvSecretKey)
 	if err != nil {
@@ -72,6 +75,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config.APIKey = values[EnvAccessKey]
 	config.SecretKey = values[EnvSecretKey]
 	config.RegionID = env.GetOrFile(EnvRegionID)
+	config.SecurityToken = env.GetOrFile(EnvSecurityToken)
 
 	return NewDNSProviderConfig(config)
 }
@@ -91,7 +95,13 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	conf := sdk.NewConfig().WithTimeout(config.HTTPTimeout)
-	credential := credentials.NewAccessKeyCredential(config.APIKey, config.SecretKey)
+
+	var credential auth.Credential
+	if config.SecurityToken == "" {
+		credential = credentials.NewAccessKeyCredential(config.APIKey, config.SecretKey)
+	} else {
+		credential = credentials.NewStsTokenCredential(config.APIKey, config.SecretKey, config.SecurityToken)
+	}
 
 	client, err := alidns.NewClientWithOptions(config.RegionID, conf, credential)
 	if err != nil {

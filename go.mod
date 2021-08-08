@@ -17,10 +17,10 @@ require (
 	github.com/aliyun/alibaba-cloud-sdk-go v1.61.1183
 	github.com/aws/aws-sdk-go v1.39.0
 	github.com/cenkalti/backoff/v4 v4.1.1
-	github.com/cloudflare/cloudflare-go v0.18.0
+	github.com/cloudflare/cloudflare-go v0.20.0
 	github.com/cpu/goacmedns v0.1.1
 	github.com/dnsimple/dnsimple-go v0.70.1
-	github.com/exoscale/egoscale v0.62.2
+	github.com/exoscale/egoscale v0.67.0
 	github.com/google/go-querystring v1.1.0
 	github.com/gophercloud/gophercloud v0.16.0
 	github.com/gophercloud/utils v0.0.0-20210216074907-f6de111f2eae
@@ -28,7 +28,7 @@ require (
 	github.com/infobloxopen/infoblox-go-client v1.1.1
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/labbsr0x/bindman-dns-webhook v1.0.2
-	github.com/linode/linodego v0.30.0
+	github.com/linode/linodego v0.31.1
 	github.com/liquidweb/liquidweb-go v1.6.3
 	github.com/miekg/dns v1.1.43
 	github.com/mitchellh/mapstructure v1.4.1
@@ -51,13 +51,13 @@ require (
 	github.com/transip/gotransip/v6 v6.6.1
 	github.com/urfave/cli v1.22.5
 	github.com/vinyldns/go-vinyldns v0.0.0-20200917153823-148a5f6b8f14
-	github.com/vultr/govultr/v2 v2.6.0
+	github.com/vultr/govultr/v2 v2.7.1
 	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e
 	golang.org/x/net v0.0.0-20210614182718-04defd469f4e
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/time v0.0.0-20210611083556-38a9dc6acbc6
 	google.golang.org/api v0.20.0
-	gopkg.in/ns1/ns1-go.v2 v2.6.0
+	gopkg.in/ns1/ns1-go.v2 v2.6.2
 	gopkg.in/square/go-jose.v2 v2.6.0
 	gopkg.in/yaml.v2 v2.4.0
 )

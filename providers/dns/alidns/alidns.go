@@ -23,6 +23,7 @@ const defaultRegionID = "cn-hangzhou"
 const (
 	envNamespace = "ALICLOUD_"
 
+	EnvRamRole       = envNamespace + "RAM_ROLE"
 	EnvAccessKey     = envNamespace + "ACCESS_KEY"
 	EnvSecretKey     = envNamespace + "SECRET_KEY"
 	EnvSecurityToken = envNamespace + "SECURITY_TOKEN"
@@ -36,6 +37,7 @@ const (
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
+	RamRole            string
 	APIKey             string
 	SecretKey          string
 	SecurityToken      string
@@ -66,12 +68,20 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables:
 // ALICLOUD_ACCESS_KEY, ALICLOUD_SECRET_KEY, and optionally ALICLOUD_SECURITY_TOKEN.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvAccessKey, EnvSecretKey)
+	config := NewDefaultConfig()
+	config.RegionID = env.GetOrFile(EnvRegionID)
+
+	values, err := env.Get(EnvRamRole)
+	if err == nil {
+		config.RamRole = values[EnvRamRole]
+		return NewDNSProviderConfig(config)
+	}
+
+	values, err = env.Get(EnvAccessKey, EnvSecretKey)
 	if err != nil {
 		return nil, fmt.Errorf("alicloud: %w", err)
 	}
 
-	config := NewDefaultConfig()
 	config.APIKey = values[EnvAccessKey]
 	config.SecretKey = values[EnvSecretKey]
 	config.RegionID = env.GetOrFile(EnvRegionID)
@@ -86,7 +96,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("alicloud: the configuration of the DNS provider is nil")
 	}
 
-	if config.APIKey == "" || config.SecretKey == "" {
+	if config.RamRole == "" && (config.APIKey == "" || config.SecretKey == "") {
 		return nil, fmt.Errorf("alicloud: credentials missing")
 	}
 
@@ -95,12 +105,13 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	conf := sdk.NewConfig().WithTimeout(config.HTTPTimeout)
-
 	var credential auth.Credential
-	if config.SecurityToken == "" {
-		credential = credentials.NewAccessKeyCredential(config.APIKey, config.SecretKey)
-	} else {
+	if config.RamRole != "" {
+		credential = credentials.NewEcsRamRoleCredential(config.RamRole)
+	} else if config.SecurityToken != "" {
 		credential = credentials.NewStsTokenCredential(config.APIKey, config.SecretKey, config.SecurityToken)
+	} else {
+		credential = credentials.NewAccessKeyCredential(config.APIKey, config.SecretKey)
 	}
 
 	client, err := alidns.NewClientWithOptions(config.RegionID, conf, credential)

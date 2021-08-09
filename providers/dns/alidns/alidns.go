@@ -65,7 +65,9 @@ type DNSProvider struct {
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Alibaba Cloud DNS.
-// Credentials must be passed in the environment variables:
+// If you're using the instance ram role, the ram role environment variable must be passed in:
+// ALICLOUD_RAM_ROLE.
+// Other than that, credentials must be passed in the environment variables:
 // ALICLOUD_ACCESS_KEY, ALICLOUD_SECRET_KEY, and optionally ALICLOUD_SECURITY_TOKEN.
 func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()

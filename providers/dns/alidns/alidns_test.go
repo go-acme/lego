@@ -89,17 +89,17 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		},
 		{
 			desc:     "missing credentials",
-			expected: "alicloud: credentials missing",
+			expected: "alicloud: ram role or credentials missing",
 		},
 		{
 			desc:      "missing api key",
 			secretKey: "456",
-			expected:  "alicloud: credentials missing",
+			expected:  "alicloud: ram role or credentials missing",
 		},
 		{
 			desc:     "missing secret key",
 			apiKey:   "123",
-			expected: "alicloud: credentials missing",
+			expected: "alicloud: ram role or credentials missing",
 		},
 	}
 

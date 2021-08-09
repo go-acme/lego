@@ -78,6 +78,7 @@ func TestNewDNSProvider(t *testing.T) {
 func TestNewDNSProviderConfig(t *testing.T) {
 	testCases := []struct {
 		desc      string
+		ramRole   string
 		apiKey    string
 		secretKey string
 		expected  string
@@ -86,6 +87,10 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			desc:      "success",
 			apiKey:    "123",
 			secretKey: "456",
+		},
+		{
+			desc:    "success",
+			ramRole: "LegoInstanceRole",
 		},
 		{
 			desc:     "missing credentials",
@@ -108,6 +113,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			config := NewDefaultConfig()
 			config.APIKey = test.apiKey
 			config.SecretKey = test.secretKey
+			config.RAMRole = test.ramRole
 
 			p, err := NewDNSProviderConfig(config)
 

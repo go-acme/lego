@@ -86,7 +86,6 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 	config.APIKey = values[EnvAccessKey]
 	config.SecretKey = values[EnvSecretKey]
-	config.RegionID = env.GetOrFile(EnvRegionID)
 	config.SecurityToken = env.GetOrFile(EnvSecurityToken)
 
 	return NewDNSProviderConfig(config)

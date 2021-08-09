@@ -23,7 +23,7 @@ const defaultRegionID = "cn-hangzhou"
 const (
 	envNamespace = "ALICLOUD_"
 
-	EnvRamRole       = envNamespace + "RAM_ROLE"
+	EnvRAMRole       = envNamespace + "RAM_ROLE"
 	EnvAccessKey     = envNamespace + "ACCESS_KEY"
 	EnvSecretKey     = envNamespace + "SECRET_KEY"
 	EnvSecurityToken = envNamespace + "SECURITY_TOKEN"
@@ -37,7 +37,7 @@ const (
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	RamRole            string
+	RAMRole            string
 	APIKey             string
 	SecretKey          string
 	SecurityToken      string
@@ -73,9 +73,9 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
 	config.RegionID = env.GetOrFile(EnvRegionID)
 
-	values, err := env.Get(EnvRamRole)
+	values, err := env.Get(EnvRAMRole)
 	if err == nil {
-		config.RamRole = values[EnvRamRole]
+		config.RAMRole = values[EnvRAMRole]
 		return NewDNSProviderConfig(config)
 	}
 
@@ -98,8 +98,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("alicloud: the configuration of the DNS provider is nil")
 	}
 
-	if config.RamRole == "" && (config.APIKey == "" || config.SecretKey == "") {
-		return nil, fmt.Errorf("alicloud: credentials missing")
+	if config.RAMRole == "" && (config.APIKey == "" || config.SecretKey == "") {
+		return nil, fmt.Errorf("alicloud: ram role or credentials missing")
 	}
 
 	if config.RegionID == "" {
@@ -108,11 +108,12 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	conf := sdk.NewConfig().WithTimeout(config.HTTPTimeout)
 	var credential auth.Credential
-	if config.RamRole != "" {
-		credential = credentials.NewEcsRamRoleCredential(config.RamRole)
-	} else if config.SecurityToken != "" {
+	switch {
+	case config.RAMRole != "":
+		credential = credentials.NewEcsRamRoleCredential(config.RAMRole)
+	case config.SecurityToken != "":
 		credential = credentials.NewStsTokenCredential(config.APIKey, config.SecretKey, config.SecurityToken)
-	} else {
+	default:
 		credential = credentials.NewAccessKeyCredential(config.APIKey, config.SecretKey)
 	}
 

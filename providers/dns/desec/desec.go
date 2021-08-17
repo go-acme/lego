@@ -2,8 +2,10 @@
 package desec
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -83,6 +85,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config.HTTPClient != nil {
 		opts.HTTPClient = config.HTTPClient
 	}
+	opts.Logger = log.Default()
 
 	client := desec.New(config.Token, opts)
 
@@ -97,6 +100,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+	ctx := context.Background()
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 	quotedValue := fmt.Sprintf(`"%s"`, value)
 
@@ -109,15 +113,15 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	domainName := dns01.UnFqdn(authZone)
 
-	rrSet, err := d.client.Records.Get(domainName, recordName, "TXT")
+	rrSet, err := d.client.Records.Get(ctx, domainName, recordName, "TXT")
 	if err != nil {
-		var nf *desec.NotFound
+		var nf *desec.NotFoundError
 		if !errors.As(err, &nf) {
 			return fmt.Errorf("desec: failed to get records: domainName=%s, recordName=%s: %w", domainName, recordName, err)
 		}
 
 		// Not found case -> create
-		_, err = d.client.Records.Create(desec.RRSet{
+		_, err = d.client.Records.Create(ctx, desec.RRSet{
 			Domain:  domainName,
 			SubName: recordName,
 			Type:    "TXT",
@@ -134,7 +138,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	// update
 	records := append(rrSet.Records, quotedValue)
 
-	_, err = d.client.Records.Update(domainName, recordName, "TXT", desec.RRSet{Records: records})
+	_, err = d.client.Records.Update(ctx, domainName, recordName, "TXT", desec.RRSet{Records: records})
 	if err != nil {
 		return fmt.Errorf("desec: failed to update records: domainName=%s, recordName=%s: %w", domainName, recordName, err)
 	}
@@ -144,6 +148,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+	ctx := context.Background()
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
@@ -155,7 +160,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	domainName := dns01.UnFqdn(authZone)
 
-	rrSet, err := d.client.Records.Get(domainName, recordName, "TXT")
+	rrSet, err := d.client.Records.Get(ctx, domainName, recordName, "TXT")
 	if err != nil {
 		return fmt.Errorf("desec: failed to get records: domainName=%s, recordName=%s: %w", domainName, recordName, err)
 	}
@@ -167,7 +172,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		}
 	}
 
-	_, err = d.client.Records.Update(domainName, recordName, "TXT", desec.RRSet{Records: records})
+	_, err = d.client.Records.Update(ctx, domainName, recordName, "TXT", desec.RRSet{Records: records})
 	if err != nil {
 		return fmt.Errorf("desec: failed to update records: domainName=%s, recordName=%s: %w", domainName, recordName, err)
 	}

@@ -105,6 +105,13 @@ For more information, you can read about the different methods of authentication
 - [API documentation](https://docs.openstack.org/designate/latest/)
 - [Go client](https://pkg.go.dev/github.com/gophercloud/gophercloud/openstack/dns/v2)
 
+
+## Designate Providers
+
+Known public cloud providers with support for Designate:
+
+- [Fuga Cloud](https://fuga.cloud/)
+
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/designate/designate.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

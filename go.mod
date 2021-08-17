@@ -61,3 +61,5 @@ require (
 	gopkg.in/square/go-jose.v2 v2.6.0
 	gopkg.in/yaml.v2 v2.4.0
 )
+
+replace github.com/nrdcg/desec => github.com/cgroschupp/desec v0.5.1-0.20210817111952-10e88ee8536a

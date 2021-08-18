@@ -130,10 +130,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("ovh: could not determine zone for domain %q: %w", fqdn, err)
 	}
-	
+
 	authZone = dns01.UnFqdn(authZone)
 	subDomain := extractRecordName(fqdn, authZone)
-	
+
 	reqURL := fmt.Sprintf("/domain/zone/%s/record", authZone)
 	reqData := Record{FieldType: "TXT", SubDomain: subDomain, Target: value, TTL: d.config.TTL}
 

@@ -2,9 +2,9 @@ package vinyldns
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"sync"
 	"testing"
 
@@ -102,7 +102,7 @@ func (h *mockRouter) add(method, path string, statusCode int, filename string) {
 	h.routes[method][path] = func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(statusCode)
 
-		data, err := ioutil.ReadFile(fmt.Sprintf("./fixtures/%s.json", filename))
+		data, err := os.ReadFile(fmt.Sprintf("./fixtures/%s.json", filename))
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
 			return

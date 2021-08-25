@@ -6,7 +6,6 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -333,7 +332,7 @@ func TestChallengeTLS_Client_ObtainForCSR(t *testing.T) {
 	require.NoError(t, err)
 	user.registration = reg
 
-	csrRaw, err := ioutil.ReadFile("./fixtures/csr.raw")
+	csrRaw, err := os.ReadFile("./fixtures/csr.raw")
 	require.NoError(t, err)
 
 	csr, err := x509.ParseCertificateRequest(csrRaw)

@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -145,7 +145,7 @@ func NewDNSProviderServiceAccount(saFile string) (*DNSProvider, error) {
 		return nil, errors.New("googlecloud: Service Account file missing")
 	}
 
-	saKey, err := ioutil.ReadFile(saFile)
+	saKey, err := os.ReadFile(saFile)
 	if err != nil {
 		return nil, fmt.Errorf("googlecloud: unable to read Service Account file: %w", err)
 	}

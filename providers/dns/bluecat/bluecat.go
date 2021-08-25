@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 	"time"
@@ -139,7 +139,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 	defer resp.Body.Close()
 
-	addTxtBytes, _ := ioutil.ReadAll(resp.Body)
+	addTxtBytes, _ := io.ReadAll(resp.Body)
 	addTxtResp := string(addTxtBytes)
 	// addEntity responds only with body text containing the ID of the created record
 	_, err = strconv.ParseUint(addTxtResp, 10, 64)

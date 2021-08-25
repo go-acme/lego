@@ -2,7 +2,7 @@ package internal
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -35,7 +35,7 @@ func TestClient_CreateDNSRecord(t *testing.T) {
 			return
 		}
 
-		raw, err := ioutil.ReadAll(req.Body)
+		raw, err := io.ReadAll(req.Body)
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusBadRequest)
 			return

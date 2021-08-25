@@ -2,7 +2,7 @@ package mydnsjp
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -23,7 +23,7 @@ func (d *DNSProvider) doRequest(domain, value, cmd string) error {
 
 	if resp.StatusCode >= 400 {
 		var content []byte
-		content, err = ioutil.ReadAll(resp.Body)
+		content, err = io.ReadAll(resp.Body)
 		if err != nil {
 			return err
 		}

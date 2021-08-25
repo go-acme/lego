@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path"
@@ -68,7 +67,7 @@ func (c *Client) getRecords(zoneID string) (*DNSRecords, error) {
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
-		bodyBytes, _ := ioutil.ReadAll(resp.Body)
+		bodyBytes, _ := io.ReadAll(resp.Body)
 		return nil, fmt.Errorf("could not get records: zone ID: %s; Status: %s; Body: %s",
 			zoneID, resp.Status, string(bodyBytes))
 	}
@@ -101,7 +100,7 @@ func (c *Client) CreateRecord(record DNSRecord) error {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		bodyBytes, _ := ioutil.ReadAll(resp.Body)
+		bodyBytes, _ := io.ReadAll(resp.Body)
 		return fmt.Errorf("could not create record %s; Status: %s; Body: %s", string(body), resp.Status, string(bodyBytes))
 	}
 

@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"path"
 	"strings"
@@ -83,7 +83,7 @@ func (d *DNSProvider) login() error {
 
 	defer func() { _ = resp.Body.Close() }()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("login: %w", err)
 	}
@@ -159,7 +159,7 @@ func (d *DNSProvider) createTXTRecord(zone, leaf, value string) error {
 
 	defer func() { _ = resp.Body.Close() }()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("createTXTRecord: %w", err)
 	}
@@ -211,7 +211,7 @@ func (d *DNSProvider) removeTXTRecord(zone, leaf, value string) error {
 
 	defer func() { _ = resp.Body.Close() }()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("removeTXTRecord: %w", err)
 	}

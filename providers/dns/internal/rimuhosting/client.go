@@ -3,7 +3,7 @@ package rimuhosting
 import (
 	"encoding/xml"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -132,7 +132,7 @@ func (c Client) do(params, data interface{}) error {
 
 	defer func() { _ = resp.Body.Close() }()
 
-	all, err := ioutil.ReadAll(resp.Body)
+	all, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}

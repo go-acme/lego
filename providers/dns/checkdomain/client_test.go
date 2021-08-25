@@ -3,7 +3,7 @@ package checkdomain
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -99,7 +99,7 @@ func Test_createRecord(t *testing.T) {
 			return
 		}
 
-		content, err := ioutil.ReadAll(req.Body)
+		content, err := io.ReadAll(req.Body)
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusBadRequest)
 			return

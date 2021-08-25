@@ -2,7 +2,7 @@ package rackspace
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -124,7 +124,7 @@ func startTestServers() (string, func()) {
 
 func identityHandler(dnsEndpoint string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		reqBody, err := ioutil.ReadAll(r.Body)
+		reqBody, err := io.ReadAll(r.Body)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
@@ -158,7 +158,7 @@ func dnsHandler() *http.ServeMux {
 		switch r.Method {
 		// Used by `Present()` creating the TXT record
 		case http.MethodPost:
-			reqBody, err := ioutil.ReadAll(r.Body)
+			reqBody, err := io.ReadAll(r.Body)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return

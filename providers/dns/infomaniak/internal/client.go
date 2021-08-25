@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path"
@@ -143,7 +142,7 @@ func (c *Client) do(req *http.Request) (*APIResponse, error) {
 
 	defer func() { _ = rawResp.Body.Close() }()
 
-	content, err := ioutil.ReadAll(rawResp.Body)
+	content, err := io.ReadAll(rawResp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read the response body, status code: %d", rawResp.StatusCode)
 	}

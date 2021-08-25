@@ -2,7 +2,6 @@ package gandi
 
 import (
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"regexp"
@@ -128,7 +127,7 @@ func TestDNSProvider(t *testing.T) {
 	fakeServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		require.Equal(t, "text/xml", r.Header.Get("Content-Type"), "invalid content type")
 
-		req, errS := ioutil.ReadAll(r.Body)
+		req, errS := io.ReadAll(r.Body)
 		require.NoError(t, errS)
 
 		req = regexpDate.ReplaceAllLiteral(req, []byte(`[ACME Challenge 01 Jan 16 00:00 +0000]`))

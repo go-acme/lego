@@ -7,7 +7,6 @@ import (
 	"go/format"
 	"go/parser"
 	"go/token"
-	"io/ioutil"
 	"log"
 	"os"
 	"regexp"
@@ -186,7 +185,7 @@ func writeUserAgentFile(filename, version, comment string) error {
 		return err
 	}
 
-	return ioutil.WriteFile(filename, source, 0o644)
+	return os.WriteFile(filename, source, 0o644)
 }
 
 func bumpVersion(userAgent, mode string) (string, error) {

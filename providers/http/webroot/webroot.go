@@ -4,7 +4,6 @@ package webroot
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -35,7 +34,7 @@ func (w *HTTPProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("could not create required directories in webroot for HTTP challenge: %w", err)
 	}
 
-	err = ioutil.WriteFile(challengeFilePath, []byte(keyAuth), 0o644)
+	err = os.WriteFile(challengeFilePath, []byte(keyAuth), 0o644)
 	if err != nil {
 		return fmt.Errorf("could not write file in webroot for HTTP challenge: %w", err)
 	}

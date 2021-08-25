@@ -4,7 +4,7 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"sort"
 	"testing"
@@ -14,7 +14,7 @@ import (
 	"github.com/go-acme/lego/v4/platform/tester"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	jose "gopkg.in/square/go-jose.v2"
+	"gopkg.in/square/go-jose.v2"
 )
 
 func TestByType(t *testing.T) {
@@ -154,7 +154,7 @@ func TestValidate(t *testing.T) {
 // or if the JWS body is not the empty JSON payload "{}" or a POST-as-GET payload "" an error is returned.
 // We use this to verify challenge POSTs to the ts below do not send a JWS body.
 func validateNoBody(privateKey *rsa.PrivateKey, r *http.Request) error {
-	reqBody, err := ioutil.ReadAll(r.Body)
+	reqBody, err := io.ReadAll(r.Body)
 	if err != nil {
 		return err
 	}

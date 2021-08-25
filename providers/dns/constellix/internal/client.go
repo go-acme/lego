@@ -3,7 +3,7 @@ package internal
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"path"
@@ -63,7 +63,7 @@ func (c *Client) do(req *http.Request, v interface{}) error {
 		return err
 	}
 
-	raw, err := ioutil.ReadAll(resp.Body)
+	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("failed to read body: %w", err)
 	}
@@ -94,7 +94,7 @@ func checkResponse(resp *http.Response) error {
 		return nil
 	}
 
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err == nil && data != nil {
 		msg := &APIError{StatusCode: resp.StatusCode}
 

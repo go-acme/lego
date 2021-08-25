@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 )
 
@@ -42,7 +41,7 @@ func (d *Client) ListZones() ([]DNSZone, error) {
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
-		bodyBytes, _ := ioutil.ReadAll(resp.Body)
+		bodyBytes, _ := io.ReadAll(resp.Body)
 
 		var errResp errorResponse
 		err = json.Unmarshal(bodyBytes, &errResp)
@@ -80,7 +79,7 @@ func (d *Client) CreateRecord(zone DNSZone, newRecord DNSRecord) (*DNSRecord, er
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
-		bodyBytes, _ := ioutil.ReadAll(resp.Body)
+		bodyBytes, _ := io.ReadAll(resp.Body)
 
 		var errResp errorResponse
 		err = json.Unmarshal(bodyBytes, &errResp)
@@ -120,7 +119,7 @@ func (d *Client) DeleteRecord(record *DNSRecord) error {
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
-		bodyBytes, _ := ioutil.ReadAll(resp.Body)
+		bodyBytes, _ := io.ReadAll(resp.Body)
 
 		var errResp errorResponse
 		err = json.Unmarshal(bodyBytes, &errResp)

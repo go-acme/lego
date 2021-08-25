@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"go/format"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -201,7 +200,7 @@ func generateReadMe(models *Providers) error {
 		return errors.New("missing end tag")
 	}
 
-	return ioutil.WriteFile(readmePath, buffer.Bytes(), 0o666)
+	return os.WriteFile(readmePath, buffer.Bytes(), 0o666)
 }
 
 func extractTableData(models *Providers) (int, [][]string) {

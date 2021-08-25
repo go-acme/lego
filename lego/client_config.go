@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"os"
@@ -88,7 +87,7 @@ func createDefaultHTTPClient() *http.Client {
 // caCertificatesEnvVar value then initCertPool will panic.
 func initCertPool() *x509.CertPool {
 	if customCACertsPath := os.Getenv(caCertificatesEnvVar); customCACertsPath != "" {
-		customCAs, err := ioutil.ReadFile(customCACertsPath)
+		customCAs, err := os.ReadFile(customCACertsPath)
 		if err != nil {
 			panic(fmt.Sprintf("error reading %s=%q: %v",
 				caCertificatesEnvVar, customCACertsPath, err))

@@ -73,6 +73,7 @@
     "noctx",
     "forcetypeassert",
     "tagliatelle",
+    "errname",
   ]
 
 [issues]

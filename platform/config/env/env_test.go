@@ -313,7 +313,7 @@ func TestGetOrFile_ReadsFiles(t *testing.T) {
 			require.NoError(t, err)
 			defer os.Remove(file.Name())
 
-			err = ioutil.WriteFile(file.Name(), []byte("lego_file\n"), 0o644)
+			err = os.WriteFile(file.Name(), []byte("lego_file\n"), 0o644)
 			require.NoError(t, err)
 
 			err = os.Setenv(varEnvFileName, file.Name())
@@ -340,7 +340,7 @@ func TestGetOrFile_PrefersEnvVars(t *testing.T) {
 	require.NoError(t, err)
 	defer os.Remove(file.Name())
 
-	err = ioutil.WriteFile(file.Name(), []byte("lego_file"), 0o644)
+	err = os.WriteFile(file.Name(), []byte("lego_file"), 0o644)
 	require.NoError(t, err)
 
 	err = os.Setenv(varEnvFileName, file.Name())

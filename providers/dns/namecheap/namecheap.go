@@ -4,7 +4,7 @@ package namecheap
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -220,7 +220,7 @@ func getClientIP(client *http.Client, debug bool) (addr string, err error) {
 	}
 	defer resp.Body.Close()
 
-	clientIP, err := ioutil.ReadAll(resp.Body)
+	clientIP, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
 	}

@@ -12,7 +12,8 @@ const envDomain = envNamespace + "DOMAIN"
 
 var envTest = tester.NewEnvTest(
 	EnvAccessKey,
-	EnvSecretKey).
+	EnvSecretKey,
+	EnvRAMRole).
 	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
@@ -26,6 +27,12 @@ func TestNewDNSProvider(t *testing.T) {
 			envVars: map[string]string{
 				EnvAccessKey: "123",
 				EnvSecretKey: "456",
+			},
+		},
+		{
+			desc: "success (RAM role)",
+			envVars: map[string]string{
+				EnvRAMRole: "LegoInstanceRole",
 			},
 		},
 		{

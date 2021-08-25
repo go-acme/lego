@@ -21,7 +21,7 @@ Configuration for [Alibaba Cloud DNS](https://www.alibabacloud.com/product/dns).
 Here is an example bash command using the Alibaba Cloud DNS provider:
 
 ```bash
-# Setup using instance ram role
+# Setup using instance RAM role
 ALICLOUD_RAM_ROLE=lego \
 lego --email myemail@example.com --dns alidns --domains my.example.org run
 
@@ -40,7 +40,7 @@ lego --email myemail@example.com --dns alidns --domains my.example.org run
 | Environment Variable Name | Description |
 |-----------------------|-------------|
 | `ALICLOUD_ACCESS_KEY` | Access key ID |
-| `ALICLOUD_RAM_ROLE` | Your instance ram role (https://www.alibabacloud.com/help/doc-detail/54579.htm) |
+| `ALICLOUD_RAM_ROLE` | Your instance RAM role (https://www.alibabacloud.com/help/doc-detail/54579.htm) |
 | `ALICLOUD_SECRET_KEY` | Access Key secret |
 | `ALICLOUD_SECURITY_TOKEN` | STS Security Token (optional) |
 

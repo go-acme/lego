@@ -126,9 +126,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
 	// Parse domain name
-	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
+	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return fmt.Errorf("ovh: could not determine zone for domain %q: %w", domain, err)
+		return fmt.Errorf("ovh: could not determine zone for domain %q: %w", fqdn, err)
 	}
 
 	authZone = dns01.UnFqdn(authZone)
@@ -170,9 +170,9 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("ovh: unknown record ID for '%s'", fqdn)
 	}
 
-	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
+	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return fmt.Errorf("ovh: could not determine zone for domain %q: %w", domain, err)
+		return fmt.Errorf("ovh: could not determine zone for domain %q: %w", fqdn, err)
 	}
 
 	authZone = dns01.UnFqdn(authZone)
@@ -210,5 +210,5 @@ func extractRecordName(fqdn, zone string) string {
 	if idx := strings.Index(name, "."+zone); idx != -1 {
 		return name[:idx]
 	}
-	return name
+	return ""
 }

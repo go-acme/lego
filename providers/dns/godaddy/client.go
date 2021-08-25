@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"path"
 )
@@ -30,7 +29,7 @@ func (d *DNSProvider) getRecords(domainZone, rType, recordName string) ([]DNSRec
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
-		bodyBytes, _ := ioutil.ReadAll(resp.Body)
+		bodyBytes, _ := io.ReadAll(resp.Body)
 		return nil, fmt.Errorf("could not get records: Domain: %s; Record: %s, Status: %v; Body: %s",
 			domainZone, recordName, resp.StatusCode, string(bodyBytes))
 	}
@@ -61,7 +60,7 @@ func (d *DNSProvider) updateTxtRecords(records []DNSRecord, domainZone, recordNa
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
-		bodyBytes, _ := ioutil.ReadAll(resp.Body)
+		bodyBytes, _ := io.ReadAll(resp.Body)
 		return fmt.Errorf("could not create record %v; Status: %v; Body: %s", string(body), resp.StatusCode, string(bodyBytes))
 	}
 

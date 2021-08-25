@@ -2,7 +2,7 @@ package duckdns
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/url"
 	"strconv"
 	"strings"
@@ -35,7 +35,7 @@ func (d *DNSProvider) updateTxtRecord(domain, token, txt string, clear bool) err
 	}
 	defer response.Body.Close()
 
-	bodyBytes, err := ioutil.ReadAll(response.Body)
+	bodyBytes, err := io.ReadAll(response.Body)
 	if err != nil {
 		return err
 	}

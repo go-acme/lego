@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 )
 
@@ -258,7 +257,7 @@ func (d *DNSProvider) sendRequest(method, resource string, payload interface{}) 
 		return nil, fmt.Errorf("OTC API request %s failed with HTTP status code %d", url, resp.StatusCode)
 	}
 
-	body1, err := ioutil.ReadAll(resp.Body)
+	body1, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

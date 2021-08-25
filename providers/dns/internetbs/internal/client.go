@@ -3,9 +3,10 @@ package internal
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"path"
 	"path/filepath"
 	"strings"
@@ -110,7 +111,7 @@ func (c Client) do(action string, params interface{}, response interface{}) erro
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode/100 != 2 {
-		data, _ := ioutil.ReadAll(resp.Body)
+		data, _ := io.ReadAll(resp.Body)
 		return fmt.Errorf("status code: %d, %s", resp.StatusCode, string(data))
 	}
 
@@ -122,7 +123,7 @@ func (c Client) do(action string, params interface{}, response interface{}) erro
 }
 
 func dump(endpoint *url.URL, resp *http.Response, response interface{}) error {
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
@@ -131,7 +132,7 @@ func dump(endpoint *url.URL, resp *http.Response, response interface{}) error {
 		return !unicode.IsLetter(r) && !unicode.IsNumber(r)
 	})
 
-	err = ioutil.WriteFile(filepath.Join("fixtures", strings.Join(fields, "_")+".json"), data, 0o666)
+	err = os.WriteFile(filepath.Join("fixtures", strings.Join(fields, "_")+".json"), data, 0o666)
 	if err != nil {
 		return err
 	}

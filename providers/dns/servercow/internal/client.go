@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 )
 
@@ -48,7 +48,7 @@ func (c *Client) GetRecords(domain string) ([]Record, error) {
 		return nil, fmt.Errorf("error: status code %d", resp.StatusCode)
 	}
 
-	raw, err := ioutil.ReadAll(resp.Body)
+	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read body: %w", err)
 	}
@@ -80,7 +80,7 @@ func (c *Client) CreateUpdateRecord(domain string, data Record) (*Message, error
 		return nil, fmt.Errorf("error: status code %d", resp.StatusCode)
 	}
 
-	raw, err := ioutil.ReadAll(resp.Body)
+	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read body: %w", err)
 	}
@@ -116,7 +116,7 @@ func (c *Client) DeleteRecord(domain string, data Record) (*Message, error) {
 		return nil, fmt.Errorf("error: status code %d", resp.StatusCode)
 	}
 
-	raw, err := ioutil.ReadAll(resp.Body)
+	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read body: %w", err)
 	}

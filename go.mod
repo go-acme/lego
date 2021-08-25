@@ -1,6 +1,6 @@
 module github.com/go-acme/lego/v4
 
-go 1.15
+go 1.16
 
 // github.com/exoscale/egoscale v1.19.0 => It is an error, please don't use it.
 // github.com/linode/linodego v1.0.0 => It is an error, please don't use it.

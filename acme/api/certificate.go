@@ -4,7 +4,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/go-acme/lego/v4/acme"
@@ -71,7 +71,7 @@ func (c *CertificateService) get(certURL string, bundle bool) (*acme.RawCertific
 		return nil, nil, err
 	}
 
-	data, err := ioutil.ReadAll(http.MaxBytesReader(nil, resp.Body, maxBodySize))
+	data, err := io.ReadAll(http.MaxBytesReader(nil, resp.Body, maxBodySize))
 	if err != nil {
 		return nil, resp.Header, err
 	}

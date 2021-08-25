@@ -3,7 +3,6 @@ package internal
 import (
 	"encoding/json"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -53,7 +52,7 @@ func TestClient_GetRecords(t *testing.T) {
 	recordsJSON, err := json.Marshal(records)
 	require.NoError(t, err)
 
-	expectedContent, err := ioutil.ReadFile("./fixtures/records-01.json")
+	expectedContent, err := os.ReadFile("./fixtures/records-01.json")
 	require.NoError(t, err)
 
 	assert.JSONEq(t, string(expectedContent), string(recordsJSON))
@@ -92,7 +91,7 @@ func TestClient_CreateUpdateRecord(t *testing.T) {
 			return
 		}
 
-		content, err := ioutil.ReadAll(req.Body)
+		content, err := io.ReadAll(req.Body)
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusBadRequest)
 			return
@@ -163,7 +162,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 			return
 		}
 
-		content, err := ioutil.ReadAll(req.Body)
+		content, err := io.ReadAll(req.Body)
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusBadRequest)
 			return

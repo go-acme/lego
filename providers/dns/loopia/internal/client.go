@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
@@ -167,7 +166,7 @@ func (c *Client) httpPost(url string, bodyType string, body io.Reader) ([]byte, 
 		return nil, fmt.Errorf("HTTP Post Error: %d", resp.StatusCode)
 	}
 
-	b, err := ioutil.ReadAll(resp.Body)
+	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("HTTP Post Error: %w", err)
 	}

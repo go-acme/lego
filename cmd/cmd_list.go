@@ -3,8 +3,8 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/url"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -66,7 +66,7 @@ func listCertificates(ctx *cli.Context) error {
 			continue
 		}
 
-		data, err := ioutil.ReadFile(filename)
+		data, err := os.ReadFile(filename)
 		if err != nil {
 			return err
 		}
@@ -110,7 +110,7 @@ func listAccount(ctx *cli.Context) error {
 
 	fmt.Println("Found the following accounts:")
 	for _, filename := range matches {
-		data, err := ioutil.ReadFile(filename)
+		data, err := os.ReadFile(filename)
 		if err != nil {
 			return err
 		}

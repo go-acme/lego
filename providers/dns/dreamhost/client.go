@@ -3,7 +3,7 @@ package dreamhost
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/url"
 
 	"github.com/go-acme/lego/v4/log"
@@ -53,7 +53,7 @@ func (d *DNSProvider) updateTxtRecord(u fmt.Stringer) error {
 		return fmt.Errorf("request failed with HTTP status code %d", resp.StatusCode)
 	}
 
-	raw, err := ioutil.ReadAll(resp.Body)
+	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("failed to read body: %w", err)
 	}

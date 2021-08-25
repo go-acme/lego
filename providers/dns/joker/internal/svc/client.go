@@ -4,7 +4,7 @@ package svc
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 
@@ -59,7 +59,7 @@ func (c *Client) Send(zone, label, value string) error {
 		return err
 	}
 
-	all, err := ioutil.ReadAll(resp.Body)
+	all, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}

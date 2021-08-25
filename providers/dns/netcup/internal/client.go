@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"time"
 )
@@ -282,7 +282,7 @@ func checkResponse(resp *http.Response) error {
 
 		defer resp.Body.Close()
 
-		raw, err := ioutil.ReadAll(resp.Body)
+		raw, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return fmt.Errorf("unable to read body: status code=%d, error=%w", resp.StatusCode, err)
 		}
@@ -300,7 +300,7 @@ func decodeResponseMsg(resp *http.Response) (*ResponseMsg, error) {
 
 	defer resp.Body.Close()
 
-	raw, err := ioutil.ReadAll(resp.Body)
+	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read body: status code=%d, error=%w", resp.StatusCode, err)
 	}

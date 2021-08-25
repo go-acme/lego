@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -41,7 +41,7 @@ func (d *DNSProvider) login() error {
 	}
 	defer resp.Body.Close()
 
-	authBytes, err := ioutil.ReadAll(resp.Body)
+	authBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("bluecat: %w", err)
 	}
@@ -74,7 +74,7 @@ func (d *DNSProvider) logout() error {
 		return fmt.Errorf("bluecat: request failed to delete session with HTTP status code %d", resp.StatusCode)
 	}
 
-	authBytes, err := ioutil.ReadAll(resp.Body)
+	authBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
@@ -240,7 +240,7 @@ func (d *DNSProvider) sendRequest(method, resource string, payload interface{}, 
 	}
 
 	if resp.StatusCode >= 400 {
-		errBytes, _ := ioutil.ReadAll(resp.Body)
+		errBytes, _ := io.ReadAll(resp.Body)
 		errResp := string(errBytes)
 		return nil, fmt.Errorf("bluecat: request failed with HTTP status code %d\n Full message: %s",
 			resp.StatusCode, errResp)

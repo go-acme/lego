@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"path"
 )
@@ -81,7 +81,7 @@ func (d *DNSProvider) doRequest(method, resource string, requestMsg, responseMsg
 	defer response.Body.Close()
 
 	if response.StatusCode >= http.StatusBadRequest {
-		body, err := ioutil.ReadAll(response.Body)
+		body, err := io.ReadAll(response.Body)
 		if err != nil {
 			return fmt.Errorf("%d: failed to read response body: %w", response.StatusCode, err)
 		}

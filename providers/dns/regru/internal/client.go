@@ -3,7 +3,7 @@ package internal
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"path"
@@ -102,7 +102,7 @@ func (c Client) do(request interface{}, fragments ...string) (*APIResponse, erro
 		return nil, fmt.Errorf("API error, status code: %d", resp.StatusCode)
 	}
 
-	all, err := ioutil.ReadAll(resp.Body)
+	all, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

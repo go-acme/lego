@@ -3,7 +3,7 @@ package internal
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -267,7 +267,7 @@ func TestClientAddTxtRecord(t *testing.T) {
 
 			server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 				assert.NotNil(t, req.Body)
-				content, err := ioutil.ReadAll(req.Body)
+				content, err := io.ReadAll(req.Body)
 				require.NoError(t, err)
 
 				assert.Equal(t, test.expected, string(content))

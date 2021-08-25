@@ -3,7 +3,7 @@ package dode
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/url"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -38,7 +38,7 @@ func (d *DNSProvider) updateTxtRecord(fqdn, token, txt string, clear bool) error
 	}
 	defer response.Body.Close()
 
-	bodyBytes, err := ioutil.ReadAll(response.Body)
+	bodyBytes, err := io.ReadAll(response.Body)
 	if err != nil {
 		return err
 	}

@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 )
 
@@ -235,7 +234,7 @@ func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 		return nil, readError(req, resp)
 	}
 
-	content, err := ioutil.ReadAll(resp.Body)
+	content, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -243,7 +242,7 @@ func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 }
 
 func readError(req *http.Request, resp *http.Response) error {
-	content, err := ioutil.ReadAll(resp.Body)
+	content, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return errors.New(toUnreadableBodyMessage(req, content))
 	}

@@ -3,9 +3,9 @@ package internal
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"regexp"
 	"testing"
 
@@ -38,7 +38,7 @@ func setupNew(t *testing.T, expectedForm string, filename string) *Client {
 			return
 		}
 
-		data, err := ioutil.ReadFile(fmt.Sprintf("./fixtures/%s.json", filename))
+		data, err := os.ReadFile(fmt.Sprintf("./fixtures/%s.json", filename))
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
 			return

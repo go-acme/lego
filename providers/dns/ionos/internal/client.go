@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path"
@@ -168,7 +167,7 @@ func (c *Client) makeRequest(ctx context.Context, method, uri string, body io.Re
 }
 
 func readError(body io.Reader, statusCode int) error {
-	bodyBytes, _ := ioutil.ReadAll(body)
+	bodyBytes, _ := io.ReadAll(body)
 
 	cErr := &ClientError{StatusCode: statusCode}
 

@@ -2,7 +2,7 @@ package internal
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -141,7 +141,7 @@ func TestClient_Login(t *testing.T) {
 	defer tearDown()
 
 	mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
-		raw, err := ioutil.ReadAll(req.Body)
+		raw, err := io.ReadAll(req.Body)
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
 		}
@@ -251,7 +251,7 @@ func TestClient_Logout(t *testing.T) {
 	defer tearDown()
 
 	mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
-		raw, err := ioutil.ReadAll(req.Body)
+		raw, err := io.ReadAll(req.Body)
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
 		}
@@ -335,7 +335,7 @@ func TestClient_GetDNSRecords(t *testing.T) {
 	defer tearDown()
 
 	mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
-		raw, err := ioutil.ReadAll(req.Body)
+		raw, err := io.ReadAll(req.Body)
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
 		}
@@ -443,7 +443,7 @@ func TestClient_GetDNSRecords_errors(t *testing.T) {
 		{
 			desc: "responsedata marshaling error",
 			handler: func(rw http.ResponseWriter, req *http.Request) {
-				raw, err := ioutil.ReadAll(req.Body)
+				raw, err := io.ReadAll(req.Body)
 				if err != nil {
 					http.Error(rw, err.Error(), http.StatusInternalServerError)
 				}

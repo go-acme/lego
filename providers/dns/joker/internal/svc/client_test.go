@@ -2,7 +2,7 @@ package svc
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -20,7 +20,7 @@ func TestClient_Send(t *testing.T) {
 			return
 		}
 
-		all, _ := ioutil.ReadAll(req.Body)
+		all, _ := io.ReadAll(req.Body)
 
 		if string(all) != "label=_acme-challenge&password=secret&type=TXT&username=test&value=123&zone=example.com" {
 			http.Error(rw, fmt.Sprintf("invalid request: %q", string(all)), http.StatusBadRequest)
@@ -54,7 +54,7 @@ func TestClient_Send_empty(t *testing.T) {
 			return
 		}
 
-		all, _ := ioutil.ReadAll(req.Body)
+		all, _ := io.ReadAll(req.Body)
 
 		if string(all) != "label=_acme-challenge&password=secret&type=TXT&username=test&value=&zone=example.com" {
 			http.Error(rw, fmt.Sprintf("invalid request: %q", string(all)), http.StatusBadRequest)

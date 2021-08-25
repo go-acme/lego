@@ -2,7 +2,7 @@ package liquidweb
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -184,7 +184,7 @@ func TestDNSProvider_Present(t *testing.T) {
 		assert.Equal(t, "tacoman", password)
 		assert.True(t, ok)
 
-		reqBody, err := ioutil.ReadAll(r.Body)
+		reqBody, err := io.ReadAll(r.Body)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

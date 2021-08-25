@@ -3,7 +3,6 @@ package internal
 import (
 	"encoding/json"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"testing"
@@ -42,7 +41,7 @@ func TestTxtRecordService_Create(t *testing.T) {
 	recordsJSON, err := json.Marshal(records)
 	require.NoError(t, err)
 
-	expectedContent, err := ioutil.ReadFile("./fixtures/records-Create.json")
+	expectedContent, err := os.ReadFile("./fixtures/records-Create.json")
 	require.NoError(t, err)
 
 	assert.JSONEq(t, string(expectedContent), string(recordsJSON))
@@ -78,7 +77,7 @@ func TestTxtRecordService_GetAll(t *testing.T) {
 	recordsJSON, err := json.Marshal(records)
 	require.NoError(t, err)
 
-	expectedContent, err := ioutil.ReadFile("./fixtures/records-GetAll.json")
+	expectedContent, err := os.ReadFile("./fixtures/records-GetAll.json")
 	require.NoError(t, err)
 
 	assert.JSONEq(t, string(expectedContent), string(recordsJSON))
@@ -211,7 +210,7 @@ func TestTxtRecordService_Search(t *testing.T) {
 	recordsJSON, err := json.Marshal(records)
 	require.NoError(t, err)
 
-	expectedContent, err := ioutil.ReadFile("./fixtures/records-Search.json")
+	expectedContent, err := os.ReadFile("./fixtures/records-Search.json")
 	require.NoError(t, err)
 
 	assert.JSONEq(t, string(expectedContent), string(recordsJSON))

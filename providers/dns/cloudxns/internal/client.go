@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -164,7 +164,7 @@ func (c *Client) doRequest(method, uri string, body []byte) (json.RawMessage, er
 
 	defer resp.Body.Close()
 
-	content, err := ioutil.ReadAll(resp.Body)
+	content, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("CloudXNS: %s", toUnreadableBodyMessage(req, content))
 	}

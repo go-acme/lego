@@ -2,7 +2,7 @@ package gandiv5
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"regexp"
@@ -128,7 +128,7 @@ func TestDNSProvider(t *testing.T) {
 			return
 		}
 
-		body, errS := ioutil.ReadAll(req.Body)
+		body, errS := io.ReadAll(req.Body)
 		if errS != nil {
 			http.Error(rw, fmt.Sprintf(`{"message": "read body error: %v"}`, errS), http.StatusInternalServerError)
 			return

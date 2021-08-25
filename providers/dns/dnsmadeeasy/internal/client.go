@@ -8,7 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"time"
 )
@@ -153,7 +153,7 @@ func (c *Client) sendRequest(method, resource string, payload interface{}) (*htt
 	}
 
 	if resp.StatusCode > 299 {
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return nil, fmt.Errorf("request failed with HTTP status code %d", resp.StatusCode)
 		}

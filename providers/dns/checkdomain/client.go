@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
@@ -385,7 +384,7 @@ func (d *DNSProvider) sendRequest(req *http.Request, result interface{}) error {
 		return nil
 	}
 
-	raw, err := ioutil.ReadAll(resp.Body)
+	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
@@ -408,7 +407,7 @@ func checkResponse(resp *http.Response) error {
 
 	defer func() { _ = resp.Body.Close() }()
 
-	raw, err := ioutil.ReadAll(resp.Body)
+	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("unable to read body: status code=%d, error=%w", resp.StatusCode, err)
 	}

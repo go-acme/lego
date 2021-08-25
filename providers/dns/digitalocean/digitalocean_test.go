@@ -2,7 +2,7 @@ package digitalocean
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -117,7 +117,7 @@ func TestDNSProvider_Present(t *testing.T) {
 		assert.Equal(t, "application/json", r.Header.Get("Content-Type"), "Content-Type")
 		assert.Equal(t, "Bearer asdf1234", r.Header.Get("Authorization"), "Authorization")
 
-		reqBody, err := ioutil.ReadAll(r.Body)
+		reqBody, err := io.ReadAll(r.Body)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}

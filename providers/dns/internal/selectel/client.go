@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -149,7 +149,7 @@ func checkResponse(resp *http.Response) error {
 			return fmt.Errorf("request failed with status code %d and empty body", resp.StatusCode)
 		}
 
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return err
 		}
@@ -168,7 +168,7 @@ func checkResponse(resp *http.Response) error {
 }
 
 func unmarshalBody(resp *http.Response, to interface{}) error {
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}

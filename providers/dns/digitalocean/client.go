@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -85,7 +84,7 @@ func (d *DNSProvider) addTxtRecord(fqdn, value string) (*txtRecordResponse, erro
 		return nil, readError(req, resp)
 	}
 
-	content, err := ioutil.ReadAll(resp.Body)
+	content, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, errors.New(toUnreadableBodyMessage(req, content))
 	}
@@ -113,7 +112,7 @@ func (d *DNSProvider) newRequest(method, reqURL string, body io.Reader) (*http.R
 }
 
 func readError(req *http.Request, resp *http.Response) error {
-	content, err := ioutil.ReadAll(resp.Body)
+	content, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return errors.New(toUnreadableBodyMessage(req, content))
 	}

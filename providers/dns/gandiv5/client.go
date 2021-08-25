@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/go-acme/lego/v4/log"
@@ -191,7 +191,7 @@ func readBody(resp *http.Response) ([]byte, error) {
 
 	defer resp.Body.Close()
 
-	rawBody, err := ioutil.ReadAll(resp.Body)
+	rawBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

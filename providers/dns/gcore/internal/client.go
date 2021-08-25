@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"path"
@@ -142,7 +142,7 @@ func (c *Client) do(ctx context.Context, method, uri string, bodyParams interfac
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode/100 != 2 {
-		all, _ := ioutil.ReadAll(resp.Body)
+		all, _ := io.ReadAll(resp.Body)
 
 		e := APIError{
 			StatusCode: resp.StatusCode,

@@ -4,7 +4,6 @@ import (
 	"crypto/rsa"
 	"encoding/base64"
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	"github.com/go-acme/lego/v4/platform/config/env"
@@ -83,7 +82,7 @@ func getPrivateKey(envVar string) ([]byte, error) {
 		return nil, fmt.Errorf("no value provided for: %s or %s", envVar, fileVar)
 	}
 
-	fileContents, err := ioutil.ReadFile(fileVarValue)
+	fileContents, err := os.ReadFile(fileVarValue)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read the file %s (defined by env var %s): %w", fileVarValue, fileVar, err)
 	}

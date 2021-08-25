@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -186,7 +185,7 @@ type assertHandler func(http.ResponseWriter, *http.Request) (int, error)
 
 func hasReqBody(v interface{}) assertHandler {
 	return func(rw http.ResponseWriter, req *http.Request) (int, error) {
-		reqBody, err := ioutil.ReadAll(req.Body)
+		reqBody, err := io.ReadAll(req.Body)
 		if err != nil {
 			return http.StatusBadRequest, err
 		}

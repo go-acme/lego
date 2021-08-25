@@ -1,7 +1,6 @@
 package webroot
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -30,7 +29,7 @@ func TestHTTPProvider(t *testing.T) {
 	}
 
 	var data []byte
-	data, err = ioutil.ReadFile(challengeFilePath)
+	data, err = os.ReadFile(challengeFilePath)
 	require.NoError(t, err)
 
 	dataStr := string(data)

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"path"
@@ -198,7 +198,7 @@ func (c Client) do(req *http.Request) (json.RawMessage, error) {
 
 	switch resp.StatusCode {
 	case http.StatusOK, http.StatusCreated:
-		all, err := ioutil.ReadAll(resp.Body)
+		all, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return nil, fmt.Errorf("read response: %w", err)
 		}
@@ -215,7 +215,7 @@ func (c Client) do(req *http.Request) (json.RawMessage, error) {
 		return nil, nil
 
 	default:
-		data, _ := ioutil.ReadAll(resp.Body)
+		data, _ := io.ReadAll(resp.Body)
 
 		e := APIError{StatusCode: resp.StatusCode}
 		err := json.Unmarshal(data, &e)

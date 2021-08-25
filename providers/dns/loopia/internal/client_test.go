@@ -3,7 +3,7 @@ package internal
 import (
 	"encoding/xml"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -210,7 +210,7 @@ func TestClient_GetZoneRecord(t *testing.T) {
 
 func TestClient_rpcCall_404(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		_, err := ioutil.ReadAll(r.Body)
+		_, err := io.ReadAll(r.Body)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -243,7 +243,7 @@ func TestClient_rpcCall_404(t *testing.T) {
 
 func TestClient_rpcCall_RPCError(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		_, err := ioutil.ReadAll(r.Body)
+		_, err := io.ReadAll(r.Body)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
@@ -310,7 +310,7 @@ func createFakeServer(t *testing.T, serverResponses map[string]string) string {
 			return
 		}
 
-		req, err := ioutil.ReadAll(r.Body)
+		req, err := io.ReadAll(r.Body)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return

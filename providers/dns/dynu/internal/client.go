@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path"
@@ -164,7 +163,7 @@ func (c Client) doRetry(method, uri string, body []byte, data interface{}) error
 
 	defer func() { _ = resp.Body.Close() }()
 
-	all, err := ioutil.ReadAll(resp.Body)
+	all, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("failed to read response body: %w", err)
 	}

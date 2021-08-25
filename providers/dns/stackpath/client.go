@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"path"
 
@@ -209,7 +209,7 @@ func readBody(resp *http.Response) ([]byte, error) {
 
 	defer resp.Body.Close()
 
-	rawBody, err := ioutil.ReadAll(resp.Body)
+	rawBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

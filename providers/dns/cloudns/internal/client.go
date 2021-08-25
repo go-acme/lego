@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"path"
@@ -278,7 +278,7 @@ func (c *Client) doRequest(method string, uri *url.URL) (json.RawMessage, error)
 
 	defer resp.Body.Close()
 
-	content, err := ioutil.ReadAll(resp.Body)
+	content, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, errors.New(toUnreadableBodyMessage(req, content))
 	}

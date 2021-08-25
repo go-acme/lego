@@ -3,7 +3,6 @@ package env
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
@@ -155,7 +154,7 @@ func GetOrFile(envVar string) string {
 		return envVarValue
 	}
 
-	fileContents, err := ioutil.ReadFile(fileVarValue)
+	fileContents, err := os.ReadFile(fileVarValue)
 	if err != nil {
 		log.Printf("Failed to read the file %s (defined by env var %s): %s", fileVarValue, fileVar, err)
 		return ""

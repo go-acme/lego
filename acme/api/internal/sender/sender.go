@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"runtime"
 	"strings"
@@ -96,7 +95,7 @@ func (d *Doer) do(req *http.Request, response interface{}) (*http.Response, erro
 	}
 
 	if response != nil {
-		raw, err := ioutil.ReadAll(resp.Body)
+		raw, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return resp, err
 		}
@@ -120,7 +119,7 @@ func (d *Doer) formatUserAgent() string {
 
 func checkError(req *http.Request, resp *http.Response) error {
 	if resp.StatusCode >= http.StatusBadRequest {
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return fmt.Errorf("%d :: %s :: %s :: %w", resp.StatusCode, req.Method, req.URL, err)
 		}

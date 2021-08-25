@@ -2,7 +2,7 @@ package otc
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -147,7 +147,7 @@ func (m *DNSServerMock) HandleListRecordsetsSuccessfully() {
 		if r.Method == http.MethodPost {
 			assert.Equal(m.t, r.Header.Get("Content-Type"), "application/json")
 
-			body, err := ioutil.ReadAll(r.Body)
+			body, err := io.ReadAll(r.Body)
 			assert.Nil(m.t, err)
 			exceptedString := `{
 				"name": "_acme-challenge.example.com.",

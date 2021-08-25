@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 )
 
 // types for XML-RPC method calls and parameters
@@ -314,7 +313,7 @@ func (d *DNSProvider) httpPost(url, bodyType string, body io.Reader) ([]byte, er
 	}
 	defer resp.Body.Close()
 
-	b, err := ioutil.ReadAll(resp.Body)
+	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("HTTP Post Error: %w", err)
 	}

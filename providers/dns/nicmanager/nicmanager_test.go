@@ -10,7 +10,7 @@ import (
 
 const envDomain = envNamespace + "DOMAIN"
 
-var envTest = tester.NewEnvTest(EnvEmail, EnvPassword, EnvOTP, EnvUsername).
+var envTest = tester.NewEnvTest(EnvUsername, EnvLogin, EnvEmail, EnvPassword, EnvOTP).
 	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
@@ -20,26 +20,46 @@ func TestNewDNSProvider(t *testing.T) {
 		expected string
 	}{
 		{
+			desc: "success (email)",
+			envVars: map[string]string{
+				EnvEmail:    "foo@example.com",
+				EnvPassword: "secret",
+			},
+		},
+		{
+			desc: "success (login.username)",
+			envVars: map[string]string{
+				EnvLogin:    "foo",
+				EnvUsername: "bar",
+				EnvPassword: "secret",
+			},
+		},
+		{
+			desc:     "missing credentials",
+			expected: "nicmanager: some credentials information are missing: NICMANAGER_API_PASSWORD",
+		},
+		{
 			desc: "missing password",
 			envVars: map[string]string{
-				EnvEmail: "foo@bar.baz",
+				EnvEmail: "foo@example.com",
 			},
 			expected: "nicmanager: some credentials information are missing: NICMANAGER_API_PASSWORD",
 		},
 		{
-			desc: "invalid username",
+			desc: "missing username",
 			envVars: map[string]string{
-				EnvUsername: "foo",
-				EnvPassword: "foo",
+				EnvLogin:    "foo",
+				EnvPassword: "secret",
 			},
-			expected: "nicmanager: username 'foo' must be formatted like account.user",
+			expected: "nicmanager: credentials missing",
 		},
 		{
-			desc: "success",
+			desc: "missing login",
 			envVars: map[string]string{
-				EnvEmail:    "foo@bar.baz",
-				EnvPassword: "foo",
+				EnvUsername: "bar",
+				EnvPassword: "secret",
 			},
+			expected: "nicmanager: credentials missing",
 		},
 	}
 
@@ -51,6 +71,75 @@ func TestNewDNSProvider(t *testing.T) {
 			envTest.Apply(test.envVars)
 
 			p, err := NewDNSProvider()
+
+			if test.expected == "" {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
+}
+
+func TestNewDNSProviderConfig(t *testing.T) {
+	testCases := []struct {
+		desc      string
+		login     string
+		username  string
+		email     string
+		password  string
+		otpSecret string
+		expected  string
+	}{
+		{
+			desc:     "success (email)",
+			email:    "foo@example.com",
+			password: "secret",
+		},
+		{
+			desc:     "success (login.username)",
+			login:    "john",
+			username: "doe",
+			password: "secret",
+		},
+		{
+			desc:     "missing credentials",
+			expected: "nicmanager: credentials missing",
+		},
+		{
+			desc:     "missing password",
+			email:    "foo@example.com",
+			expected: "nicmanager: credentials missing",
+		},
+		{
+			desc:     "missing login",
+			login:    "",
+			username: "doe",
+			password: "secret",
+			expected: "nicmanager: credentials missing",
+		},
+		{
+			desc:     "missing username",
+			login:    "john",
+			username: "",
+			password: "secret",
+			expected: "nicmanager: credentials missing",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			config := NewDefaultConfig()
+			config.Login = test.login
+			config.Username = test.username
+			config.Email = test.email
+			config.Password = test.password
+			config.OTPSecret = test.otpSecret
+
+			p, err := NewDNSProviderConfig(config)
 
 			if test.expected == "" {
 				require.NoError(t, err)

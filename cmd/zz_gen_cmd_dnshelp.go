@@ -1482,12 +1482,14 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "NICMANAGER_API_EMAIL":	Email-based login`)
-		ew.writeln(`	- "NICMANAGER_API_OTP":	Optional TOTP Secret`)
+		ew.writeln(`	- "NICMANAGER_API_LOGIN":	Login, used for Username-based login`)
 		ew.writeln(`	- "NICMANAGER_API_PASSWORD":	Password, always required`)
-		ew.writeln(`	- "NICMANAGER_API_USERNAME":	Username-based login, in the format of 'account.username'`)
+		ew.writeln(`	- "NICMANAGER_API_USERNAME":	Username, used for Username-based login`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "NICMANAGER_API_MODE":	mode: 'anycast' or 'zone' (default: 'anycast')`)
+		ew.writeln(`	- "NICMANAGER_API_OTP":	TOTP Secret (optional)`)
 		ew.writeln(`	- "NICMANAGER_HTTP_TIMEOUT":	API request timeout`)
 		ew.writeln(`	- "NICMANAGER_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "NICMANAGER_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)

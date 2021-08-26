@@ -21,16 +21,20 @@ Configuration for [Nicmanager](https://www.nicmanager.com/).
 Here is an example bash command using the Nicmanager provider:
 
 ```bash
-# Use anycast zones
-NICMANAGER_MODE = "anycast" \
-# or us normal zones
-NICMANAGER_MODE = "zone" \
+## Login using email
 
-# Login using account name + username
-NICMANAGER_API_USERNAME = "myaccount.myuser" \
-# or login using email
 NICMANAGER_API_EMAIL = "foo@bar.baz" \
+NICMANAGER_API_PASSWORD = "password" \
 
+# Optionally, if your account has TOTP enabled, set the secret here
+NICMANAGER_API_OTP = "long-secret" \
+
+lego --email myemail@example.com --dns nicmanager --domains my.example.org run
+
+## Login using account name + username
+
+NICMANAGER_API_LOGIN = "myaccount" \
+NICMANAGER_API_USERNAME = "myuser" \
 NICMANAGER_API_PASSWORD = "password" \
 
 # Optionally, if your account has TOTP enabled, set the secret here
@@ -47,9 +51,9 @@ lego --email myemail@example.com --dns nicmanager --domains my.example.org run
 | Environment Variable Name | Description |
 |-----------------------|-------------|
 | `NICMANAGER_API_EMAIL` | Email-based login |
-| `NICMANAGER_API_OTP` | Optional TOTP Secret |
+| `NICMANAGER_API_LOGIN` | Login, used for Username-based login |
 | `NICMANAGER_API_PASSWORD` | Password, always required |
-| `NICMANAGER_API_USERNAME` | Username-based login, in the format of `account.username` |
+| `NICMANAGER_API_USERNAME` | Username, used for Username-based login |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).
@@ -59,6 +63,8 @@ More information [here](/lego/dns/#configuration-and-credentials).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
+| `NICMANAGER_API_MODE` | mode: 'anycast' or 'zone' (default: 'anycast') |
+| `NICMANAGER_API_OTP` | TOTP Secret (optional) |
 | `NICMANAGER_HTTP_TIMEOUT` | API request timeout |
 | `NICMANAGER_POLLING_INTERVAL` | Time between DNS propagation check |
 | `NICMANAGER_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
@@ -69,9 +75,8 @@ More information [here](/lego/dns/#configuration-and-credentials).
 
 ## Description
 
-You can login using your account name + username or using your email address. Optionally if TOTP is configured
-for your account, set `NICMANAGER_API_OTP`
-
+You can login using your account name + username or using your email address.
+Optionally if TOTP is configured for your account, set `NICMANAGER_API_OTP`.
 
 
 

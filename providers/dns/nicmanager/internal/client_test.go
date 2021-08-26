@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"path/filepath"
 	"testing"
@@ -13,10 +14,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestClient_ZoneInfo(t *testing.T) {
+func TestClient_GetZone(t *testing.T) {
 	client := setupTest(t, "/anycast/nicmanager-anycastdns4.net", testHandler(http.MethodGet, http.StatusOK, "zone.json"))
 
-	zone, err := client.ZoneInfo("nicmanager-anycastdns4.net")
+	zone, err := client.GetZone("nicmanager-anycastdns4.net")
 	require.NoError(t, err)
 
 	expected := &Zone{
@@ -36,10 +37,10 @@ func TestClient_ZoneInfo(t *testing.T) {
 	assert.Equal(t, expected, zone)
 }
 
-func TestClient_ZoneInfo_error(t *testing.T) {
+func TestClient_GetZone_error(t *testing.T) {
 	client := setupTest(t, "/anycast/foo", testHandler(http.MethodGet, http.StatusNotFound, "error.json"))
 
-	_, err := client.ZoneInfo("foo")
+	_, err := client.GetZone("foo")
 	require.Error(t, err)
 }
 
@@ -53,7 +54,7 @@ func TestClient_AddRecord(t *testing.T) {
 		TTL:   3600,
 	}
 
-	err := client.ResourceRecordCreate("zonedomain.tld", record)
+	err := client.AddRecord("zonedomain.tld", record)
 	require.NoError(t, err)
 }
 
@@ -67,25 +68,25 @@ func TestClient_AddRecord_error(t *testing.T) {
 		TTL:   3600,
 	}
 
-	err := client.ResourceRecordCreate("zonedomain.tld", record)
+	err := client.AddRecord("zonedomain.tld", record)
 	require.Error(t, err)
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
 	client := setupTest(t, "/anycast/zonedomain.tld/records/6", testHandler(http.MethodDelete, http.StatusAccepted, "error.json"))
 
-	err := client.ResourceRecordDelete("zonedomain.tld", 6)
+	err := client.DeleteRecord("zonedomain.tld", 6)
 	require.NoError(t, err)
 }
 
 func TestClient_DeleteRecord_error(t *testing.T) {
 	client := setupTest(t, "/anycast/zonedomain.tld/records/6", testHandler(http.MethodDelete, http.StatusNoContent, ""))
 
-	err := client.ResourceRecordDelete("zonedomain.tld", 7)
+	err := client.DeleteRecord("zonedomain.tld", 7)
 	require.Error(t, err)
 }
 
-func setupTest(t *testing.T, path string, handler http.Handler) *NicManagerClient {
+func setupTest(t *testing.T, path string, handler http.Handler) *Client {
 	t.Helper()
 
 	mux := http.NewServeMux()
@@ -94,11 +95,16 @@ func setupTest(t *testing.T, path string, handler http.Handler) *NicManagerClien
 
 	mux.Handle(path, handler)
 
-	client := NewNicManagerClient(&http.Client{})
-	client.SetAccount("foo", "bar")
-	client.SetOTP("2hsn")
-	client.Password = "foo"
-	client.baseURL = server.URL
+	opts := Options{
+		Login:    "foo",
+		Username: "bar",
+		Password: "foo",
+		OTP:      "2hsn",
+	}
+
+	client := NewClient(opts)
+	client.HTTPClient = server.Client()
+	client.baseURL, _ = url.Parse(server.URL)
 
 	return client
 }

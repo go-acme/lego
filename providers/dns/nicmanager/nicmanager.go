@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/nicmanager/internal"
 )
@@ -18,6 +17,7 @@ import (
 const (
 	envNamespace = "NICMANAGER_"
 
+	EnvLogin    = envNamespace + "API_LOGIN"
 	EnvUsername = envNamespace + "API_USERNAME"
 	EnvEmail    = envNamespace + "API_EMAIL"
 	EnvPassword = envNamespace + "API_PASSWORD"
@@ -30,14 +30,16 @@ const (
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
+const minTTL = 900
+
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
+	Login     string
 	Username  string
 	Email     string
 	Password  string
 	OTPSecret string
-
-	Mode string
+	Mode      string
 
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -48,9 +50,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		// Minimum allowed TTL is 900
-		TTL: env.GetOrDefaultInt(EnvTTL, 900),
-		// Propagation takes around 4 minutes from my testing with anycast
+		TTL:                env.GetOrDefaultInt(EnvTTL, minTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 5*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
@@ -61,12 +61,17 @@ func NewDefaultConfig() *Config {
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	client *internal.NicManagerClient
+	client *internal.Client
 	config *Config
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for nicmanager.
-// Credentials must be passed in the environment variables: nicmanager_API_KEY.
+// Credentials must be passed in the environment variables:
+// NICMANAGER_API_LOGIN, NICMANAGER_API_USERNAME
+// NICMANAGER_API_EMAIL
+// NICMANAGER_API_PASSWORD
+// NICMANAGER_API_OTP
+// NICMANAGER_API_MODE.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvPassword)
 	if err != nil {
@@ -76,14 +81,16 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
 	config.Password = values[EnvPassword]
 
-	config.Mode = env.GetOrDefaultString(EnvMode, "anycast")
-	config.Username = env.GetOrDefaultString(EnvUsername, "")
-	config.Email = env.GetOrDefaultString(EnvEmail, "")
-	config.OTPSecret = env.GetOrDefaultString(EnvOTP, "")
+	config.Mode = env.GetOrDefaultString(EnvMode, internal.ModeAnycast)
+	config.Username = env.GetOrFile(EnvUsername)
+	config.Login = env.GetOrFile(EnvLogin)
+	config.Email = env.GetOrFile(EnvEmail)
+	config.OTPSecret = env.GetOrFile(EnvOTP)
 
-	if config.TTL < 900 {
-		return nil, errors.New("minimum allowed TTL is 900")
+	if config.TTL < minTTL {
+		return nil, fmt.Errorf("TTL must be higher than %d: %d", minTTL, config.TTL)
 	}
+
 	return NewDNSProviderConfig(config)
 }
 
@@ -93,45 +100,55 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("nicmanager: the configuration of the DNS provider is nil")
 	}
 
-	if config.Username == "" && config.Email == "" {
+	opts := internal.Options{
+		Password: config.Password,
+		OTP:      config.OTPSecret,
+		Mode:     config.Mode,
+	}
+
+	switch {
+	case config.Password == "":
+		return nil, errors.New("nicmanager: credentials missing")
+	case config.Email != "":
+		opts.Email = config.Email
+	case config.Login != "" && config.Username != "":
+		opts.Login = config.Login
+		opts.Username = config.Username
+	default:
 		return nil, errors.New("nicmanager: credentials missing")
 	}
-	client := internal.NewNicManagerClient(config.HTTPClient)
-	if config.Username != "" {
-		if !strings.Contains(config.Username, ".") {
-			return nil, fmt.Errorf("nicmanager: username '%s' must be formatted like account.user", config.Username)
-		}
-		parts := strings.SplitN(config.Username, ".", 1)
-		client.SetAccount(parts[0], parts[1])
-	} else if config.Email != "" {
-		client.SetEmail(config.Email)
+
+	client := internal.NewClient(opts)
+
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
 	}
-	if config.OTPSecret != "" {
-		client.SetOTP(config.OTPSecret)
-	}
-	client.Password = config.Password
-	client.Mode = config.Mode
+
 	return &DNSProvider{client: client, config: config}, nil
+}
+
+// Timeout returns the timeout and interval to use when checking for DNS propagation.
+// Adjusting here to cope with spikes in propagation times.
+func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
+	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
-	rootDoamin, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
+
+	rootDomain, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
 	if err != nil {
-		return err
+		return fmt.Errorf("nicmanager: could not determine zone for domain %q: %w", domain, err)
 	}
 
-	zone, err := d.client.ZoneInfo(dns01.UnFqdn(rootDoamin))
+	zone, err := d.client.GetZone(dns01.UnFqdn(rootDomain))
 	if err != nil {
-		return fmt.Errorf("nicmanager: %w", err)
+		return fmt.Errorf("nicmanager: failed to get zone %q: %w", rootDomain, err)
 	}
 
-	// The way nic manager deals with record with multiple values is that
-	// they are completely different records with unique ids
+	// The way nic manager deals with record with multiple values is that they are completely different records with unique ids
 	// Hence we don't check for an existing record here, but rather just create one
-	log.Infof("Create a new record for [zone: %s, fqdn: %s, domain: %s]", zone.Name, fqdn, domain)
-
 	record := internal.RecordCreateUpdate{
 		Name:  fqdn,
 		Type:  "TXT",
@@ -139,7 +156,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Value: value,
 	}
 
-	err = d.client.ResourceRecordCreate(zone.Name, record)
+	err = d.client.AddRecord(zone.Name, record)
 	if err != nil {
 		return fmt.Errorf("nicmanager: failed to create record [zone: %q, fqdn: %q]: %w", zone.Name, fqdn, err)
 	}
@@ -150,13 +167,15 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
-	rootDoamin, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
+
+	rootDomain, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
 	if err != nil {
-		return err
+		return fmt.Errorf("nicmanager: could not determine zone for domain %q: %w", domain, err)
 	}
-	zone, err := d.client.ZoneInfo(dns01.UnFqdn(rootDoamin))
+
+	zone, err := d.client.GetZone(dns01.UnFqdn(rootDomain))
 	if err != nil {
-		return fmt.Errorf("nicmanager: %w", err)
+		return fmt.Errorf("nicmanager: failed to get zone %q: %w", rootDomain, err)
 	}
 
 	name := dns01.UnFqdn(fqdn)
@@ -164,23 +183,18 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	var existingRecord internal.Record
 	var existingRecordFound bool
 	for _, record := range zone.Records {
-		if strings.EqualFold(record.Type, "txt") && strings.EqualFold(record.Name, name) && record.Content == value {
+		if strings.EqualFold(record.Type, "TXT") && strings.EqualFold(record.Name, name) && record.Content == value {
 			existingRecord = record
 			existingRecordFound = true
 		}
 	}
 
 	if existingRecordFound {
-		err = d.client.ResourceRecordDelete(zone.Name, existingRecord.ID)
+		err = d.client.DeleteRecord(zone.Name, existingRecord.ID)
 		if err != nil {
 			return fmt.Errorf("nicmanager: failed to delete record [zone: %q, domain: %q]: %w", zone.Name, name, err)
 		}
 	}
-	return fmt.Errorf("nicmanager: no record found to cleanup")
-}
 
-// Timeout returns the timeout and interval to use when checking for DNS propagation.
-// Adjusting here to cope with spikes in propagation times.
-func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
-	return d.config.PropagationTimeout, d.config.PollingInterval
+	return fmt.Errorf("nicmanager: no record found to cleanup")
 }

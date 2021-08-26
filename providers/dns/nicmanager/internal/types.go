@@ -1,5 +1,7 @@
 package internal
 
+import "fmt"
+
 type Record struct {
 	ID   int    `json:"id"`
 	Name string `json:"name"`
@@ -20,4 +22,13 @@ type RecordCreateUpdate struct {
 	Value string `json:"value"`
 	TTL   int    `json:"ttl"`
 	Type  string `json:"type"`
+}
+
+type APIError struct {
+	Message    string `json:"message"`
+	StatusCode int    `json:"-"`
+}
+
+func (a APIError) Error() string {
+	return fmt.Sprintf("%d: %s", a.StatusCode, a.Message)
 }

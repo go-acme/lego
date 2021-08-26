@@ -1,0 +1,51 @@
+{
+  "order_id": 9053,
+  "name": "nicmanager-anycastdns4.net",
+  "order_status": "active",
+  "event_status": "done",
+  "active": true,
+  "dnssec": "inactive",
+  "master1": null,
+  "master2": null,
+  "soa": {
+    "primary": "ns1.nic53.net",
+    "mail": "hostmaster.nicmanager.de",
+    "serial": 1481109046,
+    "refresh": 14400,
+    "retry": 1800,
+    "expire": 1209600,
+    "default": 3600,
+    "ttl": 86400
+  },
+  "updated_datetime": "2016-09-02T13:52:18Z",
+  "order_datetime": "2016-09-02T13:52:18Z",
+  "records": [
+    {
+      "id": 186,
+      "name": "nicmanager-anycastdns4.net",
+      "type": "A",
+      "content": "123.123.123.123",
+      "ttl": 3600,
+      "priority": 0,
+      "active": true,
+      "updated_datetime": "2016-09-02T13:52:18Z"
+    }
+  ],
+  "redirects": [
+      {
+        "id": 10,
+        "name": "test.nicmanager-anycastdns4.net",
+        "target": "https:\/\/www.nicmanager.com\/",
+        "type": "frame",
+        "updated_datetime": "2016-12-05T14:40:47Z",
+        "request_uri": true,
+        "ssl": false,
+        "meta": {
+          "title": "My frame",
+          "keywords": "foo,bar",
+          "description": "Just a Test"
+        },
+        "subdomain": "test"
+      }
+  ]
+}

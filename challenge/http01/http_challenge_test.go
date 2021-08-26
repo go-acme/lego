@@ -5,8 +5,11 @@ import (
 	"crypto/rsa"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/textproto"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/go-acme/lego/v4/acme"
@@ -16,6 +19,32 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestGetAddressTCP(t *testing.T) {
+	s := NewProviderServer("", "6789")
+	expected := ":6789"
+	got := s.GetAddress()
+	if got != expected {
+		t.Errorf("expected: %s | got: %s", expected, got)
+	}
+	s = NewProviderServer("", "")
+	expected = ":80"
+	got = s.GetAddress()
+	if got != expected {
+		t.Errorf("expected: %s | got: %s", expected, got)
+	}
+}
+
+func TestGetAddressUnix(t *testing.T) {
+	sock := filepath.Join(os.TempDir(), "var", "run", "test")
+	s := NewUnixProviderServer(sock)
+	expected := sock
+	got := s.GetAddress()
+
+	if got != expected {
+		t.Errorf("expected: %s | got: %s", expected, got)
+	}
+}
 
 func TestChallenge(t *testing.T) {
 	_, apiURL, tearDown := tester.SetupFakeAPI()
@@ -60,6 +89,64 @@ func TestChallenge(t *testing.T) {
 	authz := acme.Authorization{
 		Identifier: acme.Identifier{
 			Value: "localhost:23457",
+		},
+		Challenges: []acme.Challenge{
+			{Type: challenge.HTTP01.String(), Token: "http1"},
+		},
+	}
+
+	err = solver.Solve(authz)
+	require.NoError(t, err)
+}
+
+func TestChallengeUnix(t *testing.T) {
+	_, apiURL, tearDown := tester.SetupFakeAPI()
+	defer tearDown()
+	socket := filepath.Join(os.TempDir(), "lego-challenge-test.sock")
+	providerServer := NewUnixProviderServer(socket)
+	validate := func(_ *api.Core, _ string, chlng acme.Challenge) error {
+		// any uri will do, as we hijack the dial
+		uri := "http://localhost" + ChallengePath(chlng.Token)
+		dial := func(network, addr string) (conn net.Conn, err error) {
+			return net.Dial("unix", socket)
+		}
+		transport := &http.Transport{
+			Dial: dial,
+		}
+		cl := &http.Client{Transport: transport}
+		resp, err := cl.Get(uri)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+		if want := "text/plain"; resp.Header.Get("Content-Type") != want {
+			t.Errorf("Get(%q) Content-Type: got %q, want %q", uri, resp.Header.Get("Content-Type"), want)
+		}
+
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+		bodyStr := string(body)
+
+		if bodyStr != chlng.KeyAuthorization {
+			t.Errorf("Get(%q) Body: got %q, want %q", uri, bodyStr, chlng.KeyAuthorization)
+		}
+
+		return nil
+	}
+
+	privateKey, err := rsa.GenerateKey(rand.Reader, 512)
+	require.NoError(t, err, "Could not generate test key")
+
+	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)
+	require.NoError(t, err)
+
+	solver := NewChallenge(core, validate, providerServer)
+
+	authz := acme.Authorization{
+		Identifier: acme.Identifier{
+			Value: "localhost",
 		},
 		Challenges: []acme.Challenge{
 			{Type: challenge.HTTP01.String(), Token: "http1"},

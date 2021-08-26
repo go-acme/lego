@@ -16,6 +16,8 @@ import (
 type ProviderServer struct {
 	iface    string
 	port     string
+	network  string // must be valid argument to net.Listen
+	socket   string
 	matcher  domainMatcher
 	done     chan bool
 	listener net.Listener
@@ -29,13 +31,17 @@ func NewProviderServer(iface, port string) *ProviderServer {
 		port = "80"
 	}
 
-	return &ProviderServer{iface: iface, port: port, matcher: &hostMatcher{}}
+	return &ProviderServer{iface: iface, port: port, network: "tcp", matcher: &hostMatcher{}}
+}
+
+func NewUnixProviderServer(socketPath string) *ProviderServer {
+	return &ProviderServer{network: "unix", socket: socketPath, matcher: &hostMatcher{}}
 }
 
 // Present starts a web server and makes the token available at `ChallengePath(token)` for web requests.
 func (s *ProviderServer) Present(domain, token, keyAuth string) error {
 	var err error
-	s.listener, err = net.Listen("tcp", s.GetAddress())
+	s.listener, err = net.Listen(s.network, s.GetAddress())
 	if err != nil {
 		return fmt.Errorf("could not start HTTP server for challenge: %w", err)
 	}
@@ -46,7 +52,12 @@ func (s *ProviderServer) Present(domain, token, keyAuth string) error {
 }
 
 func (s *ProviderServer) GetAddress() string {
-	return net.JoinHostPort(s.iface, s.port)
+	switch s.network {
+	case "unix":
+		return s.socket
+	default:
+		return net.JoinHostPort(s.iface, s.port)
+	}
 }
 
 // CleanUp closes the HTTP server and removes the token from `ChallengePath(token)`.

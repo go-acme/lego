@@ -78,6 +78,7 @@ func allDNSCodes() string {
 		"namesilo",
 		"netcup",
 		"netlify",
+		"nicmanager",
 		"nifcloud",
 		"njalla",
 		"ns1",
@@ -1471,6 +1472,31 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/netlify`)
+
+	case "nicmanager":
+		// generated from: providers/dns/nicmanager/nicmanager.toml
+		ew.writeln(`Configuration for Nicmanager.`)
+		ew.writeln(`Code:	'nicmanager'`)
+		ew.writeln(`Since:	'v4.5.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "NICMANAGER_API_EMAIL":	Email-based login`)
+		ew.writeln(`	- "NICMANAGER_API_LOGIN":	Login, used for Username-based login`)
+		ew.writeln(`	- "NICMANAGER_API_PASSWORD":	Password, always required`)
+		ew.writeln(`	- "NICMANAGER_API_USERNAME":	Username, used for Username-based login`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "NICMANAGER_API_MODE":	mode: 'anycast' or 'zone' (default: 'anycast')`)
+		ew.writeln(`	- "NICMANAGER_API_OTP":	TOTP Secret (optional)`)
+		ew.writeln(`	- "NICMANAGER_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "NICMANAGER_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "NICMANAGER_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "NICMANAGER_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/nicmanager`)
 
 	case "nifcloud":
 		// generated from: providers/dns/nifcloud/nifcloud.toml

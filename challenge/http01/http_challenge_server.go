@@ -2,9 +2,11 @@ package http01
 
 import (
 	"fmt"
+	"io/fs"
 	"net"
 	"net/http"
 	"net/textproto"
+	"os"
 	"strings"
 
 	"github.com/go-acme/lego/v4/log"
@@ -14,13 +16,14 @@ import (
 // It may be instantiated without using the NewProviderServer function if
 // you want only to use the default values.
 type ProviderServer struct {
-	iface    string
-	port     string
-	network  string // must be valid argument to net.Listen
-	socket   string
-	matcher  domainMatcher
-	done     chan bool
-	listener net.Listener
+	iface      string
+	port       string
+	network    string // must be valid argument to net.Listen
+	socket     string
+	socketMode fs.FileMode
+	matcher    domainMatcher
+	done       chan bool
+	listener   net.Listener
 }
 
 // NewProviderServer creates a new ProviderServer on the selected interface and port.
@@ -34,8 +37,8 @@ func NewProviderServer(iface, port string) *ProviderServer {
 	return &ProviderServer{iface: iface, port: port, network: "tcp", matcher: &hostMatcher{}}
 }
 
-func NewUnixProviderServer(socketPath string) *ProviderServer {
-	return &ProviderServer{network: "unix", socket: socketPath, matcher: &hostMatcher{}}
+func NewUnixProviderServer(socketPath string, mode fs.FileMode) *ProviderServer {
+	return &ProviderServer{network: "unix", socket: socketPath, socketMode: mode, matcher: &hostMatcher{}}
 }
 
 // Present starts a web server and makes the token available at `ChallengePath(token)` for web requests.
@@ -44,6 +47,11 @@ func (s *ProviderServer) Present(domain, token, keyAuth string) error {
 	s.listener, err = net.Listen(s.network, s.GetAddress())
 	if err != nil {
 		return fmt.Errorf("could not start HTTP server for challenge: %w", err)
+	}
+	if s.network == "unix" {
+		if err = os.Chmod(s.socket, s.socketMode); err != nil {
+			return fmt.Errorf("chmod %s: %w", s.socket, err)
+		}
 	}
 
 	s.done = make(chan bool)

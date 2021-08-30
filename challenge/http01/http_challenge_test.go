@@ -5,11 +5,13 @@ import (
 	"crypto/rsa"
 	"fmt"
 	"io"
+	"io/fs"
 	"net"
 	"net/http"
 	"net/textproto"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/go-acme/lego/v4/acme"
@@ -37,7 +39,7 @@ func TestGetAddressTCP(t *testing.T) {
 
 func TestGetAddressUnix(t *testing.T) {
 	sock := filepath.Join(os.TempDir(), "var", "run", "test")
-	s := NewUnixProviderServer(sock)
+	s := NewUnixProviderServer(sock, fs.ModeSocket|0o666)
 	expected := sock
 	got := s.GetAddress()
 
@@ -99,10 +101,13 @@ func TestChallenge(t *testing.T) {
 }
 
 func TestChallengeUnix(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.SkipNow()
+	}
 	_, apiURL, tearDown := tester.SetupFakeAPI()
 	defer tearDown()
 	socket := filepath.Join(os.TempDir(), "lego-challenge-test.sock")
-	providerServer := NewUnixProviderServer(socket)
+	providerServer := NewUnixProviderServer(socket, fs.ModeSocket|0o666)
 	validate := func(_ *api.Core, _ string, chlng acme.Challenge) error {
 		// any uri will do, as we hijack the dial
 		uri := "http://localhost" + ChallengePath(chlng.Token)

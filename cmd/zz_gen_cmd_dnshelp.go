@@ -888,7 +888,7 @@ func displayDNSHelp(name string) error {
 		// generated from: providers/dns/hover/hover.toml
 		ew.writeln(`Configuration for Hover.`)
 		ew.writeln(`Code:	'hover'`)
-		ew.writeln(`Since:	'v3.6.0'`)
+		ew.writeln(`Since:	'v4.0.1'`)
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)

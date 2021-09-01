@@ -2,7 +2,7 @@ Name = "Hover"
 Description = '''Hover DNS Hosting (tucows)'''
 URL = "https://hover.com"
 Code = "hover"
-Since = "v3.6.0"
+Since = "v4.0.1"
 
 Example = '''
 HOVER_USERNAME=scott \

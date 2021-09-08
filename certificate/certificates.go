@@ -49,10 +49,10 @@ type Resource struct {
 // If you do not want that you can supply your own private key in the privateKey parameter.
 // If this parameter is non-nil it will be used instead of generating a new one.
 //
-// If bundle is true, the []byte contains both the issuer certificate and your issued certificate as a bundle.
+// If `Bundle` is true, the `[]byte` contains both the issuer certificate and your issued certificate as a bundle.
 //
-// If `AlwaysDeactivateAuthorizations` is true, the authorizations are also relinquished
-// if the obtain request was successful. See https://datatracker.ietf.org/doc/html/rfc8555#section-7.5.2.
+// If `AlwaysDeactivateAuthorizations` is true, the authorizations are also relinquished if the obtain request was successful.
+// See https://datatracker.ietf.org/doc/html/rfc8555#section-7.5.2.
 type ObtainRequest struct {
 	Domains                        []string
 	Bundle                         bool
@@ -64,10 +64,10 @@ type ObtainRequest struct {
 
 // ObtainForCSRRequest The request to obtain a certificate matching the CSR passed into it.
 //
-// If bundle is true, the []byte contains both the issuer certificate and your issued certificate as a bundle.
+// If `Bundle` is true, the `[]byte` contains both the issuer certificate and your issued certificate as a bundle.
 //
-// If `AlwaysDeactivateAuthorizations` is true, the authorizations are also relinquished
-// if the obtain request was successful. See https://datatracker.ietf.org/doc/html/rfc8555#section-7.5.2.
+// If `AlwaysDeactivateAuthorizations` is true, the authorizations are also relinquished if the obtain request was successful.
+// See https://datatracker.ietf.org/doc/html/rfc8555#section-7.5.2.
 type ObtainForCSRRequest struct {
 	CSR                            *x509.CertificateRequest
 	Bundle                         bool
@@ -147,7 +147,7 @@ func (c *Certifier) Obtain(request ObtainRequest) (*Resource, error) {
 	}
 
 	if request.AlwaysDeactivateAuthorizations {
-		c.deactivateAuthorizations(order, false)
+		c.deactivateAuthorizations(order, true)
 	}
 
 	// Do not return an empty failures map, because
@@ -212,7 +212,7 @@ func (c *Certifier) ObtainForCSR(request ObtainForCSRRequest) (*Resource, error)
 	}
 
 	if request.AlwaysDeactivateAuthorizations {
-		c.deactivateAuthorizations(order, false)
+		c.deactivateAuthorizations(order, true)
 	}
 
 	if cert != nil {

@@ -62,6 +62,10 @@ func createRenew() cli.Command {
 				Name:  "preferred-chain",
 				Usage: "If the CA offers multiple certificate chains, prefer the chain with an issuer matching this Subject Common Name. If no match, the default offered chain will be used.",
 			},
+			cli.StringFlag{
+				Name:  "always-deactivate-authorizations",
+				Usage: "Force the authorizations to be relinquished even if the certificate request was successful.",
+			},
 		},
 	}
 }
@@ -127,11 +131,12 @@ func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *Certif
 	}
 
 	request := certificate.ObtainRequest{
-		Domains:        merge(certDomains, domains),
-		Bundle:         bundle,
-		PrivateKey:     privateKey,
-		MustStaple:     ctx.Bool("must-staple"),
-		PreferredChain: ctx.String("preferred-chain"),
+		Domains:                        merge(certDomains, domains),
+		Bundle:                         bundle,
+		PrivateKey:                     privateKey,
+		MustStaple:                     ctx.Bool("must-staple"),
+		PreferredChain:                 ctx.String("preferred-chain"),
+		AlwaysDeactivateAuthorizations: ctx.Bool("always-deactivate-authorizations"),
 	}
 	certRes, err := client.Certificate.Obtain(request)
 	if err != nil {
@@ -174,9 +179,10 @@ func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *Certificat
 	log.Infof("[%s] acme: Trying renewal with %d hours remaining", domain, int(timeLeft.Hours()))
 
 	certRes, err := client.Certificate.ObtainForCSR(certificate.ObtainForCSRRequest{
-		CSR:            csr,
-		Bundle:         bundle,
-		PreferredChain: ctx.String("preferred-chain"),
+		CSR:                            csr,
+		Bundle:                         bundle,
+		PreferredChain:                 ctx.String("preferred-chain"),
+		AlwaysDeactivateAuthorizations: ctx.Bool("always-deactivate-authorizations"),
 	})
 	if err != nil {
 		log.Fatal(err)

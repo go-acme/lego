@@ -47,6 +47,10 @@ func createRun() cli.Command {
 				Name:  "preferred-chain",
 				Usage: "If the CA offers multiple certificate chains, prefer the chain with an issuer matching this Subject Common Name. If no match, the default offered chain will be used.",
 			},
+			cli.StringFlag{
+				Name:  "always-deactivate-authorizations",
+				Usage: "Force the authorizations to be relinquished even if the certificate request was successful.",
+			},
 		},
 	}
 }
@@ -163,10 +167,11 @@ func obtainCertificate(ctx *cli.Context, client *lego.Client) (*certificate.Reso
 	if len(domains) > 0 {
 		// obtain a certificate, generating a new private key
 		request := certificate.ObtainRequest{
-			Domains:        domains,
-			Bundle:         bundle,
-			MustStaple:     ctx.Bool("must-staple"),
-			PreferredChain: ctx.String("preferred-chain"),
+			Domains:                        domains,
+			Bundle:                         bundle,
+			MustStaple:                     ctx.Bool("must-staple"),
+			PreferredChain:                 ctx.String("preferred-chain"),
+			AlwaysDeactivateAuthorizations: ctx.Bool("always-deactivate-authorizations"),
 		}
 		return client.Certificate.Obtain(request)
 	}
@@ -179,8 +184,9 @@ func obtainCertificate(ctx *cli.Context, client *lego.Client) (*certificate.Reso
 
 	// obtain a certificate for this CSR
 	return client.Certificate.ObtainForCSR(certificate.ObtainForCSRRequest{
-		CSR:            csr,
-		Bundle:         bundle,
-		PreferredChain: ctx.String("preferred-chain"),
+		CSR:                            csr,
+		Bundle:                         bundle,
+		PreferredChain:                 ctx.String("preferred-chain"),
+		AlwaysDeactivateAuthorizations: ctx.Bool("always-deactivate-authorizations"),
 	})
 }

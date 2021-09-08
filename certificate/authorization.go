@@ -60,7 +60,7 @@ func (c *Certifier) getAuthorizations(order acme.ExtendedOrder) ([]acme.Authoriz
 	return responses, nil
 }
 
-func (c *Certifier) deactivateAuthorizations(order acme.ExtendedOrder) {
+func (c *Certifier) deactivateAuthorizations(order acme.ExtendedOrder, force bool) {
 	for _, authzURL := range order.Authorizations {
 		auth, err := c.core.Authorizations.Get(authzURL)
 		if err != nil {
@@ -68,7 +68,7 @@ func (c *Certifier) deactivateAuthorizations(order acme.ExtendedOrder) {
 			continue
 		}
 
-		if auth.Status == acme.StatusValid {
+		if auth.Status == acme.StatusValid && !force {
 			log.Infof("Skipping deactivating of valid auth: %s", authzURL)
 			continue
 		}

@@ -125,14 +125,14 @@ func (c *Certifier) Obtain(request ObtainRequest) (*Resource, error) {
 	authz, err := c.getAuthorizations(order)
 	if err != nil {
 		// If any challenge fails, return. Do not generate partial SAN certificates.
-		c.deactivateAuthorizations(order, true)
+		c.deactivateAuthorizations(order, request.AlwaysDeactivateAuthorizations)
 		return nil, err
 	}
 
 	err = c.resolver.Solve(authz)
 	if err != nil {
 		// If any challenge fails, return. Do not generate partial SAN certificates.
-		c.deactivateAuthorizations(order, true)
+		c.deactivateAuthorizations(order, request.AlwaysDeactivateAuthorizations)
 		return nil, err
 	}
 
@@ -190,14 +190,14 @@ func (c *Certifier) ObtainForCSR(request ObtainForCSRRequest) (*Resource, error)
 	authz, err := c.getAuthorizations(order)
 	if err != nil {
 		// If any challenge fails, return. Do not generate partial SAN certificates.
-		c.deactivateAuthorizations(order, true)
+		c.deactivateAuthorizations(order, request.AlwaysDeactivateAuthorizations)
 		return nil, err
 	}
 
 	err = c.resolver.Solve(authz)
 	if err != nil {
 		// If any challenge fails, return. Do not generate partial SAN certificates.
-		c.deactivateAuthorizations(order, true)
+		c.deactivateAuthorizations(order, request.AlwaysDeactivateAuthorizations)
 		return nil, err
 	}
 

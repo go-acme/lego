@@ -59,6 +59,7 @@ func allDNSCodes() string {
 		"httpreq",
 		"hurricane",
 		"hyperone",
+		"ibmcloud",
 		"iij",
 		"infoblox",
 		"infomaniak",
@@ -97,7 +98,6 @@ func allDNSCodes() string {
 		"selectel",
 		"servercow",
 		"simply",
-		"softlayer",
 		"sonic",
 		"stackpath",
 		"transip",
@@ -1065,6 +1065,27 @@ func displayDNSHelp(name string) error {
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/hyperone`)
 
+	case "ibmcloud":
+		// generated from: providers/dns/ibmcloud/ibmcloud.toml
+		ew.writeln(`Configuration for IBM Cloud (SoftLayer).`)
+		ew.writeln(`Code:	'ibmcloud'`)
+		ew.writeln(`Since:	'v4.5.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "SOFTLAYER_API_KEY":	Classic Infrastructure API key`)
+		ew.writeln(`	- "SOFTLAYER_USERNAME":	User name (IBM Cloud is <accountID>_<emailAddress>)`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "SOFTLAYER_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "SOFTLAYER_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "SOFTLAYER_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "SOFTLAYER_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/ibmcloud`)
+
 	case "iij":
 		// generated from: providers/dns/iij/iij.toml
 		ew.writeln(`Configuration for Internet Initiative Japan.`)
@@ -1890,27 +1911,6 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/simply`)
-
-	case "softlayer":
-		// generated from: providers/dns/softlayer/softlayer.toml
-		ew.writeln(`Configuration for SoftLayer (IBM Cloud).`)
-		ew.writeln(`Code:	'softlayer'`)
-		ew.writeln(`Since:	'v4.5.0'`)
-		ew.writeln()
-
-		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "SOFTLAYER_API_KEY":	Classic Infrastructure API key`)
-		ew.writeln(`	- "SOFTLAYER_USERNAME":	User name (IBM Cloud is <accountID>_<emailAddress>)`)
-		ew.writeln()
-
-		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "SOFTLAYER_POLLING_INTERVAL":	Time between DNS propagation check`)
-		ew.writeln(`	- "SOFTLAYER_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
-		ew.writeln(`	- "SOFTLAYER_TIMEOUT":	API request timeout`)
-		ew.writeln(`	- "SOFTLAYER_TTL":	The TTL of the TXT record used for the DNS challenge`)
-
-		ew.writeln()
-		ew.writeln(`More information: https://go-acme.github.io/lego/dns/softlayer`)
 
 	case "sonic":
 		// generated from: providers/dns/sonic/sonic.toml

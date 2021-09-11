@@ -50,6 +50,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/httpreq"
 	"github.com/go-acme/lego/v4/providers/dns/hurricane"
 	"github.com/go-acme/lego/v4/providers/dns/hyperone"
+	"github.com/go-acme/lego/v4/providers/dns/ibmcloud"
 	"github.com/go-acme/lego/v4/providers/dns/iij"
 	"github.com/go-acme/lego/v4/providers/dns/infoblox"
 	"github.com/go-acme/lego/v4/providers/dns/infomaniak"
@@ -88,7 +89,6 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/selectel"
 	"github.com/go-acme/lego/v4/providers/dns/servercow"
 	"github.com/go-acme/lego/v4/providers/dns/simply"
-	"github.com/go-acme/lego/v4/providers/dns/softlayer"
 	"github.com/go-acme/lego/v4/providers/dns/sonic"
 	"github.com/go-acme/lego/v4/providers/dns/stackpath"
 	"github.com/go-acme/lego/v4/providers/dns/transip"
@@ -196,6 +196,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return hurricane.NewDNSProvider()
 	case "hyperone":
 		return hyperone.NewDNSProvider()
+	case "ibmcloud":
+		return ibmcloud.NewDNSProvider()
 	case "iij":
 		return iij.NewDNSProvider()
 	case "infoblox":
@@ -274,8 +276,6 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return servercow.NewDNSProvider()
 	case "simply":
 		return simply.NewDNSProvider()
-	case "softlayer":
-		return softlayer.NewDNSProvider()
 	case "sonic":
 		return sonic.NewDNSProvider()
 	case "stackpath":

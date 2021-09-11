@@ -1,13 +1,13 @@
-Name = "SoftLayer (IBM Cloud)"
+Name = "IBM Cloud (SoftLayer)"
 Description = ''''''
 URL = "https://www.ibm.com/cloud/"
-Code = "softlayer"
+Code = "ibmcloud"
 Since = "v4.5.0"
 
 Example = '''
 SOFTLAYER_USERNAME=xxxxx \
 SOFTLAYER_API_KEY=yyyyy \
-lego --email myemail@example.com --dns softlayer --domains my.example.org run
+lego --email myemail@example.com --dns ibmcloud --domains my.example.org run
 '''
 
 [Configuration]

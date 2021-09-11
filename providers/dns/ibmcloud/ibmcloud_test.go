@@ -1,4 +1,4 @@
-package softlayer
+package ibmcloud
 
 import (
 	"testing"

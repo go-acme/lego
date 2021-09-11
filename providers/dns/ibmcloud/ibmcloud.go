@@ -1,5 +1,5 @@
 // Package softlayer implements a DNS provider for solving the DNS-01 challenge using SoftLayer (IBM Cloud).
-package softlayer
+package ibmcloud
 
 import (
 	"errors"
@@ -8,7 +8,7 @@ import (
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/softlayer/internal"
+	"github.com/go-acme/lego/v4/providers/dns/ibmcloud/internal"
 	"github.com/softlayer/softlayer-go/session"
 )
 

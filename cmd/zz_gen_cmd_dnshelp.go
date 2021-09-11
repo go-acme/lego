@@ -1893,20 +1893,20 @@ func displayDNSHelp(name string) error {
 
 	case "softlayer":
 		// generated from: providers/dns/softlayer/softlayer.toml
-		ew.writeln(`Configuration for softlayer(IBM Cloud Domain Name Registration).`)
+		ew.writeln(`Configuration for SoftLayer (IBM Cloud).`)
 		ew.writeln(`Code:	'softlayer'`)
-		ew.writeln(`Since:	'v1.0.0'`)
+		ew.writeln(`Since:	'v4.5.0'`)
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "SOFTLAYER_API_KEY":	Classic Infrastructure API key`)
-		ew.writeln(`	- "SOFTLAYER_USERNAME":	User name(IBM Cloud is <account_ID>_<email_address>)`)
+		ew.writeln(`	- "SOFTLAYER_USERNAME":	User name (IBM Cloud is <accountID>_<emailAddress>)`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "SOFTLAYER_HTTP_TIMEOUT":	API request timeout`)
 		ew.writeln(`	- "SOFTLAYER_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "SOFTLAYER_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "SOFTLAYER_TIMEOUT":	API request timeout`)
 		ew.writeln(`	- "SOFTLAYER_TTL":	The TTL of the TXT record used for the DNS challenge`)
 
 		ew.writeln()

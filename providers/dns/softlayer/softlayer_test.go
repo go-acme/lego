@@ -10,9 +10,7 @@ import (
 
 const envDomain = envNamespace + "DOMAIN"
 
-var envTest = tester.NewEnvTest(
-	EnvUsername,
-	EnvAPIKey).
+var envTest = tester.NewEnvTest(EnvUsername, EnvAPIKey).
 	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
@@ -67,7 +65,7 @@ func TestNewDNSProvider(t *testing.T) {
 				require.NoError(t, err)
 				require.NotNil(t, p)
 				require.NotNil(t, p.config)
-				require.NotNil(t, p.client)
+				require.NotNil(t, p.wrapper)
 			} else {
 				require.EqualError(t, err, test.expected)
 			}
@@ -115,7 +113,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 				require.NoError(t, err)
 				require.NotNil(t, p)
 				require.NotNil(t, p.config)
-				require.NotNil(t, p.client)
+				require.NotNil(t, p.wrapper)
 			} else {
 				require.EqualError(t, err, test.expected)
 			}

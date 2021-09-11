@@ -1,14 +1,14 @@
-// Package softlayer implements a DNS provider for solving the DNS-01 challenge using IBM Cloud Domain Name Registration.
+// Package softlayer implements a DNS provider for solving the DNS-01 challenge using SoftLayer (IBM Cloud).
 package softlayer
 
 import (
 	"errors"
 	"fmt"
-	"net/http"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/softlayer/internal"
 	"github.com/softlayer/softlayer-go/session"
 )
 
@@ -16,15 +16,20 @@ import (
 const (
 	envNamespace = "SOFTLAYER_"
 
+	// EnvUsername  the name must be the same as here:
+	// https://github.com/softlayer/softlayer-go/blob/534185047ea683dd1e29fd23e445598295d94be4/session/session.go#L171
 	EnvUsername = envNamespace + "USERNAME"
-	EnvAPIKey   = envNamespace + "API_KEY"
+	// EnvAPIKey  the name must be the same as here:
+	// https://github.com/softlayer/softlayer-go/blob/534185047ea683dd1e29fd23e445598295d94be4/session/session.go#L175
+	EnvAPIKey = envNamespace + "API_KEY"
+	// EnvHTTPTimeout the name must be the same as here:
+	// https://github.com/softlayer/softlayer-go/blob/534185047ea683dd1e29fd23e445598295d94be4/session/session.go#L182
+	EnvHTTPTimeout = envNamespace + "TIMEOUT"
+	EnvDebug       = envNamespace + "DEBUG"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
-	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
-
-	EnvDebug = envNamespace + "DEBUG"
 )
 
 // Config is used to configure the creation of the DNSProvider.
@@ -34,7 +39,7 @@ type Config struct {
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
-	HTTPClient         *http.Client
+	HTTPTimeout        time.Duration
 	Debug              bool
 }
 
@@ -44,22 +49,19 @@ func NewDefaultConfig() *Config {
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
-		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 10*time.Second),
-		},
-		Debug: env.GetOrDefaultBool(EnvDebug, false),
+		HTTPTimeout:        env.GetOrDefaultSecond(EnvHTTPTimeout, session.DefaultTimeout),
 	}
 }
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	config *Config
-	client *session.Session
+	config  *Config
+	wrapper *internal.Wrapper
 }
 
-// NewDNSProvider returns a DNSProvider instance configured for softlayer.
+// NewDNSProvider returns a DNSProvider instance configured for SoftLayer.
 // Credentials must be passed in the environment variables:
-// SOFTLAYER_USERNAME & SOFTLAYER_API_KEY.
+// SOFTLAYER_USERNAME, SOFTLAYER_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvUsername, EnvAPIKey)
 	if err != nil {
@@ -69,52 +71,59 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
 	config.Username = values[EnvUsername]
 	config.APIKey = values[EnvAPIKey]
+	config.Debug = env.GetOrDefaultBool(EnvDebug, false)
 
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderConfig return a DNSProvider instance configured for softlayer.
+// NewDNSProviderConfig return a DNSProvider instance configured for SoftLayer.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("softlayer: the configuration of the DNS provider is nil")
 	}
 
 	if config.Username == "" {
-		return nil, errors.New("softlayer: Username is missing")
+		return nil, errors.New("softlayer: username is missing")
 	}
 
 	if config.APIKey == "" {
-		return nil, errors.New("softlayer: Api key is missing")
+		return nil, errors.New("softlayer: API key is missing")
 	}
 
-	apiClient := session.New(config.Username, config.APIKey)
-	if config.HTTPClient == nil {
-		apiClient.HTTPClient = http.DefaultClient
-	} else {
-		apiClient.HTTPClient = config.HTTPClient
-	}
-	apiClient.Debug = config.Debug
+	sess := session.New(config.Username, config.APIKey)
 
-	return &DNSProvider{
-		client: apiClient,
-		config: config,
-	}, nil
-}
+	sess.Timeout = config.HTTPTimeout
+	sess.Debug = config.Debug
 
-// Present creates a TXT record to fulfill the dns-01 challenge.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
-	return d.addTXTRecord(fqdn, domain, value, d.config.TTL)
-}
-
-// CleanUp removes the TXT record matching the specified parameters.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
-	return d.cleanupTXTRecord(fqdn, domain)
+	return &DNSProvider{wrapper: internal.NewWrapper(sess), config: config}, nil
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
+}
+
+// Present creates a TXT record to fulfill the dns-01 challenge.
+func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
+
+	err := d.wrapper.AddTXTRecord(fqdn, domain, value, d.config.TTL)
+	if err != nil {
+		return fmt.Errorf("softlayer: %w", err)
+	}
+
+	return nil
+}
+
+// CleanUp removes the TXT record matching the specified parameters.
+func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+
+	err := d.wrapper.CleanupTXTRecord(fqdn, domain)
+	if err != nil {
+		return fmt.Errorf("softlayer: %w", err)
+	}
+
+	return nil
 }

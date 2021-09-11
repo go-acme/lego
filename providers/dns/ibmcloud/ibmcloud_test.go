@@ -32,7 +32,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvUsername: "",
 				EnvAPIKey:   "",
 			},
-			expected: "softlayer: some credentials information are missing: SOFTLAYER_USERNAME,SOFTLAYER_API_KEY",
+			expected: "ibmcloud: some credentials information are missing: SOFTLAYER_USERNAME,SOFTLAYER_API_KEY",
 		},
 		{
 			desc: "missing access token",
@@ -40,7 +40,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvUsername: "",
 				EnvAPIKey:   "456",
 			},
-			expected: "softlayer: some credentials information are missing: SOFTLAYER_USERNAME",
+			expected: "ibmcloud: some credentials information are missing: SOFTLAYER_USERNAME",
 		},
 		{
 			desc: "missing token secret",
@@ -48,7 +48,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvUsername: "123",
 				EnvAPIKey:   "",
 			},
-			expected: "softlayer: some credentials information are missing: SOFTLAYER_API_KEY",
+			expected: "ibmcloud: some credentials information are missing: SOFTLAYER_API_KEY",
 		},
 	}
 
@@ -87,17 +87,17 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		},
 		{
 			desc:     "missing credentials",
-			expected: "softlayer: Username is missing",
+			expected: "ibmcloud: username is missing",
 		},
 		{
 			desc:     "missing token",
 			apiKey:   "456",
-			expected: "softlayer: Username is missing",
+			expected: "ibmcloud: username is missing",
 		},
 		{
 			desc:     "missing secret",
 			username: "123",
-			expected: "softlayer: Api key is missing",
+			expected: "ibmcloud: API key is missing",
 		},
 	}
 

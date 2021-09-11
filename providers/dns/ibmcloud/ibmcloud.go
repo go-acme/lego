@@ -1,4 +1,4 @@
-// Package softlayer implements a DNS provider for solving the DNS-01 challenge using SoftLayer (IBM Cloud).
+// Package ibmcloud implements a DNS provider for solving the DNS-01 challenge using IBM Cloud (SoftLayer).
 package ibmcloud
 
 import (
@@ -59,13 +59,13 @@ type DNSProvider struct {
 	wrapper *internal.Wrapper
 }
 
-// NewDNSProvider returns a DNSProvider instance configured for SoftLayer.
+// NewDNSProvider returns a DNSProvider instance configured for IBM Cloud (SoftLayer).
 // Credentials must be passed in the environment variables:
 // SOFTLAYER_USERNAME, SOFTLAYER_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvUsername, EnvAPIKey)
 	if err != nil {
-		return nil, fmt.Errorf("softlayer: %w", err)
+		return nil, fmt.Errorf("ibmcloud: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -76,18 +76,18 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderConfig return a DNSProvider instance configured for SoftLayer.
+// NewDNSProviderConfig return a DNSProvider instance configured for IBM Cloud (SoftLayer).
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
-		return nil, errors.New("softlayer: the configuration of the DNS provider is nil")
+		return nil, errors.New("ibmcloud: the configuration of the DNS provider is nil")
 	}
 
 	if config.Username == "" {
-		return nil, errors.New("softlayer: username is missing")
+		return nil, errors.New("ibmcloud: username is missing")
 	}
 
 	if config.APIKey == "" {
-		return nil, errors.New("softlayer: API key is missing")
+		return nil, errors.New("ibmcloud: API key is missing")
 	}
 
 	sess := session.New(config.Username, config.APIKey)
@@ -110,7 +110,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	err := d.wrapper.AddTXTRecord(fqdn, domain, value, d.config.TTL)
 	if err != nil {
-		return fmt.Errorf("softlayer: %w", err)
+		return fmt.Errorf("ibmcloud: %w", err)
 	}
 
 	return nil
@@ -122,7 +122,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	err := d.wrapper.CleanupTXTRecord(fqdn, domain)
 	if err != nil {
-		return fmt.Errorf("softlayer: %w", err)
+		return fmt.Errorf("ibmcloud: %w", err)
 	}
 
 	return nil

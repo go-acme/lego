@@ -34,7 +34,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvUsername: "",
 				EnvAPIKey:   "",
 			},
-			expected: "sakuracloud: some credentials information are missing: SAKURACLOUD_ACCESS_TOKEN,SAKURACLOUD_ACCESS_TOKEN_SECRET",
+			expected: "softlayer: some credentials information are missing: SOFTLAYER_USERNAME,SOFTLAYER_API_KEY",
 		},
 		{
 			desc: "missing access token",
@@ -42,7 +42,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvUsername: "",
 				EnvAPIKey:   "456",
 			},
-			expected: "sakuracloud: some credentials information are missing: SAKURACLOUD_ACCESS_TOKEN",
+			expected: "softlayer: some credentials information are missing: SOFTLAYER_USERNAME",
 		},
 		{
 			desc: "missing token secret",
@@ -50,7 +50,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvUsername: "123",
 				EnvAPIKey:   "",
 			},
-			expected: "sakuracloud: some credentials information are missing: SAKURACLOUD_ACCESS_TOKEN_SECRET",
+			expected: "softlayer: some credentials information are missing: SOFTLAYER_API_KEY",
 		},
 	}
 
@@ -78,36 +78,36 @@ func TestNewDNSProvider(t *testing.T) {
 func TestNewDNSProviderConfig(t *testing.T) {
 	testCases := []struct {
 		desc     string
-		token    string
-		secret   string
+		username string
+		apiKey   string
 		expected string
 	}{
 		{
-			desc:   "success",
-			token:  "123",
-			secret: "456",
+			desc:     "success",
+			username: "123",
+			apiKey:   "456",
 		},
 		{
 			desc:     "missing credentials",
-			expected: "sakuracloud: AccessToken is missing",
+			expected: "softlayer: Username is missing",
 		},
 		{
 			desc:     "missing token",
-			secret:   "456",
-			expected: "sakuracloud: AccessToken is missing",
+			apiKey:   "456",
+			expected: "softlayer: Username is missing",
 		},
 		{
 			desc:     "missing secret",
-			token:    "123",
-			expected: "sakuracloud: AccessSecret is missing",
+			username: "123",
+			expected: "softlayer: Api key is missing",
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			config := NewDefaultConfig()
-			config.Username = test.token
-			config.APIKey = test.secret
+			config.Username = test.username
+			config.APIKey = test.apiKey
 
 			p, err := NewDNSProviderConfig(config)
 

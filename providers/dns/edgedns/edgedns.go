@@ -138,6 +138,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		if err != nil {
 			return fmt.Errorf("edgedns: %w", err)
 		}
+
+		return nil
 	}
 
 	record = &configdns.RecordBody{
@@ -200,6 +202,8 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		if err != nil {
 			return fmt.Errorf("edgedns: %w", err)
 		}
+
+		return nil
 	}
 
 	err = existingRec.Delete(zone)

@@ -85,6 +85,15 @@ func TestClient_GetDNSRecords(t *testing.T) {
 	assert.Equal(t, expected, records)
 }
 
+func TestClient_GetDNSRecords_error(t *testing.T) {
+	mux, client := setupTest(t)
+
+	mux.HandleFunc("/domains/example.com/records", testHandler(http.MethodGet, http.StatusUnauthorized, "error.json"))
+
+	_, err := client.GetDNSRecords("example.com")
+	assert.Error(t, err)
+}
+
 func TestClient_CreateHostRecord(t *testing.T) {
 	mux, client := setupTest(t)
 
@@ -109,6 +118,23 @@ func TestClient_CreateHostRecord(t *testing.T) {
 	assert.Equal(t, expected, data)
 }
 
+func TestClient_CreateHostRecord_error(t *testing.T) {
+	mux, client := setupTest(t)
+
+	mux.HandleFunc("/domains/example.com/records", testHandler(http.MethodPost, http.StatusUnauthorized, "error.json"))
+
+	record := RecordRequest{
+		Host: "www2",
+		Type: "A",
+		Data: "192.64.147.249",
+		Aux:  0,
+		TTL:  300,
+	}
+
+	_, err := client.CreateHostRecord("example.com", record)
+	assert.Error(t, err)
+}
+
 func TestClient_RemoveHostRecord(t *testing.T) {
 	mux, client := setupTest(t)
 
@@ -123,6 +149,15 @@ func TestClient_RemoveHostRecord(t *testing.T) {
 	}
 
 	assert.Equal(t, expected, data)
+}
+
+func TestClient_RemoveHostRecord_error(t *testing.T) {
+	mux, client := setupTest(t)
+
+	mux.HandleFunc("/domains/example.com/records", testHandler(http.MethodDelete, http.StatusUnauthorized, "error.json"))
+
+	_, err := client.RemoveHostRecord("example.com", "abc123")
+	assert.Error(t, err)
 }
 
 func testHandler(method string, statusCode int, filename string) http.HandlerFunc {

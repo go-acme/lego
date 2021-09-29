@@ -138,18 +138,18 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		if err != nil {
 			return fmt.Errorf("edgedns: %w", err)
 		}
-	}
+	} else {
+		record = &configdns.RecordBody{
+			Name:       fqdn,
+			RecordType: "TXT",
+			TTL:        d.config.TTL,
+			Target:     []string{`"` + value + `"`},
+		}
 
-	record = &configdns.RecordBody{
-		Name:       fqdn,
-		RecordType: "TXT",
-		TTL:        d.config.TTL,
-		Target:     []string{`"` + value + `"`},
-	}
-
-	err = record.Save(zone)
-	if err != nil {
-		return fmt.Errorf("edgedns: %w", err)
+		err = record.Save(zone)
+		if err != nil {
+			return fmt.Errorf("edgedns: %w", err)
+		}
 	}
 
 	return nil
@@ -200,11 +200,11 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		if err != nil {
 			return fmt.Errorf("edgedns: %w", err)
 		}
-	}
-
-	err = existingRec.Delete(zone)
-	if err != nil {
-		return fmt.Errorf("edgedns: %w", err)
+	} else {
+		err = existingRec.Delete(zone)
+		if err != nil {
+			return fmt.Errorf("edgedns: %w", err)
+		}
 	}
 
 	return nil

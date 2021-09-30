@@ -1,5 +1,35 @@
 # Changelog
 
+## [v4.5.0] - 2021-09-30
+
+### Added:
+
+- **[dnsprovider]** Add DNS provider for all-inkl
+- **[dnsprovider]** Add DNS provider for Epik
+- **[dnsprovider]** Add DNS provider for freemyip.com
+- **[dnsprovider]** Add DNS provider for g-core labs
+- **[dnsprovider]** Add DNS provider for hosttech
+- **[dnsprovider]** Add DNS Provider for IBM Cloud (SoftLayer)
+- **[dnsprovider]** Add DNS provider for Internet.bs
+- **[dnsprovider]** Add DNS provider for nicmanager
+
+### Changed:
+
+- **[dnsprovider]** alidns: support ECS instance RAM role
+- **[dnsprovider]** alidns: support sts token credential
+- **[dnsprovider]** azure: zone name as environment variable
+- **[dnsprovider]** ovh: follow cname
+- **[lib,cli]** Add AlwaysDeactivateAuthorizations flag to ObtainRequest
+
+### Fixed:
+
+- **[dnsprovider]** infomaniak: fix subzone support
+- **[dnsprovider]** edgedns: fix Present and CleanUp logic
+- **[dnsprovider]** lightsail: wrong Region env var name
+- **[lib]** lib: fix backoff in SolverManager
+- **[lib]** lib: use permanent error instead of context cancellation
+- **[dnsprovider]** desec: bump to v0.6.0
+
 ## [v4.4.0] - 2021-06-08
 
 ### Added:

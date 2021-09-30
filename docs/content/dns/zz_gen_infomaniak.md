@@ -55,7 +55,6 @@ More information [here](/lego/dns/#configuration-and-credentials).
 
 Access token can be created at the url https://manager.infomaniak.com/v3/infomaniak-api.
 You will need domain scope.
-```
 
 
 

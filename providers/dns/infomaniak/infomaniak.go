@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 	"sync"
 	"time"
 
@@ -113,11 +112,6 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	authZone, err := getZone(fqdn)
-	if err != nil {
-		return fmt.Errorf("infomaniak: %w", err)
-	}
-
 	ikDomain, err := d.client.GetDomainByName(domain)
 	if err != nil {
 		return fmt.Errorf("infomaniak: could not get domain %q: %w", domain, err)
@@ -128,7 +122,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	d.domainIDsMu.Unlock()
 
 	record := internal.Record{
-		Source: extractRecordName(fqdn, authZone),
+		Source: extractRecordName(fqdn, ikDomain.CustomerName),
 		Target: value,
 		Type:   "TXT",
 		TTL:    d.config.TTL,
@@ -190,19 +184,8 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-func getZone(fqdn string) (string, error) {
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
-	if err != nil {
-		return "", err
-	}
-
-	return dns01.UnFqdn(authZone), nil
-}
-
-func extractRecordName(fqdn, zone string) string {
+func extractRecordName(fqdn, domain string) string {
 	name := dns01.UnFqdn(fqdn)
-	if idx := strings.Index(name, "."+zone); idx != -1 {
-		return name[:idx]
-	}
-	return name
+
+	return name[:len(name)-len(domain)-1]
 }

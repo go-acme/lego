@@ -1,6 +1,6 @@
 # Changelog
 
-## [v4.5.0] - 2021-09-30
+## [v4.5.1] - 2021-09-01
 
 ### Added:
 
@@ -29,6 +29,10 @@
 - **[lib]** lib: fix backoff in SolverManager
 - **[lib]** lib: use permanent error instead of context cancellation
 - **[dnsprovider]** desec: bump to v0.6.0
+
+## [v4.5.0] - 2021-09-30
+
+Cancel due to a CI issue, replaced by v4.5.1.
 
 ## [v4.4.0] - 2021-06-08
 

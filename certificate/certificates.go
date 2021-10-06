@@ -435,10 +435,11 @@ func (c *Certifier) Renew(certRes Resource, bundle, mustStaple bool, preferredCh
 	}
 
 	query := ObtainRequest{
-		Domains:    certcrypto.ExtractDomains(x509Cert),
-		Bundle:     bundle,
-		PrivateKey: privateKey,
-		MustStaple: mustStaple,
+		Domains:        certcrypto.ExtractDomains(x509Cert),
+		Bundle:         bundle,
+		PrivateKey:     privateKey,
+		MustStaple:     mustStaple,
+		PreferredChain: preferredChain,
 	}
 	return c.Obtain(query)
 }

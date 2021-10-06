@@ -1,5 +1,11 @@
 # Changelog
 
+## [v4.5.3] - 2021-09-06
+
+### Fixed:
+
+- **[lib,cli]** fix: missing preferred chain param for renew request
+
 ## [v4.5.2] - 2021-09-01
 
 ### Added:

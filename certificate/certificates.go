@@ -439,6 +439,7 @@ func (c *Certifier) Renew(certRes Resource, bundle, mustStaple bool, preferredCh
 		Bundle:     bundle,
 		PrivateKey: privateKey,
 		MustStaple: mustStaple,
+		PreferredChain: preferredChain,
 	}
 	return c.Obtain(query)
 }

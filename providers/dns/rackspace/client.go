@@ -62,7 +62,7 @@ type ZoneSearchResponse struct {
 
 // HostedZone HostedZone.
 type HostedZone struct {
-	ID   int    `json:"id"`
+	ID   string `json:"id"`
 	Name string `json:"name"`
 }
 
@@ -82,34 +82,34 @@ type Record struct {
 
 // getHostedZoneID performs a lookup to get the DNS zone which needs
 // modifying for a given FQDN.
-func (d *DNSProvider) getHostedZoneID(fqdn string) (int, error) {
+func (d *DNSProvider) getHostedZoneID(fqdn string) (string, error) {
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return 0, err
+		return "", err
 	}
 
 	result, err := d.makeRequest(http.MethodGet, fmt.Sprintf("/domains?name=%s", dns01.UnFqdn(authZone)), nil)
 	if err != nil {
-		return 0, err
+		return "", err
 	}
 
 	var zoneSearchResponse ZoneSearchResponse
 	err = json.Unmarshal(result, &zoneSearchResponse)
 	if err != nil {
-		return 0, err
+		return "", err
 	}
 
 	// If nothing was returned, or for whatever reason more than 1 was returned (the search uses exact match, so should not occur)
 	if zoneSearchResponse.TotalEntries != 1 {
-		return 0, fmt.Errorf("found %d zones for %s in Rackspace for domain %s", zoneSearchResponse.TotalEntries, authZone, fqdn)
+		return "", fmt.Errorf("found %d zones for %s in Rackspace for domain %s", zoneSearchResponse.TotalEntries, authZone, fqdn)
 	}
 
 	return zoneSearchResponse.HostedZones[0].ID, nil
 }
 
 // findTxtRecord searches a DNS zone for a TXT record with a specific name.
-func (d *DNSProvider) findTxtRecord(fqdn string, zoneID int) (*Record, error) {
-	result, err := d.makeRequest(http.MethodGet, fmt.Sprintf("/domains/%d/records?type=TXT&name=%s", zoneID, dns01.UnFqdn(fqdn)), nil)
+func (d *DNSProvider) findTxtRecord(fqdn string, zoneID string) (*Record, error) {
+	result, err := d.makeRequest(http.MethodGet, fmt.Sprintf("/domains/%s/records?type=TXT&name=%s", zoneID, dns01.UnFqdn(fqdn)), nil)
 	if err != nil {
 		return nil, err
 	}

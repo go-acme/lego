@@ -135,7 +135,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("rackspace: %w", err)
 	}
 
-	_, err = d.makeRequest(http.MethodPost, fmt.Sprintf("/domains/%d/records", zoneID), bytes.NewReader(body))
+	_, err = d.makeRequest(http.MethodPost, fmt.Sprintf("/domains/%s/records", zoneID), bytes.NewReader(body))
 	if err != nil {
 		return fmt.Errorf("rackspace: %w", err)
 	}
@@ -156,7 +156,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("rackspace: %w", err)
 	}
 
-	_, err = d.makeRequest(http.MethodDelete, fmt.Sprintf("/domains/%d/records?id=%s", zoneID, record.ID), nil)
+	_, err = d.makeRequest(http.MethodDelete, fmt.Sprintf("/domains/%s/records?id=%s", zoneID, record.ID), nil)
 	if err != nil {
 		return fmt.Errorf("rackspace: %w", err)
 	}

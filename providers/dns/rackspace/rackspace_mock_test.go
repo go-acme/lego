@@ -31,7 +31,7 @@ const zoneDetailsMock = `
   "domains": [
     {
       "name": "example.com",
-      "id": 112233,
+      "id": "112233",
       "emailAddress": "hostmaster@example.com",
       "updated": "1970-01-01T00:00:00.000+0000",
       "created": "1970-01-01T00:00:00.000+0000"

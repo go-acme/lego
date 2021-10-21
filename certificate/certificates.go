@@ -365,6 +365,11 @@ func (c *Certifier) checkResponse(order acme.ExtendedOrder, certRes *Resource, b
 
 // Revoke takes a PEM encoded certificate or bundle and tries to revoke it at the CA.
 func (c *Certifier) Revoke(cert []byte) error {
+	return c.RevokeWithReason(cert, nil)
+}
+
+// RevokeWithReason takes a PEM encoded certificate or bundle and tries to revoke it at the CA.
+func (c *Certifier) RevokeWithReason(cert []byte, reason *uint) error {
 	certificates, err := certcrypto.ParsePEMBundle(cert)
 	if err != nil {
 		return err
@@ -377,6 +382,7 @@ func (c *Certifier) Revoke(cert []byte) error {
 
 	revokeMsg := acme.RevokeCertMessage{
 		Certificate: base64.RawURLEncoding.EncodeToString(x509Cert.Raw),
+		Reason:      reason,
 	}
 
 	return c.core.Certificates.Revoke(revokeMsg)

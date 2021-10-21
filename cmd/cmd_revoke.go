@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/go-acme/lego/v4/acme"
 	"github.com/go-acme/lego/v4/log"
 	"github.com/urfave/cli"
 )
@@ -14,6 +15,11 @@ func createRevoke() cli.Command {
 			cli.BoolFlag{
 				Name:  "keep, k",
 				Usage: "Keep the certificates after the revocation instead of archiving them.",
+			},
+			cli.UintFlag{
+				Name:  "reason",
+				Usage: "Identifies the reason for the certificate revocation. See https://tools.ietf.org/html/rfc5280#section-5.3.1. 0(unspecified),1(keyCompromise),2(cACompromise),3(affiliationChanged),4(superseded),5(cessationOfOperation),6(certificateHold),8(removeFromCRL),9(privilegeWithdrawn),10(aACompromise)",
+				Value: acme.CRLReasonUnspecified,
 			},
 		},
 	}
@@ -37,7 +43,9 @@ func revoke(ctx *cli.Context) error {
 			log.Fatalf("Error while revoking the certificate for domain %s\n\t%v", domain, err)
 		}
 
-		err = client.Certificate.Revoke(certBytes)
+		reason := ctx.Uint("reason")
+
+		err = client.Certificate.RevokeWithReason(certBytes, &reason)
 		if err != nil {
 			log.Fatalf("Error while revoking the certificate for domain %s\n\t%v", domain, err)
 		}

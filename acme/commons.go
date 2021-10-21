@@ -7,16 +7,33 @@ import (
 	"time"
 )
 
-// Challenge statuses.
-// https://tools.ietf.org/html/rfc8555#section-7.1.6
+// ACME status values of Account, Order, Authorization and Challenge objects.
+// See https://tools.ietf.org/html/rfc8555#section-7.1.6 for details.
 const (
-	StatusPending     = "pending"
-	StatusInvalid     = "invalid"
-	StatusValid       = "valid"
-	StatusProcessing  = "processing"
 	StatusDeactivated = "deactivated"
 	StatusExpired     = "expired"
+	StatusInvalid     = "invalid"
+	StatusPending     = "pending"
+	StatusProcessing  = "processing"
+	StatusReady       = "ready"
 	StatusRevoked     = "revoked"
+	StatusUnknown     = "unknown"
+	StatusValid       = "valid"
+)
+
+// CRL reason codes as defined in RFC 5280.
+// https://datatracker.ietf.org/doc/html/rfc5280#section-5.3.1
+const (
+	CRLReasonUnspecified          uint = 0
+	CRLReasonKeyCompromise        uint = 1
+	CRLReasonCACompromise         uint = 2
+	CRLReasonAffiliationChanged   uint = 3
+	CRLReasonSuperseded           uint = 4
+	CRLReasonCessationOfOperation uint = 5
+	CRLReasonCertificateHold      uint = 6
+	CRLReasonRemoveFromCRL        uint = 8
+	CRLReasonPrivilegeWithdrawn   uint = 9
+	CRLReasonAACompromise         uint = 10
 )
 
 // Directory the ACME directory object.

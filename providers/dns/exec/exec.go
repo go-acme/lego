@@ -22,6 +22,7 @@ const (
 
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvSequenceInterval   = envNamespace + "SEQUENCE_INTERVAL"
 )
 
 // Config Provider configuration.
@@ -30,6 +31,7 @@ type Config struct {
 	Mode               string
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
+	SequenceInterval   time.Duration
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
@@ -37,6 +39,7 @@ func NewDefaultConfig() *Config {
 	return &Config{
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
+		SequenceInterval:   env.GetOrDefaultSecond(EnvSequenceInterval, dns01.DefaultPropagationTimeout),
 	}
 }
 
@@ -119,5 +122,5 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 // Sequential All DNS challenges for this provider will be resolved sequentially.
 // Returns the interval between each iteration.
 func (d *DNSProvider) Sequential() time.Duration {
-	return d.config.PropagationTimeout
+	return d.config.SequenceInterval
 }

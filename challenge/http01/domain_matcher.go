@@ -23,7 +23,7 @@ import (
 // RFC7239 has standardized the different forwarding headers into a single header named Forwarded.
 // The header value has a different format, so you should use forwardedMatcher
 // when the http01.ProviderServer operates behind a RFC7239 compatible proxy.
-// https://tools.ietf.org/html/rfc7239
+// https://www.rfc-editor.org/rfc/rfc7239.html
 //
 // Note: RFC7239 also reminds us, "that an HTTP list [...] may be split over multiple header fields" (section 7.1),
 // meaning that
@@ -66,7 +66,7 @@ func (m arbitraryMatcher) matches(r *http.Request, domain string) bool {
 }
 
 // forwardedMatcher checks whether the Forwarded header contains a "host" element starting with a domain name.
-// See https://tools.ietf.org/html/rfc7239 for details.
+// See https://www.rfc-editor.org/rfc/rfc7239.html for details.
 type forwardedMatcher struct{}
 
 func (m *forwardedMatcher) name() string {

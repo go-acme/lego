@@ -8,7 +8,7 @@ Let's Encrypt client and ACME library written in Go.
 
 ## Features
 
-- ACME v2 [RFC 8555](https://tools.ietf.org/html/rfc8555) 
+- ACME v2 [RFC 8555](https://www.rfc-editor.org/rfc/rfc8555.html)
 - Register with CA
 - Obtain certificates, both from scratch or with an existing CSR
 - Renew certificates

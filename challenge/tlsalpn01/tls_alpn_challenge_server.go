@@ -61,7 +61,7 @@ func (s *ProviderServer) Present(domain, token, keyAuth string) error {
 
 	// We must set that the `acme-tls/1` application level protocol is supported
 	// so that the protocol negotiation can succeed. Reference:
-	// https://tools.ietf.org/html/draft-ietf-acme-tls-alpn-07#section-6.2
+	// https://www.rfc-editor.org/rfc/rfc8737.html#section-6.2
 	tlsConf.NextProtos = []string{ACMETLS1Protocol}
 
 	// Create the listener with the created tls.Config.

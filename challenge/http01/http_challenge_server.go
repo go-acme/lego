@@ -69,7 +69,7 @@ func (s *ProviderServer) CleanUp(domain, token, keyAuth string) error {
 //
 // The exact behavior depends on the value of headerName:
 // - "" (the empty string) and "Host" will restore the default and only check the Host header
-// - "Forwarded" will look for a Forwarded header, and inspect it according to https://tools.ietf.org/html/rfc7239
+// - "Forwarded" will look for a Forwarded header, and inspect it according to https://www.rfc-editor.org/rfc/rfc7239.html
 // - any other value will check the header value with the same name.
 func (s *ProviderServer) SetProxyHeader(headerName string) {
 	switch h := textproto.CanonicalMIMEHeaderKey(headerName); h {

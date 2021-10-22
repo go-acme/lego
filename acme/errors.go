@@ -11,8 +11,8 @@ const (
 )
 
 // ProblemDetails the problem details object.
-// - https://tools.ietf.org/html/rfc7807#section-3.1
-// - https://tools.ietf.org/html/rfc8555#section-7.3.3
+// - https://www.rfc-editor.org/rfc/rfc7807.html#section-3.1
+// - https://www.rfc-editor.org/rfc/rfc8555.html#section-7.3.3
 type ProblemDetails struct {
 	Type        string       `json:"type,omitempty"`
 	Detail      string       `json:"detail,omitempty"`
@@ -26,7 +26,7 @@ type ProblemDetails struct {
 }
 
 // SubProblem a "subproblems".
-// - https://tools.ietf.org/html/rfc8555#section-6.7.1
+// - https://www.rfc-editor.org/rfc/rfc8555.html#section-6.7.1
 type SubProblem struct {
 	Type       string     `json:"type,omitempty"`
 	Detail     string     `json:"detail,omitempty"`

@@ -18,7 +18,7 @@ func createRevoke() cli.Command {
 			},
 			cli.UintFlag{
 				Name:  "reason",
-				Usage: "Identifies the reason for the certificate revocation. See https://tools.ietf.org/html/rfc5280#section-5.3.1. 0(unspecified),1(keyCompromise),2(cACompromise),3(affiliationChanged),4(superseded),5(cessationOfOperation),6(certificateHold),8(removeFromCRL),9(privilegeWithdrawn),10(aACompromise)",
+				Usage: "Identifies the reason for the certificate revocation. See https://www.rfc-editor.org/rfc/rfc5280.html#section-5.3.1. 0(unspecified),1(keyCompromise),2(cACompromise),3(affiliationChanged),4(superseded),5(cessationOfOperation),6(certificateHold),8(removeFromCRL),9(privilegeWithdrawn),10(aACompromise)",
 				Value: acme.CRLReasonUnspecified,
 			},
 		},

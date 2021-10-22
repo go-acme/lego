@@ -1,6 +1,6 @@
 Name = "RFC2136"
 Description = ''''''
-URL = "https://tools.ietf.org/html/rfc2136"
+URL = "https://www.rfc-editor.org/rfc/rfc2136.html"
 Code = "rfc2136"
 Since = "v0.3.0"
 
@@ -36,4 +36,4 @@ lego --email myemail@example.com --dns rfc2136 --domains my.example.org run
     RFC2136_SEQUENCE_INTERVAL = "Time between sequential requests"
 
 [Links]
-  API = "https://tools.ietf.org/html/rfc2136"
+  API = "https://www.rfc-editor.org/rfc/rfc2136.html"

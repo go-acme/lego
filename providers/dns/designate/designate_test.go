@@ -321,7 +321,6 @@ func setupTestProvider(t *testing.T) string {
 	})
 
 	server := httptest.NewServer(mux)
-
 	t.Cleanup(server.Close)
 
 	return server.URL

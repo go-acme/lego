@@ -17,6 +17,7 @@ import (
 func TestClient_FindTXTRecords(t *testing.T) {
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
 		query := req.URL.Query()
@@ -257,6 +258,7 @@ func TestClient_DoActions(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			mux := http.NewServeMux()
 			server := httptest.NewServer(mux)
+			t.Cleanup(server.Close)
 
 			mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
 				query, err := url.QueryUnescape(req.URL.RawQuery)

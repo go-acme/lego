@@ -18,8 +18,7 @@ import (
 )
 
 func TestChallenge(t *testing.T) {
-	_, apiURL, tearDown := tester.SetupFakeAPI()
-	defer tearDown()
+	_, apiURL := tester.SetupFakeAPI(t)
 
 	providerServer := NewProviderServer("", "23457")
 
@@ -71,8 +70,7 @@ func TestChallenge(t *testing.T) {
 }
 
 func TestChallengeInvalidPort(t *testing.T) {
-	_, apiURL, tearDown := tester.SetupFakeAPI()
-	defer tearDown()
+	_, apiURL := tester.SetupFakeAPI(t)
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 128)
 	require.NoError(t, err, "Could not generate test key")
@@ -255,8 +253,7 @@ func TestChallengeWithProxy(t *testing.T) {
 func testServeWithProxy(t *testing.T, header, extra *testProxyHeader, expectError bool) {
 	t.Helper()
 
-	_, apiURL, tearDown := tester.SetupFakeAPI()
-	defer tearDown()
+	_, apiURL := tester.SetupFakeAPI(t)
 
 	providerServer := NewProviderServer("localhost", "23457")
 	if header != nil {

@@ -22,8 +22,7 @@ var envTest = tester.NewEnvTest(
 	WithDomain(envDomain)
 
 func TestNewDNSProviderConfig(t *testing.T) {
-	config, tearDown := setupTest()
-	defer tearDown()
+	config := setupTest(t)
 
 	provider, err := NewDNSProviderConfig(config)
 	require.NoError(t, err)
@@ -38,8 +37,7 @@ func TestNewDNSProviderConfig_MissingCredErr(t *testing.T) {
 }
 
 func TestDNSProvider_Present(t *testing.T) {
-	config, tearDown := setupTest()
-	defer tearDown()
+	config := setupTest(t)
 
 	provider, err := NewDNSProviderConfig(config)
 
@@ -50,8 +48,7 @@ func TestDNSProvider_Present(t *testing.T) {
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
-	config, tearDown := setupTest()
-	defer tearDown()
+	config := setupTest(t)
 
 	provider, err := NewDNSProviderConfig(config)
 
@@ -101,25 +98,22 @@ func TestLiveCleanUp(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func setupTest() (*Config, func()) {
-	apiURL, tearDown := startTestServers()
+func setupTest(t *testing.T) *Config {
+	t.Helper()
+
+	dnsAPI := httptest.NewServer(dnsHandler())
+	t.Cleanup(dnsAPI.Close)
+
+	identityAPI := httptest.NewServer(identityHandler(dnsAPI.URL + "/123456"))
+	t.Cleanup(identityAPI.Close)
 
 	config := NewDefaultConfig()
 	config.APIUser = "testUser"
 	config.APIKey = "testKey"
-	config.BaseURL = apiURL
+	config.HTTPClient = identityAPI.Client()
+	config.BaseURL = identityAPI.URL + "/"
 
-	return config, tearDown
-}
-
-func startTestServers() (string, func()) {
-	dnsAPI := httptest.NewServer(dnsHandler())
-	identityAPI := httptest.NewServer(identityHandler(dnsAPI.URL + "/123456"))
-
-	return identityAPI.URL + "/", func() {
-		identityAPI.Close()
-		dnsAPI.Close()
-	}
+	return config
 }
 
 func identityHandler(dnsEndpoint string) http.Handler {

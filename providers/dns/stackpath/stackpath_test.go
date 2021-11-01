@@ -135,9 +135,12 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}
 }
 
-func setupMockAPITest() (*DNSProvider, *http.ServeMux, func()) {
-	apiHandler := http.NewServeMux()
-	server := httptest.NewServer(apiHandler)
+func setupTest(t *testing.T) (*DNSProvider, *http.ServeMux) {
+	t.Helper()
+
+	mux := http.NewServeMux()
+	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	config := NewDefaultConfig()
 	config.ClientID = "CLIENT_ID"
@@ -145,19 +148,16 @@ func setupMockAPITest() (*DNSProvider, *http.ServeMux, func()) {
 	config.StackID = "STACK_ID"
 
 	provider, err := NewDNSProviderConfig(config)
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(t, err)
 
 	provider.client = http.DefaultClient
 	provider.BaseURL, _ = url.Parse(server.URL + "/")
 
-	return provider, apiHandler, server.Close
+	return provider, mux
 }
 
 func TestDNSProvider_getZoneRecords(t *testing.T) {
-	provider, mux, tearDown := setupMockAPITest()
-	defer tearDown()
+	provider, mux := setupTest(t)
 
 	mux.HandleFunc("/STACK_ID/zones/A/records", func(w http.ResponseWriter, _ *http.Request) {
 		content := `
@@ -187,8 +187,7 @@ func TestDNSProvider_getZoneRecords(t *testing.T) {
 }
 
 func TestDNSProvider_getZoneRecords_apiError(t *testing.T) {
-	provider, mux, tearDown := setupMockAPITest()
-	defer tearDown()
+	provider, mux := setupTest(t)
 
 	mux.HandleFunc("/STACK_ID/zones/A/records", func(w http.ResponseWriter, _ *http.Request) {
 		content := `
@@ -212,8 +211,7 @@ func TestDNSProvider_getZoneRecords_apiError(t *testing.T) {
 }
 
 func TestDNSProvider_getZones(t *testing.T) {
-	provider, mux, tearDown := setupMockAPITest()
-	defer tearDown()
+	provider, mux := setupTest(t)
 
 	mux.HandleFunc("/STACK_ID/zones", func(w http.ResponseWriter, _ *http.Request) {
 		content := `

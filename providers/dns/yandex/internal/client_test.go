@@ -10,17 +10,20 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func setupClientTest() (*http.ServeMux, *Client, func()) {
+func setupTest(t *testing.T) (*http.ServeMux, *Client) {
+	t.Helper()
+
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	client, err := NewClient("lego")
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(t, err)
 
+	client.HTTPClient = server.Client()
 	client.BaseURL = server.URL
-	return mux, client, server.Close
+
+	return mux, client
 }
 
 func TestAddRecord(t *testing.T) {
@@ -107,8 +110,7 @@ func TestAddRecord(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			mux, client, tearDown := setupClientTest()
-			defer tearDown()
+			mux, client := setupTest(t)
 
 			mux.HandleFunc("/add", test.handler)
 
@@ -195,8 +197,7 @@ func TestRemoveRecord(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			mux, client, tearDown := setupClientTest()
-			defer tearDown()
+			mux, client := setupTest(t)
 
 			mux.HandleFunc("/del", test.handler)
 
@@ -287,8 +288,7 @@ func TestGetRecords(t *testing.T) {
 		test := test
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
-			mux, client, tearDown := setupClientTest()
-			defer tearDown()
+			mux, client := setupTest(t)
 
 			mux.HandleFunc("/list", test.handler)
 

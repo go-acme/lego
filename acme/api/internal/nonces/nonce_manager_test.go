@@ -12,7 +12,7 @@ import (
 )
 
 func TestNotHoldingLockWhileMakingHTTPRequests(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		time.Sleep(250 * time.Millisecond)
 		w.Header().Set("Replay-Nonce", "12345")
 		w.Header().Set("Retry-After", "0")
@@ -22,10 +22,10 @@ func TestNotHoldingLockWhileMakingHTTPRequests(t *testing.T) {
 			return
 		}
 	}))
-	defer ts.Close()
+	t.Cleanup(server.Close)
 
 	doer := sender.NewDoer(http.DefaultClient, "lego-test")
-	j := NewManager(doer, ts.URL)
+	j := NewManager(doer, server.URL)
 	ch := make(chan bool)
 	resultCh := make(chan bool)
 	go func() {

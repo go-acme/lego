@@ -14,8 +14,7 @@ import (
 )
 
 func TestRegistrar_ResolveAccountByKey(t *testing.T) {
-	mux, apiURL, tearDown := tester.SetupFakeAPI()
-	defer tearDown()
+	mux, apiURL := tester.SetupFakeAPI(t)
 
 	mux.HandleFunc("/account", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Location", apiURL+"/account")

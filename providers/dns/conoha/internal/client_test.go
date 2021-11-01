@@ -6,23 +6,25 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func setupClientTest() (*http.ServeMux, *Client, func()) {
+func setupTest(t *testing.T) (*http.ServeMux, *Client) {
+	t.Helper()
+
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	client := &Client{
 		token:      "secret",
 		endpoint:   server.URL,
-		httpClient: &http.Client{Timeout: 5 * time.Second},
+		httpClient: server.Client(),
 	}
 
-	return mux, client, server.Close
+	return mux, client
 }
 
 func TestClient_GetDomainID(t *testing.T) {
@@ -120,8 +122,7 @@ func TestClient_GetDomainID(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			mux, client, tearDown := setupClientTest()
-			defer tearDown()
+			mux, client := setupTest(t)
 
 			mux.Handle("/v1/domains", test.handler)
 
@@ -180,8 +181,7 @@ func TestClient_CreateRecord(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			mux, client, tearDown := setupClientTest()
-			defer tearDown()
+			mux, client := setupTest(t)
 
 			mux.Handle("/v1/domains/lego/records", test.handler)
 

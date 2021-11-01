@@ -18,6 +18,7 @@ func setupTest(t *testing.T) (*http.ServeMux, *Client) {
 	t.Helper()
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	client := NewClient("secret")
 	client.HTTPClient = server.Client()

@@ -158,7 +158,9 @@ func TestNewDNSProvider_Present(t *testing.T) {
 
 			mux := http.NewServeMux()
 			mux.HandleFunc(path.Join("/", test.pathPrefix, "present"), test.handler)
+
 			server := httptest.NewServer(mux)
+			t.Cleanup(server.Close)
 
 			config := NewDefaultConfig()
 			config.Endpoint = mustParse(server.URL + test.pathPrefix)
@@ -233,7 +235,9 @@ func TestNewDNSProvider_Cleanup(t *testing.T) {
 
 			mux := http.NewServeMux()
 			mux.HandleFunc("/cleanup", test.handler)
+
 			server := httptest.NewServer(mux)
+			t.Cleanup(server.Close)
 
 			config := NewDefaultConfig()
 			config.Endpoint = mustParse(server.URL)

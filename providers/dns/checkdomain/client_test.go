@@ -18,19 +18,18 @@ import (
 func setupTestProvider(t *testing.T) (*DNSProvider, *http.ServeMux) {
 	t.Helper()
 
-	handler := http.NewServeMux()
-	svr := httptest.NewServer(handler)
-
-	t.Cleanup(svr.Close)
+	mux := http.NewServeMux()
+	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	config := NewDefaultConfig()
-	config.Endpoint, _ = url.Parse(svr.URL)
+	config.Endpoint, _ = url.Parse(server.URL)
 	config.Token = "secret"
 
-	prd, err := NewDNSProviderConfig(config)
+	p, err := NewDNSProviderConfig(config)
 	require.NoError(t, err)
 
-	return prd, handler
+	return p, mux
 }
 
 func Test_getDomainIDByName(t *testing.T) {

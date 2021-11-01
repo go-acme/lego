@@ -16,8 +16,7 @@ import (
 )
 
 func TestOrderService_New(t *testing.T) {
-	mux, apiURL, tearDown := tester.SetupFakeAPI()
-	defer tearDown()
+	mux, apiURL := tester.SetupFakeAPI(t)
 
 	// small value keeps test fast
 	privateKey, errK := rsa.GenerateKey(rand.Reader, 512)

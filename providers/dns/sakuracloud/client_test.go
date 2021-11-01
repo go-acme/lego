@@ -24,22 +24,26 @@ type apiQuery struct {
 	} `json:"Filter"`
 }
 
-func fakeAPIServer(handler func(rw http.ResponseWriter, req *http.Request)) func() {
+func setupTest(t *testing.T, handler http.HandlerFunc) {
+	t.Helper()
+
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	mux.HandleFunc("/is1a/api/cloud/1.1/commonserviceitem/", handler)
 
 	backup := api.SakuraCloudAPIRoot
-	api.SakuraCloudAPIRoot = server.URL
-	return func() {
+	t.Cleanup(func() {
 		api.SakuraCloudAPIRoot = backup
-	}
+	})
+	api.SakuraCloudAPIRoot = server.URL
 }
 
 func TestDNSProvider_addTXTRecord(t *testing.T) {
 	searchResp := &api.SearchDNSResponse{}
-	tearDown := fakeAPIServer(func(rw http.ResponseWriter, req *http.Request) {
+
+	handler := func(rw http.ResponseWriter, req *http.Request) {
 		switch req.Method {
 		case http.MethodGet:
 			if len(searchResp.CommonServiceDNSItems) == 0 {
@@ -78,8 +82,9 @@ func TestDNSProvider_addTXTRecord(t *testing.T) {
 		default:
 			http.Error(rw, "OOPS", http.StatusServiceUnavailable)
 		}
-	})
-	defer tearDown()
+	}
+
+	setupTest(t, handler)
 
 	config := NewDefaultConfig()
 	config.Token = "token1"
@@ -101,7 +106,7 @@ func TestDNSProvider_addTXTRecord(t *testing.T) {
 func TestDNSProvider_cleanupTXTRecord(t *testing.T) {
 	searchResp := &api.SearchDNSResponse{}
 
-	tearDown := fakeAPIServer(func(rw http.ResponseWriter, req *http.Request) {
+	handler := func(rw http.ResponseWriter, req *http.Request) {
 		switch req.Method {
 		case http.MethodGet:
 			if len(searchResp.CommonServiceDNSItems) == 0 {
@@ -141,8 +146,9 @@ func TestDNSProvider_cleanupTXTRecord(t *testing.T) {
 		default:
 			http.Error(rw, "OOPS", http.StatusServiceUnavailable)
 		}
-	})
-	defer tearDown()
+	}
+
+	setupTest(t, handler)
 
 	config := NewDefaultConfig()
 	config.Token = "token2"
@@ -164,7 +170,7 @@ func TestDNSProvider_cleanupTXTRecord(t *testing.T) {
 func TestDNSProvider_addTXTRecord_concurrent(t *testing.T) {
 	searchResp := &api.SearchDNSResponse{}
 
-	tearDown := fakeAPIServer(func(rw http.ResponseWriter, req *http.Request) {
+	handler := func(rw http.ResponseWriter, req *http.Request) {
 		switch req.Method {
 		case http.MethodGet:
 			if len(searchResp.CommonServiceDNSItems) == 0 {
@@ -203,8 +209,9 @@ func TestDNSProvider_addTXTRecord_concurrent(t *testing.T) {
 		default:
 			http.Error(rw, "OOPS", http.StatusServiceUnavailable)
 		}
-	})
-	defer tearDown()
+	}
+
+	setupTest(t, handler)
 
 	dummyRecordCount := 10
 
@@ -251,7 +258,7 @@ func TestDNSProvider_cleanupTXTRecord_concurrent(t *testing.T) {
 
 	searchResp := &api.SearchDNSResponse{CommonServiceDNSItems: []sacloud.DNS{*baseFakeZone}}
 
-	tearDown := fakeAPIServer(func(rw http.ResponseWriter, req *http.Request) {
+	handler := func(rw http.ResponseWriter, req *http.Request) {
 		switch req.Method {
 		case http.MethodGet:
 			if err := json.NewEncoder(rw).Encode(searchResp); err != nil {
@@ -279,8 +286,9 @@ func TestDNSProvider_cleanupTXTRecord_concurrent(t *testing.T) {
 		default:
 			http.Error(rw, "OOPS", http.StatusServiceUnavailable)
 		}
-	})
-	defer tearDown()
+	}
+
+	setupTest(t, handler)
 
 	fakeZone := sacloud.CreateNewDNS("example.com")
 	fakeZone.ID = 123456789012

@@ -149,6 +149,7 @@ func setupTest(t *testing.T, method, path string, handlers ...assertHandler) *Cl
 
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	mux.Handle(path, http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != method {
@@ -166,8 +167,6 @@ func setupTest(t *testing.T, method, path string, handlers ...assertHandler) *Cl
 			}
 		}
 	}))
-
-	t.Cleanup(server.Close)
 
 	passport := &Passport{
 		SubjectID: "/iam/project/proj123/sa/xxxxxxx",

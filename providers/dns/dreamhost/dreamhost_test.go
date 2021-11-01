@@ -23,20 +23,22 @@ const (
 	fakeKeyAuth        = "w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI"
 )
 
-func setupTest() (*DNSProvider, *http.ServeMux, func()) {
-	handler := http.NewServeMux()
-	server := httptest.NewServer(handler)
+func setupTest(t *testing.T) (*DNSProvider, *http.ServeMux) {
+	t.Helper()
+
+	mux := http.NewServeMux()
+	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	config := NewDefaultConfig()
 	config.APIKey = fakeAPIKey
 	config.BaseURL = server.URL
+	config.HTTPClient = server.Client()
 
 	provider, err := NewDNSProviderConfig(config)
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(t, err)
 
-	return provider, handler, server.Close
+	return provider, mux
 }
 
 func TestNewDNSProvider(t *testing.T) {
@@ -113,8 +115,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 }
 
 func TestDNSProvider_Present(t *testing.T) {
-	provider, mux, tearDown := setupTest()
-	defer tearDown()
+	provider, mux := setupTest(t)
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodGet, r.Method, "method")
@@ -138,8 +139,7 @@ func TestDNSProvider_Present(t *testing.T) {
 }
 
 func TestDNSProvider_PresentFailed(t *testing.T) {
-	provider, mux, tearDown := setupTest()
-	defer tearDown()
+	provider, mux := setupTest(t)
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodGet, r.Method, "method")
@@ -155,8 +155,7 @@ func TestDNSProvider_PresentFailed(t *testing.T) {
 }
 
 func TestDNSProvider_Cleanup(t *testing.T) {
-	provider, mux, tearDown := setupTest()
-	defer tearDown()
+	provider, mux := setupTest(t)
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodGet, r.Method, "method")

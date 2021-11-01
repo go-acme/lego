@@ -15,6 +15,7 @@ import (
 func TestClient_GetTxtRecord(t *testing.T) {
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	const zoneID = "zoneA"
 	const apiKey = "myKeyA"
@@ -63,6 +64,7 @@ func TestClient_GetTxtRecord(t *testing.T) {
 func TestClient_CreateRecord(t *testing.T) {
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	const zoneID = "zoneA"
 	const apiKey = "myKeyB"
@@ -111,6 +113,7 @@ func TestClient_CreateRecord(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	const apiKey = "myKeyC"
 
@@ -137,6 +140,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 func TestClient_GetZoneID(t *testing.T) {
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	const apiKey = "myKeyD"
 	mux.HandleFunc("/api/v1/zones", func(rw http.ResponseWriter, req *http.Request) {

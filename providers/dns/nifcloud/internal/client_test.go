@@ -10,12 +10,24 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func runTestServer(responseBody string, statusCode int) *httptest.Server {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+func setupTest(t *testing.T, responseBody string, statusCode int) *Client {
+	t.Helper()
+
+	handler := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(statusCode)
-		fmt.Fprintln(w, responseBody)
-	}))
-	return server
+		_, _ = fmt.Fprintln(w, responseBody)
+	})
+
+	server := httptest.NewServer(handler)
+	t.Cleanup(server.Close)
+
+	client, err := NewClient("A", "B")
+	require.NoError(t, err)
+
+	client.HTTPClient = server.Client()
+	client.BaseURL = server.URL
+
+	return client
 }
 
 func TestChangeResourceRecordSets(t *testing.T) {
@@ -28,16 +40,12 @@ func TestChangeResourceRecordSets(t *testing.T) {
   </ChangeInfo>
 </ChangeResourceRecordSetsResponse>
 `
-	server := runTestServer(responseBody, http.StatusOK)
-	defer server.Close()
 
-	client, err := NewClient("A", "B")
-	require.NoError(t, err)
-
-	client.BaseURL = server.URL
+	client := setupTest(t, responseBody, http.StatusOK)
 
 	res, err := client.ChangeResourceRecordSets("example.com", ChangeResourceRecordSetsRequest{})
 	require.NoError(t, err)
+
 	assert.Equal(t, "xxxxx", res.ChangeInfo.ID)
 	assert.Equal(t, "INSYNC", res.ChangeInfo.Status)
 	assert.Equal(t, "2015-08-05T00:00:00.000Z", res.ChangeInfo.SubmittedAt)
@@ -81,13 +89,7 @@ func TestChangeResourceRecordSetsErrors(t *testing.T) {
 	for _, test := range testCases {
 		test := test
 		t.Run(test.desc, func(t *testing.T) {
-			server := runTestServer(test.responseBody, test.statusCode)
-			defer server.Close()
-
-			client, err := NewClient("A", "B")
-			require.NoError(t, err)
-
-			client.BaseURL = server.URL
+			client := setupTest(t, test.responseBody, test.statusCode)
 
 			res, err := client.ChangeResourceRecordSets("example.com", ChangeResourceRecordSetsRequest{})
 			assert.Nil(t, res)
@@ -107,16 +109,11 @@ func TestGetChange(t *testing.T) {
 </GetChangeResponse>
 `
 
-	server := runTestServer(responseBody, http.StatusOK)
-	defer server.Close()
-
-	client, err := NewClient("A", "B")
-	require.NoError(t, err)
-
-	client.BaseURL = server.URL
+	client := setupTest(t, responseBody, http.StatusOK)
 
 	res, err := client.GetChange("12345")
 	require.NoError(t, err)
+
 	assert.Equal(t, "xxxxx", res.ChangeInfo.ID)
 	assert.Equal(t, "INSYNC", res.ChangeInfo.Status)
 	assert.Equal(t, "2015-08-05T00:00:00.000Z", res.ChangeInfo.SubmittedAt)
@@ -160,13 +157,7 @@ func TestGetChangeErrors(t *testing.T) {
 	for _, test := range testCases {
 		test := test
 		t.Run(test.desc, func(t *testing.T) {
-			server := runTestServer(test.responseBody, test.statusCode)
-			defer server.Close()
-
-			client, err := NewClient("A", "B")
-			require.NoError(t, err)
-
-			client.BaseURL = server.URL
+			client := setupTest(t, test.responseBody, test.statusCode)
 
 			res, err := client.GetChange("12345")
 			assert.Nil(t, res)

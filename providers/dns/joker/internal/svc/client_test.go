@@ -13,6 +13,7 @@ import (
 func TestClient_Send(t *testing.T) {
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodPost {
@@ -47,6 +48,7 @@ func TestClient_Send(t *testing.T) {
 func TestClient_Send_empty(t *testing.T) {
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodPost {

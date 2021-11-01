@@ -12,11 +12,11 @@ import (
 
 func TestDo_UserAgentOnAllHTTPMethod(t *testing.T) {
 	var ua, method string
-	ts := httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, r *http.Request) {
 		ua = r.Header.Get("User-Agent")
 		method = r.Method
 	}))
-	defer ts.Close()
+	t.Cleanup(server.Close)
 
 	doer := NewDoer(http.DefaultClient, "")
 
@@ -44,7 +44,7 @@ func TestDo_UserAgentOnAllHTTPMethod(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.method, func(t *testing.T) {
-			_, err := test.call(ts.URL)
+			_, err := test.call(server.URL)
 			require.NoError(t, err)
 
 			assert.Equal(t, test.method, method)

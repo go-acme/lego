@@ -304,7 +304,7 @@ func TestUnmarshallFaultyRecordObject(t *testing.T) {
 func createFakeServer(t *testing.T, serverResponses map[string]string) string {
 	t.Helper()
 
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("Content-Type") != "text/xml" {
 			http.Error(w, fmt.Sprintf("invalid content type: %s", r.Header.Get("Content-Type")), http.StatusBadRequest)
 			return
@@ -327,8 +327,9 @@ func createFakeServer(t *testing.T, serverResponses map[string]string) string {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-	}))
+	})
 
+	server := httptest.NewServer(handler)
 	t.Cleanup(server.Close)
 
 	return server.URL

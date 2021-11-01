@@ -32,8 +32,7 @@ func TestByType(t *testing.T) {
 }
 
 func TestValidate(t *testing.T) {
-	mux, apiURL, tearDown := tester.SetupFakeAPI()
-	defer tearDown()
+	mux, apiURL := tester.SetupFakeAPI(t)
 
 	var statuses []string
 

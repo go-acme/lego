@@ -13,8 +13,7 @@ import (
 )
 
 func TestNewClient(t *testing.T) {
-	_, apiURL, tearDown := tester.SetupFakeAPI()
-	defer tearDown()
+	_, apiURL := tester.SetupFakeAPI(t)
 
 	keyBits := 32 // small value keeps test fast
 	key, err := rsa.GenerateKey(rand.Reader, keyBits)

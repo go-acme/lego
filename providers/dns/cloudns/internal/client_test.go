@@ -456,6 +456,7 @@ func TestClient_AddTxtRecord(t *testing.T) {
 
 				handlerMock(http.MethodPost, []byte(test.apiResponse))(rw, req)
 			}))
+			t.Cleanup(server.Close)
 
 			client, err := NewClient(test.authID, test.subAuthID, "myAuthPassword")
 			require.NoError(t, err)

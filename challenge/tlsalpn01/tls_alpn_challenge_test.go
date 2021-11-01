@@ -19,8 +19,7 @@ import (
 )
 
 func TestChallenge(t *testing.T) {
-	_, apiURL, tearDown := tester.SetupFakeAPI()
-	defer tearDown()
+	_, apiURL := tester.SetupFakeAPI(t)
 
 	domain := "localhost:23457"
 
@@ -89,8 +88,7 @@ func TestChallenge(t *testing.T) {
 }
 
 func TestChallengeInvalidPort(t *testing.T) {
-	_, apiURL, tearDown := tester.SetupFakeAPI()
-	defer tearDown()
+	_, apiURL := tester.SetupFakeAPI(t)
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 128)
 	require.NoError(t, err, "Could not generate test key")

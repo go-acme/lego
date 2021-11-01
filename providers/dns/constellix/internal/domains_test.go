@@ -11,21 +11,23 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func setupAPIMock() (*Client, *http.ServeMux, func()) {
-	handler := http.NewServeMux()
-	svr := httptest.NewServer(handler)
+func setupTest(t *testing.T) (*Client, *http.ServeMux) {
+	t.Helper()
 
-	client := NewClient(nil)
-	client.BaseURL = svr.URL
+	mux := http.NewServeMux()
+	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
-	return client, handler, svr.Close
+	client := NewClient(server.Client())
+	client.BaseURL = server.URL
+
+	return client, mux
 }
 
 func TestDomainService_GetAll(t *testing.T) {
-	client, handler, tearDown := setupAPIMock()
-	defer tearDown()
+	client, mux := setupTest(t)
 
-	handler.HandleFunc("/v1/domains", func(rw http.ResponseWriter, req *http.Request) {
+	mux.HandleFunc("/v1/domains", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
 			http.Error(rw, "invalid method: "+req.Method, http.StatusBadRequest)
 			return
@@ -59,10 +61,9 @@ func TestDomainService_GetAll(t *testing.T) {
 }
 
 func TestDomainService_Search(t *testing.T) {
-	client, handler, tearDown := setupAPIMock()
-	defer tearDown()
+	client, mux := setupTest(t)
 
-	handler.HandleFunc("/v1/domains/search", func(rw http.ResponseWriter, req *http.Request) {
+	mux.HandleFunc("/v1/domains/search", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
 			http.Error(rw, "invalid method: "+req.Method, http.StatusBadRequest)
 			return

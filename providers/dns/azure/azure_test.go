@@ -132,13 +132,14 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			config.TenantID = test.tenantID
 			config.ResourceGroup = test.resourceGroup
 
-			handler := http.NewServeMux()
-			server := httptest.NewServer(handler)
-			defer server.Close()
+			mux := http.NewServeMux()
+			server := httptest.NewServer(mux)
+			t.Cleanup(server.Close)
+
 			if test.handler == nil {
-				handler.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {})
+				mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {})
 			} else {
-				handler.HandleFunc("/", test.handler)
+				mux.HandleFunc("/", test.handler)
 			}
 			config.MetadataEndpoint = server.URL
 

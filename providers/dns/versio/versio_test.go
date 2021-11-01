@@ -148,8 +148,7 @@ func TestDNSProvider_Present(t *testing.T) {
 			defer envTest.RestoreEnv()
 			envTest.ClearEnv()
 
-			baseURL, tearDown := startTestServer(test.handler)
-			defer tearDown()
+			baseURL := setupTest(t, test.handler)
 
 			envTest.Apply(map[string]string{
 				EnvUsername: "me@example.com",
@@ -191,8 +190,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 			defer envTest.RestoreEnv()
 			envTest.ClearEnv()
 
-			baseURL, tearDown := startTestServer(test.handler)
-			defer tearDown()
+			baseURL := setupTest(t, test.handler)
 
 			envTest.Apply(map[string]string{
 				EnvUsername: "me@example.com",
@@ -272,11 +270,13 @@ func muxFailToCreateTXT() *http.ServeMux {
 	return mux
 }
 
-func startTestServer(handler http.Handler) (string, func()) {
-	ts := httptest.NewServer(handler)
-	return ts.URL, func() {
-		ts.Close()
-	}
+func setupTest(t *testing.T, handler http.Handler) string {
+	t.Helper()
+
+	server := httptest.NewServer(handler)
+	t.Cleanup(server.Close)
+
+	return server.URL
 }
 
 func TestLivePresent(t *testing.T) {

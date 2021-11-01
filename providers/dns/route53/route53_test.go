@@ -28,7 +28,9 @@ var envTest = tester.NewEnvTest(
 	WithDomain(envDomain).
 	WithLiveTestRequirements(EnvAccessKeyID, EnvSecretAccessKey, EnvRegion, envDomain)
 
-func makeTestProvider(serverURL string) *DNSProvider {
+func makeTestProvider(t *testing.T, serverURL string) *DNSProvider {
+	t.Helper()
+
 	config := &aws.Config{
 		Credentials: credentials.NewStaticCredentials("abc", "123", " "),
 		Endpoint:    aws.String(serverURL),
@@ -37,9 +39,7 @@ func makeTestProvider(serverURL string) *DNSProvider {
 	}
 
 	sess, err := session.NewSession(config)
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(t, err)
 
 	return &DNSProvider{
 		client: route53.New(sess),
@@ -165,11 +165,11 @@ func TestDNSProvider_Present(t *testing.T) {
 		},
 	}
 
-	serverURL := newMockServer(t, mockResponses)
+	serverURL := setupTest(t, mockResponses)
 
 	defer envTest.RestoreEnv()
 	envTest.ClearEnv()
-	provider := makeTestProvider(serverURL)
+	provider := makeTestProvider(t, serverURL)
 
 	domain := "example.com"
 	keyAuth := "123456d=="

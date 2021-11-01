@@ -46,9 +46,7 @@ func TestClient_AddRecord(t *testing.T) {
 	})
 
 	server := httptest.NewServer(mux)
-	t.Cleanup(func() {
-		server.Close()
-	})
+	t.Cleanup(server.Close)
 
 	client := NewClient("clientID", "email@example.com", "secret", 300)
 	client.apiBaseURL = server.URL + "/api"
@@ -117,9 +115,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 	})
 
 	server := httptest.NewServer(mux)
-	t.Cleanup(func() {
-		server.Close()
-	})
+	t.Cleanup(server.Close)
 
 	client := NewClient("clientID", "email@example.com", "secret", 300)
 	client.apiBaseURL = server.URL + "/api"

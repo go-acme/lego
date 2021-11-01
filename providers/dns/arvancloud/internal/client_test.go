@@ -15,6 +15,7 @@ import (
 func TestClient_GetTxtRecord(t *testing.T) {
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	const domain = "example.com"
 	const apiKey = "myKeyA"
@@ -55,6 +56,7 @@ func TestClient_GetTxtRecord(t *testing.T) {
 func TestClient_CreateRecord(t *testing.T) {
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	const domain = "example.com"
 	const apiKey = "myKeyB"
@@ -119,6 +121,7 @@ func TestClient_CreateRecord(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	const domain = "example.com"
 	const apiKey = "myKeyC"

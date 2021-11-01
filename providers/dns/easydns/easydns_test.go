@@ -22,26 +22,26 @@ var envTest = tester.NewEnvTest(
 	EnvKey).
 	WithDomain(envDomain)
 
-func setup() (*DNSProvider, *http.ServeMux, func()) {
-	handler := http.NewServeMux()
-	server := httptest.NewServer(handler)
+func setupTest(t *testing.T) (*DNSProvider, *http.ServeMux) {
+	t.Helper()
+
+	mux := http.NewServeMux()
+	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	endpoint, err := url.Parse(server.URL)
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(t, err)
 
 	config := NewDefaultConfig()
 	config.Token = "TOKEN"
 	config.Key = "SECRET"
 	config.Endpoint = endpoint
+	config.HTTPClient = server.Client()
 
 	provider, err := NewDNSProviderConfig(config)
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(t, err)
 
-	return provider, handler, server.Close
+	return provider, mux
 }
 
 func TestNewDNSProvider(t *testing.T) {
@@ -143,8 +143,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 }
 
 func TestDNSProvider_Present(t *testing.T) {
-	provider, mux, tearDown := setup()
-	defer tearDown()
+	provider, mux := setupTest(t)
 
 	mux.HandleFunc("/zones/records/add/example.com/TXT", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodPut, r.Method, "method")
@@ -188,16 +187,14 @@ func TestDNSProvider_Present(t *testing.T) {
 }
 
 func TestDNSProvider_Cleanup_WhenRecordIdNotSet_NoOp(t *testing.T) {
-	provider, _, tearDown := setup()
-	defer tearDown()
+	provider, _ := setupTest(t)
 
 	err := provider.CleanUp("example.com", "token", "keyAuth")
 	require.NoError(t, err)
 }
 
 func TestDNSProvider_Cleanup_WhenRecordIdSet_DeletesTxtRecord(t *testing.T) {
-	provider, mux, tearDown := setup()
-	defer tearDown()
+	provider, mux := setupTest(t)
 
 	mux.HandleFunc("/zones/records/example.com/123456", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodDelete, r.Method, "method")
@@ -224,8 +221,7 @@ func TestDNSProvider_Cleanup_WhenRecordIdSet_DeletesTxtRecord(t *testing.T) {
 }
 
 func TestDNSProvider_Cleanup_WhenHttpError_ReturnsError(t *testing.T) {
-	provider, mux, tearDown := setup()
-	defer tearDown()
+	provider, mux := setupTest(t)
 
 	errorMessage := `{
 		"error": {

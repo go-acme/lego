@@ -4,14 +4,18 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"testing"
 
 	"github.com/go-acme/lego/v4/acme"
 )
 
 // SetupFakeAPI Minimal stub ACME server for validation.
-func SetupFakeAPI() (*http.ServeMux, string, func()) {
+func SetupFakeAPI(t *testing.T) (*http.ServeMux, string) {
+	t.Helper()
+
 	mux := http.NewServeMux()
-	ts := httptest.NewServer(mux)
+	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	mux.HandleFunc("/dir", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
@@ -20,11 +24,11 @@ func SetupFakeAPI() (*http.ServeMux, string, func()) {
 		}
 
 		err := WriteJSONResponse(w, acme.Directory{
-			NewNonceURL:   ts.URL + "/nonce",
-			NewAccountURL: ts.URL + "/account",
-			NewOrderURL:   ts.URL + "/newOrder",
-			RevokeCertURL: ts.URL + "/revokeCert",
-			KeyChangeURL:  ts.URL + "/keyChange",
+			NewNonceURL:   server.URL + "/nonce",
+			NewAccountURL: server.URL + "/account",
+			NewOrderURL:   server.URL + "/newOrder",
+			RevokeCertURL: server.URL + "/revokeCert",
+			KeyChangeURL:  server.URL + "/keyChange",
 		})
 
 		mux.HandleFunc("/nonce", func(w http.ResponseWriter, r *http.Request) {
@@ -43,7 +47,7 @@ func SetupFakeAPI() (*http.ServeMux, string, func()) {
 		}
 	})
 
-	return mux, ts.URL, ts.Close
+	return mux, server.URL
 }
 
 // WriteJSONResponse marshals the body as JSON and writes it to the response.

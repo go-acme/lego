@@ -16,6 +16,7 @@ import (
 func TestClient_ListRecords(t *testing.T) {
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	mux.HandleFunc("/123/records/", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
@@ -50,6 +51,7 @@ func TestClient_ListRecords(t *testing.T) {
 func TestClient_ListRecords_error(t *testing.T) {
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	mux.HandleFunc("/123/records/", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
@@ -77,6 +79,7 @@ func TestClient_ListRecords_error(t *testing.T) {
 func TestClient_GetDomainByName(t *testing.T) {
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	mux.HandleFunc("/sub.sub.example.org", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
@@ -128,6 +131,7 @@ func TestClient_GetDomainByName(t *testing.T) {
 func TestClient_AddRecord(t *testing.T) {
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	mux.HandleFunc("/123/records/", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodPost {
@@ -180,6 +184,7 @@ func TestClient_AddRecord(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodDelete {

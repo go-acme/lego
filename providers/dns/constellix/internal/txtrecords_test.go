@@ -12,10 +12,9 @@ import (
 )
 
 func TestTxtRecordService_Create(t *testing.T) {
-	client, handler, tearDown := setupAPIMock()
-	defer tearDown()
+	client, mux := setupTest(t)
 
-	handler.HandleFunc("/v1/domains/12345/records/txt", func(rw http.ResponseWriter, req *http.Request) {
+	mux.HandleFunc("/v1/domains/12345/records/txt", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodPost {
 			http.Error(rw, "invalid method: "+req.Method, http.StatusBadRequest)
 			return
@@ -48,10 +47,9 @@ func TestTxtRecordService_Create(t *testing.T) {
 }
 
 func TestTxtRecordService_GetAll(t *testing.T) {
-	client, handler, tearDown := setupAPIMock()
-	defer tearDown()
+	client, mux := setupTest(t)
 
-	handler.HandleFunc("/v1/domains/12345/records/txt", func(rw http.ResponseWriter, req *http.Request) {
+	mux.HandleFunc("/v1/domains/12345/records/txt", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
 			http.Error(rw, "invalid method: "+req.Method, http.StatusBadRequest)
 			return
@@ -84,10 +82,9 @@ func TestTxtRecordService_GetAll(t *testing.T) {
 }
 
 func TestTxtRecordService_Get(t *testing.T) {
-	client, handler, tearDown := setupAPIMock()
-	defer tearDown()
+	client, mux := setupTest(t)
 
-	handler.HandleFunc("/v1/domains/12345/records/txt/6789", func(rw http.ResponseWriter, req *http.Request) {
+	mux.HandleFunc("/v1/domains/12345/records/txt/6789", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
 			http.Error(rw, "invalid method: "+req.Method, http.StatusBadRequest)
 			return
@@ -133,10 +130,9 @@ func TestTxtRecordService_Get(t *testing.T) {
 }
 
 func TestTxtRecordService_Update(t *testing.T) {
-	client, handler, tearDown := setupAPIMock()
-	defer tearDown()
+	client, mux := setupTest(t)
 
-	handler.HandleFunc("/v1/domains/12345/records/txt/6789", func(rw http.ResponseWriter, req *http.Request) {
+	mux.HandleFunc("/v1/domains/12345/records/txt/6789", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodPut {
 			http.Error(rw, "invalid method: "+req.Method, http.StatusBadRequest)
 			return
@@ -157,10 +153,9 @@ func TestTxtRecordService_Update(t *testing.T) {
 }
 
 func TestTxtRecordService_Delete(t *testing.T) {
-	client, handler, tearDown := setupAPIMock()
-	defer tearDown()
+	client, mux := setupTest(t)
 
-	handler.HandleFunc("/v1/domains/12345/records/txt/6789", func(rw http.ResponseWriter, req *http.Request) {
+	mux.HandleFunc("/v1/domains/12345/records/txt/6789", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodDelete {
 			http.Error(rw, "invalid method: "+req.Method, http.StatusBadRequest)
 			return
@@ -181,10 +176,9 @@ func TestTxtRecordService_Delete(t *testing.T) {
 }
 
 func TestTxtRecordService_Search(t *testing.T) {
-	client, handler, tearDown := setupAPIMock()
-	defer tearDown()
+	client, mux := setupTest(t)
 
-	handler.HandleFunc("/v1/domains/12345/records/txt/search", func(rw http.ResponseWriter, req *http.Request) {
+	mux.HandleFunc("/v1/domains/12345/records/txt/search", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
 			http.Error(rw, "invalid method: "+req.Method, http.StatusBadRequest)
 			return

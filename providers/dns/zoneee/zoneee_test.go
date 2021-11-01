@@ -186,6 +186,7 @@ func TestDNSProvider_Present(t *testing.T) {
 			}
 
 			server := httptest.NewServer(mux)
+			t.Cleanup(server.Close)
 
 			config := NewDefaultConfig()
 			config.Endpoint = mustParse(server.URL)
@@ -276,6 +277,7 @@ func TestDNSProvider_Cleanup(t *testing.T) {
 			}
 
 			server := httptest.NewServer(mux)
+			t.Cleanup(server.Close)
 
 			config := NewDefaultConfig()
 			config.Endpoint = mustParse(server.URL)

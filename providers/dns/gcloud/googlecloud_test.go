@@ -206,6 +206,7 @@ func TestPresentNoExistingRR(t *testing.T) {
 	})
 
 	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	config := NewDefaultConfig()
 	config.HTTPClient = &http.Client{}
@@ -306,6 +307,7 @@ func TestPresentWithExistingRR(t *testing.T) {
 	})
 
 	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	config := NewDefaultConfig()
 	config.HTTPClient = &http.Client{}
@@ -369,6 +371,7 @@ func TestPresentSkipExistingRR(t *testing.T) {
 	})
 
 	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	config := NewDefaultConfig()
 	config.HTTPClient = &http.Client{}

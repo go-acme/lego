@@ -124,7 +124,7 @@ func TestDNSProvider(t *testing.T) {
 	regexpDate := regexp.MustCompile(`\[ACME Challenge [^\]:]*:[^\]]*\]`)
 
 	// start fake RPC server
-	fakeServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		require.Equal(t, "text/xml", r.Header.Get("Content-Type"), "invalid content type")
 
 		req, errS := io.ReadAll(r.Body)
@@ -137,7 +137,7 @@ func TestDNSProvider(t *testing.T) {
 		_, errS = io.Copy(w, strings.NewReader(resp))
 		require.NoError(t, errS)
 	}))
-	defer fakeServer.Close()
+	t.Cleanup(server.Close)
 
 	// define function to override findZoneByFqdn with
 	fakeFindZoneByFqdn := func(fqdn string) (string, error) {
@@ -145,7 +145,7 @@ func TestDNSProvider(t *testing.T) {
 	}
 
 	config := NewDefaultConfig()
-	config.BaseURL = fakeServer.URL + "/"
+	config.BaseURL = server.URL + "/"
 	config.APIKey = "123412341234123412341234"
 
 	provider, err := NewDNSProviderConfig(config)
@@ -153,9 +153,9 @@ func TestDNSProvider(t *testing.T) {
 
 	// override findZoneByFqdn function
 	savedFindZoneByFqdn := provider.findZoneByFqdn
-	defer func() {
+	t.Cleanup(func() {
 		provider.findZoneByFqdn = savedFindZoneByFqdn
-	}()
+	})
 	provider.findZoneByFqdn = fakeFindZoneByFqdn
 
 	// run Present

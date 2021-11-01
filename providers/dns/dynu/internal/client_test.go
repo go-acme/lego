@@ -12,9 +12,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(method, pattern string, status int, file string) *Client {
+func setupTest(t *testing.T, method, pattern string, status int, file string) *Client {
+	t.Helper()
+
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	mux.HandleFunc(pattern, func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != method {
@@ -39,6 +42,7 @@ func setupTest(method, pattern string, status int, file string) *Client {
 	})
 
 	client := NewClient()
+	client.HTTPClient = server.Client()
 	client.BaseURL = server.URL
 
 	return client
@@ -90,7 +94,7 @@ func TestGetRootDomain(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			client := setupTest(http.MethodGet, test.pattern, test.status, test.file)
+			client := setupTest(t, http.MethodGet, test.pattern, test.status, test.file)
 
 			domain, err := client.GetRootDomain("test.lego.freeddns.org")
 
@@ -179,7 +183,7 @@ func TestGetRecords(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			client := setupTest(http.MethodGet, test.pattern, test.status, test.file)
+			client := setupTest(t, http.MethodGet, test.pattern, test.status, test.file)
 
 			records, err := client.GetRecords("_acme-challenge.lego.freeddns.org", "TXT")
 
@@ -230,7 +234,7 @@ func TestAddNewRecord(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			client := setupTest(http.MethodPost, test.pattern, test.status, test.file)
+			client := setupTest(t, http.MethodPost, test.pattern, test.status, test.file)
 
 			record := DNSRecord{
 				Type:       "TXT",
@@ -288,7 +292,7 @@ func TestDeleteRecord(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			client := setupTest(http.MethodDelete, test.pattern, test.status, test.file)
+			client := setupTest(t, http.MethodDelete, test.pattern, test.status, test.file)
 
 			err := client.DeleteRecord(9007481, 6041418)
 

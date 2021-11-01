@@ -14,7 +14,7 @@ import (
 
 func setupAPIMock() (*Client, *http.ServeMux, func()) {
 	handler := http.NewServeMux()
-	svr := httptest.NewServer(handler)
+	svr := httptest.NewServer(handler) // FIME t.Cleanup(server.Close)
 
 	client := NewClient("", "")
 	client.BaseURL = svr.URL

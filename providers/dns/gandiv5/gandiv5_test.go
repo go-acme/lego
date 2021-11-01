@@ -114,8 +114,8 @@ func TestDNSProvider(t *testing.T) {
 	regexpToken := regexp.MustCompile(`"rrset_values":\[".+"\]`)
 
 	// start fake RPC server
-	handler := http.NewServeMux()
-	handler.HandleFunc("/domains/example.com/records/_acme-challenge.abc.def/TXT", func(rw http.ResponseWriter, req *http.Request) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/domains/example.com/records/_acme-challenge.abc.def/TXT", func(rw http.ResponseWriter, req *http.Request) {
 		log.Infof("request: %s %s", req.Method, req.URL)
 
 		if req.Header.Get(apiKeyHeader) == "" {
@@ -150,13 +150,13 @@ func TestDNSProvider(t *testing.T) {
 			return
 		}
 	})
-	handler.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
+	mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
 		log.Infof("request: %s %s", req.Method, req.URL)
 		http.Error(rw, fmt.Sprintf(`{"message": "URL doesn't match: %s"}`, req.URL), http.StatusNotFound)
 	})
 
-	server := httptest.NewServer(handler)
-	defer server.Close()
+	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	// define function to override findZoneByFqdn with
 	fakeFindZoneByFqdn := func(fqdn string) (string, error) {

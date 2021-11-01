@@ -28,8 +28,7 @@ func TestDNSProvider_TimeoutSuccess(t *testing.T) {
 	defer envTest.RestoreEnv()
 	envTest.ClearEnv()
 
-	tearDown := startTestServer(muxSuccess())
-	defer tearDown()
+	setupTest(t, muxSuccess())
 
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
@@ -66,8 +65,7 @@ func TestDNSProvider_Present(t *testing.T) {
 			defer envTest.RestoreEnv()
 			envTest.ClearEnv()
 
-			tearDown := startTestServer(test.handler)
-			defer tearDown()
+			setupTest(t, test.handler)
 
 			provider, err := NewDNSProvider()
 			require.NoError(t, err)
@@ -109,8 +107,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 			defer envTest.RestoreEnv()
 			envTest.ClearEnv()
 
-			tearDown := startTestServer(test.handler)
-			defer tearDown()
+			setupTest(t, test.handler)
 
 			provider, err := NewDNSProvider()
 			require.NoError(t, err)
@@ -273,16 +270,15 @@ func muxFailToGetRecordID() *http.ServeMux {
 	return mux
 }
 
-func startTestServer(handler http.Handler) func() {
-	ts := httptest.NewServer(handler)
+func setupTest(t *testing.T, mux http.Handler) {
+	t.Helper()
+
+	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	envTest.Apply(map[string]string{
 		EnvKey:    "key",
 		EnvSecret: "secret",
-		EnvURL:    ts.URL,
+		EnvURL:    server.URL,
 	})
-
-	return func() {
-		ts.Close()
-	}
 }

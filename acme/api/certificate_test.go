@@ -74,8 +74,7 @@ rzFL1KZfz+HZdnFwFW2T2gVW8L3ii1l9AJDuKzlvjUH3p6bgihVq02sjT8mx+GM2
 `
 
 func TestCertificateService_Get_issuerRelUp(t *testing.T) {
-	mux, apiURL, tearDown := tester.SetupFakeAPI()
-	defer tearDown()
+	mux, apiURL := tester.SetupFakeAPI(t)
 
 	mux.HandleFunc("/certificate", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Link", "<"+apiURL+`/issuer>; rel="up"`)
@@ -106,8 +105,7 @@ func TestCertificateService_Get_issuerRelUp(t *testing.T) {
 }
 
 func TestCertificateService_Get_embeddedIssuer(t *testing.T) {
-	mux, apiURL, tearDown := tester.SetupFakeAPI()
-	defer tearDown()
+	mux, apiURL := tester.SetupFakeAPI(t)
 
 	mux.HandleFunc("/certificate", func(w http.ResponseWriter, _ *http.Request) {
 		_, err := w.Write([]byte(certResponseMock))

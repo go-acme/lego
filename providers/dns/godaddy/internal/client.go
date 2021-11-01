@@ -1,4 +1,4 @@
-package godaddy
+package internal
 
 import (
 	"bytes"
@@ -6,19 +6,33 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"path"
+	"time"
 )
 
-// DNSRecord a DNS record.
-type DNSRecord struct {
-	Name     string `json:"name,omitempty"`
-	Type     string `json:"type,omitempty"`
-	Data     string `json:"data"`
-	Priority int    `json:"priority,omitempty"`
-	TTL      int    `json:"ttl,omitempty"`
+// DefaultBaseURL represents the API endpoint to call.
+const DefaultBaseURL = "https://api.godaddy.com"
+
+type Client struct {
+	HTTPClient *http.Client
+	baseURL    *url.URL
+	apiKey     string
+	apiSecret  string
 }
 
-func (d *DNSProvider) getRecords(domainZone, rType, recordName string) ([]DNSRecord, error) {
+func NewClient(apiKey string, apiSecret string) *Client {
+	baseURL, _ := url.Parse(DefaultBaseURL)
+
+	return &Client{
+		HTTPClient: &http.Client{Timeout: 5 * time.Second},
+		baseURL:    baseURL,
+		apiKey:     apiKey,
+		apiSecret:  apiSecret,
+	}
+}
+
+func (d *Client) GetRecords(domainZone, rType, recordName string) ([]DNSRecord, error) {
 	resource := path.Clean(fmt.Sprintf("/v1/domains/%s/records/%s/%s", domainZone, rType, recordName))
 
 	resp, err := d.makeRequest(http.MethodGet, resource, nil)
@@ -43,7 +57,7 @@ func (d *DNSProvider) getRecords(domainZone, rType, recordName string) ([]DNSRec
 	return records, nil
 }
 
-func (d *DNSProvider) updateTxtRecords(records []DNSRecord, domainZone, recordName string) error {
+func (d *Client) UpdateTxtRecords(records []DNSRecord, domainZone, recordName string) error {
 	body, err := json.Marshal(records)
 	if err != nil {
 		return err
@@ -67,15 +81,20 @@ func (d *DNSProvider) updateTxtRecords(records []DNSRecord, domainZone, recordNa
 	return nil
 }
 
-func (d *DNSProvider) makeRequest(method, uri string, body io.Reader) (*http.Response, error) {
-	req, err := http.NewRequest(method, fmt.Sprintf("%s%s", defaultBaseURL, uri), body)
+func (d *Client) makeRequest(method, uri string, body io.Reader) (*http.Response, error) {
+	endpoint, err := d.baseURL.Parse(path.Join(d.baseURL.Path, uri))
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(method, endpoint.String(), body)
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("sso-key %s:%s", d.config.APIKey, d.config.APISecret))
+	req.Header.Set("Authorization", fmt.Sprintf("sso-key %s:%s", d.apiKey, d.apiSecret))
 
-	return d.config.HTTPClient.Do(req)
+	return d.HTTPClient.Do(req)
 }

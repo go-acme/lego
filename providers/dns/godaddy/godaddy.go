@@ -10,13 +10,10 @@ import (
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/godaddy/internal"
 )
 
-const (
-	// defaultBaseURL represents the API endpoint to call.
-	defaultBaseURL = "https://api.godaddy.com"
-	minTTL         = 600
-)
+const minTTL = 600
 
 // Environment variables names.
 const (
@@ -56,6 +53,7 @@ func NewDefaultConfig() *Config {
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
+	client *internal.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for godaddy.
@@ -88,7 +86,13 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("godaddy: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL)
 	}
 
-	return &DNSProvider{config: config}, nil
+	client := internal.NewClient(config.APIKey, config.APISecret)
+
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
+	}
+
+	return &DNSProvider{config: config, client: client}, nil
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS
@@ -108,19 +112,19 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	recordName := extractRecordName(fqdn, domainZone)
 
-	records, err := d.getRecords(domainZone, "TXT", recordName)
+	records, err := d.client.GetRecords(domainZone, "TXT", recordName)
 	if err != nil {
 		return fmt.Errorf("godaddy: failed to get TXT records: %w", err)
 	}
 
-	var newRecords []DNSRecord
+	var newRecords []internal.DNSRecord
 	for _, record := range records {
 		if record.Data != "" {
 			newRecords = append(newRecords, record)
 		}
 	}
 
-	record := DNSRecord{
+	record := internal.DNSRecord{
 		Type: "TXT",
 		Name: recordName,
 		Data: value,
@@ -128,7 +132,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 	newRecords = append(newRecords, record)
 
-	err = d.updateTxtRecords(newRecords, domainZone, recordName)
+	err = d.client.UpdateTxtRecords(newRecords, domainZone, recordName)
 	if err != nil {
 		return fmt.Errorf("godaddy: failed to add TXT record: %w", err)
 	}
@@ -147,7 +151,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	recordName := extractRecordName(fqdn, domainZone)
 
-	records, err := d.getRecords(domainZone, "TXT", recordName)
+	records, err := d.client.GetRecords(domainZone, "TXT", recordName)
 	if err != nil {
 		return fmt.Errorf("godaddy: failed to get TXT records: %w", err)
 	}
@@ -156,12 +160,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return nil
 	}
 
-	allTxtRecords, err := d.getRecords(domainZone, "TXT", "")
+	allTxtRecords, err := d.client.GetRecords(domainZone, "TXT", "")
 	if err != nil {
 		return fmt.Errorf("godaddy: failed to get all TXT records: %w", err)
 	}
 
-	var recordsKeep []DNSRecord
+	var recordsKeep []internal.DNSRecord
 	for _, record := range allTxtRecords {
 		if record.Data != value && record.Data != "" {
 			recordsKeep = append(recordsKeep, record)
@@ -170,11 +174,11 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	// GoDaddy API don't provide a way to delete a record, an "empty" record must be added.
 	if len(recordsKeep) == 0 {
-		emptyRecord := DNSRecord{Name: "empty", Data: ""}
+		emptyRecord := internal.DNSRecord{Name: "empty", Data: ""}
 		recordsKeep = append(recordsKeep, emptyRecord)
 	}
 
-	err = d.updateTxtRecords(recordsKeep, domainZone, "")
+	err = d.client.UpdateTxtRecords(recordsKeep, domainZone, "")
 	if err != nil {
 		return fmt.Errorf("godaddy: failed to remove TXT record: %w", err)
 	}

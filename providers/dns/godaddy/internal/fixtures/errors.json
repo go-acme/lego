@@ -1,0 +1,4 @@
+{
+  "code": "INVALID_BODY",
+  "message": "Request body doesn't fulfill schema, see details in `fields`"
+}

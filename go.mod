@@ -51,7 +51,7 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/transip/gotransip/v6 v6.6.1
 	github.com/urfave/cli v1.22.5
-	github.com/vinyldns/go-vinyldns v0.0.0-20200917153823-148a5f6b8f14
+	github.com/vinyldns/go-vinyldns v0.9.16
 	github.com/vultr/govultr/v2 v2.7.1
 	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e
 	golang.org/x/net v0.0.0-20210614182718-04defd469f4e

@@ -42,6 +42,7 @@ func TestAddRecord(t *testing.T) {
 				err := r.ParseForm()
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusBadRequest)
+					return
 				}
 
 				assert.Equal(t, `content=txtTXTtxtTXTtxtTXT&domain=example.com&subdomain=foo&ttl=300&type=TXT`, r.PostForm.Encode())
@@ -63,6 +64,7 @@ func TestAddRecord(t *testing.T) {
 				err = json.NewEncoder(w).Encode(response)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
 				}
 			},
 			data: Record{
@@ -82,6 +84,7 @@ func TestAddRecord(t *testing.T) {
 				err := r.ParseForm()
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusBadRequest)
+					return
 				}
 
 				assert.Equal(t, `content=txtTXTtxtTXTtxtTXT&domain=example.com&subdomain=foo&ttl=300&type=TXT`, r.PostForm.Encode())
@@ -95,6 +98,7 @@ func TestAddRecord(t *testing.T) {
 				err = json.NewEncoder(w).Encode(response)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
 				}
 			},
 			data: Record{
@@ -142,6 +146,7 @@ func TestRemoveRecord(t *testing.T) {
 				err := r.ParseForm()
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusBadRequest)
+					return
 				}
 
 				assert.Equal(t, `domain=example.com&record_id=6`, r.PostForm.Encode())
@@ -155,6 +160,7 @@ func TestRemoveRecord(t *testing.T) {
 				err = json.NewEncoder(w).Encode(response)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
 				}
 			},
 			data: Record{
@@ -171,6 +177,7 @@ func TestRemoveRecord(t *testing.T) {
 				err := r.ParseForm()
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusBadRequest)
+					return
 				}
 
 				assert.Equal(t, `domain=example.com&record_id=6`, r.PostForm.Encode())
@@ -185,6 +192,7 @@ func TestRemoveRecord(t *testing.T) {
 				err = json.NewEncoder(w).Encode(response)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
 				}
 			},
 			data: Record{
@@ -256,6 +264,7 @@ func TestGetRecords(t *testing.T) {
 				err := json.NewEncoder(w).Encode(response)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
 				}
 			},
 			domain: "example.com",
@@ -277,6 +286,7 @@ func TestGetRecords(t *testing.T) {
 				err := json.NewEncoder(w).Encode(response)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
 				}
 			},
 			domain:      "example.com",

@@ -193,7 +193,7 @@ func (d *DNSProvider) createRecord(dom internal.Domain, fqdn, recordName, value 
 		Name: recordName,
 		TTL:  d.config.TTL,
 		RoundRobin: []internal.RecordValue{
-			{Value: fmt.Sprintf(`"%s"`, value)},
+			{Value: fmt.Sprintf(`%q`, value)},
 		},
 	}
 
@@ -218,7 +218,7 @@ func (d *DNSProvider) appendRecordValue(dom internal.Domain, recordID int64, val
 	request := internal.RecordRequest{
 		Name:       record.Name,
 		TTL:        record.TTL,
-		RoundRobin: append(record.RoundRobin, internal.RecordValue{Value: fmt.Sprintf(`"%s"`, value)}),
+		RoundRobin: append(record.RoundRobin, internal.RecordValue{Value: fmt.Sprintf(`%q`, value)}),
 	}
 
 	_, err = d.client.TxtRecords.Update(dom.ID, record.ID, request)
@@ -236,7 +236,7 @@ func (d *DNSProvider) removeRecordValue(dom internal.Domain, record *internal.Re
 	}
 
 	for _, val := range record.Value {
-		if val.Value != fmt.Sprintf(`"%s"`, value) {
+		if val.Value != fmt.Sprintf(`%q`, value) {
 			request.RoundRobin = append(request.RoundRobin, val)
 		}
 	}
@@ -255,7 +255,7 @@ func containsValue(record *internal.Record, value string) bool {
 	}
 
 	for _, val := range record.Value {
-		if val.Value == fmt.Sprintf(`"%s"`, value) {
+		if val.Value == fmt.Sprintf(`%q`, value) {
 			return true
 		}
 	}

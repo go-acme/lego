@@ -31,6 +31,7 @@ func TestOrderService_New(t *testing.T) {
 		body, err := readSignedBody(r, privateKey)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
 		}
 
 		order := acme.Order{}

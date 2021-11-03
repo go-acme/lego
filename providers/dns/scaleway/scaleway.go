@@ -114,7 +114,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
 	records := []*scwdomain.Record{{
-		Data:    fmt.Sprintf(`"%s"`, value),
+		Data:    fmt.Sprintf(`%q`, value),
 		Name:    fqdn,
 		TTL:     uint32(d.config.TTL),
 		Type:    scwdomain.RecordTypeTXT,
@@ -144,7 +144,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	recordIdentifier := &scwdomain.RecordIdentifier{
 		Name: fqdn,
 		Type: scwdomain.RecordTypeTXT,
-		Data: scw.StringPtr(fmt.Sprintf(`"%s"`, value)),
+		Data: scw.StringPtr(fmt.Sprintf(`%q`, value)),
 	}
 
 	req := &scwdomain.UpdateDNSZoneRecordsRequest{

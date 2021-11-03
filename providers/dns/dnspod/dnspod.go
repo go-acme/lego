@@ -153,7 +153,7 @@ func (d *DNSProvider) getHostedZone(domain string) (string, string, error) {
 		return "", "", fmt.Errorf("zone %s not found in dnspod for domain %s", authZone, domain)
 	}
 
-	return fmt.Sprintf("%v", hostedZone.ID), hostedZone.Name, nil
+	return hostedZone.ID.String(), hostedZone.Name, nil
 }
 
 func (d *DNSProvider) newTxtRecord(zone, fqdn, value string, ttl int) *dnspod.Record {

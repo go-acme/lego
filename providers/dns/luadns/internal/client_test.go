@@ -29,6 +29,7 @@ func TestClient_ListZones(t *testing.T) {
 		auth := req.Header.Get("Authorization")
 		if auth != "Basic bWU6c2VjcmV0QQ==" {
 			http.Error(rw, fmt.Sprintf("invalid authentication: %s", auth), http.StatusUnauthorized)
+			return
 		}
 
 		file, err := os.Open("./fixtures/list_zones.json")
@@ -93,6 +94,7 @@ func TestClient_CreateRecord(t *testing.T) {
 		auth := req.Header.Get("Authorization")
 		if auth != "Basic bWU6c2VjcmV0Qg==" {
 			http.Error(rw, fmt.Sprintf("invalid authentication: %s", auth), http.StatusUnauthorized)
+			return
 		}
 
 		file, err := os.Open("./fixtures/create_record.json")
@@ -150,6 +152,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 		auth := req.Header.Get("Authorization")
 		if auth != "Basic bWU6c2VjcmV0Qw==" {
 			http.Error(rw, fmt.Sprintf("invalid authentication: %s", auth), http.StatusUnauthorized)
+			return
 		}
 
 		file, err := os.Open("./fixtures/delete_record.json")

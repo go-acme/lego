@@ -102,7 +102,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
-	quotedValue := fmt.Sprintf(`"%s"`, value)
+	quotedValue := fmt.Sprintf(`%q`, value)
 
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
@@ -167,7 +167,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	records := make([]string, 0)
 	for _, record := range rrSet.Records {
-		if record != fmt.Sprintf(`"%s"`, value) {
+		if record != fmt.Sprintf(`%q`, value) {
 			records = append(records, record)
 		}
 	}

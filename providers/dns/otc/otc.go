@@ -146,7 +146,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Description: "Added TXT record for ACME dns-01 challenge using lego client",
 		Type:        "TXT",
 		TTL:         d.config.TTL,
-		Records:     []string{fmt.Sprintf("\"%s\"", value)},
+		Records:     []string{fmt.Sprintf("%q", value)},
 	}
 
 	_, err = d.sendRequest(http.MethodPost, resource, r1)

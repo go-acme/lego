@@ -31,6 +31,7 @@ func TestClient_Send(t *testing.T) {
 		_, err := rw.Write([]byte("OK: 1 inserted, 0 deleted"))
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	})
 
@@ -66,6 +67,7 @@ func TestClient_Send_empty(t *testing.T) {
 		_, err := rw.Write([]byte("OK: 1 inserted, 0 deleted"))
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	})
 

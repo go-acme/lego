@@ -36,7 +36,7 @@ func TestDNSProviderManual(t *testing.T) {
 			assert.NoError(t, err)
 			defer func() { _ = os.Remove(file.Name()) }()
 
-			_, err = io.WriteString(file, test.input)
+			_, err = file.WriteString(test.input)
 			assert.NoError(t, err)
 
 			_, err = file.Seek(0, io.SeekStart)

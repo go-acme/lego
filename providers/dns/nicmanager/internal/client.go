@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path"
@@ -83,7 +82,7 @@ func (c Client) GetZone(name string) (*Zone, error) {
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode >= http.StatusBadRequest {
-		b, _ := ioutil.ReadAll(resp.Body)
+		b, _ := io.ReadAll(resp.Body)
 
 		msg := APIError{StatusCode: resp.StatusCode}
 		if err = json.Unmarshal(b, &msg); err != nil {
@@ -111,7 +110,7 @@ func (c Client) AddRecord(zone string, req RecordCreateUpdate) error {
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusAccepted {
-		b, _ := ioutil.ReadAll(resp.Body)
+		b, _ := io.ReadAll(resp.Body)
 
 		msg := APIError{StatusCode: resp.StatusCode}
 		if err = json.Unmarshal(b, &msg); err != nil {
@@ -133,7 +132,7 @@ func (c Client) DeleteRecord(zone string, record int) error {
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusAccepted {
-		b, _ := ioutil.ReadAll(resp.Body)
+		b, _ := io.ReadAll(resp.Body)
 
 		msg := APIError{StatusCode: resp.StatusCode}
 		if err = json.Unmarshal(b, &msg); err != nil {

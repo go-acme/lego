@@ -52,6 +52,7 @@ func setupTest(t *testing.T, responses MockResponseMap) string {
 		_, err = w.Write(rawResponse)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	})
 

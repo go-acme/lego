@@ -146,10 +146,12 @@ func TestClient_Login(t *testing.T) {
 		raw, err := io.ReadAll(req.Body)
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
 		if string(raw) != `{"action":"login","param":{"customernumber":"a","apikey":"b","apipassword":"c"}}` {
 			http.Error(rw, fmt.Sprintf("invalid request body: %s", string(raw)), http.StatusBadRequest)
+			return
 		}
 
 		response := `
@@ -169,6 +171,7 @@ func TestClient_Login(t *testing.T) {
 		_, err = rw.Write([]byte(response))
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	})
 
@@ -206,6 +209,7 @@ func TestClient_Login_errors(t *testing.T) {
 				_, err := rw.Write([]byte(response))
 				if err != nil {
 					http.Error(rw, err.Error(), http.StatusInternalServerError)
+					return
 				}
 			},
 		},
@@ -226,6 +230,7 @@ func TestClient_Login_errors(t *testing.T) {
 				_, err := rw.Write([]byte(response))
 				if err != nil {
 					http.Error(rw, err.Error(), http.StatusInternalServerError)
+					return
 				}
 			},
 		},
@@ -254,10 +259,12 @@ func TestClient_Logout(t *testing.T) {
 		raw, err := io.ReadAll(req.Body)
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
 		if string(raw) != `{"action":"logout","param":{"customernumber":"a","apikey":"b","apisessionid":"session-id"}}` {
 			http.Error(rw, fmt.Sprintf("invalid request body: %s", string(raw)), http.StatusBadRequest)
+			return
 		}
 
 		response := `
@@ -274,6 +281,7 @@ func TestClient_Logout(t *testing.T) {
 		_, err = rw.Write([]byte(response))
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	})
 
@@ -309,6 +317,7 @@ func TestClient_Logout_errors(t *testing.T) {
 				_, err := rw.Write([]byte(response))
 				if err != nil {
 					http.Error(rw, err.Error(), http.StatusInternalServerError)
+					return
 				}
 			},
 		},
@@ -336,10 +345,12 @@ func TestClient_GetDNSRecords(t *testing.T) {
 		raw, err := io.ReadAll(req.Body)
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
 		if string(raw) != `{"action":"infoDnsRecords","param":{"domainname":"example.com","customernumber":"a","apikey":"b","apisessionid":"api-session-id"}}` {
 			http.Error(rw, fmt.Sprintf("invalid request body: %s", string(raw)), http.StatusBadRequest)
+			return
 		}
 
 		response := `
@@ -378,6 +389,7 @@ func TestClient_GetDNSRecords(t *testing.T) {
 		_, err = rw.Write([]byte(response))
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	})
 
@@ -435,6 +447,7 @@ func TestClient_GetDNSRecords_errors(t *testing.T) {
 				_, err := rw.Write([]byte(response))
 				if err != nil {
 					http.Error(rw, err.Error(), http.StatusInternalServerError)
+					return
 				}
 			},
 		},
@@ -444,10 +457,12 @@ func TestClient_GetDNSRecords_errors(t *testing.T) {
 				raw, err := io.ReadAll(req.Body)
 				if err != nil {
 					http.Error(rw, err.Error(), http.StatusInternalServerError)
+					return
 				}
 
 				if string(raw) != `{"action":"infoDnsRecords","param":{"domainname":"example.com","customernumber":"a","apikey":"b","apisessionid":"api-session-id"}}` {
 					http.Error(rw, fmt.Sprintf("invalid request body: %s", string(raw)), http.StatusBadRequest)
+					return
 				}
 
 				response := `
@@ -464,6 +479,7 @@ func TestClient_GetDNSRecords_errors(t *testing.T) {
 				_, err = rw.Write([]byte(response))
 				if err != nil {
 					http.Error(rw, err.Error(), http.StatusInternalServerError)
+					return
 				}
 			},
 		},

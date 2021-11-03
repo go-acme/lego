@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	dnsTemplate = `%s %d IN TXT "%s"`
+	dnsTemplate = `%s %d IN TXT %q`
 )
 
 // DNSProviderManual is an implementation of the ChallengeProvider interface.

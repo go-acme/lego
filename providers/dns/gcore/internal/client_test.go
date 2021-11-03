@@ -251,6 +251,7 @@ func handleAddRRSet(expected []Records) http.HandlerFunc {
 
 		if !reflect.DeepEqual(body.Records, expected) {
 			http.Error(rw, "wrong resource records", http.StatusInternalServerError)
+			return
 		}
 	}
 }

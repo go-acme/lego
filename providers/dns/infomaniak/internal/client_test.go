@@ -52,6 +52,7 @@ func TestClient_CreateDNSRecord(t *testing.T) {
 		_, err = rw.Write([]byte(response))
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	})
 
@@ -119,6 +120,7 @@ func TestClient_GetDomainByName(t *testing.T) {
 		_, err := rw.Write([]byte(response))
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	})
 
@@ -146,6 +148,7 @@ func TestClient_DeleteDNSRecord(t *testing.T) {
 		_, err := rw.Write([]byte((`{"result":"success"}`)))
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	})
 

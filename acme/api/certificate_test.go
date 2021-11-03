@@ -81,6 +81,7 @@ func TestCertificateService_Get_issuerRelUp(t *testing.T) {
 		_, err := w.Write([]byte(certResponseMock))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	})
 
@@ -89,6 +90,7 @@ func TestCertificateService_Get_issuerRelUp(t *testing.T) {
 		_, err := w.Write(p.Bytes)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	})
 
@@ -111,6 +113,7 @@ func TestCertificateService_Get_embeddedIssuer(t *testing.T) {
 		_, err := w.Write([]byte(certResponseMock))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	})
 

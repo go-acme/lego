@@ -118,6 +118,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 				_, err := w.Write([]byte("foo"))
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
 				}
 			},
 		},

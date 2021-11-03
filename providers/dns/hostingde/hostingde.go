@@ -134,7 +134,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	for _, record := range resp.Response.Records {
-		if record.Name == dns01.UnFqdn(fqdn) && record.Content == fmt.Sprintf(`"%s"`, value) {
+		if record.Name == dns01.UnFqdn(fqdn) && record.Content == fmt.Sprintf(`%q`, value) {
 			d.recordIDsMu.Lock()
 			d.recordIDs[fqdn] = record.ID
 			d.recordIDsMu.Unlock()

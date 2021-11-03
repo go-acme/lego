@@ -160,6 +160,7 @@ func Test_checkResponse(t *testing.T) {
 		_, err := w.Write([]byte(certResponseMock))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	})
 
@@ -201,6 +202,7 @@ func Test_checkResponse_issuerRelUp(t *testing.T) {
 		_, err := w.Write([]byte(certResponseMock))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	})
 
@@ -209,6 +211,7 @@ func Test_checkResponse_issuerRelUp(t *testing.T) {
 		_, err := w.Write(p.Bytes)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	})
 
@@ -249,6 +252,7 @@ func Test_checkResponse_embeddedIssuer(t *testing.T) {
 		_, err := w.Write([]byte(certResponseMock))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	})
 
@@ -291,6 +295,7 @@ func Test_checkResponse_alternate(t *testing.T) {
 		_, err := w.Write([]byte(certResponseMock))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	})
 
@@ -298,6 +303,7 @@ func Test_checkResponse_alternate(t *testing.T) {
 		_, err := w.Write([]byte(certResponseMock2))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	})
 
@@ -341,6 +347,7 @@ func Test_Get(t *testing.T) {
 		_, err := w.Write([]byte(certResponseMock))
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	})
 

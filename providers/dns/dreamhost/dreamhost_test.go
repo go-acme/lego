@@ -131,6 +131,7 @@ func TestDNSProvider_Present(t *testing.T) {
 		_, err := fmt.Fprintf(w, `{"data":"record_added","result":"success"}`)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	})
 
@@ -147,6 +148,7 @@ func TestDNSProvider_PresentFailed(t *testing.T) {
 		_, err := fmt.Fprintf(w, `{"data":"record_already_exists_remove_first","result":"error"}`)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	})
 
@@ -171,6 +173,7 @@ func TestDNSProvider_Cleanup(t *testing.T) {
 		_, err := fmt.Fprintf(w, `{"data":"record_removed","result":"success"}`)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	})
 

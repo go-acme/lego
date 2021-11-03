@@ -141,7 +141,7 @@ func TestNewDNSProvider_Present(t *testing.T) {
 			handler: func(rw http.ResponseWriter, req *http.Request) {
 				username, password, ok := req.BasicAuth()
 				if username != "bar" || password != "foo" || !ok {
-					rw.Header().Set("WWW-Authenticate", fmt.Sprintf(`Basic realm="%s"`, "Please enter your username and password."))
+					rw.Header().Set("WWW-Authenticate", fmt.Sprintf(`Basic realm=%q`, "Please enter your username and password."))
 					http.Error(rw, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 					return
 				}
@@ -219,7 +219,7 @@ func TestNewDNSProvider_Cleanup(t *testing.T) {
 			handler: func(rw http.ResponseWriter, req *http.Request) {
 				username, password, ok := req.BasicAuth()
 				if username != "bar" || password != "foo" || !ok {
-					rw.Header().Set("WWW-Authenticate", fmt.Sprintf(`Basic realm="%s"`, "Please enter your username and password."))
+					rw.Header().Set("WWW-Authenticate", fmt.Sprintf(`Basic realm=%q`, "Please enter your username and password."))
 					http.Error(rw, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 					return
 				}

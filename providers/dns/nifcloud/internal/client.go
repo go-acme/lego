@@ -114,7 +114,7 @@ func (c *Client) ChangeResourceRecordSets(hostedZoneID string, input ChangeResou
 	requestURL := fmt.Sprintf("%s/%s/hostedzone/%s/rrset", c.BaseURL, apiVersion, hostedZoneID)
 
 	body := &bytes.Buffer{}
-	body.Write([]byte(xml.Header))
+	body.WriteString(xml.Header)
 	err := xml.NewEncoder(body).Encode(input)
 	if err != nil {
 		return nil, err

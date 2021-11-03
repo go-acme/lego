@@ -41,6 +41,9 @@
       "octalLiteral",
       "ptrToRefParam",
       "appendAssign",
+      "ruleguard",
+      "httpNoBody",
+      "exposedSyncMutex",
     ]
 
 [linters]
@@ -70,6 +73,11 @@
     "makezero", # not relevant
     "ifshort", # not relevant
     "forbidigo", # not relevant
+    "varnamelen", # not relevant
+    "nilnil", # not relevant
+    "ireturn", # not relevant
+    "contextcheck", # too many false-positive
+    "tenv", # we already have a test "framework" to handle env vars
     "noctx",
     "forcetypeassert",
     "tagliatelle",

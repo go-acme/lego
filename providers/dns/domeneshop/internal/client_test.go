@@ -36,6 +36,7 @@ func TestClient_CreateTXTRecord(t *testing.T) {
 		auth := req.Header.Get("Authorization")
 		if auth != "Basic dG9rZW46c2VjcmV0" {
 			http.Error(rw, "invalid method: "+req.Method, http.StatusUnauthorized)
+			return
 		}
 
 		_, _ = rw.Write([]byte(`{"id": 1}`))
@@ -57,6 +58,7 @@ func TestClient_DeleteTXTRecord(t *testing.T) {
 		auth := req.Header.Get("Authorization")
 		if auth != "Basic dG9rZW46c2VjcmV0" {
 			http.Error(rw, "invalid method: "+req.Method, http.StatusUnauthorized)
+			return
 		}
 
 		_, _ = rw.Write([]byte(`[
@@ -79,6 +81,7 @@ func TestClient_DeleteTXTRecord(t *testing.T) {
 		auth := req.Header.Get("Authorization")
 		if auth != "Basic dG9rZW46c2VjcmV0" {
 			http.Error(rw, "invalid method: "+req.Method, http.StatusUnauthorized)
+			return
 		}
 	})
 
@@ -98,6 +101,7 @@ func TestClient_getDNSRecordByHostData(t *testing.T) {
 		auth := req.Header.Get("Authorization")
 		if auth != "Basic dG9rZW46c2VjcmV0" {
 			http.Error(rw, "invalid method: "+req.Method, http.StatusUnauthorized)
+			return
 		}
 
 		_, _ = rw.Write([]byte(`[
@@ -137,6 +141,7 @@ func TestClient_GetDomainByName(t *testing.T) {
 		auth := req.Header.Get("Authorization")
 		if auth != "Basic dG9rZW46c2VjcmV0" {
 			http.Error(rw, "invalid method: "+req.Method, http.StatusUnauthorized)
+			return
 		}
 
 		_, _ = rw.Write([]byte(`[

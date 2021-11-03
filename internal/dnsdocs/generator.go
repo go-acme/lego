@@ -125,7 +125,7 @@ func generateDocumentation(m Model) error {
 }
 
 func generateCLIHelp(models *Providers) error {
-	filename := filepath.Join(cliOutput)
+	filename := filepath.Clean(cliOutput)
 
 	file, err := os.Create(filename)
 	if err != nil {

@@ -79,6 +79,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("tencentcloud: the configuration of the DNS provider is nil")
 	}
 
+	if config.SecretID == "" || config.SecretKey == "" {
+		return nil, errors.New("tencentcloud: credentials missing")
+	}
+
 	credential := common.NewCredential(
 		config.SecretID,
 		config.SecretKey,

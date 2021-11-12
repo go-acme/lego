@@ -86,9 +86,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			secretKey: "456",
 		},
 		{
-			desc: "success",
-		},
-		{
 			desc:     "missing credentials",
 			expected: "tencentcloud: credentials missing",
 		},

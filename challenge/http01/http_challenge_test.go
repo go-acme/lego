@@ -1,6 +1,7 @@
 package http01
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"fmt"
@@ -22,29 +23,47 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestGetAddressTCP(t *testing.T) {
-	s := NewProviderServer("", "6789")
-	expected := ":6789"
-	got := s.GetAddress()
-	if got != expected {
-		t.Errorf("expected: %s | got: %s", expected, got)
-	}
-	s = NewProviderServer("", "")
-	expected = ":80"
-	got = s.GetAddress()
-	if got != expected {
-		t.Errorf("expected: %s | got: %s", expected, got)
-	}
-}
+func TestProviderServer_GetAddress(t *testing.T) {
+	dir := t.TempDir()
+	t.Cleanup(func() { _ = os.RemoveAll(dir) })
 
-func TestGetAddressUnix(t *testing.T) {
-	sock := filepath.Join(os.TempDir(), "var", "run", "test")
-	s := NewUnixProviderServer(sock, fs.ModeSocket|0o666)
-	expected := sock
-	got := s.GetAddress()
+	sock := filepath.Join(dir, "var", "run", "test")
 
-	if got != expected {
-		t.Errorf("expected: %s | got: %s", expected, got)
+	testCases := []struct {
+		desc     string
+		server   *ProviderServer
+		expected string
+	}{
+		{
+			desc:     "TCP default address",
+			server:   NewProviderServer("", ""),
+			expected: ":80",
+		},
+		{
+			desc:     "TCP with explicit port",
+			server:   NewProviderServer("", "8080"),
+			expected: ":8080",
+		},
+		{
+			desc:     "TCP with host and port",
+			server:   NewProviderServer("localhost", "8080"),
+			expected: "localhost:8080",
+		},
+		{
+			desc:     "UDS socket",
+			server:   NewUnixProviderServer(sock, fs.ModeSocket|0o666),
+			expected: sock,
+		},
+	}
+
+	for _, test := range testCases {
+		test := test
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			address := test.server.GetAddress()
+			assert.Equal(t, test.expected, address)
+		})
 	}
 }
 
@@ -102,27 +121,35 @@ func TestChallenge(t *testing.T) {
 
 func TestChallengeUnix(t *testing.T) {
 	if runtime.GOOS == "windows" {
-		t.SkipNow()
+		t.Skip("only for UNIX systems")
 	}
-	_, apiURL, tearDown := tester.SetupFakeAPI()
-	defer tearDown()
-	socket := filepath.Join(os.TempDir(), "lego-challenge-test.sock")
+
+	_, apiURL := tester.SetupFakeAPI(t)
+
+	dir := t.TempDir()
+	t.Cleanup(func() { _ = os.RemoveAll(dir) })
+
+	socket := filepath.Join(dir, "lego-challenge-test.sock")
+
 	providerServer := NewUnixProviderServer(socket, fs.ModeSocket|0o666)
+
 	validate := func(_ *api.Core, _ string, chlng acme.Challenge) error {
 		// any uri will do, as we hijack the dial
 		uri := "http://localhost" + ChallengePath(chlng.Token)
-		dial := func(network, addr string) (conn net.Conn, err error) {
-			return net.Dial("unix", socket)
-		}
-		transport := &http.Transport{
-			Dial: dial,
-		}
-		cl := &http.Client{Transport: transport}
-		resp, err := cl.Get(uri)
+
+		client := &http.Client{Transport: &http.Transport{
+			DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+				return net.Dial("unix", socket)
+			},
+		}}
+
+		resp, err := client.Get(uri)
 		if err != nil {
 			return err
 		}
+
 		defer resp.Body.Close()
+
 		if want := "text/plain"; resp.Header.Get("Content-Type") != want {
 			t.Errorf("Get(%q) Content-Type: got %q, want %q", uri, resp.Header.Get("Content-Type"), want)
 		}

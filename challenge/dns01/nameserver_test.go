@@ -106,10 +106,10 @@ var findXByFqdnTestCases = []struct {
 	},
 	{
 		desc:          "NXDOMAIN",
-		fqdn:          "test.loho.jkl.",
-		zone:          "loho.jkl.",
+		fqdn:          "test.lego.zz.",
+		zone:          "lego.zz.",
 		nameservers:   []string{"1.1.1.1:53"},
-		expectedError: "could not find the start of authority for test.loho.jkl.: NXDOMAIN",
+		expectedError: "could not find the start of authority for test.lego.zz.: NXDOMAIN",
 	},
 	{
 		desc:        "several non existent nameservers",

@@ -10,7 +10,7 @@ import (
 
 const envDomain = envNamespace + "DOMAIN"
 
-var envTest = tester.NewEnvTest(EnvAPIKey).
+var envTest = tester.NewEnvTest(EnvSecretID, EnvSecretKey).
 	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
@@ -22,15 +22,17 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				EnvAPIKey: "123",
+				EnvSecretID: "123",
+				EnvSecretKey: "456",
 			},
 		},
 		{
 			desc: "missing api key",
 			envVars: map[string]string{
-				EnvAPIKey: "",
+				EnvSecretID: "",
+				EnvSecretKey: "",
 			},
-			expected: "dnspod: some credentials information are missing: DNSPOD_API_KEY",
+			expected: "dnspod: some credentials information are missing: DNSPOD_SECRET_ID or DNSPOD_SECRET_KEY",
 		},
 	}
 
@@ -58,12 +60,14 @@ func TestNewDNSProvider(t *testing.T) {
 func TestNewDNSProviderConfig(t *testing.T) {
 	testCases := []struct {
 		desc       string
-		loginToken string
+		secretID   string
+		secretKey  string
 		expected   string
 	}{
 		{
 			desc:       "success",
-			loginToken: "123",
+			secretID:   "123",
+			secretKey:  "456",
 		},
 		{
 			desc:     "missing credentials",
@@ -74,7 +78,8 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			config := NewDefaultConfig()
-			config.LoginToken = test.loginToken
+			config.SecretID = test.secretID
+			config.SecretKey = test.secretKey
 
 			p, err := NewDNSProviderConfig(config)
 

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"sync"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -66,7 +67,10 @@ func NewDefaultConfig() (*Config, error) {
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
-	token  string
+
+	// token  string
+	token   *authResponse
+	muToken sync.Mutex
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for mythicbeasts DNSv2 API.

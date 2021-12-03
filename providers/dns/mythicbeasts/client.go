@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"path"
 	"strings"
+	"time"
 )
 
 const (
@@ -25,6 +26,8 @@ type authResponse struct {
 
 	// The token type (must be 'bearer')
 	TokenType string `json:"token_type"`
+
+	Deadline time.Time `json:"-"`
 }
 
 type authResponseError struct {
@@ -61,14 +64,15 @@ type deleteTXTResponse struct {
 // Logs into mythic beasts and acquires a bearer token for use in future API calls.
 // https://www.mythic-beasts.com/support/api/auth#sec-obtaining-a-token
 func (d *DNSProvider) login() error {
-	if d.token != "" {
+	d.muToken.Lock()
+	defer d.muToken.Unlock()
+
+	if d.token != nil && time.Now().Before(d.token.Deadline) {
 		// Already authenticated, stop now
 		return nil
 	}
 
-	reqBody := strings.NewReader("grant_type=client_credentials")
-
-	req, err := http.NewRequest(http.MethodPost, d.config.AuthAPIEndpoint.String(), reqBody)
+	req, err := http.NewRequest(http.MethodPost, d.config.AuthAPIEndpoint.String(), strings.NewReader("grant_type=client_credentials"))
 	if err != nil {
 		return err
 	}
@@ -88,7 +92,7 @@ func (d *DNSProvider) login() error {
 		return fmt.Errorf("login: %w", err)
 	}
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		if resp.StatusCode < 400 || resp.StatusCode > 499 {
 			return fmt.Errorf("login: unknown error in auth API: %d", resp.StatusCode)
 		}
@@ -113,7 +117,8 @@ func (d *DNSProvider) login() error {
 		return fmt.Errorf("login: received unexpected token type: %s", authResp.TokenType)
 	}
 
-	d.token = authResp.Token
+	authResp.Deadline = time.Now().Add(time.Duration(authResp.Lifetime) * time.Second)
+	d.token = &authResp
 
 	// Success
 	return nil
@@ -121,7 +126,7 @@ func (d *DNSProvider) login() error {
 
 // https://www.mythic-beasts.com/support/api/dnsv2#ep-get-zoneszonerecords
 func (d *DNSProvider) createTXTRecord(zone, leaf, value string) error {
-	if d.token == "" {
+	if d.token == nil {
 		return fmt.Errorf("createTXTRecord: not logged in")
 	}
 
@@ -149,7 +154,7 @@ func (d *DNSProvider) createTXTRecord(zone, leaf, value string) error {
 		return fmt.Errorf("createTXTRecord: %w", err)
 	}
 
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", d.token))
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", d.token.Token))
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := d.config.HTTPClient.Do(req)
@@ -184,13 +189,13 @@ func (d *DNSProvider) createTXTRecord(zone, leaf, value string) error {
 
 // https://www.mythic-beasts.com/support/api/dnsv2#ep-delete-zoneszonerecords
 func (d *DNSProvider) removeTXTRecord(zone, leaf, value string) error {
-	if d.token == "" {
+	if d.token == nil {
 		return fmt.Errorf("removeTXTRecord: not logged in")
 	}
 
 	endpoint, err := d.config.APIEndpoint.Parse(path.Join(d.config.APIEndpoint.Path, "zones", zone, "records", leaf, "TXT"))
 	if err != nil {
-		return fmt.Errorf("createTXTRecord: failed to parse URL: %w", err)
+		return fmt.Errorf("removeTXTRecord: failed to parse URL: %w", err)
 	}
 
 	query := endpoint.Query()
@@ -202,7 +207,7 @@ func (d *DNSProvider) removeTXTRecord(zone, leaf, value string) error {
 		return fmt.Errorf("removeTXTRecord: %w", err)
 	}
 
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", d.token))
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", d.token.Token))
 
 	resp, err := d.config.HTTPClient.Do(req)
 	if err != nil {
@@ -227,7 +232,7 @@ func (d *DNSProvider) removeTXTRecord(zone, leaf, value string) error {
 	}
 
 	if deleteResp.Removed != 1 {
-		return errors.New("deleteTXTRecord: did not add TXT record for some reason")
+		return errors.New("removeTXTRecord: did not add TXT record for some reason")
 	}
 
 	// Success

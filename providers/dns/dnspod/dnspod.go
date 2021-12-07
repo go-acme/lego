@@ -12,6 +12,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
+	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/errors"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/profile"
 	dnspod "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod/v20210323"
 )
@@ -213,6 +214,11 @@ func (d *DNSProvider) findTxtRecords(zoneID uint64, zoneName, fqdn string) ([]*d
 	request.RecordLine = common.StringPtr("默认")
 	response, err := d.client.DescribeRecordList(request)
 	if err != nil {
+		if err, ok := err.(*errors.TencentCloudSDKError); ok {
+			if err.Code == dnspod.RESOURCENOTFOUND_NODATAOFRECORD {
+				return []*dnspod.RecordListItem{}, nil
+			}
+		}
 		return nil, err
 	}
 	return response.Response.RecordList, nil

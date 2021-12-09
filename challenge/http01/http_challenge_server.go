@@ -2,9 +2,11 @@ package http01
 
 import (
 	"fmt"
+	"io/fs"
 	"net"
 	"net/http"
 	"net/textproto"
+	"os"
 	"strings"
 
 	"github.com/go-acme/lego/v4/log"
@@ -14,8 +16,11 @@ import (
 // It may be instantiated without using the NewProviderServer function if
 // you want only to use the default values.
 type ProviderServer struct {
-	iface    string
-	port     string
+	address string
+	network string // must be valid argument to net.Listen
+
+	socketMode fs.FileMode
+
 	matcher  domainMatcher
 	done     chan bool
 	listener net.Listener
@@ -29,15 +34,25 @@ func NewProviderServer(iface, port string) *ProviderServer {
 		port = "80"
 	}
 
-	return &ProviderServer{iface: iface, port: port, matcher: &hostMatcher{}}
+	return &ProviderServer{network: "tcp", address: net.JoinHostPort(iface, port), matcher: &hostMatcher{}}
+}
+
+func NewUnixProviderServer(socketPath string, mode fs.FileMode) *ProviderServer {
+	return &ProviderServer{network: "unix", address: socketPath, socketMode: mode, matcher: &hostMatcher{}}
 }
 
 // Present starts a web server and makes the token available at `ChallengePath(token)` for web requests.
 func (s *ProviderServer) Present(domain, token, keyAuth string) error {
 	var err error
-	s.listener, err = net.Listen("tcp", s.GetAddress())
+	s.listener, err = net.Listen(s.network, s.GetAddress())
 	if err != nil {
 		return fmt.Errorf("could not start HTTP server for challenge: %w", err)
+	}
+
+	if s.network == "unix" {
+		if err = os.Chmod(s.address, s.socketMode); err != nil {
+			return fmt.Errorf("chmod %s: %w", s.address, err)
+		}
 	}
 
 	s.done = make(chan bool)
@@ -46,7 +61,7 @@ func (s *ProviderServer) Present(domain, token, keyAuth string) error {
 }
 
 func (s *ProviderServer) GetAddress() string {
-	return net.JoinHostPort(s.iface, s.port)
+	return s.address
 }
 
 // CleanUp closes the HTTP server and removes the token from `ChallengePath(token)`.
@@ -85,7 +100,7 @@ func (s *ProviderServer) SetProxyHeader(headerName string) {
 func (s *ProviderServer) serve(domain, token, keyAuth string) {
 	path := ChallengePath(token)
 
-	// The incoming request must will be validated to prevent DNS rebind attacks.
+	// The incoming request will be validated to prevent DNS rebind attacks.
 	// We only respond with the keyAuth, when we're receiving a GET requests with
 	// the "Host" header matching the domain (the latter is configurable though SetProxyHeader).
 	mux := http.NewServeMux()
@@ -99,7 +114,7 @@ func (s *ProviderServer) serve(domain, token, keyAuth string) {
 			}
 			log.Infof("[%s] Served key authentication", domain)
 		} else {
-			log.Warnf("Received request for domain %s with method %s but the domain did not match any challenge. Please ensure your are passing the %s header properly.", r.Host, r.Method, s.matcher.name())
+			log.Warnf("Received request for domain %s with method %s but the domain did not match any challenge. Please ensure you are passing the %s header properly.", r.Host, r.Method, s.matcher.name())
 			_, err := w.Write([]byte("TEST"))
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)

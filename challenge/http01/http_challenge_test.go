@@ -120,7 +120,7 @@ func TestChallenge(t *testing.T) {
 }
 
 func TestChallengeUnix(t *testing.T) {
-	if runtime.GOOS == "windows" {
+	if runtime.GOOS != "linux" {
 		t.Skip("only for UNIX systems")
 	}
 

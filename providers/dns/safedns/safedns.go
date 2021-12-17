@@ -1,3 +1,4 @@
+// Package safedns implements a DNS provider for solving the DNS-01 challenge using UKFast SafeDNS.
 package safedns
 
 import (
@@ -9,47 +10,53 @@ import (
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/safedns/internal"
 )
 
 // Environment variables.
 const (
 	envNamespace = "SAFEDNS_"
 
-	EnvAuthToken          = envNamespace + "AUTH_TOKEN"
+	EnvAuthToken = envNamespace + "AUTH_TOKEN"
+
 	EnvTTL                = envNamespace + "TTL"
-	EnvAPITimeout         = envNamespace + "API_TIMEOUT"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
+// Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	BaseURL            string
-	AuthToken          string
+	AuthToken string
+
 	TTL                int
-	APITimeout         time.Duration
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	HTTPClient         *http.Client
 }
 
+// NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		BaseURL:            defaultBaseURL,
-		TTL:                env.GetOrDefaultInt(EnvTTL, 30),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 60*time.Second),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 5*time.Second),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvAPITimeout, 30*time.Second),
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
 	}
 }
 
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	config      *Config
+	config *Config
+	client *internal.Client
+
 	recordIDs   map[string]int
 	recordIDsMu sync.Mutex
 }
 
+// NewDNSProvider returns a DNSProvider instance.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvAuthToken)
 	if err != nil {
@@ -58,9 +65,11 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 	config := NewDefaultConfig()
 	config.AuthToken = values[EnvAuthToken]
+
 	return NewDNSProviderConfig(config)
 }
 
+// NewDNSProviderConfig return a DNSProvider instance configured for UKFast SafeDNS.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("safedns: supplied configuration was nil")
@@ -70,35 +79,54 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("safedns: credentials missing")
 	}
 
-	if config.BaseURL == "" {
-		config.BaseURL = defaultBaseURL
+	client := internal.NewClient(config.AuthToken)
+
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
 	}
 
 	return &DNSProvider{
 		config:    config,
+		client:    client,
 		recordIDs: make(map[string]int),
 	}, nil
 }
 
+// Timeout returns the timeout and interval to use when checking for DNS propagation.
+// Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
+// Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	respData, err := d.addTxtRecord(fqdn, value)
+	zone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(fqdn))
+	if err != nil {
+		return fmt.Errorf("safedns: could not determine zone for domain: %q: %w", fqdn, err)
+	}
+
+	record := internal.Record{
+		Name:    dns01.UnFqdn(fqdn),
+		Type:    "TXT",
+		Content: fmt.Sprintf("%q", value),
+		TTL:     d.config.TTL,
+	}
+
+	resp, err := d.client.AddRecord(zone, record)
 	if err != nil {
 		return fmt.Errorf("safedns: %w", err)
 	}
 
 	d.recordIDsMu.Lock()
-	d.recordIDs[token] = respData.Data.ID
+	d.recordIDs[token] = resp.Data.ID
 	d.recordIDsMu.Unlock()
 
 	return nil
 }
 
+// CleanUp removes the TXT record previously created.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 
@@ -114,7 +142,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("safedns: unknown record ID for '%s'", fqdn)
 	}
 
-	err = d.removeTxtRecord(authZone, recordID)
+	err = d.client.RemoveRecord(authZone, recordID)
 	if err != nil {
 		return fmt.Errorf("safedns: %w", err)
 	}

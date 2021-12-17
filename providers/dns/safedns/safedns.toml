@@ -1,4 +1,4 @@
-Name = "SafeDNS"
+Name = "UKFast SafeDNS"
 Description = ''''''
 URL = "https://www.ukfast.co.uk/dns-hosting.html"
 Code = "safedns"
@@ -13,10 +13,10 @@ lego --email myemail@example.com --dns safedns --domains my.example.org run
   [Configuration.Credentials]
     SAFEDNS_AUTH_TOKEN = "Authentication token"
   [Configuration.Additional]
-    SAFEDNS_TTL = "TXT record TTL"
+    SAFEDNS_POLLING_INTERVAL = "Time between DNS propagation check"
     SAFEDNS_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
-    SAFEDNS_API_TIMEOUT = "API request timeout in seconds"
-    SAFEDNS_POLLING_INTERVAL = "Time to wait for initial check"
+    SAFEDNS_TTL = "The TTL of the TXT record used for the DNS challenge"
+    SAFEDNS_HTTP_TIMEOUT = "API request timeout"
 
 [Links]
   API = "https://developers.ukfast.io/documentation/safedns"

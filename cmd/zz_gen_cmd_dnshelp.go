@@ -1832,7 +1832,7 @@ func displayDNSHelp(name string) error {
 
 	case "safedns":
 		// generated from: providers/dns/safedns/safedns.toml
-		ew.writeln(`Configuration for SafeDNS.`)
+		ew.writeln(`Configuration for UKFast SafeDNS.`)
 		ew.writeln(`Code:	'safedns'`)
 		ew.writeln(`Since:	'v4.6.0'`)
 		ew.writeln()
@@ -1842,10 +1842,10 @@ func displayDNSHelp(name string) error {
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "SAFEDNS_API_TIMEOUT":	API request timeout in seconds`)
-		ew.writeln(`	- "SAFEDNS_POLLING_INTERVAL":	Time to wait for initial check`)
+		ew.writeln(`	- "SAFEDNS_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "SAFEDNS_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "SAFEDNS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
-		ew.writeln(`	- "SAFEDNS_TTL":	TXT record TTL`)
+		ew.writeln(`	- "SAFEDNS_TTL":	The TTL of the TXT record used for the DNS challenge`)
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/safedns`)

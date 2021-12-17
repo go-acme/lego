@@ -1,36 +1,16 @@
 package safedns
 
 import (
-	"fmt"
-	"io"
-	"net/http"
-	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-var envTest = tester.NewEnvTest(EnvAuthToken)
+const envDomain = envNamespace + "DOMAIN"
 
-func setupTest(t *testing.T) (*DNSProvider, *http.ServeMux) {
-	t.Helper()
-
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	config := NewDefaultConfig()
-	config.AuthToken = "asdf1234"
-	config.BaseURL = server.URL
-	config.HTTPClient = server.Client()
-
-	provider, err := NewDNSProviderConfig(config)
-	require.NoError(t, err)
-
-	return provider, mux
-}
+var envTest = tester.NewEnvTest(EnvAuthToken).WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -109,61 +89,30 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}
 }
 
-func TestDNSProvider_Present(t *testing.T) {
-	provider, mux := setupTest(t)
+func TestLivePresent(t *testing.T) {
+	if !envTest.IsLiveTest() {
+		t.Skip("skipping live test")
+	}
 
-	mux.HandleFunc("/safedns/v1/zones/example.com/records", func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, http.MethodPost, r.Method, "method")
+	envTest.RestoreEnv()
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
 
-		assert.Equal(t, "application/json", r.Header.Get("Content-Type"), "Content-Type")
-		assert.Equal(t, "asdf1234", r.Header.Get("Authorization"), "Authorization")
-
-		reqBody, err := io.ReadAll(r.Body)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		expectedReqBody := `{"name":"_acme-challenge.example.com","type":"TXT","content":"\"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI\"","ttl":30}`
-		assert.Equal(t, expectedReqBody, string(reqBody))
-
-		w.WriteHeader(http.StatusCreated)
-		_, err = fmt.Fprintf(w, `{
-			"data": {
-				"id": 1234567
-			},
-			"meta": {
-				"location": "https://api.ukfast.io/safedns/v1/zones/example.com/records/1234567"
-			}
-		}`)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
-
-	err := provider.Present("example.com", "", "foobar")
+	err = provider.Present(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
 }
 
-func TestDNSProvider_CleanUp(t *testing.T) {
-	provider, mux := setupTest(t)
+func TestLiveCleanUp(t *testing.T) {
+	if !envTest.IsLiveTest() {
+		t.Skip("skipping live test")
+	}
 
-	mux.HandleFunc("/safedns/v1/zones/example.com/records/1234567", func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, http.MethodDelete, r.Method, "method")
+	envTest.RestoreEnv()
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
 
-		assert.Equal(t, "/safedns/v1/zones/example.com/records/1234567", r.URL.Path, "Path")
+	time.Sleep(1 * time.Second)
 
-		assert.Equal(t, "application/json", r.Header.Get("Content-Type"), "Content-Type")
-		assert.Equal(t, "asdf1234", r.Header.Get("Authorization"), "Authorization")
-
-		w.WriteHeader(http.StatusNoContent)
-	})
-
-	provider.recordIDsMu.Lock()
-	provider.recordIDs["token"] = 1234567
-	provider.recordIDsMu.Unlock()
-
-	err := provider.CleanUp("example.com", "token", "")
-	require.NoError(t, err, "fail to remove TXT record")
+	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
 }

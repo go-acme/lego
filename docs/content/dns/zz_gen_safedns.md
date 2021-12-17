@@ -1,5 +1,5 @@
 ---
-title: "SafeDNS"
+title: "UKFast SafeDNS"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: safedns
@@ -11,14 +11,14 @@ slug: safedns
 
 Since: v4.6.0
 
-Configuration for [SafeDNS](https://www.ukfast.co.uk/dns-hosting.html).
+Configuration for [UKFast SafeDNS](https://www.ukfast.co.uk/dns-hosting.html).
 
 
 <!--more-->
 
 - Code: `safedns`
 
-Here is an example bash command using the SafeDNS provider:
+Here is an example bash command using the UKFast SafeDNS provider:
 
 ```bash
 SAFEDNS_AUTH_TOKEN=xxxxxx \
@@ -42,10 +42,10 @@ More information [here](/lego/dns/#configuration-and-credentials).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `SAFEDNS_API_TIMEOUT` | API request timeout in seconds |
-| `SAFEDNS_POLLING_INTERVAL` | Time to wait for initial check |
+| `SAFEDNS_HTTP_TIMEOUT` | API request timeout |
+| `SAFEDNS_POLLING_INTERVAL` | Time between DNS propagation check |
 | `SAFEDNS_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
-| `SAFEDNS_TTL` | TXT record TTL |
+| `SAFEDNS_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).

@@ -6,7 +6,7 @@ Since = "v4.4.0"
 
 Example = '''
 PORKBUN_SECRET_API_KEY=xxxxxx \
-PORKBUN_PAPI_KEY=yyyyyy \
+PORKBUN_API_KEY=yyyyyy \
 lego --email myemail@example.com --dns porkbun --domains my.example.org run
 '''
 

@@ -22,7 +22,7 @@ Here is an example bash command using the Porkbun provider:
 
 ```bash
 PORKBUN_SECRET_API_KEY=xxxxxx \
-PORKBUN_PAPI_KEY=yyyyyy \
+PORKBUN_API_KEY=yyyyyy \
 lego --email myemail@example.com --dns porkbun --domains my.example.org run
 ```
 

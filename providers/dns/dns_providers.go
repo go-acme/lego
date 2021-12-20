@@ -85,6 +85,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/rfc2136"
 	"github.com/go-acme/lego/v4/providers/dns/rimuhosting"
 	"github.com/go-acme/lego/v4/providers/dns/route53"
+	"github.com/go-acme/lego/v4/providers/dns/safedns"
 	"github.com/go-acme/lego/v4/providers/dns/sakuracloud"
 	"github.com/go-acme/lego/v4/providers/dns/scaleway"
 	"github.com/go-acme/lego/v4/providers/dns/selectel"
@@ -269,6 +270,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return rimuhosting.NewDNSProvider()
 	case "route53":
 		return route53.NewDNSProvider()
+	case "safedns":
+		return safedns.NewDNSProvider()
 	case "sakuracloud":
 		return sakuracloud.NewDNSProvider()
 	case "scaleway":

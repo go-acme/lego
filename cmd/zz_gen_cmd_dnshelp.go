@@ -94,6 +94,7 @@ func allDNSCodes() string {
 		"rfc2136",
 		"rimuhosting",
 		"route53",
+		"safedns",
 		"sakuracloud",
 		"scaleway",
 		"selectel",
@@ -1828,6 +1829,26 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/route53`)
+
+	case "safedns":
+		// generated from: providers/dns/safedns/safedns.toml
+		ew.writeln(`Configuration for UKFast SafeDNS.`)
+		ew.writeln(`Code:	'safedns'`)
+		ew.writeln(`Since:	'v4.6.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "SAFEDNS_AUTH_TOKEN":	Authentication token`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "SAFEDNS_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "SAFEDNS_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "SAFEDNS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "SAFEDNS_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/safedns`)
 
 	case "sakuracloud":
 		// generated from: providers/dns/sakuracloud/sakuracloud.toml

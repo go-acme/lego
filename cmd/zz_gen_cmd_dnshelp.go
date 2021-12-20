@@ -2002,7 +2002,7 @@ func displayDNSHelp(name string) error {
 		// generated from: providers/dns/tencentcloud/tencentcloud.toml
 		ew.writeln(`Configuration for Tencent Cloud DNS.`)
 		ew.writeln(`Code:	'tencentcloud'`)
-		ew.writeln(`Since:	'v4.5.4'`)
+		ew.writeln(`Since:	'v4.6.0'`)
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)

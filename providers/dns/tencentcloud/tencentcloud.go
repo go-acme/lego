@@ -1,9 +1,9 @@
+// Package tencentcloud implements a DNS provider for solving the DNS-01 challenge using Tencent Cloud DNS.
 package tencentcloud
 
 import (
 	"errors"
 	"fmt"
-	"regexp"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -37,11 +37,6 @@ type Config struct {
 	HTTPTimeout        time.Duration
 }
 
-type DomainData struct {
-	domain    string
-	subDomain string
-}
-
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
@@ -59,6 +54,7 @@ type DNSProvider struct {
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Tencent Cloud DNS.
+// Credentials must be passed in the environment variable: TENCENTCLOUD_SECRET_ID, TENCENTCLOUD_SECRET_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
 
@@ -73,7 +69,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderConfig return a DNSProvider instance configured for alidns.
+// NewDNSProviderConfig return a DNSProvider instance configured for Tencent Cloud DNS.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("tencentcloud: the configuration of the DNS provider is nil")
@@ -103,77 +99,40 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
-	domainData := getDomainData(fqdn)
 
-	err := d.CreateRecordData(domainData, value)
+	domainData, err := getDomainData(fqdn)
 	if err != nil {
-		return fmt.Errorf("tencentcloud: API call failed: %w", err)
+		return fmt.Errorf("tencentcloud: failed to get domain data: %w", err)
 	}
+
+	err = d.createRecordData(domainData, value)
+	if err != nil {
+		return fmt.Errorf("tencentcloud: create record failed: %w", err)
+	}
+
 	return nil
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
-	domainData := getDomainData(fqdn)
 
-	records, err := d.ListRecordData(domainData)
+	domainData, err := getDomainData(fqdn)
 	if err != nil {
-		return fmt.Errorf("tencentcloud: API call failed: %w", err)
+		return fmt.Errorf("tencentcloud: failed to get domain data: %w", err)
+	}
+
+	records, err := d.listRecordData(domainData)
+	if err != nil {
+		return fmt.Errorf("tencentcloud: list records failed: %w", err)
 	}
 
 	for _, item := range records {
-		err := d.DeleteRecordData(domainData, item)
+		err := d.deleteRecordData(domainData, item)
 		if err != nil {
-			return fmt.Errorf("tencentcloud: API call failed: %w", err)
+			return fmt.Errorf("tencentcloud: delete record failed: %w", err)
 		}
 	}
 
-	return nil
-}
-
-func getDomainData(str string) *DomainData {
-	domainRegexp := regexp.MustCompile(`(.*)\.(.*\..*)\.`)
-	params := domainRegexp.FindStringSubmatch(str)
-	return &DomainData{domain: params[len(params)-1], subDomain: params[len(params)-2]}
-}
-
-func (d *DNSProvider) CreateRecordData(domainData *DomainData, value string) error {
-	request := dnspod.NewCreateRecordRequest()
-	request.Domain = common.StringPtr(domainData.domain)
-	request.SubDomain = common.StringPtr(domainData.subDomain)
-	request.RecordType = common.StringPtr("TXT")
-	request.RecordLine = common.StringPtr("默认")
-	request.Value = common.StringPtr(value)
-	request.TTL = common.Uint64Ptr(uint64(d.config.TTL))
-
-	_, err := d.client.CreateRecord(request)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (d *DNSProvider) ListRecordData(domainData *DomainData) ([]*dnspod.RecordListItem, error) {
-	request := dnspod.NewDescribeRecordListRequest()
-	request.Domain = common.StringPtr(domainData.domain)
-	request.Subdomain = common.StringPtr(domainData.subDomain)
-	request.RecordType = common.StringPtr("TXT")
-
-	response, err := d.client.DescribeRecordList(request)
-	if err != nil {
-		return nil, err
-	}
-	return response.Response.RecordList, nil
-}
-
-func (d *DNSProvider) DeleteRecordData(domainData *DomainData, item *dnspod.RecordListItem) error {
-	request := dnspod.NewDeleteRecordRequest()
-	request.Domain = common.StringPtr(domainData.domain)
-	request.RecordId = item.RecordId
-	_, err := d.client.DeleteRecord(request)
-	if err != nil {
-		return err
-	}
 	return nil
 }

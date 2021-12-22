@@ -2014,6 +2014,7 @@ func displayDNSHelp(name string) error {
 		ew.writeln(`	- "TENCENTCLOUD_HTTP_TIMEOUT":	API request timeout`)
 		ew.writeln(`	- "TENCENTCLOUD_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "TENCENTCLOUD_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "TENCENTCLOUD_REGION":	Region`)
 		ew.writeln(`	- "TENCENTCLOUD_TTL":	The TTL of the TXT record used for the DNS challenge`)
 
 		ew.writeln()

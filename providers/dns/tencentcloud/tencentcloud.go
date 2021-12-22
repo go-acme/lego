@@ -19,6 +19,7 @@ const (
 
 	EnvSecretID  = envNamespace + "SECRET_ID"
 	EnvSecretKey = envNamespace + "SECRET_KEY"
+	EnvRegion    = envNamespace + "REGION"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -30,6 +31,7 @@ const (
 type Config struct {
 	SecretID  string
 	SecretKey string
+	Region    string
 
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -56,15 +58,15 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for Tencent Cloud DNS.
 // Credentials must be passed in the environment variable: TENCENTCLOUD_SECRET_ID, TENCENTCLOUD_SECRET_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	config := NewDefaultConfig()
-
 	values, err := env.Get(EnvSecretID, EnvSecretKey)
 	if err != nil {
 		return nil, fmt.Errorf("tencentcloud: %w", err)
 	}
 
+	config := NewDefaultConfig()
 	config.SecretID = values[EnvSecretID]
 	config.SecretKey = values[EnvSecretKey]
+	config.Region = env.GetOrDefaultString(EnvRegion, "")
 
 	return NewDNSProviderConfig(config)
 }
@@ -79,13 +81,15 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("tencentcloud: credentials missing")
 	}
 
-	credential := common.NewCredential(
-		config.SecretID,
-		config.SecretKey,
-	)
+	credential := common.NewCredential(config.SecretID, config.SecretKey)
+
 	cpf := profile.NewClientProfile()
 	cpf.HttpProfile.Endpoint = "dnspod.tencentcloudapi.com"
-	client, _ := dnspod.NewClient(credential, "", cpf)
+
+	client, err := dnspod.NewClient(credential, config.Region, cpf)
+	if err != nil {
+		return nil, fmt.Errorf("tencentcloud: %w", err)
+	}
 
 	return &DNSProvider{config: config, client: client}, nil
 }

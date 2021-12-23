@@ -199,6 +199,9 @@ func TestNewDNSProvider(t *testing.T) {
 }
 
 func TestNewDNSProviderConfig(t *testing.T) {
+	envTest.ClearEnv()
+	defer envTest.RestoreEnv()
+
 	testCases := []struct {
 		desc                  string
 		compartmentID         string
@@ -206,8 +209,8 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		expected              string
 	}{
 		{
-			desc:                  "invalid configuration",
-			configurationProvider: &configProvider{},
+			desc:                  "configuration provider error",
+			configurationProvider: mockConfigurationProvider("wrong-secret"),
 			compartmentID:         "123",
 			expected:              "oraclecloud: can not create client, bad configuration: x509: decryption password incorrect",
 		},
@@ -217,8 +220,9 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			expected:      "oraclecloud: OCIConfigProvider is missing",
 		},
 		{
-			desc:     "missing CompartmentID",
-			expected: "oraclecloud: CompartmentID is missing",
+			desc:                  "missing CompartmentID",
+			configurationProvider: mockConfigurationProvider("secret"),
+			expected:              "oraclecloud: CompartmentID is missing",
 		},
 	}
 
@@ -268,6 +272,24 @@ func TestLiveCleanUp(t *testing.T) {
 
 	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
+}
+
+func mockConfigurationProvider(keyPassphrase string) *configProvider {
+	envTest.Apply(map[string]string{
+		envPrivKey: mustGeneratePrivateKey("secret"),
+	})
+
+	return &configProvider{
+		values: map[string]string{
+			EnvCompartmentOCID:   "test",
+			EnvPrivKeyPass:       "test",
+			EnvTenancyOCID:       "test",
+			EnvUserOCID:          "test",
+			EnvPubKeyFingerprint: "test",
+			EnvRegion:            "test",
+		},
+		privateKeyPassphrase: keyPassphrase,
+	}
 }
 
 func mustGeneratePrivateKey(pwd string) string {

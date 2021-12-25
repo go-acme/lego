@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bytes"
+	"crypto"
 	"crypto/rand"
 	"crypto/x509"
 	"encoding/json"
@@ -18,7 +19,7 @@ import (
 	"github.com/go-acme/lego/v4/log"
 	"github.com/urfave/cli"
 	"golang.org/x/net/idna"
-	pkcs12 "software.sslmate.com/src/go-pkcs12"
+	"software.sslmate.com/src/go-pkcs12"
 )
 
 const (
@@ -44,9 +45,9 @@ type CertificatesStorage struct {
 	rootPath    string
 	archivePath string
 	pem         bool
-	filename    string // Deprecated
 	pfx         bool
 	pfxPassword string
+	filename    string // Deprecated
 }
 
 // NewCertificatesStorage create a new certificates storage.
@@ -55,9 +56,9 @@ func NewCertificatesStorage(ctx *cli.Context) *CertificatesStorage {
 		rootPath:    filepath.Join(ctx.GlobalString("path"), baseCertificatesFolderName),
 		archivePath: filepath.Join(ctx.GlobalString("path"), baseArchivesFolderName),
 		pem:         ctx.GlobalBool("pem"),
-		filename:    ctx.GlobalString("filename"),
 		pfx:         ctx.GlobalBool("pfx"),
 		pfxPassword: ctx.GlobalString("pfx.pass"),
+		filename:    ctx.GlobalString("filename"),
 	}
 }
 
@@ -96,15 +97,15 @@ func (s *CertificatesStorage) SaveResource(certRes *certificate.Resource) {
 		}
 	}
 
+	// if we were given a CSR, we don't know the private key
 	if certRes.PrivateKey != nil {
-		// if we were given a CSR, we don't know the private key
-		err = s.WritePrivateKey(domain, certRes)
+		err = s.WriteCertificateFiles(domain, certRes)
 		if err != nil {
 			log.Fatalf("Unable to save PrivateKey for domain %s\n\t%v", domain, err)
 		}
 	} else if s.pem || s.pfx {
 		// we don't have the private key; can't write the .pem or .pfx file
-		log.Fatalf("Unable to save pem without private key for domain %s\n\t%v; are you using a CSR?", domain, err)
+		log.Fatalf("Unable to save PEM or PFX without private key for domain %s. Are you using a CSR?", domain)
 	}
 
 	jsonBytes, err := json.MarshalIndent(certRes, "", "\t")
@@ -175,8 +176,7 @@ func (s *CertificatesStorage) WriteFile(domain, extension string, data []byte) e
 	return os.WriteFile(filePath, data, filePerm)
 }
 
-func (s *CertificatesStorage) WritePrivateKey(domain string, certRes *certificate.Resource) error {
-	// if we were given a CSR, we don't know the private key
+func (s *CertificatesStorage) WriteCertificateFiles(domain string, certRes *certificate.Resource) error {
 	err := s.WriteFile(domain, ".key", certRes.PrivateKey)
 	if err != nil {
 		return fmt.Errorf("unable to save key file: %w", err)
@@ -185,21 +185,21 @@ func (s *CertificatesStorage) WritePrivateKey(domain string, certRes *certificat
 	if s.pem {
 		err = s.WriteFile(domain, ".pem", bytes.Join([][]byte{certRes.Certificate, certRes.PrivateKey}, nil))
 		if err != nil {
-			return fmt.Errorf("unable to save pem file: %w", err)
+			return fmt.Errorf("unable to save PEM file: %w", err)
 		}
 	}
 
 	if s.pfx {
-		err = s.WritePfxFile(domain, certRes)
+		err = s.WritePFXFile(domain, certRes)
 		if err != nil {
-			return fmt.Errorf("unable to save pfx file: %w", err)
+			return fmt.Errorf("unable to save PFX file: %w", err)
 		}
 	}
 
 	return nil
 }
 
-func (s *CertificatesStorage) WritePfxFile(domain string, certRes *certificate.Resource) error {
+func (s *CertificatesStorage) WritePFXFile(domain string, certRes *certificate.Resource) error {
 	certPemBlock, _ := pem.Decode(certRes.Certificate)
 	if certPemBlock == nil {
 		return fmt.Errorf("unable to parse Certificate for domain %s", domain)
@@ -225,28 +225,27 @@ func (s *CertificatesStorage) WritePfxFile(domain string, certRes *certificate.R
 		return fmt.Errorf("unable to parse PrivateKey for domain %s", domain)
 	}
 
-	var privateKey interface{}
+	var privateKey crypto.Signer
+	var keyErr error
 
 	switch keyPemBlock.Type {
 	case "RSA PRIVATE KEY":
-		key, keyErr := x509.ParsePKCS1PrivateKey(keyPemBlock.Bytes)
+		privateKey, keyErr = x509.ParsePKCS1PrivateKey(keyPemBlock.Bytes)
 		if keyErr != nil {
 			return fmt.Errorf("unable to load RSA PrivateKey for domain %s: %w", domain, keyErr)
 		}
-		privateKey = key
 	case "EC PRIVATE KEY":
-		key, keyErr := x509.ParseECPrivateKey(keyPemBlock.Bytes)
+		privateKey, keyErr = x509.ParseECPrivateKey(keyPemBlock.Bytes)
 		if keyErr != nil {
 			return fmt.Errorf("unable to load EC PrivateKey for domain %s: %w", domain, keyErr)
 		}
-		privateKey = key
 	default:
 		return fmt.Errorf("unsupported PrivateKey type '%s' for domain %s", keyPemBlock.Type, domain)
 	}
 
 	pfxBytes, err := pkcs12.Encode(rand.Reader, privateKey, cert, []*x509.Certificate{issuerCert}, s.pfxPassword)
 	if err != nil {
-		return fmt.Errorf("unable to encode pfx data for domain %s: %w", domain, err)
+		return fmt.Errorf("unable to encode PFX data for domain %s: %w", domain, err)
 	}
 
 	return s.WriteFile(domain, ".pfx", pfxBytes)

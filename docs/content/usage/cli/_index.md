@@ -50,6 +50,8 @@ GLOBAL OPTIONS:
    --http-timeout value         Set the HTTP timeout value to a specific value in seconds. (default: 0)
    --dns-timeout value          Set the DNS timeout value to a specific value in seconds. Used only when performing authoritative name servers queries. (default: 10)
    --pem                        Generate a .pem file by concatenating the .key and .crt files together.
+   --pfx                        Generate a .pfx (PKCS#12) file by with the .key and .crt and issuer .crt files together.
+   --pfx.pass                   The password used to encrypt the .pfx (PCKS#12) file (default: changeit).
    --cert.timeout value         Set the certificate timeout value to a specific value in seconds. Only used when obtaining certificates. (default: 30)
    --help, -h                   show help
    --version, -v                print the version

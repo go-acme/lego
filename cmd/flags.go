@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/go-acme/lego/v4/lego"
 	"github.com/urfave/cli"
+	pkcs12 "software.sslmate.com/src/go-pkcs12"
 )
 
 func CreateFlags(defaultPath string) []cli.Flag {
@@ -110,6 +111,15 @@ func CreateFlags(defaultPath string) []cli.Flag {
 		cli.BoolFlag{
 			Name:  "pem",
 			Usage: "Generate a .pem file by concatenating the .key and .crt files together.",
+		},
+		cli.BoolFlag{
+			Name:  "pfx",
+			Usage: "Generate a .pfx (PKCS#12) file by with the .key and .crt and issuer .crt files together.",
+		},
+		cli.StringFlag{
+			Name:  "pfx.pass",
+			Usage: "The password used to encrypt the .pfx (PCKS#12) file.",
+			Value: pkcs12.DefaultPassword,
 		},
 		cli.IntFlag{
 			Name:  "cert.timeout",

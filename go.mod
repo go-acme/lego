@@ -63,5 +63,5 @@ require (
 	gopkg.in/ns1/ns1-go.v2 v2.6.2
 	gopkg.in/square/go-jose.v2 v2.6.0
 	gopkg.in/yaml.v2 v2.4.0
-	software.sslmate.com/src/go-pkcs12 v0.0.0-20210222215041-dec221a1a07f
+	software.sslmate.com/src/go-pkcs12 v0.0.0-20210415151418-c5206de65a78
 )

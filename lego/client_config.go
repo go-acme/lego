@@ -20,7 +20,7 @@ const (
 	// specify the path to PEM encoded CA Certificates that can be used to
 	// authenticate an ACME server with an HTTPS certificate not issued by a CA in
 	// the system-wide trusted root list.
-	// Multiple file paths can be added by using `,` as a separator.
+	// Multiple file paths can be added by using os.PathListSeparator as a separator.
 	caCertificatesEnvVar = "LEGO_CA_CERTIFICATES"
 
 	// caSystemCertPool is the environment variable name that can be used to define
@@ -101,7 +101,7 @@ func initCertPool() *x509.CertPool {
 
 	certPool := getCertPool()
 
-	for _, customPath := range strings.Split(customCACertsPath, ",") {
+	for _, customPath := range strings.Split(customCACertsPath, string(os.PathListSeparator)) {
 		customCAs, err := os.ReadFile(customPath)
 		if err != nil {
 			panic(fmt.Sprintf("error reading %s=%q: %v",

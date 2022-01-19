@@ -1,5 +1,27 @@
 # Changelog
 
+## [v4.6.0] - 2022-01-18
+
+### Added
+
+- **[dnsprovider]** Add DNS provider for UKFast SafeDNS
+- **[dnsprovider]** Add DNS Provider for Tencent Cloud
+- **[dnsprovider]** azure: add support for Azure Private Zone DNS
+- **[dnsprovider]** exec: add sequence interval
+- **[cli]** Add a `--pfx`, and `--pfx.pas`s option to generate a PKCS#12 (`.pfx`) file.
+- **[lib]** Extended support of cert pool (`LEGO_CA_CERTIFICATES` and `LEGO_CA_SYSTEM_CERT_POOL`)
+- **[lib,httpprovider]** added uds capability to http challenge server
+
+### Changed
+
+- **[lib]** Extend validity of TLS-ALPN-01 certificates to 365 days
+- **[lib,cli]** Allows defining the reason for the certificate revocation
+
+### Fixed
+
+- **[dnsprovider]** mythicbeasts: fix token expiration
+- **[dnsprovider]** rackspace: change zone ID to string
+
 ## [v4.5.3] - 2021-09-06
 
 ### Fixed:

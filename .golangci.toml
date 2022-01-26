@@ -82,6 +82,7 @@
     "forcetypeassert",
     "tagliatelle",
     "errname",
+    "errchkjson",
   ]
 
 [issues]
@@ -95,7 +96,7 @@
   ]
   [[issues.exclude-rules]]
     path = "(.+)_test.go"
-    linters = ["funlen", "goconst"]
+    linters = ["funlen", "goconst", "maintidx"]
   [[issues.exclude-rules]]
     path = "providers/dns/dns_providers.go"
     linters = ["gocyclo"]
@@ -180,3 +181,6 @@
   [[issues.exclude-rules]]
     path = "challenge/http01/domain_matcher.go"
     text = "yodaStyleExpr"
+  [[issues.exclude-rules]]
+    path = "providers/dns/dns_providers.go"
+    text = "Function name: NewDNSChallengeProviderByName,"

@@ -169,7 +169,7 @@ func displayDNSHelp(name string) error {
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "ALL_INKL_LOGIN":	    KAS login`)
+		ew.writeln(`	- "ALL_INKL_LOGIN":	KAS login`)
 		ew.writeln(`	- "ALL_INKL_PASSWORD":	KAS password`)
 		ew.writeln()
 

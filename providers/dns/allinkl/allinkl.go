@@ -57,7 +57,7 @@ type DNSProvider struct {
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for all-inkl.
-// Credentials must be passed in the environment variable: ALL_INKL_API_KEY, ALL_INKL_PASSWORD.
+// Credentials must be passed in the environment variable: ALL_INKL_LOGIN, ALL_INKL_PASSWORD.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvLogin, EnvPassword)
 	if err != nil {

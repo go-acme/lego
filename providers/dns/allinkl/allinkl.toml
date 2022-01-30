@@ -12,8 +12,8 @@ lego --email myemail@example.com --dns allinkl --domains my.example.org run
 
 [Configuration]
   [Configuration.Credentials]
-    ALL_INKL_API_KEY = "API login"
-    ALL_INKL_PASSWORD = "API password"
+    ALL_INKL_LOGIN = "KAS login"
+    ALL_INKL_PASSWORD = "KAS password"
   [Configuration.Additional]
     ALL_INKL_POLLING_INTERVAL = "Time between DNS propagation check"
     ALL_INKL_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"

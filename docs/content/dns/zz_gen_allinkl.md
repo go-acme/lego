@@ -33,8 +33,8 @@ lego --email myemail@example.com --dns allinkl --domains my.example.org run
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `ALL_INKL_API_KEY` | API login |
-| `ALL_INKL_PASSWORD` | API password |
+| `ALL_INKL_LOGIN` | KAS login |
+| `ALL_INKL_PASSWORD` | KAS password |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).

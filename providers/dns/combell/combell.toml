@@ -1,0 +1,24 @@
+Name = "Combell"
+Description = ''''''
+URL = "https://www.combell.com/"
+Code = "combell"
+Since = "v4.32.0"
+
+Example = '''
+COMBELL_API_KEY=xxxxxxxxxxxxxxxxxxxxx \
+COMBELL_API_SECRET=yyyyyyyyyyyyyyyyyyyy \
+lego --dns combell -d '*.example.com' -d example.com run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    COMBELL_API_KEY = "The API key"
+    COMBELL_API_SECRET = "The API secret"
+  [Configuration.Additional]
+    COMBELL_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    COMBELL_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    COMBELL_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 3600)"
+    COMBELL_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
+
+[Links]
+  API = "https://api.combell.com/v2/documentation"

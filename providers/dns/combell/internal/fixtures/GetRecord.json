@@ -1,0 +1,13 @@
+{
+  "id": "string",
+  "type": "string",
+  "record_name": "string",
+  "ttl": 3600,
+  "content": "string",
+  "priority": 10,
+  "service": "string",
+  "weight": 0,
+  "target": "string",
+  "protocol": "TCP",
+  "port": 0
+}

@@ -67,6 +67,7 @@ func allDNSCodes() string {
 		"internetbs",
 		"inwx",
 		"ionos",
+		"iwantmyname",
 		"joker",
 		"lightsail",
 		"linode",
@@ -1240,6 +1241,27 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/ionos`)
+
+	case "iwantmyname":
+		// generated from: providers/dns/iwantmyname/iwantmyname.toml
+		ew.writeln(`Configuration for iwantmyname.`)
+		ew.writeln(`Code:	'iwantmyname'`)
+		ew.writeln(`Since:	'v4.7.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "IWANTMYNAME_PASSWORD":	API password`)
+		ew.writeln(`	- "IWANTMYNAME_USERNAME":	API username`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "IWANTMYNAME_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "IWANTMYNAME_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "IWANTMYNAME_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "IWANTMYNAME_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/iwantmyname`)
 
 	case "joker":
 		// generated from: providers/dns/joker/joker.toml

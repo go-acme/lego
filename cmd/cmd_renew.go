@@ -17,6 +17,8 @@ const (
 	renewEnvCertDomain   = "LEGO_CERT_DOMAIN"
 	renewEnvCertPath     = "LEGO_CERT_PATH"
 	renewEnvCertKeyPath  = "LEGO_CERT_KEY_PATH"
+	renewEnvCertPEMPath  = "LEGO_CERT_PEM_PATH"
+	renewEnvCertPFXPath  = "LEGO_CERT_PFX_PATH"
 )
 
 func createRenew() *cli.Command {
@@ -148,6 +150,8 @@ func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *Certif
 	meta[renewEnvCertDomain] = domain
 	meta[renewEnvCertPath] = certsStorage.GetFileName(domain, ".crt")
 	meta[renewEnvCertKeyPath] = certsStorage.GetFileName(domain, ".key")
+	meta[renewEnvCertPEMPath] = certsStorage.GetFileName(domain, ".pem")
+	meta[renewEnvCertPFXPath] = certsStorage.GetFileName(domain, ".pfx")
 
 	return launchHook(ctx.String("renew-hook"), meta)
 }

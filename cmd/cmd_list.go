@@ -9,22 +9,24 @@ import (
 	"strings"
 
 	"github.com/go-acme/lego/v4/certcrypto"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
-func createList() cli.Command {
-	return cli.Command{
+func createList() *cli.Command {
+	return &cli.Command{
 		Name:   "list",
 		Usage:  "Display certificates and accounts information.",
 		Action: list,
 		Flags: []cli.Flag{
-			cli.BoolFlag{
-				Name:  "accounts, a",
-				Usage: "Display accounts.",
+			&cli.BoolFlag{
+				Name:    "accounts",
+				Aliases: []string{"a"},
+				Usage:   "Display accounts.",
 			},
-			cli.BoolFlag{
-				Name:  "names, n",
-				Usage: "Display certificate common names only.",
+			&cli.BoolFlag{
+				Name:    "names",
+				Aliases: []string{"n"},
+				Usage:   "Display certificate common names only.",
 			},
 		},
 	}
@@ -92,7 +94,7 @@ func listCertificates(ctx *cli.Context) error {
 
 func listAccount(ctx *cli.Context) error {
 	// fake email, needed by NewAccountsStorage
-	if err := ctx.GlobalSet("email", "unknown"); err != nil {
+	if err := ctx.Set("email", "unknown"); err != nil {
 		return err
 	}
 

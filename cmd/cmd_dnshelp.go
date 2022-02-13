@@ -7,18 +7,19 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
-func createDNSHelp() cli.Command {
-	return cli.Command{
+func createDNSHelp() *cli.Command {
+	return &cli.Command{
 		Name:   "dnshelp",
 		Usage:  "Shows additional help for the '--dns' global option",
 		Action: dnsHelp,
 		Flags: []cli.Flag{
-			cli.StringFlag{
-				Name:  "code, c",
-				Usage: fmt.Sprintf("DNS code: %s", allDNSCodes()),
+			&cli.StringFlag{
+				Name:    "code",
+				Aliases: []string{"c"},
+				Usage:   fmt.Sprintf("DNS code: %s", allDNSCodes()),
 			},
 		},
 	}

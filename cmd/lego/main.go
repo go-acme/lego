@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-acme/lego/v4/cmd"
 	"github.com/go-acme/lego/v4/log"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 var version = "dev"

@@ -3,20 +3,21 @@ package cmd
 import (
 	"github.com/go-acme/lego/v4/acme"
 	"github.com/go-acme/lego/v4/log"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
-func createRevoke() cli.Command {
-	return cli.Command{
+func createRevoke() *cli.Command {
+	return &cli.Command{
 		Name:   "revoke",
 		Usage:  "Revoke a certificate",
 		Action: revoke,
 		Flags: []cli.Flag{
-			cli.BoolFlag{
-				Name:  "keep, k",
-				Usage: "Keep the certificates after the revocation instead of archiving them.",
+			&cli.BoolFlag{
+				Name:    "keep",
+				Aliases: []string{"k"},
+				Usage:   "Keep the certificates after the revocation instead of archiving them.",
 			},
-			cli.UintFlag{
+			&cli.UintFlag{
 				Name:  "reason",
 				Usage: "Identifies the reason for the certificate revocation. See https://www.rfc-editor.org/rfc/rfc5280.html#section-5.3.1. 0(unspecified),1(keyCompromise),2(cACompromise),3(affiliationChanged),4(superseded),5(cessationOfOperation),6(certificateHold),8(removeFromCRL),9(privilegeWithdrawn),10(aACompromise)",
 				Value: acme.CRLReasonUnspecified,
@@ -35,7 +36,7 @@ func revoke(ctx *cli.Context) error {
 	certsStorage := NewCertificatesStorage(ctx)
 	certsStorage.CreateRootFolder()
 
-	for _, domain := range ctx.GlobalStringSlice("domains") {
+	for _, domain := range ctx.StringSlice("domains") {
 		log.Printf("Trying to revoke certificate for domain %s", domain)
 
 		certBytes, err := certsStorage.ReadFile(domain, ".crt")

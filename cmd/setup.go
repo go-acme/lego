@@ -12,7 +12,7 @@ import (
 	"github.com/go-acme/lego/v4/lego"
 	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/registration"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 const filePerm os.FileMode = 0o600
@@ -35,16 +35,16 @@ func setup(ctx *cli.Context, accountsStorage *AccountsStorage) (*Account, *lego.
 
 func newClient(ctx *cli.Context, acc registration.User, keyType certcrypto.KeyType) *lego.Client {
 	config := lego.NewConfig(acc)
-	config.CADirURL = ctx.GlobalString("server")
+	config.CADirURL = ctx.String("server")
 
 	config.Certificate = lego.CertificateConfig{
 		KeyType: keyType,
-		Timeout: time.Duration(ctx.GlobalInt("cert.timeout")) * time.Second,
+		Timeout: time.Duration(ctx.Int("cert.timeout")) * time.Second,
 	}
 	config.UserAgent = fmt.Sprintf("lego-cli/%s", ctx.App.Version)
 
-	if ctx.GlobalIsSet("http-timeout") {
-		config.HTTPClient.Timeout = time.Duration(ctx.GlobalInt("http-timeout")) * time.Second
+	if ctx.IsSet("http-timeout") {
+		config.HTTPClient.Timeout = time.Duration(ctx.Int("http-timeout")) * time.Second
 	}
 
 	client, err := lego.NewClient(config)
@@ -52,7 +52,7 @@ func newClient(ctx *cli.Context, acc registration.User, keyType certcrypto.KeyTy
 		log.Fatalf("Could not create client: %v", err)
 	}
 
-	if client.GetExternalAccountRequired() && !ctx.GlobalIsSet("eab") {
+	if client.GetExternalAccountRequired() && !ctx.IsSet("eab") {
 		log.Fatal("Server requires External Account Binding. Use --eab with --kid and --hmac.")
 	}
 
@@ -61,7 +61,7 @@ func newClient(ctx *cli.Context, acc registration.User, keyType certcrypto.KeyTy
 
 // getKeyType the type from which private keys should be generated.
 func getKeyType(ctx *cli.Context) certcrypto.KeyType {
-	keyType := ctx.GlobalString("key-type")
+	keyType := ctx.String("key-type")
 	switch strings.ToUpper(keyType) {
 	case "RSA2048":
 		return certcrypto.RSA2048
@@ -80,7 +80,7 @@ func getKeyType(ctx *cli.Context) certcrypto.KeyType {
 }
 
 func getEmail(ctx *cli.Context) string {
-	email := ctx.GlobalString("email")
+	email := ctx.String("email")
 	if email == "" {
 		log.Fatal("You have to pass an account (email address) to the program using --email or -m")
 	}

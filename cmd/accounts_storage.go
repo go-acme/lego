@@ -16,7 +16,7 @@ import (
 	"github.com/go-acme/lego/v4/lego"
 	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/registration"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 const (
@@ -73,12 +73,12 @@ func NewAccountsStorage(ctx *cli.Context) *AccountsStorage {
 	// TODO: move to account struct? Currently MUST pass email.
 	email := getEmail(ctx)
 
-	serverURL, err := url.Parse(ctx.GlobalString("server"))
+	serverURL, err := url.Parse(ctx.String("server"))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	rootPath := filepath.Join(ctx.GlobalString("path"), baseAccountsRootFolderName)
+	rootPath := filepath.Join(ctx.String("path"), baseAccountsRootFolderName)
 	serverPath := strings.NewReplacer(":", "_", "/", string(os.PathSeparator)).Replace(serverURL.Host)
 	accountsPath := filepath.Join(rootPath, serverPath)
 	rootUserPath := filepath.Join(accountsPath, email)
@@ -226,7 +226,7 @@ func loadPrivateKey(file string) (crypto.PrivateKey, error) {
 func tryRecoverRegistration(ctx *cli.Context, privateKey crypto.PrivateKey) (*registration.Resource, error) {
 	// couldn't load account but got a key. Try to look the account up.
 	config := lego.NewConfig(&Account{key: privateKey})
-	config.CADirURL = ctx.GlobalString("server")
+	config.CADirURL = ctx.String("server")
 	config.UserAgent = fmt.Sprintf("lego-cli/%s", ctx.App.Version)
 
 	client, err := lego.NewClient(config)

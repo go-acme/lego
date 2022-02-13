@@ -14,49 +14,49 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns"
 	"github.com/go-acme/lego/v4/providers/http/memcached"
 	"github.com/go-acme/lego/v4/providers/http/webroot"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 func setupChallenges(ctx *cli.Context, client *lego.Client) {
-	if !ctx.GlobalBool("http") && !ctx.GlobalBool("tls") && !ctx.GlobalIsSet("dns") {
+	if !ctx.Bool("http") && !ctx.Bool("tls") && !ctx.IsSet("dns") {
 		log.Fatal("No challenge selected. You must specify at least one challenge: `--http`, `--tls`, `--dns`.")
 	}
 
-	if ctx.GlobalBool("http") {
+	if ctx.Bool("http") {
 		err := client.Challenge.SetHTTP01Provider(setupHTTPProvider(ctx))
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 
-	if ctx.GlobalBool("tls") {
+	if ctx.Bool("tls") {
 		err := client.Challenge.SetTLSALPN01Provider(setupTLSProvider(ctx))
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 
-	if ctx.GlobalIsSet("dns") {
+	if ctx.IsSet("dns") {
 		setupDNS(ctx, client)
 	}
 }
 
 func setupHTTPProvider(ctx *cli.Context) challenge.Provider {
 	switch {
-	case ctx.GlobalIsSet("http.webroot"):
-		ps, err := webroot.NewHTTPProvider(ctx.GlobalString("http.webroot"))
+	case ctx.IsSet("http.webroot"):
+		ps, err := webroot.NewHTTPProvider(ctx.String("http.webroot"))
 		if err != nil {
 			log.Fatal(err)
 		}
 		return ps
-	case ctx.GlobalIsSet("http.memcached-host"):
-		ps, err := memcached.NewMemcachedProvider(ctx.GlobalStringSlice("http.memcached-host"))
+	case ctx.IsSet("http.memcached-host"):
+		ps, err := memcached.NewMemcachedProvider(ctx.StringSlice("http.memcached-host"))
 		if err != nil {
 			log.Fatal(err)
 		}
 		return ps
-	case ctx.GlobalIsSet("http.port"):
-		iface := ctx.GlobalString("http.port")
+	case ctx.IsSet("http.port"):
+		iface := ctx.String("http.port")
 		if !strings.Contains(iface, ":") {
 			log.Fatalf("The --http switch only accepts interface:port or :port for its argument.")
 		}
@@ -67,13 +67,13 @@ func setupHTTPProvider(ctx *cli.Context) challenge.Provider {
 		}
 
 		srv := http01.NewProviderServer(host, port)
-		if header := ctx.GlobalString("http.proxy-header"); header != "" {
+		if header := ctx.String("http.proxy-header"); header != "" {
 			srv.SetProxyHeader(header)
 		}
 		return srv
-	case ctx.GlobalBool("http"):
+	case ctx.Bool("http"):
 		srv := http01.NewProviderServer("", "")
-		if header := ctx.GlobalString("http.proxy-header"); header != "" {
+		if header := ctx.String("http.proxy-header"); header != "" {
 			srv.SetProxyHeader(header)
 		}
 		return srv
@@ -85,8 +85,8 @@ func setupHTTPProvider(ctx *cli.Context) challenge.Provider {
 
 func setupTLSProvider(ctx *cli.Context) challenge.Provider {
 	switch {
-	case ctx.GlobalIsSet("tls.port"):
-		iface := ctx.GlobalString("tls.port")
+	case ctx.IsSet("tls.port"):
+		iface := ctx.String("tls.port")
 		if !strings.Contains(iface, ":") {
 			log.Fatalf("The --tls switch only accepts interface:port or :port for its argument.")
 		}
@@ -97,7 +97,7 @@ func setupTLSProvider(ctx *cli.Context) challenge.Provider {
 		}
 
 		return tlsalpn01.NewProviderServer(host, port)
-	case ctx.GlobalBool("tls"):
+	case ctx.Bool("tls"):
 		return tlsalpn01.NewProviderServer("", "")
 	default:
 		log.Fatal("Invalid HTTP challenge options.")
@@ -106,19 +106,19 @@ func setupTLSProvider(ctx *cli.Context) challenge.Provider {
 }
 
 func setupDNS(ctx *cli.Context, client *lego.Client) {
-	provider, err := dns.NewDNSChallengeProviderByName(ctx.GlobalString("dns"))
+	provider, err := dns.NewDNSChallengeProviderByName(ctx.String("dns"))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	servers := ctx.GlobalStringSlice("dns.resolvers")
+	servers := ctx.StringSlice("dns.resolvers")
 	err = client.Challenge.SetDNS01Provider(provider,
 		dns01.CondOption(len(servers) > 0,
-			dns01.AddRecursiveNameservers(dns01.ParseNameservers(ctx.GlobalStringSlice("dns.resolvers")))),
-		dns01.CondOption(ctx.GlobalBool("dns.disable-cp"),
+			dns01.AddRecursiveNameservers(dns01.ParseNameservers(ctx.StringSlice("dns.resolvers")))),
+		dns01.CondOption(ctx.Bool("dns.disable-cp"),
 			dns01.DisableCompletePropagationRequirement()),
-		dns01.CondOption(ctx.GlobalIsSet("dns-timeout"),
-			dns01.AddDNSTimeout(time.Duration(ctx.GlobalInt("dns-timeout"))*time.Second)),
+		dns01.CondOption(ctx.IsSet("dns-timeout"),
+			dns01.AddDNSTimeout(time.Duration(ctx.Int("dns-timeout"))*time.Second)),
 	)
 	if err != nil {
 		log.Fatal(err)

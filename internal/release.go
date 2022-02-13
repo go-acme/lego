@@ -14,7 +14,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 )
 
 const sourceFile = "./acme/api/internal/sender/useragent.go"
@@ -41,7 +41,7 @@ func main() {
 	app.Name = "lego-releaser"
 	app.Usage = "Lego releaser"
 	app.HelpName = "releaser"
-	app.Commands = []cli.Command{
+	app.Commands = []*cli.Command{
 		{
 			Name:   "release",
 			Usage:  "Update file for a release",
@@ -56,10 +56,11 @@ func main() {
 				}
 			},
 			Flags: []cli.Flag{
-				cli.StringFlag{
-					Name:  "mode, m",
-					Value: "patch",
-					Usage: "The release mode: patch|minor|major",
+				&cli.StringFlag{
+					Name:    "mode",
+					Aliases: []string{"m"},
+					Value:   "patch",
+					Usage:   "The release mode: patch|minor|major",
 				},
 			},
 		},

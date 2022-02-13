@@ -28,33 +28,33 @@ COMMANDS:
 GLOBAL OPTIONS:
    --domains value, -d value    Add a domain to the process. Can be specified multiple times.
    --server value, -s value     CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client. (default: "https://acme-v02.api.letsencrypt.org/directory")
-   --accept-tos, -a             By setting this flag to true you indicate that you accept the current Let's Encrypt terms of service.
+   --accept-tos, -a             By setting this flag to true you indicate that you accept the current Let's Encrypt terms of service. (default: false)
    --email value, -m value      Email used for registration and recovery contact.
    --csr value, -c value        Certificate signing request filename, if an external CSR is to be used.
-   --eab                        Use External Account Binding for account registration. Requires --kid and --hmac.
+   --eab                        Use External Account Binding for account registration. Requires --kid and --hmac. (default: false)
    --kid value                  Key identifier from External CA. Used for External Account Binding.
    --hmac value                 MAC key from External CA. Should be in Base64 URL Encoding without padding format. Used for External Account Binding.
    --key-type value, -k value   Key type to use for private keys. Supported: rsa2048, rsa4096, rsa8192, ec256, ec384. (default: "ec256")
    --filename value             (deprecated) Filename of the generated certificate.
    --path value                 Directory to use for storing the data. (default: "./.lego") [$LEGO_PATH]
-   --http                       Use the HTTP challenge to solve challenges. Can be mixed with other types of challenges.
+   --http                       Use the HTTP challenge to solve challenges. Can be mixed with other types of challenges. (default: false)
    --http.port value            Set the port and interface to use for HTTP based challenges to listen on.Supported: interface:port or :port. (default: ":80")
    --http.proxy-header value    Validate against this HTTP header when solving HTTP based challenges behind a reverse proxy. (default: "Host")
    --http.webroot value         Set the webroot folder to use for HTTP based challenges to write directly in a file in .well-known/acme-challenge. This disables the built-in server and expects the given directory to be publicly served with access to .well-known/acme-challenge
    --http.memcached-host value  Set the memcached host(s) to use for HTTP based challenges. Challenges will be written to all specified hosts.
-   --tls                        Use the TLS challenge to solve challenges. Can be mixed with other types of challenges.
+   --tls                        Use the TLS challenge to solve challenges. Can be mixed with other types of challenges. (default: false)
    --tls.port value             Set the port and interface to use for TLS based challenges to listen on. Supported: interface:port or :port. (default: ":443")
    --dns value                  Solve a DNS challenge using the specified provider. Can be mixed with other types of challenges. Run 'lego dnshelp' for help on usage.
-   --dns.disable-cp             By setting this flag to true, disables the need to wait the propagation of the TXT record to all authoritative name servers.
+   --dns.disable-cp             By setting this flag to true, disables the need to wait the propagation of the TXT record to all authoritative name servers. (default: false)
    --dns.resolvers value        Set the resolvers to use for performing recursive DNS queries. Supported: host:port. The default is to use the system resolvers, or Google's DNS resolvers if the system's cannot be determined.
    --http-timeout value         Set the HTTP timeout value to a specific value in seconds. (default: 0)
    --dns-timeout value          Set the DNS timeout value to a specific value in seconds. Used only when performing authoritative name servers queries. (default: 10)
-   --pem                        Generate a .pem file by concatenating the .key and .crt files together.
-   --pfx                        Generate a .pfx (PKCS#12) file by with the .key and .crt and issuer .crt files together.
-   --pfx.pass                   The password used to encrypt the .pfx (PCKS#12) file (default: changeit).
+   --pem                        Generate a .pem file by concatenating the .key and .crt files together. (default: false)
+   --pfx                        Generate a .pfx (PKCS#12) file by with the .key and .crt and issuer .crt files together. (default: false)
+   --pfx.pass value             The password used to encrypt the .pfx (PCKS#12) file. (default: "changeit")
    --cert.timeout value         Set the certificate timeout value to a specific value in seconds. Only used when obtaining certificates. (default: 30)
-   --help, -h                   show help
-   --version, -v                print the version
+   --help, -h                   show help (default: false)
+   --version, -v                print the version (default: false)
 ```
 
 When using the standard `--path` option, all certificates and account configurations are saved to a folder `.lego` in the current working directory.

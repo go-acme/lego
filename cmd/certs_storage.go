@@ -17,7 +17,7 @@ import (
 	"github.com/go-acme/lego/v4/certcrypto"
 	"github.com/go-acme/lego/v4/certificate"
 	"github.com/go-acme/lego/v4/log"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 	"golang.org/x/net/idna"
 	"software.sslmate.com/src/go-pkcs12"
 )
@@ -53,12 +53,12 @@ type CertificatesStorage struct {
 // NewCertificatesStorage create a new certificates storage.
 func NewCertificatesStorage(ctx *cli.Context) *CertificatesStorage {
 	return &CertificatesStorage{
-		rootPath:    filepath.Join(ctx.GlobalString("path"), baseCertificatesFolderName),
-		archivePath: filepath.Join(ctx.GlobalString("path"), baseArchivesFolderName),
-		pem:         ctx.GlobalBool("pem"),
-		pfx:         ctx.GlobalBool("pfx"),
-		pfxPassword: ctx.GlobalString("pfx.pass"),
-		filename:    ctx.GlobalString("filename"),
+		rootPath:    filepath.Join(ctx.String("path"), baseCertificatesFolderName),
+		archivePath: filepath.Join(ctx.String("path"), baseArchivesFolderName),
+		pem:         ctx.Bool("pem"),
+		pfx:         ctx.Bool("pfx"),
+		pfxPassword: ctx.String("pfx.pass"),
+		filename:    ctx.String("filename"),
 	}
 }
 

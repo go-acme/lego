@@ -273,6 +273,7 @@ func (c *Certifier) getForCSR(domains []string, order acme.ExtendedOrder, bundle
 		Domain:     commonName,
 		CertURL:    respOrder.Certificate,
 		PrivateKey: privateKeyPem,
+		CSR:        csr,
 	}
 
 	if respOrder.Status == acme.StatusValid {

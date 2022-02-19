@@ -22,7 +22,7 @@ Here is an example bash command using the Hosting.de provider:
 
 ```bash
 HOSTINGDE_API_KEY=xxxxxxxx \
-lego -email myemail@example.com --dns hostingde --domains my.example.org -run
+lego --email myemail@example.com --dns hostingde --domains my.example.org run
 ```
 
 

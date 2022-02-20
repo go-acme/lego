@@ -5,6 +5,7 @@ import (
 	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
+	"encoding/pem"
 	"testing"
 	"time"
 
@@ -138,6 +139,30 @@ func TestParsePEMCertificate(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, expiration.UTC(), cert.NotAfter)
+}
+
+func TestParsePEMPrivateKey(t *testing.T) {
+	privateKey, err := GeneratePrivateKey(RSA2048)
+	require.NoError(t, err, "Error generating private key")
+
+	pemPrivateKey := PEMEncode(privateKey)
+
+	// Decoding a key should work and create an identical key to the original
+	decoded, err := ParsePEMPrivateKey(pemPrivateKey)
+	require.NoError(t, err)
+	assert.Equal(t, decoded, privateKey)
+
+	// Decoding a PEM block that doesn't contain a private key should error
+	_, err = ParsePEMPrivateKey(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE"}))
+	require.Errorf(t, err, "Expected to return an error for non-private key input")
+
+	// Decoding a PEM block that doesn't actually contain a key should error
+	_, err = ParsePEMPrivateKey(pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY"}))
+	require.Errorf(t, err, "Expected to return an error for empty input")
+
+	// Decoding non-PEM input should return an error
+	_, err = ParsePEMPrivateKey([]byte("This is not PEM"))
+	require.Errorf(t, err, "Expected to return an error for non-PEM input")
 }
 
 type MockRandReader struct {

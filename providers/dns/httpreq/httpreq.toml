@@ -1,6 +1,6 @@
 Name = "HTTP request"
 Description = ''''''
-URL = "/dns/httpreq/"
+URL = "/lego/dns/httpreq/"
 Code = "httpreq"
 Since = "v2.0.0"
 

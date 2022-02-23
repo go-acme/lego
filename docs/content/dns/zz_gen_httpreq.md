@@ -11,7 +11,7 @@ slug: httpreq
 
 Since: v2.0.0
 
-Configuration for [HTTP request](/dns/httpreq/).
+Configuration for [HTTP request](/lego/dns/httpreq/).
 
 
 <!--more-->

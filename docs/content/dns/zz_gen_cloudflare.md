@@ -27,8 +27,7 @@ lego --email myemail@example.com --dns cloudflare --domains my.example.org run
 
 # or
 
-CLOUDFLARE_DNS_API_TOKEN=1234567890abcdefghijklmnopqrstuvwxyz \
-lego --email myemail@example.com --dns cloudflare --domains my.example.org run
+CLOUDFLARE_DNS_API_TOKEN=1234567890abcdefghijklmnopqrstuvwxyz lego --email myemail@example.com --dns cloudflare --domains my.example.org run
 ```
 
 

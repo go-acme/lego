@@ -20,7 +20,7 @@ func getDomainData(fqdn string) (*domainData, error) {
 	}
 
 	return &domainData{
-		domain:    zone,
+		domain:    dns01.UnFqdn(zone),
 		subDomain: dns01.UnFqdn(strings.TrimSuffix(fqdn, zone)),
 	}, nil
 }

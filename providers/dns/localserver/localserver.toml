@@ -1,0 +1,13 @@
+Name = "Localserver"
+Description = '''Setup localserver udp dns server that can serve forawrded requests from main dns server'''
+Code = "localserver"
+Since = "v0.0.1"
+
+Example = '''
+LOCALSERVER_LISTEN=0.0.0.0:5353 \
+lego --email myemail@example.com --dns localserver --domains my.example.org run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    LOCALSERVER_LISTEN = "Listen udp dns-server address"

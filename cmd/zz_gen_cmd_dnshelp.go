@@ -72,6 +72,7 @@ func allDNSCodes() string {
 		"lightsail",
 		"linode",
 		"liquidweb",
+		"local",
 		"loopia",
 		"luadns",
 		"mydnsjp",
@@ -1350,6 +1351,20 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/liquidweb`)
+
+	case "local":
+		// generated from: providers/dns/local/local.toml
+		ew.writeln(`Configuration for Local.`)
+		ew.writeln(`Code:	'local'`)
+		ew.writeln(`Since:	'v0.0.1'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "LOCAL_LISTEN":	Listen udp dns-server address`)
+		ew.writeln()
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/local`)
 
 	case "loopia":
 		// generated from: providers/dns/loopia/loopia.toml

@@ -1,26 +1,19 @@
-name: Main
+name: Documentation
 
 on:
   push:
     branches:
       - master
-    tags:
-      - v*
-  pull_request:
 
 jobs:
 
-  main:
-    name: Main Process
+  doc:
+    name: Build and deploy documentation
     runs-on: ubuntu-latest
     env:
-      GO_VERSION: 1.17
-      GOLANGCI_LINT_VERSION: v1.44.0
+      GO_VERSION: 1.18
       HUGO_VERSION: 0.54.0
-      SEIHON_VERSION: v0.8.3
       CGO_ENABLED: 0
-      LEGO_E2E_TESTS: CI
-      MEMCACHED_HOSTS: localhost:11211
 
     steps:
 
@@ -35,24 +28,6 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-
-      # https://github.com/marketplace/actions/cache
-      - name: Cache Go modules
-        uses: actions/cache@v2
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-
-      - name: Check and get dependencies
-        run: |
-          go mod tidy
-          git diff --exit-code go.mod
-          git diff --exit-code go.sum
-
-      - name: Documentation validation
-        run: make validate-doc
 
       # https://golangci-lint.run/usage/install#other-ci
       - name: Install golangci-lint ${{ env.GOLANGCI_LINT_VERSION }}
@@ -90,37 +65,8 @@ jobs:
       # https://github.com/marketplace/actions/github-pages
       - name: Deploy to GitHub Pages
         uses: crazy-max/ghaction-github-pages@v2
-        if: github.event_name == 'push'
         with:
           target_branch: gh-pages
           build_dir: docs/public
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # https://goreleaser.com/ci/actions/
-      - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v2
-        if: startsWith(github.ref, 'refs/tags/v')
-        with:
-          version: latest
-          args: release --rm-dist --timeout=60m
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_REPO }}
-
-      # Install Docker image multi-arch builder
-      - name: Install Seihon ${{ env.SEIHON_VERSION }}
-        if: startsWith(github.ref, 'refs/tags/v')
-        run: |
-          curl -sSfL https://raw.githubusercontent.com/ldez/seihon/master/godownloader.sh | sh -s -- -b $(go env GOPATH)/bin ${SEIHON_VERSION}
-          seihon --version
-
-      - name: Docker Login
-        if: startsWith(github.ref, 'refs/tags/v')
-        env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-        run: echo "${DOCKER_PASSWORD}" | docker login --username "${DOCKER_USERNAME}" --password-stdin
-
-      - name: Publish Docker Images (Seihon)
-        if: startsWith(github.ref, 'refs/tags/v')
-        run: make publish-images

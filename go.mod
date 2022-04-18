@@ -1,6 +1,6 @@
 module github.com/go-acme/lego/v4
 
-go 1.16
+go 1.17
 
 // github.com/exoscale/egoscale v1.19.0 => It is an error, please don't use it.
 // github.com/linode/linodego v1.0.0 => It is an error, please don't use it.
@@ -64,4 +64,63 @@ require (
 	gopkg.in/square/go-jose.v2 v2.6.0
 	gopkg.in/yaml.v2 v2.4.0
 	software.sslmate.com/src/go-pkcs12 v0.0.0-20210415151418-c5206de65a78
+)
+
+require (
+	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
+	github.com/Azure/go-autorest/autorest/adal v0.9.13 // indirect
+	github.com/Azure/go-autorest/autorest/azure/cli v0.4.2 // indirect
+	github.com/Azure/go-autorest/autorest/date v0.3.0 // indirect
+	github.com/Azure/go-autorest/logger v0.2.1 // indirect
+	github.com/Azure/go-autorest/tracing v0.6.0 // indirect
+	github.com/boombuler/barcode v1.0.1-0.20190219062509-6c824513bacc // indirect
+	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/deepmap/oapi-codegen v1.6.1 // indirect
+	github.com/dimchansky/utfbom v1.1.1 // indirect
+	github.com/fatih/structs v1.1.0 // indirect
+	github.com/form3tech-oss/jwt-go v3.2.2+incompatible // indirect
+	github.com/go-errors/errors v1.0.1 // indirect
+	github.com/go-resty/resty/v2 v2.1.1-0.20191201195748-d7b97669fe48 // indirect
+	github.com/gofrs/uuid v3.2.0+incompatible // indirect
+	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
+	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/google/uuid v1.1.1 // indirect
+	github.com/googleapis/gax-go/v2 v2.0.5 // indirect
+	github.com/hashicorp/go-cleanhttp v0.5.1 // indirect
+	github.com/hashicorp/go-retryablehttp v0.7.0 // indirect
+	github.com/jarcoal/httpmock v1.0.6 // indirect
+	github.com/jmespath/go-jmespath v0.4.0 // indirect
+	github.com/json-iterator/go v1.1.7 // indirect
+	github.com/k0kubun/go-ansi v0.0.0-20180517002512-3bf9e2903213 // indirect
+	github.com/kolo/xmlrpc v0.0.0-20200310150728-e0350524596b // indirect
+	github.com/labbsr0x/goh v1.0.1 // indirect
+	github.com/liquidweb/go-lwApi v0.0.5 // indirect
+	github.com/liquidweb/liquidweb-cli v0.6.9 // indirect
+	github.com/mattn/go-isatty v0.0.12 // indirect
+	github.com/mitchellh/go-homedir v1.1.0 // indirect
+	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
+	github.com/modern-go/reflect2 v1.0.1 // indirect
+	github.com/onsi/ginkgo v1.16.4 // indirect
+	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
+	github.com/pkg/errors v0.9.1 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/russross/blackfriday/v2 v2.0.1 // indirect
+	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
+	github.com/sirupsen/logrus v1.4.2 // indirect
+	github.com/smartystreets/assertions v1.0.1 // indirect
+	github.com/smartystreets/go-aws-auth v0.0.0-20180515143844-0c1422d1fdb9 // indirect
+	github.com/softlayer/xmlrpc v0.0.0-20200409220501-5f089df7cb7e // indirect
+	github.com/spf13/cast v1.3.1 // indirect
+	github.com/stretchr/objx v0.3.0 // indirect
+	go.opencensus.io v0.22.3 // indirect
+	go.uber.org/ratelimit v0.0.0-20180316092928-c15da0234277 // indirect
+	golang.org/x/sys v0.0.0-20210615035016-665e8c7367d1 // indirect
+	golang.org/x/text v0.3.6 // indirect
+	google.golang.org/appengine v1.6.5 // indirect
+	google.golang.org/genproto v0.0.0-20200305110556-506484158171 // indirect
+	google.golang.org/grpc v1.27.1 // indirect
+	google.golang.org/protobuf v1.26.0 // indirect
+	gopkg.in/ini.v1 v1.62.0 // indirect
+	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )

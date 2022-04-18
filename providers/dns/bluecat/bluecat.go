@@ -2,23 +2,14 @@
 package bluecat
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-)
-
-const (
-	configType = "Configuration"
-	viewType   = "View"
-	zoneType   = "Zone"
-	txtType    = "TXTRecord"
+	"github.com/go-acme/lego/v4/providers/dns/bluecat/internal"
 )
 
 // Environment variables names.
@@ -65,7 +56,7 @@ func NewDefaultConfig() *Config {
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
-	token  string
+	client *internal.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Bluecat DNS.
@@ -99,7 +90,13 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("bluecat: credentials missing")
 	}
 
-	return &DNSProvider{config: config}, nil
+	client := internal.NewClient(config.BaseURL)
+
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
+	}
+
+	return &DNSProvider{config: config, client: client}, nil
 }
 
 // Present creates a TXT record using the specified parameters
@@ -108,105 +105,85 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	err := d.login()
+	err := d.client.Login(d.config.UserName, d.config.Password)
 	if err != nil {
-		return err
+		return fmt.Errorf("bluecat: login: %w", err)
 	}
 
-	viewID, err := d.lookupViewID(d.config.DNSView)
+	viewID, err := d.client.LookupViewID(d.config.ConfigName, d.config.DNSView)
 	if err != nil {
-		return err
+		return fmt.Errorf("bluecat: lookupViewID: %w", err)
 	}
 
-	parentZoneID, name, err := d.lookupParentZoneID(viewID, fqdn)
+	parentZoneID, name, err := d.client.LookupParentZoneID(viewID, fqdn)
 	if err != nil {
-		return err
+		return fmt.Errorf("bluecat: lookupParentZoneID: %w", err)
 	}
 
-	queryArgs := map[string]string{
-		"parentId": strconv.FormatUint(uint64(parentZoneID), 10),
-	}
-
-	body := bluecatEntity{
+	record := internal.Entity{
 		Name:       name,
-		Type:       "TXTRecord",
+		Type:       internal.TXTType,
 		Properties: fmt.Sprintf("ttl=%d|absoluteName=%s|txt=%s|", d.config.TTL, fqdn, value),
 	}
 
-	resp, err := d.sendRequest(http.MethodPost, "addEntity", body, queryArgs)
+	_, err = d.client.AddEntity(parentZoneID, record)
 	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	addTxtBytes, _ := io.ReadAll(resp.Body)
-	addTxtResp := string(addTxtBytes)
-	// addEntity responds only with body text containing the ID of the created record
-	_, err = strconv.ParseUint(addTxtResp, 10, 64)
-	if err != nil {
-		return fmt.Errorf("bluecat: addEntity request failed: %s", addTxtResp)
+		return fmt.Errorf("bluecat: add TXT record: %w", err)
 	}
 
-	err = d.deploy(parentZoneID)
+	err = d.client.Deploy(parentZoneID)
 	if err != nil {
-		return err
+		return fmt.Errorf("bluecat: deploy: %w", err)
 	}
 
-	return d.logout()
+	err = d.client.Logout()
+	if err != nil {
+		return fmt.Errorf("bluecat: logout: %w", err)
+	}
+
+	return nil
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 
-	err := d.login()
+	err := d.client.Login(d.config.UserName, d.config.Password)
 	if err != nil {
-		return err
+		return fmt.Errorf("bluecat: login: %w", err)
 	}
 
-	viewID, err := d.lookupViewID(d.config.DNSView)
+	viewID, err := d.client.LookupViewID(d.config.ConfigName, d.config.DNSView)
 	if err != nil {
-		return err
+		return fmt.Errorf("bluecat: lookupViewID: %w", err)
 	}
 
-	parentID, name, err := d.lookupParentZoneID(viewID, fqdn)
+	parentID, name, err := d.client.LookupParentZoneID(viewID, fqdn)
 	if err != nil {
-		return err
+		return fmt.Errorf("bluecat: lookupParentZoneID: %w", err)
 	}
 
-	queryArgs := map[string]string{
-		"parentId": strconv.FormatUint(uint64(parentID), 10),
-		"name":     name,
-		"type":     txtType,
-	}
-
-	resp, err := d.sendRequest(http.MethodGet, "getEntityByName", nil, queryArgs)
+	txtRecord, err := d.client.GetEntityByName(parentID, name, internal.TXTType)
 	if err != nil {
-		return err
+		return fmt.Errorf("bluecat: get TXT record: %w", err)
 	}
-	defer resp.Body.Close()
 
-	var txtRec entityResponse
-	err = json.NewDecoder(resp.Body).Decode(&txtRec)
+	err = d.client.Delete(txtRecord.ID)
 	if err != nil {
-		return fmt.Errorf("bluecat: %w", err)
-	}
-	queryArgs = map[string]string{
-		"objectId": strconv.FormatUint(uint64(txtRec.ID), 10),
+		return fmt.Errorf("bluecat: delete TXT record: %w", err)
 	}
 
-	resp, err = d.sendRequest(http.MethodDelete, http.MethodDelete, nil, queryArgs)
+	err = d.client.Deploy(parentID)
 	if err != nil {
-		return err
+		return fmt.Errorf("bluecat: deploy: %w", err)
 	}
-	defer resp.Body.Close()
 
-	err = d.deploy(parentID)
+	err = d.client.Logout()
 	if err != nil {
-		return err
+		return fmt.Errorf("bluecat: logout: %w", err)
 	}
 
-	return d.logout()
+	return nil
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.

@@ -18,9 +18,17 @@ Configuration for [Bluecat](https://www.bluecatnetworks.com).
 
 - Code: `bluecat`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the Bluecat provider:
+
+```bash
+BLUECAT_PASSWORD=mypassword \
+BLUECAT_DNS_VIEW=myview \
+BLUECAT_USER_NAME=myusername \
+BLUECAT_CONFIG_NAME=myconfig \
+BLUECAT_SERVER_URL=https://bam.example.com \
+BLUECAT_TTL=30 \
+lego --email myemail@example.com --dns bluecat --domains my.example.org run
+```
 
 
 
@@ -54,6 +62,9 @@ More information [here](/lego/dns/#configuration-and-credentials).
 
 
 
+## More information
+
+- [API documentation](https://docs.bluecatnetworks.com/r/Address-Manager-API-Guide/REST-API/9.1.0)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/bluecat/bluecat.toml -->

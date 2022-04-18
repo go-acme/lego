@@ -54,7 +54,10 @@ func (c *Client) Login(username, password string) error {
 
 	if resp.StatusCode != http.StatusOK {
 		data, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("status code: %d, message: %s", resp.StatusCode, string(data))
+		return &APIError{
+			StatusCode: resp.StatusCode,
+			Message:    string(data),
+		}
 	}
 
 	authBytes, err := io.ReadAll(resp.Body)
@@ -89,7 +92,10 @@ func (c *Client) Logout() error {
 
 	if resp.StatusCode != http.StatusOK {
 		data, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("status code: %d, message: %s", resp.StatusCode, string(data))
+		return &APIError{
+			StatusCode: resp.StatusCode,
+			Message:    string(data),
+		}
 	}
 
 	authBytes, err := io.ReadAll(resp.Body)
@@ -123,7 +129,10 @@ func (c *Client) Deploy(entityID uint) error {
 
 	if resp.StatusCode != http.StatusCreated {
 		data, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("status code: %d, message: %s", resp.StatusCode, string(data))
+		return &APIError{
+			StatusCode: resp.StatusCode,
+			Message:    string(data),
+		}
 	}
 
 	return nil
@@ -144,7 +153,10 @@ func (c *Client) AddEntity(parentID uint, entity Entity) (uint64, error) {
 
 	if resp.StatusCode != http.StatusOK {
 		data, _ := io.ReadAll(resp.Body)
-		return 0, fmt.Errorf("status code: %d, message: %s", resp.StatusCode, string(data))
+		return 0, &APIError{
+			StatusCode: resp.StatusCode,
+			Message:    string(data),
+		}
 	}
 
 	addTxtBytes, _ := io.ReadAll(resp.Body)
@@ -176,7 +188,10 @@ func (c *Client) GetEntityByName(parentID uint, name, objType string) (*EntityRe
 
 	if resp.StatusCode != http.StatusOK {
 		data, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("status code: %d, message: %s", resp.StatusCode, string(data))
+		return nil, &APIError{
+			StatusCode: resp.StatusCode,
+			Message:    string(data),
+		}
 	}
 
 	var txtRec EntityResponse
@@ -203,7 +218,10 @@ func (c *Client) Delete(objectID uint) error {
 
 	if resp.StatusCode != http.StatusNoContent {
 		data, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("status code: %d, message: %s", resp.StatusCode, string(data))
+		return &APIError{
+			StatusCode: resp.StatusCode,
+			Message:    string(data),
+		}
 	}
 
 	return nil
@@ -228,30 +246,31 @@ func (c *Client) LookupViewID(configName, viewName string) (uint, error) {
 // LookupParentZoneID Return the entityId of the parent zone by recursing from the root view.
 // Also return the simple name of the host.
 func (c *Client) LookupParentZoneID(viewID uint, fqdn string) (uint, string, error) {
+	if fqdn == "" {
+		return viewID, "", nil
+	}
+
+	var name string
 	parentViewID := viewID
-	name := ""
 
-	if fqdn != "" {
-		zones := strings.Split(strings.Trim(fqdn, "."), ".")
-		last := len(zones) - 1
-		name = zones[0]
+	zones := strings.Split(strings.Trim(fqdn, "."), ".")
+	name = zones[0]
 
-		for i := last; i > -1; i-- {
-			zone, err := c.GetEntityByName(parentViewID, zones[i], ZoneType)
-			if err != nil {
-				return 0, "", fmt.Errorf("could not find zone named %s: %w", name, err)
-			}
-
-			if zone == nil || zone.ID == 0 {
-				return 0, "", fmt.Errorf("could not find zone named %s", name)
-			}
-
-			if i > 0 {
-				name = strings.Join(zones[0:i], ".")
-			}
-
-			parentViewID = zone.ID
+	for i := len(zones) - 1; i > -1; i-- {
+		zone, err := c.GetEntityByName(parentViewID, zones[i], ZoneType)
+		if err != nil {
+			return 0, "", fmt.Errorf("could not find zone named %s: %w", name, err)
 		}
+
+		if zone == nil || zone.ID == 0 {
+			break
+		}
+
+		if i > 0 {
+			name = strings.Join(zones[0:i], ".")
+		}
+
+		parentViewID = zone.ID
 	}
 
 	return parentViewID, name, nil

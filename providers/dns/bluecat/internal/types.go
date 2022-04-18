@@ -1,5 +1,7 @@
 package internal
 
+import "fmt"
+
 // Entity JSON body for Bluecat entity requests.
 type Entity struct {
 	ID         string `json:"id,omitempty"`
@@ -14,4 +16,13 @@ type EntityResponse struct {
 	Name       string `json:"name"`
 	Type       string `json:"type"`
 	Properties string `json:"properties"`
+}
+
+type APIError struct {
+	StatusCode int
+	Message    string
+}
+
+func (a APIError) Error() string {
+	return fmt.Sprintf("status code: %d, message: %s", a.StatusCode, a.Message)
 }

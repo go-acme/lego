@@ -24,13 +24,16 @@ type Client struct {
 	HTTPClient *http.Client
 
 	baseURL string
-	token   string
+
+	token    string
+	tokenExp *regexp.Regexp
 }
 
 func NewClient(baseURL string) *Client {
 	return &Client{
-		baseURL:    baseURL,
 		HTTPClient: &http.Client{Timeout: 30 * time.Second},
+		baseURL:    baseURL,
+		tokenExp:   regexp.MustCompile("BAMAuthToken: [^ ]+"),
 	}
 }
 
@@ -65,7 +68,7 @@ func (c *Client) Login(username, password string) error {
 	}
 
 	// Upon success, API responds with "Session Token-> BAMAuthToken: dQfuRMTUxNjc3MjcyNDg1ODppcGFybXM= <- for User : username"
-	c.token = regexp.MustCompile("BAMAuthToken: [^ ]+").FindString(authResp)
+	c.token = c.tokenExp.FindString(authResp)
 
 	return nil
 }

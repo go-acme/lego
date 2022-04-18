@@ -96,7 +96,7 @@ func (c *Client) Logout() error {
 
 	authResp := string(authBytes)
 	if !strings.Contains(authResp, "successfully") {
-		msg := strings.Trim(authResp, "\"")
+		msg := strings.Trim(authResp, `"`)
 		return fmt.Errorf("request failed to delete session: %s", msg)
 	}
 
@@ -177,12 +177,11 @@ func (c *Client) GetEntityByName(parentID uint, name, objType string) (*EntityRe
 	}
 
 	var txtRec EntityResponse
-	err = json.NewDecoder(resp.Body).Decode(&txtRec)
-	if err != nil {
+	if err = json.NewDecoder(resp.Body).Decode(&txtRec); err != nil {
 		return nil, fmt.Errorf("JSON decode: %w", err)
 	}
 
-	return &txtRec, err
+	return &txtRec, nil
 }
 
 // Delete Deletes an object using the generic delete method.

@@ -20,9 +20,10 @@ type EntityResponse struct {
 
 type APIError struct {
 	StatusCode int
+	Resource   string
 	Message    string
 }
 
 func (a APIError) Error() string {
-	return fmt.Sprintf("status code: %d, message: %s", a.StatusCode, a.Message)
+	return fmt.Sprintf("resource: %s, status code: %d, message: %s", a.Resource, a.StatusCode, a.Message)
 }

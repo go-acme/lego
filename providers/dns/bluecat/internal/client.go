@@ -56,6 +56,7 @@ func (c *Client) Login(username, password string) error {
 		data, _ := io.ReadAll(resp.Body)
 		return &APIError{
 			StatusCode: resp.StatusCode,
+			Resource:   "login",
 			Message:    string(data),
 		}
 	}
@@ -94,6 +95,7 @@ func (c *Client) Logout() error {
 		data, _ := io.ReadAll(resp.Body)
 		return &APIError{
 			StatusCode: resp.StatusCode,
+			Resource:   "logout",
 			Message:    string(data),
 		}
 	}
@@ -132,6 +134,7 @@ func (c *Client) Deploy(entityID uint) error {
 		data, _ := io.ReadAll(resp.Body)
 		return &APIError{
 			StatusCode: resp.StatusCode,
+			Resource:   "quickDeploy",
 			Message:    string(data),
 		}
 	}
@@ -156,6 +159,7 @@ func (c *Client) AddEntity(parentID uint, entity Entity) (uint64, error) {
 		data, _ := io.ReadAll(resp.Body)
 		return 0, &APIError{
 			StatusCode: resp.StatusCode,
+			Resource:   "addEntity",
 			Message:    string(data),
 		}
 	}
@@ -191,6 +195,7 @@ func (c *Client) GetEntityByName(parentID uint, name, objType string) (*EntityRe
 		data, _ := io.ReadAll(resp.Body)
 		return nil, &APIError{
 			StatusCode: resp.StatusCode,
+			Resource:   "getEntityByName",
 			Message:    string(data),
 		}
 	}
@@ -221,6 +226,7 @@ func (c *Client) Delete(objectID uint) error {
 		data, _ := io.ReadAll(resp.Body)
 		return &APIError{
 			StatusCode: resp.StatusCode,
+			Resource:   "delete",
 			Message:    string(data),
 		}
 	}

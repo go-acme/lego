@@ -222,7 +222,8 @@ func (c *Client) Delete(objectID uint) error {
 
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusNoContent {
+	// The API doc says that 204 is expected but in the reality 200 is return.
+	if resp.StatusCode != http.StatusNoContent && resp.StatusCode != http.StatusOK {
 		data, _ := io.ReadAll(resp.Body)
 		return &APIError{
 			StatusCode: resp.StatusCode,

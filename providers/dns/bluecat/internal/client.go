@@ -68,7 +68,7 @@ func (c *Client) Login(username, password string) error {
 
 	authResp := string(authBytes)
 	if strings.Contains(authResp, "Authentication Error") {
-		return fmt.Errorf("request failed: %s", strings.Trim(authResp, "\""))
+		return fmt.Errorf("request failed: %s", strings.Trim(authResp, `"`))
 	}
 
 	// Upon success, API responds with "Session Token-> BAMAuthToken: dQfuRMTUxNjc3MjcyNDg1ODppcGFybXM= <- for User : username"
@@ -107,8 +107,7 @@ func (c *Client) Logout() error {
 
 	authResp := string(authBytes)
 	if !strings.Contains(authResp, "successfully") {
-		msg := strings.Trim(authResp, `"`)
-		return fmt.Errorf("request failed to delete session: %s", msg)
+		return fmt.Errorf("request failed to delete session: %s", strings.Trim(authResp, `"`))
 	}
 
 	c.token = ""
@@ -285,7 +284,7 @@ func (c *Client) LookupParentZoneID(viewID uint, fqdn string) (uint, string, err
 
 // Send a REST request, using query parameters specified.
 // The Authorization header will be set if we have an active auth token.
-func (c *Client) sendRequest(method, resource string, payload interface{}, queryArgs map[string]string) (*http.Response, error) {
+func (c *Client) sendRequest(method, resource string, payload interface{}, queryParams map[string]string) (*http.Response, error) {
 	url := fmt.Sprintf("%s/Services/REST/v1/%s", c.baseURL, resource)
 
 	body, err := json.Marshal(payload)
@@ -300,13 +299,13 @@ func (c *Client) sendRequest(method, resource string, payload interface{}, query
 
 	req.Header.Set("Content-Type", "application/json")
 
-	if len(c.token) > 0 {
+	if c.token != "" {
 		req.Header.Set("Authorization", c.token)
 	}
 
 	q := req.URL.Query()
-	for argName, argVal := range queryArgs {
-		q.Add(argName, argVal)
+	for k, v := range queryParams {
+		q.Set(k, v)
 	}
 	req.URL.RawQuery = q.Encode()
 

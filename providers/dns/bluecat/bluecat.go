@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
+	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/bluecat/internal"
 )
@@ -21,6 +22,7 @@ const (
 	EnvPassword   = envNamespace + "PASSWORD"
 	EnvConfigName = envNamespace + "CONFIG_NAME"
 	EnvDNSView    = envNamespace + "DNS_VIEW"
+	EnvDebug      = envNamespace + "DEBUG"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -39,6 +41,7 @@ type Config struct {
 	PollingInterval    time.Duration
 	TTL                int
 	HTTPClient         *http.Client
+	Debug              bool
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
@@ -50,6 +53,7 @@ func NewDefaultConfig() *Config {
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
+		Debug: env.GetOrDefaultBool(EnvDebug, false),
 	}
 }
 
@@ -121,6 +125,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	parentZoneID, name, err := d.client.LookupParentZoneID(viewID, fqdn)
 	if err != nil {
 		return fmt.Errorf("bluecat: lookupParentZoneID: %w", err)
+	}
+
+	if d.config.Debug {
+		log.Infof("fqdn: %s; viewID: %d; ZoneID: %d; zone: %s", fqdn, viewID, parentZoneID, name)
 	}
 
 	txtRecord := internal.Entity{

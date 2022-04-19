@@ -4,7 +4,15 @@ URL = "https://www.bluecatnetworks.com"
 Code = "bluecat"
 Since = "v0.5.0"
 
-Example = ''''''
+Example = '''
+BLUECAT_PASSWORD=mypassword \
+BLUECAT_DNS_VIEW=myview \
+BLUECAT_USER_NAME=myusername \
+BLUECAT_CONFIG_NAME=myconfig \
+BLUECAT_SERVER_URL=https://bam.example.com \
+BLUECAT_TTL=30 \
+lego --email myemail@example.com --dns bluecat --domains my.example.org run
+'''
 
 [Configuration]
   [Configuration.Credentials]
@@ -18,3 +26,6 @@ Example = ''''''
     BLUECAT_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
     BLUECAT_TTL = "The TTL of the TXT record used for the DNS challenge"
     BLUECAT_HTTP_TIMEOUT = "API request timeout"
+
+[Links]
+  API = "https://docs.bluecatnetworks.com/r/Address-Manager-API-Guide/REST-API/9.1.0"

@@ -60,10 +60,13 @@ type DNSProvider struct {
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Bluecat DNS.
-// Credentials must be passed in the environment variables: BLUECAT_SERVER_URL, BLUECAT_USER_NAME and BLUECAT_PASSWORD.
-// BLUECAT_SERVER_URL should have the scheme, hostname, and port (if required) of the authoritative Bluecat BAM server.
-// The REST endpoint will be appended.
-// In addition, the Configuration name and external DNS View Name must be passed in BLUECAT_CONFIG_NAME and BLUECAT_DNS_VIEW.
+// Credentials must be passed in the environment variables:
+//  - BLUECAT_SERVER_URL
+// 		It should have the scheme, hostname, and port (if required) of the authoritative Bluecat BAM server.
+// 		The REST endpoint will be appended.
+//  - BLUECAT_USER_NAME and BLUECAT_PASSWORD
+//  - BLUECAT_CONFIG_NAME (the Configuration name)
+//  - BLUECAT_DNS_VIEW (external DNS View Name)
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvServerURL, EnvUserName, EnvPassword, EnvConfigName, EnvDNSView)
 	if err != nil {
@@ -100,8 +103,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 }
 
 // Present creates a TXT record using the specified parameters
-// This will *not* create a subzone to contain the TXT record,
-// so make sure the FQDN specified is within an extant zone.
+// This will *not* create a sub-zone to contain the TXT record,
+// so make sure the FQDN specified is within an existent zone.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
@@ -120,13 +123,13 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("bluecat: lookupParentZoneID: %w", err)
 	}
 
-	record := internal.Entity{
+	txtRecord := internal.Entity{
 		Name:       name,
 		Type:       internal.TXTType,
 		Properties: fmt.Sprintf("ttl=%d|absoluteName=%s|txt=%s|", d.config.TTL, fqdn, value),
 	}
 
-	_, err = d.client.AddEntity(parentZoneID, record)
+	_, err = d.client.AddEntity(parentZoneID, txtRecord)
 	if err != nil {
 		return fmt.Errorf("bluecat: add TXT record: %w", err)
 	}
@@ -158,12 +161,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("bluecat: lookupViewID: %w", err)
 	}
 
-	parentID, name, err := d.client.LookupParentZoneID(viewID, fqdn)
+	parentZoneID, name, err := d.client.LookupParentZoneID(viewID, fqdn)
 	if err != nil {
 		return fmt.Errorf("bluecat: lookupParentZoneID: %w", err)
 	}
 
-	txtRecord, err := d.client.GetEntityByName(parentID, name, internal.TXTType)
+	txtRecord, err := d.client.GetEntityByName(parentZoneID, name, internal.TXTType)
 	if err != nil {
 		return fmt.Errorf("bluecat: get TXT record: %w", err)
 	}
@@ -173,7 +176,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("bluecat: delete TXT record: %w", err)
 	}
 
-	err = d.client.Deploy(parentID)
+	err = d.client.Deploy(parentZoneID)
 	if err != nil {
 		return fmt.Errorf("bluecat: deploy: %w", err)
 	}

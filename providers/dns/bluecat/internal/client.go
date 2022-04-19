@@ -258,11 +258,10 @@ func (c *Client) LookupParentZoneID(viewID uint, fqdn string) (uint, string, err
 		return viewID, "", nil
 	}
 
-	var name string
-	parentViewID := viewID
-
 	zones := strings.Split(strings.Trim(fqdn, "."), ".")
-	name = zones[0]
+
+	name := zones[0]
+	parentViewID := viewID
 
 	for i := len(zones) - 1; i > -1; i-- {
 		zone, err := c.GetEntityByName(parentViewID, zones[i], ZoneType)

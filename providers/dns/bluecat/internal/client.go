@@ -127,7 +127,8 @@ func (c *Client) Deploy(entityID uint) error {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusCreated {
+	// The API doc says that 201 is expected but in the reality 200 is return.
+	if resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusOK {
 		data, _ := io.ReadAll(resp.Body)
 		return &APIError{
 			StatusCode: resp.StatusCode,

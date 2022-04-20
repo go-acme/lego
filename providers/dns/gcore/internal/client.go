@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	defaultBaseURL = "https://dnsapi.gcorelabs.com"
+	defaultBaseURL = "https://api.gcorelabs.com/dns"
 	tokenHeader    = "APIKey"
 	txtRecordType  = "TXT"
 )

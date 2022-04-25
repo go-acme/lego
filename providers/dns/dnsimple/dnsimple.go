@@ -21,6 +21,7 @@ const (
 
 	EnvOAuthToken = envNamespace + "OAUTH_TOKEN"
 	EnvBaseURL    = envNamespace + "BASE_URL"
+	EnvDebug      = envNamespace + "DEBUG"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -29,6 +30,7 @@ const (
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
+	Debug              bool
 	AccessToken        string
 	BaseURL            string
 	PropagationTimeout time.Duration
@@ -40,6 +42,7 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		Debug:              env.GetOrDefaultBool(EnvDebug, false),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 	}
@@ -80,6 +83,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config.BaseURL != "" {
 		client.BaseURL = config.BaseURL
 	}
+
+	client.Debug = config.Debug
 
 	return &DNSProvider{client: client, config: config}, nil
 }

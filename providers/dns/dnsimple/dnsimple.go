@@ -84,6 +84,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		client.BaseURL = config.BaseURL
 	}
 
+	client.Debug = config.Debug
+
 	return &DNSProvider{client: client, config: config}, nil
 }
 

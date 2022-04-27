@@ -183,7 +183,10 @@ func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 		key := dns.Fqdn(d.config.TSIGKey)
 		alg := dns.Fqdn(d.config.TSIGAlgorithm)
 		m.SetTsig(key, alg, 300, time.Now().Unix())
-		c.TsigSecret = map[string]string{dns.Fqdn(d.config.TSIGKey): d.config.TSIGSecret}
+
+		// secret(s) for Tsig map[<zonename>]<base64 secret>,
+		// zonename must be in canonical form (lowercase, fqdn, see RFC 4034 Section 6.2)
+		c.TsigSecret = map[string]string{strings.ToLower(key): d.config.TSIGSecret}
 	}
 
 	// Send the query

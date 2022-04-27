@@ -20,7 +20,7 @@ clean:
 
 build: clean
 	@echo Version: $(VERSION)
-	go build -v -trimpath -ldflags '-X "main.version=${VERSION}"' -o ${BIN_OUTPUT} ${MAIN_DIRECTORY}
+	go build -trimpath -ldflags '-X "main.version=${VERSION}"' -o ${BIN_OUTPUT} ${MAIN_DIRECTORY}
 
 image:
 	@echo Version: $(VERSION)

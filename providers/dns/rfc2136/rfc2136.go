@@ -180,13 +180,13 @@ func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 
 	// TSIG authentication / msg signing
 	if len(d.config.TSIGKey) > 0 && len(d.config.TSIGSecret) > 0 {
-		key := dns.Fqdn(d.config.TSIGKey)
+		key := strings.ToLower(dns.Fqdn(d.config.TSIGKey))
 		alg := dns.Fqdn(d.config.TSIGAlgorithm)
 		m.SetTsig(key, alg, 300, time.Now().Unix())
 
 		// secret(s) for Tsig map[<zonename>]<base64 secret>,
 		// zonename must be in canonical form (lowercase, fqdn, see RFC 4034 Section 6.2)
-		c.TsigSecret = map[string]string{strings.ToLower(key): d.config.TSIGSecret}
+		c.TsigSecret = map[string]string{key: d.config.TSIGSecret}
 	}
 
 	// Send the query

@@ -2,6 +2,7 @@ package dns
 
 import (
 	"fmt"
+	"github.com/go-acme/lego/v4/providers/dns/vercel"
 
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -296,6 +297,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return transip.NewDNSProvider()
 	case "vegadns":
 		return vegadns.NewDNSProvider()
+	case "vercel":
+		return vercel.NewDNSProvider()
 	case "versio":
 		return versio.NewDNSProvider()
 	case "vinyldns":

@@ -1,15 +1,17 @@
-// Package vercel implements a DNS provider for solving the DNS-01 challenge using vercel DNS.
+// Package vercel implements a DNS provider for solving the DNS-01 challenge using Vercel DNS.
 package vercel
 
 import (
 	"errors"
 	"fmt"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/platform/config/env"
 	"net/http"
 	"os"
 	"sync"
 	"time"
+
+	"github.com/go-acme/lego/v4/challenge/dns01"
+	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/vercel/internal"
 )
 
 // Environment variables names.
@@ -27,7 +29,6 @@ const (
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	BaseURL            string
 	AuthToken          string
 	TeamID             string
 	TTL                int
@@ -39,7 +40,6 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		BaseURL:            defaultBaseURL,
 		TTL:                env.GetOrDefaultInt(EnvTTL, 60),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 60*time.Second),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 5*time.Second),
@@ -51,13 +51,15 @@ func NewDefaultConfig() *Config {
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	config      *Config
+	config *Config
+	client *internal.Client
+
 	recordIDs   map[string]string
 	recordIDsMu sync.Mutex
 }
 
-// NewDNSProvider returns a DNSProvider instance configured for Vercel. Credentials must be passed in the environment variable:
-// VERCEL_API_TOKEN.
+// NewDNSProvider returns a DNSProvider instance configured for Vercel.
+// Credentials must be passed in the environment variable: VERCEL_API_TOKEN.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvAuthToken)
 	if err != nil {
@@ -81,12 +83,15 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("vercel: credentials missing")
 	}
 
-	if config.BaseURL == "" {
-		config.BaseURL = defaultBaseURL
+	client := internal.NewClient(config.AuthToken, config.TeamID)
+
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
 	}
 
 	return &DNSProvider{
 		config:    config,
+		client:    client,
 		recordIDs: make(map[string]string),
 	}, nil
 }
@@ -101,7 +106,19 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	respData, err := d.addTxtRecord(fqdn, value)
+	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
+	if err != nil {
+		return fmt.Errorf("vercel: could not determine zone for domain %q: %w", domain, err)
+	}
+
+	record := internal.Record{
+		Name:  fqdn,
+		Type:  "TXT",
+		Value: value,
+		TTL:   d.config.TTL,
+	}
+
+	respData, err := d.client.CreateRecord(authZone, record)
 	if err != nil {
 		return fmt.Errorf("vercel: %w", err)
 	}
@@ -130,7 +147,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("vercel: unknown record ID for '%s'", fqdn)
 	}
 
-	err = d.removeTxtRecord(authZone, recordID)
+	err = d.client.DeleteRecord(authZone, recordID)
 	if err != nil {
 		return fmt.Errorf("vercel: %w", err)
 	}

@@ -2089,7 +2089,7 @@ func displayDNSHelp(name string) error {
 		// generated from: providers/dns/vercel/vercel.toml
 		ew.writeln(`Configuration for Vercel.`)
 		ew.writeln(`Code:	'vercel'`)
-		ew.writeln(`Since:	'v4.6.0'`)
+		ew.writeln(`Since:	'v4.7.0'`)
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)

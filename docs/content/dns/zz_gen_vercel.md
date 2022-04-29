@@ -9,9 +9,9 @@ slug: vercel
 <!-- providers/dns/vercel/vercel.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.6.0
+Since: v4.7.0
 
-Configuration for [Vercel](https://vercel.com/support/articles/how-to-manage-vercel-dns-records).
+Configuration for [Vercel](https://vercel.com).
 
 
 <!--more-->

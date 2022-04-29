@@ -106,6 +106,7 @@ func allDNSCodes() string {
 		"tencentcloud",
 		"transip",
 		"vegadns",
+		"vercel",
 		"versio",
 		"vinyldns",
 		"vscale",
@@ -2083,6 +2084,27 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/vegadns`)
+
+	case "vercel":
+		// generated from: providers/dns/vercel/vercel.toml
+		ew.writeln(`Configuration for Vercel.`)
+		ew.writeln(`Code:	'vercel'`)
+		ew.writeln(`Since:	'v4.7.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "VERCEL_API_TOKEN":	Authentication token`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "VERCEL_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "VERCEL_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "VERCEL_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "VERCEL_TEAM_ID":	Team ID (ex: team_xxxxxxxxxxxxxxxxxxxxxxxx)`)
+		ew.writeln(`	- "VERCEL_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/vercel`)
 
 	case "versio":
 		// generated from: providers/dns/versio/versio.toml

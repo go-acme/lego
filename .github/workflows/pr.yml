@@ -1,0 +1,82 @@
+name: Main
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+
+  main:
+    name: Main Process
+    runs-on: ubuntu-latest
+    env:
+      GO_VERSION: 1.18
+      GOLANGCI_LINT_VERSION: v1.45.2
+      HUGO_VERSION: 0.54.0
+      CGO_ENABLED: 0
+      LEGO_E2E_TESTS: CI
+      MEMCACHED_HOSTS: localhost:11211
+
+    steps:
+
+      # https://github.com/marketplace/actions/setup-go-environment
+      - name: Set up Go ${{ env.GO_VERSION }}
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      # https://github.com/marketplace/actions/checkout
+      - name: Check out code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      # https://github.com/marketplace/actions/cache
+      - name: Cache Go modules
+        uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Check and get dependencies
+        run: |
+          go mod tidy
+          git diff --exit-code go.mod
+          git diff --exit-code go.sum
+
+      # https://golangci-lint.run/usage/install#other-ci
+      - name: Install golangci-lint ${{ env.GOLANGCI_LINT_VERSION }}
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin ${GOLANGCI_LINT_VERSION}
+          golangci-lint --version
+
+      - name: Install Pebble and challtestsrv
+        run: GO111MODULE=off go get -u github.com/letsencrypt/pebble/...
+
+      - name: Set up a Memcached server
+        uses: niden/actions-memcached@v7
+
+      - name: Setup /etc/hosts
+        run: |
+          echo "127.0.0.1 acme.wtf" | sudo tee -a /etc/hosts
+          echo "127.0.0.1 lego.wtf" | sudo tee -a /etc/hosts
+          echo "127.0.0.1 acme.lego.wtf" | sudo tee -a /etc/hosts
+          echo "127.0.0.1 légô.wtf" | sudo tee -a /etc/hosts
+          echo "127.0.0.1 xn--lg-bja9b.wtf" | sudo tee -a /etc/hosts
+
+      - name: Make
+        run: |
+          make
+          make clean
+
+      - name: Install Hugo
+        run: |
+          wget -O /tmp/hugo.deb https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_${HUGO_VERSION}_Linux-64bit.deb
+          sudo dpkg -i /tmp/hugo.deb
+
+      - name: Build Documentation
+        run: make docs-build

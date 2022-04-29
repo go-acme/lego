@@ -1,0 +1,60 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+
+  release:
+    name: Release version
+    runs-on: ubuntu-latest
+    env:
+      GO_VERSION: 1.18
+      SEIHON_VERSION: v0.8.3
+      CGO_ENABLED: 0
+
+    steps:
+      - name: Set up Go ${{ env.GO_VERSION }}
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Check out code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Cache Go modules
+        uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      # https://goreleaser.com/ci/actions/
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v2
+        with:
+          version: latest
+          args: release --rm-dist --timeout=60m
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_REPO }}
+
+      # Install Docker image multi-arch builder
+      - name: Install Seihon ${{ env.SEIHON_VERSION }}
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/ldez/seihon/master/godownloader.sh | sh -s -- -b $(go env GOPATH)/bin ${SEIHON_VERSION}
+          seihon --version
+
+      - name: Docker Login
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: echo "${DOCKER_PASSWORD}" | docker login --username "${DOCKER_USERNAME}" --password-stdin
+
+      - name: Publish Docker Images (Seihon)
+        run: make publish-images

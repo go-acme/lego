@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -21,7 +22,7 @@ func setup(t *testing.T) (*Client, *http.ServeMux) {
 	client := NewClient("secret", "123")
 
 	client.HTTPClient = server.Client()
-	client.baseURL = server.URL
+	client.baseURL, _ = url.Parse(server.URL)
 
 	return client, mux
 }

@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
+	"path"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -18,16 +20,18 @@ const defaultBaseURL = "https://api.vercel.com"
 type Client struct {
 	authToken  string
 	teamID     string
-	baseURL    string
+	baseURL    *url.URL
 	HTTPClient *http.Client
 }
 
 // NewClient creates a Client.
 func NewClient(authToken string, teamID string) *Client {
+	baseURL, _ := url.Parse(defaultBaseURL)
+
 	return &Client{
 		authToken:  authToken,
 		teamID:     teamID,
-		baseURL:    defaultBaseURL,
+		baseURL:    baseURL,
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 	}
 }
@@ -35,13 +39,17 @@ func NewClient(authToken string, teamID string) *Client {
 // CreateRecord creates a DNS record.
 // https://vercel.com/docs/rest-api#endpoints/dns/create-a-dns-record
 func (d *Client) CreateRecord(zone string, record Record) (*CreateRecordResponse, error) {
+	endpoint, err := d.baseURL.Parse(path.Join(d.baseURL.Path, "v2", "domains", dns01.UnFqdn(zone), "records"))
+	if err != nil {
+		return nil, err
+	}
+
 	body, err := json.Marshal(record)
 	if err != nil {
 		return nil, err
 	}
 
-	reqURL := fmt.Sprintf("%s/v2/domains/%s/records", d.baseURL, dns01.UnFqdn(zone))
-	req, err := d.newRequest(http.MethodPost, reqURL, bytes.NewReader(body))
+	req, err := d.newRequest(http.MethodPost, endpoint.String(), bytes.NewReader(body))
 	if err != nil {
 		return nil, err
 	}
@@ -73,14 +81,18 @@ func (d *Client) CreateRecord(zone string, record Record) (*CreateRecordResponse
 
 // DeleteRecord deletes a DNS record.
 // https://vercel.com/docs/rest-api#endpoints/dns/delete-a-dns-record
-func (d *Client) DeleteRecord(zone string, recordID string) error {
-	reqURL := fmt.Sprintf("%s/v2/domains/%s/records/%s", d.baseURL, dns01.UnFqdn(zone), recordID)
-	req, err := d.newRequest(http.MethodDelete, reqURL, nil)
+func (c *Client) DeleteRecord(zone string, recordID string) error {
+	endpoint, err := c.baseURL.Parse(path.Join(c.baseURL.Path, "v2", "domains", dns01.UnFqdn(zone), "records", recordID))
 	if err != nil {
 		return err
 	}
 
-	resp, err := d.HTTPClient.Do(req)
+	req, err := c.newRequest(http.MethodDelete, endpoint.String(), nil)
+	if err != nil {
+		return err
+	}
+
+	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
 		return err
 	}

@@ -45,7 +45,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `VERCEL_HTTP_TIMEOUT` | API request timeout |
 | `VERCEL_POLLING_INTERVAL` | Time between DNS propagation check |
 | `VERCEL_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
-| `VERCEL_TEAM_ID` | team_xxxxxxxxxxxxxxxxxxxxxxxx |
+| `VERCEL_TEAM_ID` | Team ID (ex: team_xxxxxxxxxxxxxxxxxxxxxxxx) |
 | `VERCEL_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.

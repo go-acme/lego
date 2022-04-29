@@ -38,8 +38,8 @@ func NewClient(authToken string, teamID string) *Client {
 
 // CreateRecord creates a DNS record.
 // https://vercel.com/docs/rest-api#endpoints/dns/create-a-dns-record
-func (d *Client) CreateRecord(zone string, record Record) (*CreateRecordResponse, error) {
-	endpoint, err := d.baseURL.Parse(path.Join(d.baseURL.Path, "v2", "domains", dns01.UnFqdn(zone), "records"))
+func (c *Client) CreateRecord(zone string, record Record) (*CreateRecordResponse, error) {
+	endpoint, err := c.baseURL.Parse(path.Join(c.baseURL.Path, "v2", "domains", dns01.UnFqdn(zone), "records"))
 	if err != nil {
 		return nil, err
 	}
@@ -49,12 +49,12 @@ func (d *Client) CreateRecord(zone string, record Record) (*CreateRecordResponse
 		return nil, err
 	}
 
-	req, err := d.newRequest(http.MethodPost, endpoint.String(), bytes.NewReader(body))
+	req, err := c.newRequest(http.MethodPost, endpoint.String(), bytes.NewReader(body))
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := d.HTTPClient.Do(req)
+	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -105,20 +105,20 @@ func (c *Client) DeleteRecord(zone string, recordID string) error {
 	return nil
 }
 
-func (d *Client) newRequest(method, reqURL string, body io.Reader) (*http.Request, error) {
+func (c *Client) newRequest(method, reqURL string, body io.Reader) (*http.Request, error) {
 	req, err := http.NewRequest(method, reqURL, body)
 	if err != nil {
 		return nil, err
 	}
 
-	if d.teamID != "" {
+	if c.teamID != "" {
 		query := req.URL.Query()
-		query.Add("teamId", d.teamID)
+		query.Add("teamId", c.teamID)
 		req.URL.RawQuery = query.Encode()
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", d.authToken))
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.authToken))
 
 	return req, nil
 }

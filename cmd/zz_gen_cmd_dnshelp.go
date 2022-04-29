@@ -2100,7 +2100,7 @@ func displayDNSHelp(name string) error {
 		ew.writeln(`	- "VERCEL_HTTP_TIMEOUT":	API request timeout`)
 		ew.writeln(`	- "VERCEL_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "VERCEL_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
-		ew.writeln(`	- "VERCEL_TEAM_ID":	team_xxxxxxxxxxxxxxxxxxxxxxxx`)
+		ew.writeln(`	- "VERCEL_TEAM_ID":	Team ID (ex: team_xxxxxxxxxxxxxxxxxxxxxxxx)`)
 		ew.writeln(`	- "VERCEL_TTL":	The TTL of the TXT record used for the DNS challenge`)
 
 		ew.writeln()

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"os"
 	"sync"
 	"time"
 
@@ -59,7 +58,7 @@ type DNSProvider struct {
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Vercel.
-// Credentials must be passed in the environment variable: VERCEL_API_TOKEN.
+// Credentials must be passed in the environment variables: VERCEL_API_TOKEN, VERCEL_TEAM_ID.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvAuthToken)
 	if err != nil {
@@ -68,7 +67,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 	config := NewDefaultConfig()
 	config.AuthToken = values[EnvAuthToken]
-	config.TeamID = os.Getenv(EnvTeamID)
+	config.TeamID = env.GetOrDefaultString(EnvTeamID, "")
 
 	return NewDNSProviderConfig(config)
 }

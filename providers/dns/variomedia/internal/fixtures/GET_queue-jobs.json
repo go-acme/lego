@@ -1,0 +1,25 @@
+{
+  "data": {
+    "id": "171717",
+    "type": "queue-job",
+    "links": {
+      "self": "https://api.variomedia.de/queue-jobs/171717",
+      "object": "https://api.variomedia.de/dns-records/212121"
+    },
+    "attributes": {
+      "job_type": "dns-record",
+      "status": "done"
+    },
+    "relationships": {
+      "owner": {
+        "data": {
+          "id": "505050",
+          "type": "customer"
+        }
+      }
+    }
+  },
+  "links": {
+    "self": "https://api.variomedia.de/queue-jobs/171717"
+  }
+}

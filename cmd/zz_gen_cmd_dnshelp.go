@@ -107,6 +107,7 @@ func allDNSCodes() string {
 		"stackpath",
 		"tencentcloud",
 		"transip",
+		"variomedia",
 		"vegadns",
 		"vercel",
 		"versio",
@@ -2109,6 +2110,27 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/transip`)
+
+	case "variomedia":
+		// generated from: providers/dns/variomedia/variomedia.toml
+		ew.writeln(`Configuration for Variomedia.`)
+		ew.writeln(`Code:	'variomedia'`)
+		ew.writeln(`Since:	'v4.8.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "VARIOMEDIA_API_TOKEN":	API token`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "DODE_SEQUENCE_INTERVAL":	Time between sequential requests`)
+		ew.writeln(`	- "VARIOMEDIA_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "VARIOMEDIA_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "VARIOMEDIA_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "VARIOMEDIA_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/variomedia`)
 
 	case "vegadns":
 		// generated from: providers/dns/vegadns/vegadns.toml

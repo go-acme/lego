@@ -53,7 +53,7 @@ require (
 	github.com/transip/gotransip/v6 v6.6.1
 	github.com/urfave/cli/v2 v2.3.0
 	github.com/vinyldns/go-vinyldns v0.9.16
-	github.com/vultr/govultr/v2 v2.7.1
+	github.com/vultr/govultr/v2 v2.16.0
 	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e
 	golang.org/x/net v0.0.0-20210510120150-4163338589ed
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
@@ -87,7 +87,7 @@ require (
 	github.com/google/uuid v1.1.1 // indirect
 	github.com/googleapis/gax-go/v2 v2.0.5 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.1 // indirect
-	github.com/hashicorp/go-retryablehttp v0.7.0 // indirect
+	github.com/hashicorp/go-retryablehttp v0.7.1 // indirect
 	github.com/jarcoal/httpmock v1.0.6 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/json-iterator/go v1.1.7 // indirect

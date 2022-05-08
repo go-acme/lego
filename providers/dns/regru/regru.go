@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -12,6 +13,8 @@ import (
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/regru/internal"
 )
+
+const defaultBaseURL = "https://www.webnames.ru/scripts/json_domain_zone_manager.pl"
 
 // Environment variables names.
 const (
@@ -111,6 +114,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("regru: failed to create TXT records [domain: %s, sub domain: %s]: %w",
 			dns01.UnFqdn(authZone), subDomain, err)
 	}
+
+	u, _ := url.Parse(defaultBaseURL)
+	_ = u
+
+	// DOMAIN=$(expr match "$CERTBOT_DOMAIN" '.*\.\(.*\..*\)')
+	// API="https://www.webnames.ru/scripts/json_domain_zone_manager.pl"
+	// CREATE_DOMAIN="_acme-challenge.$CERTBOT_DOMAIN"
+	// PARAMS="apikey=$API_KEY&domain=$CERTBOT_DOMAIN&type=TXT&record=$CREATE_DOMAIN:$CERTBOT_VALIDATION"
 
 	return nil
 }

@@ -103,6 +103,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/vinyldns"
 	"github.com/go-acme/lego/v4/providers/dns/vscale"
 	"github.com/go-acme/lego/v4/providers/dns/vultr"
+	"github.com/go-acme/lego/v4/providers/dns/webnames"
 	"github.com/go-acme/lego/v4/providers/dns/wedos"
 	"github.com/go-acme/lego/v4/providers/dns/yandex"
 	"github.com/go-acme/lego/v4/providers/dns/zoneee"
@@ -310,6 +311,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return vultr.NewDNSProvider()
 	case "vscale":
 		return vscale.NewDNSProvider()
+	case "webnames":
+		return webnames.NewDNSProvider()
 	case "wedos":
 		return wedos.NewDNSProvider()
 	case "yandex":

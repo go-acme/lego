@@ -18,9 +18,13 @@ Configuration for [IIJ DNS Platform Service](https://www.iij.ad.jp/en/biz/dns-pf
 
 - Code: `iijdpf`
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the IIJ DNS Platform Service provider:
+
+```bash
+IIJ_DPF_API_TOKEN=xxxxxxxx \
+IIJ_DPF_DPM_SERVICE_CODE=yyyyyy \
+lego -email myemail@example.com --dns iijdpf --domains my.example.org run
+```
 
 
 

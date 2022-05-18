@@ -4,7 +4,11 @@ URL = "https://www.iij.ad.jp/en/biz/dns-pfm/"
 Code = "iijdpf"
 Since = "v3.7.0"
 
-Example = ''''''
+Example = '''
+IIJ_DPF_API_TOKEN=xxxxxxxx \
+IIJ_DPF_DPM_SERVICE_CODE=yyyyyy \
+lego -email myemail@example.com --dns iijdpf --domains my.example.org run
+'''
 
 [Configuration]
   [Configuration.Credentials]

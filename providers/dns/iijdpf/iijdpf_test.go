@@ -24,7 +24,7 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				EnvAPIToken: "A",
+				EnvAPIToken:    "A",
 				EnvServiceCode: "dpmXXXXXX",
 			},
 		},
@@ -67,24 +67,24 @@ func TestNewDNSProvider(t *testing.T) {
 
 func TestNewDNSProviderConfig(t *testing.T) {
 	testCases := []struct {
-		desc     string
-		token    string
-		servicecode    string
-		expected string
+		desc        string
+		token       string
+		servicecode string
+		expected    string
 	}{
 		{
-			desc:  "success",
-			token: "A",
+			desc:        "success",
+			token:       "A",
 			servicecode: "dpm00000",
 		},
 		{
-			desc:     "missing credentials",
+			desc:        "missing credentials",
 			servicecode: "dpm00000",
-			expected: "iijdpf: API token missing",
+			expected:    "iijdpf: API token missing",
 		},
 		{
 			desc:     "missing credentials",
-			token: "A",
+			token:    "A",
 			expected: "iijdpf: Servicecode missing",
 		},
 		{
@@ -110,4 +110,30 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestLivePresent(t *testing.T) {
+	if !envTest.IsLiveTest() {
+		t.Skip("skipping live test")
+	}
+
+	envTest.RestoreEnv()
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
+
+	err = provider.Present(envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
+}
+
+func TestLiveCleanUp(t *testing.T) {
+	if !envTest.IsLiveTest() {
+		t.Skip("skipping live test")
+	}
+
+	envTest.RestoreEnv()
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
+
+	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
+	require.NoError(t, err)
 }

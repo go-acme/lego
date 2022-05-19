@@ -2,7 +2,7 @@ Name = "IIJ DNS Platform Service"
 Description = ''''''
 URL = "https://www.iij.ad.jp/en/biz/dns-pfm/"
 Code = "iijdpf"
-Since = "v3.7.0"
+Since = "v4.7.0"
 
 Example = '''
 IIJ_DPF_API_TOKEN=xxxxxxxx \

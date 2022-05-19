@@ -1138,7 +1138,7 @@ func displayDNSHelp(name string) error {
 		// generated from: providers/dns/iijdpf/iijdpf.toml
 		ew.writeln(`Configuration for IIJ DNS Platform Service.`)
 		ew.writeln(`Code:	'iijdpf'`)
-		ew.writeln(`Since:	'v3.7.0'`)
+		ew.writeln(`Since:	'v4.7.0'`)
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)

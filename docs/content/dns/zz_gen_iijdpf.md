@@ -9,7 +9,7 @@ slug: iijdpf
 <!-- providers/dns/iijdpf/iijdpf.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v3.7.0
+Since: v4.7.0
 
 Configuration for [IIJ DNS Platform Service](https://www.iij.ad.jp/en/biz/dns-pfm/).
 

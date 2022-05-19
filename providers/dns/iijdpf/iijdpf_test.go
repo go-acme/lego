@@ -9,11 +9,7 @@ import (
 
 const envDomain = envNamespace + "TESTDOMAIN"
 
-var envTest = tester.NewEnvTest(
-	EnvAPIToken,
-	EnvServiceCode,
-).
-	WithDomain(envDomain)
+var envTest = tester.NewEnvTest(EnvAPIToken, EnvServiceCode).WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -98,6 +94,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			config := NewDefaultConfig()
 			config.Token = test.token
 			config.ServiceCode = test.servicecode
+
 			p, err := NewDNSProviderConfig(config)
 
 			if test.expected == "" {

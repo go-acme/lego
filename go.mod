@@ -30,6 +30,7 @@ require (
 	github.com/linode/linodego v0.31.1
 	github.com/liquidweb/liquidweb-go v1.6.3
 	github.com/miekg/dns v1.1.47
+	github.com/mimuret/golang-iij-dpf v0.7.1
 	github.com/mitchellh/mapstructure v1.4.1
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
 	github.com/nrdcg/auroradns v1.0.1
@@ -63,8 +64,6 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 	software.sslmate.com/src/go-pkcs12 v0.0.0-20210415151418-c5206de65a78
 )
-
-require github.com/mimuret/golang-iij-dpf v0.7.1
 
 require (
 	github.com/Azure/go-autorest v14.2.0+incompatible // indirect

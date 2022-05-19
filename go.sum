@@ -329,8 +329,6 @@ github.com/matttproud/golang_protobuf_extensions v1.0.1/go.mod h1:D8He9yQNgCq6Z5
 github.com/miekg/dns v1.0.14/go.mod h1:W1PPwlIAgtquWBMBEV9nkV9Cazfe8ScdGz/Lj7v3Nrg=
 github.com/miekg/dns v1.1.47 h1:J9bWiXbqMbnZPcY8Qi2E3EWIBsIm6MZzzJB9VRg5gL8=
 github.com/miekg/dns v1.1.47/go.mod h1:e3IlAVfNqAllflbibAZEWOXOQ+Ynzk/dDozDxY7XnME=
-github.com/mimuret/golang-iij-dpf v0.7.0 h1:nLXtuMqwrovc7BQJD1ZV6yfeXPZlPeFFYI74l0YnG3s=
-github.com/mimuret/golang-iij-dpf v0.7.0/go.mod h1:IXWYcQVIHYzuM+W7kDWX0mseHDfUoqMuarxMXHVTir0=
 github.com/mimuret/golang-iij-dpf v0.7.1 h1:MHEZKx6gNGTvq1+3PYUNfTZ/qtGNNK4+zo+0Rdo4jY4=
 github.com/mimuret/golang-iij-dpf v0.7.1/go.mod h1:IXWYcQVIHYzuM+W7kDWX0mseHDfUoqMuarxMXHVTir0=
 github.com/mitchellh/cli v1.0.0/go.mod h1:hNIlj7HEI86fIcpObd7a0FcrxTWetlwJDGcceTlRvqc=

@@ -62,6 +62,7 @@ func allDNSCodes() string {
 		"hyperone",
 		"ibmcloud",
 		"iij",
+		"iijdpf",
 		"infoblox",
 		"infomaniak",
 		"internetbs",
@@ -1132,6 +1133,27 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/iij`)
+
+	case "iijdpf":
+		// generated from: providers/dns/iijdpf/iijdpf.toml
+		ew.writeln(`Configuration for IIJ DNS Platform Service.`)
+		ew.writeln(`Code:	'iijdpf'`)
+		ew.writeln(`Since:	'v4.7.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "IIJ_DPF_API_TOKEN":	API token`)
+		ew.writeln(`	- "IIJ_DPF_DPM_SERVICE_CODE":	IIJ Managed DNS Service's service code`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "IIJ_DPF_API_ENDPOINT":	API endpoint URL, defaults to https://api.dns-platform.jp/dpf/v1`)
+		ew.writeln(`	- "IIJ_DPF_POLLING_INTERVAL":	Time between DNS propagation check, defaults to 5 second`)
+		ew.writeln(`	- "IIJ_DPF_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation, defaults to 660 second`)
+		ew.writeln(`	- "IIJ_DPF_TTL":	The TTL of the TXT record used for the DNS challenge, default to 300`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/iijdpf`)
 
 	case "infoblox":
 		// generated from: providers/dns/infoblox/infoblox.toml

@@ -29,30 +29,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      # https://golangci-lint.run/usage/install#other-ci
-      - name: Install golangci-lint ${{ env.GOLANGCI_LINT_VERSION }}
-        run: |
-          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin ${GOLANGCI_LINT_VERSION}
-          golangci-lint --version
-
-      - name: Install Pebble and challtestsrv
-        run: GO111MODULE=off go get -u github.com/letsencrypt/pebble/...
-
-      - name: Set up a Memcached server
-        uses: niden/actions-memcached@v7
-
-      - name: Setup /etc/hosts
-        run: |
-          echo "127.0.0.1 acme.wtf" | sudo tee -a /etc/hosts
-          echo "127.0.0.1 lego.wtf" | sudo tee -a /etc/hosts
-          echo "127.0.0.1 acme.lego.wtf" | sudo tee -a /etc/hosts
-          echo "127.0.0.1 légô.wtf" | sudo tee -a /etc/hosts
-          echo "127.0.0.1 xn--lg-bja9b.wtf" | sudo tee -a /etc/hosts
-
-      - name: Make
-        run: |
-          make
-          make clean
+      - name: Generate DNS docs
+        run: make generate-dns
 
       - name: Install Hugo
         run: |

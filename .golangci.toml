@@ -53,7 +53,11 @@
     "maligned", # deprecated
     "scopelint", # deprecated
     "golint", # deprecated
+    "exhaustivestruct", # deprecated
     "cyclop", # duplicate of gocyclo
+    "sqlclosecheck", # not relevant (SQL)
+    "rowserrcheck", # not relevant (SQL)
+    "execinquery", # not relevant (SQL)
     "lll",
     "gosec",
     "dupl", # not relevant
@@ -69,7 +73,7 @@
     "nlreturn", # not relevant
     "wsl", # not relevant
     "exhaustive", # not relevant
-    "exhaustivestruct", # not relevant
+    "exhaustruct", # not relevant
     "makezero", # not relevant
     "ifshort", # not relevant
     "forbidigo", # not relevant
@@ -83,6 +87,7 @@
     "tagliatelle",
     "errname",
     "errchkjson",
+    "nonamedreturns",
   ]
 
 [issues]

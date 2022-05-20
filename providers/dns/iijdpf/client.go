@@ -10,9 +10,7 @@ import (
 	dpftypes "github.com/mimuret/golang-iij-dpf/pkg/types"
 )
 
-func (d *DNSProvider) addTxtRecord(zoneID, fqdn, rdata string) error {
-	ctx := context.Background()
-
+func (d *DNSProvider) addTxtRecord(ctx context.Context, zoneID, fqdn, rdata string) error {
 	r, err := dpfapiutils.GetRecordFromZoneID(ctx, d.client, zoneID, fqdn, dpfzones.TypeTXT)
 	if err != nil && !errors.Is(err, dpfapiutils.ErrRecordNotFound) {
 		return err
@@ -46,8 +44,8 @@ func (d *DNSProvider) addTxtRecord(zoneID, fqdn, rdata string) error {
 	return nil
 }
 
-func (d *DNSProvider) deleteTxtRecord(zoneID, fqdn, rdata string) error {
-	r, err := dpfapiutils.GetRecordFromZoneID(context.Background(), d.client, zoneID, fqdn, dpfzones.TypeTXT)
+func (d *DNSProvider) deleteTxtRecord(ctx context.Context, zoneID, fqdn, rdata string) error {
+	r, err := dpfapiutils.GetRecordFromZoneID(ctx, d.client, zoneID, fqdn, dpfzones.TypeTXT)
 	if err != nil {
 		if errors.Is(err, dpfapiutils.ErrRecordNotFound) {
 			// empty target rrset
@@ -58,7 +56,8 @@ func (d *DNSProvider) deleteTxtRecord(zoneID, fqdn, rdata string) error {
 
 	if len(r.RData) == 1 {
 		// delete rrset
-		if _, _, err := dpfapiutils.SyncDelete(context.Background(), d.client, r); err != nil {
+		_, _, err = dpfapiutils.SyncDelete(ctx, d.client, r)
+		if err != nil {
 			return fmt.Errorf("failed to delete record: %w", err)
 		}
 
@@ -74,20 +73,21 @@ func (d *DNSProvider) deleteTxtRecord(zoneID, fqdn, rdata string) error {
 	}
 	r.RData = rdataSlice
 
-	if _, _, err := dpfapiutils.SyncUpdate(context.Background(), d.client, r, nil); err != nil {
+	_, _, err = dpfapiutils.SyncUpdate(ctx, d.client, r, nil)
+	if err != nil {
 		return fmt.Errorf("failed to update record: %w", err)
 	}
 
 	return nil
 }
 
-func (d *DNSProvider) commit(zoneID string) error {
+func (d *DNSProvider) commit(ctx context.Context, zoneID string) error {
 	apply := &dpfzones.ZoneApply{
 		AttributeMeta: dpfzones.AttributeMeta{ZoneID: zoneID},
 		Description:   "ACME Processing",
 	}
 
-	_, _, err := dpfapiutils.SyncApply(context.Background(), d.client, apply, nil)
+	_, _, err := dpfapiutils.SyncApply(ctx, d.client, apply, nil)
 	if err != nil {
 		return fmt.Errorf("failed to apply zone: %w", err)
 	}

@@ -96,6 +96,8 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+	ctx := context.Background()
+
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
 	zoneID, err := dpfapiutils.GetZoneIdFromServiceCode(context.Background(), d.client, d.config.ServiceCode)
@@ -103,12 +105,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("iijdpf: failed to get zone id: %w", err)
 	}
 
-	err = d.addTxtRecord(zoneID, dns.CanonicalName(fqdn), `"`+value+`"`)
+	err = d.addTxtRecord(ctx, zoneID, dns.CanonicalName(fqdn), `"`+value+`"`)
 	if err != nil {
 		return fmt.Errorf("iijdpf: %w", err)
 	}
 
-	err = d.commit(zoneID)
+	err = d.commit(ctx, zoneID)
 	if err != nil {
 		return fmt.Errorf("iijdpf: %w", err)
 	}
@@ -118,6 +120,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+	ctx := context.Background()
+
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
 	zoneID, err := dpfapiutils.GetZoneIdFromServiceCode(context.Background(), d.client, d.config.ServiceCode)
@@ -125,12 +129,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("iijdpf: failed to get zone id: %w", err)
 	}
 
-	err = d.deleteTxtRecord(zoneID, dns.CanonicalName(fqdn), `"`+value+`"`)
+	err = d.deleteTxtRecord(ctx, zoneID, dns.CanonicalName(fqdn), `"`+value+`"`)
 	if err != nil {
 		return fmt.Errorf("iijdpf: %w", err)
 	}
 
-	err = d.commit(zoneID)
+	err = d.commit(ctx, zoneID)
 	if err != nil {
 		return fmt.Errorf("iijdpf: %w", err)
 	}

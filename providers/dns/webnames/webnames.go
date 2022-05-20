@@ -1,25 +1,21 @@
 package webnames
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/webnames/internal"
 )
 
 // Environment variables names.
 const (
-	defaultBaseURL = "https://www.webnames.ru/scripts/json_domain_zone_manager.pl"
-	envNamespace   = "WEBNAMES_"
+	envNamespace = "WEBNAMES_"
 
-	EnvApiKey             = envNamespace + "APIKEY"
+	EnvApiKey = envNamespace + "APIKEY" // FIXME
+
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
@@ -28,7 +24,7 @@ const (
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	ApiKey string
+	APIKey string // FIXME
 
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -51,20 +47,19 @@ func NewDefaultConfig() *Config {
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
-	client *internal.Client
+	// FIXME client *internal.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for reg.ru.
-// Credentials must be passed in the environment variables:
-// REGRU_USERNAME and REGRU_PASSWORD.
+// Credentials must be passed in the environment variable: WEBNAMES_APIKEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvApiKey)
+	values, err := env.Get(EnvApiKey) // FIXME
 	if err != nil {
 		return nil, fmt.Errorf("webnames: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.ApiKey = values[EnvApiKey]
+	config.APIKey = values[EnvApiKey] // FIXME
 
 	return NewDNSProviderConfig(config)
 }
@@ -74,102 +69,36 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("webnames: the configuration of the DNS provider is nil")
 	}
-
-	if config.ApiKey == "" {
-		return nil, errors.New("webnames: incomplete credentials, missing username and/or password")
-	}
-
-	client := internal.NewClient(config.ApiKey)
-
-	if config.HTTPClient != nil {
-		client.HTTPClient = config.HTTPClient
-	}
-
-	return &DNSProvider{config: config, client: client}, nil
+	// FIXME
+	panic("not yet implemented")
 }
 
-func (wn *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+	// FIXME
+	// fqdn, value := dns01.GetRecord(domain, keyAuth)
+	//
+	// authZone, err := dns01.FindZoneByFqdn(fqdn)
+	// if err != nil {
+	// 	return fmt.Errorf("webnames: could not find zone for domain %q and fqdn %q : %w", domain, fqdn, err)
+	// }
+	// subDomain := dns01.UnFqdn(strings.TrimSuffix(fqdn, authZone))
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
-	if err != nil {
-		return fmt.Errorf("webnames: could not find zone for domain %q and fqdn %q : %w", domain, fqdn, err)
-	}
-	subDomain := dns01.UnFqdn(strings.TrimSuffix(fqdn, authZone))
-
-	q := bytes.NewBuffer(nil)
-	q.WriteString(fmt.Sprintf("apikey=%s&", wn.config.ApiKey))
-	q.WriteString(fmt.Sprintf("domain=%s&", dns01.UnFqdn(authZone)))
-	q.WriteString(fmt.Sprintf("type=%s&", "TXT"))
-	q.WriteString(fmt.Sprintf("record=%s:%s&", subDomain, value))
-	q.WriteString(fmt.Sprintf("action=%s", "add"))
-
-	req, err := http.NewRequest("POST", defaultBaseURL, strings.NewReader(q.String()))
-	if err != nil {
-		return err
-	}
-	req.Header.Set("content-type", "application/x-www-form-urlencoded")
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		fmt.Println(err.Error())
-		return err
-	}
-	defer resp.Body.Close()
-
-	var r map[string]interface{}
-	if err := json.NewDecoder(resp.Body).Decode(&r); err != nil {
-		return err
-	}
-
-	if x, ok := r["result"]; ok && x == "OK" {
-		return nil
-	}
-
-	return fmt.Errorf("can not present")
+	panic("not yet implemented")
 }
 
-func (wn *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+	// FIXME
+	// fqdn, value := dns01.GetRecord(domain, keyAuth)
+	//
+	// authZone, err := dns01.FindZoneByFqdn(fqdn)
+	// if err != nil {
+	// 	return fmt.Errorf("webnames: could not find zone for domain %q and fqdn %q : %w", domain, fqdn, err)
+	// }
+	// subDomain := dns01.UnFqdn(strings.TrimSuffix(fqdn, authZone))
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
-	if err != nil {
-		return fmt.Errorf("webnames: could not find zone for domain %q and fqdn %q : %w", domain, fqdn, err)
-	}
-	subDomain := dns01.UnFqdn(strings.TrimSuffix(fqdn, authZone))
-
-	q := bytes.NewBuffer(nil)
-	q.WriteString(fmt.Sprintf("apikey=%s&", wn.config.ApiKey))
-	q.WriteString(fmt.Sprintf("domain=%s&", dns01.UnFqdn(authZone)))
-	q.WriteString(fmt.Sprintf("type=%s&", "TXT"))
-	q.WriteString(fmt.Sprintf("record=%s:%s&", subDomain, value))
-	q.WriteString(fmt.Sprintf("action=%s", "delete"))
-
-	req, err := http.NewRequest("POST", defaultBaseURL, strings.NewReader(q.String()))
-	if err != nil {
-		return err
-	}
-	req.Header.Set("content-type", "application/x-www-form-urlencoded")
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		fmt.Println(err.Error())
-		return err
-	}
-	defer resp.Body.Close()
-
-	var r map[string]interface{}
-	if err := json.NewDecoder(resp.Body).Decode(&r); err != nil {
-		return err
-	}
-
-	if x, ok := r["result"]; ok && x == "OK" {
-		return nil
-	}
-
-	return fmt.Errorf("can not cleanup")
+	panic("not yet implemented")
 }
 
-func (wn *DNSProvider) Timeout() (timeout, interval time.Duration) {
-	return wn.config.PropagationTimeout, wn.config.PollingInterval
+func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
+	return d.config.PropagationTimeout, d.config.PollingInterval
 }

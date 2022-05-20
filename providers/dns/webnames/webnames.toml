@@ -2,16 +2,16 @@ Name = "webnames.ru"
 Description = ''''''
 URL = "https://webnames.ru/"
 Code = "webnames"
-Since = "v3.5.0"
+Since = "v4.7.0"
 
 Example = '''
 WEBNAMES_APIKEY=xxxxxx \
 lego --email myemail@example.com --dns webnames --domains my.example.org run
-'''
+''' # FIXME
 
 [Configuration]
   [Configuration.Credentials]
-    WEBNAMES_APIKEY = "API KEY"
+    WEBNAMES_APIKEY = "API KEY" # FIXME
   [Configuration.Additional]
     WEBNAMES_POLLING_INTERVAL = "Time between DNS propagation check"
     WEBNAMES_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"

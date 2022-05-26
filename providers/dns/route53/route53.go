@@ -10,6 +10,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/client"
+	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/route53"
@@ -31,6 +32,7 @@ const (
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvAssumeRoleArn      = envNamespace + "ASSUME_ROLE_ARN"
 )
 
 // Config is used to configure the creation of the DNSProvider.
@@ -41,6 +43,7 @@ type Config struct {
 	PollingInterval    time.Duration
 	HostedZoneID       string
 	Client             *route53.Route53
+	assumeRoleArn      string
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
@@ -51,6 +54,7 @@ func NewDefaultConfig() *Config {
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 4*time.Second),
 		HostedZoneID:       env.GetOrFile(EnvHostedZoneID),
+		assumeRoleArn:      env.GetOrDefaultString(EnvAssumeRoleArn, ""),
 	}
 }
 
@@ -114,6 +118,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	sess = assumeRoleWithSession(sess, config.assumeRoleArn)
 
 	cl := route53.New(sess)
 	return &DNSProvider{client: cl, config: config}, nil
@@ -293,4 +299,15 @@ func (d *DNSProvider) getHostedZoneID(fqdn string) (string, error) {
 	hostedZoneID = strings.TrimPrefix(hostedZoneID, "/hostedzone/")
 
 	return hostedZoneID, nil
+}
+
+func assumeRoleWithSession(sess *session.Session, rolearn string) *session.Session {
+	if rolearn == "" {
+		return sess
+	}
+	sCreds := stscreds.NewCredentials(sess, rolearn)
+	sConfig := aws.Config{Region: sess.Config.Region, Credentials: sCreds}
+	sSess := session.New(&sConfig)
+
+	return sSess
 }

@@ -119,7 +119,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, err
 	}
 
-	sess = assumeRoleWithSession(sess, config.assumeRoleArn)
+	sess, err = assumeRoleWithSession(sess, config.assumeRoleArn)
+	if err != nil {
+		return nil, fmt.Errorf("route53: %w", err)
+	}
 
 	cl := route53.New(sess)
 	return &DNSProvider{client: cl, config: config}, nil
@@ -301,13 +304,11 @@ func (d *DNSProvider) getHostedZoneID(fqdn string) (string, error) {
 	return hostedZoneID, nil
 }
 
-func assumeRoleWithSession(sess *session.Session, rolearn string) *session.Session {
+func assumeRoleWithSession(sess *session.Session, rolearn string) (*session.Session, error) {
 	if rolearn == "" {
-		return sess
+		return sess, nil
 	}
 	sCreds := stscreds.NewCredentials(sess, rolearn)
 	sConfig := aws.Config{Region: sess.Config.Region, Credentials: sCreds}
-	sSess := session.New(&sConfig)
-
-	return sSess
+	return session.NewSession(&sConfig)
 }

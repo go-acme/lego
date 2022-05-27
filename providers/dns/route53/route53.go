@@ -37,24 +37,27 @@ const (
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	MaxRetries         int
+	HostedZoneID  string
+	MaxRetries    int
+	AssumeRoleArn string
+
 	TTL                int
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
-	HostedZoneID       string
-	Client             *route53.Route53
-	assumeRoleArn      string
+
+	Client *route53.Route53
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		MaxRetries:         env.GetOrDefaultInt(EnvMaxRetries, 5),
+		HostedZoneID:  env.GetOrFile(EnvHostedZoneID),
+		MaxRetries:    env.GetOrDefaultInt(EnvMaxRetries, 5),
+		AssumeRoleArn: env.GetOrDefaultString(EnvAssumeRoleArn, ""),
+
 		TTL:                env.GetOrDefaultInt(EnvTTL, 10),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 4*time.Second),
-		HostedZoneID:       env.GetOrFile(EnvHostedZoneID),
-		assumeRoleArn:      env.GetOrDefaultString(EnvAssumeRoleArn, ""),
 	}
 }
 
@@ -308,15 +311,12 @@ func createSession(config *Config) (*session.Session, error) {
 		return nil, err
 	}
 
-	if config.assumeRoleArn != "" {
-		sess, err = session.NewSession(&aws.Config{
-			Region:      sess.Config.Region,
-			Credentials: stscreds.NewCredentials(sess, config.assumeRoleArn),
-		})
-		if err != nil {
-			return nil, fmt.Errorf("route53: %w", err)
-		}
+	if config.AssumeRoleArn == "" {
+		return sess, nil
 	}
 
-	return sess, nil
+	return session.NewSession(&aws.Config{
+		Region:      sess.Config.Region,
+		Credentials: stscreds.NewCredentials(sess, config.AssumeRoleArn),
+	})
 }

@@ -80,6 +80,7 @@ func allDNSCodes() string {
 		"namecheap",
 		"namedotcom",
 		"namesilo",
+		"nearlyfreespeech",
 		"netcup",
 		"netlify",
 		"nicmanager",
@@ -1521,6 +1522,28 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/namesilo`)
+
+	case "nearlyfreespeech":
+		// generated from: providers/dns/nearlyfreespeech/nearlyfreespeech.toml
+		ew.writeln(`Configuration for nearlyfreespeech.net.`)
+		ew.writeln(`Code:	'nearlyfreespeech'`)
+		ew.writeln(`Since:	'v0.1.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "NFS_API_KEY":	API Key for API requests`)
+		ew.writeln(`	- "NFS_LOGIN":	Username for API requests`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "NFS_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "NFS_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "NFS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "NFS_SEQUENCE_INTERVAL":	Time between sequential requests`)
+		ew.writeln(`	- "NFS_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/nearlyfreespeech`)
 
 	case "netcup":
 		// generated from: providers/dns/netcup/netcup.toml

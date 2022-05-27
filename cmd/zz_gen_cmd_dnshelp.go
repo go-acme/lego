@@ -1860,6 +1860,7 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "AWS_ACCESS_KEY_ID":	Managed by the AWS client. Access key ID ('AWS_ACCESS_KEY_ID_FILE' is not supported, use 'AWS_SHARED_CREDENTIALS_FILE' instead)`)
+		ew.writeln(`	- "AWS_ASSUME_ROLE_ARN":	Managed by the AWS Role ARN ('AWS_ASSUME_ROLE_ARN' is not supported)`)
 		ew.writeln(`	- "AWS_HOSTED_ZONE_ID":	Override the hosted zone ID.`)
 		ew.writeln(`	- "AWS_PROFILE":	Managed by the AWS client ('AWS_PROFILE_FILE' is not supported)`)
 		ew.writeln(`	- "AWS_REGION":	Managed by the AWS client ('AWS_REGION_FILE' is not supported)`)

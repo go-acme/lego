@@ -110,22 +110,15 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return &DNSProvider{client: config.Client, config: config}, nil
 	}
 
-	retry := customRetryer{}
-	retry.NumMaxRetries = config.MaxRetries
-	sessionCfg := request.WithRetryer(aws.NewConfig(), retry)
-
-	sess, err := session.NewSessionWithOptions(session.Options{Config: *sessionCfg})
+	sess, err := createSession(config)
 	if err != nil {
 		return nil, err
 	}
 
-	sess, err = assumeRoleWithSession(sess, config.assumeRoleArn)
-	if err != nil {
-		return nil, fmt.Errorf("route53: %w", err)
-	}
-
-	cl := route53.New(sess)
-	return &DNSProvider{client: cl, config: config}, nil
+	return &DNSProvider{
+		client: route53.New(sess),
+		config: config,
+	}, nil
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
@@ -304,11 +297,26 @@ func (d *DNSProvider) getHostedZoneID(fqdn string) (string, error) {
 	return hostedZoneID, nil
 }
 
-func assumeRoleWithSession(sess *session.Session, rolearn string) (*session.Session, error) {
-	if rolearn == "" {
-		return sess, nil
+func createSession(config *Config) (*session.Session, error) {
+	retry := customRetryer{}
+	retry.NumMaxRetries = config.MaxRetries
+
+	sessionCfg := request.WithRetryer(aws.NewConfig(), retry)
+
+	sess, err := session.NewSessionWithOptions(session.Options{Config: *sessionCfg})
+	if err != nil {
+		return nil, err
 	}
-	sCreds := stscreds.NewCredentials(sess, rolearn)
-	sConfig := aws.Config{Region: sess.Config.Region, Credentials: sCreds}
-	return session.NewSession(&sConfig)
+
+	if config.assumeRoleArn != "" {
+		sess, err = session.NewSession(&aws.Config{
+			Region:      sess.Config.Region,
+			Credentials: stscreds.NewCredentials(sess, config.assumeRoleArn),
+		})
+		if err != nil {
+			return nil, fmt.Errorf("route53: %w", err)
+		}
+	}
+
+	return sess, nil
 }

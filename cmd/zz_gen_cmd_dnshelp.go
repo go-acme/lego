@@ -1525,7 +1525,7 @@ func displayDNSHelp(name string) error {
 
 	case "nearlyfreespeech":
 		// generated from: providers/dns/nearlyfreespeech/nearlyfreespeech.toml
-		ew.writeln(`Configuration for nearlyfreespeech.net.`)
+		ew.writeln(`Configuration for NearlyFreeSpeech.NET.`)
 		ew.writeln(`Code:	'nearlyfreespeech'`)
 		ew.writeln(`Since:	'v4.8.0'`)
 		ew.writeln()

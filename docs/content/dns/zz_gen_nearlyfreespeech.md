@@ -1,5 +1,5 @@
 ---
-title: "nearlyfreespeech.net"
+title: "NearlyFreeSpeech.NET"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: nearlyfreespeech
@@ -11,14 +11,14 @@ slug: nearlyfreespeech
 
 Since: v4.8.0
 
-Configuration for [nearlyfreespeech.net](https://nearlyfreespeech.net/).
+Configuration for [NearlyFreeSpeech.NET](https://nearlyfreespeech.net/).
 
 
 <!--more-->
 
 - Code: `nearlyfreespeech`
 
-Here is an example bash command using the nearlyfreespeech.net provider:
+Here is an example bash command using the NearlyFreeSpeech.NET provider:
 
 ```bash
 NEARLYFREESPEECH_API_KEY=xxxxxx \

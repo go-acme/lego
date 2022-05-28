@@ -78,7 +78,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("nearlyfreespeech: the configuration of the DNS provider is nil")
 	}
 
-	if config.Login == "" && config.APIKey == "" {
+	if config.Login == "" || config.APIKey == "" {
 		return nil, errors.New("nearlyfreespeech: API credentials are missing")
 	}
 

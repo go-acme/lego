@@ -31,7 +31,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvAPIKey: "",
 				EnvLogin:  "",
 			},
-			expected: "nearlyfreespeech: some credentials information are missing: NFS_API_KEY,NFS_LOGIN",
+			expected: "nearlyfreespeech: some credentials information are missing: NEARLYFREESPEECH_API_KEY,NEARLYFREESPEECH_LOGIN",
 		},
 		{
 			desc: "missing api key",
@@ -39,7 +39,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvAPIKey: "",
 				EnvLogin:  "testuser",
 			},
-			expected: "nearlyfreespeech: some credentials information are missing: NFS_API_KEY",
+			expected: "nearlyfreespeech: some credentials information are missing: NEARLYFREESPEECH_API_KEY",
 		},
 		{
 			desc: "missing login",
@@ -47,7 +47,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvAPIKey: "123",
 				EnvLogin:  "",
 			},
-			expected: "nearlyfreespeech: some credentials information are missing: NFS_LOGIN",
+			expected: "nearlyfreespeech: some credentials information are missing: NEARLYFREESPEECH_LOGIN",
 		},
 	}
 
@@ -91,13 +91,13 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			desc:     "missing login",
 			login:    "",
 			apikey:   "apikey",
-			expected: "nearlyfreespeech: the API Key is missing",
+			expected: "nearlyfreespeech: API credentials are missing",
 		},
 		{
 			desc:     "missing key",
 			login:    "login",
 			apikey:   "",
-			expected: "nearlyfreespeech: the API Login is missing",
+			expected: "nearlyfreespeech: API credentials are missing",
 		},
 	}
 

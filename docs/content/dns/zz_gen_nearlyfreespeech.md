@@ -9,7 +9,7 @@ slug: nearlyfreespeech
 <!-- providers/dns/nearlyfreespeech/nearlyfreespeech.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v0.1.0
+Since: v4.8.0
 
 Configuration for [nearlyfreespeech.net](https://nearlyfreespeech.net/).
 
@@ -21,8 +21,8 @@ Configuration for [nearlyfreespeech.net](https://nearlyfreespeech.net/).
 Here is an example bash command using the nearlyfreespeech.net provider:
 
 ```bash
-NFS_API_KEY=xxxxxx \
-NFS_LOGIN=xxxx \
+NEARLYFREESPEECH_API_KEY=xxxxxx \
+NEARLYFREESPEECH_LOGIN=xxxx \
 lego --email myemail@example.com --dns nearlyfreespeech --domains my.example.org run
 ```
 
@@ -33,8 +33,8 @@ lego --email myemail@example.com --dns nearlyfreespeech --domains my.example.org
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `NFS_API_KEY` | API Key for API requests |
-| `NFS_LOGIN` | Username for API requests |
+| `NEARLYFREESPEECH_API_KEY` | API Key for API requests |
+| `NEARLYFREESPEECH_LOGIN` | Username for API requests |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).
@@ -44,11 +44,11 @@ More information [here](/lego/dns/#configuration-and-credentials).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `NFS_HTTP_TIMEOUT` | API request timeout |
-| `NFS_POLLING_INTERVAL` | Time between DNS propagation check |
-| `NFS_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
-| `NFS_SEQUENCE_INTERVAL` | Time between sequential requests |
-| `NFS_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `NEARLYFREESPEECH_HTTP_TIMEOUT` | API request timeout |
+| `NEARLYFREESPEECH_POLLING_INTERVAL` | Time between DNS propagation check |
+| `NEARLYFREESPEECH_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
+| `NEARLYFREESPEECH_SEQUENCE_INTERVAL` | Time between sequential requests |
+| `NEARLYFREESPEECH_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here](/lego/dns/#configuration-and-credentials).

@@ -10,10 +10,7 @@ import (
 
 const envDomain = envNamespace + "DOMAIN"
 
-var envTest = tester.NewEnvTest(
-	EnvAPIKey,
-	EnvLogin).
-	WithDomain(envDomain)
+var envTest = tester.NewEnvTest(EnvAPIKey, EnvLogin).WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -106,8 +103,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			config, err := NewDefaultConfig()
-			require.NoError(t, err)
+			config := NewDefaultConfig()
 			config.APIKey = test.apikey
 			config.Login = test.login
 

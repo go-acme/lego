@@ -2,7 +2,7 @@ Name = "nearlyfreespeech.net"
 Description = ''''''
 URL = "https://nearlyfreespeech.net/"
 Code = "nearlyfreespeech"
-Since = "v0.1.0"
+Since = "v4.8.0"
 
 Example = '''
 NFS_API_KEY=xxxxxx \

@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge/dns01"
 	querystring "github.com/google/go-querystring/query"
 )
 
@@ -52,7 +53,7 @@ func (c Client) AddRecord(domain string, record Record) error {
 		return err
 	}
 
-	return c.do(path.Join("dns", domain, "addRR"), params)
+	return c.do(path.Join("dns", dns01.UnFqdn(domain), "addRR"), params)
 }
 
 func (c Client) RemoveRecord(domain string, record Record) error {
@@ -61,7 +62,7 @@ func (c Client) RemoveRecord(domain string, record Record) error {
 		return err
 	}
 
-	return c.do(path.Join("dns", domain, "removeRR"), params)
+	return c.do(path.Join("dns", dns01.UnFqdn(domain), "removeRR"), params)
 }
 
 func (c Client) do(uri string, params url.Values) error {

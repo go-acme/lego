@@ -58,7 +58,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 
 ## More information
 
-- [API documentation](https://api.nearlyfreespeech.net)
+- [API documentation](https://members.nearlyfreespeech.net/wiki/API/Reference)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/nearlyfreespeech/nearlyfreespeech.toml -->

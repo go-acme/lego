@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -25,10 +26,8 @@ func setupTest(t *testing.T) (*Client, *http.ServeMux) {
 	return client, mux
 }
 
-func TestClient_AddRecord(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/dns/example.com/addRR", func(rw http.ResponseWriter, req *http.Request) {
+func testHandler(params map[string]string) http.HandlerFunc {
+	return func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodPost {
 			http.Error(rw, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 			return
@@ -39,35 +38,51 @@ func TestClient_AddRecord(t *testing.T) {
 			return
 		}
 
-		all, err := io.ReadAll(req.Body)
+		err := req.ParseForm()
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		query, err := url.ParseQuery(string(all))
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusBadRequest)
+		for k, v := range params {
+			if req.PostForm.Get(k) != v {
+				http.Error(rw, fmt.Sprintf("data: got %s want %s", k, v), http.StatusBadRequest)
+				return
+			}
+		}
+	}
+}
+
+func testErrorHandler() http.HandlerFunc {
+	return func(rw http.ResponseWriter, req *http.Request) {
+		if req.Method != http.MethodPost {
+			http.Error(rw, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 			return
 		}
 
-		if query.Get("data") != "txtTXTtxt" {
-			http.Error(rw, fmt.Sprintf("data: got %s want txtTXTtxt", query.Get("data")), http.StatusBadRequest)
+		file, err := os.Open("./fixtures/error.json")
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		if query.Get("name") != "sub" {
-			http.Error(rw, fmt.Sprintf("name: got %s want sub", query.Get("name")), http.StatusBadRequest)
-			return
-		}
-		if query.Get("type") != "TXT" {
-			http.Error(rw, fmt.Sprintf("type: got %s want TXT", query.Get("TXT")), http.StatusBadRequest)
-			return
-		}
-		if query.Get("ttl") != "30" {
-			http.Error(rw, fmt.Sprintf("ttl: got %s want 30", query.Get("ttl")), http.StatusBadRequest)
-			return
-		}
-	})
+
+		rw.WriteHeader(http.StatusUnauthorized)
+
+		_, _ = io.Copy(rw, file)
+	}
+}
+
+func TestClient_AddRecord(t *testing.T) {
+	client, mux := setupTest(t)
+
+	params := map[string]string{
+		"data": "txtTXTtxt",
+		"name": "sub",
+		"type": "TXT",
+		"ttl":  "30",
+	}
+
+	mux.Handle("/dns/example.com/addRR", testHandler(params))
 
 	record := Record{
 		Name: "sub",
@@ -80,45 +95,32 @@ func TestClient_AddRecord(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestClient_AddRecord_error(t *testing.T) {
+	client, mux := setupTest(t)
+
+	mux.Handle("/dns/example.com/addRR", testErrorHandler())
+
+	record := Record{
+		Name: "sub",
+		Type: "TXT",
+		Data: "txtTXTtxt",
+		TTL:  30,
+	}
+
+	err := client.AddRecord("example.com", record)
+	require.Error(t, err)
+}
+
 func TestClient_RemoveRecord(t *testing.T) {
 	client, mux := setupTest(t)
 
-	mux.HandleFunc("/dns/example.com/removeRR", func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != http.MethodPost {
-			http.Error(rw, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-			return
-		}
+	params := map[string]string{
+		"data": "txtTXTtxt",
+		"name": "sub",
+		"type": "TXT",
+	}
 
-		if req.Header.Get(authenticationHeader) == "" {
-			http.Error(rw, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-			return
-		}
-
-		all, err := io.ReadAll(req.Body)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		query, err := url.ParseQuery(string(all))
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		if query.Get("data") != "txtTXTtxt" {
-			http.Error(rw, fmt.Sprintf("data: got %s want txtTXTtxt", query.Get("data")), http.StatusBadRequest)
-			return
-		}
-		if query.Get("name") != "sub" {
-			http.Error(rw, fmt.Sprintf("name: got %s want sub", query.Get("name")), http.StatusBadRequest)
-			return
-		}
-		if query.Get("type") != "TXT" {
-			http.Error(rw, fmt.Sprintf("type: got %s want TXT", query.Get("TXT")), http.StatusBadRequest)
-			return
-		}
-	})
+	mux.Handle("/dns/example.com/removeRR", testHandler(params))
 
 	record := Record{
 		Name: "sub",
@@ -128,4 +130,19 @@ func TestClient_RemoveRecord(t *testing.T) {
 
 	err := client.RemoveRecord("example.com", record)
 	require.NoError(t, err)
+}
+
+func TestClient_RemoveRecord_error(t *testing.T) {
+	client, mux := setupTest(t)
+
+	mux.Handle("/dns/example.com/removeRR", testErrorHandler())
+
+	record := Record{
+		Name: "sub",
+		Type: "TXT",
+		Data: "txtTXTtxt",
+	}
+
+	err := client.RemoveRecord("example.com", record)
+	require.Error(t, err)
 }

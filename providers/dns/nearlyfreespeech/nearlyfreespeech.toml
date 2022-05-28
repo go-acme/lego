@@ -22,4 +22,4 @@ lego --email myemail@example.com --dns nearlyfreespeech --domains my.example.org
     NEARLYFREESPEECH_SEQUENCE_INTERVAL = "Time between sequential requests"
 
 [Links]
-  API = "https://api.nearlyfreespeech.net"
+  API = "https://members.nearlyfreespeech.net/wiki/API/Reference"

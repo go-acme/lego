@@ -2,6 +2,7 @@ package internal
 
 import (
 	"crypto/sha1"
+	"encoding/json"
 	"fmt"
 	"io"
 	"math/rand"
@@ -22,28 +23,21 @@ const authenticationHeader = "X-NFSN-Authentication"
 
 const saltBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
-type Record struct {
-	Name string `url:"name,omitempty"`
-	Type string `url:"type,omitempty"`
-	Data string `url:"data,omitempty"`
-	TTL  int    `url:"ttl,omitempty"`
-}
-
 type Client struct {
 	HTTPClient *http.Client
+	baseURL    *url.URL
 
-	login   string
-	apiKey  string
-	baseURL *url.URL
+	login  string
+	apiKey string
 }
 
 func NewClient(login string, apiKey string) *Client {
 	baseURL, _ := url.Parse(apiURL)
 	return &Client{
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
+		baseURL:    baseURL,
 		login:      login,
 		apiKey:     apiKey,
-		baseURL:    baseURL,
 	}
 }
 
@@ -90,7 +84,14 @@ func (c Client) do(uri string, params url.Values) error {
 
 	if resp.StatusCode != http.StatusOK {
 		data, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("%s: %s", resp.Status, data)
+
+		apiErr := &APIError{}
+		err := json.Unmarshal(data, apiErr)
+		if err != nil {
+			return fmt.Errorf("%s: %s", resp.Status, data)
+		}
+
+		return apiErr
 	}
 
 	return nil

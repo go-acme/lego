@@ -1,0 +1,25 @@
+{
+  "data": {
+    "id": "303030",
+    "type": "queue-job",
+    "attributes": {
+      "job_type": "dns-record",
+      "status": "done"
+    },
+    "relationships": {
+      "owner": {
+        "data": {
+          "id": "505050",
+          "type": "customer"
+        }
+      }
+    },
+    "links": {
+      "self": "https://api.variomedia.de/queue-jobs/303030",
+      "object": "https://api.variomedia.de/dns-records/212121"
+    }
+  },
+  "links": {
+    "self": "https://api.variomedia.de/queue-jobs/303030"
+  }
+}

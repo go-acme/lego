@@ -1,0 +1,15 @@
+{
+  "data": {
+    "id": "303030",
+    "type": "queue-job",
+    "attributes": {
+      "status": "pending"
+    },
+    "links": {
+      "queue-job": "https://api.variomedia.de/queue-jobs/303030"
+    }
+  },
+  "links": {
+    "self": "https://api.variomedia.de/dns-records/212121"
+  }
+}

@@ -179,7 +179,7 @@ func Test_checkResponse(t *testing.T) {
 		},
 	}
 	certRes := &Resource{}
-	bundle := false
+	bundle := true
 
 	valid, err := certifier.checkResponse(order, certRes, bundle, "")
 	require.NoError(t, err)
@@ -230,7 +230,7 @@ func Test_checkResponse_issuerRelUp(t *testing.T) {
 		},
 	}
 	certRes := &Resource{}
-	bundle := false
+	bundle := true
 
 	valid, err := certifier.checkResponse(order, certRes, bundle, "")
 	require.NoError(t, err)
@@ -271,7 +271,7 @@ func Test_checkResponse_embeddedIssuer(t *testing.T) {
 		},
 	}
 	certRes := &Resource{}
-	bundle := false
+	bundle := true
 
 	valid, err := certifier.checkResponse(order, certRes, bundle, "")
 	require.NoError(t, err)
@@ -324,7 +324,7 @@ func Test_checkResponse_alternate(t *testing.T) {
 	certRes := &Resource{
 		Domain: "example.com",
 	}
-	bundle := false
+	bundle := true
 
 	valid, err := certifier.checkResponse(order, certRes, bundle, "DST Root CA X3")
 	require.NoError(t, err)
@@ -359,7 +359,9 @@ func Test_Get(t *testing.T) {
 
 	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
 
-	certRes, err := certifier.Get(apiURL+"/acme/cert/test-cert", false)
+	bundle := true
+
+	certRes, err := certifier.Get(apiURL+"/acme/cert/test-cert", bundle)
 	require.NoError(t, err)
 
 	assert.NotNil(t, certRes)

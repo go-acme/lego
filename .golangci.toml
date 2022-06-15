@@ -17,12 +17,16 @@
     min-len = 3.0
     min-occurrences = 3.0
 
+  [linters-settings.funlen]
+    lines = -1
+    statements = 50
+
   [linters-settings.misspell]
     locale = "US"
     ignore-words = ["internetbs"]
 
   [linters-settings.depguard]
-    list-type = "blacklist"
+    list-type = "denylist"
     include-go-root = false
     packages = ["github.com/pkg/errors"]
 

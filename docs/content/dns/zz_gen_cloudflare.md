@@ -21,7 +21,7 @@ Configuration for [Cloudflare](https://www.cloudflare.com/dns/).
 Here is an example bash command using the Cloudflare provider:
 
 ```bash
-CLOUDFLARE_EMAIL=foo@bar.com \
+CLOUDFLARE_EMAIL=you@example.com \
 CLOUDFLARE_API_KEY=b9841238feb177a84330febba8a83208921177bffe733 \
 lego --email myemail@example.com --dns cloudflare --domains my.example.org run
 
@@ -48,7 +48,7 @@ lego --email myemail@example.com --dns cloudflare --domains my.example.org run
 | `CLOUDFLARE_ZONE_API_TOKEN` | Alias to CF_ZONE_API_TOKEN |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 ## Additional Configuration
@@ -61,7 +61,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `CLOUDFLARE_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 ## Description
 

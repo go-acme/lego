@@ -23,7 +23,7 @@ Here is an example bash command using the Nicmanager provider:
 ```bash
 ## Login using email
 
-NICMANAGER_API_EMAIL = "foo@bar.baz" \
+NICMANAGER_API_EMAIL = "you@example.com" \
 NICMANAGER_API_PASSWORD = "password" \
 
 # Optionally, if your account has TOTP enabled, set the secret here
@@ -56,7 +56,7 @@ lego --email myemail@example.com --dns nicmanager --domains my.example.org run
 | `NICMANAGER_API_USERNAME` | Username, used for Username-based login |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 ## Additional Configuration
@@ -71,7 +71,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `NICMANAGER_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 ## Description
 

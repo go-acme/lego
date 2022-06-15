@@ -45,7 +45,7 @@ lego --email myemail@example.com --dns alidns --domains my.example.org run
 | `ALICLOUD_SECURITY_TOKEN` | STS Security Token (optional) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 ## Additional Configuration
@@ -58,7 +58,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `ALICLOUD_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 

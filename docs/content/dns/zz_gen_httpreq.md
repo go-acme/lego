@@ -36,7 +36,7 @@ lego --email myemail@example.com --dns httpreq --domains my.example.org run
 | `HTTPREQ_MODE` | `RAW`, none |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 ## Additional Configuration
@@ -50,7 +50,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `HTTPREQ_USERNAME` | Basic authentication username |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 ## Description
 

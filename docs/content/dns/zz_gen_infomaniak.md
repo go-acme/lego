@@ -35,7 +35,7 @@ lego --email myemail@example.com --dns infomaniak --domains my.example.org run
 | `INFOMANIAK_ACCESS_TOKEN` | Access token |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 ## Additional Configuration
@@ -49,7 +49,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `INFOMANIAK_TTL` | The TTL of the TXT record used for the DNS challenge in seconds |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 ## Access token
 

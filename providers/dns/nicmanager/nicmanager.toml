@@ -7,7 +7,7 @@ Since = "v4.5.0"
 Example = '''
 ## Login using email
 
-NICMANAGER_API_EMAIL = "foo@bar.baz" \
+NICMANAGER_API_EMAIL = "you@example.com" \
 NICMANAGER_API_PASSWORD = "password" \
 
 # Optionally, if your account has TOTP enabled, set the secret here

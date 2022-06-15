@@ -41,7 +41,7 @@ lego --email myemail@example.com --dns ovh --domains my.example.org run
 | `OVH_ENDPOINT` | Endpoint URL (ovh-eu or ovh-ca) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 ## Additional Configuration
@@ -54,7 +54,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `OVH_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 ## Application Key and Secret
 

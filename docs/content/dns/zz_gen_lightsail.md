@@ -34,7 +34,7 @@ _Please contribute by adding a CLI example._
 | `DNS_ZONE` | Domain name of the DNS zone |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 ## Additional Configuration
@@ -46,7 +46,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `LIGHTSAIL_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 ## Description
 

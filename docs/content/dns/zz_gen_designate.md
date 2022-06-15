@@ -62,7 +62,7 @@ lego --email myemail@example.com --dns designate --domains my.example.org run
 | `OS_USER_ID` | User ID |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 ## Additional Configuration
@@ -76,7 +76,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `OS_TENANT_NAME` | Tenant name (deprecated see OS_PROJECT_NAME and OS_PROJECT_ID) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 ## Description
 

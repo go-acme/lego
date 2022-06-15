@@ -37,7 +37,7 @@ lego --email myemail@example.com --dns acme-dns --domains my.example.org run
 | `ACME_DNS_STORAGE_PATH` | The ACME-DNS JSON account data file. A per-domain account will be registered/persisted to this file and used for TXT updates. |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 

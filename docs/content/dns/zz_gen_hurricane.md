@@ -38,7 +38,7 @@ lego -m myemail@example.com --dns hurricane -d my.example.org -d demo.example.or
 | `HURRICANE_TOKENS` | TXT record names and tokens |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 

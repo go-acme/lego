@@ -39,7 +39,7 @@ lego --email myemail@example.com --dns liquidweb --domains my.example.org run
 | `LIQUID_WEB_ZONE` | DNS Zone |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 ## Additional Configuration
@@ -53,7 +53,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `LIQUID_WEB_URL` | Storm API endpoint |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 

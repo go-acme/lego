@@ -137,12 +137,16 @@ func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *Certif
 		}
 	}
 
-	if ctx.Bool("no-random-sleep") {
+	if !ctx.Bool("no-random-sleep") {
 		// https://github.com/go-acme/lego/issues/1656
 		// https://github.com/certbot/certbot/blob/284023a1b7672be2bd4018dd7623b3b92197d4b0/certbot/certbot/_internal/renewal.py#L472
-		sleepTime := rand.New(rand.NewSource(time.Now().UnixNano())).Int63n(int64(8 * time.Minute))
-		log.Infof("renewal: random delay of %s", time.Duration(sleepTime))
-		time.Sleep(time.Duration(sleepTime) * time.Second)
+		const jitter = 8 * time.Minute
+		rndSource := rand.NewSource(time.Now().UnixNano())
+		rnd := rand.New(rndSource)
+		sleepTime := time.Duration(rnd.Int63n(int64(jitter)))
+		
+		log.Infof("renewal: random delay of %s", sleepTime)
+		time.Sleep(time.Duration(sleepTime))
 	}
 
 	request := certificate.ObtainRequest{

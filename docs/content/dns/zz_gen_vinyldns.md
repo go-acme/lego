@@ -24,7 +24,7 @@ Here is an example bash command using the VinylDNS provider:
 VINYLDNS_ACCESS_KEY=xxxxxx \
 VINYLDNS_SECRET_KEY=yyyyy \
 VINYLDNS_HOST=https://api.vinyldns.example.org:9443 \
-lego --email myemail@example.com --dns vinyldns --domains my.example.org run
+lego --email you@example.com --dns vinyldns --domains my.example.org run
 ```
 
 

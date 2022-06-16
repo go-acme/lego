@@ -22,7 +22,7 @@ Here is an example bash command using the deSEC.io provider:
 
 ```bash
 DESEC_TOKEN=x-xxxxxxxxxxxxxxxxxxxxxxxxxx \
-lego --email myemail@example.com --dns desec --domains my.example.org run
+lego --email you@example.com --dns desec --domains my.example.org run
 ```
 
 

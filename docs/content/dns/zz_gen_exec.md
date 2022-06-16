@@ -21,7 +21,7 @@ Here is an example bash command using the External program provider:
 
 ```bash
 EXEC_PATH=/the/path/to/myscript.sh \
-lego --email myemail@example.com --dns exec --domains my.example.org run
+lego --email you@example.com --dns exec --domains my.example.org run
 ```
 
 
@@ -56,7 +56,7 @@ For example, requesting a certificate for the domain 'my.example.org' can be ach
 
 ```bash
 EXEC_PATH=./update-dns.sh \
-	lego --email myemail@example.com \
+	lego --email you@example.com \
 	--dns exec \
 	--domains my.example.org run
 ```
@@ -78,7 +78,7 @@ If you want to use the raw domain, token, and keyAuth values with your program, 
 ```bash
 EXEC_MODE=RAW \
 EXEC_PATH=./update-dns.sh \
-	lego --email myemail@example.com \
+	lego --email you@example.com \
 	--dns exec \
 	--domains my.example.org run
 ```

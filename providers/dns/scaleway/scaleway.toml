@@ -6,7 +6,7 @@ Since = "v3.4.0"
 
 Example = '''
 SCALEWAY_API_TOKEN=xxxxxxx-xxxxx-xxxx-xxx-xxxxxx \
-lego --email myemail@example.com --dns scaleway --domains my.example.org run
+lego --email you@example.com --dns scaleway --domains my.example.org run
 '''
 
 [Configuration]

@@ -18,7 +18,7 @@ Here is an example bash command using the Cloudflare DNS provider:
 ```console
 $ CLOUDFLARE_EMAIL=you@example.com \
   CLOUDFLARE_API_KEY=b9841238feb177a84330febba8a83208921177bffe733 \
-  lego --dns cloudflare --domains www.example.com --email me@bar.com run
+  lego --dns cloudflare --domains www.example.com --email you@example.com run
 ```
 
 ### Environment Variables: File
@@ -42,7 +42,7 @@ you@example.com
 
 $ CLOUDFLARE_EMAIL_FILE=/the/path/to/my/email \
   CLOUDFLARE_API_KEY_FILE=/the/path/to/my/key \
-  lego --dns cloudflare --domains www.example.com --email me@bar.com run
+  lego --dns cloudflare --domains www.example.com --email you@example.com run
 ```
 
 ## Experimental Features
@@ -52,4 +52,4 @@ set `LEGO_EXPERIMENTAL_CNAME_SUPPORT` to `true`.
 
 ## DNS Providers
 
-{{% children style="li" description="true" %}}
+{{% tableofdnsproviders %}}

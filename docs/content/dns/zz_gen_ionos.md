@@ -22,7 +22,7 @@ Here is an example bash command using the Ionos provider:
 
 ```bash
 IONOS_API_KEY=xxxxxxxx \
-lego --email myemail@example.com --dns ionos --domains my.example.org run
+lego --email you@example.com --dns ionos --domains my.example.org run
 ```
 
 

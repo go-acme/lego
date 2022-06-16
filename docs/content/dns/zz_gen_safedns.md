@@ -22,7 +22,7 @@ Here is an example bash command using the UKFast SafeDNS provider:
 
 ```bash
 SAFEDNS_AUTH_TOKEN=xxxxxx \
-lego --email myemail@example.com --dns safedns --domains my.example.org run
+lego --email you@example.com --dns safedns --domains my.example.org run
 ```
 
 

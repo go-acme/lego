@@ -6,7 +6,7 @@ Since = "v3.7.0"
 
 Example = '''
 DESEC_TOKEN=x-xxxxxxxxxxxxxxxxxxxxxxxxxx \
-lego --email myemail@example.com --dns desec --domains my.example.org run
+lego --email you@example.com --dns desec --domains my.example.org run
 '''
 
 [Configuration]

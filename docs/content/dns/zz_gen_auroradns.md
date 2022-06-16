@@ -23,7 +23,7 @@ Here is an example bash command using the Aurora DNS provider:
 ```bash
 AURORA_USER_ID=xxxxx \
 AURORA_KEY=yyyyyy \
-lego --email myemail@example.com --dns auroradns --domains my.example.org run
+lego --email you@example.com --dns auroradns --domains my.example.org run
 ```
 
 

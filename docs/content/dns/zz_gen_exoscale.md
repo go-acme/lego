@@ -23,7 +23,7 @@ Here is an example bash command using the Exoscale provider:
 ```bash
 EXOSCALE_API_KEY=abcdefghijklmnopqrstuvwx \
 EXOSCALE_API_SECRET=xxxxxxx \
-lego --email myemail@example.com --dns exoscale --domains my.example.org run
+lego --email you@example.com --dns exoscale --domains my.example.org run
 ```
 
 

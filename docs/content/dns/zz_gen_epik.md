@@ -22,7 +22,7 @@ Here is an example bash command using the Epik provider:
 
 ```bash
 EPIK_SIGNATURE=xxxxxxxxxxxxxxxxxxxxxxxxxx \
-lego --email myemail@example.com --dns epik --domains my.example.org run
+lego --email you@example.com --dns epik --domains my.example.org run
 ```
 
 

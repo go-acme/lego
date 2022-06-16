@@ -23,7 +23,7 @@ Here is an example bash command using the Glesys provider:
 ```bash
 GLESYS_API_USER=xxxxx \
 GLESYS_API_KEY=yyyyy \
-lego --email myemail@example.com --dns glesys --domains my.example.org run
+lego --email you@example.com --dns glesys --domains my.example.org run
 ```
 
 

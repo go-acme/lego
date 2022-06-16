@@ -23,13 +23,13 @@ Here is an example bash command using the Alibaba Cloud DNS provider:
 ```bash
 # Setup using instance RAM role
 ALICLOUD_RAM_ROLE=lego \
-lego --email myemail@example.com --dns alidns --domains my.example.org run
+lego --email you@example.com --dns alidns --domains my.example.org run
 
 # Or, using credentials
 ALICLOUD_ACCESS_KEY=abcdefghijklmnopqrstuvwx \
 ALICLOUD_SECRET_KEY=your-secret-key \
 ALICLOUD_SECURITY_TOKEN=your-sts-token \
-lego --email myemail@example.com --dns alidns --domains my.example.org run
+lego --email you@example.com --dns alidns --domains my.example.org run
 ```
 
 

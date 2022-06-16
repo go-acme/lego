@@ -25,17 +25,17 @@ Here is an example bash command using the Joker provider:
 JOKER_API_MODE=SVC \
 JOKER_USERNAME=<your email> \
 JOKER_PASSWORD=<your password> \
-lego --email myemail@example.com --dns joker --domains my.example.org run
+lego --email you@example.com --dns joker --domains my.example.org run
 
 # DMAPI
 JOKER_API_MODE=DMAPI \
 JOKER_USERNAME=<your email> \
 JOKER_PASSWORD=<your password> \
-lego --email myemail@example.com --dns joker --domains my.example.org run
+lego --email you@example.com --dns joker --domains my.example.org run
 ## or
 JOKER_API_MODE=DMAPI \
 JOKER_API_KEY=<your API key> \
-lego --email myemail@example.com --dns joker --domains my.example.org run
+lego --email you@example.com --dns joker --domains my.example.org run
 ```
 
 

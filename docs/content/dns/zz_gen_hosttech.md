@@ -22,7 +22,7 @@ Here is an example bash command using the Hosttech provider:
 
 ```bash
 HOSTTECH_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxx \
-lego --email myemail@example.com --dns hosttech --domains my.example.org run
+lego --email you@example.com --dns hosttech --domains my.example.org run
 ```
 
 

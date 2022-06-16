@@ -87,7 +87,7 @@ You could also implement a rewrite to rewrite `.well-known/acme-challenge` to th
 You should be able to run an existing webserver on port 80 and have lego write the token file with the HTTP-01 challenge key authorization to `<webroot dir>/.well-known/acme-challenge/` by running something like:
 
 ```bash
-lego --accept-tos -m you@example.com --http --http.webroot /path/to/webroot -d example.com run
+lego --accept-tos --email you@example.com --http --http.webroot /path/to/webroot --domains example.com run
 ```
 
 ## Running a script afterward

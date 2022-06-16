@@ -22,7 +22,7 @@ Here is an example bash command using the DreamHost provider:
 
 ```bash
 DREAMHOST_API_KEY="YOURAPIKEY" \
-lego --email myemail@example.com --dns dreamhost --domains my.example.org run
+lego --email you@example.com --dns dreamhost --domains my.example.org run
 ```
 
 

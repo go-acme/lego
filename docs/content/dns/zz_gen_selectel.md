@@ -22,7 +22,7 @@ Here is an example bash command using the Selectel provider:
 
 ```bash
 SELECTEL_API_TOKEN=xxxxx \
-lego --email myemail@example.com --dns selectel --domains my.example.org run
+lego --email you@example.com --dns selectel --domains my.example.org run
 ```
 
 

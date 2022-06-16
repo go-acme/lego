@@ -22,7 +22,7 @@ Here is an example bash command using the Digital Ocean provider:
 
 ```bash
 DO_AUTH_TOKEN=xxxxxx \
-lego --email myemail@example.com --dns digitalocean --domains my.example.org run
+lego --email you@example.com --dns digitalocean --domains my.example.org run
 ```
 
 

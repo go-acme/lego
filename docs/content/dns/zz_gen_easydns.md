@@ -23,7 +23,7 @@ Here is an example bash command using the EasyDNS provider:
 ```bash
 EASYDNS_TOKEN=<your token> \
 EASYDNS_KEY=<your key> \
-lego --email myemail@example.com --dns easydns --domains my.example.org run
+lego --email you@example.com --dns easydns --domains my.example.org run
 ```
 
 

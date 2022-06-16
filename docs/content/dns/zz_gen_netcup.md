@@ -24,7 +24,7 @@ Here is an example bash command using the Netcup provider:
 NETCUP_CUSTOMER_NUMBER=xxxx \
 NETCUP_API_KEY=yyyy \
 NETCUP_API_PASSWORD=zzzz \
-lego --email myemail@example.com --dns netcup --domains my.example.org run
+lego --email you@example.com --dns netcup --domains my.example.org run
 ```
 
 

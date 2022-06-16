@@ -23,13 +23,13 @@ Here is an example bash command using the INWX provider:
 ```bash
 INWX_USERNAME=xxxxxxxxxx \
 INWX_PASSWORD=yyyyyyyyyy \
-lego --email myemail@example.com --dns inwx --domains my.example.org run
+lego --email you@example.com --dns inwx --domains my.example.org run
 
 # 2FA
 INWX_USERNAME=xxxxxxxxxx \
 INWX_PASSWORD=yyyyyyyyyy \
 INWX_SHARED_SECRET=zzzzzzzzzz \
-lego --email myemail@example.com --dns inwx --domains my.example.org run
+lego --email you@example.com --dns inwx --domains my.example.org run
 ```
 
 

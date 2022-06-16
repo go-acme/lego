@@ -23,7 +23,7 @@ Here is an example bash command using the Constellix provider:
 ```bash
 CONSTELLIX_API_KEY=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx \
 CONSTELLIX_SECRET_KEY=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx \
-lego --email myemail@example.com --dns constellix --domains my.example.org run
+lego --email you@example.com --dns constellix --domains my.example.org run
 ```
 
 

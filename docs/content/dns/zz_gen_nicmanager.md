@@ -29,7 +29,7 @@ NICMANAGER_API_PASSWORD = "password" \
 # Optionally, if your account has TOTP enabled, set the secret here
 NICMANAGER_API_OTP = "long-secret" \
 
-lego --email myemail@example.com --dns nicmanager --domains my.example.org run
+lego --email you@example.com --dns nicmanager --domains my.example.org run
 
 ## Login using account name + username
 
@@ -40,7 +40,7 @@ NICMANAGER_API_PASSWORD = "password" \
 # Optionally, if your account has TOTP enabled, set the secret here
 NICMANAGER_API_OTP = "long-secret" \
 
-lego --email myemail@example.com --dns nicmanager --domains my.example.org run
+lego --email you@example.com --dns nicmanager --domains my.example.org run
 ```
 
 

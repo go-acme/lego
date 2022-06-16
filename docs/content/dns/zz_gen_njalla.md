@@ -22,7 +22,7 @@ Here is an example bash command using the Njalla provider:
 
 ```bash
 NJALLA_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxx \
-lego --email myemail@example.com --dns njalla --domains my.example.org run
+lego --email you@example.com --dns njalla --domains my.example.org run
 ```
 
 

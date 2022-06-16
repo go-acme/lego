@@ -22,7 +22,7 @@ Here is an example bash command using the Gandi provider:
 
 ```bash
 GANDI_API_KEY=abcdefghijklmnopqrstuvwx \
-lego --email myemail@example.com --dns gandi --domains my.example.org run
+lego --email you@example.com --dns gandi --domains my.example.org run
 ```
 
 

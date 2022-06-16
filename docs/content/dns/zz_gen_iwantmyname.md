@@ -23,7 +23,7 @@ Here is an example bash command using the iwantmyname provider:
 ```bash
 IWANTMYNAME_USERNAME=xxxxxxxx \
 IWANTMYNAME_PASSWORD=xxxxxxxx \
-lego --email myemail@example.com --dns iwantmyname --domains my.example.org run
+lego --email you@example.com --dns iwantmyname --domains my.example.org run
 ```
 
 

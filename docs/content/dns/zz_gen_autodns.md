@@ -23,7 +23,7 @@ Here is an example bash command using the Autodns provider:
 ```bash
 AUTODNS_API_USER=username \
 AUTODNS_API_PASSWORD=supersecretpassword \
-lego --email myemail@example.com --dns autodns --domains my.example.org run
+lego --email you@example.com --dns autodns --domains my.example.org run
 ```
 
 

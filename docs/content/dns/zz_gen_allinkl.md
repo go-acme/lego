@@ -23,7 +23,7 @@ Here is an example bash command using the all-inkl provider:
 ```bash
 ALL_INKL_LOGIN=xxxxxxxxxxxxxxxxxxxxxxxxxx \
 ALL_INKL_PASSWORD=yyyyyyyyyyyyyyyyyyyyyyyyyy \
-lego --email myemail@example.com --dns allinkl --domains my.example.org run
+lego --email you@example.com --dns allinkl --domains my.example.org run
 ```
 
 

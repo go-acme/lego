@@ -22,7 +22,7 @@ Here is an example bash command using the freemyip.com provider:
 
 ```bash
 FREEMYIP_TOKEN=xxxxxx \
-lego --email myemail@example.com --dns freemyip --domains my.example.org run
+lego --email you@example.com --dns freemyip --domains my.example.org run
 ```
 
 

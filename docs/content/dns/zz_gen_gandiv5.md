@@ -22,7 +22,7 @@ Here is an example bash command using the Gandi Live DNS (v5) provider:
 
 ```bash
 GANDIV5_API_KEY=abcdefghijklmnopqrstuvwx \
-lego --email myemail@example.com --dns gandiv5 --domains my.example.org run
+lego --email you@example.com --dns gandiv5 --domains my.example.org run
 ```
 
 

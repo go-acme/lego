@@ -9,14 +9,15 @@ slug: regru
 <!-- providers/dns/regru/regru.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v3.5.0
 
 Configuration for [reg.ru](https://www.reg.ru/).
 
 
 <!--more-->
 
-- Code: `regru`
+- Code: `--dns regru`
+- Since: v3.5.0
+
 
 Here is an example bash command using the reg.ru provider:
 

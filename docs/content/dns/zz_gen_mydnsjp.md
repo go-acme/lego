@@ -9,14 +9,15 @@ slug: mydnsjp
 <!-- providers/dns/mydnsjp/mydnsjp.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v1.2.0
 
 Configuration for [MyDNS.jp](https://www.mydns.jp).
 
 
 <!--more-->
 
-- Code: `mydnsjp`
+- Code: `--dns mydnsjp`
+- Since: v1.2.0
+
 
 Here is an example bash command using the MyDNS.jp provider:
 

@@ -9,14 +9,15 @@ slug: easydns
 <!-- providers/dns/easydns/easydns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v2.6.0
 
 Configuration for [EasyDNS](https://easydns.com/).
 
 
 <!--more-->
 
-- Code: `easydns`
+- Code: `--dns easydns`
+- Since: v2.6.0
+
 
 Here is an example bash command using the EasyDNS provider:
 

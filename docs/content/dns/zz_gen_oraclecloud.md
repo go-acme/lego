@@ -9,14 +9,15 @@ slug: oraclecloud
 <!-- providers/dns/oraclecloud/oraclecloud.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v2.3.0
 
 Configuration for [Oracle Cloud](https://cloud.oracle.com/home).
 
 
 <!--more-->
 
-- Code: `oraclecloud`
+- Code: `--dns oraclecloud`
+- Since: v2.3.0
+
 
 Here is an example bash command using the Oracle Cloud provider:
 

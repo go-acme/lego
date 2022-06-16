@@ -9,14 +9,15 @@ slug: zonomi
 <!-- providers/dns/zonomi/zonomi.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v3.5.0
 
 Configuration for [Zonomi](https://zonomi.com).
 
 
 <!--more-->
 
-- Code: `zonomi`
+- Code: `--dns zonomi`
+- Since: v3.5.0
+
 
 Here is an example bash command using the Zonomi provider:
 

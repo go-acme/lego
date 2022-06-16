@@ -9,14 +9,15 @@ slug: gcloud
 <!-- providers/dns/gcloud/gcloud.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v0.3.0
 
 Configuration for [Google Cloud](https://cloud.google.com).
 
 
 <!--more-->
 
-- Code: `gcloud`
+- Code: `--dns gcloud`
+- Since: v0.3.0
+
 
 {{% notice note %}}
 _Please contribute by adding a CLI example._

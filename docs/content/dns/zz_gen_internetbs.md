@@ -9,14 +9,15 @@ slug: internetbs
 <!-- providers/dns/internetbs/internetbs.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.5.0
 
 Configuration for [Internet.bs](https://internetbs.net).
 
 
 <!--more-->
 
-- Code: `internetbs`
+- Code: `--dns internetbs`
+- Since: v4.5.0
+
 
 Here is an example bash command using the Internet.bs provider:
 

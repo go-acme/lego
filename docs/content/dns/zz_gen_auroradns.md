@@ -9,14 +9,15 @@ slug: auroradns
 <!-- providers/dns/auroradns/auroradns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v0.4.0
 
 Configuration for [Aurora DNS](https://www.pcextreme.com/aurora/dns).
 
 
 <!--more-->
 
-- Code: `auroradns`
+- Code: `--dns auroradns`
+- Since: v0.4.0
+
 
 Here is an example bash command using the Aurora DNS provider:
 

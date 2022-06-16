@@ -9,14 +9,15 @@ slug: duckdns
 <!-- providers/dns/duckdns/duckdns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v0.5.0
 
 Configuration for [Duck DNS](https://www.duckdns.org/).
 
 
 <!--more-->
 
-- Code: `duckdns`
+- Code: `--dns duckdns`
+- Since: v0.5.0
+
 
 Here is an example bash command using the Duck DNS provider:
 

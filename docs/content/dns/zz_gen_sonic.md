@@ -9,14 +9,15 @@ slug: sonic
 <!-- providers/dns/sonic/sonic.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.4.0
 
 Configuration for [Sonic](https://www.sonic.com/).
 
 
 <!--more-->
 
-- Code: `sonic`
+- Code: `--dns sonic`
+- Since: v4.4.0
+
 
 Here is an example bash command using the Sonic provider:
 

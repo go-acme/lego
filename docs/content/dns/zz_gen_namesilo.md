@@ -9,14 +9,15 @@ slug: namesilo
 <!-- providers/dns/namesilo/namesilo.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v2.7.0
 
 Configuration for [Namesilo](https://www.namesilo.com/).
 
 
 <!--more-->
 
-- Code: `namesilo`
+- Code: `--dns namesilo`
+- Since: v2.7.0
+
 
 Here is an example bash command using the Namesilo provider:
 

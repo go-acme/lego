@@ -9,14 +9,15 @@ slug: domeneshop
 <!-- providers/dns/domeneshop/domeneshop.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.3.0
 
 Configuration for [Domeneshop](https://domene.shop).
 
 
 <!--more-->
 
-- Code: `domeneshop`
+- Code: `--dns domeneshop`
+- Since: v4.3.0
+
 
 Here is an example bash command using the Domeneshop provider:
 

@@ -9,14 +9,15 @@ slug: httpreq
 <!-- providers/dns/httpreq/httpreq.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v2.0.0
 
 Configuration for [HTTP request](/lego/dns/httpreq/).
 
 
 <!--more-->
 
-- Code: `httpreq`
+- Code: `--dns httpreq`
+- Since: v2.0.0
+
 
 Here is an example bash command using the HTTP request provider:
 

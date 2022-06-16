@@ -9,14 +9,15 @@ slug: rfc2136
 <!-- providers/dns/rfc2136/rfc2136.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v0.3.0
 
 Configuration for [RFC2136](https://www.rfc-editor.org/rfc/rfc2136.html).
 
 
 <!--more-->
 
-- Code: `rfc2136`
+- Code: `--dns rfc2136`
+- Since: v0.3.0
+
 
 Here is an example bash command using the RFC2136 provider:
 

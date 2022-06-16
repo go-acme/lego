@@ -9,14 +9,15 @@ slug: vercel
 <!-- providers/dns/vercel/vercel.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.7.0
 
 Configuration for [Vercel](https://vercel.com).
 
 
 <!--more-->
 
-- Code: `vercel`
+- Code: `--dns vercel`
+- Since: v4.7.0
+
 
 Here is an example bash command using the Vercel provider:
 

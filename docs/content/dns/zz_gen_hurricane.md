@@ -9,14 +9,15 @@ slug: hurricane
 <!-- providers/dns/hurricane/hurricane.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.3.0
 
 Configuration for [Hurricane Electric DNS](https://dns.he.net/).
 
 
 <!--more-->
 
-- Code: `hurricane`
+- Code: `--dns hurricane`
+- Since: v4.3.0
+
 
 Here is an example bash command using the Hurricane Electric DNS provider:
 

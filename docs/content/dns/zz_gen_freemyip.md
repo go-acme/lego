@@ -9,14 +9,15 @@ slug: freemyip
 <!-- providers/dns/freemyip/freemyip.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.5.0
 
 Configuration for [freemyip.com](https://freemyip.com/).
 
 
 <!--more-->
 
-- Code: `freemyip`
+- Code: `--dns freemyip`
+- Since: v4.5.0
+
 
 Here is an example bash command using the freemyip.com provider:
 

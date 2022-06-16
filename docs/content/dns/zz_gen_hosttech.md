@@ -9,14 +9,15 @@ slug: hosttech
 <!-- providers/dns/hosttech/hosttech.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.5.0
 
 Configuration for [Hosttech](https://www.hosttech.eu/).
 
 
 <!--more-->
 
-- Code: `hosttech`
+- Code: `--dns hosttech`
+- Since: v4.5.0
+
 
 Here is an example bash command using the Hosttech provider:
 

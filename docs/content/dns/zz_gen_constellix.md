@@ -9,14 +9,15 @@ slug: constellix
 <!-- providers/dns/constellix/constellix.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v3.4.0
 
 Configuration for [Constellix](https://constellix.com).
 
 
 <!--more-->
 
-- Code: `constellix`
+- Code: `--dns constellix`
+- Since: v3.4.0
+
 
 Here is an example bash command using the Constellix provider:
 

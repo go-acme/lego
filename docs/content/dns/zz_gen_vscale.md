@@ -9,14 +9,15 @@ slug: vscale
 <!-- providers/dns/vscale/vscale.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v2.0.0
 
 Configuration for [Vscale](https://vscale.io/).
 
 
 <!--more-->
 
-- Code: `vscale`
+- Code: `--dns vscale`
+- Since: v2.0.0
+
 
 Here is an example bash command using the Vscale provider:
 

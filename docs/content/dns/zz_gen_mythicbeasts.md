@@ -9,14 +9,15 @@ slug: mythicbeasts
 <!-- providers/dns/mythicbeasts/mythicbeasts.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v0.3.7
 
 Configuration for [MythicBeasts](https://www.mythic-beasts.com/).
 
 
 <!--more-->
 
-- Code: `mythicbeasts`
+- Code: `--dns mythicbeasts`
+- Since: v0.3.7
+
 
 Here is an example bash command using the MythicBeasts provider:
 

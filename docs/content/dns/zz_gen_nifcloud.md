@@ -9,14 +9,15 @@ slug: nifcloud
 <!-- providers/dns/nifcloud/nifcloud.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v1.1.0
 
 Configuration for [NIFCloud](https://www.nifcloud.com/).
 
 
 <!--more-->
 
-- Code: `nifcloud`
+- Code: `--dns nifcloud`
+- Since: v1.1.0
+
 
 Here is an example bash command using the NIFCloud provider:
 

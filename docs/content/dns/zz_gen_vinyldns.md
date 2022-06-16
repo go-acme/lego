@@ -9,14 +9,15 @@ slug: vinyldns
 <!-- providers/dns/vinyldns/vinyldns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.4.0
 
 Configuration for [VinylDNS](https://www.vinyldns.io).
 
 
 <!--more-->
 
-- Code: `vinyldns`
+- Code: `--dns vinyldns`
+- Since: v4.4.0
+
 
 Here is an example bash command using the VinylDNS provider:
 

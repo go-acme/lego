@@ -9,14 +9,15 @@ slug: iwantmyname
 <!-- providers/dns/iwantmyname/iwantmyname.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.7.0
 
 Configuration for [iwantmyname](https://iwantmyname.com).
 
 
 <!--more-->
 
-- Code: `iwantmyname`
+- Code: `--dns iwantmyname`
+- Since: v4.7.0
+
 
 Here is an example bash command using the iwantmyname provider:
 

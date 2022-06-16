@@ -9,14 +9,15 @@ slug: versio
 <!-- providers/dns/versio/versio.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v2.7.0
 
 Configuration for [Versio.[nl|eu|uk]](https://www.versio.nl/domeinnamen).
 
 
 <!--more-->
 
-- Code: `versio`
+- Code: `--dns versio`
+- Since: v2.7.0
+
 
 Here is an example bash command using the Versio.[nl|eu|uk] provider:
 

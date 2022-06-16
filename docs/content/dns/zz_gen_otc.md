@@ -9,14 +9,15 @@ slug: otc
 <!-- providers/dns/otc/otc.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v0.4.1
 
 Configuration for [Open Telekom Cloud](https://cloud.telekom.de/en).
 
 
 <!--more-->
 
-- Code: `otc`
+- Code: `--dns otc`
+- Since: v0.4.1
+
 
 {{% notice note %}}
 _Please contribute by adding a CLI example._

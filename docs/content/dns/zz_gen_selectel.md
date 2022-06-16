@@ -9,14 +9,15 @@ slug: selectel
 <!-- providers/dns/selectel/selectel.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v1.2.0
 
 Configuration for [Selectel](https://kb.selectel.com/).
 
 
 <!--more-->
 
-- Code: `selectel`
+- Code: `--dns selectel`
+- Since: v1.2.0
+
 
 Here is an example bash command using the Selectel provider:
 

@@ -9,14 +9,15 @@ slug: hostingde
 <!-- providers/dns/hostingde/hostingde.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v1.1.0
 
 Configuration for [Hosting.de](https://www.hosting.de/).
 
 
 <!--more-->
 
-- Code: `hostingde`
+- Code: `--dns hostingde`
+- Since: v1.1.0
+
 
 Here is an example bash command using the Hosting.de provider:
 

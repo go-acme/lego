@@ -9,14 +9,15 @@ slug: rimuhosting
 <!-- providers/dns/rimuhosting/rimuhosting.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v0.3.5
 
 Configuration for [RimuHosting](https://rimuhosting.com).
 
 
 <!--more-->
 
-- Code: `rimuhosting`
+- Code: `--dns rimuhosting`
+- Since: v0.3.5
+
 
 Here is an example bash command using the RimuHosting provider:
 

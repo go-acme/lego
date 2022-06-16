@@ -9,14 +9,15 @@ slug: desec
 <!-- providers/dns/desec/desec.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v3.7.0
 
 Configuration for [deSEC.io](https://desec.io).
 
 
 <!--more-->
 
-- Code: `desec`
+- Code: `--dns desec`
+- Since: v3.7.0
+
 
 Here is an example bash command using the deSEC.io provider:
 

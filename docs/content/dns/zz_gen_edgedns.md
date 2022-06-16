@@ -9,15 +9,15 @@ slug: edgedns
 <!-- providers/dns/edgedns/edgedns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v3.9.0
-
 Akamai edgedns supersedes FastDNS; implementing a DNS provider for solving the DNS-01 challenge using Akamai EdgeDNS
 
 
 
 <!--more-->
 
-- Code: `edgedns`
+- Code: `--dns edgedns`
+- Since: v3.9.0
+
 
 Here is an example bash command using the Akamai EdgeDNS provider:
 

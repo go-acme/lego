@@ -9,14 +9,15 @@ slug: epik
 <!-- providers/dns/epik/epik.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.5.0
 
 Configuration for [Epik](https://www.epik.com/).
 
 
 <!--more-->
 
-- Code: `epik`
+- Code: `--dns epik`
+- Since: v4.5.0
+
 
 Here is an example bash command using the Epik provider:
 

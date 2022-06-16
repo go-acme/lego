@@ -9,14 +9,15 @@ slug: ns1
 <!-- providers/dns/ns1/ns1.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v0.4.0
 
 Configuration for [NS1](https://ns1.com).
 
 
 <!--more-->
 
-- Code: `ns1`
+- Code: `--dns ns1`
+- Since: v0.4.0
+
 
 Here is an example bash command using the NS1 provider:
 

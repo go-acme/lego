@@ -9,14 +9,15 @@ slug: transip
 <!-- providers/dns/transip/transip.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v2.0.0
 
 Configuration for [TransIP](https://www.transip.nl/).
 
 
 <!--more-->
 
-- Code: `transip`
+- Code: `--dns transip`
+- Since: v2.0.0
+
 
 Here is an example bash command using the TransIP provider:
 

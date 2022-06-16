@@ -9,14 +9,15 @@ slug: safedns
 <!-- providers/dns/safedns/safedns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.6.0
 
 Configuration for [UKFast SafeDNS](https://www.ukfast.co.uk/dns-hosting.html).
 
 
 <!--more-->
 
-- Code: `safedns`
+- Code: `--dns safedns`
+- Since: v4.6.0
+
 
 Here is an example bash command using the UKFast SafeDNS provider:
 

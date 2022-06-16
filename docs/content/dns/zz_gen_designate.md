@@ -9,14 +9,15 @@ slug: designate
 <!-- providers/dns/designate/designate.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v2.2.0
 
 Configuration for [Designate DNSaaS for Openstack](https://docs.openstack.org/designate/latest/).
 
 
 <!--more-->
 
-- Code: `designate`
+- Code: `--dns designate`
+- Since: v2.2.0
+
 
 Here is an example bash command using the Designate DNSaaS for Openstack provider:
 

@@ -9,14 +9,15 @@ slug: njalla
 <!-- providers/dns/njalla/njalla.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.3.0
 
 Configuration for [Njalla](https://njal.la).
 
 
 <!--more-->
 
-- Code: `njalla`
+- Code: `--dns njalla`
+- Since: v4.3.0
+
 
 Here is an example bash command using the Njalla provider:
 

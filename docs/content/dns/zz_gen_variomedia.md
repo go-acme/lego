@@ -9,14 +9,15 @@ slug: variomedia
 <!-- providers/dns/variomedia/variomedia.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.8.0
 
 Configuration for [Variomedia](https://www.variomedia.de/).
 
 
 <!--more-->
 
-- Code: `variomedia`
+- Code: `--dns variomedia`
+- Since: v4.8.0
+
 
 Here is an example bash command using the Variomedia provider:
 

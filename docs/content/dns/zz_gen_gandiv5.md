@@ -9,14 +9,15 @@ slug: gandiv5
 <!-- providers/dns/gandiv5/gandiv5.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v0.5.0
 
 Configuration for [Gandi Live DNS (v5)](https://www.gandi.net).
 
 
 <!--more-->
 
-- Code: `gandiv5`
+- Code: `--dns gandiv5`
+- Since: v0.5.0
+
 
 Here is an example bash command using the Gandi Live DNS (v5) provider:
 

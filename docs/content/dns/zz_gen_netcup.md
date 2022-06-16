@@ -9,14 +9,15 @@ slug: netcup
 <!-- providers/dns/netcup/netcup.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v1.1.0
 
 Configuration for [Netcup](https://www.netcup.eu/).
 
 
 <!--more-->
 
-- Code: `netcup`
+- Code: `--dns netcup`
+- Since: v1.1.0
+
 
 Here is an example bash command using the Netcup provider:
 

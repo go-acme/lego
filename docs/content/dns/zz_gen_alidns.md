@@ -9,14 +9,15 @@ slug: alidns
 <!-- providers/dns/alidns/alidns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v1.1.0
 
 Configuration for [Alibaba Cloud DNS](https://www.alibabacloud.com/product/dns).
 
 
 <!--more-->
 
-- Code: `alidns`
+- Code: `--dns alidns`
+- Since: v1.1.0
+
 
 Here is an example bash command using the Alibaba Cloud DNS provider:
 

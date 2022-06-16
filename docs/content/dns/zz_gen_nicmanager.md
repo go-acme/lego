@@ -9,14 +9,15 @@ slug: nicmanager
 <!-- providers/dns/nicmanager/nicmanager.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.5.0
 
 Configuration for [Nicmanager](https://www.nicmanager.com/).
 
 
 <!--more-->
 
-- Code: `nicmanager`
+- Code: `--dns nicmanager`
+- Since: v4.5.0
+
 
 Here is an example bash command using the Nicmanager provider:
 

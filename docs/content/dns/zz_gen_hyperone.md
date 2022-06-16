@@ -9,14 +9,15 @@ slug: hyperone
 <!-- providers/dns/hyperone/hyperone.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v3.9.0
 
 Configuration for [HyperOne](https://www.hyperone.com).
 
 
 <!--more-->
 
-- Code: `hyperone`
+- Code: `--dns hyperone`
+- Since: v3.9.0
+
 
 Here is an example bash command using the HyperOne provider:
 

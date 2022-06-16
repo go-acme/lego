@@ -9,14 +9,15 @@ slug: scaleway
 <!-- providers/dns/scaleway/scaleway.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v3.4.0
 
 Configuration for [Scaleway](https://developers.scaleway.com/).
 
 
 <!--more-->
 
-- Code: `scaleway`
+- Code: `--dns scaleway`
+- Since: v3.4.0
+
 
 Here is an example bash command using the Scaleway provider:
 

@@ -9,14 +9,15 @@ slug: acme-dns
 <!-- providers/dns/acmedns/acmedns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v1.1.0
 
 Configuration for [Joohoi's ACME-DNS](https://github.com/joohoi/acme-dns).
 
 
 <!--more-->
 
-- Code: `acme-dns`
+- Code: `--dns acme-dns`
+- Since: v1.1.0
+
 
 Here is an example bash command using the Joohoi's ACME-DNS provider:
 

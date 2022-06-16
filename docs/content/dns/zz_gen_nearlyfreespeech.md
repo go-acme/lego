@@ -9,14 +9,15 @@ slug: nearlyfreespeech
 <!-- providers/dns/nearlyfreespeech/nearlyfreespeech.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.8.0
 
 Configuration for [NearlyFreeSpeech.NET](https://nearlyfreespeech.net/).
 
 
 <!--more-->
 
-- Code: `nearlyfreespeech`
+- Code: `--dns nearlyfreespeech`
+- Since: v4.8.0
+
 
 Here is an example bash command using the NearlyFreeSpeech.NET provider:
 

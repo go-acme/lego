@@ -9,14 +9,15 @@ slug: infomaniak
 <!-- providers/dns/infomaniak/infomaniak.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.1.0
 
 Configuration for [Infomaniak](https://www.infomaniak.com/).
 
 
 <!--more-->
 
-- Code: `infomaniak`
+- Code: `--dns infomaniak`
+- Since: v4.1.0
+
 
 Here is an example bash command using the Infomaniak provider:
 

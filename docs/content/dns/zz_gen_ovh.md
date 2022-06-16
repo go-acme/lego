@@ -9,14 +9,15 @@ slug: ovh
 <!-- providers/dns/ovh/ovh.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v0.4.0
 
 Configuration for [OVH](https://www.ovh.com/).
 
 
 <!--more-->
 
-- Code: `ovh`
+- Code: `--dns ovh`
+- Since: v0.4.0
+
 
 Here is an example bash command using the OVH provider:
 

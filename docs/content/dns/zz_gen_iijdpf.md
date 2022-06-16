@@ -9,14 +9,15 @@ slug: iijdpf
 <!-- providers/dns/iijdpf/iijdpf.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.7.0
 
 Configuration for [IIJ DNS Platform Service](https://www.iij.ad.jp/en/biz/dns-pfm/).
 
 
 <!--more-->
 
-- Code: `iijdpf`
+- Code: `--dns iijdpf`
+- Since: v4.7.0
+
 
 Here is an example bash command using the IIJ DNS Platform Service provider:
 

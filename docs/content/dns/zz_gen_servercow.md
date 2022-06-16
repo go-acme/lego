@@ -9,14 +9,15 @@ slug: servercow
 <!-- providers/dns/servercow/servercow.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v3.4.0
 
 Configuration for [Servercow](https://servercow.de/).
 
 
 <!--more-->
 
-- Code: `servercow`
+- Code: `--dns servercow`
+- Since: v3.4.0
+
 
 Here is an example bash command using the Servercow provider:
 

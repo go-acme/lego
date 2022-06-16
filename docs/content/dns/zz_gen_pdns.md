@@ -9,14 +9,15 @@ slug: pdns
 <!-- providers/dns/pdns/pdns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v0.4.0
 
 Configuration for [PowerDNS](https://www.powerdns.com/).
 
 
 <!--more-->
 
-- Code: `pdns`
+- Code: `--dns pdns`
+- Since: v0.4.0
+
 
 Here is an example bash command using the PowerDNS provider:
 

@@ -9,14 +9,15 @@ slug: ibmcloud
 <!-- providers/dns/ibmcloud/ibmcloud.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.5.0
 
 Configuration for [IBM Cloud (SoftLayer)](https://www.ibm.com/cloud/).
 
 
 <!--more-->
 
-- Code: `ibmcloud`
+- Code: `--dns ibmcloud`
+- Since: v4.5.0
+
 
 Here is an example bash command using the IBM Cloud (SoftLayer) provider:
 

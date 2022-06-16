@@ -9,14 +9,15 @@ slug: route53
 <!-- providers/dns/route53/route53.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v0.3.0
 
 Configuration for [Amazon Route 53](https://aws.amazon.com/route53/).
 
 
 <!--more-->
 
-- Code: `route53`
+- Code: `--dns route53`
+- Since: v0.3.0
+
 
 {{% notice note %}}
 _Please contribute by adding a CLI example._

@@ -9,14 +9,15 @@ slug: stackpath
 <!-- providers/dns/stackpath/stackpath.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v1.1.0
 
 Configuration for [Stackpath](https://www.stackpath.com/).
 
 
 <!--more-->
 
-- Code: `stackpath`
+- Code: `--dns stackpath`
+- Since: v1.1.0
+
 
 Here is an example bash command using the Stackpath provider:
 

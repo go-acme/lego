@@ -9,14 +9,15 @@ slug: netlify
 <!-- providers/dns/netlify/netlify.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v3.7.0
 
 Configuration for [Netlify](https://www.netlify.com).
 
 
 <!--more-->
 
-- Code: `netlify`
+- Code: `--dns netlify`
+- Since: v3.7.0
+
 
 Here is an example bash command using the Netlify provider:
 

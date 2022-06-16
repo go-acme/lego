@@ -9,14 +9,15 @@ slug: loopia
 <!-- providers/dns/loopia/loopia.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.2.0
 
 Configuration for [Loopia](https://loopia.com).
 
 
 <!--more-->
 
-- Code: `loopia`
+- Code: `--dns loopia`
+- Since: v4.2.0
+
 
 Here is an example bash command using the Loopia provider:
 

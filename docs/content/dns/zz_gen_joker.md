@@ -9,14 +9,15 @@ slug: joker
 <!-- providers/dns/joker/joker.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v2.6.0
 
 Configuration for [Joker](https://joker.com).
 
 
 <!--more-->
 
-- Code: `joker`
+- Code: `--dns joker`
+- Since: v2.6.0
+
 
 Here is an example bash command using the Joker provider:
 

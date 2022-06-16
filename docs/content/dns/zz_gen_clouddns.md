@@ -9,14 +9,15 @@ slug: clouddns
 <!-- providers/dns/clouddns/clouddns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v3.6.0
 
 Configuration for [CloudDNS](https://vshosting.eu/).
 
 
 <!--more-->
 
-- Code: `clouddns`
+- Code: `--dns clouddns`
+- Since: v3.6.0
+
 
 Here is an example bash command using the CloudDNS provider:
 

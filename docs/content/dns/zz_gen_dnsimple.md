@@ -9,14 +9,15 @@ slug: dnsimple
 <!-- providers/dns/dnsimple/dnsimple.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v0.3.0
 
 Configuration for [DNSimple](https://dnsimple.com/).
 
 
 <!--more-->
 
-- Code: `dnsimple`
+- Code: `--dns dnsimple`
+- Since: v0.3.0
+
 
 Here is an example bash command using the DNSimple provider:
 

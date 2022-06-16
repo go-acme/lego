@@ -9,14 +9,15 @@ slug: wedos
 <!-- providers/dns/wedos/wedos.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.4.0
 
 Configuration for [WEDOS](https://www.wedos.com).
 
 
 <!--more-->
 
-- Code: `wedos`
+- Code: `--dns wedos`
+- Since: v4.4.0
+
 
 Here is an example bash command using the WEDOS provider:
 

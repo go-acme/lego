@@ -9,14 +9,15 @@ slug: dynu
 <!-- providers/dns/dynu/dynu.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v3.5.0
 
 Configuration for [Dynu](https://www.dynu.com/).
 
 
 <!--more-->
 
-- Code: `dynu`
+- Code: `--dns dynu`
+- Since: v3.5.0
+
 
 Here is an example bash command using the Dynu provider:
 

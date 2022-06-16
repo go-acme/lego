@@ -9,14 +9,15 @@ slug: liquidweb
 <!-- providers/dns/liquidweb/liquidweb.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v3.1.0
 
 Configuration for [Liquid Web](https://liquidweb.com).
 
 
 <!--more-->
 
-- Code: `liquidweb`
+- Code: `--dns liquidweb`
+- Since: v3.1.0
+
 
 Here is an example bash command using the Liquid Web provider:
 

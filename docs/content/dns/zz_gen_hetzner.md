@@ -9,14 +9,15 @@ slug: hetzner
 <!-- providers/dns/hetzner/hetzner.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v3.7.0
 
 Configuration for [Hetzner](https://hetzner.com).
 
 
 <!--more-->
 
-- Code: `hetzner`
+- Code: `--dns hetzner`
+- Since: v3.7.0
+
 
 Here is an example bash command using the Hetzner provider:
 

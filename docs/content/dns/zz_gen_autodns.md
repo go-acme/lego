@@ -9,14 +9,15 @@ slug: autodns
 <!-- providers/dns/autodns/autodns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v3.2.0
 
 Configuration for [Autodns](https://www.internetx.com/domains/autodns/).
 
 
 <!--more-->
 
-- Code: `autodns`
+- Code: `--dns autodns`
+- Since: v3.2.0
+
 
 Here is an example bash command using the Autodns provider:
 

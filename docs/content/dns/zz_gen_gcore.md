@@ -9,14 +9,15 @@ slug: gcore
 <!-- providers/dns/gcore/gcore.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.5.0
 
 Configuration for [G-Core Labs](https://gcorelabs.com/dns/).
 
 
 <!--more-->
 
-- Code: `gcore`
+- Code: `--dns gcore`
+- Since: v4.5.0
+
 
 Here is an example bash command using the G-Core Labs provider:
 

@@ -9,14 +9,15 @@ slug: checkdomain
 <!-- providers/dns/checkdomain/checkdomain.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v3.3.0
 
 Configuration for [Checkdomain](https://checkdomain.de/).
 
 
 <!--more-->
 
-- Code: `checkdomain`
+- Code: `--dns checkdomain`
+- Since: v3.3.0
+
 
 Here is an example bash command using the Checkdomain provider:
 

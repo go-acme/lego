@@ -9,14 +9,15 @@ slug: digitalocean
 <!-- providers/dns/digitalocean/digitalocean.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v0.3.0
 
 Configuration for [Digital Ocean](https://www.digitalocean.com/docs/networking/dns/).
 
 
 <!--more-->
 
-- Code: `digitalocean`
+- Code: `--dns digitalocean`
+- Since: v0.3.0
+
 
 Here is an example bash command using the Digital Ocean provider:
 

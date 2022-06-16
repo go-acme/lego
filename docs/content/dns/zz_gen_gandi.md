@@ -9,14 +9,15 @@ slug: gandi
 <!-- providers/dns/gandi/gandi.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v0.3.0
 
 Configuration for [Gandi](https://www.gandi.net).
 
 
 <!--more-->
 
-- Code: `gandi`
+- Code: `--dns gandi`
+- Since: v0.3.0
+
 
 Here is an example bash command using the Gandi provider:
 

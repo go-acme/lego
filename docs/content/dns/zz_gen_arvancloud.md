@@ -9,14 +9,15 @@ slug: arvancloud
 <!-- providers/dns/arvancloud/arvancloud.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v3.8.0
 
 Configuration for [ArvanCloud](https://arvancloud.com).
 
 
 <!--more-->
 
-- Code: `arvancloud`
+- Code: `--dns arvancloud`
+- Since: v3.8.0
+
 
 Here is an example bash command using the ArvanCloud provider:
 

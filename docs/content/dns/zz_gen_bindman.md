@@ -9,14 +9,15 @@ slug: bindman
 <!-- providers/dns/bindman/bindman.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v2.6.0
 
 Configuration for [Bindman](https://github.com/labbsr0x/bindman-dns-webhook).
 
 
 <!--more-->
 
-- Code: `bindman`
+- Code: `--dns bindman`
+- Since: v2.6.0
+
 
 Here is an example bash command using the Bindman provider:
 

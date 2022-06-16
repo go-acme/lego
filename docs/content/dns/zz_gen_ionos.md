@@ -9,14 +9,15 @@ slug: ionos
 <!-- providers/dns/ionos/ionos.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.2.0
 
 Configuration for [Ionos](https://ionos.com).
 
 
 <!--more-->
 
-- Code: `ionos`
+- Code: `--dns ionos`
+- Since: v4.2.0
+
 
 Here is an example bash command using the Ionos provider:
 

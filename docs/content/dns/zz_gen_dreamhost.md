@@ -9,14 +9,15 @@ slug: dreamhost
 <!-- providers/dns/dreamhost/dreamhost.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v1.1.0
 
 Configuration for [DreamHost](https://www.dreamhost.com).
 
 
 <!--more-->
 
-- Code: `dreamhost`
+- Code: `--dns dreamhost`
+- Since: v1.1.0
+
 
 Here is an example bash command using the DreamHost provider:
 

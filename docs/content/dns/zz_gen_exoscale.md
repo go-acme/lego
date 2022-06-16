@@ -9,14 +9,15 @@ slug: exoscale
 <!-- providers/dns/exoscale/exoscale.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v0.4.0
 
 Configuration for [Exoscale](https://www.exoscale.com/).
 
 
 <!--more-->
 
-- Code: `exoscale`
+- Code: `--dns exoscale`
+- Since: v0.4.0
+
 
 Here is an example bash command using the Exoscale provider:
 

@@ -9,14 +9,15 @@ slug: tencentcloud
 <!-- providers/dns/tencentcloud/tencentcloud.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.6.0
 
 Configuration for [Tencent Cloud DNS](https://cloud.tencent.com/product/cns).
 
 
 <!--more-->
 
-- Code: `tencentcloud`
+- Code: `--dns tencentcloud`
+- Since: v4.6.0
+
 
 Here is an example bash command using the Tencent Cloud DNS provider:
 

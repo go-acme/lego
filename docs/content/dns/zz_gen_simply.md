@@ -9,14 +9,15 @@ slug: simply
 <!-- providers/dns/simply/simply.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.4.0
 
 Configuration for [Simply.com](https://www.simply.com/en/domains/).
 
 
 <!--more-->
 
-- Code: `simply`
+- Code: `--dns simply`
+- Since: v4.4.0
+
 
 Here is an example bash command using the Simply.com provider:
 

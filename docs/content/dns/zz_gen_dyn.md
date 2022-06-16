@@ -9,14 +9,15 @@ slug: dyn
 <!-- providers/dns/dyn/dyn.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v0.3.0
 
 Configuration for [Dyn](https://dyn.com/).
 
 
 <!--more-->
 
-- Code: `dyn`
+- Code: `--dns dyn`
+- Since: v0.3.0
+
 
 Here is an example bash command using the Dyn provider:
 

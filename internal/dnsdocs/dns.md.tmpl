@@ -9,7 +9,6 @@ slug: {{ .Code }}
 <!-- {{ .GeneratedFrom }} -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: {{ .Since }}
 {{if .Description -}}
 {{ .Description }}
 {{else}}
@@ -18,7 +17,9 @@ Configuration for [{{ .Name }}]({{ .URL }}).
 
 <!--more-->
 
-- Code: `{{ .Code }}`
+- Code: `--dns {{ .Code }}`
+- Since: {{ .Since }}
+
 {{if .Example }}
 Here is an example bash command using the {{ .Name }} provider:
 

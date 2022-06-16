@@ -9,14 +9,15 @@ slug: porkbun
 <!-- providers/dns/porkbun/porkbun.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.4.0
 
 Configuration for [Porkbun](https://porkbun.com/).
 
 
 <!--more-->
 
-- Code: `porkbun`
+- Code: `--dns porkbun`
+- Since: v4.4.0
+
 
 Here is an example bash command using the Porkbun provider:
 

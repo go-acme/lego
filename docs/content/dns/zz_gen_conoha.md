@@ -9,14 +9,15 @@ slug: conoha
 <!-- providers/dns/conoha/conoha.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v1.2.0
 
 Configuration for [ConoHa](https://www.conoha.jp/).
 
 
 <!--more-->
 
-- Code: `conoha`
+- Code: `--dns conoha`
+- Since: v1.2.0
+
 
 Here is an example bash command using the ConoHa provider:
 

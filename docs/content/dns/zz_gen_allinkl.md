@@ -9,14 +9,15 @@ slug: allinkl
 <!-- providers/dns/allinkl/allinkl.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.5.0
 
 Configuration for [all-inkl](https://all-inkl.com).
 
 
 <!--more-->
 
-- Code: `allinkl`
+- Code: `--dns allinkl`
+- Since: v4.5.0
+
 
 Here is an example bash command using the all-inkl provider:
 

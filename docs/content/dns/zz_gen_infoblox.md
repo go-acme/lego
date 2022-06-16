@@ -9,14 +9,15 @@ slug: infoblox
 <!-- providers/dns/infoblox/infoblox.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.4.0
 
 Configuration for [Infoblox](https://www.infoblox.com/).
 
 
 <!--more-->
 
-- Code: `infoblox`
+- Code: `--dns infoblox`
+- Since: v4.4.0
+
 
 Here is an example bash command using the Infoblox provider:
 

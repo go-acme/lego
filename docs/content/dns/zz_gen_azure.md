@@ -19,7 +19,7 @@ Configuration for [Azure](https://azure.microsoft.com/services/dns/).
 
 <!--more-->
 
-- Code: `--dns azure`
+- Code: `azure`
 - Since: v0.4.0
 
 

@@ -19,7 +19,7 @@ Configuration for [Exoscale](https://www.exoscale.com/).
 
 <!--more-->
 
-- Code: `--dns exoscale`
+- Code: `exoscale`
 - Since: v0.4.0
 
 

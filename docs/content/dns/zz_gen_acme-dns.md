@@ -19,7 +19,7 @@ Configuration for [Joohoi's ACME-DNS](https://github.com/joohoi/acme-dns).
 
 <!--more-->
 
-- Code: `--dns acme-dns`
+- Code: `acme-dns`
 - Since: v1.1.0
 
 

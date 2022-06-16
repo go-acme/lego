@@ -19,7 +19,7 @@ Configuration for [Nicmanager](https://www.nicmanager.com/).
 
 <!--more-->
 
-- Code: `--dns nicmanager`
+- Code: `nicmanager`
 - Since: v4.5.0
 
 

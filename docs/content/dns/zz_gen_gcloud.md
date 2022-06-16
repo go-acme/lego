@@ -19,7 +19,7 @@ Configuration for [Google Cloud](https://cloud.google.com).
 
 <!--more-->
 
-- Code: `--dns gcloud`
+- Code: `gcloud`
 - Since: v0.3.0
 
 

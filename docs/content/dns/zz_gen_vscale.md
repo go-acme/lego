@@ -19,7 +19,7 @@ Configuration for [Vscale](https://vscale.io/).
 
 <!--more-->
 
-- Code: `--dns vscale`
+- Code: `vscale`
 - Since: v2.0.0
 
 

@@ -19,7 +19,7 @@ Configuration for [Porkbun](https://porkbun.com/).
 
 <!--more-->
 
-- Code: `--dns porkbun`
+- Code: `porkbun`
 - Since: v4.4.0
 
 

@@ -19,7 +19,7 @@ Configuration for [Constellix](https://constellix.com).
 
 <!--more-->
 
-- Code: `--dns constellix`
+- Code: `constellix`
 - Since: v3.4.0
 
 

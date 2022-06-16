@@ -19,7 +19,7 @@ Configuration for [G-Core Labs](https://gcorelabs.com/dns/).
 
 <!--more-->
 
-- Code: `--dns gcore`
+- Code: `gcore`
 - Since: v4.5.0
 
 

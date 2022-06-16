@@ -19,7 +19,7 @@ Configuration for [WEDOS](https://www.wedos.com).
 
 <!--more-->
 
-- Code: `--dns wedos`
+- Code: `wedos`
 - Since: v4.4.0
 
 

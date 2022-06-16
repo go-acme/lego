@@ -19,7 +19,7 @@ Configuration for [OVH](https://www.ovh.com/).
 
 <!--more-->
 
-- Code: `--dns ovh`
+- Code: `ovh`
 - Since: v0.4.0
 
 

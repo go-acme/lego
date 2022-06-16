@@ -19,7 +19,7 @@ Akamai edgedns supersedes FastDNS; implementing a DNS provider for solving the D
 
 <!--more-->
 
-- Code: `--dns edgedns`
+- Code: `edgedns`
 - Since: v3.9.0
 
 

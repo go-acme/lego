@@ -19,7 +19,7 @@ Configuration for [Sakura Cloud](https://cloud.sakura.ad.jp/).
 
 <!--more-->
 
-- Code: `--dns sakuracloud`
+- Code: `sakuracloud`
 - Since: v1.1.0
 
 

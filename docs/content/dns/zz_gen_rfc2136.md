@@ -19,7 +19,7 @@ Configuration for [RFC2136](https://www.rfc-editor.org/rfc/rfc2136.html).
 
 <!--more-->
 
-- Code: `--dns rfc2136`
+- Code: `rfc2136`
 - Since: v0.3.0
 
 

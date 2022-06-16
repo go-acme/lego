@@ -19,7 +19,7 @@ Configuration for [Zonomi](https://zonomi.com).
 
 <!--more-->
 
-- Code: `--dns zonomi`
+- Code: `zonomi`
 - Since: v3.5.0
 
 

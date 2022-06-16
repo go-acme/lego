@@ -19,7 +19,7 @@ Configuration for [Checkdomain](https://checkdomain.de/).
 
 <!--more-->
 
-- Code: `--dns checkdomain`
+- Code: `checkdomain`
 - Since: v3.3.0
 
 

@@ -19,7 +19,7 @@ Configuration for [Domain Offensive (do.de)](https://www.do.de/).
 
 <!--more-->
 
-- Code: `--dns dode`
+- Code: `dode`
 - Since: v2.4.0
 
 

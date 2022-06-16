@@ -19,7 +19,7 @@ Configuration for [MythicBeasts](https://www.mythic-beasts.com/).
 
 <!--more-->
 
-- Code: `--dns mythicbeasts`
+- Code: `mythicbeasts`
 - Since: v0.3.7
 
 

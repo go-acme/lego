@@ -19,7 +19,7 @@ Configuration for [DNS Made Easy](https://dnsmadeeasy.com/).
 
 <!--more-->
 
-- Code: `--dns dnsmadeeasy`
+- Code: `dnsmadeeasy`
 - Since: v0.4.0
 
 

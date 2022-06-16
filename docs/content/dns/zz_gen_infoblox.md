@@ -19,7 +19,7 @@ Configuration for [Infoblox](https://www.infoblox.com/).
 
 <!--more-->
 
-- Code: `--dns infoblox`
+- Code: `infoblox`
 - Since: v4.4.0
 
 

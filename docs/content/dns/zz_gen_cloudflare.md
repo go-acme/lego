@@ -19,7 +19,7 @@ Configuration for [Cloudflare](https://www.cloudflare.com/dns/).
 
 <!--more-->
 
-- Code: `--dns cloudflare`
+- Code: `cloudflare`
 - Since: v0.3.0
 
 

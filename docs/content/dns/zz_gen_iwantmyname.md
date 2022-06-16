@@ -19,7 +19,7 @@ Configuration for [iwantmyname](https://iwantmyname.com).
 
 <!--more-->
 
-- Code: `--dns iwantmyname`
+- Code: `iwantmyname`
 - Since: v4.7.0
 
 

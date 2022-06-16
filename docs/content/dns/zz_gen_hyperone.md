@@ -19,7 +19,7 @@ Configuration for [HyperOne](https://www.hyperone.com).
 
 <!--more-->
 
-- Code: `--dns hyperone`
+- Code: `hyperone`
 - Since: v3.9.0
 
 

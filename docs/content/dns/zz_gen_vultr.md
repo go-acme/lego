@@ -19,7 +19,7 @@ Configuration for [Vultr](https://www.vultr.com/).
 
 <!--more-->
 
-- Code: `--dns vultr`
+- Code: `vultr`
 - Since: v0.3.1
 
 

@@ -19,7 +19,7 @@ Configuration for [Duck DNS](https://www.duckdns.org/).
 
 <!--more-->
 
-- Code: `--dns duckdns`
+- Code: `duckdns`
 - Since: v0.5.0
 
 

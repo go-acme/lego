@@ -19,7 +19,7 @@ Configuration for [Aurora DNS](https://www.pcextreme.com/aurora/dns).
 
 <!--more-->
 
-- Code: `--dns auroradns`
+- Code: `auroradns`
 - Since: v0.4.0
 
 

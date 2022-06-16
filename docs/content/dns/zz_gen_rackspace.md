@@ -19,7 +19,7 @@ Configuration for [Rackspace](https://www.rackspace.com/).
 
 <!--more-->
 
-- Code: `--dns rackspace`
+- Code: `rackspace`
 - Since: v0.4.0
 
 

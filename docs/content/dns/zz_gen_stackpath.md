@@ -19,7 +19,7 @@ Configuration for [Stackpath](https://www.stackpath.com/).
 
 <!--more-->
 
-- Code: `--dns stackpath`
+- Code: `stackpath`
 - Since: v1.1.0
 
 

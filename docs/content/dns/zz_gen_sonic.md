@@ -19,7 +19,7 @@ Configuration for [Sonic](https://www.sonic.com/).
 
 <!--more-->
 
-- Code: `--dns sonic`
+- Code: `sonic`
 - Since: v4.4.0
 
 

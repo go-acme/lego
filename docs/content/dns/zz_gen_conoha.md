@@ -19,7 +19,7 @@ Configuration for [ConoHa](https://www.conoha.jp/).
 
 <!--more-->
 
-- Code: `--dns conoha`
+- Code: `conoha`
 - Since: v1.2.0
 
 

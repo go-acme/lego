@@ -19,7 +19,7 @@ Configuration for [Liquid Web](https://liquidweb.com).
 
 <!--more-->
 
-- Code: `--dns liquidweb`
+- Code: `liquidweb`
 - Since: v3.1.0
 
 

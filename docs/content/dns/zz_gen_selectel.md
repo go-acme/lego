@@ -19,7 +19,7 @@ Configuration for [Selectel](https://kb.selectel.com/).
 
 <!--more-->
 
-- Code: `--dns selectel`
+- Code: `selectel`
 - Since: v1.2.0
 
 

@@ -19,7 +19,7 @@ Configuration for [Hosting.de](https://www.hosting.de/).
 
 <!--more-->
 
-- Code: `--dns hostingde`
+- Code: `hostingde`
 - Since: v1.1.0
 
 

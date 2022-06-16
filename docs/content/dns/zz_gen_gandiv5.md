@@ -19,7 +19,7 @@ Configuration for [Gandi Live DNS (v5)](https://www.gandi.net).
 
 <!--more-->
 
-- Code: `--dns gandiv5`
+- Code: `gandiv5`
 - Since: v0.5.0
 
 

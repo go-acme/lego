@@ -19,7 +19,7 @@ Configuration for [Versio.[nl|eu|uk]](https://www.versio.nl/domeinnamen).
 
 <!--more-->
 
-- Code: `--dns versio`
+- Code: `versio`
 - Since: v2.7.0
 
 

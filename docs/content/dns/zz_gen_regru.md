@@ -19,7 +19,7 @@ Configuration for [reg.ru](https://www.reg.ru/).
 
 <!--more-->
 
-- Code: `--dns regru`
+- Code: `regru`
 - Since: v3.5.0
 
 

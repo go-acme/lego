@@ -19,7 +19,7 @@ Configuration for [all-inkl](https://all-inkl.com).
 
 <!--more-->
 
-- Code: `--dns allinkl`
+- Code: `allinkl`
 - Since: v4.5.0
 
 

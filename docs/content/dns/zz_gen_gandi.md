@@ -19,7 +19,7 @@ Configuration for [Gandi](https://www.gandi.net).
 
 <!--more-->
 
-- Code: `--dns gandi`
+- Code: `gandi`
 - Since: v0.3.0
 
 

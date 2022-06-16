@@ -19,7 +19,7 @@ Configuration for [Variomedia](https://www.variomedia.de/).
 
 <!--more-->
 
-- Code: `--dns variomedia`
+- Code: `variomedia`
 - Since: v4.8.0
 
 

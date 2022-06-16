@@ -19,7 +19,7 @@ Configuration for [Simply.com](https://www.simply.com/en/domains/).
 
 <!--more-->
 
-- Code: `--dns simply`
+- Code: `simply`
 - Since: v4.4.0
 
 

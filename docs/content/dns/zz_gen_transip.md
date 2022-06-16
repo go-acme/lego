@@ -19,7 +19,7 @@ Configuration for [TransIP](https://www.transip.nl/).
 
 <!--more-->
 
-- Code: `--dns transip`
+- Code: `transip`
 - Since: v2.0.0
 
 

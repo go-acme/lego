@@ -19,7 +19,7 @@ Configuration for [Servercow](https://servercow.de/).
 
 <!--more-->
 
-- Code: `--dns servercow`
+- Code: `servercow`
 - Since: v3.4.0
 
 

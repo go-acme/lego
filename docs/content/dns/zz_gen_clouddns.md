@@ -19,7 +19,7 @@ Configuration for [CloudDNS](https://vshosting.eu/).
 
 <!--more-->
 
-- Code: `--dns clouddns`
+- Code: `clouddns`
 - Since: v3.6.0
 
 

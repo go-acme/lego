@@ -19,7 +19,7 @@ Configuration for [DreamHost](https://www.dreamhost.com).
 
 <!--more-->
 
-- Code: `--dns dreamhost`
+- Code: `dreamhost`
 - Since: v1.1.0
 
 

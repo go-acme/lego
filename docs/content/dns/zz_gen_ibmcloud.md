@@ -19,7 +19,7 @@ Configuration for [IBM Cloud (SoftLayer)](https://www.ibm.com/cloud/).
 
 <!--more-->
 
-- Code: `--dns ibmcloud`
+- Code: `ibmcloud`
 - Since: v4.5.0
 
 

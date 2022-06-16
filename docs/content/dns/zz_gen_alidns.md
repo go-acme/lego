@@ -19,7 +19,7 @@ Configuration for [Alibaba Cloud DNS](https://www.alibabacloud.com/product/dns).
 
 <!--more-->
 
-- Code: `--dns alidns`
+- Code: `alidns`
 - Since: v1.1.0
 
 

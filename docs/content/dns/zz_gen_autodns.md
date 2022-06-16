@@ -19,7 +19,7 @@ Configuration for [Autodns](https://www.internetx.com/domains/autodns/).
 
 <!--more-->
 
-- Code: `--dns autodns`
+- Code: `autodns`
 - Since: v3.2.0
 
 

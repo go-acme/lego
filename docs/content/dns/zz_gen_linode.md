@@ -19,7 +19,7 @@ Configuration for [Linode (v4)](https://www.linode.com/).
 
 <!--more-->
 
-- Code: `--dns linode`
+- Code: `linode`
 - Since: v1.1.0
 
 

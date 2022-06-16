@@ -19,7 +19,7 @@ Configuration for [Njalla](https://njal.la).
 
 <!--more-->
 
-- Code: `--dns njalla`
+- Code: `njalla`
 - Since: v4.3.0
 
 

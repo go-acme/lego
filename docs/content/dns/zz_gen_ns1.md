@@ -19,7 +19,7 @@ Configuration for [NS1](https://ns1.com).
 
 <!--more-->
 
-- Code: `--dns ns1`
+- Code: `ns1`
 - Since: v0.4.0
 
 

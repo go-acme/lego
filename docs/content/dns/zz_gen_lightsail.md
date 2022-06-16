@@ -19,7 +19,7 @@ Configuration for [Amazon Lightsail](https://aws.amazon.com/lightsail/).
 
 <!--more-->
 
-- Code: `--dns lightsail`
+- Code: `lightsail`
 - Since: v0.5.0
 
 

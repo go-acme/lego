@@ -19,7 +19,7 @@ Configuration for [RimuHosting](https://rimuhosting.com).
 
 <!--more-->
 
-- Code: `--dns rimuhosting`
+- Code: `rimuhosting`
 - Since: v0.3.5
 
 

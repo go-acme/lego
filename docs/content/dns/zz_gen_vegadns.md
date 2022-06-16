@@ -19,7 +19,7 @@ Configuration for [VegaDNS](https://github.com/shupp/VegaDNS-API).
 
 <!--more-->
 
-- Code: `--dns vegadns`
+- Code: `vegadns`
 - Since: v1.1.0
 
 

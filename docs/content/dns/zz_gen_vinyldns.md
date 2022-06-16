@@ -19,7 +19,7 @@ Configuration for [VinylDNS](https://www.vinyldns.io).
 
 <!--more-->
 
-- Code: `--dns vinyldns`
+- Code: `vinyldns`
 - Since: v4.4.0
 
 

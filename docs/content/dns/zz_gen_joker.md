@@ -19,7 +19,7 @@ Configuration for [Joker](https://joker.com).
 
 <!--more-->
 
-- Code: `--dns joker`
+- Code: `joker`
 - Since: v2.6.0
 
 

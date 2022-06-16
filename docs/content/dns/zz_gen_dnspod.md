@@ -19,7 +19,7 @@ Configuration for [DNSPod](https://www.dnspod.com/).
 
 <!--more-->
 
-- Code: `--dns dnspod`
+- Code: `dnspod`
 - Since: v0.4.0
 
 

@@ -19,7 +19,7 @@ Configuration for [Dynu](https://www.dynu.com/).
 
 <!--more-->
 
-- Code: `--dns dynu`
+- Code: `dynu`
 - Since: v3.5.0
 
 

@@ -19,7 +19,7 @@ Configuration for [Designate DNSaaS for Openstack](https://docs.openstack.org/de
 
 <!--more-->
 
-- Code: `--dns designate`
+- Code: `designate`
 - Since: v2.2.0
 
 

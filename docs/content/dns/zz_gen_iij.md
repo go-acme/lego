@@ -19,7 +19,7 @@ Configuration for [Internet Initiative Japan](https://www.iij.ad.jp/en/).
 
 <!--more-->
 
-- Code: `--dns iij`
+- Code: `iij`
 - Since: v1.1.0
 
 

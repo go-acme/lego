@@ -19,7 +19,7 @@ Configuration for [Ionos](https://ionos.com).
 
 <!--more-->
 
-- Code: `--dns ionos`
+- Code: `ionos`
 - Since: v4.2.0
 
 

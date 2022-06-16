@@ -19,7 +19,7 @@ Configuration for [Name.com](https://www.name.com).
 
 <!--more-->
 
-- Code: `--dns namedotcom`
+- Code: `namedotcom`
 - Since: v0.5.0
 
 

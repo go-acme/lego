@@ -19,7 +19,7 @@ Configuration for [Internet.bs](https://internetbs.net).
 
 <!--more-->
 
-- Code: `--dns internetbs`
+- Code: `internetbs`
 - Since: v4.5.0
 
 

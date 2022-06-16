@@ -19,7 +19,7 @@ Configuration for [CloudXNS](https://www.cloudxns.net/).
 
 <!--more-->
 
-- Code: `--dns cloudxns`
+- Code: `cloudxns`
 - Since: v0.5.0
 
 

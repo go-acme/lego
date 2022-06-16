@@ -19,7 +19,7 @@ Configuration for [Scaleway](https://developers.scaleway.com/).
 
 <!--more-->
 
-- Code: `--dns scaleway`
+- Code: `scaleway`
 - Since: v3.4.0
 
 

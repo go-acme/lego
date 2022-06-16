@@ -19,7 +19,7 @@ Configuration for [Namesilo](https://www.namesilo.com/).
 
 <!--more-->
 
-- Code: `--dns namesilo`
+- Code: `namesilo`
 - Since: v2.7.0
 
 

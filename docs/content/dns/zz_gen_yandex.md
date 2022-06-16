@@ -19,7 +19,7 @@ Configuration for [Yandex](https://yandex.com/).
 
 <!--more-->
 
-- Code: `--dns yandex`
+- Code: `yandex`
 - Since: v3.7.0
 
 

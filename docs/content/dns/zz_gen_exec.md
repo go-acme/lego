@@ -18,7 +18,7 @@ Solving the DNS-01 challenge using an external program.
 
 <!--more-->
 
-- Code: `--dns exec`
+- Code: `exec`
 - Since: v0.5.0
 
 

@@ -19,7 +19,7 @@ Configuration for [Tencent Cloud DNS](https://cloud.tencent.com/product/cns).
 
 <!--more-->
 
-- Code: `--dns tencentcloud`
+- Code: `tencentcloud`
 - Since: v4.6.0
 
 

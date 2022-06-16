@@ -19,7 +19,7 @@ Configuration for [INWX](https://www.inwx.de/en).
 
 <!--more-->
 
-- Code: `--dns inwx`
+- Code: `inwx`
 - Since: v2.0.0
 
 

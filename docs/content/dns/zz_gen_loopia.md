@@ -19,7 +19,7 @@ Configuration for [Loopia](https://loopia.com).
 
 <!--more-->
 
-- Code: `--dns loopia`
+- Code: `loopia`
 - Since: v4.2.0
 
 

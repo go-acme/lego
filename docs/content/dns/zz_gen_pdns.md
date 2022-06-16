@@ -19,7 +19,7 @@ Configuration for [PowerDNS](https://www.powerdns.com/).
 
 <!--more-->
 
-- Code: `--dns pdns`
+- Code: `pdns`
 - Since: v0.4.0
 
 

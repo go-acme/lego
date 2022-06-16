@@ -19,7 +19,7 @@ Configuration for [Glesys](https://glesys.com/).
 
 <!--more-->
 
-- Code: `--dns glesys`
+- Code: `glesys`
 - Since: v0.5.0
 
 

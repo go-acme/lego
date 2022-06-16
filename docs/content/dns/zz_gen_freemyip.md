@@ -19,7 +19,7 @@ Configuration for [freemyip.com](https://freemyip.com/).
 
 <!--more-->
 
-- Code: `--dns freemyip`
+- Code: `freemyip`
 - Since: v4.5.0
 
 

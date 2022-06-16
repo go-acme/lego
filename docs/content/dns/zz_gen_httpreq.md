@@ -19,7 +19,7 @@ Configuration for [HTTP request](/lego/dns/httpreq/).
 
 <!--more-->
 
-- Code: `--dns httpreq`
+- Code: `httpreq`
 - Since: v2.0.0
 
 

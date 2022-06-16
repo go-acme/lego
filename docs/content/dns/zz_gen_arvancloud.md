@@ -19,7 +19,7 @@ Configuration for [ArvanCloud](https://arvancloud.com).
 
 <!--more-->
 
-- Code: `--dns arvancloud`
+- Code: `arvancloud`
 - Since: v3.8.0
 
 

@@ -19,7 +19,7 @@ Configuration for [NIFCloud](https://www.nifcloud.com/).
 
 <!--more-->
 
-- Code: `--dns nifcloud`
+- Code: `nifcloud`
 - Since: v1.1.0
 
 

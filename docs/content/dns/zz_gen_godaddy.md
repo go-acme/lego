@@ -19,7 +19,7 @@ Configuration for [Go Daddy](https://godaddy.com).
 
 <!--more-->
 
-- Code: `--dns godaddy`
+- Code: `godaddy`
 - Since: v0.5.0
 
 

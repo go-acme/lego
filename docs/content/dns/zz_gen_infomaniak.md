@@ -19,7 +19,7 @@ Configuration for [Infomaniak](https://www.infomaniak.com/).
 
 <!--more-->
 
-- Code: `--dns infomaniak`
+- Code: `infomaniak`
 - Since: v4.1.0
 
 

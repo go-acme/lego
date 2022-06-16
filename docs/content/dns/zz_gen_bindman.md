@@ -19,7 +19,7 @@ Configuration for [Bindman](https://github.com/labbsr0x/bindman-dns-webhook).
 
 <!--more-->
 
-- Code: `--dns bindman`
+- Code: `bindman`
 - Since: v2.6.0
 
 

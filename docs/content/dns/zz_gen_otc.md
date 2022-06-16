@@ -19,7 +19,7 @@ Configuration for [Open Telekom Cloud](https://cloud.telekom.de/en).
 
 <!--more-->
 
-- Code: `--dns otc`
+- Code: `otc`
 - Since: v0.4.1
 
 

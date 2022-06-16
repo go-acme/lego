@@ -19,7 +19,7 @@ Configuration for [Netlify](https://www.netlify.com).
 
 <!--more-->
 
-- Code: `--dns netlify`
+- Code: `netlify`
 - Since: v3.7.0
 
 

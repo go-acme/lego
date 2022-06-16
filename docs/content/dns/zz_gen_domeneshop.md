@@ -19,7 +19,7 @@ Configuration for [Domeneshop](https://domene.shop).
 
 <!--more-->
 
-- Code: `--dns domeneshop`
+- Code: `domeneshop`
 - Since: v4.3.0
 
 

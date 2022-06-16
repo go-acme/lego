@@ -19,7 +19,7 @@ Configuration for [IIJ DNS Platform Service](https://www.iij.ad.jp/en/biz/dns-pf
 
 <!--more-->
 
-- Code: `--dns iijdpf`
+- Code: `iijdpf`
 - Since: v4.7.0
 
 

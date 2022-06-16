@@ -19,7 +19,7 @@ Configuration for [Hurricane Electric DNS](https://dns.he.net/).
 
 <!--more-->
 
-- Code: `--dns hurricane`
+- Code: `hurricane`
 - Since: v4.3.0
 
 

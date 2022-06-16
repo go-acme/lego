@@ -19,7 +19,7 @@ Configuration for [LuaDNS](https://luadns.com).
 
 <!--more-->
 
-- Code: `--dns luadns`
+- Code: `luadns`
 - Since: v3.7.0
 
 

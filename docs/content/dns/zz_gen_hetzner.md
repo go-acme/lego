@@ -19,7 +19,7 @@ Configuration for [Hetzner](https://hetzner.com).
 
 <!--more-->
 
-- Code: `--dns hetzner`
+- Code: `hetzner`
 - Since: v3.7.0
 
 

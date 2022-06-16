@@ -19,7 +19,7 @@ Configuration for [ClouDNS](https://www.cloudns.net).
 
 <!--more-->
 
-- Code: `--dns cloudns`
+- Code: `cloudns`
 - Since: v2.3.0
 
 

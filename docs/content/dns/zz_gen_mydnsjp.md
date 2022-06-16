@@ -19,7 +19,7 @@ Configuration for [MyDNS.jp](https://www.mydns.jp).
 
 <!--more-->
 
-- Code: `--dns mydnsjp`
+- Code: `mydnsjp`
 - Since: v1.2.0
 
 

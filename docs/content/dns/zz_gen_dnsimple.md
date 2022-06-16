@@ -19,7 +19,7 @@ Configuration for [DNSimple](https://dnsimple.com/).
 
 <!--more-->
 
-- Code: `--dns dnsimple`
+- Code: `dnsimple`
 - Since: v0.3.0
 
 

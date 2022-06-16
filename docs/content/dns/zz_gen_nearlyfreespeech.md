@@ -19,7 +19,7 @@ Configuration for [NearlyFreeSpeech.NET](https://nearlyfreespeech.net/).
 
 <!--more-->
 
-- Code: `--dns nearlyfreespeech`
+- Code: `nearlyfreespeech`
 - Since: v4.8.0
 
 

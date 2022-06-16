@@ -19,7 +19,7 @@ Configuration for [Amazon Route 53](https://aws.amazon.com/route53/).
 
 <!--more-->
 
-- Code: `--dns route53`
+- Code: `route53`
 - Since: v0.3.0
 
 

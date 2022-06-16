@@ -19,7 +19,7 @@ Configuration for [Netcup](https://www.netcup.eu/).
 
 <!--more-->
 
-- Code: `--dns netcup`
+- Code: `netcup`
 - Since: v1.1.0
 
 

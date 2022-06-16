@@ -19,7 +19,7 @@ Configuration for [Zone.ee](https://www.zone.ee/).
 
 <!--more-->
 
-- Code: `--dns zoneee`
+- Code: `zoneee`
 - Since: v2.1.0
 
 

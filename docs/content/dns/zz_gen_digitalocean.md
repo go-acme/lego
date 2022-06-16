@@ -19,7 +19,7 @@ Configuration for [Digital Ocean](https://www.digitalocean.com/docs/networking/d
 
 <!--more-->
 
-- Code: `--dns digitalocean`
+- Code: `digitalocean`
 - Since: v0.3.0
 
 

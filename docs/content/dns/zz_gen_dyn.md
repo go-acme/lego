@@ -19,7 +19,7 @@ Configuration for [Dyn](https://dyn.com/).
 
 <!--more-->
 
-- Code: `--dns dyn`
+- Code: `dyn`
 - Since: v0.3.0
 
 

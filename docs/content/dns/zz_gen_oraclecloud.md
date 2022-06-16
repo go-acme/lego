@@ -19,7 +19,7 @@ Configuration for [Oracle Cloud](https://cloud.oracle.com/home).
 
 <!--more-->
 
-- Code: `--dns oraclecloud`
+- Code: `oraclecloud`
 - Since: v2.3.0
 
 

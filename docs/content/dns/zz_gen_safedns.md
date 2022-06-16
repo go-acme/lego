@@ -19,7 +19,7 @@ Configuration for [UKFast SafeDNS](https://www.ukfast.co.uk/dns-hosting.html).
 
 <!--more-->
 
-- Code: `--dns safedns`
+- Code: `safedns`
 - Since: v4.6.0
 
 

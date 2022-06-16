@@ -19,7 +19,7 @@ Configuration for [Vercel](https://vercel.com).
 
 <!--more-->
 
-- Code: `--dns vercel`
+- Code: `vercel`
 - Since: v4.7.0
 
 

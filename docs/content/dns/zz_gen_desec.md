@@ -19,7 +19,7 @@ Configuration for [deSEC.io](https://desec.io).
 
 <!--more-->
 
-- Code: `--dns desec`
+- Code: `desec`
 - Since: v3.7.0
 
 

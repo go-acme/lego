@@ -19,7 +19,7 @@ Configuration for [Hosttech](https://www.hosttech.eu/).
 
 <!--more-->
 
-- Code: `--dns hosttech`
+- Code: `hosttech`
 - Since: v4.5.0
 
 

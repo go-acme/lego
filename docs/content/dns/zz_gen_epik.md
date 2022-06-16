@@ -19,7 +19,7 @@ Configuration for [Epik](https://www.epik.com/).
 
 <!--more-->
 
-- Code: `--dns epik`
+- Code: `epik`
 - Since: v4.5.0
 
 

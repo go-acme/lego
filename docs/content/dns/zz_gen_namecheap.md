@@ -24,7 +24,7 @@ More information in the section [Enabling API Access](https://www.namecheap.com/
 
 <!--more-->
 
-- Code: `--dns namecheap`
+- Code: `namecheap`
 - Since: v0.3.0
 
 

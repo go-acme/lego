@@ -19,7 +19,7 @@ Configuration for [Bluecat](https://www.bluecatnetworks.com).
 
 <!--more-->
 
-- Code: `--dns bluecat`
+- Code: `bluecat`
 - Since: v0.5.0
 
 

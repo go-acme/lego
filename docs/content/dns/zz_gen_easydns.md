@@ -19,7 +19,7 @@ Configuration for [EasyDNS](https://easydns.com/).
 
 <!--more-->
 
-- Code: `--dns easydns`
+- Code: `easydns`
 - Since: v2.6.0
 
 

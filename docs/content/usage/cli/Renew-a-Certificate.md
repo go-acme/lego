@@ -55,7 +55,7 @@ The hook is executed only when the certificates are effectively renewed.
 lego --email="you@example.com" --domains="example.com" --http renew --renew-hook="./myscript.sh"
 ```
 
-Some information is provides through environment variables:
+Some information is provided through environment variables:
 
 - `LEGO_ACCOUNT_EMAIL`: the email of the account.
 - `LEGO_CERT_DOMAIN`: the main domain of the certificate.
@@ -72,7 +72,7 @@ When doing so, please note that some cron defaults will cause measurable load on
 Notably `@daily` jobs run at midnight.
 
 To both counteract load spikes (caused by all lego users) and reduce subsequent renewal failures, we were asked to implement a small random delay for non-interactive renewals.[^loadspikes]
-Lego since version 4.8 will pause for up to 8 minutes to help spread the load.
+Since v4.8.0, lego will pause for up to 8 minutes to help spread the load.
 
 You can help further, by adjusting your crontab entry, like so:
 

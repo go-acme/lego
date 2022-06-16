@@ -3,6 +3,10 @@ title: "INWX"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: inwx
+dnsprovider:
+  since:    "v2.0.0"
+  code:     "inwx"
+  url:      "https://www.inwx.de/en"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

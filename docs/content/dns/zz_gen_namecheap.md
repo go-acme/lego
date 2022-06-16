@@ -3,6 +3,10 @@ title: "Namecheap"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: namecheap
+dnsprovider:
+  since:    "v0.3.0"
+  code:     "namecheap"
+  url:      "https://www.namecheap.com"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

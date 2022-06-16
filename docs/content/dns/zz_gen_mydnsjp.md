@@ -3,6 +3,10 @@ title: "MyDNS.jp"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: mydnsjp
+dnsprovider:
+  since:    "v1.2.0"
+  code:     "mydnsjp"
+  url:      "https://www.mydns.jp"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

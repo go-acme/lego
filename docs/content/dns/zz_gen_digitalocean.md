@@ -3,6 +3,10 @@ title: "Digital Ocean"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: digitalocean
+dnsprovider:
+  since:    "v0.3.0"
+  code:     "digitalocean"
+  url:      "https://www.digitalocean.com/docs/networking/dns/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

@@ -3,6 +3,10 @@ title: "VegaDNS"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: vegadns
+dnsprovider:
+  since:    "v1.1.0"
+  code:     "vegadns"
+  url:      "https://github.com/shupp/VegaDNS-API"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

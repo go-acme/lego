@@ -3,6 +3,10 @@ title: "Domain Offensive (do.de)"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: dode
+dnsprovider:
+  since:    "v2.4.0"
+  code:     "dode"
+  url:      "https://www.do.de/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

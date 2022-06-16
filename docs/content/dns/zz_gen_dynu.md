@@ -3,6 +3,10 @@ title: "Dynu"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: dynu
+dnsprovider:
+  since:    "v3.5.0"
+  code:     "dynu"
+  url:      "https://www.dynu.com/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

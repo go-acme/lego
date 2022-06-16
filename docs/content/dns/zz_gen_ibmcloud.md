@@ -3,6 +3,10 @@ title: "IBM Cloud (SoftLayer)"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: ibmcloud
+dnsprovider:
+  since:    "v4.5.0"
+  code:     "ibmcloud"
+  url:      "https://www.ibm.com/cloud/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

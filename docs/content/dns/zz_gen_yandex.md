@@ -3,6 +3,10 @@ title: "Yandex"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: yandex
+dnsprovider:
+  since:    "v3.7.0"
+  code:     "yandex"
+  url:      "https://yandex.com/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

@@ -3,6 +3,10 @@ title: "CloudDNS"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: clouddns
+dnsprovider:
+  since:    "v3.6.0"
+  code:     "clouddns"
+  url:      "https://vshosting.eu/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

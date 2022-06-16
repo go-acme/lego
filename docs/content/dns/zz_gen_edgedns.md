@@ -3,6 +3,10 @@ title: "Akamai EdgeDNS"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: edgedns
+dnsprovider:
+  since:    "v3.9.0"
+  code:     "edgedns"
+  url:      "https://www.akamai.com/us/en/products/security/edge-dns.jsp"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

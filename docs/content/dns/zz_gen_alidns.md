@@ -3,6 +3,10 @@ title: "Alibaba Cloud DNS"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: alidns
+dnsprovider:
+  since:    "v1.1.0"
+  code:     "alidns"
+  url:      "https://www.alibabacloud.com/product/dns"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

@@ -3,6 +3,10 @@ title: "OVH"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: ovh
+dnsprovider:
+  since:    "v0.4.0"
+  code:     "ovh"
+  url:      "https://www.ovh.com/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

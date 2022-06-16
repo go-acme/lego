@@ -3,6 +3,10 @@ title: "NearlyFreeSpeech.NET"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: nearlyfreespeech
+dnsprovider:
+  since:    "v4.8.0"
+  code:     "nearlyfreespeech"
+  url:      "https://nearlyfreespeech.net/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

@@ -3,6 +3,10 @@ title: "RFC2136"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: rfc2136
+dnsprovider:
+  since:    "v0.3.0"
+  code:     "rfc2136"
+  url:      "https://www.rfc-editor.org/rfc/rfc2136.html"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

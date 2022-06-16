@@ -3,6 +3,10 @@ title: "Open Telekom Cloud"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: otc
+dnsprovider:
+  since:    "v0.4.1"
+  code:     "otc"
+  url:      "https://cloud.telekom.de/en"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

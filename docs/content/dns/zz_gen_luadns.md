@@ -3,6 +3,10 @@ title: "LuaDNS"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: luadns
+dnsprovider:
+  since:    "v3.7.0"
+  code:     "luadns"
+  url:      "https://luadns.com"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

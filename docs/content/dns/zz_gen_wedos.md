@@ -3,6 +3,10 @@ title: "WEDOS"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: wedos
+dnsprovider:
+  since:    "v4.4.0"
+  code:     "wedos"
+  url:      "https://www.wedos.com"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

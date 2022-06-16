@@ -3,6 +3,10 @@ title: "TransIP"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: transip
+dnsprovider:
+  since:    "v2.0.0"
+  code:     "transip"
+  url:      "https://www.transip.nl/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

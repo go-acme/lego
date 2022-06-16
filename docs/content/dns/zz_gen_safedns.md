@@ -3,6 +3,10 @@ title: "UKFast SafeDNS"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: safedns
+dnsprovider:
+  since:    "v4.6.0"
+  code:     "safedns"
+  url:      "https://www.ukfast.co.uk/dns-hosting.html"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

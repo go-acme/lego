@@ -3,6 +3,10 @@ title: "Servercow"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: servercow
+dnsprovider:
+  since:    "v3.4.0"
+  code:     "servercow"
+  url:      "https://servercow.de/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

@@ -3,6 +3,10 @@ title: "Hosting.de"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: hostingde
+dnsprovider:
+  since:    "v1.1.0"
+  code:     "hostingde"
+  url:      "https://www.hosting.de/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

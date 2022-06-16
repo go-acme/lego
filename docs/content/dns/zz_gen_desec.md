@@ -3,6 +3,10 @@ title: "deSEC.io"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: desec
+dnsprovider:
+  since:    "v3.7.0"
+  code:     "desec"
+  url:      "https://desec.io"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

@@ -3,6 +3,10 @@ title: "Vercel"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: vercel
+dnsprovider:
+  since:    "v4.7.0"
+  code:     "vercel"
+  url:      "https://vercel.com"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

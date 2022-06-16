@@ -3,6 +3,10 @@ title: "NS1"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: ns1
+dnsprovider:
+  since:    "v0.4.0"
+  code:     "ns1"
+  url:      "https://ns1.com"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

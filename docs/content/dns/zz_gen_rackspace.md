@@ -3,6 +3,10 @@ title: "Rackspace"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: rackspace
+dnsprovider:
+  since:    "v0.4.0"
+  code:     "rackspace"
+  url:      "https://www.rackspace.com/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

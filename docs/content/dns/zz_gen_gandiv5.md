@@ -3,6 +3,10 @@ title: "Gandi Live DNS (v5)"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: gandiv5
+dnsprovider:
+  since:    "v0.5.0"
+  code:     "gandiv5"
+  url:      "https://www.gandi.net"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

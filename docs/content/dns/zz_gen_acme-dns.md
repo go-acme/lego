@@ -3,6 +3,10 @@ title: "Joohoi's ACME-DNS"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: acme-dns
+dnsprovider:
+  since:    "v1.1.0"
+  code:     "acme-dns"
+  url:      "https://github.com/joohoi/acme-dns"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

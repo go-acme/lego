@@ -3,6 +3,10 @@ title: "Glesys"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: glesys
+dnsprovider:
+  since:    "v0.5.0"
+  code:     "glesys"
+  url:      "https://glesys.com/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

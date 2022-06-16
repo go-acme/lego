@@ -3,6 +3,10 @@ title: "Scaleway"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: scaleway
+dnsprovider:
+  since:    "v3.4.0"
+  code:     "scaleway"
+  url:      "https://developers.scaleway.com/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

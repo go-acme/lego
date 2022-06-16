@@ -3,6 +3,10 @@ title: "Dyn"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: dyn
+dnsprovider:
+  since:    "v0.3.0"
+  code:     "dyn"
+  url:      "https://dyn.com/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

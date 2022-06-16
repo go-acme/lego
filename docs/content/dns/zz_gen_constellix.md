@@ -3,6 +3,10 @@ title: "Constellix"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: constellix
+dnsprovider:
+  since:    "v3.4.0"
+  code:     "constellix"
+  url:      "https://constellix.com"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

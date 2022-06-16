@@ -3,6 +3,10 @@ title: "Liquid Web"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: liquidweb
+dnsprovider:
+  since:    "v3.1.0"
+  code:     "liquidweb"
+  url:      "https://liquidweb.com"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

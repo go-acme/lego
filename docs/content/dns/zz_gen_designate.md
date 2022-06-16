@@ -3,6 +3,10 @@ title: "Designate DNSaaS for Openstack"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: designate
+dnsprovider:
+  since:    "v2.2.0"
+  code:     "designate"
+  url:      "https://docs.openstack.org/designate/latest/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

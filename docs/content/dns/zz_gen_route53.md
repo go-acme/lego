@@ -3,6 +3,10 @@ title: "Amazon Route 53"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: route53
+dnsprovider:
+  since:    "v0.3.0"
+  code:     "route53"
+  url:      "https://aws.amazon.com/route53/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

@@ -3,6 +3,10 @@ title: "Google Cloud"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: gcloud
+dnsprovider:
+  since:    "v0.3.0"
+  code:     "gcloud"
+  url:      "https://cloud.google.com"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

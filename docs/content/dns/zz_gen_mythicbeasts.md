@@ -3,6 +3,10 @@ title: "MythicBeasts"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: mythicbeasts
+dnsprovider:
+  since:    "v0.3.7"
+  code:     "mythicbeasts"
+  url:      "https://www.mythic-beasts.com/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

@@ -3,6 +3,10 @@ title: "Autodns"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: autodns
+dnsprovider:
+  since:    "v3.2.0"
+  code:     "autodns"
+  url:      "https://www.internetx.com/domains/autodns/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

@@ -3,6 +3,10 @@ title: "Bluecat"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: bluecat
+dnsprovider:
+  since:    "v0.5.0"
+  code:     "bluecat"
+  url:      "https://www.bluecatnetworks.com"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

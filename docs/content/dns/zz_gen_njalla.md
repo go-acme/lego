@@ -3,6 +3,10 @@ title: "Njalla"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: njalla
+dnsprovider:
+  since:    "v4.3.0"
+  code:     "njalla"
+  url:      "https://njal.la"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

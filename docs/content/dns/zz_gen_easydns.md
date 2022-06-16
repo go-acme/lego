@@ -3,6 +3,10 @@ title: "EasyDNS"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: easydns
+dnsprovider:
+  since:    "v2.6.0"
+  code:     "easydns"
+  url:      "https://easydns.com/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

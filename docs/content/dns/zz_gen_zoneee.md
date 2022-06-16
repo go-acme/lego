@@ -3,6 +3,10 @@ title: "Zone.ee"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: zoneee
+dnsprovider:
+  since:    "v2.1.0"
+  code:     "zoneee"
+  url:      "https://www.zone.ee/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

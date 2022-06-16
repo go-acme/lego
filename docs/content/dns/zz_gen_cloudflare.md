@@ -3,6 +3,10 @@ title: "Cloudflare"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: cloudflare
+dnsprovider:
+  since:    "v0.3.0"
+  code:     "cloudflare"
+  url:      "https://www.cloudflare.com/dns/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

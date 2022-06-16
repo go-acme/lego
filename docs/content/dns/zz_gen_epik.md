@@ -3,6 +3,10 @@ title: "Epik"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: epik
+dnsprovider:
+  since:    "v4.5.0"
+  code:     "epik"
+  url:      "https://www.epik.com/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

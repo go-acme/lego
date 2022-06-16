@@ -3,6 +3,10 @@ title: "DreamHost"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: dreamhost
+dnsprovider:
+  since:    "v1.1.0"
+  code:     "dreamhost"
+  url:      "https://www.dreamhost.com"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

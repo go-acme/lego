@@ -3,6 +3,10 @@ title: "Tencent Cloud DNS"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: tencentcloud
+dnsprovider:
+  since:    "v4.6.0"
+  code:     "tencentcloud"
+  url:      "https://cloud.tencent.com/product/cns"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

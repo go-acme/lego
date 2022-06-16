@@ -7,7 +7,7 @@ Since = "v2.6.0"
 Example = '''
 EASYDNS_TOKEN=<your token> \
 EASYDNS_KEY=<your key> \
-lego --email myemail@example.com --dns easydns --domains my.example.org run
+lego --email you@example.com --dns easydns --domains my.example.org run
 '''
 
 Additional = '''

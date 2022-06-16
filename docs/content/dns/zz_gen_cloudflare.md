@@ -3,13 +3,16 @@ title: "Cloudflare"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: cloudflare
+dnsprovider:
+  since:    "v0.3.0"
+  code:     "cloudflare"
+  url:      "https://www.cloudflare.com/dns/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/cloudflare/cloudflare.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v0.3.0
 
 Configuration for [Cloudflare](https://www.cloudflare.com/dns/).
 
@@ -17,18 +20,20 @@ Configuration for [Cloudflare](https://www.cloudflare.com/dns/).
 <!--more-->
 
 - Code: `cloudflare`
+- Since: v0.3.0
+
 
 Here is an example bash command using the Cloudflare provider:
 
 ```bash
-CLOUDFLARE_EMAIL=foo@bar.com \
+CLOUDFLARE_EMAIL=you@example.com \
 CLOUDFLARE_API_KEY=b9841238feb177a84330febba8a83208921177bffe733 \
-lego --email myemail@example.com --dns cloudflare --domains my.example.org run
+lego --email you@example.com --dns cloudflare --domains my.example.org run
 
 # or
 
 CLOUDFLARE_DNS_API_TOKEN=1234567890abcdefghijklmnopqrstuvwxyz \
-lego --email myemail@example.com --dns cloudflare --domains my.example.org run
+lego --email you@example.com --dns cloudflare --domains my.example.org run
 ```
 
 
@@ -48,7 +53,7 @@ lego --email myemail@example.com --dns cloudflare --domains my.example.org run
 | `CLOUDFLARE_ZONE_API_TOKEN` | Alias to CF_ZONE_API_TOKEN |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 ## Additional Configuration
@@ -61,7 +66,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `CLOUDFLARE_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 ## Description
 

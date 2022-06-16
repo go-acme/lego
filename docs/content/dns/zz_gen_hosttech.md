@@ -3,13 +3,16 @@ title: "Hosttech"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: hosttech
+dnsprovider:
+  since:    "v4.5.0"
+  code:     "hosttech"
+  url:      "https://www.hosttech.eu/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/hosttech/hosttech.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.5.0
 
 Configuration for [Hosttech](https://www.hosttech.eu/).
 
@@ -17,12 +20,14 @@ Configuration for [Hosttech](https://www.hosttech.eu/).
 <!--more-->
 
 - Code: `hosttech`
+- Since: v4.5.0
+
 
 Here is an example bash command using the Hosttech provider:
 
 ```bash
 HOSTTECH_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxx \
-lego --email myemail@example.com --dns hosttech --domains my.example.org run
+lego --email you@example.com --dns hosttech --domains my.example.org run
 ```
 
 
@@ -36,7 +41,7 @@ lego --email myemail@example.com --dns hosttech --domains my.example.org run
 | `HOSTTECH_PASSWORD` | API password |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 ## Additional Configuration
@@ -49,7 +54,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `HOSTTECH_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 

@@ -3,13 +3,16 @@ title: "Zone.ee"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: zoneee
+dnsprovider:
+  since:    "v2.1.0"
+  code:     "zoneee"
+  url:      "https://www.zone.ee/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/zoneee/zoneee.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v2.1.0
 
 Configuration for [Zone.ee](https://www.zone.ee/).
 
@@ -17,13 +20,15 @@ Configuration for [Zone.ee](https://www.zone.ee/).
 <!--more-->
 
 - Code: `zoneee`
+- Since: v2.1.0
+
 
 Here is an example bash command using the Zone.ee provider:
 
 ```bash
 ZONEEE_API_USER=xxxxx \
 ZONEEE_API_KEY=yyyyy \
-lego --email myemail@example.com --dns zoneee --domains my.example.org run
+lego --email you@example.com --dns zoneee --domains my.example.org run
 ```
 
 
@@ -37,7 +42,7 @@ lego --email myemail@example.com --dns zoneee --domains my.example.org run
 | `ZONEEE_API_USER` | API user |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 ## Additional Configuration
@@ -51,7 +56,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `ZONEEE_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 

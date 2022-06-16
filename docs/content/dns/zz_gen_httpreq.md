@@ -3,13 +3,16 @@ title: "HTTP request"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: httpreq
+dnsprovider:
+  since:    "v2.0.0"
+  code:     "httpreq"
+  url:      "/lego/dns/httpreq/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/httpreq/httpreq.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v2.0.0
 
 Configuration for [HTTP request](/lego/dns/httpreq/).
 
@@ -17,12 +20,14 @@ Configuration for [HTTP request](/lego/dns/httpreq/).
 <!--more-->
 
 - Code: `httpreq`
+- Since: v2.0.0
+
 
 Here is an example bash command using the HTTP request provider:
 
 ```bash
 HTTPREQ_ENDPOINT=http://my.server.com:9090 \
-lego --email myemail@example.com --dns httpreq --domains my.example.org run
+lego --email you@example.com --dns httpreq --domains my.example.org run
 ```
 
 
@@ -36,7 +41,7 @@ lego --email myemail@example.com --dns httpreq --domains my.example.org run
 | `HTTPREQ_MODE` | `RAW`, none |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 ## Additional Configuration
@@ -50,7 +55,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `HTTPREQ_USERNAME` | Basic authentication username |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 ## Description
 

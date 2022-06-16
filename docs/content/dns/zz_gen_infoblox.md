@@ -3,13 +3,16 @@ title: "Infoblox"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: infoblox
+dnsprovider:
+  since:    "v4.4.0"
+  code:     "infoblox"
+  url:      "https://www.infoblox.com/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/infoblox/infoblox.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.4.0
 
 Configuration for [Infoblox](https://www.infoblox.com/).
 
@@ -17,6 +20,8 @@ Configuration for [Infoblox](https://www.infoblox.com/).
 <!--more-->
 
 - Code: `infoblox`
+- Since: v4.4.0
+
 
 Here is an example bash command using the Infoblox provider:
 
@@ -24,7 +29,7 @@ Here is an example bash command using the Infoblox provider:
 INFOBLOX_USER=api-user-529 \
 INFOBLOX_PASSWORD=b9841238feb177a84330febba8a83208921177bffe733 \
 INFOBLOX_HOST=infoblox.example.org
-lego --email myemail@example.com --dns infoblox --domains my.example.org run
+lego --email you@example.com --dns infoblox --domains my.example.org run
 ```
 
 
@@ -39,7 +44,7 @@ lego --email myemail@example.com --dns infoblox --domains my.example.org run
 | `INFOBLOX_USER` | Account Username |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 ## Additional Configuration
@@ -56,7 +61,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `INFOBLOX_WAPI_VERSION` | The version of WAPI being used, default: 2.11 |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 When creating an API's user ensure it has the proper permissions for the view you are working with.
 

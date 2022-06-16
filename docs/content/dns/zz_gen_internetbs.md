@@ -3,13 +3,16 @@ title: "Internet.bs"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: internetbs
+dnsprovider:
+  since:    "v4.5.0"
+  code:     "internetbs"
+  url:      "https://internetbs.net"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/internetbs/internetbs.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.5.0
 
 Configuration for [Internet.bs](https://internetbs.net).
 
@@ -17,13 +20,15 @@ Configuration for [Internet.bs](https://internetbs.net).
 <!--more-->
 
 - Code: `internetbs`
+- Since: v4.5.0
+
 
 Here is an example bash command using the Internet.bs provider:
 
 ```bash
 INTERNET_BS_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxx \
 INTERNET_BS_PASSWORD=yyyyyyyyyyyyyyyyyyyyyyyyyy \
-lego --email myemail@example.com --dns internetbs --domains my.example.org run
+lego --email you@example.com --dns internetbs --domains my.example.org run
 ```
 
 
@@ -37,7 +42,7 @@ lego --email myemail@example.com --dns internetbs --domains my.example.org run
 | `INTERNET_BS_PASSWORD` | API password |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 ## Additional Configuration
@@ -50,7 +55,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `INTERNET_BS_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 

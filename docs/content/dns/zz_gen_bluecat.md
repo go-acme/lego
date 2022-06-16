@@ -3,13 +3,16 @@ title: "Bluecat"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: bluecat
+dnsprovider:
+  since:    "v0.5.0"
+  code:     "bluecat"
+  url:      "https://www.bluecatnetworks.com"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/bluecat/bluecat.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v0.5.0
 
 Configuration for [Bluecat](https://www.bluecatnetworks.com).
 
@@ -17,6 +20,8 @@ Configuration for [Bluecat](https://www.bluecatnetworks.com).
 <!--more-->
 
 - Code: `bluecat`
+- Since: v0.5.0
+
 
 Here is an example bash command using the Bluecat provider:
 
@@ -27,7 +32,7 @@ BLUECAT_USER_NAME=myusername \
 BLUECAT_CONFIG_NAME=myconfig \
 BLUECAT_SERVER_URL=https://bam.example.com \
 BLUECAT_TTL=30 \
-lego --email myemail@example.com --dns bluecat --domains my.example.org run
+lego --email you@example.com --dns bluecat --domains my.example.org run
 ```
 
 
@@ -44,7 +49,7 @@ lego --email myemail@example.com --dns bluecat --domains my.example.org run
 | `BLUECAT_USER_NAME` | API username |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 ## Additional Configuration
@@ -57,7 +62,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `BLUECAT_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 

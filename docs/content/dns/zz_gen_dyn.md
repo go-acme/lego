@@ -3,13 +3,16 @@ title: "Dyn"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: dyn
+dnsprovider:
+  since:    "v0.3.0"
+  code:     "dyn"
+  url:      "https://dyn.com/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/dyn/dyn.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v0.3.0
 
 Configuration for [Dyn](https://dyn.com/).
 
@@ -17,6 +20,8 @@ Configuration for [Dyn](https://dyn.com/).
 <!--more-->
 
 - Code: `dyn`
+- Since: v0.3.0
+
 
 Here is an example bash command using the Dyn provider:
 
@@ -24,7 +29,7 @@ Here is an example bash command using the Dyn provider:
 DYN_CUSTOMER_NAME=xxxxxx \
 DYN_USER_NAME=yyyyy \
 DYN_PASSWORD=zzzz \
-lego --email myemail@example.com --dns dyn --domains my.example.org run
+lego --email you@example.com --dns dyn --domains my.example.org run
 ```
 
 
@@ -39,7 +44,7 @@ lego --email myemail@example.com --dns dyn --domains my.example.org run
 | `DYN_USER_NAME` | User name |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 ## Additional Configuration
@@ -52,7 +57,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `DYN_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 

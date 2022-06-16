@@ -3,13 +3,16 @@ title: "Hosting.de"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: hostingde
+dnsprovider:
+  since:    "v1.1.0"
+  code:     "hostingde"
+  url:      "https://www.hosting.de/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/hostingde/hostingde.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v1.1.0
 
 Configuration for [Hosting.de](https://www.hosting.de/).
 
@@ -17,12 +20,14 @@ Configuration for [Hosting.de](https://www.hosting.de/).
 <!--more-->
 
 - Code: `hostingde`
+- Since: v1.1.0
+
 
 Here is an example bash command using the Hosting.de provider:
 
 ```bash
 HOSTINGDE_API_KEY=xxxxxxxx \
-lego --email myemail@example.com --dns hostingde --domains my.example.org run
+lego --email you@example.com --dns hostingde --domains my.example.org run
 ```
 
 
@@ -35,7 +40,7 @@ lego --email myemail@example.com --dns hostingde --domains my.example.org run
 | `HOSTINGDE_API_KEY` | API key |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 ## Additional Configuration
@@ -49,7 +54,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `HOSTINGDE_ZONE_NAME` | Zone name in ACE format |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 

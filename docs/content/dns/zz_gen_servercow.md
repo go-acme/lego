@@ -3,13 +3,16 @@ title: "Servercow"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: servercow
+dnsprovider:
+  since:    "v3.4.0"
+  code:     "servercow"
+  url:      "https://servercow.de/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/servercow/servercow.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v3.4.0
 
 Configuration for [Servercow](https://servercow.de/).
 
@@ -17,13 +20,15 @@ Configuration for [Servercow](https://servercow.de/).
 <!--more-->
 
 - Code: `servercow`
+- Since: v3.4.0
+
 
 Here is an example bash command using the Servercow provider:
 
 ```bash
 SERVERCOW_USERNAME=xxxxxxxx \
 SERVERCOW_PASSWORD=xxxxxxxx \
-lego --email myemail@example.com --dns servercow --domains my.example.org run
+lego --email you@example.com --dns servercow --domains my.example.org run
 ```
 
 
@@ -37,7 +42,7 @@ lego --email myemail@example.com --dns servercow --domains my.example.org run
 | `SERVERCOW_USERNAME` | API username |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 ## Additional Configuration
@@ -50,7 +55,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `SERVERCOW_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 

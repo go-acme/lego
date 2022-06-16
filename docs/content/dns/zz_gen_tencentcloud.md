@@ -3,13 +3,16 @@ title: "Tencent Cloud DNS"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: tencentcloud
+dnsprovider:
+  since:    "v4.6.0"
+  code:     "tencentcloud"
+  url:      "https://cloud.tencent.com/product/cns"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/tencentcloud/tencentcloud.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.6.0
 
 Configuration for [Tencent Cloud DNS](https://cloud.tencent.com/product/cns).
 
@@ -17,13 +20,15 @@ Configuration for [Tencent Cloud DNS](https://cloud.tencent.com/product/cns).
 <!--more-->
 
 - Code: `tencentcloud`
+- Since: v4.6.0
+
 
 Here is an example bash command using the Tencent Cloud DNS provider:
 
 ```bash
 TENCENTCLOUD_SECRET_ID=abcdefghijklmnopqrstuvwx \
 TENCENTCLOUD_SECRET_KEY=your-secret-key \
-lego --email myemail@example.com --dns tencentcloud --domains my.example.org run
+lego --email you@example.com --dns tencentcloud --domains my.example.org run
 ```
 
 
@@ -37,7 +42,7 @@ lego --email myemail@example.com --dns tencentcloud --domains my.example.org run
 | `TENCENTCLOUD_SECRET_KEY` | Access Key secret |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 ## Additional Configuration
@@ -51,7 +56,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `TENCENTCLOUD_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 

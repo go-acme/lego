@@ -1,4 +1,9 @@
-# ![lego](./docs/static/images/logo.png)
+<div align="center">
+  <img alt="lego logo" src="./docs/static/images/logo.png">
+  <p>Automatic Certificates and HTTPS for everyone.</p>
+</div>
+
+# Lego
 
 Let's Encrypt client and ACME library written in Go.
 

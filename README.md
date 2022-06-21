@@ -1,5 +1,5 @@
 <div align="center">
-  <img alt="lego logo" src="./docs/static/images/logo.svg">
+  <img alt="lego logo" src="./docs/static/images/lego-logo.min.svg">
   <p>Automatic Certificates and HTTPS for everyone.</p>
 </div>
 

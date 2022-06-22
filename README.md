@@ -1,4 +1,9 @@
-# ![lego](./docs/static/images/logo.png)
+<div align="center">
+  <img alt="lego logo" src="./docs/static/images/lego-logo.min.svg">
+  <p>Automatic Certificates and HTTPS for everyone.</p>
+</div>
+
+# Lego
 
 Let's Encrypt client and ACME library written in Go.
 
@@ -22,8 +27,6 @@ Let's Encrypt client and ACME library written in Go.
 - [Custom challenge solvers](https://go-acme.github.io/lego/usage/library/writing-a-challenge-solver/)
 - Certificate bundling
 - OCSP helper function
-
-lego introduced support for ACME v2 in [v1.0.0](https://github.com/go-acme/lego/releases/tag/v1.0.0). If you still need to utilize ACME v1, you can do so by using the [v0.5.0](https://github.com/go-acme/lego/releases/tag/v0.5.0) version.
 
 ## Installation
 

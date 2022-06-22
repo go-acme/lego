@@ -11,6 +11,7 @@ Let's Encrypt client and ACME library written in Go.
 
 ## Features
 
+- ACME v2 [RFC 8555](https://www.rfc-editor.org/rfc/rfc8555.html)
 - Register with CA
 - Obtain certificates, both from scratch or with an existing CSR
 - Renew certificates
@@ -24,8 +25,3 @@ Let's Encrypt client and ACME library written in Go.
 - [Custom challenge solvers]({{< ref "usage/library/Writing-a-Challenge-Solver" >}})
 - Certificate bundling
 - OCSP helper function
-
-
-lego introduced support for ACME v2 in [v1.0.0](https://github.com/go-acme/lego/releases/tag/v1.0.0).
-
-If you still need to utilize ACME v1, you can do so by using the [v0.5.0](https://github.com/go-acme/lego/releases/tag/v0.5.0) version.

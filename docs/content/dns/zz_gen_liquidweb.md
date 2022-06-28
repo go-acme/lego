@@ -28,7 +28,7 @@ Here is an example bash command using the Liquid Web provider:
 ```bash
 LIQUID_WEB_USERNAME=someuser \
 LIQUID_WEB_PASSWORD=somepass \
-LIQUID_ZONE=tacoman.com.net \
+LIQUID_WEB_ZONE=tacoman.com.net \
 lego --email you@example.com --dns liquidweb --domains my.example.org run
 ```
 

@@ -3,12 +3,15 @@ package cmd
 import (
 	"crypto"
 	"crypto/x509"
+	"math/rand"
+	"os"
 	"time"
 
 	"github.com/go-acme/lego/v4/certcrypto"
 	"github.com/go-acme/lego/v4/certificate"
 	"github.com/go-acme/lego/v4/lego"
 	"github.com/go-acme/lego/v4/log"
+	"github.com/mattn/go-isatty"
 	"github.com/urfave/cli/v2"
 )
 
@@ -67,6 +70,10 @@ func createRenew() *cli.Command {
 			&cli.StringFlag{
 				Name:  "always-deactivate-authorizations",
 				Usage: "Force the authorizations to be relinquished even if the certificate request was successful.",
+			},
+			&cli.BoolFlag{
+				Name:  "no-random-sleep",
+				Usage: "Do not add a random sleep before the renewal. We do not recommend using this flag if you are doing your renewals in an automated way.",
 			},
 		},
 	}
@@ -130,6 +137,18 @@ func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *Certif
 		if errR != nil {
 			return errR
 		}
+	}
+
+	// https://github.com/go-acme/lego/issues/1656
+	// https://github.com/certbot/certbot/blob/284023a1b7672be2bd4018dd7623b3b92197d4b0/certbot/certbot/_internal/renewal.py#L435-L440
+	if !isatty.IsTerminal(os.Stdout.Fd()) && !ctx.Bool("no-random-sleep") {
+		// https://github.com/certbot/certbot/blob/284023a1b7672be2bd4018dd7623b3b92197d4b0/certbot/certbot/_internal/renewal.py#L472
+		const jitter = 8 * time.Minute
+		rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
+		sleepTime := time.Duration(rnd.Int63n(int64(jitter)))
+
+		log.Infof("renewal: random delay of %s", sleepTime)
+		time.Sleep(sleepTime)
 	}
 
 	request := certificate.ObtainRequest{

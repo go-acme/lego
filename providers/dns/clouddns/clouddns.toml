@@ -6,9 +6,9 @@ Since = "v3.6.0"
 
 Example = '''
 CLOUDDNS_CLIENT_ID=bLsdFAks23429841238feb177a572aX \
-CLOUDDNS_EMAIL=foo@bar.com \
+CLOUDDNS_EMAIL=you@example.com \
 CLOUDDNS_PASSWORD=b9841238feb177a84330f \
-lego --email myemail@example.com --dns clouddns --domains my.example.org run
+lego --email you@example.com --dns clouddns --domains my.example.org run
 '''
 
 [Configuration]

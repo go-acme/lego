@@ -71,6 +71,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/namecheap"
 	"github.com/go-acme/lego/v4/providers/dns/namedotcom"
 	"github.com/go-acme/lego/v4/providers/dns/namesilo"
+	"github.com/go-acme/lego/v4/providers/dns/nearlyfreespeech"
 	"github.com/go-acme/lego/v4/providers/dns/netcup"
 	"github.com/go-acme/lego/v4/providers/dns/netlify"
 	"github.com/go-acme/lego/v4/providers/dns/nicmanager"
@@ -97,6 +98,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/stackpath"
 	"github.com/go-acme/lego/v4/providers/dns/tencentcloud"
 	"github.com/go-acme/lego/v4/providers/dns/transip"
+	"github.com/go-acme/lego/v4/providers/dns/variomedia"
 	"github.com/go-acme/lego/v4/providers/dns/vegadns"
 	"github.com/go-acme/lego/v4/providers/dns/vercel"
 	"github.com/go-acme/lego/v4/providers/dns/versio"
@@ -247,6 +249,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return namedotcom.NewDNSProvider()
 	case "namesilo":
 		return namesilo.NewDNSProvider()
+	case "nearlyfreespeech":
+		return nearlyfreespeech.NewDNSProvider()
 	case "netcup":
 		return netcup.NewDNSProvider()
 	case "netlify":
@@ -299,6 +303,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return tencentcloud.NewDNSProvider()
 	case "transip":
 		return transip.NewDNSProvider()
+	case "variomedia":
+		return variomedia.NewDNSProvider()
 	case "vegadns":
 		return vegadns.NewDNSProvider()
 	case "vercel":

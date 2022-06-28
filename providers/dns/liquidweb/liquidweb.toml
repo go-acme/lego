@@ -7,8 +7,8 @@ Since = "v3.1.0"
 Example = '''
 LIQUID_WEB_USERNAME=someuser \
 LIQUID_WEB_PASSWORD=somepass \
-LIQUID_ZONE=tacoman.com.net \
-lego --email myemail@example.com --dns liquidweb --domains my.example.org run
+LIQUID_WEB_ZONE=tacoman.com.net \
+lego --email you@example.com --dns liquidweb --domains my.example.org run
 '''
 
 [Configuration]

@@ -1,0 +1,32 @@
+{{ $_hugo_config := `{ "version": 1 }` }}
+
+<table>
+  <thead>
+    <tr>
+      <th colspan="2">Provider name</th>
+      <th>CLI flag name</th>
+      <th>Required lego version</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{- range .Site.AllPages.ByWeight -}}
+      {{- if .Params.dnsprovider -}}
+      {{- $params := .Params.dnsprovider -}}
+        <tr>
+          <td>
+            <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+          </td>
+          <td>
+            {{- if $params.url -}}
+              <a href="{{ $params.url }}" target="_blank">Website</a>
+            {{- end -}}
+          </td>
+          <td>
+            <code>{{ $params.code }}</code>
+          </td>
+          <td>{{ $params.since }}</td>
+        </tr>
+      {{ end }}
+    {{ end }}
+  </tbody>
+</table>

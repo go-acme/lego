@@ -10,6 +10,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/client"
+	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/route53"
@@ -31,26 +32,32 @@ const (
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvAssumeRoleArn      = envNamespace + "ASSUME_ROLE_ARN"
 )
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	MaxRetries         int
+	HostedZoneID  string
+	MaxRetries    int
+	AssumeRoleArn string
+
 	TTL                int
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
-	HostedZoneID       string
-	Client             *route53.Route53
+
+	Client *route53.Route53
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		MaxRetries:         env.GetOrDefaultInt(EnvMaxRetries, 5),
+		HostedZoneID:  env.GetOrFile(EnvHostedZoneID),
+		MaxRetries:    env.GetOrDefaultInt(EnvMaxRetries, 5),
+		AssumeRoleArn: env.GetOrDefaultString(EnvAssumeRoleArn, ""),
+
 		TTL:                env.GetOrDefaultInt(EnvTTL, 10),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 4*time.Second),
-		HostedZoneID:       env.GetOrFile(EnvHostedZoneID),
 	}
 }
 
@@ -106,17 +113,15 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return &DNSProvider{client: config.Client, config: config}, nil
 	}
 
-	retry := customRetryer{}
-	retry.NumMaxRetries = config.MaxRetries
-	sessionCfg := request.WithRetryer(aws.NewConfig(), retry)
-
-	sess, err := session.NewSessionWithOptions(session.Options{Config: *sessionCfg})
+	sess, err := createSession(config)
 	if err != nil {
 		return nil, err
 	}
 
-	cl := route53.New(sess)
-	return &DNSProvider{client: cl, config: config}, nil
+	return &DNSProvider{
+		client: route53.New(sess),
+		config: config,
+	}, nil
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
@@ -293,4 +298,25 @@ func (d *DNSProvider) getHostedZoneID(fqdn string) (string, error) {
 	hostedZoneID = strings.TrimPrefix(hostedZoneID, "/hostedzone/")
 
 	return hostedZoneID, nil
+}
+
+func createSession(config *Config) (*session.Session, error) {
+	retry := customRetryer{}
+	retry.NumMaxRetries = config.MaxRetries
+
+	sessionCfg := request.WithRetryer(aws.NewConfig(), retry)
+
+	sess, err := session.NewSessionWithOptions(session.Options{Config: *sessionCfg})
+	if err != nil {
+		return nil, err
+	}
+
+	if config.AssumeRoleArn == "" {
+		return sess, nil
+	}
+
+	return session.NewSession(&aws.Config{
+		Region:      sess.Config.Region,
+		Credentials: stscreds.NewCredentials(sess, config.AssumeRoleArn),
+	})
 }

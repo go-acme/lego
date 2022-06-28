@@ -3,13 +3,16 @@ title: "Hetzner"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: hetzner
+dnsprovider:
+  since:    "v3.7.0"
+  code:     "hetzner"
+  url:      "https://hetzner.com"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/hetzner/hetzner.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v3.7.0
 
 Configuration for [Hetzner](https://hetzner.com).
 
@@ -17,12 +20,14 @@ Configuration for [Hetzner](https://hetzner.com).
 <!--more-->
 
 - Code: `hetzner`
+- Since: v3.7.0
+
 
 Here is an example bash command using the Hetzner provider:
 
 ```bash
 HETZNER_API_KEY=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx \
-lego -email myemail@example.com --dns hetzner --domains my.example.org -run
+lego --email you@example.com --dns hetzner --domains my.example.org run
 ```
 
 
@@ -35,7 +40,7 @@ lego -email myemail@example.com --dns hetzner --domains my.example.org -run
 | `HETZNER_API_KEY` | API key |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 ## Additional Configuration
@@ -48,7 +53,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `HETZNER_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 

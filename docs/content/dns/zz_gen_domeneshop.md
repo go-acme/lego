@@ -3,13 +3,16 @@ title: "Domeneshop"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: domeneshop
+dnsprovider:
+  since:    "v4.3.0"
+  code:     "domeneshop"
+  url:      "https://domene.shop"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/domeneshop/domeneshop.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.3.0
 
 Configuration for [Domeneshop](https://domene.shop).
 
@@ -17,6 +20,8 @@ Configuration for [Domeneshop](https://domene.shop).
 <!--more-->
 
 - Code: `domeneshop`
+- Since: v4.3.0
+
 
 Here is an example bash command using the Domeneshop provider:
 
@@ -37,7 +42,7 @@ lego --email example@example.com --dns domeneshop --domains example.com run
 | `DOMENESHOP_API_TOKEN` | API token |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 ## Additional Configuration
@@ -49,7 +54,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `DOMENESHOP_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 ### API credentials
 

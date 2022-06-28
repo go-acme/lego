@@ -1,0 +1,22 @@
+{
+  "data": {
+    "id": "20202020",
+    "type": "dns-record",
+    "links": {
+      "self": "https://api.variomedia.de/dns-records/20202020"
+    },
+    "attributes": {
+      "record_type": "TXT",
+      "fqdn": "my-test-record.example.com",
+      "fqdn_ace": "my-test-record.example.com",
+      "name": "my-test-record",
+      "name_ace": "my-test-record",
+      "domain": "example.com",
+      "data": "test",
+      "ttl": 300
+    }
+  },
+  "links": {
+    "self": "https://api.variomedia.de/dns-records"
+  }
+}

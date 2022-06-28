@@ -15,7 +15,7 @@ For example, the HTTP-01 challenge doesn't work well behind a load balancer or C
 
 But even if using HTTP-01 or TLS-ALPN-01 challenges, you may have specific needs that lego does not consider by default.
 
-You can write something called a `challenge.Provider` that implements [this interface](https://godoc.org/github.com/go-acme/lego/challenge#Provider):
+You can write something called a `challenge.Provider` that implements [this interface](https://pkg.go.dev/github.com/go-acme/lego/v4/challenge#Provider):
 
 ```go
 type Provider interface {
@@ -85,7 +85,7 @@ In our case, we'd just make another API request to have the DNS record deleted; 
 
 ## Using your new challenge.Provider
 
-To use your new challenge provider, call [`client.Challenge.SetDNS01Provider`](https://godoc.org/github.com/go-acme/lego/challenge/resolver#SolverManager.SetDNS01Provider) to tell lego, "For this challenge, use this provider".
+To use your new challenge provider, call [`client.Challenge.SetDNS01Provider`](https://pkg.go.dev/github.com/go-acme/lego/v4/challenge/resolver#SolverManager.SetDNS01Provider) to tell lego, "For this challenge, use this provider".
 In our case:
 
 ```go

@@ -3,13 +3,16 @@ title: "Aurora DNS"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: auroradns
+dnsprovider:
+  since:    "v0.4.0"
+  code:     "auroradns"
+  url:      "https://www.pcextreme.com/aurora/dns"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/auroradns/auroradns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v0.4.0
 
 Configuration for [Aurora DNS](https://www.pcextreme.com/aurora/dns).
 
@@ -17,13 +20,15 @@ Configuration for [Aurora DNS](https://www.pcextreme.com/aurora/dns).
 <!--more-->
 
 - Code: `auroradns`
+- Since: v0.4.0
+
 
 Here is an example bash command using the Aurora DNS provider:
 
 ```bash
 AURORA_USER_ID=xxxxx \
 AURORA_KEY=yyyyyy \
-lego --email myemail@example.com --dns auroradns --domains my.example.org run
+lego --email you@example.com --dns auroradns --domains my.example.org run
 ```
 
 
@@ -37,7 +42,7 @@ lego --email myemail@example.com --dns auroradns --domains my.example.org run
 | `AURORA_USER_ID` | User ID |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 ## Additional Configuration
@@ -50,7 +55,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `AURORA_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 

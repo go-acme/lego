@@ -3,13 +3,16 @@ title: "OVH"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: ovh
+dnsprovider:
+  since:    "v0.4.0"
+  code:     "ovh"
+  url:      "https://www.ovh.com/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/ovh/ovh.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v0.4.0
 
 Configuration for [OVH](https://www.ovh.com/).
 
@@ -17,6 +20,8 @@ Configuration for [OVH](https://www.ovh.com/).
 <!--more-->
 
 - Code: `ovh`
+- Since: v0.4.0
+
 
 Here is an example bash command using the OVH provider:
 
@@ -25,7 +30,7 @@ OVH_APPLICATION_KEY=1234567898765432 \
 OVH_APPLICATION_SECRET=b9841238feb177a84330febba8a832089 \
 OVH_CONSUMER_KEY=256vfsd347245sdfg \
 OVH_ENDPOINT=ovh-eu \
-lego --email myemail@example.com --dns ovh --domains my.example.org run
+lego --email you@example.com --dns ovh --domains my.example.org run
 ```
 
 
@@ -41,7 +46,7 @@ lego --email myemail@example.com --dns ovh --domains my.example.org run
 | `OVH_ENDPOINT` | Endpoint URL (ovh-eu or ovh-ca) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 ## Additional Configuration
@@ -54,7 +59,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `OVH_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 ## Application Key and Secret
 

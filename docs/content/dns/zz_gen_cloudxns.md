@@ -3,13 +3,16 @@ title: "CloudXNS"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: cloudxns
+dnsprovider:
+  since:    "v0.5.0"
+  code:     "cloudxns"
+  url:      "https://www.cloudxns.net/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/cloudxns/cloudxns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v0.5.0
 
 Configuration for [CloudXNS](https://www.cloudxns.net/).
 
@@ -17,13 +20,15 @@ Configuration for [CloudXNS](https://www.cloudxns.net/).
 <!--more-->
 
 - Code: `cloudxns`
+- Since: v0.5.0
+
 
 Here is an example bash command using the CloudXNS provider:
 
 ```bash
 CLOUDXNS_API_KEY=xxxx \
 CLOUDXNS_SECRET_KEY=yyyy \
-lego --email myemail@example.com --dns cloudxns --domains my.example.org run
+lego --email you@example.com --dns cloudxns --domains my.example.org run
 ```
 
 
@@ -37,7 +42,7 @@ lego --email myemail@example.com --dns cloudxns --domains my.example.org run
 | `CLOUDXNS_SECRET_KEY` | The API secret key |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 ## Additional Configuration
@@ -50,7 +55,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `CLOUDXNS_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 

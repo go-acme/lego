@@ -3,13 +3,16 @@ title: "freemyip.com"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: freemyip
+dnsprovider:
+  since:    "v4.5.0"
+  code:     "freemyip"
+  url:      "https://freemyip.com/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/freemyip/freemyip.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.5.0
 
 Configuration for [freemyip.com](https://freemyip.com/).
 
@@ -17,12 +20,14 @@ Configuration for [freemyip.com](https://freemyip.com/).
 <!--more-->
 
 - Code: `freemyip`
+- Since: v4.5.0
+
 
 Here is an example bash command using the freemyip.com provider:
 
 ```bash
 FREEMYIP_TOKEN=xxxxxx \
-lego --email myemail@example.com --dns freemyip --domains my.example.org run
+lego --email you@example.com --dns freemyip --domains my.example.org run
 ```
 
 
@@ -35,7 +40,7 @@ lego --email myemail@example.com --dns freemyip --domains my.example.org run
 | `FREEMYIP_TOKEN` | Account token |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 ## Additional Configuration
@@ -49,7 +54,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `FREEMYIP_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 

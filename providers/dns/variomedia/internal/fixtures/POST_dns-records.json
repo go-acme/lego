@@ -1,0 +1,16 @@
+{
+  "data": {
+    "type": "queue-job",
+    "id": "18181818",
+    "attributes": {
+      "status": "pending"
+    },
+    "links": {
+      "queue-job": "https://api.variomedia.de/queue-jobs/18181818",
+      "dns-record": "https://api.variomedia.de/dns-records/19191919"
+    }
+  },
+  "links": {
+    "self": "https://api.variomedia.de/dns-records"
+  }
+}

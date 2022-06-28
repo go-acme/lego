@@ -80,6 +80,7 @@ func allDNSCodes() string {
 		"namecheap",
 		"namedotcom",
 		"namesilo",
+		"nearlyfreespeech",
 		"netcup",
 		"netlify",
 		"nicmanager",
@@ -106,6 +107,7 @@ func allDNSCodes() string {
 		"stackpath",
 		"tencentcloud",
 		"transip",
+		"variomedia",
 		"vegadns",
 		"vercel",
 		"versio",
@@ -1522,6 +1524,28 @@ func displayDNSHelp(name string) error {
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/namesilo`)
 
+	case "nearlyfreespeech":
+		// generated from: providers/dns/nearlyfreespeech/nearlyfreespeech.toml
+		ew.writeln(`Configuration for NearlyFreeSpeech.NET.`)
+		ew.writeln(`Code:	'nearlyfreespeech'`)
+		ew.writeln(`Since:	'v4.8.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "NEARLYFREESPEECH_API_KEY":	API Key for API requests`)
+		ew.writeln(`	- "NEARLYFREESPEECH_LOGIN":	Username for API requests`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "NEARLYFREESPEECH_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "NEARLYFREESPEECH_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "NEARLYFREESPEECH_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "NEARLYFREESPEECH_SEQUENCE_INTERVAL":	Time between sequential requests`)
+		ew.writeln(`	- "NEARLYFREESPEECH_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/nearlyfreespeech`)
+
 	case "netcup":
 		// generated from: providers/dns/netcup/netcup.toml
 		ew.writeln(`Configuration for Netcup.`)
@@ -1860,6 +1884,7 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "AWS_ACCESS_KEY_ID":	Managed by the AWS client. Access key ID ('AWS_ACCESS_KEY_ID_FILE' is not supported, use 'AWS_SHARED_CREDENTIALS_FILE' instead)`)
+		ew.writeln(`	- "AWS_ASSUME_ROLE_ARN":	Managed by the AWS Role ARN ('AWS_ASSUME_ROLE_ARN' is not supported)`)
 		ew.writeln(`	- "AWS_HOSTED_ZONE_ID":	Override the hosted zone ID.`)
 		ew.writeln(`	- "AWS_PROFILE":	Managed by the AWS client ('AWS_PROFILE_FILE' is not supported)`)
 		ew.writeln(`	- "AWS_REGION":	Managed by the AWS client ('AWS_REGION_FILE' is not supported)`)
@@ -2085,6 +2110,27 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/transip`)
+
+	case "variomedia":
+		// generated from: providers/dns/variomedia/variomedia.toml
+		ew.writeln(`Configuration for Variomedia.`)
+		ew.writeln(`Code:	'variomedia'`)
+		ew.writeln(`Since:	'v4.8.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "VARIOMEDIA_API_TOKEN":	API token`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "DODE_SEQUENCE_INTERVAL":	Time between sequential requests`)
+		ew.writeln(`	- "VARIOMEDIA_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "VARIOMEDIA_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "VARIOMEDIA_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "VARIOMEDIA_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/variomedia`)
 
 	case "vegadns":
 		// generated from: providers/dns/vegadns/vegadns.toml

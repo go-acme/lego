@@ -6,7 +6,7 @@ Since = "v3.5.0"
 
 Example = '''
 DYNU_API_KEY=1234567890abcdefghijklmnopqrstuvwxyz \
-lego --email myemail@example.com --dns dynu --domains my.example.org run
+lego --email you@example.com --dns dynu --domains my.example.org run
 '''
 
 [Configuration]

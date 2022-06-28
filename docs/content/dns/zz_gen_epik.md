@@ -3,13 +3,16 @@ title: "Epik"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: epik
+dnsprovider:
+  since:    "v4.5.0"
+  code:     "epik"
+  url:      "https://www.epik.com/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/epik/epik.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v4.5.0
 
 Configuration for [Epik](https://www.epik.com/).
 
@@ -17,12 +20,14 @@ Configuration for [Epik](https://www.epik.com/).
 <!--more-->
 
 - Code: `epik`
+- Since: v4.5.0
+
 
 Here is an example bash command using the Epik provider:
 
 ```bash
 EPIK_SIGNATURE=xxxxxxxxxxxxxxxxxxxxxxxxxx \
-lego --email myemail@example.com --dns epik --domains my.example.org run
+lego --email you@example.com --dns epik --domains my.example.org run
 ```
 
 
@@ -35,7 +40,7 @@ lego --email myemail@example.com --dns epik --domains my.example.org run
 | `EPIK_SIGNATURE` | Epik API signature (https://registrar.epik.com/account/api-settings/) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 ## Additional Configuration
@@ -48,7 +53,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `EPIK_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 

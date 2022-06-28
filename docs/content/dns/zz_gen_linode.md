@@ -3,13 +3,16 @@ title: "Linode (v4)"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: linode
+dnsprovider:
+  since:    "v1.1.0"
+  code:     "linode"
+  url:      "https://www.linode.com/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/linode/linode.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v1.1.0
 
 Configuration for [Linode (v4)](https://www.linode.com/).
 
@@ -17,12 +20,14 @@ Configuration for [Linode (v4)](https://www.linode.com/).
 <!--more-->
 
 - Code: `linode`
+- Since: v1.1.0
+
 
 Here is an example bash command using the Linode (v4) provider:
 
 ```bash
 LINODE_TOKEN=xxxxx \
-lego --email myemail@example.com --dns linode --domains my.example.org run
+lego --email you@example.com --dns linode --domains my.example.org run
 ```
 
 
@@ -35,7 +40,7 @@ lego --email myemail@example.com --dns linode --domains my.example.org run
 | `LINODE_TOKEN` | API token |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 ## Additional Configuration
@@ -48,7 +53,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `LINODE_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 

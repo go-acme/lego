@@ -9,7 +9,7 @@ RFC2136_NAMESERVER=127.0.0.1 \
 RFC2136_TSIG_KEY=lego \
 RFC2136_TSIG_ALGORITHM=hmac-sha256. \
 RFC2136_TSIG_SECRET=YWJjZGVmZGdoaWprbG1ub3BxcnN0dXZ3eHl6MTIzNDU= \
-lego --email myemail@example.com --dns rfc2136 --domains my.example.org run
+lego --email you@example.com --dns rfc2136 --domains my.example.org run
 
 ## ---
 
@@ -19,7 +19,7 @@ RFC2136_NAMESERVER=127.0.0.1 \
 RFC2136_TSIG_KEY="$keyname" \
 RFC2136_TSIG_ALGORITHM="$( awk -F'[ ";]' '/algorithm/ { print $2 }' $keyfile )." \
 RFC2136_TSIG_SECRET="$( awk -F'[ ";]' '/secret/ { print $3 }' $keyfile )" \
-lego --email myemail@example.com --dns rfc2136 --domains my.example.org run
+lego --email you@example.com --dns rfc2136 --domains my.example.org run
 '''
 
 [Configuration]

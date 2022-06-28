@@ -3,13 +3,16 @@ title: "HyperOne"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: hyperone
+dnsprovider:
+  since:    "v3.9.0"
+  code:     "hyperone"
+  url:      "https://www.hyperone.com"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/hyperone/hyperone.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v3.9.0
 
 Configuration for [HyperOne](https://www.hyperone.com).
 
@@ -17,11 +20,13 @@ Configuration for [HyperOne](https://www.hyperone.com).
 <!--more-->
 
 - Code: `hyperone`
+- Since: v3.9.0
+
 
 Here is an example bash command using the HyperOne provider:
 
 ```bash
-lego --email myemail@example.com --dns hyperone --domains my.example.org run
+lego --email you@example.com --dns hyperone --domains my.example.org run
 ```
 
 
@@ -41,7 +46,7 @@ lego --email myemail@example.com --dns hyperone --domains my.example.org run
 | `HYPERONE_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 ## Description
 

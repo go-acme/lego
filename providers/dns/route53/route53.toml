@@ -69,6 +69,7 @@ The following AWS IAM policy document describes the permissions required for leg
     AWS_HOSTED_ZONE_ID = "Override the hosted zone ID."
     AWS_PROFILE = "Managed by the AWS client (`AWS_PROFILE_FILE` is not supported)"
     AWS_SDK_LOAD_CONFIG = "Managed by the AWS client. Retrieve the region from the CLI config file (`AWS_SDK_LOAD_CONFIG_FILE` is not supported)"
+    AWS_ASSUME_ROLE_ARN = "Managed by the AWS Role ARN (`AWS_ASSUME_ROLE_ARN` is not supported)"
   [Configuration.Additional]
     AWS_SHARED_CREDENTIALS_FILE = "Managed by the AWS client. Shared credentials file."
     AWS_MAX_RETRIES = "The number of maximum returns the service will use to make an individual API request"

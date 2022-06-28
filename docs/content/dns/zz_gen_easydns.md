@@ -3,13 +3,16 @@ title: "EasyDNS"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: easydns
+dnsprovider:
+  since:    "v2.6.0"
+  code:     "easydns"
+  url:      "https://easydns.com/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/easydns/easydns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v2.6.0
 
 Configuration for [EasyDNS](https://easydns.com/).
 
@@ -17,13 +20,15 @@ Configuration for [EasyDNS](https://easydns.com/).
 <!--more-->
 
 - Code: `easydns`
+- Since: v2.6.0
+
 
 Here is an example bash command using the EasyDNS provider:
 
 ```bash
 EASYDNS_TOKEN=<your token> \
 EASYDNS_KEY=<your key> \
-lego --email myemail@example.com --dns easydns --domains my.example.org run
+lego --email you@example.com --dns easydns --domains my.example.org run
 ```
 
 
@@ -37,7 +42,7 @@ lego --email myemail@example.com --dns easydns --domains my.example.org run
 | `EASYDNS_TOKEN` | API Token |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 ## Additional Configuration
@@ -52,7 +57,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `EASYDNS_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 To test with the sandbox environment set ```EASYDNS_ENDPOINT=https://sandbox.rest.easydns.net```
 

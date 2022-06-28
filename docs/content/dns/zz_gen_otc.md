@@ -3,13 +3,16 @@ title: "Open Telekom Cloud"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: otc
+dnsprovider:
+  since:    "v0.4.1"
+  code:     "otc"
+  url:      "https://cloud.telekom.de/en"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/otc/otc.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v0.4.1
 
 Configuration for [Open Telekom Cloud](https://cloud.telekom.de/en).
 
@@ -17,6 +20,8 @@ Configuration for [Open Telekom Cloud](https://cloud.telekom.de/en).
 <!--more-->
 
 - Code: `otc`
+- Since: v0.4.1
+
 
 {{% notice note %}}
 _Please contribute by adding a CLI example._
@@ -36,7 +41,7 @@ _Please contribute by adding a CLI example._
 | `OTC_USER_NAME` | User name |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 ## Additional Configuration
@@ -49,7 +54,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `OTC_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 

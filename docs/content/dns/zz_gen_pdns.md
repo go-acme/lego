@@ -3,13 +3,16 @@ title: "PowerDNS"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: pdns
+dnsprovider:
+  since:    "v0.4.0"
+  code:     "pdns"
+  url:      "https://www.powerdns.com/"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/pdns/pdns.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v0.4.0
 
 Configuration for [PowerDNS](https://www.powerdns.com/).
 
@@ -17,13 +20,15 @@ Configuration for [PowerDNS](https://www.powerdns.com/).
 <!--more-->
 
 - Code: `pdns`
+- Since: v0.4.0
+
 
 Here is an example bash command using the PowerDNS provider:
 
 ```bash
 PDNS_API_URL=http://pdns-server:80/ \
 PDNS_API_KEY=xxxx \
-lego --email myemail@example.com --dns pdns --domains my.example.org run
+lego --email you@example.com --dns pdns --domains my.example.org run
 ```
 
 
@@ -37,7 +42,7 @@ lego --email myemail@example.com --dns pdns --domains my.example.org run
 | `PDNS_API_URL` | API URL |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 ## Additional Configuration
@@ -51,7 +56,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `PDNS_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 ## Information
 

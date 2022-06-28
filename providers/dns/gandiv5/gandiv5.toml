@@ -6,7 +6,7 @@ Since = "v0.5.0"
 
 Example = '''
 GANDIV5_API_KEY=abcdefghijklmnopqrstuvwx \
-lego --email myemail@example.com --dns gandiv5 --domains my.example.org run
+lego --email you@example.com --dns gandiv5 --domains my.example.org run
 '''
 
 [Configuration]

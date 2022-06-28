@@ -45,6 +45,7 @@ pygmentsUseClasses = true
 #  ordersectionsby = "weight"
   # Change default color scheme with a variant one. Can be "red", "blue", "green".
   themeVariant = "blue"
+  custom_css = ["css/theme-custom.css"]
   disableLandingPageButton = true
 
 [Languages]
@@ -63,6 +64,11 @@ pygmentsUseClasses = true
   name = "<i class='fas fa-fw fa-bug'></i> Issues"
   url = "https://github.com/go-acme/lego/issues"
   weight = 11
+
+[[Languages.en.menu.shortcuts]]
+  name = "<i class='fas fa-fw fa-comments'></i> Discussions"
+  url = "https://github.com/go-acme/lego/discussions"
+  weight = 12
 
 [outputs]
   home = [ "HTML", "RSS", "JSON"]

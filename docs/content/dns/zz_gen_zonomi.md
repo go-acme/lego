@@ -3,13 +3,16 @@ title: "Zonomi"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: zonomi
+dnsprovider:
+  since:    "v3.5.0"
+  code:     "zonomi"
+  url:      "https://zonomi.com"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/zonomi/zonomi.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Since: v3.5.0
 
 Configuration for [Zonomi](https://zonomi.com).
 
@@ -17,12 +20,14 @@ Configuration for [Zonomi](https://zonomi.com).
 <!--more-->
 
 - Code: `zonomi`
+- Since: v3.5.0
+
 
 Here is an example bash command using the Zonomi provider:
 
 ```bash
 ZONOMI_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \
-lego --email myemail@example.com --dns zonomi --domains my.example.org run
+lego --email you@example.com --dns zonomi --domains my.example.org run
 ```
 
 
@@ -35,7 +40,7 @@ lego --email myemail@example.com --dns zonomi --domains my.example.org run
 | `ZONOMI_API_KEY` | User API key |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 ## Additional Configuration
@@ -48,7 +53,7 @@ More information [here](/lego/dns/#configuration-and-credentials).
 | `ZONOMI_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here](/lego/dns/#configuration-and-credentials).
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 

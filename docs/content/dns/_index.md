@@ -15,10 +15,10 @@ The environment variables can reference a value.
 
 Here is an example bash command using the Cloudflare DNS provider:
 
-```bash
-$ CLOUDFLARE_EMAIL=foo@bar.com \
-CLOUDFLARE_API_KEY=b9841238feb177a84330febba8a83208921177bffe733 \
-lego --dns cloudflare --domains www.example.com --email me@bar.com run
+```console
+$ CLOUDFLARE_EMAIL=you@example.com \
+  CLOUDFLARE_API_KEY=b9841238feb177a84330febba8a83208921177bffe733 \
+  lego --dns cloudflare --domains www.example.com --email you@example.com run
 ```
 
 ### Environment Variables: File
@@ -33,16 +33,16 @@ The file must contain only the value.
 
 Here is an example bash command using the CloudFlare DNS provider:
 
-```bash
+```console
 $ cat /the/path/to/my/key
 b9841238feb177a84330febba8a83208921177bffe733
 
 $ cat /the/path/to/my/email
-foo@bar.com
+you@example.com
 
 $ CLOUDFLARE_EMAIL_FILE=/the/path/to/my/email \
-CLOUDFLARE_API_KEY_FILE=/the/path/to/my/key \
-lego --dns cloudflare --domains www.example.com --email me@bar.com run
+  CLOUDFLARE_API_KEY_FILE=/the/path/to/my/key \
+  lego --dns cloudflare --domains www.example.com --email you@example.com run
 ```
 
 ## Experimental Features
@@ -52,4 +52,4 @@ set `LEGO_EXPERIMENTAL_CNAME_SUPPORT` to `true`.
 
 ## DNS Providers
 
-{{%children style="h2" description="true" %}}
+{{% tableofdnsproviders %}}

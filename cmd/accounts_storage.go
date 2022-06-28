@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"errors"
-	"fmt"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -227,7 +226,7 @@ func tryRecoverRegistration(ctx *cli.Context, privateKey crypto.PrivateKey) (*re
 	// couldn't load account but got a key. Try to look the account up.
 	config := lego.NewConfig(&Account{key: privateKey})
 	config.CADirURL = ctx.String("server")
-	config.UserAgent = fmt.Sprintf("lego-cli/%s", ctx.App.Version)
+	config.UserAgent = getUserAgent(ctx)
 
 	client, err := lego.NewClient(config)
 	if err != nil {

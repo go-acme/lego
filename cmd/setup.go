@@ -41,7 +41,7 @@ func newClient(ctx *cli.Context, acc registration.User, keyType certcrypto.KeyTy
 		KeyType: keyType,
 		Timeout: time.Duration(ctx.Int("cert.timeout")) * time.Second,
 	}
-	config.UserAgent = fmt.Sprintf("lego-cli/%s", ctx.App.Version)
+	config.UserAgent = getUserAgent(ctx)
 
 	if ctx.IsSet("http-timeout") {
 		config.HTTPClient.Timeout = time.Duration(ctx.Int("http-timeout")) * time.Second
@@ -85,6 +85,10 @@ func getEmail(ctx *cli.Context) string {
 		log.Fatal("You have to pass an account (email address) to the program using --email or -m")
 	}
 	return email
+}
+
+func getUserAgent(ctx *cli.Context) string {
+	return strings.TrimSpace(fmt.Sprintf("%s lego-cli/%s", ctx.String("user-agent"), ctx.App.Version))
 }
 
 func createNonExistingFolder(path string) error {

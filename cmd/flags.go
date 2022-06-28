@@ -132,5 +132,9 @@ func CreateFlags(defaultPath string) []cli.Flag {
 			Usage: "Set the certificate timeout value to a specific value in seconds. Only used when obtaining certificates.",
 			Value: 30,
 		},
+		&cli.StringFlag{
+			Name:  "user-agent",
+			Usage: "Add to the user-agent sent to the CA to identify an application embedding lego-cli",
+		},
 	}
 }

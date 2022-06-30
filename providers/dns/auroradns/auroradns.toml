@@ -6,14 +6,14 @@ Since = "v0.4.0"
 
 Example = '''
 AURORA_API_KEY=xxxxx \
-AURORA_SECRET_KEY=yyyyyy \
+AURORA_SECRET=yyyyyy \
 lego --email you@example.com --dns auroradns --domains my.example.org run
 '''
 
 [Configuration]
   [Configuration.Credentials]
-    AURORA_API_KEY = "API key"
-    AURORA_SECRET_KEY = "Secret key"
+    AURORA_API_KEY = "API key or username to used"
+    AURORA_SECRET = "Secret password to be used"
   [Configuration.Additional]
     AURORA_ENDPOINT = "API endpoint URL"
     AURORA_POLLING_INTERVAL = "Time between DNS propagation check"

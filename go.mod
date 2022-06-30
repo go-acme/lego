@@ -34,7 +34,7 @@ require (
 	github.com/mimuret/golang-iij-dpf v0.7.1
 	github.com/mitchellh/mapstructure v1.4.1
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
-	github.com/nrdcg/auroradns v1.0.1
+	github.com/nrdcg/auroradns v1.1.0
 	github.com/nrdcg/desec v0.6.0
 	github.com/nrdcg/dnspod-go v0.4.0
 	github.com/nrdcg/freemyip v0.2.0
@@ -48,7 +48,7 @@ require (
 	github.com/sacloud/libsacloud v1.36.2
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.7.0.20210127161313-bd30bebeac4f
 	github.com/softlayer/softlayer-go v1.0.3
-	github.com/stretchr/testify v1.7.1
+	github.com/stretchr/testify v1.7.5
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.287
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod v1.0.287
 	github.com/transip/gotransip/v6 v6.6.1
@@ -110,7 +110,7 @@ require (
 	github.com/smartystreets/go-aws-auth v0.0.0-20180515143844-0c1422d1fdb9 // indirect
 	github.com/softlayer/xmlrpc v0.0.0-20200409220501-5f089df7cb7e // indirect
 	github.com/spf13/cast v1.3.1 // indirect
-	github.com/stretchr/objx v0.3.0 // indirect
+	github.com/stretchr/objx v0.4.0 // indirect
 	go.opencensus.io v0.22.3 // indirect
 	go.uber.org/ratelimit v0.0.0-20180316092928-c15da0234277 // indirect
 	golang.org/x/mod v0.4.2 // indirect
@@ -123,5 +123,5 @@ require (
 	google.golang.org/grpc v1.27.1 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/ini.v1 v1.62.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

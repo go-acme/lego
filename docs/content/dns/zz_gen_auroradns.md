@@ -6,7 +6,7 @@ slug: auroradns
 dnsprovider:
   since:    "v0.4.0"
   code:     "auroradns"
-  url:      "https://www.pcextreme.com/aurora/dns"
+  url:      "https://www.pcextreme.com/dns-health-checks"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
@@ -14,7 +14,7 @@ dnsprovider:
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
-Configuration for [Aurora DNS](https://www.pcextreme.com/aurora/dns).
+Configuration for [Aurora DNS](https://www.pcextreme.com/dns-health-checks).
 
 
 <!--more-->
@@ -26,8 +26,8 @@ Configuration for [Aurora DNS](https://www.pcextreme.com/aurora/dns).
 Here is an example bash command using the Aurora DNS provider:
 
 ```bash
-AURORA_USER_ID=xxxxx \
-AURORA_KEY=yyyyyy \
+AURORA_API_KEY=xxxxx \
+AURORA_SECRET_KEY=yyyyyy \
 lego --email you@example.com --dns auroradns --domains my.example.org run
 ```
 
@@ -38,8 +38,8 @@ lego --email you@example.com --dns auroradns --domains my.example.org run
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `AURORA_KEY` | User API key |
-| `AURORA_USER_ID` | User ID |
+| `AURORA_API_KEY` | API key or username to used |
+| `AURORA_SECRET` | Secret password to be used |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{< ref "dns#configuration-and-credentials" >}}).

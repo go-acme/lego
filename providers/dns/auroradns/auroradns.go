@@ -18,9 +18,9 @@ const defaultBaseURL = "https://api.auroradns.eu"
 const (
 	envNamespace = "AURORA_"
 
-	EnvUserID   = envNamespace + "USER_ID"
-	EnvKey      = envNamespace + "KEY"
-	EnvEndpoint = envNamespace + "ENDPOINT"
+	EnvApiKey    = envNamespace + "API_KEY"
+	EnvSecretKey = envNamespace + "SECRET_KEY"
+	EnvEndpoint  = envNamespace + "ENDPOINT"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -30,8 +30,8 @@ const (
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	BaseURL            string
-	UserID             string
-	Key                string
+	ApiKey             string
+	SecretKey          string
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
@@ -56,17 +56,17 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for AuroraDNS.
 // Credentials must be passed in the environment variables:
-// AURORA_USER_ID and AURORA_KEY.
+// AURORA_API_KEY and AURORA_SECRET_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvUserID, EnvKey)
+	values, err := env.Get(EnvApiKey, EnvSecretKey)
 	if err != nil {
 		return nil, fmt.Errorf("aurora: %w", err)
 	}
 
 	config := NewDefaultConfig()
 	config.BaseURL = env.GetOrFile(EnvEndpoint)
-	config.UserID = values[EnvUserID]
-	config.Key = values[EnvKey]
+	config.ApiKey = values[EnvApiKey]
+	config.SecretKey = values[EnvSecretKey]
 
 	return NewDNSProviderConfig(config)
 }
@@ -77,7 +77,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("aurora: the configuration of the DNS provider is nil")
 	}
 
-	if config.UserID == "" || config.Key == "" {
+	if config.ApiKey == "" || config.SecretKey == "" {
 		return nil, errors.New("aurora: some credentials information are missing")
 	}
 
@@ -85,7 +85,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		config.BaseURL = defaultBaseURL
 	}
 
-	tr, err := auroradns.NewTokenTransport(config.UserID, config.Key)
+	tr, err := auroradns.NewTokenTransport(config.ApiKey, config.SecretKey)
 	if err != nil {
 		return nil, fmt.Errorf("aurora: %w", err)
 	}

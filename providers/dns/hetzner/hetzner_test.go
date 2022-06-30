@@ -74,8 +74,8 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		{
 			desc:     "invalid TTL",
 			apiKey:   "123",
-			ttl:      60,
-			expected: "hetzner: invalid TTL, TTL (60) must be greater than 600",
+			ttl:      10,
+			expected: "hetzner: invalid TTL, TTL (10) must be greater than 60",
 		},
 	}
 

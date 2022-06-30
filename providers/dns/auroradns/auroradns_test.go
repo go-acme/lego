@@ -13,8 +13,8 @@ import (
 )
 
 var envTest = tester.NewEnvTest(
-	EnvUserID,
-	EnvKey)
+	EnvApiKey,
+	EnvSecretKey)
 
 func setupTest(t *testing.T) (*DNSProvider, *http.ServeMux) {
 	t.Helper()
@@ -24,8 +24,8 @@ func setupTest(t *testing.T) (*DNSProvider, *http.ServeMux) {
 	t.Cleanup(server.Close)
 
 	config := NewDefaultConfig()
-	config.UserID = "asdf1234"
-	config.Key = "key"
+	config.ApiKey = "asdf1234"
+	config.SecretKey = "key"
 	config.BaseURL = server.URL
 
 	provider, err := NewDNSProviderConfig(config)
@@ -43,33 +43,33 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				EnvUserID: "123",
-				EnvKey:    "456",
+				EnvApiKey:    "123",
+				EnvSecretKey: "456",
 			},
 		},
 		{
 			desc: "missing credentials",
 			envVars: map[string]string{
-				EnvUserID: "",
-				EnvKey:    "",
+				EnvApiKey:    "",
+				EnvSecretKey: "",
 			},
-			expected: "aurora: some credentials information are missing: AURORA_USER_ID,AURORA_KEY",
+			expected: "aurora: some credentials information are missing: AURORA_API_KEY,AURORA_SECRET_KEY",
 		},
 		{
-			desc: "missing user id",
+			desc: "missing api key",
 			envVars: map[string]string{
-				EnvUserID: "",
-				EnvKey:    "456",
+				EnvApiKey:    "",
+				EnvSecretKey: "456",
 			},
 			expected: "aurora: some credentials information are missing: AURORA_USER_ID",
 		},
 		{
-			desc: "missing key",
+			desc: "missing secret key",
 			envVars: map[string]string{
-				EnvUserID: "123",
-				EnvKey:    "",
+				EnvApiKey:    "123",
+				EnvSecretKey: "",
 			},
-			expected: "aurora: some credentials information are missing: AURORA_KEY",
+			expected: "aurora: some credentials information are missing: AURORA_SECRET_KEY",
 		},
 	}
 
@@ -96,41 +96,41 @@ func TestNewDNSProvider(t *testing.T) {
 
 func TestNewDNSProviderConfig(t *testing.T) {
 	testCases := []struct {
-		desc     string
-		userID   string
-		key      string
-		expected string
+		desc      string
+		apiKey    string
+		secretKey string
+		expected  string
 	}{
 		{
-			desc:   "success",
-			userID: "123",
-			key:    "456",
+			desc:      "success",
+			apiKey:    "123",
+			secretKey: "456",
 		},
 		{
-			desc:     "missing credentials",
-			userID:   "",
-			key:      "",
-			expected: "aurora: some credentials information are missing",
+			desc:      "missing credentials",
+			apiKey:    "",
+			secretKey: "",
+			expected:  "aurora: some credentials information are missing",
 		},
 		{
-			desc:     "missing user id",
-			userID:   "",
-			key:      "456",
-			expected: "aurora: some credentials information are missing",
+			desc:      "missing user id",
+			apiKey:    "",
+			secretKey: "456",
+			expected:  "aurora: some credentials information are missing",
 		},
 		{
-			desc:     "missing key",
-			userID:   "123",
-			key:      "",
-			expected: "aurora: some credentials information are missing",
+			desc:      "missing key",
+			apiKey:    "123",
+			secretKey: "",
+			expected:  "aurora: some credentials information are missing",
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			config := NewDefaultConfig()
-			config.UserID = test.userID
-			config.Key = test.key
+			config.apiKey = test.apiKey
+			config.secretKey = test.secretKey
 
 			p, err := NewDNSProviderConfig(config)
 

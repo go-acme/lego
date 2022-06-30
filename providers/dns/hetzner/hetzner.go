@@ -13,7 +13,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/hetzner/internal"
 )
 
-const minTTL = 600
+const minTTL = 60
 
 // Environment variables names.
 const (

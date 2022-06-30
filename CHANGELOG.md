@@ -1,5 +1,21 @@
 # Changelog
 
+## [v4.8.0] - 2022-06-30
+
+### Added
+
+- **[dnsprovider]** Add DNS provider for Variomedia
+- **[dnsprovider]** Add NearlyFreeSpeech DNS Provider
+- **[cli]** Add a --user-agent flag to lego-cli
+
+### Changed
+
+- new logo
+- **[cli]** feat: sleep at renewal
+- **[cli]** cli/renew: skip random sleep if stdout is a terminal
+- **[dnsprovider]** hetzner: set min TTL to 60s
+- **[docs]** refactoring and cleanup
+
 ## [v4.7.0] - 2022-05-27
 
 ### Added:

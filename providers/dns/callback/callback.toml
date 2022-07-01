@@ -1,0 +1,25 @@
+Name = "callback"
+Description = '''
+callback provider can be used for custom DNS solutions when lego is used as a library
+'''
+
+Code = "callback"
+Since = "TODO"
+
+Example = '''
+myPresent := func(fqdn, recordBody string) error {
+    // create TXT record for 'fqdn' with contents 'recordBody' in any way you prefer
+}
+myCleanup := func(fqdn, recordBody string) error {
+    // remove TXT record for 'fqdn' with contents 'recordBody' in any way you prefer
+}
+myProvider, err := NewDNSProvider(myPresent, myCleanup)
+if err != nil {
+    // ...
+}
+'''
+
+[Configuration]
+  [Configuration.Additional]
+    CALLBACK_POLLING_INTERVAL = "Time between DNS propagation check. Default: 15 seconds"
+    CALLBACK_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation. Default: 3 minutes"

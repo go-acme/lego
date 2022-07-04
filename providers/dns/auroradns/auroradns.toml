@@ -1,19 +1,19 @@
 Name = "Aurora DNS"
 Description = ''''''
-URL = "https://www.pcextreme.com/aurora/dns"
+URL = "https://www.pcextreme.com/dns-health-checks"
 Code = "auroradns"
 Since = "v0.4.0"
 
 Example = '''
-AURORA_USER_ID=xxxxx \
-AURORA_KEY=yyyyyy \
+AURORA_API_KEY=xxxxx \
+AURORA_SECRET=yyyyyy \
 lego --email you@example.com --dns auroradns --domains my.example.org run
 '''
 
 [Configuration]
   [Configuration.Credentials]
-    AURORA_USER_ID = "User ID"
-    AURORA_KEY = "User API key"
+    AURORA_API_KEY = "API key or username to used"
+    AURORA_SECRET = "Secret password to be used"
   [Configuration.Additional]
     AURORA_ENDPOINT = "API endpoint URL"
     AURORA_POLLING_INTERVAL = "Time between DNS propagation check"

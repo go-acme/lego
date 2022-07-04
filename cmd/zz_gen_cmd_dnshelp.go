@@ -214,8 +214,8 @@ func displayDNSHelp(name string) error {
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "AURORA_KEY":	User API key`)
-		ew.writeln(`	- "AURORA_USER_ID":	User ID`)
+		ew.writeln(`	- "AURORA_API_KEY":	API key or username to used`)
+		ew.writeln(`	- "AURORA_SECRET":	Secret password to be used`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)

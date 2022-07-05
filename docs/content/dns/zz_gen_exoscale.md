@@ -50,6 +50,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
 | `EXOSCALE_ENDPOINT` | API endpoint URL |
+| `EXOSCALE_API_ZONE` | API Zone |
 | `EXOSCALE_HTTP_TIMEOUT` | API request timeout |
 | `EXOSCALE_POLLING_INTERVAL` | Time between DNS propagation check |
 | `EXOSCALE_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |

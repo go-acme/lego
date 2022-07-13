@@ -23,5 +23,5 @@ lego --email you@example.com --dns exoscale --domains my.example.org run
     EXOSCALE_HTTP_TIMEOUT = "API request timeout"
 
 [Links]
-  API = "https://openapi-v1.exoscale.com/#endpoint-dns"
+  API = "https://openapi-v2.exoscale.com/#endpoint-dns"
   GoClient = "https://github.com/exoscale/egoscale"

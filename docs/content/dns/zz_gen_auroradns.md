@@ -27,7 +27,7 @@ Here is an example bash command using the Aurora DNS provider:
 
 ```bash
 AURORA_API_KEY=xxxxx \
-AURORA_SECRET_KEY=yyyyyy \
+AURORA_SECRET=yyyyyy \
 lego --email you@example.com --dns auroradns --domains my.example.org run
 ```
 

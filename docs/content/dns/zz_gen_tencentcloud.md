@@ -53,6 +53,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 | `TENCENTCLOUD_POLLING_INTERVAL` | Time between DNS propagation check |
 | `TENCENTCLOUD_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
 | `TENCENTCLOUD_REGION` | Region |
+| `TENCENTCLOUD_SESSION_TOKEN` | Access Key token |
 | `TENCENTCLOUD_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.

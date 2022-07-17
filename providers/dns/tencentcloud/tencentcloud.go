@@ -4,6 +4,7 @@ package tencentcloud
 import (
 	"errors"
 	"fmt"
+	"math"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -17,9 +18,10 @@ import (
 const (
 	envNamespace = "TENCENTCLOUD_"
 
-	EnvSecretID  = envNamespace + "SECRET_ID"
-	EnvSecretKey = envNamespace + "SECRET_KEY"
-	EnvRegion    = envNamespace + "REGION"
+	EnvSecretID     = envNamespace + "SECRET_ID"
+	EnvSecretKey    = envNamespace + "SECRET_KEY"
+	EnvRegion       = envNamespace + "REGION"
+	EnvSessionToken = envNamespace + "SESSION_TOKEN"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -29,9 +31,10 @@ const (
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	SecretID  string
-	SecretKey string
-	Region    string
+	SecretID     string
+	SecretKey    string
+	Region       string
+	SessionToken string
 
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -45,7 +48,7 @@ func NewDefaultConfig() *Config {
 		TTL:                env.GetOrDefaultInt(EnvTTL, 600),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
-		HTTPTimeout:        env.GetOrDefaultSecond(EnvHTTPTimeout, 10*time.Second),
+		HTTPTimeout:        env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 	}
 }
 
@@ -67,6 +70,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config.SecretID = values[EnvSecretID]
 	config.SecretKey = values[EnvSecretKey]
 	config.Region = env.GetOrDefaultString(EnvRegion, "")
+	config.SessionToken = env.GetOrDefaultString(EnvSessionToken, "")
 
 	return NewDNSProviderConfig(config)
 }
@@ -77,14 +81,20 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("tencentcloud: the configuration of the DNS provider is nil")
 	}
 
-	if config.SecretID == "" || config.SecretKey == "" {
+	var credential *common.Credential
+
+	switch {
+	case config.SecretID != "" && config.SecretKey != "" && config.SessionToken != "":
+		credential = common.NewTokenCredential(config.SecretID, config.SecretKey, config.SessionToken)
+	case config.SecretID != "" && config.SecretKey != "":
+		credential = common.NewCredential(config.SecretID, config.SecretKey)
+	default:
 		return nil, errors.New("tencentcloud: credentials missing")
 	}
 
-	credential := common.NewCredential(config.SecretID, config.SecretKey)
-
 	cpf := profile.NewClientProfile()
 	cpf.HttpProfile.Endpoint = "dnspod.tencentcloudapi.com"
+	cpf.HttpProfile.ReqTimeout = int(math.Round(config.HTTPTimeout.Seconds()))
 
 	client, err := dnspod.NewClient(credential, config.Region, cpf)
 	if err != nil {
@@ -104,14 +114,28 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	domainData, err := getDomainData(fqdn)
+	zone, err := d.getHostedZone(domain)
 	if err != nil {
-		return fmt.Errorf("tencentcloud: failed to get domain data: %w", err)
+		return fmt.Errorf("tencentcloud: failed to get hosted zone: %w", err)
 	}
 
-	err = d.createRecordData(domainData, value)
+	recordName, err := extractRecordName(fqdn, *zone.Name)
 	if err != nil {
-		return fmt.Errorf("tencentcloud: create record failed: %w", err)
+		return fmt.Errorf("tencentcloud: failed to extract record name: %w", err)
+	}
+
+	request := dnspod.NewCreateRecordRequest()
+	request.Domain = zone.Name
+	request.DomainId = zone.DomainId
+	request.SubDomain = common.StringPtr(recordName)
+	request.RecordType = common.StringPtr("TXT")
+	request.RecordLine = common.StringPtr("默认")
+	request.Value = common.StringPtr(value)
+	request.TTL = common.Uint64Ptr(uint64(d.config.TTL))
+
+	_, err = d.client.CreateRecord(request)
+	if err != nil {
+		return fmt.Errorf("dnspod: API call failed: %w", err)
 	}
 
 	return nil
@@ -121,18 +145,23 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 
-	domainData, err := getDomainData(fqdn)
+	zone, err := d.getHostedZone(domain)
 	if err != nil {
-		return fmt.Errorf("tencentcloud: failed to get domain data: %w", err)
+		return fmt.Errorf("tencentcloud: failed to get hosted zone: %w", err)
 	}
 
-	records, err := d.listRecordData(domainData)
+	records, err := d.findTxtRecords(zone, fqdn)
 	if err != nil {
-		return fmt.Errorf("tencentcloud: list records failed: %w", err)
+		return fmt.Errorf("tencentcloud: failed to find TXT records: %w", err)
 	}
 
-	for _, item := range records {
-		err := d.deleteRecordData(domainData, item)
+	for _, record := range records {
+		request := dnspod.NewDeleteRecordRequest()
+		request.Domain = zone.Name
+		request.DomainId = zone.DomainId
+		request.RecordId = record.RecordId
+
+		_, err := d.client.DeleteRecord(request)
 		if err != nil {
 			return fmt.Errorf("tencentcloud: delete record failed: %w", err)
 		}

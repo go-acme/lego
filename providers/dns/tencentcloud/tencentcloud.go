@@ -114,19 +114,19 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	zoneID, zoneName, err := d.getHostedZone(domain)
+	zone, err := d.getHostedZone(domain)
 	if err != nil {
 		return fmt.Errorf("tencentcloud: failed to get hosted zone: %w", err)
 	}
 
-	recordName, err := extractRecordName(fqdn, zoneName)
+	recordName, err := extractRecordName(fqdn, *zone.Name)
 	if err != nil {
 		return fmt.Errorf("tencentcloud: failed to extract record name: %w", err)
 	}
 
 	request := dnspod.NewCreateRecordRequest()
-	request.Domain = common.StringPtr(zoneName)
-	request.DomainId = common.Uint64Ptr(zoneID)
+	request.Domain = zone.Name
+	request.DomainId = zone.DomainId
 	request.SubDomain = common.StringPtr(recordName)
 	request.RecordType = common.StringPtr("TXT")
 	request.RecordLine = common.StringPtr("默认")
@@ -145,20 +145,20 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 
-	zoneID, zoneName, err := d.getHostedZone(domain)
+	zone, err := d.getHostedZone(domain)
 	if err != nil {
 		return fmt.Errorf("tencentcloud: failed to get hosted zone: %w", err)
 	}
 
-	records, err := d.findTxtRecords(zoneID, zoneName, fqdn)
+	records, err := d.findTxtRecords(zone, fqdn)
 	if err != nil {
 		return fmt.Errorf("tencentcloud: failed to find TXT records: %w", err)
 	}
 
 	for _, record := range records {
 		request := dnspod.NewDeleteRecordRequest()
-		request.Domain = common.StringPtr(zoneName)
-		request.DomainId = common.Uint64Ptr(zoneID)
+		request.Domain = zone.Name
+		request.DomainId = zone.DomainId
 		request.RecordId = record.RecordId
 
 		_, err := d.client.DeleteRecord(request)

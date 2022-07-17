@@ -1,6 +1,7 @@
 package tencentcloud
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -11,7 +12,7 @@ import (
 	"golang.org/x/net/idna"
 )
 
-func (d *DNSProvider) getHostedZone(domain string) (uint64, string, error) {
+func (d *DNSProvider) getHostedZone(domain string) (*dnspod.DomainListItem, error) {
 	request := dnspod.NewDescribeDomainListRequest()
 
 	var domains []*dnspod.DomainListItem
@@ -19,7 +20,7 @@ func (d *DNSProvider) getHostedZone(domain string) (uint64, string, error) {
 	for {
 		response, err := d.client.DescribeDomainList(request)
 		if err != nil {
-			return 0, "", fmt.Errorf("API call failed: %w", err)
+			return nil, fmt.Errorf("API call failed: %w", err)
 		}
 
 		domains = append(domains, response.Response.DomainList...)
@@ -33,7 +34,7 @@ func (d *DNSProvider) getHostedZone(domain string) (uint64, string, error) {
 
 	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
 	if err != nil {
-		return 0, "", err
+		return nil, err
 	}
 
 	var hostedZone *dnspod.DomainListItem
@@ -44,30 +45,31 @@ func (d *DNSProvider) getHostedZone(domain string) (uint64, string, error) {
 	}
 
 	if hostedZone == nil {
-		return 0, "", fmt.Errorf("zone %s not found in dnspod for domain %s", authZone, domain)
+		return nil, fmt.Errorf("zone %s not found in dnspod for domain %s", authZone, domain)
 	}
 
-	return *hostedZone.DomainId, *hostedZone.Name, nil
+	return hostedZone, nil
 }
 
-func (d *DNSProvider) findTxtRecords(zoneID uint64, zoneName, fqdn string) ([]*dnspod.RecordListItem, error) {
-	recordName, err := extractRecordName(fqdn, zoneName)
+func (d *DNSProvider) findTxtRecords(zone *dnspod.DomainListItem, fqdn string) ([]*dnspod.RecordListItem, error) {
+	recordName, err := extractRecordName(fqdn, *zone.Name)
 	if err != nil {
 		return nil, err
 	}
 
 	request := dnspod.NewDescribeRecordListRequest()
-	request.Domain = common.StringPtr(zoneName)
-	request.DomainId = common.Uint64Ptr(zoneID)
+	request.Domain = zone.Name
+	request.DomainId = zone.DomainId
 	request.Subdomain = common.StringPtr(recordName)
 	request.RecordType = common.StringPtr("TXT")
 	request.RecordLine = common.StringPtr("默认")
 
 	response, err := d.client.DescribeRecordList(request)
 	if err != nil {
-		if err, ok := err.(*errorsdk.TencentCloudSDKError); ok {
-			if err.Code == dnspod.RESOURCENOTFOUND_NODATAOFRECORD {
-				return []*dnspod.RecordListItem{}, nil
+		var sdkError *errorsdk.TencentCloudSDKError
+		if errors.As(err, &sdkError) {
+			if sdkError.Code == dnspod.RESOURCENOTFOUND_NODATAOFRECORD {
+				return nil, nil
 			}
 		}
 		return nil, err

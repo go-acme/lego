@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"path"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -172,6 +173,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("pdns: %w", err)
 	}
+
+	if d.apiVersion >= 1 {
+		p := path.Join(zone.URL, "/notify")
+		_, err = d.sendRequest(http.MethodPut, p, nil)
+		if err != nil {
+			return fmt.Errorf("pdns: %w", err)
+		}
+	}
 	return nil
 }
 
@@ -209,6 +218,14 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	_, err = d.sendRequest(http.MethodPatch, zone.URL, bytes.NewReader(body))
 	if err != nil {
 		return fmt.Errorf("pdns: %w", err)
+	}
+
+	if d.apiVersion >= 1 {
+		p := path.Join(zone.URL, "/notify")
+		_, err = d.sendRequest(http.MethodPut, p, nil)
+		if err != nil {
+			return fmt.Errorf("pdns: %w", err)
+		}
 	}
 	return nil
 }

@@ -4,15 +4,12 @@ package tencentcloud
 import (
 	"errors"
 	"fmt"
-	"golang.org/x/net/idna"
 	"math"
-	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
-	errorsdk "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/errors"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/profile"
 	dnspod "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod/v20210323"
 )
@@ -23,6 +20,7 @@ const (
 
 	EnvSecretID     = envNamespace + "SECRET_ID"
 	EnvSecretKey    = envNamespace + "SECRET_KEY"
+	EnvRegion       = envNamespace + "REGION"
 	EnvSessionToken = envNamespace + "SESSION_TOKEN"
 
 	EnvTTL                = envNamespace + "TTL"
@@ -35,6 +33,7 @@ const (
 type Config struct {
 	SecretID     string
 	SecretKey    string
+	Region       string
 	SessionToken string
 
 	PropagationTimeout time.Duration
@@ -70,6 +69,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
 	config.SecretID = values[EnvSecretID]
 	config.SecretKey = values[EnvSecretKey]
+	config.Region = env.GetOrDefaultString(EnvRegion, "")
 	config.SessionToken = env.GetOrDefaultString(EnvSessionToken, "")
 
 	return NewDNSProviderConfig(config)
@@ -95,7 +95,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	cpf := profile.NewClientProfile()
 	cpf.HttpProfile.Endpoint = "dnspod.tencentcloudapi.com"
 	cpf.HttpProfile.ReqTimeout = int(math.Round(config.HTTPTimeout.Seconds()))
-	client, err := dnspod.NewClient(credential, "", cpf)
+
+	client, err := dnspod.NewClient(credential, config.Region, cpf)
 	if err != nil {
 		return nil, fmt.Errorf("tencentcloud: %w", err)
 	}
@@ -112,14 +113,17 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
+
 	zoneID, zoneName, err := d.getHostedZone(domain)
 	if err != nil {
-		return err
+		return fmt.Errorf("tencentcloud: failed to get hosted zone: %w", err)
 	}
+
 	recordName, err := extractRecordName(fqdn, zoneName)
 	if err != nil {
-		return err
+		return fmt.Errorf("tencentcloud: failed to extract record name: %w", err)
 	}
+
 	request := dnspod.NewCreateRecordRequest()
 	request.Domain = common.StringPtr(zoneName)
 	request.DomainId = common.Uint64Ptr(zoneID)
@@ -140,14 +144,15 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+
 	zoneID, zoneName, err := d.getHostedZone(domain)
 	if err != nil {
-		return err
+		return fmt.Errorf("tencentcloud: failed to get hosted zone: %w", err)
 	}
 
 	records, err := d.findTxtRecords(zoneID, zoneName, fqdn)
 	if err != nil {
-		return err
+		return fmt.Errorf("tencentcloud: failed to find TXT records: %w", err)
 	}
 
 	for _, record := range records {
@@ -158,83 +163,9 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 		_, err := d.client.DeleteRecord(request)
 		if err != nil {
-			return err
+			return fmt.Errorf("tencentcloud: delete record failed: %w", err)
 		}
 	}
 
 	return nil
-}
-
-func (d *DNSProvider) getHostedZone(domain string) (uint64, string, error) {
-	request := dnspod.NewDescribeDomainListRequest()
-
-	var domains []*dnspod.DomainListItem
-
-	for {
-		request.Offset = common.Int64Ptr(int64(len(domains)))
-		response, err := d.client.DescribeDomainList(request)
-		if err != nil {
-			return 0, "", fmt.Errorf("dnspod: API call failed: %w", err)
-		}
-
-		domains = append(domains, response.Response.DomainList...)
-
-		if uint64(len(domains)) >= *response.Response.DomainCountInfo.AllTotal {
-			break
-		}
-	}
-
-	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
-	if err != nil {
-		return 0, "", err
-	}
-
-	var hostedZone *dnspod.DomainListItem
-	for _, zone := range domains {
-		if *zone.Name == dns01.UnFqdn(authZone) {
-			hostedZone = zone
-		}
-	}
-
-	if hostedZone == nil {
-		return 0, "", fmt.Errorf("zone %s not found in dnspod for domain %s", authZone, domain)
-	}
-
-	return *hostedZone.DomainId, *hostedZone.Name, nil
-}
-
-func (d *DNSProvider) findTxtRecords(zoneID uint64, zoneName, fqdn string) ([]*dnspod.RecordListItem, error) {
-	recordName, err := extractRecordName(fqdn, zoneName)
-	if err != nil {
-		return nil, err
-	}
-	request := dnspod.NewDescribeRecordListRequest()
-	request.Domain = common.StringPtr(zoneName)
-	request.DomainId = common.Uint64Ptr(zoneID)
-	request.Subdomain = common.StringPtr(recordName)
-	request.RecordType = common.StringPtr("TXT")
-	request.RecordLine = common.StringPtr("默认")
-	response, err := d.client.DescribeRecordList(request)
-	if err != nil {
-		if err, ok := err.(*errorsdk.TencentCloudSDKError); ok {
-			if err.Code == dnspod.RESOURCENOTFOUND_NODATAOFRECORD {
-				return []*dnspod.RecordListItem{}, nil
-			}
-		}
-		return nil, err
-	}
-	return response.Response.RecordList, nil
-}
-
-func extractRecordName(fqdn, zone string) (string, error) {
-	asciiDomain, err := idna.ToASCII(zone)
-	if err != nil {
-		return "", fmt.Errorf("fail to convert punycode: %w", err)
-	}
-
-	name := dns01.UnFqdn(fqdn)
-	if idx := strings.Index(name, "."+asciiDomain); idx != -1 {
-		return name[:idx], nil
-	}
-	return name, nil
 }

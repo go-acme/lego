@@ -12,11 +12,12 @@ import (
 	"github.com/go-acme/lego/v4/platform/config/env"
 )
 
-// Defaults.
-const (
-	defaultBaseURL = "https://api.exoscale.com/v2"
-	defaultAPIZone = "ch-gva-2"
-)
+// Default Exoscale API endpoint
+const defaultBaseURL = "https://api.exoscale.com/v2"
+
+// Default Exosacle API zone. Each data center location hosts the API and
+// API zone determines which one to connect to.
+const defaultAPIZone = "ch-gva-2"
 
 // Environment variables names.
 const (
@@ -38,7 +39,6 @@ type Config struct {
 	APIKey             string
 	APISecret          string
 	Endpoint           string
-	APIZone            string
 	HTTPTimeout        time.Duration
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -47,20 +47,19 @@ type Config struct {
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
-	ttl := int64(env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL))
 	return &Config{
-		TTL:                ttl,
+		TTL:                int64(env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL)),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
-		HTTPTimeout:        env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
-		APIZone:            env.GetOrDefaultString(EnvAPIZone, defaultAPIZone),
+		HTTPTimeout:        env.GetOrDefaultSecond(EnvHTTPTimeout, 60*time.Second),
 	}
 }
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	config *Config
-	client *egoscale.Client
+	config  *Config
+	client  *egoscale.Client
+	apiZone string
 }
 
 // NewDNSProvider Credentials must be passed in the environment variables:
@@ -103,7 +102,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("exoscale: initializing client: %w", err)
 	}
 
-	return &DNSProvider{client: client, config: config}, nil
+	return &DNSProvider{
+		client:  client,
+		config:  config,
+		apiZone: env.GetOrDefaultString(EnvAPIZone, defaultAPIZone),
+	}, nil
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
@@ -138,7 +141,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 			Type:    &recordType,
 		}
 
-		_, err = d.client.CreateDNSDomainRecord(ctx, d.config.APIZone, *zone.ID, &record)
+		_, err = d.client.CreateDNSDomainRecord(ctx, d.apiZone, *zone.ID, &record)
 		if err != nil {
 			return fmt.Errorf("exoscale: error while creating DNS record: %w", err)
 		}
@@ -154,7 +157,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Type:    &recordType,
 	}
 
-	err = d.client.UpdateDNSDomainRecord(ctx, d.config.APIZone, *zone.ID, &record)
+	err = d.client.UpdateDNSDomainRecord(ctx, d.apiZone, *zone.ID, &record)
 	if err != nil {
 		return fmt.Errorf("exoscale: error while updating DNS record: %w", err)
 	}
@@ -185,7 +188,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	if recordID != "" {
-		err = d.client.DeleteDNSDomainRecord(ctx, d.config.APIZone, *zone.ID, &egoscale.DNSDomainRecord{ID: &recordID})
+		err = d.client.DeleteDNSDomainRecord(ctx, d.apiZone, *zone.ID, &egoscale.DNSDomainRecord{ID: &recordID})
 		if err != nil {
 			return errors.New("exoscale: error while deleting DNS record: " + err.Error())
 		}
@@ -204,7 +207,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 // Returns nil result if no zone could be found.
 func (d *DNSProvider) FindExistingZone(zoneName string) (*egoscale.DNSDomain, error) {
 	ctx := context.Background()
-	zones, err := d.client.ListDNSDomains(ctx, d.config.APIZone)
+	zones, err := d.client.ListDNSDomains(ctx, d.apiZone)
 	if err != nil {
 		return nil, fmt.Errorf("error while retrieving DNS zones: %w", err)
 	}
@@ -221,7 +224,7 @@ func (d *DNSProvider) FindExistingZone(zoneName string) (*egoscale.DNSDomain, er
 // Returns empty result if no record could be found.
 func (d *DNSProvider) FindExistingRecordID(zoneID, recordName string) (string, error) {
 	ctx := context.Background()
-	records, err := d.client.ListDNSDomainRecords(ctx, d.config.APIZone, zoneID)
+	records, err := d.client.ListDNSDomainRecords(ctx, d.apiZone, zoneID)
 	if err != nil {
 		return "", fmt.Errorf("error while retrieving DNS records: %w", err)
 	}

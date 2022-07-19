@@ -12,7 +12,7 @@ import (
 	"github.com/go-acme/lego/v4/platform/config/env"
 )
 
-// Default Exoscale API endpoint
+// Default Exoscale API endpoint.
 const defaultBaseURL = "https://api.exoscale.com/v2"
 
 // Default Exosacle API zone. Each data center location hosts the API and

@@ -31,7 +31,7 @@ func (a APIError) Error() string {
 
 // Record is a DNS record.
 type Record struct {
-	ID      int    `json:"id,omitempty"`
+	ID      string `json:"id,omitempty"`
 	Content string `json:"content,omitempty"`
 	Domain  string `json:"domain,omitempty"`
 	Name    string `json:"name,omitempty"`

@@ -48,7 +48,7 @@ func (c *Client) AddRecord(record Record) (*Record, error) {
 }
 
 // RemoveRecord removes a record.
-func (c *Client) RemoveRecord(id int, domain string) error {
+func (c *Client) RemoveRecord(id string, domain string) error {
 	data := APIRequest{
 		Method: "remove-record",
 		Params: Record{

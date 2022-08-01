@@ -52,7 +52,7 @@ type DNSProvider struct {
 	config *Config
 	client *internal.Client
 
-	recordIDs   map[string]int
+	recordIDs   map[string]string
 	recordIDsMu sync.Mutex
 }
 
@@ -89,7 +89,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	return &DNSProvider{
 		config:    config,
 		client:    client,
-		recordIDs: make(map[string]int),
+		recordIDs: make(map[string]string),
 	}, nil
 }
 
@@ -147,7 +147,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	err = d.client.RemoveRecord(recordID, dns01.UnFqdn(rootDomain))
 	if err != nil {
-		return fmt.Errorf("njalla: failed to delete TXT records: fqdn=%s, recordID=%d: %w", fqdn, recordID, err)
+		return fmt.Errorf("njalla: failed to delete TXT records: fqdn=%s, recordID=%s: %w", fqdn, recordID, err)
 	}
 
 	// deletes record ID from map

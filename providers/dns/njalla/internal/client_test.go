@@ -56,7 +56,7 @@ func TestClient_AddRecord(t *testing.T) {
 			return
 		}
 
-		apiReq.Params.ID = 123
+		apiReq.Params.ID = "123"
 
 		resp := map[string]interface{}{
 			"jsonrpc": "2.0",
@@ -83,7 +83,7 @@ func TestClient_AddRecord(t *testing.T) {
 	require.NoError(t, err)
 
 	expected := &Record{
-		ID:      123,
+		ID:      "123",
 		Content: "foobar",
 		Domain:  "test",
 		Name:    "example.com",
@@ -130,7 +130,7 @@ func TestClient_ListRecords(t *testing.T) {
 			"result": Records{
 				Records: []Record{
 					{
-						ID:      1,
+						ID:      "1",
 						Domain:  apiReq.Params.Domain,
 						Content: "test",
 						Name:    "test01",
@@ -138,7 +138,7 @@ func TestClient_ListRecords(t *testing.T) {
 						Type:    "TXT",
 					},
 					{
-						ID:      2,
+						ID:      "2",
 						Domain:  apiReq.Params.Domain,
 						Content: "txtTxt",
 						Name:    "test02",
@@ -161,7 +161,7 @@ func TestClient_ListRecords(t *testing.T) {
 
 	expected := []Record{
 		{
-			ID:      1,
+			ID:      "1",
 			Domain:  "example.com",
 			Content: "test",
 			Name:    "test01",
@@ -169,7 +169,7 @@ func TestClient_ListRecords(t *testing.T) {
 			Type:    "TXT",
 		},
 		{
-			ID:      2,
+			ID:      "2",
 			Domain:  "example.com",
 			Content: "txtTxt",
 			Name:    "test02",
@@ -204,7 +204,7 @@ func TestClient_RemoveRecord(t *testing.T) {
 			return
 		}
 
-		if apiReq.Params.ID == 0 {
+		if apiReq.Params.ID == "" {
 			_, _ = rw.Write([]byte(`{"jsonrpc":"2.0", "Error": {"code": 400, "message": ""missing ID"}}`))
 			return
 		}
@@ -217,7 +217,7 @@ func TestClient_RemoveRecord(t *testing.T) {
 		_, _ = rw.Write([]byte(`{"jsonrpc":"2.0"}`))
 	})
 
-	err := client.RemoveRecord(123, "example.com")
+	err := client.RemoveRecord("123", "example.com")
 	require.NoError(t, err)
 }
 
@@ -225,6 +225,6 @@ func TestClient_RemoveRecord_error(t *testing.T) {
 	client := setup(t, nil)
 	client.token = "invalid"
 
-	err := client.RemoveRecord(123, "example.com")
+	err := client.RemoveRecord("123", "example.com")
 	require.Error(t, err)
 }

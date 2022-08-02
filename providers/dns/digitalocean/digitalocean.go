@@ -22,6 +22,7 @@ const (
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+	EnvAPIUrl             = envNamespace + "API_URL"
 )
 
 // Config is used to configure the creation of the DNSProvider.
@@ -37,7 +38,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		BaseURL:            defaultBaseURL,
+		BaseURL:            env.GetOrDefaultString(EnvAPIUrl, defaultBaseURL),
 		TTL:                env.GetOrDefaultInt(EnvTTL, 30),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 60*time.Second),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 5*time.Second),

@@ -40,19 +40,20 @@ docker run goacme/lego -h
 
 Requirements:
 
-- `go` v1.15+
+- go1.17+
 - environment variable: `GO111MODULE=on`
 
-To install the latest development version from sources, just run:
+To install the latest version from sources, just run:
 
 ```bash
-go get -u github.com/go-acme/lego/v4/cmd/lego
+go install github.com/go-acme/lego/v4/cmd/lego@latest
 ```
 
 or
 
 ```bash
 git clone git@github.com:go-acme/lego.git
+cd lego
 make        # tests + doc + build
 make build  # only build
 ```

@@ -13,7 +13,7 @@ import (
 
 // This mutex is required for concurrent updates.
 // see: https://github.com/go-acme/lego/pull/850
-var mu sync.Mutex // nolint: gochecknoglobals
+var mu sync.Mutex
 
 func (d *DNSProvider) addTXTRecord(fqdn, domain, value string, ttl int) error {
 	mu.Lock()
@@ -21,7 +21,7 @@ func (d *DNSProvider) addTXTRecord(fqdn, domain, value string, ttl int) error {
 
 	zone, err := d.getHostedZone(domain)
 	if err != nil {
-		return fmt.Errorf("sakuracloud: %w", err)
+		return fmt.Errorf("%w", err)
 	}
 
 	name := extractRecordName(fqdn, zone.Name)
@@ -37,7 +37,7 @@ func (d *DNSProvider) addTXTRecord(fqdn, domain, value string, ttl int) error {
 		SettingsHash: zone.SettingsHash,
 	})
 	if err != nil {
-		return fmt.Errorf("sakuracloud: API call failed: %w", err)
+		return fmt.Errorf("API call failed: %w", err)
 	}
 
 	return nil
@@ -49,7 +49,7 @@ func (d *DNSProvider) cleanupTXTRecord(fqdn, domain, value string) error {
 
 	zone, err := d.getHostedZone(domain)
 	if err != nil {
-		return fmt.Errorf("sakuracloud: %w", err)
+		return err
 	}
 
 	recordName := extractRecordName(fqdn, zone.Name)
@@ -61,13 +61,15 @@ func (d *DNSProvider) cleanupTXTRecord(fqdn, domain, value string) error {
 		}
 	}
 
-	_, err = d.client.UpdateSettings(context.Background(), zone.ID, &iaas.DNSUpdateSettingsRequest{
+	settings := &iaas.DNSUpdateSettingsRequest{
 		Records:      updRecords,
 		SettingsHash: zone.SettingsHash,
-	})
-	if err != nil {
-		return fmt.Errorf("sakuracloud: API call failed: %w", err)
 	}
+	_, err = d.client.UpdateSettings(context.Background(), zone.ID, settings)
+	if err != nil {
+		return fmt.Errorf("API call failed: %w", err)
+	}
+
 	return nil
 }
 
@@ -79,11 +81,13 @@ func (d *DNSProvider) getHostedZone(domain string) (*iaas.DNS, error) {
 
 	zoneName := dns01.UnFqdn(authZone)
 
-	res, err := d.client.Find(context.Background(), &iaas.FindCondition{
+	conditions := &iaas.FindCondition{
 		Filter: search.Filter{
 			search.Key("Name"): search.ExactMatch(zoneName),
 		},
-	})
+	}
+
+	res, err := d.client.Find(context.Background(), conditions)
 	if err != nil {
 		if iaas.IsNotFoundError(err) {
 			return nil, fmt.Errorf("zone %s not found on SakuraCloud DNS: %w", zoneName, err)

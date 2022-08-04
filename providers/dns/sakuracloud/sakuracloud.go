@@ -89,18 +89,18 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if err != nil {
 		return nil, fmt.Errorf("sakuracloud: %w", err)
 	}
-	option := api.MergeOptions(defaultOption, &api.CallerOptions{
+
+	options := &api.CallerOptions{
 		Options: &client.Options{
 			AccessToken:       config.Token,
 			AccessTokenSecret: config.Secret,
 			HttpClient:        config.HTTPClient,
 			UserAgent:         fmt.Sprintf("go-acme/lego %s", iaas.DefaultUserAgent),
 		},
-	})
-	apiCaller := api.NewCallerWithOptions(option)
+	}
 
 	return &DNSProvider{
-		client: iaas.NewDNSOp(apiCaller),
+		client: iaas.NewDNSOp(api.NewCallerWithOptions(api.MergeOptions(defaultOption, options))),
 		config: config,
 	}, nil
 }
@@ -108,13 +108,25 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
-	return d.addTXTRecord(fqdn, domain, value, d.config.TTL)
+
+	err := d.addTXTRecord(fqdn, domain, value, d.config.TTL)
+	if err != nil {
+		return fmt.Errorf("sakuracloud: %w", err)
+	}
+
+	return nil
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
-	return d.cleanupTXTRecord(fqdn, domain, value)
+
+	err := d.cleanupTXTRecord(fqdn, domain, value)
+	if err != nil {
+		return fmt.Errorf("sakuracloud: %w", err)
+	}
+
+	return nil
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.

@@ -3,7 +3,6 @@ package sakuracloud
 import (
 	"context"
 	"fmt"
-	"os"
 	"sync"
 	"testing"
 
@@ -16,11 +15,9 @@ import (
 func setupTest(t *testing.T) {
 	t.Helper()
 
-	os.Setenv("SAKURACLOUD_FAKE_MODE", "1")
+	t.Setenv("SAKURACLOUD_FAKE_MODE", "1")
 
-	if err := createDummyZone(context.Background(), fakeCaller()); err != nil {
-		t.Fatal(err)
-	}
+	createDummyZone(t, fakeCaller())
 }
 
 func fakeCaller() iaas.APICaller {
@@ -33,28 +30,28 @@ func fakeCaller() iaas.APICaller {
 	})
 }
 
-func createDummyZone(ctx context.Context, caller iaas.APICaller) error {
+func createDummyZone(t *testing.T, caller iaas.APICaller) {
+	t.Helper()
+
+	ctx := context.Background()
+
 	dnsOp := iaas.NewDNSOp(caller)
 
 	// cleanup
 	zones, err := dnsOp.Find(ctx, &iaas.FindCondition{})
-	if err != nil {
-		return err
-	}
+	require.NoError(t, err)
+
 	for _, zone := range zones.DNS {
 		if zone.Name == "example.com" {
-			if err = dnsOp.Delete(ctx, zone.ID); err != nil {
-				return err
-			}
+			err = dnsOp.Delete(ctx, zone.ID)
+			require.NoError(t, err)
 			break
 		}
 	}
 
 	// create dummy zone
-	_, err = iaas.NewDNSOp(caller).Create(context.Background(), &iaas.DNSCreateRequest{
-		Name: "example.com",
-	})
-	return err
+	_, err = iaas.NewDNSOp(caller).Create(context.Background(), &iaas.DNSCreateRequest{Name: "example.com"})
+	require.NoError(t, err)
 }
 
 func TestDNSProvider_addAndCleanupRecords(t *testing.T) {
@@ -77,6 +74,7 @@ func TestDNSProvider_addAndCleanupRecords(t *testing.T) {
 
 		require.Len(t, updZone.Records, 1)
 	})
+
 	t.Run("cleanupTXTRecord", func(t *testing.T) {
 		err = p.cleanupTXTRecord("test.example.com", "example.com", "dummyValue")
 		require.NoError(t, err)
@@ -112,11 +110,11 @@ func TestDNSProvider_concurrentAddAndCleanupRecords(t *testing.T) {
 		wg.Add(len(providers))
 
 		for i, p := range providers {
-			go func(fqdn string, client *DNSProvider) {
-				err := client.addTXTRecord(fqdn, "example.com", "dummyValue", 10)
+			go func(j int, client *DNSProvider) {
+				err := client.addTXTRecord(fmt.Sprintf("test%d.example.com", j), "example.com", "dummyValue", 10)
 				require.NoError(t, err)
 				wg.Done()
-			}(fmt.Sprintf("test%d.example.com", i), p)
+			}(i, p)
 		}
 
 		wg.Wait()
@@ -132,11 +130,11 @@ func TestDNSProvider_concurrentAddAndCleanupRecords(t *testing.T) {
 		wg.Add(len(providers))
 
 		for i, p := range providers {
-			go func(fqdn string, client *DNSProvider) {
-				err := client.cleanupTXTRecord(fqdn, "example.com", "dummyValue")
+			go func(i int, client *DNSProvider) {
+				err := client.cleanupTXTRecord(fmt.Sprintf("test%d.example.com", i), "example.com", "dummyValue")
 				require.NoError(t, err)
 				wg.Done()
-			}(fmt.Sprintf("test%d.example.com", i), p)
+			}(i, p)
 		}
 
 		wg.Wait()

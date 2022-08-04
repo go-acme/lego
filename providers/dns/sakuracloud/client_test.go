@@ -78,7 +78,7 @@ func TestDNSProvider_addAndCleanupRecords(t *testing.T) {
 		require.Len(t, updZone.Records, 1)
 	})
 	t.Run("cleanupTXTRecord", func(t *testing.T) {
-		err = p.cleanupTXTRecord("test.example.com", "example.com")
+		err = p.cleanupTXTRecord("test.example.com", "example.com", "dummyValue")
 		require.NoError(t, err)
 
 		updZone, e := p.getHostedZone("example.com")
@@ -133,7 +133,7 @@ func TestDNSProvider_concurrentAddAndCleanupRecords(t *testing.T) {
 
 		for i, p := range providers {
 			go func(fqdn string, client *DNSProvider) {
-				err := client.cleanupTXTRecord(fqdn, "example.com")
+				err := client.cleanupTXTRecord(fqdn, "example.com", "dummyValue")
 				require.NoError(t, err)
 				wg.Done()
 			}(fmt.Sprintf("test%d.example.com", i), p)

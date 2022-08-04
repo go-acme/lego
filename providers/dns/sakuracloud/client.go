@@ -43,7 +43,7 @@ func (d *DNSProvider) addTXTRecord(fqdn, domain, value string, ttl int) error {
 	return nil
 }
 
-func (d *DNSProvider) cleanupTXTRecord(fqdn, domain string) error {
+func (d *DNSProvider) cleanupTXTRecord(fqdn, domain, value string) error {
 	mu.Lock()
 	defer mu.Unlock()
 
@@ -52,14 +52,12 @@ func (d *DNSProvider) cleanupTXTRecord(fqdn, domain string) error {
 		return fmt.Errorf("sakuracloud: %w", err)
 	}
 
-	txtRecords := findTxtRecords(fqdn, zone)
-	var updRecords iaas.DNSRecords
+	recordName := extractRecordName(fqdn, zone.Name)
 
-	for _, record := range txtRecords {
-		for _, r := range zone.Records {
-			if !(r.Name == record.Name && r.Type == record.Type && r.RData == record.RData) {
-				updRecords = append(updRecords, r)
-			}
+	var updRecords iaas.DNSRecords
+	for _, r := range zone.Records {
+		if !(r.Name == recordName && r.Type == "TXT" && r.RData == value) {
+			updRecords = append(updRecords, r)
 		}
 	}
 
@@ -101,18 +99,6 @@ func (d *DNSProvider) getHostedZone(domain string) (*iaas.DNS, error) {
 	}
 
 	return nil, fmt.Errorf("zone %s not found", zoneName)
-}
-
-func findTxtRecords(fqdn string, zone *iaas.DNS) iaas.DNSRecords {
-	recordName := extractRecordName(fqdn, zone.Name)
-
-	var res iaas.DNSRecords
-	for _, record := range zone.Records {
-		if record.Name == recordName && record.Type == "TXT" {
-			res = append(res, record)
-		}
-	}
-	return res
 }
 
 func extractRecordName(fqdn, zone string) string {

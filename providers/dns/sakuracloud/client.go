@@ -1,67 +1,79 @@
 package sakuracloud
 
 import (
-	"errors"
+	"context"
 	"fmt"
-	"net/http"
 	"strings"
+	"sync"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/sacloud/libsacloud/api"
-	"github.com/sacloud/libsacloud/sacloud"
+	"github.com/sacloud/iaas-api-go"
+	"github.com/sacloud/iaas-api-go/search"
 )
 
-const sacloudAPILockKey = "lego/dns/sacloud"
+// This mutex is required for concurrent updates.
+// see: https://github.com/go-acme/lego/pull/850
+var mu sync.Mutex
 
 func (d *DNSProvider) addTXTRecord(fqdn, domain, value string, ttl int) error {
-	sacloud.LockByKey(sacloudAPILockKey)
-	defer sacloud.UnlockByKey(sacloudAPILockKey)
+	mu.Lock()
+	defer mu.Unlock()
 
 	zone, err := d.getHostedZone(domain)
 	if err != nil {
-		return fmt.Errorf("sakuracloud: %w", err)
+		return fmt.Errorf("%w", err)
 	}
 
 	name := extractRecordName(fqdn, zone.Name)
 
-	zone.AddRecord(zone.CreateNewRecord(name, "TXT", value, ttl))
-	_, err = d.client.Update(zone.ID, zone)
+	records := append(zone.Records, &iaas.DNSRecord{
+		Name:  name,
+		Type:  "TXT",
+		RData: value,
+		TTL:   ttl,
+	})
+	_, err = d.client.UpdateSettings(context.Background(), zone.ID, &iaas.DNSUpdateSettingsRequest{
+		Records:      records,
+		SettingsHash: zone.SettingsHash,
+	})
 	if err != nil {
-		return fmt.Errorf("sakuracloud: API call failed: %w", err)
+		return fmt.Errorf("API call failed: %w", err)
 	}
 
 	return nil
 }
 
-func (d *DNSProvider) cleanupTXTRecord(fqdn, domain string) error {
-	sacloud.LockByKey(sacloudAPILockKey)
-	defer sacloud.UnlockByKey(sacloudAPILockKey)
+func (d *DNSProvider) cleanupTXTRecord(fqdn, domain, value string) error {
+	mu.Lock()
+	defer mu.Unlock()
 
 	zone, err := d.getHostedZone(domain)
 	if err != nil {
-		return fmt.Errorf("sakuracloud: %w", err)
+		return err
 	}
 
-	records := findTxtRecords(fqdn, zone)
+	recordName := extractRecordName(fqdn, zone.Name)
 
-	for _, record := range records {
-		var updRecords []sacloud.DNSRecordSet
-		for _, r := range zone.Settings.DNS.ResourceRecordSets {
-			if !(r.Name == record.Name && r.Type == record.Type && r.RData == record.RData) {
-				updRecords = append(updRecords, r)
-			}
+	var updRecords iaas.DNSRecords
+	for _, r := range zone.Records {
+		if !(r.Name == recordName && r.Type == "TXT" && r.RData == value) {
+			updRecords = append(updRecords, r)
 		}
-		zone.Settings.DNS.ResourceRecordSets = updRecords
 	}
 
-	_, err = d.client.Update(zone.ID, zone)
-	if err != nil {
-		return fmt.Errorf("sakuracloud: API call failed: %w", err)
+	settings := &iaas.DNSUpdateSettingsRequest{
+		Records:      updRecords,
+		SettingsHash: zone.SettingsHash,
 	}
+	_, err = d.client.UpdateSettings(context.Background(), zone.ID, settings)
+	if err != nil {
+		return fmt.Errorf("API call failed: %w", err)
+	}
+
 	return nil
 }
 
-func (d *DNSProvider) getHostedZone(domain string) (*sacloud.DNS, error) {
+func (d *DNSProvider) getHostedZone(domain string) (*iaas.DNS, error) {
 	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
 	if err != nil {
 		return nil, err
@@ -69,35 +81,28 @@ func (d *DNSProvider) getHostedZone(domain string) (*sacloud.DNS, error) {
 
 	zoneName := dns01.UnFqdn(authZone)
 
-	res, err := d.client.Reset().WithNameLike(zoneName).Find()
+	conditions := &iaas.FindCondition{
+		Filter: search.Filter{
+			search.Key("Name"): search.ExactMatch(zoneName),
+		},
+	}
+
+	res, err := d.client.Find(context.Background(), conditions)
 	if err != nil {
-		var notFound api.Error
-		if errors.As(err, &notFound) && notFound.ResponseCode() == http.StatusNotFound {
+		if iaas.IsNotFoundError(err) {
 			return nil, fmt.Errorf("zone %s not found on SakuraCloud DNS: %w", zoneName, err)
 		}
 
 		return nil, fmt.Errorf("API call failed: %w", err)
 	}
 
-	for _, zone := range res.CommonServiceDNSItems {
+	for _, zone := range res.DNS {
 		if zone.Name == zoneName {
-			return &zone, nil
+			return zone, nil
 		}
 	}
 
 	return nil, fmt.Errorf("zone %s not found", zoneName)
-}
-
-func findTxtRecords(fqdn string, zone *sacloud.DNS) []sacloud.DNSRecordSet {
-	recordName := extractRecordName(fqdn, zone.Name)
-
-	var res []sacloud.DNSRecordSet
-	for _, record := range zone.Settings.DNS.ResourceRecordSets {
-		if record.Name == recordName && record.Type == "TXT" {
-			res = append(res, record)
-		}
-	}
-	return res
 }
 
 func extractRecordName(fqdn, zone string) string {

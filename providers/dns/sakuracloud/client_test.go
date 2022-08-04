@@ -1,90 +1,61 @@
 package sakuracloud
 
 import (
-	"encoding/json"
+	"context"
 	"fmt"
-	"net/http"
-	"net/http/httptest"
 	"sync"
 	"testing"
 
-	"github.com/sacloud/libsacloud/api"
-	"github.com/sacloud/libsacloud/sacloud"
+	client "github.com/sacloud/api-client-go"
+	"github.com/sacloud/iaas-api-go"
+	"github.com/sacloud/iaas-api-go/helper/api"
 	"github.com/stretchr/testify/require"
 )
 
-type simpleResponse struct {
-	*sacloud.DNS `json:"CommonServiceItem,omitempty"`
-}
-
-type apiQuery struct {
-	Filter struct {
-		Name          string `json:"Name"`
-		ProviderClass string `json:"Provider.Class"`
-	} `json:"Filter"`
-}
-
-func setupTest(t *testing.T, handler http.HandlerFunc) {
+func setupTest(t *testing.T) {
 	t.Helper()
 
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
+	t.Setenv("SAKURACLOUD_FAKE_MODE", "1")
 
-	mux.HandleFunc("/is1a/api/cloud/1.1/commonserviceitem/", handler)
-
-	backup := api.SakuraCloudAPIRoot
-	t.Cleanup(func() {
-		api.SakuraCloudAPIRoot = backup
-	})
-	api.SakuraCloudAPIRoot = server.URL
+	createDummyZone(t, fakeCaller())
 }
 
-func TestDNSProvider_addTXTRecord(t *testing.T) {
-	searchResp := &api.SearchDNSResponse{}
+func fakeCaller() iaas.APICaller {
+	return api.NewCallerWithOptions(&api.CallerOptions{
+		Options: &client.Options{
+			AccessToken:       "dummy",
+			AccessTokenSecret: "dummy",
+		},
+		FakeMode: true,
+	})
+}
 
-	handler := func(rw http.ResponseWriter, req *http.Request) {
-		switch req.Method {
-		case http.MethodGet:
-			if len(searchResp.CommonServiceDNSItems) == 0 {
-				q := &apiQuery{}
-				if err := json.Unmarshal([]byte(req.URL.RawQuery), q); err != nil {
-					http.Error(rw, err.Error(), http.StatusServiceUnavailable)
-				}
+func createDummyZone(t *testing.T, caller iaas.APICaller) {
+	t.Helper()
 
-				fakeZone := sacloud.CreateNewDNS(q.Filter.Name)
-				fakeZone.ID = 123456789012
-				searchResp = &api.SearchDNSResponse{CommonServiceDNSItems: []sacloud.DNS{*fakeZone}}
-			}
+	ctx := context.Background()
 
-			if err := json.NewEncoder(rw).Encode(searchResp); err != nil {
-				http.Error(rw, err.Error(), http.StatusServiceUnavailable)
-			}
-		case http.MethodPut: // Update
-			resp := &simpleResponse{}
-			if err := json.NewDecoder(req.Body).Decode(resp); err != nil {
-				http.Error(rw, err.Error(), http.StatusServiceUnavailable)
-			}
+	dnsOp := iaas.NewDNSOp(caller)
 
-			var items []sacloud.DNS
-			for _, v := range searchResp.CommonServiceDNSItems {
-				if resp.Name == v.Name {
-					items = append(items, *resp.DNS)
-				} else {
-					items = append(items, v)
-				}
-			}
-			searchResp.CommonServiceDNSItems = items
+	// cleanup
+	zones, err := dnsOp.Find(ctx, &iaas.FindCondition{})
+	require.NoError(t, err)
 
-			if err := json.NewEncoder(rw).Encode(searchResp); err != nil {
-				http.Error(rw, err.Error(), http.StatusServiceUnavailable)
-			}
-		default:
-			http.Error(rw, "OOPS", http.StatusServiceUnavailable)
+	for _, zone := range zones.DNS {
+		if zone.Name == "example.com" {
+			err = dnsOp.Delete(ctx, zone.ID)
+			require.NoError(t, err)
+			break
 		}
 	}
 
-	setupTest(t, handler)
+	// create dummy zone
+	_, err = iaas.NewDNSOp(caller).Create(context.Background(), &iaas.DNSCreateRequest{Name: "example.com"})
+	require.NoError(t, err)
+}
+
+func TestDNSProvider_addAndCleanupRecords(t *testing.T) {
+	setupTest(t)
 
 	config := NewDefaultConfig()
 	config.Token = "token1"
@@ -93,125 +64,31 @@ func TestDNSProvider_addTXTRecord(t *testing.T) {
 	p, err := NewDNSProviderConfig(config)
 	require.NoError(t, err)
 
-	err = p.addTXTRecord("test.example.com", "example.com", "dummyValue", 10)
-	require.NoError(t, err)
+	t.Run("addTXTRecord", func(t *testing.T) {
+		err = p.addTXTRecord("test.example.com", "example.com", "dummyValue", 10)
+		require.NoError(t, err)
 
-	updZone, err := p.getHostedZone("example.com")
-	require.NoError(t, err)
-	require.NotNil(t, updZone)
+		updZone, e := p.getHostedZone("example.com")
+		require.NoError(t, e)
+		require.NotNil(t, updZone)
 
-	require.Len(t, updZone.Settings.DNS.ResourceRecordSets, 1)
+		require.Len(t, updZone.Records, 1)
+	})
+
+	t.Run("cleanupTXTRecord", func(t *testing.T) {
+		err = p.cleanupTXTRecord("test.example.com", "example.com", "dummyValue")
+		require.NoError(t, err)
+
+		updZone, e := p.getHostedZone("example.com")
+		require.NoError(t, e)
+		require.NotNil(t, updZone)
+
+		require.Len(t, updZone.Records, 0)
+	})
 }
 
-func TestDNSProvider_cleanupTXTRecord(t *testing.T) {
-	searchResp := &api.SearchDNSResponse{}
-
-	handler := func(rw http.ResponseWriter, req *http.Request) {
-		switch req.Method {
-		case http.MethodGet:
-			if len(searchResp.CommonServiceDNSItems) == 0 {
-				q := &apiQuery{}
-				if err := json.Unmarshal([]byte(req.URL.RawQuery), q); err != nil {
-					http.Error(rw, err.Error(), http.StatusServiceUnavailable)
-				}
-
-				fakeZone := sacloud.CreateNewDNS(q.Filter.Name)
-				fakeZone.ID = 123456789012
-				fakeZone.CreateNewRecord("test", "TXT", "dummyValue", 10)
-				searchResp = &api.SearchDNSResponse{CommonServiceDNSItems: []sacloud.DNS{*fakeZone}}
-			}
-
-			if err := json.NewEncoder(rw).Encode(searchResp); err != nil {
-				http.Error(rw, err.Error(), http.StatusServiceUnavailable)
-			}
-		case http.MethodPut: // Update
-			resp := &simpleResponse{}
-			if err := json.NewDecoder(req.Body).Decode(resp); err != nil {
-				http.Error(rw, err.Error(), http.StatusServiceUnavailable)
-			}
-
-			var items []sacloud.DNS
-			for _, v := range searchResp.CommonServiceDNSItems {
-				if resp.Name == v.Name {
-					items = append(items, *resp.DNS)
-				} else {
-					items = append(items, v)
-				}
-			}
-			searchResp.CommonServiceDNSItems = items
-
-			if err := json.NewEncoder(rw).Encode(searchResp); err != nil {
-				http.Error(rw, err.Error(), http.StatusServiceUnavailable)
-			}
-		default:
-			http.Error(rw, "OOPS", http.StatusServiceUnavailable)
-		}
-	}
-
-	setupTest(t, handler)
-
-	config := NewDefaultConfig()
-	config.Token = "token2"
-	config.Secret = "secret2"
-
-	p, err := NewDNSProviderConfig(config)
-	require.NoError(t, err)
-
-	err = p.cleanupTXTRecord("test.example.com", "example.com")
-	require.NoError(t, err)
-
-	updZone, err := p.getHostedZone("example.com")
-	require.NoError(t, err)
-	require.NotNil(t, updZone)
-
-	require.Len(t, updZone.Settings.DNS.ResourceRecordSets, 0)
-}
-
-func TestDNSProvider_addTXTRecord_concurrent(t *testing.T) {
-	searchResp := &api.SearchDNSResponse{}
-
-	handler := func(rw http.ResponseWriter, req *http.Request) {
-		switch req.Method {
-		case http.MethodGet:
-			if len(searchResp.CommonServiceDNSItems) == 0 {
-				q := &apiQuery{}
-				if err := json.Unmarshal([]byte(req.URL.RawQuery), q); err != nil {
-					http.Error(rw, err.Error(), http.StatusServiceUnavailable)
-				}
-
-				fakeZone := sacloud.CreateNewDNS(q.Filter.Name)
-				fakeZone.ID = 123456789012
-				searchResp = &api.SearchDNSResponse{CommonServiceDNSItems: []sacloud.DNS{*fakeZone}}
-			}
-
-			if err := json.NewEncoder(rw).Encode(searchResp); err != nil {
-				http.Error(rw, err.Error(), http.StatusServiceUnavailable)
-			}
-		case http.MethodPut: // Update
-			resp := &simpleResponse{}
-			if err := json.NewDecoder(req.Body).Decode(resp); err != nil {
-				http.Error(rw, err.Error(), http.StatusServiceUnavailable)
-			}
-
-			var items []sacloud.DNS
-			for _, v := range searchResp.CommonServiceDNSItems {
-				if resp.Name == v.Name {
-					items = append(items, *resp.DNS)
-				} else {
-					items = append(items, v)
-				}
-			}
-			searchResp.CommonServiceDNSItems = items
-
-			if err := json.NewEncoder(rw).Encode(searchResp); err != nil {
-				http.Error(rw, err.Error(), http.StatusServiceUnavailable)
-			}
-		default:
-			http.Error(rw, "OOPS", http.StatusServiceUnavailable)
-		}
-	}
-
-	setupTest(t, handler)
+func TestDNSProvider_concurrentAddAndCleanupRecords(t *testing.T) {
+	setupTest(t)
 
 	dummyRecordCount := 10
 
@@ -228,101 +105,44 @@ func TestDNSProvider_addTXTRecord_concurrent(t *testing.T) {
 	}
 
 	var wg sync.WaitGroup
-	wg.Add(len(providers))
 
-	for i, p := range providers {
-		go func(fqdn string, client *DNSProvider) {
-			err := client.addTXTRecord(fqdn, "example.com", "dummyValue", 10)
-			require.NoError(t, err)
-			wg.Done()
-		}(fmt.Sprintf("test%d.example.com", i), p)
-	}
+	t.Run("addTXTRecord", func(t *testing.T) {
+		wg.Add(len(providers))
 
-	wg.Wait()
-
-	updZone, err := providers[0].getHostedZone("example.com")
-	require.NoError(t, err)
-	require.NotNil(t, updZone)
-
-	require.Len(t, updZone.Settings.DNS.ResourceRecordSets, dummyRecordCount)
-}
-
-func TestDNSProvider_cleanupTXTRecord_concurrent(t *testing.T) {
-	dummyRecordCount := 10
-
-	baseFakeZone := sacloud.CreateNewDNS("example.com")
-	baseFakeZone.ID = 123456789012
-	for i := 0; i < dummyRecordCount; i++ {
-		baseFakeZone.AddRecord(baseFakeZone.CreateNewRecord(fmt.Sprintf("test%d", i), "TXT", "dummyValue", 10))
-	}
-
-	searchResp := &api.SearchDNSResponse{CommonServiceDNSItems: []sacloud.DNS{*baseFakeZone}}
-
-	handler := func(rw http.ResponseWriter, req *http.Request) {
-		switch req.Method {
-		case http.MethodGet:
-			if err := json.NewEncoder(rw).Encode(searchResp); err != nil {
-				http.Error(rw, err.Error(), http.StatusServiceUnavailable)
-			}
-		case http.MethodPut: // Update
-			resp := &simpleResponse{}
-			if err := json.NewDecoder(req.Body).Decode(resp); err != nil {
-				http.Error(rw, err.Error(), http.StatusServiceUnavailable)
-			}
-
-			var items []sacloud.DNS
-			for _, v := range searchResp.CommonServiceDNSItems {
-				if resp.Name == v.Name {
-					items = append(items, *resp.DNS)
-				} else {
-					items = append(items, v)
-				}
-			}
-			searchResp.CommonServiceDNSItems = items
-
-			if err := json.NewEncoder(rw).Encode(searchResp); err != nil {
-				http.Error(rw, err.Error(), http.StatusServiceUnavailable)
-			}
-		default:
-			http.Error(rw, "OOPS", http.StatusServiceUnavailable)
+		for i, p := range providers {
+			go func(j int, client *DNSProvider) {
+				err := client.addTXTRecord(fmt.Sprintf("test%d.example.com", j), "example.com", "dummyValue", 10)
+				require.NoError(t, err)
+				wg.Done()
+			}(i, p)
 		}
-	}
 
-	setupTest(t, handler)
+		wg.Wait()
 
-	fakeZone := sacloud.CreateNewDNS("example.com")
-	fakeZone.ID = 123456789012
-	for i := 0; i < dummyRecordCount; i++ {
-		fakeZone.AddRecord(fakeZone.CreateNewRecord(fmt.Sprintf("test%d", i), "TXT", "dummyValue", 10))
-	}
-
-	var providers []*DNSProvider
-	for i := 0; i < dummyRecordCount; i++ {
-		config := NewDefaultConfig()
-		config.Token = "token4"
-		config.Secret = "secret4"
-
-		p, err := NewDNSProviderConfig(config)
+		updZone, err := providers[0].getHostedZone("example.com")
 		require.NoError(t, err)
-		providers = append(providers, p)
-	}
+		require.NotNil(t, updZone)
 
-	var wg sync.WaitGroup
-	wg.Add(len(providers))
+		require.Len(t, updZone.Records, dummyRecordCount)
+	})
 
-	for i, p := range providers {
-		go func(fqdn string, client *DNSProvider) {
-			err := client.cleanupTXTRecord(fqdn, "example.com")
-			require.NoError(t, err)
-			wg.Done()
-		}(fmt.Sprintf("test%d.example.com", i), p)
-	}
+	t.Run("cleanupTXTRecord", func(t *testing.T) {
+		wg.Add(len(providers))
 
-	wg.Wait()
+		for i, p := range providers {
+			go func(i int, client *DNSProvider) {
+				err := client.cleanupTXTRecord(fmt.Sprintf("test%d.example.com", i), "example.com", "dummyValue")
+				require.NoError(t, err)
+				wg.Done()
+			}(i, p)
+		}
 
-	updZone, err := providers[0].getHostedZone("example.com")
-	require.NoError(t, err)
-	require.NotNil(t, updZone)
+		wg.Wait()
 
-	require.Len(t, updZone.Settings.DNS.ResourceRecordSets, 0)
+		updZone, err := providers[0].getHostedZone("example.com")
+		require.NoError(t, err)
+		require.NotNil(t, updZone)
+
+		require.Len(t, updZone.Records, 0)
+	})
 }

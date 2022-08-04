@@ -193,3 +193,6 @@
   [[issues.exclude-rules]]
     path = "providers/dns/dns_providers.go"
     text = "Function name: NewDNSChallengeProviderByName,"
+  [[issues.exclude-rules]]
+    path = "providers/dns/sakuracloud/client.go"
+    text = "mu is a global variable"

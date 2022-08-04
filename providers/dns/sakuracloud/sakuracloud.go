@@ -9,7 +9,9 @@ import (
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/sacloud/libsacloud/api"
+	client "github.com/sacloud/api-client-go"
+	"github.com/sacloud/iaas-api-go"
+	"github.com/sacloud/iaas-api-go/helper/api"
 )
 
 // Environment variables names.
@@ -50,7 +52,7 @@ func NewDefaultConfig() *Config {
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
-	client *api.DNSAPI
+	client iaas.DNSAPI
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for SakuraCloud.
@@ -83,15 +85,22 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("sakuracloud: AccessSecret is missing")
 	}
 
-	apiClient := api.NewClient(config.Token, config.Secret, "is1a")
-	if config.HTTPClient == nil {
-		apiClient.HTTPClient = http.DefaultClient
-	} else {
-		apiClient.HTTPClient = config.HTTPClient
+	defaultOption, err := api.DefaultOption()
+	if err != nil {
+		return nil, fmt.Errorf("sakuracloud: %w", err)
+	}
+
+	options := &api.CallerOptions{
+		Options: &client.Options{
+			AccessToken:       config.Token,
+			AccessTokenSecret: config.Secret,
+			HttpClient:        config.HTTPClient,
+			UserAgent:         fmt.Sprintf("go-acme/lego %s", iaas.DefaultUserAgent),
+		},
 	}
 
 	return &DNSProvider{
-		client: apiClient.GetDNSAPI(),
+		client: iaas.NewDNSOp(api.NewCallerWithOptions(api.MergeOptions(defaultOption, options))),
 		config: config,
 	}, nil
 }
@@ -99,13 +108,25 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
-	return d.addTXTRecord(fqdn, domain, value, d.config.TTL)
+
+	err := d.addTXTRecord(fqdn, domain, value, d.config.TTL)
+	if err != nil {
+		return fmt.Errorf("sakuracloud: %w", err)
+	}
+
+	return nil
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
-	return d.cleanupTXTRecord(fqdn, domain)
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
+
+	err := d.cleanupTXTRecord(fqdn, domain, value)
+	if err != nil {
+		return fmt.Errorf("sakuracloud: %w", err)
+	}
+
+	return nil
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.

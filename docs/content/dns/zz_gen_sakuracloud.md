@@ -63,7 +63,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 ## More information
 
 - [API documentation](https://developer.sakura.ad.jp/cloud/api/1.1/)
-- [Go client](https://github.com/sacloud/libsacloud)
+- [Go client](https://github.com/sacloud/iaas-api-go)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/sakuracloud/sakuracloud.toml -->

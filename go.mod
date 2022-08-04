@@ -32,7 +32,7 @@ require (
 	github.com/mattn/go-isatty v0.0.14
 	github.com/miekg/dns v1.1.47
 	github.com/mimuret/golang-iij-dpf v0.7.1
-	github.com/mitchellh/mapstructure v1.4.1
+	github.com/mitchellh/mapstructure v1.5.0
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
 	github.com/nrdcg/auroradns v1.1.0
 	github.com/nrdcg/desec v0.6.0
@@ -45,17 +45,18 @@ require (
 	github.com/ovh/go-ovh v1.1.0
 	github.com/pquerna/otp v1.3.0
 	github.com/rainycape/memcache v0.0.0-20150622160815-1031fa0ce2f2
-	github.com/sacloud/libsacloud v1.36.2
+	github.com/sacloud/api-client-go v0.2.0
+	github.com/sacloud/iaas-api-go v1.2.1
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.7.0.20210127161313-bd30bebeac4f
 	github.com/softlayer/softlayer-go v1.0.3
-	github.com/stretchr/testify v1.7.5
+	github.com/stretchr/testify v1.8.0
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.287
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod v1.0.287
 	github.com/transip/gotransip/v6 v6.6.1
 	github.com/urfave/cli/v2 v2.3.0
 	github.com/vinyldns/go-vinyldns v0.9.16
 	github.com/vultr/govultr/v2 v2.16.0
-	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e
+	golang.org/x/crypto v0.0.0-20220214200702-86341886e292
 	golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	golang.org/x/time v0.0.0-20210611083556-38a9dc6acbc6
@@ -73,6 +74,7 @@ require (
 	github.com/Azure/go-autorest/autorest/date v0.3.0 // indirect
 	github.com/Azure/go-autorest/logger v0.2.1 // indirect
 	github.com/Azure/go-autorest/tracing v0.6.0 // indirect
+	github.com/andres-erbsen/clock v0.0.0-20160526145045-9e14626cd129 // indirect
 	github.com/boombuler/barcode v1.0.1-0.20190219062509-6c824513bacc // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -80,6 +82,7 @@ require (
 	github.com/dimchansky/utfbom v1.1.1 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/form3tech-oss/jwt-go v3.2.2+incompatible // indirect
+	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/go-errors/errors v1.0.1 // indirect
 	github.com/go-resty/resty/v2 v2.1.1-0.20191201195748-d7b97669fe48 // indirect
 	github.com/gofrs/uuid v3.2.0+incompatible // indirect
@@ -104,6 +107,8 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/russross/blackfriday/v2 v2.0.1 // indirect
+	github.com/sacloud/go-http v0.1.1 // indirect
+	github.com/sacloud/packages-go v0.0.3 // indirect
 	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/smartystreets/assertions v1.0.1 // indirect
@@ -112,7 +117,7 @@ require (
 	github.com/spf13/cast v1.3.1 // indirect
 	github.com/stretchr/objx v0.4.0 // indirect
 	go.opencensus.io v0.22.3 // indirect
-	go.uber.org/ratelimit v0.0.0-20180316092928-c15da0234277 // indirect
+	go.uber.org/ratelimit v0.2.0 // indirect
 	golang.org/x/mod v0.4.2 // indirect
 	golang.org/x/sys v0.0.0-20220615213510-4f61da869c0c // indirect
 	golang.org/x/text v0.3.7 // indirect

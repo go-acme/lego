@@ -6,7 +6,6 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/pem"
-	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -307,7 +306,7 @@ func mustGeneratePrivateKeyFile(pwd string) string {
 		panic(err)
 	}
 
-	file, err := ioutil.TempFile("", "lego_oci_*.pem")
+	file, err := os.CreateTemp("", "lego_oci_*.pem")
 	if err != nil {
 		panic(err)
 	}

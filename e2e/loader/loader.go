@@ -5,7 +5,6 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
@@ -198,7 +197,7 @@ func buildLego() (string, func(), error) {
 	}
 	defer func() { _ = os.Chdir(here) }()
 
-	buildPath, err := ioutil.TempDir("", "lego_test")
+	buildPath, err := os.MkdirTemp("", "lego_test")
 	if err != nil {
 		return "", func() {}, err
 	}

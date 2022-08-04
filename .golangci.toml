@@ -196,3 +196,12 @@
   [[issues.exclude-rules]]
     path = "providers/dns/sakuracloud/client.go"
     text = "mu is a global variable"
+  [[issues.exclude-rules]]
+    path = "providers/dns/tencentcloud/client.go"
+    text = "RESOURCENOTFOUND_NODATAOFRECORD contains underscore."
+  [[issues.exclude-rules]]
+    path = "providers/dns/ibmcloud/internal/wrapper.go"
+    text = "Dns_Domain(_ResourceRecord)? contains underscore."
+  [[issues.exclude-rules]]
+    path = "providers/dns/rfc2136/"
+    text = "RR_Header contains underscore."

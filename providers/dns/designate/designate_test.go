@@ -1,7 +1,6 @@
 package designate
 
 import (
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -266,7 +265,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 func createCloudsYaml(t *testing.T, cloudName string, cloud clientconfig.Cloud) string {
 	t.Helper()
 
-	file, err := ioutil.TempFile("", "lego_test")
+	file, err := os.CreateTemp("", "lego_test")
 	require.NoError(t, err)
 
 	t.Cleanup(func() { _ = os.RemoveAll(file.Name()) })

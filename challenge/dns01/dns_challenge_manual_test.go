@@ -2,7 +2,6 @@ package dns01
 
 import (
 	"io"
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -32,7 +31,7 @@ func TestDNSProviderManual(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			file, err := ioutil.TempFile("", "lego_test")
+			file, err := os.CreateTemp("", "lego_test")
 			assert.NoError(t, err)
 			defer func() { _ = os.Remove(file.Name()) }()
 

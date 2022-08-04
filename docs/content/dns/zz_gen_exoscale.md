@@ -49,6 +49,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
+| `EXOSCALE_API_ZONE` | API zone |
 | `EXOSCALE_ENDPOINT` | API endpoint URL |
 | `EXOSCALE_HTTP_TIMEOUT` | API request timeout |
 | `EXOSCALE_POLLING_INTERVAL` | Time between DNS propagation check |
@@ -63,7 +64,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 ## More information
 
-- [API documentation](https://community.exoscale.com/documentation/dns/api/)
+- [API documentation](https://openapi-v2.exoscale.com/#endpoint-dns)
 - [Go client](https://github.com/exoscale/egoscale)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

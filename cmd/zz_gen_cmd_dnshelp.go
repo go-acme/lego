@@ -823,6 +823,7 @@ func displayDNSHelp(name string) error {
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "EXOSCALE_API_ZONE":	API zone`)
 		ew.writeln(`	- "EXOSCALE_ENDPOINT":	API endpoint URL`)
 		ew.writeln(`	- "EXOSCALE_HTTP_TIMEOUT":	API request timeout`)
 		ew.writeln(`	- "EXOSCALE_POLLING_INTERVAL":	Time between DNS propagation check`)

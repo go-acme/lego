@@ -22,4 +22,4 @@ lego --email you@example.com --dns sakuracloud --domains my.example.org run
 
 [Links]
   API = "https://developer.sakura.ad.jp/cloud/api/1.1/"
-  GoClient = "https://github.com/sacloud/libsacloud"
+  GoClient = "https://github.com/sacloud/iaas-api-go"

@@ -9,9 +9,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-acme/lego/challenge/dns01"
+	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/yandex-cloud/go-genproto/yandex/cloud/dns/v1"
 	"github.com/yandex-cloud/go-genproto/yandex/cloud/operation"
 	ycsdk "github.com/yandex-cloud/go-sdk"
 	"github.com/yandex-cloud/go-sdk/iamkey"

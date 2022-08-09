@@ -11,7 +11,7 @@ import (
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/yandex-cloud/go-genproto/yandex/cloud/dns/v1"
+	ycdns "github.com/yandex-cloud/go-genproto/yandex/cloud/dns/v1"
 	"github.com/yandex-cloud/go-genproto/yandex/cloud/operation"
 	ycsdk "github.com/yandex-cloud/go-sdk"
 	"github.com/yandex-cloud/go-sdk/iamkey"
@@ -105,8 +105,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 }
 
 // GetZones retrieves available zones from yandex cloud.
-func (r *DNSProvider) GetZones() ([]*dns.DnsZone, error) {
-	request := &dns.ListDnsZonesRequest{
+func (r *DNSProvider) GetZones() ([]*ycdns.DnsZone, error) {
+	request := &ycdns.ListDnsZonesRequest{
 		FolderId: r.config.FolderID,
 	}
 
@@ -191,7 +191,7 @@ func (r *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 }
 
 func (r *DNSProvider) createOrUpdateRecord(zoneID string, name string, value string) error {
-	get := &dns.GetDnsZoneRecordSetRequest{
+	get := &ycdns.GetDnsZoneRecordSetRequest{
 		DnsZoneId: zoneID,
 		Name:      name,
 		Type:      "TXT",
@@ -199,15 +199,15 @@ func (r *DNSProvider) createOrUpdateRecord(zoneID string, name string, value str
 
 	exists, _ := r.sdk.DNS().DnsZone().GetRecordSet(context.TODO(), get)
 
-	var deletions []*dns.RecordSet
+	var deletions []*ycdns.RecordSet
 	if exists != nil {
 		deletions = append(deletions, exists)
 	}
 
-	update := &dns.UpdateRecordSetsRequest{
+	update := &ycdns.UpdateRecordSetsRequest{
 		DnsZoneId: zoneID,
 		Deletions: deletions,
-		Additions: []*dns.RecordSet{
+		Additions: []*ycdns.RecordSet{
 			{
 				Name: name,
 				Type: "TXT",
@@ -225,7 +225,7 @@ func (r *DNSProvider) createOrUpdateRecord(zoneID string, name string, value str
 }
 
 func (r *DNSProvider) removeRecord(zoneID string, name string) (*operation.Operation, error) {
-	get := &dns.GetDnsZoneRecordSetRequest{
+	get := &ycdns.GetDnsZoneRecordSetRequest{
 		DnsZoneId: zoneID,
 		Name:      name,
 		Type:      "TXT",
@@ -233,15 +233,15 @@ func (r *DNSProvider) removeRecord(zoneID string, name string) (*operation.Opera
 
 	exists, _ := r.sdk.DNS().DnsZone().GetRecordSet(context.TODO(), get)
 
-	var deletions []*dns.RecordSet
+	var deletions []*ycdns.RecordSet
 	if exists != nil {
 		deletions = append(deletions, exists)
 	}
 
-	update := &dns.UpdateRecordSetsRequest{
+	update := &ycdns.UpdateRecordSetsRequest{
 		DnsZoneId: zoneID,
 		Deletions: deletions,
-		Additions: []*dns.RecordSet{},
+		Additions: []*ycdns.RecordSet{},
 	}
 
 	return r.sdk.DNS().DnsZone().UpdateRecordSets(context.TODO(), update)

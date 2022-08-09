@@ -56,6 +56,8 @@ require (
 	github.com/urfave/cli/v2 v2.3.0
 	github.com/vinyldns/go-vinyldns v0.9.16
 	github.com/vultr/govultr/v2 v2.16.0
+	github.com/yandex-cloud/go-genproto v0.0.0-20220805142335-27b56ddae16f
+	github.com/yandex-cloud/go-sdk v0.0.0-20220805164847-cf028e604997
 	golang.org/x/crypto v0.0.0-20220214200702-86341886e292
 	golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
@@ -68,12 +70,6 @@ require (
 )
 
 require (
-	github.com/go-acme/lego v2.7.2+incompatible
-	github.com/yandex-cloud/go-genproto v0.0.0-20220805142335-27b56ddae16f
-	github.com/yandex-cloud/go-sdk v0.0.0-20220805164847-cf028e604997
-)
-
-require (
 	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
 	github.com/Azure/go-autorest/autorest/adal v0.9.13 // indirect
 	github.com/Azure/go-autorest/autorest/azure/cli v0.4.2 // indirect
@@ -82,7 +78,6 @@ require (
 	github.com/Azure/go-autorest/tracing v0.6.0 // indirect
 	github.com/andres-erbsen/clock v0.0.0-20160526145045-9e14626cd129 // indirect
 	github.com/boombuler/barcode v1.0.1-0.20190219062509-6c824513bacc // indirect
-	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/deepmap/oapi-codegen v1.9.1 // indirect

@@ -7,23 +7,24 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/go-acme/lego/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/yandex-cloud/go-genproto/yandex/cloud/dns/v1"
 	"github.com/yandex-cloud/go-genproto/yandex/cloud/operation"
 	ycsdk "github.com/yandex-cloud/go-sdk"
 	"github.com/yandex-cloud/go-sdk/iamkey"
-	"time"
 )
 
-const defaultTTL = 21600
+const defaultTTL = 60
 
 // Environment variables names.
 const (
 	envNamespace = "YANDEX_CLOUD_"
 
 	EnvIamToken = envNamespace + "IAM_TOKEN"
-	EnvFolderId = envNamespace + "FOLDER_ID"
+	EnvFolderID = envNamespace + "FOLDER_ID"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -52,10 +53,6 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-const (
-	DefaultTTL = 60
-)
-
 type DNSProvider struct {
 	sdk    *ycsdk.SDK
 	config *Config
@@ -63,14 +60,14 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for Yandex Cloud.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvIamToken, EnvFolderId)
+	values, err := env.Get(EnvIamToken, EnvFolderID)
 	if err != nil {
 		return nil, fmt.Errorf("yandexcloud: %w", err)
 	}
 
 	config := NewDefaultConfig()
 	config.IamToken = values[EnvIamToken]
-	config.FolderID = values[EnvFolderId]
+	config.FolderID = values[EnvFolderID]
 
 	return NewDNSProviderConfig(config)
 }
@@ -97,7 +94,6 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	sdk, err := ycsdk.Build(context.TODO(), ycsdk.Config{
 		Credentials: ycCreds,
 	})
-
 	if err != nil {
 		return nil, errors.New("yandexcloud: unable to build yandex cloud sdk")
 	}
@@ -108,7 +104,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}, nil
 }
 
-// GetZones retrieves available zones from yandex cloud
+// GetZones retrieves available zones from yandex cloud.
 func (r *DNSProvider) GetZones() ([]*dns.DnsZone, error) {
 	request := &dns.ListDnsZonesRequest{
 		FolderId: r.config.FolderID,
@@ -215,7 +211,7 @@ func (r *DNSProvider) createOrUpdateRecord(zoneID string, name string, value str
 			{
 				Name: name,
 				Type: "TXT",
-				Ttl:  DefaultTTL,
+				Ttl:  int64(r.config.TTL),
 				Data: []string{
 					value,
 				},
@@ -263,7 +259,7 @@ func (r *DNSProvider) Sequential() time.Duration {
 	return r.config.SequenceInterval
 }
 
-// decodeYcCredentials converts base64 encoded json of iam token to struct
+// decodeYcCredentials converts base64 encoded json of iam token to struct.
 func decodeYcCredentials(ycAccountB64 string) (ycsdk.Credentials, error) {
 	ycAccountJSON, err := base64.StdEncoding.DecodeString(ycAccountB64)
 	if err != nil {

@@ -263,8 +263,8 @@ func TestChallengeHTTP_Client_Registration_QueryRegistration(t *testing.T) {
 	require.NotNil(t, resource)
 
 	assert.Equal(t, "valid", resource.Body.Status)
-	assert.Regexp(t, `https://localhost:14000/list-orderz/\d+`, resource.Body.Orders)
-	assert.Regexp(t, `https://localhost:14000/my-account/\d+`, resource.URI)
+	assert.Regexp(t, `https://localhost:14000/list-orderz/[\w\d]+`, resource.Body.Orders)
+	assert.Regexp(t, `https://localhost:14000/my-account/[\w\d]+`, resource.URI)
 }
 
 func TestChallengeTLS_Client_Obtain(t *testing.T) {

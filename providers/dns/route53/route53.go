@@ -91,10 +91,10 @@ func (d customRetryer) RetryRules(r *request.Request) time.Duration {
 // NewDNSProvider returns a DNSProvider instance configured for the AWS Route 53 service.
 //
 // AWS Credentials are automatically detected in the following locations and prioritized in the following order:
-// 1. Environment variables: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY,
-//    AWS_REGION, [AWS_SESSION_TOKEN]
-// 2. Shared credentials file (defaults to ~/.aws/credentials)
-// 3. Amazon EC2 IAM role
+//  1. Environment variables: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY,
+//     AWS_REGION, [AWS_SESSION_TOKEN]
+//  2. Shared credentials file (defaults to ~/.aws/credentials)
+//  3. Amazon EC2 IAM role
 //
 // If AWS_HOSTED_ZONE_ID is not set, Lego tries to determine the correct public hosted zone via the FQDN.
 //

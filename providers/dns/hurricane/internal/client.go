@@ -96,9 +96,9 @@ func (c *Client) UpdateTxtRecord(ctx context.Context, domain string, txt string)
 }
 
 func evaluateBody(body string, hostname string) error {
-	words := strings.SplitN(body, " ", 2)
+	code, _, _ := strings.Cut(body, " ")
 
-	switch words[0] {
+	switch code {
 	case codeGood:
 		return nil
 	case codeNoChg:
@@ -125,8 +125,8 @@ func evaluateBody(body string, hostname string) error {
 // limit computes the rate based on burst.
 // The API rate limit per-record is 10 reqs / 2 minutes.
 //
-//     10 reqs / 2 minutes = freq 1/12 (burst = 1)
-//     6 reqs / 2 minutes = freq 1/20 (burst = 5)
+//	10 reqs / 2 minutes = freq 1/12 (burst = 1)
+//	6 reqs / 2 minutes = freq 1/20 (burst = 5)
 //
 // https://github.com/go-acme/lego/issues/1415
 func limit(burst int) rate.Limit {

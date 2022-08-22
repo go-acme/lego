@@ -165,23 +165,20 @@ func (c *Client) postRequest(cmd string, data url.Values) (*Response, error) {
 func parseResponse(message string) *Response {
 	r := &Response{Headers: url.Values{}, StatusCode: -1}
 
-	parts := strings.SplitN(message, "\n\n", 2)
+	lines, body, _ := strings.Cut(message, "\n\n")
 
-	for _, line := range strings.Split(parts[0], "\n") {
+	for _, line := range strings.Split(lines, "\n") {
 		if strings.TrimSpace(line) == "" {
 			continue
 		}
 
-		kv := strings.SplitN(line, ":", 2)
+		k, v, _ := strings.Cut(line, ":")
 
-		val := ""
-		if len(kv) == 2 {
-			val = strings.TrimSpace(kv[1])
-		}
+		val := strings.TrimSpace(v)
 
-		r.Headers.Add(kv[0], val)
+		r.Headers.Add(k, val)
 
-		switch kv[0] {
+		switch k {
 		case "Status-Code":
 			i, err := strconv.Atoi(val)
 			if err == nil {
@@ -194,9 +191,7 @@ func parseResponse(message string) *Response {
 		}
 	}
 
-	if len(parts) > 1 {
-		r.Body = parts[1]
-	}
+	r.Body = body
 
 	return r
 }

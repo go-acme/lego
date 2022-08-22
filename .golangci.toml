@@ -57,6 +57,8 @@
     "maligned", # deprecated
     "scopelint", # deprecated
     "golint", # deprecated
+    "nosnakecase", # deprecated
+    "ifshort", # deprecated
     "exhaustivestruct", # deprecated
     "cyclop", # duplicate of gocyclo
     "sqlclosecheck", # not relevant (SQL)
@@ -79,7 +81,6 @@
     "exhaustive", # not relevant
     "exhaustruct", # not relevant
     "makezero", # not relevant
-    "ifshort", # not relevant
     "forbidigo", # not relevant
     "varnamelen", # not relevant
     "nilnil", # not relevant
@@ -196,3 +197,12 @@
   [[issues.exclude-rules]]
     path = "providers/dns/sakuracloud/client.go"
     text = "mu is a global variable"
+  [[issues.exclude-rules]]
+    path = "providers/dns/tencentcloud/client.go"
+    text = "RESOURCENOTFOUND_NODATAOFRECORD contains underscore."
+  [[issues.exclude-rules]]
+    path = "providers/dns/ibmcloud/internal/wrapper.go"
+    text = "Dns_Domain(_ResourceRecord)? contains underscore."
+  [[issues.exclude-rules]]
+    path = "providers/dns/rfc2136/"
+    text = "RR_Header contains underscore."

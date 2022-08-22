@@ -28,36 +28,35 @@ const (
 //
 // rootPath:
 //
-//     ./.lego/accounts/
-//          │      └── root accounts directory
-//          └── "path" option
+//	./.lego/accounts/
+//	     │      └── root accounts directory
+//	     └── "path" option
 //
 // rootUserPath:
 //
-//     ./.lego/accounts/localhost_14000/hubert@hubert.com/
-//          │      │             │             └── userID ("email" option)
-//          │      │             └── CA server ("server" option)
-//          │      └── root accounts directory
-//          └── "path" option
+//	./.lego/accounts/localhost_14000/hubert@hubert.com/
+//	     │      │             │             └── userID ("email" option)
+//	     │      │             └── CA server ("server" option)
+//	     │      └── root accounts directory
+//	     └── "path" option
 //
 // keysPath:
 //
-//     ./.lego/accounts/localhost_14000/hubert@hubert.com/keys/
-//          │      │             │             │           └── root keys directory
-//          │      │             │             └── userID ("email" option)
-//          │      │             └── CA server ("server" option)
-//          │      └── root accounts directory
-//          └── "path" option
+//	./.lego/accounts/localhost_14000/hubert@hubert.com/keys/
+//	     │      │             │             │           └── root keys directory
+//	     │      │             │             └── userID ("email" option)
+//	     │      │             └── CA server ("server" option)
+//	     │      └── root accounts directory
+//	     └── "path" option
 //
 // accountFilePath:
 //
-//     ./.lego/accounts/localhost_14000/hubert@hubert.com/account.json
-//          │      │             │             │             └── account file
-//          │      │             │             └── userID ("email" option)
-//          │      │             └── CA server ("server" option)
-//          │      └── root accounts directory
-//          └── "path" option
-//
+//	./.lego/accounts/localhost_14000/hubert@hubert.com/account.json
+//	     │      │             │             │             └── account file
+//	     │      │             │             └── userID ("email" option)
+//	     │      │             └── CA server ("server" option)
+//	     │      └── root accounts directory
+//	     └── "path" option
 type AccountsStorage struct {
 	userID          string
 	rootPath        string

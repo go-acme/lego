@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	cloudflare "github.com/cloudflare/cloudflare-go"
+	"github.com/cloudflare/cloudflare-go"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/platform/config/env"
@@ -78,7 +78,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 			[]string{"CLOUDFLARE_ZONE_API_TOKEN", "CF_ZONE_API_TOKEN", "CLOUDFLARE_DNS_API_TOKEN", "CF_DNS_API_TOKEN"},
 		)
 		if errT != nil {
-			// nolint:errorlint
+			//nolint:errorlint
 			return nil, fmt.Errorf("cloudflare: %v or %v", err, errT)
 		}
 	}

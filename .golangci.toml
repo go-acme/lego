@@ -57,6 +57,8 @@
     "maligned", # deprecated
     "scopelint", # deprecated
     "golint", # deprecated
+    "nosnakecase", # deprecated
+    "ifshort", # deprecated
     "exhaustivestruct", # deprecated
     "cyclop", # duplicate of gocyclo
     "sqlclosecheck", # not relevant (SQL)
@@ -79,7 +81,6 @@
     "exhaustive", # not relevant
     "exhaustruct", # not relevant
     "makezero", # not relevant
-    "ifshort", # not relevant
     "forbidigo", # not relevant
     "varnamelen", # not relevant
     "nilnil", # not relevant

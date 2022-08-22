@@ -54,7 +54,6 @@ func Get(names ...string) (map[string]string, error) {
 //	// LEGO_TWO=""
 //	env.GetWithFallback([]string{"LEGO_ONE", "LEGO_TWO"})
 //	// => error
-//
 func GetWithFallback(groups ...[]string) (map[string]string, error) {
 	values := map[string]string{}
 

@@ -316,7 +316,7 @@ func setupTestProvider(t *testing.T) string {
 		]
 	}
 }`))
-		w.WriteHeader(200)
+		w.WriteHeader(http.StatusOK)
 	})
 
 	server := httptest.NewServer(mux)

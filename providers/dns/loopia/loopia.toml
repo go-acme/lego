@@ -28,6 +28,7 @@ It needs to have the following permissions:
     LOOPIA_API_USER = "API username"
     LOOPIA_API_PASSWORD = "API password"
   [Configuration.Additional]
+    LOOPIA_API_URL = "API endpoint. Ex: https://api.loopia.se/RPCSERV or https://api.loopia.rs/RPCSERV"
     LOOPIA_POLLING_INTERVAL = "Time between DNS propagation check"
     LOOPIA_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
     LOOPIA_TTL = "The TTL of the TXT record used for the DNS challenge"

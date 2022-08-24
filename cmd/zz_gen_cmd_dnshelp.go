@@ -1390,6 +1390,7 @@ func displayDNSHelp(name string) error {
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "LOOPIA_API_URL":	API endpoint. Ex: https://api.loopia.se/RPCSERV or https://api.loopia.rs/RPCSERV`)
 		ew.writeln(`	- "LOOPIA_HTTP_TIMEOUT":	API request timeout`)
 		ew.writeln(`	- "LOOPIA_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "LOOPIA_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)

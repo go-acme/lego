@@ -49,6 +49,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
+| `LOOPIA_API_URL` | API endpoint. Ex: https://api.loopia.se/RPCSERV or https://api.loopia.rs/RPCSERV |
 | `LOOPIA_HTTP_TIMEOUT` | API request timeout |
 | `LOOPIA_POLLING_INTERVAL` | Time between DNS propagation check |
 | `LOOPIA_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |

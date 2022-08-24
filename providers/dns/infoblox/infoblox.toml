@@ -17,11 +17,11 @@ When creating an API's user ensure it has the proper permissions for the view yo
 
 [Configuration]
   [Configuration.Credentials]
-    INFOBLOX_USER = "Account Username"
+    INFOBLOX_USERNAME = "Account Username"
     INFOBLOX_PASSWORD = "Account Password"
     INFOBLOX_HOST = "Host URI"
   [Configuration.Additional]
-    INFOBLOX_VIEW = "The view for the TXT records, default: External"
+    INFOBLOX_DNS_VIEW = "The view for the TXT records, default: External"
     INFOBLOX_WAPI_VERSION = "The version of WAPI being used, default: 2.11"
     INFOBLOX_PORT = "The port for the infoblox grid manager, default: 443"
     INFOBLOX_SSL_VERIFY = "Whether or not to verify the TLS certificate, default: true"

@@ -89,9 +89,9 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for Infoblox.
 // Credentials must be passed in the environment variables:
-// INFOBLOX_USER, INFOBLOX_PASSWORD
+// INFOBLOX_USERNAME, INFOBLOX_PASSWORD
 // INFOBLOX_HOST, INFOBLOX_PORT
-// INFOBLOX_VIEW, INFOBLOX_WAPI_VERSION
+// INFOBLOX_DNS_VIEW, INFOBLOX_WAPI_VERSION
 // INFOBLOX_SSL_VERIFY.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvHost, EnvUsername, EnvPassword)

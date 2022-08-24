@@ -41,7 +41,7 @@ lego --email you@example.com --dns infoblox --domains my.example.org run
 |-----------------------|-------------|
 | `INFOBLOX_HOST` | Host URI |
 | `INFOBLOX_PASSWORD` | Account Password |
-| `INFOBLOX_USER` | Account Username |
+| `INFOBLOX_USERNAME` | Account Username |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{< ref "dns#configuration-and-credentials" >}}).
@@ -51,13 +51,13 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
+| `INFOBLOX_DNS_VIEW` | The view for the TXT records, default: External |
 | `INFOBLOX_HTTP_TIMEOUT` | HTTP request timeout |
 | `INFOBLOX_POLLING_INTERVAL` | Time between DNS propagation check |
 | `INFOBLOX_PORT` | The port for the infoblox grid manager, default: 443 |
 | `INFOBLOX_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
 | `INFOBLOX_SSL_VERIFY` | Whether or not to verify the TLS certificate, default: true |
 | `INFOBLOX_TTL` | The TTL of the TXT record used for the DNS challenge |
-| `INFOBLOX_VIEW` | The view for the TXT records, default: External |
 | `INFOBLOX_WAPI_VERSION` | The version of WAPI being used, default: 2.11 |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.

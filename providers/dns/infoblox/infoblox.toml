@@ -5,7 +5,7 @@ Code = "infoblox"
 Since = "v4.4.0"
 
 Example = '''
-INFOBLOX_USER=api-user-529 \
+INFOBLOX_USERNAME=api-user-529 \
 INFOBLOX_PASSWORD=b9841238feb177a84330febba8a83208921177bffe733 \
 INFOBLOX_HOST=infoblox.example.org
 lego --email you@example.com --dns infoblox --domains my.example.org run
@@ -17,11 +17,11 @@ When creating an API's user ensure it has the proper permissions for the view yo
 
 [Configuration]
   [Configuration.Credentials]
-    INFOBLOX_USER = "Account Username"
+    INFOBLOX_USERNAME = "Account Username"
     INFOBLOX_PASSWORD = "Account Password"
     INFOBLOX_HOST = "Host URI"
   [Configuration.Additional]
-    INFOBLOX_VIEW = "The view for the TXT records, default: External"
+    INFOBLOX_DNS_VIEW = "The view for the TXT records, default: External"
     INFOBLOX_WAPI_VERSION = "The version of WAPI being used, default: 2.11"
     INFOBLOX_PORT = "The port for the infoblox grid manager, default: 443"
     INFOBLOX_SSL_VERIFY = "Whether or not to verify the TLS certificate, default: true"

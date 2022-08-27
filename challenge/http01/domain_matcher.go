@@ -27,10 +27,13 @@ import (
 //
 // Note: RFC7239 also reminds us, "that an HTTP list [...] may be split over multiple header fields" (section 7.1),
 // meaning that
-//   X-Header: a
-//   X-Header: b
+//
+//	X-Header: a
+//	X-Header: b
+//
 // is equal to
-//   X-Header: a, b
+//
+//	X-Header: a, b
 //
 // All matcher implementations (explicitly not excluding arbitraryMatcher!)
 // have in common that they only match against the first value in such lists.

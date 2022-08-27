@@ -65,12 +65,12 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for Bluecat DNS.
 // Credentials must be passed in the environment variables:
-//	- BLUECAT_SERVER_URL
-//	  It should have the scheme, hostname, and port (if required) of the authoritative Bluecat BAM server.
-//	  The REST endpoint will be appended.
-//	- BLUECAT_USER_NAME and BLUECAT_PASSWORD
-//	- BLUECAT_CONFIG_NAME (the Configuration name)
-//	- BLUECAT_DNS_VIEW (external DNS View Name)
+//   - BLUECAT_SERVER_URL
+//     It should have the scheme, hostname, and port (if required) of the authoritative Bluecat BAM server.
+//     The REST endpoint will be appended.
+//   - BLUECAT_USER_NAME and BLUECAT_PASSWORD
+//   - BLUECAT_CONFIG_NAME (the Configuration name)
+//   - BLUECAT_DNS_VIEW (external DNS View Name)
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvServerURL, EnvUserName, EnvPassword, EnvConfigName, EnvDNSView)
 	if err != nil {

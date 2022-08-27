@@ -22,6 +22,7 @@ const (
 
 	EnvAPIUser     = envNamespace + "API_USER"
 	EnvAPIPassword = envNamespace + "API_PASSWORD"
+	EnvAPIURL      = envNamespace + "API_URL"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -50,7 +51,6 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		BaseURL:            internal.DefaultBaseURL,
 		TTL:                env.GetOrDefaultInt(EnvTTL, minTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 40*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 60*time.Second),
@@ -83,6 +83,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
 	config.APIUser = values[EnvAPIUser]
 	config.APIPassword = values[EnvAPIPassword]
+	config.BaseURL = env.GetOrDefaultString(EnvAPIURL, internal.DefaultBaseURL)
 
 	return NewDNSProviderConfig(config)
 }
@@ -106,6 +107,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	if config.HTTPClient != nil {
 		client.HTTPClient = config.HTTPClient
+	}
+
+	if config.BaseURL != "" {
+		client.BaseURL = config.BaseURL
 	}
 
 	return &DNSProvider{

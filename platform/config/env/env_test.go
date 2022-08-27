@@ -1,7 +1,6 @@
 package env
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -143,9 +142,7 @@ func TestGetOrDefaultInt(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer os.Unsetenv(key)
-			err := os.Setenv(key, test.envValue)
-			require.NoError(t, err)
+			t.Setenv(key, test.envValue)
 
 			result := GetOrDefaultInt(key, test.defaultValue)
 			assert.Equal(t, test.expected, result)
@@ -190,9 +187,7 @@ func TestGetOrDefaultSecond(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer os.Unsetenv(key)
-			err := os.Setenv(key, test.envValue)
-			require.NoError(t, err)
+			t.Setenv(key, test.envValue)
 
 			result := GetOrDefaultSecond(key, test.defaultValue)
 			assert.Equal(t, test.expected, result)
@@ -224,9 +219,7 @@ func TestGetOrDefaultString(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer os.Unsetenv(key)
-			err := os.Setenv(key, test.envValue)
-			require.NoError(t, err)
+			t.Setenv(key, test.envValue)
 
 			actual := GetOrDefaultString(key, test.defaultValue)
 			assert.Equal(t, test.expected, actual)
@@ -264,9 +257,7 @@ func TestGetOrDefaultBool(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer os.Unsetenv(key)
-			err := os.Setenv(key, test.envValue)
-			require.NoError(t, err)
+			t.Setenv(key, test.envValue)
 
 			actual := GetOrDefaultBool(key, test.defaultValue)
 			assert.Equal(t, test.expected, actual)
@@ -275,9 +266,7 @@ func TestGetOrDefaultBool(t *testing.T) {
 }
 
 func TestGetOrFile_ReadsEnvVars(t *testing.T) {
-	err := os.Setenv("TEST_LEGO_ENV_VAR", "lego_env")
-	require.NoError(t, err)
-	defer os.Unsetenv("TEST_LEGO_ENV_VAR")
+	t.Setenv("TEST_LEGO_ENV_VAR", "lego_env")
 
 	value := GetOrFile("TEST_LEGO_ENV_VAR")
 
@@ -309,16 +298,14 @@ func TestGetOrFile_ReadsFiles(t *testing.T) {
 			err = os.Unsetenv(varEnvName)
 			require.NoError(t, err)
 
-			file, err := ioutil.TempFile("", "lego")
+			file, err := os.CreateTemp("", "lego")
 			require.NoError(t, err)
 			defer os.Remove(file.Name())
 
 			err = os.WriteFile(file.Name(), []byte("lego_file\n"), 0o644)
 			require.NoError(t, err)
 
-			err = os.Setenv(varEnvFileName, file.Name())
-			require.NoError(t, err)
-			defer os.Unsetenv(varEnvFileName)
+			t.Setenv(varEnvFileName, file.Name())
 
 			value := GetOrFile(varEnvName)
 
@@ -336,20 +323,15 @@ func TestGetOrFile_PrefersEnvVars(t *testing.T) {
 	err = os.Unsetenv(varEnvName)
 	require.NoError(t, err)
 
-	file, err := ioutil.TempFile("", "lego")
+	file, err := os.CreateTemp("", "lego")
 	require.NoError(t, err)
 	defer os.Remove(file.Name())
 
 	err = os.WriteFile(file.Name(), []byte("lego_file"), 0o644)
 	require.NoError(t, err)
 
-	err = os.Setenv(varEnvFileName, file.Name())
-	require.NoError(t, err)
-	defer os.Unsetenv(varEnvFileName)
-
-	err = os.Setenv(varEnvName, "lego_env")
-	require.NoError(t, err)
-	defer os.Unsetenv(varEnvName)
+	t.Setenv(varEnvFileName, file.Name())
+	t.Setenv(varEnvName, "lego_env")
 
 	value := GetOrFile(varEnvName)
 

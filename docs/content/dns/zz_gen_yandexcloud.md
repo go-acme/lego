@@ -26,6 +26,12 @@ Configuration for [Yandex Cloud](https://cloud.yandex.com).
 Here is an example bash command using the Yandex Cloud provider:
 
 ```bash
+YANDEX_CLOUD_IAM_TOKEN=<base 64 IAM token> \
+YANDEX_CLOUD_FOLDER_ID=<folder/project id> \
+lego --email you@example.com --dns yandexcloud --domains "example.org" --domains "*.example.org" run
+
+# ---
+
 YANDEX_CLOUD_IAM_TOKEN=$(echo '{ \
   "id": "<string id>", \
   "service_account_id": "<string id>", \
@@ -65,7 +71,9 @@ The environment variable names can be suffixed by `_FILE` to reference a file in
 More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 ## IAM Token
-The simplest way to retrieve IAM access token is usage of yc-cli, follow [docs](https://cloud.yandex.ru/docs/iam/operations/iam-token/create-for-sa) to get it
+
+The simplest way to retrieve IAM access token is usage of yc-cli,
+follow [docs](https://cloud.yandex.ru/docs/iam/operations/iam-token/create-for-sa) to get it
 
 ```bash
 yc iam key create --service-account-name my-robot --output key.json

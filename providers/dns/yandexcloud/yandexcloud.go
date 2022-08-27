@@ -54,7 +54,7 @@ func NewDefaultConfig() *Config {
 }
 
 type DNSProvider struct {
-	sdk    *ycsdk.SDK
+	client *ycsdk.SDK
 	config *Config
 }
 
@@ -79,43 +79,27 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.IamToken == "" {
-		return nil, fmt.Errorf("yandexcloud: some credentials information are missing iam token")
+		return nil, fmt.Errorf("yandexcloud: some credentials information are missing IAM token")
 	}
 
 	if config.FolderID == "" {
 		return nil, fmt.Errorf("yandexcloud: some credentials information are missing folder id")
 	}
 
-	ycCreds, err := decodeYcCredentials(config.IamToken)
+	creds, err := decodeCredentials(config.IamToken)
 	if err != nil {
 		return nil, fmt.Errorf("yandexcloud: iam token is malformed: %w", err)
 	}
 
-	sdk, err := ycsdk.Build(context.TODO(), ycsdk.Config{
-		Credentials: ycCreds,
-	})
+	client, err := ycsdk.Build(context.Background(), ycsdk.Config{Credentials: creds})
 	if err != nil {
 		return nil, errors.New("yandexcloud: unable to build yandex cloud sdk")
 	}
 
 	return &DNSProvider{
-		sdk:    sdk,
+		client: client,
 		config: config,
 	}, nil
-}
-
-// GetZones retrieves available zones from yandex cloud.
-func (r *DNSProvider) GetZones() ([]*ycdns.DnsZone, error) {
-	request := &ycdns.ListDnsZonesRequest{
-		FolderId: r.config.FolderID,
-	}
-
-	response, err := r.sdk.DNS().DnsZone().List(context.TODO(), request)
-	if err != nil {
-		return nil, errors.New("yandexcloud: unable to fetch dns zones")
-	}
-
-	return response.DnsZones, nil
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
@@ -127,31 +111,33 @@ func (r *DNSProvider) Present(domain, _, keyAuth string) error {
 		return fmt.Errorf("yandexcloud: %w", err)
 	}
 
-	ycZones, err := r.GetZones()
+	ctx := context.Background()
+
+	zones, err := r.getZones(ctx)
 	if err != nil {
 		return fmt.Errorf("yandexcloud: %w", err)
 	}
 
-	var ycZoneID string
+	var zoneID string
 
-	for _, zone := range ycZones {
+	for _, zone := range zones {
 		if zone.GetZone() == authZone {
-			ycZoneID = zone.GetId()
+			zoneID = zone.GetId()
 		}
 	}
 
-	if ycZoneID == "" {
+	if zoneID == "" {
 		return fmt.Errorf("yandexcloud: cant find dns zone %s in yandex cloud", authZone)
 	}
 
 	name := fqdn[:len(fqdn)-len(authZone)-1]
 
-	err = r.createOrUpdateRecord(ycZoneID, name, value)
+	err = r.createOrUpdateRecord(ctx, zoneID, name, value)
 	if err != nil {
 		return fmt.Errorf("yandexcloud: %w", err)
 	}
 
-	return err
+	return nil
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
@@ -163,88 +149,33 @@ func (r *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 		return fmt.Errorf("yandexcloud: %w", err)
 	}
 
-	ycZones, err := r.GetZones()
+	ctx := context.Background()
+
+	zones, err := r.getZones(ctx)
 	if err != nil {
 		return fmt.Errorf("yandexcloud: %w", err)
 	}
 
-	var ycZoneID string
+	var zoneID string
 
-	for _, zone := range ycZones {
+	for _, zone := range zones {
 		if zone.GetZone() == authZone {
-			ycZoneID = zone.GetId()
+			zoneID = zone.GetId()
 		}
 	}
 
-	if ycZoneID == "" {
+	if zoneID == "" {
 		return nil
 	}
 
 	name := fqdn[:len(fqdn)-len(authZone)-1]
 
-	_, err = r.removeRecord(ycZoneID, name)
+	_, err = r.removeRecord(ctx, zoneID, name)
 	if err != nil {
 		return fmt.Errorf("yandexcloud: %w", err)
 	}
 
 	return nil
-}
-
-func (r *DNSProvider) createOrUpdateRecord(zoneID string, name string, value string) error {
-	get := &ycdns.GetDnsZoneRecordSetRequest{
-		DnsZoneId: zoneID,
-		Name:      name,
-		Type:      "TXT",
-	}
-
-	exists, _ := r.sdk.DNS().DnsZone().GetRecordSet(context.TODO(), get)
-
-	var deletions []*ycdns.RecordSet
-	if exists != nil {
-		deletions = append(deletions, exists)
-	}
-
-	update := &ycdns.UpdateRecordSetsRequest{
-		DnsZoneId: zoneID,
-		Deletions: deletions,
-		Additions: []*ycdns.RecordSet{
-			{
-				Name: name,
-				Type: "TXT",
-				Ttl:  int64(r.config.TTL),
-				Data: []string{
-					value,
-				},
-			},
-		},
-	}
-
-	_, err := r.sdk.DNS().DnsZone().UpdateRecordSets(context.TODO(), update)
-
-	return err
-}
-
-func (r *DNSProvider) removeRecord(zoneID string, name string) (*operation.Operation, error) {
-	get := &ycdns.GetDnsZoneRecordSetRequest{
-		DnsZoneId: zoneID,
-		Name:      name,
-		Type:      "TXT",
-	}
-
-	exists, _ := r.sdk.DNS().DnsZone().GetRecordSet(context.TODO(), get)
-
-	var deletions []*ycdns.RecordSet
-	if exists != nil {
-		deletions = append(deletions, exists)
-	}
-
-	update := &ycdns.UpdateRecordSetsRequest{
-		DnsZoneId: zoneID,
-		Deletions: deletions,
-		Additions: []*ycdns.RecordSet{},
-	}
-
-	return r.sdk.DNS().DnsZone().UpdateRecordSets(context.TODO(), update)
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
@@ -259,16 +190,84 @@ func (r *DNSProvider) Sequential() time.Duration {
 	return r.config.SequenceInterval
 }
 
-// decodeYcCredentials converts base64 encoded json of iam token to struct.
-func decodeYcCredentials(ycAccountB64 string) (ycsdk.Credentials, error) {
-	ycAccountJSON, err := base64.StdEncoding.DecodeString(ycAccountB64)
+// getZones retrieves available zones from yandex cloud.
+func (r *DNSProvider) getZones(ctx context.Context) ([]*ycdns.DnsZone, error) {
+	request := &ycdns.ListDnsZonesRequest{
+		FolderId: r.config.FolderID,
+	}
+
+	response, err := r.client.DNS().DnsZone().List(ctx, request)
+	if err != nil {
+		return nil, errors.New("yandexcloud: unable to fetch dns zones")
+	}
+
+	return response.DnsZones, nil
+}
+
+func (r *DNSProvider) createOrUpdateRecord(ctx context.Context, zoneID string, name string, value string) error {
+	get := &ycdns.GetDnsZoneRecordSetRequest{
+		DnsZoneId: zoneID,
+		Name:      name,
+		Type:      "TXT",
+	}
+
+	exists, _ := r.client.DNS().DnsZone().GetRecordSet(context.TODO(), get)
+
+	var deletions []*ycdns.RecordSet
+	if exists != nil {
+		deletions = append(deletions, exists)
+	}
+
+	update := &ycdns.UpdateRecordSetsRequest{
+		DnsZoneId: zoneID,
+		Deletions: deletions,
+		Additions: []*ycdns.RecordSet{{
+			Name: name,
+			Type: "TXT",
+			Ttl:  int64(r.config.TTL),
+			Data: []string{
+				value,
+			},
+		}},
+	}
+
+	_, err := r.client.DNS().DnsZone().UpdateRecordSets(ctx, update)
+
+	return err
+}
+
+func (r *DNSProvider) removeRecord(ctx context.Context, zoneID string, name string) (*operation.Operation, error) {
+	get := &ycdns.GetDnsZoneRecordSetRequest{
+		DnsZoneId: zoneID,
+		Name:      name,
+		Type:      "TXT",
+	}
+
+	exists, _ := r.client.DNS().DnsZone().GetRecordSet(ctx, get)
+
+	var deletions []*ycdns.RecordSet
+	if exists != nil {
+		deletions = append(deletions, exists)
+	}
+
+	update := &ycdns.UpdateRecordSetsRequest{
+		DnsZoneId: zoneID,
+		Deletions: deletions,
+		Additions: []*ycdns.RecordSet{},
+	}
+
+	return r.client.DNS().DnsZone().UpdateRecordSets(ctx, update)
+}
+
+// decodeCredentials converts base64 encoded json of iam token to struct.
+func decodeCredentials(accountB64 string) (ycsdk.Credentials, error) {
+	account, err := base64.StdEncoding.DecodeString(accountB64)
 	if err != nil {
 		return nil, err
 	}
 
 	key := &iamkey.Key{}
-
-	err = json.Unmarshal(ycAccountJSON, key)
+	err = json.Unmarshal(account, key)
 	if err != nil {
 		return nil, err
 	}

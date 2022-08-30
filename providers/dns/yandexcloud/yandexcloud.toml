@@ -43,7 +43,6 @@ cat key.json | base64
     YANDEX_CLOUD_POLLING_INTERVAL = "Time between DNS propagation check"
     YANDEX_CLOUD_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
     YANDEX_CLOUD_TTL = "The TTL of the TXT record used for the DNS challenge"
-    YANDEX_CLOUD_SEQUENCE_INTERVAL = "Time between sequential requests"
 
 [Links]
   API = "https://cloud.yandex.com/en/docs/dns/quickstart"

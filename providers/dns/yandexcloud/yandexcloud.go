@@ -7,12 +7,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	ycdns "github.com/yandex-cloud/go-genproto/yandex/cloud/dns/v1"
-	"github.com/yandex-cloud/go-genproto/yandex/cloud/operation"
 	ycsdk "github.com/yandex-cloud/go-sdk"
 	"github.com/yandex-cloud/go-sdk/iamkey"
 )
@@ -29,7 +29,6 @@ const (
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
-	EnvSequenceInterval   = envNamespace + "SEQUENCE_INTERVAL"
 )
 
 // Config is used to configure the creation of the DNSProvider.
@@ -39,7 +38,6 @@ type Config struct {
 
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
-	SequenceInterval   time.Duration
 	TTL                int
 }
 
@@ -49,7 +47,6 @@ func NewDefaultConfig() *Config {
 		TTL:                env.GetOrDefaultInt(EnvTTL, defaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
-		SequenceInterval:   env.GetOrDefaultSecond(EnvSequenceInterval, dns01.DefaultPropagationTimeout),
 	}
 }
 
@@ -132,7 +129,7 @@ func (r *DNSProvider) Present(domain, _, keyAuth string) error {
 
 	name := fqdn[:len(fqdn)-len(authZone)-1]
 
-	err = r.createOrUpdateRecord(ctx, zoneID, name, value)
+	err = r.upsertRecordSetData(ctx, zoneID, name, value)
 	if err != nil {
 		return fmt.Errorf("yandexcloud: %w", err)
 	}
@@ -142,7 +139,7 @@ func (r *DNSProvider) Present(domain, _, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (r *DNSProvider) CleanUp(domain, _, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
@@ -170,7 +167,7 @@ func (r *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 
 	name := fqdn[:len(fqdn)-len(authZone)-1]
 
-	_, err = r.removeRecord(ctx, zoneID, name)
+	err = r.removeRecordSetData(ctx, zoneID, name, value)
 	if err != nil {
 		return fmt.Errorf("yandexcloud: %w", err)
 	}
@@ -182,12 +179,6 @@ func (r *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 // Adjusting here to cope with spikes in propagation times.
 func (r *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return r.config.PropagationTimeout, r.config.PollingInterval
-}
-
-// Sequential All DNS challenges for this provider will be resolved sequentially.
-// Returns the interval between each iteration.
-func (r *DNSProvider) Sequential() time.Duration {
-	return r.config.SequenceInterval
 }
 
 // getZones retrieves available zones from yandex cloud.
@@ -204,59 +195,100 @@ func (r *DNSProvider) getZones(ctx context.Context) ([]*ycdns.DnsZone, error) {
 	return response.DnsZones, nil
 }
 
-func (r *DNSProvider) createOrUpdateRecord(ctx context.Context, zoneID string, name string, value string) error {
+func (r *DNSProvider) upsertRecordSetData(ctx context.Context, zoneID, name, value string) error {
 	get := &ycdns.GetDnsZoneRecordSetRequest{
 		DnsZoneId: zoneID,
 		Name:      name,
 		Type:      "TXT",
 	}
 
-	exists, _ := r.client.DNS().DnsZone().GetRecordSet(context.TODO(), get)
-
 	var deletions []*ycdns.RecordSet
-	if exists != nil {
-		deletions = append(deletions, exists)
+	record := &ycdns.RecordSet{
+		Name: name,
+		Type: "TXT",
+		Ttl:  int64(r.config.TTL),
+		Data: []string{},
+	}
+
+	exist, err := r.client.DNS().DnsZone().GetRecordSet(ctx, get)
+	if err != nil {
+		if !strings.Contains(err.Error(), "RecordSet not found") {
+			return err
+		}
+	}
+
+	if exist != nil {
+		record.Data = append(record.Data, exist.Data...)
+		deletions = append(deletions, exist)
+	}
+
+	appended := appendUniqRecordSetData(record, value)
+	if !appended {
+		// The value already present in RecordSet, nothing to do
+		return nil
 	}
 
 	update := &ycdns.UpdateRecordSetsRequest{
 		DnsZoneId: zoneID,
 		Deletions: deletions,
-		Additions: []*ycdns.RecordSet{{
-			Name: name,
-			Type: "TXT",
-			Ttl:  int64(r.config.TTL),
-			Data: []string{
-				value,
-			},
-		}},
+		Additions: []*ycdns.RecordSet{
+			record,
+		},
 	}
 
-	_, err := r.client.DNS().DnsZone().UpdateRecordSets(ctx, update)
+	_, err = r.client.DNS().DnsZone().UpdateRecordSets(ctx, update)
 
 	return err
 }
 
-func (r *DNSProvider) removeRecord(ctx context.Context, zoneID string, name string) (*operation.Operation, error) {
+func (r *DNSProvider) removeRecordSetData(ctx context.Context, zoneID, name, value string) error {
 	get := &ycdns.GetDnsZoneRecordSetRequest{
 		DnsZoneId: zoneID,
 		Name:      name,
 		Type:      "TXT",
 	}
 
-	exists, _ := r.client.DNS().DnsZone().GetRecordSet(ctx, get)
+	exist, err := r.client.DNS().DnsZone().GetRecordSet(ctx, get)
+	if err != nil {
+		if strings.Contains(err.Error(), "RecordSet not found") {
+			// RecordSet is not present, nothing to do
+			return nil
+		}
 
-	var deletions []*ycdns.RecordSet
-	if exists != nil {
-		deletions = append(deletions, exists)
+		return err
+	}
+
+	var additions []*ycdns.RecordSet
+
+	if len(exist.Data) > 1 {
+		// RecordSet is not empty we should update it
+		record := &ycdns.RecordSet{
+			Name: name,
+			Type: "TXT",
+			Ttl:  int64(r.config.TTL),
+			Data: []string{},
+		}
+
+		for _, data := range exist.Data {
+			if data != value {
+				record.Data = append(record.Data, data)
+			}
+		}
+
+		additions = append(additions, record)
 	}
 
 	update := &ycdns.UpdateRecordSetsRequest{
 		DnsZoneId: zoneID,
-		Deletions: deletions,
-		Additions: []*ycdns.RecordSet{},
+		Deletions: []*ycdns.RecordSet{
+			exist,
+		},
+		Additions: additions,
 	}
 
-	return r.client.DNS().DnsZone().UpdateRecordSets(ctx, update)
+	_, err = r.client.DNS().DnsZone().UpdateRecordSets(ctx, update)
+
+	return err
 }
 
 // decodeCredentials converts base64 encoded json of iam token to struct.
@@ -273,4 +305,24 @@ func decodeCredentials(accountB64 string) (ycsdk.Credentials, error) {
 	}
 
 	return ycsdk.ServiceAccountKey(key)
+}
+
+func appendUniqRecordSetData(record *ycdns.RecordSet, appendValue string) (appended bool) {
+	exists := map[string]bool{}
+
+	for _, data := range record.Data {
+		_, ok := exists[data]
+		if !ok {
+			exists[data] = true
+		}
+	}
+
+	_, ok := exists[appendValue]
+	if ok {
+		return
+	}
+
+	record.Data = append(record.Data, appendValue)
+
+	return true
 }

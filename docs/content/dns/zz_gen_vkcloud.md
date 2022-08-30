@@ -26,9 +26,9 @@ Configuration for [VK Cloud](https://mcs.mail.ru/).
 Here is an example bash command using the VK Cloud provider:
 
 ```bash
-VK_CLOUD_PROJECT_ID="todo: docs" \
-VK_CLOUD_USERNAME="todo: docs" \
-VK_CLOUD_PASSWORD="todo: docs" \
+VK_CLOUD_PROJECT_ID="<your project id string>" \
+VK_CLOUD_USERNAME="<your email>" \
+VK_CLOUD_PASSWORD="<your password>" \
 lego --email you@example.com --dns vkcloud --domains "example.org" --domains "*.example.org" run
 ```
 

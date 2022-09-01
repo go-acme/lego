@@ -15,6 +15,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/bindman"
 	"github.com/go-acme/lego/v4/providers/dns/bluecat"
 	"github.com/go-acme/lego/v4/providers/dns/checkdomain"
+	"github.com/go-acme/lego/v4/providers/dns/civo"
 	"github.com/go-acme/lego/v4/providers/dns/clouddns"
 	"github.com/go-acme/lego/v4/providers/dns/cloudflare"
 	"github.com/go-acme/lego/v4/providers/dns/cloudns"
@@ -136,6 +137,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return bluecat.NewDNSProvider()
 	case "checkdomain":
 		return checkdomain.NewDNSProvider()
+	case "civo":
+		return civo.NewDNSProvider()
 	case "clouddns":
 		return clouddns.NewDNSProvider()
 	case "cloudflare":

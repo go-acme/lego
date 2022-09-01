@@ -26,9 +26,9 @@ Configuration for [VK Cloud](https://mcs.mail.ru/).
 Here is an example bash command using the VK Cloud provider:
 
 ```bash
-VK_CLOUD_PROJECT_ID="<your project id string>" \
-VK_CLOUD_USERNAME="<your email>" \
-VK_CLOUD_PASSWORD="<your password>" \
+VK_CLOUD_PROJECT_ID="<your_project_id>" \
+VK_CLOUD_USERNAME="<your_email>" \
+VK_CLOUD_PASSWORD="<your_password>" \
 lego --email you@example.com --dns vkcloud --domains "example.org" --domains "*.example.org" run
 ```
 
@@ -62,13 +62,15 @@ The environment variable names can be suffixed by `_FILE` to reference a file in
 More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 ## Credential inforamtion
-You can find all required and additional information on ["Project/Keys" page](https://mcs.mail.ru/app/en/project/keys) of your cloud
 
-| ENV Variable | Parameter from page |
-| VK_CLOUD_PROJECT_ID |   Project ID	                  |
-| VK_CLOUD_USERNAME |           Username          |
-| VK_CLOUD_DOMAIN_NAME |       User Domain Name	              |
-| VK_CLOUD_IDENTITY_ENDPOINT |       User Domain Name	              |
+You can find all required and additional information on ["Project/Keys" page](https://mcs.mail.ru/app/en/project/keys) of your cloud.
+
+| ENV Variable               | Parameter from page |
+|----------------------------|---------------------|
+| VK_CLOUD_PROJECT_ID        | Project ID          |
+| VK_CLOUD_USERNAME          | Username            |
+| VK_CLOUD_DOMAIN_NAME       | User Domain Name    |
+| VK_CLOUD_IDENTITY_ENDPOINT | Identity endpoint   |
 
 
 

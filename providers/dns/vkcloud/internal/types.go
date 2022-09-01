@@ -1,4 +1,4 @@
-package vkcloud
+package internal
 
 type DNSZone struct {
 	UUID          string `json:"uuid,omitempty"`
@@ -21,7 +21,3 @@ type DNSTXTRecord struct {
 	Content string `json:"content,omitempty"`
 	TTL     int    `json:"ttl,omitempty"`
 }
-
-type DNSZones = []DNSZone
-
-type DNSTXTRecords = []DNSTXTRecord

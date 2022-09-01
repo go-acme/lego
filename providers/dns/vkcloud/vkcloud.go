@@ -4,22 +4,22 @@ package vkcloud
 import (
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/vkcloud/internal"
 	"github.com/gophercloud/gophercloud"
 )
 
 const (
-	defaultTTL = 60
-
 	defaultIdentityEndpoint = "https://infra.mail.ru/identity/v3/"
-	defaultDomainName       = "users"
-
-	defaultDNSEndpoint = "https://mcs.mail.ru/public-dns"
+	defaultDNSEndpoint      = "https://mcs.mail.ru/public-dns"
 )
+
+const defaultTTL = 60
+
+const defaultDomainName = "users"
 
 // Environment variables names.
 const (
@@ -64,8 +64,9 @@ func NewDefaultConfig() *Config {
 	}
 }
 
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	client *Client
+	client *internal.Client
 	config *Config
 }
 
@@ -83,9 +84,6 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config.IdentityEndpoint = env.GetOrDefaultString(EnvIdentityEndpoint, defaultIdentityEndpoint)
 	config.DomainName = env.GetOrDefaultString(EnvDomainName, defaultDomainName)
 	config.DNSEndpoint = env.GetOrDefaultString(EnvDNSEndpoint, defaultDNSEndpoint)
-	if config.DNSEndpoint == "" {
-		return nil, fmt.Errorf("vkcloud: dns api endpoint is missing in credentials information")
-	}
 
 	return NewDNSProviderConfig(config)
 }
@@ -96,18 +94,21 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("vkcloud: the configuration of the DNS provider is nil")
 	}
 
-	authOpts, err := getAuthOptions(config)
-	if err != nil {
-		return nil, fmt.Errorf("vkcloud: credentials are malformed: %w", err)
-	}
-
 	if config.DNSEndpoint == "" {
-		return nil, fmt.Errorf("vkcloud: dns endpoint is missing in config")
+		return nil, fmt.Errorf("vkcloud: DNS endpoint is missing in config")
 	}
 
-	client, err := NewClient(config.DNSEndpoint, authOpts)
+	authOpts := gophercloud.AuthOptions{
+		IdentityEndpoint: config.IdentityEndpoint,
+		Username:         config.Username,
+		Password:         config.Password,
+		DomainName:       config.DomainName,
+		TenantID:         config.ProjectID,
+	}
+
+	client, err := internal.NewClient(config.DNSEndpoint, authOpts)
 	if err != nil {
-		return nil, fmt.Errorf("vkcloud: unable to build vk cloud client: %w", err)
+		return nil, fmt.Errorf("vkcloud: unable to build VK Cloud client: %w", err)
 	}
 
 	return &DNSProvider{
@@ -124,7 +125,8 @@ func (r *DNSProvider) Present(domain, _, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("vkcloud: %w", err)
 	}
-	authZone = strings.TrimRight(authZone, ".")
+
+	authZone = dns01.UnFqdn(authZone)
 
 	zones, err := r.client.ListZones()
 	if err != nil {
@@ -132,7 +134,6 @@ func (r *DNSProvider) Present(domain, _, keyAuth string) error {
 	}
 
 	var zoneUUID string
-
 	for _, zone := range zones {
 		if zone.Zone == authZone {
 			zoneUUID = zone.UUID
@@ -140,7 +141,7 @@ func (r *DNSProvider) Present(domain, _, keyAuth string) error {
 	}
 
 	if zoneUUID == "" {
-		return fmt.Errorf("vkcloud: cant find dns zone %s in vk cloud", authZone)
+		return fmt.Errorf("vkcloud: cant find dns zone %s in VK Cloud", authZone)
 	}
 
 	name := fqdn[:len(fqdn)-len(authZone)-1]
@@ -161,7 +162,8 @@ func (r *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("vkcloud: %w", err)
 	}
-	authZone = strings.TrimRight(authZone, ".")
+
+	authZone = dns01.UnFqdn(authZone)
 
 	zones, err := r.client.ListZones()
 	if err != nil {
@@ -209,7 +211,7 @@ func (r *DNSProvider) upsertTXTRecord(zoneUUID, name, value string) error {
 		}
 	}
 
-	return r.client.CreateTXTRecord(zoneUUID, &DNSTXTRecord{
+	return r.client.CreateTXTRecord(zoneUUID, &internal.DNSTXTRecord{
 		Name:    name,
 		Content: value,
 		TTL:     r.config.TTL,
@@ -222,7 +224,7 @@ func (r *DNSProvider) removeTXTRecord(zoneUUID, name, value string) error {
 		return err
 	}
 
-	name = strings.TrimRight(name, ".")
+	name = dns01.UnFqdn(name)
 	for _, record := range records {
 		if record.Name == name && record.Content == value {
 			return r.client.DeleteTXTRecord(zoneUUID, record.UUID)
@@ -231,36 +233,4 @@ func (r *DNSProvider) removeTXTRecord(zoneUUID, name, value string) error {
 
 	// The DNSRecord is not present, nothing to do
 	return nil
-}
-
-func getAuthOptions(config *Config) (gophercloud.AuthOptions, error) {
-	opts := gophercloud.AuthOptions{}
-
-	if config.ProjectID == "" {
-		return opts, fmt.Errorf("vkcloud: project id is missing in credentials information")
-	}
-
-	if config.Username == "" {
-		return opts, fmt.Errorf("vkcloud: username is missing in credentials information")
-	}
-
-	if config.Password == "" {
-		return opts, fmt.Errorf("vkcloud: password is missing in credentials information")
-	}
-
-	if config.IdentityEndpoint == "" {
-		return opts, fmt.Errorf("vkcloud: identity endpoint is missing in config")
-	}
-
-	if config.DomainName == "" {
-		return opts, fmt.Errorf("vkcloud: domain name is missing in config")
-	}
-
-	opts.IdentityEndpoint = config.IdentityEndpoint
-	opts.Username = config.Username
-	opts.Password = config.Password
-	opts.DomainName = config.DomainName
-	opts.TenantID = config.ProjectID
-
-	return opts, nil
 }

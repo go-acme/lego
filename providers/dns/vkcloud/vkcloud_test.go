@@ -10,9 +10,9 @@ import (
 const envDomain = envNamespace + "DOMAIN"
 
 const (
-	fakeProjectID = `an_project_id_from_vk_cloud_ui`
-	fakeUsername  = `vkclouduser@email.address`
-	fakePasswd    = `vkcloudpasswd`
+	fakeProjectID = "an_project_id_from_vk_cloud_ui"
+	fakeUsername  = "vkclouduser@email.address"
+	fakePasswd    = "vkcloudpasswd"
 )
 
 var envTest = tester.NewEnvTest(EnvProjectID, EnvUsername, EnvPassword).WithDomain(envDomain)
@@ -108,7 +108,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 				IdentityEndpoint: defaultIdentityEndpoint,
 				DomainName:       defaultDomainName,
 			},
-			expected: "vkcloud: credentials are malformed: vkcloud: project id is missing in credentials information",
+			expected: "vkcloud: unable to build VK Cloud client: project id is missing in credentials information",
 		},
 		{
 			desc: "missing username",
@@ -119,7 +119,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 				IdentityEndpoint: defaultIdentityEndpoint,
 				DomainName:       defaultDomainName,
 			},
-			expected: "vkcloud: credentials are malformed: vkcloud: username is missing in credentials information",
+			expected: "vkcloud: unable to build VK Cloud client: username is missing in credentials information",
 		},
 		{
 			desc: "missing password",
@@ -130,7 +130,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 				IdentityEndpoint: defaultIdentityEndpoint,
 				DomainName:       defaultDomainName,
 			},
-			expected: "vkcloud: credentials are malformed: vkcloud: password is missing in credentials information",
+			expected: "vkcloud: unable to build VK Cloud client: password is missing in credentials information",
 		},
 		{
 			desc: "missing dns endpoint",
@@ -141,7 +141,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 				IdentityEndpoint: defaultIdentityEndpoint,
 				DomainName:       defaultDomainName,
 			},
-			expected: "vkcloud: dns endpoint is missing in config",
+			expected: "vkcloud: DNS endpoint is missing in config",
 		},
 		{
 			desc: "missing identity endpoint",
@@ -152,7 +152,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 				DNSEndpoint: defaultDNSEndpoint,
 				DomainName:  defaultDomainName,
 			},
-			expected: "vkcloud: credentials are malformed: vkcloud: identity endpoint is missing in config",
+			expected: "vkcloud: unable to build VK Cloud client: identity endpoint is missing in config",
 		},
 		{
 			desc: "missing domain name",
@@ -163,7 +163,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 				DNSEndpoint:      defaultDNSEndpoint,
 				IdentityEndpoint: defaultIdentityEndpoint,
 			},
-			expected: "vkcloud: credentials are malformed: vkcloud: domain name is missing in config",
+			expected: "vkcloud: unable to build VK Cloud client: domain name is missing in config",
 		},
 	}
 

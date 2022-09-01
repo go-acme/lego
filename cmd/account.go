@@ -29,3 +29,5 @@ func (a *Account) GetPrivateKey() crypto.PrivateKey {
 func (a *Account) GetRegistration() *registration.Resource {
 	return a.Registration
 }
+
+/** End **/

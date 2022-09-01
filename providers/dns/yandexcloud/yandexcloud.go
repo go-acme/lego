@@ -307,7 +307,7 @@ func decodeCredentials(accountB64 string) (ycsdk.Credentials, error) {
 	return ycsdk.ServiceAccountKey(key)
 }
 
-func appendUniqRecordSetData(record *ycdns.RecordSet, appendValue string) (appended bool) {
+func appendUniqRecordSetData(record *ycdns.RecordSet, appendValue string) bool {
 	exists := map[string]bool{}
 
 	for _, data := range record.Data {
@@ -319,7 +319,7 @@ func appendUniqRecordSetData(record *ycdns.RecordSet, appendValue string) (appen
 
 	_, ok := exists[appendValue]
 	if ok {
-		return
+		return false
 	}
 
 	record.Data = append(record.Data, appendValue)

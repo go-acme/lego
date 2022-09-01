@@ -26,7 +26,7 @@ Configuration for [Infoblox](https://www.infoblox.com/).
 Here is an example bash command using the Infoblox provider:
 
 ```bash
-INFOBLOX_USER=api-user-529 \
+INFOBLOX_USERNAME=api-user-529 \
 INFOBLOX_PASSWORD=b9841238feb177a84330febba8a83208921177bffe733 \
 INFOBLOX_HOST=infoblox.example.org
 lego --email you@example.com --dns infoblox --domains my.example.org run

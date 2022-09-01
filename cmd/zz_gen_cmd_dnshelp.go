@@ -116,6 +116,7 @@ func allDNSCodes() string {
 		"vultr",
 		"wedos",
 		"yandex",
+		"yandexcloud",
 		"zoneee",
 		"zonomi",
 	}
@@ -2302,6 +2303,26 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/yandex`)
+
+	case "yandexcloud":
+		// generated from: providers/dns/yandexcloud/yandexcloud.toml
+		ew.writeln(`Configuration for Yandex Cloud.`)
+		ew.writeln(`Code:	'yandexcloud'`)
+		ew.writeln(`Since:	'v4.9.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "YANDEX_CLOUD_FOLDER_ID":	The string id of folder (aka project) in Yandex Cloud`)
+		ew.writeln(`	- "YANDEX_CLOUD_IAM_TOKEN":	The base64 encoded json which contains inforamtion about iam token of serivce account with 'dns.admin' permissions`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "YANDEX_CLOUD_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "YANDEX_CLOUD_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "YANDEX_CLOUD_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/yandexcloud`)
 
 	case "zoneee":
 		// generated from: providers/dns/zoneee/zoneee.toml

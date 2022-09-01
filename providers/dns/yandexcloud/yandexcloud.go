@@ -183,13 +183,13 @@ func (r *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // getZones retrieves available zones from yandex cloud.
 func (r *DNSProvider) getZones(ctx context.Context) ([]*ycdns.DnsZone, error) {
-	request := &ycdns.ListDnsZonesRequest{
+	list := &ycdns.ListDnsZonesRequest{
 		FolderId: r.config.FolderID,
 	}
 
-	response, err := r.client.DNS().DnsZone().List(ctx, request)
+	response, err := r.client.DNS().DnsZone().List(ctx, list)
 	if err != nil {
-		return nil, errors.New("yandexcloud: unable to fetch dns zones")
+		return nil, errors.New("unable to fetch dns zones")
 	}
 
 	return response.DnsZones, nil
@@ -202,14 +202,6 @@ func (r *DNSProvider) upsertRecordSetData(ctx context.Context, zoneID, name, val
 		Type:      "TXT",
 	}
 
-	var deletions []*ycdns.RecordSet
-	record := &ycdns.RecordSet{
-		Name: name,
-		Type: "TXT",
-		Ttl:  int64(r.config.TTL),
-		Data: []string{},
-	}
-
 	exist, err := r.client.DNS().DnsZone().GetRecordSet(ctx, get)
 	if err != nil {
 		if !strings.Contains(err.Error(), "RecordSet not found") {
@@ -217,12 +209,20 @@ func (r *DNSProvider) upsertRecordSetData(ctx context.Context, zoneID, name, val
 		}
 	}
 
+	record := &ycdns.RecordSet{
+		Name: name,
+		Type: "TXT",
+		Ttl:  int64(r.config.TTL),
+		Data: []string{},
+	}
+
+	var deletions []*ycdns.RecordSet
 	if exist != nil {
 		record.Data = append(record.Data, exist.Data...)
 		deletions = append(deletions, exist)
 	}
 
-	appended := appendUniqRecordSetData(record, value)
+	appended := appendRecordSetData(record, value)
 	if !appended {
 		// The value already present in RecordSet, nothing to do
 		return nil
@@ -231,9 +231,7 @@ func (r *DNSProvider) upsertRecordSetData(ctx context.Context, zoneID, name, val
 	update := &ycdns.UpdateRecordSetsRequest{
 		DnsZoneId: zoneID,
 		Deletions: deletions,
-		Additions: []*ycdns.RecordSet{
-			record,
-		},
+		Additions: []*ycdns.RecordSet{record},
 	}
 
 	_, err = r.client.DNS().DnsZone().UpdateRecordSets(ctx, update)
@@ -248,7 +246,7 @@ func (r *DNSProvider) removeRecordSetData(ctx context.Context, zoneID, name, val
 		Type:      "TXT",
 	}
 
-	exist, err := r.client.DNS().DnsZone().GetRecordSet(ctx, get)
+	previousRecord, err := r.client.DNS().DnsZone().GetRecordSet(ctx, get)
 	if err != nil {
 		if strings.Contains(err.Error(), "RecordSet not found") {
 			// RecordSet is not present, nothing to do
@@ -260,7 +258,7 @@ func (r *DNSProvider) removeRecordSetData(ctx context.Context, zoneID, name, val
 
 	var additions []*ycdns.RecordSet
 
-	if len(exist.Data) > 1 {
+	if len(previousRecord.Data) > 1 {
 		// RecordSet is not empty we should update it
 		record := &ycdns.RecordSet{
 			Name: name,
@@ -269,7 +267,7 @@ func (r *DNSProvider) removeRecordSetData(ctx context.Context, zoneID, name, val
 			Data: []string{},
 		}
 
-		for _, data := range exist.Data {
+		for _, data := range previousRecord.Data {
 			if data != value {
 				record.Data = append(record.Data, data)
 			}
@@ -280,9 +278,7 @@ func (r *DNSProvider) removeRecordSetData(ctx context.Context, zoneID, name, val
 
 	update := &ycdns.UpdateRecordSetsRequest{
 		DnsZoneId: zoneID,
-		Deletions: []*ycdns.RecordSet{
-			exist,
-		},
+		Deletions: []*ycdns.RecordSet{previousRecord},
 		Additions: additions,
 	}
 
@@ -307,22 +303,14 @@ func decodeCredentials(accountB64 string) (ycsdk.Credentials, error) {
 	return ycsdk.ServiceAccountKey(key)
 }
 
-func appendUniqRecordSetData(record *ycdns.RecordSet, appendValue string) bool {
-	exists := map[string]bool{}
-
+func appendRecordSetData(record *ycdns.RecordSet, value string) bool {
 	for _, data := range record.Data {
-		_, ok := exists[data]
-		if !ok {
-			exists[data] = true
+		if data == value {
+			return false
 		}
 	}
 
-	_, ok := exists[appendValue]
-	if ok {
-		return false
-	}
-
-	record.Data = append(record.Data, appendValue)
+	record.Data = append(record.Data, value)
 
 	return true
 }

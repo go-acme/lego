@@ -37,8 +37,8 @@ cat key.json | base64
 
 [Configuration]
   [Configuration.Credentials]
-  YANDEX_CLOUD_IAM_TOKEN = "The base64 encoded json which contains inforamtion about iam token of serivce account with `dns.admin` permissions"
-  YANDEX_CLOUD_FOLDER_ID = "The string id of folder (aka project) in yandex cloud"
+    YANDEX_CLOUD_IAM_TOKEN = "The base64 encoded json which contains inforamtion about iam token of serivce account with `dns.admin` permissions"
+    YANDEX_CLOUD_FOLDER_ID = "The string id of folder (aka project) in yandex cloud"
   [Configuration.Additional]
     YANDEX_CLOUD_POLLING_INTERVAL = "Time between DNS propagation check"
     YANDEX_CLOUD_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"

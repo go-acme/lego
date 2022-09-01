@@ -154,7 +154,7 @@ func (c *Client) postRequest(cmd string, data url.Values) (*Response, error) {
 		return nil, err
 	}
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("HTTP error %d [%s]: %v", resp.StatusCode, http.StatusText(resp.StatusCode), string(body))
 	}
 

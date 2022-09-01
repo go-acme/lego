@@ -169,7 +169,7 @@ func (d *DNSProvider) createTXTRecord(zone, leaf, value string) error {
 		return fmt.Errorf("createTXTRecord: %w", err)
 	}
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("createTXTRecord: error in API: %d", resp.StatusCode)
 	}
 
@@ -221,7 +221,7 @@ func (d *DNSProvider) removeTXTRecord(zone, leaf, value string) error {
 		return fmt.Errorf("removeTXTRecord: %w", err)
 	}
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("removeTXTRecord: error in API: %d", resp.StatusCode)
 	}
 

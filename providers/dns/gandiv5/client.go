@@ -163,11 +163,11 @@ func (d *DNSProvider) do(req *http.Request, v interface{}) error {
 }
 
 func checkResponse(resp *http.Response) error {
-	if resp.StatusCode == 404 && resp.Request.Method == http.MethodGet {
+	if resp.StatusCode == http.StatusNotFound && resp.Request.Method == http.MethodGet {
 		return nil
 	}
 
-	if resp.StatusCode >= 400 {
+	if resp.StatusCode >= http.StatusBadRequest {
 		data, err := readBody(resp)
 		if err != nil {
 			return fmt.Errorf("%d [%s] request failed: %w", resp.StatusCode, http.StatusText(resp.StatusCode), err)

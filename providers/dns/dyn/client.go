@@ -121,7 +121,7 @@ func (d *DNSProvider) sendRequest(method, resource string, payload interface{}) 
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode >= 500 {
+	if resp.StatusCode >= http.StatusInternalServerError {
 		return nil, fmt.Errorf("API request failed with HTTP status code %d", resp.StatusCode)
 	}
 
@@ -131,9 +131,9 @@ func (d *DNSProvider) sendRequest(method, resource string, payload interface{}) 
 		return nil, err
 	}
 
-	if resp.StatusCode >= 400 {
+	if resp.StatusCode >= http.StatusBadRequest {
 		return nil, fmt.Errorf("API request failed with HTTP status code %d: %s", resp.StatusCode, dynRes.Messages)
-	} else if resp.StatusCode == 307 {
+	} else if resp.StatusCode == http.StatusTemporaryRedirect {
 		// TODO add support for HTTP 307 response and long running jobs
 		return nil, errors.New("API request returned HTTP 307. This is currently unsupported")
 	}

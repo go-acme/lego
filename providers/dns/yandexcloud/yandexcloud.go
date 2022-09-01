@@ -50,6 +50,7 @@ func NewDefaultConfig() *Config {
 	}
 }
 
+// DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	client *ycsdk.SDK
 	config *Config

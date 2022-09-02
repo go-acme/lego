@@ -283,7 +283,7 @@ func (c *Client) doRequest(method string, uri *url.URL) (json.RawMessage, error)
 		return nil, errors.New(toUnreadableBodyMessage(req, content))
 	}
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("invalid code (%d), error: %s", resp.StatusCode, content)
 	}
 

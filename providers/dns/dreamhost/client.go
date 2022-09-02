@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"net/url"
 
 	"github.com/go-acme/lego/v4/log"
@@ -49,7 +50,7 @@ func (d *DNSProvider) updateTxtRecord(u fmt.Stringer) error {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("request failed with HTTP status code %d", resp.StatusCode)
 	}
 

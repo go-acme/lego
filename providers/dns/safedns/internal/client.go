@@ -94,7 +94,7 @@ func (c *Client) RemoveRecord(zone string, recordID int) error {
 	}
 	defer func() { _ = resp.Body.Close() }()
 
-	if resp.StatusCode >= 400 {
+	if resp.StatusCode >= http.StatusBadRequest {
 		return readError(req, resp)
 	}
 

@@ -80,7 +80,7 @@ func (d *DNSProvider) sendRequest(method, resource string, payload interface{}) 
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode >= 400 {
+	if resp.StatusCode >= http.StatusBadRequest {
 		return nil, fmt.Errorf("request failed with HTTP status code %d", resp.StatusCode)
 	}
 

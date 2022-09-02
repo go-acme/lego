@@ -132,7 +132,7 @@ func (d *DNSProvider) loginRequest() error {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode >= 400 {
+	if resp.StatusCode >= http.StatusBadRequest {
 		return fmt.Errorf("OTC API request failed with HTTP status code %d", resp.StatusCode)
 	}
 
@@ -253,7 +253,7 @@ func (d *DNSProvider) sendRequest(method, resource string, payload interface{}) 
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode >= 400 {
+	if resp.StatusCode >= http.StatusBadRequest {
 		return nil, fmt.Errorf("OTC API request %s failed with HTTP status code %d", url, resp.StatusCode)
 	}
 

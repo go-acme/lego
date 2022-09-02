@@ -60,7 +60,7 @@ func (c *Client) CreateRecord(zone string, record Record) (*CreateRecordResponse
 	}
 	defer func() { _ = resp.Body.Close() }()
 
-	if resp.StatusCode >= 400 {
+	if resp.StatusCode >= http.StatusBadRequest {
 		return nil, readError(req, resp)
 	}
 
@@ -98,7 +98,7 @@ func (c *Client) DeleteRecord(zone string, recordID string) error {
 	}
 	defer func() { _ = resp.Body.Close() }()
 
-	if resp.StatusCode >= 400 {
+	if resp.StatusCode >= http.StatusBadRequest {
 		return readError(req, resp)
 	}
 

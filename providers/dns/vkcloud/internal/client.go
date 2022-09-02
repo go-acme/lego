@@ -85,7 +85,7 @@ func (c *Client) request(method, uri string, options *gophercloud.RequestOpts) e
 		return fmt.Errorf("auth: %w", err)
 	}
 
-	endpoint, err := c.baseURL.Parse(path.Join(c.baseURL.Path, "v2", "dns", uri))
+	endpoint, err := c.baseURL.Parse(path.Join(c.baseURL.Path, "v2", "dns", uri) + "/")
 	if err != nil {
 		return err
 	}

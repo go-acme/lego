@@ -21,7 +21,7 @@ func (d *DNSProvider) doRequest(domain, value, cmd string) error {
 
 	defer resp.Body.Close()
 
-	if resp.StatusCode >= 400 {
+	if resp.StatusCode >= http.StatusBadRequest {
 		var content []byte
 		content, err = io.ReadAll(resp.Body)
 		if err != nil {

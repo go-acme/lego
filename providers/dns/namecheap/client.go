@@ -110,7 +110,7 @@ func (d *DNSProvider) do(req *http.Request, out interface{}) error {
 		return err
 	}
 
-	if resp.StatusCode >= 400 {
+	if resp.StatusCode >= http.StatusBadRequest {
 		var body []byte
 		body, err = readBody(resp)
 		if err != nil {

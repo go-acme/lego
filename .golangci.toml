@@ -1,5 +1,5 @@
 [run]
-  deadline = "5m"
+  timeout = "5m"
   skip-files = []
 
 [linters-settings]
@@ -53,13 +53,16 @@
 [linters]
   enable-all = true
   disable = [
+    "deadcode", # deprecated
+    "exhaustivestruct", # deprecated
+    "golint", # deprecated
+    "ifshort", # deprecated
     "interfacer", # deprecated
     "maligned", # deprecated
-    "scopelint", # deprecated
-    "golint", # deprecated
     "nosnakecase", # deprecated
-    "ifshort", # deprecated
-    "exhaustivestruct", # deprecated
+    "scopelint", # deprecated
+    "structcheck", # deprecated
+    "varcheck", # deprecated
     "cyclop", # duplicate of gocyclo
     "sqlclosecheck", # not relevant (SQL)
     "rowserrcheck", # not relevant (SQL)
@@ -102,7 +105,8 @@
   exclude = [
     "Error return value of .((os\\.)?std(out|err)\\..*|.*Close|.*Flush|os\\.Remove(All)?|.*printf?|os\\.(Un)?Setenv). is not checked",
     "exported (type|method|function) (.+) should have comment or be unexported",
-    "ST1000: at least one file in a package should have a package comment"
+    "ST1000: at least one file in a package should have a package comment",
+    "package-comments: should have a package comment",
   ]
   [[issues.exclude-rules]]
     path = "(.+)_test.go"
@@ -197,12 +201,3 @@
   [[issues.exclude-rules]]
     path = "providers/dns/sakuracloud/client.go"
     text = "mu is a global variable"
-  [[issues.exclude-rules]]
-    path = "providers/dns/tencentcloud/client.go"
-    text = "RESOURCENOTFOUND_NODATAOFRECORD contains underscore."
-  [[issues.exclude-rules]]
-    path = "providers/dns/ibmcloud/internal/wrapper.go"
-    text = "Dns_Domain(_ResourceRecord)? contains underscore."
-  [[issues.exclude-rules]]
-    path = "providers/dns/rfc2136/"
-    text = "RR_Header contains underscore."

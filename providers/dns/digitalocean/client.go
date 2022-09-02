@@ -49,7 +49,7 @@ func (d *DNSProvider) removeTxtRecord(domain string, recordID int) error {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode >= 400 {
+	if resp.StatusCode >= http.StatusBadRequest {
 		return readError(req, resp)
 	}
 
@@ -80,7 +80,7 @@ func (d *DNSProvider) addTxtRecord(fqdn, value string) (*txtRecordResponse, erro
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode >= 400 {
+	if resp.StatusCode >= http.StatusBadRequest {
 		return nil, readError(req, resp)
 	}
 

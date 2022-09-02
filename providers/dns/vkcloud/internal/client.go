@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strings"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
@@ -52,7 +53,10 @@ func (c *Client) ListZones() ([]DNSZone, error) {
 	var zones []DNSZone
 	opts := &gophercloud.RequestOpts{JSONResponse: &zones}
 
-	err := c.request(http.MethodGet, "", opts)
+	// TODO(ldez): go1.19 => c.baseURL.JoinPath("/")
+	endpoint := joinPath(c.baseURL, "/")
+
+	err := c.request(http.MethodGet, endpoint, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +68,10 @@ func (c *Client) ListTXTRecords(zoneUUID string) ([]DNSTXTRecord, error) {
 	var records []DNSTXTRecord
 	opts := &gophercloud.RequestOpts{JSONResponse: &records}
 
-	err := c.request(http.MethodGet, path.Join(zoneUUID, "txt"), opts)
+	// TODO(ldez): go1.19 => c.baseURL.JoinPath(zoneUUID, "txt", "/")
+	endpoint := joinPath(c.baseURL, zoneUUID, "txt", "/")
+
+	err := c.request(http.MethodGet, endpoint, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -78,24 +85,25 @@ func (c *Client) CreateTXTRecord(zoneUUID string, record *DNSTXTRecord) error {
 		JSONResponse: record,
 	}
 
-	return c.request(http.MethodPost, path.Join(zoneUUID, "txt"), opts)
+	// TODO(ldez): go1.19 => c.baseURL.JoinPath(zoneUUID, "txt", "/")
+	endpoint := joinPath(c.baseURL, zoneUUID, "txt", "/")
+
+	return c.request(http.MethodPost, endpoint, opts)
 }
 
 func (c *Client) DeleteTXTRecord(zoneUUID, recordUUID string) error {
-	return c.request(http.MethodDelete, path.Join(zoneUUID, "txt", recordUUID), &gophercloud.RequestOpts{})
+	// TODO(ldez): go1.19 => c.baseURL.JoinPath(zoneUUID, "txt", recordUUID)
+	endpoint := joinPath(c.baseURL, zoneUUID, "txt", recordUUID)
+
+	return c.request(http.MethodDelete, endpoint, &gophercloud.RequestOpts{})
 }
 
-func (c *Client) request(method, uri string, options *gophercloud.RequestOpts) error {
+func (c *Client) request(method string, endpoint *url.URL, options *gophercloud.RequestOpts) error {
 	if err := c.lazyAuth(); err != nil {
 		return fmt.Errorf("auth: %w", err)
 	}
 
-	endpoint, err := c.baseURL.Parse(path.Join(c.baseURL.Path, uri) + "/")
-	if err != nil {
-		return err
-	}
-
-	_, err = c.openstack.Request(method, endpoint.String(), options)
+	_, err := c.openstack.Request(method, endpoint.String(), options)
 	if err != nil {
 		return fmt.Errorf("request: %w", err)
 	}
@@ -140,4 +148,18 @@ func validateAuthOptions(opts gophercloud.AuthOptions) error {
 	}
 
 	return nil
+}
+
+// light version of go1.19 url.URL.JoinPath.
+// TODO(ldez): must be remove when we will update to go1.19.
+func joinPath(uri *url.URL, elem ...string) *url.URL {
+	result := path.Join(elem...)
+	result = path.Join(uri.Path, result)
+	if len(elem) > 0 && strings.HasSuffix(elem[len(elem)-1], "/") {
+		result += "/"
+	}
+
+	parse, _ := uri.Parse(result)
+
+	return parse
 }

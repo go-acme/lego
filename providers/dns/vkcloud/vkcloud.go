@@ -14,7 +14,7 @@ import (
 
 const (
 	defaultIdentityEndpoint = "https://infra.mail.ru/identity/v3/"
-	defaultDNSEndpoint      = "https://mcs.mail.ru/public-dns"
+	defaultDNSEndpoint      = "https://mcs.mail.ru/public-dns/v2/dns"
 )
 
 const defaultTTL = 60

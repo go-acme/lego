@@ -37,11 +37,6 @@ func NewClient(endpoint string, authOpts gophercloud.AuthOptions) (*Client, erro
 		return nil, fmt.Errorf("parse URL: %w", err)
 	}
 
-	baseURL, err = url.Parse(path.Join(baseURL.Path, "v2", "dns"))
-	if err != nil {
-		return nil, fmt.Errorf("parse URL path: %w", err)
-	}
-
 	return &Client{
 		baseURL:   baseURL,
 		openstack: openstackClient,

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"path"
+	"strings"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
@@ -47,7 +47,7 @@ func (c *Client) ListZones() ([]DNSZone, error) {
 	var zones []DNSZone
 	opts := &gophercloud.RequestOpts{JSONResponse: &zones}
 
-	err := c.request(http.MethodGet, "", opts)
+	err := c.request(http.MethodGet, "/", opts)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +59,7 @@ func (c *Client) ListTXTRecords(zoneUUID string) ([]DNSTXTRecord, error) {
 	var records []DNSTXTRecord
 	opts := &gophercloud.RequestOpts{JSONResponse: &records}
 
-	err := c.request(http.MethodGet, path.Join(zoneUUID, "txt"), opts)
+	err := c.request(http.MethodGet, joinURL(zoneUUID, "txt", "/"), opts)
 	if err != nil {
 		return nil, err
 	}
@@ -73,11 +73,11 @@ func (c *Client) CreateTXTRecord(zoneUUID string, record *DNSTXTRecord) error {
 		JSONResponse: record,
 	}
 
-	return c.request(http.MethodPost, path.Join(zoneUUID, "txt"), opts)
+	return c.request(http.MethodPost, joinURL(zoneUUID, "txt", "/"), opts)
 }
 
 func (c *Client) DeleteTXTRecord(zoneUUID, recordUUID string) error {
-	return c.request(http.MethodDelete, path.Join(zoneUUID, "txt", recordUUID), &gophercloud.RequestOpts{})
+	return c.request(http.MethodDelete, joinURL(zoneUUID, "txt", recordUUID), &gophercloud.RequestOpts{})
 }
 
 func (c *Client) request(method, uri string, options *gophercloud.RequestOpts) error {
@@ -85,7 +85,7 @@ func (c *Client) request(method, uri string, options *gophercloud.RequestOpts) e
 		return fmt.Errorf("auth: %w", err)
 	}
 
-	endpoint, err := c.baseURL.Parse(path.Join(c.baseURL.Path, "v2", "dns", uri))
+	endpoint, err := c.baseURL.Parse(joinURL(c.baseURL.Path, "v2", "dns", uri))
 	if err != nil {
 		return err
 	}
@@ -111,6 +111,10 @@ func (c *Client) lazyAuth() error {
 	c.authenticated = true
 
 	return nil
+}
+
+func joinURL(parts ...string) string {
+	return strings.Join(parts, "/")
 }
 
 func validateAuthOptions(opts gophercloud.AuthOptions) error {

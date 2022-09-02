@@ -112,6 +112,7 @@ func allDNSCodes() string {
 		"vercel",
 		"versio",
 		"vinyldns",
+		"vkcloud",
 		"vscale",
 		"vultr",
 		"wedos",
@@ -2221,6 +2222,30 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/vinyldns`)
+
+	case "vkcloud":
+		// generated from: providers/dns/vkcloud/vkcloud.toml
+		ew.writeln(`Configuration for VK Cloud.`)
+		ew.writeln(`Code:	'vkcloud'`)
+		ew.writeln(`Since:	'v4.9.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "VK_CLOUD_PASSWORD":	Password for VK Cloud account`)
+		ew.writeln(`	- "VK_CLOUD_PROJECT_ID":	String ID of project in VK Cloud`)
+		ew.writeln(`	- "VK_CLOUD_USERNAME":	Email of VK Cloud account`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "VK_CLOUD_DNS_ENDPOINT":	URL of DNS API. Defaults to https://mcs.mail.ru/public-dns but can be changed for usage with private clouds`)
+		ew.writeln(`	- "VK_CLOUD_DOMAIN_NAME":	Openstack users domain name. Defaults to 'users' but can be changed for usage with private clouds`)
+		ew.writeln(`	- "VK_CLOUD_IDENTITY_ENDPOINT":	URL of OpenStack Auth API, Defaults to https://infra.mail.ru:35357/v3/ but can be changed for usage with private clouds`)
+		ew.writeln(`	- "VK_CLOUD_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "VK_CLOUD_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "VK_CLOUD_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/vkcloud`)
 
 	case "vscale":
 		// generated from: providers/dns/vscale/vscale.toml

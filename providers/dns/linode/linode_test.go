@@ -160,7 +160,7 @@ func TestDNSProvider_Present(t *testing.T) {
 		{
 			desc: "Success",
 			mockResponses: MockResponseMap{
-				"GET:/domains": linodego.DomainsPagedResponse{
+				"GET:/v4/domains": linodego.DomainsPagedResponse{
 					PageOptions: &linodego.PageOptions{
 						Pages:   1,
 						Results: 1,
@@ -171,7 +171,7 @@ func TestDNSProvider_Present(t *testing.T) {
 						ID:     1234,
 					}},
 				},
-				"POST:/domains/1234/records": linodego.DomainRecord{
+				"POST:/v4/domains/1234/records": linodego.DomainRecord{
 					ID: 1234,
 				},
 			},
@@ -179,7 +179,7 @@ func TestDNSProvider_Present(t *testing.T) {
 		{
 			desc: "NoDomain",
 			mockResponses: MockResponseMap{
-				"GET:/domains": linodego.APIError{
+				"GET:/v4/domains": linodego.APIError{
 					Errors: []linodego.APIErrorReason{{
 						Reason: "Not found",
 					}},
@@ -190,7 +190,7 @@ func TestDNSProvider_Present(t *testing.T) {
 		{
 			desc: "CreateFailed",
 			mockResponses: MockResponseMap{
-				"GET:/domains": &linodego.DomainsPagedResponse{
+				"GET:/v4/domains": &linodego.DomainsPagedResponse{
 					PageOptions: &linodego.PageOptions{
 						Pages:   1,
 						Results: 1,
@@ -201,7 +201,7 @@ func TestDNSProvider_Present(t *testing.T) {
 						ID:     1234,
 					}},
 				},
-				"POST:/domains/1234/records": linodego.APIError{
+				"POST:/v4/domains/1234/records": linodego.APIError{
 					Errors: []linodego.APIErrorReason{{
 						Reason: "Failed to create domain resource",
 						Field:  "somefield",
@@ -247,7 +247,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 		{
 			desc: "Success",
 			mockResponses: MockResponseMap{
-				"GET:/domains": &linodego.DomainsPagedResponse{
+				"GET:/v4/domains": &linodego.DomainsPagedResponse{
 					PageOptions: &linodego.PageOptions{
 						Pages:   1,
 						Results: 1,
@@ -258,7 +258,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 						ID:     1234,
 					}},
 				},
-				"GET:/domains/1234/records": &linodego.DomainRecordsPagedResponse{
+				"GET:/v4/domains/1234/records": &linodego.DomainRecordsPagedResponse{
 					PageOptions: &linodego.PageOptions{
 						Pages:   1,
 						Results: 1,
@@ -271,18 +271,18 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 						Type:   "TXT",
 					}},
 				},
-				"DELETE:/domains/1234/records/1234": struct{}{},
+				"DELETE:/v4/domains/1234/records/1234": struct{}{},
 			},
 		},
 		{
 			desc: "NoDomain",
 			mockResponses: MockResponseMap{
-				"GET:/domains": linodego.APIError{
+				"GET:/v4/domains": linodego.APIError{
 					Errors: []linodego.APIErrorReason{{
 						Reason: "Not found",
 					}},
 				},
-				"GET:/domains/1234/records": linodego.APIError{
+				"GET:/v4/domains/1234/records": linodego.APIError{
 					Errors: []linodego.APIErrorReason{{
 						Reason: "Not found",
 					}},
@@ -293,7 +293,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 		{
 			desc: "DeleteFailed",
 			mockResponses: MockResponseMap{
-				"GET:/domains": linodego.DomainsPagedResponse{
+				"GET:/v4/domains": linodego.DomainsPagedResponse{
 					PageOptions: &linodego.PageOptions{
 						Pages:   1,
 						Results: 1,
@@ -304,7 +304,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 						Domain: "example.com",
 					}},
 				},
-				"GET:/domains/1234/records": linodego.DomainRecordsPagedResponse{
+				"GET:/v4/domains/1234/records": linodego.DomainRecordsPagedResponse{
 					PageOptions: &linodego.PageOptions{
 						Pages:   1,
 						Results: 1,
@@ -317,7 +317,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 						Type:   "TXT",
 					}},
 				},
-				"DELETE:/domains/1234/records/1234": linodego.APIError{
+				"DELETE:/v4/domains/1234/records/1234": linodego.APIError{
 					Errors: []linodego.APIErrorReason{{
 						Reason: "Failed to delete domain resource",
 					}},

@@ -4,7 +4,7 @@ date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: civo
 dnsprovider:
-  since:    "v4.8.0"
+  since:    "v4.9.0"
   code:     "civo"
   url:      "https://civo.com"
 ---
@@ -20,7 +20,7 @@ Configuration for [Civo](https://civo.com).
 <!--more-->
 
 - Code: `civo`
-- Since: v4.8.0
+- Since: v4.9.0
 
 
 Here is an example bash command using the Civo provider:

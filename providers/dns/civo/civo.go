@@ -1,3 +1,4 @@
+// Package civo implements a DNS provider for solving the DNS-01 challenge using CIVO.
 package civo
 
 import (
@@ -52,9 +53,8 @@ type DNSProvider struct {
 	client *civogo.Client
 }
 
-// NewDNSProvider returns a DNSProvider instance configured for Scaleway Domains API.
-// Credentials must be passed in the environment variables:
-// API_TOKEN.
+// NewDNSProvider returns a DNSProvider instance configured for CIVO.
+// Credentials must be passed in the environment variables: API_TOKEN.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvAPIToken)
 	if err != nil {
@@ -67,7 +67,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderConfig return a DNSProvider instance configured for scaleway.
+// NewDNSProviderConfig return a DNSProvider instance configured for CIVO.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("civo: the configuration of the DNS provider is nil")
@@ -90,6 +90,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	return &DNSProvider{config: config, client: client}, nil
 }
 
+// Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
@@ -97,10 +98,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("civo: failed to find zone: fqdn=%s: %w", fqdn, err)
 	}
+
 	dnsDomain, err := d.client.GetDNSDomain(zone)
 	if err != nil {
 		return fmt.Errorf("civo: %w", err)
 	}
+
 	_, err = d.client.CreateDNSRecord(dnsDomain.ID, &civogo.DNSRecordConfig{
 		Name:  extractRecordName(fqdn, zone),
 		Value: value,
@@ -114,16 +117,20 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	return nil
 }
 
+// CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
+
 	zone, err := getZone(fqdn)
 	if err != nil {
 		return fmt.Errorf("civo: failed to find zone: fqdn=%s: %w", fqdn, err)
 	}
+
 	dnsDomain, err := d.client.GetDNSDomain(zone)
 	if err != nil {
 		return fmt.Errorf("civo: %w", err)
 	}
+
 	dnsRecords, err := d.client.ListDNSRecords(dnsDomain.ID)
 	if err != nil {
 		return fmt.Errorf("civo: %w", err)
@@ -141,9 +148,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("civo: %w", err)
 	}
+
 	return nil
 }
 
+// Timeout returns the timeout and interval to use when checking for DNS propagation.
+// Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }

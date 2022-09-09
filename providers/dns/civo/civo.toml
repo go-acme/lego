@@ -2,7 +2,7 @@ Name = "Civo"
 Description = ''''''
 URL = "https://civo.com"
 Code = "civo"
-Since = "v4.8.0"
+Since = "v4.9.0"
 
 Example = '''
 CIVO_TOKEN=xxxxxx \

@@ -349,7 +349,7 @@ func displayDNSHelp(name string) error {
 		// generated from: providers/dns/civo/civo.toml
 		ew.writeln(`Configuration for Civo.`)
 		ew.writeln(`Code:	'civo'`)
-		ew.writeln(`Since:	'v4.8.0'`)
+		ew.writeln(`Since:	'v4.9.0'`)
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)

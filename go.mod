@@ -16,6 +16,7 @@ require (
 	github.com/aliyun/alibaba-cloud-sdk-go v1.61.1755
 	github.com/aws/aws-sdk-go v1.39.0
 	github.com/cenkalti/backoff/v4 v4.1.3
+	github.com/civo/civogo v0.3.11
 	github.com/cloudflare/cloudflare-go v0.49.0
 	github.com/cpu/goacmedns v0.1.1
 	github.com/dnsimple/dnsimple-go v0.71.1

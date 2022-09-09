@@ -24,6 +24,7 @@ func allDNSCodes() string {
 		"bindman",
 		"bluecat",
 		"checkdomain",
+		"civo",
 		"clouddns",
 		"cloudflare",
 		"cloudns",
@@ -343,6 +344,25 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/checkdomain`)
+
+	case "civo":
+		// generated from: providers/dns/civo/civo.toml
+		ew.writeln(`Configuration for Civo.`)
+		ew.writeln(`Code:	'civo'`)
+		ew.writeln(`Since:	'v4.9.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "CIVO_TOKEN":	Authentication token`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "CIVO_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "CIVO_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "CIVO_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/civo`)
 
 	case "clouddns":
 		// generated from: providers/dns/clouddns/clouddns.toml

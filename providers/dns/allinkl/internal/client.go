@@ -2,7 +2,6 @@ package internal
 
 import (
 	"bytes"
-	"crypto/sha1"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
@@ -46,9 +45,6 @@ func NewClient(login string, password string) *Client {
 // - sessionLifetime: Validity of the token in seconds.
 // - sessionUpdateLifetime: with `true` the session is extended with every request.
 func (c Client) Authentication(sessionLifetime int, sessionUpdateLifetime bool) (string, error) {
-	hash := sha1.New()
-	hash.Write([]byte(c.password))
-
 	sul := "N"
 	if sessionUpdateLifetime {
 		sul = "Y"
@@ -56,8 +52,8 @@ func (c Client) Authentication(sessionLifetime int, sessionUpdateLifetime bool) 
 
 	ar := AuthRequest{
 		Login:                 c.login,
-		AuthData:              fmt.Sprintf("%x", hash.Sum(nil)),
-		AuthType:              "sha1",
+		AuthData:              c.password,
+		AuthType:              "plain",
 		SessionLifetime:       sessionLifetime,
 		SessionUpdateLifetime: sul,
 	}

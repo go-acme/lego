@@ -16,6 +16,27 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const certResponseNoBundleMock = `-----BEGIN CERTIFICATE-----
+MIIDEDCCAfigAwIBAgIHPhckqW5fPDANBgkqhkiG9w0BAQsFADAoMSYwJAYDVQQD
+Ex1QZWJibGUgSW50ZXJtZWRpYXRlIENBIDM5NWU2MTAeFw0xODExMDcxNzQ2NTZa
+Fw0yMzExMDcxNzQ2NTZaMBMxETAPBgNVBAMTCGFjbWUud3RmMIIBIjANBgkqhkiG
+9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwtLNKvZXD20XPUQCWYSK9rUSKxD9Eb0c9fag
+bxOxOkLRTgL8LH6yln+bxc3MrHDou4PpDUdeo2CyOQu3CKsTS5mrH3NXYHu0H7p5
+y3riOJTHnfkGKLT9LciGz7GkXd62nvNP57bOf5Sk4P2M+Qbxd0hPTSfu52740LSy
+144cnxe2P1aDYehrEp6nYCESuyD/CtUHTo0qwJmzIy163Sp3rSs15BuCPyhySnE3
+BJ8Ggv+qC6D5I1932DfSqyQJ79iq/HRm0Fn84am3KwvRlUfWxabmsUGARXoqCgnE
+zcbJVOZKewv0zlQJpfac+b+Imj6Lvt1TGjIz2mVyefYgLx8gwwIDAQABo1QwUjAO
+BgNVHQ8BAf8EBAMCBaAwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMCMAwG
+A1UdEwEB/wQCMAAwEwYDVR0RBAwwCoIIYWNtZS53dGYwDQYJKoZIhvcNAQELBQAD
+ggEBABB/0iYhmfPSQot5RaeeovQnsqYjI5ryQK2cwzW6qcTJfv8N6+p6XkqF1+W4
+jXZjrQP8MvgO9KNWlvx12vhINE6wubk88L+2piAi5uS2QejmZbXpyYB9s+oPqlk9
+IDvfdlVYOqvYAhSx7ggGi+j73mjZVtjAavP6dKuu475ZCeq+NIC15RpbbikWKtYE
+HBJ7BW8XQKx67iHGx8ygHTDLbREL80Bck3oUm7wIYGMoNijD6RBl25p4gYl9dzOd
+TqGl5hW/1P5hMbgEzHbr4O3BfWqU2g7tV36TASy3jbC3ONFRNNYrpEZ1AL3+cUri
+OPPkKtAKAbQkKbUIfsHpBZjKZMU=
+-----END CERTIFICATE-----
+`
+
 const certResponseMock = `-----BEGIN CERTIFICATE-----
 MIIDEDCCAfigAwIBAgIHPhckqW5fPDANBgkqhkiG9w0BAQsFADAoMSYwJAYDVQQD
 Ex1QZWJibGUgSW50ZXJtZWRpYXRlIENBIDM5NWU2MTAeFw0xODExMDcxNzQ2NTZa
@@ -179,9 +200,8 @@ func Test_checkResponse(t *testing.T) {
 		},
 	}
 	certRes := &Resource{}
-	bundle := false
 
-	valid, err := certifier.checkResponse(order, certRes, bundle, "")
+	valid, err := certifier.checkResponse(order, certRes, true, "")
 	require.NoError(t, err)
 	assert.True(t, valid)
 	assert.NotNil(t, certRes)
@@ -230,9 +250,8 @@ func Test_checkResponse_issuerRelUp(t *testing.T) {
 		},
 	}
 	certRes := &Resource{}
-	bundle := false
 
-	valid, err := certifier.checkResponse(order, certRes, bundle, "")
+	valid, err := certifier.checkResponse(order, certRes, true, "")
 	require.NoError(t, err)
 	assert.True(t, valid)
 	assert.NotNil(t, certRes)
@@ -245,7 +264,7 @@ func Test_checkResponse_issuerRelUp(t *testing.T) {
 	assert.Equal(t, issuerMock, string(certRes.IssuerCertificate), "IssuerCertificate")
 }
 
-func Test_checkResponse_embeddedIssuer(t *testing.T) {
+func Test_checkResponse_no_bundle(t *testing.T) {
 	mux, apiURL := tester.SetupFakeAPI(t)
 
 	mux.HandleFunc("/certificate", func(w http.ResponseWriter, _ *http.Request) {
@@ -271,9 +290,8 @@ func Test_checkResponse_embeddedIssuer(t *testing.T) {
 		},
 	}
 	certRes := &Resource{}
-	bundle := false
 
-	valid, err := certifier.checkResponse(order, certRes, bundle, "")
+	valid, err := certifier.checkResponse(order, certRes, false, "")
 	require.NoError(t, err)
 	assert.True(t, valid)
 	assert.NotNil(t, certRes)
@@ -282,7 +300,7 @@ func Test_checkResponse_embeddedIssuer(t *testing.T) {
 	assert.Contains(t, certRes.CertURL, "/certificate")
 	assert.Nil(t, certRes.CSR)
 	assert.Nil(t, certRes.PrivateKey)
-	assert.Equal(t, certResponseMock, string(certRes.Certificate), "Certificate")
+	assert.Equal(t, certResponseNoBundleMock, string(certRes.Certificate), "Certificate")
 	assert.Equal(t, issuerMock, string(certRes.IssuerCertificate), "IssuerCertificate")
 }
 
@@ -324,9 +342,8 @@ func Test_checkResponse_alternate(t *testing.T) {
 	certRes := &Resource{
 		Domain: "example.com",
 	}
-	bundle := false
 
-	valid, err := certifier.checkResponse(order, certRes, bundle, "DST Root CA X3")
+	valid, err := certifier.checkResponse(order, certRes, true, "DST Root CA X3")
 	require.NoError(t, err)
 
 	assert.True(t, valid)
@@ -359,7 +376,7 @@ func Test_Get(t *testing.T) {
 
 	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
 
-	certRes, err := certifier.Get(apiURL+"/acme/cert/test-cert", false)
+	certRes, err := certifier.Get(apiURL+"/acme/cert/test-cert", true)
 	require.NoError(t, err)
 
 	assert.NotNil(t, certRes)
@@ -376,6 +393,6 @@ type resolverMock struct {
 	error error
 }
 
-func (r *resolverMock) Solve(authorizations []acme.Authorization) error {
+func (r *resolverMock) Solve(_ []acme.Authorization) error {
 	return r.error
 }

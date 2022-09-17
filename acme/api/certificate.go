@@ -1,6 +1,7 @@
 package api
 
 import (
+	"bytes"
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
@@ -87,6 +88,11 @@ func (c *CertificateService) getCertificateChain(cert []byte, headers http.Heade
 	// See https://community.letsencrypt.org/t/acme-v2-no-up-link-in-response/64962
 	_, issuer := pem.Decode(cert)
 	if issuer != nil {
+		// If bundle is false, we want to return a single certificate.
+		// To do this, we remove the issuer cert(s) from the issued cert.
+		if !bundle {
+			cert = bytes.TrimSuffix(cert, issuer)
+		}
 		return &acme.RawCertificate{Cert: cert, Issuer: issuer}
 	}
 

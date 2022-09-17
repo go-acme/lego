@@ -1,5 +1,5 @@
 ---
-title: "DNSPod"
+title: "DNSPod (deprecated)"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: dnspod
@@ -13,8 +13,8 @@ dnsprovider:
 <!-- providers/dns/dnspod/dnspod.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
+Use the Tencent Cloud provider instead.
 
-Configuration for [DNSPod](https://www.dnspod.com/).
 
 
 <!--more-->
@@ -23,7 +23,7 @@ Configuration for [DNSPod](https://www.dnspod.com/).
 - Since: v0.4.0
 
 
-Here is an example bash command using the DNSPod provider:
+Here is an example bash command using the DNSPod (deprecated) provider:
 
 ```bash
 DNSPOD_API_KEY=xxxxxx \

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"strconv"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -63,10 +64,8 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		DNSZone:            env.GetOrFile(EnvDNSZone),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
-		Region:             env.GetOrDefaultString(EnvRegion, "us-east-1"),
 	}
 }
 
@@ -89,7 +88,12 @@ type DNSProvider struct {
 //
 // See also: https://github.com/aws/aws-sdk-go/wiki/configuring-sdk
 func NewDNSProvider() (*DNSProvider, error) {
-	return NewDNSProviderConfig(NewDefaultConfig())
+	config := NewDefaultConfig()
+
+	config.DNSZone = env.GetOrFile(EnvDNSZone)
+	config.Region = env.GetOrDefaultString(EnvRegion, "us-east-1")
+
+	return NewDNSProviderConfig(config)
 }
 
 // NewDNSProviderConfig return a DNSProvider instance configured for AWS Lightsail.
@@ -117,10 +121,20 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	err := d.newTxtRecord(fqdn, `"`+value+`"`)
+	params := &lightsail.CreateDomainEntryInput{
+		DomainName: aws.String(d.config.DNSZone),
+		DomainEntry: &lightsail.DomainEntry{
+			Name:   aws.String(fqdn),
+			Target: aws.String(strconv.Quote(value)),
+			Type:   aws.String("TXT"),
+		},
+	}
+
+	_, err := d.client.CreateDomainEntry(params)
 	if err != nil {
 		return fmt.Errorf("lightsail: %w", err)
 	}
+
 	return nil
 }
 
@@ -133,7 +147,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		DomainEntry: &lightsail.DomainEntry{
 			Name:   aws.String(fqdn),
 			Type:   aws.String("TXT"),
-			Target: aws.String(`"` + value + `"`),
+			Target: aws.String(strconv.Quote(value)),
 		},
 	}
 
@@ -141,6 +155,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("lightsail: %w", err)
 	}
+
 	return nil
 }
 
@@ -148,17 +163,4 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
-}
-
-func (d *DNSProvider) newTxtRecord(fqdn, value string) error {
-	params := &lightsail.CreateDomainEntryInput{
-		DomainName: aws.String(d.config.DNSZone),
-		DomainEntry: &lightsail.DomainEntry{
-			Name:   aws.String(fqdn),
-			Target: aws.String(value),
-			Type:   aws.String("TXT"),
-		},
-	}
-	_, err := d.client.CreateDomainEntry(params)
-	return err
 }

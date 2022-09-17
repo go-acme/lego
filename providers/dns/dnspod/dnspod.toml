@@ -1,5 +1,7 @@
-Name = "DNSPod"
-Description = ''''''
+Name = "DNSPod (deprecated)"
+Description = '''
+Use the Tencent Cloud provider instead.
+'''
 URL = "https://www.dnspod.com/"
 Code = "dnspod"
 Since = "v0.4.0"

@@ -613,7 +613,7 @@ func displayDNSHelp(name string) error {
 
 	case "dnspod":
 		// generated from: providers/dns/dnspod/dnspod.toml
-		ew.writeln(`Configuration for DNSPod.`)
+		ew.writeln(`Configuration for DNSPod (deprecated).`)
 		ew.writeln(`Code:	'dnspod'`)
 		ew.writeln(`Since:	'v0.4.0'`)
 		ew.writeln()
@@ -2331,7 +2331,7 @@ func displayDNSHelp(name string) error {
 
 	case "yandex":
 		// generated from: providers/dns/yandex/yandex.toml
-		ew.writeln(`Configuration for Yandex.`)
+		ew.writeln(`Configuration for Yandex (deprecated).`)
 		ew.writeln(`Code:	'yandex'`)
 		ew.writeln(`Since:	'v3.7.0'`)
 		ew.writeln()

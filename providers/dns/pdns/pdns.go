@@ -172,6 +172,16 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("pdns: %w", err)
 	}
+
+	if d.apiVersion < 1 {
+		return nil
+	}
+
+	err = d.notify(zone.URL)
+	if err != nil {
+		return fmt.Errorf("pdns: %w", err)
+	}
+
 	return nil
 }
 
@@ -210,5 +220,15 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("pdns: %w", err)
 	}
+
+	if d.apiVersion < 1 {
+		return nil
+	}
+
+	err = d.notify(zone.URL)
+	if err != nil {
+		return fmt.Errorf("pdns: %w", err)
+	}
+
 	return nil
 }

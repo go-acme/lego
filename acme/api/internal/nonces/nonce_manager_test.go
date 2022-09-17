@@ -49,7 +49,7 @@ func TestNotHoldingLockWhileMakingHTTPRequests(t *testing.T) {
 	}()
 	select {
 	case <-resultCh:
-	case <-time.After(400 * time.Millisecond):
+	case <-time.After(500 * time.Millisecond):
 		t.Fatal("JWS is probably holding a lock while making HTTP request")
 	}
 }

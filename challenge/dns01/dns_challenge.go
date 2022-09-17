@@ -179,10 +179,17 @@ func GetRecord(domain, keyAuth string) (fqdn, value string) {
 	fqdn = fmt.Sprintf("_acme-challenge.%s.", domain)
 
 	if ok, _ := strconv.ParseBool(os.Getenv("LEGO_EXPERIMENTAL_CNAME_SUPPORT")); ok {
-		r, err := dnsQuery(fqdn, dns.TypeCNAME, recursiveNameservers, true)
-		// Check if the domain has CNAME then return that
-		if err == nil && r.Rcode == dns.RcodeSuccess {
-			fqdn = updateDomainWithCName(r, fqdn)
+		// recursion counter so it doesn't spin out of control
+		for limit := 0; limit < 50; limit++ {
+			// Keep following CNAMEs
+			r, err := dnsQuery(fqdn, dns.TypeCNAME, recursiveNameservers, true)
+			// Check if the domain has CNAME then use that
+			if err == nil && r.Rcode == dns.RcodeSuccess {
+				fqdn = updateDomainWithCName(r, fqdn)
+			} else {
+				// No more CNAME records to follow, exit
+				return
+			}
 		}
 	}
 

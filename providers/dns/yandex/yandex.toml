@@ -1,5 +1,7 @@
-Name = "Yandex"
-Description = ''''''
+Name = "Yandex (deprecated)"
+Description = '''
+Use the Yandex Cloud provider instead.
+'''
 URL = "https://yandex.com/"
 Code = "yandex"
 Since = "v3.7.0"

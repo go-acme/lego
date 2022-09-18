@@ -1,5 +1,5 @@
 ---
-title: "Yandex"
+title: "Yandex PDD"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: yandex
@@ -14,7 +14,7 @@ dnsprovider:
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
-Configuration for [Yandex](https://yandex.com/).
+Configuration for [Yandex PDD](https://yandex.com/).
 
 
 <!--more-->
@@ -23,7 +23,7 @@ Configuration for [Yandex](https://yandex.com/).
 - Since: v3.7.0
 
 
-Here is an example bash command using the Yandex provider:
+Here is an example bash command using the Yandex PDD provider:
 
 ```bash
 YANDEX_PDD_TOKEN=<your PDD Token> \

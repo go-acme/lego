@@ -2,6 +2,7 @@ package versio
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -231,7 +232,10 @@ func muxSuccess() *http.ServeMux {
 	})
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("Not Found for Request: (%+v)\n\n", r)
+		log.Printf("unexpected request: %+v\n\n", r)
+		data, _ := io.ReadAll(r.Body)
+		defer func() { _ = r.Body.Close() }()
+		log.Println(string(data))
 		http.NotFound(w, r)
 	})
 
@@ -265,6 +269,14 @@ func muxFailToCreateTXT() *http.ServeMux {
 			return
 		}
 		w.WriteHeader(http.StatusBadRequest)
+	})
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("unexpected request: %+v\n\n", r)
+		data, _ := io.ReadAll(r.Body)
+		defer func() { _ = r.Body.Close() }()
+		log.Println(string(data))
+		http.NotFound(w, r)
 	})
 
 	return mux

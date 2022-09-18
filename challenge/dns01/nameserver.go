@@ -13,9 +13,6 @@ import (
 
 const defaultResolvConf = "/etc/resolv.conf"
 
-// dnsTimeout is used to override the default DNS timeout of 10 seconds.
-var dnsTimeout = 10 * time.Second
-
 var (
 	fqdnSoaCache   = map[string]*soaCacheEntry{}
 	muFqdnSoaCache sync.Mutex

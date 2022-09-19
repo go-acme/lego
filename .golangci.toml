@@ -125,7 +125,10 @@
     text = "(tlsFeatureExtensionOID|ocspMustStapleFeature) is a global variable"
   [[issues.exclude-rules]]
     path = "challenge/dns01/nameserver.go"
-    text = "(defaultNameservers|recursiveNameservers|dnsTimeout|fqdnSoaCache|muFqdnSoaCache) is a global variable"
+    text = "(defaultNameservers|recursiveNameservers|fqdnSoaCache|muFqdnSoaCache) is a global variable"
+  [[issues.exclude-rules]]
+    path = "challenge/dns01/nameserver_.+.go"
+    text = "dnsTimeout is a global variable"
   [[issues.exclude-rules]]
     path = "challenge/dns01/nameserver_test.go"
     text = "findXByFqdnTestCases is a global variable"

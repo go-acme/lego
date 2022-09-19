@@ -18,7 +18,7 @@ var (
 
 const (
 	// Fixed test data for unit tests.
-	egDomain  = "threeletter.agency"
+	egDomain  = "example.com"
 	egFQDN    = "_acme-challenge." + egDomain + "."
 	egKeyAuth = "⚷"
 )

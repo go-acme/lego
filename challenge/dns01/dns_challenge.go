@@ -176,22 +176,33 @@ func GetRecord(domain, keyAuth string) (fqdn, value string) {
 	keyAuthShaBytes := sha256.Sum256([]byte(keyAuth))
 	// base64URL encoding without padding
 	value = base64.RawURLEncoding.EncodeToString(keyAuthShaBytes[:sha256.Size])
-	fqdn = fmt.Sprintf("_acme-challenge.%s.", domain)
 
-	if ok, _ := strconv.ParseBool(os.Getenv("LEGO_EXPERIMENTAL_CNAME_SUPPORT")); ok {
-		// recursion counter so it doesn't spin out of control
-		for limit := 0; limit < 50; limit++ {
-			// Keep following CNAMEs
-			r, err := dnsQuery(fqdn, dns.TypeCNAME, recursiveNameservers, true)
-			// Check if the domain has CNAME then use that
-			if err == nil && r.Rcode == dns.RcodeSuccess {
-				fqdn = updateDomainWithCName(r, fqdn)
-			} else {
-				// No more CNAME records to follow, exit
-				return
-			}
-		}
-	}
+	fqdn = getChallengeFqdn(domain)
 
 	return
+}
+
+func getChallengeFqdn(domain string) string {
+	fqdn := fmt.Sprintf("_acme-challenge.%s.", domain)
+
+	if ok, _ := strconv.ParseBool(os.Getenv("LEGO_DISABLE_CNAME_SUPPORT")); ok {
+		return fqdn
+	}
+
+	// recursion counter so it doesn't spin out of control
+	for limit := 0; limit < 50; limit++ {
+		// Keep following CNAMEs
+		r, err := dnsQuery(fqdn, dns.TypeCNAME, recursiveNameservers, true)
+
+		// Check if the domain has CNAME then use that
+		if err == nil && r.Rcode == dns.RcodeSuccess {
+			fqdn = updateDomainWithCName(r, fqdn)
+			continue
+		}
+
+		// No more CNAME records to follow, exit
+		break
+	}
+
+	return fqdn
 }

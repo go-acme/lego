@@ -45,11 +45,6 @@ $ CLOUDFLARE_EMAIL_FILE=/the/path/to/my/email \
   lego --dns cloudflare --domains www.example.com --email you@example.com run
 ```
 
-## Experimental Features
-
-To resolve CNAME when creating dns-01 challenge:
-set `LEGO_EXPERIMENTAL_CNAME_SUPPORT` to `true`.
-
 ## DNS Providers
 
 {{% tableofdnsproviders %}}

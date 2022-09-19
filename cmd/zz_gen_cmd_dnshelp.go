@@ -2331,7 +2331,7 @@ func displayDNSHelp(name string) error {
 
 	case "yandex":
 		// generated from: providers/dns/yandex/yandex.toml
-		ew.writeln(`Configuration for Yandex (deprecated).`)
+		ew.writeln(`Configuration for Yandex PDD.`)
 		ew.writeln(`Code:	'yandex'`)
 		ew.writeln(`Since:	'v3.7.0'`)
 		ew.writeln()

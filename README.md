@@ -75,7 +75,7 @@ Detailed documentation is available [here](https://go-acme.github.io/lego/dns).
 | [Tencent Cloud DNS](https://go-acme.github.io/lego/dns/tencentcloud/)           | [TransIP](https://go-acme.github.io/lego/dns/transip/)                          | [UKFast SafeDNS](https://go-acme.github.io/lego/dns/safedns/)                   | [Variomedia](https://go-acme.github.io/lego/dns/variomedia/)                    |
 | [VegaDNS](https://go-acme.github.io/lego/dns/vegadns/)                          | [Vercel](https://go-acme.github.io/lego/dns/vercel/)                            | [Versio.[nl/eu/uk]](https://go-acme.github.io/lego/dns/versio/)                 | [VinylDNS](https://go-acme.github.io/lego/dns/vinyldns/)                        |
 | [VK Cloud](https://go-acme.github.io/lego/dns/vkcloud/)                         | [Vscale](https://go-acme.github.io/lego/dns/vscale/)                            | [Vultr](https://go-acme.github.io/lego/dns/vultr/)                              | [WEDOS](https://go-acme.github.io/lego/dns/wedos/)                              |
-| [Yandex (deprecated)](https://go-acme.github.io/lego/dns/yandex/)               | [Yandex Cloud](https://go-acme.github.io/lego/dns/yandexcloud/)                 | [Zone.ee](https://go-acme.github.io/lego/dns/zoneee/)                           | [Zonomi](https://go-acme.github.io/lego/dns/zonomi/)                            |
+| [Yandex Cloud](https://go-acme.github.io/lego/dns/yandexcloud/)                 | [Yandex PDD](https://go-acme.github.io/lego/dns/yandex/)                        | [Zone.ee](https://go-acme.github.io/lego/dns/zoneee/)                           | [Zonomi](https://go-acme.github.io/lego/dns/zonomi/)                            |
 
 <!-- END DNS PROVIDERS LIST -->
 

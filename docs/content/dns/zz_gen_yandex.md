@@ -1,5 +1,5 @@
 ---
-title: "Yandex (deprecated)"
+title: "Yandex PDD"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: yandex
@@ -13,8 +13,8 @@ dnsprovider:
 <!-- providers/dns/yandex/yandex.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
-Use the Yandex Cloud provider instead.
 
+Configuration for [Yandex PDD](https://yandex.com/).
 
 
 <!--more-->
@@ -23,7 +23,7 @@ Use the Yandex Cloud provider instead.
 - Since: v3.7.0
 
 
-Here is an example bash command using the Yandex (deprecated) provider:
+Here is an example bash command using the Yandex PDD provider:
 
 ```bash
 YANDEX_PDD_TOKEN=<your PDD Token> \

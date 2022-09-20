@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/base64"
 	"errors"
+	"net"
 
 	"github.com/go-acme/lego/v4/acme"
 )
@@ -13,7 +14,15 @@ type OrderService service
 func (o *OrderService) New(domains []string) (acme.ExtendedOrder, error) {
 	var identifiers []acme.Identifier
 	for _, domain := range domains {
-		identifiers = append(identifiers, acme.Identifier{Type: "dns", Value: domain})
+		ident := acme.Identifier{Value: domain}
+		//now parse type for that:
+		if net.ParseIP(domain) != nil {
+			ident.Type = "ip"
+		} else {
+			ident.Type = "dns"
+		}
+		//append to list
+		identifiers = append(identifiers, ident)
 	}
 
 	orderReq := acme.Order{Identifiers: identifiers}

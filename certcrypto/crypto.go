@@ -14,6 +14,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"net"
 	"strings"
 	"time"
 
@@ -134,9 +135,24 @@ func GeneratePrivateKey(keyType KeyType) (crypto.PrivateKey, error) {
 }
 
 func GenerateCSR(privateKey crypto.PrivateKey, domain string, san []string, mustStaple bool) ([]byte, error) {
+	var dnss []string
+	var ips []net.IP
+	for _, altname := range san {
+		if ip := net.ParseIP(altname); ip == nil {
+			dnss = append(dnss, altname)
+		} else {
+			ips = append(ips, ip)
+		}
+	}
+
 	template := x509.CertificateRequest{
-		Subject:  pkix.Name{CommonName: domain},
-		DNSNames: san,
+		Subject: pkix.Name{CommonName: domain},
+	}
+	if len(dnss) != 0 {
+		template.DNSNames = dnss
+	}
+	if len(ips) != 0 {
+		template.IPAddresses = ips
 	}
 
 	if mustStaple {
@@ -280,8 +296,14 @@ func generateDerCert(privateKey *rsa.PrivateKey, expiration time.Time, domain st
 
 		KeyUsage:              x509.KeyUsageKeyEncipherment,
 		BasicConstraintsValid: true,
-		DNSNames:              []string{domain},
 		ExtraExtensions:       extensions,
+	}
+	// handling SAN filling as type suspected
+	ip := net.ParseIP(domain)
+	if ip != nil {
+		template.IPAddresses = []net.IP{ip}
+	} else {
+		template.DNSNames = []string{domain}
 	}
 
 	return x509.CreateCertificate(rand.Reader, &template, &template, &privateKey.PublicKey, privateKey)

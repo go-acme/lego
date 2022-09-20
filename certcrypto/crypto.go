@@ -234,6 +234,12 @@ func ExtractDomains(cert *x509.Certificate) []string {
 		domains = append(domains, sanDomain)
 	}
 
+	cnip := net.ParseIP(cert.Subject.CommonName)
+	for _, sanIP := range cert.IPAddresses {
+		if !cnip.Equal(sanIP) {
+			domains = append(domains, sanIP.String())
+		}
+	}
 	return domains
 }
 
@@ -252,6 +258,13 @@ func ExtractDomainsCSR(csr *x509.CertificateRequest) []string {
 
 		// Name is unique
 		domains = append(domains, sanName)
+	}
+
+	cnip := net.ParseIP(csr.Subject.CommonName)
+	for _, sanIP := range csr.IPAddresses {
+		if !cnip.Equal(sanIP) {
+			domains = append(domains, sanIP.String())
+		}
 	}
 
 	return domains

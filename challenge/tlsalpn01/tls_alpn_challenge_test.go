@@ -7,6 +7,7 @@ import (
 	"crypto/subtle"
 	"crypto/tls"
 	"encoding/asn1"
+	"net"
 	"net/http"
 	"testing"
 
@@ -21,10 +22,11 @@ import (
 func TestChallenge(t *testing.T) {
 	_, apiURL := tester.SetupFakeAPI(t)
 
-	domain := "localhost:23457"
+	domain := "localhost"
+	port := "23457"
 
 	mockValidate := func(_ *api.Core, _ string, chlng acme.Challenge) error {
-		conn, err := tls.Dial("tcp", domain, &tls.Config{
+		conn, err := tls.Dial("tcp", net.JoinHostPort(domain, port), &tls.Config{
 			InsecureSkipVerify: true,
 		})
 		require.NoError(t, err, "Expected to connect to challenge server without an error")
@@ -76,6 +78,7 @@ func TestChallenge(t *testing.T) {
 
 	authz := acme.Authorization{
 		Identifier: acme.Identifier{
+			Type:  "dns",
 			Value: domain,
 		},
 		Challenges: []acme.Challenge{
@@ -115,4 +118,76 @@ func TestChallengeInvalidPort(t *testing.T) {
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "invalid port")
 	assert.Contains(t, err.Error(), "123456")
+}
+
+func TestChallengeIPaddress(t *testing.T) {
+	_, apiURL := tester.SetupFakeAPI(t)
+
+	domain := "127.128.129.1"
+	port := "23457"
+
+	mockValidate := func(_ *api.Core, _ string, chlng acme.Challenge) error {
+		conn, err := tls.Dial("tcp", net.JoinHostPort(domain, port), &tls.Config{
+			InsecureSkipVerify: true,
+		})
+		require.NoError(t, err, "Expected to connect to challenge server without an error")
+
+		// Expect the server to only return one certificate
+		connState := conn.ConnectionState()
+		assert.Len(t, connState.PeerCertificates, 1, "Expected the challenge server to return exactly one certificate")
+
+		remoteCert := connState.PeerCertificates[0]
+		assert.Len(t, remoteCert.DNSNames, 0, "Expected the challenge certificate to have no DNSNames entry in context of challange for IP")
+		assert.Len(t, remoteCert.IPAddresses, 1, "Expected the challange certificate to have exactly one IPAddresses entry")
+		assert.True(t, net.ParseIP("127.128.129.1").Equal(remoteCert.IPAddresses[0]), "challenge certificate IPAddress ")
+		assert.NotEmpty(t, remoteCert.Extensions, "Expected the challenge certificate to contain extensions")
+
+		idx := -1
+		for i, ext := range remoteCert.Extensions {
+			if idPeAcmeIdentifierV1.Equal(ext.Id) {
+				idx = i
+				break
+			}
+		}
+
+		require.NotEqual(t, -1, idx, "Expected the challenge certificate to contain an extension with the id-pe-acmeIdentifier id,")
+
+		ext := remoteCert.Extensions[idx]
+		assert.True(t, ext.Critical, "Expected the challenge certificate id-pe-acmeIdentifier extension to be marked as critical")
+
+		zBytes := sha256.Sum256([]byte(chlng.KeyAuthorization))
+		value, err := asn1.Marshal(zBytes[:sha256.Size])
+		require.NoError(t, err, "Expected marshaling of the keyAuth to return no error")
+
+		if subtle.ConstantTimeCompare(value, ext.Value) != 1 {
+			t.Errorf("Expected the challenge certificate id-pe-acmeIdentifier extension to contain the SHA-256 digest of the keyAuth, %v, but was %v", zBytes[:], ext.Value)
+		}
+
+		return nil
+	}
+
+	privateKey, err := rsa.GenerateKey(rand.Reader, 512)
+	require.NoError(t, err, "Could not generate test key")
+
+	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)
+	require.NoError(t, err)
+
+	solver := NewChallenge(
+		core,
+		mockValidate,
+		&ProviderServer{port: "23457"},
+	)
+
+	authz := acme.Authorization{
+		Identifier: acme.Identifier{
+			Type:  "ip",
+			Value: domain,
+		},
+		Challenges: []acme.Challenge{
+			{Type: challenge.TLSALPN01.String(), Token: "tlsalpn1"},
+		},
+	}
+
+	err = solver.Solve(authz)
+	require.NoError(t, err)
 }

@@ -561,6 +561,7 @@ func displayDNSHelp(name string) error {
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "DO_API_URL":	The URL of the API`)
 		ew.writeln(`	- "DO_HTTP_TIMEOUT":	API request timeout`)
 		ew.writeln(`	- "DO_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "DO_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)

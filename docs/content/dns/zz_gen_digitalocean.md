@@ -47,6 +47,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
+| `DO_API_URL` | The URL of the API |
 | `DO_HTTP_TIMEOUT` | API request timeout |
 | `DO_POLLING_INTERVAL` | Time between DNS propagation check |
 | `DO_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |

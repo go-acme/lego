@@ -17,6 +17,7 @@ const (
 	envNamespace = "DO_"
 
 	EnvAuthToken = envNamespace + "AUTH_TOKEN"
+	EnvAPIUrl    = envNamespace + "API_URL"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -37,7 +38,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		BaseURL:            defaultBaseURL,
+		BaseURL:            env.GetOrDefaultString(EnvAPIUrl, defaultBaseURL),
 		TTL:                env.GetOrDefaultInt(EnvTTL, 30),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 60*time.Second),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 5*time.Second),

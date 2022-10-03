@@ -13,6 +13,7 @@ lego --email you@example.com --dns digitalocean --domains my.example.org run
   [Configuration.Credentials]
     DO_AUTH_TOKEN = "Authentication token"
   [Configuration.Additional]
+    DO_API_URL = "The URL of the API"
     DO_POLLING_INTERVAL = "Time between DNS propagation check"
     DO_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
     DO_TTL = "The TTL of the TXT record used for the DNS challenge"

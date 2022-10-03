@@ -6,7 +6,7 @@ slug: yandex
 dnsprovider:
   since:    "v3.7.0"
   code:     "yandex"
-  url:      "https://yandex.com/"
+  url:      "https://pdd.yandex.com"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
@@ -14,7 +14,7 @@ dnsprovider:
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
-Configuration for [Yandex PDD](https://yandex.com/).
+Configuration for [Yandex PDD](https://pdd.yandex.com).
 
 
 <!--more-->
@@ -60,7 +60,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 ## More information
 
-- [API documentation](https://tech.yandex.com/domain/doc/concepts/api-dns-docpage/)
+- [API documentation](https://yandex.com/dev/domain/doc/concepts/api-dns.html)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/yandex/yandex.toml -->

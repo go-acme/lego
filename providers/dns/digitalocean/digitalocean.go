@@ -17,12 +17,12 @@ const (
 	envNamespace = "DO_"
 
 	EnvAuthToken = envNamespace + "AUTH_TOKEN"
+	EnvAPIUrl    = envNamespace + "API_URL"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
-	EnvAPIUrl             = envNamespace + "API_URL"
 )
 
 // Config is used to configure the creation of the DNSProvider.

@@ -1,5 +1,33 @@
 # Changelog
 
+## [v4.9.0] - 2022-10-03
+
+### Added:
+
+- **[dnsprovider]** Add DNS provider for CIVO
+- **[dnsprovider]** Add DNS provider for VK Cloud
+- **[dnsprovider]** Add DNS provider for YandexCloud
+- **[dnsprovider]** digitalocean: configurable base URL
+- **[dnsprovider]** loopia: add configurable API endpoint
+- **[dnsprovider]** pdns: notify secondary servers after updates
+
+### Changed:
+- **[dnsprovider]** allinkl: removed deprecated sha1 hashing
+- **[dnsprovider]** auroradns: update authentification
+- **[dnsprovider]** dnspod: deprecated. Use Tencent Cloud instead.
+- **[dnsprovider]** exoscale: migrate to API v2 endpoints
+- **[dnsprovider]** gcloud: update golang.org/x/oauth2
+- **[dnsprovider]** lightsail: cleanup
+- **[dnsprovider]** sakuracloud: update api client library
+- **[cname]** take out CNAME support from experimental features
+- **[lib,cname]** add recursive CNAME lookup support
+- **[lib]** Remove embedded issuer certificates from issued certificate if bundle is false
+
+### Fixed:
+- **[dnsprovider]** luadns: fix cname support
+- **[dnsprovider]** njalla: fix record id unmarshal error
+- **[dnsprovider]** tencentcloud: fix subdomain error
+
 ## [v4.8.0] - 2022-06-30
 
 ### Added

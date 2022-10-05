@@ -82,32 +82,51 @@ See also:
 
 ## Policy
 
-The following AWS IAM policy document describes the permissions required for lego to complete the DNS challenge.
+The following AWS IAM policy document describes least privilege permissions required for lego to complete the DNS challenge. Replace `Z11111112222222333333` with your hosted zone ID and `example.com` with your domain name.
 
 ```json
 {
-   "Version": "2012-10-17",
-   "Statement": [
-       {
-           "Sid": "",
-           "Effect": "Allow",
-           "Action": [
-               "route53:GetChange",
-               "route53:ChangeResourceRecordSets",
-               "route53:ListResourceRecordSets"
-           ],
-           "Resource": [
-               "arn:aws:route53:::hostedzone/*",
-               "arn:aws:route53:::change/*"
-           ]
-       },
-       {
-           "Sid": "",
-           "Effect": "Allow",
-           "Action": "route53:ListHostedZonesByName",
-           "Resource": "*"
-       }
-   ]
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": "route53:GetChange",
+      "Resource": "arn:aws:route53:::change/*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": "route53:ListHostedZonesByName",
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "route53:ListResourceRecordSets"
+      ],
+      "Resource": [
+        "arn:aws:route53:::hostedzone/Z11111112222222333333"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "route53:ChangeResourceRecordSets"
+      ],
+      "Resource": [
+        "arn:aws:route53:::hostedzone/Z11111112222222333333"
+      ],
+      "Condition": {
+        "ForAllValues:StringEquals": {
+          "route53:ChangeResourceRecordSetsNormalizedRecordNames": [
+            "_acme-challenge.example.com"
+          ],
+          "route53:ChangeResourceRecordSetsRecordTypes": [
+            "TXT"
+          ]
+        }
+      }
+    }
+  ]
 }
 ```
 

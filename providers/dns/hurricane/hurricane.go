@@ -86,9 +86,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present updates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, _, keyAuth string) error {
-	_, txtRecord := dns01.GetRecord(domain, keyAuth)
+	resolvedDomain, txtRecord := dns01.GetRecord(domain, keyAuth)
 
-	err := d.client.UpdateTxtRecord(context.Background(), domain, txtRecord)
+	err := d.client.UpdateTxtRecord(context.Background(), domain, resolvedDomain, txtRecord)
 	if err != nil {
 		return fmt.Errorf("hurricane: %w", err)
 	}
@@ -97,8 +97,10 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 }
 
 // CleanUp updates the TXT record matching the specified parameters.
-func (d *DNSProvider) CleanUp(domain, _, _ string) error {
-	err := d.client.UpdateTxtRecord(context.Background(), domain, ".")
+func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
+	resolvedDomain, _ := dns01.GetRecord(domain, keyAuth)
+
+	err := d.client.UpdateTxtRecord(context.Background(), domain, resolvedDomain, ".")
 	if err != nil {
 		return fmt.Errorf("hurricane: %w", err)
 	}

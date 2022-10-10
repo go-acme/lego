@@ -12,6 +12,7 @@
 - **[dnsprovider]** pdns: notify secondary servers after updates
 
 ### Changed:
+
 - **[dnsprovider]** allinkl: removed deprecated sha1 hashing
 - **[dnsprovider]** auroradns: update authentification
 - **[dnsprovider]** dnspod: deprecated. Use Tencent Cloud instead.

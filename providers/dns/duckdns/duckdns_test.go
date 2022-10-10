@@ -107,32 +107,32 @@ func Test_getMainDomain(t *testing.T) {
 		},
 		{
 			desc:     "explicit domain: sub domain",
-			domain:   "sub.duckdns.org",
+			domain:   "_acme-challenge.sub.duckdns.org",
 			expected: "sub.duckdns.org",
 		},
 		{
 			desc:     "explicit domain: subsub domain",
-			domain:   "my.sub.duckdns.org",
+			domain:   "_acme-challenge.my.sub.duckdns.org",
 			expected: "sub.duckdns.org",
 		},
 		{
 			desc:     "explicit domain: subsubsub domain",
-			domain:   "my.sub.sub.duckdns.org",
+			domain:   "_acme-challenge.my.sub.sub.duckdns.org",
 			expected: "sub.duckdns.org",
 		},
 		{
 			desc:     "only subname: sub domain",
-			domain:   "sub",
+			domain:   "_acme-challenge.sub",
 			expected: "sub",
 		},
 		{
 			desc:     "only subname: subsub domain",
-			domain:   "my.sub",
+			domain:   "_acme-challenge.my.sub",
 			expected: "sub",
 		},
 		{
 			desc:     "only subname: subsubsub domain",
-			domain:   "my.sub.sub",
+			domain:   "_acme-challenge.my.sub.sub",
 			expected: "sub",
 		},
 	}

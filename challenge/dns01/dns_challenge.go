@@ -194,14 +194,18 @@ func getChallengeFqdn(domain string) string {
 		// Keep following CNAMEs
 		r, err := dnsQuery(fqdn, dns.TypeCNAME, recursiveNameservers, true)
 
-		// Check if the domain has CNAME then use that
-		if err == nil && r.Rcode == dns.RcodeSuccess {
-			fqdn = updateDomainWithCName(r, fqdn)
-			continue
+		if err != nil || r.Rcode != dns.RcodeSuccess {
+			// No more CNAME records to follow, exit
+			break
 		}
 
-		// No more CNAME records to follow, exit
-		break
+		// Check if the domain has CNAME then use that
+		cname := updateDomainWithCName(r, fqdn)
+		if cname == fqdn {
+			break
+		}
+
+		fqdn = cname
 	}
 
 	return fqdn

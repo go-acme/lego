@@ -64,7 +64,7 @@ func (p preCheck) checkDNSPropagation(fqdn, value string) (bool, error) {
 	}
 
 	if r.Rcode == dns.RcodeSuccess {
-		fqdn = updateDomainWithCName(r, fqdn)
+		fqdn, _ = updateDomainWithCName(r, fqdn)
 	}
 
 	authoritativeNss, err := lookupNameservers(fqdn)

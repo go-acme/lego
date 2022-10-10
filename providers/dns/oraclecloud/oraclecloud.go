@@ -105,7 +105,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	zoneNameOrID, err1 := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
+	zoneNameOrID, err1 := dns01.FindZoneByFqdn(fqdn)
 	if err1 != nil {
 		return fmt.Errorf("oraclecloud: could not find zone for domain %q and fqdn %q : %w", domain, fqdn, err1)
 	}
@@ -140,7 +140,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	zoneNameOrID, err1 := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
+	zoneNameOrID, err1 := dns01.FindZoneByFqdn(fqdn)
 	if err1 != nil {
 		return fmt.Errorf("oraclecloud: could not find zone for domain %q and fqdn %q : %w", domain, fqdn, err1)
 	}

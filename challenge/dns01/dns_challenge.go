@@ -184,7 +184,6 @@ func GetRecord(domain, keyAuth string) (fqdn, value string) {
 
 func getChallengeFqdn(domain string) string {
 	fqdn := fmt.Sprintf("_acme-challenge.%s.", domain)
-	var hasCname bool
 
 	if ok, _ := strconv.ParseBool(os.Getenv("LEGO_DISABLE_CNAME_SUPPORT")); ok {
 		return fqdn
@@ -197,11 +196,12 @@ func getChallengeFqdn(domain string) string {
 
 		// Check if the domain has CNAME then use that
 		if err == nil && r.Rcode == dns.RcodeSuccess {
-			fqdn, hasCname = updateDomainWithCName(r, fqdn)
-			if !hasCname {
-				break
-			}
+			fqdn = updateDomainWithCName(r, fqdn)
+			continue
 		}
+
+		// No more CNAME records to follow, exit
+		break
 	}
 
 	return fqdn

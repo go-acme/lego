@@ -75,7 +75,7 @@ func TestClient_UpdateTxtRecord(t *testing.T) {
 			client := NewClient(map[string]string{"example.com": "secret"})
 			client.baseURL = server.URL
 
-			err := client.UpdateTxtRecord(context.Background(), "example.com", "foo")
+			err := client.UpdateTxtRecord(context.Background(), "_acme-challenge.example.com", "foo")
 			test.expected(t, err)
 		})
 	}

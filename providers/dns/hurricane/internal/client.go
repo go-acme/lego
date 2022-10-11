@@ -51,8 +51,8 @@ func NewClient(credentials map[string]string) *Client {
 }
 
 // UpdateTxtRecord updates a TXT record.
-func (c *Client) UpdateTxtRecord(ctx context.Context, domain string, txt string) error {
-	hostname := fmt.Sprintf("_acme-challenge.%s", domain)
+func (c *Client) UpdateTxtRecord(ctx context.Context, hostname string, txt string) error {
+	domain := strings.TrimPrefix(hostname, "_acme-challenge.")
 
 	c.credMu.Lock()
 	token, ok := c.credentials[domain]

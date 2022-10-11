@@ -12,7 +12,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-acme/lego/v4/challenge/dns01"
 	"golang.org/x/time/rate"
 )
 
@@ -52,12 +51,8 @@ func NewClient(credentials map[string]string) *Client {
 }
 
 // UpdateTxtRecord updates a TXT record.
-func (c *Client) UpdateTxtRecord(ctx context.Context, domain string, resolvedDomain string, txt string) error {
-	hostname := fmt.Sprintf("_acme-challenge.%s", domain)
-
-	if resolvedDomain != hostname {
-		hostname = resolvedDomain
-	}
+func (c *Client) UpdateTxtRecord(ctx context.Context, hostname string, txt string) error {
+	domain := strings.TrimPrefix(hostname, "_acme-challenge.")
 
 	c.credMu.Lock()
 	token, ok := c.credentials[domain]
@@ -69,7 +64,7 @@ func (c *Client) UpdateTxtRecord(ctx context.Context, domain string, resolvedDom
 
 	data := url.Values{}
 	data.Set("password", token)
-	data.Set("hostname", dns01.UnFqdn(hostname))
+	data.Set("hostname", hostname)
 	data.Set("txt", txt)
 
 	rl, _ := c.rateLimiters.LoadOrStore(hostname, rate.NewLimiter(limit(defaultBurst), defaultBurst))

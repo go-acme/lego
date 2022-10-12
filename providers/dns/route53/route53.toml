@@ -28,37 +28,91 @@ See also:
 - [Setting AWS Credentials](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-credentials)
 - [Setting AWS Region](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html#specifying-the-region)
 
-## Policy
+## IAM Policy Examples
 
-The following AWS IAM policy document describes the permissions required for lego to complete the DNS challenge.
+### Broad privileges for testing purposes
+
+The following [IAM policy](https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html) document grants access to the required APIs needed by lego to complete the DNS challenge.
+A word of caution:
+These permissions grant write access to any DNS record in any hosted zone,
+so it is recommended to narrow them down as much as possible if you are using this policy in production.
 
 ```json
 {
-   "Version": "2012-10-17",
-   "Statement": [
-       {
-           "Sid": "",
-           "Effect": "Allow",
-           "Action": [
-               "route53:GetChange",
-               "route53:ChangeResourceRecordSets",
-               "route53:ListResourceRecordSets"
-           ],
-           "Resource": [
-               "arn:aws:route53:::hostedzone/*",
-               "arn:aws:route53:::change/*"
-           ]
-       },
-       {
-           "Sid": "",
-           "Effect": "Allow",
-           "Action": "route53:ListHostedZonesByName",
-           "Resource": "*"
-       }
-   ]
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "route53:GetChange",
+        "route53:ChangeResourceRecordSets",
+        "route53:ListResourceRecordSets"
+      ],
+      "Resource": [
+        "arn:aws:route53:::hostedzone/*",
+        "arn:aws:route53:::change/*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": "route53:ListHostedZonesByName",
+      "Resource": "*"
+    }
+  ]
 }
 ```
 
+### Least privilege policy for production purposes
+
+The following AWS IAM policy document describes least privilege permissions required for lego to complete the DNS challenge.
+Write access is limited to a specified hosted zone's DNS TXT records with a key of `_acme-challenge.example.com`.
+Replace `Z11111112222222333333` with your hosted zone ID and `example.com` with your domain name to use this policy.
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": "route53:GetChange",
+      "Resource": "arn:aws:route53:::change/*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": "route53:ListHostedZonesByName",
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "route53:ListResourceRecordSets"
+      ],
+      "Resource": [
+        "arn:aws:route53:::hostedzone/Z11111112222222333333"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "route53:ChangeResourceRecordSets"
+      ],
+      "Resource": [
+        "arn:aws:route53:::hostedzone/Z11111112222222333333"
+      ],
+      "Condition": {
+        "ForAllValues:StringEquals": {
+          "route53:ChangeResourceRecordSetsNormalizedRecordNames": [
+            "_acme-challenge.example.com"
+          ],
+          "route53:ChangeResourceRecordSetsRecordTypes": [
+            "TXT"
+          ]
+        }
+      }
+    }
+  ]
+}
+```
 '''
 
 [Configuration]

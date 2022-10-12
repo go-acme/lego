@@ -84,7 +84,10 @@ See also:
 
 ### Broad privileges for testing purposes
 
-The following [IAM policy](https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html) document grants access to the required APIs needed by lego to complete the DNS challenge. A word of caution: These permissions grant write access to any DNS record in any hosted zone, so it is recommended to narrow them down as much as possible if you are using this policy in production.
+The following [IAM policy](https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html) document grants access to the required APIs needed by lego to complete the DNS challenge.
+A word of caution:
+These permissions grant write access to any DNS record in any hosted zone,
+so it is recommended to narrow them down as much as possible if you are using this policy in production.
 
 ```json
 {
@@ -113,7 +116,9 @@ The following [IAM policy](https://docs.aws.amazon.com/IAM/latest/UserGuide/acce
 
 ### Least privilege policy for production purposes
 
-The following AWS IAM policy document describes least privilege permissions required for lego to complete the DNS challenge. Write access is limited to a specified hosted zone's DNS TXT records with a key of `_acme-challenge.example.com`. Replace `Z11111112222222333333` with your hosted zone ID and `example.com` with your domain name to use this policy.
+The following AWS IAM policy document describes least privilege permissions required for lego to complete the DNS challenge.
+Write access is limited to a specified hosted zone's DNS TXT records with a key of `_acme-challenge.example.com`.
+Replace `Z11111112222222333333` with your hosted zone ID and `example.com` with your domain name to use this policy.
 
 ```json
 {

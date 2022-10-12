@@ -108,6 +108,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
+	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	err := d.wrapper.AddTXTRecord(fqdn, domain, value, d.config.TTL)
 	if err != nil {
 		return fmt.Errorf("ibmcloud: %w", err)
@@ -120,6 +121,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 
+	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	err := d.wrapper.CleanupTXTRecord(fqdn, domain)
 	if err != nil {
 		return fmt.Errorf("ibmcloud: %w", err)

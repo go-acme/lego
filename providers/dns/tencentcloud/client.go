@@ -32,7 +32,7 @@ func (d *DNSProvider) getHostedZone(domain string) (*dnspod.DomainListItem, erro
 		request.Offset = common.Int64Ptr(int64(len(domains)))
 	}
 
-	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
+	authZone, err := dns01.FindZoneByFqdn(domain)
 	if err != nil {
 		return nil, err
 	}

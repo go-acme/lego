@@ -105,7 +105,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
+	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
 		return fmt.Errorf("vercel: could not determine zone for domain %q: %w", domain, err)
 	}

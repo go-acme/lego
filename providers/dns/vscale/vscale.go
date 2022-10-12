@@ -103,6 +103,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
+	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	domainObj, err := d.client.GetDomainByName(domain)
 	if err != nil {
 		return fmt.Errorf("vscale: %w", err)
@@ -127,6 +128,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 	recordName := dns01.UnFqdn(fqdn)
 
+	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	domainObj, err := d.client.GetDomainByName(domain)
 	if err != nil {
 		return fmt.Errorf("vscale: %w", err)

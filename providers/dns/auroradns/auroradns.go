@@ -106,7 +106,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
+	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
 		return fmt.Errorf("aurora: could not determine zone for domain %q: %w", domain, err)
 	}
@@ -158,7 +158,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("unknown recordID for %q", fqdn)
 	}
 
-	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
+	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(fqdn))
 	if err != nil {
 		return fmt.Errorf("could not determine zone for domain %q: %w", domain, err)
 	}

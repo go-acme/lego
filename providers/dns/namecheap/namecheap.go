@@ -144,6 +144,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present installs a TXT record for the DNS challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	ch, err := newChallenge(domain, keyAuth)
 	if err != nil {
 		return fmt.Errorf("namecheap: %w", err)
@@ -179,6 +180,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes a TXT record used for a previous DNS challenge.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	ch, err := newChallenge(domain, keyAuth)
 	if err != nil {
 		return fmt.Errorf("namecheap: %w", err)

@@ -50,8 +50,7 @@ func (e *ErrorResponse) Error() string {
 
 // https://developer.stackpath.com/en/api/dns/#operation/GetZones
 func (d *DNSProvider) getZones(domain string) (*Zone, error) {
-	domain = dns01.UnFqdn(domain)
-	tld, err := publicsuffix.EffectiveTLDPlusOne(domain)
+	tld, err := publicsuffix.EffectiveTLDPlusOne(dns01.UnFqdn(domain))
 	if err != nil {
 		return nil, err
 	}

@@ -114,7 +114,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	zone, err := d.getHostedZone(domain)
+	zone, err := d.getHostedZone(fqdn)
 	if err != nil {
 		return fmt.Errorf("tencentcloud: failed to get hosted zone: %w", err)
 	}
@@ -145,7 +145,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 
-	zone, err := d.getHostedZone(domain)
+	zone, err := d.getHostedZone(fqdn)
 	if err != nil {
 		return fmt.Errorf("tencentcloud: failed to get hosted zone: %w", err)
 	}

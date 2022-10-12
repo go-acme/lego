@@ -101,6 +101,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	domainID, err := d.getDomainIDByName(domain)
 	if err != nil {
 		return fmt.Errorf("checkdomain: %w", err)
@@ -111,10 +112,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("checkdomain: %w", err)
 	}
 
-	name, value := dns01.GetRecord(domain, keyAuth)
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
 	err = d.createRecord(domainID, &Record{
-		Name:  name,
+		Name:  fqdn,
 		TTL:   d.config.TTL,
 		Type:  "TXT",
 		Value: value,
@@ -129,6 +130,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record previously created.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	domainID, err := d.getDomainIDByName(domain)
 	if err != nil {
 		return fmt.Errorf("checkdomain: %w", err)
@@ -139,15 +141,15 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("checkdomain: %w", err)
 	}
 
-	name, value := dns01.GetRecord(domain, keyAuth)
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	err = d.deleteTXTRecord(domainID, name, value)
+	err = d.deleteTXTRecord(domainID, fqdn, value)
 	if err != nil {
 		return fmt.Errorf("checkdomain: %w", err)
 	}
 
 	d.domainIDMu.Lock()
-	delete(d.domainIDMapping, name)
+	delete(d.domainIDMapping, fqdn)
 	d.domainIDMu.Unlock()
 
 	return nil

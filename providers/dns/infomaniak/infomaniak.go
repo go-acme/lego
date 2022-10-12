@@ -112,6 +112,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
+	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	ikDomain, err := d.client.GetDomainByName(domain)
 	if err != nil {
 		return fmt.Errorf("infomaniak: could not get domain %q: %w", domain, err)

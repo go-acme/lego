@@ -100,7 +100,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	zoneID, err := dpfapiutils.GetZoneIdFromServiceCode(context.Background(), d.client, d.config.ServiceCode)
+	zoneID, err := dpfapiutils.GetZoneIdFromServiceCode(ctx, d.client, d.config.ServiceCode)
 	if err != nil {
 		return fmt.Errorf("iijdpf: failed to get zone id: %w", err)
 	}
@@ -124,7 +124,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	zoneID, err := dpfapiutils.GetZoneIdFromServiceCode(context.Background(), d.client, d.config.ServiceCode)
+	zoneID, err := dpfapiutils.GetZoneIdFromServiceCode(ctx, d.client, d.config.ServiceCode)
 	if err != nil {
 		return fmt.Errorf("iijdpf: failed to get zone id: %w", err)
 	}

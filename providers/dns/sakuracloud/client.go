@@ -15,11 +15,11 @@ import (
 // see: https://github.com/go-acme/lego/pull/850
 var mu sync.Mutex
 
-func (d *DNSProvider) addTXTRecord(fqdn, domain, value string, ttl int) error {
+func (d *DNSProvider) addTXTRecord(fqdn, value string, ttl int) error {
 	mu.Lock()
 	defer mu.Unlock()
 
-	zone, err := d.getHostedZone(domain)
+	zone, err := d.getHostedZone(fqdn)
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
@@ -43,11 +43,11 @@ func (d *DNSProvider) addTXTRecord(fqdn, domain, value string, ttl int) error {
 	return nil
 }
 
-func (d *DNSProvider) cleanupTXTRecord(fqdn, domain, value string) error {
+func (d *DNSProvider) cleanupTXTRecord(fqdn, value string) error {
 	mu.Lock()
 	defer mu.Unlock()
 
-	zone, err := d.getHostedZone(domain)
+	zone, err := d.getHostedZone(fqdn)
 	if err != nil {
 		return err
 	}
@@ -74,7 +74,7 @@ func (d *DNSProvider) cleanupTXTRecord(fqdn, domain, value string) error {
 }
 
 func (d *DNSProvider) getHostedZone(domain string) (*iaas.DNS, error) {
-	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
+	authZone, err := dns01.FindZoneByFqdn(domain)
 	if err != nil {
 		return nil, err
 	}

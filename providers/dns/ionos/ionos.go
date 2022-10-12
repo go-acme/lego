@@ -115,6 +115,7 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 		return fmt.Errorf("ionos: failed to get zones: %w", err)
 	}
 
+	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	zone := findZone(zones, domain)
 	if zone == nil {
 		return errors.New("ionos: no matching zone found for domain")
@@ -156,6 +157,7 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 		return fmt.Errorf("ionos: failed to get zones: %w", err)
 	}
 
+	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	zone := findZone(zones, domain)
 	if zone == nil {
 		return errors.New("ionos: no matching zone found for domain")

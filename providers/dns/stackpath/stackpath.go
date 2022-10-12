@@ -113,12 +113,12 @@ func getOathClient(config *Config) *http.Client {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	zone, err := d.getZones(domain)
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
+
+	zone, err := d.getZones(fqdn)
 	if err != nil {
 		return fmt.Errorf("stackpath: %w", err)
 	}
-
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
 	record := Record{
 		Name: extractRecordName(fqdn, zone.Domain),
@@ -132,12 +132,13 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	zone, err := d.getZones(domain)
+	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+
+	zone, err := d.getZones(fqdn)
 	if err != nil {
 		return fmt.Errorf("stackpath: %w", err)
 	}
 
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 	recordName := extractRecordName(fqdn, zone.Domain)
 
 	records, err := d.getZoneRecords(recordName, zone)

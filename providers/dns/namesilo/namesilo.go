@@ -89,7 +89,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	zoneName, err := getZoneNameByDomain(domain)
+	zoneName, err := getZoneNameByDomain(fqdn)
 	if err != nil {
 		return fmt.Errorf("namesilo: %w", err)
 	}
@@ -111,7 +111,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 
-	zoneName, err := getZoneNameByDomain(domain)
+	zoneName, err := getZoneNameByDomain(fqdn)
 	if err != nil {
 		return fmt.Errorf("namesilo: %w", err)
 	}
@@ -141,7 +141,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 func getZoneNameByDomain(domain string) (string, error) {
-	zone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
+	zone, err := dns01.FindZoneByFqdn(domain)
 	if err != nil {
 		return "", fmt.Errorf("failed to find zone for domain: %s, %w", domain, err)
 	}

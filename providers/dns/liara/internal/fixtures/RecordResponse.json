@@ -1,0 +1,10 @@
+{
+  "status": "string",
+  "data": {
+    "id": "string",
+    "name": "string",
+    "type": "string",
+    "ttl": 3600,
+    "contents": [{ "text": "string" }]
+  }
+}

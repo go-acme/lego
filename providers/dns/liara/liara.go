@@ -4,6 +4,7 @@ package liara
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 	"sync"
@@ -12,6 +13,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/liara/internal"
+	"github.com/hashicorp/go-retryablehttp"
 )
 
 const (
@@ -93,7 +95,16 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("liara: invalid TTL, TTL (%d) must be lower than %d", config.TTL, maxTTL)
 	}
 
-	client := internal.NewClient(config.APIKey, config.HTTPClient)
+	client := internal.NewClient(config.APIKey)
+
+	retryClient := retryablehttp.NewClient()
+	retryClient.RetryMax = 5
+	if config.HTTPClient != nil {
+		retryClient.HTTPClient = config.HTTPClient
+	}
+	retryClient.Logger = log.Default()
+
+	client.HTTPClient = retryClient.StandardClient()
 
 	return &DNSProvider{
 		config:    config,
@@ -118,14 +129,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	record := internal.Record{
-		Type: "TXT",
-		Name: dns01.UnFqdn(strings.TrimSuffix(fqdn, authZone)),
-		Contents: []internal.Content{
-			{
-				Text: value,
-			},
-		},
-		TTL: d.config.TTL,
+		Type:     "TXT",
+		Name:     dns01.UnFqdn(strings.TrimSuffix(fqdn, authZone)),
+		Contents: []internal.Content{{Text: value}},
+		TTL:      d.config.TTL,
 	}
 	newRecord, err := d.client.CreateRecord(dns01.UnFqdn(authZone), record)
 	if err != nil {
@@ -156,7 +163,8 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("liara: unknown record ID for '%s' '%s'", fqdn, token)
 	}
 
-	if err := d.client.DeleteRecord(dns01.UnFqdn(authZone), recordID); err != nil {
+	err = d.client.DeleteRecord(dns01.UnFqdn(authZone), recordID)
+	if err != nil {
 		return fmt.Errorf("liara: failed to delete TXT record, id=%s: %w", recordID, err)
 	}
 

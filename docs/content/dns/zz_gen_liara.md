@@ -4,7 +4,7 @@ date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: liara
 dnsprovider:
-  since:    "v4.9.0"
+  since:    "v4.10.0"
   code:     "liara"
   url:      "https://liara.ir"
 ---
@@ -20,13 +20,13 @@ Configuration for [Liara](https://liara.ir).
 <!--more-->
 
 - Code: `liara`
-- Since: v4.9.0
+- Since: v4.10.0
 
 
 Here is an example bash command using the Liara provider:
 
 ```bash
-LIARA_API_KEY="Bearer xxxxxxxxxxxxxxxxxxxxx" \
+LIARA_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
 lego --email myemail@example.com --dns liara --domains my.example.org run
 ```
 

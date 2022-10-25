@@ -1341,7 +1341,7 @@ func displayDNSHelp(name string) error {
 		// generated from: providers/dns/liara/liara.toml
 		ew.writeln(`Configuration for Liara.`)
 		ew.writeln(`Code:	'liara'`)
-		ew.writeln(`Since:	'v4.9.0'`)
+		ew.writeln(`Since:	'v4.10.0'`)
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)

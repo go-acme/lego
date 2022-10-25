@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const APIKey = "key"
+const apiKey = "key"
 
 func TestClient_GetRecords(t *testing.T) {
 	client, mux := setup(t)
@@ -135,7 +135,7 @@ func testHandler(filename string, method string, statusCode int) http.HandlerFun
 		}
 
 		auth := req.Header.Get("Authorization")
-		if auth != APIKey {
+		if auth != "Bearer "+apiKey {
 			http.Error(rw, "invalid Authorization header", http.StatusUnauthorized)
 			return
 		}
@@ -166,8 +166,8 @@ func setup(t *testing.T) (*Client, *http.ServeMux) {
 	server := httptest.NewServer(mux)
 	t.Cleanup(server.Close)
 
-	client := NewClient(APIKey, nil)
-	client.httpClient = server.Client()
+	client := NewClient(apiKey)
+	client.HTTPClient = server.Client()
 	client.baseURL, _ = url.Parse(server.URL)
 
 	return client, mux

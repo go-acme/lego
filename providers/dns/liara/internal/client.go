@@ -5,12 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"path"
-
-	"github.com/hashicorp/go-retryablehttp"
+	"time"
 )
 
 const defaultBaseURL = "https://dns-service.iran.liara.ir"
@@ -19,23 +17,16 @@ const defaultBaseURL = "https://dns-service.iran.liara.ir"
 type Client struct {
 	apiKey     string
 	baseURL    *url.URL
-	httpClient *http.Client
+	HTTPClient *http.Client
 }
 
 // NewClient creates a new Client.
-func NewClient(apiKey string, httpClient *http.Client) *Client {
+func NewClient(apiKey string) *Client {
 	baseURL, _ := url.Parse(defaultBaseURL)
-
-	retryClient := retryablehttp.NewClient()
-	retryClient.RetryMax = 5
-	if httpClient != nil {
-		retryClient.HTTPClient = httpClient
-	}
-	retryClient.Logger = log.Default()
 
 	return &Client{
 		apiKey:     apiKey,
-		httpClient: retryClient.StandardClient(),
+		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 		baseURL:    baseURL,
 	}
 }
@@ -53,9 +44,9 @@ func (c Client) GetRecords(domainName string) ([]Record, error) {
 		return nil, fmt.Errorf("create request: %w", err)
 	}
 
-	req.Header.Set("Authorization", c.apiKey)
+	req.Header.Set("Authorization", "Bearer "+c.apiKey)
 
-	resp, err := c.httpClient.Do(req)
+	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -92,10 +83,10 @@ func (c Client) CreateRecord(domainName string, record Record) (*Record, error) 
 		return nil, fmt.Errorf("create request: %w", err)
 	}
 
-	req.Header.Set("Authorization", c.apiKey)
+	req.Header.Set("Authorization", "Bearer "+c.apiKey)
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := c.httpClient.Do(req)
+	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -127,9 +118,9 @@ func (c Client) GetRecord(domainName, recordID string) (*Record, error) {
 		return nil, fmt.Errorf("create request: %w", err)
 	}
 
-	req.Header.Set("Authorization", c.apiKey)
+	req.Header.Set("Authorization", "Bearer "+c.apiKey)
 
-	resp, err := c.httpClient.Do(req)
+	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -161,9 +152,9 @@ func (c Client) DeleteRecord(domainName, recordID string) error {
 		return fmt.Errorf("create request: %w", err)
 	}
 
-	req.Header.Set("Authorization", c.apiKey)
+	req.Header.Set("Authorization", "Bearer "+c.apiKey)
 
-	resp, err := c.httpClient.Do(req)
+	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
 		return err
 	}

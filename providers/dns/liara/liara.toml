@@ -2,10 +2,10 @@ Name = "Liara"
 Description = ''''''
 URL = "https://liara.ir"
 Code = "liara"
-Since = "v4.9.0"
+Since = "v4.10.0"
 
 Example = '''
-LIARA_API_KEY="Bearer xxxxxxxxxxxxxxxxxxxxx" \
+LIARA_API_KEY="xxxxxxxxxxxxxxxxxxxxx" \
 lego --email myemail@example.com --dns liara --domains my.example.org run
 '''
 

@@ -146,7 +146,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	return nil
 }
 
-// CleanUp removes the TXT record matching the specified parameters.
+// CleanUp removes the TXT record.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 

@@ -4,13 +4,13 @@ package liara
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
+	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/liara/internal"
 	"github.com/hashicorp/go-retryablehttp"
@@ -102,7 +102,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config.HTTPClient != nil {
 		retryClient.HTTPClient = config.HTTPClient
 	}
-	retryClient.Logger = log.Default()
+	retryClient.Logger = log.Logger
 
 	client.HTTPClient = retryClient.StandardClient()
 

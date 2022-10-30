@@ -177,3 +177,133 @@ func TestDNSProvider_Present(t *testing.T) {
 	err := provider.Present(domain, "", keyAuth)
 	require.NoError(t, err, "Expected Present to return no error")
 }
+
+func TestCreateSession(t *testing.T) {
+	testCases := []struct {
+		desc             string
+		env              map[string]string
+		config           *Config
+		wantCreds        credentials.Value
+		wantDefaultChain bool
+		wantRegion       string
+		wantErr          string
+	}{
+		{
+			desc:    "config is nil",
+			wantErr: "config is nil",
+		},
+		{
+			desc:    "session token without access key id or secret access key",
+			config:  &Config{SessionToken: "foo"},
+			wantErr: "SessionToken must be supplied with AccessKeyID and SecretAccessKey",
+		},
+		{
+			desc:    "access key id without secret access key",
+			config:  &Config{AccessKeyID: "foo"},
+			wantErr: "AccessKeyID and SecretAccessKey must be supplied together",
+		},
+		{
+			desc:    "access key id without secret access key",
+			config:  &Config{SecretAccessKey: "foo"},
+			wantErr: "AccessKeyID and SecretAccessKey must be supplied together",
+		},
+		{
+			desc:             "credentials from default chain",
+			config:           &Config{},
+			wantDefaultChain: true,
+		},
+		{
+			desc: "static credentials",
+			config: &Config{
+				AccessKeyID:     "one",
+				SecretAccessKey: "two",
+			},
+			wantCreds: credentials.Value{
+				AccessKeyID:     "one",
+				SecretAccessKey: "two",
+				SessionToken:    "",
+				ProviderName:    credentials.StaticProviderName,
+			},
+		},
+		{
+			desc: "static credentials with session token",
+			config: &Config{
+				AccessKeyID:     "one",
+				SecretAccessKey: "two",
+				SessionToken:    "three",
+			},
+			wantCreds: credentials.Value{
+				AccessKeyID:     "one",
+				SecretAccessKey: "two",
+				SessionToken:    "three",
+				ProviderName:    credentials.StaticProviderName,
+			},
+		},
+		{
+			desc:   "region from env",
+			config: &Config{},
+			env: map[string]string{
+				"AWS_REGION": "foo",
+			},
+			wantDefaultChain: true,
+			wantRegion:       "foo",
+		},
+		{
+			desc: "static region",
+			config: &Config{
+				Region: "one",
+			},
+			env: map[string]string{
+				"AWS_REGION": "foo",
+			},
+			wantDefaultChain: true,
+			wantRegion:       "one",
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.desc, func(t *testing.T) {
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+			for k, v := range tc.env {
+				os.Setenv(k, v)
+			}
+
+			sess, err := createSession(tc.config)
+			if errOk := testAssertErr(t, err, tc.wantErr); errOk {
+				return
+			}
+
+			gotCreds, err := sess.Config.Credentials.Get()
+			switch {
+			case !tc.wantDefaultChain:
+				require.NoError(t, err)
+				require.Equal(t, tc.wantCreds, gotCreds)
+
+			default:
+				require.NotEqual(t, credentials.StaticProviderName, gotCreds.ProviderName)
+			}
+
+			if tc.wantRegion != "" {
+				require.Equal(t, tc.wantRegion, aws.StringValue(sess.Config.Region))
+			}
+		})
+	}
+}
+
+func testAssertErr(t *testing.T, err error, wantErr string) bool {
+	t.Helper()
+	switch {
+	case err != nil && wantErr == "":
+		require.FailNow(t, err.Error())
+
+	case err == nil && wantErr != "":
+		require.FailNow(t, "expected error, got none")
+
+	case err != nil && wantErr != "":
+		require.EqualError(t, err, wantErr)
+
+		return true
+	}
+
+	return false
+}

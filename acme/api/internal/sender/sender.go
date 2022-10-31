@@ -90,6 +90,12 @@ func (d *Doer) do(req *http.Request, response interface{}) (*http.Response, erro
 		return nil, err
 	}
 
+	if resp.Body != nil {
+		defer func() {
+			_ = resp.Body.Close()
+		}()
+	}
+
 	if err = checkError(req, resp); err != nil {
 		return resp, err
 	}
@@ -99,8 +105,6 @@ func (d *Doer) do(req *http.Request, response interface{}) (*http.Response, erro
 		if err != nil {
 			return resp, err
 		}
-
-		defer resp.Body.Close()
 
 		err = json.Unmarshal(raw, response)
 		if err != nil {

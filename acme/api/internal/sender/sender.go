@@ -91,9 +91,7 @@ func (d *Doer) do(req *http.Request, response interface{}) (*http.Response, erro
 	}
 
 	if resp.Body != nil {
-		defer func() {
-			_ = resp.Body.Close()
-		}()
+		defer func() { _ = resp.Body.Close() }()
 	}
 
 	if err = checkError(req, resp); err != nil {

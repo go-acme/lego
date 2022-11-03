@@ -108,7 +108,7 @@ var findXByFqdnTestCases = []struct {
 		desc:          "NXDOMAIN",
 		fqdn:          "test.lego.zz.",
 		zone:          "lego.zz.",
-		nameservers:   []string{"1.1.1.1:53"},
+		nameservers:   []string{"8.8.8.8:53"},
 		expectedError: "could not find the start of authority for test.lego.zz.: NXDOMAIN",
 	},
 	{
@@ -116,10 +116,10 @@ var findXByFqdnTestCases = []struct {
 		fqdn:        "mail.google.com.",
 		zone:        "google.com.",
 		primaryNs:   "ns1.google.com.",
-		nameservers: []string{":7053", ":8053", "1.1.1.1:53"},
+		nameservers: []string{":7053", ":8053", "8.8.8.8:53"},
 	},
 	{
-		desc:          "only non existent nameservers",
+		desc:          "only non-existent nameservers",
 		fqdn:          "mail.google.com.",
 		zone:          "google.com.",
 		nameservers:   []string{":7053", ":8053", ":9053"},
@@ -151,7 +151,7 @@ func TestFindZoneByFqdnCustom(t *testing.T) {
 	}
 }
 
-func TestFindPrimayNsByFqdnCustom(t *testing.T) {
+func TestFindPrimaryNsByFqdnCustom(t *testing.T) {
 	for _, test := range findXByFqdnTestCases {
 		t.Run(test.desc, func(t *testing.T) {
 			ClearFqdnCache()

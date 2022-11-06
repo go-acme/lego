@@ -23,9 +23,6 @@ func TestRemoveRecord(t *testing.T) {
 }
 
 func TestRemoveRecord_errors(t *testing.T) {
-	// TODO(ldez): remove skip when the reg.ru API will be fixed.
-	t.Skip("there is a bug with the reg.ru API: INTERNAL_API_ERROR: Внутренняя ошибка, status code: 503")
-
 	testCases := []struct {
 		desc     string
 		domain   string
@@ -76,9 +73,6 @@ func TestAddTXTRecord(t *testing.T) {
 }
 
 func TestAddTXTRecord_errors(t *testing.T) {
-	// TODO(ldez): remove skip when the reg.ru API will be fixed.
-	t.Skip("there is a bug with the reg.ru API: INTERNAL_API_ERROR: Внутренняя ошибка, status code: 503")
-
 	testCases := []struct {
 		desc     string
 		domain   string

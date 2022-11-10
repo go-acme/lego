@@ -13,6 +13,9 @@ const (
 )
 
 func TestRemoveRecord(t *testing.T) {
+	// TODO(ldez): remove skip when the reg.ru API will be fixed.
+	t.Skip("there is a bug with the reg.ru API: INTERNAL_API_ERROR: Внутренняя ошибка, status code: 503")
+
 	client := NewClient(officialTestUser, officialTestPassword)
 
 	err := client.RemoveTxtRecord("test.ru", "_acme-challenge", "txttxttxt")
@@ -60,6 +63,9 @@ func TestRemoveRecord_errors(t *testing.T) {
 }
 
 func TestAddTXTRecord(t *testing.T) {
+	// TODO(ldez): remove skip when the reg.ru API will be fixed.
+	t.Skip("there is a bug with the reg.ru API: INTERNAL_API_ERROR: Внутренняя ошибка, status code: 503")
+
 	client := NewClient(officialTestUser, officialTestPassword)
 
 	err := client.AddTXTRecord("test.ru", "_acme-challenge", "txttxttxt")

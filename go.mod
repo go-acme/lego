@@ -1,4 +1,4 @@
-module github.com/go-acme/lego/v4
+module github.com/lnobach/acme-lego
 
 go 1.18
 

@@ -114,29 +114,34 @@ func (c *Challenge) Solve(authz acme.Authorization) error {
 		return err
 	}
 
-	fqdn, value := GetRecord(authz.Identifier.Value, keyAuth)
+	if c.preCheck.disabled {
+		log.Infof("[%s] acme: DNS record propagation check disabled.", domain)
+	} else {
+		fqdn, value := GetRecord(authz.Identifier.Value, keyAuth)
 
-	var timeout, interval time.Duration
-	switch provider := c.provider.(type) {
-	case challenge.ProviderTimeout:
-		timeout, interval = provider.Timeout()
-	default:
-		timeout, interval = DefaultPropagationTimeout, DefaultPollingInterval
-	}
-
-	log.Infof("[%s] acme: Checking DNS record propagation using %+v", domain, recursiveNameservers)
-
-	time.Sleep(interval)
-
-	err = wait.For("propagation", timeout, interval, func() (bool, error) {
-		stop, errP := c.preCheck.call(domain, fqdn, value)
-		if !stop || errP != nil {
-			log.Infof("[%s] acme: Waiting for DNS record propagation.", domain)
+		var timeout, interval time.Duration
+		switch provider := c.provider.(type) {
+		case challenge.ProviderTimeout:
+			timeout, interval = provider.Timeout()
+		default:
+			timeout, interval = DefaultPropagationTimeout, DefaultPollingInterval
 		}
-		return stop, errP
-	})
-	if err != nil {
-		return err
+
+		log.Infof("[%s] acme: Checking DNS record propagation using %+v", domain, recursiveNameservers)
+
+		time.Sleep(interval)
+
+		err = wait.For("propagation", timeout, interval, func() (bool, error) {
+			stop, errP := c.preCheck.call(domain, fqdn, value)
+			if !stop || errP != nil {
+				log.Infof("[%s] acme: Waiting for DNS record propagation.", domain)
+			}
+			return stop, errP
+		})
+		if err != nil {
+			return err
+		}
+
 	}
 
 	chlng.KeyAuthorization = keyAuth

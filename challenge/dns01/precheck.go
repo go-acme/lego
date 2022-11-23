@@ -31,6 +31,8 @@ func DisableCompletePropagationRequirement() ChallengeOption {
 }
 
 type preCheck struct {
+	// entirely disables DNS propagation check
+	disabled bool
 	// checks DNS propagation before notifying ACME that the DNS challenge is ready.
 	checkFunc WrapPreCheckFunc
 	// require the TXT record to be propagated to all authoritative name servers
@@ -107,4 +109,14 @@ func checkAuthoritativeNss(fqdn, value string, nameservers []string) (bool, erro
 	}
 
 	return true, nil
+}
+
+//DisablePropagationCheck is a challenge option to entirely skip after the DNS01 challenge has
+//been presented by the DNS provider. This option should only be used by DNS providers
+//guaranteeing that the challenge is present at their authoritative nameservers after returning.
+func DisablePropagationCheck() ChallengeOption {
+	return func(chlg *Challenge) error {
+		chlg.preCheck.disabled = true
+		return nil
+	}
 }

@@ -137,9 +137,9 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	rootDomain, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
+	rootDomain, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return fmt.Errorf("nicmanager: could not determine zone for domain %q: %w", domain, err)
+		return fmt.Errorf("nicmanager: could not determine zone for domain %q: %w", fqdn, err)
 	}
 
 	zone, err := d.client.GetZone(dns01.UnFqdn(rootDomain))
@@ -168,9 +168,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	rootDomain, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
+	rootDomain, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return fmt.Errorf("nicmanager: could not determine zone for domain %q: %w", domain, err)
+		return fmt.Errorf("nicmanager: could not determine zone for domain %q: %w", fqdn, err)
 	}
 
 	zone, err := d.client.GetZone(dns01.UnFqdn(rootDomain))

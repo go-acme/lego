@@ -100,6 +100,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	_, value := dns01.GetRecord(domain, keyAuth)
 
+	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	err := d.deleteTxtRecord(domain, value)
 	if err != nil {
 		return fmt.Errorf("iij: %w", err)
@@ -113,6 +114,7 @@ func (d *DNSProvider) addTxtRecord(domain, value string) error {
 		return err
 	}
 
+	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	owner, zone, err := splitDomain(domain, zones)
 	if err != nil {
 		return err

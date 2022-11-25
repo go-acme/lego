@@ -108,11 +108,13 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
+	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	domainDetails, err := d.client.GetDomain(&namecom.GetDomainRequest{DomainName: domain})
 	if err != nil {
 		return fmt.Errorf("namedotcom API call failed: %w", err)
 	}
 
+	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	request := &namecom.Record{
 		DomainName: domain,
 		Host:       extractRecordName(fqdn, domainDetails.DomainName),
@@ -133,6 +135,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 
+	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	records, err := d.getRecords(domain)
 	if err != nil {
 		return fmt.Errorf("namedotcom: %w", err)
@@ -140,6 +143,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	for _, rec := range records {
 		if rec.Fqdn == fqdn && rec.Type == "TXT" {
+			// TODO(ldez) replace domain by FQDN to follow CNAME.
 			request := &namecom.DeleteRecordRequest{
 				DomainName: domain,
 				ID:         rec.ID,

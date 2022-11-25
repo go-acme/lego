@@ -114,6 +114,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Value: value,
 	}}
 
+	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	_, err := d.addTxtRecord(domain, records)
 	if err != nil {
 		return fmt.Errorf("autodns: %w", err)
@@ -133,6 +134,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		Value: value,
 	}}
 
+	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	if err := d.removeTXTRecord(domain, records); err != nil {
 		return fmt.Errorf("autodns: %w", err)
 	}

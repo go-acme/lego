@@ -99,6 +99,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
+	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	zoneDomain, err := d.getHostedZone(ctx, domain)
 	if err != nil {
 		return fmt.Errorf("vultr: %w", err)
@@ -127,6 +128,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 
+	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	zoneDomain, records, err := d.findTxtRecords(ctx, domain, fqdn)
 	if err != nil {
 		return fmt.Errorf("vultr: %w", err)

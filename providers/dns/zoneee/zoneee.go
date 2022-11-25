@@ -112,7 +112,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Destination: value,
 	}
 
-	authZone, err := getHostedZone(domain)
+	authZone, err := getHostedZone(fqdn)
 	if err != nil {
 		return fmt.Errorf("zoneee: %w", err)
 	}
@@ -126,9 +126,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record previously created.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	_, value := dns01.GetRecord(domain, keyAuth)
+	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	authZone, err := getHostedZone(domain)
+	authZone, err := getHostedZone(fqdn)
 	if err != nil {
 		return fmt.Errorf("zoneee: %w", err)
 	}
@@ -157,11 +157,10 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 }
 
 func getHostedZone(domain string) (string, error) {
-	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
+	authZone, err := dns01.FindZoneByFqdn(domain)
 	if err != nil {
 		return "", err
 	}
 
-	zoneName := dns01.UnFqdn(authZone)
-	return zoneName, nil
+	return dns01.UnFqdn(authZone), nil
 }

@@ -140,22 +140,19 @@ func TestDNSProvider_FindZoneAndRecordName(t *testing.T) {
 	testCases := []struct {
 		desc     string
 		fqdn     string
-		domain   string
 		expected expected
 	}{
 		{
-			desc:   "Extract root record name",
-			fqdn:   "_acme-challenge.bar.com.",
-			domain: "bar.com",
+			desc: "Extract root record name",
+			fqdn: "_acme-challenge.bar.com.",
 			expected: expected{
 				zone:       "bar.com",
 				recordName: "_acme-challenge",
 			},
 		},
 		{
-			desc:   "Extract sub record name",
-			fqdn:   "_acme-challenge.foo.bar.com.",
-			domain: "foo.bar.com",
+			desc: "Extract sub record name",
+			fqdn: "_acme-challenge.foo.bar.com.",
 			expected: expected{
 				zone:       "bar.com",
 				recordName: "_acme-challenge.foo",
@@ -168,7 +165,7 @@ func TestDNSProvider_FindZoneAndRecordName(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			zone, recordName, err := provider.findZoneAndRecordName(test.fqdn, test.domain)
+			zone, recordName, err := provider.findZoneAndRecordName(test.fqdn)
 			require.NoError(t, err)
 			assert.Equal(t, test.expected.zone, zone)
 			assert.Equal(t, test.expected.recordName, recordName)

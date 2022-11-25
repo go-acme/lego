@@ -88,7 +88,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
-	zoneID, zoneName, err := d.getHostedZone(domain)
+
+	zoneID, zoneName, err := d.getHostedZone(fqdn)
 	if err != nil {
 		return err
 	}
@@ -106,12 +107,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 
-	records, err := d.findTxtRecords(domain, fqdn)
+	zoneID, zoneName, err := d.getHostedZone(fqdn)
 	if err != nil {
 		return err
 	}
 
-	zoneID, _, err := d.getHostedZone(domain)
+	records, err := d.findTxtRecords(fqdn, zoneID, zoneName)
 	if err != nil {
 		return err
 	}
@@ -137,7 +138,7 @@ func (d *DNSProvider) getHostedZone(domain string) (string, string, error) {
 		return "", "", fmt.Errorf("API call failed: %w", err)
 	}
 
-	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
+	authZone, err := dns01.FindZoneByFqdn(domain)
 	if err != nil {
 		return "", "", err
 	}
@@ -168,12 +169,7 @@ func (d *DNSProvider) newTxtRecord(zone, fqdn, value string, ttl int) *dnspod.Re
 	}
 }
 
-func (d *DNSProvider) findTxtRecords(domain, fqdn string) ([]dnspod.Record, error) {
-	zoneID, zoneName, err := d.getHostedZone(domain)
-	if err != nil {
-		return nil, err
-	}
-
+func (d *DNSProvider) findTxtRecords(fqdn, zoneID, zoneName string) ([]dnspod.Record, error) {
 	recordName := extractRecordName(fqdn, zoneName)
 
 	var records []dnspod.Record

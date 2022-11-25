@@ -110,9 +110,9 @@ func (d *DNSProvider) Sequential() time.Duration {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
+	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return fmt.Errorf("nearlyfreespeech: could not determine zone for domain %q: %w", domain, err)
+		return fmt.Errorf("nearlyfreespeech: could not determine zone for domain %q: %w", fqdn, err)
 	}
 
 	record := internal.Record{
@@ -134,9 +134,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
+	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return fmt.Errorf("nearlyfreespeech: could not determine zone for domain %q: %w", domain, err)
+		return fmt.Errorf("nearlyfreespeech: could not determine zone for domain %q: %w", fqdn, err)
 	}
 
 	record := internal.Record{

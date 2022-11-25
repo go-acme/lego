@@ -113,7 +113,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
-	zoneName, recordName, err := d.findZoneAndRecordName(fqdn, domain)
+
+	zoneName, recordName, err := d.findZoneAndRecordName(fqdn)
 	if err != nil {
 		return err
 	}
@@ -169,7 +170,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
-	zoneName, recordName, err := d.findZoneAndRecordName(fqdn, domain)
+
+	zoneName, recordName, err := d.findZoneAndRecordName(fqdn)
 	if err != nil {
 		return err
 	}
@@ -244,8 +246,8 @@ func (d *DNSProvider) findExistingRecordID(zoneID, recordName string) (string, e
 }
 
 // findZoneAndRecordName Extract DNS zone and DNS entry name.
-func (d *DNSProvider) findZoneAndRecordName(fqdn, domain string) (string, string, error) {
-	zone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
+func (d *DNSProvider) findZoneAndRecordName(fqdn string) (string, string, error) {
+	zone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
 		return "", "", err
 	}

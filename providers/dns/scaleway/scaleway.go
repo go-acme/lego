@@ -121,6 +121,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Comment: scw.StringPtr("used by lego"),
 	}}
 
+	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	req := &scwdomain.UpdateDNSZoneRecordsRequest{
 		DNSZone: domain,
 		Changes: []*scwdomain.RecordChange{{
@@ -147,6 +148,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		Data: scw.StringPtr(fmt.Sprintf(`%q`, value)),
 	}
 
+	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	req := &scwdomain.UpdateDNSZoneRecordsRequest{
 		DNSZone: domain,
 		Changes: []*scwdomain.RecordChange{{

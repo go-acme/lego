@@ -120,6 +120,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	defer d.inProgressMu.Unlock()
 
 	// add TXT record into authZone
+	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	recordID, err := d.addTXTRecord(domain, dns01.UnFqdn(authZone), name, value, d.config.TTL)
 	if err != nil {
 		return err
@@ -146,6 +147,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	delete(d.activeRecords, fqdn)
 
 	// delete TXT record from authZone
+	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	return d.deleteTXTRecord(domain, recordID)
 }
 

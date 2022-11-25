@@ -109,7 +109,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	err := d.addTXTRecord(fqdn, domain, value, d.config.TTL)
+	err := d.addTXTRecord(fqdn, value, d.config.TTL)
 	if err != nil {
 		return fmt.Errorf("sakuracloud: %w", err)
 	}
@@ -121,7 +121,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	err := d.cleanupTXTRecord(fqdn, domain, value)
+	err := d.cleanupTXTRecord(fqdn, value)
 	if err != nil {
 		return fmt.Errorf("sakuracloud: %w", err)
 	}

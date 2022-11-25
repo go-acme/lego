@@ -65,10 +65,10 @@ func TestDNSProvider_addAndCleanupRecords(t *testing.T) {
 	require.NoError(t, err)
 
 	t.Run("addTXTRecord", func(t *testing.T) {
-		err = p.addTXTRecord("test.example.com", "example.com", "dummyValue", 10)
+		err = p.addTXTRecord("test.example.com.", "dummyValue", 10)
 		require.NoError(t, err)
 
-		updZone, e := p.getHostedZone("example.com")
+		updZone, e := p.getHostedZone("test.example.com.")
 		require.NoError(t, e)
 		require.NotNil(t, updZone)
 
@@ -76,10 +76,10 @@ func TestDNSProvider_addAndCleanupRecords(t *testing.T) {
 	})
 
 	t.Run("cleanupTXTRecord", func(t *testing.T) {
-		err = p.cleanupTXTRecord("test.example.com", "example.com", "dummyValue")
+		err = p.cleanupTXTRecord("test.example.com.", "dummyValue")
 		require.NoError(t, err)
 
-		updZone, e := p.getHostedZone("example.com")
+		updZone, e := p.getHostedZone("test.example.com.")
 		require.NoError(t, e)
 		require.NotNil(t, updZone)
 
@@ -111,7 +111,7 @@ func TestDNSProvider_concurrentAddAndCleanupRecords(t *testing.T) {
 
 		for i, p := range providers {
 			go func(j int, client *DNSProvider) {
-				err := client.addTXTRecord(fmt.Sprintf("test%d.example.com", j), "example.com", "dummyValue", 10)
+				err := client.addTXTRecord(fmt.Sprintf("test%d.example.com.", j), "dummyValue", 10)
 				require.NoError(t, err)
 				wg.Done()
 			}(i, p)
@@ -119,7 +119,7 @@ func TestDNSProvider_concurrentAddAndCleanupRecords(t *testing.T) {
 
 		wg.Wait()
 
-		updZone, err := providers[0].getHostedZone("example.com")
+		updZone, err := providers[0].getHostedZone("example.com.")
 		require.NoError(t, err)
 		require.NotNil(t, updZone)
 
@@ -131,7 +131,7 @@ func TestDNSProvider_concurrentAddAndCleanupRecords(t *testing.T) {
 
 		for i, p := range providers {
 			go func(i int, client *DNSProvider) {
-				err := client.cleanupTXTRecord(fmt.Sprintf("test%d.example.com", i), "example.com", "dummyValue")
+				err := client.cleanupTXTRecord(fmt.Sprintf("test%d.example.com.", i), "dummyValue")
 				require.NoError(t, err)
 				wg.Done()
 			}(i, p)
@@ -139,7 +139,7 @@ func TestDNSProvider_concurrentAddAndCleanupRecords(t *testing.T) {
 
 		wg.Wait()
 
-		updZone, err := providers[0].getHostedZone("example.com")
+		updZone, err := providers[0].getHostedZone("example.com.")
 		require.NoError(t, err)
 		require.NotNil(t, updZone)
 

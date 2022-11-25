@@ -205,6 +205,8 @@ func getChallengeFqdn(domain string) string {
 			break
 		}
 
+		log.Infof("Found CNAME entry for %q: %q", fqdn, cname)
+
 		fqdn = cname
 	}
 

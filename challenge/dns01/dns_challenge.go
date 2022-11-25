@@ -141,7 +141,6 @@ func (c *Challenge) Solve(authz acme.Authorization) error {
 		if err != nil {
 			return err
 		}
-
 	}
 
 	chlng.KeyAuthorization = keyAuth

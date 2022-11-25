@@ -111,10 +111,10 @@ func checkAuthoritativeNss(fqdn, value string, nameservers []string) (bool, erro
 	return true, nil
 }
 
-//DisablePropagationCheck is a challenge option to entirely skip the propagation check after
-//the DNS01 challenge has been presented by the DNS provider. This option should only be used
-//by DNS providers guaranteeing that the challenge is present at their authoritative
-//nameservers after returning from the Present(..) function.
+// DisablePropagationCheck is a challenge option to entirely skip the propagation check after
+// the DNS01 challenge has been presented by the DNS provider. This option should only be used
+// by DNS providers guaranteeing that the challenge is present at their authoritative
+// nameservers after returning from the Present(..) function.
 func DisablePropagationCheck() ChallengeOption {
 	return func(chlg *Challenge) error {
 		chlg.preCheck.disabled = true

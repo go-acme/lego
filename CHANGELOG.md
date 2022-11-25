@@ -1,5 +1,20 @@
 # Changelog
 
+## [v4.9.1] - 2022-11-25
+
+### Changed:
+- 
+- **[lib,cname]** cname: add log about CNAME entries
+- **[dnsprovider]** regru: improve error handling
+
+### Fixed:
+- 
+- **[dnsprovider,cname]** fix CNAME support for multiple DNS providers
+- **[dnsprovider,cname]** duckdns: fix CNAME support
+- **[dnsprovider,cname]** oraclecloud: use fqdn to resolve zone
+- **[dnsprovider]** hurricane: fix CNAME support
+- **[lib,cname]** cname: stop trying to traverse cname if none have been found
+
 ## [v4.9.0] - 2022-10-03
 
 ### Added:

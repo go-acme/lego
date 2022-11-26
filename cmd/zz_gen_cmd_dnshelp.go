@@ -71,6 +71,7 @@ func allDNSCodes() string {
 		"ionos",
 		"iwantmyname",
 		"joker",
+		"liara",
 		"lightsail",
 		"linode",
 		"liquidweb",
@@ -1335,6 +1336,26 @@ func displayDNSHelp(name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/joker`)
+
+	case "liara":
+		// generated from: providers/dns/liara/liara.toml
+		ew.writeln(`Configuration for Liara.`)
+		ew.writeln(`Code:	'liara'`)
+		ew.writeln(`Since:	'v4.10.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "LIARA_API_KEY":	The API key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "LIARA_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "LIARA_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "LIARA_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "LIARA_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/liara`)
 
 	case "lightsail":
 		// generated from: providers/dns/lightsail/lightsail.toml

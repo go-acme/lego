@@ -109,7 +109,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("desec: could not find zone for domain %q and fqdn %q : %w", domain, fqdn, err)
 	}
 
-	recordName := getRecordName(fqdn, authZone)
+	recordName, err := getRecordName(fqdn, authZone)
+	if err != nil {
+		return fmt.Errorf("desec: %w", err)
+	}
 
 	domainName := dns01.UnFqdn(authZone)
 
@@ -156,7 +159,10 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("desec: could not find zone for domain %q and fqdn %q : %w", domain, fqdn, err)
 	}
 
-	recordName := getRecordName(fqdn, authZone)
+	recordName, err := getRecordName(fqdn, authZone)
+	if err != nil {
+		return fmt.Errorf("desec: %w", err)
+	}
 
 	domainName := dns01.UnFqdn(authZone)
 
@@ -180,6 +186,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-func getRecordName(fqdn, authZone string) string {
-	return fqdn[0 : len(fqdn)-len(authZone)-1]
+func getRecordName(fqdn, authZone string) (string, error) {
+	end := len(fqdn) - len(authZone) - 1
+
+	if len(fqdn) < end || end < 0 {
+		return "", fmt.Errorf("%d is lower than the length of the fqdn (fqdn: %s, authZone: %s)", end, fqdn, authZone)
+	}
+
+	return fqdn[0:end], nil
 }

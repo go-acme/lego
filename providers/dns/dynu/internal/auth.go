@@ -54,7 +54,7 @@ func (t *TokenTransport) Client() *http.Client {
 	return &http.Client{Transport: t}
 }
 
-// Wrap Wrap a HTTP client Transport with the TokenTransport.
+// Wrap wraps an HTTP client Transport with the TokenTransport.
 func (t *TokenTransport) Wrap(client *http.Client) *http.Client {
 	backup := client.Transport
 	t.Transport = backup

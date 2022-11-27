@@ -53,7 +53,7 @@ func (c *SolverManager) SetDNS01Provider(p challenge.Provider, opts ...dns01.Cha
 	return nil
 }
 
-// Remove Remove a challenge type from the available solvers.
+// Remove removes a challenge type from the available solvers.
 func (c *SolverManager) Remove(chlgType challenge.Type) {
 	delete(c.solvers, chlgType)
 }

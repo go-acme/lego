@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 	"sync"
 	"time"
 
@@ -131,11 +130,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	// determine name of TXT record
-	if !strings.HasSuffix(
-		strings.ToLower(fqdn), strings.ToLower("."+authZone)) {
-		return fmt.Errorf("gandi: unexpected authZone %s for fqdn %s", authZone, fqdn)
+	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	if err != nil {
+		return fmt.Errorf("gandi: %w", err)
 	}
-	name := fqdn[:len(fqdn)-len("."+authZone)]
 
 	// acquire lock and check there is not a challenge already in
 	// progress for this value of authZone
@@ -160,7 +158,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("gandi: %w", err)
 	}
 
-	err = d.addTXTRecord(newZoneID, newZoneVersion, name, value, d.config.TTL)
+	err = d.addTXTRecord(newZoneID, newZoneVersion, subDomain, value, d.config.TTL)
 	if err != nil {
 		return fmt.Errorf("gandi: %w", err)
 	}

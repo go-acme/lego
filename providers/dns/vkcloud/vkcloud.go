@@ -144,9 +144,12 @@ func (r *DNSProvider) Present(domain, _, keyAuth string) error {
 		return fmt.Errorf("vkcloud: cant find dns zone %s in VK Cloud", authZone)
 	}
 
-	name := fqdn[:len(fqdn)-len(authZone)-1]
+	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	if err != nil {
+		return fmt.Errorf("vkcloud: %w", err)
+	}
 
-	err = r.upsertTXTRecord(zoneUUID, name, value)
+	err = r.upsertTXTRecord(zoneUUID, subDomain, value)
 	if err != nil {
 		return fmt.Errorf("vkcloud: %w", err)
 	}
@@ -182,9 +185,12 @@ func (r *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 		return nil
 	}
 
-	name := fqdn[:len(fqdn)-len(authZone)-1]
+	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	if err != nil {
+		return fmt.Errorf("vkcloud: %w", err)
+	}
 
-	err = r.removeTXTRecord(zoneUUID, name, value)
+	err = r.removeTXTRecord(zoneUUID, subDomain, value)
 	if err != nil {
 		return fmt.Errorf("vkcloud: %w", err)
 	}

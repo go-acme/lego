@@ -4,7 +4,6 @@ package namesilo
 import (
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -94,10 +93,15 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("namesilo: %w", err)
 	}
 
+	subdomain, err := dns01.ExtractSubDomain(fqdn, zoneName)
+	if err != nil {
+		return fmt.Errorf("namesilo: %w", err)
+	}
+
 	_, err = d.client.DnsAddRecord(&namesilo.DnsAddRecordParams{
 		Domain: zoneName,
 		Type:   "TXT",
-		Host:   getRecordName(fqdn, zoneName),
+		Host:   subdomain,
 		Value:  value,
 		TTL:    d.config.TTL,
 	})
@@ -121,10 +125,14 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("namesilo: %w", err)
 	}
 
+	subdomain, err := dns01.ExtractSubDomain(fqdn, zoneName)
+	if err != nil {
+		return fmt.Errorf("namesilo: %w", err)
+	}
+
 	var lastErr error
-	name := getRecordName(fqdn, zoneName)
 	for _, r := range resp.Reply.ResourceRecord {
-		if r.Type == "TXT" && (r.Host == name || r.Host == dns01.UnFqdn(fqdn)) {
+		if r.Type == "TXT" && (r.Host == subdomain || r.Host == dns01.UnFqdn(fqdn)) {
 			_, err := d.client.DnsDeleteRecord(&namesilo.DnsDeleteRecordParams{Domain: zoneName, ID: r.RecordID})
 			if err != nil {
 				lastErr = fmt.Errorf("namesilo: %w", err)
@@ -146,8 +154,4 @@ func getZoneNameByDomain(domain string) (string, error) {
 		return "", fmt.Errorf("failed to find zone for domain: %s, %w", domain, err)
 	}
 	return dns01.UnFqdn(zone), nil
-}
-
-func getRecordName(domain, zone string) string {
-	return strings.TrimSuffix(dns01.ToFqdn(domain), "."+dns01.ToFqdn(zone))
 }

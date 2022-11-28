@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 	"sync"
 	"time"
 
@@ -114,9 +113,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return err
 	}
 
+	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	if err != nil {
+		return fmt.Errorf("arvancloud: %w", err)
+	}
+
 	record := internal.DNSRecord{
 		Type:          "txt",
-		Name:          extractRecordName(fqdn, authZone),
+		Name:          subDomain,
 		Value:         internal.TXTRecordValue{Text: value},
 		TTL:           d.config.TTL,
 		UpstreamHTTPS: "default",
@@ -175,12 +179,4 @@ func getZone(fqdn string) (string, error) {
 	}
 
 	return dns01.UnFqdn(authZone), nil
-}
-
-func extractRecordName(fqdn, zone string) string {
-	name := dns01.UnFqdn(fqdn)
-	if idx := strings.Index(name, "."+zone); idx != -1 {
-		return name[:idx]
-	}
-	return name
 }

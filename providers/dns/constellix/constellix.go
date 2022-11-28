@@ -109,7 +109,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("constellix: failed to get domain (%s): %w", authZone, err)
 	}
 
-	recordName := getRecordName(fqdn, authZone)
+	recordName, err := dns01.ExtractSubDomain(fqdn, authZone)
+	if err != nil {
+		return fmt.Errorf("constellix: %w", err)
+	}
 
 	records, err := d.client.TxtRecords.Search(dom.ID, internal.Exact, recordName)
 	if err != nil {
@@ -147,7 +150,10 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("constellix: failed to get domain (%s): %w", authZone, err)
 	}
 
-	recordName := getRecordName(fqdn, authZone)
+	recordName, err := dns01.ExtractSubDomain(fqdn, authZone)
+	if err != nil {
+		return fmt.Errorf("constellix: %w", err)
+	}
 
 	records, err := d.client.TxtRecords.Search(dom.ID, internal.Exact, recordName)
 	if err != nil {
@@ -261,8 +267,4 @@ func containsValue(record *internal.Record, value string) bool {
 	}
 
 	return false
-}
-
-func getRecordName(fqdn, authZone string) string {
-	return fqdn[0 : len(fqdn)-len(authZone)-1]
 }

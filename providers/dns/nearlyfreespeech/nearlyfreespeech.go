@@ -115,8 +115,13 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("nearlyfreespeech: could not determine zone for domain %q: %w", fqdn, err)
 	}
 
+	recordName, err := dns01.ExtractSubDomain(fqdn, authZone)
+	if err != nil {
+		return fmt.Errorf("nearlyfreespeech: %w", err)
+	}
+
 	record := internal.Record{
-		Name: getRecordName(fqdn, authZone),
+		Name: recordName,
 		Type: "TXT",
 		Data: value,
 		TTL:  d.config.TTL,
@@ -139,8 +144,13 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("nearlyfreespeech: could not determine zone for domain %q: %w", fqdn, err)
 	}
 
+	recordName, err := dns01.ExtractSubDomain(fqdn, authZone)
+	if err != nil {
+		return fmt.Errorf("nearlyfreespeech: %w", err)
+	}
+
 	record := internal.Record{
-		Name: getRecordName(fqdn, authZone),
+		Name: recordName,
 		Type: "TXT",
 		Data: value,
 	}
@@ -151,8 +161,4 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	return nil
-}
-
-func getRecordName(fqdn, authZone string) string {
-	return fqdn[0 : len(fqdn)-len(authZone)-1]
 }

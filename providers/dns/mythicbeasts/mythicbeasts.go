@@ -114,7 +114,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("mythicbeasts: %w", err)
 	}
 
-	leaf := fqdn[:len(fqdn)-(len(authZone)+1)]
+	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	if err != nil {
+		return fmt.Errorf("mythicbeasts: %w", err)
+	}
 
 	authZone = dns01.UnFqdn(authZone)
 
@@ -123,7 +126,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("mythicbeasts: %w", err)
 	}
 
-	err = d.createTXTRecord(authZone, leaf, value)
+	err = d.createTXTRecord(authZone, subDomain, value)
 	if err != nil {
 		return fmt.Errorf("mythicbeasts: %w", err)
 	}
@@ -140,7 +143,10 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("mythicbeasts: %w", err)
 	}
 
-	leaf := fqdn[:len(fqdn)-(len(authZone)+1)]
+	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	if err != nil {
+		return fmt.Errorf("mythicbeasts: %w", err)
+	}
 
 	authZone = dns01.UnFqdn(authZone)
 
@@ -149,7 +155,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("mythicbeasts: %w", err)
 	}
 
-	err = d.removeTXTRecord(authZone, leaf, value)
+	err = d.removeTXTRecord(authZone, subDomain, value)
 	if err != nil {
 		return fmt.Errorf("mythicbeasts: %w", err)
 	}

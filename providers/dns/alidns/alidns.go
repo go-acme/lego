@@ -4,7 +4,6 @@ package alidns
 import (
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk"
@@ -269,9 +268,10 @@ func extractRecordName(fqdn, zone string) (string, error) {
 		return "", fmt.Errorf("fail to convert punycode: %w", err)
 	}
 
-	name := dns01.UnFqdn(fqdn)
-	if idx := strings.Index(name, "."+asciiDomain); idx != -1 {
-		return name[:idx], nil
+	subDomain, err := dns01.ExtractSubDomain(fqdn, asciiDomain)
+	if err != nil {
+		return "", err
 	}
-	return name, nil
+
+	return subDomain, nil
 }

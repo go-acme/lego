@@ -4,7 +4,6 @@ package civo
 import (
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/civo/civogo"
@@ -104,8 +103,13 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("civo: %w", err)
 	}
 
+	subDomain, err := dns01.ExtractSubDomain(fqdn, zone)
+	if err != nil {
+		return fmt.Errorf("civo: %w", err)
+	}
+
 	_, err = d.client.CreateDNSRecord(dnsDomain.ID, &civogo.DNSRecordConfig{
-		Name:  extractRecordName(fqdn, zone),
+		Name:  subDomain,
 		Value: value,
 		Type:  civogo.DNSRecordTypeTXT,
 		TTL:   d.config.TTL,
@@ -136,9 +140,14 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("civo: %w", err)
 	}
 
+	subDomain, err := dns01.ExtractSubDomain(fqdn, zone)
+	if err != nil {
+		return fmt.Errorf("civo: %w", err)
+	}
+
 	var dnsRecord civogo.DNSRecord
 	for _, entry := range dnsRecords {
-		if entry.Name == extractRecordName(fqdn, zone) && entry.Value == value {
+		if entry.Name == subDomain && entry.Value == value {
 			dnsRecord = entry
 			break
 		}
@@ -165,12 +174,4 @@ func getZone(fqdn string) (string, error) {
 	}
 
 	return dns01.UnFqdn(authZone), nil
-}
-
-func extractRecordName(fqdn, zone string) string {
-	name := dns01.UnFqdn(fqdn)
-	if idx := strings.Index(name, "."+zone); idx != -1 {
-		return name[:idx]
-	}
-	return name
 }

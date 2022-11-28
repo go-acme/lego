@@ -254,8 +254,10 @@ func (d *DNSProvider) findZoneAndRecordName(fqdn string) (string, string, error)
 
 	zone = dns01.UnFqdn(zone)
 
-	name := dns01.UnFqdn(fqdn)
-	name = name[:len(name)-len("."+zone)]
+	subDomain, err := dns01.ExtractSubDomain(fqdn, zone)
+	if err != nil {
+		return "", "", err
+	}
 
-	return zone, name, nil
+	return zone, subDomain, nil
 }

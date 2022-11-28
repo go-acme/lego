@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -111,13 +110,18 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	domainDetails, err := d.client.GetDomain(&namecom.GetDomainRequest{DomainName: domain})
 	if err != nil {
-		return fmt.Errorf("namedotcom API call failed: %w", err)
+		return fmt.Errorf("namedotcom: API call failed: %w", err)
+	}
+
+	subDomain, err := dns01.ExtractSubDomain(fqdn, domainDetails.DomainName)
+	if err != nil {
+		return fmt.Errorf("namedotcom: %w", err)
 	}
 
 	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	request := &namecom.Record{
 		DomainName: domain,
-		Host:       extractRecordName(fqdn, domainDetails.DomainName),
+		Host:       subDomain,
 		Type:       "TXT",
 		TTL:        uint32(d.config.TTL),
 		Answer:     value,
@@ -182,12 +186,4 @@ func (d *DNSProvider) getRecords(domain string) ([]*namecom.Record, error) {
 	}
 
 	return records, nil
-}
-
-func extractRecordName(fqdn, zone string) string {
-	name := dns01.UnFqdn(fqdn)
-	if idx := strings.Index(name, "."+zone); idx != -1 {
-		return name[:idx]
-	}
-	return name
 }

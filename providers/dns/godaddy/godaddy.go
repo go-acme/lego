@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -110,9 +109,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("godaddy: failed to get zone: %w", err)
 	}
 
-	recordName := extractRecordName(fqdn, domainZone)
+	subDomain, err := dns01.ExtractSubDomain(fqdn, domainZone)
+	if err != nil {
+		return fmt.Errorf("godaddy: %w", err)
+	}
 
-	records, err := d.client.GetRecords(domainZone, "TXT", recordName)
+	records, err := d.client.GetRecords(domainZone, "TXT", subDomain)
 	if err != nil {
 		return fmt.Errorf("godaddy: failed to get TXT records: %w", err)
 	}
@@ -126,13 +128,13 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	record := internal.DNSRecord{
 		Type: "TXT",
-		Name: recordName,
+		Name: subDomain,
 		Data: value,
 		TTL:  d.config.TTL,
 	}
 	newRecords = append(newRecords, record)
 
-	err = d.client.UpdateTxtRecords(newRecords, domainZone, recordName)
+	err = d.client.UpdateTxtRecords(newRecords, domainZone, subDomain)
 	if err != nil {
 		return fmt.Errorf("godaddy: failed to add TXT record: %w", err)
 	}
@@ -149,9 +151,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("godaddy: failed to get zone: %w", err)
 	}
 
-	recordName := extractRecordName(fqdn, domainZone)
+	subDomain, err := dns01.ExtractSubDomain(fqdn, domainZone)
+	if err != nil {
+		return fmt.Errorf("godaddy: %w", err)
+	}
 
-	records, err := d.client.GetRecords(domainZone, "TXT", recordName)
+	records, err := d.client.GetRecords(domainZone, "TXT", subDomain)
 	if err != nil {
 		return fmt.Errorf("godaddy: failed to get TXT records: %w", err)
 	}
@@ -184,14 +189,6 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	return nil
-}
-
-func extractRecordName(fqdn, zone string) string {
-	name := dns01.UnFqdn(fqdn)
-	if idx := strings.Index(name, "."+zone); idx != -1 {
-		return name[:idx]
-	}
-	return name
 }
 
 func getZone(fqdn string) (string, error) {

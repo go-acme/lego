@@ -6,7 +6,7 @@ slug: arvancloud
 dnsprovider:
   since:    "v3.8.0"
   code:     "arvancloud"
-  url:      "https://arvancloud.com"
+  url:      "https://arvancloud.ir"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
@@ -14,7 +14,7 @@ dnsprovider:
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
-Configuration for [ArvanCloud](https://arvancloud.com).
+Configuration for [ArvanCloud](https://arvancloud.ir).
 
 
 <!--more-->
@@ -60,7 +60,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 ## More information
 
-- [API documentation](https://www.arvancloud.com/docs/api/cdn/4.0)
+- [API documentation](https://www.arvancloud.ir/docs/api/cdn/4.0)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/arvancloud/arvancloud.toml -->

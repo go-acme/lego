@@ -227,8 +227,8 @@
     }
   ],
   "links": {
-    "first": "https://napi.arvancloud.com/4.0/domains/example.ir/dns-records?page=1",
-    "last": "https://napi.arvancloud.com/4.0/domains/example.ir/dns-records?page=1",
+    "first": "https://napi.arvancloud.ir/4.0/domains/example.ir/dns-records?page=1",
+    "last": "https://napi.arvancloud.ir/4.0/domains/example.ir/dns-records?page=1",
     "prev": null,
     "next": null
   },
@@ -236,7 +236,7 @@
     "current_page": 1,
     "from": 1,
     "last_page": 1,
-    "path": "https://napi.arvancloud.com/4.0/domains/example.ir/dns-records",
+    "path": "https://napi.arvancloud.ir/4.0/domains/example.ir/dns-records",
     "per_page": 300,
     "to": 8,
     "total": 8

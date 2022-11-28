@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -94,7 +93,11 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return err
 	}
 
-	recordAttributes := d.newTxtRecord(zoneName, fqdn, value, d.config.TTL)
+	recordAttributes, err := d.newTxtRecord(zoneName, fqdn, value, d.config.TTL)
+	if err != nil {
+		return err
+	}
+
 	_, _, err = d.client.Records.Create(zoneID, *recordAttributes)
 	if err != nil {
 		return fmt.Errorf("API call failed: %w", err)
@@ -157,40 +160,38 @@ func (d *DNSProvider) getHostedZone(domain string) (string, string, error) {
 	return hostedZone.ID.String(), hostedZone.Name, nil
 }
 
-func (d *DNSProvider) newTxtRecord(zone, fqdn, value string, ttl int) *dnspod.Record {
-	name := extractRecordName(fqdn, zone)
+func (d *DNSProvider) newTxtRecord(zone, fqdn, value string, ttl int) (*dnspod.Record, error) {
+	subDomain, err := dns01.ExtractSubDomain(fqdn, zone)
+	if err != nil {
+		return nil, err
+	}
 
 	return &dnspod.Record{
 		Type:  "TXT",
-		Name:  name,
+		Name:  subDomain,
 		Value: value,
 		Line:  "默认",
 		TTL:   strconv.Itoa(ttl),
-	}
+	}, nil
 }
 
 func (d *DNSProvider) findTxtRecords(fqdn, zoneID, zoneName string) ([]dnspod.Record, error) {
-	recordName := extractRecordName(fqdn, zoneName)
+	subDomain, err := dns01.ExtractSubDomain(fqdn, zoneName)
+	if err != nil {
+		return nil, err
+	}
 
 	var records []dnspod.Record
-	result, _, err := d.client.Records.List(zoneID, recordName)
+	result, _, err := d.client.Records.List(zoneID, subDomain)
 	if err != nil {
 		return records, fmt.Errorf("API call has failed: %w", err)
 	}
 
 	for _, record := range result {
-		if record.Name == recordName {
+		if record.Name == subDomain {
 			records = append(records, record)
 		}
 	}
 
 	return records, nil
-}
-
-func extractRecordName(fqdn, zone string) string {
-	name := dns01.UnFqdn(fqdn)
-	if idx := strings.Index(name, "."+zone); idx != -1 {
-		return name[:idx]
-	}
-	return name
 }

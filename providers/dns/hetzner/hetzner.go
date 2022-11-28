@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -111,9 +110,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("hetzner: %w", err)
 	}
 
+	subDomain, err := dns01.ExtractSubDomain(fqdn, zone)
+	if err != nil {
+		return fmt.Errorf("hetzner: %w", err)
+	}
+
 	record := internal.DNSRecord{
 		Type:   "TXT",
-		Name:   extractRecordName(fqdn, zone),
+		Name:   subDomain,
 		Value:  value,
 		TTL:    d.config.TTL,
 		ZoneID: zoneID,
@@ -140,9 +144,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("hetzner: %w", err)
 	}
 
-	recordName := extractRecordName(fqdn, zone)
+	subDomain, err := dns01.ExtractSubDomain(fqdn, zone)
+	if err != nil {
+		return fmt.Errorf("hetzner: %w", err)
+	}
 
-	record, err := d.client.GetTxtRecord(recordName, value, zoneID)
+	record, err := d.client.GetTxtRecord(subDomain, value, zoneID)
 	if err != nil {
 		return fmt.Errorf("hetzner: %w", err)
 	}
@@ -152,14 +159,6 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	return nil
-}
-
-func extractRecordName(fqdn, zone string) string {
-	name := dns01.UnFqdn(fqdn)
-	if idx := strings.Index(name, "."+zone); idx != -1 {
-		return name[:idx]
-	}
-	return name
 }
 
 func getZone(fqdn string) (string, error) {

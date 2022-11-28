@@ -3,7 +3,6 @@ package sakuracloud
 import (
 	"context"
 	"fmt"
-	"strings"
 	"sync"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -21,17 +20,21 @@ func (d *DNSProvider) addTXTRecord(fqdn, value string, ttl int) error {
 
 	zone, err := d.getHostedZone(fqdn)
 	if err != nil {
-		return fmt.Errorf("%w", err)
+		return err
 	}
 
-	name := extractRecordName(fqdn, zone.Name)
+	subDomain, err := dns01.ExtractSubDomain(fqdn, zone.Name)
+	if err != nil {
+		return err
+	}
 
 	records := append(zone.Records, &iaas.DNSRecord{
-		Name:  name,
+		Name:  subDomain,
 		Type:  "TXT",
 		RData: value,
 		TTL:   ttl,
 	})
+
 	_, err = d.client.UpdateSettings(context.Background(), zone.ID, &iaas.DNSUpdateSettingsRequest{
 		Records:      records,
 		SettingsHash: zone.SettingsHash,
@@ -52,11 +55,14 @@ func (d *DNSProvider) cleanupTXTRecord(fqdn, value string) error {
 		return err
 	}
 
-	recordName := extractRecordName(fqdn, zone.Name)
+	subDomain, err := dns01.ExtractSubDomain(fqdn, zone.Name)
+	if err != nil {
+		return err
+	}
 
 	var updRecords iaas.DNSRecords
 	for _, r := range zone.Records {
-		if !(r.Name == recordName && r.Type == "TXT" && r.RData == value) {
+		if !(r.Name == subDomain && r.Type == "TXT" && r.RData == value) {
 			updRecords = append(updRecords, r)
 		}
 	}
@@ -103,12 +109,4 @@ func (d *DNSProvider) getHostedZone(domain string) (*iaas.DNS, error) {
 	}
 
 	return nil, fmt.Errorf("zone %s not found", zoneName)
-}
-
-func extractRecordName(fqdn, zone string) string {
-	name := dns01.UnFqdn(fqdn)
-	if idx := strings.Index(name, "."+zone); idx != -1 {
-		return name[:idx]
-	}
-	return name
 }

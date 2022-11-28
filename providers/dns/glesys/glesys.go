@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 	"sync"
 	"time"
 
@@ -107,12 +106,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("glesys: findZoneByFqdn failure: %w", err)
 	}
 
-	// determine name of TXT record
-	if !strings.HasSuffix(
-		strings.ToLower(fqdn), strings.ToLower("."+authZone)) {
-		return fmt.Errorf("glesys: unexpected authZone %s for fqdn %s", authZone, fqdn)
+	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	if err != nil {
+		return fmt.Errorf("glesys: %w", err)
 	}
-	name := fqdn[:len(fqdn)-len("."+authZone)]
 
 	// acquire lock and check there is not a challenge already in
 	// progress for this value of authZone
@@ -121,7 +118,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	// add TXT record into authZone
 	// TODO(ldez) replace domain by FQDN to follow CNAME.
-	recordID, err := d.addTXTRecord(domain, dns01.UnFqdn(authZone), name, value, d.config.TTL)
+	recordID, err := d.addTXTRecord(domain, dns01.UnFqdn(authZone), subDomain, value, d.config.TTL)
 	if err != nil {
 		return err
 	}

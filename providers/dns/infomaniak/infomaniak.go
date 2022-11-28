@@ -122,8 +122,13 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	d.domainIDs[token] = ikDomain.ID
 	d.domainIDsMu.Unlock()
 
+	subDomain, err := dns01.ExtractSubDomain(fqdn, ikDomain.CustomerName)
+	if err != nil {
+		return fmt.Errorf("infomaniak: %w", err)
+	}
+
 	record := internal.Record{
-		Source: extractRecordName(fqdn, ikDomain.CustomerName),
+		Source: subDomain,
 		Target: value,
 		Type:   "TXT",
 		TTL:    d.config.TTL,
@@ -183,10 +188,4 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
-}
-
-func extractRecordName(fqdn, domain string) string {
-	name := dns01.UnFqdn(fqdn)
-
-	return name[:len(name)-len(domain)-1]
 }

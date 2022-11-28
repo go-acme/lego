@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -120,8 +119,13 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("stackpath: %w", err)
 	}
 
+	subDomain, err := dns01.ExtractSubDomain(fqdn, zone.Domain)
+	if err != nil {
+		return fmt.Errorf("stackpath: %w", err)
+	}
+
 	record := Record{
-		Name: extractRecordName(fqdn, zone.Domain),
+		Name: subDomain,
 		Type: "TXT",
 		TTL:  d.config.TTL,
 		Data: value,
@@ -139,9 +143,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("stackpath: %w", err)
 	}
 
-	recordName := extractRecordName(fqdn, zone.Domain)
+	subDomain, err := dns01.ExtractSubDomain(fqdn, zone.Domain)
+	if err != nil {
+		return fmt.Errorf("stackpath: %w", err)
+	}
 
-	records, err := d.getZoneRecords(recordName, zone)
+	records, err := d.getZoneRecords(subDomain, zone)
 	if err != nil {
 		return err
 	}
@@ -160,12 +167,4 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
-}
-
-func extractRecordName(fqdn, zone string) string {
-	name := dns01.UnFqdn(fqdn)
-	if idx := strings.Index(name, "."+zone); idx != -1 {
-		return name[:idx]
-	}
-	return name
 }

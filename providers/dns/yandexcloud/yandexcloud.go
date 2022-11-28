@@ -128,9 +128,12 @@ func (r *DNSProvider) Present(domain, _, keyAuth string) error {
 		return fmt.Errorf("yandexcloud: cant find dns zone %s in yandex cloud", authZone)
 	}
 
-	name := fqdn[:len(fqdn)-len(authZone)-1]
+	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	if err != nil {
+		return fmt.Errorf("yandexcloud: %w", err)
+	}
 
-	err = r.upsertRecordSetData(ctx, zoneID, name, value)
+	err = r.upsertRecordSetData(ctx, zoneID, subDomain, value)
 	if err != nil {
 		return fmt.Errorf("yandexcloud: %w", err)
 	}
@@ -166,9 +169,12 @@ func (r *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 		return nil
 	}
 
-	name := fqdn[:len(fqdn)-len(authZone)-1]
+	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	if err != nil {
+		return fmt.Errorf("yandexcloud: %w", err)
+	}
 
-	err = r.removeRecordSetData(ctx, zoneID, name, value)
+	err = r.removeRecordSetData(ctx, zoneID, subDomain, value)
 	if err != nil {
 		return fmt.Errorf("yandexcloud: %w", err)
 	}

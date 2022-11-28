@@ -105,10 +105,13 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("vultr: %w", err)
 	}
 
-	name := extractRecordName(fqdn, zoneDomain)
+	subDomain, err := dns01.ExtractSubDomain(fqdn, zoneDomain)
+	if err != nil {
+		return fmt.Errorf("vultr: %w", err)
+	}
 
 	req := govultr.DomainRecordReq{
-		Name:     name,
+		Name:     subDomain,
 		Type:     "TXT",
 		Data:     `"` + value + `"`,
 		TTL:      d.config.TTL,
@@ -196,6 +199,11 @@ func (d *DNSProvider) findTxtRecords(ctx context.Context, domain, fqdn string) (
 		return "", nil, err
 	}
 
+	subDomain, err := dns01.ExtractSubDomain(fqdn, zoneDomain)
+	if err != nil {
+		return "", nil, err
+	}
+
 	listOptions := &govultr.ListOptions{PerPage: 25}
 
 	var records []govultr.DomainRecord
@@ -205,9 +213,8 @@ func (d *DNSProvider) findTxtRecords(ctx context.Context, domain, fqdn string) (
 			return "", records, fmt.Errorf("API call has failed: %w", err)
 		}
 
-		recordName := extractRecordName(fqdn, zoneDomain)
 		for _, record := range result {
-			if record.Type == "TXT" && record.Name == recordName {
+			if record.Type == "TXT" && record.Name == subDomain {
 				records = append(records, record)
 			}
 		}
@@ -220,12 +227,4 @@ func (d *DNSProvider) findTxtRecords(ctx context.Context, domain, fqdn string) (
 	}
 
 	return zoneDomain, records, nil
-}
-
-func extractRecordName(fqdn, zone string) string {
-	name := dns01.UnFqdn(fqdn)
-	if idx := strings.Index(name, "."+zone); idx != -1 {
-		return name[:idx]
-	}
-	return name
 }

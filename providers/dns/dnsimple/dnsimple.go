@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/dnsimple/dnsimple-go/dnsimple"
@@ -103,7 +102,11 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("dnsimple: %w", err)
 	}
 
-	recordAttributes := newTxtRecord(zoneName, fqdn, value, d.config.TTL)
+	recordAttributes, err := newTxtRecord(zoneName, fqdn, value, d.config.TTL)
+	if err != nil {
+		return fmt.Errorf("dnsimple: %w", err)
+	}
+
 	_, err = d.client.Zones.CreateRecord(context.Background(), accountID, zoneName, recordAttributes)
 	if err != nil {
 		return fmt.Errorf("dnsimple: API call failed: %w", err)
@@ -186,9 +189,12 @@ func (d *DNSProvider) findTxtRecords(fqdn string) ([]dnsimple.ZoneRecord, error)
 		return nil, err
 	}
 
-	recordName := extractRecordName(fqdn, zoneName)
+	subDomain, err := dns01.ExtractSubDomain(fqdn, zoneName)
+	if err != nil {
+		return nil, err
+	}
 
-	result, err := d.client.Zones.ListRecords(context.Background(), accountID, zoneName, &dnsimple.ZoneRecordListOptions{Name: &recordName, Type: dnsimple.String("TXT"), ListOptions: dnsimple.ListOptions{}})
+	result, err := d.client.Zones.ListRecords(context.Background(), accountID, zoneName, &dnsimple.ZoneRecordListOptions{Name: &subDomain, Type: dnsimple.String("TXT"), ListOptions: dnsimple.ListOptions{}})
 	if err != nil {
 		return nil, fmt.Errorf("API call has failed: %w", err)
 	}
@@ -196,23 +202,18 @@ func (d *DNSProvider) findTxtRecords(fqdn string) ([]dnsimple.ZoneRecord, error)
 	return result.Data, nil
 }
 
-func newTxtRecord(zoneName, fqdn, value string, ttl int) dnsimple.ZoneRecordAttributes {
-	name := extractRecordName(fqdn, zoneName)
+func newTxtRecord(zoneName, fqdn, value string, ttl int) (dnsimple.ZoneRecordAttributes, error) {
+	subDomain, err := dns01.ExtractSubDomain(fqdn, zoneName)
+	if err != nil {
+		return dnsimple.ZoneRecordAttributes{}, err
+	}
 
 	return dnsimple.ZoneRecordAttributes{
 		Type:    "TXT",
-		Name:    &name,
+		Name:    &subDomain,
 		Content: value,
 		TTL:     ttl,
-	}
-}
-
-func extractRecordName(fqdn, zone string) string {
-	name := dns01.UnFqdn(fqdn)
-	if idx := strings.Index(name, "."+zone); idx != -1 {
-		return name[:idx]
-	}
-	return name
+	}, nil
 }
 
 func (d *DNSProvider) getAccountID() (string, error) {

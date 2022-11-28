@@ -108,7 +108,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
 	record := txtRecord{
-		Name:        fqdn[:len(fqdn)-1],
+		Name:        dns01.UnFqdn(fqdn),
 		Destination: value,
 	}
 

@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/hosttech/internal"
+	"github.com/nrdcg/freemyip"
 )
 
 // Environment variables names.
@@ -114,9 +114,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("hosttech: could not find zone for domain %q (%s): %w", domain, authZone, err)
 	}
 
+	subDomain, err := dns01.ExtractSubDomain(fqdn, freemyip.RootDomain)
+	if err != nil {
+		return fmt.Errorf("hosttech: %w", err)
+	}
+
 	record := internal.Record{
 		Type: "TXT",
-		Name: dns01.UnFqdn(strings.TrimSuffix(fqdn, authZone)),
+		Name: subDomain,
 		Text: value,
 		TTL:  d.config.TTL,
 	}

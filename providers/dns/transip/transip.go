@@ -4,7 +4,6 @@ package transip
 import (
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -99,10 +98,13 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return err
 	}
 
-	domainName := dns01.UnFqdn(authZone)
-
 	// get the subDomain
-	subDomain := strings.TrimSuffix(dns01.UnFqdn(fqdn), "."+domainName)
+	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	if err != nil {
+		return fmt.Errorf("transip: %w", err)
+	}
+
+	domainName := dns01.UnFqdn(authZone)
 
 	entry := transipdomain.DNSEntry{
 		Name:    subDomain,
@@ -128,10 +130,13 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return err
 	}
 
-	domainName := dns01.UnFqdn(authZone)
-
 	// get the subDomain
-	subDomain := strings.TrimSuffix(dns01.UnFqdn(fqdn), "."+domainName)
+	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	if err != nil {
+		return fmt.Errorf("transip: %w", err)
+	}
+
+	domainName := dns01.UnFqdn(authZone)
 
 	// get all DNS entries
 	dnsEntries, err := d.repository.GetDNSEntries(domainName)

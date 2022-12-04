@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -170,5 +169,5 @@ func getAuthZone(fqdn string) (string, error) {
 		return "", err
 	}
 
-	return strings.TrimSuffix(authZone, "."), nil
+	return dns01.UnFqdn(authZone), nil
 }

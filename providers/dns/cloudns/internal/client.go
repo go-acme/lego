@@ -9,7 +9,6 @@ import (
 	"net/url"
 	"path"
 	"strconv"
-	"strings"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 )
@@ -89,7 +88,10 @@ func (c *Client) GetZone(authFQDN string) (*Zone, error) {
 
 // FindTxtRecord returns the TXT record a zone ID and a FQDN.
 func (c *Client) FindTxtRecord(zoneName, fqdn string) (*TXTRecord, error) {
-	host := dns01.UnFqdn(strings.TrimSuffix(dns01.UnFqdn(fqdn), zoneName))
+	subDomain, err := dns01.ExtractSubDomain(fqdn, zoneName)
+	if err != nil {
+		return nil, err
+	}
 
 	reqURL, err := c.BaseURL.Parse(path.Join(c.BaseURL.Path, "records.json"))
 	if err != nil {
@@ -98,7 +100,7 @@ func (c *Client) FindTxtRecord(zoneName, fqdn string) (*TXTRecord, error) {
 
 	q := reqURL.Query()
 	q.Set("domain-name", zoneName)
-	q.Set("host", host)
+	q.Set("host", subDomain)
 	q.Set("type", "TXT")
 	reqURL.RawQuery = q.Encode()
 
@@ -118,7 +120,7 @@ func (c *Client) FindTxtRecord(zoneName, fqdn string) (*TXTRecord, error) {
 	}
 
 	for _, record := range records {
-		if record.Host == host && record.Type == "TXT" {
+		if record.Host == subDomain && record.Type == "TXT" {
 			return &record, nil
 		}
 	}
@@ -128,7 +130,10 @@ func (c *Client) FindTxtRecord(zoneName, fqdn string) (*TXTRecord, error) {
 
 // ListTxtRecords returns the TXT records a zone ID and a FQDN.
 func (c *Client) ListTxtRecords(zoneName, fqdn string) ([]TXTRecord, error) {
-	host := dns01.UnFqdn(strings.TrimSuffix(dns01.UnFqdn(fqdn), zoneName))
+	subDomain, err := dns01.ExtractSubDomain(fqdn, zoneName)
+	if err != nil {
+		return nil, err
+	}
 
 	reqURL, err := c.BaseURL.Parse(path.Join(c.BaseURL.Path, "records.json"))
 	if err != nil {
@@ -137,7 +142,7 @@ func (c *Client) ListTxtRecords(zoneName, fqdn string) ([]TXTRecord, error) {
 
 	q := reqURL.Query()
 	q.Set("domain-name", zoneName)
-	q.Set("host", host)
+	q.Set("host", subDomain)
 	q.Set("type", "TXT")
 	reqURL.RawQuery = q.Encode()
 
@@ -158,7 +163,7 @@ func (c *Client) ListTxtRecords(zoneName, fqdn string) ([]TXTRecord, error) {
 
 	var records []TXTRecord
 	for _, record := range raw {
-		if record.Host == host && record.Type == "TXT" {
+		if record.Host == subDomain && record.Type == "TXT" {
 			records = append(records, record)
 		}
 	}
@@ -168,7 +173,10 @@ func (c *Client) ListTxtRecords(zoneName, fqdn string) ([]TXTRecord, error) {
 
 // AddTxtRecord adds a TXT record.
 func (c *Client) AddTxtRecord(zoneName, fqdn, value string, ttl int) error {
-	host := dns01.UnFqdn(strings.TrimSuffix(dns01.UnFqdn(fqdn), zoneName))
+	subDomain, err := dns01.ExtractSubDomain(fqdn, zoneName)
+	if err != nil {
+		return err
+	}
 
 	reqURL, err := c.BaseURL.Parse(path.Join(c.BaseURL.Path, "add-record.json"))
 	if err != nil {
@@ -177,7 +185,7 @@ func (c *Client) AddTxtRecord(zoneName, fqdn, value string, ttl int) error {
 
 	q := reqURL.Query()
 	q.Set("domain-name", zoneName)
-	q.Set("host", host)
+	q.Set("host", subDomain)
 	q.Set("record", value)
 	q.Set("ttl", strconv.Itoa(ttlRounder(ttl)))
 	q.Set("record-type", "TXT")

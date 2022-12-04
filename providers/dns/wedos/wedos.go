@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -112,7 +111,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("wedos: could not determine zone for domain %q: %w", domain, err)
 	}
 
-	subDomain := dns01.UnFqdn(strings.TrimSuffix(fqdn, authZone))
+	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	if err != nil {
+		return fmt.Errorf("wedos: %w", err)
+	}
 
 	record := internal.DNSRow{
 		Name: subDomain,
@@ -157,7 +159,10 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("wedos: could not determine zone for domain %q: %w", domain, err)
 	}
 
-	subDomain := dns01.UnFqdn(strings.TrimSuffix(fqdn, authZone))
+	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	if err != nil {
+		return fmt.Errorf("wedos: %w", err)
+	}
 
 	records, err := d.client.GetRecords(ctx, authZone)
 	if err != nil {

@@ -39,10 +39,13 @@ func (d *dnsProviderPrivate) Present(domain, token, keyAuth string) error {
 	rsc := privatedns.NewRecordSetsClientWithBaseURI(d.config.ResourceManagerEndpoint, d.config.SubscriptionID)
 	rsc.Authorizer = d.authorizer
 
-	relative := toRelativeRecord(fqdn, dns01.ToFqdn(zone))
+	subDomain, err := dns01.ExtractSubDomain(fqdn, zone)
+	if err != nil {
+		return fmt.Errorf("azure: %w", err)
+	}
 
 	// Get existing record set
-	rset, err := rsc.Get(ctx, d.config.ResourceGroup, zone, privatedns.TXT, relative)
+	rset, err := rsc.Get(ctx, d.config.ResourceGroup, zone, privatedns.TXT, subDomain)
 	if err != nil {
 		var detailed autorest.DetailedError
 		if !errors.As(err, &detailed) || detailed.StatusCode != http.StatusNotFound {
@@ -68,14 +71,14 @@ func (d *dnsProviderPrivate) Present(domain, token, keyAuth string) error {
 	}
 
 	rec := privatedns.RecordSet{
-		Name: &relative,
+		Name: &subDomain,
 		RecordSetProperties: &privatedns.RecordSetProperties{
 			TTL:        to.Int64Ptr(int64(d.config.TTL)),
 			TxtRecords: &txtRecords,
 		},
 	}
 
-	_, err = rsc.CreateOrUpdate(ctx, d.config.ResourceGroup, zone, privatedns.TXT, relative, rec, "", "")
+	_, err = rsc.CreateOrUpdate(ctx, d.config.ResourceGroup, zone, privatedns.TXT, subDomain, rec, "", "")
 	if err != nil {
 		return fmt.Errorf("azure: %w", err)
 	}
@@ -92,12 +95,15 @@ func (d *dnsProviderPrivate) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("azure: %w", err)
 	}
 
-	relative := toRelativeRecord(fqdn, dns01.ToFqdn(zone))
+	subDomain, err := dns01.ExtractSubDomain(fqdn, zone)
+	if err != nil {
+		return fmt.Errorf("azure: %w", err)
+	}
 
 	rsc := privatedns.NewRecordSetsClientWithBaseURI(d.config.ResourceManagerEndpoint, d.config.SubscriptionID)
 	rsc.Authorizer = d.authorizer
 
-	_, err = rsc.Delete(ctx, d.config.ResourceGroup, zone, privatedns.TXT, relative, "")
+	_, err = rsc.Delete(ctx, d.config.ResourceGroup, zone, privatedns.TXT, subDomain, "")
 	if err != nil {
 		return fmt.Errorf("azure: %w", err)
 	}

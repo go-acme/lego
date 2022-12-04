@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 	"sync"
 	"time"
 
@@ -119,7 +118,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 	authZone = dns01.UnFqdn(authZone)
 
-	subDomain := dns01.UnFqdn(strings.TrimSuffix(fqdn, authZone))
+	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	if err != nil {
+		return fmt.Errorf("regru: %w", err)
+	}
 
 	recordBody := internal.Record{
 		Name: subDomain,

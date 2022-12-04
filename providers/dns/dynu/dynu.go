@@ -5,13 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/dynu/internal"
-	"github.com/miekg/dns"
 )
 
 // Environment variables names.
@@ -117,11 +115,16 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		}
 	}
 
+	subDomain, err := dns01.ExtractSubDomain(fqdn, domain)
+	if err != nil {
+		return fmt.Errorf("dynu: %w", err)
+	}
+
 	record := internal.DNSRecord{
 		Type:       "TXT",
 		DomainName: rootDomain.DomainName,
 		Hostname:   dns01.UnFqdn(fqdn),
-		NodeName:   dns01.UnFqdn(strings.TrimSuffix(fqdn, dns.Fqdn(domain))),
+		NodeName:   subDomain,
 		TextData:   value,
 		State:      true,
 		TTL:        d.config.TTL,

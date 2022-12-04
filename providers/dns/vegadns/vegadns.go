@@ -4,7 +4,6 @@ package vegadns
 import (
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	vegaClient "github.com/OpenDNS/vegadns2client"
@@ -111,7 +110,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("vegadns: can't find Authoritative Zone for %s in CleanUp: %w", fqdn, err)
 	}
 
-	txt := strings.TrimSuffix(fqdn, ".")
+	txt := dns01.UnFqdn(fqdn)
 
 	recordID, err := d.client.GetRecordID(domainID, txt, "TXT")
 	if err != nil {

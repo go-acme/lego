@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 	"sync"
 	"time"
 
@@ -131,14 +130,17 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	subdomain, authZone := d.splitDomain(fqdn)
+	subDomain, authZone, err := d.splitDomain(fqdn)
+	if err != nil {
+		return fmt.Errorf("loopia: %w", err)
+	}
 
-	err := d.client.AddTXTRecord(authZone, subdomain, d.config.TTL, value)
+	err = d.client.AddTXTRecord(authZone, subDomain, d.config.TTL, value)
 	if err != nil {
 		return fmt.Errorf("loopia: failed to add TXT record: %w", err)
 	}
 
-	txtRecords, err := d.client.GetTXTRecords(authZone, subdomain)
+	txtRecords, err := d.client.GetTXTRecords(authZone, subDomain)
 	if err != nil {
 		return fmt.Errorf("loopia: failed to get TXT records: %w", err)
 	}
@@ -160,17 +162,20 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 
-	subdomain, authZone := d.splitDomain(fqdn)
+	subDomain, authZone, err := d.splitDomain(fqdn)
+	if err != nil {
+		return fmt.Errorf("loopia: %w", err)
+	}
 
 	d.inProgressMu.Lock()
 	defer d.inProgressMu.Unlock()
 
-	err := d.client.RemoveTXTRecord(authZone, subdomain, d.inProgressInfo[token])
+	err = d.client.RemoveTXTRecord(authZone, subDomain, d.inProgressInfo[token])
 	if err != nil {
 		return fmt.Errorf("loopia: failed to remove TXT record: %w", err)
 	}
 
-	records, err := d.client.GetTXTRecords(authZone, subdomain)
+	records, err := d.client.GetTXTRecords(authZone, subDomain)
 	if err != nil {
 		return fmt.Errorf("loopia: failed to get TXT records: %w", err)
 	}
@@ -179,7 +184,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return nil
 	}
 
-	err = d.client.RemoveSubdomain(authZone, subdomain)
+	err = d.client.RemoveSubdomain(authZone, subDomain)
 	if err != nil {
 		return fmt.Errorf("loopia: failed to remove sub-domain: %w", err)
 	}
@@ -187,11 +192,14 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-func (d *DNSProvider) splitDomain(fqdn string) (string, string) {
+func (d *DNSProvider) splitDomain(fqdn string) (string, string, error) {
 	authZone, _ := d.findZoneByFqdn(fqdn)
 	authZone = dns01.UnFqdn(authZone)
 
-	subdomain := strings.TrimSuffix(dns01.UnFqdn(fqdn), "."+authZone)
+	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	if err != nil {
+		return "", "", err
+	}
 
-	return subdomain, authZone
+	return subDomain, authZone, nil
 }

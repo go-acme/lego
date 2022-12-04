@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -175,7 +174,10 @@ func splitDomain(fqdn string) (string, string, error) {
 		return "", "", err
 	}
 
-	host := dns01.UnFqdn(strings.TrimSuffix(fqdn, zone))
+	subDomain, err := dns01.ExtractSubDomain(fqdn, zone)
+	if err != nil {
+		return "", "", err
+	}
 
-	return zone, host, nil
+	return zone, subDomain, nil
 }

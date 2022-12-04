@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -114,9 +113,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("hosttech: could not find zone for domain %q (%s): %w", domain, authZone, err)
 	}
 
+	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	if err != nil {
+		return fmt.Errorf("hosttech: %w", err)
+	}
+
 	record := internal.Record{
 		Type: "TXT",
-		Name: dns01.UnFqdn(strings.TrimSuffix(fqdn, authZone)),
+		Name: subDomain,
 		Text: value,
 		TTL:  d.config.TTL,
 	}

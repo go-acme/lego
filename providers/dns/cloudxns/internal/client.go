@@ -10,7 +10,6 @@ import (
 	"io"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -127,9 +126,14 @@ func (c *Client) AddTxtRecord(info *Data, fqdn, value string, ttl int) error {
 		return fmt.Errorf("CloudXNS: invalid zone ID: %w", err)
 	}
 
+	subDomain, err := dns01.ExtractSubDomain(fqdn, info.Domain)
+	if err != nil {
+		return fmt.Errorf("CloudXNS: %w", err)
+	}
+
 	payload := TXTRecord{
 		ID:     id,
-		Host:   dns01.UnFqdn(strings.TrimSuffix(fqdn, info.Domain)),
+		Host:   subDomain,
 		Value:  value,
 		Type:   "TXT",
 		LineID: 1,

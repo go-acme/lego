@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -105,7 +104,11 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("regru: could not find zone for domain %q and fqdn %q : %w", domain, fqdn, err)
 	}
 
-	subDomain := dns01.UnFqdn(strings.TrimSuffix(fqdn, authZone))
+	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	if err != nil {
+		return fmt.Errorf("regru: %w", err)
+	}
+
 	err = d.client.AddTXTRecord(dns01.UnFqdn(authZone), subDomain, value)
 	if err != nil {
 		return fmt.Errorf("regru: failed to create TXT records [domain: %s, sub domain: %s]: %w",
@@ -124,7 +127,11 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("regru: could not find zone for domain %q and fqdn %q : %w", domain, fqdn, err)
 	}
 
-	subDomain := dns01.UnFqdn(strings.TrimSuffix(fqdn, authZone))
+	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	if err != nil {
+		return fmt.Errorf("regru: %w", err)
+	}
+
 	err = d.client.RemoveTxtRecord(dns01.UnFqdn(authZone), subDomain, value)
 	if err != nil {
 		return fmt.Errorf("regru: failed to remove TXT records [domain: %s, sub domain: %s]: %w",

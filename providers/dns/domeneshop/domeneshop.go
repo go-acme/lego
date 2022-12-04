@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -142,8 +141,10 @@ func (d *DNSProvider) splitDomain(fqdn string) (string, string, error) {
 		return "", "", err
 	}
 
-	host := dns01.UnFqdn(strings.TrimSuffix(fqdn, zone))
-	zone = dns01.UnFqdn(zone)
+	subDomain, err := dns01.ExtractSubDomain(fqdn, zone)
+	if err != nil {
+		return "", "", err
+	}
 
-	return zone, host, nil
+	return dns01.UnFqdn(zone), subDomain, nil
 }

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 	"sync"
 	"time"
 
@@ -114,7 +113,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("allinkl: %w", err)
 	}
 
-	subDomain := dns01.UnFqdn(strings.TrimSuffix(fqdn, authZone))
+	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	if err != nil {
+		return fmt.Errorf("allinkl: %w", err)
+	}
 
 	record := internal.DNSRequest{
 		ZoneHost:   authZone,

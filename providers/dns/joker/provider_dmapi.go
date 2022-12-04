@@ -3,7 +3,6 @@ package joker
 import (
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -81,10 +80,13 @@ func (d *dmapiProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("joker: %w", err)
 	}
 
-	relative := getRelative(fqdn, zone)
+	subDomain, err := dns01.ExtractSubDomain(fqdn, zone)
+	if err != nil {
+		return fmt.Errorf("joker: %w", err)
+	}
 
 	if d.config.Debug {
-		log.Infof("[%s] joker: adding TXT record %q to zone %q with value %q", domain, relative, zone, value)
+		log.Infof("[%s] joker: adding TXT record %q to zone %q with value %q", domain, subDomain, zone, value)
 	}
 
 	response, err := d.client.Login()
@@ -97,7 +99,7 @@ func (d *dmapiProvider) Present(domain, token, keyAuth string) error {
 		return formatResponseError(response, err)
 	}
 
-	dnsZone := dmapi.AddTxtEntryToZone(response.Body, relative, value, d.config.TTL)
+	dnsZone := dmapi.AddTxtEntryToZone(response.Body, subDomain, value, d.config.TTL)
 
 	response, err = d.client.PutZone(zone, dnsZone)
 	if err != nil || response.StatusCode != 0 {
@@ -116,10 +118,13 @@ func (d *dmapiProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("joker: %w", err)
 	}
 
-	relative := getRelative(fqdn, zone)
+	subDomain, err := dns01.ExtractSubDomain(fqdn, zone)
+	if err != nil {
+		return fmt.Errorf("joker: %w", err)
+	}
 
 	if d.config.Debug {
-		log.Infof("[%s] joker: removing entry %q from zone %q", domain, relative, zone)
+		log.Infof("[%s] joker: removing entry %q from zone %q", domain, subDomain, zone)
 	}
 
 	response, err := d.client.Login()
@@ -128,7 +133,7 @@ func (d *dmapiProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	defer func() {
-		// Try to logout in case of errors
+		// Try to log out in case of errors
 		_, _ = d.client.Logout()
 	}()
 
@@ -137,7 +142,7 @@ func (d *dmapiProvider) CleanUp(domain, token, keyAuth string) error {
 		return formatResponseError(response, err)
 	}
 
-	dnsZone, modified := dmapi.RemoveTxtEntryFromZone(response.Body, relative)
+	dnsZone, modified := dmapi.RemoveTxtEntryFromZone(response.Body, subDomain)
 	if modified {
 		response, err = d.client.PutZone(zone, dnsZone)
 		if err != nil || response.StatusCode != 0 {
@@ -150,10 +155,6 @@ func (d *dmapiProvider) CleanUp(domain, token, keyAuth string) error {
 		return formatResponseError(response, err)
 	}
 	return nil
-}
-
-func getRelative(fqdn, zone string) string {
-	return dns01.UnFqdn(strings.TrimSuffix(fqdn, dns01.ToFqdn(zone)))
 }
 
 // formatResponseError formats error with optional details from DMAPI response.

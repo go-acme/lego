@@ -121,9 +121,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("variomedia: %w", err)
 	}
 
+	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	if err != nil {
+		return fmt.Errorf("variomedia: %w", err)
+	}
+
 	record := internal.DNSRecord{
 		RecordType: "TXT",
-		Name:       dns01.UnFqdn(strings.TrimSuffix(fqdn, authZone)),
+		Name:       subDomain,
 		Domain:     dns01.UnFqdn(authZone),
 		Data:       value,
 		TTL:        d.config.TTL,

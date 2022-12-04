@@ -55,7 +55,8 @@ func TestSplitDomain(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			subdomain, domain := provider.splitDomain(test.fqdn)
+			subdomain, domain, err := provider.splitDomain(test.fqdn)
+			require.NoError(t, err)
 
 			assert.Equal(t, test.subdomain, subdomain)
 			assert.Equal(t, test.domain, domain)

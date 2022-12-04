@@ -212,14 +212,14 @@ func TestClient_FindTxtRecord(t *testing.T) {
 		},
 		{
 			desc:        "zero records",
-			authFQDN:    "_acme-challenge.foo.com.",
-			zoneName:    "test-zone",
+			authFQDN:    "_acme-challenge.example.com.",
+			zoneName:    "example.com",
 			apiResponse: `[]`,
 		},
 		{
 			desc:        "invalid json response",
-			authFQDN:    "_acme-challenge.foo.com.",
-			zoneName:    "test-zone",
+			authFQDN:    "_acme-challenge.example.com.",
+			zoneName:    "example.com",
 			apiResponse: `[{}]`,
 			expected: expected{
 				errorMsg: "failed to unmarshall TXT records: json: cannot unmarshal array into Go value of type map[string]internal.TXTRecord: [{}]",
@@ -327,14 +327,14 @@ func TestClient_ListTxtRecord(t *testing.T) {
 		},
 		{
 			desc:        "zero records",
-			authFQDN:    "_acme-challenge.foo.com.",
-			zoneName:    "test-zone",
+			authFQDN:    "_acme-challenge.example.com.",
+			zoneName:    "example.com",
 			apiResponse: `[]`,
 		},
 		{
 			desc:        "invalid json response",
-			authFQDN:    "_acme-challenge.foo.com.",
-			zoneName:    "test-zone",
+			authFQDN:    "_acme-challenge.example.com.",
+			zoneName:    "example.com",
 			apiResponse: `[{}]`,
 			expected: expected{
 				errorMsg: "failed to unmarshall TXT records: json: cannot unmarshal array into Go value of type map[string]internal.TXTRecord: [{}]",

@@ -4,7 +4,6 @@ package vinyldns
 import (
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -285,7 +284,10 @@ func splitDomain(fqdn string) (string, string, error) {
 		return "", "", err
 	}
 
-	host := dns01.UnFqdn(strings.TrimSuffix(fqdn, zone))
+	subDomain, err := dns01.ExtractSubDomain(fqdn, zone)
+	if err != nil {
+		return "", "", err
+	}
 
-	return zone, host, nil
+	return zone, subDomain, nil
 }

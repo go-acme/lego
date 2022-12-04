@@ -61,9 +61,12 @@ func (d *svcProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("joker: %w", err)
 	}
 
-	relative := getRelative(fqdn, zone)
+	subDomain, err := dns01.ExtractSubDomain(fqdn, zone)
+	if err != nil {
+		return fmt.Errorf("joker: %w", err)
+	}
 
-	return d.client.Send(dns01.UnFqdn(zone), relative, value)
+	return d.client.Send(dns01.UnFqdn(zone), subDomain, value)
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
@@ -75,9 +78,12 @@ func (d *svcProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("joker: %w", err)
 	}
 
-	relative := getRelative(fqdn, zone)
+	subDomain, err := dns01.ExtractSubDomain(fqdn, zone)
+	if err != nil {
+		return fmt.Errorf("joker: %w", err)
+	}
 
-	return d.client.Send(dns01.UnFqdn(zone), relative, "")
+	return d.client.Send(dns01.UnFqdn(zone), subDomain, "")
 }
 
 // Sequential All DNS challenges for this provider will be resolved sequentially.

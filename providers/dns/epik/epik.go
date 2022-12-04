@@ -101,8 +101,13 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("epik: %w", err)
 	}
 
+	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	if err != nil {
+		return fmt.Errorf("epik: %w", err)
+	}
+
 	record := internal.RecordRequest{
-		Host: dns01.UnFqdn(strings.TrimSuffix(fqdn, authZone)),
+		Host: subDomain,
 		Type: "TXT",
 		Data: value,
 		TTL:  d.config.TTL,
@@ -127,15 +132,19 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	dom := dns01.UnFqdn(authZone)
-	host := dns01.UnFqdn(strings.TrimSuffix(fqdn, authZone))
 
 	records, err := d.client.GetDNSRecords(dom)
 	if err != nil {
 		return fmt.Errorf("epik: %w", err)
 	}
 
+	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	if err != nil {
+		return fmt.Errorf("epik: %w", err)
+	}
+
 	for _, record := range records {
-		if strings.EqualFold(record.Type, "TXT") && record.Data == value && record.Name == host {
+		if strings.EqualFold(record.Type, "TXT") && record.Data == value && record.Name == subDomain {
 			_, err = d.client.RemoveHostRecord(dom, record.ID)
 			if err != nil {
 				return fmt.Errorf("epik: %w", err)

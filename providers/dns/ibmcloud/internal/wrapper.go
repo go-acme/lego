@@ -2,6 +2,7 @@ package internal
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/softlayer/softlayer-go/datatypes"
 	"github.com/softlayer/softlayer-go/services"
@@ -39,7 +40,7 @@ func (w Wrapper) CleanupTXTRecord(fqdn, domain string) error {
 
 	domainID, err := getDomainID(service, domain)
 	if err != nil {
-		return fmt.Errorf("failed to get domain ID: %w", err)
+		return fmt.Errorf("failed to get domain ID for domain: %w", err)
 	}
 
 	service.Options.Id = domainID
@@ -66,7 +67,27 @@ func getDomainID(service services.Dns_Domain, domain string) (*int, error) {
 		return r.Id, nil
 	}
 
-	return nil, fmt.Errorf("no data found of domain: %s", domain)
+	// The domain was not found by name. For subdomains this is not unusal in softlayer.
+	// So in case a subdomain like sub.toplevel.domain was used try again using the
+	// parent domain (strip the first part in the domain string -> toplevel.domain).
+	domainParts := strings.Split(domain, ".")
+	if len(domainParts) > 2 {
+		return getDomainID(service, getParentDomain(domainParts))
+	} else {
+		return nil, fmt.Errorf("no data found for domain: %s", domain)
+	}
+}
+
+func getParentDomain(domainParts []string) string {
+	numParts := len(domainParts)
+	var sb strings.Builder
+	for i := 1; i < numParts; i++ {
+		sb.WriteString(domainParts[i])
+		if i < numParts-1 {
+			sb.WriteString(".")
+		}
+	}
+	return sb.String()
 }
 
 func findTxtRecords(service services.Dns_Domain, fqdn string) ([]datatypes.Dns_Domain_ResourceRecord, error) {

@@ -79,17 +79,6 @@ func getDomainID(service services.Dns_Domain, domain string) (*int, error) {
 	return getDomainID(service, parent)
 }
 
-func getParentDomain(domainParts []string) string {
-	numParts := len(domainParts)
-	var sb strings.Builder
-	for i := 1; i < numParts; i++ {
-		sb.WriteString(domainParts[i])
-		if i < numParts-1 {
-			sb.WriteString(".")
-		}
-	}
-	return sb.String()
-}
 
 func findTxtRecords(service services.Dns_Domain, fqdn string) ([]datatypes.Dns_Domain_ResourceRecord, error) {
 	var results []datatypes.Dns_Domain_ResourceRecord

@@ -71,12 +71,12 @@ func getDomainID(service services.Dns_Domain, domain string) (*int, error) {
 	// For subdomains this is not unusual in softlayer.
 	// So in case a subdomain like `sub.toplevel.tld` was used try again using the parent domain
 	// (strip the first part in the domain string -> `toplevel.tld`).
-	domainParts := strings.Split(domain, ".")
-	if len(domainParts) > 2 {
-		return getDomainID(service, getParentDomain(domainParts))
-	} else {
+	_, parent, found := strings.Cut(domain, ".")
+	if !found || strings.Index(parent, ".") == -1 {
 		return nil, fmt.Errorf("no data found for domain: %s", domain)
 	}
+
+	return getDomainID(service, parent)
 }
 
 func getParentDomain(domainParts []string) string {

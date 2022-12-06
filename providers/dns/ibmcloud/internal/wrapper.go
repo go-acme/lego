@@ -40,7 +40,7 @@ func (w Wrapper) CleanupTXTRecord(fqdn, domain string) error {
 
 	domainID, err := getDomainID(service, domain)
 	if err != nil {
-		return fmt.Errorf("failed to get domain ID for domain: %w", err)
+		return fmt.Errorf("failed to get domain ID: %w", err)
 	}
 
 	service.Options.Id = domainID

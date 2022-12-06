@@ -72,13 +72,12 @@ func getDomainID(service services.Dns_Domain, domain string) (*int, error) {
 	// So in case a subdomain like `sub.toplevel.tld` was used try again using the parent domain
 	// (strip the first part in the domain string -> `toplevel.tld`).
 	_, parent, found := strings.Cut(domain, ".")
-	if !found || strings.Index(parent, ".") == -1 {
+	if !found || !strings.Contains(parent, ".") {
 		return nil, fmt.Errorf("no data found for domain: %s", domain)
 	}
 
 	return getDomainID(service, parent)
 }
-
 
 func findTxtRecords(service services.Dns_Domain, fqdn string) ([]datatypes.Dns_Domain_ResourceRecord, error) {
 	var results []datatypes.Dns_Domain_ResourceRecord

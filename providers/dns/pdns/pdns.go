@@ -173,7 +173,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("pdns: %w", err)
 	}
 
-	if d.apiVersion < 1 {
+	if d.apiVersion < 1 || (zone.Kind != "Master" && zone.Kind != "Slave") {
 		return nil
 	}
 
@@ -221,7 +221,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("pdns: %w", err)
 	}
 
-	if d.apiVersion < 1 {
+	if d.apiVersion < 1 || (zone.Kind != "Master" && zone.Kind != "Slave") {
 		return nil
 	}
 

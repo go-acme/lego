@@ -19,7 +19,7 @@ jobs:
 
       # https://github.com/marketplace/actions/setup-go-environment
       - name: Set up Go ${{ env.GO_VERSION }}
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
           go-version: ${{ env.GO_VERSION }}
 

@@ -22,7 +22,7 @@ jobs:
     steps:
       # https://github.com/marketplace/actions/setup-go-environment
       - name: Set up Go ${{ matrix.go-version }}
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go-version }}
 

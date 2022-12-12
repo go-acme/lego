@@ -47,3 +47,23 @@ If you are using this option, make sure you proxy all of the following traffic t
 This traffic redirection is only needed as long as lego solves challenges. As soon as you have received your certificates you can deactivate the forwarding.
 
 [^header]: You must ensure that incoming validation requests contains the correct value for the HTTP `Host` header. If you operate lego behind a non-transparent reverse proxy (such as Apache or NGINX), you might need to alter the header field using `--http.proxy-header X-Forwarded-Host`.
+
+## DNS Resolvers and Challenge Verification
+
+When using a DNS challenge provider (via `--dns <name>`), Lego tries to ensure the ACME challenge token is properly setup before instructing the ACME provider to perform the validation.
+
+This involves a few DNS queries to different servers:
+
+1. Determining the apex domain and resolving CNAMES.
+
+   The apex domain is usualy the 2nd level domain for TLDs like `.com` or `.de`, but can also be the 3rd level domain for `.co.uk` domains.
+   It contains the SOA record, from which Lego extracts the authoritative name server (MNAME, i.e. the primary name server).
+   Should any DNS label on the way be a CNAME, it is resolved as per usual.
+
+   To resolve the apex domain and CNAMEs, Lego sends queries to the configured DNS resolvers.
+   These are, by default, the system name servers, and fallback to Google's DNS servers, should they be absent. You can override this behaviour with the `--dns.resolvers` flag.
+
+2. Verifying the challenge token.
+
+   The `_acme-challenge.<yourdomain>` TXT record must be correctly installed.
+   Lego verifies this by directly querying the authoritative name server for this record (as detected in the previous step).

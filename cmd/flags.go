@@ -104,7 +104,8 @@ func CreateFlags(defaultPath string) []cli.Flag {
 		},
 		&cli.StringSliceFlag{
 			Name: "dns.resolvers",
-			Usage: "Set the resolvers to use for performing recursive DNS queries." +
+			Usage: "Set the resolvers to use for performing (recursive) CNAME resolving and apex domain determination." +
+				" For DNS challenge verification, the authoritative DNS server is queried directly." +
 				" Supported: host:port." +
 				" The default is to use the system resolvers, or Google's DNS resolvers if the system's cannot be determined.",
 		},

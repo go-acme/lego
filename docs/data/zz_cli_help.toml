@@ -25,7 +25,7 @@ GLOBAL OPTIONS:
    --dns value                                                  Solve a DNS challenge using the specified provider. Can be mixed with other types of challenges. Run 'lego dnshelp' for help on usage.
    --dns-timeout value                                          Set the DNS timeout value to a specific value in seconds. Used only when performing authoritative name servers queries. (default: 10)
    --dns.disable-cp                                             By setting this flag to true, disables the need to wait the propagation of the TXT record to all authoritative name servers. (default: false)
-   --dns.resolvers value [ --dns.resolvers value ]              Set the resolvers to use for performing recursive DNS queries. Supported: host:port. The default is to use the system resolvers, or Google's DNS resolvers if the system's cannot be determined.
+   --dns.resolvers value [ --dns.resolvers value ]              Set the resolvers to use for performing (recursive) CNAME resolving and apex domain determination. For DNS challenge verification, the authoritative DNS server is queried directly. Supported: host:port. The default is to use the system resolvers, or Google's DNS resolvers if the system's cannot be determined.
    --domains value, -d value [ --domains value, -d value ]      Add a domain to the process. Can be specified multiple times.
    --eab                                                        Use External Account Binding for account registration. Requires --kid and --hmac. (default: false)
    --email value, -m value                                      Email used for registration and recovery contact.

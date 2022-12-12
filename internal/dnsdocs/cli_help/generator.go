@@ -41,18 +41,22 @@ func main() {
 		{"lego", "help", "list"},
 		{"lego", "dnshelp"},
 	} {
-		help = append(help, run(args))
+		content, err := run(args)
+		if err != nil {
+			log.Fatalf("running %s failed: %v", args, err)
+		}
+		help = append(help, content)
 	}
 
 	f, err := os.OpenFile(outputFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o644)
 	if err != nil {
 		log.Fatalf("cannot open cli_help.toml: %v", err)
 	}
-	defer f.Close()
-
 	if err = outputTpl.Execute(f, help); err != nil {
+		f.Close()
 		log.Fatalf("failed to write cli_help.toml: %v", err)
 	}
+	f.Close()
 
 	log.Println("cli_help.toml updated")
 }
@@ -75,22 +79,18 @@ var lego = func() *cli.App {
 	return app
 }()
 
-func run(args []string) commandHelp {
-	var w = lego.Writer
+func run(args []string) (h commandHelp, err error) {
+	w := lego.Writer
 	defer func() { lego.Writer = w }()
 
 	var buf bytes.Buffer
 	lego.Writer = &buf
 
 	if err := lego.Run(args); err != nil {
-		log.Fatalf("running %s failed: %v", args, err)
+		return h, err
 	}
 	return commandHelp{
 		Title: strings.Join(args, " "),
 		Help:  strings.TrimSpace(buf.String()),
-	}
-}
-
-func init() {
-
+	}, nil
 }

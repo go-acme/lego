@@ -5,7 +5,7 @@ package cmd
 
 import (
 	"fmt"
-	"os"
+	"io"
 	"sort"
 	"strings"
 	"text/tabwriter"
@@ -22,8 +22,8 @@ func allDNSCodes() string {
 	return strings.Join(providers, ", ")
 }
 
-func displayDNSHelp(name string) error {
-	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+func displayDNSHelp(w io.Writer, name string) error {
+	w = tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
 	ew := &errWriter{w: w}
 
 	switch name {
@@ -55,9 +55,8 @@ func displayDNSHelp(name string) error {
 		return fmt.Errorf("%q is not yet supported", name)
 	}
 
-	if ew.err != nil {
-		return fmt.Errorf("error: %w", ew.err)
+	if flusher, ok := w.(interface{ Flush() error }); ok {
+		return flusher.Flush()
 	}
-
-	return w.Flush()
+	return nil
 }

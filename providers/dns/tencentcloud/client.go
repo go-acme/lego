@@ -38,7 +38,8 @@ func (d *DNSProvider) getHostedZone(domain string) (*dnspod.DomainListItem, erro
 
 	var hostedZone *dnspod.DomainListItem
 	for _, zone := range domains {
-		if *zone.Name == dns01.UnFqdn(authZone) {
+		unfqdn := dns01.UnFqdn(authZone)
+		if *zone.Name == unfqdn || *zone.Punycode == unfqdn {
 			hostedZone = zone
 		}
 	}

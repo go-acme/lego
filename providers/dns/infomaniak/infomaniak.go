@@ -112,6 +112,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
+	domain = dns01.UnFqdn(fqdn)
+
 	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	ikDomain, err := d.client.GetDomainByName(domain)
 	if err != nil {
@@ -149,6 +151,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+
+	domain = dns01.UnFqdn(fqdn)
 
 	d.recordIDsMu.Lock()
 	recordID, ok := d.recordIDs[token]

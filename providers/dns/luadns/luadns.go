@@ -124,9 +124,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("luadns: failed to find zone: %w", err)
 	}
 
-	authZone = dns01.UnFqdn(authZone)
-
-	zone := findZone(zones, authZone)
+	zone := findZone(zones, dns01.UnFqdn(authZone))
 	if zone == nil {
 		return fmt.Errorf("luadns: no matching zone found for domain %s", domain)
 	}

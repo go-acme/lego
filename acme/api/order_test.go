@@ -10,9 +10,9 @@ import (
 
 	"github.com/go-acme/lego/v4/acme"
 	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/go-jose/go-jose/v3"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"gopkg.in/square/go-jose.v2"
 )
 
 func TestOrderService_New(t *testing.T) {

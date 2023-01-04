@@ -9,7 +9,7 @@ import (
 	"fmt"
 
 	"github.com/go-acme/lego/v4/acme/api/internal/nonces"
-	jose "gopkg.in/square/go-jose.v2"
+	jose "github.com/go-jose/go-jose/v3"
 )
 
 // JWS Represents a JWS.

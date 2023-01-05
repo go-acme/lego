@@ -27,7 +27,7 @@ Here is an example bash command using the Hurricane Electric DNS provider:
 
 ```bash
 HURRICANE_TOKENS=example.org:token \
-lego --email you@example.com --dns hurricane --domains example.org --domains '*.example.org run'
+lego --email you@example.com --dns hurricane --domains example.org --domains '*.example.org' run
 
 HURRICANE_TOKENS=my.example.org:token1,demo.example.org:token2 \
 lego --email you@example.com --dns hurricane --domains my.example.org --domains demo.example.org

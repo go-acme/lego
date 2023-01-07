@@ -83,7 +83,7 @@ You can help further, by adjusting your crontab entry, like so:
 #0 0 * * *   /usr/bin/lego ... renew
 
 # instead, use a randomly chosen time:
-3 35 * * *  /usr/bin/lego ... renew
+35 3 * * *  /usr/bin/lego ... renew
 ```
 
 If you use systemd timers, consider doing something similar, and/or introduce a `RandomizedDelaySec`:

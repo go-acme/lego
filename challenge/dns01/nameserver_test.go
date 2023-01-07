@@ -1,12 +1,150 @@
 package dns01
 
 import (
+	"fmt"
+	getport "github.com/jsumners/go-getport"
+	"github.com/miekg/dns"
+	"net"
 	"sort"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+type testDnsHandler struct{}
+type testDnsServer struct {
+	*dns.Server
+	getport.PortResult
+}
+
+func (handler *testDnsHandler) ServeDNS(writer dns.ResponseWriter, reply *dns.Msg) {
+	msg := dns.Msg{}
+	msg.SetReply(reply)
+
+	switch reply.Question[0].Qtype {
+	case dns.TypeA:
+		msg.Authoritative = true
+		domain := msg.Question[0].Name
+		msg.Answer = append(
+			msg.Answer,
+			&dns.A{
+				Hdr: dns.RR_Header{
+					Name:   domain,
+					Rrtype: dns.TypeA,
+					Class:  dns.ClassINET,
+					Ttl:    60,
+				},
+				A: net.ParseIP("127.0.0.1"),
+			},
+		)
+	}
+
+	writer.WriteMsg(&msg)
+}
+
+// getTestNameserver constructs a new DNS server on a local address, or set
+// of addresses, that responds to an `A` query for `example.com`.
+func getTestNameserver(t *testing.T, network string) testDnsServer {
+	server := &dns.Server{
+		Handler: new(testDnsHandler),
+		Net:     network,
+	}
+	testServer := testDnsServer{
+		Server: server,
+	}
+
+	var protocol getport.Protocol
+	var address string
+	switch network {
+	case "tcp":
+		protocol = getport.TCP
+		address = "0.0.0.0"
+	case "tcp4":
+		protocol = getport.TCP4
+		address = "127.0.0.1"
+	case "tcp6":
+		protocol = getport.TCP6
+		address = "::1"
+	case "udp":
+		protocol = getport.UDP
+		address = "0.0.0.0"
+	case "udp4":
+		protocol = getport.UDP4
+		address = "127.0.0.1"
+	case "udp6":
+		protocol = getport.UDP6
+		address = "::1"
+	}
+	portResult, portError := getport.GetPort(protocol, address)
+	if portError != nil {
+		t.Error(portError)
+		return testServer
+	}
+	testServer.PortResult = portResult
+	server.Addr = getport.PortResultToAddress(portResult)
+
+	waitLock := sync.Mutex{}
+	waitLock.Lock()
+	server.NotifyStartedFunc = waitLock.Unlock
+
+	fin := make(chan error, 1)
+	go func() {
+		fin <- server.ListenAndServe()
+	}()
+
+	waitLock.Lock()
+	return testServer
+}
+
+func TestSendDNSQuery(t *testing.T) {
+	t.Run("does udp4 only", func(t *testing.T) {
+		SetNetworkStack(IPv4Only)
+		nameserver := getTestNameserver(t, getNetwork("udp"))
+		defer nameserver.Server.Shutdown()
+
+		serverAddress := fmt.Sprintf("127.0.0.1:%d", nameserver.PortResult.Port)
+		recursiveNameservers = ParseNameservers([]string{serverAddress})
+		msg := createDNSMsg("example.com.", dns.TypeA, true)
+		result, queryError := sendDNSQuery(msg, serverAddress)
+		assert.NoError(t, queryError)
+		assert.Equal(t, result.Answer[0].(*dns.A).A.String(), "127.0.0.1")
+	})
+
+	t.Run("does udp6 only", func(t *testing.T) {
+		SetNetworkStack(IPv6Only)
+		nameserver := getTestNameserver(t, getNetwork("udp"))
+		defer nameserver.Server.Shutdown()
+
+		serverAddress := fmt.Sprintf("[::1]:%d", nameserver.PortResult.Port)
+		recursiveNameservers = ParseNameservers([]string{serverAddress})
+		msg := createDNSMsg("example.com.", dns.TypeA, true)
+		result, queryError := sendDNSQuery(msg, serverAddress)
+		assert.NoError(t, queryError)
+		assert.Equal(t, result.Answer[0].(*dns.A).A.String(), "127.0.0.1")
+	})
+
+	t.Run("does tcp4 and tcp6", func(t *testing.T) {
+		SetNetworkStack(DefaultNetworkStack)
+		nameserver := getTestNameserver(t, getNetwork("tcp"))
+		defer nameserver.Server.Shutdown()
+
+		serverAddress := fmt.Sprintf("[::1]:%d", nameserver.PortResult.Port)
+		recursiveNameservers = ParseNameservers([]string{serverAddress})
+		msg := createDNSMsg("example.com.", dns.TypeA, true)
+		result, queryError := sendDNSQuery(msg, serverAddress)
+		assert.NoError(t, queryError)
+		assert.Equal(t, result.Answer[0].(*dns.A).A.String(), "127.0.0.1")
+
+		serverAddress = fmt.Sprintf("127.0.0.1:%d", nameserver.PortResult.Port)
+		recursiveNameservers = ParseNameservers([]string{serverAddress})
+		msg = createDNSMsg("example.com.", dns.TypeA, true)
+		result, queryError = sendDNSQuery(msg, serverAddress)
+		assert.NoError(t, queryError)
+		assert.Equal(t, result.Answer[0].(*dns.A).A.String(), "127.0.0.1")
+	})
+}
 
 func TestLookupNameserversOK(t *testing.T) {
 	testCases := []struct {

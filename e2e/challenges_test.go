@@ -212,7 +212,7 @@ func TestChallengeHTTP_Client_Obtain(t *testing.T) {
 	client, err := lego.NewClient(config)
 	require.NoError(t, err)
 
-	err = client.Challenge.SetHTTP01Provider(http01.NewProviderServer("", "5002"))
+	err = client.Challenge.SetHTTP01Provider(http01.NewProviderServer("", "5002", ""))
 	require.NoError(t, err)
 
 	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
@@ -250,7 +250,7 @@ func TestChallengeHTTP_Client_Registration_QueryRegistration(t *testing.T) {
 	client, err := lego.NewClient(config)
 	require.NoError(t, err)
 
-	err = client.Challenge.SetHTTP01Provider(http01.NewProviderServer("", "5002"))
+	err = client.Challenge.SetHTTP01Provider(http01.NewProviderServer("", "5002", ""))
 	require.NoError(t, err)
 
 	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
@@ -282,7 +282,7 @@ func TestChallengeTLS_Client_Obtain(t *testing.T) {
 	client, err := lego.NewClient(config)
 	require.NoError(t, err)
 
-	err = client.Challenge.SetTLSALPN01Provider(tlsalpn01.NewProviderServer("", "5001"))
+	err = client.Challenge.SetTLSALPN01Provider(tlsalpn01.NewProviderServer("", "5001", ""))
 	require.NoError(t, err)
 
 	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
@@ -325,7 +325,7 @@ func TestChallengeTLS_Client_ObtainForCSR(t *testing.T) {
 	client, err := lego.NewClient(config)
 	require.NoError(t, err)
 
-	err = client.Challenge.SetTLSALPN01Provider(tlsalpn01.NewProviderServer("", "5001"))
+	err = client.Challenge.SetTLSALPN01Provider(tlsalpn01.NewProviderServer("", "5001", ""))
 	require.NoError(t, err)
 
 	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})

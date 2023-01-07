@@ -12,6 +12,14 @@ import (
 	"github.com/go-acme/lego/v4/log"
 )
 
+type ProviderNetwork string
+
+const (
+	DefaultNetwork = "tcp"
+	Tcp4Network    = "tcp4"
+	Tcp6Network    = "tcp6"
+)
+
 // ProviderServer implements ChallengeProvider for `http-01` challenge.
 // It may be instantiated without using the NewProviderServer function if
 // you want only to use the default values.
@@ -29,12 +37,15 @@ type ProviderServer struct {
 // NewProviderServer creates a new ProviderServer on the selected interface and port.
 // Setting iface and / or port to an empty string will make the server fall back to
 // the "any" interface and port 80 respectively.
-func NewProviderServer(iface, port string) *ProviderServer {
+func NewProviderServer(iface, port string, network ProviderNetwork) *ProviderServer {
 	if port == "" {
 		port = "80"
 	}
+	if network == "" {
+		network = DefaultNetwork
+	}
 
-	return &ProviderServer{network: "tcp", address: net.JoinHostPort(iface, port), matcher: &hostMatcher{}}
+	return &ProviderServer{network: string(network), address: net.JoinHostPort(iface, port), matcher: &hostMatcher{}}
 }
 
 func NewUnixProviderServer(socketPath string, mode fs.FileMode) *ProviderServer {

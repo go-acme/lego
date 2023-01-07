@@ -11,6 +11,14 @@ import (
 	"github.com/go-acme/lego/v4/log"
 )
 
+type ProviderNetwork string
+
+const (
+	DefaultNetwork = "tcp"
+	Tcp4Network    = "tcp4"
+	Tcp6Network    = "tcp6"
+)
+
 const (
 	// ACMETLS1Protocol is the ALPN Protocol ID for the ACME-TLS/1 Protocol.
 	ACMETLS1Protocol = "acme-tls/1"
@@ -26,14 +34,23 @@ const (
 type ProviderServer struct {
 	iface    string
 	port     string
+	network  string
 	listener net.Listener
 }
 
 // NewProviderServer creates a new ProviderServer on the selected interface and port.
 // Setting iface and / or port to an empty string will make the server fall back to
 // the "any" interface and port 443 respectively.
-func NewProviderServer(iface, port string) *ProviderServer {
-	return &ProviderServer{iface: iface, port: port}
+func NewProviderServer(iface, port string, network ProviderNetwork) *ProviderServer {
+	if port == "" {
+		port = defaultTLSPort
+	}
+	
+	if network == "" {
+		network = DefaultNetwork
+	}
+
+	return &ProviderServer{iface: iface, port: port, network: string(network)}
 }
 
 func (s *ProviderServer) GetAddress() string {
@@ -65,7 +82,7 @@ func (s *ProviderServer) Present(domain, token, keyAuth string) error {
 	tlsConf.NextProtos = []string{ACMETLS1Protocol}
 
 	// Create the listener with the created tls.Config.
-	s.listener, err = tls.Listen("tcp", s.GetAddress(), tlsConf)
+	s.listener, err = tls.Listen(s.network, s.GetAddress(), tlsConf)
 	if err != nil {
 		return fmt.Errorf("could not start HTTPS server for challenge: %w", err)
 	}

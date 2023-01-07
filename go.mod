@@ -51,7 +51,7 @@ require (
 	github.com/sacloud/iaas-api-go v1.3.2
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.9
 	github.com/softlayer/softlayer-go v1.0.6
-	github.com/stretchr/testify v1.8.0
+	github.com/stretchr/testify v1.8.1
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.490
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod v1.0.490
 	github.com/transip/gotransip/v6 v6.17.0
@@ -70,6 +70,8 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 	software.sslmate.com/src/go-pkcs12 v0.2.0
 )
+
+require github.com/jsumners/go-getport v1.0.0
 
 require (
 	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
@@ -117,8 +119,8 @@ require (
 	github.com/smartystreets/assertions v1.0.1 // indirect
 	github.com/smartystreets/go-aws-auth v0.0.0-20180515143844-0c1422d1fdb9 // indirect
 	github.com/softlayer/xmlrpc v0.0.0-20200409220501-5f089df7cb7e // indirect
-	github.com/spf13/cast v1.3.1 // indirect
-	github.com/stretchr/objx v0.4.0 // indirect
+	github.com/spf13/cast v1.5.0 // indirect
+	github.com/stretchr/objx v0.5.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	go.opencensus.io v0.22.3 // indirect
 	go.uber.org/ratelimit v0.2.0 // indirect

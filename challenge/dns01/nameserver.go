@@ -26,6 +26,24 @@ var defaultNameservers = []string{
 // recursiveNameservers are used to pre-check DNS propagation.
 var recursiveNameservers = getNameservers(defaultResolvConf, defaultNameservers)
 
+// NetworkStack is used to indicate which IP stack should be used for DNS
+// queries. Valid values are DefaultNetworkStack, IPv4Only, and IPv6Only.
+type NetworkStack int
+
+const (
+	// DefaultNetworkStack indicates that both IPv4 and IPv6 should be allowed.
+	// This setting lets the OS determine which IP stack to use.
+	DefaultNetworkStack NetworkStack = iota
+	// IPv4Only forces DNS queries to only happen over the IPv4 stack.
+	IPv4Only
+	// IPv6Only forces DNS queries to only happen over the IPv6 stack.
+	IPv6Only
+)
+
+// currentNetworkStack is used to define which IP stack will be used. The default is
+// both IPv4 and IPv6. Set to IPv4Only or IPv6Only to select either version.
+var currentNetworkStack = DefaultNetworkStack
+
 // soaCacheEntry holds a cached SOA record (only selected fields).
 type soaCacheEntry struct {
 	zone      string    // zone apex (a domain name)
@@ -65,6 +83,11 @@ func AddRecursiveNameservers(nameservers []string) ChallengeOption {
 		recursiveNameservers = ParseNameservers(nameservers)
 		return nil
 	}
+}
+
+// SetNetworkStack defines the IP stack that will be used for DNS queries.
+func SetNetworkStack(network NetworkStack) {
+	currentNetworkStack = network
 }
 
 // getNameservers attempts to get systems nameservers before falling back to the defaults.
@@ -249,12 +272,33 @@ func createDNSMsg(fqdn string, rtype uint16, recursive bool) *dns.Msg {
 	return m
 }
 
+// getNetwork interprets the NetworkStack setting in relation to the desired
+// protocol. The proto value should be either "udp" or "tcp".
+func getNetwork(proto string) string {
+	// The dns client passes whatever value is set in [dns.Client.Net] to
+	// the [net.Dialer] (https://github.com/miekg/dns/blob/fe20d5d/client.go#L119-L141).
+	// And the [net.Dialer] accepts strings such as "udp4" or "tcp6"
+	// (https://cs.opensource.google/go/go/+/refs/tags/go1.18.9:src/net/dial.go;l=167-182).
+	if currentNetworkStack == IPv4Only {
+		return proto + "4"
+	}
+	if currentNetworkStack == IPv6Only {
+		return proto + "6"
+	}
+	return proto
+}
+
 func sendDNSQuery(m *dns.Msg, ns string) (*dns.Msg, error) {
-	udp := &dns.Client{Net: "udp", Timeout: dnsTimeout}
+	network := getNetwork("udp")
+	udp := &dns.Client{Net: network, Timeout: dnsTimeout}
 	in, _, err := udp.Exchange(m, ns)
 
-	if in != nil && in.Truncated {
-		tcp := &dns.Client{Net: "tcp", Timeout: dnsTimeout}
+	network = getNetwork("tcp")
+	// We can encounter a net.OpError if the nameserver is not listening
+	// on UDP at all, i.e. net.Dial could not make a connection.
+	_, isOpErr := err.(*net.OpError)
+	if (in != nil && in.Truncated) || isOpErr {
+		tcp := &dns.Client{Net: network, Timeout: dnsTimeout}
 		// If the TCP request succeeds, the err will reset to nil
 		in, _, err = tcp.Exchange(m, ns)
 	}

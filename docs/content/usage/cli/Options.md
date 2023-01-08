@@ -40,7 +40,7 @@ lego to listen on that interface:port for any incoming challenges.
 
 If you are using this option, make sure you proxy all of the following traffic to these ports.
 
-**HTTP Port:** All plaintext HTTP requests to port **80** which begin with a request path of `/.well-known/acme-challenge/` for the HTTP challenge.[^header]
+**HTTP Port:** All plaintext HTTP requests to port **80** which begin with a request path of `/.well-known/acme-challenge/` for the HTTP challenge[^header].
 
 **TLS Port:** All TLS handshakes on port **443** for the TLS-ALPN challenge.
 
@@ -61,7 +61,7 @@ This involves a few DNS queries to different servers:
    For other domains (like `fra.eu.cdn.example.com`), this can get complicated, as `cdn.example.com` may be delegated to the CDN provider, which means for `cdn.example.com` must exist a different SOA record.
 
    To find the correct zone, Lego requests the SOA record for each DNS label (starting on the leaf domain, i.e. the left-most DNS label).
-   If there is no SOA record, Lego requests the SOA record of the parent label, then for its parent, etc., until it reaches the apex domain.[^apex]
+   If there is no SOA record, Lego requests the SOA record of the parent label, then for its parent, etc., until it reaches the apex domain[^apex].
    Should any DNS label on the way be a CNAME, it is resolved as per usual.
 
    In the default configuration, Lego uses the system name servers for this, and falls back to Google's DNS servers, should they be absent.

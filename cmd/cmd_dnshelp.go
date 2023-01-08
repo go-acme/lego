@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"io"
-	"os"
 	"strings"
 	"text/tabwriter"
 
@@ -28,16 +27,16 @@ func createDNSHelp() *cli.Command {
 func dnsHelp(ctx *cli.Context) error {
 	code := ctx.String("code")
 	if code == "" {
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+		w := tabwriter.NewWriter(ctx.App.Writer, 0, 0, 2, ' ', 0)
 		ew := &errWriter{w: w}
 
 		ew.writeln(`Credentials for DNS providers must be passed through environment variables.`)
 		ew.writeln()
-		ew.writeln(`To display the documentation for a DNS providers:`)
+		ew.writeln(`To display the documentation for a specific DNS provider, run:`)
 		ew.writeln()
 		ew.writeln("\t$ lego dnshelp -c code")
 		ew.writeln()
-		ew.writeln("All DNS codes:")
+		ew.writeln("Supported DNS providers:")
 		ew.writef("\t%s\n", allDNSCodes())
 		ew.writeln()
 		ew.writeln("More information: https://go-acme.github.io/lego/dns")
@@ -49,7 +48,7 @@ func dnsHelp(ctx *cli.Context) error {
 		return w.Flush()
 	}
 
-	return displayDNSHelp(strings.ToLower(code))
+	return displayDNSHelp(ctx.App.Writer, strings.ToLower(code))
 }
 
 type errWriter struct {

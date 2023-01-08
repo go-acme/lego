@@ -77,8 +77,9 @@ func CreateFlags(defaultPath string) []cli.Flag {
 			Value: "Host",
 		},
 		&cli.StringFlag{
-			Name:  "http.webroot",
-			Usage: "Set the webroot folder to use for HTTP based challenges to write directly in a file in .well-known/acme-challenge. This disables the built-in server and expects the given directory to be publicly served with access to .well-known/acme-challenge",
+			Name: "http.webroot",
+			Usage: "Set the webroot folder to use for HTTP based challenges to write directly in a file in .well-known/acme-challenge." +
+				" This disables the built-in server and expects the given directory to be publicly served with access to .well-known/acme-challenge",
 		},
 		&cli.StringSliceFlag{
 			Name:  "http.memcached-host",
@@ -102,8 +103,10 @@ func CreateFlags(defaultPath string) []cli.Flag {
 			Usage: "By setting this flag to true, disables the need to wait the propagation of the TXT record to all authoritative name servers.",
 		},
 		&cli.StringSliceFlag{
-			Name:  "dns.resolvers",
-			Usage: "Set the resolvers to use for performing recursive DNS queries. Supported: host:port. The default is to use the system resolvers, or Google's DNS resolvers if the system's cannot be determined.",
+			Name: "dns.resolvers",
+			Usage: "Set the resolvers to use for performing recursive DNS queries." +
+				" Supported: host:port." +
+				" The default is to use the system resolvers, or Google's DNS resolvers if the system's cannot be determined.",
 		},
 		&cli.IntFlag{
 			Name:  "http-timeout",

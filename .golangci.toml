@@ -207,6 +207,3 @@
   [[issues.exclude-rules]]
     path = "providers/dns/hosttech/internal/client_test.go"
     text = "Duplicate words \\(0\\) found"
-  [[issues.exclude-rules]]
-    path = "internal/dnsdocs/cli_help/generator.go"
-    text = "(outputTpl|lego) is a global variable"

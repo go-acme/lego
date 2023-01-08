@@ -36,7 +36,7 @@ func dnsHelp(ctx *cli.Context) error {
 		ew.writeln()
 		ew.writeln("\t$ lego dnshelp -c code")
 		ew.writeln()
-		ew.writeln("Currently, Lego knows these DNS providers:")
+		ew.writeln("Supported DNS providers:")
 		ew.writef("\t%s\n", allDNSCodes())
 		ew.writeln()
 		ew.writeln("More information: https://go-acme.github.io/lego/dns")

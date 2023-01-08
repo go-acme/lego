@@ -138,14 +138,16 @@ func (d *DNSProvider) getAPIVersion() (int, error) {
 	return latestVersion, err
 }
 
-func (d *DNSProvider) notify(zoneURL string) error {
-	if d.apiVersion >= 1 {
-		p := path.Join(zoneURL, "/notify")
-		_, err := d.sendRequest(http.MethodPut, p, nil)
-		if err != nil {
-			return err
-		}
+func (d *DNSProvider) notify(zone *hostedZone) error {
+	if d.apiVersion < 1 || zone.Kind != "Master" && zone.Kind != "Slave" {
+		return nil
 	}
+
+	_, err := d.sendRequest(http.MethodPut, path.Join(zone.URL, "/notify"), nil)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

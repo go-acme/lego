@@ -109,6 +109,7 @@ func allDNSCodes() string {
 		"stackpath",
 		"tencentcloud",
 		"transip",
+		"ultradns",
 		"variomedia",
 		"vegadns",
 		"vercel",
@@ -2157,6 +2158,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/transip`)
+
+	case "ultradns":
+		// generated from: providers/dns/ultradns/ultradns.toml
+		ew.writeln(`Configuration for Ultradns.`)
+		ew.writeln(`Code:	'ultradns'`)
+		ew.writeln(`Since:	'v4.10.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "ULTRADNS_PASSWORD":	API Password`)
+		ew.writeln(`	- "ULTRADNS_USERNAME":	API Username`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "ULTRADNS_ENDPOINT":	API endpoint URL, defaults to https://api.ultradns.com/`)
+		ew.writeln(`	- "ULTRADNS_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "ULTRADNS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "ULTRADNS_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/ultradns`)
 
 	case "variomedia":
 		// generated from: providers/dns/variomedia/variomedia.toml

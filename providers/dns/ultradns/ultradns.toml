@@ -21,4 +21,5 @@ lego --email you@example.com --dns ultradns --domains my.example.org run
     ULTRADNS_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
 
 [Links]
+  API = "https://ultra-portalstatic.ultradns.com/static/docs/REST-API_User_Guide.pdf"
   GoClient = "https://github.com/ultradns/ultradns-go-sdk"

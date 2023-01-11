@@ -62,7 +62,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 ## More information
 
-
+- [API documentation](https://ultra-portalstatic.ultradns.com/static/docs/REST-API_User_Guide.pdf)
 - [Go client](https://github.com/ultradns/ultradns-go-sdk)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

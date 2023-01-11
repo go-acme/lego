@@ -120,6 +120,55 @@ func TestNewDNSProvider(t *testing.T) {
 	}
 }
 
+func TestNewDNSProviderConfig(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		username string
+		password string
+		expected string
+	}{
+		{
+			desc:     "success",
+			username: "api_username",
+			password: "api_password",
+		},
+		{
+			desc:     "missing credentials",
+			expected: "ultradns: config validation failure: username is missing",
+		},
+		{
+			desc:     "missing username",
+			username: "",
+			password: "api_password",
+			expected: "ultradns: config validation failure: username is missing",
+		},
+		{
+			desc:     "missing password",
+			username: "api_username",
+			password: "",
+			expected: "ultradns: config validation failure: password is missing",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			config := NewDefaultConfig()
+			config.Username = test.username
+			config.Password = test.password
+
+			p, err := NewDNSProviderConfig(config)
+
+			if test.expected == "" {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
+}
+
 func TestLivePresent(t *testing.T) {
 	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")

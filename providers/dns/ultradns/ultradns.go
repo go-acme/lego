@@ -2,11 +2,11 @@
 package ultradns
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/ultradns/ultradns-go-sdk/pkg/client"
 	"github.com/ultradns/ultradns-go-sdk/pkg/record"
@@ -38,7 +38,10 @@ type DNSProvider struct {
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	Endpoint           string
+	Username string
+	Password string
+	Endpoint string
+
 	TTL                int
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -64,31 +67,31 @@ func NewDNSProvider() (*DNSProvider, error) {
 	}
 
 	config := NewDefaultConfig()
+	config.Username = values[EnvUsername]
+	config.Password = values[EnvPassword]
+
+	return NewDNSProviderConfig(config)
+}
+
+// NewDNSProviderConfig return a DNSProvider instance configured for ultradns.
+func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
+	if config == nil {
+		return nil, errors.New("ultradns: the configuration of the DNS provider is nil")
+	}
 
 	ultraConfig := client.Config{
-		Username:  values[EnvUsername],
-		Password:  values[EnvPassword],
+		Username:  config.Username,
+		Password:  config.Password,
 		HostURL:   config.Endpoint,
 		UserAgent: defaultUserAgent,
 	}
 
-	cli, err := client.NewClient(ultraConfig)
+	uClient, err := client.NewClient(ultraConfig)
 	if err != nil {
 		return nil, fmt.Errorf("ultradns: %w", err)
 	}
 
-	return &DNSProvider{
-		config: config,
-		client: cli,
-	}, nil
-}
-
-func getNewRRSetKey(owner, zone string) *rrset.RRSetKey {
-	return &rrset.RRSetKey{
-		Owner:      owner,
-		Zone:       zone,
-		RecordType: "TXT",
-	}
+	return &DNSProvider{config: config, client: uClient}, nil
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
@@ -110,27 +113,29 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("ultradns: %w", err)
 	}
 
-	rrSetKeyData := getNewRRSetKey(fqdn, authZone)
+	rrSetKeyData := &rrset.RRSetKey{
+		Owner:      fqdn,
+		Zone:       authZone,
+		RecordType: "TXT",
+	}
 
 	res, _, _ := recordService.Read(rrSetKeyData)
 
-	rrSetData := &rrset.RRSet{}
-	rrSetData.OwnerName = fqdn
-	rrSetData.TTL = d.config.TTL
-	rrSetData.RRType = "TXT"
-	rrSetData.RData = []string{value}
+	rrSetData := &rrset.RRSet{
+		OwnerName: fqdn,
+		TTL:       d.config.TTL,
+		RRType:    "TXT",
+		RData:     []string{value},
+	}
 
 	if res != nil && res.StatusCode == 200 {
 		_, err = recordService.Update(rrSetKeyData, rrSetData)
 	} else {
 		_, err = recordService.Create(rrSetKeyData, rrSetData)
 	}
-
 	if err != nil {
 		return fmt.Errorf("ultradns: %w", err)
 	}
-
-	log.Infof("ultradns:TXT record created/updated - %s", fqdn)
 
 	return nil
 }
@@ -149,14 +154,16 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("ultradns: %w", err)
 	}
 
-	rrSetKeyData := getNewRRSetKey(fqdn, authZone)
+	rrSetKeyData := &rrset.RRSetKey{
+		Owner:      fqdn,
+		Zone:       authZone,
+		RecordType: "TXT",
+	}
 
 	_, err = recordService.Delete(rrSetKeyData)
 	if err != nil {
 		return fmt.Errorf("ultradns: %w", err)
 	}
-
-	log.Infof("ultradns:TXT record deleted - %s", fqdn)
 
 	return nil
 }

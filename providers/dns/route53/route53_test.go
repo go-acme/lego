@@ -260,50 +260,44 @@ func TestCreateSession(t *testing.T) {
 			wantRegion:       "one",
 		},
 	}
-	for _, tc := range testCases {
-		t.Run(tc.desc, func(t *testing.T) {
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
 			defer envTest.RestoreEnv()
 			envTest.ClearEnv()
-			for k, v := range tc.env {
-				os.Setenv(k, v)
-			}
 
-			sess, err := createSession(tc.config)
-			if errOk := testAssertErr(t, err, tc.wantErr); errOk {
-				return
-			}
+			envTest.Apply(test.env)
+
+			sess, err := createSession(test.config)
+			assertErr(t, err, test.wantErr)
 
 			gotCreds, err := sess.Config.Credentials.Get()
-			switch {
-			case !tc.wantDefaultChain:
-				require.NoError(t, err)
-				require.Equal(t, tc.wantCreds, gotCreds)
 
-			default:
-				require.NotEqual(t, credentials.StaticProviderName, gotCreds.ProviderName)
+			if test.wantDefaultChain {
+				assert.NotEqual(t, credentials.StaticProviderName, gotCreds.ProviderName)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, test.wantCreds, gotCreds)
 			}
 
-			if tc.wantRegion != "" {
-				require.Equal(t, tc.wantRegion, aws.StringValue(sess.Config.Region))
+			if test.wantRegion != "" {
+				assert.Equal(t, test.wantRegion, aws.StringValue(sess.Config.Region))
 			}
 		})
 	}
 }
 
-func testAssertErr(t *testing.T, err error, wantErr string) bool {
+func assertErr(t *testing.T, err error, wantErr string) {
 	t.Helper()
+
 	switch {
 	case err != nil && wantErr == "":
-		require.FailNow(t, err.Error())
+		require.NoError(t, err)
 
 	case err == nil && wantErr != "":
-		require.FailNow(t, "expected error, got none")
+		require.Error(t, nil)
 
 	case err != nil && wantErr != "":
 		require.EqualError(t, err, wantErr)
-
-		return true
 	}
-
-	return false
 }

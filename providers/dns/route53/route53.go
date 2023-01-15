@@ -29,17 +29,17 @@ const (
 	EnvRegion          = envNamespace + "REGION"
 	EnvHostedZoneID    = envNamespace + "HOSTED_ZONE_ID"
 	EnvMaxRetries      = envNamespace + "MAX_RETRIES"
+	EnvAssumeRoleArn   = envNamespace + "ASSUME_ROLE_ARN"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
-	EnvAssumeRoleArn      = envNamespace + "ASSUME_ROLE_ARN"
 )
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	// Static credential chain. These are not set via environment for the time
-	// being and are only used if they are explicitly provided.
+	// Static credential chain.
+	// These are not set via environment for the time being and are only used if they are explicitly provided.
 	AccessKeyID     string
 	SecretAccessKey string
 	SessionToken    string

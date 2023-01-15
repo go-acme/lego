@@ -269,7 +269,11 @@ func TestCreateSession(t *testing.T) {
 			envTest.Apply(test.env)
 
 			sess, err := createSession(test.config)
-			assertErr(t, err, test.wantErr)
+			requireErr(t, err, test.wantErr)
+
+			if err != nil {
+				return
+			}
 
 			gotCreds, err := sess.Config.Credentials.Get()
 
@@ -287,15 +291,17 @@ func TestCreateSession(t *testing.T) {
 	}
 }
 
-func assertErr(t *testing.T, err error, wantErr string) {
+func requireErr(t *testing.T, err error, wantErr string) {
 	t.Helper()
 
 	switch {
 	case err != nil && wantErr == "":
+		// force the assertion error.
 		require.NoError(t, err)
 
 	case err == nil && wantErr != "":
-		require.Error(t, nil)
+		// force the assertion error.
+		require.EqualError(t, err, wantErr)
 
 	case err != nil && wantErr != "":
 		require.EqualError(t, err, wantErr)

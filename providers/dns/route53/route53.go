@@ -10,6 +10,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/client"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -28,15 +29,22 @@ const (
 	EnvRegion          = envNamespace + "REGION"
 	EnvHostedZoneID    = envNamespace + "HOSTED_ZONE_ID"
 	EnvMaxRetries      = envNamespace + "MAX_RETRIES"
+	EnvAssumeRoleArn   = envNamespace + "ASSUME_ROLE_ARN"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
-	EnvAssumeRoleArn      = envNamespace + "ASSUME_ROLE_ARN"
 )
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
+	// Static credential chain.
+	// These are not set via environment for the time being and are only used if they are explicitly provided.
+	AccessKeyID     string
+	SecretAccessKey string
+	SessionToken    string
+	Region          string
+
 	HostedZoneID  string
 	MaxRetries    int
 	AssumeRoleArn string
@@ -301,10 +309,23 @@ func (d *DNSProvider) getHostedZoneID(fqdn string) (string, error) {
 }
 
 func createSession(config *Config) (*session.Session, error) {
+	if err := createSessionCheckParams(config); err != nil {
+		return nil, err
+	}
+
 	retry := customRetryer{}
 	retry.NumMaxRetries = config.MaxRetries
 
-	sessionCfg := request.WithRetryer(aws.NewConfig(), retry)
+	awsConfig := aws.NewConfig()
+	if config.AccessKeyID != "" && config.SecretAccessKey != "" {
+		awsConfig = awsConfig.WithCredentials(credentials.NewStaticCredentials(config.AccessKeyID, config.SecretAccessKey, config.SessionToken))
+	}
+
+	if config.Region != "" {
+		awsConfig = awsConfig.WithRegion(config.Region)
+	}
+
+	sessionCfg := request.WithRetryer(awsConfig, retry)
 
 	sess, err := session.NewSessionWithOptions(session.Options{Config: *sessionCfg})
 	if err != nil {
@@ -319,4 +340,20 @@ func createSession(config *Config) (*session.Session, error) {
 		Region:      sess.Config.Region,
 		Credentials: stscreds.NewCredentials(sess, config.AssumeRoleArn),
 	})
+}
+
+func createSessionCheckParams(config *Config) error {
+	if config == nil {
+		return errors.New("config is nil")
+	}
+
+	switch {
+	case config.SessionToken != "" && config.AccessKeyID == "" && config.SecretAccessKey == "":
+		return errors.New("SessionToken must be supplied with AccessKeyID and SecretAccessKey")
+
+	case config.AccessKeyID == "" && config.SecretAccessKey != "" || config.AccessKeyID != "" && config.SecretAccessKey == "":
+		return errors.New("AccessKeyID and SecretAccessKey must be supplied together")
+	}
+
+	return nil
 }

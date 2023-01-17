@@ -23,10 +23,15 @@ Configuration for [Google Cloud](https://cloud.google.com).
 - Since: v0.3.0
 
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
-
+Here is an example bash command using the gcloud provider:
+```
+GCE_PROJECT="gc-project-id" GCE_SERVICE_ACCOUNT_FILE="/path/to/svc/account/file.json" lego \
+    --email="abc@email.com" \
+    --domains="example.com" \
+    --dns="gcloud" \
+    --path="${HOME}/.lego" \
+    run
+```
 
 
 

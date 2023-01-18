@@ -8,7 +8,9 @@ import (
 	"fmt"
 	"os"
 	"testing"
+	"time"
 
+	"github.com/go-acme/lego/v4/certcrypto"
 	"github.com/go-acme/lego/v4/certificate"
 	"github.com/go-acme/lego/v4/challenge/http01"
 	"github.com/go-acme/lego/v4/challenge/tlsalpn01"
@@ -253,6 +255,53 @@ func TestChallengeHTTP_Client_Obtain(t *testing.T) {
 	assert.NotEmpty(t, resource.Certificate)
 	assert.NotEmpty(t, resource.IssuerCertificate)
 	assert.Empty(t, resource.CSR)
+}
+
+func TestChallengeHTTP_Client_Obtain_notBefore_notAfter(t *testing.T) {
+	err := os.Setenv("LEGO_CA_CERTIFICATES", "./fixtures/certs/pebble.minica.pem")
+	require.NoError(t, err)
+	defer func() { _ = os.Unsetenv("LEGO_CA_CERTIFICATES") }()
+
+	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err, "Could not generate test key")
+
+	user := &fakeUser{privateKey: privateKey}
+	config := lego.NewConfig(user)
+	config.CADirURL = load.PebbleOptions.HealthCheckURL
+
+	client, err := lego.NewClient(config)
+	require.NoError(t, err)
+
+	err = client.Challenge.SetHTTP01Provider(http01.NewProviderServer("", "5002"))
+	require.NoError(t, err)
+
+	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
+	require.NoError(t, err)
+	user.registration = reg
+
+	now := time.Now().UTC()
+
+	request := certificate.ObtainRequest{
+		Domains:   []string{"acme.wtf"},
+		NotBefore: now.Add(1 * time.Hour),
+		NotAfter:  now.Add(2 * time.Hour),
+		Bundle:    true,
+	}
+	resource, err := client.Certificate.Obtain(request)
+	require.NoError(t, err)
+
+	require.NotNil(t, resource)
+	assert.Equal(t, "acme.wtf", resource.Domain)
+	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertURL)
+	assert.Regexp(t, `https://localhost:14000/certZ/[\w\d]{14,}`, resource.CertStableURL)
+	assert.NotEmpty(t, resource.Certificate)
+	assert.NotEmpty(t, resource.IssuerCertificate)
+	assert.Empty(t, resource.CSR)
+
+	cert, err := certcrypto.ParsePEMCertificate(resource.Certificate)
+	require.NoError(t, err)
+	assert.WithinDuration(t, now.Add(1*time.Hour), cert.NotBefore, 1*time.Second)
+	assert.WithinDuration(t, now.Add(2*time.Hour), cert.NotAfter, 1*time.Second)
 }
 
 func TestChallengeHTTP_Client_Registration_QueryRegistration(t *testing.T) {

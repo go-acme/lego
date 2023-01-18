@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"time"
+
 	"github.com/go-acme/lego/v4/lego"
 	"github.com/urfave/cli/v2"
 	"software.sslmate.com/src/go-pkcs12"
@@ -141,4 +143,12 @@ func CreateFlags(defaultPath string) []cli.Flag {
 			Usage: "Add to the user-agent sent to the CA to identify an application embedding lego-cli",
 		},
 	}
+}
+
+func getTime(ctx *cli.Context, name string) time.Time {
+	value := ctx.Timestamp(name)
+	if value == nil {
+		return time.Time{}
+	}
+	return *value
 }

@@ -4,14 +4,26 @@ import (
 	"encoding/base64"
 	"errors"
 	"net"
+	"time"
 
 	"github.com/go-acme/lego/v4/acme"
 )
+
+// OrderOptions used to create an order (optional).
+type OrderOptions struct {
+	NotBefore time.Time
+	NotAfter  time.Time
+}
 
 type OrderService service
 
 // New Creates a new order.
 func (o *OrderService) New(domains []string) (acme.ExtendedOrder, error) {
+	return o.NewWithOptions(domains, nil)
+}
+
+// NewWithOptions Creates a new order.
+func (o *OrderService) NewWithOptions(domains []string, opts *OrderOptions) (acme.ExtendedOrder, error) {
 	var identifiers []acme.Identifier
 	for _, domain := range domains {
 		ident := acme.Identifier{Value: domain, Type: "dns"}
@@ -24,6 +36,16 @@ func (o *OrderService) New(domains []string) (acme.ExtendedOrder, error) {
 	}
 
 	orderReq := acme.Order{Identifiers: identifiers}
+
+	if opts != nil {
+		if !opts.NotAfter.IsZero() {
+			orderReq.NotAfter = opts.NotAfter.Format(time.RFC3339)
+		}
+
+		if !opts.NotBefore.IsZero() {
+			orderReq.NotBefore = opts.NotBefore.Format(time.RFC3339)
+		}
+	}
 
 	var order acme.Order
 	resp, err := o.core.post(o.core.GetDirectory().NewOrderURL, orderReq, &order)

@@ -19,6 +19,7 @@ import (
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/dns/v1"
 	"google.golang.org/api/googleapi"
+	"google.golang.org/api/impersonate"
 	"google.golang.org/api/option"
 )
 
@@ -30,10 +31,11 @@ const (
 const (
 	envNamespace = "GCE_"
 
-	EnvServiceAccount   = envNamespace + "SERVICE_ACCOUNT"
-	EnvProject          = envNamespace + "PROJECT"
-	EnvAllowPrivateZone = envNamespace + "ALLOW_PRIVATE_ZONE"
-	EnvDebug            = envNamespace + "DEBUG"
+	EnvServiceAccount            = envNamespace + "SERVICE_ACCOUNT"
+	EnvImpersonateServiceAccount = envNamespace + "IMPERSONATE_SERVICE_ACCOUNT"
+	EnvProject                   = envNamespace + "PROJECT"
+	EnvAllowPrivateZone          = envNamespace + "ALLOW_PRIVATE_ZONE"
+	EnvDebug                     = envNamespace + "DEBUG"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -162,7 +164,20 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("googlecloud: unable to create Google Cloud DNS service: client is nil")
 	}
 
-	svc, err := dns.NewService(context.Background(), option.WithHTTPClient(config.HTTPClient))
+	if impersonateServiceAccount := env.GetOrFile(EnvImpersonateServiceAccount); len(impersonateServiceAccount) > 0 {
+		// Base credentials sourced from ADC or provided client options.
+		ts, err := impersonate.CredentialsTokenSource(context.Background(), impersonate.CredentialsConfig{
+			TargetPrincipal: impersonateServiceAccount,
+			Scopes:          []string{"https://www.googleapis.com/auth/cloud-platform"},
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
+		svc, err := dns.NewService(context.Background(), option.WithTokenSource(ts))
+	} else {
+		svc, err := dns.NewService(context.Background(), option.WithHTTPClient(config.HTTPClient))
+	}
+
 	if err != nil {
 		return nil, fmt.Errorf("googlecloud: unable to create Google Cloud DNS service: %w", err)
 	}

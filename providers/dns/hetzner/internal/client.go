@@ -145,27 +145,46 @@ func (c *Client) GetZoneID(domain string) (string, error) {
 
 // https://dns.hetzner.com/api-docs#operation/GetZones
 func (c *Client) getZones() (*Zones, error) {
-	endpoint, err := c.createEndpoint("api", "v1", "zones")
-	if err != nil {
-		return nil, fmt.Errorf("failed to create endpoint: %w", err)
+	const pageSize = 100
+	var result *Zones
+
+	for page := 1; page < 1000; page++ {
+		endpoint, err := c.createEndpoint("api", "v1", "zones")
+		if err != nil {
+			return nil, fmt.Errorf("failed to create endpoint: %w", err)
+		}
+		endpoint.RawQuery = fmt.Sprintf("page=%d&per_page=%d", page, pageSize)
+
+		resp, err := c.do(http.MethodGet, endpoint, nil)
+		if err != nil {
+			return nil, fmt.Errorf("could not get zones: %w", err)
+		}
+
+		if resp.StatusCode != http.StatusOK {
+			if resp.StatusCode == http.StatusNotFound && result != nil { // EOF fallback
+				break
+			}
+			return nil, fmt.Errorf("could not get zones: %s", resp.Status)
+		}
+
+		zones := &Zones{}
+		err = json.NewDecoder(resp.Body).Decode(zones)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decode response body: %w", err)
+		}
+
+		if result == nil {
+			result = zones
+		} else {
+			result.Zones = append(result.Zones, zones.Zones...)
+		}
+
+		if len(zones.Zones) < pageSize {
+			break
+		}
 	}
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
-	if err != nil {
-		return nil, fmt.Errorf("could not get zones: %w", err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("could not get zones: %s", resp.Status)
-	}
-
-	zones := &Zones{}
-	err = json.NewDecoder(resp.Body).Decode(zones)
-	if err != nil {
-		return nil, fmt.Errorf("failed to decode response body: %w", err)
-	}
-
-	return zones, nil
+	return result, nil
 }
 
 func (c *Client) do(method string, endpoint fmt.Stringer, body io.Reader) (*http.Response, error) {

@@ -45,12 +45,12 @@ func TestProviderServer_GetAddress(t *testing.T) {
 		},
 		{
 			desc:     "TCP4 with host and port",
-			server:   NewProviderServer("localhost", "4443", Tcp4Network),
+			server:   NewProviderServer("localhost", "4443", TCP4Network),
 			expected: "localhost:4443",
 		},
 		{
 			desc:     "TCP6 with host and port",
-			server:   NewProviderServer("localhost", "4443", Tcp6Network),
+			server:   NewProviderServer("localhost", "4443", TCP6Network),
 			expected: "localhost:4443",
 		},
 	}
@@ -119,7 +119,7 @@ func TestChallenge(t *testing.T) {
 	solver := NewChallenge(
 		core,
 		mockValidate,
-		&ProviderServer{port: "23457"},
+		&ProviderServer{port: "23457", network: DefaultNetwork},
 	)
 
 	authz := acme.Authorization{
@@ -147,7 +147,7 @@ func TestChallengeInvalidPort(t *testing.T) {
 	solver := NewChallenge(
 		core,
 		func(_ *api.Core, _ string, _ acme.Challenge) error { return nil },
-		&ProviderServer{port: "123456"},
+		&ProviderServer{port: "123456", network: DefaultNetwork},
 	)
 
 	authz := acme.Authorization{

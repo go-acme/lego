@@ -51,12 +51,12 @@ func TestProviderServer_GetAddress(t *testing.T) {
 		},
 		{
 			desc:     "TCP4 with host and port",
-			server:   NewProviderServer("localhost", "8080", Tcp4Network),
+			server:   NewProviderServer("localhost", "8080", TCP4Network),
 			expected: "localhost:8080",
 		},
 		{
 			desc:     "TCP6 with host and port",
-			server:   NewProviderServer("localhost", "8080", Tcp6Network),
+			server:   NewProviderServer("localhost", "8080", TCP6Network),
 			expected: "localhost:8080",
 		},
 		{

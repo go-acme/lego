@@ -2,29 +2,30 @@ package dns01
 
 import (
 	"fmt"
-	getport "github.com/jsumners/go-getport"
-	"github.com/miekg/dns"
 	"net"
 	"sort"
 	"sync"
 	"testing"
 
+	getport "github.com/jsumners/go-getport"
+	"github.com/miekg/dns"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-type testDnsHandler struct{}
-type testDnsServer struct {
-	*dns.Server
-	getport.PortResult
-}
+type (
+	testDNSHandler struct{}
+	testDNSServer  struct {
+		*dns.Server
+		getport.PortResult
+	}
+)
 
-func (handler *testDnsHandler) ServeDNS(writer dns.ResponseWriter, reply *dns.Msg) {
+func (handler *testDNSHandler) ServeDNS(writer dns.ResponseWriter, reply *dns.Msg) {
 	msg := dns.Msg{}
 	msg.SetReply(reply)
 
-	switch reply.Question[0].Qtype {
-	case dns.TypeA:
+	if reply.Question[0].Qtype == dns.TypeA {
 		msg.Authoritative = true
 		domain := msg.Question[0].Name
 		msg.Answer = append(
@@ -41,17 +42,18 @@ func (handler *testDnsHandler) ServeDNS(writer dns.ResponseWriter, reply *dns.Ms
 		)
 	}
 
-	writer.WriteMsg(&msg)
+	_ = writer.WriteMsg(&msg)
 }
 
 // getTestNameserver constructs a new DNS server on a local address, or set
 // of addresses, that responds to an `A` query for `example.com`.
-func getTestNameserver(t *testing.T, network string) testDnsServer {
+func getTestNameserver(t *testing.T, network string) testDNSServer {
+	t.Helper()
 	server := &dns.Server{
-		Handler: new(testDnsHandler),
+		Handler: new(testDNSHandler),
 		Net:     network,
 	}
-	testServer := testDnsServer{
+	testServer := testDNSServer{
 		Server: server,
 	}
 
@@ -99,10 +101,17 @@ func getTestNameserver(t *testing.T, network string) testDnsServer {
 }
 
 func TestSendDNSQuery(t *testing.T) {
+	currentNameservers := recursiveNameservers
+
+	t.Cleanup(func() {
+		recursiveNameservers = currentNameservers
+		SetNetworkStack(DefaultNetworkStack)
+	})
+
 	t.Run("does udp4 only", func(t *testing.T) {
 		SetNetworkStack(IPv4Only)
 		nameserver := getTestNameserver(t, getNetwork("udp"))
-		defer nameserver.Server.Shutdown()
+		defer func() { _ = nameserver.Server.Shutdown() }()
 
 		serverAddress := fmt.Sprintf("127.0.0.1:%d", nameserver.PortResult.Port)
 		recursiveNameservers = ParseNameservers([]string{serverAddress})
@@ -115,7 +124,7 @@ func TestSendDNSQuery(t *testing.T) {
 	t.Run("does udp6 only", func(t *testing.T) {
 		SetNetworkStack(IPv6Only)
 		nameserver := getTestNameserver(t, getNetwork("udp"))
-		defer nameserver.Server.Shutdown()
+		defer func() { _ = nameserver.Server.Shutdown() }()
 
 		serverAddress := fmt.Sprintf("[::1]:%d", nameserver.PortResult.Port)
 		recursiveNameservers = ParseNameservers([]string{serverAddress})
@@ -128,7 +137,7 @@ func TestSendDNSQuery(t *testing.T) {
 	t.Run("does tcp4 and tcp6", func(t *testing.T) {
 		SetNetworkStack(DefaultNetworkStack)
 		nameserver := getTestNameserver(t, getNetwork("tcp"))
-		defer nameserver.Server.Shutdown()
+		defer func() { _ = nameserver.Server.Shutdown() }()
 
 		serverAddress := fmt.Sprintf("[::1]:%d", nameserver.PortResult.Port)
 		recursiveNameservers = ParseNameservers([]string{serverAddress})
@@ -261,7 +270,7 @@ var findXByFqdnTestCases = []struct {
 		fqdn:          "mail.google.com.",
 		zone:          "google.com.",
 		nameservers:   []string{":7053", ":8053", ":9053"},
-		expectedError: "could not find the start of authority for mail.google.com.: read udp",
+		expectedError: "could not find the start of authority for mail.google.com.: dial tcp :9053: connect:",
 	},
 	{
 		desc:          "no nameservers",

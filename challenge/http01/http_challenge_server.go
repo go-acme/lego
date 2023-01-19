@@ -12,12 +12,16 @@ import (
 	"github.com/go-acme/lego/v4/log"
 )
 
+// ProviderNetwork indicates with network stack , IPv4, IPv6, or both, to use.
 type ProviderNetwork string
 
 const (
+	// DefaultNetwork indicates both IPv4 and IPv6.
 	DefaultNetwork = "tcp"
-	Tcp4Network    = "tcp4"
-	Tcp6Network    = "tcp6"
+	// TCP4Network indicates IPv4 only.
+	TCP4Network = "tcp4"
+	// TCP6Network indicates IPv6 only.
+	TCP6Network = "tcp6"
 )
 
 // ProviderServer implements ChallengeProvider for `http-01` challenge.

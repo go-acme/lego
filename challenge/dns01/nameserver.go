@@ -296,8 +296,8 @@ func sendDNSQuery(m *dns.Msg, ns string) (*dns.Msg, error) {
 	network = getNetwork("tcp")
 	// We can encounter a net.OpError if the nameserver is not listening
 	// on UDP at all, i.e. net.Dial could not make a connection.
-	_, isOpErr := err.(*net.OpError)
-	if (in != nil && in.Truncated) || isOpErr {
+	var opErr *net.OpError
+	if (in != nil && in.Truncated) || errors.As(err, &opErr) {
 		tcp := &dns.Client{Net: network, Timeout: dnsTimeout}
 		// If the TCP request succeeds, the err will reset to nil
 		in, _, err = tcp.Exchange(m, ns)

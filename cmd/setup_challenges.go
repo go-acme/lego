@@ -41,16 +41,21 @@ func setupChallenges(ctx *cli.Context, client *lego.Client) {
 	}
 }
 
-func setupHTTPProvider(ctx *cli.Context) challenge.Provider {
+func resolveHTTP01Network(ctx *cli.Context) http01.ProviderNetwork {
 	var network http01.ProviderNetwork
 	switch {
 	case ctx.IsSet("ipv4only") && ctx.IsSet("ipv6only"):
 		network = http01.DefaultNetwork
 	case ctx.IsSet("ipv4only"):
-		network = http01.Tcp4Network
+		network = http01.TCP4Network
 	case ctx.IsSet("ipv6only"):
-		network = http01.Tcp6Network
+		network = http01.TCP6Network
 	}
+	return network
+}
+
+func setupHTTPProvider(ctx *cli.Context) challenge.Provider {
+	network := resolveHTTP01Network(ctx)
 
 	switch {
 	case ctx.IsSet("http.webroot"):
@@ -99,9 +104,9 @@ func setupTLSProvider(ctx *cli.Context) challenge.Provider {
 	case ctx.IsSet("ipv4only") && ctx.IsSet("ipv6only"):
 		network = tlsalpn01.DefaultNetwork
 	case ctx.IsSet("ipv4only"):
-		network = tlsalpn01.Tcp4Network
+		network = tlsalpn01.TCP4Network
 	case ctx.IsSet("ipv6only"):
-		network = tlsalpn01.Tcp6Network
+		network = tlsalpn01.TCP6Network
 	}
 
 	switch {

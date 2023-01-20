@@ -8,12 +8,16 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+
+	querystring "github.com/google/go-querystring/query"
 )
 
 // defaultBaseURL represents the API endpoint to call.
 const defaultBaseURL = "https://dns.hetzner.com"
 
 const authHeader = "Auth-API-Token"
+
+const pageSize = 100
 
 // Client the Hetzner client.
 type Client struct {
@@ -129,7 +133,7 @@ func (c *Client) DeleteRecord(recordID string) error {
 
 // GetZoneID gets the zone ID for a domain.
 func (c *Client) GetZoneID(domain string) (string, error) {
-	zones, err := c.getZones()
+	zones, err := c.getZones(domain, &Pagination{Page: 1, PerPage: pageSize})
 	if err != nil {
 		return "", err
 	}
@@ -144,15 +148,31 @@ func (c *Client) GetZoneID(domain string) (string, error) {
 }
 
 // https://dns.hetzner.com/api-docs#operation/GetZones
-func (c *Client) getZones() (*Zones, error) {
+func (c *Client) getZones(name string, pagination *Pagination) (*Zones, error) {
 	endpoint, err := c.createEndpoint("api", "v1", "zones")
 	if err != nil {
 		return nil, fmt.Errorf("failed to create endpoint: %w", err)
 	}
 
+	values, err := querystring.Values(pagination)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse query parameters: %w", err)
+	}
+
+	if name != "" {
+		values.Set("name", name)
+	}
+
+	endpoint.RawQuery = values.Encode()
+
 	resp, err := c.do(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not get zones: %w", err)
+	}
+
+	// EOF fallback
+	if resp.StatusCode == http.StatusNotFound {
+		return &Zones{}, nil
 	}
 
 	if resp.StatusCode != http.StatusOK {

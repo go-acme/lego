@@ -8,12 +8,16 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+
+	querystring "github.com/google/go-querystring/query"
 )
 
 // defaultBaseURL represents the API endpoint to call.
 const defaultBaseURL = "https://dns.hetzner.com"
 
 const authHeader = "Auth-API-Token"
+
+const pageSize = 100
 
 // Client the Hetzner client.
 type Client struct {
@@ -145,46 +149,57 @@ func (c *Client) GetZoneID(domain string) (string, error) {
 
 // https://dns.hetzner.com/api-docs#operation/GetZones
 func (c *Client) getZones() (*Zones, error) {
-	const pageSize = 100
-	var result *Zones
+	var zones []Zone
 
-	for page := 1; page < 1000; page++ {
+	pagination := &Pagination{Page: 1, PerPage: pageSize}
+
+	for {
 		endpoint, err := c.createEndpoint("api", "v1", "zones")
 		if err != nil {
 			return nil, fmt.Errorf("failed to create endpoint: %w", err)
 		}
-		endpoint.RawQuery = fmt.Sprintf("page=%d&per_page=%d", page, pageSize)
+
+		values, err := querystring.Values(pagination)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse query parameters: %w", err)
+		}
+
+		endpoint.RawQuery = values.Encode()
 
 		resp, err := c.do(http.MethodGet, endpoint, nil)
 		if err != nil {
 			return nil, fmt.Errorf("could not get zones: %w", err)
 		}
 
+		// EOF fallback
+		if resp.StatusCode == http.StatusNotFound && len(zones) != 0 {
+			break
+		}
+
 		if resp.StatusCode != http.StatusOK {
-			if resp.StatusCode == http.StatusNotFound && result != nil { // EOF fallback
-				break
-			}
 			return nil, fmt.Errorf("could not get zones: %s", resp.Status)
 		}
 
-		zones := &Zones{}
-		err = json.NewDecoder(resp.Body).Decode(zones)
+		result := &Zones{}
+		err = json.NewDecoder(resp.Body).Decode(result)
 		if err != nil {
 			return nil, fmt.Errorf("failed to decode response body: %w", err)
 		}
 
-		if result == nil {
-			result = zones
-		} else {
-			result.Zones = append(result.Zones, zones.Zones...)
-		}
+		zones = append(zones, result.Zones...)
 
-		if len(zones.Zones) < pageSize {
+		if len(zones) >= result.Meta.Pagination.TotalEntries {
 			break
 		}
+
+		pagination.Page++
 	}
 
-	return result, nil
+	if len(zones) == 0 {
+		return nil, nil
+	}
+
+	return &Zones{Zones: zones}, nil
 }
 
 func (c *Client) do(method string, endpoint fmt.Stringer, body io.Reader) (*http.Response, error) {

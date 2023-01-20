@@ -23,9 +23,15 @@ Configuration for [Amazon Route 53](https://aws.amazon.com/route53/).
 - Since: v0.3.0
 
 
-{{% notice note %}}
-_Please contribute by adding a CLI example._
-{{% /notice %}}
+Here is an example bash command using the Amazon Route 53 provider:
+
+```bash
+AWS_ACCESS_KEY_ID=your_key_id \
+AWS_SECRET_ACCESS_KEY=your_secret_access_key \
+AWS_REGION=aws-region \
+AWS_HOSTED_ZONE_ID=your_hosted_zone_id \
+ --domains example.com --email your_example@email.com --dns route53 --accept-tos=true run
+```
 
 
 

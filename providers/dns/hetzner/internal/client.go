@@ -17,8 +17,6 @@ const defaultBaseURL = "https://dns.hetzner.com"
 
 const authHeader = "Auth-API-Token"
 
-const pageSize = 100
-
 // Client the Hetzner client.
 type Client struct {
 	HTTPClient *http.Client
@@ -133,7 +131,7 @@ func (c *Client) DeleteRecord(recordID string) error {
 
 // GetZoneID gets the zone ID for a domain.
 func (c *Client) GetZoneID(domain string) (string, error) {
-	zones, err := c.getZones(domain, &Pagination{Page: 1, PerPage: pageSize})
+	zones, err := c.getZones(domain, nil)
 	if err != nil {
 		return "", err
 	}
@@ -154,9 +152,13 @@ func (c *Client) getZones(name string, pagination *Pagination) (*Zones, error) {
 		return nil, fmt.Errorf("failed to create endpoint: %w", err)
 	}
 
-	values, err := querystring.Values(pagination)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse query parameters: %w", err)
+	var values url.Values
+
+	if pagination != nil {
+		values, err = querystring.Values(pagination)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse query parameters: %w", err)
+		}
 	}
 
 	if name != "" {

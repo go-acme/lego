@@ -11,9 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type testDNSHandler struct{}
-
-func (handler *testDNSHandler) ServeDNS(writer dns.ResponseWriter, reply *dns.Msg) {
+func testDNSHandler(writer dns.ResponseWriter, reply *dns.Msg) {
 	msg := dns.Msg{}
 	msg.SetReply(reply)
 
@@ -29,7 +27,7 @@ func (handler *testDNSHandler) ServeDNS(writer dns.ResponseWriter, reply *dns.Ms
 					Class:  dns.ClassINET,
 					Ttl:    60,
 				},
-				A: net.ParseIP("127.0.0.1"),
+				A: net.IPv4(127, 0, 0, 1),
 			},
 		)
 	}
@@ -42,7 +40,7 @@ func (handler *testDNSHandler) ServeDNS(writer dns.ResponseWriter, reply *dns.Ms
 func getTestNameserver(t *testing.T, network string) *dns.Server {
 	t.Helper()
 	server := &dns.Server{
-		Handler: new(testDNSHandler),
+		Handler: dns.HandlerFunc(testDNSHandler),
 		Net:     network,
 	}
 	switch network {
@@ -58,10 +56,7 @@ func getTestNameserver(t *testing.T, network string) *dns.Server {
 	waitLock.Lock()
 	server.NotifyStartedFunc = waitLock.Unlock
 
-	fin := make(chan error, 1)
-	go func() {
-		fin <- server.ListenAndServe()
-	}()
+	go func() { _ = server.ListenAndServe() }()
 
 	waitLock.Lock()
 	return server

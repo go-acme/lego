@@ -91,7 +91,7 @@ func TestSendDNSQuery(t *testing.T) {
 		recursiveNameservers = ParseNameservers([]string{addr})
 		msg := createDNSMsg("example.com.", dns.TypeA, true)
 		result, queryError := sendDNSQuery(msg, addr)
-		assert.NoError(t, queryError)
+		require.NoError(t, queryError)
 		assert.Equal(t, result.Answer[0].(*dns.A).A.String(), "127.0.0.1")
 	})
 
@@ -102,7 +102,7 @@ func TestSendDNSQuery(t *testing.T) {
 		recursiveNameservers = ParseNameservers([]string{addr})
 		msg := createDNSMsg("example.com.", dns.TypeA, true)
 		result, queryError := sendDNSQuery(msg, addr)
-		assert.NoError(t, queryError)
+		require.NoError(t, queryError)
 		assert.Equal(t, result.Answer[0].(*dns.A).A.String(), "127.0.0.1")
 	})
 
@@ -116,14 +116,14 @@ func TestSendDNSQuery(t *testing.T) {
 		recursiveNameservers = ParseNameservers([]string{addr6})
 		msg := createDNSMsg("example.com.", dns.TypeA, true)
 		result, queryError := sendDNSQuery(msg, addr6)
-		assert.NoError(t, queryError)
+		require.NoError(t, queryError)
 		assert.Equal(t, result.Answer[0].(*dns.A).A.String(), "127.0.0.1")
 
 		addr4 := net.JoinHostPort("127.0.0.1", port)
 		recursiveNameservers = ParseNameservers([]string{addr4})
 		msg = createDNSMsg("example.com.", dns.TypeA, true)
 		result, queryError = sendDNSQuery(msg, addr4)
-		assert.NoError(t, queryError)
+		require.NoError(t, queryError)
 		assert.Equal(t, result.Answer[0].(*dns.A).A.String(), "127.0.0.1")
 	})
 }

@@ -45,16 +45,15 @@ type ProviderServer struct {
 // NewProviderServer creates a new ProviderServer on the selected interface and port.
 // Setting iface and / or port to an empty string will make the server fall back to
 // the "any" interface and port 443 respectively.
-func NewProviderServer(iface, port string, network ProviderNetwork) *ProviderServer {
+func NewProviderServer(iface, port string) *ProviderServer {
 	if port == "" {
 		port = defaultTLSPort
 	}
+	return &ProviderServer{iface: iface, port: port, network: DefaultNetwork}
+}
 
-	if network == "" {
-		network = DefaultNetwork
-	}
-
-	return &ProviderServer{iface: iface, port: port, network: string(network)}
+func (s *ProviderServer) SetNetwork(network ProviderNetwork) {
+	s.network = string(network)
 }
 
 func (s *ProviderServer) GetAddress() string {

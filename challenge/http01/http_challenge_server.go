@@ -41,19 +41,19 @@ type ProviderServer struct {
 // NewProviderServer creates a new ProviderServer on the selected interface and port.
 // Setting iface and / or port to an empty string will make the server fall back to
 // the "any" interface and port 80 respectively.
-func NewProviderServer(iface, port string, network ProviderNetwork) *ProviderServer {
+func NewProviderServer(iface, port string) *ProviderServer {
 	if port == "" {
 		port = "80"
 	}
-	if network == "" {
-		network = DefaultNetwork
-	}
-
-	return &ProviderServer{network: string(network), address: net.JoinHostPort(iface, port), matcher: &hostMatcher{}}
+	return &ProviderServer{network: DefaultNetwork, address: net.JoinHostPort(iface, port), matcher: &hostMatcher{}}
 }
 
 func NewUnixProviderServer(socketPath string, mode fs.FileMode) *ProviderServer {
 	return &ProviderServer{network: "unix", address: socketPath, socketMode: mode, matcher: &hostMatcher{}}
+}
+
+func (s *ProviderServer) SetNetwork(network ProviderNetwork) {
+	s.network = string(network)
 }
 
 // Present starts a web server and makes the token available at `ChallengePath(token)` for web requests.

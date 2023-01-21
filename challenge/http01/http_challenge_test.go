@@ -32,31 +32,34 @@ func TestProviderServer_GetAddress(t *testing.T) {
 	testCases := []struct {
 		desc     string
 		server   *ProviderServer
+		network  ProviderNetwork
 		expected string
 	}{
 		{
 			desc:     "TCP default address",
-			server:   NewProviderServer("", "", ""),
+			server:   NewProviderServer("", ""),
 			expected: ":80",
 		},
 		{
 			desc:     "TCP with explicit port",
-			server:   NewProviderServer("", "8080", ""),
+			server:   NewProviderServer("", "8080"),
 			expected: ":8080",
 		},
 		{
 			desc:     "TCP with host and port",
-			server:   NewProviderServer("localhost", "8080", ""),
+			server:   NewProviderServer("localhost", "8080"),
 			expected: "localhost:8080",
 		},
 		{
 			desc:     "TCP4 with host and port",
-			server:   NewProviderServer("localhost", "8080", TCP4Network),
+			server:   NewProviderServer("localhost", "8080"),
+			network:  TCP4Network,
 			expected: "localhost:8080",
 		},
 		{
 			desc:     "TCP6 with host and port",
-			server:   NewProviderServer("localhost", "8080", TCP6Network),
+			server:   NewProviderServer("localhost", "8080"),
+			network:  TCP6Network,
 			expected: "localhost:8080",
 		},
 		{
@@ -71,6 +74,10 @@ func TestProviderServer_GetAddress(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
+			if test.network != "" {
+				test.server.SetNetwork(test.network)
+			}
+
 			address := test.server.GetAddress()
 			assert.Equal(t, test.expected, address)
 		})
@@ -80,7 +87,7 @@ func TestProviderServer_GetAddress(t *testing.T) {
 func TestChallenge(t *testing.T) {
 	_, apiURL := tester.SetupFakeAPI(t)
 
-	providerServer := NewProviderServer("", "23457", "")
+	providerServer := NewProviderServer("", "23457")
 
 	validate := func(_ *api.Core, _ string, chlng acme.Challenge) error {
 		uri := "http://localhost" + providerServer.GetAddress() + ChallengePath(chlng.Token)
@@ -209,7 +216,7 @@ func TestChallengeInvalidPort(t *testing.T) {
 
 	validate := func(_ *api.Core, _ string, _ acme.Challenge) error { return nil }
 
-	solver := NewChallenge(core, validate, NewProviderServer("", "123456", ""))
+	solver := NewChallenge(core, validate, NewProviderServer("", "123456"))
 
 	authz := acme.Authorization{
 		Identifier: acme.Identifier{
@@ -384,7 +391,7 @@ func testServeWithProxy(t *testing.T, header, extra *testProxyHeader, expectErro
 
 	_, apiURL := tester.SetupFakeAPI(t)
 
-	providerServer := NewProviderServer("localhost", "23457", "")
+	providerServer := NewProviderServer("localhost", "23457")
 	if header != nil {
 		providerServer.SetProxyHeader(header.name)
 	}

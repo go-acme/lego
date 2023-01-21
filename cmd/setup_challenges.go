@@ -81,13 +81,15 @@ func setupHTTPProvider(ctx *cli.Context) challenge.Provider {
 			log.Fatal(err)
 		}
 
-		srv := http01.NewProviderServer(host, port, network)
+		srv := http01.NewProviderServer(host, port)
+		srv.SetNetwork(network)
 		if header := ctx.String("http.proxy-header"); header != "" {
 			srv.SetProxyHeader(header)
 		}
 		return srv
 	case ctx.Bool("http"):
-		srv := http01.NewProviderServer("", "", network)
+		srv := http01.NewProviderServer("", "")
+		srv.SetNetwork(network)
 		if header := ctx.String("http.proxy-header"); header != "" {
 			srv.SetProxyHeader(header)
 		}
@@ -121,9 +123,13 @@ func setupTLSProvider(ctx *cli.Context) challenge.Provider {
 			log.Fatal(err)
 		}
 
-		return tlsalpn01.NewProviderServer(host, port, network)
+		srv := tlsalpn01.NewProviderServer(host, port)
+		srv.SetNetwork(network)
+		return srv
 	case ctx.Bool("tls"):
-		return tlsalpn01.NewProviderServer("", "", network)
+		srv := tlsalpn01.NewProviderServer("", "")
+		srv.SetNetwork(network)
+		return srv
 	default:
 		log.Fatal("Invalid HTTP challenge options.")
 		return nil

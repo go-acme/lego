@@ -26,31 +26,34 @@ func TestProviderServer_GetAddress(t *testing.T) {
 	testCases := []struct {
 		desc     string
 		server   *ProviderServer
+		network  ProviderNetwork
 		expected string
 	}{
 		{
 			desc:     "TCP default address",
-			server:   NewProviderServer("", "", ""),
+			server:   NewProviderServer("", ""),
 			expected: ":443",
 		},
 		{
 			desc:     "TCP with explicit port",
-			server:   NewProviderServer("", "4443", ""),
+			server:   NewProviderServer("", "4443"),
 			expected: ":4443",
 		},
 		{
 			desc:     "TCP with host and port",
-			server:   NewProviderServer("localhost", "4443", ""),
+			server:   NewProviderServer("localhost", "4443"),
 			expected: "localhost:4443",
 		},
 		{
 			desc:     "TCP4 with host and port",
-			server:   NewProviderServer("localhost", "4443", TCP4Network),
+			server:   NewProviderServer("localhost", "4443"),
+			network:  TCP4Network,
 			expected: "localhost:4443",
 		},
 		{
 			desc:     "TCP6 with host and port",
-			server:   NewProviderServer("localhost", "4443", TCP6Network),
+			server:   NewProviderServer("localhost", "4443"),
+			network:  TCP6Network,
 			expected: "localhost:4443",
 		},
 	}
@@ -59,6 +62,10 @@ func TestProviderServer_GetAddress(t *testing.T) {
 		test := test
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
+
+			if test.network != "" {
+				test.server.SetNetwork(test.network)
+			}
 
 			address := test.server.GetAddress()
 			assert.Equal(t, test.expected, address)

@@ -1,25 +1,17 @@
 package dns01
 
 import (
-	"fmt"
 	"net"
 	"sort"
 	"sync"
 	"testing"
 
-	getport "github.com/jsumners/go-getport"
 	"github.com/miekg/dns"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-type (
-	testDNSHandler struct{}
-	testDNSServer  struct {
-		*dns.Server
-		getport.PortResult
-	}
-)
+type testDNSHandler struct{}
 
 func (handler *testDNSHandler) ServeDNS(writer dns.ResponseWriter, reply *dns.Msg) {
 	msg := dns.Msg{}
@@ -47,45 +39,20 @@ func (handler *testDNSHandler) ServeDNS(writer dns.ResponseWriter, reply *dns.Ms
 
 // getTestNameserver constructs a new DNS server on a local address, or set
 // of addresses, that responds to an `A` query for `example.com`.
-func getTestNameserver(t *testing.T, network string) testDNSServer {
+func getTestNameserver(t *testing.T, network string) *dns.Server {
 	t.Helper()
 	server := &dns.Server{
 		Handler: new(testDNSHandler),
 		Net:     network,
 	}
-	testServer := testDNSServer{
-		Server: server,
-	}
-
-	var protocol getport.Protocol
-	var address string
 	switch network {
-	case "tcp":
-		protocol = getport.TCP
-		address = "0.0.0.0"
-	case "tcp4":
-		protocol = getport.TCP4
-		address = "127.0.0.1"
-	case "tcp6":
-		protocol = getport.TCP6
-		address = "::1"
-	case "udp":
-		protocol = getport.UDP
-		address = "0.0.0.0"
-	case "udp4":
-		protocol = getport.UDP4
-		address = "127.0.0.1"
-	case "udp6":
-		protocol = getport.UDP6
-		address = "::1"
+	case "tcp", "udp":
+		server.Addr = "0.0.0.0:0"
+	case "tcp4", "udp4":
+		server.Addr = "127.0.0.1:0"
+	case "tcp6", "udp6":
+		server.Addr = "[::1]:0"
 	}
-	portResult, portError := getport.GetPort(protocol, address)
-	if portError != nil {
-		t.Error(portError)
-		return testServer
-	}
-	testServer.PortResult = portResult
-	server.Addr = getport.PortResultToAddress(portResult)
 
 	waitLock := sync.Mutex{}
 	waitLock.Lock()
@@ -97,7 +64,21 @@ func getTestNameserver(t *testing.T, network string) testDNSServer {
 	}()
 
 	waitLock.Lock()
-	return testServer
+	return server
+}
+
+func startTestNameserver(t *testing.T, stack NetworkStack, proto string) (shutdown func(), addr string) {
+	t.Helper()
+	SetNetworkStack(stack)
+	srv := getTestNameserver(t, getNetwork(proto))
+
+	shutdown = func() { _ = srv.Shutdown() }
+	if proto == "tcp" {
+		addr = srv.Listener.Addr().String()
+	} else {
+		addr = srv.PacketConn.LocalAddr().String()
+	}
+	return
 }
 
 func TestSendDNSQuery(t *testing.T) {
@@ -109,47 +90,44 @@ func TestSendDNSQuery(t *testing.T) {
 	})
 
 	t.Run("does udp4 only", func(t *testing.T) {
-		SetNetworkStack(IPv4Only)
-		nameserver := getTestNameserver(t, getNetwork("udp"))
-		defer func() { _ = nameserver.Server.Shutdown() }()
+		stop, addr := startTestNameserver(t, IPv4Only, "udp")
+		defer stop()
 
-		serverAddress := fmt.Sprintf("127.0.0.1:%d", nameserver.PortResult.Port)
-		recursiveNameservers = ParseNameservers([]string{serverAddress})
+		recursiveNameservers = ParseNameservers([]string{addr})
 		msg := createDNSMsg("example.com.", dns.TypeA, true)
-		result, queryError := sendDNSQuery(msg, serverAddress)
+		result, queryError := sendDNSQuery(msg, addr)
 		assert.NoError(t, queryError)
 		assert.Equal(t, result.Answer[0].(*dns.A).A.String(), "127.0.0.1")
 	})
 
 	t.Run("does udp6 only", func(t *testing.T) {
-		SetNetworkStack(IPv6Only)
-		nameserver := getTestNameserver(t, getNetwork("udp"))
-		defer func() { _ = nameserver.Server.Shutdown() }()
+		stop, addr := startTestNameserver(t, IPv6Only, "udp")
+		defer stop()
 
-		serverAddress := fmt.Sprintf("[::1]:%d", nameserver.PortResult.Port)
-		recursiveNameservers = ParseNameservers([]string{serverAddress})
+		recursiveNameservers = ParseNameservers([]string{addr})
 		msg := createDNSMsg("example.com.", dns.TypeA, true)
-		result, queryError := sendDNSQuery(msg, serverAddress)
+		result, queryError := sendDNSQuery(msg, addr)
 		assert.NoError(t, queryError)
 		assert.Equal(t, result.Answer[0].(*dns.A).A.String(), "127.0.0.1")
 	})
 
 	t.Run("does tcp4 and tcp6", func(t *testing.T) {
-		SetNetworkStack(DefaultNetworkStack)
-		nameserver := getTestNameserver(t, getNetwork("tcp"))
-		defer func() { _ = nameserver.Server.Shutdown() }()
+		stop, addr := startTestNameserver(t, DefaultNetworkStack, "tcp")
+		_, port, _ := net.SplitHostPort(addr)
+		defer stop()
+		t.Logf("### port: %s", port)
 
-		serverAddress := fmt.Sprintf("[::1]:%d", nameserver.PortResult.Port)
-		recursiveNameservers = ParseNameservers([]string{serverAddress})
+		addr6 := net.JoinHostPort("::1", port)
+		recursiveNameservers = ParseNameservers([]string{addr6})
 		msg := createDNSMsg("example.com.", dns.TypeA, true)
-		result, queryError := sendDNSQuery(msg, serverAddress)
+		result, queryError := sendDNSQuery(msg, addr6)
 		assert.NoError(t, queryError)
 		assert.Equal(t, result.Answer[0].(*dns.A).A.String(), "127.0.0.1")
 
-		serverAddress = fmt.Sprintf("127.0.0.1:%d", nameserver.PortResult.Port)
-		recursiveNameservers = ParseNameservers([]string{serverAddress})
+		addr4 := net.JoinHostPort("127.0.0.1", port)
+		recursiveNameservers = ParseNameservers([]string{addr4})
 		msg = createDNSMsg("example.com.", dns.TypeA, true)
-		result, queryError = sendDNSQuery(msg, serverAddress)
+		result, queryError = sendDNSQuery(msg, addr4)
 		assert.NoError(t, queryError)
 		assert.Equal(t, result.Answer[0].(*dns.A).A.String(), "127.0.0.1")
 	})

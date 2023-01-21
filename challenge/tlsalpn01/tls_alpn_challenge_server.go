@@ -11,18 +11,6 @@ import (
 	"github.com/go-acme/lego/v4/log"
 )
 
-// ProviderNetwork indicates with network stack , IPv4, IPv6, or both, to use.
-type ProviderNetwork string
-
-const (
-	// DefaultNetwork indicates both IPv4 and IPv6.
-	DefaultNetwork = "tcp"
-	// TCP4Network indicates IPv4 only.
-	TCP4Network = "tcp4"
-	// TCP6Network indicates IPv6 only.
-	TCP6Network = "tcp6"
-)
-
 const (
 	// ACMETLS1Protocol is the ALPN Protocol ID for the ACME-TLS/1 Protocol.
 	ACMETLS1Protocol = "acme-tls/1"
@@ -49,12 +37,18 @@ func NewProviderServer(iface, port string) *ProviderServer {
 	if port == "" {
 		port = defaultTLSPort
 	}
-	return &ProviderServer{iface: iface, port: port, network: DefaultNetwork}
+	return &ProviderServer{iface: iface, port: port, network: "tcp"}
 }
 
-func (s *ProviderServer) SetNetwork(network ProviderNetwork) {
-	s.network = string(network)
-}
+// SetIPv4Only starts the challenge server on an IPv4 address.
+func (s *ProviderServer) SetIPv4Only() { s.network = "tcp4" }
+
+// SetIPv6Only starts the challenge server on an IPv6 address.
+func (s *ProviderServer) SetIPv6Only() { s.network = "tcp6" }
+
+// SetDualStack indicates that both IPv4 and IPv6 should be allowed.
+// This setting lets the OS determine which IP stack to use for the challenge server.
+func (s *ProviderServer) SetDualStack() { s.network = "tcp" }
 
 func (s *ProviderServer) GetAddress() string {
 	return net.JoinHostPort(s.iface, s.port)

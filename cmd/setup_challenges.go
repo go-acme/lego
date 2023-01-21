@@ -41,22 +41,25 @@ func setupChallenges(ctx *cli.Context, client *lego.Client) {
 	}
 }
 
-func resolveHTTP01Network(ctx *cli.Context) http01.ProviderNetwork {
-	var network http01.ProviderNetwork
-	switch {
-	case ctx.IsSet("ipv4only") && ctx.IsSet("ipv6only"):
-		network = http01.DefaultNetwork
-	case ctx.IsSet("ipv4only"):
-		network = http01.TCP4Network
-	case ctx.IsSet("ipv6only"):
-		network = http01.TCP6Network
+type networkStackSetter interface {
+	SetIPv4Only()
+	SetIPv6Only()
+	SetDualStack()
+}
+
+func setNetwork(ctx *cli.Context, srv networkStackSetter) {
+	switch v4, v6 := ctx.IsSet("ipv4only"), ctx.IsSet("ipv6only"); {
+	case v4 && !v6:
+		srv.SetIPv4Only()
+	case !v4 && v6:
+		srv.SetIPv6Only()
+	default:
+		// setting both --ipv4only and --ipv6only is not an error, just a no-op
+		srv.SetDualStack()
 	}
-	return network
 }
 
 func setupHTTPProvider(ctx *cli.Context) challenge.Provider {
-	network := resolveHTTP01Network(ctx)
-
 	switch {
 	case ctx.IsSet("http.webroot"):
 		ps, err := webroot.NewHTTPProvider(ctx.String("http.webroot"))
@@ -82,14 +85,14 @@ func setupHTTPProvider(ctx *cli.Context) challenge.Provider {
 		}
 
 		srv := http01.NewProviderServer(host, port)
-		srv.SetNetwork(network)
+		setNetwork(ctx, srv)
 		if header := ctx.String("http.proxy-header"); header != "" {
 			srv.SetProxyHeader(header)
 		}
 		return srv
 	case ctx.Bool("http"):
 		srv := http01.NewProviderServer("", "")
-		srv.SetNetwork(network)
+		setNetwork(ctx, srv)
 		if header := ctx.String("http.proxy-header"); header != "" {
 			srv.SetProxyHeader(header)
 		}
@@ -101,16 +104,6 @@ func setupHTTPProvider(ctx *cli.Context) challenge.Provider {
 }
 
 func setupTLSProvider(ctx *cli.Context) challenge.Provider {
-	var network tlsalpn01.ProviderNetwork
-	switch {
-	case ctx.IsSet("ipv4only") && ctx.IsSet("ipv6only"):
-		network = tlsalpn01.DefaultNetwork
-	case ctx.IsSet("ipv4only"):
-		network = tlsalpn01.TCP4Network
-	case ctx.IsSet("ipv6only"):
-		network = tlsalpn01.TCP6Network
-	}
-
 	switch {
 	case ctx.IsSet("tls.port"):
 		iface := ctx.String("tls.port")
@@ -124,11 +117,11 @@ func setupTLSProvider(ctx *cli.Context) challenge.Provider {
 		}
 
 		srv := tlsalpn01.NewProviderServer(host, port)
-		srv.SetNetwork(network)
+		setNetwork(ctx, srv)
 		return srv
 	case ctx.Bool("tls"):
 		srv := tlsalpn01.NewProviderServer("", "")
-		srv.SetNetwork(network)
+		setNetwork(ctx, srv)
 		return srv
 	default:
 		log.Fatal("Invalid HTTP challenge options.")
@@ -142,17 +135,14 @@ func setupDNS(ctx *cli.Context, client *lego.Client) {
 		log.Fatal(err)
 	}
 
-	switch {
-	case ctx.IsSet("ipv4only") && ctx.IsSet("ipv6only"):
-		// If both flags are set then it's as good as not providing either flag,
-		// so we default to the OS choice.
-		dns01.SetNetworkStack(dns01.DefaultNetworkStack)
-
-	case ctx.IsSet("ipv4only"):
-		dns01.SetNetworkStack(dns01.IPv4Only)
-
-	case ctx.IsSet("ipv6only"):
-		dns01.SetNetworkStack(dns01.IPv6Only)
+	switch v4, v6 := ctx.IsSet("ipv4only"), ctx.IsSet("ipv6only"); {
+	case v4 && !v6:
+		dns01.SetIPv4Only()
+	case !v4 && v6:
+		dns01.SetIPv6Only()
+	default:
+		// setting both --ipv4only and --ipv6only is not an error, just a no-op
+		dns01.SetDualStack()
 	}
 
 	servers := ctx.StringSlice("dns.resolvers")

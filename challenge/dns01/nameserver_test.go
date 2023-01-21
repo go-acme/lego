@@ -62,10 +62,10 @@ func getTestNameserver(t *testing.T, network string) *dns.Server {
 	return server
 }
 
-func startTestNameserver(t *testing.T, stack NetworkStack, proto string) (shutdown func(), addr string) {
+func startTestNameserver(t *testing.T, stack networkStack, proto string) (shutdown func(), addr string) {
 	t.Helper()
-	SetNetworkStack(stack)
-	srv := getTestNameserver(t, getNetwork(proto))
+	currentNetworkStack = stack
+	srv := getTestNameserver(t, currentNetworkStack.Network(proto))
 
 	shutdown = func() { _ = srv.Shutdown() }
 	if proto == "tcp" {
@@ -81,11 +81,11 @@ func TestSendDNSQuery(t *testing.T) {
 
 	t.Cleanup(func() {
 		recursiveNameservers = currentNameservers
-		SetNetworkStack(DefaultNetworkStack)
+		currentNetworkStack = dualStack
 	})
 
 	t.Run("does udp4 only", func(t *testing.T) {
-		stop, addr := startTestNameserver(t, IPv4Only, "udp")
+		stop, addr := startTestNameserver(t, ipv4only, "udp")
 		defer stop()
 
 		recursiveNameservers = ParseNameservers([]string{addr})
@@ -96,7 +96,7 @@ func TestSendDNSQuery(t *testing.T) {
 	})
 
 	t.Run("does udp6 only", func(t *testing.T) {
-		stop, addr := startTestNameserver(t, IPv6Only, "udp")
+		stop, addr := startTestNameserver(t, ipv6only, "udp")
 		defer stop()
 
 		recursiveNameservers = ParseNameservers([]string{addr})
@@ -107,7 +107,7 @@ func TestSendDNSQuery(t *testing.T) {
 	})
 
 	t.Run("does tcp4 and tcp6", func(t *testing.T) {
-		stop, addr := startTestNameserver(t, DefaultNetworkStack, "tcp")
+		stop, addr := startTestNameserver(t, dualStack, "tcp")
 		_, port, _ := net.SplitHostPort(addr)
 		defer stop()
 		t.Logf("### port: %s", port)

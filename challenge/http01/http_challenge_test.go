@@ -32,7 +32,7 @@ func TestProviderServer_GetAddress(t *testing.T) {
 	testCases := []struct {
 		desc     string
 		server   *ProviderServer
-		network  ProviderNetwork
+		network  func(*ProviderServer)
 		expected string
 	}{
 		{
@@ -53,13 +53,13 @@ func TestProviderServer_GetAddress(t *testing.T) {
 		{
 			desc:     "TCP4 with host and port",
 			server:   NewProviderServer("localhost", "8080"),
-			network:  TCP4Network,
+			network:  func(s *ProviderServer) { s.SetIPv4Only() },
 			expected: "localhost:8080",
 		},
 		{
 			desc:     "TCP6 with host and port",
 			server:   NewProviderServer("localhost", "8080"),
-			network:  TCP6Network,
+			network:  func(s *ProviderServer) { s.SetIPv6Only() },
 			expected: "localhost:8080",
 		},
 		{
@@ -74,8 +74,8 @@ func TestProviderServer_GetAddress(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			if test.network != "" {
-				test.server.SetNetwork(test.network)
+			if test.network != nil {
+				test.network(test.server)
 			}
 
 			address := test.server.GetAddress()

@@ -12,18 +12,6 @@ import (
 	"github.com/go-acme/lego/v4/log"
 )
 
-// ProviderNetwork indicates with network stack , IPv4, IPv6, or both, to use.
-type ProviderNetwork string
-
-const (
-	// DefaultNetwork indicates both IPv4 and IPv6.
-	DefaultNetwork = "tcp"
-	// TCP4Network indicates IPv4 only.
-	TCP4Network = "tcp4"
-	// TCP6Network indicates IPv6 only.
-	TCP6Network = "tcp6"
-)
-
 // ProviderServer implements ChallengeProvider for `http-01` challenge.
 // It may be instantiated without using the NewProviderServer function if
 // you want only to use the default values.
@@ -45,15 +33,33 @@ func NewProviderServer(iface, port string) *ProviderServer {
 	if port == "" {
 		port = "80"
 	}
-	return &ProviderServer{network: DefaultNetwork, address: net.JoinHostPort(iface, port), matcher: &hostMatcher{}}
+	return &ProviderServer{network: "tcp", address: net.JoinHostPort(iface, port), matcher: &hostMatcher{}}
 }
 
 func NewUnixProviderServer(socketPath string, mode fs.FileMode) *ProviderServer {
 	return &ProviderServer{network: "unix", address: socketPath, socketMode: mode, matcher: &hostMatcher{}}
 }
 
-func (s *ProviderServer) SetNetwork(network ProviderNetwork) {
-	s.network = string(network)
+// SetIPv4Only starts the challenge server on an IPv4 address.
+//
+// Calling this method has no effect if s was created with NewUnixProviderServer.
+func (s *ProviderServer) SetIPv4Only() { s.setTCPStack("tcp4") }
+
+// SetIPv6Only starts the challenge server on an IPv6 address.
+//
+// Calling this method has no effect if s was created with NewUnixProviderServer.
+func (s *ProviderServer) SetIPv6Only() { s.setTCPStack("tcp6") }
+
+// SetDualStack indicates that both IPv4 and IPv6 should be allowed.
+// This setting lets the OS determine which IP stack to use for the challenge server.
+//
+// Calling this method has no effect if s was created with NewUnixProviderServer.
+func (s *ProviderServer) SetDualStack() { s.setTCPStack("tcp") }
+
+func (s *ProviderServer) setTCPStack(network string) {
+	if s.network != "unix" {
+		s.network = network
+	}
 }
 
 // Present starts a web server and makes the token available at `ChallengePath(token)` for web requests.

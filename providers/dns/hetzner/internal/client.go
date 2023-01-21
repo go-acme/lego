@@ -152,7 +152,7 @@ func (c *Client) getZones(name string, pagination *Pagination) (*Zones, error) {
 		return nil, fmt.Errorf("failed to create endpoint: %w", err)
 	}
 
-	var values url.Values
+	values := url.Values{}
 
 	if pagination != nil {
 		values, err = querystring.Values(pagination)

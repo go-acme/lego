@@ -251,17 +251,16 @@ func createDNSMsg(fqdn string, rtype uint16, recursive bool) *dns.Msg {
 
 func sendDNSQuery(m *dns.Msg, ns string) (*dns.Msg, error) {
 	network := currentNetworkStack.Network("udp")
-	udp := &dns.Client{Net: network, Timeout: dnsTimeout}
-	in, _, err := udp.Exchange(m, ns)
+	client := &dns.Client{Net: network, Timeout: dnsTimeout}
+	in, _, err := client.Exchange(m, ns)
 
-	network = currentNetworkStack.Network("tcp")
 	// We can encounter a net.OpError if the nameserver is not listening
 	// on UDP at all, i.e. net.Dial could not make a connection.
 	var opErr *net.OpError
 	if (in != nil && in.Truncated) || errors.As(err, &opErr) {
-		tcp := &dns.Client{Net: network, Timeout: dnsTimeout}
+		client.Net = currentNetworkStack.Network("tcp")
 		// If the TCP request succeeds, the err will reset to nil
-		in, _, err = tcp.Exchange(m, ns)
+		in, _, err = client.Exchange(m, ns)
 	}
 
 	return in, err

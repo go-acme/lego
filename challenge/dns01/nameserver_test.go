@@ -194,7 +194,7 @@ var findXByFqdnTestCases = []struct {
 	zone          string
 	primaryNs     string
 	nameservers   []string
-	expectedError string
+	expectedError string // regular expression
 }{
 	{
 		desc:        "domain is a CNAME",
@@ -229,7 +229,7 @@ var findXByFqdnTestCases = []struct {
 		fqdn:          "test.lego.zz.",
 		zone:          "lego.zz.",
 		nameservers:   []string{"8.8.8.8:53"},
-		expectedError: "could not find the start of authority for test.lego.zz.: NXDOMAIN",
+		expectedError: `^could not find the start of authority for test\.lego\.zz\.: NXDOMAIN`,
 	},
 	{
 		desc:        "several non existent nameservers",
@@ -239,18 +239,21 @@ var findXByFqdnTestCases = []struct {
 		nameservers: []string{":7053", ":8053", "8.8.8.8:53"},
 	},
 	{
-		desc:          "only non-existent nameservers",
-		fqdn:          "mail.google.com.",
-		zone:          "google.com.",
-		nameservers:   []string{":7053", ":8053", ":9053"},
-		expectedError: "could not find the start of authority for mail.google.com.: dial tcp :9053: connect:",
+		desc:        "only non-existent nameservers",
+		fqdn:        "mail.google.com.",
+		zone:        "google.com.",
+		nameservers: []string{":7053", ":8053", ":9053"},
+		// NOTE: On Windows, net.DialContext finds a way down to the ContectEx syscall.
+		// There a fault is marked as "connectex", not "connect", see
+		// https://cs.opensource.google/go/go/+/refs/tags/go1.19.5:src/net/fd_windows.go;l=112
+		expectedError: `^could not find the start of authority for mail\.google\.com\.: dial tcp :9053: connect(ex)?:`,
 	},
 	{
 		desc:          "no nameservers",
 		fqdn:          "test.ldez.com.",
 		zone:          "ldez.com.",
 		nameservers:   []string{},
-		expectedError: "could not find the start of authority for test.ldez.com.",
+		expectedError: `^could not find the start of authority for test\.ldez\.com\.`,
 	},
 }
 
@@ -262,7 +265,7 @@ func TestFindZoneByFqdnCustom(t *testing.T) {
 			zone, err := FindZoneByFqdnCustom(test.fqdn, test.nameservers)
 			if test.expectedError != "" {
 				require.Error(t, err)
-				assert.Contains(t, err.Error(), test.expectedError)
+				assert.Regexp(t, test.expectedError, err.Error())
 			} else {
 				require.NoError(t, err)
 				assert.Equal(t, test.zone, zone)
@@ -279,7 +282,7 @@ func TestFindPrimaryNsByFqdnCustom(t *testing.T) {
 			ns, err := FindPrimaryNsByFqdnCustom(test.fqdn, test.nameservers)
 			if test.expectedError != "" {
 				require.Error(t, err)
-				assert.Contains(t, err.Error(), test.expectedError)
+				assert.Regexp(t, test.expectedError, err.Error())
 			} else {
 				require.NoError(t, err)
 				assert.Equal(t, test.primaryNs, ns)

@@ -34,6 +34,7 @@ func allDNSCodes() string {
 		"desec",
 		"designate",
 		"digitalocean",
+		"dnshomede",
 		"dnsimple",
 		"dnsmadeeasy",
 		"dnspod",
@@ -571,6 +572,20 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/digitalocean`)
+
+	case "dnshomede":
+		// generated from: providers/dns/dnshomede/dnshomede.toml
+		ew.writeln(`Configuration for dnsHome.de.`)
+		ew.writeln(`Code:	'dnshomede'`)
+		ew.writeln(`Since:	'v4.10.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "DNSHOMEDE_TOKENS":	TXT record names and tokens`)
+		ew.writeln()
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/dnshomede`)
 
 	case "dnsimple":
 		// generated from: providers/dns/dnsimple/dnsimple.toml

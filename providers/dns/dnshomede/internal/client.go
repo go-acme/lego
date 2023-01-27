@@ -96,6 +96,7 @@ func (c *Client) do(userInfo *url.Userinfo, action, value string) error {
 	if err != nil {
 		return err
 	}
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		all, _ := io.ReadAll(resp.Body)

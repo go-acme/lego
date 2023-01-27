@@ -14,7 +14,7 @@ lego --email you@example.com --dns dnshomede --domains my.example.org --domains 
 
 [Configuration]
   [Configuration.Credentials]
-    DNSHOMEDE_TOKENS = "TXT record names and tokens"
+    DNSHOMEDE_CREDENTIALS = "Comma-separated list of domain:password credential pairs"
   [Configuration.Addtional]
     DNSHOMEDE_POLLING_INTERVAL = "Time between DNS propagation checks"
     DNSHOMEDE_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation; defaults to 300s (5 minutes)"

@@ -77,7 +77,17 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if len(config.Credentials) == 0 {
-		return nil, errors.New("dnshomede: credentials missing")
+		return nil, errors.New("dnshomede: missing credentials")
+	}
+
+	for domain, password := range config.Credentials {
+		if domain == "" {
+			return nil, fmt.Errorf(`dnshomede: missing domain: "%s:%s"`, domain, password)
+		}
+
+		if password == "" {
+			return nil, fmt.Errorf(`dnshomede: missing password: "%s:%s"`, domain, password)
+		}
 	}
 
 	client := internal.NewClient(config.Credentials)
@@ -131,14 +141,7 @@ func parseCredentials(raw string) (map[string]string, error) {
 			return nil, fmt.Errorf("invalid credential pair: %q", credPair)
 		}
 
-		domain := strings.TrimSpace(data[0])
-		password := strings.TrimSpace(data[1])
-
-		if domain == "" || password == "" {
-			return nil, fmt.Errorf("invalid credential pair: %q", credPair)
-		}
-
-		credentials[domain] = password
+		credentials[strings.TrimSpace(data[0])] = strings.TrimSpace(data[1])
 	}
 
 	return credentials, nil

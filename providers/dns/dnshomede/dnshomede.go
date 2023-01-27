@@ -128,7 +128,7 @@ func parseCredentials(raw string) (map[string]string, error) {
 	for _, credPair := range credStrings {
 		data := strings.Split(credPair, ":")
 		if len(data) != 2 {
-			return nil, fmt.Errorf("incorrect credential pair: %q", credPair)
+			return nil, fmt.Errorf("invalid credential pair: %q", credPair)
 		}
 
 		domain := strings.TrimSpace(data[0])

@@ -40,7 +40,7 @@ lego --email you@example.com --dns dnshomede --domains my.example.org --domains 
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `DNSHOMEDE_TOKENS` | TXT record names and tokens |
+| `DNSHOMEDE_CREDENTIALS` | Comma-separated list of domain:password credential pairs |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{< ref "dns#configuration-and-credentials" >}}).

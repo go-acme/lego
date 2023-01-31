@@ -581,7 +581,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "DNSHOMEDE_TOKENS":	TXT record names and tokens`)
+		ew.writeln(`	- "DNSHOMEDE_CREDENTIALS":	Comma-separated list of domain:password credential pairs`)
 		ew.writeln()
 
 		ew.writeln()

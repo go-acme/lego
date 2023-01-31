@@ -1,0 +1,36 @@
+{
+  "id": 987654321,
+  "login": "lego@example.com",
+  "parentId": null,
+  "active": true,
+  "createTime": 1675237889,
+  "group": "users",
+  "email": "lego@example.com",
+  "phone": "+123456789",
+  "contactPerson": "",
+  "awaitingTosConfirmation": "1",
+  "userLanguage": "sk-SK",
+  "credit": 0,
+  "verifyUrl": "https:\/\/rest.websupport.sk\/v1\/user\/verify\/key\/xxx",
+  "billing": [
+    {
+      "id": 1099970,
+      "profile": "default",
+      "isDefault": true,
+      "name": "asdsdfs",
+      "city": "\u017dilina",
+      "street": "asddfsdfsdf",
+      "companyRegId": null,
+      "taxId": null,
+      "vatId": null,
+      "zip": "01234",
+      "country": "sk",
+      "isic": ""
+    }
+  ],
+  "market": {
+    "name": "Slovakia",
+    "identifier": "sk",
+    "currency": "EUR"
+  }
+}

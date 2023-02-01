@@ -1,0 +1,19 @@
+{
+  "status": "success",
+  "item": {
+    "id": 4,
+    "type": "A",
+    "name": "@",
+    "content": "1.2.3.4",
+    "ttl": 600,
+    "prio": null,
+    "weight": null,
+    "port": null,
+    "zone": {
+      "id": 1,
+      "name": "example.com",
+      "updateTime": 1381169608
+    }
+  },
+  "errors": []
+}

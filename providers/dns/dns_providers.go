@@ -110,6 +110,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/vkcloud"
 	"github.com/go-acme/lego/v4/providers/dns/vscale"
 	"github.com/go-acme/lego/v4/providers/dns/vultr"
+	"github.com/go-acme/lego/v4/providers/dns/websupport"
 	"github.com/go-acme/lego/v4/providers/dns/wedos"
 	"github.com/go-acme/lego/v4/providers/dns/yandex"
 	"github.com/go-acme/lego/v4/providers/dns/yandexcloud"
@@ -328,10 +329,12 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return vinyldns.NewDNSProvider()
 	case "vkcloud":
 		return vkcloud.NewDNSProvider()
-	case "vultr":
-		return vultr.NewDNSProvider()
 	case "vscale":
 		return vscale.NewDNSProvider()
+	case "vultr":
+		return vultr.NewDNSProvider()
+	case "websupport":
+		return websupport.NewDNSProvider()
 	case "wedos":
 		return wedos.NewDNSProvider()
 	case "yandex":

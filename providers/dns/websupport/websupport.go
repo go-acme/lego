@@ -1,3 +1,4 @@
+// Package websupport implements a DNS provider for solving the DNS-01 challenge using Websupport.
 package websupport
 
 import (

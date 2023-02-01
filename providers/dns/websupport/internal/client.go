@@ -74,8 +74,6 @@ func (c *Client) GetUser(userID string) (*User, error) {
 // ListRecords lists all records.
 // https://rest.websupport.sk/docs/v1.zone#records
 func (c *Client) ListRecords(domainName string) (*ListResponse, error) {
-	// GET https://rest.websupport.sk/v1/user/:id/zone/:domain_name/record HTTP/1.1
-
 	baseURL, err := url.Parse(c.BaseURL)
 	if err != nil {
 		return nil, fmt.Errorf("base url parsing: %w", err)

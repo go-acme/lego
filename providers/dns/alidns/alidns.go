@@ -255,7 +255,7 @@ func (d *DNSProvider) findTxtRecords(fqdn string) ([]alidns.Record, error) {
 	}
 
 	for _, record := range result.DomainRecords.Record {
-		if record.RR == recordName {
+		if record.RR == recordName && record.Type == "TXT" {
 			records = append(records, record)
 		}
 	}

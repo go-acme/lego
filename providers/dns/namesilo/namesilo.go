@@ -98,6 +98,11 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("namesilo: %w", err)
 	}
 
+	err = d.CleanUp(domain, token, keyAuth)
+	if err != nil {
+		return err
+	}
+
 	_, err = d.client.DnsAddRecord(&namesilo.DnsAddRecordParams{
 		Domain: zoneName,
 		Type:   "TXT",
@@ -112,7 +117,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 
 	zoneName, err := getZoneNameByDomain(fqdn)

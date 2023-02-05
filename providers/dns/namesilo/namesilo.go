@@ -102,6 +102,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if err != nil {
 		return err
 	}
+
 	_, err = d.client.DnsAddRecord(&namesilo.DnsAddRecordParams{
 		Domain: zoneName,
 		Type:   "TXT",

@@ -40,15 +40,19 @@ func NewClient(apiEndpoint, locationID string, passport *Passport) (*Client, err
 		return nil, err
 	}
 
-	baseURL := defaultBaseURL
-	if apiEndpoint != "" {
-		baseURL = apiEndpoint
+	if apiEndpoint == "" {
+		apiEndpoint = defaultBaseURL
+	}
+
+	baseURL, err := url.Parse(apiEndpoint)
+	if err != nil {
+		return nil, err
 	}
 
 	tokenSigner := &TokenSigner{
 		PrivateKey: passport.PrivateKey,
 		KeyID:      passport.CertificateID,
-		Audience:   baseURL,
+		Audience:   apiEndpoint,
 		Issuer:     passport.Issuer,
 		Subject:    passport.SubjectID,
 	}
@@ -57,16 +61,9 @@ func NewClient(apiEndpoint, locationID string, passport *Passport) (*Client, err
 		locationID = defaultLocationID
 	}
 
-	bu, err := url.Parse(baseURL)
-	if err != nil {
-		return nil, err
-	}
-
-	endpoint := bu.JoinPath("dns", locationID, "project", projectID)
-
 	client := &Client{
 		HTTPClient:  &http.Client{Timeout: 5 * time.Second},
-		apiEndpoint: endpoint,
+		apiEndpoint: baseURL.JoinPath("dns", locationID, "project", projectID),
 		passport:    passport,
 		signer:      tokenSigner,
 	}

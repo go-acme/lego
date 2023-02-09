@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"path"
 	"strings"
 	"time"
 )
@@ -144,10 +143,7 @@ func (d *DNSProvider) createTXTRecord(zone, leaf, value string) error {
 		return fmt.Errorf("createTXTRecord: marshaling request body failed: %w", err)
 	}
 
-	endpoint, err := d.config.APIEndpoint.Parse(path.Join(d.config.APIEndpoint.Path, "zones", zone, "records", leaf, "TXT"))
-	if err != nil {
-		return fmt.Errorf("createTXTRecord: failed to parse URL: %w", err)
-	}
+	endpoint := d.config.APIEndpoint.JoinPath("zones", zone, "records", leaf, "TXT")
 
 	req, err := http.NewRequest(http.MethodPost, endpoint.String(), bytes.NewReader(reqBody))
 	if err != nil {
@@ -193,10 +189,7 @@ func (d *DNSProvider) removeTXTRecord(zone, leaf, value string) error {
 		return fmt.Errorf("removeTXTRecord: not logged in")
 	}
 
-	endpoint, err := d.config.APIEndpoint.Parse(path.Join(d.config.APIEndpoint.Path, "zones", zone, "records", leaf, "TXT"))
-	if err != nil {
-		return fmt.Errorf("removeTXTRecord: failed to parse URL: %w", err)
-	}
+	endpoint := d.config.APIEndpoint.JoinPath("zones", zone, "records", leaf, "TXT")
 
 	query := endpoint.Query()
 	query.Add("data", value)

@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"path"
 )
 
 const (
@@ -76,17 +75,7 @@ func (c *Client) do(req *http.Request, v interface{}) error {
 }
 
 func (c *Client) createEndpoint(fragment ...string) (string, error) {
-	baseURL, err := url.Parse(c.BaseURL)
-	if err != nil {
-		return "", err
-	}
-
-	endpoint, err := baseURL.Parse(path.Join(fragment...))
-	if err != nil {
-		return "", err
-	}
-
-	return endpoint.String(), nil
+	return url.JoinPath(c.BaseURL, fragment...)
 }
 
 func checkResponse(resp *http.Response) error {

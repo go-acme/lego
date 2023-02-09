@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"path"
+	"strings"
 	"time"
 )
 
@@ -99,12 +99,9 @@ func (c *Client) DeleteRecord(zoneName string, id int64) error {
 }
 
 func (c *Client) do(zoneName string, endpoint string, reqMethod string, reqBody []byte) (*apiResponse, error) {
-	reqURL, err := c.baseURL.Parse(path.Join(c.baseURL.Path, c.accountName, c.apiKey, "my", "products", zoneName, "dns", "records", endpoint))
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse endpoint: %w", err)
-	}
+	reqURL := c.baseURL.JoinPath(c.accountName, c.apiKey, "my", "products", zoneName, "dns", "records", endpoint)
 
-	req, err := http.NewRequest(reqMethod, reqURL.String(), bytes.NewReader(reqBody))
+	req, err := http.NewRequest(reqMethod, strings.TrimSuffix(reqURL.String(), "/"), bytes.NewReader(reqBody))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}

@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"path"
 	"time"
 )
 
@@ -30,10 +29,7 @@ func NewClient(apiToken string) *Client {
 }
 
 func (c Client) CreateDNSRecord(record DNSRecord) (*CreateDNSRecordResponse, error) {
-	endpoint, err := c.baseURL.Parse(path.Join(c.baseURL.Path, "dns-records"))
-	if err != nil {
-		return nil, err
-	}
+	endpoint := c.baseURL.JoinPath("dns-records")
 
 	data := CreateDNSRecordRequest{Data: Data{
 		Type:       "dns-record",
@@ -60,10 +56,7 @@ func (c Client) CreateDNSRecord(record DNSRecord) (*CreateDNSRecordResponse, err
 }
 
 func (c Client) DeleteDNSRecord(id string) (*DeleteRecordResponse, error) {
-	endpoint, err := c.baseURL.Parse(path.Join(c.baseURL.Path, "dns-records", id))
-	if err != nil {
-		return nil, err
-	}
+	endpoint := c.baseURL.JoinPath("dns-records", id)
 
 	req, err := http.NewRequest(http.MethodDelete, endpoint.String(), nil)
 	if err != nil {
@@ -80,10 +73,7 @@ func (c Client) DeleteDNSRecord(id string) (*DeleteRecordResponse, error) {
 }
 
 func (c Client) GetJob(id string) (*GetJobResponse, error) {
-	endpoint, err := c.baseURL.Parse(path.Join(c.baseURL.Path, "queue-jobs", id))
-	if err != nil {
-		return nil, err
-	}
+	endpoint := c.baseURL.JoinPath("queue-jobs", id)
 
 	req, err := http.NewRequest(http.MethodGet, endpoint.String(), nil)
 	if err != nil {

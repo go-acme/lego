@@ -9,7 +9,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"path"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -172,11 +171,7 @@ func (d *DNSProvider) doPost(uri string, msg interface{}) error {
 		return err
 	}
 
-	newURI := path.Join(d.config.Endpoint.EscapedPath(), uri)
-	endpoint, err := d.config.Endpoint.Parse(newURI)
-	if err != nil {
-		return err
-	}
+	endpoint := d.config.Endpoint.JoinPath(uri)
 
 	req, err := http.NewRequest(http.MethodPost, endpoint.String(), reqBody)
 	if err != nil {

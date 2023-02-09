@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"path"
 	"strconv"
 )
 
@@ -85,7 +84,9 @@ func (d *DNSProvider) makeZoneUpdateRequest(zoneStream *ZoneStream, domain strin
 		return nil, err
 	}
 
-	req, err := d.makeRequest(http.MethodPost, path.Join("zone", domain, "_stream"), reqBody)
+	endpoint := d.config.Endpoint.JoinPath("zone", domain, "_stream")
+
+	req, err := d.makeRequest(http.MethodPost, endpoint.String(), reqBody)
 	if err != nil {
 		return nil, err
 	}
@@ -97,13 +98,8 @@ func (d *DNSProvider) makeZoneUpdateRequest(zoneStream *ZoneStream, domain strin
 	return resp, nil
 }
 
-func (d *DNSProvider) makeRequest(method, resource string, body io.Reader) (*http.Request, error) {
-	uri, err := d.config.Endpoint.Parse(resource)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest(method, uri.String(), body)
+func (d *DNSProvider) makeRequest(method, endpoint string, body io.Reader) (*http.Request, error) {
+	req, err := http.NewRequest(method, endpoint, body)
 	if err != nil {
 		return nil, err
 	}

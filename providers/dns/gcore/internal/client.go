@@ -8,7 +8,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"path"
 	"strings"
 	"time"
 )
@@ -40,10 +39,10 @@ func NewClient(token string) *Client {
 // GetZone gets zone information.
 // https://dnsapi.gcorelabs.com/docs#operation/Zone
 func (c *Client) GetZone(ctx context.Context, name string) (Zone, error) {
-	zone := Zone{}
-	uri := path.Join("/v2/zones", name)
+	endpoint := c.baseURL.JoinPath("v2", "zones", name)
 
-	err := c.do(ctx, http.MethodGet, uri, nil, &zone)
+	zone := Zone{}
+	err := c.do(ctx, http.MethodGet, endpoint, nil, &zone)
 	if err != nil {
 		return Zone{}, fmt.Errorf("get zone %s: %w", name, err)
 	}
@@ -54,10 +53,10 @@ func (c *Client) GetZone(ctx context.Context, name string) (Zone, error) {
 // GetRRSet gets RRSet item.
 // https://dnsapi.gcorelabs.com/docs#operation/RRSet
 func (c *Client) GetRRSet(ctx context.Context, zone, name string) (RRSet, error) {
-	var result RRSet
-	uri := path.Join("/v2/zones", zone, name, txtRecordType)
+	endpoint := c.baseURL.JoinPath("v2", "zones", zone, name, txtRecordType)
 
-	err := c.do(ctx, http.MethodGet, uri, nil, &result)
+	var result RRSet
+	err := c.do(ctx, http.MethodGet, endpoint, nil, &result)
 	if err != nil {
 		return RRSet{}, fmt.Errorf("get txt records %s -> %s: %w", zone, name, err)
 	}
@@ -68,9 +67,9 @@ func (c *Client) GetRRSet(ctx context.Context, zone, name string) (RRSet, error)
 // DeleteRRSet removes RRSet record.
 // https://dnsapi.gcorelabs.com/docs#operation/DeleteRRSet
 func (c *Client) DeleteRRSet(ctx context.Context, zone, name string) error {
-	uri := path.Join("/v2/zones", zone, name, txtRecordType)
+	endpoint := c.baseURL.JoinPath("v2", "zones", zone, name, txtRecordType)
 
-	err := c.do(ctx, http.MethodDelete, uri, nil, nil)
+	err := c.do(ctx, http.MethodDelete, endpoint, nil, nil)
 	if err != nil {
 		// Support DELETE idempotence https://developer.mozilla.org/en-US/docs/Glossary/Idempotent
 		statusErr := new(APIError)
@@ -99,19 +98,19 @@ func (c *Client) AddRRSet(ctx context.Context, zone, recordName, value string, t
 
 // https://dnsapi.gcorelabs.com/docs#operation/CreateRRSet
 func (c *Client) createRRSet(ctx context.Context, zone, name string, record RRSet) error {
-	uri := path.Join("/v2/zones", zone, name, txtRecordType)
+	endpoint := c.baseURL.JoinPath("v2", "zones", zone, name, txtRecordType)
 
-	return c.do(ctx, http.MethodPost, uri, record, nil)
+	return c.do(ctx, http.MethodPost, endpoint, record, nil)
 }
 
 // https://dnsapi.gcorelabs.com/docs#operation/UpdateRRSet
 func (c *Client) updateRRSet(ctx context.Context, zone, name string, record RRSet) error {
-	uri := path.Join("/v2/zones", zone, name, txtRecordType)
+	endpoint := c.baseURL.JoinPath("v2", "zones", zone, name, txtRecordType)
 
-	return c.do(ctx, http.MethodPut, uri, record, nil)
+	return c.do(ctx, http.MethodPut, endpoint, record, nil)
 }
 
-func (c *Client) do(ctx context.Context, method, uri string, bodyParams interface{}, dest interface{}) error {
+func (c *Client) do(ctx context.Context, method string, endpoint *url.URL, bodyParams interface{}, dest interface{}) error {
 	var bs []byte
 	if bodyParams != nil {
 		var err error
@@ -119,11 +118,6 @@ func (c *Client) do(ctx context.Context, method, uri string, bodyParams interfac
 		if err != nil {
 			return fmt.Errorf("encode bodyParams: %w", err)
 		}
-	}
-
-	endpoint, err := c.baseURL.Parse(path.Join(c.baseURL.Path, uri))
-	if err != nil {
-		return fmt.Errorf("failed to parse endpoint: %w", err)
 	}
 
 	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), strings.NewReader(string(bs)))

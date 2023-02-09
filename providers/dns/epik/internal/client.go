@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"path"
 	"time"
 )
 
@@ -127,10 +126,7 @@ func (c Client) RemoveHostRecord(domain string, recordID string) (*Data, error) 
 }
 
 func (c *Client) do(method, domain string, params url.Values, body io.Reader) (*http.Response, error) {
-	endpoint, err := c.baseURL.Parse(path.Join(c.baseURL.Path, "domains", domain, "records"))
-	if err != nil {
-		return nil, fmt.Errorf("create endpoint: %w", err)
-	}
+	endpoint := c.baseURL.JoinPath("domains", domain, "records")
 
 	params.Set("SIGNATURE", c.signature)
 	endpoint.RawQuery = params.Encode()

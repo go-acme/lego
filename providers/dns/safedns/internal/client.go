@@ -8,7 +8,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"path"
 	"strconv"
 	"time"
 
@@ -42,10 +41,7 @@ func (c *Client) AddRecord(zone string, record Record) (*AddRecordResponse, erro
 		return nil, err
 	}
 
-	endpoint, err := c.baseURL.Parse(path.Join(c.baseURL.Path, "zones", dns01.UnFqdn(zone), "records"))
-	if err != nil {
-		return nil, err
-	}
+	endpoint := c.baseURL.JoinPath("zones", dns01.UnFqdn(zone), "records")
 
 	req, err := c.newRequest(http.MethodPost, endpoint.String(), bytes.NewReader(body))
 	if err != nil {
@@ -78,10 +74,7 @@ func (c *Client) AddRecord(zone string, record Record) (*AddRecordResponse, erro
 
 // RemoveRecord removes a DNS record.
 func (c *Client) RemoveRecord(zone string, recordID int) error {
-	endpoint, err := c.baseURL.Parse(path.Join(c.baseURL.Path, "zones", dns01.UnFqdn(zone), "records", strconv.Itoa(recordID)))
-	if err != nil {
-		return err
-	}
+	endpoint := c.baseURL.JoinPath("zones", dns01.UnFqdn(zone), "records", strconv.Itoa(recordID))
 
 	req, err := c.newRequest(http.MethodDelete, endpoint.String(), nil)
 	if err != nil {

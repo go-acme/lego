@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"path"
 )
 
 const defaultEndpoint = "https://api.zone.eu/v2/dns/"
@@ -32,7 +31,9 @@ func (d *DNSProvider) addTxtRecord(domain string, record txtRecord) ([]txtRecord
 		return nil, err
 	}
 
-	req, err := d.makeRequest(http.MethodPost, path.Join(domain, "txt"), reqBody)
+	endpoint := d.config.Endpoint.JoinPath(domain, "txt")
+
+	req, err := http.NewRequest(http.MethodPost, endpoint.String(), reqBody)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +46,9 @@ func (d *DNSProvider) addTxtRecord(domain string, record txtRecord) ([]txtRecord
 }
 
 func (d *DNSProvider) getTxtRecords(domain string) ([]txtRecord, error) {
-	req, err := d.makeRequest(http.MethodGet, path.Join(domain, "txt"), nil)
+	endpoint := d.config.Endpoint.JoinPath(domain, "txt")
+
+	req, err := http.NewRequest(http.MethodGet, endpoint.String(), http.NoBody)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +61,9 @@ func (d *DNSProvider) getTxtRecords(domain string) ([]txtRecord, error) {
 }
 
 func (d *DNSProvider) removeTxtRecord(domain, id string) error {
-	req, err := d.makeRequest(http.MethodDelete, path.Join(domain, "txt", id), nil)
+	endpoint := d.config.Endpoint.JoinPath(domain, "txt", id)
+
+	req, err := http.NewRequest(http.MethodDelete, endpoint.String(), http.NoBody)
 	if err != nil {
 		return err
 	}
@@ -66,24 +71,10 @@ func (d *DNSProvider) removeTxtRecord(domain, id string) error {
 	return d.sendRequest(req, nil)
 }
 
-func (d *DNSProvider) makeRequest(method, resource string, body io.Reader) (*http.Request, error) {
-	uri, err := d.config.Endpoint.Parse(resource)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest(method, uri.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
+func (d *DNSProvider) sendRequest(req *http.Request, result interface{}) error {
 	req.Header.Set("Content-Type", "application/json")
 	req.SetBasicAuth(d.config.Username, d.config.APIKey)
 
-	return req, nil
-}
-
-func (d *DNSProvider) sendRequest(req *http.Request, result interface{}) error {
 	resp, err := d.config.HTTPClient.Do(req)
 	if err != nil {
 		return err

@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"path"
 	"strconv"
 	"time"
 
@@ -74,7 +73,9 @@ func NewClient(opts Options) *Client {
 }
 
 func (c Client) GetZone(name string) (*Zone, error) {
-	resp, err := c.do(http.MethodGet, name, nil)
+	endpoint := c.baseURL.JoinPath(c.mode, name)
+
+	resp, err := c.do(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +103,9 @@ func (c Client) GetZone(name string) (*Zone, error) {
 }
 
 func (c Client) AddRecord(zone string, req RecordCreateUpdate) error {
-	resp, err := c.do(http.MethodPost, path.Join(zone, "records"), req)
+	endpoint := c.baseURL.JoinPath(c.mode, zone, "records")
+
+	resp, err := c.do(http.MethodPost, endpoint, req)
 	if err != nil {
 		return err
 	}
@@ -124,7 +127,9 @@ func (c Client) AddRecord(zone string, req RecordCreateUpdate) error {
 }
 
 func (c Client) DeleteRecord(zone string, record int) error {
-	resp, err := c.do(http.MethodDelete, path.Join(zone, "records", strconv.Itoa(record)), nil)
+	endpoint := c.baseURL.JoinPath(c.mode, zone, "records", strconv.Itoa(record))
+
+	resp, err := c.do(http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
 	}
@@ -145,7 +150,7 @@ func (c Client) DeleteRecord(zone string, record int) error {
 	return nil
 }
 
-func (c Client) do(method, uri string, body interface{}) (*http.Response, error) {
+func (c Client) do(method string, endpoint *url.URL, body interface{}) (*http.Response, error) {
 	var reqBody io.Reader
 	if body != nil {
 		jsonValue, err := json.Marshal(body)
@@ -154,11 +159,6 @@ func (c Client) do(method, uri string, body interface{}) (*http.Response, error)
 		}
 
 		reqBody = bytes.NewBuffer(jsonValue)
-	}
-
-	endpoint, err := c.baseURL.Parse(path.Join(c.baseURL.Path, c.mode, uri))
-	if err != nil {
-		return nil, err
 	}
 
 	r, err := http.NewRequest(method, endpoint.String(), reqBody)

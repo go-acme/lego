@@ -8,7 +8,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"path"
 
 	querystring "github.com/google/go-querystring/query"
 )
@@ -40,7 +39,9 @@ func NewClient(apiKey string) (*Client, error) {
 
 // ListZones gets all zones.
 func (c *Client) ListZones(ctx context.Context) ([]Zone, error) {
-	req, err := c.makeRequest(ctx, http.MethodGet, "/v1/zones", nil)
+	endpoint := c.BaseURL.JoinPath("v1", "zones")
+
+	req, err := c.makeRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
@@ -65,14 +66,16 @@ func (c *Client) ListZones(ctx context.Context) ([]Zone, error) {
 	return zones, nil
 }
 
-// ReplaceRecords replaces the some records of a zones.
+// ReplaceRecords replaces some records of a zones.
 func (c *Client) ReplaceRecords(ctx context.Context, zoneID string, records []Record) error {
+	endpoint := c.BaseURL.JoinPath("v1", "zones", zoneID)
+
 	body, err := json.Marshal(records)
 	if err != nil {
 		return fmt.Errorf("failed to marshal request body: %w", err)
 	}
 
-	req, err := c.makeRequest(ctx, http.MethodPatch, path.Join("/v1/zones", zoneID), bytes.NewReader(body))
+	req, err := c.makeRequest(ctx, http.MethodPatch, endpoint, bytes.NewReader(body))
 	if err != nil {
 		return fmt.Errorf("failed to create request: %w", err)
 	}
@@ -93,7 +96,9 @@ func (c *Client) ReplaceRecords(ctx context.Context, zoneID string, records []Re
 
 // GetRecords gets the records of a zones.
 func (c *Client) GetRecords(ctx context.Context, zoneID string, filter *RecordsFilter) ([]Record, error) {
-	req, err := c.makeRequest(ctx, http.MethodGet, path.Join("/v1/zones", zoneID), nil)
+	endpoint := c.BaseURL.JoinPath("v1", "zones", zoneID)
+
+	req, err := c.makeRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
@@ -129,7 +134,9 @@ func (c *Client) GetRecords(ctx context.Context, zoneID string, filter *RecordsF
 
 // RemoveRecord removes a record.
 func (c *Client) RemoveRecord(ctx context.Context, zoneID, recordID string) error {
-	req, err := c.makeRequest(ctx, http.MethodDelete, path.Join("/v1/zones", zoneID, "records", recordID), nil)
+	endpoint := c.BaseURL.JoinPath("v1", "zones", zoneID, "records", recordID)
+
+	req, err := c.makeRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return fmt.Errorf("failed to create request: %w", err)
 	}
@@ -148,12 +155,7 @@ func (c *Client) RemoveRecord(ctx context.Context, zoneID, recordID string) erro
 	return nil
 }
 
-func (c *Client) makeRequest(ctx context.Context, method, uri string, body io.Reader) (*http.Request, error) {
-	endpoint, err := c.BaseURL.Parse(path.Join(c.BaseURL.Path, uri))
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse endpoint: %w", err)
-	}
-
+func (c *Client) makeRequest(ctx context.Context, method string, endpoint *url.URL, body io.Reader) (*http.Request, error) {
 	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)

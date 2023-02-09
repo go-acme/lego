@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"path"
 )
 
 const defaultBaseURL = "https://api.netlify.com/api/v1"
@@ -36,7 +35,7 @@ func (c *Client) GetRecords(zoneID string) ([]DNSRecord, error) {
 		return nil, fmt.Errorf("failed to parse endpoint: %w", err)
 	}
 
-	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
+	req, err := http.NewRequest(http.MethodGet, endpoint.String(), nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
@@ -81,7 +80,7 @@ func (c *Client) CreateRecord(zoneID string, record DNSRecord) (*DNSRecord, erro
 		return nil, fmt.Errorf("failed to marshal request body: %w", err)
 	}
 
-	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewReader(marshaledRecord))
+	req, err := http.NewRequest(http.MethodPost, endpoint.String(), bytes.NewReader(marshaledRecord))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
@@ -122,7 +121,7 @@ func (c *Client) RemoveRecord(zoneID, recordID string) error {
 		return fmt.Errorf("failed to parse endpoint: %w", err)
 	}
 
-	req, err := http.NewRequest(http.MethodDelete, endpoint, nil)
+	req, err := http.NewRequest(http.MethodDelete, endpoint.String(), nil)
 	if err != nil {
 		return fmt.Errorf("failed to create request: %w", err)
 	}
@@ -149,16 +148,11 @@ func (c *Client) RemoveRecord(zoneID, recordID string) error {
 	return nil
 }
 
-func (c *Client) createEndpoint(parts ...string) (string, error) {
+func (c *Client) createEndpoint(parts ...string) (*url.URL, error) {
 	base, err := url.Parse(c.BaseURL)
 	if err != nil {
-		return "", fmt.Errorf("failed to parse base URL: %w", err)
+		return nil, fmt.Errorf("failed to parse base URL: %w", err)
 	}
 
-	endpoint, err := base.Parse(path.Join(base.Path, path.Join(parts...)))
-	if err != nil {
-		return "", fmt.Errorf("failed to parse endpoint path: %w", err)
-	}
-
-	return endpoint.String(), nil
+	return base.JoinPath(parts...), nil
 }

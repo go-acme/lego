@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"path"
-	"strings"
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
@@ -48,8 +46,7 @@ func (c *Client) ListZones() ([]DNSZone, error) {
 	var zones []DNSZone
 	opts := &gophercloud.RequestOpts{JSONResponse: &zones}
 
-	// TODO(ldez): go1.19 => c.baseURL.JoinPath("/")
-	endpoint := joinPath(c.baseURL, "/")
+	endpoint := c.baseURL.JoinPath("/")
 
 	err := c.request(http.MethodGet, endpoint, opts)
 	if err != nil {
@@ -63,8 +60,7 @@ func (c *Client) ListTXTRecords(zoneUUID string) ([]DNSTXTRecord, error) {
 	var records []DNSTXTRecord
 	opts := &gophercloud.RequestOpts{JSONResponse: &records}
 
-	// TODO(ldez): go1.19 => c.baseURL.JoinPath(zoneUUID, "txt", "/")
-	endpoint := joinPath(c.baseURL, zoneUUID, "txt", "/")
+	endpoint := c.baseURL.JoinPath(zoneUUID, "txt", "/")
 
 	err := c.request(http.MethodGet, endpoint, opts)
 	if err != nil {
@@ -80,15 +76,13 @@ func (c *Client) CreateTXTRecord(zoneUUID string, record *DNSTXTRecord) error {
 		JSONResponse: record,
 	}
 
-	// TODO(ldez): go1.19 => c.baseURL.JoinPath(zoneUUID, "txt", "/")
-	endpoint := joinPath(c.baseURL, zoneUUID, "txt", "/")
+	endpoint := c.baseURL.JoinPath(zoneUUID, "txt", "/")
 
 	return c.request(http.MethodPost, endpoint, opts)
 }
 
 func (c *Client) DeleteTXTRecord(zoneUUID, recordUUID string) error {
-	// TODO(ldez): go1.19 => c.baseURL.JoinPath(zoneUUID, "txt", recordUUID)
-	endpoint := joinPath(c.baseURL, zoneUUID, "txt", recordUUID)
+	endpoint := c.baseURL.JoinPath(zoneUUID, "txt", recordUUID)
 
 	return c.request(http.MethodDelete, endpoint, &gophercloud.RequestOpts{})
 }
@@ -143,18 +137,4 @@ func validateAuthOptions(opts gophercloud.AuthOptions) error {
 	}
 
 	return nil
-}
-
-// light version of go1.19 url.URL.JoinPath.
-// TODO(ldez): must be remove when we will update to go1.19.
-func joinPath(uri *url.URL, elem ...string) *url.URL {
-	result := path.Join(elem...)
-	result = path.Join(uri.Path, result)
-	if len(elem) > 0 && strings.HasSuffix(elem[len(elem)-1], "/") {
-		result += "/"
-	}
-
-	parse, _ := uri.Parse(result)
-
-	return parse
 }

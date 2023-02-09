@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"path"
 	"strconv"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -57,10 +56,7 @@ func (c *Client) GetZone(authFQDN string) (*Zone, error) {
 
 	authZoneName := dns01.UnFqdn(authZone)
 
-	endpoint, err := c.BaseURL.Parse(path.Join(c.BaseURL.Path, "get-zone-info.json"))
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse endpoint: %w", err)
-	}
+	endpoint := c.BaseURL.JoinPath("get-zone-info.json")
 
 	q := endpoint.Query()
 	q.Set("domain-name", authZoneName)
@@ -93,18 +89,15 @@ func (c *Client) FindTxtRecord(zoneName, fqdn string) (*TXTRecord, error) {
 		return nil, err
 	}
 
-	reqURL, err := c.BaseURL.Parse(path.Join(c.BaseURL.Path, "records.json"))
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse endpoint: %w", err)
-	}
+	endpoint := c.BaseURL.JoinPath("records.json")
 
-	q := reqURL.Query()
+	q := endpoint.Query()
 	q.Set("domain-name", zoneName)
 	q.Set("host", subDomain)
 	q.Set("type", "TXT")
-	reqURL.RawQuery = q.Encode()
+	endpoint.RawQuery = q.Encode()
 
-	result, err := c.doRequest(http.MethodGet, reqURL)
+	result, err := c.doRequest(http.MethodGet, endpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -135,18 +128,15 @@ func (c *Client) ListTxtRecords(zoneName, fqdn string) ([]TXTRecord, error) {
 		return nil, err
 	}
 
-	reqURL, err := c.BaseURL.Parse(path.Join(c.BaseURL.Path, "records.json"))
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse endpoint: %w", err)
-	}
+	endpoint := c.BaseURL.JoinPath("records.json")
 
-	q := reqURL.Query()
+	q := endpoint.Query()
 	q.Set("domain-name", zoneName)
 	q.Set("host", subDomain)
 	q.Set("type", "TXT")
-	reqURL.RawQuery = q.Encode()
+	endpoint.RawQuery = q.Encode()
 
-	result, err := c.doRequest(http.MethodGet, reqURL)
+	result, err := c.doRequest(http.MethodGet, endpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -178,20 +168,17 @@ func (c *Client) AddTxtRecord(zoneName, fqdn, value string, ttl int) error {
 		return err
 	}
 
-	reqURL, err := c.BaseURL.Parse(path.Join(c.BaseURL.Path, "add-record.json"))
-	if err != nil {
-		return fmt.Errorf("failed to parse endpoint: %w", err)
-	}
+	endpoint := c.BaseURL.JoinPath("add-record.json")
 
-	q := reqURL.Query()
+	q := endpoint.Query()
 	q.Set("domain-name", zoneName)
 	q.Set("host", subDomain)
 	q.Set("record", value)
 	q.Set("ttl", strconv.Itoa(ttlRounder(ttl)))
 	q.Set("record-type", "TXT")
-	reqURL.RawQuery = q.Encode()
+	endpoint.RawQuery = q.Encode()
 
-	raw, err := c.doRequest(http.MethodPost, reqURL)
+	raw, err := c.doRequest(http.MethodPost, endpoint)
 	if err != nil {
 		return err
 	}
@@ -210,17 +197,14 @@ func (c *Client) AddTxtRecord(zoneName, fqdn, value string, ttl int) error {
 
 // RemoveTxtRecord removes a TXT record.
 func (c *Client) RemoveTxtRecord(recordID int, zoneName string) error {
-	reqURL, err := c.BaseURL.Parse(path.Join(c.BaseURL.Path, "delete-record.json"))
-	if err != nil {
-		return fmt.Errorf("failed to parse endpoint: %w", err)
-	}
+	endpoint := c.BaseURL.JoinPath("delete-record.json")
 
-	q := reqURL.Query()
+	q := endpoint.Query()
 	q.Set("domain-name", zoneName)
 	q.Set("record-id", strconv.Itoa(recordID))
-	reqURL.RawQuery = q.Encode()
+	endpoint.RawQuery = q.Encode()
 
-	raw, err := c.doRequest(http.MethodPost, reqURL)
+	raw, err := c.doRequest(http.MethodPost, endpoint)
 	if err != nil {
 		return err
 	}
@@ -239,16 +223,13 @@ func (c *Client) RemoveTxtRecord(recordID int, zoneName string) error {
 
 // GetUpdateStatus gets sync progress of all CloudDNS NS servers.
 func (c *Client) GetUpdateStatus(zoneName string) (*SyncProgress, error) {
-	reqURL, err := c.BaseURL.Parse(path.Join(c.BaseURL.Path, "update-status.json"))
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse endpoint: %w", err)
-	}
+	endpoint := c.BaseURL.JoinPath("update-status.json")
 
-	q := reqURL.Query()
+	q := endpoint.Query()
 	q.Set("domain-name", zoneName)
-	reqURL.RawQuery = q.Encode()
+	endpoint.RawQuery = q.Encode()
 
-	result, err := c.doRequest(http.MethodGet, reqURL)
+	result, err := c.doRequest(http.MethodGet, endpoint)
 	if err != nil {
 		return nil, err
 	}

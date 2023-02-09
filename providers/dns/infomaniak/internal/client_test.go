@@ -102,20 +102,20 @@ func TestClient_GetDomainByName(t *testing.T) {
 		}
 
 		response := `
-{
-  "result": "success",
-  "data": [
-    {
-      "id": 123,
-      "customer_name": "two.three.example.com"
-    },
-    {
-      "id": 456,
-      "customer_name": "three.example.com"
-    }
-  ]
-}
-`
+	{
+	  "result": "success",
+	  "data": [
+	    {
+	      "id": 123,
+	      "customer_name": "two.three.example.com"
+	    },
+	    {
+	      "id": 456,
+	      "customer_name": "three.example.com"
+	    }
+	  ]
+	}
+	`
 
 		_, err := rw.Write([]byte(response))
 		if err != nil {

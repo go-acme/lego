@@ -23,7 +23,7 @@ type signer interface {
 type Client struct {
 	HTTPClient *http.Client
 
-	apiEndpoint string
+	apiEndpoint *url.URL
 
 	passport *Passport
 	signer   signer
@@ -57,10 +57,12 @@ func NewClient(apiEndpoint, locationID string, passport *Passport) (*Client, err
 		locationID = defaultLocationID
 	}
 
-	endpoint, err := url.JoinPath(baseURL, "dns", locationID, "project", projectID)
+	bu, err := url.Parse(baseURL)
 	if err != nil {
 		return nil, err
 	}
+
+	endpoint := bu.JoinPath("dns", locationID, "project", projectID)
 
 	client := &Client{
 		HTTPClient:  &http.Client{Timeout: 5 * time.Second},
@@ -77,12 +79,9 @@ func NewClient(apiEndpoint, locationID string, passport *Passport) (*Client, err
 // https://api.hyperone.com/v2/docs#operation/dns_project_zone_recordset_list
 func (c *Client) FindRecordset(zoneID, recordType, name string) (*Recordset, error) {
 	// https://api.hyperone.com/v2/dns/{locationId}/project/{projectId}/zone/{zoneId}/recordset
-	endpoint, err := url.JoinPath(c.apiEndpoint, "zone", zoneID, "recordset")
-	if err != nil {
-		return nil, err
-	}
+	endpoint := c.apiEndpoint.JoinPath("zone", zoneID, "recordset")
 
-	req, err := c.createRequest(http.MethodGet, endpoint, nil)
+	req, err := c.createRequest(http.MethodGet, endpoint.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -120,12 +119,9 @@ func (c *Client) CreateRecordset(zoneID, recordType, name, recordValue string, t
 	}
 
 	// https://api.hyperone.com/v2/dns/{locationId}/project/{projectId}/zone/{zoneId}/recordset
-	endpoint, err := url.JoinPath(c.apiEndpoint, "zone", zoneID, "recordset")
-	if err != nil {
-		return nil, err
-	}
+	endpoint := c.apiEndpoint.JoinPath("zone", zoneID, "recordset")
 
-	req, err := c.createRequest(http.MethodPost, endpoint, bytes.NewBuffer(requestBody))
+	req, err := c.createRequest(http.MethodPost, endpoint.String(), bytes.NewBuffer(requestBody))
 	if err != nil {
 		return nil, err
 	}
@@ -144,12 +140,9 @@ func (c *Client) CreateRecordset(zoneID, recordType, name, recordValue string, t
 // https://api.hyperone.com/v2/docs#operation/dns_project_zone_recordset_delete
 func (c *Client) DeleteRecordset(zoneID string, recordsetID string) error {
 	// https://api.hyperone.com/v2/dns/{locationId}/project/{projectId}/zone/{zoneId}/recordset/{recordsetId}
-	endpoint, err := url.JoinPath(c.apiEndpoint, "zone", zoneID, "recordset", recordsetID)
-	if err != nil {
-		return err
-	}
+	endpoint := c.apiEndpoint.JoinPath("zone", zoneID, "recordset", recordsetID)
 
-	req, err := c.createRequest(http.MethodDelete, endpoint, nil)
+	req, err := c.createRequest(http.MethodDelete, endpoint.String(), nil)
 	if err != nil {
 		return err
 	}
@@ -161,12 +154,9 @@ func (c *Client) DeleteRecordset(zoneID string, recordsetID string) error {
 // https://api.hyperone.com/v2/docs#operation/dns_project_zone_recordset_record_list
 func (c *Client) GetRecords(zoneID string, recordsetID string) ([]Record, error) {
 	// https://api.hyperone.com/v2/dns/{locationId}/project/{projectId}/zone/{zoneId}/recordset/{recordsetId}/record
-	endpoint, err := url.JoinPath(c.apiEndpoint, "zone", zoneID, "recordset", recordsetID, "record")
-	if err != nil {
-		return nil, err
-	}
+	endpoint := c.apiEndpoint.JoinPath("zone", zoneID, "recordset", recordsetID, "record")
 
-	req, err := c.createRequest(http.MethodGet, endpoint, nil)
+	req, err := c.createRequest(http.MethodGet, endpoint.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -185,17 +175,14 @@ func (c *Client) GetRecords(zoneID string, recordsetID string) ([]Record, error)
 // https://api.hyperone.com/v2/docs#operation/dns_project_zone_recordset_record_create
 func (c *Client) CreateRecord(zoneID, recordsetID, recordContent string) (*Record, error) {
 	// https://api.hyperone.com/v2/dns/{locationId}/project/{projectId}/zone/{zoneId}/recordset/{recordsetId}/record
-	endpoint, err := url.JoinPath(c.apiEndpoint, zoneID, "recordset", recordsetID, "record")
-	if err != nil {
-		return nil, err
-	}
+	endpoint := c.apiEndpoint.JoinPath("zone", zoneID, "recordset", recordsetID, "record")
 
 	requestBody, err := json.Marshal(Record{Content: recordContent})
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal record: %w", err)
 	}
 
-	req, err := c.createRequest(http.MethodPost, endpoint, bytes.NewBuffer(requestBody))
+	req, err := c.createRequest(http.MethodPost, endpoint.String(), bytes.NewBuffer(requestBody))
 	if err != nil {
 		return nil, err
 	}
@@ -214,12 +201,9 @@ func (c *Client) CreateRecord(zoneID, recordsetID, recordContent string) (*Recor
 // https://api.hyperone.com/v2/docs#operation/dns_project_zone_recordset_record_delete
 func (c *Client) DeleteRecord(zoneID, recordsetID, recordID string) error {
 	// https://api.hyperone.com/v2/dns/{locationId}/project/{projectId}/zone/{zoneId}/recordset/{recordsetId}/record/{recordId}
-	endpoint, err := url.JoinPath(c.apiEndpoint, "zone", zoneID, "recordset", recordsetID, "record", recordID)
-	if err != nil {
-		return err
-	}
+	endpoint := c.apiEndpoint.JoinPath("zone", zoneID, "recordset", recordsetID, "record", recordID)
 
-	req, err := c.createRequest(http.MethodDelete, endpoint, nil)
+	req, err := c.createRequest(http.MethodDelete, endpoint.String(), nil)
 	if err != nil {
 		return err
 	}
@@ -247,12 +231,9 @@ func (c *Client) FindZone(name string) (*Zone, error) {
 // https://api.hyperone.com/v2/docs#operation/dns_project_zone_list
 func (c *Client) GetZones() ([]Zone, error) {
 	// https://api.hyperone.com/v2/dns/{locationId}/project/{projectId}/zone
-	endpoint, err := url.JoinPath(c.apiEndpoint, "zone")
-	if err != nil {
-		return nil, err
-	}
+	endpoint := c.apiEndpoint.JoinPath("zone")
 
-	req, err := c.createRequest(http.MethodGet, endpoint, nil)
+	req, err := c.createRequest(http.MethodGet, endpoint.String(), nil)
 	if err != nil {
 		return nil, err
 	}

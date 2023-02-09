@@ -96,6 +96,7 @@
     "errname",
     "errchkjson",
     "nonamedreturns",
+    "musttag", # false-positive https://github.com/junk1tm/musttag/issues/17
   ]
 
 [issues]

@@ -8,7 +8,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"path"
 	"strconv"
 	"strings"
 
@@ -125,12 +124,7 @@ func (c *Client) PutZone(domain, zone string) (*Response, error) {
 
 // postRequest performs actual HTTP request.
 func (c *Client) postRequest(cmd string, data url.Values) (*Response, error) {
-	baseURL, err := url.Parse(c.BaseURL)
-	if err != nil {
-		return nil, err
-	}
-
-	endpoint, err := baseURL.Parse(path.Join(baseURL.Path, cmd))
+	endpoint, err := url.JoinPath(c.BaseURL, cmd)
 	if err != nil {
 		return nil, err
 	}
@@ -140,10 +134,10 @@ func (c *Client) postRequest(cmd string, data url.Values) (*Response, error) {
 	}
 
 	if c.Debug {
-		log.Infof("postRequest:\n\tURL: %q\n\tData: %v", endpoint.String(), data)
+		log.Infof("postRequest:\n\tURL: %q\n\tData: %v", endpoint, data)
 	}
 
-	resp, err := c.HTTPClient.PostForm(endpoint.String(), data)
+	resp, err := c.HTTPClient.PostForm(endpoint, data)
 	if err != nil {
 		return nil, err
 	}

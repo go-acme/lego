@@ -7,7 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"path"
+	"strconv"
 	"strings"
 	"time"
 
@@ -37,11 +37,14 @@ func (c *Client) CreateDNSRecord(domain *DNSDomain, record Record) (string, erro
 		return "", err
 	}
 
-	uri := fmt.Sprintf("/1/domain/%d/dns/record", domain.ID)
-
-	req, err := c.newRequest(http.MethodPost, uri, bytes.NewBuffer(rawJSON))
+	endpoint, err := url.JoinPath(c.apiEndpoint, "1", "domain", strconv.FormatUint(domain.ID, 10), "dns", "record")
 	if err != nil {
 		return "", err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(rawJSON))
+	if err != nil {
+		return "", fmt.Errorf("failed to create request: %w", err)
 	}
 
 	resp, err := c.do(req)
@@ -58,11 +61,14 @@ func (c *Client) CreateDNSRecord(domain *DNSDomain, record Record) (string, erro
 }
 
 func (c *Client) DeleteDNSRecord(domainID uint64, recordID string) error {
-	uri := fmt.Sprintf("/1/domain/%d/dns/record/%s", domainID, recordID)
-
-	req, err := c.newRequest(http.MethodDelete, uri, nil)
+	endpoint, err := url.JoinPath(c.apiEndpoint, "1", "domain", strconv.FormatUint(domainID, 10), "dns", "record", recordID)
 	if err != nil {
 		return err
+	}
+
+	req, err := http.NewRequest(http.MethodDelete, endpoint, http.NoBody)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
 	}
 
 	_, err = c.do(req)
@@ -100,17 +106,19 @@ func (c *Client) GetDomainByName(name string) (*DNSDomain, error) {
 }
 
 func (c *Client) getDomainByName(name string) (*DNSDomain, error) {
-	base, err := url.Parse("/1/product")
+	baseURL, err := url.Parse(c.apiEndpoint)
 	if err != nil {
 		return nil, err
 	}
 
-	query := base.Query()
+	endpoint := baseURL.JoinPath("1", "product")
+
+	query := endpoint.Query()
 	query.Add("service_name", "domain")
 	query.Add("customer_name", name)
-	base.RawQuery = query.Encode()
+	endpoint.RawQuery = query.Encode()
 
-	req, err := c.newRequest(http.MethodGet, base.String(), nil)
+	req, err := http.NewRequest(http.MethodGet, endpoint.String(), http.NoBody)
 	if err != nil {
 		return nil, err
 	}
@@ -135,6 +143,9 @@ func (c *Client) getDomainByName(name string) (*DNSDomain, error) {
 }
 
 func (c *Client) do(req *http.Request) (*APIResponse, error) {
+	req.Header.Set("Authorization", "Bearer "+c.apiToken)
+	req.Header.Set("Content-Type", "application/json")
+
 	rawResp, err := c.HTTPClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to perform API request: %w", err)
@@ -149,7 +160,7 @@ func (c *Client) do(req *http.Request) (*APIResponse, error) {
 
 	var resp APIResponse
 	if err := json.Unmarshal(content, &resp); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal the response body: %s", string(content))
+		return nil, fmt.Errorf("failed to unmarshal the response body: %s, %w", string(content), err)
 	}
 
 	if resp.Result != "success" {
@@ -157,26 +168,4 @@ func (c *Client) do(req *http.Request) (*APIResponse, error) {
 	}
 
 	return &resp, nil
-}
-
-func (c *Client) newRequest(method, uri string, body io.Reader) (*http.Request, error) {
-	baseURL, err := url.Parse(c.apiEndpoint)
-	if err != nil {
-		return nil, err
-	}
-
-	endpoint, err := baseURL.Parse(path.Join(baseURL.Path, uri))
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest(method, endpoint.String(), body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
-	}
-
-	req.Header.Set("Authorization", "Bearer "+c.apiToken)
-	req.Header.Set("Content-Type", "application/json")
-
-	return req, nil
 }

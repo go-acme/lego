@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"path"
 	"strings"
 )
 
@@ -178,12 +177,7 @@ func (c *Client) createEndpoint(parts ...string) (*url.URL, error) {
 		return nil, err
 	}
 
-	endpoint, err := baseURL.Parse(path.Join(parts...))
-	if err != nil {
-		return nil, err
-	}
-
-	return endpoint, nil
+	return baseURL.JoinPath(parts...), nil
 }
 
 func equalsTXTRecord(record DNSRecord, name, value string) bool {

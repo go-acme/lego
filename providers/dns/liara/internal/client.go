@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"path"
 	"time"
 )
 
@@ -34,10 +33,7 @@ func NewClient(apiKey string) *Client {
 // GetRecords gets the records of a domain.
 // https://dns-service.iran.liara.ir/swagger
 func (c Client) GetRecords(domainName string) ([]Record, error) {
-	endpoint, err := c.baseURL.Parse(path.Join(c.baseURL.Path, "api", "v1", "zones", domainName, "dns-records"))
-	if err != nil {
-		return nil, fmt.Errorf("parse URL: %w", err)
-	}
+	endpoint := c.baseURL.JoinPath("api", "v1", "zones", domainName, "dns-records")
 
 	req, err := http.NewRequest(http.MethodGet, endpoint.String(), nil)
 	if err != nil {
@@ -68,10 +64,7 @@ func (c Client) GetRecords(domainName string) ([]Record, error) {
 
 // CreateRecord creates a record.
 func (c Client) CreateRecord(domainName string, record Record) (*Record, error) {
-	endpoint, err := c.baseURL.Parse(path.Join(c.baseURL.Path, "api", "v1", "zones", domainName, "dns-records"))
-	if err != nil {
-		return nil, fmt.Errorf("parse URL: %w", err)
-	}
+	endpoint := c.baseURL.JoinPath("api", "v1", "zones", domainName, "dns-records")
 
 	body, err := json.Marshal(record)
 	if err != nil {
@@ -108,10 +101,7 @@ func (c Client) CreateRecord(domainName string, record Record) (*Record, error) 
 
 // GetRecord gets a specific record.
 func (c Client) GetRecord(domainName, recordID string) (*Record, error) {
-	endpoint, err := c.baseURL.Parse(path.Join(c.baseURL.Path, "api", "v1", "zones", domainName, "dns-records", recordID))
-	if err != nil {
-		return nil, fmt.Errorf("parse URL: %w", err)
-	}
+	endpoint := c.baseURL.JoinPath("api", "v1", "zones", domainName, "dns-records", recordID)
 
 	req, err := http.NewRequest(http.MethodGet, endpoint.String(), nil)
 	if err != nil {
@@ -142,10 +132,7 @@ func (c Client) GetRecord(domainName, recordID string) (*Record, error) {
 
 // DeleteRecord deletes a record.
 func (c Client) DeleteRecord(domainName, recordID string) error {
-	endpoint, err := c.baseURL.Parse(path.Join(c.baseURL.Path, "api", "v1", "zones", domainName, "dns-records", recordID))
-	if err != nil {
-		return fmt.Errorf("parse URL: %w", err)
-	}
+	endpoint := c.baseURL.JoinPath("api", "v1", "zones", domainName, "dns-records", recordID)
 
 	req, err := http.NewRequest(http.MethodDelete, endpoint.String(), nil)
 	if err != nil {

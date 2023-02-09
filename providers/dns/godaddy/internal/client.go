@@ -82,10 +82,7 @@ func (d *Client) UpdateTxtRecords(records []DNSRecord, domainZone, recordName st
 }
 
 func (d *Client) makeRequest(method, uri string, body io.Reader) (*http.Response, error) {
-	endpoint, err := d.baseURL.Parse(path.Join(d.baseURL.Path, uri))
-	if err != nil {
-		return nil, err
-	}
+	endpoint := d.baseURL.JoinPath(uri)
 
 	req, err := http.NewRequest(method, endpoint.String(), body)
 	if err != nil {

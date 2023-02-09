@@ -200,12 +200,9 @@ func (d *DNSProvider) makeRequest(method, uri string, body io.Reader) (*http.Req
 		p = path.Join("/api", "v"+strconv.Itoa(d.apiVersion), p)
 	}
 
-	u, err := d.config.Host.Parse(path.Join(d.config.Host.Path, p))
-	if err != nil {
-		return nil, err
-	}
+	endpoint := d.config.Host.JoinPath(p)
 
-	req, err := http.NewRequest(method, u.String(), body)
+	req, err := http.NewRequest(method, strings.TrimSuffix(endpoint.String(), "/"), body)
 	if err != nil {
 		return nil, err
 	}

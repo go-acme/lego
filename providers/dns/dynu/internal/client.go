@@ -8,7 +8,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"path"
 	"strconv"
 	"time"
 
@@ -177,5 +176,5 @@ func (c Client) createEndpoint(fragments ...string) (*url.URL, error) {
 		return nil, err
 	}
 
-	return baseURL.Parse(path.Join(baseURL.Path, path.Join(fragments...)))
+	return baseURL.JoinPath(fragments...), nil
 }

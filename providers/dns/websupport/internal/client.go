@@ -11,7 +11,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"path"
 	"strconv"
 	"time"
 )
@@ -46,17 +45,12 @@ func NewClient(apiKey, secretKey string) (*Client, error) {
 // GetUser gets a user detail.
 // https://rest.websupport.sk/docs/v1.user#user
 func (c *Client) GetUser(userID string) (*User, error) {
-	baseURL, err := url.Parse(c.BaseURL)
+	endpoint, err := url.JoinPath(c.BaseURL, "v1", "user", userID)
 	if err != nil {
 		return nil, fmt.Errorf("base url parsing: %w", err)
 	}
 
-	endpoint, err := baseURL.Parse(path.Join(baseURL.Path, "v1", "user", userID))
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse endpoint: %w", err)
-	}
-
-	req, err := http.NewRequest(http.MethodGet, endpoint.String(), http.NoBody)
+	req, err := http.NewRequest(http.MethodGet, endpoint, http.NoBody)
 	if err != nil {
 		return nil, fmt.Errorf("request payload: %w", err)
 	}
@@ -74,17 +68,12 @@ func (c *Client) GetUser(userID string) (*User, error) {
 // ListRecords lists all records.
 // https://rest.websupport.sk/docs/v1.zone#records
 func (c *Client) ListRecords(domainName string) (*ListResponse, error) {
-	baseURL, err := url.Parse(c.BaseURL)
+	endpoint, err := url.JoinPath(c.BaseURL, "v1", "user", "self", "zone", domainName, "record")
 	if err != nil {
 		return nil, fmt.Errorf("base url parsing: %w", err)
 	}
 
-	endpoint, err := baseURL.Parse(path.Join(baseURL.Path, "v1", "user", "self", "zone", domainName, "record"))
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse endpoint: %w", err)
-	}
-
-	req, err := http.NewRequest(http.MethodGet, endpoint.String(), http.NoBody)
+	req, err := http.NewRequest(http.MethodGet, endpoint, http.NoBody)
 	if err != nil {
 		return nil, fmt.Errorf("request payload: %w", err)
 	}
@@ -101,17 +90,12 @@ func (c *Client) ListRecords(domainName string) (*ListResponse, error) {
 
 // GetRecords gets a DNS record.
 func (c *Client) GetRecords(domainName string, recordID int) (*Record, error) {
-	baseURL, err := url.Parse(c.BaseURL)
+	endpoint, err := url.JoinPath(c.BaseURL, "v1", "user", "self", "zone", domainName, "record", strconv.Itoa(recordID))
 	if err != nil {
 		return nil, fmt.Errorf("base url parsing: %w", err)
 	}
 
-	endpoint, err := baseURL.Parse(path.Join(baseURL.Path, "v1", "user", "self", "zone", domainName, "record", strconv.Itoa(recordID)))
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse endpoint: %w", err)
-	}
-
-	req, err := http.NewRequest(http.MethodGet, endpoint.String(), http.NoBody)
+	req, err := http.NewRequest(http.MethodGet, endpoint, http.NoBody)
 	if err != nil {
 		return nil, err
 	}
@@ -129,14 +113,9 @@ func (c *Client) GetRecords(domainName string, recordID int) (*Record, error) {
 // AddRecord adds a DNS record.
 // https://rest.websupport.sk/docs/v1.zone#post-record
 func (c *Client) AddRecord(domainName string, record Record) (*Response, error) {
-	baseURL, err := url.Parse(c.BaseURL)
+	endpoint, err := url.JoinPath(c.BaseURL, "v1", "user", "self", "zone", domainName, "record")
 	if err != nil {
 		return nil, fmt.Errorf("base url parsing: %w", err)
-	}
-
-	endpoint, err := baseURL.Parse(path.Join(baseURL.Path, "v1", "user", "self", "zone", domainName, "record"))
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse endpoint: %w", err)
 	}
 
 	payload, err := json.Marshal(record)
@@ -144,7 +123,7 @@ func (c *Client) AddRecord(domainName string, record Record) (*Response, error) 
 		return nil, fmt.Errorf("request payload: %w", err)
 	}
 
-	req, err := http.NewRequest(http.MethodPost, endpoint.String(), bytes.NewReader(payload))
+	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewReader(payload))
 	if err != nil {
 		return nil, err
 	}
@@ -162,17 +141,12 @@ func (c *Client) AddRecord(domainName string, record Record) (*Response, error) 
 // DeleteRecord deletes a DNS record.
 // https://rest.websupport.sk/docs/v1.zone#delete-record
 func (c *Client) DeleteRecord(domainName string, recordID int) (*Response, error) {
-	baseURL, err := url.Parse(c.BaseURL)
+	endpoint, err := url.JoinPath(c.BaseURL, "v1", "user", "self", "zone", domainName, "record", strconv.Itoa(recordID))
 	if err != nil {
 		return nil, fmt.Errorf("base url parsing: %w", err)
 	}
 
-	endpoint, err := baseURL.Parse(path.Join(baseURL.Path, "v1", "user", "self", "zone", domainName, "record", strconv.Itoa(recordID)))
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse endpoint: %w", err)
-	}
-
-	req, err := http.NewRequest(http.MethodDelete, endpoint.String(), http.NoBody)
+	req, err := http.NewRequest(http.MethodDelete, endpoint, http.NoBody)
 	if err != nil {
 		return nil, fmt.Errorf("request payload: %w", err)
 	}

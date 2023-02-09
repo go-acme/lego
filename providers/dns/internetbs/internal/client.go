@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 	"time"
@@ -89,10 +88,7 @@ func (c Client) ListRecords(query ListRecordQuery) ([]Record, error) {
 }
 
 func (c Client) do(action string, params interface{}, response interface{}) error {
-	endpoint, err := c.baseURL.Parse(path.Join(c.baseURL.Path, "Domain", "DnsRecord", action))
-	if err != nil {
-		return fmt.Errorf("create endpoint: %w", err)
-	}
+	endpoint := c.baseURL.JoinPath("Domain", "DnsRecord", action)
 
 	values, err := querystring.Values(params)
 	if err != nil {

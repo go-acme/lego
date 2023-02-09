@@ -8,7 +8,6 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
-	"path"
 	"strconv"
 	"strings"
 	"time"
@@ -42,29 +41,28 @@ func NewClient(login string, apiKey string) *Client {
 }
 
 func (c Client) AddRecord(domain string, record Record) error {
+	endpoint := c.baseURL.JoinPath("dns", dns01.UnFqdn(domain), "addRR")
+
 	params, err := querystring.Values(record)
 	if err != nil {
 		return err
 	}
 
-	return c.do(path.Join("dns", dns01.UnFqdn(domain), "addRR"), params)
+	return c.do(endpoint, params)
 }
 
 func (c Client) RemoveRecord(domain string, record Record) error {
+	endpoint := c.baseURL.JoinPath("dns", dns01.UnFqdn(domain), "removeRR")
+
 	params, err := querystring.Values(record)
 	if err != nil {
 		return err
 	}
 
-	return c.do(path.Join("dns", dns01.UnFqdn(domain), "removeRR"), params)
+	return c.do(endpoint, params)
 }
 
-func (c Client) do(uri string, params url.Values) error {
-	endpoint, err := c.baseURL.Parse(path.Join(c.baseURL.Path, uri))
-	if err != nil {
-		return err
-	}
-
+func (c Client) do(endpoint *url.URL, params url.Values) error {
 	payload := params.Encode()
 
 	req, err := http.NewRequest(http.MethodPost, endpoint.String(), strings.NewReader(payload))

@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"path"
 )
 
 const defaultBaseURL = "https://api.reg.ru/api/regru2/"
@@ -133,10 +132,5 @@ func (c Client) createEndpoint(fragments ...string) (*url.URL, error) {
 		return nil, err
 	}
 
-	endpoint, err := baseURL.Parse(path.Join(baseURL.Path, path.Join(fragments...)))
-	if err != nil {
-		return nil, err
-	}
-
-	return endpoint, nil
+	return baseURL.JoinPath(fragments...), nil
 }

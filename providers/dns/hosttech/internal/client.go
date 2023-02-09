@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"path"
 	"strconv"
 	"time"
 )
@@ -36,10 +35,7 @@ func NewClient(apiKey string) *Client {
 // GetZones Get a list of all zones.
 // https://api.ns1.hosttech.eu/api/documentation/#/Zones/get_api_user_v1_zones
 func (c Client) GetZones(query string, limit, offset int) ([]Zone, error) {
-	endpoint, err := c.baseURL.Parse(path.Join(c.baseURL.Path, "user", "v1", "zones"))
-	if err != nil {
-		return nil, fmt.Errorf("parse URL: %w", err)
-	}
+	endpoint := c.baseURL.JoinPath("user", "v1", "zones")
 
 	values := endpoint.Query()
 	values.Set("query", query)
@@ -76,10 +72,7 @@ func (c Client) GetZones(query string, limit, offset int) ([]Zone, error) {
 // GetZone Get a single zone.
 // https://api.ns1.hosttech.eu/api/documentation/#/Zones/get_api_user_v1_zones__zoneId_
 func (c Client) GetZone(zoneID string) (*Zone, error) {
-	endpoint, err := c.baseURL.Parse(path.Join(c.baseURL.Path, "user", "v1", "zones", zoneID))
-	if err != nil {
-		return nil, fmt.Errorf("parse URL: %w", err)
-	}
+	endpoint := c.baseURL.JoinPath("user", "v1", "zones", zoneID)
 
 	req, err := http.NewRequest(http.MethodGet, endpoint.String(), nil)
 	if err != nil {
@@ -103,10 +96,7 @@ func (c Client) GetZone(zoneID string) (*Zone, error) {
 // GetRecords Returns a list of all records for the given zone.
 // https://api.ns1.hosttech.eu/api/documentation/#/Records/get_api_user_v1_zones__zoneId__records
 func (c Client) GetRecords(zoneID, recordType string) ([]Record, error) {
-	endpoint, err := c.baseURL.Parse(path.Join(c.baseURL.Path, "user", "v1", "zones", zoneID, "records"))
-	if err != nil {
-		return nil, fmt.Errorf("parse URL: %w", err)
-	}
+	endpoint := c.baseURL.JoinPath("user", "v1", "zones", zoneID, "records")
 
 	values := endpoint.Query()
 
@@ -138,10 +128,7 @@ func (c Client) GetRecords(zoneID, recordType string) ([]Record, error) {
 // AddRecord Adds a new record to the zone and returns the newly created record.
 // https://api.ns1.hosttech.eu/api/documentation/#/Records/post_api_user_v1_zones__zoneId__records
 func (c Client) AddRecord(zoneID string, record Record) (*Record, error) {
-	endpoint, err := c.baseURL.Parse(path.Join(c.baseURL.Path, "user", "v1", "zones", zoneID, "records"))
-	if err != nil {
-		return nil, fmt.Errorf("parse URL: %w", err)
-	}
+	endpoint := c.baseURL.JoinPath("user", "v1", "zones", zoneID, "records")
 
 	body, err := json.Marshal(record)
 	if err != nil {
@@ -170,10 +157,7 @@ func (c Client) AddRecord(zoneID string, record Record) (*Record, error) {
 // DeleteRecord Deletes a single record for the given id.
 // https://api.ns1.hosttech.eu/api/documentation/#/Records/delete_api_user_v1_zones__zoneId__records__recordId_
 func (c Client) DeleteRecord(zoneID, recordID string) error {
-	endpoint, err := c.baseURL.Parse(path.Join(c.baseURL.Path, "user", "v1", "zones", zoneID, "records", recordID))
-	if err != nil {
-		return fmt.Errorf("parse URL: %w", err)
-	}
+	endpoint := c.baseURL.JoinPath("user", "v1", "zones", zoneID, "records", recordID)
 
 	req, err := http.NewRequest(http.MethodDelete, endpoint.String(), nil)
 	if err != nil {

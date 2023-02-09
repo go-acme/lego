@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"path"
+	"net/url"
 )
 
 const defaultEndpoint = "https://rest.easydns.net"
@@ -32,10 +32,10 @@ type addRecordResponse struct {
 }
 
 func (d *DNSProvider) addRecord(domain string, record interface{}) (string, error) {
-	pathAdd := path.Join("/zones/records/add", domain, "TXT")
+	endpoint := d.config.Endpoint.JoinPath("zones", "records", "add", domain, "TXT")
 
 	response := &addRecordResponse{}
-	err := d.doRequest(http.MethodPut, pathAdd, record, response)
+	err := d.doRequest(http.MethodPut, endpoint, record, response)
 	if err != nil {
 		return "", err
 	}
@@ -46,12 +46,12 @@ func (d *DNSProvider) addRecord(domain string, record interface{}) (string, erro
 }
 
 func (d *DNSProvider) deleteRecord(domain, recordID string) error {
-	pathDelete := path.Join("/zones/records", domain, recordID)
+	endpoint := d.config.Endpoint.JoinPath("zones", "records", domain, recordID)
 
-	return d.doRequest(http.MethodDelete, pathDelete, nil, nil)
+	return d.doRequest(http.MethodDelete, endpoint, nil, nil)
 }
 
-func (d *DNSProvider) doRequest(method, resource string, requestMsg, responseMsg interface{}) error {
+func (d *DNSProvider) doRequest(method string, endpoint *url.URL, requestMsg, responseMsg interface{}) error {
 	reqBody := &bytes.Buffer{}
 	if requestMsg != nil {
 		err := json.NewEncoder(reqBody).Encode(requestMsg)
@@ -60,10 +60,9 @@ func (d *DNSProvider) doRequest(method, resource string, requestMsg, responseMsg
 		}
 	}
 
-	endpoint, err := d.config.Endpoint.Parse(resource + "?format=json")
-	if err != nil {
-		return err
-	}
+	query := endpoint.Query()
+	query.Set("format", "json")
+	endpoint.RawQuery = query.Encode()
 
 	request, err := http.NewRequest(method, endpoint.String(), reqBody)
 	if err != nil {

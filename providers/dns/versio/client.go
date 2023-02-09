@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"path"
 )
 
 const defaultBaseURL = "https://www.versio.nl/api/v1/"
@@ -43,7 +42,9 @@ func (d *DNSProvider) postDNSRecords(domain string, msg interface{}) error {
 		return err
 	}
 
-	req, err := d.makeRequest(http.MethodPost, "domains/"+domain+"/update", reqBody)
+	endpoint := d.config.BaseURL.JoinPath("domains", domain, "update")
+
+	req, err := http.NewRequest(http.MethodPost, endpoint.String(), reqBody)
 	if err != nil {
 		return err
 	}
@@ -52,7 +53,13 @@ func (d *DNSProvider) postDNSRecords(domain string, msg interface{}) error {
 }
 
 func (d *DNSProvider) getDNSRecords(domain string) (*dnsRecordsResponse, error) {
-	req, err := d.makeRequest(http.MethodGet, "domains/"+domain+"?show_dns_records=true", nil)
+	endpoint := d.config.BaseURL.JoinPath("domains", domain)
+
+	query := endpoint.Query()
+	query.Set("show_dns_records", "true")
+	endpoint.RawQuery = query.Encode()
+
+	req, err := http.NewRequest(http.MethodGet, endpoint.String(), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -67,27 +74,13 @@ func (d *DNSProvider) getDNSRecords(domain string) (*dnsRecordsResponse, error) 
 	return respData, nil
 }
 
-func (d *DNSProvider) makeRequest(method, uri string, body io.Reader) (*http.Request, error) {
-	endpoint, err := d.config.BaseURL.Parse(path.Join(d.config.BaseURL.EscapedPath(), uri))
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest(method, endpoint.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
+func (d *DNSProvider) do(req *http.Request, result interface{}) error {
 	req.Header.Set("Content-Type", "application/json")
 
 	if len(d.config.Username) > 0 && len(d.config.Password) > 0 {
 		req.SetBasicAuth(d.config.Username, d.config.Password)
 	}
 
-	return req, nil
-}
-
-func (d *DNSProvider) do(req *http.Request, result interface{}) error {
 	resp, err := d.config.HTTPClient.Do(req)
 	if resp != nil {
 		defer resp.Body.Close()

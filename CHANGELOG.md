@@ -1,5 +1,28 @@
 # Changelog
 
+## [v4.10.0] - 2023-02-10
+
+### Added:
+- **[dnsprovider]** Add DNS provider for dnsHome.de
+- **[dnsprovider]** Add DNS provider for Liara
+- **[dnsprovider]** Add DNS provider for UltraDNS
+- **[dnsprovider]** Add DNS provider for Websupport
+
+### Changed:
+- **[dnsprovider]** ibmcloud: add support for subdomains
+- **[dnsprovider]** infomaniak: CNAME support
+- **[dnsprovider]** namesilo: add cleanup before add a DNS record
+- **[dnsprovider]** route53: Allow static credentials to be supplied
+- **[dnsprovider]** tencentcloud: support punycode domain
+
+### Fixed:
+- **[dnsprovider]** alidns: filter on record type
+- **[dnsprovider]** arvancloud: replace arvancloud.com by arvancloud.ir
+- **[dnsprovider]** hetzner: improve zone ID detection
+- **[dnsprovider]** luadns: removed dot suffix from authzone while searching for zone
+- **[dnsprovider]** pdns: fix usage of notify only when zone kind is Master or Slave
+- **[dnsprovider]** return an error when extracting record name
+
 ## [v4.9.1] - 2022-11-25
 
 ### Changed:

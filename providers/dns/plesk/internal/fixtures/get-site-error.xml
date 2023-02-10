@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<packet version="1.6.9.1">
+    <site>
+        <get>
+            <result>
+                <status>error</status>
+                <errcode>1013</errcode>
+                <errtext>Site does not exist</errtext>
+                <filter-id>bollox.com</filter-id>
+            </result>
+        </get>
+    </site>
+</packet>

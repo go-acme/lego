@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<packet version="1.6.9.1">
+    <dns>
+        <del_rec>
+            <result>
+                <status>error</status>
+                <errcode>1013</errcode>
+                <errtext>Record does not exist</errtext>
+                <id>453899</id>
+            </result>
+        </del_rec>
+    </dns>
+</packet>

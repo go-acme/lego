@@ -58,8 +58,8 @@ type SiteTypeRequest struct {
 type SiteGetRequest struct {
 	Text string `xml:",chardata"`
 
-	Filter  *SiteFilterType  `xml:"filter,omitempty"`
-	Dataset *SiteDatasetType `xml:"dataset,omitempty"`
+	Filter  *SiteFilterType `xml:"filter,omitempty"`
+	Dataset SiteDatasetType `xml:"dataset,omitempty"`
 }
 
 type SiteFilterType struct {
@@ -71,7 +71,7 @@ type SiteFilterType struct {
 type SiteDatasetType struct {
 	Text string `xml:",chardata"`
 
-	GenInfo *SiteGenInfoType `xml:"gen_info"`
+	GenInfo *SiteGenInfoType `xml:"gen_info,omitempty"`
 }
 
 type SiteGenInfoType struct {

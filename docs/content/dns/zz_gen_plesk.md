@@ -64,7 +64,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 ## More information
 
-- [API documentation](https://www.reg.ru/support/help/api2)
+- [API documentation](https://docs.plesk.com/en-US/obsidian/api-rpc/about-xml-api/reference.28784/)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/plesk/plesk.toml -->

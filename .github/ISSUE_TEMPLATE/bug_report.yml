@@ -40,6 +40,8 @@ body:
         - Docker image
         - Through Traefik
         - Through Caddy
+        - Through Terraform ACME provider
+        - Through Bitnami
         - Other
     validations:
       required: true

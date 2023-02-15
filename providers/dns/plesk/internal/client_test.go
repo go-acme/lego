@@ -18,6 +18,7 @@ func setupTest(t *testing.T, filename string) *Client {
 	t.Helper()
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	serverURL, err := url.Parse(server.URL)
 	require.NoError(t, err)

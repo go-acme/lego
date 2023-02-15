@@ -130,7 +130,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("plesk: failed to get site: %w", err)
 	}
 
-	recordID, err := d.client.AddRecord(siteID, dns01.UnFqdn(fqdn), value)
+	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	if err != nil {
+		return fmt.Errorf("nodion: %w", err)
+	}
+
+	recordID, err := d.client.AddRecord(siteID, subDomain, value)
 	if err != nil {
 		return fmt.Errorf("plesk: failed to add record: %w", err)
 	}

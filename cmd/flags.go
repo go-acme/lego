@@ -85,6 +85,10 @@ func CreateFlags(defaultPath string) []cli.Flag {
 			Name:  "http.memcached-host",
 			Usage: "Set the memcached host(s) to use for HTTP based challenges. Challenges will be written to all specified hosts.",
 		},
+		&cli.StringFlag{
+			Name:  "http.nfqueueport",
+			Usage: "Set the port to use for HTTP based challange. but unlike http it will not bind that port and while other thing already binding that port.",
+		},
 		&cli.BoolFlag{
 			Name:  "tls",
 			Usage: "Use the TLS challenge to solve challenges. Can be mixed with other types of challenges.",

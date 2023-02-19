@@ -115,7 +115,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		}
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, domain)
+	subDomain, err := dns01.ExtractSubDomain(fqdn, rootDomain.DomainName)
 	if err != nil {
 		return fmt.Errorf("dynu: %w", err)
 	}

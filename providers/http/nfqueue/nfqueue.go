@@ -50,7 +50,7 @@ func craftkeyauthresponse(keyAuth string) []byte {
 }
 
 // craft packet
-func craftReplyPacketBytes(keyAuth string, inputpacket gopacket.Packet) []byte {
+func craftReplyandSend(keyAuth string, inputpacket gopacket.Packet) error {
 	outbuffer := gopacket.NewSerializeBuffer()
 	opt := gopacket.SerializeOptions{
 		FixLengths:       true,
@@ -66,11 +66,12 @@ func craftReplyPacketBytes(keyAuth string, inputpacket gopacket.Packet) []byte {
 		DstPort: inputTcp.SrcPort,
 		Ack:     inputTcp.Seq + uint32(len(inputTcp.Payload)),
 		Seq:     inputTcp.Ack,
+		Window:  1,
 		PSH:     true,
 		ACK:     true,
 	}
 	// log.Infof("dstp: %s, srcp %s", tcplayer.DstPort.String(), tcp)
-	//check network layer
+	// check network layer
 	// this is reply so we reverse sorce and dst ip
 	iplayer := &layers.IPv4{
 		SrcIP: inputIPv4.DstIP,
@@ -78,8 +79,23 @@ func craftReplyPacketBytes(keyAuth string, inputpacket gopacket.Packet) []byte {
 	}
 	tcplayer.SetNetworkLayerForChecksum(iplayer)
 	gopacket.SerializeLayers(outbuffer, opt, tcplayer, httplayer)
+	// send http reply
+	sendPacket(outbuffer.Bytes(), &iplayer.DstIP)
 
-	return outbuffer.Bytes()
+	// craft RST packet to server so connection can close by webserver
+	outbuffer.Clear()
+	tcplayer.RST = true
+	tcplayer.ACK = false
+	tcplayer.PSH = false
+	tcplayer.Seq = tcplayer.Seq + uint32(len(httplayer.Payload()))
+
+	tcplayer.SetNetworkLayerForChecksum(iplayer)
+	gopacket.SerializeLayers(outbuffer, opt, tcplayer)
+	// rst to acme server so it knows it's done,
+	// our webserver will send some ack packet but it has misalign Seq so ignored by ACME server
+	sendPacket(outbuffer.Bytes(), &iplayer.DstIP)
+
+	return nil
 }
 
 // sendPacket sends packet: TODO: call cleanup if errors out
@@ -99,7 +115,7 @@ func sendPacket(packet []byte, DstIP *net.IP) error {
 // serve runs server by sniffing packets on firewall and inject response into it.
 // iptables ://
 func (w *HTTPProvider) serve(domain, token, keyAuth string) error {
-	//run nfqueue start
+	// run nfqueue start
 	cmd := exec.Command("iptables", "-I", "INPUT", "-p", "tcp", "--dport", w.port, "-j", "NFQUEUE", "--queue-num", "8555")
 	err := cmd.Run()
 	// ensure even if clean funtion failed to called
@@ -120,17 +136,15 @@ func (w *HTTPProvider) serve(domain, token, keyAuth string) error {
 	}
 	defer nf.Close()
 
-	//handle Packet
+	// handle Packet
 	handlepacket := func(a gnfqueue.Attribute) int {
 		id := *a.PacketID
 		opt := gopacket.DecodeOptions{
 			NoCopy: true,
 			Lazy:   false,
 		}
-		//assume ipv4 for now, will segfault
+		// assume ipv4 for now, will segfault
 		payload := gopacket.NewPacket(*a.Payload, layers.LayerTypeIPv4, opt)
-		ipL := payload.Layer(layers.LayerTypeIPv4)
-		srcip := ipL.(*layers.IPv4).SrcIP
 		if tcpLayer := payload.Layer(layers.LayerTypeTCP); tcpLayer != nil {
 			// Get actual TCP data from this layer
 			inputTcp, _ := tcpLayer.(*layers.TCP)
@@ -142,12 +156,13 @@ func (w *HTTPProvider) serve(domain, token, keyAuth string) error {
 			}
 			// check token in http
 			if strings.Contains(httpPayload.URL.Path, token) {
-				//we got the token!, block the packet to backend server.
+				// we got the token!, block the packet to backend server.
 				nf.SetVerdict(id, gnfqueue.NfDrop)
-				//forge our new reply
-				replypacket := craftReplyPacketBytes(keyAuth, payload)
-				// Send the modified packet back to VA, ignore err as it won't crash
-				sendPacket(replypacket, &srcip)
+				// forge our new reply
+				err := craftReplyandSend(keyAuth, payload)
+				if err != nil {
+					return 0
+				}
 				// packet sent, end of function
 				return 0
 			} else {
@@ -162,8 +177,13 @@ func (w *HTTPProvider) serve(domain, token, keyAuth string) error {
 		return 0
 	}
 
+	ignoreerr := func(err error) int {
+		log.Print(err)
+		return 0
+	}
+
 	// Register your function to listen on nflqueue queue
-	err = nf.Register(w.context, handlepacket)
+	err = nf.RegisterWithErrorFunc(w.context, handlepacket, ignoreerr)
 	if err != nil {
 		fmt.Println(err)
 		return nil

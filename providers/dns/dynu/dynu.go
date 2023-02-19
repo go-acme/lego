@@ -97,7 +97,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	rootDomain, err := d.client.GetRootDomain(fqdn)
+	rootDomain, err := d.client.GetRootDomain(dns01.UnFqdn(fqdn))
 	if err != nil {
 		return fmt.Errorf("dynu: could not find root domain for %s: %w", domain, err)
 	}
@@ -141,7 +141,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	rootDomain, err := d.client.GetRootDomain(fqdn)
+	rootDomain, err := d.client.GetRootDomain(dns01.UnFqdn(fqdn))
 	if err != nil {
 		return fmt.Errorf("dynu: could not find root domain for %s: %w", domain, err)
 	}

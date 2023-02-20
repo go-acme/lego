@@ -89,6 +89,7 @@ func allDNSCodes() string {
 		"nicmanager",
 		"nifcloud",
 		"njalla",
+		"nodion",
 		"ns1",
 		"oraclecloud",
 		"otc",
@@ -1717,6 +1718,26 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/njalla`)
+
+	case "nodion":
+		// generated from: providers/dns/nodion/nodion.toml
+		ew.writeln(`Configuration for Nodion.`)
+		ew.writeln(`Code:	'nodion'`)
+		ew.writeln(`Since:	'v4.11.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "NODION_API_TOKEN":	The API token`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "NODION_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "NODION_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "NODION_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "NODION_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/nodion`)
 
 	case "ns1":
 		// generated from: providers/dns/ns1/ns1.toml

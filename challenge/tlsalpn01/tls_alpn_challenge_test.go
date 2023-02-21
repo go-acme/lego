@@ -123,7 +123,7 @@ func TestChallengeInvalidPort(t *testing.T) {
 func TestChallengeIPaddress(t *testing.T) {
 	_, apiURL := tester.SetupFakeAPI(t)
 
-	domain := "127.128.129.1"
+	domain := "127.0.0.1"
 	port := "23457"
 
 	mockValidate := func(_ *api.Core, _ string, chlng acme.Challenge) error {
@@ -139,7 +139,7 @@ func TestChallengeIPaddress(t *testing.T) {
 		remoteCert := connState.PeerCertificates[0]
 		assert.Len(t, remoteCert.DNSNames, 0, "Expected the challenge certificate to have no DNSNames entry in context of challenge for IP")
 		assert.Len(t, remoteCert.IPAddresses, 1, "Expected the challenge certificate to have exactly one IPAddresses entry")
-		assert.True(t, net.ParseIP("127.128.129.1").Equal(remoteCert.IPAddresses[0]), "challenge certificate IPAddress ")
+		assert.True(t, net.ParseIP("127.0.0.1").Equal(remoteCert.IPAddresses[0]), "challenge certificate IPAddress ")
 		assert.NotEmpty(t, remoteCert.Extensions, "Expected the challenge certificate to contain extensions")
 
 		idx := -1

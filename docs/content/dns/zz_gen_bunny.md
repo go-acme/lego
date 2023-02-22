@@ -4,7 +4,7 @@ date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: bunny
 dnsprovider:
-  since:    "v4.10.0"
+  since:    "v4.11.0"
   code:     "bunny"
   url:      "https://bunny.net"
 ---
@@ -20,7 +20,7 @@ Configuration for [Bunny](https://bunny.net).
 <!--more-->
 
 - Code: `bunny`
-- Since: v4.10.0
+- Since: v4.11.0
 
 
 Here is an example bash command using the Bunny provider:

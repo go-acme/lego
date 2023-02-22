@@ -335,7 +335,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		// generated from: providers/dns/bunny/bunny.toml
 		ew.writeln(`Configuration for Bunny.`)
 		ew.writeln(`Code:	'bunny'`)
-		ew.writeln(`Since:	'v4.10.0'`)
+		ew.writeln(`Since:	'v4.11.0'`)
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)

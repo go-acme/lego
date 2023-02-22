@@ -120,14 +120,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("bunny: %w", err)
 	}
 
-	opts := &bunny.AddOrUpdateDNSRecordOptions{
+	record := &bunny.AddOrUpdateDNSRecordOptions{
 		Type:  pointer(bunny.DNSRecordTypeTXT),
 		Name:  pointer(subDomain),
 		Value: pointer(value),
 		TTL:   pointer(int32(d.config.TTL)),
 	}
 
-	if _, err := d.client.DNSZone.AddDNSRecord(ctx, deref(zone.ID), opts); err != nil {
+	if _, err := d.client.DNSZone.AddDNSRecord(ctx, deref(zone.ID), record); err != nil {
 		return fmt.Errorf("bunny: failed to add TXT record: fqdn=%s, zoneID=%d: %w", fqdn, deref(zone.ID), err)
 	}
 
@@ -166,21 +166,21 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("bunny: %w", err)
 	}
 
-	var txtRecord *bunny.DNSRecord
-	for _, record := range zone.Records {
-		if deref(record.Name) == subDomain && deref(record.Type) == bunny.DNSRecordTypeTXT {
-			record := record
-			txtRecord = &record
+	var record *bunny.DNSRecord
+	for _, r := range zone.Records {
+		if deref(r.Name) == subDomain && deref(r.Type) == bunny.DNSRecordTypeTXT {
+			r := r
+			record = &r
 			break
 		}
 	}
 
-	if txtRecord == nil {
+	if record == nil {
 		return fmt.Errorf("bunny: could not find TXT record zone=%d, subdomain=%s", deref(zone.ID), subDomain)
 	}
 
-	if err := d.client.DNSZone.DeleteDNSRecord(ctx, deref(zone.ID), deref(txtRecord.ID)); err != nil {
-		return fmt.Errorf("bunny: failed to delete TXT record: id=%d, name=%s: %w", deref(txtRecord.ID), deref(txtRecord.Name), err)
+	if err := d.client.DNSZone.DeleteDNSRecord(ctx, deref(zone.ID), deref(record.ID)); err != nil {
+		return fmt.Errorf("bunny: failed to delete TXT record: id=%d, name=%s: %w", deref(record.ID), deref(record.Name), err)
 	}
 
 	return nil

@@ -45,7 +45,7 @@ func (c Client) GetSite(domain string) (int, error) {
 		return 0, response.System
 	}
 
-	if response == nil || response.Site == nil || response.Site.Get.Result == nil {
+	if response == nil || response.Site.Get.Result == nil {
 		return 0, errors.New("unexpected empty result")
 	}
 
@@ -75,7 +75,7 @@ func (c Client) AddRecord(siteID int, host, value string) (int, error) {
 		return 0, response.System
 	}
 
-	if response.DNS == nil || len(response.DNS.AddRec) < 1 {
+	if len(response.DNS.AddRec) < 1 {
 		return 0, errors.New("unexpected empty result")
 	}
 
@@ -102,7 +102,7 @@ func (c Client) DeleteRecord(recordID int) (int, error) {
 		return 0, response.System
 	}
 
-	if response.DNS == nil || len(response.DNS.DelRec) < 1 {
+	if len(response.DNS.DelRec) < 1 {
 		return 0, errors.New("unexpected empty result")
 	}
 

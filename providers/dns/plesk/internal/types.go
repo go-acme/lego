@@ -97,9 +97,9 @@ type ResponsePacketType struct {
 	XMLName xml.Name `xml:"packet"`
 	Text    string   `xml:",chardata"`
 
-	DNS    *DNSResponseType  `xml:"dns,omitempty"`
-	Site   *SiteResponseType `xml:"site,omitempty"`
-	System *System           `xml:"system,omitempty"`
+	DNS    DNSResponseType  `xml:"dns,omitempty"`
+	Site   SiteResponseType `xml:"site,omitempty"`
+	System *System          `xml:"system,omitempty"`
 }
 
 type System struct {

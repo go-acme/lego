@@ -197,7 +197,8 @@ func pointer[T string | int | int32 | int64](v T) *T { return &v }
 
 func deref[T string | int | int32 | int64](v *T) T {
 	if v == nil {
-		return *new(T)
+		var zero T
+		return zero
 	}
 
 	return *v

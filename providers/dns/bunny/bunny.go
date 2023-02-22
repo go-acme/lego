@@ -98,21 +98,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	ctx := context.Background()
 
-	zones, err := d.client.DNSZone.List(ctx, &bunny.PaginationOptions{})
+	zone, err := d.findZone(ctx, authZone)
 	if err != nil {
 		return fmt.Errorf("bunny: %w", err)
-	}
-
-	var zone *bunny.DNSZone
-	for _, item := range zones.Items {
-		if item != nil && deref(item.Domain) == authZone {
-			zone = item
-			break
-		}
-	}
-
-	if zone == nil {
-		return fmt.Errorf("bunny: could not find DNSZone zone=%s", authZone)
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
@@ -140,25 +128,14 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := getZone(fqdn)
 	if err != nil {
-		return fmt.Errorf("bunny: failed to find zone: fqdn=%s: %w", fqdn, err)
+		return fmt.Errorf("bunny:  failed to find zone: fqdn=%s: %w", fqdn, err)
 	}
 
 	ctx := context.Background()
 
-	zones, err := d.client.DNSZone.List(ctx, nil)
+	zone, err := d.findZone(ctx, authZone)
 	if err != nil {
 		return fmt.Errorf("bunny: %w", err)
-	}
-
-	var zone *bunny.DNSZone
-	for _, item := range zones.Items {
-		if item != nil && deref(item.Domain) == authZone {
-			zone = item
-			break
-		}
-	}
-	if zone == nil {
-		return fmt.Errorf("bunny: could not find DNSZone zone=%s", authZone)
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
@@ -184,6 +161,27 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	return nil
+}
+
+func (d *DNSProvider) findZone(ctx context.Context, authZone string) (*bunny.DNSZone, error) {
+	zones, err := d.client.DNSZone.List(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var zone *bunny.DNSZone
+	for _, item := range zones.Items {
+		if item != nil && deref(item.Domain) == authZone {
+			zone = item
+			break
+		}
+	}
+
+	if zone == nil {
+		return nil, fmt.Errorf("could not find DNSZone zone=%s", authZone)
+	}
+
+	return zone, nil
 }
 
 func getZone(fqdn string) (string, error) {

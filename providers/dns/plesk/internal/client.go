@@ -3,6 +3,7 @@ package internal
 import (
 	"bytes"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -44,6 +45,10 @@ func (c Client) GetSite(domain string) (int, error) {
 		return 0, response.System
 	}
 
+	if response == nil || response.Site == nil || response.Site.Get.Result == nil {
+		return 0, errors.New("unexpected empty result")
+	}
+
 	if response.Site.Get.Result.Status != StatusOK {
 		return 0, response.Site.Get.Result
 	}
@@ -70,6 +75,10 @@ func (c Client) AddRecord(siteID int, host, value string) (int, error) {
 		return 0, response.System
 	}
 
+	if response.DNS == nil || len(response.DNS.AddRec) < 1 {
+		return 0, errors.New("unexpected empty result")
+	}
+
 	if response.DNS.AddRec[0].Result.Status != StatusOK {
 		return 0, response.DNS.AddRec[0].Result
 	}
@@ -91,6 +100,10 @@ func (c Client) DeleteRecord(recordID int) (int, error) {
 
 	if response.System != nil {
 		return 0, response.System
+	}
+
+	if response.DNS == nil || len(response.DNS.DelRec) < 1 {
+		return 0, errors.New("unexpected empty result")
 	}
 
 	if response.DNS.DelRec[0].Result.Status != StatusOK {

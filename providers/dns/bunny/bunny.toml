@@ -2,7 +2,7 @@ Name = "Bunny"
 Description = ''''''
 URL = "https://bunny.net"
 Code = "bunny"
-Since = "v4.10.0"
+Since = "v4.11.0"
 
 Example = '''
 BUNNY_API_KEY=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxxxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx \

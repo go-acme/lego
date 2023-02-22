@@ -42,6 +42,7 @@ require (
 	github.com/nrdcg/freemyip v0.2.0
 	github.com/nrdcg/goinwx v0.8.1
 	github.com/nrdcg/namesilo v0.2.1
+	github.com/nrdcg/nodion v0.1.0
 	github.com/nrdcg/porkbun v0.1.1
 	github.com/oracle/oci-go-sdk v24.3.0+incompatible
 	github.com/ovh/go-ovh v1.1.0
@@ -70,8 +71,6 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 	software.sslmate.com/src/go-pkcs12 v0.2.0
 )
-
-require github.com/nrdcg/nodion v0.1.0
 
 require (
 	github.com/Azure/go-autorest v14.2.0+incompatible // indirect

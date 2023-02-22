@@ -91,43 +91,44 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	zone, err := getZone(fqdn)
+	authZone, err := getZone(fqdn)
 	if err != nil {
 		return fmt.Errorf("bunny: failed to find zone: fqdn=%s: %w", fqdn, err)
 	}
 
-	zones, err := d.client.DNSZone.List(context.Background(), &bunny.PaginationOptions{})
+	ctx := context.Background()
+
+	zones, err := d.client.DNSZone.List(ctx, &bunny.PaginationOptions{})
 	if err != nil {
 		return fmt.Errorf("bunny: %w", err)
 	}
 
-	var bunnyZone *bunny.DNSZone
-	for _, z := range zones.Items {
-		if *z.Domain == zone {
-			bunnyZone = z
+	var zone *bunny.DNSZone
+	for _, item := range zones.Items {
+		if item != nil && deref(item.Domain) == authZone {
+			zone = item
 			break
 		}
 	}
-	if bunnyZone == nil {
-		return fmt.Errorf("bunny: could not find DNSZone zone=%s", zone)
+
+	if zone == nil {
+		return fmt.Errorf("bunny: could not find DNSZone zone=%s", authZone)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, zone)
+	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
 	if err != nil {
 		return fmt.Errorf("bunny: %w", err)
 	}
 
-	typ := bunny.DNSRecordTypeTXT
-	ttl := int32(d.config.TTL)
 	opts := &bunny.AddOrUpdateDNSRecordOptions{
-		Type:  &typ,
-		Name:  &subDomain,
-		Value: &value,
-		TTL:   &ttl,
+		Type:  pointer(bunny.DNSRecordTypeTXT),
+		Name:  pointer(subDomain),
+		Value: pointer(value),
+		TTL:   pointer(int32(d.config.TTL)),
 	}
 
-	if _, err := d.client.DNSZone.AddDNSRecord(context.Background(), *bunnyZone.ID, opts); err != nil {
-		return fmt.Errorf("bunny: failed to add TXT record: fqdn=%s, zoneID=%d: %w", fqdn, bunnyZone.ID, err)
+	if _, err := d.client.DNSZone.AddDNSRecord(ctx, deref(zone.ID), opts); err != nil {
+		return fmt.Errorf("bunny: failed to add TXT record: fqdn=%s, zoneID=%d: %w", fqdn, deref(zone.ID), err)
 	}
 
 	return nil
@@ -137,47 +138,49 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	fqdn, _ := dns01.GetRecord(domain, keyAuth)
 
-	zone, err := getZone(fqdn)
+	authZone, err := getZone(fqdn)
 	if err != nil {
 		return fmt.Errorf("bunny: failed to find zone: fqdn=%s: %w", fqdn, err)
 	}
 
-	zones, err := d.client.DNSZone.List(context.Background(), &bunny.PaginationOptions{})
+	ctx := context.Background()
+
+	zones, err := d.client.DNSZone.List(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("bunny: %w", err)
 	}
 
-	var bunnyZone *bunny.DNSZone
-	for _, z := range zones.Items {
-		if *z.Domain == zone {
-			bunnyZone = z
+	var zone *bunny.DNSZone
+	for _, item := range zones.Items {
+		if item != nil && deref(item.Domain) == authZone {
+			zone = item
 			break
 		}
 	}
-	if bunnyZone == nil {
-		return fmt.Errorf("bunny: could not find DNSZone zone=%s", zone)
+	if zone == nil {
+		return fmt.Errorf("bunny: could not find DNSZone zone=%s", authZone)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, zone)
+	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
 	if err != nil {
 		return fmt.Errorf("bunny: %w", err)
 	}
 
-	typ := bunny.DNSRecordTypeTXT
 	var txtRecord *bunny.DNSRecord
-	for _, record := range bunnyZone.Records {
-		if *record.Name == subDomain && *record.Type == typ {
+	for _, record := range zone.Records {
+		if deref(record.Name) == subDomain && deref(record.Type) == bunny.DNSRecordTypeTXT {
 			record := record
 			txtRecord = &record
 			break
 		}
 	}
+
 	if txtRecord == nil {
-		return fmt.Errorf("bunny: could not find TXT record zone=%d, subdomain=%s", bunnyZone.ID, subDomain)
+		return fmt.Errorf("bunny: could not find TXT record zone=%d, subdomain=%s", deref(zone.ID), subDomain)
 	}
 
-	if err := d.client.DNSZone.DeleteDNSRecord(context.Background(), *bunnyZone.ID, *txtRecord.ID); err != nil {
-		return fmt.Errorf("bunny: failed to delete TXT record: id=%d, name=%s: %w", txtRecord.ID, *txtRecord.Name, err)
+	if err := d.client.DNSZone.DeleteDNSRecord(ctx, deref(zone.ID), deref(txtRecord.ID)); err != nil {
+		return fmt.Errorf("bunny: failed to delete TXT record: id=%d, name=%s: %w", deref(txtRecord.ID), deref(txtRecord.Name), err)
 	}
 
 	return nil
@@ -190,4 +193,14 @@ func getZone(fqdn string) (string, error) {
 	}
 
 	return dns01.UnFqdn(authZone), nil
+}
+
+func pointer[T string | int | int32 | int64](v T) *T { return &v }
+
+func deref[T string | int | int32 | int64](v *T) T {
+	if v == nil {
+		return *new(T)
+	}
+
+	return *v
 }

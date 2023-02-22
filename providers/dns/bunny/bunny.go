@@ -167,6 +167,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	var txtRecord *bunny.DNSRecord
 	for _, record := range bunnyZone.Records {
 		if *record.Name == subDomain && *record.Type == typ {
+			record := record
 			txtRecord = &record
 			break
 		}

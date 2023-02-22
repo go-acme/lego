@@ -72,6 +72,8 @@ require (
 	software.sslmate.com/src/go-pkcs12 v0.2.0
 )
 
+require github.com/simplesurance/bunny-go v0.0.0-20221115111006-e11d9dc91f04
+
 require (
 	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
 	github.com/Azure/go-autorest/autorest/adal v0.9.18 // indirect

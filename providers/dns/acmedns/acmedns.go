@@ -111,7 +111,6 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	}
 
 	// Check if credentials were previously saved for this domain.
-	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	account, err := d.storage.Fetch(effectiveDomain)
 	if err != nil {
 		if errors.Is(err, goacmedns.ErrDomainNotFound) {

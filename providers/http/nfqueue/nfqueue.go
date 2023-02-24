@@ -7,13 +7,14 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 	"os/exec"
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/go-acme/lego/v4/log"
 
 	gnfqueue "github.com/florianl/go-nfqueue"
 	"github.com/google/gopacket"
@@ -55,10 +56,10 @@ func craftkeyauthresponse(keyAuth string) []byte {
 }
 
 // craft packet
-func craftReplyandSend(keyAuth string, inputpacket gopacket.Packet) error {
+func craftReplyandSend(keyAuth string, inputpacket gopacket.Packet, dst net.IP) error {
 	outbuffer := gopacket.NewSerializeBuffer()
 	inputTcp := inputpacket.Layer(layers.LayerTypeTCP).(*layers.TCP)
-	inputIPv4 := inputpacket.Layer(layers.LayerTypeIPv4).(*layers.IPv4)
+	inputIPL := inputpacket.NetworkLayer()
 
 	httplayer := gopacket.Payload(craftkeyauthresponse(keyAuth))
 	tcplayer := &layers.TCP{
@@ -74,14 +75,11 @@ func craftReplyandSend(keyAuth string, inputpacket gopacket.Packet) error {
 	// log.Infof("dstp: %s, srcp %s", tcplayer.DstPort.String(), tcp)
 	// check network layer
 	// this is reply so we reverse sorce and dst ip
-	iplayer := &layers.IPv4{
-		SrcIP: inputIPv4.DstIP,
-		DstIP: inputIPv4.SrcIP,
-	}
-	tcplayer.SetNetworkLayerForChecksum(iplayer)
+
+	tcplayer.SetNetworkLayerForChecksum(inputIPL)
 	gopacket.SerializeLayers(outbuffer, sopt, tcplayer, httplayer)
 	// send http reply
-	sendPacket(outbuffer.Bytes(), &iplayer.DstIP)
+	sendPacket(outbuffer.Bytes(), &dst)
 
 	// craft RST packet to server so connection can close by webserver
 	outbuffer.Clear()
@@ -90,18 +88,18 @@ func craftReplyandSend(keyAuth string, inputpacket gopacket.Packet) error {
 	tcplayer.PSH = false
 	tcplayer.Seq = tcplayer.Seq + uint32(len(httplayer.Payload()))
 
-	tcplayer.SetNetworkLayerForChecksum(iplayer)
+	tcplayer.SetNetworkLayerForChecksum(inputIPL)
 	gopacket.SerializeLayers(outbuffer, sopt, tcplayer)
 	// rst to acme server so it knows it's done,
 	// our webserver will send some ack packet but it has misalign Seq so ignored by ACME server
-	sendPacket(outbuffer.Bytes(), &iplayer.DstIP)
+	sendPacket(outbuffer.Bytes(), &dst)
 
 	return nil
 }
 
-func craftRSTbyte4(inpkt gopacket.Packet) []byte {
+func craftRSTbyte(inpkt gopacket.Packet) []byte {
 	tcpl := inpkt.Layer(layers.LayerTypeTCP).(*layers.TCP)
-	ipl := inpkt.Layer(layers.LayerTypeIPv4).(*layers.IPv4)
+	ipl := inpkt.LayerClass(layers.LayerClassIPNetwork).(gopacket.SerializableLayer)
 	buf := gopacket.NewSerializeBuffer()
 	tcpl.RST = true
 	gopacket.SerializeLayers(buf, sopt, ipl, tcpl)
@@ -127,9 +125,14 @@ func sendPacket(packet []byte, DstIP *net.IP) error {
 func (w *HTTPProvider) serve(domain, token, keyAuth string) error {
 	// run nfqueue start
 	cmd := exec.Command("iptables", "-I", "INPUT", "-p", "tcp", "--dport", w.port, "-j", "NFQUEUE", "--queue-num", "8555")
-	err := cmd.Run()
-	// ensure even if clean funtion failed to called
 	defer exec.Command("iptables", "-D", "INPUT", "-p", "tcp", "--dport", w.port, "-j", "NFQUEUE", "--queue-num", "8555").Run()
+	err := cmd.Run()
+	if err != nil {
+		return err
+	}
+	err = exec.Command("ip6tables", "-I", "INPUT", "-p", "tcp", "--dport", w.port, "-j", "NFQUEUE", "--queue-num", "8555").Run()
+	// ensure even if clean funtion failed to called
+	defer exec.Command("ip6tables", "-D", "INPUT", "-p", "tcp", "--dport", w.port, "-j", "NFQUEUE", "--queue-num", "8555").Run()
 	if err != nil {
 		return err
 	}
@@ -138,6 +141,7 @@ func (w *HTTPProvider) serve(domain, token, keyAuth string) error {
 		MaxPacketLen: 0xFFFF,
 		MaxQueueLen:  0xFF,
 		Copymode:     gnfqueue.NfQnlCopyPacket,
+		Flags:        gnfqueue.NfQaCfgFlagFailOpen,
 		WriteTimeout: 15 * time.Millisecond,
 	}
 	nf, err := gnfqueue.Open(&config)
@@ -154,10 +158,27 @@ func (w *HTTPProvider) serve(domain, token, keyAuth string) error {
 			NoCopy: true,
 			Lazy:   false,
 		}
-		payload := gopacket.NewPacket(*a.Payload, layers.LayerTypeIPv4, dopt)
-		tcpLayer := payload.Layer(layers.LayerTypeTCP)
+		var ipLType gopacket.LayerType
+		if *a.HwProtocol == 0x0800 {
+			//ipv4
+			ipLType = layers.LayerTypeIPv4
+		} else if *a.HwProtocol == 0x86DD {
+			ipLType = layers.LayerTypeIPv6
+		} else {
+			nf.SetVerdict(id, gnfqueue.NfAccept)
+			return 0
+		}
+		payload := gopacket.NewPacket(*a.Payload, ipLType, dopt)
+		// iplayer := payload.LayerClass(layers.LayerClassIPNetwork)
 		// Get actual TCP data from this layer
+		tcpLayer := payload.Layer(layers.LayerTypeTCP)
+		if tcpLayer == nil {
+			nf.SetVerdict(id, gnfqueue.NfAccept)
+			return 0
+		}
 		inputTcp := tcpLayer.(*layers.TCP)
+		// get destination IP here, this is sent from other side, so src is other side
+		otherend := net.IP(payload.NetworkLayer().NetworkFlow().Src().Raw())
 		// this should be HTTP payload
 		httpPayload, err := http.ReadRequest(bufio.NewReader((bytes.NewReader(inputTcp.LayerPayload()))))
 		if err != nil {
@@ -168,7 +189,8 @@ func (w *HTTPProvider) serve(domain, token, keyAuth string) error {
 		if strings.Contains(httpPayload.URL.Path, token) {
 			// we got the token!
 			// forge our new reply
-			err := craftReplyandSend(keyAuth, payload)
+			log.Infof("[%s] Injecting key authentication", domain)
+			err := craftReplyandSend(keyAuth, payload, otherend)
 			if err != nil {
 				return 0
 			}
@@ -177,7 +199,7 @@ func (w *HTTPProvider) serve(domain, token, keyAuth string) error {
 				fmt.Print("modpacket err", err)
 			}
 
-			rstpk := craftRSTbyte4(payload)
+			rstpk := craftRSTbyte(payload)
 			err = nf.SetVerdictModPacket(id, gnfqueue.NfAccept, rstpk)
 			if err != nil {
 				fmt.Print("modpacket err", err)
@@ -210,7 +232,7 @@ func (w *HTTPProvider) serve(domain, token, keyAuth string) error {
 func (w *HTTPProvider) Present(domain, token, keyAuth string) error {
 	// test if OS is linux, otherwise no point running this nfqueue is linux thing
 	if runtime.GOOS != "linux" {
-		log.Panicf("[%s] http-nfq provider isn't implimented non-linux", domain)
+		log.Fatalf("[%s] http-nfq provider isn't implimented non-linux", domain)
 	}
 	w.context, w.cancel = context.WithCancel(context.Background())
 	go w.serve(domain, token, keyAuth)
@@ -222,6 +244,8 @@ func (w *HTTPProvider) Present(domain, token, keyAuth string) error {
 // iptables -D INPUT -p tcp --dport Port -j NFQUEUE --queue-num 8555
 func (w *HTTPProvider) CleanUp(domain, token, keyAuth string) error {
 	cmd := exec.Command("iptables", "-D", "INPUT", "-p", "tcp", "--dport", w.port, "-j", "NFQUEUE", "--queue-num", "8555")
+	cmd.Run()
+	cmd = exec.Command("ip6tables", "-D", "INPUT", "-p", "tcp", "--dport", w.port, "-j", "NFQUEUE", "--queue-num", "8555")
 	cmd.Run()
 	// tell nfqueue to shut down
 	w.cancel()

@@ -27,6 +27,11 @@ type HTTPProvider struct {
 	cancel  context.CancelFunc
 }
 
+var sopt = gopacket.SerializeOptions{
+	FixLengths:       true,
+	ComputeChecksums: true,
+}
+
 // NewHttpDpiProvider returns a HTTPProvider instance with a configured port.
 func NewHttpDpiProvider(port string) (*HTTPProvider, error) {
 
@@ -52,10 +57,6 @@ func craftkeyauthresponse(keyAuth string) []byte {
 // craft packet
 func craftReplyandSend(keyAuth string, inputpacket gopacket.Packet) error {
 	outbuffer := gopacket.NewSerializeBuffer()
-	opt := gopacket.SerializeOptions{
-		FixLengths:       true,
-		ComputeChecksums: true,
-	}
 	inputTcp := inputpacket.Layer(layers.LayerTypeTCP).(*layers.TCP)
 	inputIPv4 := inputpacket.Layer(layers.LayerTypeIPv4).(*layers.IPv4)
 
@@ -78,7 +79,7 @@ func craftReplyandSend(keyAuth string, inputpacket gopacket.Packet) error {
 		DstIP: inputIPv4.SrcIP,
 	}
 	tcplayer.SetNetworkLayerForChecksum(iplayer)
-	gopacket.SerializeLayers(outbuffer, opt, tcplayer, httplayer)
+	gopacket.SerializeLayers(outbuffer, sopt, tcplayer, httplayer)
 	// send http reply
 	sendPacket(outbuffer.Bytes(), &iplayer.DstIP)
 
@@ -90,12 +91,21 @@ func craftReplyandSend(keyAuth string, inputpacket gopacket.Packet) error {
 	tcplayer.Seq = tcplayer.Seq + uint32(len(httplayer.Payload()))
 
 	tcplayer.SetNetworkLayerForChecksum(iplayer)
-	gopacket.SerializeLayers(outbuffer, opt, tcplayer)
+	gopacket.SerializeLayers(outbuffer, sopt, tcplayer)
 	// rst to acme server so it knows it's done,
 	// our webserver will send some ack packet but it has misalign Seq so ignored by ACME server
 	sendPacket(outbuffer.Bytes(), &iplayer.DstIP)
 
 	return nil
+}
+
+func craftRSTbyte4(inpkt gopacket.Packet) []byte {
+	tcpl := inpkt.Layer(layers.LayerTypeTCP).(*layers.TCP)
+	ipl := inpkt.Layer(layers.LayerTypeIPv4).(*layers.IPv4)
+	buf := gopacket.NewSerializeBuffer()
+	tcpl.RST = true
+	gopacket.SerializeLayers(buf, sopt, ipl, tcpl)
+	return buf.Bytes()
 }
 
 // sendPacket sends packet: TODO: call cleanup if errors out
@@ -139,42 +149,45 @@ func (w *HTTPProvider) serve(domain, token, keyAuth string) error {
 	// handle Packet
 	handlepacket := func(a gnfqueue.Attribute) int {
 		id := *a.PacketID
-		opt := gopacket.DecodeOptions{
+		// assume ipv4 for now, will segfault
+		dopt := gopacket.DecodeOptions{
 			NoCopy: true,
 			Lazy:   false,
 		}
-		// assume ipv4 for now, will segfault
-		payload := gopacket.NewPacket(*a.Payload, layers.LayerTypeIPv4, opt)
-		if tcpLayer := payload.Layer(layers.LayerTypeTCP); tcpLayer != nil {
-			// Get actual TCP data from this layer
-			inputTcp, _ := tcpLayer.(*layers.TCP)
-			// this should be HTTP payload
-			httpPayload, err := http.ReadRequest(bufio.NewReader((bytes.NewReader(inputTcp.LayerPayload()))))
+		payload := gopacket.NewPacket(*a.Payload, layers.LayerTypeIPv4, dopt)
+		tcpLayer := payload.Layer(layers.LayerTypeTCP)
+		// Get actual TCP data from this layer
+		inputTcp := tcpLayer.(*layers.TCP)
+		// this should be HTTP payload
+		httpPayload, err := http.ReadRequest(bufio.NewReader((bytes.NewReader(inputTcp.LayerPayload()))))
+		if err != nil {
+			nf.SetVerdict(id, gnfqueue.NfAccept)
+			return 0
+		}
+		// check token in http
+		if strings.Contains(httpPayload.URL.Path, token) {
+			// we got the token!
+			// forge our new reply
+			err := craftReplyandSend(keyAuth, payload)
 			if err != nil {
-				nf.SetVerdict(id, gnfqueue.NfAccept)
 				return 0
 			}
-			// check token in http
-			if strings.Contains(httpPayload.URL.Path, token) {
-				// we got the token!, block the packet to backend server.
-				nf.SetVerdict(id, gnfqueue.NfDrop)
-				// forge our new reply
-				err := craftReplyandSend(keyAuth, payload)
-				if err != nil {
-					return 0
-				}
-				// packet sent, end of function
-				return 0
-			} else {
-				nf.SetVerdict(id, gnfqueue.NfAccept)
-				return 0
+			// mark incomming packet as RST so backend server ignore and close session
+			if err != nil {
+				fmt.Print("modpacket err", err)
 			}
 
+			rstpk := craftRSTbyte4(payload)
+			err = nf.SetVerdictModPacket(id, gnfqueue.NfAccept, rstpk)
+			if err != nil {
+				fmt.Print("modpacket err", err)
+			}
+			// packet sent, end of function
+			return 0
 		} else {
 			nf.SetVerdict(id, gnfqueue.NfAccept)
+			return 0
 		}
-
-		return 0
 	}
 
 	ignoreerr := func(err error) int {

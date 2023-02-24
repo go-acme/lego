@@ -11,7 +11,6 @@ import (
 	"net/http"
 	"os/exec"
 	"runtime"
-	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/log"
@@ -124,15 +123,15 @@ func sendPacket(packet []byte, DstIP *net.IP) error {
 // iptables ://
 func (w *HTTPProvider) serve(domain, token, keyAuth string) error {
 	// run nfqueue start
-	cmd := exec.Command("iptables", "-I", "INPUT", "-p", "tcp", "--dport", w.port, "-j", "NFQUEUE", "--queue-num", "8555")
-	defer exec.Command("iptables", "-D", "INPUT", "-p", "tcp", "--dport", w.port, "-j", "NFQUEUE", "--queue-num", "8555").Run()
+	cmd := exec.Command("iptables", "-I", "INPUT", "-p", "tcp", "--dport", w.port, "-j", "NFQUEUE", "--queue-num", "8555", "--queue-bypass")
+	defer exec.Command("iptables", "-D", "INPUT", "-p", "tcp", "--dport", w.port, "-j", "NFQUEUE", "--queue-num", "8555", "--queue-bypass").Run()
 	err := cmd.Run()
 	if err != nil {
 		return err
 	}
-	err = exec.Command("ip6tables", "-I", "INPUT", "-p", "tcp", "--dport", w.port, "-j", "NFQUEUE", "--queue-num", "8555").Run()
+	err = exec.Command("ip6tables", "-I", "INPUT", "-p", "tcp", "--dport", w.port, "-j", "NFQUEUE", "--queue-num", "8555", "--queue-bypass").Run()
 	// ensure even if clean funtion failed to called
-	defer exec.Command("ip6tables", "-D", "INPUT", "-p", "tcp", "--dport", w.port, "-j", "NFQUEUE", "--queue-num", "8555").Run()
+	defer exec.Command("ip6tables", "-D", "INPUT", "-p", "tcp", "--dport", w.port, "-j", "NFQUEUE", "--queue-num", "8555", "--queue-bypass").Run()
 	if err != nil {
 		return err
 	}
@@ -186,7 +185,8 @@ func (w *HTTPProvider) serve(domain, token, keyAuth string) error {
 			return 0
 		}
 		// check token in http
-		if strings.Contains(httpPayload.URL.Path, token) {
+		chalPath := fmt.Sprintf("/.well-known/acme-challenge/%s", token)
+		if httpPayload.URL.Path == chalPath {
 			// we got the token!
 			// forge our new reply
 			log.Infof("[%s] Injecting key authentication", domain)
@@ -243,9 +243,9 @@ func (w *HTTPProvider) Present(domain, token, keyAuth string) error {
 // solve should removed it already but just do be safe:
 // iptables -D INPUT -p tcp --dport Port -j NFQUEUE --queue-num 8555
 func (w *HTTPProvider) CleanUp(domain, token, keyAuth string) error {
-	cmd := exec.Command("iptables", "-D", "INPUT", "-p", "tcp", "--dport", w.port, "-j", "NFQUEUE", "--queue-num", "8555")
+	cmd := exec.Command("iptables", "-D", "INPUT", "-p", "tcp", "--dport", w.port, "-j", "NFQUEUE", "--queue-num", "8555", "--queue-bypass")
 	cmd.Run()
-	cmd = exec.Command("ip6tables", "-D", "INPUT", "-p", "tcp", "--dport", w.port, "-j", "NFQUEUE", "--queue-num", "8555")
+	cmd = exec.Command("ip6tables", "-D", "INPUT", "-p", "tcp", "--dport", w.port, "-j", "NFQUEUE", "--queue-num", "8555", "--queue-bypass")
 	cmd.Run()
 	// tell nfqueue to shut down
 	w.cancel()

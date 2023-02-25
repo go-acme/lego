@@ -70,27 +70,27 @@ func craftReplyandSend(keyAuth string, inputpacket gopacket.Packet, dst net.IP) 
 		Window:  1,
 		PSH:     true,
 		ACK:     true,
+		// we want to finish TCP after this packet so set fin
+		FIN: true,
 	}
-	// log.Infof("dstp: %s, srcp %s", tcplayer.DstPort.String(), tcp)
-	// check network layer
-	// this is reply so we reverse sorce and dst ip
-
+	// answer is same with same protocal, so we use input's layer
 	tcplayer.SetNetworkLayerForChecksum(inputIPL)
 	gopacket.SerializeLayers(outbuffer, sopt, tcplayer, httplayer)
 	// send http reply
 	sendPacket(outbuffer.Bytes(), &dst)
 
-	// craft RST packet to server so connection can close by webserver
+	// need to ACK the server FIN so acme server can close connection
 	outbuffer.Clear()
-	tcplayer.RST = true
-	tcplayer.ACK = false
+	tcplayer.ACK = true
 	tcplayer.PSH = false
-	tcplayer.Seq = tcplayer.Seq + uint32(len(httplayer.Payload()))
+	tcplayer.Seq = tcplayer.Seq + uint32(len(httplayer.Payload())) + 1
+	tcplayer.Ack = inputTcp.Seq + uint32(len(inputTcp.Payload)) + 1
 
 	tcplayer.SetNetworkLayerForChecksum(inputIPL)
 	gopacket.SerializeLayers(outbuffer, sopt, tcplayer)
-	// rst to acme server so it knows it's done,
-	// our webserver will send some ack packet but it has misalign Seq so ignored by ACME server
+	// Fin+ACK to acme server so it knows it's done,
+	// sleep some time here so acme server sent it's FIN+ACK here
+	time.Sleep(time.Millisecond * 10)
 	sendPacket(outbuffer.Bytes(), &dst)
 
 	return nil
@@ -98,9 +98,11 @@ func craftReplyandSend(keyAuth string, inputpacket gopacket.Packet, dst net.IP) 
 
 func craftRSTbyte(inpkt gopacket.Packet) []byte {
 	tcpl := inpkt.Layer(layers.LayerTypeTCP).(*layers.TCP)
+	tcpl.SetNetworkLayerForChecksum(inpkt.NetworkLayer())
 	ipl := inpkt.LayerClass(layers.LayerClassIPNetwork).(gopacket.SerializableLayer)
 	buf := gopacket.NewSerializeBuffer()
 	tcpl.RST = true
+	tcpl.ACK = true
 	gopacket.SerializeLayers(buf, sopt, ipl, tcpl)
 	return buf.Bytes()
 }
@@ -167,17 +169,17 @@ func (w *HTTPProvider) serve(domain, token, keyAuth string) error {
 			nf.SetVerdict(id, gnfqueue.NfAccept)
 			return 0
 		}
-		payload := gopacket.NewPacket(*a.Payload, ipLType, dopt)
+		packetin := gopacket.NewPacket(*a.Payload, ipLType, dopt)
 		// iplayer := payload.LayerClass(layers.LayerClassIPNetwork)
 		// Get actual TCP data from this layer
-		tcpLayer := payload.Layer(layers.LayerTypeTCP)
+		tcpLayer := packetin.Layer(layers.LayerTypeTCP)
 		if tcpLayer == nil {
 			nf.SetVerdict(id, gnfqueue.NfAccept)
 			return 0
 		}
 		inputTcp := tcpLayer.(*layers.TCP)
 		// get destination IP here, this is sent from other side, so src is other side
-		otherend := net.IP(payload.NetworkLayer().NetworkFlow().Src().Raw())
+		otherend := net.IP(packetin.NetworkLayer().NetworkFlow().Src().Raw())
 		// this should be HTTP payload
 		httpPayload, err := http.ReadRequest(bufio.NewReader((bytes.NewReader(inputTcp.LayerPayload()))))
 		if err != nil {
@@ -190,7 +192,7 @@ func (w *HTTPProvider) serve(domain, token, keyAuth string) error {
 			// we got the token!
 			// forge our new reply
 			log.Infof("[%s] Injecting key authentication", domain)
-			err := craftReplyandSend(keyAuth, payload, otherend)
+			err := craftReplyandSend(keyAuth, packetin, otherend)
 			if err != nil {
 				return 0
 			}
@@ -198,8 +200,7 @@ func (w *HTTPProvider) serve(domain, token, keyAuth string) error {
 			if err != nil {
 				fmt.Print("modpacket err", err)
 			}
-
-			rstpk := craftRSTbyte(payload)
+			rstpk := craftRSTbyte(packetin)
 			err = nf.SetVerdictModPacket(id, gnfqueue.NfAccept, rstpk)
 			if err != nil {
 				fmt.Print("modpacket err", err)

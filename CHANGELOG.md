@@ -1,5 +1,9 @@
 # Changelog
 
+## [v4.10.2] - 2023-02-26
+
+Fix Docker image builds.
+
 ## [v4.10.1] - 2023-02-25
 
 ### Fixed:

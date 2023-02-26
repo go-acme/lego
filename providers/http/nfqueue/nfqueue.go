@@ -233,7 +233,14 @@ func (w *HTTPProvider) serve(domain, token, keyAuth string) error {
 func (w *HTTPProvider) Present(domain, token, keyAuth string) error {
 	// test if OS is linux, otherwise no point running this nfqueue is linux thing
 	if runtime.GOOS != "linux" {
-		log.Fatalf("[%s] http-nfq provider isn't implimented non-linux", domain)
+		return fmt.Errorf("[%s] http-nfq provider isn't implimented non-linux", domain)
+	}
+	// test if there is a webserver on port requested
+	con, err := net.DialTimeout("tcp", fmt.Sprintf("localhost:%s", w.port), time.Second)
+	if err != nil {
+		return fmt.Errorf("[%s] http-nfq needs a webserver watching on requested, port %s", domain, w.port)
+	} else {
+		con.Close()
 	}
 	w.context, w.cancel = context.WithCancel(context.Background())
 	go w.serve(domain, token, keyAuth)

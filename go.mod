@@ -51,6 +51,7 @@ require (
 	github.com/sacloud/api-client-go v0.2.1
 	github.com/sacloud/iaas-api-go v1.3.2
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.9
+	github.com/simplesurance/bunny-go v0.0.0-20221115111006-e11d9dc91f04
 	github.com/softlayer/softlayer-go v1.0.6
 	github.com/stretchr/testify v1.8.1
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.490

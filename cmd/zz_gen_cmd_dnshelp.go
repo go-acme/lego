@@ -23,6 +23,7 @@ func allDNSCodes() string {
 		"azure",
 		"bindman",
 		"bluecat",
+		"bunny",
 		"checkdomain",
 		"civo",
 		"clouddns",
@@ -329,6 +330,25 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/bluecat`)
+
+	case "bunny":
+		// generated from: providers/dns/bunny/bunny.toml
+		ew.writeln(`Configuration for Bunny.`)
+		ew.writeln(`Code:	'bunny'`)
+		ew.writeln(`Since:	'v4.11.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "BUNNY_API_KEY":	API key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "BUNNY_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "BUNNY_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "BUNNY_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/bunny`)
 
 	case "checkdomain":
 		// generated from: providers/dns/checkdomain/checkdomain.toml

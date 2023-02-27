@@ -54,6 +54,25 @@ func craftkeyauthresponse(keyAuth string) []byte {
 	return reply
 }
 
+func setFirewallRule(on bool, port string) error {
+	var onoff string
+	if on {
+		onoff = "-I"
+	} else {
+		onoff = "-D"
+	}
+
+	out, err := exec.Command("sudo", "iptables", onoff, "INPUT", "-p", "tcp", "--dport", port, "-j", "NFQUEUE", "--queue-num", "8555", "--queue-bypass").CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%s", out)
+	}
+	err = exec.Command("sudo", "ip6tables", onoff, "INPUT", "-p", "tcp", "--dport", port, "-j", "NFQUEUE", "--queue-num", "8555", "--queue-bypass").Run()
+	if err != nil {
+		return fmt.Errorf("%s", out)
+	}
+	return nil
+}
+
 // craft packet
 func craftReplyandSend(keyAuth string, inputpacket gopacket.Packet, dst net.IP) error {
 	outbuffer := gopacket.NewSerializeBuffer()
@@ -125,18 +144,6 @@ func sendPacket(packet []byte, DstIP *net.IP) error {
 // iptables ://
 func (w *HTTPProvider) serve(domain, token, keyAuth string) error {
 	// run nfqueue start
-	cmd := exec.Command("iptables", "-I", "INPUT", "-p", "tcp", "--dport", w.port, "-j", "NFQUEUE", "--queue-num", "8555", "--queue-bypass")
-	defer exec.Command("iptables", "-D", "INPUT", "-p", "tcp", "--dport", w.port, "-j", "NFQUEUE", "--queue-num", "8555", "--queue-bypass").Run()
-	err := cmd.Run()
-	if err != nil {
-		return err
-	}
-	err = exec.Command("ip6tables", "-I", "INPUT", "-p", "tcp", "--dport", w.port, "-j", "NFQUEUE", "--queue-num", "8555", "--queue-bypass").Run()
-	// ensure even if clean funtion failed to called
-	defer exec.Command("ip6tables", "-D", "INPUT", "-p", "tcp", "--dport", w.port, "-j", "NFQUEUE", "--queue-num", "8555", "--queue-bypass").Run()
-	if err != nil {
-		return err
-	}
 	config := gnfqueue.Config{
 		NfQueue:      8555,
 		MaxPacketLen: 0xFFFF,
@@ -233,7 +240,7 @@ func (w *HTTPProvider) serve(domain, token, keyAuth string) error {
 func (w *HTTPProvider) Present(domain, token, keyAuth string) error {
 	// test if OS is linux, otherwise no point running this nfqueue is linux thing
 	if runtime.GOOS != "linux" {
-		return fmt.Errorf("[%s] http-nfq provider isn't implimented non-linux", domain)
+		return fmt.Errorf("[%s] http-nfq provider is only for linux", domain)
 	}
 	// test if there is a webserver on port requested
 	con, err := net.DialTimeout("tcp", fmt.Sprintf("localhost:%s", w.port), time.Second)
@@ -241,6 +248,10 @@ func (w *HTTPProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("[%s] http-nfq needs a webserver watching on requested, port %s", domain, w.port)
 	} else {
 		con.Close()
+	}
+	err = setFirewallRule(true, w.port)
+	if err != nil {
+		return err
 	}
 	w.context, w.cancel = context.WithCancel(context.Background())
 	go w.serve(domain, token, keyAuth)
@@ -251,10 +262,7 @@ func (w *HTTPProvider) Present(domain, token, keyAuth string) error {
 // solve should removed it already but just do be safe:
 // iptables -D INPUT -p tcp --dport Port -j NFQUEUE --queue-num 8555
 func (w *HTTPProvider) CleanUp(domain, token, keyAuth string) error {
-	cmd := exec.Command("iptables", "-D", "INPUT", "-p", "tcp", "--dport", w.port, "-j", "NFQUEUE", "--queue-num", "8555", "--queue-bypass")
-	cmd.Run()
-	cmd = exec.Command("ip6tables", "-D", "INPUT", "-p", "tcp", "--dport", w.port, "-j", "NFQUEUE", "--queue-num", "8555", "--queue-bypass")
-	cmd.Run()
+	setFirewallRule(false, w.port)
 	// tell nfqueue to shut down
 	w.cancel()
 	return nil

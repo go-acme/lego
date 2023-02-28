@@ -1,0 +1,180 @@
+run:
+  timeout: 7m
+  skip-files: []
+
+linters-settings:
+  govet:
+    check-shadowing: true
+  gocyclo:
+    min-complexity: 12
+  maligned:
+    suggest-new: true
+  goconst:
+    min-len: 3
+    min-occurrences: 3
+  funlen:
+    lines: -1
+    statements: 50
+  misspell:
+    locale: US
+    ignore-words:
+      - internetbs
+  depguard:
+    list-type: denylist
+    include-go-root: false
+    packages:
+      - github.com/pkg/errors
+      - github.com/instana/testify
+  godox:
+    keywords:
+      - FIXME
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - style
+      - performance
+    disabled-checks:
+      - paramTypeCombine # already handle by gofumpt.extra-rules
+      - whyNoLint # already handle by nonolint
+      - unnamedResult
+      - hugeParam
+      - sloppyReassign
+      - rangeValCopy
+      - octalLiteral
+      - ptrToRefParam
+      - appendAssign
+      - ruleguard
+      - httpNoBody
+      - exposedSyncMutex
+
+linters:
+  enable-all: true
+  disable:
+    - deadcode # deprecated
+    - exhaustivestruct # deprecated
+    - golint # deprecated
+    - ifshort # deprecated
+    - interfacer # deprecated
+    - maligned # deprecated
+    - nosnakecase # deprecated
+    - scopelint # deprecated
+    - structcheck # deprecated
+    - varcheck # deprecated
+    - cyclop # duplicate of gocyclo
+    - sqlclosecheck # not relevant (SQL)
+    - rowserrcheck # not relevant (SQL)
+    - execinquery # not relevant (SQL)
+    - lll
+    - gosec
+    - dupl # not relevant
+    - prealloc # too many false-positive
+    - bodyclose # too many false-positive
+    - gomnd
+    - testpackage # not relevant
+    - tparallel # not relevant
+    - paralleltest # not relevant
+    - nestif # too many false-positive
+    - wrapcheck
+    - goerr113 # not relevant
+    - nlreturn # not relevant
+    - wsl # not relevant
+    - exhaustive # not relevant
+    - exhaustruct # not relevant
+    - makezero # not relevant
+    - forbidigo
+    - varnamelen # not relevant
+    - nilnil # not relevant
+    - ireturn # not relevant
+    - contextcheck # too many false-positive
+    - tenv # we already have a test "framework" to handle env vars
+    - noctx
+    - forcetypeassert
+    - tagliatelle
+    - errname
+    - errchkjson
+    - nonamedreturns
+    - musttag # false-positive https://github.com/junk1tm/musttag/issues/17
+
+issues:
+  exclude-use-default: false
+  max-per-linter: 0
+  max-same-issues: 0
+  exclude:
+    - 'Error return value of .((os\.)?std(out|err)\..*|.*Close|.*Flush|os\.Remove(All)?|.*printf?|os\.(Un)?Setenv). is not checked'
+    - 'exported (type|method|function) (.+) should have comment or be unexported'
+    - 'ST1000: at least one file in a package should have a package comment'
+    - 'package-comments: should have a package comment'
+  exclude-rules:
+    - path: (.+)_test.go
+      linters:
+        - funlen
+        - goconst
+        - maintidx
+    - path: providers/dns/dns_providers.go
+      linters:
+        - gocyclo
+    - path: providers/dns/gcloud/googlecloud_test.go
+      text: 'string `(lego\.wtf|manhattan)` has (\d+) occurrences, make it a constant'
+    - path: providers/dns/zoneee/zoneee_test.go
+      text: 'string `(bar|foo)` has (\d+) occurrences, make it a constant'
+    - path: certcrypto/crypto.go
+      text: '(tlsFeatureExtensionOID|ocspMustStapleFeature) is a global variable'
+    - path: challenge/dns01/nameserver.go
+      text: '(defaultNameservers|recursiveNameservers|fqdnSoaCache|muFqdnSoaCache) is a global variable'
+    - path: challenge/dns01/nameserver_.+.go
+      text: 'dnsTimeout is a global variable'
+    - path: challenge/dns01/nameserver_test.go
+      text: 'findXByFqdnTestCases is a global variable'
+    - path: challenge/http01/domain_matcher.go
+      text: 'string `Host` has \d occurrences, make it a constant'
+    - path: challenge/http01/domain_matcher.go
+      text: 'cyclomatic complexity \d+ of func `parseForwardedHeader` is high'
+    - path: challenge/http01/domain_matcher.go
+      text: "Function 'parseForwardedHeader' has too many statements"
+    - path: challenge/tlsalpn01/tls_alpn_challenge.go
+      text: 'idPeAcmeIdentifierV1 is a global variable'
+    - path: log/logger.go
+      text: 'Logger is a global variable'
+    - path: 'e2e/(dnschallenge/)?[\d\w]+_test.go'
+      text: load is a global variable
+    - path: 'providers/dns/([\d\w]+/)*[\d\w]+_test.go'
+      text: 'envTest is a global variable'
+    - path: providers/dns/namecheap/namecheap_test.go
+      text: 'testCases is a global variable'
+    - path: providers/dns/acmedns/acmedns_test.go
+      text: 'egTestAccount is a global variable'
+    - path: providers/http/memcached/memcached_test.go
+      text: 'memcachedHosts is a global variable'
+    - path: providers/dns/sakuracloud/client_test.go
+      text: 'cyclomatic complexity 13 of func `(TestDNSProvider_cleanupTXTRecord_concurrent|TestDNSProvider_addTXTRecord_concurrent)` is high'
+    - path: providers/dns/dns_providers.go
+      text: "Function 'NewDNSChallengeProviderByName' has too many statements"
+    - path: cmd/flags.go
+      text: "Function 'CreateFlags' is too long"
+    - path: certificate/certificates.go
+      text: "Function 'GetOCSP' is too long"
+    - path: providers/dns/otc/client.go
+      text: "Function 'loginRequest' is too long"
+    - path: providers/dns/gandi/gandi.go
+      text: "Function 'Present' is too long"
+    - path: cmd/zz_gen_cmd_dnshelp.go
+      linters:
+        - gocyclo
+        - funlen
+    - path: providers/dns/checkdomain/client.go
+      text: '`payed` is a misspelling of `paid`'
+    - path: providers/dns/namecheap/namecheap_test.go
+      text: 'cognitive complexity (\d+) of func `TestDNSProvider_getHosts` is high'
+    - path: platform/tester/env_test.go
+      linters:
+        - thelper
+    - path: providers/dns/oraclecloud/oraclecloud_test.go
+      text: 'SA1019: x509.EncryptPEMBlock has been deprecated since Go 1.16'
+    - path: challenge/http01/domain_matcher.go
+      text: 'yodaStyleExpr'
+    - path: providers/dns/dns_providers.go
+      text: 'Function name: NewDNSChallengeProviderByName,'
+    - path: providers/dns/sakuracloud/client.go
+      text: 'mu is a global variable'
+    - path: providers/dns/hosttech/internal/client_test.go
+      text: 'Duplicate words \(0\) found'

@@ -266,6 +266,7 @@ func (c *Client) doRequest(payload, responseData interface{}) error {
 	if responseData != nil {
 		err = json.Unmarshal(respMsg.ResponseData, responseData)
 		if err != nil {
+			//nolint:errorlint // in this context respMsg is not an error.
 			return fmt.Errorf("%v: unmarshaling %T error: %w: %s",
 				respMsg, responseData, err, string(respMsg.ResponseData))
 		}

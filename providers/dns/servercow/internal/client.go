@@ -124,6 +124,7 @@ func (c *Client) DeleteRecord(domain string, data Record) (*Message, error) {
 	var msg Message
 	err = json.Unmarshal(raw, &msg)
 	if err != nil {
+		//nolint:errorlint // in this context msg is not an error, and we just get the type.
 		return nil, fmt.Errorf("unmarshaling %T error: %w: %s", msg, err, string(raw))
 	}
 

@@ -1,5 +1,6 @@
 // Package nfqueue implements a HTTP provider for solving the HTTP-01 challenge using nfqueue
 // by captureing http challange pacet in fly and answering it by ourself
+// This solver needs a TCP server attached on request port, and need root or CAP_NET_ADMIN
 package nfqueue
 
 import (
@@ -27,6 +28,14 @@ type HTTPProvider struct {
 	cancel  context.CancelFunc
 }
 
+// a struct holds thing that packet handler should know about
+type chalnfq struct {
+	domain  string
+	token   string
+	keyAuth string
+	queue   *gnfqueue.Nfqueue
+}
+
 var sopt = gopacket.SerializeOptions{
 	FixLengths:       true,
 	ComputeChecksums: true,
@@ -42,7 +51,7 @@ func NewHttpDpiProvider(port string) (*HTTPProvider, error) {
 	return c, nil
 }
 
-// this craft acme challange response in HTTP level
+// craftkeyauthresponse carft acme challange response in HTTP level
 func craftkeyauthresponse(keyAuth string) []byte {
 	var reply []byte
 	reply = fmt.Append(reply, "HTTP/1.1 200 OK\r\n")
@@ -54,19 +63,22 @@ func craftkeyauthresponse(keyAuth string) []byte {
 	return reply
 }
 
+// setFirewallRule set rule in firewall INPUT chain so we can sniff on
+// with --queue-bypass option even if this crash without clean webserver will listen
+// iptables {on} INPUT -p tcp --dport {Port} -j NFQUEUE --queue-num 8555 --queue-bypass
 func setFirewallRule(on bool, port string) error {
+	// google's nft api is unstable, so we run command as-is
 	var onoff string
 	if on {
 		onoff = "-I"
 	} else {
 		onoff = "-D"
 	}
-
-	out, err := exec.Command("sudo", "iptables", onoff, "INPUT", "-p", "tcp", "--dport", port, "-j", "NFQUEUE", "--queue-num", "8555", "--queue-bypass").CombinedOutput()
+	out, err := exec.Command("iptables", onoff, "INPUT", "-p", "tcp", "--dport", port, "-j", "NFQUEUE", "--queue-num", "8555", "--queue-bypass").CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("%s", out)
 	}
-	err = exec.Command("sudo", "ip6tables", onoff, "INPUT", "-p", "tcp", "--dport", port, "-j", "NFQUEUE", "--queue-num", "8555", "--queue-bypass").Run()
+	err = exec.Command("ip6tables", onoff, "INPUT", "-p", "tcp", "--dport", port, "-j", "NFQUEUE", "--queue-num", "8555", "--queue-bypass").Run()
 	if err != nil {
 		return fmt.Errorf("%s", out)
 	}
@@ -98,7 +110,7 @@ func craftReplyandSend(keyAuth string, inputpacket gopacket.Packet, dst net.IP) 
 	// send http reply
 	sendPacket(outbuffer.Bytes(), &dst)
 
-	// need to ACK the server FIN so acme server can close connection
+	// need to ACK for the server FIN so acme server can close connection
 	outbuffer.Clear()
 	tcplayer.ACK = true
 	tcplayer.PSH = false
@@ -107,8 +119,8 @@ func craftReplyandSend(keyAuth string, inputpacket gopacket.Packet, dst net.IP) 
 
 	tcplayer.SetNetworkLayerForChecksum(inputIPL)
 	gopacket.SerializeLayers(outbuffer, sopt, tcplayer)
-	// Fin+ACK to acme server so it knows it's done,
-	// sleep some time here so acme server sent it's FIN+ACK here
+	// sleep some time here so acme server sent its FIN+ACK when this arrives
+	// alternatives are: 1. send rst here instead 2. actually trace connection
 	time.Sleep(time.Millisecond * 10)
 	sendPacket(outbuffer.Bytes(), &dst)
 
@@ -140,8 +152,66 @@ func sendPacket(packet []byte, DstIP *net.IP) error {
 	return nil
 }
 
+// handlePacket handles packet input
+func (q chalnfq) handlePacket(qupkt gnfqueue.Attribute) int {
+	id := *qupkt.PacketID
+	dopt := gopacket.DecodeOptions{
+		NoCopy: true,
+		Lazy:   false,
+	}
+	var ipLType gopacket.LayerType
+	// Hwprotocol here is ethernet frame protocol header
+	if *qupkt.HwProtocol == 0x0800 {
+		//ipv4
+		ipLType = layers.LayerTypeIPv4
+	} else if *qupkt.HwProtocol == 0x86DD {
+		ipLType = layers.LayerTypeIPv6
+	} else {
+		q.queue.SetVerdict(id, gnfqueue.NfAccept)
+		return 0
+	}
+	packetin := gopacket.NewPacket(*qupkt.Payload, ipLType, dopt)
+	// Get actual TCP data from this layer
+	tcpLayer := packetin.Layer(layers.LayerTypeTCP)
+	if tcpLayer == nil {
+		q.queue.SetVerdict(id, gnfqueue.NfAccept)
+		return 0
+	}
+	inputTcp := tcpLayer.(*layers.TCP)
+	// get destination IP here, this is sent from other side, so src is other side
+	otherend := net.IP(packetin.NetworkLayer().NetworkFlow().Src().Raw())
+	// this should be HTTP payload as this is webserver
+	httpPayload, err := http.ReadRequest(bufio.NewReader((bytes.NewReader(inputTcp.LayerPayload()))))
+	if err != nil {
+		q.queue.SetVerdict(id, gnfqueue.NfAccept)
+		return 0
+	}
+	// check this request ask for token
+	chalPath := fmt.Sprintf("/.well-known/acme-challenge/%s", q.token)
+	if httpPayload.URL.Path == chalPath {
+		// we got the token!
+		// forge our new reply
+		log.Infof("[%s] Injecting key authentication", q.domain)
+		err := craftReplyandSend(q.keyAuth, packetin, otherend)
+		if err != nil {
+			return 0
+		}
+		// mark incomming packet as RST so backend server ignore and close session
+		rstpk := craftRSTbyte(packetin)
+		err = q.queue.SetVerdictModPacket(id, gnfqueue.NfAccept, rstpk)
+		if err != nil {
+			fmt.Print("modpacket err", err)
+		}
+		// packet sent, end of function
+		return 0
+	} else {
+		q.queue.SetVerdict(id, gnfqueue.NfAccept)
+		return 0
+	}
+
+}
+
 // serve runs server by sniffing packets on firewall and inject response into it.
-// iptables ://
 func (w *HTTPProvider) serve(domain, token, keyAuth string) error {
 	// run nfqueue start
 	config := gnfqueue.Config{
@@ -158,75 +228,21 @@ func (w *HTTPProvider) serve(domain, token, keyAuth string) error {
 	}
 	defer nf.Close()
 
-	// handle Packet
-	handlepacket := func(a gnfqueue.Attribute) int {
-		id := *a.PacketID
-		// assume ipv4 for now, will segfault
-		dopt := gopacket.DecodeOptions{
-			NoCopy: true,
-			Lazy:   false,
-		}
-		var ipLType gopacket.LayerType
-		if *a.HwProtocol == 0x0800 {
-			//ipv4
-			ipLType = layers.LayerTypeIPv4
-		} else if *a.HwProtocol == 0x86DD {
-			ipLType = layers.LayerTypeIPv6
-		} else {
-			nf.SetVerdict(id, gnfqueue.NfAccept)
-			return 0
-		}
-		packetin := gopacket.NewPacket(*a.Payload, ipLType, dopt)
-		// iplayer := payload.LayerClass(layers.LayerClassIPNetwork)
-		// Get actual TCP data from this layer
-		tcpLayer := packetin.Layer(layers.LayerTypeTCP)
-		if tcpLayer == nil {
-			nf.SetVerdict(id, gnfqueue.NfAccept)
-			return 0
-		}
-		inputTcp := tcpLayer.(*layers.TCP)
-		// get destination IP here, this is sent from other side, so src is other side
-		otherend := net.IP(packetin.NetworkLayer().NetworkFlow().Src().Raw())
-		// this should be HTTP payload
-		httpPayload, err := http.ReadRequest(bufio.NewReader((bytes.NewReader(inputTcp.LayerPayload()))))
-		if err != nil {
-			nf.SetVerdict(id, gnfqueue.NfAccept)
-			return 0
-		}
-		// check token in http
-		chalPath := fmt.Sprintf("/.well-known/acme-challenge/%s", token)
-		if httpPayload.URL.Path == chalPath {
-			// we got the token!
-			// forge our new reply
-			log.Infof("[%s] Injecting key authentication", domain)
-			err := craftReplyandSend(keyAuth, packetin, otherend)
-			if err != nil {
-				return 0
-			}
-			// mark incomming packet as RST so backend server ignore and close session
-			if err != nil {
-				fmt.Print("modpacket err", err)
-			}
-			rstpk := craftRSTbyte(packetin)
-			err = nf.SetVerdictModPacket(id, gnfqueue.NfAccept, rstpk)
-			if err != nil {
-				fmt.Print("modpacket err", err)
-			}
-			// packet sent, end of function
-			return 0
-		} else {
-			nf.SetVerdict(id, gnfqueue.NfAccept)
-			return 0
-		}
+	h := chalnfq{
+		token:   token,
+		domain:  domain,
+		keyAuth: keyAuth,
+		queue:   nf,
 	}
 
+	// error here would mean we couldn't capture packet, notthing to act about
 	ignoreerr := func(err error) int {
 		log.Print(err)
 		return 0
 	}
 
-	// Register your function to listen on nflqueue queue
-	err = nf.RegisterWithErrorFunc(w.context, handlepacket, ignoreerr)
+	// Register function to listen on nflqueue queue
+	err = nf.RegisterWithErrorFunc(w.context, h.handlePacket, ignoreerr)
 	if err != nil {
 		fmt.Println(err)
 		return nil
@@ -249,9 +265,13 @@ func (w *HTTPProvider) Present(domain, token, keyAuth string) error {
 	} else {
 		con.Close()
 	}
+	// if there is residuel firewall rule from old run remove it, ignore error
+	setFirewallRule(false, w.port)
+
+	// try set actuall firewall rule needed
 	err = setFirewallRule(true, w.port)
 	if err != nil {
-		return err
+		return fmt.Errorf("[nfqueue] fail to set firewal rule, error : %s", err.Error())
 	}
 	w.context, w.cancel = context.WithCancel(context.Background())
 	go w.serve(domain, token, keyAuth)
@@ -260,7 +280,6 @@ func (w *HTTPProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the firewall rule created for the challenge.
 // solve should removed it already but just do be safe:
-// iptables -D INPUT -p tcp --dport Port -j NFQUEUE --queue-num 8555
 func (w *HTTPProvider) CleanUp(domain, token, keyAuth string) error {
 	setFirewallRule(false, w.port)
 	// tell nfqueue to shut down

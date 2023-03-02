@@ -41,8 +41,8 @@ GLOBAL OPTIONS:
    --key-type value, -k value                                   Key type to use for private keys. Supported: rsa2048, rsa3072, rsa4096, rsa8192, ec256, ec384. (default: "ec256")
    --kid value                                                  Key identifier from External CA. Used for External Account Binding.
    --path value                                                 Directory to use for storing the data. (default: "./.lego") [$LEGO_PATH]
-   --pem                                                        Generate a .pem file by concatenating the .key and .crt files together. (default: false)
-   --pfx                                                        Generate a .pfx (PKCS#12) file by with the .key and .crt and issuer .crt files together. (default: false)
+   --pem                                                        Generate an additional .pem (base64) file by concatenating the .key and .crt files together. (default: false)
+   --pfx                                                        Generate an additional .pfx (PKCS#12) file by concatenating the .key and .crt and issuer .crt files together. (default: false)
    --pfx.pass value                                             The password used to encrypt the .pfx (PCKS#12) file. (default: "changeit")
    --server value, -s value                                     CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client. (default: "https://acme-v02.api.letsencrypt.org/directory")
    --tls                                                        Use the TLS challenge to solve challenges. Can be mixed with other types of challenges. (default: false)

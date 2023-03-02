@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<packet version="1.6.9.1">
+    <dns>
+        <add_rec>
+            <result>
+                <status>ok</status>
+                <id>4537</id>
+            </result>
+        </add_rec>
+    </dns>
+</packet>

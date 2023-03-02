@@ -428,6 +428,8 @@ github.com/nrdcg/goinwx v0.8.1 h1:20EQ/JaGFnSKwiDH2JzjIpicffl3cPk6imJBDqVBVtU=
 github.com/nrdcg/goinwx v0.8.1/go.mod h1:tILVc10gieBp/5PMvbcYeXM6pVQ+c9jxDZnpaR1UW7c=
 github.com/nrdcg/namesilo v0.2.1 h1:kLjCjsufdW/IlC+iSfAqj0iQGgKjlbUUeDJio5Y6eMg=
 github.com/nrdcg/namesilo v0.2.1/go.mod h1:lwMvfQTyYq+BbjJd30ylEG4GPSS6PII0Tia4rRpRiyw=
+github.com/nrdcg/nodion v0.1.0 h1:zLKaqTn2X0aDuBHHfyA1zFgeZfiCpmu/O9DM73okavw=
+github.com/nrdcg/nodion v0.1.0/go.mod h1:inbuh3neCtIWlMPZHtEpe43TmRXxHV6+hk97iCZicms=
 github.com/nrdcg/porkbun v0.1.1 h1:gxVzQYfFUGXhnBax/aVugoE3OIBAdHgrJgyMPyY5Sjo=
 github.com/nrdcg/porkbun v0.1.1/go.mod h1:JWl/WKnguWos4mjfp4YizvvToigk9qpQwrodOk+CPoA=
 github.com/nxadm/tail v1.4.4/go.mod h1:kenIhsEOeOJmVchQTgglprH7qJGnHDVpk1VPCcaMI8A=
@@ -507,6 +509,8 @@ github.com/scaleway/scaleway-sdk-go v1.0.0-beta.9 h1:0roa6gXKgyta64uqh52AQG3wzZX
 github.com/scaleway/scaleway-sdk-go v1.0.0-beta.9/go.mod h1:fCa7OJZ/9DRTnOKmxvT6pn+LPWUptQAmHF/SBJUGEcg=
 github.com/sean-/seed v0.0.0-20170313163322-e2103e2c3529/go.mod h1:DxrIzT+xaE7yg65j358z/aeFdxmN0P9QXhEzd20vsDc=
 github.com/shurcooL/sanitized_anchor_name v1.0.0/go.mod h1:1NzhyTcUVG4SuEtjjoZeVRXNmyL/1OwPU0+IJeTBvfc=
+github.com/simplesurance/bunny-go v0.0.0-20221115111006-e11d9dc91f04 h1:ZTzdx88+AcnjqUfJwnz89UBrMSBQ1NEysg9u5d+dU9c=
+github.com/simplesurance/bunny-go v0.0.0-20221115111006-e11d9dc91f04/go.mod h1:5KS21fpch8TIMyAUv/qQqTa3GZfBDYgjaZbd2KXKYfg=
 github.com/sirupsen/logrus v1.2.0/go.mod h1:LxeOpSwHxABJmUn/MG1IvRgCAasNZTLOkJPxbbu5VWo=
 github.com/sirupsen/logrus v1.4.2/go.mod h1:tLMulIdttU9McNUspp0xgXVQah82FyeX6MwdIuYE2rE=
 github.com/sirupsen/logrus v1.8.1 h1:dJKuHgqk1NNQlqoA6BTlM1Wf9DOH3NBjQyu0h9+AZZE=

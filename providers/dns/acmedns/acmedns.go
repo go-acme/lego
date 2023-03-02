@@ -102,21 +102,25 @@ func (e ErrCNAMERequired) Error() string {
 // one will be created and registered with the ACME DNS server and an ErrCNAMERequired error is returned.
 // This will halt issuance and indicate to the user that a one-time manual setup is required for the domain.
 func (d *DNSProvider) Present(domain, _, keyAuth string) error {
-	// Compute the challenge response FQDN and TXT value for the domain based
-	// on the keyAuth.
+	// Compute the challenge response FQDN and TXT value for the domain based on the keyAuth.
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	// Check if credentials were previously saved for this domain.
-	// TODO(ldez) replace domain by FQDN to follow CNAME.
-	account, err := d.storage.Fetch(domain)
-	// Errors other than goacmeDNS.ErrDomainNotFound are unexpected.
-	if err != nil && !errors.Is(err, goacmedns.ErrDomainNotFound) {
-		return err
+	effectiveDomain := domain
+	if isCNAME(domain, fqdn) {
+		effectiveDomain = fqdn
 	}
-	if errors.Is(err, goacmedns.ErrDomainNotFound) {
-		// The account did not exist. Create a new one and return an error
-		// indicating the required one-time manual CNAME setup.
-		return d.register(domain, fqdn)
+
+	// Check if credentials were previously saved for this domain.
+	account, err := d.storage.Fetch(effectiveDomain)
+	if err != nil {
+		if errors.Is(err, goacmedns.ErrDomainNotFound) {
+			// The account did not exist.
+			// Create a new one and return an error indicating the required one-time manual CNAME setup.
+			return d.register(effectiveDomain, fqdn)
+		}
+
+		// Errors other than goacmeDNS.ErrDomainNotFound are unexpected.
+		return err
 	}
 
 	// Update the acme-dns TXT record.
@@ -160,4 +164,8 @@ func (d *DNSProvider) register(domain, fqdn string) error {
 		FQDN:   fqdn,
 		Target: newAcct.FullDomain,
 	}
+}
+
+func isCNAME(domain, fqdn string) bool {
+	return fmt.Sprintf("_acme-challenge.%s.", domain) != fqdn
 }

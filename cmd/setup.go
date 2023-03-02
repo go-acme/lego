@@ -65,6 +65,8 @@ func getKeyType(ctx *cli.Context) certcrypto.KeyType {
 	switch strings.ToUpper(keyType) {
 	case "RSA2048":
 		return certcrypto.RSA2048
+	case "RSA3072":
+		return certcrypto.RSA3072
 	case "RSA4096":
 		return certcrypto.RSA4096
 	case "RSA8192":

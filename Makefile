@@ -26,9 +26,6 @@ image:
 	@echo Version: $(VERSION)
 	docker build -t $(LEGO_IMAGE) .
 
-publish-images:
-	seihon publish -v "$(TAG_NAME)" -v "latest" --image-name="$(LEGO_IMAGE)" --dry-run=false
-
 test: clean
 	go test -v -cover ./...
 

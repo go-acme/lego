@@ -1,5 +1,15 @@
 # Changelog
 
+## [v4.10.2] - 2023-02-26
+
+Fix Docker image builds.
+
+## [v4.10.1] - 2023-02-25
+
+### Fixed:
+- **[dnsprovider,cname]** acmedns: fix CNAME support
+- **[dnsprovider]** dynu: fix subdomain support
+
 ## [v4.10.0] - 2023-02-10
 
 ### Added:

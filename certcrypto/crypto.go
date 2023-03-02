@@ -25,6 +25,7 @@ const (
 	EC256   = KeyType("P256")
 	EC384   = KeyType("P384")
 	RSA2048 = KeyType("2048")
+	RSA3072 = KeyType("3072")
 	RSA4096 = KeyType("4096")
 	RSA8192 = KeyType("8192")
 )
@@ -121,6 +122,8 @@ func GeneratePrivateKey(keyType KeyType) (crypto.PrivateKey, error) {
 		return ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
 	case RSA2048:
 		return rsa.GenerateKey(rand.Reader, 2048)
+	case RSA3072:
+		return rsa.GenerateKey(rand.Reader, 3072)
 	case RSA4096:
 		return rsa.GenerateKey(rand.Reader, 4096)
 	case RSA8192:

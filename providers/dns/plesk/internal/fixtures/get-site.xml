@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<packet version="1.6.9.1">
+    <site>
+        <get>
+            <result>
+                <status>ok</status>
+                <filter-id>example.com</filter-id>
+                <id>82</id>
+                <data>
+                    <gen_info>
+                        <cr_date>2022-12-31</cr_date>
+                        <name>example.com</name>
+                        <ascii-name>example.com</ascii-name>
+                        <status>0</status>
+                        <real_size>2717782016</real_size>
+                        <dns_ip_address>217.28.1.1</dns_ip_address>
+                        <htype>vrt_hst</htype>
+                        <guid>e9114a63-e626-4977-ac15-a8e608750a33</guid>
+                        <webspace-guid>e9114a63-e626-4977-ac15-a8e608750a33</webspace-guid>
+                        <sb-site-uuid></sb-site-uuid>
+                        <webspace-id>82</webspace-id>
+                        <description></description>
+                    </gen_info>
+                </data>
+            </result>
+        </get>
+    </site>
+</packet>

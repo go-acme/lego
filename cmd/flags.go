@@ -120,11 +120,11 @@ func CreateFlags(defaultPath string) []cli.Flag {
 		},
 		&cli.BoolFlag{
 			Name:  "pem",
-			Usage: "Generate a .pem file by concatenating the .key and .crt files together.",
+			Usage: "Generate an additional .pem (base64) file by concatenating the .key and .crt files together.",
 		},
 		&cli.BoolFlag{
 			Name:  "pfx",
-			Usage: "Generate a .pfx (PKCS#12) file by with the .key and .crt and issuer .crt files together.",
+			Usage: "Generate an additional .pfx (PKCS#12) file by concatenating the .key and .crt and issuer .crt files together.",
 		},
 		&cli.StringFlag{
 			Name:  "pfx.pass",

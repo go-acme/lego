@@ -119,6 +119,10 @@ func CreateFlags(defaultPath string) []cli.Flag {
 			Value: 10,
 		},
 		&cli.BoolFlag{
+			Name:  "bupem",
+			Usage: "Generate an additional 'bottom-up' .bupem (PEM, base64) file by concatenating the .key, .crt and issuer .crt together, in that order.",
+		},
+		&cli.BoolFlag{
 			Name:  "pem",
 			Usage: "Generate an additional .pem (base64) file by concatenating the .key and .crt files together.",
 		},

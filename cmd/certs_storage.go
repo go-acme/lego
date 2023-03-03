@@ -43,6 +43,8 @@ const (
 type CertificatesStorage struct {
 	rootPath    string
 	archivePath string
+	bundle      bool
+	bupem       bool
 	pem         bool
 	pfx         bool
 	pfxPassword string
@@ -54,6 +56,8 @@ func NewCertificatesStorage(ctx *cli.Context) *CertificatesStorage {
 	return &CertificatesStorage{
 		rootPath:    filepath.Join(ctx.String("path"), baseCertificatesFolderName),
 		archivePath: filepath.Join(ctx.String("path"), baseArchivesFolderName),
+		bundle:      !ctx.Bool("no-bundle"),
+		bupem:       ctx.Bool("bupem"),
 		pem:         ctx.Bool("pem"),
 		pfx:         ctx.Bool("pfx"),
 		pfxPassword: ctx.String("pfx.pass"),
@@ -102,8 +106,8 @@ func (s *CertificatesStorage) SaveResource(certRes *certificate.Resource) {
 		if err != nil {
 			log.Fatalf("Unable to save PrivateKey for domain %s\n\t%v", domain, err)
 		}
-	} else if s.pem || s.pfx {
-		// we don't have the private key; can't write the .pem or .pfx file
+	} else if s.bupem || s.pem || s.pfx {
+		// we don't have the private key; can't write the .bupem, .pem or .pfx file
 		log.Fatalf("Unable to save PEM or PFX without private key for domain %s. Are you using a CSR?", domain)
 	}
 
@@ -179,6 +183,20 @@ func (s *CertificatesStorage) WriteCertificateFiles(domain string, certRes *cert
 	err := s.WriteFile(domain, ".key", certRes.PrivateKey)
 	if err != nil {
 		return fmt.Errorf("unable to save key file: %w", err)
+	}
+
+	if s.bupem { // how we make the bupem depends on whether the bundle flag is true. bottom-up == private key first.
+		if s.bundle { // bundle is true by default. So certRes.Certificate already consists of OurX509+Int+CA
+			err = s.WriteFile(domain, ".bupem", bytes.Join([][]byte{certRes.PrivateKey, certRes.Certificate}, nil))
+			if err != nil {
+				return fmt.Errorf("unable to save bottom-up PEM file: %w", err)
+			}
+		} else { // when bundle is false, we want pKey+OurX509+Int+CA
+			err = s.WriteFile(domain, ".bupem", bytes.Join([][]byte{certRes.PrivateKey, certRes.Certificate, certRes.IssuerCertificate}, nil))
+			if err != nil {
+				return fmt.Errorf("unable to save bottom-up PEM file: %w", err)
+			}
+		}
 	}
 
 	if s.pem {

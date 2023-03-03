@@ -103,11 +103,11 @@ func (e ErrCNAMERequired) Error() string {
 // This will halt issuance and indicate to the user that a one-time manual setup is required for the domain.
 func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	// Compute the challenge response FQDN and TXT value for the domain based on the keyAuth.
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	effectiveDomain := domain
-	if isCNAME(domain, fqdn) {
-		effectiveDomain = fqdn
+	if isCNAME(domain, info.EffectiveFQDN) {
+		effectiveDomain = info.EffectiveFQDN
 	}
 
 	// Check if credentials were previously saved for this domain.
@@ -116,7 +116,7 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 		if errors.Is(err, goacmedns.ErrDomainNotFound) {
 			// The account did not exist.
 			// Create a new one and return an error indicating the required one-time manual CNAME setup.
-			return d.register(effectiveDomain, fqdn)
+			return d.register(effectiveDomain, info.EffectiveFQDN)
 		}
 
 		// Errors other than goacmeDNS.ErrDomainNotFound are unexpected.
@@ -124,7 +124,7 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	}
 
 	// Update the acme-dns TXT record.
-	return d.client.UpdateTXTRecord(account, value)
+	return d.client.UpdateTXTRecord(account, info.Value)
 }
 
 // CleanUp removes the record matching the specified parameters. It is not

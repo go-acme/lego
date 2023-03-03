@@ -94,16 +94,16 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, _, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	ctx := context.Background()
 
-	zone, err := d.guessZone(ctx, fqdn)
+	zone, err := d.guessZone(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("gcore: %w", err)
 	}
 
-	err = d.client.AddRRSet(ctx, zone, dns01.UnFqdn(fqdn), value, d.config.TTL)
+	err = d.client.AddRRSet(ctx, zone, dns01.UnFqdn(info.EffectiveFQDN), info.Value, d.config.TTL)
 	if err != nil {
 		return fmt.Errorf("gcore: add txt record: %w", err)
 	}
@@ -113,16 +113,16 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 
 // CleanUp removes the record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	ctx := context.Background()
 
-	zone, err := d.guessZone(ctx, fqdn)
+	zone, err := d.guessZone(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("gcore: %w", err)
 	}
 
-	err = d.client.DeleteRRSet(ctx, zone, dns01.UnFqdn(fqdn))
+	err = d.client.DeleteRRSet(ctx, zone, dns01.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
 		return fmt.Errorf("gcore: remove txt record: %w", err)
 	}

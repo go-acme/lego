@@ -111,11 +111,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domainName, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domainName, keyAuth)
+	info := dns01.GetChallengeInfo(domainName, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("dnsmadeeasy: unable to find zone for %s: %w", fqdn, err)
+		return fmt.Errorf("dnsmadeeasy: unable to find zone for %s: %w", info.EffectiveFQDN, err)
 	}
 
 	// fetch the domain details
@@ -125,8 +125,8 @@ func (d *DNSProvider) Present(domainName, token, keyAuth string) error {
 	}
 
 	// create the TXT record
-	name := strings.Replace(fqdn, "."+authZone, "", 1)
-	record := &internal.Record{Type: "TXT", Name: name, Value: value, TTL: d.config.TTL}
+	name := strings.Replace(info.EffectiveFQDN, "."+authZone, "", 1)
+	record := &internal.Record{Type: "TXT", Name: name, Value: info.Value, TTL: d.config.TTL}
 
 	err = d.client.CreateRecord(domain, record)
 	if err != nil {
@@ -137,11 +137,11 @@ func (d *DNSProvider) Present(domainName, token, keyAuth string) error {
 
 // CleanUp removes the TXT records matching the specified parameters.
 func (d *DNSProvider) CleanUp(domainName, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domainName, keyAuth)
+	info := dns01.GetChallengeInfo(domainName, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("dnsmadeeasy: unable to find zone for %s: %w", fqdn, err)
+		return fmt.Errorf("dnsmadeeasy: unable to find zone for %s: %w", info.EffectiveFQDN, err)
 	}
 
 	// fetch the domain details
@@ -151,7 +151,7 @@ func (d *DNSProvider) CleanUp(domainName, token, keyAuth string) error {
 	}
 
 	// find matching records
-	name := strings.Replace(fqdn, "."+authZone, "", 1)
+	name := strings.Replace(info.EffectiveFQDN, "."+authZone, "", 1)
 	records, err := d.client.GetRecords(domain, name, "TXT")
 	if err != nil {
 		return fmt.Errorf("dnsmadeeasy: unable to get records for domain %s: %w", domain.Name, err)

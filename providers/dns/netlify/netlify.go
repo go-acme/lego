@@ -101,9 +101,9 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("netlify: failed to find zone: %w", err)
 	}
@@ -111,15 +111,15 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	authZone = dns01.UnFqdn(authZone)
 
 	record := internal.DNSRecord{
-		Hostname: dns01.UnFqdn(fqdn),
+		Hostname: dns01.UnFqdn(info.EffectiveFQDN),
 		TTL:      d.config.TTL,
 		Type:     "TXT",
-		Value:    value,
+		Value:    info.Value,
 	}
 
 	resp, err := d.client.CreateRecord(strings.ReplaceAll(authZone, ".", "_"), record)
 	if err != nil {
-		return fmt.Errorf("netlify: failed to create TXT records: fqdn=%s, authZone=%s: %w", fqdn, authZone, err)
+		return fmt.Errorf("netlify: failed to create TXT records: fqdn=%s, authZone=%s: %w", info.EffectiveFQDN, authZone, err)
 	}
 
 	d.recordIDsMu.Lock()
@@ -131,9 +131,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("netlify: failed to find zone: %w", err)
 	}
@@ -145,12 +145,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	recordID, ok := d.recordIDs[token]
 	d.recordIDsMu.Unlock()
 	if !ok {
-		return fmt.Errorf("netlify: unknown record ID for '%s' '%s'", fqdn, token)
+		return fmt.Errorf("netlify: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
 	err = d.client.RemoveRecord(strings.ReplaceAll(authZone, ".", "_"), recordID)
 	if err != nil {
-		return fmt.Errorf("netlify: failed to delete TXT records: fqdn=%s, authZone=%s, recordID=%s: %w", fqdn, authZone, recordID, err)
+		return fmt.Errorf("netlify: failed to delete TXT records: fqdn=%s, authZone=%s, recordID=%s: %w", info.EffectiveFQDN, authZone, recordID, err)
 	}
 
 	// deletes record ID from map

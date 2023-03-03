@@ -112,13 +112,13 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("checkdomain: %w", err)
 	}
 
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	err = d.createRecord(domainID, &Record{
-		Name:  fqdn,
+		Name:  info.EffectiveFQDN,
 		TTL:   d.config.TTL,
 		Type:  "TXT",
-		Value: value,
+		Value: info.Value,
 	})
 
 	if err != nil {
@@ -141,15 +141,15 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("checkdomain: %w", err)
 	}
 
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	err = d.deleteTXTRecord(domainID, fqdn, value)
+	err = d.deleteTXTRecord(domainID, info.EffectiveFQDN, info.Value)
 	if err != nil {
 		return fmt.Errorf("checkdomain: %w", err)
 	}
 
 	d.domainIDMu.Lock()
-	delete(d.domainIDMapping, fqdn)
+	delete(d.domainIDMapping, info.EffectiveFQDN)
 	d.domainIDMu.Unlock()
 
 	return nil

@@ -112,14 +112,14 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	zones, err := d.client.ListZones()
 	if err != nil {
 		return fmt.Errorf("luadns: failed to get zones: %w", err)
 	}
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("luadns: failed to find zone: %w", err)
 	}
@@ -130,9 +130,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	newRecord := internal.DNSRecord{
-		Name:    fqdn,
+		Name:    info.EffectiveFQDN,
 		Type:    "TXT",
-		Content: value,
+		Content: info.Value,
 		TTL:     d.config.TTL,
 	}
 
@@ -150,14 +150,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	d.recordsMu.Lock()
 	record, ok := d.records[token]
 	d.recordsMu.Unlock()
 
 	if !ok {
-		return fmt.Errorf("luadns: unknown record ID for '%s'", fqdn)
+		return fmt.Errorf("luadns: unknown record ID for '%s'", info.EffectiveFQDN)
 	}
 
 	err := d.client.DeleteRecord(record)

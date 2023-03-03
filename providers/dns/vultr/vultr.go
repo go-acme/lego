@@ -97,7 +97,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	zoneDomain, err := d.getHostedZone(ctx, domain)
@@ -105,7 +105,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("vultr: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, zoneDomain)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zoneDomain)
 	if err != nil {
 		return fmt.Errorf("vultr: %w", err)
 	}
@@ -113,7 +113,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	req := govultr.DomainRecordReq{
 		Name:     subDomain,
 		Type:     "TXT",
-		Data:     `"` + value + `"`,
+		Data:     `"` + info.Value + `"`,
 		TTL:      d.config.TTL,
 		Priority: func(v int) *int { return &v }(0),
 	}
@@ -129,10 +129,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	// TODO(ldez) replace domain by FQDN to follow CNAME.
-	zoneDomain, records, err := d.findTxtRecords(ctx, domain, fqdn)
+	zoneDomain, records, err := d.findTxtRecords(ctx, domain, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("vultr: %w", err)
 	}

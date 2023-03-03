@@ -105,14 +105,14 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	record := txtRecord{
-		Name:        dns01.UnFqdn(fqdn),
-		Destination: value,
+		Name:        dns01.UnFqdn(info.EffectiveFQDN),
+		Destination: info.Value,
 	}
 
-	authZone, err := getHostedZone(fqdn)
+	authZone, err := getHostedZone(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("zoneee: %w", err)
 	}
@@ -126,9 +126,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record previously created.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := getHostedZone(fqdn)
+	authZone, err := getHostedZone(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("zoneee: %w", err)
 	}
@@ -140,13 +140,13 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	var id string
 	for _, record := range records {
-		if record.Destination == value {
+		if record.Destination == info.Value {
 			id = record.ID
 		}
 	}
 
 	if id == "" {
-		return fmt.Errorf("zoneee: txt record does not exist for %s", value)
+		return fmt.Errorf("zoneee: txt record does not exist for %s", info.Value)
 	}
 
 	if err = d.removeTxtRecord(authZone, id); err != nil {

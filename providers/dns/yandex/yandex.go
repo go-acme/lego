@@ -91,9 +91,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	rootDomain, subDomain, err := splitDomain(fqdn)
+	rootDomain, subDomain, err := splitDomain(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("yandex: %w", err)
 	}
@@ -103,7 +103,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		SubDomain: subDomain,
 		Type:      "TXT",
 		TTL:       d.config.TTL,
-		Content:   value,
+		Content:   info.Value,
 	}
 
 	_, err = d.client.AddRecord(data)
@@ -116,9 +116,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	rootDomain, subDomain, err := splitDomain(fqdn)
+	rootDomain, subDomain, err := splitDomain(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("yandex: %w", err)
 	}
@@ -131,7 +131,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	var record *internal.Record
 	for _, rcd := range records {
 		rcd := rcd
-		if rcd.Type == "TXT" && rcd.SubDomain == subDomain && rcd.Content == value {
+		if rcd.Type == "TXT" && rcd.SubDomain == subDomain && rcd.Content == info.Value {
 			record = &rcd
 			break
 		}

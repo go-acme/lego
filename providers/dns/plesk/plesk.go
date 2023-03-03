@@ -118,11 +118,11 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("plesk: could not find zone for domain %q and fqdn %q : %w", domain, fqdn, err)
+		return fmt.Errorf("plesk: could not find zone for domain %q and fqdn %q : %w", domain, info.EffectiveFQDN, err)
 	}
 
 	siteID, err := d.client.GetSite(dns01.UnFqdn(authZone))
@@ -130,12 +130,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("plesk: failed to get site: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("nodion: %w", err)
 	}
 
-	recordID, err := d.client.AddRecord(siteID, subDomain, value)
+	recordID, err := d.client.AddRecord(siteID, subDomain, info.Value)
 	if err != nil {
 		return fmt.Errorf("plesk: failed to add record: %w", err)
 	}
@@ -149,13 +149,13 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	d.recordIDsMu.Lock()
 	recordID, ok := d.recordIDs[token]
 	d.recordIDsMu.Unlock()
 	if !ok {
-		return fmt.Errorf("plesk: unknown record ID for '%s' '%s'", fqdn, token)
+		return fmt.Errorf("plesk: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
 	_, err := d.client.DeleteRecord(recordID)

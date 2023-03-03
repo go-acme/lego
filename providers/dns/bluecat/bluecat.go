@@ -110,7 +110,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 // This will *not* create a sub-zone to contain the TXT record,
 // so make sure the FQDN specified is within an existent zone.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	err := d.client.Login(d.config.UserName, d.config.Password)
 	if err != nil {
@@ -122,19 +122,19 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("bluecat: lookupViewID: %w", err)
 	}
 
-	parentZoneID, name, err := d.client.LookupParentZoneID(viewID, fqdn)
+	parentZoneID, name, err := d.client.LookupParentZoneID(viewID, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("bluecat: lookupParentZoneID: %w", err)
 	}
 
 	if d.config.Debug {
-		log.Infof("fqdn: %s; viewID: %d; ZoneID: %d; zone: %s", fqdn, viewID, parentZoneID, name)
+		log.Infof("fqdn: %s; viewID: %d; ZoneID: %d; zone: %s", info.EffectiveFQDN, viewID, parentZoneID, name)
 	}
 
 	txtRecord := internal.Entity{
 		Name:       name,
 		Type:       internal.TXTType,
-		Properties: fmt.Sprintf("ttl=%d|absoluteName=%s|txt=%s|", d.config.TTL, fqdn, value),
+		Properties: fmt.Sprintf("ttl=%d|absoluteName=%s|txt=%s|", d.config.TTL, info.EffectiveFQDN, info.Value),
 	}
 
 	_, err = d.client.AddEntity(parentZoneID, txtRecord)
@@ -157,7 +157,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	err := d.client.Login(d.config.UserName, d.config.Password)
 	if err != nil {
@@ -169,7 +169,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("bluecat: lookupViewID: %w", err)
 	}
 
-	parentZoneID, name, err := d.client.LookupParentZoneID(viewID, fqdn)
+	parentZoneID, name, err := d.client.LookupParentZoneID(viewID, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("bluecat: lookupParentZoneID: %w", err)
 	}

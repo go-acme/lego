@@ -122,9 +122,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("otc: %w", err)
 	}
@@ -142,11 +142,11 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	resource := fmt.Sprintf("zones/%s/recordsets", zoneID)
 
 	r1 := &recordset{
-		Name:        fqdn,
+		Name:        info.EffectiveFQDN,
 		Description: "Added TXT record for ACME dns-01 challenge using lego client",
 		Type:        "TXT",
 		TTL:         d.config.TTL,
-		Records:     []string{fmt.Sprintf("%q", value)},
+		Records:     []string{fmt.Sprintf("%q", info.Value)},
 	}
 
 	_, err = d.sendRequest(http.MethodPost, resource, r1)
@@ -158,9 +158,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("otc: %w", err)
 	}
@@ -175,9 +175,9 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("otc: %w", err)
 	}
 
-	recordID, err := d.getRecordSetID(zoneID, fqdn)
+	recordID, err := d.getRecordSetID(zoneID, info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("otc: unable go get record %s for zone %s: %w", fqdn, domain, err)
+		return fmt.Errorf("otc: unable go get record %s for zone %s: %w", info.EffectiveFQDN, domain, err)
 	}
 
 	err = d.deleteRecordSet(zoneID, recordID)

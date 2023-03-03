@@ -89,11 +89,11 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := getZone(fqdn)
+	authZone, err := getZone(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("bunny: failed to find zone: fqdn=%s: %w", fqdn, err)
+		return fmt.Errorf("bunny: failed to find zone: fqdn=%s: %w", info.EffectiveFQDN, err)
 	}
 
 	ctx := context.Background()
@@ -103,7 +103,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("bunny: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("bunny: %w", err)
 	}
@@ -111,12 +111,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	record := &bunny.AddOrUpdateDNSRecordOptions{
 		Type:  pointer(bunny.DNSRecordTypeTXT),
 		Name:  pointer(subDomain),
-		Value: pointer(value),
+		Value: pointer(info.Value),
 		TTL:   pointer(int32(d.config.TTL)),
 	}
 
 	if _, err := d.client.DNSZone.AddDNSRecord(ctx, deref(zone.ID), record); err != nil {
-		return fmt.Errorf("bunny: failed to add TXT record: fqdn=%s, zoneID=%d: %w", fqdn, deref(zone.ID), err)
+		return fmt.Errorf("bunny: failed to add TXT record: fqdn=%s, zoneID=%d: %w", info.EffectiveFQDN, deref(zone.ID), err)
 	}
 
 	return nil
@@ -124,11 +124,11 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := getZone(fqdn)
+	authZone, err := getZone(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("bunny:  failed to find zone: fqdn=%s: %w", fqdn, err)
+		return fmt.Errorf("bunny:  failed to find zone: fqdn=%s: %w", info.EffectiveFQDN, err)
 	}
 
 	ctx := context.Background()
@@ -138,7 +138,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("bunny: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("bunny: %w", err)
 	}

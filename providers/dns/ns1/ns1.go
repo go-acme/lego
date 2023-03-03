@@ -84,26 +84,26 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := d.getHostedZone(fqdn)
+	zone, err := d.getHostedZone(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("ns1: %w", err)
 	}
 
-	record, _, err := d.client.Records.Get(zone.Zone, dns01.UnFqdn(fqdn), "TXT")
+	record, _, err := d.client.Records.Get(zone.Zone, dns01.UnFqdn(info.EffectiveFQDN), "TXT")
 
 	// Create a new record
 	if errors.Is(err, rest.ErrRecordMissing) || record == nil {
-		log.Infof("Create a new record for [zone: %s, fqdn: %s, domain: %s]", zone.Zone, fqdn, domain)
+		log.Infof("Create a new record for [zone: %s, fqdn: %s, domain: %s]", zone.Zone, info.EffectiveFQDN, domain)
 
-		record = dns.NewRecord(zone.Zone, dns01.UnFqdn(fqdn), "TXT")
+		record = dns.NewRecord(zone.Zone, dns01.UnFqdn(info.EffectiveFQDN), "TXT")
 		record.TTL = d.config.TTL
-		record.Answers = []*dns.Answer{{Rdata: []string{value}}}
+		record.Answers = []*dns.Answer{{Rdata: []string{info.Value}}}
 
 		_, err = d.client.Records.Create(record)
 		if err != nil {
-			return fmt.Errorf("ns1: failed to create record [zone: %q, fqdn: %q]: %w", zone.Zone, fqdn, err)
+			return fmt.Errorf("ns1: failed to create record [zone: %q, fqdn: %q]: %w", zone.Zone, info.EffectiveFQDN, err)
 		}
 
 		return nil
@@ -114,13 +114,13 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	// Update the existing records
-	record.Answers = append(record.Answers, &dns.Answer{Rdata: []string{value}})
+	record.Answers = append(record.Answers, &dns.Answer{Rdata: []string{info.Value}})
 
-	log.Infof("Update an existing record for [zone: %s, fqdn: %s, domain: %s]", zone.Zone, fqdn, domain)
+	log.Infof("Update an existing record for [zone: %s, fqdn: %s, domain: %s]", zone.Zone, info.EffectiveFQDN, domain)
 
 	_, err = d.client.Records.Update(record)
 	if err != nil {
-		return fmt.Errorf("ns1: failed to update record [zone: %q, fqdn: %q]: %w", zone.Zone, fqdn, err)
+		return fmt.Errorf("ns1: failed to update record [zone: %q, fqdn: %q]: %w", zone.Zone, info.EffectiveFQDN, err)
 	}
 
 	return nil
@@ -128,14 +128,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := d.getHostedZone(fqdn)
+	zone, err := d.getHostedZone(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("ns1: %w", err)
 	}
 
-	name := dns01.UnFqdn(fqdn)
+	name := dns01.UnFqdn(info.EffectiveFQDN)
 	_, err = d.client.Records.Delete(zone.Zone, name, "TXT")
 	if err != nil {
 		return fmt.Errorf("ns1: failed to delete record [zone: %q, domain: %q]: %w", zone.Zone, name, err)

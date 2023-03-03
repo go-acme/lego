@@ -101,9 +101,9 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("ultradns: %w", err)
 	}
@@ -114,7 +114,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	rrSetKeyData := &rrset.RRSetKey{
-		Owner:      fqdn,
+		Owner:      info.EffectiveFQDN,
 		Zone:       authZone,
 		RecordType: "TXT",
 	}
@@ -122,10 +122,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	res, _, _ := recordService.Read(rrSetKeyData)
 
 	rrSetData := &rrset.RRSet{
-		OwnerName: fqdn,
+		OwnerName: info.EffectiveFQDN,
 		TTL:       d.config.TTL,
 		RRType:    "TXT",
-		RData:     []string{value},
+		RData:     []string{info.Value},
 	}
 
 	if res != nil && res.StatusCode == 200 {
@@ -142,9 +142,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("ultradns: %w", err)
 	}
@@ -155,7 +155,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	rrSetKeyData := &rrset.RRSetKey{
-		Owner:      fqdn,
+		Owner:      info.EffectiveFQDN,
 		Zone:       authZone,
 		RecordType: "TXT",
 	}

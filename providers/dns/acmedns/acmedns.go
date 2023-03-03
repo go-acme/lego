@@ -105,21 +105,16 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	// Compute the challenge response FQDN and TXT value for the domain based on the keyAuth.
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	effectiveDomain := domain
-	if isCNAME(domain, info.EffectiveFQDN) {
-		effectiveDomain = info.EffectiveFQDN
-	}
-
 	// Check if credentials were previously saved for this domain.
-	account, err := d.storage.Fetch(effectiveDomain)
+	account, err := d.storage.Fetch(domain)
 	if err != nil {
 		if errors.Is(err, goacmedns.ErrDomainNotFound) {
 			// The account did not exist.
 			// Create a new one and return an error indicating the required one-time manual CNAME setup.
-			return d.register(effectiveDomain, info.EffectiveFQDN)
+			return d.register(domain, info.FQDN)
 		}
 
-		// Errors other than goacmeDNS.ErrDomainNotFound are unexpected.
+		// Errors other than goacmedns.ErrDomainNotFound are unexpected.
 		return err
 	}
 
@@ -164,8 +159,4 @@ func (d *DNSProvider) register(domain, fqdn string) error {
 		FQDN:   fqdn,
 		Target: newAcct.FullDomain,
 	}
-}
-
-func isCNAME(domain, fqdn string) bool {
-	return fmt.Sprintf("_acme-challenge.%s.", domain) != fqdn
 }

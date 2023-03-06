@@ -181,13 +181,13 @@ func GetRecord(domain, keyAuth string) (fqdn, value string) {
 
 // ChallengeInfo contains the information use to create the TXT record.
 type ChallengeInfo struct {
-	// FQDN the FQDN of the domain (`_acme-challenge.[domain].`)
+	// FQDN is the full-qualified challenge domain (i.e. `_acme-challenge.[domain].`)
 	FQDN string
 
 	// EffectiveFQDN contains the resulting FQDN after the CNAMEs resolutions.
 	EffectiveFQDN string
 
-	// Value the value of the TXT record.
+	// Value contains the value for the TXT record.
 	Value string
 }
 

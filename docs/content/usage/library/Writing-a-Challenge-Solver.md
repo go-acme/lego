@@ -70,23 +70,6 @@ After calling `dns01.GetChallengeInfo(domain, keyAuth)`, we now have the informa
 - `EffectiveFQDN` is the fully qualified domain name after the CNAMEs resolutions on which to set the TXT record.
 - `Value` is the record's value to set on the record.
 
-<details><summary>Migrating from Lego 4.10.2 or earlier</summary>
-
-In previous versions of Lego, we've provided and used `dns01.GetRecord(domain, keyAuth)` here.
-With the introduction of `dns01.GetChallengeInfo`, `dns01.GetRecord` is now deprecated.
-
-To migrate your own solver, replace
-
-    fqdn, value := dns01.GetRecord(domain, keyAuth)
-
-with
-
-    info := dns01.GetChallengeInfo(domain, keyAuth)
-
-and use `info.FQDN` or `info.EffectiveFQDN`, and `info.Value`.
-
-</details>
-
 So then you make an API request to the DNS service according to their docs.
 Once the TXT record is set on the domain, you may return and the challenge will proceed.
 

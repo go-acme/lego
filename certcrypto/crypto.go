@@ -147,13 +147,9 @@ func GenerateCSR(privateKey crypto.PrivateKey, domain string, san []string, must
 
 	template := x509.CertificateRequest{
 		Subject: pkix.Name{CommonName: domain},
-	}
-	if len(dnss) != 0 {
-		template.DNSNames = dnss
-	}
-	if len(ips) != 0 {
-		template.IPAddresses = ips
-	}
+		DNSNames: dnss,
+		IPAddresses: ips,
+	}	}
 
 	if mustStaple {
 		template.ExtraExtensions = append(template.ExtraExtensions, pkix.Extension{
@@ -312,8 +308,7 @@ func generateDerCert(privateKey *rsa.PrivateKey, expiration time.Time, domain st
 		ExtraExtensions:       extensions,
 	}
 	// handling SAN filling as type suspected
-	ip := net.ParseIP(domain)
-	if ip != nil {
+	if ip := net.ParseIP(domain); ip != nil {
 		template.IPAddresses = []net.IP{ip}
 	} else {
 		template.DNSNames = []string{domain}

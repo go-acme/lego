@@ -142,26 +142,21 @@ func TestChallengeIPaddress(t *testing.T) {
 		assert.True(t, net.ParseIP("127.0.0.1").Equal(remoteCert.IPAddresses[0]), "challenge certificate IPAddress ")
 		assert.NotEmpty(t, remoteCert.Extensions, "Expected the challenge certificate to contain extensions")
 
-		idx := -1
+		var foundAcmeIdentifier bool
 		for i, ext := range remoteCert.Extensions {
 			if idPeAcmeIdentifierV1.Equal(ext.Id) {
-				idx = i
+				assert.True(t, ext.Critical, "Expected the challenge certificate id-pe-acmeIdentifier extension to be marked as critical")
+				foundAcmeIdentifier = true
 				break
 			}
 		}
 
-		require.NotEqual(t, -1, idx, "Expected the challenge certificate to contain an extension with the id-pe-acmeIdentifier id,")
-
-		ext := remoteCert.Extensions[idx]
-		assert.True(t, ext.Critical, "Expected the challenge certificate id-pe-acmeIdentifier extension to be marked as critical")
-
+		require.True(t, foundAcmeIdentifier, "Expected the challenge certificate to contain an extension with the id-pe-acmeIdentifier id,")
 		zBytes := sha256.Sum256([]byte(chlng.KeyAuthorization))
 		value, err := asn1.Marshal(zBytes[:sha256.Size])
 		require.NoError(t, err, "Expected marshaling of the keyAuth to return no error")
 
-		if subtle.ConstantTimeCompare(value, ext.Value) != 1 {
-			t.Errorf("Expected the challenge certificate id-pe-acmeIdentifier extension to contain the SHA-256 digest of the keyAuth, %v, but was %v", zBytes[:], ext.Value)
-		}
+		require.EqualValues(t, value, ext.Value, "Expected the challenge certificate id-pe-acmeIdentifier extension to contain the SHA-256 digest of the keyAuth")
 
 		return nil
 	}
@@ -188,6 +183,5 @@ func TestChallengeIPaddress(t *testing.T) {
 		},
 	}
 
-	err = solver.Solve(authz)
-	require.NoError(t, err)
+	require.NoError(t, solver.Solve(authz))
 }

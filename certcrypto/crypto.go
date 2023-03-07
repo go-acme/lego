@@ -146,10 +146,10 @@ func GenerateCSR(privateKey crypto.PrivateKey, domain string, san []string, must
 	}
 
 	template := x509.CertificateRequest{
-		Subject: pkix.Name{CommonName: domain},
-		DNSNames: dnss,
+		Subject:     pkix.Name{CommonName: domain},
+		DNSNames:    dnss,
 		IPAddresses: ips,
-	}	}
+	}
 
 	if mustStaple {
 		template.ExtraExtensions = append(template.ExtraExtensions, pkix.Extension{

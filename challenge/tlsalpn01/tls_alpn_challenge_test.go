@@ -143,10 +143,12 @@ func TestChallengeIPaddress(t *testing.T) {
 		assert.NotEmpty(t, remoteCert.Extensions, "Expected the challenge certificate to contain extensions")
 
 		var foundAcmeIdentifier bool
-		for i, ext := range remoteCert.Extensions {
+		var extValue []byte
+		for _, ext := range remoteCert.Extensions {
 			if idPeAcmeIdentifierV1.Equal(ext.Id) {
 				assert.True(t, ext.Critical, "Expected the challenge certificate id-pe-acmeIdentifier extension to be marked as critical")
 				foundAcmeIdentifier = true
+				extValue = ext.Value
 				break
 			}
 		}
@@ -156,7 +158,7 @@ func TestChallengeIPaddress(t *testing.T) {
 		value, err := asn1.Marshal(zBytes[:sha256.Size])
 		require.NoError(t, err, "Expected marshaling of the keyAuth to return no error")
 
-		require.EqualValues(t, value, ext.Value, "Expected the challenge certificate id-pe-acmeIdentifier extension to contain the SHA-256 digest of the keyAuth")
+		require.EqualValues(t, value, extValue, "Expected the challenge certificate id-pe-acmeIdentifier extension to contain the SHA-256 digest of the keyAuth")
 
 		return nil
 	}

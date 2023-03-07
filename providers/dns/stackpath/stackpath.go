@@ -112,14 +112,14 @@ func getOathClient(config *Config) *http.Client {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := d.getZones(fqdn)
+	zone, err := d.getZones(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("stackpath: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, zone.Domain)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone.Domain)
 	if err != nil {
 		return fmt.Errorf("stackpath: %w", err)
 	}
@@ -128,7 +128,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Name: subDomain,
 		Type: "TXT",
 		TTL:  d.config.TTL,
-		Data: value,
+		Data: info.Value,
 	}
 
 	return d.createZoneRecord(zone, record)
@@ -136,14 +136,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := d.getZones(fqdn)
+	zone, err := d.getZones(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("stackpath: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, zone.Domain)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone.Domain)
 	if err != nil {
 		return fmt.Errorf("stackpath: %w", err)
 	}

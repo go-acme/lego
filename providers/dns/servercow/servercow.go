@@ -97,9 +97,9 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := getAuthZone(fqdn)
+	authZone, err := getAuthZone(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("servercow: %w", err)
 	}
@@ -109,7 +109,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("servercow: %w", err)
 	}
 
-	recordName, err := dns01.ExtractSubDomain(fqdn, authZone)
+	recordName, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("servercow: %w", err)
 	}
@@ -118,7 +118,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	// TXT record entry already existing
 	if record != nil {
-		if containsValue(record, value) {
+		if containsValue(record, info.Value) {
 			return nil
 		}
 
@@ -126,7 +126,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 			Name:    record.Name,
 			TTL:     record.TTL,
 			Type:    record.Type,
-			Content: append(record.Content, value),
+			Content: append(record.Content, info.Value),
 		}
 
 		_, err = d.client.CreateUpdateRecord(authZone, request)
@@ -140,12 +140,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Type:    "TXT",
 		Name:    recordName,
 		TTL:     d.config.TTL,
-		Content: internal.Value{value},
+		Content: internal.Value{info.Value},
 	}
 
 	_, err = d.client.CreateUpdateRecord(authZone, request)
 	if err != nil {
-		return fmt.Errorf("servercow: failed to create TXT record %s: %w", fqdn, err)
+		return fmt.Errorf("servercow: failed to create TXT record %s: %w", info.EffectiveFQDN, err)
 	}
 
 	return nil
@@ -153,9 +153,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record previously created.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := getAuthZone(fqdn)
+	authZone, err := getAuthZone(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("servercow: %w", err)
 	}
@@ -165,7 +165,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("servercow: failed to get TXT records: %w", err)
 	}
 
-	recordName, err := dns01.ExtractSubDomain(fqdn, authZone)
+	recordName, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("servercow: %w", err)
 	}
@@ -175,7 +175,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return nil
 	}
 
-	if !containsValue(record, value) {
+	if !containsValue(record, info.Value) {
 		return nil
 	}
 
@@ -195,7 +195,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	for _, val := range record.Content {
-		if val != value {
+		if val != info.Value {
 			request.Content = append(request.Content, val)
 		}
 	}

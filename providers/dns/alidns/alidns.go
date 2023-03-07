@@ -129,14 +129,14 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zoneName, err := d.getHostedZone(fqdn)
+	zoneName, err := d.getHostedZone(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("alicloud: %w", err)
 	}
 
-	recordAttributes, err := d.newTxtRecord(zoneName, fqdn, value)
+	recordAttributes, err := d.newTxtRecord(zoneName, info.EffectiveFQDN, info.Value)
 	if err != nil {
 		return err
 	}
@@ -150,14 +150,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	records, err := d.findTxtRecords(fqdn)
+	records, err := d.findTxtRecords(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("alicloud: %w", err)
 	}
 
-	_, err = d.getHostedZone(fqdn)
+	_, err = d.getHostedZone(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("alicloud: %w", err)
 	}

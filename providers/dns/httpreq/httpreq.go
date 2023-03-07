@@ -122,10 +122,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return nil
 	}
 
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 	msg := &message{
-		FQDN:  fqdn,
-		Value: value,
+		FQDN:  info.EffectiveFQDN,
+		Value: info.Value,
 	}
 
 	err := d.doPost("/present", msg)
@@ -151,10 +151,10 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return nil
 	}
 
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 	msg := &message{
-		FQDN:  fqdn,
-		Value: value,
+		FQDN:  info.EffectiveFQDN,
+		Value: info.Value,
 	}
 
 	err := d.doPost("/cleanup", msg)

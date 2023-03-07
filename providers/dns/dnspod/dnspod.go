@@ -86,14 +86,14 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zoneID, zoneName, err := d.getHostedZone(fqdn)
+	zoneID, zoneName, err := d.getHostedZone(info.EffectiveFQDN)
 	if err != nil {
 		return err
 	}
 
-	recordAttributes, err := d.newTxtRecord(zoneName, fqdn, value, d.config.TTL)
+	recordAttributes, err := d.newTxtRecord(zoneName, info.EffectiveFQDN, info.Value, d.config.TTL)
 	if err != nil {
 		return err
 	}
@@ -108,14 +108,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zoneID, zoneName, err := d.getHostedZone(fqdn)
+	zoneID, zoneName, err := d.getHostedZone(info.EffectiveFQDN)
 	if err != nil {
 		return err
 	}
 
-	records, err := d.findTxtRecords(fqdn, zoneID, zoneName)
+	records, err := d.findTxtRecords(info.EffectiveFQDN, zoneID, zoneName)
 	if err != nil {
 		return err
 	}

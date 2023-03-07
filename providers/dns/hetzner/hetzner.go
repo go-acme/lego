@@ -98,11 +98,11 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := getZone(fqdn)
+	zone, err := getZone(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("hetzner: failed to find zone: fqdn=%s: %w", fqdn, err)
+		return fmt.Errorf("hetzner: failed to find zone: fqdn=%s: %w", info.EffectiveFQDN, err)
 	}
 
 	zoneID, err := d.client.GetZoneID(zone)
@@ -110,7 +110,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("hetzner: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, zone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone)
 	if err != nil {
 		return fmt.Errorf("hetzner: %w", err)
 	}
@@ -118,13 +118,13 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	record := internal.DNSRecord{
 		Type:   "TXT",
 		Name:   subDomain,
-		Value:  value,
+		Value:  info.Value,
 		TTL:    d.config.TTL,
 		ZoneID: zoneID,
 	}
 
 	if err := d.client.CreateRecord(record); err != nil {
-		return fmt.Errorf("hetzner: failed to add TXT record: fqdn=%s, zoneID=%s: %w", fqdn, zoneID, err)
+		return fmt.Errorf("hetzner: failed to add TXT record: fqdn=%s, zoneID=%s: %w", info.EffectiveFQDN, zoneID, err)
 	}
 
 	return nil
@@ -132,11 +132,11 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := getZone(fqdn)
+	zone, err := getZone(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("hetzner: failed to find zone: fqdn=%s: %w", fqdn, err)
+		return fmt.Errorf("hetzner: failed to find zone: fqdn=%s: %w", info.EffectiveFQDN, err)
 	}
 
 	zoneID, err := d.client.GetZoneID(zone)
@@ -144,12 +144,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("hetzner: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, zone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone)
 	if err != nil {
 		return fmt.Errorf("hetzner: %w", err)
 	}
 
-	record, err := d.client.GetTxtRecord(subDomain, value, zoneID)
+	record, err := d.client.GetTxtRecord(subDomain, info.Value, zoneID)
 	if err != nil {
 		return fmt.Errorf("hetzner: %w", err)
 	}

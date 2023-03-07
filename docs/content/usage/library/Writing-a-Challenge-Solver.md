@@ -59,15 +59,16 @@ For DNS-01, we'll just use `domain` and `keyAuth`.
 
 ```go
 func (d *DNSProviderBestDNS) Present(domain, token, keyAuth string) error {
-    fqdn, value := dns01.GetRecord(domain, keyAuth)
+    info := dns01.GetChallengeInfo(domain, keyAuth)
     // make API request to set a TXT record on fqdn with value and TTL
     return nil
 }
 ```
 
-After calling `dns01.GetRecord(domain, keyAuth)`, we now have the information we need to make our API request and set the TXT record:
-- `fqdn` is the fully qualified domain name on which to set the TXT record.
-- `value` is the record's value to set on the record.
+After calling `dns01.GetChallengeInfo(domain, keyAuth)`, we now have the information we need to make our API request and set the TXT record:
+- `FQDN` is the fully qualified domain name on which to set the TXT record.
+- `EffectiveFQDN` is the fully qualified domain name after the CNAMEs resolutions on which to set the TXT record.
+- `Value` is the record's value to set on the record.
 
 So then you make an API request to the DNS service according to their docs.
 Once the TXT record is set on the domain, you may return and the challenge will proceed.

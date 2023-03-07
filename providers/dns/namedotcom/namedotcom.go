@@ -105,7 +105,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	domainDetails, err := d.client.GetDomain(&namecom.GetDomainRequest{DomainName: domain})
@@ -113,7 +113,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("namedotcom: API call failed: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, domainDetails.DomainName)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, domainDetails.DomainName)
 	if err != nil {
 		return fmt.Errorf("namedotcom: %w", err)
 	}
@@ -124,7 +124,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Host:       subDomain,
 		Type:       "TXT",
 		TTL:        uint32(d.config.TTL),
-		Answer:     value,
+		Answer:     info.Value,
 	}
 
 	_, err = d.client.CreateRecord(request)
@@ -137,7 +137,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	records, err := d.getRecords(domain)
@@ -146,7 +146,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	for _, rec := range records {
-		if rec.Fqdn == fqdn && rec.Type == "TXT" {
+		if rec.Fqdn == info.EffectiveFQDN && rec.Type == "TXT" {
 			// TODO(ldez) replace domain by FQDN to follow CNAME.
 			request := &namecom.DeleteRecordRequest{
 				DomainName: domain,

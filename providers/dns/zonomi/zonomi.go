@@ -94,15 +94,15 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	records, err := d.client.FindTXTRecords(dns01.UnFqdn(fqdn))
+	records, err := d.client.FindTXTRecords(dns01.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
 		return fmt.Errorf("zonomi: failed to find record(s) for %s: %w", domain, err)
 	}
 
 	actions := []rimuhosting.ActionParameter{
-		rimuhosting.AddRecord(dns01.UnFqdn(fqdn), value, d.config.TTL),
+		rimuhosting.AddRecord(dns01.UnFqdn(info.EffectiveFQDN), info.Value, d.config.TTL),
 	}
 
 	for _, record := range records {
@@ -119,9 +119,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	action := rimuhosting.DeleteRecord(dns01.UnFqdn(fqdn), value)
+	action := rimuhosting.DeleteRecord(dns01.UnFqdn(info.EffectiveFQDN), info.Value)
 
 	_, err := d.client.DoActions(action)
 	if err != nil {

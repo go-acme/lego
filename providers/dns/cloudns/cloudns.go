@@ -102,14 +102,14 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := d.client.GetZone(fqdn)
+	zone, err := d.client.GetZone(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("ClouDNS: %w", err)
 	}
 
-	err = d.client.AddTxtRecord(zone.Name, fqdn, value, d.config.TTL)
+	err = d.client.AddTxtRecord(zone.Name, info.EffectiveFQDN, info.Value, d.config.TTL)
 	if err != nil {
 		return fmt.Errorf("ClouDNS: %w", err)
 	}
@@ -119,14 +119,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT records matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := d.client.GetZone(fqdn)
+	zone, err := d.client.GetZone(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("ClouDNS: %w", err)
 	}
 
-	records, err := d.client.ListTxtRecords(zone.Name, fqdn)
+	records, err := d.client.ListTxtRecords(zone.Name, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("ClouDNS: %w", err)
 	}

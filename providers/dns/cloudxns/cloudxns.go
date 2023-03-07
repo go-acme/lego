@@ -87,26 +87,26 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	challengeInfo := dns01.GetChallengeInfo(domain, keyAuth)
 
-	info, err := d.client.GetDomainInformation(fqdn)
+	info, err := d.client.GetDomainInformation(challengeInfo.EffectiveFQDN)
 	if err != nil {
 		return err
 	}
 
-	return d.client.AddTxtRecord(info, fqdn, value, d.config.TTL)
+	return d.client.AddTxtRecord(info, challengeInfo.EffectiveFQDN, challengeInfo.Value, d.config.TTL)
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	challengeInfo := dns01.GetChallengeInfo(domain, keyAuth)
 
-	info, err := d.client.GetDomainInformation(fqdn)
+	info, err := d.client.GetDomainInformation(challengeInfo.EffectiveFQDN)
 	if err != nil {
 		return err
 	}
 
-	record, err := d.client.FindTxtRecord(info.ID, fqdn)
+	record, err := d.client.FindTxtRecord(info.ID, challengeInfo.EffectiveFQDN)
 	if err != nil {
 		return err
 	}

@@ -142,7 +142,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	connector, err := infoblox.NewConnector(d.ibConfig, d.transportConfig, &infoblox.WapiRequestBuilder{}, &infoblox.WapiHttpRequestor{})
 	if err != nil {
@@ -153,7 +153,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	objectManager := infoblox.NewObjectManager(connector, defaultUserAgent, "")
 
-	record, err := objectManager.CreateTXTRecord(dns01.UnFqdn(fqdn), value, uint(d.config.TTL), d.config.DNSView)
+	record, err := objectManager.CreateTXTRecord(dns01.UnFqdn(info.EffectiveFQDN), info.Value, uint(d.config.TTL), d.config.DNSView)
 	if err != nil {
 		return fmt.Errorf("infoblox: could not create TXT record for %s: %w", domain, err)
 	}
@@ -167,7 +167,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	connector, err := infoblox.NewConnector(d.ibConfig, d.transportConfig, &infoblox.WapiRequestBuilder{}, &infoblox.WapiHttpRequestor{})
 	if err != nil {
@@ -183,7 +183,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	recordRef, ok := d.recordRefs[token]
 	d.recordRefsMu.Unlock()
 	if !ok {
-		return fmt.Errorf("infoblox: unknown record ID for '%s' '%s'", fqdn, token)
+		return fmt.Errorf("infoblox: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
 	_, err = objectManager.DeleteTXTRecord(recordRef)

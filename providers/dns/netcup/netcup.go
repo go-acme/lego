@@ -92,9 +92,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := dns01.FindZoneByFqdn(fqdn)
+	zone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("netcup: failed to find DNSZone, %w", err)
 	}
@@ -111,11 +111,11 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		}
 	}()
 
-	hostname := strings.Replace(fqdn, "."+zone, "", 1)
+	hostname := strings.Replace(info.EffectiveFQDN, "."+zone, "", 1)
 	record := internal.DNSRecord{
 		Hostname:    hostname,
 		RecordType:  "TXT",
-		Destination: value,
+		Destination: info.Value,
 		TTL:         d.config.TTL,
 	}
 
@@ -139,9 +139,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := dns01.FindZoneByFqdn(fqdn)
+	zone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("netcup: failed to find DNSZone, %w", err)
 	}
@@ -158,7 +158,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		}
 	}()
 
-	hostname := strings.Replace(fqdn, "."+zone, "", 1)
+	hostname := strings.Replace(info.EffectiveFQDN, "."+zone, "", 1)
 
 	zone = dns01.UnFqdn(zone)
 
@@ -170,7 +170,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	record := internal.DNSRecord{
 		Hostname:    hostname,
 		RecordType:  "TXT",
-		Destination: value,
+		Destination: info.Value,
 	}
 
 	idx, err := internal.GetDNSRecordIdx(records, record)

@@ -135,11 +135,11 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	rootDomain, err := dns01.FindZoneByFqdn(fqdn)
+	rootDomain, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("nicmanager: could not determine zone for domain %q: %w", fqdn, err)
+		return fmt.Errorf("nicmanager: could not determine zone for domain %q: %w", info.EffectiveFQDN, err)
 	}
 
 	zone, err := d.client.GetZone(dns01.UnFqdn(rootDomain))
@@ -150,15 +150,15 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	// The way nic manager deals with record with multiple values is that they are completely different records with unique ids
 	// Hence we don't check for an existing record here, but rather just create one
 	record := internal.RecordCreateUpdate{
-		Name:  fqdn,
+		Name:  info.EffectiveFQDN,
 		Type:  "TXT",
 		TTL:   d.config.TTL,
-		Value: value,
+		Value: info.Value,
 	}
 
 	err = d.client.AddRecord(zone.Name, record)
 	if err != nil {
-		return fmt.Errorf("nicmanager: failed to create record [zone: %q, fqdn: %q]: %w", zone.Name, fqdn, err)
+		return fmt.Errorf("nicmanager: failed to create record [zone: %q, fqdn: %q]: %w", zone.Name, info.EffectiveFQDN, err)
 	}
 
 	return nil
@@ -166,11 +166,11 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	rootDomain, err := dns01.FindZoneByFqdn(fqdn)
+	rootDomain, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("nicmanager: could not determine zone for domain %q: %w", fqdn, err)
+		return fmt.Errorf("nicmanager: could not determine zone for domain %q: %w", info.EffectiveFQDN, err)
 	}
 
 	zone, err := d.client.GetZone(dns01.UnFqdn(rootDomain))
@@ -178,12 +178,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("nicmanager: failed to get zone %q: %w", rootDomain, err)
 	}
 
-	name := dns01.UnFqdn(fqdn)
+	name := dns01.UnFqdn(info.EffectiveFQDN)
 
 	var existingRecord internal.Record
 	var existingRecordFound bool
 	for _, record := range zone.Records {
-		if strings.EqualFold(record.Type, "TXT") && strings.EqualFold(record.Name, name) && record.Content == value {
+		if strings.EqualFold(record.Type, "TXT") && strings.EqualFold(record.Name, name) && record.Content == info.Value {
 			existingRecord = record
 			existingRecordFound = true
 		}

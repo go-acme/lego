@@ -95,17 +95,17 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	existingRecord, err := d.getRecordSet(fqdn)
+	existingRecord, err := d.getRecordSet(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("vinyldns: %w", err)
 	}
 
-	record := vinyldns.Record{Text: value}
+	record := vinyldns.Record{Text: info.Value}
 
 	if existingRecord == nil || existingRecord.ID == "" {
-		err = d.createRecordSet(fqdn, []vinyldns.Record{record})
+		err = d.createRecordSet(info.EffectiveFQDN, []vinyldns.Record{record})
 		if err != nil {
 			return fmt.Errorf("vinyldns: %w", err)
 		}
@@ -114,7 +114,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	for _, i := range existingRecord.Records {
-		if i.Text == value {
+		if i.Text == info.Value {
 			return nil
 		}
 	}
@@ -132,9 +132,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	existingRecord, err := d.getRecordSet(fqdn)
+	existingRecord, err := d.getRecordSet(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("vinyldns: %w", err)
 	}
@@ -145,7 +145,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	var records []vinyldns.Record
 	for _, i := range existingRecord.Records {
-		if i.Text != value {
+		if i.Text != info.Value {
 			records = append(records, i)
 		}
 	}

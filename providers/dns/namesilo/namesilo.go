@@ -86,14 +86,14 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zoneName, err := getZoneNameByDomain(fqdn)
+	zoneName, err := getZoneNameByDomain(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("namesilo: %w", err)
 	}
 
-	subdomain, err := dns01.ExtractSubDomain(fqdn, zoneName)
+	subdomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zoneName)
 	if err != nil {
 		return fmt.Errorf("namesilo: %w", err)
 	}
@@ -107,7 +107,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Domain: zoneName,
 		Type:   "TXT",
 		Host:   subdomain,
-		Value:  value,
+		Value:  info.Value,
 		TTL:    d.config.TTL,
 	})
 	if err != nil {
@@ -118,9 +118,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zoneName, err := getZoneNameByDomain(fqdn)
+	zoneName, err := getZoneNameByDomain(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("namesilo: %w", err)
 	}
@@ -130,14 +130,14 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 		return fmt.Errorf("namesilo: %w", err)
 	}
 
-	subdomain, err := dns01.ExtractSubDomain(fqdn, zoneName)
+	subdomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zoneName)
 	if err != nil {
 		return fmt.Errorf("namesilo: %w", err)
 	}
 
 	var lastErr error
 	for _, r := range resp.Reply.ResourceRecord {
-		if r.Type == "TXT" && (r.Host == subdomain || r.Host == dns01.UnFqdn(fqdn)) {
+		if r.Type == "TXT" && (r.Host == subdomain || r.Host == dns01.UnFqdn(info.EffectiveFQDN)) {
 			_, err := d.client.DnsDeleteRecord(&namesilo.DnsDeleteRecordParams{Domain: zoneName, ID: r.RecordID})
 			if err != nil {
 				lastErr = fmt.Errorf("namesilo: %w", err)

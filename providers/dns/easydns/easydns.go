@@ -103,14 +103,14 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	apiHost, apiDomain := splitFqdn(fqdn)
+	apiHost, apiDomain := splitFqdn(info.EffectiveFQDN)
 	record := &zoneRecord{
 		Domain: apiDomain,
 		Host:   apiHost,
 		Type:   "TXT",
-		Rdata:  value,
+		Rdata:  info.Value,
 		TTL:    strconv.Itoa(d.config.TTL),
 		Prio:   "0",
 	}
@@ -120,7 +120,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("easydns: error adding zone record: %w", err)
 	}
 
-	key := getMapKey(fqdn, value)
+	key := getMapKey(info.EffectiveFQDN, info.Value)
 
 	d.recordIDsMu.Lock()
 	d.recordIDs[key] = recordID
@@ -131,15 +131,15 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, challenge := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	key := getMapKey(fqdn, challenge)
+	key := getMapKey(info.EffectiveFQDN, info.Value)
 	recordID, exists := d.recordIDs[key]
 	if !exists {
 		return nil
 	}
 
-	_, apiDomain := splitFqdn(fqdn)
+	_, apiDomain := splitFqdn(info.EffectiveFQDN)
 	err := d.deleteRecord(apiDomain, recordID)
 
 	d.recordIDsMu.Lock()

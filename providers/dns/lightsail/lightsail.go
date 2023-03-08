@@ -119,13 +119,13 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	params := &lightsail.CreateDomainEntryInput{
 		DomainName: aws.String(d.config.DNSZone),
 		DomainEntry: &lightsail.DomainEntry{
-			Name:   aws.String(fqdn),
-			Target: aws.String(strconv.Quote(value)),
+			Name:   aws.String(info.EffectiveFQDN),
+			Target: aws.String(strconv.Quote(info.Value)),
 			Type:   aws.String("TXT"),
 		},
 	}
@@ -140,14 +140,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	params := &lightsail.DeleteDomainEntryInput{
 		DomainName: aws.String(d.config.DNSZone),
 		DomainEntry: &lightsail.DomainEntry{
-			Name:   aws.String(fqdn),
+			Name:   aws.String(info.EffectiveFQDN),
 			Type:   aws.String("TXT"),
-			Target: aws.String(strconv.Quote(value)),
+			Target: aws.String(strconv.Quote(info.Value)),
 		},
 	}
 

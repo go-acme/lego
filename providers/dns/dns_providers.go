@@ -14,6 +14,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/azure"
 	"github.com/go-acme/lego/v4/providers/dns/bindman"
 	"github.com/go-acme/lego/v4/providers/dns/bluecat"
+	"github.com/go-acme/lego/v4/providers/dns/bunny"
 	"github.com/go-acme/lego/v4/providers/dns/checkdomain"
 	"github.com/go-acme/lego/v4/providers/dns/civo"
 	"github.com/go-acme/lego/v4/providers/dns/clouddns"
@@ -80,11 +81,13 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/nicmanager"
 	"github.com/go-acme/lego/v4/providers/dns/nifcloud"
 	"github.com/go-acme/lego/v4/providers/dns/njalla"
+	"github.com/go-acme/lego/v4/providers/dns/nodion"
 	"github.com/go-acme/lego/v4/providers/dns/ns1"
 	"github.com/go-acme/lego/v4/providers/dns/oraclecloud"
 	"github.com/go-acme/lego/v4/providers/dns/otc"
 	"github.com/go-acme/lego/v4/providers/dns/ovh"
 	"github.com/go-acme/lego/v4/providers/dns/pdns"
+	"github.com/go-acme/lego/v4/providers/dns/plesk"
 	"github.com/go-acme/lego/v4/providers/dns/porkbun"
 	"github.com/go-acme/lego/v4/providers/dns/rackspace"
 	"github.com/go-acme/lego/v4/providers/dns/regru"
@@ -139,6 +142,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return bindman.NewDNSProvider()
 	case "bluecat":
 		return bluecat.NewDNSProvider()
+	case "bunny":
+		return bunny.NewDNSProvider()
 	case "checkdomain":
 		return checkdomain.NewDNSProvider()
 	case "civo":
@@ -273,6 +278,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return nifcloud.NewDNSProvider()
 	case "njalla":
 		return njalla.NewDNSProvider()
+	case "nodion":
+		return nodion.NewDNSProvider()
 	case "ns1":
 		return ns1.NewDNSProvider()
 	case "oraclecloud":
@@ -283,6 +290,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return ovh.NewDNSProvider()
 	case "pdns":
 		return pdns.NewDNSProvider()
+	case "plesk":
+		return plesk.NewDNSProvider()
 	case "porkbun":
 		return porkbun.NewDNSProvider()
 	case "rackspace":

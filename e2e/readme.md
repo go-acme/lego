@@ -13,7 +13,8 @@ How to run:
 
 - Install [Pebble](https://github.com/letsencrypt/pebble):
 ```bash
-go get -u github.com/letsencrypt/pebble/...
+go install github.com/letsencrypt/pebble/v2/cmd/pebble@main
+go install github.com/letsencrypt/pebble/v2/cmd/pebble-challtestsrv@main
 ```
 
 - Launch tests:

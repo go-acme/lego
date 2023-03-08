@@ -123,11 +123,11 @@ func (d *DNSProvider) Timeout() (time.Duration, time.Duration) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	params := &network.DNSRecordParams{
-		Name:  dns01.UnFqdn(fqdn),
-		RData: strconv.Quote(value),
+		Name:  dns01.UnFqdn(info.EffectiveFQDN),
+		RData: strconv.Quote(info.Value),
 		Type:  "TXT",
 		Zone:  d.config.Zone,
 		TTL:   d.config.TTL,

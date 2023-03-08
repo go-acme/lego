@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GO_VERSION: '1.20'
-      GOLANGCI_LINT_VERSION: v1.51.1
+      GOLANGCI_LINT_VERSION: v1.51.2
       HUGO_VERSION: 0.54.0
       CGO_ENABLED: 0
       LEGO_E2E_TESTS: CI
@@ -54,8 +54,11 @@ jobs:
           curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin ${GOLANGCI_LINT_VERSION}
           golangci-lint --version
 
-      - name: Install Pebble and challtestsrv
-        run: GO111MODULE=off go get -u github.com/letsencrypt/pebble/...
+      - name: Install Pebble
+        run: go install github.com/letsencrypt/pebble/v2/cmd/pebble@main
+
+      - name: Install challtestsrv
+        run: go install github.com/letsencrypt/pebble/v2/cmd/pebble-challtestsrv@main
 
       - name: Set up a Memcached server
         uses: niden/actions-memcached@v7

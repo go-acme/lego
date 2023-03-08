@@ -251,13 +251,13 @@ func newChallenge(domain, keyAuth string) (*challenge, error) {
 		host = strings.Join(parts[:longest-1], ".")
 	}
 
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	return &challenge{
 		domain:   domain,
 		key:      "_acme-challenge." + host,
-		keyFqdn:  fqdn,
-		keyValue: value,
+		keyFqdn:  info.EffectiveFQDN,
+		keyValue: info.Value,
 		tld:      tld,
 		sld:      sld,
 		host:     host,

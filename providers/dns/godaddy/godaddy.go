@@ -102,14 +102,14 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	domainZone, err := getZone(fqdn)
+	domainZone, err := getZone(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("godaddy: failed to get zone: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, domainZone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, domainZone)
 	if err != nil {
 		return fmt.Errorf("godaddy: %w", err)
 	}
@@ -129,7 +129,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	record := internal.DNSRecord{
 		Type: "TXT",
 		Name: subDomain,
-		Data: value,
+		Data: info.Value,
 		TTL:  d.config.TTL,
 	}
 	newRecords = append(newRecords, record)
@@ -144,14 +144,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	domainZone, err := getZone(fqdn)
+	domainZone, err := getZone(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("godaddy: failed to get zone: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, domainZone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, domainZone)
 	if err != nil {
 		return fmt.Errorf("godaddy: %w", err)
 	}
@@ -172,7 +172,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	var recordsKeep []internal.DNSRecord
 	for _, record := range allTxtRecords {
-		if record.Data != value && record.Data != "" {
+		if record.Data != info.Value && record.Data != "" {
 			recordsKeep = append(recordsKeep, record)
 		}
 	}

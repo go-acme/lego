@@ -93,9 +93,9 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, _, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, host, err := d.splitDomain(fqdn)
+	zone, host, err := d.splitDomain(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("domeneshop: %w", err)
 	}
@@ -105,7 +105,7 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 		return fmt.Errorf("domeneshop: %w", err)
 	}
 
-	err = d.client.CreateTXTRecord(domainInstance, host, value)
+	err = d.client.CreateTXTRecord(domainInstance, host, info.Value)
 	if err != nil {
 		return fmt.Errorf("domeneshop: failed to create record: %w", err)
 	}
@@ -115,9 +115,9 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, host, err := d.splitDomain(fqdn)
+	zone, host, err := d.splitDomain(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("domeneshop: %w", err)
 	}
@@ -127,7 +127,7 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 		return fmt.Errorf("domeneshop: %w", err)
 	}
 
-	if err := d.client.DeleteTXTRecord(domainInstance, host, value); err != nil {
+	if err := d.client.DeleteTXTRecord(domainInstance, host, info.Value); err != nil {
 		return fmt.Errorf("domeneshop: failed to create record: %w", err)
 	}
 

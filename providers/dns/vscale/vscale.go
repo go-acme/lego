@@ -101,7 +101,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record to fulfill DNS-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	domainObj, err := d.client.GetDomainByName(domain)
@@ -112,8 +112,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	txtRecord := selectel.Record{
 		Type:    "TXT",
 		TTL:     d.config.TTL,
-		Name:    fqdn,
-		Content: value,
+		Name:    info.EffectiveFQDN,
+		Content: info.Value,
 	}
 	_, err = d.client.AddRecord(domainObj.ID, txtRecord)
 	if err != nil {
@@ -125,8 +125,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes a TXT record used for DNS-01 challenge.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
-	recordName := dns01.UnFqdn(fqdn)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
+
+	recordName := dns01.UnFqdn(info.EffectiveFQDN)
 
 	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	domainObj, err := d.client.GetDomainByName(domain)

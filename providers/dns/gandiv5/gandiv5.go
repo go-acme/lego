@@ -110,16 +110,16 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	// find authZone
-	authZone, err := d.findZoneByFqdn(fqdn)
+	authZone, err := d.findZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("gandiv5: findZoneByFqdn failure: %w", err)
 	}
 
 	// determine name of TXT record
-	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("gandiv5: %w", err)
 	}
@@ -130,13 +130,13 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	defer d.inProgressMu.Unlock()
 
 	// add TXT record into authZone
-	err = d.addTXTRecord(dns01.UnFqdn(authZone), subDomain, value, d.config.TTL)
+	err = d.addTXTRecord(dns01.UnFqdn(authZone), subDomain, info.Value, d.config.TTL)
 	if err != nil {
 		return err
 	}
 
 	// save data necessary for CleanUp
-	d.inProgressFQDNs[fqdn] = inProgressInfo{
+	d.inProgressFQDNs[info.EffectiveFQDN] = inProgressInfo{
 		authZone:  authZone,
 		fieldName: subDomain,
 	}
@@ -145,19 +145,19 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	// acquire lock and retrieve authZone
 	d.inProgressMu.Lock()
 	defer d.inProgressMu.Unlock()
-	if _, ok := d.inProgressFQDNs[fqdn]; !ok {
+	if _, ok := d.inProgressFQDNs[info.EffectiveFQDN]; !ok {
 		// if there is no cleanup information then just return
 		return nil
 	}
 
-	fieldName := d.inProgressFQDNs[fqdn].fieldName
-	authZone := d.inProgressFQDNs[fqdn].authZone
-	delete(d.inProgressFQDNs, fqdn)
+	fieldName := d.inProgressFQDNs[info.EffectiveFQDN].fieldName
+	authZone := d.inProgressFQDNs[info.EffectiveFQDN].authZone
+	delete(d.inProgressFQDNs, info.EffectiveFQDN)
 
 	// delete TXT record from authZone
 	err := d.deleteTXTRecord(dns01.UnFqdn(authZone), fieldName)

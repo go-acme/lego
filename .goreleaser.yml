@@ -51,3 +51,85 @@ archives:
     files:
       - LICENSE
       - CHANGELOG.md
+
+docker_manifests:
+  - name_template: 'goacme/lego:{{ .Tag }}'
+    image_templates:
+      - 'goacme/lego:{{ .Tag }}-amd64'
+      - 'goacme/lego:{{ .Tag }}-arm64'
+      - 'goacme/lego:{{ .Tag }}-armv7'
+  - name_template: 'goacme/lego:latest'
+    image_templates:
+      - 'goacme/lego:{{ .Tag }}-amd64'
+      - 'goacme/lego:{{ .Tag }}-arm64'
+      - 'goacme/lego:{{ .Tag }}-armv7'
+  - name_template: 'goacme/lego:v{{ .Major }}.{{ .Minor }}'
+    image_templates:
+      - 'goacme/lego:v{{ .Major }}.{{ .Minor }}-amd64'
+      - 'goacme/lego:v{{ .Major }}.{{ .Minor }}-arm64'
+      - 'goacme/lego:v{{ .Major }}.{{ .Minor }}-armv7'
+
+dockers:
+  - use: buildx
+    goos: linux
+    goarch: amd64
+    dockerfile: buildx.Dockerfile
+    image_templates:
+      - 'goacme/lego:latest-amd64'
+      - 'goacme/lego:{{ .Tag }}-amd64'
+      - 'goacme/lego:v{{ .Major }}.{{ .Minor }}-amd64'
+    build_flag_templates:
+      - '--pull'
+      # https://github.com/opencontainers/image-spec/blob/main/annotations.md#pre-defined-annotation-keys
+      - '--label=org.opencontainers.image.title={{.ProjectName}}'
+      - '--label=org.opencontainers.image.description=Lets Encrypt/ACME client and library written in Go'
+      - '--label=org.opencontainers.image.source={{.GitURL}}'
+      - '--label=org.opencontainers.image.url={{.GitURL}}'
+      - '--label=org.opencontainers.image.documentation=https://go-acme.github.io/lego'
+      - '--label=org.opencontainers.image.created={{.Date}}'
+      - '--label=org.opencontainers.image.revision={{.FullCommit}}'
+      - '--label=org.opencontainers.image.version={{.Version}}'
+      - '--platform=linux/amd64'
+
+  - use: buildx
+    goos: linux
+    goarch: arm64
+    dockerfile: buildx.Dockerfile
+    image_templates:
+      - 'goacme/lego:latest-arm64'
+      - 'goacme/lego:{{ .Tag }}-arm64'
+      - 'goacme/lego:v{{ .Major }}.{{ .Minor }}-arm64'
+    build_flag_templates:
+      - '--pull'
+      # https://github.com/opencontainers/image-spec/blob/main/annotations.md#pre-defined-annotation-keys
+      - '--label=org.opencontainers.image.title={{.ProjectName}}'
+      - '--label=org.opencontainers.image.description=Lets Encrypt/ACME client and library written in Go'
+      - '--label=org.opencontainers.image.source={{.GitURL}}'
+      - '--label=org.opencontainers.image.url={{.GitURL}}'
+      - '--label=org.opencontainers.image.documentation=https://go-acme.github.io/lego'
+      - '--label=org.opencontainers.image.created={{.Date}}'
+      - '--label=org.opencontainers.image.revision={{.FullCommit}}'
+      - '--label=org.opencontainers.image.version={{.Version}}'
+      - '--platform=linux/arm64'
+
+  - use: buildx
+    goos: linux
+    goarch: arm
+    goarm: '7'
+    dockerfile: buildx.Dockerfile
+    image_templates:
+      - 'goacme/lego:latest-armv7'
+      - 'goacme/lego:{{ .Tag }}-armv7'
+      - 'goacme/lego:v{{ .Major }}.{{ .Minor }}-armv7'
+    build_flag_templates:
+      - '--pull'
+      # https://github.com/opencontainers/image-spec/blob/main/annotations.md#pre-defined-annotation-keys
+      - '--label=org.opencontainers.image.title={{.ProjectName}}'
+      - '--label=org.opencontainers.image.description=Lets Encrypt/ACME client and library written in Go'
+      - '--label=org.opencontainers.image.source={{.GitURL}}'
+      - '--label=org.opencontainers.image.url={{.GitURL}}'
+      - '--label=org.opencontainers.image.documentation=https://go-acme.github.io/lego'
+      - '--label=org.opencontainers.image.created={{.Date}}'
+      - '--label=org.opencontainers.image.revision={{.FullCommit}}'
+      - '--label=org.opencontainers.image.version={{.Version}}'
+      - '--platform=linux/arm/v7'

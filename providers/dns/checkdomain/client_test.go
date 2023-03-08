@@ -225,7 +225,7 @@ func Test_deleteTXTRecord(t *testing.T) {
 		}
 	})
 
-	fqdn, _ := dns01.GetRecord(domainName, "abc")
-	err := prd.deleteTXTRecord(1, fqdn, recordValue)
+	info := dns01.GetChallengeInfo(domainName, "abc")
+	err := prd.deleteTXTRecord(1, info.EffectiveFQDN, recordValue)
 	require.NoError(t, err)
 }

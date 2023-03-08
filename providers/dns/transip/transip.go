@@ -91,15 +91,15 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
 		return err
 	}
 
 	// get the subDomain
-	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("transip: %w", err)
 	}
@@ -110,7 +110,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Name:    subDomain,
 		Expire:  int(d.config.TTL),
 		Type:    "TXT",
-		Content: value,
+		Content: info.Value,
 	}
 
 	err = d.repository.AddDNSEntry(domainName, entry)
@@ -123,15 +123,15 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
 		return err
 	}
 
 	// get the subDomain
-	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("transip: %w", err)
 	}
@@ -141,12 +141,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	// get all DNS entries
 	dnsEntries, err := d.repository.GetDNSEntries(domainName)
 	if err != nil {
-		return fmt.Errorf("transip: error for %s in CleanUp: %w", fqdn, err)
+		return fmt.Errorf("transip: error for %s in CleanUp: %w", info.EffectiveFQDN, err)
 	}
 
 	// loop through the existing entries and remove the specific record
 	for _, entry := range dnsEntries {
-		if entry.Name == subDomain && entry.Content == value {
+		if entry.Name == subDomain && entry.Content == info.Value {
 			if err = d.repository.RemoveDNSEntry(domainName, entry); err != nil {
 				return fmt.Errorf("transip: couldn't get Record ID in CleanUp: %w", err)
 			}

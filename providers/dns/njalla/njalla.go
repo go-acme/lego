@@ -101,9 +101,9 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	rootDomain, subDomain, err := splitDomain(fqdn)
+	rootDomain, subDomain, err := splitDomain(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("njalla: %w", err)
 	}
@@ -111,7 +111,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	record := internal.Record{
 		Name:    subDomain,                // TODO need to be tested
 		Domain:  dns01.UnFqdn(rootDomain), // TODO need to be tested
-		Content: value,
+		Content: info.Value,
 		TTL:     d.config.TTL,
 		Type:    "TXT",
 	}
@@ -130,9 +130,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	rootDomain, _, err := splitDomain(fqdn)
+	rootDomain, _, err := splitDomain(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("njalla: %w", err)
 	}
@@ -142,12 +142,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	recordID, ok := d.recordIDs[token]
 	d.recordIDsMu.Unlock()
 	if !ok {
-		return fmt.Errorf("njalla: unknown record ID for '%s' '%s'", fqdn, token)
+		return fmt.Errorf("njalla: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
 	err = d.client.RemoveRecord(recordID, dns01.UnFqdn(rootDomain))
 	if err != nil {
-		return fmt.Errorf("njalla: failed to delete TXT records: fqdn=%s, recordID=%s: %w", fqdn, recordID, err)
+		return fmt.Errorf("njalla: failed to delete TXT records: fqdn=%s, recordID=%s: %w", info.EffectiveFQDN, recordID, err)
 	}
 
 	// deletes record ID from map

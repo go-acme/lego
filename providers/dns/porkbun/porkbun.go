@@ -112,9 +112,9 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zoneName, hostName, err := splitDomain(fqdn)
+	zoneName, hostName, err := splitDomain(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("porkbun: %w", err)
 	}
@@ -122,7 +122,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	record := porkbun.Record{
 		Name:    hostName,
 		Type:    "TXT",
-		Content: value,
+		Content: info.Value,
 		TTL:     strconv.Itoa(d.config.TTL),
 	}
 
@@ -142,17 +142,17 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	// gets the record's unique ID from when we created it
 	d.recordIDsMu.Lock()
 	recordID, ok := d.recordIDs[token]
 	d.recordIDsMu.Unlock()
 	if !ok {
-		return fmt.Errorf("porkbun: unknown record ID for '%s' '%s'", fqdn, token)
+		return fmt.Errorf("porkbun: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
-	zoneName, _, err := splitDomain(fqdn)
+	zoneName, _, err := splitDomain(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("porkbun: %w", err)
 	}

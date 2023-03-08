@@ -107,14 +107,14 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := findZone(fqdn)
+	zone, err := findZone(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("edgedns: %w", err)
 	}
 
-	record, err := configdns.GetRecord(zone, fqdn, "TXT")
+	record, err := configdns.GetRecord(zone, info.EffectiveFQDN, "TXT")
 	if err != nil && !isNotFound(err) {
 		return fmt.Errorf("edgedns: %w", err)
 	}
@@ -126,12 +126,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if record != nil {
 		log.Infof("TXT record already exists. Updating target")
 
-		if containsValue(record.Target, value) {
+		if containsValue(record.Target, info.Value) {
 			// have a record and have entry already
 			return nil
 		}
 
-		record.Target = append(record.Target, `"`+value+`"`)
+		record.Target = append(record.Target, `"`+info.Value+`"`)
 		record.TTL = d.config.TTL
 
 		err = record.Update(zone)
@@ -143,10 +143,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	record = &configdns.RecordBody{
-		Name:       fqdn,
+		Name:       info.EffectiveFQDN,
 		RecordType: "TXT",
 		TTL:        d.config.TTL,
-		Target:     []string{`"` + value + `"`},
+		Target:     []string{`"` + info.Value + `"`},
 	}
 
 	err = record.Save(zone)
@@ -159,14 +159,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := findZone(fqdn)
+	zone, err := findZone(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("edgedns: %w", err)
 	}
 
-	existingRec, err := configdns.GetRecord(zone, fqdn, "TXT")
+	existingRec, err := configdns.GetRecord(zone, info.EffectiveFQDN, "TXT")
 	if err != nil {
 		if isNotFound(err) {
 			return nil
@@ -182,14 +182,14 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("edgedns: TXT record is invalid")
 	}
 
-	if !containsValue(existingRec.Target, value) {
+	if !containsValue(existingRec.Target, info.Value) {
 		return nil
 	}
 
 	var newRData []string
 	for _, val := range existingRec.Target {
 		val = strings.Trim(val, `"`)
-		if val == value {
+		if val == info.Value {
 			continue
 		}
 		newRData = append(newRData, val)

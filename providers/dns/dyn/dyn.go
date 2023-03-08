@@ -87,9 +87,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("dyn: %w", err)
 	}
@@ -101,12 +101,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	data := map[string]interface{}{
 		"rdata": map[string]string{
-			"txtdata": value,
+			"txtdata": info.Value,
 		},
 		"ttl": strconv.Itoa(d.config.TTL),
 	}
 
-	resource := fmt.Sprintf("TXTRecord/%s/%s/", authZone, fqdn)
+	resource := fmt.Sprintf("TXTRecord/%s/%s/", authZone, info.EffectiveFQDN)
 	_, err = d.sendRequest(http.MethodPost, resource, data)
 	if err != nil {
 		return fmt.Errorf("dyn: %w", err)
@@ -122,9 +122,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("dyn: %w", err)
 	}
@@ -134,7 +134,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("dyn: %w", err)
 	}
 
-	resource := fmt.Sprintf("TXTRecord/%s/%s/", authZone, fqdn)
+	resource := fmt.Sprintf("TXTRecord/%s/%s/", authZone, info.EffectiveFQDN)
 	url := fmt.Sprintf("%s/%s", defaultBaseURL, resource)
 
 	req, err := http.NewRequest(http.MethodDelete, url, nil)

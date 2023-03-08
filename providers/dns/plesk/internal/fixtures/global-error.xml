@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<packet version="1.6.9.1">
+    <system>
+        <status>error</status>
+        <errcode>1001</errcode>
+        <errtext>You have entered incorrect username or password.</errtext>
+    </system>
+</packet>

@@ -98,14 +98,14 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	zoneID, err := dpfapiutils.GetZoneIdFromServiceCode(ctx, d.client, d.config.ServiceCode)
 	if err != nil {
 		return fmt.Errorf("iijdpf: failed to get zone id: %w", err)
 	}
 
-	err = d.addTxtRecord(ctx, zoneID, dns.CanonicalName(fqdn), `"`+value+`"`)
+	err = d.addTxtRecord(ctx, zoneID, dns.CanonicalName(info.EffectiveFQDN), `"`+info.Value+`"`)
 	if err != nil {
 		return fmt.Errorf("iijdpf: %w", err)
 	}
@@ -122,14 +122,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	zoneID, err := dpfapiutils.GetZoneIdFromServiceCode(ctx, d.client, d.config.ServiceCode)
 	if err != nil {
 		return fmt.Errorf("iijdpf: failed to get zone id: %w", err)
 	}
 
-	err = d.deleteTxtRecord(ctx, zoneID, dns.CanonicalName(fqdn), `"`+value+`"`)
+	err = d.deleteTxtRecord(ctx, zoneID, dns.CanonicalName(info.EffectiveFQDN), `"`+info.Value+`"`)
 	if err != nil {
 		return fmt.Errorf("iijdpf: %w", err)
 	}

@@ -104,14 +104,14 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("wedos: could not determine zone for domain %q: %w", domain, err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("wedos: %w", err)
 	}
@@ -120,7 +120,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Name: subDomain,
 		TTL:  json.Number(strconv.Itoa(d.config.TTL)),
 		Type: "TXT",
-		Data: value,
+		Data: info.Value,
 	}
 
 	records, err := d.client.GetRecords(ctx, authZone)
@@ -129,7 +129,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	for _, candidate := range records {
-		if candidate.Type == "TXT" && candidate.Name == subDomain && candidate.Data == value {
+		if candidate.Type == "TXT" && candidate.Name == subDomain && candidate.Data == info.Value {
 			record.ID = candidate.ID
 			break
 		}
@@ -152,14 +152,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("wedos: could not determine zone for domain %q: %w", domain, err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("wedos: %w", err)
 	}
@@ -170,7 +170,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	for _, candidate := range records {
-		if candidate.Type != "TXT" || candidate.Name != subDomain || candidate.Data != value {
+		if candidate.Type != "TXT" || candidate.Name != subDomain || candidate.Data != info.Value {
 			continue
 		}
 

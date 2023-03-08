@@ -114,7 +114,7 @@ func (c *Challenge) Solve(authz acme.Authorization) error {
 		return err
 	}
 
-	fqdn, value := GetRecord(authz.Identifier.Value, keyAuth)
+	info := GetChallengeInfo(authz.Identifier.Value, keyAuth)
 
 	var timeout, interval time.Duration
 	switch provider := c.provider.(type) {
@@ -129,7 +129,7 @@ func (c *Challenge) Solve(authz acme.Authorization) error {
 	time.Sleep(interval)
 
 	err = wait.For("propagation", timeout, interval, func() (bool, error) {
-		stop, errP := c.preCheck.call(domain, fqdn, value)
+		stop, errP := c.preCheck.call(domain, info.EffectiveFQDN, info.Value)
 		if !stop || errP != nil {
 			log.Infof("[%s] acme: Waiting for DNS record propagation.", domain)
 		}
@@ -172,20 +172,44 @@ type sequential interface {
 }
 
 // GetRecord returns a DNS record which will fulfill the `dns-01` challenge.
+// Deprecated: use GetChallengeInfo instead.
 func GetRecord(domain, keyAuth string) (fqdn, value string) {
-	keyAuthShaBytes := sha256.Sum256([]byte(keyAuth))
-	// base64URL encoding without padding
-	value = base64.RawURLEncoding.EncodeToString(keyAuthShaBytes[:sha256.Size])
+	info := GetChallengeInfo(domain, keyAuth)
 
-	fqdn = getChallengeFqdn(domain)
-
-	return
+	return info.EffectiveFQDN, info.Value
 }
 
-func getChallengeFqdn(domain string) string {
+// ChallengeInfo contains the information use to create the TXT record.
+type ChallengeInfo struct {
+	// FQDN is the full-qualified challenge domain (i.e. `_acme-challenge.[domain].`)
+	FQDN string
+
+	// EffectiveFQDN contains the resulting FQDN after the CNAMEs resolutions.
+	EffectiveFQDN string
+
+	// Value contains the value for the TXT record.
+	Value string
+}
+
+// GetChallengeInfo returns information used to create a DNS record which will fulfill the `dns-01` challenge.
+func GetChallengeInfo(domain, keyAuth string) ChallengeInfo {
+	keyAuthShaBytes := sha256.Sum256([]byte(keyAuth))
+	// base64URL encoding without padding
+	value := base64.RawURLEncoding.EncodeToString(keyAuthShaBytes[:sha256.Size])
+
+	ok, _ := strconv.ParseBool(os.Getenv("LEGO_DISABLE_CNAME_SUPPORT"))
+
+	return ChallengeInfo{
+		Value:         value,
+		FQDN:          getChallengeFQDN(domain, false),
+		EffectiveFQDN: getChallengeFQDN(domain, !ok),
+	}
+}
+
+func getChallengeFQDN(domain string, followCNAME bool) string {
 	fqdn := fmt.Sprintf("_acme-challenge.%s.", domain)
 
-	if ok, _ := strconv.ParseBool(os.Getenv("LEGO_DISABLE_CNAME_SUPPORT")); ok {
+	if !followCNAME {
 		return fqdn
 	}
 

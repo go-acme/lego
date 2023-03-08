@@ -114,18 +114,18 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zoneID, err := d.getHostedZoneID(fqdn)
+	zoneID, err := d.getHostedZoneID(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("rackspace: %w", err)
 	}
 
 	rec := Records{
 		Record: []Record{{
-			Name: dns01.UnFqdn(fqdn),
+			Name: dns01.UnFqdn(info.EffectiveFQDN),
 			Type: "TXT",
-			Data: value,
+			Data: info.Value,
 			TTL:  d.config.TTL,
 		}},
 	}
@@ -144,14 +144,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zoneID, err := d.getHostedZoneID(fqdn)
+	zoneID, err := d.getHostedZoneID(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("rackspace: %w", err)
 	}
 
-	record, err := d.findTxtRecord(fqdn, zoneID)
+	record, err := d.findTxtRecord(info.EffectiveFQDN, zoneID)
 	if err != nil {
 		return fmt.Errorf("rackspace: %w", err)
 	}

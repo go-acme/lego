@@ -97,11 +97,11 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("constellix: could not find zone for domain %q and fqdn %q : %w", domain, fqdn, err)
+		return fmt.Errorf("constellix: could not find zone for domain %q and fqdn %q : %w", domain, info.EffectiveFQDN, err)
 	}
 
 	dom, err := d.client.Domains.GetByName(dns01.UnFqdn(authZone))
@@ -109,7 +109,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("constellix: failed to get domain (%s): %w", authZone, err)
 	}
 
-	recordName, err := dns01.ExtractSubDomain(fqdn, authZone)
+	recordName, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("constellix: %w", err)
 	}
@@ -125,10 +125,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	// TXT record entry already existing
 	if len(records) == 1 {
-		return d.appendRecordValue(dom, records[0].ID, value)
+		return d.appendRecordValue(dom, records[0].ID, info.Value)
 	}
 
-	err = d.createRecord(dom, fqdn, recordName, value)
+	err = d.createRecord(dom, info.EffectiveFQDN, recordName, info.Value)
 	if err != nil {
 		return fmt.Errorf("constellix: %w", err)
 	}
@@ -138,11 +138,11 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("constellix: could not find zone for domain %q and fqdn %q : %w", domain, fqdn, err)
+		return fmt.Errorf("constellix: could not find zone for domain %q and fqdn %q : %w", domain, info.EffectiveFQDN, err)
 	}
 
 	dom, err := d.client.Domains.GetByName(dns01.UnFqdn(authZone))
@@ -150,7 +150,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("constellix: failed to get domain (%s): %w", authZone, err)
 	}
 
-	recordName, err := dns01.ExtractSubDomain(fqdn, authZone)
+	recordName, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("constellix: %w", err)
 	}
@@ -173,7 +173,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("constellix: failed to get TXT records: %w", err)
 	}
 
-	if !containsValue(record, value) {
+	if !containsValue(record, info.Value) {
 		return nil
 	}
 
@@ -186,7 +186,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return nil
 	}
 
-	err = d.removeRecordValue(dom, record, value)
+	err = d.removeRecordValue(dom, record, info.Value)
 	if err != nil {
 		return fmt.Errorf("constellix: %w", err)
 	}

@@ -101,15 +101,15 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
-	quotedValue := fmt.Sprintf(`%q`, value)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
+	quotedValue := fmt.Sprintf(`%q`, info.Value)
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("desec: could not find zone for domain %q and fqdn %q : %w", domain, fqdn, err)
+		return fmt.Errorf("desec: could not find zone for domain %q and fqdn %q : %w", domain, info.EffectiveFQDN, err)
 	}
 
-	recordName, err := dns01.ExtractSubDomain(fqdn, authZone)
+	recordName, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("desec: %w", err)
 	}
@@ -152,14 +152,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("desec: could not find zone for domain %q and fqdn %q : %w", domain, fqdn, err)
+		return fmt.Errorf("desec: could not find zone for domain %q and fqdn %q : %w", domain, info.EffectiveFQDN, err)
 	}
 
-	recordName, err := dns01.ExtractSubDomain(fqdn, authZone)
+	recordName, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("desec: %w", err)
 	}
@@ -173,7 +173,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	records := make([]string, 0)
 	for _, record := range rrSet.Records {
-		if record != fmt.Sprintf(`%q`, value) {
+		if record != fmt.Sprintf(`%q`, info.Value) {
 			records = append(records, record)
 		}
 	}

@@ -103,9 +103,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
 		return err
 	}
@@ -116,9 +116,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	record := internal.Record{
-		Name: fqdn,
+		Name: info.EffectiveFQDN,
 		Type: "TXT",
-		Data: value,
+		Data: info.Value,
 		TTL:  d.config.TTL,
 	}
 
@@ -132,9 +132,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp clears ConoHa DNS TXT record.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
 		return err
 	}
@@ -144,7 +144,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("conoha: failed to get domain ID: %w", err)
 	}
 
-	recID, err := d.client.GetRecordID(domID, fqdn, "TXT", value)
+	recID, err := d.client.GetRecordID(domID, info.EffectiveFQDN, "TXT", info.Value)
 	if err != nil {
 		return fmt.Errorf("conoha: failed to get record ID: %w", err)
 	}

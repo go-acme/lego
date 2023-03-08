@@ -50,7 +50,7 @@ func CreateFlags(defaultPath string) []cli.Flag {
 			Name:    "key-type",
 			Aliases: []string{"k"},
 			Value:   "ec256",
-			Usage:   "Key type to use for private keys. Supported: rsa2048, rsa4096, rsa8192, ec256, ec384.",
+			Usage:   "Key type to use for private keys. Supported: rsa2048, rsa3072, rsa4096, rsa8192, ec256, ec384.",
 		},
 		&cli.StringFlag{
 			Name:  "filename",
@@ -64,48 +64,48 @@ func CreateFlags(defaultPath string) []cli.Flag {
 		},
 		&cli.BoolFlag{
 			Name:  "http",
-			Usage: "Use the HTTP challenge to solve challenges. Can be mixed with other types of challenges.",
+			Usage: "Use the HTTP-01 challenge to solve challenges. Can be mixed with other types of challenges.",
 		},
 		&cli.StringFlag{
 			Name:  "http.port",
-			Usage: "Set the port and interface to use for HTTP based challenges to listen on.Supported: interface:port or :port.",
+			Usage: "Set the port and interface to use for HTTP-01 based challenges to listen on. Supported: interface:port or :port.",
 			Value: ":80",
 		},
 		&cli.StringFlag{
 			Name:  "http.proxy-header",
-			Usage: "Validate against this HTTP header when solving HTTP based challenges behind a reverse proxy.",
+			Usage: "Validate against this HTTP header when solving HTTP-01 based challenges behind a reverse proxy.",
 			Value: "Host",
 		},
 		&cli.StringFlag{
 			Name: "http.webroot",
-			Usage: "Set the webroot folder to use for HTTP based challenges to write directly in a file in .well-known/acme-challenge." +
+			Usage: "Set the webroot folder to use for HTTP-01 based challenges to write directly to the .well-known/acme-challenge file." +
 				" This disables the built-in server and expects the given directory to be publicly served with access to .well-known/acme-challenge",
 		},
 		&cli.StringSliceFlag{
 			Name:  "http.memcached-host",
-			Usage: "Set the memcached host(s) to use for HTTP based challenges. Challenges will be written to all specified hosts.",
+			Usage: "Set the memcached host(s) to use for HTTP-01 based challenges. Challenges will be written to all specified hosts.",
 		},
 		&cli.BoolFlag{
 			Name:  "tls",
-			Usage: "Use the TLS challenge to solve challenges. Can be mixed with other types of challenges.",
+			Usage: "Use the TLS-ALPN-01 challenge to solve challenges. Can be mixed with other types of challenges.",
 		},
 		&cli.StringFlag{
 			Name:  "tls.port",
-			Usage: "Set the port and interface to use for TLS based challenges to listen on. Supported: interface:port or :port.",
+			Usage: "Set the port and interface to use for TLS-ALPN-01 based challenges to listen on. Supported: interface:port or :port.",
 			Value: ":443",
 		},
 		&cli.StringFlag{
 			Name:  "dns",
-			Usage: "Solve a DNS challenge using the specified provider. Can be mixed with other types of challenges. Run 'lego dnshelp' for help on usage.",
+			Usage: "Solve a DNS-01 challenge using the specified provider. Can be mixed with other types of challenges. Run 'lego dnshelp' for help on usage.",
 		},
 		&cli.BoolFlag{
 			Name:  "dns.disable-cp",
-			Usage: "By setting this flag to true, disables the need to wait the propagation of the TXT record to all authoritative name servers.",
+			Usage: "By setting this flag to true, disables the need to await propagation of the TXT record to all authoritative name servers.",
 		},
 		&cli.StringSliceFlag{
 			Name: "dns.resolvers",
 			Usage: "Set the resolvers to use for performing (recursive) CNAME resolving and apex domain determination." +
-				" For DNS challenge verification, the authoritative DNS server is queried directly." +
+				" For DNS-01 challenge verification, the authoritative DNS server is queried directly." +
 				" Supported: host:port." +
 				" The default is to use the system resolvers, or Google's DNS resolvers if the system's cannot be determined.",
 		},
@@ -115,16 +115,16 @@ func CreateFlags(defaultPath string) []cli.Flag {
 		},
 		&cli.IntFlag{
 			Name:  "dns-timeout",
-			Usage: "Set the DNS timeout value to a specific value in seconds. Used only when performing authoritative name servers queries.",
+			Usage: "Set the DNS timeout value to a specific value in seconds. Used only when performing authoritative name server queries.",
 			Value: 10,
 		},
 		&cli.BoolFlag{
 			Name:  "pem",
-			Usage: "Generate a .pem file by concatenating the .key and .crt files together.",
+			Usage: "Generate an additional .pem (base64) file by concatenating the .key and .crt files together.",
 		},
 		&cli.BoolFlag{
 			Name:  "pfx",
-			Usage: "Generate a .pfx (PKCS#12) file by with the .key and .crt and issuer .crt files together.",
+			Usage: "Generate an additional .pfx (PKCS#12) file by concatenating the .key and .crt and issuer .crt files together.",
 		},
 		&cli.StringFlag{
 			Name:  "pfx.pass",

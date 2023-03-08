@@ -112,14 +112,14 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := d.getHostedZone(fqdn)
+	zone, err := d.getHostedZone(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("tencentcloud: failed to get hosted zone: %w", err)
 	}
 
-	recordName, err := extractRecordName(fqdn, *zone.Name)
+	recordName, err := extractRecordName(info.EffectiveFQDN, *zone.Name)
 	if err != nil {
 		return fmt.Errorf("tencentcloud: failed to extract record name: %w", err)
 	}
@@ -130,7 +130,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	request.SubDomain = common.StringPtr(recordName)
 	request.RecordType = common.StringPtr("TXT")
 	request.RecordLine = common.StringPtr("默认")
-	request.Value = common.StringPtr(value)
+	request.Value = common.StringPtr(info.Value)
 	request.TTL = common.Uint64Ptr(uint64(d.config.TTL))
 
 	_, err = d.client.CreateRecord(request)
@@ -143,14 +143,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := d.getHostedZone(fqdn)
+	zone, err := d.getHostedZone(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("tencentcloud: failed to get hosted zone: %w", err)
 	}
 
-	records, err := d.findTxtRecords(zone, fqdn)
+	records, err := d.findTxtRecords(zone, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("tencentcloud: failed to find TXT records: %w", err)
 	}

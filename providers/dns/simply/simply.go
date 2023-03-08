@@ -110,22 +110,22 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("simply: could not determine zone for domain %q: %w", domain, err)
 	}
 	authZone = dns01.UnFqdn(authZone)
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("regru: %w", err)
 	}
 
 	recordBody := internal.Record{
 		Name: subDomain,
-		Data: value,
+		Data: info.Value,
 		Type: "TXT",
 		TTL:  d.config.TTL,
 	}
@@ -144,9 +144,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("simply: could not determine zone for domain %q: %w", domain, err)
 	}
@@ -157,12 +157,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	recordID, ok := d.recordIDs[token]
 	d.recordIDsMu.Unlock()
 	if !ok {
-		return fmt.Errorf("simply: unknown record ID for '%s' '%s'", fqdn, token)
+		return fmt.Errorf("simply: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
 	err = d.client.DeleteRecord(authZone, recordID)
 	if err != nil {
-		return fmt.Errorf("simply: failed to delete TXT records: fqdn=%s, recordID=%d: %w", fqdn, recordID, err)
+		return fmt.Errorf("simply: failed to delete TXT records: fqdn=%s, recordID=%d: %w", info.EffectiveFQDN, recordID, err)
 	}
 
 	// deletes record ID from map

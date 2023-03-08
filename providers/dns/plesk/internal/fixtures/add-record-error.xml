@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<packet version="1.6.9.1">
+    <dns>
+        <add_rec>
+            <result>
+                <status>error</status>
+                <errcode>1015</errcode>
+                <errtext>Domain does not exist.</errtext>
+            </result>
+        </add_rec>
+    </dns>
+</packet>

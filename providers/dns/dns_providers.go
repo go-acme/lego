@@ -203,8 +203,6 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return gandi.NewDNSProvider()
 	case "gandiv5":
 		return gandiv5.NewDNSProvider()
-	case "googledomains":
-		return googledomains.NewDNSProvider()
 	case "gcloud":
 		return gcloud.NewDNSProvider()
 	case "gcore":
@@ -213,6 +211,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return glesys.NewDNSProvider()
 	case "godaddy":
 		return godaddy.NewDNSProvider()
+	case "googledomains":
+		return googledomains.NewDNSProvider()
 	case "hetzner":
 		return hetzner.NewDNSProvider()
 	case "hostingde":

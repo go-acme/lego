@@ -49,7 +49,15 @@ func NewDefaultConfig() *Config {
 
 // NewDNSProvider returns the Google Domains DNS provider with a default configuration.
 func NewDNSProvider() (*DNSProvider, error) {
-	return NewDNSProviderConfig(NewDefaultConfig())
+	values, err := env.Get(EnvAccessToken)
+	if err != nil {
+		return nil, fmt.Errorf("googledomains: %w", err)
+	}
+
+	config := NewDefaultConfig()
+	config.AccessToken = values[EnvAccessToken]
+
+	return NewDNSProviderConfig(config)
 }
 
 // NewDNSProviderConfig returns the Google Domains DNS provider with the provided config.

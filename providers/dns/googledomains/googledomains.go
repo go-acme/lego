@@ -25,7 +25,7 @@ const (
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
-// static check on interface implementation
+// static compile-time check on interface implementation.
 var _ challenge.Provider = &DNSProvider{}
 
 // Config is used to configure the creation of the DNSProvider.
@@ -69,13 +69,13 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	return &DNSProvider{
-		config: config,
+		config:  config,
 		acmedns: service,
 	}, nil
 }
 
 type DNSProvider struct {
-	config     *Config
+	config  *Config
 	acmedns *acmedns.Service
 }
 
@@ -87,7 +87,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	rotateReq := acmedns.RotateChallengesRequest{
 		AccessToken:        d.config.AccessToken,
-		RecordsToAdd:       []*acmedns.AcmeTxtRecord{getAcmeTxtRecord(domain, token, keyAuth)},
+		RecordsToAdd:       []*acmedns.AcmeTxtRecord{getAcmeTxtRecord(domain, keyAuth)},
 		KeepExpiredRecords: false,
 	}
 
@@ -107,7 +107,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	rotateReq := acmedns.RotateChallengesRequest{
 		AccessToken:        d.config.AccessToken,
-		RecordsToRemove:    []*acmedns.AcmeTxtRecord{getAcmeTxtRecord(domain, token, keyAuth)},
+		RecordsToRemove:    []*acmedns.AcmeTxtRecord{getAcmeTxtRecord(domain, keyAuth)},
 		KeepExpiredRecords: false,
 	}
 
@@ -123,11 +123,11 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-func getAcmeTxtRecord(domain, token, keyAuth string) *acmedns.AcmeTxtRecord {
+func getAcmeTxtRecord(domain, keyAuth string) *acmedns.AcmeTxtRecord {
 	challengeInfo := dns01.GetChallengeInfo(domain, keyAuth)
 
 	return &acmedns.AcmeTxtRecord{
-		Fqdn:  challengeInfo.EffectiveFQDN,
+		Fqdn:   challengeInfo.EffectiveFQDN,
 		Digest: challengeInfo.Value,
 	}
 }

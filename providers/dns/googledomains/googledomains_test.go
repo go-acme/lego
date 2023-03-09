@@ -28,9 +28,8 @@ func TestNewDNSProvider(t *testing.T) {
 			expected: "",
 		},
 		{
-			desc: "missing credentials",
-			envVars: map[string]string{
-			},
+			desc:     "missing credentials",
+			envVars:  map[string]string{},
 			expected: "google domains: access token is missing",
 		},
 	}
@@ -52,7 +51,7 @@ func TestNewDNSProvider(t *testing.T) {
 	}
 }
 
-func TestLivePresent(t *testing.T){
+func TestLivePresent(t *testing.T) {
 	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
@@ -65,7 +64,7 @@ func TestLivePresent(t *testing.T){
 	require.NoError(t, err)
 }
 
-func TestLiveCleanUp(t *testing.T){
+func TestLiveCleanUp(t *testing.T) {
 	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}

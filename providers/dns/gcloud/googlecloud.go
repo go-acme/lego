@@ -176,13 +176,13 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zone, err := d.getHostedZone(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("googlecloud1: %w", err)
+		return fmt.Errorf("googlecloud: %w", err)
 	}
 
 	// Look for existing records.
 	existingRrSet, err := d.findTxtRecords(zone, info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("googlecloud2: %w", err)
+		return fmt.Errorf("googlecloud: %w", err)
 	}
 
 	for _, rrSet := range existingRrSet {
@@ -202,7 +202,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	// Attempt to delete the existing records before adding the new one.
 	if len(existingRrSet) > 0 {
 		if err = d.applyChanges(zone, &dns.Change{Deletions: existingRrSet}); err != nil {
-			return fmt.Errorf("googlecloud3: %w", err)
+			return fmt.Errorf("googlecloud: %w", err)
 		}
 	}
 
@@ -227,7 +227,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	if err = d.applyChanges(zone, change); err != nil {
-		return fmt.Errorf("googlecloud4: %w", err)
+		return fmt.Errorf("googlecloud: %w", err)
 	}
 
 	return nil
@@ -315,7 +315,7 @@ func (d *DNSProvider) getHostedZone(domain string) (string, error) {
 		return "", err
 	}
 
-		zones, err := d.client.ManagedZones.
+	zones, err := d.client.ManagedZones.
 		List(d.config.Project).
 		DnsName(authZone).
 		Do()

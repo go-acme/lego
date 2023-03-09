@@ -146,7 +146,7 @@ func TestPresentNoExistingRR(t *testing.T) {
 	mux := http.NewServeMux()
 
 	// getHostedZone: /manhattan/managedZones?alt=json&dnsName=lego.wtf.
-	mux.HandleFunc("/manhattan/managedZones", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/dns/v1/projects/manhattan/managedZones", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
 			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 			return
@@ -166,7 +166,7 @@ func TestPresentNoExistingRR(t *testing.T) {
 	})
 
 	// findTxtRecords: /manhattan/managedZones/test/rrsets?alt=json&name=_acme-challenge.lego.wtf.&type=TXT
-	mux.HandleFunc("/manhattan/managedZones/test/rrsets", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/dns/v1/projects/manhattan/managedZones/test/rrsets", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
 			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 			return
@@ -184,7 +184,7 @@ func TestPresentNoExistingRR(t *testing.T) {
 	})
 
 	// applyChanges [Create]: /manhattan/managedZones/test/changes?alt=json
-	mux.HandleFunc("/manhattan/managedZones/test/changes", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/dns/v1/projects/manhattan/managedZones/test/changes", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 			return
@@ -227,7 +227,7 @@ func TestPresentWithExistingRR(t *testing.T) {
 	mux := http.NewServeMux()
 
 	// getHostedZone: /manhattan/managedZones?alt=json&dnsName=lego.wtf.
-	mux.HandleFunc("/manhattan/managedZones", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/dns/v1/projects/manhattan/managedZones", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
 			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 			return
@@ -247,7 +247,7 @@ func TestPresentWithExistingRR(t *testing.T) {
 	})
 
 	// findTxtRecords: /manhattan/managedZones/test/rrsets?alt=json&name=_acme-challenge.lego.wtf.&type=TXT
-	mux.HandleFunc("/manhattan/managedZones/test/rrsets", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/dns/v1/projects/manhattan/managedZones/test/rrsets", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
 			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 			return
@@ -270,7 +270,7 @@ func TestPresentWithExistingRR(t *testing.T) {
 	})
 
 	// applyChanges [Create]: /manhattan/managedZones/test/changes?alt=json
-	mux.HandleFunc("/manhattan/managedZones/test/changes", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/dns/v1/projects/manhattan/managedZones/test/changes", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 			return
@@ -328,7 +328,7 @@ func TestPresentSkipExistingRR(t *testing.T) {
 	mux := http.NewServeMux()
 
 	// getHostedZone: /manhattan/managedZones?alt=json&dnsName=lego.wtf.
-	mux.HandleFunc("/manhattan/managedZones", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/dns/v1/projects/manhattan/managedZones", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
 			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 			return
@@ -348,7 +348,7 @@ func TestPresentSkipExistingRR(t *testing.T) {
 	})
 
 	// findTxtRecords: /manhattan/managedZones/test/rrsets?alt=json&name=_acme-challenge.lego.wtf.&type=TXT
-	mux.HandleFunc("/manhattan/managedZones/test/rrsets", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/dns/v1/projects/manhattan/managedZones/test/rrsets", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
 			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 			return

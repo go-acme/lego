@@ -18,7 +18,7 @@ import (
 const (
 	envNamespace = "GOOGLE_DOMAINS_"
 
-	EnvAccessToken = envNamespace + "ACCESS_TOKEN"
+	EnvAccessToken        = envNamespace + "ACCESS_TOKEN"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"

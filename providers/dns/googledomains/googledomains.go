@@ -1,7 +1,7 @@
 package googledomains
 
 import (
-	"bytes"
+	"context"
 	"fmt"
 	"net/http"
 	"time"
@@ -9,37 +9,28 @@ import (
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-jose/go-jose/v3/json"
+	"google.golang.org/api/acmedns/v1"
+	"google.golang.org/api/option"
 )
 
-// API Documentation: https://developers.google.com/domains/acme-dns/reference/rest
+// Environment variables names.
+const (
+	envNamespace = "GOOGLE_DOMAINS_"
+
+	EnvAccessToken = envNamespace + "ACCESS_TOKEN"
+	EnvZoneName    = envNamespace + "ZONE_NAME"
+
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
 
 // static check on interface implementation
 var _ challenge.Provider = &DNSProvider{}
 
-type acmeTxtRecord struct {
-	Fqdn       string `json:"fqdn"`
-	Digest     string `json:"digest"`
-	UpdateTime string `json:"update_time,omitempty"`
-}
-
-type rotateChallengesRequest struct {
-	AccessToken        string          `json:"access_token"`
-	RecordsToAdd       []acmeTxtRecord `json:"records_to_add,omitempty"`
-	RecordsToRemove    []acmeTxtRecord `json:"records_to_remove,omitempty"`
-	KeepExpiredRecords bool            `json:"keep_expired_records,omitempty"`
-}
-
-type acmeChallengeSet struct {
-	Record []acmeTxtRecord `json:"record"`
-}
-
-const rotateChallengesRequestURL = "https://acmedns.googleapis.com/v1/acmeChallengeSets/%s:rotateChallenges"
-
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	AccessToken        string
-	HTTPClient         *http.Client
 	PollingInterval    time.Duration
 	PropagationTimeout time.Duration
 }
@@ -47,12 +38,9 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond("GOOGLE_DOMAINS_HTTP_TIMEOUT", 30*time.Second),
-		},
-		AccessToken:        env.GetOrDefaultString("GOOGLE_DOMAINS_ACCESS_TOKEN", ""),
-		PropagationTimeout: env.GetOrDefaultSecond("GOOGLE_DOMAINS_PROPAGATION_TIMEOUT", 2*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond("GOOGLE_DOMAINS_POLLING_INTERVAL", 2*time.Second),
+		AccessToken:        env.GetOrDefaultString(EnvAccessToken, ""),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
 	}
 }
 
@@ -63,23 +51,48 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 // NewDNSProviderConfig returns the Google Domains DNS provider with the provided config.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
-	return &DNSProvider{config: config}, nil
+	if config == nil {
+		return nil, fmt.Errorf("google domains: the configuration of the DNS provider is nil")
+	}
+
+	if config.AccessToken == "" {
+		return nil, fmt.Errorf("google domains: access token is missing")
+	}
+
+	httpClient := &http.Client{
+		Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+	}
+
+	service, err := acmedns.NewService(context.Background(), option.WithHTTPClient(httpClient))
+	if err != nil {
+		return nil, fmt.Errorf("google domains: error creating acme dns service: %w", err)
+	}
+
+	return &DNSProvider{
+		config: config,
+		acmedns: service,
+	}, nil
 }
 
 type DNSProvider struct {
-	config *Config
+	config     *Config
+	acmedns *acmedns.Service
 }
 
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	rec := getAcmeTxtRecord(domain, token, keyAuth)
+	zone, err := dns01.FindZoneByFqdn(domain)
+	if err != nil {
+		return fmt.Errorf("error finding zone for domain %s: %w", domain, err)
+	}
 
-	rotateReq := rotateChallengesRequest{
+	rotateReq := acmedns.RotateChallengesRequest{
 		AccessToken:        d.config.AccessToken,
-		RecordsToAdd:       []acmeTxtRecord{rec},
+		RecordsToAdd:       []*acmedns.AcmeTxtRecord{getAcmeTxtRecord(domain, token, keyAuth)},
 		KeepExpiredRecords: false,
 	}
 
-	_, err := d.doRequest(domain, rotateReq)
+	call := d.acmedns.AcmeChallengeSets.RotateChallenges(zone, &rotateReq)
+	_, err = call.Do()
 	if err != nil {
 		return err
 	}
@@ -87,15 +100,19 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	rec := getAcmeTxtRecord(domain, token, keyAuth)
+	zone, err := dns01.FindZoneByFqdn(domain)
+	if err != nil {
+		return fmt.Errorf("error finding zone for domain %s: %w", domain, err)
+	}
 
-	rotateReq := rotateChallengesRequest{
+	rotateReq := acmedns.RotateChallengesRequest{
 		AccessToken:        d.config.AccessToken,
-		RecordsToRemove:    []acmeTxtRecord{rec},
+		RecordsToRemove:    []*acmedns.AcmeTxtRecord{getAcmeTxtRecord(domain, token, keyAuth)},
 		KeepExpiredRecords: false,
 	}
 
-	_, err := d.doRequest(domain, rotateReq)
+	call := d.acmedns.AcmeChallengeSets.RotateChallenges(zone, &rotateReq)
+	_, err = call.Do()
 	if err != nil {
 		return err
 	}
@@ -106,38 +123,10 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-func (d *DNSProvider) doRequest(domain string, rotateReq rotateChallengesRequest) (acmeChallengeSet, error) {
-	acmeChallengeSetResp := acmeChallengeSet{}
-
-	reqJson, err := json.Marshal(rotateReq)
-	if err != nil {
-		return acmeChallengeSetResp, fmt.Errorf("error marshalling rotate request: %w", err)
-	}
-
-	req, err := http.NewRequest("POST", fmt.Sprintf(rotateChallengesRequestURL, domain), bytes.NewBuffer(reqJson))
-	if err != nil {
-		return acmeChallengeSetResp, fmt.Errorf("error when http.NewRequest: %w", err)
-	}
-
-	req.Header.Add("Content-Type", "application/json; charset=utf-8")
-
-	resp, err := d.config.HTTPClient.Do(req)
-	if err != nil {
-		return acmeChallengeSetResp, fmt.Errorf("error when sending http request: %w", err)
-	}
-	defer resp.Body.Close()
-
-	err = json.NewDecoder(resp.Body).Decode(&acmeChallengeSetResp)
-	if err != nil {
-		return acmeChallengeSetResp, fmt.Errorf("unable to decode response from google domains API: %w", err)
-	}
-	return acmeChallengeSetResp, nil
-}
-
-func getAcmeTxtRecord(domain, token, keyAuth string) acmeTxtRecord {
+func getAcmeTxtRecord(domain, token, keyAuth string) *acmedns.AcmeTxtRecord {
 	fqdn, value := dns01.GetRecord(domain, keyAuth)
 
-	return acmeTxtRecord{
+	return &acmedns.AcmeTxtRecord{
 		Fqdn:   fqdn,
 		Digest: value,
 	}

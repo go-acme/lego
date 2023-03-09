@@ -48,6 +48,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/gcore"
 	"github.com/go-acme/lego/v4/providers/dns/glesys"
 	"github.com/go-acme/lego/v4/providers/dns/godaddy"
+	"github.com/go-acme/lego/v4/providers/dns/googledomains"
 	"github.com/go-acme/lego/v4/providers/dns/hetzner"
 	"github.com/go-acme/lego/v4/providers/dns/hostingde"
 	"github.com/go-acme/lego/v4/providers/dns/hosttech"
@@ -202,6 +203,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return gandi.NewDNSProvider()
 	case "gandiv5":
 		return gandiv5.NewDNSProvider()
+	case "googledomains":
+		return googledomains.NewDNSProvider()
 	case "gcloud":
 		return gcloud.NewDNSProvider()
 	case "gcore":

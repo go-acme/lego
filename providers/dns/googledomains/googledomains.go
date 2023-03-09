@@ -80,7 +80,7 @@ type DNSProvider struct {
 }
 
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	zone, err := dns01.FindZoneByFqdn(domain)
+	zone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
 	if err != nil {
 		return fmt.Errorf("error finding zone for domain %s: %w", domain, err)
 	}
@@ -100,7 +100,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	zone, err := dns01.FindZoneByFqdn(domain)
+	zone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
 	if err != nil {
 		return fmt.Errorf("error finding zone for domain %s: %w", domain, err)
 	}

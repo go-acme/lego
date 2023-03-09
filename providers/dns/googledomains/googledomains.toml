@@ -1,0 +1,10 @@
+Name = "Google Domains"
+Description = ''''''
+URL = "https://domains.google"
+Code = "googledomains"
+Since = "v4.10.2"
+
+Example = '''
+GOOGLE_DOMAINS_ACCESS_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \
+lego --email you@example.com --dns gdomains --domains my.example.org run
+'''

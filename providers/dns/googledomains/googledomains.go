@@ -1,3 +1,4 @@
+// Package googledomains implements a DNS provider for solving the DNS-01 challenge using Google Domains DNS API.
 package googledomains
 
 import (
@@ -18,8 +19,6 @@ const (
 	envNamespace = "GOOGLE_DOMAINS_"
 
 	EnvAccessToken = envNamespace + "ACCESS_TOKEN"
-	EnvZoneName    = envNamespace + "ZONE_NAME"
-
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"

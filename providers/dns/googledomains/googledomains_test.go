@@ -9,8 +9,7 @@ import (
 
 const envDomain = envNamespace + "DOMAIN"
 
-var envTest = tester.NewEnvTest(
-	EnvAccessToken).
+var envTest = tester.NewEnvTest(EnvAccessToken).
 	WithDomain(envDomain).
 	WithLiveTestRequirements(EnvAccessToken, envDomain)
 

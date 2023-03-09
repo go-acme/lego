@@ -30,7 +30,7 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc:     "missing credentials",
 			envVars:  map[string]string{},
-			expected: "google domains: access token is missing",
+			expected: "googledomains: some credentials information are missing: GOOGLE_DOMAINS_ACCESS_TOKEN",
 		},
 	}
 
@@ -46,6 +46,40 @@ func TestNewDNSProvider(t *testing.T) {
 			} else {
 				require.Error(t, err)
 				require.Contains(t, err.Error(), test.expected)
+			}
+		})
+	}
+}
+
+func TestNewDNSProviderConfig(t *testing.T) {
+	testCases := []struct {
+		desc        string
+		accessToken string
+		expected    string
+	}{
+		{
+			desc:        "success",
+			accessToken: "abc",
+		},
+		{
+			desc:     "missing credentials",
+			expected: "googledomains: access token is missing",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			config := NewDefaultConfig()
+			config.AccessToken = test.accessToken
+
+			p, err := NewDNSProviderConfig(config)
+
+			if test.expected == "" {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+			} else {
+				require.EqualError(t, err, test.expected)
 			}
 		})
 	}

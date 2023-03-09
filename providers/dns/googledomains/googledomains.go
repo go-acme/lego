@@ -33,6 +33,7 @@ type Config struct {
 	AccessToken        string
 	PollingInterval    time.Duration
 	PropagationTimeout time.Duration
+	HTTPClient         *http.Client
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
@@ -41,6 +42,9 @@ func NewDefaultConfig() *Config {
 		AccessToken:        env.GetOrDefaultString(EnvAccessToken, ""),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
+		HTTPClient: &http.Client{
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+		},
 	}
 }
 
@@ -52,20 +56,20 @@ func NewDNSProvider() (*DNSProvider, error) {
 // NewDNSProviderConfig returns the Google Domains DNS provider with the provided config.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
-		return nil, fmt.Errorf("google domains: the configuration of the DNS provider is nil")
+		return nil, fmt.Errorf("googledomains: the configuration of the DNS provider is nil")
 	}
 
 	if config.AccessToken == "" {
-		return nil, fmt.Errorf("google domains: access token is missing")
+		return nil, fmt.Errorf("googledomains: access token is missing")
 	}
 
 	httpClient := &http.Client{
 		Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 	}
 
-	service, err := acmedns.NewService(context.Background(), option.WithHTTPClient(httpClient))
+	service, err := acmedns.NewService(context.Background(), option.WithHTTPClient(config.HTTPClient))
 	if err != nil {
-		return nil, fmt.Errorf("google domains: error creating acme dns service: %w", err)
+		return nil, fmt.Errorf("googledomains: error creating acme dns service: %w", err)
 	}
 
 	return &DNSProvider{
@@ -82,7 +86,7 @@ type DNSProvider struct {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	zone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
 	if err != nil {
-		return fmt.Errorf("google domains: error finding zone for domain %s: %w", domain, err)
+		return fmt.Errorf("googledomains: error finding zone for domain %s: %w", domain, err)
 	}
 
 	rotateReq := acmedns.RotateChallengesRequest{
@@ -94,7 +98,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	call := d.acmedns.AcmeChallengeSets.RotateChallenges(zone, &rotateReq)
 	_, err = call.Do()
 	if err != nil {
-		return fmt.Errorf("google domains: error adding challenge for domain %s: %w", domain, err)
+		return fmt.Errorf("googledomains: error adding challenge for domain %s: %w", domain, err)
 	}
 	return nil
 }
@@ -102,7 +106,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	zone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
 	if err != nil {
-		return fmt.Errorf("google domains: error finding zone for domain %s: %w", domain, err)
+		return fmt.Errorf("googledomains: error finding zone for domain %s: %w", domain, err)
 	}
 
 	rotateReq := acmedns.RotateChallengesRequest{
@@ -114,7 +118,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	call := d.acmedns.AcmeChallengeSets.RotateChallenges(zone, &rotateReq)
 	_, err = call.Do()
 	if err != nil {
-		return fmt.Errorf("google domains: error cleaning up challenge for domain %s: %w", domain, err)
+		return fmt.Errorf("googledomains: error cleaning up challenge for domain %s: %w", domain, err)
 	}
 	return nil
 }

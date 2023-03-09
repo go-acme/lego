@@ -62,10 +62,6 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("googledomains: access token is missing")
 	}
 
-	httpClient := &http.Client{
-		Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
-	}
-
 	service, err := acmedns.NewService(context.Background(), option.WithHTTPClient(config.HTTPClient))
 	if err != nil {
 		return nil, fmt.Errorf("googledomains: error creating acme dns service: %w", err)

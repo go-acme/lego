@@ -82,7 +82,7 @@ type DNSProvider struct {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	zone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
 	if err != nil {
-		return fmt.Errorf("error finding zone for domain %s: %w", domain, err)
+		return fmt.Errorf("google domains: error finding zone for domain %s: %w", domain, err)
 	}
 
 	rotateReq := acmedns.RotateChallengesRequest{
@@ -94,7 +94,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	call := d.acmedns.AcmeChallengeSets.RotateChallenges(zone, &rotateReq)
 	_, err = call.Do()
 	if err != nil {
-		return err
+		return fmt.Errorf("google domains: error adding challenge for domain %s: %w", domain, err)
 	}
 	return nil
 }
@@ -102,7 +102,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	zone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
 	if err != nil {
-		return fmt.Errorf("error finding zone for domain %s: %w", domain, err)
+		return fmt.Errorf("google domains: error finding zone for domain %s: %w", domain, err)
 	}
 
 	rotateReq := acmedns.RotateChallengesRequest{
@@ -114,7 +114,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	call := d.acmedns.AcmeChallengeSets.RotateChallenges(zone, &rotateReq)
 	_, err = call.Do()
 	if err != nil {
-		return err
+		return fmt.Errorf("google domains: error cleaning up challenge for domain %s: %w", domain, err)
 	}
 	return nil
 }
@@ -124,10 +124,10 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 func getAcmeTxtRecord(domain, token, keyAuth string) *acmedns.AcmeTxtRecord {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	challengeInfo := dns01.GetChallengeInfo(domain, keyAuth)
 
 	return &acmedns.AcmeTxtRecord{
-		Fqdn:   fqdn,
-		Digest: value,
+		Fqdn:  challengeInfo.EffectiveFQDN,
+		Digest: challengeInfo.Value,
 	}
 }

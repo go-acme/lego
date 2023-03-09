@@ -144,6 +144,8 @@ func TestNewDNSProviderConfig(t *testing.T) {
 
 func TestPresentNoExistingRR(t *testing.T) {
 	mux := http.NewServeMux()
+	pathMux := http.NewServeMux()
+  pathMux.Handle("/dns/v1/projects/", http.StripPrefix("/dns/v1/projects", mux))
 
 	// getHostedZone: /manhattan/managedZones?alt=json&dnsName=lego.wtf.
 	mux.HandleFunc("/manhattan/managedZones", func(w http.ResponseWriter, r *http.Request) {
@@ -205,7 +207,7 @@ func TestPresentNoExistingRR(t *testing.T) {
 		}
 	})
 
-	server := httptest.NewServer(mux)
+	server := httptest.NewServer(pathMux)
 	t.Cleanup(server.Close)
 
 	config := NewDefaultConfig()
@@ -225,6 +227,8 @@ func TestPresentNoExistingRR(t *testing.T) {
 
 func TestPresentWithExistingRR(t *testing.T) {
 	mux := http.NewServeMux()
+	pathMux := http.NewServeMux()
+  pathMux.Handle("/dns/v1/projects/", http.StripPrefix("/dns/v1/projects", mux))
 
 	// getHostedZone: /manhattan/managedZones?alt=json&dnsName=lego.wtf.
 	mux.HandleFunc("/manhattan/managedZones", func(w http.ResponseWriter, r *http.Request) {
@@ -306,7 +310,7 @@ func TestPresentWithExistingRR(t *testing.T) {
 		}
 	})
 
-	server := httptest.NewServer(mux)
+	server := httptest.NewServer(pathMux)
 	t.Cleanup(server.Close)
 
 	config := NewDefaultConfig()
@@ -326,6 +330,8 @@ func TestPresentWithExistingRR(t *testing.T) {
 
 func TestPresentSkipExistingRR(t *testing.T) {
 	mux := http.NewServeMux()
+	pathMux := http.NewServeMux()
+  pathMux.Handle("/dns/v1/projects/", http.StripPrefix("/dns/v1/projects", mux))
 
 	// getHostedZone: /manhattan/managedZones?alt=json&dnsName=lego.wtf.
 	mux.HandleFunc("/manhattan/managedZones", func(w http.ResponseWriter, r *http.Request) {
@@ -370,7 +376,7 @@ func TestPresentSkipExistingRR(t *testing.T) {
 		}
 	})
 
-	server := httptest.NewServer(mux)
+	server := httptest.NewServer(pathMux)
 	t.Cleanup(server.Close)
 
 	config := NewDefaultConfig()

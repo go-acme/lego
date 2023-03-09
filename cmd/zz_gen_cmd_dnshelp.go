@@ -57,6 +57,7 @@ func allDNSCodes() string {
 		"gcore",
 		"glesys",
 		"godaddy",
+		"googledomains",
 		"hetzner",
 		"hostingde",
 		"hosttech",
@@ -1041,6 +1042,16 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/godaddy`)
+
+	case "googledomains":
+		// generated from: providers/dns/googledomains/googledomains.toml
+		ew.writeln(`Configuration for Google Domains.`)
+		ew.writeln(`Code:	'googledomains'`)
+		ew.writeln(`Since:	'v4.10.2'`)
+		ew.writeln()
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/googledomains`)
 
 	case "hetzner":
 		// generated from: providers/dns/hetzner/hetzner.toml

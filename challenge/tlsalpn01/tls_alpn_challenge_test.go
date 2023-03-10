@@ -15,6 +15,7 @@ import (
 	"github.com/go-acme/lego/v4/acme/api"
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/miekg/dns"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -27,6 +28,7 @@ func TestChallenge(t *testing.T) {
 
 	mockValidate := func(_ *api.Core, _ string, chlng acme.Challenge) error {
 		conn, err := tls.Dial("tcp", net.JoinHostPort(domain, port), &tls.Config{
+			ServerName:         domain,
 			InsecureSkipVerify: true,
 		})
 		require.NoError(t, err, "Expected to connect to challenge server without an error")
@@ -125,9 +127,11 @@ func TestChallengeIPaddress(t *testing.T) {
 
 	domain := "127.0.0.1"
 	port := "23457"
+	rd, _ := dns.ReverseAddr(domain)
 
 	mockValidate := func(_ *api.Core, _ string, chlng acme.Challenge) error {
 		conn, err := tls.Dial("tcp", net.JoinHostPort(domain, port), &tls.Config{
+			ServerName:         rd,
 			InsecureSkipVerify: true,
 		})
 		require.NoError(t, err, "Expected to connect to challenge server without an error")

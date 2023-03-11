@@ -1,4 +1,4 @@
-package dreamhost
+package internal
 
 import (
 	"testing"
@@ -7,7 +7,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestDNSProvider_buildQuery(t *testing.T) {
+const fakeAPIKey = "asdf1234"
+
+func TestClient_buildQuery(t *testing.T) {
 	testCases := []struct {
 		desc     string
 		apiKey   string
@@ -40,23 +42,18 @@ func TestDNSProvider_buildQuery(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			config := NewDefaultConfig()
-			config.APIKey = test.apiKey
+			client := NewClient(test.apiKey)
 			if test.baseURL != "" {
-				config.BaseURL = test.baseURL
+				client.BaseURL = test.baseURL
 			}
 
-			provider, err := NewDNSProviderConfig(config)
-			require.NoError(t, err)
-			require.NotNil(t, provider)
-
-			u, err := provider.buildQuery(test.action, test.domain, test.txt)
+			endpoint, err := client.buildEndpoint(test.action, test.domain, test.txt)
 
 			if test.expected == "" {
 				require.Error(t, err)
 			} else {
 				require.NoError(t, err)
-				assert.Equal(t, test.expected, u.String())
+				assert.Equal(t, test.expected, endpoint.String())
 			}
 		})
 	}

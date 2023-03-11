@@ -4,6 +4,7 @@
 package dreamhost
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/dreamhost/internal"
 )
 
 // Environment variables names.
@@ -36,7 +38,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		BaseURL:            defaultBaseURL,
+		BaseURL:            internal.DefaultBaseURL,
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 60*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 1*time.Minute),
 		HTTPClient: &http.Client{
@@ -48,6 +50,7 @@ func NewDefaultConfig() *Config {
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
+	client *internal.Client
 }
 
 // NewDNSProvider returns a new DNS provider using
@@ -74,44 +77,39 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("dreamhost: credentials missing")
 	}
 
-	if config.BaseURL == "" {
-		config.BaseURL = defaultBaseURL
+	client := internal.NewClient(config.APIKey)
+
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
 	}
 
-	return &DNSProvider{config: config}, nil
+	if config.BaseURL != "" {
+		client.BaseURL = config.BaseURL
+	}
+
+	return &DNSProvider{config: config, client: client}, nil
 }
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
-	record := dns01.UnFqdn(info.EffectiveFQDN)
-
-	u, err := d.buildQuery(cmdAddRecord, record, info.Value)
+	err := d.client.AddRecord(context.Background(), dns01.UnFqdn(info.EffectiveFQDN), info.Value)
 	if err != nil {
 		return fmt.Errorf("dreamhost: %w", err)
 	}
 
-	err = d.updateTxtRecord(u)
-	if err != nil {
-		return fmt.Errorf("dreamhost: %w", err)
-	}
 	return nil
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
-	record := dns01.UnFqdn(info.EffectiveFQDN)
 
-	u, err := d.buildQuery(cmdRemoveRecord, record, info.Value)
+	err := d.client.RemoveRecord(context.Background(), dns01.UnFqdn(info.EffectiveFQDN), info.Value)
 	if err != nil {
 		return fmt.Errorf("dreamhost: %w", err)
 	}
 
-	err = d.updateTxtRecord(u)
-	if err != nil {
-		return fmt.Errorf("dreamhost: %w", err)
-	}
 	return nil
 }
 

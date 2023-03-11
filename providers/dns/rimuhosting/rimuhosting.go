@@ -2,6 +2,7 @@
 package rimuhosting
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -96,20 +97,22 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	records, err := d.client.FindTXTRecords(dns01.UnFqdn(info.EffectiveFQDN))
+	ctx := context.Background()
+
+	records, err := d.client.FindTXTRecords(ctx, dns01.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
 		return fmt.Errorf("rimuhosting: failed to find record(s) for %s: %w", domain, err)
 	}
 
 	actions := []rimuhosting.ActionParameter{
-		rimuhosting.AddRecord(dns01.UnFqdn(info.EffectiveFQDN), info.Value, d.config.TTL),
+		rimuhosting.NewAddRecordAction(dns01.UnFqdn(info.EffectiveFQDN), info.Value, d.config.TTL),
 	}
 
 	for _, record := range records {
-		actions = append(actions, rimuhosting.AddRecord(record.Name, record.Content, d.config.TTL))
+		actions = append(actions, rimuhosting.NewAddRecordAction(record.Name, record.Content, d.config.TTL))
 	}
 
-	_, err = d.client.DoActions(actions...)
+	_, err = d.client.DoActions(ctx, actions...)
 	if err != nil {
 		return fmt.Errorf("rimuhosting: failed to add record(s) for %s: %w", domain, err)
 	}
@@ -121,9 +124,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	action := rimuhosting.DeleteRecord(dns01.UnFqdn(info.EffectiveFQDN), info.Value)
+	action := rimuhosting.NewDeleteRecordAction(dns01.UnFqdn(info.EffectiveFQDN), info.Value)
 
-	_, err := d.client.DoActions(action)
+	_, err := d.client.DoActions(context.Background(), action)
 	if err != nil {
 		return fmt.Errorf("rimuhosting: failed to delete record for %s: %w", domain, err)
 	}

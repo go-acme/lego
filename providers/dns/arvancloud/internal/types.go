@@ -1,17 +1,15 @@
 package internal
 
-import "encoding/json"
-
-type apiResponse struct {
-	Message string          `json:"message"`
-	Data    json.RawMessage `json:"data"`
+type apiResponse[T any] struct {
+	Message string `json:"message"`
+	Data    T      `json:"data"`
 }
 
 // DNSRecord a DNS record.
 type DNSRecord struct {
 	ID            string        `json:"id,omitempty"`
 	Type          string        `json:"type"`
-	Value         interface{}   `json:"value,omitempty"`
+	Value         any           `json:"value,omitempty"`
 	Name          string        `json:"name,omitempty"`
 	TTL           int           `json:"ttl,omitempty"`
 	UpstreamHTTPS string        `json:"upstream_https,omitempty"`

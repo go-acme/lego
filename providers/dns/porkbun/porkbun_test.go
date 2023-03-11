@@ -1,7 +1,6 @@
 package porkbun
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/go-acme/lego/v4/platform/tester"
@@ -143,8 +142,4 @@ func TestLiveCleanUp(t *testing.T) {
 
 	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
-}
-
-func TestName(t *testing.T) {
-	fmt.Println(splitDomain("_acme-challenge.example.com."))
 }

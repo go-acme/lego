@@ -2,6 +2,7 @@
 package njalla
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -116,7 +117,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Type:    "TXT",
 	}
 
-	resp, err := d.client.AddRecord(record)
+	resp, err := d.client.AddRecord(context.Background(), record)
 	if err != nil {
 		return fmt.Errorf("njalla: failed to add record: %w", err)
 	}
@@ -145,7 +146,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("njalla: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
-	err = d.client.RemoveRecord(recordID, dns01.UnFqdn(rootDomain))
+	err = d.client.RemoveRecord(context.Background(), recordID, dns01.UnFqdn(rootDomain))
 	if err != nil {
 		return fmt.Errorf("njalla: failed to delete TXT records: fqdn=%s, recordID=%s: %w", info.EffectiveFQDN, recordID, err)
 	}

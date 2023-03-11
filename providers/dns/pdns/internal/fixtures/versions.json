@@ -1,0 +1,18 @@
+[
+  {
+    "url": "/fooa",
+    "version": 0
+  },
+  {
+    "url": "/foob",
+    "version": 4
+  },
+  {
+    "url": "/fooc",
+    "version": 2
+  },
+  {
+    "url": "/food",
+    "version": 1
+  }
+]

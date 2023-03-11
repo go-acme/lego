@@ -2,6 +2,7 @@
 package godaddy
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -104,17 +105,21 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	domainZone, err := getZone(info.EffectiveFQDN)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("godaddy: failed to get zone: %w", err)
+		return fmt.Errorf("godaddy: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, domainZone)
+	authZone = dns01.UnFqdn(authZone)
+
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("godaddy: %w", err)
 	}
 
-	records, err := d.client.GetRecords(domainZone, "TXT", subDomain)
+	ctx := context.Background()
+
+	records, err := d.client.GetRecords(ctx, authZone, "TXT", subDomain)
 	if err != nil {
 		return fmt.Errorf("godaddy: failed to get TXT records: %w", err)
 	}
@@ -134,7 +139,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 	newRecords = append(newRecords, record)
 
-	err = d.client.UpdateTxtRecords(newRecords, domainZone, subDomain)
+	err = d.client.UpdateTxtRecords(ctx, newRecords, authZone, subDomain)
 	if err != nil {
 		return fmt.Errorf("godaddy: failed to add TXT record: %w", err)
 	}
@@ -146,17 +151,21 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	domainZone, err := getZone(info.EffectiveFQDN)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("godaddy: failed to get zone: %w", err)
+		return fmt.Errorf("godaddy: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, domainZone)
+	authZone = dns01.UnFqdn(authZone)
+
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("godaddy: %w", err)
 	}
 
-	records, err := d.client.GetRecords(domainZone, "TXT", subDomain)
+	ctx := context.Background()
+
+	records, err := d.client.GetRecords(ctx, authZone, "TXT", subDomain)
 	if err != nil {
 		return fmt.Errorf("godaddy: failed to get TXT records: %w", err)
 	}
@@ -165,7 +174,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return nil
 	}
 
-	allTxtRecords, err := d.client.GetRecords(domainZone, "TXT", "")
+	allTxtRecords, err := d.client.GetRecords(ctx, authZone, "TXT", "")
 	if err != nil {
 		return fmt.Errorf("godaddy: failed to get all TXT records: %w", err)
 	}
@@ -183,19 +192,10 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		recordsKeep = append(recordsKeep, emptyRecord)
 	}
 
-	err = d.client.UpdateTxtRecords(recordsKeep, domainZone, "")
+	err = d.client.UpdateTxtRecords(ctx, recordsKeep, authZone, "")
 	if err != nil {
 		return fmt.Errorf("godaddy: failed to remove TXT record: %w", err)
 	}
 
 	return nil
-}
-
-func getZone(fqdn string) (string, error) {
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
-	if err != nil {
-		return "", err
-	}
-
-	return dns01.UnFqdn(authZone), nil
 }

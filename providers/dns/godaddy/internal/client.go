@@ -2,54 +2,51 @@ package internal
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
-	"path"
 	"time"
+
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
 // DefaultBaseURL represents the API endpoint to call.
 const DefaultBaseURL = "https://api.godaddy.com"
 
+const authorizationHeader = "Authorization"
+
 type Client struct {
-	HTTPClient *http.Client
+	apiKey    string
+	apiSecret string
+
 	baseURL    *url.URL
-	apiKey     string
-	apiSecret  string
+	HTTPClient *http.Client
 }
 
 func NewClient(apiKey string, apiSecret string) *Client {
 	baseURL, _ := url.Parse(DefaultBaseURL)
 
 	return &Client{
-		HTTPClient: &http.Client{Timeout: 5 * time.Second},
-		baseURL:    baseURL,
 		apiKey:     apiKey,
 		apiSecret:  apiSecret,
+		baseURL:    baseURL,
+		HTTPClient: &http.Client{Timeout: 5 * time.Second},
 	}
 }
 
-func (d *Client) GetRecords(domainZone, rType, recordName string) ([]DNSRecord, error) {
-	resource := path.Clean(fmt.Sprintf("/v1/domains/%s/records/%s/%s", domainZone, rType, recordName))
+func (c *Client) GetRecords(ctx context.Context, domainZone, rType, recordName string) ([]DNSRecord, error) {
+	endpoint := c.baseURL.JoinPath("v1", "domains", domainZone, "records", rType, recordName)
 
-	resp, err := d.makeRequest(http.MethodGet, resource, nil)
+	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	defer func() { _ = resp.Body.Close() }()
-
-	if resp.StatusCode != http.StatusOK {
-		bodyBytes, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("could not get records: Domain: %s; Record: %s, Status: %v; Body: %s",
-			domainZone, recordName, resp.StatusCode, string(bodyBytes))
-	}
-
 	var records []DNSRecord
-	err = json.NewDecoder(resp.Body).Decode(&records)
+	err = c.do(req, &records)
 	if err != nil {
 		return nil, err
 	}
@@ -57,41 +54,68 @@ func (d *Client) GetRecords(domainZone, rType, recordName string) ([]DNSRecord, 
 	return records, nil
 }
 
-func (d *Client) UpdateTxtRecords(records []DNSRecord, domainZone, recordName string) error {
-	body, err := json.Marshal(records)
+func (c *Client) UpdateTxtRecords(ctx context.Context, records []DNSRecord, domainZone, recordName string) error {
+	endpoint := c.baseURL.JoinPath("v1", "domains", domainZone, "records", "TXT", recordName)
+
+	req, err := newJSONRequest(ctx, http.MethodPut, endpoint, records)
 	if err != nil {
 		return err
 	}
 
-	resource := path.Clean(fmt.Sprintf("/v1/domains/%s/records/TXT/%s", domainZone, recordName))
+	return c.do(req, nil)
+}
 
-	var resp *http.Response
-	resp, err = d.makeRequest(http.MethodPut, resource, bytes.NewReader(body))
+func (c *Client) do(req *http.Request, result any) error {
+	req.Header.Set(authorizationHeader, fmt.Sprintf("sso-key %s:%s", c.apiKey, c.apiSecret))
+
+	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
-		return err
+		return errutils.NewHTTPDoError(req, err)
 	}
 
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
-		bodyBytes, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("could not create record %v; Status: %v; Body: %s", string(body), resp.StatusCode, string(bodyBytes))
+		return errutils.NewUnexpectedResponseStatusCodeError(req, resp)
+	}
+
+	if result == nil {
+		return nil
+	}
+
+	raw, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return errutils.NewReadResponseError(req, resp.StatusCode, err)
+	}
+
+	err = json.Unmarshal(raw, result)
+	if err != nil {
+		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
 	}
 
 	return nil
 }
 
-func (d *Client) makeRequest(method, uri string, body io.Reader) (*http.Response, error) {
-	endpoint := d.baseURL.JoinPath(uri)
+func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
+	buf := new(bytes.Buffer)
 
-	req, err := http.NewRequest(method, endpoint.String(), body)
+	if payload != nil {
+		err := json.NewEncoder(buf).Encode(payload)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create request JSON body: %w", err)
+		}
+	}
+
+	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), buf)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to create request: %w", err)
 	}
 
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("sso-key %s:%s", d.apiKey, d.apiSecret))
 
-	return d.HTTPClient.Do(req)
+	if payload != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
+	return req, nil
 }

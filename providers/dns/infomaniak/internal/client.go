@@ -2,6 +2,7 @@ package internal
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -13,71 +14,63 @@ import (
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/log"
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
+	"golang.org/x/oauth2"
 )
+
+// DefaultBaseURL Default API endpoint.
+const DefaultBaseURL = "https://api.infomaniak.com"
 
 // Client the Infomaniak client.
 type Client struct {
-	apiEndpoint string
-	apiToken    string
-	HTTPClient  *http.Client
+	baseURL    *url.URL
+	httpClient *http.Client
 }
 
 // New Creates a new Infomaniak client.
-func New(apiEndpoint, apiToken string) *Client {
-	return &Client{
-		apiEndpoint: apiEndpoint,
-		apiToken:    apiToken,
-		HTTPClient:  &http.Client{Timeout: 5 * time.Second},
+func New(hc *http.Client, apiEndpoint string) (*Client, error) {
+	baseURL, err := url.Parse(apiEndpoint)
+	if err != nil {
+		return nil, err
 	}
+
+	if hc == nil {
+		hc = &http.Client{Timeout: 5 * time.Second}
+	}
+
+	return &Client{baseURL: baseURL, httpClient: hc}, nil
 }
 
-func (c *Client) CreateDNSRecord(domain *DNSDomain, record Record) (string, error) {
-	rawJSON, err := json.Marshal(record)
-	if err != nil {
-		return "", err
-	}
+func (c *Client) CreateDNSRecord(ctx context.Context, domain *DNSDomain, record Record) (string, error) {
+	endpoint := c.baseURL.JoinPath("1", "domain", strconv.FormatUint(domain.ID, 10), "dns", "record")
 
-	endpoint, err := url.JoinPath(c.apiEndpoint, "1", "domain", strconv.FormatUint(domain.ID, 10), "dns", "record")
-	if err != nil {
-		return "", err
-	}
-
-	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewBuffer(rawJSON))
+	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
 	if err != nil {
 		return "", fmt.Errorf("failed to create request: %w", err)
 	}
 
-	resp, err := c.do(req)
+	result := APIResponse[string]{}
+	err = c.do(req, &result)
 	if err != nil {
 		return "", err
 	}
 
-	var recordID string
-	if err = json.Unmarshal(resp.Data, &recordID); err != nil {
-		return "", fmt.Errorf("expected record, got: %s", string(resp.Data))
-	}
-
-	return recordID, err
+	return result.Data, err
 }
 
-func (c *Client) DeleteDNSRecord(domainID uint64, recordID string) error {
-	endpoint, err := url.JoinPath(c.apiEndpoint, "1", "domain", strconv.FormatUint(domainID, 10), "dns", "record", recordID)
-	if err != nil {
-		return err
-	}
+func (c *Client) DeleteDNSRecord(ctx context.Context, domainID uint64, recordID string) error {
+	endpoint := c.baseURL.JoinPath("1", "domain", strconv.FormatUint(domainID, 10), "dns", "record", recordID)
 
-	req, err := http.NewRequest(http.MethodDelete, endpoint, http.NoBody)
+	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return fmt.Errorf("failed to create request: %w", err)
 	}
 
-	_, err = c.do(req)
-
-	return err
+	return c.do(req, &APIResponse[json.RawMessage]{})
 }
 
 // GetDomainByName gets a Domain object from its name.
-func (c *Client) GetDomainByName(name string) (*DNSDomain, error) {
+func (c *Client) GetDomainByName(ctx context.Context, name string) (*DNSDomain, error) {
 	name = dns01.UnFqdn(name)
 
 	// Try to find the most specific domain
@@ -88,7 +81,7 @@ func (c *Client) GetDomainByName(name string) (*DNSDomain, error) {
 			break
 		}
 
-		domain, err := c.getDomainByName(name)
+		domain, err := c.getDomainByName(ctx, name)
 		if err != nil {
 			return nil, err
 		}
@@ -105,35 +98,26 @@ func (c *Client) GetDomainByName(name string) (*DNSDomain, error) {
 	return nil, fmt.Errorf("domain not found %s", name)
 }
 
-func (c *Client) getDomainByName(name string) (*DNSDomain, error) {
-	baseURL, err := url.Parse(c.apiEndpoint)
-	if err != nil {
-		return nil, err
-	}
-
-	endpoint := baseURL.JoinPath("1", "product")
+func (c *Client) getDomainByName(ctx context.Context, name string) (*DNSDomain, error) {
+	endpoint := c.baseURL.JoinPath("1", "product")
 
 	query := endpoint.Query()
 	query.Add("service_name", "domain")
 	query.Add("customer_name", name)
 	endpoint.RawQuery = query.Encode()
 
-	req, err := http.NewRequest(http.MethodGet, endpoint.String(), http.NoBody)
+	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := c.do(req)
+	result := APIResponse[[]DNSDomain]{}
+	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
 	}
 
-	var domains []DNSDomain
-	if err = json.Unmarshal(resp.Data, &domains); err != nil {
-		return nil, fmt.Errorf("failed to marshal domains: %s", string(resp.Data))
-	}
-
-	for _, domain := range domains {
+	for _, domain := range result.Data {
 		if domain.CustomerName == name {
 			return &domain, nil
 		}
@@ -142,30 +126,63 @@ func (c *Client) getDomainByName(name string) (*DNSDomain, error) {
 	return nil, nil
 }
 
-func (c *Client) do(req *http.Request) (*APIResponse, error) {
-	req.Header.Set("Authorization", "Bearer "+c.apiToken)
-	req.Header.Set("Content-Type", "application/json")
-
-	rawResp, err := c.HTTPClient.Do(req)
+func (c *Client) do(req *http.Request, result Response) error {
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to perform API request: %w", err)
+		return errutils.NewHTTPDoError(req, err)
 	}
 
-	defer func() { _ = rawResp.Body.Close() }()
+	defer func() { _ = resp.Body.Close() }()
 
-	content, err := io.ReadAll(rawResp.Body)
+	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read the response body, status code: %d", rawResp.StatusCode)
+		return errutils.NewReadResponseError(req, resp.StatusCode, err)
 	}
 
-	var resp APIResponse
-	if err := json.Unmarshal(content, &resp); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal the response body: %s, %w", string(content), err)
+	if err := json.Unmarshal(raw, result); err != nil {
+		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
 	}
 
-	if resp.Result != "success" {
-		return nil, fmt.Errorf("%d: unexpected API result (%s): %w", rawResp.StatusCode, resp.Result, resp.ErrResponse)
+	if result.GetResult() != "success" {
+		return fmt.Errorf("%d: unexpected API result (%s): %w", resp.StatusCode, result.GetResult(), result.GetError())
 	}
 
-	return &resp, nil
+	return nil
+}
+
+func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
+	buf := new(bytes.Buffer)
+
+	if payload != nil {
+		err := json.NewEncoder(buf).Encode(payload)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create request JSON body: %w", err)
+		}
+	}
+
+	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), buf)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create request: %w", err)
+	}
+
+	req.Header.Set("Accept", "application/json")
+
+	if payload != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
+	return req, nil
+}
+
+func OAuthStaticAccessToken(client *http.Client, accessToken string) *http.Client {
+	if client == nil {
+		client = &http.Client{Timeout: 5 * time.Second}
+	}
+
+	client.Transport = &oauth2.Transport{
+		Source: oauth2.StaticTokenSource(&oauth2.Token{AccessToken: accessToken}),
+		Base:   client.Transport,
+	}
+
+	return client
 }

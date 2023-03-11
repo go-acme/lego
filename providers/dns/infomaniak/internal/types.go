@@ -1,7 +1,6 @@
 package internal
 
 import (
-	"encoding/json"
 	"fmt"
 )
 
@@ -19,10 +18,23 @@ type DNSDomain struct {
 	CustomerName string `json:"customer_name,omitempty"`
 }
 
-type APIResponse struct {
+type Response interface {
+	GetResult() string
+	GetError() *APIErrorResponse
+}
+
+type APIResponse[T any] struct {
 	Result      string            `json:"result"`
-	Data        json.RawMessage   `json:"data,omitempty"`
+	Data        T                 `json:"data,omitempty"`
 	ErrResponse *APIErrorResponse `json:"error,omitempty"`
+}
+
+func (a APIResponse[T]) GetResult() string {
+	return a.Result
+}
+
+func (a APIResponse[T]) GetError() *APIErrorResponse {
+	return a.ErrResponse
 }
 
 type APIErrorResponse struct {

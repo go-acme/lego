@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -18,7 +20,10 @@ func setupTest(t *testing.T) (*Client, *http.ServeMux) {
 	server := httptest.NewServer(mux)
 	t.Cleanup(server.Close)
 
-	return New(server.URL, "token"), mux
+	client, err := New(OAuthStaticAccessToken(server.Client(), "token"), server.URL)
+	require.NoError(t, err)
+
+	return client, mux
 }
 
 func TestClient_CreateDNSRecord(t *testing.T) {
@@ -42,7 +47,7 @@ func TestClient_CreateDNSRecord(t *testing.T) {
 		}
 		defer func() { _ = req.Body.Close() }()
 
-		if string(raw) != `{"source":"foo","type":"TXT","ttl":60,"target":"txtxtxttxt"}` {
+		if string(bytes.TrimSpace(raw)) != `{"source":"foo","type":"TXT","ttl":60,"target":"txtxtxttxt"}` {
 			http.Error(rw, fmt.Sprintf("invalid request body: %s", string(raw)), http.StatusBadRequest)
 			return
 		}
@@ -68,7 +73,7 @@ func TestClient_CreateDNSRecord(t *testing.T) {
 		TTL:    60,
 	}
 
-	recordID, err := client.CreateDNSRecord(domain, record)
+	recordID, err := client.CreateDNSRecord(context.Background(), domain, record)
 	require.NoError(t, err)
 
 	assert.Equal(t, "123", recordID)
@@ -95,7 +100,6 @@ func TestClient_GetDomainByName(t *testing.T) {
 		}
 
 		customerName := req.URL.Query().Get("customer_name")
-		fmt.Println("customerName", customerName)
 		if customerName == "" {
 			http.Error(rw, fmt.Sprintf("invalid customer_name: %s", customerName), http.StatusBadRequest)
 			return
@@ -124,7 +128,7 @@ func TestClient_GetDomainByName(t *testing.T) {
 		}
 	})
 
-	domain, err := client.GetDomainByName("one.two.three.example.com.")
+	domain, err := client.GetDomainByName(context.Background(), "one.two.three.example.com.")
 	require.NoError(t, err)
 
 	expected := &DNSDomain{ID: 123, CustomerName: "two.three.example.com"}
@@ -152,6 +156,6 @@ func TestClient_DeleteDNSRecord(t *testing.T) {
 		}
 	})
 
-	err := client.DeleteDNSRecord(123, "456")
+	err := client.DeleteDNSRecord(context.Background(), 123, "456")
 	require.NoError(t, err)
 }

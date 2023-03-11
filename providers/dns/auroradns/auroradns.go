@@ -108,7 +108,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("aurora: could not determine zone for domain %q: %w", domain, err)
+		return fmt.Errorf("aurora: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	// 1. Aurora will happily create the TXT record when it is provided a fqdn,
@@ -155,24 +155,24 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	d.recordIDsMu.Unlock()
 
 	if !ok {
-		return fmt.Errorf("unknown recordID for %q", info.EffectiveFQDN)
+		return fmt.Errorf("aurora: unknown recordID for %q", info.EffectiveFQDN)
 	}
 
 	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(info.EffectiveFQDN))
 	if err != nil {
-		return fmt.Errorf("could not determine zone for domain %q: %w", domain, err)
+		return fmt.Errorf("aurora: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	authZone = dns01.UnFqdn(authZone)
 
 	zone, err := d.getZoneInformationByName(authZone)
 	if err != nil {
-		return err
+		return fmt.Errorf("aurora: %w", err)
 	}
 
 	_, _, err = d.client.DeleteRecord(zone.ID, recordID)
 	if err != nil {
-		return err
+		return fmt.Errorf("aurora: %w", err)
 	}
 
 	d.recordIDsMu.Lock()

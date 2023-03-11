@@ -1,0 +1,11 @@
+{
+  "domain_record": {
+    "id": 1234567,
+    "type": "TXT",
+    "name": "_acme-challenge",
+    "data": "w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI",
+    "priority": null,
+    "port": null,
+    "weight": null
+  }
+}

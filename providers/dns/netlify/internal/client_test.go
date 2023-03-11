@@ -1,10 +1,12 @@
 package internal
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"testing"
 
@@ -12,10 +14,21 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestClient_GetRecords(t *testing.T) {
+func setupTest(t *testing.T, token string) (*Client, *http.ServeMux) {
+	t.Helper()
+
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
 	t.Cleanup(server.Close)
+
+	client := NewClient(OAuthStaticAccessToken(server.Client(), token))
+	client.baseURL, _ = url.Parse(server.URL)
+
+	return client, mux
+}
+
+func TestClient_GetRecords(t *testing.T) {
+	client, mux := setupTest(t, "tokenA")
 
 	mux.HandleFunc("/dns_zones/zoneID/dns_records", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
@@ -45,10 +58,7 @@ func TestClient_GetRecords(t *testing.T) {
 		}
 	})
 
-	client := NewClient("tokenA")
-	client.BaseURL = server.URL
-
-	records, err := client.GetRecords("zoneID")
+	records, err := client.GetRecords(context.Background(), "zoneID")
 	require.NoError(t, err)
 
 	expected := []DNSRecord{
@@ -60,9 +70,7 @@ func TestClient_GetRecords(t *testing.T) {
 }
 
 func TestClient_CreateRecord(t *testing.T) {
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
+	client, mux := setupTest(t, "tokenB")
 
 	mux.HandleFunc("/dns_zones/zoneID/dns_records", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodPost {
@@ -93,9 +101,6 @@ func TestClient_CreateRecord(t *testing.T) {
 		}
 	})
 
-	client := NewClient("tokenB")
-	client.BaseURL = server.URL
-
 	record := DNSRecord{
 		Hostname: "_acme-challenge.example.com",
 		TTL:      300,
@@ -103,7 +108,7 @@ func TestClient_CreateRecord(t *testing.T) {
 		Value:    "txtxtxtxtxtxt",
 	}
 
-	result, err := client.CreateRecord("zoneID", record)
+	result, err := client.CreateRecord(context.Background(), "zoneID", record)
 	require.NoError(t, err)
 
 	expected := &DNSRecord{
@@ -118,9 +123,7 @@ func TestClient_CreateRecord(t *testing.T) {
 }
 
 func TestClient_RemoveRecord(t *testing.T) {
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
+	client, mux := setupTest(t, "tokenC")
 
 	mux.HandleFunc("/dns_zones/zoneID/dns_records/recordID", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodDelete {
@@ -137,9 +140,6 @@ func TestClient_RemoveRecord(t *testing.T) {
 		rw.WriteHeader(http.StatusNoContent)
 	})
 
-	client := NewClient("tokenC")
-	client.BaseURL = server.URL
-
-	err := client.RemoveRecord("zoneID", "recordID")
+	err := client.RemoveRecord(context.Background(), "zoneID", "recordID")
 	require.NoError(t, err)
 }

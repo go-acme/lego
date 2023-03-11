@@ -2,6 +2,7 @@
 package netlify
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -80,11 +81,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("netlify: incomplete credentials, missing token")
 	}
 
-	client := internal.NewClient(config.Token)
-
-	if config.HTTPClient != nil {
-		client.HTTPClient = config.HTTPClient
-	}
+	client := internal.NewClient(internal.OAuthStaticAccessToken(config.HTTPClient, config.Token))
 
 	return &DNSProvider{
 		config:    config,
@@ -105,7 +102,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("netlify: failed to find zone: %w", err)
+		return fmt.Errorf("netlify: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	authZone = dns01.UnFqdn(authZone)
@@ -117,7 +114,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Value:    info.Value,
 	}
 
-	resp, err := d.client.CreateRecord(strings.ReplaceAll(authZone, ".", "_"), record)
+	resp, err := d.client.CreateRecord(context.Background(), strings.ReplaceAll(authZone, ".", "_"), record)
 	if err != nil {
 		return fmt.Errorf("netlify: failed to create TXT records: fqdn=%s, authZone=%s: %w", info.EffectiveFQDN, authZone, err)
 	}
@@ -135,7 +132,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("netlify: failed to find zone: %w", err)
+		return fmt.Errorf("netlify: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	authZone = dns01.UnFqdn(authZone)
@@ -148,7 +145,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("netlify: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
-	err = d.client.RemoveRecord(strings.ReplaceAll(authZone, ".", "_"), recordID)
+	err = d.client.RemoveRecord(context.Background(), strings.ReplaceAll(authZone, ".", "_"), recordID)
 	if err != nil {
 		return fmt.Errorf("netlify: failed to delete TXT records: fqdn=%s, authZone=%s, recordID=%s: %w", info.EffectiveFQDN, authZone, recordID, err)
 	}

@@ -75,7 +75,7 @@ type DNSProvider struct {
 // or by specifying the keyfile location: GCE_SERVICE_ACCOUNT_FILE.
 func NewDNSProvider() (*DNSProvider, error) {
 	// Use a service account file if specified via environment variable.
-	if saKey := env.GetOrFile(EnvServiceAccount); len(saKey) > 0 {
+	if saKey := env.GetOrFile(EnvServiceAccount); saKey != "" {
 		return NewDNSProviderServiceAccountKey([]byte(saKey))
 	}
 
@@ -312,7 +312,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) getHostedZone(domain string) (string, error) {
 	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("designate: could not find zone for FQDN %q: %w", domain, err)
 	}
 
 	zones, err := d.client.ManagedZones.

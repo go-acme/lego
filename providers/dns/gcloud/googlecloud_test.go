@@ -144,6 +144,8 @@ func TestNewDNSProviderConfig(t *testing.T) {
 
 func TestPresentNoExistingRR(t *testing.T) {
 	mux := http.NewServeMux()
+	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	// getHostedZone: /manhattan/managedZones?alt=json&dnsName=lego.wtf.
 	mux.HandleFunc("/dns/v1/projects/manhattan/managedZones", func(w http.ResponseWriter, r *http.Request) {
@@ -205,11 +207,8 @@ func TestPresentNoExistingRR(t *testing.T) {
 		}
 	})
 
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
 	config := NewDefaultConfig()
-	config.HTTPClient = &http.Client{}
+	config.HTTPClient = &http.Client{Timeout: 10 * time.Second}
 	config.Project = "manhattan"
 
 	p, err := NewDNSProviderConfig(config)
@@ -225,6 +224,8 @@ func TestPresentNoExistingRR(t *testing.T) {
 
 func TestPresentWithExistingRR(t *testing.T) {
 	mux := http.NewServeMux()
+	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	// getHostedZone: /manhattan/managedZones?alt=json&dnsName=lego.wtf.
 	mux.HandleFunc("/dns/v1/projects/manhattan/managedZones", func(w http.ResponseWriter, r *http.Request) {
@@ -306,11 +307,8 @@ func TestPresentWithExistingRR(t *testing.T) {
 		}
 	})
 
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
 	config := NewDefaultConfig()
-	config.HTTPClient = &http.Client{}
+	config.HTTPClient = &http.Client{Timeout: 10 * time.Second}
 	config.Project = "manhattan"
 
 	p, err := NewDNSProviderConfig(config)
@@ -326,6 +324,8 @@ func TestPresentWithExistingRR(t *testing.T) {
 
 func TestPresentSkipExistingRR(t *testing.T) {
 	mux := http.NewServeMux()
+	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	// getHostedZone: /manhattan/managedZones?alt=json&dnsName=lego.wtf.
 	mux.HandleFunc("/dns/v1/projects/manhattan/managedZones", func(w http.ResponseWriter, r *http.Request) {
@@ -370,11 +370,8 @@ func TestPresentSkipExistingRR(t *testing.T) {
 		}
 	})
 
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
 	config := NewDefaultConfig()
-	config.HTTPClient = &http.Client{}
+	config.HTTPClient = &http.Client{Timeout: 10 * time.Second}
 	config.Project = "manhattan"
 
 	p, err := NewDNSProviderConfig(config)

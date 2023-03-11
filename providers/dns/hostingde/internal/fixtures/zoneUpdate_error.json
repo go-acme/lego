@@ -1,0 +1,63 @@
+{
+  "errors": [
+    {
+      "code": 123,
+      "contextObject": "o",
+      "contextPath": "p",
+      "details": [
+        "a",
+        "b"
+      ],
+      "text": "t",
+      "value": "v"
+    }
+  ],
+  "metadata": {
+    "clientTransactionId": "",
+    "serverTransactionId": ""
+  },
+  "warnings": [
+    "aaa",
+    "bbb"
+  ],
+  "status": "error",
+  "response": {
+    "records": [
+      {
+        "id": "123",
+        "zoneId": "456",
+        "recordTemplateId": "789",
+        "name": "n",
+        "type": "TXT",
+        "content": "txt",
+        "ttl": 120,
+        "priority": 5,
+        "lastChangeDate": "d"
+      }
+    ],
+    "zoneConfig": {
+      "id": "123",
+      "accountId": "456",
+      "status": "s",
+      "name": "n",
+      "nameUnicode": "u",
+      "masterIp": "m",
+      "type": "t",
+      "emailAddress": "e",
+      "zoneTransferWhitelist": [
+        "a",
+        "b"
+      ],
+      "lastChangeDate": "l",
+      "dnsServerGroupId": "g",
+      "dnsSecMode": "m",
+      "soaValues": {
+        "refresh": 1,
+        "retry": 2,
+        "expire": 3,
+        "ttl": 4,
+        "negativeTtl": 5
+      }
+    }
+  }
+}

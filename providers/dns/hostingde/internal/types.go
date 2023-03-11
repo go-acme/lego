@@ -1,4 +1,4 @@
-package hostingde
+package internal
 
 import "encoding/json"
 
@@ -93,13 +93,6 @@ type ZoneUpdateRequest struct {
 	RecordsToDelete []DNSRecord `json:"recordsToDelete"`
 }
 
-// ZoneUpdateResponse represents a response from the API.
-// https://www.hosting.de/api/?json#updating-zones
-type ZoneUpdateResponse struct {
-	BaseResponse
-	Response Zone `json:"response"`
-}
-
 // ZoneConfigsFindRequest represents a API ZonesFind request.
 // https://www.hosting.de/api/?json#list-zoneconfigs
 type ZoneConfigsFindRequest struct {
@@ -110,27 +103,25 @@ type ZoneConfigsFindRequest struct {
 	Sort   *Sort  `json:"sort,omitempty"`
 }
 
-// ZoneConfigsFindResponse represents the API response for ZoneConfigsFind.
-// https://www.hosting.de/api/?json#list-zoneconfigs
-type ZoneConfigsFindResponse struct {
-	BaseResponse
-	Response struct {
-		Limit        int          `json:"limit"`
-		Page         int          `json:"page"`
-		TotalEntries int          `json:"totalEntries"`
-		TotalPages   int          `json:"totalPages"`
-		Type         string       `json:"type"`
-		Data         []ZoneConfig `json:"data"`
-	} `json:"response"`
+type ZoneResponse struct {
+	Limit        int          `json:"limit"`
+	Page         int          `json:"page"`
+	TotalEntries int          `json:"totalEntries"`
+	TotalPages   int          `json:"totalPages"`
+	Type         string       `json:"type"`
+	Data         []ZoneConfig `json:"data"`
 }
 
 // BaseResponse Common response struct.
-// https://www.hosting.de/api/?json#responses
-type BaseResponse struct {
+// base: https://www.hosting.de/api/?json#responses
+// ZoneConfigsFind: https://www.hosting.de/api/?json#list-zoneconfigs
+// ZoneUpdate: https://www.hosting.de/api/?json#updating-zones
+type BaseResponse[T any] struct {
 	Errors   []APIError `json:"errors"`
 	Metadata Metadata   `json:"metadata"`
 	Warnings []string   `json:"warnings"`
 	Status   string     `json:"status"`
+	Response T          `json:"response"`
 }
 
 // BaseRequest Common request struct.

@@ -2,6 +2,7 @@
 package hostingde
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/hostingde/internal"
 )
 
 // Environment variables names.
@@ -49,7 +51,9 @@ func NewDefaultConfig() *Config {
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	config      *Config
+	config *Config
+	client *internal.Client
+
 	recordIDs   map[string]string
 	recordIDsMu sync.Mutex
 }
@@ -82,6 +86,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	return &DNSProvider{
 		config:    config,
+		client:    internal.NewClient(config.APIKey),
 		recordIDs: make(map[string]string),
 	}, nil
 }
@@ -98,42 +103,43 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zoneName, err := d.getZoneName(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("hostingde: could not determine zone for domain %q: %w", domain, err)
+		return fmt.Errorf("hostingde: could not find zone for domain %q: %w", domain, err)
 	}
 
+	ctx := context.Background()
+
 	// get the ZoneConfig for that domain
-	zonesFind := ZoneConfigsFindRequest{
-		Filter: Filter{Field: "zoneName", Value: zoneName},
+	zonesFind := internal.ZoneConfigsFindRequest{
+		Filter: internal.Filter{Field: "zoneName", Value: zoneName},
 		Limit:  1,
 		Page:   1,
 	}
-	zonesFind.AuthToken = d.config.APIKey
 
-	zoneConfig, err := d.getZone(zonesFind)
+	zoneConfig, err := d.client.GetZone(ctx, zonesFind)
 	if err != nil {
 		return fmt.Errorf("hostingde: %w", err)
 	}
+
 	zoneConfig.Name = zoneName
 
-	rec := []DNSRecord{{
+	rec := []internal.DNSRecord{{
 		Type:    "TXT",
 		Name:    dns01.UnFqdn(info.EffectiveFQDN),
 		Content: info.Value,
 		TTL:     d.config.TTL,
 	}}
 
-	req := ZoneUpdateRequest{
+	req := internal.ZoneUpdateRequest{
 		ZoneConfig:   *zoneConfig,
 		RecordsToAdd: rec,
 	}
-	req.AuthToken = d.config.APIKey
 
-	resp, err := d.updateZone(req)
+	response, err := d.client.UpdateZone(ctx, req)
 	if err != nil {
 		return fmt.Errorf("hostingde: %w", err)
 	}
 
-	for _, record := range resp.Response.Records {
+	for _, record := range response.Records {
 		if record.Name == dns01.UnFqdn(info.EffectiveFQDN) && record.Content == fmt.Sprintf(`%q`, info.Value) {
 			d.recordIDsMu.Lock()
 			d.recordIDs[info.EffectiveFQDN] = record.ID
@@ -154,41 +160,41 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	zoneName, err := d.getZoneName(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("hostingde: could not determine zone for domain %q: %w", domain, err)
+		return fmt.Errorf("hostingde: could not find zone for domain %q: %w", domain, err)
 	}
 
-	rec := []DNSRecord{{
-		Type:    "TXT",
-		Name:    dns01.UnFqdn(info.EffectiveFQDN),
-		Content: `"` + info.Value + `"`,
-	}}
+	ctx := context.Background()
 
 	// get the ZoneConfig for that domain
-	zonesFind := ZoneConfigsFindRequest{
-		Filter: Filter{Field: "zoneName", Value: zoneName},
+	zonesFind := internal.ZoneConfigsFindRequest{
+		Filter: internal.Filter{Field: "zoneName", Value: zoneName},
 		Limit:  1,
 		Page:   1,
 	}
-	zonesFind.AuthToken = d.config.APIKey
 
-	zoneConfig, err := d.getZone(zonesFind)
+	zoneConfig, err := d.client.GetZone(ctx, zonesFind)
 	if err != nil {
 		return fmt.Errorf("hostingde: %w", err)
 	}
 	zoneConfig.Name = zoneName
 
-	req := ZoneUpdateRequest{
+	rec := []internal.DNSRecord{{
+		Type:    "TXT",
+		Name:    dns01.UnFqdn(info.EffectiveFQDN),
+		Content: `"` + info.Value + `"`,
+	}}
+
+	req := internal.ZoneUpdateRequest{
 		ZoneConfig:      *zoneConfig,
 		RecordsToDelete: rec,
 	}
-	req.AuthToken = d.config.APIKey
 
 	// Delete record ID from map
 	d.recordIDsMu.Lock()
 	delete(d.recordIDs, info.EffectiveFQDN)
 	d.recordIDsMu.Unlock()
 
-	_, err = d.updateZone(req)
+	_, err = d.client.UpdateZone(ctx, req)
 	if err != nil {
 		return fmt.Errorf("hostingde: %w", err)
 	}
@@ -202,7 +208,7 @@ func (d *DNSProvider) getZoneName(fqdn string) (string, error) {
 
 	zoneName, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("could not find zone for FQDN %q: %w", fqdn, err)
 	}
 
 	if zoneName == "" {

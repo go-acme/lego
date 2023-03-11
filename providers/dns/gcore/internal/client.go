@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -8,21 +9,26 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"strings"
 	"time"
+
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
+const defaultBaseURL = "https://api.gcorelabs.com/dns"
+
 const (
-	defaultBaseURL = "https://api.gcorelabs.com/dns"
-	tokenHeader    = "APIKey"
-	txtRecordType  = "TXT"
+	authorizationHeader = "Authorization"
+	tokenTypeHeader     = "APIKey"
 )
+
+const txtRecordType = "TXT"
 
 // Client for DNS API.
 type Client struct {
-	HTTPClient *http.Client
+	token string
+
 	baseURL    *url.URL
-	token      string
+	HTTPClient *http.Client
 }
 
 // NewClient constructor of Client.
@@ -42,7 +48,7 @@ func (c *Client) GetZone(ctx context.Context, name string) (Zone, error) {
 	endpoint := c.baseURL.JoinPath("v2", "zones", name)
 
 	zone := Zone{}
-	err := c.do(ctx, http.MethodGet, endpoint, nil, &zone)
+	err := c.doRequest(ctx, http.MethodGet, endpoint, nil, &zone)
 	if err != nil {
 		return Zone{}, fmt.Errorf("get zone %s: %w", name, err)
 	}
@@ -56,7 +62,7 @@ func (c *Client) GetRRSet(ctx context.Context, zone, name string) (RRSet, error)
 	endpoint := c.baseURL.JoinPath("v2", "zones", zone, name, txtRecordType)
 
 	var result RRSet
-	err := c.do(ctx, http.MethodGet, endpoint, nil, &result)
+	err := c.doRequest(ctx, http.MethodGet, endpoint, nil, &result)
 	if err != nil {
 		return RRSet{}, fmt.Errorf("get txt records %s -> %s: %w", zone, name, err)
 	}
@@ -69,7 +75,7 @@ func (c *Client) GetRRSet(ctx context.Context, zone, name string) (RRSet, error)
 func (c *Client) DeleteRRSet(ctx context.Context, zone, name string) error {
 	endpoint := c.baseURL.JoinPath("v2", "zones", zone, name, txtRecordType)
 
-	err := c.do(ctx, http.MethodDelete, endpoint, nil, nil)
+	err := c.doRequest(ctx, http.MethodDelete, endpoint, nil, nil)
 	if err != nil {
 		// Support DELETE idempotence https://developer.mozilla.org/en-US/docs/Glossary/Idempotent
 		statusErr := new(APIError)
@@ -100,59 +106,84 @@ func (c *Client) AddRRSet(ctx context.Context, zone, recordName, value string, t
 func (c *Client) createRRSet(ctx context.Context, zone, name string, record RRSet) error {
 	endpoint := c.baseURL.JoinPath("v2", "zones", zone, name, txtRecordType)
 
-	return c.do(ctx, http.MethodPost, endpoint, record, nil)
+	return c.doRequest(ctx, http.MethodPost, endpoint, record, nil)
 }
 
 // https://dnsapi.gcorelabs.com/docs#operation/UpdateRRSet
 func (c *Client) updateRRSet(ctx context.Context, zone, name string, record RRSet) error {
 	endpoint := c.baseURL.JoinPath("v2", "zones", zone, name, txtRecordType)
 
-	return c.do(ctx, http.MethodPut, endpoint, record, nil)
+	return c.doRequest(ctx, http.MethodPut, endpoint, record, nil)
 }
 
-func (c *Client) do(ctx context.Context, method string, endpoint *url.URL, bodyParams interface{}, dest interface{}) error {
-	var bs []byte
-	if bodyParams != nil {
-		var err error
-		bs, err = json.Marshal(bodyParams)
-		if err != nil {
-			return fmt.Errorf("encode bodyParams: %w", err)
-		}
-	}
-
-	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), strings.NewReader(string(bs)))
+func (c *Client) doRequest(ctx context.Context, method string, endpoint *url.URL, bodyParams any, result any) error {
+	req, err := newJSONRequest(ctx, method, endpoint, bodyParams)
 	if err != nil {
 		return fmt.Errorf("new request: %w", err)
 	}
 
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("%s %s", tokenHeader, c.token))
+	req.Header.Set(authorizationHeader, fmt.Sprintf("%s %s", tokenTypeHeader, c.token))
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("send request: %w", err)
+		return errutils.NewHTTPDoError(req, err)
 	}
 
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode/100 != 2 {
-		all, _ := io.ReadAll(resp.Body)
-
-		e := APIError{
-			StatusCode: resp.StatusCode,
-		}
-
-		err := json.Unmarshal(all, &e)
-		if err != nil {
-			e.Message = string(all)
-		}
-
-		return e
+		return parseError(resp)
 	}
 
-	if dest == nil {
+	if result == nil {
 		return nil
 	}
 
-	return json.NewDecoder(resp.Body).Decode(dest)
+	raw, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return errutils.NewReadResponseError(req, resp.StatusCode, err)
+	}
+
+	err = json.Unmarshal(raw, result)
+	if err != nil {
+		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
+	}
+
+	return nil
+}
+
+func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
+	buf := new(bytes.Buffer)
+
+	if payload != nil {
+		err := json.NewEncoder(buf).Encode(payload)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create request JSON body: %w", err)
+		}
+	}
+
+	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), buf)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create request: %w", err)
+	}
+
+	req.Header.Set("Accept", "application/json")
+
+	if payload != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
+	return req, nil
+}
+
+func parseError(resp *http.Response) error {
+	raw, _ := io.ReadAll(resp.Body)
+
+	errAPI := APIError{StatusCode: resp.StatusCode}
+	err := json.Unmarshal(raw, &errAPI)
+	if err != nil {
+		errAPI.Message = string(raw)
+	}
+
+	return errAPI
 }

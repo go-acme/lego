@@ -2,6 +2,7 @@ package internal
 
 import (
 	"bytes"
+	"context"
 	"crypto/hmac"
 	"crypto/sha1"
 	"encoding/hex"
@@ -10,34 +11,25 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
+	"strconv"
 	"time"
+
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
-// Domain holds the DNSMadeEasy API representation of a Domain.
-type Domain struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
-}
-
-// Record holds the DNSMadeEasy API representation of a Domain Record.
-type Record struct {
-	ID       int    `json:"id"`
-	Type     string `json:"type"`
-	Name     string `json:"name"`
-	Value    string `json:"value"`
-	TTL      int    `json:"ttl"`
-	SourceID int    `json:"sourceId"`
-}
-
-type recordsResponse struct {
-	Records *[]Record `json:"data"`
-}
+// Default API endpoints.
+const (
+	DefaultSandboxBaseURL = "https://api.sandbox.dnsmadeeasy.com/V2.0"
+	DefaultProdBaseURL    = "https://api.dnsmadeeasy.com/V2.0"
+)
 
 // Client DNSMadeEasy client.
 type Client struct {
-	apiKey     string
-	apiSecret  string
-	BaseURL    string
+	apiKey    string
+	apiSecret string
+
+	BaseURL    *url.URL
 	HTTPClient *http.Client
 }
 
@@ -51,26 +43,33 @@ func NewClient(apiKey, apiSecret string) (*Client, error) {
 		return nil, errors.New("credentials missing: API secret")
 	}
 
+	baseURL, _ := url.Parse(DefaultProdBaseURL)
+
 	return &Client{
 		apiKey:     apiKey,
 		apiSecret:  apiSecret,
-		HTTPClient: &http.Client{},
+		BaseURL:    baseURL,
+		HTTPClient: &http.Client{Timeout: 5 * time.Second},
 	}, nil
 }
 
 // GetDomain gets a domain.
-func (c *Client) GetDomain(authZone string) (*Domain, error) {
-	domainName := authZone[0 : len(authZone)-1]
-	resource := fmt.Sprintf("%s%s", "/dns/managed/name?domainname=", domainName)
+func (c *Client) GetDomain(ctx context.Context, authZone string) (*Domain, error) {
+	endpoint := c.BaseURL.JoinPath("dns", "managed", "name")
 
-	resp, err := c.sendRequest(http.MethodGet, resource, nil)
+	domainName := authZone[0 : len(authZone)-1]
+
+	query := endpoint.Query()
+	query.Set("domainname", domainName)
+	endpoint.RawQuery = query.Encode()
+
+	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
 
 	domain := &Domain{}
-	err = json.NewDecoder(resp.Body).Decode(&domain)
+	err = c.do(req, domain)
 	if err != nil {
 		return nil, err
 	}
@@ -79,17 +78,20 @@ func (c *Client) GetDomain(authZone string) (*Domain, error) {
 }
 
 // GetRecords gets all TXT records.
-func (c *Client) GetRecords(domain *Domain, recordName, recordType string) (*[]Record, error) {
-	resource := fmt.Sprintf("%s/%d/%s%s%s%s", "/dns/managed", domain.ID, "records?recordName=", recordName, "&type=", recordType)
+func (c *Client) GetRecords(ctx context.Context, domain *Domain, recordName, recordType string) (*[]Record, error) {
+	endpoint := c.BaseURL.JoinPath("dns", "managed", strconv.Itoa(domain.ID), "records")
 
-	resp, err := c.sendRequest(http.MethodGet, resource, nil)
+	query := endpoint.Query()
+	query.Set("recordName", recordName)
+	query.Set("type", recordType)
+
+	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
 
 	records := &recordsResponse{}
-	err = json.NewDecoder(resp.Body).Decode(&records)
+	err = c.do(req, records)
 	if err != nil {
 		return nil, err
 	}
@@ -98,69 +100,73 @@ func (c *Client) GetRecords(domain *Domain, recordName, recordType string) (*[]R
 }
 
 // CreateRecord creates a TXT records.
-func (c *Client) CreateRecord(domain *Domain, record *Record) error {
-	url := fmt.Sprintf("%s/%d/%s", "/dns/managed", domain.ID, "records")
+func (c *Client) CreateRecord(ctx context.Context, domain *Domain, record *Record) error {
+	endpoint := c.BaseURL.JoinPath("dns", "managed", strconv.Itoa(domain.ID), "records")
 
-	resp, err := c.sendRequest(http.MethodPost, url, record)
+	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
 
-	return nil
+	return c.do(req, nil)
 }
 
 // DeleteRecord deletes a TXT records.
-func (c *Client) DeleteRecord(record Record) error {
-	resource := fmt.Sprintf("%s/%d/%s/%d", "/dns/managed", record.SourceID, "records", record.ID)
+func (c *Client) DeleteRecord(ctx context.Context, record Record) error {
+	endpoint := c.BaseURL.JoinPath("/dns/managed", strconv.Itoa(record.SourceID), "records", strconv.Itoa(record.ID))
 
-	resp, err := c.sendRequest(http.MethodDelete, resource, nil)
+	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+
+	return c.do(req, nil)
+}
+
+func (c *Client) do(req *http.Request, result any) error {
+	err := c.sign(req, time.Now().UTC().Format(time.RFC1123))
+	if err != nil {
+		return err
+	}
+
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return errutils.NewHTTPDoError(req, err)
+	}
+
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode/100 != 2 {
+		return errutils.NewUnexpectedResponseStatusCodeError(req, resp)
+	}
+
+	if result == nil {
+		return nil
+	}
+
+	raw, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return errutils.NewReadResponseError(req, resp.StatusCode, err)
+	}
+
+	if err = json.Unmarshal(raw, result); err != nil {
+		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
+	}
 
 	return nil
 }
 
-func (c *Client) sendRequest(method, resource string, payload interface{}) (*http.Response, error) {
-	url := fmt.Sprintf("%s%s", c.BaseURL, resource)
-
-	body, err := json.Marshal(payload)
-	if err != nil {
-		return nil, err
-	}
-
-	timestamp := time.Now().UTC().Format(time.RFC1123)
+func (c *Client) sign(req *http.Request, timestamp string) error {
 	signature, err := computeHMAC(timestamp, c.apiSecret)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	req, err := http.NewRequest(method, url, bytes.NewReader(body))
-	if err != nil {
-		return nil, err
-	}
 	req.Header.Set("x-dnsme-apiKey", c.apiKey)
 	req.Header.Set("x-dnsme-requestDate", timestamp)
 	req.Header.Set("x-dnsme-hmac", signature)
-	req.Header.Set("accept", "application/json")
-	req.Header.Set("content-type", "application/json")
 
-	resp, err := c.HTTPClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode > 299 {
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return nil, fmt.Errorf("request failed with HTTP status code %d", resp.StatusCode)
-		}
-		return nil, fmt.Errorf("request failed with HTTP status code %d: %s", resp.StatusCode, string(body))
-	}
-
-	return resp, nil
+	return nil
 }
 
 func computeHMAC(message, secret string) (string, error) {
@@ -171,4 +177,28 @@ func computeHMAC(message, secret string) (string, error) {
 		return "", err
 	}
 	return hex.EncodeToString(h.Sum(nil)), nil
+}
+
+func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
+	buf := new(bytes.Buffer)
+
+	if payload != nil {
+		err := json.NewEncoder(buf).Encode(payload)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create request JSON body: %w", err)
+		}
+	}
+
+	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), buf)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create request: %w", err)
+	}
+
+	req.Header.Set("Accept", "application/json")
+
+	if payload != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
+	return req, nil
 }

@@ -92,10 +92,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		client.HTTPClient = config.HTTPClient
 	}
 
-	return &DNSProvider{
-		config: config,
-		client: client,
-	}, nil
+	return &DNSProvider{config: config, client: client}, nil
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.

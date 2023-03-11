@@ -17,7 +17,7 @@ import (
 )
 
 func TestClient_ListZones(t *testing.T) {
-	mux, client := setupTest(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/v1/zones", mockHandler(http.MethodGet, http.StatusOK, "list_zones.json"))
 
@@ -34,7 +34,7 @@ func TestClient_ListZones(t *testing.T) {
 }
 
 func TestClient_ListZones_error(t *testing.T) {
-	mux, client := setupTest(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/v1/zones", mockHandler(http.MethodGet, http.StatusUnauthorized, "list_zones_error.json"))
 
@@ -49,7 +49,7 @@ func TestClient_ListZones_error(t *testing.T) {
 }
 
 func TestClient_GetRecords(t *testing.T) {
-	mux, client := setupTest(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/v1/zones/azone01", mockHandler(http.MethodGet, http.StatusOK, "get_records.json"))
 
@@ -67,7 +67,7 @@ func TestClient_GetRecords(t *testing.T) {
 }
 
 func TestClient_GetRecords_error(t *testing.T) {
-	mux, client := setupTest(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/v1/zones/azone01", mockHandler(http.MethodGet, http.StatusUnauthorized, "get_records_error.json"))
 
@@ -82,7 +82,7 @@ func TestClient_GetRecords_error(t *testing.T) {
 }
 
 func TestClient_RemoveRecord(t *testing.T) {
-	mux, client := setupTest(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/v1/zones/azone01/records/arecord01", mockHandler(http.MethodDelete, http.StatusOK, ""))
 
@@ -91,7 +91,7 @@ func TestClient_RemoveRecord(t *testing.T) {
 }
 
 func TestClient_RemoveRecord_error(t *testing.T) {
-	mux, client := setupTest(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/v1/zones/azone01/records/arecord01", mockHandler(http.MethodDelete, http.StatusInternalServerError, "remove_record_error.json"))
 
@@ -104,7 +104,7 @@ func TestClient_RemoveRecord_error(t *testing.T) {
 }
 
 func TestClient_ReplaceRecords(t *testing.T) {
-	mux, client := setupTest(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/v1/zones/azone01", mockHandler(http.MethodPatch, http.StatusOK, ""))
 
@@ -120,7 +120,7 @@ func TestClient_ReplaceRecords(t *testing.T) {
 }
 
 func TestClient_ReplaceRecords_error(t *testing.T) {
-	mux, client := setupTest(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/v1/zones/azone01", mockHandler(http.MethodPatch, http.StatusBadRequest, "replace_records_error.json"))
 
@@ -139,7 +139,7 @@ func TestClient_ReplaceRecords_error(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, cErr.StatusCode)
 }
 
-func setupTest(t *testing.T) (*http.ServeMux, *Client) {
+func setupTest(t *testing.T) (*Client, *http.ServeMux) {
 	t.Helper()
 
 	mux := http.NewServeMux()
@@ -151,7 +151,7 @@ func setupTest(t *testing.T) (*http.ServeMux, *Client) {
 
 	client.BaseURL, _ = url.Parse(server.URL)
 
-	return mux, client
+	return client, mux
 }
 
 func mockHandler(method string, statusCode int, filename string) func(http.ResponseWriter, *http.Request) {

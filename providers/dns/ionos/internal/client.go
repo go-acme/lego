@@ -8,7 +8,9 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"time"
 
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 	querystring "github.com/google/go-querystring/query"
 )
 
@@ -17,10 +19,10 @@ const defaultBaseURL = "https://api.hosting.ionos.com/dns"
 
 // Client Ionos API client.
 type Client struct {
-	HTTPClient *http.Client
-	BaseURL    *url.URL
-
 	apiKey string
+
+	BaseURL    *url.URL
+	HTTPClient *http.Client
 }
 
 // NewClient creates a new Client.
@@ -31,9 +33,9 @@ func NewClient(apiKey string) (*Client, error) {
 	}
 
 	return &Client{
-		HTTPClient: http.DefaultClient,
-		BaseURL:    baseURL,
 		apiKey:     apiKey,
+		BaseURL:    baseURL,
+		HTTPClient: &http.Client{Timeout: 5 * time.Second},
 	}, nil
 }
 
@@ -41,26 +43,15 @@ func NewClient(apiKey string) (*Client, error) {
 func (c *Client) ListZones(ctx context.Context) ([]Zone, error) {
 	endpoint := c.BaseURL.JoinPath("v1", "zones")
 
-	req, err := c.makeRequest(ctx, http.MethodGet, endpoint, nil)
+	req, err := makeJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	resp, err := c.HTTPClient.Do(req)
+	var zones []Zone
+	err = c.do(req, &zones)
 	if err != nil {
 		return nil, fmt.Errorf("failed to call API: %w", err)
-	}
-
-	defer func() { _ = resp.Body.Close() }()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, readError(resp.Body, resp.StatusCode)
-	}
-
-	var zones []Zone
-	err = json.NewDecoder(resp.Body).Decode(&zones)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	return zones, nil
@@ -70,25 +61,14 @@ func (c *Client) ListZones(ctx context.Context) ([]Zone, error) {
 func (c *Client) ReplaceRecords(ctx context.Context, zoneID string, records []Record) error {
 	endpoint := c.BaseURL.JoinPath("v1", "zones", zoneID)
 
-	body, err := json.Marshal(records)
-	if err != nil {
-		return fmt.Errorf("failed to marshal request body: %w", err)
-	}
-
-	req, err := c.makeRequest(ctx, http.MethodPatch, endpoint, bytes.NewReader(body))
+	req, err := makeJSONRequest(ctx, http.MethodPatch, endpoint, records)
 	if err != nil {
 		return fmt.Errorf("failed to create request: %w", err)
 	}
 
-	resp, err := c.HTTPClient.Do(req)
+	err = c.do(req, nil)
 	if err != nil {
 		return fmt.Errorf("failed to call API: %w", err)
-	}
-
-	defer func() { _ = resp.Body.Close() }()
-
-	if resp.StatusCode != http.StatusOK {
-		return readError(resp.Body, resp.StatusCode)
 	}
 
 	return nil
@@ -98,7 +78,7 @@ func (c *Client) ReplaceRecords(ctx context.Context, zoneID string, records []Re
 func (c *Client) GetRecords(ctx context.Context, zoneID string, filter *RecordsFilter) ([]Record, error) {
 	endpoint := c.BaseURL.JoinPath("v1", "zones", zoneID)
 
-	req, err := c.makeRequest(ctx, http.MethodGet, endpoint, nil)
+	req, err := makeJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
@@ -112,21 +92,10 @@ func (c *Client) GetRecords(ctx context.Context, zoneID string, filter *RecordsF
 		req.URL.RawQuery = v.Encode()
 	}
 
-	resp, err := c.HTTPClient.Do(req)
+	var zone CustomerZone
+	err = c.do(req, &zone)
 	if err != nil {
 		return nil, fmt.Errorf("failed to call API: %w", err)
-	}
-
-	defer func() { _ = resp.Body.Close() }()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, readError(resp.Body, resp.StatusCode)
-	}
-
-	var zone CustomerZone
-	err = json.NewDecoder(resp.Body).Decode(&zone)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	return zone.Records, nil
@@ -136,48 +105,82 @@ func (c *Client) GetRecords(ctx context.Context, zoneID string, filter *RecordsF
 func (c *Client) RemoveRecord(ctx context.Context, zoneID, recordID string) error {
 	endpoint := c.BaseURL.JoinPath("v1", "zones", zoneID, "records", recordID)
 
-	req, err := c.makeRequest(ctx, http.MethodDelete, endpoint, nil)
+	req, err := makeJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return fmt.Errorf("failed to create request: %w", err)
 	}
 
-	resp, err := c.HTTPClient.Do(req)
+	err = c.do(req, nil)
 	if err != nil {
 		return fmt.Errorf("failed to call API: %w", err)
-	}
-
-	defer func() { _ = resp.Body.Close() }()
-
-	if resp.StatusCode != http.StatusOK {
-		return readError(resp.Body, resp.StatusCode)
 	}
 
 	return nil
 }
 
-func (c *Client) makeRequest(ctx context.Context, method string, endpoint *url.URL, body io.Reader) (*http.Request, error) {
-	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), body)
+func (c *Client) do(req *http.Request, result any) error {
+	req.Header.Set("X-API-Key", c.apiKey)
+
+	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
+		return errutils.NewHTTPDoError(req, err)
+	}
+
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		return parseError(req, resp)
+	}
+
+	if result == nil {
+		return nil
+	}
+
+	raw, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return errutils.NewReadResponseError(req, resp.StatusCode, err)
+	}
+
+	err = json.Unmarshal(raw, result)
+	if err != nil {
+		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
+	}
+
+	return nil
+}
+
+func makeJSONRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
+	buf := new(bytes.Buffer)
+
+	if payload != nil {
+		err := json.NewEncoder(buf).Encode(payload)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create request JSON body: %w", err)
+		}
+	}
+
+	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), buf)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create request: %w", err)
 	}
 
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-API-Key", c.apiKey)
+
+	if payload != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
 
 	return req, nil
 }
 
-func readError(body io.Reader, statusCode int) error {
-	bodyBytes, _ := io.ReadAll(body)
+func parseError(req *http.Request, resp *http.Response) error {
+	raw, _ := io.ReadAll(resp.Body)
 
-	cErr := &ClientError{StatusCode: statusCode}
-
-	err := json.Unmarshal(bodyBytes, &cErr.errors)
+	errClient := &ClientError{StatusCode: resp.StatusCode}
+	err := json.Unmarshal(raw, &errClient.errors)
 	if err != nil {
-		cErr.message = string(bodyBytes)
-		return cErr
+		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return cErr
+	return errClient
 }

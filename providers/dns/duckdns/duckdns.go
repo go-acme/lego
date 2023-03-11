@@ -3,6 +3,7 @@
 package duckdns
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/duckdns/internal"
 )
 
 // Environment variables names.
@@ -48,6 +50,7 @@ func NewDefaultConfig() *Config {
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
+	client *internal.Client
 }
 
 // NewDNSProvider returns a new DNS provider using
@@ -74,19 +77,25 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("duckdns: credentials missing")
 	}
 
-	return &DNSProvider{config: config}, nil
+	client := internal.NewClient(config.Token)
+
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
+	}
+
+	return &DNSProvider{config: config, client: client}, nil
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
-	return d.updateTxtRecord(dns01.UnFqdn(info.EffectiveFQDN), d.config.Token, info.Value, false)
+	return d.client.AddTXTRecord(context.Background(), dns01.UnFqdn(info.EffectiveFQDN), info.Value)
 }
 
 // CleanUp clears DuckDNS TXT record.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
-	return d.updateTxtRecord(dns01.UnFqdn(info.EffectiveFQDN), d.config.Token, "", true)
+	return d.client.RemoveTXTRecord(context.Background(), dns01.UnFqdn(info.EffectiveFQDN))
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.

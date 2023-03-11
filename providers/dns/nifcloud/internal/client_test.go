@@ -1,9 +1,11 @@
 package internal
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -25,7 +27,7 @@ func setupTest(t *testing.T, responseBody string, statusCode int) *Client {
 	require.NoError(t, err)
 
 	client.HTTPClient = server.Client()
-	client.BaseURL = server.URL
+	client.BaseURL, _ = url.Parse(server.URL)
 
 	return client
 }
@@ -43,7 +45,7 @@ func TestChangeResourceRecordSets(t *testing.T) {
 
 	client := setupTest(t, responseBody, http.StatusOK)
 
-	res, err := client.ChangeResourceRecordSets("example.com", ChangeResourceRecordSetsRequest{})
+	res, err := client.ChangeResourceRecordSets(context.Background(), "example.com", ChangeResourceRecordSetsRequest{})
 	require.NoError(t, err)
 
 	assert.Equal(t, "xxxxx", res.ChangeInfo.ID)
@@ -70,19 +72,19 @@ func TestChangeResourceRecordSetsErrors(t *testing.T) {
 </ErrorResponse>
 `,
 			statusCode: http.StatusUnauthorized,
-			expected:   "an error occurred: The request signature we calculated does not match the signature you provided.",
+			expected:   "Sender(AuthFailed): The request signature we calculated does not match the signature you provided.",
 		},
 		{
 			desc:         "response body error",
 			responseBody: "foo",
 			statusCode:   http.StatusOK,
-			expected:     "an error occurred while unmarshaling the response body to XML: EOF",
+			expected:     "unable to unmarshal response: [status code: 200] body: foo error: EOF",
 		},
 		{
 			desc:         "error message error",
 			responseBody: "foo",
 			statusCode:   http.StatusInternalServerError,
-			expected:     "an error occurred while unmarshaling the error body to XML: EOF",
+			expected:     "unexpected status code: [status code: 500] body: foo",
 		},
 	}
 
@@ -91,7 +93,7 @@ func TestChangeResourceRecordSetsErrors(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			client := setupTest(t, test.responseBody, test.statusCode)
 
-			res, err := client.ChangeResourceRecordSets("example.com", ChangeResourceRecordSetsRequest{})
+			res, err := client.ChangeResourceRecordSets(context.Background(), "example.com", ChangeResourceRecordSetsRequest{})
 			assert.Nil(t, res)
 			assert.EqualError(t, err, test.expected)
 		})
@@ -111,7 +113,7 @@ func TestGetChange(t *testing.T) {
 
 	client := setupTest(t, responseBody, http.StatusOK)
 
-	res, err := client.GetChange("12345")
+	res, err := client.GetChange(context.Background(), "12345")
 	require.NoError(t, err)
 
 	assert.Equal(t, "xxxxx", res.ChangeInfo.ID)
@@ -138,19 +140,19 @@ func TestGetChangeErrors(t *testing.T) {
 </ErrorResponse>
 `,
 			statusCode: http.StatusUnauthorized,
-			expected:   "an error occurred: The request signature we calculated does not match the signature you provided.",
+			expected:   "Sender(AuthFailed): The request signature we calculated does not match the signature you provided.",
 		},
 		{
 			desc:         "response body error",
 			responseBody: "foo",
 			statusCode:   http.StatusOK,
-			expected:     "an error occurred while unmarshaling the response body to XML: EOF",
+			expected:     "unable to unmarshal response: [status code: 200] body: foo error: EOF",
 		},
 		{
 			desc:         "error message error",
 			responseBody: "foo",
 			statusCode:   http.StatusInternalServerError,
-			expected:     "an error occurred while unmarshaling the error body to XML: EOF",
+			expected:     "unexpected status code: [status code: 500] body: foo",
 		},
 	}
 
@@ -159,7 +161,7 @@ func TestGetChangeErrors(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			client := setupTest(t, test.responseBody, test.statusCode)
 
-			res, err := client.GetChange("12345")
+			res, err := client.GetChange(context.Background(), "12345")
 			assert.Nil(t, res)
 			assert.EqualError(t, err, test.expected)
 		})

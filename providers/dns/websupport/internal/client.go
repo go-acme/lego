@@ -2,6 +2,7 @@ package internal
 
 import (
 	"bytes"
+	"context"
 	"crypto/hmac"
 	"crypto/sha1"
 	"encoding/hex"
@@ -13,6 +14,8 @@ import (
 	"net/url"
 	"strconv"
 	"time"
+
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
 const defaultBaseURL = "https://rest.websupport.sk"
@@ -22,9 +25,10 @@ const StatusSuccess = "success"
 
 // Client a Websupport DNS API client.
 type Client struct {
-	apiKey     string
-	secretKey  string
-	BaseURL    string
+	apiKey    string
+	secretKey string
+
+	baseURL    *url.URL
 	HTTPClient *http.Client
 }
 
@@ -34,23 +38,22 @@ func NewClient(apiKey, secretKey string) (*Client, error) {
 		return nil, errors.New("credentials missing")
 	}
 
+	baseURL, _ := url.Parse(defaultBaseURL)
+
 	return &Client{
 		apiKey:     apiKey,
 		secretKey:  secretKey,
-		BaseURL:    defaultBaseURL,
+		baseURL:    baseURL,
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 	}, nil
 }
 
 // GetUser gets a user detail.
 // https://rest.websupport.sk/docs/v1.user#user
-func (c *Client) GetUser(userID string) (*User, error) {
-	endpoint, err := url.JoinPath(c.BaseURL, "v1", "user", userID)
-	if err != nil {
-		return nil, fmt.Errorf("base url parsing: %w", err)
-	}
+func (c *Client) GetUser(ctx context.Context, userID string) (*User, error) {
+	endpoint := c.baseURL.JoinPath("v1", "user", userID)
 
-	req, err := http.NewRequest(http.MethodGet, endpoint, http.NoBody)
+	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, fmt.Errorf("request payload: %w", err)
 	}
@@ -67,13 +70,10 @@ func (c *Client) GetUser(userID string) (*User, error) {
 
 // ListRecords lists all records.
 // https://rest.websupport.sk/docs/v1.zone#records
-func (c *Client) ListRecords(domainName string) (*ListResponse, error) {
-	endpoint, err := url.JoinPath(c.BaseURL, "v1", "user", "self", "zone", domainName, "record")
-	if err != nil {
-		return nil, fmt.Errorf("base url parsing: %w", err)
-	}
+func (c *Client) ListRecords(ctx context.Context, domainName string) (*ListResponse, error) {
+	endpoint := c.baseURL.JoinPath("v1", "user", "self", "zone", domainName, "record")
 
-	req, err := http.NewRequest(http.MethodGet, endpoint, http.NoBody)
+	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, fmt.Errorf("request payload: %w", err)
 	}
@@ -89,13 +89,10 @@ func (c *Client) ListRecords(domainName string) (*ListResponse, error) {
 }
 
 // GetRecords gets a DNS record.
-func (c *Client) GetRecords(domainName string, recordID int) (*Record, error) {
-	endpoint, err := url.JoinPath(c.BaseURL, "v1", "user", "self", "zone", domainName, "record", strconv.Itoa(recordID))
-	if err != nil {
-		return nil, fmt.Errorf("base url parsing: %w", err)
-	}
+func (c *Client) GetRecords(ctx context.Context, domainName string, recordID int) (*Record, error) {
+	endpoint := c.baseURL.JoinPath("v1", "user", "self", "zone", domainName, "record", strconv.Itoa(recordID))
 
-	req, err := http.NewRequest(http.MethodGet, endpoint, http.NoBody)
+	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -112,20 +109,12 @@ func (c *Client) GetRecords(domainName string, recordID int) (*Record, error) {
 
 // AddRecord adds a DNS record.
 // https://rest.websupport.sk/docs/v1.zone#post-record
-func (c *Client) AddRecord(domainName string, record Record) (*Response, error) {
-	endpoint, err := url.JoinPath(c.BaseURL, "v1", "user", "self", "zone", domainName, "record")
-	if err != nil {
-		return nil, fmt.Errorf("base url parsing: %w", err)
-	}
+func (c *Client) AddRecord(ctx context.Context, domainName string, record Record) (*Response, error) {
+	endpoint := c.baseURL.JoinPath("v1", "user", "self", "zone", domainName, "record")
 
-	payload, err := json.Marshal(record)
+	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
 	if err != nil {
-		return nil, fmt.Errorf("request payload: %w", err)
-	}
-
-	req, err := http.NewRequest(http.MethodPost, endpoint, bytes.NewReader(payload))
-	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("create request: %w", err)
 	}
 
 	result := &Response{}
@@ -140,15 +129,12 @@ func (c *Client) AddRecord(domainName string, record Record) (*Response, error) 
 
 // DeleteRecord deletes a DNS record.
 // https://rest.websupport.sk/docs/v1.zone#delete-record
-func (c *Client) DeleteRecord(domainName string, recordID int) (*Response, error) {
-	endpoint, err := url.JoinPath(c.BaseURL, "v1", "user", "self", "zone", domainName, "record", strconv.Itoa(recordID))
-	if err != nil {
-		return nil, fmt.Errorf("base url parsing: %w", err)
-	}
+func (c *Client) DeleteRecord(ctx context.Context, domainName string, recordID int) (*Response, error) {
+	endpoint := c.baseURL.JoinPath("v1", "user", "self", "zone", domainName, "record", strconv.Itoa(recordID))
 
-	req, err := http.NewRequest(http.MethodDelete, endpoint, http.NoBody)
+	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
-		return nil, fmt.Errorf("request payload: %w", err)
+		return nil, fmt.Errorf("create request: %w", err)
 	}
 
 	result := &Response{}
@@ -162,8 +148,6 @@ func (c *Client) DeleteRecord(domainName string, recordID int) (*Response, error
 }
 
 func (c *Client) do(req *http.Request, result any) error {
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Accept-Language", "en_us")
 
 	location, err := time.LoadLocation("GMT")
@@ -178,31 +162,23 @@ func (c *Client) do(req *http.Request, result any) error {
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
-		return err
+		return errutils.NewHTTPDoError(req, err)
 	}
 
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode > http.StatusBadRequest {
-		all, _ := io.ReadAll(resp.Body)
-
-		var e APIError
-		err = json.Unmarshal(all, &e)
-		if err != nil {
-			return fmt.Errorf("%d: %s", resp.StatusCode, string(all))
-		}
-
-		return &e
+		return parseError(req, resp)
 	}
 
-	all, err := io.ReadAll(resp.Body)
+	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("read response body: %w", err)
+		return errutils.NewReadResponseError(req, resp.StatusCode, err)
 	}
 
-	err = json.Unmarshal(all, result)
+	err = json.Unmarshal(raw, result)
 	if err != nil {
-		return fmt.Errorf("unmarshal response body: %w", err)
+		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
 	}
 
 	return nil
@@ -229,4 +205,40 @@ func (c *Client) sign(req *http.Request, now time.Time) error {
 	req.Header.Set("Date", now.Format(time.RFC3339))
 
 	return nil
+}
+
+func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
+	buf := new(bytes.Buffer)
+
+	if payload != nil {
+		err := json.NewEncoder(buf).Encode(payload)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create request JSON body: %w", err)
+		}
+	}
+
+	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), buf)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create request: %w", err)
+	}
+
+	req.Header.Set("Accept", "application/json")
+
+	if payload != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
+	return req, nil
+}
+
+func parseError(req *http.Request, resp *http.Response) error {
+	raw, _ := io.ReadAll(resp.Body)
+
+	var errAPI APIError
+	err := json.Unmarshal(raw, &errAPI)
+	if err != nil {
+		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
+	}
+
+	return &errAPI
 }

@@ -1,11 +1,13 @@
 package internal
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"testing"
 
@@ -46,7 +48,7 @@ func setupTest(t *testing.T, method, pattern string, status int, file string) *C
 	require.NoError(t, err)
 
 	client.HTTPClient = server.Client()
-	client.BaseURL = server.URL
+	client.baseURL, _ = url.Parse(server.URL)
 
 	return client
 }
@@ -54,7 +56,7 @@ func setupTest(t *testing.T, method, pattern string, status int, file string) *C
 func TestClient_GetUser(t *testing.T) {
 	client := setupTest(t, http.MethodGet, "/v1/user/self", http.StatusOK, "./fixtures/get-user.json")
 
-	user, err := client.GetUser("self")
+	user, err := client.GetUser(context.Background(), "self")
 	require.NoError(t, err)
 
 	expected := &User{
@@ -89,7 +91,7 @@ func TestClient_GetUser(t *testing.T) {
 func TestClient_ListRecords(t *testing.T) {
 	client := setupTest(t, http.MethodGet, "/v1/user/self/zone/example.com/record", http.StatusOK, "./fixtures/list-records.json")
 
-	resp, err := client.ListRecords("example.com")
+	resp, err := client.ListRecords(context.Background(), "example.com")
 	require.NoError(t, err)
 
 	expected := &ListResponse{
@@ -124,7 +126,7 @@ func TestClient_AddRecord(t *testing.T) {
 		TTL:     600,
 	}
 
-	resp, err := client.AddRecord("example.com", record)
+	resp, err := client.AddRecord(context.Background(), "example.com", record)
 	require.NoError(t, err)
 
 	expected := &Response{
@@ -157,7 +159,7 @@ func TestClient_AddRecord_error_400(t *testing.T) {
 		TTL:     600,
 	}
 
-	resp, err := client.AddRecord("example.com", record)
+	resp, err := client.AddRecord(context.Background(), "example.com", record)
 	require.NoError(t, err)
 
 	assert.Equal(t, "error", resp.Status)
@@ -190,7 +192,7 @@ func TestClient_AddRecord_error_404(t *testing.T) {
 		TTL:     600,
 	}
 
-	resp, err := client.AddRecord("example.com", record)
+	resp, err := client.AddRecord(context.Background(), "example.com", record)
 	require.Error(t, err)
 
 	assert.Nil(t, resp)
@@ -199,7 +201,7 @@ func TestClient_AddRecord_error_404(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := setupTest(t, http.MethodDelete, "/v1/user/self/zone/example.com/record/123", http.StatusOK, "./fixtures/delete-record.json")
 
-	resp, err := client.DeleteRecord("example.com", 123)
+	resp, err := client.DeleteRecord(context.Background(), "example.com", 123)
 	require.NoError(t, err)
 
 	expected := &Response{
@@ -225,7 +227,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 func TestClient_DeleteRecord_error(t *testing.T) {
 	client := setupTest(t, http.MethodDelete, "/v1/user/self/zone/example.com/record/123", http.StatusNotFound, "./fixtures/delete-record-error-404.json")
 
-	resp, err := client.DeleteRecord("example.com", 123)
+	resp, err := client.DeleteRecord(context.Background(), "example.com", 123)
 	require.Error(t, err)
 
 	assert.Nil(t, resp)

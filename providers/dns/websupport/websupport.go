@@ -2,6 +2,7 @@
 package websupport
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -106,7 +107,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("websupport: %w", err)
+		return fmt.Errorf("websupport: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
@@ -121,7 +122,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		TTL:     d.config.TTL,
 	}
 
-	resp, err := d.client.AddRecord(dns01.UnFqdn(authZone), record)
+	resp, err := d.client.AddRecord(context.Background(), dns01.UnFqdn(authZone), record)
 	if err != nil {
 		return fmt.Errorf("websupport: add record: %w", err)
 	}
@@ -148,7 +149,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("websupport: %w", err)
+		return fmt.Errorf("websupport: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	// gets the record's unique ID
@@ -159,7 +160,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("websupport: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
-	resp, err := d.client.DeleteRecord(dns01.UnFqdn(authZone), recordID)
+	resp, err := d.client.DeleteRecord(context.Background(), dns01.UnFqdn(authZone), recordID)
 	if err != nil {
 		return fmt.Errorf("websupport: delete record: %w", err)
 	}

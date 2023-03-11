@@ -2,6 +2,7 @@ package internal
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -10,6 +11,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 	"github.com/pquerna/otp/totp"
 )
 
@@ -39,14 +41,14 @@ type Options struct {
 
 // Client a nicmanager DNS client.
 type Client struct {
-	HTTPClient *http.Client
-	baseURL    *url.URL
-
 	username string
 	password string
 	otp      string
 
 	mode string
+
+	baseURL    *url.URL
+	HTTPClient *http.Client
 }
 
 // NewClient create a new Client.
@@ -72,29 +74,16 @@ func NewClient(opts Options) *Client {
 	return c
 }
 
-func (c Client) GetZone(name string) (*Zone, error) {
+func (c Client) GetZone(ctx context.Context, name string) (*Zone, error) {
 	endpoint := c.baseURL.JoinPath(c.mode, name)
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	defer func() { _ = resp.Body.Close() }()
-
-	if resp.StatusCode >= http.StatusBadRequest {
-		b, _ := io.ReadAll(resp.Body)
-
-		msg := APIError{StatusCode: resp.StatusCode}
-		if err = json.Unmarshal(b, &msg); err != nil {
-			return nil, fmt.Errorf("failed to get zone info for %s", name)
-		}
-
-		return nil, msg
-	}
-
 	var zone Zone
-	err = json.NewDecoder(resp.Body).Decode(&zone)
+	err = c.do(req, http.StatusOK, &zone)
 	if err != nil {
 		return nil, err
 	}
@@ -102,83 +91,109 @@ func (c Client) GetZone(name string) (*Zone, error) {
 	return &zone, nil
 }
 
-func (c Client) AddRecord(zone string, req RecordCreateUpdate) error {
+func (c Client) AddRecord(ctx context.Context, zone string, payload RecordCreateUpdate) error {
 	endpoint := c.baseURL.JoinPath(c.mode, zone, "records")
 
-	resp, err := c.do(http.MethodPost, endpoint, req)
+	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, payload)
 	if err != nil {
 		return err
 	}
 
-	defer func() { _ = resp.Body.Close() }()
-
-	if resp.StatusCode != http.StatusAccepted {
-		b, _ := io.ReadAll(resp.Body)
-
-		msg := APIError{StatusCode: resp.StatusCode}
-		if err = json.Unmarshal(b, &msg); err != nil {
-			return fmt.Errorf("records create should've returned %d but returned %d", http.StatusAccepted, resp.StatusCode)
-		}
-
-		return msg
+	err = c.do(req, http.StatusAccepted, nil)
+	if err != nil {
+		return err
 	}
 
 	return nil
 }
 
-func (c Client) DeleteRecord(zone string, record int) error {
+func (c Client) DeleteRecord(ctx context.Context, zone string, record int) error {
 	endpoint := c.baseURL.JoinPath(c.mode, zone, "records", strconv.Itoa(record))
 
-	resp, err := c.do(http.MethodDelete, endpoint, nil)
+	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
 	}
 
-	defer func() { _ = resp.Body.Close() }()
-
-	if resp.StatusCode != http.StatusAccepted {
-		b, _ := io.ReadAll(resp.Body)
-
-		msg := APIError{StatusCode: resp.StatusCode}
-		if err = json.Unmarshal(b, &msg); err != nil {
-			return fmt.Errorf("records delete should've returned %d but returned %d", http.StatusAccepted, resp.StatusCode)
-		}
-
-		return msg
+	err = c.do(req, http.StatusAccepted, nil)
+	if err != nil {
+		return err
 	}
 
 	return nil
 }
 
-func (c Client) do(method string, endpoint *url.URL, body interface{}) (*http.Response, error) {
-	var reqBody io.Reader
-	if body != nil {
-		jsonValue, err := json.Marshal(body)
-		if err != nil {
-			return nil, err
-		}
-
-		reqBody = bytes.NewBuffer(jsonValue)
-	}
-
-	r, err := http.NewRequest(method, endpoint.String(), reqBody)
-	if err != nil {
-		return nil, err
-	}
-
-	r.Header.Set("Accept", "application/json")
-	r.Header.Set("Content-Type", "application/json")
-
-	r.SetBasicAuth(c.username, c.password)
+func (c Client) do(req *http.Request, expectedStatusCode int, result any) error {
+	req.SetBasicAuth(c.username, c.password)
 
 	if c.otp != "" {
 		tan, err := totp.GenerateCode(c.otp, time.Now())
 		if err != nil {
-			return nil, err
+			return err
 		}
 
-		r.Header.Set(headerTOTPToken, tan)
+		req.Header.Set(headerTOTPToken, tan)
 	}
 
-	return c.HTTPClient.Do(r)
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return errutils.NewHTTPDoError(req, err)
+	}
+
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != expectedStatusCode {
+		return parseError(req, resp)
+	}
+
+	if result == nil {
+		return nil
+	}
+
+	raw, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return errutils.NewReadResponseError(req, resp.StatusCode, err)
+	}
+
+	err = json.Unmarshal(raw, result)
+	if err != nil {
+		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
+	}
+
+	return err
+}
+
+func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
+	buf := new(bytes.Buffer)
+
+	if payload != nil {
+		err := json.NewEncoder(buf).Encode(payload)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create request JSON body: %w", err)
+		}
+	}
+
+	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), buf)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create request: %w", err)
+	}
+
+	req.Header.Set("Accept", "application/json")
+
+	if payload != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
+	return req, nil
+}
+
+func parseError(req *http.Request, resp *http.Response) error {
+	raw, _ := io.ReadAll(resp.Body)
+
+	errAPI := APIError{StatusCode: resp.StatusCode}
+	if err := json.Unmarshal(raw, &errAPI); err != nil {
+		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
+	}
+
+	return errAPI
 }

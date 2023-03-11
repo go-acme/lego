@@ -2,6 +2,7 @@
 package mydnsjp
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -9,9 +10,8 @@ import (
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/mydnsjp/internal"
 )
-
-const defaultBaseURL = "https://www.mydns.jp/directedit.html"
 
 // Environment variables names.
 const (
@@ -48,6 +48,7 @@ func NewDefaultConfig() *Config {
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
+	client *internal.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for MyDNS.jp.
@@ -75,7 +76,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("mydnsjp: some credentials information are missing")
 	}
 
-	return &DNSProvider{config: config}, nil
+	return &DNSProvider{
+		config: config,
+		client: internal.NewClient(config.MasterID, config.Password),
+	}, nil
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
@@ -89,7 +93,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	// TODO(ldez) replace domain by FQDN to follow CNAME.
-	err := d.doRequest(domain, info.Value, "REGIST")
+	err := d.client.AddTXTRecord(context.Background(), domain, info.Value)
 	if err != nil {
 		return fmt.Errorf("mydnsjp: %w", err)
 	}
@@ -101,7 +105,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	// TODO(ldez) replace domain by FQDN to follow CNAME.
-	err := d.doRequest(domain, info.Value, "DELETE")
+	err := d.client.DeleteTXTRecord(context.Background(), domain, info.Value)
 	if err != nil {
 		return fmt.Errorf("mydnsjp: %w", err)
 	}

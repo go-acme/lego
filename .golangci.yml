@@ -161,7 +161,7 @@ issues:
       linters:
         - gocyclo
         - funlen
-    - path: providers/dns/checkdomain/client.go
+    - path: providers/dns/checkdomain/internal/types.go
       text: '`payed` is a misspelling of `paid`'
     - path: providers/dns/namecheap/namecheap_test.go
       text: 'cognitive complexity (\d+) of func `TestDNSProvider_getHosts` is high'
@@ -174,7 +174,7 @@ issues:
       text: 'yodaStyleExpr'
     - path: providers/dns/dns_providers.go
       text: 'Function name: NewDNSChallengeProviderByName,'
-    - path: providers/dns/sakuracloud/client.go
+    - path: providers/dns/sakuracloud/wrapper.go
       text: 'mu is a global variable'
     - path: providers/dns/hosttech/internal/client_test.go
       text: 'Duplicate words \(0\) found'

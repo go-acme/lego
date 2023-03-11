@@ -61,7 +61,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 ## More information
 
-- [API documentation](https://docs.otc.t-systems.com/en-us/dns/index.html)
+- [API documentation](https://docs.otc.t-systems.com/domain-name-service/api-ref/index.html)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/otc/otc.toml -->

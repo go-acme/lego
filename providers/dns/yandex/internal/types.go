@@ -10,23 +10,38 @@ type Record struct {
 	Content   string `json:"content,omitempty" url:"content,omitempty"`
 }
 
+type Response interface {
+	GetSuccess() string
+	GetError() string
+}
+
+type BaseResponse struct {
+	Success string `json:"success"`
+	Error   string `json:"error,omitempty"`
+}
+
+func (r BaseResponse) GetSuccess() string {
+	return r.Success
+}
+
+func (r BaseResponse) GetError() string {
+	return r.Error
+}
+
 type AddResponse struct {
-	Domain  string  `json:"domain,omitempty"`
-	Record  *Record `json:"record,omitempty"`
-	Success string  `json:"success"`
-	Error   string  `json:"error,omitempty"`
+	BaseResponse
+	Domain string  `json:"domain,omitempty"`
+	Record *Record `json:"record,omitempty"`
 }
 
 type RemoveResponse struct {
+	BaseResponse
 	Domain   string `json:"domain,omitempty"`
 	RecordID int    `json:"record_id,omitempty"`
-	Success  string `json:"success"`
-	Error    string `json:"error,omitempty"`
 }
 
 type ListResponse struct {
+	BaseResponse
 	Domain  string   `json:"domain,omitempty"`
 	Records []Record `json:"records,omitempty"`
-	Success string   `json:"success"`
-	Error   string   `json:"error,omitempty"`
 }

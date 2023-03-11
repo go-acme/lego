@@ -2,6 +2,7 @@
 package yandex
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -106,7 +107,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Content:   info.Value,
 	}
 
-	_, err = d.client.AddRecord(data)
+	_, err = d.client.AddRecord(context.Background(), data)
 	if err != nil {
 		return fmt.Errorf("yandex: %w", err)
 	}
@@ -123,7 +124,9 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("yandex: %w", err)
 	}
 
-	records, err := d.client.GetRecords(rootDomain)
+	ctx := context.Background()
+
+	records, err := d.client.GetRecords(ctx, rootDomain)
 	if err != nil {
 		return fmt.Errorf("yandex: %w", err)
 	}
@@ -146,7 +149,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		Domain: rootDomain,
 	}
 
-	_, err = d.client.RemoveRecord(data)
+	_, err = d.client.RemoveRecord(ctx, data)
 	if err != nil {
 		return fmt.Errorf("yandex: %w", err)
 	}

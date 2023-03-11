@@ -1,12 +1,17 @@
 package internal
 
 import (
+	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
-	"strings"
+	"net/url"
+	"time"
 
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 	"github.com/google/go-querystring/query"
 )
 
@@ -17,119 +22,139 @@ const successCode = "ok"
 const pddTokenHeader = "PddToken"
 
 type Client struct {
+	pddToken string
+
+	baseURL    *url.URL
 	HTTPClient *http.Client
-	BaseURL    string
-	pddToken   string
 }
 
 func NewClient(pddToken string) (*Client, error) {
 	if pddToken == "" {
 		return nil, errors.New("PDD token is required")
 	}
+
+	baseURL, _ := url.Parse(defaultBaseURL)
+
 	return &Client{
-		HTTPClient: &http.Client{},
-		BaseURL:    defaultBaseURL,
 		pddToken:   pddToken,
+		baseURL:    baseURL,
+		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 	}, nil
 }
 
-func (c *Client) AddRecord(data Record) (*Record, error) {
-	resp, err := c.postForm("/add", data)
+func (c *Client) AddRecord(ctx context.Context, payload Record) (*Record, error) {
+	endpoint := c.baseURL.JoinPath("add")
+
+	req, err := newRequest(ctx, http.MethodPost, endpoint, payload)
 	if err != nil {
 		return nil, err
-	}
-	defer func() { _ = resp.Body.Close() }()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("API response error: %d", resp.StatusCode)
 	}
 
 	r := AddResponse{}
-	err = json.NewDecoder(resp.Body).Decode(&r)
+	err = c.do(req, &r)
 	if err != nil {
 		return nil, err
-	}
-
-	if r.Success != successCode {
-		return nil, fmt.Errorf("error during record addition: %s", r.Error)
 	}
 
 	return r.Record, nil
 }
 
-func (c *Client) RemoveRecord(data Record) (int, error) {
-	resp, err := c.postForm("/del", data)
+func (c *Client) RemoveRecord(ctx context.Context, payload Record) (int, error) {
+	endpoint := c.baseURL.JoinPath("del")
+
+	req, err := newRequest(ctx, http.MethodPost, endpoint, payload)
 	if err != nil {
 		return 0, err
 	}
-	defer func() { _ = resp.Body.Close() }()
 
 	r := RemoveResponse{}
-	err = json.NewDecoder(resp.Body).Decode(&r)
+	err = c.do(req, &r)
 	if err != nil {
 		return 0, err
-	}
-
-	if r.Success != successCode {
-		return 0, fmt.Errorf("error during record addition: %s", r.Error)
 	}
 
 	return r.RecordID, nil
 }
 
-func (c *Client) GetRecords(domain string) ([]Record, error) {
-	resp, err := c.get("/list", struct {
+func (c *Client) GetRecords(ctx context.Context, domain string) ([]Record, error) {
+	endpoint := c.baseURL.JoinPath("list")
+
+	payload := struct {
 		Domain string `url:"domain"`
-	}{Domain: domain})
+	}{Domain: domain}
+
+	req, err := newRequest(ctx, http.MethodGet, endpoint, payload)
 	if err != nil {
 		return nil, err
 	}
-	defer func() { _ = resp.Body.Close() }()
 
 	r := ListResponse{}
-	err = json.NewDecoder(resp.Body).Decode(&r)
+	err = c.do(req, &r)
 	if err != nil {
 		return nil, err
-	}
-
-	if r.Success != successCode {
-		return nil, fmt.Errorf("error during record addition: %s", r.Error)
 	}
 
 	return r.Records, nil
 }
 
-func (c *Client) postForm(uri string, data interface{}) (*http.Response, error) {
-	values, err := query.Values(data)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest(http.MethodPost, c.BaseURL+uri, strings.NewReader(values.Encode()))
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+func (c *Client) do(req *http.Request, result Response) error {
 	req.Header.Set(pddTokenHeader, c.pddToken)
 
-	return c.HTTPClient.Do(req)
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return errutils.NewHTTPDoError(req, err)
+	}
+
+	defer func() { _ = resp.Body.Close() }()
+
+	raw, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return errutils.NewReadResponseError(req, resp.StatusCode, err)
+	}
+
+	err = json.Unmarshal(raw, result)
+	if err != nil {
+		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
+	}
+
+	if result.GetSuccess() != successCode {
+		return fmt.Errorf("error during operation: %s %s", result.GetSuccess(), result.GetError())
+	}
+
+	return nil
 }
 
-func (c *Client) get(uri string, data interface{}) (*http.Response, error) {
-	req, err := http.NewRequest(http.MethodGet, c.BaseURL+uri, nil)
-	if err != nil {
-		return nil, err
+func newRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
+	buf := new(bytes.Buffer)
+
+	if payload != nil {
+		switch method {
+		case http.MethodPost:
+			values, err := query.Values(payload)
+			if err != nil {
+				return nil, err
+			}
+
+			buf.WriteString(values.Encode())
+
+		case http.MethodGet:
+			values, err := query.Values(payload)
+			if err != nil {
+				return nil, err
+			}
+
+			endpoint.RawQuery = values.Encode()
+		}
 	}
 
-	req.Header.Set(pddTokenHeader, c.pddToken)
-
-	values, err := query.Values(data)
+	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), buf)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to create request: %w", err)
 	}
 
-	req.URL.RawQuery = values.Encode()
+	if method == http.MethodPost {
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	}
 
-	return c.HTTPClient.Do(req)
+	return req, nil
 }

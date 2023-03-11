@@ -150,10 +150,12 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 func (d *DNSProvider) getHostedZone(fqdn string) (*dns.Zone, error) {
-	authZone, err := getAuthZone(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return nil, fmt.Errorf("failed to extract auth zone from fqdn %q: %w", fqdn, err)
+		return nil, fmt.Errorf("could not find zone for FQDN %q: %w", fqdn, err)
 	}
+
+	authZone = dns01.UnFqdn(authZone)
 
 	zone, _, err := d.client.Zones.Get(authZone)
 	if err != nil {
@@ -161,13 +163,4 @@ func (d *DNSProvider) getHostedZone(fqdn string) (*dns.Zone, error) {
 	}
 
 	return zone, nil
-}
-
-func getAuthZone(fqdn string) (string, error) {
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
-	if err != nil {
-		return "", err
-	}
-
-	return dns01.UnFqdn(authZone), nil
 }

@@ -1,6 +1,8 @@
 package internal
 
 import (
+	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,23 +14,21 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func setup(t *testing.T) (*Client, *http.ServeMux) {
+func setupTest(t *testing.T) (*Client, *http.ServeMux) {
 	t.Helper()
 
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
 	t.Cleanup(server.Close)
 
-	client := NewClient("secret", "123")
-
-	client.HTTPClient = server.Client()
+	client := NewClient(OAuthStaticAccessToken(server.Client(), "secret"), "123")
 	client.baseURL, _ = url.Parse(server.URL)
 
 	return client, mux
 }
 
 func TestClient_CreateRecord(t *testing.T) {
-	client, mux := setup(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/v2/domains/example.com/records", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodPost {
@@ -55,7 +55,7 @@ func TestClient_CreateRecord(t *testing.T) {
 		}
 
 		expectedReqBody := `{"name":"_acme-challenge.example.com.","type":"TXT","value":"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI","ttl":60}`
-		assert.Equal(t, expectedReqBody, string(reqBody))
+		assert.Equal(t, expectedReqBody, string(bytes.TrimSpace(reqBody)))
 
 		rw.WriteHeader(http.StatusOK)
 		_, err = fmt.Fprintf(rw, `{
@@ -75,7 +75,7 @@ func TestClient_CreateRecord(t *testing.T) {
 		TTL:   60,
 	}
 
-	resp, err := client.CreateRecord("example.com.", record)
+	resp, err := client.CreateRecord(context.Background(), "example.com.", record)
 	require.NoError(t, err)
 
 	expected := &CreateRecordResponse{
@@ -87,7 +87,7 @@ func TestClient_CreateRecord(t *testing.T) {
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
-	client, mux := setup(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/v2/domains/example.com/records/1234567", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodDelete {
@@ -109,6 +109,6 @@ func TestClient_DeleteRecord(t *testing.T) {
 		rw.WriteHeader(http.StatusOK)
 	})
 
-	err := client.DeleteRecord("example.com.", "1234567")
+	err := client.DeleteRecord(context.Background(), "example.com.", "1234567")
 	require.NoError(t, err)
 }

@@ -2,6 +2,7 @@
 package gandi
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -10,16 +11,13 @@ import (
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/gandi/internal"
 )
 
 // Gandi API reference:       http://doc.rpc.gandi.net/index.html
 // Gandi API domain examples: http://doc.rpc.gandi.net/domain/faq.html
 
-const (
-	// defaultBaseURL Gandi XML-RPC endpoint used by Present and CleanUp.
-	defaultBaseURL = "https://rpc.gandi.net/xmlrpc/"
-	minTTL         = 300
-)
+const minTTL = 300
 
 // Environment variables names.
 const (
@@ -64,11 +62,16 @@ type inProgressInfo struct {
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
+	config *Config
+	client *internal.Client
+
 	inProgressFQDNs     map[string]inProgressInfo
 	inProgressAuthZones map[string]struct{}
 	inProgressMu        sync.Mutex
-	config              *Config
-	// findZoneByFqdn determines the DNS zone of an fqdn. It is overridden during tests.
+
+	// findZoneByFqdn determines the DNS zone of a FQDN.
+	// It is overridden during tests.
+	// only for testing purpose.
 	findZoneByFqdn func(fqdn string) (string, error)
 }
 
@@ -96,12 +99,19 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("gandi: no API Key given")
 	}
 
-	if config.BaseURL == "" {
-		config.BaseURL = defaultBaseURL
+	client := internal.NewClient(config.APIKey)
+
+	if config.BaseURL != "" {
+		client.BaseURL = config.BaseURL
+	}
+
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
 	}
 
 	return &DNSProvider{
 		config:              config,
+		client:              client,
 		inProgressFQDNs:     make(map[string]inProgressInfo),
 		inProgressAuthZones: make(map[string]struct{}),
 		findZoneByFqdn:      dns01.FindZoneByFqdn,
@@ -121,10 +131,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	// find authZone and Gandi zone_id for fqdn
 	authZone, err := d.findZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("gandi: findZoneByFqdn failure: %w", err)
+		return fmt.Errorf("gandi: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
-	zoneID, err := d.getZoneID(authZone)
+	ctx := context.Background()
+
+	zoneID, err := d.client.GetZoneID(ctx, authZone)
 	if err != nil {
 		return fmt.Errorf("gandi: %w", err)
 	}
@@ -148,27 +160,27 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	// containing the required TXT record
 	newZoneName := fmt.Sprintf("%s [ACME Challenge %s]", dns01.UnFqdn(authZone), time.Now().Format(time.RFC822Z))
 
-	newZoneID, err := d.cloneZone(zoneID, newZoneName)
+	newZoneID, err := d.client.CloneZone(ctx, zoneID, newZoneName)
 	if err != nil {
 		return err
 	}
 
-	newZoneVersion, err := d.newZoneVersion(newZoneID)
+	newZoneVersion, err := d.client.NewZoneVersion(ctx, newZoneID)
 	if err != nil {
 		return fmt.Errorf("gandi: %w", err)
 	}
 
-	err = d.addTXTRecord(newZoneID, newZoneVersion, subDomain, info.Value, d.config.TTL)
+	err = d.client.AddTXTRecord(ctx, newZoneID, newZoneVersion, subDomain, info.Value, d.config.TTL)
 	if err != nil {
 		return fmt.Errorf("gandi: %w", err)
 	}
 
-	err = d.setZoneVersion(newZoneID, newZoneVersion)
+	err = d.client.SetZoneVersion(ctx, newZoneID, newZoneVersion)
 	if err != nil {
 		return fmt.Errorf("gandi: %w", err)
 	}
 
-	err = d.setZone(authZone, newZoneID)
+	err = d.client.SetZone(ctx, authZone, newZoneID)
 	if err != nil {
 		return fmt.Errorf("gandi: %w", err)
 	}
@@ -205,13 +217,15 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	delete(d.inProgressFQDNs, info.EffectiveFQDN)
 	delete(d.inProgressAuthZones, authZone)
 
+	ctx := context.Background()
+
 	// perform API actions to restore old gandi zone for authZone
-	err := d.setZone(authZone, zoneID)
+	err := d.client.SetZone(ctx, authZone, zoneID)
 	if err != nil {
 		return fmt.Errorf("gandi: %w", err)
 	}
 
-	return d.deleteZone(newZoneID)
+	return d.client.DeleteZone(ctx, newZoneID)
 }
 
 // Timeout returns the values (40*time.Minute, 60*time.Second) which

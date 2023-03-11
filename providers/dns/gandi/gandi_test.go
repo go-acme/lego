@@ -132,7 +132,7 @@ func TestDNSProvider(t *testing.T) {
 
 		req = regexpDate.ReplaceAllLiteral(req, []byte(`[ACME Challenge 01 Jan 16 00:00 +0000]`))
 		resp, ok := serverResponses[string(req)]
-		require.True(t, ok, "Server response for request not found")
+		require.Truef(t, ok, "Server response for request not found: %s", string(req))
 
 		_, errS = io.Copy(w, strings.NewReader(resp))
 		require.NoError(t, errS)

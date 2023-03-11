@@ -1,6 +1,7 @@
 package rimuhosting
 
 import (
+	"context"
 	"encoding/xml"
 	"fmt"
 	"io"
@@ -14,10 +15,22 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestClient_FindTXTRecords(t *testing.T) {
+func setupTest(t *testing.T) (*Client, *http.ServeMux) {
+	t.Helper()
+
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
 	t.Cleanup(server.Close)
+
+	client := NewClient("apikeyvaluehere")
+	client.BaseURL = server.URL
+	client.HTTPClient = server.Client()
+
+	return client, mux
+}
+
+func TestClient_FindTXTRecords(t *testing.T) {
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
 		query := req.URL.Query()
@@ -38,9 +51,6 @@ func TestClient_FindTXTRecords(t *testing.T) {
 			return
 		}
 	})
-
-	client := NewClient("apikeyvaluehere")
-	client.BaseURL = server.URL
 
 	testCases := []struct {
 		desc     string
@@ -89,7 +99,7 @@ func TestClient_FindTXTRecords(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			records, err := client.FindTXTRecords(test.domain)
+			records, err := client.FindTXTRecords(context.Background(), test.domain)
 			require.NoError(t, err)
 
 			assert.Equal(t, test.expected, records)
@@ -113,7 +123,7 @@ func TestClient_DoActions(t *testing.T) {
 		{
 			desc: "SET error",
 			actions: []ActionParameter{
-				AddRecord("example.com", "txttxtx", 0),
+				NewAddRecordAction("example.com", "txttxtx", 0),
 			},
 			fixture: "./fixtures/add_record_error.xml",
 			expected: expected{
@@ -124,7 +134,7 @@ func TestClient_DoActions(t *testing.T) {
 		{
 			desc: "SET simple",
 			actions: []ActionParameter{
-				AddRecord("example.org", "txttxtx", 0),
+				NewAddRecordAction("example.org", "txttxtx", 0),
 			},
 			fixture: "./fixtures/add_record.xml",
 			expected: expected{
@@ -153,8 +163,8 @@ func TestClient_DoActions(t *testing.T) {
 		{
 			desc: "SET multiple values",
 			actions: []ActionParameter{
-				AddRecord("example.org", "txttxtx", 0),
-				AddRecord("example.org", "sample", 0),
+				NewAddRecordAction("example.org", "txttxtx", 0),
+				NewAddRecordAction("example.org", "sample", 0),
 			},
 			fixture: "./fixtures/add_record_same_domain.xml",
 			expected: expected{
@@ -192,7 +202,7 @@ func TestClient_DoActions(t *testing.T) {
 		{
 			desc: "DELETE error",
 			actions: []ActionParameter{
-				DeleteRecord("example.com", "txttxtx"),
+				NewDeleteRecordAction("example.com", "txttxtx"),
 			},
 			fixture: "./fixtures/delete_record_error.xml",
 			expected: expected{
@@ -203,7 +213,7 @@ func TestClient_DoActions(t *testing.T) {
 		{
 			desc: "DELETE nothing",
 			actions: []ActionParameter{
-				DeleteRecord("example.org", "nothing"),
+				NewDeleteRecordAction("example.org", "nothing"),
 			},
 			fixture: "./fixtures/delete_record_nothing.xml",
 			expected: expected{
@@ -226,7 +236,7 @@ func TestClient_DoActions(t *testing.T) {
 		{
 			desc: "DELETE simple",
 			actions: []ActionParameter{
-				DeleteRecord("example.org", "txttxtx"),
+				NewDeleteRecordAction("example.org", "txttxtx"),
 			},
 			fixture: "./fixtures/delete_record.xml",
 			expected: expected{
@@ -256,9 +266,7 @@ func TestClient_DoActions(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			mux := http.NewServeMux()
-			server := httptest.NewServer(mux)
-			t.Cleanup(server.Close)
+			client, mux := setupTest(t)
 
 			mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
 				query, err := url.QueryUnescape(req.URL.RawQuery)
@@ -283,10 +291,7 @@ func TestClient_DoActions(t *testing.T) {
 				}
 			})
 
-			client := NewClient("apikeyvaluehere")
-			client.BaseURL = server.URL
-
-			resp, err := client.DoActions(test.actions...)
+			resp, err := client.DoActions(context.Background(), test.actions...)
 			if test.expected.Error != "" {
 				require.EqualError(t, err, test.expected.Error)
 				return

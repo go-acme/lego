@@ -1,11 +1,13 @@
 package selectel
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"testing"
 
@@ -13,10 +15,22 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestClient_ListRecords(t *testing.T) {
+func setupTest(t *testing.T) (*Client, *http.ServeMux) {
+	t.Helper()
+
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
 	t.Cleanup(server.Close)
+
+	client := NewClient("token")
+	client.BaseURL, _ = url.Parse(server.URL)
+	client.HTTPClient = server.Client()
+
+	return client, mux
+}
+
+func TestClient_ListRecords(t *testing.T) {
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/123/records/", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
@@ -33,10 +47,7 @@ func TestClient_ListRecords(t *testing.T) {
 		}
 	})
 
-	client := NewClient("token")
-	client.BaseURL = server.URL
-
-	records, err := client.ListRecords(123)
+	records, err := client.ListRecords(context.Background(), 123)
 	require.NoError(t, err)
 
 	expected := []Record{
@@ -49,9 +60,7 @@ func TestClient_ListRecords(t *testing.T) {
 }
 
 func TestClient_ListRecords_error(t *testing.T) {
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/123/records/", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
@@ -67,19 +76,14 @@ func TestClient_ListRecords_error(t *testing.T) {
 		}
 	})
 
-	client := NewClient("token")
-	client.BaseURL = server.URL
-
-	records, err := client.ListRecords(123)
+	records, err := client.ListRecords(context.Background(), 123)
 
 	assert.EqualError(t, err, "request failed with status code 401: API error: 400 - error description - field that the error occurred in")
 	assert.Nil(t, records)
 }
 
 func TestClient_GetDomainByName(t *testing.T) {
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/sub.sub.example.org", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
@@ -114,10 +118,7 @@ func TestClient_GetDomainByName(t *testing.T) {
 		}
 	})
 
-	client := NewClient("token")
-	client.BaseURL = server.URL
-
-	domain, err := client.GetDomainByName("sub.sub.example.org")
+	domain, err := client.GetDomainByName(context.Background(), "sub.sub.example.org")
 	require.NoError(t, err)
 
 	expected := &Domain{
@@ -129,9 +130,7 @@ func TestClient_GetDomainByName(t *testing.T) {
 }
 
 func TestClient_AddRecord(t *testing.T) {
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/123/records/", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodPost {
@@ -156,10 +155,7 @@ func TestClient_AddRecord(t *testing.T) {
 		}
 	})
 
-	client := NewClient("token")
-	client.BaseURL = server.URL
-
-	record, err := client.AddRecord(123, Record{
+	record, err := client.AddRecord(context.Background(), 123, Record{
 		Name:    "example.org",
 		Type:    "TXT",
 		TTL:     60,
@@ -182,9 +178,7 @@ func TestClient_AddRecord(t *testing.T) {
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodDelete {
@@ -193,10 +187,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 		}
 	})
 
-	client := NewClient("token")
-	client.BaseURL = server.URL
-
-	err := client.DeleteRecord(123, 456)
+	err := client.DeleteRecord(context.Background(), 123, 456)
 	require.NoError(t, err)
 }
 

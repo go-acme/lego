@@ -2,11 +2,17 @@ package selectel
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
+	"strconv"
 	"strings"
+	"time"
+
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
 // Base URL for the Selectel/VScale DNS services.
@@ -15,39 +21,43 @@ const (
 	DefaultVScaleBaseURL   = "https://api.vscale.io/v1/domains"
 )
 
+const tokenHeader = "X-Token"
+
 // Client represents DNS client.
 type Client struct {
-	BaseURL    string
+	token string
+
+	BaseURL    *url.URL
 	HTTPClient *http.Client
-	token      string
 }
 
 // NewClient returns a client instance.
 func NewClient(token string) *Client {
+	baseURL, _ := url.Parse(DefaultVScaleBaseURL)
+
 	return &Client{
 		token:      token,
-		BaseURL:    DefaultVScaleBaseURL,
-		HTTPClient: &http.Client{},
+		BaseURL:    baseURL,
+		HTTPClient: &http.Client{Timeout: 5 * time.Second},
 	}
 }
 
 // GetDomainByName gets Domain object by its name. If `domainName` level > 2 and there is
 // no such domain on the account - it'll recursively search for the first
 // which is exists in Selectel Domain API.
-func (c *Client) GetDomainByName(domainName string) (*Domain, error) {
-	uri := fmt.Sprintf("/%s", domainName)
-	req, err := c.newRequest(http.MethodGet, uri, nil)
+func (c *Client) GetDomainByName(ctx context.Context, domainName string) (*Domain, error) {
+	req, err := newJSONRequest(ctx, http.MethodGet, c.BaseURL.JoinPath(domainName), nil)
 	if err != nil {
 		return nil, err
 	}
 
 	domain := &Domain{}
-	resp, err := c.do(req, domain)
+	statusCode, err := c.do(req, domain)
 	if err != nil {
-		if resp != nil && resp.StatusCode == http.StatusNotFound && strings.Count(domainName, ".") > 1 {
+		if statusCode == http.StatusNotFound && strings.Count(domainName, ".") > 1 {
 			// Look up for the next sub domain
 			subIndex := strings.Index(domainName, ".")
-			return c.GetDomainByName(domainName[subIndex+1:])
+			return c.GetDomainByName(ctx, domainName[subIndex+1:])
 		}
 
 		return nil, err
@@ -57,9 +67,8 @@ func (c *Client) GetDomainByName(domainName string) (*Domain, error) {
 }
 
 // AddRecord adds Record for given domain.
-func (c *Client) AddRecord(domainID int, body Record) (*Record, error) {
-	uri := fmt.Sprintf("/%d/records/", domainID)
-	req, err := c.newRequest(http.MethodPost, uri, body)
+func (c *Client) AddRecord(ctx context.Context, domainID int, body Record) (*Record, error) {
+	req, err := newJSONRequest(ctx, http.MethodPost, c.BaseURL.JoinPath(strconv.Itoa(domainID), "records", "/"), body)
 	if err != nil {
 		return nil, err
 	}
@@ -74,9 +83,8 @@ func (c *Client) AddRecord(domainID int, body Record) (*Record, error) {
 }
 
 // ListRecords returns list records for specific domain.
-func (c *Client) ListRecords(domainID int) ([]Record, error) {
-	uri := fmt.Sprintf("/%d/records/", domainID)
-	req, err := c.newRequest(http.MethodGet, uri, nil)
+func (c *Client) ListRecords(ctx context.Context, domainID int) ([]Record, error) {
+	req, err := newJSONRequest(ctx, http.MethodGet, c.BaseURL.JoinPath(strconv.Itoa(domainID), "records", "/"), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -86,13 +94,15 @@ func (c *Client) ListRecords(domainID int) ([]Record, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return records, nil
 }
 
 // DeleteRecord deletes specific record.
-func (c *Client) DeleteRecord(domainID, recordID int) error {
-	uri := fmt.Sprintf("/%d/records/%d", domainID, recordID)
-	req, err := c.newRequest(http.MethodDelete, uri, nil)
+func (c *Client) DeleteRecord(ctx context.Context, domainID, recordID int) error {
+	endpoint := c.BaseURL.JoinPath(strconv.Itoa(domainID), "records", strconv.Itoa(recordID))
+
+	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
 	}
@@ -101,83 +111,69 @@ func (c *Client) DeleteRecord(domainID, recordID int) error {
 	return err
 }
 
-func (c *Client) newRequest(method, uri string, body interface{}) (*http.Request, error) {
+func (c *Client) do(req *http.Request, result any) (int, error) {
+	req.Header.Set(tokenHeader, c.token)
+
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return 0, errutils.NewHTTPDoError(req, err)
+	}
+
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode/100 != 2 {
+		return resp.StatusCode, parseError(req, resp)
+	}
+
+	if result == nil {
+		return resp.StatusCode, nil
+	}
+
+	raw, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return resp.StatusCode, errutils.NewReadResponseError(req, resp.StatusCode, err)
+	}
+
+	err = json.Unmarshal(raw, result)
+	if err != nil {
+		return resp.StatusCode, errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
+	}
+
+	return resp.StatusCode, nil
+}
+
+func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
 	buf := new(bytes.Buffer)
 
-	if body != nil {
-		err := json.NewEncoder(buf).Encode(body)
+	if payload != nil {
+		err := json.NewEncoder(buf).Encode(payload)
 		if err != nil {
-			return nil, fmt.Errorf("failed to encode request body with error: %w", err)
+			return nil, fmt.Errorf("failed to create request JSON body: %w", err)
 		}
 	}
 
-	req, err := http.NewRequest(method, c.BaseURL+uri, buf)
+	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), buf)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create new http request with error: %w", err)
+		return nil, fmt.Errorf("unable to create request: %w", err)
 	}
 
-	req.Header.Set("X-Token", c.token)
-	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
+
+	if payload != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
 
 	return req, nil
 }
 
-func (c *Client) do(req *http.Request, to interface{}) (*http.Response, error) {
-	resp, err := c.HTTPClient.Do(req)
+func parseError(req *http.Request, resp *http.Response) error {
+	raw, _ := io.ReadAll(resp.Body)
+
+	errAPI := &APIError{}
+	err := json.Unmarshal(raw, errAPI)
 	if err != nil {
-		return nil, fmt.Errorf("request failed with error: %w", err)
+		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	err = checkResponse(resp)
-	if err != nil {
-		return resp, err
-	}
-
-	if to != nil {
-		if err = unmarshalBody(resp, to); err != nil {
-			return resp, err
-		}
-	}
-
-	return resp, nil
-}
-
-func checkResponse(resp *http.Response) error {
-	if resp.StatusCode >= http.StatusBadRequest {
-		if resp.Body == nil {
-			return fmt.Errorf("request failed with status code %d and empty body", resp.StatusCode)
-		}
-
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return err
-		}
-		defer resp.Body.Close()
-
-		apiError := APIError{}
-		err = json.Unmarshal(body, &apiError)
-		if err != nil {
-			return fmt.Errorf("request failed with status code %d, response body: %s", resp.StatusCode, string(body))
-		}
-
-		return fmt.Errorf("request failed with status code %d: %w", resp.StatusCode, apiError)
-	}
-
-	return nil
-}
-
-func unmarshalBody(resp *http.Response, to interface{}) error {
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	err = json.Unmarshal(body, to)
-	if err != nil {
-		return fmt.Errorf("unmarshaling error: %w: %s", err, string(body))
-	}
-
-	return nil
+	return fmt.Errorf("request failed with status code %d: %w", resp.StatusCode, errAPI)
 }

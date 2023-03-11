@@ -231,7 +231,7 @@ func splitDomain(domain string, zones []string) (string, string, error) {
 		zone = strings.Join(parts[i:], ".")
 		if zoneContains(zone, zones) {
 			baseOwner := strings.Join(parts[0:i], ".")
-			if len(baseOwner) > 0 {
+			if baseOwner != "" {
 				baseOwner = "." + baseOwner
 			}
 			owner = "_acme-challenge" + baseOwner

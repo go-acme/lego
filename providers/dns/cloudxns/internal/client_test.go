@@ -1,19 +1,35 @@
 package internal
 
 import (
+	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func handlerMock(method string, response *apiResponse, data interface{}) http.Handler {
-	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+func setupTest(t *testing.T, handler http.HandlerFunc) *Client {
+	t.Helper()
+
+	server := httptest.NewServer(handler)
+	t.Cleanup(server.Close)
+
+	client, _ := NewClient("myKey", "mySecret")
+	client.baseURL, _ = url.Parse(server.URL + "/")
+	client.HTTPClient = server.Client()
+
+	return client
+}
+
+func handlerMock(method string, response *apiResponse, data interface{}) http.HandlerFunc {
+	return func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != method {
 			content, err := json.Marshal(apiResponse{
 				Code:    999, // random code only for the test
@@ -47,10 +63,10 @@ func handlerMock(method string, response *apiResponse, data interface{}) http.Ha
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
 			return
 		}
-	})
+	}
 }
 
-func TestClientGetDomainInformation(t *testing.T) {
+func TestClient_GetDomainInformation(t *testing.T) {
 	type result struct {
 		domain *Data
 		error  bool
@@ -106,13 +122,9 @@ func TestClientGetDomainInformation(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			server := httptest.NewServer(handlerMock(http.MethodGet, test.response, test.data))
-			t.Cleanup(server.Close)
+			client := setupTest(t, handlerMock(http.MethodGet, test.response, test.data))
 
-			client, _ := NewClient("myKey", "mySecret")
-			client.BaseURL = server.URL + "/"
-
-			domain, err := client.GetDomainInformation(test.fqdn)
+			domain, err := client.GetDomainInformation(context.Background(), test.fqdn)
 
 			if test.expected.error {
 				require.Error(t, err)
@@ -124,7 +136,7 @@ func TestClientGetDomainInformation(t *testing.T) {
 	}
 }
 
-func TestClientFindTxtRecord(t *testing.T) {
+func TestClient_FindTxtRecord(t *testing.T) {
 	type result struct {
 		txtRecord *TXTRecord
 		error     bool
@@ -210,13 +222,9 @@ func TestClientFindTxtRecord(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			server := httptest.NewServer(handlerMock(http.MethodGet, test.response, test.txtRecords))
-			t.Cleanup(server.Close)
+			client := setupTest(t, handlerMock(http.MethodGet, test.response, test.txtRecords))
 
-			client, _ := NewClient("myKey", "mySecret")
-			client.BaseURL = server.URL + "/"
-
-			txtRecord, err := client.FindTxtRecord(test.zoneID, test.fqdn)
+			txtRecord, err := client.FindTxtRecord(context.Background(), test.zoneID, test.fqdn)
 
 			if test.expected.error {
 				require.Error(t, err)
@@ -228,7 +236,7 @@ func TestClientFindTxtRecord(t *testing.T) {
 	}
 }
 
-func TestClientAddTxtRecord(t *testing.T) {
+func TestClient_AddTxtRecord(t *testing.T) {
 	testCases := []struct {
 		desc     string
 		domain   *Data
@@ -267,21 +275,17 @@ func TestClientAddTxtRecord(t *testing.T) {
 				Code: 1,
 			}
 
-			server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+			client := setupTest(t, func(rw http.ResponseWriter, req *http.Request) {
 				assert.NotNil(t, req.Body)
 				content, err := io.ReadAll(req.Body)
 				require.NoError(t, err)
 
-				assert.Equal(t, test.expected, string(content))
+				assert.Equal(t, test.expected, string(bytes.TrimSpace(content)))
 
 				handlerMock(http.MethodPost, response, nil).ServeHTTP(rw, req)
-			}))
-			t.Cleanup(server.Close)
+			})
 
-			client, _ := NewClient("myKey", "mySecret")
-			client.BaseURL = server.URL + "/"
-
-			err := client.AddTxtRecord(test.domain, test.fqdn, test.value, test.ttl)
+			err := client.AddTxtRecord(context.Background(), test.domain, test.fqdn, test.value, test.ttl)
 			require.NoError(t, err)
 		})
 	}

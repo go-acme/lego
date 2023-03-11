@@ -34,7 +34,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvAPIKey:    "",
 				EnvSecretKey: "",
 			},
-			expected: "CloudXNS: some credentials information are missing: CLOUDXNS_API_KEY,CLOUDXNS_SECRET_KEY",
+			expected: "cloudxns: some credentials information are missing: CLOUDXNS_API_KEY,CLOUDXNS_SECRET_KEY",
 		},
 		{
 			desc: "missing API key",
@@ -42,7 +42,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvAPIKey:    "",
 				EnvSecretKey: "456",
 			},
-			expected: "CloudXNS: some credentials information are missing: CLOUDXNS_API_KEY",
+			expected: "cloudxns: some credentials information are missing: CLOUDXNS_API_KEY",
 		},
 		{
 			desc: "missing secret key",
@@ -50,7 +50,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvAPIKey:    "123",
 				EnvSecretKey: "",
 			},
-			expected: "CloudXNS: some credentials information are missing: CLOUDXNS_SECRET_KEY",
+			expected: "cloudxns: some credentials information are missing: CLOUDXNS_SECRET_KEY",
 		},
 	}
 
@@ -89,17 +89,17 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		},
 		{
 			desc:     "missing credentials",
-			expected: "CloudXNS: credentials missing: apiKey",
+			expected: "cloudxns: credentials missing: apiKey",
 		},
 		{
 			desc:      "missing api key",
 			secretKey: "456",
-			expected:  "CloudXNS: credentials missing: apiKey",
+			expected:  "cloudxns: credentials missing: apiKey",
 		},
 		{
 			desc:     "missing secret key",
 			apiKey:   "123",
-			expected: "CloudXNS: credentials missing: secretKey",
+			expected: "cloudxns: credentials missing: secretKey",
 		},
 	}
 

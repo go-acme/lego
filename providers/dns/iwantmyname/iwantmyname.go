@@ -108,7 +108,7 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 		TTL:      d.config.TTL,
 	}
 
-	err := d.client.Do(context.Background(), record)
+	err := d.client.SendRequest(context.Background(), record)
 	if err != nil {
 		return fmt.Errorf("iwantmyname: %w", err)
 	}
@@ -127,7 +127,7 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 		TTL:      d.config.TTL,
 	}
 
-	err := d.client.Do(context.Background(), record)
+	err := d.client.SendRequest(context.Background(), record)
 	if err != nil {
 		return fmt.Errorf("iwantmyname: %w", err)
 	}

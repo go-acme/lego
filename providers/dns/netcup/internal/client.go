@@ -2,123 +2,28 @@ package internal
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"time"
+
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
 // defaultBaseURL for reaching the jSON-based API-Endpoint of netcup.
 const defaultBaseURL = "https://ccp.netcup.net/run/webservice/servers/endpoint.php?JSON"
-
-// success response status.
-const success = "success"
-
-// Request wrapper as specified in netcup wiki
-// needed for every request to netcup API around *Msg.
-// https://www.netcup-wiki.de/wiki/CCP_API#Anmerkungen_zu_JSON-Requests
-type Request struct {
-	Action string      `json:"action"`
-	Param  interface{} `json:"param"`
-}
-
-// LoginRequest as specified in netcup WSDL.
-// https://ccp.netcup.net/run/webservice/servers/endpoint.php#login
-type LoginRequest struct {
-	CustomerNumber  string `json:"customernumber"`
-	APIKey          string `json:"apikey"`
-	APIPassword     string `json:"apipassword"`
-	ClientRequestID string `json:"clientrequestid,omitempty"`
-}
-
-// LogoutRequest as specified in netcup WSDL.
-// https://ccp.netcup.net/run/webservice/servers/endpoint.php#logout
-type LogoutRequest struct {
-	CustomerNumber  string `json:"customernumber"`
-	APIKey          string `json:"apikey"`
-	APISessionID    string `json:"apisessionid"`
-	ClientRequestID string `json:"clientrequestid,omitempty"`
-}
-
-// UpdateDNSRecordsRequest as specified in netcup WSDL.
-// https://ccp.netcup.net/run/webservice/servers/endpoint.php#updateDnsRecords
-type UpdateDNSRecordsRequest struct {
-	DomainName      string       `json:"domainname"`
-	CustomerNumber  string       `json:"customernumber"`
-	APIKey          string       `json:"apikey"`
-	APISessionID    string       `json:"apisessionid"`
-	ClientRequestID string       `json:"clientrequestid,omitempty"`
-	DNSRecordSet    DNSRecordSet `json:"dnsrecordset"`
-}
-
-// DNSRecordSet as specified in netcup WSDL.
-// needed in UpdateDNSRecordsRequest.
-// https://ccp.netcup.net/run/webservice/servers/endpoint.php#Dnsrecordset
-type DNSRecordSet struct {
-	DNSRecords []DNSRecord `json:"dnsrecords"`
-}
-
-// InfoDNSRecordsRequest as specified in netcup WSDL.
-// https://ccp.netcup.net/run/webservice/servers/endpoint.php#infoDnsRecords
-type InfoDNSRecordsRequest struct {
-	DomainName      string `json:"domainname"`
-	CustomerNumber  string `json:"customernumber"`
-	APIKey          string `json:"apikey"`
-	APISessionID    string `json:"apisessionid"`
-	ClientRequestID string `json:"clientrequestid,omitempty"`
-}
-
-// DNSRecord as specified in netcup WSDL.
-// https://ccp.netcup.net/run/webservice/servers/endpoint.php#Dnsrecord
-type DNSRecord struct {
-	ID           int    `json:"id,string,omitempty"`
-	Hostname     string `json:"hostname"`
-	RecordType   string `json:"type"`
-	Priority     string `json:"priority,omitempty"`
-	Destination  string `json:"destination"`
-	DeleteRecord bool   `json:"deleterecord,omitempty"`
-	State        string `json:"state,omitempty"`
-	TTL          int    `json:"ttl,omitempty"`
-}
-
-// ResponseMsg as specified in netcup WSDL.
-// https://ccp.netcup.net/run/webservice/servers/endpoint.php#Responsemessage
-type ResponseMsg struct {
-	ServerRequestID string          `json:"serverrequestid"`
-	ClientRequestID string          `json:"clientrequestid,omitempty"`
-	Action          string          `json:"action"`
-	Status          string          `json:"status"`
-	StatusCode      int             `json:"statuscode"`
-	ShortMessage    string          `json:"shortmessage"`
-	LongMessage     string          `json:"longmessage"`
-	ResponseData    json.RawMessage `json:"responsedata,omitempty"`
-}
-
-func (r *ResponseMsg) Error() string {
-	return fmt.Sprintf("an error occurred during the action %s: [Status=%s, StatusCode=%d, ShortMessage=%s, LongMessage=%s]",
-		r.Action, r.Status, r.StatusCode, r.ShortMessage, r.LongMessage)
-}
-
-// LoginResponse response to login action.
-type LoginResponse struct {
-	APISessionID string `json:"apisessionid"`
-}
-
-// InfoDNSRecordsResponse response to infoDnsRecords action.
-type InfoDNSRecordsResponse struct {
-	APISessionID string      `json:"apisessionid"`
-	DNSRecords   []DNSRecord `json:"dnsrecords,omitempty"`
-}
 
 // Client netcup DNS client.
 type Client struct {
 	customerNumber string
 	apiKey         string
 	apiPassword    string
-	HTTPClient     *http.Client
-	BaseURL        string
+
+	baseURL    string
+	HTTPClient *http.Client
 }
 
 // NewClient creates a netcup DNS client.
@@ -131,73 +36,27 @@ func NewClient(customerNumber, apiKey, apiPassword string) (*Client, error) {
 		customerNumber: customerNumber,
 		apiKey:         apiKey,
 		apiPassword:    apiPassword,
-		BaseURL:        defaultBaseURL,
-		HTTPClient: &http.Client{
-			Timeout: 10 * time.Second,
-		},
+		baseURL:        defaultBaseURL,
+		HTTPClient:     &http.Client{Timeout: 10 * time.Second},
 	}, nil
-}
-
-// Login performs the login as specified by the netcup WSDL
-// returns sessionID needed to perform remaining actions.
-// https://ccp.netcup.net/run/webservice/servers/endpoint.php
-func (c *Client) Login() (string, error) {
-	payload := &Request{
-		Action: "login",
-		Param: &LoginRequest{
-			CustomerNumber:  c.customerNumber,
-			APIKey:          c.apiKey,
-			APIPassword:     c.apiPassword,
-			ClientRequestID: "",
-		},
-	}
-
-	var responseData LoginResponse
-	err := c.doRequest(payload, &responseData)
-	if err != nil {
-		return "", fmt.Errorf("loging error: %w", err)
-	}
-
-	return responseData.APISessionID, nil
-}
-
-// Logout performs the logout with the supplied sessionID as specified by the netcup WSDL.
-// https://ccp.netcup.net/run/webservice/servers/endpoint.php
-func (c *Client) Logout(sessionID string) error {
-	payload := &Request{
-		Action: "logout",
-		Param: &LogoutRequest{
-			CustomerNumber:  c.customerNumber,
-			APIKey:          c.apiKey,
-			APISessionID:    sessionID,
-			ClientRequestID: "",
-		},
-	}
-
-	err := c.doRequest(payload, nil)
-	if err != nil {
-		return fmt.Errorf("logout error: %w", err)
-	}
-
-	return nil
 }
 
 // UpdateDNSRecord performs an update of the DNSRecords as specified by the netcup WSDL.
 // https://ccp.netcup.net/run/webservice/servers/endpoint.php
-func (c *Client) UpdateDNSRecord(sessionID, domainName string, records []DNSRecord) error {
+func (c *Client) UpdateDNSRecord(ctx context.Context, domainName string, records []DNSRecord) error {
 	payload := &Request{
 		Action: "updateDnsRecords",
 		Param: UpdateDNSRecordsRequest{
 			DomainName:      domainName,
 			CustomerNumber:  c.customerNumber,
 			APIKey:          c.apiKey,
-			APISessionID:    sessionID,
+			APISessionID:    getSessionID(ctx),
 			ClientRequestID: "",
 			DNSRecordSet:    DNSRecordSet{DNSRecords: records},
 		},
 	}
 
-	err := c.doRequest(payload, nil)
+	err := c.doRequest(ctx, payload, nil)
 	if err != nil {
 		return fmt.Errorf("error when sending the request: %w", err)
 	}
@@ -208,20 +67,20 @@ func (c *Client) UpdateDNSRecord(sessionID, domainName string, records []DNSReco
 // GetDNSRecords retrieves all dns records of an DNS-Zone as specified by the netcup WSDL
 // returns an array of DNSRecords.
 // https://ccp.netcup.net/run/webservice/servers/endpoint.php
-func (c *Client) GetDNSRecords(hostname, apiSessionID string) ([]DNSRecord, error) {
+func (c *Client) GetDNSRecords(ctx context.Context, hostname string) ([]DNSRecord, error) {
 	payload := &Request{
 		Action: "infoDnsRecords",
 		Param: InfoDNSRecordsRequest{
 			DomainName:      hostname,
 			CustomerNumber:  c.customerNumber,
 			APIKey:          c.apiKey,
-			APISessionID:    apiSessionID,
+			APISessionID:    getSessionID(ctx),
 			ClientRequestID: "",
 		},
 	}
 
 	var responseData InfoDNSRecordsResponse
-	err := c.doRequest(payload, &responseData)
+	err := c.doRequest(ctx, payload, &responseData)
 	if err != nil {
 		return nil, fmt.Errorf("error when sending the request: %w", err)
 	}
@@ -231,30 +90,26 @@ func (c *Client) GetDNSRecords(hostname, apiSessionID string) ([]DNSRecord, erro
 
 // doRequest marshals given body to JSON, send the request to netcup API
 // and returns body of response.
-func (c *Client) doRequest(payload, responseData interface{}) error {
-	body, err := json.Marshal(payload)
-	if err != nil {
-		return err
-	}
-
-	req, err := http.NewRequest(http.MethodPost, c.BaseURL, bytes.NewReader(body))
+func (c *Client) doRequest(ctx context.Context, payload, result any) error {
+	req, err := newJSONRequest(ctx, http.MethodPost, c.baseURL, payload)
 	if err != nil {
 		return err
 	}
 
 	req.Close = true
-	req.Header.Set("content-type", "application/json")
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
-		return err
+		return errutils.NewHTTPDoError(req, err)
 	}
 
-	if err = checkResponse(resp); err != nil {
-		return err
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode >= http.StatusMultipleChoices {
+		return errutils.NewUnexpectedResponseStatusCodeError(req, resp)
 	}
 
-	respMsg, err := decodeResponseMsg(resp)
+	respMsg, err := unmarshalResponseMsg(req, resp)
 	if err != nil {
 		return err
 	}
@@ -263,56 +118,16 @@ func (c *Client) doRequest(payload, responseData interface{}) error {
 		return respMsg
 	}
 
-	if responseData != nil {
-		err = json.Unmarshal(respMsg.ResponseData, responseData)
-		if err != nil {
-			//nolint:errorlint // in this context respMsg is not an error.
-			return fmt.Errorf("%v: unmarshaling %T error: %w: %s",
-				respMsg, responseData, err, string(respMsg.ResponseData))
-		}
+	if result == nil {
+		return nil
+	}
+
+	err = json.Unmarshal(respMsg.ResponseData, result)
+	if err != nil {
+		return errutils.NewUnmarshalError(req, resp.StatusCode, respMsg.ResponseData, err)
 	}
 
 	return nil
-}
-
-func checkResponse(resp *http.Response) error {
-	if resp.StatusCode > 299 {
-		if resp.Body == nil {
-			return fmt.Errorf("response body is nil, status code=%d", resp.StatusCode)
-		}
-
-		defer resp.Body.Close()
-
-		raw, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return fmt.Errorf("unable to read body: status code=%d, error=%w", resp.StatusCode, err)
-		}
-
-		return fmt.Errorf("status code=%d: %s", resp.StatusCode, string(raw))
-	}
-
-	return nil
-}
-
-func decodeResponseMsg(resp *http.Response) (*ResponseMsg, error) {
-	if resp.Body == nil {
-		return nil, fmt.Errorf("response body is nil, status code=%d", resp.StatusCode)
-	}
-
-	defer resp.Body.Close()
-
-	raw, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("unable to read body: status code=%d, error=%w", resp.StatusCode, err)
-	}
-
-	var respMsg ResponseMsg
-	err = json.Unmarshal(raw, &respMsg)
-	if err != nil {
-		return nil, fmt.Errorf("unmarshaling %T error [status code=%d]: %w: %s", respMsg, resp.StatusCode, err, string(raw))
-	}
-
-	return &respMsg, nil
 }
 
 // GetDNSRecordIdx searches a given array of DNSRecords for a given DNSRecord
@@ -325,4 +140,43 @@ func GetDNSRecordIdx(records []DNSRecord, record DNSRecord) (int, error) {
 		}
 	}
 	return -1, errors.New("no DNS Record found")
+}
+
+func newJSONRequest(ctx context.Context, method string, endpoint string, payload any) (*http.Request, error) {
+	buf := new(bytes.Buffer)
+
+	if payload != nil {
+		err := json.NewEncoder(buf).Encode(payload)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create request JSON body: %w", err)
+		}
+	}
+
+	req, err := http.NewRequestWithContext(ctx, method, endpoint, buf)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create request: %w", err)
+	}
+
+	req.Header.Set("Accept", "application/json")
+
+	if payload != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
+	return req, nil
+}
+
+func unmarshalResponseMsg(req *http.Request, resp *http.Response) (*ResponseMsg, error) {
+	raw, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errutils.NewReadResponseError(req, resp.StatusCode, err)
+	}
+
+	var respMsg ResponseMsg
+	err = json.Unmarshal(raw, &respMsg)
+	if err != nil {
+		return nil, errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
+	}
+
+	return &respMsg, nil
 }

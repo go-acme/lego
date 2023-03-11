@@ -14,6 +14,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const authorizationHeader = "Authorization"
+
 const envDomain = envNamespace + "DOMAIN"
 
 var envTest = tester.NewEnvTest(
@@ -149,7 +151,7 @@ func TestDNSProvider_Present(t *testing.T) {
 		assert.Equal(t, http.MethodPut, r.Method, "method")
 		assert.Equal(t, "format=json", r.URL.RawQuery, "query")
 		assert.Equal(t, "application/json", r.Header.Get("Content-Type"), "Content-Type")
-		assert.Equal(t, "Basic VE9LRU46U0VDUkVU", r.Header.Get("Authorization"), "Authorization")
+		assert.Equal(t, "Basic VE9LRU46U0VDUkVU", r.Header.Get(authorizationHeader), authorizationHeader)
 
 		reqBody, err := io.ReadAll(r.Body)
 		if err != nil {
@@ -201,7 +203,7 @@ func TestDNSProvider_Cleanup_WhenRecordIdSet_DeletesTxtRecord(t *testing.T) {
 	mux.HandleFunc("/zones/records/example.com/123456", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodDelete, r.Method, "method")
 		assert.Equal(t, "format=json", r.URL.RawQuery, "query")
-		assert.Equal(t, "Basic VE9LRU46U0VDUkVU", r.Header.Get("Authorization"), "Authorization")
+		assert.Equal(t, "Basic VE9LRU46U0VDUkVU", r.Header.Get(authorizationHeader), authorizationHeader)
 
 		w.WriteHeader(http.StatusOK)
 		_, err := fmt.Fprintf(w, `{
@@ -235,7 +237,7 @@ func TestDNSProvider_Cleanup_WhenHttpError_ReturnsError(t *testing.T) {
 	mux.HandleFunc("/zones/records/example.com/123456", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodDelete, r.Method, "method")
 		assert.Equal(t, "format=json", r.URL.RawQuery, "query")
-		assert.Equal(t, "Basic VE9LRU46U0VDUkVU", r.Header.Get("Authorization"), "Authorization")
+		assert.Equal(t, "Basic VE9LRU46U0VDUkVU", r.Header.Get(authorizationHeader), authorizationHeader)
 
 		w.WriteHeader(http.StatusNotAcceptable)
 		_, err := fmt.Fprint(w, errorMessage)
@@ -247,7 +249,7 @@ func TestDNSProvider_Cleanup_WhenHttpError_ReturnsError(t *testing.T) {
 
 	provider.recordIDs["_acme-challenge.example.com.|pW9ZKG0xz_PCriK-nCMOjADy9eJcgGWIzkkj2fN4uZM"] = "123456"
 	err := provider.CleanUp("example.com", "token", "keyAuth")
-	expectedError := fmt.Sprintf("easydns: 406: request failed: %v", errorMessage)
+	expectedError := fmt.Sprintf("easydns: unexpected status code: [status code: 406] body: %v", errorMessage)
 	require.EqualError(t, err, expectedError)
 }
 

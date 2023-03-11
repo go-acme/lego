@@ -2,6 +2,7 @@
 package easydns
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/easydns/internal"
 	"github.com/miekg/dns"
 )
 
@@ -58,7 +60,9 @@ func NewDefaultConfig() *Config {
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	config      *Config
+	config *Config
+	client *internal.Client
+
 	recordIDs   map[string]string
 	recordIDsMu sync.Mutex
 }
@@ -67,7 +71,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
 
-	endpoint, err := url.Parse(env.GetOrDefaultString(EnvEndpoint, defaultEndpoint))
+	endpoint, err := url.Parse(env.GetOrDefaultString(EnvEndpoint, internal.DefaultBaseURL))
 	if err != nil {
 		return nil, fmt.Errorf("easydns: %w", err)
 	}
@@ -98,7 +102,17 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("easydns: the API key is missing")
 	}
 
-	return &DNSProvider{config: config, recordIDs: map[string]string{}}, nil
+	client := internal.NewClient(config.Token, config.Key)
+
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
+	}
+
+	if config.Endpoint != nil {
+		client.BaseURL = config.Endpoint
+	}
+
+	return &DNSProvider{config: config, client: client, recordIDs: map[string]string{}}, nil
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
@@ -106,16 +120,17 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	apiHost, apiDomain := splitFqdn(info.EffectiveFQDN)
-	record := &zoneRecord{
-		Domain: apiDomain,
-		Host:   apiHost,
-		Type:   "TXT",
-		Rdata:  info.Value,
-		TTL:    strconv.Itoa(d.config.TTL),
-		Prio:   "0",
+
+	record := internal.ZoneRecord{
+		Domain:   apiDomain,
+		Host:     apiHost,
+		Type:     "TXT",
+		Rdata:    info.Value,
+		TTL:      strconv.Itoa(d.config.TTL),
+		Priority: "0",
 	}
 
-	recordID, err := d.addRecord(apiDomain, record)
+	recordID, err := d.client.AddRecord(context.Background(), apiDomain, record)
 	if err != nil {
 		return fmt.Errorf("easydns: error adding zone record: %w", err)
 	}
@@ -134,13 +149,18 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	key := getMapKey(info.EffectiveFQDN, info.Value)
+
+	d.recordIDsMu.Lock()
 	recordID, exists := d.recordIDs[key]
+	d.recordIDsMu.Unlock()
+
 	if !exists {
 		return nil
 	}
 
 	_, apiDomain := splitFqdn(info.EffectiveFQDN)
-	err := d.deleteRecord(apiDomain, recordID)
+
+	err := d.client.DeleteRecord(context.Background(), apiDomain, recordID)
 
 	d.recordIDsMu.Lock()
 	defer delete(d.recordIDs, key)

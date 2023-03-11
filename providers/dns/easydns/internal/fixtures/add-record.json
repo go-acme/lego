@@ -1,0 +1,14 @@
+{
+  "msg": "message",
+  "tm": 1,
+  "data": {
+    "id": "xxx",
+    "domain": "example.com",
+    "host": "test631",
+    "ttl": "300",
+    "prio": "0",
+    "type": "TXT",
+    "rdata": "txt"
+  },
+  "status": 201
+}

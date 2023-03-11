@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"net/http"
 	"os"
 	"testing"
@@ -22,7 +23,7 @@ func TestRemoveRecord(t *testing.T) {
 	client := NewClient(officialTestUser, officialTestPassword)
 	client.HTTPClient = &http.Client{Timeout: 30 * time.Second}
 
-	err := client.RemoveTxtRecord("test.ru", "_acme-challenge", "txttxttxt")
+	err := client.RemoveTxtRecord(context.Background(), "test.ru", "_acme-challenge", "txttxttxt")
 	require.NoError(t, err)
 }
 
@@ -65,9 +66,9 @@ func TestRemoveRecord_errors(t *testing.T) {
 
 			client := NewClient(test.username, test.username)
 			client.HTTPClient = &http.Client{Timeout: 30 * time.Second}
-			client.BaseURL = test.baseURL
+			client.baseURL = test.baseURL
 
-			err := client.RemoveTxtRecord(test.domain, "_acme-challenge", "txttxttxt")
+			err := client.RemoveTxtRecord(context.Background(), test.domain, "_acme-challenge", "txttxttxt")
 			require.EqualError(t, err, test.expected)
 		})
 	}
@@ -80,7 +81,7 @@ func TestAddTXTRecord(t *testing.T) {
 	client := NewClient(officialTestUser, officialTestPassword)
 	client.HTTPClient = &http.Client{Timeout: 30 * time.Second}
 
-	err := client.AddTXTRecord("test.ru", "_acme-challenge", "txttxttxt")
+	err := client.AddTXTRecord(context.Background(), "test.ru", "_acme-challenge", "txttxttxt")
 	require.NoError(t, err)
 }
 
@@ -123,9 +124,9 @@ func TestAddTXTRecord_errors(t *testing.T) {
 
 			client := NewClient(test.username, test.username)
 			client.HTTPClient = &http.Client{Timeout: 30 * time.Second}
-			client.BaseURL = test.baseURL
+			client.baseURL = test.baseURL
 
-			err := client.AddTXTRecord(test.domain, "_acme-challenge", "txttxttxt")
+			err := client.AddTXTRecord(context.Background(), test.domain, "_acme-challenge", "txttxttxt")
 			require.EqualError(t, err, test.expected)
 		})
 	}

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ApiResponse xmlns="http://api.namecheap.com/xml.response" Status="OK">
+    <Errors />
+    <RequestedCommand>namecheap.domains.dns.getHosts</RequestedCommand>
+    <CommandResponse Type="namecheap.domains.dns.getHosts">
+        <DomainDNSGetHostsResult Domain="domain.com" IsUsingOurDNS="true">
+            <host HostId="12" Name="@" Type="A" Address="1.2.3.4" MXPref="10" TTL="1800" />
+            <host HostId="14" Name="www" Type="A" Address="122.23.3.7" MXPref="10" TTL="1800" />
+        </DomainDNSGetHostsResult>
+    </CommandResponse>
+    <Server>SERVER-NAME</Server>
+    <GMTTimeDifference>+5</GMTTimeDifference>
+    <ExecutionTime>32.76</ExecutionTime>
+</ApiResponse>

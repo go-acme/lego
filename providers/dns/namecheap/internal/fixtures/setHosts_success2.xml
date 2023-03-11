@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ApiResponse Status="OK" xmlns="http://api.namecheap.com/xml.response">
+    <Errors />
+    <Warnings />
+    <RequestedCommand>namecheap.domains.dns.setHosts</RequestedCommand>
+    <CommandResponse Type="namecheap.domains.dns.setHosts">
+        <DomainDNSSetHostsResult Domain="example.com" IsSuccess="true">
+            <Warnings />
+        </DomainDNSSetHostsResult>
+    </CommandResponse>
+    <Server>PHX01SBAPI01</Server>
+    <GMTTimeDifference>--5:00</GMTTimeDifference>
+    <ExecutionTime>2.347</ExecutionTime>
+</ApiResponse>

@@ -2,9 +2,9 @@
 package namecheap
 
 import (
+	"context"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -13,6 +13,7 @@ import (
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/namecheap/internal"
 	"golang.org/x/net/publicsuffix"
 )
 
@@ -28,12 +29,6 @@ import (
 //    its APIs. It also requires all API calls to include the whitelisted IP
 //    address as a form or query string value. This code uses a namecheap
 //    service to query the client's IP address.
-
-const (
-	defaultBaseURL = "https://api.namecheap.com/xml.response"
-	sandboxBaseURL = "https://api.sandbox.namecheap.com/xml.response"
-	getIPURL       = "https://dynamicdns.park-your-domain.com/getip"
-)
 
 // Environment variables names.
 const (
@@ -60,177 +55,6 @@ type challenge struct {
 	tld      string
 	sld      string
 	host     string
-}
-
-// Config is used to configure the creation of the DNSProvider.
-type Config struct {
-	Debug              bool
-	BaseURL            string
-	APIUser            string
-	APIKey             string
-	ClientIP           string
-	PropagationTimeout time.Duration
-	PollingInterval    time.Duration
-	TTL                int
-	HTTPClient         *http.Client
-}
-
-// NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
-	baseURL := defaultBaseURL
-	if env.GetOrDefaultBool(EnvSandbox, false) {
-		baseURL = sandboxBaseURL
-	}
-
-	return &Config{
-		BaseURL:            baseURL,
-		Debug:              env.GetOrDefaultBool(EnvDebug, false),
-		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 60*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 15*time.Second),
-		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 60*time.Second),
-		},
-	}
-}
-
-// DNSProvider implements the challenge.Provider interface.
-type DNSProvider struct {
-	config *Config
-}
-
-// NewDNSProvider returns a DNSProvider instance configured for namecheap.
-// Credentials must be passed in the environment variables:
-// NAMECHEAP_API_USER and NAMECHEAP_API_KEY.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvAPIUser, EnvAPIKey)
-	if err != nil {
-		return nil, fmt.Errorf("namecheap: %w", err)
-	}
-
-	config := NewDefaultConfig()
-	config.APIUser = values[EnvAPIUser]
-	config.APIKey = values[EnvAPIKey]
-
-	return NewDNSProviderConfig(config)
-}
-
-// NewDNSProviderConfig return a DNSProvider instance configured for Namecheap.
-func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
-	if config == nil {
-		return nil, errors.New("namecheap: the configuration of the DNS provider is nil")
-	}
-
-	if config.APIUser == "" || config.APIKey == "" {
-		return nil, errors.New("namecheap: credentials missing")
-	}
-
-	if config.ClientIP == "" {
-		clientIP, err := getClientIP(config.HTTPClient, config.Debug)
-		if err != nil {
-			return nil, fmt.Errorf("namecheap: %w", err)
-		}
-		config.ClientIP = clientIP
-	}
-
-	return &DNSProvider{config: config}, nil
-}
-
-// Timeout returns the timeout and interval to use when checking for DNS propagation.
-// Namecheap can sometimes take a long time to complete an update, so wait up to 60 minutes for the update to propagate.
-func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
-	return d.config.PropagationTimeout, d.config.PollingInterval
-}
-
-// Present installs a TXT record for the DNS challenge.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	// TODO(ldez) replace domain by FQDN to follow CNAME.
-	ch, err := newChallenge(domain, keyAuth)
-	if err != nil {
-		return fmt.Errorf("namecheap: %w", err)
-	}
-
-	records, err := d.getHosts(ch.sld, ch.tld)
-	if err != nil {
-		return fmt.Errorf("namecheap: %w", err)
-	}
-
-	record := Record{
-		Name:    ch.key,
-		Type:    "TXT",
-		Address: ch.keyValue,
-		MXPref:  "10",
-		TTL:     strconv.Itoa(d.config.TTL),
-	}
-
-	records = append(records, record)
-
-	if d.config.Debug {
-		for _, h := range records {
-			log.Printf("%-5.5s %-30.30s %-6s %-70.70s", h.Type, h.Name, h.TTL, h.Address)
-		}
-	}
-
-	err = d.setHosts(ch.sld, ch.tld, records)
-	if err != nil {
-		return fmt.Errorf("namecheap: %w", err)
-	}
-	return nil
-}
-
-// CleanUp removes a TXT record used for a previous DNS challenge.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	// TODO(ldez) replace domain by FQDN to follow CNAME.
-	ch, err := newChallenge(domain, keyAuth)
-	if err != nil {
-		return fmt.Errorf("namecheap: %w", err)
-	}
-
-	records, err := d.getHosts(ch.sld, ch.tld)
-	if err != nil {
-		return fmt.Errorf("namecheap: %w", err)
-	}
-
-	// Find the challenge TXT record and remove it if found.
-	var found bool
-	var newRecords []Record
-	for _, h := range records {
-		if h.Name == ch.key && h.Type == "TXT" {
-			found = true
-		} else {
-			newRecords = append(newRecords, h)
-		}
-	}
-
-	if !found {
-		return nil
-	}
-
-	err = d.setHosts(ch.sld, ch.tld, newRecords)
-	if err != nil {
-		return fmt.Errorf("namecheap: %w", err)
-	}
-	return nil
-}
-
-// getClientIP returns the client's public IP address.
-// It uses namecheap's IP discovery service to perform the lookup.
-func getClientIP(client *http.Client, debug bool) (addr string, err error) {
-	resp, err := client.Get(getIPURL)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	clientIP, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-
-	if debug {
-		log.Println("Client IP:", string(clientIP))
-	}
-	return string(clientIP), nil
 }
 
 // newChallenge builds a challenge record from a domain name and a challenge authentication key.
@@ -262,4 +86,167 @@ func newChallenge(domain, keyAuth string) (*challenge, error) {
 		sld:      sld,
 		host:     host,
 	}, nil
+}
+
+// Config is used to configure the creation of the DNSProvider.
+type Config struct {
+	Debug              bool
+	BaseURL            string
+	APIUser            string
+	APIKey             string
+	ClientIP           string
+	PropagationTimeout time.Duration
+	PollingInterval    time.Duration
+	TTL                int
+	HTTPClient         *http.Client
+}
+
+// NewDefaultConfig returns a default configuration for the DNSProvider.
+func NewDefaultConfig() *Config {
+	baseURL := internal.DefaultBaseURL
+	if env.GetOrDefaultBool(EnvSandbox, false) {
+		baseURL = internal.SandboxBaseURL
+	}
+
+	return &Config{
+		BaseURL:            baseURL,
+		Debug:              env.GetOrDefaultBool(EnvDebug, false),
+		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 60*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 15*time.Second),
+		HTTPClient: &http.Client{
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 60*time.Second),
+		},
+	}
+}
+
+// DNSProvider implements the challenge.Provider interface.
+type DNSProvider struct {
+	config *Config
+	client *internal.Client
+}
+
+// NewDNSProvider returns a DNSProvider instance configured for namecheap.
+// Credentials must be passed in the environment variables:
+// NAMECHEAP_API_USER and NAMECHEAP_API_KEY.
+func NewDNSProvider() (*DNSProvider, error) {
+	values, err := env.Get(EnvAPIUser, EnvAPIKey)
+	if err != nil {
+		return nil, fmt.Errorf("namecheap: %w", err)
+	}
+
+	config := NewDefaultConfig()
+	config.APIUser = values[EnvAPIUser]
+	config.APIKey = values[EnvAPIKey]
+
+	return NewDNSProviderConfig(config)
+}
+
+// NewDNSProviderConfig return a DNSProvider instance configured for Namecheap.
+func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
+	if config == nil {
+		return nil, errors.New("namecheap: the configuration of the DNS provider is nil")
+	}
+
+	if config.APIUser == "" || config.APIKey == "" {
+		return nil, errors.New("namecheap: credentials missing")
+	}
+
+	if config.ClientIP == "" {
+		clientIP, err := internal.GetClientIP(context.Background(), config.HTTPClient, config.Debug)
+		if err != nil {
+			return nil, fmt.Errorf("namecheap: %w", err)
+		}
+		config.ClientIP = clientIP
+	}
+
+	client := internal.NewClient(config.APIUser, config.APIKey, config.ClientIP)
+	client.BaseURL = config.BaseURL
+
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
+	}
+
+	return &DNSProvider{config: config, client: client}, nil
+}
+
+// Timeout returns the timeout and interval to use when checking for DNS propagation.
+// Namecheap can sometimes take a long time to complete an update, so wait up to 60 minutes for the update to propagate.
+func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
+	return d.config.PropagationTimeout, d.config.PollingInterval
+}
+
+// Present installs a TXT record for the DNS challenge.
+func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+	// TODO(ldez) replace domain by FQDN to follow CNAME.
+	ch, err := newChallenge(domain, keyAuth)
+	if err != nil {
+		return fmt.Errorf("namecheap: %w", err)
+	}
+
+	ctx := context.Background()
+
+	records, err := d.client.GetHosts(ctx, ch.sld, ch.tld)
+	if err != nil {
+		return fmt.Errorf("namecheap: %w", err)
+	}
+
+	record := internal.Record{
+		Name:    ch.key,
+		Type:    "TXT",
+		Address: ch.keyValue,
+		MXPref:  "10",
+		TTL:     strconv.Itoa(d.config.TTL),
+	}
+
+	records = append(records, record)
+
+	if d.config.Debug {
+		for _, h := range records {
+			log.Printf("%-5.5s %-30.30s %-6s %-70.70s", h.Type, h.Name, h.TTL, h.Address)
+		}
+	}
+
+	err = d.client.SetHosts(ctx, ch.sld, ch.tld, records)
+	if err != nil {
+		return fmt.Errorf("namecheap: %w", err)
+	}
+	return nil
+}
+
+// CleanUp removes a TXT record used for a previous DNS challenge.
+func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+	// TODO(ldez) replace domain by FQDN to follow CNAME.
+	ch, err := newChallenge(domain, keyAuth)
+	if err != nil {
+		return fmt.Errorf("namecheap: %w", err)
+	}
+
+	ctx := context.Background()
+
+	records, err := d.client.GetHosts(ctx, ch.sld, ch.tld)
+	if err != nil {
+		return fmt.Errorf("namecheap: %w", err)
+	}
+
+	// Find the challenge TXT record and remove it if found.
+	var found bool
+	var newRecords []internal.Record
+	for _, h := range records {
+		if h.Name == ch.key && h.Type == "TXT" {
+			found = true
+		} else {
+			newRecords = append(newRecords, h)
+		}
+	}
+
+	if !found {
+		return nil
+	}
+
+	err = d.client.SetHosts(ctx, ch.sld, ch.tld, newRecords)
+	if err != nil {
+		return fmt.Errorf("namecheap: %w", err)
+	}
+	return nil
 }

@@ -121,7 +121,7 @@ func TestNewDNSProvider_Present(t *testing.T) {
 		{
 			desc:          "error",
 			handler:       http.NotFound,
-			expectedError: "httpreq: 404: request failed: 404 page not found\n",
+			expectedError: "httpreq: unexpected status code: [status code: 404] body: 404 page not found",
 		},
 		{
 			desc:    "success raw mode",
@@ -132,7 +132,7 @@ func TestNewDNSProvider_Present(t *testing.T) {
 			desc:          "error raw mode",
 			mode:          "RAW",
 			handler:       http.NotFound,
-			expectedError: "httpreq: 404: request failed: 404 page not found\n",
+			expectedError: "httpreq: unexpected status code: [status code: 404] body: 404 page not found",
 		},
 		{
 			desc:     "basic auth",
@@ -157,10 +157,10 @@ func TestNewDNSProvider_Present(t *testing.T) {
 			t.Parallel()
 
 			mux := http.NewServeMux()
-			mux.HandleFunc(path.Join("/", test.pathPrefix, "present"), test.handler)
-
 			server := httptest.NewServer(mux)
 			t.Cleanup(server.Close)
+
+			mux.HandleFunc(path.Join("/", test.pathPrefix, "present"), test.handler)
 
 			config := NewDefaultConfig()
 			config.Endpoint = mustParse(server.URL + test.pathPrefix)
@@ -199,7 +199,7 @@ func TestNewDNSProvider_Cleanup(t *testing.T) {
 		{
 			desc:          "error",
 			handler:       http.NotFound,
-			expectedError: "httpreq: 404: request failed: 404 page not found\n",
+			expectedError: "httpreq: unexpected status code: [status code: 404] body: 404 page not found",
 		},
 		{
 			desc:    "success raw mode",
@@ -210,7 +210,7 @@ func TestNewDNSProvider_Cleanup(t *testing.T) {
 			desc:          "error raw mode",
 			mode:          "RAW",
 			handler:       http.NotFound,
-			expectedError: "httpreq: 404: request failed: 404 page not found\n",
+			expectedError: "httpreq: unexpected status code: [status code: 404] body: 404 page not found",
 		},
 		{
 			desc:     "basic auth",
@@ -234,10 +234,10 @@ func TestNewDNSProvider_Cleanup(t *testing.T) {
 			t.Parallel()
 
 			mux := http.NewServeMux()
-			mux.HandleFunc("/cleanup", test.handler)
-
 			server := httptest.NewServer(mux)
 			t.Cleanup(server.Close)
+
+			mux.HandleFunc("/cleanup", test.handler)
 
 			config := NewDefaultConfig()
 			config.Endpoint = mustParse(server.URL)

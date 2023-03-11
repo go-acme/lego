@@ -1,30 +1,71 @@
 package internal
 
 import (
+	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T) (*http.ServeMux, *Client) {
+func setupTest(t *testing.T) (*Client, *http.ServeMux) {
 	t.Helper()
 
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
 	t.Cleanup(server.Close)
 
-	client := &Client{
-		token:      "secret",
-		endpoint:   server.URL,
-		httpClient: server.Client(),
-	}
+	client, err := NewClient("tyo1", "secret")
+	require.NoError(t, err)
 
-	return mux, client
+	client.HTTPClient = server.Client()
+	client.baseURL, _ = url.Parse(server.URL)
+
+	return client, mux
+}
+
+func writeFixtureHandler(method, filename string) http.HandlerFunc {
+	return func(rw http.ResponseWriter, req *http.Request) {
+		if req.Method != method {
+			http.Error(rw, fmt.Sprintf("unsupported method %s", req.Method), http.StatusBadRequest)
+			return
+		}
+
+		writeFixture(rw, filename)
+	}
+}
+
+func writeBodyHandler(method, content string) http.HandlerFunc {
+	return func(rw http.ResponseWriter, req *http.Request) {
+		if req.Method != method {
+			http.Error(rw, fmt.Sprintf("unsupported method %s", req.Method), http.StatusBadRequest)
+			return
+		}
+		_, err := fmt.Fprint(rw, content)
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+func writeFixture(rw http.ResponseWriter, filename string) {
+	file, err := os.Open(filepath.Join("fixtures", filename))
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer func() { _ = file.Close() }()
+
+	_, _ = io.Copy(rw, file)
 }
 
 func TestClient_GetDomainID(t *testing.T) {
@@ -42,91 +83,30 @@ func TestClient_GetDomainID(t *testing.T) {
 		{
 			desc:       "success",
 			domainName: "domain1.com.",
-			handler: func(rw http.ResponseWriter, req *http.Request) {
-				if req.Method != http.MethodGet {
-					http.Error(rw, fmt.Sprintf("%s: %s", http.StatusText(http.StatusMethodNotAllowed), req.Method), http.StatusMethodNotAllowed)
-					return
-				}
-
-				content := `
-{
-    "domains":[
-      {
-        "id": "09494b72-b65b-4297-9efb-187f65a0553e",
-        "name": "domain1.com.",
-        "ttl": 3600,
-        "serial": 1351800668,
-        "email": "nsadmin@example.org",
-        "gslb": 0,
-        "created_at": "2012-11-01T20:11:08.000000",
-        "updated_at": null,
-        "description": "memo"
-      },
-      {
-        "id": "cf661142-e577-40b5-b3eb-75795cdc0cd7",
-        "name": "domain2.com.",
-        "ttl": 7200,
-        "serial": 1351800670,
-        "email": "nsadmin2@example.org",
-        "gslb": 1,
-        "created_at": "2012-11-01T20:11:08.000000",
-        "updated_at": "2012-12-01T20:11:08.000000",
-        "description": "memomemo"
-      }
-    ]
-}
-`
-				_, err := fmt.Fprint(rw, content)
-				if err != nil {
-					http.Error(rw, err.Error(), http.StatusInternalServerError)
-					return
-				}
-			},
-			expected: expected{domainID: "09494b72-b65b-4297-9efb-187f65a0553e"},
+			handler:    writeFixtureHandler(http.MethodGet, "domains_GET.json"),
+			expected:   expected{domainID: "09494b72-b65b-4297-9efb-187f65a0553e"},
 		},
 		{
 			desc:       "non existing domain",
 			domainName: "domain1.com.",
-			handler: func(rw http.ResponseWriter, req *http.Request) {
-				if req.Method != http.MethodGet {
-					http.Error(rw, fmt.Sprintf("%s: %s", http.StatusText(http.StatusMethodNotAllowed), req.Method), http.StatusMethodNotAllowed)
-					return
-				}
-
-				_, err := fmt.Fprint(rw, "{}")
-				if err != nil {
-					http.Error(rw, err.Error(), http.StatusInternalServerError)
-					return
-				}
-			},
-			expected: expected{error: true},
+			handler:    writeBodyHandler(http.MethodGet, "{}"),
+			expected:   expected{error: true},
 		},
 		{
 			desc:       "marshaling error",
 			domainName: "domain1.com.",
-			handler: func(rw http.ResponseWriter, req *http.Request) {
-				if req.Method != http.MethodGet {
-					http.Error(rw, fmt.Sprintf("%s: %s", http.StatusText(http.StatusMethodNotAllowed), req.Method), http.StatusMethodNotAllowed)
-					return
-				}
-
-				_, err := fmt.Fprint(rw, "[]")
-				if err != nil {
-					http.Error(rw, err.Error(), http.StatusInternalServerError)
-					return
-				}
-			},
-			expected: expected{error: true},
+			handler:    writeBodyHandler(http.MethodGet, "[]"),
+			expected:   expected{error: true},
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			mux, client := setupTest(t)
+			client, mux := setupTest(t)
 
 			mux.Handle("/v1/domains", test.handler)
 
-			domainID, err := client.GetDomainID(test.domainName)
+			domainID, err := client.GetDomainID(context.Background(), test.domainName)
 
 			if test.expected.error {
 				require.Error(t, err)
@@ -140,15 +120,15 @@ func TestClient_GetDomainID(t *testing.T) {
 
 func TestClient_CreateRecord(t *testing.T) {
 	testCases := []struct {
-		desc        string
-		handler     http.HandlerFunc
-		expectError bool
+		desc    string
+		handler http.HandlerFunc
+		assert  require.ErrorAssertionFunc
 	}{
 		{
 			desc: "success",
 			handler: func(rw http.ResponseWriter, req *http.Request) {
 				if req.Method != http.MethodPost {
-					http.Error(rw, fmt.Sprintf("%s: %s", http.StatusText(http.StatusMethodNotAllowed), req.Method), http.StatusMethodNotAllowed)
+					http.Error(rw, fmt.Sprintf("unsupported method %s", req.Method), http.StatusBadRequest)
 					return
 				}
 
@@ -157,31 +137,34 @@ func TestClient_CreateRecord(t *testing.T) {
 					http.Error(rw, err.Error(), http.StatusBadRequest)
 					return
 				}
-				defer req.Body.Close()
+				defer func() { _ = req.Body.Close() }()
 
-				if string(raw) != `{"name":"lego.com.","type":"TXT","data":"txtTXTtxt","ttl":300}` {
+				if string(bytes.TrimSpace(raw)) != `{"name":"lego.com.","type":"TXT","data":"txtTXTtxt","ttl":300}` {
 					http.Error(rw, fmt.Sprintf("invalid request body: %s", string(raw)), http.StatusBadRequest)
 					return
 				}
+
+				writeFixture(rw, "domains-records_POST.json")
 			},
+			assert: require.NoError,
 		},
 		{
 			desc: "bad request",
 			handler: func(rw http.ResponseWriter, req *http.Request) {
 				if req.Method != http.MethodPost {
-					http.Error(rw, fmt.Sprintf("%s: %s", http.StatusText(http.StatusMethodNotAllowed), req.Method), http.StatusMethodNotAllowed)
+					http.Error(rw, fmt.Sprintf("unsupported method %s", req.Method), http.StatusBadRequest)
 					return
 				}
 
 				http.Error(rw, "OOPS", http.StatusBadRequest)
 			},
-			expectError: true,
+			assert: require.Error,
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			mux, client := setupTest(t)
+			client, mux := setupTest(t)
 
 			mux.Handle("/v1/domains/lego/records", test.handler)
 
@@ -194,13 +177,36 @@ func TestClient_CreateRecord(t *testing.T) {
 				TTL:  300,
 			}
 
-			err := client.CreateRecord(domainID, record)
-
-			if test.expectError {
-				require.Error(t, err)
-			} else {
-				require.NoError(t, err)
-			}
+			err := client.CreateRecord(context.Background(), domainID, record)
+			test.assert(t, err)
 		})
 	}
+}
+
+func TestClient_GetRecordID(t *testing.T) {
+	client, mux := setupTest(t)
+
+	mux.HandleFunc("/v1/domains/89acac79-38e7-497d-807c-a011e1310438/records",
+		writeFixtureHandler(http.MethodGet, "domains-records_GET.json"))
+
+	recordID, err := client.GetRecordID(context.Background(), "89acac79-38e7-497d-807c-a011e1310438", "www.example.com.", "A", "15.185.172.153")
+	require.NoError(t, err)
+
+	assert.Equal(t, "2e32e609-3a4f-45ba-bdef-e50eacd345ad", recordID)
+}
+
+func TestClient_DeleteRecord(t *testing.T) {
+	client, mux := setupTest(t)
+
+	mux.HandleFunc("/v1/domains/89acac79-38e7-497d-807c-a011e1310438/records/2e32e609-3a4f-45ba-bdef-e50eacd345ad", func(rw http.ResponseWriter, req *http.Request) {
+		if req.Method != http.MethodDelete {
+			http.Error(rw, fmt.Sprintf("unsupported method %s", req.Method), http.StatusBadRequest)
+			return
+		}
+
+		rw.WriteHeader(http.StatusOK)
+	})
+
+	err := client.DeleteRecord(context.Background(), "89acac79-38e7-497d-807c-a011e1310438", "2e32e609-3a4f-45ba-bdef-e50eacd345ad")
+	require.NoError(t, err)
 }

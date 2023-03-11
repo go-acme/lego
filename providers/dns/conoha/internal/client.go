@@ -2,121 +2,45 @@ package internal
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
+	"time"
+
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
-const (
-	identityBaseURL   = "https://identity.%s.conoha.io"
-	dnsServiceBaseURL = "https://dns-service.%s.conoha.io"
-)
-
-// IdentityRequest is an authentication request body.
-type IdentityRequest struct {
-	Auth Auth `json:"auth"`
-}
-
-// Auth is an authentication information.
-type Auth struct {
-	TenantID            string              `json:"tenantId"`
-	PasswordCredentials PasswordCredentials `json:"passwordCredentials"`
-}
-
-// PasswordCredentials is API-user's credentials.
-type PasswordCredentials struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
-// IdentityResponse is an authentication response body.
-type IdentityResponse struct {
-	Access Access `json:"access"`
-}
-
-// Access is an identity information.
-type Access struct {
-	Token Token `json:"token"`
-}
-
-// Token is an api access token.
-type Token struct {
-	ID string `json:"id"`
-}
-
-// DomainListResponse is a response of a domain listing request.
-type DomainListResponse struct {
-	Domains []Domain `json:"domains"`
-}
-
-// Domain is a hosted domain entry.
-type Domain struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-}
-
-// RecordListResponse is a response of record listing request.
-type RecordListResponse struct {
-	Records []Record `json:"records"`
-}
-
-// Record is a record entry.
-type Record struct {
-	ID   string `json:"id,omitempty"`
-	Name string `json:"name"`
-	Type string `json:"type"`
-	Data string `json:"data"`
-	TTL  int    `json:"ttl"`
-}
+const dnsServiceBaseURL = "https://dns-service.%s.conoha.io"
 
 // Client is a ConoHa API client.
 type Client struct {
-	token      string
-	endpoint   string
-	httpClient *http.Client
+	token string
+
+	baseURL    *url.URL
+	HTTPClient *http.Client
 }
 
 // NewClient returns a client instance logged into the ConoHa service.
-func NewClient(region string, auth Auth, httpClient *http.Client) (*Client, error) {
-	if httpClient == nil {
-		httpClient = &http.Client{}
-	}
-
-	c := &Client{httpClient: httpClient}
-
-	c.endpoint = fmt.Sprintf(identityBaseURL, region)
-
-	identity, err := c.getIdentity(auth)
-	if err != nil {
-		return nil, fmt.Errorf("failed to login: %w", err)
-	}
-
-	c.token = identity.Access.Token.ID
-	c.endpoint = fmt.Sprintf(dnsServiceBaseURL, region)
-
-	return c, nil
-}
-
-func (c *Client) getIdentity(auth Auth) (*IdentityResponse, error) {
-	req := &IdentityRequest{Auth: auth}
-
-	identity := &IdentityResponse{}
-
-	err := c.do(http.MethodPost, "/v2.0/tokens", req, identity)
+func NewClient(region string, token string) (*Client, error) {
+	baseURL, err := url.Parse(fmt.Sprintf(dnsServiceBaseURL, region))
 	if err != nil {
 		return nil, err
 	}
 
-	return identity, nil
+	return &Client{
+		token:      token,
+		baseURL:    baseURL,
+		HTTPClient: &http.Client{Timeout: 5 * time.Second},
+	}, nil
 }
 
 // GetDomainID returns an ID of specified domain.
-func (c *Client) GetDomainID(domainName string) (string, error) {
-	domainList := &DomainListResponse{}
-
-	err := c.do(http.MethodGet, "/v1/domains", nil, domainList)
+func (c *Client) GetDomainID(ctx context.Context, domainName string) (string, error) {
+	domainList, err := c.getDomains(ctx)
 	if err != nil {
 		return "", err
 	}
@@ -126,14 +50,32 @@ func (c *Client) GetDomainID(domainName string) (string, error) {
 			return domain.ID, nil
 		}
 	}
+
 	return "", fmt.Errorf("no such domain: %s", domainName)
 }
 
-// GetRecordID returns an ID of specified record.
-func (c *Client) GetRecordID(domainID, recordName, recordType, data string) (string, error) {
-	recordList := &RecordListResponse{}
+// https://www.conoha.jp/docs/paas-dns-list-domains.php
+func (c *Client) getDomains(ctx context.Context) (*DomainListResponse, error) {
+	endpoint := c.baseURL.JoinPath("v1", "domains")
 
-	err := c.do(http.MethodGet, fmt.Sprintf("/v1/domains/%s/records", domainID), nil, recordList)
+	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	domainList := &DomainListResponse{}
+
+	err = c.do(req, domainList)
+	if err != nil {
+		return nil, err
+	}
+
+	return domainList, nil
+}
+
+// GetRecordID returns an ID of specified record.
+func (c *Client) GetRecordID(ctx context.Context, domainID, recordName, recordType, data string) (string, error) {
+	recordList, err := c.getRecords(ctx, domainID)
 	if err != nil {
 		return "", err
 	}
@@ -143,63 +85,119 @@ func (c *Client) GetRecordID(domainID, recordName, recordType, data string) (str
 			return record.ID, nil
 		}
 	}
+
 	return "", errors.New("no such record")
 }
 
+// https://www.conoha.jp/docs/paas-dns-list-records-in-a-domain.php
+func (c *Client) getRecords(ctx context.Context, domainID string) (*RecordListResponse, error) {
+	endpoint := c.baseURL.JoinPath("v1", "domains", domainID, "records")
+
+	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	recordList := &RecordListResponse{}
+
+	err = c.do(req, recordList)
+	if err != nil {
+		return nil, err
+	}
+
+	return recordList, nil
+}
+
 // CreateRecord adds new record.
-func (c *Client) CreateRecord(domainID string, record Record) error {
-	return c.do(http.MethodPost, fmt.Sprintf("/v1/domains/%s/records", domainID), record, nil)
+func (c *Client) CreateRecord(ctx context.Context, domainID string, record Record) error {
+	_, err := c.createRecord(ctx, domainID, record)
+	return err
+}
+
+// https://www.conoha.jp/docs/paas-dns-create-record.php
+func (c *Client) createRecord(ctx context.Context, domainID string, record Record) (*Record, error) {
+	endpoint := c.baseURL.JoinPath("v1", "domains", domainID, "records")
+
+	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
+	if err != nil {
+		return nil, err
+	}
+
+	newRecord := &Record{}
+	err = c.do(req, newRecord)
+	if err != nil {
+		return nil, err
+	}
+
+	return newRecord, nil
 }
 
 // DeleteRecord removes specified record.
-func (c *Client) DeleteRecord(domainID, recordID string) error {
-	return c.do(http.MethodDelete, fmt.Sprintf("/v1/domains/%s/records/%s", domainID, recordID), nil, nil)
+// https://www.conoha.jp/docs/paas-dns-delete-a-record.php
+func (c *Client) DeleteRecord(ctx context.Context, domainID, recordID string) error {
+	endpoint := c.baseURL.JoinPath("v1", "domains", domainID, "records", recordID)
+
+	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
+	if err != nil {
+		return err
+	}
+
+	return c.do(req, nil)
 }
 
-func (c *Client) do(method, path string, payload, result interface{}) error {
-	body := bytes.NewReader(nil)
-
-	if payload != nil {
-		bodyBytes, err := json.Marshal(payload)
-		if err != nil {
-			return err
-		}
-		body = bytes.NewReader(bodyBytes)
+func (c *Client) do(req *http.Request, result any) error {
+	if c.token != "" {
+		req.Header.Set("X-Auth-Token", c.token)
 	}
 
-	req, err := http.NewRequest(method, c.endpoint+path, body)
+	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
-		return err
+		return errutils.NewHTTPDoError(req, err)
 	}
 
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-Auth-Token", c.token)
-
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return err
-	}
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
-		respBody, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return err
-		}
-		defer resp.Body.Close()
-
-		return fmt.Errorf("HTTP request failed with status code %d: %s", resp.StatusCode, string(respBody))
+		return errutils.NewUnexpectedResponseStatusCodeError(req, resp)
 	}
 
-	if result != nil {
-		respBody, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return err
-		}
-		defer resp.Body.Close()
+	if result == nil {
+		return nil
+	}
 
-		return json.Unmarshal(respBody, result)
+	raw, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return errutils.NewReadResponseError(req, resp.StatusCode, err)
+	}
+
+	err = json.Unmarshal(raw, result)
+	if err != nil {
+		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
 	}
 
 	return nil
+}
+
+func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
+	buf := new(bytes.Buffer)
+
+	if payload != nil {
+		err := json.NewEncoder(buf).Encode(payload)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create request JSON body: %w", err)
+		}
+	}
+
+	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), buf)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create request: %w", err)
+	}
+
+	req.Header.Set("Accept", "application/json")
+
+	if payload != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
+	return req, nil
 }

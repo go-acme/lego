@@ -2,6 +2,7 @@
 package conoha
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -85,6 +86,15 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("conoha: some credentials information are missing")
 	}
 
+	identifier, err := internal.NewIdentifier(config.Region)
+	if err != nil {
+		return nil, fmt.Errorf("conoha: failed to create identity client: %w", err)
+	}
+
+	if config.HTTPClient != nil {
+		identifier.HTTPClient = config.HTTPClient
+	}
+
 	auth := internal.Auth{
 		TenantID: config.TenantID,
 		PasswordCredentials: internal.PasswordCredentials{
@@ -93,9 +103,18 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		},
 	}
 
-	client, err := internal.NewClient(config.Region, auth, config.HTTPClient)
+	tokens, err := identifier.GetToken(context.TODO(), auth)
+	if err != nil {
+		return nil, fmt.Errorf("conoha: failed to login: %w", err)
+	}
+
+	client, err := internal.NewClient(config.Region, tokens.Access.Token.ID)
 	if err != nil {
 		return nil, fmt.Errorf("conoha: failed to create client: %w", err)
+	}
+
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
 	}
 
 	return &DNSProvider{config: config, client: client}, nil
@@ -107,10 +126,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return err
+		return fmt.Errorf("conoha: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
-	id, err := d.client.GetDomainID(authZone)
+	ctx := context.Background()
+
+	id, err := d.client.GetDomainID(ctx, authZone)
 	if err != nil {
 		return fmt.Errorf("conoha: failed to get domain ID: %w", err)
 	}
@@ -122,7 +143,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		TTL:  d.config.TTL,
 	}
 
-	err = d.client.CreateRecord(id, record)
+	err = d.client.CreateRecord(ctx, id, record)
 	if err != nil {
 		return fmt.Errorf("conoha: failed to create record: %w", err)
 	}
@@ -136,20 +157,22 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return err
+		return fmt.Errorf("conoha: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
-	domID, err := d.client.GetDomainID(authZone)
+	ctx := context.Background()
+
+	domID, err := d.client.GetDomainID(ctx, authZone)
 	if err != nil {
 		return fmt.Errorf("conoha: failed to get domain ID: %w", err)
 	}
 
-	recID, err := d.client.GetRecordID(domID, info.EffectiveFQDN, "TXT", info.Value)
+	recID, err := d.client.GetRecordID(ctx, domID, info.EffectiveFQDN, "TXT", info.Value)
 	if err != nil {
 		return fmt.Errorf("conoha: failed to get record ID: %w", err)
 	}
 
-	err = d.client.DeleteRecord(domID, recID)
+	err = d.client.DeleteRecord(ctx, domID, recID)
 	if err != nil {
 		return fmt.Errorf("conoha: failed to delete record: %w", err)
 	}

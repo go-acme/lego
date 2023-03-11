@@ -93,10 +93,12 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := getZone(info.EffectiveFQDN)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("civo: failed to find zone: fqdn=%s: %w", info.EffectiveFQDN, err)
+		return fmt.Errorf("civo: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
+
+	zone := dns01.UnFqdn(authZone)
 
 	dnsDomain, err := d.client.GetDNSDomain(zone)
 	if err != nil {
@@ -125,10 +127,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := getZone(info.EffectiveFQDN)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("civo: failed to find zone: fqdn=%s: %w", info.EffectiveFQDN, err)
+		return fmt.Errorf("civo: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
+
+	zone := dns01.UnFqdn(authZone)
 
 	dnsDomain, err := d.client.GetDNSDomain(zone)
 	if err != nil {
@@ -165,13 +169,4 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
-}
-
-func getZone(fqdn string) (string, error) {
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
-	if err != nil {
-		return "", err
-	}
-
-	return dns01.UnFqdn(authZone), nil
 }

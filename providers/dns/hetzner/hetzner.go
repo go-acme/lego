@@ -2,6 +2,7 @@
 package hetzner
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -100,12 +101,16 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := getZone(info.EffectiveFQDN)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("hetzner: failed to find zone: fqdn=%s: %w", info.EffectiveFQDN, err)
+		return fmt.Errorf("hetzner: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
-	zoneID, err := d.client.GetZoneID(zone)
+	zone := dns01.UnFqdn(authZone)
+
+	ctx := context.Background()
+
+	zoneID, err := d.client.GetZoneID(ctx, zone)
 	if err != nil {
 		return fmt.Errorf("hetzner: %w", err)
 	}
@@ -123,7 +128,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		ZoneID: zoneID,
 	}
 
-	if err := d.client.CreateRecord(record); err != nil {
+	if err := d.client.CreateRecord(ctx, record); err != nil {
 		return fmt.Errorf("hetzner: failed to add TXT record: fqdn=%s, zoneID=%s: %w", info.EffectiveFQDN, zoneID, err)
 	}
 
@@ -134,12 +139,16 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := getZone(info.EffectiveFQDN)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("hetzner: failed to find zone: fqdn=%s: %w", info.EffectiveFQDN, err)
+		return fmt.Errorf("hetzner: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
-	zoneID, err := d.client.GetZoneID(zone)
+	zone := dns01.UnFqdn(authZone)
+
+	ctx := context.Background()
+
+	zoneID, err := d.client.GetZoneID(ctx, zone)
 	if err != nil {
 		return fmt.Errorf("hetzner: %w", err)
 	}
@@ -149,23 +158,14 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("hetzner: %w", err)
 	}
 
-	record, err := d.client.GetTxtRecord(subDomain, info.Value, zoneID)
+	record, err := d.client.GetTxtRecord(ctx, subDomain, info.Value, zoneID)
 	if err != nil {
 		return fmt.Errorf("hetzner: %w", err)
 	}
 
-	if err := d.client.DeleteRecord(record.ID); err != nil {
+	if err := d.client.DeleteRecord(ctx, record.ID); err != nil {
 		return fmt.Errorf("hetzner: failed to delate TXT record: id=%s, name=%s: %w", record.ID, record.Name, err)
 	}
 
 	return nil
-}
-
-func getZone(fqdn string) (string, error) {
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
-	if err != nil {
-		return "", err
-	}
-
-	return dns01.UnFqdn(authZone), nil
 }

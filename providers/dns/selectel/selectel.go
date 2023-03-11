@@ -4,9 +4,11 @@
 package selectel
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -87,8 +89,15 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	client := selectel.NewClient(config.Token)
-	client.BaseURL = config.BaseURL
-	client.HTTPClient = config.HTTPClient
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
+	}
+
+	var err error
+	client.BaseURL, err = url.Parse(config.BaseURL)
+	if err != nil {
+		return nil, fmt.Errorf("selectel: %w", err)
+	}
 
 	return &DNSProvider{config: config, client: client}, nil
 }
@@ -103,8 +112,10 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
+	ctx := context.Background()
+
 	// TODO(ldez) replace domain by FQDN to follow CNAME.
-	domainObj, err := d.client.GetDomainByName(domain)
+	domainObj, err := d.client.GetDomainByName(ctx, domain)
 	if err != nil {
 		return fmt.Errorf("selectel: %w", err)
 	}
@@ -115,7 +126,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Name:    info.EffectiveFQDN,
 		Content: info.Value,
 	}
-	_, err = d.client.AddRecord(domainObj.ID, txtRecord)
+	_, err = d.client.AddRecord(ctx, domainObj.ID, txtRecord)
 	if err != nil {
 		return fmt.Errorf("selectel: %w", err)
 	}
@@ -129,13 +140,15 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	recordName := dns01.UnFqdn(info.EffectiveFQDN)
 
+	ctx := context.Background()
+
 	// TODO(ldez) replace domain by FQDN to follow CNAME.
-	domainObj, err := d.client.GetDomainByName(domain)
+	domainObj, err := d.client.GetDomainByName(ctx, domain)
 	if err != nil {
 		return fmt.Errorf("selectel: %w", err)
 	}
 
-	records, err := d.client.ListRecords(domainObj.ID)
+	records, err := d.client.ListRecords(ctx, domainObj.ID)
 	if err != nil {
 		return fmt.Errorf("selectel: %w", err)
 	}
@@ -144,7 +157,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	var lastErr error
 	for _, record := range records {
 		if record.Name == recordName {
-			err = d.client.DeleteRecord(domainObj.ID, record.ID)
+			err = d.client.DeleteRecord(ctx, domainObj.ID, record.ID)
 			if err != nil {
 				lastErr = fmt.Errorf("selectel: %w", err)
 			}

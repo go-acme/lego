@@ -1,31 +1,34 @@
 package internal
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func setup(t *testing.T) (*Client, *http.ServeMux) {
+const authorizationHeader = "Authorization"
+
+func setupTest(t *testing.T) (*Client, *http.ServeMux) {
 	t.Helper()
 
 	mux := http.NewServeMux()
-
 	server := httptest.NewServer(mux)
 	t.Cleanup(server.Close)
 
 	client := NewClient("token", "secret")
-
-	client.baseURL = server.URL
+	client.HTTPClient = server.Client()
+	client.baseURL, _ = url.Parse(server.URL)
 
 	return client, mux
 }
 
 func TestClient_CreateTXTRecord(t *testing.T) {
-	client, mux := setup(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/domains/1/dns", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodPost {
@@ -33,21 +36,21 @@ func TestClient_CreateTXTRecord(t *testing.T) {
 			return
 		}
 
-		auth := req.Header.Get("Authorization")
+		auth := req.Header.Get(authorizationHeader)
 		if auth != "Basic dG9rZW46c2VjcmV0" {
-			http.Error(rw, "invalid method: "+req.Method, http.StatusUnauthorized)
+			http.Error(rw, "invalid credentials: "+auth, http.StatusUnauthorized)
 			return
 		}
 
 		_, _ = rw.Write([]byte(`{"id": 1}`))
 	})
 
-	err := client.CreateTXTRecord(&Domain{ID: 1}, "example", "txtTXTtxt")
+	err := client.CreateTXTRecord(context.Background(), &Domain{ID: 1}, "example", "txtTXTtxt")
 	require.NoError(t, err)
 }
 
 func TestClient_DeleteTXTRecord(t *testing.T) {
-	client, mux := setup(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/domains/1/dns", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
@@ -55,9 +58,9 @@ func TestClient_DeleteTXTRecord(t *testing.T) {
 			return
 		}
 
-		auth := req.Header.Get("Authorization")
+		auth := req.Header.Get(authorizationHeader)
 		if auth != "Basic dG9rZW46c2VjcmV0" {
-			http.Error(rw, "invalid method: "+req.Method, http.StatusUnauthorized)
+			http.Error(rw, "invalid credentials: "+auth, http.StatusUnauthorized)
 			return
 		}
 
@@ -78,19 +81,19 @@ func TestClient_DeleteTXTRecord(t *testing.T) {
 			return
 		}
 
-		auth := req.Header.Get("Authorization")
+		auth := req.Header.Get(authorizationHeader)
 		if auth != "Basic dG9rZW46c2VjcmV0" {
-			http.Error(rw, "invalid method: "+req.Method, http.StatusUnauthorized)
+			http.Error(rw, "invalid credentials: "+auth, http.StatusUnauthorized)
 			return
 		}
 	})
 
-	err := client.DeleteTXTRecord(&Domain{ID: 1}, "example.com", "txtTXTtxt")
+	err := client.DeleteTXTRecord(context.Background(), &Domain{ID: 1}, "example.com", "txtTXTtxt")
 	require.NoError(t, err)
 }
 
 func TestClient_getDNSRecordByHostData(t *testing.T) {
-	client, mux := setup(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/domains/1/dns", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
@@ -98,9 +101,9 @@ func TestClient_getDNSRecordByHostData(t *testing.T) {
 			return
 		}
 
-		auth := req.Header.Get("Authorization")
+		auth := req.Header.Get(authorizationHeader)
 		if auth != "Basic dG9rZW46c2VjcmV0" {
-			http.Error(rw, "invalid method: "+req.Method, http.StatusUnauthorized)
+			http.Error(rw, "invalid credentials: "+auth, http.StatusUnauthorized)
 			return
 		}
 
@@ -115,7 +118,7 @@ func TestClient_getDNSRecordByHostData(t *testing.T) {
 ]`))
 	})
 
-	record, err := client.getDNSRecordByHostData(Domain{ID: 1}, "example.com", "txtTXTtxt")
+	record, err := client.getDNSRecordByHostData(context.Background(), Domain{ID: 1}, "example.com", "txtTXTtxt")
 	require.NoError(t, err)
 
 	expected := &DNSRecord{
@@ -130,7 +133,7 @@ func TestClient_getDNSRecordByHostData(t *testing.T) {
 }
 
 func TestClient_GetDomainByName(t *testing.T) {
-	client, mux := setup(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/domains", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
@@ -138,9 +141,9 @@ func TestClient_GetDomainByName(t *testing.T) {
 			return
 		}
 
-		auth := req.Header.Get("Authorization")
+		auth := req.Header.Get(authorizationHeader)
 		if auth != "Basic dG9rZW46c2VjcmV0" {
-			http.Error(rw, "invalid method: "+req.Method, http.StatusUnauthorized)
+			http.Error(rw, "invalid credentials: "+auth, http.StatusUnauthorized)
 			return
 		}
 
@@ -168,7 +171,7 @@ func TestClient_GetDomainByName(t *testing.T) {
 ]`))
 	})
 
-	domain, err := client.GetDomainByName("example.com")
+	domain, err := client.GetDomainByName(context.Background(), "example.com")
 	require.NoError(t, err)
 
 	expected := &Domain{

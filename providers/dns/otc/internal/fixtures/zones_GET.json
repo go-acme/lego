@@ -1,0 +1,49 @@
+{
+  "links": {
+    "self": "https://Endpoint/v2/zones?type=public&limit=11",
+    "next": "https://Endpoint/v2/zones?type=public&limit=11&marker=2c9eb155587194ec01587224c9f90149"
+  },
+  "zones": [
+    {
+      "id": "123123",
+      "name": "example.com.",
+      "description": "This is an example zone.",
+      "email": "xx@example.com",
+      "ttl": 300,
+      "serial": 0,
+      "masters": [],
+      "status": "ACTIVE",
+      "links": {
+        "self": "https://Endpoint/v2/zones/2c9eb155587194ec01587224c9f90149"
+      },
+      "pool_id": "00000000570e54ee01570e9939b20019",
+      "project_id": "e55c6f3dc4e34c9f86353b664ae0e70c",
+      "zone_type": "public",
+      "created_at": "2016-11-17T11:56:03.439",
+      "updated_at": "2016-11-17T11:56:05.528",
+      "record_num": 2
+    },
+    {
+      "id": "2c9eb155587228570158722996c50001",
+      "name": "example.org.",
+      "description": "This is an example zone.",
+      "email": "xx@example.org",
+      "ttl": 300,
+      "serial": 0,
+      "masters": [],
+      "status": "PENDING_CREATE",
+      "links": {
+        "self": "https://Endpoint/v2/zones/2c9eb155587228570158722996c50001"
+      },
+      "pool_id": "00000000570e54ee01570e9939b20019",
+      "project_id": "e55c6f3dc4e34c9f86353b664ae0e70c",
+      "zone_type": "public",
+      "created_at": "2016-11-17T12:01:17.996",
+      "updated_at": "2016-11-17T12:01:18.528",
+      "record_num": 2
+    }
+  ],
+  "metadata": {
+    "total_count": 2
+  }
+}

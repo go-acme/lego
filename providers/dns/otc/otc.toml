@@ -20,5 +20,5 @@ Example = ''''''
     OTC_HTTP_TIMEOUT = "API request timeout"
 
 [Links]
-  API = "https://docs.otc.t-systems.com/en-us/dns/index.html"
+  API = "https://docs.otc.t-systems.com/domain-name-service/api-ref/index.html"
 

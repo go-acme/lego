@@ -1,0 +1,30 @@
+{
+  "links": {
+    "self": "https://Endpoint/v2/recordsets",
+    "next": "https://Endpoint/v2/recordsets?id=&limit=11&marker=2c9eb155587194ec01587224c9f9014a"
+  },
+  "recordsets": [
+    {
+      "id": "321321",
+      "name": "_acme-challenge.example.com",
+      "type": "TXT",
+      "ttl": 300,
+      "records": [
+        "ns1.hotrot.de. xx.example.com. (1 7200 900 1209600 300)"
+      ],
+      "status": "ACTIVE",
+      "links": {
+        "self": "https://Endpoint/v2/zones/2c9eb155587194ec01587224c9f90149/recordsets/2c9eb155587194ec01587224c9f9014a"
+      },
+      "zone_id": "2c9eb155587194ec01587224c9f90149",
+      "zone_name": "example.com.",
+      "create_at": "2016-11-17T11:56:03.439",
+      "update_at": "2016-11-17T11:56:03.827",
+      "default": true,
+      "project_id": "e55c6f3dc4e34c9f86353b664ae0e70c"
+    }
+  ],
+  "metadata": {
+    "total_count": 1
+  }
+}

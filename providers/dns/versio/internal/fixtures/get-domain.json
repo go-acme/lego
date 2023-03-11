@@ -1,0 +1,120 @@
+{
+  "domainInfo": {
+    "domain": "example.com",
+    "status": "OK",
+    "expire-date": "2020-10-01",
+    "registrant_id": "4334",
+    "reseller_id": "3253",
+    "category_id": "674",
+    "dnstemplate_id": "674",
+    "lock": false,
+    "auto_renew": false,
+    "epp_code": "3fFerggEg",
+    "ns": [],
+    "dns_management": true,
+    "dns_records": [
+      {
+        "type": "MX",
+        "name": "example.com",
+        "value": "fallback.axc.eu",
+        "prio": 20,
+        "ttl": 3600
+      },
+      {
+        "type": "TXT",
+        "name": "example.com",
+        "value": "\"v=spf1 a mx ip4:127.0.0.1 a:spf.spamexperts.axc.nl ~all\"",
+        "prio": 0,
+        "ttl": 3600
+      },
+      {
+        "type": "A",
+        "name": "example.com",
+        "value": "185.13.227.159",
+        "prio": 0,
+        "ttl": 14400
+      },
+      {
+        "type": "A",
+        "name": "ftp.example.com",
+        "value": "185.13.227.159",
+        "prio": 0,
+        "ttl": 14400
+      },
+      {
+        "type": "A",
+        "name": "localhost.example.com",
+        "value": "185.13.227.159",
+        "prio": 0,
+        "ttl": 14400
+      },
+      {
+        "type": "A",
+        "name": "pop.example.com",
+        "value": "185.13.227.159",
+        "prio": 0,
+        "ttl": 14400
+      },
+      {
+        "type": "A",
+        "name": "smtp.example.com",
+        "value": "185.13.227.159",
+        "prio": 0,
+        "ttl": 14400
+      },
+      {
+        "type": "A",
+        "name": "www.example.com",
+        "value": "185.13.227.159",
+        "prio": 0,
+        "ttl": 14400
+      },
+      {
+        "type": "A",
+        "name": "dev.example.com",
+        "value": "185.13.227.159",
+        "prio": 0,
+        "ttl": 14400
+      },
+      {
+        "type": "A",
+        "name": "_domainkey.domain.com.example.com",
+        "value": "185.13.227.159",
+        "prio": 0,
+        "ttl": 14400
+      },
+      {
+        "type": "MX",
+        "name": "example.com",
+        "value": "spamfilter2.axc.eu",
+        "prio": 0,
+        "ttl": 3600
+      },
+      {
+        "type": "A",
+        "name": "redirect.example.com",
+        "value": "localhost",
+        "prio": 10,
+        "ttl": 14400
+      }
+    ],
+    "dns_redirections": [
+      {
+        "from": "redirect.example.com",
+        "destination": "http:\/\/www.google.nl"
+      }
+    ],
+    "dnssec_keys": [
+      {
+        "flags": 256,
+        "algorithm": 3,
+        "public_key": "AwEAAZKsuPDwO1+Usao2X1rgdFhdT3LAxy5cbRNFNEy1qsauwSIYov5SU4GlG6ylXIVQwHF5AWfbD7lcZzw1IlNegvaLnoirJjcYZhz4ppQU5+M/1hfH7aNZIsyz7AhHwX7gpOeUdGBXTiXQ3m7ksGccVQ79h7yl2fiBDCryBSf49vOTqo3dI7KZM48vmeqOxPth3ANMXzt6osHENGIchdGgIOVy5Y7AsVecL4V+lbn2t47fFfJ2O9PwuuDBzO0HCCT/mmYVsvZ33kgc7QPFKB3LojoXdHFHl1jCsC98phIVGzJR54H2xRohQvfC2WAXFEx+YNDW1yv7zQFrUVVMFwCe/E8="
+      },
+      {
+        "flags": 257,
+        "algorithm": 8,
+        "public_key": "AwEAAZKsuPDwO1+Usao2X1rgdFhdT3LAxy5cbRNFNEy1qsauwSIYov5SU4GlG6ylXIVQwHF5AWfbD7lcZzw1IlNegvaLnoirJjcYZhz4ppQU5+M/1hfH7aNZIsyz7AhHwX7gpOeUdGBXTiXQ3m7ksGccVQ79h7yl2fiBDCryBSf49vOTqo3dI7KZM48vmeqOxPth3ANMXzt6osHENGIchdGgIOVy5Y7AsVecL4V+lbn2t47fFfJ2O9PwuuDBzO0HCCT/mmYVsvZ33kgc7QPFKB3LojoXdHFHl1jCsC98phIVGzJR54H2xRohQvfC2WAXFEx+YNDW1yv7zQFrUVVMFwCe/E8="
+      }
+    ]
+  }
+}

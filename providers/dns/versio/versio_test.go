@@ -135,12 +135,12 @@ func TestDNSProvider_Present(t *testing.T) {
 		{
 			desc:          "FailToFindZone",
 			handler:       muxFailToFindZone(),
-			expectedError: `versio: 401: request failed: ObjectDoesNotExist|Domain not found`,
+			expectedError: `versio: [status code: 401] 401: ObjectDoesNotExist|Domain not found`,
 		},
 		{
 			desc:          "FailToCreateTXT",
 			handler:       muxFailToCreateTXT(),
-			expectedError: `versio: 400: request failed: ProcessError|DNS record invalid type _acme-challenge.example.eu. TST`,
+			expectedError: `versio: [status code: 400] 400: ProcessError|DNS record invalid type _acme-challenge.example.eu. TST`,
 		},
 	}
 
@@ -182,7 +182,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 		{
 			desc:          "FailToFindZone",
 			handler:       muxFailToFindZone(),
-			expectedError: `versio: 401: request failed: ObjectDoesNotExist|Domain not found`,
+			expectedError: `versio: [status code: 401] 401: ObjectDoesNotExist|Domain not found`,
 		},
 	}
 

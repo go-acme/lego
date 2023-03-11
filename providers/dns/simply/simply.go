@@ -2,6 +2,7 @@
 package simply
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -114,8 +115,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("simply: could not determine zone for domain %q: %w", domain, err)
+		return fmt.Errorf("simply: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
+
 	authZone = dns01.UnFqdn(authZone)
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
@@ -130,7 +132,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		TTL:  d.config.TTL,
 	}
 
-	recordID, err := d.client.AddRecord(authZone, recordBody)
+	recordID, err := d.client.AddRecord(context.Background(), authZone, recordBody)
 	if err != nil {
 		return fmt.Errorf("simply: failed to add record: %w", err)
 	}
@@ -148,8 +150,9 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("simply: could not determine zone for domain %q: %w", domain, err)
+		return fmt.Errorf("simply: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
+
 	authZone = dns01.UnFqdn(authZone)
 
 	// gets the record's unique ID from when we created it
@@ -160,7 +163,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("simply: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
-	err = d.client.DeleteRecord(authZone, recordID)
+	err = d.client.DeleteRecord(context.Background(), authZone, recordID)
 	if err != nil {
 		return fmt.Errorf("simply: failed to delete TXT records: fqdn=%s, recordID=%d: %w", info.EffectiveFQDN, recordID, err)
 	}

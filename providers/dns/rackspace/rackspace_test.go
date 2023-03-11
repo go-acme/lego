@@ -1,6 +1,7 @@
 package rackspace
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"net/http"
@@ -124,14 +125,14 @@ func identityHandler(dnsEndpoint string) http.Handler {
 			return
 		}
 
-		if string(reqBody) != `{"auth":{"RAX-KSKEY:apiKeyCredentials":{"username":"testUser","apiKey":"testKey"}}}` {
-			w.WriteHeader(http.StatusBadRequest)
+		if string(bytes.TrimSpace(reqBody)) != `{"auth":{"RAX-KSKEY:apiKeyCredentials":{"username":"testUser","apiKey":"testKey"}}}` {
+			http.Error(w, fmt.Sprintf("invalid body: %s", string(reqBody)), http.StatusBadRequest)
 			return
 		}
 
 		resp := strings.Replace(identityResponseMock, "https://dns.api.rackspacecloud.com/v1.0/123456", dnsEndpoint, 1)
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprint(w, resp)
+		_, _ = fmt.Fprint(w, resp)
 	})
 }
 
@@ -142,7 +143,7 @@ func dnsHandler() *http.ServeMux {
 	mux.HandleFunc("/123456/domains", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Query().Get("name") == "example.com" {
 			w.WriteHeader(http.StatusOK)
-			fmt.Fprint(w, zoneDetailsMock)
+			_, _ = fmt.Fprint(w, zoneDetailsMock)
 			return
 		}
 		w.WriteHeader(http.StatusBadRequest)
@@ -158,27 +159,30 @@ func dnsHandler() *http.ServeMux {
 				return
 			}
 
-			if string(reqBody) != `{"records":[{"name":"_acme-challenge.example.com","type":"TXT","data":"pW9ZKG0xz_PCriK-nCMOjADy9eJcgGWIzkkj2fN4uZM","ttl":300}]}` {
-				w.WriteHeader(http.StatusBadRequest)
+			if string(bytes.TrimSpace(reqBody)) != `{"records":[{"name":"_acme-challenge.example.com","type":"TXT","data":"pW9ZKG0xz_PCriK-nCMOjADy9eJcgGWIzkkj2fN4uZM","ttl":300}]}` {
+				http.Error(w, fmt.Sprintf("invalid body: %s", string(reqBody)), http.StatusBadRequest)
 				return
 			}
 
 			w.WriteHeader(http.StatusAccepted)
-			fmt.Fprint(w, recordResponseMock)
-			// Used by `findTxtRecord()` finding `record.ID` "?type=TXT&name=_acme-challenge.example.com"
+			_, _ = fmt.Fprint(w, recordResponseMock)
+
+		// Used by `findTxtRecord()` finding `record.ID` "?type=TXT&name=_acme-challenge.example.com"
 		case http.MethodGet:
 			if r.URL.Query().Get("type") == "TXT" && r.URL.Query().Get("name") == "_acme-challenge.example.com" {
 				w.WriteHeader(http.StatusOK)
-				fmt.Fprint(w, recordDetailsMock)
+				_, _ = fmt.Fprint(w, recordDetailsMock)
 				return
 			}
+
 			w.WriteHeader(http.StatusBadRequest)
 			return
-			// Used by `CleanUp()` deleting the TXT record "?id=445566"
+
+		// Used by `CleanUp()` deleting the TXT record "?id=445566"
 		case http.MethodDelete:
 			if r.URL.Query().Get("id") == "TXT-654321" {
 				w.WriteHeader(http.StatusOK)
-				fmt.Fprint(w, recordDeleteMock)
+				_, _ = fmt.Fprint(w, recordDeleteMock)
 				return
 			}
 			w.WriteHeader(http.StatusBadRequest)
@@ -186,8 +190,7 @@ func dnsHandler() *http.ServeMux {
 	})
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusNotFound)
-		fmt.Printf("Not Found for Request: (%+v)\n\n", r)
+		http.Error(w, fmt.Sprintf("Not Found for Request: (%+v)", r), http.StatusNotFound)
 	})
 
 	return mux

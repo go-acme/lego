@@ -3,6 +3,7 @@
 package dmapi
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -10,9 +11,12 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/log"
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
 const defaultBaseURL = "https://dmapi.joker.com/request/"
@@ -30,129 +34,90 @@ type AuthInfo struct {
 	APIKey   string
 	Username string
 	Password string
-	authSid  string
 }
 
 // Client a DMAPI Client.
 type Client struct {
-	HTTPClient *http.Client
+	apiKey   string
+	username string
+	password string
+
+	token   *Token
+	muToken sync.Mutex
+
+	Debug      bool
 	BaseURL    string
-
-	Debug bool
-
-	auth AuthInfo
+	HTTPClient *http.Client
 }
 
 // NewClient creates a new DMAPI Client.
-func NewClient(auth AuthInfo) *Client {
+func NewClient(authInfo AuthInfo) *Client {
 	return &Client{
-		HTTPClient: http.DefaultClient,
+		apiKey:     authInfo.APIKey,
+		username:   authInfo.Username,
+		password:   authInfo.Password,
 		BaseURL:    defaultBaseURL,
-		Debug:      false,
-		auth:       auth,
+		HTTPClient: &http.Client{Timeout: 5 * time.Second},
 	}
-}
-
-// Login performs a login to Joker's DMAPI.
-func (c *Client) Login() (*Response, error) {
-	if c.auth.authSid != "" {
-		// already logged in
-		return nil, nil
-	}
-
-	var values url.Values
-	switch {
-	case c.auth.Username != "" && c.auth.Password != "":
-		values = url.Values{
-			"username": {c.auth.Username},
-			"password": {c.auth.Password},
-		}
-	case c.auth.APIKey != "":
-		values = url.Values{"api-key": {c.auth.APIKey}}
-	default:
-		return nil, errors.New("no username and password or api-key")
-	}
-
-	response, err := c.postRequest("login", values)
-	if err != nil {
-		return response, err
-	}
-
-	if response == nil {
-		return nil, errors.New("login returned nil response")
-	}
-
-	if response.AuthSid == "" {
-		return response, errors.New("login did not return valid Auth-Sid")
-	}
-
-	c.auth.authSid = response.AuthSid
-
-	return response, nil
-}
-
-// Logout closes authenticated session with Joker's DMAPI.
-func (c *Client) Logout() (*Response, error) {
-	if c.auth.authSid == "" {
-		return nil, errors.New("already logged out")
-	}
-
-	response, err := c.postRequest("logout", url.Values{})
-	if err == nil {
-		c.auth.authSid = ""
-	}
-	return response, err
 }
 
 // GetZone returns content of DNS zone for domain.
-func (c *Client) GetZone(domain string) (*Response, error) {
-	if c.auth.authSid == "" {
+func (c *Client) GetZone(ctx context.Context, domain string) (*Response, error) {
+	if getSessionID(ctx) == "" {
 		return nil, errors.New("must be logged in to get zone")
 	}
 
-	return c.postRequest("dns-zone-get", url.Values{"domain": {dns01.UnFqdn(domain)}})
+	return c.postRequest(ctx, "dns-zone-get", url.Values{"domain": {dns01.UnFqdn(domain)}})
 }
 
 // PutZone uploads DNS zone to Joker DMAPI.
-func (c *Client) PutZone(domain, zone string) (*Response, error) {
-	if c.auth.authSid == "" {
+func (c *Client) PutZone(ctx context.Context, domain, zone string) (*Response, error) {
+	if getSessionID(ctx) == "" {
 		return nil, errors.New("must be logged in to put zone")
 	}
 
-	return c.postRequest("dns-zone-put", url.Values{"domain": {dns01.UnFqdn(domain)}, "zone": {strings.TrimSpace(zone)}})
+	return c.postRequest(ctx, "dns-zone-put", url.Values{"domain": {dns01.UnFqdn(domain)}, "zone": {strings.TrimSpace(zone)}})
 }
 
 // postRequest performs actual HTTP request.
-func (c *Client) postRequest(cmd string, data url.Values) (*Response, error) {
+func (c *Client) postRequest(ctx context.Context, cmd string, data url.Values) (*Response, error) {
 	endpoint, err := url.JoinPath(c.BaseURL, cmd)
 	if err != nil {
 		return nil, err
 	}
 
-	if c.auth.authSid != "" {
-		data.Set("auth-sid", c.auth.authSid)
+	if getSessionID(ctx) != "" {
+		data.Set("auth-sid", getSessionID(ctx))
 	}
 
 	if c.Debug {
 		log.Infof("postRequest:\n\tURL: %q\n\tData: %v", endpoint, data)
 	}
 
-	resp, err := c.HTTPClient.PostForm(endpoint, data)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, strings.NewReader(data.Encode()))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to create request: %w", err)
 	}
-	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, errutils.NewHTTPDoError(req, err)
 	}
+
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("HTTP error %d [%s]: %v", resp.StatusCode, http.StatusText(resp.StatusCode), string(body))
+		return nil, errutils.NewUnexpectedResponseStatusCodeError(req, resp)
 	}
 
-	return parseResponse(string(body)), nil
+	raw, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errutils.NewReadResponseError(req, resp.StatusCode, err)
+	}
+
+	return parseResponse(string(raw)), nil
 }
 
 // parseResponse parses HTTP response body.

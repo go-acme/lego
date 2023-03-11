@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -31,7 +32,7 @@ func TestClient_AddRecord(t *testing.T) {
 		TTL:            36000,
 	}
 
-	err := client.AddRecord(query)
+	err := client.AddRecord(context.Background(), query)
 	require.NoError(t, err)
 }
 
@@ -45,7 +46,7 @@ func TestClient_AddRecord_error(t *testing.T) {
 		TTL:            36000,
 	}
 
-	err := client.AddRecord(query)
+	err := client.AddRecord(context.Background(), query)
 	require.Error(t, err)
 }
 
@@ -66,7 +67,7 @@ func TestClient_AddRecord_integration(t *testing.T) {
 		TTL:            36000,
 	}
 
-	err := client.AddRecord(query)
+	err := client.AddRecord(context.Background(), query)
 	require.NoError(t, err)
 
 	query = RecordQuery{
@@ -76,7 +77,7 @@ func TestClient_AddRecord_integration(t *testing.T) {
 		TTL:            36000,
 	}
 
-	err = client.AddRecord(query)
+	err = client.AddRecord(context.Background(), query)
 	require.NoError(t, err)
 }
 
@@ -88,7 +89,7 @@ func TestClient_RemoveRecord(t *testing.T) {
 		Type:           "TXT",
 		Value:          "",
 	}
-	err := client.RemoveRecord(query)
+	err := client.RemoveRecord(context.Background(), query)
 	require.NoError(t, err)
 }
 
@@ -100,7 +101,7 @@ func TestClient_RemoveRecord_error(t *testing.T) {
 		Type:           "TXT",
 		Value:          "",
 	}
-	err := client.RemoveRecord(query)
+	err := client.RemoveRecord(context.Background(), query)
 	require.Error(t, err)
 }
 
@@ -120,7 +121,7 @@ func TestClient_RemoveRecord_integration(t *testing.T) {
 		Value:          "",
 	}
 
-	err := client.RemoveRecord(query)
+	err := client.RemoveRecord(context.Background(), query)
 	require.NoError(t, err)
 }
 
@@ -131,7 +132,7 @@ func TestClient_ListRecords(t *testing.T) {
 		Domain: "example.com",
 	}
 
-	records, err := client.ListRecords(query)
+	records, err := client.ListRecords(context.Background(), query)
 	require.NoError(t, err)
 
 	expected := []Record{
@@ -183,7 +184,7 @@ func TestClient_ListRecords_error(t *testing.T) {
 		Domain: "www.example.com",
 	}
 
-	_, err := client.ListRecords(query)
+	_, err := client.ListRecords(context.Background(), query)
 	require.Error(t, err)
 }
 
@@ -201,7 +202,7 @@ func TestClient_ListRecords_integration(t *testing.T) {
 		Domain: "example.com",
 	}
 
-	records, err := client.ListRecords(query)
+	records, err := client.ListRecords(context.Background(), query)
 	require.NoError(t, err)
 
 	for _, record := range records {

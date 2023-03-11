@@ -2,6 +2,7 @@
 package internetbs
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -107,7 +108,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		TTL:            d.config.TTL,
 	}
 
-	err := d.client.AddRecord(query)
+	err := d.client.AddRecord(context.Background(), query)
 	if err != nil {
 		return fmt.Errorf("internetbs: %w", err)
 	}
@@ -126,7 +127,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		TTL:            d.config.TTL,
 	}
 
-	err := d.client.RemoveRecord(query)
+	err := d.client.RemoveRecord(context.Background(), query)
 	if err != nil {
 		return fmt.Errorf("internetbs: %w", err)
 	}

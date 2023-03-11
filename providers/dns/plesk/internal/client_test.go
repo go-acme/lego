@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -16,6 +17,7 @@ import (
 
 func setupTest(t *testing.T, filename string) *Client {
 	t.Helper()
+
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
 	t.Cleanup(server.Close)
@@ -64,7 +66,7 @@ func setupTest(t *testing.T, filename string) *Client {
 func TestClient_GetSite(t *testing.T) {
 	client := setupTest(t, "get-site.xml")
 
-	siteID, err := client.GetSite("example.com")
+	siteID, err := client.GetSite(context.Background(), "example.com")
 	require.NoError(t, err)
 
 	assert.Equal(t, 82, siteID)
@@ -73,7 +75,7 @@ func TestClient_GetSite(t *testing.T) {
 func TestClient_GetSite_error(t *testing.T) {
 	client := setupTest(t, "get-site-error.xml")
 
-	siteID, err := client.GetSite("example.com")
+	siteID, err := client.GetSite(context.Background(), "example.com")
 	require.Error(t, err)
 
 	assert.Equal(t, 0, siteID)
@@ -82,7 +84,7 @@ func TestClient_GetSite_error(t *testing.T) {
 func TestClient_GetSite_system_error(t *testing.T) {
 	client := setupTest(t, "global-error.xml")
 
-	siteID, err := client.GetSite("example.com")
+	siteID, err := client.GetSite(context.Background(), "example.com")
 	require.Error(t, err)
 
 	assert.Equal(t, 0, siteID)
@@ -91,7 +93,7 @@ func TestClient_GetSite_system_error(t *testing.T) {
 func TestClient_AddRecord(t *testing.T) {
 	client := setupTest(t, "add-record.xml")
 
-	recordID, err := client.AddRecord(123, "_acme-challenge.example.com", "txtTXTtxt")
+	recordID, err := client.AddRecord(context.Background(), 123, "_acme-challenge.example.com", "txtTXTtxt")
 	require.NoError(t, err)
 
 	assert.Equal(t, 4537, recordID)
@@ -100,8 +102,8 @@ func TestClient_AddRecord(t *testing.T) {
 func TestClient_AddRecord_error(t *testing.T) {
 	client := setupTest(t, "add-record-error.xml")
 
-	recordID, err := client.AddRecord(123, "_acme-challenge.example.com", "txtTXTtxt")
-	require.Error(t, err)
+	recordID, err := client.AddRecord(context.Background(), 123, "_acme-challenge.example.com", "txtTXTtxt")
+	require.ErrorAs(t, err, new(RecResult))
 
 	assert.Equal(t, 0, recordID)
 }
@@ -109,8 +111,8 @@ func TestClient_AddRecord_error(t *testing.T) {
 func TestClient_AddRecord_system_error(t *testing.T) {
 	client := setupTest(t, "global-error.xml")
 
-	recordID, err := client.AddRecord(123, "_acme-challenge.example.com", "txtTXTtxt")
-	require.Error(t, err)
+	recordID, err := client.AddRecord(context.Background(), 123, "_acme-challenge.example.com", "txtTXTtxt")
+	require.ErrorAs(t, err, new(*System))
 
 	assert.Equal(t, 0, recordID)
 }
@@ -118,7 +120,7 @@ func TestClient_AddRecord_system_error(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := setupTest(t, "delete-record.xml")
 
-	recordID, err := client.DeleteRecord(4537)
+	recordID, err := client.DeleteRecord(context.Background(), 4537)
 	require.NoError(t, err)
 
 	assert.Equal(t, 4537, recordID)
@@ -127,8 +129,8 @@ func TestClient_DeleteRecord(t *testing.T) {
 func TestClient_DeleteRecord_error(t *testing.T) {
 	client := setupTest(t, "delete-record-error.xml")
 
-	recordID, err := client.DeleteRecord(4537)
-	require.Error(t, err)
+	recordID, err := client.DeleteRecord(context.Background(), 4537)
+	require.ErrorAs(t, err, new(RecResult))
 
 	assert.Equal(t, 0, recordID)
 }
@@ -136,8 +138,8 @@ func TestClient_DeleteRecord_error(t *testing.T) {
 func TestClient_DeleteRecord_system_error(t *testing.T) {
 	client := setupTest(t, "global-error.xml")
 
-	recordID, err := client.DeleteRecord(4537)
-	require.Error(t, err)
+	recordID, err := client.DeleteRecord(context.Background(), 4537)
+	require.ErrorAs(t, err, new(*System))
 
 	assert.Equal(t, 0, recordID)
 }

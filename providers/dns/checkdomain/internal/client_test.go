@@ -1,6 +1,8 @@
-package checkdomain
+package internal
 
 import (
+	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -15,29 +17,39 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func setupTestProvider(t *testing.T) (*DNSProvider, *http.ServeMux) {
+func setupTest(t *testing.T) (*Client, *http.ServeMux) {
 	t.Helper()
 
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
 	t.Cleanup(server.Close)
 
-	config := NewDefaultConfig()
-	config.Endpoint, _ = url.Parse(server.URL)
-	config.Token = "secret"
+	client := NewClient(OAuthStaticAccessToken(server.Client(), "secret"))
+	client.BaseURL, _ = url.Parse(server.URL)
 
-	p, err := NewDNSProviderConfig(config)
-	require.NoError(t, err)
-
-	return p, mux
+	return client, mux
 }
 
-func Test_getDomainIDByName(t *testing.T) {
-	prd, handler := setupTestProvider(t)
+func checkAuthorizationHeader(req *http.Request) error {
+	val := req.Header.Get("Authorization")
+	if val != "Bearer secret" {
+		return fmt.Errorf("invalid header value, got: %s want %s", val, "Bearer secret")
+	}
+	return nil
+}
 
-	handler.HandleFunc("/v1/domains", func(rw http.ResponseWriter, req *http.Request) {
+func TestClient_GetDomainIDByName(t *testing.T) {
+	client, mux := setupTest(t)
+
+	mux.HandleFunc("/v1/domains", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
 			http.Error(rw, "invalid method: "+req.Method, http.StatusBadRequest)
+			return
+		}
+
+		err := checkAuthorizationHeader(req)
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusUnauthorized)
 			return
 		}
 
@@ -48,25 +60,31 @@ func Test_getDomainIDByName(t *testing.T) {
 			}},
 		}
 
-		err := json.NewEncoder(rw).Encode(domainList)
+		err = json.NewEncoder(rw).Encode(domainList)
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	})
 
-	id, err := prd.getDomainIDByName("test.com")
+	id, err := client.GetDomainIDByName(context.Background(), "test.com")
 	require.NoError(t, err)
 
 	assert.Equal(t, 1, id)
 }
 
-func Test_checkNameservers(t *testing.T) {
-	prd, handler := setupTestProvider(t)
+func TestClient_CheckNameservers(t *testing.T) {
+	client, mux := setupTest(t)
 
-	handler.HandleFunc("/v1/domains/1/nameservers", func(rw http.ResponseWriter, req *http.Request) {
+	mux.HandleFunc("/v1/domains/1/nameservers", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
 			http.Error(rw, "invalid method: "+req.Method, http.StatusBadRequest)
+			return
+		}
+
+		err := checkAuthorizationHeader(req)
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusUnauthorized)
 			return
 		}
 
@@ -78,23 +96,29 @@ func Test_checkNameservers(t *testing.T) {
 			},
 		}
 
-		err := json.NewEncoder(rw).Encode(nsResp)
+		err = json.NewEncoder(rw).Encode(nsResp)
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	})
 
-	err := prd.checkNameservers(1)
+	err := client.CheckNameservers(context.Background(), 1)
 	require.NoError(t, err)
 }
 
-func Test_createRecord(t *testing.T) {
-	prd, handler := setupTestProvider(t)
+func TestClient_CreateRecord(t *testing.T) {
+	client, mux := setupTest(t)
 
-	handler.HandleFunc("/v1/domains/1/nameservers/records", func(rw http.ResponseWriter, req *http.Request) {
+	mux.HandleFunc("/v1/domains/1/nameservers/records", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodPost {
 			http.Error(rw, "invalid method: "+req.Method, http.StatusBadRequest)
+			return
+		}
+
+		err := checkAuthorizationHeader(req)
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusUnauthorized)
 			return
 		}
 
@@ -104,7 +128,7 @@ func Test_createRecord(t *testing.T) {
 			return
 		}
 
-		if string(content) != `{"name":"test.com","value":"value","ttl":300,"priority":0,"type":"TXT"}` {
+		if string(bytes.TrimSpace(content)) != `{"name":"test.com","value":"value","ttl":300,"priority":0,"type":"TXT"}` {
 			http.Error(rw, "invalid request body: "+string(content), http.StatusBadRequest)
 			return
 		}
@@ -117,12 +141,12 @@ func Test_createRecord(t *testing.T) {
 		Value: "value",
 	}
 
-	err := prd.createRecord(1, record)
+	err := client.CreateRecord(context.Background(), 1, record)
 	require.NoError(t, err)
 }
 
-func Test_deleteTXTRecord(t *testing.T) {
-	prd, handler := setupTestProvider(t)
+func TestClient_DeleteTXTRecord(t *testing.T) {
+	client, mux := setupTest(t)
 
 	domainName := "lego.test"
 	recordValue := "test"
@@ -158,20 +182,26 @@ func Test_deleteTXTRecord(t *testing.T) {
 		},
 	}
 
-	handler.HandleFunc("/v1/domains/1", func(rw http.ResponseWriter, req *http.Request) {
+	mux.HandleFunc("/v1/domains/1", func(rw http.ResponseWriter, req *http.Request) {
+		err := checkAuthorizationHeader(req)
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusUnauthorized)
+			return
+		}
+
 		resp := DomainResponse{
 			ID:   1,
 			Name: domainName,
 		}
 
-		err := json.NewEncoder(rw).Encode(resp)
+		err = json.NewEncoder(rw).Encode(resp)
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	})
 
-	handler.HandleFunc("/v1/domains/1/nameservers", func(rw http.ResponseWriter, req *http.Request) {
+	mux.HandleFunc("/v1/domains/1/nameservers", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
 			http.Error(rw, "invalid method: "+req.Method, http.StatusBadRequest)
 			return
@@ -188,7 +218,7 @@ func Test_deleteTXTRecord(t *testing.T) {
 		}
 	})
 
-	handler.HandleFunc("/v1/domains/1/nameservers/records", func(rw http.ResponseWriter, req *http.Request) {
+	mux.HandleFunc("/v1/domains/1/nameservers/records", func(rw http.ResponseWriter, req *http.Request) {
 		switch req.Method {
 		case http.MethodGet:
 			resp := RecordListingResponse{
@@ -226,6 +256,6 @@ func Test_deleteTXTRecord(t *testing.T) {
 	})
 
 	info := dns01.GetChallengeInfo(domainName, "abc")
-	err := prd.deleteTXTRecord(1, info.EffectiveFQDN, recordValue)
+	err := client.DeleteTXTRecord(context.Background(), 1, info.EffectiveFQDN, recordValue)
 	require.NoError(t, err)
 }

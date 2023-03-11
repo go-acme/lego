@@ -2,6 +2,7 @@
 package dynu
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -97,12 +98,14 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	rootDomain, err := d.client.GetRootDomain(dns01.UnFqdn(info.EffectiveFQDN))
+	ctx := context.Background()
+
+	rootDomain, err := d.client.GetRootDomain(ctx, dns01.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
 		return fmt.Errorf("dynu: could not find root domain for %s: %w", domain, err)
 	}
 
-	records, err := d.client.GetRecords(dns01.UnFqdn(info.EffectiveFQDN), "TXT")
+	records, err := d.client.GetRecords(ctx, dns01.UnFqdn(info.EffectiveFQDN), "TXT")
 	if err != nil {
 		return fmt.Errorf("dynu: failed to get records for %s: %w", domain, err)
 	}
@@ -129,7 +132,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		TTL:        d.config.TTL,
 	}
 
-	err = d.client.AddNewRecord(rootDomain.ID, record)
+	err = d.client.AddNewRecord(ctx, rootDomain.ID, record)
 	if err != nil {
 		return fmt.Errorf("dynu: failed to add record to %s: %w", domain, err)
 	}
@@ -141,19 +144,21 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	rootDomain, err := d.client.GetRootDomain(dns01.UnFqdn(info.EffectiveFQDN))
+	ctx := context.Background()
+
+	rootDomain, err := d.client.GetRootDomain(ctx, dns01.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
 		return fmt.Errorf("dynu: could not find root domain for %s: %w", domain, err)
 	}
 
-	records, err := d.client.GetRecords(dns01.UnFqdn(info.EffectiveFQDN), "TXT")
+	records, err := d.client.GetRecords(ctx, dns01.UnFqdn(info.EffectiveFQDN), "TXT")
 	if err != nil {
 		return fmt.Errorf("dynu: failed to get records for %s: %w", domain, err)
 	}
 
 	for _, record := range records {
 		if record.Hostname == dns01.UnFqdn(info.EffectiveFQDN) && record.TextData == info.Value {
-			err = d.client.DeleteRecord(rootDomain.ID, record.ID)
+			err = d.client.DeleteRecord(ctx, rootDomain.ID, record.ID)
 			if err != nil {
 				return fmt.Errorf("dynu: failed to remove TXT record for %s: %w", domain, err)
 			}

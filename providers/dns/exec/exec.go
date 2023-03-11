@@ -2,6 +2,7 @@
 package exec
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -67,7 +68,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 // for adding and removing the DNS record.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
-		return nil, errors.New("the configuration is nil")
+		return nil, errors.New("exec: the configuration is nil")
 	}
 
 	return &DNSProvider{config: config}, nil
@@ -75,42 +76,22 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	var args []string
-	if d.config.Mode == "RAW" {
-		args = []string{"present", "--", domain, token, keyAuth}
-	} else {
-		info := dns01.GetChallengeInfo(domain, keyAuth)
-		args = []string{"present", info.EffectiveFQDN, info.Value}
+	err := d.run(context.Background(), "present", domain, token, keyAuth)
+	if err != nil {
+		return fmt.Errorf("exec: %w", err)
 	}
 
-	cmd := exec.Command(d.config.Program, args...)
-
-	output, err := cmd.CombinedOutput()
-	if len(output) > 0 {
-		log.Println(string(output))
-	}
-
-	return err
+	return nil
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	var args []string
-	if d.config.Mode == "RAW" {
-		args = []string{"cleanup", "--", domain, token, keyAuth}
-	} else {
-		info := dns01.GetChallengeInfo(domain, keyAuth)
-		args = []string{"cleanup", info.EffectiveFQDN, info.Value}
+	err := d.run(context.Background(), "cleanup", domain, token, keyAuth)
+	if err != nil {
+		return fmt.Errorf("exec: %w", err)
 	}
 
-	cmd := exec.Command(d.config.Program, args...)
-
-	output, err := cmd.CombinedOutput()
-	if len(output) > 0 {
-		log.Println(string(output))
-	}
-
-	return err
+	return nil
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
@@ -123,4 +104,23 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 // Returns the interval between each iteration.
 func (d *DNSProvider) Sequential() time.Duration {
 	return d.config.SequenceInterval
+}
+
+func (d *DNSProvider) run(ctx context.Context, command, domain, token, keyAuth string) error {
+	var args []string
+	if d.config.Mode == "RAW" {
+		args = []string{command, "--", domain, token, keyAuth}
+	} else {
+		info := dns01.GetChallengeInfo(domain, keyAuth)
+		args = []string{command, info.EffectiveFQDN, info.Value}
+	}
+
+	cmd := exec.CommandContext(ctx, d.config.Program, args...)
+
+	output, err := cmd.CombinedOutput()
+	if len(output) > 0 {
+		log.Println(string(output))
+	}
+
+	return err
 }

@@ -1,5 +1,7 @@
 package internal
 
+import "fmt"
+
 type APIError struct {
 	Error ErrorContent `json:"error"`
 }
@@ -7,6 +9,10 @@ type APIError struct {
 type ErrorContent struct {
 	Code    int    `json:"code,omitempty"`
 	Message string `json:"message,omitempty"`
+}
+
+func (e ErrorContent) Error() string {
+	return fmt.Sprintf("%d: %s", e.Code, e.Message)
 }
 
 type Authorization struct {

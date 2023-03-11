@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -16,8 +17,8 @@ func setupTest(t *testing.T) (*Client, *http.ServeMux) {
 	t.Helper()
 
 	mux := http.NewServeMux()
-
 	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	client := NewClient("user", "secret")
 	client.HTTPClient = server.Client()
@@ -91,7 +92,7 @@ func TestClient_AddRecord(t *testing.T) {
 		TTL:  30,
 	}
 
-	err := client.AddRecord("example.com", record)
+	err := client.AddRecord(context.Background(), "example.com", record)
 	require.NoError(t, err)
 }
 
@@ -107,7 +108,7 @@ func TestClient_AddRecord_error(t *testing.T) {
 		TTL:  30,
 	}
 
-	err := client.AddRecord("example.com", record)
+	err := client.AddRecord(context.Background(), "example.com", record)
 	require.Error(t, err)
 }
 
@@ -128,7 +129,7 @@ func TestClient_RemoveRecord(t *testing.T) {
 		Data: "txtTXTtxt",
 	}
 
-	err := client.RemoveRecord("example.com", record)
+	err := client.RemoveRecord(context.Background(), "example.com", record)
 	require.NoError(t, err)
 }
 
@@ -143,6 +144,6 @@ func TestClient_RemoveRecord_error(t *testing.T) {
 		Data: "txtTXTtxt",
 	}
 
-	err := client.RemoveRecord("example.com", record)
+	err := client.RemoveRecord(context.Background(), "example.com", record)
 	require.Error(t, err)
 }

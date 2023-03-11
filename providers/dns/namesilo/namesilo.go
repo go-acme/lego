@@ -88,10 +88,12 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zoneName, err := getZoneNameByDomain(info.EffectiveFQDN)
+	zone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("namesilo: %w", err)
+		return fmt.Errorf("namesilo: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
+
+	zoneName := dns01.UnFqdn(zone)
 
 	subdomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zoneName)
 	if err != nil {
@@ -120,10 +122,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zoneName, err := getZoneNameByDomain(info.EffectiveFQDN)
+	zone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("namesilo: %w", err)
+		return fmt.Errorf("namesilo: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
+
+	zoneName := dns01.UnFqdn(zone)
 
 	resp, err := d.client.DnsListRecords(&namesilo.DnsListRecordsParams{Domain: zoneName})
 	if err != nil {
@@ -151,12 +155,4 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
-}
-
-func getZoneNameByDomain(domain string) (string, error) {
-	zone, err := dns01.FindZoneByFqdn(domain)
-	if err != nil {
-		return "", fmt.Errorf("failed to find zone for domain: %s, %w", domain, err)
-	}
-	return dns01.UnFqdn(zone), nil
 }

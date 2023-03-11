@@ -2,126 +2,64 @@ package internal
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
-	"encoding/xml"
 	"fmt"
-	"io"
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 	"github.com/mitchellh/mapstructure"
 )
 
-const (
-	authEndpoint = "https://kasapi.kasserver.com/soap/KasAuth.php"
-	apiEndpoint  = "https://kasapi.kasserver.com/soap/KasApi.php"
-)
+const apiEndpoint = "https://kasapi.kasserver.com/soap/KasApi.php"
+
+type Authentication interface {
+	Authentication(ctx context.Context, sessionLifetime int, sessionUpdateLifetime bool) (string, error)
+}
 
 // Client a KAS server client.
 type Client struct {
-	login    string
-	password string
+	login string
 
-	authEndpoint string
-	apiEndpoint  string
-	HTTPClient   *http.Client
-	floodTime    time.Time
+	floodTime   time.Time
+	muFloodTime sync.Mutex
+
+	baseURL    string
+	HTTPClient *http.Client
 }
 
 // NewClient creates a new Client.
-func NewClient(login string, password string) *Client {
+func NewClient(login string) *Client {
 	return &Client{
-		login:        login,
-		password:     password,
-		authEndpoint: authEndpoint,
-		apiEndpoint:  apiEndpoint,
-		HTTPClient:   &http.Client{Timeout: 10 * time.Second},
+		login:      login,
+		baseURL:    apiEndpoint,
+		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 	}
-}
-
-// Authentication Creates a credential token.
-// - sessionLifetime: Validity of the token in seconds.
-// - sessionUpdateLifetime: with `true` the session is extended with every request.
-func (c Client) Authentication(sessionLifetime int, sessionUpdateLifetime bool) (string, error) {
-	sul := "N"
-	if sessionUpdateLifetime {
-		sul = "Y"
-	}
-
-	ar := AuthRequest{
-		Login:                 c.login,
-		AuthData:              c.password,
-		AuthType:              "plain",
-		SessionLifetime:       sessionLifetime,
-		SessionUpdateLifetime: sul,
-	}
-
-	body, err := json.Marshal(ar)
-	if err != nil {
-		return "", fmt.Errorf("request marshal: %w", err)
-	}
-
-	payload := []byte(strings.TrimSpace(fmt.Sprintf(kasAuthEnvelope, body)))
-
-	req, err := http.NewRequest(http.MethodPost, c.authEndpoint, bytes.NewReader(payload))
-	if err != nil {
-		return "", fmt.Errorf("request creation: %w", err)
-	}
-
-	resp, err := c.HTTPClient.Do(req)
-	if err != nil {
-		return "", fmt.Errorf("request execution: %w", err)
-	}
-
-	defer func() { _ = resp.Body.Close() }()
-
-	if resp.StatusCode != http.StatusOK {
-		data, _ := io.ReadAll(resp.Body)
-		return "", fmt.Errorf("invalid status code: %d %s", resp.StatusCode, string(data))
-	}
-
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", fmt.Errorf("response read: %w", err)
-	}
-
-	var e KasAuthEnvelope
-	decoder := xml.NewTokenDecoder(Trimmer{decoder: xml.NewDecoder(bytes.NewReader(data))})
-	err = decoder.Decode(&e)
-	if err != nil {
-		return "", fmt.Errorf("response xml decode: %w", err)
-	}
-
-	if e.Body.Fault != nil {
-		return "", e.Body.Fault
-	}
-
-	return e.Body.KasAuthResponse.Return.Text, nil
 }
 
 // GetDNSSettings Reading out the DNS settings of a zone.
 // - zone: host zone.
 // - recordID: the ID of the resource record (optional).
-func (c *Client) GetDNSSettings(credentialToken, zone, recordID string) ([]ReturnInfo, error) {
+func (c *Client) GetDNSSettings(ctx context.Context, zone, recordID string) ([]ReturnInfo, error) {
 	requestParams := map[string]string{"zone_host": zone}
 
 	if recordID != "" {
 		requestParams["record_id"] = recordID
 	}
 
-	item, err := c.do(credentialToken, "get_dns_settings", requestParams)
+	req, err := c.newRequest(ctx, "get_dns_settings", requestParams)
 	if err != nil {
 		return nil, err
 	}
 
-	raw := getValue(item)
-
 	var g GetDNSSettingsAPIResponse
-	err = mapstructure.Decode(raw, &g)
+	err = c.do(req, &g)
 	if err != nil {
-		return nil, fmt.Errorf("response struct decode: %w", err)
+		return nil, err
 	}
 
 	c.updateFloodTime(g.Response.KasFloodDelay)
@@ -130,18 +68,16 @@ func (c *Client) GetDNSSettings(credentialToken, zone, recordID string) ([]Retur
 }
 
 // AddDNSSettings Creation of a DNS resource record.
-func (c *Client) AddDNSSettings(credentialToken string, record DNSRequest) (string, error) {
-	item, err := c.do(credentialToken, "add_dns_settings", record)
+func (c *Client) AddDNSSettings(ctx context.Context, record DNSRequest) (string, error) {
+	req, err := c.newRequest(ctx, "add_dns_settings", record)
 	if err != nil {
 		return "", err
 	}
 
-	raw := getValue(item)
-
 	var g AddDNSSettingsAPIResponse
-	err = mapstructure.Decode(raw, &g)
+	err = c.do(req, &g)
 	if err != nil {
-		return "", fmt.Errorf("response struct decode: %w", err)
+		return "", err
 	}
 
 	c.updateFloodTime(g.Response.KasFloodDelay)
@@ -150,20 +86,18 @@ func (c *Client) AddDNSSettings(credentialToken string, record DNSRequest) (stri
 }
 
 // DeleteDNSSettings Deleting a DNS Resource Record.
-func (c *Client) DeleteDNSSettings(credentialToken, recordID string) (bool, error) {
+func (c *Client) DeleteDNSSettings(ctx context.Context, recordID string) (bool, error) {
 	requestParams := map[string]string{"record_id": recordID}
 
-	item, err := c.do(credentialToken, "delete_dns_settings", requestParams)
+	req, err := c.newRequest(ctx, "delete_dns_settings", requestParams)
 	if err != nil {
 		return false, err
 	}
 
-	raw := getValue(item)
-
 	var g DeleteDNSSettingsAPIResponse
-	err = mapstructure.Decode(raw, &g)
+	err = c.do(req, &g)
 	if err != nil {
-		return false, fmt.Errorf("response struct decode: %w", err)
+		return false, err
 	}
 
 	c.updateFloodTime(g.Response.KasFloodDelay)
@@ -171,65 +105,72 @@ func (c *Client) DeleteDNSSettings(credentialToken, recordID string) (bool, erro
 	return g.Response.ReturnInfo, nil
 }
 
-func (c Client) do(credentialToken, action string, requestParams interface{}) (*Item, error) {
-	time.Sleep(time.Until(c.floodTime))
-
+func (c *Client) newRequest(ctx context.Context, action string, requestParams any) (*http.Request, error) {
 	ar := KasRequest{
 		Login:         c.login,
 		AuthType:      "session",
-		AuthData:      credentialToken,
+		AuthData:      getToken(ctx),
 		Action:        action,
 		RequestParams: requestParams,
 	}
 
 	body, err := json.Marshal(ar)
 	if err != nil {
-		return nil, fmt.Errorf("request marshal: %w", err)
+		return nil, fmt.Errorf("failed to create request JSON body: %w", err)
 	}
 
 	payload := []byte(strings.TrimSpace(fmt.Sprintf(kasAPIEnvelope, body)))
 
-	req, err := http.NewRequest(http.MethodPost, c.apiEndpoint, bytes.NewReader(payload))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL, bytes.NewReader(payload))
 	if err != nil {
-		return nil, fmt.Errorf("request creation: %w", err)
+		return nil, fmt.Errorf("unable to create request: %w", err)
 	}
+
+	return req, nil
+}
+
+func (c *Client) do(req *http.Request, result any) error {
+	c.muFloodTime.Lock()
+	time.Sleep(time.Until(c.floodTime))
+	c.muFloodTime.Unlock()
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("request execution: %w", err)
+		return errutils.NewHTTPDoError(req, err)
 	}
 
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
-		data, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("invalid status code: %d %s", resp.StatusCode, string(data))
+		return errutils.NewUnexpectedResponseStatusCodeError(req, resp)
 	}
 
-	data, err := io.ReadAll(resp.Body)
+	envlp, err := decodeXML[KasAPIResponseEnvelope](resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("response read: %w", err)
+		return err
 	}
 
-	var e KasAPIResponseEnvelope
-	decoder := xml.NewTokenDecoder(Trimmer{decoder: xml.NewDecoder(bytes.NewReader(data))})
-	err = decoder.Decode(&e)
+	if envlp.Body.Fault != nil {
+		return envlp.Body.Fault
+	}
+
+	raw := getValue(envlp.Body.KasAPIResponse.Return)
+
+	err = mapstructure.Decode(raw, result)
 	if err != nil {
-		return nil, fmt.Errorf("response xml decode: %w", err)
+		return fmt.Errorf("response struct decode: %w", err)
 	}
 
-	if e.Body.Fault != nil {
-		return nil, e.Body.Fault
-	}
-
-	return e.Body.KasAPIResponse.Return, nil
+	return nil
 }
 
 func (c *Client) updateFloodTime(delay float64) {
+	c.muFloodTime.Lock()
 	c.floodTime = time.Now().Add(time.Duration(delay * float64(time.Second)))
+	c.muFloodTime.Unlock()
 }
 
-func getValue(item *Item) interface{} {
+func getValue(item *Item) any {
 	switch {
 	case item.Raw != "":
 		v, _ := strconv.ParseBool(item.Raw)
@@ -253,7 +194,7 @@ func getValue(item *Item) interface{} {
 		return getValue(item.Value)
 
 	case len(item.Items) > 0 && item.Type == "SOAP-ENC:Array":
-		var v []interface{}
+		var v []any
 		for _, i := range item.Items {
 			v = append(v, getValue(i))
 		}
@@ -261,7 +202,7 @@ func getValue(item *Item) interface{} {
 		return v
 
 	case len(item.Items) > 0:
-		v := map[string]interface{}{}
+		v := map[string]any{}
 		for _, i := range item.Items {
 			v[getKey(i)] = getValue(i)
 		}

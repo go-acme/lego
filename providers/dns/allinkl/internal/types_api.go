@@ -35,7 +35,7 @@ type KasRequest struct {
 	// Action API function.
 	Action string `json:"kas_action,omitempty"`
 	// RequestParams Parameters to the API function.
-	RequestParams interface{} `json:"KasRequestParams,omitempty"`
+	RequestParams any `json:"KasRequestParams,omitempty"`
 }
 
 type DNSRequest struct {
@@ -64,13 +64,13 @@ type GetDNSSettingsResponse struct {
 }
 
 type ReturnInfo struct {
-	ID         interface{} `json:"record_id,omitempty" mapstructure:"record_id"`
-	Zone       string      `json:"record_zone,omitempty" mapstructure:"record_zone"`
-	Name       string      `json:"record_name,omitempty" mapstructure:"record_name"`
-	Type       string      `json:"record_type,omitempty" mapstructure:"record_type"`
-	Data       string      `json:"record_data,omitempty" mapstructure:"record_data"`
-	Changeable string      `json:"record_changeable,omitempty" mapstructure:"record_changeable"`
-	Aux        int         `json:"record_aux,omitempty" mapstructure:"record_aux"`
+	ID         any    `json:"record_id,omitempty" mapstructure:"record_id"`
+	Zone       string `json:"record_zone,omitempty" mapstructure:"record_zone"`
+	Name       string `json:"record_name,omitempty" mapstructure:"record_name"`
+	Type       string `json:"record_type,omitempty" mapstructure:"record_type"`
+	Data       string `json:"record_data,omitempty" mapstructure:"record_data"`
+	Changeable string `json:"record_changeable,omitempty" mapstructure:"record_changeable"`
+	Aux        int    `json:"record_aux,omitempty" mapstructure:"record_aux"`
 }
 
 type AddDNSSettingsAPIResponse struct {

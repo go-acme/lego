@@ -13,36 +13,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestClient_Authentication(t *testing.T) {
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	mux.HandleFunc("/", testHandler("auth.xml"))
-
-	client := NewClient("user", "secret")
-	client.authEndpoint = server.URL
-
-	credentialToken, err := client.Authentication(60, false)
-	require.NoError(t, err)
-
-	assert.Equal(t, "593959ca04f0de9689b586c6a647d15d", credentialToken)
-}
-
-func TestClient_Authentication_error(t *testing.T) {
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	mux.HandleFunc("/", testHandler("auth_fault.xml"))
-
-	client := NewClient("user", "secret")
-	client.authEndpoint = server.URL
-
-	_, err := client.Authentication(60, false)
-	require.Error(t, err)
-}
-
 func TestClient_GetDNSSettings(t *testing.T) {
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
@@ -50,12 +20,10 @@ func TestClient_GetDNSSettings(t *testing.T) {
 
 	mux.HandleFunc("/", testHandler("get_dns_settings.xml"))
 
-	client := NewClient("user", "secret")
-	client.apiEndpoint = server.URL
+	client := NewClient("user")
+	client.baseURL = server.URL
 
-	token := "sha1secret"
-
-	records, err := client.GetDNSSettings(token, "example.com", "")
+	records, err := client.GetDNSSettings(mockContext(), "example.com", "")
 	require.NoError(t, err)
 
 	expected := []ReturnInfo{
@@ -134,10 +102,8 @@ func TestClient_AddDNSSettings(t *testing.T) {
 
 	mux.HandleFunc("/", testHandler("add_dns_settings.xml"))
 
-	client := NewClient("user", "secret")
-	client.apiEndpoint = server.URL
-
-	token := "sha1secret"
+	client := NewClient("user")
+	client.baseURL = server.URL
 
 	record := DNSRequest{
 		ZoneHost:   "42cnc.de.",
@@ -146,7 +112,7 @@ func TestClient_AddDNSSettings(t *testing.T) {
 		RecordData: "abcdefgh",
 	}
 
-	recordID, err := client.AddDNSSettings(token, record)
+	recordID, err := client.AddDNSSettings(mockContext(), record)
 	require.NoError(t, err)
 
 	assert.Equal(t, "57347444", recordID)
@@ -159,12 +125,10 @@ func TestClient_DeleteDNSSettings(t *testing.T) {
 
 	mux.HandleFunc("/", testHandler("delete_dns_settings.xml"))
 
-	client := NewClient("user", "secret")
-	client.apiEndpoint = server.URL
+	client := NewClient("user")
+	client.baseURL = server.URL
 
-	token := "sha1secret"
-
-	r, err := client.DeleteDNSSettings(token, "57347450")
+	r, err := client.DeleteDNSSettings(mockContext(), "57347450")
 	require.NoError(t, err)
 
 	assert.True(t, r)

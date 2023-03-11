@@ -2,6 +2,7 @@
 package hyperone
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
@@ -105,18 +106,20 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := d.getHostedZone(info.EffectiveFQDN)
+	ctx := context.Background()
+
+	zone, err := d.getHostedZone(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("hyperone: failed to get zone for fqdn=%s: %w", info.EffectiveFQDN, err)
 	}
 
-	recordset, err := d.client.FindRecordset(zone.ID, "TXT", info.EffectiveFQDN)
+	recordset, err := d.client.FindRecordset(ctx, zone.ID, "TXT", info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("hyperone: fqdn=%s, zone ID=%s: %w", info.EffectiveFQDN, zone.ID, err)
 	}
 
 	if recordset == nil {
-		_, err = d.client.CreateRecordset(zone.ID, "TXT", info.EffectiveFQDN, info.Value, d.config.TTL)
+		_, err = d.client.CreateRecordset(ctx, zone.ID, "TXT", info.EffectiveFQDN, info.Value, d.config.TTL)
 		if err != nil {
 			return fmt.Errorf("hyperone: failed to create recordset: fqdn=%s, zone ID=%s, value=%s: %w", info.EffectiveFQDN, zone.ID, info.Value, err)
 		}
@@ -124,7 +127,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return nil
 	}
 
-	_, err = d.client.CreateRecord(zone.ID, recordset.ID, info.Value)
+	_, err = d.client.CreateRecord(ctx, zone.ID, recordset.ID, info.Value)
 	if err != nil {
 		return fmt.Errorf("hyperone: failed to create record: fqdn=%s, zone ID=%s, recordset ID=%s: %w", info.EffectiveFQDN, zone.ID, recordset.ID, err)
 	}
@@ -137,12 +140,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := d.getHostedZone(info.EffectiveFQDN)
+	ctx := context.Background()
+
+	zone, err := d.getHostedZone(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("hyperone: failed to get zone for fqdn=%s: %w", info.EffectiveFQDN, err)
 	}
 
-	recordset, err := d.client.FindRecordset(zone.ID, "TXT", info.EffectiveFQDN)
+	recordset, err := d.client.FindRecordset(ctx, zone.ID, "TXT", info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("hyperone: fqdn=%s, zone ID=%s: %w", info.EffectiveFQDN, zone.ID, err)
 	}
@@ -151,7 +156,7 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 		return fmt.Errorf("hyperone: recordset to remove not found: fqdn=%s", info.EffectiveFQDN)
 	}
 
-	records, err := d.client.GetRecords(zone.ID, recordset.ID)
+	records, err := d.client.GetRecords(ctx, zone.ID, recordset.ID)
 	if err != nil {
 		return fmt.Errorf("hyperone: %w", err)
 	}
@@ -160,7 +165,7 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 			return fmt.Errorf("hyperone: record with content %s not found: fqdn=%s", info.Value, info.EffectiveFQDN)
 		}
 
-		err = d.client.DeleteRecordset(zone.ID, recordset.ID)
+		err = d.client.DeleteRecordset(ctx, zone.ID, recordset.ID)
 		if err != nil {
 			return fmt.Errorf("hyperone: failed to delete record: fqdn=%s, zone ID=%s, recordset ID=%s: %w", info.EffectiveFQDN, zone.ID, recordset.ID, err)
 		}
@@ -170,7 +175,7 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 
 	for _, record := range records {
 		if record.Content == info.Value {
-			err = d.client.DeleteRecord(zone.ID, recordset.ID, record.ID)
+			err = d.client.DeleteRecord(ctx, zone.ID, recordset.ID, record.ID)
 			if err != nil {
 				return fmt.Errorf("hyperone: fqdn=%s, zone ID=%s, recordset ID=%s, record ID=%s: %w", info.EffectiveFQDN, zone.ID, recordset.ID, record.ID, err)
 			}
@@ -183,13 +188,13 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 }
 
 // getHostedZone gets the hosted zone.
-func (d *DNSProvider) getHostedZone(fqdn string) (*internal.Zone, error) {
+func (d *DNSProvider) getHostedZone(ctx context.Context, fqdn string) (*internal.Zone, error) {
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("hetzner: could not find zone for FQDN %q: %w", fqdn, err)
 	}
 
-	return d.client.FindZone(authZone)
+	return d.client.FindZone(ctx, authZone)
 }
 
 func GetDefaultPassportLocation() (string, error) {

@@ -2,6 +2,7 @@ package internal
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,6 +10,8 @@ import (
 	"net/http"
 	"net/url"
 	"time"
+
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
 const defaultBaseURL = "https://api.hyperone.com/v2"
@@ -21,12 +24,11 @@ type signer interface {
 
 // Client the HyperOne client.
 type Client struct {
-	HTTPClient *http.Client
-
-	apiEndpoint *url.URL
-
 	passport *Passport
 	signer   signer
+
+	baseURL    *url.URL
+	HTTPClient *http.Client
 }
 
 // NewClient Creates a new HyperOne client.
@@ -62,10 +64,10 @@ func NewClient(apiEndpoint, locationID string, passport *Passport) (*Client, err
 	}
 
 	client := &Client{
-		HTTPClient:  &http.Client{Timeout: 5 * time.Second},
-		apiEndpoint: baseURL.JoinPath("dns", locationID, "project", projectID),
-		passport:    passport,
-		signer:      tokenSigner,
+		HTTPClient: &http.Client{Timeout: 5 * time.Second},
+		baseURL:    baseURL.JoinPath("dns", locationID, "project", projectID),
+		passport:   passport,
+		signer:     tokenSigner,
 	}
 
 	return client, nil
@@ -74,11 +76,11 @@ func NewClient(apiEndpoint, locationID string, passport *Passport) (*Client, err
 // FindRecordset looks for recordset with given recordType and name and returns it.
 // In case if recordset is not found returns nil.
 // https://api.hyperone.com/v2/docs#operation/dns_project_zone_recordset_list
-func (c *Client) FindRecordset(zoneID, recordType, name string) (*Recordset, error) {
+func (c *Client) FindRecordset(ctx context.Context, zoneID, recordType, name string) (*Recordset, error) {
 	// https://api.hyperone.com/v2/dns/{locationId}/project/{projectId}/zone/{zoneId}/recordset
-	endpoint := c.apiEndpoint.JoinPath("zone", zoneID, "recordset")
+	endpoint := c.baseURL.JoinPath("zone", zoneID, "recordset")
 
-	req, err := c.createRequest(http.MethodGet, endpoint.String(), nil)
+	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +104,10 @@ func (c *Client) FindRecordset(zoneID, recordType, name string) (*Recordset, err
 
 // CreateRecordset creates recordset and record with given value within one request.
 // https://api.hyperone.com/v2/docs#operation/dns_project_zone_recordset_create
-func (c *Client) CreateRecordset(zoneID, recordType, name, recordValue string, ttl int) (*Recordset, error) {
+func (c *Client) CreateRecordset(ctx context.Context, zoneID, recordType, name, recordValue string, ttl int) (*Recordset, error) {
+	// https://api.hyperone.com/v2/dns/{locationId}/project/{projectId}/zone/{zoneId}/recordset
+	endpoint := c.baseURL.JoinPath("zone", zoneID, "recordset")
+
 	recordsetInput := Recordset{
 		RecordType: recordType,
 		Name:       name,
@@ -110,15 +115,7 @@ func (c *Client) CreateRecordset(zoneID, recordType, name, recordValue string, t
 		Record:     &Record{Content: recordValue},
 	}
 
-	requestBody, err := json.Marshal(recordsetInput)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal recordset: %w", err)
-	}
-
-	// https://api.hyperone.com/v2/dns/{locationId}/project/{projectId}/zone/{zoneId}/recordset
-	endpoint := c.apiEndpoint.JoinPath("zone", zoneID, "recordset")
-
-	req, err := c.createRequest(http.MethodPost, endpoint.String(), bytes.NewBuffer(requestBody))
+	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, recordsetInput)
 	if err != nil {
 		return nil, err
 	}
@@ -135,11 +132,11 @@ func (c *Client) CreateRecordset(zoneID, recordType, name, recordValue string, t
 
 // DeleteRecordset deletes a recordset.
 // https://api.hyperone.com/v2/docs#operation/dns_project_zone_recordset_delete
-func (c *Client) DeleteRecordset(zoneID string, recordsetID string) error {
+func (c *Client) DeleteRecordset(ctx context.Context, zoneID string, recordsetID string) error {
 	// https://api.hyperone.com/v2/dns/{locationId}/project/{projectId}/zone/{zoneId}/recordset/{recordsetId}
-	endpoint := c.apiEndpoint.JoinPath("zone", zoneID, "recordset", recordsetID)
+	endpoint := c.baseURL.JoinPath("zone", zoneID, "recordset", recordsetID)
 
-	req, err := c.createRequest(http.MethodDelete, endpoint.String(), nil)
+	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
 	}
@@ -149,11 +146,11 @@ func (c *Client) DeleteRecordset(zoneID string, recordsetID string) error {
 
 // GetRecords gets all records within specified recordset.
 // https://api.hyperone.com/v2/docs#operation/dns_project_zone_recordset_record_list
-func (c *Client) GetRecords(zoneID string, recordsetID string) ([]Record, error) {
+func (c *Client) GetRecords(ctx context.Context, zoneID string, recordsetID string) ([]Record, error) {
 	// https://api.hyperone.com/v2/dns/{locationId}/project/{projectId}/zone/{zoneId}/recordset/{recordsetId}/record
-	endpoint := c.apiEndpoint.JoinPath("zone", zoneID, "recordset", recordsetID, "record")
+	endpoint := c.baseURL.JoinPath("zone", zoneID, "recordset", recordsetID, "record")
 
-	req, err := c.createRequest(http.MethodGet, endpoint.String(), nil)
+	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -170,16 +167,11 @@ func (c *Client) GetRecords(zoneID string, recordsetID string) ([]Record, error)
 
 // CreateRecord creates a record.
 // https://api.hyperone.com/v2/docs#operation/dns_project_zone_recordset_record_create
-func (c *Client) CreateRecord(zoneID, recordsetID, recordContent string) (*Record, error) {
+func (c *Client) CreateRecord(ctx context.Context, zoneID, recordsetID, recordContent string) (*Record, error) {
 	// https://api.hyperone.com/v2/dns/{locationId}/project/{projectId}/zone/{zoneId}/recordset/{recordsetId}/record
-	endpoint := c.apiEndpoint.JoinPath("zone", zoneID, "recordset", recordsetID, "record")
+	endpoint := c.baseURL.JoinPath("zone", zoneID, "recordset", recordsetID, "record")
 
-	requestBody, err := json.Marshal(Record{Content: recordContent})
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal record: %w", err)
-	}
-
-	req, err := c.createRequest(http.MethodPost, endpoint.String(), bytes.NewBuffer(requestBody))
+	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, Record{Content: recordContent})
 	if err != nil {
 		return nil, err
 	}
@@ -196,11 +188,11 @@ func (c *Client) CreateRecord(zoneID, recordsetID, recordContent string) (*Recor
 
 // DeleteRecord deletes a record.
 // https://api.hyperone.com/v2/docs#operation/dns_project_zone_recordset_record_delete
-func (c *Client) DeleteRecord(zoneID, recordsetID, recordID string) error {
+func (c *Client) DeleteRecord(ctx context.Context, zoneID, recordsetID, recordID string) error {
 	// https://api.hyperone.com/v2/dns/{locationId}/project/{projectId}/zone/{zoneId}/recordset/{recordsetId}/record/{recordId}
-	endpoint := c.apiEndpoint.JoinPath("zone", zoneID, "recordset", recordsetID, "record", recordID)
+	endpoint := c.baseURL.JoinPath("zone", zoneID, "recordset", recordsetID, "record", recordID)
 
-	req, err := c.createRequest(http.MethodDelete, endpoint.String(), nil)
+	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
 	}
@@ -209,8 +201,8 @@ func (c *Client) DeleteRecord(zoneID, recordsetID, recordID string) error {
 }
 
 // FindZone looks for DNS Zone and returns nil if it does not exist.
-func (c *Client) FindZone(name string) (*Zone, error) {
-	zones, err := c.GetZones()
+func (c *Client) FindZone(ctx context.Context, name string) (*Zone, error) {
+	zones, err := c.GetZones(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -226,11 +218,11 @@ func (c *Client) FindZone(name string) (*Zone, error) {
 
 // GetZones gets all user's zones.
 // https://api.hyperone.com/v2/docs#operation/dns_project_zone_list
-func (c *Client) GetZones() ([]Zone, error) {
+func (c *Client) GetZones(ctx context.Context) ([]Zone, error) {
 	// https://api.hyperone.com/v2/dns/{locationId}/project/{projectId}/zone
-	endpoint := c.apiEndpoint.JoinPath("zone")
+	endpoint := c.baseURL.JoinPath("zone")
 
-	req, err := c.createRequest(http.MethodGet, endpoint.String(), nil)
+	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -245,69 +237,72 @@ func (c *Client) GetZones() ([]Zone, error) {
 	return zones, nil
 }
 
-func (c *Client) createRequest(method, endpoint string, body io.Reader) (*http.Request, error) {
-	req, err := http.NewRequest(method, endpoint, body)
-	if err != nil {
-		return nil, err
-	}
-
+func (c *Client) do(req *http.Request, result any) error {
 	jwt, err := c.signer.GetJWT()
 	if err != nil {
-		return nil, fmt.Errorf("failed to sign the request: %w", err)
+		return fmt.Errorf("failed to sign the request: %w", err)
 	}
 
 	req.Header.Set("Authorization", "Bearer "+jwt)
-	req.Header.Set("Content-Type", "application/json")
 
-	return req, nil
-}
-
-func (c *Client) do(req *http.Request, v interface{}) error {
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
-		return err
+		return errutils.NewHTTPDoError(req, err)
 	}
 
 	defer func() { _ = resp.Body.Close() }()
 
-	err = checkResponse(resp)
-	if err != nil {
-		return err
+	if resp.StatusCode/100 != 2 {
+		return parseError(req, resp)
 	}
 
-	if v == nil {
+	if result == nil {
 		return nil
 	}
 
 	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("failed to read body: %w", err)
+		return errutils.NewReadResponseError(req, resp.StatusCode, err)
 	}
 
-	if err = json.Unmarshal(raw, v); err != nil {
-		return fmt.Errorf("unmarshaling %T error: %w: %s", v, err, string(raw))
+	if err = json.Unmarshal(raw, result); err != nil {
+		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
 	}
 
 	return nil
 }
 
-func checkResponse(resp *http.Response) error {
-	if resp.StatusCode/100 == 2 {
-		return nil
+func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
+	buf := new(bytes.Buffer)
+
+	if payload != nil {
+		err := json.NewEncoder(buf).Encode(payload)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create request JSON body: %w", err)
+		}
 	}
 
+	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), buf)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create request: %w", err)
+	}
+
+	req.Header.Set("Accept", "application/json")
+
+	if payload != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
+	return req, nil
+}
+
+func parseError(req *http.Request, resp *http.Response) error {
 	var msg string
 	if resp.StatusCode == http.StatusForbidden {
 		msg = "forbidden: check if service account you are trying to use has permissions required for managing DNS"
 	} else {
-		msg = fmt.Sprintf("%d: unknown error", resp.StatusCode)
+		msg = "unknown error"
 	}
 
-	// add response body to error message if not empty
-	responseBody, _ := io.ReadAll(resp.Body)
-	if len(responseBody) > 0 {
-		msg = fmt.Sprintf("%s: %s", msg, string(responseBody))
-	}
-
-	return errors.New(msg)
+	return fmt.Errorf("%s: %w", msg, errutils.NewUnexpectedResponseStatusCodeError(req, resp))
 }

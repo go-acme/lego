@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -17,11 +18,11 @@ import (
 const apiKey = "key"
 
 func TestClient_GetRecords(t *testing.T) {
-	client, mux := setup(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/api/v1/zones/example.com/dns-records", testHandler("./RecordsResponse.json", http.MethodGet, http.StatusOK))
 
-	records, err := client.GetRecords("example.com")
+	records, err := client.GetRecords(context.Background(), "example.com")
 	require.NoError(t, err)
 
 	expected := []Record{
@@ -41,11 +42,11 @@ func TestClient_GetRecords(t *testing.T) {
 }
 
 func TestClient_GetRecord(t *testing.T) {
-	client, mux := setup(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/api/v1/zones/example.com/dns-records/123", testHandler("./RecordResponse.json", http.MethodGet, http.StatusOK))
 
-	record, err := client.GetRecord("example.com", "123")
+	record, err := client.GetRecord(context.Background(), "example.com", "123")
 	require.NoError(t, err)
 
 	expected := &Record{
@@ -63,7 +64,7 @@ func TestClient_GetRecord(t *testing.T) {
 }
 
 func TestClient_CreateRecord(t *testing.T) {
-	client, mux := setup(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/api/v1/zones/example.com/dns-records", testHandler("./RecordResponse.json", http.MethodPost, http.StatusCreated))
 
@@ -78,7 +79,7 @@ func TestClient_CreateRecord(t *testing.T) {
 		TTL: 3600,
 	}
 
-	record, err := client.CreateRecord("example.com", data)
+	record, err := client.CreateRecord(context.Background(), "example.com", data)
 	require.NoError(t, err)
 
 	expected := &Record{
@@ -97,33 +98,33 @@ func TestClient_CreateRecord(t *testing.T) {
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
-	client, mux := setup(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/api/v1/zones/example.com/dns-records/123", func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(http.StatusNoContent)
 	})
 
-	err := client.DeleteRecord("example.com", "123")
+	err := client.DeleteRecord(context.Background(), "example.com", "123")
 	require.NoError(t, err)
 }
 
 func TestClient_DeleteRecord_NotFound_Response(t *testing.T) {
-	client, mux := setup(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/api/v1/zones/example.com/dns-records/123", func(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(http.StatusNotFound)
 	})
 
-	err := client.DeleteRecord("example.com", "123")
+	err := client.DeleteRecord(context.Background(), "example.com", "123")
 	require.NoError(t, err)
 }
 
 func TestClient_DeleteRecord_error(t *testing.T) {
-	client, mux := setup(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/api/v1/zones/example.com/dns-records/123", testHandler("./error.json", http.MethodDelete, http.StatusUnauthorized))
 
-	err := client.DeleteRecord("example.com", "123")
+	err := client.DeleteRecord(context.Background(), "example.com", "123")
 	require.Error(t, err)
 }
 
@@ -158,16 +159,14 @@ func testHandler(filename string, method string, statusCode int) http.HandlerFun
 	}
 }
 
-func setup(t *testing.T) (*Client, *http.ServeMux) {
+func setupTest(t *testing.T) (*Client, *http.ServeMux) {
 	t.Helper()
 
 	mux := http.NewServeMux()
-
 	server := httptest.NewServer(mux)
 	t.Cleanup(server.Close)
 
-	client := NewClient(apiKey)
-	client.HTTPClient = server.Client()
+	client := NewClient(OAuthStaticAccessToken(server.Client(), apiKey))
 	client.baseURL, _ = url.Parse(server.URL)
 
 	return client, mux

@@ -128,12 +128,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("designate: couldn't get zone ID in Present: %w", err)
+		return fmt.Errorf("designate: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	zoneID, err := d.getZoneID(authZone)
 	if err != nil {
-		return fmt.Errorf("designate: %w", err)
+		return fmt.Errorf("designate: couldn't get zone ID in Present: %w", err)
 	}
 
 	// use mutex to prevent race condition between creating the record and verifying it
@@ -168,7 +168,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return err
+		return fmt.Errorf("designate: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	zoneID, err := d.getZoneID(authZone)

@@ -246,7 +246,7 @@ func (d *DNSProvider) findExistingRecordID(zoneID, recordName string) (string, e
 func (d *DNSProvider) findZoneAndRecordName(fqdn string) (string, string, error) {
 	zone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return "", "", err
+		return "", "", fmt.Errorf("designate: could not find zone for FQDN %q: %w", fqdn, err)
 	}
 
 	zone = dns01.UnFqdn(zone)

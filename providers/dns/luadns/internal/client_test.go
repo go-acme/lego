@@ -1,10 +1,12 @@
 package internal
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"testing"
 
@@ -12,13 +14,22 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestClient_ListZones(t *testing.T) {
+func setupTest(t *testing.T, apiToken string) (*Client, *http.ServeMux) {
+	t.Helper()
+
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
 	t.Cleanup(server.Close)
 
-	client := NewClient("me", "secretA")
-	client.BaseURL = server.URL
+	client := NewClient("me", apiToken)
+	client.baseURL, _ = url.Parse(server.URL)
+	client.HTTPClient = server.Client()
+
+	return client, mux
+}
+
+func TestClient_ListZones(t *testing.T) {
+	client, mux := setupTest(t, "secretA")
 
 	mux.HandleFunc("/v1/zones", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
@@ -46,7 +57,7 @@ func TestClient_ListZones(t *testing.T) {
 		}
 	})
 
-	zones, err := client.ListZones()
+	zones, err := client.ListZones(context.Background())
 	require.NoError(t, err)
 
 	expected := []DNSZone{
@@ -78,12 +89,7 @@ func TestClient_ListZones(t *testing.T) {
 }
 
 func TestClient_CreateRecord(t *testing.T) {
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	client := NewClient("me", "secretB")
-	client.BaseURL = server.URL
+	client, mux := setupTest(t, "secretB")
 
 	mux.HandleFunc("/v1/zones/1/records", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodPost {
@@ -120,7 +126,7 @@ func TestClient_CreateRecord(t *testing.T) {
 		TTL:     300,
 	}
 
-	newRecord, err := client.CreateRecord(zone, record)
+	newRecord, err := client.CreateRecord(context.Background(), zone, record)
 	require.NoError(t, err)
 
 	expected := &DNSRecord{
@@ -136,12 +142,7 @@ func TestClient_CreateRecord(t *testing.T) {
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	client := NewClient("me", "secretC")
-	client.BaseURL = server.URL
+	client, mux := setupTest(t, "secretC")
 
 	mux.HandleFunc("/v1/zones/1/records/2", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodDelete {
@@ -178,6 +179,6 @@ func TestClient_DeleteRecord(t *testing.T) {
 		ZoneID:  1,
 	}
 
-	err := client.DeleteRecord(record)
+	err := client.DeleteRecord(context.Background(), record)
 	require.NoError(t, err)
 }

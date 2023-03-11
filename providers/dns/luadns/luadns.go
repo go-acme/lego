@@ -2,6 +2,7 @@
 package luadns
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -114,14 +115,16 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zones, err := d.client.ListZones()
+	ctx := context.Background()
+
+	zones, err := d.client.ListZones(ctx)
 	if err != nil {
 		return fmt.Errorf("luadns: failed to get zones: %w", err)
 	}
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("luadns: failed to find zone: %w", err)
+		return fmt.Errorf("luadns: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	zone := findZone(zones, dns01.UnFqdn(authZone))
@@ -136,7 +139,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		TTL:     d.config.TTL,
 	}
 
-	record, err := d.client.CreateRecord(*zone, newRecord)
+	record, err := d.client.CreateRecord(ctx, *zone, newRecord)
 	if err != nil {
 		return fmt.Errorf("luadns: failed to create record: %w", err)
 	}
@@ -160,7 +163,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("luadns: unknown record ID for '%s'", info.EffectiveFQDN)
 	}
 
-	err := d.client.DeleteRecord(record)
+	err := d.client.DeleteRecord(context.Background(), record)
 	if err != nil {
 		return fmt.Errorf("luadns: failed to delete record: %w", err)
 	}

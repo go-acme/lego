@@ -77,13 +77,13 @@ type responseFault struct {
 func (r responseFault) faultCode() int      { return r.FaultCode }
 func (r responseFault) faultString() string { return r.FaultString }
 
-type rpcError struct {
-	faultCode   int
-	faultString string
+type RPCError struct {
+	FaultCode   int
+	FaultString string
 }
 
-func (e rpcError) Error() string {
-	return fmt.Sprintf("RPC Error: (%d) %s", e.faultCode, e.faultString)
+func (e RPCError) Error() string {
+	return fmt.Sprintf("RPC Error: (%d) %s", e.FaultCode, e.FaultString)
 }
 
 type recordObjectsResponse struct {

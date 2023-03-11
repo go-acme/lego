@@ -12,10 +12,10 @@ import (
 
 // Client VK client.
 type Client struct {
-	baseURL       *url.URL
 	openstack     *gophercloud.ProviderClient
 	authOpts      gophercloud.AuthOptions
 	authenticated bool
+	baseURL       *url.URL
 }
 
 // NewClient creates a Client.
@@ -36,17 +36,17 @@ func NewClient(endpoint string, authOpts gophercloud.AuthOptions) (*Client, erro
 	}
 
 	return &Client{
-		baseURL:   baseURL,
 		openstack: openstackClient,
 		authOpts:  authOpts,
+		baseURL:   baseURL,
 	}, nil
 }
 
 func (c *Client) ListZones() ([]DNSZone, error) {
+	endpoint := c.baseURL.JoinPath("/")
+
 	var zones []DNSZone
 	opts := &gophercloud.RequestOpts{JSONResponse: &zones}
-
-	endpoint := c.baseURL.JoinPath("/")
 
 	err := c.request(http.MethodGet, endpoint, opts)
 	if err != nil {
@@ -57,10 +57,10 @@ func (c *Client) ListZones() ([]DNSZone, error) {
 }
 
 func (c *Client) ListTXTRecords(zoneUUID string) ([]DNSTXTRecord, error) {
+	endpoint := c.baseURL.JoinPath(zoneUUID, "txt", "/")
+
 	var records []DNSTXTRecord
 	opts := &gophercloud.RequestOpts{JSONResponse: &records}
-
-	endpoint := c.baseURL.JoinPath(zoneUUID, "txt", "/")
 
 	err := c.request(http.MethodGet, endpoint, opts)
 	if err != nil {
@@ -71,12 +71,12 @@ func (c *Client) ListTXTRecords(zoneUUID string) ([]DNSTXTRecord, error) {
 }
 
 func (c *Client) CreateTXTRecord(zoneUUID string, record *DNSTXTRecord) error {
+	endpoint := c.baseURL.JoinPath(zoneUUID, "txt", "/")
+
 	opts := &gophercloud.RequestOpts{
 		JSONBody:     record,
 		JSONResponse: record,
 	}
-
-	endpoint := c.baseURL.JoinPath(zoneUUID, "txt", "/")
 
 	return c.request(http.MethodPost, endpoint, opts)
 }

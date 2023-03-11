@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -15,7 +16,8 @@ func TestClient_LookupParentZoneID(t *testing.T) {
 	server := httptest.NewServer(mux)
 	t.Cleanup(server.Close)
 
-	client := NewClient(server.URL)
+	client := NewClient(server.URL, "user", "secret")
+	client.HTTPClient = server.Client()
 
 	mux.HandleFunc("/Services/REST/v1/getEntityByName", func(rw http.ResponseWriter, req *http.Request) {
 		query := req.URL.Query()
@@ -33,7 +35,7 @@ func TestClient_LookupParentZoneID(t *testing.T) {
 		http.Error(rw, "{}", http.StatusOK)
 	})
 
-	parentID, name, err := client.LookupParentZoneID(2, "foo.example.com")
+	parentID, name, err := client.LookupParentZoneID(context.Background(), 2, "foo.example.com")
 	require.NoError(t, err)
 
 	assert.EqualValues(t, 2, parentID)

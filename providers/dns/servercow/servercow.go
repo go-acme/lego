@@ -2,6 +2,7 @@
 package servercow
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -76,12 +77,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("servercow: incomplete credentials, missing username and/or password")
 	}
 
-	if config.HTTPClient == nil {
-		config.HTTPClient = http.DefaultClient
-	}
-
 	client := internal.NewClient(config.Username, config.Password)
-	client.HTTPClient = config.HTTPClient
+
+	if config.HTTPClient == nil {
+		client.HTTPClient = config.HTTPClient
+	}
 
 	return &DNSProvider{
 		config: config,
@@ -104,7 +104,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("servercow: %w", err)
 	}
 
-	records, err := d.client.GetRecords(authZone)
+	ctx := context.Background()
+
+	records, err := d.client.GetRecords(ctx, authZone)
 	if err != nil {
 		return fmt.Errorf("servercow: %w", err)
 	}
@@ -129,7 +131,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 			Content: append(record.Content, info.Value),
 		}
 
-		_, err = d.client.CreateUpdateRecord(authZone, request)
+		_, err = d.client.CreateUpdateRecord(ctx, authZone, request)
 		if err != nil {
 			return fmt.Errorf("servercow: failed to update TXT records: %w", err)
 		}
@@ -143,7 +145,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Content: internal.Value{info.Value},
 	}
 
-	_, err = d.client.CreateUpdateRecord(authZone, request)
+	_, err = d.client.CreateUpdateRecord(ctx, authZone, request)
 	if err != nil {
 		return fmt.Errorf("servercow: failed to create TXT record %s: %w", info.EffectiveFQDN, err)
 	}
@@ -160,7 +162,9 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("servercow: %w", err)
 	}
 
-	records, err := d.client.GetRecords(authZone)
+	ctx := context.Background()
+
+	records, err := d.client.GetRecords(ctx, authZone)
 	if err != nil {
 		return fmt.Errorf("servercow: failed to get TXT records: %w", err)
 	}
@@ -181,7 +185,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	// only 1 record value, the whole record must be deleted.
 	if len(record.Content) == 1 {
-		_, err = d.client.DeleteRecord(authZone, *record)
+		_, err = d.client.DeleteRecord(ctx, authZone, *record)
 		if err != nil {
 			return fmt.Errorf("servercow: failed to delete TXT records: %w", err)
 		}
@@ -200,7 +204,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		}
 	}
 
-	_, err = d.client.CreateUpdateRecord(authZone, request)
+	_, err = d.client.CreateUpdateRecord(ctx, authZone, request)
 	if err != nil {
 		return fmt.Errorf("servercow: failed to update TXT records: %w", err)
 	}
@@ -211,7 +215,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 func getAuthZone(domain string) (string, error) {
 	authZone, err := dns01.FindZoneByFqdn(domain)
 	if err != nil {
-		return "", fmt.Errorf("could not find zone for domain %q: %w", domain, err)
+		return "", fmt.Errorf("could not find zone for FQDN %q: %w", domain, err)
 	}
 
 	zoneName := dns01.UnFqdn(authZone)

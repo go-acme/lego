@@ -2,6 +2,7 @@
 package safedns
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -104,7 +105,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(info.EffectiveFQDN))
 	if err != nil {
-		return fmt.Errorf("safedns: could not determine zone for domain: %q: %w", info.EffectiveFQDN, err)
+		return fmt.Errorf("safedns: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	record := internal.Record{
@@ -114,7 +115,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		TTL:     d.config.TTL,
 	}
 
-	resp, err := d.client.AddRecord(zone, record)
+	resp, err := d.client.AddRecord(context.Background(), zone, record)
 	if err != nil {
 		return fmt.Errorf("safedns: %w", err)
 	}
@@ -132,7 +133,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("safedns: %w", err)
+		return fmt.Errorf("safedns: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	d.recordIDsMu.Lock()
@@ -142,7 +143,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("safedns: unknown record ID for '%s'", info.EffectiveFQDN)
 	}
 
-	err = d.client.RemoveRecord(authZone, recordID)
+	err = d.client.RemoveRecord(context.Background(), authZone, recordID)
 	if err != nil {
 		return fmt.Errorf("safedns: %w", err)
 	}

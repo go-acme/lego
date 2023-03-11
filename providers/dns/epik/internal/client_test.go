@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -14,8 +15,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T) (*http.ServeMux, *Client) {
+func setupTest(t *testing.T) (*Client, *http.ServeMux) {
 	t.Helper()
+
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
 	t.Cleanup(server.Close)
@@ -24,15 +26,15 @@ func setupTest(t *testing.T) (*http.ServeMux, *Client) {
 	client.HTTPClient = server.Client()
 	client.baseURL, _ = url.Parse(server.URL)
 
-	return mux, client
+	return client, mux
 }
 
 func TestClient_GetDNSRecords(t *testing.T) {
-	mux, client := setupTest(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/domains/example.com/records", testHandler(http.MethodGet, http.StatusOK, "getDnsRecord.json"))
 
-	records, err := client.GetDNSRecords("example.com")
+	records, err := client.GetDNSRecords(context.Background(), "example.com")
 	require.NoError(t, err)
 
 	expected := []Record{
@@ -87,16 +89,16 @@ func TestClient_GetDNSRecords(t *testing.T) {
 }
 
 func TestClient_GetDNSRecords_error(t *testing.T) {
-	mux, client := setupTest(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/domains/example.com/records", testHandler(http.MethodGet, http.StatusUnauthorized, "error.json"))
 
-	_, err := client.GetDNSRecords("example.com")
+	_, err := client.GetDNSRecords(context.Background(), "example.com")
 	assert.Error(t, err)
 }
 
 func TestClient_CreateHostRecord(t *testing.T) {
-	mux, client := setupTest(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/domains/example.com/records", testHandler(http.MethodPost, http.StatusOK, "createHostRecord.json"))
 
@@ -108,7 +110,7 @@ func TestClient_CreateHostRecord(t *testing.T) {
 		TTL:  300,
 	}
 
-	data, err := client.CreateHostRecord("example.com", record)
+	data, err := client.CreateHostRecord(context.Background(), "example.com", record)
 	require.NoError(t, err)
 
 	expected := &Data{
@@ -120,7 +122,7 @@ func TestClient_CreateHostRecord(t *testing.T) {
 }
 
 func TestClient_CreateHostRecord_error(t *testing.T) {
-	mux, client := setupTest(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/domains/example.com/records", testHandler(http.MethodPost, http.StatusUnauthorized, "error.json"))
 
@@ -132,16 +134,16 @@ func TestClient_CreateHostRecord_error(t *testing.T) {
 		TTL:  300,
 	}
 
-	_, err := client.CreateHostRecord("example.com", record)
+	_, err := client.CreateHostRecord(context.Background(), "example.com", record)
 	assert.Error(t, err)
 }
 
 func TestClient_RemoveHostRecord(t *testing.T) {
-	mux, client := setupTest(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/domains/example.com/records", testHandler(http.MethodDelete, http.StatusOK, "removeHostRecord.json"))
 
-	data, err := client.RemoveHostRecord("example.com", "abc123")
+	data, err := client.RemoveHostRecord(context.Background(), "example.com", "abc123")
 	require.NoError(t, err)
 
 	expected := &Data{
@@ -153,11 +155,11 @@ func TestClient_RemoveHostRecord(t *testing.T) {
 }
 
 func TestClient_RemoveHostRecord_error(t *testing.T) {
-	mux, client := setupTest(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/domains/example.com/records", testHandler(http.MethodDelete, http.StatusUnauthorized, "error.json"))
 
-	_, err := client.RemoveHostRecord("example.com", "abc123")
+	_, err := client.RemoveHostRecord(context.Background(), "example.com", "abc123")
 	assert.Error(t, err)
 }
 

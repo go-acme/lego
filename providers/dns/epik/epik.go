@@ -2,6 +2,7 @@
 package epik
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -98,7 +99,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	// find authZone
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("epik: %w", err)
+		return fmt.Errorf("epik: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
@@ -113,7 +114,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		TTL:  d.config.TTL,
 	}
 
-	_, err = d.client.CreateHostRecord(dns01.UnFqdn(authZone), record)
+	_, err = d.client.CreateHostRecord(context.Background(), dns01.UnFqdn(authZone), record)
 	if err != nil {
 		return fmt.Errorf("epik: %w", err)
 	}
@@ -128,12 +129,14 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	// find authZone
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("epik: %w", err)
+		return fmt.Errorf("epik: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	dom := dns01.UnFqdn(authZone)
 
-	records, err := d.client.GetDNSRecords(dom)
+	ctx := context.Background()
+
+	records, err := d.client.GetDNSRecords(ctx, dom)
 	if err != nil {
 		return fmt.Errorf("epik: %w", err)
 	}
@@ -145,7 +148,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	for _, record := range records {
 		if strings.EqualFold(record.Type, "TXT") && record.Data == info.Value && record.Name == subDomain {
-			_, err = d.client.RemoveHostRecord(dom, record.ID)
+			_, err = d.client.RemoveHostRecord(ctx, dom, record.ID)
 			if err != nil {
 				return fmt.Errorf("epik: %w", err)
 			}

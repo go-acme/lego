@@ -2,6 +2,7 @@
 package autodns
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/autodns/internal"
 )
 
 // Environment variables names.
@@ -27,10 +29,7 @@ const (
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
-const (
-	defaultEndpointContext int = 4
-	defaultTTL             int = 600
-)
+const defaultTTL int = 600
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
@@ -46,11 +45,11 @@ type Config struct {
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
-	endpoint, _ := url.Parse(env.GetOrDefaultString(EnvAPIEndpoint, defaultEndpoint))
+	endpoint, _ := url.Parse(env.GetOrDefaultString(EnvAPIEndpoint, internal.DefaultEndpoint))
 
 	return &Config{
 		Endpoint:           endpoint,
-		Context:            env.GetOrDefaultInt(EnvAPIEndpointContext, defaultEndpointContext),
+		Context:            env.GetOrDefaultInt(EnvAPIEndpointContext, internal.DefaultEndpointContext),
 		TTL:                env.GetOrDefaultInt(EnvTTL, defaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
@@ -63,6 +62,7 @@ func NewDefaultConfig() *Config {
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
+	client *internal.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for autoDNS.
@@ -94,7 +94,17 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("autodns: missing password")
 	}
 
-	return &DNSProvider{config: config}, nil
+	client := internal.NewClient(config.Username, config.Password, config.Context)
+
+	if config.Endpoint != nil {
+		client.BaseURL = config.Endpoint
+	}
+
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
+	}
+
+	return &DNSProvider{config: config, client: client}, nil
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
@@ -107,7 +117,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	records := []*ResourceRecord{{
+	records := []*internal.ResourceRecord{{
 		Name:  info.EffectiveFQDN,
 		TTL:   int64(d.config.TTL),
 		Type:  "TXT",
@@ -115,7 +125,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}}
 
 	// TODO(ldez) replace domain by FQDN to follow CNAME.
-	_, err := d.addTxtRecord(domain, records)
+	_, err := d.client.AddTxtRecords(context.Background(), domain, records)
 	if err != nil {
 		return fmt.Errorf("autodns: %w", err)
 	}
@@ -127,7 +137,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	records := []*ResourceRecord{{
+	records := []*internal.ResourceRecord{{
 		Name:  info.EffectiveFQDN,
 		TTL:   int64(d.config.TTL),
 		Type:  "TXT",
@@ -135,7 +145,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}}
 
 	// TODO(ldez) replace domain by FQDN to follow CNAME.
-	if err := d.removeTXTRecord(domain, records); err != nil {
+	if err := d.client.RemoveTXTRecords(context.Background(), domain, records); err != nil {
 		return fmt.Errorf("autodns: %w", err)
 	}
 

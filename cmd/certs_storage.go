@@ -251,15 +251,24 @@ func (s *CertificatesStorage) WritePFXFile(domain string, certRes *certificate.R
 }
 
 func (s *CertificatesStorage) MoveToArchive(domain string) error {
-	matches, err := filepath.Glob(filepath.Join(s.rootPath, sanitizedDomain(domain)+".*"))
+	sanitizedDomain := sanitizedDomain(domain)
+	matches, err := filepath.Glob(filepath.Join(s.rootPath, sanitizedDomain+".*"))
 	if err != nil {
 		return err
 	}
 
 	for _, oldFile := range matches {
+		oldFilename := filepath.Base(oldFile)
+		oldFilenameExt := filepath.Ext(oldFilename)
+		switch oldFilename[len(sanitizedDomain):] {
+		case oldFilenameExt, ".issuer.crt":
+		default:
+			continue
+		}
+
 		date := strconv.FormatInt(time.Now().Unix(), 10)
-		filename := date + "." + filepath.Base(oldFile)
-		newFile := filepath.Join(s.archivePath, filename)
+		newFilename := date + "." + oldFilename
+		newFile := filepath.Join(s.archivePath, newFilename)
 
 		err = os.Rename(oldFile, newFile)
 		if err != nil {

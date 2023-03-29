@@ -2,7 +2,7 @@ Name = "Beget.com"
 Description = ''''''
 URL = "https://beget.com/"
 Code = "beget"
-Since = "v1.0.0"
+Since = "v4.23.0"
 
 Example = '''
 BEGET_USERNAME=xxxxxx \

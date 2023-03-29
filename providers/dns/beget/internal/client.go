@@ -1,63 +1,53 @@
 package internal
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"time"
+
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
 const defaultBaseURL = "https://api.beget.com/api/"
 
 // Client the beget.com client.
 type Client struct {
-	Login  string
-	Passwd string
+	login    string
+	password string
 
-	BaseURL    string
+	baseURL    *url.URL
 	HTTPClient *http.Client
 }
 
 // NewClient Creates a beget.com client.
-func NewClient(login, passwd string) *Client {
+func NewClient(login, password string) *Client {
+	baseURL, _ := url.Parse(defaultBaseURL)
+
 	return &Client{
-		Login:      login,
-		Passwd:     passwd,
-		BaseURL:    defaultBaseURL,
-		HTTPClient: http.DefaultClient,
+		login:      login,
+		password:   password,
+		baseURL:    baseURL,
+		HTTPClient: &http.Client{Timeout: 5 * time.Second},
 	}
-}
-
-// RemoveTxtRecord removes a TXT record.
-// https://beget.com/ru/kb/api/funkczii-upravleniya-dns
-func (c Client) RemoveTxtRecord(domain, subDomain string) error {
-	request := ChangeRecordsRequest{
-		Fqdn:    fmt.Sprintf("%s.%s", subDomain, domain),
-		Records: RecordList{},
-	}
-
-	resp, err := c.do(request, "dns", "changeRecords")
-	if err != nil {
-		return err
-	}
-
-	return resp.HasError()
 }
 
 // AddTXTRecord adds a TXT record.
 // https://beget.com/ru/kb/api/funkczii-upravleniya-dns
-func (c Client) AddTXTRecord(domain, subDomain, content string) error {
+func (c Client) AddTXTRecord(ctx context.Context, domain, subDomain, content string) error {
 	request := ChangeRecordsRequest{
 		Fqdn: fmt.Sprintf("%s.%s", subDomain, domain),
 		Records: RecordList{
-			TXT: []TxtRecord{
+			TXT: []Record{
 				{Priority: 10, Value: content},
 			},
 		},
 	}
 
-	resp, err := c.do(request, "dns", "changeRecords")
+	resp, err := c.doRequest(ctx, request, "dns", "changeRecords")
 	if err != nil {
 		return err
 	}
@@ -65,66 +55,76 @@ func (c Client) AddTXTRecord(domain, subDomain, content string) error {
 	return resp.HasError()
 }
 
-func (c Client) do(request interface{}, fragments ...string) (*APIResponse, error) {
-	endpoint, err := c.createEndpoint(fragments...)
-	if err != nil {
-		return nil, err
+// RemoveTxtRecord removes a TXT record.
+// https://beget.com/ru/kb/api/funkczii-upravleniya-dns
+func (c Client) RemoveTxtRecord(ctx context.Context, domain, subDomain string) error {
+	request := ChangeRecordsRequest{
+		Fqdn:    fmt.Sprintf("%s.%s", subDomain, domain),
+		Records: RecordList{},
 	}
 
-	inputData, err := json.Marshal(request)
+	resp, err := c.doRequest(ctx, request, "dns", "changeRecords")
 	if err != nil {
-		return nil, err
+		return err
+	}
+
+	return resp.HasError()
+}
+
+func (c Client) doRequest(ctx context.Context, data any, fragments ...string) (*APIResponse, error) {
+	endpoint := c.baseURL.JoinPath(fragments...)
+
+	inputData, err := json.Marshal(data)
+	if err != nil {
+		return nil, fmt.Errorf("failed to mashall input data: %w", err)
 	}
 
 	query := endpoint.Query()
 	query.Add("input_data", string(inputData))
-	query.Add("login", c.Login)
-	query.Add("passwd", c.Passwd)
+	query.Add("login", c.login)
+	query.Add("passwd", c.password)
 	query.Add("input_format", "json")
 	query.Add("output_format", "json")
 	endpoint.RawQuery = query.Encode()
 
-	resp, err := http.Get(endpoint.String())
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint.String(), http.NoBody)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to create request: %w", err)
+	}
+
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return nil, errutils.NewHTTPDoError(req, err)
 	}
 
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode/100 != 2 {
-		all, errB := io.ReadAll(resp.Body)
-		if errB != nil {
-			return nil, fmt.Errorf("API error, status code: %d", resp.StatusCode)
-		}
-
-		var apiResp APIResponse
-		errB = json.Unmarshal(all, &apiResp)
-		if errB != nil {
-			return nil, fmt.Errorf("API error, status code: %d, %s", resp.StatusCode, string(all))
-		}
-
-		return nil, fmt.Errorf("%w, status code: %d", apiResp, resp.StatusCode)
+		return nil, parseError(req, resp)
 	}
 
-	all, err := io.ReadAll(resp.Body)
+	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, errutils.NewReadResponseError(req, resp.StatusCode, err)
 	}
 
 	var apiResp APIResponse
-	err = json.Unmarshal(all, &apiResp)
+	err = json.Unmarshal(raw, &apiResp)
 	if err != nil {
-		return nil, err
+		return nil, errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
 	}
 
 	return &apiResp, nil
 }
 
-func (c Client) createEndpoint(fragments ...string) (*url.URL, error) {
-	baseURL, err := url.Parse(c.BaseURL)
+func parseError(req *http.Request, resp *http.Response) error {
+	raw, _ := io.ReadAll(resp.Body)
+
+	var apiResp APIResponse
+	err := json.Unmarshal(raw, &apiResp)
 	if err != nil {
-		return nil, err
+		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	return baseURL.JoinPath(fragments...), nil
+	return fmt.Errorf("[status code %d] %w", resp.StatusCode, apiResp)
 }

@@ -2,7 +2,7 @@ Name = "Beget.com"
 Description = ''''''
 URL = "https://beget.com/"
 Code = "beget"
-Since = "v1.0.0"
+Since = "v4.27.0"
 
 Example = '''
 BEGET_USERNAME=xxxxxx \
@@ -15,10 +15,10 @@ lego --email you@example.com --dns beget --domains my.example.org run
     BEGET_USERNAME = "API username"
     BEGET_PASSWORD = "API password"
   [Configuration.Additional]
-    BEGET_POLLING_INTERVAL = "Time between DNS propagation check"
-    BEGET_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
-    BEGET_TTL = "The TTL of the TXT record used for the DNS challenge"
-    BEGET_HTTP_TIMEOUT = "API request timeout"
+    BEGET_POLLING_INTERVAL = "Time between DNS propagation check in seconds (Default: 2)"
+    BEGET_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation in seconds (Default: 60)"
+    BEGET_TTL = "The TTL of the TXT record used for the DNS challenge in seconds (Default: 120)"
+    BEGET_HTTP_TIMEOUT = "API request timeout in seconds (Default: 30)"
 
 [Links]
   API = "https://beget.com/ru/kb/api/funkczii-upravleniya-dns"

@@ -1,0 +1,31 @@
+{
+  "status": "success",
+  "answer": {
+    "status": "success",
+    "result": {
+      "A": [
+        {
+          "priority": 10,
+          "value": "127.0.0.1"
+        }
+      ],
+      "MX": [
+        {
+          "priority": 10,
+          "value": "mx1.beget.ru"
+        },
+        {
+          "priority": 20,
+          "value": "mx2.beget.ru"
+        }
+      ],
+      "TXT": [
+        {
+          "priority": 10,
+          "value": "TXT record"
+        }
+      ]
+    }
+  }
+}
+

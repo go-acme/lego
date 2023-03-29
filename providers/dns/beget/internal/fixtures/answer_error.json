@@ -1,0 +1,12 @@
+{
+  "status": "success",
+  "answer": {
+    "status": "error",
+    "errors": [
+      {
+        "error_code": "INVALID_DATA",
+        "error_text": "Login length cannot be greater than 12 characters"
+      }
+    ]
+  }
+}

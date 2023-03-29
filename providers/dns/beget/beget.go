@@ -2,11 +2,13 @@
 package beget
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/beget/internal"
@@ -25,6 +27,8 @@ const (
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
+var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
+
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	Username string
@@ -40,7 +44,7 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, 300),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout*2), //2m
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout*2), // 2m
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
@@ -101,7 +105,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("beget: could not find zone for domain %q and fqdn %q : %w", domain, info.EffectiveFQDN, err)
+		return fmt.Errorf("beget: could not find zone for domain %q: %w", domain, err)
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
@@ -109,7 +113,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("beget: %w", err)
 	}
 
-	err = d.client.AddTXTRecord(dns01.UnFqdn(authZone), subDomain, info.Value)
+	err = d.client.AddTXTRecord(context.Background(), dns01.UnFqdn(authZone), subDomain, info.Value)
 	if err != nil {
 		return fmt.Errorf("beget: failed to create TXT records [domain: %s, sub domain: %s]: %w",
 			dns01.UnFqdn(authZone), subDomain, err)
@@ -124,7 +128,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("beget: could not find zone for domain %q and fqdn %q : %w", domain, info.EffectiveFQDN, err)
+		return fmt.Errorf("beget: could not find zone for domain %q: %w", domain, err)
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
@@ -132,7 +136,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("beget: %w", err)
 	}
 
-	err = d.client.RemoveTxtRecord(dns01.UnFqdn(authZone), subDomain)
+	err = d.client.RemoveTxtRecord(context.Background(), dns01.UnFqdn(authZone), subDomain)
 	if err != nil {
 		return fmt.Errorf("beget: failed to remove TXT records [domain: %s, sub domain: %s]: %w",
 			dns01.UnFqdn(authZone), subDomain, err)

@@ -335,7 +335,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		// generated from: providers/dns/beget/beget.toml
 		ew.writeln(`Configuration for Beget.com.`)
 		ew.writeln(`Code:	'beget'`)
-		ew.writeln(`Since:	'v1.0.0'`)
+		ew.writeln(`Since:	'v4.12.0'`)
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)

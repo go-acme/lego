@@ -4,7 +4,7 @@ date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: beget
 dnsprovider:
-  since:    "v1.0.0"
+  since:    "v4.12.0"
   code:     "beget"
   url:      "https://beget.com/"
 ---
@@ -20,7 +20,7 @@ Configuration for [Beget.com](https://beget.com/).
 <!--more-->
 
 - Code: `beget`
-- Since: v1.0.0
+- Since: v4.12.0
 
 
 Here is an example bash command using the Beget.com provider:

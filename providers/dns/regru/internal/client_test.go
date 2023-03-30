@@ -3,6 +3,7 @@ package internal
 import (
 	"context"
 	"net/http"
+	"net/url"
 	"os"
 	"testing"
 	"time"
@@ -66,7 +67,7 @@ func TestRemoveRecord_errors(t *testing.T) {
 
 			client := NewClient(test.username, test.username)
 			client.HTTPClient = &http.Client{Timeout: 30 * time.Second}
-			client.baseURL = test.baseURL
+			client.baseURL, _ = url.Parse(test.baseURL)
 
 			err := client.RemoveTxtRecord(context.Background(), test.domain, "_acme-challenge", "txttxttxt")
 			require.EqualError(t, err, test.expected)
@@ -124,7 +125,7 @@ func TestAddTXTRecord_errors(t *testing.T) {
 
 			client := NewClient(test.username, test.username)
 			client.HTTPClient = &http.Client{Timeout: 30 * time.Second}
-			client.baseURL = test.baseURL
+			client.baseURL, _ = url.Parse(test.baseURL)
 
 			err := client.AddTXTRecord(context.Background(), test.domain, "_acme-challenge", "txttxttxt")
 			require.EqualError(t, err, test.expected)

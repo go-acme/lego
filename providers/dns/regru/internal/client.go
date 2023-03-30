@@ -19,16 +19,18 @@ type Client struct {
 	username string
 	password string
 
-	baseURL    string
+	baseURL    *url.URL
 	HTTPClient *http.Client
 }
 
 // NewClient Creates a reg.ru client.
 func NewClient(username, password string) *Client {
+	baseURL, _ := url.Parse(defaultBaseURL)
+
 	return &Client{
 		username:   username,
 		password:   password,
-		baseURL:    defaultBaseURL,
+		baseURL:    baseURL,
 		HTTPClient: &http.Client{Timeout: 5 * time.Second},
 	}
 }
@@ -75,10 +77,7 @@ func (c Client) AddTXTRecord(ctx context.Context, domain, subDomain, content str
 }
 
 func (c Client) doRequest(ctx context.Context, request any, fragments ...string) (*APIResponse, error) {
-	endpoint, err := c.createEndpoint(fragments...)
-	if err != nil {
-		return nil, err
-	}
+	endpoint := c.baseURL.JoinPath(fragments...)
 
 	inputData, err := json.Marshal(request)
 	if err != nil {
@@ -118,15 +117,6 @@ func (c Client) doRequest(ctx context.Context, request any, fragments ...string)
 	}
 
 	return &apiResp, nil
-}
-
-func (c Client) createEndpoint(fragments ...string) (*url.URL, error) {
-	baseURL, err := url.Parse(c.baseURL)
-	if err != nil {
-		return nil, err
-	}
-
-	return baseURL.JoinPath(fragments...), nil
 }
 
 func parseError(req *http.Request, resp *http.Response) error {

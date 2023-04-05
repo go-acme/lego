@@ -139,19 +139,19 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	hostedZoneID, err := d.getHostedZoneID(fqdn)
+	hostedZoneID, err := d.getHostedZoneID(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("route53: failed to determine hosted zone ID: %w", err)
 	}
 
-	records, err := d.getExistingRecordSets(hostedZoneID, fqdn)
+	records, err := d.getExistingRecordSets(hostedZoneID, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("route53: %w", err)
 	}
 
-	realValue := `"` + value + `"`
+	realValue := `"` + info.Value + `"`
 
 	var found bool
 	for _, record := range records {
@@ -165,7 +165,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	recordSet := &route53.ResourceRecordSet{
-		Name:            aws.String(fqdn),
+		Name:            aws.String(info.EffectiveFQDN),
 		Type:            aws.String("TXT"),
 		TTL:             aws.Int64(int64(d.config.TTL)),
 		ResourceRecords: records,
@@ -180,14 +180,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	hostedZoneID, err := d.getHostedZoneID(fqdn)
+	hostedZoneID, err := d.getHostedZoneID(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("failed to determine Route 53 hosted zone ID: %w", err)
 	}
 
-	records, err := d.getExistingRecordSets(hostedZoneID, fqdn)
+	records, err := d.getExistingRecordSets(hostedZoneID, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("route53: %w", err)
 	}
@@ -197,7 +197,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	recordSet := &route53.ResourceRecordSet{
-		Name:            aws.String(fqdn),
+		Name:            aws.String(info.EffectiveFQDN),
 		Type:            aws.String("TXT"),
 		TTL:             aws.Int64(int64(d.config.TTL)),
 		ResourceRecords: records,

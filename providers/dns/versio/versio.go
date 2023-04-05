@@ -102,9 +102,9 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("versio: %w", err)
 	}
@@ -121,8 +121,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	txtRecord := record{
 		Type:  "TXT",
-		Name:  fqdn,
-		Value: `"` + value + `"`,
+		Name:  info.EffectiveFQDN,
+		Value: `"` + info.Value + `"`,
 		TTL:   d.config.TTL,
 	}
 	// Add new txtRercord to existing array of DNSRecords
@@ -138,9 +138,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("versio: %w", err)
 	}
@@ -158,7 +158,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	// loop through the existing entries and remove the specific record
 	msg := &dnsRecord{}
 	for _, e := range domains.Record.DNSRecords {
-		if e.Name != fqdn {
+		if e.Name != info.EffectiveFQDN {
 			msg.DNSRecords = append(msg.DNSRecords, e)
 		}
 	}

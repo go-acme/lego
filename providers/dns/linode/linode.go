@@ -130,16 +130,16 @@ func (d *DNSProvider) Timeout() (time.Duration, time.Duration) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := d.getHostedZoneInfo(fqdn)
+	zone, err := d.getHostedZoneInfo(info.EffectiveFQDN)
 	if err != nil {
 		return err
 	}
 
 	createOpts := linodego.DomainRecordCreateOptions{
-		Name:   dns01.UnFqdn(fqdn),
-		Target: value,
+		Name:   dns01.UnFqdn(info.EffectiveFQDN),
+		Target: info.Value,
 		TTLSec: d.config.TTL,
 		Type:   linodego.RecordTypeTXT,
 	}
@@ -150,9 +150,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := d.getHostedZoneInfo(fqdn)
+	zone, err := d.getHostedZoneInfo(info.EffectiveFQDN)
 	if err != nil {
 		return err
 	}
@@ -166,8 +166,8 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	// Remove the specified resource, if it exists.
 	for _, resource := range resources {
-		if (resource.Name == dns01.UnFqdn(fqdn) || resource.Name == zone.resourceName) &&
-			resource.Target == value {
+		if (resource.Name == dns01.UnFqdn(info.EffectiveFQDN) || resource.Name == zone.resourceName) &&
+			resource.Target == info.Value {
 			if err := d.client.DeleteDomainRecord(context.Background(), zone.domainID, resource.ID); err != nil {
 				return err
 			}

@@ -110,25 +110,25 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	ikDomain, err := d.client.GetDomainByName(dns01.UnFqdn(fqdn))
+	ikDomain, err := d.client.GetDomainByName(dns01.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
-		return fmt.Errorf("infomaniak: could not get domain %q: %w", fqdn, err)
+		return fmt.Errorf("infomaniak: could not get domain %q: %w", info.EffectiveFQDN, err)
 	}
 
 	d.domainIDsMu.Lock()
 	d.domainIDs[token] = ikDomain.ID
 	d.domainIDsMu.Unlock()
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, ikDomain.CustomerName)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, ikDomain.CustomerName)
 	if err != nil {
 		return fmt.Errorf("infomaniak: %w", err)
 	}
 
 	record := internal.Record{
 		Source: subDomain,
-		Target: value,
+		Target: info.Value,
 		Type:   "TXT",
 		TTL:    d.config.TTL,
 	}
@@ -147,14 +147,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	d.recordIDsMu.Lock()
 	recordID, ok := d.recordIDs[token]
 	d.recordIDsMu.Unlock()
 
 	if !ok {
-		return fmt.Errorf("infomaniak: unknown record ID for '%s'", fqdn)
+		return fmt.Errorf("infomaniak: unknown record ID for '%s'", info.EffectiveFQDN)
 	}
 
 	d.domainIDsMu.Lock()
@@ -162,12 +162,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	d.domainIDsMu.Unlock()
 
 	if !ok {
-		return fmt.Errorf("infomaniak: unknown domain ID for '%s'", fqdn)
+		return fmt.Errorf("infomaniak: unknown domain ID for '%s'", info.EffectiveFQDN)
 	}
 
 	err := d.client.DeleteDNSRecord(domainID, recordID)
 	if err != nil {
-		return fmt.Errorf("infomaniak: could not delete record %q: %w", dns01.UnFqdn(fqdn), err)
+		return fmt.Errorf("infomaniak: could not delete record %q: %w", dns01.UnFqdn(info.EffectiveFQDN), err)
 	}
 
 	// Delete record ID from map

@@ -91,11 +91,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := getZone(fqdn)
+	zone, err := getZone(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("civo: failed to find zone: fqdn=%s: %w", fqdn, err)
+		return fmt.Errorf("civo: failed to find zone: fqdn=%s: %w", info.EffectiveFQDN, err)
 	}
 
 	dnsDomain, err := d.client.GetDNSDomain(zone)
@@ -103,14 +103,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("civo: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, zone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone)
 	if err != nil {
 		return fmt.Errorf("civo: %w", err)
 	}
 
 	_, err = d.client.CreateDNSRecord(dnsDomain.ID, &civogo.DNSRecordConfig{
 		Name:  subDomain,
-		Value: value,
+		Value: info.Value,
 		Type:  civogo.DNSRecordTypeTXT,
 		TTL:   d.config.TTL,
 	})
@@ -123,11 +123,11 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := getZone(fqdn)
+	zone, err := getZone(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("civo: failed to find zone: fqdn=%s: %w", fqdn, err)
+		return fmt.Errorf("civo: failed to find zone: fqdn=%s: %w", info.EffectiveFQDN, err)
 	}
 
 	dnsDomain, err := d.client.GetDNSDomain(zone)
@@ -140,14 +140,14 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("civo: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, zone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone)
 	if err != nil {
 		return fmt.Errorf("civo: %w", err)
 	}
 
 	var dnsRecord civogo.DNSRecord
 	for _, entry := range dnsRecords {
-		if entry.Name == subDomain && entry.Value == value {
+		if entry.Name == subDomain && entry.Value == info.Value {
 			dnsRecord = entry
 			break
 		}

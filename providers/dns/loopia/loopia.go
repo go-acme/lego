@@ -128,14 +128,14 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	subDomain, authZone, err := d.splitDomain(fqdn)
+	subDomain, authZone, err := d.splitDomain(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("loopia: %w", err)
 	}
 
-	err = d.client.AddTXTRecord(authZone, subDomain, d.config.TTL, value)
+	err = d.client.AddTXTRecord(authZone, subDomain, d.config.TTL, info.Value)
 	if err != nil {
 		return fmt.Errorf("loopia: failed to add TXT record: %w", err)
 	}
@@ -149,7 +149,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	defer d.inProgressMu.Unlock()
 
 	for _, r := range txtRecords {
-		if r.Rdata == value {
+		if r.Rdata == info.Value {
 			d.inProgressInfo[token] = r.RecordID
 			return nil
 		}
@@ -160,9 +160,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	subDomain, authZone, err := d.splitDomain(fqdn)
+	subDomain, authZone, err := d.splitDomain(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("loopia: %w", err)
 	}

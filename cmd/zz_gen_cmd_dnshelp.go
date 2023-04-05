@@ -57,6 +57,7 @@ func allDNSCodes() string {
 		"gcore",
 		"glesys",
 		"godaddy",
+		"googledomains",
 		"hetzner",
 		"hostingde",
 		"hosttech",
@@ -1041,6 +1042,25 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/godaddy`)
+
+	case "googledomains":
+		// generated from: providers/dns/googledomains/googledomains.toml
+		ew.writeln(`Configuration for Google Domains.`)
+		ew.writeln(`Code:	'googledomains'`)
+		ew.writeln(`Since:	'v4.11.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "GOOGLE_DOMAINS_ACCESS_TOKEN":	Access token`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "GOOGLE_DOMAINS_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "GOOGLE_DOMAINS_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "GOOGLE_DOMAINS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/googledomains`)
 
 	case "hetzner":
 		// generated from: providers/dns/hetzner/hetzner.toml

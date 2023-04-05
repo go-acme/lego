@@ -120,14 +120,14 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("liara: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("liara: %w", err)
 	}
@@ -135,12 +135,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	record := internal.Record{
 		Type:     "TXT",
 		Name:     subDomain,
-		Contents: []internal.Content{{Text: value}},
+		Contents: []internal.Content{{Text: info.Value}},
 		TTL:      d.config.TTL,
 	}
 	newRecord, err := d.client.CreateRecord(dns01.UnFqdn(authZone), record)
 	if err != nil {
-		return fmt.Errorf("liara: failed to create TXT record, fqdn=%s: %w", fqdn, err)
+		return fmt.Errorf("liara: failed to create TXT record, fqdn=%s: %w", info.EffectiveFQDN, err)
 	}
 
 	d.recordIDsMu.Lock()
@@ -152,9 +152,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("liara: %w", err)
 	}
@@ -164,7 +164,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	recordID, ok := d.recordIDs[token]
 	d.recordIDsMu.Unlock()
 	if !ok {
-		return fmt.Errorf("liara: unknown record ID for '%s' '%s'", fqdn, token)
+		return fmt.Errorf("liara: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
 	err = d.client.DeleteRecord(dns01.UnFqdn(authZone), recordID)

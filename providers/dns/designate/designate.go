@@ -124,9 +124,9 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("designate: couldn't get zone ID in Present: %w", err)
 	}
@@ -140,21 +140,21 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	d.dnsEntriesMu.Lock()
 	defer d.dnsEntriesMu.Unlock()
 
-	existingRecord, err := d.getRecord(zoneID, fqdn)
+	existingRecord, err := d.getRecord(zoneID, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("designate: %w", err)
 	}
 
 	if existingRecord != nil {
-		if contains(existingRecord.Records, value) {
-			log.Printf("designate: the record already exists: %s", value)
+		if contains(existingRecord.Records, info.Value) {
+			log.Printf("designate: the record already exists: %s", info.Value)
 			return nil
 		}
 
-		return d.updateRecord(existingRecord, value)
+		return d.updateRecord(existingRecord, info.Value)
 	}
 
-	err = d.createRecord(zoneID, fqdn, value)
+	err = d.createRecord(zoneID, info.EffectiveFQDN, info.Value)
 	if err != nil {
 		return fmt.Errorf("designate: %w", err)
 	}
@@ -164,9 +164,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
 		return err
 	}
@@ -180,7 +180,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	d.dnsEntriesMu.Lock()
 	defer d.dnsEntriesMu.Unlock()
 
-	record, err := d.getRecord(zoneID, fqdn)
+	record, err := d.getRecord(zoneID, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("designate: couldn't get Record ID in CleanUp: %w", err)
 	}
@@ -192,7 +192,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	err = recordsets.Delete(d.client, zoneID, record.ID).ExtractErr()
 	if err != nil {
-		return fmt.Errorf("designate: error for %s in CleanUp: %w", fqdn, err)
+		return fmt.Errorf("designate: error for %s in CleanUp: %w", info.EffectiveFQDN, err)
 	}
 	return nil
 }

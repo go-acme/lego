@@ -94,9 +94,9 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zoneName, err := d.getZoneName(fqdn)
+	zoneName, err := d.getZoneName(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("hostingde: could not determine zone for domain %q: %w", domain, err)
 	}
@@ -117,8 +117,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	rec := []DNSRecord{{
 		Type:    "TXT",
-		Name:    dns01.UnFqdn(fqdn),
-		Content: value,
+		Name:    dns01.UnFqdn(info.EffectiveFQDN),
+		Content: info.Value,
 		TTL:     d.config.TTL,
 	}}
 
@@ -134,14 +134,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	for _, record := range resp.Response.Records {
-		if record.Name == dns01.UnFqdn(fqdn) && record.Content == fmt.Sprintf(`%q`, value) {
+		if record.Name == dns01.UnFqdn(info.EffectiveFQDN) && record.Content == fmt.Sprintf(`%q`, info.Value) {
 			d.recordIDsMu.Lock()
-			d.recordIDs[fqdn] = record.ID
+			d.recordIDs[info.EffectiveFQDN] = record.ID
 			d.recordIDsMu.Unlock()
 		}
 	}
 
-	if d.recordIDs[fqdn] == "" {
+	if d.recordIDs[info.EffectiveFQDN] == "" {
 		return fmt.Errorf("hostingde: error getting ID of just created record, for domain %s", domain)
 	}
 
@@ -150,17 +150,17 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zoneName, err := d.getZoneName(fqdn)
+	zoneName, err := d.getZoneName(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("hostingde: could not determine zone for domain %q: %w", domain, err)
 	}
 
 	rec := []DNSRecord{{
 		Type:    "TXT",
-		Name:    dns01.UnFqdn(fqdn),
-		Content: `"` + value + `"`,
+		Name:    dns01.UnFqdn(info.EffectiveFQDN),
+		Content: `"` + info.Value + `"`,
 	}}
 
 	// get the ZoneConfig for that domain
@@ -185,7 +185,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	// Delete record ID from map
 	d.recordIDsMu.Lock()
-	delete(d.recordIDs, fqdn)
+	delete(d.recordIDs, info.EffectiveFQDN)
 	d.recordIDsMu.Unlock()
 
 	_, err = d.updateZone(req)

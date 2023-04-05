@@ -99,12 +99,12 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, _, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	record := internal.Record{
-		Hostname: dns01.UnFqdn(fqdn),
+		Hostname: dns01.UnFqdn(info.EffectiveFQDN),
 		Type:     "TXT",
-		Value:    value,
+		Value:    info.Value,
 		TTL:      d.config.TTL,
 	}
 
@@ -118,10 +118,10 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	record := internal.Record{
-		Hostname: dns01.UnFqdn(fqdn),
+		Hostname: dns01.UnFqdn(info.EffectiveFQDN),
 		Type:     "TXT",
 		Value:    "delete",
 		TTL:      d.config.TTL,

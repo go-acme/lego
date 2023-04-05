@@ -105,14 +105,14 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("nodion: could not find zone for domain %q and fqdn %q : %w", domain, fqdn, err)
+		return fmt.Errorf("nodion: could not find zone for domain %q and fqdn %q : %w", domain, info.EffectiveFQDN, err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("nodion: %w", err)
 	}
@@ -137,7 +137,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	record := nodion.Record{
 		RecordType: nodion.TypeTXT,
 		Name:       subDomain,
-		Content:    value,
+		Content:    info.Value,
 		TTL:        d.config.TTL,
 	}
 
@@ -156,21 +156,21 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("nodion: could not find zone for domain %q and fqdn %q : %w", domain, fqdn, err)
+		return fmt.Errorf("nodion: could not find zone for domain %q and fqdn %q : %w", domain, info.EffectiveFQDN, err)
 	}
 
 	d.zoneIDsMu.Lock()
 	zoneID, ok := d.zoneIDs[token]
 	d.zoneIDsMu.Unlock()
 	if !ok {
-		return fmt.Errorf("nodion: unknown zone ID for '%s' '%s'", fqdn, token)
+		return fmt.Errorf("nodion: unknown zone ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("nodion: %w", err)
 	}
@@ -180,7 +180,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	filter := &nodion.RecordsFilter{
 		Name:       subDomain,
 		RecordType: nodion.TypeTXT,
-		Content:    value,
+		Content:    info.Value,
 	}
 
 	records, err := d.client.GetRecords(ctx, zoneID, filter)
@@ -193,7 +193,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	if len(records) > 1 {
-		return fmt.Errorf("nodion: too many possible records for the domain %s: %v", fqdn, records)
+		return fmt.Errorf("nodion: too many possible records for the domain %s: %v", info.EffectiveFQDN, records)
 	}
 
 	_, err = d.client.DeleteRecord(ctx, zoneID, records[0].ID)

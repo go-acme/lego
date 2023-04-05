@@ -113,22 +113,22 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := d.getHostedZone(fqdn)
+	zone, err := d.getHostedZone(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("pdns: %w", err)
 	}
 
-	name := fqdn
+	name := info.EffectiveFQDN
 
 	// pre-v1 API wants non-fqdn
 	if d.apiVersion == 0 {
-		name = dns01.UnFqdn(fqdn)
+		name = dns01.UnFqdn(info.EffectiveFQDN)
 	}
 
 	rec := Record{
-		Content:  "\"" + value + "\"",
+		Content:  "\"" + info.Value + "\"",
 		Disabled: false,
 
 		// pre-v1 API
@@ -138,7 +138,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	// Look for existing records.
-	existingRrSet, err := d.findTxtRecord(fqdn)
+	existingRrSet, err := d.findTxtRecord(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("pdns: %w", err)
 	}
@@ -178,19 +178,19 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := d.getHostedZone(fqdn)
+	zone, err := d.getHostedZone(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("pdns: %w", err)
 	}
 
-	set, err := d.findTxtRecord(fqdn)
+	set, err := d.findTxtRecord(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("pdns: %w", err)
 	}
 	if set == nil {
-		return fmt.Errorf("pdns: no existing record found for %s", fqdn)
+		return fmt.Errorf("pdns: no existing record found for %s", info.EffectiveFQDN)
 	}
 
 	rrsets := rrSets{

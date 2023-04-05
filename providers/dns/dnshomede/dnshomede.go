@@ -97,9 +97,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present updates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, _, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	err := d.client.Add(dns01.UnFqdn(fqdn), value)
+	err := d.client.Add(dns01.UnFqdn(info.EffectiveFQDN), info.Value)
 	if err != nil {
 		return fmt.Errorf("dnshomede: %w", err)
 	}
@@ -109,9 +109,9 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 
 // CleanUp updates the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	err := d.client.Remove(dns01.UnFqdn(fqdn), value)
+	err := d.client.Remove(dns01.UnFqdn(info.EffectiveFQDN), info.Value)
 	if err != nil {
 		return fmt.Errorf("dnshomede: %w", err)
 	}

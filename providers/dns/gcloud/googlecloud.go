@@ -172,15 +172,15 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := d.getHostedZone(fqdn)
+	zone, err := d.getHostedZone(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("googlecloud: %w", err)
 	}
 
 	// Look for existing records.
-	existingRrSet, err := d.findTxtRecords(zone, fqdn)
+	existingRrSet, err := d.findTxtRecords(zone, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("googlecloud: %w", err)
 	}
@@ -191,8 +191,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 			data := mustUnquote(rr)
 			rrd = append(rrd, data)
 
-			if data == value {
-				log.Printf("skip: the record already exists: %s", value)
+			if data == info.Value {
+				log.Printf("skip: the record already exists: %s", info.Value)
 				return nil
 			}
 		}
@@ -207,8 +207,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	rec := &dns.ResourceRecordSet{
-		Name:    fqdn,
-		Rrdatas: []string{value},
+		Name:    info.EffectiveFQDN,
+		Rrdatas: []string{info.Value},
 		Ttl:     int64(d.config.TTL),
 		Type:    "TXT",
 	}
@@ -216,7 +216,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	// Append existing TXT record data to the new TXT record data
 	for _, rrSet := range existingRrSet {
 		for _, rr := range rrSet.Rrdatas {
-			if rr != value {
+			if rr != info.Value {
 				rec.Rrdatas = append(rec.Rrdatas, rr)
 			}
 		}
@@ -279,14 +279,14 @@ func (d *DNSProvider) applyChanges(zone string, change *dns.Change) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := d.getHostedZone(fqdn)
+	zone, err := d.getHostedZone(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("googlecloud: %w", err)
 	}
 
-	records, err := d.findTxtRecords(zone, fqdn)
+	records, err := d.findTxtRecords(zone, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("googlecloud: %w", err)
 	}

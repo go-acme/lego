@@ -111,11 +111,11 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record to fulfill DNS-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	records := []*scwdomain.Record{{
-		Data:    fmt.Sprintf(`%q`, value),
-		Name:    fqdn,
+		Data:    fmt.Sprintf(`%q`, info.Value),
+		Name:    info.EffectiveFQDN,
 		TTL:     uint32(d.config.TTL),
 		Type:    scwdomain.RecordTypeTXT,
 		Comment: scw.StringPtr("used by lego"),
@@ -140,12 +140,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes a TXT record used for DNS-01 challenge.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	recordIdentifier := &scwdomain.RecordIdentifier{
-		Name: fqdn,
+		Name: info.EffectiveFQDN,
 		Type: scwdomain.RecordTypeTXT,
-		Data: scw.StringPtr(fmt.Sprintf(`%q`, value)),
+		Data: scw.StringPtr(fmt.Sprintf(`%q`, info.Value)),
 	}
 
 	// TODO(ldez) replace domain by FQDN to follow CNAME.

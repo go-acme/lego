@@ -98,9 +98,9 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	respData, err := d.addTxtRecord(fqdn, value)
+	respData, err := d.addTxtRecord(info.EffectiveFQDN, info.Value)
 	if err != nil {
 		return fmt.Errorf("digitalocean: %w", err)
 	}
@@ -114,9 +114,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("digitalocean: %w", err)
 	}
@@ -126,7 +126,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	recordID, ok := d.recordIDs[token]
 	d.recordIDsMu.Unlock()
 	if !ok {
-		return fmt.Errorf("digitalocean: unknown record ID for '%s'", fqdn)
+		return fmt.Errorf("digitalocean: unknown record ID for '%s'", info.EffectiveFQDN)
 	}
 
 	err = d.removeTxtRecord(authZone, recordID)

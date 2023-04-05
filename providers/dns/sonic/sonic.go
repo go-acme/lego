@@ -92,11 +92,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	err := d.client.SetRecord(dns01.UnFqdn(fqdn), value, d.config.TTL)
+	err := d.client.SetRecord(dns01.UnFqdn(info.EffectiveFQDN), info.Value, d.config.TTL)
 	if err != nil {
-		return fmt.Errorf("sonic: unable to create record for %s: %w", fqdn, err)
+		return fmt.Errorf("sonic: unable to create record for %s: %w", info.EffectiveFQDN, err)
 	}
 
 	return nil
@@ -104,11 +104,11 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT records matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	err := d.client.SetRecord(dns01.UnFqdn(fqdn), "_", d.config.TTL)
+	err := d.client.SetRecord(dns01.UnFqdn(info.EffectiveFQDN), "_", d.config.TTL)
 	if err != nil {
-		return fmt.Errorf("sonic: unable to clean record for %s: %w", fqdn, err)
+		return fmt.Errorf("sonic: unable to clean record for %s: %w", info.EffectiveFQDN, err)
 	}
 
 	return nil

@@ -112,9 +112,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zoneName, recordName, err := d.findZoneAndRecordName(fqdn)
+	zoneName, recordName, err := d.findZoneAndRecordName(info.EffectiveFQDN)
 	if err != nil {
 		return err
 	}
@@ -127,22 +127,20 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("exoscale: zone %q not found", zoneName)
 	}
 
-	recordID, err := d.findExistingRecordID(*zone.ID, recordName)
+	recordID, err := d.findExistingRecordID(deref(zone.ID), recordName)
 	if err != nil {
 		return fmt.Errorf("exoscale: %w", err)
 	}
 
-	recordType := "TXT"
-
 	if recordID == "" {
 		record := egoscale.DNSDomainRecord{
-			Name:    &recordName,
-			TTL:     &d.config.TTL,
-			Content: &value,
-			Type:    &recordType,
+			Name:    pointer(recordName),
+			TTL:     pointer(d.config.TTL),
+			Content: pointer(info.Value),
+			Type:    pointer("TXT"),
 		}
 
-		_, err = d.client.CreateDNSDomainRecord(ctx, d.apiZone, *zone.ID, &record)
+		_, err = d.client.CreateDNSDomainRecord(ctx, d.apiZone, deref(zone.ID), &record)
 		if err != nil {
 			return fmt.Errorf("exoscale: error while creating DNS record: %w", err)
 		}
@@ -151,14 +149,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	record := egoscale.DNSDomainRecord{
-		ID:      &recordID,
-		Name:    &recordName,
-		TTL:     &d.config.TTL,
-		Content: &value,
-		Type:    &recordType,
+		ID:      pointer(recordID),
+		Name:    pointer(recordName),
+		TTL:     pointer(d.config.TTL),
+		Content: pointer(info.Value),
+		Type:    pointer("TXT"),
 	}
 
-	err = d.client.UpdateDNSDomainRecord(ctx, d.apiZone, *zone.ID, &record)
+	err = d.client.UpdateDNSDomainRecord(ctx, d.apiZone, deref(zone.ID), &record)
 	if err != nil {
 		return fmt.Errorf("exoscale: error while updating DNS record: %w", err)
 	}
@@ -169,9 +167,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 // CleanUp removes the record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zoneName, recordName, err := d.findZoneAndRecordName(fqdn)
+	zoneName, recordName, err := d.findZoneAndRecordName(info.EffectiveFQDN)
 	if err != nil {
 		return err
 	}
@@ -184,13 +182,13 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("exoscale: zone %q not found", zoneName)
 	}
 
-	recordID, err := d.findExistingRecordID(*zone.ID, recordName)
+	recordID, err := d.findExistingRecordID(deref(zone.ID), recordName)
 	if err != nil {
 		return err
 	}
 
 	if recordID != "" {
-		err = d.client.DeleteDNSDomainRecord(ctx, d.apiZone, *zone.ID, &egoscale.DNSDomainRecord{ID: &recordID})
+		err = d.client.DeleteDNSDomainRecord(ctx, d.apiZone, deref(zone.ID), &egoscale.DNSDomainRecord{ID: &recordID})
 		if err != nil {
 			return fmt.Errorf("exoscale: error while deleting DNS record: %w", err)
 		}
@@ -216,7 +214,7 @@ func (d *DNSProvider) findExistingZone(zoneName string) (*egoscale.DNSDomain, er
 	}
 
 	for _, zone := range zones {
-		if zone.UnicodeName != nil && *zone.UnicodeName == zoneName {
+		if zone.UnicodeName != nil && deref(zone.UnicodeName) == zoneName {
 			return &zone, nil
 		}
 	}
@@ -234,11 +232,10 @@ func (d *DNSProvider) findExistingRecordID(zoneID, recordName string) (string, e
 		return "", fmt.Errorf("error while retrieving DNS records: %w", err)
 	}
 
-	recordType := "TXT"
 	for _, record := range records {
-		if record.Name != nil && *record.Name == recordName &&
-			record.Type != nil && *record.Type == recordType {
-			return *record.ID, nil
+		if deref(record.Name) == recordName &&
+			deref(record.Type) == "TXT" {
+			return deref(record.ID), nil
 		}
 	}
 
@@ -260,4 +257,15 @@ func (d *DNSProvider) findZoneAndRecordName(fqdn string) (string, string, error)
 	}
 
 	return zone, subDomain, nil
+}
+
+func pointer[T string | int | int32 | int64](v T) *T { return &v }
+
+func deref[T string | int | int32 | int64](v *T) T {
+	if v == nil {
+		var zero T
+		return zero
+	}
+
+	return *v
 }

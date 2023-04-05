@@ -29,9 +29,9 @@ func (d *dnsProviderPublic) Timeout() (timeout, interval time.Duration) {
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *dnsProviderPublic) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := d.getHostedZoneID(ctx, fqdn)
+	zone, err := d.getHostedZoneID(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("azure: %w", err)
 	}
@@ -39,7 +39,7 @@ func (d *dnsProviderPublic) Present(domain, token, keyAuth string) error {
 	rsc := dns.NewRecordSetsClientWithBaseURI(d.config.ResourceManagerEndpoint, d.config.SubscriptionID)
 	rsc.Authorizer = d.authorizer
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, zone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone)
 	if err != nil {
 		return fmt.Errorf("azure: %w", err)
 	}
@@ -54,7 +54,7 @@ func (d *dnsProviderPublic) Present(domain, token, keyAuth string) error {
 	}
 
 	// Construct unique TXT records using map
-	uniqRecords := map[string]struct{}{value: {}}
+	uniqRecords := map[string]struct{}{info.Value: {}}
 	if rset.RecordSetProperties != nil && rset.TxtRecords != nil {
 		for _, txtRecord := range *rset.TxtRecords {
 			// Assume Value doesn't contain multiple strings
@@ -88,14 +88,14 @@ func (d *dnsProviderPublic) Present(domain, token, keyAuth string) error {
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *dnsProviderPublic) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := d.getHostedZoneID(ctx, fqdn)
+	zone, err := d.getHostedZoneID(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("azure: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, zone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone)
 	if err != nil {
 		return fmt.Errorf("azure: %w", err)
 	}

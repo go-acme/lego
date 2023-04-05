@@ -114,14 +114,14 @@ func (d *DNSProvider) Sequential() time.Duration {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("variomedia: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("variomedia: %w", err)
 	}
@@ -130,7 +130,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		RecordType: "TXT",
 		Name:       subDomain,
 		Domain:     dns01.UnFqdn(authZone),
-		Data:       value,
+		Data:       info.Value,
 		TTL:        d.config.TTL,
 	}
 
@@ -153,14 +153,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record previously created.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	// get the record's unique ID from when we created it
 	d.recordIDsMu.Lock()
 	recordID, ok := d.recordIDs[token]
 	d.recordIDsMu.Unlock()
 	if !ok {
-		return fmt.Errorf("variomedia: unknown record ID for '%s'", fqdn)
+		return fmt.Errorf("variomedia: unknown record ID for '%s'", info.EffectiveFQDN)
 	}
 
 	ddrr, err := d.client.DeleteDNSRecord(recordID)

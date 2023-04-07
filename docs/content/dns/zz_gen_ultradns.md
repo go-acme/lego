@@ -6,7 +6,7 @@ slug: ultradns
 dnsprovider:
   since:    "v4.10.0"
   code:     "ultradns"
-  url:      "https://neustarsecurityservices.com/dns-services"
+  url:      "https://vercara.com/authoritative-dns"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
@@ -14,7 +14,7 @@ dnsprovider:
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
-Configuration for [Ultradns](https://neustarsecurityservices.com/dns-services).
+Configuration for [Ultradns](https://vercara.com/authoritative-dns).
 
 
 <!--more-->

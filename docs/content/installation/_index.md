@@ -18,10 +18,16 @@ docker run goacme/lego -h
 
 ## From package managers
 
-- [ArchLinux (AUR)](https://aur.archlinux.org/packages/lego) (official):
+- [ArchLinux](https://archlinux.org/packages/community/x86_64/lego/) (official):
 
   ```bash
-  yay -S lego
+  pacman -S lego
+  ```
+
+- [ArchLinux (AUR)](https://aur.archlinux.org/packages/lego-bin) (official):
+
+  ```bash
+  yay -S lego-bin
   ```
 
 - [FreeBSD (Ports)](https://www.freshports.org/security/lego) (unofficial):

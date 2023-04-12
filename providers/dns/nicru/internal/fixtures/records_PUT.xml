@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<response>
+    <status>success</status>
+    <data>
+        <zone admin="123/NIC-REG" has-changes="true" id="228095" idn-name="test.ru" name="test.ru" service="testservice">
+            <rr id="210076"><name>@</name><idn-name>@</idn-name><type>NS</type><ns><name>ns4-l2.nic.ru.</name><idn-name>ns4-l2.nic.ru.</idn-name></ns></rr>
+            <rr id="210077"><name>@</name><idn-name>@</idn-name><type>NS</type><ns><name>ns8-l2.nic.ru.</name><idn-name>ns8-l2.nic.ru.</idn-name></ns></rr>
+        </zone>
+    </data>
+</response>

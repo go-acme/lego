@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<response>
+    <status>success</status>
+    <data>
+        <service admin="123/NIC-REG" domains-limit="12" domains-num="5" enable="true" has-primary="false"
+                 name="testservice"
+                 payer="123/NIC-REG" tariff="Secondary L"/>
+        <service admin="123/NIC-REG" domains-limit="150" domains-num="10" enable="true" has-primary="true"
+                 name="myservice"
+                 payer="123/NIC-REG" rr-limit="7500" rr-num="1000" tariff="DNS-master XXL"/>
+    </data>
+</response>

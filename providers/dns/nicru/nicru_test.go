@@ -1,23 +1,23 @@
 package nicru
 
 import (
+	"testing"
+
 	"github.com/go-acme/lego/v4/platform/tester"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
-const defaultDomainName = "example.com"
-const envDomain = envNamespace + "DOMAIN"
-
 const (
-	fakeServiceId   = "2519234972459cdfa23423adf143324f"
+	fakeServiceID   = "2519234972459cdfa23423adf143324f"
 	fakeSecret      = "oo5ahrie0aiPho3Vee4siupoPhahdahCh1thiesohru"
 	fakeServiceName = "DS1234567890"
 	fakeUsername    = "1234567/NIC-D"
 	fakePassword    = "einge8Goo2eBaiXievuj"
 )
 
-var envTest = tester.NewEnvTest(EnvUsername, EnvPassword, EnvServiceId, EnvSecret, EnvServiceName).WithDomain(envDomain)
+const envDomain = envNamespace + "DOMAIN"
+
+var envTest = tester.NewEnvTest(EnvUsername, EnvPassword, EnvServiceID, EnvSecret, EnvServiceName).WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -28,62 +28,63 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				EnvServiceId:   fakeServiceId,
+				EnvServiceID:   fakeServiceID,
 				EnvSecret:      fakeSecret,
 				EnvServiceName: fakeServiceName,
 				EnvUsername:    fakeUsername,
 				EnvPassword:    fakePassword,
 			},
+			expected: "nicru: failed to create oauth2 token: oauth2: \"unauthorized_client\"",
 		},
 		{
-			desc: "missing serviceId",
+			desc: "missing serviceID",
 			envVars: map[string]string{
 				EnvSecret:      fakeSecret,
 				EnvServiceName: fakeServiceName,
 				EnvUsername:    fakeUsername,
 				EnvPassword:    fakePassword,
 			},
-			expected: "nicru: some credentials information are missing: NIC_RU_SERVICE_ID",
+			expected: "nicru: some credentials information are missing: NICRU_SERVICE_ID",
 		},
 		{
 			desc: "missing secret",
 			envVars: map[string]string{
-				EnvServiceId:   fakeServiceId,
+				EnvServiceID:   fakeServiceID,
 				EnvServiceName: fakeServiceName,
 				EnvUsername:    fakeUsername,
 				EnvPassword:    fakePassword,
 			},
-			expected: "nicru: some credentials information are missing: NIC_RU_SECRET",
+			expected: "nicru: some credentials information are missing: NICRU_SECRET",
 		},
 		{
 			desc: "missing service name",
 			envVars: map[string]string{
-				EnvServiceId: fakeServiceId,
+				EnvServiceID: fakeServiceID,
 				EnvSecret:    fakeSecret,
 				EnvUsername:  fakeUsername,
 				EnvPassword:  fakePassword,
 			},
-			expected: "nicru: some credentials information are missing: NIC_RU_SERVICE_NAME",
+			expected: "nicru: some credentials information are missing: NICRU_SERVICE_NAME",
 		},
 		{
 			desc: "missing username",
 			envVars: map[string]string{
-				EnvServiceId:   fakeServiceId,
+				EnvServiceID:   fakeServiceID,
 				EnvSecret:      fakeSecret,
 				EnvServiceName: fakeServiceName,
 				EnvPassword:    fakePassword,
 			},
-			expected: "nicru: some credentials information are missing: NIC_RU_USER",
+			expected: "nicru: some credentials information are missing: NICRU_USER",
 		},
 		{
 			desc: "missing password",
 			envVars: map[string]string{
-				EnvServiceId:   fakeServiceId,
+				EnvServiceID:   fakeServiceID,
 				EnvSecret:      fakeSecret,
 				EnvServiceName: fakeServiceName,
 				EnvUsername:    fakeUsername,
 			},
-			expected: "nicru: some credentials information are missing: NIC_RU_PASSWORD",
+			expected: "nicru: some credentials information are missing: NICRU_PASSWORD",
 		},
 	}
 
@@ -116,15 +117,12 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		{
 			desc: "success",
 			config: &Config{
-				ServiceId:          fakeServiceId,
-				Secret:             fakeSecret,
-				ServiceName:        fakeServiceName,
-				Username:           fakeUsername,
-				Password:           fakePassword,
-				TTL:                defaultTTL,
-				PropagationTimeout: defaultPropagationTimeout,
-				PollingInterval:    defaultPollingInterval,
+				ServiceID: fakeServiceID,
+				Secret:    fakeSecret,
+				Username:  fakeUsername,
+				Password:  fakePassword,
 			},
+			expected: "nicru: failed to create oauth2 token: oauth2: \"unauthorized_client\"",
 		},
 		{
 			desc:     "nil config",
@@ -132,63 +130,39 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			expected: "nicru: the configuration of the DNS provider is nil",
 		},
 		{
-			desc: "missing service name",
-			config: &Config{
-				Username:           fakeUsername,
-				Password:           fakePassword,
-				TTL:                defaultTTL,
-				PropagationTimeout: defaultPropagationTimeout,
-				PollingInterval:    defaultPollingInterval,
-			},
-			expected: "nicru: unable to build RU CENTER client: service name is missing in credentials information",
-		},
-		{
 			desc: "missing username",
 			config: &Config{
-				ServiceName:        fakeServiceName,
-				ServiceId:          fakeServiceId,
-				Password:           fakePassword,
-				TTL:                defaultTTL,
-				PropagationTimeout: defaultPropagationTimeout,
-				PollingInterval:    defaultPollingInterval,
+				ServiceID: fakeServiceID,
+				Password:  fakePassword,
 			},
-			expected: "nicru: unable to build RU CENTER client: username is missing in credentials information",
+			expected: "nicru: username is missing in credentials information",
 		},
 		{
 			desc: "missing password",
 			config: &Config{
-				ServiceName:        fakeServiceName,
-				ServiceId:          fakeServiceId,
-				Secret:             fakeSecret,
-				Username:           fakeUsername,
-				TTL:                defaultTTL,
-				PropagationTimeout: defaultPropagationTimeout,
-				PollingInterval:    defaultPollingInterval,
+				ServiceID: fakeServiceID,
+				Secret:    fakeSecret,
+				Username:  fakeUsername,
 			},
-			expected: "nicru: unable to build RU CENTER client: password is missing in credentials information",
+			expected: "nicru: password is missing in credentials information",
 		},
 		{
 			desc: "missing secret",
 			config: &Config{
-				ServiceId:          fakeServiceId,
-				ServiceName:        fakeServiceName,
-				Username:           fakeUsername,
-				Password:           fakePassword,
-				PropagationTimeout: defaultPropagationTimeout,
-				PollingInterval:    defaultPollingInterval,
+				ServiceID: fakeServiceID,
+				Username:  fakeUsername,
+				Password:  fakePassword,
 			},
-			expected: "nicru: unable to build RU CENTER client: secret is missing in credentials information",
+			expected: "nicru: secret is missing in credentials information",
 		},
 		{
-			desc: "missing serviceId",
+			desc: "missing serviceID",
 			config: &Config{
-				ServiceName: fakeServiceName,
-				Secret:      fakeSecret,
-				Username:    fakeUsername,
-				Password:    fakePassword,
-				Domain:      defaultDomainName,
+				Secret:   fakeSecret,
+				Username: fakeUsername,
+				Password: fakePassword,
 			},
-			expected: "nicru: unable to build RU CENTER client: serviceId is missing in credentials information",
+			expected: "nicru: serviceID is missing in credentials information",
 		},
 	}
 

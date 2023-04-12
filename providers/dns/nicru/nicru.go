@@ -1,59 +1,52 @@
+// Package nicru implements a DNS provider for solving the DNS-01 challenge using RU Center.
 package nicru
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"strconv"
+	"time"
+
+	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/nicru/internal"
-	"net/http"
-	"strconv"
-	"time"
 )
 
+// Environment variables names.
 const (
-	envNamespace = "NIC_RU_"
+	envNamespace = "NICRU_"
 
-	EnvUsername    = envNamespace + "USER"
-	EnvPassword    = envNamespace + "PASSWORD"
-	EnvServiceId   = envNamespace + "SERVICE_ID"
-	EnvSecret      = envNamespace + "SECRET"
-	EnvServiceName = envNamespace + "SERVICE_NAME"
+	EnvUsername  = envNamespace + "USER"
+	EnvPassword  = envNamespace + "PASSWORD"
+	EnvServiceID = envNamespace + "SERVICE_ID"
+	EnvSecret    = envNamespace + "SECRET"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
-	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
-
-	defaultTTL                = 30
-	defaultPropagationTimeout = 10 * 60 * time.Second
-	defaultPollingInterval    = 60 * time.Second
-	defaultHttpTimeout        = 30 * time.Second
 )
+
+var _ challenge.ProviderTimeout = (*DNSProvider)(nil)
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	TTL                int
 	Username           string
 	Password           string
-	ServiceId          string
+	ServiceID          string
 	Secret             string
-	Domain             string
-	ServiceName        string
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
-	HTTPClient         *http.Client
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, defaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, defaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, defaultPollingInterval),
-		HTTPClient: &http.Client{
-			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, defaultHttpTimeout),
-		},
+		TTL:                env.GetOrDefaultInt(EnvTTL, 30),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 10*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 1*time.Minute),
 	}
 }
 
@@ -63,9 +56,9 @@ type DNSProvider struct {
 	config *Config
 }
 
-// NewDNSProvider returns a DNSProvider instance configured for NIC RU
+// NewDNSProvider returns a DNSProvider instance configured for RU Center.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvUsername, EnvPassword, EnvServiceId, EnvSecret, EnvServiceName)
+	values, err := env.Get(EnvUsername, EnvPassword, EnvServiceID, EnvSecret)
 	if err != nil {
 		return nil, fmt.Errorf("nicru: %w", err)
 	}
@@ -73,29 +66,33 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
 	config.Username = values[EnvUsername]
 	config.Password = values[EnvPassword]
-	config.ServiceId = values[EnvServiceId]
+	config.ServiceID = values[EnvServiceID]
 	config.Secret = values[EnvSecret]
-	config.ServiceName = values[EnvServiceName]
 
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderConfig return a DNSProvider instance configured for NIC RU.
+// NewDNSProviderConfig return a DNSProvider instance configured for RU Center.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("nicru: the configuration of the DNS provider is nil")
 	}
 
-	provider := internal.Provider{
-		OAuth2ClientID: config.ServiceId,
+	clientCfg := &internal.OauthConfiguration{
+		OAuth2ClientID: config.ServiceID,
 		OAuth2SecretID: config.Secret,
 		Username:       config.Username,
 		Password:       config.Password,
-		ServiceName:    config.ServiceName,
 	}
-	client, err := internal.NewClient(&provider)
+
+	oauthClient, err := internal.NewOauthClient(context.Background(), clientCfg)
 	if err != nil {
-		return nil, fmt.Errorf("nicru: unable to build RU CENTER client: %w", err)
+		return nil, fmt.Errorf("nicru: %w", err)
+	}
+
+	client, err := internal.NewClient(oauthClient)
+	if err != nil {
+		return nil, fmt.Errorf("nicru: unable to build API client: %w", err)
 	}
 
 	return &DNSProvider{
@@ -105,26 +102,21 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
-func (r *DNSProvider) Present(domain, _, keyAuth string) error {
+func (d *DNSProvider) Present(domain, _, keyAuth string) error {
+	ctx := context.Background()
+
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("nicru: %w", err)
+		return fmt.Errorf("nicru: could not find zone for domain %q: %w", domain, err)
 	}
 
 	authZone = dns01.UnFqdn(authZone)
 
-	zones, err := r.client.GetZones()
-	var zoneUUID string
-	for _, zone := range zones {
-		if zone.Name == authZone {
-			zoneUUID = zone.ID
-		}
-	}
-
-	if zoneUUID == "" {
-		return fmt.Errorf("nicru: cant find dns zone %s in nic.ru", authZone)
+	zone, err := d.findZone(ctx, authZone)
+	if err != nil {
+		return fmt.Errorf("nicru: find zone: %w", err)
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
@@ -132,40 +124,57 @@ func (r *DNSProvider) Present(domain, _, keyAuth string) error {
 		return fmt.Errorf("nicru: %w", err)
 	}
 
-	err = r.upsertTxtRecord(authZone, subDomain, info.Value)
+	records, err := d.client.GetRecords(ctx, zone.Service, authZone)
 	if err != nil {
-		return fmt.Errorf("nicru: %w", err)
+		return fmt.Errorf("nicru: get records: %w", err)
+	}
+
+	for _, record := range records {
+		if record.TXT == nil {
+			continue
+		}
+
+		if record.TXT.Text == subDomain && record.TXT.String == info.Value {
+			return nil
+		}
+	}
+
+	rrs := []internal.RR{{
+		Name: subDomain,
+		TTL:  strconv.Itoa(d.config.TTL),
+		Type: "TXT",
+		TXT:  &internal.TXT{String: info.Value},
+	}}
+
+	_, err = d.client.AddRecords(ctx, zone.Service, authZone, rrs)
+	if err != nil {
+		return fmt.Errorf("nicru: add records: %w", err)
+	}
+
+	err = d.client.CommitZone(ctx, zone.Service, authZone)
+	if err != nil {
+		return fmt.Errorf("nicru: commit zone: %w", err)
 	}
 
 	return nil
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (r *DNSProvider) CleanUp(domain, _, keyAuth string) error {
+func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
+	ctx := context.Background()
+
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("nicru: %w", err)
+		return fmt.Errorf("nicru: could not find zone for domain %q: %w", domain, err)
 	}
 
 	authZone = dns01.UnFqdn(authZone)
 
-	zones, err := r.client.GetZones()
+	zone, err := d.findZone(ctx, authZone)
 	if err != nil {
-		return fmt.Errorf("nicru: unable to fetch dns zones: %w", err)
-	}
-
-	var zoneUUID string
-
-	for _, zone := range zones {
-		if zone.Name == authZone {
-			zoneUUID = zone.ID
-		}
-	}
-
-	if zoneUUID == "" {
-		return nil
+		return fmt.Errorf("nicru: find zone: %w", err)
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
@@ -173,9 +182,31 @@ func (r *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 		return fmt.Errorf("nicru: %w", err)
 	}
 
-	err = r.removeTxtRecord(authZone, subDomain, info.Value)
+	records, err := d.client.GetRecords(ctx, zone.Service, authZone)
 	if err != nil {
-		return fmt.Errorf("nicru: %w", err)
+		return fmt.Errorf("nicru: get records: %w", err)
+	}
+
+	subDomain = dns01.UnFqdn(subDomain)
+
+	for _, record := range records {
+		if record.TXT == nil {
+			continue
+		}
+
+		if record.Name != subDomain || record.TXT.String != info.Value {
+			continue
+		}
+
+		err = d.client.DeleteRecord(ctx, zone.Service, authZone, record.ID)
+		if err != nil {
+			return fmt.Errorf("nicru: delete record: %w", err)
+		}
+	}
+
+	err = d.client.CommitZone(ctx, zone.Service, authZone)
+	if err != nil {
+		return fmt.Errorf("nicru: commit zone: %w", err)
 	}
 
 	return nil
@@ -183,52 +214,25 @@ func (r *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
 // Adjusting here to cope with spikes in propagation times.
-func (r *DNSProvider) Timeout() (timeout, interval time.Duration) {
-	return r.config.PropagationTimeout, r.config.PollingInterval
+func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
+	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-func (r *DNSProvider) upsertTxtRecord(zone, name, value string) error {
-	records, err := r.client.GetTXTRecords(zone)
+func (d *DNSProvider) findZone(ctx context.Context, authZone string) (*internal.Zone, error) {
+	zones, err := d.client.ListZones(ctx)
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("unable to fetch dns zones: %w", err)
 	}
 
-	for _, record := range records {
-		if record.Text == name && record.String == value {
-			return nil
+	if len(zones) == 0 {
+		return nil, errors.New("no zones found")
+	}
+
+	for _, zone := range zones {
+		if zone.Name == authZone {
+			return &zone, nil
 		}
 	}
 
-	_, err = r.client.AddTxtRecord(zone, name, value, r.config.TTL)
-	if err != nil {
-		return err
-	}
-	_, err = r.client.CommitZone(zone)
-	return err
-}
-
-func (r *DNSProvider) removeTxtRecord(zone, name, value string) error {
-	records, err := r.client.GetRecords(zone)
-	if err != nil {
-		return err
-	}
-
-	name = dns01.UnFqdn(name)
-	for _, record := range records {
-		if record.Txt != nil {
-			if record.Name == name && record.Txt.String == value {
-				_id, err := strconv.Atoi(record.ID)
-				if err != nil {
-					return err
-				}
-				_, err = r.client.DeleteRecord(zone, _id)
-				if err != nil {
-					return err
-				}
-			}
-		}
-	}
-
-	_, err = r.client.CommitZone(zone)
-	return err
+	return nil, fmt.Errorf("zone not found for %s", authZone)
 }

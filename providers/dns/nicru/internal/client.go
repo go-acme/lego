@@ -4,294 +4,246 @@ import (
 	"bytes"
 	"context"
 	"encoding/xml"
-	"errors"
 	"fmt"
-	"golang.org/x/oauth2"
+	"io"
 	"net/http"
-	"strconv"
+	"net/url"
+	"time"
+
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
 const (
-	BaseURL                 = `https://api.nic.ru`
-	TokenURL                = BaseURL + `/oauth/token`
-	GetZonesUrlPattern      = BaseURL + `/dns-master/services/%s/zones`
-	GetRecordsUrlPattern    = BaseURL + `/dns-master/services/%s/zones/%s/records`
-	DeleteRecordsUrlPattern = BaseURL + `/dns-master/services/%s/zones/%s/records/%d`
-	AddRecordsUrlPattern    = BaseURL + `/dns-master/services/%s/zones/%s/records`
-	CommitUrlPattern        = BaseURL + `/dns-master/services/%s/zones/%s/commit`
-	SuccessStatus           = `success`
-	OAuth2Scope             = `.+:/dns-master/.+`
+	apiBaseURL = "https://api.nic.ru/dns-master"
+	tokenURL   = "https://api.nic.ru/oauth/token"
 )
 
-// Provider facilitates DNS record manipulation with NIC.ru.
-type Provider struct {
-	OAuth2ClientID string `json:"oauth2_client_id"`
-	OAuth2SecretID string `json:"oauth2_secret_id"`
-	Username       string `json:"username"`
-	Password       string `json:"password"`
-	ServiceName    string `json:"service_name"`
+const successStatus = "success"
+
+// Trimmer trim all XML fields.
+type Trimmer struct {
+	decoder *xml.Decoder
+}
+
+func (tr Trimmer) Token() (xml.Token, error) {
+	t, err := tr.decoder.Token()
+	if cd, ok := t.(xml.CharData); ok {
+		t = xml.CharData(bytes.TrimSpace(cd))
+	}
+	return t, err
 }
 
 type Client struct {
-	client   *http.Client
-	provider *Provider
-	token    string
+	baseURL    *url.URL
+	httpClient *http.Client
 }
 
-func NewClient(provider *Provider) (*Client, error) {
-	client := Client{provider: provider}
-	err := client.validateAuthOptions()
+func NewClient(httpClient *http.Client) (*Client, error) {
+	if httpClient == nil {
+		httpClient = &http.Client{Timeout: 5 * time.Second}
+	}
+
+	baseURL, _ := url.Parse(apiBaseURL)
+
+	return &Client{
+		baseURL:    baseURL,
+		httpClient: httpClient,
+	}, nil
+}
+
+func (c *Client) GetServices(ctx context.Context) ([]Service, error) {
+	endpoint := c.baseURL.JoinPath("services")
+
+	req, err := newXMLRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
-	return &client, nil
+
+	apiResponse, err := c.do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if apiResponse.Data == nil {
+		return nil, nil
+	}
+
+	return apiResponse.Data.Service, nil
 }
 
-func (client *Client) GetOauth2Client() error {
-	ctx := context.TODO()
+func (c *Client) ListZones(ctx context.Context) ([]Zone, error) {
+	endpoint := c.baseURL.JoinPath("zones")
 
-	oauth2Config := oauth2.Config{
-		ClientID:     client.provider.OAuth2ClientID,
-		ClientSecret: client.provider.OAuth2SecretID,
-		Endpoint: oauth2.Endpoint{
-			TokenURL:  TokenURL,
-			AuthStyle: oauth2.AuthStyleInParams,
-		},
-		Scopes: []string{OAuth2Scope},
-	}
-
-	oauth2Token, err := oauth2Config.PasswordCredentialsToken(ctx, client.provider.Username, client.provider.Password)
+	req, err := newXMLRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
-		return fmt.Errorf("nicru: %s", err.Error())
+		return nil, err
 	}
 
-	client.client = oauth2Config.Client(ctx, oauth2Token)
+	apiResponse, err := c.do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if apiResponse.Data == nil {
+		return nil, nil
+	}
+
+	return apiResponse.Data.Zone, nil
+}
+
+func (c *Client) GetZonesByService(ctx context.Context, serviceName string) ([]Zone, error) {
+	endpoint := c.baseURL.JoinPath("services", serviceName, "zones")
+
+	req, err := newXMLRequest(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	apiResponse, err := c.do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if apiResponse.Data == nil {
+		return nil, nil
+	}
+
+	return apiResponse.Data.Zone, nil
+}
+
+func (c *Client) GetRecords(ctx context.Context, serviceName, zoneName string) ([]RR, error) {
+	endpoint := c.baseURL.JoinPath("services", serviceName, "zones", zoneName, "records")
+
+	req, err := newXMLRequest(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	apiResponse, err := c.do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if apiResponse.Data == nil {
+		return nil, nil
+	}
+
+	var records []RR
+	for _, zone := range apiResponse.Data.Zone {
+		records = append(records, zone.RR...)
+	}
+
+	return records, nil
+}
+
+func (c *Client) DeleteRecord(ctx context.Context, serviceName, zoneName string, id string) error {
+	endpoint := c.baseURL.JoinPath("services", serviceName, "zones", zoneName, "records", id)
+
+	req, err := newXMLRequest(ctx, http.MethodDelete, endpoint, nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.do(req)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func (client *Client) Do(r *http.Request) (*http.Response, error) {
-	if client.client == nil {
-		err := client.GetOauth2Client()
+func (c *Client) CommitZone(ctx context.Context, serviceName, zoneName string) error {
+	endpoint := c.baseURL.JoinPath("services", serviceName, "zones", zoneName, "commit")
+
+	req, err := newXMLRequest(ctx, http.MethodPost, endpoint, nil)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.do(req)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Client) AddRecords(ctx context.Context, serviceName, zoneName string, rrs []RR) ([]Zone, error) {
+	endpoint := c.baseURL.JoinPath("services", serviceName, "zones", zoneName, "records")
+
+	payload := &Request{RRList: &RRList{RR: rrs}}
+
+	req, err := newXMLRequest(ctx, http.MethodPut, endpoint, payload)
+	if err != nil {
+		return nil, err
+	}
+
+	apiResponse, err := c.do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if apiResponse.Data == nil {
+		return nil, nil
+	}
+
+	return apiResponse.Data.Zone, nil
+}
+
+func (c *Client) do(req *http.Request) (*Response, error) {
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, errutils.NewHTTPDoError(req, err)
+	}
+
+	defer func() { _ = resp.Body.Close() }()
+
+	apiResponse := &Response{}
+
+	raw, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errutils.NewReadResponseError(req, resp.StatusCode, err)
+	}
+
+	decoder := xml.NewTokenDecoder(Trimmer{decoder: xml.NewDecoder(bytes.NewReader(raw))})
+
+	err = decoder.Decode(apiResponse)
+	if err != nil {
+		return nil, fmt.Errorf("[status code=%d] decode XML response: %s", resp.StatusCode, string(raw))
+	}
+
+	if apiResponse.Status != successStatus {
+		return nil, fmt.Errorf("[status code=%d] %s: %w", resp.StatusCode, apiResponse.Status, apiResponse.Errors.Error)
+	}
+
+	return apiResponse, nil
+}
+
+func newXMLRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
+	body := new(bytes.Buffer)
+
+	if payload != nil {
+		body.WriteString(xml.Header)
+
+		encoder := xml.NewEncoder(body)
+		encoder.Indent("", "  ")
+
+		err := encoder.Encode(payload)
 		if err != nil {
 			return nil, err
 		}
 	}
-	return client.client.Do(r)
-}
 
-func (client *Client) GetZones() ([]*Zone, error) {
-	request, err := http.NewRequest(http.MethodGet, fmt.Sprintf(GetZonesUrlPattern, client.provider.ServiceName), nil)
+	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), body)
 	if err != nil {
-		return nil, err
-	}
-	response, err := client.Do(request)
-	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to create request: %w", err)
 	}
 
-	buf := bytes.NewBuffer(nil)
-	if _, err := buf.ReadFrom(response.Body); err != nil {
-		return nil, err
+	req.Header.Set("Accept", "text/xml")
+
+	if payload != nil {
+		req.Header.Set("Content-Type", "text/xml")
 	}
 
-	apiResponse := &Response{}
-	if err := xml.NewDecoder(buf).Decode(&apiResponse); err != nil {
-		return nil, err
-	} else {
-		var zones []*Zone
-		for _, zone := range apiResponse.Data.Zone {
-			zones = append(zones, zone)
-		}
-		return zones, nil
-	}
-}
-
-func (client *Client) GetRecords(fqdn string) ([]*RR, error) {
-	request, err := http.NewRequest(
-		http.MethodGet,
-		fmt.Sprintf(GetRecordsUrlPattern, client.provider.ServiceName, fqdn),
-		nil)
-	if err != nil {
-		return nil, err
-	}
-	response, err := client.Do(request)
-	if err != nil {
-		return nil, err
-	}
-
-	buf := bytes.NewBuffer(nil)
-	if _, err := buf.ReadFrom(response.Body); err != nil {
-		return nil, err
-	}
-
-	apiResponse := &Response{}
-	if err := xml.NewDecoder(buf).Decode(&apiResponse); err != nil {
-		return nil, err
-	} else {
-		var records []*RR
-		for _, zone := range apiResponse.Data.Zone {
-			records = append(records, zone.Rr...)
-		}
-		return records, nil
-	}
-}
-
-func (client *Client) add(zoneName string, request *Request) (*Response, error) {
-
-	buf := bytes.NewBuffer(nil)
-	if err := xml.NewEncoder(buf).Encode(request); err != nil {
-		return nil, err
-	}
-
-	url := fmt.Sprintf(AddRecordsUrlPattern, client.provider.ServiceName, zoneName)
-
-	req, err := http.NewRequest(http.MethodPut, url, buf)
-	if err != nil {
-		return nil, err
-	}
-
-	response, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	buf = bytes.NewBuffer(nil)
-	if _, err := buf.ReadFrom(response.Body); err != nil {
-		return nil, err
-	}
-
-	apiResponse := &Response{}
-	if err := xml.NewDecoder(buf).Decode(&apiResponse); err != nil {
-		return nil, err
-	}
-
-	if apiResponse.Status != SuccessStatus {
-		return nil, fmt.Errorf(describeError(apiResponse.Errors.Error))
-	} else {
-		return apiResponse, nil
-	}
-}
-
-func (client *Client) deleteRecord(zoneName string, id int) (*Response, error) {
-	url := fmt.Sprintf(DeleteRecordsUrlPattern, client.provider.ServiceName, zoneName, id)
-	req, err := http.NewRequest(http.MethodDelete, url, nil)
-	if err != nil {
-		return nil, err
-	}
-	response, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	apiResponse := Response{}
-	if err := xml.NewDecoder(response.Body).Decode(&apiResponse); err != nil {
-		return nil, err
-	}
-	if apiResponse.Status != SuccessStatus {
-		return nil, err
-	} else {
-		return &apiResponse, nil
-	}
-}
-
-func (client *Client) GetTXTRecords(fqdn string) ([]*Txt, error) {
-	records, err := client.GetRecords(fqdn)
-	if err != nil {
-		return nil, err
-	}
-
-	txt := make([]*Txt, 0)
-	for _, record := range records {
-		if record.Txt != nil {
-			txt = append(txt, record.Txt)
-		}
-	}
-
-	return txt, nil
-}
-
-func (client *Client) AddTxtRecord(zoneName string, name string, content string, ttl int) (*Response, error) {
-	request := &Request{
-		RrList: &RrList{
-			Rr: []*RR{},
-		},
-	}
-	request.RrList.Rr = append(request.RrList.Rr, &RR{
-		Name: name,
-		Ttl:  strconv.Itoa(ttl),
-		Type: `TXT`,
-		Txt: &Txt{
-			String: content,
-		},
-	})
-
-	return client.add(zoneName, request)
-}
-
-func (client *Client) DeleteRecord(zoneName string, id int) (*Response, error) {
-	url := fmt.Sprintf(DeleteRecordsUrlPattern, client.provider.ServiceName, zoneName, id)
-	req, err := http.NewRequest(http.MethodDelete, url, nil)
-	if err != nil {
-		return nil, err
-	}
-	response, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	apiResponse := Response{}
-	if err := xml.NewDecoder(response.Body).Decode(&apiResponse); err != nil {
-		return nil, err
-	}
-	if apiResponse.Status != SuccessStatus {
-		return nil, err
-	} else {
-		return &apiResponse, nil
-	}
-}
-
-func (client *Client) CommitZone(zoneName string) (*Response, error) {
-	url := fmt.Sprintf(CommitUrlPattern, client.provider.ServiceName, zoneName)
-	request, err := http.NewRequest(http.MethodPost, url, nil)
-	if err != nil {
-		return nil, err
-	}
-	response, err := client.Do(request)
-	if err != nil {
-		return nil, err
-	}
-	apiResponse := Response{}
-	if err := xml.NewDecoder(response.Body).Decode(&apiResponse); err != nil {
-		return nil, err
-	}
-	if apiResponse.Status != SuccessStatus {
-		return nil, err
-	} else {
-		return &apiResponse, nil
-	}
-}
-
-func (client *Client) validateAuthOptions() error {
-
-	msg := " is missing in credentials information"
-
-	if client.provider.ServiceName == "" {
-		return errors.New("service name" + msg)
-	}
-
-	if client.provider.Username == "" {
-		return errors.New("username" + msg)
-	}
-
-	if client.provider.Password == "" {
-		return errors.New("password" + msg)
-	}
-
-	if client.provider.OAuth2ClientID == "" {
-		return errors.New("serviceId" + msg)
-	}
-
-	if client.provider.OAuth2SecretID == "" {
-		return errors.New("secret" + msg)
-	}
-
-	return nil
+	return req, nil
 }

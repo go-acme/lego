@@ -103,6 +103,7 @@ func allDNSCodes() string {
 		"netcup",
 		"netlify",
 		"nicmanager",
+		"nicru",
 		"nifcloud",
 		"njalla",
 		"nodion",
@@ -2087,6 +2088,30 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/nicmanager`)
+
+	case "nicru":
+		// generated from: providers/dns/nicru/nicru.toml
+		ew.writeln(`Configuration for RU CENTER.`)
+		ew.writeln(`Code:	'nicru'`)
+		ew.writeln(`Since:	'v4.11.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "NIC_RU_PASSWORD":	Password for account in RU CENTER`)
+		ew.writeln(`	- "NIC_RU_SECRET":	Secret for application in DNS-hosting RU CENTER`)
+		ew.writeln(`	- "NIC_RU_SERVICE_ID":	Service ID for application in DNS-hosting RU CENTER`)
+		ew.writeln(`	- "NIC_RU_SERVICE_NAME":	Service Name for DNS-hosting RU CENTER`)
+		ew.writeln(`	- "NIC_RU_USER":	Agreement for account in RU CENTER`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "NIC_RU_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "NIC_RU_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "NIC_RU_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "NIC_RU_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/nicru`)
 
 	case "nifcloud":
 		// generated from: providers/dns/nifcloud/nifcloud.toml

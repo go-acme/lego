@@ -51,10 +51,14 @@ type ListRecordsResponse struct {
 	Last   []int    `json:"last,omitempty"`
 }
 
-type Errors struct {
-	Code   int    `json:"code"`
-	Status string `json:"status"`
-	Error  string `json:"error"`
+type APIError struct {
+	Code    int    `json:"code"`
+	Status  string `json:"status"`
+	Message string `json:"error"`
+}
+
+func (a APIError) Error() string {
+	return fmt.Sprintf("code: %d, status: %s, message: %s", a.Code, a.Status, a.Message)
 }
 
 type AddRecord struct {

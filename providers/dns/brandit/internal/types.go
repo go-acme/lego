@@ -10,30 +10,30 @@ type StatusDomain struct {
 }
 
 type StatusResponse struct {
-	Renewalmode                []string `json:"renewalmode"`
+	RenewalMode                []string `json:"renewalmode"`
 	Status                     []string `json:"status"`
-	Transferlock               []int    `json:"transferlock"`
+	TransferLock               []int    `json:"transferlock"`
 	Registrar                  []string `json:"registrar"`
-	Paiduntildate              []string `json:"paiduntildate"`
+	PaidUntilDate              []string `json:"paiduntildate"`
 	Nameserver                 []string `json:"nameserver"`
-	Registrationexpirationdate []string `json:"registrationexpirationdate"`
+	RegistrationExpirationDate []string `json:"registrationexpirationdate"`
 	Domain                     []string `json:"domain"`
-	Renewaldate                []string `json:"renewaldate"`
-	Updateddate                []string `json:"updateddate"`
-	Billingcontact             []string `json:"billingcontact"`
-	XDomainRoid                []string `json:"x-domain-roid"`
-	Admincontact               []string `json:"admincontact"`
-	Techcontact                []string `json:"techcontact"`
-	Domainidn                  []string `json:"domainidn"`
-	Createddate                []string `json:"createddate"`
-	Registrartransferdate      []string `json:"registrartransferdate"`
+	RenewalDate                []string `json:"renewaldate"`
+	UpdatedDate                []string `json:"updateddate"`
+	BillingContact             []string `json:"billingcontact"`
+	XDomainRoID                []string `json:"x-domain-roid"`
+	AdminContact               []string `json:"admincontact"`
+	TechContact                []string `json:"techcontact"`
+	DomainIDN                  []string `json:"domainidn"`
+	CreatedDate                []string `json:"createddate"`
+	RegistrarTransferDate      []string `json:"registrartransferdate"`
 	Zone                       []string `json:"zone"`
 	Auth                       []string `json:"auth"`
-	Updatedby                  []string `json:"updatedby"`
-	Roid                       []string `json:"roid"`
-	Ownercontact               []string `json:"ownercontact"`
-	Createdby                  []string `json:"createdby"`
-	Transfermode               []string `json:"transfermode"`
+	UpdatedBy                  []string `json:"updatedby"`
+	RoID                       []string `json:"roid"`
+	OwnerContact               []string `json:"ownercontact"`
+	CreatedBy                  []string `json:"createdby"`
+	TransferMode               []string `json:"transfermode"`
 }
 
 type ListRecords struct {

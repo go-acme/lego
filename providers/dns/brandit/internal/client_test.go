@@ -121,7 +121,7 @@ func TestClient_AddRecord(t *testing.T) {
 
 	expected := &AddRecord{
 		Response: AddRecordResponse{
-			Zonetype: []string{"com"},
+			ZoneType: []string{"com"},
 			Signed:   []int{1},
 		},
 		Record: "example.com 600 IN TXT txttxttxt",

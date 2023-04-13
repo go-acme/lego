@@ -151,24 +151,25 @@ func (c *Client) do(query url.Values, result any) error {
 
 	defer func() { _ = resp.Body.Close() }()
 
-	all, err := io.ReadAll(resp.Body)
+	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("read response body: %w", err)
 	}
 
 	//  Unmarshal the error response, because the API returns a 200 OK even if there is an error.
-	var Err Errors
-	err = json.Unmarshal(all, &Err)
+	var apiError APIError
+	err = json.Unmarshal(raw, &apiError)
 	if err != nil {
-		return fmt.Errorf("unmarshal response body: %w", err)
-	}
-	if Err.Code > 299 {
-		return fmt.Errorf("response code: %d, message: %s", Err.Code, Err.Error)
+		return fmt.Errorf("unmarshal error response: %w %s", err, string(raw))
 	}
 
-	err = json.Unmarshal(all, result)
+	if apiError.Code > 299 || apiError.Status != "success" {
+		return apiError
+	}
+
+	err = json.Unmarshal(raw, result)
 	if err != nil {
-		return fmt.Errorf("unmarshal response body: %w", err)
+		return fmt.Errorf("unmarshal response body: %w %s", err, string(raw))
 	}
 
 	return nil

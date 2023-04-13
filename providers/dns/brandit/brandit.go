@@ -153,13 +153,31 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	// gets the record's unique ID
 	d.recordsMu.Lock()
-	DNSRecord, ok := d.records[token]
+	dnsRecord, ok := d.records[token]
 	d.recordsMu.Unlock()
 	if !ok {
 		return fmt.Errorf("brandit: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
-	resp, err := d.client.CleanUpRecord(dns01.UnFqdn(authZone), DNSRecord)
+	// find the account associated with the domain
+	account, err := d.client.StatusDomain(dns01.UnFqdn(authZone))
+	if err != nil {
+		return fmt.Errorf("brandit: status domain: %w", err)
+	}
+
+	records, err := d.client.ListRecords(account.Response.Registrar[0], dns01.UnFqdn(authZone))
+	if err != nil {
+		return fmt.Errorf("brandit: list records: %w", err)
+	}
+
+	var recordID int
+	for i, r := range records.Response.RR {
+		if r == dnsRecord {
+			recordID = i
+		}
+	}
+
+	_, err = d.client.DeleteRecord(dns01.UnFqdn(authZone), account.Response.Registrar[0], dnsRecord, fmt.Sprint(recordID))
 	if err != nil {
 		return fmt.Errorf("brandit: delete record: %w", err)
 	}
@@ -168,10 +186,6 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	d.recordsMu.Lock()
 	delete(d.records, token)
 	d.recordsMu.Unlock()
-
-	if resp.Status == internal.StatusSuccess {
-		return nil
-	}
 
 	return nil
 }

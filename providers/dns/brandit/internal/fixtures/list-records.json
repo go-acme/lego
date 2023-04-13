@@ -1,0 +1,28 @@
+{
+  "response": {
+    "limit": [
+      100
+    ],
+    "column": [
+      "rr"
+    ],
+    "count": [
+      1
+    ],
+    "first": [
+      0
+    ],
+    "total": [
+      1
+    ],
+    "rr": [
+      "example.com. 600 IN TXT txttxttxt"
+    ],
+    "last": [
+      0
+    ]
+  },
+  "code": 200,
+  "status": "success",
+  "error": ""
+}

@@ -1,0 +1,80 @@
+{
+  "response": {
+    "renewalmode": [
+      "DEFAULT"
+    ],
+    "status": [
+      "clientTransferProhibited"
+    ],
+    "transferlock": [
+      1
+    ],
+    "registrar": [
+      "brandit"
+    ],
+    "paiduntildate": [
+      "2021-12-15 05:00:00.0"
+    ],
+    "nameserver": [
+      "NS1.RRPPROXY.NET",
+      "NS2.RRPPROXY.NET"
+    ],
+    "registrationexpirationdate": [
+      "2021-12-15 05:00:00.0"
+    ],
+    "domain": [
+      "example.com"
+    ],
+    "renewaldate": [
+      "2024-01-19 05:00:00.0"
+    ],
+    "updateddate": [
+      "2022-12-16 08:01:27.0"
+    ],
+    "billingcontact": [
+      "example"
+    ],
+    "x-domain-roid": [
+      "example"
+    ],
+    "admincontact": [
+      "example"
+    ],
+    "techcontact": [
+      "example"
+    ],
+    "domainidn": [
+      "example.com"
+    ],
+    "createddate": [
+      "2016-12-16 05:00:00.0"
+    ],
+    "registrartransferdate": [
+      "2021-12-09 05:17:42.0"
+    ],
+    "zone": [
+      "com"
+    ],
+    "auth": [
+      "example"
+    ],
+    "updatedby": [
+      "example"
+    ],
+    "roid": [
+      "example"
+    ],
+    "ownercontact": [
+      "example"
+    ],
+    "createdby": [
+      "example"
+    ],
+    "transfermode": [
+      "auto"
+    ]
+  },
+  "code": 200,
+  "status": "success",
+  "error": ""
+}

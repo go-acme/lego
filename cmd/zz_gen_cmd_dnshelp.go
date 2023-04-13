@@ -23,6 +23,7 @@ func allDNSCodes() string {
 		"azure",
 		"bindman",
 		"bluecat",
+		"brandit",
 		"bunny",
 		"checkdomain",
 		"civo",
@@ -331,6 +332,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/bluecat`)
+
+	case "brandit":
+		// generated from: providers/dns/brandit/brandit.toml
+		ew.writeln(`Configuration for BRANDIT.`)
+		ew.writeln(`Code:	'brandit'`)
+		ew.writeln(`Since:	'v4.11.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "BRANDIT_API_KEY":	The API key`)
+		ew.writeln(`	- "BRANDIT_API_USERNAME":	The API username`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "BRANDIT_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "BRANDIT_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "BRANDIT_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "BRANDIT_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/brandit`)
 
 	case "bunny":
 		// generated from: providers/dns/bunny/bunny.toml

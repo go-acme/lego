@@ -62,7 +62,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 ## More information
 
-- [API documentation](https://portal.brandit.com/api/v3/)
+- [API documentation](https://portal.brandit.com/apidocv3)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/brandit/brandit.toml -->

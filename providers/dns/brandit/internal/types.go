@@ -70,7 +70,7 @@ type AddRecord struct {
 }
 
 type AddRecordResponse struct {
-	Zonetype []string `json:"zonetype"`
+	ZoneType []string `json:"zonetype"`
 	Signed   []int    `json:"signed"`
 }
 

@@ -14,7 +14,7 @@ import (
 // Base URL for the RimuHosting DNS services.
 const (
 	DefaultZonomiBaseURL      = "https://zonomi.com/app/dns/dyndns.jsp"
-	DefaultRimuHostingBaseURL = "https://rimuhosting.com/app/dns/dyndns.jsp"
+	DefaultRimuHostingBaseURL = "https://rimuhosting.com/dns/dyndns.jsp"
 )
 
 // Action names.

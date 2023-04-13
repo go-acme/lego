@@ -21,10 +21,11 @@ const (
 	EnvAPIKey      = envNamespace + "API_KEY"
 	EnvAPIUsername = envNamespace + "API_USERNAME"
 
-	EnvTTL                = envNamespace + "TTL"
-	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
-	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
-	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+	EnvTTL                           = envNamespace + "TTL"
+	EnvPropagationTimeout            = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval               = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout                   = envNamespace + "HTTP_TIMEOUT"
+	DefaultBrandItPropagationTimeout = 600 * time.Second
 )
 
 // Config is used to configure the creation of the DNSProvider.
@@ -42,7 +43,7 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, defaultTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, DefaultBrandItPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
@@ -116,7 +117,6 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Content: info.Value,
 		TTL:     d.config.TTL,
 	}
-
 
 	// find the account associated with the domain
 	account, err := d.client.StatusDomain(dns01.UnFqdn(authZone))

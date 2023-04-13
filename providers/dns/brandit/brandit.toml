@@ -21,5 +21,6 @@ lego --email myemail@example.com --dns brandit --domains my.example.org run
     BRANDIT_HTTP_TIMEOUT = "API request timeout"
 
 [Links]
-  API = "https://portal.brandit.com/api/v3/"
+  API = "https://portal.brandit.com/apidocv3"
+
   

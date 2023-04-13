@@ -1,5 +1,7 @@
 package internal
 
+import "fmt"
+
 type StatusDomain struct {
 	Response StatusResponse `json:"response,omitempty"`
 	Code     int            `json:"code"`
@@ -47,7 +49,7 @@ type ListRecordsResponse struct {
 	Count  []int    `json:"count,omitempty"`
 	First  []int    `json:"first,omitempty"`
 	Total  []int    `json:"total,omitempty"`
-	Rr     []string `json:"rr,omitempty"`
+	RR     []string `json:"rr,omitempty"`
 	Last   []int    `json:"last,omitempty"`
 }
 

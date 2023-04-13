@@ -43,12 +43,12 @@ func NewClient(apiUsername, apiKey string) (*Client, error) {
 
 // ListRecords lists all records.
 // https://portal.brandit.com/apidocv3#listDNSRR
-func (c *Client) ListRecords(account, dnszone string) (*ListRecords, error) {
+func (c *Client) ListRecords(account, dnsZone string) (*ListRecords, error) {
 	// Create a new query
 	query := url.Values{}
 	query.Add("command", "listDNSRR")
 	query.Add("account", account)
-	query.Add("dnszone", dnszone)
+	query.Add("dnszone", dnsZone)
 
 	result := &ListRecords{}
 
@@ -57,14 +57,16 @@ func (c *Client) ListRecords(account, dnszone string) (*ListRecords, error) {
 		return nil, fmt.Errorf("do: %w", err)
 	}
 
-	for len(result.Response.Rr) < result.Response.Total[0] {
+	for len(result.Response.RR) < result.Response.Total[0] {
 		query.Add("first", fmt.Sprint(result.Response.Last[0]+1))
+
 		tmp := &ListRecords{}
 		err := c.do(query, tmp)
 		if err != nil {
 			return nil, fmt.Errorf("do: %w", err)
 		}
-		result.Response.Rr = append(result.Response.Rr, tmp.Response.Rr...)
+
+		result.Response.RR = append(result.Response.RR, tmp.Response.RR...)
 		result.Response.Last = tmp.Response.Last
 	}
 

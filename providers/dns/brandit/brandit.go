@@ -117,18 +117,27 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		TTL:     d.config.TTL,
 	}
 
-	resp, err := d.client.PresentRecord(dns01.UnFqdn(authZone), record)
+
+	// find the account associated with the domain
+	account, err := d.client.StatusDomain(dns01.UnFqdn(authZone))
+	if err != nil {
+		return fmt.Errorf("brandit: status domain: %w", err)
+	}
+
+	// Find the next record id
+	recordID, err := d.client.ListRecords(account.Response.Registrar[0], dns01.UnFqdn(authZone))
+	if err != nil {
+		return fmt.Errorf("brandit: list records: %w", err)
+	}
+
+	result, err := d.client.AddRecord(dns01.UnFqdn(authZone), account.Response.Registrar[0], fmt.Sprint(recordID.Response.Total[0]), record)
 	if err != nil {
 		return fmt.Errorf("brandit: add record: %w", err)
 	}
 
-	if resp.Status == internal.StatusSuccess {
-		d.recordsMu.Lock()
-		d.records[token] = resp.Record
-		d.recordsMu.Unlock()
-
-		return nil
-	}
+	d.recordsMu.Lock()
+	d.records[token] = result.Record
+	d.recordsMu.Unlock()
 
 	return nil
 }

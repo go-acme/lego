@@ -95,7 +95,7 @@ func TestClient_ListRecords(t *testing.T) {
 			Count:  []int{1},
 			First:  []int{0},
 			Total:  []int{1},
-			Rr:     []string{"example.com. 600 IN TXT txttxttxt"},
+			RR:     []string{"example.com. 600 IN TXT txttxttxt"},
 			Last:   []int{0},
 		},
 		Code:   200,

@@ -22,5 +22,3 @@ lego --email myemail@example.com --dns brandit --domains my.example.org run
 
 [Links]
   API = "https://portal.brandit.com/apidocv3"
-
-  

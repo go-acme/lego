@@ -96,51 +96,6 @@ func (c *Client) AddRecord(domainName, account, newRecordID string, record Recor
 	return result, nil
 }
 
-func (c *Client) PresentRecord(domainName string, record Record) (*AddRecord, error) {
-	// find the account associated with the domain
-	account, err := c.StatusDomain(domainName)
-	if err != nil {
-		return nil, fmt.Errorf("status domain: %w", err)
-	}
-
-	// Find the next record id
-	recordID, err := c.ListRecords(account.Response.Registrar[0], domainName)
-	if err != nil {
-		return nil, fmt.Errorf("list records: %w", err)
-	}
-
-	result, err := c.AddRecord(domainName, account.Response.Registrar[0], fmt.Sprint(recordID.Response.Total[0]), record)
-	if err != nil {
-		return nil, fmt.Errorf("add record: %w", err)
-	}
-
-	return result, nil
-}
-
-func (c *Client) CleanUpRecord(domainName, dnsRecord string) (*DeleteRecord, error) {
-	// find the account associated with the domain
-	account, err := c.StatusDomain(domainName)
-	if err != nil {
-		return nil, fmt.Errorf("status domain: %w", err)
-	}
-
-	records, err := c.ListRecords(account.Response.Registrar[0], domainName)
-	if err != nil {
-		return nil, fmt.Errorf("list records: %w", err)
-	}
-	var recordID int
-	for i, r := range records.Response.Rr {
-		if r == dnsRecord {
-			recordID = i
-		}
-	}
-	result, err := c.DeleteRecord(domainName, account.Response.Registrar[0], dnsRecord, fmt.Sprint(recordID))
-	if err != nil {
-		return nil, fmt.Errorf("delete record: %w", err)
-	}
-
-	return result, nil
-}
 
 // DeleteRecord deletes a DNS record.
 // https://portal.brandit.com/apidocv3#deleteDNSRR

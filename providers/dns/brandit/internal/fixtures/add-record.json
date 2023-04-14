@@ -1,0 +1,14 @@
+{
+  "response": {
+    "zonetype": [
+      "com"
+    ],
+    "signed": [
+      1
+    ]
+  },
+  "record": "example.com. 600 IN TXT txttxttxt",
+  "code": 200,
+  "status": "success",
+  "error": ""
+}

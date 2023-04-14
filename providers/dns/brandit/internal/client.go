@@ -16,9 +16,6 @@ import (
 
 const defaultBaseURL = "https://portal.brandit.com/api/v3/"
 
-// StatusSuccess expected status text when success.
-const StatusSuccess = "success"
-
 // Client a BrandIT DNS API client.
 type Client struct {
 	apiUsername string
@@ -95,7 +92,6 @@ func (c *Client) AddRecord(domainName, account, newRecordID string, record Recor
 
 	return result, nil
 }
-
 
 // DeleteRecord deletes a DNS record.
 // https://portal.brandit.com/apidocv3#deleteDNSRR

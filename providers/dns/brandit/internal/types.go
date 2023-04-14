@@ -2,11 +2,11 @@ package internal
 
 import "fmt"
 
-type StatusDomain struct {
-	Response StatusResponse `json:"response,omitempty"`
-	Code     int            `json:"code"`
-	Status   string         `json:"status"`
-	Error    string         `json:"error"`
+type Response[T any] struct {
+	Response T      `json:"response,omitempty"`
+	Code     int    `json:"code"`
+	Status   string `json:"status"`
+	Error    string `json:"error"`
 }
 
 type StatusResponse struct {
@@ -34,13 +34,6 @@ type StatusResponse struct {
 	OwnerContact               []string `json:"ownercontact"`
 	CreatedBy                  []string `json:"createdby"`
 	TransferMode               []string `json:"transfermode"`
-}
-
-type ListRecords struct {
-	Response ListRecordsResponse `json:"response,omitempty"`
-	Code     int                 `json:"code"`
-	Status   string              `json:"status"`
-	Error    string              `json:"error"`
 }
 
 type ListRecordsResponse struct {
@@ -82,10 +75,4 @@ type Record struct {
 	Name    string `json:"name,omitempty"` // subdomain name or @ if you don't want subdomain
 	Content string `json:"content,omitempty"`
 	TTL     int    `json:"ttl,omitempty"` // default 600
-}
-
-type DeleteRecord struct {
-	Code   int    `json:"code"`
-	Status string `json:"status"`
-	Error  string `json:"error"`
 }

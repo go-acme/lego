@@ -4,10 +4,15 @@ import (
 	"bytes"
 	"crypto"
 	"crypto/x509"
+	"crypto/x509/pkix"
+	"encoding/asn1"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"math/big"
+	"math/rand"
 	"net/http"
 	"strings"
 	"time"
@@ -557,6 +562,109 @@ func (c *Certifier) Get(url string, bundle bool) (*Resource, error) {
 	}, nil
 }
 
+// ErrNoARI is returned when the server does not advertise a renewal info
+// endpoint.
+var ErrNoARI = errors.New("server does not advertise a renewal info endpoint")
+
+type CheckRenewalInfoRequest struct {
+	Cert   *x509.Certificate
+	Issuer *x509.Certificate
+}
+
+// SuggestedWindow is a type exposed inside the RenewalInfo resource. It is
+// used to indicate a suggested renewal window to the caller.
+type SuggestedWindow struct {
+	Start time.Time `json:"start"`
+	End   time.Time `json:"end"`
+}
+
+// RenewalInfo is a type which is exposed to callers which query the renewalInfo
+// endpoint specified in https://datatracker.ietf.org/doc/draft-ietf-acme-ari.
+type RenewalInfo struct {
+	// SuggestedWindow contains two fields, start and end, whose values are
+	// timestamps which bound the window of time in which the CA recommends
+	// renewing the certificate.
+	SuggestedWindow SuggestedWindow `json:"suggestedWindow"`
+	//	ExplanationURL is a optional URL pointing to a page which may explain
+	//	why the suggested renewal window is what it is. For example, it may be a
+	//	page explaining the CA's dynamic load-balancing strategy, or a page
+	//	documenting which certificates are affected by a mass revocation event.
+	//	Callers SHOULD provide this URL to their operator, if present.
+	ExplanationURL string `json:"explanationUrl"`
+}
+
+// ShouldRenewAt determines the optimal renewal time based on the current time
+// (UTC), renewal window suggest by ARI, and the client's willingness to sleep.
+// It returns a pointer to a time.Time value indicating when the renewal should
+// be attempted or nil if deferred until the next normal wake time. This method
+// implements the RECOMMENDED algorithm described in draft-ietf-acme-ari.
+func (r *RenewalInfo) ShouldRenewAt(now time.Time, willingToSleep time.Duration) *time.Time {
+	// Explicitly convert all times to UTC.
+	now = now.UTC()
+	start := r.SuggestedWindow.Start.UTC()
+	end := r.SuggestedWindow.End.UTC()
+
+	// Select a uniform random time within the suggested window.
+	window := end.Sub(start)
+	randomDuration := time.Duration(rand.Int63n(int64(window)))
+	rt := start.Add(randomDuration)
+
+	// If the selected time is in the past, attempt renewal immediately.
+	if rt.Before(now) {
+		return &now
+	}
+
+	// Otherwise, if the client can schedule itself to attempt renewal at
+	// exactly the selected time, do so.
+	willingToSleepUntil := now.Add(willingToSleep)
+	if willingToSleepUntil.After(rt) || willingToSleepUntil.Equal(rt) {
+		return &rt
+	}
+
+	// TODO: Otherwise, if the selected time is before the next time that the
+	// client would wake up normally, attempt renewal immediately.
+
+	// Otherwise, sleep until the next normal wake time, re-check ARI, and
+	// return to Step 1.
+	return nil
+}
+
+// RetrieveRenewalInfo retrieves a suggested renewal window from the ACME
+// server. Using this information, the caller should select a uniform random
+// time within the suggested window. If the selected time is in the past,
+// attempt renewal immediately. Otherwise, if the caller can schedule itself to
+// attempt renewal at exactly the selected time, do so.
+//
+// Note: this endpoint is part of a draft specification, not all ACME servers
+// will implement it. This method will return ErrNoARI if the server does not
+// advertise a renewal info endpoint.
+//
+// https://datatracker.ietf.org/doc/draft-ietf-acme-ari
+func (c *Certifier) RetrieveRenewalInfo(req CheckRenewalInfoRequest) (*RenewalInfo, error) {
+	if c.core.GetDirectory().RenewalInfo == "" {
+		// The ACME server does not advertise a renewal info endpoint.
+		return nil, ErrNoARI
+	}
+
+	certID, err := makeCertID(req.Cert, req.Issuer)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.core.HTTPClient.Get(c.core.GetDirectory().RenewalInfo + "/" + certID)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var info RenewalInfo
+	err = json.NewDecoder(resp.Body).Decode(&info)
+	if err != nil {
+		return nil, err
+	}
+	return &info, nil
+}
+
 func hasPreferredChain(issuer []byte, preferredChain string) (bool, error) {
 	certs, err := certcrypto.ParsePEMBundle(issuer)
 	if err != nil {
@@ -599,4 +707,85 @@ func sanitizeDomain(domains []string) []string {
 		}
 	}
 	return sanitizedDomains
+}
+
+// makeCertID returns a base64url-encoded string that uniquely identifies a
+// certificate to endpoints that implement the draft-ietf-acme-ari
+// specification: https://datatracker.ietf.org/doc/draft-ietf-acme-ari
+func makeCertID(leaf, issuer *x509.Certificate) (string, error) {
+	var hashFunc crypto.Hash
+	var oid asn1.ObjectIdentifier
+
+	switch issuer.SignatureAlgorithm {
+	// The following correlation of hash to hashFunc and OID is copied from a
+	// private mapping in golang.org/x/crypto/ocsp:
+	// https://cs.opensource.google/go/x/crypto/+/refs/tags/v0.8.0:ocsp/ocsp.go;l=156
+	case x509.SHA1WithRSA, x509.ECDSAWithSHA1:
+		hashFunc = crypto.SHA1
+		oid = asn1.ObjectIdentifier([]int{1, 3, 14, 3, 2, 26})
+
+	case x509.SHA256WithRSA, x509.ECDSAWithSHA256:
+		hashFunc = crypto.SHA256
+		oid = asn1.ObjectIdentifier([]int{2, 16, 840, 1, 101, 3, 4, 2, 1})
+
+	case x509.SHA384WithRSA, x509.ECDSAWithSHA384:
+		hashFunc = crypto.SHA384
+		oid = asn1.ObjectIdentifier([]int{2, 16, 840, 1, 101, 3, 4, 2, 2})
+
+	case x509.SHA512WithRSA, x509.ECDSAWithSHA512:
+		hashFunc = crypto.SHA512
+		oid = asn1.ObjectIdentifier([]int{2, 16, 840, 1, 101, 3, 4, 2, 3})
+
+	default:
+		return "", fmt.Errorf("unsupported signature algorithm %s", issuer.SignatureAlgorithm)
+	}
+
+	// Check that the hash function is available on this platform.
+	if !hashFunc.Available() {
+		// This should never happen.
+		return "", fmt.Errorf("unsupported hash function %s", hashFunc)
+	}
+
+	var spki struct {
+		Algorithm pkix.AlgorithmIdentifier
+		PublicKey asn1.BitString
+	}
+
+	_, err := asn1.Unmarshal(issuer.RawSubjectPublicKeyInfo, &spki)
+	if err != nil {
+		return "", err
+	}
+	h := hashFunc.New()
+	h.Write(spki.PublicKey.RightAlign())
+	issuerKeyHash := h.Sum(nil)
+
+	h.Reset()
+	h.Write(issuer.RawSubject)
+	issuerNameHash := h.Sum(nil)
+
+	type certID struct {
+		HashAlgorithm  pkix.AlgorithmIdentifier
+		IssuerNameHash []byte
+		IssuerKeyHash  []byte
+		SerialNumber   *big.Int
+	}
+
+	// DER-encode the CertID ASN.1 sequence [RFC6960].
+	certIDBytes, err := asn1.Marshal(certID{
+		HashAlgorithm: pkix.AlgorithmIdentifier{
+			Algorithm: oid,
+		},
+		IssuerNameHash: issuerNameHash,
+		IssuerKeyHash:  issuerKeyHash,
+		SerialNumber:   leaf.SerialNumber})
+	if err != nil {
+		return "", err
+	}
+
+	// base64url-encode [RFC4648] the bytes of the DER-encoded CertID ASN.1
+	// sequence [RFC6960].
+	encodedBytes := base64.URLEncoding.EncodeToString(certIDBytes)
+
+	// Any trailing '=' characters MUST be stripped.
+	return strings.TrimRight(encodedBytes, "="), nil
 }

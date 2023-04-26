@@ -3,10 +3,12 @@ package certificate
 import (
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/x509"
 	"encoding/pem"
 	"fmt"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/go-acme/lego/v4/acme"
 	"github.com/go-acme/lego/v4/acme/api"
@@ -395,4 +397,94 @@ type resolverMock struct {
 
 func (r *resolverMock) Solve(_ []acme.Authorization) error {
 	return r.error
+}
+
+func Test_makeCertID(t *testing.T) {
+	leafPEM := `-----BEGIN CERTIFICATE-----
+MIIDMDCCAhigAwIBAgIIPqNFaGVEHxwwDQYJKoZIhvcNAQELBQAwIDEeMBwGA1UE
+AxMVbWluaWNhIHJvb3QgY2EgM2ExMzU2MB4XDTIyMDMxNzE3NTEwOVoXDTI0MDQx
+NjE3NTEwOVowFjEUMBIGA1UEAxMLZXhhbXBsZS5jb20wggEiMA0GCSqGSIb3DQEB
+AQUAA4IBDwAwggEKAoIBAQCgm9K/c+il2Pf0f8qhgxn9SKqXq88cOm9ov9AVRbPA
+OWAAewqX2yUAwI4LZBGEgzGzTATkiXfoJ3cN3k39cH6tBbb3iSPuEn7OZpIk9D+e
+3Q9/hX+N/jlWkaTB/FNA+7aE5IVWhmdczYilXa10V9r+RcvACJt0gsipBZVJ4jfJ
+HnWJJGRZzzxqG/xkQmpXxZO7nOPFc8SxYKWdfcgp+rjR2ogYhSz7BfKoVakGPbpX
+vZOuT9z4kkHra/WjwlkQhtHoTXdAxH3qC2UjMzO57Tx+otj0CxAv9O7CTJXISywB
+vEVcmTSZkHS3eZtvvIwPx7I30ITRkYk/tLl1MbyB3SiZAgMBAAGjeDB2MA4GA1Ud
+DwEB/wQEAwIFoDAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwDAYDVR0T
+AQH/BAIwADAfBgNVHSMEGDAWgBQ4zzDRUaXHVKqlSTWkULGU4zGZpTAWBgNVHREE
+DzANggtleGFtcGxlLmNvbTANBgkqhkiG9w0BAQsFAAOCAQEAx0aYvmCk7JYGNEXe
++hrOfKawkHYzWvA92cI/Oi6h+oSdHZ2UKzwFNf37cVKZ37FCrrv5pFP/xhhHvrNV
+EnOx4IaF7OrnaTu5miZiUWuvRQP7ZGmGNFYbLTEF6/dj+WqyYdVaWzxRqHFu1ptC
+TXysJCeyiGnR+KOOjOOQ9ZlO5JUK3OE4hagPLfaIpDDy6RXQt3ss0iNLuB1+IOtp
+1URpvffLZQ8xPsEgOZyPWOcabTwJrtqBwily+lwPFn2mChUx846LwQfxtsXU/lJg
+HX2RteNJx7YYNeX3Uf960mgo5an6vE8QNAsIoNHYrGyEmXDhTRe9mCHyiW2S7fZq
+o9q12g==
+-----END CERTIFICATE-----`
+	issuerPEM := `-----BEGIN CERTIFICATE-----
+MIIDSzCCAjOgAwIBAgIIOhNWtJ7Igr0wDQYJKoZIhvcNAQELBQAwIDEeMBwGA1UE
+AxMVbWluaWNhIHJvb3QgY2EgM2ExMzU2MCAXDTIyMDMxNzE3NTEwOVoYDzIxMjIw
+MzE3MTc1MTA5WjAgMR4wHAYDVQQDExVtaW5pY2Egcm9vdCBjYSAzYTEzNTYwggEi
+MA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDc3P6cxcCZ7FQOQrYuigReSa8T
+IOPNKmlmX9OrTkPwjThiMNEETYKO1ea99yXPK36LUHC6OLmZ9jVQW2Ny1qwQCOy6
+TrquhnwKgtkBMDAZBLySSEXYdKL3r0jA4sflW130/OLwhstU/yv0J8+pj7eSVOR3
+zJBnYd1AqnXHRSwQm299KXgqema7uwsa8cgjrXsBzAhrwrvYlVhpWFSv3lQRDFQg
+c5Z/ZDV9i26qiaJsCCmdisJZWN7N2luUgxdRqzZ4Cr2Xoilg3T+hkb2y/d6ttsPA
+kaSA+pq3q6Qa7/qfGdT5WuUkcHpvKNRWqnwT9rCYlmG00r3hGgc42D/z1VvfAgMB
+AAGjgYYwgYMwDgYDVR0PAQH/BAQDAgKEMB0GA1UdJQQWMBQGCCsGAQUFBwMBBggr
+BgEFBQcDAjASBgNVHRMBAf8ECDAGAQH/AgEAMB0GA1UdDgQWBBQ4zzDRUaXHVKql
+STWkULGU4zGZpTAfBgNVHSMEGDAWgBQ4zzDRUaXHVKqlSTWkULGU4zGZpTANBgkq
+hkiG9w0BAQsFAAOCAQEArbDHhEjGedjb/YjU80aFTPWOMRjgyfQaPPgyxwX6Dsid
+1i2H1x4ud4ntz3sTZZxdQIrOqtlIWTWVCjpStwGxaC+38SdreiTTwy/nikXGa/6W
+ZyQRppR3agh/pl5LHVO6GsJz3YHa7wQhEhj3xsRwa9VrRXgHbLGbPOFVRTHPjaPg
+Gtsv2PN3f67DsPHF47ASqyOIRpLZPQmZIw6D3isJwfl+8CzvlB1veO0Q3uh08IJc
+fspYQXvFBzYa64uKxNAJMi4Pby8cf4r36Wnb7cL4ho3fOHgAltxdW8jgibRzqZpQ
+QKyxn2jX7kxeUDt0hFDJE8lOrhP73m66eBNzxe//FQ==
+-----END CERTIFICATE-----`
+	leafBlock, _ := pem.Decode([]byte(leafPEM))
+	leaf, err := x509.ParseCertificate(leafBlock.Bytes)
+	require.NoError(t, err)
+	issuerBlock, _ := pem.Decode([]byte(issuerPEM))
+	issuer, err := x509.ParseCertificate(issuerBlock.Bytes)
+	require.NoError(t, err)
+
+	actual, err := makeCertID(leaf, issuer)
+	require.NoError(t, err)
+
+	expected := "MFswCwYJYIZIAWUDBAIBBCCeWLRusNLb--vmWOkxm34qDjTMWkc3utIhOMoMwKDqbgQg2iiKWySZrD-6c88HMZ6vhIHZPamChLlzGHeZ7pTS8jYCCD6jRWhlRB8c"
+	assert.Equal(t, expected, actual)
+}
+
+func TestRenewalInfo_ShouldRenew(t *testing.T) {
+	now := time.Now().UTC()
+
+	// Window is in the past.
+	ri := RenewalInfo{
+		SuggestedWindow{
+			Start: now.Add(-1 * time.Hour),
+			End:   now.Add(-30 * time.Minute),
+		},
+		"",
+	}
+	rt := ri.ShouldRenewAt(now, 0)
+	assert.Equal(t, now, *rt)
+
+	// Window is in the future.
+	ri = RenewalInfo{
+		SuggestedWindow{
+			Start: now.Add(1 * time.Hour),
+			End:   now.Add(2 * time.Hour),
+		},
+		"",
+	}
+	rt = ri.ShouldRenewAt(now, 0)
+	assert.Nil(t, rt)
+
+	// Window is in the future, but caller is willing to sleep.
+	rt = ri.ShouldRenewAt(now, 2*time.Hour)
+	assert.NotNil(t, rt)
+	assert.True(t, rt.Before(now.Add(2*time.Hour)))
+
+	// Window is in the future, but caller isn't willing to sleep long enough.
+	rt = ri.ShouldRenewAt(now, 59*time.Minute)
+	assert.Nil(t, rt)
 }

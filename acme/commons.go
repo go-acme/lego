@@ -46,6 +46,7 @@ type Directory struct {
 	RevokeCertURL string `json:"revokeCert"`
 	KeyChangeURL  string `json:"keyChange"`
 	Meta          Meta   `json:"meta"`
+	RenewalInfo   string `json:"renewalInfo"`
 }
 
 // Meta the ACME meta object (related to Directory).

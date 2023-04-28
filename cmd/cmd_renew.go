@@ -132,8 +132,9 @@ func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *Certif
 	if ctx.Bool("ari-enable") {
 		if len(certificates) < 2 {
 			log.Warnf("[%s] Certificate bundle does not contain issuer, cannot use the renewalInfo endpoint", domain)
+		} else {
+			ariSaysRenew = needRenewalARI(ctx, certificates[0], certificates[1], domain, client)
 		}
-		ariSaysRenew = needRenewalARI(ctx, certificates[0], certificates[1], domain, client)
 	}
 
 	if !ariSaysRenew && !needRenewal(cert, domain, ctx.Int("days")) {
@@ -217,8 +218,9 @@ func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *Certificat
 	if ctx.Bool("ari-enable") {
 		if len(certificates) < 2 {
 			log.Warnf("[%s] Certificate bundle does not contain issuer, cannot use the renewalInfo endpoint", domain)
+		} else {
+			ariSaysRenew = needRenewalARI(ctx, certificates[0], certificates[1], domain, client)
 		}
-		ariSaysRenew = needRenewalARI(ctx, certificates[0], certificates[1], domain, client)
 	}
 
 	if !ariSaysRenew && !needRenewal(cert, domain, ctx.Int("days")) {

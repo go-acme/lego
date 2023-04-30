@@ -105,6 +105,8 @@ func run(ctx *cli.Context) error {
 		renewEnvCertDomain:   cert.Domain,
 		renewEnvCertPath:     certsStorage.GetFileName(cert.Domain, ".crt"),
 		renewEnvCertKeyPath:  certsStorage.GetFileName(cert.Domain, ".key"),
+		renewEnvCertPEMPath:  certsStorage.GetFileName(cert.Domain, ".pem"),
+		renewEnvCertPFXPath:  certsStorage.GetFileName(cert.Domain, ".pfx"),
 	}
 
 	return launchHook(ctx.String("run-hook"), meta)

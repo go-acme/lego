@@ -298,6 +298,10 @@ func needRenewalARI(ctx *cli.Context, cert, issuer *x509.Certificate, domain str
 	}
 	log.Infof("[%s] acme: renewalInfo endpoint indicates that renewal is needed", domain)
 
+	if renewalInfo.ExplanationURL != "" {
+		log.Infof("[%s] acme: renewalInfo endpoint provided an explanation: %s", domain, renewalInfo.ExplanationURL)
+	}
+
 	// Figure out if we need to sleep before renewing.
 	if renewalTime.After(now) {
 		log.Infof("[%s] Sleeping %s until renewal time %s", domain, renewalTime.Sub(now), renewalTime)

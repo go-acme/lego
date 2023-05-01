@@ -531,6 +531,7 @@ QKyxn2jX7kxeUDt0hFDJE8lOrhP73m66eBNzxe//FQ==
 
 	ri, err := certifier.RetrieveRenewalInfo(CheckRenewalInfoRequest{leaf, issuer})
 	require.NoError(t, err)
+	require.NotNil(t, ri)
 	assert.Equal(t, "2020-03-17T17:51:09Z", ri.SuggestedWindow.Start.Format(time.RFC3339))
 	assert.Equal(t, "2020-03-17T18:21:09Z", ri.SuggestedWindow.End.Format(time.RFC3339))
 	assert.Equal(t, "https://aricapable.ca/docs/renewal-advice/", ri.ExplanationURL)

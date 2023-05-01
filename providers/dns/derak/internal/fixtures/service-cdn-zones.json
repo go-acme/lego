@@ -1,0 +1,40 @@
+{
+  "success": true,
+  "result": [
+    {
+      "zoneId": "47c0ecf6c91243308c649ad1d2d618dd",
+      "tags": [],
+      "contextId": "47c0ecf6c91243308c649ad1d2d618dd",
+      "contextType": "CDN",
+      "humanReadable": "example.com",
+      "serial": "2301449956",
+      "creationTime": 1679090659902,
+      "creationTimeDate": "2023-03-17T22:04:19.902Z",
+      "status": "active",
+      "is_moved": true,
+      "paused": false,
+      "cache": {
+        "developmentMode": false
+      },
+      "securityOptions": {
+        "level": "off"
+      },
+      "ssl": {
+        "active": true
+      },
+      "dns": {
+        "length": 8
+      },
+      "serviceType": "CDN",
+      "limbo": false,
+      "teamName": "test",
+      "teamId": "640ef58496738d38fa7246a4",
+      "myTeam": true,
+      "roleName": "owner",
+      "isBoard": true,
+      "boardRole": [
+        "owner"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "data": [
+    {
+      "recordId": "812bee17a0b440b0bd5ee099a78b839c",
+      "type": "A",
+      "host": "example.com",
+      "content": "188.114.97.3",
+      "ttl": 0,
+      "cloud": false,
+      "advanced": false,
+      "customSSLType": ""
+    },
+    {
+      "recordId": "90e6029da45d4a36bf31056cf85d0cab",
+      "type": "A",
+      "host": "example.com",
+      "content": "188.114.96.3",
+      "ttl": 0,
+      "cloud": false,
+      "advanced": false,
+      "customSSLType": ""
+    },
+    {
+      "recordId": "0ac0320da0d24b5ca4f1648986a17340",
+      "type": "AAAA",
+      "host": "example.com",
+      "content": "2a06:98c1:3121::7",
+      "ttl": 0,
+      "cloud": false,
+      "advanced": false,
+      "customSSLType": ""
+    },
+    {
+      "recordId": "c91599694aea413498a0b3cd0a54a585",
+      "type": "AAAA",
+      "host": "example.com",
+      "content": "2a06:98c1:3120::7",
+      "ttl": 0,
+      "cloud": false,
+      "advanced": false,
+      "customSSLType": ""
+    },
+    {
+      "recordId": "c21f974992d549499f92e768bc468374",
+      "type": "A",
+      "host": "www",
+      "content": "188.114.96.7",
+      "ttl": 0,
+      "cloud": false,
+      "advanced": false,
+      "customSSLType": ""
+    },
+    {
+      "recordId": "90c3c1f05dca426893f10f122d18ad7a",
+      "type": "A",
+      "host": "www",
+      "content": "188.114.97.7",
+      "ttl": 0,
+      "cloud": false,
+      "advanced": false,
+      "customSSLType": ""
+    },
+    {
+      "recordId": "379ab0ac0e434bc9aee5287e497f88a5",
+      "type": "AAAA",
+      "host": "www",
+      "content": "2a06:98c1:3121::",
+      "ttl": 0,
+      "cloud": false,
+      "advanced": false,
+      "customSSLType": ""
+    },
+    {
+      "recordId": "a1c4f9e50ba74791a4d70dc96999474c",
+      "type": "AAAA",
+      "host": "www",
+      "content": "2a06:98c1:3120::",
+      "ttl": 0,
+      "cloud": false,
+      "advanced": false,
+      "customSSLType": ""
+    }
+  ],
+  "count": 8
+}

@@ -529,7 +529,7 @@ QKyxn2jX7kxeUDt0hFDJE8lOrhP73m66eBNzxe//FQ==
 
 	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
 
-	ri, err := certifier.RetrieveRenewalInfo(CheckRenewalInfoRequest{leaf, issuer})
+	ri, err := certifier.GetRenewalInfo(RenewalInfoRequest{leaf, issuer})
 	require.NoError(t, err)
 	require.NotNil(t, ri)
 	assert.Equal(t, "2020-03-17T17:51:09Z", ri.SuggestedWindow.Start.Format(time.RFC3339))
@@ -542,22 +542,26 @@ func TestRenewalInfo_ShouldRenew(t *testing.T) {
 
 	// Window is in the past.
 	ri := RenewalInfo{
-		SuggestedWindow{
-			Start: now.Add(-1 * time.Hour),
-			End:   now.Add(-30 * time.Minute),
+		acme.RenewalInfoResponse{
+			SuggestedWindow: acme.Window{
+				Start: now.Add(-2 * time.Hour),
+				End:   now.Add(-1 * time.Hour),
+			},
+			ExplanationURL: "",
 		},
-		"",
 	}
 	rt := ri.ShouldRenewAt(now, 0)
 	assert.Equal(t, now, *rt)
 
 	// Window is in the future.
 	ri = RenewalInfo{
-		SuggestedWindow{
-			Start: now.Add(1 * time.Hour),
-			End:   now.Add(2 * time.Hour),
+		acme.RenewalInfoResponse{
+			SuggestedWindow: acme.Window{
+				Start: now.Add(1 * time.Hour),
+				End:   now.Add(2 * time.Hour),
+			},
+			ExplanationURL: "",
 		},
-		"",
 	}
 	rt = ri.ShouldRenewAt(now, 0)
 	assert.Nil(t, rt)

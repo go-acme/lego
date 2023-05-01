@@ -61,6 +61,30 @@ func (c *CertificateService) Revoke(req acme.RevokeCertMessage) error {
 	return err
 }
 
+// GetRenewalInfo GETs renewal information for a certificate from the
+// renewalInfo endpoint. This is used to determine if a certificate needs to be
+// renewed.
+func (c *CertificateService) GetRenewalInfo(certID string) (*http.Response, error) {
+	if certID == "" {
+		return nil, errors.New("renewalInfo[post]: 'certID' cannot be empty")
+	}
+	return c.core.HTTPClient.Get(c.core.GetDirectory().RenewalInfo + "/" + certID)
+}
+
+// PostRenewalInfo POSTs updated renewal information for a certificate to the
+// renewalInfo endpoint. This is used to indicate that a certificate has been
+// renewed.
+func (c *CertificateService) UpdateRenewalInfo(req acme.RenewalInfoUpdateRequest) (*http.Response, error) {
+	if req.CertID == "" {
+		return nil, errors.New("renewalInfo[post]: 'certID' cannot be empty")
+	}
+
+	if !req.Replaced {
+		return nil, errors.New("renewalInfo[post]: 'replaced' cannot be false")
+	}
+	return c.core.post(c.core.GetDirectory().RenewalInfo, req, nil)
+}
+
 // get Returns the certificate and the "up" link.
 func (c *CertificateService) get(certURL string, bundle bool) (*acme.RawCertificate, http.Header, error) {
 	if certURL == "" {

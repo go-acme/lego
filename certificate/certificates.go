@@ -562,35 +562,20 @@ func (c *Certifier) Get(url string, bundle bool) (*Resource, error) {
 	}, nil
 }
 
-// ErrNoARI is returned when the server does not advertise a renewal info
-// endpoint.
-var ErrNoARI = errors.New("server does not advertise a renewal info endpoint")
+// ErrNoARIEndpoint is returned when the server does not advertise a renewal
+// info endpoint.
+var ErrNoARIEndpoint = errors.New("server does not advertise a renewal info endpoint")
 
-type CheckRenewalInfoRequest struct {
+// RenewalInfoRequest contains the necessary renewal information.
+type RenewalInfoRequest struct {
 	Cert   *x509.Certificate
 	Issuer *x509.Certificate
 }
 
-// SuggestedWindow is a type exposed inside the RenewalInfo resource. It is
-// used to indicate a suggested renewal window to the caller.
-type SuggestedWindow struct {
-	Start time.Time `json:"start"`
-	End   time.Time `json:"end"`
-}
-
-// RenewalInfo is a type which is exposed to callers which query the renewalInfo
-// endpoint specified in https://datatracker.ietf.org/doc/draft-ietf-acme-ari.
+// RenewalInfo is a wrapper around acme.RenewalInfoResponse that provides a
+// method for determining when to renew a certificate.
 type RenewalInfo struct {
-	// SuggestedWindow contains two fields, start and end, whose values are
-	// timestamps which bound the window of time in which the CA recommends
-	// renewing the certificate.
-	SuggestedWindow SuggestedWindow `json:"suggestedWindow"`
-	//	ExplanationURL is a optional URL pointing to a page which may explain
-	//	why the suggested renewal window is what it is. For example, it may be a
-	//	page explaining the CA's dynamic load-balancing strategy, or a page
-	//	documenting which certificates are affected by a mass revocation event.
-	//	Callers SHOULD provide this URL to their operator, if present.
-	ExplanationURL string `json:"explanationUrl"`
+	acme.RenewalInfoResponse
 }
 
 // ShouldRenewAt determines the optimal renewal time based on the current time
@@ -629,29 +614,28 @@ func (r *RenewalInfo) ShouldRenewAt(now time.Time, willingToSleep time.Duration)
 	return nil
 }
 
-// RetrieveRenewalInfo retrieves a suggested renewal window from the ACME
-// server. Using this information, the caller should select a uniform random
-// time within the suggested window. If the selected time is in the past,
-// attempt renewal immediately. Otherwise, if the caller can schedule itself to
-// attempt renewal at exactly the selected time, do so.
+// GetRenewalInfo sends a GET request to the ACME server's renewalInfo endpoint
+// to obtain a suggested renewal window. The caller MUST provide the certificate
+// and issuer certificate for the certificate they wish to renew. The caller
+// should attempt to renew the certificate at the time indicated by the
+// ShouldRenewAt method of the returned RenewalInfo object.
 //
 // Note: this endpoint is part of a draft specification, not all ACME servers
-// will implement it. This method will return ErrNoARI if the server does not
-// advertise a renewal info endpoint.
+// will implement it. This method will return ErrNoARIEndpoint if the server
+// does not advertise a renewal info endpoint.
 //
 // https://datatracker.ietf.org/doc/draft-ietf-acme-ari
-func (c *Certifier) RetrieveRenewalInfo(req CheckRenewalInfoRequest) (*RenewalInfo, error) {
+func (c *Certifier) GetRenewalInfo(req RenewalInfoRequest) (*RenewalInfo, error) {
 	if c.core.GetDirectory().RenewalInfo == "" {
-		// The ACME server does not advertise a renewal info endpoint.
-		return nil, ErrNoARI
+		return nil, ErrNoARIEndpoint
 	}
 
 	certID, err := makeCertID(req.Cert, req.Issuer)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error making certID: %v", err)
 	}
 
-	resp, err := c.core.HTTPClient.Get(c.core.GetDirectory().RenewalInfo + "/" + certID)
+	resp, err := c.core.Certificates.GetRenewalInfo(certID)
 	if err != nil {
 		return nil, err
 	}
@@ -663,6 +647,42 @@ func (c *Certifier) RetrieveRenewalInfo(req CheckRenewalInfoRequest) (*RenewalIn
 		return nil, err
 	}
 	return &info, nil
+}
+
+// UpdateRenewalInfo sends a POST request to the ACME server's renewal info
+// endpoint to indicate that the client has successfully replaced a certificate.
+// A certificate is considered replaced when its revocation would not disrupt
+// any ongoing services, for instance because it has been renewed and the new
+// certificate is in use, or because it is no longer in use.
+//
+// Note: this endpoint is part of a draft specification, not all ACME servers
+// will implement it. This method will return ErrNoARIEndpoint if the server
+// does not advertise a renewal info endpoint.
+//
+// https://datatracker.ietf.org/doc/draft-ietf-acme-ari
+func (c *Certifier) UpdateRenewalInfo(req RenewalInfoRequest) error {
+	if c.core.GetDirectory().RenewalInfo == "" {
+		return ErrNoARIEndpoint
+	}
+
+	certID, err := makeCertID(req.Cert, req.Issuer)
+	if err != nil {
+		return fmt.Errorf("error making certID: %v", err)
+	}
+
+	resp, err := c.core.Certificates.UpdateRenewalInfo(acme.RenewalInfoUpdateRequest{
+		CertID:   certID,
+		Replaced: true,
+	})
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("unexpected status code %d", resp.StatusCode)
+	}
+	return nil
 }
 
 func hasPreferredChain(issuer []byte, preferredChain string) (bool, error) {

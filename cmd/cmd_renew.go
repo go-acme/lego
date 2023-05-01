@@ -274,11 +274,11 @@ func needRenewalARI(ctx *cli.Context, cert, issuer *x509.Certificate, domain str
 		log.Fatalf("[%s] Certificate bundle starts with a CA certificate", domain)
 	}
 
-	renewalInfo, err := client.Certificate.RetrieveRenewalInfo(certificate.CheckRenewalInfoRequest{
+	renewalInfo, err := client.Certificate.GetRenewalInfo(certificate.RenewalInfoRequest{
 		Cert:   cert,
 		Issuer: issuer})
 	if err != nil {
-		if errors.Is(err, certificate.ErrNoARI) {
+		if errors.Is(err, certificate.ErrNoARIEndpoint) {
 			// The server does not advertise a renewal info endpoint.
 			log.Warnf("[%s] acme: %w", domain, err)
 			return false

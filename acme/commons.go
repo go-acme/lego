@@ -307,3 +307,41 @@ type RawCertificate struct {
 	Cert   []byte
 	Issuer []byte
 }
+
+// Window is a window of time.
+type Window struct {
+	Start time.Time `json:"start"`
+	End   time.Time `json:"end"`
+}
+
+// RenewalInfoResponse is the response to GET requests made the renewalInfo
+// endpoint.
+// - https://datatracker.ietf.org/doc/draft-ietf-acme-ari/ (4.1.  Getting Renewal Information)
+type RenewalInfoResponse struct {
+	// SuggestedWindow contains two fields, start and end, whose values are
+	// timestamps which bound the window of time in which the CA recommends renewing
+	// the certificate.
+	SuggestedWindow Window `json:"suggestedWindow"`
+	//	ExplanationURL is a optional URL pointing to a page which may explain
+	//	why the suggested renewal window is what it is. For example, it may be a
+	//	page explaining the CA's dynamic load-balancing strategy, or a page
+	//	documenting which certificates are affected by a mass revocation event.
+	//	Callers SHOULD provide this URL to their operator, if present.
+	ExplanationURL string `json:"explanationUrl"`
+}
+
+// RenewalInfoUpdateRequest is the JWS payload for POST requests made to the
+// renewalInfo endpoint.
+// - https://datatracker.ietf.org/doc/draft-ietf-acme-ari/ 4.2.  Updating Renewal Information)
+type RenewalInfoUpdateRequest struct {
+	// CertID is the base64url-encoded [RFC4648] bytes of a DER-encoded CertID
+	// ASN.1 sequence [RFC6960] with any trailing '=' characters stripped.
+	CertID string `json:"certID"`
+	// Replaced is required and indicates whether or not the client considers
+	// the certificate to have been replaced.  A certificate is considered
+	// replaced when its revocation would not disrupt any ongoing services, for
+	// instance because it has been renewed and the new certificate is in use,
+	// or because it is no longer in use.  Clients SHOULD NOT send a request
+	// where this value is false.
+	Replaced bool `json:"replaced"`
+}

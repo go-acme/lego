@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/go-acme/lego/v4/acme/api"
 	"github.com/go-acme/lego/v4/certcrypto"
 	"github.com/go-acme/lego/v4/certificate"
 	"github.com/go-acme/lego/v4/lego"
@@ -278,7 +279,7 @@ func needRenewalARI(ctx *cli.Context, cert, issuer *x509.Certificate, domain str
 		Cert:   cert,
 		Issuer: issuer})
 	if err != nil {
-		if errors.Is(err, certificate.ErrNoARIEndpoint) {
+		if errors.Is(err, api.ErrNoARI) {
 			// The server does not advertise a renewal info endpoint.
 			log.Warnf("[%s] acme: %w", domain, err)
 			return false

@@ -562,10 +562,6 @@ func (c *Certifier) Get(url string, bundle bool) (*Resource, error) {
 	}, nil
 }
 
-// ErrNoARIEndpoint is returned when the server does not advertise a renewal
-// info endpoint.
-var ErrNoARIEndpoint = errors.New("server does not advertise a renewal info endpoint")
-
 // RenewalInfoRequest contains the necessary renewal information.
 type RenewalInfoRequest struct {
 	Cert   *x509.Certificate
@@ -614,22 +610,18 @@ func (r *RenewalInfo) ShouldRenewAt(now time.Time, willingToSleep time.Duration)
 	return nil
 }
 
-// GetRenewalInfo sends a GET request to the ACME server's renewalInfo endpoint
-// to obtain a suggested renewal window. The caller MUST provide the certificate
+// GetRenewalInfo sends a request to the ACME server's renewalInfo endpoint to
+// obtain a suggested renewal window. The caller MUST provide the certificate
 // and issuer certificate for the certificate they wish to renew. The caller
 // should attempt to renew the certificate at the time indicated by the
 // ShouldRenewAt method of the returned RenewalInfo object.
 //
 // Note: this endpoint is part of a draft specification, not all ACME servers
-// will implement it. This method will return ErrNoARIEndpoint if the server
-// does not advertise a renewal info endpoint.
+// will implement it. This method will return api.ErrNoARI if the server does
+// not advertise a renewal info endpoint.
 //
 // https://datatracker.ietf.org/doc/draft-ietf-acme-ari
 func (c *Certifier) GetRenewalInfo(req RenewalInfoRequest) (*RenewalInfo, error) {
-	if c.core.GetDirectory().RenewalInfo == "" {
-		return nil, ErrNoARIEndpoint
-	}
-
 	certID, err := makeCertID(req.Cert, req.Issuer)
 	if err != nil {
 		return nil, fmt.Errorf("error making certID: %v", err)
@@ -649,22 +641,18 @@ func (c *Certifier) GetRenewalInfo(req RenewalInfoRequest) (*RenewalInfo, error)
 	return &info, nil
 }
 
-// UpdateRenewalInfo sends a POST request to the ACME server's renewal info
-// endpoint to indicate that the client has successfully replaced a certificate.
-// A certificate is considered replaced when its revocation would not disrupt
-// any ongoing services, for instance because it has been renewed and the new
+// UpdateRenewalInfo sends an update to the ACME server's renewal info endpoint
+// to indicate that the client has successfully replaced a certificate. A
+// certificate is considered replaced when its revocation would not disrupt any
+// ongoing services, for instance because it has been renewed and the new
 // certificate is in use, or because it is no longer in use.
 //
 // Note: this endpoint is part of a draft specification, not all ACME servers
-// will implement it. This method will return ErrNoARIEndpoint if the server
-// does not advertise a renewal info endpoint.
+// will implement it. This method will return api.ErrNoARI if the server does
+// not advertise a renewal info endpoint.
 //
 // https://datatracker.ietf.org/doc/draft-ietf-acme-ari
 func (c *Certifier) UpdateRenewalInfo(req RenewalInfoRequest) error {
-	if c.core.GetDirectory().RenewalInfo == "" {
-		return ErrNoARIEndpoint
-	}
-
 	certID, err := makeCertID(req.Cert, req.Issuer)
 	if err != nil {
 		return fmt.Errorf("error making certID: %v", err)

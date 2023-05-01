@@ -86,7 +86,7 @@ func (c *CertificateService) GetRenewalInfo(certID string) (*http.Response, erro
 
 // PostRenewalInfo POSTs updated renewal information for a certificate to the
 // renewalInfo endpoint. This is used to indicate that a certificate has been
-// renewed.
+// replaced.
 //
 // Note: this endpoint is part of a draft specification, not all ACME servers
 // will implement it. This method will return api.ErrNoARI if the server does

@@ -122,7 +122,7 @@ postfix_cert_dir="/etc/postfix/certificates"
 # our Postfix server only handles mail for @example.com domain
 if [ "$LEGO_CERT_DOMAIN" = "example.com" ]; then
   install -u postfix -g postfix -m 0644 "$LEGO_CERT_PATH" "$postfix_cert_dir"
-  install -u postfix -g postfix -m 0640 "$LEGO_KEY_PATH"  "$postfix_cert_dir"
+  install -u postfix -g postfix -m 0640 "$LEGO_CERT_KEY_PATH"  "$postfix_cert_dir"
 
   systemctl reload postfix@-service
 fi

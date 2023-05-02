@@ -14,9 +14,8 @@ type OrderService service
 func (o *OrderService) New(domains []string) (acme.ExtendedOrder, error) {
 	var identifiers []acme.Identifier
 	for _, domain := range domains {
-		ident := acme.Identifier{Value: domain}
+		ident := acme.Identifier{Value: domain, Type: "dns"}
 
-		ident.Type = "dns"
 		if net.ParseIP(domain) != nil {
 			ident.Type = "ip"
 		}

@@ -15,13 +15,12 @@ func (o *OrderService) New(domains []string) (acme.ExtendedOrder, error) {
 	var identifiers []acme.Identifier
 	for _, domain := range domains {
 		ident := acme.Identifier{Value: domain}
-		// now parse type for that:
+
+		ident.Type = "dns"
 		if net.ParseIP(domain) != nil {
 			ident.Type = "ip"
-		} else {
-			ident.Type = "dns"
 		}
-		// append to list
+
 		identifiers = append(identifiers, ident)
 	}
 

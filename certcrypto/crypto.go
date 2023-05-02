@@ -135,20 +135,20 @@ func GeneratePrivateKey(keyType KeyType) (crypto.PrivateKey, error) {
 }
 
 func GenerateCSR(privateKey crypto.PrivateKey, domain string, san []string, mustStaple bool) ([]byte, error) {
-	var dnss []string
-	var ips []net.IP
+	var dnsNames []string
+	var ipAddresses []net.IP
 	for _, altname := range san {
-		if ip := net.ParseIP(altname); ip == nil {
-			dnss = append(dnss, altname)
+		if ip := net.ParseIP(altname); ip != nil {
+			ipAddresses = append(ipAddresses, ip)
 		} else {
-			ips = append(ips, ip)
+			dnsNames = append(dnsNames, altname)
 		}
 	}
 
 	template := x509.CertificateRequest{
 		Subject:     pkix.Name{CommonName: domain},
-		DNSNames:    dnss,
-		IPAddresses: ips,
+		DNSNames:    dnsNames,
+		IPAddresses: ipAddresses,
 	}
 
 	if mustStaple {
@@ -230,12 +230,13 @@ func ExtractDomains(cert *x509.Certificate) []string {
 		domains = append(domains, sanDomain)
 	}
 
-	cnip := net.ParseIP(cert.Subject.CommonName)
+	commonNameIP := net.ParseIP(cert.Subject.CommonName)
 	for _, sanIP := range cert.IPAddresses {
-		if !cnip.Equal(sanIP) {
+		if !commonNameIP.Equal(sanIP) {
 			domains = append(domains, sanIP.String())
 		}
 	}
+
 	return domains
 }
 
@@ -307,6 +308,7 @@ func generateDerCert(privateKey *rsa.PrivateKey, expiration time.Time, domain st
 		BasicConstraintsValid: true,
 		ExtraExtensions:       extensions,
 	}
+
 	// handling SAN filling as type suspected
 	if ip := net.ParseIP(domain); ip != nil {
 		template.IPAddresses = []net.IP{ip}

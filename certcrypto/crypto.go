@@ -14,6 +14,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"net"
 	"strings"
 	"time"
 
@@ -134,9 +135,20 @@ func GeneratePrivateKey(keyType KeyType) (crypto.PrivateKey, error) {
 }
 
 func GenerateCSR(privateKey crypto.PrivateKey, domain string, san []string, mustStaple bool) ([]byte, error) {
+	var dnsNames []string
+	var ipAddresses []net.IP
+	for _, altname := range san {
+		if ip := net.ParseIP(altname); ip != nil {
+			ipAddresses = append(ipAddresses, ip)
+		} else {
+			dnsNames = append(dnsNames, altname)
+		}
+	}
+
 	template := x509.CertificateRequest{
-		Subject:  pkix.Name{CommonName: domain},
-		DNSNames: san,
+		Subject:     pkix.Name{CommonName: domain},
+		DNSNames:    dnsNames,
+		IPAddresses: ipAddresses,
 	}
 
 	if mustStaple {
@@ -218,6 +230,13 @@ func ExtractDomains(cert *x509.Certificate) []string {
 		domains = append(domains, sanDomain)
 	}
 
+	commonNameIP := net.ParseIP(cert.Subject.CommonName)
+	for _, sanIP := range cert.IPAddresses {
+		if !commonNameIP.Equal(sanIP) {
+			domains = append(domains, sanIP.String())
+		}
+	}
+
 	return domains
 }
 
@@ -236,6 +255,13 @@ func ExtractDomainsCSR(csr *x509.CertificateRequest) []string {
 
 		// Name is unique
 		domains = append(domains, sanName)
+	}
+
+	cnip := net.ParseIP(csr.Subject.CommonName)
+	for _, sanIP := range csr.IPAddresses {
+		if !cnip.Equal(sanIP) {
+			domains = append(domains, sanIP.String())
+		}
 	}
 
 	return domains
@@ -280,8 +306,14 @@ func generateDerCert(privateKey *rsa.PrivateKey, expiration time.Time, domain st
 
 		KeyUsage:              x509.KeyUsageKeyEncipherment,
 		BasicConstraintsValid: true,
-		DNSNames:              []string{domain},
 		ExtraExtensions:       extensions,
+	}
+
+	// handling SAN filling as type suspected
+	if ip := net.ParseIP(domain); ip != nil {
+		template.IPAddresses = []net.IP{ip}
+	} else {
+		template.DNSNames = []string{domain}
 	}
 
 	return x509.CreateCertificate(rand.Reader, &template, &template, &privateKey.PublicKey, privateKey)

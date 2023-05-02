@@ -84,6 +84,26 @@ func TestChallengeTLS_Run_Domains(t *testing.T) {
 	}
 }
 
+func TestChallengeTLS_Run_IP(t *testing.T) {
+	loader.CleanLegoFiles()
+
+	output, err := load.RunLego(
+		"-m", "hubert@hubert.com",
+		"--accept-tos",
+		"-s", "https://localhost:14000/dir",
+		"-d", "127.0.0.1",
+		"--tls",
+		"--tls.port", ":5001",
+		"run")
+
+	if len(output) > 0 {
+		fmt.Fprintf(os.Stdout, "%s\n", output)
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestChallengeTLS_Run_CSR(t *testing.T) {
 	loader.CleanLegoFiles()
 

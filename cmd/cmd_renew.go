@@ -188,6 +188,18 @@ func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *Certif
 
 	certsStorage.SaveResource(certRes)
 
+	if ariSaysRenew {
+		// Post to the renewalInfo endpoint to indicate that we have renewed and
+		// replaced the certificate.
+		err := client.Certificate.UpdateRenewalInfo(certificate.RenewalInfoRequest{
+			Cert:   certificates[0],
+			Issuer: certificates[1],
+		})
+		if err != nil {
+			log.Warnf("[%s] Failed to update renewal info: %v", domain, err)
+		}
+	}
+
 	meta[renewEnvCertDomain] = domain
 	meta[renewEnvCertPath] = certsStorage.GetFileName(domain, ".crt")
 	meta[renewEnvCertKeyPath] = certsStorage.GetFileName(domain, ".key")
@@ -243,6 +255,18 @@ func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *Certificat
 	}
 
 	certsStorage.SaveResource(certRes)
+
+	if ariSaysRenew {
+		// Post to the renewalInfo endpoint to indicate that we have renewed and
+		// replaced the certificate.
+		err := client.Certificate.UpdateRenewalInfo(certificate.RenewalInfoRequest{
+			Cert:   certificates[0],
+			Issuer: certificates[1],
+		})
+		if err != nil {
+			log.Warnf("[%s] Failed to update renewal info: %v", domain, err)
+		}
+	}
 
 	meta[renewEnvCertDomain] = domain
 	meta[renewEnvCertPath] = certsStorage.GetFileName(domain, ".crt")

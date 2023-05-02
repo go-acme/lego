@@ -1,5 +1,24 @@
 # Changelog
 
+## [v4.11.0] - 2023-05-02
+
+### Added:
+- **[lib]** Support for certificate with raw IP SAN (RFC8738)
+- **[dnsprovider]** Add Brandit.com as DNS provider
+- **[dnsprovider]** Add DNS provider for Bunny
+- **[dnsprovider]** Add DNS provider for Nodion
+- **[dnsprovider]** Add Google Domains as DNS provider
+- **[dnsprovider]** Add DNS provider for Plesk
+
+### Changed:
+- **[cli]** feat: add LEGO_CERT_PEM_PATH and LEGO_CERT_PFX_PATH to run hook
+- **[lib,cli]** feat: add RSA 3072
+- **[dnsprovider]** gcloud: update google APIs to latest version
+- **[lib,dnsprovider,cname]** chore: replace GetRecord by GetChallengeInfo
+
+### Fixed:
+- **[dnsprovider]** rimuhosting: fix API base URL
+
 ## [v4.10.2] - 2023-02-26
 
 Fix Docker image builds.

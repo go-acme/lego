@@ -635,18 +635,19 @@ QKyxn2jX7kxeUDt0hFDJE8lOrhP73m66eBNzxe//FQ==
 	// Test with a fake API.
 	mux, apiURL := tester.SetupFakeAPI(t)
 	mux.HandleFunc("/renewalInfo", func(w http.ResponseWriter, r *http.Request) {
-		defer r.Body.Close()
-		reqBody, err := io.ReadAll(r.Body)
-		assert.NoError(t, err)
+		if r.Method != http.MethodPost {
+			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+			return
+		}
 
-		jws, err := jose.ParseSigned(string(reqBody))
-		assert.NoError(t, err)
-
-		payload, err := jws.Verify(key.Public())
-		assert.NoError(t, err)
+		body, err := readSignedBody(r, key)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 
 		var req acme.RenewalInfoUpdateRequest
-		err = json.Unmarshal(payload, &req)
+		err = json.Unmarshal(body, &req)
 		assert.NoError(t, err)
 		assert.True(t, req.Replaced)
 		assert.Equal(t, leafCertID, req.CertID)
@@ -661,4 +662,26 @@ QKyxn2jX7kxeUDt0hFDJE8lOrhP73m66eBNzxe//FQ==
 
 	err = certifier.UpdateRenewalInfo(RenewalInfoRequest{leaf, issuer})
 	require.NoError(t, err)
+}
+
+func readSignedBody(r *http.Request, privateKey *rsa.PrivateKey) ([]byte, error) {
+	reqBody, err := io.ReadAll(r.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	jws, err := jose.ParseSigned(string(reqBody))
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := jws.Verify(&jose.JSONWebKey{
+		Key:       privateKey.Public(),
+		Algorithm: "RSA",
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return body, nil
 }

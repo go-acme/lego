@@ -97,6 +97,7 @@ type RenewalInfoResponse struct {
 // It returns a pointer to a time.Time value indicating when the renewal should
 // be attempted or nil if deferred until the next normal wake time. This method
 // implements the RECOMMENDED algorithm described in draft-ietf-acme-ari.
+//  (4.1-11. Getting Renewal Information)
 func (r *RenewalInfoResponse) ShouldRenewAt(now time.Time, willingToSleep time.Duration) *time.Time {
 	// Explicitly convert all times to UTC.
 	now = now.UTC()

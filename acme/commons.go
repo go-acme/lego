@@ -38,6 +38,7 @@ const (
 
 // Directory the ACME directory object.
 // - https://www.rfc-editor.org/rfc/rfc8555.html#section-7.1.1
+// - https://datatracker.ietf.org/doc/draft-ietf-acme-ari/
 type Directory struct {
 	NewNonceURL   string `json:"newNonce"`
 	NewAccountURL string `json:"newAccount"`

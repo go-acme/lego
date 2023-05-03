@@ -761,7 +761,6 @@ func makeCertID(leaf, issuer *x509.Certificate, hashName string) (string, error)
 		return "", fmt.Errorf("hashName %q is not supported by this package", hashName)
 	}
 
-	// Check that the hash function is available on this platform.
 	if !hashFunc.Available() {
 		// This should never happen.
 		return "", fmt.Errorf("hash function %q is not available on your platform", hashFunc)

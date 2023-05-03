@@ -1,6 +1,7 @@
 package certificate
 
 import (
+	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
@@ -447,7 +448,6 @@ QKyxn2jX7kxeUDt0hFDJE8lOrhP73m66eBNzxe//FQ==
 )
 
 func Test_makeCertID(t *testing.T) {
-
 	leafBlock, _ := pem.Decode([]byte(ariLeafPEM))
 	leaf, err := x509.ParseCertificate(leafBlock.Bytes)
 	require.NoError(t, err)
@@ -455,7 +455,7 @@ func Test_makeCertID(t *testing.T) {
 	issuer, err := x509.ParseCertificate(issuerBlock.Bytes)
 	require.NoError(t, err)
 
-	actual, err := makeCertID(leaf, issuer)
+	actual, err := makeCertID(leaf, issuer, crypto.SHA256.String())
 	require.NoError(t, err)
 	assert.Equal(t, ariLeafCertID, actual)
 }
@@ -493,7 +493,7 @@ func TestGetRenewalInfo(t *testing.T) {
 
 	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
 
-	ri, err := certifier.GetRenewalInfo(RenewalInfoRequest{leaf, issuer})
+	ri, err := certifier.GetRenewalInfo(RenewalInfoRequest{leaf, issuer, crypto.SHA256.String()})
 	require.NoError(t, err)
 	require.NotNil(t, ri)
 	assert.Equal(t, "2020-03-17T17:51:09Z", ri.SuggestedWindow.Start.Format(time.RFC3339))
@@ -524,7 +524,7 @@ func TestGetRenewalInfoError(t *testing.T) {
 
 	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
 
-	ri, err := certifier.GetRenewalInfo(RenewalInfoRequest{leaf, issuer})
+	ri, err := certifier.GetRenewalInfo(RenewalInfoRequest{leaf, issuer, crypto.SHA256.String()})
 	require.Error(t, err)
 	assert.Nil(t, ri)
 
@@ -539,15 +539,11 @@ func TestGetRenewalInfoError(t *testing.T) {
 
 	certifier = NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
 
-	ri, err = certifier.GetRenewalInfo(RenewalInfoRequest{leaf, issuer})
+	ri, err = certifier.GetRenewalInfo(RenewalInfoRequest{leaf, issuer, crypto.SHA256.String()})
 	require.Error(t, err)
 	assert.Nil(t, ri)
 
-	ri, err = certifier.GetRenewalInfo(RenewalInfoRequest{leaf, nil})
-	require.Error(t, err)
-	assert.Nil(t, ri)
-
-	ri, err = certifier.GetRenewalInfo(RenewalInfoRequest{nil, issuer})
+	ri, err = certifier.GetRenewalInfo(RenewalInfoRequest{leaf, nil, crypto.SHA256.String()})
 	require.Error(t, err)
 	assert.Nil(t, ri)
 }
@@ -630,7 +626,7 @@ func TestUpdateRenewalInfo(t *testing.T) {
 
 	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
 
-	err = certifier.UpdateRenewalInfo(RenewalInfoRequest{leaf, issuer})
+	err = certifier.UpdateRenewalInfo(RenewalInfoRequest{leaf, issuer, crypto.SHA256.String()})
 	require.NoError(t, err)
 }
 
@@ -657,13 +653,10 @@ func TestUpdateRenewalInfoError(t *testing.T) {
 
 	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
 
-	err = certifier.UpdateRenewalInfo(RenewalInfoRequest{leaf, issuer})
+	err = certifier.UpdateRenewalInfo(RenewalInfoRequest{leaf, issuer, crypto.SHA256.String()})
 	require.Error(t, err)
 
-	err = certifier.UpdateRenewalInfo(RenewalInfoRequest{nil, issuer})
-	require.Error(t, err)
-
-	err = certifier.UpdateRenewalInfo(RenewalInfoRequest{leaf, nil})
+	err = certifier.UpdateRenewalInfo(RenewalInfoRequest{nil, issuer, crypto.SHA256.String()})
 	require.Error(t, err)
 }
 

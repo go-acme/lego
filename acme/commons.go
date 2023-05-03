@@ -332,7 +332,7 @@ type RenewalInfoResponse struct {
 
 // RenewalInfoUpdateRequest is the JWS payload for POST requests made to the
 // renewalInfo endpoint.
-// - https://datatracker.ietf.org/doc/draft-ietf-acme-ari/ 4.2.  Updating Renewal Information)
+// - https://datatracker.ietf.org/doc/draft-ietf-acme-ari/ (4.2.  Updating Renewal Information)
 type RenewalInfoUpdateRequest struct {
 	// CertID is the base64url-encoded [RFC4648] bytes of a DER-encoded CertID
 	// ASN.1 sequence [RFC6960] with any trailing '=' characters stripped.

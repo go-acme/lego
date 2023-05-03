@@ -139,7 +139,7 @@ func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *Certif
 		if len(certificates) < 2 {
 			log.Warnf("[%s] Certificate bundle does not contain issuer, cannot use the renewalInfo endpoint", domain)
 		} else {
-			ariRenewalTime = needRenewalARI(ctx, certificates[0], certificates[1], domain, client)
+			ariRenewalTime = getARIRenewalTime(ctx, certificates[0], certificates[1], domain, client)
 		}
 		if ariRenewalTime != nil {
 			now := time.Now().UTC()
@@ -245,7 +245,7 @@ func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *Certificat
 		if len(certificates) < 2 {
 			log.Warnf("[%s] Certificate bundle does not contain issuer, cannot use the renewalInfo endpoint", domain)
 		} else {
-			ariRenewalTime = needRenewalARI(ctx, certificates[0], certificates[1], domain, client)
+			ariRenewalTime = getARIRenewalTime(ctx, certificates[0], certificates[1], domain, client)
 		}
 		if ariRenewalTime != nil {
 			now := time.Now().UTC()
@@ -313,9 +313,9 @@ func needRenewal(x509Cert *x509.Certificate, domain string, days int) bool {
 	return true
 }
 
-// needRenewalARI checks if the certificate needs to be renewed using the
+// getARIRenewalTime checks if the certificate needs to be renewed using the
 // renewalInfo endpoint.
-func needRenewalARI(ctx *cli.Context, cert, issuer *x509.Certificate, domain string, client *lego.Client) *time.Time {
+func getARIRenewalTime(ctx *cli.Context, cert, issuer *x509.Certificate, domain string, client *lego.Client) *time.Time {
 	if cert.IsCA {
 		log.Fatalf("[%s] Certificate bundle starts with a CA certificate", domain)
 	}

@@ -79,7 +79,7 @@ func (c *CertificateService) GetRenewalInfo(certID string) (*http.Response, erro
 		return nil, ErrNoARI
 	}
 	if certID == "" {
-		return nil, errors.New("renewalInfo[post]: 'certID' cannot be empty")
+		return nil, errors.New("renewalInfo[get]: 'certID' cannot be empty")
 	}
 	return c.core.HTTPClient.Get(c.core.GetDirectory().RenewalInfo + "/" + certID)
 }

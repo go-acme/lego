@@ -134,16 +134,24 @@ func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *Certif
 
 	cert := certificates[0]
 
-	var ariSaysRenew bool
+	var ariRenewalTime *time.Time
 	if ctx.Bool("ari-enable") {
 		if len(certificates) < 2 {
 			log.Warnf("[%s] Certificate bundle does not contain issuer, cannot use the renewalInfo endpoint", domain)
 		} else {
-			ariSaysRenew = needRenewalARI(ctx, certificates[0], certificates[1], domain, client)
+			ariRenewalTime = needRenewalARI(ctx, certificates[0], certificates[1], domain, client)
+		}
+		if ariRenewalTime != nil {
+			now := time.Now().UTC()
+			// Figure out if we need to sleep before renewing.
+			if ariRenewalTime.After(now) {
+				log.Infof("[%s] Sleeping %s until renewal time %s", domain, ariRenewalTime.Sub(now), ariRenewalTime)
+				time.Sleep(ariRenewalTime.Sub(now))
+			}
 		}
 	}
 
-	if !ariSaysRenew && !needRenewal(cert, domain, ctx.Int("days")) {
+	if ariRenewalTime == nil && !needRenewal(cert, domain, ctx.Int("days")) {
 		return nil
 	}
 
@@ -193,7 +201,7 @@ func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *Certif
 
 	certsStorage.SaveResource(certRes)
 
-	if ariSaysRenew {
+	if ariRenewalTime != nil {
 		// Post to the renewalInfo endpoint to indicate that we have renewed and
 		// replaced the certificate.
 		err := client.Certificate.UpdateRenewalInfo(certificate.RenewalInfoRequest{
@@ -232,16 +240,24 @@ func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *Certificat
 
 	cert := certificates[0]
 
-	var ariSaysRenew bool
+	var ariRenewalTime *time.Time
 	if ctx.Bool("ari-enable") {
 		if len(certificates) < 2 {
 			log.Warnf("[%s] Certificate bundle does not contain issuer, cannot use the renewalInfo endpoint", domain)
 		} else {
-			ariSaysRenew = needRenewalARI(ctx, certificates[0], certificates[1], domain, client)
+			ariRenewalTime = needRenewalARI(ctx, certificates[0], certificates[1], domain, client)
+		}
+		if ariRenewalTime != nil {
+			now := time.Now().UTC()
+			// Figure out if we need to sleep before renewing.
+			if ariRenewalTime.After(now) {
+				log.Infof("[%s] Sleeping %s until renewal time %s", domain, ariRenewalTime.Sub(now), ariRenewalTime)
+				time.Sleep(ariRenewalTime.Sub(now))
+			}
 		}
 	}
 
-	if !ariSaysRenew && !needRenewal(cert, domain, ctx.Int("days")) {
+	if ariRenewalTime == nil && !needRenewal(cert, domain, ctx.Int("days")) {
 		return nil
 	}
 
@@ -261,7 +277,7 @@ func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *Certificat
 
 	certsStorage.SaveResource(certRes)
 
-	if ariSaysRenew {
+	if ariRenewalTime != nil {
 		// Post to the renewalInfo endpoint to indicate that we have renewed and
 		// replaced the certificate.
 		err := client.Certificate.UpdateRenewalInfo(certificate.RenewalInfoRequest{
@@ -299,7 +315,7 @@ func needRenewal(x509Cert *x509.Certificate, domain string, days int) bool {
 
 // needRenewalARI checks if the certificate needs to be renewed using the
 // renewalInfo endpoint.
-func needRenewalARI(ctx *cli.Context, cert, issuer *x509.Certificate, domain string, client *lego.Client) bool {
+func needRenewalARI(ctx *cli.Context, cert, issuer *x509.Certificate, domain string, client *lego.Client) *time.Time {
 	if cert.IsCA {
 		log.Fatalf("[%s] Certificate bundle starts with a CA certificate", domain)
 	}
@@ -312,12 +328,12 @@ func needRenewalARI(ctx *cli.Context, cert, issuer *x509.Certificate, domain str
 		if errors.Is(err, api.ErrNoARI) {
 			// The server does not advertise a renewal info endpoint.
 			log.Warnf("[%s] acme: %w", domain, err)
-			return false
+			return nil
 
 		} else {
 			// Something else went wrong.
 			log.Warnf("[%s] acme: calling renewal info endpoint: %w", domain, err)
-			return false
+			return nil
 		}
 	}
 
@@ -325,7 +341,7 @@ func needRenewalARI(ctx *cli.Context, cert, issuer *x509.Certificate, domain str
 	renewalTime := renewalInfo.ShouldRenewAt(now, ctx.Duration("ari-wait-to-renew-duration"))
 	if renewalTime == nil {
 		log.Infof("[%s] acme: renewalInfo endpoint indicates that renewal is not needed", domain)
-		return false
+		return nil
 	}
 	log.Infof("[%s] acme: renewalInfo endpoint indicates that renewal is needed", domain)
 
@@ -333,13 +349,7 @@ func needRenewalARI(ctx *cli.Context, cert, issuer *x509.Certificate, domain str
 		log.Infof("[%s] acme: renewalInfo endpoint provided an explanation: %s", domain, renewalInfo.ExplanationURL)
 	}
 
-	// Figure out if we need to sleep before renewing.
-	if renewalTime.After(now) {
-		log.Infof("[%s] Sleeping %s until renewal time %s", domain, renewalTime.Sub(now), renewalTime)
-		time.Sleep(renewalTime.Sub(now))
-	}
-
-	return true
+	return renewalTime
 }
 
 func merge(prevDomains, nextDomains []string) []string {

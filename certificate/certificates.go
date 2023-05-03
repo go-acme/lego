@@ -719,6 +719,13 @@ func sanitizeDomain(domains []string) []string {
 // certificate to endpoints that implement the draft-ietf-acme-ari
 // specification: https://datatracker.ietf.org/doc/draft-ietf-acme-ari
 func makeCertID(leaf, issuer *x509.Certificate) (string, error) {
+	if leaf == nil {
+		return "", fmt.Errorf("leaf certificate is nil")
+	}
+	if issuer == nil {
+		return "", fmt.Errorf("issuer certificate is nil")
+	}
+
 	var hashFunc crypto.Hash
 	var oid asn1.ObjectIdentifier
 

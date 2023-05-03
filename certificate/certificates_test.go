@@ -402,8 +402,8 @@ func (r *resolverMock) Solve(_ []acme.Authorization) error {
 	return r.error
 }
 
-func Test_makeCertID(t *testing.T) {
-	leafPEM := `-----BEGIN CERTIFICATE-----
+const (
+	ariLeafPEM = `-----BEGIN CERTIFICATE-----
 MIIDMDCCAhigAwIBAgIIPqNFaGVEHxwwDQYJKoZIhvcNAQELBQAwIDEeMBwGA1UE
 AxMVbWluaWNhIHJvb3QgY2EgM2ExMzU2MB4XDTIyMDMxNzE3NTEwOVoXDTI0MDQx
 NjE3NTEwOVowFjEUMBIGA1UEAxMLZXhhbXBsZS5jb20wggEiMA0GCSqGSIb3DQEB
@@ -423,7 +423,7 @@ TXysJCeyiGnR+KOOjOOQ9ZlO5JUK3OE4hagPLfaIpDDy6RXQt3ss0iNLuB1+IOtp
 HX2RteNJx7YYNeX3Uf960mgo5an6vE8QNAsIoNHYrGyEmXDhTRe9mCHyiW2S7fZq
 o9q12g==
 -----END CERTIFICATE-----`
-	issuerPEM := `-----BEGIN CERTIFICATE-----
+	ariIssuerPEM = `-----BEGIN CERTIFICATE-----
 MIIDSzCCAjOgAwIBAgIIOhNWtJ7Igr0wDQYJKoZIhvcNAQELBQAwIDEeMBwGA1UE
 AxMVbWluaWNhIHJvb3QgY2EgM2ExMzU2MCAXDTIyMDMxNzE3NTEwOVoYDzIxMjIw
 MzE3MTc1MTA5WjAgMR4wHAYDVQQDExVtaW5pY2Egcm9vdCBjYSAzYTEzNTYwggEi
@@ -443,73 +443,34 @@ Gtsv2PN3f67DsPHF47ASqyOIRpLZPQmZIw6D3isJwfl+8CzvlB1veO0Q3uh08IJc
 fspYQXvFBzYa64uKxNAJMi4Pby8cf4r36Wnb7cL4ho3fOHgAltxdW8jgibRzqZpQ
 QKyxn2jX7kxeUDt0hFDJE8lOrhP73m66eBNzxe//FQ==
 -----END CERTIFICATE-----`
-	leafBlock, _ := pem.Decode([]byte(leafPEM))
+	ariLeafCertID = "MFswCwYJYIZIAWUDBAIBBCCeWLRusNLb--vmWOkxm34qDjTMWkc3utIhOMoMwKDqbgQg2iiKWySZrD-6c88HMZ6vhIHZPamChLlzGHeZ7pTS8jYCCD6jRWhlRB8c"
+)
+
+func Test_makeCertID(t *testing.T) {
+
+	leafBlock, _ := pem.Decode([]byte(ariLeafPEM))
 	leaf, err := x509.ParseCertificate(leafBlock.Bytes)
 	require.NoError(t, err)
-	issuerBlock, _ := pem.Decode([]byte(issuerPEM))
+	issuerBlock, _ := pem.Decode([]byte(ariIssuerPEM))
 	issuer, err := x509.ParseCertificate(issuerBlock.Bytes)
 	require.NoError(t, err)
 
 	actual, err := makeCertID(leaf, issuer)
 	require.NoError(t, err)
-
-	expected := "MFswCwYJYIZIAWUDBAIBBCCeWLRusNLb--vmWOkxm34qDjTMWkc3utIhOMoMwKDqbgQg2iiKWySZrD-6c88HMZ6vhIHZPamChLlzGHeZ7pTS8jYCCD6jRWhlRB8c"
-	assert.Equal(t, expected, actual)
+	assert.Equal(t, ariLeafCertID, actual)
 }
 
 func TestGetRenewalInfo(t *testing.T) {
-	leafPEM := `-----BEGIN CERTIFICATE-----
-MIIDMDCCAhigAwIBAgIIPqNFaGVEHxwwDQYJKoZIhvcNAQELBQAwIDEeMBwGA1UE
-AxMVbWluaWNhIHJvb3QgY2EgM2ExMzU2MB4XDTIyMDMxNzE3NTEwOVoXDTI0MDQx
-NjE3NTEwOVowFjEUMBIGA1UEAxMLZXhhbXBsZS5jb20wggEiMA0GCSqGSIb3DQEB
-AQUAA4IBDwAwggEKAoIBAQCgm9K/c+il2Pf0f8qhgxn9SKqXq88cOm9ov9AVRbPA
-OWAAewqX2yUAwI4LZBGEgzGzTATkiXfoJ3cN3k39cH6tBbb3iSPuEn7OZpIk9D+e
-3Q9/hX+N/jlWkaTB/FNA+7aE5IVWhmdczYilXa10V9r+RcvACJt0gsipBZVJ4jfJ
-HnWJJGRZzzxqG/xkQmpXxZO7nOPFc8SxYKWdfcgp+rjR2ogYhSz7BfKoVakGPbpX
-vZOuT9z4kkHra/WjwlkQhtHoTXdAxH3qC2UjMzO57Tx+otj0CxAv9O7CTJXISywB
-vEVcmTSZkHS3eZtvvIwPx7I30ITRkYk/tLl1MbyB3SiZAgMBAAGjeDB2MA4GA1Ud
-DwEB/wQEAwIFoDAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwDAYDVR0T
-AQH/BAIwADAfBgNVHSMEGDAWgBQ4zzDRUaXHVKqlSTWkULGU4zGZpTAWBgNVHREE
-DzANggtleGFtcGxlLmNvbTANBgkqhkiG9w0BAQsFAAOCAQEAx0aYvmCk7JYGNEXe
-+hrOfKawkHYzWvA92cI/Oi6h+oSdHZ2UKzwFNf37cVKZ37FCrrv5pFP/xhhHvrNV
-EnOx4IaF7OrnaTu5miZiUWuvRQP7ZGmGNFYbLTEF6/dj+WqyYdVaWzxRqHFu1ptC
-TXysJCeyiGnR+KOOjOOQ9ZlO5JUK3OE4hagPLfaIpDDy6RXQt3ss0iNLuB1+IOtp
-1URpvffLZQ8xPsEgOZyPWOcabTwJrtqBwily+lwPFn2mChUx846LwQfxtsXU/lJg
-HX2RteNJx7YYNeX3Uf960mgo5an6vE8QNAsIoNHYrGyEmXDhTRe9mCHyiW2S7fZq
-o9q12g==
------END CERTIFICATE-----`
-	issuerPEM := `-----BEGIN CERTIFICATE-----
-MIIDSzCCAjOgAwIBAgIIOhNWtJ7Igr0wDQYJKoZIhvcNAQELBQAwIDEeMBwGA1UE
-AxMVbWluaWNhIHJvb3QgY2EgM2ExMzU2MCAXDTIyMDMxNzE3NTEwOVoYDzIxMjIw
-MzE3MTc1MTA5WjAgMR4wHAYDVQQDExVtaW5pY2Egcm9vdCBjYSAzYTEzNTYwggEi
-MA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDc3P6cxcCZ7FQOQrYuigReSa8T
-IOPNKmlmX9OrTkPwjThiMNEETYKO1ea99yXPK36LUHC6OLmZ9jVQW2Ny1qwQCOy6
-TrquhnwKgtkBMDAZBLySSEXYdKL3r0jA4sflW130/OLwhstU/yv0J8+pj7eSVOR3
-zJBnYd1AqnXHRSwQm299KXgqema7uwsa8cgjrXsBzAhrwrvYlVhpWFSv3lQRDFQg
-c5Z/ZDV9i26qiaJsCCmdisJZWN7N2luUgxdRqzZ4Cr2Xoilg3T+hkb2y/d6ttsPA
-kaSA+pq3q6Qa7/qfGdT5WuUkcHpvKNRWqnwT9rCYlmG00r3hGgc42D/z1VvfAgMB
-AAGjgYYwgYMwDgYDVR0PAQH/BAQDAgKEMB0GA1UdJQQWMBQGCCsGAQUFBwMBBggr
-BgEFBQcDAjASBgNVHRMBAf8ECDAGAQH/AgEAMB0GA1UdDgQWBBQ4zzDRUaXHVKql
-STWkULGU4zGZpTAfBgNVHSMEGDAWgBQ4zzDRUaXHVKqlSTWkULGU4zGZpTANBgkq
-hkiG9w0BAQsFAAOCAQEArbDHhEjGedjb/YjU80aFTPWOMRjgyfQaPPgyxwX6Dsid
-1i2H1x4ud4ntz3sTZZxdQIrOqtlIWTWVCjpStwGxaC+38SdreiTTwy/nikXGa/6W
-ZyQRppR3agh/pl5LHVO6GsJz3YHa7wQhEhj3xsRwa9VrRXgHbLGbPOFVRTHPjaPg
-Gtsv2PN3f67DsPHF47ASqyOIRpLZPQmZIw6D3isJwfl+8CzvlB1veO0Q3uh08IJc
-fspYQXvFBzYa64uKxNAJMi4Pby8cf4r36Wnb7cL4ho3fOHgAltxdW8jgibRzqZpQ
-QKyxn2jX7kxeUDt0hFDJE8lOrhP73m66eBNzxe//FQ==
------END CERTIFICATE-----`
-	leafBlock, _ := pem.Decode([]byte(leafPEM))
+	leafBlock, _ := pem.Decode([]byte(ariLeafPEM))
 	leaf, err := x509.ParseCertificate(leafBlock.Bytes)
 	require.NoError(t, err)
-	issuerBlock, _ := pem.Decode([]byte(issuerPEM))
+	issuerBlock, _ := pem.Decode([]byte(ariIssuerPEM))
 	issuer, err := x509.ParseCertificate(issuerBlock.Bytes)
 	require.NoError(t, err)
 
-	leafCertID := "MFswCwYJYIZIAWUDBAIBBCCeWLRusNLb--vmWOkxm34qDjTMWkc3utIhOMoMwKDqbgQg2iiKWySZrD-6c88HMZ6vhIHZPamChLlzGHeZ7pTS8jYCCD6jRWhlRB8c"
-
 	// Test with a fake API.
 	mux, apiURL := tester.SetupFakeAPI(t)
-	mux.HandleFunc("/renewalInfo/"+leafCertID, func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/renewalInfo/"+ariLeafCertID, func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, "GET", r.Method)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
@@ -538,6 +499,57 @@ QKyxn2jX7kxeUDt0hFDJE8lOrhP73m66eBNzxe//FQ==
 	assert.Equal(t, "2020-03-17T17:51:09Z", ri.SuggestedWindow.Start.Format(time.RFC3339))
 	assert.Equal(t, "2020-03-17T18:21:09Z", ri.SuggestedWindow.End.Format(time.RFC3339))
 	assert.Equal(t, "https://aricapable.ca/docs/renewal-advice/", ri.ExplanationURL)
+}
+
+func TestGetRenewalInfoError(t *testing.T) {
+	leafBlock, _ := pem.Decode([]byte(ariLeafPEM))
+	leaf, err := x509.ParseCertificate(leafBlock.Bytes)
+	require.NoError(t, err)
+	issuerBlock, _ := pem.Decode([]byte(ariIssuerPEM))
+	issuer, err := x509.ParseCertificate(issuerBlock.Bytes)
+	require.NoError(t, err)
+
+	// API that takes 2ms to respond.
+	mux, apiURL := tester.SetupFakeAPI(t)
+	mux.HandleFunc("/renewalInfo/"+ariLeafCertID, func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(2 * time.Millisecond)
+	})
+
+	key, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err, "Could not generate test key")
+
+	// HTTP client that times out after 1ms.
+	core, err := api.New(&http.Client{Timeout: 1 * time.Millisecond}, "lego-test", apiURL+"/dir", "", key)
+	require.NoError(t, err)
+
+	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
+
+	ri, err := certifier.GetRenewalInfo(RenewalInfoRequest{leaf, issuer})
+	require.Error(t, err)
+	assert.Nil(t, ri)
+
+	// API that responds with error instead of renewal info.
+	mux, apiURL = tester.SetupFakeAPI(t)
+	mux.HandleFunc("/renewalInfo/"+ariLeafCertID, func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+	})
+
+	core, err = api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", key)
+	require.NoError(t, err)
+
+	certifier = NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
+
+	ri, err = certifier.GetRenewalInfo(RenewalInfoRequest{leaf, issuer})
+	require.Error(t, err)
+	assert.Nil(t, ri)
+
+	ri, err = certifier.GetRenewalInfo(RenewalInfoRequest{leaf, nil})
+	require.Error(t, err)
+	assert.Nil(t, ri)
+
+	ri, err = certifier.GetRenewalInfo(RenewalInfoRequest{nil, issuer})
+	require.Error(t, err)
+	assert.Nil(t, ri)
 }
 
 func TestRenewalInfo_ShouldRenew(t *testing.T) {
@@ -580,54 +592,12 @@ func TestRenewalInfo_ShouldRenew(t *testing.T) {
 }
 
 func TestUpdateRenewalInfo(t *testing.T) {
-	leafPEM := `-----BEGIN CERTIFICATE-----
-MIIDMDCCAhigAwIBAgIIPqNFaGVEHxwwDQYJKoZIhvcNAQELBQAwIDEeMBwGA1UE
-AxMVbWluaWNhIHJvb3QgY2EgM2ExMzU2MB4XDTIyMDMxNzE3NTEwOVoXDTI0MDQx
-NjE3NTEwOVowFjEUMBIGA1UEAxMLZXhhbXBsZS5jb20wggEiMA0GCSqGSIb3DQEB
-AQUAA4IBDwAwggEKAoIBAQCgm9K/c+il2Pf0f8qhgxn9SKqXq88cOm9ov9AVRbPA
-OWAAewqX2yUAwI4LZBGEgzGzTATkiXfoJ3cN3k39cH6tBbb3iSPuEn7OZpIk9D+e
-3Q9/hX+N/jlWkaTB/FNA+7aE5IVWhmdczYilXa10V9r+RcvACJt0gsipBZVJ4jfJ
-HnWJJGRZzzxqG/xkQmpXxZO7nOPFc8SxYKWdfcgp+rjR2ogYhSz7BfKoVakGPbpX
-vZOuT9z4kkHra/WjwlkQhtHoTXdAxH3qC2UjMzO57Tx+otj0CxAv9O7CTJXISywB
-vEVcmTSZkHS3eZtvvIwPx7I30ITRkYk/tLl1MbyB3SiZAgMBAAGjeDB2MA4GA1Ud
-DwEB/wQEAwIFoDAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwDAYDVR0T
-AQH/BAIwADAfBgNVHSMEGDAWgBQ4zzDRUaXHVKqlSTWkULGU4zGZpTAWBgNVHREE
-DzANggtleGFtcGxlLmNvbTANBgkqhkiG9w0BAQsFAAOCAQEAx0aYvmCk7JYGNEXe
-+hrOfKawkHYzWvA92cI/Oi6h+oSdHZ2UKzwFNf37cVKZ37FCrrv5pFP/xhhHvrNV
-EnOx4IaF7OrnaTu5miZiUWuvRQP7ZGmGNFYbLTEF6/dj+WqyYdVaWzxRqHFu1ptC
-TXysJCeyiGnR+KOOjOOQ9ZlO5JUK3OE4hagPLfaIpDDy6RXQt3ss0iNLuB1+IOtp
-1URpvffLZQ8xPsEgOZyPWOcabTwJrtqBwily+lwPFn2mChUx846LwQfxtsXU/lJg
-HX2RteNJx7YYNeX3Uf960mgo5an6vE8QNAsIoNHYrGyEmXDhTRe9mCHyiW2S7fZq
-o9q12g==
------END CERTIFICATE-----`
-	issuerPEM := `-----BEGIN CERTIFICATE-----
-MIIDSzCCAjOgAwIBAgIIOhNWtJ7Igr0wDQYJKoZIhvcNAQELBQAwIDEeMBwGA1UE
-AxMVbWluaWNhIHJvb3QgY2EgM2ExMzU2MCAXDTIyMDMxNzE3NTEwOVoYDzIxMjIw
-MzE3MTc1MTA5WjAgMR4wHAYDVQQDExVtaW5pY2Egcm9vdCBjYSAzYTEzNTYwggEi
-MA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDc3P6cxcCZ7FQOQrYuigReSa8T
-IOPNKmlmX9OrTkPwjThiMNEETYKO1ea99yXPK36LUHC6OLmZ9jVQW2Ny1qwQCOy6
-TrquhnwKgtkBMDAZBLySSEXYdKL3r0jA4sflW130/OLwhstU/yv0J8+pj7eSVOR3
-zJBnYd1AqnXHRSwQm299KXgqema7uwsa8cgjrXsBzAhrwrvYlVhpWFSv3lQRDFQg
-c5Z/ZDV9i26qiaJsCCmdisJZWN7N2luUgxdRqzZ4Cr2Xoilg3T+hkb2y/d6ttsPA
-kaSA+pq3q6Qa7/qfGdT5WuUkcHpvKNRWqnwT9rCYlmG00r3hGgc42D/z1VvfAgMB
-AAGjgYYwgYMwDgYDVR0PAQH/BAQDAgKEMB0GA1UdJQQWMBQGCCsGAQUFBwMBBggr
-BgEFBQcDAjASBgNVHRMBAf8ECDAGAQH/AgEAMB0GA1UdDgQWBBQ4zzDRUaXHVKql
-STWkULGU4zGZpTAfBgNVHSMEGDAWgBQ4zzDRUaXHVKqlSTWkULGU4zGZpTANBgkq
-hkiG9w0BAQsFAAOCAQEArbDHhEjGedjb/YjU80aFTPWOMRjgyfQaPPgyxwX6Dsid
-1i2H1x4ud4ntz3sTZZxdQIrOqtlIWTWVCjpStwGxaC+38SdreiTTwy/nikXGa/6W
-ZyQRppR3agh/pl5LHVO6GsJz3YHa7wQhEhj3xsRwa9VrRXgHbLGbPOFVRTHPjaPg
-Gtsv2PN3f67DsPHF47ASqyOIRpLZPQmZIw6D3isJwfl+8CzvlB1veO0Q3uh08IJc
-fspYQXvFBzYa64uKxNAJMi4Pby8cf4r36Wnb7cL4ho3fOHgAltxdW8jgibRzqZpQ
-QKyxn2jX7kxeUDt0hFDJE8lOrhP73m66eBNzxe//FQ==
------END CERTIFICATE-----`
-	leafBlock, _ := pem.Decode([]byte(leafPEM))
+	leafBlock, _ := pem.Decode([]byte(ariLeafPEM))
 	leaf, err := x509.ParseCertificate(leafBlock.Bytes)
 	require.NoError(t, err)
-	issuerBlock, _ := pem.Decode([]byte(issuerPEM))
+	issuerBlock, _ := pem.Decode([]byte(ariIssuerPEM))
 	issuer, err := x509.ParseCertificate(issuerBlock.Bytes)
 	require.NoError(t, err)
-
-	leafCertID := "MFswCwYJYIZIAWUDBAIBBCCeWLRusNLb--vmWOkxm34qDjTMWkc3utIhOMoMwKDqbgQg2iiKWySZrD-6c88HMZ6vhIHZPamChLlzGHeZ7pTS8jYCCD6jRWhlRB8c"
 
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err, "Could not generate test key")
@@ -650,7 +620,7 @@ QKyxn2jX7kxeUDt0hFDJE8lOrhP73m66eBNzxe//FQ==
 		err = json.Unmarshal(body, &req)
 		assert.NoError(t, err)
 		assert.True(t, req.Replaced)
-		assert.Equal(t, leafCertID, req.CertID)
+		assert.Equal(t, ariLeafCertID, req.CertID)
 
 		w.WriteHeader(http.StatusOK)
 	})
@@ -665,50 +635,10 @@ QKyxn2jX7kxeUDt0hFDJE8lOrhP73m66eBNzxe//FQ==
 }
 
 func TestUpdateRenewalInfoError(t *testing.T) {
-	leafPEM := `-----BEGIN CERTIFICATE-----
-MIIDMDCCAhigAwIBAgIIPqNFaGVEHxwwDQYJKoZIhvcNAQELBQAwIDEeMBwGA1UE
-AxMVbWluaWNhIHJvb3QgY2EgM2ExMzU2MB4XDTIyMDMxNzE3NTEwOVoXDTI0MDQx
-NjE3NTEwOVowFjEUMBIGA1UEAxMLZXhhbXBsZS5jb20wggEiMA0GCSqGSIb3DQEB
-AQUAA4IBDwAwggEKAoIBAQCgm9K/c+il2Pf0f8qhgxn9SKqXq88cOm9ov9AVRbPA
-OWAAewqX2yUAwI4LZBGEgzGzTATkiXfoJ3cN3k39cH6tBbb3iSPuEn7OZpIk9D+e
-3Q9/hX+N/jlWkaTB/FNA+7aE5IVWhmdczYilXa10V9r+RcvACJt0gsipBZVJ4jfJ
-HnWJJGRZzzxqG/xkQmpXxZO7nOPFc8SxYKWdfcgp+rjR2ogYhSz7BfKoVakGPbpX
-vZOuT9z4kkHra/WjwlkQhtHoTXdAxH3qC2UjMzO57Tx+otj0CxAv9O7CTJXISywB
-vEVcmTSZkHS3eZtvvIwPx7I30ITRkYk/tLl1MbyB3SiZAgMBAAGjeDB2MA4GA1Ud
-DwEB/wQEAwIFoDAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwDAYDVR0T
-AQH/BAIwADAfBgNVHSMEGDAWgBQ4zzDRUaXHVKqlSTWkULGU4zGZpTAWBgNVHREE
-DzANggtleGFtcGxlLmNvbTANBgkqhkiG9w0BAQsFAAOCAQEAx0aYvmCk7JYGNEXe
-+hrOfKawkHYzWvA92cI/Oi6h+oSdHZ2UKzwFNf37cVKZ37FCrrv5pFP/xhhHvrNV
-EnOx4IaF7OrnaTu5miZiUWuvRQP7ZGmGNFYbLTEF6/dj+WqyYdVaWzxRqHFu1ptC
-TXysJCeyiGnR+KOOjOOQ9ZlO5JUK3OE4hagPLfaIpDDy6RXQt3ss0iNLuB1+IOtp
-1URpvffLZQ8xPsEgOZyPWOcabTwJrtqBwily+lwPFn2mChUx846LwQfxtsXU/lJg
-HX2RteNJx7YYNeX3Uf960mgo5an6vE8QNAsIoNHYrGyEmXDhTRe9mCHyiW2S7fZq
-o9q12g==
------END CERTIFICATE-----`
-	issuerPEM := `-----BEGIN CERTIFICATE-----
-MIIDSzCCAjOgAwIBAgIIOhNWtJ7Igr0wDQYJKoZIhvcNAQELBQAwIDEeMBwGA1UE
-AxMVbWluaWNhIHJvb3QgY2EgM2ExMzU2MCAXDTIyMDMxNzE3NTEwOVoYDzIxMjIw
-MzE3MTc1MTA5WjAgMR4wHAYDVQQDExVtaW5pY2Egcm9vdCBjYSAzYTEzNTYwggEi
-MA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDc3P6cxcCZ7FQOQrYuigReSa8T
-IOPNKmlmX9OrTkPwjThiMNEETYKO1ea99yXPK36LUHC6OLmZ9jVQW2Ny1qwQCOy6
-TrquhnwKgtkBMDAZBLySSEXYdKL3r0jA4sflW130/OLwhstU/yv0J8+pj7eSVOR3
-zJBnYd1AqnXHRSwQm299KXgqema7uwsa8cgjrXsBzAhrwrvYlVhpWFSv3lQRDFQg
-c5Z/ZDV9i26qiaJsCCmdisJZWN7N2luUgxdRqzZ4Cr2Xoilg3T+hkb2y/d6ttsPA
-kaSA+pq3q6Qa7/qfGdT5WuUkcHpvKNRWqnwT9rCYlmG00r3hGgc42D/z1VvfAgMB
-AAGjgYYwgYMwDgYDVR0PAQH/BAQDAgKEMB0GA1UdJQQWMBQGCCsGAQUFBwMBBggr
-BgEFBQcDAjASBgNVHRMBAf8ECDAGAQH/AgEAMB0GA1UdDgQWBBQ4zzDRUaXHVKql
-STWkULGU4zGZpTAfBgNVHSMEGDAWgBQ4zzDRUaXHVKqlSTWkULGU4zGZpTANBgkq
-hkiG9w0BAQsFAAOCAQEArbDHhEjGedjb/YjU80aFTPWOMRjgyfQaPPgyxwX6Dsid
-1i2H1x4ud4ntz3sTZZxdQIrOqtlIWTWVCjpStwGxaC+38SdreiTTwy/nikXGa/6W
-ZyQRppR3agh/pl5LHVO6GsJz3YHa7wQhEhj3xsRwa9VrRXgHbLGbPOFVRTHPjaPg
-Gtsv2PN3f67DsPHF47ASqyOIRpLZPQmZIw6D3isJwfl+8CzvlB1veO0Q3uh08IJc
-fspYQXvFBzYa64uKxNAJMi4Pby8cf4r36Wnb7cL4ho3fOHgAltxdW8jgibRzqZpQ
-QKyxn2jX7kxeUDt0hFDJE8lOrhP73m66eBNzxe//FQ==
------END CERTIFICATE-----`
-	leafBlock, _ := pem.Decode([]byte(leafPEM))
+	leafBlock, _ := pem.Decode([]byte(ariLeafPEM))
 	leaf, err := x509.ParseCertificate(leafBlock.Bytes)
 	require.NoError(t, err)
-	issuerBlock, _ := pem.Decode([]byte(issuerPEM))
+	issuerBlock, _ := pem.Decode([]byte(ariIssuerPEM))
 	issuer, err := x509.ParseCertificate(issuerBlock.Bytes)
 	require.NoError(t, err)
 
@@ -728,6 +658,12 @@ QKyxn2jX7kxeUDt0hFDJE8lOrhP73m66eBNzxe//FQ==
 	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
 
 	err = certifier.UpdateRenewalInfo(RenewalInfoRequest{leaf, issuer})
+	require.Error(t, err)
+
+	err = certifier.UpdateRenewalInfo(RenewalInfoRequest{nil, issuer})
+	require.Error(t, err)
+
+	err = certifier.UpdateRenewalInfo(RenewalInfoRequest{leaf, nil})
 	require.Error(t, err)
 }
 

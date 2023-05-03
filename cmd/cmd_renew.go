@@ -54,7 +54,7 @@ func createRenew() *cli.Command {
 				Usage: "Use the renewalInfo endpoint (draft-ietf-acme-ari) to check if a certificate should be renewed.",
 			},
 			&cli.DurationFlag{
-				Name:  "ari-willing-to-sleep",
+				Name:  "ari-wait-to-renew-duration",
 				Usage: "The maximum duration you're willing to sleep for a renewal time returned by the renewalInfo endpoint.",
 			},
 			&cli.BoolFlag{
@@ -316,7 +316,7 @@ func needRenewalARI(ctx *cli.Context, cert, issuer *x509.Certificate, domain str
 	}
 
 	now := time.Now().UTC()
-	renewalTime := renewalInfo.ShouldRenewAt(now, ctx.Duration("ari-willing-to-sleep"))
+	renewalTime := renewalInfo.ShouldRenewAt(now, ctx.Duration("ari-wait-to-renew-duration"))
 	if renewalTime == nil {
 		log.Infof("[%s] acme: renewalInfo endpoint indicates that renewal is not needed", domain)
 		return false

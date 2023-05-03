@@ -84,7 +84,7 @@ func (c *CertificateService) GetRenewalInfo(certID string) (*http.Response, erro
 	return c.core.HTTPClient.Get(c.core.GetDirectory().RenewalInfo + "/" + certID)
 }
 
-// PostRenewalInfo POSTs updated renewal information for a certificate to the
+// UpdateRenewalInfo POSTs updated renewal information for a certificate to the
 // renewalInfo endpoint. This is used to indicate that a certificate has been
 // replaced.
 //

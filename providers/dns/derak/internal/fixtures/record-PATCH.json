@@ -1,0 +1,10 @@
+{
+  "recordId": "812bee17a0b440b0bd5ee099a78b839c",
+  "type": "A",
+  "host": "example.com",
+  "content": "188.114.97.3",
+  "ttl": 0,
+  "cloud": false,
+  "advanced": false,
+  "customSSLType": ""
+}

@@ -14,8 +14,6 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/brandit/internal"
 )
 
-const defaultTTL = 600
-
 // Environment variables names.
 const (
 	envNamespace = "BRANDIT_"
@@ -43,7 +41,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, defaultTTL),
+		TTL:                env.GetOrDefaultInt(EnvTTL, 600),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 10*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{

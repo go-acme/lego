@@ -17,8 +17,6 @@ const (
 	defaultDNSEndpoint      = "https://mcs.mail.ru/public-dns/v2/dns"
 )
 
-const defaultTTL = 60
-
 const defaultDomainName = "users"
 
 // Environment variables names.
@@ -58,7 +56,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, defaultTTL),
+		TTL:                env.GetOrDefaultInt(EnvTTL, 60),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 	}

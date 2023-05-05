@@ -17,8 +17,6 @@ import (
 	"github.com/yandex-cloud/go-sdk/iamkey"
 )
 
-const defaultTTL = 60
-
 // Environment variables names.
 const (
 	envNamespace = "YANDEX_CLOUD_"
@@ -44,7 +42,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, defaultTTL),
+		TTL:                env.GetOrDefaultInt(EnvTTL, 60),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 	}

@@ -29,8 +29,6 @@ const (
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
-const defaultTTL int = 600
-
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	Endpoint           *url.URL
@@ -50,7 +48,7 @@ func NewDefaultConfig() *Config {
 	return &Config{
 		Endpoint:           endpoint,
 		Context:            env.GetOrDefaultInt(EnvAPIEndpointContext, internal.DefaultEndpointContext),
-		TTL:                env.GetOrDefaultInt(EnvTTL, defaultTTL),
+		TTL:                env.GetOrDefaultInt(EnvTTL, 600),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
 		HTTPClient: &http.Client{

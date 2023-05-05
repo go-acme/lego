@@ -19,7 +19,7 @@ func (e obtainError) Error() string {
 	sort.Strings(domains)
 
 	for _, domain := range domains {
-		buffer.WriteString(fmt.Sprintf("[%s] %s\n", domain, e[domain]))
+		_, _ = fmt.Fprintf(buffer, "[%s] %s\n", domain, e[domain])
 	}
 	return buffer.String()
 }

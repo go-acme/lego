@@ -46,6 +46,36 @@ linters-settings:
       - ruleguard
       - httpNoBody
       - exposedSyncMutex
+  revive:
+    rules:
+      - name: struct-tag
+      - name: blank-imports
+      - name: context-as-argument
+      - name: context-keys-type
+      - name: dot-imports
+      - name: error-return
+      - name: error-strings
+      - name: error-naming
+      - name: exported
+        disabled: true
+      - name: if-return
+      - name: increment-decrement
+      - name: var-naming
+      - name: var-declaration
+      - name: package-comments
+        disabled: true
+      - name: range
+      - name: receiver-naming
+      - name: time-naming
+      - name: unexported-return
+      - name: indent-error-flow
+      - name: errorf
+      - name: empty-block
+      - name: superfluous-else
+      - name: unused-parameter
+        disabled: true
+      - name: unreachable-code
+      - name: redefines-builtin-id
 
 linters:
   enable-all: true
@@ -103,7 +133,6 @@ issues:
     - 'Error return value of .((os\.)?std(out|err)\..*|.*Close|.*Flush|os\.Remove(All)?|.*printf?|os\.(Un)?Setenv). is not checked'
     - 'exported (type|method|function) (.+) should have comment or be unexported'
     - 'ST1000: at least one file in a package should have a package comment'
-    - 'package-comments: should have a package comment'
   exclude-rules:
     - path: (.+)_test.go
       linters:

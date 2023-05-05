@@ -2,6 +2,7 @@
 package websupport
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -12,8 +13,6 @@ import (
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/websupport/internal"
 )
-
-const defaultTTL = 600
 
 // Environment variables names.
 const (
@@ -44,7 +43,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, defaultTTL),
+		TTL:                env.GetOrDefaultInt(EnvTTL, 600),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		SequenceInterval:   env.GetOrDefaultSecond(EnvSequenceInterval, dns01.DefaultPropagationTimeout),
@@ -106,7 +105,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("websupport: %w", err)
+		return fmt.Errorf("websupport: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
@@ -121,7 +120,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		TTL:     d.config.TTL,
 	}
 
-	resp, err := d.client.AddRecord(dns01.UnFqdn(authZone), record)
+	resp, err := d.client.AddRecord(context.Background(), dns01.UnFqdn(authZone), record)
 	if err != nil {
 		return fmt.Errorf("websupport: add record: %w", err)
 	}
@@ -148,7 +147,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("websupport: %w", err)
+		return fmt.Errorf("websupport: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	// gets the record's unique ID
@@ -159,7 +158,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("websupport: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
-	resp, err := d.client.DeleteRecord(dns01.UnFqdn(authZone), recordID)
+	resp, err := d.client.DeleteRecord(context.Background(), dns01.UnFqdn(authZone), recordID)
 	if err != nil {
 		return fmt.Errorf("websupport: delete record: %w", err)
 	}

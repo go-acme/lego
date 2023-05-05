@@ -1,10 +1,12 @@
 package internal
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"testing"
 
@@ -20,7 +22,8 @@ func setupTest(t *testing.T) (*Client, *http.ServeMux) {
 	t.Cleanup(server.Close)
 
 	client := NewClient("", "")
-	client.BaseURL = server.URL
+	client.HTTPClient = server.Client()
+	client.baseURL, _ = url.Parse(server.URL)
 
 	return client, mux
 }
@@ -48,7 +51,7 @@ func TestClient_GetRecords(t *testing.T) {
 		}
 	})
 
-	records, err := client.GetRecords("lego.wtf")
+	records, err := client.GetRecords(context.Background(), "lego.wtf")
 	require.NoError(t, err)
 
 	recordsJSON, err := json.Marshal(records)
@@ -76,7 +79,7 @@ func TestClient_GetRecords_error(t *testing.T) {
 		}
 	})
 
-	records, err := client.GetRecords("lego.wtf")
+	records, err := client.GetRecords(context.Background(), "lego.wtf")
 	require.Error(t, err)
 
 	assert.Nil(t, records)
@@ -118,7 +121,7 @@ func TestClient_CreateUpdateRecord(t *testing.T) {
 		Content: Value{"aaa", "bbb"},
 	}
 
-	msg, err := client.CreateUpdateRecord("lego.wtf", record)
+	msg, err := client.CreateUpdateRecord(context.Background(), "lego.wtf", record)
 	require.NoError(t, err)
 
 	expected := &Message{Message: "ok"}
@@ -145,7 +148,7 @@ func TestClient_CreateUpdateRecord_error(t *testing.T) {
 		Name: "_acme-challenge.www",
 	}
 
-	msg, err := client.CreateUpdateRecord("lego.wtf", record)
+	msg, err := client.CreateUpdateRecord(context.Background(), "lego.wtf", record)
 	require.Error(t, err)
 
 	assert.Nil(t, msg)
@@ -185,7 +188,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 		Type: "TXT",
 	}
 
-	msg, err := client.DeleteRecord("lego.wtf", record)
+	msg, err := client.DeleteRecord(context.Background(), "lego.wtf", record)
 	require.NoError(t, err)
 
 	expected := &Message{Message: "ok"}
@@ -212,7 +215,7 @@ func TestClient_DeleteRecord_error(t *testing.T) {
 		Name: "_acme-challenge.www",
 	}
 
-	msg, err := client.DeleteRecord("lego.wtf", record)
+	msg, err := client.DeleteRecord(context.Background(), "lego.wtf", record)
 	require.Error(t, err)
 
 	assert.Nil(t, msg)

@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"encoding/xml"
 	"fmt"
 	"io"
@@ -49,7 +50,7 @@ func TestClient_AddZoneRecord(t *testing.T) {
 			desc:     "empty response",
 			password: "goodpassword",
 			domain:   "empty.com",
-			err:      "error during unmarshalling the response body: EOF",
+			err:      "unmarshal error: EOF",
 		},
 	}
 
@@ -58,7 +59,7 @@ func TestClient_AddZoneRecord(t *testing.T) {
 			client := NewClient("apiuser", test.password)
 			client.BaseURL = serverURL + "/"
 
-			err := client.AddTXTRecord(test.domain, exampleSubDomain, 123, "TXTrecord")
+			err := client.AddTXTRecord(context.Background(), test.domain, exampleSubDomain, 123, "TXTrecord")
 			if test.err == "" {
 				require.NoError(t, err)
 			} else {
@@ -106,7 +107,7 @@ func TestClient_RemoveSubdomain(t *testing.T) {
 			desc:     "empty response",
 			password: "goodpassword",
 			domain:   "empty.com",
-			err:      "error during unmarshalling the response body: EOF",
+			err:      "unmarshal error: EOF",
 		},
 	}
 
@@ -115,7 +116,7 @@ func TestClient_RemoveSubdomain(t *testing.T) {
 			client := NewClient("apiuser", test.password)
 			client.BaseURL = serverURL + "/"
 
-			err := client.RemoveSubdomain(test.domain, exampleSubDomain)
+			err := client.RemoveSubdomain(context.Background(), test.domain, exampleSubDomain)
 			if test.err == "" {
 				require.NoError(t, err)
 			} else {
@@ -163,7 +164,7 @@ func TestClient_RemoveZoneRecord(t *testing.T) {
 			desc:     "empty response",
 			password: "goodpassword",
 			domain:   "empty.com",
-			err:      "error during unmarshalling the response body: EOF",
+			err:      "unmarshal error: EOF",
 		},
 	}
 
@@ -172,7 +173,7 @@ func TestClient_RemoveZoneRecord(t *testing.T) {
 			client := NewClient("apiuser", test.password)
 			client.BaseURL = serverURL + "/"
 
-			err := client.RemoveTXTRecord(test.domain, exampleSubDomain, 12345678)
+			err := client.RemoveTXTRecord(context.Background(), test.domain, exampleSubDomain, 12345678)
 			if test.err == "" {
 				require.NoError(t, err)
 			} else {
@@ -193,7 +194,7 @@ func TestClient_GetZoneRecord(t *testing.T) {
 	client := NewClient("apiuser", "goodpassword")
 	client.BaseURL = serverURL + "/"
 
-	recordObjs, err := client.GetTXTRecords(exampleDomain, exampleSubDomain)
+	recordObjs, err := client.GetTXTRecords(context.Background(), exampleDomain, exampleSubDomain)
 	require.NoError(t, err)
 
 	expected := []RecordObj{
@@ -237,8 +238,8 @@ func TestClient_rpcCall_404(t *testing.T) {
 	client := NewClient("apiuser", "apipassword")
 	client.BaseURL = server.URL + "/"
 
-	err := client.rpcCall(call, &responseString{})
-	assert.EqualError(t, err, "HTTP Post Error: 404")
+	err := client.rpcCall(context.Background(), call, &responseString{})
+	assert.EqualError(t, err, "unexpected status code: [status code: 404] body: <?xml version='1.0' encoding='UTF-8'?>")
 }
 
 func TestClient_rpcCall_RPCError(t *testing.T) {
@@ -268,7 +269,7 @@ func TestClient_rpcCall_RPCError(t *testing.T) {
 	client := NewClient("apiuser", "apipassword")
 	client.BaseURL = server.URL + "/"
 
-	err := client.rpcCall(call, &responseString{})
+	err := client.rpcCall(context.Background(), call, &responseString{})
 	assert.EqualError(t, err, "RPC Error: (201) Method signature error: 42")
 }
 

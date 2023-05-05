@@ -6,18 +6,20 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/go-acme/lego/v4/providers/dns/otc/internal"
 	"github.com/stretchr/testify/suite"
 )
 
 type OTCSuite struct {
 	suite.Suite
-	Mock    *DNSServerMock
+
+	mock    *internal.DNSServerMock
 	envTest *tester.EnvTest
 }
 
 func (s *OTCSuite) SetupTest() {
-	s.Mock = NewDNSServerMock(s.T())
-	s.Mock.HandleAuthSuccessfully()
+	s.mock = internal.NewDNSServerMock(s.T())
+	s.mock.HandleAuthSuccessfully()
 	s.envTest = tester.NewEnvTest(
 		EnvDomainName,
 		EnvUserName,
@@ -29,7 +31,7 @@ func (s *OTCSuite) SetupTest() {
 
 func (s *OTCSuite) TearDownTest() {
 	s.envTest.RestoreEnv()
-	s.Mock.ShutdownServer()
+	s.mock.ShutdownServer()
 }
 
 func TestTestSuite(t *testing.T) {
@@ -42,20 +44,9 @@ func (s *OTCSuite) createDNSProvider() (*DNSProvider, error) {
 	config.Password = "Password"
 	config.DomainName = "DomainName"
 	config.ProjectName = "ProjectName"
-	config.IdentityEndpoint = fmt.Sprintf("%s/v3/auth/token", s.Mock.GetServerURL())
+	config.IdentityEndpoint = fmt.Sprintf("%s/v3/auth/token", s.mock.GetServerURL())
 
 	return NewDNSProviderConfig(config)
-}
-
-func (s *OTCSuite) TestLogin() {
-	provider, err := s.createDNSProvider()
-	s.Require().NoError(err)
-
-	err = provider.loginRequest()
-	s.Require().NoError(err)
-
-	s.Equal(provider.baseURL, fmt.Sprintf("%s/v2", s.Mock.GetServerURL()))
-	s.Equal(fakeOTCToken, provider.token)
 }
 
 func (s *OTCSuite) TestLoginEnv() {
@@ -94,8 +85,8 @@ func (s *OTCSuite) TestLoginEnvEmpty() {
 }
 
 func (s *OTCSuite) TestDNSProvider_Present() {
-	s.Mock.HandleListZonesSuccessfully()
-	s.Mock.HandleListRecordsetsSuccessfully()
+	s.mock.HandleListZonesSuccessfully()
+	s.mock.HandleListRecordsetsSuccessfully()
 
 	provider, err := s.createDNSProvider()
 	s.Require().NoError(err)
@@ -105,8 +96,8 @@ func (s *OTCSuite) TestDNSProvider_Present() {
 }
 
 func (s *OTCSuite) TestDNSProvider_Present_EmptyZone() {
-	s.Mock.HandleListZonesEmpty()
-	s.Mock.HandleListRecordsetsSuccessfully()
+	s.mock.HandleListZonesEmpty()
+	s.mock.HandleListRecordsetsSuccessfully()
 
 	provider, err := s.createDNSProvider()
 	s.Require().NoError(err)
@@ -116,9 +107,9 @@ func (s *OTCSuite) TestDNSProvider_Present_EmptyZone() {
 }
 
 func (s *OTCSuite) TestDNSProvider_CleanUp() {
-	s.Mock.HandleListZonesSuccessfully()
-	s.Mock.HandleListRecordsetsSuccessfully()
-	s.Mock.HandleDeleteRecordsetsSuccessfully()
+	s.mock.HandleListZonesSuccessfully()
+	s.mock.HandleListRecordsetsSuccessfully()
+	s.mock.HandleDeleteRecordsetsSuccessfully()
 
 	provider, err := s.createDNSProvider()
 	s.Require().NoError(err)
@@ -128,8 +119,8 @@ func (s *OTCSuite) TestDNSProvider_CleanUp() {
 }
 
 func (s *OTCSuite) TestDNSProvider_CleanUp_EmptyRecordset() {
-	s.Mock.HandleListZonesSuccessfully()
-	s.Mock.HandleListRecordsetsEmpty()
+	s.mock.HandleListZonesSuccessfully()
+	s.mock.HandleListRecordsetsEmpty()
 
 	provider, err := s.createDNSProvider()
 	s.Require().NoError(err)

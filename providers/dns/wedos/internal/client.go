@@ -11,61 +11,21 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
 const baseURL = "https://api.wedos.com/wapi/json"
 
-const codeOk = 1000
-
-const (
-	commandPing            = "ping"
-	commandDNSDomainCommit = "dns-domain-commit"
-	commandDNSRowsList     = "dns-rows-list"
-	commandDNSRowDelete    = "dns-row-delete"
-	commandDNSRowAdd       = "dns-row-add"
-	commandDNSRowUpdate    = "dns-row-update"
-)
-
-type ResponsePayload struct {
-	Code      int             `json:"code,omitempty"`
-	Result    string          `json:"result,omitempty"`
-	Timestamp int             `json:"timestamp,omitempty"`
-	SvTRID    string          `json:"svTRID,omitempty"`
-	Command   string          `json:"command,omitempty"`
-	Data      json.RawMessage `json:"data"`
-}
-
-type DNSRow struct {
-	ID   string      `json:"ID,omitempty"`
-	Name string      `json:"name,omitempty"`
-	TTL  json.Number `json:"ttl,omitempty" type:"integer"`
-	Type string      `json:"rdtype,omitempty"`
-	Data string      `json:"rdata"`
-}
-
-type DNSRowRequest struct {
-	ID     string      `json:"row_id,omitempty"`
-	Domain string      `json:"domain,omitempty"`
-	Name   string      `json:"name,omitempty"`
-	TTL    json.Number `json:"ttl,omitempty" type:"integer"`
-	Type   string      `json:"type,omitempty"`
-	Data   string      `json:"rdata"`
-}
-
-type APIRequest struct {
-	User    string      `json:"user,omitempty"`
-	Auth    string      `json:"auth,omitempty"`
-	Command string      `json:"command,omitempty"`
-	Data    interface{} `json:"data,omitempty"`
-}
-
+// Client the API client for Webos.
 type Client struct {
-	username   string
-	password   string
+	username string
+	password string
+
 	baseURL    string
 	HTTPClient *http.Client
 }
 
+// NewClient creates a new Client.
 func NewClient(username string, password string) *Client {
 	return &Client{
 		username:   username,
@@ -78,25 +38,23 @@ func NewClient(username string, password string) *Client {
 // GetRecords lists all the records in the zone.
 // https://kb.wedos.com/en/wapi-api-interface/wapi-command-dns-rows-list/
 func (c *Client) GetRecords(ctx context.Context, zone string) ([]DNSRow, error) {
-	payload := map[string]interface{}{
+	payload := map[string]any{
 		"domain": dns01.UnFqdn(zone),
 	}
 
-	resp, err := c.do(ctx, commandDNSRowsList, payload)
+	req, err := c.newRequest(ctx, commandDNSRowsList, payload)
 	if err != nil {
 		return nil, err
 	}
 
-	arrayWrapper := struct {
-		Rows []DNSRow `json:"row"`
-	}{}
+	result := APIResponse[Rows]{}
 
-	err = json.Unmarshal(resp.Data, &arrayWrapper)
+	err = c.do(req, &result)
 	if err != nil {
 		return nil, err
 	}
 
-	return arrayWrapper.Rows, err
+	return result.Response.Data.Rows, err
 }
 
 // AddRecord adds a record in the zone, either by updating existing records or creating new ones.
@@ -118,12 +76,12 @@ func (c *Client) AddRecord(ctx context.Context, zone string, record DNSRow) erro
 		payload.ID = record.ID
 	}
 
-	_, err := c.do(ctx, cmd, payload)
+	req, err := c.newRequest(ctx, cmd, payload)
 	if err != nil {
 		return err
 	}
 
-	return nil
+	return c.do(req, &APIResponse[json.RawMessage]{})
 }
 
 // DeleteRecord deletes a record from the zone.
@@ -135,40 +93,67 @@ func (c *Client) DeleteRecord(ctx context.Context, zone string, recordID string)
 		ID:     recordID,
 	}
 
-	_, err := c.do(ctx, commandDNSRowDelete, payload)
+	req, err := c.newRequest(ctx, commandDNSRowDelete, payload)
 	if err != nil {
 		return err
 	}
 
-	return nil
+	return c.do(req, &APIResponse[json.RawMessage]{})
 }
 
 // Commit not really required, all changes will be auto-committed after 5 minutes.
 // https://kb.wedos.com/en/wapi-api-interface/wapi-command-dns-domain-commit/
 func (c *Client) Commit(ctx context.Context, zone string) error {
-	payload := map[string]interface{}{
+	payload := map[string]any{
 		"name": dns01.UnFqdn(zone),
 	}
 
-	_, err := c.do(ctx, commandDNSDomainCommit, payload)
+	req, err := c.newRequest(ctx, commandDNSDomainCommit, payload)
 	if err != nil {
 		return err
 	}
 
-	return nil
+	return c.do(req, &APIResponse[json.RawMessage]{})
 }
 
 func (c *Client) Ping(ctx context.Context) error {
-	_, err := c.do(ctx, commandPing, nil)
+	req, err := c.newRequest(ctx, commandPing, nil)
 	if err != nil {
 		return err
 	}
 
-	return nil
+	return c.do(req, &APIResponse[json.RawMessage]{})
 }
 
-func (c *Client) do(ctx context.Context, command string, payload interface{}) (*ResponsePayload, error) {
-	requestObject := map[string]interface{}{
+func (c *Client) do(req *http.Request, result Response) error {
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return errutils.NewHTTPDoError(req, err)
+	}
+
+	raw, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return errutils.NewReadResponseError(req, resp.StatusCode, err)
+	}
+
+	if resp.StatusCode/100 != 2 {
+		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
+	}
+
+	err = json.Unmarshal(raw, result)
+	if err != nil {
+		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
+	}
+
+	if result.GetCode() != codeOk {
+		return fmt.Errorf("error %d: %s", result.GetCode(), result.GetResult())
+	}
+
+	return err
+}
+
+func (c *Client) newRequest(ctx context.Context, command string, payload any) (*http.Request, error) {
+	requestObject := map[string]any{
 		"request": APIRequest{
 			User:    c.username,
 			Auth:    authToken(c.username, c.password),
@@ -177,46 +162,20 @@ func (c *Client) do(ctx context.Context, command string, payload interface{}) (*
 		},
 	}
 
-	jsonBytes, err := json.Marshal(requestObject)
+	object, err := json.Marshal(requestObject)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create request JSON body: %w", err)
 	}
 
 	form := url.Values{}
-	form.Add("request", string(jsonBytes))
+	form.Add("request", string(object))
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL, strings.NewReader(form.Encode()))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to create request: %w", err)
 	}
+
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
-	resp, err := c.HTTPClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode/100 != 2 {
-		return nil, fmt.Errorf("API error, status code: %d", resp.StatusCode)
-	}
-
-	responseWrapper := struct {
-		Response ResponsePayload `json:"response"`
-	}{}
-
-	err = json.Unmarshal(body, &responseWrapper)
-	if err != nil {
-		return nil, err
-	}
-
-	if responseWrapper.Response.Code != codeOk {
-		return nil, fmt.Errorf("wedos responded with error code %d = %s", responseWrapper.Response.Code, responseWrapper.Response.Result)
-	}
-
-	return &responseWrapper.Response, err
+	return req, nil
 }

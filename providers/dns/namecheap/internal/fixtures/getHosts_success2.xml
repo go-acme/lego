@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ApiResponse Status="OK" xmlns="http://api.namecheap.com/xml.response">
+    <Errors />
+    <Warnings />
+    <RequestedCommand>namecheap.domains.dns.getHosts</RequestedCommand>
+    <CommandResponse Type="namecheap.domains.dns.getHosts">
+        <DomainDNSGetHostsResult Domain="example.com" EmailType="MXE" IsUsingOurDNS="true">
+            <host HostId="217076" Name="@" Type="A" Address="10.0.0.2" MXPref="10" TTL="1200" AssociatedAppTitle="" FriendlyName="" IsActive="true" IsDDNSEnabled="false" />
+            <host HostId="217069" Name="www" Type="A" Address="10.0.0.3" MXPref="10" TTL="60" AssociatedAppTitle="" FriendlyName="" IsActive="true" IsDDNSEnabled="false" />
+        </DomainDNSGetHostsResult>
+    </CommandResponse>
+    <Server>PHX01SBAPI01</Server>
+    <GMTTimeDifference>--5:00</GMTTimeDifference>
+    <ExecutionTime>3.338</ExecutionTime>
+</ApiResponse>

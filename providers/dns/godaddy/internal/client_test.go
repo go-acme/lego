@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -14,7 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T) (*http.ServeMux, *Client) {
+func setupTest(t *testing.T) (*Client, *http.ServeMux) {
 	t.Helper()
 
 	mux := http.NewServeMux()
@@ -25,15 +26,15 @@ func setupTest(t *testing.T) (*http.ServeMux, *Client) {
 	client.HTTPClient = server.Client()
 	client.baseURL, _ = url.Parse(server.URL)
 
-	return mux, client
+	return client, mux
 }
 
 func TestClient_GetRecords(t *testing.T) {
-	mux, client := setupTest(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/v1/domains/example.com/records/TXT/", testHandler(http.MethodGet, http.StatusOK, "getrecords.json"))
 
-	records, err := client.GetRecords("example.com", "TXT", "")
+	records, err := client.GetRecords(context.Background(), "example.com", "TXT", "")
 	require.NoError(t, err)
 
 	expected := []DNSRecord{
@@ -49,17 +50,17 @@ func TestClient_GetRecords(t *testing.T) {
 }
 
 func TestClient_GetRecords_errors(t *testing.T) {
-	mux, client := setupTest(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/v1/domains/example.com/records/TXT/", testHandler(http.MethodGet, http.StatusUnprocessableEntity, "errors.json"))
 
-	records, err := client.GetRecords("example.com", "TXT", "")
+	records, err := client.GetRecords(context.Background(), "example.com", "TXT", "")
 	require.Error(t, err)
 	assert.Nil(t, records)
 }
 
 func TestClient_UpdateTxtRecords(t *testing.T) {
-	mux, client := setupTest(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/v1/domains/example.com/records/TXT/lego", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodPut {
@@ -67,7 +68,7 @@ func TestClient_UpdateTxtRecords(t *testing.T) {
 			return
 		}
 
-		auth := req.Header.Get("Authorization")
+		auth := req.Header.Get(authorizationHeader)
 		if auth != "sso-key key:secret" {
 			http.Error(rw, fmt.Sprintf("invalid API key or secret: %s", auth), http.StatusUnauthorized)
 			return
@@ -83,12 +84,12 @@ func TestClient_UpdateTxtRecords(t *testing.T) {
 		{Name: "_acme-challenge.lego", Type: "TXT", Data: "acme", TTL: 600},
 	}
 
-	err := client.UpdateTxtRecords(records, "example.com", "lego")
+	err := client.UpdateTxtRecords(context.Background(), records, "example.com", "lego")
 	require.NoError(t, err)
 }
 
 func TestClient_UpdateTxtRecords_errors(t *testing.T) {
-	mux, client := setupTest(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/v1/domains/example.com/records/TXT/lego",
 		testHandler(http.MethodPut, http.StatusUnprocessableEntity, "errors.json"))
@@ -102,7 +103,7 @@ func TestClient_UpdateTxtRecords_errors(t *testing.T) {
 		{Name: "_acme-challenge.lego", Type: "TXT", Data: "acme", TTL: 600},
 	}
 
-	err := client.UpdateTxtRecords(records, "example.com", "lego")
+	err := client.UpdateTxtRecords(context.Background(), records, "example.com", "lego")
 	require.Error(t, err)
 }
 
@@ -113,7 +114,7 @@ func testHandler(method string, statusCode int, filename string) http.HandlerFun
 			return
 		}
 
-		auth := req.Header.Get("Authorization")
+		auth := req.Header.Get(authorizationHeader)
 		if auth != "sso-key key:secret" {
 			http.Error(rw, fmt.Sprintf("invalid API key or secret: %s", auth), http.StatusUnauthorized)
 			return

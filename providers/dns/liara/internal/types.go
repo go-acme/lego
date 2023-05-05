@@ -14,14 +14,9 @@ type Record struct {
 	Contents []Content `json:"contents"`
 }
 
-type RecordResponse struct {
+type Response[D any] struct {
 	Status string `json:"status"`
-	Data   Record `json:"data"`
-}
-
-type RecordsResponse struct {
-	Status string   `json:"status"`
-	Data   []Record `json:"data"`
+	Data   D      `json:"data"`
 }
 
 type APIError struct {

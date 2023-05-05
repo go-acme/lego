@@ -2,6 +2,7 @@
 package variomedia
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -15,8 +16,6 @@ import (
 	"github.com/go-acme/lego/v4/platform/wait"
 	"github.com/go-acme/lego/v4/providers/dns/variomedia/internal"
 )
-
-const defaultTTL = 300
 
 // Environment variables names.
 const (
@@ -45,7 +44,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, defaultTTL),
+		TTL:                env.GetOrDefaultInt(EnvTTL, 300),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		SequenceInterval:   env.GetOrDefaultSecond(EnvSequenceInterval, dns01.DefaultPropagationTimeout),
@@ -83,10 +82,6 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("variomedia: missing credentials")
 	}
 
-	if config.HTTPClient == nil {
-		config.HTTPClient = http.DefaultClient
-	}
-
 	client := internal.NewClient(config.APIToken)
 
 	if config.HTTPClient != nil {
@@ -118,13 +113,15 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("variomedia: %w", err)
+		return fmt.Errorf("variomedia: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
 		return fmt.Errorf("variomedia: %w", err)
 	}
+
+	ctx := context.Background()
 
 	record := internal.DNSRecord{
 		RecordType: "TXT",
@@ -134,12 +131,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		TTL:        d.config.TTL,
 	}
 
-	cdrr, err := d.client.CreateDNSRecord(record)
+	cdrr, err := d.client.CreateDNSRecord(ctx, record)
 	if err != nil {
 		return fmt.Errorf("variomedia: %w", err)
 	}
 
-	err = d.waitJob(domain, cdrr.Data.ID)
+	err = d.waitJob(ctx, domain, cdrr.Data.ID)
 	if err != nil {
 		return fmt.Errorf("variomedia: %w", err)
 	}
@@ -155,6 +152,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
+	ctx := context.Background()
+
 	// get the record's unique ID from when we created it
 	d.recordIDsMu.Lock()
 	recordID, ok := d.recordIDs[token]
@@ -163,12 +162,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("variomedia: unknown record ID for '%s'", info.EffectiveFQDN)
 	}
 
-	ddrr, err := d.client.DeleteDNSRecord(recordID)
+	ddrr, err := d.client.DeleteDNSRecord(ctx, recordID)
 	if err != nil {
 		return fmt.Errorf("variomedia: %w", err)
 	}
 
-	err = d.waitJob(domain, ddrr.Data.ID)
+	err = d.waitJob(ctx, domain, ddrr.Data.ID)
 	if err != nil {
 		return fmt.Errorf("variomedia: %w", err)
 	}
@@ -176,9 +175,9 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-func (d *DNSProvider) waitJob(domain string, id string) error {
+func (d *DNSProvider) waitJob(ctx context.Context, domain string, id string) error {
 	return wait.For("variomedia: apply change on "+domain, d.config.PropagationTimeout, d.config.PollingInterval, func() (bool, error) {
-		result, err := d.client.GetJob(id)
+		result, err := d.client.GetJob(ctx, id)
 		if err != nil {
 			return false, err
 		}

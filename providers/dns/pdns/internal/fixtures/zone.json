@@ -1,0 +1,69 @@
+{
+  "id": "example.org.",
+  "url": "api/v1/servers/localhost/zones/example.org.",
+  "name": "example.org.",
+  "kind": "Master",
+  "dnssec": false,
+  "account": "",
+  "masters": [],
+  "serial": 2015120401,
+  "notified_serial": 0,
+  "last_check": 0,
+  "soa_edit_api": "",
+  "soa_edit": "",
+  "rrsets": [
+    {
+      "comments": [],
+      "name": "example.org.",
+      "records": [
+        {
+          "content": "ns2.example.org.",
+          "disabled": false
+        },
+        {
+          "content": "ns1.example.org.",
+          "disabled": false
+        }
+      ],
+      "ttl": 86400,
+      "type": "NS"
+    },
+    {
+      "comments": [],
+      "name": "example.org.",
+      "type": "SOA",
+      "ttl": 86400,
+      "records": [
+        {
+          "disabled": false,
+          "content": "ns1.example.org. hostmaster.example.org. 2015120401 10800 15 604800 10800"
+        }
+      ]
+    },
+    {
+      "comments": [],
+      "name": "ns1.example.org.",
+      "type": "A",
+      "ttl": 86400,
+      "records": [
+        {
+          "content": "192.168.0.1",
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "comments": [],
+      "name": "www.example.org.",
+      "type": "A",
+      "ttl": 86400,
+      "records": [
+        {
+          "disabled": false,
+          "content": "192.168.0.2"
+        }
+      ]
+    }
+  ]
+}
+

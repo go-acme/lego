@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -13,15 +14,15 @@ type DomainService service
 
 // GetAll domains.
 // https://api-docs.constellix.com/?version=latest#484c3f21-d724-4ee4-a6fa-ab22c8eb9e9b
-func (s *DomainService) GetAll(params *PaginationParameters) ([]Domain, error) {
+func (s *DomainService) GetAll(ctx context.Context, params *PaginationParameters) ([]Domain, error) {
 	endpoint, err := s.client.createEndpoint(defaultVersion, "domains")
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request endpoint: %w", err)
 	}
 
-	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
+		return nil, fmt.Errorf("unable to create request: %w", err)
 	}
 
 	if params != nil {
@@ -42,8 +43,8 @@ func (s *DomainService) GetAll(params *PaginationParameters) ([]Domain, error) {
 }
 
 // GetByName Gets domain by name.
-func (s *DomainService) GetByName(domainName string) (Domain, error) {
-	domains, err := s.Search(Exact, domainName)
+func (s *DomainService) GetByName(ctx context.Context, domainName string) (Domain, error) {
+	domains, err := s.Search(ctx, Exact, domainName)
 	if err != nil {
 		return Domain{}, err
 	}
@@ -61,15 +62,15 @@ func (s *DomainService) GetByName(domainName string) (Domain, error) {
 
 // Search searches for a domain by name.
 // https://api-docs.constellix.com/?version=latest#3d7b2679-2209-49f3-b011-b7d24e512008
-func (s *DomainService) Search(filter searchFilter, value string) ([]Domain, error) {
+func (s *DomainService) Search(ctx context.Context, filter searchFilter, value string) ([]Domain, error) {
 	endpoint, err := s.client.createEndpoint(defaultVersion, "domains", "search")
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request endpoint: %w", err)
 	}
 
-	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
+		return nil, fmt.Errorf("unable to create request: %w", err)
 	}
 
 	query := req.URL.Query()

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/Azure/go-autorest/autorest"
@@ -14,6 +15,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
 const defaultMetadataEndpoint = "http://169.254.169.254"
@@ -122,7 +124,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.HTTPClient == nil {
-		config.HTTPClient = http.DefaultClient
+		config.HTTPClient = &http.Client{Timeout: 5 * time.Second}
 	}
 
 	authorizer, err := getAuthorizer(config)
@@ -208,8 +210,12 @@ func getMetadata(config *Config, field string) (string, error) {
 		metadataEndpoint = defaultMetadataEndpoint
 	}
 
-	resource := fmt.Sprintf("%s/metadata/instance/compute/%s", metadataEndpoint, field)
-	req, err := http.NewRequest(http.MethodGet, resource, nil)
+	endpoint, err := url.JoinPath(metadataEndpoint, "metadata", "instance", "compute", field)
+	if err != nil {
+		return "", err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, endpoint, nil)
 	if err != nil {
 		return "", err
 	}
@@ -223,14 +229,15 @@ func getMetadata(config *Config, field string) (string, error) {
 
 	resp, err := config.HTTPClient.Do(req)
 	if err != nil {
-		return "", err
+		return "", errutils.NewHTTPDoError(req, err)
 	}
-	defer resp.Body.Close()
 
-	respBody, err := io.ReadAll(resp.Body)
+	defer func() { _ = resp.Body.Close() }()
+
+	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", err
+		return "", errutils.NewReadResponseError(req, resp.StatusCode, err)
 	}
 
-	return string(respBody), nil
+	return string(raw), nil
 }

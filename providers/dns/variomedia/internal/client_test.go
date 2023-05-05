@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -13,7 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func setup(t *testing.T) (*Client, *http.ServeMux) {
+func setupTest(t *testing.T) (*Client, *http.ServeMux) {
 	t.Helper()
 
 	mux := http.NewServeMux()
@@ -36,7 +37,7 @@ func mockHandler(method string, filename string) http.HandlerFunc {
 		filename = "./fixtures/" + filename
 		statusCode := http.StatusOK
 
-		if req.Header.Get("Authorization") != "token secret" {
+		if req.Header.Get(authorizationHeader) != "token secret" {
 			statusCode = http.StatusUnauthorized
 			filename = "./fixtures/error.json"
 		}
@@ -59,7 +60,7 @@ func mockHandler(method string, filename string) http.HandlerFunc {
 }
 
 func TestClient_CreateDNSRecord(t *testing.T) {
-	client, mux := setup(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/dns-records", mockHandler(http.MethodPost, "POST_dns-records.json"))
 
@@ -71,7 +72,7 @@ func TestClient_CreateDNSRecord(t *testing.T) {
 		TTL:        300,
 	}
 
-	resp, err := client.CreateDNSRecord(record)
+	resp, err := client.CreateDNSRecord(context.Background(), record)
 	require.NoError(t, err)
 
 	expected := &CreateDNSRecordResponse{
@@ -107,11 +108,11 @@ func TestClient_CreateDNSRecord(t *testing.T) {
 }
 
 func TestClient_DeleteDNSRecord(t *testing.T) {
-	client, mux := setup(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/dns-records/test", mockHandler(http.MethodDelete, "DELETE_dns-records_pending.json"))
 
-	resp, err := client.DeleteDNSRecord("test")
+	resp, err := client.DeleteDNSRecord(context.Background(), "test")
 	require.NoError(t, err)
 
 	expected := &DeleteRecordResponse{
@@ -142,11 +143,11 @@ func TestClient_DeleteDNSRecord(t *testing.T) {
 }
 
 func TestClient_GetJob(t *testing.T) {
-	client, mux := setup(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/queue-jobs/test", mockHandler(http.MethodGet, "GET_queue-jobs.json"))
 
-	resp, err := client.GetJob("test")
+	resp, err := client.GetJob(context.Background(), "test")
 	require.NoError(t, err)
 
 	expected := &GetJobResponse{

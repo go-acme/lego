@@ -1,0 +1,10 @@
+{
+  "fqdn": "example.com.",
+  "rdata": {
+    "txtdata": "txt"
+  },
+  "record_type": "TXT",
+  "ttl": 120,
+  "zone": "example.com"
+}
+

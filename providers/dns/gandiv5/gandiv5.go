@@ -2,23 +2,22 @@
 package gandiv5
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"sync"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/gandiv5/internal"
 )
 
 // Gandi API reference:       http://doc.livedns.gandi.net/
 
-const (
-	// defaultBaseURL endpoint is the Gandi API endpoint used by Present and CleanUp.
-	defaultBaseURL = "https://dns.api.gandi.net/api/v5"
-	minTTL         = 300
-)
+const minTTL = 300
 
 // Environment variables names.
 const (
@@ -62,10 +61,15 @@ func NewDefaultConfig() *Config {
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	config          *Config
+	config *Config
+	client *internal.Client
+
 	inProgressFQDNs map[string]inProgressInfo
 	inProgressMu    sync.Mutex
-	// findZoneByFqdn determines the DNS zone of an fqdn. It is overridden during tests.
+
+	// findZoneByFqdn determines the DNS zone of a FQDN.
+	// It is overridden during tests.
+	// only for testing purpose.
 	findZoneByFqdn func(fqdn string) (string, error)
 }
 
@@ -93,16 +97,27 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("gandiv5: no API Key given")
 	}
 
-	if config.BaseURL == "" {
-		config.BaseURL = defaultBaseURL
-	}
-
 	if config.TTL < minTTL {
 		return nil, fmt.Errorf("gandiv5: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL)
 	}
 
+	client := internal.NewClient(config.APIKey)
+
+	if config.BaseURL != "" {
+		baseURL, err := url.Parse(config.BaseURL)
+		if err != nil {
+			return nil, fmt.Errorf("gandiv5: %w", err)
+		}
+		client.BaseURL = baseURL
+	}
+
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
+	}
+
 	return &DNSProvider{
 		config:          config,
+		client:          client,
 		inProgressFQDNs: make(map[string]inProgressInfo),
 		findZoneByFqdn:  dns01.FindZoneByFqdn,
 	}, nil
@@ -115,7 +130,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	// find authZone
 	authZone, err := d.findZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("gandiv5: findZoneByFqdn failure: %w", err)
+		return fmt.Errorf("gandiv5: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	// determine name of TXT record
@@ -130,7 +145,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	defer d.inProgressMu.Unlock()
 
 	// add TXT record into authZone
-	err = d.addTXTRecord(dns01.UnFqdn(authZone), subDomain, info.Value, d.config.TTL)
+	err = d.client.AddTXTRecord(context.Background(), dns01.UnFqdn(authZone), subDomain, info.Value, d.config.TTL)
 	if err != nil {
 		return err
 	}
@@ -160,7 +175,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	delete(d.inProgressFQDNs, info.EffectiveFQDN)
 
 	// delete TXT record from authZone
-	err := d.deleteTXTRecord(dns01.UnFqdn(authZone), fieldName)
+	err := d.client.DeleteTXTRecord(context.Background(), dns01.UnFqdn(authZone), fieldName)
 	if err != nil {
 		return fmt.Errorf("gandiv5: %w", err)
 	}

@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -19,7 +20,7 @@ const testAPIKey = "secret"
 func TestClient_GetZones(t *testing.T) {
 	client := setupTest(t, "/user/v1/zones", testHandler(http.MethodGet, http.StatusOK, "zones.json"))
 
-	zones, err := client.GetZones("", 100, 0)
+	zones, err := client.GetZones(context.Background(), "", 100, 0)
 	require.NoError(t, err)
 
 	expected := []Zone{
@@ -40,14 +41,14 @@ func TestClient_GetZones(t *testing.T) {
 func TestClient_GetZones_error(t *testing.T) {
 	client := setupTest(t, "/user/v1/zones", testHandler(http.MethodGet, http.StatusUnauthorized, "error.json"))
 
-	_, err := client.GetZones("", 100, 0)
+	_, err := client.GetZones(context.Background(), "", 100, 0)
 	require.Error(t, err)
 }
 
 func TestClient_GetZone(t *testing.T) {
 	client := setupTest(t, "/user/v1/zones/123", testHandler(http.MethodGet, http.StatusOK, "zone.json"))
 
-	zone, err := client.GetZone("123")
+	zone, err := client.GetZone(context.Background(), "123")
 	require.NoError(t, err)
 
 	expected := &Zone{
@@ -66,14 +67,14 @@ func TestClient_GetZone(t *testing.T) {
 func TestClient_GetZone_error(t *testing.T) {
 	client := setupTest(t, "/user/v1/zones/123", testHandler(http.MethodGet, http.StatusUnauthorized, "error.json"))
 
-	_, err := client.GetZone("123")
+	_, err := client.GetZone(context.Background(), "123")
 	require.Error(t, err)
 }
 
 func TestClient_GetRecords(t *testing.T) {
 	client := setupTest(t, "/user/v1/zones/123/records", testHandler(http.MethodGet, http.StatusOK, "records.json"))
 
-	records, err := client.GetRecords("123", "TXT")
+	records, err := client.GetRecords(context.Background(), "123", "TXT")
 	require.NoError(t, err)
 
 	expected := []Record{
@@ -153,7 +154,7 @@ func TestClient_GetRecords(t *testing.T) {
 func TestClient_GetRecords_error(t *testing.T) {
 	client := setupTest(t, "/user/v1/zones/123/records", testHandler(http.MethodGet, http.StatusUnauthorized, "error.json"))
 
-	_, err := client.GetRecords("123", "TXT")
+	_, err := client.GetRecords(context.Background(), "123", "TXT")
 	require.Error(t, err)
 }
 
@@ -168,7 +169,7 @@ func TestClient_AddRecord(t *testing.T) {
 		Comment: "example",
 	}
 
-	newRecord, err := client.AddRecord("123", record)
+	newRecord, err := client.AddRecord(context.Background(), "123", record)
 	require.NoError(t, err)
 
 	expected := &Record{
@@ -194,21 +195,21 @@ func TestClient_AddRecord_error(t *testing.T) {
 		Comment: "example",
 	}
 
-	_, err := client.AddRecord("123", record)
+	_, err := client.AddRecord(context.Background(), "123", record)
 	require.Error(t, err)
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
 	client := setupTest(t, "/user/v1/zones/123/records/6", testHandler(http.MethodDelete, http.StatusUnauthorized, "error.json"))
 
-	err := client.DeleteRecord("123", "6")
+	err := client.DeleteRecord(context.Background(), "123", "6")
 	require.Error(t, err)
 }
 
 func TestClient_DeleteRecord_error(t *testing.T) {
 	client := setupTest(t, "/user/v1/zones/123/records/6", testHandler(http.MethodDelete, http.StatusNoContent, ""))
 
-	err := client.DeleteRecord("123", "6")
+	err := client.DeleteRecord(context.Background(), "123", "6")
 	require.NoError(t, err)
 }
 
@@ -221,7 +222,7 @@ func setupTest(t *testing.T, path string, handler http.Handler) *Client {
 
 	mux.Handle(path, handler)
 
-	client := NewClient(testAPIKey)
+	client := NewClient(OAuthStaticAccessToken(server.Client(), testAPIKey))
 	client.baseURL, _ = url.Parse(server.URL)
 
 	return client

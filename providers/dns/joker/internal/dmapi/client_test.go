@@ -23,223 +23,17 @@ const (
 	serverErrorUsername = "error"
 )
 
-func setup(t *testing.T) (*http.ServeMux, string) {
+func setupTest(t *testing.T) (*http.ServeMux, string) {
 	t.Helper()
 
 	mux := http.NewServeMux()
-
 	server := httptest.NewServer(mux)
 	t.Cleanup(server.Close)
 
 	return mux, server.URL
 }
 
-func TestDNSProvider_login_api_key(t *testing.T) {
-	testCases := []struct {
-		desc               string
-		apiKey             string
-		expectedError      bool
-		expectedStatusCode int
-		expectedAuthSid    string
-	}{
-		{
-			desc:               "correct key",
-			apiKey:             correctAPIKey,
-			expectedStatusCode: 0,
-			expectedAuthSid:    correctAPIKey,
-		},
-		{
-			desc:               "incorrect key",
-			apiKey:             incorrectAPIKey,
-			expectedStatusCode: 2200,
-			expectedError:      true,
-		},
-		{
-			desc:               "server error",
-			apiKey:             serverErrorAPIKey,
-			expectedStatusCode: -500,
-			expectedError:      true,
-		},
-		{
-			desc:               "non-ok status code",
-			apiKey:             "333",
-			expectedStatusCode: 2202,
-			expectedError:      true,
-		},
-	}
-
-	mux, serverURL := setup(t)
-
-	mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-		require.Equal(t, http.MethodPost, r.Method)
-
-		switch r.FormValue("api-key") {
-		case correctAPIKey:
-			_, _ = io.WriteString(w, "Status-Code: 0\nStatus-Text: OK\nAuth-Sid: 123\n\ncom\nnet")
-		case incorrectAPIKey:
-			_, _ = io.WriteString(w, "Status-Code: 2200\nStatus-Text: Authentication error")
-		case serverErrorAPIKey:
-			http.NotFound(w, r)
-		default:
-			_, _ = io.WriteString(w, "Status-Code: 2202\nStatus-Text: OK\n\ncom\nnet")
-		}
-	})
-
-	for _, test := range testCases {
-		t.Run(test.desc, func(t *testing.T) {
-			client := NewClient(AuthInfo{APIKey: test.apiKey})
-			client.BaseURL = serverURL
-
-			response, err := client.Login()
-			if test.expectedError {
-				require.Error(t, err)
-			} else {
-				require.NoError(t, err)
-				require.NotNil(t, response)
-				assert.Equal(t, test.expectedStatusCode, response.StatusCode)
-				assert.Equal(t, test.expectedAuthSid, response.AuthSid)
-			}
-		})
-	}
-}
-
-func TestDNSProvider_login_username(t *testing.T) {
-	testCases := []struct {
-		desc               string
-		username           string
-		password           string
-		expectedError      bool
-		expectedStatusCode int
-		expectedAuthSid    string
-	}{
-		{
-			desc:               "correct username and password",
-			username:           correctUsername,
-			password:           "go-acme",
-			expectedError:      false,
-			expectedStatusCode: 0,
-			expectedAuthSid:    correctAPIKey,
-		},
-		{
-			desc:               "incorrect username",
-			username:           incorrectUsername,
-			password:           "go-acme",
-			expectedStatusCode: 2200,
-			expectedError:      true,
-		},
-		{
-			desc:               "server error",
-			username:           serverErrorUsername,
-			password:           "go-acme",
-			expectedStatusCode: -500,
-			expectedError:      true,
-		},
-		{
-			desc:               "non-ok status code",
-			username:           "random",
-			password:           "go-acme",
-			expectedStatusCode: 2202,
-			expectedError:      true,
-		},
-	}
-
-	mux, serverURL := setup(t)
-
-	mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-		require.Equal(t, http.MethodPost, r.Method)
-
-		switch r.FormValue("username") {
-		case correctUsername:
-			_, _ = io.WriteString(w, "Status-Code: 0\nStatus-Text: OK\nAuth-Sid: 123\n\ncom\nnet")
-		case incorrectUsername:
-			_, _ = io.WriteString(w, "Status-Code: 2200\nStatus-Text: Authentication error")
-		case serverErrorUsername:
-			http.NotFound(w, r)
-		default:
-			_, _ = io.WriteString(w, "Status-Code: 2202\nStatus-Text: OK\n\ncom\nnet")
-		}
-	})
-
-	for _, test := range testCases {
-		t.Run(test.desc, func(t *testing.T) {
-			client := NewClient(AuthInfo{Username: test.username, Password: test.password})
-			client.BaseURL = serverURL
-
-			response, err := client.Login()
-			if test.expectedError {
-				require.Error(t, err)
-			} else {
-				require.NoError(t, err)
-				require.NotNil(t, response)
-				assert.Equal(t, test.expectedStatusCode, response.StatusCode)
-				assert.Equal(t, test.expectedAuthSid, response.AuthSid)
-			}
-		})
-	}
-}
-
-func TestDNSProvider_logout(t *testing.T) {
-	testCases := []struct {
-		desc               string
-		authSid            string
-		expectedError      bool
-		expectedStatusCode int
-	}{
-		{
-			desc:               "correct auth-sid",
-			authSid:            correctAPIKey,
-			expectedStatusCode: 0,
-		},
-		{
-			desc:               "incorrect auth-sid",
-			authSid:            incorrectAPIKey,
-			expectedStatusCode: 2200,
-		},
-		{
-			desc:          "already logged out",
-			authSid:       "",
-			expectedError: true,
-		},
-		{
-			desc:          "server error",
-			authSid:       serverErrorAPIKey,
-			expectedError: true,
-		},
-	}
-
-	mux, serverURL := setup(t)
-
-	mux.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
-		require.Equal(t, http.MethodPost, r.Method)
-
-		switch r.FormValue("auth-sid") {
-		case correctAPIKey:
-			_, _ = io.WriteString(w, "Status-Code: 0\nStatus-Text: OK\n")
-		case incorrectAPIKey:
-			_, _ = io.WriteString(w, "Status-Code: 2200\nStatus-Text: Authentication error")
-		default:
-			http.NotFound(w, r)
-		}
-	})
-
-	for _, test := range testCases {
-		t.Run(test.desc, func(t *testing.T) {
-			client := NewClient(AuthInfo{APIKey: "12345", authSid: test.authSid})
-			client.BaseURL = serverURL
-
-			response, err := client.Logout()
-			if test.expectedError {
-				require.Error(t, err)
-			} else {
-				require.NoError(t, err)
-				require.NotNil(t, response)
-				assert.Equal(t, test.expectedStatusCode, response.StatusCode)
-			}
-		})
-	}
-}
-
-func TestDNSProvider_getZone(t *testing.T) {
+func TestClient_GetZone(t *testing.T) {
 	testZone := "@ A 0 192.0.2.2 3600"
 
 	testCases := []struct {
@@ -276,7 +70,7 @@ func TestDNSProvider_getZone(t *testing.T) {
 		},
 	}
 
-	mux, serverURL := setup(t)
+	mux, serverURL := setupTest(t)
 
 	mux.HandleFunc("/dns-zone-get", func(w http.ResponseWriter, r *http.Request) {
 		require.Equal(t, http.MethodPost, r.Method)
@@ -296,10 +90,10 @@ func TestDNSProvider_getZone(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			client := NewClient(AuthInfo{APIKey: "12345", authSid: test.authSid})
+			client := NewClient(AuthInfo{APIKey: "12345"})
 			client.BaseURL = serverURL
 
-			response, err := client.GetZone(test.domain)
+			response, err := client.GetZone(mockContext(test.authSid), test.domain)
 			if test.expectedError {
 				require.Error(t, err)
 			} else {
@@ -387,7 +181,7 @@ func Test_parseResponse(t *testing.T) {
 	}
 }
 
-func Test_removeTxtEntryFromZone(t *testing.T) {
+func Test_RemoveTxtEntryFromZone(t *testing.T) {
 	testCases := []struct {
 		desc     string
 		input    string
@@ -438,7 +232,7 @@ func Test_removeTxtEntryFromZone(t *testing.T) {
 	}
 }
 
-func Test_addTxtEntryToZone(t *testing.T) {
+func Test_AddTxtEntryToZone(t *testing.T) {
 	testCases := []struct {
 		desc     string
 		input    string

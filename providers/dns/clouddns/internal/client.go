@@ -2,117 +2,127 @@ package internal
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
+	"time"
+
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
-const (
-	apiBaseURL = "https://admin.vshosting.cloud/clouddns"
-	loginURL   = "https://admin.vshosting.cloud/api/public/auth/login"
-)
+const apiBaseURL = "https://admin.vshosting.cloud/clouddns"
+
+const authorizationHeader = "Authorization"
 
 // Client handles all communication with CloudDNS API.
 type Client struct {
-	AccessToken string
-	ClientID    string
-	Email       string
-	Password    string
-	TTL         int
-	HTTPClient  *http.Client
+	clientID string
+	email    string
+	password string
+	ttl      int
 
-	apiBaseURL string
-	loginURL   string
+	apiBaseURL *url.URL
+
+	loginURL *url.URL
+
+	HTTPClient *http.Client
 }
 
 // NewClient returns a Client instance configured to handle CloudDNS API communication.
 func NewClient(clientID, email, password string, ttl int) *Client {
+	baseURL, _ := url.Parse(apiBaseURL)
+	loginBaseURL, _ := url.Parse(loginURL)
+
 	return &Client{
-		ClientID:   clientID,
-		Email:      email,
-		Password:   password,
-		TTL:        ttl,
-		HTTPClient: &http.Client{},
-		apiBaseURL: apiBaseURL,
-		loginURL:   loginURL,
+		clientID:   clientID,
+		email:      email,
+		password:   password,
+		ttl:        ttl,
+		apiBaseURL: baseURL,
+		loginURL:   loginBaseURL,
+		HTTPClient: &http.Client{Timeout: 5 * time.Second},
 	}
 }
 
 // AddRecord is a high level method to add a new record into CloudDNS zone.
-func (c *Client) AddRecord(zone, recordName, recordValue string) error {
-	domain, err := c.getDomain(zone)
+func (c *Client) AddRecord(ctx context.Context, zone, recordName, recordValue string) error {
+	domain, err := c.getDomain(ctx, zone)
 	if err != nil {
 		return err
 	}
 
 	record := Record{DomainID: domain.ID, Name: recordName, Value: recordValue, Type: "TXT"}
 
-	err = c.addTxtRecord(record)
+	err = c.addTxtRecord(ctx, record)
 	if err != nil {
 		return err
 	}
 
-	return c.publishRecords(domain.ID)
+	return c.publishRecords(ctx, domain.ID)
 }
 
 // DeleteRecord is a high level method to remove a record from zone.
-func (c *Client) DeleteRecord(zone, recordName string) error {
-	domain, err := c.getDomain(zone)
+func (c *Client) DeleteRecord(ctx context.Context, zone, recordName string) error {
+	domain, err := c.getDomain(ctx, zone)
 	if err != nil {
 		return err
 	}
 
-	record, err := c.getRecord(domain.ID, recordName)
+	record, err := c.getRecord(ctx, domain.ID, recordName)
 	if err != nil {
 		return err
 	}
 
-	err = c.deleteRecord(record)
+	err = c.deleteRecord(ctx, record)
 	if err != nil {
 		return err
 	}
 
-	return c.publishRecords(domain.ID)
+	return c.publishRecords(ctx, domain.ID)
 }
 
-func (c *Client) addTxtRecord(record Record) error {
-	body, err := json.Marshal(record)
+func (c *Client) addTxtRecord(ctx context.Context, record Record) error {
+	endpoint := c.apiBaseURL.JoinPath("record-txt")
+
+	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
 	if err != nil {
 		return err
 	}
 
-	_, err = c.doAPIRequest(http.MethodPost, "record-txt", bytes.NewReader(body))
-	return err
+	return c.do(req, nil)
 }
 
-func (c *Client) deleteRecord(record Record) error {
-	endpoint := fmt.Sprintf("record/%s", record.ID)
-	_, err := c.doAPIRequest(http.MethodDelete, endpoint, nil)
-	return err
+func (c *Client) deleteRecord(ctx context.Context, record Record) error {
+	endpoint := c.apiBaseURL.JoinPath("record", record.ID)
+
+	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
+	if err != nil {
+		return err
+	}
+
+	return c.do(req, nil)
 }
 
-func (c *Client) getDomain(zone string) (Domain, error) {
+func (c *Client) getDomain(ctx context.Context, zone string) (Domain, error) {
 	searchQuery := SearchQuery{
 		Search: []Search{
-			{Name: "clientId", Operator: "eq", Value: c.ClientID},
+			{Name: "clientId", Operator: "eq", Value: c.clientID},
 			{Name: "domainName", Operator: "eq", Value: zone},
 		},
 	}
 
-	body, err := json.Marshal(searchQuery)
-	if err != nil {
-		return Domain{}, err
-	}
+	endpoint := c.apiBaseURL.JoinPath("domain", "search")
 
-	resp, err := c.doAPIRequest(http.MethodPost, "domain/search", bytes.NewReader(body))
+	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, searchQuery)
 	if err != nil {
 		return Domain{}, err
 	}
 
 	var result SearchResponse
-	err = json.Unmarshal(resp, &result)
+	err = c.do(req, &result)
 	if err != nil {
 		return Domain{}, err
 	}
@@ -124,15 +134,16 @@ func (c *Client) getDomain(zone string) (Domain, error) {
 	return result.Items[0], nil
 }
 
-func (c *Client) getRecord(domainID, recordName string) (Record, error) {
-	endpoint := fmt.Sprintf("domain/%s", domainID)
-	resp, err := c.doAPIRequest(http.MethodGet, endpoint, nil)
+func (c *Client) getRecord(ctx context.Context, domainID, recordName string) (Record, error) {
+	endpoint := c.apiBaseURL.JoinPath("domain", domainID)
+
+	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return Record{}, err
 	}
 
 	var result DomainInfo
-	err = json.Unmarshal(resp, &result)
+	err = c.do(req, &result)
 	if err != nil {
 		return Record{}, err
 	}
@@ -146,116 +157,85 @@ func (c *Client) getRecord(domainID, recordName string) (Record, error) {
 	return Record{}, fmt.Errorf("record not found: domainID %s, name %s", domainID, recordName)
 }
 
-func (c *Client) publishRecords(domainID string) error {
-	body, err := json.Marshal(DomainInfo{SoaTTL: c.TTL})
+func (c *Client) publishRecords(ctx context.Context, domainID string) error {
+	endpoint := c.apiBaseURL.JoinPath("domain", domainID, "publish")
+
+	payload := DomainInfo{SoaTTL: c.ttl}
+
+	req, err := newJSONRequest(ctx, http.MethodPut, endpoint, payload)
 	if err != nil {
 		return err
 	}
 
-	endpoint := fmt.Sprintf("domain/%s/publish", domainID)
-	_, err = c.doAPIRequest(http.MethodPut, endpoint, bytes.NewReader(body))
-	return err
+	return c.do(req, nil)
 }
 
-func (c *Client) login() error {
-	authorization := Authorization{Email: c.Email, Password: c.Password}
-
-	body, err := json.Marshal(authorization)
-	if err != nil {
-		return err
+func (c *Client) do(req *http.Request, result any) error {
+	at := getAccessToken(req.Context())
+	if at != "" {
+		req.Header.Set(authorizationHeader, "Bearer "+at)
 	}
 
-	req, err := http.NewRequest(http.MethodPost, c.loginURL, bytes.NewReader(body))
+	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
-		return err
+		return errutils.NewHTTPDoError(req, err)
 	}
 
-	req.Header.Set("Content-Type", "application/json")
+	defer func() { _ = resp.Body.Close() }()
 
-	content, err := c.doRequest(req)
-	if err != nil {
-		return err
+	if resp.StatusCode/100 != 2 {
+		return parseError(req, resp)
 	}
 
-	var result AuthResponse
-	err = json.Unmarshal(content, &result)
-	if err != nil {
-		return err
+	if result == nil {
+		return nil
 	}
 
-	c.AccessToken = result.Auth.AccessToken
+	raw, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return errutils.NewReadResponseError(req, resp.StatusCode, err)
+	}
+
+	err = json.Unmarshal(raw, result)
+	if err != nil {
+		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
+	}
 
 	return nil
 }
 
-func (c *Client) doAPIRequest(method, endpoint string, body io.Reader) ([]byte, error) {
-	if c.AccessToken == "" {
-		err := c.login()
+func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
+	buf := new(bytes.Buffer)
+
+	if payload != nil {
+		err := json.NewEncoder(buf).Encode(payload)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to create request JSON body: %w", err)
 		}
 	}
 
-	url := fmt.Sprintf("%s/%s", c.apiBaseURL, endpoint)
-
-	req, err := c.newRequest(method, url, body)
+	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), buf)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to create request: %w", err)
 	}
 
-	content, err := c.doRequest(req)
-	if err != nil {
-		return nil, err
+	req.Header.Set("Accept", "application/json")
+
+	if payload != nil {
+		req.Header.Set("Content-Type", "application/json")
 	}
-
-	return content, nil
-}
-
-func (c *Client) newRequest(method, reqURL string, body io.Reader) (*http.Request, error) {
-	req, err := http.NewRequest(method, reqURL, body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.AccessToken))
 
 	return req, nil
 }
 
-func (c *Client) doRequest(req *http.Request) ([]byte, error) {
-	resp, err := c.HTTPClient.Do(req)
+func parseError(req *http.Request, resp *http.Response) error {
+	raw, _ := io.ReadAll(resp.Body)
+
+	var response APIError
+	err := json.Unmarshal(raw, &response)
 	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode >= http.StatusBadRequest {
-		return nil, readError(req, resp)
+		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	content, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	return content, nil
-}
-
-func readError(req *http.Request, resp *http.Response) error {
-	content, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return errors.New(toUnreadableBodyMessage(req, content))
-	}
-
-	var errInfo APIError
-	err = json.Unmarshal(content, &errInfo)
-	if err != nil {
-		return fmt.Errorf("APIError unmarshaling error: %w: %s", err, toUnreadableBodyMessage(req, content))
-	}
-
-	return fmt.Errorf("HTTP %d: code %v: %s", resp.StatusCode, errInfo.Error.Code, errInfo.Error.Message)
-}
-
-func toUnreadableBodyMessage(req *http.Request, rawBody []byte) string {
-	return fmt.Sprintf("the request %s sent a response with a body which is an invalid format: %q", req.URL, string(rawBody))
+	return fmt.Errorf("[status code %d] %w", resp.StatusCode, response.Error)
 }

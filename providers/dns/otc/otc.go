@@ -2,6 +2,7 @@
 package otc
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/otc/internal"
 )
 
 const defaultIdentityEndpoint = "https://iam.eu-de.otc.t-systems.com:443/v3/auth/tokens"
@@ -60,7 +62,6 @@ func NewDefaultConfig() *Config {
 				DialContext: (&net.Dialer{
 					Timeout:   30 * time.Second,
 					KeepAlive: 30 * time.Second,
-					DualStack: true,
 				}).DialContext,
 				MaxIdleConns:          100,
 				IdleConnTimeout:       90 * time.Second,
@@ -76,9 +77,8 @@ func NewDefaultConfig() *Config {
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	config  *Config
-	baseURL string
-	token   string
+	config *Config
+	client *internal.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for OTC DNS.
@@ -113,11 +113,17 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("otc: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL)
 	}
 
-	if config.IdentityEndpoint == "" {
-		config.IdentityEndpoint = defaultIdentityEndpoint
+	client := internal.NewClient(config.UserName, config.Password, config.DomainName, config.ProjectName)
+
+	if config.IdentityEndpoint != "" {
+		client.IdentityEndpoint = config.IdentityEndpoint
 	}
 
-	return &DNSProvider{config: config}, nil
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
+	}
+
+	return &DNSProvider{config: config, client: client}, nil
 }
 
 // Present creates a TXT record using the specified parameters.
@@ -126,22 +132,22 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("otc: %w", err)
+		return fmt.Errorf("otc: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
-	err = d.login()
+	ctx := context.Background()
+
+	err = d.client.Login(ctx)
 	if err != nil {
 		return fmt.Errorf("otc: %w", err)
 	}
 
-	zoneID, err := d.getZoneID(authZone)
+	zoneID, err := d.client.GetZoneID(ctx, authZone)
 	if err != nil {
 		return fmt.Errorf("otc: unable to get zone: %w", err)
 	}
 
-	resource := fmt.Sprintf("zones/%s/recordsets", zoneID)
-
-	r1 := &recordset{
+	record := internal.RecordSets{
 		Name:        info.EffectiveFQDN,
 		Description: "Added TXT record for ACME dns-01 challenge using lego client",
 		Type:        "TXT",
@@ -149,10 +155,11 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Records:     []string{fmt.Sprintf("%q", info.Value)},
 	}
 
-	_, err = d.sendRequest(http.MethodPost, resource, r1)
+	err = d.client.CreateRecordSet(ctx, zoneID, record)
 	if err != nil {
 		return fmt.Errorf("otc: %w", err)
 	}
+
 	return nil
 }
 
@@ -162,28 +169,31 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("otc: %w", err)
+		return fmt.Errorf("otc: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
-	err = d.login()
+	ctx := context.Background()
+
+	err = d.client.Login(ctx)
 	if err != nil {
 		return fmt.Errorf("otc: %w", err)
 	}
 
-	zoneID, err := d.getZoneID(authZone)
+	zoneID, err := d.client.GetZoneID(ctx, authZone)
 	if err != nil {
 		return fmt.Errorf("otc: %w", err)
 	}
 
-	recordID, err := d.getRecordSetID(zoneID, info.EffectiveFQDN)
+	recordID, err := d.client.GetRecordSetID(ctx, zoneID, info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("otc: unable go get record %s for zone %s: %w", info.EffectiveFQDN, domain, err)
+		return fmt.Errorf("otc: unable to get record %s for zone %s: %w", info.EffectiveFQDN, domain, err)
 	}
 
-	err = d.deleteRecordSet(zoneID, recordID)
+	err = d.client.DeleteRecordSet(ctx, zoneID, recordID)
 	if err != nil {
 		return fmt.Errorf("otc: %w", err)
 	}
+
 	return nil
 }
 

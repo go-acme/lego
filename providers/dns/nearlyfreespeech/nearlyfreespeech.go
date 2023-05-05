@@ -2,6 +2,7 @@
 package nearlyfreespeech
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -112,7 +113,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("nearlyfreespeech: could not determine zone for domain %q: %w", info.EffectiveFQDN, err)
+		return fmt.Errorf("nearlyfreespeech: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	recordName, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
@@ -127,7 +128,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		TTL:  d.config.TTL,
 	}
 
-	err = d.client.AddRecord(authZone, record)
+	err = d.client.AddRecord(context.Background(), authZone, record)
 	if err != nil {
 		return fmt.Errorf("nearlyfreespeech: %w", err)
 	}
@@ -141,7 +142,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("nearlyfreespeech: could not determine zone for domain %q: %w", info.EffectiveFQDN, err)
+		return fmt.Errorf("nearlyfreespeech: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	recordName, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
@@ -155,7 +156,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		Data: info.Value,
 	}
 
-	err = d.client.RemoveRecord(domain, record)
+	err = d.client.RemoveRecord(context.Background(), domain, record)
 	if err != nil {
 		return fmt.Errorf("nearlyfreespeech: %w", err)
 	}

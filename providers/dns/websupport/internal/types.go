@@ -30,8 +30,8 @@ type Zone struct {
 }
 
 type Response struct {
-	Status string          `json:"status"`
 	Item   *Record         `json:"item"`
+	Status string          `json:"status"`
 	Errors json.RawMessage `json:"errors"`
 }
 
@@ -72,13 +72,13 @@ func (e *Errors) Error() string {
 
 // ParseError extract error from Response.
 func ParseError(resp *Response) error {
-	var apiError Errors
-	err := json.Unmarshal(resp.Errors, &apiError)
+	var errAPI Errors
+	err := json.Unmarshal(resp.Errors, &errAPI)
 	if err != nil {
 		return err
 	}
 
-	return &apiError
+	return &errAPI
 }
 
 type User struct {

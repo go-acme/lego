@@ -286,6 +286,9 @@ func setupTestProvider(t *testing.T) string {
 	t.Helper()
 
 	mux := http.NewServeMux()
+	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
+
 	mux.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
 		_, _ = w.Write([]byte(`{
 	"access": {
@@ -318,9 +321,6 @@ func setupTestProvider(t *testing.T) string {
 }`))
 		w.WriteHeader(http.StatusOK)
 	})
-
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
 
 	return server.URL
 }

@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -17,7 +18,7 @@ import (
 func TestClient_GetZone(t *testing.T) {
 	client := setupTest(t, "/anycast/nicmanager-anycastdns4.net", testHandler(http.MethodGet, http.StatusOK, "zone.json"))
 
-	zone, err := client.GetZone("nicmanager-anycastdns4.net")
+	zone, err := client.GetZone(context.Background(), "nicmanager-anycastdns4.net")
 	require.NoError(t, err)
 
 	expected := &Zone{
@@ -40,7 +41,7 @@ func TestClient_GetZone(t *testing.T) {
 func TestClient_GetZone_error(t *testing.T) {
 	client := setupTest(t, "/anycast/foo", testHandler(http.MethodGet, http.StatusNotFound, "error.json"))
 
-	_, err := client.GetZone("foo")
+	_, err := client.GetZone(context.Background(), "foo")
 	require.Error(t, err)
 }
 
@@ -54,7 +55,7 @@ func TestClient_AddRecord(t *testing.T) {
 		TTL:   3600,
 	}
 
-	err := client.AddRecord("zonedomain.tld", record)
+	err := client.AddRecord(context.Background(), "zonedomain.tld", record)
 	require.NoError(t, err)
 }
 
@@ -68,21 +69,21 @@ func TestClient_AddRecord_error(t *testing.T) {
 		TTL:   3600,
 	}
 
-	err := client.AddRecord("zonedomain.tld", record)
+	err := client.AddRecord(context.Background(), "zonedomain.tld", record)
 	require.Error(t, err)
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
 	client := setupTest(t, "/anycast/zonedomain.tld/records/6", testHandler(http.MethodDelete, http.StatusAccepted, "error.json"))
 
-	err := client.DeleteRecord("zonedomain.tld", 6)
+	err := client.DeleteRecord(context.Background(), "zonedomain.tld", 6)
 	require.NoError(t, err)
 }
 
 func TestClient_DeleteRecord_error(t *testing.T) {
 	client := setupTest(t, "/anycast/zonedomain.tld/records/6", testHandler(http.MethodDelete, http.StatusNoContent, ""))
 
-	err := client.DeleteRecord("zonedomain.tld", 7)
+	err := client.DeleteRecord(context.Background(), "zonedomain.tld", 7)
 	require.Error(t, err)
 }
 

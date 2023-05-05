@@ -2,39 +2,45 @@ package internal
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
+
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
 // defaultBaseURL represents the API endpoint to call.
 const defaultBaseURL = "https://napi.arvancloud.ir"
 
-const authHeader = "Authorization"
+const authorizationHeader = "Authorization"
 
 // Client the ArvanCloud client.
 type Client struct {
-	HTTPClient *http.Client
-	BaseURL    string
-
 	apiKey string
+
+	baseURL    *url.URL
+	HTTPClient *http.Client
 }
 
-// NewClient Creates a new ArvanCloud client.
+// NewClient Creates a new Client.
 func NewClient(apiKey string) *Client {
+	baseURL, _ := url.Parse(defaultBaseURL)
+
 	return &Client{
-		HTTPClient: http.DefaultClient,
-		BaseURL:    defaultBaseURL,
 		apiKey:     apiKey,
+		baseURL:    baseURL,
+		HTTPClient: &http.Client{Timeout: 5 * time.Second},
 	}
 }
 
 // GetTxtRecord gets a TXT record.
-func (c *Client) GetTxtRecord(domain, name, value string) (*DNSRecord, error) {
-	records, err := c.getRecords(domain, name)
+func (c *Client) GetTxtRecord(ctx context.Context, domain, name, value string) (*DNSRecord, error) {
+	records, err := c.getRecords(ctx, domain, name)
 	if err != nil {
 		return nil, err
 	}
@@ -49,11 +55,8 @@ func (c *Client) GetTxtRecord(domain, name, value string) (*DNSRecord, error) {
 }
 
 // https://www.arvancloud.ir/docs/api/cdn/4.0#operation/dns_records.list
-func (c *Client) getRecords(domain, search string) ([]DNSRecord, error) {
-	endpoint, err := c.createEndpoint("cdn", "4.0", "domains", domain, "dns-records")
-	if err != nil {
-		return nil, fmt.Errorf("failed to create endpoint: %w", err)
-	}
+func (c *Client) getRecords(ctx context.Context, domain, search string) ([]DNSRecord, error) {
+	endpoint := c.baseURL.JoinPath("cdn", "4.0", "domains", domain, "dns-records")
 
 	if search != "" {
 		query := endpoint.Query()
@@ -61,123 +64,110 @@ func (c *Client) getRecords(domain, search string) ([]DNSRecord, error) {
 		endpoint.RawQuery = query.Encode()
 	}
 
-	resp, err := c.do(http.MethodGet, endpoint.String(), nil)
+	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	defer func() { _ = resp.Body.Close() }()
-
-	body, err := io.ReadAll(resp.Body)
+	response := &apiResponse[[]DNSRecord]{}
+	err = c.do(req, http.StatusOK, response)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %w", err)
+		return nil, fmt.Errorf("could not get records %s: Domain: %s: %w", search, domain, err)
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("could not get records %s: Domain: %s; Status: %s; Body: %s",
-			search, domain, resp.Status, string(body))
-	}
-
-	response := &apiResponse{}
-	err = json.Unmarshal(body, response)
-	if err != nil {
-		return nil, fmt.Errorf("failed to decode response body: %w", err)
-	}
-
-	var records []DNSRecord
-	err = json.Unmarshal(response.Data, &records)
-	if err != nil {
-		return nil, fmt.Errorf("failed to decode records: %w", err)
-	}
-
-	return records, nil
+	return response.Data, nil
 }
 
 // CreateRecord creates a DNS record.
 // https://www.arvancloud.ir/docs/api/cdn/4.0#operation/dns_records.create
-func (c *Client) CreateRecord(domain string, record DNSRecord) (*DNSRecord, error) {
-	reqBody, err := json.Marshal(record)
+func (c *Client) CreateRecord(ctx context.Context, domain string, record DNSRecord) (*DNSRecord, error) {
+	endpoint := c.baseURL.JoinPath("cdn", "4.0", "domains", domain, "dns-records")
+
+	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
 	if err != nil {
 		return nil, err
 	}
 
-	endpoint, err := c.createEndpoint("cdn", "4.0", "domains", domain, "dns-records")
+	response := &apiResponse[*DNSRecord]{}
+	err = c.do(req, http.StatusCreated, response)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create endpoint: %w", err)
+		return nil, fmt.Errorf("could not create record; Domain: %s: %w", domain, err)
 	}
 
-	resp, err := c.do(http.MethodPost, endpoint.String(), bytes.NewReader(reqBody))
-	if err != nil {
-		return nil, err
-	}
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %w", err)
-	}
-
-	if resp.StatusCode != http.StatusCreated {
-		return nil, fmt.Errorf("could not create record %s; Domain: %s; Status: %s; Body: %s", string(reqBody), domain, resp.Status, string(body))
-	}
-
-	response := &apiResponse{}
-	err = json.Unmarshal(body, response)
-	if err != nil {
-		return nil, fmt.Errorf("failed to decode response body: %w", err)
-	}
-
-	var newRecord DNSRecord
-	err = json.Unmarshal(response.Data, &newRecord)
-	if err != nil {
-		return nil, fmt.Errorf("failed to decode record: %w", err)
-	}
-
-	return &newRecord, nil
+	return response.Data, nil
 }
 
 // DeleteRecord deletes a DNS record.
 // https://www.arvancloud.ir/docs/api/cdn/4.0#operation/dns_records.remove
-func (c *Client) DeleteRecord(domain, id string) error {
-	endpoint, err := c.createEndpoint("cdn", "4.0", "domains", domain, "dns-records", id)
-	if err != nil {
-		return fmt.Errorf("failed to create endpoint: %w", err)
-	}
+func (c *Client) DeleteRecord(ctx context.Context, domain, id string) error {
+	endpoint := c.baseURL.JoinPath("cdn", "4.0", "domains", domain, "dns-records", id)
 
-	resp, err := c.do(http.MethodDelete, endpoint.String(), nil)
+	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("could not delete record %s; Domain: %s; Status: %s; Body: %s", id, domain, resp.Status, string(body))
+	err = c.do(req, http.StatusOK, nil)
+	if err != nil {
+		return fmt.Errorf("could not delete record %s; Domain: %s: %w", id, domain, err)
 	}
 
 	return nil
 }
 
-func (c *Client) do(method, endpoint string, body io.Reader) (*http.Response, error) {
-	req, err := http.NewRequest(method, endpoint, body)
+func (c *Client) do(req *http.Request, expectedStatus int, result any) error {
+	req.Header.Set(authorizationHeader, c.apiKey)
+
+	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
-		return nil, err
+		return errutils.NewHTTPDoError(req, err)
+	}
+
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != expectedStatus {
+		return errutils.NewUnexpectedResponseStatusCodeError(req, resp)
+	}
+
+	if result == nil {
+		return nil
+	}
+
+	raw, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return errutils.NewReadResponseError(req, resp.StatusCode, err)
+	}
+
+	err = json.Unmarshal(raw, result)
+	if err != nil {
+		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
+	}
+
+	return nil
+}
+
+func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
+	buf := new(bytes.Buffer)
+
+	if payload != nil {
+		err := json.NewEncoder(buf).Encode(payload)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create request JSON body: %w", err)
+		}
+	}
+
+	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), buf)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create request: %w", err)
 	}
 
 	req.Header.Set("Accept", "application/json")
-	if body != nil {
+
+	if payload != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
-	req.Header.Set(authHeader, c.apiKey)
 
-	return c.HTTPClient.Do(req)
-}
-
-func (c *Client) createEndpoint(parts ...string) (*url.URL, error) {
-	baseURL, err := url.Parse(c.BaseURL)
-	if err != nil {
-		return nil, err
-	}
-
-	return baseURL.JoinPath(parts...), nil
+	return req, nil
 }
 
 func equalsTXTRecord(record DNSRecord, name, value string) bool {
@@ -189,7 +179,7 @@ func equalsTXTRecord(record DNSRecord, name, value string) bool {
 		return false
 	}
 
-	data, ok := record.Value.(map[string]interface{})
+	data, ok := record.Value.(map[string]any)
 	if !ok {
 		return false
 	}

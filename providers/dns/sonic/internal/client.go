@@ -2,35 +2,25 @@ package internal
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"time"
+
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
 const baseURL = "https://public-api.sonic.net/dyndns"
 
-type APIResponse struct {
-	Message string `json:"message"`
-	Result  int    `json:"result"`
-}
-
-// Record holds the Sonic API representation of a Domain Record.
-type Record struct {
-	UserID   string `json:"userid"`
-	APIKey   string `json:"apikey"`
-	Hostname string `json:"hostname"`
-	Value    string `json:"value"`
-	TTL      int    `json:"ttl"`
-	Type     string `json:"type"`
-}
-
 // Client Sonic client.
 type Client struct {
-	userID     string
-	apiKey     string
+	userID string
+	apiKey string
+
 	baseURL    string
 	HTTPClient *http.Client
 }
@@ -52,7 +42,7 @@ func NewClient(userID, apiKey string) (*Client, error) {
 // SetRecord creates or updates a TXT records.
 // Sonic does not provide a delete record API endpoint.
 // https://public-api.sonic.net/dyndns#updating_or_adding_host_records
-func (c *Client) SetRecord(hostname string, value string, ttl int) error {
+func (c *Client) SetRecord(ctx context.Context, hostname string, value string, ttl int) error {
 	payload := &Record{
 		UserID:   c.userID,
 		APIKey:   c.apiKey,
@@ -64,32 +54,38 @@ func (c *Client) SetRecord(hostname string, value string, ttl int) error {
 
 	body, err := json.Marshal(payload)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create request JSON body: %w", err)
 	}
 
-	req, err := http.NewRequest(http.MethodPut, c.baseURL+"/host", bytes.NewReader(body))
+	endpoint, err := url.JoinPath(c.baseURL, "host")
 	if err != nil {
 		return err
 	}
 
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, endpoint, bytes.NewReader(body))
+	if err != nil {
+		return fmt.Errorf("unable to create request: %w", err)
+	}
+
+	req.Header.Set("Accept", "application/json")
 	req.Header.Set("content-type", "application/json")
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
-		return err
+		return errutils.NewHTTPDoError(req, err)
 	}
 
 	defer func() { _ = resp.Body.Close() }()
 
 	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("failed to read response body: %w", err)
+		return errutils.NewReadResponseError(req, resp.StatusCode, err)
 	}
 
 	r := APIResponse{}
 	err = json.Unmarshal(raw, &r)
 	if err != nil {
-		return fmt.Errorf("failed to unmarshal response: %w: %s", err, string(raw))
+		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
 	}
 
 	if r.Result != 200 {

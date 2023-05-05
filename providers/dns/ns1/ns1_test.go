@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -86,57 +85,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 				require.NotNil(t, p.client)
 			} else {
 				require.EqualError(t, err, test.expected)
-			}
-		})
-	}
-}
-
-func Test_getAuthZone(t *testing.T) {
-	type expected struct {
-		AuthZone string
-		Error    string
-	}
-
-	testCases := []struct {
-		desc     string
-		fqdn     string
-		expected expected
-	}{
-		{
-			desc: "valid fqdn",
-			fqdn: "_acme-challenge.myhost.sub.example.com.",
-			expected: expected{
-				AuthZone: "example.com",
-			},
-		},
-		{
-			desc: "invalid fqdn",
-			fqdn: "_acme-challenge.myhost.sub.example.com",
-			expected: expected{
-				Error: "could not find the start of authority for _acme-challenge.myhost.sub.example.com: dns: domain must be fully qualified",
-			},
-		},
-		{
-			desc: "invalid authority",
-			fqdn: "_acme-challenge.myhost.sub.domain.tld.",
-			expected: expected{
-				Error: "could not find the start of authority for _acme-challenge.myhost.sub.domain.tld.: NXDOMAIN",
-			},
-		},
-	}
-
-	for _, test := range testCases {
-		test := test
-		t.Run(test.desc, func(t *testing.T) {
-			t.Parallel()
-
-			authZone, err := getAuthZone(test.fqdn)
-
-			if len(test.expected.Error) > 0 {
-				assert.EqualError(t, err, test.expected.Error)
-			} else {
-				require.NoError(t, err)
-				assert.Equal(t, test.expected.AuthZone, authZone)
 			}
 		})
 	}

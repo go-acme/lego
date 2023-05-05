@@ -1,16 +1,33 @@
 package internal
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
-func TestClient_AddRecord(t *testing.T) {
+func setupTest(t *testing.T) (*Client, *http.ServeMux) {
+	t.Helper()
+
 	mux := http.NewServeMux()
+	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
+
+	client := NewClient("clientID", "email@example.com", "secret", 300)
+	client.HTTPClient = server.Client()
+	client.apiBaseURL, _ = url.Parse(server.URL + "/api")
+	client.loginURL, _ = url.Parse(server.URL + "/login")
+
+	return client, mux
+}
+
+func TestClient_AddRecord(t *testing.T) {
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/api/domain/search", func(rw http.ResponseWriter, req *http.Request) {
 		response := SearchResponse{
@@ -45,19 +62,12 @@ func TestClient_AddRecord(t *testing.T) {
 		}
 	})
 
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
-	client := NewClient("clientID", "email@example.com", "secret", 300)
-	client.apiBaseURL = server.URL + "/api"
-	client.loginURL = server.URL + "/login"
-
-	err := client.AddRecord("example.com", "_acme-challenge.example.com", "txt")
+	err := client.AddRecord(context.Background(), "example.com", "_acme-challenge.example.com", "txt")
 	require.NoError(t, err)
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
-	mux := http.NewServeMux()
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/api/domain/search", func(rw http.ResponseWriter, req *http.Request) {
 		response := SearchResponse{
@@ -114,13 +124,9 @@ func TestClient_DeleteRecord(t *testing.T) {
 		}
 	})
 
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
+	ctx, err := client.CreateAuthenticatedContext(context.Background())
+	require.NoError(t, err)
 
-	client := NewClient("clientID", "email@example.com", "secret", 300)
-	client.apiBaseURL = server.URL + "/api"
-	client.loginURL = server.URL + "/login"
-
-	err := client.DeleteRecord("example.com", "_acme-challenge.example.com")
+	err = client.DeleteRecord(ctx, "example.com", "_acme-challenge.example.com")
 	require.NoError(t, err)
 }

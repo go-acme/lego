@@ -2,6 +2,7 @@
 package regru
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -101,7 +102,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("regru: could not find zone for domain %q and fqdn %q : %w", domain, info.EffectiveFQDN, err)
+		return fmt.Errorf("regru: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
@@ -109,7 +110,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("regru: %w", err)
 	}
 
-	err = d.client.AddTXTRecord(dns01.UnFqdn(authZone), subDomain, info.Value)
+	err = d.client.AddTXTRecord(context.Background(), dns01.UnFqdn(authZone), subDomain, info.Value)
 	if err != nil {
 		return fmt.Errorf("regru: failed to create TXT records [domain: %s, sub domain: %s]: %w",
 			dns01.UnFqdn(authZone), subDomain, err)
@@ -124,7 +125,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("regru: could not find zone for domain %q and fqdn %q : %w", domain, info.EffectiveFQDN, err)
+		return fmt.Errorf("regru: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
@@ -132,7 +133,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("regru: %w", err)
 	}
 
-	err = d.client.RemoveTxtRecord(dns01.UnFqdn(authZone), subDomain, info.Value)
+	err = d.client.RemoveTxtRecord(context.Background(), dns01.UnFqdn(authZone), subDomain, info.Value)
 	if err != nil {
 		return fmt.Errorf("regru: failed to remove TXT records [domain: %s, sub domain: %s]: %w",
 			dns01.UnFqdn(authZone), subDomain, err)

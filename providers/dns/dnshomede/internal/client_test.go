@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -9,79 +10,55 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestClient_Add(t *testing.T) {
-	txtValue := "123456789012"
+func setupTest(t *testing.T, credentials map[string]string, handler http.HandlerFunc) *Client {
+	t.Helper()
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", handlerMock(addAction, txtValue))
 	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
-	credentials := map[string]string{
-		"example.org": "secret",
-	}
+	mux.HandleFunc("/", handler)
 
 	client := NewClient(credentials)
 	client.HTTPClient = server.Client()
 	client.baseURL = server.URL
 
-	err := client.Add("example.org", txtValue)
+	return client
+}
+
+func TestClient_Add(t *testing.T) {
+	txtValue := "123456789012"
+
+	client := setupTest(t, map[string]string{"example.org": "secret"}, handlerMock(addAction, txtValue))
+
+	err := client.Add(context.Background(), "example.org", txtValue)
 	require.NoError(t, err)
 }
 
 func TestClient_Add_error(t *testing.T) {
 	txtValue := "123456789012"
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", handlerMock(addAction, txtValue))
-	server := httptest.NewServer(mux)
+	client := setupTest(t, map[string]string{"example.com": "secret"}, handlerMock(addAction, txtValue))
 
-	credentials := map[string]string{
-		"example.com": "secret",
-	}
-
-	client := NewClient(credentials)
-	client.HTTPClient = server.Client()
-	client.baseURL = server.URL
-
-	err := client.Add("example.org", txtValue)
+	err := client.Add(context.Background(), "example.org", txtValue)
 	require.Error(t, err)
 }
 
 func TestClient_Remove(t *testing.T) {
 	txtValue := "ABCDEFGHIJKL"
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", handlerMock(removeAction, txtValue))
-	server := httptest.NewServer(mux)
+	client := setupTest(t, map[string]string{"example.org": "secret"}, handlerMock(removeAction, txtValue))
 
-	credentials := map[string]string{
-		"example.org": "secret",
-	}
-
-	client := NewClient(credentials)
-	client.HTTPClient = server.Client()
-	client.baseURL = server.URL
-
-	err := client.Remove("example.org", txtValue)
+	err := client.Remove(context.Background(), "example.org", txtValue)
 	require.NoError(t, err)
 }
 
 func TestClient_Remove_error(t *testing.T) {
 	txtValue := "ABCDEFGHIJKL"
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", handlerMock(removeAction, txtValue))
-	server := httptest.NewServer(mux)
+	client := setupTest(t, map[string]string{"example.com": "secret"}, handlerMock(removeAction, txtValue))
 
-	credentials := map[string]string{
-		"example.com": "secret",
-	}
-
-	client := NewClient(credentials)
-	client.HTTPClient = server.Client()
-	client.baseURL = server.URL
-
-	err := client.Remove("example.org", txtValue)
+	err := client.Remove(context.Background(), "example.org", txtValue)
 	require.Error(t, err)
 }
 

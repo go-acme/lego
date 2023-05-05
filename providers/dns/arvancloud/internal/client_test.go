@@ -1,10 +1,12 @@
 package internal
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"testing"
 
@@ -12,13 +14,26 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestClient_GetTxtRecord(t *testing.T) {
+func setupTest(t *testing.T, apiKey string) (*Client, *http.ServeMux) {
+	t.Helper()
+
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
 	t.Cleanup(server.Close)
 
-	const domain = "example.com"
+	client := NewClient(apiKey)
+	client.baseURL, _ = url.Parse(server.URL)
+	client.HTTPClient = server.Client()
+
+	return client, mux
+}
+
+func TestClient_GetTxtRecord(t *testing.T) {
 	const apiKey = "myKeyA"
+
+	client, mux := setupTest(t, apiKey)
+
+	const domain = "example.com"
 
 	mux.HandleFunc("/cdn/4.0/domains/"+domain+"/dns-records", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
@@ -26,7 +41,7 @@ func TestClient_GetTxtRecord(t *testing.T) {
 			return
 		}
 
-		auth := req.Header.Get(authHeader)
+		auth := req.Header.Get(authorizationHeader)
 		if auth != apiKey {
 			http.Error(rw, fmt.Sprintf("invalid API key: %s", auth), http.StatusUnauthorized)
 			return
@@ -46,20 +61,16 @@ func TestClient_GetTxtRecord(t *testing.T) {
 		}
 	})
 
-	client := NewClient(apiKey)
-	client.BaseURL = server.URL
-
-	_, err := client.GetTxtRecord(domain, "_acme-challenge", "txtxtxt")
+	_, err := client.GetTxtRecord(context.Background(), domain, "_acme-challenge", "txtxtxt")
 	require.NoError(t, err)
 }
 
 func TestClient_CreateRecord(t *testing.T) {
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
+	const apiKey = "myKeyB"
+
+	client, mux := setupTest(t, apiKey)
 
 	const domain = "example.com"
-	const apiKey = "myKeyB"
 
 	mux.HandleFunc("/cdn/4.0/domains/"+domain+"/dns-records", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodPost {
@@ -67,7 +78,7 @@ func TestClient_CreateRecord(t *testing.T) {
 			return
 		}
 
-		auth := req.Header.Get(authHeader)
+		auth := req.Header.Get(authorizationHeader)
 		if auth != apiKey {
 			http.Error(rw, fmt.Sprintf("invalid API key: %s", auth), http.StatusUnauthorized)
 			return
@@ -88,9 +99,6 @@ func TestClient_CreateRecord(t *testing.T) {
 		}
 	})
 
-	client := NewClient(apiKey)
-	client.BaseURL = server.URL
-
 	record := DNSRecord{
 		Name:  "_acme-challenge",
 		Type:  "txt",
@@ -98,7 +106,7 @@ func TestClient_CreateRecord(t *testing.T) {
 		TTL:   600,
 	}
 
-	newRecord, err := client.CreateRecord(domain, record)
+	newRecord, err := client.CreateRecord(context.Background(), domain, record)
 	require.NoError(t, err)
 
 	expected := &DNSRecord{
@@ -119,12 +127,11 @@ func TestClient_CreateRecord(t *testing.T) {
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
+	const apiKey = "myKeyC"
+
+	client, mux := setupTest(t, apiKey)
 
 	const domain = "example.com"
-	const apiKey = "myKeyC"
 	const recordID = "recordId"
 
 	mux.HandleFunc("/cdn/4.0/domains/"+domain+"/dns-records/"+recordID, func(rw http.ResponseWriter, req *http.Request) {
@@ -133,16 +140,13 @@ func TestClient_DeleteRecord(t *testing.T) {
 			return
 		}
 
-		auth := req.Header.Get(authHeader)
+		auth := req.Header.Get(authorizationHeader)
 		if auth != apiKey {
 			http.Error(rw, fmt.Sprintf("invalid API key: %s", auth), http.StatusUnauthorized)
 			return
 		}
 	})
 
-	client := NewClient(apiKey)
-	client.BaseURL = server.URL
-
-	err := client.DeleteRecord(domain, recordID)
+	err := client.DeleteRecord(context.Background(), domain, recordID)
 	require.NoError(t, err)
 }

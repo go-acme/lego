@@ -105,9 +105,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zoneNameOrID, err1 := dns01.FindZoneByFqdn(info.EffectiveFQDN)
-	if err1 != nil {
-		return fmt.Errorf("oraclecloud: could not find zone for domain %q and fqdn %q : %w", domain, info.EffectiveFQDN, err1)
+	zoneNameOrID, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	if err != nil {
+		return fmt.Errorf("oraclecloud: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	// generate request to dns.PatchDomainRecordsRequest
@@ -128,7 +128,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		},
 	}
 
-	_, err := d.client.PatchDomainRecords(context.Background(), request)
+	_, err = d.client.PatchDomainRecords(context.Background(), request)
 	if err != nil {
 		return fmt.Errorf("oraclecloud: %w", err)
 	}
@@ -140,9 +140,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zoneNameOrID, err1 := dns01.FindZoneByFqdn(info.EffectiveFQDN)
-	if err1 != nil {
-		return fmt.Errorf("oraclecloud: could not find zone for domain %q and fqdn %q : %w", domain, info.EffectiveFQDN, err1)
+	zoneNameOrID, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	if err != nil {
+		return fmt.Errorf("oraclecloud: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	// search to TXT record's hash to delete

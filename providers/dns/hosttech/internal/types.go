@@ -1,18 +1,17 @@
 package internal
 
 import (
-	"encoding/json"
 	"fmt"
 )
 
-type apiResponse struct {
-	Data json.RawMessage `json:"data"`
+type apiResponse[T any] struct {
+	Data T `json:"data"`
 }
 
 type APIError struct {
-	Message    string                 `json:"message,omitempty"`
-	Errors     map[string]interface{} `json:"errors,omitempty"`
-	StatusCode int                    `json:"-"`
+	Message    string         `json:"message,omitempty"`
+	Errors     map[string]any `json:"errors,omitempty"`
+	StatusCode int            `json:"-"`
 }
 
 func (a APIError) Error() string {

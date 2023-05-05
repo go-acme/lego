@@ -1,6 +1,7 @@
 package svc
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -10,10 +11,22 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestClient_Send(t *testing.T) {
+func setupTest(t *testing.T) (*Client, *http.ServeMux) {
+	t.Helper()
+
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
 	t.Cleanup(server.Close)
+
+	client := NewClient("test", "secret")
+	client.BaseURL = server.URL
+	client.HTTPClient = server.Client()
+
+	return client, mux
+}
+
+func TestClient_Send(t *testing.T) {
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodPost {
@@ -35,21 +48,16 @@ func TestClient_Send(t *testing.T) {
 		}
 	})
 
-	client := NewClient("test", "secret")
-	client.BaseURL = server.URL
-
 	zone := "example.com"
 	label := "_acme-challenge"
 	value := "123"
 
-	err := client.Send(zone, label, value)
+	err := client.SendRequest(context.Background(), zone, label, value)
 	require.NoError(t, err)
 }
 
 func TestClient_Send_empty(t *testing.T) {
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodPost {
@@ -71,13 +79,10 @@ func TestClient_Send_empty(t *testing.T) {
 		}
 	})
 
-	client := NewClient("test", "secret")
-	client.BaseURL = server.URL
-
 	zone := "example.com"
 	label := "_acme-challenge"
 	value := ""
 
-	err := client.Send(zone, label, value)
+	err := client.SendRequest(context.Background(), zone, label, value)
 	require.NoError(t, err)
 }

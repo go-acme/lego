@@ -91,21 +91,17 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("linode: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL)
 	}
 
-	tokenSource := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: config.Token})
 	oauth2Client := &http.Client{
 		Timeout: config.HTTPTimeout,
 		Transport: &oauth2.Transport{
-			Source: tokenSource,
+			Source: oauth2.StaticTokenSource(&oauth2.Token{AccessToken: config.Token}),
 		},
 	}
 
 	client := linodego.NewClient(oauth2Client)
-	client.SetUserAgent("lego-dns https://github.com/linode/linodego")
+	client.SetUserAgent("go-acme/lego https://github.com/linode/linodego")
 
-	return &DNSProvider{
-		config: config,
-		client: &client,
-	}, nil
+	return &DNSProvider{config: config, client: &client}, nil
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS
@@ -158,7 +154,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	// Get all TXT records for the specified domain.
-	listOpts := linodego.NewListOptions(0, "{\"type\":\"TXT\"}")
+	listOpts := linodego.NewListOptions(0, `{"type":"TXT"}`)
 	resources, err := d.client.ListDomainRecords(context.Background(), zone.domainID, listOpts)
 	if err != nil {
 		return err
@@ -181,16 +177,16 @@ func (d *DNSProvider) getHostedZoneInfo(fqdn string) (*hostedZoneInfo, error) {
 	// Lookup the zone that handles the specified FQDN.
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("inwx: could not find zone for FQDN %q: %w", fqdn, err)
 	}
 
 	// Query the authority zone.
-	data, err := json.Marshal(map[string]string{"domain": dns01.UnFqdn(authZone)})
+	filter, err := json.Marshal(map[string]string{"domain": dns01.UnFqdn(authZone)})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create JSON filter: %w", err)
 	}
 
-	listOpts := linodego.NewListOptions(0, string(data))
+	listOpts := linodego.NewListOptions(0, string(filter))
 	domains, err := d.client.ListDomains(context.Background(), listOpts)
 	if err != nil {
 		return nil, err

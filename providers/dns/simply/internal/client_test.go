@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -16,11 +17,11 @@ import (
 )
 
 func TestClient_GetRecords(t *testing.T) {
-	mux, client := setupTest(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/accountname/apikey/my/products/azone01/dns/records", mockHandler(http.MethodGet, http.StatusOK, "get_records.json"))
 
-	records, err := client.GetRecords("azone01")
+	records, err := client.GetRecords(context.Background(), "azone01")
 	require.NoError(t, err)
 
 	expected := []Record{
@@ -62,18 +63,18 @@ func TestClient_GetRecords(t *testing.T) {
 }
 
 func TestClient_GetRecords_error(t *testing.T) {
-	mux, client := setupTest(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/accountname/apikey/my/products/azone01/dns/records", mockHandler(http.MethodGet, http.StatusBadRequest, "bad_auth_error.json"))
 
-	records, err := client.GetRecords("azone01")
+	records, err := client.GetRecords(context.Background(), "azone01")
 	require.Error(t, err)
 
 	assert.Nil(t, records)
 }
 
 func TestClient_AddRecord(t *testing.T) {
-	mux, client := setupTest(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/accountname/apikey/my/products/azone01/dns/records", mockHandler(http.MethodPost, http.StatusOK, "add_record.json"))
 
@@ -85,14 +86,14 @@ func TestClient_AddRecord(t *testing.T) {
 		Priority: 0,
 	}
 
-	recordID, err := client.AddRecord("azone01", record)
+	recordID, err := client.AddRecord(context.Background(), "azone01", record)
 	require.NoError(t, err)
 
 	assert.EqualValues(t, 123456789, recordID)
 }
 
 func TestClient_AddRecord_error(t *testing.T) {
-	mux, client := setupTest(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/accountname/apikey/my/products/azone01/dns/records", mockHandler(http.MethodPost, http.StatusNotFound, "bad_zone_error.json"))
 
@@ -104,14 +105,14 @@ func TestClient_AddRecord_error(t *testing.T) {
 		Priority: 0,
 	}
 
-	recordID, err := client.AddRecord("azone01", record)
+	recordID, err := client.AddRecord(context.Background(), "azone01", record)
 	require.Error(t, err)
 
 	assert.Zero(t, recordID)
 }
 
 func TestClient_EditRecord(t *testing.T) {
-	mux, client := setupTest(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/accountname/apikey/my/products/azone01/dns/records/123456789", mockHandler(http.MethodPut, http.StatusOK, "success.json"))
 
@@ -123,12 +124,12 @@ func TestClient_EditRecord(t *testing.T) {
 		Priority: 0,
 	}
 
-	err := client.EditRecord("azone01", 123456789, record)
+	err := client.EditRecord(context.Background(), "azone01", 123456789, record)
 	require.NoError(t, err)
 }
 
 func TestClient_EditRecord_error(t *testing.T) {
-	mux, client := setupTest(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/accountname/apikey/my/products/azone01/dns/records/123456789", mockHandler(http.MethodPut, http.StatusNotFound, "invalid_record_id.json"))
 
@@ -140,29 +141,29 @@ func TestClient_EditRecord_error(t *testing.T) {
 		Priority: 0,
 	}
 
-	err := client.EditRecord("azone01", 123456789, record)
+	err := client.EditRecord(context.Background(), "azone01", 123456789, record)
 	require.Error(t, err)
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
-	mux, client := setupTest(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/accountname/apikey/my/products/azone01/dns/records/123456789", mockHandler(http.MethodDelete, http.StatusOK, "success.json"))
 
-	err := client.DeleteRecord("azone01", 123456789)
+	err := client.DeleteRecord(context.Background(), "azone01", 123456789)
 	require.NoError(t, err)
 }
 
 func TestClient_DeleteRecord_error(t *testing.T) {
-	mux, client := setupTest(t)
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/accountname/apikey/my/products/azone01/dns/records/123456789", mockHandler(http.MethodDelete, http.StatusNotFound, "invalid_record_id.json"))
 
-	err := client.DeleteRecord("azone01", 123456789)
+	err := client.DeleteRecord(context.Background(), "azone01", 123456789)
 	require.Error(t, err)
 }
 
-func setupTest(t *testing.T) (*http.ServeMux, *Client) {
+func setupTest(t *testing.T) (*Client, *http.ServeMux) {
 	t.Helper()
 
 	mux := http.NewServeMux()
@@ -174,7 +175,7 @@ func setupTest(t *testing.T) (*http.ServeMux, *Client) {
 
 	client.baseURL, _ = url.Parse(server.URL)
 
-	return mux, client
+	return client, mux
 }
 
 func mockHandler(method string, statusCode int, filename string) func(http.ResponseWriter, *http.Request) {

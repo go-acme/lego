@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/go-acme/lego/v4/providers/dns/gandiv5/internal"
 	"github.com/stretchr/testify/require"
 )
 
@@ -115,10 +116,13 @@ func TestDNSProvider(t *testing.T) {
 
 	// start fake RPC server
 	mux := http.NewServeMux()
+	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
+
 	mux.HandleFunc("/domains/example.com/records/_acme-challenge.abc.def/TXT", func(rw http.ResponseWriter, req *http.Request) {
 		log.Infof("request: %s %s", req.Method, req.URL)
 
-		if req.Header.Get(apiKeyHeader) == "" {
+		if req.Header.Get(internal.APIKeyHeader) == "" {
 			http.Error(rw, `{"message": "missing API key"}`, http.StatusUnauthorized)
 			return
 		}
@@ -154,9 +158,6 @@ func TestDNSProvider(t *testing.T) {
 		log.Infof("request: %s %s", req.Method, req.URL)
 		http.Error(rw, fmt.Sprintf(`{"message": "URL doesn't match: %s"}`, req.URL), http.StatusNotFound)
 	})
-
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
 
 	// define function to override findZoneByFqdn with
 	fakeFindZoneByFqdn := func(fqdn string) (string, error) {

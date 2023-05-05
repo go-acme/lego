@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/xml"
 	"fmt"
+	"io"
 )
 
 // Trimmer trim all XML fields.
@@ -43,4 +44,19 @@ type Item struct {
 	Key   *Item   `xml:"key" json:"key,omitempty"`
 	Value *Item   `xml:"value" json:"value,omitempty"`
 	Items []*Item `xml:"item" json:"item,omitempty"`
+}
+
+func decodeXML[T any](reader io.Reader) (*T, error) {
+	raw, err := io.ReadAll(reader)
+	if err != nil {
+		return nil, fmt.Errorf("read response body: %w", err)
+	}
+
+	var result T
+	err = xml.NewTokenDecoder(Trimmer{decoder: xml.NewDecoder(bytes.NewReader(raw))}).Decode(&result)
+	if err != nil {
+		return nil, fmt.Errorf("decode XML response: %w", err)
+	}
+
+	return &result, nil
 }

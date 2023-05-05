@@ -2,6 +2,7 @@
 package vercel
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -82,11 +83,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("vercel: credentials missing")
 	}
 
-	client := internal.NewClient(config.AuthToken, config.TeamID)
-
-	if config.HTTPClient != nil {
-		client.HTTPClient = config.HTTPClient
-	}
+	client := internal.NewClient(internal.OAuthStaticAccessToken(config.HTTPClient, config.AuthToken), config.TeamID)
 
 	return &DNSProvider{
 		config:    config,
@@ -107,7 +104,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("vercel: could not determine zone for domain %q: %w", domain, err)
+		return fmt.Errorf("vercel: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	record := internal.Record{
@@ -117,7 +114,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		TTL:   d.config.TTL,
 	}
 
-	respData, err := d.client.CreateRecord(authZone, record)
+	respData, err := d.client.CreateRecord(context.Background(), authZone, record)
 	if err != nil {
 		return fmt.Errorf("vercel: %w", err)
 	}
@@ -135,7 +132,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("vercel: %w", err)
+		return fmt.Errorf("vercel: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	// get the record's unique ID from when we created it
@@ -146,7 +143,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("vercel: unknown record ID for '%s'", info.EffectiveFQDN)
 	}
 
-	err = d.client.DeleteRecord(authZone, recordID)
+	err = d.client.DeleteRecord(context.Background(), authZone, recordID)
 	if err != nil {
 		return fmt.Errorf("vercel: %w", err)
 	}

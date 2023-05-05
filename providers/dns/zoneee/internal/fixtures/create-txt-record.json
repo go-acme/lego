@@ -1,0 +1,10 @@
+[
+  {
+    "resource_url": "string",
+    "destination": "server.example.com",
+    "id": "123",
+    "name": "prefix.example.com",
+    "delete": true,
+    "modify": true
+  }
+]

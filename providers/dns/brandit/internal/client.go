@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
@@ -12,6 +13,8 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
 const defaultBaseURL = "https://portal.brandit.com/api/v3/"
@@ -20,8 +23,9 @@ const defaultBaseURL = "https://portal.brandit.com/api/v3/"
 type Client struct {
 	apiUsername string
 	apiKey      string
-	BaseURL     string
-	HTTPClient  *http.Client
+
+	baseURL    string
+	HTTPClient *http.Client
 }
 
 // NewClient creates a new Client.
@@ -33,70 +37,69 @@ func NewClient(apiUsername, apiKey string) (*Client, error) {
 	return &Client{
 		apiUsername: apiUsername,
 		apiKey:      apiKey,
-		BaseURL:     defaultBaseURL,
+		baseURL:     defaultBaseURL,
 		HTTPClient:  &http.Client{Timeout: 10 * time.Second},
 	}, nil
 }
 
 // ListRecords lists all records.
 // https://portal.brandit.com/apidocv3#listDNSRR
-func (c *Client) ListRecords(account, dnsZone string) (*ListRecords, error) {
-	// Create a new query
+func (c *Client) ListRecords(ctx context.Context, account, dnsZone string) (*ListRecordsResponse, error) {
 	query := url.Values{}
 	query.Add("command", "listDNSRR")
 	query.Add("account", account)
 	query.Add("dnszone", dnsZone)
 
-	result := &ListRecords{}
+	result := &Response[*ListRecordsResponse]{}
 
-	err := c.do(query, result)
+	err := c.do(ctx, query, result)
 	if err != nil {
-		return nil, fmt.Errorf("do: %w", err)
+		return nil, err
 	}
 
 	for len(result.Response.RR) < result.Response.Total[0] {
 		query.Add("first", fmt.Sprint(result.Response.Last[0]+1))
 
-		tmp := &ListRecords{}
-		err := c.do(query, tmp)
+		tmp := &Response[*ListRecordsResponse]{}
+		err := c.do(ctx, query, tmp)
 		if err != nil {
-			return nil, fmt.Errorf("do: %w", err)
+			return nil, err
 		}
 
 		result.Response.RR = append(result.Response.RR, tmp.Response.RR...)
 		result.Response.Last = tmp.Response.Last
 	}
 
-	return result, nil
+	return result.Response, nil
 }
 
 // AddRecord adds a DNS record.
 // https://portal.brandit.com/apidocv3#addDNSRR
-func (c *Client) AddRecord(domainName, account, newRecordID string, record Record) (*AddRecord, error) {
-	// Create a new query
+func (c *Client) AddRecord(ctx context.Context, domainName, account, newRecordID string, record Record) (*AddRecord, error) {
+	value := strings.Join([]string{record.Name, fmt.Sprint(record.TTL), "IN", record.Type, record.Content}, " ")
 
 	query := url.Values{}
 	query.Add("command", "addDNSRR")
 	query.Add("account", account)
 	query.Add("dnszone", domainName)
-	query.Add("rrdata", strings.Join([]string{record.Name, fmt.Sprint(record.TTL), "IN", record.Type, record.Content}, " "))
+	query.Add("rrdata", value)
 	query.Add("key", newRecordID)
 
 	result := &AddRecord{}
 
-	err := c.do(query, result)
+	err := c.do(ctx, query, result)
 	if err != nil {
-		return nil, fmt.Errorf("do: %w", err)
+		return nil, err
 	}
-	result.Record = strings.Join([]string{record.Name, fmt.Sprint(record.TTL), "IN", record.Type, record.Content}, " ")
+
+	result.Record = value
 
 	return result, nil
 }
 
 // DeleteRecord deletes a DNS record.
 // https://portal.brandit.com/apidocv3#deleteDNSRR
-func (c *Client) DeleteRecord(domainName, account, dnsRecord, recordID string) (*DeleteRecord, error) {
-	// Create a new query
+func (c *Client) DeleteRecord(ctx context.Context, domainName, account, dnsRecord, recordID string) error {
 	query := url.Values{}
 	query.Add("command", "deleteDNSRR")
 	query.Add("account", account)
@@ -104,68 +107,70 @@ func (c *Client) DeleteRecord(domainName, account, dnsRecord, recordID string) (
 	query.Add("rrdata", dnsRecord)
 	query.Add("key", recordID)
 
-	result := &DeleteRecord{}
-
-	err := c.do(query, result)
-	if err != nil {
-		return nil, fmt.Errorf("do: %w", err)
-	}
-
-	return result, nil
+	return c.do(ctx, query, nil)
 }
 
 // StatusDomain returns the status of a domain and account associated with it.
 // https://portal.brandit.com/apidocv3#statusDomain
-func (c *Client) StatusDomain(domain string) (*StatusDomain, error) {
-	// Create a new query
+func (c *Client) StatusDomain(ctx context.Context, domain string) (*StatusResponse, error) {
 	query := url.Values{}
 
 	query.Add("command", "statusDomain")
 	query.Add("domain", domain)
 
-	result := &StatusDomain{}
+	result := &Response[*StatusResponse]{}
 
-	err := c.do(query, result)
+	err := c.do(ctx, query, result)
 	if err != nil {
-		return nil, fmt.Errorf("do: %w", err)
+		return nil, err
 	}
 
-	return result, nil
+	return result.Response, nil
 }
 
-func (c *Client) do(query url.Values, result any) error {
-	// Add signature
-	v, err := sign(c.apiUsername, c.apiKey, query)
-	if err != nil {
-		return fmt.Errorf("signature: %w", err)
-	}
-
-	resp, err := c.HTTPClient.PostForm(c.BaseURL, v)
+func (c *Client) do(ctx context.Context, query url.Values, result any) error {
+	values, err := sign(c.apiUsername, c.apiKey, query)
 	if err != nil {
 		return err
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL, strings.NewReader(values.Encode()))
+	if err != nil {
+		return fmt.Errorf("unable to create request: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return errutils.NewHTTPDoError(req, err)
 	}
 
 	defer func() { _ = resp.Body.Close() }()
 
 	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("read response body: %w", err)
+		return errutils.NewReadResponseError(req, resp.StatusCode, err)
 	}
 
 	//  Unmarshal the error response, because the API returns a 200 OK even if there is an error.
 	var apiError APIError
 	err = json.Unmarshal(raw, &apiError)
 	if err != nil {
-		return fmt.Errorf("unmarshal error response: %w %s", err, string(raw))
+		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
 	}
 
 	if apiError.Code > 299 || apiError.Status != "success" {
 		return apiError
 	}
 
+	if result == nil {
+		return nil
+	}
+
 	err = json.Unmarshal(raw, result)
 	if err != nil {
-		return fmt.Errorf("unmarshal response body: %w %s", err, string(raw))
+		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
 	}
 
 	return nil

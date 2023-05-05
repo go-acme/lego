@@ -1,0 +1,14 @@
+{
+  "origin": "example.com",
+  "resourceRecords": [
+    {
+      "name": "example.com",
+      "ttl": 120,
+      "type": "TXT",
+      "value": "txt",
+      "pref": 1
+    }
+  ],
+  "action": "xxx",
+  "virtualNameServer": "yyy"
+}

@@ -2,14 +2,17 @@
 package digitalocean
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"sync"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/digitalocean/internal"
 )
 
 // Environment variables names.
@@ -38,7 +41,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		BaseURL:            env.GetOrDefaultString(EnvAPIUrl, defaultBaseURL),
+		BaseURL:            env.GetOrDefaultString(EnvAPIUrl, internal.DefaultBaseURL),
 		TTL:                env.GetOrDefaultInt(EnvTTL, 30),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 60*time.Second),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 5*time.Second),
@@ -50,7 +53,9 @@ func NewDefaultConfig() *Config {
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	config      *Config
+	config *Config
+	client *internal.Client
+
 	recordIDs   map[string]int
 	recordIDsMu sync.Mutex
 }
@@ -80,12 +85,19 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("digitalocean: credentials missing")
 	}
 
-	if config.BaseURL == "" {
-		config.BaseURL = defaultBaseURL
+	client := internal.NewClient(internal.OAuthStaticAccessToken(config.HTTPClient, config.AuthToken))
+
+	if config.BaseURL != "" {
+		var err error
+		client.BaseURL, err = url.Parse(config.BaseURL)
+		if err != nil {
+			return nil, fmt.Errorf("digitalocean: %w", err)
+		}
 	}
 
 	return &DNSProvider{
 		config:    config,
+		client:    client,
 		recordIDs: make(map[string]int),
 	}, nil
 }
@@ -100,7 +112,14 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	respData, err := d.addTxtRecord(info.EffectiveFQDN, info.Value)
+	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(info.EffectiveFQDN))
+	if err != nil {
+		return fmt.Errorf("designate: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
+	}
+
+	record := internal.Record{Type: "TXT", Name: info.EffectiveFQDN, Data: info.Value, TTL: d.config.TTL}
+
+	respData, err := d.client.AddTxtRecord(context.Background(), authZone, record)
 	if err != nil {
 		return fmt.Errorf("digitalocean: %w", err)
 	}
@@ -118,7 +137,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("digitalocean: %w", err)
+		return fmt.Errorf("designate: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	// get the record's unique ID from when we created it
@@ -129,7 +148,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("digitalocean: unknown record ID for '%s'", info.EffectiveFQDN)
 	}
 
-	err = d.removeTxtRecord(authZone, recordID)
+	err = d.client.RemoveTxtRecord(context.Background(), authZone, recordID)
 	if err != nil {
 		return fmt.Errorf("digitalocean: %w", err)
 	}

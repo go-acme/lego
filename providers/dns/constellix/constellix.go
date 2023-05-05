@@ -2,6 +2,7 @@
 package constellix
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -101,10 +102,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("constellix: could not find zone for domain %q and fqdn %q : %w", domain, info.EffectiveFQDN, err)
+		return fmt.Errorf("constellix: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
-	dom, err := d.client.Domains.GetByName(dns01.UnFqdn(authZone))
+	ctx := context.Background()
+
+	dom, err := d.client.Domains.GetByName(ctx, dns01.UnFqdn(authZone))
 	if err != nil {
 		return fmt.Errorf("constellix: failed to get domain (%s): %w", authZone, err)
 	}
@@ -114,7 +117,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("constellix: %w", err)
 	}
 
-	records, err := d.client.TxtRecords.Search(dom.ID, internal.Exact, recordName)
+	records, err := d.client.TxtRecords.Search(ctx, dom.ID, internal.Exact, recordName)
 	if err != nil {
 		return fmt.Errorf("constellix: failed to search TXT records: %w", err)
 	}
@@ -125,10 +128,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	// TXT record entry already existing
 	if len(records) == 1 {
-		return d.appendRecordValue(dom, records[0].ID, info.Value)
+		return d.appendRecordValue(ctx, dom, records[0].ID, info.Value)
 	}
 
-	err = d.createRecord(dom, info.EffectiveFQDN, recordName, info.Value)
+	err = d.createRecord(ctx, dom, info.EffectiveFQDN, recordName, info.Value)
 	if err != nil {
 		return fmt.Errorf("constellix: %w", err)
 	}
@@ -142,10 +145,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("constellix: could not find zone for domain %q and fqdn %q : %w", domain, info.EffectiveFQDN, err)
+		return fmt.Errorf("constellix: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
-	dom, err := d.client.Domains.GetByName(dns01.UnFqdn(authZone))
+	ctx := context.Background()
+
+	dom, err := d.client.Domains.GetByName(ctx, dns01.UnFqdn(authZone))
 	if err != nil {
 		return fmt.Errorf("constellix: failed to get domain (%s): %w", authZone, err)
 	}
@@ -155,7 +160,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("constellix: %w", err)
 	}
 
-	records, err := d.client.TxtRecords.Search(dom.ID, internal.Exact, recordName)
+	records, err := d.client.TxtRecords.Search(ctx, dom.ID, internal.Exact, recordName)
 	if err != nil {
 		return fmt.Errorf("constellix: failed to search TXT records: %w", err)
 	}
@@ -168,7 +173,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return nil
 	}
 
-	record, err := d.client.TxtRecords.Get(dom.ID, records[0].ID)
+	record, err := d.client.TxtRecords.Get(ctx, dom.ID, records[0].ID)
 	if err != nil {
 		return fmt.Errorf("constellix: failed to get TXT records: %w", err)
 	}
@@ -179,14 +184,14 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	// only 1 record value, the whole record must be deleted.
 	if len(record.Value) == 1 {
-		_, err = d.client.TxtRecords.Delete(dom.ID, record.ID)
+		_, err = d.client.TxtRecords.Delete(ctx, dom.ID, record.ID)
 		if err != nil {
 			return fmt.Errorf("constellix: failed to delete TXT records: %w", err)
 		}
 		return nil
 	}
 
-	err = d.removeRecordValue(dom, record, info.Value)
+	err = d.removeRecordValue(ctx, dom, record, info.Value)
 	if err != nil {
 		return fmt.Errorf("constellix: %w", err)
 	}
@@ -194,7 +199,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-func (d *DNSProvider) createRecord(dom internal.Domain, fqdn, recordName, value string) error {
+func (d *DNSProvider) createRecord(ctx context.Context, dom internal.Domain, fqdn, recordName, value string) error {
 	request := internal.RecordRequest{
 		Name: recordName,
 		TTL:  d.config.TTL,
@@ -203,7 +208,7 @@ func (d *DNSProvider) createRecord(dom internal.Domain, fqdn, recordName, value 
 		},
 	}
 
-	_, err := d.client.TxtRecords.Create(dom.ID, request)
+	_, err := d.client.TxtRecords.Create(ctx, dom.ID, request)
 	if err != nil {
 		return fmt.Errorf("failed to create TXT record %s: %w", fqdn, err)
 	}
@@ -211,8 +216,8 @@ func (d *DNSProvider) createRecord(dom internal.Domain, fqdn, recordName, value 
 	return nil
 }
 
-func (d *DNSProvider) appendRecordValue(dom internal.Domain, recordID int64, value string) error {
-	record, err := d.client.TxtRecords.Get(dom.ID, recordID)
+func (d *DNSProvider) appendRecordValue(ctx context.Context, dom internal.Domain, recordID int64, value string) error {
+	record, err := d.client.TxtRecords.Get(ctx, dom.ID, recordID)
 	if err != nil {
 		return fmt.Errorf("failed to get TXT records: %w", err)
 	}
@@ -227,7 +232,7 @@ func (d *DNSProvider) appendRecordValue(dom internal.Domain, recordID int64, val
 		RoundRobin: append(record.RoundRobin, internal.RecordValue{Value: fmt.Sprintf(`%q`, value)}),
 	}
 
-	_, err = d.client.TxtRecords.Update(dom.ID, record.ID, request)
+	_, err = d.client.TxtRecords.Update(ctx, dom.ID, record.ID, request)
 	if err != nil {
 		return fmt.Errorf("failed to update TXT records: %w", err)
 	}
@@ -235,7 +240,7 @@ func (d *DNSProvider) appendRecordValue(dom internal.Domain, recordID int64, val
 	return nil
 }
 
-func (d *DNSProvider) removeRecordValue(dom internal.Domain, record *internal.Record, value string) error {
+func (d *DNSProvider) removeRecordValue(ctx context.Context, dom internal.Domain, record *internal.Record, value string) error {
 	request := internal.RecordRequest{
 		Name: record.Name,
 		TTL:  record.TTL,
@@ -247,7 +252,7 @@ func (d *DNSProvider) removeRecordValue(dom internal.Domain, record *internal.Re
 		}
 	}
 
-	_, err := d.client.TxtRecords.Update(dom.ID, record.ID, request)
+	_, err := d.client.TxtRecords.Update(ctx, dom.ID, record.ID, request)
 	if err != nil {
 		return fmt.Errorf("failed to update TXT records: %w", err)
 	}

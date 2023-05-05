@@ -78,17 +78,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("vultr: credentials missing")
 	}
 
-	httpClient := config.HTTPClient
-	if httpClient == nil {
-		httpClient = &http.Client{
-			Timeout: config.HTTPTimeout,
-			Transport: &oauth2.Transport{
-				Source: oauth2.StaticTokenSource(&oauth2.Token{AccessToken: config.APIKey}),
-			},
-		}
-	}
+	authClient := OAuthStaticAccessToken(config.HTTPClient, config.APIKey)
+	authClient.Timeout = config.HTTPTimeout
 
-	client := govultr.NewClient(httpClient)
+	client := govultr.NewClient(authClient)
 
 	return &DNSProvider{client: client, config: config}, nil
 }
@@ -227,4 +220,17 @@ func (d *DNSProvider) findTxtRecords(ctx context.Context, domain, fqdn string) (
 	}
 
 	return zoneDomain, records, nil
+}
+
+func OAuthStaticAccessToken(client *http.Client, accessToken string) *http.Client {
+	if client == nil {
+		client = &http.Client{Timeout: 5 * time.Second}
+	}
+
+	client.Transport = &oauth2.Transport{
+		Source: oauth2.StaticTokenSource(&oauth2.Token{AccessToken: accessToken}),
+		Base:   client.Transport,
+	}
+
+	return client
 }

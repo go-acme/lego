@@ -1,6 +1,7 @@
 package joker
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"time"
@@ -77,7 +78,7 @@ func (d *dmapiProvider) Present(domain, token, keyAuth string) error {
 
 	zone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("joker: %w", err)
+		return fmt.Errorf("joker: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone)
@@ -89,19 +90,19 @@ func (d *dmapiProvider) Present(domain, token, keyAuth string) error {
 		log.Infof("[%s] joker: adding TXT record %q to zone %q with value %q", domain, subDomain, zone, info.Value)
 	}
 
-	response, err := d.client.Login()
+	ctx, err := d.client.CreateAuthenticatedContext(context.Background())
 	if err != nil {
-		return formatResponseError(response, err)
+		return err
 	}
 
-	response, err = d.client.GetZone(zone)
+	response, err := d.client.GetZone(ctx, zone)
 	if err != nil || response.StatusCode != 0 {
 		return formatResponseError(response, err)
 	}
 
 	dnsZone := dmapi.AddTxtEntryToZone(response.Body, subDomain, info.Value, d.config.TTL)
 
-	response, err = d.client.PutZone(zone, dnsZone)
+	response, err = d.client.PutZone(ctx, zone, dnsZone)
 	if err != nil || response.StatusCode != 0 {
 		return formatResponseError(response, err)
 	}
@@ -115,7 +116,7 @@ func (d *dmapiProvider) CleanUp(domain, token, keyAuth string) error {
 
 	zone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("joker: %w", err)
+		return fmt.Errorf("joker: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone)
@@ -127,30 +128,30 @@ func (d *dmapiProvider) CleanUp(domain, token, keyAuth string) error {
 		log.Infof("[%s] joker: removing entry %q from zone %q", domain, subDomain, zone)
 	}
 
-	response, err := d.client.Login()
+	ctx, err := d.client.CreateAuthenticatedContext(context.Background())
 	if err != nil {
-		return formatResponseError(response, err)
+		return err
 	}
 
 	defer func() {
 		// Try to log out in case of errors
-		_, _ = d.client.Logout()
+		_, _ = d.client.Logout(ctx)
 	}()
 
-	response, err = d.client.GetZone(zone)
+	response, err := d.client.GetZone(ctx, zone)
 	if err != nil || response.StatusCode != 0 {
 		return formatResponseError(response, err)
 	}
 
 	dnsZone, modified := dmapi.RemoveTxtEntryFromZone(response.Body, subDomain)
 	if modified {
-		response, err = d.client.PutZone(zone, dnsZone)
+		response, err = d.client.PutZone(ctx, zone, dnsZone)
 		if err != nil || response.StatusCode != 0 {
 			return formatResponseError(response, err)
 		}
 	}
 
-	response, err = d.client.Logout()
+	response, err = d.client.Logout(ctx)
 	if err != nil {
 		return formatResponseError(response, err)
 	}

@@ -3,16 +3,17 @@ package httpreq
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
 // Environment variables names.
@@ -108,6 +109,8 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+	ctx := context.Background()
+
 	if d.config.Mode == "RAW" {
 		msg := &messageRaw{
 			Domain:  domain,
@@ -115,7 +118,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 			KeyAuth: keyAuth,
 		}
 
-		err := d.doPost("/present", msg)
+		err := d.doPost(ctx, "/present", msg)
 		if err != nil {
 			return fmt.Errorf("httpreq: %w", err)
 		}
@@ -128,7 +131,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Value: info.Value,
 	}
 
-	err := d.doPost("/present", msg)
+	err := d.doPost(ctx, "/present", msg)
 	if err != nil {
 		return fmt.Errorf("httpreq: %w", err)
 	}
@@ -137,6 +140,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+	ctx := context.Background()
+
 	if d.config.Mode == "RAW" {
 		msg := &messageRaw{
 			Domain:  domain,
@@ -144,7 +149,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 			KeyAuth: keyAuth,
 		}
 
-		err := d.doPost("/cleanup", msg)
+		err := d.doPost(ctx, "/cleanup", msg)
 		if err != nil {
 			return fmt.Errorf("httpreq: %w", err)
 		}
@@ -157,46 +162,43 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		Value: info.Value,
 	}
 
-	err := d.doPost("/cleanup", msg)
+	err := d.doPost(ctx, "/cleanup", msg)
 	if err != nil {
 		return fmt.Errorf("httpreq: %w", err)
 	}
 	return nil
 }
 
-func (d *DNSProvider) doPost(uri string, msg interface{}) error {
-	reqBody := &bytes.Buffer{}
+func (d *DNSProvider) doPost(ctx context.Context, uri string, msg any) error {
+	reqBody := new(bytes.Buffer)
 	err := json.NewEncoder(reqBody).Encode(msg)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create request JSON body: %w", err)
 	}
 
 	endpoint := d.config.Endpoint.JoinPath(uri)
 
-	req, err := http.NewRequest(http.MethodPost, endpoint.String(), reqBody)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint.String(), reqBody)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to create request: %w", err)
 	}
 
+	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
 
-	if len(d.config.Username) > 0 && len(d.config.Password) > 0 {
+	if d.config.Username != "" && d.config.Password != "" {
 		req.SetBasicAuth(d.config.Username, d.config.Password)
 	}
 
 	resp, err := d.config.HTTPClient.Do(req)
 	if err != nil {
-		return err
+		return errutils.NewHTTPDoError(req, err)
 	}
-	defer resp.Body.Close()
 
-	if resp.StatusCode >= http.StatusBadRequest {
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return fmt.Errorf("%d: failed to read response body: %w", resp.StatusCode, err)
-		}
+	defer func() { _ = resp.Body.Close() }()
 
-		return fmt.Errorf("%d: request failed: %v", resp.StatusCode, string(body))
+	if resp.StatusCode/100 != 2 {
+		return errutils.NewUnexpectedResponseStatusCodeError(req, resp)
 	}
 
 	return nil

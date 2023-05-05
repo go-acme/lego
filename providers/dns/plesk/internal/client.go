@@ -2,6 +2,7 @@ package internal
 
 import (
 	"bytes"
+	"context"
 	"encoding/xml"
 	"errors"
 	"fmt"
@@ -9,34 +10,37 @@ import (
 	"net/http"
 	"net/url"
 	"time"
+
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
 // Client the Plesk API client.
 type Client struct {
-	HTTPClient *http.Client
+	login    string
+	password string
+
 	baseURL    *url.URL
-	login      string
-	password   string
+	HTTPClient *http.Client
 }
 
 // NewClient created a new Client.
 func NewClient(baseURL *url.URL, login string, password string) *Client {
 	return &Client{
-		HTTPClient: &http.Client{Timeout: 10 * time.Second},
-		baseURL:    baseURL,
 		login:      login,
 		password:   password,
+		baseURL:    baseURL,
+		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 	}
 }
 
 // GetSite gets a site.
 // https://docs.plesk.com/en-US/obsidian/api-rpc/about-xml-api/reference/managing-sites-domains/getting-information-about-sites.66583/
-func (c Client) GetSite(domain string) (int, error) {
+func (c Client) GetSite(ctx context.Context, domain string) (int, error) {
 	payload := RequestPacketType{Site: &SiteTypeRequest{Get: SiteGetRequest{Filter: &SiteFilterType{
 		Name: domain,
 	}}}}
 
-	response, err := c.do(payload)
+	response, err := c.doRequest(ctx, payload)
 	if err != nil {
 		return 0, err
 	}
@@ -58,7 +62,7 @@ func (c Client) GetSite(domain string) (int, error) {
 
 // AddRecord adds a TXT record.
 // https://docs.plesk.com/en-US/obsidian/api-rpc/about-xml-api/reference/managing-dns/managing-dns-records/adding-dns-record.34798/
-func (c Client) AddRecord(siteID int, host, value string) (int, error) {
+func (c Client) AddRecord(ctx context.Context, siteID int, host, value string) (int, error) {
 	payload := RequestPacketType{DNS: &DNSInputType{AddRec: []AddRecRequest{{
 		SiteID: siteID,
 		Type:   "TXT",
@@ -66,7 +70,7 @@ func (c Client) AddRecord(siteID int, host, value string) (int, error) {
 		Value:  value,
 	}}}}
 
-	response, err := c.do(payload)
+	response, err := c.doRequest(ctx, payload)
 	if err != nil {
 		return 0, err
 	}
@@ -88,12 +92,12 @@ func (c Client) AddRecord(siteID int, host, value string) (int, error) {
 
 // DeleteRecord Deletes a TXT record.
 // https://docs.plesk.com/en-US/obsidian/api-rpc/about-xml-api/reference/managing-dns/managing-dns-records/deleting-dns-records.34864/
-func (c Client) DeleteRecord(recordID int) (int, error) {
+func (c Client) DeleteRecord(ctx context.Context, recordID int) (int, error) {
 	payload := RequestPacketType{DNS: &DNSInputType{DelRec: []DelRecRequest{{Filter: DNSSelectionFilterType{
 		ID: recordID,
 	}}}}}
 
-	response, err := c.do(payload)
+	response, err := c.doRequest(ctx, payload)
 	if err != nil {
 		return 0, err
 	}
@@ -113,36 +117,45 @@ func (c Client) DeleteRecord(recordID int) (int, error) {
 	return response.DNS.DelRec[0].Result.ID, nil
 }
 
-func (c Client) do(payload RequestPacketType) (*ResponsePacketType, error) {
+func (c Client) doRequest(ctx context.Context, payload RequestPacketType) (*ResponsePacketType, error) {
 	endpoint := c.baseURL.JoinPath("/enterprise/control/agent.php")
 
-	body := &bytes.Buffer{}
+	body := new(bytes.Buffer)
 	err := xml.NewEncoder(body).Encode(payload)
 	if err != nil {
 		return nil, err
 	}
 
-	req, _ := http.NewRequest(http.MethodPost, endpoint.String(), body)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint.String(), body)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create request: %w", err)
+	}
+
 	req.Header.Set("Content-Type", "text/xml")
+
 	req.Header.Set("Http_auth_login", c.login)
 	req.Header.Set("Http_auth_passwd", c.password)
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, errutils.NewHTTPDoError(req, err)
 	}
 
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode/100 != 2 {
-		all, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("API error: %s", string(all))
+		return nil, errutils.NewUnexpectedResponseStatusCodeError(req, resp)
+	}
+
+	raw, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errutils.NewReadResponseError(req, resp.StatusCode, err)
 	}
 
 	var response ResponsePacketType
-	err = xml.NewDecoder(resp.Body).Decode(&response)
+	err = xml.Unmarshal(raw, &response)
 	if err != nil {
-		return nil, err
+		return nil, errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
 	}
 
 	return &response, nil

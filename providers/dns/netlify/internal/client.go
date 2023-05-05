@@ -2,157 +2,161 @@ package internal
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"time"
+
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
+	"golang.org/x/oauth2"
 )
 
 const defaultBaseURL = "https://api.netlify.com/api/v1"
 
 // Client Netlify API client.
 type Client struct {
-	HTTPClient *http.Client
-	BaseURL    string
-
-	token string
+	baseURL    *url.URL
+	httpClient *http.Client
 }
 
 // NewClient creates a new Client.
-func NewClient(token string) *Client {
-	return &Client{
-		HTTPClient: http.DefaultClient,
-		BaseURL:    defaultBaseURL,
-		token:      token,
+func NewClient(hc *http.Client) *Client {
+	baseURL, _ := url.Parse(defaultBaseURL)
+
+	if hc == nil {
+		hc = &http.Client{Timeout: 5 * time.Second}
 	}
+
+	return &Client{baseURL: baseURL, httpClient: hc}
 }
 
 // GetRecords gets a DNS records.
-func (c *Client) GetRecords(zoneID string) ([]DNSRecord, error) {
-	endpoint, err := c.createEndpoint("dns_zones", zoneID, "dns_records")
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse endpoint: %w", err)
-	}
+func (c *Client) GetRecords(ctx context.Context, zoneID string) ([]DNSRecord, error) {
+	endpoint := c.baseURL.JoinPath("dns_zones", zoneID, "dns_records")
 
-	req, err := http.NewRequest(http.MethodGet, endpoint.String(), nil)
+	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.token))
-
-	resp, err := c.HTTPClient.Do(req)
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("API call failed: %w", err)
+		return nil, errutils.NewHTTPDoError(req, err)
 	}
 
 	defer func() { _ = resp.Body.Close() }()
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %w", err)
+	if resp.StatusCode != http.StatusOK {
+		return nil, errutils.NewUnexpectedResponseStatusCodeError(req, resp)
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("invalid status code: %s: %s", resp.Status, string(body))
+	raw, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errutils.NewReadResponseError(req, resp.StatusCode, err)
 	}
 
 	var records []DNSRecord
-	err = json.Unmarshal(body, &records)
+	err = json.Unmarshal(raw, &records)
 	if err != nil {
-		return nil, fmt.Errorf("failed to marshal response body: %w", err)
+		return nil, errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
 	}
 
 	return records, nil
 }
 
 // CreateRecord creates a DNS records.
-func (c *Client) CreateRecord(zoneID string, record DNSRecord) (*DNSRecord, error) {
-	endpoint, err := c.createEndpoint("dns_zones", zoneID, "dns_records")
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse endpoint: %w", err)
-	}
+func (c *Client) CreateRecord(ctx context.Context, zoneID string, record DNSRecord) (*DNSRecord, error) {
+	endpoint := c.baseURL.JoinPath("dns_zones", zoneID, "dns_records")
 
-	marshaledRecord, err := json.Marshal(record)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal request body: %w", err)
-	}
-
-	req, err := http.NewRequest(http.MethodPost, endpoint.String(), bytes.NewReader(marshaledRecord))
+	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Content-Type", "application/json; charset=utf-8")
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.token))
-
-	resp, err := c.HTTPClient.Do(req)
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("API call failed: %w", err)
+		return nil, errutils.NewHTTPDoError(req, err)
 	}
 
 	defer func() { _ = resp.Body.Close() }()
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %w", err)
+	if resp.StatusCode != http.StatusCreated {
+		return nil, errutils.NewUnexpectedResponseStatusCodeError(req, resp)
 	}
 
-	if resp.StatusCode != http.StatusCreated {
-		return nil, fmt.Errorf("invalid status code: %s: %s", resp.Status, string(body))
+	raw, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errutils.NewReadResponseError(req, resp.StatusCode, err)
 	}
 
 	var recordResp DNSRecord
-	err = json.Unmarshal(body, &recordResp)
+	err = json.Unmarshal(raw, &recordResp)
 	if err != nil {
-		return nil, fmt.Errorf("failed to marshal response body: %w", err)
+		return nil, errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
 	}
 
 	return &recordResp, nil
 }
 
 // RemoveRecord removes a DNS records.
-func (c *Client) RemoveRecord(zoneID, recordID string) error {
-	endpoint, err := c.createEndpoint("dns_zones", zoneID, "dns_records", recordID)
+func (c *Client) RemoveRecord(ctx context.Context, zoneID, recordID string) error {
+	endpoint := c.baseURL.JoinPath("dns_zones", zoneID, "dns_records", recordID)
+
+	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
-		return fmt.Errorf("failed to parse endpoint: %w", err)
+		return err
 	}
 
-	req, err := http.NewRequest(http.MethodDelete, endpoint.String(), nil)
+	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("failed to create request: %w", err)
-	}
-
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.token))
-
-	resp, err := c.HTTPClient.Do(req)
-	if err != nil {
-		return fmt.Errorf("API call failed: %w", err)
+		return errutils.NewHTTPDoError(req, err)
 	}
 
 	defer func() { _ = resp.Body.Close() }()
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return fmt.Errorf("failed to read response body: %w", err)
-	}
-
 	if resp.StatusCode != http.StatusNoContent {
-		return fmt.Errorf("invalid status code: %s: %s", resp.Status, string(body))
+		return errutils.NewUnexpectedResponseStatusCodeError(req, resp)
 	}
 
 	return nil
 }
 
-func (c *Client) createEndpoint(parts ...string) (*url.URL, error) {
-	base, err := url.Parse(c.BaseURL)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse base URL: %w", err)
+func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, payload interface{}) (*http.Request, error) {
+	buf := new(bytes.Buffer)
+
+	if payload != nil {
+		err := json.NewEncoder(buf).Encode(payload)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create request JSON body: %w", err)
+		}
 	}
 
-	return base.JoinPath(parts...), nil
+	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), buf)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create request: %w", err)
+	}
+
+	req.Header.Set("Accept", "application/json")
+
+	if payload != nil {
+		req.Header.Set("Content-Type", "application/json; charset=utf-8")
+	}
+
+	return req, nil
+}
+
+func OAuthStaticAccessToken(client *http.Client, accessToken string) *http.Client {
+	if client == nil {
+		client = &http.Client{Timeout: 5 * time.Second}
+	}
+
+	client.Transport = &oauth2.Transport{
+		Source: oauth2.StaticTokenSource(&oauth2.Token{AccessToken: accessToken}),
+		Base:   client.Transport,
+	}
+
+	return client
 }

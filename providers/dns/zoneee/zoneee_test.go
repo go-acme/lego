@@ -6,10 +6,12 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"path"
 	"testing"
 	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/go-acme/lego/v4/providers/dns/zoneee/internal"
 	"github.com/stretchr/testify/require"
 )
 
@@ -122,7 +124,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			config.APIKey = test.apiKey
 			config.Username = test.apiUser
 
-			if len(test.endpoint) > 0 {
+			if test.endpoint != "" {
 				config.Endpoint = mustParse(test.endpoint)
 			}
 
@@ -155,7 +157,7 @@ func TestDNSProvider_Present(t *testing.T) {
 			username: "bar",
 			apiKey:   "foo",
 			handlers: map[string]http.HandlerFunc{
-				"/" + hostedZone + "/txt": mockHandlerCreateRecord,
+				path.Join("/", "dns", hostedZone, "txt"): mockHandlerCreateRecord,
 			},
 		},
 		{
@@ -163,15 +165,15 @@ func TestDNSProvider_Present(t *testing.T) {
 			username: "nope",
 			apiKey:   "foo",
 			handlers: map[string]http.HandlerFunc{
-				"/" + hostedZone + "/txt": mockHandlerCreateRecord,
+				path.Join("/", "dns", hostedZone, "txt"): mockHandlerCreateRecord,
 			},
-			expectedError: "zoneee: status code=401: Unauthorized\n",
+			expectedError: "zoneee: unexpected status code: [status code: 401] body: Unauthorized",
 		},
 		{
 			desc:          "error",
 			username:      "bar",
 			apiKey:        "foo",
-			expectedError: "zoneee: status code=404: 404 page not found\n",
+			expectedError: "zoneee: unexpected status code: [status code: 404] body: 404 page not found",
 		},
 	}
 
@@ -181,12 +183,13 @@ func TestDNSProvider_Present(t *testing.T) {
 			t.Parallel()
 
 			mux := http.NewServeMux()
-			for uri, handler := range test.handlers {
-				mux.HandleFunc(uri, handler)
-			}
-
 			server := httptest.NewServer(mux)
 			t.Cleanup(server.Close)
+
+			for uri, handler := range test.handlers {
+				handler := handler
+				mux.HandleFunc(uri, handler)
+			}
 
 			config := NewDefaultConfig()
 			config.Endpoint = mustParse(server.URL)
@@ -222,14 +225,14 @@ func TestDNSProvider_Cleanup(t *testing.T) {
 			username: "bar",
 			apiKey:   "foo",
 			handlers: map[string]http.HandlerFunc{
-				"/" + hostedZone + "/txt": mockHandlerGetRecords([]txtRecord{{
+				path.Join("/", "dns", hostedZone, "txt"): mockHandlerGetRecords([]internal.TXTRecord{{
 					ID:          "1234",
 					Name:        domain,
 					Destination: "LHDhK3oGRvkiefQnx7OOczTY5Tic_xZ6HcMOc_gmtoM",
 					Delete:      true,
 					Modify:      true,
 				}}),
-				"/" + hostedZone + "/txt/1234": mockHandlerDeleteRecord,
+				path.Join("/", "dns", hostedZone, "txt", "1234"): mockHandlerDeleteRecord,
 			},
 		},
 		{
@@ -237,8 +240,8 @@ func TestDNSProvider_Cleanup(t *testing.T) {
 			username: "bar",
 			apiKey:   "foo",
 			handlers: map[string]http.HandlerFunc{
-				"/" + hostedZone + "/txt":      mockHandlerGetRecords([]txtRecord{}),
-				"/" + hostedZone + "/txt/1234": mockHandlerDeleteRecord,
+				path.Join("/", "dns", hostedZone, "txt"):         mockHandlerGetRecords([]internal.TXTRecord{}),
+				path.Join("/", "dns", hostedZone, "txt", "1234"): mockHandlerDeleteRecord,
 			},
 			expectedError: "zoneee: txt record does not exist for LHDhK3oGRvkiefQnx7OOczTY5Tic_xZ6HcMOc_gmtoM",
 		},
@@ -247,22 +250,22 @@ func TestDNSProvider_Cleanup(t *testing.T) {
 			username: "nope",
 			apiKey:   "foo",
 			handlers: map[string]http.HandlerFunc{
-				"/" + hostedZone + "/txt": mockHandlerGetRecords([]txtRecord{{
+				path.Join("/", "dns", hostedZone, "txt"): mockHandlerGetRecords([]internal.TXTRecord{{
 					ID:          "1234",
 					Name:        domain,
 					Destination: "LHDhK3oGRvkiefQnx7OOczTY5Tic_xZ6HcMOc_gmtoM",
 					Delete:      true,
 					Modify:      true,
 				}}),
-				"/" + hostedZone + "/txt/1234": mockHandlerDeleteRecord,
+				path.Join("/", "dns", hostedZone, "txt", "1234"): mockHandlerDeleteRecord,
 			},
-			expectedError: "zoneee: status code=401: Unauthorized\n",
+			expectedError: "zoneee: unexpected status code: [status code: 401] body: Unauthorized",
 		},
 		{
 			desc:          "error",
 			username:      "bar",
 			apiKey:        "foo",
-			expectedError: "zoneee: status code=404: 404 page not found\n",
+			expectedError: "zoneee: unexpected status code: [status code: 404] body: 404 page not found",
 		},
 	}
 
@@ -272,12 +275,13 @@ func TestDNSProvider_Cleanup(t *testing.T) {
 			t.Parallel()
 
 			mux := http.NewServeMux()
-			for uri, handler := range test.handlers {
-				mux.HandleFunc(uri, handler)
-			}
-
 			server := httptest.NewServer(mux)
 			t.Cleanup(server.Close)
+
+			for uri, handler := range test.handlers {
+				handler := handler
+				mux.HandleFunc(uri, handler)
+			}
 
 			config := NewDefaultConfig()
 			config.Endpoint = mustParse(server.URL)
@@ -346,7 +350,7 @@ func mockHandlerCreateRecord(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	record := txtRecord{}
+	record := internal.TXTRecord{}
 	err := json.NewDecoder(req.Body).Decode(&record)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
@@ -358,7 +362,7 @@ func mockHandlerCreateRecord(rw http.ResponseWriter, req *http.Request) {
 	record.Modify = true
 	record.ResourceURL = req.URL.String() + "/1234"
 
-	bytes, err := json.Marshal([]txtRecord{record})
+	bytes, err := json.Marshal([]internal.TXTRecord{record})
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
@@ -370,7 +374,7 @@ func mockHandlerCreateRecord(rw http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func mockHandlerGetRecords(records []txtRecord) http.HandlerFunc {
+func mockHandlerGetRecords(records []internal.TXTRecord) http.HandlerFunc {
 	return func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
 			http.Error(rw, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)

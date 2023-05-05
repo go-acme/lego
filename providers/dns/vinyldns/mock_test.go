@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func setup(t *testing.T) (*http.ServeMux, *DNSProvider) {
+func setupTest(t *testing.T) (*http.ServeMux, *DNSProvider) {
 	t.Helper()
 
 	mux := http.NewServeMux()

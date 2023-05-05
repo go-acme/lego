@@ -1,16 +1,18 @@
 package internal
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func setupTest(t *testing.T) (*http.ServeMux, *Client) {
+func setupTest(t *testing.T) (*Client, *http.ServeMux) {
 	t.Helper()
 
 	mux := http.NewServeMux()
@@ -21,9 +23,9 @@ func setupTest(t *testing.T) (*http.ServeMux, *Client) {
 	require.NoError(t, err)
 
 	client.HTTPClient = server.Client()
-	client.BaseURL = server.URL
+	client.baseURL, _ = url.Parse(server.URL)
 
-	return mux, client
+	return client, mux
 }
 
 func TestAddRecord(t *testing.T) {
@@ -58,7 +60,9 @@ func TestAddRecord(t *testing.T) {
 						Content:   "txtTXTtxtTXTtxtTXT",
 						TTL:       300,
 					},
-					Success: "ok",
+					BaseResponse: BaseResponse{
+						Success: "ok",
+					},
 				}
 
 				err = json.NewEncoder(w).Encode(response)
@@ -90,9 +94,11 @@ func TestAddRecord(t *testing.T) {
 				assert.Equal(t, `content=txtTXTtxtTXTtxtTXT&domain=example.com&subdomain=foo&ttl=300&type=TXT`, r.PostForm.Encode())
 
 				response := AddResponse{
-					Domain:  "example.com",
-					Success: "error",
-					Error:   "bad things",
+					Domain: "example.com",
+					BaseResponse: BaseResponse{
+						Success: "error",
+						Error:   "bad things",
+					},
 				}
 
 				err = json.NewEncoder(w).Encode(response)
@@ -114,11 +120,11 @@ func TestAddRecord(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			mux, client := setupTest(t)
+			client, mux := setupTest(t)
 
 			mux.HandleFunc("/add", test.handler)
 
-			record, err := client.AddRecord(test.data)
+			record, err := client.AddRecord(context.Background(), test.data)
 			if test.expectError {
 				require.Error(t, err)
 				require.Nil(t, record)
@@ -154,7 +160,9 @@ func TestRemoveRecord(t *testing.T) {
 				response := RemoveResponse{
 					Domain:   "example.com",
 					RecordID: 6,
-					Success:  "ok",
+					BaseResponse: BaseResponse{
+						Success: "ok",
+					},
 				}
 
 				err = json.NewEncoder(w).Encode(response)
@@ -185,8 +193,10 @@ func TestRemoveRecord(t *testing.T) {
 				response := RemoveResponse{
 					Domain:   "example.com",
 					RecordID: 6,
-					Success:  "error",
-					Error:    "bad things",
+					BaseResponse: BaseResponse{
+						Success: "error",
+						Error:   "bad things",
+					},
 				}
 
 				err = json.NewEncoder(w).Encode(response)
@@ -205,11 +215,11 @@ func TestRemoveRecord(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			mux, client := setupTest(t)
+			client, mux := setupTest(t)
 
 			mux.HandleFunc("/del", test.handler)
 
-			id, err := client.RemoveRecord(test.data)
+			id, err := client.RemoveRecord(context.Background(), test.data)
 			if test.expectError {
 				require.Error(t, err)
 				require.Equal(t, 0, id)
@@ -258,7 +268,9 @@ func TestGetRecords(t *testing.T) {
 							TTL:       300,
 						},
 					},
-					Success: "ok",
+					BaseResponse: BaseResponse{
+						Success: "ok",
+					},
 				}
 
 				err := json.NewEncoder(w).Encode(response)
@@ -278,9 +290,11 @@ func TestGetRecords(t *testing.T) {
 				assert.Equal(t, "domain=example.com", r.URL.RawQuery)
 
 				response := ListResponse{
-					Domain:  "example.com",
-					Success: "error",
-					Error:   "bad things",
+					Domain: "example.com",
+					BaseResponse: BaseResponse{
+						Success: "error",
+						Error:   "bad things",
+					},
 				}
 
 				err := json.NewEncoder(w).Encode(response)
@@ -298,11 +312,11 @@ func TestGetRecords(t *testing.T) {
 		test := test
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
-			mux, client := setupTest(t)
+			client, mux := setupTest(t)
 
 			mux.HandleFunc("/list", test.handler)
 
-			records, err := client.GetRecords(test.domain)
+			records, err := client.GetRecords(context.Background(), test.domain)
 			if test.expectError {
 				require.Error(t, err)
 				require.Empty(t, records)

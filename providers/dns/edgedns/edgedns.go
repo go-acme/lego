@@ -109,7 +109,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := findZone(info.EffectiveFQDN)
+	zone, err := getZone(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("edgedns: %w", err)
 	}
@@ -161,7 +161,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := findZone(info.EffectiveFQDN)
+	zone, err := getZone(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("edgedns: %w", err)
 	}
@@ -214,10 +214,10 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-func findZone(domain string) (string, error) {
+func getZone(domain string) (string, error) {
 	zone, err := dns01.FindZoneByFqdn(domain)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("could not find zone for FQDN %q: %w", domain, err)
 	}
 
 	return dns01.UnFqdn(zone), nil

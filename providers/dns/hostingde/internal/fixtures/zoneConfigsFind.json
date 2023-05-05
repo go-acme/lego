@@ -1,0 +1,44 @@
+{
+  "metadata": {
+    "clientTransactionId": "1",
+    "serverTransactionId": "2"
+  },
+  "warnings": [
+    "aaa",
+    "bbb"
+  ],
+  "status": "success",
+  "response": {
+    "limit": 10,
+    "page": 1,
+    "totalEntries": 15,
+    "totalPages": 2,
+    "type": "FindZoneConfigsResult",
+    "data": [
+      {
+        "id": "123",
+        "accountId": "456",
+        "status": "s",
+        "name": "n",
+        "nameUnicode": "u",
+        "masterIp": "m",
+        "type": "t",
+        "emailAddress": "e",
+        "zoneTransferWhitelist": [
+          "a",
+          "b"
+        ],
+        "lastChangeDate": "l",
+        "dnsServerGroupId": "g",
+        "dnsSecMode": "m",
+        "soaValues": {
+          "refresh": 1,
+          "retry": 2,
+          "expire": 3,
+          "ttl": 4,
+          "negativeTtl": 5
+        }
+      }
+    ]
+  }
+}

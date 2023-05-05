@@ -126,7 +126,7 @@ import (
 // NewDNSChallengeProviderByName Factory for DNS providers.
 func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 	switch name {
-	case "acme-dns":
+	case "acme-dns": // TODO(ldez): remove "-" in v5
 		return acmedns.NewDNSProvider()
 	case "alidns":
 		return alidns.NewDNSProvider()

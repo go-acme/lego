@@ -1,11 +1,13 @@
 package internal
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strings"
 	"testing"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -35,7 +37,7 @@ func TestClient_AddRecord(t *testing.T) {
 			return
 		}
 
-		if req.Header.Get("Authorization") != "secret" {
+		if req.Header.Get(authorizationHeader) != "secret" {
 			http.Error(rw, `{"message":"Unauthenticated"}`, http.StatusUnauthorized)
 			return
 		}
@@ -47,7 +49,7 @@ func TestClient_AddRecord(t *testing.T) {
 		}
 
 		expectedReqBody := `{"name":"_acme-challenge.example.com","type":"TXT","content":"\"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI\"","ttl":120}`
-		if string(reqBody) != expectedReqBody {
+		if strings.TrimSpace(string(reqBody)) != expectedReqBody {
 			http.Error(rw, `{"message":"invalid request"}`, http.StatusBadRequest)
 			return
 		}
@@ -76,7 +78,7 @@ func TestClient_AddRecord(t *testing.T) {
 		TTL:     dns01.DefaultTTL,
 	}
 
-	response, err := client.AddRecord("example.com", record)
+	response, err := client.AddRecord(context.Background(), "example.com", record)
 	require.NoError(t, err)
 
 	expected := &AddRecordResponse{
@@ -104,7 +106,7 @@ func TestClient_RemoveRecord(t *testing.T) {
 			return
 		}
 
-		if req.Header.Get("Authorization") != "secret" {
+		if req.Header.Get(authorizationHeader) != "secret" {
 			http.Error(rw, `{"message":"Unauthenticated"}`, http.StatusUnauthorized)
 			return
 		}
@@ -112,6 +114,6 @@ func TestClient_RemoveRecord(t *testing.T) {
 		rw.WriteHeader(http.StatusNoContent)
 	})
 
-	err := client.RemoveRecord("example.com", 1234567)
+	err := client.RemoveRecord(context.Background(), "example.com", 1234567)
 	require.NoError(t, err)
 }

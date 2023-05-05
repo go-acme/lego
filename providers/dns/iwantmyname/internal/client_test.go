@@ -18,13 +18,22 @@ func checkParameter(query url.Values, key, expected string) error {
 	return nil
 }
 
-func TestClient_Do(t *testing.T) {
+func setupTest(t *testing.T) (*Client, *http.ServeMux) {
+	t.Helper()
+
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
 
 	client := NewClient("user", "secret")
 	client.HTTPClient = server.Client()
 	client.baseURL, _ = url.Parse(server.URL)
+
+	return client, mux
+}
+
+func TestClient_Do(t *testing.T) {
+	client, mux := setupTest(t)
 
 	mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodPost {
@@ -73,6 +82,6 @@ func TestClient_Do(t *testing.T) {
 		TTL:      120,
 	}
 
-	err := client.Do(context.Background(), record)
+	err := client.SendRequest(context.Background(), record)
 	require.NoError(t, err)
 }

@@ -2,6 +2,7 @@
 package plesk
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -122,10 +123,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("plesk: could not find zone for domain %q and fqdn %q : %w", domain, info.EffectiveFQDN, err)
+		return fmt.Errorf("plesk: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
-	siteID, err := d.client.GetSite(dns01.UnFqdn(authZone))
+	ctx := context.Background()
+
+	siteID, err := d.client.GetSite(ctx, dns01.UnFqdn(authZone))
 	if err != nil {
 		return fmt.Errorf("plesk: failed to get site: %w", err)
 	}
@@ -135,7 +138,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("nodion: %w", err)
 	}
 
-	recordID, err := d.client.AddRecord(siteID, subDomain, info.Value)
+	recordID, err := d.client.AddRecord(ctx, siteID, subDomain, info.Value)
 	if err != nil {
 		return fmt.Errorf("plesk: failed to add record: %w", err)
 	}
@@ -158,7 +161,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("plesk: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
-	_, err := d.client.DeleteRecord(recordID)
+	_, err := d.client.DeleteRecord(context.Background(), recordID)
 	if err != nil {
 		return fmt.Errorf("plesk: failed to delete record (%d): %w", recordID, err)
 	}

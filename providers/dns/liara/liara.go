@@ -2,6 +2,7 @@
 package liara
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -94,8 +95,6 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("liara: invalid TTL, TTL (%d) must be lower than %d", config.TTL, maxTTL)
 	}
 
-	client := internal.NewClient(config.APIKey)
-
 	retryClient := retryablehttp.NewClient()
 	retryClient.RetryMax = 5
 	if config.HTTPClient != nil {
@@ -103,7 +102,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 	retryClient.Logger = log.Logger
 
-	client.HTTPClient = retryClient.StandardClient()
+	client := internal.NewClient(internal.OAuthStaticAccessToken(retryClient.StandardClient(), config.APIKey))
 
 	return &DNSProvider{
 		config:    config,
@@ -124,7 +123,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("liara: %w", err)
+		return fmt.Errorf("liara: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
@@ -138,7 +137,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Contents: []internal.Content{{Text: info.Value}},
 		TTL:      d.config.TTL,
 	}
-	newRecord, err := d.client.CreateRecord(dns01.UnFqdn(authZone), record)
+	newRecord, err := d.client.CreateRecord(context.Background(), dns01.UnFqdn(authZone), record)
 	if err != nil {
 		return fmt.Errorf("liara: failed to create TXT record, fqdn=%s: %w", info.EffectiveFQDN, err)
 	}
@@ -156,7 +155,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("liara: %w", err)
+		return fmt.Errorf("liara: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	// gets the record's unique ID
@@ -167,7 +166,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("liara: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
-	err = d.client.DeleteRecord(dns01.UnFqdn(authZone), recordID)
+	err = d.client.DeleteRecord(context.Background(), dns01.UnFqdn(authZone), recordID)
 	if err != nil {
 		return fmt.Errorf("liara: failed to delete TXT record, id=%s: %w", recordID, err)
 	}

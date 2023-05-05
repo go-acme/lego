@@ -1,6 +1,7 @@
 package digitalocean
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"net/http"
@@ -115,6 +116,7 @@ func TestDNSProvider_Present(t *testing.T) {
 	mux.HandleFunc("/v2/domains/example.com/records", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodPost, r.Method, "method")
 
+		assert.Equal(t, "application/json", r.Header.Get("Accept"), "Accept")
 		assert.Equal(t, "application/json", r.Header.Get("Content-Type"), "Content-Type")
 		assert.Equal(t, "Bearer asdf1234", r.Header.Get("Authorization"), "Authorization")
 
@@ -125,7 +127,7 @@ func TestDNSProvider_Present(t *testing.T) {
 		}
 
 		expectedReqBody := `{"type":"TXT","name":"_acme-challenge.example.com.","data":"w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI","ttl":30}`
-		assert.Equal(t, expectedReqBody, string(reqBody))
+		assert.Equal(t, expectedReqBody, string(bytes.TrimSpace(reqBody)))
 
 		w.WriteHeader(http.StatusCreated)
 		_, err = fmt.Fprintf(w, `{
@@ -157,7 +159,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 
 		assert.Equal(t, "/v2/domains/example.com/records/1234567", r.URL.Path, "Path")
 
-		// NOTE: Even though the body is empty, DigitalOcean API docs still show setting this Content-Type...
+		assert.Equal(t, "application/json", r.Header.Get("Accept"), "Accept")
 		assert.Equal(t, "application/json", r.Header.Get("Content-Type"), "Content-Type")
 		assert.Equal(t, "Bearer asdf1234", r.Header.Get("Authorization"), "Authorization")
 

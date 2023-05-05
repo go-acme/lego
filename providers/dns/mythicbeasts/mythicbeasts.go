@@ -2,15 +2,16 @@
 package mythicbeasts
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
-	"sync"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/mythicbeasts/internal"
 )
 
 // Environment variables names.
@@ -42,12 +43,12 @@ type Config struct {
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() (*Config, error) {
-	apiEndpoint, err := url.Parse(env.GetOrDefaultString(EnvAPIEndpoint, apiBaseURL))
+	apiEndpoint, err := url.Parse(env.GetOrDefaultString(EnvAPIEndpoint, internal.APIBaseURL))
 	if err != nil {
 		return nil, fmt.Errorf("mythicbeasts: Unable to parse API URL: %w", err)
 	}
 
-	authEndpoint, err := url.Parse(env.GetOrDefaultString(EnvAuthAPIEndpoint, authBaseURL))
+	authEndpoint, err := url.Parse(env.GetOrDefaultString(EnvAuthAPIEndpoint, internal.AuthBaseURL))
 	if err != nil {
 		return nil, fmt.Errorf("mythicbeasts: Unable to parse AUTH API URL: %w", err)
 	}
@@ -67,10 +68,7 @@ func NewDefaultConfig() (*Config, error) {
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
-
-	// token  string
-	token   *authResponse
-	muToken sync.Mutex
+	client *internal.Client
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for mythicbeasts DNSv2 API.
@@ -102,7 +100,21 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("mythicbeasts: incomplete credentials, missing username and/or password")
 	}
 
-	return &DNSProvider{config: config}, nil
+	client := internal.NewClient(config.UserName, config.Password)
+
+	if config.APIEndpoint != nil {
+		client.APIEndpoint = config.APIEndpoint
+	}
+
+	if config.AuthAPIEndpoint != nil {
+		client.AuthEndpoint = config.AuthAPIEndpoint
+	}
+
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
+	}
+
+	return &DNSProvider{config: config, client: client}, nil
 }
 
 // Present creates a TXT record using the specified parameters.
@@ -111,7 +123,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("mythicbeasts: %w", err)
+		return fmt.Errorf("mythicbeasts: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
@@ -121,14 +133,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone = dns01.UnFqdn(authZone)
 
-	err = d.login()
+	ctx, err := d.client.CreateAuthenticatedContext(context.Background())
 	if err != nil {
-		return fmt.Errorf("mythicbeasts: %w", err)
+		return fmt.Errorf("mythicbeasts: login: %w", err)
 	}
 
-	err = d.createTXTRecord(authZone, subDomain, info.Value)
+	err = d.client.CreateTXTRecord(ctx, authZone, subDomain, info.Value, d.config.TTL)
 	if err != nil {
-		return fmt.Errorf("mythicbeasts: %w", err)
+		return fmt.Errorf("mythicbeasts: CreateTXTRecord: %w", err)
 	}
 
 	return nil
@@ -140,7 +152,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("mythicbeasts: %w", err)
+		return fmt.Errorf("mythicbeasts: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
@@ -150,14 +162,14 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone = dns01.UnFqdn(authZone)
 
-	err = d.login()
+	ctx, err := d.client.CreateAuthenticatedContext(context.Background())
 	if err != nil {
-		return fmt.Errorf("mythicbeasts: %w", err)
+		return fmt.Errorf("mythicbeasts: login: %w", err)
 	}
 
-	err = d.removeTXTRecord(authZone, subDomain, info.Value)
+	err = d.client.RemoveTXTRecord(ctx, authZone, subDomain, info.Value)
 	if err != nil {
-		return fmt.Errorf("mythicbeasts: %w", err)
+		return fmt.Errorf("mythicbeasts: RemoveTXTRecord: %w", err)
 	}
 
 	return nil

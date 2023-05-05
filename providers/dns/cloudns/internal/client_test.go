@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -10,6 +11,21 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func setupTest(t *testing.T, subAuthID string, handler http.HandlerFunc) *Client {
+	t.Helper()
+
+	server := httptest.NewServer(handler)
+	t.Cleanup(server.Close)
+
+	client, err := NewClient("myAuthID", subAuthID, "myAuthPassword")
+	require.NoError(t, err)
+
+	client.BaseURL, _ = url.Parse(server.URL)
+	client.HTTPClient = server.Client()
+
+	return client
+}
 
 func handlerMock(method string, jsonData []byte) http.HandlerFunc {
 	return func(rw http.ResponseWriter, req *http.Request) {
@@ -109,22 +125,16 @@ func TestClient_GetZone(t *testing.T) {
 			authFQDN:    "_acme-challenge.foo.com.",
 			apiResponse: `[{}]`,
 			expected: expected{
-				errorMsg: "failed to unmarshal zone: json: cannot unmarshal array into Go value of type internal.Zone",
+				errorMsg: "unable to unmarshal response: [status code: 200] body: [{}] error: json: cannot unmarshal array into Go value of type internal.Zone",
 			},
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			server := httptest.NewServer(handlerMock(http.MethodGet, []byte(test.apiResponse)))
-			t.Cleanup(server.Close)
+			client := setupTest(t, "", handlerMock(http.MethodGet, []byte(test.apiResponse)))
 
-			client, err := NewClient("myAuthID", "", "myAuthPassword")
-			require.NoError(t, err)
-
-			client.BaseURL, _ = url.Parse(server.URL)
-
-			zone, err := client.GetZone(test.authFQDN)
+			zone, err := client.GetZone(context.Background(), test.authFQDN)
 
 			if test.expected.errorMsg != "" {
 				require.EqualError(t, err, test.expected.errorMsg)
@@ -222,22 +232,16 @@ func TestClient_FindTxtRecord(t *testing.T) {
 			zoneName:    "example.com",
 			apiResponse: `[{}]`,
 			expected: expected{
-				errorMsg: "failed to unmarshall TXT records: json: cannot unmarshal array into Go value of type map[string]internal.TXTRecord: [{}]",
+				errorMsg: "unable to unmarshal response: [status code: 200] body: [{}] error: json: cannot unmarshal array into Go value of type map[string]internal.TXTRecord",
 			},
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			server := httptest.NewServer(handlerMock(http.MethodGet, []byte(test.apiResponse)))
-			t.Cleanup(server.Close)
+			client := setupTest(t, "", handlerMock(http.MethodGet, []byte(test.apiResponse)))
 
-			client, err := NewClient("myAuthID", "", "myAuthPassword")
-			require.NoError(t, err)
-
-			client.BaseURL, _ = url.Parse(server.URL)
-
-			txtRecord, err := client.FindTxtRecord(test.zoneName, test.authFQDN)
+			txtRecord, err := client.FindTxtRecord(context.Background(), test.zoneName, test.authFQDN)
 
 			if test.expected.errorMsg != "" {
 				require.EqualError(t, err, test.expected.errorMsg)
@@ -337,22 +341,16 @@ func TestClient_ListTxtRecord(t *testing.T) {
 			zoneName:    "example.com",
 			apiResponse: `[{}]`,
 			expected: expected{
-				errorMsg: "failed to unmarshall TXT records: json: cannot unmarshal array into Go value of type map[string]internal.TXTRecord: [{}]",
+				errorMsg: "unable to unmarshal response: [status code: 200] body: [{}] error: json: cannot unmarshal array into Go value of type map[string]internal.TXTRecord",
 			},
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			server := httptest.NewServer(handlerMock(http.MethodGet, []byte(test.apiResponse)))
-			t.Cleanup(server.Close)
+			client := setupTest(t, "", handlerMock(http.MethodGet, []byte(test.apiResponse)))
 
-			client, err := NewClient("myAuthID", "", "myAuthPassword")
-			require.NoError(t, err)
-
-			client.BaseURL, _ = url.Parse(server.URL)
-
-			txtRecords, err := client.ListTxtRecords(test.zoneName, test.authFQDN)
+			txtRecords, err := client.ListTxtRecords(context.Background(), test.zoneName, test.authFQDN)
 
 			if test.expected.errorMsg != "" {
 				require.EqualError(t, err, test.expected.errorMsg)
@@ -440,14 +438,14 @@ func TestClient_AddTxtRecord(t *testing.T) {
 			apiResponse: `[{}]`,
 			expected: expected{
 				query:    `auth-id=myAuthID&auth-password=myAuthPassword&domain-name=bar.com&host=_acme-challenge&record=TXTtxtTXTtxtTXTtxtTXTtxt&record-type=TXT&ttl=300`,
-				errorMsg: "failed to unmarshal API response: json: cannot unmarshal array into Go value of type internal.apiResponse: [{}]",
+				errorMsg: "unable to unmarshal response: [status code: 200] body: [{}] error: json: cannot unmarshal array into Go value of type internal.apiResponse",
 			},
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+			client := setupTest(t, test.subAuthID, func(rw http.ResponseWriter, req *http.Request) {
 				if test.expected.query != req.URL.RawQuery {
 					msg := fmt.Sprintf("got: %s, want: %s", test.expected.query, req.URL.RawQuery)
 					http.Error(rw, msg, http.StatusBadRequest)
@@ -455,15 +453,9 @@ func TestClient_AddTxtRecord(t *testing.T) {
 				}
 
 				handlerMock(http.MethodPost, []byte(test.apiResponse))(rw, req)
-			}))
-			t.Cleanup(server.Close)
+			})
 
-			client, err := NewClient(test.authID, test.subAuthID, "myAuthPassword")
-			require.NoError(t, err)
-
-			client.BaseURL, _ = url.Parse(server.URL)
-
-			err = client.AddTxtRecord(test.zoneName, test.authFQDN, test.value, test.ttl)
+			err := client.AddTxtRecord(context.Background(), test.zoneName, test.authFQDN, test.value, test.ttl)
 
 			if test.expected.errorMsg != "" {
 				require.EqualError(t, err, test.expected.errorMsg)
@@ -513,7 +505,7 @@ func TestClient_RemoveTxtRecord(t *testing.T) {
 			apiResponse: `[{}]`,
 			expected: expected{
 				query:    `auth-id=myAuthID&auth-password=myAuthPassword&domain-name=foo-plus.com&record-id=44`,
-				errorMsg: "failed to unmarshal API response: json: cannot unmarshal array into Go value of type internal.apiResponse: [{}]",
+				errorMsg: "unable to unmarshal response: [status code: 200] body: [{}] error: json: cannot unmarshal array into Go value of type internal.apiResponse",
 			},
 		},
 	}
@@ -536,7 +528,7 @@ func TestClient_RemoveTxtRecord(t *testing.T) {
 
 			client.BaseURL, _ = url.Parse(server.URL)
 
-			err = client.RemoveTxtRecord(test.id, test.zoneName)
+			err = client.RemoveTxtRecord(context.Background(), test.id, test.zoneName)
 
 			if test.expected.errorMsg != "" {
 				require.EqualError(t, err, test.expected.errorMsg)
@@ -592,7 +584,7 @@ func TestClient_GetUpdateStatus(t *testing.T) {
 			authFQDN:    "_acme-challenge.foo.com.",
 			zoneName:    "test-zone",
 			apiResponse: `[x]`,
-			expected:    expected{errorMsg: "failed to unmarshal UpdateRecord: invalid character 'x' looking for beginning of value: [x]"},
+			expected:    expected{errorMsg: "unable to unmarshal response: [status code: 200] body: [x] error: invalid character 'x' looking for beginning of value"},
 		},
 	}
 
@@ -606,7 +598,7 @@ func TestClient_GetUpdateStatus(t *testing.T) {
 
 			client.BaseURL, _ = url.Parse(server.URL)
 
-			syncProgress, err := client.GetUpdateStatus(test.zoneName)
+			syncProgress, err := client.GetUpdateStatus(context.Background(), test.zoneName)
 
 			if test.expected.errorMsg != "" {
 				require.EqualError(t, err, test.expected.errorMsg)

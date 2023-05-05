@@ -3,28 +3,21 @@ package internal
 import (
 	"context"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"time"
 
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 	querystring "github.com/google/go-querystring/query"
 )
 
 const defaultBaseURL = "https://iwantmyname.com/basicauth/ddns"
 
-// Record represents a record.
-type Record struct {
-	Hostname string `url:"hostname,omitempty"`
-	Type     string `url:"type,omitempty"`
-	Value    string `url:"value,omitempty"`
-	TTL      int    `url:"ttl,omitempty"`
-}
-
 // Client iwantmyname client.
 type Client struct {
-	username   string
-	password   string
+	username string
+	password string
+
 	baseURL    *url.URL
 	HTTPClient *http.Client
 }
@@ -32,6 +25,7 @@ type Client struct {
 // NewClient creates a new Client.
 func NewClient(username string, password string) *Client {
 	baseURL, _ := url.Parse(defaultBaseURL)
+
 	return &Client{
 		username:   username,
 		password:   password,
@@ -40,8 +34,8 @@ func NewClient(username string, password string) *Client {
 	}
 }
 
-// Do send a request (create/add/delete) to the API.
-func (c Client) Do(ctx context.Context, record Record) error {
+// SendRequest send a request (create/add/delete) to the API.
+func (c Client) SendRequest(ctx context.Context, record Record) error {
 	values, err := querystring.Values(record)
 	if err != nil {
 		return err
@@ -52,19 +46,20 @@ func (c Client) Do(ctx context.Context, record Record) error {
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint.String(), http.NoBody)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to create request: %w", err)
 	}
 
 	req.SetBasicAuth(c.username, c.password)
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
-		return err
+		return errutils.NewHTTPDoError(req, err)
 	}
 
+	defer func() { _ = resp.Body.Close() }()
+
 	if resp.StatusCode/100 != 2 {
-		data, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("status code: %d, %s", resp.StatusCode, string(data))
+		return errutils.NewUnexpectedResponseStatusCodeError(req, resp)
 	}
 
 	return nil

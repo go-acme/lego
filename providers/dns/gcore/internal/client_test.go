@@ -21,22 +21,21 @@ const (
 	testTTL            = 10
 )
 
-func setupTest(t *testing.T) (*http.ServeMux, *Client) {
+func setupTest(t *testing.T) (*Client, *http.ServeMux) {
 	t.Helper()
 
 	mux := http.NewServeMux()
-
 	server := httptest.NewServer(mux)
 	t.Cleanup(server.Close)
 
 	client := NewClient(testToken)
 	client.baseURL, _ = url.Parse(server.URL)
 
-	return mux, client
+	return client, mux
 }
 
 func TestClient_GetZone(t *testing.T) {
-	mux, client := setupTest(t)
+	client, mux := setupTest(t)
 
 	expected := Zone{Name: "example.com"}
 
@@ -52,7 +51,7 @@ func TestClient_GetZone(t *testing.T) {
 }
 
 func TestClient_GetZone_error(t *testing.T) {
-	mux, client := setupTest(t)
+	client, mux := setupTest(t)
 
 	mux.Handle("/v2/zones/example.com", validationHandler{
 		method: http.MethodGet,
@@ -64,7 +63,7 @@ func TestClient_GetZone_error(t *testing.T) {
 }
 
 func TestClient_GetRRSet(t *testing.T) {
-	mux, client := setupTest(t)
+	client, mux := setupTest(t)
 
 	expected := RRSet{
 		TTL: testTTL,
@@ -85,7 +84,7 @@ func TestClient_GetRRSet(t *testing.T) {
 }
 
 func TestClient_GetRRSet_error(t *testing.T) {
-	mux, client := setupTest(t)
+	client, mux := setupTest(t)
 
 	mux.Handle("/v2/zones/example.com/foo.example.com/TXT", validationHandler{
 		method: http.MethodGet,
@@ -97,7 +96,7 @@ func TestClient_GetRRSet_error(t *testing.T) {
 }
 
 func TestClient_DeleteRRSet(t *testing.T) {
-	mux, client := setupTest(t)
+	client, mux := setupTest(t)
 
 	mux.Handle("/v2/zones/test.example.com/my.test.example.com/"+txtRecordType,
 		validationHandler{method: http.MethodDelete})
@@ -107,7 +106,7 @@ func TestClient_DeleteRRSet(t *testing.T) {
 }
 
 func TestClient_DeleteRRSet_error(t *testing.T) {
-	mux, client := setupTest(t)
+	client, mux := setupTest(t)
 
 	mux.Handle("/v2/zones/test.example.com/my.test.example.com/"+txtRecordType, validationHandler{
 		method: http.MethodDelete,
@@ -178,7 +177,7 @@ func TestClient_AddRRSet(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			mux, cl := setupTest(t)
+			cl, mux := setupTest(t)
 
 			for pattern, handler := range test.handlers {
 				mux.Handle(pattern, handler)
@@ -201,7 +200,7 @@ type validationHandler struct {
 }
 
 func (v validationHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	if req.Header.Get("Authorization") != fmt.Sprintf("%s %s", tokenHeader, testToken) {
+	if req.Header.Get(authorizationHeader) != fmt.Sprintf("%s %s", tokenTypeHeader, testToken) {
 		rw.WriteHeader(http.StatusForbidden)
 		_ = json.NewEncoder(rw).Encode(APIError{Message: "token up for parsing was not passed through the context"})
 		return

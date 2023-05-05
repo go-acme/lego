@@ -1,11 +1,12 @@
 package internal
 
 import (
+	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"strconv"
 	"strings"
 	"testing"
 
@@ -31,8 +32,8 @@ func setupTest(t *testing.T) (*Client, *http.ServeMux) {
 	client, err := NewClient("a", "b", "c")
 	require.NoError(t, err)
 
+	client.baseURL = server.URL
 	client.HTTPClient = server.Client()
-	client.BaseURL = server.URL
 
 	return client, mux
 }
@@ -139,205 +140,6 @@ func TestGetDNSRecordIdx(t *testing.T) {
 	}
 }
 
-func TestClient_Login(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
-		raw, err := io.ReadAll(req.Body)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		if string(raw) != `{"action":"login","param":{"customernumber":"a","apikey":"b","apipassword":"c"}}` {
-			http.Error(rw, fmt.Sprintf("invalid request body: %s", string(raw)), http.StatusBadRequest)
-			return
-		}
-
-		response := `
-		{
-		    "serverrequestid": "srv-request-id",
-		    "clientrequestid": "",
-		    "action": "login",
-		    "status": "success",
-		    "statuscode": 2000,
-		    "shortmessage": "Login successful",
-		    "longmessage": "Session has been created successful.",
-		    "responsedata": {
-		        "apisessionid": "api-session-id"
-		    }
-		}
-		`
-		_, err = rw.Write([]byte(response))
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
-
-	sessionID, err := client.Login()
-	require.NoError(t, err)
-
-	assert.Equal(t, "api-session-id", sessionID)
-}
-
-func TestClient_Login_errors(t *testing.T) {
-	testCases := []struct {
-		desc    string
-		handler func(rw http.ResponseWriter, req *http.Request)
-	}{
-		{
-			desc: "HTTP error",
-			handler: func(rw http.ResponseWriter, _ *http.Request) {
-				http.Error(rw, "error message", http.StatusInternalServerError)
-			},
-		},
-		{
-			desc: "API error",
-			handler: func(rw http.ResponseWriter, _ *http.Request) {
-				response := `
-					{
-						"serverrequestid":"YxTr4EzdbJ101T211zR4yzUEMVE",
-						"clientrequestid":"",
-						"action":"login",
-						"status":"error",
-						"statuscode":4013,
-						"shortmessage":"Validation Error.",
-						"longmessage":"Message is empty.",
-						"responsedata":""
-					}`
-				_, err := rw.Write([]byte(response))
-				if err != nil {
-					http.Error(rw, err.Error(), http.StatusInternalServerError)
-					return
-				}
-			},
-		},
-		{
-			desc: "responsedata marshaling error",
-			handler: func(rw http.ResponseWriter, _ *http.Request) {
-				response := `
-							{
-								"serverrequestid": "srv-request-id",
-								"clientrequestid": "",
-								"action": "login",
-								"status": "success",
-								"statuscode": 2000,
-								"shortmessage": "Login successful",
-								"longmessage": "Session has been created successful.",
-								"responsedata": ""
-							}`
-				_, err := rw.Write([]byte(response))
-				if err != nil {
-					http.Error(rw, err.Error(), http.StatusInternalServerError)
-					return
-				}
-			},
-		},
-	}
-
-	for _, test := range testCases {
-		test := test
-		t.Run(test.desc, func(t *testing.T) {
-			t.Parallel()
-
-			client, mux := setupTest(t)
-
-			mux.HandleFunc("/", test.handler)
-
-			sessionID, err := client.Login()
-			assert.Error(t, err)
-			assert.Equal(t, "", sessionID)
-		})
-	}
-}
-
-func TestClient_Logout(t *testing.T) {
-	client, mux := setupTest(t)
-
-	mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
-		raw, err := io.ReadAll(req.Body)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		if string(raw) != `{"action":"logout","param":{"customernumber":"a","apikey":"b","apisessionid":"session-id"}}` {
-			http.Error(rw, fmt.Sprintf("invalid request body: %s", string(raw)), http.StatusBadRequest)
-			return
-		}
-
-		response := `
-			{
-				"serverrequestid": "request-id",
-				"clientrequestid": "",
-				"action": "logout",
-				"status": "success",
-				"statuscode": 2000,
-				"shortmessage": "Logout successful",
-				"longmessage": "Session has been terminated successful.",
-				"responsedata": ""
-			}`
-		_, err = rw.Write([]byte(response))
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
-
-	err := client.Logout("session-id")
-	require.NoError(t, err)
-}
-
-func TestClient_Logout_errors(t *testing.T) {
-	testCases := []struct {
-		desc    string
-		handler func(rw http.ResponseWriter, req *http.Request)
-	}{
-		{
-			desc: "HTTP error",
-			handler: func(rw http.ResponseWriter, _ *http.Request) {
-				http.Error(rw, "error message", http.StatusInternalServerError)
-			},
-		},
-		{
-			desc: "API error",
-			handler: func(rw http.ResponseWriter, _ *http.Request) {
-				response := `
-					{
-						"serverrequestid":"YxTr4EzdbJ101T211zR4yzUEMVE",
-						"clientrequestid":"",
-						"action":"logout",
-						"status":"error",
-						"statuscode":4013,
-						"shortmessage":"Validation Error.",
-						"longmessage":"Message is empty.",
-						"responsedata":""
-					}`
-				_, err := rw.Write([]byte(response))
-				if err != nil {
-					http.Error(rw, err.Error(), http.StatusInternalServerError)
-					return
-				}
-			},
-		},
-	}
-
-	for _, test := range testCases {
-		test := test
-		t.Run(test.desc, func(t *testing.T) {
-			t.Parallel()
-
-			client, mux := setupTest(t)
-
-			mux.HandleFunc("/", test.handler)
-
-			err := client.Logout("session-id")
-			require.Error(t, err)
-		})
-	}
-}
-
 func TestClient_GetDNSRecords(t *testing.T) {
 	client, mux := setupTest(t)
 
@@ -348,7 +150,7 @@ func TestClient_GetDNSRecords(t *testing.T) {
 			return
 		}
 
-		if string(raw) != `{"action":"infoDnsRecords","param":{"domainname":"example.com","customernumber":"a","apikey":"b","apisessionid":"api-session-id"}}` {
+		if string(bytes.TrimSpace(raw)) != `{"action":"infoDnsRecords","param":{"domainname":"example.com","customernumber":"a","apikey":"b","apisessionid":""}}` {
 			http.Error(rw, fmt.Sprintf("invalid request body: %s", string(raw)), http.StatusBadRequest)
 			return
 		}
@@ -413,7 +215,7 @@ func TestClient_GetDNSRecords(t *testing.T) {
 		TTL:          300,
 	}}
 
-	records, err := client.GetDNSRecords("example.com", "api-session-id")
+	records, err := client.GetDNSRecords(context.Background(), "example.com")
 	require.NoError(t, err)
 
 	assert.Equal(t, expected, records)
@@ -494,14 +296,14 @@ func TestClient_GetDNSRecords_errors(t *testing.T) {
 
 			mux.HandleFunc("/", test.handler)
 
-			records, err := client.GetDNSRecords("example.com", "api-session-id")
+			records, err := client.GetDNSRecords(context.Background(), "example.com")
 			require.Error(t, err)
 			assert.Empty(t, records)
 		})
 	}
 }
 
-func TestLiveClientAuth(t *testing.T) {
+func TestClient_GetDNSRecords_Live(t *testing.T) {
 	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
@@ -515,35 +317,7 @@ func TestLiveClientAuth(t *testing.T) {
 		envTest.GetValue("NETCUP_API_PASSWORD"))
 	require.NoError(t, err)
 
-	for i := 1; i < 4; i++ {
-		i := i
-		t.Run("Test_"+strconv.Itoa(i), func(t *testing.T) {
-			t.Parallel()
-
-			sessionID, err := client.Login()
-			require.NoError(t, err)
-
-			err = client.Logout(sessionID)
-			require.NoError(t, err)
-		})
-	}
-}
-
-func TestLiveClientGetDnsRecords(t *testing.T) {
-	if !envTest.IsLiveTest() {
-		t.Skip("skipping live test")
-	}
-
-	// Setup
-	envTest.RestoreEnv()
-
-	client, err := NewClient(
-		envTest.GetValue("NETCUP_CUSTOMER_NUMBER"),
-		envTest.GetValue("NETCUP_API_KEY"),
-		envTest.GetValue("NETCUP_API_PASSWORD"))
-	require.NoError(t, err)
-
-	sessionID, err := client.Login()
+	ctx, err := client.CreateSessionContext(context.Background())
 	require.NoError(t, err)
 
 	info := dns01.GetChallengeInfo(envTest.GetDomain(), "123d==")
@@ -554,15 +328,15 @@ func TestLiveClientGetDnsRecords(t *testing.T) {
 	zone = dns01.UnFqdn(zone)
 
 	// TestMethod
-	_, err = client.GetDNSRecords(zone, sessionID)
+	_, err = client.GetDNSRecords(ctx, zone)
 	require.NoError(t, err)
 
 	// Tear down
-	err = client.Logout(sessionID)
+	err = client.Logout(ctx)
 	require.NoError(t, err)
 }
 
-func TestLiveClientUpdateDnsRecord(t *testing.T) {
+func TestClient_UpdateDNSRecord_Live(t *testing.T) {
 	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
@@ -576,7 +350,7 @@ func TestLiveClientUpdateDnsRecord(t *testing.T) {
 		envTest.GetValue("NETCUP_API_PASSWORD"))
 	require.NoError(t, err)
 
-	sessionID, err := client.Login()
+	ctx, err := client.CreateSessionContext(context.Background())
 	require.NoError(t, err)
 
 	info := dns01.GetChallengeInfo(envTest.GetDomain(), "123d==")
@@ -597,10 +371,10 @@ func TestLiveClientUpdateDnsRecord(t *testing.T) {
 	// test
 	zone = dns01.UnFqdn(zone)
 
-	err = client.UpdateDNSRecord(sessionID, zone, []DNSRecord{record})
+	err = client.UpdateDNSRecord(ctx, zone, []DNSRecord{record})
 	require.NoError(t, err)
 
-	records, err := client.GetDNSRecords(zone, sessionID)
+	records, err := client.GetDNSRecords(ctx, zone)
 	require.NoError(t, err)
 
 	recordIdx, err := GetDNSRecordIdx(records, record)
@@ -614,9 +388,9 @@ func TestLiveClientUpdateDnsRecord(t *testing.T) {
 	records[recordIdx].DeleteRecord = true
 
 	// Tear down
-	err = client.UpdateDNSRecord(sessionID, envTest.GetDomain(), []DNSRecord{records[recordIdx]})
+	err = client.UpdateDNSRecord(ctx, envTest.GetDomain(), []DNSRecord{records[recordIdx]})
 	require.NoError(t, err, "Did not remove record! Please do so yourself.")
 
-	err = client.Logout(sessionID)
+	err = client.Logout(ctx)
 	require.NoError(t, err)
 }

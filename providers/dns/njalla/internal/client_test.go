@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -11,7 +12,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func setup(t *testing.T, handler func(http.ResponseWriter, *http.Request)) *Client {
+func setupTest(t *testing.T, handler func(http.ResponseWriter, *http.Request)) *Client {
 	t.Helper()
 
 	mux := http.NewServeMux()
@@ -24,7 +25,7 @@ func setup(t *testing.T, handler func(http.ResponseWriter, *http.Request)) *Clie
 			return
 		}
 
-		token := req.Header.Get("Authorization")
+		token := req.Header.Get(authorizationHeader)
 		if token != "Njalla secret" {
 			_, _ = rw.Write([]byte(`{"jsonrpc":"2.0", "Error": {"code": 403, "message": "Invalid token."}}`))
 			return
@@ -44,7 +45,7 @@ func setup(t *testing.T, handler func(http.ResponseWriter, *http.Request)) *Clie
 }
 
 func TestClient_AddRecord(t *testing.T) {
-	client := setup(t, func(rw http.ResponseWriter, req *http.Request) {
+	client := setupTest(t, func(rw http.ResponseWriter, req *http.Request) {
 		apiReq := struct {
 			Method string `json:"method"`
 			Params Record `json:"params"`
@@ -79,7 +80,7 @@ func TestClient_AddRecord(t *testing.T) {
 		Type:    "TXT",
 	}
 
-	result, err := client.AddRecord(record)
+	result, err := client.AddRecord(context.Background(), record)
 	require.NoError(t, err)
 
 	expected := &Record{
@@ -94,7 +95,7 @@ func TestClient_AddRecord(t *testing.T) {
 }
 
 func TestClient_AddRecord_error(t *testing.T) {
-	client := setup(t, nil)
+	client := setupTest(t, nil)
 	client.token = "invalid"
 
 	record := Record{
@@ -105,14 +106,14 @@ func TestClient_AddRecord_error(t *testing.T) {
 		Type:    "TXT",
 	}
 
-	result, err := client.AddRecord(record)
+	result, err := client.AddRecord(context.Background(), record)
 	require.Error(t, err)
 
 	assert.Nil(t, result)
 }
 
 func TestClient_ListRecords(t *testing.T) {
-	client := setup(t, func(rw http.ResponseWriter, req *http.Request) {
+	client := setupTest(t, func(rw http.ResponseWriter, req *http.Request) {
 		apiReq := struct {
 			Method string `json:"method"`
 			Params Record `json:"params"`
@@ -156,7 +157,7 @@ func TestClient_ListRecords(t *testing.T) {
 		}
 	})
 
-	records, err := client.ListRecords("example.com")
+	records, err := client.ListRecords(context.Background(), "example.com")
 	require.NoError(t, err)
 
 	expected := []Record{
@@ -182,17 +183,17 @@ func TestClient_ListRecords(t *testing.T) {
 }
 
 func TestClient_ListRecords_error(t *testing.T) {
-	client := setup(t, nil)
+	client := setupTest(t, nil)
 	client.token = "invalid"
 
-	records, err := client.ListRecords("example.com")
+	records, err := client.ListRecords(context.Background(), "example.com")
 	require.Error(t, err)
 
 	assert.Empty(t, records)
 }
 
 func TestClient_RemoveRecord(t *testing.T) {
-	client := setup(t, func(rw http.ResponseWriter, req *http.Request) {
+	client := setupTest(t, func(rw http.ResponseWriter, req *http.Request) {
 		apiReq := struct {
 			Method string `json:"method"`
 			Params Record `json:"params"`
@@ -217,14 +218,14 @@ func TestClient_RemoveRecord(t *testing.T) {
 		_, _ = rw.Write([]byte(`{"jsonrpc":"2.0"}`))
 	})
 
-	err := client.RemoveRecord("123", "example.com")
+	err := client.RemoveRecord(context.Background(), "123", "example.com")
 	require.NoError(t, err)
 }
 
 func TestClient_RemoveRecord_error(t *testing.T) {
-	client := setup(t, nil)
+	client := setupTest(t, nil)
 	client.token = "invalid"
 
-	err := client.RemoveRecord("123", "example.com")
+	err := client.RemoveRecord(context.Background(), "123", "example.com")
 	require.Error(t, err)
 }

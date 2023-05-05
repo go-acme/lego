@@ -171,7 +171,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 func splitDomain(fqdn string) (string, string, error) {
 	zone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return "", "", err
+		return "", "", fmt.Errorf("could not find zone for FQDN %q: %w", fqdn, err)
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(fqdn, zone)

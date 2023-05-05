@@ -2,6 +2,7 @@
 package nicmanager
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -139,10 +140,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	rootDomain, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("nicmanager: could not determine zone for domain %q: %w", info.EffectiveFQDN, err)
+		return fmt.Errorf("nicmanager: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
-	zone, err := d.client.GetZone(dns01.UnFqdn(rootDomain))
+	ctx := context.Background()
+
+	zone, err := d.client.GetZone(ctx, dns01.UnFqdn(rootDomain))
 	if err != nil {
 		return fmt.Errorf("nicmanager: failed to get zone %q: %w", rootDomain, err)
 	}
@@ -156,7 +159,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Value: info.Value,
 	}
 
-	err = d.client.AddRecord(zone.Name, record)
+	err = d.client.AddRecord(ctx, zone.Name, record)
 	if err != nil {
 		return fmt.Errorf("nicmanager: failed to create record [zone: %q, fqdn: %q]: %w", zone.Name, info.EffectiveFQDN, err)
 	}
@@ -170,10 +173,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	rootDomain, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("nicmanager: could not determine zone for domain %q: %w", info.EffectiveFQDN, err)
+		return fmt.Errorf("nicmanager: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
-	zone, err := d.client.GetZone(dns01.UnFqdn(rootDomain))
+	ctx := context.Background()
+
+	zone, err := d.client.GetZone(ctx, dns01.UnFqdn(rootDomain))
 	if err != nil {
 		return fmt.Errorf("nicmanager: failed to get zone %q: %w", rootDomain, err)
 	}
@@ -190,7 +195,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	if existingRecordFound {
-		err = d.client.DeleteRecord(zone.Name, existingRecord.ID)
+		err = d.client.DeleteRecord(ctx, zone.Name, existingRecord.ID)
 		if err != nil {
 			return fmt.Errorf("nicmanager: failed to delete record [zone: %q, domain: %q]: %w", zone.Name, name, err)
 		}

@@ -1,6 +1,7 @@
 package joker
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"time"
@@ -58,7 +59,7 @@ func (d *svcProvider) Present(domain, token, keyAuth string) error {
 
 	zone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("joker: %w", err)
+		return fmt.Errorf("joker: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone)
@@ -66,7 +67,7 @@ func (d *svcProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("joker: %w", err)
 	}
 
-	return d.client.Send(dns01.UnFqdn(zone), subDomain, info.Value)
+	return d.client.SendRequest(context.Background(), dns01.UnFqdn(zone), subDomain, info.Value)
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
@@ -75,7 +76,7 @@ func (d *svcProvider) CleanUp(domain, token, keyAuth string) error {
 
 	zone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("joker: %w", err)
+		return fmt.Errorf("joker: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone)
@@ -83,7 +84,7 @@ func (d *svcProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("joker: %w", err)
 	}
 
-	return d.client.Send(dns01.UnFqdn(zone), subDomain, "")
+	return d.client.SendRequest(context.Background(), dns01.UnFqdn(zone), subDomain, "")
 }
 
 // Sequential All DNS challenges for this provider will be resolved sequentially.

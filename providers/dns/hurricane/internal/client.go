@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 	"golang.org/x/time/rate"
 )
 
@@ -59,7 +60,7 @@ func (c *Client) UpdateTxtRecord(ctx context.Context, hostname string, txt strin
 	c.credMu.Unlock()
 
 	if !ok {
-		return fmt.Errorf("hurricane: Domain %s not found in credentials, check your credentials map", domain)
+		return fmt.Errorf("domain %s not found in credentials, check your credentials map", domain)
 	}
 
 	data := url.Values{}
@@ -67,32 +68,37 @@ func (c *Client) UpdateTxtRecord(ctx context.Context, hostname string, txt strin
 	data.Set("hostname", hostname)
 	data.Set("txt", txt)
 
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL, strings.NewReader(data.Encode()))
+	if err != nil {
+		return fmt.Errorf("unable to create request: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
 	rl, _ := c.rateLimiters.LoadOrStore(hostname, rate.NewLimiter(limit(defaultBurst), defaultBurst))
 
-	err := rl.(*rate.Limiter).Wait(ctx)
+	err = rl.(*rate.Limiter).Wait(ctx)
 	if err != nil {
 		return err
 	}
 
-	resp, err := c.HTTPClient.PostForm(c.baseURL, data)
+	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
-		return err
+		return errutils.NewHTTPDoError(req, err)
 	}
 
 	defer func() { _ = resp.Body.Close() }()
 
-	bodyBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
-
-	body := string(bytes.TrimSpace(bodyBytes))
-
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("%d: attempt to change TXT record %s returned %s", resp.StatusCode, hostname, body)
+		return errutils.NewUnexpectedResponseStatusCodeError(req, resp)
 	}
 
-	return evaluateBody(body, hostname)
+	raw, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return errutils.NewReadResponseError(req, resp.StatusCode, err)
+	}
+
+	return evaluateBody(string(bytes.TrimSpace(raw)), hostname)
 }
 
 func evaluateBody(body string, hostname string) error {

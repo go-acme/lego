@@ -118,7 +118,7 @@ func (d *dnsProviderPrivate) getHostedZoneID(ctx context.Context, fqdn string) (
 
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("could not find zone for FQDN %q: %w", fqdn, err)
 	}
 
 	dc := privatedns.NewPrivateZonesClientWithBaseURI(d.config.ResourceManagerEndpoint, d.config.SubscriptionID)

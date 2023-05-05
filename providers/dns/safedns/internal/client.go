@@ -2,8 +2,8 @@ package internal
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,9 +12,12 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
 const defaultBaseURL = "https://api.ukfast.io/safedns/v1"
+
+const authorizationHeader = "Authorization"
 
 // Client the UKFast SafeDNS client.
 type Client struct {
@@ -27,6 +30,7 @@ type Client struct {
 // NewClient Creates a new Client.
 func NewClient(authToken string) *Client {
 	baseURL, _ := url.Parse(defaultBaseURL)
+
 	return &Client{
 		authToken:  authToken,
 		baseURL:    baseURL,
@@ -35,93 +39,103 @@ func NewClient(authToken string) *Client {
 }
 
 // AddRecord adds a DNS record.
-func (c *Client) AddRecord(zone string, record Record) (*AddRecordResponse, error) {
-	body, err := json.Marshal(record)
-	if err != nil {
-		return nil, err
-	}
-
+func (c *Client) AddRecord(ctx context.Context, zone string, record Record) (*AddRecordResponse, error) {
 	endpoint := c.baseURL.JoinPath("zones", dns01.UnFqdn(zone), "records")
 
-	req, err := c.newRequest(http.MethodPost, endpoint.String(), bytes.NewReader(body))
+	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
 	if err != nil {
 		return nil, err
-	}
-
-	resp, err := c.HTTPClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer func() { _ = resp.Body.Close() }()
-
-	if resp.StatusCode >= http.StatusBadRequest {
-		return nil, readError(req, resp)
-	}
-
-	content, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, errors.New(toUnreadableBodyMessage(req, content))
 	}
 
 	respData := &AddRecordResponse{}
-	err = json.Unmarshal(content, respData)
+	err = c.do(req, respData)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %s", err, toUnreadableBodyMessage(req, content))
+		return nil, fmt.Errorf("remove record: %w", err)
 	}
 
 	return respData, nil
 }
 
 // RemoveRecord removes a DNS record.
-func (c *Client) RemoveRecord(zone string, recordID int) error {
+func (c *Client) RemoveRecord(ctx context.Context, zone string, recordID int) error {
 	endpoint := c.baseURL.JoinPath("zones", dns01.UnFqdn(zone), "records", strconv.Itoa(recordID))
 
-	req, err := c.newRequest(http.MethodDelete, endpoint.String(), nil)
+	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
 	}
 
-	resp, err := c.HTTPClient.Do(req)
+	err = c.do(req, nil)
 	if err != nil {
-		return err
-	}
-	defer func() { _ = resp.Body.Close() }()
-
-	if resp.StatusCode >= http.StatusBadRequest {
-		return readError(req, resp)
+		return fmt.Errorf("remove record: %w", err)
 	}
 
 	return nil
 }
 
-func (c *Client) newRequest(method, endpoint string, body io.Reader) (*http.Request, error) {
-	req, err := http.NewRequest(method, endpoint, body)
+func (c *Client) do(req *http.Request, result any) error {
+	req.Header.Set(authorizationHeader, c.authToken)
+
+	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
-		return nil, err
+		return errutils.NewHTTPDoError(req, err)
 	}
 
-	req.Header.Set("Content-Type", "application/json")
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode/100 != 2 {
+		return parseError(req, resp)
+	}
+
+	if result == nil {
+		return nil
+	}
+
+	raw, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return errutils.NewReadResponseError(req, resp.StatusCode, err)
+	}
+
+	err = json.Unmarshal(raw, result)
+	if err != nil {
+		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
+	}
+
+	return nil
+}
+
+func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
+	buf := new(bytes.Buffer)
+
+	if payload != nil {
+		err := json.NewEncoder(buf).Encode(payload)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create request JSON body: %w", err)
+		}
+	}
+
+	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), buf)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create request: %w", err)
+	}
+
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Authorization", c.authToken)
+
+	if payload != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
 
 	return req, nil
 }
 
-func readError(req *http.Request, resp *http.Response) error {
-	content, err := io.ReadAll(resp.Body)
+func parseError(req *http.Request, resp *http.Response) error {
+	raw, _ := io.ReadAll(resp.Body)
+
+	var errAPI APIError
+	err := json.Unmarshal(raw, &errAPI)
 	if err != nil {
-		return errors.New(toUnreadableBodyMessage(req, content))
+		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	var errInfo APIError
-	err = json.Unmarshal(content, &errInfo)
-	if err != nil {
-		return fmt.Errorf("unmarshaling error: %w: %s", err, toUnreadableBodyMessage(req, content))
-	}
-
-	return errInfo
-}
-
-func toUnreadableBodyMessage(req *http.Request, rawBody []byte) string {
-	return fmt.Sprintf("the request %s received a response with an invalid format: %q", req.URL, string(rawBody))
+	return fmt.Errorf("[status code: %d] %w", resp.StatusCode, errAPI)
 }

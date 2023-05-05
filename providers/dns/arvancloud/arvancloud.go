@@ -2,6 +2,7 @@
 package arvancloud
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -108,10 +109,12 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := getZone(info.EffectiveFQDN)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return err
+		return fmt.Errorf("arvancloud: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
+
+	authZone = dns01.UnFqdn(authZone)
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
@@ -131,7 +134,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		},
 	}
 
-	newRecord, err := d.client.CreateRecord(authZone, record)
+	newRecord, err := d.client.CreateRecord(context.Background(), authZone, record)
 	if err != nil {
 		return fmt.Errorf("arvancloud: failed to add TXT record: fqdn=%s: %w", info.EffectiveFQDN, err)
 	}
@@ -147,10 +150,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := getZone(info.EffectiveFQDN)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return err
+		return fmt.Errorf("arvancloud: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
+
+	authZone = dns01.UnFqdn(authZone)
 
 	// gets the record's unique ID from when we created it
 	d.recordIDsMu.Lock()
@@ -160,7 +165,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("arvancloud: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
-	if err := d.client.DeleteRecord(authZone, recordID); err != nil {
+	if err := d.client.DeleteRecord(context.Background(), authZone, recordID); err != nil {
 		return fmt.Errorf("arvancloud: failed to delate TXT record: id=%s: %w", recordID, err)
 	}
 
@@ -170,13 +175,4 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	d.recordIDsMu.Unlock()
 
 	return nil
-}
-
-func getZone(fqdn string) (string, error) {
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
-	if err != nil {
-		return "", err
-	}
-
-	return dns01.UnFqdn(authZone), nil
 }

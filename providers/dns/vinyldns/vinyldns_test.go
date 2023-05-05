@@ -192,7 +192,7 @@ func TestDNSProvider_Present(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			mux, p := setup(t)
+			mux, p := setupTest(t)
 			mux.Handle("/", test.handler)
 
 			err := p.Present(targetDomain, "token"+test.keyAuth, test.keyAuth)
@@ -202,7 +202,7 @@ func TestDNSProvider_Present(t *testing.T) {
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
-	mux, p := setup(t)
+	mux, p := setupTest(t)
 
 	mux.Handle("/", newMockRouter().
 		Get("/zones/name/"+targetRootDomain+".", http.StatusOK, "zoneByName").

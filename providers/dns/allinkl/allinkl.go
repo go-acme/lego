@@ -2,6 +2,7 @@
 package allinkl
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -49,7 +50,9 @@ func NewDefaultConfig() *Config {
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config *Config
-	client *internal.Client
+
+	identifier *internal.Identifier
+	client     *internal.Client
 
 	recordIDs   map[string]string
 	recordIDsMu sync.Mutex
@@ -80,16 +83,23 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("allinkl: missing credentials")
 	}
 
-	client := internal.NewClient(config.Login, config.Password)
+	identifier := internal.NewIdentifier(config.Login, config.Password)
+
+	if config.HTTPClient != nil {
+		identifier.HTTPClient = config.HTTPClient
+	}
+
+	client := internal.NewClient(config.Login)
 
 	if config.HTTPClient != nil {
 		client.HTTPClient = config.HTTPClient
 	}
 
 	return &DNSProvider{
-		config:    config,
-		client:    client,
-		recordIDs: make(map[string]string),
+		config:     config,
+		identifier: identifier,
+		client:     client,
+		recordIDs:  make(map[string]string),
 	}, nil
 }
 
@@ -105,13 +115,17 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("allinkl: could not determine zone for domain %q: %w", domain, err)
+		return fmt.Errorf("allinkl: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
-	credential, err := d.client.Authentication(60, true)
+	ctx := context.Background()
+
+	credential, err := d.identifier.Authentication(ctx, 60, true)
 	if err != nil {
 		return fmt.Errorf("allinkl: %w", err)
 	}
+
+	ctx = internal.WithContext(ctx, credential)
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
@@ -125,7 +139,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		RecordData: info.Value,
 	}
 
-	recordID, err := d.client.AddDNSSettings(credential, record)
+	recordID, err := d.client.AddDNSSettings(ctx, record)
 	if err != nil {
 		return fmt.Errorf("allinkl: %w", err)
 	}
@@ -141,10 +155,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	credential, err := d.client.Authentication(60, true)
+	ctx := context.Background()
+
+	credential, err := d.identifier.Authentication(ctx, 60, true)
 	if err != nil {
 		return fmt.Errorf("allinkl: %w", err)
 	}
+
+	ctx = internal.WithContext(ctx, credential)
 
 	// gets the record's unique ID from when we created it
 	d.recordIDsMu.Lock()
@@ -154,7 +172,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("allinkl: unknown record ID for '%s' '%s'", info.EffectiveFQDN, token)
 	}
 
-	_, err = d.client.DeleteDNSSettings(credential, recordID)
+	_, err = d.client.DeleteDNSSettings(ctx, recordID)
 	if err != nil {
 		return fmt.Errorf("allinkl: %w", err)
 	}

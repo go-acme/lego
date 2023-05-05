@@ -173,7 +173,7 @@ func TestDNSProvider_findZone(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			zone, err := findZone(test.domain)
+			zone, err := getZone(test.domain)
 			require.NoError(t, err)
 			require.Equal(t, test.expected, zone)
 		})

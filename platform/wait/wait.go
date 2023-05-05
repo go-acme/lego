@@ -1,7 +1,6 @@
 package wait
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
@@ -18,9 +17,9 @@ func For(msg string, timeout, interval time.Duration, f func() (bool, error)) er
 		select {
 		case <-timeUp:
 			if lastErr == nil {
-				return errors.New("time limit exceeded")
+				return fmt.Errorf("%s: time limit exceeded", msg)
 			}
-			return fmt.Errorf("time limit exceeded: last error: %w", lastErr)
+			return fmt.Errorf("%s: time limit exceeded: last error: %w", msg, lastErr)
 		default:
 		}
 

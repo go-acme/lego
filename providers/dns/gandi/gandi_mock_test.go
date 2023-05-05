@@ -1,7 +1,7 @@
 package gandi
 
 // CleanUp Request->Response 1 (setZone).
-const cleanupSetZoneRequestMock = `<?xml version="1.0"?>
+const cleanupSetZoneRequestMock = `<?xml version="1.0" encoding="UTF-8"?>
 <methodCall>
   <methodName>domain.zone.set</methodName>
   <param>
@@ -22,7 +22,7 @@ const cleanupSetZoneRequestMock = `<?xml version="1.0"?>
 </methodCall>`
 
 // CleanUp Request->Response 1 (setZone).
-const cleanupSetZoneResponseMock = `<?xml version='1.0'?>
+const cleanupSetZoneResponseMock = `<?xml version="1.0" encoding="UTF-8"?>
 <methodResponse>
 <params>
 <param>
@@ -192,7 +192,7 @@ const cleanupSetZoneResponseMock = `<?xml version='1.0'?>
 `
 
 // CleanUp Request->Response 2 (deleteZone).
-const cleanupDeleteZoneRequestMock = `<?xml version="1.0"?>
+const cleanupDeleteZoneRequestMock = `<?xml version="1.0" encoding="UTF-8"?>
 <methodCall>
   <methodName>domain.zone.delete</methodName>
   <param>
@@ -208,7 +208,7 @@ const cleanupDeleteZoneRequestMock = `<?xml version="1.0"?>
 </methodCall>`
 
 // CleanUp Request->Response 2 (deleteZone).
-const cleanupDeleteZoneResponseMock = `<?xml version='1.0'?>
+const cleanupDeleteZoneResponseMock = `<?xml version="1.0" encoding="UTF-8"?>
 <methodResponse>
 <params>
 <param>
@@ -219,7 +219,7 @@ const cleanupDeleteZoneResponseMock = `<?xml version='1.0'?>
 `
 
 // Present Request->Response 1 (getZoneID).
-const presentGetZoneIDRequestMock = `<?xml version="1.0"?>
+const presentGetZoneIDRequestMock = `<?xml version="1.0" encoding="UTF-8"?>
 <methodCall>
   <methodName>domain.info</methodName>
   <param>
@@ -235,7 +235,7 @@ const presentGetZoneIDRequestMock = `<?xml version="1.0"?>
 </methodCall>`
 
 // Present Request->Response 1 (getZoneID).
-const presentGetZoneIDResponseMock = `<?xml version='1.0'?>
+const presentGetZoneIDResponseMock = `<?xml version="1.0" encoding="UTF-8"?>
 <methodResponse>
 <params>
 <param>
@@ -405,7 +405,7 @@ const presentGetZoneIDResponseMock = `<?xml version='1.0'?>
 `
 
 // Present Request->Response 2 (cloneZone).
-const presentCloneZoneRequestMock = `<?xml version="1.0"?>
+const presentCloneZoneRequestMock = `<?xml version="1.0" encoding="UTF-8"?>
 <methodCall>
   <methodName>domain.zone.clone</methodName>
   <param>
@@ -438,7 +438,7 @@ const presentCloneZoneRequestMock = `<?xml version="1.0"?>
 </methodCall>`
 
 // Present Request->Response 2 (cloneZone).
-const presentCloneZoneResponseMock = `<?xml version='1.0'?>
+const presentCloneZoneResponseMock = `<?xml version="1.0" encoding="UTF-8"?>
 <methodResponse>
 <params>
 <param>
@@ -484,7 +484,7 @@ const presentCloneZoneResponseMock = `<?xml version='1.0'?>
 `
 
 // Present Request->Response 3 (newZoneVersion).
-const presentNewZoneVersionRequestMock = `<?xml version="1.0"?>
+const presentNewZoneVersionRequestMock = `<?xml version="1.0" encoding="UTF-8"?>
 <methodCall>
   <methodName>domain.zone.version.new</methodName>
   <param>
@@ -500,7 +500,7 @@ const presentNewZoneVersionRequestMock = `<?xml version="1.0"?>
 </methodCall>`
 
 // Present Request->Response 3 (newZoneVersion).
-const presentNewZoneVersionResponseMock = `<?xml version='1.0'?>
+const presentNewZoneVersionResponseMock = `<?xml version="1.0" encoding="UTF-8"?>
 <methodResponse>
 <params>
 <param>
@@ -511,7 +511,7 @@ const presentNewZoneVersionResponseMock = `<?xml version='1.0'?>
 `
 
 // Present Request->Response 4 (addTXTRecord).
-const presentAddTXTRecordRequestMock = `<?xml version="1.0"?>
+const presentAddTXTRecordRequestMock = `<?xml version="1.0" encoding="UTF-8"?>
 <methodCall>
   <methodName>domain.zone.record.add</methodName>
   <param>
@@ -562,7 +562,7 @@ const presentAddTXTRecordRequestMock = `<?xml version="1.0"?>
 </methodCall>`
 
 // Present Request->Response 4 (addTXTRecord).
-const presentAddTXTRecordResponseMock = `<?xml version='1.0'?>
+const presentAddTXTRecordResponseMock = `<?xml version="1.0" encoding="UTF-8"?>
 <methodResponse>
 <params>
 <param>
@@ -594,7 +594,7 @@ const presentAddTXTRecordResponseMock = `<?xml version='1.0'?>
 `
 
 // Present Request->Response 5 (setZoneVersion).
-const presentSetZoneVersionRequestMock = `<?xml version="1.0"?>
+const presentSetZoneVersionRequestMock = `<?xml version="1.0" encoding="UTF-8"?>
 <methodCall>
   <methodName>domain.zone.version.set</methodName>
   <param>
@@ -615,7 +615,7 @@ const presentSetZoneVersionRequestMock = `<?xml version="1.0"?>
 </methodCall>`
 
 // Present Request->Response 5 (setZoneVersion).
-const presentSetZoneVersionResponseMock = `<?xml version='1.0'?>
+const presentSetZoneVersionResponseMock = `<?xml version="1.0" encoding="UTF-8"?>
 <methodResponse>
 <params>
 <param>
@@ -626,7 +626,7 @@ const presentSetZoneVersionResponseMock = `<?xml version='1.0'?>
 `
 
 // Present Request->Response 6 (setZone).
-const presentSetZoneRequestMock = `<?xml version="1.0"?>
+const presentSetZoneRequestMock = `<?xml version="1.0" encoding="UTF-8"?>
 <methodCall>
   <methodName>domain.zone.set</methodName>
   <param>
@@ -647,7 +647,7 @@ const presentSetZoneRequestMock = `<?xml version="1.0"?>
 </methodCall>`
 
 // Present Request->Response 6 (setZone).
-const presentSetZoneResponseMock = `<?xml version='1.0'?>
+const presentSetZoneResponseMock = `<?xml version="1.0" encoding="UTF-8"?>
 <methodResponse>
 <params>
 <param>

@@ -66,7 +66,7 @@ func TestLiveTTL(t *testing.T) {
 	}()
 
 	fqdn := "_acme-challenge." + domain + "."
-	zone, err := findZone(fqdn)
+	zone, err := getZone(fqdn)
 	require.NoError(t, err)
 
 	resourceRecordSets, err := configdns.GetRecordList(zone, fqdn, "TXT")

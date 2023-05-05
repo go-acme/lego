@@ -149,7 +149,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) getHostedZone(domain string) (string, error) {
 	authZone, err := dns01.FindZoneByFqdn(domain)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("could not find zone for FQDN %q: %w", domain, err)
 	}
 
 	accountID, err := d.getAccountID()

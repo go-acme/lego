@@ -1,10 +1,12 @@
 package internal
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"testing"
 
@@ -12,13 +14,25 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestClient_GetTxtRecord(t *testing.T) {
+func setupTest(t *testing.T, apiKey string) (*Client, *http.ServeMux) {
+	t.Helper()
+
 	mux := http.NewServeMux()
 	server := httptest.NewServer(mux)
 	t.Cleanup(server.Close)
 
+	client := NewClient(apiKey)
+	client.baseURL, _ = url.Parse(server.URL)
+	client.HTTPClient = server.Client()
+
+	return client, mux
+}
+
+func TestClient_GetTxtRecord(t *testing.T) {
 	const zoneID = "zoneA"
 	const apiKey = "myKeyA"
+
+	client, mux := setupTest(t, apiKey)
 
 	mux.HandleFunc("/api/v1/records", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
@@ -52,22 +66,17 @@ func TestClient_GetTxtRecord(t *testing.T) {
 		}
 	})
 
-	client := NewClient(apiKey)
-	client.BaseURL = server.URL
-
-	record, err := client.GetTxtRecord("test1", "txttxttxt", zoneID)
+	record, err := client.GetTxtRecord(context.Background(), "test1", "txttxttxt", zoneID)
 	require.NoError(t, err)
 
 	fmt.Println(record)
 }
 
 func TestClient_CreateRecord(t *testing.T) {
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
 	const zoneID = "zoneA"
 	const apiKey = "myKeyB"
+
+	client, mux := setupTest(t, apiKey)
 
 	mux.HandleFunc("/api/v1/records", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodPost {
@@ -95,9 +104,6 @@ func TestClient_CreateRecord(t *testing.T) {
 		}
 	})
 
-	client := NewClient(apiKey)
-	client.BaseURL = server.URL
-
 	record := DNSRecord{
 		Name:   "test",
 		Type:   "TXT",
@@ -106,16 +112,14 @@ func TestClient_CreateRecord(t *testing.T) {
 		ZoneID: zoneID,
 	}
 
-	err := client.CreateRecord(record)
+	err := client.CreateRecord(context.Background(), record)
 	require.NoError(t, err)
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
 	const apiKey = "myKeyC"
+
+	client, mux := setupTest(t, apiKey)
 
 	mux.HandleFunc("/api/v1/records/recordID", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodDelete {
@@ -130,19 +134,15 @@ func TestClient_DeleteRecord(t *testing.T) {
 		}
 	})
 
-	client := NewClient(apiKey)
-	client.BaseURL = server.URL
-
-	err := client.DeleteRecord("recordID")
+	err := client.DeleteRecord(context.Background(), "recordID")
 	require.NoError(t, err)
 }
 
 func TestClient_GetZoneID(t *testing.T) {
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
-
 	const apiKey = "myKeyD"
+
+	client, mux := setupTest(t, apiKey)
+
 	mux.HandleFunc("/api/v1/zones", func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodGet {
 			http.Error(rw, fmt.Sprintf("unsupported method: %s", req.Method), http.StatusMethodNotAllowed)
@@ -169,10 +169,7 @@ func TestClient_GetZoneID(t *testing.T) {
 		}
 	})
 
-	client := NewClient(apiKey)
-	client.BaseURL = server.URL
-
-	zoneID, err := client.GetZoneID("example.com")
+	zoneID, err := client.GetZoneID(context.Background(), "example.com")
 	require.NoError(t, err)
 
 	assert.Equal(t, "zoneA", zoneID)

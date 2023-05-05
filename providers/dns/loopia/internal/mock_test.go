@@ -6,7 +6,7 @@ const (
 	exampleRdata     = "LHDhK3oGRvkiefQnx7OOczTY5Tic_xZ6HcMOc_gmtoM"
 )
 
-// Testdata based on real traffic between an xml-rpc client and the api.
+// Testdata based on real traffic between a xml-rpc client and the api.
 const responseOk = `<?xml version="1.0" encoding="UTF-8"?>
 		<methodResponse>
 		  <params>
@@ -76,7 +76,7 @@ const responseRPCError = `<?xml version="1.0" encoding="UTF-8"?>
   </fault>
 </methodResponse>`
 
-const addZoneRecordGoodAuth = `<?xml version="1.0"?>
+const addZoneRecordGoodAuth = `<?xml version="1.0" encoding="UTF-8"?>
 <methodCall>
   <methodName>addZoneRecord</methodName>
   <params>
@@ -139,7 +139,7 @@ const addZoneRecordGoodAuth = `<?xml version="1.0"?>
   </params>
 </methodCall>`
 
-const addZoneRecordBadAuth = `<?xml version="1.0"?>
+const addZoneRecordBadAuth = `<?xml version="1.0" encoding="UTF-8"?>
 <methodCall>
   <methodName>addZoneRecord</methodName>
   <params>
@@ -202,7 +202,7 @@ const addZoneRecordBadAuth = `<?xml version="1.0"?>
   </params>
 </methodCall>`
 
-const addZoneRecordNonValidDomain = `<?xml version="1.0"?>
+const addZoneRecordNonValidDomain = `<?xml version="1.0" encoding="UTF-8"?>
 <methodCall>
   <methodName>addZoneRecord</methodName>
   <params>
@@ -265,7 +265,7 @@ const addZoneRecordNonValidDomain = `<?xml version="1.0"?>
   </params>
 </methodCall>`
 
-const addZoneRecordEmptyResponse = `<?xml version="1.0"?>
+const addZoneRecordEmptyResponse = `<?xml version="1.0" encoding="UTF-8"?>
 <methodCall>
   <methodName>addZoneRecord</methodName>
   <params>
@@ -328,7 +328,7 @@ const addZoneRecordEmptyResponse = `<?xml version="1.0"?>
   </params>
 </methodCall>`
 
-const getZoneRecords = `<?xml version="1.0"?>
+const getZoneRecords = `<?xml version="1.0" encoding="UTF-8"?>
 <methodCall>
   <methodName>getZoneRecords</methodName>
   <params>
@@ -423,7 +423,7 @@ const getZoneRecordsResponse = `<?xml version="1.0" encoding="UTF-8"?>
   </params>
 </methodResponse>`
 
-const removeRecordGoodAuth = `<?xml version="1.0"?>
+const removeRecordGoodAuth = `<?xml version="1.0" encoding="UTF-8"?>
 <methodCall>
   <methodName>removeZoneRecord</methodName>
   <params>
@@ -455,7 +455,7 @@ const removeRecordGoodAuth = `<?xml version="1.0"?>
   </params>
 </methodCall>`
 
-const removeRecordBadAuth = `<?xml version="1.0"?>
+const removeRecordBadAuth = `<?xml version="1.0" encoding="UTF-8"?>
 <methodCall>
   <methodName>removeZoneRecord</methodName>
   <params>
@@ -487,7 +487,7 @@ const removeRecordBadAuth = `<?xml version="1.0"?>
   </params>
 </methodCall>`
 
-const removeRecordNonValidDomain = `<?xml version="1.0"?>
+const removeRecordNonValidDomain = `<?xml version="1.0" encoding="UTF-8"?>
 <methodCall>
   <methodName>removeZoneRecord</methodName>
   <params>
@@ -519,7 +519,7 @@ const removeRecordNonValidDomain = `<?xml version="1.0"?>
   </params>
 </methodCall>`
 
-const removeRecordEmptyResponse = `<?xml version="1.0"?>
+const removeRecordEmptyResponse = `<?xml version="1.0" encoding="UTF-8"?>
 <methodCall>
   <methodName>removeZoneRecord</methodName>
   <params>
@@ -551,7 +551,7 @@ const removeRecordEmptyResponse = `<?xml version="1.0"?>
   </params>
 </methodCall>`
 
-const removeSubdomainGoodAuth = `<?xml version="1.0"?>
+const removeSubdomainGoodAuth = `<?xml version="1.0" encoding="UTF-8"?>
 <methodCall>
   <methodName>removeSubdomain</methodName>
   <params>
@@ -578,7 +578,7 @@ const removeSubdomainGoodAuth = `<?xml version="1.0"?>
   </params>
 </methodCall>`
 
-const removeSubdomainBadAuth = `<?xml version="1.0"?>
+const removeSubdomainBadAuth = `<?xml version="1.0" encoding="UTF-8"?>
 <methodCall>
   <methodName>removeSubdomain</methodName>
   <params>
@@ -605,7 +605,7 @@ const removeSubdomainBadAuth = `<?xml version="1.0"?>
   </params>
 </methodCall>`
 
-const removeSubdomainNonValidDomain = `<?xml version="1.0"?>
+const removeSubdomainNonValidDomain = `<?xml version="1.0" encoding="UTF-8"?>
 <methodCall>
   <methodName>removeSubdomain</methodName>
   <params>
@@ -632,7 +632,7 @@ const removeSubdomainNonValidDomain = `<?xml version="1.0"?>
   </params>
 </methodCall>`
 
-const removeSubdomainEmptyResponse = `<?xml version="1.0"?>
+const removeSubdomainEmptyResponse = `<?xml version="1.0" encoding="UTF-8"?>
 <methodCall>
   <methodName>removeSubdomain</methodName>
   <params>

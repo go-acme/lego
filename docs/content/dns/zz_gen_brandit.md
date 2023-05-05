@@ -1,5 +1,5 @@
 ---
-title: "BRANDIT"
+title: "Brandit"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: brandit
@@ -14,7 +14,7 @@ dnsprovider:
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
-Configuration for [BRANDIT](https://www.brandit.com/).
+Configuration for [Brandit](https://www.brandit.com/).
 
 
 <!--more-->
@@ -23,7 +23,7 @@ Configuration for [BRANDIT](https://www.brandit.com/).
 - Since: v4.11.0
 
 
-Here is an example bash command using the BRANDIT provider:
+Here is an example bash command using the Brandit provider:
 
 ```bash
 BRANDIT_API_KEY=xxxxxxxxxxxxxxxxxxxxx \

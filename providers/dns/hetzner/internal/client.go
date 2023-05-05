@@ -2,11 +2,15 @@ package internal
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"time"
+
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
 // defaultBaseURL represents the API endpoint to call.
@@ -16,24 +20,26 @@ const authHeader = "Auth-API-Token"
 
 // Client the Hetzner client.
 type Client struct {
-	HTTPClient *http.Client
-	BaseURL    string
-
 	apiKey string
+
+	baseURL    *url.URL
+	HTTPClient *http.Client
 }
 
 // NewClient Creates a new Hetzner client.
 func NewClient(apiKey string) *Client {
+	baseURL, _ := url.Parse(defaultBaseURL)
+
 	return &Client{
-		HTTPClient: http.DefaultClient,
-		BaseURL:    defaultBaseURL,
 		apiKey:     apiKey,
+		baseURL:    baseURL,
+		HTTPClient: &http.Client{Timeout: 5 * time.Second},
 	}
 }
 
 // GetTxtRecord gets a TXT record.
-func (c *Client) GetTxtRecord(name, value, zoneID string) (*DNSRecord, error) {
-	records, err := c.getRecords(zoneID)
+func (c *Client) GetTxtRecord(ctx context.Context, name, value, zoneID string) (*DNSRecord, error) {
+	records, err := c.getRecords(ctx, zoneID)
 	if err != nil {
 		return nil, err
 	}
@@ -48,33 +54,38 @@ func (c *Client) GetTxtRecord(name, value, zoneID string) (*DNSRecord, error) {
 }
 
 // https://dns.hetzner.com/api-docs#operation/GetRecords
-func (c *Client) getRecords(zoneID string) (*DNSRecords, error) {
-	endpoint, err := c.createEndpoint("api", "v1", "records")
-	if err != nil {
-		return nil, fmt.Errorf("failed to create endpoint: %w", err)
-	}
+func (c *Client) getRecords(ctx context.Context, zoneID string) (*DNSRecords, error) {
+	endpoint := c.baseURL.JoinPath("api", "v1", "records")
 
 	query := endpoint.Query()
 	query.Set("zone_id", zoneID)
 	endpoint.RawQuery = query.Encode()
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	req, err := c.newRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
+	}
+
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return nil, errutils.NewHTTPDoError(req, err)
 	}
 
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
-		bodyBytes, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("could not get records: zone ID: %s; Status: %s; Body: %s",
-			zoneID, resp.Status, string(bodyBytes))
+		return nil, errutils.NewUnexpectedResponseStatusCodeError(req, resp)
+	}
+
+	raw, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errutils.NewReadResponseError(req, resp.StatusCode, err)
 	}
 
 	records := &DNSRecords{}
-	err = json.NewDecoder(resp.Body).Decode(records)
+	err = json.Unmarshal(raw, records)
 	if err != nil {
-		return nil, fmt.Errorf("failed to decode response body: %w", err)
+		return nil, errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
 	}
 
 	return records, nil
@@ -82,25 +93,23 @@ func (c *Client) getRecords(zoneID string) (*DNSRecords, error) {
 
 // CreateRecord creates a DNS record.
 // https://dns.hetzner.com/api-docs#operation/CreateRecord
-func (c *Client) CreateRecord(record DNSRecord) error {
-	body, err := json.Marshal(record)
+func (c *Client) CreateRecord(ctx context.Context, record DNSRecord) error {
+	endpoint := c.baseURL.JoinPath("api", "v1", "records")
+
+	req, err := c.newRequest(ctx, http.MethodPost, endpoint, record)
 	if err != nil {
 		return err
 	}
 
-	endpoint, err := c.createEndpoint("api", "v1", "records")
+	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("failed to create endpoint: %w", err)
+		return errutils.NewHTTPDoError(req, err)
 	}
 
-	resp, err := c.do(http.MethodPost, endpoint, bytes.NewReader(body))
-	if err != nil {
-		return err
-	}
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
-		bodyBytes, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("could not create record %s; Status: %s; Body: %s", string(body), resp.Status, string(bodyBytes))
+		return errutils.NewUnexpectedResponseStatusCodeError(req, resp)
 	}
 
 	return nil
@@ -108,27 +117,31 @@ func (c *Client) CreateRecord(record DNSRecord) error {
 
 // DeleteRecord deletes a DNS record.
 // https://dns.hetzner.com/api-docs#operation/DeleteRecord
-func (c *Client) DeleteRecord(recordID string) error {
-	endpoint, err := c.createEndpoint("api", "v1", "records", recordID)
-	if err != nil {
-		return fmt.Errorf("failed to create endpoint: %w", err)
-	}
+func (c *Client) DeleteRecord(ctx context.Context, recordID string) error {
+	endpoint := c.baseURL.JoinPath("api", "v1", "records", recordID)
 
-	resp, err := c.do(http.MethodDelete, endpoint, nil)
+	req, err := c.newRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {
 		return err
 	}
 
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return errutils.NewHTTPDoError(req, err)
+	}
+
+	defer func() { _ = resp.Body.Close() }()
+
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("could not delete record: %s; Status: %s", resp.Status, recordID)
+		return errutils.NewUnexpectedResponseStatusCodeError(req, resp)
 	}
 
 	return nil
 }
 
 // GetZoneID gets the zone ID for a domain.
-func (c *Client) GetZoneID(domain string) (string, error) {
-	zones, err := c.getZones(domain)
+func (c *Client) GetZoneID(ctx context.Context, domain string) (string, error) {
+	zones, err := c.getZones(ctx, domain)
 	if err != nil {
 		return "", err
 	}
@@ -143,20 +156,24 @@ func (c *Client) GetZoneID(domain string) (string, error) {
 }
 
 // https://dns.hetzner.com/api-docs#operation/GetZones
-func (c *Client) getZones(name string) (*Zones, error) {
-	endpoint, err := c.createEndpoint("api", "v1", "zones")
-	if err != nil {
-		return nil, fmt.Errorf("failed to create endpoint: %w", err)
-	}
+func (c *Client) getZones(ctx context.Context, name string) (*Zones, error) {
+	endpoint := c.baseURL.JoinPath("api", "v1", "zones")
 
 	query := endpoint.Query()
 	query.Set("name", name)
 	endpoint.RawQuery = query.Encode()
 
-	resp, err := c.do(http.MethodGet, endpoint, nil)
+	req, err := c.newRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not get zones: %w", err)
 	}
+
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return nil, errutils.NewHTTPDoError(req, err)
+	}
+
+	defer func() { _ = resp.Body.Close() }()
 
 	// EOF fallback
 	if resp.StatusCode == http.StatusNotFound {
@@ -164,36 +181,45 @@ func (c *Client) getZones(name string) (*Zones, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("could not get zones: %s", resp.Status)
+		return nil, errutils.NewUnexpectedResponseStatusCodeError(req, resp)
+	}
+
+	raw, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errutils.NewReadResponseError(req, resp.StatusCode, err)
 	}
 
 	zones := &Zones{}
-	err = json.NewDecoder(resp.Body).Decode(zones)
+	err = json.Unmarshal(raw, zones)
 	if err != nil {
-		return nil, fmt.Errorf("failed to decode response body: %w", err)
+		return nil, errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
 	}
 
 	return zones, nil
 }
 
-func (c *Client) do(method string, endpoint fmt.Stringer, body io.Reader) (*http.Response, error) {
-	req, err := http.NewRequest(method, endpoint.String(), body)
+func (c *Client) newRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
+	buf := new(bytes.Buffer)
+
+	if payload != nil {
+		err := json.NewEncoder(buf).Encode(payload)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create request JSON body: %w", err)
+		}
+	}
+
+	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), buf)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to create request: %w", err)
 	}
 
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set(authHeader, c.apiKey)
 
-	return c.HTTPClient.Do(req)
-}
-
-func (c *Client) createEndpoint(parts ...string) (*url.URL, error) {
-	baseURL, err := url.Parse(c.BaseURL)
-	if err != nil {
-		return nil, err
+	if payload != nil {
+		req.Header.Set("Content-Type", "application/json")
 	}
 
-	return baseURL.JoinPath(parts...), nil
+	req.Header.Set(authHeader, c.apiKey)
+
+	return req, nil
 }

@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -9,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func setup(t *testing.T, body string) *Client {
+func setupTest(t *testing.T, body string) *Client {
 	t.Helper()
 
 	mux := http.NewServeMux()
@@ -51,9 +52,9 @@ func TestClient_SetRecord(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			client := setup(t, test.response)
+			client := setupTest(t, test.response)
 
-			err := client.SetRecord("example.com", "txttxttxt", 10)
+			err := client.SetRecord(context.Background(), "example.com", "txttxttxt", 10)
 			test.assert(t, err)
 		})
 	}

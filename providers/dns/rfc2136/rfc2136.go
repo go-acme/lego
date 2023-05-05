@@ -179,7 +179,7 @@ func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 	c.SingleInflight = true
 
 	// TSIG authentication / msg signing
-	if len(d.config.TSIGKey) > 0 && len(d.config.TSIGSecret) > 0 {
+	if d.config.TSIGKey != "" && d.config.TSIGSecret != "" {
 		key := strings.ToLower(dns.Fqdn(d.config.TSIGKey))
 		alg := dns.Fqdn(d.config.TSIGAlgorithm)
 		m.SetTsig(key, alg, 300, time.Now().Unix())

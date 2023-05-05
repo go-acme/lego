@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"crypto/sha1"
 	"encoding/json"
 	"fmt"
@@ -13,6 +14,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 	querystring "github.com/google/go-querystring/query"
 )
 
@@ -23,24 +25,25 @@ const authenticationHeader = "X-NFSN-Authentication"
 const saltBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
 type Client struct {
-	HTTPClient *http.Client
-	baseURL    *url.URL
-
 	login  string
 	apiKey string
+
+	baseURL    *url.URL
+	HTTPClient *http.Client
 }
 
 func NewClient(login string, apiKey string) *Client {
 	baseURL, _ := url.Parse(apiURL)
+
 	return &Client{
-		HTTPClient: &http.Client{Timeout: 10 * time.Second},
-		baseURL:    baseURL,
 		login:      login,
 		apiKey:     apiKey,
+		baseURL:    baseURL,
+		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 	}
 }
 
-func (c Client) AddRecord(domain string, record Record) error {
+func (c Client) AddRecord(ctx context.Context, domain string, record Record) error {
 	endpoint := c.baseURL.JoinPath("dns", dns01.UnFqdn(domain), "addRR")
 
 	params, err := querystring.Values(record)
@@ -48,10 +51,10 @@ func (c Client) AddRecord(domain string, record Record) error {
 		return err
 	}
 
-	return c.do(endpoint, params)
+	return c.doRequest(ctx, endpoint, params)
 }
 
-func (c Client) RemoveRecord(domain string, record Record) error {
+func (c Client) RemoveRecord(ctx context.Context, domain string, record Record) error {
 	endpoint := c.baseURL.JoinPath("dns", dns01.UnFqdn(domain), "removeRR")
 
 	params, err := querystring.Values(record)
@@ -59,15 +62,15 @@ func (c Client) RemoveRecord(domain string, record Record) error {
 		return err
 	}
 
-	return c.do(endpoint, params)
+	return c.doRequest(ctx, endpoint, params)
 }
 
-func (c Client) do(endpoint *url.URL, params url.Values) error {
+func (c Client) doRequest(ctx context.Context, endpoint *url.URL, params url.Values) error {
 	payload := params.Encode()
 
-	req, err := http.NewRequest(http.MethodPost, endpoint.String(), strings.NewReader(payload))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint.String(), strings.NewReader(payload))
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to create request: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -75,21 +78,13 @@ func (c Client) do(endpoint *url.URL, params url.Values) error {
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
-		return err
+		return errutils.NewHTTPDoError(req, err)
 	}
 
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
-		data, _ := io.ReadAll(resp.Body)
-
-		apiErr := &APIError{}
-		err := json.Unmarshal(data, apiErr)
-		if err != nil {
-			return fmt.Errorf("%s: %s", resp.Status, data)
-		}
-
-		return apiErr
+		return parseError(req, resp)
 	}
 
 	return nil
@@ -112,4 +107,16 @@ func (c Client) createSignature(uri string, body string) string {
 	hashInput := fmt.Sprintf("%s;%s;%s;%s;%s;%02x", c.login, timestamp, salt, c.apiKey, uri, bodyHash)
 
 	return fmt.Sprintf("%s;%s;%s;%02x", c.login, timestamp, salt, sha1.Sum([]byte(hashInput)))
+}
+
+func parseError(req *http.Request, resp *http.Response) error {
+	raw, _ := io.ReadAll(resp.Body)
+
+	errAPI := &APIError{}
+	err := json.Unmarshal(raw, errAPI)
+	if err != nil {
+		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
+	}
+
+	return errAPI
 }

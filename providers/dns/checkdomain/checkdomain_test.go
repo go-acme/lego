@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/go-acme/lego/v4/providers/dns/checkdomain/internal"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -83,7 +84,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			config := NewDefaultConfig()
-			config.Endpoint, _ = url.Parse(defaultEndpoint)
+			config.Endpoint, _ = url.Parse(internal.DefaultEndpoint)
 
 			if test.token != "" {
 				config.Token = test.token

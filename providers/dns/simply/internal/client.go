@@ -2,23 +2,28 @@ package internal
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
 const defaultBaseURL = "https://api.simply.com/1/"
 
 // Client is a Simply.com API client.
 type Client struct {
-	HTTPClient  *http.Client
-	baseURL     *url.URL
 	accountName string
 	apiKey      string
+
+	baseURL    *url.URL
+	HTTPClient *http.Client
 }
 
 // NewClient creates a new Client.
@@ -37,98 +42,126 @@ func NewClient(accountName string, apiKey string) (*Client, error) {
 	}
 
 	return &Client{
-		HTTPClient:  &http.Client{Timeout: 5 * time.Second},
-		baseURL:     baseURL,
 		accountName: accountName,
 		apiKey:      apiKey,
+		baseURL:     baseURL,
+		HTTPClient:  &http.Client{Timeout: 5 * time.Second},
 	}, nil
 }
 
 // GetRecords lists all the records in the zone.
-func (c *Client) GetRecords(zoneName string) ([]Record, error) {
-	resp, err := c.do(zoneName, "/", http.MethodGet, nil)
-	if err != nil {
-		return nil, err
-	}
+func (c *Client) GetRecords(ctx context.Context, zoneName string) ([]Record, error) {
+	endpoint := c.createEndpoint(zoneName, "/")
 
-	var records []Record
-	err = json.Unmarshal(resp.Records, &records)
-	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal response result: %w", err)
-	}
-
-	return records, nil
-}
-
-// AddRecord adds a record.
-func (c *Client) AddRecord(zoneName string, record Record) (int64, error) {
-	reqBody, err := json.Marshal(record)
-	if err != nil {
-		return 0, fmt.Errorf("failed to marshall request body: %w", err)
-	}
-
-	resp, err := c.do(zoneName, "/", http.MethodPost, reqBody)
-	if err != nil {
-		return 0, err
-	}
-
-	var rcd recordHeader
-	err = json.Unmarshal(resp.Record, &rcd)
-	if err != nil {
-		return 0, fmt.Errorf("failed to unmarshal response result: %w", err)
-	}
-
-	return rcd.ID, nil
-}
-
-// EditRecord updates a record.
-func (c *Client) EditRecord(zoneName string, id int64, record Record) error {
-	reqBody, err := json.Marshal(record)
-	if err != nil {
-		return fmt.Errorf("failed to marshall request body: %w", err)
-	}
-
-	_, err = c.do(zoneName, fmt.Sprintf("%d", id), http.MethodPut, reqBody)
-	return err
-}
-
-// DeleteRecord deletes a record.
-func (c *Client) DeleteRecord(zoneName string, id int64) error {
-	_, err := c.do(zoneName, fmt.Sprintf("%d", id), http.MethodDelete, nil)
-	return err
-}
-
-func (c *Client) do(zoneName string, endpoint string, reqMethod string, reqBody []byte) (*apiResponse, error) {
-	reqURL := c.baseURL.JoinPath(c.accountName, c.apiKey, "my", "products", zoneName, "dns", "records", endpoint)
-
-	req, err := http.NewRequest(reqMethod, strings.TrimSuffix(reqURL.String(), "/"), bytes.NewReader(reqBody))
+	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Content-Type", "application/json")
+	result := &apiResponse[[]Record, json.RawMessage]{}
+	err = c.do(req, result)
+	if err != nil {
+		return nil, err
+	}
 
+	return result.Records, nil
+}
+
+// AddRecord adds a record.
+func (c *Client) AddRecord(ctx context.Context, zoneName string, record Record) (int64, error) {
+	endpoint := c.createEndpoint(zoneName, "/")
+
+	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
+	if err != nil {
+		return 0, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	result := &apiResponse[json.RawMessage, recordHeader]{}
+	err = c.do(req, result)
+	if err != nil {
+		return 0, err
+	}
+
+	return result.Record.ID, nil
+}
+
+// EditRecord updates a record.
+func (c *Client) EditRecord(ctx context.Context, zoneName string, id int64, record Record) error {
+	endpoint := c.createEndpoint(zoneName, fmt.Sprintf("%d", id))
+
+	req, err := newJSONRequest(ctx, http.MethodPut, endpoint, record)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	return c.do(req, &apiResponse[json.RawMessage, json.RawMessage]{})
+}
+
+// DeleteRecord deletes a record.
+func (c *Client) DeleteRecord(ctx context.Context, zoneName string, id int64) error {
+	endpoint := c.createEndpoint(zoneName, fmt.Sprintf("%d", id))
+
+	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	return c.do(req, &apiResponse[json.RawMessage, json.RawMessage]{})
+}
+
+func (c *Client) createEndpoint(zoneName string, uri string) *url.URL {
+	return c.baseURL.JoinPath(c.accountName, c.apiKey, "my", "products", zoneName, "dns", "records", strings.TrimSuffix(uri, "/"))
+}
+
+func (c *Client) do(req *http.Request, result Response) error {
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to perform request: %w", err)
+		return errutils.NewHTTPDoError(req, err)
 	}
 
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode >= http.StatusInternalServerError {
-		return nil, fmt.Errorf("unexpected error: %d", resp.StatusCode)
+		return errutils.NewUnexpectedResponseStatusCodeError(req, resp)
 	}
 
-	response := apiResponse{}
-	err = json.NewDecoder(resp.Body).Decode(&response)
+	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
+		return errutils.NewReadResponseError(req, resp.StatusCode, err)
 	}
 
-	if response.Status != http.StatusOK {
-		return nil, fmt.Errorf("unexpected error: %s", response.Message)
+	err = json.Unmarshal(raw, result)
+	if err != nil {
+		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
 	}
 
-	return &response, nil
+	if result.GetStatus() != http.StatusOK {
+		return fmt.Errorf("unexpected error: %s", result.GetMessage())
+	}
+
+	return nil
+}
+
+func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
+	buf := new(bytes.Buffer)
+
+	if payload != nil {
+		err := json.NewEncoder(buf).Encode(payload)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create request JSON body: %w", err)
+		}
+	}
+
+	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), buf)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create request: %w", err)
+	}
+
+	req.Header.Set("Accept", "application/json")
+
+	if payload != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
+	return req, nil
 }

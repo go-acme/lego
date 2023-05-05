@@ -1,0 +1,6 @@
+{
+  "error": {
+    "code": 401,
+    "message": "You are not authorized to access this resource. Did you supply the correct credentials and have you IP (xxxx:xxxx:xxx:xxxx:xxxx:xxxx:xxxx:xxxx) whitelisted for API use?"
+  }
+}

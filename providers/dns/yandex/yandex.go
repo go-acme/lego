@@ -2,6 +2,7 @@
 package yandex
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -12,8 +13,6 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/yandex/internal"
 	"github.com/miekg/dns"
 )
-
-const defaultTTL = 21600
 
 // Environment variables names.
 const (
@@ -39,7 +38,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, defaultTTL),
+		TTL:                env.GetOrDefaultInt(EnvTTL, 21600),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
@@ -106,7 +105,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Content:   info.Value,
 	}
 
-	_, err = d.client.AddRecord(data)
+	_, err = d.client.AddRecord(context.Background(), data)
 	if err != nil {
 		return fmt.Errorf("yandex: %w", err)
 	}
@@ -123,7 +122,9 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("yandex: %w", err)
 	}
 
-	records, err := d.client.GetRecords(rootDomain)
+	ctx := context.Background()
+
+	records, err := d.client.GetRecords(ctx, rootDomain)
 	if err != nil {
 		return fmt.Errorf("yandex: %w", err)
 	}
@@ -146,7 +147,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		Domain: rootDomain,
 	}
 
-	_, err = d.client.RemoveRecord(data)
+	_, err = d.client.RemoveRecord(ctx, data)
 	if err != nil {
 		return fmt.Errorf("yandex: %w", err)
 	}

@@ -1,0 +1,17 @@
+{
+  "id": "2c9eb155587228570158722b6ac30007",
+  "name": "www.example.com.",
+  "description": "This is an example record set.",
+  "type": "A",
+  "ttl": 300,
+  "status": "PENDING_DELETE",
+  "links": {
+    "self": "https://Endpoint/v2/zones/2c9eb155587194ec01587224c9f90149/recordsets/2c9eb155587228570158722b6ac30007"
+  },
+  "zone_id": "2c9eb155587194ec01587224c9f90149",
+  "zone_name": "example.com.",
+  "create_at": "2016-11-17T12:03:17.827",
+  "update_at": "2016-11-17T12:56:03.827",
+  "default": false,
+  "project_id": "e55c6f3dc4e34c9f86353b664ae0e70c"
+}

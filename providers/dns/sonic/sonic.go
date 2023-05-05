@@ -2,6 +2,7 @@
 package sonic
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -94,7 +95,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	err := d.client.SetRecord(dns01.UnFqdn(info.EffectiveFQDN), info.Value, d.config.TTL)
+	err := d.client.SetRecord(context.Background(), dns01.UnFqdn(info.EffectiveFQDN), info.Value, d.config.TTL)
 	if err != nil {
 		return fmt.Errorf("sonic: unable to create record for %s: %w", info.EffectiveFQDN, err)
 	}
@@ -106,7 +107,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	err := d.client.SetRecord(dns01.UnFqdn(info.EffectiveFQDN), "_", d.config.TTL)
+	err := d.client.SetRecord(context.Background(), dns01.UnFqdn(info.EffectiveFQDN), "_", d.config.TTL)
 	if err != nil {
 		return fmt.Errorf("sonic: unable to clean record for %s: %w", info.EffectiveFQDN, err)
 	}

@@ -1,22 +1,33 @@
 package internal
 
 import (
-	"encoding/json"
 	"fmt"
 )
 
 // APIRequest represents an API request body.
 type APIRequest struct {
-	Method string      `json:"method"`
-	Params interface{} `json:"params"`
+	Method string `json:"method"`
+	Params any    `json:"params"`
+}
+
+type Response interface {
+	GetError() error
 }
 
 // APIResponse represents an API response body.
-type APIResponse struct {
-	ID     string          `json:"id"`
-	RPC    string          `json:"jsonrpc"`
-	Error  *APIError       `json:"error,omitempty"`
-	Result json.RawMessage `json:"result,omitempty"`
+type APIResponse[T any] struct {
+	ID     string    `json:"id"`
+	RPC    string    `json:"jsonrpc"`
+	Error  *APIError `json:"error,omitempty"`
+	Result T         `json:"result,omitempty"`
+}
+
+func (a APIResponse[T]) GetError() error {
+	if a.Error == (*APIError)(nil) {
+		return nil
+	}
+
+	return a.Error
 }
 
 // APIError is an API error.

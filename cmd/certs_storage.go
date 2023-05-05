@@ -27,6 +27,15 @@ const (
 	baseArchivesFolderName     = "archives"
 )
 
+const (
+	issuerExt   = ".issuer.crt"
+	certExt     = ".crt"
+	keyExt      = ".key"
+	pemExt      = ".pem"
+	pfxExt      = ".pfx"
+	resourceExt = ".json"
+)
+
 // CertificatesStorage a certificates' storage.
 //
 // rootPath:
@@ -84,13 +93,13 @@ func (s *CertificatesStorage) SaveResource(certRes *certificate.Resource) {
 
 	// We store the certificate, private key and metadata in different files
 	// as web servers would not be able to work with a combined file.
-	err := s.WriteFile(domain, ".crt", certRes.Certificate)
+	err := s.WriteFile(domain, certExt, certRes.Certificate)
 	if err != nil {
 		log.Fatalf("Unable to save Certificate for domain %s\n\t%v", domain, err)
 	}
 
 	if certRes.IssuerCertificate != nil {
-		err = s.WriteFile(domain, ".issuer.crt", certRes.IssuerCertificate)
+		err = s.WriteFile(domain, issuerExt, certRes.IssuerCertificate)
 		if err != nil {
 			log.Fatalf("Unable to save IssuerCertificate for domain %s\n\t%v", domain, err)
 		}
@@ -112,14 +121,14 @@ func (s *CertificatesStorage) SaveResource(certRes *certificate.Resource) {
 		log.Fatalf("Unable to marshal CertResource for domain %s\n\t%v", domain, err)
 	}
 
-	err = s.WriteFile(domain, ".json", jsonBytes)
+	err = s.WriteFile(domain, resourceExt, jsonBytes)
 	if err != nil {
 		log.Fatalf("Unable to save CertResource for domain %s\n\t%v", domain, err)
 	}
 }
 
 func (s *CertificatesStorage) ReadResource(domain string) certificate.Resource {
-	raw, err := s.ReadFile(domain, ".json")
+	raw, err := s.ReadFile(domain, resourceExt)
 	if err != nil {
 		log.Fatalf("Error while loading the meta data for domain %s\n\t%v", domain, err)
 	}
@@ -176,13 +185,13 @@ func (s *CertificatesStorage) WriteFile(domain, extension string, data []byte) e
 }
 
 func (s *CertificatesStorage) WriteCertificateFiles(domain string, certRes *certificate.Resource) error {
-	err := s.WriteFile(domain, ".key", certRes.PrivateKey)
+	err := s.WriteFile(domain, keyExt, certRes.PrivateKey)
 	if err != nil {
 		return fmt.Errorf("unable to save key file: %w", err)
 	}
 
 	if s.pem {
-		err = s.WriteFile(domain, ".pem", bytes.Join([][]byte{certRes.Certificate, certRes.PrivateKey}, nil))
+		err = s.WriteFile(domain, pemExt, bytes.Join([][]byte{certRes.Certificate, certRes.PrivateKey}, nil))
 		if err != nil {
 			return fmt.Errorf("unable to save PEM file: %w", err)
 		}
@@ -247,16 +256,22 @@ func (s *CertificatesStorage) WritePFXFile(domain string, certRes *certificate.R
 		return fmt.Errorf("unable to encode PFX data for domain %s: %w", domain, err)
 	}
 
-	return s.WriteFile(domain, ".pfx", pfxBytes)
+	return s.WriteFile(domain, pfxExt, pfxBytes)
 }
 
 func (s *CertificatesStorage) MoveToArchive(domain string) error {
-	matches, err := filepath.Glob(filepath.Join(s.rootPath, sanitizedDomain(domain)+".*"))
+	baseFilename := filepath.Join(s.rootPath, sanitizedDomain(domain))
+
+	matches, err := filepath.Glob(baseFilename + ".*")
 	if err != nil {
 		return err
 	}
 
 	for _, oldFile := range matches {
+		if strings.TrimSuffix(oldFile, filepath.Ext(oldFile)) != baseFilename && oldFile != baseFilename+issuerExt {
+			continue
+		}
+
 		date := strconv.FormatInt(time.Now().Unix(), 10)
 		filename := date + "." + filepath.Base(oldFile)
 		newFile := filepath.Join(s.archivePath, filename)

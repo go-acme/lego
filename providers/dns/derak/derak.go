@@ -121,7 +121,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zoneID, err := d.getZoneID(ctx, info)
 	if err != nil {
-		return fmt.Errorf("derak: %w", err)
+		return fmt.Errorf("derak: get zone ID: %w", err)
 	}
 
 	r := internal.Record{
@@ -150,7 +150,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	zoneID, err := d.getZoneID(ctx, info)
 	if err != nil {
-		return fmt.Errorf("derak: %w", err)
+		return fmt.Errorf("derak: get zone ID: %w", err)
 	}
 
 	// gets the record's unique ID
@@ -182,7 +182,7 @@ func (d *DNSProvider) getZoneID(ctx context.Context, info dns01.ChallengeInfo) (
 
 	zones, err := d.client.GetZones(ctx)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("get zones: %w", err)
 	}
 
 	for _, zone := range zones {

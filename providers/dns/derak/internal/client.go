@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 	querystring "github.com/google/go-querystring/query"
 )
 
@@ -163,7 +164,7 @@ func (c Client) do(req *http.Request, result any) error {
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
-		return err
+		return errutils.NewHTTPDoError(req, err)
 	}
 
 	defer func() { _ = resp.Body.Close() }()
@@ -171,22 +172,22 @@ func (c Client) do(req *http.Request, result any) error {
 	switch req.Method {
 	case http.MethodPut:
 		if resp.StatusCode != http.StatusCreated {
-			return parseError(resp)
+			return parseError(req, resp)
 		}
 	default:
 		if resp.StatusCode != http.StatusOK {
-			return parseError(resp)
+			return parseError(req, resp)
 		}
 	}
 
 	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("failed to read response body: %w", err)
+		return errutils.NewReadResponseError(req, resp.StatusCode, err)
 	}
 
 	err = json.Unmarshal(raw, result)
 	if err != nil {
-		return fmt.Errorf("failed to decode response body: %w: %s", err, string(raw))
+		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
 	}
 
 	return nil
@@ -216,13 +217,13 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 	return req, nil
 }
 
-func parseError(resp *http.Response) error {
+func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
 	var response APIResponse[any]
 	err := json.Unmarshal(raw, &response)
 	if err != nil {
-		return fmt.Errorf("[status code %d] %s", resp.StatusCode, string(raw))
+		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
 	return fmt.Errorf("[status code %d] %d: %s", resp.StatusCode, response.Error, codeText(response.Error))

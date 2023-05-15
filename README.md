@@ -14,6 +14,7 @@ Let's Encrypt client and ACME library written in Go.
 ## Features
 
 - ACME v2 [RFC 8555](https://www.rfc-editor.org/rfc/rfc8555.html)
+- Support [RFC 8738](https://www.rfc-editor.org/rfc/rfc8738) (issues certificates for IP addresses)
 - Register with CA
 - Obtain certificates, both from scratch or with an existing CSR
 - Renew certificates
@@ -23,6 +24,7 @@ Let's Encrypt client and ACME library written in Go.
   - DNS (dns-01)
   - TLS (tls-alpn-01)
 - SAN certificate support
+- [CNAME support](https://letsencrypt.org/2019/10/09/onboarding-your-customers-with-lets-encrypt-and-acme.html) by default
 - Comes with multiple optional [DNS providers](https://go-acme.github.io/lego/dns)
 - [Custom challenge solvers](https://go-acme.github.io/lego/usage/library/writing-a-challenge-solver/)
 - Certificate bundling

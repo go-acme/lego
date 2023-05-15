@@ -474,7 +474,7 @@ func TestGetRenewalInfo(t *testing.T) {
 		assert.Equal(t, "GET", r.Method)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		_, err := w.Write([]byte(`{
+		_, wErr := w.Write([]byte(`{
 				"suggestedWindow": {
 					"start": "2020-03-17T17:51:09Z",
 					"end": "2020-03-17T18:21:09Z"
@@ -482,7 +482,7 @@ func TestGetRenewalInfo(t *testing.T) {
 				"explanationUrl": "https://aricapable.ca/docs/renewal-advice/"
 			}
 		}`))
-		require.NoError(t, err)
+		require.NoError(t, wErr)
 	})
 
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -606,9 +606,9 @@ func TestUpdateRenewalInfo(t *testing.T) {
 			return
 		}
 
-		body, err := readSignedBody(r, key)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+		body, rsbErr := readSignedBody(r, key)
+		if rsbErr != nil {
+			http.Error(w, rsbErr.Error(), http.StatusBadRequest)
 			return
 		}
 

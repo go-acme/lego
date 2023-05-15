@@ -207,7 +207,8 @@ func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *Certif
 		err := client.Certificate.UpdateRenewalInfo(certificate.RenewalInfoRequest{
 			Cert:     certificates[0],
 			Issuer:   certificates[1],
-			HashName: ctx.String("ari-hash-name")})
+			HashName: ctx.String("ari-hash-name"),
+		})
 		if err != nil {
 			log.Warnf("[%s] Failed to update renewal info: %v", domain, err)
 		}
@@ -283,7 +284,8 @@ func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *Certificat
 		err := client.Certificate.UpdateRenewalInfo(certificate.RenewalInfoRequest{
 			Cert:     certificates[0],
 			Issuer:   certificates[1],
-			HashName: ctx.String("ari-hash-name")})
+			HashName: ctx.String("ari-hash-name"),
+		})
 		if err != nil {
 			log.Warnf("[%s] Failed to update renewal info: %v", domain, err)
 		}
@@ -323,13 +325,13 @@ func getARIRenewalTime(ctx *cli.Context, cert, issuer *x509.Certificate, domain 
 	renewalInfo, err := client.Certificate.GetRenewalInfo(certificate.RenewalInfoRequest{
 		Cert:     cert,
 		Issuer:   issuer,
-		HashName: ctx.String("ari-hash-name")})
+		HashName: ctx.String("ari-hash-name"),
+	})
 	if err != nil {
 		if errors.Is(err, api.ErrNoARI) {
 			// The server does not advertise a renewal info endpoint.
 			log.Warnf("[%s] acme: %w", domain, err)
 			return nil
-
 		} else {
 			// Something else went wrong.
 			log.Warnf("[%s] acme: calling renewal info endpoint: %w", domain, err)

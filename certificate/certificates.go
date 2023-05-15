@@ -631,7 +631,7 @@ func (c *Certifier) Get(url string, bundle bool) (*Resource, error) {
 func (c *Certifier) GetRenewalInfo(req RenewalInfoRequest) (*RenewalInfoResponse, error) {
 	certID, err := makeCertID(req.Cert, req.Issuer, req.HashName)
 	if err != nil {
-		return nil, fmt.Errorf("error making certID: %v", err)
+		return nil, fmt.Errorf("error making certID: %w", err)
 	}
 
 	resp, err := c.core.Certificates.GetRenewalInfo(certID)
@@ -662,7 +662,7 @@ func (c *Certifier) GetRenewalInfo(req RenewalInfoRequest) (*RenewalInfoResponse
 func (c *Certifier) UpdateRenewalInfo(req RenewalInfoRequest) error {
 	certID, err := makeCertID(req.Cert, req.Issuer, req.HashName)
 	if err != nil {
-		return fmt.Errorf("error making certID: %v", err)
+		return fmt.Errorf("error making certID: %w", err)
 	}
 
 	_, err = c.core.Certificates.UpdateRenewalInfo(acme.RenewalInfoUpdateRequest{
@@ -797,7 +797,8 @@ func makeCertID(leaf, issuer *x509.Certificate, hashName string) (string, error)
 		},
 		IssuerNameHash: issuerNameHash,
 		IssuerKeyHash:  issuerKeyHash,
-		SerialNumber:   leaf.SerialNumber})
+		SerialNumber:   leaf.SerialNumber,
+	})
 	if err != nil {
 		return "", err
 	}

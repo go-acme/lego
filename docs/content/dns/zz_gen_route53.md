@@ -41,7 +41,7 @@ AWS_HOSTED_ZONE_ID=your_hosted_zone_id \
 | Environment Variable Name | Description |
 |-----------------------|-------------|
 | `AWS_ACCESS_KEY_ID` | Managed by the AWS client. Access key ID (`AWS_ACCESS_KEY_ID_FILE` is not supported, use `AWS_SHARED_CREDENTIALS_FILE` instead) |
-| `AWS_ASSUME_ROLE_ARN` | Managed by the AWS Role ARN (`AWS_ASSUME_ROLE_ARN` is not supported) |
+| `AWS_ASSUME_ROLE_ARN` | Managed by the AWS Role ARN (`AWS_ASSUME_ROLE_ARN_FILE` is not supported) |
 | `AWS_HOSTED_ZONE_ID` | Override the hosted zone ID. |
 | `AWS_PROFILE` | Managed by the AWS client (`AWS_PROFILE_FILE` is not supported) |
 | `AWS_REGION` | Managed by the AWS client (`AWS_REGION_FILE` is not supported) |

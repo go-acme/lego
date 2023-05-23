@@ -39,8 +39,7 @@ docker run goacme/lego -h
   [Homebrew](https://brew.sh/) user can install [lego](https://formulae.brew.sh/formula/lego) with:
 
   ```bash
-  $ brew install lego
-
+  brew install lego
   ```
 
   or

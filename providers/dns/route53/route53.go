@@ -30,6 +30,7 @@ const (
 	EnvHostedZoneID    = envNamespace + "HOSTED_ZONE_ID"
 	EnvMaxRetries      = envNamespace + "MAX_RETRIES"
 	EnvAssumeRoleArn   = envNamespace + "ASSUME_ROLE_ARN"
+	EnvExternalID      = envNamespace + "EXTERNAL_ID"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -48,6 +49,7 @@ type Config struct {
 	HostedZoneID  string
 	MaxRetries    int
 	AssumeRoleArn string
+	ExternalID    string
 
 	TTL                int
 	PropagationTimeout time.Duration
@@ -62,6 +64,7 @@ func NewDefaultConfig() *Config {
 		HostedZoneID:  env.GetOrFile(EnvHostedZoneID),
 		MaxRetries:    env.GetOrDefaultInt(EnvMaxRetries, 5),
 		AssumeRoleArn: env.GetOrDefaultString(EnvAssumeRoleArn, ""),
+		ExternalID:    env.GetOrDefaultString(EnvExternalID, ""),
 
 		TTL:                env.GetOrDefaultInt(EnvTTL, 10),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
@@ -337,8 +340,12 @@ func createSession(config *Config) (*session.Session, error) {
 	}
 
 	return session.NewSession(&aws.Config{
-		Region:      sess.Config.Region,
-		Credentials: stscreds.NewCredentials(sess, config.AssumeRoleArn),
+		Region: sess.Config.Region,
+		Credentials: stscreds.NewCredentials(sess, config.AssumeRoleArn, func(arp *stscreds.AssumeRoleProvider) {
+			if config.ExternalID != "" {
+				arp.ExternalID = &config.ExternalID
+			}
+		}),
 	})
 }
 

@@ -84,26 +84,21 @@ type ObtainForCSRRequest struct {
 type RenewalInfoRequest struct {
 	Cert   *x509.Certificate
 	Issuer *x509.Certificate
-	// HashName must be the string representation of a crypto.Hash constant in
-	// the golang.org/x/crypto package (e.g. "SHA-256"). The correct value
-	// depends on the algorithm expected by the ACME server's ARI
-	// implementation.
+	// HashName must be the string representation of a crypto.Hash constant in the golang.org/x/crypto package (e.g. "SHA-256").
+	// The correct value depends on the algorithm expected by the ACME server's ARI implementation.
 	HashName string
 }
 
-// RenewalInfoResponse is a wrapper around acme.RenewalInfoResponse that provides a
-// method for determining when to renew a certificate.
+// RenewalInfoResponse is a wrapper around acme.RenewalInfoResponse that provides a method for determining when to renew a certificate.
 type RenewalInfoResponse struct {
 	acme.RenewalInfoResponse
 }
 
-// ShouldRenewAt determines the optimal renewal time based on the current time
-// (UTC), renewal window suggest by ARI, and the client's willingness to sleep.
-// It returns a pointer to a time.Time value indicating when the renewal should
-// be attempted or nil if deferred until the next normal wake time. This method
-// implements the RECOMMENDED algorithm described in draft-ietf-acme-ari.
+// ShouldRenewAt determines the optimal renewal time based on the current time (UTC),renewal window suggest by ARI, and the client's willingness to sleep.
+// It returns a pointer to a time.Time value indicating when the renewal should be attempted or nil if deferred until the next normal wake time.
+// This method implements the RECOMMENDED algorithm described in draft-ietf-acme-ari.
 //
-//	(4.1-11. Getting Renewal Information)
+// - https://datatracker.ietf.org/doc/draft-ietf-acme-ari/ (4.1-11. Getting Renewal Information)
 func (r *RenewalInfoResponse) ShouldRenewAt(now time.Time, willingToSleep time.Duration) *time.Time {
 	// Explicitly convert all times to UTC.
 	now = now.UTC()
@@ -120,18 +115,15 @@ func (r *RenewalInfoResponse) ShouldRenewAt(now time.Time, willingToSleep time.D
 		return &now
 	}
 
-	// Otherwise, if the client can schedule itself to attempt renewal at
-	// exactly the selected time, do so.
+	// Otherwise, if the client can schedule itself to attempt renewal at exactly the selected time, do so.
 	willingToSleepUntil := now.Add(willingToSleep)
 	if willingToSleepUntil.After(rt) || willingToSleepUntil.Equal(rt) {
 		return &rt
 	}
 
-	// TODO: Otherwise, if the selected time is before the next time that the
-	// client would wake up normally, attempt renewal immediately.
+	// TODO: Otherwise, if the selected time is before the next time that the client would wake up normally, attempt renewal immediately.
 
-	// Otherwise, sleep until the next normal wake time, re-check ARI, and
-	// return to Step 1.
+	// Otherwise, sleep until the next normal wake time, re-check ARI, and return to Step 1.
 	return nil
 }
 
@@ -617,15 +609,12 @@ func (c *Certifier) Get(url string, bundle bool) (*Resource, error) {
 	}, nil
 }
 
-// GetRenewalInfo sends a request to the ACME server's renewalInfo endpoint to
-// obtain a suggested renewal window. The caller MUST provide the certificate
-// and issuer certificate for the certificate they wish to renew. The caller
-// should attempt to renew the certificate at the time indicated by the
-// ShouldRenewAt method of the returned RenewalInfoResponse object.
+// GetRenewalInfo sends a request to the ACME server's renewalInfo endpoint to obtain a suggested renewal window.
+// The caller MUST provide the certificate and issuer certificate for the certificate they wish to renew.
+// The caller should attempt to renew the certificate at the time indicated by the ShouldRenewAt method of the returned RenewalInfoResponse object.
 //
-// Note: this endpoint is part of a draft specification, not all ACME servers
-// will implement it. This method will return api.ErrNoARI if the server does
-// not advertise a renewal info endpoint.
+// Note: this endpoint is part of a draft specification, not all ACME servers will implement it.
+// This method will return api.ErrNoARI if the server does not advertise a renewal info endpoint.
 //
 // https://datatracker.ietf.org/doc/draft-ietf-acme-ari
 func (c *Certifier) GetRenewalInfo(req RenewalInfoRequest) (*RenewalInfoResponse, error) {
@@ -648,15 +637,12 @@ func (c *Certifier) GetRenewalInfo(req RenewalInfoRequest) (*RenewalInfoResponse
 	return &info, nil
 }
 
-// UpdateRenewalInfo sends an update to the ACME server's renewal info endpoint
-// to indicate that the client has successfully replaced a certificate. A
-// certificate is considered replaced when its revocation would not disrupt any
-// ongoing services, for instance because it has been renewed and the new
-// certificate is in use, or because it is no longer in use.
+// UpdateRenewalInfo sends an update to the ACME server's renewal info endpoint to indicate that the client has successfully replaced a certificate.
+// A certificate is considered replaced when its revocation would not disrupt any ongoing services,
+// for instance because it has been renewed and the new certificate is in use, or because it is no longer in use.
 //
-// Note: this endpoint is part of a draft specification, not all ACME servers
-// will implement it. This method will return api.ErrNoARI if the server does
-// not advertise a renewal info endpoint.
+// Note: this endpoint is part of a draft specification, not all ACME servers will implement it.
+// This method will return api.ErrNoARI if the server does not advertise a renewal info endpoint.
 //
 // https://datatracker.ietf.org/doc/draft-ietf-acme-ari
 func (c *Certifier) UpdateRenewalInfo(req RenewalInfoRequest) error {
@@ -720,12 +706,10 @@ func sanitizeDomain(domains []string) []string {
 	return sanitizedDomains
 }
 
-// makeCertID returns a base64url-encoded string that uniquely identifies a
-// certificate to endpoints that implement the draft-ietf-acme-ari
-// specification: https://datatracker.ietf.org/doc/draft-ietf-acme-ari. hashName
-// must be the string representation of a crypto.Hash constant in the
-// golang.org/x/crypto package. Supported hash functions are SHA-1, SHA-256,
-// SHA-384, and SHA-512.
+// makeCertID returns a base64url-encoded string that uniquely identifies a certificate to endpoints
+// that implement the draft-ietf-acme-ari specification: https://datatracker.ietf.org/doc/draft-ietf-acme-ari.
+// hashName must be the string representation of a crypto.Hash constant in the golang.org/x/crypto package.
+// Supported hash functions are SHA-1, SHA-256, SHA-384, and SHA-512.
 func makeCertID(leaf, issuer *x509.Certificate, hashName string) (string, error) {
 	if leaf == nil {
 		return "", fmt.Errorf("leaf certificate is nil")
@@ -738,8 +722,7 @@ func makeCertID(leaf, issuer *x509.Certificate, hashName string) (string, error)
 	var oid asn1.ObjectIdentifier
 
 	switch hashName {
-	// The following correlation of hashFunc to OID is copied from a private
-	// mapping in golang.org/x/crypto/ocsp:
+	// The following correlation of hashFunc to OID is copied from a private mapping in golang.org/x/crypto/ocsp:
 	// https://cs.opensource.google/go/x/crypto/+/refs/tags/v0.8.0:ocsp/ocsp.go;l=156
 	case crypto.SHA1.String():
 		hashFunc = crypto.SHA1
@@ -803,8 +786,7 @@ func makeCertID(leaf, issuer *x509.Certificate, hashName string) (string, error)
 		return "", err
 	}
 
-	// base64url-encode [RFC4648] the bytes of the DER-encoded CertID ASN.1
-	// sequence [RFC6960].
+	// base64url-encode [RFC4648] the bytes of the DER-encoded CertID ASN.1 sequence [RFC6960].
 	encodedBytes := base64.URLEncoding.EncodeToString(certIDBytes)
 
 	// Any trailing '=' characters MUST be stripped.

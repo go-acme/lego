@@ -202,8 +202,7 @@ func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *Certif
 	certsStorage.SaveResource(certRes)
 
 	if ariRenewalTime != nil {
-		// Post to the renewalInfo endpoint to indicate that we have renewed and
-		// replaced the certificate.
+		// Post to the renewalInfo endpoint to indicate that we have renewed and replaced the certificate.
 		err := client.Certificate.UpdateRenewalInfo(certificate.RenewalInfoRequest{
 			Cert:     certificates[0],
 			Issuer:   certificates[1],
@@ -279,8 +278,7 @@ func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *Certificat
 	certsStorage.SaveResource(certRes)
 
 	if ariRenewalTime != nil {
-		// Post to the renewalInfo endpoint to indicate that we have renewed and
-		// replaced the certificate.
+		// Post to the renewalInfo endpoint to indicate that we have renewed and replaced the certificate.
 		err := client.Certificate.UpdateRenewalInfo(certificate.RenewalInfoRequest{
 			Cert:     certificates[0],
 			Issuer:   certificates[1],
@@ -315,8 +313,7 @@ func needRenewal(x509Cert *x509.Certificate, domain string, days int) bool {
 	return true
 }
 
-// getARIRenewalTime checks if the certificate needs to be renewed using the
-// renewalInfo endpoint.
+// getARIRenewalTime checks if the certificate needs to be renewed using the renewalInfo endpoint.
 func getARIRenewalTime(ctx *cli.Context, cert, issuer *x509.Certificate, domain string, client *lego.Client) *time.Time {
 	if cert.IsCA {
 		log.Fatalf("[%s] Certificate bundle starts with a CA certificate", domain)

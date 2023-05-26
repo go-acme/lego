@@ -16,6 +16,9 @@ import (
 // maxBodySize is the maximum size of body that we will read.
 const maxBodySize = 1024 * 1024
 
+// ErrNoARI is returned when the server does not advertise a renewal info endpoint.
+var ErrNoARI = errors.New("renewalInfo[get/post]: server does not advertise a renewal info endpoint")
+
 type CertificateService service
 
 // Get Returns the certificate and the issuer certificate.
@@ -60,9 +63,6 @@ func (c *CertificateService) Revoke(req acme.RevokeCertMessage) error {
 	_, err := c.core.post(c.core.GetDirectory().RevokeCertURL, req, nil)
 	return err
 }
-
-// ErrNoARI is returned when the server does not advertise a renewal info endpoint.
-var ErrNoARI = errors.New("renewalInfo[get/post]: server does not advertise a renewal info endpoint")
 
 // GetRenewalInfo GETs renewal information for a certificate from the renewalInfo endpoint.
 // This is used to determine if a certificate needs to be renewed.

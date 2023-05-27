@@ -316,7 +316,7 @@ type Window struct {
 }
 
 // RenewalInfoResponse is the response to GET requests made the renewalInfo endpoint.
-// - https://datatracker.ietf.org/doc/draft-ietf-acme-ari/ (4.1. Getting Renewal Information).
+// - (4.1. Getting Renewal Information) https://datatracker.ietf.org/doc/draft-ietf-acme-ari/
 type RenewalInfoResponse struct {
 	// SuggestedWindow contains two fields, start and end,
 	// whose values are timestamps which bound the window of time in which the CA recommends renewing the certificate.
@@ -329,7 +329,7 @@ type RenewalInfoResponse struct {
 }
 
 // RenewalInfoUpdateRequest is the JWS payload for POST requests made to the renewalInfo endpoint.
-// - https://datatracker.ietf.org/doc/draft-ietf-acme-ari/ (4.2. Updating Renewal Information).
+// - (4.2. Updating Renewal Information) https://datatracker.ietf.org/doc/draft-ietf-acme-ari/
 type RenewalInfoUpdateRequest struct {
 	// CertID is the base64url-encoded [RFC4648] bytes of a DER-encoded CertID ASN.1 sequence [RFC6960] with any trailing '=' characters stripped.
 	CertID string `json:"certID"`

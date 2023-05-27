@@ -207,3 +207,6 @@ issues:
       text: 'mu is a global variable'
     - path: providers/dns/hosttech/internal/client_test.go
       text: 'Duplicate words \(0\) found'
+    - path: cmd/cmd_renew.go
+      text: 'cyclomatic complexity 16 of func `renewForDomains` is high'
+

@@ -117,49 +117,67 @@ func TestCertifier_GetRenewalInfo(t *testing.T) {
 	assert.Equal(t, "https://aricapable.ca/docs/renewal-advice/", ri.ExplanationURL)
 }
 
-func TestCertifier_GetRenewalInfo_error(t *testing.T) {
+func TestCertifier_GetRenewalInfo_errors(t *testing.T) {
 	leaf, err := certcrypto.ParsePEMCertificate([]byte(ariLeafPEM))
 	require.NoError(t, err)
 	issuer, err := certcrypto.ParsePEMCertificate([]byte(ariIssuerPEM))
 	require.NoError(t, err)
 
-	// API that takes 2ms to respond.
-	mux, apiURL := tester.SetupFakeAPI(t)
-	mux.HandleFunc("/renewalInfo/"+ariLeafCertID, func(w http.ResponseWriter, r *http.Request) {
-		time.Sleep(2 * time.Millisecond)
-	})
-
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err, "Could not generate test key")
 
-	// HTTP client that times out after 1ms.
-	core, err := api.New(&http.Client{Timeout: 1 * time.Millisecond}, "lego-test", apiURL+"/dir", "", key)
-	require.NoError(t, err)
+	testCases := []struct {
+		desc       string
+		httpClient *http.Client
+		request    RenewalInfoRequest
+		handler    http.HandlerFunc
+	}{
+		{
+			desc:       "API timeout",
+			httpClient: &http.Client{Timeout: 1 * time.Millisecond}, // HTTP client that times out after 1ms.
+			request:    RenewalInfoRequest{leaf, issuer, crypto.SHA256.String()},
+			handler: func(w http.ResponseWriter, r *http.Request) {
+				// API that takes 2ms to respond.
+				time.Sleep(2 * time.Millisecond)
+			},
+		},
+		{
+			desc:       "API error",
+			httpClient: http.DefaultClient,
+			request:    RenewalInfoRequest{leaf, issuer, crypto.SHA256.String()},
+			handler: func(w http.ResponseWriter, r *http.Request) {
+				// API that responds with error instead of renewal info.
+				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			},
+		},
+		{
+			desc:       "Issuer certificate is nil",
+			httpClient: http.DefaultClient,
+			request:    RenewalInfoRequest{leaf, nil, crypto.SHA256.String()},
+			handler: func(w http.ResponseWriter, r *http.Request) {
+				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			},
+		},
+	}
 
-	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
+	for _, test := range testCases {
+		test := test
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
 
-	ri, err := certifier.GetRenewalInfo(RenewalInfoRequest{leaf, issuer, crypto.SHA256.String()})
-	require.Error(t, err)
-	assert.Nil(t, ri)
+			mux, apiURL := tester.SetupFakeAPI(t)
+			mux.HandleFunc("/renewalInfo/"+ariLeafCertID, test.handler)
 
-	// API that responds with error instead of renewal info.
-	mux, apiURL = tester.SetupFakeAPI(t)
-	mux.HandleFunc("/renewalInfo/"+ariLeafCertID, func(w http.ResponseWriter, r *http.Request) {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-	})
+			core, err := api.New(test.httpClient, "lego-test", apiURL+"/dir", "", key)
+			require.NoError(t, err)
 
-	core, err = api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", key)
-	require.NoError(t, err)
+			certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
 
-	certifier = NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
-
-	ri, err = certifier.GetRenewalInfo(RenewalInfoRequest{leaf, issuer, crypto.SHA256.String()})
-	require.Error(t, err)
-	assert.Nil(t, ri)
-
-	ri, err = certifier.GetRenewalInfo(RenewalInfoRequest{leaf, nil, crypto.SHA256.String()})
-	require.Error(t, err)
-	assert.Nil(t, ri)
+			response, err := certifier.GetRenewalInfo(test.request)
+			require.Error(t, err)
+			assert.Nil(t, response)
+		})
+	}
 }
 
 func TestCertifier_UpdateRenewalInfo(t *testing.T) {
@@ -203,7 +221,7 @@ func TestCertifier_UpdateRenewalInfo(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestCertifier_UpdateRenewalInfo_error(t *testing.T) {
+func TestCertifier_UpdateRenewalInfo_errors(t *testing.T) {
 	leaf, err := certcrypto.ParsePEMCertificate([]byte(ariLeafPEM))
 	require.NoError(t, err)
 	issuer, err := certcrypto.ParsePEMCertificate([]byte(ariIssuerPEM))
@@ -212,62 +230,107 @@ func TestCertifier_UpdateRenewalInfo_error(t *testing.T) {
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err, "Could not generate test key")
 
-	// Test with a fake API.
-	mux, apiURL := tester.SetupFakeAPI(t)
-	// Always returns an error.
-	mux.HandleFunc("/renewalInfo", func(w http.ResponseWriter, r *http.Request) {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-	})
+	testCases := []struct {
+		desc    string
+		request RenewalInfoRequest
+	}{
+		{
+			desc:    "API error",
+			request: RenewalInfoRequest{leaf, issuer, crypto.SHA256.String()},
+		},
+		{
+			desc:    "Certificate is nil",
+			request: RenewalInfoRequest{nil, issuer, crypto.SHA256.String()},
+		},
+	}
 
-	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", key)
-	require.NoError(t, err)
+	for _, test := range testCases {
+		test := test
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
 
-	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
+			mux, apiURL := tester.SetupFakeAPI(t)
 
-	err = certifier.UpdateRenewalInfo(RenewalInfoRequest{leaf, issuer, crypto.SHA256.String()})
-	require.Error(t, err)
+			// Always returns an error.
+			mux.HandleFunc("/renewalInfo", func(w http.ResponseWriter, r *http.Request) {
+				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			})
 
-	err = certifier.UpdateRenewalInfo(RenewalInfoRequest{nil, issuer, crypto.SHA256.String()})
-	require.Error(t, err)
+			core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", key)
+			require.NoError(t, err)
+
+			certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
+
+			err = certifier.UpdateRenewalInfo(test.request)
+			require.Error(t, err)
+		})
+	}
 }
 
 func TestRenewalInfoResponse_ShouldRenew(t *testing.T) {
 	now := time.Now().UTC()
 
-	// Window is in the past.
-	ri := RenewalInfoResponse{
-		acme.RenewalInfoResponse{
-			SuggestedWindow: acme.Window{
-				Start: now.Add(-2 * time.Hour),
-				End:   now.Add(-1 * time.Hour),
+	t.Run("Window is in the past", func(t *testing.T) {
+		ri := RenewalInfoResponse{
+			acme.RenewalInfoResponse{
+				SuggestedWindow: acme.Window{
+					Start: now.Add(-2 * time.Hour),
+					End:   now.Add(-1 * time.Hour),
+				},
+				ExplanationURL: "",
 			},
-			ExplanationURL: "",
-		},
-	}
-	rt := ri.ShouldRenewAt(now, 0)
-	assert.Equal(t, now, *rt)
+		}
 
-	// Window is in the future.
-	ri = RenewalInfoResponse{
-		acme.RenewalInfoResponse{
-			SuggestedWindow: acme.Window{
-				Start: now.Add(1 * time.Hour),
-				End:   now.Add(2 * time.Hour),
+		rt := ri.ShouldRenewAt(now, 0)
+		require.NotNil(t, rt)
+		assert.Equal(t, now, *rt)
+	})
+
+	t.Run("Window is in the future", func(t *testing.T) {
+		ri := RenewalInfoResponse{
+			acme.RenewalInfoResponse{
+				SuggestedWindow: acme.Window{
+					Start: now.Add(1 * time.Hour),
+					End:   now.Add(2 * time.Hour),
+				},
+				ExplanationURL: "",
 			},
-			ExplanationURL: "",
-		},
-	}
-	rt = ri.ShouldRenewAt(now, 0)
-	assert.Nil(t, rt)
+		}
 
-	// Window is in the future, but caller is willing to sleep.
-	rt = ri.ShouldRenewAt(now, 2*time.Hour)
-	assert.NotNil(t, rt)
-	assert.True(t, rt.Before(now.Add(2*time.Hour)))
+		rt := ri.ShouldRenewAt(now, 0)
+		assert.Nil(t, rt)
+	})
 
-	// Window is in the future, but caller isn't willing to sleep long enough.
-	rt = ri.ShouldRenewAt(now, 59*time.Minute)
-	assert.Nil(t, rt)
+	t.Run("Window is in the future, but caller is willing to sleep", func(t *testing.T) {
+		ri := RenewalInfoResponse{
+			acme.RenewalInfoResponse{
+				SuggestedWindow: acme.Window{
+					Start: now.Add(1 * time.Hour),
+					End:   now.Add(2 * time.Hour),
+				},
+				ExplanationURL: "",
+			},
+		}
+
+		rt := ri.ShouldRenewAt(now, 2*time.Hour)
+		require.NotNil(t, rt)
+		assert.True(t, rt.Before(now.Add(2*time.Hour)))
+	})
+
+	t.Run("Window is in the future, but caller isn't willing to sleep long enough", func(t *testing.T) {
+		ri := RenewalInfoResponse{
+			acme.RenewalInfoResponse{
+				SuggestedWindow: acme.Window{
+					Start: now.Add(1 * time.Hour),
+					End:   now.Add(2 * time.Hour),
+				},
+				ExplanationURL: "",
+			},
+		}
+
+		rt := ri.ShouldRenewAt(now, 59*time.Minute)
+		assert.Nil(t, rt)
+	})
 }
 
 func readSignedBody(r *http.Request, privateKey *rsa.PrivateKey) ([]byte, error) {

@@ -133,12 +133,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return nil
 	}
 
-	err = internal.ParseError(resp)
-	if err != nil {
-		return fmt.Errorf("websupport: %w", err)
-	}
-
-	return nil
+	return fmt.Errorf("websupport: %w", internal.ParseError(resp))
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
@@ -172,12 +167,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return nil
 	}
 
-	err = internal.ParseError(resp)
-	if err != nil {
-		return fmt.Errorf("websupport: %w", err)
-	}
-
-	return nil
+	return fmt.Errorf("websupport: %w", internal.ParseError(resp))
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.

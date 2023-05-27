@@ -29,6 +29,7 @@ func SetupFakeAPI(t *testing.T) (*http.ServeMux, string) {
 			NewOrderURL:   server.URL + "/newOrder",
 			RevokeCertURL: server.URL + "/revokeCert",
 			KeyChangeURL:  server.URL + "/keyChange",
+			RenewalInfo:   server.URL + "/renewalInfo",
 		})
 
 		mux.HandleFunc("/nonce", func(w http.ResponseWriter, r *http.Request) {

@@ -134,7 +134,7 @@ func TestCertifier_GetRenewalInfo_errors(t *testing.T) {
 	}{
 		{
 			desc:       "API timeout",
-			httpClient: &http.Client{Timeout: 1 * time.Millisecond}, // HTTP client that times out after 1ms.
+			httpClient: &http.Client{Timeout: 100 * time.Millisecond}, // HTTP client that times out after 100ms.
 			request:    RenewalInfoRequest{leaf, issuer, crypto.SHA256.String()},
 			handler: func(w http.ResponseWriter, r *http.Request) {
 				// API that takes 2ms to respond.

@@ -1,5 +1,20 @@
 # Changelog
 
+## [v4.12.0] - 2023-05-28
+
+### Added:
+- **[lib,cli]** Initial ACME Renewal Info (ARI) Implementation
+- **[dnsprovider]** Add DNS provider for Derak Cloud
+- **[dnsprovider]** route53: pass ExternalID property to STS:AssumeRole API operation
+- **[lib,cli]** Support custom duration for certificate
+
+### Changed:
+- **[dnsprovider]** Refactor DNS provider and client implementations
+
+### Fixed:
+- **[dnsprovider]** autodns: fixes wrong zone in api call if CNAME is used
+- **[cli]** fix: archive only domain-related files on revoke
+
 ## [v4.11.0] - 2023-05-02
 
 ### Added:

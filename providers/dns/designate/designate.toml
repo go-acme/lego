@@ -65,4 +65,4 @@ For more information, you can read about the different methods of authentication
 
 [Links]
   API = "https://docs.openstack.org/designate/latest/"
-  GoClient = "https://godoc.org/github.com/gophercloud/gophercloud/openstack/dns/v2"
+  GoClient = "https://pkg.go.dev/github.com/gophercloud/gophercloud/openstack/dns/v2"

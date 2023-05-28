@@ -103,7 +103,7 @@ For more information, you can read about the different methods of authentication
 ## More information
 
 - [API documentation](https://docs.openstack.org/designate/latest/)
-- [Go client](https://godoc.org/github.com/gophercloud/gophercloud/openstack/dns/v2)
+- [Go client](https://pkg.go.dev/github.com/gophercloud/gophercloud/openstack/dns/v2)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/designate/designate.toml -->

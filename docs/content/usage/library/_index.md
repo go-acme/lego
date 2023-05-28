@@ -10,7 +10,7 @@ Lego can be use as a Go Library.
 
 ## GoDoc
 
-The GoDoc can be found here: [GoDoc](https://pkg.go.dev/mod/github.com/go-acme/lego/v4).
+The GoDoc can be found here: [Go Reference](https://pkg.go.dev/github.com/go-acme/lego/v4).
 
 ## Usage
 

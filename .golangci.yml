@@ -20,11 +20,23 @@ linters-settings:
     ignore-words:
       - internetbs
   depguard:
-    list-type: denylist
-    include-go-root: false
-    packages:
-      - github.com/pkg/errors
-      - github.com/instana/testify
+    rules:
+      main:
+        deny:
+          - pkg: "github.com/instana/testify"
+            desc: not allowed
+          - pkg: "github.com/pkg/errors"
+            desc: Should be replaced by standard lib errors package
+  tagalign:
+    align: false
+    order:
+      - xml
+      - json
+      - yaml
+      - yml
+      - toml
+      - mapstructure
+      - url
   godox:
     keywords:
       - FIXME
@@ -124,6 +136,7 @@ linters:
     - errchkjson
     - nonamedreturns
     - musttag # false-positive https://github.com/junk1tm/musttag/issues/17
+    - gosmopolitan  # not relevant
 
 issues:
   exclude-use-default: false

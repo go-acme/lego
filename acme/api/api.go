@@ -117,7 +117,7 @@ func (a *Core) signedPost(uri string, content []byte, response interface{}) (*ht
 		return nil, fmt.Errorf("failed to post JWS message: failed to sign content: %w", err)
 	}
 
-	signedBody := bytes.NewBuffer([]byte(signedContent.FullSerialize()))
+	signedBody := bytes.NewBufferString(signedContent.FullSerialize())
 
 	resp, err := a.doer.Post(uri, signedBody, "application/jose+json", response)
 

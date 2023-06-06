@@ -142,7 +142,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	rec := internal.Record{
-		Content:  "\"" + info.EffectiveFQDN + "\"",
+		Content:  "\"" + info.Value + "\"",
 		Disabled: false,
 
 		// pre-v1 API

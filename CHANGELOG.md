@@ -1,5 +1,10 @@
 # Changelog
 
+## [v4.12.1] - 2023-06-06
+
+### Fixed:
+- **[dnsprovider]** pdns: fix record value
+
 ## [v4.12.0] - 2023-05-28
 
 ### Added:

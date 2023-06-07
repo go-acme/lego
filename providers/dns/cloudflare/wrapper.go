@@ -63,8 +63,8 @@ func (m *metaClient) CreateDNSRecord(ctx context.Context, zoneID string, rr clou
 	return m.clientEdit.CreateDNSRecord(ctx, cloudflare.ZoneIdentifier(zoneID), rr)
 }
 
-func (m *metaClient) DNSRecords(ctx context.Context, zoneID string, rr cloudflare.DNSRecord) ([]cloudflare.DNSRecord, error) {
-	return m.clientEdit.DNSRecords(ctx, zoneID, rr)
+func (m *metaClient) DNSRecords(ctx context.Context, zoneID string, rr cloudflare.ListDNSRecordsParams) ([]cloudflare.DNSRecord, *cloudflare.ResultInfo, error) {
+	return m.clientEdit.ListDNSRecords(ctx, cloudflare.ZoneIdentifier(zoneID), rr)
 }
 
 func (m *metaClient) DeleteDNSRecord(ctx context.Context, zoneID, recordID string) error {

@@ -134,7 +134,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("cloudflare: failed to find zone %s: %w", authZone, err)
 	}
 
-	dnsRecord := cloudflare.DNSRecord{
+	dnsRecord := cloudflare.CreateDNSRecordParams{
 		Type:    "TXT",
 		Name:    dns01.UnFqdn(info.EffectiveFQDN),
 		Content: info.Value,
@@ -146,15 +146,11 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("cloudflare: failed to create TXT record: %w", err)
 	}
 
-	if !response.Success {
-		return fmt.Errorf("cloudflare: failed to create TXT record: %+v %+v", response.Errors, response.Messages)
-	}
-
 	d.recordIDsMu.Lock()
-	d.recordIDs[token] = response.Result.ID
+	d.recordIDs[token] = response.ID
 	d.recordIDsMu.Unlock()
 
-	log.Infof("cloudflare: new record for %s, ID %s", domain, response.Result.ID)
+	log.Infof("cloudflare: new record for %s, ID %s", domain, response.ID)
 
 	return nil
 }

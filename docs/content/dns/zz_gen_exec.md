@@ -116,21 +116,6 @@ you can use the `--` delimiter to specify the start of positional arguments, and
 | default | `myprogram cleanup -- <FQDN> <record>`             |
 | `RAW`   | `myprogram cleanup -- <domain> <token> <key_auth>` |
 
-### Timeout
-
-The command have to display propagation timeout and polling interval into Stdout.
-
-The values must be formatted as JSON, and times are in seconds.
-Example: `{"timeout": 30, "interval": 5}`
-
-If an error occurs or if the command is not provided:
-the default display propagation timeout and polling interval are used.
-
-| Mode    | Command                                            |
-|---------|----------------------------------------------------|
-| default | `myprogram timeout`                                |
-| `RAW`   | `myprogram timeout`                                |
-
 
 
 

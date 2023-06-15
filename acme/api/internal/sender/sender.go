@@ -133,6 +133,10 @@ func checkError(req *http.Request, resp *http.Response) error {
 		errorDetails.Method = req.Method
 		errorDetails.URL = req.URL.String()
 
+		if errorDetails.HTTPStatus == 0 {
+			errorDetails.HTTPStatus = resp.StatusCode
+		}
+
 		// Check for errors we handle specifically
 		if errorDetails.HTTPStatus == http.StatusBadRequest && errorDetails.Type == acme.BadNonceErr {
 			return &acme.NonceError{ProblemDetails: errorDetails}

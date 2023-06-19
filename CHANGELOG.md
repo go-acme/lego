@@ -1,5 +1,11 @@
 # Changelog
 
+## [v4.12.2] - 2023-06-19
+
+### Fixed:
+- **[dnsprovider]** dnsmadeeasy: fix DeleteRecord
+- **[lib]** fix: read status code from response
+
 ## [v4.12.1] - 2023-06-06
 
 ### Fixed:

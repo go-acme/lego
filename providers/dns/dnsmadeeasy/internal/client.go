@@ -84,6 +84,7 @@ func (c *Client) GetRecords(ctx context.Context, domain *Domain, recordName, rec
 	query := endpoint.Query()
 	query.Set("recordName", recordName)
 	query.Set("type", recordType)
+	endpoint.RawQuery = query.Encode()
 
 	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
@@ -113,7 +114,7 @@ func (c *Client) CreateRecord(ctx context.Context, domain *Domain, record *Recor
 
 // DeleteRecord deletes a TXT records.
 func (c *Client) DeleteRecord(ctx context.Context, record Record) error {
-	endpoint := c.BaseURL.JoinPath("/dns/managed", strconv.Itoa(record.SourceID), "records", strconv.Itoa(record.ID))
+	endpoint := c.BaseURL.JoinPath("dns", "managed", strconv.Itoa(record.SourceID), "records", strconv.Itoa(record.ID))
 
 	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {

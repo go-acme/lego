@@ -28,6 +28,12 @@ func createList() *cli.Command {
 				Aliases: []string{"n"},
 				Usage:   "Display certificate common names only.",
 			},
+			// fake email, needed by NewAccountsStorage
+			&cli.StringFlag{
+				Name:   "email",
+				Value:  "unknown",
+				Hidden: true,
+			},
 		},
 	}
 }
@@ -93,11 +99,6 @@ func listCertificates(ctx *cli.Context) error {
 }
 
 func listAccount(ctx *cli.Context) error {
-	// fake email, needed by NewAccountsStorage
-	if err := ctx.Set("email", "unknown"); err != nil {
-		return err
-	}
-
 	accountsStorage := NewAccountsStorage(ctx)
 
 	matches, err := filepath.Glob(filepath.Join(accountsStorage.GetRootPath(), "*", "*", "*.json"))

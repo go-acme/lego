@@ -20,6 +20,7 @@ COMMANDS:
 
 GLOBAL OPTIONS:
    --accept-tos, -a                                             By setting this flag to true you indicate that you accept the current Let's Encrypt terms of service. (default: false)
+   --bupem                                                      Generate an additional 'bottom-up' .bupem (PEM, base64) file by concatenating the .key, .crt and issuer .crt together, in that order. (default: false)
    --cert.timeout value                                         Set the certificate timeout value to a specific value in seconds. Only used when obtaining certificates. (default: 30)
    --csr value, -c value                                        Certificate signing request filename, if an external CSR is to be used.
    --dns value                                                  Solve a DNS-01 challenge using the specified provider. Can be mixed with other types of challenges. Run 'lego dnshelp' for help on usage.

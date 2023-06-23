@@ -325,7 +325,7 @@ type RenewalInfoResponse struct {
 	//	For example, it may be a page explaining the CA's dynamic load-balancing strategy,
 	//	or a page documenting which certificates are affected by a mass revocation event.
 	//	Callers SHOULD provide this URL to their operator, if present.
-	ExplanationURL string `json:"explanationUrl"`
+	ExplanationURL string `json:"explanationURL"`
 }
 
 // RenewalInfoUpdateRequest is the JWS payload for POST requests made to the renewalInfo endpoint.

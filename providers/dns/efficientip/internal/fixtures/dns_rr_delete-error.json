@@ -1,0 +1,6 @@
+{
+  "errno": "20117",
+  "errmsg": "This RR does not exist",
+  "severity": "error",
+  "category": "dns_rr_delete"
+}

@@ -14,8 +14,8 @@ func TestLookupNameserversOK(t *testing.T) {
 		nss  []string
 	}{
 		{
-			fqdn: "books.google.com.ng.",
-			nss:  []string{"ns1.google.com.", "ns2.google.com.", "ns3.google.com.", "ns4.google.com."},
+			fqdn: "en.wikipedia.org.",
+			nss:  []string{"ns0.wikimedia.org.", "ns1.wikimedia.org.", "ns2.wikimedia.org."},
 		},
 		{
 			fqdn: "www.google.com.",

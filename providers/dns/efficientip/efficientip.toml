@@ -18,8 +18,8 @@ lego --email you@example.com --dns efficientip --domains my.example.org run
     EFFICIENTIP_PASSWORD = "Password"
     EFFICIENTIP_HOSTNAME = "Hostname (ex: foo.example.com)"
     EFFICIENTIP_DNS_NAME = "DNS name (ex: dns.smart)"
-    EFFICIENTIP_VIEW_NAME = "View name (ex: external)"
   [Configuration.Additional]
+    EFFICIENTIP_VIEW_NAME = "View name (ex: external)"
     EFFICIENTIP_POLLING_INTERVAL = "Time between DNS propagation check"
     EFFICIENTIP_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
     EFFICIENTIP_TTL = "The TTL of the TXT record used for the DNS challenge"

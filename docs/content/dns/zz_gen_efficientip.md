@@ -44,7 +44,6 @@ lego --email you@example.com --dns efficientip --domains my.example.org run
 | `EFFICIENTIP_HOSTNAME` | Hostname (ex: foo.example.com) |
 | `EFFICIENTIP_PASSWORD` | Password |
 | `EFFICIENTIP_USERNAME` | Username |
-| `EFFICIENTIP_VIEW_NAME` | View name (ex: external) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{< ref "dns#configuration-and-credentials" >}}).
@@ -58,6 +57,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 | `EFFICIENTIP_POLLING_INTERVAL` | Time between DNS propagation check |
 | `EFFICIENTIP_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
 | `EFFICIENTIP_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `EFFICIENTIP_VIEW_NAME` | View name (ex: external) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{< ref "dns#configuration-and-credentials" >}}).

@@ -102,6 +102,7 @@ func allDNSCodes() string {
 		"plesk",
 		"porkbun",
 		"rackspace",
+		"rcodezero",
 		"regru",
 		"rfc2136",
 		"rimuhosting",
@@ -2000,6 +2001,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/rackspace`)
+
+	case "rcodezero":
+		// generated from: providers/dns/rcodezero/rcodezero.toml
+		ew.writeln(`Configuration for RcodeZero.`)
+		ew.writeln(`Code:	'rcodezero'`)
+		ew.writeln(`Since:	'v4.12.4'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "RCODEZERO_API_TOKEN":	API token`)
+		ew.writeln(`	- "RCODEZERO_API_URL":	alternative API URL, default: https://my.rcodezero.at/api/v1/acme`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "RCODEZERO_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "RCODEZERO_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "RCODEZERO_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "RCODEZERO_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/rcodezero`)
 
 	case "regru":
 		// generated from: providers/dns/regru/regru.toml

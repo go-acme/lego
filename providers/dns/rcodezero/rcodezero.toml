@@ -1,0 +1,23 @@
+Name = "RcodeZero"
+Description = ''''''
+URL = "https://www.rcodezero.at/"
+Code = "rcodezero"
+Since = "v4.12.4"
+
+Example = '''
+RCODEZERO_API_TOKEN=<mytoken> \
+lego --email you@example.com --dns pdns --domains my.example.org run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    RCODEZERO_API_TOKEN = "API token"
+    RCODEZERO_API_URL = "alternative API URL, default: https://my.rcodezero.at/api/v1/acme"
+  [Configuration.Additional]
+    RCODEZERO_POLLING_INTERVAL = "Time between DNS propagation check"
+    RCODEZERO_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
+    RCODEZERO_TTL = "The TTL of the TXT record used for the DNS challenge"
+    RCODEZERO_HTTP_TIMEOUT = "API request timeout"
+
+[Links]
+  API = "https://my.rcodezero.at/openapi"

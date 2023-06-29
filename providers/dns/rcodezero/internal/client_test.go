@@ -28,7 +28,7 @@ func setupTest(t *testing.T, method, pattern string, status int, file string) *C
 			return
 		}
 
-		apiToken := req.Header.Get("Authorization")
+		apiToken := req.Header.Get(authorizationHeader)
 		if apiToken != "Bearer secret" {
 			http.Error(rw, fmt.Sprintf("invalid credentials: %s", apiToken), http.StatusBadRequest)
 			return
@@ -55,68 +55,11 @@ func setupTest(t *testing.T, method, pattern string, status int, file string) *C
 		}
 	})
 
-	serverURL, _ := url.Parse(server.URL)
-
-	client := NewClient(serverURL, "secret")
+	client := NewClient("secret")
 	client.HTTPClient = server.Client()
+	client.baseURL, _ = url.Parse(server.URL)
 
 	return client
-}
-
-func TestClient_joinPath(t *testing.T) {
-	testCases := []struct {
-		desc     string
-		baseURL  string
-		uri      string
-		expected string
-	}{
-		{
-			desc:     "host with path",
-			baseURL:  "https://example.com/test",
-			uri:      "/foo",
-			expected: "https://example.com/test/foo",
-		},
-		{
-			desc:     "host with path + trailing slash",
-			baseURL:  "https://example.com/test/",
-			uri:      "/foo",
-			expected: "https://example.com/test/foo",
-		},
-		{
-			desc:     "no URI",
-			baseURL:  "https://example.com/test",
-			uri:      "",
-			expected: "https://example.com/test",
-		},
-		{
-			desc:     "host without path",
-			baseURL:  "https://example.com",
-			uri:      "/foo",
-			expected: "https://example.com/foo",
-		},
-		{
-			desc:     "api",
-			baseURL:  "https://example.com",
-			uri:      "/api",
-			expected: "https://example.com/api",
-		},
-	}
-
-	for _, test := range testCases {
-		test := test
-		t.Run(test.desc, func(t *testing.T) {
-			t.Parallel()
-
-			host, err := url.Parse(test.baseURL)
-			require.NoError(t, err)
-
-			client := NewClient(host, "secret")
-
-			endpoint := client.joinPath(test.uri)
-
-			assert.Equal(t, test.expected, endpoint.String())
-		})
-	}
 }
 
 func TestClient_UpdateRecords_error(t *testing.T) {
@@ -128,13 +71,14 @@ func TestClient_UpdateRecords_error(t *testing.T) {
 			ChangeType: "add",
 			Type:       "TXT",
 			Records: []Record{{
-				Content: "\"my-acme-challenge\"",
+				Content: `"my-acme-challenge"`,
 			}},
 		},
 	}
 
-	err := client.UpdateRecords(context.Background(), "example.org", rrSet)
-	require.ErrorAs(t, err, &apiResponse{})
+	resp, err := client.UpdateRecords(context.Background(), "example.org", rrSet)
+	require.ErrorAs(t, err, new(*APIResponse))
+	assert.Nil(t, resp)
 }
 
 func TestClient_UpdateRecords(t *testing.T) {
@@ -146,11 +90,15 @@ func TestClient_UpdateRecords(t *testing.T) {
 			ChangeType: "add",
 			Type:       "TXT",
 			Records: []Record{{
-				Content: "\"my-acme-challenge\"",
+				Content: `"my-acme-challenge"`,
 			}},
 		},
 	}
 
-	err := client.UpdateRecords(context.Background(), "example.org", rrSet)
+	resp, err := client.UpdateRecords(context.Background(), "example.org", rrSet)
 	require.NoError(t, err)
+
+	expected := &APIResponse{Status: "ok", Message: "RRsets updated"}
+
+	assert.Equal(t, expected, resp)
 }

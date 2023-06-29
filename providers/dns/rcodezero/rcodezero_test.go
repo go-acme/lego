@@ -10,7 +10,6 @@ import (
 const envDomain = envNamespace + "DOMAIN"
 
 var envTest = tester.NewEnvTest(
-	EnvAPIURL,
 	EnvAPIToken).
 	WithDomain(envDomain)
 
@@ -24,7 +23,6 @@ func TestNewDNSProvider(t *testing.T) {
 			desc: "success",
 			envVars: map[string]string{
 				EnvAPIToken: "123",
-				EnvAPIURL:   "https://my-test.rcodezero.at/api/v2",
 			},
 		},
 		{

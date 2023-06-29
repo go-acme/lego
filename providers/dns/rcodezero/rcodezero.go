@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"net/url"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -19,7 +18,6 @@ const (
 	envNamespace = "RCODEZERO_"
 
 	EnvAPIToken = envNamespace + "API_TOKEN"
-	EnvAPIURL   = envNamespace + "API_URL"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -30,7 +28,6 @@ const (
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	APIToken           string
-	URL                *url.URL
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
@@ -59,18 +56,12 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variable:
 // RCODEZERO_API_URL and RCODEZERO_API_TOKEN.
 func NewDNSProvider() (*DNSProvider, error) {
-	hostURL, err := url.Parse(env.GetOrDefaultString(EnvAPIURL, "https://my.rcodezero.at/api/v1/acme"))
-	if err != nil {
-		return nil, fmt.Errorf("rcodezero: %w", err)
-	}
-
 	values, err := env.Get(EnvAPIToken)
 	if err != nil {
 		return nil, fmt.Errorf("rcodezero: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.URL = hostURL
 	config.APIToken = values[EnvAPIToken]
 
 	return NewDNSProviderConfig(config)
@@ -86,7 +77,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("rcodezero: API token missing")
 	}
 
-	client := internal.NewClient(config.URL, config.APIToken)
+	client := internal.NewClient(config.APIToken)
+
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
+	}
 
 	return &DNSProvider{config: config, client: client}, nil
 }
@@ -101,49 +96,50 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
+	ctx := context.Background()
+
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("rcodezero: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
-	ctx := context.Background()
+	rrSet := []internal.UpdateRRSet{{
+		Name:       info.EffectiveFQDN,
+		ChangeType: "update",
+		Type:       "TXT",
+		TTL:        d.config.TTL,
+		Records:    []internal.Record{{Content: `"` + info.Value + `"`}},
+	}}
 
-	rec := internal.Record{
-		Content:  "\"" + info.Value + "\"",
-		Disabled: false,
+	_, err = d.client.UpdateRecords(ctx, authZone, rrSet)
+	if err != nil {
+		return fmt.Errorf("rcodezero: %w", err)
 	}
 
-	rrSet := []internal.UpdateRRSet{
-		{
-			Name:       info.EffectiveFQDN,
-			ChangeType: "update",
-			Type:       "TXT",
-			TTL:        d.config.TTL,
-			Records:    []internal.Record{rec},
-		},
-	}
-
-	return d.client.UpdateRecords(ctx, authZone, rrSet)
+	return nil
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
+	ctx := context.Background()
+
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("rcodezero: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
-	ctx := context.Background()
+	rrSet := []internal.UpdateRRSet{{
+		Name:       info.EffectiveFQDN,
+		Type:       "TXT",
+		ChangeType: "delete",
+	}}
 
-	rrSet := []internal.UpdateRRSet{
-		{
-			Name:       info.EffectiveFQDN,
-			Type:       "TXT",
-			ChangeType: "delete",
-		},
+	_, err = d.client.UpdateRecords(ctx, authZone, rrSet)
+	if err != nil {
+		return fmt.Errorf("rcodezero: %w", err)
 	}
 
-	return d.client.UpdateRecords(ctx, authZone, rrSet)
+	return nil
 }

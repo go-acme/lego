@@ -2006,12 +2006,11 @@ func displayDNSHelp(w io.Writer, name string) error {
 		// generated from: providers/dns/rcodezero/rcodezero.toml
 		ew.writeln(`Configuration for RcodeZero.`)
 		ew.writeln(`Code:	'rcodezero'`)
-		ew.writeln(`Since:	'v4.12.4'`)
+		ew.writeln(`Since:	'v4.13'`)
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "RCODEZERO_API_TOKEN":	API token`)
-		ew.writeln(`	- "RCODEZERO_API_URL":	alternative API URL, default: https://my.rcodezero.at/api/v1/acme`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)

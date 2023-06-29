@@ -4,12 +4,10 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
-	"path"
 	"strings"
 	"time"
 
@@ -17,46 +15,47 @@ import (
 	"github.com/miekg/dns"
 )
 
+const defaultBaseURL = "https://my.rcodezero.at/api/v1/acme"
+
+const authorizationHeader = "Authorization"
+
 // Client for the RcodeZero API.
 type Client struct {
-	apiToken   string
-	Host       *url.URL
+	apiToken string
+
+	baseURL    *url.URL
 	HTTPClient *http.Client
 }
 
 // NewClient creates a new Client.
-func NewClient(host *url.URL, apiToken string) *Client {
+func NewClient(apiToken string) *Client {
+	baseURL, _ := url.Parse(defaultBaseURL)
+
 	return &Client{
 		apiToken:   apiToken,
-		Host:       host,
+		baseURL:    baseURL,
 		HTTPClient: &http.Client{Timeout: 5 * time.Second},
 	}
 }
 
-func (c *Client) UpdateRecords(ctx context.Context, authZone string, sets []UpdateRRSet) error {
-	endpoint := c.joinPath("/", "zones", strings.TrimSuffix(dns.Fqdn(authZone), "."), "/", "rrsets")
+func (c *Client) UpdateRecords(ctx context.Context, authZone string, sets []UpdateRRSet) (*APIResponse, error) {
+	endpoint := c.baseURL.JoinPath("zones", strings.TrimSuffix(dns.Fqdn(authZone), "."), "rrsets")
 
 	req, err := newJSONRequest(ctx, http.MethodPatch, endpoint, sets)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	_, err = c.do(req)
+	resp, err := c.do(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return resp, nil
 }
 
-func (c *Client) joinPath(elem ...string) *url.URL {
-	p := path.Join(elem...)
-
-	return c.Host.JoinPath(p)
-}
-
-func (c *Client) do(req *http.Request) (json.RawMessage, error) {
-	req.Header.Set("Authorization", "Bearer "+c.apiToken)
+func (c *Client) do(req *http.Request) (*APIResponse, error) {
+	req.Header.Set(authorizationHeader, "Bearer "+c.apiToken)
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
@@ -65,35 +64,22 @@ func (c *Client) do(req *http.Request) (json.RawMessage, error) {
 
 	defer func() { _ = resp.Body.Close() }()
 
-	if resp.StatusCode != http.StatusUnprocessableEntity && (resp.StatusCode < 200 || resp.StatusCode >= 300) {
-		return nil, errutils.NewUnexpectedResponseStatusCodeError(req, resp)
+	if resp.StatusCode/100 != 2 {
+		return nil, parseError(req, resp)
 	}
 
-	var msg json.RawMessage
-	err = json.NewDecoder(resp.Body).Decode(&msg)
+	result := &APIResponse{}
+	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
-		if errors.Is(err, io.EOF) {
-			// empty body
-			return nil, nil
-		}
-		// other error
-		return nil, err
+		return nil, errutils.NewReadResponseError(req, resp.StatusCode, err)
 	}
 
-	if resp.StatusCode == http.StatusOK {
-		return msg, nil
-	}
-	// check for error message
-	if len(msg) > 0 && msg[0] == '{' {
-		var apiResp apiResponse
-		err = json.Unmarshal(msg, &apiResp)
-		if err != nil {
-			return nil, errutils.NewUnmarshalError(req, resp.StatusCode, msg, err)
-		}
-		return nil, apiResp
+	err = json.Unmarshal(raw, result)
+	if err != nil {
+		return nil, errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
 	}
 
-	return msg, nil
+	return result, nil
 }
 
 func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
@@ -118,4 +104,16 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 	}
 
 	return req, nil
+}
+
+func parseError(req *http.Request, resp *http.Response) error {
+	raw, _ := io.ReadAll(resp.Body)
+
+	errAPI := &APIResponse{}
+	err := json.Unmarshal(raw, errAPI)
+	if err != nil {
+		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
+	}
+
+	return fmt.Errorf("[status code: %d] %w", resp.StatusCode, errAPI)
 }

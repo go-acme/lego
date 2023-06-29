@@ -2,7 +2,7 @@ Name = "RcodeZero"
 Description = ''''''
 URL = "https://www.rcodezero.at/"
 Code = "rcodezero"
-Since = "v4.12.4"
+Since = "v4.13"
 
 Example = '''
 RCODEZERO_API_TOKEN=<mytoken> \
@@ -21,7 +21,6 @@ RcodeZero is an Anycast Network so the distribution of the DNS01-Challenge can t
 [Configuration]
   [Configuration.Credentials]
     RCODEZERO_API_TOKEN = "API token"
-    RCODEZERO_API_URL = "alternative API URL, default: https://my.rcodezero.at/api/v1/acme"
   [Configuration.Additional]
     RCODEZERO_POLLING_INTERVAL = "Time between DNS propagation check"
     RCODEZERO_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"

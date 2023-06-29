@@ -1,9 +1,6 @@
 package internal
 
-type Record struct {
-	Content  string `json:"content"`
-	Disabled bool   `json:"disabled"`
-}
+import "fmt"
 
 type UpdateRRSet struct {
 	Name       string   `json:"name"`
@@ -13,11 +10,16 @@ type UpdateRRSet struct {
 	TTL        int      `json:"ttl"`
 }
 
-type apiResponse struct {
+type Record struct {
+	Content  string `json:"content"`
+	Disabled bool   `json:"disabled"`
+}
+
+type APIResponse struct {
 	Status  string `json:"status"`
 	Message string `json:"message"`
 }
 
-func (a apiResponse) Error() string {
-	return a.Message
+func (a APIResponse) Error() string {
+	return fmt.Sprintf("%s: %s", a.Status, a.Message)
 }

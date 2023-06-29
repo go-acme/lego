@@ -4,7 +4,7 @@ date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: rcodezero
 dnsprovider:
-  since:    "v4.12.4"
+  since:    "v4.13"
   code:     "rcodezero"
   url:      "https://www.rcodezero.at/"
 ---
@@ -20,14 +20,14 @@ Configuration for [RcodeZero](https://www.rcodezero.at/).
 <!--more-->
 
 - Code: `rcodezero`
-- Since: v4.12.4
+- Since: v4.13
 
 
 Here is an example bash command using the RcodeZero provider:
 
 ```bash
 RCODEZERO_API_TOKEN=<mytoken> \
-lego --email you@example.com --dns pdns --domains my.example.org run
+lego --email you@example.com --dns rcodezero --domains my.example.org run
 ```
 
 
@@ -38,7 +38,6 @@ lego --email you@example.com --dns pdns --domains my.example.org run
 | Environment Variable Name | Description |
 |-----------------------|-------------|
 | `RCODEZERO_API_TOKEN` | API token |
-| `RCODEZERO_API_URL` | alternative API URL, default: https://my.rcodezero.at/api/v1/acme |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{< ref "dns#configuration-and-credentials" >}}).
@@ -55,6 +54,12 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{< ref "dns#configuration-and-credentials" >}}).
+
+## Description
+
+Generate your API Token via https://my.rcodezero.at with the `ACME` permissions. This are special tokens with limited access for ACME requests only.
+
+RcodeZero is an Anycast Network so the distribution of the DNS01-Challenge can take up to 2 minutes
 
 
 

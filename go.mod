@@ -48,7 +48,7 @@ require (
 	github.com/ovh/go-ovh v1.4.1
 	github.com/pquerna/otp v1.4.0
 	github.com/rainycape/memcache v0.0.0-20150622160815-1031fa0ce2f2
-	github.com/sacloud/api-client-go v0.2.1
+	github.com/sacloud/api-client-go v0.2.8
 	github.com/sacloud/iaas-api-go v1.3.2
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.9
 	github.com/simplesurance/bunny-go v0.0.0-20221115111006-e11d9dc91f04
@@ -115,8 +115,8 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
-	github.com/sacloud/go-http v0.1.2 // indirect
-	github.com/sacloud/packages-go v0.0.5 // indirect
+	github.com/sacloud/go-http v0.1.6 // indirect
+	github.com/sacloud/packages-go v0.0.8 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/smartystreets/assertions v1.0.1 // indirect
 	github.com/smartystreets/go-aws-auth v0.0.0-20180515143844-0c1422d1fdb9 // indirect

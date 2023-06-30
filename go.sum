@@ -363,8 +363,8 @@ github.com/miekg/dns v1.0.14/go.mod h1:W1PPwlIAgtquWBMBEV9nkV9Cazfe8ScdGz/Lj7v3N
 github.com/miekg/dns v1.1.47/go.mod h1:e3IlAVfNqAllflbibAZEWOXOQ+Ynzk/dDozDxY7XnME=
 github.com/miekg/dns v1.1.55 h1:GoQ4hpsj0nFLYe+bWiCToyrBEJXkQfOOIvFGFy0lEgo=
 github.com/miekg/dns v1.1.55/go.mod h1:uInx36IzPl7FYnDcMeVWxj9byh7DutNykX4G9Sj60FY=
-github.com/mimuret/golang-iij-dpf v0.7.1 h1:MHEZKx6gNGTvq1+3PYUNfTZ/qtGNNK4+zo+0Rdo4jY4=
-github.com/mimuret/golang-iij-dpf v0.7.1/go.mod h1:IXWYcQVIHYzuM+W7kDWX0mseHDfUoqMuarxMXHVTir0=
+github.com/mimuret/golang-iij-dpf v0.9.1 h1:Gj6EhHJkOhr+q2RnvRPJsPMcjuVnWPSccEHyoEehU34=
+github.com/mimuret/golang-iij-dpf v0.9.1/go.mod h1:sl9KyOkESib9+KRD3HaGpgi1xk7eoN2+d96LCLsME2M=
 github.com/mitchellh/cli v1.0.0/go.mod h1:hNIlj7HEI86fIcpObd7a0FcrxTWetlwJDGcceTlRvqc=
 github.com/mitchellh/go-homedir v1.0.0/go.mod h1:SfyaCUpYCn1Vlf4IUYiD9fPX4A5wJrkLzIz1N1q0pr0=
 github.com/mitchellh/go-homedir v1.1.0 h1:lukF9ziXFxDFPkA1vsr5zpc1XuPDn/wFntq5mG+4E0Y=

@@ -31,7 +31,7 @@ require (
 	github.com/labbsr0x/bindman-dns-webhook v1.0.2
 	github.com/linode/linodego v1.17.2
 	github.com/liquidweb/liquidweb-go v1.6.3
-	github.com/mattn/go-isatty v0.0.17
+	github.com/mattn/go-isatty v0.0.19
 	github.com/miekg/dns v1.1.50
 	github.com/mimuret/golang-iij-dpf v0.7.1
 	github.com/mitchellh/mapstructure v1.5.0

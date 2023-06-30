@@ -176,7 +176,6 @@ func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 
 	// Setup client
 	c := &dns.Client{Timeout: d.config.DNSTimeout}
-	c.SingleInflight = true
 
 	// TSIG authentication / msg signing
 	if d.config.TSIGKey != "" && d.config.TSIGSecret != "" {

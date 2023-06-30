@@ -24,6 +24,18 @@ type fakeClient struct {
 	domainName           string
 }
 
+func (f *fakeClient) PutWithResponse(_ rest.Request) (rest.Response, error) {
+	panic("not implemented")
+}
+
+func (f *fakeClient) PostWithResponse(_ rest.Request) (rest.Response, error) {
+	panic("not implemented")
+}
+
+func (f *fakeClient) PatchWithResponse(_ rest.Request) (rest.Response, error) {
+	panic("not implemented")
+}
+
 func (f *fakeClient) Get(request rest.Request, dest interface{}) error {
 	if f.getInfoLatency != 0 {
 		time.Sleep(f.getInfoLatency)

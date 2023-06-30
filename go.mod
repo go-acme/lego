@@ -20,7 +20,7 @@ require (
 	github.com/cloudflare/cloudflare-go v0.49.0
 	github.com/cpu/goacmedns v0.1.1
 	github.com/dnsimple/dnsimple-go v1.2.0
-	github.com/exoscale/egoscale v0.90.0
+	github.com/exoscale/egoscale v0.100.1
 	github.com/go-jose/go-jose/v3 v3.0.0
 	github.com/google/go-querystring v1.1.0
 	github.com/gophercloud/gophercloud v1.0.0

@@ -59,16 +59,16 @@ func newClient(config *Config) (*metaClient, error) {
 	}, nil
 }
 
-func (m *metaClient) CreateDNSRecord(ctx context.Context, zoneID string, rr cloudflare.DNSRecord) (*cloudflare.DNSRecordResponse, error) {
-	return m.clientEdit.CreateDNSRecord(ctx, zoneID, rr)
+func (m *metaClient) CreateDNSRecord(ctx context.Context, zoneID string, rr cloudflare.CreateDNSRecordParams) (cloudflare.DNSRecord, error) {
+	return m.clientEdit.CreateDNSRecord(ctx, cloudflare.ZoneIdentifier(zoneID), rr)
 }
 
-func (m *metaClient) DNSRecords(ctx context.Context, zoneID string, rr cloudflare.DNSRecord) ([]cloudflare.DNSRecord, error) {
-	return m.clientEdit.DNSRecords(ctx, zoneID, rr)
+func (m *metaClient) DNSRecords(ctx context.Context, zoneID string, rr cloudflare.ListDNSRecordsParams) ([]cloudflare.DNSRecord, *cloudflare.ResultInfo, error) {
+	return m.clientEdit.ListDNSRecords(ctx, cloudflare.ZoneIdentifier(zoneID), rr)
 }
 
 func (m *metaClient) DeleteDNSRecord(ctx context.Context, zoneID, recordID string) error {
-	return m.clientEdit.DeleteDNSRecord(ctx, zoneID, recordID)
+	return m.clientEdit.DeleteDNSRecord(ctx, cloudflare.ZoneIdentifier(zoneID), recordID)
 }
 
 func (m *metaClient) ZoneIDByName(fdqn string) (string, error) {

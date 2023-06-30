@@ -535,8 +535,8 @@ github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.490/go.mod 
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod v1.0.490 h1:g9SWTaTy/rEuhMErC2jWq9Qt5ci+jBYSvXnJsLq4adg=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod v1.0.490/go.mod h1:l9q4vc1QiawUB1m3RU+87yLvrrxe54jc0w/kEl4DbSQ=
 github.com/tmc/grpc-websocket-proxy v0.0.0-20190109142713-0ad062ec5ee5/go.mod h1:ncp9v5uamzpCO7NfCPTXjqaC+bZgJeR0sMTm6dMHP7U=
-github.com/transip/gotransip/v6 v6.17.0 h1:2RCyqYqz5+Ej8z96EyE4sf6tQrrfEBaFDO0LliSl6+8=
-github.com/transip/gotransip/v6 v6.17.0/go.mod h1:pQZ36hWWRahCUXkFWlx9Hs711gLd8J4qdgLdRzmtY+g=
+github.com/transip/gotransip/v6 v6.20.0 h1:AuvwyOZ51f2brzMbTqlRy/wmaM3kF7Vx5Wds8xcDflY=
+github.com/transip/gotransip/v6 v6.20.0/go.mod h1:nzv9eN2tdsUrm5nG5ZX6AugYIU4qgsMwIn2c0EZLk8c=
 github.com/ugorji/go v1.1.7/go.mod h1:kZn38zHttfInRq0xu/PH0az30d+z6vm202qpg1oXVMw=
 github.com/ugorji/go v1.2.6/go.mod h1:anCg0y61KIhDlPZmnH+so+RQbysYVyDko0IMgJv0Nn0=
 github.com/ugorji/go/codec v1.1.7/go.mod h1:Ax+UKWsSmolVDwsd+7N3ZtXu+yMGCf907BLYF3GoBXY=

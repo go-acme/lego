@@ -53,7 +53,7 @@ require (
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.9
 	github.com/simplesurance/bunny-go v0.0.0-20221115111006-e11d9dc91f04
 	github.com/softlayer/softlayer-go v1.0.6
-	github.com/stretchr/testify v1.8.2
+	github.com/stretchr/testify v1.8.4
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.490
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod v1.0.490
 	github.com/transip/gotransip/v6 v6.17.0

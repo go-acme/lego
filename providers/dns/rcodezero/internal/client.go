@@ -15,7 +15,7 @@ import (
 	"github.com/miekg/dns"
 )
 
-const defaultBaseURL = "https://my.rcodezero.at/api/v1/acme"
+const defaultBaseURL = "https://my.rcodezero.at/api"
 
 const authorizationHeader = "Authorization"
 
@@ -39,19 +39,14 @@ func NewClient(apiToken string) *Client {
 }
 
 func (c *Client) UpdateRecords(ctx context.Context, authZone string, sets []UpdateRRSet) (*APIResponse, error) {
-	endpoint := c.baseURL.JoinPath("zones", strings.TrimSuffix(dns.Fqdn(authZone), "."), "rrsets")
+	endpoint := c.baseURL.JoinPath("v1", "acme", "zones", strings.TrimSuffix(dns.Fqdn(authZone), "."), "rrsets")
 
 	req, err := newJSONRequest(ctx, http.MethodPatch, endpoint, sets)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := c.do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	return resp, nil
+	return c.do(req)
 }
 
 func (c *Client) do(req *http.Request) (*APIResponse, error) {
@@ -92,7 +87,7 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 		}
 	}
 
-	req, err := http.NewRequestWithContext(ctx, method, strings.TrimSuffix(endpoint.String(), "/"), buf)
+	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), buf)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create request: %w", err)
 	}

@@ -63,18 +63,14 @@ func setupTest(t *testing.T, method, pattern string, status int, file string) *C
 }
 
 func TestClient_UpdateRecords_error(t *testing.T) {
-	client := setupTest(t, http.MethodPatch, "/zones/example.org/rrsets", http.StatusUnprocessableEntity, "error.json")
+	client := setupTest(t, http.MethodPatch, "/v1/acme/zones/example.org/rrsets", http.StatusUnprocessableEntity, "error.json")
 
-	rrSet := []UpdateRRSet{
-		{
-			Name:       "acme.example.org.",
-			ChangeType: "add",
-			Type:       "TXT",
-			Records: []Record{{
-				Content: `"my-acme-challenge"`,
-			}},
-		},
-	}
+	rrSet := []UpdateRRSet{{
+		Name:       "acme.example.org.",
+		ChangeType: "add",
+		Type:       "TXT",
+		Records:    []Record{{Content: `"my-acme-challenge"`}},
+	}}
 
 	resp, err := client.UpdateRecords(context.Background(), "example.org", rrSet)
 	require.ErrorAs(t, err, new(*APIResponse))
@@ -82,18 +78,14 @@ func TestClient_UpdateRecords_error(t *testing.T) {
 }
 
 func TestClient_UpdateRecords(t *testing.T) {
-	client := setupTest(t, http.MethodPatch, "/zones/example.org/rrsets", http.StatusOK, "rrsets-response.json")
+	client := setupTest(t, http.MethodPatch, "/v1/acme/zones/example.org/rrsets", http.StatusOK, "rrsets-response.json")
 
-	rrSet := []UpdateRRSet{
-		{
-			Name:       "acme.example.org.",
-			ChangeType: "add",
-			Type:       "TXT",
-			Records: []Record{{
-				Content: `"my-acme-challenge"`,
-			}},
-		},
-	}
+	rrSet := []UpdateRRSet{{
+		Name:       "acme.example.org.",
+		ChangeType: "add",
+		Type:       "TXT",
+		Records:    []Record{{Content: `"my-acme-challenge"`}},
+	}}
 
 	resp, err := client.UpdateRecords(context.Background(), "example.org", rrSet)
 	require.NoError(t, err)

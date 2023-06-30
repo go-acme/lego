@@ -46,7 +46,7 @@ require (
 	github.com/nrdcg/porkbun v0.2.0
 	github.com/oracle/oci-go-sdk v24.3.0+incompatible
 	github.com/ovh/go-ovh v1.4.1
-	github.com/pquerna/otp v1.3.0
+	github.com/pquerna/otp v1.4.0
 	github.com/rainycape/memcache v0.0.0-20150622160815-1031fa0ce2f2
 	github.com/sacloud/api-client-go v0.2.1
 	github.com/sacloud/iaas-api-go v1.3.2

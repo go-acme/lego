@@ -104,8 +104,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	return &DNSProvider{config: config, client: &client}, nil
 }
 
-// Timeout returns the timeout and interval to use when checking for DNS
-// propagation.  Adjusting here to cope with spikes in propagation times.
+// Timeout returns the timeout and interval to use when checking for DNS propagation.
+// Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (time.Duration, time.Duration) {
 	timeout := d.config.PropagationTimeout
 	if d.config.PropagationTimeout <= 0 {

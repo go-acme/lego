@@ -19,7 +19,7 @@ require (
 	github.com/civo/civogo v0.3.11
 	github.com/cloudflare/cloudflare-go v0.49.0
 	github.com/cpu/goacmedns v0.1.1
-	github.com/dnsimple/dnsimple-go v0.71.1
+	github.com/dnsimple/dnsimple-go v1.2.0
 	github.com/exoscale/egoscale v0.90.0
 	github.com/go-jose/go-jose/v3 v3.0.0
 	github.com/google/go-querystring v1.1.0
@@ -53,7 +53,7 @@ require (
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.9
 	github.com/simplesurance/bunny-go v0.0.0-20221115111006-e11d9dc91f04
 	github.com/softlayer/softlayer-go v1.0.6
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.8.2
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.490
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod v1.0.490
 	github.com/transip/gotransip/v6 v6.17.0

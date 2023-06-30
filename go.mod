@@ -43,7 +43,7 @@ require (
 	github.com/nrdcg/goinwx v0.8.2
 	github.com/nrdcg/namesilo v0.2.1
 	github.com/nrdcg/nodion v0.1.0
-	github.com/nrdcg/porkbun v0.1.1
+	github.com/nrdcg/porkbun v0.2.0
 	github.com/oracle/oci-go-sdk v24.3.0+incompatible
 	github.com/ovh/go-ovh v1.1.0
 	github.com/pquerna/otp v1.3.0

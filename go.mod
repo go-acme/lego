@@ -15,7 +15,7 @@ require (
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.2.2
 	github.com/aliyun/alibaba-cloud-sdk-go v1.61.1755
 	github.com/aws/aws-sdk-go v1.39.0
-	github.com/cenkalti/backoff/v4 v4.2.0
+	github.com/cenkalti/backoff/v4 v4.2.1
 	github.com/civo/civogo v0.3.11
 	github.com/cloudflare/cloudflare-go v0.49.0
 	github.com/cpu/goacmedns v0.1.1

@@ -49,7 +49,7 @@ require (
 	github.com/pquerna/otp v1.4.0
 	github.com/rainycape/memcache v0.0.0-20150622160815-1031fa0ce2f2
 	github.com/sacloud/api-client-go v0.2.8
-	github.com/sacloud/iaas-api-go v1.3.2
+	github.com/sacloud/iaas-api-go v1.11.1
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.9
 	github.com/simplesurance/bunny-go v0.0.0-20221115111006-e11d9dc91f04
 	github.com/softlayer/softlayer-go v1.0.6
@@ -88,7 +88,7 @@ require (
 	github.com/deepmap/oapi-codegen v1.9.1 // indirect
 	github.com/dimchansky/utfbom v1.1.1 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
-	github.com/fsnotify/fsnotify v1.5.4 // indirect
+	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-errors/errors v1.0.1 // indirect
 	github.com/go-resty/resty/v2 v2.7.0 // indirect
@@ -116,7 +116,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sacloud/go-http v0.1.6 // indirect
-	github.com/sacloud/packages-go v0.0.8 // indirect
+	github.com/sacloud/packages-go v0.0.9 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/smartystreets/assertions v1.0.1 // indirect
 	github.com/smartystreets/go-aws-auth v0.0.0-20180515143844-0c1422d1fdb9 // indirect

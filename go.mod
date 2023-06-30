@@ -45,7 +45,7 @@ require (
 	github.com/nrdcg/nodion v0.1.0
 	github.com/nrdcg/porkbun v0.2.0
 	github.com/oracle/oci-go-sdk v24.3.0+incompatible
-	github.com/ovh/go-ovh v1.1.0
+	github.com/ovh/go-ovh v1.4.1
 	github.com/pquerna/otp v1.3.0
 	github.com/rainycape/memcache v0.0.0-20150622160815-1031fa0ce2f2
 	github.com/sacloud/api-client-go v0.2.1
@@ -134,6 +134,6 @@ require (
 	google.golang.org/genproto v0.0.0-20230223222841-637eb2293923 // indirect
 	google.golang.org/grpc v1.53.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
-	gopkg.in/ini.v1 v1.66.6 // indirect
+	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

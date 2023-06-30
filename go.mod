@@ -52,7 +52,7 @@ require (
 	github.com/sacloud/iaas-api-go v1.11.1
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.17
 	github.com/simplesurance/bunny-go v0.0.0-20221115111006-e11d9dc91f04
-	github.com/softlayer/softlayer-go v1.0.6
+	github.com/softlayer/softlayer-go v1.1.2
 	github.com/stretchr/testify v1.8.4
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.490
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod v1.0.490

@@ -25,7 +25,7 @@ require (
 	github.com/google/go-querystring v1.1.0
 	github.com/gophercloud/gophercloud v1.0.0
 	github.com/gophercloud/utils v0.0.0-20210216074907-f6de111f2eae
-	github.com/hashicorp/go-retryablehttp v0.7.1
+	github.com/hashicorp/go-retryablehttp v0.7.4
 	github.com/iij/doapi v0.0.0-20190504054126-0bbf12d6d7df
 	github.com/infobloxopen/infoblox-go-client v1.1.1
 	github.com/labbsr0x/bindman-dns-webhook v1.0.2

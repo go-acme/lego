@@ -50,7 +50,7 @@ require (
 	github.com/rainycape/memcache v0.0.0-20150622160815-1031fa0ce2f2
 	github.com/sacloud/api-client-go v0.2.8
 	github.com/sacloud/iaas-api-go v1.11.1
-	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.9
+	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.17
 	github.com/simplesurance/bunny-go v0.0.0-20221115111006-e11d9dc91f04
 	github.com/softlayer/softlayer-go v1.0.6
 	github.com/stretchr/testify v1.8.4

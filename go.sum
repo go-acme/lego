@@ -299,8 +299,8 @@ github.com/k0kubun/go-ansi v0.0.0-20180517002512-3bf9e2903213 h1:qGQQKEcAR99REcM
 github.com/k0kubun/go-ansi v0.0.0-20180517002512-3bf9e2903213/go.mod h1:vNUNkEQ1e29fT/6vq2aBdFsgNPmy8qMdSay1npru+Sw=
 github.com/kisielk/errcheck v1.1.0/go.mod h1:EZBBE59ingxPouuu3KfxchcWSUPOHkagtvWXihfKN4Q=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
-github.com/kolo/xmlrpc v0.0.0-20200310150728-e0350524596b h1:DzHy0GlWeF0KAglaTMY7Q+khIFoG8toHP+wLFBVBQJc=
-github.com/kolo/xmlrpc v0.0.0-20200310150728-e0350524596b/go.mod h1:o03bZfuBwAXHetKXuInt4S7omeXUu62/A845kiycsSQ=
+github.com/kolo/xmlrpc v0.0.0-20220921171641-a4b6fa1dd06b h1:udzkj9S/zlT5X367kqJis0QP7YMxobob6zhzq6Yre00=
+github.com/kolo/xmlrpc v0.0.0-20220921171641-a4b6fa1dd06b/go.mod h1:pcaDhQK0/NJZEvtCO0qQPPropqV0sJOJ6YW7X+9kRwM=
 github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
 github.com/kr/fs v0.1.0/go.mod h1:FFnZGqtBN9Gxj7eW1uZ42v5BccTP0vu6NEaFoC2HwRg=
 github.com/kr/logfmt v0.0.0-20140226030751-b84e30acd515/go.mod h1:+0opPa2QZZtGFBFZlji/RkVcI2GknAs/DXo4wKdlNEc=
@@ -397,8 +397,8 @@ github.com/nrdcg/dnspod-go v0.4.0 h1:c/jn1mLZNKF3/osJ6mz3QPxTudvPArXTjpkmYj0uK6U
 github.com/nrdcg/dnspod-go v0.4.0/go.mod h1:vZSoFSFeQVm2gWLMkyX61LZ8HI3BaqtHZWgPTGKr6KQ=
 github.com/nrdcg/freemyip v0.2.0 h1:/GscavT4GVqAY13HExl5UyoB4wlchv6Cg5NYDGsUoJ8=
 github.com/nrdcg/freemyip v0.2.0/go.mod h1:HjF0Yz0lSb37HD2ihIyGz9esyGcxbCrrGFLPpKevbx4=
-github.com/nrdcg/goinwx v0.8.1 h1:20EQ/JaGFnSKwiDH2JzjIpicffl3cPk6imJBDqVBVtU=
-github.com/nrdcg/goinwx v0.8.1/go.mod h1:tILVc10gieBp/5PMvbcYeXM6pVQ+c9jxDZnpaR1UW7c=
+github.com/nrdcg/goinwx v0.8.2 h1:RmjiHlEA+lzi3toXyPSaE6hWnBQ0+G+1u7w8C6Fpp4g=
+github.com/nrdcg/goinwx v0.8.2/go.mod h1:mnMSTi7CXBu2io4DzdOBoGFA1XclD0sEPWJaDhNgkA4=
 github.com/nrdcg/namesilo v0.2.1 h1:kLjCjsufdW/IlC+iSfAqj0iQGgKjlbUUeDJio5Y6eMg=
 github.com/nrdcg/namesilo v0.2.1/go.mod h1:lwMvfQTyYq+BbjJd30ylEG4GPSS6PII0Tia4rRpRiyw=
 github.com/nrdcg/nodion v0.1.0 h1:zLKaqTn2X0aDuBHHfyA1zFgeZfiCpmu/O9DM73okavw=

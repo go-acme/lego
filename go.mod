@@ -40,7 +40,7 @@ require (
 	github.com/nrdcg/desec v0.7.0
 	github.com/nrdcg/dnspod-go v0.4.0
 	github.com/nrdcg/freemyip v0.2.0
-	github.com/nrdcg/goinwx v0.8.1
+	github.com/nrdcg/goinwx v0.8.2
 	github.com/nrdcg/namesilo v0.2.1
 	github.com/nrdcg/nodion v0.1.0
 	github.com/nrdcg/porkbun v0.1.1
@@ -104,7 +104,7 @@ require (
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/k0kubun/go-ansi v0.0.0-20180517002512-3bf9e2903213 // indirect
-	github.com/kolo/xmlrpc v0.0.0-20200310150728-e0350524596b // indirect
+	github.com/kolo/xmlrpc v0.0.0-20220921171641-a4b6fa1dd06b // indirect
 	github.com/labbsr0x/goh v1.0.1 // indirect
 	github.com/liquidweb/go-lwApi v0.0.5 // indirect
 	github.com/liquidweb/liquidweb-cli v0.6.9 // indirect

@@ -49,6 +49,7 @@ func allDNSCodes() string {
 		"dynu",
 		"easydns",
 		"edgedns",
+		"efficientip",
 		"epik",
 		"exec",
 		"exoscale",
@@ -888,6 +889,30 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/edgedns`)
+
+	case "efficientip":
+		// generated from: providers/dns/efficientip/efficientip.toml
+		ew.writeln(`Configuration for Efficient IP.`)
+		ew.writeln(`Code:	'efficientip'`)
+		ew.writeln(`Since:	'v4.13.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "EFFICIENTIP_DNS_NAME":	DNS name (ex: dns.smart)`)
+		ew.writeln(`	- "EFFICIENTIP_HOSTNAME":	Hostname (ex: foo.example.com)`)
+		ew.writeln(`	- "EFFICIENTIP_PASSWORD":	Password`)
+		ew.writeln(`	- "EFFICIENTIP_USERNAME":	Username`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "EFFICIENTIP_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "EFFICIENTIP_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "EFFICIENTIP_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "EFFICIENTIP_TTL":	The TTL of the TXT record used for the DNS challenge`)
+		ew.writeln(`	- "EFFICIENTIP_VIEW_NAME":	View name (ex: external)`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/efficientip`)
 
 	case "epik":
 		// generated from: providers/dns/epik/epik.toml

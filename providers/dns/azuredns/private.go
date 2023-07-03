@@ -10,7 +10,6 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
-	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/privatedns/armprivatedns"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
@@ -24,7 +23,7 @@ type DNSProviderPrivate struct {
 }
 
 // NewDNSProviderPrivate creates a DNSProviderPrivate structure with intialised Azure clients.
-func NewDNSProviderPrivate(config *Config, credentials *azidentity.DefaultAzureCredential) (*DNSProviderPrivate, error) {
+func NewDNSProviderPrivate(config *Config, credentials azcore.TokenCredential) (*DNSProviderPrivate, error) {
 	options := arm.ClientOptions{
 		ClientOptions: azcore.ClientOptions{
 			Cloud: config.Environment,

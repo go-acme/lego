@@ -10,7 +10,6 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
-	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dns/armdns"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
@@ -24,7 +23,7 @@ type DNSProviderPublic struct {
 }
 
 // NewDNSProviderPublic creates a DNSProviderPublic structure with intialised Azure clients.
-func NewDNSProviderPublic(config *Config, credentials *azidentity.DefaultAzureCredential) (*DNSProviderPublic, error) {
+func NewDNSProviderPublic(config *Config, credentials azcore.TokenCredential) (*DNSProviderPublic, error) {
 	options := arm.ClientOptions{
 		ClientOptions: azcore.ClientOptions{
 			Cloud: config.Environment,

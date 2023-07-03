@@ -28,9 +28,19 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
+				EnvEnvironment:    "",
 				EnvSubscriptionID: "A",
 				EnvResourceGroup:  "B",
 			},
+		},
+		{
+			desc: "unknown environment",
+			envVars: map[string]string{
+				EnvEnvironment:    "test",
+				EnvSubscriptionID: "A",
+				EnvResourceGroup:  "B",
+			},
+			expected: "azuredns: unknown environment test",
 		},
 	}
 
@@ -42,6 +52,11 @@ func TestNewDNSProvider(t *testing.T) {
 			envTest.Apply(test.envVars)
 
 			p, err := NewDNSProvider()
+
+			if test.expected != "" {
+				require.EqualError(t, err, test.expected)
+				return
+			}
 
 			require.NoError(t, err)
 			require.NotNil(t, p)

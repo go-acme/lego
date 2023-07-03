@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/go-acme/lego/v4/challenge"
@@ -16,6 +17,10 @@ import (
 // Environment variables names.
 const (
 	envNamespace = "AZURE_"
+
+	EnvTenantID     = envNamespace + "TENANT_ID"
+	EnvClientID     = envNamespace + "CLIENT_ID"
+	EnvClientSecret = envNamespace + "CLIENT_SECRET"
 
 	EnvEnvironment    = envNamespace + "ENVIRONMENT"
 	EnvSubscriptionID = envNamespace + "SUBSCRIPTION_ID"
@@ -30,6 +35,11 @@ const (
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
+	// optional if using default Azure credentials
+	ClientID     string
+	ClientSecret string
+	TenantID     string
+
 	SubscriptionID string
 	ResourceGroup  string
 	PrivateZone    bool
@@ -72,6 +82,8 @@ func NewDNSProvider() (*DNSProvider, error) {
 		default:
 			return nil, fmt.Errorf("azuredns: unknown environment %s", environmentName)
 		}
+	} else {
+		config.Environment = cloud.AzurePublic
 	}
 
 	config.SubscriptionID = env.GetOrFile(EnvSubscriptionID)
@@ -87,9 +99,30 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("azuredns: the configuration of the DNS provider is nil")
 	}
 
-	credentials, err := azidentity.NewDefaultAzureCredential(nil)
-	if err != nil {
-		return nil, fmt.Errorf("azuredns: %w", err)
+	var err error
+	var credentials azcore.TokenCredential
+	if config.ClientID != "" && config.ClientSecret != "" && config.TenantID != "" {
+		options := azidentity.ClientSecretCredentialOptions{
+			ClientOptions: azcore.ClientOptions{
+				Cloud: config.Environment,
+			},
+		}
+
+		credentials, err = azidentity.NewClientSecretCredential(config.TenantID, config.ClientID, config.ClientSecret, &options)
+		if err != nil {
+			return nil, fmt.Errorf("azuredns: %w", err)
+		}
+	} else {
+		options := azidentity.DefaultAzureCredentialOptions{
+			ClientOptions: azcore.ClientOptions{
+				Cloud: config.Environment,
+			},
+		}
+
+		credentials, err = azidentity.NewDefaultAzureCredential(&options)
+		if err != nil {
+			return nil, fmt.Errorf("azuredns: %w", err)
+		}
 	}
 
 	if config.SubscriptionID == "" {

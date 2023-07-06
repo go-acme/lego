@@ -1,10 +1,31 @@
-Name = "AzureDNS"
-Description = ''''''
-URL = "https://azure.microsoft.com/services/dns/"
-Code = "azuredns"
-Since = "v0.1.0"
+---
+title: "AzureDNS"
+date: 2019-03-03T16:39:46+01:00
+draft: false
+slug: azuredns
+dnsprovider:
+  since:    "v0.1.0"
+  code:     "azuredns"
+  url:      "https://azure.microsoft.com/services/dns/"
+---
 
-Example = '''
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+<!-- providers/dns/azuredns/azuredns.toml -->
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+
+
+Configuration for [AzureDNS](https://azure.microsoft.com/services/dns/).
+
+
+<!--more-->
+
+- Code: `azuredns`
+- Since: v0.1.0
+
+
+Here is an example bash command using the AzureDNS provider:
+
+```bash
 ### Using client secret
 AZURE_CLIENT_ID=<your service principal client ID> \
 AZURE_TENANT_ID=<your service principal tenant ID> \
@@ -20,9 +41,39 @@ lego --domains example.com --email your_example@email.com --dns azuredns run
 ### Using Azure CLI
 az login \
 lego --domains example.com --email your_example@email.com --dns azuredns run
-'''
+```
 
-Additional = '''
+
+
+
+## Credentials
+
+| Environment Variable Name | Description |
+|-----------------------|-------------|
+| `AZURE_CLIENT_ID` | Client ID |
+| `AZURE_CLIENT_SECRET` | Client secret |
+| `AZURE_RESOURCE_GROUP` | DNS zone resource group |
+| `AZURE_SUBSCRIPTION_ID` | DNS zone subscription ID |
+| `AZURE_TENANT_ID` | Tenant ID |
+
+The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
+
+
+## Additional Configuration
+
+| Environment Variable Name | Description |
+|--------------------------------|-------------|
+| `AZURE_ENVIRONMENT` | Azure environment, one of: public, usgovernment, and china |
+| `AZURE_POLLING_INTERVAL` | Time between DNS propagation check |
+| `AZURE_PRIVATE_ZONE` | Set to true to use Azure Private DNS Zones and not public |
+| `AZURE_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
+| `AZURE_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `AZURE_ZONE_NAME` | Zone name to use inside Azure DNS service to add the TXT record in |
+
+The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
+
 ## Description
 
 Azure Credentials are automatically detected in the following locations and prioritized in the following order:
@@ -55,23 +106,14 @@ Here is a summary of the steps to follow to use it :
 Link :
 - [Azure AD Workload identity](https://azure.github.io/azure-workload-identity/docs/topics/service-account-labels-and-annotations.html)
 
-'''
 
-[Configuration]
-  [Configuration.Credentials]
-    AZURE_CLIENT_ID = "Client ID"
-    AZURE_CLIENT_SECRET = "Client secret"
-    AZURE_TENANT_ID = "Tenant ID"
-    AZURE_SUBSCRIPTION_ID = "DNS zone subscription ID"
-    AZURE_RESOURCE_GROUP = "DNS zone resource group"
-  [Configuration.Additional]
-    AZURE_ENVIRONMENT = "Azure environment, one of: public, usgovernment, and china"
-    AZURE_PRIVATE_ZONE = "Set to true to use Azure Private DNS Zones and not public"
-    AZURE_ZONE_NAME = "Zone name to use inside Azure DNS service to add the TXT record in"
-    AZURE_TTL = "The TTL of the TXT record used for the DNS challenge"
-    AZURE_POLLING_INTERVAL = "Time between DNS propagation check"
-    AZURE_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
 
-[Links]
-  API = "https://docs.microsoft.com/en-us/go/azure/"
-  GoClient = "https://github.com/Azure/azure-sdk-for-go"
+
+## More information
+
+- [API documentation](https://docs.microsoft.com/en-us/go/azure/)
+- [Go client](https://github.com/Azure/azure-sdk-for-go)
+
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
+<!-- providers/dns/azuredns/azuredns.toml -->
+<!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

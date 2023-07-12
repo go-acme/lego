@@ -268,7 +268,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 	case "azure":
 		// generated from: providers/dns/azure/azure.toml
-		ew.writeln(`Configuration for Azure.`)
+		ew.writeln(`Configuration for Azure (deprecated).`)
 		ew.writeln(`Code:	'azure'`)
 		ew.writeln(`Since:	'v0.4.0'`)
 		ew.writeln()

@@ -18,15 +18,15 @@ import (
 const (
 	envNamespace = "AZURE_"
 
-	EnvTenantID     = envNamespace + "TENANT_ID"
-	EnvClientID     = envNamespace + "CLIENT_ID"
-	EnvClientSecret = envNamespace + "CLIENT_SECRET"
-
 	EnvEnvironment    = envNamespace + "ENVIRONMENT"
 	EnvSubscriptionID = envNamespace + "SUBSCRIPTION_ID"
 	EnvResourceGroup  = envNamespace + "RESOURCE_GROUP"
 	EnvZoneName       = envNamespace + "ZONE_NAME"
 	EnvPrivateZone    = envNamespace + "PRIVATE_ZONE"
+
+	EnvTenantID     = envNamespace + "TENANT_ID"
+	EnvClientID     = envNamespace + "CLIENT_ID"
+	EnvClientSecret = envNamespace + "CLIENT_SECRET"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -35,16 +35,16 @@ const (
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	// optional if using default Azure credentials
-	ClientID     string
-	ClientSecret string
-	TenantID     string
-
 	SubscriptionID string
 	ResourceGroup  string
 	PrivateZone    bool
 
 	Environment cloud.Configuration
+
+	// optional if using default Azure credentials
+	ClientID     string
+	ClientSecret string
+	TenantID     string
 
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -90,6 +90,10 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config.ResourceGroup = env.GetOrFile(EnvResourceGroup)
 	config.PrivateZone = env.GetOrDefaultBool(EnvPrivateZone, false)
 
+	config.ClientID = env.GetOrFile(EnvTenantID)
+	config.ClientSecret = env.GetOrFile(EnvClientID)
+	config.TenantID = env.GetOrFile(EnvClientSecret)
+
 	return NewDNSProviderConfig(config)
 }
 
@@ -133,22 +137,20 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("azuredns: ResourceGroup is missing")
 	}
 
-	var dnsProvider challenge.Provider
+	var dnsProvider challenge.ProviderTimeout
 	if config.PrivateZone {
 		dnsProvider, err = NewDNSProviderPrivate(config, credentials)
-		privateDNS, ok := dnsProvider.(*DNSProviderPrivate)
-		if !ok {
-			return nil, errors.New("azuredns: unable to create private DNS provider")
+		if err != nil {
+			return nil, fmt.Errorf("azuredns: %w", err)
 		}
-		return &DNSProvider{provider: privateDNS}, err
+	} else {
+		dnsProvider, err = NewDNSProviderPublic(config, credentials)
+		if err != nil {
+			return nil, fmt.Errorf("azuredns: %w", err)
+		}
 	}
 
-	dnsProvider, err = NewDNSProviderPublic(config, credentials)
-	publicDNS, ok := dnsProvider.(*DNSProviderPublic)
-	if !ok {
-		return nil, errors.New("azuredns: unable to create public DNS provider")
-	}
-	return &DNSProvider{provider: publicDNS}, err
+	return &DNSProvider{provider: dnsProvider}, nil
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
@@ -165,4 +167,13 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return d.provider.CleanUp(domain, token, keyAuth)
+}
+
+func deref[T string | int | int32 | int64](v *T) T {
+	if v == nil {
+		var zero T
+		return zero
+	}
+
+	return *v
 }

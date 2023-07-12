@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
@@ -32,21 +31,19 @@ func NewDNSProviderPublic(config *Config, credentials azcore.TokenCredential) (*
 
 	zoneClient, err := armdns.NewZonesClient(config.SubscriptionID, credentials, &options)
 	if err != nil {
-		return nil, fmt.Errorf("azuredns: %w", err)
+		return nil, err
 	}
 
 	recordClient, err := armdns.NewRecordSetsClient(config.SubscriptionID, credentials, &options)
 	if err != nil {
-		return nil, fmt.Errorf("azuredns: %w", err)
+		return nil, err
 	}
 
-	dnsProvider := &DNSProviderPublic{
+	return &DNSProviderPublic{
 		config:       config,
 		zoneClient:   zoneClient,
 		recordClient: recordClient,
-	}
-
-	return dnsProvider, nil
+	}, nil
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
@@ -56,16 +53,16 @@ func (d *DNSProviderPublic) Timeout() (timeout, interval time.Duration) {
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
-func (d *DNSProviderPublic) Present(domain, token, keyAuth string) error {
+func (d *DNSProviderPublic) Present(domain, _, keyAuth string) error {
 	ctx := context.Background()
-	fqdn, value := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := d.getHostedZoneID(ctx, fqdn)
+	zone, err := d.getHostedZoneID(ctx, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("azuredns: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, zone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone)
 	if err != nil {
 		return fmt.Errorf("azuredns: %w", err)
 	}
@@ -80,12 +77,12 @@ func (d *DNSProviderPublic) Present(domain, token, keyAuth string) error {
 	}
 
 	// Construct unique TXT records using map
-	uniqRecords := map[string]struct{}{value: {}}
+	uniqRecords := map[string]struct{}{info.Value: {}}
 	if rset.RecordSet.Properties != nil && rset.RecordSet.Properties.TxtRecords != nil {
 		for _, txtRecord := range rset.RecordSet.Properties.TxtRecords {
 			// Assume Value doesn't contain multiple strings
 			if len(txtRecord.Value) > 0 {
-				uniqRecords[*txtRecord.Value[0]] = struct{}{}
+				uniqRecords[deref(txtRecord.Value[0])] = struct{}{}
 			}
 		}
 	}
@@ -109,20 +106,21 @@ func (d *DNSProviderPublic) Present(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("azuredns: %w", err)
 	}
+
 	return nil
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (d *DNSProviderPublic) CleanUp(domain, token, keyAuth string) error {
+func (d *DNSProviderPublic) CleanUp(domain, _, keyAuth string) error {
 	ctx := context.Background()
-	fqdn, _ := dns01.GetRecord(domain, keyAuth)
+	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := d.getHostedZoneID(ctx, fqdn)
+	zone, err := d.getHostedZoneID(ctx, info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("azurdnse: %w", err)
+		return fmt.Errorf("azuredns: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(fqdn, zone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone)
 	if err != nil {
 		return fmt.Errorf("azuredns: %w", err)
 	}
@@ -131,6 +129,7 @@ func (d *DNSProviderPublic) CleanUp(domain, token, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("azuredns: %w", err)
 	}
+
 	return nil
 }
 
@@ -151,5 +150,5 @@ func (d *DNSProviderPublic) getHostedZoneID(ctx context.Context, fqdn string) (s
 	}
 
 	// zone.Name shouldn't have a trailing dot(.)
-	return strings.TrimSuffix(*zone.Name, "."), nil
+	return dns01.UnFqdn(deref(zone.Name)), nil
 }

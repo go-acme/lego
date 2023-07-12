@@ -21,6 +21,7 @@ func allDNSCodes() string {
 		"auroradns",
 		"autodns",
 		"azure",
+		"azuredns",
 		"bindman",
 		"bluecat",
 		"brandit",
@@ -267,7 +268,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 	case "azure":
 		// generated from: providers/dns/azure/azure.toml
-		ew.writeln(`Configuration for Azure.`)
+		ew.writeln(`Configuration for Azure (deprecated).`)
 		ew.writeln(`Code:	'azure'`)
 		ew.writeln(`Since:	'v0.4.0'`)
 		ew.writeln()
@@ -292,6 +293,32 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/azure`)
+
+	case "azuredns":
+		// generated from: providers/dns/azuredns/azuredns.toml
+		ew.writeln(`Configuration for AzureDNS.`)
+		ew.writeln(`Code:	'azuredns'`)
+		ew.writeln(`Since:	'v0.1.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "AZURE_CLIENT_ID":	Client ID`)
+		ew.writeln(`	- "AZURE_CLIENT_SECRET":	Client secret`)
+		ew.writeln(`	- "AZURE_RESOURCE_GROUP":	DNS zone resource group`)
+		ew.writeln(`	- "AZURE_SUBSCRIPTION_ID":	DNS zone subscription ID`)
+		ew.writeln(`	- "AZURE_TENANT_ID":	Tenant ID`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "AZURE_ENVIRONMENT":	Azure environment, one of: public, usgovernment, and china`)
+		ew.writeln(`	- "AZURE_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "AZURE_PRIVATE_ZONE":	Set to true to use Azure Private DNS Zones and not public`)
+		ew.writeln(`	- "AZURE_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "AZURE_TTL":	The TTL of the TXT record used for the DNS challenge`)
+		ew.writeln(`	- "AZURE_ZONE_NAME":	Zone name to use inside Azure DNS service to add the TXT record in`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/azuredns`)
 
 	case "bindman":
 		// generated from: providers/dns/bindman/bindman.toml

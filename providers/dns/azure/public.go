@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2017-09-01/dns"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/dns/mgmt/dns"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/go-acme/lego/v4/challenge/dns01"

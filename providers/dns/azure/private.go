@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/privatedns/mgmt/2018-09-01/privatedns"
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/privatedns/mgmt/privatedns"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/go-acme/lego/v4/challenge/dns01"

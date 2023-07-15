@@ -26,8 +26,8 @@ Configuration for [Metaname](https://metaname.net).
 Here is an example bash command using the Metaname provider:
 
 ```bash
-METANAME_ACCOUNT_REFERENCE="abcd" \
-METANAME_API_KEY="secret" \
+METANAME_ACCOUNT_REFERENCE=xxxx \
+METANAME_API_KEY=yyyyyyy \
 lego --email you@example.com --dns metaname --domains my.example.org run
 ```
 
@@ -38,7 +38,7 @@ lego --email you@example.com --dns metaname --domains my.example.org run
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `METANAME_ACCOUNT_REFERENCE` | Account METANAME_ACCOUNT_REFERENCE |
+| `METANAME_ACCOUNT_REFERENCE` | The four-digit reference of a Metaname account |
 | `METANAME_API_KEY` | API Key |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.

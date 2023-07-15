@@ -3,6 +3,7 @@ package metaname
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -15,7 +16,6 @@ import (
 // Environment variables names.
 const (
 	envNamespace = "METANAME_"
-	codeName     = "metaname"
 
 	EnvAccountReference = envNamespace + "ACCOUNT_REFERENCE"
 	EnvAPIKey           = envNamespace + "API_KEY"
@@ -57,7 +57,7 @@ type DNSProvider struct {
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvAccountReference, EnvAPIKey)
 	if err != nil {
-		return nil, fmt.Errorf("%s: %w", codeName, err)
+		return nil, fmt.Errorf("metaname: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -70,19 +70,21 @@ func NewDNSProvider() (*DNSProvider, error) {
 // NewDNSProviderConfig return a DNSProvider instance configured for Metaname.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
-		return nil, fmt.Errorf("%s", codeName)
+		return nil, errors.New("metaname: the configuration of the DNS provider is nil")
 	}
 
 	if config.AccountReference == "" {
-		return nil, fmt.Errorf("%s: missing account reference", codeName)
+		return nil, errors.New("metaname: missing account reference")
 	}
 	if config.APIKey == "" {
-		return nil, fmt.Errorf("%s: missing api key", codeName)
+		return nil, errors.New("metaname: missing api key")
 	}
-	client := metaname.NewMetanameClient(config.AccountReference, config.APIKey)
-	records := make(map[string]string)
 
-	return &DNSProvider{config: config, client: client, records: records}, nil
+	return &DNSProvider{
+		config:  config,
+		client:  metaname.NewMetanameClient(config.AccountReference, config.APIKey),
+		records: make(map[string]string),
+	}, nil
 }
 
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
@@ -90,14 +92,14 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("%s: could not find zone for domain %q (%s): %w", codeName, domain, info.EffectiveFQDN, err)
+		return fmt.Errorf("metaname: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	authZone = dns01.UnFqdn(authZone)
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
-		return fmt.Errorf("%s: could not extract subDomain: %w", codeName, err)
+		return fmt.Errorf("metaname: could not extract subDomain: %w", err)
 	}
 
 	ctx := context.Background()
@@ -112,7 +114,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	ref, err := d.client.CreateDnsRecord(ctx, authZone, r)
 	if err != nil {
-		return fmt.Errorf("%s: add record: %w", codeName, err)
+		return fmt.Errorf("metaname: add record: %w", err)
 	}
 
 	d.recordsMu.Lock()
@@ -127,7 +129,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("%s: could not find zone for domain %q (%s): %w", codeName, domain, info.EffectiveFQDN, err)
+		return fmt.Errorf("metaname: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
 	authZone = dns01.UnFqdn(authZone)
@@ -139,12 +141,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	d.recordsMu.Unlock()
 
 	if !ok {
-		return fmt.Errorf("%s: unknown ref for %s", codeName, info.EffectiveFQDN)
+		return fmt.Errorf("metaname: unknown ref for %s", info.EffectiveFQDN)
 	}
 
 	err = d.client.DeleteDnsRecord(ctx, authZone, ref)
 	if err != nil {
-		return fmt.Errorf("%s: delete record: %w", codeName, err)
+		return fmt.Errorf("metaname: delete record: %w", err)
 	}
 
 	return nil

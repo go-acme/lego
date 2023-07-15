@@ -1629,7 +1629,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "METANAME_ACCOUNT_REFERENCE":	Account METANAME_ACCOUNT_REFERENCE`)
+		ew.writeln(`	- "METANAME_ACCOUNT_REFERENCE":	The four-digit reference of a Metaname account`)
 		ew.writeln(`	- "METANAME_API_KEY":	API Key`)
 		ew.writeln()
 

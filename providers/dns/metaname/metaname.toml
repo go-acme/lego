@@ -5,14 +5,14 @@ Code = "metaname"
 Since = "v4.13.0"
 
 Example = '''
-METANAME_ACCOUNT_REFERENCE="abcd" \
-METANAME_API_KEY="secret" \
+METANAME_ACCOUNT_REFERENCE=xxxx \
+METANAME_API_KEY=yyyyyyy \
 lego --email you@example.com --dns metaname --domains my.example.org run
 '''
 
 [Configuration]
   [Configuration.Credentials]
-    METANAME_ACCOUNT_REFERENCE = "Account METANAME_ACCOUNT_REFERENCE"
+    METANAME_ACCOUNT_REFERENCE = "The four-digit reference of a Metaname account"
     METANAME_API_KEY = "API Key"
   [Configuration.Additional]
     METANAME_POLLING_INTERVAL = "Time between DNS propagation check"

@@ -47,6 +47,7 @@ require (
 	github.com/nrdcg/namesilo v0.2.1
 	github.com/nrdcg/nodion v0.1.0
 	github.com/nrdcg/porkbun v0.2.0
+	github.com/nzdjb/go-metaname v1.0.0
 	github.com/oracle/oci-go-sdk v24.3.0+incompatible
 	github.com/ovh/go-ovh v1.4.1
 	github.com/pquerna/otp v1.4.0
@@ -75,8 +76,6 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 	software.sslmate.com/src/go-pkcs12 v0.2.0
 )
-
-require github.com/nzdjb/go-metaname v1.0.0
 
 require (
 	cloud.google.com/go/compute v1.18.0 // indirect

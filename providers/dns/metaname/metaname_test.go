@@ -10,10 +10,7 @@ import (
 
 const envDomain = envNamespace + "DOMAIN"
 
-var envTest = tester.NewEnvTest(
-	EnvAccountReference,
-	EnvAPIKey,
-).WithDomain(envDomain)
+var envTest = tester.NewEnvTest(EnvAccountReference, EnvAPIKey).WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {

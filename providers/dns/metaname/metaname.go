@@ -85,7 +85,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	return &DNSProvider{config: config, client: client, records: records}, nil
 }
 
-func (d *DNSProvider) Present(domain, _, keyAuth string) error {
+func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
@@ -116,18 +116,14 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	}
 
 	d.recordsMu.Lock()
-	d.records[info.EffectiveFQDN] = ref
+	d.records[token] = ref
 	d.recordsMu.Unlock()
 
 	return nil
 }
 
-func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
+func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
-
-	if _, ok := d.records[info.EffectiveFQDN]; !ok {
-		return nil
-	}
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
@@ -139,7 +135,7 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 	ctx := context.Background()
 
 	d.recordsMu.Lock()
-	ref, ok := d.records[info.EffectiveFQDN]
+	ref, ok := d.records[token]
 	d.recordsMu.Unlock()
 
 	if !ok {

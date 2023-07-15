@@ -47,6 +47,7 @@ require (
 	github.com/nrdcg/namesilo v0.2.1
 	github.com/nrdcg/nodion v0.1.0
 	github.com/nrdcg/porkbun v0.2.0
+	github.com/nzdjb/go-metaname v1.0.0
 	github.com/oracle/oci-go-sdk v24.3.0+incompatible
 	github.com/ovh/go-ovh v1.4.1
 	github.com/pquerna/otp v1.4.0
@@ -78,6 +79,7 @@ require (
 
 require (
 	cloud.google.com/go/compute v1.18.0 // indirect
+	github.com/AdamSLevy/jsonrpc2/v14 v14.1.0 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/internal v1.3.0 // indirect
 	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
 	github.com/Azure/go-autorest/autorest/adal v0.9.18 // indirect

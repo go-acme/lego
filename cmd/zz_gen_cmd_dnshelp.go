@@ -84,6 +84,7 @@ func allDNSCodes() string {
 		"liquidweb",
 		"loopia",
 		"luadns",
+		"metaname",
 		"mydnsjp",
 		"mythicbeasts",
 		"namecheap",
@@ -1619,6 +1620,26 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/luadns`)
+
+	case "metaname":
+		// generated from: providers/dns/metaname/metaname.toml
+		ew.writeln(`Configuration for Metaname.`)
+		ew.writeln(`Code:	'metaname'`)
+		ew.writeln(`Since:	'v4.13.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "METANAME_ACCOUNT_REFERENCE":	The four-digit reference of a Metaname account`)
+		ew.writeln(`	- "METANAME_API_KEY":	API Key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "METANAME_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "METANAME_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "METANAME_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/metaname`)
 
 	case "mydnsjp":
 		// generated from: providers/dns/mydnsjp/mydnsjp.toml

@@ -11,82 +11,101 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
-	"github.com/miekg/dns"
 )
 
-const defaultBaseURL = "https://ipv64.net/api"
+const defaultBaseURL = "https://ipv64.net"
 
-// Client the IPv64 API client.
+const authorizationHeader = "Authorization"
+
 type Client struct {
-	token string
+	apiKey string
 
+	baseURL    *url.URL
 	HTTPClient *http.Client
 }
 
-// NewClient Creates a new Client.
-func NewClient(token string) *Client {
+func NewClient(apiKey string) *Client {
+	baseURL, _ := url.Parse(defaultBaseURL)
+
 	return &Client{
-		token:      token,
-		HTTPClient: &http.Client{Timeout: 5 * time.Second},
+		apiKey:     apiKey,
+		baseURL:    baseURL,
+		HTTPClient: &http.Client{Timeout: 15 * time.Second},
 	}
 }
 
-func (c Client) AddTXTRecord(ctx context.Context, domain, value string) error {
-	return c.UpdateTxtRecord(ctx, domain, value, false)
-}
+func (c Client) GetDomains(ctx context.Context) (*Domains, error) {
+	endpoint := c.baseURL.JoinPath("api")
 
-func (c Client) RemoveTXTRecord(ctx context.Context, domain string, value string) error {
-	return c.UpdateTxtRecord(ctx, domain, value, true)
-}
+	query := endpoint.Query()
+	query.Set("get_domains", "")
+	endpoint.RawQuery = query.Encode()
 
-type SuccessMessage struct {
-	Info      string `json:"info"`
-	Status    string `json:"status"`
-	AddRecord string `json:"add_record"`
-}
-
-// UpdateTxtRecord Update the domains TXT record
-// To update the TXT record we just need to make one simple get request.
-// In IPv64 you only have one TXT record shared with the domain and all subdomains.
-func (c Client) UpdateTxtRecord(ctx context.Context, domain, txt string, clear bool) error {
-	endpoint, _ := url.Parse(defaultBaseURL)
-
-	prefix, mainDomain, err := getPrefix(domain)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint.String(), http.NoBody)
 	if err != nil {
-		return fmt.Errorf("the domain needs to contain at least 3 parts")
+		return nil, err
 	}
 
-	if mainDomain == "" {
-		return fmt.Errorf("unable to find the main domain for: %s", domain)
+	results := &Domains{}
+
+	err = c.do(req, results)
+	if err != nil {
+		return nil, err
 	}
 
-	form := url.Values{}
-	form.Add("praefix", prefix)
-	form.Add("type", "TXT")
-	form.Add("content", txt)
+	return results, nil
+}
 
+func (c Client) AddRecord(ctx context.Context, domain, prefix, recordType, content string) error {
+	endpoint := c.baseURL.JoinPath("api")
+
+	data := make(url.Values)
+	data.Set("add_record", domain)
+	data.Set("praefix", prefix)
+	data.Set("type", recordType)
+	data.Set("content", content)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint.String(), strings.NewReader(data.Encode()))
 	if err != nil {
 		return err
 	}
 
-	var req *http.Request
-	var requestError error
-
-	if clear {
-		form.Add("del_record", mainDomain)
-		req, requestError = http.NewRequestWithContext(ctx, http.MethodDelete, endpoint.String(), strings.NewReader(form.Encode()))
-	} else {
-		form.Add("add_record", mainDomain)
-		req, requestError = http.NewRequestWithContext(ctx, http.MethodPost, endpoint.String(), strings.NewReader(form.Encode()))
+	err = c.do(req, nil)
+	if err != nil {
+		return err
 	}
 
-	if requestError != nil {
-		return fmt.Errorf("unable to create request: %w", err)
+	return nil
+}
+
+func (c Client) DeleteRecord(ctx context.Context, domain, prefix, recordType, content string) error {
+	endpoint := c.baseURL.JoinPath("api")
+
+	data := make(url.Values)
+	data.Set("del_record", domain)
+	data.Set("praefix", prefix)
+	data.Set("type", recordType)
+	data.Set("content", content)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, endpoint.String(), strings.NewReader(data.Encode()))
+	if err != nil {
+		return err
 	}
 
-	// Add the token to the request header.
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.token))
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	err = c.do(req, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c Client) do(req *http.Request, result any) error {
+	req.Header.Set(authorizationHeader, fmt.Sprintf("Bearer %s", c.apiKey))
+
+	if req.Method != http.MethodGet {
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	}
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
@@ -95,42 +114,39 @@ func (c Client) UpdateTxtRecord(ctx context.Context, domain, txt string, clear b
 
 	defer func() { _ = resp.Body.Close() }()
 
-	raw, err := io.ReadAll(resp.Body)
-
-	var successBody SuccessMessage
-
-	body := string(raw)
-
-	println("Content", txt)
-	if parseError := json.Unmarshal(raw, &successBody); parseError != nil {
-		return fmt.Errorf("request to change TXT record for IPv64 returned the following result ("+
-			"%s) this does not match expectation (OK) used url [%s]", body, endpoint)
+	if resp.StatusCode/100 != 2 {
+		return parseError(req, resp)
 	}
 
+	if result == nil {
+		return nil
+	}
+
+	raw, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return errutils.NewReadResponseError(req, resp.StatusCode, err)
 	}
 
-	if !strings.Contains(successBody.Status, "201 Created") && resp.StatusCode > 300 {
-		return fmt.Errorf("request to change TXT record for IPv64 returned the following result ("+
-			"%s) this does not match expectation (OK) used url [%s]", body, endpoint)
+	if string(raw) == "null" {
+		return fmt.Errorf("unexpected response: %s", string(raw))
 	}
+
+	err = json.Unmarshal(raw, result)
+	if err != nil {
+		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
+	}
+
 	return nil
 }
 
-// IPv64 only lets you write to your subdomain.
-// It must be in format subdomain.home64.de,
-// not in format subsubdomain.subdomain.home64.de.
-// So strip off everything that is not top 3 levels.
-func getPrefix(full string) (prefix string, mainDomain string, err error) {
-	split := dns.Split(full)
-	if len(split) < 3 {
-		return "", "", fmt.Errorf("unsupported domain: %s", full)
+func parseError(req *http.Request, resp *http.Response) error {
+	raw, _ := io.ReadAll(resp.Body)
+
+	errAPI := &APIError{}
+	err := json.Unmarshal(raw, errAPI)
+	if err != nil {
+		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
-	if len(split) == 3 {
-		return "", full, nil
-	}
-	domain := full[split[len(split)-3]:]
-	subDomain := full[:split[len(split)-3]-1]
-	return subDomain, domain, nil
+
+	return errAPI
 }

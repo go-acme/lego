@@ -5,13 +5,85 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 const envDomain = envNamespace + "DOMAIN"
 
-var envTest = tester.NewEnvTest(EnvToken).
-	WithDomain(envDomain)
+var envTest = tester.NewEnvTest(EnvAPIKey).WithDomain(envDomain)
+
+func Test_splitDomain(t *testing.T) {
+	testCases := []struct {
+		desc       string
+		domain     string
+		prefix     string
+		expected   string
+		requireErr require.ErrorAssertionFunc
+	}{
+		{
+			desc:       "empty",
+			domain:     "",
+			expected:   "",
+			requireErr: require.Error,
+		},
+		{
+			desc:       "missing sub domain",
+			domain:     "home64.de",
+			prefix:     "",
+			expected:   "",
+			requireErr: require.Error,
+		},
+		{
+			desc:       "explicit domain: sub domain",
+			domain:     "_acme-challenge.sub.home64.de",
+			prefix:     "_acme-challenge",
+			expected:   "sub.home64.de",
+			requireErr: require.NoError,
+		},
+		{
+			desc:       "explicit domain: subsub domain",
+			domain:     "_acme-challenge.my.sub.home64.de",
+			prefix:     "_acme-challenge.my",
+			expected:   "sub.home64.de",
+			requireErr: require.NoError,
+		},
+		{
+			desc:       "explicit domain: subsubsub domain",
+			domain:     "_acme-challenge.my.sub.sub.home64.de",
+			prefix:     "_acme-challenge.my.sub",
+			expected:   "sub.home64.de",
+			requireErr: require.NoError,
+		},
+		{
+			desc:       "only subname: sub domain",
+			domain:     "_acme-challenge.sub",
+			expected:   "",
+			prefix:     "",
+			requireErr: require.Error,
+		},
+		{
+			desc:       "only subname: subsubsub domain",
+			domain:     "_acme-challenge.my.sub.sub",
+			expected:   "my.sub.sub",
+			prefix:     "_acme-challenge",
+			requireErr: require.NoError,
+		},
+	}
+
+	for _, test := range testCases {
+		test := test
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			sub, root, err := splitDomain(test.domain)
+			test.requireErr(t, err)
+
+			assert.Equal(t, test.prefix, sub)
+			assert.Equal(t, test.expected, root)
+		})
+	}
+}
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -22,15 +94,15 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				EnvToken: "123",
+				EnvAPIKey: "123",
 			},
 		},
 		{
 			desc: "missing api key",
 			envVars: map[string]string{
-				EnvToken: "",
+				EnvAPIKey: "",
 			},
-			expected: "ipv64: some credentials information are missing: IPV64_TOKEN",
+			expected: "ipv64: some credentials information are missing: IPV64_API_KEY",
 		},
 	}
 
@@ -57,12 +129,12 @@ func TestNewDNSProvider(t *testing.T) {
 func TestNewDNSProviderConfig(t *testing.T) {
 	testCases := []struct {
 		desc     string
-		token    string
+		apiKey   string
 		expected string
 	}{
 		{
-			desc:  "success",
-			token: "123",
+			desc:   "success",
+			apiKey: "123",
 		},
 		{
 			desc:     "missing credentials",
@@ -73,7 +145,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			config := NewDefaultConfig()
-			config.Token = test.token
+			config.APIKey = test.apiKey
 
 			p, err := NewDNSProviderConfig(config)
 

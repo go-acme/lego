@@ -12,13 +12,14 @@ import (
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/ipv64/internal"
+	"github.com/miekg/dns"
 )
 
 // Environment variables names.
 const (
 	envNamespace = "IPV64_"
 
-	EnvToken = envNamespace + "TOKEN"
+	EnvAPIKey = envNamespace + "API_KEY"
 
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
@@ -28,7 +29,7 @@ const (
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	Token              string
+	APIKey             string
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	SequenceInterval   time.Duration
@@ -56,13 +57,13 @@ type DNSProvider struct {
 // NewDNSProvider returns a new DNS provider using
 // environment variable IPV64_TOKEN for adding and removing the DNS record.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvToken)
+	values, err := env.Get(EnvAPIKey)
 	if err != nil {
 		return nil, fmt.Errorf("ipv64: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.Token = values[EnvToken]
+	config.APIKey = values[EnvAPIKey]
 
 	return NewDNSProviderConfig(config)
 }
@@ -73,11 +74,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("ipv64: the configuration of the DNS provider is nil")
 	}
 
-	if config.Token == "" {
+	if config.APIKey == "" {
 		return nil, errors.New("ipv64: credentials missing")
 	}
 
-	client := internal.NewClient(config.Token)
+	client := internal.NewClient(config.APIKey)
 
 	if config.HTTPClient != nil {
 		client.HTTPClient = config.HTTPClient
@@ -89,13 +90,35 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
-	return d.client.AddTXTRecord(context.Background(), dns01.UnFqdn(info.EffectiveFQDN), info.Value)
+
+	sub, root, err := splitDomain(dns01.UnFqdn(info.EffectiveFQDN))
+	if err != nil {
+		return fmt.Errorf("ipv64: %w", err)
+	}
+
+	err = d.client.AddRecord(context.Background(), root, sub, "TXT", info.Value)
+	if err != nil {
+		return fmt.Errorf("ipv64: %w", err)
+	}
+
+	return nil
 }
 
 // CleanUp clears IPv64 TXT record.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
-	return d.client.RemoveTXTRecord(context.Background(), dns01.UnFqdn(info.EffectiveFQDN), info.Value)
+
+	sub, root, err := splitDomain(dns01.UnFqdn(info.EffectiveFQDN))
+	if err != nil {
+		return fmt.Errorf("ipv64: %w", err)
+	}
+
+	err = d.client.DeleteRecord(context.Background(), root, sub, "TXT", info.Value)
+	if err != nil {
+		return fmt.Errorf("ipv64: %w", err)
+	}
+
+	return nil
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
@@ -104,8 +127,18 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-// Sequential All DNS challenges for this provider will be resolved sequentially.
-// Returns the interval between each iteration.
-func (d *DNSProvider) Sequential() time.Duration {
-	return d.config.SequenceInterval
+func splitDomain(full string) (string, string, error) {
+	split := dns.Split(full)
+	if len(split) < 3 {
+		return "", "", fmt.Errorf("unsupported domain: %s", full)
+	}
+
+	if len(split) == 3 {
+		return full, "", nil
+	}
+
+	domain := full[split[len(split)-3]:]
+	subDomain := full[:split[len(split)-3]-1]
+
+	return subDomain, domain, nil
 }

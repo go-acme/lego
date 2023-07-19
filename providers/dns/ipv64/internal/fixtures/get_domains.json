@@ -1,0 +1,39 @@
+{
+  "subdomains": {
+    "lego.ipv64.net": {
+      "updates": 0,
+      "wildcard": 1,
+      "domain_update_hash": "Dr4l6jFVgkXITqZPEyMHLNsGAfwoSu9v",
+      "records": [
+        {
+          "record_id": 50664,
+          "content": "2606:2800:220:1:248:1893:25c8:1946",
+          "ttl": 60,
+          "type": "AAAA",
+          "praefix": "",
+          "last_update": "2023-07-19 13:18:59",
+          "record_key": "ZDMxOWUxMjZjOTk5MmQ3N2M3ODc4NjJj"
+        }
+      ]
+    },
+    "lego.home64.net": {
+      "updates": 0,
+      "wildcard": 1,
+      "domain_update_hash": "Dr4l6jFVgkXITqZPEyMHLNsGAfwoSu9v",
+      "records": [
+        {
+          "record_id": 50665,
+          "content": "2606:2800:220:1:248:1893:25c8:1946",
+          "ttl": 60,
+          "type": "AAAA",
+          "praefix": "",
+          "last_update": "2023-07-19 13:18:59",
+          "record_key": "MTA0YzdmMWVjYTFiNDBmZjYwMTU0OGUy"
+        }
+      ]
+    }
+  },
+  "info": "success",
+  "status": "200 OK",
+  "add_domain": "get_domains"
+}

@@ -26,7 +26,7 @@ Configuration for [IPv64](https://ipv64.net/).
 Here is an example bash command using the IPv64 provider:
 
 ```bash
-IPV64_TOKEN=xxxxxx \
+IPV64_API_KEY=xxxxxx \
 lego --email you@example.com --dns ipv64 --domains my.example.org run
 ```
 

@@ -134,7 +134,7 @@ func splitDomain(full string) (string, string, error) {
 	}
 
 	if len(split) == 3 {
-		return full, "", nil
+		return "", full, nil
 	}
 
 	domain := full[split[len(split)-3]:]

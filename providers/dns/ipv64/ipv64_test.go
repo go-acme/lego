@@ -14,60 +14,82 @@ const envDomain = envNamespace + "DOMAIN"
 var envTest = tester.NewEnvTest(EnvAPIKey).WithDomain(envDomain)
 
 func Test_splitDomain(t *testing.T) {
-	testCases := []struct {
-		desc       string
-		domain     string
-		prefix     string
-		expected   string
+	type expected struct {
+		root       string
+		sub        string
 		requireErr require.ErrorAssertionFunc
+	}
+
+	testCases := []struct {
+		desc     string
+		domain   string
+		expected expected
 	}{
 		{
-			desc:       "empty",
-			domain:     "",
-			expected:   "",
-			requireErr: require.Error,
+			desc:   "empty",
+			domain: "",
+			expected: expected{
+				requireErr: require.Error,
+			},
 		},
 		{
-			desc:       "missing sub domain",
-			domain:     "home64.de",
-			prefix:     "",
-			expected:   "",
-			requireErr: require.Error,
+			desc:   "missing sub domain",
+			domain: "home64.de",
+			expected: expected{
+				requireErr: require.Error,
+			},
 		},
 		{
-			desc:       "explicit domain: sub domain",
-			domain:     "_acme-challenge.sub.home64.de",
-			prefix:     "_acme-challenge",
-			expected:   "sub.home64.de",
-			requireErr: require.NoError,
+			desc:   "explicit domain: sub domain",
+			domain: "_acme-challenge.sub.home64.de",
+			expected: expected{
+				sub:        "_acme-challenge",
+				root:       "sub.home64.de",
+				requireErr: require.NoError,
+			},
 		},
 		{
-			desc:       "explicit domain: subsub domain",
-			domain:     "_acme-challenge.my.sub.home64.de",
-			prefix:     "_acme-challenge.my",
-			expected:   "sub.home64.de",
-			requireErr: require.NoError,
+			desc:   "explicit domain: subsub domain",
+			domain: "_acme-challenge.my.sub.home64.de",
+			expected: expected{
+				sub:        "_acme-challenge.my",
+				root:       "sub.home64.de",
+				requireErr: require.NoError,
+			},
 		},
 		{
-			desc:       "explicit domain: subsubsub domain",
-			domain:     "_acme-challenge.my.sub.sub.home64.de",
-			prefix:     "_acme-challenge.my.sub",
-			expected:   "sub.home64.de",
-			requireErr: require.NoError,
+			desc:   "explicit domain: subsubsub domain",
+			domain: "_acme-challenge.my.sub.sub.home64.de",
+			expected: expected{
+				sub:        "_acme-challenge.my.sub",
+				root:       "sub.home64.de",
+				requireErr: require.NoError,
+			},
 		},
 		{
-			desc:       "only subname: sub domain",
-			domain:     "_acme-challenge.sub",
-			expected:   "",
-			prefix:     "",
-			requireErr: require.Error,
+			desc:   "only subname: sub domain",
+			domain: "_acme-challenge.sub",
+			expected: expected{
+				requireErr: require.Error,
+			},
 		},
 		{
-			desc:       "only subname: subsubsub domain",
-			domain:     "_acme-challenge.my.sub.sub",
-			expected:   "my.sub.sub",
-			prefix:     "_acme-challenge",
-			requireErr: require.NoError,
+			desc:   "only subname: subsubsub domain",
+			domain: "_acme-challenge.my.sub.sub",
+			expected: expected{
+				root:       "my.sub.sub",
+				sub:        "_acme-challenge",
+				requireErr: require.NoError,
+			},
+		},
+		{
+			desc:   "only subname: subsub domain",
+			domain: "_acme-challenge.my.sub",
+			expected: expected{
+				sub:        "",
+				root:       "_acme-challenge.my.sub",
+				requireErr: require.NoError,
+			},
 		},
 	}
 
@@ -77,10 +99,10 @@ func Test_splitDomain(t *testing.T) {
 			t.Parallel()
 
 			sub, root, err := splitDomain(test.domain)
-			test.requireErr(t, err)
+			test.expected.requireErr(t, err)
 
-			assert.Equal(t, test.prefix, sub)
-			assert.Equal(t, test.expected, root)
+			assert.Equal(t, test.expected.root, root)
+			assert.Equal(t, test.expected.sub, sub)
 		})
 	}
 }

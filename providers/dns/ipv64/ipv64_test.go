@@ -33,61 +33,45 @@ func Test_splitDomain(t *testing.T) {
 			},
 		},
 		{
-			desc:   "missing sub domain",
-			domain: "home64.de",
+			desc:   "2 levels",
+			domain: "example.com",
 			expected: expected{
 				requireErr: require.Error,
 			},
 		},
 		{
-			desc:   "explicit domain: sub domain",
-			domain: "_acme-challenge.sub.home64.de",
+			desc:   "3 levels",
+			domain: "_acme-challenge.example.com",
 			expected: expected{
-				sub:        "_acme-challenge",
-				root:       "sub.home64.de",
-				requireErr: require.NoError,
-			},
-		},
-		{
-			desc:   "explicit domain: subsub domain",
-			domain: "_acme-challenge.my.sub.home64.de",
-			expected: expected{
-				sub:        "_acme-challenge.my",
-				root:       "sub.home64.de",
-				requireErr: require.NoError,
-			},
-		},
-		{
-			desc:   "explicit domain: subsubsub domain",
-			domain: "_acme-challenge.my.sub.sub.home64.de",
-			expected: expected{
-				sub:        "_acme-challenge.my.sub",
-				root:       "sub.home64.de",
-				requireErr: require.NoError,
-			},
-		},
-		{
-			desc:   "only subname: sub domain",
-			domain: "_acme-challenge.sub",
-			expected: expected{
-				requireErr: require.Error,
-			},
-		},
-		{
-			desc:   "only subname: subsubsub domain",
-			domain: "_acme-challenge.my.sub.sub",
-			expected: expected{
-				root:       "my.sub.sub",
-				sub:        "_acme-challenge",
-				requireErr: require.NoError,
-			},
-		},
-		{
-			desc:   "only subname: subsub domain",
-			domain: "_acme-challenge.my.sub",
-			expected: expected{
+				root:       "_acme-challenge.example.com",
 				sub:        "",
-				root:       "_acme-challenge.my.sub",
+				requireErr: require.NoError,
+			},
+		},
+		{
+			desc:   "4 levels",
+			domain: "_acme-challenge.sub.example.com",
+			expected: expected{
+				root:       "sub.example.com",
+				sub:        "_acme-challenge",
+				requireErr: require.NoError,
+			},
+		},
+		{
+			desc:   "5 levels",
+			domain: "_acme-challenge.my.sub.example.com",
+			expected: expected{
+				root:       "sub.example.com",
+				sub:        "_acme-challenge.my",
+				requireErr: require.NoError,
+			},
+		},
+		{
+			desc:   "6 levels",
+			domain: "_acme-challenge.my.sub.sub.example.com",
+			expected: expected{
+				root:       "sub.example.com",
+				sub:        "_acme-challenge.my.sub",
 				requireErr: require.NoError,
 			},
 		},

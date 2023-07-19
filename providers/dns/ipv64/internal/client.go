@@ -4,13 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
-	"github.com/miekg/dns"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
+	"github.com/miekg/dns"
 )
 
 const defaultBaseURL = "https://ipv64.net/api"
@@ -51,7 +52,6 @@ func (c Client) UpdateTxtRecord(ctx context.Context, domain, txt string, clear b
 	endpoint, _ := url.Parse(defaultBaseURL)
 
 	prefix, mainDomain, err := getPrefix(domain)
-
 	if err != nil {
 		return fmt.Errorf("the domain needs to contain at least 3 parts")
 	}
@@ -102,7 +102,7 @@ func (c Client) UpdateTxtRecord(ctx context.Context, domain, txt string, clear b
 	body := string(raw)
 
 	println("Content", txt)
-	if parse_error := json.Unmarshal(raw, &successBody); parse_error != nil {
+	if parseError := json.Unmarshal(raw, &successBody); parseError != nil {
 		return fmt.Errorf("request to change TXT record for IPv64 returned the following result ("+
 			"%s) this does not match expectation (OK) used url [%s]", body, endpoint)
 	}

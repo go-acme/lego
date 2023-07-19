@@ -137,19 +137,22 @@ func getPrefix(domain string) (prefix string, mainDomain string, err error) {
 	domain = dns01.UnFqdn(domain)
 
 	splittedPartsOfDomain := strings.Split(domain, ".")
-	lengthOfSplit := len(splittedPartsOfDomain)
+	var cleanedPartsOfDomain []string
 
-	println(lengthOfSplit)
+	for _, domainSplit := range splittedPartsOfDomain {
+		if len(strings.TrimSpace(domainSplit)) != 0 {
+			cleanedPartsOfDomain = append(cleanedPartsOfDomain, domainSplit)
+		}
+	}
+	lengthOfSplit := len(cleanedPartsOfDomain)
+	numberOfDots := strings.Count(domain, ".")
+
+	println(numberOfDots, lengthOfSplit)
 	if lengthOfSplit < 3 {
 		return "", "", errors.New("The domain needs to contain ")
 	}
 
-	root := splittedPartsOfDomain[lengthOfSplit-1]            // de
-	resultingDomain := splittedPartsOfDomain[lengthOfSplit-2] ///homeserver
-	subdomain := splittedPartsOfDomain[lengthOfSplit-3]       // home64
-
-	const SEP = "."
-	completeDomain := subdomain + SEP + resultingDomain + SEP + root
+	completeDomain := strings.Join(splittedPartsOfDomain[lengthOfSplit-3:], ".")
 	praefix := strings.Join(splittedPartsOfDomain[:lengthOfSplit-3], ".")
 	return praefix, completeDomain, nil
 }

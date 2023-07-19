@@ -2,7 +2,7 @@ Name = "IPv64"
 Description = ''''''
 URL = "https://ipv64.net/"
 Code = "ipv64"
-Since = "v4.12.3"
+Since = "v4.13.0"
 
 Example = '''
 IPV64_TOKEN=xxxxxx \
@@ -20,4 +20,4 @@ lego --email you@example.com --dns ipv64 --domains my.example.org run
     IPV64_SEQUENCE_INTERVAL = "Time between sequential requests"
 
 [Links]
-  API = "https://ipv64.net/healthcheck_updater_api"
+  API = "https://ipv64.net/dyndns_updater_api"

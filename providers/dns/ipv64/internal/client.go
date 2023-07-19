@@ -1,19 +1,15 @@
 package internal
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
+	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
+	"github.com/miekg/dns"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
-
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
 const defaultBaseURL = "https://ipv64.net/api"
@@ -23,20 +19,6 @@ type Client struct {
 	token string
 
 	HTTPClient *http.Client
-}
-
-type IPV64AddRecordData struct {
-	Domain     string `json:"add_record"`
-	Prefix     string `json:"praefix"`
-	PrefixType string `json:"type"`
-	Content    string `json:"content"`
-}
-
-type IPV64DelRecordData struct {
-	Domain     string `json:"del_record"`
-	Prefix     string `json:"praefix"`
-	PrefixType string `json:"type"`
-	Content    string `json:"content"`
 }
 
 // NewClient Creates a new Client.
@@ -61,13 +43,6 @@ func (c Client) RemoveTXTRecord(ctx context.Context, domain string) error {
 func (c Client) UpdateTxtRecord(ctx context.Context, domain, txt string, clear bool) error {
 	endpoint, _ := url.Parse(defaultBaseURL)
 
-	if clear {
-		endpoint.Path += "/del_record"
-
-	} else {
-		endpoint.Path += "/add_record"
-	}
-
 	prefix, mainDomain, err := getPrefix(domain)
 
 	if err != nil {
@@ -78,36 +53,30 @@ func (c Client) UpdateTxtRecord(ctx context.Context, domain, txt string, clear b
 		return fmt.Errorf("unable to find the main domain for: %s", domain)
 	}
 
-	var data interface{}
+	form := url.Values{}
+	form.Add("praefix", prefix)
+	form.Add("type", "TXT")
+	form.Add("content", txt)
 
+	println(mainDomain, prefix)
 	if clear {
-		data = IPV64DelRecordData{
-			Domain:     mainDomain,
-			Prefix:     prefix,
-			Content:    txt,
-			PrefixType: "TXT",
-		}
+		form.Add("del_record", mainDomain)
 	} else {
-		data = IPV64AddRecordData{
-			Domain:     mainDomain,
-			Prefix:     prefix,
-			Content:    txt,
-			PrefixType: "TXT",
-		}
+		form.Add("add_record", mainDomain)
 	}
 
-	marshal, err := json.Marshal(data)
 	if err != nil {
 		return err
 	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint.String(),
-		bytes.NewReader(marshal))
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint.String(), strings.NewReader(form.Encode()))
 	if err != nil {
 		return fmt.Errorf("unable to create request: %w", err)
 	}
 
 	// Add the token to the request header.
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.token))
+	req.Header.Set("Accept", "form-data")
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
@@ -133,26 +102,15 @@ func (c Client) UpdateTxtRecord(ctx context.Context, domain, txt string, clear b
 // It must be in format subdomain.home64.de,
 // not in format subsubdomain.subdomain.home64.de.
 // So strip off everything that is not top 3 levels.
-func getPrefix(domain string) (prefix string, mainDomain string, err error) {
-	domain = dns01.UnFqdn(domain)
-
-	splittedPartsOfDomain := strings.Split(domain, ".")
-	var cleanedPartsOfDomain []string
-
-	for _, domainSplit := range splittedPartsOfDomain {
-		if len(strings.TrimSpace(domainSplit)) != 0 {
-			cleanedPartsOfDomain = append(cleanedPartsOfDomain, domainSplit)
-		}
+func getPrefix(full string) (prefix string, mainDomain string, err error) {
+	split := dns.Split(full)
+	if len(split) < 3 {
+		return "", "", fmt.Errorf("unsupported domain: %s", full)
 	}
-	lengthOfSplit := len(cleanedPartsOfDomain)
-	numberOfDots := strings.Count(domain, ".")
-
-	println(numberOfDots, lengthOfSplit)
-	if lengthOfSplit < 3 {
-		return "", "", errors.New("The domain needs to contain ")
+	if len(split) == 3 {
+		return "", full, nil
 	}
-
-	completeDomain := strings.Join(splittedPartsOfDomain[lengthOfSplit-3:], ".")
-	praefix := strings.Join(splittedPartsOfDomain[:lengthOfSplit-3], ".")
-	return praefix, completeDomain, nil
+	domain := full[split[len(split)-3]:]
+	subDomain := full[:split[len(split)-3]-1]
+	return subDomain, domain, nil
 }

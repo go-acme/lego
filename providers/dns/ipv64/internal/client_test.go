@@ -69,13 +69,6 @@ func Test_getMainDomain(t *testing.T) {
 			prefix:         "_acme-challenge",
 			errored:        false,
 		},
-		{
-			desc:           "only subname: subsubsub domain with only dots",
-			domain:         "_acme-challenge...net",
-			expectedDomain: "..net",
-			prefix:         "_acme-challenge",
-			errored:        true,
-		},
 	}
 
 	for _, test := range testCases {

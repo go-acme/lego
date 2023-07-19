@@ -37,7 +37,7 @@ lego --email you@example.com --dns ipv64 --domains my.example.org run
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `IPV64_TOKEN` | Account token |
+| `IPV64_API_KEY` | Account API Key |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{< ref "dns#configuration-and-credentials" >}}).

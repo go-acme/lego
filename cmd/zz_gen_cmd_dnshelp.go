@@ -1458,7 +1458,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "IPV64_TOKEN":	Account token`)
+		ew.writeln(`	- "IPV64_API_KEY":	Account API Key`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)

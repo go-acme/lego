@@ -2,6 +2,7 @@ package internal
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 	"github.com/miekg/dns"
@@ -37,6 +38,12 @@ func (c Client) RemoveTXTRecord(ctx context.Context, domain string) error {
 	return c.UpdateTxtRecord(ctx, domain, "", true)
 }
 
+type SuccessMessage struct {
+	Info      string `json:"info"`
+	Status    string `json:"status"`
+	AddRecord string `json:"add_record"`
+}
+
 // UpdateTxtRecord Update the domains TXT record
 // To update the TXT record we just need to make one simple get request.
 // In IPv64 you only have one TXT record shared with the domain and all subdomains.
@@ -58,7 +65,6 @@ func (c Client) UpdateTxtRecord(ctx context.Context, domain, txt string, clear b
 	form.Add("type", "TXT")
 	form.Add("content", txt)
 
-	println(mainDomain, prefix)
 	if clear {
 		form.Add("del_record", mainDomain)
 	} else {
@@ -76,7 +82,7 @@ func (c Client) UpdateTxtRecord(ctx context.Context, domain, txt string, clear b
 
 	// Add the token to the request header.
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.token))
-	req.Header.Set("Accept", "form-data")
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
@@ -86,12 +92,21 @@ func (c Client) UpdateTxtRecord(ctx context.Context, domain, txt string, clear b
 	defer func() { _ = resp.Body.Close() }()
 
 	raw, err := io.ReadAll(resp.Body)
+
+	var successBody SuccessMessage
+
+	body := string(raw)
+
+	if parse_error := json.Unmarshal(raw, &successBody); parse_error != nil {
+		return fmt.Errorf("request to change TXT record for IPv64 returned the following result ("+
+			"%s) this does not match expectation (OK) used url [%s]", body, endpoint)
+	}
+
 	if err != nil {
 		return errutils.NewReadResponseError(req, resp.StatusCode, err)
 	}
 
-	body := string(raw)
-	if body != "\"info\":\"success\"" {
+	if !strings.Contains(successBody.Status, "201 Created") {
 		return fmt.Errorf("request to change TXT record for IPv64 returned the following result ("+
 			"%s) this does not match expectation (OK) used url [%s]", body, endpoint)
 	}

@@ -95,7 +95,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 // CleanUp clears IPv64 TXT record.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
-	return d.client.RemoveTXTRecord(context.Background(), dns01.UnFqdn(info.EffectiveFQDN))
+	return d.client.RemoveTXTRecord(context.Background(), dns01.UnFqdn(info.EffectiveFQDN), info.Value)
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.

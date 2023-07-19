@@ -34,8 +34,8 @@ func (c Client) AddTXTRecord(ctx context.Context, domain, value string) error {
 	return c.UpdateTxtRecord(ctx, domain, value, false)
 }
 
-func (c Client) RemoveTXTRecord(ctx context.Context, domain string) error {
-	return c.UpdateTxtRecord(ctx, domain, "", true)
+func (c Client) RemoveTXTRecord(ctx context.Context, domain string, value string) error {
+	return c.UpdateTxtRecord(ctx, domain, value, true)
 }
 
 type SuccessMessage struct {
@@ -111,7 +111,7 @@ func (c Client) UpdateTxtRecord(ctx context.Context, domain, txt string, clear b
 		return errutils.NewReadResponseError(req, resp.StatusCode, err)
 	}
 
-	if !strings.Contains(successBody.Status, "201 Created") {
+	if !strings.Contains(successBody.Status, "201 Created") && resp.StatusCode > 300 {
 		return fmt.Errorf("request to change TXT record for IPv64 returned the following result ("+
 			"%s) this does not match expectation (OK) used url [%s]", body, endpoint)
 	}

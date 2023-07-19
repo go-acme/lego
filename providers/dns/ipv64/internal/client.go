@@ -65,18 +65,22 @@ func (c Client) UpdateTxtRecord(ctx context.Context, domain, txt string, clear b
 	form.Add("type", "TXT")
 	form.Add("content", txt)
 
-	if clear {
-		form.Add("del_record", mainDomain)
-	} else {
-		form.Add("add_record", mainDomain)
-	}
-
 	if err != nil {
 		return err
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint.String(), strings.NewReader(form.Encode()))
-	if err != nil {
+	var req *http.Request
+	var requestError error
+
+	if clear {
+		form.Add("del_record", mainDomain)
+		req, requestError = http.NewRequestWithContext(ctx, http.MethodDelete, endpoint.String(), strings.NewReader(form.Encode()))
+	} else {
+		form.Add("add_record", mainDomain)
+		req, requestError = http.NewRequestWithContext(ctx, http.MethodPost, endpoint.String(), strings.NewReader(form.Encode()))
+	}
+
+	if requestError != nil {
 		return fmt.Errorf("unable to create request: %w", err)
 	}
 
@@ -97,6 +101,7 @@ func (c Client) UpdateTxtRecord(ctx context.Context, domain, txt string, clear b
 
 	body := string(raw)
 
+	println("Content", txt)
 	if parse_error := json.Unmarshal(raw, &successBody); parse_error != nil {
 		return fmt.Errorf("request to change TXT record for IPv64 returned the following result ("+
 			"%s) this does not match expectation (OK) used url [%s]", body, endpoint)

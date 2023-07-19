@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -67,7 +68,12 @@ func (c Client) UpdateTxtRecord(ctx context.Context, domain, txt string, clear b
 		endpoint.Path += "/add_record"
 	}
 
-	mainDomain := getPrefix(domain)
+	prefix, mainDomain, err := getPrefix(domain)
+
+	if err != nil {
+		return fmt.Errorf("the domain needs to contain at least 3 parts")
+	}
+
 	if mainDomain == "" {
 		return fmt.Errorf("unable to find the main domain for: %s", domain)
 	}
@@ -76,15 +82,15 @@ func (c Client) UpdateTxtRecord(ctx context.Context, domain, txt string, clear b
 
 	if clear {
 		data = IPV64DelRecordData{
-			Domain:     domain,
-			Prefix:     mainDomain,
+			Domain:     mainDomain,
+			Prefix:     prefix,
 			Content:    txt,
 			PrefixType: "TXT",
 		}
 	} else {
 		data = IPV64AddRecordData{
-			Domain:     domain,
-			Prefix:     mainDomain,
+			Domain:     mainDomain,
+			Prefix:     prefix,
 			Content:    txt,
 			PrefixType: "TXT",
 		}
@@ -127,10 +133,23 @@ func (c Client) UpdateTxtRecord(ctx context.Context, domain, txt string, clear b
 // It must be in format subdomain.home64.de,
 // not in format subsubdomain.subdomain.home64.de.
 // So strip off everything that is not top 3 levels.
-func getPrefix(domain string) string {
+func getPrefix(domain string) (prefix string, mainDomain string, err error) {
 	domain = dns01.UnFqdn(domain)
 
-	prefix, _ := strings.CutSuffix(domain, ".home64.net")
+	splittedPartsOfDomain := strings.Split(domain, ".")
+	lengthOfSplit := len(splittedPartsOfDomain)
 
-	return prefix
+	println(lengthOfSplit)
+	if lengthOfSplit < 3 {
+		return "", "", errors.New("The domain needs to contain ")
+	}
+
+	root := splittedPartsOfDomain[lengthOfSplit-1]            // de
+	resultingDomain := splittedPartsOfDomain[lengthOfSplit-2] ///homeserver
+	subdomain := splittedPartsOfDomain[lengthOfSplit-3]       // home64
+
+	const SEP = "."
+	completeDomain := subdomain + SEP + resultingDomain + SEP + root
+	praefix := strings.Join(splittedPartsOfDomain[:lengthOfSplit-3], ".")
+	return praefix, completeDomain, nil
 }

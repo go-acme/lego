@@ -41,12 +41,14 @@ func CreateFlags(defaultPath string) []cli.Flag {
 			Usage: "Use External Account Binding for account registration. Requires --kid and --hmac.",
 		},
 		&cli.StringFlag{
-			Name:  "kid",
-			Usage: "Key identifier from External CA. Used for External Account Binding.",
+			Name:    "kid",
+			EnvVars: []string{"LEGO_EAB_KID"},
+			Usage:   "Key identifier from External CA. Used for External Account Binding.",
 		},
 		&cli.StringFlag{
-			Name:  "hmac",
-			Usage: "MAC key from External CA. Should be in Base64 URL Encoding without padding format. Used for External Account Binding.",
+			Name:    "hmac",
+			EnvVars: []string{"LEGO_EAB_HMAC"},
+			Usage:   "MAC key from External CA. Should be in Base64 URL Encoding without padding format. Used for External Account Binding.",
 		},
 		&cli.StringFlag{
 			Name:    "key-type",

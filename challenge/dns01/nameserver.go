@@ -252,7 +252,7 @@ func createDNSMsg(fqdn string, rtype uint16, recursive bool) *dns.Msg {
 }
 
 func sendDNSQuery(m *dns.Msg, ns string) (*dns.Msg, error) {
-	if ok, _ := strconv.ParseBool(os.Getenv("LEGO_TCP_DNS_QUERY")); ok {
+	if ok, _ := strconv.ParseBool(os.Getenv("LEGO_EXPERIMENTAL_DNS_TCP_ONLY")); ok {
 		tcp := &dns.Client{Net: "tcp", Timeout: dnsTimeout}
 		in, _, err := tcp.Exchange(m, ns)
 

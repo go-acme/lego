@@ -76,6 +76,7 @@ func allDNSCodes() string {
 		"internetbs",
 		"inwx",
 		"ionos",
+		"ipv64",
 		"iwantmyname",
 		"joker",
 		"liara",
@@ -1448,6 +1449,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/ionos`)
+
+	case "ipv64":
+		// generated from: providers/dns/ipv64/ipv64.toml
+		ew.writeln(`Configuration for IPv64.`)
+		ew.writeln(`Code:	'ipv64'`)
+		ew.writeln(`Since:	'v4.13.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "IPV64_API_KEY":	Account API Key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "IPV64_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "IPV64_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "IPV64_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "IPV64_SEQUENCE_INTERVAL":	Time between sequential requests`)
+		ew.writeln(`	- "IPV64_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/ipv64`)
 
 	case "iwantmyname":
 		// generated from: providers/dns/iwantmyname/iwantmyname.toml

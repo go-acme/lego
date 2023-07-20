@@ -1,0 +1,5 @@
+{
+  "info": "error",
+  "status": "400 Bad Request",
+  "add_record": "dns record already there"
+}

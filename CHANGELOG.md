@@ -1,5 +1,23 @@
 # Changelog
 
+## [v4.13.0] - 2023-07-20
+
+### Added:
+- **[dnsprovider]** Add DNS provider for IPv64
+- **[dnsprovider]** Add DNS provider for Metaname
+- **[dnsprovider]** Add DNS provider for RcodeZero
+- **[dnsprovider]** Add DNS provider for Efficient IP
+- **[dnsprovider]** azure: new implementation based on the new API client
+- **[lib]** Experimental option to force DNS queries to use TCP
+
+### Changed:
+- **[dnsprovider]** cloudflare: update api client to v0.70.0
+
+### Fixed:
+- **[dnsprovider,cname]** fix: ensure case-insensitive comparison of CNAME records
+- **[cli]** fix: list command
+- **[lib]** fix: ARI explanationURL
+
 ## [v4.12.2] - 2023-06-19
 
 ### Fixed:

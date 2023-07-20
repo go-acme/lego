@@ -43,7 +43,7 @@ func (c Client) GetDomains(ctx context.Context) (*Domains, error) {
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint.String(), http.NoBody)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to create request: %w", err)
 	}
 
 	results := &Domains{}
@@ -67,15 +67,10 @@ func (c Client) AddRecord(ctx context.Context, domain, prefix, recordType, conte
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint.String(), strings.NewReader(data.Encode()))
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to create request: %w", err)
 	}
 
-	err = c.do(req, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.do(req, nil)
 }
 
 func (c Client) DeleteRecord(ctx context.Context, domain, prefix, recordType, content string) error {
@@ -89,15 +84,10 @@ func (c Client) DeleteRecord(ctx context.Context, domain, prefix, recordType, co
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, endpoint.String(), strings.NewReader(data.Encode()))
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to create request: %w", err)
 	}
 
-	err = c.do(req, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.do(req, nil)
 }
 
 func (c Client) do(req *http.Request, result any) error {

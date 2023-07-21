@@ -1,6 +1,11 @@
 # Changelog
 
-## [v4.13.0] - 2023-07-20
+## [v4.13.2] - 2023-07-21
+
+### Fixed:
+- **[dnsprovider]** servercow: fix regression
+
+## [v4.13.1] - 2023-07-20
 
 ### Added:
 - **[dnsprovider]** Add DNS provider for IPv64
@@ -17,6 +22,10 @@
 - **[dnsprovider,cname]** fix: ensure case-insensitive comparison of CNAME records
 - **[cli]** fix: list command
 - **[lib]** fix: ARI explanationURL
+
+## [v4.13.0] - 2023-07-20
+
+Cancelled due to a CI issue (no space left on device).
 
 ## [v4.12.2] - 2023-06-19
 

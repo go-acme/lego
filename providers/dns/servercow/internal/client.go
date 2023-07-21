@@ -149,9 +149,8 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 
 	req.Header.Set("Accept", "application/json")
 
-	if payload != nil {
-		req.Header.Set("Content-Type", "application/json")
-	}
+	// Content-Type should be added even if there is no request body.
+	req.Header.Set("Content-Type", "application/json")
 
 	return req, nil
 }

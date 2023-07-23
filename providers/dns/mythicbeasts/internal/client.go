@@ -20,7 +20,7 @@ const (
 	AuthBaseURL = "https://auth.mythic-beasts.com/login"
 )
 
-// Client the EasyDNS API client.
+// Client the Mythic Beasts API client.
 type Client struct {
 	username string
 	password string

@@ -1,0 +1,14 @@
+{
+  "items": [
+    {
+      "id": "59556fcd-95ff-451f-b49b-9732f21f944a",
+      "parent_id": "2d7b6194-2b83-4f71-86fd-a1e727e347b2",
+      "name": "example.com",
+      "valid": true,
+      "validation_text": "sbc-verification: 5c86c962-7ee2-4983-b39b-1d9461959d8b",
+      "delegated": true,
+      "created_at": "2023-07-23T08:12:41.000000Z",
+      "updated_at": "2023-07-24T05:50:28.000000Z"
+    }
+  ]
+}

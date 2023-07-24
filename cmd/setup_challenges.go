@@ -13,6 +13,7 @@ import (
 	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/providers/dns"
 	"github.com/go-acme/lego/v4/providers/http/memcached"
+	"github.com/go-acme/lego/v4/providers/http/s3"
 	"github.com/go-acme/lego/v4/providers/http/webroot"
 	"github.com/urfave/cli/v2"
 )
@@ -51,6 +52,12 @@ func setupHTTPProvider(ctx *cli.Context) challenge.Provider {
 		return ps
 	case ctx.IsSet("http.memcached-host"):
 		ps, err := memcached.NewMemcachedProvider(ctx.StringSlice("http.memcached-host"))
+		if err != nil {
+			log.Fatal(err)
+		}
+		return ps
+	case ctx.IsSet("http.s3-bucket"):
+		ps, err := s3.NewHTTPProvider(ctx.String("http.s3-bucket"))
 		if err != nil {
 			log.Fatal(err)
 		}

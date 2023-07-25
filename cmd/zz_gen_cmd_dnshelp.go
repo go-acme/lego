@@ -1082,13 +1082,13 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 	case "gcore":
 		// generated from: providers/dns/gcore/gcore.toml
-		ew.writeln(`Configuration for G-Core Labs.`)
+		ew.writeln(`Configuration for G-Core.`)
 		ew.writeln(`Code:	'gcore'`)
 		ew.writeln(`Since:	'v4.5.0'`)
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "GCORE_PERMANENT_API_TOKEN":	Permanent API tokene (https://gcorelabs.com/blog/permanent-api-token-explained/)`)
+		ew.writeln(`	- "GCORE_PERMANENT_API_TOKEN":	Permanent API token (https://gcore.com/blog/permanent-api-token-explained/)`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)

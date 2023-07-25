@@ -1,11 +1,12 @@
 package lightsail
 
 import (
+	"context"
 	"testing"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/lightsail"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/lightsail"
 	"github.com/stretchr/testify/require"
 )
 
@@ -24,13 +25,15 @@ func TestLiveTTL(t *testing.T) {
 	err = provider.Present(domain, "foo", "bar")
 	require.NoError(t, err)
 
-	// we need a separate Lightsail client here as the one in the DNS provider is
-	// unexported.
+	// we need a separate Lightsail client here as the one in the DNS provider is unexported.
 	fqdn := "_acme-challenge." + domain
-	sess, err := session.NewSession()
+
+	ctx := context.Background()
+
+	cfg, err := awsconfig.LoadDefaultConfig(ctx)
 	require.NoError(t, err)
 
-	svc := lightsail.New(sess)
+	svc := lightsail.NewFromConfig(cfg)
 	require.NoError(t, err)
 
 	defer func() {
@@ -44,15 +47,24 @@ func TestLiveTTL(t *testing.T) {
 		DomainName: aws.String(domain),
 	}
 
-	resp, err := svc.GetDomain(params)
+	resp, err := svc.GetDomain(ctx, params)
 	require.NoError(t, err)
 
 	entries := resp.Domain.DomainEntries
 	for _, entry := range entries {
-		if aws.StringValue(entry.Type) == "TXT" && aws.StringValue(entry.Name) == fqdn {
+		if deref(entry.Type) == "TXT" && deref(entry.Name) == fqdn {
 			return
 		}
 	}
 
 	t.Fatalf("Could not find a TXT record for _acme-challenge.%s", domain)
+}
+
+func deref[T string | int | int32 | int64 | bool](v *T) T {
+	if v == nil {
+		var zero T
+		return zero
+	}
+
+	return *v
 }

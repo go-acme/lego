@@ -1,14 +1,16 @@
 package lightsail
 
 import (
+	"context"
 	"os"
 	"testing"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/lightsail"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/lightsail"
 	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -29,23 +31,26 @@ var envTest = tester.NewEnvTest(
 	WithDomain(EnvDNSZone).
 	WithLiveTestRequirements(envAwsAccessKeyID, envAwsSecretAccessKey, EnvDNSZone)
 
-func makeProvider(serverURL string) (*DNSProvider, error) {
-	config := &aws.Config{
-		Credentials: credentials.NewStaticCredentials("abc", "123", " "),
-		Endpoint:    aws.String(serverURL),
-		Region:      aws.String("mock-region"),
-		MaxRetries:  aws.Int(1),
+type endpointResolverMock struct {
+	endpoint string
+}
+
+func (e endpointResolverMock) ResolveEndpoint(_, _ string, _ ...interface{}) (aws.Endpoint, error) {
+	return aws.Endpoint{URL: e.endpoint}, nil
+}
+
+func makeProvider(serverURL string) *DNSProvider {
+	config := aws.Config{
+		Credentials:                 credentials.NewStaticCredentialsProvider("abc", "123", " "),
+		Region:                      "mock-region",
+		EndpointResolverWithOptions: endpointResolverMock{endpoint: serverURL},
+		RetryMaxAttempts:            1,
 	}
 
-	sess, err := session.NewSession(config)
-	if err != nil {
-		return nil, err
+	return &DNSProvider{
+		client: lightsail.NewFromConfig(config),
+		config: NewDefaultConfig(),
 	}
-
-	conf := NewDefaultConfig()
-
-	client := lightsail.New(sess)
-	return &DNSProvider{client: client, config: conf}, nil
 }
 
 func TestCredentialsFromEnv(t *testing.T) {
@@ -56,15 +61,19 @@ func TestCredentialsFromEnv(t *testing.T) {
 	_ = os.Setenv(envAwsSecretAccessKey, "123")
 	_ = os.Setenv(envAwsRegion, "us-east-1")
 
-	config := &aws.Config{
-		CredentialsChainVerboseErrors: aws.Bool(true),
-	}
-
-	sess, err := session.NewSession(config)
+	ctx := context.Background()
+	cfg, err := awsconfig.LoadDefaultConfig(ctx)
 	require.NoError(t, err)
 
-	_, err = sess.Config.Credentials.Get()
+	cs, err := cfg.Credentials.Retrieve(ctx)
 	require.NoError(t, err, "Expected credentials to be set from environment")
+
+	expected := aws.Credentials{
+		AccessKeyID:     "123",
+		SecretAccessKey: "123",
+		Source:          "EnvConfigCredentials",
+	}
+	assert.Equal(t, expected, cs)
 }
 
 func TestDNSProvider_Present(t *testing.T) {
@@ -74,12 +83,11 @@ func TestDNSProvider_Present(t *testing.T) {
 
 	serverURL := newMockServer(t, mockResponses)
 
-	provider, err := makeProvider(serverURL)
-	require.NoError(t, err)
+	provider := makeProvider(serverURL)
 
 	domain := "example.com"
 	keyAuth := "123456d=="
 
-	err = provider.Present(domain, "", keyAuth)
+	err := provider.Present(domain, "", keyAuth)
 	require.NoError(t, err, "Expected Present to return no error")
 }

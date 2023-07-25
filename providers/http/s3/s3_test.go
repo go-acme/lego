@@ -3,64 +3,69 @@
 package s3
 
 import (
+	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"testing"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/http01"
+	"github.com/go-acme/lego/v4/platform/tester"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const (
-	domain  = "domain"
-	token   = "token"
-	keyAuth = "keyAuth"
+	domain  = "example.com"
+	token   = "foo"
+	keyAuth = "bar"
 )
 
-func isLive() bool {
-	s3Key := os.Getenv("AWS_ACCESS_KEY_ID")
-	s3Secret := os.Getenv("AWS_SECRET_ACCESS_KEY")
-	s3Region := os.Getenv("AWS_REGION")
-	s3Bucket := os.Getenv("S3_BUCKET")
-	if len(s3Key) > 0 && len(s3Secret) > 0 && len(s3Region) > 0 && len(s3Bucket) > 0 {
-		return true
-	}
-
-	return false
-}
+var envTest = tester.NewEnvTest(
+	"AWS_ACCESS_KEY_ID",
+	"AWS_SECRET_ACCESS_KEY",
+	"AWS_REGION",
+	"S3_BUCKET")
 
 func TestNewS3ProviderValid(t *testing.T) {
-	s3Bucket := os.Getenv("S3_BUCKET")
-	if !isLive() {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
-	_, err := NewHTTPProvider(s3Bucket)
-	assert.NoError(t, err)
+	envTest.RestoreEnv()
+
+	_, err := NewHTTPProvider(envTest.GetValue("S3_BUCKET"))
+	require.NoError(t, err)
 }
 
 func TestLiveS3ProviderPresent(t *testing.T) {
-	s3Region := os.Getenv("AWS_REGION")
-	s3Bucket := os.Getenv("S3_BUCKET")
-	if !isLive() {
+	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
+	envTest.RestoreEnv()
+
+	s3Bucket := envTest.GetValue("S3_BUCKET")
+
 	provider, err := NewHTTPProvider(s3Bucket)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = provider.Present(domain, token, keyAuth)
-	assert.NoError(t, err)
+	require.NoError(t, err)
+
 	// Need to wait a little bit before checking website
 	time.Sleep(1 * time.Second)
-	s3Host := "http://" + s3Bucket + ".s3-website." + s3Region + ".amazonaws.com"
-	resp, err := http.Get(s3Host + http01.ChallengePath(token))
-	assert.NoError(t, err)
-	defer resp.Body.Close()
+
+	chlgPath := fmt.Sprintf("http://%s.s3-website.%s.amazonaws.com%s",
+		s3Bucket, envTest.GetValue("AWS_REGION"), http01.ChallengePath(token))
+
+	resp, err := http.Get(chlgPath)
+	require.NoError(t, err)
+
+	defer func() { _ = resp.Body.Close() }()
 
 	data, err := io.ReadAll(resp.Body)
-	assert.NoError(t, err)
-	assert.Equal(t, data, []byte(keyAuth))
+	require.NoError(t, err)
+
+	assert.Equal(t, []byte(keyAuth), data)
 }

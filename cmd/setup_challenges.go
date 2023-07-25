@@ -42,6 +42,7 @@ func setupChallenges(ctx *cli.Context, client *lego.Client) {
 	}
 }
 
+//nolint:gocyclo // the complexity is expected.
 func setupHTTPProvider(ctx *cli.Context) challenge.Provider {
 	switch {
 	case ctx.IsSet("http.webroot"):

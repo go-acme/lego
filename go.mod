@@ -18,6 +18,8 @@ require (
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.2.2
 	github.com/aliyun/alibaba-cloud-sdk-go v1.61.1755
 	github.com/aws/aws-sdk-go v1.39.0
+	github.com/aws/aws-sdk-go-v2/config v1.18.28
+	github.com/aws/aws-sdk-go-v2/service/s3 v1.37.0
 	github.com/cenkalti/backoff/v4 v4.2.1
 	github.com/civo/civogo v0.3.11
 	github.com/cloudflare/cloudflare-go v0.70.0
@@ -75,11 +77,6 @@ require (
 	gopkg.in/ns1/ns1-go.v2 v2.7.6
 	gopkg.in/yaml.v2 v2.4.0
 	software.sslmate.com/src/go-pkcs12 v0.2.0
-)
-
-require (
-	github.com/aws/aws-sdk-go-v2/config v1.18.28
-	github.com/aws/aws-sdk-go-v2/service/s3 v1.37.0
 )
 
 require (

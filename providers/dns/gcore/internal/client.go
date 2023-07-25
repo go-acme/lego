@@ -14,7 +14,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
-const defaultBaseURL = "https://api.gcorelabs.com/dns"
+const defaultBaseURL = "https://api.gcore.com/dns"
 
 const (
 	authorizationHeader = "Authorization"
@@ -43,7 +43,7 @@ func NewClient(token string) *Client {
 }
 
 // GetZone gets zone information.
-// https://dnsapi.gcorelabs.com/docs#operation/Zone
+// https://api.gcore.com/docs/dns#tag/zones/operation/Zone
 func (c *Client) GetZone(ctx context.Context, name string) (Zone, error) {
 	endpoint := c.baseURL.JoinPath("v2", "zones", name)
 
@@ -57,7 +57,7 @@ func (c *Client) GetZone(ctx context.Context, name string) (Zone, error) {
 }
 
 // GetRRSet gets RRSet item.
-// https://dnsapi.gcorelabs.com/docs#operation/RRSet
+// https://api.gcore.com/docs/dns#tag/rrsets/operation/RRSet
 func (c *Client) GetRRSet(ctx context.Context, zone, name string) (RRSet, error) {
 	endpoint := c.baseURL.JoinPath("v2", "zones", zone, name, txtRecordType)
 
@@ -71,7 +71,7 @@ func (c *Client) GetRRSet(ctx context.Context, zone, name string) (RRSet, error)
 }
 
 // DeleteRRSet removes RRSet record.
-// https://dnsapi.gcorelabs.com/docs#operation/DeleteRRSet
+// https://api.gcore.com/docs/dns#tag/rrsets/operation/DeleteRRSet
 func (c *Client) DeleteRRSet(ctx context.Context, zone, name string) error {
 	endpoint := c.baseURL.JoinPath("v2", "zones", zone, name, txtRecordType)
 
@@ -102,14 +102,14 @@ func (c *Client) AddRRSet(ctx context.Context, zone, recordName, value string, t
 	return c.createRRSet(ctx, zone, recordName, record)
 }
 
-// https://dnsapi.gcorelabs.com/docs#operation/CreateRRSet
+// https://api.gcore.com/docs/dns#tag/rrsets/operation/CreateRRSet
 func (c *Client) createRRSet(ctx context.Context, zone, name string, record RRSet) error {
 	endpoint := c.baseURL.JoinPath("v2", "zones", zone, name, txtRecordType)
 
 	return c.doRequest(ctx, http.MethodPost, endpoint, record, nil)
 }
 
-// https://dnsapi.gcorelabs.com/docs#operation/UpdateRRSet
+// https://api.gcore.com/docs/dns#tag/rrsets/operation/UpdateRRSet
 func (c *Client) updateRRSet(ctx context.Context, zone, name string, record RRSet) error {
 	endpoint := c.baseURL.JoinPath("v2", "zones", zone, name, txtRecordType)
 

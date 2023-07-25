@@ -57,7 +57,7 @@ type DNSProvider struct {
 	client *internal.Client
 }
 
-// NewDNSProvider returns an instance of DNSProvider configured for G-Core Labs DNS API.
+// NewDNSProvider returns an instance of DNSProvider configured for G-Core DNS API.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvPermanentAPIToken)
 	if err != nil {
@@ -70,7 +70,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderConfig return a DNSProvider instance configured for  G-Core Labs DNS API.
+// NewDNSProviderConfig return a DNSProvider instance configured for G-Core DNS API.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("gcore: the configuration of the DNS provider is nil")

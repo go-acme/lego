@@ -1,14 +1,15 @@
 package route53
 
 import (
+	"context"
 	"os"
 	"testing"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/route53"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/route53"
 	"github.com/go-acme/lego/v4/platform/tester"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -28,21 +29,26 @@ var envTest = tester.NewEnvTest(
 	WithDomain(envDomain).
 	WithLiveTestRequirements(EnvAccessKeyID, EnvSecretAccessKey, EnvRegion, envDomain)
 
+type endpointResolverMock struct {
+	endpoint string
+}
+
+func (e endpointResolverMock) ResolveEndpoint(_, _ string, _ ...interface{}) (aws.Endpoint, error) {
+	return aws.Endpoint{URL: e.endpoint}, nil
+}
+
 func makeTestProvider(t *testing.T, serverURL string) *DNSProvider {
 	t.Helper()
 
-	config := &aws.Config{
-		Credentials: credentials.NewStaticCredentials("abc", "123", " "),
-		Endpoint:    aws.String(serverURL),
-		Region:      aws.String("mock-region"),
-		MaxRetries:  aws.Int(1),
+	cfg := aws.Config{
+		Credentials:                 credentials.NewStaticCredentialsProvider("abc", "123", " "),
+		Region:                      "mock-region",
+		EndpointResolverWithOptions: endpointResolverMock{endpoint: serverURL},
+		RetryMaxAttempts:            1,
 	}
 
-	sess, err := session.NewSession(config)
-	require.NoError(t, err)
-
 	return &DNSProvider{
-		client: route53.New(sess),
+		client: route53.NewFromConfig(cfg),
 		config: NewDefaultConfig(),
 	}
 }
@@ -55,22 +61,21 @@ func Test_loadCredentials_FromEnv(t *testing.T) {
 	_ = os.Setenv(EnvSecretAccessKey, "456")
 	_ = os.Setenv(EnvRegion, "us-east-1")
 
-	config := &aws.Config{
-		CredentialsChainVerboseErrors: aws.Bool(true),
-	}
+	ctx := context.Background()
 
-	sess, err := session.NewSession(config)
+	cfg, err := awsconfig.LoadDefaultConfig(ctx)
 	require.NoError(t, err)
 
-	value, err := sess.Config.Credentials.Get()
+	value, err := cfg.Credentials.Retrieve(ctx)
 	require.NoError(t, err, "Expected credentials to be set from environment")
 
-	expected := credentials.Value{
+	expected := aws.Credentials{
 		AccessKeyID:     "123",
 		SecretAccessKey: "456",
 		SessionToken:    "",
-		ProviderName:    "EnvConfigCredentials",
+		Source:          "EnvConfigCredentials",
 	}
+
 	assert.Equal(t, expected, value)
 }
 
@@ -78,13 +83,12 @@ func Test_loadRegion_FromEnv(t *testing.T) {
 	defer envTest.RestoreEnv()
 	envTest.ClearEnv()
 
-	os.Setenv(EnvRegion, route53.CloudWatchRegionUsEast1)
+	_ = os.Setenv(EnvRegion, "foo")
 
-	sess, err := session.NewSession(aws.NewConfig())
+	cfg, err := awsconfig.LoadDefaultConfig(context.Background())
 	require.NoError(t, err)
 
-	region := aws.StringValue(sess.Config.Region)
-	assert.Equal(t, route53.CloudWatchRegionUsEast1, region, "Region")
+	assert.Equal(t, "foo", cfg.Region, "Region")
 }
 
 func Test_getHostedZoneID_FromEnv(t *testing.T) {
@@ -93,12 +97,12 @@ func Test_getHostedZoneID_FromEnv(t *testing.T) {
 
 	expectedZoneID := "zoneID"
 
-	os.Setenv(EnvHostedZoneID, expectedZoneID)
+	_ = os.Setenv(EnvHostedZoneID, expectedZoneID)
 
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	hostedZoneID, err := provider.getHostedZoneID("whatever")
+	hostedZoneID, err := provider.getHostedZoneID(context.Background(), "whatever")
 	require.NoError(t, err, "HostedZoneID")
 
 	assert.Equal(t, expectedZoneID, hostedZoneID)
@@ -144,7 +148,7 @@ func TestNewDefaultConfig(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			envTest.ClearEnv()
 			for key, value := range test.envVars {
-				os.Setenv(key, value)
+				_ = os.Setenv(key, value)
 			}
 
 			config := NewDefaultConfig()
@@ -156,9 +160,9 @@ func TestNewDefaultConfig(t *testing.T) {
 
 func TestDNSProvider_Present(t *testing.T) {
 	mockResponses := MockResponseMap{
-		"/2013-04-01/hostedzonesbyname":         {StatusCode: 200, Body: ListHostedZonesByNameResponse},
-		"/2013-04-01/hostedzone/ABCDEFG/rrset/": {StatusCode: 200, Body: ChangeResourceRecordSetsResponse},
-		"/2013-04-01/change/123456":             {StatusCode: 200, Body: GetChangeResponse},
+		"/2013-04-01/hostedzonesbyname":        {StatusCode: 200, Body: ListHostedZonesByNameResponse},
+		"/2013-04-01/hostedzone/ABCDEFG/rrset": {StatusCode: 200, Body: ChangeResourceRecordSetsResponse},
+		"/2013-04-01/change/123456":            {StatusCode: 200, Body: GetChangeResponse},
 		"/2013-04-01/hostedzone/ABCDEFG/rrset?name=_acme-challenge.example.com.&type=TXT": {
 			StatusCode: 200,
 			Body:       "",
@@ -178,12 +182,12 @@ func TestDNSProvider_Present(t *testing.T) {
 	require.NoError(t, err, "Expected Present to return no error")
 }
 
-func TestCreateSession(t *testing.T) {
+func Test_createAWSConfig(t *testing.T) {
 	testCases := []struct {
 		desc             string
 		env              map[string]string
 		config           *Config
-		wantCreds        credentials.Value
+		wantCreds        aws.Credentials
 		wantDefaultChain bool
 		wantRegion       string
 		wantErr          string
@@ -218,11 +222,11 @@ func TestCreateSession(t *testing.T) {
 				AccessKeyID:     "one",
 				SecretAccessKey: "two",
 			},
-			wantCreds: credentials.Value{
+			wantCreds: aws.Credentials{
 				AccessKeyID:     "one",
 				SecretAccessKey: "two",
 				SessionToken:    "",
-				ProviderName:    credentials.StaticProviderName,
+				Source:          credentials.StaticCredentialsName,
 			},
 		},
 		{
@@ -232,11 +236,11 @@ func TestCreateSession(t *testing.T) {
 				SecretAccessKey: "two",
 				SessionToken:    "three",
 			},
-			wantCreds: credentials.Value{
+			wantCreds: aws.Credentials{
 				AccessKeyID:     "one",
 				SecretAccessKey: "two",
 				SessionToken:    "three",
-				ProviderName:    credentials.StaticProviderName,
+				Source:          credentials.StaticCredentialsName,
 			},
 		},
 		{
@@ -268,24 +272,26 @@ func TestCreateSession(t *testing.T) {
 
 			envTest.Apply(test.env)
 
-			sess, err := createSession(test.config)
+			ctx := context.Background()
+
+			cfg, err := createAWSConfig(ctx, test.config)
 			requireErr(t, err, test.wantErr)
 
 			if err != nil {
 				return
 			}
 
-			gotCreds, err := sess.Config.Credentials.Get()
+			gotCreds, err := cfg.Credentials.Retrieve(ctx)
 
 			if test.wantDefaultChain {
-				assert.NotEqual(t, credentials.StaticProviderName, gotCreds.ProviderName)
+				assert.NotEqual(t, credentials.StaticCredentialsName, gotCreds.Source)
 			} else {
 				require.NoError(t, err)
 				assert.Equal(t, test.wantCreds, gotCreds)
 			}
 
 			if test.wantRegion != "" {
-				assert.Equal(t, test.wantRegion, aws.StringValue(sess.Config.Region))
+				assert.Equal(t, test.wantRegion, cfg.Region)
 			}
 		})
 	}

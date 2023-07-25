@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/go-acme/lego/v4/challenge/http01"
@@ -46,8 +47,8 @@ func (s *HTTPProvider) Present(domain, token, keyAuth string) error {
 
 	params := &s3.PutObjectInput{
 		ACL:    "public-read",
-		Bucket: pointer(s.bucket),
-		Key:    pointer(strings.Trim(http01.ChallengePath(token), "/")),
+		Bucket: aws.String(s.bucket),
+		Key:    aws.String(strings.Trim(http01.ChallengePath(token), "/")),
 		Body:   bytes.NewReader([]byte(keyAuth)),
 	}
 
@@ -63,8 +64,8 @@ func (s *HTTPProvider) CleanUp(domain, token, keyAuth string) error {
 	ctx := context.Background()
 
 	params := &s3.DeleteObjectInput{
-		Bucket: pointer(s.bucket),
-		Key:    pointer(strings.Trim(http01.ChallengePath(token), "/")),
+		Bucket: aws.String(s.bucket),
+		Key:    aws.String(strings.Trim(http01.ChallengePath(token), "/")),
 	}
 
 	_, err := s.client.DeleteObject(ctx, params)
@@ -74,5 +75,3 @@ func (s *HTTPProvider) CleanUp(domain, token, keyAuth string) error {
 
 	return nil
 }
-
-func pointer[T string | int | int32 | int64](v T) *T { return &v }

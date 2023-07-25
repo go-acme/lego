@@ -90,9 +90,9 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config.ResourceGroup = env.GetOrFile(EnvResourceGroup)
 	config.PrivateZone = env.GetOrDefaultBool(EnvPrivateZone, false)
 
-	config.ClientID = env.GetOrFile(EnvTenantID)
-	config.ClientSecret = env.GetOrFile(EnvClientID)
-	config.TenantID = env.GetOrFile(EnvClientSecret)
+	config.ClientID = env.GetOrFile(EnvClientID)
+	config.ClientSecret = env.GetOrFile(EnvClientSecret)
+	config.TenantID = env.GetOrFile(EnvTenantID)
 
 	return NewDNSProviderConfig(config)
 }

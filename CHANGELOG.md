@@ -1,5 +1,11 @@
 # Changelog
 
+## [v4.13.3] - 2023-07-25
+
+### Fixed:
+- **[dnsprovider]** azuredns: fix configuration from env vars
+- **[dnsprovider]** gcore: change API domain
+- 
 ## [v4.13.2] - 2023-07-21
 
 ### Fixed:

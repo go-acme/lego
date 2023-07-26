@@ -56,7 +56,7 @@ func TestLiveS3ProviderPresent(t *testing.T) {
 	// Need to wait a little bit before checking website
 	time.Sleep(1 * time.Second)
 
-	chlgPath := fmt.Sprintf("http://%s.s3-website.%s.amazonaws.com%s",
+	chlgPath := fmt.Sprintf("http://%s.s3.%s.amazonaws.com%s",
 		s3Bucket, envTest.GetValue("AWS_REGION"), http01.ChallengePath(token))
 
 	resp, err := http.Get(chlgPath)
@@ -68,4 +68,17 @@ func TestLiveS3ProviderPresent(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, []byte(keyAuth), data)
+
+	err = provider.CleanUp(domain, token, keyAuth)
+	require.NoError(t, err)
+
+	// Need to wait a little bit before checking website aghain
+	time.Sleep(1 * time.Second)
+
+	cleanupResp, err := http.Get(chlgPath)
+	require.NoError(t, err)
+
+	defer func() { _ = resp.Body.Close() }()
+
+	assert.Equal(t, cleanupResp.StatusCode, 404)
 }

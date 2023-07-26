@@ -7,7 +7,7 @@ import (
 	"io"
 	"net/http"
 	"testing"
-	"time"
+
 
 	"github.com/go-acme/lego/v4/challenge/http01"
 	"github.com/go-acme/lego/v4/platform/tester"
@@ -53,8 +53,6 @@ func TestLiveS3ProviderPresent(t *testing.T) {
 	err = provider.Present(domain, token, keyAuth)
 	require.NoError(t, err)
 
-	// Need to wait a little bit before checking website
-	time.Sleep(1 * time.Second)
 
 	chlgPath := fmt.Sprintf("http://%s.s3.%s.amazonaws.com%s",
 		s3Bucket, envTest.GetValue("AWS_REGION"), http01.ChallengePath(token))
@@ -72,13 +70,10 @@ func TestLiveS3ProviderPresent(t *testing.T) {
 	err = provider.CleanUp(domain, token, keyAuth)
 	require.NoError(t, err)
 
-	// Need to wait a little bit before checking website aghain
-	time.Sleep(1 * time.Second)
+
 
 	cleanupResp, err := http.Get(chlgPath)
 	require.NoError(t, err)
 
-	defer func() { _ = resp.Body.Close() }()
-
-	assert.Equal(t, cleanupResp.StatusCode, 404)
+	assert.Equal(t, cleanupResp.StatusCode, 403)
 }

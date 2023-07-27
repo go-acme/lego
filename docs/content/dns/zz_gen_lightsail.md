@@ -95,7 +95,7 @@ Alternatively, you can also set the `Resource` to `*` (wildcard), which allow to
 ## More information
 
 
-- [Go client](https://github.com/aws/aws-sdk-go/)
+- [Go client](https://github.com/aws/aws-sdk-go-v2)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/lightsail/lightsail.toml -->

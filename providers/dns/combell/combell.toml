@@ -2,7 +2,7 @@ Name = "Combell"
 Description = ''''''
 URL = "https://www.combell.com/"
 Code = "combell"
-Since = "v4.7.0"
+Since = "v4.14.0"
 
 Example = '''
 COMBELL_API_KEY=xxxxxxxxxxxxxxxxxxxxx \

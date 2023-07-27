@@ -31,6 +31,7 @@ func allDNSCodes() string {
 		"clouddns",
 		"cloudflare",
 		"cloudns",
+		"cloudru",
 		"cloudxns",
 		"conoha",
 		"constellix",
@@ -515,6 +516,29 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/cloudns`)
+
+	case "cloudru":
+		// generated from: providers/dns/cloudru/cloudru.toml
+		ew.writeln(`Configuration for Cloud.ru.`)
+		ew.writeln(`Code:	'cloudru'`)
+		ew.writeln(`Since:	'v4.14.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "CLOUDRU_KEY_ID":	Key ID (login)`)
+		ew.writeln(`	- "CLOUDRU_SECRET":	Key Secret`)
+		ew.writeln(`	- "CLOUDRU_SERVICE_INSTANCE_ID":	Service Instance ID (parentId)`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "CLOUDRU_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "CLOUDRU_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "CLOUDRU_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "CLOUDRU_SEQUENCE_INTERVAL":	Time between sequential requests`)
+		ew.writeln(`	- "CLOUDRU_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/cloudru`)
 
 	case "cloudxns":
 		// generated from: providers/dns/cloudxns/cloudxns.toml

@@ -1,0 +1,11 @@
+{
+  "zone_id": "59556fcd-95ff-451f-b49b-9732f21f944a",
+  "name": "www.example.com.",
+  "type": "TXT",
+  "values": [
+    "txt"
+  ],
+  "ttl": "3600",
+  "enables": true,
+  "readonly": false
+}

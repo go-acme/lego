@@ -1,0 +1,38 @@
+{
+  "items": [
+    {
+      "zone_id": "59556fcd-95ff-451f-b49b-9732f21f944a",
+      "name": "example.com.",
+      "type": "SOA",
+      "values": [
+        "cdns-ns01.sbercloud.ru. mail.sbercloud.ru 1 120 3600 604800 3600"
+      ],
+      "ttl": "3600",
+      "enables": true,
+      "readonly": true
+    },
+    {
+      "zone_id": "59556fcd-95ff-451f-b49b-9732f21f944a",
+      "name": "example.com.",
+      "type": "NS",
+      "values": [
+        "cdns-ns01.sbercloud.ru.",
+        "cdns-ns02.sbercloud.ru."
+      ],
+      "ttl": "3600",
+      "enables": true,
+      "readonly": true
+    },
+    {
+      "zone_id": "59556fcd-95ff-451f-b49b-9732f21f944a",
+      "name": "www.example.com.",
+      "type": "A",
+      "values": [
+        "8.8.8.8"
+      ],
+      "ttl": "3600",
+      "enables": true,
+      "readonly": false
+    }
+  ]
+}

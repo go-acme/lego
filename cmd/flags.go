@@ -87,6 +87,10 @@ func CreateFlags(defaultPath string) []cli.Flag {
 			Name:  "http.memcached-host",
 			Usage: "Set the memcached host(s) to use for HTTP-01 based challenges. Challenges will be written to all specified hosts.",
 		},
+		&cli.StringFlag{
+			Name:  "http.s3-bucket",
+			Usage: "Set the S3 bucket name to use for HTTP-01 based challenges. Challenges will be written to the S3 bucket.",
+		},
 		&cli.BoolFlag{
 			Name:  "tls",
 			Usage: "Use the TLS-ALPN-01 challenge to solve challenges. Can be mixed with other types of challenges.",

@@ -89,7 +89,7 @@ func CreateFlags(defaultPath string) []cli.Flag {
 		},
 		&cli.StringFlag{
 			Name:  "http.s3-bucket",
-			Usage: "Set the s3 bucket name to use for HTTP-01 based challenges. Challenges will be written to the s3 bucket.",
+			Usage: "Set the S3 bucket name to use for HTTP-01 based challenges. Challenges will be written to the S3 bucket.",
 		},
 		&cli.BoolFlag{
 			Name:  "tls",

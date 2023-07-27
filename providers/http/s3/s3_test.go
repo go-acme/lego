@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"testing"
-
 
 	"github.com/go-acme/lego/v4/challenge/http01"
 	"github.com/go-acme/lego/v4/platform/tester"
@@ -27,7 +27,7 @@ var envTest = tester.NewEnvTest(
 	"AWS_REGION",
 	"S3_BUCKET")
 
-func TestNewS3ProviderValid(t *testing.T) {
+func TestLiveNewHTTPProvider_Valid(t *testing.T) {
 	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
@@ -38,21 +38,22 @@ func TestNewS3ProviderValid(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestLiveS3ProviderPresent(t *testing.T) {
+func TestLiveNewHTTPProvider(t *testing.T) {
 	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
 
 	envTest.RestoreEnv()
 
-	s3Bucket := envTest.GetValue("S3_BUCKET")
+	s3Bucket := os.Getenv("S3_BUCKET")
 
 	provider, err := NewHTTPProvider(s3Bucket)
 	require.NoError(t, err)
 
+	// Present
+
 	err = provider.Present(domain, token, keyAuth)
 	require.NoError(t, err)
-
 
 	chlgPath := fmt.Sprintf("http://%s.s3.%s.amazonaws.com%s",
 		s3Bucket, envTest.GetValue("AWS_REGION"), http01.ChallengePath(token))
@@ -67,10 +68,10 @@ func TestLiveS3ProviderPresent(t *testing.T) {
 
 	assert.Equal(t, []byte(keyAuth), data)
 
+	// CleanUp
+
 	err = provider.CleanUp(domain, token, keyAuth)
 	require.NoError(t, err)
-
-
 
 	cleanupResp, err := http.Get(chlgPath)
 	require.NoError(t, err)

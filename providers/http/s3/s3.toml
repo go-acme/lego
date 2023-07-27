@@ -1,8 +1,8 @@
-Name = "Amazon Route S3"
+Name = "Amazon S3"
 Description = ''''''
 URL = "https://aws.amazon.com/s3/"
 Code = "s3"
-Since = "v4.13.4"
+Since = "v4.14.0"
 
 Example = '''
 AWS_ACCESS_KEY_ID=your_key_id \
@@ -29,9 +29,10 @@ See also: https://aws.github.io/aws-sdk-go-v2/docs/configuring-sdk/
 
 ### Broad privileges for testing purposes
 
-Will need to create an s3 bucket which has read permissions set for Everyone(public access)
-The s3 bucket doesn't require static website hosting to be enabled
-AWS_REGION must match the region where the s3 bucket is hosted
+Will need to create an S3 bucket which has read permissions set for Everyone (public access).
+The S3 bucket doesn't require static website hosting to be enabled.
+AWS_REGION must match the region where the s3 bucket is hosted.
+'''
 
 [Configuration]
   [Configuration.Credentials]
@@ -50,4 +51,4 @@ AWS_REGION must match the region where the s3 bucket is hosted
 [Links]
   API = "https://docs.aws.amazon.com/AmazonS3/latest/userguide//Welcome.html"
   GoClient = "https://docs.aws.amazon.com/sdk-for-go/"
-'''
+

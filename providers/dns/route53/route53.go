@@ -185,17 +185,29 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return nil
 	}
 
+	var toDelete []awstypes.ResourceRecord
+	for _, record := range records {
+		if deref(record.Value) == `"`+info.Value+`"` {
+			toDelete = append(toDelete, record)
+		}
+	}
+
+	if len(toDelete) == 0 {
+		return nil
+	}
+
 	recordSet := &awstypes.ResourceRecordSet{
 		Name:            aws.String(info.EffectiveFQDN),
 		Type:            "TXT",
 		TTL:             aws.Int64(int64(d.config.TTL)),
-		ResourceRecords: records,
+		ResourceRecords: toDelete,
 	}
 
 	err = d.changeRecord(ctx, awstypes.ChangeActionDelete, hostedZoneID, recordSet)
 	if err != nil {
 		return fmt.Errorf("route53: %w", err)
 	}
+
 	return nil
 }
 

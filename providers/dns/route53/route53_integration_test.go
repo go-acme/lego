@@ -1,11 +1,12 @@
 package route53
 
 import (
+	"context"
 	"testing"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/route53"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/route53"
 	"github.com/stretchr/testify/require"
 )
 
@@ -26,9 +27,13 @@ func TestLiveTTL(t *testing.T) {
 
 	// we need a separate R53 client here as the one in the DNS provider is unexported.
 	fqdn := "_acme-challenge." + domain + "."
-	sess, err := session.NewSession()
+
+	ctx := context.Background()
+
+	cfg, err := awsconfig.LoadDefaultConfig(ctx)
 	require.NoError(t, err)
-	svc := route53.New(sess)
+
+	svc := route53.NewFromConfig(cfg)
 
 	defer func() {
 		errC := provider.CleanUp(domain, "foo", "bar")
@@ -37,17 +42,17 @@ func TestLiveTTL(t *testing.T) {
 		}
 	}()
 
-	zoneID, err := provider.getHostedZoneID(fqdn)
+	zoneID, err := provider.getHostedZoneID(context.Background(), fqdn)
 	require.NoError(t, err)
 
 	params := &route53.ListResourceRecordSetsInput{
 		HostedZoneId: aws.String(zoneID),
 	}
-	resp, err := svc.ListResourceRecordSets(params)
+	resp, err := svc.ListResourceRecordSets(ctx, params)
 	require.NoError(t, err)
 
 	for _, v := range resp.ResourceRecordSets {
-		if aws.StringValue(v.Name) == fqdn && aws.StringValue(v.Type) == "TXT" && aws.Int64Value(v.TTL) == 10 {
+		if deref(v.Name) == fqdn && v.Type == "TXT" && deref(v.TTL) == 10 {
 			return
 		}
 	}

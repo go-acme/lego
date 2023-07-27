@@ -140,4 +140,4 @@ Replace `Z11111112222222333333` with your hosted zone ID and `example.com` with 
 
 [Links]
   API = "https://docs.aws.amazon.com/Route53/latest/APIReference/API_Operations_Amazon_Route_53.html"
-  GoClient = "https://github.com/aws/aws-sdk-go/aws"
+  GoClient = "https://github.com/aws/aws-sdk-go-v2"

@@ -134,6 +134,7 @@ func allDNSCodes() string {
 		"websupport",
 		"wedos",
 		"yandex",
+		"yandex360",
 		"yandexcloud",
 		"zoneee",
 		"zonomi",
@@ -2699,6 +2700,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/yandex`)
+
+	case "yandex360":
+		// generated from: providers/dns/yandex360/yandex360.toml
+		ew.writeln(`Configuration for Yandex 360.`)
+		ew.writeln(`Code:	'yandex360'`)
+		ew.writeln(`Since:	'v4.14.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "YANDEX360_OAUTH_TOKEN":	The OAuth Token`)
+		ew.writeln(`	- "YANDEX360_ORG_ID":	The organization ID`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "YANDEX360_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "YANDEX360_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "YANDEX360_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "YANDEX360_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/yandex360`)
 
 	case "yandexcloud":
 		// generated from: providers/dns/yandexcloud/yandexcloud.toml

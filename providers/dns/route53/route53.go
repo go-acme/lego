@@ -176,26 +176,43 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("failed to determine Route 53 hosted zone ID: %w", err)
 	}
 
-	records, err := d.getExistingRecordSets(ctx, hostedZoneID, info.EffectiveFQDN)
+	existingRecords, err := d.getExistingRecordSets(ctx, hostedZoneID, info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("route53: %w", err)
 	}
 
-	if len(records) == 0 {
+	if len(existingRecords) == 0 {
 		return nil
 	}
+
+	var nonLegoRecords []awstypes.ResourceRecord
+	for _, record := range existingRecords {
+		if deref(record.Value) != `"`+info.Value+`"` {
+			nonLegoRecords = append(nonLegoRecords, record)
+		}
+	}
+
+	action := awstypes.ChangeActionUpsert
 
 	recordSet := &awstypes.ResourceRecordSet{
 		Name:            aws.String(info.EffectiveFQDN),
 		Type:            "TXT",
 		TTL:             aws.Int64(int64(d.config.TTL)),
-		ResourceRecords: records,
+		ResourceRecords: nonLegoRecords,
 	}
 
-	err = d.changeRecord(ctx, awstypes.ChangeActionDelete, hostedZoneID, recordSet)
+	// If the records are only records created by lego.
+	if len(nonLegoRecords) == 0 {
+		action = awstypes.ChangeActionDelete
+
+		recordSet.ResourceRecords = existingRecords
+	}
+
+	err = d.changeRecord(ctx, action, hostedZoneID, recordSet)
 	if err != nil {
 		return fmt.Errorf("route53: %w", err)
 	}
+
 	return nil
 }
 

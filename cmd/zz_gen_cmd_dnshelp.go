@@ -32,6 +32,7 @@ func allDNSCodes() string {
 		"cloudns",
 		"cloudru",
 		"cloudxns",
+		"combell",
 		"conoha",
 		"constellix",
 		"corenetworks",
@@ -581,6 +582,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/cloudxns`)
+
+	case "combell":
+		// generated from: providers/dns/combell/combell.toml
+		ew.writeln(`Configuration for Combell.`)
+		ew.writeln(`Code:	'combell'`)
+		ew.writeln(`Since:	'v4.20.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "COMBELL_API_KEY":	The API key`)
+		ew.writeln(`	- "COMBELL_API_SECRET":	The API secret`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "COMBELL_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "COMBELL_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "COMBELL_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "COMBELL_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/combell`)
 
 	case "conoha":
 		// generated from: providers/dns/conoha/conoha.toml

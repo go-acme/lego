@@ -37,8 +37,9 @@ func CreateFlags(defaultPath string) []cli.Flag {
 			Usage:   "Certificate signing request filename, if an external CSR is to be used.",
 		},
 		&cli.BoolFlag{
-			Name:  "eab",
-			Usage: "Use External Account Binding for account registration. Requires --kid and --hmac.",
+			Name:    "eab",
+			EnvVars: []string{"LEGO_EAB"},
+			Usage:   "Use External Account Binding for account registration. Requires --kid and --hmac.",
 		},
 		&cli.StringFlag{
 			Name:    "kid",

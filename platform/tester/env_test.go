@@ -149,6 +149,22 @@ func TestEnvTest(t *testing.T) {
 			},
 		},
 		{
+			desc: "WithLiveTestRequirements with domain as requirement",
+			envVars: map[string]string{
+				envVar01: "A",
+				envVar02: "B",
+			},
+			envTestSetup: func() *tester.EnvTest {
+				return tester.NewEnvTest(envVar01, envVar02).WithDomain(envVarDomain).WithLiveTestRequirements(envVar02, envVarDomain)
+			},
+			expected: func(t *testing.T, envTest *tester.EnvTest) {
+				assert.True(t, envTest.IsLiveTest())
+				assert.Equal(t, "A", envTest.GetValue(envVar01))
+				assert.Equal(t, "B", envTest.GetValue(envVar02))
+				assert.Equal(t, "", envTest.GetDomain())
+			},
+		},
+		{
 			desc: "WithLiveTestRequirements non required var missing",
 			envVars: map[string]string{
 				envVar02: "B",

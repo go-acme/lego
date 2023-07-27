@@ -51,6 +51,11 @@ func (e *EnvTest) WithLiveTestRequirements(keys ...string) *EnvTest {
 			panic(fmt.Sprintf("Unauthorized action, the env var %s is not managed or it's not the key of the domain.", key))
 		}
 
+		if e.domainKey == key {
+			countValuedVars++
+			continue
+		}
+
 		if _, ok := e.values[key]; ok {
 			countValuedVars++
 		}

@@ -1,24 +1,26 @@
-// Package yandex implements a DNS provider for solving the DNS-01 challenge using Yandex PDD.
-package yandex
+// Package yandex360 implements a DNS provider for solving the DNS-01 challenge using Yandex 360.
+package yandex360
 
 import (
 	"context"
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
+	"sync"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/yandex/internal"
-	"github.com/miekg/dns"
+	"github.com/go-acme/lego/v4/providers/dns/yandex360/internal"
 )
 
 // Environment variables names.
 const (
-	envNamespace = "YANDEX_"
+	envNamespace = "YANDEX360_"
 
-	EnvPddToken = envNamespace + "PDD_TOKEN"
+	EnvOAuthToken = envNamespace + "OAUTH_TOKEN"
+	EnvOrgID      = envNamespace + "ORG_ID"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -28,7 +30,8 @@ const (
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	PddToken           string
+	OAuthToken         string
+	OrgID              int64
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
@@ -51,34 +54,40 @@ func NewDefaultConfig() *Config {
 type DNSProvider struct {
 	client *internal.Client
 	config *Config
+
+	recordIDs   map[string]int64
+	recordIDsMu sync.Mutex
 }
 
-// NewDNSProvider returns a DNSProvider instance configured for Yandex.
+// NewDNSProvider returns a DNSProvider instance configured for Yandex 360.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvPddToken)
+	values, err := env.Get(EnvOAuthToken, EnvOrgID)
 	if err != nil {
-		return nil, fmt.Errorf("yandex: %w", err)
+		return nil, fmt.Errorf("yandex360: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.PddToken = values[EnvPddToken]
+	config.OAuthToken = values[EnvOAuthToken]
+
+	orgID, err := strconv.ParseInt(values[EnvOrgID], 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("yandex360: %w", err)
+	}
+
+	config.OrgID = orgID
 
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderConfig return a DNSProvider instance configured for Yandex.
+// NewDNSProviderConfig return a DNSProvider instance configured for Yandex 360.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
-		return nil, errors.New("yandex: the configuration of the DNS provider is nil")
+		return nil, errors.New("yandex360: the configuration of the DNS provider is nil")
 	}
 
-	if config.PddToken == "" {
-		return nil, fmt.Errorf("yandex: credentials missing")
-	}
-
-	client, err := internal.NewClient(config.PddToken)
+	client, err := internal.NewClient(config.OAuthToken, config.OrgID)
 	if err != nil {
-		return nil, fmt.Errorf("yandex: %w", err)
+		return nil, fmt.Errorf("yandex360: %w", err)
 	}
 
 	if config.HTTPClient != nil {
@@ -92,23 +101,33 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	rootDomain, subDomain, err := splitDomain(info.EffectiveFQDN)
+	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(info.EffectiveFQDN))
 	if err != nil {
-		return fmt.Errorf("yandex: %w", err)
+		return fmt.Errorf("yandex360: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
-	data := internal.Record{
-		Domain:    rootDomain,
-		SubDomain: subDomain,
-		Type:      "TXT",
-		TTL:       d.config.TTL,
-		Content:   info.Value,
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
+	if err != nil {
+		return fmt.Errorf("yandex360: %w", err)
 	}
 
-	_, err = d.client.AddRecord(context.Background(), data)
-	if err != nil {
-		return fmt.Errorf("yandex: %w", err)
+	authZone = dns01.UnFqdn(authZone)
+
+	record := internal.Record{
+		Name: subDomain,
+		TTL:  d.config.TTL,
+		Text: info.Value,
+		Type: "TXT",
 	}
+
+	newRecord, err := d.client.AddRecord(context.Background(), authZone, record)
+	if err != nil {
+		return fmt.Errorf("yandex360: add DNS record: %w", err)
+	}
+
+	d.recordIDsMu.Lock()
+	d.recordIDs[token] = newRecord.ID
+	d.recordIDsMu.Unlock()
 
 	return nil
 }
@@ -117,40 +136,30 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	rootDomain, subDomain, err := splitDomain(info.EffectiveFQDN)
+	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(info.EffectiveFQDN))
 	if err != nil {
-		return fmt.Errorf("yandex: %w", err)
+		return fmt.Errorf("yandex360: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
-	ctx := context.Background()
+	authZone = dns01.UnFqdn(authZone)
 
-	records, err := d.client.GetRecords(ctx, rootDomain)
+	d.recordIDsMu.Lock()
+	recordID, ok := d.recordIDs[token]
+	d.recordIDsMu.Unlock()
+
+	if !ok {
+		return fmt.Errorf("yandex360: unknown recordID for %q", info.EffectiveFQDN)
+	}
+
+	err = d.client.DeleteRecord(context.Background(), authZone, recordID)
 	if err != nil {
-		return fmt.Errorf("yandex: %w", err)
+		return fmt.Errorf("yandex360: delete DNS record: %w", err)
 	}
 
-	var record *internal.Record
-	for _, rcd := range records {
-		rcd := rcd
-		if rcd.Type == "TXT" && rcd.SubDomain == subDomain && rcd.Content == info.Value {
-			record = &rcd
-			break
-		}
-	}
+	d.recordIDsMu.Lock()
+	delete(d.recordIDs, token)
+	d.recordIDsMu.Unlock()
 
-	if record == nil {
-		return fmt.Errorf("yandex: TXT record not found for domain: %s", domain)
-	}
-
-	data := internal.Record{
-		ID:     record.ID,
-		Domain: rootDomain,
-	}
-
-	_, err = d.client.RemoveRecord(ctx, data)
-	if err != nil {
-		return fmt.Errorf("yandex: %w", err)
-	}
 	return nil
 }
 
@@ -158,20 +167,4 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
-}
-
-func splitDomain(full string) (string, string, error) {
-	split := dns.Split(full)
-	if len(split) < 2 {
-		return "", "", fmt.Errorf("unsupported domain: %s", full)
-	}
-
-	if len(split) == 2 {
-		return full, "", nil
-	}
-
-	domain := full[split[len(split)-2]:]
-	subDomain := full[:split[len(split)-2]-1]
-
-	return domain, subDomain, nil
 }

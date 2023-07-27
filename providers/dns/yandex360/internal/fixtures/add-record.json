@@ -1,0 +1,7 @@
+{
+  "recordID": 789465,
+  "name": "foo",
+  "text": "_acme-challenge",
+  "ttl": 60,
+  "type": "txtxtxt"
+}

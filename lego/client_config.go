@@ -29,7 +29,7 @@ const (
 
 	// caServerNameEnvVar is the environment variable name that can be used to
 	// specify the CA server name that can be used to
-	// authenticate an ACME server with a HTTPS certificate not issued by a CA in
+	// authenticate an ACME server with an HTTPS certificate not issued by a CA in
 	// the system-wide trusted root list.
 	caServerNameEnvVar = "LEGO_CA_SERVER_NAME"
 

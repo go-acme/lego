@@ -113,7 +113,7 @@ func evaluateBody(body string, hostname string) error {
 	case codeAbuse:
 		return fmt.Errorf("%s: blocked hostname for abuse: %s", body, hostname)
 	case codeBadAgent:
-		return fmt.Errorf("%s: user agent not sent or HTTP method not recognized; open an issue on go-acme/lego on Github", body)
+		return fmt.Errorf("%s: user agent not sent or HTTP method not recognized; open an issue on go-acme/lego on GitHub", body)
 	case codeBadAuth:
 		return fmt.Errorf("%s: wrong authentication token provided for TXT record %s", body, hostname)
 	case codeInterval:

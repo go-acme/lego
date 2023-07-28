@@ -18,17 +18,16 @@ import (
 )
 
 // Notes about namecheap's tool API:
-// 1. Using the API requires registration. Once registered, use your account
-//    name and API key to access the API.
-// 2. There is no API to add or modify a single DNS record. Instead you must
-//    read the entire list of records, make modifications, and then write the
-//    entire updated list of records.  (Yuck.)
-// 3. Namecheap's DNS updates can be slow to propagate. I've seen them take
-//    as long as an hour.
-// 4. Namecheap requires you to whitelist the IP address from which you call
-//    its APIs. It also requires all API calls to include the whitelisted IP
-//    address as a form or query string value. This code uses a namecheap
-//    service to query the client's IP address.
+// 1. Using the API requires registration.
+//    Once registered, use your account name and API key to access the API.
+// 2. There is no API to add or modify a single DNS record.
+//    Instead, you must read the entire list of records, make modifications,
+//    and then write the entire updated list of records. (Yuck.)
+// 3. Namecheap's DNS updates can be slow to propagate.
+//    I've seen them take as long as an hour.
+// 4. Namecheap requires you to whitelist the IP address from which you call its APIs.
+//    It also requires all API calls to include the whitelisted IP address as a form or query string value.
+//    This code uses a namecheap service to query the client's IP address.
 
 // Environment variables names.
 const (

@@ -71,12 +71,12 @@ type Meta struct {
 
 	// externalAccountRequired (optional, boolean):
 	// If this field is present and set to "true",
-	// then the CA requires that all new- account requests include an "externalAccountBinding" field
+	// then the CA requires that all new-account requests include an "externalAccountBinding" field
 	// associating the new account with an external account.
 	ExternalAccountRequired bool `json:"externalAccountRequired"`
 }
 
-// ExtendedAccount a extended Account.
+// ExtendedAccount an extended Account.
 type ExtendedAccount struct {
 	Account
 	// Contains the value of the response header `Location`
@@ -91,7 +91,7 @@ type Account struct {
 	// The status of this account.
 	// Possible values are: "valid", "deactivated", and "revoked".
 	// The value "deactivated" should be used to indicate client-initiated deactivation
-	// whereas "revoked" should be used to indicate server- initiated deactivation. (See Section 7.1.6)
+	// whereas "revoked" should be used to indicate server-initiated deactivation. (See Section 7.1.6)
 	Status string `json:"status,omitempty"`
 
 	// contact (optional, array of string):
@@ -321,7 +321,7 @@ type RenewalInfoResponse struct {
 	// SuggestedWindow contains two fields, start and end,
 	// whose values are timestamps which bound the window of time in which the CA recommends renewing the certificate.
 	SuggestedWindow Window `json:"suggestedWindow"`
-	//	ExplanationURL is a optional URL pointing to a page which may explain why the suggested renewal window is what it is.
+	//	ExplanationURL is an optional URL pointing to a page which may explain why the suggested renewal window is what it is.
 	//	For example, it may be a page explaining the CA's dynamic load-balancing strategy,
 	//	or a page documenting which certificates are affected by a mass revocation event.
 	//	Callers SHOULD provide this URL to their operator, if present.

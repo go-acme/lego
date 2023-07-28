@@ -204,7 +204,7 @@ func getAuthorizer(config *Config) (autorest.Authorizer, error) {
 	return auth.NewAuthorizerFromEnvironment()
 }
 
-// Fetches metadata from environment or he instance metadata service.
+// Fetches metadata from environment or the instance metadata service.
 // borrowed from https://github.com/Microsoft/azureimds/blob/master/imdssample.go
 func getMetadata(config *Config, field string) (string, error) {
 	metadataEndpoint := config.MetadataEndpoint

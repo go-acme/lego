@@ -7,7 +7,7 @@ To ensure a great and easy experience for everyone, please review the few guidel
 
 - Use the issue search to see if the issue has already been reported.
 - Also look for closed issues to see if your issue has already been fixed.
-- If both of the above do not apply create a new issue and include as much information as possible.
+- If both of the above do not apply, create a new issue and include as much information as possible.
 
 Bug reports should include all information a person could need to reproduce your problem without the need to
 follow up for more information. If possible, provide detailed steps for us to reproduce it, the expected behaviour and the actual behaviour.

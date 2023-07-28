@@ -40,7 +40,7 @@ func (s *ProviderServer) GetAddress() string {
 	return net.JoinHostPort(s.iface, s.port)
 }
 
-// Present generates a certificate with a SHA-256 digest of the keyAuth provided
+// Present generates a certificate with an SHA-256 digest of the keyAuth provided
 // as the acmeValidation-v1 extension value to conform to the ACME-TLS-ALPN spec.
 func (s *ProviderServer) Present(domain, token, keyAuth string) error {
 	if s.port == "" {

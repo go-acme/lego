@@ -62,7 +62,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
-Akamai credentials are automatically detected in the following locations and prioritized in the following order:
+Akamai's credentials are automatically detected in the following locations and prioritized in the following order:
 
 1. Section-specific environment variables (where `{SECTION}` is specified using `AKAMAI_EDGERC_SECTION`):
   - `AKAMAI_{SECTION}_HOST`

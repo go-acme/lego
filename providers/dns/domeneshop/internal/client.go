@@ -17,7 +17,7 @@ import (
 const defaultBaseURL string = "https://api.domeneshop.no/v0"
 
 // Client implements a very simple wrapper around the Domeneshop API.
-// For now it will only deal with adding and removing TXT records, as required by ACME providers.
+// For now, it will only deal with adding and removing TXT records, as required by ACME providers.
 // https://api.domeneshop.no/docs/
 type Client struct {
 	apiToken  string

@@ -123,7 +123,7 @@ so it is recommended to narrow them down as much as possible if you are using th
 
 ### Least privilege policy for production purposes
 
-The following AWS IAM policy document describes least privilege permissions required for lego to complete the DNS challenge.
+The following AWS IAM policy document describes the least privilege permissions required for lego to complete the DNS challenge.
 Write access is limited to a specified hosted zone's DNS TXT records with a key of `_acme-challenge.example.com`.
 Replace `Z11111112222222333333` with your hosted zone ID and `example.com` with your domain name to use this policy.
 

@@ -63,7 +63,7 @@ func (n *Manager) getNonce() (string, error) {
 	return GetFromResponse(resp)
 }
 
-// GetFromResponse Extracts a nonce from a HTTP response.
+// GetFromResponse Extracts a nonce from an HTTP response.
 func GetFromResponse(resp *http.Response) (string, error) {
 	if resp == nil {
 		return "", errors.New("nil response")

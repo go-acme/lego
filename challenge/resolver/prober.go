@@ -128,7 +128,7 @@ func sequentialSolve(authSolvers []*selectedAuthSolver, failures obtainError) {
 }
 
 func parallelSolve(authSolvers []*selectedAuthSolver, failures obtainError) {
-	// For all valid preSolvers, first submit the challenges so they have max time to propagate
+	// For all valid preSolvers, first submit the challenges, so they have max time to propagate
 	for _, authSolver := range authSolvers {
 		authz := authSolver.authz
 		if solvr, ok := authSolver.solver.(preSolver); ok {

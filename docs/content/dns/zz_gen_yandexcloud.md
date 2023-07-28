@@ -52,7 +52,7 @@ lego --email you@example.com --dns yandexcloud --domains "example.org" --domains
 | Environment Variable Name | Description |
 |-----------------------|-------------|
 | `YANDEX_CLOUD_FOLDER_ID` | The string id of folder (aka project) in Yandex Cloud |
-| `YANDEX_CLOUD_IAM_TOKEN` | The base64 encoded json which contains inforamtion about iam token of serivce account with `dns.admin` permissions |
+| `YANDEX_CLOUD_IAM_TOKEN` | The base64 encoded json which contains information about iam token of serivce account with `dns.admin` permissions |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{< ref "dns#configuration-and-credentials" >}}).

@@ -1,4 +1,4 @@
-// Package s3 implements a HTTP provider for solving the HTTP-01 challenge using web server's root path.
+// Package s3 implements an HTTP provider for solving the HTTP-01 challenge using AWS S3.
 package s3
 
 import (

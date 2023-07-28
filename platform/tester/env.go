@@ -48,7 +48,7 @@ func (e *EnvTest) WithLiveTestRequirements(keys ...string) *EnvTest {
 
 	for _, key := range keys {
 		if e.domainKey != key && !e.isManagedKey(key) {
-			panic(fmt.Sprintf("Unauthorized action, the env var %s is not managed or it's not the key of the domain.", key))
+			panic(fmt.Sprintf("Unauthorized action, the env var %s is not managed, or it's not the key of the domain.", key))
 		}
 
 		if e.domainKey == key {

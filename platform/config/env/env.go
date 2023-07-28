@@ -95,7 +95,7 @@ func getOneWithFallback(main string, names ...string) (string, string) {
 }
 
 // GetOrDefaultInt returns the given environment variable value as an integer.
-// Returns the default if the envvar cannot be coopered to an int, or is not found.
+// Returns the default if the env var cannot be coopered to an int, or is not found.
 func GetOrDefaultInt(envVar string, defaultValue int) int {
 	v, err := strconv.Atoi(GetOrFile(envVar))
 	if err != nil {
@@ -105,8 +105,8 @@ func GetOrDefaultInt(envVar string, defaultValue int) int {
 	return v
 }
 
-// GetOrDefaultSecond returns the given environment variable value as an time.Duration (second).
-// Returns the default if the envvar cannot be coopered to an int, or is not found.
+// GetOrDefaultSecond returns the given environment variable value as a time.Duration (second).
+// Returns the default if the env var cannot be coopered to an int, or is not found.
 func GetOrDefaultSecond(envVar string, defaultValue time.Duration) time.Duration {
 	v := GetOrDefaultInt(envVar, -1)
 	if v < 0 {
@@ -117,7 +117,7 @@ func GetOrDefaultSecond(envVar string, defaultValue time.Duration) time.Duration
 }
 
 // GetOrDefaultString returns the given environment variable value as a string.
-// Returns the default if the envvar cannot be find.
+// Returns the default if the env var cannot be found.
 func GetOrDefaultString(envVar, defaultValue string) string {
 	v := GetOrFile(envVar)
 	if v == "" {
@@ -128,7 +128,7 @@ func GetOrDefaultString(envVar, defaultValue string) string {
 }
 
 // GetOrDefaultBool returns the given environment variable value as a boolean.
-// Returns the default if the envvar cannot be coopered to a boolean, or is not found.
+// Returns the default if the env var cannot be coopered to a boolean, or is not found.
 func GetOrDefaultBool(envVar string, defaultValue bool) bool {
 	v, err := strconv.ParseBool(GetOrFile(envVar))
 	if err != nil {

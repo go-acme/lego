@@ -108,7 +108,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	defer func() {
 		errL := d.client.Account.Logout()
 		if errL != nil {
-			log.Infof("inwx: failed to logout: %v", errL)
+			log.Infof("inwx: failed to log out: %v", errL)
 		}
 	}()
 
@@ -158,7 +158,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	defer func() {
 		errL := d.client.Account.Logout()
 		if errL != nil {
-			log.Infof("inwx: failed to logout: %v", errL)
+			log.Infof("inwx: failed to log out: %v", errL)
 		}
 	}()
 
@@ -199,7 +199,7 @@ func (d *DNSProvider) twoFactorAuth(info *goinwx.LoginResponse) error {
 	}
 
 	if d.config.SharedSecret == "" {
-		return errors.New("two factor authentication but no shared secret is given")
+		return errors.New("two-factor authentication but no shared secret is given")
 	}
 
 	tan, err := totp.GenerateCode(d.config.SharedSecret, time.Now())

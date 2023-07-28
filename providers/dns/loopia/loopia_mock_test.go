@@ -149,10 +149,10 @@ func TestDNSProvider_Cleanup(t *testing.T) {
 			callGetTXTRecords:    true,
 			callRemoveSubdomain:  true,
 
-			expectedError: `loopia: failed to remove sub-domain: unknown error: "UNKNOWN_ERROR"`,
+			expectedError: `loopia: failed to remove subdomain: unknown error: "UNKNOWN_ERROR"`,
 		},
 		{
-			desc: "Dont call removeSubdomain when records",
+			desc: "Don't call removeSubdomain when records",
 
 			getTXTRecordsReturn: []internal.RecordObj{{Type: "TXT", Rdata: "LEFTOVER"}},
 			callAddTXTRecord:    true,

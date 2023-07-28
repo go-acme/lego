@@ -1,0 +1,17 @@
+{
+  "apiversion": 3,
+  "func": "mass_edit_zone",
+  "module": "DNS",
+  "result": {
+    "data": {
+      "new_serial": 2021031903
+    },
+    "errors": null,
+    "messages": null,
+    "metadata": {
+      "transformed": 1
+    },
+    "status": 1,
+    "warnings": null
+  }
+}

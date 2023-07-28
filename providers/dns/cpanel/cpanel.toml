@@ -1,0 +1,29 @@
+Name = "CPanel"
+Description = ''''''
+URL = "https://cpanel.net/"
+Code = "cpanel"
+Since = "v4.14.0"
+
+Example = '''
+CPANEL_USERNAME = "yyyy"
+CPANEL_TOKEN = "xxxx"
+CPANEL_BASE_URL = "https://somecpanel.com:2083/execute" \
+CPANEL_NAMESERVER = "ns1.somecpanel.com:53" \
+lego --email you@example.com --dns cpanel --domains my.example.org run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    CPANEL_USERNAME = "username (Default: gr8)"
+    CPANEL_TOKEN = "CPanal token"
+    CPANEL_BASE_URL = "API server URL"
+    CPANEL_NAMESERVER = "Nameserver"
+  [Configuration.Additional]
+    CPANEL_POLLING_INTERVAL = "Time between DNS propagation check"
+    CPANEL_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
+    CPANEL_TTL = "The TTL of the TXT record used for the DNS challenge"
+    CPANEL_HTTP_TIMEOUT = "API request timeout"
+    CPANEL_REGION = "The region"
+
+[Links]
+  API = "https://api.docs.cpanel.net/openapi/cpanel/tag/DNS/"

@@ -1,0 +1,15 @@
+{
+  "apiversion": 3,
+  "func": "parse_zone",
+  "module": "DNS",
+  "result": {
+    "data": null,
+    "errors": ["a", "b", "c"],
+    "messages": ["d", "e", "f"],
+    "metadata": {
+      "transformed": 0
+    },
+    "status": 0,
+    "warnings": null
+  }
+}

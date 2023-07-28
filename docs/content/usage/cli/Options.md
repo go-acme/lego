@@ -38,7 +38,7 @@ By default, lego assumes it is able to bind to ports 80 and 443 to solve challen
 If this is not possible in your environment, you can use the `--http.port` and `--tls.port` options to instruct
 lego to listen on that interface:port for any incoming challenges.
 
-If you are using this option, make sure you proxy all the following traffic to these ports.
+If you are using either of these options, make sure you setup a proxy to redirect traffic to the chosen ports.
 
 **HTTP Port:** All plaintext HTTP requests to port **80** which begin with a request path of `/.well-known/acme-challenge/` for the HTTP challenge[^header].
 

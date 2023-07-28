@@ -14,7 +14,7 @@ code!!! The CA's private key is **public** and anyone can use it to issue
 certificates that will be trusted by a system with the Pebble CA in the trust
 store.
 
-To re-create all the Pebble certificates run:
+To re-create all certificates used by Pebble, run:
 
     minica -ca-cert pebble.minica.pem \
            -ca-key pebble.minica.key.pem \

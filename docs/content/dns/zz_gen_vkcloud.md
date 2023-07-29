@@ -61,7 +61,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
-## Credential inforamtion
+## Credential information
 
 You can find all required and additional information on ["Project/Keys" page](https://mcs.mail.ru/app/en/project/keys) of your cloud.
 

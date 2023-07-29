@@ -200,7 +200,7 @@ func (c *Client) LookupViewID(ctx context.Context, configName, viewName string) 
 	return view.ID, nil
 }
 
-// LookupParentZoneID Return the entityId of the parent zone by recursing from the root view.
+// LookupParentZoneID returns the entityId of the parent zone by iterating through the root labels.
 // Also return the simple name of the host.
 func (c *Client) LookupParentZoneID(ctx context.Context, viewID uint, fqdn string) (uint, string, error) {
 	if fqdn == "" {

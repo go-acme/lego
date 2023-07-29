@@ -292,7 +292,7 @@ func (c *Certifier) getForCSR(domains []string, order acme.ExtendedOrder, bundle
 	}
 
 	if respOrder.Status == acme.StatusValid {
-		// if the certificate is available right away, short cut!
+		// if the certificate is available right away, shortcut!
 		ok, errR := c.checkResponse(respOrder, certRes, bundle, preferredChain)
 		if errR != nil {
 			return nil, errR

@@ -1,4 +1,4 @@
-// Package httpreq implements a DNS provider for solving the DNS-01 challenge through a HTTP server.
+// Package httpreq implements a DNS provider for solving the DNS-01 challenge through an HTTP server.
 package httpreq
 
 import (

@@ -1,4 +1,4 @@
-// Package webroot implements a HTTP provider for solving the HTTP-01 challenge using web server's root path.
+// Package webroot implements an HTTP provider for solving the HTTP-01 challenge using web server's root path.
 package webroot
 
 import (

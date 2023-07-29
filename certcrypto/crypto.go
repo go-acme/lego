@@ -84,7 +84,7 @@ func ParsePEMBundle(bundle []byte) ([]*x509.Certificate, error) {
 // ParsePEMPrivateKey parses a private key from key, which is a PEM block.
 // Borrowed from Go standard library, to handle various private key and PEM block types.
 // https://github.com/golang/go/blob/693748e9fa385f1e2c3b91ca9acbb6c0ad2d133d/src/crypto/tls/tls.go#L291-L308
-// https://github.com/golang/go/blob/693748e9fa385f1e2c3b91ca9acbb6c0ad2d133d/src/crypto/tls/tls.go#L238)
+// https://github.com/golang/go/blob/693748e9fa385f1e2c3b91ca9acbb6c0ad2d133d/src/crypto/tls/tls.go#L238
 func ParsePEMPrivateKey(key []byte) (crypto.PrivateKey, error) {
 	keyBlockDER, _ := pem.Decode(key)
 	if keyBlockDER == nil {

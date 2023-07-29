@@ -34,11 +34,11 @@ To run the CLI without `sudo`, you have four options:
 
 ## Port Usage
 
-By default lego assumes it is able to bind to ports 80 and 443 to solve challenges.
+By default, lego assumes it is able to bind to ports 80 and 443 to solve challenges.
 If this is not possible in your environment, you can use the `--http.port` and `--tls.port` options to instruct
 lego to listen on that interface:port for any incoming challenges.
 
-If you are using this option, make sure you proxy all of the following traffic to these ports.
+If you are using either of these options, make sure you setup a proxy to redirect traffic to the chosen ports.
 
 **HTTP Port:** All plaintext HTTP requests to port **80** which begin with a request path of `/.well-known/acme-challenge/` for the HTTP challenge[^header].
 
@@ -77,7 +77,7 @@ Remember that some ACME providers impose a rate limit on certain actions (at the
 There are also situations, where this verification step doesn't work as expected:
 
 - A "split DNS" setup gives different answers to clients on the internal network (Lego) vs. on the public internet (Let's Encrypt).
-- With "hidden master" setups, Lego may be able to directly talk to the primary DNS server, while the `_acme-challenge` record might not have fully propagate to the (public) secondary servers, yet.
+- With "hidden master" setups, Lego may be able to directly talk to the primary DNS server, while the `_acme-challenge` record might not have fully propagated to the (public) secondary servers, yet.
 
 The effect is the same: Lego determined the challenge token to be installed correctly, while Let's Encrypt has a different view, and rejects the certificate order.
 

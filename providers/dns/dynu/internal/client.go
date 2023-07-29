@@ -110,7 +110,7 @@ func (c Client) GetRootDomain(ctx context.Context, hostname string) (*DNSHostnam
 	return &apiResp, nil
 }
 
-// doRetry the API is really unstable so we need to retry on EOF.
+// doRetry the API is really unstable, so we need to retry on EOF.
 func (c Client) doRetry(ctx context.Context, method, uri string, body []byte, result any) error {
 	operation := func() error {
 		return c.do(ctx, method, uri, body, result)

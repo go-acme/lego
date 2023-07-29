@@ -1310,7 +1310,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "SOFTLAYER_API_KEY":	Classic Infrastructure API key`)
-		ew.writeln(`	- "SOFTLAYER_USERNAME":	User name (IBM Cloud is <accountID>_<emailAddress>)`)
+		ew.writeln(`	- "SOFTLAYER_USERNAME":	Username (IBM Cloud is <accountID>_<emailAddress>)`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
@@ -2709,7 +2709,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "YANDEX_CLOUD_FOLDER_ID":	The string id of folder (aka project) in Yandex Cloud`)
-		ew.writeln(`	- "YANDEX_CLOUD_IAM_TOKEN":	The base64 encoded json which contains inforamtion about iam token of serivce account with 'dns.admin' permissions`)
+		ew.writeln(`	- "YANDEX_CLOUD_IAM_TOKEN":	The base64 encoded json which contains information about iam token of serivce account with 'dns.admin' permissions`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)

@@ -201,5 +201,5 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		}
 	}
 
-	return fmt.Errorf("nicmanager: no record found to cleanup")
+	return fmt.Errorf("nicmanager: no record found to clean up")
 }

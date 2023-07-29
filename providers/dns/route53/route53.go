@@ -95,7 +95,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderConfig(NewDefaultConfig())
 }
 
-// NewDNSProviderConfig takes a given config ans returns a custom configured DNSProvider instance.
+// NewDNSProviderConfig takes a given config and returns a custom configured DNSProvider instance.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("route53: the configuration of the Route53 DNS provider is nil")

@@ -85,7 +85,7 @@ func TestServerError(t *testing.T) {
 	err = provider.Present(fakeDomain, "", fakeKeyAuth)
 	require.Error(t, err)
 	if !strings.Contains(err.Error(), "NOTZONE") {
-		t.Errorf("Expected Present() to return an error with the 'NOTZONE' rcode string but it did not: %v", err)
+		t.Errorf("Expected Present() to return an error with the 'NOTZONE' rcode string, but it did not: %v", err)
 	}
 }
 

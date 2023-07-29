@@ -39,7 +39,7 @@ lego --email you@example.com --dns ibmcloud --domains my.example.org run
 | Environment Variable Name | Description |
 |-----------------------|-------------|
 | `SOFTLAYER_API_KEY` | Classic Infrastructure API key |
-| `SOFTLAYER_USERNAME` | User name (IBM Cloud is <accountID>_<emailAddress>) |
+| `SOFTLAYER_USERNAME` | Username (IBM Cloud is <accountID>_<emailAddress>) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{< ref "dns#configuration-and-credentials" >}}).

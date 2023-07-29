@@ -192,7 +192,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	err = d.client.RemoveSubdomain(ctx, authZone, subDomain)
 	if err != nil {
-		return fmt.Errorf("loopia: failed to remove sub-domain: %w", err)
+		return fmt.Errorf("loopia: failed to remove subdomain: %w", err)
 	}
 
 	return nil

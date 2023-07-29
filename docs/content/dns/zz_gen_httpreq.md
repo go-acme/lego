@@ -64,7 +64,7 @@ The server must provide:
 - `POST` `/present`
 - `POST` `/cleanup`
 
-The URL of the server must be define by `HTTPREQ_ENDPOINT`.
+The URL of the server must be defined by `HTTPREQ_ENDPOINT`.
 
 ### Mode
 

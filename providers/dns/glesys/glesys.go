@@ -14,11 +14,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/glesys/internal"
 )
 
-const (
-	// defaultBaseURL is the GleSYS API endpoint used by Present and CleanUp.
-	defaultBaseURL = "https://api.glesys.com/domain"
-	minTTL         = 60
-)
+const minTTL = 60
 
 // Environment variables names.
 const (

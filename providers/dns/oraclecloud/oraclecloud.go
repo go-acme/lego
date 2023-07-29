@@ -161,7 +161,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	if *domainRecords.OpcTotalItems == 0 {
-		return errors.New("oraclecloud: no record to CleanUp")
+		return errors.New("oraclecloud: no record to clean up")
 	}
 
 	var deleteHash *string
@@ -173,7 +173,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	if deleteHash == nil {
-		return errors.New("oraclecloud: no record to CleanUp")
+		return errors.New("oraclecloud: no record to clean up")
 	}
 
 	recordOperation := dns.RecordOperation{

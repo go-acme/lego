@@ -477,7 +477,7 @@ Cancelled due to a CI issue, replaced by v4.5.2.
 - **[dnsprovider]** azure: Allow for the use of MSI
 - **[dnsprovider]** constellix: improve challenge.
 - **[dnsprovider]** godaddy: allow parallel solve.
-- **[dnsprovider]** namedotcom: get the actual registered domain so we can remove just that from the hostname to be created
+- **[dnsprovider]** namedotcom: get the actual registered domain, so we can remove just that from the hostname to be created
 - **[dnsprovider]** transip: updated the client to v6
 
 ### Fixed:
@@ -581,7 +581,7 @@ Cancelled due to a CI issue, replaced by v4.5.2.
 
 ## [v3.0.1] - 2019-08-14
 
-There was a problem when creating the tag v3.0.1, this tag has been invalidate.
+There was a problem when creating the tag v3.0.1, this tag has been invalidated.
 
 ## [v3.0.0] - 2019-08-05
 
@@ -873,7 +873,7 @@ There was a problem when creating the tag v3.0.1, this tag has been invalidate.
 - lib: The `DeleteRegistration` function on `acme.Client`. This deletes the registration as currently configured in the client.
 - lib: The `ObtainCertificateForCSR` function on `acme.Client`. The function allows to request a certificate for an already existing CSR.
 - CLI: The `--csr` switch. Allows to use already existing CSRs for certificate requests on the command line.
-- CLI: The `--pem` flag. This will change the certificate output so it outputs a .pem file concatanating the .key and .crt files together.
+- CLI: The `--pem` flag. This will change the certificate output, so it outputs a .pem file concatanating the .key and .crt files together.
 - CLI: The `--dns-resolvers` flag. Allows for users to override the default DNS servers used for recursive lookup.
 - lib: Added a memcached provider for the HTTP challenge.
 - CLI: The `--memcached-host` flag. This allows to use memcached for challenge storage.
@@ -895,11 +895,11 @@ There was a problem when creating the tag v3.0.1, this tag has been invalidate.
 - lib: The library will now skip challenge solving if a valid Authz already exists.
 
 ### Removed:
-- lib: The library will no longer check for auto renewed certificates. This has been removed from the spec and is not supported in Boulder.
+- lib: The library will no longer check for auto-renewed certificates. This has been removed from the spec and is not supported in Boulder.
 
 ### Fixed:
 - lib: Fix a problem with the Route53 provider where it was possible the verification was published to a private zone.
-- lib: Loading an account from file should fail if a integral part is nil
+- lib: Loading an account from file should fail if an integral part is nil
 - lib: Fix a potential issue where the Dyn provider could resolve to an incorrect zone.
 - lib: If a registration encounteres a conflict, the old registration is now recovered.
 - CLI: The account.json file no longer has the executable flag set.
@@ -967,7 +967,7 @@ There was a problem when creating the tag v3.0.1, this tag has been invalidate.
 
 ### Changed:
 - lib: NewClient does no longer accept the optPort parameter
-- lib: ObtainCertificate now returns a SAN certificate if you pass more then one domain.
+- lib: ObtainCertificate now returns a SAN certificate if you pass more than one domain.
 - lib: GetOCSPForCert now returns the parsed OCSP response instead of just the status.
 - lib: ObtainCertificate has a new parameter `privKey crypto.PrivateKey` which lets you reuse an existing private key for new certificates.
 - lib: RenewCertificate now expects the PrivateKey property of the CertificateResource to be set only if you want to reuse the key.

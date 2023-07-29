@@ -58,7 +58,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 ## Description
 
 Generate your API Token via https://my.rcodezero.at with the `ACME` permissions.
-This are special tokens with limited access for ACME requests only.
+These are special tokens with limited access for ACME requests only.
 
 RcodeZero is an Anycast Network so the distribution of the DNS01-Challenge can take up to 2 minutes.
 

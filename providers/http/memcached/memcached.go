@@ -1,5 +1,4 @@
-// Package memcached implements a HTTP provider for solving the HTTP-01 challenge using memcached
-// in combination with a webserver.
+// Package memcached implements an HTTP provider for solving the HTTP-01 challenge using memcached in combination with a webserver.
 package memcached
 
 import (

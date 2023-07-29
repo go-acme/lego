@@ -37,8 +37,8 @@ func TestCheckDNSPropagation(t *testing.T) {
 
 			ok, err := check.checkDNSPropagation(test.fqdn, test.value)
 			if test.expectError {
-				assert.Errorf(t, err, "PreCheckDNS must failed for %s", test.fqdn)
-				assert.False(t, ok, "PreCheckDNS must failed for %s", test.fqdn)
+				assert.Errorf(t, err, "PreCheckDNS must fail for %s", test.fqdn)
+				assert.False(t, ok, "PreCheckDNS must fail for %s", test.fqdn)
 			} else {
 				assert.NoErrorf(t, err, "PreCheckDNS failed for %s", test.fqdn)
 				assert.True(t, ok, "PreCheckDNS failed for %s", test.fqdn)

@@ -80,7 +80,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 ## Description
 
-You can login using your account name + username or using your email address.
+You can log in using your account name + username or using your email address.
 Optionally if TOTP is configured for your account, set `NICMANAGER_API_OTP`.
 
 

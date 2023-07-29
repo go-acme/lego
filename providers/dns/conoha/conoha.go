@@ -105,7 +105,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	tokens, err := identifier.GetToken(context.TODO(), auth)
 	if err != nil {
-		return nil, fmt.Errorf("conoha: failed to login: %w", err)
+		return nil, fmt.Errorf("conoha: failed to log in: %w", err)
 	}
 
 	client, err := internal.NewClient(config.Region, tokens.Access.Token.ID)

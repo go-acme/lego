@@ -1,5 +1,3 @@
-// Package s3 implements a HTTP provider for solving the HTTP-01 challenge
-// using AWS S3 in combination with AWS CloudFront.
 package s3
 
 import (

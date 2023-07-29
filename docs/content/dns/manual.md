@@ -21,7 +21,7 @@ To start using the CLI prompt "provider", start lego with `--dns manual`:
 $ lego --email "you@example.com" --domains="example.com" --dns "manual" run
 ```
 
-What follows are a few log print outs, interspersed with some prompts, asking for you to do perform some actions:
+What follows are a few log print-outs, interspersed with some prompts, asking for you to do perform some actions:
 
 ```txt
 No key found for account you@example.com. Generating a P256 key.

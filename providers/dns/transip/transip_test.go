@@ -81,7 +81,7 @@ func TestNewDNSProvider(t *testing.T) {
 	}
 
 	// The error message for a file not existing is different on Windows and Linux.
-	// Therefore we test if the error type is the same.
+	// Therefore, we test if the error type is the same.
 	t.Run("could not open private key path", func(t *testing.T) {
 		defer envTest.RestoreEnv()
 		envTest.ClearEnv()
@@ -144,7 +144,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}
 
 	// The error message for a file not existing is different on Windows and Linux.
-	// Therefore we test if the error type is the same.
+	// Therefore, we test if the error type is the same.
 	t.Run("could not open private key path", func(t *testing.T) {
 		config := NewDefaultConfig()
 		config.AccountName = "johndoe"

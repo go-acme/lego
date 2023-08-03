@@ -41,6 +41,28 @@ func NewUnixProviderServer(socketPath string, mode fs.FileMode) *ProviderServer 
 	return &ProviderServer{network: "unix", address: socketPath, socketMode: mode, matcher: &hostMatcher{}}
 }
 
+// SetIPv4Only starts the challenge server on an IPv4 address.
+//
+// Calling this method has no effect if s was created with NewUnixProviderServer.
+func (s *ProviderServer) SetIPv4Only() { s.setTCPStack("tcp4") }
+
+// SetIPv6Only starts the challenge server on an IPv6 address.
+//
+// Calling this method has no effect if s was created with NewUnixProviderServer.
+func (s *ProviderServer) SetIPv6Only() { s.setTCPStack("tcp6") }
+
+// SetDualStack indicates that both IPv4 and IPv6 should be allowed.
+// This setting lets the OS determine which IP stack to use for the challenge server.
+//
+// Calling this method has no effect if s was created with NewUnixProviderServer.
+func (s *ProviderServer) SetDualStack() { s.setTCPStack("tcp") }
+
+func (s *ProviderServer) setTCPStack(network string) {
+	if s.network != "unix" {
+		s.network = network
+	}
+}
+
 // Present starts a web server and makes the token available at `ChallengePath(token)` for web requests.
 func (s *ProviderServer) Present(domain, token, keyAuth string) error {
 	var err error

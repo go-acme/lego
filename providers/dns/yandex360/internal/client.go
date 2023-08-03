@@ -50,7 +50,7 @@ func NewClient(oauthToken string, orgID int64) (*Client, error) {
 func (c Client) AddRecord(ctx context.Context, domain string, record Record) (*Record, error) {
 	endpoint := c.baseURL.JoinPath("directory", "v1", "org", strconv.FormatInt(c.orgID, 10), "domains", domain, "dns")
 
-	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, record)
+	req, err := newJSONRequest(ctx, http.MethodPost, endpoint, record)
 	if err != nil {
 		return nil, err
 	}

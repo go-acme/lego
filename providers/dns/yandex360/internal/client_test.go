@@ -54,7 +54,7 @@ func setupTest(t *testing.T, pattern, method string, status int, filename string
 }
 
 func TestClient_AddRecord(t *testing.T) {
-	client := setupTest(t, "/directory/v1/org/123456/domains/example.com/dns", http.MethodGet, http.StatusOK, "add-record.json")
+	client := setupTest(t, "/directory/v1/org/123456/domains/example.com/dns", http.MethodPost, http.StatusOK, "add-record.json")
 
 	record := Record{
 		Name: "_acme-challenge",

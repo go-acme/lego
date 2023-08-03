@@ -94,7 +94,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		client.HTTPClient = config.HTTPClient
 	}
 
-	return &DNSProvider{client: client, config: config}, nil
+	return &DNSProvider{
+		client:    client,
+		config:    config,
+		recordIDs: make(map[string]int64),
+	}, nil
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.

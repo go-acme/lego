@@ -172,6 +172,8 @@ issues:
       text: 'dnsTimeout is a global variable'
     - path: challenge/dns01/nameserver_test.go
       text: 'findXByFqdnTestCases is a global variable'
+    - path: challenge/dns01/network.go
+      text: 'currentNetworkStack is a global variable'
     - path: challenge/http01/domain_matcher.go
       text: 'string `Host` has \d occurrences, make it a constant'
     - path: challenge/http01/domain_matcher.go

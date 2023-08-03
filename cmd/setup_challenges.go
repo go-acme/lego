@@ -42,6 +42,24 @@ func setupChallenges(ctx *cli.Context, client *lego.Client) {
 	}
 }
 
+type networkStackSetter interface {
+	SetIPv4Only()
+	SetIPv6Only()
+	SetDualStack()
+}
+
+func setNetwork(ctx *cli.Context, srv networkStackSetter) {
+	switch v4, v6 := ctx.IsSet("ipv4only"), ctx.IsSet("ipv6only"); {
+	case v4 && !v6:
+		srv.SetIPv4Only()
+	case !v4 && v6:
+		srv.SetIPv6Only()
+	default:
+		// setting both --ipv4only and --ipv6only is not an error, just a no-op
+		srv.SetDualStack()
+	}
+}
+
 //nolint:gocyclo // the complexity is expected.
 func setupHTTPProvider(ctx *cli.Context) challenge.Provider {
 	switch {
@@ -75,12 +93,14 @@ func setupHTTPProvider(ctx *cli.Context) challenge.Provider {
 		}
 
 		srv := http01.NewProviderServer(host, port)
+		setNetwork(ctx, srv)
 		if header := ctx.String("http.proxy-header"); header != "" {
 			srv.SetProxyHeader(header)
 		}
 		return srv
 	case ctx.Bool("http"):
 		srv := http01.NewProviderServer("", "")
+		setNetwork(ctx, srv)
 		if header := ctx.String("http.proxy-header"); header != "" {
 			srv.SetProxyHeader(header)
 		}
@@ -104,9 +124,13 @@ func setupTLSProvider(ctx *cli.Context) challenge.Provider {
 			log.Fatal(err)
 		}
 
-		return tlsalpn01.NewProviderServer(host, port)
+		srv := tlsalpn01.NewProviderServer(host, port)
+		setNetwork(ctx, srv)
+		return srv
 	case ctx.Bool("tls"):
-		return tlsalpn01.NewProviderServer("", "")
+		srv := tlsalpn01.NewProviderServer("", "")
+		setNetwork(ctx, srv)
+		return srv
 	default:
 		log.Fatal("Invalid HTTP challenge options.")
 		return nil
@@ -117,6 +141,16 @@ func setupDNS(ctx *cli.Context, client *lego.Client) {
 	provider, err := dns.NewDNSChallengeProviderByName(ctx.String("dns"))
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	switch v4, v6 := ctx.IsSet("ipv4only"), ctx.IsSet("ipv6only"); {
+	case v4 && !v6:
+		dns01.SetIPv4Only()
+	case !v4 && v6:
+		dns01.SetIPv6Only()
+	default:
+		// setting both --ipv4only and --ipv6only is not an error, just a no-op
+		dns01.SetDualStack()
 	}
 
 	servers := ctx.StringSlice("dns.resolvers")

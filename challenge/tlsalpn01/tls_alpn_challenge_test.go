@@ -9,6 +9,7 @@ import (
 	"encoding/asn1"
 	"net"
 	"net/http"
+	"os"
 	"testing"
 
 	"github.com/go-acme/lego/v4/acme"
@@ -19,6 +20,60 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestProviderServer_GetAddress(t *testing.T) {
+	dir := t.TempDir()
+	t.Cleanup(func() { _ = os.RemoveAll(dir) })
+
+	testCases := []struct {
+		desc     string
+		server   *ProviderServer
+		network  func(*ProviderServer)
+		expected string
+	}{
+		{
+			desc:     "TCP default address",
+			server:   NewProviderServer("", ""),
+			expected: ":443",
+		},
+		{
+			desc:     "TCP with explicit port",
+			server:   NewProviderServer("", "4443"),
+			expected: ":4443",
+		},
+		{
+			desc:     "TCP with host and port",
+			server:   NewProviderServer("localhost", "4443"),
+			expected: "localhost:4443",
+		},
+		{
+			desc:     "TCP4 with host and port",
+			server:   NewProviderServer("localhost", "4443"),
+			network:  func(s *ProviderServer) { s.SetIPv4Only() },
+			expected: "localhost:4443",
+		},
+		{
+			desc:     "TCP6 with host and port",
+			server:   NewProviderServer("localhost", "4443"),
+			network:  func(s *ProviderServer) { s.SetIPv6Only() },
+			expected: "localhost:4443",
+		},
+	}
+
+	for _, test := range testCases {
+		test := test
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			if test.network != nil {
+				test.network(test.server)
+			}
+
+			address := test.server.GetAddress()
+			assert.Equal(t, test.expected, address)
+		})
+	}
+}
 
 func TestChallenge(t *testing.T) {
 	_, apiURL := tester.SetupFakeAPI(t)
@@ -75,7 +130,7 @@ func TestChallenge(t *testing.T) {
 	solver := NewChallenge(
 		core,
 		mockValidate,
-		&ProviderServer{port: port},
+		&ProviderServer{port: port, network: "tcp"},
 	)
 
 	authz := acme.Authorization{
@@ -104,7 +159,7 @@ func TestChallengeInvalidPort(t *testing.T) {
 	solver := NewChallenge(
 		core,
 		func(_ *api.Core, _ string, _ acme.Challenge) error { return nil },
-		&ProviderServer{port: "123456"},
+		&ProviderServer{port: "123456", network: "tcp"},
 	)
 
 	authz := acme.Authorization{
@@ -176,7 +231,7 @@ func TestChallengeIPaddress(t *testing.T) {
 	solver := NewChallenge(
 		core,
 		mockValidate,
-		&ProviderServer{port: port},
+		&ProviderServer{port: port, network: "tcp"},
 	)
 
 	authz := acme.Authorization{

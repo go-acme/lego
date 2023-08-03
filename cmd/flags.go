@@ -11,6 +11,16 @@ import (
 
 func CreateFlags(defaultPath string) []cli.Flag {
 	return []cli.Flag{
+		&cli.BoolFlag{
+			Name:    "ipv4only",
+			Aliases: []string{"4"},
+			Usage:   "Use IPv4 only. This flag is ignored if ipv6only is also specified.",
+		},
+		&cli.BoolFlag{
+			Name:    "ipv6only",
+			Aliases: []string{"6"},
+			Usage:   "Use IPv6 only. This flag is ignored if ipv4only is also specified.",
+		},
 		&cli.StringSliceFlag{
 			Name:    "domains",
 			Aliases: []string{"d"},

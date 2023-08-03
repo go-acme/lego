@@ -2,13 +2,132 @@ package dns01
 
 import (
 	"errors"
+	"net"
 	"sort"
+	"sync"
 	"testing"
 
 	"github.com/miekg/dns"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func testDNSHandler(writer dns.ResponseWriter, reply *dns.Msg) {
+	msg := dns.Msg{}
+	msg.SetReply(reply)
+
+	if reply.Question[0].Qtype == dns.TypeA {
+		msg.Authoritative = true
+		domain := msg.Question[0].Name
+		msg.Answer = append(
+			msg.Answer,
+			&dns.A{
+				Hdr: dns.RR_Header{
+					Name:   domain,
+					Rrtype: dns.TypeA,
+					Class:  dns.ClassINET,
+					Ttl:    60,
+				},
+				A: net.IPv4(127, 0, 0, 1),
+			},
+		)
+	}
+
+	_ = writer.WriteMsg(&msg)
+}
+
+// getTestNameserver constructs a new DNS server on a local address, or set
+// of addresses, that responds to an `A` query for `example.com`.
+func getTestNameserver(t *testing.T, network string) *dns.Server {
+	t.Helper()
+	server := &dns.Server{
+		Handler: dns.HandlerFunc(testDNSHandler),
+		Net:     network,
+	}
+	switch network {
+	case "tcp", "udp":
+		server.Addr = "0.0.0.0:0"
+	case "tcp4", "udp4":
+		server.Addr = "127.0.0.1:0"
+	case "tcp6", "udp6":
+		server.Addr = "[::1]:0"
+	}
+
+	waitLock := sync.Mutex{}
+	waitLock.Lock()
+	server.NotifyStartedFunc = waitLock.Unlock
+
+	go func() { _ = server.ListenAndServe() }()
+
+	waitLock.Lock()
+	return server
+}
+
+func startTestNameserver(t *testing.T, stack networkStack, proto string) (shutdown func(), addr string) {
+	t.Helper()
+	currentNetworkStack = stack
+	srv := getTestNameserver(t, currentNetworkStack.Network(proto))
+
+	shutdown = func() { _ = srv.Shutdown() }
+	if proto == "tcp" {
+		addr = srv.Listener.Addr().String()
+	} else {
+		addr = srv.PacketConn.LocalAddr().String()
+	}
+	return
+}
+
+func TestSendDNSQuery(t *testing.T) {
+	currentNameservers := recursiveNameservers
+
+	t.Cleanup(func() {
+		recursiveNameservers = currentNameservers
+		currentNetworkStack = dualStack
+	})
+
+	t.Run("does udp4 only", func(t *testing.T) {
+		stop, addr := startTestNameserver(t, ipv4only, "udp")
+		defer stop()
+
+		recursiveNameservers = ParseNameservers([]string{addr})
+		msg := createDNSMsg("example.com.", dns.TypeA, true)
+		result, queryError := sendDNSQuery(msg, addr)
+		require.NoError(t, queryError)
+		assert.Equal(t, result.Answer[0].(*dns.A).A.String(), "127.0.0.1")
+	})
+
+	t.Run("does udp6 only", func(t *testing.T) {
+		stop, addr := startTestNameserver(t, ipv6only, "udp")
+		defer stop()
+
+		recursiveNameservers = ParseNameservers([]string{addr})
+		msg := createDNSMsg("example.com.", dns.TypeA, true)
+		result, queryError := sendDNSQuery(msg, addr)
+		require.NoError(t, queryError)
+		assert.Equal(t, result.Answer[0].(*dns.A).A.String(), "127.0.0.1")
+	})
+
+	t.Run("does tcp4 and tcp6", func(t *testing.T) {
+		stop, addr := startTestNameserver(t, dualStack, "tcp")
+		host, port, _ := net.SplitHostPort(addr)
+		defer stop()
+		t.Logf("### port: %s", port)
+
+		addr6 := net.JoinHostPort(host, port)
+		recursiveNameservers = ParseNameservers([]string{addr6})
+		msg := createDNSMsg("example.com.", dns.TypeA, true)
+		result, queryError := sendDNSQuery(msg, addr6)
+		require.NoError(t, queryError)
+		assert.Equal(t, result.Answer[0].(*dns.A).A.String(), "127.0.0.1")
+
+		addr4 := net.JoinHostPort("127.0.0.1", port)
+		recursiveNameservers = ParseNameservers([]string{addr4})
+		msg = createDNSMsg("example.com.", dns.TypeA, true)
+		result, queryError = sendDNSQuery(msg, addr4)
+		require.NoError(t, queryError)
+		assert.Equal(t, result.Answer[0].(*dns.A).A.String(), "127.0.0.1")
+	})
+}
 
 func TestLookupNameserversOK(t *testing.T) {
 	testCases := []struct {
@@ -123,8 +242,10 @@ var findXByFqdnTestCases = []struct {
 		fqdn:        "mail.google.com.",
 		zone:        "google.com.",
 		nameservers: []string{":7053", ":8053", ":9053"},
-		// use only the start of the message because the port changes with each call: 127.0.0.1:XXXXX->127.0.0.1:7053.
-		expectedError: "[fqdn=mail.google.com.] could not find the start of authority for 'mail.google.com.': DNS call error: read udp ",
+		// NOTE: On Windows, net.DialContext finds a way down to the ContectEx syscall.
+		// There a fault is marked as "connectex", not "connect", see
+		// https://cs.opensource.google/go/go/+/refs/tags/go1.19.5:src/net/fd_windows.go;l=112
+		expectedError: "could not find the start of authority for 'mail.google.com.':",
 	},
 	{
 		desc:          "no nameservers",

@@ -138,7 +138,8 @@ func (c *Client) Notify(ctx context.Context, zone *HostedZone) error {
 
 	endpoint := c.joinPath("/", zone.URL, "/notify")
 
-	req, err := newJSONRequest(ctx, http.MethodPut, endpoint, nil)
+	// this endpoint doesn't allow `Accept: application/json` header.
+	req, err := http.NewRequestWithContext(ctx, http.MethodPut, strings.TrimSuffix(endpoint.String(), "/"), http.NoBody)
 	if err != nil {
 		return err
 	}

@@ -218,7 +218,8 @@ func newJSONRequest(ctx context.Context, method string, endpoint *url.URL, paylo
 
 	req.Header.Set("Accept", "application/json")
 
-	if payload != nil {
+	// PowerDNS doesn't follow HTTP convention about the "Content-Type" header.
+	if method != http.MethodGet && method != http.MethodDelete {
 		req.Header.Set("Content-Type", "application/json")
 	}
 

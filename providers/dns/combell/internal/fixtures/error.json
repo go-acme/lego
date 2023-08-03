@@ -1,0 +1,4 @@
+{
+  "error_code": "auth_authorization_header_invalid_format",
+  "error_text": "The authorization header is in an invalid format."
+}

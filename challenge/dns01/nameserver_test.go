@@ -6,6 +6,7 @@ import (
 	"sort"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/miekg/dns"
 	"github.com/stretchr/testify/assert"
@@ -194,6 +195,7 @@ var findXByFqdnTestCases = []struct {
 	primaryNs     string
 	nameservers   []string
 	expectedError string
+	timeout       time.Duration
 }{
 	{
 		desc:        "domain is a CNAME",
@@ -236,6 +238,7 @@ var findXByFqdnTestCases = []struct {
 		zone:        "google.com.",
 		primaryNs:   "ns1.google.com.",
 		nameservers: []string{":7053", ":8053", "8.8.8.8:53"},
+		timeout:     500 * time.Millisecond,
 	},
 	{
 		desc:        "only non-existent nameservers",
@@ -246,6 +249,7 @@ var findXByFqdnTestCases = []struct {
 		// There a fault is marked as "connectex", not "connect", see
 		// https://cs.opensource.google/go/go/+/refs/tags/go1.19.5:src/net/fd_windows.go;l=112
 		expectedError: "could not find the start of authority for 'mail.google.com.':",
+		timeout:       500 * time.Millisecond,
 	},
 	{
 		desc:          "no nameservers",
@@ -276,6 +280,11 @@ func TestFindZoneByFqdnCustom(t *testing.T) {
 func TestFindPrimaryNsByFqdnCustom(t *testing.T) {
 	for _, test := range findXByFqdnTestCases {
 		t.Run(test.desc, func(t *testing.T) {
+			origTimeout := dnsTimeout
+			if test.timeout > 0 {
+				dnsTimeout = test.timeout
+			}
+
 			ClearFqdnCache()
 
 			ns, err := FindPrimaryNsByFqdnCustom(test.fqdn, test.nameservers)
@@ -286,6 +295,8 @@ func TestFindPrimaryNsByFqdnCustom(t *testing.T) {
 				require.NoError(t, err)
 				assert.Equal(t, test.primaryNs, ns)
 			}
+
+			dnsTimeout = origTimeout
 		})
 	}
 }

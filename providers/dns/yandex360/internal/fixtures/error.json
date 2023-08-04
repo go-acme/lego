@@ -1,0 +1,9 @@
+{
+  "code": 123,
+  "details": [
+    {
+      "@type": "foo"
+    }
+  ],
+  "message": "bar"
+}

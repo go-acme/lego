@@ -80,7 +80,14 @@ func GetWithFallback(groups ...[]string) (map[string]string, error) {
 
 func getOneWithFallback(main string, names ...string) (string, string) {
 	value := GetOrFile(main)
+
 	if len(value) > 0 {
+		for _, name := range names {
+			fallbackValue := GetOrFile(name)
+			if !(fallbackValue == value || len(fallbackValue) == 0) {
+				log.Warnf("Both %q and %q environment variables are set with different values. Using %q.", main, name, main)
+			}
+		}
 		return value, main
 	}
 

@@ -118,12 +118,12 @@ export AZ_HOSTNAME="fw01"
 export AZ_RECORD_SET="_acme-challenge.${AZ_HOSTNAME}"
 
 az role assignment create \
---assignee "${SERVICE_PRINCIPAL}" \
+--assignee "${SERVICE_PRINCIPAL_ID}" \
 --role "Reader" \
 --scope "/subscriptions/${AZURE_SUBSCRIPTION_ID}/resourceGroups/${AZURE_RESOURCE_GROUP}/providers/Microsoft.Network/dnszones/${AZURE_DNS_ZONE}"
 
 az role assignment create \
---assignee "${SERVICE_PRINCIPAL}" \
+--assignee "${SERVICE_PRINCIPAL_ID}" \
 --role "DNS Zone Contributor" \
 --scope "/subscriptions/${AZURE_SUBSCRIPTION_ID}/resourceGroups/${AZURE_RESOURCE_GROUP}/providers/Microsoft.Network/dnszones/${AZURE_DNS_ZONE}/TXT/${AZ_RECORD_SET}"
 ```

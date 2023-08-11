@@ -104,7 +104,29 @@ Link:
 
 The Azure Managed Identity service allows linking Azure AD identities to Azure resources, without needing to manually manage client IDs and secrets.
 
-Workloads running inside compute typed resource can inherit from this configuration to get rights on Azure resources.
+Workloads with a Managed Identity can manage their own certificates, with permissions on specific domain names set using IAM assignments. For this to work, the Managed Identity requires the **Reader** role on the target DNS Zone, and the **DNS Zone Contributor** on the relevant `_acme-challenge` TXT records.
+
+For example, to allow a Managed Identity to create a certificate for "fw01.lab.example.com", using Azure CLI:
+
+```bash
+export AZURE_SUBSCRIPTION_ID="00000000-0000-0000-0000-000000000000"
+export AZURE_RESOURCE_GROUP="rg1"
+export SERVICE_PRINCIPAL_ID="00000000-0000-0000-0000-000000000000"
+
+export AZURE_DNS_ZONE="lab.example.com"
+export AZ_HOSTNAME="fw01"
+export AZ_RECORD_SET="_acme-challenge.${AZ_HOSTNAME}"
+
+az role assignment create \
+--assignee "${SERVICE_PRINCIPAL}" \
+--role "Reader" \
+--scope "/subscriptions/${AZURE_SUBSCRIPTION_ID}/resourceGroups/${AZURE_RESOURCE_GROUP}/providers/Microsoft.Network/dnszones/${AZURE_DNS_ZONE}"
+
+az role assignment create \
+--assignee "${SERVICE_PRINCIPAL}" \
+--role "DNS Zone Contributor" \
+--scope "/subscriptions/${AZURE_SUBSCRIPTION_ID}/resourceGroups/${AZURE_RESOURCE_GROUP}/providers/Microsoft.Network/dnszones/${AZURE_DNS_ZONE}/TXT/${AZ_RECORD_SET}"
+```
 
 #### Azure Managed Identity (with Azure Arc)
 

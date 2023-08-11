@@ -41,6 +41,18 @@ lego --domains example.com --email your_example@email.com --dns azuredns run
 ### Using Azure CLI
 az login \
 lego --domains example.com --email your_example@email.com --dns azuredns run
+
+### Using Managed Identity (Azure VM)
+AZURE_TENANT_ID=<your service principal tenant ID>
+AZURE_SUBSCRIPTION_ID=<your target zone subscription ID>
+AZURE_RESOURCE_GROUP=<your target zone resource group name>
+
+### Using Managed Identity (Azure Arc)
+AZURE_TENANT_ID=<your service principal tenant ID>
+AZURE_SUBSCRIPTION_ID=<your target zone subscription ID>
+AZURE_RESOURCE_GROUP=<your target zone resource group name>
+IMDS_ENDPOINT=http://localhost:40342
+IDENTITY_ENDPOINT=http://localhost:40342/metadata/identity/oauth2/token
 ```
 
 
@@ -90,16 +102,26 @@ Link:
 
 #### Azure Managed Identity
 
-Azure managed identity service allows linking Azure AD identities to Azure resources. \
+The Azure Managed Identity service allows linking Azure AD identities to Azure resources, without needing to manually manage client IDs and secrets.
+
 Workloads running inside compute typed resource can inherit from this configuration to get rights on Azure resources.
+
+#### Azure Managed Identity (with Azure Arc)
+
+The Azure Arc agent provides the ability to use a Managed Identity on resources hosted outside of Azure (such as on-prem virtual machines, or VMs in another cloud provider).
+
+While the upstream `azidentity` SDK will try to automatically identify and use the Azure Arc metadata service, if you get `azuredns: DefaultAzureCredential: failed to acquire a token.` error messages, you may need to set the environment variables:
+  * `IMDS_ENDPOINT=http://localhost:40342`
+  * `IDENTITY_ENDPOINT=http://localhost:40342/metadata/identity/oauth2/token`
 
 #### Workload identity for AKS
 
-Workload identity allows workloads running Azure Kubernetes Services (AKS) clusters to authenticate as an Azure AD application identity using federated credentials. \
-This must be configured in kubernetes workload deployment in one hand and on the Azure AD application registration in the other hand. \
+Workload identity allows workloads running Azure Kubernetes Services (AKS) clusters to authenticate as an Azure AD application identity using federated credentials.
+
+This must be configured in kubernetes workload deployment in one hand and on the Azure AD application registration in the other hand.
 
 Here is a summary of the steps to follow to use it :
-* create a `ServiceAccount` resource, add following annotations to reference the targeted Azure AD application registration : `azure.workload.identity/client-id` and `azure.workload.identity/tenant-id`. \
+* create a `ServiceAccount` resource, add following annotations to reference the targeted Azure AD application registration : `azure.workload.identity/client-id` and `azure.workload.identity/tenant-id`.
 * on the `Deployment` resource you must reference the previous `ServiceAccount` and add the following label : `azure.workload.identity/use: "true"`.
 * create a fedreated credentials of type `Kubernetes accessing Azure resources`, add the cluster issuer URL  and add the namespace and name of your kubernetes service account.
 

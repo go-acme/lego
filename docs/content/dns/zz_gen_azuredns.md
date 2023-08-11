@@ -1,10 +1,10 @@
 ---
-title: "AzureDNS"
+title: "Azure DNS"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: azuredns
 dnsprovider:
-  since:    "v0.1.0"
+  since:    "v4.13.0"
   code:     "azuredns"
   url:      "https://azure.microsoft.com/services/dns/"
 ---
@@ -14,33 +14,53 @@ dnsprovider:
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
-Configuration for [AzureDNS](https://azure.microsoft.com/services/dns/).
+Configuration for [Azure DNS](https://azure.microsoft.com/services/dns/).
 
 
 <!--more-->
 
 - Code: `azuredns`
-- Since: v0.1.0
+- Since: v4.13.0
 
 
-Here is an example bash command using the AzureDNS provider:
+Here is an example bash command using the Azure DNS provider:
 
 ```bash
 ### Using client secret
+
 AZURE_CLIENT_ID=<your service principal client ID> \
 AZURE_TENANT_ID=<your service principal tenant ID> \
 AZURE_CLIENT_SECRET=<your service principal client secret> \
 lego --domains example.com --email your_example@email.com --dns azuredns run
 
 ### Using client certificate
+
 AZURE_CLIENT_ID=<your service principal client ID> \
 AZURE_TENANT_ID=<your service principal tenant ID> \
 AZURE_CLIENT_CERTIFICATE_PATH=<your service principal certificate path> \
 lego --domains example.com --email your_example@email.com --dns azuredns run
 
 ### Using Azure CLI
+
 az login \
 lego --domains example.com --email your_example@email.com --dns azuredns run
+
+### Using Managed Identity (Azure VM)
+
+AZURE_TENANT_ID=<your service principal tenant ID> \
+AZURE_SUBSCRIPTION_ID=<your target zone subscription ID> \
+AZURE_RESOURCE_GROUP=<your target zone resource group name> \
+lego --domains example.com --email your_example@email.com --dns azuredns run
+
+### Using Managed Identity (Azure Arc)
+
+AZURE_TENANT_ID=<your service principal tenant ID> \
+AZURE_SUBSCRIPTION_ID=<your target zone subscription ID> \
+AZURE_RESOURCE_GROUP=<your target zone resource group name> \
+IMDS_ENDPOINT=http://localhost:40342 \
+IDENTITY_ENDPOINT=http://localhost:40342/metadata/identity/oauth2/token \
+lego --domains example.com --email your_example@email.com --dns azuredns run
+
 ```
 
 
@@ -90,16 +110,53 @@ Link:
 
 #### Azure Managed Identity
 
-Azure managed identity service allows linking Azure AD identities to Azure resources. \
-Workloads running inside compute typed resource can inherit from this configuration to get rights on Azure resources.
+The Azure Managed Identity service allows linking Azure AD identities to Azure resources, without needing to manually manage client IDs and secrets.
+
+Workloads with a Managed Identity can manage their own certificates, with permissions on specific domain names set using IAM assignments.
+For this to work, the Managed Identity requires the **Reader** role on the target DNS Zone,
+and the **DNS Zone Contributor** on the relevant `_acme-challenge` TXT records.
+
+For example, to allow a Managed Identity to create a certificate for "fw01.lab.example.com", using Azure CLI:
+
+```bash
+export AZURE_SUBSCRIPTION_ID="00000000-0000-0000-0000-000000000000"
+export AZURE_RESOURCE_GROUP="rg1"
+export SERVICE_PRINCIPAL_ID="00000000-0000-0000-0000-000000000000"
+
+export AZURE_DNS_ZONE="lab.example.com"
+export AZ_HOSTNAME="fw01"
+export AZ_RECORD_SET="_acme-challenge.${AZ_HOSTNAME}"
+
+az role assignment create \
+--assignee "${SERVICE_PRINCIPAL_ID}" \
+--role "Reader" \
+--scope "/subscriptions/${AZURE_SUBSCRIPTION_ID}/resourceGroups/${AZURE_RESOURCE_GROUP}/providers/Microsoft.Network/dnszones/${AZURE_DNS_ZONE}"
+
+az role assignment create \
+--assignee "${SERVICE_PRINCIPAL_ID}" \
+--role "DNS Zone Contributor" \
+--scope "/subscriptions/${AZURE_SUBSCRIPTION_ID}/resourceGroups/${AZURE_RESOURCE_GROUP}/providers/Microsoft.Network/dnszones/${AZURE_DNS_ZONE}/TXT/${AZ_RECORD_SET}"
+```
+
+#### Azure Managed Identity (with Azure Arc)
+
+The Azure Arc agent provides the ability to use a Managed Identity on resources hosted outside of Azure
+(such as on-prem virtual machines, or VMs in another cloud provider).
+
+While the upstream `azidentity` SDK will try to automatically identify and use the Azure Arc metadata service,
+if you get `azuredns: DefaultAzureCredential: failed to acquire a token.` error messages,
+you may need to set the environment variables:
+  * `IMDS_ENDPOINT=http://localhost:40342`
+  * `IDENTITY_ENDPOINT=http://localhost:40342/metadata/identity/oauth2/token`
 
 #### Workload identity for AKS
 
-Workload identity allows workloads running Azure Kubernetes Services (AKS) clusters to authenticate as an Azure AD application identity using federated credentials. \
-This must be configured in kubernetes workload deployment in one hand and on the Azure AD application registration in the other hand. \
+Workload identity allows workloads running Azure Kubernetes Services (AKS) clusters to authenticate as an Azure AD application identity using federated credentials.
+
+This must be configured in kubernetes workload deployment in one hand and on the Azure AD application registration in the other hand.
 
 Here is a summary of the steps to follow to use it :
-* create a `ServiceAccount` resource, add following annotations to reference the targeted Azure AD application registration : `azure.workload.identity/client-id` and `azure.workload.identity/tenant-id`. \
+* create a `ServiceAccount` resource, add following annotations to reference the targeted Azure AD application registration : `azure.workload.identity/client-id` and `azure.workload.identity/tenant-id`.
 * on the `Deployment` resource you must reference the previous `ServiceAccount` and add the following label : `azure.workload.identity/use: "true"`.
 * create a fedreated credentials of type `Kubernetes accessing Azure resources`, add the cluster issuer URL  and add the namespace and name of your kubernetes service account.
 

@@ -300,9 +300,9 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 	case "azuredns":
 		// generated from: providers/dns/azuredns/azuredns.toml
-		ew.writeln(`Configuration for AzureDNS.`)
+		ew.writeln(`Configuration for Azure DNS.`)
 		ew.writeln(`Code:	'azuredns'`)
-		ew.writeln(`Since:	'v0.1.0'`)
+		ew.writeln(`Since:	'v4.13.0'`)
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)

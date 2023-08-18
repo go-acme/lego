@@ -11,26 +11,26 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
+	"golang.org/x/oauth2"
 )
 
 const defaultBaseURL = "https://ipv64.net"
 
-const authorizationHeader = "Authorization"
-
 type Client struct {
-	apiKey string
-
 	baseURL    *url.URL
 	HTTPClient *http.Client
 }
 
-func NewClient(apiKey string) *Client {
+func NewClient(hc *http.Client) *Client {
 	baseURL, _ := url.Parse(defaultBaseURL)
 
+	if hc == nil {
+		hc = &http.Client{Timeout: 15 * time.Second}
+	}
+
 	return &Client{
-		apiKey:     apiKey,
 		baseURL:    baseURL,
-		HTTPClient: &http.Client{Timeout: 15 * time.Second},
+		HTTPClient: hc,
 	}
 }
 
@@ -91,8 +91,6 @@ func (c Client) DeleteRecord(ctx context.Context, domain, prefix, recordType, co
 }
 
 func (c Client) do(req *http.Request, result any) error {
-	req.Header.Set(authorizationHeader, fmt.Sprintf("Bearer %s", c.apiKey))
-
 	if req.Method != http.MethodGet {
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	}
@@ -139,4 +137,17 @@ func parseError(req *http.Request, resp *http.Response) error {
 	}
 
 	return errAPI
+}
+
+func OAuthStaticAccessToken(client *http.Client, accessToken string) *http.Client {
+	if client == nil {
+		client = &http.Client{Timeout: 15 * time.Second}
+	}
+
+	client.Transport = &oauth2.Transport{
+		Source: oauth2.StaticTokenSource(&oauth2.Token{AccessToken: accessToken}),
+		Base:   client.Transport,
+	}
+
+	return client
 }

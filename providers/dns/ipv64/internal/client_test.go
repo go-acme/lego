@@ -15,12 +15,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const testAPIKey = "secret"
+
 func setupTest(t *testing.T, handler http.HandlerFunc) *Client {
 	t.Helper()
 
 	server := httptest.NewServer(handler)
 
-	client := NewClient("secret")
+	client := NewClient(OAuthStaticAccessToken(server.Client(), testAPIKey))
 	client.HTTPClient = server.Client()
 	client.baseURL, _ = url.Parse(server.URL)
 
@@ -34,8 +36,8 @@ func testHandler(method, filename string, statusCode int) http.HandlerFunc {
 			return
 		}
 
-		auth := req.Header.Get(authorizationHeader)
-		if auth != "Bearer secret" {
+		auth := req.Header.Get("Authorization")
+		if auth != "Bearer "+testAPIKey {
 			http.Error(rw, fmt.Sprintf("invalid API key: %s", auth), http.StatusUnauthorized)
 			return
 		}

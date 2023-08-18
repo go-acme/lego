@@ -2731,7 +2731,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "YANDEX_CLOUD_FOLDER_ID":	The string id of folder (aka project) in Yandex Cloud`)
-		ew.writeln(`	- "YANDEX_CLOUD_IAM_TOKEN":	The base64 encoded json which contains information about iam token of serivce account with 'dns.admin' permissions`)
+		ew.writeln(`	- "YANDEX_CLOUD_IAM_TOKEN":	The base64 encoded json which contains information about iam token of service account with 'dns.admin' permissions`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)

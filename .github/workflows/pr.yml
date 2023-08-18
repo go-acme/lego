@@ -14,7 +14,7 @@ jobs:
     env:
       GO_VERSION: '1.20'
       GOLANGCI_LINT_VERSION: v1.53.1
-      HUGO_VERSION: 0.54.0
+      HUGO_VERSION: '0.117.0'
       CGO_ENABLED: 0
       LEGO_E2E_TESTS: CI
       MEMCACHED_HOSTS: localhost:11211
@@ -78,7 +78,7 @@ jobs:
 
       - name: Install Hugo
         run: |
-          wget -O /tmp/hugo.deb https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_${HUGO_VERSION}_Linux-64bit.deb
+          wget -O /tmp/hugo.deb https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_${HUGO_VERSION}_Linux-amd64.deb
           sudo dpkg -i /tmp/hugo.deb
 
       - name: Build Documentation

@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GO_VERSION: '1.20'
-      HUGO_VERSION: 0.101.0
+      HUGO_VERSION: '0.117.0'
       CGO_ENABLED: 0
 
     steps:
@@ -34,7 +34,7 @@ jobs:
 
       - name: Install Hugo
         run: |
-          wget -O /tmp/hugo.deb https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_${HUGO_VERSION}_Linux-64bit.deb
+          wget -O /tmp/hugo.deb https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_${HUGO_VERSION}_Linux-amd64.deb
           sudo dpkg -i /tmp/hugo.deb
 
       - name: Build Documentation

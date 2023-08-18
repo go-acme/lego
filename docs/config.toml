@@ -4,7 +4,7 @@ title = "Lego"
 
 theme = "hugo-theme-learn"
 
-# Code higlighting settings
+# Code highlighting settings
 pygmentsCodefences = true
 pygmentsCodeFencesGuesSsyntax = false
 pygmentsOptions = ""

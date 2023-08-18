@@ -149,11 +149,11 @@ func (c *Certifier) Obtain(request ObtainRequest) (*Resource, error) {
 
 	log.Infof("[%s] acme: Validations succeeded; requesting certificates", strings.Join(domains, ", "))
 
-	failures := make(obtainError)
+	failures := newObtainError()
 	cert, err := c.getForOrder(domains, order, request.Bundle, request.PrivateKey, request.MustStaple, request.PreferredChain)
 	if err != nil {
 		for _, auth := range authz {
-			failures[challenge.GetTargetedDomain(auth)] = err
+			failures.Add(challenge.GetTargetedDomain(auth), err)
 		}
 	}
 
@@ -161,12 +161,7 @@ func (c *Certifier) Obtain(request ObtainRequest) (*Resource, error) {
 		c.deactivateAuthorizations(order, true)
 	}
 
-	// Do not return an empty failures map, because
-	// it would still be a non-nil error value
-	if len(failures) > 0 {
-		return cert, failures
-	}
-	return cert, nil
+	return cert, failures.Join()
 }
 
 // ObtainForCSR tries to obtain a certificate matching the CSR passed into it.
@@ -219,11 +214,11 @@ func (c *Certifier) ObtainForCSR(request ObtainForCSRRequest) (*Resource, error)
 
 	log.Infof("[%s] acme: Validations succeeded; requesting certificates", strings.Join(domains, ", "))
 
-	failures := make(obtainError)
+	failures := newObtainError()
 	cert, err := c.getForCSR(domains, order, request.Bundle, request.CSR.Raw, nil, request.PreferredChain)
 	if err != nil {
 		for _, auth := range authz {
-			failures[challenge.GetTargetedDomain(auth)] = err
+			failures.Add(challenge.GetTargetedDomain(auth), err)
 		}
 	}
 
@@ -236,12 +231,7 @@ func (c *Certifier) ObtainForCSR(request ObtainForCSRRequest) (*Resource, error)
 		cert.CSR = certcrypto.PEMEncode(request.CSR)
 	}
 
-	// Do not return an empty failures map,
-	// because it would still be a non-nil error value
-	if len(failures) > 0 {
-		return cert, failures
-	}
-	return cert, nil
+	return cert, failures.Join()
 }
 
 func (c *Certifier) getForOrder(domains []string, order acme.ExtendedOrder, bundle bool, privateKey crypto.PrivateKey, mustStaple bool, preferredChain string) (*Resource, error) {

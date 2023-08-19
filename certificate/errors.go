@@ -1,27 +1,37 @@
 package certificate
 
 import (
-	"bytes"
+	"errors"
 	"fmt"
-	"sort"
 )
 
-// obtainError is returned when there are specific errors available per domain.
-type obtainError map[string]error
+type obtainError struct {
+	data map[string]error
+}
 
-func (e obtainError) Error() string {
-	buffer := bytes.NewBufferString("error: one or more domains had a problem:\n")
+func newObtainError() *obtainError {
+	return &obtainError{data: make(map[string]error)}
+}
 
-	var domains []string
-	for domain := range e {
-		domains = append(domains, domain)
+func (e *obtainError) Add(domain string, err error) {
+	e.data[domain] = err
+}
+
+func (e *obtainError) Join() error {
+	if e == nil {
+		return nil
 	}
-	sort.Strings(domains)
 
-	for _, domain := range domains {
-		_, _ = fmt.Fprintf(buffer, "[%s] %s\n", domain, e[domain])
+	if len(e.data) == 0 {
+		return nil
 	}
-	return buffer.String()
+
+	var err error
+	for d, e := range e.data {
+		err = errors.Join(err, fmt.Errorf("%s: %w", d, e))
+	}
+
+	return fmt.Errorf("error: one or more domains had a problem:\n%w", err)
 }
 
 type domainError struct {

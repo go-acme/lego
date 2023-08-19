@@ -35,13 +35,14 @@ func (c *Certifier) getAuthorizations(order acme.ExtendedOrder) ([]acme.Authoriz
 	}
 
 	var responses []acme.Authorization
-	failures := make(obtainError)
+
+	failures := newObtainError()
 	for i := 0; i < len(order.Authorizations); i++ {
 		select {
 		case res := <-resc:
 			responses = append(responses, res)
 		case err := <-errc:
-			failures[err.Domain] = err.Error
+			failures.Add(err.Domain, err.Error)
 		}
 	}
 
@@ -52,12 +53,7 @@ func (c *Certifier) getAuthorizations(order acme.ExtendedOrder) ([]acme.Authoriz
 	close(resc)
 	close(errc)
 
-	// be careful to not return an empty failures map;
-	// even if empty, they become non-nil error values
-	if len(failures) > 0 {
-		return responses, failures
-	}
-	return responses, nil
+	return responses, failures.Join()
 }
 
 func (c *Certifier) deactivateAuthorizations(order acme.ExtendedOrder, force bool) {

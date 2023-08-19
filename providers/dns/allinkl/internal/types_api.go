@@ -54,7 +54,7 @@ type DNSRequest struct {
 // ---
 
 type GetDNSSettingsAPIResponse struct {
-	Response GetDNSSettingsResponse `json:"Response"  mapstructure:"Response"`
+	Response GetDNSSettingsResponse `json:"Response" mapstructure:"Response"`
 }
 
 type GetDNSSettingsResponse struct {

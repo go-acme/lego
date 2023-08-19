@@ -78,7 +78,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("ipv64: credentials missing")
 	}
 
-	client := internal.NewClient(config.APIKey)
+	client := internal.NewClient(internal.OAuthStaticAccessToken(config.HTTPClient, config.APIKey))
 
 	if config.HTTPClient != nil {
 		client.HTTPClient = config.HTTPClient

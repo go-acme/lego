@@ -16,37 +16,19 @@ jobs:
 
     strategy:
       matrix:
-        go-version: [ '1.19', '1.20', 1.x ]
+        go-version: [ stable, oldstable ]
         os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
-      # https://github.com/marketplace/actions/setup-go-environment
-      - name: Set up Go ${{ matrix.go-version }}
-        uses: actions/setup-go@v3
-        with:
-          go-version: ${{ matrix.go-version }}
-
       # https://github.com/marketplace/actions/checkout
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # https://github.com/marketplace/actions/cache
-      - name: Cache Go modules
-        uses: actions/cache@v3
+      # https://github.com/marketplace/actions/setup-go-environment
+      - name: Set up Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v4
         with:
-          # In order:
-          # * Module download cache
-          # * Build cache (Linux)
-          # * Build cache (Mac)
-          # * Build cache (Windows)
-          path: |
-            ~/go/pkg/mod
-            ~/.cache/go-build
-            ~/Library/Caches/go-build
-            %LocalAppData%\go-build
-          key: ${{ runner.os }}-${{ matrix.go-version }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ matrix.go-version }}-go-
+          go-version: ${{ matrix.go-version }}
 
       - name: Test
         run: go test -v -cover ./...

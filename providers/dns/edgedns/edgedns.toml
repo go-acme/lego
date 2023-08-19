@@ -40,7 +40,7 @@ See also:
 - [Setting up Akamai credentials](https://developer.akamai.com/api/getting-started)
 - [.edgerc Format](https://developer.akamai.com/legacy/introduction/Conf_Client.html#edgercformat)
 - [API Client Authentication](https://developer.akamai.com/legacy/introduction/Client_Auth.html)
-- [Config from Env](https://github.com/akamai/AkamaiOPEN-edgegrid-golang/blob/master/edgegrid/config.go#L118)
+- [Config from Env](https://github.com/akamai/AkamaiOPEN-edgegrid-golang/blob/master/pkg/edgegrid/config.go#L118)
 '''
 
 [Configuration]

@@ -18,7 +18,7 @@ docker run goacme/lego -h
 
 ## From package managers
 
-- [ArchLinux](https://archlinux.org/packages/community/x86_64/lego/) (official):
+- [ArchLinux](https://archlinux.org/packages/extra/x86_64/lego/) (official):
 
   ```bash
   pacman -S lego

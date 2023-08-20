@@ -30,6 +30,16 @@ type Client struct {
 
 	baseURL    *url.URL
 	HTTPClient *http.Client
+	timeNow    func() time.Time
+	genSalt    func() []byte
+}
+
+func genRandomSalt() []byte {
+	salt := make([]byte, 16)
+	for i := 0; i < 16; i++ {
+		salt[i] = saltBytes[rand.Intn(len(saltBytes))]
+	}
+	return salt
 }
 
 func NewClient(login string, apiKey string) *Client {
@@ -40,6 +50,8 @@ func NewClient(login string, apiKey string) *Client {
 		apiKey:     apiKey,
 		baseURL:    baseURL,
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
+		timeNow:    time.Now,
+		genSalt:    genRandomSalt,
 	}
 }
 
@@ -95,17 +107,14 @@ func (c Client) doRequest(ctx context.Context, endpoint *url.URL, params url.Val
 
 func (c Client) createSignature(uri string, body string) string {
 	// This is the only part of this that needs to be serialized.
-	salt := make([]byte, 16)
-	for i := 0; i < 16; i++ {
-		salt[i] = saltBytes[rand.Intn(len(saltBytes))]
-	}
+	salt := c.genSalt()
 
 	// Header is "login;timestamp;salt;hash".
 	// hash is SHA1("login;timestamp;salt;api-key;request-uri;body-hash")
 	// and body-hash is SHA1(body).
 
 	bodyHash := sha1.Sum([]byte(body))
-	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
+	timestamp := strconv.FormatInt(c.timeNow().Unix(), 10)
 
 	hashInput := fmt.Sprintf("%s;%s;%s;%s;%s;%02x", c.login, timestamp, salt, c.apiKey, uri, bodyHash)
 

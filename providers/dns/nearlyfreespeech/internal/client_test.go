@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -23,18 +24,23 @@ func setupTest(t *testing.T) (*Client, *http.ServeMux) {
 	client := NewClient("user", "secret")
 	client.HTTPClient = server.Client()
 	client.baseURL, _ = url.Parse(server.URL)
+	// Make everything deterministic for golden tests of signatures.
+	client.genSalt = func() []byte { return []byte("0123456789ABCDEF") }
+	client.timeNow = func() time.Time { return time.Unix(1692475113, 0) }
 
 	return client, mux
 }
 
-func testHandler(params map[string]string) http.HandlerFunc {
+func testHandler(params map[string]string, authHeader string) http.HandlerFunc {
 	return func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodPost {
 			http.Error(rw, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 			return
 		}
 
-		if req.Header.Get(authenticationHeader) == "" {
+		if req.Header.Get(authenticationHeader) != authHeader {
+			// As an aid in fixing the test if the exact formatting of the body is changed.
+			fmt.Printf("authHeader: got %q wanted %q, returning 403\n", req.Header.Get(authenticationHeader), authHeader)
 			http.Error(rw, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 			return
 		}
@@ -83,7 +89,12 @@ func TestClient_AddRecord(t *testing.T) {
 		"ttl":  "30",
 	}
 
-	mux.Handle("/dns/example.com/addRR", testHandler(params))
+	// The reason we're testing that we're getting this exact authHeader is
+	// so that we can detect if some change that is not expected to modify
+	// neither the request nor the authHeader does so. If you're changing
+	// the request, please ensure your change actually works against the
+	// real nfsn API before modifying this golden value.
+	mux.Handle("/dns/example.com/addRR", testHandler(params, "user;1692475113;0123456789ABCDEF;24a32faf74c7bd0525f560ff12a1c1fb6545bafc"))
 
 	record := Record{
 		Name: "sub",
@@ -121,7 +132,12 @@ func TestClient_RemoveRecord(t *testing.T) {
 		"type": "TXT",
 	}
 
-	mux.Handle("/dns/example.com/removeRR", testHandler(params))
+	// The reason we're testing that we're getting this exact authHeader is
+	// so that we can detect if some change that is not expected to modify
+	// neither the request nor the authHeader does so. If you're changing
+	// the request, please ensure your change actually works against the
+	// real nfsn API before modifying this golden value.
+	mux.Handle("/dns/example.com/removeRR", testHandler(params, "user;1692475113;0123456789ABCDEF;699f01f077ca487bd66ac370d6dfc5b122c65522"))
 
 	record := Record{
 		Name: "sub",

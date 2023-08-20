@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -24,23 +25,21 @@ func setupTest(t *testing.T) (*Client, *http.ServeMux) {
 	client := NewClient("user", "secret")
 	client.HTTPClient = server.Client()
 	client.baseURL, _ = url.Parse(server.URL)
-	// Make everything deterministic for golden tests of signatures.
-	client.genSalt = func() []byte { return []byte("0123456789ABCDEF") }
-	client.timeNow = func() time.Time { return time.Unix(1692475113, 0) }
+
+	client.signer.saltShaker = func() []byte { return []byte("0123456789ABCDEF") }
+	client.signer.clock = func() time.Time { return time.Unix(1692475113, 0) }
 
 	return client, mux
 }
 
-func testHandler(params map[string]string, authHeader string) http.HandlerFunc {
+func testHandler(params map[string]string) http.HandlerFunc {
 	return func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodPost {
 			http.Error(rw, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 			return
 		}
 
-		if req.Header.Get(authenticationHeader) != authHeader {
-			// As an aid in fixing the test if the exact formatting of the body is changed.
-			fmt.Printf("authHeader: got %q wanted %q, returning 403\n", req.Header.Get(authenticationHeader), authHeader)
+		if req.Header.Get(authenticationHeader) == "" {
 			http.Error(rw, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 			return
 		}
@@ -89,12 +88,7 @@ func TestClient_AddRecord(t *testing.T) {
 		"ttl":  "30",
 	}
 
-	// The reason we're testing that we're getting this exact authHeader is
-	// so that we can detect if some change that is not expected to modify
-	// neither the request nor the authHeader does so. If you're changing
-	// the request, please ensure your change actually works against the
-	// real nfsn API before modifying this golden value.
-	mux.Handle("/dns/example.com/addRR", testHandler(params, "user;1692475113;0123456789ABCDEF;24a32faf74c7bd0525f560ff12a1c1fb6545bafc"))
+	mux.Handle("/dns/example.com/addRR", testHandler(params))
 
 	record := Record{
 		Name: "sub",
@@ -132,12 +126,7 @@ func TestClient_RemoveRecord(t *testing.T) {
 		"type": "TXT",
 	}
 
-	// The reason we're testing that we're getting this exact authHeader is
-	// so that we can detect if some change that is not expected to modify
-	// neither the request nor the authHeader does so. If you're changing
-	// the request, please ensure your change actually works against the
-	// real nfsn API before modifying this golden value.
-	mux.Handle("/dns/example.com/removeRR", testHandler(params, "user;1692475113;0123456789ABCDEF;699f01f077ca487bd66ac370d6dfc5b122c65522"))
+	mux.Handle("/dns/example.com/removeRR", testHandler(params))
 
 	record := Record{
 		Name: "sub",
@@ -162,4 +151,64 @@ func TestClient_RemoveRecord_error(t *testing.T) {
 
 	err := client.RemoveRecord(context.Background(), "example.com", record)
 	require.Error(t, err)
+}
+
+func TestSigner_Sign(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		path     string
+		now      int64
+		salt     string
+		expected string
+	}{
+		{
+			desc:     "basic",
+			path:     "/path",
+			now:      1692475113,
+			salt:     "0123456789ABCDEF",
+			expected: "user;1692475113;0123456789ABCDEF;417a9988c7ad7919b297884dd120b5808d8a1e6f",
+		},
+		{
+			desc:     "another date",
+			path:     "/path",
+			now:      1692567766,
+			salt:     "0123456789ABCDEF",
+			expected: "user;1692567766;0123456789ABCDEF;b5c28286fd2e1a45a7c576dc2a6430116f721502",
+		},
+		{
+			desc:     "another salt",
+			path:     "/path",
+			now:      1692475113,
+			salt:     "FEDCBA9876543210",
+			expected: "user;1692475113;FEDCBA9876543210;0f766822bda4fdc09829be4e1ea5e27ae3ae334e",
+		},
+		{
+			desc:     "empty path",
+			path:     "",
+			now:      1692475113,
+			salt:     "0123456789ABCDEF",
+			expected: "user;1692475113;0123456789ABCDEF;c7c241a4d15d04d92805631d58d4d72ac1c339a1",
+		},
+		{
+			desc:     "root path",
+			path:     "/",
+			now:      1692475113,
+			salt:     "0123456789ABCDEF",
+			expected: "user;1692475113;0123456789ABCDEF;c7c241a4d15d04d92805631d58d4d72ac1c339a1",
+		},
+	}
+
+	for _, test := range testCases {
+		test := test
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+			signer := NewSigner()
+			signer.saltShaker = func() []byte { return []byte(test.salt) }
+			signer.clock = func() time.Time { return time.Unix(test.now, 0) }
+
+			sign := signer.Sign(test.path, "data", "user", "secret")
+
+			assert.Equal(t, test.expected, sign)
+		})
+	}
 }

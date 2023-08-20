@@ -28,18 +28,10 @@ type Client struct {
 	login  string
 	apiKey string
 
+	signer *Signer
+
 	baseURL    *url.URL
 	HTTPClient *http.Client
-	timeNow    func() time.Time
-	genSalt    func() []byte
-}
-
-func genRandomSalt() []byte {
-	salt := make([]byte, 16)
-	for i := 0; i < 16; i++ {
-		salt[i] = saltBytes[rand.Intn(len(saltBytes))]
-	}
-	return salt
 }
 
 func NewClient(login string, apiKey string) *Client {
@@ -48,10 +40,9 @@ func NewClient(login string, apiKey string) *Client {
 	return &Client{
 		login:      login,
 		apiKey:     apiKey,
+		signer:     NewSigner(),
 		baseURL:    baseURL,
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
-		timeNow:    time.Now,
-		genSalt:    genRandomSalt,
 	}
 }
 
@@ -86,10 +77,7 @@ func (c Client) doRequest(ctx context.Context, endpoint *url.URL, params url.Val
 	}
 
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-	// Workaround for https://golang.org/issue/58605
-	uri := "/" + strings.TrimPrefix(endpoint.Path, "/")
-	req.Header.Set(authenticationHeader, c.createSignature(uri, payload))
+	req.Header.Set(authenticationHeader, c.signer.Sign(endpoint.Path, payload, c.login, c.apiKey))
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
@@ -105,22 +93,6 @@ func (c Client) doRequest(ctx context.Context, endpoint *url.URL, params url.Val
 	return nil
 }
 
-func (c Client) createSignature(uri string, body string) string {
-	// This is the only part of this that needs to be serialized.
-	salt := c.genSalt()
-
-	// Header is "login;timestamp;salt;hash".
-	// hash is SHA1("login;timestamp;salt;api-key;request-uri;body-hash")
-	// and body-hash is SHA1(body).
-
-	bodyHash := sha1.Sum([]byte(body))
-	timestamp := strconv.FormatInt(c.timeNow().Unix(), 10)
-
-	hashInput := fmt.Sprintf("%s;%s;%s;%s;%s;%02x", c.login, timestamp, salt, c.apiKey, uri, bodyHash)
-
-	return fmt.Sprintf("%s;%s;%s;%02x", c.login, timestamp, salt, sha1.Sum([]byte(hashInput)))
-}
-
 func parseError(req *http.Request, resp *http.Response) error {
 	raw, _ := io.ReadAll(resp.Body)
 
@@ -131,4 +103,39 @@ func parseError(req *http.Request, resp *http.Response) error {
 	}
 
 	return errAPI
+}
+
+type Signer struct {
+	saltShaker func() []byte
+	clock      func() time.Time
+}
+
+func NewSigner() *Signer {
+	return &Signer{saltShaker: getRandomSalt, clock: time.Now}
+}
+
+func (c Signer) Sign(uri string, body, login, apiKey string) string {
+	// Header is "login;timestamp;salt;hash".
+	// hash is SHA1("login;timestamp;salt;api-key;request-uri;body-hash")
+	// and body-hash is SHA1(body).
+
+	bodyHash := sha1.Sum([]byte(body))
+	timestamp := strconv.FormatInt(c.clock().Unix(), 10)
+
+	// Workaround for https://golang.org/issue/58605
+	uri = "/" + strings.TrimLeft(uri, "/")
+
+	hashInput := fmt.Sprintf("%s;%s;%s;%s;%s;%02x", login, timestamp, c.saltShaker(), apiKey, uri, bodyHash)
+
+	return fmt.Sprintf("%s;%s;%s;%02x", login, timestamp, c.saltShaker(), sha1.Sum([]byte(hashInput)))
+}
+
+func getRandomSalt() []byte {
+	// This is the only part of this that needs to be serialized.
+	salt := make([]byte, 16)
+	for i := 0; i < 16; i++ {
+		salt[i] = saltBytes[rand.Intn(len(saltBytes))]
+	}
+
+	return salt
 }

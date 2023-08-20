@@ -125,9 +125,11 @@ func (c Signer) Sign(uri string, body, login, apiKey string) string {
 	// Workaround for https://golang.org/issue/58605
 	uri = "/" + strings.TrimLeft(uri, "/")
 
-	hashInput := fmt.Sprintf("%s;%s;%s;%s;%s;%02x", login, timestamp, c.saltShaker(), apiKey, uri, bodyHash)
+	salt := c.saltShaker()
 
-	return fmt.Sprintf("%s;%s;%s;%02x", login, timestamp, c.saltShaker(), sha1.Sum([]byte(hashInput)))
+	hashInput := fmt.Sprintf("%s;%s;%s;%s;%s;%02x", login, timestamp, salt, apiKey, uri, bodyHash)
+
+	return fmt.Sprintf("%s;%s;%s;%02x", login, timestamp, salt, sha1.Sum([]byte(hashInput)))
 }
 
 func getRandomSalt() []byte {

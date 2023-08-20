@@ -74,7 +74,10 @@ func (c Client) doRequest(ctx context.Context, endpoint *url.URL, params url.Val
 	}
 
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Set(authenticationHeader, c.createSignature(endpoint.Path, payload))
+
+	// Workaround for https://golang.org/issue/58605
+	uri := "/" + strings.TrimPrefix(endpoint.Path, "/")
+	req.Header.Set(authenticationHeader, c.createSignature(uri, payload))
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {

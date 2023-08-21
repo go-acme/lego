@@ -1,11 +1,27 @@
 # Changelog
 
+## [v4.14.0] - 2023-08-20
+
+### Added:
+- **[dnsprovider]** Add DNS provider for Yandex 360
+- **[dnsprovider]** Add DNS provider for cloud.ru
+- **[httpprovider]** Adding S3 support for HTTP domain validation
+
+### Changed:
+- **[cli]** Allow to set EAB kid and hmac via environment variables
+- **[dnsprovider]** Migrate to aws-sdk-go-v2 (lightsail, route53)
+
+### Fixed:
+- **[dnsprovider]** nearlyfreespeech: fix authentication
+- **[dnsprovider]** pdns: fix notify
+- **[dnsprovider]** route53: avoid unexpected records deletion
+
 ## [v4.13.3] - 2023-07-25
 
 ### Fixed:
 - **[dnsprovider]** azuredns: fix configuration from env vars
 - **[dnsprovider]** gcore: change API domain
-- 
+
 ## [v4.13.2] - 2023-07-21
 
 ### Fixed:

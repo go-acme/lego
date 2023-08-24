@@ -2,6 +2,8 @@ module github.com/go-acme/lego/v4
 
 go 1.20
 
+// github.com/exoscale/egoscale v1.19.0 => It is an error, please don't use it.
+
 require (
 	cloud.google.com/go/compute/metadata v0.2.3
 	github.com/Azure/azure-sdk-for-go v68.0.0+incompatible
@@ -164,5 +166,3 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-exclude github.com/exoscale/egoscale v1.19.0 // It is an error, please don't use it.

@@ -10,11 +10,10 @@ import (
 
 	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/go-acme/lego/v4/providers/dns/gandiv5/internal"
 	"github.com/stretchr/testify/require"
 )
 
-var envTest = tester.NewEnvTest(EnvAPIKey)
+var envTest = tester.NewEnvTest(EnvAPIKey, EnvPersonalAccessToken)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -33,7 +32,7 @@ func TestNewDNSProvider(t *testing.T) {
 			envVars: map[string]string{
 				EnvAPIKey: "",
 			},
-			expected: "gandi: some credentials information are missing: GANDIV5_API_KEY",
+			expected: "gandiv5: credentials information are missing",
 		},
 	}
 
@@ -70,7 +69,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		},
 		{
 			desc:     "missing credentials",
-			expected: "gandiv5: no API Key given",
+			expected: "gandiv5: credentials information are missing",
 		},
 	}
 
@@ -122,8 +121,8 @@ func TestDNSProvider(t *testing.T) {
 	mux.HandleFunc("/domains/example.com/records/_acme-challenge.abc.def/TXT", func(rw http.ResponseWriter, req *http.Request) {
 		log.Infof("request: %s %s", req.Method, req.URL)
 
-		if req.Header.Get(internal.APIKeyHeader) == "" {
-			http.Error(rw, `{"message": "missing API key"}`, http.StatusUnauthorized)
+		if req.Header.Get("Authorization") == "" {
+			http.Error(rw, `{"message": "missing Authorization"}`, http.StatusUnauthorized)
 			return
 		}
 
@@ -165,7 +164,7 @@ func TestDNSProvider(t *testing.T) {
 	}
 
 	config := NewDefaultConfig()
-	config.APIKey = "123412341234123412341234"
+	config.PersonalAccessToken = "123412341234123412341234"
 	config.BaseURL = server.URL
 
 	provider, err := NewDNSProviderConfig(config)

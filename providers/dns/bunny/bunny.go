@@ -9,7 +9,7 @@ import (
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/simplesurance/bunny-go"
+	"github.com/nrdcg/bunny-go"
 )
 
 const minTTL = 60

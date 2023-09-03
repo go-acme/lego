@@ -448,6 +448,8 @@ github.com/nbio/st v0.0.0-20140626010706-e9e8d9816f32/go.mod h1:9wM+0iRr9ahx58uY
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/nrdcg/auroradns v1.1.0 h1:KekGh8kmf2MNwqZVVYo/fw/ZONt8QMEmbMFOeljteWo=
 github.com/nrdcg/auroradns v1.1.0/go.mod h1:O7tViUZbAcnykVnrGkXzIJTHoQCHcgalgAe6X1mzHfk=
+github.com/nrdcg/bunny-go v0.0.0-20230728143221-c9dda82568d9 h1:qpB3wZR4+MPK92cTC9zZPnndkJgDgPvQqPUAgVc1NXU=
+github.com/nrdcg/bunny-go v0.0.0-20230728143221-c9dda82568d9/go.mod h1:HUoHXDrFvidN1NK9Wb/mZKNOfDNutKkzF2Pg71M9hHA=
 github.com/nrdcg/desec v0.7.0 h1:iuGhi4pstF3+vJWwt292Oqe2+AsSPKDynQna/eu1fDs=
 github.com/nrdcg/desec v0.7.0/go.mod h1:e1uRqqKv1mJdd5+SQROAhmy75lKMphLzWIuASLkpeFY=
 github.com/nrdcg/dnspod-go v0.4.0 h1:c/jn1mLZNKF3/osJ6mz3QPxTudvPArXTjpkmYj0uK6U=
@@ -543,8 +545,6 @@ github.com/scaleway/scaleway-sdk-go v1.0.0-beta.17 h1:1WuWJu7/e8SqK+uQl7lfk/N/oM
 github.com/scaleway/scaleway-sdk-go v1.0.0-beta.17/go.mod h1:fCa7OJZ/9DRTnOKmxvT6pn+LPWUptQAmHF/SBJUGEcg=
 github.com/sean-/seed v0.0.0-20170313163322-e2103e2c3529/go.mod h1:DxrIzT+xaE7yg65j358z/aeFdxmN0P9QXhEzd20vsDc=
 github.com/shurcooL/sanitized_anchor_name v1.0.0/go.mod h1:1NzhyTcUVG4SuEtjjoZeVRXNmyL/1OwPU0+IJeTBvfc=
-github.com/simplesurance/bunny-go v0.0.0-20221115111006-e11d9dc91f04 h1:ZTzdx88+AcnjqUfJwnz89UBrMSBQ1NEysg9u5d+dU9c=
-github.com/simplesurance/bunny-go v0.0.0-20221115111006-e11d9dc91f04/go.mod h1:5KS21fpch8TIMyAUv/qQqTa3GZfBDYgjaZbd2KXKYfg=
 github.com/sirupsen/logrus v1.2.0/go.mod h1:LxeOpSwHxABJmUn/MG1IvRgCAasNZTLOkJPxbbu5VWo=
 github.com/sirupsen/logrus v1.4.2/go.mod h1:tLMulIdttU9McNUspp0xgXVQah82FyeX6MwdIuYE2rE=
 github.com/sirupsen/logrus v1.8.1 h1:dJKuHgqk1NNQlqoA6BTlM1Wf9DOH3NBjQyu0h9+AZZE=

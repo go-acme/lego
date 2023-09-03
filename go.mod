@@ -47,6 +47,7 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
 	github.com/nrdcg/auroradns v1.1.0
+	github.com/nrdcg/bunny-go v0.0.0-20230728143221-c9dda82568d9
 	github.com/nrdcg/desec v0.7.0
 	github.com/nrdcg/dnspod-go v0.4.0
 	github.com/nrdcg/freemyip v0.2.0
@@ -62,7 +63,6 @@ require (
 	github.com/sacloud/api-client-go v0.2.8
 	github.com/sacloud/iaas-api-go v1.11.1
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.17
-	github.com/simplesurance/bunny-go v0.0.0-20221115111006-e11d9dc91f04
 	github.com/softlayer/softlayer-go v1.1.2
 	github.com/stretchr/testify v1.8.4
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.490

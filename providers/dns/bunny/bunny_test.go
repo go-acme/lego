@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -122,4 +123,84 @@ func TestLiveCleanUp(t *testing.T) {
 
 	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
+}
+
+func Test_splitDomain(t *testing.T) {
+	type expected struct {
+		root       string
+		sub        string
+		requireErr require.ErrorAssertionFunc
+	}
+
+	testCases := []struct {
+		desc     string
+		domain   string
+		expected expected
+	}{
+		{
+			desc:   "empty",
+			domain: "",
+			expected: expected{
+				requireErr: require.Error,
+			},
+		},
+		{
+			desc:   "2 levels",
+			domain: "example.com",
+			expected: expected{
+				root:       "example.com",
+				sub:        "",
+				requireErr: require.NoError,
+			},
+		},
+		{
+			desc:   "3 levels",
+			domain: "_acme-challenge.example.com",
+			expected: expected{
+				root:       "example.com",
+				sub:        "_acme-challenge",
+				requireErr: require.NoError,
+			},
+		},
+		{
+			desc:   "4 levels",
+			domain: "_acme-challenge.sub.example.com",
+			expected: expected{
+				root:       "example.com",
+				sub:        "_acme-challenge.sub",
+				requireErr: require.NoError,
+			},
+		},
+		{
+			desc:   "5 levels",
+			domain: "_acme-challenge.my.sub.example.com",
+			expected: expected{
+				root:       "example.com",
+				sub:        "_acme-challenge.my.sub",
+				requireErr: require.NoError,
+			},
+		},
+		{
+			desc:   "6 levels",
+			domain: "_acme-challenge.my.sub.sub.example.com",
+			expected: expected{
+				root:       "example.com",
+				sub:        "_acme-challenge.my.sub.sub",
+				requireErr: require.NoError,
+			},
+		},
+	}
+
+	for _, test := range testCases {
+		test := test
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			root, sub, err := splitDomain(test.domain)
+			test.expected.requireErr(t, err)
+
+			assert.Equal(t, test.expected.root, root)
+			assert.Equal(t, test.expected.sub, sub)
+		})
+	}
 }

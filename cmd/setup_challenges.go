@@ -12,6 +12,7 @@ import (
 	"github.com/go-acme/lego/v4/lego"
 	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/providers/dns"
+	"github.com/go-acme/lego/v4/providers/dns/multi"
 	"github.com/go-acme/lego/v4/providers/http/memcached"
 	"github.com/go-acme/lego/v4/providers/http/s3"
 	"github.com/go-acme/lego/v4/providers/http/webroot"
@@ -114,7 +115,15 @@ func setupTLSProvider(ctx *cli.Context) challenge.Provider {
 }
 
 func setupDNS(ctx *cli.Context, client *lego.Client) {
-	provider, err := dns.NewDNSChallengeProviderByName(ctx.String("dns"))
+	providers := ctx.StringSlice("dns")
+
+	var provider challenge.Provider
+	var err error
+	if len(providers) == 1 {
+		provider, err = dns.NewDNSChallengeProviderByName(providers[0])
+	} else {
+		provider, err = multi.NewDNSProviderByNames(providers...)
+	}
 	if err != nil {
 		log.Fatal(err)
 	}

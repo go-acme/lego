@@ -103,9 +103,9 @@ func CreateFlags(defaultPath string) []cli.Flag {
 			Usage: "Set the port and interface to use for TLS-ALPN-01 based challenges to listen on. Supported: interface:port or :port.",
 			Value: ":443",
 		},
-		&cli.StringFlag{
+		&cli.StringSliceFlag{
 			Name:  "dns",
-			Usage: "Solve a DNS-01 challenge using the specified provider. Can be mixed with other types of challenges. Run 'lego dnshelp' for help on usage.",
+			Usage: "Solve a DNS-01 challenge using the specified provider. Can be mixed with other types of challenges. Can be specified multiple times. Run 'lego dnshelp' for help on usage.",
 		},
 		&cli.BoolFlag{
 			Name:  "dns.disable-cp",

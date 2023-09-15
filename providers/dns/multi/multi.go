@@ -66,6 +66,7 @@ func NewDNSProviderConfig(config *Config) (challenge.Provider, error) {
 func NewDNSProviderByNames(names ...string) (challenge.Provider, error) {
 	sequentialType := false
 	subProviders := make([]challenge.Provider, len(names))
+
 	for i, name := range names {
 		subProvider, err := dns.NewDNSChallengeProviderByName(name)
 		if err != nil {
@@ -82,6 +83,24 @@ func NewDNSProviderByNames(names ...string) (challenge.Provider, error) {
 		return &DNSProviderSequential{DNSProvider: provider}, nil
 	}
 	return &provider, nil
+}
+
+// NewDNSProviderFromOthers returns an DNSProvider or
+// DNSProviderSequential instance that implements challenge.Provider,
+// and passes through all interface calls to the providers passed in.
+// If one of the providers passed in via config implements a
+// Sequential() function, a DNSProviderSequential is
+// returned. Otherwise a DNSProvider is returned.
+func NewDNSProviderFromOthers(providers ...challenge.Provider) challenge.Provider {
+	provider := DNSProvider{subProviders: providers}
+
+	for _, subProvider := range providers {
+		if _, ok := subProvider.(sequential); ok {
+			return &DNSProviderSequential{DNSProvider: provider}
+		}
+	}
+
+	return &provider
 }
 
 // Timeout returns the timeout and interval to use when checking for

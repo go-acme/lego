@@ -23,6 +23,7 @@ const (
 	EnvAPIURL = envNamespace + "API_URL"
 
 	EnvTTL                = envNamespace + "TTL"
+	EnvCustomAPIVersion   = envNamespace + "CUSTOM_API_VERSION"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
@@ -37,6 +38,7 @@ type Config struct {
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
+	CustomApiVersion   int
 	HTTPClient         *http.Client
 }
 
@@ -44,6 +46,7 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
+		CustomApiVersion:   env.GetOrDefaultInt(EnvCustomAPIVersion, 0),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 120*time.Second),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
 		ServerName:         env.GetOrDefaultString(EnvServerName, "localhost"),
@@ -96,9 +99,14 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	client := internal.NewClient(config.Host, config.ServerName, config.APIKey)
 
-	err := client.SetAPIVersion(context.Background())
-	if err != nil {
-		log.Warnf("pdns: failed to get API version %v", err)
+	if config.CustomApiVersion > 0 {
+		client.SetCustomAPIVersion(config.CustomApiVersion)
+		log.Infof("pdns: using custom API version %d", config.CustomApiVersion)
+	} else {
+		err := client.SetAPIVersion(context.Background())
+		if err != nil {
+			log.Warnf("pdns: failed to get API version %v", err)
+		}
 	}
 
 	return &DNSProvider{config: config, client: client}, nil

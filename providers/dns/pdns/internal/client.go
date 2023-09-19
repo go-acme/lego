@@ -43,6 +43,10 @@ func (c *Client) APIVersion() int {
 	return c.apiVersion
 }
 
+func (c *Client) SetCustomAPIVersion(version int) {
+	c.apiVersion = version
+}
+
 func (c *Client) SetAPIVersion(ctx context.Context) error {
 	var err error
 

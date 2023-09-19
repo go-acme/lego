@@ -76,14 +76,24 @@ func TestNewDNSProvider(t *testing.T) {
 
 func TestNewDNSProviderConfig(t *testing.T) {
 	testCases := []struct {
-		desc     string
-		apiKey   string
-		host     *url.URL
-		expected string
+		desc             string
+		apiKey           string
+		customApiVersion int
+		host             *url.URL
+		expected         string
 	}{
 		{
 			desc:   "success",
 			apiKey: "123",
+			host: func() *url.URL {
+				u, _ := url.Parse("http://example.com")
+				return u
+			}(),
+		},
+		{
+			desc:             "success custom API version",
+			apiKey:           "123",
+			customApiVersion: 1,
 			host: func() *url.URL {
 				u, _ := url.Parse("http://example.com")
 				return u
@@ -114,6 +124,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			config := NewDefaultConfig()
 			config.APIKey = test.apiKey
 			config.Host = test.host
+			config.CustomApiVersion = test.customApiVersion
 
 			p, err := NewDNSProviderConfig(config)
 

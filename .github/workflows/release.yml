@@ -15,6 +15,12 @@ jobs:
       CGO_ENABLED: 0
 
     steps:
+      # temporary workaround for an error in free disk space action
+      # https://github.com/jlumbroso/free-disk-space/issues/14
+      - name: Update Package List and Remove Dotnet
+        run: |
+          sudo apt-get update
+          sudo apt-get remove -y '^dotnet-.*'
 
       # https://github.com/marketplace/actions/free-disk-space-ubuntu
       - name: Free Disk Space

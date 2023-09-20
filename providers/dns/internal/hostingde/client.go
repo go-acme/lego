@@ -1,4 +1,4 @@
-package internal
+package hostingde
 
 import (
 	"bytes"
@@ -14,23 +14,26 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
-const defaultBaseURL = "https://secure.hosting.de/api/dns/v1/json"
+const (
+	DefaultHostingdeBaseURL = "https://secure.hosting.de/api/dns/v1/json"
+	DefaultHTTPNetBaseURL   = "https://partner.http.net/api/dns/v1/json"
+)
 
 // Client the API client for Hosting.de.
 type Client struct {
 	apiKey string
 
-	baseURL    *url.URL
+	BaseURL    *url.URL
 	HTTPClient *http.Client
 }
 
 // NewClient creates new Client.
 func NewClient(apiKey string) *Client {
-	baseURL, _ := url.Parse(defaultBaseURL)
+	baseURL, _ := url.Parse(DefaultHostingdeBaseURL)
 
 	return &Client{
 		apiKey:     apiKey,
-		baseURL:    baseURL,
+		BaseURL:    baseURL,
 		HTTPClient: &http.Client{Timeout: 5 * time.Second},
 	}
 }
@@ -71,7 +74,7 @@ func (c Client) GetZone(ctx context.Context, req ZoneConfigsFindRequest) (*ZoneC
 // ListZoneConfigs lists zone configuration.
 // https://www.hosting.de/api/?json#list-zoneconfigs
 func (c Client) ListZoneConfigs(ctx context.Context, req ZoneConfigsFindRequest) (*ZoneResponse, error) {
-	endpoint := c.baseURL.JoinPath("zoneConfigsFind")
+	endpoint := c.BaseURL.JoinPath("zoneConfigsFind")
 
 	req.AuthToken = c.apiKey
 
@@ -96,7 +99,7 @@ func (c Client) ListZoneConfigs(ctx context.Context, req ZoneConfigsFindRequest)
 // UpdateZone updates a zone.
 // https://www.hosting.de/api/?json#updating-zones
 func (c Client) UpdateZone(ctx context.Context, req ZoneUpdateRequest) (*Zone, error) {
-	endpoint := c.baseURL.JoinPath("zoneUpdate")
+	endpoint := c.BaseURL.JoinPath("zoneUpdate")
 
 	req.AuthToken = c.apiKey
 

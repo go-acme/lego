@@ -1,11 +1,12 @@
-// Package hostingde implements a DNS provider for solving the DNS-01 challenge using hosting.de.
-package hostingde
+// Package httpnet implements a DNS provider for solving the DNS-01 challenge using http.net.
+package httpnet
 
 import (
 	"context"
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"sync"
 	"time"
 
@@ -16,7 +17,7 @@ import (
 
 // Environment variables names.
 const (
-	envNamespace = "HOSTINGDE_"
+	envNamespace = "HTTPNET_"
 
 	EnvAPIKey   = envNamespace + "API_KEY"
 	EnvZoneName = envNamespace + "ZONE_NAME"
@@ -58,13 +59,13 @@ type DNSProvider struct {
 	recordIDsMu sync.Mutex
 }
 
-// NewDNSProvider returns a DNSProvider instance configured for hosting.de.
+// NewDNSProvider returns a DNSProvider instance configured for http.net.
 // Credentials must be passed in the environment variables:
-// HOSTINGDE_ZONE_NAME and HOSTINGDE_API_KEY.
+// HTTPNET_ZONE_NAME and HTTPNET_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
 	values, err := env.Get(EnvAPIKey)
 	if err != nil {
-		return nil, fmt.Errorf("hostingde: %w", err)
+		return nil, fmt.Errorf("httpnet: %w", err)
 	}
 
 	config := NewDefaultConfig()
@@ -74,19 +75,22 @@ func NewDNSProvider() (*DNSProvider, error) {
 	return NewDNSProviderConfig(config)
 }
 
-// NewDNSProviderConfig return a DNSProvider instance configured for hosting.de.
+// NewDNSProviderConfig return a DNSProvider instance configured for http.net.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
-		return nil, errors.New("hostingde: the configuration of the DNS provider is nil")
+		return nil, errors.New("httpnet: the configuration of the DNS provider is nil")
 	}
 
 	if config.APIKey == "" {
-		return nil, errors.New("hostingde: API key missing")
+		return nil, errors.New("httpnet: API key missing")
 	}
+
+	client := hostingde.NewClient(config.APIKey)
+	client.BaseURL, _ = url.Parse(hostingde.DefaultHTTPNetBaseURL)
 
 	return &DNSProvider{
 		config:    config,
-		client:    hostingde.NewClient(config.APIKey),
+		client:    client,
 		recordIDs: make(map[string]string),
 	}, nil
 }
@@ -103,7 +107,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zoneName, err := d.getZoneName(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("hostingde: could not find zone for domain %q: %w", domain, err)
+		return fmt.Errorf("httpnet: could not find zone for domain %q: %w", domain, err)
 	}
 
 	ctx := context.Background()
@@ -117,7 +121,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zoneConfig, err := d.client.GetZone(ctx, zonesFind)
 	if err != nil {
-		return fmt.Errorf("hostingde: %w", err)
+		return fmt.Errorf("httpnet: %w", err)
 	}
 
 	zoneConfig.Name = zoneName
@@ -136,7 +140,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	response, err := d.client.UpdateZone(ctx, req)
 	if err != nil {
-		return fmt.Errorf("hostingde: %w", err)
+		return fmt.Errorf("httpnet: %w", err)
 	}
 
 	for _, record := range response.Records {
@@ -148,7 +152,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	if d.recordIDs[info.EffectiveFQDN] == "" {
-		return fmt.Errorf("hostingde: error getting ID of just created record, for domain %s", domain)
+		return fmt.Errorf("httpnet: error getting ID of just created record, for domain %s", domain)
 	}
 
 	return nil
@@ -160,7 +164,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	zoneName, err := d.getZoneName(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("hostingde: could not find zone for domain %q: %w", domain, err)
+		return fmt.Errorf("httpnet: could not find zone for domain %q: %w", domain, err)
 	}
 
 	ctx := context.Background()
@@ -174,7 +178,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	zoneConfig, err := d.client.GetZone(ctx, zonesFind)
 	if err != nil {
-		return fmt.Errorf("hostingde: %w", err)
+		return fmt.Errorf("httpnet: %w", err)
 	}
 	zoneConfig.Name = zoneName
 
@@ -196,7 +200,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	_, err = d.client.UpdateZone(ctx, req)
 	if err != nil {
-		return fmt.Errorf("hostingde: %w", err)
+		return fmt.Errorf("httpnet: %w", err)
 	}
 	return nil
 }

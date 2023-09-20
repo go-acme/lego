@@ -1,4 +1,4 @@
-package internal
+package hostingde
 
 import (
 	"bytes"
@@ -26,7 +26,7 @@ func setupTest(t *testing.T, pattern string, handler http.HandlerFunc) *Client {
 
 	client := NewClient("secret")
 	client.HTTPClient = server.Client()
-	client.baseURL, _ = url.Parse(server.URL)
+	client.BaseURL, _ = url.Parse(server.URL)
 
 	mux.HandleFunc(pattern, handler)
 

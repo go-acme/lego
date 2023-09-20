@@ -17,7 +17,6 @@ lego --email you@example.com --dns ipv64 --domains my.example.org run
     IPV64_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
     IPV64_TTL = "The TTL of the TXT record used for the DNS challenge"
     IPV64_HTTP_TIMEOUT = "API request timeout"
-    IPV64_SEQUENCE_INTERVAL = "Time between sequential requests"
 
 [Links]
   API = "https://ipv64.net/dyndns_updater_api"

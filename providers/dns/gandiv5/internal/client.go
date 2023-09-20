@@ -20,20 +20,25 @@ const defaultBaseURL = "https://dns.api.gandi.net/api/v5"
 // APIKeyHeader API key header.
 const APIKeyHeader = "X-Api-Key"
 
+// Related to Personal Access Token.
+const authorizationHeader = "Authorization"
+
 // Client the Gandi API v5 client.
 type Client struct {
 	apiKey string
+	pat    string
 
 	BaseURL    *url.URL
 	HTTPClient *http.Client
 }
 
 // NewClient Creates a new Client.
-func NewClient(apiKey string) *Client {
+func NewClient(apiKey, pat string) *Client {
 	baseURL, _ := url.Parse(defaultBaseURL)
 
 	return &Client{
 		apiKey:     apiKey,
+		pat:        pat,
 		BaseURL:    baseURL,
 		HTTPClient: &http.Client{Timeout: 5 * time.Second},
 	}
@@ -126,6 +131,10 @@ func (c *Client) DeleteTXTRecord(ctx context.Context, domain, name string) error
 func (c *Client) do(req *http.Request, result any) error {
 	if c.apiKey != "" {
 		req.Header.Set(APIKeyHeader, c.apiKey)
+	}
+
+	if c.pat != "" {
+		req.Header.Set(authorizationHeader, c.pat)
 	}
 
 	resp, err := c.HTTPClient.Do(req)

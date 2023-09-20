@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
+	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/gandiv5/internal"
 )
@@ -23,7 +24,8 @@ const minTTL = 300
 const (
 	envNamespace = "GANDIV5_"
 
-	EnvAPIKey = envNamespace + "API_KEY"
+	EnvAPIKey              = envNamespace + "API_KEY"
+	EnvPersonalAccessToken = envNamespace + "PERSONAL_ACCESS_TOKEN"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -39,12 +41,13 @@ type inProgressInfo struct {
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	BaseURL            string
-	APIKey             string
-	PropagationTimeout time.Duration
-	PollingInterval    time.Duration
-	TTL                int
-	HTTPClient         *http.Client
+	BaseURL             string
+	APIKey              string // Deprecated use PersonalAccessToken
+	PersonalAccessToken string
+	PropagationTimeout  time.Duration
+	PollingInterval     time.Duration
+	TTL                 int
+	HTTPClient          *http.Client
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
@@ -76,13 +79,10 @@ type DNSProvider struct {
 // NewDNSProvider returns a DNSProvider instance configured for Gandi.
 // Credentials must be passed in the environment variable: GANDIV5_API_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvAPIKey)
-	if err != nil {
-		return nil, fmt.Errorf("gandi: %w", err)
-	}
-
+	// TODO(ldez): rewrite this when APIKey will be removed.
 	config := NewDefaultConfig()
-	config.APIKey = values[EnvAPIKey]
+	config.APIKey = env.GetOrFile(EnvAPIKey)
+	config.PersonalAccessToken = env.GetOrFile(EnvPersonalAccessToken)
 
 	return NewDNSProviderConfig(config)
 }
@@ -93,15 +93,19 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("gandiv5: the configuration of the DNS provider is nil")
 	}
 
-	if config.APIKey == "" {
-		return nil, errors.New("gandiv5: no API Key given")
+	if config.APIKey != "" {
+		log.Print("gandiv5: API Key is deprecated, use Personal Access Token instead")
+	}
+
+	if config.APIKey == "" && config.PersonalAccessToken == "" {
+		return nil, errors.New("gandiv5: credentials information are missing")
 	}
 
 	if config.TTL < minTTL {
 		return nil, fmt.Errorf("gandiv5: invalid TTL, TTL (%d) must be greater than %d", config.TTL, minTTL)
 	}
 
-	client := internal.NewClient(config.APIKey)
+	client := internal.NewClient(config.APIKey, config.PersonalAccessToken)
 
 	if config.BaseURL != "" {
 		baseURL, err := url.Parse(config.BaseURL)

@@ -26,7 +26,7 @@ Configuration for [Gandi Live DNS (v5)](https://www.gandi.net).
 Here is an example bash command using the Gandi Live DNS (v5) provider:
 
 ```bash
-GANDIV5_API_KEY=abcdefghijklmnopqrstuvwx \
+GANDIV5_PERSONAL_ACCESS_TOKEN=abcdefghijklmnopqrstuvwx \
 lego --email you@example.com --dns gandiv5 --domains my.example.org run
 ```
 
@@ -37,7 +37,8 @@ lego --email you@example.com --dns gandiv5 --domains my.example.org run
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `GANDIV5_API_KEY` | API key |
+| `GANDIV5_API_KEY` | API key (Deprecated) |
+| `GANDIV5_PERSONAL_ACCESS_TOKEN` | Personal Access Token |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{< ref "dns#configuration-and-credentials" >}}).

@@ -24,6 +24,7 @@ const (
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+	EnvSequenceInterval   = envNamespace + "SEQUENCE_INTERVAL" // Deprecated: unused, will be removed in v5.
 )
 
 // Config is used to configure the creation of the DNSProvider.
@@ -32,6 +33,7 @@ type Config struct {
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	HTTPClient         *http.Client
+	SequenceInterval   time.Duration // Deprecated: unused, will be removed in v5.
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.

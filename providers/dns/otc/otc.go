@@ -206,7 +206,8 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-// The sequential function makes all DNS challenges for this provider happen sequentially.
+// Sequential All DNS challenges for this provider will be resolved sequentially.
+// Returns the interval between each iteration.
 func (d *DNSProvider) Sequential() time.Duration {
 	return d.config.SequenceInterval
 }

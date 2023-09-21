@@ -51,6 +51,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 | `OTC_HTTP_TIMEOUT` | API request timeout |
 | `OTC_POLLING_INTERVAL` | Time between DNS propagation check |
 | `OTC_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
+| `OTC_SEQUENCE_INTERVAL` | Time between sequential requests |
 | `OTC_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.

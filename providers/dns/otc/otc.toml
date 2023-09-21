@@ -16,6 +16,7 @@ Example = ''''''
   [Configuration.Additional]
     OTC_POLLING_INTERVAL = "Time between DNS propagation check"
     OTC_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
+    OTC_SEQUENCE_INTERVAL = "Time between sequential requests"
     OTC_TTL = "The TTL of the TXT record used for the DNS challenge"
     OTC_HTTP_TIMEOUT = "API request timeout"
 

@@ -4,7 +4,9 @@ package liquidweb
 import (
 	"errors"
 	"fmt"
+	"sort"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -166,4 +168,40 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	d.recordIDsMu.Unlock()
 
 	return nil
+}
+
+func (d *DNSProvider) findZone(fqdn string) (string, error) {
+	fqdn = dns01.UnFqdn(fqdn)
+	zones, err := d.client.NetworkDNSZone.ListAll()
+	if err != nil {
+		return "", fmt.Errorf("failed to retrieve zones for account: %w", err)
+	}
+
+	// filter the zones on the account to only ones that match
+	for id := 0; id < len(zones.Items); {
+		if !strings.HasSuffix(fqdn, zones[id]) {
+			zones = append(zones[id:], zones[:id]...)
+		} else {
+			id++
+		}
+	}
+
+	// filter the zones on the account to only ones that
+	sort.Slice(zones.Items, func(i, j int) bool {
+		return len(zones.Items[i]) < len(zones.Items[j])
+	})
+	bestZone := zones.Items[0]
+
+	for _, zone := range zones.Items {
+		recs, err := d.client.NetworkDNS.ListAll(&network.DNSRecordParams{Zone: zone})
+		if err != nil {
+			continue
+		}
+		for _, rec := range recs.Items {
+			if rec == fqdn {
+				return zone, nil
+			}
+		}
+	}
+	return bestZone, nil
 }

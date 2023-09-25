@@ -40,6 +40,7 @@ type Model struct {
 	Since         string         // First lego version
 	URL           string         // DNS provider URL
 	Description   string         // Provider summary
+	IgnoreCmd     bool           // Leave documentation out of CLI
 	Example       string         // CLI example
 	Configuration *Configuration // Environment variables
 	Links         *Links         // Links

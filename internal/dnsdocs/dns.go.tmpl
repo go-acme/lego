@@ -15,6 +15,9 @@ func allDNSCodes() string {
 	providers := []string{
 		"manual",
 {{- range $provider := .Providers }}
+{{- if $provider.IgnoreCmd }}
+{{- continue}}
+{{- end}}
 		"{{ $provider.Code }}",
 {{- end}}
 	}
@@ -28,6 +31,9 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 	switch name {
 {{- range $provider := .Providers }}
+{{- if $provider.IgnoreCmd }}
+{{- continue}}
+{{- end}}
 	case "{{ $provider.Code }}":
 		// generated from: {{ .GeneratedFrom }}
 		ew.writeln(`Configuration for {{ $provider.Name }}.`)

@@ -20,7 +20,8 @@ const defaultBaseURL = "https://api.stormondemand.com"
 
 // Environment variables names.
 const (
-	envNamespace = "LIQUID_WEB_"
+	envNamespace       = "LWAPI"
+	envLegacyNamespace = "LIQUID_WEB_"
 
 	EnvURL      = envNamespace + "URL"
 	EnvUsername = envNamespace + "USERNAME"
@@ -53,6 +54,7 @@ func NewDefaultConfig() *Config {
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
 		HTTPTimeout:        env.GetOrDefaultSecond(EnvHTTPTimeout, 1*time.Minute),
+		Zone:               env.GetOrDefaultString(EnvZone, ""),
 	}
 
 	return config
@@ -179,8 +181,8 @@ func (d *DNSProvider) findZone(fqdn string) (string, error) {
 
 	// filter the zones on the account to only ones that match
 	for id := 0; id < len(zones.Items); {
-		if !strings.HasSuffix(fqdn, zones[id]) {
-			zones = append(zones[id:], zones[:id]...)
+		if !strings.HasSuffix(fqdn, zones.Items[id].Name) {
+			zones.Items = append(zones.Items[id:], zones.Items[:id]...)
 		} else {
 			id++
 		}
@@ -188,20 +190,11 @@ func (d *DNSProvider) findZone(fqdn string) (string, error) {
 
 	// filter the zones on the account to only ones that
 	sort.Slice(zones.Items, func(i, j int) bool {
-		return len(zones.Items[i]) < len(zones.Items[j])
+		return len(zones.Items[i].Name) < len(zones.Items[j].Name)
 	})
-	bestZone := zones.Items[0]
 
-	for _, zone := range zones.Items {
-		recs, err := d.client.NetworkDNS.ListAll(&network.DNSRecordParams{Zone: zone})
-		if err != nil {
-			continue
-		}
-		for _, rec := range recs.Items {
-			if rec == fqdn {
-				return zone, nil
-			}
-		}
-	}
-	return bestZone, nil
+	// powerdns _only_ looks for records on the longest matching subdomain zone
+	// aka, for test.sub.example.com if sub.example.com exists, it will look there
+	// it will not look atexample.com even if it also exists
+	return zones.Items[0].Name, nil
 }

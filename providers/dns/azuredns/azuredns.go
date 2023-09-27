@@ -3,12 +3,14 @@
 package azuredns
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/platform/config/env"
@@ -31,6 +33,12 @@ const (
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+
+	EnvUseEnvVars = envNamespace + "USE_ENV_VARS"
+	EnvUseWli     = envNamespace + "USE_WLI"
+	EnvUseMsi     = envNamespace + "USE_MSI"
+	EnvUseCli     = envNamespace + "USE_CLI"
+	EnvMsiTimeout = envNamespace + "MSI_TIMEOUT"
 )
 
 // Config is used to configure the creation of the DNSProvider.
@@ -49,6 +57,12 @@ type Config struct {
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
+
+	UseEnvVars bool
+	UseWli     bool
+	UseMsi     bool
+	UseCli     bool
+	MsiTimeout time.Duration
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
@@ -58,7 +72,37 @@ func NewDefaultConfig() *Config {
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
 		Environment:        cloud.AzurePublic,
+		UseEnvVars:         env.GetOrDefaultBool(EnvUseEnvVars, true),
+		UseWli:             env.GetOrDefaultBool(EnvUseWli, true),
+		UseMsi:             env.GetOrDefaultBool(EnvUseMsi, true),
+		UseCli:             env.GetOrDefaultBool(EnvUseCli, true),
+		MsiTimeout:         env.GetOrDefaultSecond(EnvMsiTimeout, 2*time.Second),
 	}
+}
+
+// timeoutWrapper wraps a ManagedIdentityCredential to add a timeout.
+type timeoutWrapper struct {
+	cred    azcore.TokenCredential
+	timeout time.Duration
+}
+
+// timeoutWrapper GetToken implements the azcore.TokenCredential interface.
+func (w *timeoutWrapper) GetToken(ctx context.Context, opts policy.TokenRequestOptions) (azcore.AccessToken, error) {
+	var tk azcore.AccessToken
+	var err error
+	if w.timeout > 0 {
+		c, cancel := context.WithTimeout(ctx, w.timeout)
+		defer cancel()
+		tk, err = w.cred.GetToken(c, opts)
+		if ce := c.Err(); errors.Is(ce, context.DeadlineExceeded) {
+			err = azidentity.NewCredentialUnavailableError("managed identity timed out")
+		} else {
+			w.timeout = 0
+		}
+	} else {
+		tk, err = w.cred.GetToken(ctx, opts)
+	}
+	return tk, err
 }
 
 // DNSProvider implements the challenge.Provider interface.
@@ -103,30 +147,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("azuredns: the configuration of the DNS provider is nil")
 	}
 
-	var err error
-	var credentials azcore.TokenCredential
-	if config.ClientID != "" && config.ClientSecret != "" && config.TenantID != "" {
-		options := azidentity.ClientSecretCredentialOptions{
-			ClientOptions: azcore.ClientOptions{
-				Cloud: config.Environment,
-			},
-		}
-
-		credentials, err = azidentity.NewClientSecretCredential(config.TenantID, config.ClientID, config.ClientSecret, &options)
-		if err != nil {
-			return nil, fmt.Errorf("azuredns: %w", err)
-		}
-	} else {
-		options := azidentity.DefaultAzureCredentialOptions{
-			ClientOptions: azcore.ClientOptions{
-				Cloud: config.Environment,
-			},
-		}
-
-		credentials, err = azidentity.NewDefaultAzureCredential(&options)
-		if err != nil {
-			return nil, fmt.Errorf("azuredns: %w", err)
-		}
+	creds := getCredentials(config)
+	credentials, err := azidentity.NewChainedTokenCredential(*creds, nil)
+	if err != nil {
+		return nil, errors.New("azuredns: Unable to retrieve valid credentials")
 	}
 
 	if config.SubscriptionID == "" {
@@ -151,6 +175,52 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	return &DNSProvider{provider: dnsProvider}, nil
+}
+
+//gocyclo:ignore
+func getCredentials(config *Config) *[]azcore.TokenCredential {
+	var creds []azcore.TokenCredential
+	clientOptions := azcore.ClientOptions{Cloud: config.Environment}
+
+	var err error
+	var cred azcore.TokenCredential
+	if config.UseEnvVars {
+		if config.ClientID != "" && config.ClientSecret != "" && config.TenantID != "" {
+			cred, err = azidentity.NewClientSecretCredential(config.TenantID, config.ClientID, config.ClientSecret,
+				&azidentity.ClientSecretCredentialOptions{ClientOptions: clientOptions})
+			if err == nil {
+				creds = append(creds, cred)
+			}
+		} else {
+			cred, err = azidentity.NewEnvironmentCredential(&azidentity.EnvironmentCredentialOptions{ClientOptions: clientOptions})
+			if err == nil {
+				creds = append(creds, cred)
+			}
+		}
+	}
+
+	if config.UseWli {
+		cred, err = azidentity.NewWorkloadIdentityCredential(&azidentity.WorkloadIdentityCredentialOptions{ClientOptions: clientOptions})
+		if err == nil {
+			creds = append(creds, cred)
+		}
+	}
+
+	if config.UseMsi {
+		cred, err = azidentity.NewManagedIdentityCredential(&azidentity.ManagedIdentityCredentialOptions{ClientOptions: clientOptions})
+		if err == nil {
+			creds = append(creds, &timeoutWrapper{cred, time.Second})
+		}
+	}
+
+	if config.UseCli {
+		cred, err = azidentity.NewAzureCLICredential(nil)
+		if err == nil {
+			creds = append(creds, cred)
+		}
+	}
+
+	return &creds
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.

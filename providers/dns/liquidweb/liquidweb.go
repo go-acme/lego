@@ -16,22 +16,22 @@ import (
 	"github.com/liquidweb/liquidweb-go/network"
 )
 
-const defaultBaseURL = "https://api.stormondemand.com"
+const DefaultBaseUrl = "https://api.liquidweb.com"
 
 // Environment variables names.
 const (
-	envNamespace       = "LWAPI"
-	envLegacyNamespace = "LIQUID_WEB_"
+	EnvPrefix       = "LWAPI_"
+	envLegacyPrefix = "LIQUID_WEB_"
 
-	EnvURL      = envNamespace + "URL"
-	EnvUsername = envNamespace + "USERNAME"
-	EnvPassword = envNamespace + "PASSWORD"
-	EnvZone     = envNamespace + "ZONE"
+	EnvURL      = "URL"
+	EnvUsername = "USERNAME"
+	EnvPassword = "PASSWORD"
 
-	EnvTTL                = envNamespace + "TTL"
-	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
-	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
-	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+	EnvZone               = "ZONE"
+	EnvTTL                = "TTL"
+	EnvPropagationTimeout = "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = "POLLING_INTERVAL"
+	EnvHTTPTimeout        = "HTTP_TIMEOUT"
 )
 
 // Config is used to configure the creation of the DNSProvider.
@@ -46,20 +46,6 @@ type Config struct {
 	HTTPTimeout        time.Duration
 }
 
-// NewDefaultConfig returns a default configuration for the DNSProvider.
-func NewDefaultConfig() *Config {
-	config := &Config{
-		BaseURL:            defaultBaseURL,
-		TTL:                env.GetOrDefaultInt(EnvTTL, 300),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
-		HTTPTimeout:        env.GetOrDefaultSecond(EnvHTTPTimeout, 1*time.Minute),
-		Zone:               env.GetOrDefaultString(EnvZone, ""),
-	}
-
-	return config
-}
-
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config      *Config
@@ -68,42 +54,52 @@ type DNSProvider struct {
 	recordIDsMu sync.Mutex
 }
 
-// NewDNSProvider returns a DNSProvider instance configured for Liquid Web.
-func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvUsername, EnvPassword, EnvZone)
-	if err != nil {
-		return nil, fmt.Errorf("liquidweb: %w", err)
-	}
-
-	config := NewDefaultConfig()
-	config.BaseURL = env.GetOrFile(EnvURL)
-	config.Username = values[EnvUsername]
-	config.Password = values[EnvPassword]
-	config.Zone = values[EnvZone]
-
-	return NewDNSProviderConfig(config)
+func getStringEnv(varName, defVal string) string {
+	defVal = env.GetOrDefaultString(envLegacyPrefix+varName, defVal)
+	defVal = env.GetOrDefaultString(EnvPrefix+varName, defVal)
+	return defVal
 }
 
-// NewDNSProviderConfig return a DNSProvider instance configured for Liquid Web.
-func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
+func getIntEnv(varName string, defVal int) int {
+	defVal = env.GetOrDefaultInt(envLegacyPrefix+varName, defVal)
+	defVal = env.GetOrDefaultInt(EnvPrefix+varName, defVal)
+	return defVal
+}
+
+func getSecondEnv(varName string, defVal time.Duration) time.Duration {
+	defVal = env.GetOrDefaultSecond(envLegacyPrefix+varName, defVal)
+	defVal = env.GetOrDefaultSecond(EnvPrefix+varName, defVal)
+	return defVal
+}
+
+// NewDNSProvider returns a DNSProvider instance configured for Liquid Web.
+func NewDNSProvider() (*DNSProvider, error) {
+	config := &Config{
+		Username:           getStringEnv(EnvUsername, ""),
+		Password:           getStringEnv(EnvPassword, ""),
+		BaseURL:            getStringEnv(EnvURL, DefaultBaseUrl),
+		Zone:               getStringEnv(EnvZone, ""),
+		TTL:                getIntEnv(EnvTTL, 300),
+		PropagationTimeout: getSecondEnv(EnvPropagationTimeout, 2*time.Minute),
+		PollingInterval:    getSecondEnv(EnvPollingInterval, 2*time.Second),
+		HTTPTimeout:        getSecondEnv(EnvHTTPTimeout, 1*time.Minute),
+	}
+
 	if config == nil {
 		return nil, errors.New("liquidweb: the configuration of the DNS provider is nil")
 	}
 
 	if config.BaseURL == "" {
-		config.BaseURL = defaultBaseURL
+		config.BaseURL = DefaultBaseUrl
 	}
 
-	if config.Zone == "" {
-		return nil, errors.New("liquidweb: zone is missing")
-	}
-
-	if config.Username == "" {
-		return nil, errors.New("liquidweb: username is missing")
-	}
-
-	if config.Password == "" {
-		return nil, errors.New("liquidweb: password is missing")
+	switch {
+	case config.Username == "" && config.Password == "":
+		return nil, errors.New("liquidweb: username and password are missing, set LWAPI_USERNAME and LWAPI_PASSWORD")
+	case config.Username == "":
+		return nil, errors.New("liquidweb: username is missing, set LWAPI_USERNAME")
+	case config.Password == "":
+		return nil, errors.New("liquidweb: password is missing, set LWAPI_PASSWORD")
 	}
 
 	// Initialize LW client.

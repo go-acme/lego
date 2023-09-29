@@ -64,7 +64,7 @@ The Azure Credentials can be configured using the following environment variable
 * AZURE_CLIENT_SECRET = "Client secret"
 * AZURE_TENANT_ID = "Tenant ID"
 
-This authentication method can be disabled by setting the `AZURE_USE_ENV_VARS` environment variable to `false`.
+This authentication method can be specificaly used by setting the `AZURE_USE_ENV_VARS` environment variable to `true`.
 
 #### Client certificate
 
@@ -73,7 +73,7 @@ The Azure Credentials can be configured using the following environment variable
 * AZURE_CLIENT_CERTIFICATE_PATH = "Client certificate path"
 * AZURE_TENANT_ID = "Tenant ID"
 
-This authentication method can be disabled by setting the `AZURE_USE_ENV_VARS` environment variable to `false`.
+This authentication method can be specificaly used by setting the `AZURE_USE_ENV_VARS` environment variable to `true`.
 
 ### Workload identity
 
@@ -89,7 +89,7 @@ Here is a summary of the steps to follow to use it :
 Link :
 - [Azure AD Workload identity](https://azure.github.io/azure-workload-identity/docs/topics/service-account-labels-and-annotations.html)
 
-This authentication method can be disabled by setting the `AZURE_USE_WLI` environment variable to `false`.
+This authentication method can be specificaly used by setting the `AZURE_USE_WLI` environment variable to `true`.
 
 ### Azure Managed Identity
 
@@ -124,7 +124,7 @@ az role assignment create \
 ```
 
 A timeout wrapper is configured for this authentication method. The duraction can be configured by setting the `AZURE_MSI_TIMEOUT`. The default timeout is 2 seconds.
-This authentication method can be disabled by setting the `AZURE_USE_MSI` environment variable to `false`.
+This authentication method can be specificaly used by setting the `AZURE_USE_MSI` environment variable to `true`.
 
 #### Azure Managed Identity (with Azure Arc)
 
@@ -138,7 +138,7 @@ you may need to set the environment variables:
 * `IDENTITY_ENDPOINT=http://localhost:40342/metadata/identity/oauth2/token`
 
 A timeout wrapper is configured for this authentication method. The duraction can be configured by setting the `AZURE_MSI_TIMEOUT`. The default timeout is 2 seconds.
-This authentication method can be disabled by setting the `AZURE_USE_MSI` environment variable to `false`.
+This authentication method can be specificaly used by setting the `AZURE_USE_MSI` environment variable to `true`.
 
 ### Azure CLI
 
@@ -146,7 +146,7 @@ The Azure CLI is a command-line tool provided by Microsoft to interact with Azur
 It provides an easy way to authenticate by simply running `az login` command.
 The generated token will be cached by default in the `~/.azure` folder.
 
-This authentication method can be disabled by setting the `AZURE_USE_CLI` environment variable to `false`.
+This authentication method can be specificaly used by setting the `AZURE_USE_CLI` environment variable to `true`.
 
 '''
 
@@ -156,10 +156,10 @@ This authentication method can be disabled by setting the `AZURE_USE_CLI` enviro
     AZURE_CLIENT_SECRET = "Client secret"
     AZURE_TENANT_ID = "Tenant ID"
     AZURE_CLIENT_CERTIFICATE_PATH = "Client certificate path"
-    AZURE_USE_ENV_VARS = "Enable environment variables credentials, true by default"
-    AZURE_USE_WLI = "Enable workload identity credentials, true by default"
-    AZURE_USE_MSI = "Enable managed service identity credentials, true by default"
-    AZURE_USE_CLI = "Enable Azure CLI credentials, true by default"
+    AZURE_USE_ENV_VARS = "Specificaly use environment variables credentials"
+    AZURE_USE_WLI = "Specificaly use workload identity credentials"
+    AZURE_USE_MSI = "Specificaly use managed service identity credentials"
+    AZURE_USE_CLI = "Specificaly use Azure CLI credentials"
   [Configuration.DnsZone]
     AZURE_SUBSCRIPTION_ID = "DNS zone subscription ID"
     AZURE_RESOURCE_GROUP = "DNS zone resource group"

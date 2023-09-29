@@ -72,10 +72,10 @@ func NewDefaultConfig() *Config {
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
 		Environment:        cloud.AzurePublic,
-		UseEnvVars:         env.GetOrDefaultBool(EnvUseEnvVars, true),
-		UseWli:             env.GetOrDefaultBool(EnvUseWli, true),
-		UseMsi:             env.GetOrDefaultBool(EnvUseMsi, true),
-		UseCli:             env.GetOrDefaultBool(EnvUseCli, true),
+		UseEnvVars:         env.GetOrDefaultBool(EnvUseEnvVars, false),
+		UseWli:             env.GetOrDefaultBool(EnvUseWli, false),
+		UseMsi:             env.GetOrDefaultBool(EnvUseMsi, false),
+		UseCli:             env.GetOrDefaultBool(EnvUseCli, false),
 		MsiTimeout:         env.GetOrDefaultSecond(EnvMsiTimeout, 2*time.Second),
 	}
 }
@@ -147,8 +147,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("azuredns: the configuration of the DNS provider is nil")
 	}
 
-	creds := getCredentials(config)
-	credentials, err := azidentity.NewChainedTokenCredential(*creds, nil)
+	credentials, err := getCredentials(config)
 	if err != nil {
 		return nil, errors.New("azuredns: Unable to retrieve valid credentials")
 	}
@@ -178,7 +177,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 }
 
 //gocyclo:ignore
-func getCredentials(config *Config) *[]azcore.TokenCredential {
+func getCredentials(config *Config) (azcore.TokenCredential, error) {
 	var creds []azcore.TokenCredential
 	clientOptions := azcore.ClientOptions{Cloud: config.Environment}
 
@@ -220,7 +219,11 @@ func getCredentials(config *Config) *[]azcore.TokenCredential {
 		}
 	}
 
-	return &creds
+	if len(creds) != 0 {
+		return azidentity.NewChainedTokenCredential(creds, nil)
+	}
+
+	return azidentity.NewDefaultAzureCredential(&azidentity.DefaultAzureCredentialOptions{ClientOptions: clientOptions})
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.

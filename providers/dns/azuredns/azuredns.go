@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
@@ -34,10 +35,7 @@ const (
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 
-	EnvUseEnvVars = envNamespace + "USE_ENV_VARS"
-	EnvUseWli     = envNamespace + "USE_WLI"
-	EnvUseMsi     = envNamespace + "USE_MSI"
-	EnvUseCli     = envNamespace + "USE_CLI"
+	EnvAuthMethod = envNamespace + "AUTH_METHOD"
 	EnvMsiTimeout = envNamespace + "MSI_TIMEOUT"
 )
 
@@ -58,10 +56,7 @@ type Config struct {
 	PollingInterval    time.Duration
 	TTL                int
 
-	UseEnvVars bool
-	UseWli     bool
-	UseMsi     bool
-	UseCli     bool
+	AuthMethod string
 	MsiTimeout time.Duration
 }
 
@@ -72,10 +67,7 @@ func NewDefaultConfig() *Config {
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
 		Environment:        cloud.AzurePublic,
-		UseEnvVars:         env.GetOrDefaultBool(EnvUseEnvVars, false),
-		UseWli:             env.GetOrDefaultBool(EnvUseWli, false),
-		UseMsi:             env.GetOrDefaultBool(EnvUseMsi, false),
-		UseCli:             env.GetOrDefaultBool(EnvUseCli, false),
+		AuthMethod:         env.GetOrDefaultString(EnvAuthMethod, ""),
 		MsiTimeout:         env.GetOrDefaultSecond(EnvMsiTimeout, 2*time.Second),
 	}
 }
@@ -176,51 +168,32 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	return &DNSProvider{provider: dnsProvider}, nil
 }
 
-//gocyclo:ignore
 func getCredentials(config *Config) (azcore.TokenCredential, error) {
-	var creds []azcore.TokenCredential
 	clientOptions := azcore.ClientOptions{Cloud: config.Environment}
 
-	var err error
-	var cred azcore.TokenCredential
-	if config.UseEnvVars {
+	if strings.EqualFold(config.AuthMethod, "env") {
 		if config.ClientID != "" && config.ClientSecret != "" && config.TenantID != "" {
-			cred, err = azidentity.NewClientSecretCredential(config.TenantID, config.ClientID, config.ClientSecret,
+			return azidentity.NewClientSecretCredential(config.TenantID, config.ClientID, config.ClientSecret,
 				&azidentity.ClientSecretCredentialOptions{ClientOptions: clientOptions})
-			if err == nil {
-				creds = append(creds, cred)
-			}
-		} else {
-			cred, err = azidentity.NewEnvironmentCredential(&azidentity.EnvironmentCredentialOptions{ClientOptions: clientOptions})
-			if err == nil {
-				creds = append(creds, cred)
-			}
 		}
+
+		return azidentity.NewEnvironmentCredential(&azidentity.EnvironmentCredentialOptions{ClientOptions: clientOptions})
 	}
 
-	if config.UseWli {
-		cred, err = azidentity.NewWorkloadIdentityCredential(&azidentity.WorkloadIdentityCredentialOptions{ClientOptions: clientOptions})
-		if err == nil {
-			creds = append(creds, cred)
-		}
+	if strings.EqualFold(config.AuthMethod, "wli") {
+		return azidentity.NewWorkloadIdentityCredential(&azidentity.WorkloadIdentityCredentialOptions{ClientOptions: clientOptions})
 	}
 
-	if config.UseMsi {
-		cred, err = azidentity.NewManagedIdentityCredential(&azidentity.ManagedIdentityCredentialOptions{ClientOptions: clientOptions})
-		if err == nil {
-			creds = append(creds, &timeoutWrapper{cred, time.Second})
+	if strings.EqualFold(config.AuthMethod, "msi") {
+		cred, err := azidentity.NewManagedIdentityCredential(&azidentity.ManagedIdentityCredentialOptions{ClientOptions: clientOptions})
+		if err != nil {
+			return nil, err
 		}
+		return &timeoutWrapper{cred: cred, timeout: config.MsiTimeout}, nil
 	}
 
-	if config.UseCli {
-		cred, err = azidentity.NewAzureCLICredential(nil)
-		if err == nil {
-			creds = append(creds, cred)
-		}
-	}
-
-	if len(creds) != 0 {
-		return azidentity.NewChainedTokenCredential(creds, nil)
+	if strings.EqualFold(config.AuthMethod, "cli") {
+		return azidentity.NewAzureCLICredential(nil)
 	}
 
 	return azidentity.NewDefaultAzureCredential(&azidentity.DefaultAzureCredentialOptions{ClientOptions: clientOptions})

@@ -1,6 +1,7 @@
 package liquidweb
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/liquidweb/liquidweb-go/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -21,6 +23,134 @@ var envTest = tester.NewEnvTest(
 	EnvPrefix+EnvPassword,
 	EnvPrefix+EnvZone).
 	WithDomain(envDomain)
+
+func mockApiCreate(t *testing.T, recs map[int]string) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		body, err := io.ReadAll(r.Body)
+		if !assert.NoError(t, err) {
+			http.Error(w, "invalid request", http.StatusInternalServerError)
+		}
+
+		req := struct {
+			Params struct {
+				Name   string `json:"name"`
+				Rdata  string `json:"rdata"`
+				Type   string `json:"type"`
+				ID     int    `json:"ID"`
+				Zone   int    `json:"zone"`
+				ZoneID int    `json:"zone_id"`
+			} `json:"params"`
+		}{}
+		req.Params.ZoneID = 1
+
+		if !assert.NoError(t, json.Unmarshal(body, &req)) {
+			resp := jsonEncodingError
+			resp.Data = string(body)
+			resp.FullMessage = fmt.Sprintf(resp.FullMessage, string(body))
+			json.NewEncoder(w).Encode(resp)
+		}
+
+		if val, ok := mockApiServerRecords[req.Params.Name]; ok {
+			recs[val] = req.Params.Name
+			req.Params.ID = val
+			resp, err := json.Marshal(req.Params)
+			if err != nil {
+				http.Error(w, "", http.StatusInternalServerError)
+			}
+			w.Write(resp)
+			return
+		}
+		t.Errorf("requested to create record for %s and does not exist", req.Params.Name)
+		http.Error(w, "bad request records", http.StatusInternalServerError)
+		return
+	}
+}
+
+func mockApiDelete(t *testing.T, recs map[int]string) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		body, err := io.ReadAll(r.Body)
+		if !assert.NoError(t, err) {
+			http.Error(w, "invalid request", http.StatusInternalServerError)
+		}
+
+		req := struct {
+			Params struct {
+				ID int `json:"id"`
+			} `json:"params"`
+		}{}
+
+		if !assert.NoError(t, json.Unmarshal(body, &req)) {
+			resp := jsonEncodingError
+			resp.Data = string(body)
+			resp.FullMessage = fmt.Sprintf(resp.FullMessage, string(body))
+			json.NewEncoder(w).Encode(resp)
+		}
+
+		if val, ok := recs[req.Params.ID]; ok && val != "" {
+			delete(recs, req.Params.ID)
+			w.Write([]byte(fmt.Sprintf("{\"deleted\":%d}", req.Params.ID)))
+			return
+		}
+		http.Error(w, fmt.Sprintf(`{"error":"","error_class":"LW::Exception::RecordNotFound","field":"network_dns_rr","full_message":"Record 'network_dns_rr: %d' not found","input":"%d","public_message":null}`, req.Params.ID, req.Params.ID), http.StatusOK)
+		return
+	}
+}
+
+func mockApiListZones(t *testing.T) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		body, err := io.ReadAll(r.Body)
+		if !assert.NoError(t, err) {
+			http.Error(w, "invalid request", http.StatusInternalServerError)
+		}
+
+		req := struct {
+			Params struct {
+				PageNum int `json:"page_num"`
+			} `json:"params"`
+		}{}
+
+		if !assert.NoError(t, json.Unmarshal(body, &req)) {
+			resp := jsonEncodingError
+			resp.Data = string(body)
+			resp.FullMessage = fmt.Sprintf(resp.FullMessage, string(body))
+			json.NewEncoder(w).Encode(resp)
+		}
+
+		switch {
+		case req.Params.PageNum < 1:
+			req.Params.PageNum = 1
+		case req.Params.PageNum > len(mockZones):
+			req.Params.PageNum = len(mockZones)
+		}
+		resp := mockZones[req.Params.PageNum]
+		resp.ItemTotal = types.FlexInt(len(mockApiServerRecords))
+		resp.PageNum = types.FlexInt(req.Params.PageNum)
+		resp.PageSize = 5
+		resp.PageTotal = types.FlexInt(len(mockZones))
+
+		if respBody, err := json.Marshal(resp); err == nil {
+			w.Write(respBody)
+			return
+		}
+		http.Error(w, "", http.StatusInternalServerError)
+		return
+	}
+}
+
+func testApiServer(t *testing.T) {
+	t.Helper()
+
+	mux := http.NewServeMux()
+	server := httptest.NewServer(mux)
+	t.Cleanup(server.Close)
+
+	recs := map[int]string{}
+	mux.HandleFunc("/Network/DNS/Record/delete", mockApiDelete(t, recs))
+	mux.HandleFunc("/Network/DNS/Record/create", mockApiCreate(t, recs))
+	mux.HandleFunc("/Network/DNS/Zone/list", mockApiListZones(t))
+
+}
 
 func setupTest(t *testing.T) (*DNSProvider, *http.ServeMux) {
 	t.Helper()

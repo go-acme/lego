@@ -165,38 +165,38 @@ func mockApiListZones() func(http.ResponseWriter, *http.Request) {
 	}
 }
 
-func testApiServer(t *testing.T) {
+func testApiServer(t *testing.T) string {
 	t.Helper()
 
 	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
 
 	recs := map[int]string{}
-	mux.HandleFunc("/Network/DNS/Record/delete", mockApiDelete(t, recs))
-	mux.HandleFunc("/Network/DNS/Record/create", mockApiCreate(t, recs))
-	mux.HandleFunc("/Network/DNS/Zone/list", mockApiListZones(t))
+	mux.HandleFunc("/Network/DNS/Record/delete", mockApiDelete(recs))
+	mux.HandleFunc("/Network/DNS/Record/create", mockApiCreate(recs))
+	mux.HandleFunc("/Network/DNS/Zone/list", mockApiListZones())
+	handler := http.HandlerFunc(requireJson(mux))
+	handler = http.HandlerFunc(requireBasicAuth(handler))
+
+	server := httptest.NewServer(handler)
+	t.Cleanup(server.Close)
+	return server.URL
 
 }
 
-func setupTest(t *testing.T) (*DNSProvider, *http.ServeMux) {
+func setupTest(t *testing.T) *DNSProvider {
 	t.Helper()
-
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
 
 	envTest.Apply(map[string]string{
 		EnvPrefix + EnvUsername: "blars",
 		EnvPrefix + EnvPassword: "tacoman",
-		EnvPrefix + EnvURL:      server.URL,
+		EnvPrefix + EnvURL:      testApiServer(t),
 		EnvPrefix + EnvZone:     "tacoman.com", // this needs to be removed from test?
 	})
 
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	return provider, mux
+	return provider
 }
 
 func TestNewDNSProvider(t *testing.T) {

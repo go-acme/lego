@@ -1,6 +1,7 @@
 package liquidweb
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -24,11 +25,36 @@ var envTest = tester.NewEnvTest(
 	EnvPrefix+EnvZone).
 	WithDomain(envDomain)
 
-func mockApiCreate(t *testing.T, recs map[int]string) func(http.ResponseWriter, *http.Request) {
+func requireBasicAuth(child http.Handler) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		username, password, ok := r.BasicAuth()
+		if ok && username == "blars" && password == "tacoman" {
+			child.ServeHTTP(w, r)
+			return
+		}
+		http.Error(w, "invalid auth", http.StatusForbidden)
+	}
+}
+
+func requireJson(child http.Handler) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		buf := &bytes.Buffer{}
+		_, err := buf.ReadFrom(r.Body)
+		if err != nil {
+			http.Error(w, "malformed request - json required", http.StatusBadRequest)
+			return
+		}
+		r.Body = io.NopCloser(buf)
+		child.ServeHTTP(w, r)
+	}
+}
+
+func mockApiCreate(recs map[int]string) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		body, err := io.ReadAll(r.Body)
-		if !assert.NoError(t, err) {
+		if err != nil {
 			http.Error(w, "invalid request", http.StatusInternalServerError)
+			return
 		}
 
 		req := struct {
@@ -43,7 +69,7 @@ func mockApiCreate(t *testing.T, recs map[int]string) func(http.ResponseWriter, 
 		}{}
 		req.Params.ZoneID = 1
 
-		if !assert.NoError(t, json.Unmarshal(body, &req)) {
+		if err := json.Unmarshal(body, &req); err != nil {
 			resp := jsonEncodingError
 			resp.Data = string(body)
 			resp.FullMessage = fmt.Sprintf(resp.FullMessage, string(body))
@@ -60,17 +86,17 @@ func mockApiCreate(t *testing.T, recs map[int]string) func(http.ResponseWriter, 
 			w.Write(resp)
 			return
 		}
-		t.Errorf("requested to create record for %s and does not exist", req.Params.Name)
-		http.Error(w, "bad request records", http.StatusInternalServerError)
+		http.Error(w, "record not defined for tests", http.StatusInternalServerError)
 		return
 	}
 }
 
-func mockApiDelete(t *testing.T, recs map[int]string) func(http.ResponseWriter, *http.Request) {
+func mockApiDelete(recs map[int]string) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		body, err := io.ReadAll(r.Body)
-		if !assert.NoError(t, err) {
+		if err != nil {
 			http.Error(w, "invalid request", http.StatusInternalServerError)
+			return
 		}
 
 		req := struct {
@@ -79,7 +105,7 @@ func mockApiDelete(t *testing.T, recs map[int]string) func(http.ResponseWriter, 
 			} `json:"params"`
 		}{}
 
-		if !assert.NoError(t, json.Unmarshal(body, &req)) {
+		if err := json.Unmarshal(body, &req); err != nil {
 			resp := jsonEncodingError
 			resp.Data = string(body)
 			resp.FullMessage = fmt.Sprintf(resp.FullMessage, string(body))
@@ -96,12 +122,13 @@ func mockApiDelete(t *testing.T, recs map[int]string) func(http.ResponseWriter, 
 	}
 }
 
-func mockApiListZones(t *testing.T) func(http.ResponseWriter, *http.Request) {
+func mockApiListZones() func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		body, err := io.ReadAll(r.Body)
-		if !assert.NoError(t, err) {
+		if err != nil {
 			http.Error(w, "invalid request", http.StatusInternalServerError)
+			return
 		}
 
 		req := struct {
@@ -110,7 +137,7 @@ func mockApiListZones(t *testing.T) func(http.ResponseWriter, *http.Request) {
 			} `json:"params"`
 		}{}
 
-		if !assert.NoError(t, json.Unmarshal(body, &req)) {
+		if err := json.Unmarshal(body, &req); err != nil {
 			resp := jsonEncodingError
 			resp.Data = string(body)
 			resp.FullMessage = fmt.Sprintf(resp.FullMessage, string(body))

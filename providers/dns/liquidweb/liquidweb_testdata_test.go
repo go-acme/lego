@@ -2,7 +2,7 @@ package liquidweb
 
 import "github.com/liquidweb/liquidweb-go/network"
 
-var mockApiServerRecords = map[string]int{
+var mockApiServerZones = map[string]int{
 	"blars.com":     1,
 	"tacoman.com":   2,
 	"storm.com":     3,

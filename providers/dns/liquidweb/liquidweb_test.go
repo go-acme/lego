@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/liquidweb/liquidweb-go/network"
 	"github.com/liquidweb/liquidweb-go/types"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -49,7 +49,7 @@ func requireJson(child http.Handler) func(http.ResponseWriter, *http.Request) {
 	}
 }
 
-func mockApiCreate(recs map[int]string) func(http.ResponseWriter, *http.Request) {
+func mockApiCreate(recs map[int]network.DNSRecord) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
@@ -58,16 +58,8 @@ func mockApiCreate(recs map[int]string) func(http.ResponseWriter, *http.Request)
 		}
 
 		req := struct {
-			Params struct {
-				Name   string `json:"name"`
-				Rdata  string `json:"rdata"`
-				Type   string `json:"type"`
-				ID     int    `json:"ID"`
-				Zone   int    `json:"zone"`
-				ZoneID int    `json:"zone_id"`
-			} `json:"params"`
+			Params network.DNSRecord `json:"params"`
 		}{}
-		req.Params.ZoneID = 1
 
 		if err := json.Unmarshal(body, &req); err != nil {
 			resp := jsonEncodingError
@@ -75,23 +67,27 @@ func mockApiCreate(recs map[int]string) func(http.ResponseWriter, *http.Request)
 			resp.FullMessage = fmt.Sprintf(resp.FullMessage, string(body))
 			json.NewEncoder(w).Encode(resp)
 		}
+		req.Params.ZoneID = 1
 
-		if val, ok := mockApiServerRecords[req.Params.Name]; ok {
-			recs[val] = req.Params.Name
-			req.Params.ID = val
-			resp, err := json.Marshal(req.Params)
-			if err != nil {
-				http.Error(w, "", http.StatusInternalServerError)
-			}
-			w.Write(resp)
+		if _, exists := recs[int(req.Params.ID)]; exists {
+			http.Error(w, "dns record already exists", http.StatusTeapot)
 			return
 		}
-		http.Error(w, "record not defined for tests", http.StatusInternalServerError)
+
+		recs[int(req.Params.ID)] = req.Params
+		recsNameToID[req.Params.Name] = int(req.Params.ID)
+
+		resp, err := json.Marshal(req.Params)
+		if err != nil {
+			http.Error(w, "", http.StatusInternalServerError)
+			return
+		}
+		w.Write(resp)
 		return
 	}
 }
 
-func mockApiDelete(recs map[int]string) func(http.ResponseWriter, *http.Request) {
+func mockApiDelete(recs map[int]network.DNSRecord) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
@@ -101,7 +97,8 @@ func mockApiDelete(recs map[int]string) func(http.ResponseWriter, *http.Request)
 
 		req := struct {
 			Params struct {
-				ID int `json:"id"`
+				Name string `json:"name"`
+				ID   int    `json:"id"`
 			} `json:"params"`
 		}{}
 
@@ -112,7 +109,18 @@ func mockApiDelete(recs map[int]string) func(http.ResponseWriter, *http.Request)
 			json.NewEncoder(w).Encode(resp)
 		}
 
-		if val, ok := recs[req.Params.ID]; ok && val != "" {
+		if req.Params.ID == 0 && req.Params.Name == "" {
+			http.Error(w, `{"error":"","error_class":"LW::Exception::Input::Multiple","errors":[{"error":"","error_class":"LW::Exception::Input::Required","field":"id","full_message":"The required field 'id' was missing a value.","position":null}],"field":["id"],"full_message":"The following input errors occurred:\nThe required field 'id' was missing a value.","type":null}`, http.StatusOK)
+			return
+		}
+
+		if req.Params.ID == 0 {
+			if name, ok := recsNameToID[req.Params.Name]; ok {
+				req.Params.ID = name
+			}
+		}
+
+		if _, ok := recs[req.Params.ID]; ok {
 			delete(recs, req.Params.ID)
 			w.Write([]byte(fmt.Sprintf("{\"deleted\":%d}", req.Params.ID)))
 			return
@@ -151,7 +159,7 @@ func mockApiListZones() func(http.ResponseWriter, *http.Request) {
 			req.Params.PageNum = len(mockZones)
 		}
 		resp := mockZones[req.Params.PageNum]
-		resp.ItemTotal = types.FlexInt(len(mockApiServerRecords))
+		resp.ItemTotal = types.FlexInt(len(mockApiServerZones))
 		resp.PageNum = types.FlexInt(req.Params.PageNum)
 		resp.PageSize = 5
 		resp.PageTotal = types.FlexInt(len(mockZones))
@@ -165,31 +173,39 @@ func mockApiListZones() func(http.ResponseWriter, *http.Request) {
 	}
 }
 
-func testApiServer(t *testing.T) string {
+var recsNameToID map[string]int
+
+func mockApiServer(t *testing.T, initRecs ...network.DNSRecord) string {
 	t.Helper()
+
+	recs := make(map[int]network.DNSRecord)
+	recsNameToID = make(map[string]int)
+
+	for _, rec := range initRecs {
+		recs[int(rec.ID)] = rec
+		recsNameToID[rec.Name] = int(rec.ID)
+	}
 
 	mux := http.NewServeMux()
 
-	recs := map[int]string{}
-	mux.HandleFunc("/Network/DNS/Record/delete", mockApiDelete(recs))
-	mux.HandleFunc("/Network/DNS/Record/create", mockApiCreate(recs))
-	mux.HandleFunc("/Network/DNS/Zone/list", mockApiListZones())
+	mux.HandleFunc("/v1/Network/DNS/Record/delete", mockApiDelete(recs))
+	mux.HandleFunc("/v1/Network/DNS/Record/create", mockApiCreate(recs))
+	mux.HandleFunc("/v1/Network/DNS/Zone/list", mockApiListZones())
 	handler := http.HandlerFunc(requireJson(mux))
 	handler = http.HandlerFunc(requireBasicAuth(handler))
 
 	server := httptest.NewServer(handler)
 	t.Cleanup(server.Close)
 	return server.URL
-
 }
 
-func setupTest(t *testing.T) *DNSProvider {
+func setupTest(t *testing.T, initRecs ...network.DNSRecord) *DNSProvider {
 	t.Helper()
 
 	envTest.Apply(map[string]string{
 		EnvPrefix + EnvUsername: "blars",
 		EnvPrefix + EnvPassword: "tacoman",
-		EnvPrefix + EnvURL:      testApiServer(t),
+		EnvPrefix + EnvURL:      mockApiServer(t, initRecs...),
 		EnvPrefix + EnvZone:     "tacoman.com", // this needs to be removed from test?
 	})
 
@@ -222,138 +238,18 @@ func TestNewDNSProvider(t *testing.T) {
 	}
 }
 
-/*
-func TestNewDNSProviderConfig(t *testing.T) {
-	testCases := []struct {
-		desc     string
-		username string
-		password string
-		zone     string
-		expected string
-	}{
-		{
-			desc:     "success",
-			username: "acme",
-			password: "secret",
-			zone:     "example.com",
-		},
-		{
-			desc:     "missing credentials",
-			username: "",
-			password: "",
-			zone:     "",
-			expected: "liquidweb: zone is missing",
-		},
-		{
-			desc:     "missing username",
-			username: "",
-			password: "secret",
-			zone:     "example.com",
-			expected: "liquidweb: username is missing",
-		},
-		{
-			desc:     "missing password",
-			username: "acme",
-			password: "",
-			zone:     "example.com",
-			expected: "liquidweb: password is missing",
-		},
-		{
-			desc:     "missing zone",
-			username: "acme",
-			password: "secret",
-			zone:     "",
-			expected: "liquidweb: zone is missing",
-		},
-	}
-
-	for _, test := range testCases {
-		t.Run(test.desc, func(t *testing.T) {
-			config := NewDefaultConfig()
-			config.Username = test.username
-			config.Password = test.password
-			config.Zone = test.zone
-
-			p, err := NewDNSProviderConfig(config)
-
-			if test.expected == "" {
-				require.NoError(t, err)
-				require.NotNil(t, p)
-				require.NotNil(t, p.config)
-				require.NotNil(t, p.client)
-				require.NotNil(t, p.recordIDs)
-			} else {
-				require.EqualError(t, err, test.expected)
-			}
-		})
-	}
-}
-*/
-
 func TestDNSProvider_Present(t *testing.T) {
-	provider, mux := setupTest(t)
-
-	mux.HandleFunc("/v1/Network/DNS/Record/create", func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, http.MethodPost, r.Method)
-
-		username, password, ok := r.BasicAuth()
-		assert.Equal(t, "blars", username)
-		assert.Equal(t, "tacoman", password)
-		assert.True(t, ok)
-
-		reqBody, err := io.ReadAll(r.Body)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		expectedReqBody := `
-			{
-				"params": {
-					"name": "_acme-challenge.tacoman.com",
-					"rdata": "\"47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU\"",
-					"ttl": 300,
-					"type": "TXT",
-					"zone": "tacoman.com"
-				}
-			}`
-		assert.JSONEq(t, expectedReqBody, string(reqBody))
-
-		w.WriteHeader(http.StatusOK)
-		_, err = fmt.Fprintf(w, `{
-			"type": "TXT",
-			"name": "_acme-challenge.tacoman.com",
-			"rdata": "\"47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU\"",
-			"ttl": 300,
-			"id": 1234567,
-			"prio": null
-		}`)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
+	provider := setupTest(t)
 
 	err := provider.Present("tacoman.com", "", "")
 	require.NoError(t, err)
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
-	provider, mux := setupTest(t)
-
-	mux.HandleFunc("/v1/Network/DNS/Record/delete", func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, http.MethodPost, r.Method)
-
-		username, password, ok := r.BasicAuth()
-		assert.Equal(t, "blars", username)
-		assert.Equal(t, "tacoman", password)
-		assert.True(t, ok)
-
-		_, err := fmt.Fprintf(w, `{"deleted": "123"}`)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+	provider := setupTest(t, network.DNSRecord{
+		Name:  "tacoman.com.",
+		RData: "123",
+		ID:    1234567,
 	})
 
 	provider.recordIDs["123"] = 1234567

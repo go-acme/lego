@@ -3,12 +3,15 @@
 package azuredns
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/platform/config/env"
@@ -28,6 +31,9 @@ const (
 	EnvClientID     = envNamespace + "CLIENT_ID"
 	EnvClientSecret = envNamespace + "CLIENT_SECRET"
 
+	EnvAuthMethod     = envNamespace + "AUTH_METHOD"
+	EnvAuthMSITimeout = envNamespace + "AUTH_MSI_TIMEOUT"
+
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
@@ -45,6 +51,9 @@ type Config struct {
 	ClientID     string
 	ClientSecret string
 	TenantID     string
+
+	AuthMethod     string
+	AuthMSITimeout time.Duration
 
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -94,6 +103,9 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config.ClientSecret = env.GetOrFile(EnvClientSecret)
 	config.TenantID = env.GetOrFile(EnvTenantID)
 
+	config.AuthMethod = env.GetOrFile(EnvAuthMethod)
+	config.AuthMSITimeout = env.GetOrDefaultSecond(EnvAuthMSITimeout, 2*time.Second)
+
 	return NewDNSProviderConfig(config)
 }
 
@@ -103,30 +115,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("azuredns: the configuration of the DNS provider is nil")
 	}
 
-	var err error
-	var credentials azcore.TokenCredential
-	if config.ClientID != "" && config.ClientSecret != "" && config.TenantID != "" {
-		options := azidentity.ClientSecretCredentialOptions{
-			ClientOptions: azcore.ClientOptions{
-				Cloud: config.Environment,
-			},
-		}
-
-		credentials, err = azidentity.NewClientSecretCredential(config.TenantID, config.ClientID, config.ClientSecret, &options)
-		if err != nil {
-			return nil, fmt.Errorf("azuredns: %w", err)
-		}
-	} else {
-		options := azidentity.DefaultAzureCredentialOptions{
-			ClientOptions: azcore.ClientOptions{
-				Cloud: config.Environment,
-			},
-		}
-
-		credentials, err = azidentity.NewDefaultAzureCredential(&options)
-		if err != nil {
-			return nil, fmt.Errorf("azuredns: %w", err)
-		}
+	credentials, err := getCredentials(config)
+	if err != nil {
+		return nil, fmt.Errorf("azuredns: Unable to retrieve valid credentials: %w", err)
 	}
 
 	if config.SubscriptionID == "" {
@@ -153,6 +144,37 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	return &DNSProvider{provider: dnsProvider}, nil
 }
 
+func getCredentials(config *Config) (azcore.TokenCredential, error) {
+	clientOptions := azcore.ClientOptions{Cloud: config.Environment}
+
+	switch strings.ToLower(config.AuthMethod) {
+	case "env":
+		if config.ClientID != "" && config.ClientSecret != "" && config.TenantID != "" {
+			return azidentity.NewClientSecretCredential(config.TenantID, config.ClientID, config.ClientSecret,
+				&azidentity.ClientSecretCredentialOptions{ClientOptions: clientOptions})
+		}
+
+		return azidentity.NewEnvironmentCredential(&azidentity.EnvironmentCredentialOptions{ClientOptions: clientOptions})
+
+	case "wli":
+		return azidentity.NewWorkloadIdentityCredential(&azidentity.WorkloadIdentityCredentialOptions{ClientOptions: clientOptions})
+
+	case "msi":
+		cred, err := azidentity.NewManagedIdentityCredential(&azidentity.ManagedIdentityCredentialOptions{ClientOptions: clientOptions})
+		if err != nil {
+			return nil, err
+		}
+
+		return &timeoutTokenCredential{cred: cred, timeout: config.AuthMSITimeout}, nil
+
+	case "cli":
+		return azidentity.NewAzureCLICredential(nil)
+
+	default:
+		return azidentity.NewDefaultAzureCredential(&azidentity.DefaultAzureCredentialOptions{ClientOptions: clientOptions})
+	}
+}
+
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
 // Adjusting here to cope with spikes in propagation times.
 func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
@@ -167,6 +189,31 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return d.provider.CleanUp(domain, token, keyAuth)
+}
+
+// timeoutTokenCredential wraps a TokenCredential to add a timeout.
+type timeoutTokenCredential struct {
+	cred    azcore.TokenCredential
+	timeout time.Duration
+}
+
+// GetToken implements the azcore.TokenCredential interface.
+func (w *timeoutTokenCredential) GetToken(ctx context.Context, opts policy.TokenRequestOptions) (azcore.AccessToken, error) {
+	if w.timeout <= 0 {
+		return w.cred.GetToken(ctx, opts)
+	}
+
+	ctxTimeout, cancel := context.WithTimeout(ctx, w.timeout)
+	defer cancel()
+
+	tk, err := w.cred.GetToken(ctxTimeout, opts)
+	if ce := ctxTimeout.Err(); errors.Is(ce, context.DeadlineExceeded) {
+		return tk, azidentity.NewCredentialUnavailableError("managed identity timed out")
+	}
+
+	w.timeout = 0
+
+	return tk, err
 }
 
 func deref[T string | int | int32 | int64](v *T) T {

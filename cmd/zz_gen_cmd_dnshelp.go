@@ -307,6 +307,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "AZURE_CLIENT_CERTIFICATE_PATH":	Client certificate path`)
 		ew.writeln(`	- "AZURE_CLIENT_ID":	Client ID`)
 		ew.writeln(`	- "AZURE_CLIENT_SECRET":	Client secret`)
 		ew.writeln(`	- "AZURE_RESOURCE_GROUP":	DNS zone resource group`)
@@ -315,6 +316,8 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "AZURE_AUTH_METHOD":	Specify which authentication method to use`)
+		ew.writeln(`	- "AZURE_AUTH_MSI_TIMEOUT":	Managed Identity timeout duration`)
 		ew.writeln(`	- "AZURE_ENVIRONMENT":	Azure environment, one of: public, usgovernment, and china`)
 		ew.writeln(`	- "AZURE_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "AZURE_PRIVATE_ZONE":	Set to true to use Azure Private DNS Zones and not public`)

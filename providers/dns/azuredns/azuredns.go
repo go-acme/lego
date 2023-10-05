@@ -117,7 +117,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	credentials, err := getCredentials(config)
 	if err != nil {
-		return nil, errors.New("azuredns: Unable to retrieve valid credentials")
+		return nil, fmt.Errorf("azuredns: Unable to retrieve valid credentials: %w", err)
 	}
 
 	if config.SubscriptionID == "" {

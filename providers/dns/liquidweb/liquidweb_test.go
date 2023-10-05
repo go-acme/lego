@@ -76,7 +76,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 		EnvPrefix + EnvPassword: "tacoman",
 		EnvPrefix + EnvURL: mockApiServer(t, network.DNSRecord{
 			Name:   "_acme-challenge.tacoman.com",
-			RData:  "123",
+			RData:  "123d==",
 			Type:   "TXT",
 			TTL:    300,
 			ID:     1234567,
@@ -88,9 +88,9 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
-	provider.recordIDs["123"] = 1234567
+	provider.recordIDs["123d=="] = 1234567
 
-	err = provider.CleanUp("tacoman.com.", "123", "")
+	err = provider.CleanUp("tacoman.com.", "123d==", "")
 	require.NoError(t, err, "fail to remove TXT record")
 }
 

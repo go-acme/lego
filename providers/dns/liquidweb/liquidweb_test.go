@@ -11,14 +11,14 @@ import (
 
 const envDomain = EnvPrefix + "DOMAIN"
 
-var envTest = tester.NewEnvTest(
-	EnvPrefix+EnvURL,
-	EnvPrefix+EnvUsername,
-	EnvPrefix+EnvPassword,
-	EnvPrefix+EnvZone).
-	WithDomain(envDomain)
-
 func TestNewDNSProvider(t *testing.T) {
+	envTest := tester.NewEnvTest(
+		EnvPrefix+EnvURL,
+		EnvPrefix+EnvUsername,
+		EnvPrefix+EnvPassword,
+		EnvPrefix+EnvZone).
+		WithDomain(envDomain)
+
 	for _, test := range testNewDNSProvider_testdata {
 		t.Run(test.desc, func(t *testing.T) {
 			defer envTest.RestoreEnv()
@@ -42,6 +42,12 @@ func TestNewDNSProvider(t *testing.T) {
 }
 
 func TestDNSProvider_Present(t *testing.T) {
+	envTest := tester.NewEnvTest(
+		EnvPrefix+EnvURL,
+		EnvPrefix+EnvUsername,
+		EnvPrefix+EnvPassword,
+		EnvPrefix+EnvZone).
+		WithDomain(envDomain)
 
 	envTest.Apply(map[string]string{
 		EnvPrefix + EnvUsername: "blars",
@@ -58,6 +64,13 @@ func TestDNSProvider_Present(t *testing.T) {
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
+	envTest := tester.NewEnvTest(
+		EnvPrefix+EnvURL,
+		EnvPrefix+EnvUsername,
+		EnvPrefix+EnvPassword,
+		EnvPrefix+EnvZone).
+		WithDomain(envDomain)
+
 	envTest.Apply(map[string]string{
 		EnvPrefix + EnvUsername: "blars",
 		EnvPrefix + EnvPassword: "tacoman",
@@ -82,6 +95,13 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 }
 
 func TestLivePresent(t *testing.T) {
+	envTest := tester.NewEnvTest(
+		EnvPrefix+EnvURL,
+		EnvPrefix+EnvUsername,
+		EnvPrefix+EnvPassword,
+		EnvPrefix+EnvZone).
+		WithDomain(envDomain)
+
 	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
@@ -96,6 +116,13 @@ func TestLivePresent(t *testing.T) {
 }
 
 func TestLiveCleanUp(t *testing.T) {
+	envTest := tester.NewEnvTest(
+		EnvPrefix+EnvURL,
+		EnvPrefix+EnvUsername,
+		EnvPrefix+EnvPassword,
+		EnvPrefix+EnvZone).
+		WithDomain(envDomain)
+
 	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}

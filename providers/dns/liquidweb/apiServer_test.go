@@ -63,7 +63,6 @@ func mockApiCreate(recs map[int]network.DNSRecord) func(http.ResponseWriter, *ht
 		}
 
 		recs[int(req.Params.ID)] = req.Params
-		recsNameToID[req.Params.Name] = int(req.Params.ID)
 
 		resp, err := json.Marshal(req.Params)
 		if err != nil {
@@ -97,15 +96,9 @@ func mockApiDelete(recs map[int]network.DNSRecord) func(http.ResponseWriter, *ht
 			json.NewEncoder(w).Encode(resp)
 		}
 
-		if req.Params.ID == 0 && req.Params.Name == "" {
+		if req.Params.ID == 0 {
 			http.Error(w, `{"error":"","error_class":"LW::Exception::Input::Multiple","errors":[{"error":"","error_class":"LW::Exception::Input::Required","field":"id","full_message":"The required field 'id' was missing a value.","position":null}],"field":["id"],"full_message":"The following input errors occurred:\nThe required field 'id' was missing a value.","type":null}`, http.StatusOK)
 			return
-		}
-
-		if req.Params.ID == 0 {
-			if name, ok := recsNameToID[req.Params.Name]; ok {
-				req.Params.ID = name
-			}
 		}
 
 		if _, ok := recs[req.Params.ID]; ok {
@@ -161,17 +154,13 @@ func mockApiListZones() func(http.ResponseWriter, *http.Request) {
 	}
 }
 
-var recsNameToID map[string]int
-
 func mockApiServer(t *testing.T, initRecs ...network.DNSRecord) string {
 	t.Helper()
 
 	recs := make(map[int]network.DNSRecord)
-	recsNameToID = make(map[string]int)
 
 	for _, rec := range initRecs {
 		recs[int(rec.ID)] = rec
-		recsNameToID[rec.Name] = int(rec.ID)
 	}
 
 	mux := http.NewServeMux()

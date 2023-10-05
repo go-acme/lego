@@ -18,22 +18,6 @@ var envTest = tester.NewEnvTest(
 	EnvPrefix+EnvZone).
 	WithDomain(envDomain)
 
-func setupTest(t *testing.T, initRecs ...network.DNSRecord) *DNSProvider {
-	t.Helper()
-
-	envTest.Apply(map[string]string{
-		EnvPrefix + EnvUsername: "blars",
-		EnvPrefix + EnvPassword: "tacoman",
-		EnvPrefix + EnvURL:      mockApiServer(t, initRecs...),
-		EnvPrefix + EnvZone:     "tacoman.com", // this needs to be removed from test?
-	})
-
-	provider, err := NewDNSProvider()
-	require.NoError(t, err)
-
-	return provider
-}
-
 func TestNewDNSProvider(t *testing.T) {
 	for _, test := range testNewDNSProvider_testdata {
 		t.Run(test.desc, func(t *testing.T) {
@@ -58,22 +42,42 @@ func TestNewDNSProvider(t *testing.T) {
 }
 
 func TestDNSProvider_Present(t *testing.T) {
-	provider := setupTest(t)
 
-	err := provider.Present("tacoman.com", "", "")
+	envTest.Apply(map[string]string{
+		EnvPrefix + EnvUsername: "blars",
+		EnvPrefix + EnvPassword: "tacoman",
+		EnvPrefix + EnvURL:      mockApiServer(t),
+		EnvPrefix + EnvZone:     "tacoman.com", // this needs to be removed from test?
+	})
+
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
+
+	err = provider.Present("tacoman.com", "", "")
 	require.NoError(t, err)
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
-	provider := setupTest(t, network.DNSRecord{
-		Name:  "tacoman.com.",
-		RData: "123",
-		ID:    1234567,
+	envTest.Apply(map[string]string{
+		EnvPrefix + EnvUsername: "blars",
+		EnvPrefix + EnvPassword: "tacoman",
+		EnvPrefix + EnvURL: mockApiServer(t, network.DNSRecord{
+			Name:   "_acme-challenge.tacoman.com",
+			RData:  "123",
+			Type:   "TXT",
+			TTL:    300,
+			ID:     1234567,
+			ZoneID: 42,
+		}),
+		EnvPrefix + EnvZone: "tacoman.com", // this needs to be removed from test?
 	})
+
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
 
 	provider.recordIDs["123"] = 1234567
 
-	err := provider.CleanUp("tacoman.com.", "123", "")
+	err = provider.CleanUp("tacoman.com.", "123", "")
 	require.NoError(t, err, "fail to remove TXT record")
 }
 

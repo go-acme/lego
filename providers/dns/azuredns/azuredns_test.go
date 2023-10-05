@@ -13,13 +13,13 @@ import (
 
 const envDomain = envNamespace + "DOMAIN"
 
-func TestNewDNSProvider(t *testing.T) {
-	envTest := tester.NewEnvTest(
-		EnvEnvironment,
-		EnvSubscriptionID,
-		EnvResourceGroup).
-		WithDomain(envDomain)
+var envTest = tester.NewEnvTest(
+	EnvEnvironment,
+	EnvSubscriptionID,
+	EnvResourceGroup).
+	WithDomain(envDomain)
 
+func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
 		desc     string
 		envVars  map[string]string
@@ -140,12 +140,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 }
 
 func TestLivePresent(t *testing.T) {
-	envTest := tester.NewEnvTest(
-		EnvEnvironment,
-		EnvSubscriptionID,
-		EnvResourceGroup).
-		WithDomain(envDomain)
-
 	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
@@ -159,12 +153,6 @@ func TestLivePresent(t *testing.T) {
 }
 
 func TestLiveCleanUp(t *testing.T) {
-	envTest := tester.NewEnvTest(
-		EnvEnvironment,
-		EnvSubscriptionID,
-		EnvResourceGroup).
-		WithDomain(envDomain)
-
 	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}

@@ -127,7 +127,9 @@ az role assignment create \
 --scope "/subscriptions/${AZURE_SUBSCRIPTION_ID}/resourceGroups/${AZURE_RESOURCE_GROUP}/providers/Microsoft.Network/dnszones/${AZURE_DNS_ZONE}/TXT/${AZ_RECORD_SET}"
 ```
 
-A timeout wrapper is configured for this authentication method. The duraction can be configured by setting the `AZURE_MSI_TIMEOUT`. The default timeout is 2 seconds.
+A timeout wrapper is configured for this authentication method.
+The duraction can be configured by setting the `AZURE_AUTH_MSI_TIMEOUT`.
+The default timeout is 2 seconds.
 This authentication method can be specificaly used by setting the `AZURE_AUTH_METHOD` environment variable to `msi`.
 
 #### Azure Managed Identity (with Azure Arc)
@@ -141,7 +143,9 @@ you may need to set the environment variables:
 * `IMDS_ENDPOINT=http://localhost:40342`
 * `IDENTITY_ENDPOINT=http://localhost:40342/metadata/identity/oauth2/token`
 
-A timeout wrapper is configured for this authentication method. The duraction can be configured by setting the `AZURE_MSI_TIMEOUT`. The default timeout is 2 seconds.
+A timeout wrapper is configured for this authentication method.
+The duraction can be configured by setting the `AZURE_AUTH_MSI_TIMEOUT`.
+The default timeout is 2 seconds.
 This authentication method can be specificaly used by setting the `AZURE_AUTH_METHOD` environment variable to `msi`.
 
 ### Azure CLI
@@ -160,18 +164,17 @@ This authentication method can be specificaly used by setting the `AZURE_AUTH_ME
     AZURE_CLIENT_SECRET = "Client secret"
     AZURE_TENANT_ID = "Tenant ID"
     AZURE_CLIENT_CERTIFICATE_PATH = "Client certificate path"
-    AZURE_AUTH_METHOD = "Specify which authentication method to use"
-  [Configuration.DnsZone]
     AZURE_SUBSCRIPTION_ID = "DNS zone subscription ID"
     AZURE_RESOURCE_GROUP = "DNS zone resource group"
   [Configuration.Additional]
     AZURE_ENVIRONMENT = "Azure environment, one of: public, usgovernment, and china"
     AZURE_PRIVATE_ZONE = "Set to true to use Azure Private DNS Zones and not public"
     AZURE_ZONE_NAME = "Zone name to use inside Azure DNS service to add the TXT record in"
+    AZURE_AUTH_METHOD = "Specify which authentication method to use"
+    AZURE_AUTH_MSI_TIMEOUT = "Managed Identity timeout duration"
     AZURE_TTL = "The TTL of the TXT record used for the DNS challenge"
     AZURE_POLLING_INTERVAL = "Time between DNS propagation check"
     AZURE_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
-    AZURE_MSI_TIMEOUT = "Managed Identity timeout duration"
 
 [Links]
   API = "https://docs.microsoft.com/en-us/go/azure/"

@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-acme/lego/v4/platform/tester"
 	"github.com/liquidweb/liquidweb-go/network"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -136,4 +137,34 @@ func TestLiveCleanUp(t *testing.T) {
 
 	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
+}
+
+func TestIntegration(t *testing.T) {
+	for testName, td := range testIntegration_testdata {
+		t.Run(testName, func(t *testing.T) {
+			td := td
+
+			var keys []string
+			for each := range td.envVars {
+				keys = append(keys, each)
+			}
+			td.envVars["LWAPI_URL"] = mockApiServer(t, td.initRecs...)
+			keys = append(keys, "LWAPI_URL")
+			envTest := tester.NewEnvTest(keys...)
+			envTest.Apply(td.envVars)
+
+			provider, err := NewDNSProvider()
+			require.NoError(t, err)
+
+			if td.present {
+				err = provider.Present(td.domain, td.token, td.keyauth)
+				assert.Equal(t, td.expPresentErr, err)
+			}
+
+			if td.cleanup {
+				err = provider.CleanUp(td.domain, td.token, td.keyauth)
+				assert.Equal(t, td.expCleanupErr, err)
+			}
+		})
+	}
 }

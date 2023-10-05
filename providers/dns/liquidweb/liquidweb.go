@@ -89,10 +89,6 @@ func NewDNSProvider() (*DNSProvider, error) {
 		return nil, errors.New("liquidweb: the configuration of the DNS provider is nil")
 	}
 
-	if config.BaseURL == "" {
-		config.BaseURL = DefaultBaseUrl
-	}
-
 	switch {
 	case config.Username == "" && config.Password == "":
 		return nil, errors.New("liquidweb: username and password are missing, set LWAPI_USERNAME and LWAPI_PASSWORD")
@@ -131,6 +127,17 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Type:  "TXT",
 		Zone:  d.config.Zone,
 		TTL:   d.config.TTL,
+	}
+
+	fmt.Printf("%#v\n", params)
+
+	if len(params.Zone) == 0 {
+		bestZone, err := d.findZone(params.Name)
+		if err == nil {
+			params.Zone = bestZone
+		} else {
+			return fmt.Errorf("zone not specified in environment, could not detect best zone: %w", err)
+		}
 	}
 
 	dnsEntry, err := d.client.NetworkDNS.Create(params)

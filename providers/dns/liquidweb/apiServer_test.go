@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math/rand"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -37,6 +38,17 @@ func requireJson(child http.Handler) func(http.ResponseWriter, *http.Request) {
 	}
 }
 
+func findZoneID(zoneName string) (zoneid int) {
+	for _, page := range mockZones {
+		for _, zone := range page.Items {
+			if zone.Name == zoneName {
+				zoneid = int(zone.ID)
+			}
+		}
+	}
+	return
+}
+
 func mockApiCreate(recs map[int]network.DNSRecord) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		body, err := io.ReadAll(r.Body)
@@ -55,7 +67,8 @@ func mockApiCreate(recs map[int]network.DNSRecord) func(http.ResponseWriter, *ht
 			resp.FullMessage = fmt.Sprintf(resp.FullMessage, string(body))
 			json.NewEncoder(w).Encode(resp)
 		}
-		req.Params.ZoneID = 1
+		req.Params.ID = types.FlexInt(rand.Intn(10000000))
+		req.Params.ZoneID = types.FlexInt(findZoneID(req.Params.Zone))
 
 		if _, exists := recs[int(req.Params.ID)]; exists {
 			http.Error(w, "dns record already exists", http.StatusTeapot)

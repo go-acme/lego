@@ -164,3 +164,38 @@ var testNewDNSProvider_testdata = []struct {
 		expected: "liquidweb: password is missing, set LWAPI_PASSWORD",
 	},
 }
+
+var testIntegration_testdata = map[string]struct {
+	envVars       map[string]string
+	initRecs      []network.DNSRecord
+	domain        string
+	token         string
+	keyauth       string
+	present       bool
+	cleanup       bool
+	expPresentErr error
+	expCleanupErr error
+}{
+	"expected successful": {
+		envVars: map[string]string{
+			"LWAPI_USERNAME": "blars",
+			"LWAPI_PASSWORD": "tacoman",
+		},
+		domain:  "tacoman.com",
+		token:   "123",
+		keyauth: "456",
+		present: true,
+		cleanup: true,
+	},
+	"other successful": {
+		envVars: map[string]string{
+			"LWAPI_USERNAME": "blars",
+			"LWAPI_PASSWORD": "tacoman",
+		},
+		domain:  "banana.com",
+		token:   "123",
+		keyauth: "456",
+		present: true,
+		cleanup: true,
+	},
+}

@@ -70,7 +70,7 @@ func NewDNSProviderByNames(names ...string) (challenge.Provider, error) {
 	for i, name := range names {
 		subProvider, err := dns.NewDNSChallengeProviderByName(name)
 		if err != nil {
-			return nil, fmt.Errorf("multi: error creating subprovider '%s': %w", name, err)
+			return nil, fmt.Errorf("multi: %w", err)
 		}
 		subProviders[i] = subProvider
 		if _, ok := subProvider.(sequential); ok {

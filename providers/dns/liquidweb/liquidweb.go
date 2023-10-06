@@ -129,14 +129,12 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		TTL:   d.config.TTL,
 	}
 
-	fmt.Printf("%#v\n", params)
-
-	if len(params.Zone) == 0 {
+	if params.Zone == "" {
 		bestZone, err := d.findZone(params.Name)
 		if err == nil {
 			params.Zone = bestZone
 		} else {
-			return fmt.Errorf("zone not specified in environment, could not detect best zone: %w", err)
+			return err
 		}
 	}
 
@@ -185,15 +183,19 @@ func (d *DNSProvider) findZone(fqdn string) (string, error) {
 	// filter the zones on the account to only ones that match
 	for id := 0; id < len(zones.Items); {
 		if !strings.HasSuffix(fqdn, zones.Items[id].Name) {
-			zones.Items = append(zones.Items[id:], zones.Items[:id]...)
+			zones.Items = append(zones.Items[:id], zones.Items[id+1:]...)
 		} else {
 			id++
 		}
 	}
 
+	if len(zones.Items) < 1 {
+		return "", fmt.Errorf("no valid zone in account for certificate %s", fqdn)
+	}
+
 	// filter the zones on the account to only ones that
 	sort.Slice(zones.Items, func(i, j int) bool {
-		return len(zones.Items[i].Name) < len(zones.Items[j].Name)
+		return len(zones.Items[i].Name) > len(zones.Items[j].Name)
 	})
 
 	// powerdns _only_ looks for records on the longest matching subdomain zone

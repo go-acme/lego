@@ -1,19 +1,17 @@
 package liquidweb
 
-import "github.com/liquidweb/liquidweb-go/network"
+import (
+	"github.com/liquidweb/liquidweb-go/network"
+)
 
-var mockApiServerZones = map[string]int{
-	"blars.com":     1,
-	"tacoman.com":   2,
-	"storm.com":     3,
-	"not-apple.com": 4,
-	"example.com":   5,
-	"banana.com":    6,
-	"carrot.com":    7,
-	"dates.com":     8,
-	"eggplant.com":  9,
-	"fig.com":       10,
-	"grapes.com":    11,
+var mockApiServerZones = make(map[string]int)
+
+func init() {
+	for _, page := range mockZones {
+		for _, zone := range page.Items {
+			mockApiServerZones[zone.Name] = int(zone.ID)
+		}
+	}
 }
 
 var jsonEncodingError = struct {
@@ -80,7 +78,7 @@ var mockZones = map[int]network.DNSZoneList{
 			},
 			{
 				ID:                7,
-				Name:              "carrot.com",
+				Name:              "cherry.com",
 				Active:            1,
 				DelegationStatus:  "SERVFAIL",
 				PrimaryNameserver: "ns.liquidweb.com",
@@ -113,6 +111,27 @@ var mockZones = map[int]network.DNSZoneList{
 			{
 				ID:                11,
 				Name:              "grapes.com",
+				Active:            1,
+				DelegationStatus:  "UNKNOWN",
+				PrimaryNameserver: "ns.liquidweb.com",
+			},
+			{
+				ID:                12,
+				Name:              "money.banana.com",
+				Active:            1,
+				DelegationStatus:  "UNKNOWN",
+				PrimaryNameserver: "ns.liquidweb.com",
+			},
+			{
+				ID:                13,
+				Name:              "money.stand.banana.com",
+				Active:            1,
+				DelegationStatus:  "UNKNOWN",
+				PrimaryNameserver: "ns.liquidweb.com",
+			},
+			{
+				ID:                14,
+				Name:              "stand.banana.com",
 				Active:            1,
 				DelegationStatus:  "UNKNOWN",
 				PrimaryNameserver: "ns.liquidweb.com",
@@ -173,8 +192,8 @@ var testIntegration_testdata = map[string]struct {
 	keyauth       string
 	present       bool
 	cleanup       bool
-	expPresentErr error
-	expCleanupErr error
+	expPresentErr string
+	expCleanupErr string
 }{
 	"expected successful": {
 		envVars: map[string]string{
@@ -197,5 +216,41 @@ var testIntegration_testdata = map[string]struct {
 		keyauth: "456",
 		present: true,
 		cleanup: true,
+	},
+	"zone not on account": {
+		envVars: map[string]string{
+			"LWAPI_USERNAME": "blars",
+			"LWAPI_PASSWORD": "tacoman",
+		},
+		domain:        "huckleberry.com",
+		token:         "123",
+		keyauth:       "456",
+		present:       true,
+		cleanup:       false,
+		expPresentErr: "no valid zone in account for certificate _acme-challenge.huckleberry.com",
+	},
+	"ssl for domain": {
+		envVars: map[string]string{
+			"LWAPI_USERNAME": "blars",
+			"LWAPI_PASSWORD": "tacoman",
+		},
+		domain:        "sundae.cherry.com",
+		token:         "5847953",
+		keyauth:       "34872934",
+		present:       true,
+		cleanup:       true,
+		expPresentErr: "",
+	},
+	"complicated domain": {
+		envVars: map[string]string{
+			"LWAPI_USERNAME": "blars",
+			"LWAPI_PASSWORD": "tacoman",
+		},
+		domain:        "always.money.stand.banana.com",
+		token:         "5847953",
+		keyauth:       "theres always money in the banana stand",
+		present:       true,
+		cleanup:       true,
+		expPresentErr: "",
 	},
 }

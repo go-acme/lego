@@ -19,6 +19,7 @@ func TestNewDNSProvider(t *testing.T) {
 		EnvPrefix+EnvPassword,
 		EnvPrefix+EnvZone).
 		WithDomain(envDomain)
+	defer envTest.ClearEnv()
 
 	for _, test := range testNewDNSProvider_testdata {
 		t.Run(test.desc, func(t *testing.T) {
@@ -57,6 +58,8 @@ func TestDNSProvider_Present(t *testing.T) {
 		EnvPrefix + EnvZone:     "tacoman.com", // this needs to be removed from test?
 	})
 
+	defer envTest.ClearEnv()
+
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
@@ -86,6 +89,8 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 		EnvPrefix + EnvZone: "tacoman.com", // this needs to be removed from test?
 	})
 
+	defer envTest.ClearEnv()
+
 	provider, err := NewDNSProvider()
 	require.NoError(t, err)
 
@@ -102,6 +107,7 @@ func TestLivePresent(t *testing.T) {
 		EnvPrefix+EnvPassword,
 		EnvPrefix+EnvZone).
 		WithDomain(envDomain)
+	defer envTest.ClearEnv()
 
 	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
@@ -124,6 +130,8 @@ func TestLiveCleanUp(t *testing.T) {
 		EnvPrefix+EnvZone).
 		WithDomain(envDomain)
 
+	defer envTest.ClearEnv()
+
 	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
@@ -140,17 +148,17 @@ func TestLiveCleanUp(t *testing.T) {
 }
 
 func TestIntegration(t *testing.T) {
+	envTest := tester.NewEnvTest(
+		"LWAPI_USERNAME",
+		"LWAPI_PASSWORD",
+		"LWAPI_URL")
+
 	for testName, td := range testIntegration_testdata {
 		t.Run(testName, func(t *testing.T) {
 			td := td
 
-			var keys []string
-			for each := range td.envVars {
-				keys = append(keys, each)
-			}
 			td.envVars["LWAPI_URL"] = mockApiServer(t, td.initRecs...)
-			keys = append(keys, "LWAPI_URL")
-			envTest := tester.NewEnvTest(keys...)
+			envTest.ClearEnv()
 			envTest.Apply(td.envVars)
 
 			provider, err := NewDNSProvider()
@@ -158,12 +166,20 @@ func TestIntegration(t *testing.T) {
 
 			if td.present {
 				err = provider.Present(td.domain, td.token, td.keyauth)
-				assert.Equal(t, td.expPresentErr, err)
+				if td.expPresentErr == "" {
+					assert.NoError(t, err)
+				} else {
+					assert.Equal(t, td.expPresentErr, err.Error())
+				}
 			}
 
 			if td.cleanup {
 				err = provider.CleanUp(td.domain, td.token, td.keyauth)
-				assert.Equal(t, td.expCleanupErr, err)
+				if td.expCleanupErr == "" {
+					assert.NoError(t, err)
+				} else {
+					assert.Equal(t, td.expCleanupErr, err.Error())
+				}
 			}
 		})
 	}

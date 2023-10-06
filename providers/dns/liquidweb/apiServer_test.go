@@ -38,17 +38,6 @@ func requireJson(child http.Handler) func(http.ResponseWriter, *http.Request) {
 	}
 }
 
-func findZoneID(zoneName string) (zoneid int) {
-	for _, page := range mockZones {
-		for _, zone := range page.Items {
-			if zone.Name == zoneName {
-				zoneid = int(zone.ID)
-			}
-		}
-	}
-	return
-}
-
 func mockApiCreate(recs map[int]network.DNSRecord) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		body, err := io.ReadAll(r.Body)
@@ -68,13 +57,12 @@ func mockApiCreate(recs map[int]network.DNSRecord) func(http.ResponseWriter, *ht
 			json.NewEncoder(w).Encode(resp)
 		}
 		req.Params.ID = types.FlexInt(rand.Intn(10000000))
-		req.Params.ZoneID = types.FlexInt(findZoneID(req.Params.Zone))
+		req.Params.ZoneID = types.FlexInt(mockApiServerZones[req.Params.Name])
 
 		if _, exists := recs[int(req.Params.ID)]; exists {
 			http.Error(w, "dns record already exists", http.StatusTeapot)
 			return
 		}
-
 		recs[int(req.Params.ID)] = req.Params
 
 		resp, err := json.Marshal(req.Params)
@@ -181,6 +169,9 @@ func mockApiServer(t *testing.T, initRecs ...network.DNSRecord) string {
 	mux.HandleFunc("/v1/Network/DNS/Record/delete", mockApiDelete(recs))
 	mux.HandleFunc("/v1/Network/DNS/Record/create", mockApiCreate(recs))
 	mux.HandleFunc("/v1/Network/DNS/Zone/list", mockApiListZones())
+	mux.HandleFunc("/bleed/Network/DNS/Record/delete", mockApiDelete(recs))
+	mux.HandleFunc("/bleed/Network/DNS/Record/create", mockApiCreate(recs))
+	mux.HandleFunc("/bleed/Network/DNS/Zone/list", mockApiListZones())
 	handler := http.HandlerFunc(requireJson(mux))
 	handler = http.HandlerFunc(requireBasicAuth(handler))
 

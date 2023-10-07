@@ -121,8 +121,8 @@ func TestDNSProvider(t *testing.T) {
 	mux.HandleFunc("/domains/example.com/records/_acme-challenge.abc.def/TXT", func(rw http.ResponseWriter, req *http.Request) {
 		log.Infof("request: %s %s", req.Method, req.URL)
 
-		if req.Header.Get("Authorization") == "" {
-			http.Error(rw, `{"message": "missing Authorization"}`, http.StatusUnauthorized)
+		if req.Header.Get("Authorization") != "Bearer 123412341234123412341234" {
+			http.Error(rw, `{"message": "missing or malformed Authorization"}`, http.StatusUnauthorized)
 			return
 		}
 

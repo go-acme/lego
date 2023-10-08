@@ -25,7 +25,7 @@ func requireBasicAuth(child http.Handler) func(http.ResponseWriter, *http.Reques
 	}
 }
 
-func requireJson(child http.Handler) func(http.ResponseWriter, *http.Request) {
+func requireJSON(child http.Handler) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		buf := &bytes.Buffer{}
 		_, err := buf.ReadFrom(r.Body)
@@ -38,7 +38,7 @@ func requireJson(child http.Handler) func(http.ResponseWriter, *http.Request) {
 	}
 }
 
-func mockApiCreate(recs map[int]network.DNSRecord) func(http.ResponseWriter, *http.Request) {
+func mockAPICreate(recs map[int]network.DNSRecord) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
@@ -50,14 +50,12 @@ func mockApiCreate(recs map[int]network.DNSRecord) func(http.ResponseWriter, *ht
 			Params network.DNSRecord `json:"params"`
 		}{}
 
-		if err := json.Unmarshal(body, &req); err != nil {
-			resp := jsonEncodingError
-			resp.Data = string(body)
-			resp.FullMessage = fmt.Sprintf(resp.FullMessage, string(body))
-			json.NewEncoder(w).Encode(resp)
+		if err = json.Unmarshal(body, &req); err != nil {
+			http.Error(w, fmt.Sprintf(encodingError, body, body), http.StatusBadRequest)
+			return
 		}
 		req.Params.ID = types.FlexInt(rand.Intn(10000000))
-		req.Params.ZoneID = types.FlexInt(mockApiServerZones[req.Params.Name])
+		req.Params.ZoneID = types.FlexInt(mockAPIServerZones[req.Params.Name])
 
 		if _, exists := recs[int(req.Params.ID)]; exists {
 			http.Error(w, "dns record already exists", http.StatusTeapot)
@@ -70,12 +68,11 @@ func mockApiCreate(recs map[int]network.DNSRecord) func(http.ResponseWriter, *ht
 			http.Error(w, "", http.StatusInternalServerError)
 			return
 		}
-		w.Write(resp)
-		return
+		http.Error(w, string(resp), http.StatusOK)
 	}
 }
 
-func mockApiDelete(recs map[int]network.DNSRecord) func(http.ResponseWriter, *http.Request) {
+func mockAPIDelete(recs map[int]network.DNSRecord) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
@@ -91,10 +88,8 @@ func mockApiDelete(recs map[int]network.DNSRecord) func(http.ResponseWriter, *ht
 		}{}
 
 		if err := json.Unmarshal(body, &req); err != nil {
-			resp := jsonEncodingError
-			resp.Data = string(body)
-			resp.FullMessage = fmt.Sprintf(resp.FullMessage, string(body))
-			json.NewEncoder(w).Encode(resp)
+			http.Error(w, fmt.Sprintf(encodingError, body, body), http.StatusBadRequest)
+			return
 		}
 
 		if req.Params.ID == 0 {
@@ -104,17 +99,14 @@ func mockApiDelete(recs map[int]network.DNSRecord) func(http.ResponseWriter, *ht
 
 		if _, ok := recs[req.Params.ID]; ok {
 			delete(recs, req.Params.ID)
-			w.Write([]byte(fmt.Sprintf("{\"deleted\":%d}", req.Params.ID)))
-			return
+			http.Error(w, fmt.Sprintf("{\"deleted\":%d}", req.Params.ID), http.StatusOK)
 		}
 		http.Error(w, fmt.Sprintf(`{"error":"","error_class":"LW::Exception::RecordNotFound","field":"network_dns_rr","full_message":"Record 'network_dns_rr: %d' not found","input":"%d","public_message":null}`, req.Params.ID, req.Params.ID), http.StatusOK)
-		return
 	}
 }
 
-func mockApiListZones() func(http.ResponseWriter, *http.Request) {
+func mockAPIListZones() func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			http.Error(w, "invalid request", http.StatusInternalServerError)
@@ -127,11 +119,9 @@ func mockApiListZones() func(http.ResponseWriter, *http.Request) {
 			} `json:"params"`
 		}{}
 
-		if err := json.Unmarshal(body, &req); err != nil {
-			resp := jsonEncodingError
-			resp.Data = string(body)
-			resp.FullMessage = fmt.Sprintf(resp.FullMessage, string(body))
-			json.NewEncoder(w).Encode(resp)
+		if err = json.Unmarshal(body, &req); err != nil {
+			http.Error(w, fmt.Sprintf(encodingError, body, body), http.StatusBadRequest)
+			return
 		}
 
 		switch {
@@ -141,21 +131,20 @@ func mockApiListZones() func(http.ResponseWriter, *http.Request) {
 			req.Params.PageNum = len(mockZones)
 		}
 		resp := mockZones[req.Params.PageNum]
-		resp.ItemTotal = types.FlexInt(len(mockApiServerZones))
+		resp.ItemTotal = types.FlexInt(len(mockAPIServerZones))
 		resp.PageNum = types.FlexInt(req.Params.PageNum)
 		resp.PageSize = 5
 		resp.PageTotal = types.FlexInt(len(mockZones))
 
-		if respBody, err := json.Marshal(resp); err == nil {
-			w.Write(respBody)
-			return
+		var respBody []byte
+		if respBody, err = json.Marshal(resp); err == nil {
+			http.Error(w, string(respBody), http.StatusOK)
 		}
 		http.Error(w, "", http.StatusInternalServerError)
-		return
 	}
 }
 
-func mockApiServer(t *testing.T, initRecs ...network.DNSRecord) string {
+func mockAPIServer(t *testing.T, initRecs ...network.DNSRecord) string {
 	t.Helper()
 
 	recs := make(map[int]network.DNSRecord)
@@ -166,13 +155,13 @@ func mockApiServer(t *testing.T, initRecs ...network.DNSRecord) string {
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/v1/Network/DNS/Record/delete", mockApiDelete(recs))
-	mux.HandleFunc("/v1/Network/DNS/Record/create", mockApiCreate(recs))
-	mux.HandleFunc("/v1/Network/DNS/Zone/list", mockApiListZones())
-	mux.HandleFunc("/bleed/Network/DNS/Record/delete", mockApiDelete(recs))
-	mux.HandleFunc("/bleed/Network/DNS/Record/create", mockApiCreate(recs))
-	mux.HandleFunc("/bleed/Network/DNS/Zone/list", mockApiListZones())
-	handler := http.HandlerFunc(requireJson(mux))
+	mux.HandleFunc("/v1/Network/DNS/Record/delete", mockAPIDelete(recs))
+	mux.HandleFunc("/v1/Network/DNS/Record/create", mockAPICreate(recs))
+	mux.HandleFunc("/v1/Network/DNS/Zone/list", mockAPIListZones())
+	mux.HandleFunc("/bleed/Network/DNS/Record/delete", mockAPIDelete(recs))
+	mux.HandleFunc("/bleed/Network/DNS/Record/create", mockAPICreate(recs))
+	mux.HandleFunc("/bleed/Network/DNS/Zone/list", mockAPIListZones())
+	handler := http.HandlerFunc(requireJSON(mux))
 	handler = http.HandlerFunc(requireBasicAuth(handler))
 
 	server := httptest.NewServer(handler)

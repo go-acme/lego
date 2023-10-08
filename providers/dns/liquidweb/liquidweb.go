@@ -16,7 +16,7 @@ import (
 	"github.com/liquidweb/liquidweb-go/network"
 )
 
-const DefaultBaseUrl = "https://api.liquidweb.com"
+const DefaultBaseURL = "https://api.liquidweb.com"
 
 // Environment variables names.
 const (
@@ -77,16 +77,12 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config := &Config{
 		Username:           getStringEnv(EnvUsername, ""),
 		Password:           getStringEnv(EnvPassword, ""),
-		BaseURL:            getStringEnv(EnvURL, DefaultBaseUrl),
+		BaseURL:            getStringEnv(EnvURL, DefaultBaseURL),
 		Zone:               getStringEnv(EnvZone, ""),
 		TTL:                getIntEnv(EnvTTL, 300),
 		PropagationTimeout: getSecondEnv(EnvPropagationTimeout, 2*time.Minute),
 		PollingInterval:    getSecondEnv(EnvPollingInterval, 2*time.Second),
 		HTTPTimeout:        getSecondEnv(EnvHTTPTimeout, 1*time.Minute),
-	}
-
-	if config == nil {
-		return nil, errors.New("liquidweb: the configuration of the DNS provider is nil")
 	}
 
 	switch {

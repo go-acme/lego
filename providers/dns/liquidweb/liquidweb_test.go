@@ -21,7 +21,7 @@ func TestNewDNSProvider(t *testing.T) {
 		WithDomain(envDomain)
 	defer envTest.ClearEnv()
 
-	for _, test := range testNewDNSProvider_testdata {
+	for _, test := range testNewDNSProviderTestdata {
 		t.Run(test.desc, func(t *testing.T) {
 			defer envTest.RestoreEnv()
 			envTest.ClearEnv()
@@ -54,7 +54,7 @@ func TestDNSProvider_Present(t *testing.T) {
 	envTest.Apply(map[string]string{
 		EnvPrefix + EnvUsername: "blars",
 		EnvPrefix + EnvPassword: "tacoman",
-		EnvPrefix + EnvURL:      mockApiServer(t),
+		EnvPrefix + EnvURL:      mockAPIServer(t),
 		EnvPrefix + EnvZone:     "tacoman.com", // this needs to be removed from test?
 	})
 
@@ -78,7 +78,7 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 	envTest.Apply(map[string]string{
 		EnvPrefix + EnvUsername: "blars",
 		EnvPrefix + EnvPassword: "tacoman",
-		EnvPrefix + EnvURL: mockApiServer(t, network.DNSRecord{
+		EnvPrefix + EnvURL: mockAPIServer(t, network.DNSRecord{
 			Name:   "_acme-challenge.tacoman.com",
 			RData:  "123d==",
 			Type:   "TXT",
@@ -153,11 +153,11 @@ func TestIntegration(t *testing.T) {
 		"LWAPI_PASSWORD",
 		"LWAPI_URL")
 
-	for testName, td := range testIntegration_testdata {
+	for testName, td := range testIntegrationTestdata {
 		t.Run(testName, func(t *testing.T) {
 			td := td
 
-			td.envVars["LWAPI_URL"] = mockApiServer(t, td.initRecs...)
+			td.envVars["LWAPI_URL"] = mockAPIServer(t, td.initRecs...)
 			envTest.ClearEnv()
 			envTest.Apply(td.envVars)
 

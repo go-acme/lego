@@ -4,28 +4,17 @@ import (
 	"github.com/liquidweb/liquidweb-go/network"
 )
 
-var mockApiServerZones = make(map[string]int)
+var mockAPIServerZones = make(map[string]int)
 
 func init() {
 	for _, page := range mockZones {
 		for _, zone := range page.Items {
-			mockApiServerZones[zone.Name] = int(zone.ID)
+			mockAPIServerZones[zone.Name] = int(zone.ID)
 		}
 	}
 }
 
-var jsonEncodingError = struct {
-	Data        string `json:"data"`
-	Encoding    string `json:"encoding"`
-	Err         string `json:"error"`
-	ErrClass    string `json:"error_class"`
-	FullMessage string `json:"full_message"`
-}{
-	Encoding:    "JSON",
-	ErrClass:    "LW::Exception::Deserialize",
-	Err:         `unexpected end of string while parsing JSON string, at character offset 32 (before \"(end of string)\") at /usr/local/lp/libs/perl/LW/Base/Role/Serializer.pm line 16.\n`,
-	FullMessage: `Could not deserialize "%s" from JSON: unexpected end of string while parsing JSON string, at character offset 32 (before "(end of string)") at /usr/local/lp/libs/perl/LW/Base/Role/Serializer.pm line 16.\n`,
-}
+var encodingError = `{"data":"%s","encoding":"JSON","error":"unexpected end of string while parsing JSON string, at character offset 32 (before \"(end of string)\") at /usr/local/lp/libs/perl/LW/Base/Role/Serializer.pm line 16.\n","error_class":"LW::Exception::Deserialize","full_message":"Could not deserialize \"%s\" from JSON: unexpected end of string while parsing JSON string, at character offset 32 (before \"(end of string)\") at /usr/local/lp/libs/perl/LW/Base/Role/Serializer.pm line 16.\n"}⏎`
 
 var mockZones = map[int]network.DNSZoneList{
 	1: {
@@ -140,7 +129,7 @@ var mockZones = map[int]network.DNSZoneList{
 	},
 }
 
-var testNewDNSProvider_testdata = []struct {
+var testNewDNSProviderTestdata = []struct {
 	desc     string
 	envVars  map[string]string
 	expected string
@@ -184,7 +173,7 @@ var testNewDNSProvider_testdata = []struct {
 	},
 }
 
-var testIntegration_testdata = map[string]struct {
+var testIntegrationTestdata = map[string]struct {
 	envVars       map[string]string
 	initRecs      []network.DNSRecord
 	domain        string

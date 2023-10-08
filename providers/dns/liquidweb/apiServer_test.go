@@ -98,11 +98,12 @@ func mockAPIDelete(recs map[int]network.DNSRecord) func(http.ResponseWriter, *ht
 			return
 		}
 
-		if _, ok := recs[req.Params.ID]; ok {
-			delete(recs, req.Params.ID)
-			http.Error(w, fmt.Sprintf("{\"deleted\":%d}", req.Params.ID), http.StatusOK)
+		if _, ok := recs[req.Params.ID]; !ok {
+			http.Error(w, fmt.Sprintf(`{"error":"","error_class":"LW::Exception::RecordNotFound","field":"network_dns_rr","full_message":"Record 'network_dns_rr: %d' not found","input":"%d","public_message":null}`, req.Params.ID, req.Params.ID), http.StatusOK)
+			return
 		}
-		http.Error(w, fmt.Sprintf(`{"error":"","error_class":"LW::Exception::RecordNotFound","field":"network_dns_rr","full_message":"Record 'network_dns_rr: %d' not found","input":"%d","public_message":null}`, req.Params.ID, req.Params.ID), http.StatusOK)
+		delete(recs, req.Params.ID)
+		http.Error(w, fmt.Sprintf("{\"deleted\":%d}", req.Params.ID), http.StatusOK)
 	}
 }
 
@@ -141,6 +142,7 @@ func mockAPIListZones() func(http.ResponseWriter, *http.Request) {
 		var respBody []byte
 		if respBody, err = json.Marshal(resp); err == nil {
 			http.Error(w, string(respBody), http.StatusOK)
+			return
 		}
 		http.Error(w, "", http.StatusInternalServerError)
 	}

@@ -21,7 +21,7 @@ func TestNewDNSProvider(t *testing.T) {
 		WithDomain(envDomain)
 	defer envTest.ClearEnv()
 
-	for _, test := range testNewDNSProviderTestdata {
+	for _, test := range testNewDNSProviderTestdata() {
 		t.Run(test.desc, func(t *testing.T) {
 			defer envTest.RestoreEnv()
 			envTest.ClearEnv()
@@ -153,7 +153,7 @@ func TestIntegration(t *testing.T) {
 		"LWAPI_PASSWORD",
 		"LWAPI_URL")
 
-	for testName, td := range testIntegrationTestdata {
+	for testName, td := range testIntegrationTestdata() {
 		t.Run(testName, func(t *testing.T) {
 			td := td
 

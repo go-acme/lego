@@ -39,6 +39,7 @@ func requireJSON(child http.Handler) func(http.ResponseWriter, *http.Request) {
 }
 
 func mockAPICreate(recs map[int]network.DNSRecord) func(http.ResponseWriter, *http.Request) {
+	_, mockAPIServerZones := makeMockZones()
 	return func(w http.ResponseWriter, r *http.Request) {
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
@@ -51,7 +52,7 @@ func mockAPICreate(recs map[int]network.DNSRecord) func(http.ResponseWriter, *ht
 		}{}
 
 		if err = json.Unmarshal(body, &req); err != nil {
-			http.Error(w, fmt.Sprintf(encodingError, body, body), http.StatusBadRequest)
+			http.Error(w, makeEncodingError(body), http.StatusBadRequest)
 			return
 		}
 		req.Params.ID = types.FlexInt(rand.Intn(10000000))
@@ -88,7 +89,7 @@ func mockAPIDelete(recs map[int]network.DNSRecord) func(http.ResponseWriter, *ht
 		}{}
 
 		if err := json.Unmarshal(body, &req); err != nil {
-			http.Error(w, fmt.Sprintf(encodingError, body, body), http.StatusBadRequest)
+			http.Error(w, makeEncodingError(body), http.StatusBadRequest)
 			return
 		}
 
@@ -106,6 +107,7 @@ func mockAPIDelete(recs map[int]network.DNSRecord) func(http.ResponseWriter, *ht
 }
 
 func mockAPIListZones() func(http.ResponseWriter, *http.Request) {
+	mockZones, mockAPIServerZones := makeMockZones()
 	return func(w http.ResponseWriter, r *http.Request) {
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
@@ -120,7 +122,7 @@ func mockAPIListZones() func(http.ResponseWriter, *http.Request) {
 		}{}
 
 		if err = json.Unmarshal(body, &req); err != nil {
-			http.Error(w, fmt.Sprintf(encodingError, body, body), http.StatusBadRequest)
+			http.Error(w, makeEncodingError(body), http.StatusBadRequest)
 			return
 		}
 

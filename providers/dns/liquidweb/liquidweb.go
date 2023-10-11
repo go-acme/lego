@@ -123,7 +123,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if params.Zone == "" {
 		bestZone, err := d.findZone(params.Name)
 		if err != nil {
-			return err
+			return fmt.Errorf("liquidweb: %w", err)
 		}
 
 		params.Zone = bestZone
@@ -171,24 +171,23 @@ func (d *DNSProvider) findZone(domain string) (string, error) {
 	}
 
 	// filter the zones on the account to only ones that match
-	for id := 0; id < len(zones.Items); {
-		if !strings.HasSuffix(domain, zones.Items[id].Name) {
-			zones.Items = append(zones.Items[:id], zones.Items[id+1:]...)
-		} else {
-			id++
+	var zs []network.DNSZone
+	for _, item := range zones.Items {
+		if strings.HasSuffix(domain, item.Name) {
+			zs = append(zs, item)
 		}
 	}
 
-	if len(zones.Items) < 1 {
-		return "", fmt.Errorf("no valid zone in account for certificate %s", domain)
+	if len(zs) < 1 {
+		return "", fmt.Errorf("no valid zone in account for certificate '%s'", domain)
 	}
 
 	// powerdns _only_ looks for records on the longest matching subdomain zone aka,
 	// for test.sub.example.com if sub.example.com exists,
 	// it will look there it will not look atexample.com even if it also exists
-	sort.Slice(zones.Items, func(i, j int) bool {
-		return len(zones.Items[i].Name) > len(zones.Items[j].Name)
+	sort.Slice(zs, func(i, j int) bool {
+		return len(zs[i].Name) > len(zs[j].Name)
 	})
 
-	return zones.Items[0].Name, nil
+	return zs[0].Name, nil
 }

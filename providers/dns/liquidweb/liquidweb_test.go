@@ -216,7 +216,7 @@ func TestDNSProvider(t *testing.T) {
 			token:         "123",
 			keyAuth:       "456",
 			present:       true,
-			expPresentErr: "no valid zone in account for certificate _acme-challenge.huckleberry.com",
+			expPresentErr: "no valid zone in account for certificate '_acme-challenge.huckleberry.com'",
 			cleanup:       false,
 		},
 		{

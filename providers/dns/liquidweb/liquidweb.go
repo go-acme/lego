@@ -25,8 +25,8 @@ const (
 	EnvURL      = envNamespace + "URL"
 	EnvUsername = envNamespace + "USERNAME"
 	EnvPassword = envNamespace + "PASSWORD"
+	EnvZone     = envNamespace + "ZONE"
 
-	EnvZone               = envNamespace + "ZONE"
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"

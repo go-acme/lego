@@ -183,13 +183,12 @@ func (d *DNSProvider) findZone(domain string) (string, error) {
 		return "", fmt.Errorf("no valid zone in account for certificate %s", domain)
 	}
 
-	// filter the zones on the account to only ones that
+	// powerdns _only_ looks for records on the longest matching subdomain zone aka,
+	// for test.sub.example.com if sub.example.com exists,
+	// it will look there it will not look atexample.com even if it also exists
 	sort.Slice(zones.Items, func(i, j int) bool {
 		return len(zones.Items[i].Name) > len(zones.Items[j].Name)
 	})
 
-	// powerdns _only_ looks for records on the longest matching subdomain zone aka,
-	// for test.sub.example.com if sub.example.com exists,
-	// it will look there it will not look atexample.com even if it also exists
 	return zones.Items[0].Name, nil
 }

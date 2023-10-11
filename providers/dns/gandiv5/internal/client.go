@@ -134,7 +134,7 @@ func (c *Client) do(req *http.Request, result any) error {
 	}
 
 	if c.pat != "" {
-		req.Header.Set(authorizationHeader, c.pat)
+		req.Header.Set(authorizationHeader, "Bearer "+c.pat)
 	}
 
 	resp, err := c.HTTPClient.Do(req)

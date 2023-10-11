@@ -45,19 +45,59 @@ lego --domains example.com --email your_example@email.com --dns azuredns run
 Additional = '''
 ## Description
 
-Azure Credentials are automatically detected in the following locations and prioritized in the following order:
+Several authentication methods can be used to authenticate against Azure DNS API.
+
+### Default Azure Credentials (default option)
+
+Default Azure Credentials automatically detects in the following locations and prioritized in the following order:
 
 1. Environment variables for client secret: `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_CLIENT_SECRET`
 2. Environment variables for client certificate: `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_CLIENT_CERTIFICATE_PATH`
 3. Workload identity for resources hosted in Azure environment (see below)
-4. Shared credentials file (defaults to `~/.azure`), used by Azure CLI
+4. Shared credentials (defaults to `~/.azure` folder), used by Azure CLI
 
 Link:
 - [Azure Authentication](https://learn.microsoft.com/en-us/azure/developer/go/azure-sdk-authentication)
 
+### Environment variables
+
+#### Client secret
+
+The Azure Credentials can be configured using the following environment variables:
+* AZURE_CLIENT_ID = "Client ID"
+* AZURE_CLIENT_SECRET = "Client secret"
+* AZURE_TENANT_ID = "Tenant ID"
+
+This authentication method can be specificaly used by setting the `AZURE_AUTH_METHOD` environment variable to `env`.
+
+#### Client certificate
+
+The Azure Credentials can be configured using the following environment variables:
+* AZURE_CLIENT_ID = "Client ID"
+* AZURE_CLIENT_CERTIFICATE_PATH = "Client certificate path"
+* AZURE_TENANT_ID = "Tenant ID"
+
+This authentication method can be specificaly used by setting the `AZURE_AUTH_METHOD` environment variable to `env`.
+
 ### Workload identity
 
-#### Azure Managed Identity
+Workload identity allows workloads running Azure Kubernetes Services (AKS) clusters to authenticate as an Azure AD application identity using federated credentials.
+
+This must be configured in kubernetes workload deployment in one hand and on the Azure AD application registration in the other hand.
+
+Here is a summary of the steps to follow to use it :
+* create a `ServiceAccount` resource, add following annotations to reference the targeted Azure AD application registration : `azure.workload.identity/client-id` and `azure.workload.identity/tenant-id`.
+* on the `Deployment` resource you must reference the previous `ServiceAccount` and add the following label : `azure.workload.identity/use: "true"`.
+* create a fedreated credentials of type `Kubernetes accessing Azure resources`, add the cluster issuer URL  and add the namespace and name of your kubernetes service account.
+
+Link :
+- [Azure AD Workload identity](https://azure.github.io/azure-workload-identity/docs/topics/service-account-labels-and-annotations.html)
+
+This authentication method can be specificaly used by setting the `AZURE_AUTH_METHOD` environment variable to `wli`.
+
+### Azure Managed Identity
+
+#### Azure Managed Identity (with Azure workload)
 
 The Azure Managed Identity service allows linking Azure AD identities to Azure resources, without needing to manually manage client IDs and secrets.
 
@@ -87,6 +127,11 @@ az role assignment create \
 --scope "/subscriptions/${AZURE_SUBSCRIPTION_ID}/resourceGroups/${AZURE_RESOURCE_GROUP}/providers/Microsoft.Network/dnszones/${AZURE_DNS_ZONE}/TXT/${AZ_RECORD_SET}"
 ```
 
+A timeout wrapper is configured for this authentication method.
+The duraction can be configured by setting the `AZURE_AUTH_MSI_TIMEOUT`.
+The default timeout is 2 seconds.
+This authentication method can be specificaly used by setting the `AZURE_AUTH_METHOD` environment variable to `msi`.
+
 #### Azure Managed Identity (with Azure Arc)
 
 The Azure Arc agent provides the ability to use a Managed Identity on resources hosted outside of Azure
@@ -95,22 +140,21 @@ The Azure Arc agent provides the ability to use a Managed Identity on resources 
 While the upstream `azidentity` SDK will try to automatically identify and use the Azure Arc metadata service,
 if you get `azuredns: DefaultAzureCredential: failed to acquire a token.` error messages,
 you may need to set the environment variables:
-  * `IMDS_ENDPOINT=http://localhost:40342`
-  * `IDENTITY_ENDPOINT=http://localhost:40342/metadata/identity/oauth2/token`
+* `IMDS_ENDPOINT=http://localhost:40342`
+* `IDENTITY_ENDPOINT=http://localhost:40342/metadata/identity/oauth2/token`
 
-#### Workload identity for AKS
+A timeout wrapper is configured for this authentication method.
+The duraction can be configured by setting the `AZURE_AUTH_MSI_TIMEOUT`.
+The default timeout is 2 seconds.
+This authentication method can be specificaly used by setting the `AZURE_AUTH_METHOD` environment variable to `msi`.
 
-Workload identity allows workloads running Azure Kubernetes Services (AKS) clusters to authenticate as an Azure AD application identity using federated credentials.
+### Azure CLI
 
-This must be configured in kubernetes workload deployment in one hand and on the Azure AD application registration in the other hand.
+The Azure CLI is a command-line tool provided by Microsoft to interact with Azure resources.
+It provides an easy way to authenticate by simply running `az login` command.
+The generated token will be cached by default in the `~/.azure` folder.
 
-Here is a summary of the steps to follow to use it :
-* create a `ServiceAccount` resource, add following annotations to reference the targeted Azure AD application registration : `azure.workload.identity/client-id` and `azure.workload.identity/tenant-id`.
-* on the `Deployment` resource you must reference the previous `ServiceAccount` and add the following label : `azure.workload.identity/use: "true"`.
-* create a fedreated credentials of type `Kubernetes accessing Azure resources`, add the cluster issuer URL  and add the namespace and name of your kubernetes service account.
-
-Link :
-- [Azure AD Workload identity](https://azure.github.io/azure-workload-identity/docs/topics/service-account-labels-and-annotations.html)
+This authentication method can be specificaly used by setting the `AZURE_AUTH_METHOD` environment variable to `cli`.
 
 '''
 
@@ -119,12 +163,15 @@ Link :
     AZURE_CLIENT_ID = "Client ID"
     AZURE_CLIENT_SECRET = "Client secret"
     AZURE_TENANT_ID = "Tenant ID"
+    AZURE_CLIENT_CERTIFICATE_PATH = "Client certificate path"
     AZURE_SUBSCRIPTION_ID = "DNS zone subscription ID"
     AZURE_RESOURCE_GROUP = "DNS zone resource group"
   [Configuration.Additional]
     AZURE_ENVIRONMENT = "Azure environment, one of: public, usgovernment, and china"
     AZURE_PRIVATE_ZONE = "Set to true to use Azure Private DNS Zones and not public"
     AZURE_ZONE_NAME = "Zone name to use inside Azure DNS service to add the TXT record in"
+    AZURE_AUTH_METHOD = "Specify which authentication method to use"
+    AZURE_AUTH_MSI_TIMEOUT = "Managed Identity timeout duration"
     AZURE_TTL = "The TTL of the TXT record used for the DNS challenge"
     AZURE_POLLING_INTERVAL = "Time between DNS propagation check"
     AZURE_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"

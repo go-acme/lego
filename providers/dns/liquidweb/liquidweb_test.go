@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/liquidweb/liquidweb-go/network"
 	"github.com/stretchr/testify/require"
 )
 
@@ -143,9 +144,54 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}
 }
 
-func TestLivePresent(t *testing.T) {
-	defer envTest.ClearEnv()
+func TestDNSProvider_Present(t *testing.T) {
+	serverURL := mockAPIServer(t)
 
+	defer envTest.RestoreEnv()
+	envTest.ClearEnv()
+
+	envTest.Apply(map[string]string{
+		EnvUsername: "blars",
+		EnvPassword: "tacoman",
+		EnvURL:      serverURL,
+	})
+
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
+
+	err = provider.Present("tacoman.com", "", "")
+	require.NoError(t, err)
+}
+
+func TestDNSProvider_CleanUp(t *testing.T) {
+	serverURL := mockAPIServer(t, network.DNSRecord{
+		Name:   "_acme-challenge.tacoman.com",
+		RData:  "123d==",
+		Type:   "TXT",
+		TTL:    300,
+		ID:     1234567,
+		ZoneID: 42,
+	})
+
+	defer envTest.RestoreEnv()
+	envTest.ClearEnv()
+
+	envTest.Apply(map[string]string{
+		EnvUsername: "blars",
+		EnvPassword: "tacoman",
+		EnvURL:      serverURL,
+	})
+
+	provider, err := NewDNSProvider()
+	require.NoError(t, err)
+
+	provider.recordIDs["123d=="] = 1234567
+
+	err = provider.CleanUp("tacoman.com.", "123d==", "")
+	require.NoError(t, err, "fail to remove TXT record")
+}
+
+func TestLivePresent(t *testing.T) {
 	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}
@@ -160,8 +206,6 @@ func TestLivePresent(t *testing.T) {
 }
 
 func TestLiveCleanUp(t *testing.T) {
-	defer envTest.ClearEnv()
-
 	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")
 	}

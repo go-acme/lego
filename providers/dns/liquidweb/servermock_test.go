@@ -14,31 +14,57 @@ import (
 	"github.com/liquidweb/liquidweb-go/types"
 )
 
-func requireBasicAuth(child http.Handler) func(http.ResponseWriter, *http.Request) {
+func mockAPIServer(t *testing.T, initRecs ...network.DNSRecord) string {
+	t.Helper()
+
+	recs := make(map[int]network.DNSRecord)
+
+	for _, rec := range initRecs {
+		recs[int(rec.ID)] = rec
+	}
+
+	mux := http.NewServeMux()
+	mux.Handle("/v1/Network/DNS/Record/delete", mockAPIDelete(recs))
+	mux.Handle("/v1/Network/DNS/Record/create", mockAPICreate(recs))
+	mux.Handle("/v1/Network/DNS/Zone/list", mockAPIListZones())
+	mux.Handle("/bleed/Network/DNS/Record/delete", mockAPIDelete(recs))
+	mux.Handle("/bleed/Network/DNS/Record/create", mockAPICreate(recs))
+	mux.Handle("/bleed/Network/DNS/Zone/list", mockAPIListZones())
+
+	server := httptest.NewServer(requireBasicAuth(requireJSON(mux)))
+	t.Cleanup(server.Close)
+
+	return server.URL
+}
+
+func requireBasicAuth(next http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		username, password, ok := r.BasicAuth()
 		if ok && username == "blars" && password == "tacoman" {
-			child.ServeHTTP(w, r)
+			next.ServeHTTP(w, r)
 			return
 		}
+
 		http.Error(w, "invalid auth", http.StatusForbidden)
 	}
 }
 
-func requireJSON(child http.Handler) func(http.ResponseWriter, *http.Request) {
+func requireJSON(next http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		buf := &bytes.Buffer{}
+
 		_, err := buf.ReadFrom(r.Body)
 		if err != nil {
 			http.Error(w, "malformed request - json required", http.StatusBadRequest)
 			return
 		}
+
 		r.Body = io.NopCloser(buf)
-		child.ServeHTTP(w, r)
+		next.ServeHTTP(w, r)
 	}
 }
 
-func mockAPICreate(recs map[int]network.DNSRecord) func(http.ResponseWriter, *http.Request) {
+func mockAPICreate(recs map[int]network.DNSRecord) http.HandlerFunc {
 	_, mockAPIServerZones := makeMockZones()
 	return func(w http.ResponseWriter, r *http.Request) {
 		body, err := io.ReadAll(r.Body)
@@ -73,7 +99,7 @@ func mockAPICreate(recs map[int]network.DNSRecord) func(http.ResponseWriter, *ht
 	}
 }
 
-func mockAPIDelete(recs map[int]network.DNSRecord) func(http.ResponseWriter, *http.Request) {
+func mockAPIDelete(recs map[int]network.DNSRecord) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
@@ -107,7 +133,7 @@ func mockAPIDelete(recs map[int]network.DNSRecord) func(http.ResponseWriter, *ht
 	}
 }
 
-func mockAPIListZones() func(http.ResponseWriter, *http.Request) {
+func mockAPIListZones() http.HandlerFunc {
 	mockZones, mockAPIServerZones := makeMockZones()
 	return func(w http.ResponseWriter, r *http.Request) {
 		body, err := io.ReadAll(r.Body)
@@ -146,29 +172,4 @@ func mockAPIListZones() func(http.ResponseWriter, *http.Request) {
 		}
 		http.Error(w, "", http.StatusInternalServerError)
 	}
-}
-
-func mockAPIServer(t *testing.T, initRecs ...network.DNSRecord) string {
-	t.Helper()
-
-	recs := make(map[int]network.DNSRecord)
-
-	for _, rec := range initRecs {
-		recs[int(rec.ID)] = rec
-	}
-
-	mux := http.NewServeMux()
-
-	mux.HandleFunc("/v1/Network/DNS/Record/delete", mockAPIDelete(recs))
-	mux.HandleFunc("/v1/Network/DNS/Record/create", mockAPICreate(recs))
-	mux.HandleFunc("/v1/Network/DNS/Zone/list", mockAPIListZones())
-	mux.HandleFunc("/bleed/Network/DNS/Record/delete", mockAPIDelete(recs))
-	mux.HandleFunc("/bleed/Network/DNS/Record/create", mockAPICreate(recs))
-	mux.HandleFunc("/bleed/Network/DNS/Zone/list", mockAPIListZones())
-	handler := http.HandlerFunc(requireJSON(mux))
-	handler = http.HandlerFunc(requireBasicAuth(handler))
-
-	server := httptest.NewServer(handler)
-	t.Cleanup(server.Close)
-	return server.URL
 }

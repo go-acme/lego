@@ -18,6 +18,22 @@ var envTest = tester.NewEnvTest(
 	EnvZone).
 	WithDomain(envDomain)
 
+func setupTest(t *testing.T, initRecs ...network.DNSRecord) *DNSProvider {
+	t.Helper()
+
+	serverURL := mockAPIServer(t, initRecs)
+
+	config := NewDefaultConfig()
+	config.Username = "blars"
+	config.Password = "tacoman"
+	config.BaseURL = serverURL
+
+	provider, err := NewDNSProviderConfig(config)
+	require.NoError(t, err)
+
+	return provider
+}
+
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
 		desc     string
@@ -145,26 +161,14 @@ func TestNewDNSProviderConfig(t *testing.T) {
 }
 
 func TestDNSProvider_Present(t *testing.T) {
-	serverURL := mockAPIServer(t)
+	provider := setupTest(t)
 
-	defer envTest.RestoreEnv()
-	envTest.ClearEnv()
-
-	envTest.Apply(map[string]string{
-		EnvUsername: "blars",
-		EnvPassword: "tacoman",
-		EnvURL:      serverURL,
-	})
-
-	provider, err := NewDNSProvider()
-	require.NoError(t, err)
-
-	err = provider.Present("tacoman.com", "", "")
+	err := provider.Present("tacoman.com", "", "")
 	require.NoError(t, err)
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
-	serverURL := mockAPIServer(t, network.DNSRecord{
+	provider := setupTest(t, network.DNSRecord{
 		Name:   "_acme-challenge.tacoman.com",
 		RData:  "123d==",
 		Type:   "TXT",
@@ -173,22 +177,86 @@ func TestDNSProvider_CleanUp(t *testing.T) {
 		ZoneID: 42,
 	})
 
-	defer envTest.RestoreEnv()
-	envTest.ClearEnv()
-
-	envTest.Apply(map[string]string{
-		EnvUsername: "blars",
-		EnvPassword: "tacoman",
-		EnvURL:      serverURL,
-	})
-
-	provider, err := NewDNSProvider()
-	require.NoError(t, err)
-
 	provider.recordIDs["123d=="] = 1234567
 
-	err = provider.CleanUp("tacoman.com.", "123d==", "")
-	require.NoError(t, err, "fail to remove TXT record")
+	err := provider.CleanUp("tacoman.com.", "123d==", "")
+	require.NoError(t, err)
+}
+
+func TestDNSProvider(t *testing.T) {
+	testCases := []struct {
+		desc          string
+		initRecs      []network.DNSRecord
+		domain        string
+		token         string
+		keyAuth       string
+		present       bool
+		expPresentErr string
+		cleanup       bool
+	}{
+		{
+			desc:    "expected successful",
+			domain:  "tacoman.com",
+			token:   "123",
+			keyAuth: "456",
+			present: true,
+			cleanup: true,
+		},
+		{
+			desc:    "other successful",
+			domain:  "banana.com",
+			token:   "123",
+			keyAuth: "456",
+			present: true,
+			cleanup: true,
+		},
+		{
+			desc:          "zone not on account",
+			domain:        "huckleberry.com",
+			token:         "123",
+			keyAuth:       "456",
+			present:       true,
+			expPresentErr: "no valid zone in account for certificate _acme-challenge.huckleberry.com",
+			cleanup:       false,
+		},
+		{
+			desc:    "ssl for domain",
+			domain:  "sundae.cherry.com",
+			token:   "5847953",
+			keyAuth: "34872934",
+			present: true,
+			cleanup: true,
+		},
+		{
+			desc:    "complicated domain",
+			domain:  "always.money.stand.banana.com",
+			token:   "5847953",
+			keyAuth: "there is always money in the banana stand",
+			present: true,
+			cleanup: true,
+		},
+	}
+
+	for _, test := range testCases {
+		test := test
+		t.Run(test.desc, func(t *testing.T) {
+			provider := setupTest(t, test.initRecs...)
+
+			if test.present {
+				err := provider.Present(test.domain, test.token, test.keyAuth)
+				if test.expPresentErr == "" {
+					require.NoError(t, err)
+				} else {
+					require.ErrorContains(t, err, test.expPresentErr)
+				}
+			}
+
+			if test.cleanup {
+				err := provider.CleanUp(test.domain, test.token, test.keyAuth)
+				require.NoError(t, err)
+			}
+		})
+	}
 }
 
 func TestLivePresent(t *testing.T) {

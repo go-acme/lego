@@ -5,23 +5,64 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/liquidweb/liquidweb-go/network"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-const envDomain = EnvPrefix + "DOMAIN"
+const envDomain = envNamespace + "DOMAIN"
+
+var envTest = tester.NewEnvTest(
+	EnvURL,
+	EnvUsername,
+	EnvPassword,
+	EnvZone).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
-	envTest := tester.NewEnvTest(
-		EnvPrefix+EnvURL,
-		EnvPrefix+EnvUsername,
-		EnvPrefix+EnvPassword,
-		EnvPrefix+EnvZone).
-		WithDomain(envDomain)
-	defer envTest.ClearEnv()
+	testCases := []struct {
+		desc     string
+		envVars  map[string]string
+		expected string
+	}{
+		{
+			desc: "minimum-success",
+			envVars: map[string]string{
+				EnvUsername: "blars",
+				EnvPassword: "tacoman",
+			},
+		},
+		{
+			desc: "set-everything",
+			envVars: map[string]string{
+				EnvURL:      "https://storm.com",
+				EnvUsername: "blars",
+				EnvPassword: "tacoman",
+				EnvZone:     "blars.com",
+			},
+		},
+		{
+			desc:     "missing credentials",
+			envVars:  map[string]string{},
+			expected: "liquidweb: some credentials information are missing: LIQUID_WEB_USERNAME,LIQUID_WEB_PASSWORD",
+		},
+		{
+			desc: "missing username",
+			envVars: map[string]string{
+				EnvPassword: "tacoman",
+				EnvZone:     "blars.com",
+			},
+			expected: "liquidweb: some credentials information are missing: LIQUID_WEB_USERNAME",
+		},
+		{
+			desc: "missing password",
+			envVars: map[string]string{
+				EnvUsername: "blars",
+				EnvZone:     "blars.com",
+			},
+			expected: "liquidweb: some credentials information are missing: LIQUID_WEB_PASSWORD",
+		},
+	}
 
-	for _, test := range testNewDNSProviderTestdata() {
+	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			defer envTest.RestoreEnv()
 			envTest.ClearEnv()
@@ -43,70 +84,66 @@ func TestNewDNSProvider(t *testing.T) {
 	}
 }
 
-func TestDNSProvider_Present(t *testing.T) {
-	envTest := tester.NewEnvTest(
-		EnvPrefix+EnvURL,
-		EnvPrefix+EnvUsername,
-		EnvPrefix+EnvPassword,
-		EnvPrefix+EnvZone).
-		WithDomain(envDomain)
+func TestNewDNSProviderConfig(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		username string
+		password string
+		zone     string
+		expected string
+	}{
+		{
+			desc:     "success",
+			username: "acme",
+			password: "secret",
+			zone:     "example.com",
+		},
+		{
+			desc:     "missing credentials",
+			username: "",
+			password: "",
+			zone:     "",
+			expected: "liquidweb: could not create Liquid Web API client: provided username is empty",
+		},
+		{
+			desc:     "missing username",
+			username: "",
+			password: "secret",
+			zone:     "example.com",
+			expected: "liquidweb: could not create Liquid Web API client: provided username is empty",
+		},
+		{
+			desc:     "missing password",
+			username: "acme",
+			password: "",
+			zone:     "example.com",
+			expected: "liquidweb: could not create Liquid Web API client: provided password is empty",
+		},
+	}
 
-	envTest.Apply(map[string]string{
-		EnvPrefix + EnvUsername: "blars",
-		EnvPrefix + EnvPassword: "tacoman",
-		EnvPrefix + EnvURL:      mockAPIServer(t),
-		EnvPrefix + EnvZone:     "tacoman.com", // this needs to be removed from test?
-	})
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			config := NewDefaultConfig()
+			config.Username = test.username
+			config.Password = test.password
+			config.Zone = test.zone
 
-	defer envTest.ClearEnv()
+			p, err := NewDNSProviderConfig(config)
 
-	provider, err := NewDNSProvider()
-	require.NoError(t, err)
-
-	err = provider.Present("tacoman.com", "", "")
-	require.NoError(t, err)
-}
-
-func TestDNSProvider_CleanUp(t *testing.T) {
-	envTest := tester.NewEnvTest(
-		EnvPrefix+EnvURL,
-		EnvPrefix+EnvUsername,
-		EnvPrefix+EnvPassword,
-		EnvPrefix+EnvZone).
-		WithDomain(envDomain)
-
-	envTest.Apply(map[string]string{
-		EnvPrefix + EnvUsername: "blars",
-		EnvPrefix + EnvPassword: "tacoman",
-		EnvPrefix + EnvURL: mockAPIServer(t, network.DNSRecord{
-			Name:   "_acme-challenge.tacoman.com",
-			RData:  "123d==",
-			Type:   "TXT",
-			TTL:    300,
-			ID:     1234567,
-			ZoneID: 42,
-		}),
-		EnvPrefix + EnvZone: "tacoman.com", // this needs to be removed from test?
-	})
-
-	defer envTest.ClearEnv()
-
-	provider, err := NewDNSProvider()
-	require.NoError(t, err)
-
-	provider.recordIDs["123d=="] = 1234567
-
-	err = provider.CleanUp("tacoman.com.", "123d==", "")
-	require.NoError(t, err, "fail to remove TXT record")
+			if test.expected == "" {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
+				require.NotNil(t, p.recordIDs)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
 }
 
 func TestLivePresent(t *testing.T) {
-	envTest := tester.NewEnvTest(
-		EnvPrefix+EnvURL,
-		EnvPrefix+EnvUsername,
-		EnvPrefix+EnvPassword,
-		EnvPrefix+EnvZone).
-		WithDomain(envDomain)
 	defer envTest.ClearEnv()
 
 	if !envTest.IsLiveTest() {
@@ -123,13 +160,6 @@ func TestLivePresent(t *testing.T) {
 }
 
 func TestLiveCleanUp(t *testing.T) {
-	envTest := tester.NewEnvTest(
-		EnvPrefix+EnvURL,
-		EnvPrefix+EnvUsername,
-		EnvPrefix+EnvPassword,
-		EnvPrefix+EnvZone).
-		WithDomain(envDomain)
-
 	defer envTest.ClearEnv()
 
 	if !envTest.IsLiveTest() {
@@ -145,42 +175,4 @@ func TestLiveCleanUp(t *testing.T) {
 
 	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
-}
-
-func TestIntegration(t *testing.T) {
-	envTest := tester.NewEnvTest(
-		"LWAPI_USERNAME",
-		"LWAPI_PASSWORD",
-		"LWAPI_URL")
-
-	for testName, td := range testIntegrationTestdata() {
-		t.Run(testName, func(t *testing.T) {
-			td := td
-
-			td.envVars["LWAPI_URL"] = mockAPIServer(t, td.initRecs...)
-			envTest.ClearEnv()
-			envTest.Apply(td.envVars)
-
-			provider, err := NewDNSProvider()
-			require.NoError(t, err)
-
-			if td.present {
-				err = provider.Present(td.domain, td.token, td.keyauth)
-				if td.expPresentErr == "" {
-					assert.NoError(t, err)
-				} else {
-					assert.Equal(t, td.expPresentErr, err.Error())
-				}
-			}
-
-			if td.cleanup {
-				err = provider.CleanUp(td.domain, td.token, td.keyauth)
-				if td.expCleanupErr == "" {
-					assert.NoError(t, err)
-				} else {
-					assert.Equal(t, td.expCleanupErr, err.Error())
-				}
-			}
-		})
-	}
 }

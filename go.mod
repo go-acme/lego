@@ -40,7 +40,7 @@ require (
 	github.com/infobloxopen/infoblox-go-client v1.1.1
 	github.com/labbsr0x/bindman-dns-webhook v1.0.2
 	github.com/linode/linodego v1.17.2
-	github.com/liquidweb/liquidweb-go v1.6.3
+	github.com/liquidweb/liquidweb-go v1.6.4
 	github.com/mattn/go-isatty v0.0.19
 	github.com/miekg/dns v1.1.55
 	github.com/mimuret/golang-iij-dpf v0.9.1
@@ -134,7 +134,6 @@ require (
 	github.com/kolo/xmlrpc v0.0.0-20220921171641-a4b6fa1dd06b // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/labbsr0x/goh v1.0.1 // indirect
-	github.com/liquidweb/go-lwApi v0.0.5 // indirect
 	github.com/liquidweb/liquidweb-cli v0.6.9 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect

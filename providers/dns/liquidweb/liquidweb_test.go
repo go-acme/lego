@@ -1,15 +1,11 @@
 package liquidweb
 
 import (
-	"fmt"
-	"io"
-	"net/http"
-	"net/http/httptest"
 	"testing"
 	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/stretchr/testify/assert"
+	"github.com/liquidweb/liquidweb-go/network"
 	"github.com/stretchr/testify/require"
 )
 
@@ -22,23 +18,20 @@ var envTest = tester.NewEnvTest(
 	EnvZone).
 	WithDomain(envDomain)
 
-func setupTest(t *testing.T) (*DNSProvider, *http.ServeMux) {
+func setupTest(t *testing.T, initRecs ...network.DNSRecord) *DNSProvider {
 	t.Helper()
 
-	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
-	t.Cleanup(server.Close)
+	serverURL := mockAPIServer(t, initRecs)
 
 	config := NewDefaultConfig()
 	config.Username = "blars"
 	config.Password = "tacoman"
-	config.BaseURL = server.URL
-	config.Zone = "tacoman.com"
+	config.BaseURL = serverURL
 
 	provider, err := NewDNSProviderConfig(config)
 	require.NoError(t, err)
 
-	return provider, mux
+	return provider
 }
 
 func TestNewDNSProvider(t *testing.T) {
@@ -48,7 +41,14 @@ func TestNewDNSProvider(t *testing.T) {
 		expected string
 	}{
 		{
-			desc: "success",
+			desc: "minimum-success",
+			envVars: map[string]string{
+				EnvUsername: "blars",
+				EnvPassword: "tacoman",
+			},
+		},
+		{
+			desc: "set-everything",
 			envVars: map[string]string{
 				EnvURL:      "https://storm.com",
 				EnvUsername: "blars",
@@ -59,7 +59,7 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc:     "missing credentials",
 			envVars:  map[string]string{},
-			expected: "liquidweb: some credentials information are missing: LIQUID_WEB_USERNAME,LIQUID_WEB_PASSWORD,LIQUID_WEB_ZONE",
+			expected: "liquidweb: some credentials information are missing: LIQUID_WEB_USERNAME,LIQUID_WEB_PASSWORD",
 		},
 		{
 			desc: "missing username",
@@ -74,14 +74,8 @@ func TestNewDNSProvider(t *testing.T) {
 			envVars: map[string]string{
 				EnvUsername: "blars",
 				EnvZone:     "blars.com",
-			}, expected: "liquidweb: some credentials information are missing: LIQUID_WEB_PASSWORD",
-		},
-		{
-			desc: "missing zone",
-			envVars: map[string]string{
-				EnvUsername: "blars",
-				EnvPassword: "tacoman",
-			}, expected: "liquidweb: some credentials information are missing: LIQUID_WEB_ZONE",
+			},
+			expected: "liquidweb: some credentials information are missing: LIQUID_WEB_PASSWORD",
 		},
 	}
 
@@ -126,28 +120,21 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			username: "",
 			password: "",
 			zone:     "",
-			expected: "liquidweb: zone is missing",
+			expected: "liquidweb: could not create Liquid Web API client: provided username is empty",
 		},
 		{
 			desc:     "missing username",
 			username: "",
 			password: "secret",
 			zone:     "example.com",
-			expected: "liquidweb: username is missing",
+			expected: "liquidweb: could not create Liquid Web API client: provided username is empty",
 		},
 		{
 			desc:     "missing password",
 			username: "acme",
 			password: "",
 			zone:     "example.com",
-			expected: "liquidweb: password is missing",
-		},
-		{
-			desc:     "missing zone",
-			username: "acme",
-			password: "secret",
-			zone:     "",
-			expected: "liquidweb: zone is missing",
+			expected: "liquidweb: could not create Liquid Web API client: provided password is empty",
 		},
 	}
 
@@ -174,75 +161,102 @@ func TestNewDNSProviderConfig(t *testing.T) {
 }
 
 func TestDNSProvider_Present(t *testing.T) {
-	provider, mux := setupTest(t)
-
-	mux.HandleFunc("/v1/Network/DNS/Record/create", func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, http.MethodPost, r.Method)
-
-		username, password, ok := r.BasicAuth()
-		assert.Equal(t, "blars", username)
-		assert.Equal(t, "tacoman", password)
-		assert.True(t, ok)
-
-		reqBody, err := io.ReadAll(r.Body)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		expectedReqBody := `
-			{
-				"params": {
-					"name": "_acme-challenge.tacoman.com",
-					"rdata": "\"47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU\"",
-					"ttl": 300,
-					"type": "TXT",
-					"zone": "tacoman.com"
-				}
-			}`
-		assert.JSONEq(t, expectedReqBody, string(reqBody))
-
-		w.WriteHeader(http.StatusOK)
-		_, err = fmt.Fprintf(w, `{
-			"type": "TXT",
-			"name": "_acme-challenge.tacoman.com",
-			"rdata": "\"47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU\"",
-			"ttl": 300,
-			"id": 1234567,
-			"prio": null
-		}`)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	})
+	provider := setupTest(t)
 
 	err := provider.Present("tacoman.com", "", "")
 	require.NoError(t, err)
 }
 
 func TestDNSProvider_CleanUp(t *testing.T) {
-	provider, mux := setupTest(t)
-
-	mux.HandleFunc("/v1/Network/DNS/Record/delete", func(w http.ResponseWriter, r *http.Request) {
-		assert.Equal(t, http.MethodPost, r.Method)
-
-		username, password, ok := r.BasicAuth()
-		assert.Equal(t, "blars", username)
-		assert.Equal(t, "tacoman", password)
-		assert.True(t, ok)
-
-		_, err := fmt.Fprintf(w, `{"deleted": "123"}`)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+	provider := setupTest(t, network.DNSRecord{
+		Name:   "_acme-challenge.tacoman.com",
+		RData:  "123d==",
+		Type:   "TXT",
+		TTL:    300,
+		ID:     1234567,
+		ZoneID: 42,
 	})
 
-	provider.recordIDs["123"] = 1234567
+	provider.recordIDs["123d=="] = 1234567
 
-	err := provider.CleanUp("tacoman.com.", "123", "")
-	require.NoError(t, err, "fail to remove TXT record")
+	err := provider.CleanUp("tacoman.com.", "123d==", "")
+	require.NoError(t, err)
+}
+
+func TestDNSProvider(t *testing.T) {
+	testCases := []struct {
+		desc          string
+		initRecs      []network.DNSRecord
+		domain        string
+		token         string
+		keyAuth       string
+		present       bool
+		expPresentErr string
+		cleanup       bool
+	}{
+		{
+			desc:    "expected successful",
+			domain:  "tacoman.com",
+			token:   "123",
+			keyAuth: "456",
+			present: true,
+			cleanup: true,
+		},
+		{
+			desc:    "other successful",
+			domain:  "banana.com",
+			token:   "123",
+			keyAuth: "456",
+			present: true,
+			cleanup: true,
+		},
+		{
+			desc:          "zone not on account",
+			domain:        "huckleberry.com",
+			token:         "123",
+			keyAuth:       "456",
+			present:       true,
+			expPresentErr: "no valid zone in account for certificate '_acme-challenge.huckleberry.com'",
+			cleanup:       false,
+		},
+		{
+			desc:    "ssl for domain",
+			domain:  "sundae.cherry.com",
+			token:   "5847953",
+			keyAuth: "34872934",
+			present: true,
+			cleanup: true,
+		},
+		{
+			desc:    "complicated domain",
+			domain:  "always.money.stand.banana.com",
+			token:   "5847953",
+			keyAuth: "there is always money in the banana stand",
+			present: true,
+			cleanup: true,
+		},
+	}
+
+	for _, test := range testCases {
+		test := test
+		t.Run(test.desc, func(t *testing.T) {
+			provider := setupTest(t, test.initRecs...)
+
+			if test.present {
+				err := provider.Present(test.domain, test.token, test.keyAuth)
+				if test.expPresentErr == "" {
+					require.NoError(t, err)
+				} else {
+					require.ErrorContains(t, err, test.expPresentErr)
+				}
+			}
+
+			if test.cleanup {
+				err := provider.CleanUp(test.domain, test.token, test.keyAuth)
+				require.NoError(t, err)
+			}
+		})
+	}
 }
 
 func TestLivePresent(t *testing.T) {

@@ -28,7 +28,6 @@ Here is an example bash command using the Liquid Web provider:
 ```bash
 LIQUID_WEB_USERNAME=someuser \
 LIQUID_WEB_PASSWORD=somepass \
-LIQUID_WEB_ZONE=tacoman.com.net \
 lego --email you@example.com --dns liquidweb --domains my.example.org run
 ```
 
@@ -39,9 +38,8 @@ lego --email you@example.com --dns liquidweb --domains my.example.org run
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `LIQUID_WEB_PASSWORD` | Storm API Password |
-| `LIQUID_WEB_USERNAME` | Storm API Username |
-| `LIQUID_WEB_ZONE` | DNS Zone |
+| `LIQUID_WEB_PASSWORD` | Liquid Web API Password |
+| `LIQUID_WEB_USERNAME` | Liquid Web API Username |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{< ref "dns#configuration-and-credentials" >}}).
@@ -55,7 +53,8 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 | `LIQUID_WEB_POLLING_INTERVAL` | Time between DNS propagation check |
 | `LIQUID_WEB_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
 | `LIQUID_WEB_TTL` | The TTL of the TXT record used for the DNS challenge |
-| `LIQUID_WEB_URL` | Storm API endpoint |
+| `LIQUID_WEB_URL` | Liquid Web API endpoint |
+| `LIQUID_WEB_ZONE` | DNS Zone |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{< ref "dns#configuration-and-credentials" >}}).
@@ -65,7 +64,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 ## More information
 
-- [API documentation](https://cart.liquidweb.com/storm/api/docs/v1/)
+- [API documentation](https://api.liquidweb.com/docs/)
 - [Go client](https://github.com/liquidweb/liquidweb-go)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

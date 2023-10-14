@@ -386,12 +386,10 @@ github.com/lestrrat-go/option v1.0.0/go.mod h1:5ZHFbivi4xwXxhxY9XHDe2FHo6/Z7WWmt
 github.com/linode/linodego v1.17.2 h1:b32dj4662PGG5P9qVa6nBezccWdqgukndlMIuPGq1CQ=
 github.com/linode/linodego v1.17.2/go.mod h1:C2iyT3Vg2O2sPxkWka4XAQ5WSUtm5LmTZ3Adw43Ra7Q=
 github.com/liquidweb/go-lwApi v0.0.0-20190605172801-52a4864d2738/go.mod h1:0sYF9rMXb0vlG+4SzdiGMXHheCZxjguMq+Zb4S2BfBs=
-github.com/liquidweb/go-lwApi v0.0.5 h1:CT4cdXzJXmo0bon298kS7NeSk+Gt8/UHpWBBol1NGCA=
-github.com/liquidweb/go-lwApi v0.0.5/go.mod h1:0sYF9rMXb0vlG+4SzdiGMXHheCZxjguMq+Zb4S2BfBs=
 github.com/liquidweb/liquidweb-cli v0.6.9 h1:acbIvdRauiwbxIsOCEMXGwF75aSJDbDiyAWPjVnwoYM=
 github.com/liquidweb/liquidweb-cli v0.6.9/go.mod h1:cE1uvQ+x24NGUL75D0QagOFCG8Wdvmwu8aL9TLmA/eQ=
-github.com/liquidweb/liquidweb-go v1.6.3 h1:NVHvcnX3eb3BltiIoA+gLYn15nOpkYkdizOEYGSKrk4=
-github.com/liquidweb/liquidweb-go v1.6.3/go.mod h1:SuXXp+thr28LnjEw18AYtWwIbWMHSUiajPQs8T9c/Rc=
+github.com/liquidweb/liquidweb-go v1.6.4 h1:6S0m3hHSpiLqGD7AFSb7lH/W/qr1wx+tKil9fgIbjMc=
+github.com/liquidweb/liquidweb-go v1.6.4/go.mod h1:B934JPIIcdA+uTq2Nz5PgOtG6CuCaEvQKe/Ge/5GgZ4=
 github.com/magiconair/properties v1.8.1/go.mod h1:PppfXfuXeibc/6YijjN8zIbojt8czPbwD3XqdrwzmxQ=
 github.com/magiconair/properties v1.8.4/go.mod h1:y3VJvCyxH9uVvJTWEGAELF3aiYNyPKd5NZ3oSwXrF60=
 github.com/mailru/easyjson v0.0.0-20190614124828-94de47d64c63/go.mod h1:C1wdFJiN94OJF2b5HbByQZoLdCWB1Yqtg26g4irojpc=

@@ -15,12 +15,12 @@ func TestGetWithFallback(t *testing.T) {
 	var1Missing := os.Getenv("TEST_LEGO_VAR_MISSING_1")
 	var2Missing := os.Getenv("TEST_LEGO_VAR_MISSING_2")
 
-	defer func() {
+	t.Cleanup(func() {
 		_ = os.Setenv("TEST_LEGO_VAR_EXIST_1", var1Exist)
 		_ = os.Setenv("TEST_LEGO_VAR_EXIST_2", var2Exist)
 		_ = os.Setenv("TEST_LEGO_VAR_MISSING_1", var1Missing)
 		_ = os.Setenv("TEST_LEGO_VAR_MISSING_2", var2Missing)
-	}()
+	})
 
 	err := os.Setenv("TEST_LEGO_VAR_EXIST_1", "VAR1")
 	require.NoError(t, err)
@@ -93,7 +93,10 @@ func TestGetWithFallback(t *testing.T) {
 	}
 
 	for _, test := range testCases {
+		test := test
 		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
 			value, err := GetWithFallback(test.groups...)
 			if len(test.expected.error) > 0 {
 				assert.EqualError(t, err, test.expected.error)
@@ -101,6 +104,74 @@ func TestGetWithFallback(t *testing.T) {
 				require.NoError(t, err)
 				assert.Equal(t, test.expected.value, value)
 			}
+		})
+	}
+}
+
+func TestGetOneWithFallback(t *testing.T) {
+	var1Exist := os.Getenv("TEST_LEGO_VAR_EXIST_1")
+	var2Exist := os.Getenv("TEST_LEGO_VAR_EXIST_2")
+	var1Missing := os.Getenv("TEST_LEGO_VAR_MISSING_1")
+	var2Missing := os.Getenv("TEST_LEGO_VAR_MISSING_2")
+
+	t.Cleanup(func() {
+		_ = os.Setenv("TEST_LEGO_VAR_EXIST_1", var1Exist)
+		_ = os.Setenv("TEST_LEGO_VAR_EXIST_2", var2Exist)
+		_ = os.Setenv("TEST_LEGO_VAR_MISSING_1", var1Missing)
+		_ = os.Setenv("TEST_LEGO_VAR_MISSING_2", var2Missing)
+	})
+
+	err := os.Setenv("TEST_LEGO_VAR_EXIST_1", "VAR1")
+	require.NoError(t, err)
+	err = os.Setenv("TEST_LEGO_VAR_EXIST_2", "VAR2")
+	require.NoError(t, err)
+	err = os.Unsetenv("TEST_LEGO_VAR_MISSING_1")
+	require.NoError(t, err)
+	err = os.Unsetenv("TEST_LEGO_VAR_MISSING_2")
+	require.NoError(t, err)
+
+	testCases := []struct {
+		desc         string
+		main         string
+		defaultValue string
+		alts         []string
+		expected     string
+	}{
+		{
+			desc:         "with value and no alternative",
+			main:         "TEST_LEGO_VAR_EXIST_1",
+			defaultValue: "oops",
+			expected:     "VAR1",
+		},
+		{
+			desc:         "with value and alternatives",
+			main:         "TEST_LEGO_VAR_EXIST_1",
+			defaultValue: "oops",
+			alts:         []string{"TEST_LEGO_VAR_MISSING_1"},
+			expected:     "VAR1",
+		},
+		{
+			desc:         "without value and no alternatives",
+			main:         "TEST_LEGO_VAR_MISSING_1",
+			defaultValue: "oops",
+			expected:     "oops",
+		},
+		{
+			desc:         "without value and alternatives",
+			main:         "TEST_LEGO_VAR_MISSING_1",
+			defaultValue: "oops",
+			alts:         []string{"TEST_LEGO_VAR_EXIST_1"},
+			expected:     "VAR1",
+		},
+	}
+
+	for _, test := range testCases {
+		test := test
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			value := GetOneWithFallback(test.main, test.defaultValue, ParseString, test.alts...)
+			assert.Equal(t, test.expected, value)
 		})
 	}
 }

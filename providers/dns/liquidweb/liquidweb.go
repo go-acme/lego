@@ -20,7 +20,8 @@ const defaultBaseURL = "https://api.liquidweb.com"
 
 // Environment variables names.
 const (
-	envNamespace = "LIQUID_WEB_"
+	envNamespace    = "LIQUID_WEB_"
+	altEnvNamespace = "LWAPI_"
 
 	EnvURL      = envNamespace + "URL"
 	EnvUsername = envNamespace + "USERNAME"
@@ -49,10 +50,10 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		BaseURL:            defaultBaseURL,
-		TTL:                env.GetOrDefaultInt(EnvTTL, 300),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
-		HTTPTimeout:        env.GetOrDefaultSecond(EnvHTTPTimeout, 1*time.Minute),
+		TTL:                env.GetOneWithFallback(EnvTTL, 300, strconv.Atoi, altEnvName(EnvTTL)),
+		PropagationTimeout: env.GetOneWithFallback(EnvPropagationTimeout, 2*time.Minute, env.ParseSecond, altEnvName(EnvPropagationTimeout)),
+		PollingInterval:    env.GetOneWithFallback(EnvPollingInterval, 2*time.Second, env.ParseSecond, altEnvName(EnvPollingInterval)),
+		HTTPTimeout:        env.GetOneWithFallback(EnvHTTPTimeout, 1*time.Minute, env.ParseSecond, altEnvName(EnvHTTPTimeout)),
 	}
 }
 
@@ -66,16 +67,19 @@ type DNSProvider struct {
 
 // NewDNSProvider returns a DNSProvider instance configured for Liquid Web.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvUsername, EnvPassword)
+	values, err := env.GetWithFallback(
+		[]string{EnvUsername, altEnvName(EnvUsername)},
+		[]string{EnvPassword, altEnvName(EnvPassword)},
+	)
 	if err != nil {
 		return nil, fmt.Errorf("liquidweb: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.BaseURL = env.GetOrFile(EnvURL)
+	config.BaseURL = env.GetOneWithFallback(EnvURL, defaultBaseURL, env.ParseString, altEnvName(EnvURL))
 	config.Username = values[EnvUsername]
 	config.Password = values[EnvPassword]
-	config.Zone = env.GetOrDefaultString(EnvZone, "")
+	config.Zone = env.GetOneWithFallback(EnvZone, "", env.ParseString, altEnvName(EnvZone))
 
 	return NewDNSProviderConfig(config)
 }
@@ -190,4 +194,8 @@ func (d *DNSProvider) findZone(domain string) (string, error) {
 	})
 
 	return zs[0].Name, nil
+}
+
+func altEnvName(v string) string {
+	return strings.ReplaceAll(v, envNamespace, altEnvNamespace)
 }

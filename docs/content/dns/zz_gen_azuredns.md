@@ -110,6 +110,8 @@ Default Azure Credentials automatically detects in the following locations and p
 3. Workload identity for resources hosted in Azure environment (see below)
 4. Shared credentials (defaults to `~/.azure` folder), used by Azure CLI
 
+**Open ID Connect authentication is not supported by default.**
+
 Link:
 - [Azure Authentication](https://learn.microsoft.com/en-us/azure/developer/go/azure-sdk-authentication)
 
@@ -209,6 +211,11 @@ It provides an easy way to authenticate by simply running `az login` command.
 The generated token will be cached by default in the `~/.azure` folder.
 
 This authentication method can be specificaly used by setting the `AZURE_AUTH_METHOD` environment variable to `cli`.
+
+### Open ID Connect
+
+Open ID Connect is a mechanism that establish a trust relationship between a running environment and the Azure AD identity provider.
+It is not supported by default, but can be enabled by setting the `AZURE_AUTH_METHOD` environment variable to `oidc`.
 
 
 

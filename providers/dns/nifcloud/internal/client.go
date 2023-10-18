@@ -149,10 +149,9 @@ func (c *Client) sign(req *http.Request) error {
 }
 
 func newXMLRequest(ctx context.Context, method string, endpoint *url.URL, payload any) (*http.Request, error) {
-	buf := new(bytes.Buffer)
+	body := new(bytes.Buffer)
 
 	if payload != nil {
-		body := new(bytes.Buffer)
 		body.WriteString(xml.Header)
 		err := xml.NewEncoder(body).Encode(payload)
 		if err != nil {
@@ -160,7 +159,7 @@ func newXMLRequest(ctx context.Context, method string, endpoint *url.URL, payloa
 		}
 	}
 
-	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), buf)
+	req, err := http.NewRequestWithContext(ctx, method, endpoint.String(), body)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create request: %w", err)
 	}

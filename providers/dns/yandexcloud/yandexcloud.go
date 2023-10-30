@@ -197,7 +197,7 @@ func (r *DNSProvider) getZones(ctx context.Context) ([]*ycdns.DnsZone, error) {
 		return nil, errors.New("unable to fetch dns zones")
 	}
 
-	return response.DnsZones, nil
+	return response.GetDnsZones(), nil
 }
 
 func (r *DNSProvider) upsertRecordSetData(ctx context.Context, zoneID, name, value string) error {
@@ -223,7 +223,7 @@ func (r *DNSProvider) upsertRecordSetData(ctx context.Context, zoneID, name, val
 
 	var deletions []*ycdns.RecordSet
 	if exist != nil {
-		record.Data = append(record.Data, exist.Data...)
+		record.SetData(append(record.GetData(), exist.GetData()...))
 		deletions = append(deletions, exist)
 	}
 
@@ -263,7 +263,7 @@ func (r *DNSProvider) removeRecordSetData(ctx context.Context, zoneID, name, val
 
 	var additions []*ycdns.RecordSet
 
-	if len(previousRecord.Data) > 1 {
+	if len(previousRecord.GetData()) > 1 {
 		// RecordSet is not empty we should update it
 		record := &ycdns.RecordSet{
 			Name: name,
@@ -272,9 +272,9 @@ func (r *DNSProvider) removeRecordSetData(ctx context.Context, zoneID, name, val
 			Data: []string{},
 		}
 
-		for _, data := range previousRecord.Data {
+		for _, data := range previousRecord.GetData() {
 			if data != value {
-				record.Data = append(record.Data, data)
+				record.SetData(append(record.GetData(), data))
 			}
 		}
 
@@ -309,13 +309,13 @@ func decodeCredentials(accountB64 string) (ycsdk.Credentials, error) {
 }
 
 func appendRecordSetData(record *ycdns.RecordSet, value string) bool {
-	for _, data := range record.Data {
+	for _, data := range record.GetData() {
 		if data == value {
 			return false
 		}
 	}
 
-	record.Data = append(record.Data, value)
+	record.SetData(append(record.GetData(), value))
 
 	return true
 }

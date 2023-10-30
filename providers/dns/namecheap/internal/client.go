@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -73,7 +74,7 @@ func (c *Client) SetHosts(ctx context.Context, sld, tld string, hosts []Record) 
 		addParam("TLD", tld),
 		func(values url.Values) {
 			for i, h := range hosts {
-				ind := fmt.Sprintf("%d", i+1)
+				ind := strconv.Itoa(i + 1)
 				values.Add("HostName"+ind, h.Name)
 				values.Add("RecordType"+ind, h.Type)
 				values.Add("Address"+ind, h.Address)

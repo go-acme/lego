@@ -2,6 +2,7 @@ package internal
 
 import (
 	"crypto/sha1"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"time"
@@ -14,7 +15,7 @@ func authToken(userName string, wapiPass string) string {
 func sha1string(txt string) string {
 	h := sha1.New()
 	_, _ = io.WriteString(h, txt)
-	return fmt.Sprintf("%x", h.Sum(nil))
+	return hex.EncodeToString(h.Sum(nil))
 }
 
 func czechHourString() string {

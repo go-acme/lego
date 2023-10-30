@@ -11,6 +11,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -58,7 +59,7 @@ func (c *Client) ListRecords(ctx context.Context, account, dnsZone string) (*Lis
 	}
 
 	for len(result.Response.RR) < result.Response.Total[0] {
-		query.Add("first", fmt.Sprint(result.Response.Last[0]+1))
+		query.Add("first", strconv.Itoa(result.Response.Last[0]+1))
 
 		tmp := &Response[*ListRecordsResponse]{}
 		err := c.do(ctx, query, tmp)
@@ -76,7 +77,7 @@ func (c *Client) ListRecords(ctx context.Context, account, dnsZone string) (*Lis
 // AddRecord adds a DNS record.
 // https://portal.brandit.com/apidocv3#addDNSRR
 func (c *Client) AddRecord(ctx context.Context, domainName, account, newRecordID string, record Record) (*AddRecord, error) {
-	value := strings.Join([]string{record.Name, fmt.Sprint(record.TTL), "IN", record.Type, record.Content}, " ")
+	value := strings.Join([]string{record.Name, strconv.Itoa(record.TTL), "IN", record.Type, record.Content}, " ")
 
 	query := url.Values{}
 	query.Add("command", "addDNSRR")

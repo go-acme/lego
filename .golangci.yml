@@ -88,6 +88,19 @@ linters-settings:
         disabled: true
       - name: unreachable-code
       - name: redefines-builtin-id
+  testifylint:
+    enable:
+      - bool-compare
+      - compares
+      - empty
+      - error-is-as
+      - error-nil
+      - expected-actual
+      - float-compare
+      - len
+      - suite-dont-use-pkg
+      - suite-extra-assert-call
+      - suite-thelper
 
 linters:
   enable-all: true

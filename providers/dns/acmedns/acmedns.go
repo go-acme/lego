@@ -28,10 +28,10 @@ const (
 type acmeDNSClient interface {
 	// UpdateTXTRecord updates the provided account's TXT record
 	// to the given value or returns an error.
-	UpdateTXTRecord(goacmedns.Account, string) error
+	UpdateTXTRecord(account goacmedns.Account, value string) error
 	// RegisterAccount registers and returns a new account
 	// with the given allowFrom restriction or returns an error.
-	RegisterAccount([]string) (goacmedns.Account, error)
+	RegisterAccount(allowFrom []string) (goacmedns.Account, error)
 }
 
 // DNSProvider implements the challenge.Provider interface.

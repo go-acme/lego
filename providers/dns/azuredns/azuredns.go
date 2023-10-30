@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 
@@ -31,12 +32,20 @@ const (
 	EnvClientID     = envNamespace + "CLIENT_ID"
 	EnvClientSecret = envNamespace + "CLIENT_SECRET"
 
+	EnvOIDCToken         = envNamespace + "OIDC_TOKEN"
+	EnvOIDCTokenFilePath = envNamespace + "OIDC_TOKEN_FILE_PATH"
+	EnvOIDCRequestURL    = envNamespace + "OIDC_REQUEST_URL"
+	EnvOIDCRequestToken  = envNamespace + "OIDC_REQUEST_TOKEN"
+
 	EnvAuthMethod     = envNamespace + "AUTH_METHOD"
 	EnvAuthMSITimeout = envNamespace + "AUTH_MSI_TIMEOUT"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+
+	EnvGitHubOIDCRequestURL   = "ACTIONS_ID_TOKEN_REQUEST_URL"
+	EnvGitHubOIDCRequestToken = "ACTIONS_ID_TOKEN_REQUEST_TOKEN"
 )
 
 // Config is used to configure the creation of the DNSProvider.
@@ -52,12 +61,18 @@ type Config struct {
 	ClientSecret string
 	TenantID     string
 
+	OIDCToken         string
+	OIDCTokenFilePath string
+	OIDCRequestURL    string
+	OIDCRequestToken  string
+
 	AuthMethod     string
 	AuthMSITimeout time.Duration
 
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
+	HTTPClient         *http.Client
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
@@ -103,6 +118,17 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config.ClientSecret = env.GetOrFile(EnvClientSecret)
 	config.TenantID = env.GetOrFile(EnvTenantID)
 
+	config.OIDCToken = env.GetOrFile(EnvOIDCToken)
+	config.OIDCTokenFilePath = env.GetOrFile(EnvOIDCTokenFilePath)
+
+	oidcValues, _ := env.GetWithFallback(
+		[]string{EnvOIDCRequestURL, EnvGitHubOIDCRequestURL},
+		[]string{EnvOIDCRequestToken, EnvGitHubOIDCRequestToken},
+	)
+
+	config.OIDCRequestURL = oidcValues[EnvOIDCRequestURL]
+	config.OIDCRequestToken = oidcValues[EnvOIDCRequestToken]
+
 	config.AuthMethod = env.GetOrFile(EnvAuthMethod)
 	config.AuthMSITimeout = env.GetOrDefaultSecond(EnvAuthMSITimeout, 2*time.Second)
 
@@ -113,6 +139,10 @@ func NewDNSProvider() (*DNSProvider, error) {
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("azuredns: the configuration of the DNS provider is nil")
+	}
+
+	if config.HTTPClient == nil {
+		config.HTTPClient = &http.Client{Timeout: 5 * time.Second}
 	}
 
 	credentials, err := getCredentials(config)
@@ -144,6 +174,22 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	return &DNSProvider{provider: dnsProvider}, nil
 }
 
+// Timeout returns the timeout and interval to use when checking for DNS propagation.
+// Adjusting here to cope with spikes in propagation times.
+func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
+	return d.provider.Timeout()
+}
+
+// Present creates a TXT record to fulfill the dns-01 challenge.
+func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+	return d.provider.Present(domain, token, keyAuth)
+}
+
+// CleanUp removes the TXT record matching the specified parameters.
+func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+	return d.provider.CleanUp(domain, token, keyAuth)
+}
+
 func getCredentials(config *Config) (azcore.TokenCredential, error) {
 	clientOptions := azcore.ClientOptions{Cloud: config.Environment}
 
@@ -170,25 +216,17 @@ func getCredentials(config *Config) (azcore.TokenCredential, error) {
 	case "cli":
 		return azidentity.NewAzureCLICredential(nil)
 
+	case "oidc":
+		err := checkOIDCConfig(config)
+		if err != nil {
+			return nil, err
+		}
+
+		return azidentity.NewClientAssertionCredential(config.TenantID, config.ClientID, getOIDCAssertion(config), &azidentity.ClientAssertionCredentialOptions{ClientOptions: clientOptions})
+
 	default:
 		return azidentity.NewDefaultAzureCredential(&azidentity.DefaultAzureCredentialOptions{ClientOptions: clientOptions})
 	}
-}
-
-// Timeout returns the timeout and interval to use when checking for DNS propagation.
-// Adjusting here to cope with spikes in propagation times.
-func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
-	return d.provider.Timeout()
-}
-
-// Present creates a TXT record to fulfill the dns-01 challenge.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
-	return d.provider.Present(domain, token, keyAuth)
-}
-
-// CleanUp removes the TXT record matching the specified parameters.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
-	return d.provider.CleanUp(domain, token, keyAuth)
 }
 
 // timeoutTokenCredential wraps a TokenCredential to add a timeout.

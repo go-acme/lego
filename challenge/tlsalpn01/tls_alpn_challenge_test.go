@@ -141,7 +141,7 @@ func TestChallengeIPaddress(t *testing.T) {
 		assert.Len(t, connState.PeerCertificates, 1, "Expected the challenge server to return exactly one certificate")
 
 		remoteCert := connState.PeerCertificates[0]
-		assert.Len(t, remoteCert.DNSNames, 0, "Expected the challenge certificate to have no DNSNames entry in context of challenge for IP")
+		assert.Empty(t, remoteCert.DNSNames, "Expected the challenge certificate to have no DNSNames entry in context of challenge for IP")
 		assert.Len(t, remoteCert.IPAddresses, 1, "Expected the challenge certificate to have exactly one IPAddresses entry")
 		assert.True(t, net.ParseIP("127.0.0.1").Equal(remoteCert.IPAddresses[0]), "challenge certificate IPAddress ")
 		assert.NotEmpty(t, remoteCert.Extensions, "Expected the challenge certificate to contain extensions")

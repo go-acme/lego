@@ -21,7 +21,7 @@ func TestNewDNSProvider_Fail(t *testing.T) {
 	envTest.ClearEnv()
 
 	_, err := NewDNSProvider()
-	assert.Error(t, err, "VEGADNS_URL env missing")
+	require.Error(t, err, "VEGADNS_URL env missing")
 }
 
 func TestDNSProvider_TimeoutSuccess(t *testing.T) {
@@ -34,8 +34,8 @@ func TestDNSProvider_TimeoutSuccess(t *testing.T) {
 	require.NoError(t, err)
 
 	timeout, interval := provider.Timeout()
-	assert.Equal(t, timeout, 12*time.Minute)
-	assert.Equal(t, interval, 1*time.Minute)
+	assert.Equal(t, 12*time.Minute, timeout)
+	assert.Equal(t, 1*time.Minute, interval)
 }
 
 func TestDNSProvider_Present(t *testing.T) {

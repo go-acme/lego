@@ -94,7 +94,7 @@ func TestClient_GetDNSRecords_error(t *testing.T) {
 	mux.HandleFunc("/domains/example.com/records", testHandler(http.MethodGet, http.StatusUnauthorized, "error.json"))
 
 	_, err := client.GetDNSRecords(context.Background(), "example.com")
-	assert.Error(t, err)
+	require.Error(t, err)
 }
 
 func TestClient_CreateHostRecord(t *testing.T) {
@@ -135,7 +135,7 @@ func TestClient_CreateHostRecord_error(t *testing.T) {
 	}
 
 	_, err := client.CreateHostRecord(context.Background(), "example.com", record)
-	assert.Error(t, err)
+	require.Error(t, err)
 }
 
 func TestClient_RemoveHostRecord(t *testing.T) {
@@ -160,7 +160,7 @@ func TestClient_RemoveHostRecord_error(t *testing.T) {
 	mux.HandleFunc("/domains/example.com/records", testHandler(http.MethodDelete, http.StatusUnauthorized, "error.json"))
 
 	_, err := client.RemoveHostRecord(context.Background(), "example.com", "abc123")
-	assert.Error(t, err)
+	require.Error(t, err)
 }
 
 func testHandler(method string, statusCode int, filename string) http.HandlerFunc {

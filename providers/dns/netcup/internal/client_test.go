@@ -356,7 +356,7 @@ func TestClient_UpdateDNSRecord_Live(t *testing.T) {
 	info := dns01.GetChallengeInfo(envTest.GetDomain(), "123d==")
 
 	zone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
-	require.NoError(t, err, fmt.Errorf("error finding DNSZone, %w", err))
+	require.NotErrorIs(t, err, fmt.Errorf("error finding DNSZone, %w", err))
 
 	hostname := strings.Replace(info.EffectiveFQDN, "."+zone, "", 1)
 

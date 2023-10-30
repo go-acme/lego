@@ -391,7 +391,6 @@ func TestLivePresent(t *testing.T) {
 	}
 
 	envTest.RestoreEnv()
-
 	provider, err := NewDNSProviderCredentials(envTest.GetValue(EnvProject))
 	require.NoError(t, err)
 

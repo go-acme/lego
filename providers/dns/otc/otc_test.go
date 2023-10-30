@@ -63,18 +63,18 @@ func (s *OTCSuite) TestLoginEnv() {
 	provider, err := NewDNSProvider()
 	s.Require().NoError(err)
 
-	s.Equal(provider.config.DomainName, "unittest1")
-	s.Equal(provider.config.UserName, "unittest2")
-	s.Equal(provider.config.Password, "unittest3")
-	s.Equal(provider.config.ProjectName, "unittest4")
-	s.Equal(provider.config.IdentityEndpoint, "unittest5")
+	s.Equal("unittest1", provider.config.DomainName)
+	s.Equal("unittest2", provider.config.UserName)
+	s.Equal("unittest3", provider.config.Password)
+	s.Equal("unittest4", provider.config.ProjectName)
+	s.Equal("unittest5", provider.config.IdentityEndpoint)
 
 	os.Setenv(EnvIdentityEndpoint, "")
 
 	provider, err = NewDNSProvider()
 	s.Require().NoError(err)
 
-	s.Equal(provider.config.IdentityEndpoint, "https://iam.eu-de.otc.t-systems.com:443/v3/auth/tokens")
+	s.Equal("https://iam.eu-de.otc.t-systems.com:443/v3/auth/tokens", provider.config.IdentityEndpoint)
 }
 
 func (s *OTCSuite) TestLoginEnvEmpty() {
@@ -103,7 +103,7 @@ func (s *OTCSuite) TestDNSProvider_Present_EmptyZone() {
 	s.Require().NoError(err)
 
 	err = provider.Present("example.com", "", "foobar")
-	s.NotNil(err)
+	s.Error(err)
 }
 
 func (s *OTCSuite) TestDNSProvider_CleanUp() {

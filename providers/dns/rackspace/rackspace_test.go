@@ -29,12 +29,12 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, provider.config)
 
-	assert.Equal(t, provider.token, "testToken", "The token should match")
+	assert.Equal(t, "testToken", provider.token, "The token should match")
 }
 
 func TestNewDNSProviderConfig_MissingCredErr(t *testing.T) {
 	_, err := NewDNSProviderConfig(NewDefaultConfig())
-	assert.EqualError(t, err, "rackspace: credentials missing")
+	require.EqualError(t, err, "rackspace: credentials missing")
 }
 
 func TestDNSProvider_Present(t *testing.T) {

@@ -83,7 +83,7 @@ func TestDNSProvider_addAndCleanupRecords(t *testing.T) {
 		require.NoError(t, e)
 		require.NotNil(t, updZone)
 
-		require.Len(t, updZone.Records, 0)
+		require.Empty(t, updZone.Records)
 	})
 }
 
@@ -143,6 +143,6 @@ func TestDNSProvider_concurrentAddAndCleanupRecords(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, updZone)
 
-		require.Len(t, updZone.Records, 0)
+		require.Empty(t, updZone.Records)
 	})
 }

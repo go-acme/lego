@@ -239,7 +239,7 @@ func TestClient_rpcCall_404(t *testing.T) {
 	client.BaseURL = server.URL + "/"
 
 	err := client.rpcCall(context.Background(), call, &responseString{})
-	assert.EqualError(t, err, "unexpected status code: [status code: 404] body: <?xml version='1.0' encoding='UTF-8'?>")
+	require.EqualError(t, err, "unexpected status code: [status code: 404] body: <?xml version='1.0' encoding='UTF-8'?>")
 }
 
 func TestClient_rpcCall_RPCError(t *testing.T) {
@@ -270,7 +270,7 @@ func TestClient_rpcCall_RPCError(t *testing.T) {
 	client.BaseURL = server.URL + "/"
 
 	err := client.rpcCall(context.Background(), call, &responseString{})
-	assert.EqualError(t, err, "RPC Error: (201) Method signature error: 42")
+	require.EqualError(t, err, "RPC Error: (201) Method signature error: 42")
 }
 
 func TestUnmarshallFaultyRecordObject(t *testing.T) {

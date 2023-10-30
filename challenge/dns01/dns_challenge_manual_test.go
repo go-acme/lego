@@ -5,7 +5,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -32,14 +31,14 @@ func TestDNSProviderManual(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			file, err := os.CreateTemp("", "lego_test")
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			defer func() { _ = os.Remove(file.Name()) }()
 
 			_, err = file.WriteString(test.input)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 
 			_, err = file.Seek(0, io.SeekStart)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 
 			os.Stdin = file
 

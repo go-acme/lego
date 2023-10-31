@@ -226,8 +226,8 @@ func Test_RemoveTxtEntryFromZone(t *testing.T) {
 			t.Parallel()
 
 			zone, modified := RemoveTxtEntryFromZone(test.input, "_acme-challenge")
-			assert.Equal(t, zone, test.expected)
-			assert.Equal(t, modified, test.modified)
+			assert.Equal(t, test.expected, zone)
+			assert.Equal(t, test.modified, modified)
 		})
 	}
 }
@@ -258,7 +258,7 @@ func Test_AddTxtEntryToZone(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			zone := AddTxtEntryToZone(test.input, "_acme-challenge", "test", 120)
-			assert.Equal(t, zone, test.expected)
+			assert.Equal(t, test.expected, zone)
 		})
 	}
 }
@@ -299,7 +299,7 @@ func Test_fixTxtLines(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			line := fixTxtLines(test.input)
-			assert.Equal(t, line, test.expected)
+			assert.Equal(t, test.expected, line)
 		})
 	}
 }

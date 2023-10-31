@@ -78,9 +78,9 @@ func TestLiveTTL(t *testing.T) {
 		}
 
 		t.Run(fmt.Sprintf("testing record set %d", i), func(t *testing.T) {
-			assert.Equal(t, rrset.Name, fqdn)
-			assert.Equal(t, rrset.Type, "TXT")
-			assert.Equal(t, rrset.TTL, dns01.DefaultTTL)
+			assert.Equal(t, fqdn, rrset.Name)
+			assert.Equal(t, "TXT", rrset.Type)
+			assert.Equal(t, dns01.DefaultTTL, rrset.TTL)
 		})
 	}
 }

@@ -78,7 +78,7 @@ func TestClient_ListRecords_error(t *testing.T) {
 
 	records, err := client.ListRecords(context.Background(), 123)
 
-	assert.EqualError(t, err, "request failed with status code 401: API error: 400 - error description - field that the error occurred in")
+	require.EqualError(t, err, "request failed with status code 401: API error: 400 - error description - field that the error occurred in")
 	assert.Nil(t, records)
 }
 

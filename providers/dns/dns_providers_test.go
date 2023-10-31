@@ -29,12 +29,12 @@ func TestKnownDNSProviderError(t *testing.T) {
 	envTest.ClearEnv()
 
 	provider, err := NewDNSChallengeProviderByName("exec")
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Nil(t, provider)
 }
 
 func TestUnknownDNSProvider(t *testing.T) {
 	provider, err := NewDNSChallengeProviderByName("foobar")
-	assert.Error(t, err)
+	require.Error(t, err)
 	assert.Nil(t, provider)
 }

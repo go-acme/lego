@@ -121,12 +121,12 @@ func TestDNSProvider_Present(t *testing.T) {
 		assert.Equal(t, http.MethodGet, r.Method, "method")
 
 		q := r.URL.Query()
-		assert.Equal(t, q.Get("key"), fakeAPIKey)
-		assert.Equal(t, q.Get("cmd"), "dns-add_record")
-		assert.Equal(t, q.Get("format"), "json")
-		assert.Equal(t, q.Get("record"), "_acme-challenge.example.com")
-		assert.Equal(t, q.Get("value"), fakeKeyAuth)
-		assert.Equal(t, q.Get("comment"), "Managed+By+lego")
+		assert.Equal(t, fakeAPIKey, q.Get("key"))
+		assert.Equal(t, "dns-add_record", q.Get("cmd"))
+		assert.Equal(t, "json", q.Get("format"))
+		assert.Equal(t, "_acme-challenge.example.com", q.Get("record"))
+		assert.Equal(t, fakeKeyAuth, q.Get("value"))
+		assert.Equal(t, "Managed+By+lego", q.Get("comment"))
 
 		_, err := fmt.Fprintf(w, `{"data":"record_added","result":"success"}`)
 		if err != nil {
@@ -163,12 +163,12 @@ func TestDNSProvider_Cleanup(t *testing.T) {
 		assert.Equal(t, http.MethodGet, r.Method, "method")
 
 		q := r.URL.Query()
-		assert.Equal(t, q.Get("key"), fakeAPIKey, "key mismatch")
-		assert.Equal(t, q.Get("cmd"), "dns-remove_record", "cmd mismatch")
-		assert.Equal(t, q.Get("format"), "json")
-		assert.Equal(t, q.Get("record"), "_acme-challenge.example.com")
-		assert.Equal(t, q.Get("value"), fakeKeyAuth, "value mismatch")
-		assert.Equal(t, q.Get("comment"), "Managed+By+lego")
+		assert.Equal(t, fakeAPIKey, q.Get("key"), "key mismatch")
+		assert.Equal(t, "dns-remove_record", q.Get("cmd"), "cmd mismatch")
+		assert.Equal(t, "json", q.Get("format"))
+		assert.Equal(t, "_acme-challenge.example.com", q.Get("record"))
+		assert.Equal(t, fakeKeyAuth, q.Get("value"), "value mismatch")
+		assert.Equal(t, "Managed+By+lego", q.Get("comment"))
 
 		_, err := fmt.Fprintf(w, `{"data":"record_removed","result":"success"}`)
 		if err != nil {

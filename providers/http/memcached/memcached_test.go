@@ -31,7 +31,7 @@ func loadMemcachedHosts() []string {
 func TestNewMemcachedProviderEmpty(t *testing.T) {
 	emptyHosts := make([]string, 0)
 	_, err := NewMemcachedProvider(emptyHosts)
-	assert.EqualError(t, err, "no memcached hosts provided")
+	require.EqualError(t, err, "no memcached hosts provided")
 }
 
 func TestNewMemcachedProviderValid(t *testing.T) {

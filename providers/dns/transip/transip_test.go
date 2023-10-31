@@ -92,7 +92,7 @@ func TestNewDNSProvider(t *testing.T) {
 		})
 
 		_, err := NewDNSProvider()
-		assert.ErrorIs(t, err, os.ErrNotExist)
+		require.ErrorIs(t, err, os.ErrNotExist)
 	})
 }
 
@@ -151,7 +151,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		config.PrivateKeyPath = "./fixtures/non/existent/private.key"
 
 		_, err := NewDNSProviderConfig(config)
-		assert.ErrorIs(t, err, os.ErrNotExist)
+		require.ErrorIs(t, err, os.ErrNotExist)
 	})
 }
 

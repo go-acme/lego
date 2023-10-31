@@ -74,5 +74,5 @@ func TestLiveNewHTTPProvider(t *testing.T) {
 	cleanupResp, err := http.Get(chlgPath)
 	require.NoError(t, err)
 
-	assert.Equal(t, cleanupResp.StatusCode, 403)
+	assert.Equal(t, 403, cleanupResp.StatusCode)
 }

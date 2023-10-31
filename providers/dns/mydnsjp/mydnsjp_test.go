@@ -128,7 +128,7 @@ func TestLivePresent(t *testing.T) {
 	require.NoError(t, err)
 
 	err = provider.Present(envTest.GetDomain(), "", "123d==")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestLiveCleanUp(t *testing.T) {
@@ -143,5 +143,5 @@ func TestLiveCleanUp(t *testing.T) {
 	time.Sleep(2 * time.Second)
 
 	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

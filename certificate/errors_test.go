@@ -4,7 +4,6 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -28,7 +27,7 @@ func Test_obtainError_Join(t *testing.T) {
 	err := failures.Join()
 
 	to := &TomatoError{}
-	assert.ErrorAs(t, err, &to)
+	require.ErrorAs(t, err, &to)
 }
 
 func Test_obtainError_Join_multiple_domains(t *testing.T) {
@@ -40,16 +39,16 @@ func Test_obtainError_Join_multiple_domains(t *testing.T) {
 	err := failures.Join()
 
 	to := &TomatoError{}
-	assert.ErrorAs(t, err, &to)
+	require.ErrorAs(t, err, &to)
 
 	ca := &CarrotError{}
-	assert.ErrorAs(t, err, &ca)
+	require.ErrorAs(t, err, &ca)
 }
 
 func Test_obtainError_Join_no_error(t *testing.T) {
 	failures := newObtainError()
 
-	assert.NoError(t, failures.Join())
+	require.NoError(t, failures.Join())
 }
 
 func Test_obtainError_Join_same_domain(t *testing.T) {
@@ -66,5 +65,5 @@ func Test_obtainError_Join_same_domain(t *testing.T) {
 	}
 
 	ca := &CarrotError{}
-	assert.ErrorAs(t, err, &ca)
+	require.ErrorAs(t, err, &ca)
 }

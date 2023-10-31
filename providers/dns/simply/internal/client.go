@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -87,7 +88,7 @@ func (c *Client) AddRecord(ctx context.Context, zoneName string, record Record) 
 
 // EditRecord updates a record.
 func (c *Client) EditRecord(ctx context.Context, zoneName string, id int64, record Record) error {
-	endpoint := c.createEndpoint(zoneName, fmt.Sprintf("%d", id))
+	endpoint := c.createEndpoint(zoneName, strconv.FormatInt(id, 10))
 
 	req, err := newJSONRequest(ctx, http.MethodPut, endpoint, record)
 	if err != nil {
@@ -99,7 +100,7 @@ func (c *Client) EditRecord(ctx context.Context, zoneName string, id int64, reco
 
 // DeleteRecord deletes a record.
 func (c *Client) DeleteRecord(ctx context.Context, zoneName string, id int64) error {
-	endpoint := c.createEndpoint(zoneName, fmt.Sprintf("%d", id))
+	endpoint := c.createEndpoint(zoneName, strconv.FormatInt(id, 10))
 
 	req, err := newJSONRequest(ctx, http.MethodDelete, endpoint, nil)
 	if err != nil {

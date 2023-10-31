@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const fakeOTCToken = "62244bc21da68d03ebac94e6636ff01f"
@@ -143,7 +144,7 @@ func (m *DNSServerMock) HandleListRecordsetsSuccessfully() {
 			assert.Equal(m.t, "application/json", r.Header.Get("Content-Type"))
 
 			raw, err := io.ReadAll(r.Body)
-			assert.Nil(m.t, err)
+			require.NoError(m.t, err)
 			exceptedString := `{
 				"name": "_acme-challenge.example.com.",
 				"description": "Added TXT record for ACME dns-01 challenge using lego client",

@@ -9,6 +9,8 @@ import (
 	"github.com/go-acme/lego/v4/log"
 )
 
+const mailTo = "mailto:"
+
 // Resource represents all important information about a registration
 // of which the client needs to keep track itself.
 // WARNING: will be removed in the future (acme.ExtendedAccount), https://github.com/go-acme/lego/issues/855.
@@ -52,7 +54,7 @@ func (r *Registrar) Register(options RegisterOptions) (*Resource, error) {
 
 	if r.user.GetEmail() != "" {
 		log.Infof("acme: Registering account for %s", r.user.GetEmail())
-		accMsg.Contact = []string{"mailto:" + r.user.GetEmail()}
+		accMsg.Contact = []string{mailTo + r.user.GetEmail()}
 	}
 
 	account, err := r.core.Accounts.New(accMsg)
@@ -76,7 +78,7 @@ func (r *Registrar) RegisterWithExternalAccountBinding(options RegisterEABOption
 
 	if r.user.GetEmail() != "" {
 		log.Infof("acme: Registering account for %s", r.user.GetEmail())
-		accMsg.Contact = []string{"mailto:" + r.user.GetEmail()}
+		accMsg.Contact = []string{mailTo + r.user.GetEmail()}
 	}
 
 	account, err := r.core.Accounts.NewEAB(accMsg, options.Kid, options.HmacEncoded)
@@ -128,7 +130,7 @@ func (r *Registrar) UpdateRegistration(options RegisterOptions) (*Resource, erro
 
 	if r.user.GetEmail() != "" {
 		log.Infof("acme: Registering account for %s", r.user.GetEmail())
-		accMsg.Contact = []string{"mailto:" + r.user.GetEmail()}
+		accMsg.Contact = []string{mailTo + r.user.GetEmail()}
 	}
 
 	accountURL := r.user.GetRegistration().URI

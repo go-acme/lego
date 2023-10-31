@@ -6,7 +6,6 @@ import (
 
 	"github.com/go-acme/lego/v4/platform/tester"
 	"github.com/go-acme/lego/v4/providers/dns/checkdomain/internal"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -110,10 +109,10 @@ func TestLivePresent(t *testing.T) {
 
 	envTest.RestoreEnv()
 	provider, err := NewDNSProvider()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = provider.Present(envTest.GetDomain(), "", "123d==")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestLiveCleanUp(t *testing.T) {
@@ -123,8 +122,8 @@ func TestLiveCleanUp(t *testing.T) {
 
 	envTest.RestoreEnv()
 	provider, err := NewDNSProvider()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }

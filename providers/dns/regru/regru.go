@@ -18,10 +18,10 @@ import (
 const (
 	envNamespace = "REGRU_"
 
-	EnvUsername    = envNamespace + "USERNAME"
-	EnvPassword    = envNamespace + "PASSWORD"
-	EnvTlsCertPath = envNamespace + "SSL_CERT"
-	EnvTlsKeyPath  = envNamespace + "SSL_KEY"
+	EnvUsername = envNamespace + "USERNAME"
+	EnvPassword = envNamespace + "PASSWORD"
+	EnvTLSCert  = envNamespace + "TLS_CERT"
+	EnvTLSKey   = envNamespace + "TLS_KEY"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -33,8 +33,8 @@ const (
 type Config struct {
 	Username string
 	Password string
-	TlsCert  string
-	TlsKey   string
+	TLSCert  string
+	TLSKey   string
 
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -45,8 +45,8 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TlsCert:            env.GetOrDefaultString(EnvTlsCertPath, ""),
-		TlsKey:             env.GetOrDefaultString(EnvTlsKeyPath, ""),
+		TLSCert:            env.GetOrDefaultString(EnvTLSCert, ""),
+		TLSKey:             env.GetOrDefaultString(EnvTLSKey, ""),
 		TTL:                env.GetOrDefaultInt(EnvTTL, 300),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
@@ -94,10 +94,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		client.HTTPClient = config.HTTPClient
 	}
 
-	if config.TlsCert != "" || config.TlsKey != "" {
-		tlsCert, err := tls.X509KeyPair([]byte(config.TlsCert), []byte(config.TlsKey))
+	if config.TLSCert != "" || config.TLSKey != "" {
+		tlsCert, err := tls.X509KeyPair([]byte(config.TLSCert), []byte(config.TLSKey))
 		if err != nil {
-			return nil, errors.New("regru: " + err.Error())
+			return nil, fmt.Errorf("regru: %w", err)
 		}
 		client.HTTPClient.Transport = &http.Transport{
 			TLSClientConfig: &tls.Config{

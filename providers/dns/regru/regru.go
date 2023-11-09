@@ -95,6 +95,12 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.TLSCert != "" || config.TLSKey != "" {
+		if config.TLSCert == "" {
+			return nil, errors.New("regru: TLS certificate is missing")
+		}
+		if config.TLSKey == "" {
+			return nil, errors.New("regru: TLS key is missing")
+		}
 		tlsCert, err := tls.X509KeyPair([]byte(config.TLSCert), []byte(config.TLSKey))
 		if err != nil {
 			return nil, fmt.Errorf("regru: %w", err)

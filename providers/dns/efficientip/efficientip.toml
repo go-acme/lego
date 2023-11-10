@@ -24,3 +24,4 @@ lego --email you@example.com --dns efficientip --domains my.example.org run
     EFFICIENTIP_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
     EFFICIENTIP_TTL = "The TTL of the TXT record used for the DNS challenge"
     EFFICIENTIP_HTTP_TIMEOUT = "API request timeout"
+    EFFICIENTIP_SSL_VERIFY = "Whether or not to verify EfficientIP API certificate, default: true"

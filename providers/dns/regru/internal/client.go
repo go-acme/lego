@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
@@ -39,8 +40,6 @@ func NewClient(username, password string) *Client {
 // https://www.reg.ru/support/help/api2#zone_remove_record
 func (c Client) RemoveTxtRecord(ctx context.Context, domain, subDomain, content string) error {
 	request := RemoveRecordRequest{
-		Username:          c.username,
-		Password:          c.password,
 		Domains:           []Domain{{DName: domain}},
 		SubDomain:         subDomain,
 		Content:           content,
@@ -60,8 +59,6 @@ func (c Client) RemoveTxtRecord(ctx context.Context, domain, subDomain, content 
 // https://www.reg.ru/support/help/api2#zone_add_txt
 func (c Client) AddTXTRecord(ctx context.Context, domain, subDomain, content string) error {
 	request := AddTxtRequest{
-		Username:          c.username,
-		Password:          c.password,
 		Domains:           []Domain{{DName: domain}},
 		SubDomain:         subDomain,
 		Text:              content,
@@ -84,15 +81,23 @@ func (c Client) doRequest(ctx context.Context, request any, fragments ...string)
 		return nil, fmt.Errorf("failed to create input data: %w", err)
 	}
 
+	postData := url.Values{}
+	postData.Set("input_data", string(inputData))
+	postData.Set("input_format", "json")
+	postDataEncoded := postData.Encode()
+
 	query := endpoint.Query()
-	query.Add("input_data", string(inputData))
-	query.Add("input_format", "json")
+	query.Add("username", c.username)
+	query.Add("password", c.password)
 	endpoint.RawQuery = query.Encode()
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint.String(), http.NoBody)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint.String(), strings.NewReader(postDataEncoded))
 	if err != nil {
 		return nil, fmt.Errorf("unable to create request: %w", err)
 	}
+
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Add("Content-Length", fmt.Sprintf("%d", len(postDataEncoded)))
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {

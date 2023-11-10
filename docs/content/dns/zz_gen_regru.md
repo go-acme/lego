@@ -52,6 +52,8 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 | `REGRU_HTTP_TIMEOUT` | API request timeout |
 | `REGRU_POLLING_INTERVAL` | Time between DNS propagation check |
 | `REGRU_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
+| `REGRU_TLS_CERT` | authentication certificate |
+| `REGRU_TLS_KEY` | authentication private key |
 | `REGRU_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.

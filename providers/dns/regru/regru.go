@@ -3,6 +3,7 @@ package regru
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"net/http"
@@ -19,6 +20,8 @@ const (
 
 	EnvUsername = envNamespace + "USERNAME"
 	EnvPassword = envNamespace + "PASSWORD"
+	EnvTLSCert  = envNamespace + "TLS_CERT"
+	EnvTLSKey   = envNamespace + "TLS_KEY"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -30,6 +33,8 @@ const (
 type Config struct {
 	Username string
 	Password string
+	TLSCert  string
+	TLSKey   string
 
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -67,6 +72,8 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
 	config.Username = values[EnvUsername]
 	config.Password = values[EnvPassword]
+	config.TLSCert = env.GetOrDefaultString(EnvTLSCert, "")
+	config.TLSKey = env.GetOrDefaultString(EnvTLSKey, "")
 
 	return NewDNSProviderConfig(config)
 }
@@ -85,6 +92,27 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	if config.HTTPClient != nil {
 		client.HTTPClient = config.HTTPClient
+	}
+
+	if config.TLSCert != "" || config.TLSKey != "" {
+		if config.TLSCert == "" {
+			return nil, errors.New("regru: TLS certificate is missing")
+		}
+
+		if config.TLSKey == "" {
+			return nil, errors.New("regru: TLS key is missing")
+		}
+
+		tlsCert, err := tls.X509KeyPair([]byte(config.TLSCert), []byte(config.TLSKey))
+		if err != nil {
+			return nil, fmt.Errorf("regru: %w", err)
+		}
+
+		client.HTTPClient.Transport = &http.Transport{
+			TLSClientConfig: &tls.Config{
+				Certificates: []tls.Certificate{tlsCert},
+			},
+		}
 	}
 
 	return &DNSProvider{config: config, client: client}, nil

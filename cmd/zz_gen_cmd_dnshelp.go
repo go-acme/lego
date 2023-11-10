@@ -2184,6 +2184,8 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln(`	- "REGRU_HTTP_TIMEOUT":	API request timeout`)
 		ew.writeln(`	- "REGRU_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "REGRU_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "REGRU_TLS_CERT":	authentication certificate`)
+		ew.writeln(`	- "REGRU_TLS_KEY":	authentication private key`)
 		ew.writeln(`	- "REGRU_TTL":	The TTL of the TXT record used for the DNS challenge`)
 
 		ew.writeln()

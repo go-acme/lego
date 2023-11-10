@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -97,7 +98,7 @@ func (c Client) doRequest(ctx context.Context, request any, fragments ...string)
 	}
 
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Add("Content-Length", fmt.Sprintf("%d", len(postDataEncoded)))
+	req.Header.Add("Content-Length", strconv.Itoa(len(postDataEncoded)))
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {

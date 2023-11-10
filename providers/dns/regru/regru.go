@@ -45,8 +45,6 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TLSCert:            env.GetOrDefaultString(EnvTLSCert, ""),
-		TLSKey:             env.GetOrDefaultString(EnvTLSKey, ""),
 		TTL:                env.GetOrDefaultInt(EnvTTL, 300),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
@@ -74,6 +72,8 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
 	config.Username = values[EnvUsername]
 	config.Password = values[EnvPassword]
+	config.TLSCert = env.GetOrDefaultString(EnvTLSCert, "")
+	config.TLSKey = env.GetOrDefaultString(EnvTLSKey, "")
 
 	return NewDNSProviderConfig(config)
 }
@@ -98,13 +98,16 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		if config.TLSCert == "" {
 			return nil, errors.New("regru: TLS certificate is missing")
 		}
+
 		if config.TLSKey == "" {
 			return nil, errors.New("regru: TLS key is missing")
 		}
+
 		tlsCert, err := tls.X509KeyPair([]byte(config.TLSCert), []byte(config.TLSKey))
 		if err != nil {
 			return nil, fmt.Errorf("regru: %w", err)
 		}
+
 		client.HTTPClient.Transport = &http.Transport{
 			TLSClientConfig: &tls.Config{
 				Certificates: []tls.Certificate{tlsCert},

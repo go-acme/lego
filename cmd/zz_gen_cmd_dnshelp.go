@@ -964,6 +964,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln(`Additional Configuration:`)
 		ew.writeln(`	- "EFFICIENTIP_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "EFFICIENTIP_INSECURE_SKIP_VERIFY":	Whether or not to verify EfficientIP API certificate`)
 		ew.writeln(`	- "EFFICIENTIP_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "EFFICIENTIP_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
 		ew.writeln(`	- "EFFICIENTIP_TTL":	The TTL of the TXT record used for the DNS challenge`)

@@ -54,6 +54,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
 | `EFFICIENTIP_HTTP_TIMEOUT` | API request timeout |
+| `EFFICIENTIP_INSECURE_SKIP_VERIFY` | Whether or not to verify EfficientIP API certificate |
 | `EFFICIENTIP_POLLING_INTERVAL` | Time between DNS propagation check |
 | `EFFICIENTIP_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
 | `EFFICIENTIP_TTL` | The TTL of the TXT record used for the DNS challenge |

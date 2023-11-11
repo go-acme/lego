@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"strconv"
 	"strings"
 	"time"
 
@@ -77,28 +76,26 @@ func (c Client) AddTXTRecord(ctx context.Context, domain, subDomain, content str
 func (c Client) doRequest(ctx context.Context, request any, fragments ...string) (*APIResponse, error) {
 	endpoint := c.baseURL.JoinPath(fragments...)
 
+	query := endpoint.Query()
+	query.Set("username", c.username)
+	query.Set("password", c.password)
+	endpoint.RawQuery = query.Encode()
+
 	inputData, err := json.Marshal(request)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create input data: %w", err)
 	}
 
-	postData := url.Values{}
-	postData.Set("input_data", string(inputData))
-	postData.Set("input_format", "json")
-	postDataEncoded := postData.Encode()
+	data := url.Values{}
+	data.Set("input_data", string(inputData))
+	data.Set("input_format", "json")
 
-	query := endpoint.Query()
-	query.Add("username", c.username)
-	query.Add("password", c.password)
-	endpoint.RawQuery = query.Encode()
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint.String(), strings.NewReader(postDataEncoded))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint.String(), strings.NewReader(data.Encode()))
 	if err != nil {
 		return nil, fmt.Errorf("unable to create request: %w", err)
 	}
 
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Add("Content-Length", strconv.Itoa(len(postDataEncoded)))
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {

@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
@@ -39,8 +40,6 @@ func NewClient(username, password string) *Client {
 // https://www.reg.ru/support/help/api2#zone_remove_record
 func (c Client) RemoveTxtRecord(ctx context.Context, domain, subDomain, content string) error {
 	request := RemoveRecordRequest{
-		Username:          c.username,
-		Password:          c.password,
 		Domains:           []Domain{{DName: domain}},
 		SubDomain:         subDomain,
 		Content:           content,
@@ -60,8 +59,6 @@ func (c Client) RemoveTxtRecord(ctx context.Context, domain, subDomain, content 
 // https://www.reg.ru/support/help/api2#zone_add_txt
 func (c Client) AddTXTRecord(ctx context.Context, domain, subDomain, content string) error {
 	request := AddTxtRequest{
-		Username:          c.username,
-		Password:          c.password,
 		Domains:           []Domain{{DName: domain}},
 		SubDomain:         subDomain,
 		Text:              content,
@@ -79,20 +76,26 @@ func (c Client) AddTXTRecord(ctx context.Context, domain, subDomain, content str
 func (c Client) doRequest(ctx context.Context, request any, fragments ...string) (*APIResponse, error) {
 	endpoint := c.baseURL.JoinPath(fragments...)
 
+	query := endpoint.Query()
+	query.Set("username", c.username)
+	query.Set("password", c.password)
+	endpoint.RawQuery = query.Encode()
+
 	inputData, err := json.Marshal(request)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create input data: %w", err)
 	}
 
-	query := endpoint.Query()
-	query.Add("input_data", string(inputData))
-	query.Add("input_format", "json")
-	endpoint.RawQuery = query.Encode()
+	data := url.Values{}
+	data.Set("input_data", string(inputData))
+	data.Set("input_format", "json")
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint.String(), http.NoBody)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint.String(), strings.NewReader(data.Encode()))
 	if err != nil {
 		return nil, fmt.Errorf("unable to create request: %w", err)
 	}
+
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {

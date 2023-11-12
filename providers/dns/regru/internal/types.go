@@ -56,9 +56,6 @@ func (d DomainResponse) Error() string {
 
 // AddTxtRequest is the representation of the payload of a request to add a TXT record.
 type AddTxtRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-
 	Domains           []Domain `json:"domains,omitempty"`
 	SubDomain         string   `json:"subdomain,omitempty"`
 	Text              string   `json:"text,omitempty"`
@@ -67,9 +64,6 @@ type AddTxtRequest struct {
 
 // RemoveRecordRequest is the representation of the payload of a request to remove a record.
 type RemoveRecordRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-
 	Domains           []Domain `json:"domains,omitempty"`
 	SubDomain         string   `json:"subdomain,omitempty"`
 	Content           string   `json:"content,omitempty"`

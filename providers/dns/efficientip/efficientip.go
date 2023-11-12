@@ -3,6 +3,7 @@ package efficientip
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"net/http"
@@ -26,6 +27,7 @@ const (
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+	EnvInsecureSkipVerify = envNamespace + "INSECURE_SKIP_VERIFY"
 )
 
 // Config is used to configure the creation of the DNSProvider.
@@ -35,6 +37,7 @@ type Config struct {
 	Hostname           string
 	DNSName            string
 	ViewName           string
+	InsecureSkipVerify bool
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	HTTPClient         *http.Client
@@ -71,6 +74,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config.Hostname = values[EnvHostname]
 	config.DNSName = values[EnvDNSName]
 	config.ViewName = env.GetOrDefaultString(EnvViewName, "")
+	config.InsecureSkipVerify = env.GetOrDefaultBool(EnvInsecureSkipVerify, false)
 
 	return NewDNSProviderConfig(config)
 }
@@ -98,6 +102,12 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	if config.HTTPClient != nil {
 		client.HTTPClient = config.HTTPClient
+	}
+
+	if config.InsecureSkipVerify {
+		client.HTTPClient.Transport = &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
 	}
 
 	return &DNSProvider{config: config, client: client}, nil

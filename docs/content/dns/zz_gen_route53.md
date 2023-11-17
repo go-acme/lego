@@ -138,11 +138,6 @@ Replace `Z11111112222222333333` with your hosted zone ID and `example.com` with 
     },
     {
       "Effect": "Allow",
-      "Action": "route53:ListHostedZonesByName",
-      "Resource": "*"
-    },
-    {
-      "Effect": "Allow",
       "Action": [
         "route53:ListResourceRecordSets"
       ],

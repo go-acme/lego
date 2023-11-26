@@ -19,6 +19,8 @@ COMMANDS:
    help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
+   --ipv4only, -4                                               Use IPv4 only. This flag is ignored if ipv6only is also specified. (default: false)
+   --ipv6only, -6                                               Use IPv6 only. This flag is ignored if ipv4only is also specified. (default: false)
    --domains value, -d value [ --domains value, -d value ]      Add a domain to the process. Can be specified multiple times.
    --server value, -s value                                     CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client. (default: "https://acme-v02.api.letsencrypt.org/directory") [$LEGO_SERVER]
    --accept-tos, -a                                             By setting this flag to true you indicate that you accept the current Let's Encrypt terms of service. (default: false)
@@ -36,8 +38,6 @@ GLOBAL OPTIONS:
    --http.webroot value                                         Set the webroot folder to use for HTTP-01 based challenges to write directly to the .well-known/acme-challenge file. This disables the built-in server and expects the given directory to be publicly served with access to .well-known/acme-challenge
    --http.memcached-host value [ --http.memcached-host value ]  Set the memcached host(s) to use for HTTP-01 based challenges. Challenges will be written to all specified hosts.
    --http.s3-bucket value                                       Set the S3 bucket name to use for HTTP-01 based challenges. Challenges will be written to the S3 bucket.
-   --ipv4only, -4                                               Use IPv4 only. This flag is ignored if ipv6only is also specified. (default: false)
-   --ipv6only, -6                                               Use IPv6 only. This flag is ignored if ipv4only is also specified. (default: false)
    --tls                                                        Use the TLS-ALPN-01 challenge to solve challenges. Can be mixed with other types of challenges. (default: false)
    --tls.port value                                             Set the port and interface to use for TLS-ALPN-01 based challenges to listen on. Supported: interface:port or :port. (default: ":443")
    --dns value                                                  Solve a DNS-01 challenge using the specified provider. Can be mixed with other types of challenges. Run 'lego dnshelp' for help on usage.

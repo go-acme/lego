@@ -94,7 +94,7 @@ func TestSendDNSQuery(t *testing.T) {
 		msg := createDNSMsg("example.com.", dns.TypeA, true)
 		result, queryError := sendDNSQuery(msg, addr)
 		require.NoError(t, queryError)
-		assert.Equal(t, result.Answer[0].(*dns.A).A.String(), "127.0.0.1")
+		assert.Equal(t, "127.0.0.1", result.Answer[0].(*dns.A).A.String())
 	})
 
 	t.Run("does udp6 only", func(t *testing.T) {
@@ -105,7 +105,7 @@ func TestSendDNSQuery(t *testing.T) {
 		msg := createDNSMsg("example.com.", dns.TypeA, true)
 		result, queryError := sendDNSQuery(msg, addr)
 		require.NoError(t, queryError)
-		assert.Equal(t, result.Answer[0].(*dns.A).A.String(), "127.0.0.1")
+		assert.Equal(t, "127.0.0.1", result.Answer[0].(*dns.A).A.String())
 	})
 
 	t.Run("does tcp4 and tcp6", func(t *testing.T) {
@@ -119,14 +119,14 @@ func TestSendDNSQuery(t *testing.T) {
 		msg := createDNSMsg("example.com.", dns.TypeA, true)
 		result, queryError := sendDNSQuery(msg, addr6)
 		require.NoError(t, queryError)
-		assert.Equal(t, result.Answer[0].(*dns.A).A.String(), "127.0.0.1")
+		assert.Equal(t, "127.0.0.1", result.Answer[0].(*dns.A).A.String())
 
 		addr4 := net.JoinHostPort("127.0.0.1", port)
 		recursiveNameservers = ParseNameservers([]string{addr4})
 		msg = createDNSMsg("example.com.", dns.TypeA, true)
 		result, queryError = sendDNSQuery(msg, addr4)
 		require.NoError(t, queryError)
-		assert.Equal(t, result.Answer[0].(*dns.A).A.String(), "127.0.0.1")
+		assert.Equal(t, "127.0.0.1", result.Answer[0].(*dns.A).A.String())
 	})
 }
 

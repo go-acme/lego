@@ -81,14 +81,6 @@ func getKeyType(ctx *cli.Context) certcrypto.KeyType {
 	return ""
 }
 
-func getEmail(ctx *cli.Context) string {
-	email := ctx.String("email")
-	if email == "" {
-		log.Fatal("You have to pass an account (email address) to the program using --email or -m")
-	}
-	return email
-}
-
 func getUserAgent(ctx *cli.Context) string {
 	return strings.TrimSpace(fmt.Sprintf("%s lego-cli/%s", ctx.String("user-agent"), ctx.App.Version))
 }

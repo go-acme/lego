@@ -35,7 +35,7 @@ func CreateFlags(defaultPath string) []cli.Flag {
 			Name:    "no-email",
 			Aliases: []string{"M"},
 			EnvVars: []string{"LEGO_NO_EMAIL"},
-			Usage:   "Create an ACME request not including an email address.",
+			Usage:   "Create an ACME request without including an email address.",
 		},
 		&cli.StringFlag{
 			Name:    "csr",

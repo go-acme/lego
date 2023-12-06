@@ -227,14 +227,19 @@ func (s *CertificatesStorage) WritePFXFile(domain string, certRes *certificate.R
 		return fmt.Errorf("unable to load Certificate for domain %s: %w", domain, err)
 	}
 
-	issuerCertPemBlock, _ := pem.Decode(certRes.IssuerCertificate)
-	if issuerCertPemBlock == nil {
-		return fmt.Errorf("unable to parse Issuer Certificate for domain %s", domain)
-	}
+	chainCertPemBlock, rest := pem.Decode(certRes.IssuerCertificate)
+	var certChain []*x509.Certificate
+	for chainCertPemBlock != nil {
+		if chainCertPemBlock == nil {
+			return fmt.Errorf("unable to parse Issuer Certificate for domain %s", domain)
+		}
 
-	issuerCert, err := x509.ParseCertificate(issuerCertPemBlock.Bytes)
-	if err != nil {
-		return fmt.Errorf("unable to load Issuer Certificate for domain %s: %w", domain, err)
+		chainCert, err := x509.ParseCertificate(chainCertPemBlock.Bytes)
+		if err != nil {
+			return fmt.Errorf("unable to load Issuer Certificate for domain %s: %w", domain, err)
+		}
+		certChain = append(certChain, chainCert)
+		chainCertPemBlock, rest = pem.Decode(rest) // Try decoding the next pem block
 	}
 
 	keyPemBlock, _ := pem.Decode(certRes.PrivateKey)
@@ -269,7 +274,7 @@ func (s *CertificatesStorage) WritePFXFile(domain string, certRes *certificate.R
 	case "RC2":
 		encoder = pkcs12.LegacyRC2
 	}
-	pfxBytes, err := encoder.Encode(privateKey, cert, []*x509.Certificate{issuerCert}, s.pfxPassword)
+	pfxBytes, err := encoder.Encode(privateKey, cert, certChain, s.pfxPassword)
 	if err != nil {
 		return fmt.Errorf("unable to encode PFX data for domain %s: %w", domain, err)
 	}

@@ -228,12 +228,12 @@ func (s *CertificatesStorage) WritePFXFile(domain string, certRes *certificate.R
 	}
 
 	chainCertPemBlock, rest := pem.Decode(certRes.IssuerCertificate)
+	if chainCertPemBlock == nil {
+		return fmt.Errorf("unable to parse Issuer Certificate for domain %s", domain)
+	}
+
 	var certChain []*x509.Certificate
 	for chainCertPemBlock != nil {
-		if chainCertPemBlock == nil {
-			return fmt.Errorf("unable to parse Issuer Certificate for domain %s", domain)
-		}
-
 		chainCert, err := x509.ParseCertificate(chainCertPemBlock.Bytes)
 		if err != nil {
 			return fmt.Errorf("unable to load Issuer Certificate for domain %s: %w", domain, err)

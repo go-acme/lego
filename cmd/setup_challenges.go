@@ -19,8 +19,8 @@ import (
 )
 
 func setupChallenges(ctx *cli.Context, client *lego.Client) {
-	if !ctx.Bool("http") && !ctx.Bool("tls") && !ctx.IsSet("dns") {
-		log.Fatal("No challenge selected. You must specify at least one challenge: `--http`, `--tls`, `--dns`.")
+	if !ctx.Bool("http") && !ctx.Bool("tls") && !ctx.IsSet("dns") && !ctx.IsSet("eab") {
+		log.Fatal("No challenge selected. You must specify at least one challenge: `--http`, `--tls`, `--dns`, `--eab`.")
 	}
 
 	if ctx.Bool("http") {

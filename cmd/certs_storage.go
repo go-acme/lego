@@ -236,7 +236,7 @@ func (s *CertificatesStorage) WritePFXFile(domain string, certRes *certificate.R
 	for chainCertPemBlock != nil {
 		chainCert, err := x509.ParseCertificate(chainCertPemBlock.Bytes)
 		if err != nil {
-			return fmt.Errorf("unable to load Chain Certificate for domain %s: %w", domain, err)
+			return fmt.Errorf("unable to parse Chain Certificate for domain %s: %w", domain, err)
 		}
 		certChain = append(certChain, chainCert)
 		chainCertPemBlock, rest = pem.Decode(rest) // Try decoding the next pem block

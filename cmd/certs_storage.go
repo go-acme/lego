@@ -3,7 +3,6 @@ package cmd
 import (
 	"bytes"
 	"crypto"
-	"crypto/rand"
 	"crypto/x509"
 	"encoding/json"
 	"encoding/pem"
@@ -55,17 +54,27 @@ type CertificatesStorage struct {
 	pem         bool
 	pfx         bool
 	pfxPassword string
+	pfxFormat   string
 	filename    string // Deprecated
 }
 
 // NewCertificatesStorage create a new certificates storage.
 func NewCertificatesStorage(ctx *cli.Context) *CertificatesStorage {
+	pfxFormat := ctx.String("pfx.format")
+
+	switch pfxFormat {
+	case "DES", "RC2", "SHA256":
+	default:
+		log.Fatalf("Invalid PFX format: %v", pfxFormat)
+	}
+
 	return &CertificatesStorage{
 		rootPath:    filepath.Join(ctx.String("path"), baseCertificatesFolderName),
 		archivePath: filepath.Join(ctx.String("path"), baseArchivesFolderName),
 		pem:         ctx.Bool("pem"),
 		pfx:         ctx.Bool("pfx"),
 		pfxPassword: ctx.String("pfx.pass"),
+		pfxFormat:   pfxFormat,
 		filename:    ctx.String("filename"),
 	}
 }
@@ -251,7 +260,16 @@ func (s *CertificatesStorage) WritePFXFile(domain string, certRes *certificate.R
 		return fmt.Errorf("unsupported PrivateKey type '%s' for domain %s", keyPemBlock.Type, domain)
 	}
 
-	pfxBytes, err := pkcs12.Encode(rand.Reader, privateKey, cert, []*x509.Certificate{issuerCert}, s.pfxPassword)
+	var encoder *pkcs12.Encoder
+	switch s.pfxFormat {
+	case "SHA256":
+		encoder = pkcs12.Modern2023
+	case "DES":
+		encoder = pkcs12.LegacyDES
+	case "RC2":
+		encoder = pkcs12.LegacyRC2
+	}
+	pfxBytes, err := encoder.Encode(privateKey, cert, []*x509.Certificate{issuerCert}, s.pfxPassword)
 	if err != nil {
 		return fmt.Errorf("unable to encode PFX data for domain %s: %w", domain, err)
 	}

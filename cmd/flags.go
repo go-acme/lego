@@ -141,6 +141,11 @@ func CreateFlags(defaultPath string) []cli.Flag {
 			Usage: "The password used to encrypt the .pfx (PCKS#12) file.",
 			Value: pkcs12.DefaultPassword,
 		},
+		&cli.StringFlag{
+			Name:  "pfx.format",
+			Usage: "The encoding format to use when encrypting the .pfx (PCKS#12) file. Supported: RC2, DES, SHA256.",
+			Value: "RC2",
+		},
 		&cli.IntFlag{
 			Name:  "cert.timeout",
 			Usage: "Set the certificate timeout value to a specific value in seconds. Only used when obtaining certificates.",

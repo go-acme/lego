@@ -11,15 +11,16 @@ import (
 	"time"
 
 	"cloud.google.com/go/compute/metadata"
-	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/log"
-	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/platform/wait"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/dns/v1"
 	"google.golang.org/api/googleapi"
 	"google.golang.org/api/option"
+
+	"github.com/go-acme/lego/v4/challenge/dns01"
+	"github.com/go-acme/lego/v4/log"
+	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/platform/wait"
 )
 
 const (
@@ -34,6 +35,7 @@ const (
 	EnvProject          = envNamespace + "PROJECT"
 	EnvAllowPrivateZone = envNamespace + "ALLOW_PRIVATE_ZONE"
 	EnvDebug            = envNamespace + "DEBUG"
+	EnvZoneID           = envNamespace + "ZONE_ID"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -310,9 +312,29 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // getHostedZone returns the managed-zone.
 func (d *DNSProvider) getHostedZone(domain string) (string, error) {
+	// Be careful here.
+	// An automated system might run in a GCloud Service Account, with access to edit the zone
+	//    (gcloud dns managed-zones get-iam-policy $zone_id) (role roles/dns.admin)
+	// but not with project-wide access to list all zones
+	//    (gcloud projects get-iam-policy $project_id) (a role with permission dns.managedZones.list)
+	//
+	// If we force a zone list to succeed, we demand more permissions than needed.
+
 	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
 	if err != nil {
 		return "", fmt.Errorf("designate: could not find zone for FQDN %q: %w", domain, err)
+	}
+
+	if zoneId := env.GetOrDefaultString(EnvZoneID, ""); zoneId != "" {
+		// GCE_ZONE_ID override for service accounts to avoid needing zones-list permission
+		z, err := d.client.ManagedZones.Get(d.config.Project, zoneId).Do()
+		if err != nil {
+			return "", fmt.Errorf("API call ManagedZones.Get for explicit zone-id %q in project %q failed: %w", zoneId, d.config.Project, err)
+		}
+		if z.Visibility == "public" || z.Visibility == "" || (z.Visibility == "private" && d.config.AllowPrivateZone) {
+			return z.Name, nil
+		}
+		return "", fmt.Errorf("zone %q in project %q is not public, needed for ACME", zoneId, d.config.Project)
 	}
 
 	zones, err := d.client.ManagedZones.
@@ -320,7 +342,7 @@ func (d *DNSProvider) getHostedZone(domain string) (string, error) {
 		DnsName(authZone).
 		Do()
 	if err != nil {
-		return "", fmt.Errorf("API call failed: %w", err)
+		return "", fmt.Errorf("API call ManagedZones.List failed: %w", err)
 	}
 
 	if len(zones.ManagedZones) == 0 {

@@ -24,7 +24,7 @@ func TestChallenge(t *testing.T) {
 	_, apiURL := tester.SetupFakeAPI(t)
 
 	domain := "localhost"
-	port := "23457"
+	port := "24457"
 
 	mockValidate := func(_ *api.Core, _ string, chlng acme.Challenge) error {
 		conn, err := tls.Dial("tcp", net.JoinHostPort(domain, port), &tls.Config{
@@ -75,7 +75,7 @@ func TestChallenge(t *testing.T) {
 	solver := NewChallenge(
 		core,
 		mockValidate,
-		&ProviderServer{port: "23457"},
+		&ProviderServer{port: port},
 	)
 
 	authz := acme.Authorization{
@@ -126,7 +126,7 @@ func TestChallengeIPaddress(t *testing.T) {
 	_, apiURL := tester.SetupFakeAPI(t)
 
 	domain := "127.0.0.1"
-	port := "23457"
+	port := "24457"
 	rd, _ := dns.ReverseAddr(domain)
 
 	mockValidate := func(_ *api.Core, _ string, chlng acme.Challenge) error {
@@ -176,7 +176,7 @@ func TestChallengeIPaddress(t *testing.T) {
 	solver := NewChallenge(
 		core,
 		mockValidate,
-		&ProviderServer{port: "23457"},
+		&ProviderServer{port: port},
 	)
 
 	authz := acme.Authorization{

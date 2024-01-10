@@ -1,0 +1,23 @@
+Name = "webnames.ru"
+Description = ''''''
+URL = "https://www.webnames.ru/"
+Code = "webnames"
+Since = "v0.0.0"
+
+Example = '''
+WEBNAMES_TOKEN=xxxxxx \
+lego --email you@example.com --dns webnames --domains my.example.org run
+'''
+
+[Configuration]
+[Configuration.Credentials]
+WEBNAMES_TOKEN = "Account token"
+[Configuration.Additional]
+WEBNAMES_POLLING_INTERVAL = "Time between DNS propagation check"
+WEBNAMES_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"
+WEBNAMES_TTL = "The TTL of the TXT record used for the DNS challenge"
+WEBNAMES_HTTP_TIMEOUT = "API request timeout"
+WEBNAMES_SEQUENCE_INTERVAL = "Time between sequential requests"
+
+[Links]
+API = "https://www.webnames.ru/scripts/json_domain_zone_manager.pl"

@@ -16,60 +16,51 @@ const defaultBaseURL = "https://www.webnames.ru/scripts/json_domain_zone_manager
 
 // Client the Webnames API client.
 type Client struct {
-	APIKey string
+	apiKey string
 
+	baseURL    string
 	HTTPClient *http.Client
 }
 
 // NewClient Creates a new Client.
-func NewClient(apikey string) *Client {
+func NewClient(apiKey string) *Client {
 	return &Client{
-		APIKey:     apikey,
-		HTTPClient: &http.Client{Timeout: 5 * time.Second},
+		apiKey:     apiKey,
+		baseURL:    defaultBaseURL,
+		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 	}
 }
 
-func (c Client) AddTXTRecord(ctx context.Context, domain, subDomain, value string) error {
-	endpoint, _ := url.Parse(defaultBaseURL)
+func (c *Client) AddTXTRecord(ctx context.Context, domain, subDomain, value string) error {
+	data := url.Values{}
+	data.Set("domain", domain)
+	data.Set("type", "TXT")
+	data.Set("record", subDomain+":"+value)
+	data.Set("action", "add")
 
-	query := endpoint.Query()
-	query.Set("apikey", c.APIKey)
-	query.Set("domain", domain)
-	query.Set("type", "TXT")
-	query.Set("record", subDomain+":"+value)
-	query.Set("action", "add")
+	return c.doRequest(ctx, data)
+}
 
-	endpoint.RawQuery = query.Encode()
+func (c *Client) RemoveTXTRecord(ctx context.Context, domain, subDomain, value string) error {
+	data := url.Values{}
+	data.Set("domain", domain)
+	data.Set("type", "TXT")
+	data.Set("record", subDomain+":"+value)
+	data.Set("action", "delete")
 
-	err := c.doRequest(ctx, endpoint)
+	return c.doRequest(ctx, data)
+}
+
+func (c *Client) doRequest(ctx context.Context, data url.Values) error {
+	data.Set("apikey", c.apiKey)
+
+	endpoint, err := url.Parse(c.baseURL)
 	if err != nil {
 		return err
 	}
 
-	return nil
-}
+	endpoint.RawQuery = data.Encode()
 
-func (c Client) RemoveTXTRecord(ctx context.Context, domain, subDomain, value string) error {
-	endpoint, _ := url.Parse(defaultBaseURL)
-
-	query := endpoint.Query()
-	query.Set("apikey", c.APIKey)
-	query.Set("domain", domain)
-	query.Set("type", "TXT")
-	query.Set("record", subDomain+":"+value)
-	query.Set("action", "delete")
-
-	endpoint.RawQuery = query.Encode()
-
-	err := c.doRequest(ctx, endpoint)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (c Client) doRequest(ctx context.Context, endpoint *url.URL) error {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint.String(), http.NoBody)
 	if err != nil {
 		return fmt.Errorf("unable to create request: %w", err)
@@ -87,15 +78,15 @@ func (c Client) doRequest(ctx context.Context, endpoint *url.URL) error {
 		return errutils.NewReadResponseError(req, resp.StatusCode, err)
 	}
 
-	var body map[string]any
-	err = json.Unmarshal(raw, &body)
+	var r APIResponse
+	err = json.Unmarshal(raw, &r)
 	if err != nil {
-		return fmt.Errorf("unable to parse response: %w", err)
+		return errutils.NewUnmarshalError(req, resp.StatusCode, raw, err)
 	}
 
-	if body["result"].(string) != "OK" {
-		return fmt.Errorf("request to change TXT record for Webnames returned the following result (%s) this does not match expectation (OK) used url [%s]", body["result"].(string), endpoint)
+	if r.Result == "OK" {
+		return nil
 	}
 
-	return nil
+	return fmt.Errorf("%s: %s", r.Result, r.Details)
 }

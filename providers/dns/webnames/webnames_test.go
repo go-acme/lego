@@ -10,8 +10,7 @@ import (
 
 const envDomain = envNamespace + "DOMAIN"
 
-var envTest = tester.NewEnvTest(EnvAPIKey).
-	WithDomain(envDomain)
+var envTest = tester.NewEnvTest(EnvAPIKey).WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -57,12 +56,12 @@ func TestNewDNSProvider(t *testing.T) {
 func TestNewDNSProviderConfig(t *testing.T) {
 	testCases := []struct {
 		desc     string
-		apikey   string
+		apiKey   string
 		expected string
 	}{
 		{
 			desc:   "success",
-			apikey: "123",
+			apiKey: "123",
 		},
 		{
 			desc:     "missing credentials",
@@ -73,7 +72,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			config := NewDefaultConfig()
-			config.APIKey = test.apikey
+			config.APIKey = test.apiKey
 
 			p, err := NewDNSProviderConfig(config)
 

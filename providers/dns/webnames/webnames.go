@@ -17,7 +17,7 @@ import (
 const (
 	envNamespace = "WEBNAMES_"
 
-	EnvToken = envNamespace + "TOKEN"
+	EnvAPIKey = envNamespace + "API_KEY"
 
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
@@ -27,7 +27,7 @@ const (
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	Token string
+	APIKey string
 
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -54,15 +54,15 @@ type DNSProvider struct {
 }
 
 // NewDNSProvider returns a new DNS provider using
-// environment variable WEBNAMES_TOKEN for adding and removing the DNS record.
+// environment variable WEBNAMES_API_KEY for adding and removing the DNS record.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvToken)
+	values, err := env.Get(EnvAPIKey)
 	if err != nil {
 		return nil, fmt.Errorf("webnames: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.Token = values[EnvToken]
+	config.APIKey = values[EnvAPIKey]
 
 	return NewDNSProviderConfig(config)
 }
@@ -73,11 +73,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("webnames: the configuration of the DNS provider is nil")
 	}
 
-	if config.Token == "" {
+	if config.APIKey == "" {
 		return nil, errors.New("webnames: credentials missing")
 	}
 
-	client := internal.NewClient(config.Token)
+	client := internal.NewClient(config.APIKey)
 
 	if config.HTTPClient != nil {
 		client.HTTPClient = config.HTTPClient

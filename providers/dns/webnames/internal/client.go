@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
@@ -17,15 +16,15 @@ const defaultBaseURL = "https://www.webnames.ru/scripts/json_domain_zone_manager
 
 // Client the Webnames API client.
 type Client struct {
-	token string
+	APIKey string
 
 	HTTPClient *http.Client
 }
 
 // NewClient Creates a new Client.
-func NewClient(token string) *Client {
+func NewClient(apikey string) *Client {
 	return &Client{
-		token:      token,
+		APIKey:     apikey,
 		HTTPClient: &http.Client{Timeout: 5 * time.Second},
 	}
 }
@@ -34,10 +33,10 @@ func (c Client) AddTXTRecord(ctx context.Context, domain, subDomain, value strin
 	endpoint, _ := url.Parse(defaultBaseURL)
 
 	query := endpoint.Query()
-	query.Set("apikey", c.token)
+	query.Set("apikey", c.APIKey)
 	query.Set("domain", domain)
 	query.Set("type", "TXT")
-	query.Set("record", strings.Join([]string{subDomain, value}, ":"))
+	query.Set("record", subDomain+":"+value)
 	query.Set("action", "add")
 
 	endpoint.RawQuery = query.Encode()
@@ -54,10 +53,10 @@ func (c Client) RemoveTXTRecord(ctx context.Context, domain, subDomain, value st
 	endpoint, _ := url.Parse(defaultBaseURL)
 
 	query := endpoint.Query()
-	query.Set("apikey", c.token)
+	query.Set("apikey", c.APIKey)
 	query.Set("domain", domain)
 	query.Set("type", "TXT")
-	query.Set("record", strings.Join([]string{subDomain, value}, ":"))
+	query.Set("record", subDomain+":"+value)
 	query.Set("action", "delete")
 
 	endpoint.RawQuery = query.Encode()
@@ -88,7 +87,6 @@ func (c Client) doRequest(ctx context.Context, endpoint *url.URL) error {
 		return errutils.NewReadResponseError(req, resp.StatusCode, err)
 	}
 
-	//body := string(raw)
 	var body map[string]any
 	err = json.Unmarshal(raw, &body)
 	if err != nil {

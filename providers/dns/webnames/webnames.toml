@@ -1,17 +1,25 @@
-Name = "webnames.ru"
+Name = "Webnames"
 Description = ''''''
 URL = "https://www.webnames.ru/"
 Code = "webnames"
-Since = "v0.0.0"
+Since = "v4.14.2"
 
 Example = '''
-WEBNAMES_TOKEN=xxxxxx \
+WEBNAMES_API_KEY=xxxxxx \
 lego --email you@example.com --dns webnames --domains my.example.org run
+'''
+
+Additional = '''
+## API key 
+
+Для получения ключа необходимо сменить DNS-сервера на *.nameself.com: Личный кабинет / Мои домены и услуги / Выбрать необходимый домен / DNS-серверы
+
+Ключ API можно будет найти: Личный кабинет / Мои домены и услуги / Выбрать необходимый домен / Управление зоной / Настройка acme.sh или certbot
 '''
 
 [Configuration]
 [Configuration.Credentials]
-WEBNAMES_TOKEN = "Account token"
+WEBNAMES_API_KEY = "Domain api key"
 [Configuration.Additional]
 WEBNAMES_POLLING_INTERVAL = "Time between DNS propagation check"
 WEBNAMES_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"

@@ -2676,7 +2676,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "WEBNAMES_API_KEY":	Domain api key`)
+		ew.writeln(`	- "WEBNAMES_API_KEY":	Domain API key`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)

@@ -37,7 +37,7 @@ lego --email you@example.com --dns webnames --domains my.example.org run
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `WEBNAMES_API_KEY` | Domain api key |
+| `WEBNAMES_API_KEY` | Domain API key |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{< ref "dns#configuration-and-credentials" >}}).
@@ -55,9 +55,9 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
-## API key 
+## API Key
 
-To obtain the key, you need to change the DNS server to *.nameself.com: Personal account / My domains and services / Select the required domain / DNS servers
+To obtain the key, you need to change the DNS server to `*.nameself.com`: Personal account / My domains and services / Select the required domain / DNS servers
 
 The API key can be found: Personal account / My domains and services / Select the required domain / Zone management / acme.sh or certbot settings
 

@@ -16,8 +16,8 @@ import (
 
 // Default API endpoints.
 const (
-	APIBaseURL  = "https://console.sbercloud.ru/api/clouddns/v1"
-	AuthBaseURL = "https://auth.iam.sbercloud.ru/auth/system/openid/token"
+	APIBaseURL  = "https://console.cloud.ru/api/clouddns/v1"
+	AuthBaseURL = "https://auth.iam.cloud.ru/auth/system/openid/token"
 )
 
 // Client the Cloud.ru API client.

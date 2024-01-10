@@ -2672,7 +2672,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		// generated from: providers/dns/webnames/webnames.toml
 		ew.writeln(`Configuration for Webnames.`)
 		ew.writeln(`Code:	'webnames'`)
-		ew.writeln(`Since:	'v4.14.2'`)
+		ew.writeln(`Since:	'v4.15.0'`)
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
@@ -2683,7 +2683,6 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln(`	- "WEBNAMES_HTTP_TIMEOUT":	API request timeout`)
 		ew.writeln(`	- "WEBNAMES_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "WEBNAMES_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
-		ew.writeln(`	- "WEBNAMES_SEQUENCE_INTERVAL":	Time between sequential requests`)
 		ew.writeln(`	- "WEBNAMES_TTL":	The TTL of the TXT record used for the DNS challenge`)
 
 		ew.writeln()

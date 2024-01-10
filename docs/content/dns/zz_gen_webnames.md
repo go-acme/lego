@@ -4,7 +4,7 @@ date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: webnames
 dnsprovider:
-  since:    "v4.14.2"
+  since:    "v4.15.0"
   code:     "webnames"
   url:      "https://www.webnames.ru/"
 ---
@@ -20,7 +20,7 @@ Configuration for [Webnames](https://www.webnames.ru/).
 <!--more-->
 
 - Code: `webnames`
-- Since: v4.14.2
+- Since: v4.15.0
 
 
 Here is an example bash command using the Webnames provider:
@@ -50,7 +50,6 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 | `WEBNAMES_HTTP_TIMEOUT` | API request timeout |
 | `WEBNAMES_POLLING_INTERVAL` | Time between DNS propagation check |
 | `WEBNAMES_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
-| `WEBNAMES_SEQUENCE_INTERVAL` | Time between sequential requests |
 | `WEBNAMES_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
@@ -58,9 +57,9 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 ## API key 
 
-Для получения ключа необходимо сменить DNS-сервера на *.nameself.com: Личный кабинет / Мои домены и услуги / Выбрать необходимый домен / DNS-серверы
+To obtain the key, you need to change the DNS server to *.nameself.com: Personal account / My domains and services / Select the required domain / DNS servers
 
-Ключ API можно будет найти: Личный кабинет / Мои домены и услуги / Выбрать необходимый домен / Управление зоной / Настройка acme.sh или certbot
+The API key can be found: Personal account / My domains and services / Select the required domain / Zone management / acme.sh or certbot settings
 
 
 

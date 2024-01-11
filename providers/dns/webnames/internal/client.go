@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
@@ -31,6 +32,8 @@ func NewClient(apiKey string) *Client {
 	}
 }
 
+// AddTXTRecord adds a TXT record.
+// Inspired by https://github.com/regtime-ltd/certbot-dns-webnames/blob/master/authenticator.sh
 func (c *Client) AddTXTRecord(ctx context.Context, domain, subDomain, value string) error {
 	data := url.Values{}
 	data.Set("domain", domain)
@@ -41,6 +44,8 @@ func (c *Client) AddTXTRecord(ctx context.Context, domain, subDomain, value stri
 	return c.doRequest(ctx, data)
 }
 
+// RemoveTXTRecord removes a TXT record.
+// Inspired by https://github.com/regtime-ltd/certbot-dns-webnames/blob/master/cleanup.sh
 func (c *Client) RemoveTXTRecord(ctx context.Context, domain, subDomain, value string) error {
 	data := url.Values{}
 	data.Set("domain", domain)
@@ -54,17 +59,12 @@ func (c *Client) RemoveTXTRecord(ctx context.Context, domain, subDomain, value s
 func (c *Client) doRequest(ctx context.Context, data url.Values) error {
 	data.Set("apikey", c.apiKey)
 
-	endpoint, err := url.Parse(c.baseURL)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL, strings.NewReader(data.Encode()))
 	if err != nil {
 		return err
 	}
 
-	endpoint.RawQuery = data.Encode()
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint.String(), http.NoBody)
-	if err != nil {
-		return fmt.Errorf("unable to create request: %w", err)
-	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
@@ -72,6 +72,10 @@ func (c *Client) doRequest(ctx context.Context, data url.Values) error {
 	}
 
 	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode/100 != 2 {
+		return errutils.NewUnexpectedResponseStatusCodeError(req, resp)
+	}
 
 	raw, err := io.ReadAll(resp.Body)
 	if err != nil {

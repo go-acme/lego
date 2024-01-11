@@ -20,21 +20,31 @@ func setupTest(t *testing.T, filename string, expectedParams url.Values) *Client
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", func(rw http.ResponseWriter, req *http.Request) {
-		if req.Method != http.MethodGet {
+		if req.Method != http.MethodPost {
 			http.Error(rw, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 			return
 		}
 
-		query := req.URL.Query()
+		if req.Header.Get("Content-Type") != "application/x-www-form-urlencoded" {
+			http.Error(rw, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
 
-		for k, v := range query {
+		err := req.ParseForm()
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		for k, v := range expectedParams {
+			val := req.PostForm.Get(k)
 			if len(v) == 0 {
 				http.Error(rw, fmt.Sprintf("%s: no value", k), http.StatusBadRequest)
 				return
 			}
 
-			if v[0] != expectedParams.Get(k) {
-				http.Error(rw, fmt.Sprintf("%s: invalid value: %q != %q", k, expectedParams.Get(k), v[0]), http.StatusBadRequest)
+			if val != v[0] {
+				http.Error(rw, fmt.Sprintf("%s: invalid value: %s != %s", k, val, v[0]), http.StatusBadRequest)
 				return
 			}
 		}
@@ -90,7 +100,6 @@ func TestClient_AddTXTRecord(t *testing.T) {
 			data.Set("type", "TXT")
 			data.Set("record", "foo:txtTXTtxt")
 			data.Set("action", "add")
-			data.Set("apikey", "secret")
 
 			client := setupTest(t, test.filename, data)
 
@@ -132,7 +141,6 @@ func TestClient_RemoveTxtRecord(t *testing.T) {
 			data.Set("type", "TXT")
 			data.Set("record", "foo:txtTXTtxt")
 			data.Set("action", "delete")
-			data.Set("apikey", "secret")
 
 			client := setupTest(t, test.filename, data)
 

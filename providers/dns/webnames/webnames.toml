@@ -27,4 +27,4 @@ The API key can be found: Personal account / My domains and services / Select th
     WEBNAMES_HTTP_TIMEOUT = "API request timeout"
 
 [Links]
-  API = "https://www.webnames.ru/scripts/json_domain_zone_manager.pl"
+  API = "https://github.com/regtime-ltd/certbot-dns-webnames"

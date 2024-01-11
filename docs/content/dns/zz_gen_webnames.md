@@ -65,7 +65,7 @@ The API key can be found: Personal account / My domains and services / Select th
 
 ## More information
 
-- [API documentation](https://www.webnames.ru/scripts/json_domain_zone_manager.pl)
+- [API documentation](https://github.com/regtime-ltd/certbot-dns-webnames)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/webnames/webnames.toml -->

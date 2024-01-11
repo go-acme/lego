@@ -92,5 +92,5 @@ func (c *Client) doRequest(ctx context.Context, data url.Values) error {
 		return nil
 	}
 
-	return fmt.Errorf("%s: %s", r.Result, r.Details)
+	return fmt.Errorf("%s: %d", r.Result, r.Details)
 }

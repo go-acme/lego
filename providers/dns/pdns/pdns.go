@@ -38,7 +38,7 @@ type Config struct {
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
-	CustomApiVersion   int
+	CustomAPIVersion   int
 	HTTPClient         *http.Client
 }
 
@@ -46,7 +46,7 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		CustomApiVersion:   env.GetOrDefaultInt(EnvCustomAPIVersion, 0),
+		CustomAPIVersion:   env.GetOrDefaultInt(EnvCustomAPIVersion, 0),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 120*time.Second),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
 		ServerName:         env.GetOrDefaultString(EnvServerName, "localhost"),
@@ -99,9 +99,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 	client := internal.NewClient(config.Host, config.ServerName, config.APIKey)
 
-	if config.CustomApiVersion > 0 {
-		client.SetCustomAPIVersion(config.CustomApiVersion)
-		log.Infof("pdns: using custom API version %d", config.CustomApiVersion)
+	if config.CustomAPIVersion > 0 {
+		client.SetCustomAPIVersion(config.CustomAPIVersion)
+		log.Infof("pdns: using custom API version %d", config.CustomAPIVersion)
 	} else {
 		err := client.SetAPIVersion(context.Background())
 		if err != nil {

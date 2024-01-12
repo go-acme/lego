@@ -132,6 +132,7 @@ func allDNSCodes() string {
 		"vkcloud",
 		"vscale",
 		"vultr",
+		"webnames",
 		"websupport",
 		"wedos",
 		"yandex",
@@ -2666,6 +2667,26 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/vultr`)
+
+	case "webnames":
+		// generated from: providers/dns/webnames/webnames.toml
+		ew.writeln(`Configuration for Webnames.`)
+		ew.writeln(`Code:	'webnames'`)
+		ew.writeln(`Since:	'v4.15.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "WEBNAMES_API_KEY":	Domain API key`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "WEBNAMES_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "WEBNAMES_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "WEBNAMES_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "WEBNAMES_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/webnames`)
 
 	case "websupport":
 		// generated from: providers/dns/websupport/websupport.toml

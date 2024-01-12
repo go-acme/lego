@@ -121,13 +121,13 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Comment: scw.StringPtr("used by lego"),
 	}}
 
-	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	req := &scwdomain.UpdateDNSZoneRecordsRequest{
-		DNSZone: domain,
+		DNSZone: info.EffectiveFQDN,
 		Changes: []*scwdomain.RecordChange{{
 			Add: &scwdomain.RecordChangeAdd{Records: records},
 		}},
-		ReturnAllRecords: scw.BoolPtr(false),
+		ReturnAllRecords:        scw.BoolPtr(false),
+		DisallowNewZoneCreation: true,
 	}
 
 	_, err := d.client.UpdateDNSZoneRecords(req)
@@ -148,13 +148,13 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		Data: scw.StringPtr(fmt.Sprintf(`%q`, info.Value)),
 	}
 
-	// TODO(ldez) replace domain by FQDN to follow CNAME.
 	req := &scwdomain.UpdateDNSZoneRecordsRequest{
-		DNSZone: domain,
+		DNSZone: info.EffectiveFQDN,
 		Changes: []*scwdomain.RecordChange{{
 			Delete: &scwdomain.RecordChangeDelete{IDFields: recordIdentifier},
 		}},
-		ReturnAllRecords: scw.BoolPtr(false),
+		ReturnAllRecords:        scw.BoolPtr(false),
+		DisallowNewZoneCreation: true,
 	}
 
 	_, err := d.client.UpdateDNSZoneRecords(req)

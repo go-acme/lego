@@ -539,8 +539,8 @@ github.com/sacloud/iaas-api-go v1.11.1 h1:2MsFZ4H1uRdRVx2nVXuERWQ3swoFc3XreIV5hJ
 github.com/sacloud/iaas-api-go v1.11.1/go.mod h1:uBDSa06F/V0OnoR66jGdbH0PVnCJw+NeE9RVbVgMfss=
 github.com/sacloud/packages-go v0.0.9 h1:GbinkBLC/eirFhHpLjoDW6JV7+95Rnd2d8RWj7Afeks=
 github.com/sacloud/packages-go v0.0.9/go.mod h1:k+EEUMF2LlncjbNIJNOqLyZ9wjTESPIWIk1OA7x9j2Q=
-github.com/scaleway/scaleway-sdk-go v1.0.0-beta.17 h1:1WuWJu7/e8SqK+uQl7lfk/N/oMZTL2NE/TJsNKRNMc4=
-github.com/scaleway/scaleway-sdk-go v1.0.0-beta.17/go.mod h1:fCa7OJZ/9DRTnOKmxvT6pn+LPWUptQAmHF/SBJUGEcg=
+github.com/scaleway/scaleway-sdk-go v1.0.0-beta.22 h1:wJrcTdddKOI8TFxs8cemnhKP2EmKy3yfUKHj3ZdfzYo=
+github.com/scaleway/scaleway-sdk-go v1.0.0-beta.22/go.mod h1:fCa7OJZ/9DRTnOKmxvT6pn+LPWUptQAmHF/SBJUGEcg=
 github.com/sean-/seed v0.0.0-20170313163322-e2103e2c3529/go.mod h1:DxrIzT+xaE7yg65j358z/aeFdxmN0P9QXhEzd20vsDc=
 github.com/shurcooL/sanitized_anchor_name v1.0.0/go.mod h1:1NzhyTcUVG4SuEtjjoZeVRXNmyL/1OwPU0+IJeTBvfc=
 github.com/sirupsen/logrus v1.2.0/go.mod h1:LxeOpSwHxABJmUn/MG1IvRgCAasNZTLOkJPxbbu5VWo=

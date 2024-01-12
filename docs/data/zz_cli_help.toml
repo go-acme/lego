@@ -20,7 +20,7 @@ COMMANDS:
 
 GLOBAL OPTIONS:
    --domains value, -d value [ --domains value, -d value ]      Add a domain to the process. Can be specified multiple times.
-   --server value, -s value                                     CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client. (default: "https://acme-v02.api.letsencrypt.org/directory")
+   --server value, -s value                                     CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client. (default: "https://acme-v02.api.letsencrypt.org/directory") [$LEGO_SERVER]
    --accept-tos, -a                                             By setting this flag to true you indicate that you accept the current Let's Encrypt terms of service. (default: false)
    --email value, -m value                                      Email used for registration and recovery contact.
    --csr value, -c value                                        Certificate signing request filename, if an external CSR is to be used.

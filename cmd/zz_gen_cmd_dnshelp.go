@@ -1108,6 +1108,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln(`	- "GCE_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "GCE_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
 		ew.writeln(`	- "GCE_TTL":	The TTL of the TXT record used for the DNS challenge`)
+		ew.writeln(`	- "GCE_ZONE_ID":	Allows to skip the automatic detection of the zone`)
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/gcloud`)

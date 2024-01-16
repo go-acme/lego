@@ -51,8 +51,9 @@ func NewDefaultConfig() *Config {
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	config *Config
-	client *goinwx.Client
+	config         *Config
+	client         *goinwx.Client
+	prevTANCounter int64
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Dyn DNS.
@@ -202,10 +203,28 @@ func (d *DNSProvider) twoFactorAuth(info *goinwx.LoginResponse) error {
 		return errors.New("two-factor authentication but no shared secret is given")
 	}
 
+	// INWX forbids re-authentication with a previously used TAN.
+	// To avoid using the same TAN twice, we wait until the next
+	// TOTP period and retry.
+	const s = 30 // seconds per TOTP period
+	now := time.Now()
+	tanCounter := now.Unix() / s
+	if tanCounter == d.prevTANCounter {
+		nextPeriod := time.Unix(s*(now.Unix()/s)+s, 0)
+		d := nextPeriod.Sub(now)
+
+		log.Infof("inwx: waiting %v for next TOTP token", d)
+		time.Sleep(d)
+
+		now = time.Now()
+		tanCounter = now.Unix() / s
+	}
+
 	tan, err := totp.GenerateCode(d.config.SharedSecret, time.Now())
 	if err != nil {
 		return err
 	}
+	d.prevTANCounter = tanCounter
 
 	return d.client.Account.Unlock(tan)
 }

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -171,8 +172,8 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 	}
 
 	for _, record := range records {
-		if record.Name == dns01.UnFqdn(info.EffectiveFQDN) && record.Content == info.Value {
-			err := d.client.RemoveRecord(ctx, zone.ID, record.ID)
+		if record.Name == dns01.UnFqdn(info.EffectiveFQDN) && record.Content == strconv.Quote(info.Value) {
+			err = d.client.RemoveRecord(ctx, zone.ID, record.ID)
 			if err != nil {
 				return fmt.Errorf("ionos: failed to remove record (zone=%s, record=%s): %w", zone.ID, record.ID, err)
 			}
@@ -180,7 +181,7 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 		}
 	}
 
-	return nil
+	return fmt.Errorf("ionos: failed to remove record, record not found (zone=%s, domain=%s, fqdn=%s, value=%s)", zone.ID, domain, info.EffectiveFQDN, info.Value)
 }
 
 func findZone(zones []internal.Zone, domain string) *internal.Zone {

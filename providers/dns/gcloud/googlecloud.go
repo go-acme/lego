@@ -32,6 +32,7 @@ const (
 
 	EnvServiceAccount   = envNamespace + "SERVICE_ACCOUNT"
 	EnvProject          = envNamespace + "PROJECT"
+	EnvZoneID           = envNamespace + "ZONE_ID"
 	EnvAllowPrivateZone = envNamespace + "ALLOW_PRIVATE_ZONE"
 	EnvDebug            = envNamespace + "DEBUG"
 
@@ -44,6 +45,7 @@ const (
 type Config struct {
 	Debug              bool
 	Project            string
+	ZoneID             string
 	AllowPrivateZone   bool
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -55,6 +57,7 @@ type Config struct {
 func NewDefaultConfig() *Config {
 	return &Config{
 		Debug:              env.GetOrDefaultBool(EnvDebug, false),
+		ZoneID:             env.GetOrDefaultString(EnvZoneID, ""),
 		AllowPrivateZone:   env.GetOrDefaultBool(EnvAllowPrivateZone, false),
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 180*time.Second),
@@ -310,24 +313,16 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // getHostedZone returns the managed-zone.
 func (d *DNSProvider) getHostedZone(domain string) (string, error) {
-	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
+	authZone, zones, err := d.lookupHostedZoneID(domain)
 	if err != nil {
-		return "", fmt.Errorf("designate: could not find zone for FQDN %q: %w", domain, err)
+		return "", err
 	}
 
-	zones, err := d.client.ManagedZones.
-		List(d.config.Project).
-		DnsName(authZone).
-		Do()
-	if err != nil {
-		return "", fmt.Errorf("API call failed: %w", err)
-	}
-
-	if len(zones.ManagedZones) == 0 {
+	if len(zones) == 0 {
 		return "", fmt.Errorf("no matching domain found for domain %s", authZone)
 	}
 
-	for _, z := range zones.ManagedZones {
+	for _, z := range zones {
 		if z.Visibility == "public" || z.Visibility == "" || (z.Visibility == "private" && d.config.AllowPrivateZone) {
 			return z.Name, nil
 		}
@@ -338,6 +333,45 @@ func (d *DNSProvider) getHostedZone(domain string) (string, error) {
 	}
 
 	return "", fmt.Errorf("no public zone found for domain %s", authZone)
+}
+
+// lookupHostedZoneID finds the managed zone ID in Google.
+//
+// Be careful here.
+// An automated system might run in a GCloud Service Account, with access to edit the zone
+//
+//	(gcloud dns managed-zones get-iam-policy $zone_id) (role roles/dns.admin)
+//
+// but not with project-wide access to list all zones
+//
+//	(gcloud projects get-iam-policy $project_id) (a role with permission dns.managedZones.list)
+//
+// If we force a zone list to succeed, we demand more permissions than needed.
+func (d *DNSProvider) lookupHostedZoneID(domain string) (string, []*dns.ManagedZone, error) {
+	// GCE_ZONE_ID override for service accounts to avoid needing zones-list permission
+	if d.config.ZoneID != "" {
+		zone, err := d.client.ManagedZones.Get(d.config.Project, d.config.ZoneID).Do()
+		if err != nil {
+			return "", nil, fmt.Errorf("API call ManagedZones.Get for explicit zone ID %q in project %q failed: %w", d.config.ZoneID, d.config.Project, err)
+		}
+
+		return zone.DnsName, []*dns.ManagedZone{zone}, nil
+	}
+
+	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
+	if err != nil {
+		return "", nil, fmt.Errorf("could not find zone for FQDN %q: %w", domain, err)
+	}
+
+	zones, err := d.client.ManagedZones.
+		List(d.config.Project).
+		DnsName(authZone).
+		Do()
+	if err != nil {
+		return "", nil, fmt.Errorf("API call ManagedZones.List failed: %w", err)
+	}
+
+	return authZone, zones.ManagedZones, nil
 }
 
 func (d *DNSProvider) findTxtRecords(zone, fqdn string) ([]*dns.ResourceRecordSet, error) {

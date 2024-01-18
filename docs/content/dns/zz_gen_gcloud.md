@@ -58,6 +58,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 | `GCE_POLLING_INTERVAL` | Time between DNS propagation check |
 | `GCE_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
 | `GCE_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `GCE_ZONE_ID` | Allows to skip the automatic detection of the zone |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{< ref "dns#configuration-and-credentials" >}}).

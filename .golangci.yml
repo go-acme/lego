@@ -236,4 +236,4 @@ issues:
     - path: providers/dns/hosttech/internal/client_test.go
       text: 'Duplicate words \(0\) found'
     - path: cmd/cmd_renew.go
-      text: 'cyclomatic complexity 16 of func `renewForDomains` is high'
+      text: 'cyclomatic complexity 15 of func `renewForDomains` is high'

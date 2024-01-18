@@ -4,6 +4,7 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math/rand"
 	"strings"
@@ -111,8 +112,9 @@ func (c *Certifier) UpdateRenewalInfo(req RenewalInfoRequest) error {
 // makeARICertID constructs a certificate identifier as described in draft-ietf-acme-ari-02, section 4.1.
 func makeARICertID(leaf *x509.Certificate) (string, error) {
 	if leaf == nil {
-		return "", fmt.Errorf("leaf certificate is nil")
+		return "", errors.New("leaf certificate is nil")
 	}
+
 	return fmt.Sprintf("%s.%s",
 		strings.TrimRight(base64.URLEncoding.EncodeToString(leaf.AuthorityKeyId), "="),
 		strings.TrimRight(base64.URLEncoding.EncodeToString(leaf.SerialNumber.Bytes()), "="),

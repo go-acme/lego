@@ -319,10 +319,10 @@ func getARIRenewalTime(ctx *cli.Context, cert *x509.Certificate, domain string, 
 	if err != nil {
 		if errors.Is(err, api.ErrNoARI) {
 			// The server does not advertise a renewal info endpoint.
-			log.Warnf("[%s] acme: %w", domain, err)
+			log.Warnf("[%s] acme: %v", domain, err)
 			return nil
 		}
-		log.Warnf("[%s] acme: calling renewal info endpoint: %w", domain, err)
+		log.Warnf("[%s] acme: calling renewal info endpoint: %v", domain, err)
 		return nil
 	}
 

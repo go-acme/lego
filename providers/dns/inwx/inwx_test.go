@@ -147,22 +147,22 @@ func TestLivePresentAndCleanup(t *testing.T) {
 func Test_computeSleep(t *testing.T) {
 	testCases := []struct {
 		desc     string
-		time     string
+		previous string
 		expected time.Duration
 	}{
 		{
 			desc:     "after 30s",
-			time:     "2024-01-01T06:29:20Z",
+			previous: "2024-01-01T06:29:20Z",
 			expected: 0 * time.Second,
 		},
 		{
 			desc:     "0s",
-			time:     "2024-01-01T06:29:30Z",
+			previous: "2024-01-01T06:29:30Z",
 			expected: 0 * time.Second,
 		},
 		{
 			desc:     "before 30s",
-			time:     "2024-01-01T06:29:50Z", // 10 s
+			previous: "2024-01-01T06:29:50Z", // 10 s
 			expected: 20 * time.Second,
 		},
 	}
@@ -175,10 +175,10 @@ func Test_computeSleep(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			previous, err := time.Parse(time.RFC3339, test.time)
+			previous, err := time.Parse(time.RFC3339, test.previous)
 			require.NoError(t, err)
 
-			d := &DNSProvider{previousCall: previous}
+			d := &DNSProvider{previousUnlock: previous}
 
 			sleep := d.computeSleep(now)
 			assert.Equal(t, test.expected, sleep)

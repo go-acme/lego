@@ -51,9 +51,9 @@ func NewDefaultConfig() *Config {
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	config         *Config
-	client         *goinwx.Client
-	prevTANCounter int64
+	config       *Config
+	client       *goinwx.Client
+	previousCall time.Time
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Dyn DNS.
@@ -204,27 +204,34 @@ func (d *DNSProvider) twoFactorAuth(info *goinwx.LoginResponse) error {
 	}
 
 	// INWX forbids re-authentication with a previously used TAN.
-	// To avoid using the same TAN twice, we wait until the next
-	// TOTP period and retry.
-	const s = 30 // seconds per TOTP period
-	now := time.Now()
-	tanCounter := now.Unix() / s
-	if tanCounter == d.prevTANCounter {
-		nextPeriod := time.Unix(s*(now.Unix()/s)+s, 0)
-		d := nextPeriod.Sub(now)
-
-		log.Infof("inwx: waiting %v for next TOTP token", d)
-		time.Sleep(d)
-
-		now = time.Now()
-		tanCounter = now.Unix() / s
+	// To avoid using the same TAN twice, we wait until the next TOTP period and retry.
+	sleep := d.computeSleep(time.Now())
+	if sleep != 0 {
+		log.Infof("inwx: waiting %s for next TOTP token", sleep)
+		time.Sleep(sleep)
 	}
 
-	tan, err := totp.GenerateCode(d.config.SharedSecret, time.Now())
+	now := time.Now()
+
+	tan, err := totp.GenerateCode(d.config.SharedSecret, now)
 	if err != nil {
 		return err
 	}
-	d.prevTANCounter = tanCounter
+
+	d.previousCall = now
 
 	return d.client.Account.Unlock(tan)
+}
+
+func (d *DNSProvider) computeSleep(now time.Time) time.Duration {
+	if d.previousCall.IsZero() {
+		return 0 * time.Second
+	}
+
+	endPeriod := d.previousCall.Add(30 * time.Second)
+	if endPeriod.After(now) {
+		return endPeriod.Sub(now)
+	}
+
+	return 0 * time.Second
 }

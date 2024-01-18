@@ -2,8 +2,10 @@ package inwx
 
 import (
 	"testing"
+	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -140,4 +142,46 @@ func TestLivePresentAndCleanup(t *testing.T) {
 
 	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
+}
+
+func Test_computeSleep(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		previous string
+		expected time.Duration
+	}{
+		{
+			desc:     "after 30s",
+			previous: "2024-01-01T06:29:20Z",
+			expected: 0 * time.Second,
+		},
+		{
+			desc:     "0s",
+			previous: "2024-01-01T06:29:30Z",
+			expected: 0 * time.Second,
+		},
+		{
+			desc:     "before 30s",
+			previous: "2024-01-01T06:29:50Z", // 10 s
+			expected: 20 * time.Second,
+		},
+	}
+
+	now, err := time.Parse(time.RFC3339, "2024-01-01T06:30:00Z")
+	require.NoError(t, err)
+
+	for _, test := range testCases {
+		test := test
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			previous, err := time.Parse(time.RFC3339, test.previous)
+			require.NoError(t, err)
+
+			d := &DNSProvider{previousUnlock: previous}
+
+			sleep := d.computeSleep(now)
+			assert.Equal(t, test.expected, sleep)
+		})
+	}
 }

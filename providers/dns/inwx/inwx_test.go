@@ -147,27 +147,27 @@ func TestLivePresentAndCleanup(t *testing.T) {
 func Test_computeSleep(t *testing.T) {
 	testCases := []struct {
 		desc     string
-		previous string
+		now      string
 		expected time.Duration
 	}{
 		{
 			desc:     "after 30s",
-			previous: "2024-01-01T06:29:20Z",
+			now:      "2024-01-01T06:30:30Z",
 			expected: 0 * time.Second,
 		},
 		{
 			desc:     "0s",
-			previous: "2024-01-01T06:29:30Z",
+			now:      "2024-01-01T06:30:00Z",
 			expected: 0 * time.Second,
 		},
 		{
 			desc:     "before 30s",
-			previous: "2024-01-01T06:29:50Z", // 10 s
+			now:      "2024-01-01T06:29:40Z", // 10 s
 			expected: 20 * time.Second,
 		},
 	}
 
-	now, err := time.Parse(time.RFC3339, "2024-01-01T06:30:00Z")
+	previous, err := time.Parse(time.RFC3339, "2024-01-01T06:29:30Z")
 	require.NoError(t, err)
 
 	for _, test := range testCases {
@@ -175,7 +175,7 @@ func Test_computeSleep(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			previous, err := time.Parse(time.RFC3339, test.previous)
+			now, err := time.Parse(time.RFC3339, test.now)
 			require.NoError(t, err)
 
 			d := &DNSProvider{previousUnlock: previous}

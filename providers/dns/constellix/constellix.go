@@ -6,11 +6,13 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/constellix/internal"
+	"github.com/hashicorp/go-retryablehttp"
 )
 
 // Environment variables names.
@@ -85,7 +87,12 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("constellix: %w", err)
 	}
 
-	client := internal.NewClient(tr.Wrap(config.HTTPClient))
+	retryClient := retryablehttp.NewClient()
+	retryClient.RetryMax = 5
+	retryClient.HTTPClient = tr.Wrap(config.HTTPClient)
+	retryClient.Backoff = backoff
+
+	client := internal.NewClient(retryClient.StandardClient())
 
 	return &DNSProvider{config: config, client: client}, nil
 }
@@ -272,4 +279,19 @@ func containsValue(record *internal.Record, value string) bool {
 	}
 
 	return false
+}
+
+func backoff(min, max time.Duration, attemptNum int, resp *http.Response) time.Duration {
+	if resp != nil {
+		// https://api.dns.constellix.com/v4/docs#section/Using-the-API/Rate-Limiting
+		if resp.StatusCode == http.StatusTooManyRequests {
+			if s, ok := resp.Header["X-Ratelimit-Reset"]; ok {
+				if sleep, err := strconv.ParseInt(s[0], 10, 64); err == nil {
+					return time.Second * time.Duration(sleep)
+				}
+			}
+		}
+	}
+
+	return retryablehttp.DefaultBackoff(min, max, attemptNum, resp)
 }

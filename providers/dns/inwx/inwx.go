@@ -211,19 +211,21 @@ func (d *DNSProvider) twoFactorAuth(info *goinwx.LoginResponse) error {
 		time.Sleep(sleep)
 	}
 
-	tan, err := totp.GenerateCode(d.config.SharedSecret, time.Now())
+	now := time.Now()
+
+	tan, err := totp.GenerateCode(d.config.SharedSecret, now)
 	if err != nil {
 		return err
 	}
 
-	d.previousUnlock = time.Now()
+	d.previousUnlock = now.Truncate(30 * time.Second)
 
 	return d.client.Account.Unlock(tan)
 }
 
 func (d *DNSProvider) computeSleep(now time.Time) time.Duration {
 	if d.previousUnlock.IsZero() {
-		return 0 * time.Second
+		return 0
 	}
 
 	endPeriod := d.previousUnlock.Add(30 * time.Second)
@@ -231,5 +233,5 @@ func (d *DNSProvider) computeSleep(now time.Time) time.Duration {
 		return endPeriod.Sub(now)
 	}
 
-	return 0 * time.Second
+	return 0
 }

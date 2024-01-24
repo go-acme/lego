@@ -329,9 +329,11 @@ type RenewalInfoResponse struct {
 }
 
 // RenewalInfoUpdateRequest is the JWS payload for POST requests made to the renewalInfo endpoint.
-// - (4.2. Updating Renewal Information) https://datatracker.ietf.org/doc/draft-ietf-acme-ari/
+// - (4.2. RenewalInfo Objects) https://datatracker.ietf.org/doc/html/draft-ietf-acme-ari-02#section-4.2
 type RenewalInfoUpdateRequest struct {
-	// CertID is the base64url-encoded [RFC4648] bytes of a DER-encoded CertID ASN.1 sequence [RFC6960] with any trailing '=' characters stripped.
+	// CertID is a composite string in the format: base64url(AKI) || '.' || base64url(Serial), where AKI is the
+	// certificate's authority key identifier and Serial is the certificate's serial number. For details, see:
+	// https://datatracker.ietf.org/doc/html/draft-ietf-acme-ari-02#section-4.1
 	CertID string `json:"certID"`
 	// Replaced is required and indicates whether or not the client considers the certificate to have been replaced.
 	// A certificate is considered replaced when its revocation would not disrupt any ongoing services,

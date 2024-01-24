@@ -53,11 +53,6 @@ func createRenew() *cli.Command {
 				Name:  "ari-enable",
 				Usage: "Use the renewalInfo endpoint (draft-ietf-acme-ari) to check if a certificate should be renewed.",
 			},
-			&cli.StringFlag{
-				Name:  "ari-hash-name",
-				Value: crypto.SHA256.String(),
-				Usage: "The string representation of the hash expected by the renewalInfo endpoint (e.g. \"SHA-256\").",
-			},
 			&cli.DurationFlag{
 				Name:  "ari-wait-to-renew-duration",
 				Usage: "The maximum duration you're willing to sleep for a renewal time returned by the renewalInfo endpoint.",
@@ -146,11 +141,7 @@ func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *Certif
 
 	var ariRenewalTime *time.Time
 	if ctx.Bool("ari-enable") {
-		if len(certificates) < 2 {
-			log.Warnf("[%s] Certificate bundle does not contain issuer, cannot use the renewalInfo endpoint", domain)
-		} else {
-			ariRenewalTime = getARIRenewalTime(ctx, certificates[0], certificates[1], domain, client)
-		}
+		ariRenewalTime = getARIRenewalTime(ctx, cert, domain, client)
 		if ariRenewalTime != nil {
 			now := time.Now().UTC()
 			// Figure out if we need to sleep before renewing.
@@ -216,11 +207,7 @@ func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *Certif
 
 	if ariRenewalTime != nil {
 		// Post to the renewalInfo endpoint to indicate that we have renewed and replaced the certificate.
-		err := client.Certificate.UpdateRenewalInfo(certificate.RenewalInfoRequest{
-			Cert:     certificates[0],
-			Issuer:   certificates[1],
-			HashName: ctx.String("ari-hash-name"),
-		})
+		err := client.Certificate.UpdateRenewalInfo(certificate.RenewalInfoRequest{Cert: certificates[0]})
 		if err != nil {
 			log.Warnf("[%s] Failed to update renewal info: %v", domain, err)
 		}
@@ -255,11 +242,7 @@ func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *Certificat
 
 	var ariRenewalTime *time.Time
 	if ctx.Bool("ari-enable") {
-		if len(certificates) < 2 {
-			log.Warnf("[%s] Certificate bundle does not contain issuer, cannot use the renewalInfo endpoint", domain)
-		} else {
-			ariRenewalTime = getARIRenewalTime(ctx, certificates[0], certificates[1], domain, client)
-		}
+		ariRenewalTime = getARIRenewalTime(ctx, cert, domain, client)
 		if ariRenewalTime != nil {
 			now := time.Now().UTC()
 			// Figure out if we need to sleep before renewing.
@@ -296,11 +279,7 @@ func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *Certificat
 
 	if ariRenewalTime != nil {
 		// Post to the renewalInfo endpoint to indicate that we have renewed and replaced the certificate.
-		err := client.Certificate.UpdateRenewalInfo(certificate.RenewalInfoRequest{
-			Cert:     certificates[0],
-			Issuer:   certificates[1],
-			HashName: ctx.String("ari-hash-name"),
-		})
+		err := client.Certificate.UpdateRenewalInfo(certificate.RenewalInfoRequest{Cert: certificates[0]})
 		if err != nil {
 			log.Warnf("[%s] Failed to update renewal info: %v", domain, err)
 		}
@@ -331,23 +310,19 @@ func needRenewal(x509Cert *x509.Certificate, domain string, days int) bool {
 }
 
 // getARIRenewalTime checks if the certificate needs to be renewed using the renewalInfo endpoint.
-func getARIRenewalTime(ctx *cli.Context, cert, issuer *x509.Certificate, domain string, client *lego.Client) *time.Time {
+func getARIRenewalTime(ctx *cli.Context, cert *x509.Certificate, domain string, client *lego.Client) *time.Time {
 	if cert.IsCA {
 		log.Fatalf("[%s] Certificate bundle starts with a CA certificate", domain)
 	}
 
-	renewalInfo, err := client.Certificate.GetRenewalInfo(certificate.RenewalInfoRequest{
-		Cert:     cert,
-		Issuer:   issuer,
-		HashName: ctx.String("ari-hash-name"),
-	})
+	renewalInfo, err := client.Certificate.GetRenewalInfo(certificate.RenewalInfoRequest{Cert: cert})
 	if err != nil {
 		if errors.Is(err, api.ErrNoARI) {
 			// The server does not advertise a renewal info endpoint.
-			log.Warnf("[%s] acme: %w", domain, err)
+			log.Warnf("[%s] acme: %v", domain, err)
 			return nil
 		}
-		log.Warnf("[%s] acme: calling renewal info endpoint: %w", domain, err)
+		log.Warnf("[%s] acme: calling renewal info endpoint: %v", domain, err)
 		return nil
 	}
 

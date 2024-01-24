@@ -1,7 +1,6 @@
 package certificate
 
 import (
-	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
 	"encoding/json"
@@ -40,44 +39,20 @@ TXysJCeyiGnR+KOOjOOQ9ZlO5JUK3OE4hagPLfaIpDDy6RXQt3ss0iNLuB1+IOtp
 HX2RteNJx7YYNeX3Uf960mgo5an6vE8QNAsIoNHYrGyEmXDhTRe9mCHyiW2S7fZq
 o9q12g==
 -----END CERTIFICATE-----`
-	ariIssuerPEM = `-----BEGIN CERTIFICATE-----
-MIIDSzCCAjOgAwIBAgIIOhNWtJ7Igr0wDQYJKoZIhvcNAQELBQAwIDEeMBwGA1UE
-AxMVbWluaWNhIHJvb3QgY2EgM2ExMzU2MCAXDTIyMDMxNzE3NTEwOVoYDzIxMjIw
-MzE3MTc1MTA5WjAgMR4wHAYDVQQDExVtaW5pY2Egcm9vdCBjYSAzYTEzNTYwggEi
-MA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDc3P6cxcCZ7FQOQrYuigReSa8T
-IOPNKmlmX9OrTkPwjThiMNEETYKO1ea99yXPK36LUHC6OLmZ9jVQW2Ny1qwQCOy6
-TrquhnwKgtkBMDAZBLySSEXYdKL3r0jA4sflW130/OLwhstU/yv0J8+pj7eSVOR3
-zJBnYd1AqnXHRSwQm299KXgqema7uwsa8cgjrXsBzAhrwrvYlVhpWFSv3lQRDFQg
-c5Z/ZDV9i26qiaJsCCmdisJZWN7N2luUgxdRqzZ4Cr2Xoilg3T+hkb2y/d6ttsPA
-kaSA+pq3q6Qa7/qfGdT5WuUkcHpvKNRWqnwT9rCYlmG00r3hGgc42D/z1VvfAgMB
-AAGjgYYwgYMwDgYDVR0PAQH/BAQDAgKEMB0GA1UdJQQWMBQGCCsGAQUFBwMBBggr
-BgEFBQcDAjASBgNVHRMBAf8ECDAGAQH/AgEAMB0GA1UdDgQWBBQ4zzDRUaXHVKql
-STWkULGU4zGZpTAfBgNVHSMEGDAWgBQ4zzDRUaXHVKqlSTWkULGU4zGZpTANBgkq
-hkiG9w0BAQsFAAOCAQEArbDHhEjGedjb/YjU80aFTPWOMRjgyfQaPPgyxwX6Dsid
-1i2H1x4ud4ntz3sTZZxdQIrOqtlIWTWVCjpStwGxaC+38SdreiTTwy/nikXGa/6W
-ZyQRppR3agh/pl5LHVO6GsJz3YHa7wQhEhj3xsRwa9VrRXgHbLGbPOFVRTHPjaPg
-Gtsv2PN3f67DsPHF47ASqyOIRpLZPQmZIw6D3isJwfl+8CzvlB1veO0Q3uh08IJc
-fspYQXvFBzYa64uKxNAJMi4Pby8cf4r36Wnb7cL4ho3fOHgAltxdW8jgibRzqZpQ
-QKyxn2jX7kxeUDt0hFDJE8lOrhP73m66eBNzxe//FQ==
------END CERTIFICATE-----`
-	ariLeafCertID = "MFswCwYJYIZIAWUDBAIBBCCeWLRusNLb--vmWOkxm34qDjTMWkc3utIhOMoMwKDqbgQg2iiKWySZrD-6c88HMZ6vhIHZPamChLlzGHeZ7pTS8jYCCD6jRWhlRB8c"
+	ariLeafCertID = "OM8w0VGlx1SqpUk1pFCxlOMxmaU.PqNFaGVEHxw"
 )
 
 func Test_makeCertID(t *testing.T) {
 	leaf, err := certcrypto.ParsePEMCertificate([]byte(ariLeafPEM))
 	require.NoError(t, err)
-	issuer, err := certcrypto.ParsePEMCertificate([]byte(ariIssuerPEM))
-	require.NoError(t, err)
 
-	actual, err := makeCertID(leaf, issuer, crypto.SHA256.String())
+	actual, err := makeARICertID(leaf)
 	require.NoError(t, err)
 	assert.Equal(t, ariLeafCertID, actual)
 }
 
 func TestCertifier_GetRenewalInfo(t *testing.T) {
 	leaf, err := certcrypto.ParsePEMCertificate([]byte(ariLeafPEM))
-	require.NoError(t, err)
-	issuer, err := certcrypto.ParsePEMCertificate([]byte(ariIssuerPEM))
 	require.NoError(t, err)
 
 	// Test with a fake API.
@@ -109,7 +84,7 @@ func TestCertifier_GetRenewalInfo(t *testing.T) {
 
 	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
 
-	ri, err := certifier.GetRenewalInfo(RenewalInfoRequest{leaf, issuer, crypto.SHA256.String()})
+	ri, err := certifier.GetRenewalInfo(RenewalInfoRequest{leaf})
 	require.NoError(t, err)
 	require.NotNil(t, ri)
 	assert.Equal(t, "2020-03-17T17:51:09Z", ri.SuggestedWindow.Start.Format(time.RFC3339))
@@ -119,8 +94,6 @@ func TestCertifier_GetRenewalInfo(t *testing.T) {
 
 func TestCertifier_GetRenewalInfo_errors(t *testing.T) {
 	leaf, err := certcrypto.ParsePEMCertificate([]byte(ariLeafPEM))
-	require.NoError(t, err)
-	issuer, err := certcrypto.ParsePEMCertificate([]byte(ariIssuerPEM))
 	require.NoError(t, err)
 
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -135,7 +108,7 @@ func TestCertifier_GetRenewalInfo_errors(t *testing.T) {
 		{
 			desc:       "API timeout",
 			httpClient: &http.Client{Timeout: 500 * time.Millisecond}, // HTTP client that times out after 500ms.
-			request:    RenewalInfoRequest{leaf, issuer, crypto.SHA256.String()},
+			request:    RenewalInfoRequest{leaf},
 			handler: func(w http.ResponseWriter, r *http.Request) {
 				// API that takes 2ms to respond.
 				time.Sleep(2 * time.Millisecond)
@@ -144,17 +117,9 @@ func TestCertifier_GetRenewalInfo_errors(t *testing.T) {
 		{
 			desc:       "API error",
 			httpClient: http.DefaultClient,
-			request:    RenewalInfoRequest{leaf, issuer, crypto.SHA256.String()},
+			request:    RenewalInfoRequest{leaf},
 			handler: func(w http.ResponseWriter, r *http.Request) {
 				// API that responds with error instead of renewal info.
-				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-			},
-		},
-		{
-			desc:       "Issuer certificate is nil",
-			httpClient: http.DefaultClient,
-			request:    RenewalInfoRequest{leaf, nil, crypto.SHA256.String()},
-			handler: func(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			},
 		},
@@ -182,8 +147,6 @@ func TestCertifier_GetRenewalInfo_errors(t *testing.T) {
 
 func TestCertifier_UpdateRenewalInfo(t *testing.T) {
 	leaf, err := certcrypto.ParsePEMCertificate([]byte(ariLeafPEM))
-	require.NoError(t, err)
-	issuer, err := certcrypto.ParsePEMCertificate([]byte(ariIssuerPEM))
 	require.NoError(t, err)
 
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -217,14 +180,12 @@ func TestCertifier_UpdateRenewalInfo(t *testing.T) {
 
 	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
 
-	err = certifier.UpdateRenewalInfo(RenewalInfoRequest{leaf, issuer, crypto.SHA256.String()})
+	err = certifier.UpdateRenewalInfo(RenewalInfoRequest{leaf})
 	require.NoError(t, err)
 }
 
 func TestCertifier_UpdateRenewalInfo_errors(t *testing.T) {
 	leaf, err := certcrypto.ParsePEMCertificate([]byte(ariLeafPEM))
-	require.NoError(t, err)
-	issuer, err := certcrypto.ParsePEMCertificate([]byte(ariIssuerPEM))
 	require.NoError(t, err)
 
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -236,11 +197,7 @@ func TestCertifier_UpdateRenewalInfo_errors(t *testing.T) {
 	}{
 		{
 			desc:    "API error",
-			request: RenewalInfoRequest{leaf, issuer, crypto.SHA256.String()},
-		},
-		{
-			desc:    "Certificate is nil",
-			request: RenewalInfoRequest{nil, issuer, crypto.SHA256.String()},
+			request: RenewalInfoRequest{leaf},
 		},
 	}
 

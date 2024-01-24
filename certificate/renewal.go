@@ -1,14 +1,11 @@
 package certificate
 
 import (
-	"crypto"
 	"crypto/x509"
-	"crypto/x509/pkix"
-	"encoding/asn1"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"math/big"
 	"math/rand"
 	"strings"
 	"time"
@@ -18,11 +15,7 @@ import (
 
 // RenewalInfoRequest contains the necessary renewal information.
 type RenewalInfoRequest struct {
-	Cert   *x509.Certificate
-	Issuer *x509.Certificate
-	// HashName must be the string representation of a crypto.Hash constant in the golang.org/x/crypto package (e.g. "SHA-256").
-	// The correct value depends on the algorithm expected by the ACME server's ARI implementation.
-	HashName string
+	Cert *x509.Certificate
 }
 
 // RenewalInfoResponse is a wrapper around acme.RenewalInfoResponse that provides a method for determining when to renew a certificate.
@@ -72,7 +65,7 @@ func (r *RenewalInfoResponse) ShouldRenewAt(now time.Time, willingToSleep time.D
 //
 // https://datatracker.ietf.org/doc/draft-ietf-acme-ari
 func (c *Certifier) GetRenewalInfo(req RenewalInfoRequest) (*RenewalInfoResponse, error) {
-	certID, err := makeCertID(req.Cert, req.Issuer, req.HashName)
+	certID, err := makeARICertID(req.Cert)
 	if err != nil {
 		return nil, fmt.Errorf("error making certID: %w", err)
 	}
@@ -100,7 +93,7 @@ func (c *Certifier) GetRenewalInfo(req RenewalInfoRequest) (*RenewalInfoResponse
 //
 // https://datatracker.ietf.org/doc/draft-ietf-acme-ari
 func (c *Certifier) UpdateRenewalInfo(req RenewalInfoRequest) error {
-	certID, err := makeCertID(req.Cert, req.Issuer, req.HashName)
+	certID, err := makeARICertID(req.Cert)
 	if err != nil {
 		return fmt.Errorf("error making certID: %w", err)
 	}
@@ -116,89 +109,14 @@ func (c *Certifier) UpdateRenewalInfo(req RenewalInfoRequest) error {
 	return nil
 }
 
-// makeCertID returns a base64url-encoded string that uniquely identifies a certificate to endpoints
-// that implement the draft-ietf-acme-ari specification: https://datatracker.ietf.org/doc/draft-ietf-acme-ari.
-// hashName must be the string representation of a crypto.Hash constant in the golang.org/x/crypto package.
-// Supported hash functions are SHA-1, SHA-256, SHA-384, and SHA-512.
-func makeCertID(leaf, issuer *x509.Certificate, hashName string) (string, error) {
+// makeARICertID constructs a certificate identifier as described in draft-ietf-acme-ari-02, section 4.1.
+func makeARICertID(leaf *x509.Certificate) (string, error) {
 	if leaf == nil {
-		return "", fmt.Errorf("leaf certificate is nil")
-	}
-	if issuer == nil {
-		return "", fmt.Errorf("issuer certificate is nil")
+		return "", errors.New("leaf certificate is nil")
 	}
 
-	var hashFunc crypto.Hash
-	var oid asn1.ObjectIdentifier
-
-	switch hashName {
-	// The following correlation of hashFunc to OID is copied from a private mapping in golang.org/x/crypto/ocsp:
-	// https://cs.opensource.google/go/x/crypto/+/refs/tags/v0.8.0:ocsp/ocsp.go;l=156
-	case crypto.SHA1.String():
-		hashFunc = crypto.SHA1
-		oid = asn1.ObjectIdentifier([]int{1, 3, 14, 3, 2, 26})
-
-	case crypto.SHA256.String():
-		hashFunc = crypto.SHA256
-		oid = asn1.ObjectIdentifier([]int{2, 16, 840, 1, 101, 3, 4, 2, 1})
-
-	case crypto.SHA384.String():
-		hashFunc = crypto.SHA384
-		oid = asn1.ObjectIdentifier([]int{2, 16, 840, 1, 101, 3, 4, 2, 2})
-
-	case crypto.SHA512.String():
-		hashFunc = crypto.SHA512
-		oid = asn1.ObjectIdentifier([]int{2, 16, 840, 1, 101, 3, 4, 2, 3})
-
-	default:
-		return "", fmt.Errorf("hashName %q is not supported by this package", hashName)
-	}
-
-	if !hashFunc.Available() {
-		// This should never happen.
-		return "", fmt.Errorf("hash function %q is not available on your platform", hashFunc)
-	}
-
-	var spki struct {
-		Algorithm pkix.AlgorithmIdentifier
-		PublicKey asn1.BitString
-	}
-
-	_, err := asn1.Unmarshal(issuer.RawSubjectPublicKeyInfo, &spki)
-	if err != nil {
-		return "", err
-	}
-	h := hashFunc.New()
-	h.Write(spki.PublicKey.RightAlign())
-	issuerKeyHash := h.Sum(nil)
-
-	h.Reset()
-	h.Write(issuer.RawSubject)
-	issuerNameHash := h.Sum(nil)
-
-	type certID struct {
-		HashAlgorithm  pkix.AlgorithmIdentifier
-		IssuerNameHash []byte
-		IssuerKeyHash  []byte
-		SerialNumber   *big.Int
-	}
-
-	// DER-encode the CertID ASN.1 sequence [RFC6960].
-	certIDBytes, err := asn1.Marshal(certID{
-		HashAlgorithm: pkix.AlgorithmIdentifier{
-			Algorithm: oid,
-		},
-		IssuerNameHash: issuerNameHash,
-		IssuerKeyHash:  issuerKeyHash,
-		SerialNumber:   leaf.SerialNumber,
-	})
-	if err != nil {
-		return "", err
-	}
-
-	// base64url-encode [RFC4648] the bytes of the DER-encoded CertID ASN.1 sequence [RFC6960].
-	encodedBytes := base64.URLEncoding.EncodeToString(certIDBytes)
-
-	// Any trailing '=' characters MUST be stripped.
-	return strings.TrimRight(encodedBytes, "="), nil
+	return fmt.Sprintf("%s.%s",
+		strings.TrimRight(base64.URLEncoding.EncodeToString(leaf.AuthorityKeyId), "="),
+		strings.TrimRight(base64.URLEncoding.EncodeToString(leaf.SerialNumber.Bytes()), "="),
+	), nil
 }

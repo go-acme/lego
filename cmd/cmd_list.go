@@ -84,10 +84,15 @@ func listCertificates(ctx *cli.Context) error {
 			return err
 		}
 
+		name, err := certcrypto.GetCertificateMainDomain(pCert)
+		if err != nil {
+			return err
+		}
+
 		if names {
-			fmt.Println(pCert.Subject.CommonName)
+			fmt.Println(name)
 		} else {
-			fmt.Println("  Certificate Name:", pCert.Subject.CommonName)
+			fmt.Println("  Certificate Name:", name)
 			fmt.Println("    Domains:", strings.Join(pCert.DNSNames, ", "))
 			fmt.Println("    Expiry Date:", pCert.NotAfter)
 			fmt.Println("    Certificate Path:", filename)

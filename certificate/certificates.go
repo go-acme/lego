@@ -243,7 +243,6 @@ func (c *Certifier) getForOrder(domains []string, order acme.ExtendedOrder, bund
 		}
 	}
 
-	// Determine certificate name(s) based on the authorization resources
 	commonName := ""
 	if len(domains[0]) <= 64 {
 		commonName = domains[0]
@@ -255,10 +254,12 @@ func (c *Certifier) getForOrder(domains []string, order acme.ExtendedOrder, bund
 	//   Clients SHOULD NOT make any assumptions about the sort order of
 	//   "identifiers" or "authorizations" elements in the returned order
 	//   object.
-	san := []string{}
+
+	var san []string
 	if commonName != "" {
-		san = []string{commonName}
+		san = append(san, commonName)
 	}
+
 	for _, auth := range order.Identifiers {
 		if auth.Value != commonName {
 			san = append(san, auth.Value)
@@ -603,8 +604,13 @@ func (c *Certifier) Get(url string, bundle bool) (*Resource, error) {
 		return nil, err
 	}
 
+	domain, err := certcrypto.GetCertificateMainDomain(x509Certs[0])
+	if err != nil {
+		return nil, err
+	}
+
 	return &Resource{
-		Domain:            x509Certs[0].Subject.CommonName,
+		Domain:            domain,
 		Certificate:       cert,
 		IssuerCertificate: issuer,
 		CertURL:           url,

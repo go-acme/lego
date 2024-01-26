@@ -228,7 +228,10 @@ func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *Certificat
 		log.Fatal(err)
 	}
 
-	domain := csr.Subject.CommonName
+	domain, err := certcrypto.GetCSRMainDomain(csr)
+	if err != nil {
+		log.Fatalf("Error: %v", err)
+	}
 
 	// load the cert resource from files.
 	// We store the certificate, private key and metadata in different files

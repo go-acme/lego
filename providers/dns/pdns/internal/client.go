@@ -30,10 +30,11 @@ type Client struct {
 }
 
 // NewClient creates a new Client.
-func NewClient(host *url.URL, serverName string, apiKey string) *Client {
+func NewClient(host *url.URL, serverName string, apiVersion int, apiKey string) *Client {
 	return &Client{
 		serverName: serverName,
 		apiKey:     apiKey,
+		apiVersion: apiVersion,
 		Host:       host,
 		HTTPClient: &http.Client{Timeout: 5 * time.Second},
 	}
@@ -41,10 +42,6 @@ func NewClient(host *url.URL, serverName string, apiKey string) *Client {
 
 func (c *Client) APIVersion() int {
 	return c.apiVersion
-}
-
-func (c *Client) SetCustomAPIVersion(version int) {
-	c.apiVersion = version
 }
 
 func (c *Client) SetAPIVersion(ctx context.Context) error {

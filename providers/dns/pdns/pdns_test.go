@@ -85,31 +85,22 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		{
 			desc:   "success",
 			apiKey: "123",
-			host: func() *url.URL {
-				u, _ := url.Parse("http://example.com")
-				return u
-			}(),
+			host:   mustParse("http://example.com"),
 		},
 		{
 			desc:             "success custom API version",
 			apiKey:           "123",
 			customAPIVersion: 1,
-			host: func() *url.URL {
-				u, _ := url.Parse("http://example.com")
-				return u
-			}(),
+			host:             mustParse("http://example.com"),
 		},
 		{
 			desc:     "missing credentials",
 			expected: "pdns: API key missing",
 		},
 		{
-			desc:   "missing API key",
-			apiKey: "",
-			host: func() *url.URL {
-				u, _ := url.Parse("http://example.com")
-				return u
-			}(),
+			desc:     "missing API key",
+			apiKey:   "",
+			host:     mustParse("http://example.com"),
 			expected: "pdns: API key missing",
 		},
 		{
@@ -124,7 +115,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			config := NewDefaultConfig()
 			config.APIKey = test.apiKey
 			config.Host = test.host
-			config.CustomAPIVersion = test.customAPIVersion
+			config.APIVersion = test.customAPIVersion
 
 			p, err := NewDNSProviderConfig(config)
 
@@ -153,4 +144,12 @@ func TestLivePresentAndCleanup(t *testing.T) {
 
 	err = provider.CleanUp(envTest.GetDomain(), "", "123d==")
 	require.NoError(t, err)
+}
+
+func mustParse(rawURL string) *url.URL {
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		panic(err)
+	}
+	return u
 }

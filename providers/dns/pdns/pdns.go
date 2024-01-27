@@ -23,7 +23,7 @@ const (
 	EnvAPIURL = envNamespace + "API_URL"
 
 	EnvTTL                = envNamespace + "TTL"
-	EnvCustomAPIVersion   = envNamespace + "CUSTOM_API_VERSION"
+	EnvAPIVersion         = envNamespace + "API_VERSION"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
@@ -35,21 +35,21 @@ type Config struct {
 	APIKey             string
 	Host               *url.URL
 	ServerName         string
+	APIVersion         int
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
-	CustomAPIVersion   int
 	HTTPClient         *http.Client
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
+		ServerName:         env.GetOrDefaultString(EnvServerName, "localhost"),
+		APIVersion:         env.GetOrDefaultInt(EnvAPIVersion, 0),
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
-		CustomAPIVersion:   env.GetOrDefaultInt(EnvCustomAPIVersion, 0),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 120*time.Second),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
-		ServerName:         env.GetOrDefaultString(EnvServerName, "localhost"),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
@@ -97,12 +97,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("pdns: API URL missing")
 	}
 
-	client := internal.NewClient(config.Host, config.ServerName, config.APIKey)
+	client := internal.NewClient(config.Host, config.ServerName, config.APIVersion, config.APIKey)
 
-	if config.CustomAPIVersion > 0 {
-		client.SetCustomAPIVersion(config.CustomAPIVersion)
-		log.Infof("pdns: using custom API version %d", config.CustomAPIVersion)
-	} else {
+	if config.APIVersion <= 0 {
 		err := client.SetAPIVersion(context.Background())
 		if err != nil {
 			log.Warnf("pdns: failed to get API version %v", err)

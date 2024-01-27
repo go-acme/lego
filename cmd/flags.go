@@ -133,13 +133,21 @@ func CreateFlags(defaultPath string) []cli.Flag {
 			Usage: "Generate an additional .pem (base64) file by concatenating the .key and .crt files together.",
 		},
 		&cli.BoolFlag{
-			Name:  "pfx",
-			Usage: "Generate an additional .pfx (PKCS#12) file by concatenating the .key and .crt and issuer .crt files together.",
+			Name:    "pfx",
+			Usage:   "Generate an additional .pfx (PKCS#12) file by concatenating the .key and .crt and issuer .crt files together.",
+			EnvVars: []string{"LEGO_PFX"},
 		},
 		&cli.StringFlag{
-			Name:  "pfx.pass",
-			Usage: "The password used to encrypt the .pfx (PCKS#12) file.",
-			Value: pkcs12.DefaultPassword,
+			Name:    "pfx.pass",
+			Usage:   "The password used to encrypt the .pfx (PCKS#12) file.",
+			Value:   pkcs12.DefaultPassword,
+			EnvVars: []string{"LEGO_PFX_PASSWORD"},
+		},
+		&cli.StringFlag{
+			Name:    "pfx.format",
+			Usage:   "The encoding format to use when encrypting the .pfx (PCKS#12) file. Supported: RC2, DES, SHA256.",
+			Value:   "RC2",
+			EnvVars: []string{"LEGO_PFX_FORMAT"},
 		},
 		&cli.IntFlag{
 			Name:  "cert.timeout",

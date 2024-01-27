@@ -23,6 +23,7 @@ const (
 	EnvAPIURL = envNamespace + "API_URL"
 
 	EnvTTL                = envNamespace + "TTL"
+	EnvAPIVersion         = envNamespace + "API_VERSION"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
@@ -34,6 +35,7 @@ type Config struct {
 	APIKey             string
 	Host               *url.URL
 	ServerName         string
+	APIVersion         int
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
@@ -43,10 +45,11 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
+		ServerName:         env.GetOrDefaultString(EnvServerName, "localhost"),
+		APIVersion:         env.GetOrDefaultInt(EnvAPIVersion, 0),
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 120*time.Second),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
-		ServerName:         env.GetOrDefaultString(EnvServerName, "localhost"),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
@@ -94,11 +97,13 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("pdns: API URL missing")
 	}
 
-	client := internal.NewClient(config.Host, config.ServerName, config.APIKey)
+	client := internal.NewClient(config.Host, config.ServerName, config.APIVersion, config.APIKey)
 
-	err := client.SetAPIVersion(context.Background())
-	if err != nil {
-		log.Warnf("pdns: failed to get API version %v", err)
+	if config.APIVersion <= 0 {
+		err := client.SetAPIVersion(context.Background())
+		if err != nil {
+			log.Warnf("pdns: failed to get API version %v", err)
+		}
 	}
 
 	return &DNSProvider{config: config, client: client}, nil

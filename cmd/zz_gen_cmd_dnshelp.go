@@ -2078,6 +2078,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "PDNS_API_VERSION":	Skip API version autodetection and use the provided version number.`)
 		ew.writeln(`	- "PDNS_HTTP_TIMEOUT":	API request timeout`)
 		ew.writeln(`	- "PDNS_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "PDNS_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)

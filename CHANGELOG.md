@@ -1,5 +1,39 @@
 # Changelog
 
+## [v4.15.0] - 2024-01-28
+
+### Added:
+- **[dnsprovider]** Add DNS provider for http.net
+- **[dnsprovider]** Add DNS provider for Webnames
+
+### Changed:
+- **[cli]** Add environment variable for specifying alternate directory URL
+- **[cli]** Add format option for PFX encoding
+- **[lib]** Support simplified issuance for very long domain names at Let&#39;s Encrypt
+- **[lib]** Update CertID format as per draft-ietf-acme-ari-02
+- **[dnsprovider]** azuredns: allow OIDC authentication
+- **[dnsprovider]** azuredns: provide the ability to select authentication methods
+- **[dnsprovider]** efficientip: add insecure skip verify option
+- **[dnsprovider]** gandiv5: add Personal Access Token support
+- **[dnsprovider]** gcloud: support GCE_ZONE_ID to bypass zone list
+- **[dnsprovider]** liquidweb: add LWAPI_ prefix for env vars
+- **[dnsprovider]** liquidweb: detect zone automatically
+- **[dnsprovider]** pdns: optional custom API version
+- **[dnsprovider]** regru: client certificate support
+- **[dnsprovider]** regru: HTTP method changed to POST
+- **[dnsprovider]** scaleway: add cname support
+
+### Fixed:
+- **[dnsprovider]** cloudru: change default URLs
+- **[dnsprovider]** constellix: follow rate limiting headers
+- **[dnsprovider]** desec: increase default propagation interval
+- **[dnsprovider]** gandiv5: Add &#34;Bearer&#34; prefix to the auth header
+- **[dnsprovider]** inwx: improve sleep calculation
+- **[dnsprovider]** inwx: wait before generating new TOTP TANs
+- **[dnsprovider]** ionos: fix DNS record removal
+- **[dnsprovider]** ipv64: remove unused option
+- **[dnsprovider]** nifcloud: fix API requests
+- **[dnsprovider]** otc: sequential challenge
 
 ## [v4.14.1] - 2023-09-20
 

@@ -42,7 +42,7 @@ require (
 	github.com/linode/linodego v1.17.2
 	github.com/liquidweb/liquidweb-go v1.6.4
 	github.com/mattn/go-isatty v0.0.20
-	github.com/miekg/dns v1.1.55
+	github.com/miekg/dns v1.1.58
 	github.com/mimuret/golang-iij-dpf v0.9.1
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04

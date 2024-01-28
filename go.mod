@@ -31,7 +31,7 @@ require (
 	github.com/cpu/goacmedns v0.1.1
 	github.com/dnsimple/dnsimple-go v1.2.0
 	github.com/exoscale/egoscale v0.102.3
-	github.com/go-jose/go-jose/v3 v3.0.0
+	github.com/go-jose/go-jose/v3 v3.0.1
 	github.com/google/go-querystring v1.1.0
 	github.com/gophercloud/gophercloud v1.0.0
 	github.com/gophercloud/utils v0.0.0-20210216074907-f6de111f2eae

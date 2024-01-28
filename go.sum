@@ -463,8 +463,8 @@ github.com/nrdcg/dnspod-go v0.4.0 h1:c/jn1mLZNKF3/osJ6mz3QPxTudvPArXTjpkmYj0uK6U
 github.com/nrdcg/dnspod-go v0.4.0/go.mod h1:vZSoFSFeQVm2gWLMkyX61LZ8HI3BaqtHZWgPTGKr6KQ=
 github.com/nrdcg/freemyip v0.2.0 h1:/GscavT4GVqAY13HExl5UyoB4wlchv6Cg5NYDGsUoJ8=
 github.com/nrdcg/freemyip v0.2.0/go.mod h1:HjF0Yz0lSb37HD2ihIyGz9esyGcxbCrrGFLPpKevbx4=
-github.com/nrdcg/goinwx v0.8.2 h1:RmjiHlEA+lzi3toXyPSaE6hWnBQ0+G+1u7w8C6Fpp4g=
-github.com/nrdcg/goinwx v0.8.2/go.mod h1:mnMSTi7CXBu2io4DzdOBoGFA1XclD0sEPWJaDhNgkA4=
+github.com/nrdcg/goinwx v0.10.0 h1:6W630bjDxQD6OuXKqrFRYVpTt0G/9GXXm3CeOrN0zJM=
+github.com/nrdcg/goinwx v0.10.0/go.mod h1:mnMSTi7CXBu2io4DzdOBoGFA1XclD0sEPWJaDhNgkA4=
 github.com/nrdcg/namesilo v0.2.1 h1:kLjCjsufdW/IlC+iSfAqj0iQGgKjlbUUeDJio5Y6eMg=
 github.com/nrdcg/namesilo v0.2.1/go.mod h1:lwMvfQTyYq+BbjJd30ylEG4GPSS6PII0Tia4rRpRiyw=
 github.com/nrdcg/nodion v0.1.0 h1:zLKaqTn2X0aDuBHHfyA1zFgeZfiCpmu/O9DM73okavw=

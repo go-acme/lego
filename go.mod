@@ -27,7 +27,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.19.3
 	github.com/cenkalti/backoff/v4 v4.2.1
 	github.com/civo/civogo v0.3.11
-	github.com/cloudflare/cloudflare-go v0.70.0
+	github.com/cloudflare/cloudflare-go v0.86.0
 	github.com/cpu/goacmedns v0.1.1
 	github.com/dnsimple/dnsimple-go v1.2.0
 	github.com/exoscale/egoscale v0.100.1
@@ -119,6 +119,7 @@ require (
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-errors/errors v1.0.1 // indirect
 	github.com/go-resty/resty/v2 v2.7.0 // indirect
+	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.3 // indirect

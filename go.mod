@@ -32,6 +32,7 @@ require (
 	github.com/dnsimple/dnsimple-go v1.2.0
 	github.com/exoscale/egoscale v0.102.3
 	github.com/go-jose/go-jose/v3 v3.0.1
+	github.com/go-viper/mapstructure/v2 v2.0.0-alpha.1
 	github.com/google/go-querystring v1.1.0
 	github.com/gophercloud/gophercloud v1.0.0
 	github.com/gophercloud/utils v0.0.0-20210216074907-f6de111f2eae
@@ -44,7 +45,6 @@ require (
 	github.com/mattn/go-isatty v0.0.20
 	github.com/miekg/dns v1.1.58
 	github.com/mimuret/golang-iij-dpf v0.9.1
-	github.com/mitchellh/mapstructure v1.5.0
 	github.com/namedotcom/go v0.0.0-20180403034216-08470befbe04
 	github.com/nrdcg/auroradns v1.1.0
 	github.com/nrdcg/bunny-go v0.0.0-20230728143221-c9dda82568d9
@@ -139,6 +139,7 @@ require (
 	github.com/labbsr0x/goh v1.0.1 // indirect
 	github.com/liquidweb/liquidweb-cli v0.6.9 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
+	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect

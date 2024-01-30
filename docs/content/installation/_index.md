@@ -36,7 +36,15 @@ docker run goacme/lego -h
   cd /usr/ports/security/lego && make install clean
   ```
 
-  [Homebrew](https://brew.sh/) user can install [lego](https://formulae.brew.sh/formula/lego) with:
+- [Gentoo](https://gitweb.gentoo.org/repo/proj/guru.git/tree/app-crypt/lego) (unofficial):
+
+  You can [enable GURU](https://wiki.gentoo.org/wiki/Project:GURU/Information_for_End_Users) repository and then:
+
+  ```bash
+  emerge app-crypt/lego
+  ```
+
+- [Homebrew](https://formulae.brew.sh/formula/lego) (unofficial):
 
   ```bash
   brew install lego

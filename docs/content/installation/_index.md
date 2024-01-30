@@ -44,7 +44,7 @@ docker run goacme/lego -h
   emerge app-crypt/lego
   ```
 
-- [Homebrew](https://brew.sh/) user can install [lego](https://formulae.brew.sh/formula/lego) with:
+- [Homebrew](https://formulae.brew.sh/formula/lego) (unofficial):
 
   ```bash
   brew install lego

@@ -17,17 +17,17 @@ jobs:
 
     steps:
 
-      # https://github.com/marketplace/actions/setup-go-environment
-      - name: Set up Go ${{ env.GO_VERSION }}
-        uses: actions/setup-go@v3
-        with:
-          go-version: ${{ env.GO_VERSION }}
-
       # https://github.com/marketplace/actions/checkout
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      # https://github.com/marketplace/actions/setup-go-environment
+      - name: Set up Go ${{ env.GO_VERSION }}
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
 
       - name: Generate DNS docs
         run: make generate-dns
@@ -42,7 +42,7 @@ jobs:
 
       # https://github.com/marketplace/actions/github-pages
       - name: Deploy to GitHub Pages
-        uses: crazy-max/ghaction-github-pages@v3
+        uses: crazy-max/ghaction-github-pages@v4
         with:
           target_branch: gh-pages
           build_dir: docs/public

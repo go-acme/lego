@@ -41,6 +41,14 @@ builds:
       - goos: openbsd
         goarch: arm
 
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '(?i)^chore:'
+      - '(?i)^Detach v[\d|.]+'
+      - '(?i)^Prepare release v[\d|.]+'
+
 archives:
   - id: lego
     name_template: '{{ .ProjectName }}_v{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}'

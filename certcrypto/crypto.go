@@ -88,7 +88,7 @@ func ParsePEMBundle(bundle []byte) ([]*x509.Certificate, error) {
 func ParsePEMPrivateKey(key []byte) (crypto.PrivateKey, error) {
 	keyBlockDER, _ := pem.Decode(key)
 	if keyBlockDER == nil {
-		return nil, fmt.Errorf("invalid PEM block")
+		return nil, errors.New("invalid PEM block")
 	}
 
 	if keyBlockDER.Type != "PRIVATE KEY" && !strings.HasSuffix(keyBlockDER.Type, " PRIVATE KEY") {

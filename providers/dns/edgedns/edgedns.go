@@ -120,7 +120,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	if err == nil && record == nil {
-		return fmt.Errorf("edgedns: unknown error")
+		return errors.New("edgedns: unknown error")
 	}
 
 	if record != nil {
@@ -175,11 +175,11 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	if existingRec == nil {
-		return fmt.Errorf("edgedns: unknown failure")
+		return errors.New("edgedns: unknown failure")
 	}
 
 	if len(existingRec.Target) == 0 {
-		return fmt.Errorf("edgedns: TXT record is invalid")
+		return errors.New("edgedns: TXT record is invalid")
 	}
 
 	if !containsValue(existingRec.Target, info.Value) {

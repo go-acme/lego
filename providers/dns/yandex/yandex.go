@@ -73,7 +73,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.PddToken == "" {
-		return nil, fmt.Errorf("yandex: credentials missing")
+		return nil, errors.New("yandex: credentials missing")
 	}
 
 	client, err := internal.NewClient(config.PddToken)

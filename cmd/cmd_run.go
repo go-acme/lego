@@ -21,7 +21,7 @@ func createRun() *cli.Command {
 		Before: func(ctx *cli.Context) error {
 			// we require either domains or csr, but not both
 			hasDomains := len(ctx.StringSlice("domains")) > 0
-			hasCsr := len(ctx.String("csr")) > 0
+			hasCsr := ctx.String("csr") != ""
 			if hasDomains && hasCsr {
 				log.Fatal("Please specify either --domains/-d or --csr/-c, but not both")
 			}

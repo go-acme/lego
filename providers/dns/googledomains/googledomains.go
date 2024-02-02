@@ -3,6 +3,7 @@ package googledomains
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -62,11 +63,11 @@ func NewDNSProvider() (*DNSProvider, error) {
 // NewDNSProviderConfig returns the Google Domains DNS provider with the provided config.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
-		return nil, fmt.Errorf("googledomains: the configuration of the DNS provider is nil")
+		return nil, errors.New("googledomains: the configuration of the DNS provider is nil")
 	}
 
 	if config.AccessToken == "" {
-		return nil, fmt.Errorf("googledomains: access token is missing")
+		return nil, errors.New("googledomains: access token is missing")
 	}
 
 	service, err := acmedns.NewService(context.Background(), option.WithHTTPClient(config.HTTPClient))

@@ -26,4 +26,5 @@ lego --email you@example.com --dns cpanel --domains my.example.org run
     CPANEL_REGION = "The region"
 
 [Links]
-  API = "https://api.docs.cpanel.net/openapi/cpanel/tag/DNS/"
+  API_CPANEL = "https://api.docs.cpanel.net/openapi/cpanel/tag/DNS/"
+  API_WHM = "https://api.docs.cpanel.net/openapi/whm/operation/cpanel/"

@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/go-acme/lego/v4/log"
 	"github.com/miekg/dns"
 )
 
@@ -27,7 +28,13 @@ func (d DNSClient) SOACall(fqdn, ns string) (*dns.SOA, error) {
 		return nil, err
 	}
 
+	log.Println(in)
+
 	if len(in.Answer) > 0 {
+		if len(in.Ns) > 0 {
+			return d.SOACall(in.Ns[0].(*dns.SOA).Hdr.Name, ns)
+		}
+
 		return nil, fmt.Errorf("empty answer for %s in %s", fqdn, ns)
 	}
 

@@ -32,7 +32,10 @@ func (d DNSClient) SOACall(fqdn, ns string) (*dns.SOA, error) {
 
 	if len(in.Answer) > 0 {
 		if len(in.Ns) > 0 {
-			return d.SOACall(in.Ns[0].(*dns.SOA).Hdr.Name, ns)
+			name := in.Ns[0].(*dns.SOA).Hdr.Name
+			if fqdn != name {
+				return d.SOACall(name, ns)
+			}
 		}
 
 		return nil, fmt.Errorf("empty answer for %s in %s", fqdn, ns)

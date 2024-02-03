@@ -125,7 +125,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("cpanel: could not find SOA for domain %q (%s) in %s: %w", domain, info.EffectiveFQDN, d.config.Nameserver, err)
 	}
 
-	zoneInfo, err := d.client.FetchZoneInformation(ctx, soa.Hdr.Name)
+	zoneInfo, err := d.client.FetchZoneInformation(ctx, dns01.UnFqdn(soa.Hdr.Name))
 	if err != nil {
 		return fmt.Errorf("cpanel: fetch zone information: %w", err)
 	}
@@ -192,7 +192,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("cpanel: could not find SOA for domain %q (%s) in %s: %w", domain, info.EffectiveFQDN, d.config.Nameserver, err)
 	}
 
-	zoneInfo, err := d.client.FetchZoneInformation(ctx, soa.Hdr.Name)
+	zoneInfo, err := d.client.FetchZoneInformation(ctx, dns01.UnFqdn(soa.Hdr.Name))
 	if err != nil {
 		return fmt.Errorf("cpanel: fetch zone information: %w", err)
 	}

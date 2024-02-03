@@ -30,9 +30,10 @@ func (d DNSClient) SOACall(fqdn, ns string) (*dns.SOA, error) {
 
 	log.Println(in)
 
-	if len(in.Answer) > 0 {
+	if len(in.Answer) <= 0 {
 		if len(in.Ns) > 0 {
 			name := in.Ns[0].(*dns.SOA).Hdr.Name
+			fmt.Println(fqdn != name)
 			if fqdn != name {
 				return d.SOACall(name, ns)
 			}

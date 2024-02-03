@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/go-acme/lego/v4/log"
 	"github.com/miekg/dns"
 )
 
@@ -18,28 +17,25 @@ func NewDNSClient(timeout time.Duration) *DNSClient {
 	return &DNSClient{timeout: timeout}
 }
 
-func (d DNSClient) SOACall(fqdn, ns string) (*dns.SOA, error) {
+func (d DNSClient) SOACall(fqdn, nameserver string) (*dns.SOA, error) {
 	m := new(dns.Msg)
 	m.SetQuestion(fqdn, dns.TypeSOA)
 	m.SetEdns0(4096, false)
 
-	in, err := d.sendDNSQuery(m, ns)
+	in, err := d.sendDNSQuery(m, nameserver)
 	if err != nil {
 		return nil, err
 	}
 
-	log.Println(in)
-
 	if len(in.Answer) <= 0 {
 		if len(in.Ns) > 0 {
 			name := in.Ns[0].(*dns.SOA).Hdr.Name
-			fmt.Println(fqdn != name)
 			if fqdn != name {
-				return d.SOACall(name, ns)
+				return d.SOACall(name, nameserver)
 			}
 		}
 
-		return nil, fmt.Errorf("empty answer for %s in %s", fqdn, ns)
+		return nil, fmt.Errorf("empty answer for %s in %s", fqdn, nameserver)
 	}
 
 	for _, rr := range in.Answer {
@@ -48,7 +44,7 @@ func (d DNSClient) SOACall(fqdn, ns string) (*dns.SOA, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("SOA not found for %s in %s", fqdn, ns)
+	return nil, fmt.Errorf("SOA not found for %s in %s", fqdn, nameserver)
 }
 
 func (d DNSClient) sendDNSQuery(m *dns.Msg, ns string) (*dns.Msg, error) {

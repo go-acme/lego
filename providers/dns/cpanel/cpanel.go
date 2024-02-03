@@ -125,7 +125,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("cpanel: could not find SOA for domain %q (%s) in %s: %w", domain, info.EffectiveFQDN, d.config.Nameserver, err)
 	}
 
-	zoneInfo, err := d.client.FetchZoneInformation(ctx, dns01.UnFqdn(soa.Hdr.Name))
+	zone := dns01.UnFqdn(soa.Hdr.Name)
+
+	zoneInfo, err := d.client.FetchZoneInformation(ctx, zone)
 	if err != nil {
 		return fmt.Errorf("cpanel: fetch zone information: %w", err)
 	}
@@ -152,7 +154,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if !found {
 		record.Data = []string{info.Value}
 
-		_, err = d.client.AddRecord(ctx, soa.Serial, soa.Hdr.Name, record)
+		_, err = d.client.AddRecord(ctx, soa.Serial, zone, record)
 		if err != nil {
 			return fmt.Errorf("cpanel: add record: %w", err)
 		}
@@ -174,7 +176,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	record.Data = append(record.Data, info.Value)
 
-	_, err = d.client.EditRecord(ctx, soa.Serial, soa.Hdr.Name, record)
+	_, err = d.client.EditRecord(ctx, soa.Serial, zone, record)
 	if err != nil {
 		return fmt.Errorf("cpanel: edit record: %w", err)
 	}
@@ -192,7 +194,9 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("cpanel: could not find SOA for domain %q (%s) in %s: %w", domain, info.EffectiveFQDN, d.config.Nameserver, err)
 	}
 
-	zoneInfo, err := d.client.FetchZoneInformation(ctx, dns01.UnFqdn(soa.Hdr.Name))
+	zone := dns01.UnFqdn(soa.Hdr.Name)
+
+	zoneInfo, err := d.client.FetchZoneInformation(ctx, zone)
 	if err != nil {
 		return fmt.Errorf("cpanel: fetch zone information: %w", err)
 	}
@@ -229,7 +233,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	// Delete record.
 	if len(newData) == 0 {
-		err = d.client.DeleteRecord(ctx, soa.Serial, soa.Hdr.Name, existingRecord.LineIndex)
+		err = d.client.DeleteRecord(ctx, soa.Serial, zone, existingRecord.LineIndex)
 		if err != nil {
 			return fmt.Errorf("cpanel: delete record: %w", err)
 		}
@@ -246,7 +250,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		LineIndex:  existingRecord.LineIndex,
 	}
 
-	_, err = d.client.EditRecord(ctx, soa.Serial, soa.Hdr.Name, record)
+	_, err = d.client.EditRecord(ctx, soa.Serial, zone, record)
 	if err != nil {
 		return fmt.Errorf("cpanel: edit record: %w", err)
 	}

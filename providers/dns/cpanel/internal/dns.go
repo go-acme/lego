@@ -27,11 +27,10 @@ func (d DNSClient) SOACall(fqdn, nameserver string) (*dns.SOA, error) {
 		return nil, err
 	}
 
-	if len(in.Answer) <= 0 {
+	if len(in.Answer) == 0 {
 		if len(in.Ns) > 0 {
-			name := in.Ns[0].(*dns.SOA).Hdr.Name
-			if fqdn != name {
-				return d.SOACall(name, nameserver)
+			if soa, ok := in.Ns[0].(*dns.SOA); ok && fqdn != soa.Hdr.Name {
+				return d.SOACall(soa.Hdr.Name, nameserver)
 			}
 		}
 

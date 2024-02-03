@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/go-acme/lego/v4/providers/dns/cpanel/internal/shared"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -57,7 +58,7 @@ func TestClient_FetchZoneInformation(t *testing.T) {
 	zoneInfo, err := client.FetchZoneInformation(context.Background(), "example.com")
 	require.NoError(t, err)
 
-	expected := []ZoneRecord{{
+	expected := []shared.ZoneRecord{{
 		LineIndex:  22,
 		Type:       "record",
 		DataB64:    []string{"dGV4YXMuY29tLg=="},
@@ -81,7 +82,7 @@ func TestClient_FetchZoneInformation_error(t *testing.T) {
 func TestClient_AddRecord(t *testing.T) {
 	client := setupTest(t, "/DNS/mass_edit_zone", "update-zone.json")
 
-	record := Record{
+	record := shared.Record{
 		DName:      "example",
 		TTL:        14400,
 		RecordType: "TXT",
@@ -91,7 +92,7 @@ func TestClient_AddRecord(t *testing.T) {
 	zoneSerial, err := client.AddRecord(context.Background(), 123456, "example.com", record)
 	require.NoError(t, err)
 
-	expected := &ZoneSerial{NewSerial: 2021031903}
+	expected := &shared.ZoneSerial{NewSerial: 2021031903}
 
 	assert.Equal(t, expected, zoneSerial)
 }
@@ -99,7 +100,7 @@ func TestClient_AddRecord(t *testing.T) {
 func TestClient_AddRecord_error(t *testing.T) {
 	client := setupTest(t, "/DNS/mass_edit_zone", "update-zone_error.json")
 
-	record := Record{
+	record := shared.Record{
 		DName:      "example",
 		TTL:        14400,
 		RecordType: "TXT",
@@ -115,7 +116,7 @@ func TestClient_AddRecord_error(t *testing.T) {
 func TestClient_EditRecord(t *testing.T) {
 	client := setupTest(t, "/DNS/mass_edit_zone", "update-zone.json")
 
-	record := Record{
+	record := shared.Record{
 		LineIndex:  9,
 		DName:      "example",
 		TTL:        14400,
@@ -126,7 +127,7 @@ func TestClient_EditRecord(t *testing.T) {
 	zoneSerial, err := client.EditRecord(context.Background(), 123456, "example.com", record)
 	require.NoError(t, err)
 
-	expected := &ZoneSerial{NewSerial: 2021031903}
+	expected := &shared.ZoneSerial{NewSerial: 2021031903}
 
 	assert.Equal(t, expected, zoneSerial)
 }
@@ -134,7 +135,7 @@ func TestClient_EditRecord(t *testing.T) {
 func TestClient_EditRecord_error(t *testing.T) {
 	client := setupTest(t, "/DNS/mass_edit_zone", "update-zone_error.json")
 
-	record := Record{
+	record := shared.Record{
 		LineIndex:  9,
 		DName:      "example",
 		TTL:        14400,

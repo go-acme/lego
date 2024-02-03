@@ -136,7 +136,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	valueB64 := base64.StdEncoding.EncodeToString([]byte(info.Value))
 
 	var found bool
-	var existingRecord cpanel.ZoneRecord
+	var existingRecord shared.ZoneRecord
 	for _, record := range zoneInfo {
 		if contains(record.DataB64, valueB64) {
 			existingRecord = record
@@ -145,7 +145,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		}
 	}
 
-	record := cpanel.Record{
+	record := shared.Record{
 		DName:      info.EffectiveFQDN,
 		TTL:        d.config.TTL,
 		RecordType: "TXT",
@@ -205,7 +205,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	valueB64 := base64.StdEncoding.EncodeToString([]byte(info.Value))
 
 	var found bool
-	var existingRecord cpanel.ZoneRecord
+	var existingRecord shared.ZoneRecord
 	for _, record := range zoneInfo {
 		if contains(record.DataB64, valueB64) {
 			existingRecord = record
@@ -243,7 +243,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	// Remove one value.
-	record := cpanel.Record{
+	record := shared.Record{
 		DName:      info.EffectiveFQDN,
 		TTL:        d.config.TTL,
 		RecordType: "TXT",

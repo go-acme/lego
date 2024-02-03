@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/log"
+	"github.com/go-acme/lego/v4/providers/dns/cpanel/internal/shared"
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
@@ -41,14 +42,14 @@ func NewClient(baseURL string, username string, token string) (*Client, error) {
 
 // FetchZoneInformation fetches zone information.
 // https://api.docs.cpanel.net/openapi/cpanel/operation/dns-parse_zone/
-func (c Client) FetchZoneInformation(ctx context.Context, domain string) ([]ZoneRecord, error) {
+func (c Client) FetchZoneInformation(ctx context.Context, domain string) ([]shared.ZoneRecord, error) {
 	endpoint := c.baseURL.JoinPath("DNS", "parse_zone")
 
 	query := endpoint.Query()
 	query.Set("zone", domain)
 	endpoint.RawQuery = query.Encode()
 
-	var result APIResponse[[]ZoneRecord]
+	var result APIResponse[[]shared.ZoneRecord]
 
 	err := c.doRequest(ctx, endpoint, &result)
 	if err != nil {
@@ -65,7 +66,7 @@ func (c Client) FetchZoneInformation(ctx context.Context, domain string) ([]Zone
 // AddRecord adds a new record.
 //
 //	add='{"dname":"example", "ttl":14400, "record_type":"TXT", "data":["string1", "string2"]}'
-func (c Client) AddRecord(ctx context.Context, serial uint32, domain string, record Record) (*ZoneSerial, error) {
+func (c Client) AddRecord(ctx context.Context, serial uint32, domain string, record shared.Record) (*shared.ZoneSerial, error) {
 	data, err := json.Marshal(record)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request JSON data: %w", err)
@@ -77,7 +78,7 @@ func (c Client) AddRecord(ctx context.Context, serial uint32, domain string, rec
 // EditRecord edits an existing record.
 //
 //	edit='{"line_index": 9, "dname":"example", "ttl":14400, "record_type":"TXT", "data":["string1", "string2"]}'
-func (c Client) EditRecord(ctx context.Context, serial uint32, domain string, record Record) (*ZoneSerial, error) {
+func (c Client) EditRecord(ctx context.Context, serial uint32, domain string, record shared.Record) (*shared.ZoneSerial, error) {
 	data, err := json.Marshal(record)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request JSON data: %w", err)
@@ -95,7 +96,7 @@ func (c Client) DeleteRecord(ctx context.Context, serial uint32, domain string, 
 }
 
 // https://api.docs.cpanel.net/openapi/cpanel/operation/dns-mass_edit_zone/
-func (c Client) updateZone(ctx context.Context, serial uint32, domain, action, data string) (*ZoneSerial, error) {
+func (c Client) updateZone(ctx context.Context, serial uint32, domain, action, data string) (*shared.ZoneSerial, error) {
 	endpoint := c.baseURL.JoinPath("DNS", "mass_edit_zone")
 
 	query := endpoint.Query()
@@ -104,7 +105,7 @@ func (c Client) updateZone(ctx context.Context, serial uint32, domain, action, d
 	query.Set("zone", domain)
 	endpoint.RawQuery = query.Encode()
 
-	var result APIResponse[ZoneSerial]
+	var result APIResponse[shared.ZoneSerial]
 
 	err := c.doRequest(ctx, endpoint, &result)
 	if err != nil {

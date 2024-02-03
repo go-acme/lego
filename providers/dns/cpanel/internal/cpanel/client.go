@@ -1,4 +1,4 @@
-package internal
+package cpanel
 
 import (
 	"context"
@@ -124,6 +124,7 @@ func (c Client) doRequest(ctx context.Context, endpoint *url.URL, result any) er
 		return fmt.Errorf("unable to create request: %w", err)
 	}
 
+	// https://api.docs.cpanel.net/cpanel/tokens/#using-an-api-token
 	req.Header.Set("Authorization", fmt.Sprintf("cpanel %s:%s", c.username, c.token))
 	req.Header.Set("Accept", "application/json")
 

@@ -12,7 +12,8 @@ import (
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/go-acme/lego/v4/providers/dns/cpanel/internal"
+	"github.com/go-acme/lego/v4/providers/dns/cpanel/internal/cpanel"
+	"github.com/go-acme/lego/v4/providers/dns/cpanel/internal/shared"
 )
 
 // Environment variables names.
@@ -57,8 +58,8 @@ func NewDefaultConfig() *Config {
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config    *Config
-	client    *internal.Client
-	dnsClient *internal.DNSClient
+	client    *cpanel.Client
+	dnsClient *shared.DNSClient
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for CPanel.
@@ -93,7 +94,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("cpanel: server information are missing")
 	}
 
-	client, err := internal.NewClient(config.BaseURL, config.Username, config.Token)
+	client, err := cpanel.NewClient(config.BaseURL, config.Username, config.Token)
 	if err != nil {
 		return nil, fmt.Errorf("cpanel: failed to create client: %w", err)
 	}
@@ -105,7 +106,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	return &DNSProvider{
 		config:    config,
 		client:    client,
-		dnsClient: internal.NewDNSClient(10 * time.Second),
+		dnsClient: shared.NewDNSClient(10 * time.Second),
 	}, nil
 }
 
@@ -135,7 +136,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	valueB64 := base64.StdEncoding.EncodeToString([]byte(info.Value))
 
 	var found bool
-	var existingRecord internal.ZoneRecord
+	var existingRecord cpanel.ZoneRecord
 	for _, record := range zoneInfo {
 		if contains(record.DataB64, valueB64) {
 			existingRecord = record
@@ -144,7 +145,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		}
 	}
 
-	record := internal.Record{
+	record := cpanel.Record{
 		DName:      info.EffectiveFQDN,
 		TTL:        d.config.TTL,
 		RecordType: "TXT",
@@ -204,7 +205,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	valueB64 := base64.StdEncoding.EncodeToString([]byte(info.Value))
 
 	var found bool
-	var existingRecord internal.ZoneRecord
+	var existingRecord cpanel.ZoneRecord
 	for _, record := range zoneInfo {
 		if contains(record.DataB64, valueB64) {
 			existingRecord = record
@@ -242,7 +243,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	// Remove one value.
-	record := internal.Record{
+	record := cpanel.Record{
 		DName:      info.EffectiveFQDN,
 		TTL:        d.config.TTL,
 		RecordType: "TXT",

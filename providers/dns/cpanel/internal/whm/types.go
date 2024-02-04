@@ -7,19 +7,19 @@ import (
 )
 
 type Metadata struct {
-	Command string `json:"command"`
-	Reason  string `json:"reason"`
-	Result  int    `json:"result"`
-	Version int    `json:"version"`
+	Command string `json:"command,omitempty"`
+	Reason  string `json:"reason,omitempty"`
+	Result  int    `json:"result,omitempty"`
+	Version int    `json:"version,omitempty"`
 }
 
 type ZoneData struct {
-	Payload []shared.ZoneRecord `json:"payload"`
+	Payload []shared.ZoneRecord `json:"payload,omitempty"`
 }
 
 type APIResponse[T any] struct {
-	Data     T        `json:"data"`
-	Metadata Metadata `json:"metadata"`
+	Data     T        `json:"data,omitempty"`
+	Metadata Metadata `json:"metadata,omitempty"`
 }
 
 func toError(m Metadata) error {

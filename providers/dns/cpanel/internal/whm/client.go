@@ -35,7 +35,7 @@ func NewClient(baseURL string, username string, token string) (*Client, error) {
 	return &Client{
 		username:   username,
 		token:      token,
-		baseURL:    apiEndpoint,
+		baseURL:    apiEndpoint.JoinPath("json-api"),
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 	}, nil
 }
@@ -43,7 +43,7 @@ func NewClient(baseURL string, username string, token string) (*Client, error) {
 // FetchZoneInformation fetches zone information.
 // https://api.docs.cpanel.net/openapi/whm/operation/parse_dns_zone/
 func (c Client) FetchZoneInformation(ctx context.Context, domain string) ([]shared.ZoneRecord, error) {
-	endpoint := c.baseURL.JoinPath("json-api", "parse_dns_zone")
+	endpoint := c.baseURL.JoinPath("parse_dns_zone")
 
 	query := endpoint.Query()
 	query.Set("zone", domain)
@@ -96,7 +96,7 @@ func (c Client) DeleteRecord(ctx context.Context, serial uint32, domain string, 
 
 // https://api.docs.cpanel.net/openapi/whm/operation/mass_edit_dns_zone/
 func (c Client) updateZone(ctx context.Context, serial uint32, domain, action, data string) (*shared.ZoneSerial, error) {
-	endpoint := c.baseURL.JoinPath("json-api", "mass_edit_dns_zone")
+	endpoint := c.baseURL.JoinPath("mass_edit_dns_zone")
 
 	query := endpoint.Query()
 	query.Set("serial", strconv.FormatUint(uint64(serial), 10))

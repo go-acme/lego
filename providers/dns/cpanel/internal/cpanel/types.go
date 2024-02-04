@@ -15,7 +15,7 @@ type APIResponse[T any] struct {
 }
 
 type Metadata struct {
-	Transformed int `json:"transformed"`
+	Transformed int `json:"transformed,omitempty"`
 }
 
 func toError[T any](r APIResponse[T]) error {

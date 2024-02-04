@@ -19,5 +19,5 @@ type ZoneRecord struct {
 }
 
 type ZoneSerial struct {
-	NewSerial string `json:"new_serial"`
+	NewSerial string `json:"new_serial,omitempty"`
 }

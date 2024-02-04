@@ -1,0 +1,22 @@
+{
+  "data": {
+    "payload": [
+      {
+        "line_index": 22,
+        "type": "record",
+        "data_b64": [
+          "dGV4YXMuY29tLg=="
+        ],
+        "dname_b64": "dGV4YXMuY29tLg==",
+        "record_type": "MX",
+        "ttl": 14400
+      }
+    ]
+  },
+  "metadata": {
+    "command": "parse_dns_zone",
+    "reason": "OK",
+    "result": 1,
+    "version": 1
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "data": {
+    "new_serial": "2021031903"
+  },
+  "metadata": {
+    "command": "mass_edit_dns_zone",
+    "reason": "OK",
+    "result": 1,
+    "version": 1
+  }
+}

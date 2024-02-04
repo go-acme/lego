@@ -35,6 +35,7 @@ func allDNSCodes() string {
 		"cloudxns",
 		"conoha",
 		"constellix",
+		"cpanel",
 		"derak",
 		"desec",
 		"designate",
@@ -610,6 +611,31 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/constellix`)
+
+	case "cpanel":
+		// generated from: providers/dns/cpanel/cpanel.toml
+		ew.writeln(`Configuration for CPanel/WHM.`)
+		ew.writeln(`Code:	'cpanel'`)
+		ew.writeln(`Since:	'v4.16.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "CPANEL_BASE_URL":	API server URL`)
+		ew.writeln(`	- "CPANEL_NAMESERVER":	Nameserver`)
+		ew.writeln(`	- "CPANEL_TOKEN":	API token`)
+		ew.writeln(`	- "CPANEL_USERNAME":	username`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "CPANEL_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "CPANEL_MODE":	use cpanel API or WHM API (Default: cpanel)`)
+		ew.writeln(`	- "CPANEL_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "CPANEL_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "CPANEL_REGION":	The region`)
+		ew.writeln(`	- "CPANEL_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/cpanel`)
 
 	case "derak":
 		// generated from: providers/dns/derak/derak.toml

@@ -13,6 +13,7 @@ type ZoneRecord struct {
 	Type       string   `json:"type,omitempty"`
 	DataB64    []string `json:"data_b64,omitempty"`
 	DNameB64   string   `json:"dname_b64,omitempty"`
+	TextB64    string   `json:"text_b64,omitempty"`
 	RecordType string   `json:"record_type,omitempty"`
 	TTL        int      `json:"ttl,omitempty"`
 }

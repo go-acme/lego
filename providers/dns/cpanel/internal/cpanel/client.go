@@ -56,11 +56,11 @@ func (c Client) FetchZoneInformation(ctx context.Context, domain string) ([]shar
 		return nil, err
 	}
 
-	if result.Result.Status == statusFailed {
-		return nil, toError(result.Result)
+	if result.Status == statusFailed {
+		return nil, toError(result)
 	}
 
-	return result.Result.Data, nil
+	return result.Data, nil
 }
 
 // AddRecord adds a new record.
@@ -112,11 +112,11 @@ func (c Client) updateZone(ctx context.Context, serial uint32, domain, action, d
 		return nil, err
 	}
 
-	if result.Result.Status == statusFailed {
-		return nil, toError(result.Result)
+	if result.Status == statusFailed {
+		return nil, toError(result)
 	}
 
-	return &result.Result.Data, nil
+	return &result.Data, nil
 }
 
 func (c Client) doRequest(ctx context.Context, endpoint *url.URL, result any) error {

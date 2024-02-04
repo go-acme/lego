@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -70,11 +69,9 @@ func NewDefaultConfig() *Config {
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	config        *Config
-	client        apiClient
-	dnsClient     *shared.DNSClient
-	zoneSerials   map[string]uint32
-	zoneSerialsMu sync.Mutex
+	config    *Config
+	client    apiClient
+	dnsClient *shared.DNSClient
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for CPanel.
@@ -115,10 +112,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	return &DNSProvider{
-		config:      config,
-		client:      client,
-		dnsClient:   shared.NewDNSClient(10 * time.Second),
-		zoneSerials: make(map[string]uint32),
+		config:    config,
+		client:    client,
+		dnsClient: shared.NewDNSClient(10 * time.Second),
 	}, nil
 }
 
@@ -133,18 +129,23 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	ctx := context.Background()
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	soa, err := d.dnsClient.SOACall(strings.TrimPrefix(info.EffectiveFQDN, "_acme-challenge."), d.config.Nameserver)
+	effectiveDomain := strings.TrimPrefix(info.EffectiveFQDN, "_acme-challenge.")
+
+	soa, err := d.dnsClient.SOACall(effectiveDomain, d.config.Nameserver)
 	if err != nil {
 		return fmt.Errorf("cpanel: could not find SOA for domain %q (%s) in %s: %w", domain, info.EffectiveFQDN, d.config.Nameserver, err)
 	}
-
-	serial := d.getSerial(soa)
 
 	zone := dns01.UnFqdn(soa.Hdr.Name)
 
 	zoneInfo, err := d.client.FetchZoneInformation(ctx, zone)
 	if err != nil {
 		return fmt.Errorf("cpanel: fetch zone information: %w", err)
+	}
+
+	serial, err := getZoneSerial(soa, zoneInfo)
+	if err != nil {
+		return fmt.Errorf("cpanel: get zone serial: %w", err)
 	}
 
 	valueB64 := base64.StdEncoding.EncodeToString([]byte(info.Value))
@@ -169,14 +170,9 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	if !found {
 		record.Data = []string{info.Value}
 
-		zoneSerial, err := d.client.AddRecord(ctx, serial, zone, record)
+		_, err = d.client.AddRecord(ctx, serial, zone, record)
 		if err != nil {
 			return fmt.Errorf("cpanel: add record: %w", err)
-		}
-
-		err = d.setSerial(soa, zoneSerial)
-		if err != nil {
-			return fmt.Errorf("cpanel: delete record (set serial): %w", err)
 		}
 
 		return nil
@@ -196,14 +192,9 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 
 	record.Data = append(record.Data, info.Value)
 
-	zoneSerial, err := d.client.EditRecord(ctx, serial, zone, record)
+	_, err = d.client.EditRecord(ctx, serial, zone, record)
 	if err != nil {
 		return fmt.Errorf("cpanel: edit record: %w", err)
-	}
-
-	err = d.setSerial(soa, zoneSerial)
-	if err != nil {
-		return fmt.Errorf("cpanel: delete record (set serial): %w", err)
 	}
 
 	return nil
@@ -224,6 +215,11 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 	zoneInfo, err := d.client.FetchZoneInformation(ctx, zone)
 	if err != nil {
 		return fmt.Errorf("cpanel: fetch zone information: %w", err)
+	}
+
+	serial, err := getZoneSerial(soa, zoneInfo)
+	if err != nil {
+		return fmt.Errorf("cpanel: get zone serial: %w", err)
 	}
 
 	valueB64 := base64.StdEncoding.EncodeToString([]byte(info.Value))
@@ -258,14 +254,9 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 
 	// Delete record.
 	if len(newData) == 0 {
-		zoneSerial, err := d.client.DeleteRecord(ctx, soa.Serial, zone, existingRecord.LineIndex)
+		_, err = d.client.DeleteRecord(ctx, serial, zone, existingRecord.LineIndex)
 		if err != nil {
 			return fmt.Errorf("cpanel: delete record: %w", err)
-		}
-
-		err = d.setSerial(soa, zoneSerial)
-		if err != nil {
-			return fmt.Errorf("cpanel: delete record (set serial): %w", err)
 		}
 
 		return nil
@@ -280,47 +271,37 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 		LineIndex:  existingRecord.LineIndex,
 	}
 
-	zoneSerial, err := d.client.EditRecord(ctx, soa.Serial, zone, record)
+	_, err = d.client.EditRecord(ctx, serial, zone, record)
 	if err != nil {
 		return fmt.Errorf("cpanel: edit record: %w", err)
 	}
 
-	err = d.setSerial(soa, zoneSerial)
-	if err != nil {
-		return fmt.Errorf("cpanel: delete record (set serial): %w", err)
-	}
-
 	return nil
 }
 
-func (d *DNSProvider) getSerial(soa *dns.SOA) uint32 {
-	d.zoneSerialsMu.Lock()
-	defer d.zoneSerialsMu.Unlock()
+func getZoneSerial(soa *dns.SOA, zoneInfo []shared.ZoneRecord) (uint32, error) {
+	nameB64 := base64.StdEncoding.EncodeToString([]byte(soa.Hdr.Name))
 
-	if s, ok := d.zoneSerials[soa.Hdr.Name]; ok && s > soa.Serial {
-		return s
+	for _, record := range zoneInfo {
+		if record.Type != "record" || record.DNameB64 != nameB64 || record.RecordType != "SOA" {
+			continue
+		}
+
+		data, err := base64.StdEncoding.DecodeString(record.DataB64[2])
+		if err != nil {
+			return 0, fmt.Errorf("decode serial DNameB64: %w", err)
+		}
+
+		var newSerial uint32
+		_, err = fmt.Sscan(string(data), &newSerial)
+		if err != nil {
+			return 0, fmt.Errorf("decode serial DNameB64, invalid serial %q: %w", string(data), err)
+		}
+
+		return newSerial, nil
 	}
 
-	d.zoneSerials[soa.Hdr.Name] = soa.Serial
-
-	return soa.Serial
-}
-
-func (d *DNSProvider) setSerial(soa *dns.SOA, zoneSerial *shared.ZoneSerial) error {
-	d.zoneSerialsMu.Lock()
-	defer d.zoneSerialsMu.Unlock()
-
-	var newSerial uint32
-	_, err := fmt.Sscan(zoneSerial.NewSerial, &newSerial)
-	if err != nil {
-		return err
-	}
-
-	if s, ok := d.zoneSerials[soa.Hdr.Name]; ok && s < newSerial {
-		d.zoneSerials[soa.Hdr.Name] = newSerial
-	}
-
-	return nil
+	return 0, errors.New("decode serial DNameB64: serial not found")
 }
 
 func createClient(config *Config) (apiClient, error) {

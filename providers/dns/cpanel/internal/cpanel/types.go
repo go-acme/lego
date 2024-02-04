@@ -7,11 +7,12 @@ import (
 
 type APIResponse[T any] struct {
 	Metadata Metadata `json:"metadata,omitempty"`
-	Messages []string `json:"messages,omitempty"`
+	Data     T        `json:"data,omitempty"`
+
 	Status   int      `json:"status,omitempty"`
+	Messages []string `json:"messages,omitempty"`
 	Warnings []string `json:"warnings,omitempty"`
 	Errors   []string `json:"errors,omitempty"`
-	Data     T        `json:"data,omitempty"`
 }
 
 type Metadata struct {

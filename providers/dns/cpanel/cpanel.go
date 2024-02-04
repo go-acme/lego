@@ -296,13 +296,13 @@ func getZoneSerial(zoneFqdn string, zoneInfo []shared.ZoneRecord) (uint32, error
 		var newSerial uint32
 		_, err = fmt.Sscan(string(data), &newSerial)
 		if err != nil {
-			return 0, fmt.Errorf("decode serial DNameB64, invalid serial %q: %w", string(data), err)
+			return 0, fmt.Errorf("decode serial DNameB64, invalid serial value %q: %w", string(data), err)
 		}
 
 		return newSerial, nil
 	}
 
-	return 0, errors.New("decode serial DNameB64: serial not found")
+	return 0, errors.New("zone serial not found")
 }
 
 func createClient(config *Config) (apiClient, error) {

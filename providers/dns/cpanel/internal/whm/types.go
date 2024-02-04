@@ -6,6 +6,11 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/cpanel/internal/shared"
 )
 
+type APIResponse[T any] struct {
+	Metadata Metadata `json:"metadata,omitempty"`
+	Data     T        `json:"data,omitempty"`
+}
+
 type Metadata struct {
 	Command string `json:"command,omitempty"`
 	Reason  string `json:"reason,omitempty"`
@@ -17,11 +22,6 @@ type ZoneData struct {
 	Payload []shared.ZoneRecord `json:"payload,omitempty"`
 }
 
-type APIResponse[T any] struct {
-	Data     T        `json:"data,omitempty"`
-	Metadata Metadata `json:"metadata,omitempty"`
-}
-
 func toError(m Metadata) error {
-	return fmt.Errorf("%s failure: %s", m.Command, m.Reason)
+	return fmt.Errorf("%s error(%d): %s", m.Command, m.Result, m.Reason)
 }

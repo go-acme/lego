@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/go-acme/lego/v4/providers/dns/cpanel/internal/shared"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -202,6 +203,110 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_getZoneSerial(t *testing.T) {
+	zones := []shared.ZoneRecord{
+		{
+			Type:      "comment",
+			LineIndex: 1,
+			TextB64:   "OyBab25lIGZpbGUgZm9yIGV4YW1wbGUuY29t",
+		},
+		{
+			Type:      "control",
+			LineIndex: 2,
+			TextB64:   "JFRUTCAxNDQwMA==",
+		},
+		{
+			DNameB64:   "ZXhhbXBsZS5jb20u",
+			LineIndex:  4,
+			RecordType: "NS",
+			Type:       "record",
+			TTL:        86400,
+			DataB64:    []string{"YWxsMS5kbnNyb3VuZHJvYmluLm5ldC4="},
+		},
+		{
+			DataB64: []string{
+				"YWxsMS5kbnNyb3VuZHJvYmluLm5ldC4=",
+				"ZW1haWwuaXB4Y29yZS5jb20u",
+				"MjAyNDAyMDQwOQ==",
+				"MzYwMA==",
+				"MTgwMA==",
+				"MTIwOTYwMA==",
+				"ODY0MDA=",
+			},
+			RecordType: "SOA",
+			Type:       "record",
+			TTL:        86400,
+			LineIndex:  3,
+			DNameB64:   "ZXhhbXBsZS5jb20u",
+		},
+		{
+			RecordType: "A",
+			Type:       "record",
+			TTL:        3600,
+			DataB64:    []string{"MTAuMTAuMTAuMTA="},
+			LineIndex:  9,
+			DNameB64:   "ZXhhbXBsZS5jb20u",
+		},
+	}
+
+	serial, err := getZoneSerial("example.com.", zones)
+	require.NoError(t, err)
+
+	assert.EqualValues(t, 2024020409, serial)
+}
+
+func Test_getZoneSerial_error(t *testing.T) {
+	zones := []shared.ZoneRecord{
+		{
+			Type:      "comment",
+			LineIndex: 1,
+			TextB64:   "OyBab25lIGZpbGUgZm9yIGV4YW1wbGUuY29t",
+		},
+		{
+			Type:      "control",
+			LineIndex: 2,
+			TextB64:   "JFRUTCAxNDQwMA==",
+		},
+		{
+			DNameB64:   "ZXhhbXBsZS5jb20u",
+			LineIndex:  4,
+			RecordType: "NS",
+			Type:       "record",
+			TTL:        86400,
+			DataB64:    []string{"YWxsMS5kbnNyb3VuZHJvYmluLm5ldC4="},
+		},
+		{
+			DataB64: []string{
+				"YWxsMS5kbnNyb3VuZHJvYmluLm5ldC4=",
+				"ZW1haWwuaXB4Y29yZS5jb20u",
+				"MjAyNDAyMDQwOQ==",
+				"MzYwMA==",
+				"MTgwMA==",
+				"MTIwOTYwMA==",
+				"ODY0MDA=",
+			},
+			RecordType: "SOA",
+			Type:       "record",
+			TTL:        86400,
+			LineIndex:  3,
+			DNameB64:   "ZXhhbXBsZS5vcmcu",
+		},
+		{
+			RecordType: "A",
+			Type:       "record",
+			TTL:        3600,
+			DataB64:    []string{"MTAuMTAuMTAuMTA="},
+			LineIndex:  9,
+			DNameB64:   "ZXhhbXBsZS5jb20u",
+		},
+	}
+
+	serial, err := getZoneSerial("example.com.", zones)
+	require.Error(t, err)
+
+	assert.EqualValues(t, 0, serial)
 }
 
 func TestLivePresent(t *testing.T) {

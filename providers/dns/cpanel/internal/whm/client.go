@@ -117,6 +117,10 @@ func (c Client) updateZone(ctx context.Context, serial uint32, domain, action, d
 }
 
 func (c Client) doRequest(ctx context.Context, endpoint *url.URL, result any) error {
+	query := endpoint.Query()
+	query.Set("api.version", "1")
+	endpoint.RawQuery = query.Encode()
+
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint.String(), http.NoBody)
 	if err != nil {
 		return fmt.Errorf("unable to create request: %w", err)

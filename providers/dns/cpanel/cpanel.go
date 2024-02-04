@@ -15,7 +15,6 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/cpanel/internal/cpanel"
 	"github.com/go-acme/lego/v4/providers/dns/cpanel/internal/shared"
 	"github.com/go-acme/lego/v4/providers/dns/cpanel/internal/whm"
-	"github.com/miekg/dns"
 )
 
 // Environment variables names.
@@ -143,7 +142,7 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 		return fmt.Errorf("cpanel: fetch zone information: %w", err)
 	}
 
-	serial, err := getZoneSerial(soa, zoneInfo)
+	serial, err := getZoneSerial(soa.Hdr.Name, zoneInfo)
 	if err != nil {
 		return fmt.Errorf("cpanel: get zone serial: %w", err)
 	}
@@ -217,7 +216,7 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 		return fmt.Errorf("cpanel: fetch zone information: %w", err)
 	}
 
-	serial, err := getZoneSerial(soa, zoneInfo)
+	serial, err := getZoneSerial(soa.Hdr.Name, zoneInfo)
 	if err != nil {
 		return fmt.Errorf("cpanel: get zone serial: %w", err)
 	}
@@ -279,11 +278,11 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 	return nil
 }
 
-func getZoneSerial(soa *dns.SOA, zoneInfo []shared.ZoneRecord) (uint32, error) {
-	nameB64 := base64.StdEncoding.EncodeToString([]byte(soa.Hdr.Name))
+func getZoneSerial(zoneFqdn string, zoneInfo []shared.ZoneRecord) (uint32, error) {
+	nameB64 := base64.StdEncoding.EncodeToString([]byte(zoneFqdn))
 
 	for _, record := range zoneInfo {
-		if record.Type != "record" || record.DNameB64 != nameB64 || record.RecordType != "SOA" {
+		if record.Type != "record" || record.RecordType != "SOA" || record.DNameB64 != nameB64 {
 			continue
 		}
 

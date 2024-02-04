@@ -237,3 +237,5 @@ issues:
       text: 'Duplicate words \(0\) found'
     - path: cmd/cmd_renew.go
       text: 'cyclomatic complexity 15 of func `renewForDomains` is high'
+    - path: providers/dns/cpanel/cpanel.go
+      text: 'cyclomatic complexity 13 of func `\(\*DNSProvider\)\.CleanUp` is high'

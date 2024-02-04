@@ -614,7 +614,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 	case "cpanel":
 		// generated from: providers/dns/cpanel/cpanel.toml
-		ew.writeln(`Configuration for CPanel.`)
+		ew.writeln(`Configuration for CPanel/WHM.`)
 		ew.writeln(`Code:	'cpanel'`)
 		ew.writeln(`Since:	'v4.14.0'`)
 		ew.writeln()
@@ -623,11 +623,12 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln(`	- "CPANEL_BASE_URL":	API server URL`)
 		ew.writeln(`	- "CPANEL_NAMESERVER":	Nameserver`)
 		ew.writeln(`	- "CPANEL_TOKEN":	CPanal token`)
-		ew.writeln(`	- "CPANEL_USERNAME":	username (Default: gr8)`)
+		ew.writeln(`	- "CPANEL_USERNAME":	username`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
 		ew.writeln(`	- "CPANEL_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "CPANEL_MODE":	use cpanel API or WHM API (Default: cpanel)`)
 		ew.writeln(`	- "CPANEL_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "CPANEL_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
 		ew.writeln(`	- "CPANEL_REGION":	The region`)

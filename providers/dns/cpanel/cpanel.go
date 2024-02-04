@@ -14,12 +14,14 @@ import (
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/cpanel/internal/cpanel"
 	"github.com/go-acme/lego/v4/providers/dns/cpanel/internal/shared"
+	"github.com/go-acme/lego/v4/providers/dns/cpanel/internal/whm"
 )
 
 // Environment variables names.
 const (
 	envNamespace = "CPANEL_"
 
+	EnvMode       = envNamespace + "MODE"
 	EnvUsername   = envNamespace + "USERNAME"
 	EnvToken      = envNamespace + "TOKEN"
 	EnvBaseURL    = envNamespace + "BASE_URL"
@@ -31,8 +33,16 @@ const (
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
+type apiClient interface {
+	FetchZoneInformation(ctx context.Context, domain string) ([]shared.ZoneRecord, error)
+	AddRecord(ctx context.Context, serial uint32, domain string, record shared.Record) (*shared.ZoneSerial, error)
+	EditRecord(ctx context.Context, serial uint32, domain string, record shared.Record) (*shared.ZoneSerial, error)
+	DeleteRecord(ctx context.Context, serial uint32, domain string, lineIndex int) error
+}
+
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
+	Mode               string
 	Username           string
 	Token              string
 	BaseURL            string
@@ -46,6 +56,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
+		Mode:               env.GetOrDefaultString(EnvMode, "cpanel"),
 		TTL:                env.GetOrDefaultInt(EnvTTL, 300),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
@@ -58,7 +69,7 @@ func NewDefaultConfig() *Config {
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	config    *Config
-	client    *cpanel.Client
+	client    apiClient
 	dnsClient *shared.DNSClient
 }
 
@@ -66,13 +77,13 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables:
 // CPANEL_USERNAME, CPANEL_TOKEN, CPANEL_BASE_URL, CPANEL_NAMESERVER.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvToken, EnvBaseURL, EnvNameserver)
+	values, err := env.Get(EnvUsername, EnvToken, EnvBaseURL, EnvNameserver)
 	if err != nil {
 		return nil, fmt.Errorf("cpanel: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.Username = env.GetOrDefaultString(EnvUsername, "gr8")
+	config.Username = values[EnvUsername]
 	config.Token = values[EnvToken]
 	config.BaseURL = values[EnvBaseURL]
 	config.Nameserver = values[EnvNameserver]
@@ -94,13 +105,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("cpanel: server information are missing")
 	}
 
-	client, err := cpanel.NewClient(config.BaseURL, config.Username, config.Token)
+	client, err := createClient(config)
 	if err != nil {
-		return nil, fmt.Errorf("cpanel: failed to create client: %w", err)
-	}
-
-	if config.HTTPClient != nil {
-		client.HTTPClient = config.HTTPClient
+		return nil, fmt.Errorf("cpanel: create client error: %w", err)
 	}
 
 	return &DNSProvider{
@@ -117,7 +124,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
-func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	ctx := context.Background()
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
@@ -186,7 +193,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 }
 
 // CleanUp removes the TXT record matching the specified parameters.
-func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 	ctx := context.Background()
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
@@ -257,6 +264,37 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	return nil
+}
+
+func createClient(config *Config) (apiClient, error) {
+	switch strings.ToLower(config.Mode) {
+	case "cpanel":
+		client, err := cpanel.NewClient(config.BaseURL, config.Username, config.Token)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create cPanel API client: %w", err)
+		}
+
+		if config.HTTPClient != nil {
+			client.HTTPClient = config.HTTPClient
+		}
+
+		return client, nil
+
+	case "whm":
+		client, err := whm.NewClient(config.BaseURL, config.Username, config.Token)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create WHM API client: %w", err)
+		}
+
+		if config.HTTPClient != nil {
+			client.HTTPClient = config.HTTPClient
+		}
+
+		return client, nil
+
+	default:
+		return nil, fmt.Errorf("unsupported mode: %q", config.Mode)
+	}
 }
 
 func contains(values []string, value string) bool {

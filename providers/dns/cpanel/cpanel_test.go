@@ -11,6 +11,7 @@ import (
 const envDomain = envNamespace + "DOMAIN"
 
 var envTest = tester.NewEnvTest(
+	EnvMode,
 	EnvUsername,
 	EnvToken,
 	EnvBaseURL,
@@ -26,14 +27,25 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
+				EnvUsername:   "user",
 				EnvToken:      "secret",
 				EnvBaseURL:    "https://example.com",
 				EnvNameserver: "ns.example.com:53",
 			},
 		},
 		{
+			desc: "missing user",
+			envVars: map[string]string{
+				EnvToken:      "secret",
+				EnvBaseURL:    "https://example.com",
+				EnvNameserver: "ns.example.com:53",
+			},
+			expected: "cpanel: some credentials information are missing: CPANEL_USERNAME",
+		},
+		{
 			desc: "missing token",
 			envVars: map[string]string{
+				EnvUsername:   "user",
 				EnvBaseURL:    "https://example.com",
 				EnvNameserver: "ns.example.com:53",
 			},
@@ -42,6 +54,7 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "missing base URL",
 			envVars: map[string]string{
+				EnvUsername:   "user",
 				EnvToken:      "secret",
 				EnvBaseURL:    "",
 				EnvNameserver: "ns.example.com:53",
@@ -51,6 +64,7 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "missing nameserver",
 			envVars: map[string]string{
+				EnvUsername:   "user",
 				EnvToken:      "secret",
 				EnvBaseURL:    "https://example.com",
 				EnvNameserver: "",
@@ -82,6 +96,7 @@ func TestNewDNSProvider(t *testing.T) {
 func TestNewDNSProviderConfig(t *testing.T) {
 	testCases := []struct {
 		desc       string
+		mode       string
 		username   string
 		token      string
 		baseURL    string
@@ -90,13 +105,32 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}{
 		{
 			desc:       "success",
+			mode:       "whm",
 			username:   "user",
 			token:      "secret",
 			baseURL:    "https://example.com",
 			nameserver: "ns.example.com:53",
 		},
 		{
+			desc:       "missing mode",
+			username:   "user",
+			token:      "secret",
+			baseURL:    "https://example.com",
+			nameserver: "ns.example.com:53",
+			expected:   `cpanel: create client error: unsupported mode: ""`,
+		},
+		{
+			desc:       "invalid mode",
+			mode:       "test",
+			username:   "user",
+			token:      "secret",
+			baseURL:    "https://example.com",
+			nameserver: "ns.example.com:53",
+			expected:   `cpanel: create client error: unsupported mode: "test"`,
+		},
+		{
 			desc:       "missing username",
+			mode:       "whm",
 			username:   "",
 			token:      "secret",
 			baseURL:    "https://example.com",
@@ -105,6 +139,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		},
 		{
 			desc:       "missing token",
+			mode:       "whm",
 			username:   "user",
 			token:      "",
 			baseURL:    "https://example.com",
@@ -113,6 +148,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		},
 		{
 			desc:       "missing base URL",
+			mode:       "whm",
 			username:   "user",
 			token:      "secret",
 			baseURL:    "",
@@ -121,6 +157,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		},
 		{
 			desc:       "missing nameserver",
+			mode:       "whm",
 			username:   "user",
 			token:      "secret",
 			baseURL:    "https://example.com",
@@ -132,6 +169,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			config := NewDefaultConfig()
+			config.Mode = test.mode
 			config.Username = test.username
 			config.Token = test.token
 			config.BaseURL = test.baseURL

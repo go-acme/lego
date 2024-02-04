@@ -616,7 +616,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		// generated from: providers/dns/cpanel/cpanel.toml
 		ew.writeln(`Configuration for CPanel/WHM.`)
 		ew.writeln(`Code:	'cpanel'`)
-		ew.writeln(`Since:	'v4.14.0'`)
+		ew.writeln(`Since:	'v4.16.0'`)
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)

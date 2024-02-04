@@ -4,7 +4,7 @@ date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: cpanel
 dnsprovider:
-  since:    "v4.14.0"
+  since:    "v4.16.0"
   code:     "cpanel"
   url:      "https://cpanel.net/"
 ---
@@ -20,7 +20,7 @@ Configuration for [CPanel/WHM](https://cpanel.net/).
 <!--more-->
 
 - Code: `cpanel`
-- Since: v4.14.0
+- Since: v4.16.0
 
 
 Here is an example bash command using the CPanel/WHM provider:

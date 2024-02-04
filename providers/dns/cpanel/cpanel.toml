@@ -2,7 +2,7 @@ Name = "CPanel/WHM"
 Description = ''''''
 URL = "https://cpanel.net/"
 Code = "cpanel"
-Since = "v4.14.0"
+Since = "v4.16.0"
 
 Example = '''
 CPANEL_MODE = "cpanel"

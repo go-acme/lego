@@ -152,13 +152,19 @@ func TestClient_EditRecord_error(t *testing.T) {
 func TestClient_DeleteRecord(t *testing.T) {
 	client := setupTest(t, "/DNS/mass_edit_zone", "update-zone.json")
 
-	err := client.DeleteRecord(context.Background(), 123456, "example.com", 0)
+	zoneSerial, err := client.DeleteRecord(context.Background(), 123456, "example.com", 0)
 	require.NoError(t, err)
+
+	expected := &shared.ZoneSerial{NewSerial: "2021031903"}
+
+	assert.Equal(t, expected, zoneSerial)
 }
 
 func TestClient_DeleteRecord_error(t *testing.T) {
 	client := setupTest(t, "/DNS/mass_edit_zone", "update-zone_error.json")
 
-	err := client.DeleteRecord(context.Background(), 123456, "example.com", 0)
+	zoneSerial, err := client.DeleteRecord(context.Background(), 123456, "example.com", 0)
 	require.Error(t, err)
+
+	assert.Nil(t, zoneSerial)
 }

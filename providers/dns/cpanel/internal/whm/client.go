@@ -90,9 +90,8 @@ func (c Client) EditRecord(ctx context.Context, serial uint32, domain string, re
 // DeleteRecord deletes an existing record.
 //
 //	remove=22
-func (c Client) DeleteRecord(ctx context.Context, serial uint32, domain string, lineIndex int) error {
-	_, err := c.updateZone(ctx, serial, domain, "remove", strconv.Itoa(lineIndex))
-	return err
+func (c Client) DeleteRecord(ctx context.Context, serial uint32, domain string, lineIndex int) (*shared.ZoneSerial, error) {
+	return c.updateZone(ctx, serial, domain, "remove", strconv.Itoa(lineIndex))
 }
 
 // https://api.docs.cpanel.net/openapi/whm/operation/mass_edit_dns_zone/

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -15,6 +16,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/cpanel/internal/cpanel"
 	"github.com/go-acme/lego/v4/providers/dns/cpanel/internal/shared"
 	"github.com/go-acme/lego/v4/providers/dns/cpanel/internal/whm"
+	"github.com/miekg/dns"
 )
 
 // Environment variables names.
@@ -37,7 +39,7 @@ type apiClient interface {
 	FetchZoneInformation(ctx context.Context, domain string) ([]shared.ZoneRecord, error)
 	AddRecord(ctx context.Context, serial uint32, domain string, record shared.Record) (*shared.ZoneSerial, error)
 	EditRecord(ctx context.Context, serial uint32, domain string, record shared.Record) (*shared.ZoneSerial, error)
-	DeleteRecord(ctx context.Context, serial uint32, domain string, lineIndex int) error
+	DeleteRecord(ctx context.Context, serial uint32, domain string, lineIndex int) (*shared.ZoneSerial, error)
 }
 
 // Config is used to configure the creation of the DNSProvider.
@@ -68,9 +70,11 @@ func NewDefaultConfig() *Config {
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	config    *Config
-	client    apiClient
-	dnsClient *shared.DNSClient
+	config        *Config
+	client        apiClient
+	dnsClient     *shared.DNSClient
+	zoneSerials   map[string]uint32
+	zoneSerialsMu sync.Mutex
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for CPanel.
@@ -111,9 +115,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	return &DNSProvider{
-		config:    config,
-		client:    client,
-		dnsClient: shared.NewDNSClient(10 * time.Second),
+		config:      config,
+		client:      client,
+		dnsClient:   shared.NewDNSClient(10 * time.Second),
+		zoneSerials: make(map[string]uint32),
 	}, nil
 }
 
@@ -132,6 +137,8 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	if err != nil {
 		return fmt.Errorf("cpanel: could not find SOA for domain %q (%s) in %s: %w", domain, info.EffectiveFQDN, d.config.Nameserver, err)
 	}
+
+	serial := d.getSerial(soa)
 
 	zone := dns01.UnFqdn(soa.Hdr.Name)
 
@@ -162,9 +169,14 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	if !found {
 		record.Data = []string{info.Value}
 
-		_, err = d.client.AddRecord(ctx, soa.Serial, zone, record)
+		zoneSerial, err := d.client.AddRecord(ctx, serial, zone, record)
 		if err != nil {
 			return fmt.Errorf("cpanel: add record: %w", err)
+		}
+
+		err = d.setSerial(soa, zoneSerial)
+		if err != nil {
+			return fmt.Errorf("cpanel: delete record (set serial): %w", err)
 		}
 
 		return nil
@@ -184,9 +196,14 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 
 	record.Data = append(record.Data, info.Value)
 
-	_, err = d.client.EditRecord(ctx, soa.Serial, zone, record)
+	zoneSerial, err := d.client.EditRecord(ctx, serial, zone, record)
 	if err != nil {
 		return fmt.Errorf("cpanel: edit record: %w", err)
+	}
+
+	err = d.setSerial(soa, zoneSerial)
+	if err != nil {
+		return fmt.Errorf("cpanel: delete record (set serial): %w", err)
 	}
 
 	return nil
@@ -241,9 +258,14 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 
 	// Delete record.
 	if len(newData) == 0 {
-		err = d.client.DeleteRecord(ctx, soa.Serial, zone, existingRecord.LineIndex)
+		zoneSerial, err := d.client.DeleteRecord(ctx, soa.Serial, zone, existingRecord.LineIndex)
 		if err != nil {
 			return fmt.Errorf("cpanel: delete record: %w", err)
+		}
+
+		err = d.setSerial(soa, zoneSerial)
+		if err != nil {
+			return fmt.Errorf("cpanel: delete record (set serial): %w", err)
 		}
 
 		return nil
@@ -258,9 +280,44 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 		LineIndex:  existingRecord.LineIndex,
 	}
 
-	_, err = d.client.EditRecord(ctx, soa.Serial, zone, record)
+	zoneSerial, err := d.client.EditRecord(ctx, soa.Serial, zone, record)
 	if err != nil {
 		return fmt.Errorf("cpanel: edit record: %w", err)
+	}
+
+	err = d.setSerial(soa, zoneSerial)
+	if err != nil {
+		return fmt.Errorf("cpanel: delete record (set serial): %w", err)
+	}
+
+	return nil
+}
+
+func (d *DNSProvider) getSerial(soa *dns.SOA) uint32 {
+	d.zoneSerialsMu.Lock()
+	defer d.zoneSerialsMu.Unlock()
+
+	if s, ok := d.zoneSerials[soa.Hdr.Name]; ok && s > soa.Serial {
+		return s
+	}
+
+	d.zoneSerials[soa.Hdr.Name] = soa.Serial
+
+	return soa.Serial
+}
+
+func (d *DNSProvider) setSerial(soa *dns.SOA, zoneSerial *shared.ZoneSerial) error {
+	d.zoneSerialsMu.Lock()
+	defer d.zoneSerialsMu.Unlock()
+
+	var newSerial uint32
+	_, err := fmt.Sscan(zoneSerial.NewSerial, &newSerial)
+	if err != nil {
+		return err
+	}
+
+	if s, ok := d.zoneSerials[soa.Hdr.Name]; ok && s < newSerial {
+		d.zoneSerials[soa.Hdr.Name] = newSerial
 	}
 
 	return nil

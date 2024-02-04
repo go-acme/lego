@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"strconv"
 	"time"
 
+	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/providers/dns/cpanel/internal/shared"
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
@@ -130,6 +132,12 @@ func (c Client) doRequest(ctx context.Context, endpoint *url.URL, result any) er
 	req.Header.Set("Authorization", fmt.Sprintf("whm %s:%s", c.username, c.token))
 	req.Header.Set("Accept", "application/json")
 
+	dump, err := httputil.DumpRequest(req, true)
+	if err != nil {
+		log.Infof("DumpRequest: %v", err)
+	}
+	log.Println(string(dump))
+
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
 		return errutils.NewHTTPDoError(req, err)
@@ -149,6 +157,8 @@ func (c Client) doRequest(ctx context.Context, endpoint *url.URL, result any) er
 	if err != nil {
 		return errutils.NewReadResponseError(req, resp.StatusCode, err)
 	}
+
+	log.Println(string(raw))
 
 	err = json.Unmarshal(raw, result)
 	if err != nil {

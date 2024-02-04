@@ -26,11 +26,21 @@ Configuration for [CPanel/WHM](https://cpanel.net/).
 Here is an example bash command using the CPanel/WHM provider:
 
 ```bash
-CPANEL_MODE = "cpanel"
+### CPANEL (default)
+
 CPANEL_USERNAME = "yyyy"
 CPANEL_TOKEN = "xxxx"
-CPANEL_BASE_URL = "https://somecpanel.com:2083" \
-CPANEL_NAMESERVER = "ns1.somecpanel.com:53" \
+CPANEL_BASE_URL = "https://example.com:2083" \
+CPANEL_NAMESERVER = "ns1.example.com:53" \
+lego --email you@example.com --dns cpanel --domains my.example.org run
+
+## WHM
+
+CPANEL_MODE = whm
+CPANEL_USERNAME = "yyyy"
+CPANEL_TOKEN = "xxxx"
+CPANEL_BASE_URL = "https://example.com:2087" \
+CPANEL_NAMESERVER = "ns1.example.com:53" \
 lego --email you@example.com --dns cpanel --domains my.example.org run
 ```
 

@@ -1,15 +1,14 @@
 {
-  "apiversion": 3,
-  "func": "mass_edit_zone",
-  "module": "DNS",
-  "result": {
-    "data": null,
-    "errors": ["a", "b", "c"],
-    "messages": ["d", "e", "f"],
-    "metadata": {
-      "transformed": 0
-    },
-    "status": 0,
-    "warnings": null
-  }
+  "warnings": null,
+  "messages": [
+    "a",
+    "b",
+    "c"
+  ],
+  "data": null,
+  "errors": [
+    "You do not control a DNS zone named example.com."
+  ],
+  "metadata": {},
+  "status": 0
 }

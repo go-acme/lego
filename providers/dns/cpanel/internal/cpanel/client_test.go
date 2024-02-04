@@ -92,7 +92,7 @@ func TestClient_AddRecord(t *testing.T) {
 	zoneSerial, err := client.AddRecord(context.Background(), 123456, "example.com", record)
 	require.NoError(t, err)
 
-	expected := &shared.ZoneSerial{NewSerial: 2021031903}
+	expected := &shared.ZoneSerial{NewSerial: "2021031903"}
 
 	assert.Equal(t, expected, zoneSerial)
 }
@@ -127,7 +127,7 @@ func TestClient_EditRecord(t *testing.T) {
 	zoneSerial, err := client.EditRecord(context.Background(), 123456, "example.com", record)
 	require.NoError(t, err)
 
-	expected := &shared.ZoneSerial{NewSerial: 2021031903}
+	expected := &shared.ZoneSerial{NewSerial: "2021031903"}
 
 	assert.Equal(t, expected, zoneSerial)
 }

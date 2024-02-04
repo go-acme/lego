@@ -132,19 +132,19 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 
 	soa, err := d.dnsClient.SOACall(effectiveDomain, d.config.Nameserver)
 	if err != nil {
-		return fmt.Errorf("cpanel: could not find SOA for domain %q (%s) in %s: %w", domain, info.EffectiveFQDN, d.config.Nameserver, err)
+		return fmt.Errorf("cpanel[mode=%s]: could not find SOA for domain %q (%s) in %s: %w", d.config.Mode, domain, info.EffectiveFQDN, d.config.Nameserver, err)
 	}
 
 	zone := dns01.UnFqdn(soa.Hdr.Name)
 
 	zoneInfo, err := d.client.FetchZoneInformation(ctx, zone)
 	if err != nil {
-		return fmt.Errorf("cpanel: fetch zone information: %w", err)
+		return fmt.Errorf("cpanel[mode=%s]: fetch zone information: %w", d.config.Mode, err)
 	}
 
 	serial, err := getZoneSerial(soa.Hdr.Name, zoneInfo)
 	if err != nil {
-		return fmt.Errorf("cpanel: get zone serial: %w", err)
+		return fmt.Errorf("cpanel[mode=%s]: get zone serial: %w", d.config.Mode, err)
 	}
 
 	valueB64 := base64.StdEncoding.EncodeToString([]byte(info.Value))
@@ -171,7 +171,7 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 
 		_, err = d.client.AddRecord(ctx, serial, zone, record)
 		if err != nil {
-			return fmt.Errorf("cpanel: add record: %w", err)
+			return fmt.Errorf("cpanel[mode=%s]: add record: %w", d.config.Mode, err)
 		}
 
 		return nil
@@ -183,7 +183,7 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	for _, dataB64 := range existingRecord.DataB64 {
 		data, errD := base64.StdEncoding.DecodeString(dataB64)
 		if errD != nil {
-			return fmt.Errorf("cpanel: decode base64 record value: %w", errD)
+			return fmt.Errorf("cpanel[mode=%s]: decode base64 record value: %w", d.config.Mode, errD)
 		}
 
 		record.Data = append(record.Data, string(data))
@@ -193,7 +193,7 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 
 	_, err = d.client.EditRecord(ctx, serial, zone, record)
 	if err != nil {
-		return fmt.Errorf("cpanel: edit record: %w", err)
+		return fmt.Errorf("cpanel[mode=%s]: edit record: %w", d.config.Mode, err)
 	}
 
 	return nil
@@ -206,19 +206,19 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 
 	soa, err := d.dnsClient.SOACall(strings.TrimPrefix(info.EffectiveFQDN, "_acme-challenge."), d.config.Nameserver)
 	if err != nil {
-		return fmt.Errorf("cpanel: could not find SOA for domain %q (%s) in %s: %w", domain, info.EffectiveFQDN, d.config.Nameserver, err)
+		return fmt.Errorf("cpanel[mode=%s]: could not find SOA for domain %q (%s) in %s: %w", d.config.Mode, domain, info.EffectiveFQDN, d.config.Nameserver, err)
 	}
 
 	zone := dns01.UnFqdn(soa.Hdr.Name)
 
 	zoneInfo, err := d.client.FetchZoneInformation(ctx, zone)
 	if err != nil {
-		return fmt.Errorf("cpanel: fetch zone information: %w", err)
+		return fmt.Errorf("cpanel[mode=%s]: fetch zone information: %w", d.config.Mode, err)
 	}
 
 	serial, err := getZoneSerial(soa.Hdr.Name, zoneInfo)
 	if err != nil {
-		return fmt.Errorf("cpanel: get zone serial: %w", err)
+		return fmt.Errorf("cpanel[mode=%s]: get zone serial: %w", d.config.Mode, err)
 	}
 
 	valueB64 := base64.StdEncoding.EncodeToString([]byte(info.Value))
@@ -245,7 +245,7 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 
 		data, errD := base64.StdEncoding.DecodeString(dataB64)
 		if errD != nil {
-			return fmt.Errorf("cpanel: decode base64 record value: %w", errD)
+			return fmt.Errorf("cpanel[mode=%s]: decode base64 record value: %w", d.config.Mode, errD)
 		}
 
 		newData = append(newData, string(data))
@@ -255,7 +255,7 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 	if len(newData) == 0 {
 		_, err = d.client.DeleteRecord(ctx, serial, zone, existingRecord.LineIndex)
 		if err != nil {
-			return fmt.Errorf("cpanel: delete record: %w", err)
+			return fmt.Errorf("cpanel[mode=%s]: delete record: %w", d.config.Mode, err)
 		}
 
 		return nil
@@ -272,7 +272,7 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 
 	_, err = d.client.EditRecord(ctx, serial, zone, record)
 	if err != nil {
-		return fmt.Errorf("cpanel: edit record: %w", err)
+		return fmt.Errorf("cpanel[mode=%s]: edit record: %w", d.config.Mode, err)
 	}
 
 	return nil

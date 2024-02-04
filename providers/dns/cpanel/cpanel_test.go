@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/platform/tester"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -20,18 +21,31 @@ var envTest = tester.NewEnvTest(
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
-		desc     string
-		envVars  map[string]string
-		expected string
+		desc         string
+		envVars      map[string]string
+		expected     string
+		expectedMode string
 	}{
 		{
-			desc: "success",
+			desc: "success cpanel mode (default)",
 			envVars: map[string]string{
 				EnvUsername:   "user",
 				EnvToken:      "secret",
 				EnvBaseURL:    "https://example.com",
 				EnvNameserver: "ns.example.com:53",
 			},
+			expectedMode: "cpanel",
+		},
+		{
+			desc: "success whm mode",
+			envVars: map[string]string{
+				EnvMode:       "whm",
+				EnvUsername:   "user",
+				EnvToken:      "secret",
+				EnvBaseURL:    "https://example.com",
+				EnvNameserver: "ns.example.com:53",
+			},
+			expectedMode: "whm",
 		},
 		{
 			desc: "missing user",
@@ -83,6 +97,7 @@ func TestNewDNSProvider(t *testing.T) {
 			p, err := NewDNSProvider()
 
 			if test.expected == "" {
+				assert.Equal(t, test.expectedMode, p.config.Mode)
 				require.NoError(t, err)
 				require.NotNil(t, p)
 				require.NotNil(t, p.config)

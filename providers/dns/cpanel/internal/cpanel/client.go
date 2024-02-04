@@ -33,7 +33,7 @@ func NewClient(baseURL string, username string, token string) (*Client, error) {
 	return &Client{
 		username:   username,
 		token:      token,
-		baseURL:    apiEndpoint,
+		baseURL:    apiEndpoint.JoinPath("execute"),
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 	}, nil
 }

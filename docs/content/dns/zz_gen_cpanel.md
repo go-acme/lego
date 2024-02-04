@@ -29,7 +29,7 @@ Here is an example bash command using the CPanel/WHM provider:
 CPANEL_MODE = "cpanel"
 CPANEL_USERNAME = "yyyy"
 CPANEL_TOKEN = "xxxx"
-CPANEL_BASE_URL = "https://somecpanel.com:2083/execute" \
+CPANEL_BASE_URL = "https://somecpanel.com:2083" \
 CPANEL_NAMESERVER = "ns1.somecpanel.com:53" \
 lego --email you@example.com --dns cpanel --domains my.example.org run
 ```
@@ -43,7 +43,7 @@ lego --email you@example.com --dns cpanel --domains my.example.org run
 |-----------------------|-------------|
 | `CPANEL_BASE_URL` | API server URL |
 | `CPANEL_NAMESERVER` | Nameserver |
-| `CPANEL_TOKEN` | CPanal token |
+| `CPANEL_TOKEN` | API token |
 | `CPANEL_USERNAME` | username |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.

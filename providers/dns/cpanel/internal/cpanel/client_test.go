@@ -53,7 +53,7 @@ func setupTest(t *testing.T, pattern string, filename string) *Client {
 }
 
 func TestClient_FetchZoneInformation(t *testing.T) {
-	client := setupTest(t, "/DNS/parse_zone", "zone-info.json")
+	client := setupTest(t, "/execute/DNS/parse_zone", "zone-info.json")
 
 	zoneInfo, err := client.FetchZoneInformation(context.Background(), "example.com")
 	require.NoError(t, err)
@@ -71,7 +71,7 @@ func TestClient_FetchZoneInformation(t *testing.T) {
 }
 
 func TestClient_FetchZoneInformation_error(t *testing.T) {
-	client := setupTest(t, "/DNS/parse_zone", "zone-info_error.json")
+	client := setupTest(t, "/execute/DNS/parse_zone", "zone-info_error.json")
 
 	zoneInfo, err := client.FetchZoneInformation(context.Background(), "example.com")
 	require.Error(t, err)
@@ -80,7 +80,7 @@ func TestClient_FetchZoneInformation_error(t *testing.T) {
 }
 
 func TestClient_AddRecord(t *testing.T) {
-	client := setupTest(t, "/DNS/mass_edit_zone", "update-zone.json")
+	client := setupTest(t, "/execute/DNS/mass_edit_zone", "update-zone.json")
 
 	record := shared.Record{
 		DName:      "example",
@@ -98,7 +98,7 @@ func TestClient_AddRecord(t *testing.T) {
 }
 
 func TestClient_AddRecord_error(t *testing.T) {
-	client := setupTest(t, "/DNS/mass_edit_zone", "update-zone_error.json")
+	client := setupTest(t, "/execute/DNS/mass_edit_zone", "update-zone_error.json")
 
 	record := shared.Record{
 		DName:      "example",
@@ -114,7 +114,7 @@ func TestClient_AddRecord_error(t *testing.T) {
 }
 
 func TestClient_EditRecord(t *testing.T) {
-	client := setupTest(t, "/DNS/mass_edit_zone", "update-zone.json")
+	client := setupTest(t, "/execute/DNS/mass_edit_zone", "update-zone.json")
 
 	record := shared.Record{
 		LineIndex:  9,
@@ -133,7 +133,7 @@ func TestClient_EditRecord(t *testing.T) {
 }
 
 func TestClient_EditRecord_error(t *testing.T) {
-	client := setupTest(t, "/DNS/mass_edit_zone", "update-zone_error.json")
+	client := setupTest(t, "/execute/DNS/mass_edit_zone", "update-zone_error.json")
 
 	record := shared.Record{
 		LineIndex:  9,
@@ -150,7 +150,7 @@ func TestClient_EditRecord_error(t *testing.T) {
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
-	client := setupTest(t, "/DNS/mass_edit_zone", "update-zone.json")
+	client := setupTest(t, "/execute/DNS/mass_edit_zone", "update-zone.json")
 
 	zoneSerial, err := client.DeleteRecord(context.Background(), 123456, "example.com", 0)
 	require.NoError(t, err)
@@ -161,7 +161,7 @@ func TestClient_DeleteRecord(t *testing.T) {
 }
 
 func TestClient_DeleteRecord_error(t *testing.T) {
-	client := setupTest(t, "/DNS/mass_edit_zone", "update-zone_error.json")
+	client := setupTest(t, "/execute/DNS/mass_edit_zone", "update-zone_error.json")
 
 	zoneSerial, err := client.DeleteRecord(context.Background(), 123456, "example.com", 0)
 	require.Error(t, err)

@@ -197,7 +197,7 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 	ctx := context.Background()
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	soa, err := d.dnsClient.SOACall(info.EffectiveFQDN, d.config.Nameserver)
+	soa, err := d.dnsClient.SOACall(strings.TrimPrefix(info.EffectiveFQDN, "_acme-challenge."), d.config.Nameserver)
 	if err != nil {
 		return fmt.Errorf("cpanel: could not find SOA for domain %q (%s) in %s: %w", domain, info.EffectiveFQDN, d.config.Nameserver, err)
 	}

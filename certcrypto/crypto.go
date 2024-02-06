@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"math/big"
 	"net"
+	"slices"
 	"strings"
 	"time"
 
@@ -268,7 +269,7 @@ func ExtractDomainsCSR(csr *x509.CertificateRequest) []string {
 
 	// loop over the SubjectAltName DNS names
 	for _, sanName := range csr.DNSNames {
-		if containsSAN(domains, sanName) {
+		if slices.Contains(domains, sanName) {
 			// Duplicate; skip this name
 			continue
 		}
@@ -285,15 +286,6 @@ func ExtractDomainsCSR(csr *x509.CertificateRequest) []string {
 	}
 
 	return domains
-}
-
-func containsSAN(domains []string, sanName string) bool {
-	for _, existingName := range domains {
-		if existingName == sanName {
-			return true
-		}
-	}
-	return false
 }
 
 func GeneratePemCert(privateKey *rsa.PrivateKey, domain string, extensions []pkix.Extension) ([]byte, error) {

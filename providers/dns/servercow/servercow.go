@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"slices"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -118,7 +119,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	// TXT record entry already existing
 	if record != nil {
-		if containsValue(record, info.Value) {
+		if slices.Contains(record.Content, info.Value) {
 			return nil
 		}
 
@@ -177,7 +178,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return nil
 	}
 
-	if !containsValue(record, info.Value) {
+	if !slices.Contains(record.Content, info.Value) {
 		return nil
 	}
 
@@ -228,14 +229,4 @@ func findRecords(records []internal.Record, name string) *internal.Record {
 	}
 
 	return nil
-}
-
-func containsValue(record *internal.Record, value string) bool {
-	for _, val := range record.Content {
-		if val == value {
-			return true
-		}
-	}
-
-	return false
 }

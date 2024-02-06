@@ -4,6 +4,7 @@ package iij
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -229,7 +230,7 @@ func splitDomain(domain string, zones []string) (string, string, error) {
 
 	for i := 0; i < len(parts)-1; i++ {
 		zone = strings.Join(parts[i:], ".")
-		if zoneContains(zone, zones) {
+		if slices.Contains(zones, zone) {
 			baseOwner := strings.Join(parts[0:i], ".")
 			if baseOwner != "" {
 				baseOwner = "." + baseOwner
@@ -244,13 +245,4 @@ func splitDomain(domain string, zones []string) (string, string, error) {
 	}
 
 	return owner, zone, nil
-}
-
-func zoneContains(zone string, zones []string) bool {
-	for _, z := range zones {
-		if zone == z {
-			return true
-		}
-	}
-	return false
 }

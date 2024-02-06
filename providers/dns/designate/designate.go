@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"slices"
 	"sync"
 	"time"
 
@@ -146,7 +147,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	if existingRecord != nil {
-		if contains(existingRecord.Records, info.Value) {
+		if slices.Contains(existingRecord.Records, info.Value) {
 			log.Printf("designate: the record already exists: %s", info.Value)
 			return nil
 		}
@@ -197,15 +198,6 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-func contains(values []string, value string) bool {
-	for _, v := range values {
-		if v == value {
-			return true
-		}
-	}
-	return false
-}
-
 func (d *DNSProvider) createRecord(zoneID, fqdn, value string) error {
 	createOpts := recordsets.CreateOpts{
 		Name:        fqdn,
@@ -228,7 +220,7 @@ func (d *DNSProvider) createRecord(zoneID, fqdn, value string) error {
 }
 
 func (d *DNSProvider) updateRecord(record *recordsets.RecordSet, value string) error {
-	if contains(record.Records, value) {
+	if slices.Contains(record.Records, value) {
 		log.Printf("skip: the record already exists: %s", value)
 		return nil
 	}

@@ -31,7 +31,6 @@ Here is an example bash command using the CPanel/WHM provider:
 CPANEL_USERNAME = "yyyy"
 CPANEL_TOKEN = "xxxx"
 CPANEL_BASE_URL = "https://example.com:2083" \
-CPANEL_NAMESERVER = "ns1.example.com:53" \
 lego --email you@example.com --dns cpanel --domains my.example.org run
 
 ## WHM
@@ -40,7 +39,6 @@ CPANEL_MODE = whm
 CPANEL_USERNAME = "yyyy"
 CPANEL_TOKEN = "xxxx"
 CPANEL_BASE_URL = "https://example.com:2087" \
-CPANEL_NAMESERVER = "ns1.example.com:53" \
 lego --email you@example.com --dns cpanel --domains my.example.org run
 ```
 
@@ -52,7 +50,6 @@ lego --email you@example.com --dns cpanel --domains my.example.org run
 | Environment Variable Name | Description |
 |-----------------------|-------------|
 | `CPANEL_BASE_URL` | API server URL |
-| `CPANEL_NAMESERVER` | Nameserver |
 | `CPANEL_TOKEN` | API token |
 | `CPANEL_USERNAME` | username |
 

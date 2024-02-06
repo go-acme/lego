@@ -621,7 +621,6 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "CPANEL_BASE_URL":	API server URL`)
-		ew.writeln(`	- "CPANEL_NAMESERVER":	Nameserver`)
 		ew.writeln(`	- "CPANEL_TOKEN":	API token`)
 		ew.writeln(`	- "CPANEL_USERNAME":	username`)
 		ew.writeln()

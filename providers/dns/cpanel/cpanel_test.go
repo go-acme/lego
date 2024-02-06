@@ -16,8 +16,7 @@ var envTest = tester.NewEnvTest(
 	EnvMode,
 	EnvUsername,
 	EnvToken,
-	EnvBaseURL,
-	EnvNameserver).
+	EnvBaseURL).
 	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
@@ -30,61 +29,46 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success cpanel mode (default)",
 			envVars: map[string]string{
-				EnvUsername:   "user",
-				EnvToken:      "secret",
-				EnvBaseURL:    "https://example.com",
-				EnvNameserver: "ns.example.com:53",
+				EnvUsername: "user",
+				EnvToken:    "secret",
+				EnvBaseURL:  "https://example.com",
 			},
 			expectedMode: "cpanel",
 		},
 		{
 			desc: "success whm mode",
 			envVars: map[string]string{
-				EnvMode:       "whm",
-				EnvUsername:   "user",
-				EnvToken:      "secret",
-				EnvBaseURL:    "https://example.com",
-				EnvNameserver: "ns.example.com:53",
+				EnvMode:     "whm",
+				EnvUsername: "user",
+				EnvToken:    "secret",
+				EnvBaseURL:  "https://example.com",
 			},
 			expectedMode: "whm",
 		},
 		{
 			desc: "missing user",
 			envVars: map[string]string{
-				EnvToken:      "secret",
-				EnvBaseURL:    "https://example.com",
-				EnvNameserver: "ns.example.com:53",
+				EnvToken:   "secret",
+				EnvBaseURL: "https://example.com",
 			},
 			expected: "cpanel: some credentials information are missing: CPANEL_USERNAME",
 		},
 		{
 			desc: "missing token",
 			envVars: map[string]string{
-				EnvUsername:   "user",
-				EnvBaseURL:    "https://example.com",
-				EnvNameserver: "ns.example.com:53",
+				EnvUsername: "user",
+				EnvBaseURL:  "https://example.com",
 			},
 			expected: "cpanel: some credentials information are missing: CPANEL_TOKEN",
 		},
 		{
 			desc: "missing base URL",
 			envVars: map[string]string{
-				EnvUsername:   "user",
-				EnvToken:      "secret",
-				EnvBaseURL:    "",
-				EnvNameserver: "ns.example.com:53",
+				EnvUsername: "user",
+				EnvToken:    "secret",
+				EnvBaseURL:  "",
 			},
 			expected: "cpanel: some credentials information are missing: CPANEL_BASE_URL",
-		},
-		{
-			desc: "missing nameserver",
-			envVars: map[string]string{
-				EnvUsername:   "user",
-				EnvToken:      "secret",
-				EnvBaseURL:    "https://example.com",
-				EnvNameserver: "",
-			},
-			expected: "cpanel: some credentials information are missing: CPANEL_NAMESERVER",
 		},
 	}
 
@@ -111,74 +95,58 @@ func TestNewDNSProvider(t *testing.T) {
 
 func TestNewDNSProviderConfig(t *testing.T) {
 	testCases := []struct {
-		desc       string
-		mode       string
-		username   string
-		token      string
-		baseURL    string
-		nameserver string
-		expected   string
+		desc     string
+		mode     string
+		username string
+		token    string
+		baseURL  string
+		expected string
 	}{
 		{
-			desc:       "success",
-			mode:       "whm",
-			username:   "user",
-			token:      "secret",
-			baseURL:    "https://example.com",
-			nameserver: "ns.example.com:53",
+			desc:     "success",
+			mode:     "whm",
+			username: "user",
+			token:    "secret",
+			baseURL:  "https://example.com",
 		},
 		{
-			desc:       "missing mode",
-			username:   "user",
-			token:      "secret",
-			baseURL:    "https://example.com",
-			nameserver: "ns.example.com:53",
-			expected:   `cpanel: create client error: unsupported mode: ""`,
+			desc:     "missing mode",
+			username: "user",
+			token:    "secret",
+			baseURL:  "https://example.com",
+			expected: `cpanel: create client error: unsupported mode: ""`,
 		},
 		{
-			desc:       "invalid mode",
-			mode:       "test",
-			username:   "user",
-			token:      "secret",
-			baseURL:    "https://example.com",
-			nameserver: "ns.example.com:53",
-			expected:   `cpanel: create client error: unsupported mode: "test"`,
+			desc:     "invalid mode",
+			mode:     "test",
+			username: "user",
+			token:    "secret",
+			baseURL:  "https://example.com",
+			expected: `cpanel: create client error: unsupported mode: "test"`,
 		},
 		{
-			desc:       "missing username",
-			mode:       "whm",
-			username:   "",
-			token:      "secret",
-			baseURL:    "https://example.com",
-			nameserver: "ns.example.com:53",
-			expected:   "cpanel: some credentials information are missing",
+			desc:     "missing username",
+			mode:     "whm",
+			username: "",
+			token:    "secret",
+			baseURL:  "https://example.com",
+			expected: "cpanel: some credentials information are missing",
 		},
 		{
-			desc:       "missing token",
-			mode:       "whm",
-			username:   "user",
-			token:      "",
-			baseURL:    "https://example.com",
-			nameserver: "ns.example.com:53",
-			expected:   "cpanel: some credentials information are missing",
+			desc:     "missing token",
+			mode:     "whm",
+			username: "user",
+			token:    "",
+			baseURL:  "https://example.com",
+			expected: "cpanel: some credentials information are missing",
 		},
 		{
-			desc:       "missing base URL",
-			mode:       "whm",
-			username:   "user",
-			token:      "secret",
-			baseURL:    "",
-			nameserver: "ns.example.com:53",
-			expected:   "cpanel: server information are missing",
-		},
-		{
-			desc:       "missing nameserver",
-			mode:       "whm",
-			username:   "user",
-			token:      "secret",
-			baseURL:    "https://example.com",
-			nameserver: "",
-			expected:   "cpanel: server information are missing",
+			desc:     "missing base URL",
+			mode:     "whm",
+			username: "user",
+			token:    "secret",
+			baseURL:  "",
+			expected: "cpanel: server information are missing",
 		},
 	}
 
@@ -189,7 +157,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			config.Username = test.username
 			config.Token = test.token
 			config.BaseURL = test.baseURL
-			config.Nameserver = test.nameserver
 
 			p, err := NewDNSProviderConfig(config)
 

@@ -21,11 +21,10 @@ import (
 const (
 	envNamespace = "CPANEL_"
 
-	EnvMode       = envNamespace + "MODE"
-	EnvUsername   = envNamespace + "USERNAME"
-	EnvToken      = envNamespace + "TOKEN"
-	EnvBaseURL    = envNamespace + "BASE_URL"
-	EnvNameserver = envNamespace + "NAMESERVER"
+	EnvMode     = envNamespace + "MODE"
+	EnvUsername = envNamespace + "USERNAME"
+	EnvToken    = envNamespace + "TOKEN"
+	EnvBaseURL  = envNamespace + "BASE_URL"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -46,7 +45,6 @@ type Config struct {
 	Username           string
 	Token              string
 	BaseURL            string
-	Nameserver         string
 	TTL                int
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -58,7 +56,7 @@ func NewDefaultConfig() *Config {
 	return &Config{
 		Mode:               env.GetOrDefaultString(EnvMode, "cpanel"),
 		TTL:                env.GetOrDefaultInt(EnvTTL, 300),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, dns01.DefaultPropagationTimeout),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, dns01.DefaultPollingInterval),
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
@@ -68,16 +66,15 @@ func NewDefaultConfig() *Config {
 
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
-	config    *Config
-	client    apiClient
-	dnsClient *shared.DNSClient
+	config *Config
+	client apiClient
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for CPanel.
 // Credentials must be passed in the environment variables:
 // CPANEL_USERNAME, CPANEL_TOKEN, CPANEL_BASE_URL, CPANEL_NAMESERVER.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvUsername, EnvToken, EnvBaseURL, EnvNameserver)
+	values, err := env.Get(EnvUsername, EnvToken, EnvBaseURL)
 	if err != nil {
 		return nil, fmt.Errorf("cpanel: %w", err)
 	}
@@ -86,7 +83,6 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config.Username = values[EnvUsername]
 	config.Token = values[EnvToken]
 	config.BaseURL = values[EnvBaseURL]
-	config.Nameserver = values[EnvNameserver]
 
 	return NewDNSProviderConfig(config)
 }
@@ -101,7 +97,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("cpanel: some credentials information are missing")
 	}
 
-	if config.BaseURL == "" || config.Nameserver == "" {
+	if config.BaseURL == "" {
 		return nil, errors.New("cpanel: server information are missing")
 	}
 
@@ -111,9 +107,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	return &DNSProvider{
-		config:    config,
-		client:    client,
-		dnsClient: shared.NewDNSClient(10 * time.Second),
+		config: config,
+		client: client,
 	}, nil
 }
 
@@ -128,21 +123,19 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	ctx := context.Background()
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	effectiveDomain := strings.TrimPrefix(info.EffectiveFQDN, "_acme-challenge.")
-
-	soa, err := d.dnsClient.SOACall(effectiveDomain, d.config.Nameserver)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("cpanel[mode=%s]: could not find SOA for domain %q (%s) in %s: %w", d.config.Mode, domain, info.EffectiveFQDN, d.config.Nameserver, err)
+		return fmt.Errorf("arvancloud: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
-	zone := dns01.UnFqdn(soa.Hdr.Name)
+	zone := dns01.UnFqdn(authZone)
 
 	zoneInfo, err := d.client.FetchZoneInformation(ctx, zone)
 	if err != nil {
 		return fmt.Errorf("cpanel[mode=%s]: fetch zone information: %w", d.config.Mode, err)
 	}
 
-	serial, err := getZoneSerial(soa.Hdr.Name, zoneInfo)
+	serial, err := getZoneSerial(authZone, zoneInfo)
 	if err != nil {
 		return fmt.Errorf("cpanel[mode=%s]: get zone serial: %w", d.config.Mode, err)
 	}
@@ -204,19 +197,19 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 	ctx := context.Background()
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	soa, err := d.dnsClient.SOACall(strings.TrimPrefix(info.EffectiveFQDN, "_acme-challenge."), d.config.Nameserver)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("cpanel[mode=%s]: could not find SOA for domain %q (%s) in %s: %w", d.config.Mode, domain, info.EffectiveFQDN, d.config.Nameserver, err)
+		return fmt.Errorf("arvancloud: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
 	}
 
-	zone := dns01.UnFqdn(soa.Hdr.Name)
+	zone := dns01.UnFqdn(authZone)
 
 	zoneInfo, err := d.client.FetchZoneInformation(ctx, zone)
 	if err != nil {
 		return fmt.Errorf("cpanel[mode=%s]: fetch zone information: %w", d.config.Mode, err)
 	}
 
-	serial, err := getZoneSerial(soa.Hdr.Name, zoneInfo)
+	serial, err := getZoneSerial(authZone, zoneInfo)
 	if err != nil {
 		return fmt.Errorf("cpanel[mode=%s]: get zone serial: %w", d.config.Mode, err)
 	}

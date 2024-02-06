@@ -1,0 +1,20 @@
+[
+  {
+    "name": "@",
+    "ttl": 86400,
+    "type": "NS",
+    "data": "ns2.core-networks.eu."
+  },
+  {
+    "name": "@",
+    "ttl": 86400,
+    "type": "NS",
+    "data": "ns3.core-networks.com."
+  },
+  {
+    "name": "@",
+    "ttl": 86400,
+    "type": "NS",
+    "data": "ns1.core-networks.de."
+  }
+]

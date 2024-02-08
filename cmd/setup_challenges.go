@@ -57,6 +57,7 @@ func setupHTTPProvider(ctx *cli.Context) challenge.Provider {
 		}
 
 		return ps
+
 	case ctx.IsSet(flgHTTPMemcachedHost):
 		ps, err := memcached.NewMemcachedProvider(ctx.StringSlice(flgHTTPMemcachedHost))
 		if err != nil {
@@ -65,6 +66,7 @@ func setupHTTPProvider(ctx *cli.Context) challenge.Provider {
 		}
 
 		return ps
+
 	case ctx.IsSet(flgHTTPS3Bucket):
 		ps, err := s3.NewHTTPProvider(ctx.String(flgHTTPS3Bucket))
 		if err != nil {
@@ -73,8 +75,10 @@ func setupHTTPProvider(ctx *cli.Context) challenge.Provider {
 		}
 
 		return ps
+
 	case ctx.IsSet(flgHTTPPort):
 		iface := ctx.String(flgHTTPPort)
+
 		if !strings.Contains(iface, ":") {
 			log.Fatal(
 				fmt.Sprintf("The --%s switch only accepts interface:port or :port for its argument.", flgHTTPPort),
@@ -87,19 +91,31 @@ func setupHTTPProvider(ctx *cli.Context) challenge.Provider {
 			log.Fatal("Could not split host and port.", "iface", iface, "error", err)
 		}
 
-		srv := http01.NewProviderServer(host, port)
+		srv := http01.NewProviderServerWithOptions(http01.Options{
+			// TODO(ldez): set network stack
+			Network: "tcp",
+			Address: net.JoinHostPort(host, port),
+		})
+
 		if header := ctx.String(flgHTTPProxyHeader); header != "" {
 			srv.SetProxyHeader(header)
 		}
 
 		return srv
+
 	case ctx.Bool(flgHTTP):
-		srv := http01.NewProviderServer("", "")
+		srv := http01.NewProviderServerWithOptions(http01.Options{
+			// TODO(ldez): set network stack
+			Network: "tcp",
+			Address: net.JoinHostPort("", ":80"),
+		})
+
 		if header := ctx.String(flgHTTPProxyHeader); header != "" {
 			srv.SetProxyHeader(header)
 		}
 
 		return srv
+
 	default:
 		log.Fatal("Invalid HTTP challenge options.")
 		return nil
@@ -119,9 +135,19 @@ func setupTLSProvider(ctx *cli.Context) challenge.Provider {
 			log.Fatal("Could not split host and port.", "iface", iface, "error", err)
 		}
 
-		return tlsalpn01.NewProviderServer(host, port)
+		return tlsalpn01.NewProviderServerWithOptions(tlsalpn01.Options{
+			// TODO(ldez): set network stack
+			Network: "tcp",
+			Host:    host,
+			Port:    port,
+		})
+
 	case ctx.Bool(flgTLS):
-		return tlsalpn01.NewProviderServer("", "")
+		return tlsalpn01.NewProviderServerWithOptions(tlsalpn01.Options{
+			// TODO(ldez): set network stack
+			Network: "tcp",
+		})
+
 	default:
 		log.Fatal("Invalid HTTP challenge options.")
 		return nil

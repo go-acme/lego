@@ -57,10 +57,6 @@ func NewChallenge(core *api.Core, validate ValidateFunc, provider challenge.Prov
 	return chlg
 }
 
-func (c *Challenge) SetProvider(provider challenge.Provider) {
-	c.provider = provider
-}
-
 // Solve manages the provider to validate and solve the challenge.
 func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 	domain := authz.Identifier.Value

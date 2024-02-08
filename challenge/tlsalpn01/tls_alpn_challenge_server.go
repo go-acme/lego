@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/go-acme/lego/v5/challenge"
 	"github.com/go-acme/lego/v5/log"
 )
 
@@ -20,34 +21,52 @@ const (
 	defaultTLSPort = "443"
 )
 
+var _ challenge.Provider = (*ProviderServer)(nil)
+
+type Options struct {
+	Network      string
+	NetworkStack challenge.NetworkStack
+	Host         string
+	Port         string
+}
+
 // ProviderServer implements ChallengeProvider for `TLS-ALPN-01` challenge.
 // It may be instantiated without using the NewProviderServer
 // if you want only to use the default values.
 type ProviderServer struct {
-	iface    string
-	port     string
+	network string
+	address string
+
 	listener net.Listener
 }
 
-// NewProviderServer creates a new ProviderServer on the selected interface and port.
-// Setting iface and / or port to an empty string will make the server fall back to
-// the "any" interface and port 443 respectively.
-func NewProviderServer(iface, port string) *ProviderServer {
-	return &ProviderServer{iface: iface, port: port}
+// NewProviderServerWithOptions creates a new ProviderServer.
+func NewProviderServerWithOptions(opts Options) *ProviderServer {
+	if opts.Port == "" {
+		// Fallback to port 443 if the port was not provided.
+		opts.Port = defaultTLSPort
+	}
+
+	if opts.Network == "" {
+		opts.Network = "tcp"
+	}
+
+	return &ProviderServer{
+		network: opts.NetworkStack.Network(opts.Network),
+		address: net.JoinHostPort(opts.Host, opts.Port),
+	}
 }
 
-func (s *ProviderServer) GetAddress() string {
-	return net.JoinHostPort(s.iface, s.port)
+// NewProviderServer creates a new ProviderServer on the selected interface and port.
+// Setting host and / or port to an empty string will make the server fall back to
+// the "any" interface and port 443 respectively.
+func NewProviderServer(host, port string) *ProviderServer {
+	return NewProviderServerWithOptions(Options{Host: host, Port: port})
 }
 
 // Present generates a certificate with an SHA-256 digest of the keyAuth provided
 // as the acmeValidation-v1 extension value to conform to the ACME-TLS-ALPN spec.
 func (s *ProviderServer) Present(domain, token, keyAuth string) error {
-	if s.port == "" {
-		// Fallback to port 443 if the port was not provided.
-		s.port = defaultTLSPort
-	}
-
 	// Generate the challenge certificate using the provided keyAuth and domain.
 	cert, err := ChallengeCert(domain, keyAuth)
 	if err != nil {
@@ -65,7 +84,7 @@ func (s *ProviderServer) Present(domain, token, keyAuth string) error {
 	tlsConf.NextProtos = []string{ACMETLS1Protocol}
 
 	// Create the listener with the created tls.Config.
-	s.listener, err = tls.Listen("tcp", s.GetAddress(), tlsConf)
+	s.listener, err = tls.Listen(s.network, s.GetAddress(), tlsConf)
 	if err != nil {
 		return fmt.Errorf("could not start HTTPS server for challenge: %w", err)
 	}
@@ -93,4 +112,8 @@ func (s *ProviderServer) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	return nil
+}
+
+func (s *ProviderServer) GetAddress() string {
+	return s.address
 }

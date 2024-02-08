@@ -52,10 +52,6 @@ func NewChallenge(core *api.Core, validate ValidateFunc, provider challenge.Prov
 	return chlg
 }
 
-func (c *Challenge) SetProvider(provider challenge.Provider) {
-	c.provider = provider
-}
-
 func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 	domain := challenge.GetTargetedDomain(authz)
 	log.Info("acme: Trying to solve HTTP-01.", "domain", domain)

@@ -93,7 +93,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.DNSEndpoint == "" {
-		return nil, fmt.Errorf("vkcloud: DNS endpoint is missing in config")
+		return nil, errors.New("vkcloud: DNS endpoint is missing in config")
 	}
 
 	authOpts := gophercloud.AuthOptions{

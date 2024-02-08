@@ -22,7 +22,7 @@ var memcachedHosts = loadMemcachedHosts()
 
 func loadMemcachedHosts() []string {
 	memcachedHostsStr := os.Getenv("MEMCACHED_HOSTS")
-	if len(memcachedHostsStr) > 0 {
+	if memcachedHostsStr != "" {
 		return strings.Split(memcachedHostsStr, ",")
 	}
 	return nil

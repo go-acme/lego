@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"slices"
 	"strings"
 	"time"
 
@@ -145,7 +146,7 @@ func (d *DNSProvider) Present(domain, _, keyAuth string) error {
 	var found bool
 	var existingRecord shared.ZoneRecord
 	for _, record := range zoneInfo {
-		if contains(record.DataB64, valueB64) {
+		if slices.Contains(record.DataB64, valueB64) {
 			existingRecord = record
 			found = true
 			break
@@ -219,7 +220,7 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 	var found bool
 	var existingRecord shared.ZoneRecord
 	for _, record := range zoneInfo {
-		if contains(record.DataB64, valueB64) {
+		if slices.Contains(record.DataB64, valueB64) {
 			existingRecord = record
 			found = true
 			break
@@ -327,13 +328,4 @@ func createClient(config *Config) (apiClient, error) {
 	default:
 		return nil, fmt.Errorf("unsupported mode: %q", config.Mode)
 	}
-}
-
-func contains(values []string, value string) bool {
-	for _, v := range values {
-		if v == value {
-			return true
-		}
-	}
-	return false
 }

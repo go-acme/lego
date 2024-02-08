@@ -108,7 +108,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	case config.APIKey != "" && config.SecretKey != "":
 		credential = credentials.NewAccessKeyCredential(config.APIKey, config.SecretKey)
 	default:
-		return nil, fmt.Errorf("alicloud: ram role or credentials missing")
+		return nil, errors.New("alicloud: ram role or credentials missing")
 	}
 
 	conf := sdk.NewConfig().WithTimeout(config.HTTPTimeout)

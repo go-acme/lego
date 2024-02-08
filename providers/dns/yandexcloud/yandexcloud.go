@@ -75,11 +75,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.IamToken == "" {
-		return nil, fmt.Errorf("yandexcloud: some credentials information are missing IAM token")
+		return nil, errors.New("yandexcloud: some credentials information are missing IAM token")
 	}
 
 	if config.FolderID == "" {
-		return nil, fmt.Errorf("yandexcloud: some credentials information are missing folder id")
+		return nil, errors.New("yandexcloud: some credentials information are missing folder id")
 	}
 
 	creds, err := decodeCredentials(config.IamToken)

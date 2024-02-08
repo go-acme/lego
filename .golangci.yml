@@ -89,18 +89,9 @@ linters-settings:
       - name: unreachable-code
       - name: redefines-builtin-id
   testifylint:
-    enable:
-      - bool-compare
-      - compares
-      - empty
-      - error-is-as
-      - error-nil
-      - expected-actual
-      - float-compare
-      - len
-      - suite-dont-use-pkg
-      - suite-extra-assert-call
-      - suite-thelper
+    disable:
+      - require-error
+      - go-require
 
 linters:
   enable-all: true
@@ -153,12 +144,13 @@ linters:
 
 issues:
   exclude-use-default: false
-  max-per-linter: 0
+  max-issues-per-linter: 0
   max-same-issues: 0
   exclude:
     - 'Error return value of .((os\.)?std(out|err)\..*|.*Close|.*Flush|os\.Remove(All)?|.*printf?|os\.(Un)?Setenv). is not checked'
     - 'exported (type|method|function) (.+) should have comment or be unexported'
     - 'ST1000: at least one file in a package should have a package comment'
+    - 'fmt.Sprintf can be replaced with string addition'
   exclude-rules:
     - path: (.+)_test.go
       linters:

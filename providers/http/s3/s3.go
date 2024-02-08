@@ -4,6 +4,7 @@ package s3
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -23,7 +24,7 @@ type HTTPProvider struct {
 // Credentials must be passed in the environment variables.
 func NewHTTPProvider(bucket string) (*HTTPProvider, error) {
 	if bucket == "" {
-		return nil, fmt.Errorf("s3: bucket name missing")
+		return nil, errors.New("s3: bucket name missing")
 	}
 
 	ctx := context.Background()

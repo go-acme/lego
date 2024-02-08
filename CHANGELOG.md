@@ -918,7 +918,7 @@ There was a problem when creating the tag v3.0.1, this tag has been invalidated.
 ### Added:
 - lib: A new DNS provider for OTC.
 - lib: The `AWS_HOSTED_ZONE_ID` environment variable for the Route53 DNS provider to directly specify the zone.
-- lib: The `RFC2136_TIMEOUT` enviroment variable to make the timeout for the RFC2136 provider configurable.
+- lib: The `RFC2136_TIMEOUT` environment variable to make the timeout for the RFC2136 provider configurable.
 - lib: The `GCE_SERVICE_ACCOUNT_FILE` environment variable to specify a service account file for the Google Cloud DNS provider.
 
 ### Fixed:

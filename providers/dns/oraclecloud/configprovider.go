@@ -28,7 +28,7 @@ func (p *configProvider) PrivateRSAKey() (*rsa.PrivateKey, error) {
 		return nil, err
 	}
 
-	return common.PrivateKeyFromBytes(privateKey, common.String(p.privateKeyPassphrase))
+	return common.PrivateKeyFromBytesWithPassword(privateKey, []byte(p.privateKeyPassphrase))
 }
 
 func (p *configProvider) KeyID() (string, error) {

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"slices"
 	"strconv"
 	"time"
 
@@ -272,13 +273,11 @@ func containsValue(record *internal.Record, value string) bool {
 		return false
 	}
 
-	for _, val := range record.Value {
-		if val.Value == fmt.Sprintf(`%q`, value) {
-			return true
-		}
-	}
+	qValue := fmt.Sprintf(`%q`, value)
 
-	return false
+	return slices.ContainsFunc(record.Value, func(val internal.RecordValue) bool {
+		return val.Value == qValue
+	})
 }
 
 func backoff(min, max time.Duration, attemptNum int, resp *http.Response) time.Duration {

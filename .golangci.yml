@@ -7,8 +7,6 @@ linters-settings:
     check-shadowing: true
   gocyclo:
     min-complexity: 12
-  maligned:
-    suggest-new: true
   goconst:
     min-len: 3
     min-occurrences: 3

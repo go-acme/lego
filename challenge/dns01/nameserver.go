@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -216,12 +217,10 @@ func fetchSoaByFqdn(fqdn string, nameservers []string) (*soaCacheEntry, error) {
 
 // dnsMsgContainsCNAME checks for a CNAME answer in msg.
 func dnsMsgContainsCNAME(msg *dns.Msg) bool {
-	for _, ans := range msg.Answer {
-		if _, ok := ans.(*dns.CNAME); ok {
-			return true
-		}
-	}
-	return false
+	return slices.ContainsFunc(msg.Answer, func(rr dns.RR) bool {
+		_, ok := rr.(*dns.CNAME)
+		return ok
+	})
 }
 
 func dnsQuery(fqdn string, rtype uint16, nameservers []string, recursive bool) (*dns.Msg, error) {

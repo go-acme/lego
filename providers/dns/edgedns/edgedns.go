@@ -4,6 +4,7 @@ package edgedns
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -224,13 +225,9 @@ func getZone(domain string) (string, error) {
 }
 
 func containsValue(values []string, value string) bool {
-	for _, val := range values {
-		if strings.Trim(val, `"`) == value {
-			return true
-		}
-	}
-
-	return false
+	return slices.ContainsFunc(values, func(val string) bool {
+		return strings.Trim(val, `"`) == value
+	})
 }
 
 func isNotFound(err error) bool {

@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -309,10 +310,8 @@ func decodeCredentials(accountB64 string) (ycsdk.Credentials, error) {
 }
 
 func appendRecordSetData(record *ycdns.RecordSet, value string) bool {
-	for _, data := range record.GetData() {
-		if data == value {
-			return false
-		}
+	if slices.Contains(record.GetData(), value) {
+		return false
 	}
 
 	record.SetData(append(record.GetData(), value))

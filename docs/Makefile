@@ -1,6 +1,6 @@
 .PHONY: default clean hugo hugo-build
 
-default: hugo
+default: clean hugo
 
 clean:
 	rm -rf public/

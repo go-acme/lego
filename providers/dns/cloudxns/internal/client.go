@@ -60,7 +60,7 @@ func (c *Client) GetDomainInformation(ctx context.Context, fqdn string) (*Data, 
 
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return nil, fmt.Errorf("cloudflare: could not find zone for FQDN %q: %w", fqdn, err)
+		return nil, fmt.Errorf("could not find zone for FQDN %q: %w", fqdn, err)
 	}
 
 	var domains []Data

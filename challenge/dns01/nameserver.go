@@ -99,12 +99,12 @@ func lookupNameservers(fqdn string) ([]string, error) {
 
 	zone, err := FindZoneByFqdn(fqdn)
 	if err != nil {
-		return nil, fmt.Errorf("could not determine the zone: %w", err)
+		return nil, fmt.Errorf("[fqdn=%s] could not determine the zone: %w", fqdn, err)
 	}
 
 	r, err := dnsQuery(zone, dns.TypeNS, recursiveNameservers, true)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("[zone=%s] NS call failed: %w", zone, err)
 	}
 
 	for _, rr := range r.Answer {
@@ -116,7 +116,8 @@ func lookupNameservers(fqdn string) ([]string, error) {
 	if len(authoritativeNss) > 0 {
 		return authoritativeNss, nil
 	}
-	return nil, errors.New("could not determine authoritative nameservers")
+
+	return nil, fmt.Errorf("[zone=%s] could not determine authoritative nameservers", zone)
 }
 
 // FindPrimaryNsByFqdn determines the primary nameserver of the zone apex for the given fqdn
@@ -212,7 +213,12 @@ func fetchSoaByFqdn(fqdn string, nameservers []string) (*soaCacheEntry, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("could not find the start of authority for %s%s", fqdn, formatDNSError(in, err))
+	errMsg := "could not find the start of authority for %s"
+	if errW := wrapDNSError(in, err); errW != nil {
+		return nil, fmt.Errorf(errMsg+": %w", fqdn, errW)
+	}
+
+	return nil, fmt.Errorf(errMsg, fqdn)
 }
 
 // dnsMsgContainsCNAME checks for a CNAME answer in msg.
@@ -228,14 +234,22 @@ func dnsQuery(fqdn string, rtype uint16, nameservers []string, recursive bool) (
 
 	var in *dns.Msg
 	var err error
+	var errAll error
 
 	for _, ns := range nameservers {
 		in, err = sendDNSQuery(m, ns)
 		if err == nil && len(in.Answer) > 0 {
 			break
 		}
+
+		errAll = errors.Join(errAll, err)
 	}
-	return in, err
+
+	if err != nil {
+		return in, errAll
+	}
+
+	return in, nil
 }
 
 func createDNSMsg(fqdn string, rtype uint16, recursive bool) *dns.Msg {
@@ -254,8 +268,11 @@ func sendDNSQuery(m *dns.Msg, ns string) (*dns.Msg, error) {
 	if ok, _ := strconv.ParseBool(os.Getenv("LEGO_EXPERIMENTAL_DNS_TCP_ONLY")); ok {
 		tcp := &dns.Client{Net: "tcp", Timeout: dnsTimeout}
 		in, _, err := tcp.Exchange(m, ns)
+		if err != nil {
+			return in, fmt.Errorf("DNS call to %s: %w", ns, err)
+		}
 
-		return in, err
+		return in, nil
 	}
 
 	udp := &dns.Client{Net: "udp", Timeout: dnsTimeout}
@@ -267,23 +284,31 @@ func sendDNSQuery(m *dns.Msg, ns string) (*dns.Msg, error) {
 		in, _, err = tcp.Exchange(m, ns)
 	}
 
-	return in, err
+	if err != nil {
+		return in, fmt.Errorf("DNS call to %s: %w", ns, err)
+	}
+
+	return in, nil
 }
 
-func formatDNSError(msg *dns.Msg, err error) string {
-	var parts []string
-
+func wrapDNSError(msg *dns.Msg, err error) error {
 	if msg != nil {
-		parts = append(parts, dns.RcodeToString[msg.Rcode])
+		m := fmt.Sprintf("code=%s, question='%s'", dns.RcodeToString[msg.Rcode], formatQuestions(msg.Question))
+		if err != nil {
+			return fmt.Errorf("%s: %w", m, err)
+		}
+
+		return errors.New(m)
 	}
 
-	if err != nil {
-		parts = append(parts, err.Error())
+	return err
+}
+
+func formatQuestions(questions []dns.Question) string {
+	var parts []string
+	for _, question := range questions {
+		parts = append(parts, strings.ReplaceAll(strings.TrimPrefix(question.String(), ";"), "\t", " "))
 	}
 
-	if len(parts) > 0 {
-		return ": " + strings.Join(parts, " ")
-	}
-
-	return ""
+	return strings.Join(parts, ";")
 }

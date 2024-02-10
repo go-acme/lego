@@ -1,9 +1,11 @@
 package dns01
 
 import (
+	"errors"
 	"sort"
 	"testing"
 
+	"github.com/miekg/dns"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -109,7 +111,7 @@ var findXByFqdnTestCases = []struct {
 		fqdn:          "test.lego.zz.",
 		zone:          "lego.zz.",
 		nameservers:   []string{"8.8.8.8:53"},
-		expectedError: "could not find the start of authority for test.lego.zz.: NXDOMAIN",
+		expectedError: "could not find the start of authority for test.lego.zz.: code=NXDOMAIN, question='zz. IN  SOA'",
 	},
 	{
 		desc:        "several non existent nameservers",
@@ -119,11 +121,12 @@ var findXByFqdnTestCases = []struct {
 		nameservers: []string{":7053", ":8053", "8.8.8.8:53"},
 	},
 	{
-		desc:          "only non-existent nameservers",
-		fqdn:          "mail.google.com.",
-		zone:          "google.com.",
-		nameservers:   []string{":7053", ":8053", ":9053"},
-		expectedError: "could not find the start of authority for mail.google.com.: read udp",
+		desc:        "only non-existent nameservers",
+		fqdn:        "mail.google.com.",
+		zone:        "google.com.",
+		nameservers: []string{":7053", ":8053", ":9053"},
+		// use only the start of the message because the port changes with each call: 127.0.0.1:XXXXX->127.0.0.1:7053.
+		expectedError: "could not find the start of authority for mail.google.com.: DNS call to :7053: read udp",
 	},
 	{
 		desc:          "no nameservers",
@@ -194,6 +197,53 @@ func TestResolveConfServers(t *testing.T) {
 			sort.Strings(test.expected)
 
 			assert.Equal(t, test.expected, result)
+		})
+	}
+}
+
+func Test_wrapDNSError(t *testing.T) {
+	msg := createDNSMsg("example.com.", dns.TypeTXT, true)
+	msg.Rcode = dns.RcodeNameError
+
+	testCases := []struct {
+		desc     string
+		in       *dns.Msg
+		err      error
+		expected string
+	}{
+		{
+			desc:     "DNS response and error",
+			in:       msg,
+			err:      errors.New("oops"),
+			expected: "code=NXDOMAIN, question='example.com. IN  TXT': oops",
+		},
+		{
+			desc:     "only DNS response",
+			in:       msg,
+			expected: "code=NXDOMAIN, question='example.com. IN  TXT'",
+		},
+		{
+			desc:     "only error",
+			err:      errors.New("oops"),
+			expected: "oops",
+		},
+		{
+			desc:     "nothing",
+			expected: "",
+		},
+	}
+
+	for _, test := range testCases {
+		test := test
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			err := wrapDNSError(test.in, test.err)
+			if test.expected == "" {
+				require.NoError(t, err)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
 		})
 	}
 }

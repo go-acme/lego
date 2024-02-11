@@ -214,7 +214,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 func getAuthZone(domain string) (string, error) {
 	authZone, err := dns01.FindZoneByFqdn(domain)
 	if err != nil {
-		return "", fmt.Errorf("could not find zone for FQDN %q: %w", domain, err)
+		return "", fmt.Errorf("could not find zone: %w", err)
 	}
 
 	zoneName := dns01.UnFqdn(authZone)

@@ -140,7 +140,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	rootDomain, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("nicmanager: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
+		return fmt.Errorf("nicmanager: could not find zone for domain %q: %w", domain, err)
 	}
 
 	ctx := context.Background()
@@ -173,7 +173,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	rootDomain, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("nicmanager: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
+		return fmt.Errorf("nicmanager: could not find zone for domain %q: %w", domain, err)
 	}
 
 	ctx := context.Background()

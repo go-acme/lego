@@ -33,7 +33,7 @@ func (d *DNSProvider) getHostedZone(domain string) (*dnspod.DomainListItem, erro
 
 	authZone, err := dns01.FindZoneByFqdn(domain)
 	if err != nil {
-		return nil, fmt.Errorf("could not find zone for FQDN %q : %w", domain, err)
+		return nil, fmt.Errorf("could not find zone: %w", err)
 	}
 
 	var hostedZone *dnspod.DomainListItem

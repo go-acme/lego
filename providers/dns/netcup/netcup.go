@@ -97,7 +97,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("netcup: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
+		return fmt.Errorf("netcup: could not find zone for domain %q: %w", domain, err)
 	}
 
 	ctx, err := d.client.CreateSessionContext(context.Background())
@@ -144,7 +144,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	zone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("netcup: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
+		return fmt.Errorf("netcup: could not find zone for domain %q: %w", domain, err)
 	}
 
 	ctx, err := d.client.CreateSessionContext(context.Background())

@@ -116,7 +116,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zoneName, recordName, err := d.findZoneAndRecordName(info.EffectiveFQDN)
 	if err != nil {
-		return err
+		return fmt.Errorf("exoscale: %w", err)
 	}
 
 	zone, err := d.findExistingZone(zoneName)
@@ -171,7 +171,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	zoneName, recordName, err := d.findZoneAndRecordName(info.EffectiveFQDN)
 	if err != nil {
-		return err
+		return fmt.Errorf("exoscale: %w", err)
 	}
 
 	zone, err := d.findExistingZone(zoneName)
@@ -246,7 +246,7 @@ func (d *DNSProvider) findExistingRecordID(zoneID, recordName string) (string, e
 func (d *DNSProvider) findZoneAndRecordName(fqdn string) (string, string, error) {
 	zone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return "", "", fmt.Errorf("designate: could not find zone for FQDN %q: %w", fqdn, err)
+		return "", "", fmt.Errorf("could not find zone: %w", err)
 	}
 
 	zone = dns01.UnFqdn(zone)

@@ -55,7 +55,7 @@ func NewClient(authID, subAuthID, authPassword string) (*Client, error) {
 func (c *Client) GetZone(ctx context.Context, authFQDN string) (*Zone, error) {
 	authZone, err := dns01.FindZoneByFqdn(authFQDN)
 	if err != nil {
-		return nil, fmt.Errorf("could not find zone for FQDN %q: %w", authFQDN, err)
+		return nil, fmt.Errorf("could not find zone: %w", err)
 	}
 
 	authZoneName := dns01.UnFqdn(authZone)

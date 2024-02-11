@@ -1,9 +1,11 @@
 package dns01
 
 import (
+	"errors"
 	"sort"
 	"testing"
 
+	"github.com/miekg/dns"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -52,7 +54,7 @@ func TestLookupNameserversErr(t *testing.T) {
 		{
 			desc:  "invalid tld",
 			fqdn:  "_null.n0n0.",
-			error: "could not determine the zone",
+			error: "could not find zone",
 		},
 	}
 
@@ -109,7 +111,7 @@ var findXByFqdnTestCases = []struct {
 		fqdn:          "test.lego.zz.",
 		zone:          "lego.zz.",
 		nameservers:   []string{"8.8.8.8:53"},
-		expectedError: "could not find the start of authority for test.lego.zz.: NXDOMAIN",
+		expectedError: "[fqdn=test.lego.zz.] could not find the start of authority for 'test.lego.zz.' [question='zz. IN  SOA', code=NXDOMAIN]",
 	},
 	{
 		desc:        "several non existent nameservers",
@@ -119,18 +121,19 @@ var findXByFqdnTestCases = []struct {
 		nameservers: []string{":7053", ":8053", "8.8.8.8:53"},
 	},
 	{
-		desc:          "only non-existent nameservers",
-		fqdn:          "mail.google.com.",
-		zone:          "google.com.",
-		nameservers:   []string{":7053", ":8053", ":9053"},
-		expectedError: "could not find the start of authority for mail.google.com.: read udp",
+		desc:        "only non-existent nameservers",
+		fqdn:        "mail.google.com.",
+		zone:        "google.com.",
+		nameservers: []string{":7053", ":8053", ":9053"},
+		// use only the start of the message because the port changes with each call: 127.0.0.1:XXXXX->127.0.0.1:7053.
+		expectedError: "[fqdn=mail.google.com.] could not find the start of authority for 'mail.google.com.': DNS call error: read udp ",
 	},
 	{
 		desc:          "no nameservers",
 		fqdn:          "test.ldez.com.",
 		zone:          "ldez.com.",
 		nameservers:   []string{},
-		expectedError: "could not find the start of authority for test.ldez.com.",
+		expectedError: "[fqdn=test.ldez.com.] could not find the start of authority for 'test.ldez.com.': empty list of nameservers",
 	},
 }
 
@@ -142,7 +145,7 @@ func TestFindZoneByFqdnCustom(t *testing.T) {
 			zone, err := FindZoneByFqdnCustom(test.fqdn, test.nameservers)
 			if test.expectedError != "" {
 				require.Error(t, err)
-				assert.Contains(t, err.Error(), test.expectedError)
+				assert.ErrorContains(t, err, test.expectedError)
 			} else {
 				require.NoError(t, err)
 				assert.Equal(t, test.zone, zone)
@@ -159,7 +162,7 @@ func TestFindPrimaryNsByFqdnCustom(t *testing.T) {
 			ns, err := FindPrimaryNsByFqdnCustom(test.fqdn, test.nameservers)
 			if test.expectedError != "" {
 				require.Error(t, err)
-				assert.Contains(t, err.Error(), test.expectedError)
+				assert.ErrorContains(t, err, test.expectedError)
 			} else {
 				require.NoError(t, err)
 				assert.Equal(t, test.primaryNs, ns)
@@ -194,6 +197,73 @@ func TestResolveConfServers(t *testing.T) {
 			sort.Strings(test.expected)
 
 			assert.Equal(t, test.expected, result)
+		})
+	}
+}
+
+func TestDNSError_Error(t *testing.T) {
+	msgIn := createDNSMsg("example.com.", dns.TypeTXT, true)
+
+	msgOut := createDNSMsg("example.org.", dns.TypeSOA, true)
+	msgOut.Rcode = dns.RcodeNameError
+
+	testCases := []struct {
+		desc     string
+		err      *DNSError
+		expected string
+	}{
+		{
+			desc:     "empty error",
+			err:      &DNSError{},
+			expected: "DNS error",
+		},
+		{
+			desc: "all fields",
+			err: &DNSError{
+				Message: "Oops",
+				NS:      "example.com.",
+				MsgIn:   msgIn,
+				MsgOut:  msgOut,
+				Err:     errors.New("I did it again"),
+			},
+			expected: "Oops: I did it again [ns=example.com., question='example.com. IN  TXT', code=NXDOMAIN]",
+		},
+		{
+			desc: "only NS",
+			err: &DNSError{
+				NS: "example.com.",
+			},
+			expected: "DNS error [ns=example.com.]",
+		},
+		{
+			desc: "only MsgIn",
+			err: &DNSError{
+				MsgIn: msgIn,
+			},
+			expected: "DNS error [question='example.com. IN  TXT']",
+		},
+		{
+			desc: "only MsgOut",
+			err: &DNSError{
+				MsgOut: msgOut,
+			},
+			expected: "DNS error [question='example.org. IN  SOA', code=NXDOMAIN]",
+		},
+		{
+			desc: "only Err",
+			err: &DNSError{
+				Err: errors.New("I did it again"),
+			},
+			expected: "DNS error: I did it again",
+		},
+	}
+
+	for _, test := range testCases {
+		test := test
+		t.Run(test.desc, func(t *testing.T) {
+			t.Parallel()
+
+			assert.EqualError(t, test.err, test.expected)
 		})
 	}
 }

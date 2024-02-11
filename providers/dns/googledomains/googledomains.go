@@ -89,7 +89,7 @@ type DNSProvider struct {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	zone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
 	if err != nil {
-		return fmt.Errorf("googledomains: error finding zone for domain %s: %w", domain, err)
+		return fmt.Errorf("googledomains: could not find zone for domain %q: %w", domain, err)
 	}
 
 	rotateReq := acmedns.RotateChallengesRequest{
@@ -109,7 +109,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	zone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
 	if err != nil {
-		return fmt.Errorf("googledomains: error finding zone for domain %s: %w", domain, err)
+		return fmt.Errorf("googledomains: could not find zone for domain %q: %w", domain, err)
 	}
 
 	rotateReq := acmedns.RotateChallengesRequest{

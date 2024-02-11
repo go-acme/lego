@@ -177,7 +177,7 @@ func (d *DNSProvider) getHostedZoneInfo(fqdn string) (*hostedZoneInfo, error) {
 	// Lookup the zone that handles the specified FQDN.
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return nil, fmt.Errorf("inwx: could not find zone for FQDN %q: %w", fqdn, err)
+		return nil, fmt.Errorf("could not find zone: %w", err)
 	}
 
 	// Query the authority zone.

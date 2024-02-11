@@ -82,7 +82,7 @@ func (d *DNSProvider) cleanupTXTRecord(fqdn, value string) error {
 func (d *DNSProvider) getHostedZone(domain string) (*iaas.DNS, error) {
 	authZone, err := dns01.FindZoneByFqdn(domain)
 	if err != nil {
-		return nil, fmt.Errorf("could not find zone for FQDN %q: %w", domain, err)
+		return nil, fmt.Errorf("could not find zone: %w", err)
 	}
 
 	zoneName := dns01.UnFqdn(authZone)

@@ -107,7 +107,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zoneNameOrID, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("oraclecloud: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
+		return fmt.Errorf("oraclecloud: could not find zone for domain %q: %w", domain, err)
 	}
 
 	// generate request to dns.PatchDomainRecordsRequest
@@ -142,7 +142,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	zoneNameOrID, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("oraclecloud: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
+		return fmt.Errorf("oraclecloud: could not find zone for domain %q: %w", domain, err)
 	}
 
 	// search to TXT record's hash to delete

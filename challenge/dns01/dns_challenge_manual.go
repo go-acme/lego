@@ -25,7 +25,7 @@ func (*DNSProviderManual) Present(domain, token, keyAuth string) error {
 
 	authZone, err := FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return err
+		return fmt.Errorf("manual: could not find zone: %w", err)
 	}
 
 	fmt.Printf("lego: Please create the following TXT record in your %s zone:\n", authZone)
@@ -33,8 +33,11 @@ func (*DNSProviderManual) Present(domain, token, keyAuth string) error {
 	fmt.Printf("lego: Press 'Enter' when you are done\n")
 
 	_, err = bufio.NewReader(os.Stdin).ReadBytes('\n')
+	if err != nil {
+		return fmt.Errorf("manual: %w", err)
+	}
 
-	return err
+	return nil
 }
 
 // CleanUp prints instructions for manually removing the TXT record.
@@ -43,7 +46,7 @@ func (*DNSProviderManual) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return err
+		return fmt.Errorf("manual: could not find zone: %w", err)
 	}
 
 	fmt.Printf("lego: You can now remove this TXT record from your %s zone:\n", authZone)

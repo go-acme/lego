@@ -141,7 +141,7 @@ func (d *DNSProviderPublic) getHostedZoneID(ctx context.Context, fqdn string) (s
 
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("could not find zone: %w", err)
 	}
 
 	zone, err := d.zoneClient.Get(ctx, d.config.ResourceGroup, dns01.UnFqdn(authZone), nil)

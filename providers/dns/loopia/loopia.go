@@ -201,7 +201,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 func (d *DNSProvider) splitDomain(fqdn string) (string, string, error) {
 	authZone, err := d.findZoneByFqdn(fqdn)
 	if err != nil {
-		return "", "", fmt.Errorf("desec: could not find zone for FQDN %q: %w", fqdn, err)
+		return "", "", fmt.Errorf("could not find zone: %w", err)
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(fqdn, authZone)

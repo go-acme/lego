@@ -360,7 +360,7 @@ func (d *DNSProvider) lookupHostedZoneID(domain string) (string, []*dns.ManagedZ
 
 	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(domain))
 	if err != nil {
-		return "", nil, fmt.Errorf("could not find zone for FQDN %q: %w", domain, err)
+		return "", nil, fmt.Errorf("could not find zone: %w", err)
 	}
 
 	zones, err := d.client.ManagedZones.

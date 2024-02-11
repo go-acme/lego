@@ -94,7 +94,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := getZone(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("bunny: failed to find zone: fqdn=%s: %w", info.EffectiveFQDN, err)
+		return fmt.Errorf("bunny: could not find zone for domain %q: %w", domain, err)
 	}
 
 	ctx := context.Background()
@@ -129,7 +129,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := getZone(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("bunny:  failed to find zone: fqdn=%s: %w", info.EffectiveFQDN, err)
+		return fmt.Errorf("bunny: could not find zone for domain %q: %w", domain, err)
 	}
 
 	ctx := context.Background()

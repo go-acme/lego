@@ -78,6 +78,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/liquidweb"
 	"github.com/go-acme/lego/v4/providers/dns/loopia"
 	"github.com/go-acme/lego/v4/providers/dns/luadns"
+	"github.com/go-acme/lego/v4/providers/dns/mailinabox"
 	"github.com/go-acme/lego/v4/providers/dns/metaname"
 	"github.com/go-acme/lego/v4/providers/dns/mydnsjp"
 	"github.com/go-acme/lego/v4/providers/dns/mythicbeasts"
@@ -278,10 +279,12 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return linode.NewDNSProvider()
 	case "liquidweb":
 		return liquidweb.NewDNSProvider()
-	case "luadns":
-		return luadns.NewDNSProvider()
 	case "loopia":
 		return loopia.NewDNSProvider()
+	case "luadns":
+		return luadns.NewDNSProvider()
+	case "mailinabox":
+		return mailinabox.NewDNSProvider()
 	case "manual":
 		return dns01.NewDNSProviderManual()
 	case "metaname":

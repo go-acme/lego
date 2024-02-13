@@ -1,0 +1,45 @@
+{
+  "meta": {
+    "invocationId": "95cdcc21-b9c3-4b21-8bd1-b05c34c56147"
+  },
+  "data": {
+    "type": "zone",
+    "id": "dipcon.com",
+    "attributes": {
+      "organisationId": "10154",
+      "organisationDescription": "My Company AB",
+      "dnsTypeDescription": "Anycast",
+      "slave": false,
+      "pending": false,
+      "deleted": false,
+      "settings": {
+        "mname": "dns01.dipcon.com.",
+        "refresh": 3600,
+        "expire": 604800,
+        "ttl": 600
+      },
+      "records": {
+        "@": {
+          "NS": [
+            {
+              "ttl": 3600,
+              "rdata": "193.14.90.194",
+              "comments": "this is a comment"
+            }
+          ]
+        }
+      },
+      "redirects": {
+        "<name>": [
+          {
+            "path": "/x/y",
+            "destination": "https://abion.com/?ref=dipcon",
+            "status": 301,
+            "slugs": true,
+            "certificate": true
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,3 +1,5 @@
+//go:build !manualdnsonly
+
 package dns
 
 import (

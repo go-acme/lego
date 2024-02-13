@@ -137,6 +137,33 @@ func TestUpdateZone(t *testing.T) {
 	assert.Equal(t, expected, zone)
 }
 
+func TestUpdateZone_error(t *testing.T) {
+	domain := "example.com"
+
+	client := setupTest(t, http.MethodPatch, "/v1/zones/"+domain, http.StatusUnauthorized, "error.json")
+
+	patch := ZoneRequest{
+		Data: Zone{
+			Type: "zone",
+			ID:   domain,
+			Attributes: Attributes{
+				Records: map[string]map[string][]Record{
+					"_acme-challenge.test": {
+						"TXT": []Record{
+							{Data: "test"},
+							{Data: "test1"},
+							{Data: "test2"},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	_, err := client.UpdateZone(context.Background(), domain, patch)
+	require.EqualError(t, err, "could not update zone example.com: api error: status=401, message=Authentication Error")
+}
+
 func TestGetZones(t *testing.T) {
 	client := setupTest(t, http.MethodGet, "/v1/zones/", http.StatusOK, "zones.json")
 
@@ -169,6 +196,13 @@ func TestGetZones(t *testing.T) {
 	}
 
 	assert.Equal(t, expected, zones)
+}
+
+func TestGetZones_error(t *testing.T) {
+	client := setupTest(t, http.MethodGet, "/v1/zones/", http.StatusUnauthorized, "error.json")
+
+	_, err := client.GetZones(context.Background(), nil)
+	require.EqualError(t, err, "could not get zones: api error: status=401, message=Authentication Error")
 }
 
 func TestGetZone(t *testing.T) {
@@ -226,4 +260,13 @@ func TestGetZone(t *testing.T) {
 	}
 
 	assert.Equal(t, expected, zones)
+}
+
+func TestGetZone_error(t *testing.T) {
+	domain := "example.com"
+
+	client := setupTest(t, http.MethodGet, "/v1/zones/"+domain, http.StatusUnauthorized, "error.json")
+
+	_, err := client.GetZone(context.Background(), domain)
+	require.EqualError(t, err, "could not get zone example.com: api error: status=401, message=Authentication Error")
 }

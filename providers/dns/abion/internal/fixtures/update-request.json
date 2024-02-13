@@ -1,0 +1,23 @@
+{
+  "data": {
+    "type": "zone",
+    "id": "example.com",
+    "attributes": {
+      "records": {
+        "_acme-challenge.test": {
+          "TXT": [
+            {
+              "rdata": "test"
+            },
+            {
+              "rdata": "test1"
+            },
+            {
+              "rdata": "test2"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

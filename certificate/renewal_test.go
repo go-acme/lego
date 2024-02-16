@@ -3,8 +3,6 @@ package certificate
 import (
 	"crypto/rand"
 	"crypto/rsa"
-	"encoding/json"
-	"io"
 	"net/http"
 	"testing"
 	"time"
@@ -13,7 +11,6 @@ import (
 	"github.com/go-acme/lego/v4/acme/api"
 	"github.com/go-acme/lego/v4/certcrypto"
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/go-jose/go-jose/v4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -46,7 +43,7 @@ func Test_makeCertID(t *testing.T) {
 	leaf, err := certcrypto.ParsePEMCertificate([]byte(ariLeafPEM))
 	require.NoError(t, err)
 
-	actual, err := makeARICertID(leaf)
+	actual, err := MakeARICertID(leaf)
 	require.NoError(t, err)
 	assert.Equal(t, ariLeafCertID, actual)
 }
@@ -145,85 +142,6 @@ func TestCertifier_GetRenewalInfo_errors(t *testing.T) {
 	}
 }
 
-func TestCertifier_UpdateRenewalInfo(t *testing.T) {
-	leaf, err := certcrypto.ParsePEMCertificate([]byte(ariLeafPEM))
-	require.NoError(t, err)
-
-	key, err := rsa.GenerateKey(rand.Reader, 2048)
-	require.NoError(t, err, "Could not generate test key")
-
-	// Test with a fake API.
-	mux, apiURL := tester.SetupFakeAPI(t)
-	mux.HandleFunc("/renewalInfo", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-			return
-		}
-
-		body, rsbErr := readSignedBody(r, key)
-		if rsbErr != nil {
-			http.Error(w, rsbErr.Error(), http.StatusBadRequest)
-			return
-		}
-
-		var req acme.RenewalInfoUpdateRequest
-		err = json.Unmarshal(body, &req)
-		assert.NoError(t, err)
-		assert.True(t, req.Replaced)
-		assert.Equal(t, ariLeafCertID, req.CertID)
-
-		w.WriteHeader(http.StatusOK)
-	})
-
-	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", key)
-	require.NoError(t, err)
-
-	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
-
-	err = certifier.UpdateRenewalInfo(RenewalInfoRequest{leaf})
-	require.NoError(t, err)
-}
-
-func TestCertifier_UpdateRenewalInfo_errors(t *testing.T) {
-	leaf, err := certcrypto.ParsePEMCertificate([]byte(ariLeafPEM))
-	require.NoError(t, err)
-
-	key, err := rsa.GenerateKey(rand.Reader, 2048)
-	require.NoError(t, err, "Could not generate test key")
-
-	testCases := []struct {
-		desc    string
-		request RenewalInfoRequest
-	}{
-		{
-			desc:    "API error",
-			request: RenewalInfoRequest{leaf},
-		},
-	}
-
-	for _, test := range testCases {
-		test := test
-		t.Run(test.desc, func(t *testing.T) {
-			t.Parallel()
-
-			mux, apiURL := tester.SetupFakeAPI(t)
-
-			// Always returns an error.
-			mux.HandleFunc("/renewalInfo", func(w http.ResponseWriter, r *http.Request) {
-				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-			})
-
-			core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", key)
-			require.NoError(t, err)
-
-			certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
-
-			err = certifier.UpdateRenewalInfo(test.request)
-			require.Error(t, err)
-		})
-	}
-}
-
 func TestRenewalInfoResponse_ShouldRenew(t *testing.T) {
 	now := time.Now().UTC()
 
@@ -288,27 +206,4 @@ func TestRenewalInfoResponse_ShouldRenew(t *testing.T) {
 		rt := ri.ShouldRenewAt(now, 59*time.Minute)
 		assert.Nil(t, rt)
 	})
-}
-
-func readSignedBody(r *http.Request, privateKey *rsa.PrivateKey) ([]byte, error) {
-	reqBody, err := io.ReadAll(r.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	sigAlgs := []jose.SignatureAlgorithm{jose.RS256}
-	jws, err := jose.ParseSigned(string(reqBody), sigAlgs)
-	if err != nil {
-		return nil, err
-	}
-
-	body, err := jws.Verify(&jose.JSONWebKey{
-		Key:       privateKey.Public(),
-		Algorithm: "RSA",
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return body, nil
 }

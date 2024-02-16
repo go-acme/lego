@@ -181,6 +181,12 @@ type Order struct {
 	// certificate (optional, string):
 	// A URL for the certificate that has been issued in response to this order
 	Certificate string `json:"certificate,omitempty"`
+
+	// replaces (optional, string):
+	// replaces (string, optional): A string uniquely identifying a
+	// previously-issued certificate which this order is intended to replace.
+	// - https://datatracker.ietf.org/doc/html/draft-ietf-acme-ari-03#section-5
+	Replaces string `json:"replaces,omitempty"`
 }
 
 // Authorization the ACME authorization object.

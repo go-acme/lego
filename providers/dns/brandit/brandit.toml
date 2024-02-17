@@ -1,5 +1,8 @@
-Name = "Brandit"
-Description = ''''''
+Name = "Brandit (deprecated)"
+Description = '''
+Brandit has been acquired by Abion.
+Abion has a different API, you can use the [Abion provider](https://go-acme.github.io/lego/dns/abion/).
+'''
 URL = "https://www.brandit.com/"
 Code = "brandit"
 Since = "v4.11.0"

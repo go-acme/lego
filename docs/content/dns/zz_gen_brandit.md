@@ -1,5 +1,5 @@
 ---
-title: "Brandit"
+title: "Brandit (deprecated)"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: brandit
@@ -13,8 +13,11 @@ dnsprovider:
 <!-- providers/dns/brandit/brandit.toml -->
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
+Brandit has been acquired by Abion.
+Abion has a different API.
 
-Configuration for [Brandit](https://www.brandit.com/).
+If you are a Brandit/Albion user, you can try the PR https://github.com/go-acme/lego/pull/2112.
+
 
 
 <!--more-->
@@ -23,7 +26,7 @@ Configuration for [Brandit](https://www.brandit.com/).
 - Since: v4.11.0
 
 
-Here is an example bash command using the Brandit provider:
+Here is an example bash command using the Brandit (deprecated) provider:
 
 ```bash
 BRANDIT_API_KEY=xxxxxxxxxxxxxxxxxxxxx \

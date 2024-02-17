@@ -389,7 +389,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 	case "brandit":
 		// generated from: providers/dns/brandit/brandit.toml
-		ew.writeln(`Configuration for Brandit.`)
+		ew.writeln(`Configuration for Brandit (deprecated).`)
 		ew.writeln(`Code:	'brandit'`)
 		ew.writeln(`Since:	'v4.11.0'`)
 		ew.writeln()

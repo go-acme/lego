@@ -41,6 +41,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/duckdns"
 	"github.com/go-acme/lego/v4/providers/dns/dyn"
 	"github.com/go-acme/lego/v4/providers/dns/dynu"
+	"github.com/go-acme/lego/v4/providers/dns/directadmin"
 	"github.com/go-acme/lego/v4/providers/dns/easydns"
 	"github.com/go-acme/lego/v4/providers/dns/edgedns"
 	"github.com/go-acme/lego/v4/providers/dns/efficientip"
@@ -208,6 +209,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return dyn.NewDNSProvider()
 	case "dynu":
 		return dynu.NewDNSProvider()
+	case "directadmin":
+		return directadmin.NewDNSProvider()	
 	case "easydns":
 		return easydns.NewDNSProvider()
 	case "edgedns", "fastdns": // "fastdns" is for compatibility with v3, must be dropped in v5

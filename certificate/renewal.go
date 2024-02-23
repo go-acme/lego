@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
-	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/acme"
@@ -91,7 +90,7 @@ func MakeARICertID(leaf *x509.Certificate) (string, error) {
 	}
 
 	return fmt.Sprintf("%s.%s",
-		strings.TrimRight(base64.URLEncoding.EncodeToString(leaf.AuthorityKeyId), "="),
-		strings.TrimRight(base64.URLEncoding.EncodeToString(leaf.SerialNumber.Bytes()), "="),
+		base64.RawURLEncoding.EncodeToString(leaf.AuthorityKeyId),
+		base64.RawURLEncoding.EncodeToString(leaf.SerialNumber.Bytes()),
 	), nil
 }

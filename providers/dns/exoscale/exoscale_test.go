@@ -144,17 +144,17 @@ func TestDNSProvider_FindZoneAndRecordName(t *testing.T) {
 	}{
 		{
 			desc: "Extract root record name",
-			fqdn: "_acme-challenge.bar.com.",
+			fqdn: "_acme-challenge.example.com.",
 			expected: expected{
-				zone:       "bar.com",
+				zone:       "example.com",
 				recordName: "_acme-challenge",
 			},
 		},
 		{
 			desc: "Extract sub record name",
-			fqdn: "_acme-challenge.foo.bar.com.",
+			fqdn: "_acme-challenge.foo.example.com.",
 			expected: expected{
-				zone:       "bar.com",
+				zone:       "example.com",
 				recordName: "_acme-challenge.foo",
 			},
 		},

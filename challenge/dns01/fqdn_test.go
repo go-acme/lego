@@ -14,13 +14,13 @@ func TestToFqdn(t *testing.T) {
 	}{
 		{
 			desc:     "simple",
-			domain:   "foo.bar.com",
-			expected: "foo.bar.com.",
+			domain:   "foo.example.com",
+			expected: "foo.example.com.",
 		},
 		{
 			desc:     "already FQDN",
-			domain:   "foo.bar.com.",
-			expected: "foo.bar.com.",
+			domain:   "foo.example.com.",
+			expected: "foo.example.com.",
 		},
 	}
 
@@ -43,13 +43,13 @@ func TestUnFqdn(t *testing.T) {
 	}{
 		{
 			desc:     "simple",
-			fqdn:     "foo.bar.com.",
-			expected: "foo.bar.com",
+			fqdn:     "foo.example.",
+			expected: "foo.example",
 		},
 		{
 			desc:     "already domain",
-			fqdn:     "foo.bar.com",
-			expected: "foo.bar.com",
+			fqdn:     "foo.example",
+			expected: "foo.example",
 		},
 	}
 

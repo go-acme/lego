@@ -88,6 +88,7 @@ func allDNSCodes() string {
 		"liquidweb",
 		"loopia",
 		"luadns",
+		"mailinabox",
 		"metaname",
 		"mydnsjp",
 		"mythicbeasts",
@@ -1720,6 +1721,26 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/luadns`)
+
+	case "mailinabox":
+		// generated from: providers/dns/mailinabox/mailinabox.toml
+		ew.writeln(`Configuration for Mail-in-a-Box.`)
+		ew.writeln(`Code:	'mailinabox'`)
+		ew.writeln(`Since:	'v4.16.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "MAILINABOX_BASE_URL":	Base API URL (ex: https://box.example.com)`)
+		ew.writeln(`	- "MAILINABOX_EMAIL":	User email`)
+		ew.writeln(`	- "MAILINABOX_PASSWORD":	User password`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "MAILINABOX_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "MAILINABOX_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/mailinabox`)
 
 	case "metaname":
 		// generated from: providers/dns/metaname/metaname.toml

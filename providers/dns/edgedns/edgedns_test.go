@@ -158,13 +158,13 @@ func TestDNSProvider_findZone(t *testing.T) {
 	}{
 		{
 			desc:     "Extract root record name",
-			domain:   "bar.com.",
-			expected: "bar.com",
+			domain:   "example.com.",
+			expected: "example.com",
 		},
 		{
 			desc:     "Extract sub record name",
-			domain:   "foo.bar.com.",
-			expected: "bar.com",
+			domain:   "foo.example.com.",
+			expected: "example.com",
 		},
 	}
 

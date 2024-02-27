@@ -253,43 +253,6 @@ func TestDNSProvider_Cleanup_WhenHttpError_ReturnsError(t *testing.T) {
 	require.EqualError(t, err, expectedError)
 }
 
-func TestSplitFqdn(t *testing.T) {
-	testCases := []struct {
-		desc           string
-		fqdn           string
-		expectedHost   string
-		expectedDomain string
-	}{
-		{
-			desc:           "domain only",
-			fqdn:           "domain.com.",
-			expectedHost:   "",
-			expectedDomain: "domain.com",
-		},
-		{
-			desc:           "single-part host",
-			fqdn:           "_acme-challenge.domain.com.",
-			expectedHost:   "_acme-challenge",
-			expectedDomain: "domain.com",
-		},
-		{
-			desc:           "multi-part host",
-			fqdn:           "_acme-challenge.sub.domain.com.",
-			expectedHost:   "_acme-challenge.sub",
-			expectedDomain: "domain.com",
-		},
-	}
-
-	for _, test := range testCases {
-		t.Run(test.desc, func(t *testing.T) {
-			actualHost, actualDomain := splitFqdn(test.fqdn)
-
-			require.Equal(t, test.expectedHost, actualHost)
-			require.Equal(t, test.expectedDomain, actualDomain)
-		})
-	}
-}
-
 func TestLivePresent(t *testing.T) {
 	if !envTest.IsLiveTest() {
 		t.Skip("skipping live test")

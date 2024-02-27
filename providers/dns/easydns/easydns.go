@@ -8,14 +8,12 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/easydns/internal"
-	"github.com/miekg/dns"
 )
 
 // Environment variables names.
@@ -119,18 +117,26 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	apiHost, apiDomain := splitFqdn(info.EffectiveFQDN)
+	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(info.EffectiveFQDN))
+	if err != nil {
+		return fmt.Errorf("easydns: could not find zone for domain %q: %w", domain, err)
+	}
+
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
+	if err != nil {
+		return fmt.Errorf("easydns: %w", err)
+	}
 
 	record := internal.ZoneRecord{
-		Domain:   apiDomain,
-		Host:     apiHost,
+		Domain:   dns01.UnFqdn(authZone),
+		Host:     subDomain,
 		Type:     "TXT",
 		Rdata:    info.Value,
 		TTL:      strconv.Itoa(d.config.TTL),
 		Priority: "0",
 	}
 
-	recordID, err := d.client.AddRecord(context.Background(), apiDomain, record)
+	recordID, err := d.client.AddRecord(context.Background(), dns01.UnFqdn(authZone), record)
 	if err != nil {
 		return fmt.Errorf("easydns: error adding zone record: %w", err)
 	}
@@ -158,9 +164,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return nil
 	}
 
-	_, apiDomain := splitFqdn(info.EffectiveFQDN)
+	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(info.EffectiveFQDN))
+	if err != nil {
+		return fmt.Errorf("easydns: could not find zone for domain %q: %w", domain, err)
+	}
 
-	err := d.client.DeleteRecord(context.Background(), apiDomain, recordID)
+	err = d.client.DeleteRecord(context.Background(), dns01.UnFqdn(authZone), recordID)
 
 	d.recordIDsMu.Lock()
 	defer delete(d.recordIDs, key)
@@ -183,15 +192,6 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 // Returns the interval between each iteration.
 func (d *DNSProvider) Sequential() time.Duration {
 	return d.config.SequenceInterval
-}
-
-func splitFqdn(fqdn string) (host, domain string) {
-	parts := dns.SplitDomainName(fqdn)
-	length := len(parts)
-
-	host = strings.Join(parts[0:length-2], ".")
-	domain = strings.Join(parts[length-2:length], ".")
-	return
 }
 
 func getMapKey(fqdn, value string) string {

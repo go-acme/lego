@@ -9,7 +9,6 @@ import (
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/miekg/dns"
 	"github.com/nrdcg/bunny-go"
 )
 
@@ -191,28 +190,9 @@ func getZone(fqdn string) (string, error) {
 		return "", err
 	}
 
-	zone, _, err := splitDomain(dns01.UnFqdn(authZone))
-	if err != nil {
-		return "", err
-	}
+	zone := dns01.UnFqdn(authZone)
 
 	return zone, nil
-}
-
-func splitDomain(full string) (string, string, error) {
-	split := dns.Split(full)
-	if len(split) < 2 {
-		return "", "", fmt.Errorf("unsupported domain: %s", full)
-	}
-
-	if len(split) == 2 {
-		return full, "", nil
-	}
-
-	domain := full[split[len(split)-2]:]
-	subDomain := full[:split[len(split)-2]-1]
-
-	return domain, subDomain, nil
 }
 
 func pointer[T string | int | int32 | int64](v T) *T { return &v }

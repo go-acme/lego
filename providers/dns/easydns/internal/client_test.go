@@ -67,13 +67,13 @@ func setupTest(t *testing.T, method, pattern string, status int, file string) *C
 	return client
 }
 
-func TestClient_ListZone(t *testing.T) {
+func TestClient_ListZones(t *testing.T) {
 	client := setupTest(t, http.MethodGet, "/zones/records/all/example.com", http.StatusOK, "list-zone.json")
 
-	zone, err := client.ListZone(context.Background(), "example.com")
+	zones, err := client.ListZones(context.Background(), "example.com")
 	require.NoError(t, err)
 
-	expected := &ZoneRecord{
+	expected := []ZoneRecord{{
 		ID:       "60898922",
 		Domain:   "example.com",
 		Host:     "hosta",
@@ -82,9 +82,9 @@ func TestClient_ListZone(t *testing.T) {
 		Type:     "A",
 		Rdata:    "1.2.3.4",
 		LastMod:  "2019-08-28 19:09:50",
-	}
+	}}
 
-	assert.Equal(t, expected, zone)
+	assert.Equal(t, expected, zones)
 }
 
 func TestClient_AddRecord(t *testing.T) {

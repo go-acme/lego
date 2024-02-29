@@ -147,7 +147,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 func TestDNSProvider_Present(t *testing.T) {
 	provider, mux := setupTest(t)
 
-	mux.HandleFunc("/zones/records/all/_acme-challenge.example.com", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/zones/records/all/example.com", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodGet, r.Method, "method")
 		assert.Equal(t, "format=json", r.URL.RawQuery, "query")
 		assert.Equal(t, "Basic VE9LRU46U0VDUkVU", r.Header.Get(authorizationHeader), authorizationHeader)
@@ -157,17 +157,17 @@ func TestDNSProvider_Present(t *testing.T) {
   "msg": "string",
   "status": 200,
   "tm": 0,
-  "data": {
+  "data": [{
     "id": "60898922",
     "domain": "example.com",
     "host": "hosta",
     "ttl": "300",
     "prio": "0",
-    "geozone_id": 0,
+    "geozone_id": "0",
     "type": "A",
     "rdata": "1.2.3.4",
     "last_mod": "2019-08-28 19:09:50"
-  },
+  }],
   "count": 0,
   "total": 0,
   "start": 0,
@@ -226,7 +226,7 @@ func TestDNSProvider_Present(t *testing.T) {
 func TestDNSProvider_Cleanup_WhenRecordIdNotSet_NoOp(t *testing.T) {
 	provider, mux := setupTest(t)
 
-	mux.HandleFunc("/zones/records/all/_acme-challenge.example.com", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/zones/records/all/example.com", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodGet, r.Method, "method")
 		assert.Equal(t, "format=json", r.URL.RawQuery, "query")
 		assert.Equal(t, "Basic VE9LRU46U0VDUkVU", r.Header.Get(authorizationHeader), authorizationHeader)
@@ -236,17 +236,17 @@ func TestDNSProvider_Cleanup_WhenRecordIdNotSet_NoOp(t *testing.T) {
   "msg": "string",
   "status": 200,
   "tm": 0,
-  "data": {
+  "data": [{
     "id": "60898922",
     "domain": "example.com",
     "host": "hosta",
     "ttl": "300",
     "prio": "0",
-    "geozone_id": 0,
+    "geozone_id": "0",
     "type": "A",
     "rdata": "1.2.3.4",
     "last_mod": "2019-08-28 19:09:50"
-  },
+  }],
   "count": 0,
   "total": 0,
   "start": 0,
@@ -266,7 +266,7 @@ func TestDNSProvider_Cleanup_WhenRecordIdNotSet_NoOp(t *testing.T) {
 func TestDNSProvider_Cleanup_WhenRecordIdSet_DeletesTxtRecord(t *testing.T) {
 	provider, mux := setupTest(t)
 
-	mux.HandleFunc("/zones/records/all/_acme-challenge.example.com", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/zones/records/all/example.com", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodGet, r.Method, "method")
 		assert.Equal(t, "format=json", r.URL.RawQuery, "query")
 		assert.Equal(t, "Basic VE9LRU46U0VDUkVU", r.Header.Get(authorizationHeader), authorizationHeader)
@@ -276,17 +276,17 @@ func TestDNSProvider_Cleanup_WhenRecordIdSet_DeletesTxtRecord(t *testing.T) {
   "msg": "string",
   "status": 200,
   "tm": 0,
-  "data": {
+  "data": [{
     "id": "60898922",
     "domain": "example.com",
     "host": "hosta",
     "ttl": "300",
     "prio": "0",
-    "geozone_id": 0,
+    "geozone_id": "0",
     "type": "A",
     "rdata": "1.2.3.4",
     "last_mod": "2019-08-28 19:09:50"
-  },
+  }],
   "count": 0,
   "total": 0,
   "start": 0,
@@ -327,7 +327,7 @@ func TestDNSProvider_Cleanup_WhenRecordIdSet_DeletesTxtRecord(t *testing.T) {
 func TestDNSProvider_Cleanup_WhenHttpError_ReturnsError(t *testing.T) {
 	provider, mux := setupTest(t)
 
-	mux.HandleFunc("/zones/records/all/_acme-challenge.example.com", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/zones/records/all/example.com", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodGet, r.Method, "method")
 		assert.Equal(t, "format=json", r.URL.RawQuery, "query")
 		assert.Equal(t, "Basic VE9LRU46U0VDUkVU", r.Header.Get(authorizationHeader), authorizationHeader)
@@ -337,17 +337,17 @@ func TestDNSProvider_Cleanup_WhenHttpError_ReturnsError(t *testing.T) {
   "msg": "string",
   "status": 200,
   "tm": 0,
-  "data": {
+  "data": [{
     "id": "60898922",
     "domain": "example.com",
     "host": "hosta",
     "ttl": "300",
     "prio": "0",
-    "geozone_id": 0,
+    "geozone_id": "0",
     "type": "A",
     "rdata": "1.2.3.4",
     "last_mod": "2019-08-28 19:09:50"
-  },
+  }],
   "count": 0,
   "total": 0,
   "start": 0,

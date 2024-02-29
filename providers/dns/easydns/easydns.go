@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -119,12 +120,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := d.client.ListZone(ctx, dns01.UnFqdn(info.EffectiveFQDN))
-	if err != nil {
-		return fmt.Errorf("easydns: could not list zone for domain %q: %w", domain, err)
+	authZone := d.findZone(ctx, dns01.UnFqdn(info.EffectiveFQDN))
+	if authZone == "" {
+		return fmt.Errorf("easydns: could not find zone for domain %q", domain)
 	}
-
-	authZone := zone.Domain
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
@@ -170,12 +169,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return nil
 	}
 
-	zone, err := d.client.ListZone(ctx, dns01.UnFqdn(info.EffectiveFQDN))
-	if err != nil {
-		return fmt.Errorf("easydns: could not list zone for domain %q: %w", domain, err)
+	authZone := d.findZone(ctx, dns01.UnFqdn(info.EffectiveFQDN))
+	if authZone == "" {
+		return fmt.Errorf("easydns: could not find zone for domain %q", domain)
 	}
 
-	err = d.client.DeleteRecord(ctx, dns01.UnFqdn(zone.Domain), recordID)
+	err := d.client.DeleteRecord(ctx, dns01.UnFqdn(authZone), recordID)
 
 	d.recordIDsMu.Lock()
 	defer delete(d.recordIDs, key)
@@ -202,4 +201,22 @@ func (d *DNSProvider) Sequential() time.Duration {
 
 func getMapKey(fqdn, value string) string {
 	return fqdn + "|" + value
+}
+
+func (d *DNSProvider) findZone(ctx context.Context, domain string) string {
+	for {
+		i := strings.Index(domain, ".")
+		if i == -1 {
+			break
+		}
+
+		_, err := d.client.ListZones(ctx, domain)
+		if err == nil {
+			return domain
+		}
+
+		domain = domain[i+1:]
+	}
+
+	return ""
 }

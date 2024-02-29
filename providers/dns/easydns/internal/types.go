@@ -1,14 +1,14 @@
 package internal
 
-type apiResponse struct {
-	Msg    string      `json:"msg"`
-	Status int         `json:"status"`
-	Tm     int         `json:"tm"`
-	Data   *ZoneRecord `json:"data"`
-	Count  int         `json:"count"`
-	Total  int         `json:"total"`
-	Start  int         `json:"start"`
-	Max    int         `json:"max"`
+type apiResponse[T any] struct {
+	Msg    string `json:"msg"`
+	Status int    `json:"status"`
+	Tm     int    `json:"tm"`
+	Data   T      `json:"data"`
+	Count  int    `json:"count"`
+	Total  int    `json:"total"`
+	Start  int    `json:"start"`
+	Max    int    `json:"max"`
 }
 
 type ZoneRecord struct {

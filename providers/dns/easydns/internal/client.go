@@ -37,6 +37,23 @@ func NewClient(token string, key string) *Client {
 	}
 }
 
+func (c *Client) ListZone(ctx context.Context, domain string) (*ZoneRecord, error) {
+	endpoint := c.BaseURL.JoinPath("zones", "records", "all", domain)
+
+	req, err := newJSONRequest(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	response := &apiResponse{}
+	err = c.do(req, response)
+	if err != nil {
+		return nil, err
+	}
+
+	return response.Data, nil
+}
+
 func (c *Client) AddRecord(ctx context.Context, domain string, record ZoneRecord) (string, error) {
 	endpoint := c.BaseURL.JoinPath("zones", "records", "add", domain, "TXT")
 
@@ -45,7 +62,7 @@ func (c *Client) AddRecord(ctx context.Context, domain string, record ZoneRecord
 		return "", err
 	}
 
-	response := &addRecordResponse{}
+	response := &apiResponse{}
 	err = c.do(req, response)
 	if err != nil {
 		return "", err
@@ -64,7 +81,9 @@ func (c *Client) DeleteRecord(ctx context.Context, domain, recordID string) erro
 		return err
 	}
 
-	return c.do(req, nil)
+	err = c.do(req, nil)
+
+	return err
 }
 
 func (c *Client) do(req *http.Request, result any) error {

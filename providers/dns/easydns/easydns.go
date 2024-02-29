@@ -115,12 +115,16 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+	ctx := context.Background()
+
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(info.EffectiveFQDN))
+	zone, err := d.client.ListZone(ctx, dns01.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
-		return fmt.Errorf("easydns: could not find zone for domain %q: %w", domain, err)
+		return fmt.Errorf("easydns: could not list zone for domain %q: %w", domain, err)
 	}
+
+	authZone := zone.Domain
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
 	if err != nil {
@@ -128,7 +132,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	record := internal.ZoneRecord{
-		Domain:   dns01.UnFqdn(authZone),
+		Domain:   authZone,
 		Host:     subDomain,
 		Type:     "TXT",
 		Rdata:    info.Value,
@@ -136,7 +140,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Priority: "0",
 	}
 
-	recordID, err := d.client.AddRecord(context.Background(), dns01.UnFqdn(authZone), record)
+	recordID, err := d.client.AddRecord(ctx, dns01.UnFqdn(authZone), record)
 	if err != nil {
 		return fmt.Errorf("easydns: error adding zone record: %w", err)
 	}
@@ -152,6 +156,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+	ctx := context.Background()
+
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	key := getMapKey(info.EffectiveFQDN, info.Value)
@@ -164,12 +170,12 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return nil
 	}
 
-	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(info.EffectiveFQDN))
+	zone, err := d.client.ListZone(ctx, dns01.UnFqdn(info.EffectiveFQDN))
 	if err != nil {
-		return fmt.Errorf("easydns: could not find zone for domain %q: %w", domain, err)
+		return fmt.Errorf("easydns: could not list zone for domain %q: %w", domain, err)
 	}
 
-	err = d.client.DeleteRecord(context.Background(), dns01.UnFqdn(authZone), recordID)
+	err = d.client.DeleteRecord(ctx, dns01.UnFqdn(zone.Domain), recordID)
 
 	d.recordIDsMu.Lock()
 	defer delete(d.recordIDs, key)

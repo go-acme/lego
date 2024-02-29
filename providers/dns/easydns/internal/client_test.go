@@ -67,6 +67,26 @@ func setupTest(t *testing.T, method, pattern string, status int, file string) *C
 	return client
 }
 
+func TestClient_ListZone(t *testing.T) {
+	client := setupTest(t, http.MethodGet, "/zones/records/all/example.com", http.StatusOK, "list-zone.json")
+
+	zone, err := client.ListZone(context.Background(), "example.com")
+	require.NoError(t, err)
+
+	expected := &ZoneRecord{
+		ID:       "60898922",
+		Domain:   "example.com",
+		Host:     "hosta",
+		TTL:      "300",
+		Priority: "0",
+		Type:     "A",
+		Rdata:    "1.2.3.4",
+		LastMod:  "2019-08-28 19:09:50",
+	}
+
+	assert.Equal(t, expected, zone)
+}
+
 func TestClient_AddRecord(t *testing.T) {
 	client := setupTest(t, http.MethodPut, "/zones/records/add/example.com/TXT", http.StatusCreated, "add-record.json")
 

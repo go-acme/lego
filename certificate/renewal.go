@@ -2,6 +2,7 @@ package certificate
 
 import (
 	"crypto/x509"
+	"encoding/asn1"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -83,14 +84,32 @@ func (c *Certifier) GetRenewalInfo(req RenewalInfoRequest) (*RenewalInfoResponse
 	return &info, nil
 }
 
-// MakeARICertID constructs a certificate identifier as described in draft-ietf-acme-ari-02, section 4.1.
+// MakeARICertID constructs a certificate identifier as described in draft-ietf-acme-ari-03, section 4.1.
 func MakeARICertID(leaf *x509.Certificate) (string, error) {
 	if leaf == nil {
 		return "", errors.New("leaf certificate is nil")
 	}
 
-	return fmt.Sprintf("%s.%s",
-		base64.RawURLEncoding.EncodeToString(leaf.AuthorityKeyId),
-		base64.RawURLEncoding.EncodeToString(leaf.SerialNumber.Bytes()),
-	), nil
+	// Marshal the Serial Number into DER.
+	der, err := asn1.Marshal(leaf.SerialNumber)
+	if err != nil {
+		return "", err
+	}
+
+	// Check if the DER encoded bytes are sufficient (at least 3 bytes: tag,
+	// length, and value).
+	if len(der) < 3 {
+		return "", errors.New("invalid DER encoding of serial number")
+	}
+
+	// Extract only the integer bytes from the DER encoded Serial Number
+	// Skipping the first 2 bytes (tag and length).
+	serial := base64.RawURLEncoding.EncodeToString(der[2:])
+
+	// Convert the Authority Key Identifier to base64url encoding without
+	// padding.
+	aki := base64.RawURLEncoding.EncodeToString(leaf.AuthorityKeyId)
+
+	// Construct the final identifier by concatenating AKI and Serial Number.
+	return fmt.Sprintf("%s.%s", aki, serial), nil
 }

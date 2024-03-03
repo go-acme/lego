@@ -1,0 +1,22 @@
+{
+  "msg": "message",
+  "status": 200,
+  "tm": 0,
+  "data": [
+    {
+      "id": "60898922",
+      "domain": "example.com",
+      "host": "hosta",
+      "ttl": "300",
+      "prio": "0",
+      "geozone_id": "0",
+      "type": "A",
+      "rdata": "1.2.3.4",
+      "last_mod": "2019-08-28 19:09:50"
+    }
+  ],
+  "count": 43,
+  "total": 43,
+  "start": 0,
+  "max": 1000
+}

@@ -120,7 +120,11 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone := d.findZone(ctx, dns01.UnFqdn(info.EffectiveFQDN))
+	authZone, err := d.findZone(ctx, dns01.UnFqdn(info.EffectiveFQDN))
+	if err != nil {
+		return fmt.Errorf("easydns: %w", err)
+	}
+
 	if authZone == "" {
 		return fmt.Errorf("easydns: could not find zone for domain %q", domain)
 	}
@@ -169,12 +173,16 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return nil
 	}
 
-	authZone := d.findZone(ctx, dns01.UnFqdn(info.EffectiveFQDN))
+	authZone, err := d.findZone(ctx, dns01.UnFqdn(info.EffectiveFQDN))
+	if err != nil {
+		return fmt.Errorf("easydns: %w", err)
+	}
+
 	if authZone == "" {
 		return fmt.Errorf("easydns: could not find zone for domain %q", domain)
 	}
 
-	err := d.client.DeleteRecord(ctx, dns01.UnFqdn(authZone), recordID)
+	err = d.client.DeleteRecord(ctx, dns01.UnFqdn(authZone), recordID)
 
 	d.recordIDsMu.Lock()
 	defer delete(d.recordIDs, key)
@@ -203,7 +211,9 @@ func getMapKey(fqdn, value string) string {
 	return fqdn + "|" + value
 }
 
-func (d *DNSProvider) findZone(ctx context.Context, domain string) string {
+func (d *DNSProvider) findZone(ctx context.Context, domain string) (string, error) {
+	var errAll error
+
 	for {
 		i := strings.Index(domain, ".")
 		if i == -1 {
@@ -212,11 +222,13 @@ func (d *DNSProvider) findZone(ctx context.Context, domain string) string {
 
 		_, err := d.client.ListZones(ctx, domain)
 		if err == nil {
-			return domain
+			return domain, nil
 		}
+
+		errAll = errors.Join(errAll, err)
 
 		domain = domain[i+1:]
 	}
 
-	return ""
+	return "", errAll
 }

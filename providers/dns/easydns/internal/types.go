@@ -1,5 +1,7 @@
 package internal
 
+import "fmt"
+
 type apiResponse[T any] struct {
 	Msg    string `json:"msg"`
 	Status int    `json:"status"`
@@ -9,6 +11,7 @@ type apiResponse[T any] struct {
 	Total  int    `json:"total"`
 	Start  int    `json:"start"`
 	Max    int    `json:"max"`
+	Error  *Error `json:"error,omitempty"`
 }
 
 type ZoneRecord struct {
@@ -22,4 +25,13 @@ type ZoneRecord struct {
 	LastMod  string `json:"last_mod,omitempty"`
 	Revoked  int    `json:"revoked,omitempty"`
 	NewHost  string `json:"new_host,omitempty"`
+}
+
+type Error struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
+
+func (e *Error) Error() string {
+	return fmt.Sprintf("code %d: %s", e.Code, e.Message)
 }

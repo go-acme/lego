@@ -51,6 +51,10 @@ func (c *Client) ListZones(ctx context.Context, domain string) ([]ZoneRecord, er
 		return nil, err
 	}
 
+	if response.Error != nil {
+		return nil, response.Error
+	}
+
 	return response.Data, nil
 }
 
@@ -66,6 +70,10 @@ func (c *Client) AddRecord(ctx context.Context, domain string, record ZoneRecord
 	err = c.do(req, response)
 	if err != nil {
 		return "", err
+	}
+
+	if response.Error != nil {
+		return "", response.Error
 	}
 
 	recordID := response.Data.ID

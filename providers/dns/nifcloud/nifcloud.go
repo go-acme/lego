@@ -133,6 +133,15 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 	name := dns01.UnFqdn(fqdn)
 
+	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	if err != nil {
+		return fmt.Errorf("could not find zone: %w", err)
+	}
+
+	if authZone == fqdn {
+		name = "@"
+	}
+
 	reqParams := internal.ChangeResourceRecordSetsRequest{
 		XMLNs: internal.XMLNs,
 		ChangeBatch: internal.ChangeBatch{
@@ -157,11 +166,6 @@ func (d *DNSProvider) changeRecord(action, fqdn, value string, ttl int) error {
 				},
 			},
 		},
-	}
-
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
-	if err != nil {
-		return fmt.Errorf("could not find zone: %w", err)
 	}
 
 	ctx := context.Background()

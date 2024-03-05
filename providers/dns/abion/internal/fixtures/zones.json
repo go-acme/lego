@@ -1,0 +1,22 @@
+{
+  "meta": {
+    "invocationId": "95cdcc21-b9c3-4b21-8bd1-b05c34c56147",
+    "offset": 0,
+    "limit": 1,
+    "total": 1
+  },
+  "data": [
+    {
+      "type": "zone",
+      "id": "dipcon.com",
+      "attributes": {
+        "organisationId": "10154",
+        "organisationDescription": "My Company AB",
+        "dnsTypeDescription": "Anycast",
+        "slave": true,
+        "pending": true,
+        "deleted": true
+      }
+    }
+  ]
+}

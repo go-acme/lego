@@ -1,0 +1,13 @@
+{
+  "success": true,
+  "data": [
+    {
+      "id": "12345",
+      "type": "TXT",
+      "content": "\"txtxtxt\"",
+      "name": "example.com",
+      "prio": "0",
+      "ttl": "3600"
+    }
+  ]
+}

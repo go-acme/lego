@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-jose/go-jose/v3"
-	"github.com/go-jose/go-jose/v3/jwt"
+	"github.com/go-jose/go-jose/v4"
+	"github.com/go-jose/go-jose/v4/jwt"
 )
 
 type TokenSigner struct {
@@ -65,7 +65,7 @@ type Payload struct {
 func (payload *Payload) buildToken(signer *jose.Signer) (string, error) {
 	builder := jwt.Signed(*signer).Claims(payload)
 
-	token, err := builder.CompactSerialize()
+	token, err := builder.Serialize()
 	if err != nil {
 		return "", fmt.Errorf("failed to build JWT: %w", err)
 	}

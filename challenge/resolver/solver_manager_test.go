@@ -12,7 +12,7 @@ import (
 	"github.com/go-acme/lego/v4/acme"
 	"github.com/go-acme/lego/v4/acme/api"
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/go-jose/go-jose/v3"
+	"github.com/go-jose/go-jose/v4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -158,7 +158,8 @@ func validateNoBody(privateKey *rsa.PrivateKey, r *http.Request) error {
 		return err
 	}
 
-	jws, err := jose.ParseSigned(string(reqBody))
+	sigAlgs := []jose.SignatureAlgorithm{jose.RS256}
+	jws, err := jose.ParseSigned(string(reqBody), sigAlgs)
 	if err != nil {
 		return err
 	}

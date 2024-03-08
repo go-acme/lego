@@ -120,6 +120,7 @@ func allDNSCodes() string {
 		"scaleway",
 		"selectel",
 		"servercow",
+		"shellrent",
 		"simply",
 		"sonic",
 		"stackpath",
@@ -2415,6 +2416,27 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/servercow`)
+
+	case "shellrent":
+		// generated from: providers/dns/shellrent/shellrent.toml
+		ew.writeln(`Configuration for Shellrent.`)
+		ew.writeln(`Code:	'shellrent'`)
+		ew.writeln(`Since:	'v4.16.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "SHELLRENT_TOKEN":	Token`)
+		ew.writeln(`	- "SHELLRENT_USERNAME":	Username`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "SHELLRENT_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "SHELLRENT_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "SHELLRENT_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "SHELLRENT_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/shellrent`)
 
 	case "simply":
 		// generated from: providers/dns/simply/simply.toml

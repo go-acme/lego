@@ -13,6 +13,10 @@ import (
 type OrderOptions struct {
 	NotBefore time.Time
 	NotAfter  time.Time
+	// A string uniquely identifying a previously-issued certificate which this
+	// order is intended to replace.
+	// - https://datatracker.ietf.org/doc/html/draft-ietf-acme-ari-03#section-5
+	ReplacesCertID string
 }
 
 type OrderService service
@@ -44,6 +48,10 @@ func (o *OrderService) NewWithOptions(domains []string, opts *OrderOptions) (acm
 
 		if !opts.NotBefore.IsZero() {
 			orderReq.NotBefore = opts.NotBefore.Format(time.RFC3339)
+		}
+
+		if o.core.GetDirectory().RenewalInfo != "" {
+			orderReq.Replaces = opts.ReplacesCertID
 		}
 	}
 

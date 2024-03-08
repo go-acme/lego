@@ -63,6 +63,10 @@ type ObtainRequest struct {
 	Bundle                         bool
 	PreferredChain                 string
 	AlwaysDeactivateAuthorizations bool
+	// A string uniquely identifying a previously-issued certificate which this
+	// order is intended to replace.
+	// - https://datatracker.ietf.org/doc/html/draft-ietf-acme-ari-03#section-5
+	ReplacesCertID string
 }
 
 // ObtainForCSRRequest The request to obtain a certificate matching the CSR passed into it.
@@ -79,6 +83,10 @@ type ObtainForCSRRequest struct {
 	Bundle                         bool
 	PreferredChain                 string
 	AlwaysDeactivateAuthorizations bool
+	// A string uniquely identifying a previously-issued certificate which this
+	// order is intended to replace.
+	// - https://datatracker.ietf.org/doc/html/draft-ietf-acme-ari-03#section-5
+	ReplacesCertID string
 }
 
 type resolver interface {
@@ -124,8 +132,9 @@ func (c *Certifier) Obtain(request ObtainRequest) (*Resource, error) {
 	}
 
 	orderOpts := &api.OrderOptions{
-		NotBefore: request.NotBefore,
-		NotAfter:  request.NotAfter,
+		NotBefore:      request.NotBefore,
+		NotAfter:       request.NotAfter,
+		ReplacesCertID: request.ReplacesCertID,
 	}
 
 	order, err := c.core.Orders.NewWithOptions(domains, orderOpts)
@@ -189,8 +198,9 @@ func (c *Certifier) ObtainForCSR(request ObtainForCSRRequest) (*Resource, error)
 	}
 
 	orderOpts := &api.OrderOptions{
-		NotBefore: request.NotBefore,
-		NotAfter:  request.NotAfter,
+		NotBefore:      request.NotBefore,
+		NotAfter:       request.NotAfter,
+		ReplacesCertID: request.ReplacesCertID,
 	}
 
 	order, err := c.core.Orders.NewWithOptions(domains, orderOpts)

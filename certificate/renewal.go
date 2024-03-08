@@ -2,12 +2,12 @@ package certificate
 
 import (
 	"crypto/x509"
+	"encoding/asn1"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"math/rand"
-	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/acme"
@@ -65,7 +65,7 @@ func (r *RenewalInfoResponse) ShouldRenewAt(now time.Time, willingToSleep time.D
 //
 // https://datatracker.ietf.org/doc/draft-ietf-acme-ari
 func (c *Certifier) GetRenewalInfo(req RenewalInfoRequest) (*RenewalInfoResponse, error) {
-	certID, err := makeARICertID(req.Cert)
+	certID, err := MakeARICertID(req.Cert)
 	if err != nil {
 		return nil, fmt.Errorf("error making certID: %w", err)
 	}
@@ -84,39 +84,32 @@ func (c *Certifier) GetRenewalInfo(req RenewalInfoRequest) (*RenewalInfoResponse
 	return &info, nil
 }
 
-// UpdateRenewalInfo sends an update to the ACME server's renewal info endpoint to indicate that the client has successfully replaced a certificate.
-// A certificate is considered replaced when its revocation would not disrupt any ongoing services,
-// for instance because it has been renewed and the new certificate is in use, or because it is no longer in use.
-//
-// Note: this endpoint is part of a draft specification, not all ACME servers will implement it.
-// This method will return api.ErrNoARI if the server does not advertise a renewal info endpoint.
-//
-// https://datatracker.ietf.org/doc/draft-ietf-acme-ari
-func (c *Certifier) UpdateRenewalInfo(req RenewalInfoRequest) error {
-	certID, err := makeARICertID(req.Cert)
-	if err != nil {
-		return fmt.Errorf("error making certID: %w", err)
-	}
-
-	_, err = c.core.Certificates.UpdateRenewalInfo(acme.RenewalInfoUpdateRequest{
-		CertID:   certID,
-		Replaced: true,
-	})
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// makeARICertID constructs a certificate identifier as described in draft-ietf-acme-ari-02, section 4.1.
-func makeARICertID(leaf *x509.Certificate) (string, error) {
+// MakeARICertID constructs a certificate identifier as described in draft-ietf-acme-ari-03, section 4.1.
+func MakeARICertID(leaf *x509.Certificate) (string, error) {
 	if leaf == nil {
 		return "", errors.New("leaf certificate is nil")
 	}
 
-	return fmt.Sprintf("%s.%s",
-		strings.TrimRight(base64.URLEncoding.EncodeToString(leaf.AuthorityKeyId), "="),
-		strings.TrimRight(base64.URLEncoding.EncodeToString(leaf.SerialNumber.Bytes()), "="),
-	), nil
+	// Marshal the Serial Number into DER.
+	der, err := asn1.Marshal(leaf.SerialNumber)
+	if err != nil {
+		return "", err
+	}
+
+	// Check if the DER encoded bytes are sufficient (at least 3 bytes: tag,
+	// length, and value).
+	if len(der) < 3 {
+		return "", errors.New("invalid DER encoding of serial number")
+	}
+
+	// Extract only the integer bytes from the DER encoded Serial Number
+	// Skipping the first 2 bytes (tag and length).
+	serial := base64.RawURLEncoding.EncodeToString(der[2:])
+
+	// Convert the Authority Key Identifier to base64url encoding without
+	// padding.
+	aki := base64.RawURLEncoding.EncodeToString(leaf.AuthorityKeyId)
+
+	// Construct the final identifier by concatenating AKI and Serial Number.
+	return fmt.Sprintf("%s.%s", aki, serial), nil
 }

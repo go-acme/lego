@@ -187,6 +187,11 @@ func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *Certif
 		time.Sleep(sleepTime)
 	}
 
+	replacesCertID, err := certificate.MakeARICertID(cert)
+	if err != nil {
+		log.Fatalf("Error while construction the ARI CertID for domain %s\n\t%v", domain, err)
+	}
+
 	request := certificate.ObtainRequest{
 		Domains:                        merge(certDomains, domains),
 		PrivateKey:                     privateKey,
@@ -196,6 +201,7 @@ func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *Certif
 		Bundle:                         bundle,
 		PreferredChain:                 ctx.String("preferred-chain"),
 		AlwaysDeactivateAuthorizations: ctx.Bool("always-deactivate-authorizations"),
+		ReplacesCertID:                 replacesCertID,
 	}
 
 	certRes, err := client.Certificate.Obtain(request)
@@ -204,14 +210,6 @@ func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *Certif
 	}
 
 	certsStorage.SaveResource(certRes)
-
-	if ariRenewalTime != nil {
-		// Post to the renewalInfo endpoint to indicate that we have renewed and replaced the certificate.
-		err := client.Certificate.UpdateRenewalInfo(certificate.RenewalInfoRequest{Cert: certificates[0]})
-		if err != nil {
-			log.Warnf("[%s] Failed to update renewal info: %v", domain, err)
-		}
-	}
 
 	meta[renewEnvCertDomain] = domain
 	meta[renewEnvCertPath] = certsStorage.GetFileName(domain, ".crt")
@@ -264,6 +262,11 @@ func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *Certificat
 	timeLeft := cert.NotAfter.Sub(time.Now().UTC())
 	log.Infof("[%s] acme: Trying renewal with %d hours remaining", domain, int(timeLeft.Hours()))
 
+	replacesCertID, err := certificate.MakeARICertID(cert)
+	if err != nil {
+		log.Fatalf("Error while construction the ARI CertID for domain %s\n\t%v", domain, err)
+	}
+
 	request := certificate.ObtainForCSRRequest{
 		CSR:                            csr,
 		NotBefore:                      getTime(ctx, "not-before"),
@@ -271,6 +274,7 @@ func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *Certificat
 		Bundle:                         bundle,
 		PreferredChain:                 ctx.String("preferred-chain"),
 		AlwaysDeactivateAuthorizations: ctx.Bool("always-deactivate-authorizations"),
+		ReplacesCertID:                 replacesCertID,
 	}
 
 	certRes, err := client.Certificate.ObtainForCSR(request)
@@ -279,14 +283,6 @@ func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *Certificat
 	}
 
 	certsStorage.SaveResource(certRes)
-
-	if ariRenewalTime != nil {
-		// Post to the renewalInfo endpoint to indicate that we have renewed and replaced the certificate.
-		err := client.Certificate.UpdateRenewalInfo(certificate.RenewalInfoRequest{Cert: certificates[0]})
-		if err != nil {
-			log.Warnf("[%s] Failed to update renewal info: %v", domain, err)
-		}
-	}
 
 	meta[renewEnvCertDomain] = domain
 	meta[renewEnvCertPath] = certsStorage.GetFileName(domain, ".crt")

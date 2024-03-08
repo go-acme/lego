@@ -181,6 +181,12 @@ type Order struct {
 	// certificate (optional, string):
 	// A URL for the certificate that has been issued in response to this order
 	Certificate string `json:"certificate,omitempty"`
+
+	// replaces (optional, string):
+	// replaces (string, optional): A string uniquely identifying a
+	// previously-issued certificate which this order is intended to replace.
+	// - https://datatracker.ietf.org/doc/html/draft-ietf-acme-ari-03#section-5
+	Replaces string `json:"replaces,omitempty"`
 }
 
 // Authorization the ACME authorization object.
@@ -329,11 +335,11 @@ type RenewalInfoResponse struct {
 }
 
 // RenewalInfoUpdateRequest is the JWS payload for POST requests made to the renewalInfo endpoint.
-// - (4.2. RenewalInfo Objects) https://datatracker.ietf.org/doc/html/draft-ietf-acme-ari-02#section-4.2
+// - (4.2. RenewalInfo Objects) https://datatracker.ietf.org/doc/html/draft-ietf-acme-ari-03#section-4.2
 type RenewalInfoUpdateRequest struct {
 	// CertID is a composite string in the format: base64url(AKI) || '.' || base64url(Serial), where AKI is the
 	// certificate's authority key identifier and Serial is the certificate's serial number. For details, see:
-	// https://datatracker.ietf.org/doc/html/draft-ietf-acme-ari-02#section-4.1
+	// https://datatracker.ietf.org/doc/html/draft-ietf-acme-ari-03#section-4.1
 	CertID string `json:"certID"`
 	// Replaced is required and indicates whether or not the client considers the certificate to have been replaced.
 	// A certificate is considered replaced when its revocation would not disrupt any ongoing services,

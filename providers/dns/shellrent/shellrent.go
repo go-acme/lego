@@ -131,9 +131,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	record := internal.Record{
-		Kind: "TXT",
-		Host: subDomain,
-		TTL:  internal.TTLRounder(d.config.TTL),
+		Type:        "TXT",
+		Host:        subDomain,
+		TTL:         internal.TTLRounder(d.config.TTL),
+		Destination: info.Value,
 	}
 
 	recordID, err := d.client.CreateRecord(ctx, zone.ID, record)
@@ -186,13 +187,15 @@ func (d *DNSProvider) findZone(ctx context.Context, domain string) (*internal.Do
 			return nil, fmt.Errorf("get domain details: %w", err)
 		}
 
+		domain := domain
+
 		for {
 			i := strings.Index(domain, ".")
 			if i == -1 {
 				break
 			}
 
-			if domainDetails.DomainName == domain {
+			if strings.EqualFold(domainDetails.DomainName, domain) {
 				return domainDetails, nil
 			}
 

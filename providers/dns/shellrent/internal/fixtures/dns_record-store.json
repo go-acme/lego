@@ -1,7 +1,8 @@
 {
   "error": 0,
-  "message": "",
+  "title": "",
+  "message": "Record DNS aggiunto con successo",
   "data": {
-    "id": 150
+    "id": "2255674"
   }
 }

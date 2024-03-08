@@ -1,6 +1,9 @@
 package internal
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+)
 
 type Response[T any] struct {
 	Base
@@ -29,8 +32,43 @@ type DomainDetails struct {
 }
 
 type Record struct {
-	ID   int    `json:"id,omitempty"`
-	Kind string `json:"kind,omitempty"`
-	Host string `json:"host,omitempty"`
-	TTL  int    `json:"ttl,omitempty"` // It can be set to the following values (number of seconds): 3600, 14400, 28800, 57600, 86400
+	ID          IntOrString `json:"id,omitempty"`
+	Type        string      `json:"type,omitempty"`
+	Host        string      `json:"host,omitempty"`
+	TTL         int         `json:"ttl,omitempty"` // It can be set to the following values (number of seconds): 3600, 14400, 28800, 57600, 86400
+	Destination string      `json:"destination,omitempty"`
+}
+
+type IntOrString int
+
+func (m *IntOrString) Value() int {
+	if m == nil {
+		return 0
+	}
+
+	return int(*m)
+}
+
+func (m *IntOrString) UnmarshalJSON(data []byte) error {
+	if len(data) == 0 {
+		return nil
+	}
+
+	raw := string(data)
+	if data[0] == '"' {
+		var err error
+		raw, err = strconv.Unquote(string(data))
+		if err != nil {
+			return err
+		}
+	}
+
+	v, err := strconv.Atoi(raw)
+	if err != nil {
+		return err
+	}
+
+	*m = IntOrString(v)
+
+	return nil
 }

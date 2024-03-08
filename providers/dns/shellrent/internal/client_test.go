@@ -143,7 +143,7 @@ func TestClient_CreateRecord(t *testing.T) {
 	services, err := client.CreateRecord(context.Background(), 123, Record{})
 	require.NoError(t, err)
 
-	expected := 150
+	expected := 2255674
 
 	assert.Equal(t, expected, services)
 }
@@ -183,7 +183,7 @@ func TestClient_DeleteRecord_error_status(t *testing.T) {
 	require.EqualError(t, err, "code 2: Token di autorizzazione non valido")
 }
 
-func TestName(t *testing.T) {
+func TestTTLRounder(t *testing.T) {
 	testCases := []struct {
 		desc     string
 		value    int

@@ -50,7 +50,7 @@ func (c Client) ListServices(ctx context.Context) ([]int, error) {
 		return nil, err
 	}
 
-	result := Response[[]int]{}
+	result := Response[[]IntOrString]{}
 
 	err = c.do(req, &result)
 	if err != nil {
@@ -61,7 +61,13 @@ func (c Client) ListServices(ctx context.Context) ([]int, error) {
 		return nil, result.Base
 	}
 
-	return result.Data, nil
+	var ids []int
+
+	for _, datum := range result.Data {
+		ids = append(ids, datum.Value())
+	}
+
+	return ids, nil
 }
 
 // GetServiceDetails gets service details.
@@ -131,7 +137,7 @@ func (c Client) CreateRecord(ctx context.Context, domainID int, record Record) (
 	if result.Code != 0 {
 		return 0, result.Base
 	}
-	return result.Data.ID, nil
+	return result.Data.ID.Value(), nil
 }
 
 // DeleteRecord deletes a record.

@@ -1,5 +1,23 @@
 # Changelog
 
+## [v4.16.0] - 2024-03-09
+
+### Added:
+- **[dnsprovider]** Add DNS provider for Shellrent
+- **[dnsprovider]** Add DNS provider for Mail-in-a-Box
+- **[dnsprovider]** Add DNS provider for CPanel and WHM
+- 
+### Changed:
+- **[lib,ari]** Implement 'replaces' field in newOrder and draft-ietf-acme-ari-03 CertID changes
+- **[log]** feat: improve errors and logs related to DNS call
+- **[lib]** update to go-jose/go-jose/v4 v4.0.1
+
+### Fixed:
+- **[dnsprovider]** nifcloud: fix bug in case of same auth zone
+- **[dnsprovider]** bunny: Support delegated sub-domains
+- **[dnsprovider]** easydns: fix zone detection
+- **[dnsprovider]** ns1: fix record creation
+
 ## [v4.15.0] - 2024-01-28
 
 ### Added:

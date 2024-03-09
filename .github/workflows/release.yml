@@ -55,7 +55,7 @@ jobs:
 
       - name: Snapcraft login
         env:
-          SNAPCRAFT_LOGIN: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
         run: snapcraft login
 
       - name: Set up QEMU

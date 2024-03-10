@@ -13,7 +13,7 @@
 - **[dnsprovider]** Add DNS provider for Shellrent
 - **[dnsprovider]** Add DNS provider for Mail-in-a-Box
 - **[dnsprovider]** Add DNS provider for CPanel and WHM
-- 
+
 ### Changed
 
 - **[lib,ari]** Implement 'replaces' field in newOrder and draft-ietf-acme-ari-03 CertID changes

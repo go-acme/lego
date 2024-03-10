@@ -5,6 +5,8 @@ package scaleway
 import (
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
@@ -19,12 +21,20 @@ const (
 	defaultPropagationTimeout = 120 * time.Second
 )
 
+// The access key is not used by the Scaleway client.
+const dumpAccessKey = "SCWXXXXXXXXXXXXXXXXX"
+
 // Environment variables names.
 const (
 	envNamespace = "SCALEWAY_"
 
 	EnvAPIToken  = envNamespace + "API_TOKEN"
 	EnvProjectID = envNamespace + "PROJECT_ID"
+
+	altEnvNamespace = "SCW_"
+
+	EnvAccessKey = altEnvNamespace + "ACCESS_KEY"
+	EnvSecretKey = altEnvNamespace + "SECRET_KEY"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -34,7 +44,8 @@ const (
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
 	ProjectID          string
-	Token              string
+	Token              string // TODO(ldez) rename to SecretKey in the next major.
+	AccessKey          string
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
@@ -43,9 +54,10 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, minTTL),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, defaultPropagationTimeout),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, defaultPollingInterval),
+		AccessKey:          dumpAccessKey,
+		TTL:                env.GetOneWithFallback(EnvTTL, minTTL, strconv.Atoi, altEnvName(EnvTTL)),
+		PropagationTimeout: env.GetOneWithFallback(EnvPropagationTimeout, defaultPropagationTimeout, env.ParseSecond, altEnvName(EnvPropagationTimeout)),
+		PollingInterval:    env.GetOneWithFallback(EnvPollingInterval, defaultPollingInterval, env.ParseSecond, altEnvName(EnvPollingInterval)),
 	}
 }
 
@@ -59,13 +71,14 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables:
 // SCALEWAY_API_TOKEN, SCALEWAY_PROJECT_ID.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvAPIToken)
+	values, err := env.GetWithFallback([]string{EnvSecretKey, EnvAPIToken})
 	if err != nil {
 		return nil, fmt.Errorf("scaleway: %w", err)
 	}
 
 	config := NewDefaultConfig()
-	config.Token = values[EnvAPIToken]
+	config.Token = values[EnvSecretKey]
+	config.AccessKey = env.GetOrDefaultString(EnvAccessKey, dumpAccessKey)
 	config.ProjectID = env.GetOrFile(EnvProjectID)
 
 	return NewDNSProviderConfig(config)
@@ -86,7 +99,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	configuration := []scw.ClientOption{
-		scw.WithAuth("SCWXXXXXXXXXXXXXXXXX", config.Token),
+		scw.WithAuth(config.AccessKey, config.Token),
 		scw.WithUserAgent("Scaleway Lego's provider"),
 	}
 
@@ -163,4 +176,8 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	return nil
+}
+
+func altEnvName(v string) string {
+	return strings.ReplaceAll(v, envNamespace, altEnvNamespace)
 }

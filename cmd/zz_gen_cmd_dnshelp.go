@@ -2363,14 +2363,15 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "SCALEWAY_API_TOKEN":	API token`)
-		ew.writeln(`	- "SCALEWAY_PROJECT_ID":	Project to use (optional)`)
+		ew.writeln(`	- "SCW_PROJECT_ID":	Project to use (optional)`)
+		ew.writeln(`	- "SCW_SECRET_KEY":	Secret key`)
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "SCALEWAY_POLLING_INTERVAL":	Time between DNS propagation check`)
-		ew.writeln(`	- "SCALEWAY_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
-		ew.writeln(`	- "SCALEWAY_TTL":	The TTL of the TXT record used for the DNS challenge`)
+		ew.writeln(`	- "SCW_ACCESS_KEY":	Access key`)
+		ew.writeln(`	- "SCW_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "SCW_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "SCW_TTL":	The TTL of the TXT record used for the DNS challenge`)
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/scaleway`)

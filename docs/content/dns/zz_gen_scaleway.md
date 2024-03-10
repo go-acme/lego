@@ -26,7 +26,7 @@ Configuration for [Scaleway](https://developers.scaleway.com/).
 Here is an example bash command using the Scaleway provider:
 
 ```bash
-SCALEWAY_API_TOKEN=xxxxxxx-xxxxx-xxxx-xxx-xxxxxx \
+SCW_SECRET_KEY=xxxxxxx-xxxxx-xxxx-xxx-xxxxxx \
 lego --email you@example.com --dns scaleway --domains my.example.org run
 ```
 
@@ -37,8 +37,8 @@ lego --email you@example.com --dns scaleway --domains my.example.org run
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `SCALEWAY_API_TOKEN` | API token |
-| `SCALEWAY_PROJECT_ID` | Project to use (optional) |
+| `SCW_PROJECT_ID` | Project to use (optional) |
+| `SCW_SECRET_KEY` | Secret key |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{< ref "dns#configuration-and-credentials" >}}).
@@ -48,9 +48,10 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `SCALEWAY_POLLING_INTERVAL` | Time between DNS propagation check |
-| `SCALEWAY_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
-| `SCALEWAY_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `SCW_ACCESS_KEY` | Access key |
+| `SCW_POLLING_INTERVAL` | Time between DNS propagation check |
+| `SCW_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
+| `SCW_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{< ref "dns#configuration-and-credentials" >}}).

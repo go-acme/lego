@@ -187,11 +187,6 @@ func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *Certif
 		time.Sleep(sleepTime)
 	}
 
-	replacesCertID, err := certificate.MakeARICertID(cert)
-	if err != nil {
-		log.Fatalf("Error while construction the ARI CertID for domain %s\n\t%v", domain, err)
-	}
-
 	request := certificate.ObtainRequest{
 		Domains:                        merge(certDomains, domains),
 		PrivateKey:                     privateKey,
@@ -201,7 +196,13 @@ func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *Certif
 		Bundle:                         bundle,
 		PreferredChain:                 ctx.String("preferred-chain"),
 		AlwaysDeactivateAuthorizations: ctx.Bool("always-deactivate-authorizations"),
-		ReplacesCertID:                 replacesCertID,
+	}
+
+	if ctx.Bool("ari-enable") {
+		request.ReplacesCertID, err = certificate.MakeARICertID(cert)
+		if err != nil {
+			log.Fatalf("Error while construction the ARI CertID for domain %s\n\t%v", domain, err)
+		}
 	}
 
 	certRes, err := client.Certificate.Obtain(request)
@@ -262,11 +263,6 @@ func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *Certificat
 	timeLeft := cert.NotAfter.Sub(time.Now().UTC())
 	log.Infof("[%s] acme: Trying renewal with %d hours remaining", domain, int(timeLeft.Hours()))
 
-	replacesCertID, err := certificate.MakeARICertID(cert)
-	if err != nil {
-		log.Fatalf("Error while construction the ARI CertID for domain %s\n\t%v", domain, err)
-	}
-
 	request := certificate.ObtainForCSRRequest{
 		CSR:                            csr,
 		NotBefore:                      getTime(ctx, "not-before"),
@@ -274,7 +270,13 @@ func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *Certificat
 		Bundle:                         bundle,
 		PreferredChain:                 ctx.String("preferred-chain"),
 		AlwaysDeactivateAuthorizations: ctx.Bool("always-deactivate-authorizations"),
-		ReplacesCertID:                 replacesCertID,
+	}
+
+	if ctx.Bool("ari-enable") {
+		request.ReplacesCertID, err = certificate.MakeARICertID(cert)
+		if err != nil {
+			log.Fatalf("Error while construction the ARI CertID for domain %s\n\t%v", domain, err)
+		}
 	}
 
 	certRes, err := client.Certificate.ObtainForCSR(request)

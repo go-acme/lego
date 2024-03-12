@@ -40,6 +40,8 @@ const (
 	EnvAuthMethod     = envNamespace + "AUTH_METHOD"
 	EnvAuthMSITimeout = envNamespace + "AUTH_MSI_TIMEOUT"
 
+	EnvServiceDiscoveryFilter = envNamespace + "SERVICEDISCOVERY_FILTER"
+
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
@@ -74,7 +76,8 @@ type Config struct {
 	TTL                int
 	HTTPClient         *http.Client
 
-	ServiceDiscoveryZones map[string]ServiceDiscoveryZone
+	ServiceDiscoveryFilter string
+	ServiceDiscoveryZones  map[string]ServiceDiscoveryZone
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
@@ -123,6 +126,8 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 	config.OIDCToken = env.GetOrFile(EnvOIDCToken)
 	config.OIDCTokenFilePath = env.GetOrFile(EnvOIDCTokenFilePath)
+
+	config.ServiceDiscoveryFilter = env.GetOrFile(EnvServiceDiscoveryFilter)
 
 	oidcValues, _ := env.GetWithFallback(
 		[]string{EnvOIDCRequestURL, EnvGitHubOIDCRequestURL},

@@ -16,35 +16,49 @@ type ServiceDiscoveryZone struct {
 	ResourceGroup  string
 }
 
-const ResourceGraphQuery = `
+const (
+	ResourceGraphTypePublicDnsZone  = "microsoft.network/dnszones"
+	ResourceGraphTypePrivateDnsZone = "microsoft.network/privatednszones"
+
+	ResourceGraphQuery = `
 resources
 | where type =~ "%s"
 %s
-| project subscriptionId, resourceGroup, name
-`
+| project subscriptionId, resourceGroup, name`
+)
 
 const ResourceGraphQueryOptionsTop = 1000
 
+// discoverDnsZones finds all visible Azure DNS zones based on optional subscriptionID, resourceGroup and servicediscovery filter using Kusto query.
 func discoverDnsZones(config *Config, credentials azcore.TokenCredential) (map[string]ServiceDiscoveryZone, error) {
 	ctx := context.Background()
 	zones := map[string]ServiceDiscoveryZone{}
 
-	resourceType := "microsoft.network/dnszones"
+	resourceType := ResourceGraphTypePublicDnsZone
 	if config.PrivateZone {
-		resourceType = "microsoft.network/privatednszones"
+		resourceType = ResourceGraphTypePrivateDnsZone
 	}
 
 	resourceGraphConditions := []string{}
+	// subscriptionID filter
 	if config.SubscriptionID != "" {
 		resourceGraphConditions = append(
 			resourceGraphConditions,
 			fmt.Sprintf(`| where subscriptionId =~ "%s"`, config.SubscriptionID),
 		)
 	}
+	// resourceGroup filter
 	if config.ResourceGroup != "" {
 		resourceGraphConditions = append(
 			resourceGraphConditions,
 			fmt.Sprintf(`| where resourceGroup =~ "%s"`, config.ResourceGroup),
+		)
+	}
+	// custom filter
+	if config.ServiceDiscoveryFilter != "" {
+		resourceGraphConditions = append(
+			resourceGraphConditions,
+			fmt.Sprintf(`| %s`, config.ServiceDiscoveryFilter),
 		)
 	}
 
@@ -77,7 +91,7 @@ func discoverDnsZones(config *Config, credentials azcore.TokenCredential) (map[s
 	}
 
 	for {
-		// Create the query request
+		// create the query request
 		request := armresourcegraph.QueryRequest{
 			Query:   &resourceGraphQuery,
 			Options: &requestOptions,

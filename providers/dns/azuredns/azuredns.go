@@ -73,15 +73,18 @@ type Config struct {
 	PollingInterval    time.Duration
 	TTL                int
 	HTTPClient         *http.Client
+
+	ServiceDiscoveryZones map[string]ServiceDiscoveryZone
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                env.GetOrDefaultInt(EnvTTL, 60),
-		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
-		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
-		Environment:        cloud.AzurePublic,
+		TTL:                   env.GetOrDefaultInt(EnvTTL, 60),
+		PropagationTimeout:    env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
+		PollingInterval:       env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
+		Environment:           cloud.AzurePublic,
+		ServiceDiscoveryZones: map[string]ServiceDiscoveryZone{},
 	}
 }
 
@@ -150,12 +153,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("azuredns: Unable to retrieve valid credentials: %w", err)
 	}
 
-	if config.SubscriptionID == "" {
-		return nil, errors.New("azuredns: SubscriptionID is missing")
-	}
-
-	if config.ResourceGroup == "" {
-		return nil, errors.New("azuredns: ResourceGroup is missing")
+	if zones, err := discoverDnsZones(config, credentials); err == nil {
+		config.ServiceDiscoveryZones = zones
+	} else {
+		return nil, fmt.Errorf("azuredns: %w", err)
 	}
 
 	var dnsProvider challenge.ProviderTimeout

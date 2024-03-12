@@ -16,34 +16,35 @@ import (
 
 // DNSProviderPublic implements the challenge.Provider interface for Azure Public Zone DNS.
 type DNSProviderPublic struct {
-	config       *Config
-	zoneClient   *armdns.ZonesClient
-	recordClient *armdns.RecordSetsClient
+	config      *Config
+	credentials azcore.TokenCredential
 }
 
 // NewDNSProviderPublic creates a DNSProviderPublic structure with intialised Azure clients.
 func NewDNSProviderPublic(config *Config, credentials azcore.TokenCredential) (*DNSProviderPublic, error) {
+	return &DNSProviderPublic{
+		config:      config,
+		credentials: credentials,
+	}, nil
+}
+
+func (d *DNSProviderPublic) recordClient(zoneName string) (*armdns.RecordSetsClient, *ServiceDiscoveryZone, error) {
 	options := arm.ClientOptions{
 		ClientOptions: azcore.ClientOptions{
-			Cloud: config.Environment,
+			Cloud: d.config.Environment,
 		},
 	}
 
-	zoneClient, err := armdns.NewZonesClient(config.SubscriptionID, credentials, &options)
-	if err != nil {
-		return nil, err
-	}
+	if zone, exists := d.config.ServiceDiscoveryZones[zoneName]; exists {
+		recordClient, err := armdns.NewRecordSetsClient(zone.SubscriptionID, d.credentials, &options)
+		if err != nil {
+			panic(err)
+		}
 
-	recordClient, err := armdns.NewRecordSetsClient(config.SubscriptionID, credentials, &options)
-	if err != nil {
-		return nil, err
+		return recordClient, &zone, nil
+	} else {
+		return nil, nil, fmt.Errorf(`zone %s not found`, zoneName)
 	}
-
-	return &DNSProviderPublic{
-		config:       config,
-		zoneClient:   zoneClient,
-		recordClient: recordClient,
-	}, nil
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
@@ -67,8 +68,13 @@ func (d *DNSProviderPublic) Present(domain, _, keyAuth string) error {
 		return fmt.Errorf("azuredns: %w", err)
 	}
 
+	recordClient, azureZone, err := d.recordClient(zone)
+	if err != nil {
+		return fmt.Errorf("azuredns: %w", err)
+	}
+
 	// Get existing record set
-	rset, err := d.recordClient.Get(ctx, d.config.ResourceGroup, zone, subDomain, armdns.RecordTypeTXT, nil)
+	rset, err := recordClient.Get(ctx, azureZone.ResourceGroup, azureZone.Name, subDomain, armdns.RecordTypeTXT, nil)
 	if err != nil {
 		var respErr *azcore.ResponseError
 		if !errors.As(err, &respErr) || respErr.StatusCode != http.StatusNotFound {
@@ -102,7 +108,7 @@ func (d *DNSProviderPublic) Present(domain, _, keyAuth string) error {
 		},
 	}
 
-	_, err = d.recordClient.CreateOrUpdate(ctx, d.config.ResourceGroup, zone, subDomain, armdns.RecordTypeTXT, rec, nil)
+	_, err = recordClient.CreateOrUpdate(ctx, azureZone.ResourceGroup, azureZone.Name, subDomain, armdns.RecordTypeTXT, rec, nil)
 	if err != nil {
 		return fmt.Errorf("azuredns: %w", err)
 	}
@@ -125,7 +131,12 @@ func (d *DNSProviderPublic) CleanUp(domain, _, keyAuth string) error {
 		return fmt.Errorf("azuredns: %w", err)
 	}
 
-	_, err = d.recordClient.Delete(ctx, d.config.ResourceGroup, zone, subDomain, armdns.RecordTypeTXT, nil)
+	recordClient, azureZone, err := d.recordClient(zone)
+	if err != nil {
+		return fmt.Errorf("azuredns: %w", err)
+	}
+
+	_, err = recordClient.Delete(ctx, azureZone.ResourceGroup, azureZone.Name, subDomain, armdns.RecordTypeTXT, nil)
 	if err != nil {
 		return fmt.Errorf("azuredns: %w", err)
 	}
@@ -144,11 +155,9 @@ func (d *DNSProviderPublic) getHostedZoneID(ctx context.Context, fqdn string) (s
 		return "", fmt.Errorf("could not find zone: %w", err)
 	}
 
-	zone, err := d.zoneClient.Get(ctx, d.config.ResourceGroup, dns01.UnFqdn(authZone), nil)
-	if err != nil {
-		return "", err
+	if azureZone, exists := d.config.ServiceDiscoveryZones[dns01.UnFqdn(authZone)]; exists {
+		return dns01.UnFqdn(azureZone.Name), nil
 	}
 
-	// zone.Name shouldn't have a trailing dot(.)
-	return dns01.UnFqdn(deref(zone.Name)), nil
+	return "", fmt.Errorf(`could not find zone: %s`, authZone)
 }

@@ -149,11 +149,11 @@ snapcrafts:
     license: MIT
     base: core22
     publish: true
-    summary: LEGO is a Let's Encrypt client.
+    summary: Lego is a Let's Encrypt/ACME client.
     description: |
-      LEGO is a Let's Encrypt client written in Go.
+      Lego is a Let's Encrypt/ACME client written in Go.
 
-      The LEGO snap makes it easy to install and use LEGO on any Linux distribution that supports snaps.
+      The lego snap makes it easy to install and use Lego on any Linux distribution that supports snaps.
     
       Usage:
       * `sudo snap install lego`

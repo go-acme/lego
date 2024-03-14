@@ -17,41 +17,106 @@ type ServiceDiscoveryZone struct {
 }
 
 const (
-	ResourceGraphTypePublicDnsZone  = "microsoft.network/dnszones"
-	ResourceGraphTypePrivateDnsZone = "microsoft.network/privatednszones"
+	ResourceGraphTypePublicDNSZone  = "microsoft.network/dnszones"
+	ResourceGraphTypePrivateDNSZone = "microsoft.network/privatednszones"
+)
 
-	ResourceGraphQuery = `
+const ResourceGraphQuery = `
 resources
 | where type =~ "%s"
 %s
 | project subscriptionId, resourceGroup, name`
-)
 
-const ResourceGraphQueryOptionsTop = 1000
+const ResourceGraphQueryOptionsTop int32 = 1000
 
-// discoverDnsZones finds all visible Azure DNS zones based on optional subscriptionID, resourceGroup and servicediscovery filter using Kusto query.
-func discoverDnsZones(config *Config, credentials azcore.TokenCredential) (map[string]ServiceDiscoveryZone, error) {
-	ctx := context.Background()
-	zones := map[string]ServiceDiscoveryZone{}
-
-	resourceType := ResourceGraphTypePublicDnsZone
-	if config.PrivateZone {
-		resourceType = ResourceGraphTypePrivateDnsZone
+// discoverDNSZones finds all visible Azure DNS zones based on optional subscriptionID, resourceGroup and serviceDiscovery filter using Kusto query.
+func discoverDNSZones(ctx context.Context, config *Config, credentials azcore.TokenCredential) (map[string]ServiceDiscoveryZone, error) {
+	options := &arm.ClientOptions{
+		ClientOptions: azcore.ClientOptions{
+			Cloud: config.Environment,
+		},
 	}
 
-	resourceGraphConditions := []string{}
+	client, err := armresourcegraph.NewClient(credentials, options)
+	if err != nil {
+		return nil, err
+	}
+
+	// Set options
+	requestOptions := &armresourcegraph.QueryRequestOptions{
+		ResultFormat: pointer(armresourcegraph.ResultFormatObjectArray),
+		Top:          pointer(ResourceGraphQueryOptionsTop),
+		Skip:         pointer[int32](0),
+	}
+
+	zones := map[string]ServiceDiscoveryZone{}
+	for {
+		// create the query request
+		request := armresourcegraph.QueryRequest{
+			Query:   pointer(createGraphQuery(config)),
+			Options: requestOptions,
+		}
+
+		result, err := client.Resources(ctx, request, nil)
+		if err != nil {
+			return zones, err
+		}
+
+		resultList, ok := result.Data.([]any)
+		if !ok {
+			// got invalid or empty data, skipping
+			break
+		}
+
+		for _, row := range resultList {
+			rowData, ok := row.(map[string]any)
+			if !ok {
+				continue
+			}
+
+			zoneName, ok := rowData["name"].(string)
+			if !ok {
+				continue
+			}
+
+			if _, exists := zones[zoneName]; exists {
+				return zones, fmt.Errorf(`found duplicate dns zone "%s"`, zoneName)
+			}
+
+			zones[zoneName] = ServiceDiscoveryZone{
+				Name:           zoneName,
+				ResourceGroup:  rowData["resourceGroup"].(string),
+				SubscriptionID: rowData["subscriptionId"].(string),
+			}
+		}
+
+		*requestOptions.Skip += ResourceGraphQueryOptionsTop
+
+		if result.TotalRecords != nil {
+			if int64(deref(requestOptions.Skip)) >= deref(result.TotalRecords) {
+				break
+			}
+		}
+	}
+
+	return zones, nil
+}
+
+func createGraphQuery(config *Config) string {
+	var resourceGraphConditions []string
+
 	// subscriptionID filter
 	if config.SubscriptionID != "" {
 		resourceGraphConditions = append(
 			resourceGraphConditions,
-			fmt.Sprintf(`| where subscriptionId =~ "%s"`, config.SubscriptionID),
+			fmt.Sprintf(`| where subscriptionId =~ %q`, config.SubscriptionID),
 		)
 	}
 	// resourceGroup filter
 	if config.ResourceGroup != "" {
 		resourceGraphConditions = append(
 			resourceGraphConditions,
-			fmt.Sprintf(`| where resourceGroup =~ "%s"`, config.ResourceGroup),
+			fmt.Sprintf(`| where resourceGroup =~ %q`, config.ResourceGroup),
 		)
 	}
 	// custom filter
@@ -62,74 +127,14 @@ func discoverDnsZones(config *Config, credentials azcore.TokenCredential) (map[s
 		)
 	}
 
-	resourceGraphQuery := fmt.Sprintf(
+	resourceType := ResourceGraphTypePublicDNSZone
+	if config.PrivateZone {
+		resourceType = ResourceGraphTypePrivateDNSZone
+	}
+
+	return fmt.Sprintf(
 		ResourceGraphQuery,
 		resourceType,
 		strings.Join(resourceGraphConditions, "\n"),
 	)
-
-	options := arm.ClientOptions{
-		ClientOptions: azcore.ClientOptions{
-			Cloud: config.Environment,
-		},
-	}
-
-	resourceGraphClient, err := armresourcegraph.NewClient(credentials, &options)
-	if err != nil {
-		return zones, err
-	}
-
-	requestQueryTop := int32(ResourceGraphQueryOptionsTop)
-	requestQuerySkip := int32(0)
-
-	// Set options
-	resultFormat := armresourcegraph.ResultFormatObjectArray
-	requestOptions := armresourcegraph.QueryRequestOptions{
-		ResultFormat: &resultFormat,
-		Top:          &requestQueryTop,
-		Skip:         &requestQuerySkip,
-	}
-
-	for {
-		// create the query request
-		request := armresourcegraph.QueryRequest{
-			Query:   &resourceGraphQuery,
-			Options: &requestOptions,
-		}
-
-		var result, queryErr = resourceGraphClient.Resources(ctx, request, nil)
-		if queryErr != nil {
-			return zones, queryErr
-		}
-
-		if resultList, ok := result.Data.([]interface{}); ok {
-			for _, row := range resultList {
-				if rowData, ok := row.(map[string]interface{}); ok {
-					if zoneName, ok := rowData["name"].(string); ok {
-						if _, exists := zones[zoneName]; exists {
-							return zones, fmt.Errorf(`found duplicate dns zone "%s"`, zoneName)
-						}
-
-						zones[zoneName] = ServiceDiscoveryZone{
-							Name:           zoneName,
-							ResourceGroup:  rowData["resourceGroup"].(string),
-							SubscriptionID: rowData["subscriptionId"].(string),
-						}
-					}
-				}
-			}
-		} else {
-			// got invalid or empty data, skipping
-			break
-		}
-
-		*requestOptions.Skip += requestQueryTop
-		if result.TotalRecords != nil {
-			if int64(*requestOptions.Skip) >= *result.TotalRecords {
-				break
-			}
-		}
-	}
-
-	return zones, nil
 }

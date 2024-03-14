@@ -158,11 +158,12 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("azuredns: Unable to retrieve valid credentials: %w", err)
 	}
 
-	if zones, err := discoverDnsZones(config, credentials); err == nil {
-		config.ServiceDiscoveryZones = zones
-	} else {
-		return nil, fmt.Errorf("azuredns: %w", err)
+	zones, err := discoverDNSZones(context.Background(), config, credentials)
+	if err != nil {
+		return nil, fmt.Errorf("azuredns: discover DNS zones: %w", err)
 	}
+
+	config.ServiceDiscoveryZones = zones
 
 	var dnsProvider challenge.ProviderTimeout
 	if config.PrivateZone {
@@ -260,7 +261,7 @@ func (w *timeoutTokenCredential) GetToken(ctx context.Context, opts policy.Token
 	return tk, err
 }
 
-func deref[T string | int | int32 | int64](v *T) T {
+func deref[T any](v *T) T {
 	if v == nil {
 		var zero T
 		return zero
@@ -268,3 +269,5 @@ func deref[T string | int | int32 | int64](v *T) T {
 
 	return *v
 }
+
+func pointer[T any](v T) *T { return &v }

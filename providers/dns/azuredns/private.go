@@ -9,6 +9,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/privatedns/armprivatedns"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
@@ -20,46 +21,12 @@ type DNSProviderPrivate struct {
 	credentials azcore.TokenCredential
 }
 
-// DnsProviderPrivateZone provides Azure client for one DNS zone
-type DnsProviderPrivateZone struct {
-	Name           string
-	ResourceGroup  string
-	SubscriptionID string
-
-	RecordClient *armprivatedns.RecordSetsClient
-}
-
-// NewDNSProviderPrivate creates a DNSProviderPrivate structure with initialized Azure clients.
+// NewDNSProviderPrivate creates a DNSProviderPrivate structure.
 func NewDNSProviderPrivate(config *Config, credentials azcore.TokenCredential) (*DNSProviderPrivate, error) {
 	return &DNSProviderPrivate{
 		config:      config,
 		credentials: credentials,
 	}, nil
-}
-
-// zoneClient creates DnsProviderPrivateZone structure with initialised Azure client.
-func (d *DNSProviderPrivate) zoneClient(zoneName string) (*DnsProviderPrivateZone, error) {
-	options := arm.ClientOptions{
-		ClientOptions: azcore.ClientOptions{
-			Cloud: d.config.Environment,
-		},
-	}
-
-	if zone, exists := d.config.ServiceDiscoveryZones[zoneName]; exists {
-		recordClient, err := armprivatedns.NewRecordSetsClient(zone.SubscriptionID, d.credentials, &options)
-		if err != nil {
-			panic(err)
-		}
-
-		return &DnsProviderPrivateZone{
-			RecordClient:   recordClient,
-			Name:           zone.Name,
-			ResourceGroup:  zone.ResourceGroup,
-			SubscriptionID: zone.SubscriptionID,
-		}, nil
-	} else {
-		return nil, fmt.Errorf(`zone %s not found`, zoneName)
-	}
 }
 
 // Timeout returns the timeout and interval to use when checking for DNS propagation.
@@ -73,7 +40,7 @@ func (d *DNSProviderPrivate) Present(domain, _, keyAuth string) error {
 	ctx := context.Background()
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := d.getHostedZoneID(ctx, info.EffectiveFQDN)
+	zone, err := d.getHostedZoneID(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("azuredns: %w", err)
 	}
@@ -83,13 +50,13 @@ func (d *DNSProviderPrivate) Present(domain, _, keyAuth string) error {
 		return fmt.Errorf("azuredns: %w", err)
 	}
 
-	zoneClient, err := d.zoneClient(zone)
+	client, err := d.newZoneClient(zone)
 	if err != nil {
 		return fmt.Errorf("azuredns: %w", err)
 	}
 
 	// Get existing record set
-	rset, err := zoneClient.RecordClient.Get(ctx, zoneClient.ResourceGroup, zoneClient.Name, armprivatedns.RecordTypeTXT, subDomain, nil)
+	resp, err := client.Get(ctx, subDomain)
 	if err != nil {
 		var respErr *azcore.ResponseError
 		if !errors.As(err, &respErr) || respErr.StatusCode != http.StatusNotFound {
@@ -98,15 +65,7 @@ func (d *DNSProviderPrivate) Present(domain, _, keyAuth string) error {
 	}
 
 	// Construct unique TXT records using map
-	uniqRecords := map[string]struct{}{info.Value: {}}
-	if rset.RecordSet.Properties != nil && rset.RecordSet.Properties.TxtRecords != nil {
-		for _, txtRecord := range rset.RecordSet.Properties.TxtRecords {
-			// Assume Value doesn't contain multiple strings
-			if len(txtRecord.Value) > 0 {
-				uniqRecords[deref(txtRecord.Value[0])] = struct{}{}
-			}
-		}
-	}
+	uniqRecords := privateUniqueRecords(resp.RecordSet, info.Value)
 
 	var txtRecords []*armprivatedns.TxtRecord
 	for txt := range uniqRecords {
@@ -114,16 +73,15 @@ func (d *DNSProviderPrivate) Present(domain, _, keyAuth string) error {
 		txtRecords = append(txtRecords, &armprivatedns.TxtRecord{Value: []*string{&txtRecord}})
 	}
 
-	ttlInt64 := int64(d.config.TTL)
 	rec := armprivatedns.RecordSet{
 		Name: &subDomain,
 		Properties: &armprivatedns.RecordSetProperties{
-			TTL:        &ttlInt64,
+			TTL:        pointer(int64(d.config.TTL)),
 			TxtRecords: txtRecords,
 		},
 	}
 
-	_, err = zoneClient.RecordClient.CreateOrUpdate(ctx, zoneClient.ResourceGroup, zoneClient.Name, armprivatedns.RecordTypeTXT, subDomain, rec, nil)
+	_, err = client.CreateOrUpdate(ctx, subDomain, rec)
 	if err != nil {
 		return fmt.Errorf("azuredns: %w", err)
 	}
@@ -136,7 +94,7 @@ func (d *DNSProviderPrivate) CleanUp(domain, _, keyAuth string) error {
 	ctx := context.Background()
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := d.getHostedZoneID(ctx, info.EffectiveFQDN)
+	zone, err := d.getHostedZoneID(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("azuredns: %w", err)
 	}
@@ -146,12 +104,12 @@ func (d *DNSProviderPrivate) CleanUp(domain, _, keyAuth string) error {
 		return fmt.Errorf("azuredns: %w", err)
 	}
 
-	zoneClient, err := d.zoneClient(zone)
+	client, err := d.newZoneClient(zone)
 	if err != nil {
 		return fmt.Errorf("azuredns: %w", err)
 	}
 
-	_, err = zoneClient.RecordClient.Delete(ctx, zoneClient.ResourceGroup, zoneClient.Name, armprivatedns.RecordTypeTXT, subDomain, nil)
+	_, err = client.Delete(ctx, subDomain)
 	if err != nil {
 		return fmt.Errorf("azuredns: %w", err)
 	}
@@ -160,7 +118,7 @@ func (d *DNSProviderPrivate) CleanUp(domain, _, keyAuth string) error {
 }
 
 // Checks that azure has a zone for this domain name.
-func (d *DNSProviderPrivate) getHostedZoneID(ctx context.Context, fqdn string) (string, error) {
+func (d *DNSProviderPrivate) getHostedZoneID(fqdn string) (string, error) {
 	if zone := env.GetOrFile(EnvZoneName); zone != "" {
 		return zone, nil
 	}
@@ -175,4 +133,64 @@ func (d *DNSProviderPrivate) getHostedZoneID(ctx context.Context, fqdn string) (
 	}
 
 	return "", fmt.Errorf(`could not find zone: %s`, authZone)
+}
+
+// newZoneClient creates PrivateZoneClient structure with initialized Azure client.
+func (d *DNSProviderPrivate) newZoneClient(zoneName string) (*PrivateZoneClient, error) {
+	zone, exists := d.config.ServiceDiscoveryZones[zoneName]
+	if !exists {
+		return nil, fmt.Errorf(`zone %s not found`, zoneName)
+	}
+
+	return NewPrivateZoneClient(zone, d.credentials, d.config.Environment)
+}
+
+// PrivateZoneClient provides Azure client for one DNS zone.
+type PrivateZoneClient struct {
+	zone         ServiceDiscoveryZone
+	recordClient *armprivatedns.RecordSetsClient
+}
+
+func NewPrivateZoneClient(zone ServiceDiscoveryZone, credential azcore.TokenCredential, environment cloud.Configuration) (*PrivateZoneClient, error) {
+	options := &arm.ClientOptions{
+		ClientOptions: azcore.ClientOptions{
+			Cloud: environment,
+		},
+	}
+
+	recordClient, err := armprivatedns.NewRecordSetsClient(zone.SubscriptionID, credential, options)
+	if err != nil {
+		return nil, err
+	}
+
+	return &PrivateZoneClient{
+		zone:         zone,
+		recordClient: recordClient,
+	}, nil
+}
+
+func (c PrivateZoneClient) Get(ctx context.Context, subDomain string) (armprivatedns.RecordSetsClientGetResponse, error) {
+	return c.recordClient.Get(ctx, c.zone.ResourceGroup, c.zone.Name, armprivatedns.RecordTypeTXT, subDomain, nil)
+}
+
+func (c PrivateZoneClient) CreateOrUpdate(ctx context.Context, subDomain string, rec armprivatedns.RecordSet) (armprivatedns.RecordSetsClientCreateOrUpdateResponse, error) {
+	return c.recordClient.CreateOrUpdate(ctx, c.zone.ResourceGroup, c.zone.Name, armprivatedns.RecordTypeTXT, subDomain, rec, nil)
+}
+
+func (c PrivateZoneClient) Delete(ctx context.Context, subDomain string) (armprivatedns.RecordSetsClientDeleteResponse, error) {
+	return c.recordClient.Delete(ctx, c.zone.ResourceGroup, c.zone.Name, armprivatedns.RecordTypeTXT, subDomain, nil)
+}
+
+func privateUniqueRecords(recordSet armprivatedns.RecordSet, value string) map[string]struct{} {
+	uniqRecords := map[string]struct{}{value: {}}
+	if recordSet.Properties != nil && recordSet.Properties.TxtRecords != nil {
+		for _, txtRecord := range recordSet.Properties.TxtRecords {
+			// Assume Value doesn't contain multiple strings
+			if len(txtRecord.Value) > 0 {
+				uniqRecords[deref(txtRecord.Value[0])] = struct{}{}
+			}
+		}
+	}
+
+	return uniqRecords
 }

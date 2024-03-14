@@ -77,17 +77,15 @@ type Config struct {
 	HTTPClient         *http.Client
 
 	ServiceDiscoveryFilter string
-	ServiceDiscoveryZones  map[string]ServiceDiscoveryZone
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		TTL:                   env.GetOrDefaultInt(EnvTTL, 60),
-		PropagationTimeout:    env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
-		PollingInterval:       env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
-		Environment:           cloud.AzurePublic,
-		ServiceDiscoveryZones: map[string]ServiceDiscoveryZone{},
+		TTL:                env.GetOrDefaultInt(EnvTTL, 60),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
+		Environment:        cloud.AzurePublic,
 	}
 }
 
@@ -157,13 +155,6 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if err != nil {
 		return nil, fmt.Errorf("azuredns: Unable to retrieve valid credentials: %w", err)
 	}
-
-	zones, err := discoverDNSZones(context.Background(), config, credentials)
-	if err != nil {
-		return nil, fmt.Errorf("azuredns: discover DNS zones: %w", err)
-	}
-
-	config.ServiceDiscoveryZones = zones
 
 	var dnsProvider challenge.ProviderTimeout
 	if config.PrivateZone {

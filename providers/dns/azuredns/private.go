@@ -17,15 +17,22 @@ import (
 
 // DNSProviderPrivate implements the challenge.Provider interface for Azure Private Zone DNS.
 type DNSProviderPrivate struct {
-	config      *Config
-	credentials azcore.TokenCredential
+	config                *Config
+	credentials           azcore.TokenCredential
+	serviceDiscoveryZones map[string]ServiceDiscoveryZone
 }
 
 // NewDNSProviderPrivate creates a DNSProviderPrivate structure.
 func NewDNSProviderPrivate(config *Config, credentials azcore.TokenCredential) (*DNSProviderPrivate, error) {
+	zones, err := discoverDNSZones(context.Background(), config, credentials)
+	if err != nil {
+		return nil, fmt.Errorf("discover DNS zones: %w", err)
+	}
+
 	return &DNSProviderPrivate{
-		config:      config,
-		credentials: credentials,
+		config:                config,
+		credentials:           credentials,
+		serviceDiscoveryZones: zones,
 	}, nil
 }
 
@@ -40,17 +47,19 @@ func (d *DNSProviderPrivate) Present(domain, _, keyAuth string) error {
 	ctx := context.Background()
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := d.getHostedZoneID(info.EffectiveFQDN)
+	zone, err := d.getHostedZone(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("azuredns: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone)
+	zoneName := dns01.UnFqdn(zone.Name)
+
+	client, err := newPrivateZoneClient(zone, d.credentials, d.config.Environment)
 	if err != nil {
 		return fmt.Errorf("azuredns: %w", err)
 	}
 
-	client, err := d.newZoneClient(zone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zoneName)
 	if err != nil {
 		return fmt.Errorf("azuredns: %w", err)
 	}
@@ -94,17 +103,19 @@ func (d *DNSProviderPrivate) CleanUp(domain, _, keyAuth string) error {
 	ctx := context.Background()
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := d.getHostedZoneID(info.EffectiveFQDN)
+	zone, err := d.getHostedZone(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("azuredns: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone)
+	zoneName := dns01.UnFqdn(zone.Name)
+
+	client, err := newPrivateZoneClient(zone, d.credentials, d.config.Environment)
 	if err != nil {
 		return fmt.Errorf("azuredns: %w", err)
 	}
 
-	client, err := d.newZoneClient(zone)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zoneName)
 	if err != nil {
 		return fmt.Errorf("azuredns: %w", err)
 	}
@@ -118,40 +129,37 @@ func (d *DNSProviderPrivate) CleanUp(domain, _, keyAuth string) error {
 }
 
 // Checks that azure has a zone for this domain name.
-func (d *DNSProviderPrivate) getHostedZoneID(fqdn string) (string, error) {
+func (d *DNSProviderPrivate) getHostedZone(fqdn string) (ServiceDiscoveryZone, error) {
 	if zone := env.GetOrFile(EnvZoneName); zone != "" {
-		return zone, nil
+		azureZone, exists := d.serviceDiscoveryZones[dns01.UnFqdn(zone)]
+		if !exists {
+			return ServiceDiscoveryZone{}, fmt.Errorf("could not find zone: %s", zone)
+		}
+
+		return azureZone, nil
 	}
 
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return "", fmt.Errorf("could not find zone: %w", err)
+		return ServiceDiscoveryZone{}, fmt.Errorf("could not find zone: %w", err)
 	}
 
-	if azureZone, exists := d.config.ServiceDiscoveryZones[dns01.UnFqdn(authZone)]; exists {
-		return dns01.UnFqdn(azureZone.Name), nil
-	}
-
-	return "", fmt.Errorf(`could not find zone: %s`, authZone)
-}
-
-// newZoneClient creates PrivateZoneClient structure with initialized Azure client.
-func (d *DNSProviderPrivate) newZoneClient(zoneName string) (*PrivateZoneClient, error) {
-	zone, exists := d.config.ServiceDiscoveryZones[zoneName]
+	azureZone, exists := d.serviceDiscoveryZones[dns01.UnFqdn(authZone)]
 	if !exists {
-		return nil, fmt.Errorf(`zone %s not found`, zoneName)
+		return ServiceDiscoveryZone{}, fmt.Errorf("could not find zone: %s", authZone)
 	}
 
-	return NewPrivateZoneClient(zone, d.credentials, d.config.Environment)
+	return azureZone, nil
 }
 
-// PrivateZoneClient provides Azure client for one DNS zone.
-type PrivateZoneClient struct {
+// privateZoneClient provides Azure client for one DNS zone.
+type privateZoneClient struct {
 	zone         ServiceDiscoveryZone
 	recordClient *armprivatedns.RecordSetsClient
 }
 
-func NewPrivateZoneClient(zone ServiceDiscoveryZone, credential azcore.TokenCredential, environment cloud.Configuration) (*PrivateZoneClient, error) {
+// newPrivateZoneClient creates privateZoneClient structure with initialized Azure client.
+func newPrivateZoneClient(zone ServiceDiscoveryZone, credential azcore.TokenCredential, environment cloud.Configuration) (*privateZoneClient, error) {
 	options := &arm.ClientOptions{
 		ClientOptions: azcore.ClientOptions{
 			Cloud: environment,
@@ -163,21 +171,21 @@ func NewPrivateZoneClient(zone ServiceDiscoveryZone, credential azcore.TokenCred
 		return nil, err
 	}
 
-	return &PrivateZoneClient{
+	return &privateZoneClient{
 		zone:         zone,
 		recordClient: recordClient,
 	}, nil
 }
 
-func (c PrivateZoneClient) Get(ctx context.Context, subDomain string) (armprivatedns.RecordSetsClientGetResponse, error) {
+func (c privateZoneClient) Get(ctx context.Context, subDomain string) (armprivatedns.RecordSetsClientGetResponse, error) {
 	return c.recordClient.Get(ctx, c.zone.ResourceGroup, c.zone.Name, armprivatedns.RecordTypeTXT, subDomain, nil)
 }
 
-func (c PrivateZoneClient) CreateOrUpdate(ctx context.Context, subDomain string, rec armprivatedns.RecordSet) (armprivatedns.RecordSetsClientCreateOrUpdateResponse, error) {
+func (c privateZoneClient) CreateOrUpdate(ctx context.Context, subDomain string, rec armprivatedns.RecordSet) (armprivatedns.RecordSetsClientCreateOrUpdateResponse, error) {
 	return c.recordClient.CreateOrUpdate(ctx, c.zone.ResourceGroup, c.zone.Name, armprivatedns.RecordTypeTXT, subDomain, rec, nil)
 }
 
-func (c PrivateZoneClient) Delete(ctx context.Context, subDomain string) (armprivatedns.RecordSetsClientDeleteResponse, error) {
+func (c privateZoneClient) Delete(ctx context.Context, subDomain string) (armprivatedns.RecordSetsClientDeleteResponse, error) {
 	return c.recordClient.Delete(ctx, c.zone.ResourceGroup, c.zone.Name, armprivatedns.RecordTypeTXT, subDomain, nil)
 }
 

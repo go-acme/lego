@@ -254,13 +254,43 @@ func TestClient_GetHostedZone_v0(t *testing.T) {
 }
 
 func TestClient_UpdateRecords(t *testing.T) {
-	client := setupTest(t, http.MethodPatch, "/api/v1/servers/localhost/zones/example.org.", http.StatusOK, "zone.json")
+	client := setupTest(t, http.MethodPatch, "/api/v1/servers/server/zones/example.org.", http.StatusOK, "zone.json")
 	client.apiVersion = 1
 
 	zone := &HostedZone{
 		ID:   "example.org.",
 		Name: "example.org.",
-		URL:  "api/v1/servers/localhost/zones/example.org.",
+		URL:  "api/v1/servers/server/zones/example.org.",
+		Kind: "Master",
+	}
+
+	rrSets := RRSets{
+		RRSets: []RRSet{{
+			Name:       "example.org.",
+			Type:       "NS",
+			ChangeType: "REPLACE",
+			Records: []Record{{
+				Content: "192.0.2.5",
+				Name:    "ns1.example.org.",
+				TTL:     86400,
+				Type:    "A",
+			}},
+		}},
+	}
+
+	err := client.UpdateRecords(context.Background(), zone, rrSets)
+	require.NoError(t, err)
+}
+
+func TestClient_UpdateRecords_NonRootApi(t *testing.T) {
+	client := setupTest(t, http.MethodPatch, "/some/path/api/v1/servers/server/zones/example.org.", http.StatusOK, "zone.json")
+	client.Host = client.Host.JoinPath("some", "path")
+	client.apiVersion = 1
+
+	zone := &HostedZone{
+		ID:   "example.org.",
+		Name: "example.org.",
+		URL:  "some/path/api/v1/servers/server/zones/example.org.",
 		Kind: "Master",
 	}
 
@@ -283,13 +313,13 @@ func TestClient_UpdateRecords(t *testing.T) {
 }
 
 func TestClient_UpdateRecords_v0(t *testing.T) {
-	client := setupTest(t, http.MethodPatch, "/servers/localhost/zones/example.org.", http.StatusOK, "zone.json")
+	client := setupTest(t, http.MethodPatch, "/servers/server/zones/example.org.", http.StatusOK, "zone.json")
 	client.apiVersion = 0
 
 	zone := &HostedZone{
 		ID:   "example.org.",
 		Name: "example.org.",
-		URL:  "servers/localhost/zones/example.org.",
+		URL:  "servers/server/zones/example.org.",
 		Kind: "Master",
 	}
 
@@ -312,13 +342,29 @@ func TestClient_UpdateRecords_v0(t *testing.T) {
 }
 
 func TestClient_Notify(t *testing.T) {
-	client := setupTest(t, http.MethodPut, "/api/v1/servers/localhost/zones/example.org./notify", http.StatusOK, "")
+	client := setupTest(t, http.MethodPut, "/api/v1/servers/server/zones/example.org./notify", http.StatusOK, "")
 	client.apiVersion = 1
 
 	zone := &HostedZone{
 		ID:   "example.org.",
 		Name: "example.org.",
-		URL:  "api/v1/servers/localhost/zones/example.org.",
+		URL:  "api/v1/servers/server/zones/example.org.",
+		Kind: "Master",
+	}
+
+	err := client.Notify(context.Background(), zone)
+	require.NoError(t, err)
+}
+
+func TestClient_Notify_NonRootApi(t *testing.T) {
+	client := setupTest(t, http.MethodPut, "/some/path/api/v1/servers/server/zones/example.org./notify", http.StatusOK, "")
+	client.Host = client.Host.JoinPath("some", "path")
+	client.apiVersion = 1
+
+	zone := &HostedZone{
+		ID:   "example.org.",
+		Name: "example.org.",
+		URL:  "/some/path/api/v1/servers/server/zones/example.org.",
 		Kind: "Master",
 	}
 
@@ -327,12 +373,13 @@ func TestClient_Notify(t *testing.T) {
 }
 
 func TestClient_Notify_v0(t *testing.T) {
-	client := setupTest(t, http.MethodPut, "/api/v1/servers/localhost/zones/example.org./notify", http.StatusOK, "")
+	client := setupTest(t, http.MethodPut, "/not/queried/for/api/version/0", http.StatusOK, "")
+	client.apiVersion = 0
 
 	zone := &HostedZone{
 		ID:   "example.org.",
 		Name: "example.org.",
-		URL:  "servers/localhost/zones/example.org.",
+		URL:  "servers/server/zones/example.org.",
 		Kind: "Master",
 	}
 

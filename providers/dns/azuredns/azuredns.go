@@ -260,5 +260,3 @@ func deref[T any](v *T) T {
 
 	return *v
 }
-
-func pointer[T any](v T) *T { return &v }

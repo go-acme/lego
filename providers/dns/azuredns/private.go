@@ -10,6 +10,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/privatedns/armprivatedns"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
@@ -79,13 +80,13 @@ func (d *DNSProviderPrivate) Present(domain, _, keyAuth string) error {
 	var txtRecords []*armprivatedns.TxtRecord
 	for txt := range uniqRecords {
 		txtRecord := txt
-		txtRecords = append(txtRecords, &armprivatedns.TxtRecord{Value: []*string{&txtRecord}})
+		txtRecords = append(txtRecords, &armprivatedns.TxtRecord{Value: to.SliceOfPtrs(txtRecord)})
 	}
 
 	rec := armprivatedns.RecordSet{
 		Name: &subDomain,
 		Properties: &armprivatedns.RecordSetProperties{
-			TTL:        pointer(int64(d.config.TTL)),
+			TTL:        to.Ptr(int64(d.config.TTL)),
 			TxtRecords: txtRecords,
 		},
 	}

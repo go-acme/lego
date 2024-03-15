@@ -53,6 +53,14 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: echo "${DOCKER_PASSWORD}" | docker login --username "${DOCKER_USERNAME}" --password-stdin
 
+      - name: Install snapcraft
+        run: sudo snap install snapcraft --classic
+
+      - name: Snapcraft login
+        env:
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
+        run: snapcraft login
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 

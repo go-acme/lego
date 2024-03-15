@@ -141,3 +141,31 @@ dockers:
       - '--label=org.opencontainers.image.revision={{.FullCommit}}'
       - '--label=org.opencontainers.image.version={{.Version}}'
       - '--platform=linux/arm/v7'
+
+snapcrafts:
+  - name: lego
+    grade: stable
+    confinement: strict
+    license: MIT
+    base: core22
+    publish: true
+    summary: Lego is a Let's Encrypt/ACME client.
+    description: |
+      Lego is a Let's Encrypt/ACME client written in Go.
+
+      The lego snap makes it easy to install and use Lego on any Linux distribution that supports snaps.
+    
+      Usage:
+      * `sudo snap install lego`
+      * `sudo lego --email="you@example.com" --domains="example.com" --server=https://acme-staging-v02.api.letsencrypt.org/directory --http --http.port :8080 run
+    
+    channel_templates:
+      - edge
+
+    apps:
+      lego:
+        command: bin/lego
+        environment:
+          LEGO_PATH: /var/snap/lego/common/.lego
+        plugs:
+          - network-bind

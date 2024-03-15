@@ -13,7 +13,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/privatedns/armprivatedns"
 	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/platform/config/env"
 )
 
 // DNSProviderPrivate implements the challenge.Provider interface for Azure Private Zone DNS.
@@ -53,14 +52,12 @@ func (d *DNSProviderPrivate) Present(domain, _, keyAuth string) error {
 		return fmt.Errorf("azuredns: %w", err)
 	}
 
-	zoneName := dns01.UnFqdn(zone.Name)
-
 	client, err := newPrivateZoneClient(zone, d.credentials, d.config.Environment)
 	if err != nil {
 		return fmt.Errorf("azuredns: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zoneName)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone.Name)
 	if err != nil {
 		return fmt.Errorf("azuredns: %w", err)
 	}
@@ -109,14 +106,12 @@ func (d *DNSProviderPrivate) CleanUp(domain, _, keyAuth string) error {
 		return fmt.Errorf("azuredns: %w", err)
 	}
 
-	zoneName := dns01.UnFqdn(zone.Name)
-
 	client, err := newPrivateZoneClient(zone, d.credentials, d.config.Environment)
 	if err != nil {
 		return fmt.Errorf("azuredns: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zoneName)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone.Name)
 	if err != nil {
 		return fmt.Errorf("azuredns: %w", err)
 	}
@@ -131,23 +126,14 @@ func (d *DNSProviderPrivate) CleanUp(domain, _, keyAuth string) error {
 
 // Checks that azure has a zone for this domain name.
 func (d *DNSProviderPrivate) getHostedZone(fqdn string) (ServiceDiscoveryZone, error) {
-	if zone := env.GetOrFile(EnvZoneName); zone != "" {
-		azureZone, exists := d.serviceDiscoveryZones[dns01.UnFqdn(zone)]
-		if !exists {
-			return ServiceDiscoveryZone{}, fmt.Errorf("could not find zone: %s", zone)
-		}
-
-		return azureZone, nil
-	}
-
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	authZone, err := getAuthZone(fqdn)
 	if err != nil {
-		return ServiceDiscoveryZone{}, fmt.Errorf("could not find zone: %w", err)
+		return ServiceDiscoveryZone{}, err
 	}
 
 	azureZone, exists := d.serviceDiscoveryZones[dns01.UnFqdn(authZone)]
 	if !exists {
-		return ServiceDiscoveryZone{}, fmt.Errorf("could not find zone: %s", authZone)
+		return ServiceDiscoveryZone{}, fmt.Errorf("could not find zone (from discovery): %s", authZone)
 	}
 
 	return azureZone, nil

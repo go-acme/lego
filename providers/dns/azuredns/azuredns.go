@@ -15,6 +15,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/go-acme/lego/v4/challenge"
+	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 )
 
@@ -250,6 +251,20 @@ func (w *timeoutTokenCredential) GetToken(ctx context.Context, opts policy.Token
 	w.timeout = 0
 
 	return tk, err
+}
+
+func getAuthZone(fqdn string) (string, error) {
+	authZone := env.GetOrFile(EnvZoneName)
+	if authZone != "" {
+		return authZone, nil
+	}
+
+	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	if err != nil {
+		return "", fmt.Errorf("could not find zone: %w", err)
+	}
+
+	return authZone, nil
 }
 
 func deref[T any](v *T) T {

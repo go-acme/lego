@@ -1,9 +1,9 @@
 package azuredns
 
 import (
+	"bytes"
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
@@ -21,12 +21,6 @@ const (
 	ResourceGraphTypePublicDNSZone  = "microsoft.network/dnszones"
 	ResourceGraphTypePrivateDNSZone = "microsoft.network/privatednszones"
 )
-
-const ResourceGraphQuery = `
-resources
-| where type =~ "%s"
-%s
-| project subscriptionId, resourceGroup, name`
 
 const ResourceGraphQueryOptionsTop int32 = 1000
 
@@ -104,38 +98,29 @@ func discoverDNSZones(ctx context.Context, config *Config, credentials azcore.To
 }
 
 func createGraphQuery(config *Config) string {
-	var resourceGraphConditions []string
-
-	// subscriptionID filter
-	if config.SubscriptionID != "" {
-		resourceGraphConditions = append(
-			resourceGraphConditions,
-			fmt.Sprintf(`| where subscriptionId =~ %q`, config.SubscriptionID),
-		)
-	}
-	// resourceGroup filter
-	if config.ResourceGroup != "" {
-		resourceGraphConditions = append(
-			resourceGraphConditions,
-			fmt.Sprintf(`| where resourceGroup =~ %q`, config.ResourceGroup),
-		)
-	}
-	// custom filter
-	if config.ServiceDiscoveryFilter != "" {
-		resourceGraphConditions = append(
-			resourceGraphConditions,
-			fmt.Sprintf(`| %s`, config.ServiceDiscoveryFilter),
-		)
-	}
+	buf := new(bytes.Buffer)
+	buf.WriteString("\nresources\n")
 
 	resourceType := ResourceGraphTypePublicDNSZone
 	if config.PrivateZone {
 		resourceType = ResourceGraphTypePrivateDNSZone
 	}
 
-	return fmt.Sprintf(
-		ResourceGraphQuery,
-		resourceType,
-		strings.Join(resourceGraphConditions, "\n"),
-	)
+	_, _ = fmt.Fprintf(buf, "| where type =~ %q\n", resourceType)
+
+	if config.SubscriptionID != "" {
+		_, _ = fmt.Fprintf(buf, "| where subscriptionId =~ %q\n", config.SubscriptionID)
+	}
+
+	if config.ResourceGroup != "" {
+		_, _ = fmt.Fprintf(buf, "| where resourceGroup =~ %q\n", config.ResourceGroup)
+	}
+
+	if config.ServiceDiscoveryFilter != "" {
+		_, _ = fmt.Fprintf(buf, "| %s\n", config.ServiceDiscoveryFilter)
+	}
+
+	buf.WriteString("| project subscriptionId, resourceGroup, name")
+
+	return buf.String()
 }

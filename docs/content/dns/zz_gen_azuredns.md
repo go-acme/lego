@@ -48,15 +48,12 @@ lego --domains example.com --email your_example@email.com --dns azuredns run
 ### Using Managed Identity (Azure VM)
 
 AZURE_TENANT_ID=<your service principal tenant ID> \
-AZURE_SUBSCRIPTION_ID=<your target zone subscription ID> \
 AZURE_RESOURCE_GROUP=<your target zone resource group name> \
 lego --domains example.com --email your_example@email.com --dns azuredns run
 
 ### Using Managed Identity (Azure Arc)
 
 AZURE_TENANT_ID=<your service principal tenant ID> \
-AZURE_SUBSCRIPTION_ID=<your target zone subscription ID> \
-AZURE_RESOURCE_GROUP=<your target zone resource group name> \
 IMDS_ENDPOINT=http://localhost:40342 \
 IDENTITY_ENDPOINT=http://localhost:40342/metadata/identity/oauth2/token \
 lego --domains example.com --email your_example@email.com --dns azuredns run
@@ -73,8 +70,6 @@ lego --domains example.com --email your_example@email.com --dns azuredns run
 | `AZURE_CLIENT_CERTIFICATE_PATH` | Client certificate path |
 | `AZURE_CLIENT_ID` | Client ID |
 | `AZURE_CLIENT_SECRET` | Client secret |
-| `AZURE_RESOURCE_GROUP` | DNS zone resource group |
-| `AZURE_SUBSCRIPTION_ID` | DNS zone subscription ID |
 | `AZURE_TENANT_ID` | Tenant ID |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
@@ -91,6 +86,9 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 | `AZURE_POLLING_INTERVAL` | Time between DNS propagation check |
 | `AZURE_PRIVATE_ZONE` | Set to true to use Azure Private DNS Zones and not public |
 | `AZURE_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
+| `AZURE_RESOURCE_GROUP` | DNS zone resource group |
+| `AZURE_SERVICEDISCOVERY_FILTER` | Advanced ServiceDiscovery filter using Kusto query condition |
+| `AZURE_SUBSCRIPTION_ID` | DNS zone subscription ID |
 | `AZURE_TTL` | The TTL of the TXT record used for the DNS challenge |
 | `AZURE_ZONE_NAME` | Zone name to use inside Azure DNS service to add the TXT record in |
 
@@ -115,6 +113,22 @@ Link:
 
 ### Environment variables
 
+#### Service Discovery
+
+Lego automatically finds all visible Azure (private) DNS zones using [Azure ResourceGraph query](https://learn.microsoft.com/en-us/azure/governance/resource-graph/).
+This can be limited by specifying environment variable `AZURE_SUBSCRIPTION_ID` and/or `AZURE_RESOURCE_GROUP` which limits the
+DNS zones to only a subscription or to one resourceGroup.
+
+Additionally environment variable `AZURE_SERVICEDISCOVERY_FILTER` can be used to filter DNS zones with an addition Kusto filter eg:
+
+```
+resources
+| where type =~ "microsoft.network/dnszones"
+| ${AZURE_SERVICEDISCOVERY_FILTER}
+| project subscriptionId, resourceGroup, name
+```
+
+
 #### Client secret
 
 The Azure Credentials can be configured using the following environment variables:
@@ -122,7 +136,7 @@ The Azure Credentials can be configured using the following environment variable
 * AZURE_CLIENT_SECRET = "Client secret"
 * AZURE_TENANT_ID = "Tenant ID"
 
-This authentication method can be specificaly used by setting the `AZURE_AUTH_METHOD` environment variable to `env`.
+This authentication method can be specifically used by setting the `AZURE_AUTH_METHOD` environment variable to `env`.
 
 #### Client certificate
 
@@ -131,7 +145,7 @@ The Azure Credentials can be configured using the following environment variable
 * AZURE_CLIENT_CERTIFICATE_PATH = "Client certificate path"
 * AZURE_TENANT_ID = "Tenant ID"
 
-This authentication method can be specificaly used by setting the `AZURE_AUTH_METHOD` environment variable to `env`.
+This authentication method can be specifically used by setting the `AZURE_AUTH_METHOD` environment variable to `env`.
 
 ### Workload identity
 
@@ -142,12 +156,12 @@ This must be configured in kubernetes workload deployment in one hand and on the
 Here is a summary of the steps to follow to use it :
 * create a `ServiceAccount` resource, add following annotations to reference the targeted Azure AD application registration : `azure.workload.identity/client-id` and `azure.workload.identity/tenant-id`.
 * on the `Deployment` resource you must reference the previous `ServiceAccount` and add the following label : `azure.workload.identity/use: "true"`.
-* create a fedreated credentials of type `Kubernetes accessing Azure resources`, add the cluster issuer URL  and add the namespace and name of your kubernetes service account.
+* create a federated credentials of type `Kubernetes accessing Azure resources`, add the cluster issuer URL  and add the namespace and name of your kubernetes service account.
 
 Link :
 - [Azure AD Workload identity](https://azure.github.io/azure-workload-identity/docs/topics/service-account-labels-and-annotations.html)
 
-This authentication method can be specificaly used by setting the `AZURE_AUTH_METHOD` environment variable to `wli`.
+This authentication method can be specifically used by setting the `AZURE_AUTH_METHOD` environment variable to `wli`.
 
 ### Azure Managed Identity
 
@@ -182,9 +196,9 @@ az role assignment create \
 ```
 
 A timeout wrapper is configured for this authentication method.
-The duraction can be configured by setting the `AZURE_AUTH_MSI_TIMEOUT`.
+The duration can be configured by setting the `AZURE_AUTH_MSI_TIMEOUT`.
 The default timeout is 2 seconds.
-This authentication method can be specificaly used by setting the `AZURE_AUTH_METHOD` environment variable to `msi`.
+This authentication method can be specifically used by setting the `AZURE_AUTH_METHOD` environment variable to `msi`.
 
 #### Azure Managed Identity (with Azure Arc)
 
@@ -198,9 +212,9 @@ you may need to set the environment variables:
 * `IDENTITY_ENDPOINT=http://localhost:40342/metadata/identity/oauth2/token`
 
 A timeout wrapper is configured for this authentication method.
-The duraction can be configured by setting the `AZURE_AUTH_MSI_TIMEOUT`.
+The duration can be configured by setting the `AZURE_AUTH_MSI_TIMEOUT`.
 The default timeout is 2 seconds.
-This authentication method can be specificaly used by setting the `AZURE_AUTH_METHOD` environment variable to `msi`.
+This authentication method can be specifically used by setting the `AZURE_AUTH_METHOD` environment variable to `msi`.
 
 ### Azure CLI
 
@@ -208,7 +222,7 @@ The Azure CLI is a command-line tool provided by Microsoft to interact with Azur
 It provides an easy way to authenticate by simply running `az login` command.
 The generated token will be cached by default in the `~/.azure` folder.
 
-This authentication method can be specificaly used by setting the `AZURE_AUTH_METHOD` environment variable to `cli`.
+This authentication method can be specifically used by setting the `AZURE_AUTH_METHOD` environment variable to `cli`.
 
 ### Open ID Connect
 

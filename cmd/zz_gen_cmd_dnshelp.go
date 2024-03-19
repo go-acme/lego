@@ -314,8 +314,6 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln(`	- "AZURE_CLIENT_CERTIFICATE_PATH":	Client certificate path`)
 		ew.writeln(`	- "AZURE_CLIENT_ID":	Client ID`)
 		ew.writeln(`	- "AZURE_CLIENT_SECRET":	Client secret`)
-		ew.writeln(`	- "AZURE_RESOURCE_GROUP":	DNS zone resource group`)
-		ew.writeln(`	- "AZURE_SUBSCRIPTION_ID":	DNS zone subscription ID`)
 		ew.writeln(`	- "AZURE_TENANT_ID":	Tenant ID`)
 		ew.writeln()
 
@@ -326,6 +324,9 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln(`	- "AZURE_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "AZURE_PRIVATE_ZONE":	Set to true to use Azure Private DNS Zones and not public`)
 		ew.writeln(`	- "AZURE_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "AZURE_RESOURCE_GROUP":	DNS zone resource group`)
+		ew.writeln(`	- "AZURE_SERVICEDISCOVERY_FILTER":	Advanced ServiceDiscovery filter using Kusto query condition`)
+		ew.writeln(`	- "AZURE_SUBSCRIPTION_ID":	DNS zone subscription ID`)
 		ew.writeln(`	- "AZURE_TTL":	The TTL of the TXT record used for the DNS challenge`)
 		ew.writeln(`	- "AZURE_ZONE_NAME":	Zone name to use inside Azure DNS service to add the TXT record in`)
 

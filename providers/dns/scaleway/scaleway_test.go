@@ -12,7 +12,7 @@ import (
 
 const envDomain = envNamespace + "DOMAIN"
 
-var envTest = tester.NewEnvTest(EnvAPIToken, EnvProjectID).
+var envTest = tester.NewEnvTest(EnvAPIToken, EnvSecretKey, EnvAccessKey, EnvProjectID).
 	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
@@ -34,7 +34,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvAPIToken:  "",
 				EnvProjectID: "",
 			},
-			expected: fmt.Sprintf("scaleway: some credentials information are missing: %s", EnvAPIToken),
+			expected: fmt.Sprintf("scaleway: some credentials information are missing: %s", EnvSecretKey),
 		},
 	}
 

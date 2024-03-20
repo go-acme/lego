@@ -46,7 +46,6 @@ func TestClient_UpdateTxtRecord(t *testing.T) {
 	}
 
 	for _, test := range testCases {
-		test := test
 		t.Run(test.code, func(t *testing.T) {
 			t.Parallel()
 

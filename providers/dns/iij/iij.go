@@ -228,7 +228,7 @@ func splitDomain(domain string, zones []string) (string, string, error) {
 	var owner string
 	var zone string
 
-	for i := 0; i < len(parts)-1; i++ {
+	for i := range len(parts) - 1 {
 		zone = strings.Join(parts[i:], ".")
 		if slices.Contains(zones, zone) {
 			baseOwner := strings.Join(parts[0:i], ".")

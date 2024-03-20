@@ -76,8 +76,7 @@ func (d *DNSProviderPrivate) Present(domain, _, keyAuth string) error {
 
 	var txtRecords []*armprivatedns.TxtRecord
 	for txt := range uniqRecords {
-		txtRecord := txt
-		txtRecords = append(txtRecords, &armprivatedns.TxtRecord{Value: to.SliceOfPtrs(txtRecord)})
+		txtRecords = append(txtRecords, &armprivatedns.TxtRecord{Value: to.SliceOfPtrs(txt)})
 	}
 
 	rec := armprivatedns.RecordSet{

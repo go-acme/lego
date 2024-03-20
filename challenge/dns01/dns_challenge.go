@@ -215,7 +215,7 @@ func getChallengeFQDN(domain string, followCNAME bool) string {
 	}
 
 	// recursion counter so it doesn't spin out of control
-	for limit := 0; limit < 50; limit++ {
+	for range 50 {
 		// Keep following CNAMEs
 		r, err := dnsQuery(fqdn, dns.TypeCNAME, recursiveNameservers, true)
 

@@ -180,7 +180,6 @@ func findZone(zones []internal.DNSZone, domain string) *internal.DNSZone {
 	var result *internal.DNSZone
 
 	for _, zone := range zones {
-		zone := zone
 		if zone.Name != "" && strings.HasSuffix(domain, zone.Name) {
 			if result == nil || len(zone.Name) > len(result.Name) {
 				result = &zone

@@ -1,10 +1,10 @@
 run:
   timeout: 10m
-  skip-files: []
 
 linters-settings:
   govet:
-    check-shadowing: true
+    enable:
+      - shadow
   gocyclo:
     min-complexity: 12
   goconst:
@@ -139,6 +139,7 @@ linters:
     - nonamedreturns
     - musttag # false-positive https://github.com/junk1tm/musttag/issues/17
     - gosmopolitan  # not relevant
+    - exportloopref # Useless with go1.22
 
 issues:
   exclude-use-default: false
@@ -148,7 +149,7 @@ issues:
     - 'Error return value of .((os\.)?std(out|err)\..*|.*Close|.*Flush|os\.Remove(All)?|.*printf?|os\.(Un)?Setenv). is not checked'
     - 'exported (type|method|function) (.+) should have comment or be unexported'
     - 'ST1000: at least one file in a package should have a package comment'
-    - 'fmt.Sprintf can be replaced with string addition'
+    - 'fmt.Sprintf can be replaced with string'
   exclude-rules:
     - path: (.+)_test.go
       linters:

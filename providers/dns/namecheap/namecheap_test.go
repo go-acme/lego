@@ -203,7 +203,6 @@ func TestDomainSplit(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		test := test
 		t.Run(test.domain, func(t *testing.T) {
 			valid := true
 			ch, err := newChallenge(test.domain, "")

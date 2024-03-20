@@ -131,7 +131,6 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	var record *internal.Record
 	for _, rcd := range records {
-		rcd := rcd
 		if rcd.Type == "TXT" && rcd.SubDomain == subDomain && rcd.Content == info.Value {
 			record = &rcd
 			break

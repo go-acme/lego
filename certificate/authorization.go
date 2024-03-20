@@ -38,7 +38,7 @@ func (c *Certifier) getAuthorizations(order acme.ExtendedOrder) ([]acme.Authoriz
 	var responses []acme.Authorization
 
 	failures := newObtainError()
-	for i := 0; i < len(order.Authorizations); i++ {
+	for range len(order.Authorizations) {
 		select {
 		case res := <-resc:
 			responses = append(responses, res)

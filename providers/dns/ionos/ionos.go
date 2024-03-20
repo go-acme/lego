@@ -188,7 +188,6 @@ func findZone(zones []internal.Zone, domain string) *internal.Zone {
 	var result *internal.Zone
 
 	for _, zone := range zones {
-		zone := zone
 		if zone.Name != "" && strings.HasSuffix(domain, zone.Name) {
 			if result == nil || len(zone.Name) > len(result.Name) {
 				result = &zone

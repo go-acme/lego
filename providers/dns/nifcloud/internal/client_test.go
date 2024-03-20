@@ -89,7 +89,6 @@ func TestChangeResourceRecordSetsErrors(t *testing.T) {
 	}
 
 	for _, test := range testCases {
-		test := test
 		t.Run(test.desc, func(t *testing.T) {
 			client := setupTest(t, test.responseBody, test.statusCode)
 
@@ -157,7 +156,6 @@ func TestGetChangeErrors(t *testing.T) {
 	}
 
 	for _, test := range testCases {
-		test := test
 		t.Run(test.desc, func(t *testing.T) {
 			client := setupTest(t, test.responseBody, test.statusCode)
 

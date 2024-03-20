@@ -30,7 +30,6 @@ func TestLookupNameserversOK(t *testing.T) {
 	}
 
 	for _, test := range testCases {
-		test := test
 		t.Run(test.fqdn, func(t *testing.T) {
 			t.Parallel()
 
@@ -59,7 +58,6 @@ func TestLookupNameserversErr(t *testing.T) {
 	}
 
 	for _, test := range testCases {
-		test := test
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
@@ -259,7 +257,6 @@ func TestDNSError_Error(t *testing.T) {
 	}
 
 	for _, test := range testCases {
-		test := test
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 

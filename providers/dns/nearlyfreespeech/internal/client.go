@@ -135,7 +135,7 @@ func (c Signer) Sign(uri string, body, login, apiKey string) string {
 func getRandomSalt() []byte {
 	// This is the only part of this that needs to be serialized.
 	salt := make([]byte, 16)
-	for i := 0; i < 16; i++ {
+	for i := range 16 {
 		salt[i] = saltBytes[rand.Intn(len(saltBytes))]
 	}
 

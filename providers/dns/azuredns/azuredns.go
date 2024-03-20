@@ -15,6 +15,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/go-acme/lego/v4/challenge"
+	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 )
 
@@ -39,6 +40,8 @@ const (
 
 	EnvAuthMethod     = envNamespace + "AUTH_METHOD"
 	EnvAuthMSITimeout = envNamespace + "AUTH_MSI_TIMEOUT"
+
+	EnvServiceDiscoveryFilter = envNamespace + "SERVICEDISCOVERY_FILTER"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -73,6 +76,8 @@ type Config struct {
 	PollingInterval    time.Duration
 	TTL                int
 	HTTPClient         *http.Client
+
+	ServiceDiscoveryFilter string
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
@@ -121,6 +126,8 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config.OIDCToken = env.GetOrFile(EnvOIDCToken)
 	config.OIDCTokenFilePath = env.GetOrFile(EnvOIDCTokenFilePath)
 
+	config.ServiceDiscoveryFilter = env.GetOrFile(EnvServiceDiscoveryFilter)
+
 	oidcValues, _ := env.GetWithFallback(
 		[]string{EnvOIDCRequestURL, EnvGitHubOIDCRequestURL},
 		[]string{EnvOIDCRequestToken, EnvGitHubOIDCRequestToken},
@@ -148,14 +155,6 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	credentials, err := getCredentials(config)
 	if err != nil {
 		return nil, fmt.Errorf("azuredns: Unable to retrieve valid credentials: %w", err)
-	}
-
-	if config.SubscriptionID == "" {
-		return nil, errors.New("azuredns: SubscriptionID is missing")
-	}
-
-	if config.ResourceGroup == "" {
-		return nil, errors.New("azuredns: ResourceGroup is missing")
 	}
 
 	var dnsProvider challenge.ProviderTimeout
@@ -254,7 +253,21 @@ func (w *timeoutTokenCredential) GetToken(ctx context.Context, opts policy.Token
 	return tk, err
 }
 
-func deref[T string | int | int32 | int64](v *T) T {
+func getAuthZone(fqdn string) (string, error) {
+	authZone := env.GetOrFile(EnvZoneName)
+	if authZone != "" {
+		return authZone, nil
+	}
+
+	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	if err != nil {
+		return "", fmt.Errorf("could not find zone: %w", err)
+	}
+
+	return authZone, nil
+}
+
+func deref[T any](v *T) T {
 	if v == nil {
 		var zero T
 		return zero

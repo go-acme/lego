@@ -66,7 +66,7 @@ docker run goacme/lego -h
 
 Requirements:
 
-- go1.17+
+- go1.22+.
 - environment variable: `GO111MODULE=on`
 
 To install the latest version from sources, just run:

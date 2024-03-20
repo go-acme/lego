@@ -16,7 +16,7 @@ jobs:
 
     strategy:
       matrix:
-        go-version: [ stable, oldstable ]
+        go-version: [ stable ]
         os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:

@@ -38,6 +38,9 @@ const (
 
 	// LEDirectoryStaging URL to the Let's Encrypt staging.
 	LEDirectoryStaging = "https://acme-staging-v02.api.letsencrypt.org/directory"
+
+	// ZeroSSLDirectory URL to the ZeroSSL production.
+	ZeroSSLDirectory = "https://acme.zerossl.com/v2/DV90"
 )
 
 type Config struct {

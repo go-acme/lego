@@ -52,7 +52,7 @@ func newClient(ctx *cli.Context, acc registration.User, keyType certcrypto.KeyTy
 		log.Fatalf("Could not create client: %v", err)
 	}
 
-	if client.GetExternalAccountRequired() && !ctx.IsSet("eab") {
+	if client.GetExternalAccountRequired() && !ctx.IsSet("eab") && config.CADirURL != lego.ZeroSSLDirectory {
 		log.Fatal("Server requires External Account Binding. Use --eab with --kid and --hmac.")
 	}
 

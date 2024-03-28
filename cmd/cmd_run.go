@@ -157,6 +157,10 @@ func register(ctx *cli.Context, client *lego.Client) (*registration.Resource, er
 		log.Fatal("You did not accept the TOS. Unable to proceed.")
 	}
 
+	if ctx.String("server") == lego.ZeroSSLDirectory {
+		return client.Registration.RegisterWithZeroSSL(registration.RegisterOptions{TermsOfServiceAgreed: true})
+	}
+
 	if ctx.Bool("eab") {
 		kid := ctx.String("kid")
 		hmacEncoded := ctx.String("hmac")

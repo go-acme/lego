@@ -1,69 +1,69 @@
 package selectelv2
 
 import (
+	"testing"
+	"time"
+
 	"github.com/go-acme/lego/v4/platform/tester"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
-	"time"
 )
 
 const envDomain = envNamespace + "DOMAIN"
 
-var envTest = tester.NewEnvTest(envUsernameOS, envPasswordOS, envAccount, envProjectId).
-	WithDomain(envDomain).
-	WithLiveTestRequirements(envUsernameOS, envPasswordOS, envAccount, envProjectId)
+var envTest = tester.NewEnvTest(EnvUsernameOS, EnvPasswordOS, EnvAccount, EnvProjectID).
+	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
-		desc    string
-		envVars map[string]string
-		err     error
+		desc     string
+		envVars  map[string]string
+		expected string
 	}{
 		{
-			desc: "OK",
+			desc: "success",
 			envVars: map[string]string{
-				envUsernameOS: "someName",
-				envPasswordOS: "qwerty",
-				envAccount:    "1",
-				envProjectId:  "111a11111aaa11aa1a11aaa11111aa1a",
+				EnvUsernameOS: "someName",
+				EnvPasswordOS: "qwerty",
+				EnvAccount:    "1",
+				EnvProjectID:  "111a11111aaa11aa1a11aaa11111aa1a",
 			},
 		},
 		{
-			desc: "Fail;No username",
+			desc: "No username",
 			envVars: map[string]string{
-				envPasswordOS: "qwerty",
-				envAccount:    "1",
-				envProjectId:  "111a11111aaa11aa1a11aaa11111aa1a",
+				EnvPasswordOS: "qwerty",
+				EnvAccount:    "1",
+				EnvProjectID:  "111a11111aaa11aa1a11aaa11111aa1a",
 			},
-			err: UsernameMissingErr,
+			expected: "selectelv2: some credentials information are missing: SELECTELV2_USERNAME",
 		},
 		{
-			desc: "Fail;No password",
+			desc: "No password",
 			envVars: map[string]string{
-				envUsernameOS: "someName",
-				envAccount:    "1",
-				envProjectId:  "111a11111aaa11aa1a11aaa11111aa1a",
+				EnvUsernameOS: "someName",
+				EnvAccount:    "1",
+				EnvProjectID:  "111a11111aaa11aa1a11aaa11111aa1a",
 			},
-			err: PasswordMissingErr,
+			expected: "selectelv2: some credentials information are missing: SELECTELV2_PASSWORD",
 		},
 		{
-			desc: "Fail;No account",
+			desc: "No account",
 			envVars: map[string]string{
-				envUsernameOS: "someName",
-				envPasswordOS: "qwerty",
-				envProjectId:  "111a11111aaa11aa1a11aaa11111aa1a",
+				EnvUsernameOS: "someName",
+				EnvPasswordOS: "qwerty",
+				EnvProjectID:  "111a11111aaa11aa1a11aaa11111aa1a",
 			},
-			err: AccountMissingErr,
+			expected: "selectelv2: some credentials information are missing: SELECTELV2_ACCOUNT_ID",
 		},
 		{
-			desc: "Fail;No project",
+			desc: "No project",
 			envVars: map[string]string{
-				envUsernameOS: "someName",
-				envPasswordOS: "qwerty",
-				envAccount:    "1",
+				EnvUsernameOS: "someName",
+				EnvPasswordOS: "qwerty",
+				EnvAccount:    "1",
 			},
-			err: ProjectMissingErr,
+			expected: "selectelv2: some credentials information are missing: SELECTELV2_PROJECT_ID",
 		},
 	}
 
@@ -71,16 +71,19 @@ func TestNewDNSProvider(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			defer envTest.RestoreEnv()
 			envTest.ClearEnv()
+
 			envTest.Apply(test.envVars)
 
 			p, err := NewDNSProvider()
-			if test.err != nil {
-				assert.Nil(t, p)
-				assert.EqualError(t, &SelectelError{test.err}, err.Error())
-			} else {
-				//
-			}
 
+			if test.expected == "" {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				assert.NotNil(t, p.config)
+				assert.NotNil(t, p.client)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
 		})
 	}
 }

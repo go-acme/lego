@@ -220,18 +220,18 @@ func (p *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 func (p *DNSProvider) getZoneByName(name string) (*selectelapi.Zone, error) {
 	params := &map[string]string{"filter": name}
 
-	l, err := p.client.ListZones(p.providerCtx, params)
+	zones, err := p.client.ListZones(p.providerCtx, params)
 	if err != nil {
 		return nil, fmt.Errorf("find zone: %w", err)
 	}
 
-	for _, z := range l.GetItems() {
-		if z.Name == dns01.ToFqdn(name) {
-			return z, nil
+	for _, zone := range zones.GetItems() {
+		if zone.Name == dns01.ToFqdn(name) {
+			return zone, nil
 		}
 	}
 
-	if len(strings.Split(strings.TrimRight(name, "."), ".")) == 1 {
+	if len(strings.Split(dns01.UnFqdn(name), ".")) == 1 {
 		return nil, errors.New("zone for challenge has not been found")
 	}
 
@@ -264,8 +264,10 @@ func (p *DNSProvider) authorize() error {
 	token := p.providerCtx.Value(key)
 	if token != nil {
 		extraHeaders := http.Header{}
-		extraHeaders.Add(tokenHeader, token.(string))
+		extraHeaders.Set(tokenHeader, token.(string))
+
 		p.client = p.client.WithHeaders(extraHeaders)
+
 		return nil
 	}
 

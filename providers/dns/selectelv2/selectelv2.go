@@ -131,6 +131,8 @@ func (p *DNSProvider) Timeout() (timeout, interval time.Duration) {
 
 // Present creates a TXT record to fulfill DNS-01 challenge.
 func (p *DNSProvider) Present(domain, _, keyAuth string) error {
+	ctx := context.Background()
+
 	err := p.authorize()
 	if err != nil {
 		return fmt.Errorf("selectelv2: %w", err)
@@ -138,12 +140,12 @@ func (p *DNSProvider) Present(domain, _, keyAuth string) error {
 
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := p.getZoneByName(domain)
+	zone, err := p.getZoneByName(ctx, domain)
 	if err != nil {
 		return fmt.Errorf("selectelv2: %w", err)
 	}
 
-	rrset, err := p.getChallengeRRset(dns01.UnFqdn(info.EffectiveFQDN), zone.ID)
+	rrset, err := p.getChallengeRRset(ctx, dns01.UnFqdn(info.EffectiveFQDN), zone.ID)
 	if err != nil {
 		if !errors.Is(err, RRsetNotFoundErr) {
 			return err
@@ -156,7 +158,7 @@ func (p *DNSProvider) Present(domain, _, keyAuth string) error {
 			Records: []selectelapi.RecordItem{{Content: fmt.Sprintf("%q", info.Value)}},
 		}
 
-		_, err = p.client.CreateRRSet(p.providerCtx, zone.ID, newRRSet)
+		_, err = p.client.CreateRRSet(ctx, zone.ID, newRRSet)
 		if err != nil {
 			return fmt.Errorf("selectelv2: %w", err)
 		}
@@ -166,7 +168,7 @@ func (p *DNSProvider) Present(domain, _, keyAuth string) error {
 
 	rrset.Records = append(rrset.Records, selectelapi.RecordItem{Content: fmt.Sprintf("%q", info.Value)})
 
-	err = p.client.UpdateRRSet(p.providerCtx, zone.ID, rrset.ID, rrset)
+	err = p.client.UpdateRRSet(ctx, zone.ID, rrset.ID, rrset)
 	if err != nil {
 		return fmt.Errorf("selectelv2: %w", err)
 	}
@@ -176,6 +178,8 @@ func (p *DNSProvider) Present(domain, _, keyAuth string) error {
 
 // CleanUp removes a TXT record used for DNS-01 challenge.
 func (p *DNSProvider) CleanUp(domain, _, keyAuth string) error {
+	ctx := context.Background()
+
 	err := p.authorize()
 	if err != nil {
 		return fmt.Errorf("selectelv2: %w", err)
@@ -183,18 +187,18 @@ func (p *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := p.getZoneByName(domain)
+	zone, err := p.getZoneByName(ctx, domain)
 	if err != nil {
 		return fmt.Errorf("selectelv2: %w", err)
 	}
 
-	rrset, err := p.getChallengeRRset(dns01.UnFqdn(info.EffectiveFQDN), zone.ID)
+	rrset, err := p.getChallengeRRset(ctx, dns01.UnFqdn(info.EffectiveFQDN), zone.ID)
 	if err != nil {
 		return fmt.Errorf("selectelv2: %w", err)
 	}
 
 	if len(rrset.Records) <= 1 {
-		err = p.client.DeleteRRSet(p.providerCtx, zone.ID, rrset.ID)
+		err = p.client.DeleteRRSet(ctx, zone.ID, rrset.ID)
 		if err != nil {
 			return fmt.Errorf("selectelv2: %w", err)
 		}
@@ -209,7 +213,7 @@ func (p *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 		}
 	}
 
-	err = p.client.UpdateRRSet(p.providerCtx, zone.ID, rrset.ID, rrset)
+	err = p.client.UpdateRRSet(ctx, zone.ID, rrset.ID, rrset)
 	if err != nil {
 		return fmt.Errorf("selectelv2: %w", err)
 	}
@@ -217,10 +221,10 @@ func (p *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 	return nil
 }
 
-func (p *DNSProvider) getZoneByName(name string) (*selectelapi.Zone, error) {
+func (p *DNSProvider) getZoneByName(ctx context.Context, name string) (*selectelapi.Zone, error) {
 	params := &map[string]string{"filter": name}
 
-	zones, err := p.client.ListZones(p.providerCtx, params)
+	zones, err := p.client.ListZones(ctx, params)
 	if err != nil {
 		return nil, fmt.Errorf("find zone: %w", err)
 	}
@@ -238,13 +242,13 @@ func (p *DNSProvider) getZoneByName(name string) (*selectelapi.Zone, error) {
 	// -1 can not be returned since if no dots present we exit above
 	i := strings.Index(name, ".")
 
-	return p.getZoneByName(name[i+1:])
+	return p.getZoneByName(ctx, name[i+1:])
 }
 
-func (p *DNSProvider) getChallengeRRset(name, zoneID string) (*selectelapi.RRSet, error) {
+func (p *DNSProvider) getChallengeRRset(ctx context.Context, name, zoneID string) (*selectelapi.RRSet, error) {
 	params := &map[string]string{"name": name, "rrset_types": string(selectelapi.TXT)}
 
-	resp, err := p.client.ListRRSets(p.providerCtx, zoneID, params)
+	resp, err := p.client.ListRRSets(ctx, zoneID, params)
 	if err != nil {
 		return nil, fmt.Errorf("find rrset: %w", err)
 	}

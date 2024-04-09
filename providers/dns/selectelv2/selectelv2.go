@@ -133,20 +133,20 @@ func (p *DNSProvider) Present(domain, _, keyAuth string) error {
 
 	client, err := p.authorize()
 	if err != nil {
-		return fmt.Errorf("selectelv2: %w", err)
+		return fmt.Errorf("selectelv2: authorize: %w", err)
 	}
 
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	zone, err := client.getZone(ctx, domain)
 	if err != nil {
-		return fmt.Errorf("selectelv2: %w", err)
+		return fmt.Errorf("selectelv2: get zone: %w", err)
 	}
 
 	rrset, err := client.getRRset(ctx, dns01.UnFqdn(info.EffectiveFQDN), zone.ID)
 	if err != nil {
 		if !errors.Is(err, errNotFound) {
-			return err
+			return fmt.Errorf("selectelv2: get RRSet: %w", err)
 		}
 
 		newRRSet := &selectelapi.RRSet{
@@ -158,7 +158,7 @@ func (p *DNSProvider) Present(domain, _, keyAuth string) error {
 
 		_, err = client.CreateRRSet(ctx, zone.ID, newRRSet)
 		if err != nil {
-			return fmt.Errorf("selectelv2: %w", err)
+			return fmt.Errorf("selectelv2: create RRSet: %w", err)
 		}
 
 		return nil
@@ -168,7 +168,7 @@ func (p *DNSProvider) Present(domain, _, keyAuth string) error {
 
 	err = client.UpdateRRSet(ctx, zone.ID, rrset.ID, rrset)
 	if err != nil {
-		return fmt.Errorf("selectelv2: %w", err)
+		return fmt.Errorf("selectelv2: update RRSet: %w", err)
 	}
 
 	return nil
@@ -180,19 +180,19 @@ func (p *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 
 	client, err := p.authorize()
 	if err != nil {
-		return fmt.Errorf("selectelv2: %w", err)
+		return fmt.Errorf("selectelv2: authorize: %w", err)
 	}
 
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	zone, err := client.getZone(ctx, domain)
 	if err != nil {
-		return fmt.Errorf("selectelv2: %w", err)
+		return fmt.Errorf("selectelv2: get zone: %w", err)
 	}
 
 	rrset, err := client.getRRset(ctx, dns01.UnFqdn(info.EffectiveFQDN), zone.ID)
 	if err != nil {
-		return fmt.Errorf("selectelv2: %w", err)
+		return fmt.Errorf("selectelv2: get RRSet: %w", err)
 	}
 
 	if len(rrset.Records) <= 1 {
@@ -213,7 +213,7 @@ func (p *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 
 	err = client.UpdateRRSet(ctx, zone.ID, rrset.ID, rrset)
 	if err != nil {
-		return fmt.Errorf("selectelv2: %w", err)
+		return fmt.Errorf("selectelv2: update RRSet: %w", err)
 	}
 
 	return nil
@@ -241,7 +241,7 @@ func obtainOpenstackToken(config *Config) (string, error) {
 		ProjectID:      config.ProjectID,
 	})
 	if err != nil {
-		return "", fmt.Errorf("authorize: %w", err)
+		return "", fmt.Errorf("new VPC client: %w", err)
 	}
 
 	return vpcClient.GetXAuthToken(), nil
@@ -256,7 +256,7 @@ func (w *clientWrapper) getZone(ctx context.Context, name string) (*selectelapi.
 
 	zones, err := w.ListZones(ctx, params)
 	if err != nil {
-		return nil, fmt.Errorf("find zone: %w", err)
+		return nil, fmt.Errorf("list zone: %w", err)
 	}
 
 	for _, zone := range zones.GetItems() {
@@ -280,7 +280,7 @@ func (w *clientWrapper) getRRset(ctx context.Context, name, zoneID string) (*sel
 
 	resp, err := w.ListRRSets(ctx, zoneID, params)
 	if err != nil {
-		return nil, fmt.Errorf("find rrset: %w", err)
+		return nil, fmt.Errorf("list rrset: %w", err)
 	}
 
 	for _, rrset := range resp.GetItems() {

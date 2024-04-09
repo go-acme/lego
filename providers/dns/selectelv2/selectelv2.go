@@ -41,7 +41,7 @@ const (
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
-var RRsetNotFoundErr = errors.New("rrset for challenge has not been found")
+var errRRsetNotFound = errors.New("rrset for challenge has not been found")
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
@@ -70,9 +70,9 @@ func NewDefaultConfig() *Config {
 }
 
 type DNSProvider struct {
-	client      selectelapi.DNSClient[selectelapi.Zone, selectelapi.RRSet]
-	providerCtx context.Context
-	config      *Config
+	client selectelapi.DNSClient[selectelapi.Zone, selectelapi.RRSet]
+	token  string
+	config *Config
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Selectel Domains APIv2.
@@ -117,9 +117,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	headers.Set("User-Agent", "lego/selectelv2")
 
 	return &DNSProvider{
-		client:      selectelapi.NewClient(defaultBaseURL, config.HTTPClient, headers),
-		providerCtx: context.Background(),
-		config:      config,
+		client: selectelapi.NewClient(defaultBaseURL, config.HTTPClient, headers),
+		config: config,
 	}, nil
 }
 
@@ -147,7 +146,7 @@ func (p *DNSProvider) Present(domain, _, keyAuth string) error {
 
 	rrset, err := p.getChallengeRRset(ctx, dns01.UnFqdn(info.EffectiveFQDN), zone.ID)
 	if err != nil {
-		if !errors.Is(err, RRsetNotFoundErr) {
+		if !errors.Is(err, errRRsetNotFound) {
 			return err
 		}
 
@@ -259,16 +258,13 @@ func (p *DNSProvider) getChallengeRRset(ctx context.Context, name, zoneID string
 		}
 	}
 
-	return nil, RRsetNotFoundErr
+	return nil, errRRsetNotFound
 }
 
 func (p *DNSProvider) authorize() error {
-	key := fmt.Sprintf("_%s_%s", p.config.Username, p.config.ProjectID)
-
-	token := p.providerCtx.Value(key)
-	if token != nil {
+	if p.token != "" {
 		extraHeaders := http.Header{}
-		extraHeaders.Set(tokenHeader, token.(string))
+		extraHeaders.Set(tokenHeader, p.token)
 
 		p.client = p.client.WithHeaders(extraHeaders)
 
@@ -280,7 +276,7 @@ func (p *DNSProvider) authorize() error {
 		return err
 	}
 
-	p.providerCtx = context.WithValue(p.providerCtx, key, newToken)
+	p.token = newToken
 
 	return p.authorize()
 }

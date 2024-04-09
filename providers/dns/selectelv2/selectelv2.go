@@ -69,10 +69,8 @@ func NewDefaultConfig() *Config {
 	}
 }
 
-type apiClient selectelapi.DNSClient[selectelapi.Zone, selectelapi.RRSet]
-
 type DNSProvider struct {
-	baseClient apiClient
+	baseClient selectelapi.DNSClient[selectelapi.Zone, selectelapi.RRSet]
 	config     *Config
 }
 
@@ -140,12 +138,12 @@ func (p *DNSProvider) Present(domain, _, keyAuth string) error {
 
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := p.getZone(ctx, client, domain)
+	zone, err := client.getZone(ctx, domain)
 	if err != nil {
 		return fmt.Errorf("selectelv2: %w", err)
 	}
 
-	rrset, err := p.getRRset(ctx, client, dns01.UnFqdn(info.EffectiveFQDN), zone.ID)
+	rrset, err := client.getRRset(ctx, dns01.UnFqdn(info.EffectiveFQDN), zone.ID)
 	if err != nil {
 		if !errors.Is(err, errNotFound) {
 			return err
@@ -187,12 +185,12 @@ func (p *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := p.getZone(ctx, client, domain)
+	zone, err := client.getZone(ctx, domain)
 	if err != nil {
 		return fmt.Errorf("selectelv2: %w", err)
 	}
 
-	rrset, err := p.getRRset(ctx, client, dns01.UnFqdn(info.EffectiveFQDN), zone.ID)
+	rrset, err := client.getRRset(ctx, dns01.UnFqdn(info.EffectiveFQDN), zone.ID)
 	if err != nil {
 		return fmt.Errorf("selectelv2: %w", err)
 	}
@@ -221,10 +219,42 @@ func (p *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 	return nil
 }
 
-func (p *DNSProvider) getZone(ctx context.Context, client apiClient, name string) (*selectelapi.Zone, error) {
+func (p *DNSProvider) authorize() (*clientWrapper, error) {
+	token, err := obtainOpenstackToken(p.config)
+	if err != nil {
+		return nil, err
+	}
+
+	extraHeaders := http.Header{}
+	extraHeaders.Set(tokenHeader, token)
+
+	return &clientWrapper{
+		DNSClient: p.baseClient.WithHeaders(extraHeaders),
+	}, nil
+}
+
+func obtainOpenstackToken(config *Config) (string, error) {
+	vpcClient, err := selvpcclient.NewClient(&selvpcclient.ClientOptions{
+		Username:       config.Username,
+		Password:       config.Password,
+		UserDomainName: config.Account,
+		ProjectID:      config.ProjectID,
+	})
+	if err != nil {
+		return "", fmt.Errorf("authorize: %w", err)
+	}
+
+	return vpcClient.GetXAuthToken(), nil
+}
+
+type clientWrapper struct {
+	selectelapi.DNSClient[selectelapi.Zone, selectelapi.RRSet]
+}
+
+func (w *clientWrapper) getZone(ctx context.Context, name string) (*selectelapi.Zone, error) {
 	params := &map[string]string{"filter": name}
 
-	zones, err := client.ListZones(ctx, params)
+	zones, err := w.ListZones(ctx, params)
 	if err != nil {
 		return nil, fmt.Errorf("find zone: %w", err)
 	}
@@ -242,13 +272,13 @@ func (p *DNSProvider) getZone(ctx context.Context, client apiClient, name string
 	// -1 can not be returned since if no dots present we exit above
 	i := strings.Index(name, ".")
 
-	return p.getZone(ctx, client, name[i+1:])
+	return w.getZone(ctx, name[i+1:])
 }
 
-func (p *DNSProvider) getRRset(ctx context.Context, client apiClient, name, zoneID string) (*selectelapi.RRSet, error) {
+func (w *clientWrapper) getRRset(ctx context.Context, name, zoneID string) (*selectelapi.RRSet, error) {
 	params := &map[string]string{"name": name, "rrset_types": string(selectelapi.TXT)}
 
-	resp, err := client.ListRRSets(ctx, zoneID, params)
+	resp, err := w.ListRRSets(ctx, zoneID, params)
 	if err != nil {
 		return nil, fmt.Errorf("find rrset: %w", err)
 	}
@@ -260,30 +290,4 @@ func (p *DNSProvider) getRRset(ctx context.Context, client apiClient, name, zone
 	}
 
 	return nil, errNotFound
-}
-
-func (p *DNSProvider) authorize() (apiClient, error) {
-	token, err := obtainOpenstackToken(p.config)
-	if err != nil {
-		return nil, err
-	}
-
-	extraHeaders := http.Header{}
-	extraHeaders.Set(tokenHeader, token)
-
-	return p.baseClient.WithHeaders(extraHeaders), nil
-}
-
-func obtainOpenstackToken(config *Config) (string, error) {
-	vpcClient, err := selvpcclient.NewClient(&selvpcclient.ClientOptions{
-		Username:       config.Username,
-		Password:       config.Password,
-		UserDomainName: config.Account,
-		ProjectID:      config.ProjectID,
-	})
-	if err != nil {
-		return "", fmt.Errorf("authorize: %w", err)
-	}
-
-	return vpcClient.GetXAuthToken(), nil
 }

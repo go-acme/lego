@@ -1,12 +1,12 @@
 ---
-title: "SelectelV2"
+title: "Selectel v2"
 date: 2019-03-03T16:39:46+01:00
 draft: false
 slug: selectelv2
 dnsprovider:
   since:    "v4.17.0"
   code:     "selectelv2"
-  url:      "https://docs.selectel.ru/en/"
+  url:      "https://selectel.ru"
 ---
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
@@ -14,7 +14,7 @@ dnsprovider:
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 
 
-Configuration for [SelectelV2](https://docs.selectel.ru/en/).
+Configuration for [Selectel v2](https://selectel.ru).
 
 
 <!--more-->
@@ -23,7 +23,7 @@ Configuration for [SelectelV2](https://docs.selectel.ru/en/).
 - Since: v4.17.0
 
 
-Here is an example bash command using the SelectelV2 provider:
+Here is an example bash command using the Selectel v2 provider:
 
 ```bash
 SELECTEL_USERNAME=trex \
@@ -68,6 +68,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 ## More information
 
 - [API documentation](https://developers.selectel.ru/docs/cloud-services/dns_api/dns_api_actual/)
+- [Go client](https://github.com/selectel/domains-go)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/selectelv2/selectelv2.toml -->

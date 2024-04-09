@@ -2401,7 +2401,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 	case "selectelv2":
 		// generated from: providers/dns/selectelv2/selectelv2.toml
-		ew.writeln(`Configuration for SelectelV2.`)
+		ew.writeln(`Configuration for Selectel v2.`)
 		ew.writeln(`Code:	'selectelv2'`)
 		ew.writeln(`Since:	'v4.17.0'`)
 		ew.writeln()

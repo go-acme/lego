@@ -93,6 +93,26 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 // NewDNSProviderConfig return a DNSProvider instance configured for selectel.
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
+	if config == nil {
+		return nil, errors.New("selectelv2: the configuration of the DNS provider is nil")
+	}
+
+	if config.Username == "" {
+		return nil, errors.New("selectelv2: missing username")
+	}
+
+	if config.Password == "" {
+		return nil, errors.New("selectelv2: missing password")
+	}
+
+	if config.Account == "" {
+		return nil, errors.New("selectelv2: missing account")
+	}
+
+	if config.ProjectID == "" {
+		return nil, errors.New("selectelv2: missing project ID")
+	}
+
 	headers := http.Header{}
 	headers.Set("User-Agent", "lego/selectelv2")
 

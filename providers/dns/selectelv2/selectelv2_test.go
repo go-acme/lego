@@ -30,7 +30,7 @@ func TestNewDNSProvider(t *testing.T) {
 			},
 		},
 		{
-			desc: "No username",
+			desc: "missing username",
 			envVars: map[string]string{
 				EnvPasswordOS: "qwerty",
 				EnvAccount:    "1",
@@ -39,7 +39,7 @@ func TestNewDNSProvider(t *testing.T) {
 			expected: "selectelv2: some credentials information are missing: SELECTELV2_USERNAME",
 		},
 		{
-			desc: "No password",
+			desc: "missing password",
 			envVars: map[string]string{
 				EnvUsernameOS: "someName",
 				EnvAccount:    "1",
@@ -48,7 +48,7 @@ func TestNewDNSProvider(t *testing.T) {
 			expected: "selectelv2: some credentials information are missing: SELECTELV2_PASSWORD",
 		},
 		{
-			desc: "No account",
+			desc: "missing account",
 			envVars: map[string]string{
 				EnvUsernameOS: "someName",
 				EnvPasswordOS: "qwerty",
@@ -57,7 +57,7 @@ func TestNewDNSProvider(t *testing.T) {
 			expected: "selectelv2: some credentials information are missing: SELECTELV2_ACCOUNT_ID",
 		},
 		{
-			desc: "No project",
+			desc: "missing project",
 			envVars: map[string]string{
 				EnvUsernameOS: "someName",
 				EnvPasswordOS: "qwerty",
@@ -75,6 +75,74 @@ func TestNewDNSProvider(t *testing.T) {
 			envTest.Apply(test.envVars)
 
 			p, err := NewDNSProvider()
+
+			if test.expected == "" {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				assert.NotNil(t, p.config)
+				assert.NotNil(t, p.client)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
+}
+
+func TestNewDNSProviderConfig(t *testing.T) {
+	testCases := []struct {
+		desc      string
+		username  string
+		password  string
+		account   string
+		projectID string
+		expected  string
+	}{
+		{
+			desc:      "success",
+			username:  "user",
+			password:  "secret",
+			account:   "1",
+			projectID: "111a11111aaa11aa1a11aaa11111aa1a",
+		},
+		{
+			desc:      "missing username",
+			password:  "secret",
+			account:   "1",
+			projectID: "111a11111aaa11aa1a11aaa11111aa1a",
+			expected:  "selectelv2: missing username",
+		},
+		{
+			desc:      "missing password",
+			username:  "user",
+			account:   "1",
+			projectID: "111a11111aaa11aa1a11aaa11111aa1a",
+			expected:  "selectelv2: missing password",
+		},
+		{
+			desc:      "missing account",
+			username:  "user",
+			password:  "secret",
+			projectID: "111a11111aaa11aa1a11aaa11111aa1a",
+			expected:  "selectelv2: missing account",
+		},
+		{
+			desc:     "missing projectID",
+			username: "user",
+			password: "secret",
+			account:  "1",
+			expected: "selectelv2: missing project ID",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			config := NewDefaultConfig()
+			config.Username = test.username
+			config.Password = test.password
+			config.Account = test.account
+			config.ProjectID = test.projectID
+
+			p, err := NewDNSProviderConfig(config)
 
 			if test.expected == "" {
 				require.NoError(t, err)

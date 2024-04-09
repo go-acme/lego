@@ -41,7 +41,7 @@ const (
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
 )
 
-var errRRsetNotFound = errors.New("rrset for challenge has not been found")
+var errNotFound = errors.New("rrset not found")
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
@@ -139,14 +139,14 @@ func (p *DNSProvider) Present(domain, _, keyAuth string) error {
 
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := p.getZoneByName(ctx, domain)
+	zone, err := p.getZone(ctx, domain)
 	if err != nil {
 		return fmt.Errorf("selectelv2: %w", err)
 	}
 
-	rrset, err := p.getChallengeRRset(ctx, dns01.UnFqdn(info.EffectiveFQDN), zone.ID)
+	rrset, err := p.getRRset(ctx, dns01.UnFqdn(info.EffectiveFQDN), zone.ID)
 	if err != nil {
-		if !errors.Is(err, errRRsetNotFound) {
+		if !errors.Is(err, errNotFound) {
 			return err
 		}
 
@@ -186,12 +186,12 @@ func (p *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := p.getZoneByName(ctx, domain)
+	zone, err := p.getZone(ctx, domain)
 	if err != nil {
 		return fmt.Errorf("selectelv2: %w", err)
 	}
 
-	rrset, err := p.getChallengeRRset(ctx, dns01.UnFqdn(info.EffectiveFQDN), zone.ID)
+	rrset, err := p.getRRset(ctx, dns01.UnFqdn(info.EffectiveFQDN), zone.ID)
 	if err != nil {
 		return fmt.Errorf("selectelv2: %w", err)
 	}
@@ -220,7 +220,7 @@ func (p *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 	return nil
 }
 
-func (p *DNSProvider) getZoneByName(ctx context.Context, name string) (*selectelapi.Zone, error) {
+func (p *DNSProvider) getZone(ctx context.Context, name string) (*selectelapi.Zone, error) {
 	params := &map[string]string{"filter": name}
 
 	zones, err := p.client.ListZones(ctx, params)
@@ -241,10 +241,10 @@ func (p *DNSProvider) getZoneByName(ctx context.Context, name string) (*selectel
 	// -1 can not be returned since if no dots present we exit above
 	i := strings.Index(name, ".")
 
-	return p.getZoneByName(ctx, name[i+1:])
+	return p.getZone(ctx, name[i+1:])
 }
 
-func (p *DNSProvider) getChallengeRRset(ctx context.Context, name, zoneID string) (*selectelapi.RRSet, error) {
+func (p *DNSProvider) getRRset(ctx context.Context, name, zoneID string) (*selectelapi.RRSet, error) {
 	params := &map[string]string{"name": name, "rrset_types": string(selectelapi.TXT)}
 
 	resp, err := p.client.ListRRSets(ctx, zoneID, params)
@@ -258,7 +258,7 @@ func (p *DNSProvider) getChallengeRRset(ctx context.Context, name, zoneID string
 		}
 	}
 
-	return nil, errRRsetNotFound
+	return nil, errNotFound
 }
 
 func (p *DNSProvider) authorize() error {
@@ -271,12 +271,12 @@ func (p *DNSProvider) authorize() error {
 		return nil
 	}
 
-	newToken, err := obtainOpenstackToken(p.config)
+	token, err := obtainOpenstackToken(p.config)
 	if err != nil {
 		return err
 	}
 
-	p.token = newToken
+	p.token = token
 
 	return p.authorize()
 }

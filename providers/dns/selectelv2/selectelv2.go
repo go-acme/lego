@@ -69,10 +69,11 @@ func NewDefaultConfig() *Config {
 	}
 }
 
+type apiClient selectelapi.DNSClient[selectelapi.Zone, selectelapi.RRSet]
+
 type DNSProvider struct {
-	client selectelapi.DNSClient[selectelapi.Zone, selectelapi.RRSet]
-	token  string
-	config *Config
+	baseClient apiClient
+	config     *Config
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for Selectel Domains APIv2.
@@ -117,8 +118,8 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	headers.Set("User-Agent", "lego/selectelv2")
 
 	return &DNSProvider{
-		client: selectelapi.NewClient(defaultBaseURL, config.HTTPClient, headers),
-		config: config,
+		baseClient: selectelapi.NewClient(defaultBaseURL, config.HTTPClient, headers),
+		config:     config,
 	}, nil
 }
 
@@ -132,19 +133,19 @@ func (p *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (p *DNSProvider) Present(domain, _, keyAuth string) error {
 	ctx := context.Background()
 
-	err := p.authorize()
+	client, err := p.authorize()
 	if err != nil {
 		return fmt.Errorf("selectelv2: %w", err)
 	}
 
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := p.getZone(ctx, domain)
+	zone, err := p.getZone(ctx, client, domain)
 	if err != nil {
 		return fmt.Errorf("selectelv2: %w", err)
 	}
 
-	rrset, err := p.getRRset(ctx, dns01.UnFqdn(info.EffectiveFQDN), zone.ID)
+	rrset, err := p.getRRset(ctx, client, dns01.UnFqdn(info.EffectiveFQDN), zone.ID)
 	if err != nil {
 		if !errors.Is(err, errNotFound) {
 			return err
@@ -157,7 +158,7 @@ func (p *DNSProvider) Present(domain, _, keyAuth string) error {
 			Records: []selectelapi.RecordItem{{Content: fmt.Sprintf("%q", info.Value)}},
 		}
 
-		_, err = p.client.CreateRRSet(ctx, zone.ID, newRRSet)
+		_, err = client.CreateRRSet(ctx, zone.ID, newRRSet)
 		if err != nil {
 			return fmt.Errorf("selectelv2: %w", err)
 		}
@@ -167,7 +168,7 @@ func (p *DNSProvider) Present(domain, _, keyAuth string) error {
 
 	rrset.Records = append(rrset.Records, selectelapi.RecordItem{Content: fmt.Sprintf("%q", info.Value)})
 
-	err = p.client.UpdateRRSet(ctx, zone.ID, rrset.ID, rrset)
+	err = client.UpdateRRSet(ctx, zone.ID, rrset.ID, rrset)
 	if err != nil {
 		return fmt.Errorf("selectelv2: %w", err)
 	}
@@ -179,25 +180,25 @@ func (p *DNSProvider) Present(domain, _, keyAuth string) error {
 func (p *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 	ctx := context.Background()
 
-	err := p.authorize()
+	client, err := p.authorize()
 	if err != nil {
 		return fmt.Errorf("selectelv2: %w", err)
 	}
 
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := p.getZone(ctx, domain)
+	zone, err := p.getZone(ctx, client, domain)
 	if err != nil {
 		return fmt.Errorf("selectelv2: %w", err)
 	}
 
-	rrset, err := p.getRRset(ctx, dns01.UnFqdn(info.EffectiveFQDN), zone.ID)
+	rrset, err := p.getRRset(ctx, client, dns01.UnFqdn(info.EffectiveFQDN), zone.ID)
 	if err != nil {
 		return fmt.Errorf("selectelv2: %w", err)
 	}
 
 	if len(rrset.Records) <= 1 {
-		err = p.client.DeleteRRSet(ctx, zone.ID, rrset.ID)
+		err = client.DeleteRRSet(ctx, zone.ID, rrset.ID)
 		if err != nil {
 			return fmt.Errorf("selectelv2: %w", err)
 		}
@@ -212,7 +213,7 @@ func (p *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 		}
 	}
 
-	err = p.client.UpdateRRSet(ctx, zone.ID, rrset.ID, rrset)
+	err = client.UpdateRRSet(ctx, zone.ID, rrset.ID, rrset)
 	if err != nil {
 		return fmt.Errorf("selectelv2: %w", err)
 	}
@@ -220,10 +221,10 @@ func (p *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 	return nil
 }
 
-func (p *DNSProvider) getZone(ctx context.Context, name string) (*selectelapi.Zone, error) {
+func (p *DNSProvider) getZone(ctx context.Context, client apiClient, name string) (*selectelapi.Zone, error) {
 	params := &map[string]string{"filter": name}
 
-	zones, err := p.client.ListZones(ctx, params)
+	zones, err := client.ListZones(ctx, params)
 	if err != nil {
 		return nil, fmt.Errorf("find zone: %w", err)
 	}
@@ -241,13 +242,13 @@ func (p *DNSProvider) getZone(ctx context.Context, name string) (*selectelapi.Zo
 	// -1 can not be returned since if no dots present we exit above
 	i := strings.Index(name, ".")
 
-	return p.getZone(ctx, name[i+1:])
+	return p.getZone(ctx, client, name[i+1:])
 }
 
-func (p *DNSProvider) getRRset(ctx context.Context, name, zoneID string) (*selectelapi.RRSet, error) {
+func (p *DNSProvider) getRRset(ctx context.Context, client apiClient, name, zoneID string) (*selectelapi.RRSet, error) {
 	params := &map[string]string{"name": name, "rrset_types": string(selectelapi.TXT)}
 
-	resp, err := p.client.ListRRSets(ctx, zoneID, params)
+	resp, err := client.ListRRSets(ctx, zoneID, params)
 	if err != nil {
 		return nil, fmt.Errorf("find rrset: %w", err)
 	}
@@ -261,24 +262,16 @@ func (p *DNSProvider) getRRset(ctx context.Context, name, zoneID string) (*selec
 	return nil, errNotFound
 }
 
-func (p *DNSProvider) authorize() error {
-	if p.token != "" {
-		extraHeaders := http.Header{}
-		extraHeaders.Set(tokenHeader, p.token)
-
-		p.client = p.client.WithHeaders(extraHeaders)
-
-		return nil
-	}
-
+func (p *DNSProvider) authorize() (apiClient, error) {
 	token, err := obtainOpenstackToken(p.config)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	p.token = token
+	extraHeaders := http.Header{}
+	extraHeaders.Set(tokenHeader, token)
 
-	return p.authorize()
+	return p.baseClient.WithHeaders(extraHeaders), nil
 }
 
 func obtainOpenstackToken(config *Config) (string, error) {

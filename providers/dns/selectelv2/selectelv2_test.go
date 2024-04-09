@@ -80,7 +80,7 @@ func TestNewDNSProvider(t *testing.T) {
 				require.NoError(t, err)
 				require.NotNil(t, p)
 				assert.NotNil(t, p.config)
-				assert.NotNil(t, p.client)
+				assert.NotNil(t, p.baseClient)
 			} else {
 				require.EqualError(t, err, test.expected)
 			}
@@ -148,7 +148,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 				require.NoError(t, err)
 				require.NotNil(t, p)
 				assert.NotNil(t, p.config)
-				assert.NotNil(t, p.client)
+				assert.NotNil(t, p.baseClient)
 			} else {
 				require.EqualError(t, err, test.expected)
 			}

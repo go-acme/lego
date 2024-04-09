@@ -143,8 +143,6 @@ func (p *DNSProvider) Present(domain, _, keyAuth string) error {
 		return fmt.Errorf("selectelv2: %w", err)
 	}
 
-	value := fmt.Sprintf("%q", info.Value)
-
 	rrset, err := p.getChallengeRRset(dns01.UnFqdn(info.EffectiveFQDN), zone.ID)
 	if err != nil {
 		if !errors.Is(err, RRsetNotFoundErr) {
@@ -155,7 +153,7 @@ func (p *DNSProvider) Present(domain, _, keyAuth string) error {
 			Name:    info.EffectiveFQDN,
 			Type:    selectelapi.TXT,
 			TTL:     p.config.TTL,
-			Records: []selectelapi.RecordItem{{Content: value}},
+			Records: []selectelapi.RecordItem{{Content: fmt.Sprintf("%q", info.Value)}},
 		}
 
 		_, err = p.client.CreateRRSet(p.providerCtx, zone.ID, newRRSet)
@@ -166,7 +164,7 @@ func (p *DNSProvider) Present(domain, _, keyAuth string) error {
 		return nil
 	}
 
-	rrset.Records = append(rrset.Records, selectelapi.RecordItem{Content: value})
+	rrset.Records = append(rrset.Records, selectelapi.RecordItem{Content: fmt.Sprintf("%q", info.Value)})
 
 	err = p.client.UpdateRRSet(p.providerCtx, zone.ID, rrset.ID, rrset)
 	if err != nil {

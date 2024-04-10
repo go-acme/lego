@@ -164,7 +164,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	if err := d.client.DeleteRecord(ctx, record.ID); err != nil {
-		return fmt.Errorf("hetzner: failed to delate TXT record: id=%s, name=%s: %w", record.ID, record.Name, err)
+		return fmt.Errorf("hetzner: failed to delete TXT record: id=%s, name=%s: %w", record.ID, record.Name, err)
 	}
 
 	return nil

@@ -119,6 +119,7 @@ func allDNSCodes() string {
 		"sakuracloud",
 		"scaleway",
 		"selectel",
+		"selectelv2",
 		"servercow",
 		"shellrent",
 		"simply",
@@ -2397,6 +2398,30 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/selectel`)
+
+	case "selectelv2":
+		// generated from: providers/dns/selectelv2/selectelv2.toml
+		ew.writeln(`Configuration for Selectel v2.`)
+		ew.writeln(`Code:	'selectelv2'`)
+		ew.writeln(`Since:	'v4.17.0'`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "SELECTELV2_ACCOUNT_ID":	Selectel account ID (INT)`)
+		ew.writeln(`	- "SELECTELV2_PASSWORD":	Openstack username's password`)
+		ew.writeln(`	- "SELECTELV2_PROJECT_ID":	Cloud project ID (UUID)`)
+		ew.writeln(`	- "SELECTELV2_USERNAME":	Openstack username`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "SELECTELV2_BASE_URL":	API endpoint URL`)
+		ew.writeln(`	- "SELECTELV2_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "SELECTELV2_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "SELECTELV2_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "SELECTELV2_TTL":	The TTL of the TXT record used for the DNS challenge`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/selectelv2`)
 
 	case "servercow":
 		// generated from: providers/dns/servercow/servercow.toml

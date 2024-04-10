@@ -35,7 +35,7 @@ require (
 	github.com/go-jose/go-jose/v4 v4.0.1
 	github.com/go-viper/mapstructure/v2 v2.0.0-alpha.1
 	github.com/google/go-querystring v1.1.0
-	github.com/gophercloud/gophercloud v1.0.0
+	github.com/gophercloud/gophercloud v1.5.0
 	github.com/gophercloud/utils v0.0.0-20210216074907-f6de111f2eae
 	github.com/hashicorp/go-retryablehttp v0.7.5
 	github.com/iij/doapi v0.0.0-20190504054126-0bbf12d6d7df
@@ -65,6 +65,8 @@ require (
 	github.com/sacloud/api-client-go v0.2.8
 	github.com/sacloud/iaas-api-go v1.11.1
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.22
+	github.com/selectel/domains-go v1.0.2
+	github.com/selectel/go-selvpcclient/v3 v3.1.1
 	github.com/softlayer/softlayer-go v1.1.3
 	github.com/stretchr/testify v1.8.4
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.490

@@ -3,11 +3,12 @@ package oraclecloud
 import (
 	"crypto/rsa"
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"os"
 
 	"github.com/go-acme/lego/v4/platform/config/env"
-	"github.com/oracle/oci-go-sdk/common"
+	"github.com/oracle/oci-go-sdk/v65/common"
 )
 
 type configProvider struct {
@@ -64,6 +65,11 @@ func (p *configProvider) KeyFingerprint() (string, error) {
 
 func (p *configProvider) Region() (string, error) {
 	return p.values[EnvRegion], nil
+}
+
+func (p *configProvider) AuthType() (common.AuthConfig, error) {
+	// Inspired by https://github.com/oracle/oci-go-sdk/blob/e7635c292e60d0a9dcdd3a1e7de180d7c99b1eee/common/configuration.go#L231-L234
+	return common.AuthConfig{AuthType: common.UnknownAuthenticationType}, errors.New("unsupported, keep the interface")
 }
 
 func getPrivateKey(envVar string) ([]byte, error) {

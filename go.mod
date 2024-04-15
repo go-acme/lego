@@ -30,7 +30,7 @@ require (
 	github.com/civo/civogo v0.3.11
 	github.com/cloudflare/cloudflare-go v0.86.0
 	github.com/cpu/goacmedns v0.1.1
-	github.com/dnsimple/dnsimple-go v1.2.0
+	github.com/dnsimple/dnsimple-go v1.7.0
 	github.com/exoscale/egoscale v0.102.3
 	github.com/go-jose/go-jose/v4 v4.0.1
 	github.com/go-viper/mapstructure/v2 v2.0.0-alpha.1
@@ -155,6 +155,7 @@ require (
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sacloud/go-http v0.1.6 // indirect
 	github.com/sacloud/packages-go v0.0.9 // indirect
+	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/smartystreets/assertions v1.0.1 // indirect
 	github.com/smartystreets/go-aws-auth v0.0.0-20180515143844-0c1422d1fdb9 // indirect

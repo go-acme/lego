@@ -173,8 +173,8 @@ github.com/dimchansky/utfbom v1.1.1 h1:vV6w1AhK4VMnhBno/TPVCoK9U/LP0PkLCS9tbxHdi
 github.com/dimchansky/utfbom v1.1.1/go.mod h1:SxdoEBH5qIqFocHMyGOXVAybYJdr71b1Q/j0mACtrfE=
 github.com/dnaeon/go-vcr v1.2.0 h1:zHCHvJYTMh1N7xnV7zf1m1GPBF9Ad0Jk/whtQ1663qI=
 github.com/dnaeon/go-vcr v1.2.0/go.mod h1:R4UdLID7HZT3taECzJs4YgbbH6PIGXB6W/sc5OLb6RQ=
-github.com/dnsimple/dnsimple-go v1.2.0 h1:ddTGyLVKly5HKb5L65AkLqFqwZlWo3WnR0BlFZlIddM=
-github.com/dnsimple/dnsimple-go v1.2.0/go.mod h1:z/cs26v/eiRvUyXsHQBLd8lWF8+cD6GbmkPH84plM4U=
+github.com/dnsimple/dnsimple-go v1.7.0 h1:JKu9xJtZ3SqOC+BuYgAWeab7+EEx0sz422vu8j611ZY=
+github.com/dnsimple/dnsimple-go v1.7.0/go.mod h1:EKpuihlWizqYafSnQHGCd/gyvy3HkEQJ7ODB4KdV8T8=
 github.com/envoyproxy/go-control-plane v0.9.0/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/go-control-plane v0.9.1-0.20191026205805-5f8ba28d4473/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/go-control-plane v0.9.4/go.mod h1:6rpuAdCZL397s3pYoYcLgu1mIlRU8Am5FuJP05cCM98=
@@ -578,6 +578,8 @@ github.com/selectel/domains-go v1.0.2 h1:Si6iGaMnTFJxwiJVI50DOdZnwcxc87kqaWrVQYW
 github.com/selectel/domains-go v1.0.2/go.mod h1:SugRKfq4sTpnOHquslCpzda72wV8u0cMBHx0C0l+bzA=
 github.com/selectel/go-selvpcclient/v3 v3.1.1 h1:C1q2LqqosiapoLpnGITGmysg0YCSQYDo2Gh69CioevM=
 github.com/selectel/go-selvpcclient/v3 v3.1.1/go.mod h1:NM7IXhh1IzqZ88DOw1Qc5Ez3tULLViXo95l5+rKPuyQ=
+github.com/shopspring/decimal v1.3.1 h1:2Usl1nmF/WZucqkFZhnfFYxxxu8LG21F6nPQBE5gKV8=
+github.com/shopspring/decimal v1.3.1/go.mod h1:DKyhrW/HYNuLGql+MJL6WCR6knT2jwCFRcu2hWCYk4o=
 github.com/shurcooL/sanitized_anchor_name v1.0.0/go.mod h1:1NzhyTcUVG4SuEtjjoZeVRXNmyL/1OwPU0+IJeTBvfc=
 github.com/sirupsen/logrus v1.2.0/go.mod h1:LxeOpSwHxABJmUn/MG1IvRgCAasNZTLOkJPxbbu5VWo=
 github.com/sirupsen/logrus v1.4.2/go.mod h1:tLMulIdttU9McNUspp0xgXVQah82FyeX6MwdIuYE2rE=

@@ -141,8 +141,8 @@ github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1/go.mod h1:Q3SI9o4m/ZMn
 github.com/civo/civogo v0.3.11 h1:mON/fyrV946Sbk6paRtOSGsN+asCgCmHCgArf5xmGxM=
 github.com/civo/civogo v0.3.11/go.mod h1:7+GeeFwc4AYTULaEshpT2vIcl3Qq8HPoxA17viX3l6g=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
-github.com/cloudflare/cloudflare-go v0.86.0 h1:jEKN5VHNYNYtfDL2lUFLTRo+nOVNPFxpXTstVx0rqHI=
-github.com/cloudflare/cloudflare-go v0.86.0/go.mod h1:wYW/5UP02TUfBToa/yKbQHV+r6h1NnJ1Je7XjuGM4Jw=
+github.com/cloudflare/cloudflare-go v0.93.0 h1:rV0eHb42NUewfK5qa2+LKAD4v4oFA0QGDABn/lMyF78=
+github.com/cloudflare/cloudflare-go v0.93.0/go.mod h1:N1u1cLZ4lG6NeezGOWi7P6aq1DK2iVYg9ze7GZbUmZE=
 github.com/cncf/udpa/go v0.0.0-20191209042840-269d4d468f6f/go.mod h1:M8M6+tZqaGXZJjfX53e64911xZQV5JYwmTeXPW+k8Sc=
 github.com/cncf/udpa/go v0.0.0-20201120205902-5459f2c99403/go.mod h1:WmhPx2Nbnhtbo57+VJT5O0JRkEi1Wbu0z5j0R8u5Hbk=
 github.com/cncf/udpa/go v0.0.0-20210930031921-04548b0d99d4/go.mod h1:6pvJx4me5XPnfI9Z40ddWsdw2W/uZgQLFXToKeRcDiI=

@@ -76,8 +76,8 @@ require (
 	github.com/urfave/cli/v2 v2.27.1
 	github.com/vinyldns/go-vinyldns v0.9.16
 	github.com/vultr/govultr/v2 v2.17.2
-	github.com/yandex-cloud/go-genproto v0.0.0-20220805142335-27b56ddae16f
-	github.com/yandex-cloud/go-sdk v0.0.0-20220805164847-cf028e604997
+	github.com/yandex-cloud/go-genproto v0.0.0-20240318083951-4fe6125f286e
+	github.com/yandex-cloud/go-sdk v0.0.0-20240318084659-dfa50323a0b4
 	golang.org/x/crypto v0.22.0
 	golang.org/x/net v0.24.0
 	golang.org/x/oauth2 v0.19.0

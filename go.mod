@@ -62,8 +62,8 @@ require (
 	github.com/ovh/go-ovh v1.4.3
 	github.com/pquerna/otp v1.4.0
 	github.com/rainycape/memcache v0.0.0-20150622160815-1031fa0ce2f2
-	github.com/sacloud/api-client-go v0.2.8
-	github.com/sacloud/iaas-api-go v1.11.1
+	github.com/sacloud/api-client-go v0.2.10
+	github.com/sacloud/iaas-api-go v1.12.0
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.22
 	github.com/selectel/domains-go v1.0.2
 	github.com/selectel/go-selvpcclient/v3 v3.1.1
@@ -99,7 +99,6 @@ require (
 	github.com/Azure/go-autorest/logger v0.2.1 // indirect
 	github.com/Azure/go-autorest/tracing v0.6.0 // indirect
 	github.com/AzureAD/microsoft-authentication-library-for-go v1.2.1 // indirect
-	github.com/andres-erbsen/clock v0.0.0-20160526145045-9e14626cd129 // indirect
 	github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.5.4 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.14.11 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.2.10 // indirect
@@ -113,6 +112,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sso v1.18.7 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.21.7 // indirect
 	github.com/aws/smithy-go v1.19.0 // indirect
+	github.com/benbjohnson/clock v1.3.0 // indirect
 	github.com/boombuler/barcode v1.0.1-0.20190219062509-6c824513bacc // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -154,8 +154,8 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
-	github.com/sacloud/go-http v0.1.6 // indirect
-	github.com/sacloud/packages-go v0.0.9 // indirect
+	github.com/sacloud/go-http v0.1.8 // indirect
+	github.com/sacloud/packages-go v0.0.10 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/smartystreets/assertions v1.0.1 // indirect
@@ -166,7 +166,7 @@ require (
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	go.opencensus.io v0.24.0 // indirect
-	go.uber.org/ratelimit v0.2.0 // indirect
+	go.uber.org/ratelimit v0.3.0 // indirect
 	golang.org/x/mod v0.17.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
 	golang.org/x/sys v0.19.0 // indirect

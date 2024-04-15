@@ -35,7 +35,7 @@ require (
 	github.com/go-jose/go-jose/v4 v4.0.1
 	github.com/go-viper/mapstructure/v2 v2.0.0-alpha.1
 	github.com/google/go-querystring v1.1.0
-	github.com/gophercloud/gophercloud v1.5.0
+	github.com/gophercloud/gophercloud v1.11.0
 	github.com/gophercloud/utils v0.0.0-20210216074907-f6de111f2eae
 	github.com/hashicorp/go-retryablehttp v0.7.5
 	github.com/iij/doapi v0.0.0-20190504054126-0bbf12d6d7df

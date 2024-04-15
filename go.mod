@@ -18,7 +18,7 @@ require (
 	github.com/BurntSushi/toml v1.3.2
 	github.com/OpenDNS/vegadns2client v0.0.0-20180418235048-a3fa4a771d87
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.2.2
-	github.com/aliyun/alibaba-cloud-sdk-go v1.61.1755
+	github.com/aliyun/alibaba-cloud-sdk-go v1.62.712
 	github.com/aws/aws-sdk-go-v2 v1.24.1
 	github.com/aws/aws-sdk-go-v2/config v1.26.6
 	github.com/aws/aws-sdk-go-v2/credentials v1.16.16
@@ -149,6 +149,7 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
+	github.com/opentracing/opentracing-go v1.2.1-0.20220228012449-10b1cf09e00b // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
 	github.com/pkg/errors v0.9.1 // indirect

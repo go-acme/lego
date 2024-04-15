@@ -69,8 +69,8 @@ require (
 	github.com/selectel/go-selvpcclient/v3 v3.1.1
 	github.com/softlayer/softlayer-go v1.1.3
 	github.com/stretchr/testify v1.9.0
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.490
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod v1.0.490
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.898
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod v1.0.898
 	github.com/transip/gotransip/v6 v6.23.0
 	github.com/ultradns/ultradns-go-sdk v1.6.1-20231103022937-8589b6a
 	github.com/urfave/cli/v2 v2.27.1

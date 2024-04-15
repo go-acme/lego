@@ -36,7 +36,7 @@ require (
 	github.com/go-viper/mapstructure/v2 v2.0.0-alpha.1
 	github.com/google/go-querystring v1.1.0
 	github.com/gophercloud/gophercloud v1.11.0
-	github.com/gophercloud/utils v0.0.0-20210216074907-f6de111f2eae
+	github.com/gophercloud/utils v0.0.0-20231010081019-80377eca5d56
 	github.com/hashicorp/go-retryablehttp v0.7.5
 	github.com/iij/doapi v0.0.0-20190504054126-0bbf12d6d7df
 	github.com/infobloxopen/infoblox-go-client v1.1.1
@@ -137,6 +137,7 @@ require (
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
+	github.com/hashicorp/go-uuid v1.0.3 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/k0kubun/go-ansi v0.0.0-20180517002512-3bf9e2903213 // indirect

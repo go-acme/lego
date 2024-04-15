@@ -68,7 +68,7 @@ require (
 	github.com/selectel/domains-go v1.0.2
 	github.com/selectel/go-selvpcclient/v3 v3.1.1
 	github.com/softlayer/softlayer-go v1.1.3
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.490
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod v1.0.490
 	github.com/transip/gotransip/v6 v6.23.0
@@ -161,7 +161,7 @@ require (
 	github.com/softlayer/xmlrpc v0.0.0-20200409220501-5f089df7cb7e // indirect
 	github.com/sony/gobreaker v0.5.0 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
-	github.com/stretchr/objx v0.5.1 // indirect
+	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.uber.org/ratelimit v0.2.0 // indirect

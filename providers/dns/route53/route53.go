@@ -33,6 +33,7 @@ const (
 	EnvMaxRetries      = envNamespace + "MAX_RETRIES"
 	EnvAssumeRoleArn   = envNamespace + "ASSUME_ROLE_ARN"
 	EnvExternalID      = envNamespace + "EXTERNAL_ID"
+	EnvPrivateZone     = envNamespace + "PRIVATE_ZONE"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -52,6 +53,7 @@ type Config struct {
 	MaxRetries    int
 	AssumeRoleArn string
 	ExternalID    string
+	PrivateZone   bool
 
 	TTL                int
 	PropagationTimeout time.Duration
@@ -67,6 +69,7 @@ func NewDefaultConfig() *Config {
 		MaxRetries:    env.GetOrDefaultInt(EnvMaxRetries, 5),
 		AssumeRoleArn: env.GetOrDefaultString(EnvAssumeRoleArn, ""),
 		ExternalID:    env.GetOrDefaultString(EnvExternalID, ""),
+		PrivateZone:   env.GetOrDefaultBool(EnvPrivateZone, false),
 
 		TTL:                env.GetOrDefaultInt(EnvTTL, 10),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
@@ -299,7 +302,7 @@ func (d *DNSProvider) getHostedZoneID(ctx context.Context, fqdn string) (string,
 	var hostedZoneID string
 	for _, hostedZone := range resp.HostedZones {
 		// .Name has a trailing dot
-		if !hostedZone.Config.PrivateZone && deref(hostedZone.Name) == authZone {
+		if deref(hostedZone.Name) == authZone && (d.config.PrivateZone && hostedZone.Config.PrivateZone || !d.config.PrivateZone && !hostedZone.Config.PrivateZone) {
 			hostedZoneID = deref(hostedZone.Id)
 			break
 		}

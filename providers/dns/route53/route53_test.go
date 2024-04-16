@@ -23,6 +23,7 @@ var envTest = tester.NewEnvTest(
 	EnvRegion,
 	EnvHostedZoneID,
 	EnvMaxRetries,
+	EnvPrivateZone,
 	EnvTTL,
 	EnvPropagationTimeout,
 	EnvPollingInterval,

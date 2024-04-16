@@ -215,8 +215,14 @@ func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *Certif
 	meta[renewEnvCertDomain] = domain
 	meta[renewEnvCertPath] = certsStorage.GetFileName(domain, ".crt")
 	meta[renewEnvCertKeyPath] = certsStorage.GetFileName(domain, ".key")
-	meta[renewEnvCertPEMPath] = certsStorage.GetFileName(domain, ".pem")
-	meta[renewEnvCertPFXPath] = certsStorage.GetFileName(domain, ".pfx")
+
+	if certsStorage.pem {
+		meta[renewEnvCertPEMPath] = certsStorage.GetFileName(domain, ".pem")
+	}
+
+	if certsStorage.pfx {
+		meta[renewEnvCertPFXPath] = certsStorage.GetFileName(domain, ".pfx")
+	}
 
 	return launchHook(ctx.String("renew-hook"), meta)
 }
@@ -289,6 +295,14 @@ func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *Certificat
 	meta[renewEnvCertDomain] = domain
 	meta[renewEnvCertPath] = certsStorage.GetFileName(domain, ".crt")
 	meta[renewEnvCertKeyPath] = certsStorage.GetFileName(domain, ".key")
+
+	if certsStorage.pem {
+		meta[renewEnvCertPEMPath] = certsStorage.GetFileName(domain, ".pem")
+	}
+
+	if certsStorage.pfx {
+		meta[renewEnvCertPFXPath] = certsStorage.GetFileName(domain, ".pfx")
+	}
 
 	return launchHook(ctx.String("renew-hook"), meta)
 }

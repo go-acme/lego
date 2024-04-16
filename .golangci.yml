@@ -90,6 +90,11 @@ linters-settings:
     disable:
       - require-error
       - go-require
+  perfsprint:
+    err-error: true
+    errorf: true
+    sprintf1: true
+    strconcat: false
 
 linters:
   enable-all: true
@@ -149,7 +154,6 @@ issues:
     - 'Error return value of .((os\.)?std(out|err)\..*|.*Close|.*Flush|os\.Remove(All)?|.*printf?|os\.(Un)?Setenv). is not checked'
     - 'exported (type|method|function) (.+) should have comment or be unexported'
     - 'ST1000: at least one file in a package should have a package comment'
-    - 'fmt.Sprintf can be replaced with string'
   exclude-rules:
     - path: (.+)_test.go
       linters:
@@ -227,6 +231,6 @@ issues:
     - path: providers/dns/hosttech/internal/client_test.go
       text: 'Duplicate words \(0\) found'
     - path: cmd/cmd_renew.go
-      text: 'cyclomatic complexity \d+ of func `renewForDomains` is high'
+      text: 'cyclomatic complexity \d+ of func `(renewForDomains|renewForCSR)` is high'
     - path: providers/dns/cpanel/cpanel.go
       text: 'cyclomatic complexity 13 of func `\(\*DNSProvider\)\.CleanUp` is high'

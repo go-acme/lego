@@ -50,6 +50,7 @@ func TestCertifier_GetRenewalInfo(t *testing.T) {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Retry-After", "21600")
 		w.WriteHeader(http.StatusOK)
 		_, wErr := w.Write([]byte(`{
 				"suggestedWindow": {
@@ -76,6 +77,7 @@ func TestCertifier_GetRenewalInfo(t *testing.T) {
 	assert.Equal(t, "2020-03-17T17:51:09Z", ri.SuggestedWindow.Start.Format(time.RFC3339))
 	assert.Equal(t, "2020-03-17T18:21:09Z", ri.SuggestedWindow.End.Format(time.RFC3339))
 	assert.Equal(t, "https://aricapable.ca/docs/renewal-advice/", ri.ExplanationURL)
+	assert.Equal(t, time.Duration(21600000000000), ri.RetryAfter)
 }
 
 func TestCertifier_GetRenewalInfo_errors(t *testing.T) {
@@ -135,13 +137,14 @@ func TestRenewalInfoResponse_ShouldRenew(t *testing.T) {
 
 	t.Run("Window is in the past", func(t *testing.T) {
 		ri := RenewalInfoResponse{
-			acme.RenewalInfoResponse{
+			RenewalInfoResponse: acme.RenewalInfoResponse{
 				SuggestedWindow: acme.Window{
 					Start: now.Add(-2 * time.Hour),
 					End:   now.Add(-1 * time.Hour),
 				},
 				ExplanationURL: "",
 			},
+			RetryAfter: 0,
 		}
 
 		rt := ri.ShouldRenewAt(now, 0)
@@ -151,13 +154,14 @@ func TestRenewalInfoResponse_ShouldRenew(t *testing.T) {
 
 	t.Run("Window is in the future", func(t *testing.T) {
 		ri := RenewalInfoResponse{
-			acme.RenewalInfoResponse{
+			RenewalInfoResponse: acme.RenewalInfoResponse{
 				SuggestedWindow: acme.Window{
 					Start: now.Add(1 * time.Hour),
 					End:   now.Add(2 * time.Hour),
 				},
 				ExplanationURL: "",
 			},
+			RetryAfter: 0,
 		}
 
 		rt := ri.ShouldRenewAt(now, 0)
@@ -166,13 +170,14 @@ func TestRenewalInfoResponse_ShouldRenew(t *testing.T) {
 
 	t.Run("Window is in the future, but caller is willing to sleep", func(t *testing.T) {
 		ri := RenewalInfoResponse{
-			acme.RenewalInfoResponse{
+			RenewalInfoResponse: acme.RenewalInfoResponse{
 				SuggestedWindow: acme.Window{
 					Start: now.Add(1 * time.Hour),
 					End:   now.Add(2 * time.Hour),
 				},
 				ExplanationURL: "",
 			},
+			RetryAfter: 0,
 		}
 
 		rt := ri.ShouldRenewAt(now, 2*time.Hour)
@@ -182,13 +187,14 @@ func TestRenewalInfoResponse_ShouldRenew(t *testing.T) {
 
 	t.Run("Window is in the future, but caller isn't willing to sleep long enough", func(t *testing.T) {
 		ri := RenewalInfoResponse{
-			acme.RenewalInfoResponse{
+			RenewalInfoResponse: acme.RenewalInfoResponse{
 				SuggestedWindow: acme.Window{
 					Start: now.Add(1 * time.Hour),
 					End:   now.Add(2 * time.Hour),
 				},
 				ExplanationURL: "",
 			},
+			RetryAfter: 0,
 		}
 
 		rt := ri.ShouldRenewAt(now, 59*time.Minute)

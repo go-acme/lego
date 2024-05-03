@@ -155,7 +155,7 @@ func generateCLIHelp(models *Providers) error {
 }
 
 func generateReadMe(models *Providers) error {
-	max, lines := extractTableData(models)
+	maximum, lines := extractTableData(models)
 
 	file, err := os.Open(readmePath)
 	if err != nil {
@@ -174,7 +174,7 @@ func generateReadMe(models *Providers) error {
 
 		if text == startLine {
 			_, _ = fmt.Fprintln(buffer, text)
-			err = writeDNSTable(buffer, lines, max)
+			err = writeDNSTable(buffer, lines, maximum)
 			if err != nil {
 				return err
 			}
@@ -208,14 +208,14 @@ func extractTableData(models *Providers) (int, [][]string) {
 
 	items := []string{fmt.Sprintf(readmePattern, "Manual", "manual")}
 
-	var max int
+	var maximum int
 
 	for _, pvd := range models.Providers {
 		item := fmt.Sprintf(readmePattern, strings.ReplaceAll(pvd.Name, "|", "/"), pvd.Code)
 		items = append(items, item)
 
-		if max < len(item) {
-			max = len(item)
+		if maximum < len(item) {
+			maximum = len(item)
 		}
 	}
 
@@ -253,7 +253,7 @@ func extractTableData(models *Providers) (int, [][]string) {
 		lines = append(lines, line)
 	}
 
-	return max, lines
+	return maximum, lines
 }
 
 func writeDNSTable(w io.Writer, lines [][]string, size int) error {

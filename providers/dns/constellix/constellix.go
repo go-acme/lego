@@ -280,7 +280,7 @@ func containsValue(record *internal.Record, value string) bool {
 	})
 }
 
-func backoff(min, max time.Duration, attemptNum int, resp *http.Response) time.Duration {
+func backoff(minimum, maximum time.Duration, attemptNum int, resp *http.Response) time.Duration {
 	if resp != nil {
 		// https://api.dns.constellix.com/v4/docs#section/Using-the-API/Rate-Limiting
 		if resp.StatusCode == http.StatusTooManyRequests {
@@ -292,5 +292,5 @@ func backoff(min, max time.Duration, attemptNum int, resp *http.Response) time.D
 		}
 	}
 
-	return retryablehttp.DefaultBackoff(min, max, attemptNum, resp)
+	return retryablehttp.DefaultBackoff(minimum, maximum, attemptNum, resp)
 }

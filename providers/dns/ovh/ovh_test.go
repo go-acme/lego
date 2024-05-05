@@ -247,9 +247,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
-			defer envTest.RestoreEnv()
-			envTest.ClearEnv()
-
 			config := NewDefaultConfig()
 			config.APIEndpoint = test.apiEndpoint
 			config.ApplicationKey = test.applicationKey

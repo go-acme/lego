@@ -60,7 +60,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvApplicationSecret: "C",
 				EnvConsumerKey:       "D",
 			},
-			expected: "ovh: unknown endpoint 'foobar', consider checking 'Endpoints' list of using an URL",
+			expected: "ovh: unknown endpoint 'foobar', consider checking 'Endpoints' list or using an URL",
 		},
 		{
 			desc: "missing application key",
@@ -145,12 +145,12 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			expected:          "ovh: credentials missing",
 		},
 		{
-			desc:              "missing invalid api endpoint",
+			desc:              "invalid api endpoint",
 			apiEndpoint:       "foobar",
 			applicationKey:    "B",
 			applicationSecret: "C",
 			consumerKey:       "D",
-			expected:          "ovh: unknown endpoint 'foobar', consider checking 'Endpoints' list of using an URL",
+			expected:          "ovh: unknown endpoint 'foobar', consider checking 'Endpoints' list or using an URL",
 		},
 		{
 			desc:              "missing application key",

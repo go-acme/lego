@@ -23,19 +23,23 @@ const (
 
 	EnvEndpoint = envNamespace + "ENDPOINT"
 
-	// Authenticate using application key
-	EnvApplicationKey    = envNamespace + "APPLICATION_KEY"
-	EnvApplicationSecret = envNamespace + "APPLICATION_SECRET"
-	EnvConsumerKey       = envNamespace + "CONSUMER_KEY"
-
-	// Authenticate using OAuth2 client
-	EnvClientId     = envNamespace + "CLIENT_ID"
-	EnvClientSecret = envNamespace + "CLIENT_SECRET"
-
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
 	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
+// Authenticate using application key
+const (
+	EnvApplicationKey    = envNamespace + "APPLICATION_KEY"
+	EnvApplicationSecret = envNamespace + "APPLICATION_SECRET"
+	EnvConsumerKey       = envNamespace + "CONSUMER_KEY"
+)
+
+// Authenticate using OAuth2 client
+const (
+	EnvClientId     = envNamespace + "CLIENT_ID"
+	EnvClientSecret = envNamespace + "CLIENT_SECRET"
 )
 
 // Record a DNS record.
@@ -48,22 +52,21 @@ type Record struct {
 	Zone      string `json:"zone,omitempty"`
 }
 
-type ApplicationConfig struct {
-	ApplicationKey    string
-	ApplicationSecret string
-	ConsumerKey       string
-}
-
 type OAuth2Config struct {
-	ClientId     string
+	ClientID     string
 	ClientSecret string
 }
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	APIEndpoint        string
-	ApplicationConfig  *ApplicationConfig
-	OAuth2Config       *OAuth2Config
+	APIEndpoint string
+
+	ApplicationKey    string
+	ApplicationSecret string
+	ConsumerKey       string
+
+	OAuth2Config *OAuth2Config
+
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
 	TTL                int
@@ -109,7 +112,7 @@ func NewDNSProvider() (*DNSProvider, error) {
 		config := NewDefaultConfig()
 		config.APIEndpoint = values[EnvEndpoint]
 		config.OAuth2Config = &OAuth2Config{
-			ClientId:     values[EnvClientId],
+			ClientID:     values[EnvClientId],
 			ClientSecret: values[EnvClientSecret],
 		}
 
@@ -125,11 +128,9 @@ func NewDNSProvider() (*DNSProvider, error) {
 	config := NewDefaultConfig()
 	config.APIEndpoint = values[EnvEndpoint]
 
-	config.ApplicationConfig = &ApplicationConfig{
-		ApplicationKey:    values[EnvApplicationKey],
-		ApplicationSecret: values[EnvApplicationSecret],
-		ConsumerKey:       values[EnvConsumerKey],
-	}
+	config.ApplicationKey = values[EnvApplicationKey]
+	config.ApplicationSecret = values[EnvApplicationSecret]
+	config.ConsumerKey = values[EnvConsumerKey]
 
 	return NewDNSProviderConfig(config)
 }
@@ -140,20 +141,15 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, errors.New("ovh: the configuration of the DNS provider is nil")
 	}
 
-	apiConfig := config.ApplicationConfig
-	if apiConfig == nil {
-		return nil, errors.New("ovh: the configuration of ApplicationConfig is nil")
-	}
-
-	if config.APIEndpoint == "" || apiConfig.ApplicationKey == "" || apiConfig.ApplicationSecret == "" || apiConfig.ConsumerKey == "" {
+	if config.APIEndpoint == "" || config.ApplicationKey == "" || config.ApplicationSecret == "" || config.ConsumerKey == "" {
 		return nil, errors.New("ovh: credentials missing")
 	}
 
 	client, err := ovh.NewClient(
 		config.APIEndpoint,
-		apiConfig.ApplicationKey,
-		apiConfig.ApplicationSecret,
-		apiConfig.ConsumerKey,
+		config.ApplicationKey,
+		config.ApplicationSecret,
+		config.ConsumerKey,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("ovh: %w", err)
@@ -168,25 +164,23 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}, nil
 }
 
-// NewDNSProviderConfig return a DNSProvider instance configured for OVH.
 func NewDNSProviderOAuth2Config(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("ovh: the configuration of the DNS provider is nil")
 	}
 
-	oauth2Config := config.OAuth2Config
-	if oauth2Config == nil {
+	if config.OAuth2Config == nil {
 		return nil, errors.New("ovh: the configuration of OAuth2Config is nil")
 	}
 
-	if config.APIEndpoint == "" || oauth2Config.ClientId == "" || oauth2Config.ClientSecret == "" {
+	if config.APIEndpoint == "" || config.OAuth2Config.ClientID == "" || config.OAuth2Config.ClientSecret == "" {
 		return nil, errors.New("ovh: credentials missing")
 	}
 
 	client, err := ovh.NewOAuth2Client(
 		config.APIEndpoint,
-		oauth2Config.ClientId,
-		oauth2Config.ClientSecret,
+		config.OAuth2Config.ClientID,
+		config.OAuth2Config.ClientSecret,
 	)
 
 	if err != nil {

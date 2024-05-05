@@ -216,11 +216,9 @@ func TestNewDNSProviderConfig(t *testing.T) {
 
 			config := NewDefaultConfig()
 			config.APIEndpoint = test.apiEndpoint
-			config.ApplicationConfig = &ApplicationConfig{
-				ApplicationKey:    test.applicationKey,
-				ApplicationSecret: test.applicationSecret,
-				ConsumerKey:       test.consumerKey,
-			}
+			config.ApplicationKey = test.applicationKey
+			config.ApplicationSecret = test.applicationSecret
+			config.ConsumerKey = test.consumerKey
 
 			p, err := NewDNSProviderConfig(config)
 
@@ -241,14 +239,14 @@ func TestNewDNSProviderOAuth2Config(t *testing.T) {
 	testCases := []struct {
 		desc         string
 		apiEndpoint  string
-		clientId     string
+		clientID     string
 		clientSecret string
 		expected     string
 	}{
 		{
 			desc:         "success",
 			apiEndpoint:  "ovh-eu",
-			clientId:     "B",
+			clientID:     "B",
 			clientSecret: "C",
 		},
 		{
@@ -258,28 +256,28 @@ func TestNewDNSProviderOAuth2Config(t *testing.T) {
 		{
 			desc:         "missing api endpoint",
 			apiEndpoint:  "",
-			clientId:     "B",
+			clientID:     "B",
 			clientSecret: "C",
 			expected:     "ovh: credentials missing",
 		},
 		{
 			desc:         "invalid api endpoint",
 			apiEndpoint:  "foobar",
-			clientId:     "B",
+			clientID:     "B",
 			clientSecret: "C",
 			expected:     "ovh: unknown endpoint 'foobar', consider checking 'Endpoints' list or using an URL",
 		},
 		{
 			desc:         "missing client id",
 			apiEndpoint:  "ovh-eu",
-			clientId:     "",
+			clientID:     "",
 			clientSecret: "C",
 			expected:     "ovh: credentials missing",
 		},
 		{
 			desc:         "missing client secret",
 			apiEndpoint:  "ovh-eu",
-			clientId:     "B",
+			clientID:     "B",
 			clientSecret: "",
 			expected:     "ovh: credentials missing",
 		},
@@ -293,7 +291,7 @@ func TestNewDNSProviderOAuth2Config(t *testing.T) {
 			config := NewDefaultConfig()
 			config.APIEndpoint = test.apiEndpoint
 			config.OAuth2Config = &OAuth2Config{
-				ClientId:     test.clientId,
+				ClientID:     test.clientID,
 				ClientSecret: test.clientSecret,
 			}
 

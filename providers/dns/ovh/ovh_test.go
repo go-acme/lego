@@ -15,7 +15,7 @@ var envTest = tester.NewEnvTest(
 	EnvApplicationKey,
 	EnvApplicationSecret,
 	EnvConsumerKey,
-	EnvClientId,
+	EnvClientID,
 	EnvClientSecret).
 	WithDomain(envDomain)
 
@@ -38,7 +38,7 @@ func TestNewDNSProvider(t *testing.T) {
 			desc: "success client id",
 			envVars: map[string]string{
 				EnvEndpoint:     "ovh-eu",
-				EnvClientId:     "E",
+				EnvClientID:     "E",
 				EnvClientSecret: "F",
 			},
 		},
@@ -70,7 +70,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvApplicationSecret: "C",
 				EnvConsumerKey:       "D",
 			},
-			expected: "ovh: unknown endpoint 'foobar', consider checking 'Endpoints' list or using an URL",
+			expected: "ovh: new client: unknown endpoint 'foobar', consider checking 'Endpoints' list or using an URL",
 		},
 		{
 			desc: "missing application key",
@@ -106,7 +106,7 @@ func TestNewDNSProvider(t *testing.T) {
 			desc: "missing client secret",
 			envVars: map[string]string{
 				EnvEndpoint:     "ovh-eu",
-				EnvClientId:     "A",
+				EnvClientID:     "A",
 				EnvClientSecret: "",
 			},
 			expected: "ovh: some credentials information are missing: OVH_CLIENT_SECRET",
@@ -118,7 +118,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvApplicationKey:    "B",
 				EnvApplicationSecret: "C",
 				EnvConsumerKey:       "D",
-				EnvClientId:          "E",
+				EnvClientID:          "E",
 				EnvClientSecret:      "F",
 			},
 			expected: "ovh: set OVH_APPLICATION_KEY or OVH_CLIENT_ID but not both",
@@ -154,6 +154,8 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		applicationKey    string
 		applicationSecret string
 		consumerKey       string
+		clientID          string
+		clientSecret      string
 		expected          string
 	}{
 		{
@@ -168,7 +170,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			expected: "ovh: credentials missing",
 		},
 		{
-			desc:              "missing api endpoint",
+			desc:              "application key: missing api endpoint",
 			apiEndpoint:       "",
 			applicationKey:    "B",
 			applicationSecret: "C",
@@ -176,15 +178,15 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			expected:          "ovh: credentials missing",
 		},
 		{
-			desc:              "invalid api endpoint",
+			desc:              "application key: invalid api endpoint",
 			apiEndpoint:       "foobar",
 			applicationKey:    "B",
 			applicationSecret: "C",
 			consumerKey:       "D",
-			expected:          "ovh: unknown endpoint 'foobar', consider checking 'Endpoints' list or using an URL",
+			expected:          "ovh: new client: unknown endpoint 'foobar', consider checking 'Endpoints' list or using an URL",
 		},
 		{
-			desc:              "missing application key",
+			desc:              "application key: missing application key",
 			apiEndpoint:       "ovh-eu",
 			applicationKey:    "",
 			applicationSecret: "C",
@@ -192,7 +194,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			expected:          "ovh: credentials missing",
 		},
 		{
-			desc:              "missing application secret",
+			desc:              "application key: missing application secret",
 			apiEndpoint:       "ovh-eu",
 			applicationKey:    "B",
 			applicationSecret: "",
@@ -200,82 +202,42 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			expected:          "ovh: credentials missing",
 		},
 		{
-			desc:              "missing consumer key",
+			desc:              "application key: missing consumer key",
 			apiEndpoint:       "ovh-eu",
 			applicationKey:    "B",
 			applicationSecret: "C",
 			consumerKey:       "",
 			expected:          "ovh: credentials missing",
 		},
-	}
-
-	for _, test := range testCases {
-		t.Run(test.desc, func(t *testing.T) {
-			defer envTest.RestoreEnv()
-			envTest.ClearEnv()
-
-			config := NewDefaultConfig()
-			config.APIEndpoint = test.apiEndpoint
-			config.ApplicationKey = test.applicationKey
-			config.ApplicationSecret = test.applicationSecret
-			config.ConsumerKey = test.consumerKey
-
-			p, err := NewDNSProviderConfig(config)
-
-			if test.expected == "" {
-				require.NoError(t, err)
-				require.NotNil(t, p)
-				require.NotNil(t, p.config)
-				require.NotNil(t, p.client)
-				require.NotNil(t, p.recordIDs)
-			} else {
-				require.EqualError(t, err, test.expected)
-			}
-		})
-	}
-}
-
-func TestNewDNSProviderOAuth2Config(t *testing.T) {
-	testCases := []struct {
-		desc         string
-		apiEndpoint  string
-		clientID     string
-		clientSecret string
-		expected     string
-	}{
 		{
-			desc:         "success",
+			desc:         "oauth2: success",
 			apiEndpoint:  "ovh-eu",
 			clientID:     "B",
 			clientSecret: "C",
 		},
 		{
-			desc:     "missing credentials",
-			expected: "ovh: credentials missing",
-		},
-		{
-			desc:         "missing api endpoint",
+			desc:         "oauth2: missing api endpoint",
 			apiEndpoint:  "",
 			clientID:     "B",
 			clientSecret: "C",
 			expected:     "ovh: credentials missing",
 		},
 		{
-			desc:         "invalid api endpoint",
+			desc:         "oauth2: invalid api endpoint",
 			apiEndpoint:  "foobar",
 			clientID:     "B",
 			clientSecret: "C",
-			expected:     "ovh: unknown endpoint 'foobar', consider checking 'Endpoints' list or using an URL",
+			expected:     "ovh: new OAuth2 client: unknown endpoint 'foobar', consider checking 'Endpoints' list or using an URL",
 		},
 		{
-			desc:         "missing client id",
+			desc:         "oauth2: missing client id",
 			apiEndpoint:  "ovh-eu",
 			clientID:     "",
 			clientSecret: "C",
 			expected:     "ovh: credentials missing",
 		},
 		{
-			desc:         "missing client secret",
+			desc:         "oauth2: missing client secret",
 			apiEndpoint:  "ovh-eu",
 			clientID:     "B",
 			clientSecret: "",
@@ -290,12 +252,18 @@ func TestNewDNSProviderOAuth2Config(t *testing.T) {
 
 			config := NewDefaultConfig()
 			config.APIEndpoint = test.apiEndpoint
-			config.OAuth2Config = &OAuth2Config{
-				ClientID:     test.clientID,
-				ClientSecret: test.clientSecret,
+			config.ApplicationKey = test.applicationKey
+			config.ApplicationSecret = test.applicationSecret
+			config.ConsumerKey = test.consumerKey
+
+			if test.clientID != "" || test.clientSecret != "" {
+				config.OAuth2Config = &OAuth2Config{
+					ClientID:     test.clientID,
+					ClientSecret: test.clientSecret,
+				}
 			}
 
-			p, err := NewDNSProviderOAuth2Config(config)
+			p, err := NewDNSProviderConfig(config)
 
 			if test.expected == "" {
 				require.NoError(t, err)

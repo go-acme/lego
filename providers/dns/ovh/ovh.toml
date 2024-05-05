@@ -34,7 +34,7 @@ When requesting the consumer key, the following configuration can be used to def
 }
 ```
 
-## OAuth2 client credentials
+## OAuth2 Client Credentials
 
 Another method for authentication is by using OAuth2 client credentials.
 
@@ -48,7 +48,7 @@ Following IAM policies need to be authorized for the affected domain :
 
 ## Important note
 
-Either authentication methods can be used **but** not both at the same time and doing so will result in an error.
+Both authentication methods cannot be used at the same time.
 '''
 
 [Configuration]
@@ -57,10 +57,8 @@ Either authentication methods can be used **but** not both at the same time and 
     OVH_APPLICATION_KEY = "Application key"
     OVH_APPLICATION_SECRET = "Application secret"
     OVH_CONSUMER_KEY = "Consumer key"
-  [Configuration.OAuth2Client]
-    OVH_ENDPOINT = "Endpoint URL (ovh-eu or ovh-ca)"
-    OVH_CLIENT_ID = "Client ID"
-    OVH_CLIENT_SECRET = "Client secret"
+    OVH_CLIENT_ID = "Client ID (OAuth2)"
+    OVH_CLIENT_SECRET = "Client secret (OAuth2)"
   [Configuration.Additional]
     OVH_POLLING_INTERVAL = "Time between DNS propagation check"
     OVH_PROPAGATION_TIMEOUT = "Maximum waiting time for DNS propagation"

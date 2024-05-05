@@ -98,7 +98,7 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables:
 // OVH_ENDPOINT (must be either "ovh-eu" or "ovh-ca"), OVH_APPLICATION_KEY, OVH_APPLICATION_SECRET, OVH_CONSUMER_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	config, err := loadConfig()
+	config, err := createConfigFromEnvVars()
 	if err != nil {
 		return nil, fmt.Errorf("ovh: %w", err)
 	}
@@ -214,14 +214,17 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-func loadConfig() (*Config, error) {
-	if err := checkAuthMethods(); err != nil {
-		return nil, err
+func createConfigFromEnvVars() (*Config, error) {
+	firstAppKeyEnvVar := findFirstValuedEnvVar(EnvApplicationKey, EnvApplicationSecret, EnvConsumerKey)
+	firstOAuth2EnvVar := findFirstValuedEnvVar(EnvClientID, EnvClientSecret)
+
+	if firstAppKeyEnvVar != "" && firstOAuth2EnvVar != "" {
+		return nil, fmt.Errorf("can't use both %s and %s at the same time", firstAppKeyEnvVar, firstOAuth2EnvVar)
 	}
 
 	config := NewDefaultConfig()
 
-	if hasOAuth2Config() {
+	if firstOAuth2EnvVar != "" {
 		values, err := env.Get(EnvEndpoint, EnvClientID, EnvClientSecret)
 		if err != nil {
 			return nil, err
@@ -250,17 +253,6 @@ func loadConfig() (*Config, error) {
 	return config, nil
 }
 
-func checkAuthMethods() error {
-	appKeyEnvVar := findFirstValuedEnvVar(EnvApplicationKey, EnvApplicationSecret, EnvConsumerKey)
-	oauth2EnvVar := findFirstValuedEnvVar(EnvClientID, EnvClientSecret)
-
-	if appKeyEnvVar != "" && oauth2EnvVar != "" {
-		return fmt.Errorf("can't use both %s and %s at the same time", appKeyEnvVar, oauth2EnvVar)
-	}
-
-	return nil
-}
-
 func findFirstValuedEnvVar(envVars ...string) string {
 	for _, envVar := range envVars {
 		if env.GetOrFile(envVar) != "" {
@@ -269,10 +261,6 @@ func findFirstValuedEnvVar(envVars ...string) string {
 	}
 
 	return ""
-}
-
-func hasOAuth2Config() bool {
-	return env.GetOrFile(EnvClientID) != "" || env.GetOrFile(EnvClientSecret) != ""
 }
 
 func newClient(config *Config) (*ovh.Client, error) {

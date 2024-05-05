@@ -2101,6 +2101,8 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln(`Credentials:`)
 		ew.writeln(`	- "OVH_APPLICATION_KEY":	Application key`)
 		ew.writeln(`	- "OVH_APPLICATION_SECRET":	Application secret`)
+		ew.writeln(`	- "OVH_CLIENT_ID":	Client ID (OAuth2)`)
+		ew.writeln(`	- "OVH_CLIENT_SECRET":	Client secret (OAuth2)`)
 		ew.writeln(`	- "OVH_CONSUMER_KEY":	Consumer key`)
 		ew.writeln(`	- "OVH_ENDPOINT":	Endpoint URL (ovh-eu or ovh-ca)`)
 		ew.writeln()

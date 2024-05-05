@@ -42,6 +42,8 @@ lego --email you@example.com --dns ovh --domains my.example.org run
 |-----------------------|-------------|
 | `OVH_APPLICATION_KEY` | Application key |
 | `OVH_APPLICATION_SECRET` | Application secret |
+| `OVH_CLIENT_ID` | Client ID (OAuth2) |
+| `OVH_CLIENT_SECRET` | Client secret (OAuth2) |
 | `OVH_CONSUMER_KEY` | Consumer key |
 | `OVH_ENDPOINT` | Endpoint URL (ovh-eu or ovh-ca) |
 
@@ -81,6 +83,22 @@ When requesting the consumer key, the following configuration can be used to def
   ]
 }
 ```
+
+## OAuth2 Client Credentials
+
+Another method for authentication is by using OAuth2 client credentials.
+
+An IAM policy and service account can be created by following the [OVH guide](https://help.ovhcloud.com/csm/en-manage-service-account?id=kb_article_view&sysparm_article=KB0059343).
+
+Following IAM policies need to be authorized for the affected domain :
+
+* dnsZone:apiovh:record/create
+* dnsZone:apiovh:record/delete
+* dnsZone:apiovh:refresh
+
+## Important note
+
+Both authentication methods cannot be used at the same time.
 
 
 

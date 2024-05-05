@@ -14,7 +14,9 @@ var envTest = tester.NewEnvTest(
 	EnvEndpoint,
 	EnvApplicationKey,
 	EnvApplicationSecret,
-	EnvConsumerKey).
+	EnvConsumerKey,
+	EnvClientId,
+	EnvClientSecret).
 	WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
@@ -24,12 +26,20 @@ func TestNewDNSProvider(t *testing.T) {
 		expected string
 	}{
 		{
-			desc: "success",
+			desc: "success application key",
 			envVars: map[string]string{
 				EnvEndpoint:          "ovh-eu",
 				EnvApplicationKey:    "B",
 				EnvApplicationSecret: "C",
 				EnvConsumerKey:       "D",
+			},
+		},
+		{
+			desc: "success client id",
+			envVars: map[string]string{
+				EnvEndpoint:     "ovh-eu",
+				EnvClientId:     "E",
+				EnvClientSecret: "F",
 			},
 		},
 		{
@@ -91,6 +101,27 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvConsumerKey:       "",
 			},
 			expected: "ovh: some credentials information are missing: OVH_CONSUMER_KEY",
+		},
+		{
+			desc: "missing client secret",
+			envVars: map[string]string{
+				EnvEndpoint:     "ovh-eu",
+				EnvClientId:     "A",
+				EnvClientSecret: "",
+			},
+			expected: "ovh: some credentials information are missing: OVH_CLIENT_SECRET",
+		},
+		{
+			desc: "fail both auth methods set",
+			envVars: map[string]string{
+				EnvEndpoint:          "ovh-eu",
+				EnvApplicationKey:    "B",
+				EnvApplicationSecret: "C",
+				EnvConsumerKey:       "D",
+				EnvClientId:          "E",
+				EnvClientSecret:      "F",
+			},
+			expected: "ovh: set OVH_APPLICATION_KEY or OVH_CLIENT_ID but not both",
 		},
 	}
 
@@ -180,13 +211,93 @@ func TestNewDNSProviderConfig(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
 			config := NewDefaultConfig()
 			config.APIEndpoint = test.apiEndpoint
-			config.ApplicationKey = test.applicationKey
-			config.ApplicationSecret = test.applicationSecret
-			config.ConsumerKey = test.consumerKey
+			config.ApplicationConfig = &ApplicationConfig{
+				ApplicationKey:    test.applicationKey,
+				ApplicationSecret: test.applicationSecret,
+				ConsumerKey:       test.consumerKey,
+			}
 
 			p, err := NewDNSProviderConfig(config)
+
+			if test.expected == "" {
+				require.NoError(t, err)
+				require.NotNil(t, p)
+				require.NotNil(t, p.config)
+				require.NotNil(t, p.client)
+				require.NotNil(t, p.recordIDs)
+			} else {
+				require.EqualError(t, err, test.expected)
+			}
+		})
+	}
+}
+
+func TestNewDNSProviderOAuth2Config(t *testing.T) {
+	testCases := []struct {
+		desc         string
+		apiEndpoint  string
+		clientId     string
+		clientSecret string
+		expected     string
+	}{
+		{
+			desc:         "success",
+			apiEndpoint:  "ovh-eu",
+			clientId:     "B",
+			clientSecret: "C",
+		},
+		{
+			desc:     "missing credentials",
+			expected: "ovh: credentials missing",
+		},
+		{
+			desc:         "missing api endpoint",
+			apiEndpoint:  "",
+			clientId:     "B",
+			clientSecret: "C",
+			expected:     "ovh: credentials missing",
+		},
+		{
+			desc:         "invalid api endpoint",
+			apiEndpoint:  "foobar",
+			clientId:     "B",
+			clientSecret: "C",
+			expected:     "ovh: unknown endpoint 'foobar', consider checking 'Endpoints' list or using an URL",
+		},
+		{
+			desc:         "missing client id",
+			apiEndpoint:  "ovh-eu",
+			clientId:     "",
+			clientSecret: "C",
+			expected:     "ovh: credentials missing",
+		},
+		{
+			desc:         "missing client secret",
+			apiEndpoint:  "ovh-eu",
+			clientId:     "B",
+			clientSecret: "",
+			expected:     "ovh: credentials missing",
+		},
+	}
+
+	for _, test := range testCases {
+		t.Run(test.desc, func(t *testing.T) {
+			defer envTest.RestoreEnv()
+			envTest.ClearEnv()
+
+			config := NewDefaultConfig()
+			config.APIEndpoint = test.apiEndpoint
+			config.OAuth2Config = &OAuth2Config{
+				ClientId:     test.clientId,
+				ClientSecret: test.clientSecret,
+			}
+
+			p, err := NewDNSProviderOAuth2Config(config)
 
 			if test.expected == "" {
 				require.NoError(t, err)

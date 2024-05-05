@@ -215,8 +215,8 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 }
 
 func loadConfig() (*Config, error) {
-	if hasApplicationKeyConfig() && hasOAuth2Config() {
-		return nil, fmt.Errorf("set %s or %s but not both", EnvApplicationKey, EnvClientID)
+	if err := checkAuthMethods(); err != nil {
+		return nil, err
 	}
 
 	config := NewDefaultConfig()
@@ -250,12 +250,29 @@ func loadConfig() (*Config, error) {
 	return config, nil
 }
 
-func hasApplicationKeyConfig() bool {
-	return env.GetOrFile(EnvApplicationKey) != ""
+func checkAuthMethods() error {
+	appKeyEnvVar := findFirstValuedEnvVar(EnvApplicationKey, EnvApplicationSecret, EnvConsumerKey)
+	oauth2EnvVar := findFirstValuedEnvVar(EnvClientID, EnvClientSecret)
+
+	if appKeyEnvVar != "" && oauth2EnvVar != "" {
+		return fmt.Errorf("can't use both %s and %s at the same time", appKeyEnvVar, oauth2EnvVar)
+	}
+
+	return nil
+}
+
+func findFirstValuedEnvVar(envVars ...string) string {
+	for _, envVar := range envVars {
+		if env.GetOrFile(envVar) != "" {
+			return envVar
+		}
+	}
+
+	return ""
 }
 
 func hasOAuth2Config() bool {
-	return env.GetOrFile(EnvClientID) != ""
+	return env.GetOrFile(EnvClientID) != "" || env.GetOrFile(EnvClientSecret) != ""
 }
 
 func newClient(config *Config) (*ovh.Client, error) {
@@ -268,7 +285,7 @@ func newClient(config *Config) (*ovh.Client, error) {
 
 func newClientApplicationKey(config *Config) (*ovh.Client, error) {
 	if config.APIEndpoint == "" || config.ApplicationKey == "" || config.ApplicationSecret == "" || config.ConsumerKey == "" {
-		return nil, errors.New("credentials missing")
+		return nil, errors.New("credentials are missing")
 	}
 
 	client, err := ovh.NewClient(
@@ -286,7 +303,7 @@ func newClientApplicationKey(config *Config) (*ovh.Client, error) {
 
 func newClientOAuth2(config *Config) (*ovh.Client, error) {
 	if config.APIEndpoint == "" || config.OAuth2Config.ClientID == "" || config.OAuth2Config.ClientSecret == "" {
-		return nil, errors.New("credentials missing")
+		return nil, errors.New("credentials are missing")
 	}
 
 	client, err := ovh.NewOAuth2Client(

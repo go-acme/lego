@@ -121,7 +121,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvClientID:          "E",
 				EnvClientSecret:      "F",
 			},
-			expected: "ovh: set OVH_APPLICATION_KEY or OVH_CLIENT_ID but not both",
+			expected: "ovh: can't use both OVH_APPLICATION_KEY and OVH_CLIENT_ID at the same time",
 		},
 	}
 
@@ -167,7 +167,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		},
 		{
 			desc:     "missing credentials",
-			expected: "ovh: credentials missing",
+			expected: "ovh: credentials are missing",
 		},
 		{
 			desc:              "application key: missing api endpoint",
@@ -175,7 +175,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			applicationKey:    "B",
 			applicationSecret: "C",
 			consumerKey:       "D",
-			expected:          "ovh: credentials missing",
+			expected:          "ovh: credentials are missing",
 		},
 		{
 			desc:              "application key: invalid api endpoint",
@@ -191,7 +191,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			applicationKey:    "",
 			applicationSecret: "C",
 			consumerKey:       "D",
-			expected:          "ovh: credentials missing",
+			expected:          "ovh: credentials are missing",
 		},
 		{
 			desc:              "application key: missing application secret",
@@ -199,7 +199,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			applicationKey:    "B",
 			applicationSecret: "",
 			consumerKey:       "D",
-			expected:          "ovh: credentials missing",
+			expected:          "ovh: credentials are missing",
 		},
 		{
 			desc:              "application key: missing consumer key",
@@ -207,7 +207,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			applicationKey:    "B",
 			applicationSecret: "C",
 			consumerKey:       "",
-			expected:          "ovh: credentials missing",
+			expected:          "ovh: credentials are missing",
 		},
 		{
 			desc:         "oauth2: success",
@@ -220,7 +220,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			apiEndpoint:  "",
 			clientID:     "B",
 			clientSecret: "C",
-			expected:     "ovh: credentials missing",
+			expected:     "ovh: credentials are missing",
 		},
 		{
 			desc:         "oauth2: invalid api endpoint",
@@ -234,16 +234,20 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			apiEndpoint:  "ovh-eu",
 			clientID:     "",
 			clientSecret: "C",
-			expected:     "ovh: credentials missing",
+			expected:     "ovh: credentials are missing",
 		},
 		{
 			desc:         "oauth2: missing client secret",
 			apiEndpoint:  "ovh-eu",
 			clientID:     "B",
 			clientSecret: "",
-			expected:     "ovh: credentials missing",
+			expected:     "ovh: credentials are missing",
 		},
 	}
+
+	// The OVH client use the same env vars than lego, so it requires to clean them.
+	defer envTest.RestoreEnv()
+	envTest.ClearEnv()
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {

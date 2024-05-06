@@ -59,7 +59,7 @@ require (
 	github.com/nrdcg/porkbun v0.3.0
 	github.com/nzdjb/go-metaname v1.0.0
 	github.com/oracle/oci-go-sdk/v65 v65.63.1
-	github.com/ovh/go-ovh v1.4.3
+	github.com/ovh/go-ovh v1.5.1
 	github.com/pquerna/otp v1.4.0
 	github.com/rainycape/memcache v0.0.0-20150622160815-1031fa0ce2f2
 	github.com/sacloud/api-client-go v0.2.10

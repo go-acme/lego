@@ -26,9 +26,18 @@ Configuration for [OVH](https://www.ovh.com/).
 Here is an example bash command using the OVH provider:
 
 ```bash
+# Application Key authentication:
+
 OVH_APPLICATION_KEY=1234567898765432 \
 OVH_APPLICATION_SECRET=b9841238feb177a84330febba8a832089 \
 OVH_CONSUMER_KEY=256vfsd347245sdfg \
+OVH_ENDPOINT=ovh-eu \
+lego --email you@example.com --dns ovh --domains my.example.org run
+
+# Or OAuth2:
+
+OVH_CLIENT_ID=yyy \
+OVH_CLIENT_SECRET=xxx \
 OVH_ENDPOINT=ovh-eu \
 lego --email you@example.com --dns ovh --domains my.example.org run
 ```
@@ -40,9 +49,11 @@ lego --email you@example.com --dns ovh --domains my.example.org run
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
-| `OVH_APPLICATION_KEY` | Application key |
-| `OVH_APPLICATION_SECRET` | Application secret |
-| `OVH_CONSUMER_KEY` | Consumer key |
+| `OVH_APPLICATION_KEY` | Application key (Application Key authentication) |
+| `OVH_APPLICATION_SECRET` | Application secret (Application Key authentication) |
+| `OVH_CLIENT_ID` | Client ID (OAuth2) |
+| `OVH_CLIENT_SECRET` | Client secret (OAuth2) |
+| `OVH_CONSUMER_KEY` | Consumer key (Application Key authentication) |
 | `OVH_ENDPOINT` | Endpoint URL (ovh-eu or ovh-ca) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
@@ -81,6 +92,22 @@ When requesting the consumer key, the following configuration can be used to def
   ]
 }
 ```
+
+## OAuth2 Client Credentials
+
+Another method for authentication is by using OAuth2 client credentials.
+
+An IAM policy and service account can be created by following the [OVH guide](https://help.ovhcloud.com/csm/en-manage-service-account?id=kb_article_view&sysparm_article=KB0059343).
+
+Following IAM policies need to be authorized for the affected domain:
+
+* dnsZone:apiovh:record/create
+* dnsZone:apiovh:record/delete
+* dnsZone:apiovh:refresh
+
+## Important Note
+
+Both authentication methods cannot be used at the same time.
 
 
 

@@ -74,6 +74,10 @@ type Config struct {
 	HTTPClient         *http.Client
 }
 
+func (c *Config) hasAppKeyAuth() bool {
+	return c.ApplicationKey != "" || c.ApplicationSecret != "" || c.ConsumerKey != ""
+}
+
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
@@ -110,6 +114,10 @@ func NewDNSProvider() (*DNSProvider, error) {
 func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if config == nil {
 		return nil, errors.New("ovh: the configuration of the DNS provider is nil")
+	}
+
+	if config.OAuth2Config != nil && config.hasAppKeyAuth() {
+		return nil, errors.New("ovh: can't use both authentication systems (ApplicationKey and OAuth2)")
 	}
 
 	client, err := newClient(config)

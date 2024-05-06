@@ -243,6 +243,16 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			clientSecret: "",
 			expected:     "ovh: credentials are missing",
 		},
+		{
+			desc:              "mixed auth",
+			apiEndpoint:       "ovh-eu",
+			applicationKey:    "B",
+			applicationSecret: "C",
+			consumerKey:       "D",
+			clientID:          "B",
+			clientSecret:      "C",
+			expected:          "ovh: can't use both authentication systems (ApplicationKey and OAuth2)",
+		},
 	}
 
 	// The OVH client use the same env vars than lego, so it requires to clean them.

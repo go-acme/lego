@@ -1,0 +1,74 @@
+[
+  {
+    "authCode": {
+      "expires": "2024-06-04T15:11:59.964Z",
+      "value": "string"
+    },
+    "authCode2": {
+      "expires": "2024-06-04T15:11:59.964Z"
+    },
+    "connected": true,
+    "deleted": true,
+    "domain": "string",
+    "domainId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "handles": {
+      "adminC": {
+        "current": {
+          "handleFields": [
+            {
+              "name": "string",
+              "value": "jnoFDyCBDHC&70Zp&2JMErZBq(),fnsYIvn_bOed5e_.vmsrZ3-IH )Ms)Xc13KDWy2WMH((mJ.-uY_NEBu/3MO8)3"
+            }
+          ],
+          "handleRef": "string"
+        },
+        "desired": {
+          "handleFields": [
+            {
+              "name": "string",
+              "value": "1odACmUIyjG Xa-uEX7R+f4,ykqpZ71FFLzkl8B87/+I@s0bVMxA"
+            }
+          ],
+          "handleRef": "string"
+        }
+      },
+      "ownerC": {
+        "current": {
+          "handleFields": [
+            {
+              "name": "string",
+              "value": "oklq/PU.yBrSFq) .Qx_Uqb8NBZnwA(9jk@x4w Dp6lLd&+a-A.oG5sHw(jcRSOyv0"
+            }
+          ],
+          "handleRef": "string"
+        },
+        "desired": {
+          "handleFields": [
+            {
+              "name": "string",
+              "value": "iwt.q,vygqXwZ0_HK+j3kuw/,A,Z)L1Jg&fNgIxWdBc1xnGj(pjj8YQX1DG 9M1/_Vaam,"
+            }
+          ],
+          "handleRef": "string"
+        }
+      }
+    },
+    "nameservers": [
+      "string"
+    ],
+    "processes": [
+      {
+        "error": "string",
+        "lastUpdate": "2024-06-04T15:11:59.973Z",
+        "processType": "UNSPECIFIED",
+        "state": "UNSPECIFIED",
+        "status": "string",
+        "statusCode": "string",
+        "transactionId": "string"
+      }
+    ],
+    "projectId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "transferInAuthCode": "string",
+    "usesDefaultNameserver": true
+  }
+]

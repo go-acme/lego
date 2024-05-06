@@ -26,7 +26,7 @@ func TestNewDNSProvider(t *testing.T) {
 		expected string
 	}{
 		{
-			desc: "success application key",
+			desc: "application key: success",
 			envVars: map[string]string{
 				EnvEndpoint:          "ovh-eu",
 				EnvApplicationKey:    "B",
@@ -35,25 +35,7 @@ func TestNewDNSProvider(t *testing.T) {
 			},
 		},
 		{
-			desc: "success client id",
-			envVars: map[string]string{
-				EnvEndpoint:     "ovh-eu",
-				EnvClientID:     "E",
-				EnvClientSecret: "F",
-			},
-		},
-		{
-			desc: "missing credentials",
-			envVars: map[string]string{
-				EnvEndpoint:          "",
-				EnvApplicationKey:    "",
-				EnvApplicationSecret: "",
-				EnvConsumerKey:       "",
-			},
-			expected: "ovh: some credentials information are missing: OVH_ENDPOINT,OVH_APPLICATION_KEY,OVH_APPLICATION_SECRET,OVH_CONSUMER_KEY",
-		},
-		{
-			desc: "missing endpoint",
+			desc: "application key: missing endpoint",
 			envVars: map[string]string{
 				EnvEndpoint:          "",
 				EnvApplicationKey:    "B",
@@ -63,7 +45,7 @@ func TestNewDNSProvider(t *testing.T) {
 			expected: "ovh: some credentials information are missing: OVH_ENDPOINT",
 		},
 		{
-			desc: "missing invalid endpoint",
+			desc: "application key: missing invalid endpoint",
 			envVars: map[string]string{
 				EnvEndpoint:          "foobar",
 				EnvApplicationKey:    "B",
@@ -73,7 +55,7 @@ func TestNewDNSProvider(t *testing.T) {
 			expected: "ovh: new client: unknown endpoint 'foobar', consider checking 'Endpoints' list or using an URL",
 		},
 		{
-			desc: "missing application key",
+			desc: "application key: missing application key",
 			envVars: map[string]string{
 				EnvEndpoint:          "ovh-eu",
 				EnvApplicationKey:    "",
@@ -83,7 +65,7 @@ func TestNewDNSProvider(t *testing.T) {
 			expected: "ovh: some credentials information are missing: OVH_APPLICATION_KEY",
 		},
 		{
-			desc: "missing application secret",
+			desc: "application key: missing application secret",
 			envVars: map[string]string{
 				EnvEndpoint:          "ovh-eu",
 				EnvApplicationKey:    "B",
@@ -93,7 +75,7 @@ func TestNewDNSProvider(t *testing.T) {
 			expected: "ovh: some credentials information are missing: OVH_APPLICATION_SECRET",
 		},
 		{
-			desc: "missing consumer key",
+			desc: "application key: missing consumer key",
 			envVars: map[string]string{
 				EnvEndpoint:          "ovh-eu",
 				EnvApplicationKey:    "B",
@@ -103,16 +85,45 @@ func TestNewDNSProvider(t *testing.T) {
 			expected: "ovh: some credentials information are missing: OVH_CONSUMER_KEY",
 		},
 		{
-			desc: "missing client secret",
+			desc: "oauth2: success",
 			envVars: map[string]string{
 				EnvEndpoint:     "ovh-eu",
-				EnvClientID:     "A",
+				EnvClientID:     "E",
+				EnvClientSecret: "F",
+			},
+		},
+		{
+			desc: "oauth2: missing client secret",
+			envVars: map[string]string{
+				EnvEndpoint:     "ovh-eu",
+				EnvClientID:     "E",
 				EnvClientSecret: "",
 			},
 			expected: "ovh: some credentials information are missing: OVH_CLIENT_SECRET",
 		},
 		{
-			desc: "fail both auth methods set",
+			desc: "oauth2: missing client ID",
+			envVars: map[string]string{
+				EnvEndpoint:     "ovh-eu",
+				EnvClientID:     "",
+				EnvClientSecret: "F",
+			},
+			expected: "ovh: some credentials information are missing: OVH_CLIENT_ID",
+		},
+		{
+			desc: "missing credentials",
+			envVars: map[string]string{
+				EnvEndpoint:          "",
+				EnvApplicationKey:    "",
+				EnvApplicationSecret: "",
+				EnvConsumerKey:       "",
+				EnvClientID:          "",
+				EnvClientSecret:      "",
+			},
+			expected: "ovh: some credentials information are missing: OVH_ENDPOINT,OVH_APPLICATION_KEY,OVH_APPLICATION_SECRET,OVH_CONSUMER_KEY",
+		},
+		{
+			desc: "mixed auth",
 			envVars: map[string]string{
 				EnvEndpoint:          "ovh-eu",
 				EnvApplicationKey:    "B",
@@ -159,15 +170,11 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		expected          string
 	}{
 		{
-			desc:              "success",
+			desc:              "application key: success",
 			apiEndpoint:       "ovh-eu",
 			applicationKey:    "B",
 			applicationSecret: "C",
 			consumerKey:       "D",
-		},
-		{
-			desc:     "missing credentials",
-			expected: "ovh: credentials are missing",
 		},
 		{
 			desc:              "application key: missing api endpoint",
@@ -242,6 +249,10 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			clientID:     "B",
 			clientSecret: "",
 			expected:     "ovh: credentials are missing",
+		},
+		{
+			desc:     "missing credentials",
+			expected: "ovh: credentials are missing",
 		},
 		{
 			desc:              "mixed auth",

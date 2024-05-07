@@ -127,38 +127,16 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("exoscale: zone %q not found", zoneName)
 	}
 
-	recordID, err := d.findExistingRecordID(deref(zone.ID), recordName)
-	if err != nil {
-		return fmt.Errorf("exoscale: %w", err)
-	}
-
-	if recordID == "" {
-		record := egoscale.DNSDomainRecord{
-			Name:    pointer(recordName),
-			TTL:     pointer(d.config.TTL),
-			Content: pointer(info.Value),
-			Type:    pointer("TXT"),
-		}
-
-		_, err = d.client.CreateDNSDomainRecord(ctx, d.apiZone, deref(zone.ID), &record)
-		if err != nil {
-			return fmt.Errorf("exoscale: error while creating DNS record: %w", err)
-		}
-
-		return nil
-	}
-
 	record := egoscale.DNSDomainRecord{
-		ID:      pointer(recordID),
 		Name:    pointer(recordName),
 		TTL:     pointer(d.config.TTL),
 		Content: pointer(info.Value),
 		Type:    pointer("TXT"),
 	}
 
-	err = d.client.UpdateDNSDomainRecord(ctx, d.apiZone, deref(zone.ID), &record)
+	_, err = d.client.CreateDNSDomainRecord(ctx, d.apiZone, deref(zone.ID), &record)
 	if err != nil {
-		return fmt.Errorf("exoscale: error while updating DNS record: %w", err)
+		return fmt.Errorf("exoscale: error while creating DNS record: %w", err)
 	}
 
 	return nil
@@ -182,7 +160,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("exoscale: zone %q not found", zoneName)
 	}
 
-	recordID, err := d.findExistingRecordID(deref(zone.ID), recordName)
+	recordID, err := d.findExistingRecordID(deref(zone.ID), recordName, info.Value)
 	if err != nil {
 		return err
 	}
@@ -224,7 +202,7 @@ func (d *DNSProvider) findExistingZone(zoneName string) (*egoscale.DNSDomain, er
 
 // findExistingRecordID Query Exoscale to find an existing record for this name.
 // Returns empty result if no record could be found.
-func (d *DNSProvider) findExistingRecordID(zoneID, recordName string) (string, error) {
+func (d *DNSProvider) findExistingRecordID(zoneID, recordName, value string) (string, error) {
 	ctx := context.Background()
 
 	records, err := d.client.ListDNSDomainRecords(ctx, d.apiZone, zoneID)
@@ -233,8 +211,7 @@ func (d *DNSProvider) findExistingRecordID(zoneID, recordName string) (string, e
 	}
 
 	for _, record := range records {
-		if deref(record.Name) == recordName &&
-			deref(record.Type) == "TXT" {
+		if deref(record.Name) == recordName && deref(record.Type) == "TXT" && deref(record.Content) == value {
 			return deref(record.ID), nil
 		}
 	}

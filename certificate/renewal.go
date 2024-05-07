@@ -23,7 +23,9 @@ type RenewalInfoResponse struct {
 	acme.RenewalInfoResponse
 
 	// RetryAfter header indicating the polling interval that the ACME server recommends.
-	// Conforming clients SHOULD query the renewalInfo URL again after the RetryAfter period has passed, as the server may provide a different suggestedWindow.
+	// Conforming clients SHOULD query the renewalInfo URL again after the RetryAfter period has passed,
+	// as the server may provide a different suggestedWindow.
+	// https://datatracker.ietf.org/doc/html/draft-ietf-acme-ari-03#section-4.2
 	RetryAfter time.Duration
 }
 

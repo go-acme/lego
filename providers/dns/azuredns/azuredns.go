@@ -213,7 +213,11 @@ func getCredentials(config *Config) (azcore.TokenCredential, error) {
 		return &timeoutTokenCredential{cred: cred, timeout: config.AuthMSITimeout}, nil
 
 	case "cli":
-		return azidentity.NewAzureCLICredential(nil)
+		var credOptions *azidentity.AzureCLICredentialOptions
+		if config.TenantID != "" {
+			credOptions = &azidentity.AzureCLICredentialOptions{TenantID: config.TenantID}
+		}
+		return azidentity.NewAzureCLICredential(credOptions)
 
 	case "oidc":
 		err := checkOIDCConfig(config)

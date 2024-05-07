@@ -21,6 +21,12 @@ type RenewalInfoRequest struct {
 // RenewalInfoResponse is a wrapper around acme.RenewalInfoResponse that provides a method for determining when to renew a certificate.
 type RenewalInfoResponse struct {
 	acme.RenewalInfoResponse
+
+	// RetryAfter header indicating the polling interval that the ACME server recommends.
+	// Conforming clients SHOULD query the renewalInfo URL again after the RetryAfter period has passed,
+	// as the server may provide a different suggestedWindow.
+	// https://datatracker.ietf.org/doc/html/draft-ietf-acme-ari-03#section-4.2
+	RetryAfter time.Duration
 }
 
 // ShouldRenewAt determines the optimal renewal time based on the current time (UTC),renewal window suggest by ARI, and the client's willingness to sleep.
@@ -81,6 +87,14 @@ func (c *Certifier) GetRenewalInfo(req RenewalInfoRequest) (*RenewalInfoResponse
 	if err != nil {
 		return nil, err
 	}
+
+	if retry := resp.Header.Get("Retry-After"); retry != "" {
+		info.RetryAfter, err = time.ParseDuration(retry + "s")
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return &info, nil
 }
 

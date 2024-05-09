@@ -99,16 +99,7 @@ linters-settings:
 linters:
   enable-all: true
   disable:
-    - deadcode # deprecated
-    - exhaustivestruct # deprecated
-    - golint # deprecated
-    - ifshort # deprecated
-    - interfacer # deprecated
-    - maligned # deprecated
-    - nosnakecase # deprecated
-    - scopelint # deprecated
-    - structcheck # deprecated
-    - varcheck # deprecated
+    - gomnd # deprecated
     - cyclop # duplicate of gocyclo
     - sqlclosecheck # not relevant (SQL)
     - rowserrcheck # not relevant (SQL)
@@ -118,13 +109,13 @@ linters:
     - dupl # not relevant
     - prealloc # too many false-positive
     - bodyclose # too many false-positive
-    - gomnd
+    - mnd
     - testpackage # not relevant
     - tparallel # not relevant
     - paralleltest # not relevant
     - nestif # too many false-positive
     - wrapcheck
-    - goerr113 # not relevant
+    - err113 # not relevant
     - nlreturn # not relevant
     - wsl # not relevant
     - exhaustive # not relevant
@@ -145,6 +136,7 @@ linters:
     - musttag # false-positive https://github.com/junk1tm/musttag/issues/17
     - gosmopolitan  # not relevant
     - exportloopref # Useless with go1.22
+    - canonicalheader # Can create side effects in the context of API clients
 
 issues:
   exclude-use-default: false
@@ -234,3 +226,9 @@ issues:
       text: 'cyclomatic complexity \d+ of func `(renewForDomains|renewForCSR)` is high'
     - path: providers/dns/cpanel/cpanel.go
       text: 'cyclomatic complexity 13 of func `\(\*DNSProvider\)\.CleanUp` is high'
+
+output:
+  sort-results: true
+  sort-order:
+    - linter
+    - file

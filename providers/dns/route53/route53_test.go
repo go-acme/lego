@@ -25,7 +25,8 @@ var envTest = tester.NewEnvTest(
 	EnvMaxRetries,
 	EnvTTL,
 	EnvPropagationTimeout,
-	EnvPollingInterval).
+	EnvPollingInterval,
+	EnvWaitForRecordSetsChanged).
 	WithDomain(envDomain).
 	WithLiveTestRequirements(EnvAccessKeyID, EnvSecretAccessKey, EnvRegion, envDomain)
 
@@ -119,20 +120,22 @@ func TestNewDefaultConfig(t *testing.T) {
 		{
 			desc: "default configuration",
 			expected: &Config{
-				MaxRetries:         5,
-				TTL:                10,
-				PropagationTimeout: 2 * time.Minute,
-				PollingInterval:    4 * time.Second,
+				MaxRetries:               5,
+				TTL:                      10,
+				PropagationTimeout:       2 * time.Minute,
+				PollingInterval:          4 * time.Second,
+				WaitForRecordSetsChanged: true,
 			},
 		},
 		{
-			desc: "",
+			desc: "set values",
 			envVars: map[string]string{
-				EnvMaxRetries:         "10",
-				EnvTTL:                "99",
-				EnvPropagationTimeout: "60",
-				EnvPollingInterval:    "60",
-				EnvHostedZoneID:       "abc123",
+				EnvMaxRetries:               "10",
+				EnvTTL:                      "99",
+				EnvPropagationTimeout:       "60",
+				EnvPollingInterval:          "60",
+				EnvHostedZoneID:             "abc123",
+				EnvWaitForRecordSetsChanged: "false",
 			},
 			expected: &Config{
 				MaxRetries:         10,

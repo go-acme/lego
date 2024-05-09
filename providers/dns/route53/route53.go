@@ -34,6 +34,8 @@ const (
 	EnvAssumeRoleArn   = envNamespace + "ASSUME_ROLE_ARN"
 	EnvExternalID      = envNamespace + "EXTERNAL_ID"
 
+	EnvWaitForRecordSetsChanged = envNamespace + "WAIT_FOR_RECORD_SETS_CHANGED"
+
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
@@ -53,6 +55,8 @@ type Config struct {
 	AssumeRoleArn string
 	ExternalID    string
 
+	WaitForRecordSetsChanged bool
+
 	TTL                int
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -67,6 +71,8 @@ func NewDefaultConfig() *Config {
 		MaxRetries:    env.GetOrDefaultInt(EnvMaxRetries, 5),
 		AssumeRoleArn: env.GetOrDefaultString(EnvAssumeRoleArn, ""),
 		ExternalID:    env.GetOrDefaultString(EnvExternalID, ""),
+
+		WaitForRecordSetsChanged: env.GetOrDefaultBool(EnvWaitForRecordSetsChanged, true),
 
 		TTL:                env.GetOrDefaultInt(EnvTTL, 10),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
@@ -235,19 +241,22 @@ func (d *DNSProvider) changeRecord(ctx context.Context, action awstypes.ChangeAc
 
 	changeID := resp.ChangeInfo.Id
 
-	return wait.For("route53", d.config.PropagationTimeout, d.config.PollingInterval, func() (bool, error) {
-		reqParams := &route53.GetChangeInput{Id: changeID}
+	if d.config.WaitForRecordSetsChanged {
+		return wait.For("route53", d.config.PropagationTimeout, d.config.PollingInterval, func() (bool, error) {
+			resp, err := d.client.GetChange(ctx, &route53.GetChangeInput{Id: changeID})
+			if err != nil {
+				return false, fmt.Errorf("failed to query change status: %w", err)
+			}
 
-		resp, err := d.client.GetChange(ctx, reqParams)
-		if err != nil {
-			return false, fmt.Errorf("failed to query change status: %w", err)
-		}
+			if resp.ChangeInfo.Status == awstypes.ChangeStatusInsync {
+				return true, nil
+			}
 
-		if resp.ChangeInfo.Status == awstypes.ChangeStatusInsync {
-			return true, nil
-		}
-		return false, fmt.Errorf("unable to retrieve change: ID=%s", deref(changeID))
-	})
+			return false, fmt.Errorf("unable to retrieve change: ID=%s", deref(changeID))
+		})
+	}
+
+	return nil
 }
 
 func (d *DNSProvider) getExistingRecordSets(ctx context.Context, hostedZoneID, fqdn string) ([]awstypes.ResourceRecord, error) {

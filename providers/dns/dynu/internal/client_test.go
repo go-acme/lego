@@ -106,7 +106,7 @@ func TestGetRootDomain(t *testing.T) {
 
 			require.NoError(t, err)
 
-			assert.NotNil(t, domain)
+			assert.NotNil(t, domain) //nolint:testifylint // false positive https://github.com/Antonboom/testifylint/issues/95
 			assert.Equal(t, test.expected.domain, domain)
 		})
 	}

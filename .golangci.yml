@@ -152,6 +152,10 @@ issues:
         - funlen
         - goconst
         - maintidx
+    - path: (.+)_test.go
+      text: 'Error return value of `fmt.Fprintln` is not checked'
+      linters:
+        - errcheck
     - path: providers/dns/dns_providers.go
       linters:
         - gocyclo

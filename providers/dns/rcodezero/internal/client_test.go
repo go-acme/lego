@@ -74,7 +74,7 @@ func TestClient_UpdateRecords_error(t *testing.T) {
 
 	resp, err := client.UpdateRecords(context.Background(), "example.org", rrSet)
 	require.ErrorAs(t, err, new(*APIResponse))
-	assert.Nil(t, resp)
+	assert.Nil(t, resp) //nolint:testifylint // false positive https://github.com/Antonboom/testifylint/issues/95
 }
 
 func TestClient_UpdateRecords(t *testing.T) {

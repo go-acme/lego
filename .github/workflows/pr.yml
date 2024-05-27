@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GO_VERSION: stable
-      GOLANGCI_LINT_VERSION: v1.58.1
+      GOLANGCI_LINT_VERSION: v1.59.0
       HUGO_VERSION: 0.117.0
       CGO_ENABLED: 0
       LEGO_E2E_TESTS: CI

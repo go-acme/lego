@@ -131,7 +131,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	// find authZone and Gandi zone_id for fqdn
 	authZone, err := d.findZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("gandi: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
+		return fmt.Errorf("gandi: could not find zone for domain %q: %w", domain, err)
 	}
 
 	ctx := context.Background()

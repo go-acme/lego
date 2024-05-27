@@ -12,6 +12,7 @@ const (
 	// limited on the "new-reg", "new-authz" and "new-cert" endpoints.
 	// From the documentation the limitation is 20 requests per second,
 	// but using 20 as value doesn't work but 18 do.
+	// https://letsencrypt.org/docs/rate-limits/
 	overallRequestLimit = 18
 )
 
@@ -37,7 +38,7 @@ func (c *Certifier) getAuthorizations(order acme.ExtendedOrder) ([]acme.Authoriz
 	var responses []acme.Authorization
 
 	failures := newObtainError()
-	for i := 0; i < len(order.Authorizations); i++ {
+	for range len(order.Authorizations) {
 		select {
 		case res := <-resc:
 			responses = append(responses, res)

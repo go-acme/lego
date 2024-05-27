@@ -3,6 +3,7 @@ package azuredns
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -13,15 +14,15 @@ import (
 
 func checkOIDCConfig(config *Config) error {
 	if config.TenantID == "" {
-		return fmt.Errorf("azuredns: TenantID is missing")
+		return errors.New("azuredns: TenantID is missing")
 	}
 
 	if config.ClientID == "" {
-		return fmt.Errorf("azuredns: ClientID is missing")
+		return errors.New("azuredns: ClientID is missing")
 	}
 
 	if config.OIDCToken == "" && config.OIDCTokenFilePath == "" && (config.OIDCRequestURL == "" || config.OIDCRequestToken == "") {
-		return fmt.Errorf("azuredns: OIDCToken, OIDCTokenFilePath or OIDCRequestURL and OIDCRequestToken must be set")
+		return errors.New("azuredns: OIDCToken, OIDCTokenFilePath or OIDCRequestURL and OIDCRequestToken must be set")
 	}
 
 	return nil
@@ -64,7 +65,7 @@ func getOIDCToken(config *Config) (string, error) {
 
 	query, err := url.ParseQuery(req.URL.RawQuery)
 	if err != nil {
-		return "", fmt.Errorf("azuredns: cannot parse OIDC request URL query")
+		return "", errors.New("azuredns: cannot parse OIDC request URL query")
 	}
 
 	if query.Get("audience") == "" {

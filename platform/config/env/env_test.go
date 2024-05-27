@@ -93,12 +93,11 @@ func TestGetWithFallback(t *testing.T) {
 	}
 
 	for _, test := range testCases {
-		test := test
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
 			value, err := GetWithFallback(test.groups...)
-			if len(test.expected.error) > 0 {
+			if test.expected.error != "" {
 				assert.EqualError(t, err, test.expected.error)
 			} else {
 				require.NoError(t, err)
@@ -166,7 +165,6 @@ func TestGetOneWithFallback(t *testing.T) {
 	}
 
 	for _, test := range testCases {
-		test := test
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 

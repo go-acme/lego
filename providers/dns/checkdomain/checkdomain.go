@@ -115,7 +115,6 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Type:  "TXT",
 		Value: info.Value,
 	})
-
 	if err != nil {
 		return fmt.Errorf("checkdomain: %w", err)
 	}

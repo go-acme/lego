@@ -97,7 +97,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	if errors.Is(err, rest.ErrRecordMissing) || record == nil {
 		log.Infof("Create a new record for [zone: %s, fqdn: %s, domain: %s]", zone.Zone, info.EffectiveFQDN, domain)
 
-		record = dns.NewRecord(zone.Zone, dns01.UnFqdn(info.EffectiveFQDN), "TXT")
+		// Work through a bug in the NS1 API library that causes 400 Input validation failed (Value None for field '<obj>.filters' is not of type ...)
+		// So the `tags` and `blockedTags` parameters should be initialized to empty.
+		record = dns.NewRecord(zone.Zone, dns01.UnFqdn(info.EffectiveFQDN), "TXT", make(map[string]string), make([]string, 0))
 		record.TTL = d.config.TTL
 		record.Answers = []*dns.Answer{{Rdata: []string{info.Value}}}
 
@@ -152,12 +154,12 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) getHostedZone(fqdn string) (*dns.Zone, error) {
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return nil, fmt.Errorf("could not find zone for FQDN %q: %w", fqdn, err)
+		return nil, fmt.Errorf("could not find zone: %w", err)
 	}
 
 	authZone = dns01.UnFqdn(authZone)
 
-	zone, _, err := d.client.Zones.Get(authZone)
+	zone, _, err := d.client.Zones.Get(authZone, false)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get zone [authZone: %q, fqdn: %q]: %w", authZone, fqdn, err)
 	}

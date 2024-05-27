@@ -49,6 +49,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
+| `PDNS_API_VERSION` | Skip API version autodetection and use the provided version number. |
 | `PDNS_HTTP_TIMEOUT` | API request timeout |
 | `PDNS_POLLING_INTERVAL` | Time between DNS propagation check |
 | `PDNS_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
@@ -65,6 +66,7 @@ Tested and confirmed to work with PowerDNS authoritative server 3.4.8 and 4.0.1.
 PowerDNS Notes:
 - PowerDNS API does not currently support SSL, therefore you should take care to ensure that traffic between lego and the PowerDNS API is over a trusted network, VPN etc.
 - In order to have the SOA serial automatically increment each time the `_acme-challenge` record is added/modified via the API, set `SOA-EDIT-API` to `INCEPTION-INCREMENT` for the zone in the `domainmetadata` table
+- Some PowerDNS servers doesn't have root API endpoints enabled and API version autodetection will not work. In that case version number can be defined using `PDNS_API_VERSION`.
 
 
 

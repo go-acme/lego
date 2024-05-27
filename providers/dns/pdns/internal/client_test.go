@@ -57,7 +57,7 @@ func setupTest(t *testing.T, method, pattern string, status int, file string) *C
 
 	serverURL, _ := url.Parse(server.URL)
 
-	client := NewClient(serverURL, "server", "secret")
+	client := NewClient(serverURL, "server", 0, "secret")
 	client.HTTPClient = server.Client()
 
 	return client
@@ -144,15 +144,13 @@ func TestClient_joinPath(t *testing.T) {
 	}
 
 	for _, test := range testCases {
-		test := test
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
 			host, err := url.Parse(test.baseURL)
 			require.NoError(t, err)
 
-			client := NewClient(host, "test", "secret")
-			client.apiVersion = test.apiVersion
+			client := NewClient(host, "test", test.apiVersion, "secret")
 
 			endpoint := client.joinPath(test.uri)
 

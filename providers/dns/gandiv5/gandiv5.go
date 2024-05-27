@@ -134,7 +134,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	// find authZone
 	authZone, err := d.findZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("gandiv5: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
+		return fmt.Errorf("gandiv5: could not find zone for domain %q: %w", domain, err)
 	}
 
 	// determine name of TXT record

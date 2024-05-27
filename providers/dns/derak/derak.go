@@ -111,7 +111,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("derak: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
+		return fmt.Errorf("derak: could not find zone for domain %q: %w", domain, err)
 	}
 
 	recordName, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)

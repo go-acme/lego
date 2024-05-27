@@ -81,23 +81,23 @@ func TestClient_GetDomainInformation(t *testing.T) {
 	}{
 		{
 			desc: "domain found",
-			fqdn: "_acme-challenge.foo.com.",
+			fqdn: "_acme-challenge.example.org.",
 			response: &apiResponse{
 				Code: 1,
 			},
 			data: []Data{
 				{
 					ID:     "1",
-					Domain: "bar.com.",
+					Domain: "example.com.",
 				},
 				{
 					ID:     "2",
-					Domain: "foo.com.",
+					Domain: "example.org.",
 				},
 			},
 			expected: result{domain: &Data{
 				ID:     "2",
-				Domain: "foo.com.",
+				Domain: "example.org.",
 			}},
 		},
 		{
@@ -109,11 +109,11 @@ func TestClient_GetDomainInformation(t *testing.T) {
 			data: []Data{
 				{
 					ID:     "5",
-					Domain: "bar.com.",
+					Domain: "example.com.",
 				},
 				{
 					ID:     "6",
-					Domain: "foo.com.",
+					Domain: "example.org.",
 				},
 			},
 			expected: result{error: true},
@@ -152,13 +152,13 @@ func TestClient_FindTxtRecord(t *testing.T) {
 	}{
 		{
 			desc:   "record found",
-			fqdn:   "_acme-challenge.foo.com.",
+			fqdn:   "_acme-challenge.example.org.",
 			zoneID: "test-zone",
 			txtRecords: []TXTRecord{
 				{
 					ID:       1,
 					RecordID: "Record-A",
-					Host:     "_acme-challenge.foo.com",
+					Host:     "_acme-challenge.example.org",
 					Value:    "txtTXTtxtTXTtxtTXTtxtTXT",
 					Type:     "TXT",
 					LineID:   6,
@@ -167,7 +167,7 @@ func TestClient_FindTxtRecord(t *testing.T) {
 				{
 					ID:       2,
 					RecordID: "Record-B",
-					Host:     "_acme-challenge.bar.com",
+					Host:     "_acme-challenge.example.com",
 					Value:    "TXTtxtTXTtxtTXTtxtTXTtxt",
 					Type:     "TXT",
 					LineID:   6,
@@ -181,7 +181,7 @@ func TestClient_FindTxtRecord(t *testing.T) {
 				txtRecord: &TXTRecord{
 					ID:       1,
 					RecordID: "Record-A",
-					Host:     "_acme-challenge.foo.com",
+					Host:     "_acme-challenge.example.org",
 					Value:    "txtTXTtxtTXTtxtTXTtxtTXT",
 					Type:     "TXT",
 					LineID:   6,
@@ -197,7 +197,7 @@ func TestClient_FindTxtRecord(t *testing.T) {
 				{
 					ID:       1,
 					RecordID: "Record-A",
-					Host:     "_acme-challenge.foo.com",
+					Host:     "_acme-challenge.example.org",
 					Value:    "txtTXTtxtTXTtxtTXTtxtTXT",
 					Type:     "TXT",
 					LineID:   6,
@@ -206,7 +206,7 @@ func TestClient_FindTxtRecord(t *testing.T) {
 				{
 					ID:       2,
 					RecordID: "Record-B",
-					Host:     "_acme-challenge.bar.com",
+					Host:     "_acme-challenge.example.com",
 					Value:    "TXTtxtTXTtxtTXTtxtTXTtxt",
 					Type:     "TXT",
 					LineID:   6,
@@ -249,9 +249,9 @@ func TestClient_AddTxtRecord(t *testing.T) {
 			desc: "sub-domain",
 			domain: &Data{
 				ID:     "1",
-				Domain: "bar.com.",
+				Domain: "example.com.",
 			},
-			fqdn:     "_acme-challenge.foo.bar.com.",
+			fqdn:     "_acme-challenge.foo.example.com.",
 			value:    "txtTXTtxtTXTtxtTXTtxtTXT",
 			ttl:      30,
 			expected: `{"domain_id":1,"host":"_acme-challenge.foo","value":"txtTXTtxtTXTtxtTXTtxtTXT","type":"TXT","line_id":"1","ttl":"30"}`,
@@ -260,9 +260,9 @@ func TestClient_AddTxtRecord(t *testing.T) {
 			desc: "main domain",
 			domain: &Data{
 				ID:     "2",
-				Domain: "bar.com.",
+				Domain: "example.com.",
 			},
-			fqdn:     "_acme-challenge.bar.com.",
+			fqdn:     "_acme-challenge.example.com.",
 			value:    "TXTtxtTXTtxtTXTtxtTXTtxt",
 			ttl:      30,
 			expected: `{"domain_id":2,"host":"_acme-challenge","value":"TXTtxtTXTtxtTXTtxtTXTtxt","type":"TXT","line_id":"1","ttl":"30"}`,

@@ -1,0 +1,21 @@
+{
+  "metadata": {
+    "transformed": 1
+  },
+  "messages": null,
+  "status": 1,
+  "warnings": null,
+  "errors": null,
+  "data": [
+    {
+      "line_index": 22,
+      "dname_b64": "dGV4YXMuY29tLg==",
+      "data_b64": [
+        "dGV4YXMuY29tLg=="
+      ],
+      "type": "record",
+      "ttl": 14400,
+      "record_type": "MX"
+    }
+  ]
+}

@@ -105,7 +105,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	zone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(info.EffectiveFQDN))
 	if err != nil {
-		return fmt.Errorf("safedns: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
+		return fmt.Errorf("safedns: could not find zone for domain %q: %w", domain, err)
 	}
 
 	record := internal.Record{
@@ -133,7 +133,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("safedns: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
+		return fmt.Errorf("safedns: could not find zone for domain %q: %w", domain, err)
 	}
 
 	d.recordIDsMu.Lock()

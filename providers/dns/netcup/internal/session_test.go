@@ -115,7 +115,6 @@ func TestClient_Login_errors(t *testing.T) {
 	}
 
 	for _, test := range testCases {
-		test := test
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
@@ -202,7 +201,6 @@ func TestClient_Logout_errors(t *testing.T) {
 	}
 
 	for _, test := range testCases {
-		test := test
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
@@ -230,9 +228,8 @@ func TestLiveClientAuth(t *testing.T) {
 		envTest.GetValue("NETCUP_API_PASSWORD"))
 	require.NoError(t, err)
 
-	for i := 1; i < 4; i++ {
-		i := i
-		t.Run("Test_"+strconv.Itoa(i), func(t *testing.T) {
+	for i := range 4 {
+		t.Run("Test_"+strconv.Itoa(i+1), func(t *testing.T) {
 			t.Parallel()
 
 			ctx, err := client.CreateSessionContext(context.Background())

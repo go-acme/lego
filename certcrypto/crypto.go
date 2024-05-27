@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"math/big"
 	"net"
+	"slices"
 	"strings"
 	"time"
 
@@ -88,7 +89,7 @@ func ParsePEMBundle(bundle []byte) ([]*x509.Certificate, error) {
 func ParsePEMPrivateKey(key []byte) (crypto.PrivateKey, error) {
 	keyBlockDER, _ := pem.Decode(key)
 	if keyBlockDER == nil {
-		return nil, fmt.Errorf("invalid PEM block")
+		return nil, errors.New("invalid PEM block")
 	}
 
 	if keyBlockDER.Type != "PRIVATE KEY" && !strings.HasSuffix(keyBlockDER.Type, " PRIVATE KEY") {
@@ -216,6 +217,26 @@ func ParsePEMCertificate(cert []byte) (*x509.Certificate, error) {
 	return x509.ParseCertificate(pemBlock.Bytes)
 }
 
+func GetCertificateMainDomain(cert *x509.Certificate) (string, error) {
+	return getMainDomain(cert.Subject, cert.DNSNames)
+}
+
+func GetCSRMainDomain(cert *x509.CertificateRequest) (string, error) {
+	return getMainDomain(cert.Subject, cert.DNSNames)
+}
+
+func getMainDomain(subject pkix.Name, dnsNames []string) (string, error) {
+	if subject.CommonName == "" && len(dnsNames) == 0 {
+		return "", errors.New("missing domain")
+	}
+
+	if subject.CommonName != "" {
+		return subject.CommonName, nil
+	}
+
+	return dnsNames[0], nil
+}
+
 func ExtractDomains(cert *x509.Certificate) []string {
 	var domains []string
 	if cert.Subject.CommonName != "" {
@@ -248,7 +269,7 @@ func ExtractDomainsCSR(csr *x509.CertificateRequest) []string {
 
 	// loop over the SubjectAltName DNS names
 	for _, sanName := range csr.DNSNames {
-		if containsSAN(domains, sanName) {
+		if slices.Contains(domains, sanName) {
 			// Duplicate; skip this name
 			continue
 		}
@@ -265,15 +286,6 @@ func ExtractDomainsCSR(csr *x509.CertificateRequest) []string {
 	}
 
 	return domains
-}
-
-func containsSAN(domains []string, sanName string) bool {
-	for _, existingName := range domains {
-		if existingName == sanName {
-			return true
-		}
-	}
-	return false
 }
 
 func GeneratePemCert(privateKey *rsa.PrivateKey, domain string, extensions []pkix.Extension) ([]byte, error) {

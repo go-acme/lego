@@ -18,12 +18,13 @@ import (
 )
 
 const (
-	renewEnvAccountEmail = "LEGO_ACCOUNT_EMAIL"
-	renewEnvCertDomain   = "LEGO_CERT_DOMAIN"
-	renewEnvCertPath     = "LEGO_CERT_PATH"
-	renewEnvCertKeyPath  = "LEGO_CERT_KEY_PATH"
-	renewEnvCertPEMPath  = "LEGO_CERT_PEM_PATH"
-	renewEnvCertPFXPath  = "LEGO_CERT_PFX_PATH"
+	renewEnvAccountEmail      = "LEGO_ACCOUNT_EMAIL"
+	renewEnvCertDomain        = "LEGO_CERT_DOMAIN"
+	renewEnvCertPath          = "LEGO_CERT_PATH"
+	renewEnvCertKeyPath       = "LEGO_CERT_KEY_PATH"
+	renewEnvIssuerCertKeyPath = "LEGO_ISSUER_CERT_PATH"
+	renewEnvCertPEMPath       = "LEGO_CERT_PEM_PATH"
+	renewEnvCertPFXPath       = "LEGO_CERT_PFX_PATH"
 )
 
 func createRenew() *cli.Command {
@@ -34,7 +35,7 @@ func createRenew() *cli.Command {
 		Before: func(ctx *cli.Context) error {
 			// we require either domains or csr, but not both
 			hasDomains := len(ctx.StringSlice("domains")) > 0
-			hasCsr := len(ctx.String("csr")) > 0
+			hasCsr := ctx.String("csr") != ""
 			if hasDomains && hasCsr {
 				log.Fatal("Please specify either --domains/-d or --csr/-c, but not both")
 			}
@@ -52,11 +53,6 @@ func createRenew() *cli.Command {
 			&cli.BoolFlag{
 				Name:  "ari-enable",
 				Usage: "Use the renewalInfo endpoint (draft-ietf-acme-ari) to check if a certificate should be renewed.",
-			},
-			&cli.StringFlag{
-				Name:  "ari-hash-name",
-				Value: crypto.SHA256.String(),
-				Usage: "The string representation of the hash expected by the renewalInfo endpoint (e.g. \"SHA-256\").",
 			},
 			&cli.DurationFlag{
 				Name:  "ari-wait-to-renew-duration",
@@ -146,11 +142,7 @@ func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *Certif
 
 	var ariRenewalTime *time.Time
 	if ctx.Bool("ari-enable") {
-		if len(certificates) < 2 {
-			log.Warnf("[%s] Certificate bundle does not contain issuer, cannot use the renewalInfo endpoint", domain)
-		} else {
-			ariRenewalTime = getARIRenewalTime(ctx, certificates[0], certificates[1], domain, client)
-		}
+		ariRenewalTime = getARIRenewalTime(ctx, cert, domain, client)
 		if ariRenewalTime != nil {
 			now := time.Now().UTC()
 			// Figure out if we need to sleep before renewing.
@@ -207,6 +199,13 @@ func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *Certif
 		AlwaysDeactivateAuthorizations: ctx.Bool("always-deactivate-authorizations"),
 	}
 
+	if ctx.Bool("ari-enable") {
+		request.ReplacesCertID, err = certificate.MakeARICertID(cert)
+		if err != nil {
+			log.Fatalf("Error while construction the ARI CertID for domain %s\n\t%v", domain, err)
+		}
+	}
+
 	certRes, err := client.Certificate.Obtain(request)
 	if err != nil {
 		log.Fatal(err)
@@ -214,23 +213,7 @@ func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *Certif
 
 	certsStorage.SaveResource(certRes)
 
-	if ariRenewalTime != nil {
-		// Post to the renewalInfo endpoint to indicate that we have renewed and replaced the certificate.
-		err := client.Certificate.UpdateRenewalInfo(certificate.RenewalInfoRequest{
-			Cert:     certificates[0],
-			Issuer:   certificates[1],
-			HashName: ctx.String("ari-hash-name"),
-		})
-		if err != nil {
-			log.Warnf("[%s] Failed to update renewal info: %v", domain, err)
-		}
-	}
-
-	meta[renewEnvCertDomain] = domain
-	meta[renewEnvCertPath] = certsStorage.GetFileName(domain, ".crt")
-	meta[renewEnvCertKeyPath] = certsStorage.GetFileName(domain, ".key")
-	meta[renewEnvCertPEMPath] = certsStorage.GetFileName(domain, ".pem")
-	meta[renewEnvCertPFXPath] = certsStorage.GetFileName(domain, ".pfx")
+	addPathToMetadata(meta, domain, certRes, certsStorage)
 
 	return launchHook(ctx.String("renew-hook"), meta)
 }
@@ -241,7 +224,10 @@ func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *Certificat
 		log.Fatal(err)
 	}
 
-	domain := csr.Subject.CommonName
+	domain, err := certcrypto.GetCSRMainDomain(csr)
+	if err != nil {
+		log.Fatalf("Error: %v", err)
+	}
 
 	// load the cert resource from files.
 	// We store the certificate, private key and metadata in different files
@@ -255,11 +241,7 @@ func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *Certificat
 
 	var ariRenewalTime *time.Time
 	if ctx.Bool("ari-enable") {
-		if len(certificates) < 2 {
-			log.Warnf("[%s] Certificate bundle does not contain issuer, cannot use the renewalInfo endpoint", domain)
-		} else {
-			ariRenewalTime = getARIRenewalTime(ctx, certificates[0], certificates[1], domain, client)
-		}
+		ariRenewalTime = getARIRenewalTime(ctx, cert, domain, client)
 		if ariRenewalTime != nil {
 			now := time.Now().UTC()
 			// Figure out if we need to sleep before renewing.
@@ -287,6 +269,13 @@ func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *Certificat
 		AlwaysDeactivateAuthorizations: ctx.Bool("always-deactivate-authorizations"),
 	}
 
+	if ctx.Bool("ari-enable") {
+		request.ReplacesCertID, err = certificate.MakeARICertID(cert)
+		if err != nil {
+			log.Fatalf("Error while construction the ARI CertID for domain %s\n\t%v", domain, err)
+		}
+	}
+
 	certRes, err := client.Certificate.ObtainForCSR(request)
 	if err != nil {
 		log.Fatal(err)
@@ -294,21 +283,7 @@ func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *Certificat
 
 	certsStorage.SaveResource(certRes)
 
-	if ariRenewalTime != nil {
-		// Post to the renewalInfo endpoint to indicate that we have renewed and replaced the certificate.
-		err := client.Certificate.UpdateRenewalInfo(certificate.RenewalInfoRequest{
-			Cert:     certificates[0],
-			Issuer:   certificates[1],
-			HashName: ctx.String("ari-hash-name"),
-		})
-		if err != nil {
-			log.Warnf("[%s] Failed to update renewal info: %v", domain, err)
-		}
-	}
-
-	meta[renewEnvCertDomain] = domain
-	meta[renewEnvCertPath] = certsStorage.GetFileName(domain, ".crt")
-	meta[renewEnvCertKeyPath] = certsStorage.GetFileName(domain, ".key")
+	addPathToMetadata(meta, domain, certRes, certsStorage)
 
 	return launchHook(ctx.String("renew-hook"), meta)
 }
@@ -331,23 +306,19 @@ func needRenewal(x509Cert *x509.Certificate, domain string, days int) bool {
 }
 
 // getARIRenewalTime checks if the certificate needs to be renewed using the renewalInfo endpoint.
-func getARIRenewalTime(ctx *cli.Context, cert, issuer *x509.Certificate, domain string, client *lego.Client) *time.Time {
+func getARIRenewalTime(ctx *cli.Context, cert *x509.Certificate, domain string, client *lego.Client) *time.Time {
 	if cert.IsCA {
 		log.Fatalf("[%s] Certificate bundle starts with a CA certificate", domain)
 	}
 
-	renewalInfo, err := client.Certificate.GetRenewalInfo(certificate.RenewalInfoRequest{
-		Cert:     cert,
-		Issuer:   issuer,
-		HashName: ctx.String("ari-hash-name"),
-	})
+	renewalInfo, err := client.Certificate.GetRenewalInfo(certificate.RenewalInfoRequest{Cert: cert})
 	if err != nil {
 		if errors.Is(err, api.ErrNoARI) {
 			// The server does not advertise a renewal info endpoint.
-			log.Warnf("[%s] acme: %w", domain, err)
+			log.Warnf("[%s] acme: %v", domain, err)
 			return nil
 		}
-		log.Warnf("[%s] acme: calling renewal info endpoint: %w", domain, err)
+		log.Warnf("[%s] acme: calling renewal info endpoint: %v", domain, err)
 		return nil
 	}
 
@@ -364,6 +335,24 @@ func getARIRenewalTime(ctx *cli.Context, cert, issuer *x509.Certificate, domain 
 	}
 
 	return renewalTime
+}
+
+func addPathToMetadata(meta map[string]string, domain string, certRes *certificate.Resource, certsStorage *CertificatesStorage) {
+	meta[renewEnvCertDomain] = domain
+	meta[renewEnvCertPath] = certsStorage.GetFileName(domain, certExt)
+	meta[renewEnvCertKeyPath] = certsStorage.GetFileName(domain, keyExt)
+
+	if certRes.IssuerCertificate != nil {
+		meta[renewEnvIssuerCertKeyPath] = certsStorage.GetFileName(domain, issuerExt)
+	}
+
+	if certsStorage.pem {
+		meta[renewEnvCertPEMPath] = certsStorage.GetFileName(domain, pemExt)
+	}
+
+	if certsStorage.pfx {
+		meta[renewEnvCertPFXPath] = certsStorage.GetFileName(domain, pfxExt)
+	}
 }
 
 func merge(prevDomains, nextDomains []string) []string {

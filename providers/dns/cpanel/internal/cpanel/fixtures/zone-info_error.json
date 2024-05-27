@@ -1,0 +1,14 @@
+{
+  "warnings": null,
+  "messages": [
+    "a",
+    "b",
+    "c"
+  ],
+  "data": null,
+  "errors": [
+    "You do not control a DNS zone named example.com."
+  ],
+  "metadata": {},
+  "status": 0
+}

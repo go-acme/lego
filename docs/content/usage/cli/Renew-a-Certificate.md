@@ -61,6 +61,8 @@ Some information is provided through environment variables:
 - `LEGO_CERT_DOMAIN`: the main domain of the certificate.
 - `LEGO_CERT_PATH`: the path of the certificate.
 - `LEGO_CERT_KEY_PATH`: the path of the certificate key.
+- `LEGO_CERT_PEM_PATH`: (only with `--pem`) the path to the PEM certificate.
+- `LEGO_CERT_PFX_PATH`: (only with `--pfx`) the path to the PFX certificate.
 
 See [Obtain a Certificate → Use case]({{< ref "usage/cli/Obtain-a-Certificate#use-case" >}}) for an example script.
 

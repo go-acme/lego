@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -75,11 +76,11 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	}
 
 	if config.IamToken == "" {
-		return nil, fmt.Errorf("yandexcloud: some credentials information are missing IAM token")
+		return nil, errors.New("yandexcloud: some credentials information are missing IAM token")
 	}
 
 	if config.FolderID == "" {
-		return nil, fmt.Errorf("yandexcloud: some credentials information are missing folder id")
+		return nil, errors.New("yandexcloud: some credentials information are missing folder id")
 	}
 
 	creds, err := decodeCredentials(config.IamToken)
@@ -104,7 +105,7 @@ func (r *DNSProvider) Present(domain, _, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("yandexcloud: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
+		return fmt.Errorf("yandexcloud: could not find zone for domain %q: %w", domain, err)
 	}
 
 	ctx := context.Background()
@@ -145,7 +146,7 @@ func (r *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("yandexcloud: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
+		return fmt.Errorf("yandexcloud: could not find zone for domain %q: %w", domain, err)
 	}
 
 	ctx := context.Background()
@@ -309,10 +310,8 @@ func decodeCredentials(accountB64 string) (ycsdk.Credentials, error) {
 }
 
 func appendRecordSetData(record *ycdns.RecordSet, value string) bool {
-	for _, data := range record.GetData() {
-		if data == value {
-			return false
-		}
+	if slices.Contains(record.GetData(), value) {
+		return false
 	}
 
 	record.SetData(append(record.GetData(), value))

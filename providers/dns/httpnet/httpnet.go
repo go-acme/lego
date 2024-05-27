@@ -212,7 +212,7 @@ func (d *DNSProvider) getZoneName(fqdn string) (string, error) {
 
 	zoneName, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return "", fmt.Errorf("could not find zone for FQDN %q: %w", fqdn, err)
+		return "", fmt.Errorf("could not find zone: %w", err)
 	}
 
 	if zoneName == "" {

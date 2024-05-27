@@ -1,5 +1,19 @@
 package internal
 
+import "fmt"
+
+type apiResponse[T any] struct {
+	Msg    string `json:"msg"`
+	Status int    `json:"status"`
+	Tm     int    `json:"tm"`
+	Data   T      `json:"data"`
+	Count  int    `json:"count"`
+	Total  int    `json:"total"`
+	Start  int    `json:"start"`
+	Max    int    `json:"max"`
+	Error  *Error `json:"error,omitempty"`
+}
+
 type ZoneRecord struct {
 	ID       string `json:"id,omitempty"`
 	Domain   string `json:"domain"`
@@ -13,9 +27,11 @@ type ZoneRecord struct {
 	NewHost  string `json:"new_host,omitempty"`
 }
 
-type addRecordResponse struct {
-	Msg    string     `json:"msg"`
-	Tm     int        `json:"tm"`
-	Data   ZoneRecord `json:"data"`
-	Status int        `json:"status"`
+type Error struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
+
+func (e *Error) Error() string {
+	return fmt.Sprintf("code %d: %s", e.Code, e.Message)
 }

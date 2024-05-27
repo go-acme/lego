@@ -3,6 +3,7 @@ package tester
 import (
 	"fmt"
 	"os"
+	"slices"
 )
 
 // EnvTest Environment variables manager for tests.
@@ -143,10 +144,5 @@ func (e *EnvTest) Apply(envVars map[string]string) {
 }
 
 func (e *EnvTest) isManagedKey(varName string) bool {
-	for _, key := range e.keys {
-		if key == varName {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(e.keys, varName)
 }

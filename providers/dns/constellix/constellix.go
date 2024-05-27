@@ -6,11 +6,14 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"slices"
+	"strconv"
 	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/constellix/internal"
+	"github.com/hashicorp/go-retryablehttp"
 )
 
 // Environment variables names.
@@ -85,7 +88,12 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("constellix: %w", err)
 	}
 
-	client := internal.NewClient(tr.Wrap(config.HTTPClient))
+	retryClient := retryablehttp.NewClient()
+	retryClient.RetryMax = 5
+	retryClient.HTTPClient = tr.Wrap(config.HTTPClient)
+	retryClient.Backoff = backoff
+
+	client := internal.NewClient(retryClient.StandardClient())
 
 	return &DNSProvider{config: config, client: client}, nil
 }
@@ -102,7 +110,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("constellix: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
+		return fmt.Errorf("constellix: could not find zone for domain %q: %w", domain, err)
 	}
 
 	ctx := context.Background()
@@ -145,7 +153,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("constellix: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
+		return fmt.Errorf("constellix: could not find zone for domain %q: %w", domain, err)
 	}
 
 	ctx := context.Background()
@@ -265,11 +273,24 @@ func containsValue(record *internal.Record, value string) bool {
 		return false
 	}
 
-	for _, val := range record.Value {
-		if val.Value == fmt.Sprintf(`%q`, value) {
-			return true
+	qValue := fmt.Sprintf(`%q`, value)
+
+	return slices.ContainsFunc(record.Value, func(val internal.RecordValue) bool {
+		return val.Value == qValue
+	})
+}
+
+func backoff(minimum, maximum time.Duration, attemptNum int, resp *http.Response) time.Duration {
+	if resp != nil {
+		// https://api.dns.constellix.com/v4/docs#section/Using-the-API/Rate-Limiting
+		if resp.StatusCode == http.StatusTooManyRequests {
+			if s, ok := resp.Header["X-Ratelimit-Reset"]; ok {
+				if sleep, err := strconv.ParseInt(s[0], 10, 64); err == nil {
+					return time.Second * time.Duration(sleep)
+				}
+			}
 		}
 	}
 
-	return false
+	return retryablehttp.DefaultBackoff(minimum, maximum, attemptNum, resp)
 }

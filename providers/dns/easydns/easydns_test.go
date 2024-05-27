@@ -147,6 +147,39 @@ func TestNewDNSProviderConfig(t *testing.T) {
 func TestDNSProvider_Present(t *testing.T) {
 	provider, mux := setupTest(t)
 
+	mux.HandleFunc("/zones/records/all/example.com", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodGet, r.Method, "method")
+		assert.Equal(t, "format=json", r.URL.RawQuery, "query")
+		assert.Equal(t, "Basic VE9LRU46U0VDUkVU", r.Header.Get(authorizationHeader), authorizationHeader)
+
+		w.WriteHeader(http.StatusOK)
+		_, err := fmt.Fprintf(w, `{
+  "msg": "string",
+  "status": 200,
+  "tm": 0,
+  "data": [{
+    "id": "60898922",
+    "domain": "example.com",
+    "host": "hosta",
+    "ttl": "300",
+    "prio": "0",
+    "geozone_id": "0",
+    "type": "A",
+    "rdata": "1.2.3.4",
+    "last_mod": "2019-08-28 19:09:50"
+  }],
+  "count": 0,
+  "total": 0,
+  "start": 0,
+  "max": 0
+}
+`)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	})
+
 	mux.HandleFunc("/zones/records/add/example.com/TXT", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodPut, r.Method, "method")
 		assert.Equal(t, "format=json", r.URL.RawQuery, "query")
@@ -191,7 +224,40 @@ func TestDNSProvider_Present(t *testing.T) {
 }
 
 func TestDNSProvider_Cleanup_WhenRecordIdNotSet_NoOp(t *testing.T) {
-	provider, _ := setupTest(t)
+	provider, mux := setupTest(t)
+
+	mux.HandleFunc("/zones/records/all/example.com", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodGet, r.Method, "method")
+		assert.Equal(t, "format=json", r.URL.RawQuery, "query")
+		assert.Equal(t, "Basic VE9LRU46U0VDUkVU", r.Header.Get(authorizationHeader), authorizationHeader)
+
+		w.WriteHeader(http.StatusOK)
+		_, err := fmt.Fprintf(w, `{
+  "msg": "string",
+  "status": 200,
+  "tm": 0,
+  "data": [{
+    "id": "60898922",
+    "domain": "example.com",
+    "host": "hosta",
+    "ttl": "300",
+    "prio": "0",
+    "geozone_id": "0",
+    "type": "A",
+    "rdata": "1.2.3.4",
+    "last_mod": "2019-08-28 19:09:50"
+  }],
+  "count": 0,
+  "total": 0,
+  "start": 0,
+  "max": 0
+}
+`)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	})
 
 	err := provider.CleanUp("example.com", "token", "keyAuth")
 	require.NoError(t, err)
@@ -199,6 +265,39 @@ func TestDNSProvider_Cleanup_WhenRecordIdNotSet_NoOp(t *testing.T) {
 
 func TestDNSProvider_Cleanup_WhenRecordIdSet_DeletesTxtRecord(t *testing.T) {
 	provider, mux := setupTest(t)
+
+	mux.HandleFunc("/zones/records/all/example.com", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodGet, r.Method, "method")
+		assert.Equal(t, "format=json", r.URL.RawQuery, "query")
+		assert.Equal(t, "Basic VE9LRU46U0VDUkVU", r.Header.Get(authorizationHeader), authorizationHeader)
+
+		w.WriteHeader(http.StatusOK)
+		_, err := fmt.Fprintf(w, `{
+  "msg": "string",
+  "status": 200,
+  "tm": 0,
+  "data": [{
+    "id": "60898922",
+    "domain": "example.com",
+    "host": "hosta",
+    "ttl": "300",
+    "prio": "0",
+    "geozone_id": "0",
+    "type": "A",
+    "rdata": "1.2.3.4",
+    "last_mod": "2019-08-28 19:09:50"
+  }],
+  "count": 0,
+  "total": 0,
+  "start": 0,
+  "max": 0
+}
+`)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	})
 
 	mux.HandleFunc("/zones/records/example.com/123456", func(w http.ResponseWriter, r *http.Request) {
 		assert.Equal(t, http.MethodDelete, r.Method, "method")
@@ -228,6 +327,39 @@ func TestDNSProvider_Cleanup_WhenRecordIdSet_DeletesTxtRecord(t *testing.T) {
 func TestDNSProvider_Cleanup_WhenHttpError_ReturnsError(t *testing.T) {
 	provider, mux := setupTest(t)
 
+	mux.HandleFunc("/zones/records/all/example.com", func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodGet, r.Method, "method")
+		assert.Equal(t, "format=json", r.URL.RawQuery, "query")
+		assert.Equal(t, "Basic VE9LRU46U0VDUkVU", r.Header.Get(authorizationHeader), authorizationHeader)
+
+		w.WriteHeader(http.StatusOK)
+		_, err := fmt.Fprintf(w, `{
+  "msg": "string",
+  "status": 200,
+  "tm": 0,
+  "data": [{
+    "id": "60898922",
+    "domain": "example.com",
+    "host": "hosta",
+    "ttl": "300",
+    "prio": "0",
+    "geozone_id": "0",
+    "type": "A",
+    "rdata": "1.2.3.4",
+    "last_mod": "2019-08-28 19:09:50"
+  }],
+  "count": 0,
+  "total": 0,
+  "start": 0,
+  "max": 0
+}
+`)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	})
+
 	errorMessage := `{
 		"error": {
 			"code": 406,
@@ -251,43 +383,6 @@ func TestDNSProvider_Cleanup_WhenHttpError_ReturnsError(t *testing.T) {
 	err := provider.CleanUp("example.com", "token", "keyAuth")
 	expectedError := fmt.Sprintf("easydns: unexpected status code: [status code: 406] body: %v", errorMessage)
 	require.EqualError(t, err, expectedError)
-}
-
-func TestSplitFqdn(t *testing.T) {
-	testCases := []struct {
-		desc           string
-		fqdn           string
-		expectedHost   string
-		expectedDomain string
-	}{
-		{
-			desc:           "domain only",
-			fqdn:           "domain.com.",
-			expectedHost:   "",
-			expectedDomain: "domain.com",
-		},
-		{
-			desc:           "single-part host",
-			fqdn:           "_acme-challenge.domain.com.",
-			expectedHost:   "_acme-challenge",
-			expectedDomain: "domain.com",
-		},
-		{
-			desc:           "multi-part host",
-			fqdn:           "_acme-challenge.sub.domain.com.",
-			expectedHost:   "_acme-challenge.sub",
-			expectedDomain: "domain.com",
-		},
-	}
-
-	for _, test := range testCases {
-		t.Run(test.desc, func(t *testing.T) {
-			actualHost, actualDomain := splitFqdn(test.fqdn)
-
-			require.Equal(t, test.expectedHost, actualHost)
-			require.Equal(t, test.expectedDomain, actualDomain)
-		})
-	}
 }
 
 func TestLivePresent(t *testing.T) {

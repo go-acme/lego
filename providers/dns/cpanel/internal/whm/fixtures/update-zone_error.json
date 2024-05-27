@@ -1,0 +1,9 @@
+{
+  "data": null,
+  "metadata": {
+    "command": "mass_edit_dns_zone",
+    "reason": "There is a problem",
+    "result": 0,
+    "version": 1
+  }
+}

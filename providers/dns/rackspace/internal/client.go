@@ -80,7 +80,7 @@ func (c *Client) DeleteRecord(ctx context.Context, zoneID, recordID string) erro
 func (c *Client) GetHostedZoneID(ctx context.Context, fqdn string) (string, error) {
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return "", fmt.Errorf("could not find zone for FQDN %q: %w", fqdn, err)
+		return "", fmt.Errorf("could not find zone: %w", err)
 	}
 
 	zoneSearchResponse, err := c.listDomainsByName(ctx, dns01.UnFqdn(authZone))

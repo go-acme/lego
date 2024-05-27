@@ -13,7 +13,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 )
 
-const defaultBaseURL = "https://www.do.de/api"
+const defaultBaseURL = "https://my.do.de/api"
 
 // Client the do.de API client.
 type Client struct {

@@ -61,7 +61,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 ## More information
 
-- [API documentation](https://www.do.de/wiki/LetsEncrypt_-_Entwickler)
+- [API documentation](https://www.do.de/wiki/freie-ssl-tls-zertifikate-ueber-acme/)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->
 <!-- providers/dns/dode/dode.toml -->

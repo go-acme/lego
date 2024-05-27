@@ -1,5 +1,33 @@
 # Changelog
 
+## [v4.17.0] - 2024-05-28
+
+### Added
+
+- **[dnsprovider]** Add DNS provider for Selectel v2
+- **[dnsprovider]** route53: adds option to not wait for changes
+- **[dnsprovider]** ovh: add OAuth2 authentication
+- **[dnsprovider]** azuredns: use TenantID also for cli authentication
+- **[dnsprovider]** godaddy: documentation about new API limitations
+- **[cli]** feat: add LEGO_ISSUER_CERT_PATH to hook
+
+### Changed
+
+- **[dnsprovider]** dode: update API URL
+- **[dnsprovider]** exec: stream command output
+- **[dnsprovider]** oracle: update API client
+- **[dnsprovider]** azuredns: servicediscovery for zones
+- **[dnsprovider]** scaleway: add alternative env var names
+- **[dnsprovider]** exoscale: simplify record creation
+- **[dnsprovider]** httpnet: add provider to NewDNSChallengeProviderByName
+- **[cli]** feat: fills LEGO_CERT_PFX_PATH and LEGO_CERT_PEM_PATH only when needed
+- **[lib,ari]** feat: renewal retry after value
+
+### Fixed
+
+- **[dnsprovider]** pdns: reconstruct zone URLs to enable non-root folder API endpoints
+- **[dnsprovider]** alidns: fix link to API documentation
+
 ## [v4.16.1] - 2024-03-10
 
 ### Fixed

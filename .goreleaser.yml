@@ -17,7 +17,7 @@ builds:
       - linux
       - freebsd
       - openbsd
-      - solaris
+      # - solaris # https://github.com/gofrs/flock/issues/60
     goarch:
       - amd64
       - 386

@@ -1,6 +1,6 @@
 # Changelog
 
-## [v4.17.2] - 2024-05-28
+## [v4.17.3] - 2024-05-28
 
 ### Added
 
@@ -27,6 +27,12 @@
 
 - **[dnsprovider]** pdns: reconstruct zone URLs to enable non-root folder API endpoints
 - **[dnsprovider]** alidns: fix link to API documentation
+
+## [v4.17.2] - 2024-05-28
+
+Canceled due to a release failure related to Snapcraft.
+
+The Snapcraft release are disabled for now.
 
 ## [v4.17.1] - 2024-05-28
 

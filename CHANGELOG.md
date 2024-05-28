@@ -1,6 +1,6 @@
 # Changelog
 
-## [v4.17.1] - 2024-05-28
+## [v4.17.2] - 2024-05-28
 
 ### Added
 
@@ -28,9 +28,18 @@
 - **[dnsprovider]** pdns: reconstruct zone URLs to enable non-root folder API endpoints
 - **[dnsprovider]** alidns: fix link to API documentation
 
+## [v4.17.1] - 2024-05-28
+
+Canceled due to a release failure related to oci-go-sdk.
+
+The module `github.com/oracle/oci-go-sdk/v65` uses `github.com/gofrs/flock` but flock doesn't support some platform (like Solaris):
+- https://github.com/gofrs/flock/issues/60
+
+Due to that we will remove the Solaris build.
+
 ## [v4.17.0] - 2024-05-28
 
-Canceled due to a release failure.
+Canceled due to a release failure related to Snapcraft.
 
 ## [v4.16.1] - 2024-03-10
 

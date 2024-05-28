@@ -1,6 +1,6 @@
 # Changelog
 
-## [v4.17.0] - 2024-05-28
+## [v4.17.1] - 2024-05-28
 
 ### Added
 
@@ -27,6 +27,10 @@
 
 - **[dnsprovider]** pdns: reconstruct zone URLs to enable non-root folder API endpoints
 - **[dnsprovider]** alidns: fix link to API documentation
+
+## [v4.17.0] - 2024-05-28
+
+Canceled due to a release failure.
 
 ## [v4.16.1] - 2024-03-10
 

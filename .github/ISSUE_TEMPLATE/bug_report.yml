@@ -42,6 +42,7 @@ body:
         - Through Caddy
         - Through Terraform ACME provider
         - Through Bitnami
+        - Through Zoraxy
         - Other
     validations:
       required: true

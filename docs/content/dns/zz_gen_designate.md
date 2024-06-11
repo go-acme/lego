@@ -77,6 +77,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 | `DESIGNATE_POLLING_INTERVAL` | Time between DNS propagation check |
 | `DESIGNATE_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
 | `DESIGNATE_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `DESIGNATE_ZONE_NAME` | The zone name to use in the OpenStack Project to manage TXT records. |
 | `OS_PROJECT_ID` | Project ID |
 | `OS_TENANT_NAME` | Tenant name (deprecated see OS_PROJECT_NAME and OS_PROJECT_ID) |
 

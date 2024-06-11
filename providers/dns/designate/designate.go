@@ -26,6 +26,7 @@ const (
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvZoneName           = envNamespace + "ZONE_NAME"
 
 	envNamespaceClient = "OS_"
 
@@ -127,12 +128,17 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
-	if err != nil {
-		return fmt.Errorf("designate: could not find zone for domain %q: %w", domain, err)
+	zone := env.GetOrFile(EnvZoneName)
+	if zone == "" {
+		// Find authoritative zone via SOA record
+		authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+		if err != nil {
+			return fmt.Errorf("designate: could not find zone for domain %q: %w", domain, err)
+		}
+		zone = authZone
 	}
 
-	zoneID, err := d.getZoneID(authZone)
+	zoneID, err := d.getZoneID(zone)
 	if err != nil {
 		return fmt.Errorf("designate: couldn't get zone ID in Present: %w", err)
 	}
@@ -167,12 +173,17 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
-	if err != nil {
-		return fmt.Errorf("designate: could not find zone for domain %q: %w", domain, err)
+	zone := env.GetOrFile(EnvZoneName)
+	if zone == "" {
+		// Find authoritative zone via SOA record
+		authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+		if err != nil {
+			return fmt.Errorf("designate: could not find zone for domain %q: %w", domain, err)
+		}
+		zone = authZone
 	}
 
-	zoneID, err := d.getZoneID(authZone)
+	zoneID, err := d.getZoneID(zone)
 	if err != nil {
 		return fmt.Errorf("designate: couldn't get zone ID in CleanUp: %w", err)
 	}

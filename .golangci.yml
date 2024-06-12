@@ -137,6 +137,7 @@ linters:
     - gosmopolitan  # not relevant
     - exportloopref # Useless with go1.22
     - canonicalheader # Can create side effects in the context of API clients
+    - usestdlibvars # false-positive https://github.com/sashamelentyev/usestdlibvars/issues/96
 
 issues:
   exclude-use-default: false

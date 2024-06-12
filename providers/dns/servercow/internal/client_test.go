@@ -151,7 +151,7 @@ func TestClient_CreateUpdateRecord_error(t *testing.T) {
 	msg, err := client.CreateUpdateRecord(context.Background(), "lego.wtf", record)
 	require.Error(t, err)
 
-	assert.Nil(t, msg) //nolint:testifylint // false positive https://github.com/Antonboom/testifylint/issues/95
+	assert.Nil(t, msg)
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
@@ -218,5 +218,5 @@ func TestClient_DeleteRecord_error(t *testing.T) {
 	msg, err := client.DeleteRecord(context.Background(), "lego.wtf", record)
 	require.Error(t, err)
 
-	assert.Nil(t, msg) //nolint:testifylint // false positive https://github.com/Antonboom/testifylint/issues/95
+	assert.Nil(t, msg)
 }

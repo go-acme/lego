@@ -67,7 +67,7 @@ require (
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.25
 	github.com/selectel/domains-go v1.0.2
 	github.com/selectel/go-selvpcclient/v3 v3.1.1
-	github.com/softlayer/softlayer-go v1.1.3
+	github.com/softlayer/softlayer-go v1.1.5
 	github.com/stretchr/testify v1.9.0
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.898
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod v1.0.898

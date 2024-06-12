@@ -30,22 +30,14 @@ var envTest = tester.NewEnvTest(
 	WithDomain(envDomain).
 	WithLiveTestRequirements(EnvAccessKeyID, EnvSecretAccessKey, EnvRegion, envDomain)
 
-type endpointResolverMock struct {
-	endpoint string
-}
-
-func (e endpointResolverMock) ResolveEndpoint(_, _ string, _ ...interface{}) (aws.Endpoint, error) {
-	return aws.Endpoint{URL: e.endpoint}, nil
-}
-
 func makeTestProvider(t *testing.T, serverURL string) *DNSProvider {
 	t.Helper()
 
 	cfg := aws.Config{
-		Credentials:                 credentials.NewStaticCredentialsProvider("abc", "123", " "),
-		Region:                      "mock-region",
-		EndpointResolverWithOptions: endpointResolverMock{endpoint: serverURL},
-		RetryMaxAttempts:            1,
+		Credentials:      credentials.NewStaticCredentialsProvider("abc", "123", " "),
+		Region:           "mock-region",
+		BaseEndpoint:     aws.String(serverURL),
+		RetryMaxAttempts: 1,
 	}
 
 	return &DNSProvider{

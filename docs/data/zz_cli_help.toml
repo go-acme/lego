@@ -59,7 +59,7 @@ NAME:
    lego run - Register an account, then create and install a certificate
 
 USAGE:
-   lego run [command options] [arguments...]
+   lego run [command options]
 
 OPTIONS:
    --no-bundle                               Do not create a certificate bundle by adding the issuers certificate to the new certificate. (default: false)
@@ -79,7 +79,7 @@ NAME:
    lego renew - Renew a certificate
 
 USAGE:
-   lego renew [command options] [arguments...]
+   lego renew [command options]
 
 OPTIONS:
    --days value                              The number of days left on a certificate to renew it. (default: 30)
@@ -104,7 +104,7 @@ NAME:
    lego revoke - Revoke a certificate
 
 USAGE:
-   lego revoke [command options] [arguments...]
+   lego revoke [command options]
 
 OPTIONS:
    --keep, -k      Keep the certificates after the revocation instead of archiving them. (default: false)
@@ -119,7 +119,7 @@ NAME:
    lego list - Display certificates and accounts information.
 
 USAGE:
-   lego list [command options] [arguments...]
+   lego list [command options]
 
 OPTIONS:
    --accounts, -a  Display accounts. (default: false)

@@ -3,7 +3,8 @@
 ## [v4.17.4] - 2024-06-12
 
 ### Fixed
-- update dependencies
+
+- **[dnsprovider]** Update dependencies
 
 ## [v4.17.3] - 2024-05-28
 

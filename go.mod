@@ -20,7 +20,7 @@ require (
 	github.com/akamai/AkamaiOPEN-edgegrid-golang v1.2.2
 	github.com/aliyun/alibaba-cloud-sdk-go v1.62.712
 	github.com/aws/aws-sdk-go-v2 v1.27.2
-	github.com/aws/aws-sdk-go-v2/config v1.27.11
+	github.com/aws/aws-sdk-go-v2/config v1.27.18
 	github.com/aws/aws-sdk-go-v2/credentials v1.17.18
 	github.com/aws/aws-sdk-go-v2/service/lightsail v1.38.3
 	github.com/aws/aws-sdk-go-v2/service/route53 v1.40.10

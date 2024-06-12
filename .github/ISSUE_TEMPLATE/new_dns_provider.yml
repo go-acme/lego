@@ -1,4 +1,4 @@
-name: New DNS provider support
+name: 🧩 New DNS provider support
 description: Request for the support of a new DNS provider.
 title: "Support for provider: <put the name of your provider>"
 labels: [enhancement, new-provider]

@@ -28,7 +28,7 @@ const (
 	// From the documentation the limitation is 20 requests per second,
 	// but using 20 as value doesn't work but 18 do.
 	// https://letsencrypt.org/docs/rate-limits/
-	// ZeroSSL has a limit to 7.
+	// ZeroSSL has a limit of 7.
 	// https://help.zerossl.com/hc/en-us/articles/17864245480093-Advantages-over-Using-Let-s-Encrypt#h_01HT4Z1JCJFJQFJ1M3P7S085Q9
 	DefaultOverallRequestLimit = 18
 )

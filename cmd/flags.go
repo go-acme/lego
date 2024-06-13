@@ -3,6 +3,7 @@ package cmd
 import (
 	"time"
 
+	"github.com/go-acme/lego/v4/certificate"
 	"github.com/go-acme/lego/v4/lego"
 	"github.com/urfave/cli/v2"
 	"software.sslmate.com/src/go-pkcs12"
@@ -153,6 +154,11 @@ func CreateFlags(defaultPath string) []cli.Flag {
 			Name:  "cert.timeout",
 			Usage: "Set the certificate timeout value to a specific value in seconds. Only used when obtaining certificates.",
 			Value: 30,
+		},
+		&cli.IntFlag{
+			Name:  "overall-request-limit",
+			Usage: "ACME overall requests limit.",
+			Value: certificate.DefaultOverallRequestLimit,
 		},
 		&cli.StringFlag{
 			Name:  "user-agent",

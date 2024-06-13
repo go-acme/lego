@@ -48,6 +48,7 @@ GLOBAL OPTIONS:
    --pfx.pass value                                             The password used to encrypt the .pfx (PCKS#12) file. (default: "changeit") [$LEGO_PFX_PASSWORD]
    --pfx.format value                                           The encoding format to use when encrypting the .pfx (PCKS#12) file. Supported: RC2, DES, SHA256. (default: "RC2") [$LEGO_PFX_FORMAT]
    --cert.timeout value                                         Set the certificate timeout value to a specific value in seconds. Only used when obtaining certificates. (default: 30)
+   --overall-request-limit value                                ACME overall requests limit. (default: 18)
    --user-agent value                                           Add to the user-agent sent to the CA to identify an application embedding lego-cli
    --help, -h                                                   show help
 """

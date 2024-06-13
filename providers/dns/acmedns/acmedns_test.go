@@ -59,7 +59,7 @@ func (c mockUpdateClient) UpdateTXTRecord(acct goacmedns.Account, value string) 
 	return nil
 }
 
-// errorRegisterClient is a mock implementing the acmeDNSClient interface that always
+// errorUpdateClient is a mock implementing the acmeDNSClient interface that always
 // returns errors from errorUpdateClient.
 type errorUpdateClient struct {
 	mockClient

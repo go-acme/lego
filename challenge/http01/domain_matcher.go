@@ -57,7 +57,7 @@ func (m *hostMatcher) matches(r *http.Request, domain string) bool {
 	return strings.HasPrefix(r.Host, domain)
 }
 
-// hostMatcher checks whether the specified (*net/http.Request).Header value starts with a domain name.
+// arbitraryMatcher checks whether the specified (*net/http.Request).Header value starts with a domain name.
 type arbitraryMatcher string
 
 func (m arbitraryMatcher) name() string {

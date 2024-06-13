@@ -126,7 +126,8 @@ func NewCertifier(core *api.Core, resolver resolver, options CertifierOptions) *
 		options:  options,
 	}
 
-	if options.OverallRequestLimit <= 0 {
+	c.overallRequestLimit = options.OverallRequestLimit
+	if c.overallRequestLimit <= 0 {
 		c.overallRequestLimit = DefaultOverallRequestLimit
 	}
 

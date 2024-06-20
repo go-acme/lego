@@ -26,7 +26,8 @@ const (
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
 	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
-	EnvZoneName           = envNamespace + "ZONE_NAME"
+
+	EnvZoneName = envNamespace + "ZONE_NAME"
 
 	envNamespaceClient = "OS_"
 
@@ -128,14 +129,9 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone := env.GetOrFile(EnvZoneName)
-	if zone == "" {
-		// Find authoritative zone via SOA record
-		authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
-		if err != nil {
-			return fmt.Errorf("designate: could not find zone for domain %q: %w", domain, err)
-		}
-		zone = authZone
+	zone, err := getAuthZone(info.EffectiveFQDN)
+	if err != nil {
+		return fmt.Errorf("designate: %w", err)
 	}
 
 	zoneID, err := d.getZoneID(zone)
@@ -173,14 +169,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone := env.GetOrFile(EnvZoneName)
-	if zone == "" {
-		// Find authoritative zone via SOA record
-		authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
-		if err != nil {
-			return fmt.Errorf("designate: could not find zone for domain %q: %w", domain, err)
-		}
-		zone = authZone
+	zone, err := getAuthZone(info.EffectiveFQDN)
+	if err != nil {
+		return fmt.Errorf("designate: %w", err)
 	}
 
 	zoneID, err := d.getZoneID(zone)
@@ -283,4 +274,18 @@ func (d *DNSProvider) getRecord(zoneID, wanted string) (*recordsets.RecordSet, e
 	}
 
 	return nil, nil
+}
+
+func getAuthZone(fqdn string) (string, error) {
+	authZone := env.GetOrFile(EnvZoneName)
+	if authZone != "" {
+		return authZone, nil
+	}
+
+	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	if err != nil {
+		return "", fmt.Errorf("could not find zone: %w", err)
+	}
+
+	return authZone, nil
 }

@@ -35,6 +35,7 @@ docker run goacme/lego -h
   ```bash
   sudo snap install lego
   ```
+  Note: The snap can only write to the `/var/snap/lego/common/.lego` directory.
 
 - [FreeBSD (Ports)](https://www.freshports.org/security/lego) (unofficial):
 

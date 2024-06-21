@@ -187,3 +187,5 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/ovh/go-ovh => github.com/ldez/go-ovh v1.4.2-0.20240621144634-e57d43b43c1c

@@ -15,7 +15,7 @@ import (
 
 // OVH API reference:       https://eu.api.ovh.com/
 // Create a Token:          https://eu.api.ovh.com/createToken/
-// Create a OAuth2 client:   https://eu.api.ovh.com/console-preview/?section=%2Fme&branch=v1#post-/me/api/oauth2/client
+// Create a OAuth2 client:   https://eu.api.ovh.com/console/?section=%2Fme&branch=v1#post-/me/api/oauth2/client
 
 // Environment variables names.
 const (
@@ -234,29 +234,22 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-// Inspired by:
-// - NewClient: https://github.com/ovh/go-ovh/blob/6817886d12a8c5650794b28da635af9fcdfd1162/ovh/ovh.go#L103
-// - NewOAuth2Client: https://github.com/ovh/go-ovh/blob/6817886d12a8c5650794b28da635af9fcdfd1162/ovh/ovh.go#L132
 func newClient(config *Config) (*ovh.Client, error) {
-	client := ovh.Client{
-		AppKey:      config.ApplicationKey,
-		AppSecret:   config.ApplicationSecret,
-		ConsumerKey: config.ConsumerKey,
-		Client:      config.HTTPClient,
-		Timeout:     ovh.DefaultTimeout,
-		UserAgent:   "go-acme/lego",
+	var client *ovh.Client
+	var err error
+	if config.hasAppKeyAuth() {
+		client, err = ovh.NewClient(config.APIEndpoint, config.ApplicationKey, config.ApplicationSecret, config.ConsumerKey)
+	} else if config.OAuth2Config != nil {
+		client, err = ovh.NewOAuth2Client(config.APIEndpoint, config.OAuth2Config.ClientID, config.OAuth2Config.ClientSecret)
+	} else {
+		client, err = ovh.NewDefaultClient()
 	}
 
-	if config.OAuth2Config != nil {
-		client.ClientID = config.OAuth2Config.ClientID
-		client.ClientSecret = config.OAuth2Config.ClientSecret
-	}
-
-	// Get and check the configuration
-	err := client.LoadConfig(config.APIEndpoint)
 	if err != nil {
 		return nil, fmt.Errorf("new client: %w", err)
 	}
 
-	return &client, nil
+	client.UserAgent = "go-acme/lego"
+
+	return client, nil
 }

@@ -58,6 +58,7 @@ const (
 //	     │      └── root accounts directory
 //	     └── "path" option
 type AccountsStorage struct {
+	noEmail         bool
 	userID          string
 	rootPath        string
 	rootUserPath    string
@@ -68,8 +69,14 @@ type AccountsStorage struct {
 
 // NewAccountsStorage Creates a new AccountsStorage.
 func NewAccountsStorage(ctx *cli.Context) *AccountsStorage {
-	// TODO: move to account struct? Currently MUST pass email.
-	email := getEmail(ctx)
+	var userID string
+	noEmail := ctx.IsSet("no-email")
+	if noEmail {
+		userID = "default"
+	} else {
+		// TODO: move to account struct?
+		userID = getEmail(ctx)
+	}
 
 	serverURL, err := url.Parse(ctx.String("server"))
 	if err != nil {
@@ -79,10 +86,11 @@ func NewAccountsStorage(ctx *cli.Context) *AccountsStorage {
 	rootPath := filepath.Join(ctx.String("path"), baseAccountsRootFolderName)
 	serverPath := strings.NewReplacer(":", "_", "/", string(os.PathSeparator)).Replace(serverURL.Host)
 	accountsPath := filepath.Join(rootPath, serverPath)
-	rootUserPath := filepath.Join(accountsPath, email)
+	rootUserPath := filepath.Join(accountsPath, userID)
 
 	return &AccountsStorage{
-		userID:          email,
+		noEmail:         noEmail,
+		userID:          userID,
 		rootPath:        rootPath,
 		rootUserPath:    rootUserPath,
 		keysPath:        filepath.Join(rootUserPath, baseKeysFolderName),
@@ -110,6 +118,9 @@ func (s *AccountsStorage) GetRootUserPath() string {
 }
 
 func (s *AccountsStorage) GetUserID() string {
+	if s.noEmail {
+		return ""
+	}
 	return s.userID
 }
 

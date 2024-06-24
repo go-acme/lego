@@ -100,7 +100,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvClientID:          "",
 				EnvClientSecret:      "",
 			},
-			expected: "ovh: new client: missing authentication information, you need to provide one of the following: application_key/application_secret, client_id/client_secret, or access_token",
+			expected: "ovh: new client: missing authentication information, you need to provide at least an application_key/application_secret or a client_id/client_secret",
 		},
 		{
 			desc: "mixed auth",
@@ -224,7 +224,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		},
 		{
 			desc:     "missing credentials",
-			expected: "ovh: new client: missing authentication information, you need to provide one of the following: application_key/application_secret, client_id/client_secret, or access_token",
+			expected: "ovh: new client: missing authentication information, you need to provide at least an application_key/application_secret or a client_id/client_secret",
 		},
 		{
 			desc:              "mixed auth",

@@ -237,11 +237,13 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func newClient(config *Config) (*ovh.Client, error) {
 	var client *ovh.Client
 	var err error
-	if config.hasAppKeyAuth() {
+
+	switch {
+	case config.hasAppKeyAuth():
 		client, err = ovh.NewClient(config.APIEndpoint, config.ApplicationKey, config.ApplicationSecret, config.ConsumerKey)
-	} else if config.OAuth2Config != nil {
+	case config.OAuth2Config != nil:
 		client, err = ovh.NewOAuth2Client(config.APIEndpoint, config.OAuth2Config.ClientID, config.OAuth2Config.ClientSecret)
-	} else {
+	default:
 		client, err = ovh.NewDefaultClient()
 	}
 

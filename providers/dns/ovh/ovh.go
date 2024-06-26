@@ -15,7 +15,7 @@ import (
 
 // OVH API reference:       https://eu.api.ovh.com/
 // Create a Token:          https://eu.api.ovh.com/createToken/
-// Create a OAuth2 client:   https://eu.api.ovh.com/console-preview/?section=%2Fme&branch=v1#post-/me/api/oauth2/client
+// Create a OAuth2 client:   https://eu.api.ovh.com/console/?section=%2Fme&branch=v1#post-/me/api/oauth2/client
 
 // Environment variables names.
 const (
@@ -102,9 +102,23 @@ type DNSProvider struct {
 // Credentials must be passed in the environment variables:
 // OVH_ENDPOINT (must be either "ovh-eu" or "ovh-ca"), OVH_APPLICATION_KEY, OVH_APPLICATION_SECRET, OVH_CONSUMER_KEY.
 func NewDNSProvider() (*DNSProvider, error) {
-	config, err := createConfigFromEnvVars()
-	if err != nil {
-		return nil, fmt.Errorf("ovh: %w", err)
+	config := NewDefaultConfig()
+
+	// https://github.com/ovh/go-ovh/blob/6817886d12a8c5650794b28da635af9fcdfd1162/ovh/configuration.go#L105
+	config.APIEndpoint = env.GetOrDefaultString(EnvEndpoint, "ovh-eu")
+
+	config.ApplicationKey = env.GetOrFile(EnvApplicationKey)
+	config.ApplicationSecret = env.GetOrFile(EnvApplicationSecret)
+	config.ConsumerKey = env.GetOrFile(EnvConsumerKey)
+
+	clientID := env.GetOrFile(EnvClientID)
+	clientSecret := env.GetOrFile(EnvClientSecret)
+
+	if clientID != "" || clientSecret != "" {
+		config.OAuth2Config = &OAuth2Config{
+			ClientID:     clientID,
+			ClientSecret: clientSecret,
+		}
 	}
 
 	return NewDNSProviderConfig(config)
@@ -124,8 +138,6 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	if err != nil {
 		return nil, fmt.Errorf("ovh: %w", err)
 	}
-
-	client.Client = config.HTTPClient
 
 	return &DNSProvider{
 		config:    config,
@@ -222,94 +234,24 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 	return d.config.PropagationTimeout, d.config.PollingInterval
 }
 
-func createConfigFromEnvVars() (*Config, error) {
-	firstAppKeyEnvVar := findFirstValuedEnvVar(EnvApplicationKey, EnvApplicationSecret, EnvConsumerKey)
-	firstOAuth2EnvVar := findFirstValuedEnvVar(EnvClientID, EnvClientSecret)
-
-	if firstAppKeyEnvVar != "" && firstOAuth2EnvVar != "" {
-		return nil, fmt.Errorf("can't use both %s and %s at the same time", firstAppKeyEnvVar, firstOAuth2EnvVar)
-	}
-
-	config := NewDefaultConfig()
-
-	if firstOAuth2EnvVar != "" {
-		values, err := env.Get(EnvEndpoint, EnvClientID, EnvClientSecret)
-		if err != nil {
-			return nil, err
-		}
-
-		config.APIEndpoint = values[EnvEndpoint]
-		config.OAuth2Config = &OAuth2Config{
-			ClientID:     values[EnvClientID],
-			ClientSecret: values[EnvClientSecret],
-		}
-
-		return config, nil
-	}
-
-	values, err := env.Get(EnvEndpoint, EnvApplicationKey, EnvApplicationSecret, EnvConsumerKey)
-	if err != nil {
-		return nil, err
-	}
-
-	config.APIEndpoint = values[EnvEndpoint]
-
-	config.ApplicationKey = values[EnvApplicationKey]
-	config.ApplicationSecret = values[EnvApplicationSecret]
-	config.ConsumerKey = values[EnvConsumerKey]
-
-	return config, nil
-}
-
-func findFirstValuedEnvVar(envVars ...string) string {
-	for _, envVar := range envVars {
-		if env.GetOrFile(envVar) != "" {
-			return envVar
-		}
-	}
-
-	return ""
-}
-
 func newClient(config *Config) (*ovh.Client, error) {
-	if config.OAuth2Config == nil {
-		return newClientApplicationKey(config)
+	var client *ovh.Client
+	var err error
+
+	switch {
+	case config.hasAppKeyAuth():
+		client, err = ovh.NewClient(config.APIEndpoint, config.ApplicationKey, config.ApplicationSecret, config.ConsumerKey)
+	case config.OAuth2Config != nil:
+		client, err = ovh.NewOAuth2Client(config.APIEndpoint, config.OAuth2Config.ClientID, config.OAuth2Config.ClientSecret)
+	default:
+		client, err = ovh.NewDefaultClient()
 	}
 
-	return newClientOAuth2(config)
-}
-
-func newClientApplicationKey(config *Config) (*ovh.Client, error) {
-	if config.APIEndpoint == "" || config.ApplicationKey == "" || config.ApplicationSecret == "" || config.ConsumerKey == "" {
-		return nil, errors.New("credentials are missing")
-	}
-
-	client, err := ovh.NewClient(
-		config.APIEndpoint,
-		config.ApplicationKey,
-		config.ApplicationSecret,
-		config.ConsumerKey,
-	)
 	if err != nil {
 		return nil, fmt.Errorf("new client: %w", err)
 	}
 
-	return client, nil
-}
-
-func newClientOAuth2(config *Config) (*ovh.Client, error) {
-	if config.APIEndpoint == "" || config.OAuth2Config.ClientID == "" || config.OAuth2Config.ClientSecret == "" {
-		return nil, errors.New("credentials are missing")
-	}
-
-	client, err := ovh.NewOAuth2Client(
-		config.APIEndpoint,
-		config.OAuth2Config.ClientID,
-		config.OAuth2Config.ClientSecret,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("new OAuth2 client: %w", err)
-	}
+	client.UserAgent = "go-acme/lego"
 
 	return client, nil
 }

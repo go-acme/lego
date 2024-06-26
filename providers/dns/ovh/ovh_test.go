@@ -35,16 +35,6 @@ func TestNewDNSProvider(t *testing.T) {
 			},
 		},
 		{
-			desc: "application key: missing endpoint",
-			envVars: map[string]string{
-				EnvEndpoint:          "",
-				EnvApplicationKey:    "B",
-				EnvApplicationSecret: "C",
-				EnvConsumerKey:       "D",
-			},
-			expected: "ovh: some credentials information are missing: OVH_ENDPOINT",
-		},
-		{
 			desc: "application key: missing invalid endpoint",
 			envVars: map[string]string{
 				EnvEndpoint:          "foobar",
@@ -62,7 +52,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvApplicationSecret: "C",
 				EnvConsumerKey:       "D",
 			},
-			expected: "ovh: some credentials information are missing: OVH_APPLICATION_KEY",
+			expected: "ovh: new client: invalid authentication config, both application_key and application_secret must be given",
 		},
 		{
 			desc: "application key: missing application secret",
@@ -72,17 +62,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvApplicationSecret: "",
 				EnvConsumerKey:       "D",
 			},
-			expected: "ovh: some credentials information are missing: OVH_APPLICATION_SECRET",
-		},
-		{
-			desc: "application key: missing consumer key",
-			envVars: map[string]string{
-				EnvEndpoint:          "ovh-eu",
-				EnvApplicationKey:    "B",
-				EnvApplicationSecret: "C",
-				EnvConsumerKey:       "",
-			},
-			expected: "ovh: some credentials information are missing: OVH_CONSUMER_KEY",
+			expected: "ovh: new client: invalid authentication config, both application_key and application_secret must be given",
 		},
 		{
 			desc: "oauth2: success",
@@ -99,7 +79,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvClientID:     "E",
 				EnvClientSecret: "",
 			},
-			expected: "ovh: some credentials information are missing: OVH_CLIENT_SECRET",
+			expected: "ovh: new client: invalid oauth2 config, both client_id and client_secret must be given",
 		},
 		{
 			desc: "oauth2: missing client ID",
@@ -108,7 +88,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvClientID:     "",
 				EnvClientSecret: "F",
 			},
-			expected: "ovh: some credentials information are missing: OVH_CLIENT_ID",
+			expected: "ovh: new client: invalid oauth2 config, both client_id and client_secret must be given",
 		},
 		{
 			desc: "missing credentials",
@@ -120,7 +100,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvClientID:          "",
 				EnvClientSecret:      "",
 			},
-			expected: "ovh: some credentials information are missing: OVH_ENDPOINT,OVH_APPLICATION_KEY,OVH_APPLICATION_SECRET,OVH_CONSUMER_KEY",
+			expected: "ovh: new client: missing authentication information, you need to provide at least an application_key/application_secret or a client_id/client_secret",
 		},
 		{
 			desc: "mixed auth",
@@ -132,7 +112,7 @@ func TestNewDNSProvider(t *testing.T) {
 				EnvClientID:          "E",
 				EnvClientSecret:      "F",
 			},
-			expected: "ovh: can't use both OVH_APPLICATION_KEY and OVH_CLIENT_ID at the same time",
+			expected: "ovh: can't use both authentication systems (ApplicationKey and OAuth2)",
 		},
 	}
 
@@ -182,7 +162,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			applicationKey:    "B",
 			applicationSecret: "C",
 			consumerKey:       "D",
-			expected:          "ovh: credentials are missing",
+			expected:          "ovh: new client: unknown endpoint '', consider checking 'Endpoints' list or using an URL",
 		},
 		{
 			desc:              "application key: invalid api endpoint",
@@ -198,7 +178,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			applicationKey:    "",
 			applicationSecret: "C",
 			consumerKey:       "D",
-			expected:          "ovh: credentials are missing",
+			expected:          "ovh: new client: invalid authentication config, both application_key and application_secret must be given",
 		},
 		{
 			desc:              "application key: missing application secret",
@@ -206,15 +186,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			applicationKey:    "B",
 			applicationSecret: "",
 			consumerKey:       "D",
-			expected:          "ovh: credentials are missing",
-		},
-		{
-			desc:              "application key: missing consumer key",
-			apiEndpoint:       "ovh-eu",
-			applicationKey:    "B",
-			applicationSecret: "C",
-			consumerKey:       "",
-			expected:          "ovh: credentials are missing",
+			expected:          "ovh: new client: invalid authentication config, both application_key and application_secret must be given",
 		},
 		{
 			desc:         "oauth2: success",
@@ -227,32 +199,32 @@ func TestNewDNSProviderConfig(t *testing.T) {
 			apiEndpoint:  "",
 			clientID:     "B",
 			clientSecret: "C",
-			expected:     "ovh: credentials are missing",
+			expected:     "ovh: new client: unknown endpoint '', consider checking 'Endpoints' list or using an URL",
 		},
 		{
 			desc:         "oauth2: invalid api endpoint",
 			apiEndpoint:  "foobar",
 			clientID:     "B",
 			clientSecret: "C",
-			expected:     "ovh: new OAuth2 client: unknown endpoint 'foobar', consider checking 'Endpoints' list or using an URL",
+			expected:     "ovh: new client: unknown endpoint 'foobar', consider checking 'Endpoints' list or using an URL",
 		},
 		{
 			desc:         "oauth2: missing client id",
 			apiEndpoint:  "ovh-eu",
 			clientID:     "",
 			clientSecret: "C",
-			expected:     "ovh: credentials are missing",
+			expected:     "ovh: new client: invalid oauth2 config, both client_id and client_secret must be given",
 		},
 		{
 			desc:         "oauth2: missing client secret",
 			apiEndpoint:  "ovh-eu",
 			clientID:     "B",
 			clientSecret: "",
-			expected:     "ovh: credentials are missing",
+			expected:     "ovh: new client: invalid oauth2 config, both client_id and client_secret must be given",
 		},
 		{
 			desc:     "missing credentials",
-			expected: "ovh: credentials are missing",
+			expected: "ovh: new client: missing authentication information, you need to provide at least an application_key/application_secret or a client_id/client_secret",
 		},
 		{
 			desc:              "mixed auth",

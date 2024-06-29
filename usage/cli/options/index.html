@@ -1,0 +1,5865 @@
+<!DOCTYPE html>
+<html lang="en" class="js csstransforms3d">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="Hugo 0.117.0">
+    <meta name="description" content="">
+<meta name="author" content="Lego Team">
+
+    <link rel="icon" href="/lego/images/favicon.png" type="image/png">
+
+    <title>Options :: Let’s Encrypt client and ACME library written in Go.</title>
+
+    
+    <link href="/lego/css/nucleus.css?1719679963" rel="stylesheet">
+    <link href="/lego/css/fontawesome-all.min.css?1719679963" rel="stylesheet">
+    <link href="/lego/css/hybrid.css?1719679963" rel="stylesheet">
+    <link href="/lego/css/featherlight.min.css?1719679963" rel="stylesheet">
+    <link href="/lego/css/perfect-scrollbar.min.css?1719679963" rel="stylesheet">
+    <link href="/lego/css/auto-complete.css?1719679963" rel="stylesheet">
+    <link href="/lego/css/atom-one-dark-reasonable.css?1719679963" rel="stylesheet">
+    <link href="/lego/css/theme.css?1719679963" rel="stylesheet">
+    <link href="/lego/css/tabs.css?1719679963" rel="stylesheet">
+    <link href="/lego/css/hugo-theme.css?1719679963" rel="stylesheet">
+    
+    <link href="/lego/css/theme-blue.css?1719679963" rel="stylesheet">
+    
+    <link href="/lego/css/theme-custom.css?1719679963" rel="stylesheet">
+
+    <script src="/lego/js/jquery-3.3.1.min.js?1719679963"></script>
+
+    <style>
+      :root #header + #content > #left > #rlblock_left{
+          display:none !important;
+      }
+      
+    </style>
+    
+  </head>
+  <body class="" data-url="/lego/usage/cli/options/">
+    <nav id="sidebar" class="showVisitedLinks">
+
+
+
+  <div id="header-wrapper">
+    <div id="header">
+      <a id="logo" href="/lego"><img src="/lego/images/lego-logo-white.min.svg" alt="lego logo"></a>
+
+    </div>
+    
+        <div class="searchbox">
+    <label for="search-by"><i class="fas fa-search"></i></label>
+    <input data-search-input id="search-by" type="search" placeholder="Search...">
+    <span data-search-clear=""><i class="fas fa-times"></i></span>
+</div>
+
+<script type="text/javascript" src="/lego/js/lunr.min.js?1719679963"></script>
+<script type="text/javascript" src="/lego/js/auto-complete.js?1719679963"></script>
+<script type="text/javascript">
+    
+        var baseurl = "https:\/\/go-acme.github.io\/lego\/";
+    
+</script>
+<script type="text/javascript" src="/lego/js/search.js?1719679963"></script>
+
+    
+  </div>
+  
+
+    <div class="highlightable">
+    <ul class="topics">
+
+        
+          
+          
+
+
+
+
+ 
+  
+    
+    <li data-nav-id="/lego/installation/" title="Installation" class="dd-item
+        
+        
+        
+        ">
+      <a href="/lego/installation/">
+          Installation
+          
+            <i class="fas fa-check read-icon"></i>
+          
+      </a>
+      
+      
+    </li>
+  
+ 
+
+          
+          
+
+
+
+
+ 
+  
+    
+    <li data-nav-id="/lego/usage/" title="Usage" class="dd-item
+        parent
+        
+        
+        ">
+      <a href="/lego/usage/">
+          Usage
+          
+            <i class="fas fa-check read-icon"></i>
+          
+      </a>
+      
+      
+        <ul>
+          
+          
+            
+          
+          
+
+        
+          
+            
+            
+
+
+
+
+ 
+  
+    
+    <li data-nav-id="/lego/usage/cli/" title="CLI" class="dd-item
+        parent
+        
+        
+        ">
+      <a href="/lego/usage/cli/">
+          CLI
+          
+            <i class="fas fa-check read-icon"></i>
+          
+      </a>
+      
+      
+        <ul>
+          
+          
+          
+
+        
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/usage/cli/general-instructions/" title="General Instructions" class="dd-item ">
+        <a href="/lego/usage/cli/general-instructions/">
+        General Instructions
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/usage/cli/obtain-a-certificate/" title="Obtain a Certificate" class="dd-item ">
+        <a href="/lego/usage/cli/obtain-a-certificate/">
+        Obtain a Certificate
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/usage/cli/renew-a-certificate/" title="Renew a Certificate" class="dd-item ">
+        <a href="/lego/usage/cli/renew-a-certificate/">
+        Renew a Certificate
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/usage/cli/options/" title="Options" class="dd-item active">
+        <a href="/lego/usage/cli/options/">
+        Options
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+          
+        
+        </ul>
+      
+    </li>
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+    <li data-nav-id="/lego/usage/library/" title="Library" class="dd-item
+        
+        
+        
+        ">
+      <a href="/lego/usage/library/">
+          Library
+          
+            <i class="fas fa-check read-icon"></i>
+          
+      </a>
+      
+      
+        <ul>
+          
+          
+          
+
+        
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/usage/library/writing-a-challenge-solver/" title="Writing a Challenge Solver" class="dd-item ">
+        <a href="/lego/usage/library/writing-a-challenge-solver/">
+        Writing a Challenge Solver
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+        
+        </ul>
+      
+    </li>
+  
+ 
+
+            
+          
+        
+        </ul>
+      
+    </li>
+  
+ 
+
+          
+          
+
+
+
+
+ 
+  
+    
+    <li data-nav-id="/lego/dns/" title="DNS Providers" class="dd-item
+        
+        
+        
+        ">
+      <a href="/lego/dns/">
+          DNS Providers
+          
+            <i class="fas fa-check read-icon"></i>
+          
+      </a>
+      
+      
+        <ul>
+          
+          
+          
+
+        
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/edgedns/" title="Akamai EdgeDNS" class="dd-item ">
+        <a href="/lego/dns/edgedns/">
+        Akamai EdgeDNS
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/alidns/" title="Alibaba Cloud DNS" class="dd-item ">
+        <a href="/lego/dns/alidns/">
+        Alibaba Cloud DNS
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/allinkl/" title="all-inkl" class="dd-item ">
+        <a href="/lego/dns/allinkl/">
+        all-inkl
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/lightsail/" title="Amazon Lightsail" class="dd-item ">
+        <a href="/lego/dns/lightsail/">
+        Amazon Lightsail
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/route53/" title="Amazon Route 53" class="dd-item ">
+        <a href="/lego/dns/route53/">
+        Amazon Route 53
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/arvancloud/" title="ArvanCloud" class="dd-item ">
+        <a href="/lego/dns/arvancloud/">
+        ArvanCloud
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/auroradns/" title="Aurora DNS" class="dd-item ">
+        <a href="/lego/dns/auroradns/">
+        Aurora DNS
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/autodns/" title="Autodns" class="dd-item ">
+        <a href="/lego/dns/autodns/">
+        Autodns
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/azure/" title="Azure (deprecated)" class="dd-item ">
+        <a href="/lego/dns/azure/">
+        Azure (deprecated)
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/azuredns/" title="Azure DNS" class="dd-item ">
+        <a href="/lego/dns/azuredns/">
+        Azure DNS
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/bindman/" title="Bindman" class="dd-item ">
+        <a href="/lego/dns/bindman/">
+        Bindman
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/bluecat/" title="Bluecat" class="dd-item ">
+        <a href="/lego/dns/bluecat/">
+        Bluecat
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/brandit/" title="Brandit" class="dd-item ">
+        <a href="/lego/dns/brandit/">
+        Brandit
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/bunny/" title="Bunny" class="dd-item ">
+        <a href="/lego/dns/bunny/">
+        Bunny
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/checkdomain/" title="Checkdomain" class="dd-item ">
+        <a href="/lego/dns/checkdomain/">
+        Checkdomain
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/civo/" title="Civo" class="dd-item ">
+        <a href="/lego/dns/civo/">
+        Civo
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/cloudru/" title="Cloud.ru" class="dd-item ">
+        <a href="/lego/dns/cloudru/">
+        Cloud.ru
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/clouddns/" title="CloudDNS" class="dd-item ">
+        <a href="/lego/dns/clouddns/">
+        CloudDNS
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/cloudflare/" title="Cloudflare" class="dd-item ">
+        <a href="/lego/dns/cloudflare/">
+        Cloudflare
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/cloudns/" title="ClouDNS" class="dd-item ">
+        <a href="/lego/dns/cloudns/">
+        ClouDNS
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/cloudxns/" title="CloudXNS" class="dd-item ">
+        <a href="/lego/dns/cloudxns/">
+        CloudXNS
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/conoha/" title="ConoHa" class="dd-item ">
+        <a href="/lego/dns/conoha/">
+        ConoHa
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/constellix/" title="Constellix" class="dd-item ">
+        <a href="/lego/dns/constellix/">
+        Constellix
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/cpanel/" title="CPanel/WHM" class="dd-item ">
+        <a href="/lego/dns/cpanel/">
+        CPanel/WHM
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/derak/" title="Derak Cloud" class="dd-item ">
+        <a href="/lego/dns/derak/">
+        Derak Cloud
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/desec/" title="deSEC.io" class="dd-item ">
+        <a href="/lego/dns/desec/">
+        deSEC.io
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/designate/" title="Designate DNSaaS for Openstack" class="dd-item ">
+        <a href="/lego/dns/designate/">
+        Designate DNSaaS for Openstack
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/digitalocean/" title="Digital Ocean" class="dd-item ">
+        <a href="/lego/dns/digitalocean/">
+        Digital Ocean
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/dnsmadeeasy/" title="DNS Made Easy" class="dd-item ">
+        <a href="/lego/dns/dnsmadeeasy/">
+        DNS Made Easy
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/dnshomede/" title="dnsHome.de" class="dd-item ">
+        <a href="/lego/dns/dnshomede/">
+        dnsHome.de
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/dnsimple/" title="DNSimple" class="dd-item ">
+        <a href="/lego/dns/dnsimple/">
+        DNSimple
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/dnspod/" title="DNSPod (deprecated)" class="dd-item ">
+        <a href="/lego/dns/dnspod/">
+        DNSPod (deprecated)
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/dode/" title="Domain Offensive (do.de)" class="dd-item ">
+        <a href="/lego/dns/dode/">
+        Domain Offensive (do.de)
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/domeneshop/" title="Domeneshop" class="dd-item ">
+        <a href="/lego/dns/domeneshop/">
+        Domeneshop
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/dreamhost/" title="DreamHost" class="dd-item ">
+        <a href="/lego/dns/dreamhost/">
+        DreamHost
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/duckdns/" title="Duck DNS" class="dd-item ">
+        <a href="/lego/dns/duckdns/">
+        Duck DNS
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/dyn/" title="Dyn" class="dd-item ">
+        <a href="/lego/dns/dyn/">
+        Dyn
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/dynu/" title="Dynu" class="dd-item ">
+        <a href="/lego/dns/dynu/">
+        Dynu
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/easydns/" title="EasyDNS" class="dd-item ">
+        <a href="/lego/dns/easydns/">
+        EasyDNS
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/efficientip/" title="Efficient IP" class="dd-item ">
+        <a href="/lego/dns/efficientip/">
+        Efficient IP
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/epik/" title="Epik" class="dd-item ">
+        <a href="/lego/dns/epik/">
+        Epik
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/exoscale/" title="Exoscale" class="dd-item ">
+        <a href="/lego/dns/exoscale/">
+        Exoscale
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/exec/" title="External program" class="dd-item ">
+        <a href="/lego/dns/exec/">
+        External program
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/freemyip/" title="freemyip.com" class="dd-item ">
+        <a href="/lego/dns/freemyip/">
+        freemyip.com
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/gcore/" title="G-Core" class="dd-item ">
+        <a href="/lego/dns/gcore/">
+        G-Core
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/gandi/" title="Gandi" class="dd-item ">
+        <a href="/lego/dns/gandi/">
+        Gandi
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/gandiv5/" title="Gandi Live DNS (v5)" class="dd-item ">
+        <a href="/lego/dns/gandiv5/">
+        Gandi Live DNS (v5)
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/glesys/" title="Glesys" class="dd-item ">
+        <a href="/lego/dns/glesys/">
+        Glesys
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/godaddy/" title="Go Daddy" class="dd-item ">
+        <a href="/lego/dns/godaddy/">
+        Go Daddy
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/gcloud/" title="Google Cloud" class="dd-item ">
+        <a href="/lego/dns/gcloud/">
+        Google Cloud
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/googledomains/" title="Google Domains" class="dd-item ">
+        <a href="/lego/dns/googledomains/">
+        Google Domains
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/hetzner/" title="Hetzner" class="dd-item ">
+        <a href="/lego/dns/hetzner/">
+        Hetzner
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/hostingde/" title="Hosting.de" class="dd-item ">
+        <a href="/lego/dns/hostingde/">
+        Hosting.de
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/hosttech/" title="Hosttech" class="dd-item ">
+        <a href="/lego/dns/hosttech/">
+        Hosttech
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/httpreq/" title="HTTP request" class="dd-item ">
+        <a href="/lego/dns/httpreq/">
+        HTTP request
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/httpnet/" title="http.net" class="dd-item ">
+        <a href="/lego/dns/httpnet/">
+        http.net
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/hurricane/" title="Hurricane Electric DNS" class="dd-item ">
+        <a href="/lego/dns/hurricane/">
+        Hurricane Electric DNS
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/hyperone/" title="HyperOne" class="dd-item ">
+        <a href="/lego/dns/hyperone/">
+        HyperOne
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/ibmcloud/" title="IBM Cloud (SoftLayer)" class="dd-item ">
+        <a href="/lego/dns/ibmcloud/">
+        IBM Cloud (SoftLayer)
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/iijdpf/" title="IIJ DNS Platform Service" class="dd-item ">
+        <a href="/lego/dns/iijdpf/">
+        IIJ DNS Platform Service
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/infoblox/" title="Infoblox" class="dd-item ">
+        <a href="/lego/dns/infoblox/">
+        Infoblox
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/infomaniak/" title="Infomaniak" class="dd-item ">
+        <a href="/lego/dns/infomaniak/">
+        Infomaniak
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/iij/" title="Internet Initiative Japan" class="dd-item ">
+        <a href="/lego/dns/iij/">
+        Internet Initiative Japan
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/internetbs/" title="Internet.bs" class="dd-item ">
+        <a href="/lego/dns/internetbs/">
+        Internet.bs
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/inwx/" title="INWX" class="dd-item ">
+        <a href="/lego/dns/inwx/">
+        INWX
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/ionos/" title="Ionos" class="dd-item ">
+        <a href="/lego/dns/ionos/">
+        Ionos
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/ipv64/" title="IPv64" class="dd-item ">
+        <a href="/lego/dns/ipv64/">
+        IPv64
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/iwantmyname/" title="iwantmyname" class="dd-item ">
+        <a href="/lego/dns/iwantmyname/">
+        iwantmyname
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/joker/" title="Joker" class="dd-item ">
+        <a href="/lego/dns/joker/">
+        Joker
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/acme-dns/" title="Joohoi&#39;s ACME-DNS" class="dd-item ">
+        <a href="/lego/dns/acme-dns/">
+        Joohoi&#39;s ACME-DNS
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/liara/" title="Liara" class="dd-item ">
+        <a href="/lego/dns/liara/">
+        Liara
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/linode/" title="Linode (v4)" class="dd-item ">
+        <a href="/lego/dns/linode/">
+        Linode (v4)
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/liquidweb/" title="Liquid Web" class="dd-item ">
+        <a href="/lego/dns/liquidweb/">
+        Liquid Web
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/loopia/" title="Loopia" class="dd-item ">
+        <a href="/lego/dns/loopia/">
+        Loopia
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/luadns/" title="LuaDNS" class="dd-item ">
+        <a href="/lego/dns/luadns/">
+        LuaDNS
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/mailinabox/" title="Mail-in-a-Box" class="dd-item ">
+        <a href="/lego/dns/mailinabox/">
+        Mail-in-a-Box
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/manual/" title="Manual" class="dd-item ">
+        <a href="/lego/dns/manual/">
+        Manual
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/metaname/" title="Metaname" class="dd-item ">
+        <a href="/lego/dns/metaname/">
+        Metaname
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/mydnsjp/" title="MyDNS.jp" class="dd-item ">
+        <a href="/lego/dns/mydnsjp/">
+        MyDNS.jp
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/mythicbeasts/" title="MythicBeasts" class="dd-item ">
+        <a href="/lego/dns/mythicbeasts/">
+        MythicBeasts
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/namedotcom/" title="Name.com" class="dd-item ">
+        <a href="/lego/dns/namedotcom/">
+        Name.com
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/namecheap/" title="Namecheap" class="dd-item ">
+        <a href="/lego/dns/namecheap/">
+        Namecheap
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/namesilo/" title="Namesilo" class="dd-item ">
+        <a href="/lego/dns/namesilo/">
+        Namesilo
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/nearlyfreespeech/" title="NearlyFreeSpeech.NET" class="dd-item ">
+        <a href="/lego/dns/nearlyfreespeech/">
+        NearlyFreeSpeech.NET
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/netcup/" title="Netcup" class="dd-item ">
+        <a href="/lego/dns/netcup/">
+        Netcup
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/netlify/" title="Netlify" class="dd-item ">
+        <a href="/lego/dns/netlify/">
+        Netlify
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/nicmanager/" title="Nicmanager" class="dd-item ">
+        <a href="/lego/dns/nicmanager/">
+        Nicmanager
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/nifcloud/" title="NIFCloud" class="dd-item ">
+        <a href="/lego/dns/nifcloud/">
+        NIFCloud
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/njalla/" title="Njalla" class="dd-item ">
+        <a href="/lego/dns/njalla/">
+        Njalla
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/nodion/" title="Nodion" class="dd-item ">
+        <a href="/lego/dns/nodion/">
+        Nodion
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/ns1/" title="NS1" class="dd-item ">
+        <a href="/lego/dns/ns1/">
+        NS1
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/otc/" title="Open Telekom Cloud" class="dd-item ">
+        <a href="/lego/dns/otc/">
+        Open Telekom Cloud
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/oraclecloud/" title="Oracle Cloud" class="dd-item ">
+        <a href="/lego/dns/oraclecloud/">
+        Oracle Cloud
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/ovh/" title="OVH" class="dd-item ">
+        <a href="/lego/dns/ovh/">
+        OVH
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/plesk/" title="plesk.com" class="dd-item ">
+        <a href="/lego/dns/plesk/">
+        plesk.com
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/porkbun/" title="Porkbun" class="dd-item ">
+        <a href="/lego/dns/porkbun/">
+        Porkbun
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/pdns/" title="PowerDNS" class="dd-item ">
+        <a href="/lego/dns/pdns/">
+        PowerDNS
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/rackspace/" title="Rackspace" class="dd-item ">
+        <a href="/lego/dns/rackspace/">
+        Rackspace
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/rcodezero/" title="RcodeZero" class="dd-item ">
+        <a href="/lego/dns/rcodezero/">
+        RcodeZero
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/regru/" title="reg.ru" class="dd-item ">
+        <a href="/lego/dns/regru/">
+        reg.ru
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/rfc2136/" title="RFC2136" class="dd-item ">
+        <a href="/lego/dns/rfc2136/">
+        RFC2136
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/rimuhosting/" title="RimuHosting" class="dd-item ">
+        <a href="/lego/dns/rimuhosting/">
+        RimuHosting
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/sakuracloud/" title="Sakura Cloud" class="dd-item ">
+        <a href="/lego/dns/sakuracloud/">
+        Sakura Cloud
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/scaleway/" title="Scaleway" class="dd-item ">
+        <a href="/lego/dns/scaleway/">
+        Scaleway
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/selectel/" title="Selectel" class="dd-item ">
+        <a href="/lego/dns/selectel/">
+        Selectel
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/selectelv2/" title="Selectel v2" class="dd-item ">
+        <a href="/lego/dns/selectelv2/">
+        Selectel v2
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/servercow/" title="Servercow" class="dd-item ">
+        <a href="/lego/dns/servercow/">
+        Servercow
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/shellrent/" title="Shellrent" class="dd-item ">
+        <a href="/lego/dns/shellrent/">
+        Shellrent
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/simply/" title="Simply.com" class="dd-item ">
+        <a href="/lego/dns/simply/">
+        Simply.com
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/sonic/" title="Sonic" class="dd-item ">
+        <a href="/lego/dns/sonic/">
+        Sonic
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/stackpath/" title="Stackpath" class="dd-item ">
+        <a href="/lego/dns/stackpath/">
+        Stackpath
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/tencentcloud/" title="Tencent Cloud DNS" class="dd-item ">
+        <a href="/lego/dns/tencentcloud/">
+        Tencent Cloud DNS
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/transip/" title="TransIP" class="dd-item ">
+        <a href="/lego/dns/transip/">
+        TransIP
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/safedns/" title="UKFast SafeDNS" class="dd-item ">
+        <a href="/lego/dns/safedns/">
+        UKFast SafeDNS
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/ultradns/" title="Ultradns" class="dd-item ">
+        <a href="/lego/dns/ultradns/">
+        Ultradns
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/variomedia/" title="Variomedia" class="dd-item ">
+        <a href="/lego/dns/variomedia/">
+        Variomedia
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/vegadns/" title="VegaDNS" class="dd-item ">
+        <a href="/lego/dns/vegadns/">
+        VegaDNS
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/vercel/" title="Vercel" class="dd-item ">
+        <a href="/lego/dns/vercel/">
+        Vercel
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/versio/" title="Versio.[nl|eu|uk]" class="dd-item ">
+        <a href="/lego/dns/versio/">
+        Versio.[nl|eu|uk]
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/vinyldns/" title="VinylDNS" class="dd-item ">
+        <a href="/lego/dns/vinyldns/">
+        VinylDNS
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/vkcloud/" title="VK Cloud" class="dd-item ">
+        <a href="/lego/dns/vkcloud/">
+        VK Cloud
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/vscale/" title="Vscale" class="dd-item ">
+        <a href="/lego/dns/vscale/">
+        Vscale
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/vultr/" title="Vultr" class="dd-item ">
+        <a href="/lego/dns/vultr/">
+        Vultr
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/webnames/" title="Webnames" class="dd-item ">
+        <a href="/lego/dns/webnames/">
+        Webnames
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/websupport/" title="Websupport" class="dd-item ">
+        <a href="/lego/dns/websupport/">
+        Websupport
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/wedos/" title="WEDOS" class="dd-item ">
+        <a href="/lego/dns/wedos/">
+        WEDOS
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/yandex360/" title="Yandex 360" class="dd-item ">
+        <a href="/lego/dns/yandex360/">
+        Yandex 360
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/yandexcloud/" title="Yandex Cloud" class="dd-item ">
+        <a href="/lego/dns/yandexcloud/">
+        Yandex Cloud
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/yandex/" title="Yandex PDD" class="dd-item ">
+        <a href="/lego/dns/yandex/">
+        Yandex PDD
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/zoneee/" title="Zone.ee" class="dd-item ">
+        <a href="/lego/dns/zoneee/">
+        Zone.ee
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+            
+            
+
+
+
+
+ 
+  
+    
+      <li data-nav-id="/lego/dns/zonomi/" title="Zonomi" class="dd-item ">
+        <a href="/lego/dns/zonomi/">
+        Zonomi
+        <i class="fas fa-check read-icon"></i>
+        </a>
+    </li>
+     
+  
+ 
+
+            
+          
+        
+        </ul>
+      
+    </li>
+  
+ 
+
+          
+        
+    </ul>
+
+    
+    
+      <section id="shortcuts">
+        <h3>More</h3>
+        <ul>
+          
+              <li>
+                  <a class="padding" href="https://github.com/go-acme/lego"><i class='fab fa-fw fa-github'></i> GitHub repo</a>
+              </li>
+          
+              <li>
+                  <a class="padding" href="https://github.com/go-acme/lego/issues"><i class='fas fa-fw fa-bug'></i> Issues</a>
+              </li>
+          
+              <li>
+                  <a class="padding" href="https://github.com/go-acme/lego/discussions"><i class='fas fa-fw fa-comments'></i> Discussions</a>
+              </li>
+          
+        </ul>
+      </section>
+    
+
+    
+    <section id="prefooter">
+      <hr/>
+      <ul>
+      
+
+      
+        <li><a class="padding" href="#" data-clear-history-toggle=""><i class="fas fa-history fa-fw"></i> Clear History</a></li>
+      
+      </ul>
+    </section>
+    
+    <section id="footer">
+      <p>Built with <a href="https://github.com/matcornic/hugo-theme-learn"><i class="fas fa-heart"></i></a> from <a href="https://getgrav.org">Grav</a> and <a href="https://gohugo.io/">Hugo</a></p>
+
+    </section>
+  </div>
+</nav>
+
+
+
+
+        <section id="body">
+        <div id="overlay"></div>
+        <div class="padding highlightable">
+              
+              <div>
+                <div id="top-bar">
+                
+                
+                <div id="breadcrumbs" itemscope="" itemtype="http://data-vocabulary.org/Breadcrumb">
+                    <span id="sidebar-toggle-span">
+                        <a href="#" id="sidebar-toggle" data-sidebar-toggle="">
+                          <i class="fas fa-bars"></i>
+                        </a>
+                    </span>
+                  
+                  <span id="toc-menu"><i class="fas fa-list-alt"></i></span>
+                  
+                  <span class="links">
+                 
+                 
+                    
+          
+          
+            
+            
+          
+          
+            
+            
+          
+          
+            
+            
+          
+          
+            <a href='/lego/'>Welcome</a> > <a href='/lego/usage/'>Usage</a> > <a href='/lego/usage/cli/'>CLI</a> > Options
+          
+        
+          
+        
+          
+        
+          
+        
+                 
+                  </span>
+                </div>
+                
+                    <div class="progress">
+    <div class="wrapper">
+<nav id="TableOfContents">
+  <ul>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#lets-encrypt-acme-server">Let&rsquo;s Encrypt ACME server</a></li>
+    <li><a href="#running-without-root-privileges">Running without root privileges</a></li>
+    <li><a href="#port-usage">Port Usage</a></li>
+    <li><a href="#dns-resolvers-and-challenge-verification">DNS Resolvers and Challenge Verification</a></li>
+  </ul>
+</nav>
+    </div>
+</div>
+
+                
+              </div>
+            </div>
+            
+        <div id="head-tags">
+        
+        </div>
+        
+        <div id="body-inner">
+          
+            <h1>
+              
+              Options
+            </h1>
+          
+
+        
+
+
+<h2 id="usage">Usage</h2>
+<div class="tab-panel">
+    <div class="tab-nav">
+    
+    
+        <button
+            data-tab-item="lego help"
+            data-tab-group="cli-help"
+            class="tab-nav-button btn active"
+            onclick="switchTab('cli-help','lego help')"
+         >lego help</button>
+    
+        <button
+            data-tab-item="lego help run"
+            data-tab-group="cli-help"
+            class="tab-nav-button btn "
+            onclick="switchTab('cli-help','lego help run')"
+         >lego help run</button>
+    
+        <button
+            data-tab-item="lego help renew"
+            data-tab-group="cli-help"
+            class="tab-nav-button btn "
+            onclick="switchTab('cli-help','lego help renew')"
+         >lego help renew</button>
+    
+        <button
+            data-tab-item="lego help revoke"
+            data-tab-group="cli-help"
+            class="tab-nav-button btn "
+            onclick="switchTab('cli-help','lego help revoke')"
+         >lego help revoke</button>
+    
+        <button
+            data-tab-item="lego help list"
+            data-tab-group="cli-help"
+            class="tab-nav-button btn "
+            onclick="switchTab('cli-help','lego help list')"
+         >lego help list</button>
+    
+        <button
+            data-tab-item="lego dnshelp"
+            data-tab-group="cli-help"
+            class="tab-nav-button btn "
+            onclick="switchTab('cli-help','lego dnshelp')"
+         >lego dnshelp</button>
+    
+    </div>
+    <div class="tab-content">
+        
+        <div
+            data-tab-item="lego help"
+            data-tab-group="cli-help"
+            class="tab-item active"
+        >
+            <pre>NAME:
+   lego - Let&#39;s Encrypt client written in Go
+
+USAGE:
+   lego [global options] command [command options] 
+
+COMMANDS:
+   run      Register an account, then create and install a certificate
+   revoke   Revoke a certificate
+   renew    Renew a certificate
+   dnshelp  Shows additional help for the &#39;--dns&#39; global option
+   list     Display certificates and accounts information.
+   help, h  Shows a list of commands or help for one command
+
+GLOBAL OPTIONS:
+   --domains value, -d value [ --domains value, -d value ]      Add a domain to the process. Can be specified multiple times.
+   --server value, -s value                                     CA hostname (and optionally :port). The server certificate must be trusted in order to avoid further modifications to the client. (default: &#34;https://acme-v02.api.letsencrypt.org/directory&#34;) [$LEGO_SERVER]
+   --accept-tos, -a                                             By setting this flag to true you indicate that you accept the current Let&#39;s Encrypt terms of service. (default: false)
+   --email value, -m value                                      Email used for registration and recovery contact.
+   --csr value, -c value                                        Certificate signing request filename, if an external CSR is to be used.
+   --eab                                                        Use External Account Binding for account registration. Requires --kid and --hmac. (default: false) [$LEGO_EAB]
+   --kid value                                                  Key identifier from External CA. Used for External Account Binding. [$LEGO_EAB_KID]
+   --hmac value                                                 MAC key from External CA. Should be in Base64 URL Encoding without padding format. Used for External Account Binding. [$LEGO_EAB_HMAC]
+   --key-type value, -k value                                   Key type to use for private keys. Supported: rsa2048, rsa3072, rsa4096, rsa8192, ec256, ec384. (default: &#34;ec256&#34;)
+   --filename value                                             (deprecated) Filename of the generated certificate.
+   --path value                                                 Directory to use for storing the data. (default: &#34;./.lego&#34;) [$LEGO_PATH]
+   --http                                                       Use the HTTP-01 challenge to solve challenges. Can be mixed with other types of challenges. (default: false)
+   --http.port value                                            Set the port and interface to use for HTTP-01 based challenges to listen on. Supported: interface:port or :port. (default: &#34;:80&#34;)
+   --http.proxy-header value                                    Validate against this HTTP header when solving HTTP-01 based challenges behind a reverse proxy. (default: &#34;Host&#34;)
+   --http.webroot value                                         Set the webroot folder to use for HTTP-01 based challenges to write directly to the .well-known/acme-challenge file. This disables the built-in server and expects the given directory to be publicly served with access to .well-known/acme-challenge
+   --http.memcached-host value [ --http.memcached-host value ]  Set the memcached host(s) to use for HTTP-01 based challenges. Challenges will be written to all specified hosts.
+   --http.s3-bucket value                                       Set the S3 bucket name to use for HTTP-01 based challenges. Challenges will be written to the S3 bucket.
+   --tls                                                        Use the TLS-ALPN-01 challenge to solve challenges. Can be mixed with other types of challenges. (default: false)
+   --tls.port value                                             Set the port and interface to use for TLS-ALPN-01 based challenges to listen on. Supported: interface:port or :port. (default: &#34;:443&#34;)
+   --dns value                                                  Solve a DNS-01 challenge using the specified provider. Can be mixed with other types of challenges. Run &#39;lego dnshelp&#39; for help on usage.
+   --dns.disable-cp                                             By setting this flag to true, disables the need to await propagation of the TXT record to all authoritative name servers. (default: false)
+   --dns.resolvers value [ --dns.resolvers value ]              Set the resolvers to use for performing (recursive) CNAME resolving and apex domain determination. For DNS-01 challenge verification, the authoritative DNS server is queried directly. Supported: host:port. The default is to use the system resolvers, or Google&#39;s DNS resolvers if the system&#39;s cannot be determined.
+   --http-timeout value                                         Set the HTTP timeout value to a specific value in seconds. (default: 0)
+   --dns-timeout value                                          Set the DNS timeout value to a specific value in seconds. Used only when performing authoritative name server queries. (default: 10)
+   --pem                                                        Generate an additional .pem (base64) file by concatenating the .key and .crt files together. (default: false)
+   --pfx                                                        Generate an additional .pfx (PKCS#12) file by concatenating the .key and .crt and issuer .crt files together. (default: false) [$LEGO_PFX]
+   --pfx.pass value                                             The password used to encrypt the .pfx (PCKS#12) file. (default: &#34;changeit&#34;) [$LEGO_PFX_PASSWORD]
+   --pfx.format value                                           The encoding format to use when encrypting the .pfx (PCKS#12) file. Supported: RC2, DES, SHA256. (default: &#34;RC2&#34;) [$LEGO_PFX_FORMAT]
+   --cert.timeout value                                         Set the certificate timeout value to a specific value in seconds. Only used when obtaining certificates. (default: 30)
+   --overall-request-limit value                                ACME overall requests limit. (default: 18)
+   --user-agent value                                           Add to the user-agent sent to the CA to identify an application embedding lego-cli
+   --help, -h                                                   show help
+</pre>
+        </div>
+        
+        <div
+            data-tab-item="lego help run"
+            data-tab-group="cli-help"
+            class="tab-item "
+        >
+            <pre>NAME:
+   lego run - Register an account, then create and install a certificate
+
+USAGE:
+   lego run [command options]
+
+OPTIONS:
+   --no-bundle                               Do not create a certificate bundle by adding the issuers certificate to the new certificate. (default: false)
+   --must-staple                             Include the OCSP must staple TLS extension in the CSR and generated certificate. Only works if the CSR is generated by lego. (default: false)
+   --not-before value                        Set the notBefore field in the certificate (RFC3339 format)
+   --not-after value                         Set the notAfter field in the certificate (RFC3339 format)
+   --preferred-chain value                   If the CA offers multiple certificate chains, prefer the chain with an issuer matching this Subject Common Name. If no match, the default offered chain will be used.
+   --always-deactivate-authorizations value  Force the authorizations to be relinquished even if the certificate request was successful.
+   --run-hook value                          Define a hook. The hook is executed when the certificates are effectively created.
+   --help, -h                                show help
+</pre>
+        </div>
+        
+        <div
+            data-tab-item="lego help renew"
+            data-tab-group="cli-help"
+            class="tab-item "
+        >
+            <pre>NAME:
+   lego renew - Renew a certificate
+
+USAGE:
+   lego renew [command options]
+
+OPTIONS:
+   --days value                              The number of days left on a certificate to renew it. (default: 30)
+   --ari-enable                              Use the renewalInfo endpoint (draft-ietf-acme-ari) to check if a certificate should be renewed. (default: false)
+   --ari-wait-to-renew-duration value        The maximum duration you&#39;re willing to sleep for a renewal time returned by the renewalInfo endpoint. (default: 0s)
+   --reuse-key                               Used to indicate you want to reuse your current private key for the new certificate. (default: false)
+   --no-bundle                               Do not create a certificate bundle by adding the issuers certificate to the new certificate. (default: false)
+   --must-staple                             Include the OCSP must staple TLS extension in the CSR and generated certificate. Only works if the CSR is generated by lego. (default: false)
+   --not-before value                        Set the notBefore field in the certificate (RFC3339 format)
+   --not-after value                         Set the notAfter field in the certificate (RFC3339 format)
+   --preferred-chain value                   If the CA offers multiple certificate chains, prefer the chain with an issuer matching this Subject Common Name. If no match, the default offered chain will be used.
+   --always-deactivate-authorizations value  Force the authorizations to be relinquished even if the certificate request was successful.
+   --renew-hook value                        Define a hook. The hook is executed only when the certificates are effectively renewed.
+   --no-random-sleep                         Do not add a random sleep before the renewal. We do not recommend using this flag if you are doing your renewals in an automated way. (default: false)
+   --help, -h                                show help
+</pre>
+        </div>
+        
+        <div
+            data-tab-item="lego help revoke"
+            data-tab-group="cli-help"
+            class="tab-item "
+        >
+            <pre>NAME:
+   lego revoke - Revoke a certificate
+
+USAGE:
+   lego revoke [command options]
+
+OPTIONS:
+   --keep, -k      Keep the certificates after the revocation instead of archiving them. (default: false)
+   --reason value  Identifies the reason for the certificate revocation. See https://www.rfc-editor.org/rfc/rfc5280.html#section-5.3.1. Valid values are: 0 (unspecified), 1 (keyCompromise), 2 (cACompromise), 3 (affiliationChanged), 4 (superseded), 5 (cessationOfOperation), 6 (certificateHold), 8 (removeFromCRL), 9 (privilegeWithdrawn), or 10 (aACompromise). (default: 0)
+   --help, -h      show help
+</pre>
+        </div>
+        
+        <div
+            data-tab-item="lego help list"
+            data-tab-group="cli-help"
+            class="tab-item "
+        >
+            <pre>NAME:
+   lego list - Display certificates and accounts information.
+
+USAGE:
+   lego list [command options]
+
+OPTIONS:
+   --accounts, -a  Display accounts. (default: false)
+   --names, -n     Display certificate common names only. (default: false)
+   --help, -h      show help
+</pre>
+        </div>
+        
+        <div
+            data-tab-item="lego dnshelp"
+            data-tab-group="cli-help"
+            class="tab-item "
+        >
+            <pre>Credentials for DNS providers must be passed through environment variables.
+
+To display the documentation for a specific DNS provider, run:
+
+  $ lego dnshelp -c code
+
+Supported DNS providers:
+  acme-dns, alidns, allinkl, arvancloud, auroradns, autodns, azure, azuredns, bindman, bluecat, brandit, bunny, checkdomain, civo, clouddns, cloudflare, cloudns, cloudru, cloudxns, conoha, constellix, cpanel, derak, desec, designate, digitalocean, dnshomede, dnsimple, dnsmadeeasy, dnspod, dode, domeneshop, dreamhost, duckdns, dyn, dynu, easydns, edgedns, efficientip, epik, exec, exoscale, freemyip, gandi, gandiv5, gcloud, gcore, glesys, godaddy, googledomains, hetzner, hostingde, hosttech, httpnet, httpreq, hurricane, hyperone, ibmcloud, iij, iijdpf, infoblox, infomaniak, internetbs, inwx, ionos, ipv64, iwantmyname, joker, liara, lightsail, linode, liquidweb, loopia, luadns, mailinabox, manual, metaname, mydnsjp, mythicbeasts, namecheap, namedotcom, namesilo, nearlyfreespeech, netcup, netlify, nicmanager, nifcloud, njalla, nodion, ns1, oraclecloud, otc, ovh, pdns, plesk, porkbun, rackspace, rcodezero, regru, rfc2136, rimuhosting, route53, safedns, sakuracloud, scaleway, selectel, selectelv2, servercow, shellrent, simply, sonic, stackpath, tencentcloud, transip, ultradns, variomedia, vegadns, vercel, versio, vinyldns, vkcloud, vscale, vultr, webnames, websupport, wedos, yandex, yandex360, yandexcloud, zoneee, zonomi
+
+More information: https://go-acme.github.io/lego/dns
+</pre>
+        </div>
+        
+    </div>
+</div>
+
+<p>When using the standard <code>--path</code> option, all certificates and account configurations are saved to a folder <code>.lego</code> in the current working directory.</p>
+<h2 id="lets-encrypt-acme-server">Let&rsquo;s Encrypt ACME server</h2>
+<p>lego defaults to communicating with the production Let&rsquo;s Encrypt ACME server.
+If you&rsquo;d like to test something without issuing real certificates, consider using the staging endpoint instead:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">lego --server<span class="o">=</span>https://acme-staging-v02.api.letsencrypt.org/directory …
+</span></span></code></pre></div><h2 id="running-without-root-privileges">Running without root privileges</h2>
+<p>The CLI does not require root permissions but needs to bind to port 80 and 443 for certain challenges.
+To run the CLI without <code>sudo</code>, you have four options:</p>
+<ul>
+<li>Use <code>setcap 'cap_net_bind_service=+ep' /path/to/lego</code> (Linux only)</li>
+<li>Pass the <code>--http.port</code> or/and the <code>--tls.port</code> option and specify a custom port to bind to. In this case you have to forward port 80/443 to these custom ports (see <a href="#port-usage">Port Usage</a>).</li>
+<li>Pass the <code>--http.webroot</code> option and specify the path to your webroot folder. In this case the challenge will be written in a file in <code>.well-known/acme-challenge/</code> inside your webroot.</li>
+<li>Pass the <code>--dns</code> option and specify a DNS provider.</li>
+</ul>
+<h2 id="port-usage">Port Usage</h2>
+<p>By default, lego assumes it is able to bind to ports 80 and 443 to solve challenges.
+If this is not possible in your environment, you can use the <code>--http.port</code> and <code>--tls.port</code> options to instruct
+lego to listen on that interface:port for any incoming challenges.</p>
+<p>If you are using either of these options, make sure you setup a proxy to redirect traffic to the chosen ports.</p>
+<p><strong>HTTP Port:</strong> All plaintext HTTP requests to port <strong>80</strong> which begin with a request path of <code>/.well-known/acme-challenge/</code> for the HTTP challenge<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>.</p>
+<p><strong>TLS Port:</strong> All TLS handshakes on port <strong>443</strong> for the TLS-ALPN challenge.</p>
+<p>This traffic redirection is only needed as long as lego solves challenges. As soon as you have received your certificates you can deactivate the forwarding.</p>
+<h2 id="dns-resolvers-and-challenge-verification">DNS Resolvers and Challenge Verification</h2>
+<p>When using a DNS challenge provider (via <code>--dns &lt;name&gt;</code>), Lego tries to ensure the ACME challenge token is properly setup before instructing the ACME provider to perform the validation.</p>
+<p>This involves a few DNS queries to different servers:</p>
+<ol>
+<li>
+<p>Determining the DNS zone and resolving CNAMEs.</p>
+<p>The DNS zone for a given domain is determined by the SOA record, which contains the authoritative name server for the domain and all its subdomains.
+For simple domains like <code>example.com</code>, this is usually <code>example.com</code> itself.
+For other domains (like <code>fra.eu.cdn.example.com</code>), this can get complicated, as <code>cdn.example.com</code> may be delegated to the CDN provider, which means for <code>cdn.example.com</code> must exist a different SOA record.</p>
+<p>To find the correct zone, Lego requests the SOA record for each DNS label (starting on the leaf domain, i.e. the left-most DNS label).
+If there is no SOA record, Lego requests the SOA record of the parent label, then for its parent, etc., until it reaches the apex domain<sup id="fnref:2"><a href="#fn:2" class="footnote-ref" role="doc-noteref">2</a></sup>.
+Should any DNS label on the way be a CNAME, it is resolved as per usual.</p>
+<p>In the default configuration, Lego uses the system name servers for this, and falls back to Google&rsquo;s DNS servers, should they be absent.</p>
+</li>
+<li>
+<p>Verifying the challenge token.</p>
+<p>The <code>_acme-challenge.&lt;yourdomain&gt;</code> TXT record must be correctly installed.
+Lego verifies this by directly querying the authoritative name server for this record (as detected in the previous step).</p>
+</li>
+</ol>
+<p>Strictly speaking, this verification step is not necessary, but helps to protect your ACME account.
+Remember that some ACME providers impose a rate limit on certain actions (at the time of writing, Let&rsquo;s Encrypt allows 300 new certificate orders per account per 3 hours).</p>
+<p>There are also situations, where this verification step doesn&rsquo;t work as expected:</p>
+<ul>
+<li>A &ldquo;split DNS&rdquo; setup gives different answers to clients on the internal network (Lego) vs. on the public internet (Let&rsquo;s Encrypt).</li>
+<li>With &ldquo;hidden master&rdquo; setups, Lego may be able to directly talk to the primary DNS server, while the <code>_acme-challenge</code> record might not have fully propagated to the (public) secondary servers, yet.</li>
+</ul>
+<p>The effect is the same: Lego determined the challenge token to be installed correctly, while Let&rsquo;s Encrypt has a different view, and rejects the certificate order.</p>
+<p>In these cases, you can instruct Lego to use a different DNS resolver, using the <code>--dns.resolvers</code> flag.
+You should prefer one on the public internet, otherwise you might be susceptible to the same problem.</p>
+<div class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1">
+<p>You must ensure that incoming validation requests contains the correct value for the HTTP <code>Host</code> header. If you operate lego behind a non-transparent reverse proxy (such as Apache or NGINX), you might need to alter the header field using <code>--http.proxy-header X-Forwarded-Host</code>.&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:2">
+<p>The apex domain is the domain you have registered with your domain registrar. For gTLDs (<code>.com</code>, <code>.fyi</code>) this is the 2nd level domain, but for ccTLDs, this can either be the 2nd level (<code>.de</code>) or 3rd level domain (<code>.co.uk</code>).&#160;<a href="#fnref:2" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</div>
+
+
+<footer class="footline">
+	
+</footer>
+
+        
+        </div>
+        
+
+      </div>
+
+    <div id="navigation">
+        
+        
+
+        
+            
+            
+                
+                    
+                    
+                
+                
+
+                    
+                    
+                        
+                    
+                    
+
+                    
+                        
+            
+            
+                
+                    
+                        
+                        
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                    
+                
+                
+
+                    
+                    
+                        
+                    
+                    
+
+                    
+                        
+            
+            
+                
+                    
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+                        
+            
+            
+                
+                    
+                        
+                        
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+        
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                        
+                        
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+            
+        
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+                        
+            
+            
+                
+                    
+                
+                
+
+                    
+                    
+                    
+
+                    
+            
+        
+                    
+            
+        
+                    
+            
+        
+
+        
+
+
+	 
+	 
+		
+			<a class="nav nav-prev" href="/lego/usage/cli/renew-a-certificate/" title="Renew a Certificate"> <i class="fa fa-chevron-left"></i></a>
+		
+		
+			<a class="nav nav-next" href="/lego/usage/library/" title="Library" style="margin-right: 0px;"><i class="fa fa-chevron-right"></i></a>
+		
+	
+    </div>
+
+    </section>
+
+    <div style="left: -1000px; overflow: scroll; position: absolute; top: -1000px; border: none; box-sizing: content-box; height: 200px; margin: 0px; padding: 0px; width: 200px;">
+      <div style="border: none; box-sizing: content-box; height: 200px; margin: 0px; padding: 0px; width: 200px;"></div>
+    </div>
+    <script src="/lego/js/clipboard.min.js?1719679963"></script>
+    <script src="/lego/js/perfect-scrollbar.min.js?1719679963"></script>
+    <script src="/lego/js/perfect-scrollbar.jquery.min.js?1719679963"></script>
+    <script src="/lego/js/jquery.sticky.js?1719679963"></script>
+    <script src="/lego/js/featherlight.min.js?1719679963"></script>
+    <script src="/lego/js/highlight.pack.js?1719679963"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    <script src="/lego/js/modernizr.custom-3.6.0.js?1719679963"></script>
+    <script src="/lego/js/learn.js?1719679963"></script>
+    <script src="/lego/js/hugo-learn.js?1719679963"></script>
+    
+        
+            <script src="/lego/mermaid/mermaid.js?1719679963"></script>
+        
+        <script>
+            mermaid.initialize({ startOnLoad: true });
+        </script>
+    
+    
+
+  </body>
+</html>
+

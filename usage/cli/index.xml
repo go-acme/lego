@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>CLI on Let’s Encrypt client and ACME library written in Go.</title>
+    <link>https://go-acme.github.io/lego/usage/cli/</link>
+    <description>Recent content in CLI on Let’s Encrypt client and ACME library written in Go.</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Sun, 03 Mar 2019 16:39:46 +0100</lastBuildDate><atom:link href="https://go-acme.github.io/lego/usage/cli/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>General Instructions</title>
+      <link>https://go-acme.github.io/lego/usage/cli/general-instructions/</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      
+      <guid>https://go-acme.github.io/lego/usage/cli/general-instructions/</guid>
+      <description>Read this first to clarify some assumptions made by the following guides.</description>
+    </item>
+    
+    <item>
+      <title>Obtain a Certificate</title>
+      <link>https://go-acme.github.io/lego/usage/cli/obtain-a-certificate/</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      
+      <guid>https://go-acme.github.io/lego/usage/cli/obtain-a-certificate/</guid>
+      <description>&lt;p&gt;This guide explains various ways to obtain a new certificate.&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Renew a Certificate</title>
+      <link>https://go-acme.github.io/lego/usage/cli/renew-a-certificate/</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      
+      <guid>https://go-acme.github.io/lego/usage/cli/renew-a-certificate/</guid>
+      <description>&lt;p&gt;This guide describes how to renew existing certificates.&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Options</title>
+      <link>https://go-acme.github.io/lego/usage/cli/options/</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      
+      <guid>https://go-acme.github.io/lego/usage/cli/options/</guid>
+      <description>This page describes various command line options.</description>
+    </item>
+    
+    <item>
+      <title>Examples</title>
+      <link>https://go-acme.github.io/lego/usage/cli/examples/</link>
+      <pubDate>Sun, 03 Mar 2019 16:39:46 +0100</pubDate>
+      
+      <guid>https://go-acme.github.io/lego/usage/cli/examples/</guid>
+      <description> Heads up! We&amp;rsquo;ve restructured the content a bit.
+You&amp;rsquo;ll find the content now at one of these pages:
+Guide: How to obtain a certificate Using the built-in web server Using a DNS provider Using a custom certificate signing request (CSR) Using an existing, running web server Running a script afterward Use case Guide: How to renew a certificate Using the built-in web server Using a DNS provider Running a script afterward Automatic renewal Reference: Command line options Usage Let&amp;rsquo;s Encrypt ACME server Running without root privileges Port Usage </description>
+    </item>
+    
+  </channel>
+</rss>

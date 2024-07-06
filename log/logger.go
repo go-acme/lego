@@ -5,10 +5,12 @@ import (
 	"os"
 )
 
-// Logger is an optional custom logger.
-var Logger StdLogger = log.New(os.Stderr, "", log.LstdFlags)
+// Logger is an optional custom logger to stdout.
+// ErrLogger is an optional custom logger to stderr.
+var Logger StdLogger = log.New(os.Stdout, "", log.LstdFlags)
+var ErrLogger StdLogger = log.New(os.Stderr, "", log.LstdFlags)
 
-// StdLogger interface for Standard Logger.
+// StdLogger interface.
 type StdLogger interface {
 	Fatal(args ...interface{})
 	Fatalln(args ...interface{})
@@ -19,15 +21,15 @@ type StdLogger interface {
 }
 
 // Fatal writes a log entry.
-// It uses Logger if not nil, otherwise it uses the default log.Logger.
+// It uses ErrLogger if not nil, otherwise it uses the default log.Logger.
 func Fatal(args ...interface{}) {
-	Logger.Fatal(args...)
+	ErrLogger.Fatal(args...)
 }
 
 // Fatalf writes a log entry.
-// It uses Logger if not nil, otherwise it uses the default log.Logger.
+// It uses ErrLogger if not nil, otherwise it uses the default log.Logger.
 func Fatalf(format string, args ...interface{}) {
-	Logger.Fatalf(format, args...)
+	ErrLogger.Fatalf(format, args...)
 }
 
 // Print writes a log entry.
@@ -49,11 +51,13 @@ func Printf(format string, args ...interface{}) {
 }
 
 // Warnf writes a log entry.
+// It uses ErrLogger if not nil, otherwise it uses the default log.Logger.
 func Warnf(format string, args ...interface{}) {
-	Printf("[WARN] "+format, args...)
+	ErrLogger.Printf("[WARN] "+format, args...)
 }
 
 // Infof writes a log entry.
+// It uses Logger if not nil, otherwise it uses the default log.Logger.
 func Infof(format string, args ...interface{}) {
-	Printf("[INFO] "+format, args...)
+	Logger.Printf("[INFO] "+format, args...)
 }

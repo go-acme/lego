@@ -160,6 +160,10 @@ func CreateFlags(defaultPath string) []cli.Flag {
 			Usage: "ACME overall requests limit.",
 			Value: certificate.DefaultOverallRequestLimit,
 		},
+		&cli.BoolFlag{
+			Name:  "quiet",
+			Usage: "Only show warnings and errors.",
+		},
 		&cli.StringFlag{
 			Name:  "user-agent",
 			Usage: "Add to the user-agent sent to the CA to identify an application embedding lego-cli",

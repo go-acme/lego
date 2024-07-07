@@ -6,6 +6,8 @@ import (
 )
 
 func Before(ctx *cli.Context) error {
+	log.Quiet = ctx.Bool("quiet")
+
 	if ctx.String("path") == "" {
 		log.Fatal("Could not determine current working directory. Please pass --path.")
 	}

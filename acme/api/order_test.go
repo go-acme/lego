@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"encoding/json"
@@ -9,11 +10,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-acme/lego/v4/acme"
-	"github.com/go-acme/lego/v4/platform/tester"
 	"github.com/go-jose/go-jose/v4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/go-acme/lego/v4/acme"
+	"github.com/go-acme/lego/v4/platform/tester"
 )
 
 func TestOrderService_NewWithOptions(t *testing.T) {
@@ -59,7 +61,8 @@ func TestOrderService_NewWithOptions(t *testing.T) {
 		}
 	})
 
-	core, err := New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)
+	ctx := context.Background()
+	core, err := NewWithContext(ctx, http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)
 	require.NoError(t, err)
 
 	testCases := []struct {
@@ -97,7 +100,7 @@ func TestOrderService_NewWithOptions(t *testing.T) {
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
-			order, err := core.Orders.NewWithOptions([]string{"example.com"}, test.opts)
+			order, err := core.Orders.NewWithOptions(context.Background(), []string{"example.com"}, test.opts)
 			require.NoError(t, err)
 
 			assert.Equal(t, test.expected, order)

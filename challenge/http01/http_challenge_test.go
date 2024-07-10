@@ -15,12 +15,13 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/go-acme/lego/v4/acme"
 	"github.com/go-acme/lego/v4/acme/api"
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestProviderServer_GetAddress(t *testing.T) {
@@ -71,7 +72,7 @@ func TestChallenge(t *testing.T) {
 
 	providerServer := NewProviderServer("", "23457")
 
-	validate := func(_ *api.Core, _ string, chlng acme.Challenge) error {
+	validate := func(_ context.Context, _ *api.Core, _ string, chlng acme.Challenge) error {
 		uri := "http://localhost" + providerServer.GetAddress() + ChallengePath(chlng.Token)
 
 		resp, err := http.DefaultClient.Get(uri)
@@ -100,7 +101,8 @@ func TestChallenge(t *testing.T) {
 	privateKey, err := rsa.GenerateKey(rand.Reader, 512)
 	require.NoError(t, err, "Could not generate test key")
 
-	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)
+	ctx := context.Background()
+	core, err := api.NewWithContext(ctx, http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)
 	require.NoError(t, err)
 
 	solver := NewChallenge(core, validate, providerServer)
@@ -114,7 +116,7 @@ func TestChallenge(t *testing.T) {
 		},
 	}
 
-	err = solver.Solve(authz)
+	err = solver.Solve(ctx, authz)
 	require.NoError(t, err)
 }
 
@@ -132,7 +134,7 @@ func TestChallengeUnix(t *testing.T) {
 
 	providerServer := NewUnixProviderServer(socket, fs.ModeSocket|0o666)
 
-	validate := func(_ *api.Core, _ string, chlng acme.Challenge) error {
+	validate := func(_ context.Context, _ *api.Core, _ string, chlng acme.Challenge) error {
 		// any uri will do, as we hijack the dial
 		uri := "http://localhost" + ChallengePath(chlng.Token)
 
@@ -169,7 +171,8 @@ func TestChallengeUnix(t *testing.T) {
 	privateKey, err := rsa.GenerateKey(rand.Reader, 512)
 	require.NoError(t, err, "Could not generate test key")
 
-	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)
+	ctx := context.Background()
+	core, err := api.NewWithContext(ctx, http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)
 	require.NoError(t, err)
 
 	solver := NewChallenge(core, validate, providerServer)
@@ -183,7 +186,7 @@ func TestChallengeUnix(t *testing.T) {
 		},
 	}
 
-	err = solver.Solve(authz)
+	err = solver.Solve(ctx, authz)
 	require.NoError(t, err)
 }
 
@@ -193,10 +196,11 @@ func TestChallengeInvalidPort(t *testing.T) {
 	privateKey, err := rsa.GenerateKey(rand.Reader, 128)
 	require.NoError(t, err, "Could not generate test key")
 
-	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)
+	ctx := context.Background()
+	core, err := api.NewWithContext(ctx, http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)
 	require.NoError(t, err)
 
-	validate := func(_ *api.Core, _ string, _ acme.Challenge) error { return nil }
+	validate := func(_ context.Context, _ *api.Core, _ string, _ acme.Challenge) error { return nil }
 
 	solver := NewChallenge(core, validate, NewProviderServer("", "123456"))
 
@@ -209,7 +213,7 @@ func TestChallengeInvalidPort(t *testing.T) {
 		},
 	}
 
-	err = solver.Solve(authz)
+	err = solver.Solve(ctx, authz)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "invalid port")
 	assert.Contains(t, err.Error(), "123456")
@@ -378,7 +382,7 @@ func testServeWithProxy(t *testing.T, header, extra *testProxyHeader, expectErro
 		providerServer.SetProxyHeader(header.name)
 	}
 
-	validate := func(_ *api.Core, _ string, chlng acme.Challenge) error {
+	validate := func(_ context.Context, _ *api.Core, _ string, chlng acme.Challenge) error {
 		uri := "http://" + providerServer.GetAddress() + ChallengePath(chlng.Token)
 
 		req, err := http.NewRequest(http.MethodGet, uri, nil)
@@ -414,7 +418,8 @@ func testServeWithProxy(t *testing.T, header, extra *testProxyHeader, expectErro
 	privateKey, err := rsa.GenerateKey(rand.Reader, 512)
 	require.NoError(t, err, "Could not generate test key")
 
-	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)
+	ctx := context.Background()
+	core, err := api.NewWithContext(ctx, http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)
 	require.NoError(t, err)
 
 	solver := NewChallenge(core, validate, providerServer)
@@ -428,7 +433,7 @@ func testServeWithProxy(t *testing.T, header, extra *testProxyHeader, expectErro
 		},
 	}
 
-	err = solver.Solve(authz)
+	err = solver.Solve(ctx, authz)
 	if expectError {
 		require.Error(t, err)
 	} else {

@@ -1,6 +1,7 @@
 package http01
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/go-acme/lego/v4/acme"
@@ -9,7 +10,7 @@ import (
 	"github.com/go-acme/lego/v4/log"
 )
 
-type ValidateFunc func(core *api.Core, domain string, chlng acme.Challenge) error
+type ValidateFunc func(ctx context.Context, core *api.Core, domain string, chlng acme.Challenge) error
 
 // ChallengePath returns the URL path for the `http-01` challenge.
 func ChallengePath(token string) string {
@@ -34,7 +35,7 @@ func (c *Challenge) SetProvider(provider challenge.Provider) {
 	c.provider = provider
 }
 
-func (c *Challenge) Solve(authz acme.Authorization) error {
+func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 	domain := challenge.GetTargetedDomain(authz)
 	log.Infof("[%s] acme: Trying to solve HTTP-01", domain)
 
@@ -61,5 +62,5 @@ func (c *Challenge) Solve(authz acme.Authorization) error {
 	}()
 
 	chlng.KeyAuthorization = keyAuth
-	return c.validate(c.core, domain, chlng)
+	return c.validate(ctx, c.core, domain, chlng)
 }

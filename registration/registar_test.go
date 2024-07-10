@@ -1,16 +1,18 @@
 package registration
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"net/http"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/go-acme/lego/v4/acme"
 	"github.com/go-acme/lego/v4/acme/api"
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestRegistrar_ResolveAccountByKey(t *testing.T) {
@@ -36,12 +38,13 @@ func TestRegistrar_ResolveAccountByKey(t *testing.T) {
 		privatekey: key,
 	}
 
-	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", key)
+	ctx := context.Background()
+	core, err := api.NewWithContext(ctx, http.DefaultClient, "lego-test", apiURL+"/dir", "", key)
 	require.NoError(t, err)
 
 	registrar := NewRegistrar(core, user)
 
-	res, err := registrar.ResolveAccountByKey()
+	res, err := registrar.ResolveAccountByKey(ctx)
 	require.NoError(t, err, "Unexpected error resolving account by key")
 
 	assert.Equal(t, "valid", res.Body.Status, "Unexpected account status")

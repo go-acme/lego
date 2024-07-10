@@ -1,10 +1,12 @@
 package nonces
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/go-acme/lego/v4/acme/api/internal/sender"
 )
@@ -51,11 +53,15 @@ func (n *Manager) Nonce() (string, error) {
 	if nonce, ok := n.Pop(); ok {
 		return nonce, nil
 	}
-	return n.getNonce()
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+
+	return n.getNonce(ctx)
 }
 
-func (n *Manager) getNonce() (string, error) {
-	resp, err := n.do.Head(n.nonceURL)
+func (n *Manager) getNonce(ctx context.Context) (string, error) {
+	resp, err := n.do.Head(ctx, n.nonceURL)
 	if err != nil {
 		return "", fmt.Errorf("failed to get nonce from HTTP HEAD: %w", err)
 	}

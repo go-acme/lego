@@ -1,15 +1,17 @@
 package api
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"encoding/pem"
 	"net/http"
 	"testing"
 
-	"github.com/go-acme/lego/v4/platform/tester"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/go-acme/lego/v4/platform/tester"
 )
 
 const certResponseMock = `-----BEGIN CERTIFICATE-----
@@ -97,10 +99,11 @@ func TestCertificateService_Get_issuerRelUp(t *testing.T) {
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err, "Could not generate test key")
 
-	core, err := New(http.DefaultClient, "lego-test", apiURL+"/dir", "", key)
+	ctx := context.Background()
+	core, err := NewWithContext(ctx, http.DefaultClient, "lego-test", apiURL+"/dir", "", key)
 	require.NoError(t, err)
 
-	cert, issuer, err := core.Certificates.Get(apiURL+"/certificate", true)
+	cert, issuer, err := core.Certificates.Get(ctx, apiURL+"/certificate", true)
 	require.NoError(t, err)
 	assert.Equal(t, certResponseMock, string(cert), "Certificate")
 	assert.Equal(t, issuerMock, string(issuer), "IssuerCertificate")
@@ -120,10 +123,11 @@ func TestCertificateService_Get_embeddedIssuer(t *testing.T) {
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err, "Could not generate test key")
 
-	core, err := New(http.DefaultClient, "lego-test", apiURL+"/dir", "", key)
+	ctx := context.Background()
+	core, err := NewWithContext(ctx, http.DefaultClient, "lego-test", apiURL+"/dir", "", key)
 	require.NoError(t, err)
 
-	cert, issuer, err := core.Certificates.Get(apiURL+"/certificate", true)
+	cert, issuer, err := core.Certificates.Get(ctx, apiURL+"/certificate", true)
 	require.NoError(t, err)
 	assert.Equal(t, certResponseMock, string(cert), "Certificate")
 	assert.Equal(t, issuerMock, string(issuer), "IssuerCertificate")

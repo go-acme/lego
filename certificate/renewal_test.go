@@ -1,18 +1,20 @@
 package certificate
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"net/http"
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/go-acme/lego/v4/acme"
 	"github.com/go-acme/lego/v4/acme/api"
 	"github.com/go-acme/lego/v4/certcrypto"
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -66,7 +68,8 @@ func TestCertifier_GetRenewalInfo(t *testing.T) {
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err, "Could not generate test key")
 
-	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", key)
+	ctx := context.Background()
+	core, err := api.NewWithContext(ctx, http.DefaultClient, "lego-test", apiURL+"/dir", "", key)
 	require.NoError(t, err)
 
 	certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})
@@ -120,7 +123,8 @@ func TestCertifier_GetRenewalInfo_errors(t *testing.T) {
 			mux, apiURL := tester.SetupFakeAPI(t)
 			mux.HandleFunc("/renewalInfo/"+ariLeafCertID, test.handler)
 
-			core, err := api.New(test.httpClient, "lego-test", apiURL+"/dir", "", key)
+			ctx := context.Background()
+			core, err := api.NewWithContext(ctx, test.httpClient, "lego-test", apiURL+"/dir", "", key)
 			require.NoError(t, err)
 
 			certifier := NewCertifier(core, &resolverMock{}, CertifierOptions{KeyType: certcrypto.RSA2048})

@@ -1,6 +1,7 @@
 package dns01
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
@@ -9,12 +10,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/miekg/dns"
+
 	"github.com/go-acme/lego/v4/acme"
 	"github.com/go-acme/lego/v4/acme/api"
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/platform/wait"
-	"github.com/miekg/dns"
 )
 
 const (
@@ -28,7 +30,7 @@ const (
 	DefaultTTL = 120
 )
 
-type ValidateFunc func(core *api.Core, domain string, chlng acme.Challenge) error
+type ValidateFunc func(ctx context.Context, core *api.Core, domain string, chlng acme.Challenge) error
 
 type ChallengeOption func(*Challenge) error
 
@@ -100,7 +102,7 @@ func (c *Challenge) PreSolve(authz acme.Authorization) error {
 	return nil
 }
 
-func (c *Challenge) Solve(authz acme.Authorization) error {
+func (c *Challenge) Solve(ctx context.Context, authz acme.Authorization) error {
 	domain := challenge.GetTargetedDomain(authz)
 	log.Infof("[%s] acme: Trying to solve DNS-01", domain)
 
@@ -141,7 +143,7 @@ func (c *Challenge) Solve(authz acme.Authorization) error {
 	}
 
 	chlng.KeyAuthorization = keyAuth
-	return c.validate(c.core, domain, chlng)
+	return c.validate(ctx, c.core, domain, chlng)
 }
 
 // CleanUp cleans the challenge.

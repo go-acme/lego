@@ -8,13 +8,14 @@ import (
 	"os"
 	"time"
 
+	"github.com/mattn/go-isatty"
+	"github.com/urfave/cli/v2"
+
 	"github.com/go-acme/lego/v4/acme/api"
 	"github.com/go-acme/lego/v4/certcrypto"
 	"github.com/go-acme/lego/v4/certificate"
 	"github.com/go-acme/lego/v4/lego"
 	"github.com/go-acme/lego/v4/log"
-	"github.com/mattn/go-isatty"
-	"github.com/urfave/cli/v2"
 )
 
 const (
@@ -206,7 +207,7 @@ func renewForDomains(ctx *cli.Context, client *lego.Client, certsStorage *Certif
 		}
 	}
 
-	certRes, err := client.Certificate.Obtain(request)
+	certRes, err := client.Certificate.Obtain(ctx.Context, request)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -276,7 +277,7 @@ func renewForCSR(ctx *cli.Context, client *lego.Client, certsStorage *Certificat
 		}
 	}
 
-	certRes, err := client.Certificate.ObtainForCSR(request)
+	certRes, err := client.Certificate.ObtainForCSR(ctx.Context, request)
 	if err != nil {
 		log.Fatal(err)
 	}

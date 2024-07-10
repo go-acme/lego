@@ -1,6 +1,7 @@
 package sender
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -22,12 +23,12 @@ func TestDo_UserAgentOnAllHTTPMethod(t *testing.T) {
 
 	testCases := []struct {
 		method string
-		call   func(u string) (*http.Response, error)
+		call   func(ctx context.Context, u string) (*http.Response, error)
 	}{
 		{
 			method: http.MethodGet,
-			call: func(u string) (*http.Response, error) {
-				return doer.Get(u, nil)
+			call: func(ctx context.Context, u string) (*http.Response, error) {
+				return doer.Get(ctx, u, nil)
 			},
 		},
 		{
@@ -36,15 +37,15 @@ func TestDo_UserAgentOnAllHTTPMethod(t *testing.T) {
 		},
 		{
 			method: http.MethodPost,
-			call: func(u string) (*http.Response, error) {
-				return doer.Post(u, strings.NewReader("falalalala"), "text/plain", nil)
+			call: func(ctx context.Context, u string) (*http.Response, error) {
+				return doer.Post(ctx, u, strings.NewReader("falalalala"), "text/plain", nil)
 			},
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.method, func(t *testing.T) {
-			_, err := test.call(server.URL)
+			_, err := test.call(context.Background(), server.URL)
 			require.NoError(t, err)
 
 			assert.Equal(t, test.method, method)

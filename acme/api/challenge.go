@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"errors"
 
 	"github.com/go-acme/lego/v4/acme"
@@ -9,7 +10,7 @@ import (
 type ChallengeService service
 
 // New Creates a challenge.
-func (c *ChallengeService) New(chlgURL string) (acme.ExtendedChallenge, error) {
+func (c *ChallengeService) New(ctx context.Context, chlgURL string) (acme.ExtendedChallenge, error) {
 	if chlgURL == "" {
 		return acme.ExtendedChallenge{}, errors.New("challenge[new]: empty URL")
 	}
@@ -17,7 +18,7 @@ func (c *ChallengeService) New(chlgURL string) (acme.ExtendedChallenge, error) {
 	// Challenge initiation is done by sending a JWS payload containing the trivial JSON object `{}`.
 	// We use an empty struct instance as the postJSON payload here to achieve this result.
 	var chlng acme.ExtendedChallenge
-	resp, err := c.core.post(chlgURL, struct{}{}, &chlng)
+	resp, err := c.core.post(ctx, chlgURL, struct{}{}, &chlng)
 	if err != nil {
 		return acme.ExtendedChallenge{}, err
 	}
@@ -28,13 +29,13 @@ func (c *ChallengeService) New(chlgURL string) (acme.ExtendedChallenge, error) {
 }
 
 // Get Gets a challenge.
-func (c *ChallengeService) Get(chlgURL string) (acme.ExtendedChallenge, error) {
+func (c *ChallengeService) Get(ctx context.Context, chlgURL string) (acme.ExtendedChallenge, error) {
 	if chlgURL == "" {
 		return acme.ExtendedChallenge{}, errors.New("challenge[get]: empty URL")
 	}
 
 	var chlng acme.ExtendedChallenge
-	resp, err := c.core.postAsGet(chlgURL, &chlng)
+	resp, err := c.core.postAsGet(ctx, chlgURL, &chlng)
 	if err != nil {
 		return acme.ExtendedChallenge{}, err
 	}

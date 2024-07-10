@@ -1,6 +1,7 @@
 package tlsalpn01
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha256"
@@ -11,13 +12,14 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/miekg/dns"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/go-acme/lego/v4/acme"
 	"github.com/go-acme/lego/v4/acme/api"
 	"github.com/go-acme/lego/v4/challenge"
 	"github.com/go-acme/lego/v4/platform/tester"
-	"github.com/miekg/dns"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestChallenge(t *testing.T) {
@@ -26,7 +28,7 @@ func TestChallenge(t *testing.T) {
 	domain := "localhost"
 	port := "24457"
 
-	mockValidate := func(_ *api.Core, _ string, chlng acme.Challenge) error {
+	mockValidate := func(_ context.Context, _ *api.Core, _ string, chlng acme.Challenge) error {
 		conn, err := tls.Dial("tcp", net.JoinHostPort(domain, port), &tls.Config{
 			ServerName:         domain,
 			InsecureSkipVerify: true,
@@ -69,7 +71,8 @@ func TestChallenge(t *testing.T) {
 	privateKey, err := rsa.GenerateKey(rand.Reader, 512)
 	require.NoError(t, err, "Could not generate test key")
 
-	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)
+	ctx := context.Background()
+	core, err := api.NewWithContext(ctx, http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)
 	require.NoError(t, err)
 
 	solver := NewChallenge(
@@ -88,7 +91,7 @@ func TestChallenge(t *testing.T) {
 		},
 	}
 
-	err = solver.Solve(authz)
+	err = solver.Solve(ctx, authz)
 	require.NoError(t, err)
 }
 
@@ -98,12 +101,13 @@ func TestChallengeInvalidPort(t *testing.T) {
 	privateKey, err := rsa.GenerateKey(rand.Reader, 128)
 	require.NoError(t, err, "Could not generate test key")
 
-	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)
+	ctx := context.Background()
+	core, err := api.NewWithContext(ctx, http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)
 	require.NoError(t, err)
 
 	solver := NewChallenge(
 		core,
-		func(_ *api.Core, _ string, _ acme.Challenge) error { return nil },
+		func(_ context.Context, _ *api.Core, _ string, _ acme.Challenge) error { return nil },
 		&ProviderServer{port: "123456"},
 	)
 
@@ -116,7 +120,7 @@ func TestChallengeInvalidPort(t *testing.T) {
 		},
 	}
 
-	err = solver.Solve(authz)
+	err = solver.Solve(ctx, authz)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "invalid port")
 	assert.Contains(t, err.Error(), "123456")
@@ -129,7 +133,7 @@ func TestChallengeIPaddress(t *testing.T) {
 	port := "24457"
 	rd, _ := dns.ReverseAddr(domain)
 
-	mockValidate := func(_ *api.Core, _ string, chlng acme.Challenge) error {
+	mockValidate := func(_ context.Context, _ *api.Core, _ string, chlng acme.Challenge) error {
 		conn, err := tls.Dial("tcp", net.JoinHostPort(domain, port), &tls.Config{
 			ServerName:         rd,
 			InsecureSkipVerify: true,
@@ -170,7 +174,8 @@ func TestChallengeIPaddress(t *testing.T) {
 	privateKey, err := rsa.GenerateKey(rand.Reader, 512)
 	require.NoError(t, err, "Could not generate test key")
 
-	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)
+	ctx := context.Background()
+	core, err := api.NewWithContext(ctx, http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)
 	require.NoError(t, err)
 
 	solver := NewChallenge(
@@ -189,5 +194,5 @@ func TestChallengeIPaddress(t *testing.T) {
 		},
 	}
 
-	require.NoError(t, solver.Solve(authz))
+	require.NoError(t, solver.Solve(ctx, authz))
 }

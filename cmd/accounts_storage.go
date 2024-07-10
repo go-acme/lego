@@ -11,11 +11,12 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/urfave/cli/v2"
+
 	"github.com/go-acme/lego/v4/certcrypto"
 	"github.com/go-acme/lego/v4/lego"
 	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/registration"
-	"github.com/urfave/cli/v2"
 )
 
 const (
@@ -232,7 +233,7 @@ func tryRecoverRegistration(ctx *cli.Context, privateKey crypto.PrivateKey) (*re
 		return nil, err
 	}
 
-	reg, err := client.Registration.ResolveAccountByKey()
+	reg, err := client.Registration.ResolveAccountByKey(ctx.Context)
 	if err != nil {
 		return nil, err
 	}

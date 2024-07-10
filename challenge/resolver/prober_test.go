@@ -4,9 +4,10 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/go-acme/lego/v4/acme"
 	"github.com/go-acme/lego/v4/challenge"
-	"github.com/stretchr/testify/require"
 )
 
 func TestProber_Solve(t *testing.T) {
@@ -106,7 +107,7 @@ func TestProber_Solve(t *testing.T) {
 				solverManager: &SolverManager{solvers: test.solvers},
 			}
 
-			err := prober.Solve(test.authz)
+			err := prober.Solve(nil, test.authz)
 			if test.expectedError != "" {
 				require.EqualError(t, err, test.expectedError)
 			} else {

@@ -7,11 +7,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/urfave/cli/v2"
+
 	"github.com/go-acme/lego/v4/certificate"
 	"github.com/go-acme/lego/v4/lego"
 	"github.com/go-acme/lego/v4/log"
 	"github.com/go-acme/lego/v4/registration"
-	"github.com/urfave/cli/v2"
 )
 
 func createRun() *cli.Command {
@@ -165,14 +166,14 @@ func register(ctx *cli.Context, client *lego.Client) (*registration.Resource, er
 			log.Fatalf("Requires arguments --kid and --hmac.")
 		}
 
-		return client.Registration.RegisterWithExternalAccountBinding(registration.RegisterEABOptions{
+		return client.Registration.RegisterWithExternalAccountBinding(ctx.Context, registration.RegisterEABOptions{
 			TermsOfServiceAgreed: accepted,
 			Kid:                  kid,
 			HmacEncoded:          hmacEncoded,
 		})
 	}
 
-	return client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
+	return client.Registration.Register(ctx.Context, registration.RegisterOptions{TermsOfServiceAgreed: true})
 }
 
 func obtainCertificate(ctx *cli.Context, client *lego.Client) (*certificate.Resource, error) {
@@ -199,7 +200,7 @@ func obtainCertificate(ctx *cli.Context, client *lego.Client) (*certificate.Reso
 			request.NotAfter = *notAfter
 		}
 
-		return client.Certificate.Obtain(request)
+		return client.Certificate.Obtain(ctx.Context, request)
 	}
 
 	// read the CSR
@@ -218,5 +219,5 @@ func obtainCertificate(ctx *cli.Context, client *lego.Client) (*certificate.Reso
 		AlwaysDeactivateAuthorizations: ctx.Bool("always-deactivate-authorizations"),
 	}
 
-	return client.Certificate.ObtainForCSR(request)
+	return client.Certificate.ObtainForCSR(ctx.Context, request)
 }

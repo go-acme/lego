@@ -1,6 +1,7 @@
 package resolver
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"fmt"
@@ -9,12 +10,13 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/go-acme/lego/v4/acme"
-	"github.com/go-acme/lego/v4/acme/api"
-	"github.com/go-acme/lego/v4/platform/tester"
 	"github.com/go-jose/go-jose/v4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/go-acme/lego/v4/acme"
+	"github.com/go-acme/lego/v4/acme/api"
+	"github.com/go-acme/lego/v4/platform/tester"
 )
 
 func TestByType(t *testing.T) {
@@ -95,7 +97,8 @@ func TestValidate(t *testing.T) {
 		}
 	})
 
-	core, err := api.New(http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)
+	ctx := context.Background()
+	core, err := api.NewWithContext(ctx, http.DefaultClient, "lego-test", apiURL+"/dir", "", privateKey)
 	require.NoError(t, err)
 
 	testCases := []struct {
@@ -137,7 +140,9 @@ func TestValidate(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			statuses = test.statuses
 
-			err := validate(core, "example.com", acme.Challenge{Type: "http-01", Token: "token", URL: apiURL + "/chlg"})
+			ctx := context.Background()
+
+			err := validate(ctx, core, "example.com", acme.Challenge{Type: "http-01", Token: "token", URL: apiURL + "/chlg"})
 			if test.want == "" {
 				require.NoError(t, err)
 			} else {

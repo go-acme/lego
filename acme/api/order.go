@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"encoding/base64"
 	"errors"
 	"net"
@@ -22,12 +23,12 @@ type OrderOptions struct {
 type OrderService service
 
 // New Creates a new order.
-func (o *OrderService) New(domains []string) (acme.ExtendedOrder, error) {
-	return o.NewWithOptions(domains, nil)
+func (o *OrderService) New(ctx context.Context, domains []string) (acme.ExtendedOrder, error) {
+	return o.NewWithOptions(ctx, domains, nil)
 }
 
 // NewWithOptions Creates a new order.
-func (o *OrderService) NewWithOptions(domains []string, opts *OrderOptions) (acme.ExtendedOrder, error) {
+func (o *OrderService) NewWithOptions(ctx context.Context, domains []string, opts *OrderOptions) (acme.ExtendedOrder, error) {
 	var identifiers []acme.Identifier
 	for _, domain := range domains {
 		ident := acme.Identifier{Value: domain, Type: "dns"}
@@ -56,7 +57,7 @@ func (o *OrderService) NewWithOptions(domains []string, opts *OrderOptions) (acm
 	}
 
 	var order acme.Order
-	resp, err := o.core.post(o.core.GetDirectory().NewOrderURL, orderReq, &order)
+	resp, err := o.core.post(ctx, o.core.GetDirectory().NewOrderURL, orderReq, &order)
 	if err != nil {
 		return acme.ExtendedOrder{}, err
 	}
@@ -68,13 +69,13 @@ func (o *OrderService) NewWithOptions(domains []string, opts *OrderOptions) (acm
 }
 
 // Get Gets an order.
-func (o *OrderService) Get(orderURL string) (acme.ExtendedOrder, error) {
+func (o *OrderService) Get(ctx context.Context, orderURL string) (acme.ExtendedOrder, error) {
 	if orderURL == "" {
 		return acme.ExtendedOrder{}, errors.New("order[get]: empty URL")
 	}
 
 	var order acme.Order
-	_, err := o.core.postAsGet(orderURL, &order)
+	_, err := o.core.postAsGet(ctx, orderURL, &order)
 	if err != nil {
 		return acme.ExtendedOrder{}, err
 	}
@@ -83,13 +84,13 @@ func (o *OrderService) Get(orderURL string) (acme.ExtendedOrder, error) {
 }
 
 // UpdateForCSR Updates an order for a CSR.
-func (o *OrderService) UpdateForCSR(orderURL string, csr []byte) (acme.ExtendedOrder, error) {
+func (o *OrderService) UpdateForCSR(ctx context.Context, orderURL string, csr []byte) (acme.ExtendedOrder, error) {
 	csrMsg := acme.CSRMessage{
 		Csr: base64.RawURLEncoding.EncodeToString(csr),
 	}
 
 	var order acme.Order
-	_, err := o.core.post(orderURL, csrMsg, &order)
+	_, err := o.core.post(ctx, orderURL, csrMsg, &order)
 	if err != nil {
 		return acme.ExtendedOrder{}, err
 	}

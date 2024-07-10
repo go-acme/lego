@@ -2,6 +2,7 @@ package api
 
 import (
 	"bytes"
+	"context"
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
@@ -20,8 +21,8 @@ type CertificateService service
 
 // Get Returns the certificate and the issuer certificate.
 // 'bundle' is only applied if the issuer is provided by the 'up' link.
-func (c *CertificateService) Get(certURL string, bundle bool) ([]byte, []byte, error) {
-	cert, _, err := c.get(certURL, bundle)
+func (c *CertificateService) Get(ctx context.Context, certURL string, bundle bool) ([]byte, []byte, error) {
+	cert, _, err := c.get(ctx, certURL, bundle)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -31,8 +32,8 @@ func (c *CertificateService) Get(certURL string, bundle bool) ([]byte, []byte, e
 
 // GetAll the certificates and the alternate certificates.
 // bundle' is only applied if the issuer is provided by the 'up' link.
-func (c *CertificateService) GetAll(certURL string, bundle bool) (map[string]*acme.RawCertificate, error) {
-	cert, headers, err := c.get(certURL, bundle)
+func (c *CertificateService) GetAll(ctx context.Context, certURL string, bundle bool) (map[string]*acme.RawCertificate, error) {
+	cert, headers, err := c.get(ctx, certURL, bundle)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +45,7 @@ func (c *CertificateService) GetAll(certURL string, bundle bool) (map[string]*ac
 	alts := getLinks(headers, "alternate")
 
 	for _, alt := range alts {
-		altCert, _, err := c.get(alt, bundle)
+		altCert, _, err := c.get(ctx, alt, bundle)
 		if err != nil {
 			return nil, err
 		}
@@ -56,18 +57,18 @@ func (c *CertificateService) GetAll(certURL string, bundle bool) (map[string]*ac
 }
 
 // Revoke Revokes a certificate.
-func (c *CertificateService) Revoke(req acme.RevokeCertMessage) error {
-	_, err := c.core.post(c.core.GetDirectory().RevokeCertURL, req, nil)
+func (c *CertificateService) Revoke(ctx context.Context, req acme.RevokeCertMessage) error {
+	_, err := c.core.post(ctx, c.core.GetDirectory().RevokeCertURL, req, nil)
 	return err
 }
 
 // get Returns the certificate and the "up" link.
-func (c *CertificateService) get(certURL string, bundle bool) (*acme.RawCertificate, http.Header, error) {
+func (c *CertificateService) get(ctx context.Context, certURL string, bundle bool) (*acme.RawCertificate, http.Header, error) {
 	if certURL == "" {
 		return nil, nil, errors.New("certificate[get]: empty URL")
 	}
 
-	resp, err := c.core.postAsGet(certURL, nil)
+	resp, err := c.core.postAsGet(ctx, certURL, nil)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -77,13 +78,13 @@ func (c *CertificateService) get(certURL string, bundle bool) (*acme.RawCertific
 		return nil, resp.Header, err
 	}
 
-	cert := c.getCertificateChain(data, resp.Header, bundle, certURL)
+	cert := c.getCertificateChain(ctx, data, resp.Header, bundle, certURL)
 
 	return cert, resp.Header, err
 }
 
 // getCertificateChain Returns the certificate and the issuer certificate.
-func (c *CertificateService) getCertificateChain(cert []byte, headers http.Header, bundle bool, certURL string) *acme.RawCertificate {
+func (c *CertificateService) getCertificateChain(ctx context.Context, cert []byte, headers http.Header, bundle bool, certURL string) *acme.RawCertificate {
 	// Get issuerCert from bundled response from Let's Encrypt
 	// See https://community.letsencrypt.org/t/acme-v2-no-up-link-in-response/64962
 	_, issuer := pem.Decode(cert)
@@ -101,7 +102,7 @@ func (c *CertificateService) getCertificateChain(cert []byte, headers http.Heade
 	// See https://www.rfc-editor.org/rfc/rfc8555.html#section-7.4.2
 	up := getLink(headers, "up")
 
-	issuer, err := c.getIssuerFromLink(up)
+	issuer, err := c.getIssuerFromLink(ctx, up)
 	if err != nil {
 		// If we fail to acquire the issuer cert, return the issued certificate - do not fail.
 		log.Warnf("acme: Could not bundle issuer certificate [%s]: %v", certURL, err)
@@ -117,14 +118,14 @@ func (c *CertificateService) getCertificateChain(cert []byte, headers http.Heade
 }
 
 // getIssuerFromLink requests the issuer certificate.
-func (c *CertificateService) getIssuerFromLink(up string) ([]byte, error) {
+func (c *CertificateService) getIssuerFromLink(ctx context.Context, up string) ([]byte, error) {
 	if up == "" {
 		return nil, nil
 	}
 
 	log.Infof("acme: Requesting issuer cert from %s", up)
 
-	cert, _, err := c.get(up, false)
+	cert, _, err := c.get(ctx, up, false)
 	if err != nil {
 		return nil, err
 	}

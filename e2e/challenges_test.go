@@ -1,6 +1,7 @@
 package e2e
 
 import (
+	"context"
 	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
@@ -10,6 +11,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/go-acme/lego/v4/certcrypto"
 	"github.com/go-acme/lego/v4/certificate"
 	"github.com/go-acme/lego/v4/challenge/http01"
@@ -17,8 +21,6 @@ import (
 	"github.com/go-acme/lego/v4/e2e/loader"
 	"github.com/go-acme/lego/v4/lego"
 	"github.com/go-acme/lego/v4/registration"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 var load = loader.EnvLoader{
@@ -237,7 +239,9 @@ func TestChallengeHTTP_Client_Obtain(t *testing.T) {
 	err = client.Challenge.SetHTTP01Provider(http01.NewProviderServer("", "5002"))
 	require.NoError(t, err)
 
-	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
+	ctx := context.Background()
+
+	reg, err := client.Registration.Register(ctx, registration.RegisterOptions{TermsOfServiceAgreed: true})
 	require.NoError(t, err)
 	user.registration = reg
 
@@ -245,7 +249,7 @@ func TestChallengeHTTP_Client_Obtain(t *testing.T) {
 		Domains: []string{"acme.wtf"},
 		Bundle:  true,
 	}
-	resource, err := client.Certificate.Obtain(request)
+	resource, err := client.Certificate.Obtain(ctx, request)
 	require.NoError(t, err)
 
 	require.NotNil(t, resource)
@@ -275,7 +279,8 @@ func TestChallengeHTTP_Client_Obtain_notBefore_notAfter(t *testing.T) {
 	err = client.Challenge.SetHTTP01Provider(http01.NewProviderServer("", "5002"))
 	require.NoError(t, err)
 
-	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
+	ctx := context.Background()
+	reg, err := client.Registration.Register(ctx, registration.RegisterOptions{TermsOfServiceAgreed: true})
 	require.NoError(t, err)
 	user.registration = reg
 
@@ -287,7 +292,7 @@ func TestChallengeHTTP_Client_Obtain_notBefore_notAfter(t *testing.T) {
 		NotAfter:  now.Add(2 * time.Hour),
 		Bundle:    true,
 	}
-	resource, err := client.Certificate.Obtain(request)
+	resource, err := client.Certificate.Obtain(context.Background(), request)
 	require.NoError(t, err)
 
 	require.NotNil(t, resource)
@@ -322,11 +327,12 @@ func TestChallengeHTTP_Client_Registration_QueryRegistration(t *testing.T) {
 	err = client.Challenge.SetHTTP01Provider(http01.NewProviderServer("", "5002"))
 	require.NoError(t, err)
 
-	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
+	ctx := context.Background()
+	reg, err := client.Registration.Register(ctx, registration.RegisterOptions{TermsOfServiceAgreed: true})
 	require.NoError(t, err)
 	user.registration = reg
 
-	resource, err := client.Registration.QueryRegistration()
+	resource, err := client.Registration.QueryRegistration(ctx)
 	require.NoError(t, err)
 
 	require.NotNil(t, resource)
@@ -354,7 +360,8 @@ func TestChallengeTLS_Client_Obtain(t *testing.T) {
 	err = client.Challenge.SetTLSALPN01Provider(tlsalpn01.NewProviderServer("", "5001"))
 	require.NoError(t, err)
 
-	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
+	ctx := context.Background()
+	reg, err := client.Registration.Register(ctx, registration.RegisterOptions{TermsOfServiceAgreed: true})
 	require.NoError(t, err)
 	user.registration = reg
 
@@ -367,7 +374,7 @@ func TestChallengeTLS_Client_Obtain(t *testing.T) {
 		Bundle:     true,
 		PrivateKey: privateKeyCSR,
 	}
-	resource, err := client.Certificate.Obtain(request)
+	resource, err := client.Certificate.Obtain(context.Background(), request)
 	require.NoError(t, err)
 
 	require.NotNil(t, resource)
@@ -397,7 +404,8 @@ func TestChallengeTLS_Client_ObtainForCSR(t *testing.T) {
 	err = client.Challenge.SetTLSALPN01Provider(tlsalpn01.NewProviderServer("", "5001"))
 	require.NoError(t, err)
 
-	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
+	ctx := context.Background()
+	reg, err := client.Registration.Register(ctx, registration.RegisterOptions{TermsOfServiceAgreed: true})
 	require.NoError(t, err)
 	user.registration = reg
 
@@ -407,7 +415,7 @@ func TestChallengeTLS_Client_ObtainForCSR(t *testing.T) {
 	csr, err := x509.ParseCertificateRequest(csrRaw)
 	require.NoError(t, err)
 
-	resource, err := client.Certificate.ObtainForCSR(certificate.ObtainForCSRRequest{
+	resource, err := client.Certificate.ObtainForCSR(ctx, certificate.ObtainForCSRRequest{
 		CSR:    csr,
 		Bundle: true,
 	})
@@ -440,14 +448,15 @@ func TestRegistrar_UpdateAccount(t *testing.T) {
 	client, err := lego.NewClient(config)
 	require.NoError(t, err)
 
+	ctx := context.Background()
 	regOptions := registration.RegisterOptions{TermsOfServiceAgreed: true}
-	reg, err := client.Registration.Register(regOptions)
+	reg, err := client.Registration.Register(ctx, regOptions)
 	require.NoError(t, err)
 	require.Equal(t, []string{"mailto:foo@example.com"}, reg.Body.Contact)
 	user.registration = reg
 
 	user.email = "bar@example.com"
-	resource, err := client.Registration.UpdateRegistration(regOptions)
+	resource, err := client.Registration.UpdateRegistration(ctx, regOptions)
 	require.NoError(t, err)
 	require.Equal(t, []string{"mailto:bar@example.com"}, resource.Body.Contact)
 	require.Equal(t, reg.URI, resource.URI)

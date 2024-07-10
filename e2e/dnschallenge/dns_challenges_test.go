@@ -1,6 +1,7 @@
 package dnschallenge
 
 import (
+	"context"
 	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
@@ -8,14 +9,15 @@ import (
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/go-acme/lego/v4/certificate"
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/e2e/loader"
 	"github.com/go-acme/lego/v4/lego"
 	"github.com/go-acme/lego/v4/providers/dns"
 	"github.com/go-acme/lego/v4/registration"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 var load = loader.EnvLoader{
@@ -97,7 +99,8 @@ func TestChallengeDNS_Client_Obtain(t *testing.T) {
 		dns01.DisableCompletePropagationRequirement())
 	require.NoError(t, err)
 
-	reg, err := client.Registration.Register(registration.RegisterOptions{TermsOfServiceAgreed: true})
+	ctx := context.Background()
+	reg, err := client.Registration.Register(ctx, registration.RegisterOptions{TermsOfServiceAgreed: true})
 	require.NoError(t, err)
 	user.registration = reg
 
@@ -112,7 +115,7 @@ func TestChallengeDNS_Client_Obtain(t *testing.T) {
 		Bundle:     true,
 		PrivateKey: privateKeyCSR,
 	}
-	resource, err := client.Certificate.Obtain(request)
+	resource, err := client.Certificate.Obtain(ctx, request)
 	require.NoError(t, err)
 
 	require.NotNil(t, resource)

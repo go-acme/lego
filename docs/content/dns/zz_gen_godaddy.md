@@ -57,6 +57,12 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
+GoDaddy has recently (2024-04) updated the account requirements to access parts of their production Domains API:
+
+- Availability API: Limited to accounts with 50 or more domains.
+- Management and DNS APIs: Limited to accounts with 10 or more domains and/or an active Discount Domain Club plan.
+
+https://community.letsencrypt.org/t/getting-unauthorized-url-error-while-trying-to-get-cert-for-subdomains/217329/12
 
 
 

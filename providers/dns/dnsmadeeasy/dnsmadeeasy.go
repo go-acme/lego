@@ -120,7 +120,7 @@ func (d *DNSProvider) Present(domainName, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("dnsmadeeasy: could not find zone for domain %q (%s): %w", domainName, info.EffectiveFQDN, err)
+		return fmt.Errorf("dnsmadeeasy: could not find zone for domain %q: %w", domainName, err)
 	}
 
 	ctx := context.Background()
@@ -148,7 +148,7 @@ func (d *DNSProvider) CleanUp(domainName, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("dnsmadeeasy: could not find zone for domain %q (%s): %w", domainName, info.EffectiveFQDN, err)
+		return fmt.Errorf("dnsmadeeasy: could not find zone for domain %q: %w", domainName, err)
 	}
 
 	ctx := context.Background()

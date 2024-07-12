@@ -38,8 +38,9 @@ func newClient(ctx *cli.Context, acc registration.User, keyType certcrypto.KeyTy
 	config.CADirURL = ctx.String("server")
 
 	config.Certificate = lego.CertificateConfig{
-		KeyType: keyType,
-		Timeout: time.Duration(ctx.Int("cert.timeout")) * time.Second,
+		KeyType:             keyType,
+		Timeout:             time.Duration(ctx.Int("cert.timeout")) * time.Second,
+		OverallRequestLimit: ctx.Int("overall-request-limit"),
 	}
 	config.UserAgent = getUserAgent(ctx)
 

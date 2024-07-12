@@ -3,7 +3,6 @@ package loopia
 import (
 	"context"
 	"errors"
-	"fmt"
 	"testing"
 
 	"github.com/go-acme/lego/v4/providers/dns/loopia/internal"
@@ -47,7 +46,7 @@ func TestDNSProvider_Present(t *testing.T) {
 		{
 			desc: "AddTXTRecord fails",
 
-			addTXTRecordError: fmt.Errorf("unknown error: 'ADDTXT'"),
+			addTXTRecordError: errors.New("unknown error: 'ADDTXT'"),
 			callAddTXTRecord:  true,
 
 			expectedError: "loopia: failed to add TXT record: unknown error: 'ADDTXT'",
@@ -55,7 +54,7 @@ func TestDNSProvider_Present(t *testing.T) {
 		{
 			desc: "GetTXTRecords fails",
 
-			getTXTRecordsError: fmt.Errorf("unknown error: 'GETTXT'"),
+			getTXTRecordsError: errors.New("unknown error: 'GETTXT'"),
 			callAddTXTRecord:   true,
 			callGetTXTRecords:  true,
 

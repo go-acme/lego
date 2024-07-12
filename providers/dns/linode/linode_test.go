@@ -197,7 +197,7 @@ func TestDNSProvider_Present(t *testing.T) {
 						Page:    1,
 					},
 					Data: []linodego.Domain{{
-						Domain: "foobar.com",
+						Domain: "example.com",
 						ID:     1234,
 					}},
 				},

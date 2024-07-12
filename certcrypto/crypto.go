@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"math/big"
 	"net"
+	"slices"
 	"strings"
 	"time"
 
@@ -88,7 +89,7 @@ func ParsePEMBundle(bundle []byte) ([]*x509.Certificate, error) {
 func ParsePEMPrivateKey(key []byte) (crypto.PrivateKey, error) {
 	keyBlockDER, _ := pem.Decode(key)
 	if keyBlockDER == nil {
-		return nil, fmt.Errorf("invalid PEM block")
+		return nil, errors.New("invalid PEM block")
 	}
 
 	if keyBlockDER.Type != "PRIVATE KEY" && !strings.HasSuffix(keyBlockDER.Type, " PRIVATE KEY") {
@@ -268,7 +269,7 @@ func ExtractDomainsCSR(csr *x509.CertificateRequest) []string {
 
 	// loop over the SubjectAltName DNS names
 	for _, sanName := range csr.DNSNames {
-		if containsSAN(domains, sanName) {
+		if slices.Contains(domains, sanName) {
 			// Duplicate; skip this name
 			continue
 		}
@@ -285,15 +286,6 @@ func ExtractDomainsCSR(csr *x509.CertificateRequest) []string {
 	}
 
 	return domains
-}
-
-func containsSAN(domains []string, sanName string) bool {
-	for _, existingName := range domains {
-		if existingName == sanName {
-			return true
-		}
-	}
-	return false
 }
 
 func GeneratePemCert(privateKey *rsa.PrivateKey, domain string, extensions []pkix.Extension) ([]byte, error) {

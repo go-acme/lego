@@ -1,0 +1,9 @@
+{
+  "error": 0,
+  "message": "",
+  "data": {
+    "id": 123,
+    "domain_name": "example.com",
+    "domain_name_ascii": "example.com"
+  }
+}

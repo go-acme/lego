@@ -1,0 +1,6 @@
+{
+  "error": {
+    "code": 420,
+    "message": "Enhance Your Calm. Rate limit exceeded (too many requests) OR you did NOT provide any credentials with your request!"
+  }
+}

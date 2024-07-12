@@ -1,15 +1,97 @@
 # Changelog
 
+## [v4.17.4] - 2024-06-12
+
+### Fixed
+
+- **[dnsprovider]** Update dependencies
+
+## [v4.17.3] - 2024-05-28
+
+### Added
+
+- **[dnsprovider]** Add DNS provider for Selectel v2
+- **[dnsprovider]** route53: adds option to not wait for changes
+- **[dnsprovider]** ovh: add OAuth2 authentication
+- **[dnsprovider]** azuredns: use TenantID also for cli authentication
+- **[dnsprovider]** godaddy: documentation about new API limitations
+- **[cli]** feat: add LEGO_ISSUER_CERT_PATH to hook
+
+### Changed
+
+- **[dnsprovider]** dode: update API URL
+- **[dnsprovider]** exec: stream command output
+- **[dnsprovider]** oracle: update API client
+- **[dnsprovider]** azuredns: servicediscovery for zones
+- **[dnsprovider]** scaleway: add alternative env var names
+- **[dnsprovider]** exoscale: simplify record creation
+- **[dnsprovider]** httpnet: add provider to NewDNSChallengeProviderByName
+- **[cli]** feat: fills LEGO_CERT_PFX_PATH and LEGO_CERT_PEM_PATH only when needed
+- **[lib,ari]** feat: renewal retry after value
+
+### Fixed
+
+- **[dnsprovider]** pdns: reconstruct zone URLs to enable non-root folder API endpoints
+- **[dnsprovider]** alidns: fix link to API documentation
+
+## [v4.17.2] - 2024-05-28
+
+Canceled due to a release failure related to Snapcraft.
+
+The Snapcraft release are disabled for now.
+
+## [v4.17.1] - 2024-05-28
+
+Canceled due to a release failure related to oci-go-sdk.
+
+The module `github.com/oracle/oci-go-sdk/v65` uses `github.com/gofrs/flock` but flock doesn't support some platform (like Solaris):
+- https://github.com/gofrs/flock/issues/60
+
+Due to that we will remove the Solaris build.
+
+## [v4.17.0] - 2024-05-28
+
+Canceled due to a release failure related to Snapcraft.
+
+## [v4.16.1] - 2024-03-10
+
+### Fixed
+
+- **[cli,ari]** fix: don't generate ARI cert ID if ARI is not enable
+
+## [v4.16.0] - 2024-03-09
+
+### Added
+
+- **[dnsprovider]** Add DNS provider for Shellrent
+- **[dnsprovider]** Add DNS provider for Mail-in-a-Box
+- **[dnsprovider]** Add DNS provider for CPanel and WHM
+
+### Changed
+
+- **[lib,ari]** Implement 'replaces' field in newOrder and draft-ietf-acme-ari-03 CertID changes
+- **[log]** feat: improve errors and logs related to DNS call
+- **[lib]** update to go-jose/go-jose/v4 v4.0.1
+
+### Fixed
+
+- **[dnsprovider]** nifcloud: fix bug in case of same auth zone
+- **[dnsprovider]** bunny: Support delegated subdomains
+- **[dnsprovider]** easydns: fix zone detection
+- **[dnsprovider]** ns1: fix record creation
+
 ## [v4.15.0] - 2024-01-28
 
-### Added:
+### Added
+
 - **[dnsprovider]** Add DNS provider for http.net
 - **[dnsprovider]** Add DNS provider for Webnames
 
-### Changed:
+### Changed
+
 - **[cli]** Add environment variable for specifying alternate directory URL
 - **[cli]** Add format option for PFX encoding
-- **[lib]** Support simplified issuance for very long domain names at Let&#39;s Encrypt
+- **[lib]** Support simplified issuance for very long domain names at Let's Encrypt
 - **[lib]** Update CertID format as per draft-ietf-acme-ari-02
 - **[dnsprovider]** azuredns: allow OIDC authentication
 - **[dnsprovider]** azuredns: provide the ability to select authentication methods
@@ -23,11 +105,12 @@
 - **[dnsprovider]** regru: HTTP method changed to POST
 - **[dnsprovider]** scaleway: add cname support
 
-### Fixed:
+### Fixed
+
 - **[dnsprovider]** cloudru: change default URLs
 - **[dnsprovider]** constellix: follow rate limiting headers
 - **[dnsprovider]** desec: increase default propagation interval
-- **[dnsprovider]** gandiv5: Add &#34;Bearer&#34; prefix to the auth header
+- **[dnsprovider]** gandiv5: Add "Bearer" prefix to the auth header
 - **[dnsprovider]** inwx: improve sleep calculation
 - **[dnsprovider]** inwx: wait before generating new TOTP TANs
 - **[dnsprovider]** ionos: fix DNS record removal
@@ -37,7 +120,8 @@
 
 ## [v4.14.1] - 2023-09-20
 
-### Fixed:
+### Fixed
+
 - **[dnsprovider]** bunny: fix zone detection
 - **[dnsprovider]** bunny: use NRDCG fork
 - **[dnsprovider]** ovh: update client to v1.4.2
@@ -48,34 +132,40 @@ Cancelled due to CI failure.
 
 ## [v4.14.0] - 2023-08-20
 
-### Added:
+### Added
+
 - **[dnsprovider]** Add DNS provider for Yandex 360
 - **[dnsprovider]** Add DNS provider for cloud.ru
 - **[httpprovider]** Adding S3 support for HTTP domain validation
 
-### Changed:
+### Changed
+
 - **[cli]** Allow to set EAB kid and hmac via environment variables
 - **[dnsprovider]** Migrate to aws-sdk-go-v2 (lightsail, route53)
 
-### Fixed:
+### Fixed
+
 - **[dnsprovider]** nearlyfreespeech: fix authentication
 - **[dnsprovider]** pdns: fix notify
 - **[dnsprovider]** route53: avoid unexpected records deletion
 
 ## [v4.13.3] - 2023-07-25
 
-### Fixed:
+### Fixed
+
 - **[dnsprovider]** azuredns: fix configuration from env vars
 - **[dnsprovider]** gcore: change API domain
 
 ## [v4.13.2] - 2023-07-21
 
-### Fixed:
+### Fixed
+
 - **[dnsprovider]** servercow: fix regression
 
 ## [v4.13.1] - 2023-07-20
 
-### Added:
+### Added
+
 - **[dnsprovider]** Add DNS provider for IPv64
 - **[dnsprovider]** Add DNS provider for Metaname
 - **[dnsprovider]** Add DNS provider for RcodeZero
@@ -83,10 +173,12 @@ Cancelled due to CI failure.
 - **[dnsprovider]** azure: new implementation based on the new API client
 - **[lib]** Experimental option to force DNS queries to use TCP
 
-### Changed:
+### Changed
+
 - **[dnsprovider]** cloudflare: update api client to v0.70.0
 
-### Fixed:
+### Fixed
+
 - **[dnsprovider,cname]** fix: ensure case-insensitive comparison of CNAME records
 - **[cli]** fix: list command
 - **[lib]** fix: ARI explanationURL
@@ -97,33 +189,39 @@ Cancelled due to a CI issue (no space left on device).
 
 ## [v4.12.2] - 2023-06-19
 
-### Fixed:
+### Fixed
+
 - **[dnsprovider]** dnsmadeeasy: fix DeleteRecord
 - **[lib]** fix: read status code from response
 
 ## [v4.12.1] - 2023-06-06
 
-### Fixed:
+### Fixed
+
 - **[dnsprovider]** pdns: fix record value
 
 ## [v4.12.0] - 2023-05-28
 
-### Added:
+### Added
+
 - **[lib,cli]** Initial ACME Renewal Info (ARI) Implementation
 - **[dnsprovider]** Add DNS provider for Derak Cloud
 - **[dnsprovider]** route53: pass ExternalID property to STS:AssumeRole API operation
 - **[lib,cli]** Support custom duration for certificate
 
-### Changed:
+### Changed
+
 - **[dnsprovider]** Refactor DNS provider and client implementations
 
-### Fixed:
+### Fixed
+
 - **[dnsprovider]** autodns: fixes wrong zone in api call if CNAME is used
 - **[cli]** fix: archive only domain-related files on revoke
 
 ## [v4.11.0] - 2023-05-02
 
-### Added:
+### Added
+
 - **[lib]** Support for certificate with raw IP SAN (RFC8738)
 - **[dnsprovider]** Add Brandit.com as DNS provider
 - **[dnsprovider]** Add DNS provider for Bunny
@@ -131,13 +229,15 @@ Cancelled due to a CI issue (no space left on device).
 - **[dnsprovider]** Add Google Domains as DNS provider
 - **[dnsprovider]** Add DNS provider for Plesk
 
-### Changed:
+### Changed
+
 - **[cli]** feat: add LEGO_CERT_PEM_PATH and LEGO_CERT_PFX_PATH to run hook
 - **[lib,cli]** feat: add RSA 3072
 - **[dnsprovider]** gcloud: update google APIs to latest version
 - **[lib,dnsprovider,cname]** chore: replace GetRecord by GetChallengeInfo
 
-### Fixed:
+### Fixed
+
 - **[dnsprovider]** rimuhosting: fix API base URL
 
 ## [v4.10.2] - 2023-02-26
@@ -146,26 +246,30 @@ Fix Docker image builds.
 
 ## [v4.10.1] - 2023-02-25
 
-### Fixed:
+### Fixed
+
 - **[dnsprovider,cname]** acmedns: fix CNAME support
 - **[dnsprovider]** dynu: fix subdomain support
 
 ## [v4.10.0] - 2023-02-10
 
-### Added:
+### Added
+
 - **[dnsprovider]** Add DNS provider for dnsHome.de
 - **[dnsprovider]** Add DNS provider for Liara
 - **[dnsprovider]** Add DNS provider for UltraDNS
 - **[dnsprovider]** Add DNS provider for Websupport
 
-### Changed:
+### Changed
+
 - **[dnsprovider]** ibmcloud: add support for subdomains
 - **[dnsprovider]** infomaniak: CNAME support
 - **[dnsprovider]** namesilo: add cleanup before add a DNS record
 - **[dnsprovider]** route53: Allow static credentials to be supplied
 - **[dnsprovider]** tencentcloud: support punycode domain
 
-### Fixed:
+### Fixed
+
 - **[dnsprovider]** alidns: filter on record type
 - **[dnsprovider]** arvancloud: replace arvancloud.com by arvancloud.ir
 - **[dnsprovider]** hetzner: improve zone ID detection
@@ -175,12 +279,12 @@ Fix Docker image builds.
 
 ## [v4.9.1] - 2022-11-25
 
-### Changed:
+### Changed
 - 
 - **[lib,cname]** cname: add log about CNAME entries
 - **[dnsprovider]** regru: improve error handling
 
-### Fixed:
+### Fixed
 - 
 - **[dnsprovider,cname]** fix CNAME support for multiple DNS providers
 - **[dnsprovider,cname]** duckdns: fix CNAME support
@@ -190,7 +294,7 @@ Fix Docker image builds.
 
 ## [v4.9.0] - 2022-10-03
 
-### Added:
+### Added
 
 - **[dnsprovider]** Add DNS provider for CIVO
 - **[dnsprovider]** Add DNS provider for VK Cloud
@@ -199,7 +303,7 @@ Fix Docker image builds.
 - **[dnsprovider]** loopia: add configurable API endpoint
 - **[dnsprovider]** pdns: notify secondary servers after updates
 
-### Changed:
+### Changed
 
 - **[dnsprovider]** allinkl: removed deprecated sha1 hashing
 - **[dnsprovider]** auroradns: update authentification
@@ -212,7 +316,8 @@ Fix Docker image builds.
 - **[lib,cname]** add recursive CNAME lookup support
 - **[lib]** Remove embedded issuer certificates from issued certificate if bundle is false
 
-### Fixed:
+### Fixed
+
 - **[dnsprovider]** luadns: fix cname support
 - **[dnsprovider]** njalla: fix record id unmarshal error
 - **[dnsprovider]** tencentcloud: fix subdomain error
@@ -577,7 +682,7 @@ Cancelled due to a CI issue, replaced by v4.5.2.
 - **[dnsprovider]** Add DNS provider for Constellix
 - **[dnsprovider]** Add DNS provider for Servercow.
 - **[dnsprovider]** Add DNS provider for Scaleway
-- **[cli]** Add &#34;LEGO_PATH&#34; environment variable
+- **[cli]** Add "LEGO_PATH" environment variable
 
 ### Changed:
 
@@ -590,7 +695,7 @@ Cancelled due to a CI issue, replaced by v4.5.2.
 ### Fixed:
 
 - **[dnsprovider]** zoneee: fix subdomains.
-- **[dnsprovider]** designate: Don&#39;t clean up managed records like SOA and NS
+- **[dnsprovider]** designate: Don't clean up managed records like SOA and NS
 - **[dnsprovider]** dnspod: update lib.
 - **[lib]** crypto: Treat CommonName as optional
 - **[lib]** chore: update cenkalti/backoff to v4.
@@ -615,7 +720,7 @@ Cancelled due to a CI issue, replaced by v4.5.2.
 
 ### Changed:
 - **[dnsprovider]** httpreq: Allow use environment vars from a `_FILE` file
-- **[lib]** Don&#39;t deactivate valid authorizations
+- **[lib]** Don't deactivate valid authorizations
 - **[lib]** Expose more SOA fields found by dns01.FindZoneByFqdn
 
 ### Fixed:
@@ -788,7 +893,7 @@ There was a problem when creating the tag v3.0.1, this tag has been invalidated.
 - **[lib]** Adds `Remove` for challenges
 - **[lib]** Add version to xenolf-acme in User-Agent.
 - **[dnsprovider]** The ability for a DNS provider to solve the challenge sequentially
-- **[dnsprovider]** Add DNS provider for &#34;HTTP request&#34;.
+- **[dnsprovider]** Add DNS provider for "HTTP request".
 - **[dnsprovider]** Add DNS Provider for Vscale
 - **[dnsprovider]** Add DNS Provider for TransIP
 - **[dnsprovider]** Add DNS Provider for inwx
@@ -918,7 +1023,7 @@ There was a problem when creating the tag v3.0.1, this tag has been invalidated.
 ### Added:
 - lib: A new DNS provider for OTC.
 - lib: The `AWS_HOSTED_ZONE_ID` environment variable for the Route53 DNS provider to directly specify the zone.
-- lib: The `RFC2136_TIMEOUT` enviroment variable to make the timeout for the RFC2136 provider configurable.
+- lib: The `RFC2136_TIMEOUT` environment variable to make the timeout for the RFC2136 provider configurable.
 - lib: The `GCE_SERVICE_ACCOUNT_FILE` environment variable to specify a service account file for the Google Cloud DNS provider.
 
 ### Fixed:

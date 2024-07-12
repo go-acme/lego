@@ -2,6 +2,7 @@
 package exec
 
 import (
+	"bufio"
 	"context"
 	"errors"
 	"fmt"
@@ -117,10 +118,27 @@ func (d *DNSProvider) run(ctx context.Context, command, domain, token, keyAuth s
 
 	cmd := exec.CommandContext(ctx, d.config.Program, args...)
 
-	output, err := cmd.CombinedOutput()
-	if len(output) > 0 {
-		log.Println(string(output))
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return fmt.Errorf("create pipe: %w", err)
 	}
 
-	return err
+	cmd.Stderr = cmd.Stdout
+
+	err = cmd.Start()
+	if err != nil {
+		return fmt.Errorf("start command: %w", err)
+	}
+
+	scanner := bufio.NewScanner(stdout)
+	for scanner.Scan() {
+		log.Println(scanner.Text())
+	}
+
+	err = cmd.Wait()
+	if err != nil {
+		return fmt.Errorf("wait command: %w", err)
+	}
+
+	return nil
 }

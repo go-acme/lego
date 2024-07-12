@@ -59,6 +59,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/hetzner"
 	"github.com/go-acme/lego/v4/providers/dns/hostingde"
 	"github.com/go-acme/lego/v4/providers/dns/hosttech"
+	"github.com/go-acme/lego/v4/providers/dns/httpnet"
 	"github.com/go-acme/lego/v4/providers/dns/httpreq"
 	"github.com/go-acme/lego/v4/providers/dns/hurricane"
 	"github.com/go-acme/lego/v4/providers/dns/hyperone"
@@ -79,6 +80,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/liquidweb"
 	"github.com/go-acme/lego/v4/providers/dns/loopia"
 	"github.com/go-acme/lego/v4/providers/dns/luadns"
+	"github.com/go-acme/lego/v4/providers/dns/mailinabox"
 	"github.com/go-acme/lego/v4/providers/dns/metaname"
 	"github.com/go-acme/lego/v4/providers/dns/mydnsjp"
 	"github.com/go-acme/lego/v4/providers/dns/mythicbeasts"
@@ -109,7 +111,9 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/sakuracloud"
 	"github.com/go-acme/lego/v4/providers/dns/scaleway"
 	"github.com/go-acme/lego/v4/providers/dns/selectel"
+	"github.com/go-acme/lego/v4/providers/dns/selectelv2"
 	"github.com/go-acme/lego/v4/providers/dns/servercow"
+	"github.com/go-acme/lego/v4/providers/dns/shellrent"
 	"github.com/go-acme/lego/v4/providers/dns/simply"
 	"github.com/go-acme/lego/v4/providers/dns/sonic"
 	"github.com/go-acme/lego/v4/providers/dns/stackpath"
@@ -245,6 +249,8 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return hostingde.NewDNSProvider()
 	case "hosttech":
 		return hosttech.NewDNSProvider()
+	case "httpnet":
+		return httpnet.NewDNSProvider()
 	case "httpreq":
 		return httpreq.NewDNSProvider()
 	case "hurricane":
@@ -281,10 +287,12 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return linode.NewDNSProvider()
 	case "liquidweb":
 		return liquidweb.NewDNSProvider()
-	case "luadns":
-		return luadns.NewDNSProvider()
 	case "loopia":
 		return loopia.NewDNSProvider()
+	case "luadns":
+		return luadns.NewDNSProvider()
+	case "mailinabox":
+		return mailinabox.NewDNSProvider()
 	case "manual":
 		return dns01.NewDNSProviderManual()
 	case "metaname":
@@ -347,8 +355,12 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 		return scaleway.NewDNSProvider()
 	case "selectel":
 		return selectel.NewDNSProvider()
+	case "selectelv2":
+		return selectelv2.NewDNSProvider()
 	case "servercow":
 		return servercow.NewDNSProvider()
+	case "shellrent":
+		return shellrent.NewDNSProvider()
 	case "simply":
 		return simply.NewDNSProvider()
 	case "sonic":

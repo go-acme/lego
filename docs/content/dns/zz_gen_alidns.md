@@ -70,7 +70,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 ## More information
 
-- [API documentation](https://www.alibabacloud.com/help/doc-detail/42875.htm)
+- [API documentation](https://www.alibabacloud.com/help/en/alibaba-cloud-dns/latest/api-alidns-2015-01-09-dir-parsing-records)
 - [Go client](https://github.com/aliyun/alibaba-cloud-sdk-go)
 
 <!-- THIS DOCUMENTATION IS AUTO-GENERATED. PLEASE DO NOT EDIT. -->

@@ -9,40 +9,30 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/dns/armdns"
 	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/platform/config/env"
 )
 
 // DNSProviderPublic implements the challenge.Provider interface for Azure Public Zone DNS.
 type DNSProviderPublic struct {
-	config       *Config
-	zoneClient   *armdns.ZonesClient
-	recordClient *armdns.RecordSetsClient
+	config                *Config
+	credentials           azcore.TokenCredential
+	serviceDiscoveryZones map[string]ServiceDiscoveryZone
 }
 
-// NewDNSProviderPublic creates a DNSProviderPublic structure with intialised Azure clients.
+// NewDNSProviderPublic creates a DNSProviderPublic structure.
 func NewDNSProviderPublic(config *Config, credentials azcore.TokenCredential) (*DNSProviderPublic, error) {
-	options := arm.ClientOptions{
-		ClientOptions: azcore.ClientOptions{
-			Cloud: config.Environment,
-		},
-	}
-
-	zoneClient, err := armdns.NewZonesClient(config.SubscriptionID, credentials, &options)
+	zones, err := discoverDNSZones(context.Background(), config, credentials)
 	if err != nil {
-		return nil, err
-	}
-
-	recordClient, err := armdns.NewRecordSetsClient(config.SubscriptionID, credentials, &options)
-	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("discover DNS zones: %w", err)
 	}
 
 	return &DNSProviderPublic{
-		config:       config,
-		zoneClient:   zoneClient,
-		recordClient: recordClient,
+		config:                config,
+		credentials:           credentials,
+		serviceDiscoveryZones: zones,
 	}, nil
 }
 
@@ -57,18 +47,23 @@ func (d *DNSProviderPublic) Present(domain, _, keyAuth string) error {
 	ctx := context.Background()
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := d.getHostedZoneID(ctx, info.EffectiveFQDN)
+	zone, err := d.getHostedZone(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("azuredns: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone)
+	client, err := newPublicZoneClient(zone, d.credentials, d.config.Environment)
+	if err != nil {
+		return fmt.Errorf("azuredns: %w", err)
+	}
+
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone.Name)
 	if err != nil {
 		return fmt.Errorf("azuredns: %w", err)
 	}
 
 	// Get existing record set
-	rset, err := d.recordClient.Get(ctx, d.config.ResourceGroup, zone, subDomain, armdns.RecordTypeTXT, nil)
+	resp, err := client.Get(ctx, subDomain)
 	if err != nil {
 		var respErr *azcore.ResponseError
 		if !errors.As(err, &respErr) || respErr.StatusCode != http.StatusNotFound {
@@ -76,33 +71,22 @@ func (d *DNSProviderPublic) Present(domain, _, keyAuth string) error {
 		}
 	}
 
-	// Construct unique TXT records using map
-	uniqRecords := map[string]struct{}{info.Value: {}}
-	if rset.RecordSet.Properties != nil && rset.RecordSet.Properties.TxtRecords != nil {
-		for _, txtRecord := range rset.RecordSet.Properties.TxtRecords {
-			// Assume Value doesn't contain multiple strings
-			if len(txtRecord.Value) > 0 {
-				uniqRecords[deref(txtRecord.Value[0])] = struct{}{}
-			}
-		}
-	}
+	uniqRecords := publicUniqueRecords(resp.RecordSet, info.Value)
 
 	var txtRecords []*armdns.TxtRecord
 	for txt := range uniqRecords {
-		txtRecord := txt
-		txtRecords = append(txtRecords, &armdns.TxtRecord{Value: []*string{&txtRecord}})
+		txtRecords = append(txtRecords, &armdns.TxtRecord{Value: to.SliceOfPtrs(txt)})
 	}
 
-	ttlInt64 := int64(d.config.TTL)
 	rec := armdns.RecordSet{
 		Name: &subDomain,
 		Properties: &armdns.RecordSetProperties{
-			TTL:        &ttlInt64,
+			TTL:        to.Ptr(int64(d.config.TTL)),
 			TxtRecords: txtRecords,
 		},
 	}
 
-	_, err = d.recordClient.CreateOrUpdate(ctx, d.config.ResourceGroup, zone, subDomain, armdns.RecordTypeTXT, rec, nil)
+	_, err = client.CreateOrUpdate(ctx, subDomain, rec)
 	if err != nil {
 		return fmt.Errorf("azuredns: %w", err)
 	}
@@ -115,17 +99,22 @@ func (d *DNSProviderPublic) CleanUp(domain, _, keyAuth string) error {
 	ctx := context.Background()
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	zone, err := d.getHostedZoneID(ctx, info.EffectiveFQDN)
+	zone, err := d.getHostedZone(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("azuredns: %w", err)
 	}
 
-	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone)
+	client, err := newPublicZoneClient(zone, d.credentials, d.config.Environment)
 	if err != nil {
 		return fmt.Errorf("azuredns: %w", err)
 	}
 
-	_, err = d.recordClient.Delete(ctx, d.config.ResourceGroup, zone, subDomain, armdns.RecordTypeTXT, nil)
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, zone.Name)
+	if err != nil {
+		return fmt.Errorf("azuredns: %w", err)
+	}
+
+	_, err = client.Delete(ctx, subDomain)
 	if err != nil {
 		return fmt.Errorf("azuredns: %w", err)
 	}
@@ -134,21 +123,66 @@ func (d *DNSProviderPublic) CleanUp(domain, _, keyAuth string) error {
 }
 
 // Checks that azure has a zone for this domain name.
-func (d *DNSProviderPublic) getHostedZoneID(ctx context.Context, fqdn string) (string, error) {
-	if zone := env.GetOrFile(EnvZoneName); zone != "" {
-		return zone, nil
-	}
-
-	authZone, err := dns01.FindZoneByFqdn(fqdn)
+func (d *DNSProviderPublic) getHostedZone(fqdn string) (ServiceDiscoveryZone, error) {
+	authZone, err := getAuthZone(fqdn)
 	if err != nil {
-		return "", err
+		return ServiceDiscoveryZone{}, err
 	}
 
-	zone, err := d.zoneClient.Get(ctx, d.config.ResourceGroup, dns01.UnFqdn(authZone), nil)
+	azureZone, exists := d.serviceDiscoveryZones[dns01.UnFqdn(authZone)]
+	if !exists {
+		return ServiceDiscoveryZone{}, fmt.Errorf("could not find zone (from discovery): %s", authZone)
+	}
+
+	return azureZone, nil
+}
+
+type publicZoneClient struct {
+	zone         ServiceDiscoveryZone
+	recordClient *armdns.RecordSetsClient
+}
+
+// newPublicZoneClient creates publicZoneClient structure with initialized Azure client.
+func newPublicZoneClient(zone ServiceDiscoveryZone, credential azcore.TokenCredential, environment cloud.Configuration) (*publicZoneClient, error) {
+	options := &arm.ClientOptions{
+		ClientOptions: azcore.ClientOptions{
+			Cloud: environment,
+		},
+	}
+
+	recordClient, err := armdns.NewRecordSetsClient(zone.SubscriptionID, credential, options)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	// zone.Name shouldn't have a trailing dot(.)
-	return dns01.UnFqdn(deref(zone.Name)), nil
+	return &publicZoneClient{
+		zone:         zone,
+		recordClient: recordClient,
+	}, nil
+}
+
+func (c publicZoneClient) Get(ctx context.Context, subDomain string) (armdns.RecordSetsClientGetResponse, error) {
+	return c.recordClient.Get(ctx, c.zone.ResourceGroup, c.zone.Name, subDomain, armdns.RecordTypeTXT, nil)
+}
+
+func (c publicZoneClient) CreateOrUpdate(ctx context.Context, subDomain string, rec armdns.RecordSet) (armdns.RecordSetsClientCreateOrUpdateResponse, error) {
+	return c.recordClient.CreateOrUpdate(ctx, c.zone.ResourceGroup, c.zone.Name, subDomain, armdns.RecordTypeTXT, rec, nil)
+}
+
+func (c publicZoneClient) Delete(ctx context.Context, subDomain string) (armdns.RecordSetsClientDeleteResponse, error) {
+	return c.recordClient.Delete(ctx, c.zone.ResourceGroup, c.zone.Name, subDomain, armdns.RecordTypeTXT, nil)
+}
+
+func publicUniqueRecords(recordSet armdns.RecordSet, value string) map[string]struct{} {
+	uniqRecords := map[string]struct{}{value: {}}
+	if recordSet.Properties != nil && recordSet.Properties.TxtRecords != nil {
+		for _, txtRecord := range recordSet.Properties.TxtRecords {
+			// Assume Value doesn't contain multiple strings
+			if len(txtRecord.Value) > 0 {
+				uniqRecords[deref(txtRecord.Value[0])] = struct{}{}
+			}
+		}
+	}
+
+	return uniqRecords
 }

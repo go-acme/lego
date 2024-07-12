@@ -108,7 +108,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 	case config.APIKey != "" && config.SecretKey != "":
 		credential = credentials.NewAccessKeyCredential(config.APIKey, config.SecretKey)
 	default:
-		return nil, fmt.Errorf("alicloud: ram role or credentials missing")
+		return nil, errors.New("alicloud: ram role or credentials missing")
 	}
 
 	conf := sdk.NewConfig().WithTimeout(config.HTTPTimeout)
@@ -198,7 +198,7 @@ func (d *DNSProvider) getHostedZone(domain string) (string, error) {
 
 	authZone, err := dns01.FindZoneByFqdn(domain)
 	if err != nil {
-		return "", fmt.Errorf("could not find zone for FQDN %q: %w", domain, err)
+		return "", fmt.Errorf("could not find zone: %w", err)
 	}
 
 	var hostedZone alidns.DomainInDescribeDomains

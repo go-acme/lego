@@ -67,6 +67,33 @@ func setupTest(t *testing.T, method, pattern string, status int, file string) *C
 	return client
 }
 
+func TestClient_ListZones(t *testing.T) {
+	client := setupTest(t, http.MethodGet, "/zones/records/all/example.com", http.StatusOK, "list-zone.json")
+
+	zones, err := client.ListZones(context.Background(), "example.com")
+	require.NoError(t, err)
+
+	expected := []ZoneRecord{{
+		ID:       "60898922",
+		Domain:   "example.com",
+		Host:     "hosta",
+		TTL:      "300",
+		Priority: "0",
+		Type:     "A",
+		Rdata:    "1.2.3.4",
+		LastMod:  "2019-08-28 19:09:50",
+	}}
+
+	assert.Equal(t, expected, zones)
+}
+
+func TestClient_ListZones_error(t *testing.T) {
+	client := setupTest(t, http.MethodGet, "/zones/records/all/example.com", http.StatusOK, "error1.json")
+
+	_, err := client.ListZones(context.Background(), "example.com")
+	require.EqualError(t, err, "code 420: Enhance Your Calm. Rate limit exceeded (too many requests) OR you did NOT provide any credentials with your request!")
+}
+
 func TestClient_AddRecord(t *testing.T) {
 	client := setupTest(t, http.MethodPut, "/zones/records/add/example.com/TXT", http.StatusCreated, "add-record.json")
 
@@ -83,6 +110,22 @@ func TestClient_AddRecord(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, "xxx", recordID)
+}
+
+func TestClient_AddRecord_error(t *testing.T) {
+	client := setupTest(t, http.MethodPut, "/zones/records/add/example.com/TXT", http.StatusCreated, "error1.json")
+
+	record := ZoneRecord{
+		Domain:   "example.com",
+		Host:     "test631",
+		Type:     "TXT",
+		Rdata:    "txt",
+		TTL:      "300",
+		Priority: "0",
+	}
+
+	_, err := client.AddRecord(context.Background(), "example.com", record)
+	require.EqualError(t, err, "code 420: Enhance Your Calm. Rate limit exceeded (too many requests) OR you did NOT provide any credentials with your request!")
 }
 
 func TestClient_DeleteRecord(t *testing.T) {

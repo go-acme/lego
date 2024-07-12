@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"slices"
 	"strconv"
 	"time"
 
@@ -109,7 +110,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("constellix: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
+		return fmt.Errorf("constellix: could not find zone for domain %q: %w", domain, err)
 	}
 
 	ctx := context.Background()
@@ -152,7 +153,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("constellix: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
+		return fmt.Errorf("constellix: could not find zone for domain %q: %w", domain, err)
 	}
 
 	ctx := context.Background()
@@ -272,16 +273,14 @@ func containsValue(record *internal.Record, value string) bool {
 		return false
 	}
 
-	for _, val := range record.Value {
-		if val.Value == fmt.Sprintf(`%q`, value) {
-			return true
-		}
-	}
+	qValue := fmt.Sprintf(`%q`, value)
 
-	return false
+	return slices.ContainsFunc(record.Value, func(val internal.RecordValue) bool {
+		return val.Value == qValue
+	})
 }
 
-func backoff(min, max time.Duration, attemptNum int, resp *http.Response) time.Duration {
+func backoff(minimum, maximum time.Duration, attemptNum int, resp *http.Response) time.Duration {
 	if resp != nil {
 		// https://api.dns.constellix.com/v4/docs#section/Using-the-API/Rate-Limiting
 		if resp.StatusCode == http.StatusTooManyRequests {
@@ -293,5 +292,5 @@ func backoff(min, max time.Duration, attemptNum int, resp *http.Response) time.D
 		}
 	}
 
-	return retryablehttp.DefaultBackoff(min, max, attemptNum, resp)
+	return retryablehttp.DefaultBackoff(minimum, maximum, attemptNum, resp)
 }

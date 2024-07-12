@@ -124,7 +124,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("luadns: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
+		return fmt.Errorf("luadns: could not find zone for domain %q: %w", domain, err)
 	}
 
 	zone := findZone(zones, dns01.UnFqdn(authZone))
@@ -180,7 +180,6 @@ func findZone(zones []internal.DNSZone, domain string) *internal.DNSZone {
 	var result *internal.DNSZone
 
 	for _, zone := range zones {
-		zone := zone
 		if zone.Name != "" && strings.HasSuffix(domain, zone.Name) {
 			if result == nil || len(zone.Name) > len(result.Name) {
 				result = &zone

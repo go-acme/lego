@@ -121,7 +121,6 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}
 
 	for desc, test := range testCases {
-		test := test
 		t.Run(desc, func(t *testing.T) {
 			t.Parallel()
 

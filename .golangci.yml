@@ -1,14 +1,12 @@
 run:
   timeout: 10m
-  skip-files: []
 
 linters-settings:
   govet:
-    check-shadowing: true
+    enable:
+      - shadow
   gocyclo:
     min-complexity: 12
-  maligned:
-    suggest-new: true
   goconst:
     min-len: 3
     min-occurrences: 3
@@ -89,32 +87,19 @@ linters-settings:
       - name: unreachable-code
       - name: redefines-builtin-id
   testifylint:
-    enable:
-      - bool-compare
-      - compares
-      - empty
-      - error-is-as
-      - error-nil
-      - expected-actual
-      - float-compare
-      - len
-      - suite-dont-use-pkg
-      - suite-extra-assert-call
-      - suite-thelper
+    disable:
+      - require-error
+      - go-require
+  perfsprint:
+    err-error: true
+    errorf: true
+    sprintf1: true
+    strconcat: false
 
 linters:
   enable-all: true
   disable:
-    - deadcode # deprecated
-    - exhaustivestruct # deprecated
-    - golint # deprecated
-    - ifshort # deprecated
-    - interfacer # deprecated
-    - maligned # deprecated
-    - nosnakecase # deprecated
-    - scopelint # deprecated
-    - structcheck # deprecated
-    - varcheck # deprecated
+    - gomnd # deprecated
     - cyclop # duplicate of gocyclo
     - sqlclosecheck # not relevant (SQL)
     - rowserrcheck # not relevant (SQL)
@@ -124,13 +109,13 @@ linters:
     - dupl # not relevant
     - prealloc # too many false-positive
     - bodyclose # too many false-positive
-    - gomnd
+    - mnd
     - testpackage # not relevant
     - tparallel # not relevant
     - paralleltest # not relevant
     - nestif # too many false-positive
     - wrapcheck
-    - goerr113 # not relevant
+    - err113 # not relevant
     - nlreturn # not relevant
     - wsl # not relevant
     - exhaustive # not relevant
@@ -150,10 +135,13 @@ linters:
     - nonamedreturns
     - musttag # false-positive https://github.com/junk1tm/musttag/issues/17
     - gosmopolitan  # not relevant
+    - exportloopref # Useless with go1.22
+    - canonicalheader # Can create side effects in the context of API clients
+    - usestdlibvars # false-positive https://github.com/sashamelentyev/usestdlibvars/issues/96
 
 issues:
   exclude-use-default: false
-  max-per-linter: 0
+  max-issues-per-linter: 0
   max-same-issues: 0
   exclude:
     - 'Error return value of .((os\.)?std(out|err)\..*|.*Close|.*Flush|os\.Remove(All)?|.*printf?|os\.(Un)?Setenv). is not checked'
@@ -165,6 +153,10 @@ issues:
         - funlen
         - goconst
         - maintidx
+    - path: (.+)_test.go
+      text: 'Error return value of `fmt.Fprintln` is not checked'
+      linters:
+        - errcheck
     - path: providers/dns/dns_providers.go
       linters:
         - gocyclo
@@ -236,6 +228,12 @@ issues:
     - path: providers/dns/hosttech/internal/client_test.go
       text: 'Duplicate words \(0\) found'
     - path: cmd/cmd_renew.go
-      text: 'cyclomatic complexity 15 of func `renewForDomains` is high'
+      text: 'cyclomatic complexity \d+ of func `(renewForDomains|renewForCSR)` is high'
     - path: providers/dns/cpanel/cpanel.go
       text: 'cyclomatic complexity 13 of func `\(\*DNSProvider\)\.CleanUp` is high'
+
+output:
+  sort-results: true
+  sort-order:
+    - linter
+    - file

@@ -191,7 +191,7 @@ func (d *DNSProvider) CleanUp(domain, _, keyAuth string) error {
 func (d *DNSProvider) getHostedZone(ctx context.Context, fqdn string) (*internal.Zone, error) {
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return nil, fmt.Errorf("hetzner: could not find zone for FQDN %q: %w", fqdn, err)
+		return nil, fmt.Errorf("could not find zone: %w", err)
 	}
 
 	return d.client.FindZone(ctx, authZone)

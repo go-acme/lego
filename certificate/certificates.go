@@ -22,6 +22,17 @@ import (
 	"golang.org/x/net/idna"
 )
 
+const (
+	// DefaultOverallRequestLimit is the overall number of request per second
+	// limited on the "new-reg", "new-authz" and "new-cert" endpoints.
+	// From the documentation the limitation is 20 requests per second,
+	// but using 20 as value doesn't work but 18 do.
+	// https://letsencrypt.org/docs/rate-limits/
+	// ZeroSSL has a limit of 7.
+	// https://help.zerossl.com/hc/en-us/articles/17864245480093-Advantages-over-Using-Let-s-Encrypt#h_01HT4Z1JCJFJQFJ1M3P7S085Q9
+	DefaultOverallRequestLimit = 18
+)
+
 // maxBodySize is the maximum size of body that we will read.
 const maxBodySize = 1024 * 1024
 
@@ -63,6 +74,10 @@ type ObtainRequest struct {
 	Bundle                         bool
 	PreferredChain                 string
 	AlwaysDeactivateAuthorizations bool
+	// A string uniquely identifying a previously-issued certificate which this
+	// order is intended to replace.
+	// - https://datatracker.ietf.org/doc/html/draft-ietf-acme-ari-03#section-5
+	ReplacesCertID string
 }
 
 // ObtainForCSRRequest The request to obtain a certificate matching the CSR passed into it.
@@ -79,6 +94,10 @@ type ObtainForCSRRequest struct {
 	Bundle                         bool
 	PreferredChain                 string
 	AlwaysDeactivateAuthorizations bool
+	// A string uniquely identifying a previously-issued certificate which this
+	// order is intended to replace.
+	// - https://datatracker.ietf.org/doc/html/draft-ietf-acme-ari-03#section-5
+	ReplacesCertID string
 }
 
 type resolver interface {
@@ -86,24 +105,33 @@ type resolver interface {
 }
 
 type CertifierOptions struct {
-	KeyType certcrypto.KeyType
-	Timeout time.Duration
+	KeyType             certcrypto.KeyType
+	Timeout             time.Duration
+	OverallRequestLimit int
 }
 
 // Certifier A service to obtain/renew/revoke certificates.
 type Certifier struct {
-	core     *api.Core
-	resolver resolver
-	options  CertifierOptions
+	core                *api.Core
+	resolver            resolver
+	options             CertifierOptions
+	overallRequestLimit int
 }
 
 // NewCertifier creates a Certifier.
 func NewCertifier(core *api.Core, resolver resolver, options CertifierOptions) *Certifier {
-	return &Certifier{
+	c := &Certifier{
 		core:     core,
 		resolver: resolver,
 		options:  options,
 	}
+
+	c.overallRequestLimit = options.OverallRequestLimit
+	if c.overallRequestLimit <= 0 {
+		c.overallRequestLimit = DefaultOverallRequestLimit
+	}
+
+	return c
 }
 
 // Obtain tries to obtain a single certificate using all domains passed into it.
@@ -124,8 +152,9 @@ func (c *Certifier) Obtain(request ObtainRequest) (*Resource, error) {
 	}
 
 	orderOpts := &api.OrderOptions{
-		NotBefore: request.NotBefore,
-		NotAfter:  request.NotAfter,
+		NotBefore:      request.NotBefore,
+		NotAfter:       request.NotAfter,
+		ReplacesCertID: request.ReplacesCertID,
 	}
 
 	order, err := c.core.Orders.NewWithOptions(domains, orderOpts)
@@ -189,8 +218,9 @@ func (c *Certifier) ObtainForCSR(request ObtainForCSRRequest) (*Resource, error)
 	}
 
 	orderOpts := &api.OrderOptions{
-		NotBefore: request.NotBefore,
-		NotAfter:  request.NotAfter,
+		NotBefore:      request.NotBefore,
+		NotAfter:       request.NotAfter,
+		ReplacesCertID: request.ReplacesCertID,
 	}
 
 	order, err := c.core.Orders.NewWithOptions(domains, orderOpts)

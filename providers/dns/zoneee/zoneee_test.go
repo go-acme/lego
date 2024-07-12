@@ -178,7 +178,6 @@ func TestDNSProvider_Present(t *testing.T) {
 	}
 
 	for _, test := range testCases {
-		test := test
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
@@ -187,7 +186,6 @@ func TestDNSProvider_Present(t *testing.T) {
 			t.Cleanup(server.Close)
 
 			for uri, handler := range test.handlers {
-				handler := handler
 				mux.HandleFunc(uri, handler)
 			}
 
@@ -270,7 +268,6 @@ func TestDNSProvider_Cleanup(t *testing.T) {
 	}
 
 	for _, test := range testCases {
-		test := test
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 
@@ -279,7 +276,6 @@ func TestDNSProvider_Cleanup(t *testing.T) {
 			t.Cleanup(server.Close)
 
 			for uri, handler := range test.handlers {
-				handler := handler
 				mux.HandleFunc(uri, handler)
 			}
 

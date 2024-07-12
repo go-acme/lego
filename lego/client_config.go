@@ -61,8 +61,9 @@ func NewConfig(user registration.User) *Config {
 }
 
 type CertificateConfig struct {
-	KeyType certcrypto.KeyType
-	Timeout time.Duration
+	KeyType             certcrypto.KeyType
+	Timeout             time.Duration
+	OverallRequestLimit int
 }
 
 // createDefaultHTTPClient Creates an HTTP client with a reasonable timeout value
@@ -99,26 +100,41 @@ func initCertPool() *x509.CertPool {
 		return nil
 	}
 
-	certPool := getCertPool()
+	useSystemCertPool, _ := strconv.ParseBool(os.Getenv(caSystemCertPool))
 
-	for _, customPath := range strings.Split(customCACertsPath, string(os.PathListSeparator)) {
-		customCAs, err := os.ReadFile(customPath)
-		if err != nil {
-			panic(fmt.Sprintf("error reading %s=%q: %v",
-				caCertificatesEnvVar, customPath, err))
-		}
+	caCerts := strings.Split(customCACertsPath, string(os.PathListSeparator))
 
-		if ok := certPool.AppendCertsFromPEM(customCAs); !ok {
-			panic(fmt.Sprintf("error creating x509 cert pool from %s=%q: %v",
-				caCertificatesEnvVar, customPath, err))
-		}
+	certPool, err := CreateCertPool(caCerts, useSystemCertPool)
+	if err != nil {
+		panic(fmt.Sprintf("create certificates pool: %v", err))
 	}
 
 	return certPool
 }
 
-func getCertPool() *x509.CertPool {
-	useSystemCertPool, _ := strconv.ParseBool(os.Getenv(caSystemCertPool))
+// CreateCertPool creates a *x509.CertPool populated with the PEM certificates.
+func CreateCertPool(caCerts []string, useSystemCertPool bool) (*x509.CertPool, error) {
+	if len(caCerts) == 0 {
+		return nil, nil
+	}
+
+	certPool := newCertPool(useSystemCertPool)
+
+	for _, customPath := range caCerts {
+		customCAs, err := os.ReadFile(customPath)
+		if err != nil {
+			return nil, fmt.Errorf("error reading %q: %w", customPath, err)
+		}
+
+		if ok := certPool.AppendCertsFromPEM(customCAs); !ok {
+			return nil, fmt.Errorf("error creating x509 cert pool from %q: %w", customPath, err)
+		}
+	}
+
+	return certPool, nil
+}
+
+func newCertPool(useSystemCertPool bool) *x509.CertPool {
 	if !useSystemCertPool {
 		return x509.NewCertPool()
 	}
@@ -127,5 +143,6 @@ func getCertPool() *x509.CertPool {
 	if err == nil {
 		return pool
 	}
+
 	return x509.NewCertPool()
 }

@@ -108,7 +108,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("aurora: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
+		return fmt.Errorf("aurora: could not find zone for domain %q: %w", domain, err)
 	}
 
 	// 1. Aurora will happily create the TXT record when it is provided a fqdn,
@@ -160,7 +160,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	authZone, err := dns01.FindZoneByFqdn(dns01.ToFqdn(info.EffectiveFQDN))
 	if err != nil {
-		return fmt.Errorf("aurora: could not find zone for domain %q (%s): %w", domain, info.EffectiveFQDN, err)
+		return fmt.Errorf("aurora: could not find zone for domain %q: %w", domain, err)
 	}
 
 	authZone = dns01.UnFqdn(authZone)

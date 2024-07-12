@@ -48,6 +48,7 @@ GLOBAL OPTIONS:
    --pfx.pass value                                             The password used to encrypt the .pfx (PCKS#12) file. (default: "changeit") [$LEGO_PFX_PASSWORD]
    --pfx.format value                                           The encoding format to use when encrypting the .pfx (PCKS#12) file. Supported: RC2, DES, SHA256. (default: "RC2") [$LEGO_PFX_FORMAT]
    --cert.timeout value                                         Set the certificate timeout value to a specific value in seconds. Only used when obtaining certificates. (default: 30)
+   --overall-request-limit value                                ACME overall requests limit. (default: 18)
    --user-agent value                                           Add to the user-agent sent to the CA to identify an application embedding lego-cli
    --help, -h                                                   show help
 """
@@ -59,7 +60,7 @@ NAME:
    lego run - Register an account, then create and install a certificate
 
 USAGE:
-   lego run [command options] [arguments...]
+   lego run [command options]
 
 OPTIONS:
    --no-bundle                               Do not create a certificate bundle by adding the issuers certificate to the new certificate. (default: false)
@@ -79,7 +80,7 @@ NAME:
    lego renew - Renew a certificate
 
 USAGE:
-   lego renew [command options] [arguments...]
+   lego renew [command options]
 
 OPTIONS:
    --days value                              The number of days left on a certificate to renew it. (default: 30)
@@ -104,7 +105,7 @@ NAME:
    lego revoke - Revoke a certificate
 
 USAGE:
-   lego revoke [command options] [arguments...]
+   lego revoke [command options]
 
 OPTIONS:
    --keep, -k      Keep the certificates after the revocation instead of archiving them. (default: false)
@@ -119,7 +120,7 @@ NAME:
    lego list - Display certificates and accounts information.
 
 USAGE:
-   lego list [command options] [arguments...]
+   lego list [command options]
 
 OPTIONS:
    --accounts, -a  Display accounts. (default: false)
@@ -137,7 +138,7 @@ To display the documentation for a specific DNS provider, run:
   $ lego dnshelp -c code
 
 Supported DNS providers:
-  acme-dns, alidns, allinkl, arvancloud, auroradns, autodns, azure, azuredns, bindman, bluecat, brandit, bunny, checkdomain, civo, clouddns, cloudflare, cloudns, cloudru, cloudxns, conoha, constellix, cpanel, derak, desec, designate, digitalocean, dnshomede, dnsimple, dnsmadeeasy, dnspod, dode, domeneshop, dreamhost, duckdns, dyn, dynu, easydns, edgedns, efficientip, epik, exec, exoscale, freemyip, gandi, gandiv5, gcloud, gcore, glesys, godaddy, googledomains, hetzner, hostingde, hosttech, httpnet, httpreq, hurricane, hyperone, ibmcloud, iij, iijdpf, infoblox, infomaniak, internetbs, inwx, ionos, ipv64, iwantmyname, joker, liara, lightsail, linode, liquidweb, loopia, luadns, manual, metaname, mydnsjp, mythicbeasts, namecheap, namedotcom, namesilo, nearlyfreespeech, netcup, netlify, nicmanager, nifcloud, njalla, nodion, ns1, oraclecloud, otc, ovh, pdns, plesk, porkbun, rackspace, rcodezero, regru, rfc2136, rimuhosting, route53, safedns, sakuracloud, scaleway, selectel, servercow, simply, sonic, stackpath, tencentcloud, transip, ultradns, variomedia, vegadns, vercel, versio, vinyldns, vkcloud, vscale, vultr, webnames, websupport, wedos, yandex, yandex360, yandexcloud, zoneee, zonomi
+  acme-dns, alidns, allinkl, arvancloud, auroradns, autodns, azure, azuredns, bindman, bluecat, brandit, bunny, checkdomain, civo, clouddns, cloudflare, cloudns, cloudru, cloudxns, conoha, constellix, cpanel, derak, desec, designate, digitalocean, dnshomede, dnsimple, dnsmadeeasy, dnspod, dode, domeneshop, dreamhost, duckdns, dyn, dynu, easydns, edgedns, efficientip, epik, exec, exoscale, freemyip, gandi, gandiv5, gcloud, gcore, glesys, godaddy, googledomains, hetzner, hostingde, hosttech, httpnet, httpreq, hurricane, hyperone, ibmcloud, iij, iijdpf, infoblox, infomaniak, internetbs, inwx, ionos, ipv64, iwantmyname, joker, liara, lightsail, linode, liquidweb, loopia, luadns, mailinabox, manual, metaname, mydnsjp, mythicbeasts, namecheap, namedotcom, namesilo, nearlyfreespeech, netcup, netlify, nicmanager, nifcloud, njalla, nodion, ns1, oraclecloud, otc, ovh, pdns, plesk, porkbun, rackspace, rcodezero, regru, rfc2136, rimuhosting, route53, safedns, sakuracloud, scaleway, selectel, selectelv2, servercow, shellrent, simply, sonic, stackpath, tencentcloud, transip, ultradns, variomedia, vegadns, vercel, versio, vinyldns, vkcloud, vscale, vultr, webnames, websupport, wedos, yandex, yandex360, yandexcloud, zoneee, zonomi
 
 More information: https://go-acme.github.io/lego/dns
 """

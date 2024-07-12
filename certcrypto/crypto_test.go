@@ -39,14 +39,14 @@ func TestGenerateCSR(t *testing.T) {
 		expected   expected
 	}{
 		{
-			desc:       "without SAN",
+			desc:       "without SAN (nil)",
 			privateKey: privateKey,
 			domain:     "lego.acme",
 			mustStaple: true,
 			expected:   expected{len: 245},
 		},
 		{
-			desc:       "without SAN",
+			desc:       "without SAN (empty)",
 			privateKey: privateKey,
 			domain:     "lego.acme",
 			san:        []string{},
@@ -86,7 +86,6 @@ func TestGenerateCSR(t *testing.T) {
 	}
 
 	for _, test := range testCases {
-		test := test
 		t.Run(test.desc, func(t *testing.T) {
 			t.Parallel()
 

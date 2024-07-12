@@ -93,7 +93,7 @@ func TestDNSProvider_concurrentAddAndCleanupRecords(t *testing.T) {
 	dummyRecordCount := 10
 
 	var providers []*DNSProvider
-	for i := 0; i < dummyRecordCount; i++ {
+	for range dummyRecordCount {
 		config := NewDefaultConfig()
 		config.Token = "token3"
 		config.Secret = "secret3"

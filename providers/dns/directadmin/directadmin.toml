@@ -1,0 +1,13 @@
+# directadmin.toml
+
+# The URL of your DirectAdmin API endpoint.
+api_url = "https://your.directadmin.url"
+
+# The username to authenticate with DirectAdmin.
+username = "yourusername"
+
+# The password to authenticate with DirectAdmin.
+password = "yourpassword"
+
+# The timeout duration for API requests, in seconds.
+timeout = 30

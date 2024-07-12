@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-acme/lego/v4/acme"
@@ -124,7 +125,7 @@ func (c *Challenge) Solve(authz acme.Authorization) error {
 		timeout, interval = DefaultPropagationTimeout, DefaultPollingInterval
 	}
 
-	log.Infof("[%s] acme: Checking DNS record propagation using %+v", domain, recursiveNameservers)
+	log.Infof("[%s] acme: Checking DNS record propagation. [nameservers=%s]", domain, strings.Join(recursiveNameservers, ","))
 
 	time.Sleep(interval)
 
@@ -214,7 +215,7 @@ func getChallengeFQDN(domain string, followCNAME bool) string {
 	}
 
 	// recursion counter so it doesn't spin out of control
-	for limit := 0; limit < 50; limit++ {
+	for range 50 {
 		// Keep following CNAMEs
 		r, err := dnsQuery(fqdn, dns.TypeCNAME, recursiveNameservers, true)
 

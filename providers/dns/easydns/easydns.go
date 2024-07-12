@@ -15,7 +15,6 @@ import (
 	"github.com/go-acme/lego/v4/challenge/dns01"
 	"github.com/go-acme/lego/v4/platform/config/env"
 	"github.com/go-acme/lego/v4/providers/dns/easydns/internal"
-	"github.com/miekg/dns"
 )
 
 // Environment variables names.
@@ -117,20 +116,34 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 
 // Present creates a TXT record to fulfill the dns-01 challenge.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
+	ctx := context.Background()
+
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	apiHost, apiDomain := splitFqdn(info.EffectiveFQDN)
+	authZone, err := d.findZone(ctx, dns01.UnFqdn(info.EffectiveFQDN))
+	if err != nil {
+		return fmt.Errorf("easydns: %w", err)
+	}
+
+	if authZone == "" {
+		return fmt.Errorf("easydns: could not find zone for domain %q", domain)
+	}
+
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
+	if err != nil {
+		return fmt.Errorf("easydns: %w", err)
+	}
 
 	record := internal.ZoneRecord{
-		Domain:   apiDomain,
-		Host:     apiHost,
+		Domain:   authZone,
+		Host:     subDomain,
 		Type:     "TXT",
 		Rdata:    info.Value,
 		TTL:      strconv.Itoa(d.config.TTL),
 		Priority: "0",
 	}
 
-	recordID, err := d.client.AddRecord(context.Background(), apiDomain, record)
+	recordID, err := d.client.AddRecord(ctx, dns01.UnFqdn(authZone), record)
 	if err != nil {
 		return fmt.Errorf("easydns: error adding zone record: %w", err)
 	}
@@ -146,6 +159,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 // CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
+	ctx := context.Background()
+
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
 	key := getMapKey(info.EffectiveFQDN, info.Value)
@@ -158,9 +173,16 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return nil
 	}
 
-	_, apiDomain := splitFqdn(info.EffectiveFQDN)
+	authZone, err := d.findZone(ctx, dns01.UnFqdn(info.EffectiveFQDN))
+	if err != nil {
+		return fmt.Errorf("easydns: %w", err)
+	}
 
-	err := d.client.DeleteRecord(context.Background(), apiDomain, recordID)
+	if authZone == "" {
+		return fmt.Errorf("easydns: could not find zone for domain %q", domain)
+	}
+
+	err = d.client.DeleteRecord(ctx, dns01.UnFqdn(authZone), recordID)
 
 	d.recordIDsMu.Lock()
 	defer delete(d.recordIDs, key)
@@ -185,15 +207,28 @@ func (d *DNSProvider) Sequential() time.Duration {
 	return d.config.SequenceInterval
 }
 
-func splitFqdn(fqdn string) (host, domain string) {
-	parts := dns.SplitDomainName(fqdn)
-	length := len(parts)
-
-	host = strings.Join(parts[0:length-2], ".")
-	domain = strings.Join(parts[length-2:length], ".")
-	return
-}
-
 func getMapKey(fqdn, value string) string {
 	return fqdn + "|" + value
+}
+
+func (d *DNSProvider) findZone(ctx context.Context, domain string) (string, error) {
+	var errAll error
+
+	for {
+		i := strings.Index(domain, ".")
+		if i == -1 {
+			break
+		}
+
+		_, err := d.client.ListZones(ctx, domain)
+		if err == nil {
+			return domain, nil
+		}
+
+		errAll = errors.Join(errAll, err)
+
+		domain = domain[i+1:]
+	}
+
+	return "", errAll
 }

@@ -1,13 +1,22 @@
-# directadmin.toml
+Name = "directadmin"
+Description = ''''''
+URL = "directadmin"
+Code = "directadmin"
+Since = "v0.3.0"
 
-# The URL of your DirectAdmin API endpoint.
-api_url = "https://your.directadmin.url"
+Example = '''
+DO_AUTH_TOKEN=xxxxxx \
+lego --email you@example.com --dns directadmin --domains my.example.org run
+'''
 
-# The username to authenticate with DirectAdmin.
-username = "yourusername"
+[Configuration]
+  [Configuration.Credentials]
+    username = "yourusername"
+    password = "yourpassword"
 
-# The password to authenticate with DirectAdmin.
-password = "yourpassword"
+  [Configuration.Additional]
+    api_url = "The URL of the API"
+    timeout = "API request timeout"
 
-# The timeout duration for API requests, in seconds.
-timeout = 30
+[Links]
+  API = "directadmin"

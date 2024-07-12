@@ -11,6 +11,7 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/arvancloud"
 	"github.com/go-acme/lego/v4/providers/dns/auroradns"
 	"github.com/go-acme/lego/v4/providers/dns/autodns"
+	"github.com/go-acme/lego/v4/providers/dns/directadmin"
 	"github.com/go-acme/lego/v4/providers/dns/azure"
 	"github.com/go-acme/lego/v4/providers/dns/azuredns"
 	"github.com/go-acme/lego/v4/providers/dns/bindman"
@@ -41,7 +42,6 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/duckdns"
 	"github.com/go-acme/lego/v4/providers/dns/dyn"
 	"github.com/go-acme/lego/v4/providers/dns/dynu"
-	"github.com/go-acme/lego/v4/providers/dns/directadmin"
 	"github.com/go-acme/lego/v4/providers/dns/easydns"
 	"github.com/go-acme/lego/v4/providers/dns/edgedns"
 	"github.com/go-acme/lego/v4/providers/dns/efficientip"
@@ -214,7 +214,7 @@ func NewDNSChallengeProviderByName(name string) (challenge.Provider, error) {
 	case "dynu":
 		return dynu.NewDNSProvider()
 	case "directadmin":
-		return directadmin.NewDNSProvider()	
+		return directadmin.NewDNSProvider()
 	case "easydns":
 		return easydns.NewDNSProvider()
 	case "edgedns", "fastdns": // "fastdns" is for compatibility with v3, must be dropped in v5

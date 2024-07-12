@@ -932,26 +932,6 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/dynu`)
 
-	case "directadmin":
-		// generated from: providers/dns/directadmin/directadmin.toml
-		ew.writeln(`Configuration for Dynu.`)
-		ew.writeln(`Code:	'dynu'`)
-		ew.writeln(`Since:	'v3.5.0'`)
-		ew.writeln()
-
-		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "DYNU_API_KEY":	API key`)
-		ew.writeln()
-
-		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "DYNU_HTTP_TIMEOUT":	API request timeout`)
-		ew.writeln(`	- "DYNU_POLLING_INTERVAL":	Time between DNS propagation check`)
-		ew.writeln(`	- "DYNU_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
-		ew.writeln(`	- "DYNU_TTL":	The TTL of the TXT record used for the DNS challenge`)
-
-		ew.writeln()
-		ew.writeln(`More information: https://go-acme.github.io/lego/dns/dynu`)
-
 	case "easydns":
 		// generated from: providers/dns/easydns/easydns.toml
 		ew.writeln(`Configuration for EasyDNS.`)

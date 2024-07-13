@@ -40,6 +40,7 @@ func allDNSCodes() string {
 		"desec",
 		"designate",
 		"digitalocean",
+		"directadmin",
 		"dnshomede",
 		"dnsimple",
 		"dnsmadeeasy",
@@ -731,6 +732,24 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/digitalocean`)
 
+	case "directadmin":
+		// generated from: providers/dns/directadmin/directadmin.toml
+		ew.writeln(`Configuration for directadmin.`)
+		ew.writeln(`Code:	'directadmin'`)
+		ew.writeln(`Since:	''`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "DIRECTADMIN_PASSWORD":	API password`)
+		ew.writeln(`	- "DIRECTADMIN_USERNAME":	API username`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "DIRECTADMIN_API_URL":	The URL of the API`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/directadmin`)
+
 	case "dnshomede":
 		// generated from: providers/dns/dnshomede/dnshomede.toml
 		ew.writeln(`Configuration for dnsHome.de.`)
@@ -930,24 +949,6 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/dynu`)
-
-	case "directadmin":
-		// generated from: providers/dns/directadmin/directadmin.toml
-		ew.writeln(`Configuration for directadmin.`)
-		ew.writeln(`Code:	'directadmin'`)
-		ew.writeln(`Since:	''`)
-		ew.writeln()
-
-		ew.writeln(`Credentials:`)
-		ew.writeln(`	- "DIRECTADMIN_PASSWORD":	yourpassword`)
-		ew.writeln(`	- "DIRECTADMIN_USERNAME":	yourusername`)
-		ew.writeln()
-
-		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "DIRECTADMIN_API_URL":	The URL of the API`)
-
-		ew.writeln()
-		ew.writeln(`More information: https://go-acme.github.io/lego/dns/directadmin`)
 
 	case "easydns":
 		// generated from: providers/dns/easydns/easydns.toml

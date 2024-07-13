@@ -931,6 +931,24 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/dynu`)
 
+	case "directadmin":
+		// generated from: providers/dns/directadmin/directadmin.toml
+		ew.writeln(`Configuration for directadmin.`)
+		ew.writeln(`Code:	'directadmin'`)
+		ew.writeln(`Since:	''`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "DIRECTADMIN_PASSWORD":	yourpassword`)
+		ew.writeln(`	- "DIRECTADMIN_USERNAME":	yourusername`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "DIRECTADMIN_API_URL":	The URL of the API`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/directadmin`)
+
 	case "easydns":
 		// generated from: providers/dns/easydns/easydns.toml
 		ew.writeln(`Configuration for EasyDNS.`)

@@ -1,0 +1,23 @@
+Name = "directadmin"
+Description = '''directadmin api'''
+URL = "directadmin"
+Code = "directadmin"
+
+
+Example = '''
+DIRECTADMIN_API_URL="https://url:2222" \
+DIRECTADMIN_USERNAME="yourusername" \
+DIRECTADMIN_PASSWORD="yourpassword" \
+lego --email you@example.com --dns directadmin -d "my.example.org" -d "*.example.org" run
+'''
+
+[Configuration]
+  [Configuration.Credentials]
+    DIRECTADMIN_USERNAME = "yourusername"
+    DIRECTADMIN_PASSWORD = "yourpassword"
+
+  [Configuration.Additional]
+    DIRECTADMIN_API_URL = "The URL of the API"
+
+[Links]
+  API = "https://www.directadmin.com/api.php"

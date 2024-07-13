@@ -7,15 +7,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const (
-	envNamespace = "DIRECTADMIN_"
-	envAPIURL    = envNamespace + "API_URL"
-	envUsername  = envNamespace + "USERNAME"
-	envPassword  = envNamespace + "PASSWORD"
-	envDomain    = envNamespace + "DOMAIN"
-)
+const envDomain = envNamespace + "DOMAIN"
 
-var envTest = tester.NewEnvTest(envAPIURL, envUsername, envPassword).WithDomain(envDomain)
+var envTest = tester.NewEnvTest(EnvAPIURL, EnvUsername, EnvPassword).WithDomain(envDomain)
 
 func TestNewDNSProvider(t *testing.T) {
 	testCases := []struct {
@@ -26,15 +20,28 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				envAPIURL:   "https://api.directadmin.com",
-				envUsername: "username",
-				envPassword: "password",
+				EnvUsername: "test",
+				EnvPassword: "secret",
 			},
 		},
 		{
-			desc:     "missing API URL",
+			desc:     "missing credentials",
 			envVars:  map[string]string{},
-			expected: "directadmin: some credentials information are missing: DIRECTADMIN_API_URL, DIRECTADMIN_USERNAME, DIRECTADMIN_PASSWORD",
+			expected: "directadmin: some credentials information are missing: DIRECTADMIN_USERNAME,DIRECTADMIN_PASSWORD",
+		},
+		{
+			desc: "missing username",
+			envVars: map[string]string{
+				EnvPassword: "secret",
+			},
+			expected: "directadmin: some credentials information are missing: DIRECTADMIN_USERNAME",
+		},
+		{
+			desc: "missing password",
+			envVars: map[string]string{
+				EnvUsername: "test",
+			},
+			expected: "directadmin: some credentials information are missing: DIRECTADMIN_PASSWORD",
 		},
 	}
 
@@ -60,38 +67,38 @@ func TestNewDNSProvider(t *testing.T) {
 func TestNewDNSProviderConfig(t *testing.T) {
 	testCases := []struct {
 		desc     string
-		apiURL   string
+		baseURL  string
 		username string
 		password string
 		expected string
 	}{
 		{
 			desc:     "success",
-			apiURL:   "https://api.directadmin.com",
-			username: "username",
-			password: "password",
+			baseURL:  "https://api.directadmin.com",
+			username: "test",
+			password: "secret",
 		},
 		{
 			desc:     "missing API URL",
-			expected: "directadmin: APIURL is missing",
+			expected: "directadmin: missing API URL",
 		},
 		{
 			desc:     "missing username",
-			apiURL:   "https://api.directadmin.com",
-			expected: "directadmin: username is missing",
+			baseURL:  "https://api.directadmin.com",
+			expected: "directadmin: some credentials information are missing",
 		},
 		{
 			desc:     "missing password",
-			apiURL:   "https://api.directadmin.com",
-			username: "username",
-			expected: "directadmin: password is missing",
+			baseURL:  "https://api.directadmin.com",
+			username: "test",
+			expected: "directadmin: some credentials information are missing",
 		},
 	}
 
 	for _, test := range testCases {
 		t.Run(test.desc, func(t *testing.T) {
 			config := NewDefaultConfig()
-			config.APIURL = test.apiURL
+			config.BaseURL = test.baseURL
 			config.Username = test.username
 			config.Password = test.password
 

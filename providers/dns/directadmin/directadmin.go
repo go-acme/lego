@@ -1,99 +1,114 @@
 package directadmin
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"net/http"
-	"os"
-	"strings"
+	"time"
 
 	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/log"
+	"github.com/go-acme/lego/v4/platform/config/env"
+	"github.com/go-acme/lego/v4/providers/dns/directadmin/internal"
 )
 
-// DNSProvider implements the challenge.Provider interface
-type DNSProvider struct {
-	apiURL   string
-	username string
-	password string
+// Environment variables names.
+const (
+	envNamespace = "DIRECTADMIN_"
+
+	EnvAPIURL   = envNamespace + "API_URL"
+	EnvUsername = envNamespace + "USERNAME"
+	EnvPassword = envNamespace + "PASSWORD"
+
+	EnvTTL                = envNamespace + "TTL"
+	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
+	EnvPollingInterval    = envNamespace + "POLLING_INTERVAL"
+	EnvHTTPTimeout        = envNamespace + "HTTP_TIMEOUT"
+)
+
+// Config is used to configure the creation of the DNSProvider.
+type Config struct {
+	BaseURL            string
+	Username           string
+	Password           string
+	TTL                int
+	PropagationTimeout time.Duration
+	PollingInterval    time.Duration
+	HTTPClient         *http.Client
 }
 
-// NewDNSProvider creates a new DNSProvider instance
-func NewDNSProvider() (*DNSProvider, error) {
-	apiURL := getEnv("DIRECTADMIN_API_URL", "https://api.directadmin.com")
-	username := getEnv("DIRECTADMIN_USERNAME", "default_username")
-	password := getEnv("DIRECTADMIN_PASSWORD", "default_password")
-
-	return &DNSProvider{
-		apiURL:   apiURL,
-		username: username,
-		password: password,
-	}, nil
-}
-
-// getEnv reads an environment variable and returns the value or a default value if the environment variable is not set.
-func getEnv(key, defaultValue string) string {
-	if value, exists := os.LookupEnv(key); exists {
-		return value
+// NewDefaultConfig returns a default configuration for the DNSProvider.
+func NewDefaultConfig() *Config {
+	return &Config{
+		BaseURL:            env.GetOrDefaultString(EnvAPIURL, internal.DefaultBaseURL),
+		TTL:                env.GetOrDefaultInt(EnvTTL, 30),
+		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 60*time.Second),
+		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 5*time.Second),
+		HTTPClient: &http.Client{
+			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
+		},
 	}
-	return defaultValue
 }
 
-// Present creates a TXT record to fulfill the DNS-01 challenge
+// DNSProvider implements the challenge.Provider interface.
+type DNSProvider struct {
+	client *internal.Client
+}
+
+// NewDNSProvider returns a DNSProvider instance configured for DirectAdmin.
+// Credentials must be passed in the environment variables:
+// DIRECTADMIN_API_URL, DIRECTADMIN_USERNAME, DIRECTADMIN_PASSWORD.
+func NewDNSProvider() (*DNSProvider, error) {
+	values, err := env.Get(EnvUsername, EnvPassword)
+	if err != nil {
+		return nil, fmt.Errorf("directadmin: %w", err)
+	}
+
+	config := NewDefaultConfig()
+	config.Username = values[EnvUsername]
+	config.Password = values[EnvPassword]
+
+	return NewDNSProviderConfig(config)
+}
+
+// NewDNSProviderConfig return a DNSProvider instance configured for DirectAdmin.
+func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
+	if config.BaseURL == "" {
+		return nil, errors.New("directadmin: missing API URL")
+	}
+
+	if config.Username == "" || config.Password == "" {
+		return nil, errors.New("directadmin: some credentials information are missing")
+	}
+
+	client, err := internal.NewClient(config.BaseURL, config.Username, config.Password)
+	if err != nil {
+		return nil, fmt.Errorf("directadmin: %w", err)
+	}
+
+	return &DNSProvider{client: client}, nil
+}
+
+// Present creates a TXT record using the specified parameters.
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	url := fmt.Sprintf("%s/CMD_API_DNS_CONTROL?domain=%s&json=yes", d.apiURL, domain)
-	data := fmt.Sprintf("action=add&type=TXT&name=_acme-challenge&value=%s", info.Value)
-
-	req, err := http.NewRequest("POST", url, strings.NewReader(data))
+	err := d.client.SetRecord(context.Background(), info.EffectiveFQDN, info.Value)
 	if err != nil {
-		return fmt.Errorf("failed to create request: %w", err)
+		return fmt.Errorf("directadmin: %w", err)
 	}
 
-	req.SetBasicAuth(d.username, d.password)
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return fmt.Errorf("failed to execute request: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
-	}
-
-	log.Infof("Presented TXT record for domain %s", domain)
 	return nil
 }
 
-// CleanUp removes the TXT record created for the DNS-01 challenge
+// CleanUp removes the TXT record matching the specified parameters.
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	url := fmt.Sprintf("%s/CMD_API_DNS_CONTROL?domain=%s&json=yes", d.apiURL, domain)
-	data := fmt.Sprintf("action=delete&type=TXT&name=_acme-challenge&value=%s", info.Value)
-
-	req, err := http.NewRequest("POST", url, strings.NewReader(data))
+	err := d.client.DeleteRecord(context.Background(), info.EffectiveFQDN, info.Value)
 	if err != nil {
-		return fmt.Errorf("failed to create request: %w", err)
+		return fmt.Errorf("directadmin: %w", err)
 	}
 
-	req.SetBasicAuth(d.username, d.password)
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return fmt.Errorf("failed to execute request: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("unexpected status code: %d", resp.StatusCode)
-	}
-
-	log.Infof("Cleaned up TXT record for domain %s", domain)
 	return nil
 }

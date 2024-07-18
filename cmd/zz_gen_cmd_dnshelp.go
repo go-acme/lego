@@ -704,6 +704,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln(`	- "DESIGNATE_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "DESIGNATE_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
 		ew.writeln(`	- "DESIGNATE_TTL":	The TTL of the TXT record used for the DNS challenge`)
+		ew.writeln(`	- "DESIGNATE_ZONE_NAME":	The zone name to use in the OpenStack Project to manage TXT records.`)
 		ew.writeln(`	- "OS_PROJECT_ID":	Project ID`)
 		ew.writeln(`	- "OS_TENANT_NAME":	Tenant name (deprecated see OS_PROJECT_NAME and OS_PROJECT_ID)`)
 

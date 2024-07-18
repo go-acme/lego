@@ -40,7 +40,6 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
-		BaseURL:            env.GetOrDefaultString(EnvAPIURL, internal.DefaultBaseURL),
 		TTL:                env.GetOrDefaultInt(EnvTTL, 30),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 60*time.Second),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 5*time.Second),
@@ -53,18 +52,20 @@ func NewDefaultConfig() *Config {
 // DNSProvider implements the challenge.Provider interface.
 type DNSProvider struct {
 	client *internal.Client
+	config *Config
 }
 
 // NewDNSProvider returns a DNSProvider instance configured for DirectAdmin.
 // Credentials must be passed in the environment variables:
 // DIRECTADMIN_API_URL, DIRECTADMIN_USERNAME, DIRECTADMIN_PASSWORD.
 func NewDNSProvider() (*DNSProvider, error) {
-	values, err := env.Get(EnvUsername, EnvPassword)
+	values, err := env.Get(EnvAPIURL, EnvUsername, EnvPassword)
 	if err != nil {
 		return nil, fmt.Errorf("directadmin: %w", err)
 	}
 
 	config := NewDefaultConfig()
+	config.BaseURL = values[EnvAPIURL]
 	config.Username = values[EnvUsername]
 	config.Password = values[EnvPassword]
 
@@ -93,7 +94,24 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	err := d.client.SetRecord(context.Background(), info.EffectiveFQDN, info.Value)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	if err != nil {
+		return fmt.Errorf("directadmin: could not find zone for domain %q: %w", domain, err)
+	}
+
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
+	if err != nil {
+		return fmt.Errorf("directadmin: %w", err)
+	}
+
+	record := internal.Record{
+		Name:  subDomain,
+		Type:  "TXT",
+		Value: info.Value,
+		TTL:   d.config.TTL,
+	}
+
+	err = d.client.SetRecord(context.Background(), authZone, record)
 	if err != nil {
 		return fmt.Errorf("directadmin: %w", err)
 	}
@@ -105,7 +123,23 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	err := d.client.DeleteRecord(context.Background(), info.EffectiveFQDN, info.Value)
+	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	if err != nil {
+		return fmt.Errorf("directadmin: could not find zone for domain %q: %w", domain, err)
+	}
+
+	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
+	if err != nil {
+		return fmt.Errorf("directadmin: %w", err)
+	}
+
+	record := internal.Record{
+		Name:  subDomain,
+		Type:  "TXT",
+		Value: info.Value,
+	}
+
+	err = d.client.DeleteRecord(context.Background(), authZone, record)
 	if err != nil {
 		return fmt.Errorf("directadmin: %w", err)
 	}

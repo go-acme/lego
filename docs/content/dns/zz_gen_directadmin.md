@@ -25,7 +25,7 @@ directadmin api
 Here is an example bash command using the directadmin provider:
 
 ```bash
-DIRECTADMIN_API_URL="https://url:2222" \
+DIRECTADMIN_API_URL="http://example.com:2222" \
 DIRECTADMIN_USERNAME=xxxx \
 DIRECTADMIN_PASSWORD=yyy \
 lego --email you@example.com --dns directadmin -d "my.example.org" -d "*.example.org" run
@@ -38,6 +38,7 @@ lego --email you@example.com --dns directadmin -d "my.example.org" -d "*.example
 
 | Environment Variable Name | Description |
 |-----------------------|-------------|
+| `DIRECTADMIN_API_URL` | URL of the API |
 | `DIRECTADMIN_PASSWORD` | API password |
 | `DIRECTADMIN_USERNAME` | API username |
 
@@ -45,14 +46,6 @@ The environment variable names can be suffixed by `_FILE` to reference a file in
 More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
-## Additional Configuration
-
-| Environment Variable Name | Description |
-|--------------------------------|-------------|
-| `DIRECTADMIN_API_URL` | The URL of the API |
-
-The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 

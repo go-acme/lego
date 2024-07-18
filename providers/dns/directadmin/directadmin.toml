@@ -5,7 +5,7 @@ Code = "directadmin"
 
 
 Example = '''
-DIRECTADMIN_API_URL="https://url:2222" \
+DIRECTADMIN_API_URL="http://example.com:2222" \
 DIRECTADMIN_USERNAME=xxxx \
 DIRECTADMIN_PASSWORD=yyy \
 lego --email you@example.com --dns directadmin -d "my.example.org" -d "*.example.org" run
@@ -13,11 +13,9 @@ lego --email you@example.com --dns directadmin -d "my.example.org" -d "*.example
 
 [Configuration]
   [Configuration.Credentials]
+    DIRECTADMIN_API_URL = "URL of the API"
     DIRECTADMIN_USERNAME = "API username"
     DIRECTADMIN_PASSWORD = "API password"
-
-  [Configuration.Additional]
-    DIRECTADMIN_API_URL = "The URL of the API"
 
 [Links]
   API = "https://www.directadmin.com/api.php"

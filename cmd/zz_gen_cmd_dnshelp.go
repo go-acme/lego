@@ -740,12 +740,10 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "DIRECTADMIN_API_URL":	URL of the API`)
 		ew.writeln(`	- "DIRECTADMIN_PASSWORD":	API password`)
 		ew.writeln(`	- "DIRECTADMIN_USERNAME":	API username`)
 		ew.writeln()
-
-		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "DIRECTADMIN_API_URL":	The URL of the API`)
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/directadmin`)

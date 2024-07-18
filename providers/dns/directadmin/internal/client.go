@@ -10,9 +10,16 @@ import (
 	"time"
 
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
+	querystring "github.com/google/go-querystring/query"
 )
 
-const DefaultBaseURL = "https://api.directadmin.com"
+// Record represents a DNS record.
+type Record struct {
+	Name  string `url:"name,omitempty"`
+	Type  string `url:"type,omitempty"`
+	Value string `url:"value,omitempty"`
+	TTL   int    `url:"ttl,omitempty"`
+}
 
 // Client the Direct Admin API client.
 type Client struct {
@@ -38,24 +45,29 @@ func NewClient(baseURL, username, password string) (*Client, error) {
 	}, nil
 }
 
-func (c Client) SetRecord(ctx context.Context, domain, value string) error {
-	endpoint := c.baseURL.JoinPath("CMD_API_DNS_CONTROL")
+func (c Client) SetRecord(ctx context.Context, domain string, record Record) error {
+	data, err := querystring.Values(record)
+	if err != nil {
+		return err
+	}
 
-	query := endpoint.Query()
-	query.Set("domain", domain)
-	query.Set("json", "yes")
-	endpoint.RawQuery = query.Encode()
-
-	data := make(url.Values)
 	data.Set("action", "add")
-	data.Set("type", "TXT")
-	data.Set("name", "_acme-challenge")
-	data.Set("value", value)
 
-	return c.do(ctx, endpoint, data)
+	return c.do(ctx, domain, data)
 }
 
-func (c Client) DeleteRecord(ctx context.Context, domain, value string) error {
+func (c Client) DeleteRecord(ctx context.Context, domain string, record Record) error {
+	data, err := querystring.Values(record)
+	if err != nil {
+		return err
+	}
+
+	data.Set("action", "delete")
+
+	return c.do(ctx, domain, data)
+}
+
+func (c Client) do(ctx context.Context, domain string, data url.Values) error {
 	endpoint := c.baseURL.JoinPath("CMD_API_DNS_CONTROL")
 
 	query := endpoint.Query()
@@ -63,16 +75,6 @@ func (c Client) DeleteRecord(ctx context.Context, domain, value string) error {
 	query.Set("json", "yes")
 	endpoint.RawQuery = query.Encode()
 
-	data := make(url.Values)
-	data.Set("action", "delete")
-	data.Set("type", "TXT")
-	data.Set("name", "_acme-challenge")
-	data.Set("value", value)
-
-	return c.do(ctx, endpoint, data)
-}
-
-func (c Client) do(ctx context.Context, endpoint *url.URL, data url.Values) error {
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint.String(), strings.NewReader(data.Encode()))
 	if err != nil {
 		return fmt.Errorf("unable to create request: %w", err)

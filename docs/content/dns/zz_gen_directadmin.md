@@ -46,6 +46,18 @@ The environment variable names can be suffixed by `_FILE` to reference a file in
 More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
+## Additional Configuration
+
+| Environment Variable Name | Description |
+|--------------------------------|-------------|
+| `DIRECTADMIN_HTTP_TIMEOUT` | API request timeout |
+| `DIRECTADMIN_POLLING_INTERVAL` | Time between DNS propagation check |
+| `DIRECTADMIN_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
+| `DIRECTADMIN_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `DIRECTADMIN_ZONE_NAME` | API password |
+
+The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
+More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 
 

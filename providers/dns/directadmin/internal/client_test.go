@@ -2,6 +2,7 @@ package internal
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -25,6 +26,17 @@ func setupTest(t *testing.T) (*Client, *http.ServeMux) {
 	return client, mux
 }
 
+func newJSONErrorf(reason string, a ...any) string {
+	err := APIError{
+		Message: "Cannot View Dns Record",
+		Result:  fmt.Sprintf(reason, a...),
+	}
+
+	data, _ := json.Marshal(err)
+
+	return string(data)
+}
+
 func testHandler(kv map[string]string) func(rw http.ResponseWriter, req *http.Request) {
 	return func(rw http.ResponseWriter, req *http.Request) {
 		if req.Method != http.MethodPost {
@@ -34,7 +46,7 @@ func testHandler(kv map[string]string) func(rw http.ResponseWriter, req *http.Re
 
 		domain := req.URL.Query().Get("domain")
 		if domain != "example.com" {
-			http.Error(rw, fmt.Sprintf("invalid domain: %s", domain), http.StatusUnauthorized)
+			http.Error(rw, newJSONErrorf("invalid domain: %s", domain), http.StatusUnauthorized)
 			return
 		}
 
@@ -53,7 +65,7 @@ func testHandler(kv map[string]string) func(rw http.ResponseWriter, req *http.Re
 		for k, v := range kv {
 			actual := values.Get(k)
 			if v != actual {
-				http.Error(rw, fmt.Sprintf("invalid %q: %s", k, actual), http.StatusBadRequest)
+				http.Error(rw, newJSONErrorf("invalid %q: %s", k, actual), http.StatusBadRequest)
 				return
 			}
 		}
@@ -88,7 +100,7 @@ func TestClient_SetRecord_error(t *testing.T) {
 	client, mux := setupTest(t)
 
 	mux.HandleFunc("/CMD_API_DNS_CONTROL", func(rw http.ResponseWriter, req *http.Request) {
-		http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		http.Error(rw, newJSONErrorf("OOPS"), http.StatusInternalServerError)
 	})
 
 	record := Record{
@@ -99,7 +111,7 @@ func TestClient_SetRecord_error(t *testing.T) {
 	}
 
 	err := client.SetRecord(context.Background(), "example.com", record)
-	require.EqualError(t, err, "error: 500: Internal Server Error\n")
+	require.EqualError(t, err, "[status code 500] Cannot View Dns Record: OOPS")
 }
 
 func TestClient_DeleteRecord(t *testing.T) {
@@ -129,7 +141,7 @@ func TestClient_DeleteRecord_error(t *testing.T) {
 	client, mux := setupTest(t)
 
 	mux.HandleFunc("/CMD_API_DNS_CONTROL", func(rw http.ResponseWriter, req *http.Request) {
-		http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		http.Error(rw, newJSONErrorf("OOPS"), http.StatusInternalServerError)
 	})
 
 	record := Record{
@@ -139,5 +151,5 @@ func TestClient_DeleteRecord_error(t *testing.T) {
 	}
 
 	err := client.DeleteRecord(context.Background(), "example.com", record)
-	require.EqualError(t, err, "error: 500: Internal Server Error\n")
+	require.EqualError(t, err, "[status code 500] Cannot View Dns Record: OOPS")
 }

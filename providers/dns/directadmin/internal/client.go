@@ -2,6 +2,7 @@ package internal
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,14 +13,6 @@ import (
 	"github.com/go-acme/lego/v4/providers/dns/internal/errutils"
 	querystring "github.com/google/go-querystring/query"
 )
-
-// Record represents a DNS record.
-type Record struct {
-	Name  string `url:"name,omitempty"`
-	Type  string `url:"type,omitempty"`
-	Value string `url:"value,omitempty"`
-	TTL   int    `url:"ttl,omitempty"`
-}
 
 // Client the Direct Admin API client.
 type Client struct {
@@ -90,14 +83,21 @@ func (c Client) do(ctx context.Context, domain string, data url.Values) error {
 
 	defer func() { _ = resp.Body.Close() }()
 
-	raw, err := io.ReadAll(resp.Body)
+	if resp.StatusCode != http.StatusOK {
+		return parseError(req, resp)
+	}
+
+	return nil
+}
+
+func parseError(req *http.Request, resp *http.Response) error {
+	raw, _ := io.ReadAll(resp.Body)
+
+	var errInfo APIError
+	err := json.Unmarshal(raw, &errInfo)
 	if err != nil {
-		return errutils.NewReadResponseError(req, resp.StatusCode, err)
+		return errutils.NewUnexpectedStatusCodeError(req, resp.StatusCode, raw)
 	}
 
-	if resp.StatusCode == http.StatusOK {
-		return nil
-	}
-
-	return fmt.Errorf("error: %d: %s", resp.StatusCode, string(raw))
+	return fmt.Errorf("[status code %d] %w", resp.StatusCode, errInfo)
 }

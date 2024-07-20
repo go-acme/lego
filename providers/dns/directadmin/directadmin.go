@@ -19,6 +19,7 @@ const (
 	EnvAPIURL   = envNamespace + "API_URL"
 	EnvUsername = envNamespace + "USERNAME"
 	EnvPassword = envNamespace + "PASSWORD"
+	EnvZoneName = envNamespace + "ZONE_NAME"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -94,9 +95,9 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	authZone, err := getAuthZone(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("directadmin: could not find zone for domain %q: %w", domain, err)
+		return fmt.Errorf("directadmin: [domain: %q] %w", domain, err)
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
@@ -123,9 +124,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
+	authZone, err := getAuthZone(info.EffectiveFQDN)
 	if err != nil {
-		return fmt.Errorf("directadmin: could not find zone for domain %q: %w", domain, err)
+		return fmt.Errorf("directadmin: [domain: %q] %w", domain, err)
 	}
 
 	subDomain, err := dns01.ExtractSubDomain(info.EffectiveFQDN, authZone)
@@ -145,4 +146,18 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	}
 
 	return nil
+}
+
+func getAuthZone(fqdn string) (string, error) {
+	authZone := env.GetOrFile(EnvZoneName)
+	if authZone != "" {
+		return authZone, nil
+	}
+
+	authZone, err := dns01.FindZoneByFqdn(fqdn)
+	if err != nil {
+		return "", fmt.Errorf("could not find zone for %s: %w", fqdn, err)
+	}
+
+	return authZone, nil
 }

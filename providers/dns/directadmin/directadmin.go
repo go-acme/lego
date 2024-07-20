@@ -87,7 +87,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("directadmin: %w", err)
 	}
 
-	return &DNSProvider{client: client}, nil
+	return &DNSProvider{client: client, config: config}, nil
 }
 
 // Present creates a TXT record using the specified parameters.

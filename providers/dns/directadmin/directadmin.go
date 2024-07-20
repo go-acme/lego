@@ -113,7 +113,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 
 	err = d.client.SetRecord(context.Background(), authZone, record)
 	if err != nil {
-		return fmt.Errorf("directadmin: %w", err)
+		return fmt.Errorf("directadmin: set record for zone %s and subdomain %s: %w", authZone, subDomain, err)
 	}
 
 	return nil
@@ -141,7 +141,7 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 
 	err = d.client.DeleteRecord(context.Background(), authZone, record)
 	if err != nil {
-		return fmt.Errorf("directadmin: %w", err)
+		return fmt.Errorf("directadmin: delete record for zone %s and subdomain %s: %w", authZone, subDomain, err)
 	}
 
 	return nil

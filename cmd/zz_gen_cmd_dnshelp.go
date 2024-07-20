@@ -372,6 +372,7 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln(`	- "BLUECAT_HTTP_TIMEOUT":	API request timeout`)
 		ew.writeln(`	- "BLUECAT_POLLING_INTERVAL":	Time between DNS propagation check`)
 		ew.writeln(`	- "BLUECAT_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "BLUECAT_SKIP_DEPLOY":	Skip deployements`)
 		ew.writeln(`	- "BLUECAT_TTL":	The TTL of the TXT record used for the DNS challenge`)
 
 		ew.writeln()

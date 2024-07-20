@@ -24,6 +24,7 @@ const (
 	EnvConfigName = envNamespace + "CONFIG_NAME"
 	EnvDNSView    = envNamespace + "DNS_VIEW"
 	EnvDebug      = envNamespace + "DEBUG"
+	EnvSkipDeploy = envNamespace + "SKIP_DEPLOY"
 
 	EnvTTL                = envNamespace + "TTL"
 	EnvPropagationTimeout = envNamespace + "PROPAGATION_TIMEOUT"
@@ -43,6 +44,7 @@ type Config struct {
 	TTL                int
 	HTTPClient         *http.Client
 	Debug              bool
+	SkipDeploy         bool
 }
 
 // NewDefaultConfig returns a default configuration for the DNSProvider.
@@ -54,7 +56,8 @@ func NewDefaultConfig() *Config {
 		HTTPClient: &http.Client{
 			Timeout: env.GetOrDefaultSecond(EnvHTTPTimeout, 30*time.Second),
 		},
-		Debug: env.GetOrDefaultBool(EnvDebug, false),
+		Debug:      env.GetOrDefaultBool(EnvDebug, false),
+		SkipDeploy: env.GetOrDefaultBool(EnvSkipDeploy, false),
 	}
 }
 
@@ -143,9 +146,11 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		return fmt.Errorf("bluecat: add TXT record: %w", err)
 	}
 
-	err = d.client.Deploy(ctx, parentZoneID)
-	if err != nil {
-		return fmt.Errorf("bluecat: deploy: %w", err)
+	if !d.config.SkipDeploy {
+		err = d.client.Deploy(ctx, parentZoneID)
+		if err != nil {
+			return fmt.Errorf("bluecat: deploy: %w", err)
+		}
 	}
 
 	err = d.client.Logout(ctx)
@@ -185,9 +190,11 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 		return fmt.Errorf("bluecat: delete TXT record: %w", err)
 	}
 
-	err = d.client.Deploy(ctx, parentZoneID)
-	if err != nil {
-		return fmt.Errorf("bluecat: deploy: %w", err)
+	if !d.config.SkipDeploy {
+		err = d.client.Deploy(ctx, parentZoneID)
+		if err != nil {
+			return fmt.Errorf("bluecat: deploy: %w", err)
+		}
 	}
 
 	err = d.client.Logout(ctx)

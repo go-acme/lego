@@ -124,7 +124,7 @@ func (d *DNSProviderPublic) CleanUp(domain, _, keyAuth string) error {
 
 // Checks that azure has a zone for this domain name.
 func (d *DNSProviderPublic) getHostedZone(fqdn string) (ServiceDiscoveryZone, error) {
-	authZone, err := getAuthZone(fqdn)
+	authZone, err := getZoneName(d.config, fqdn)
 	if err != nil {
 		return ServiceDiscoveryZone{}, err
 	}

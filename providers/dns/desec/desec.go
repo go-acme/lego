@@ -102,7 +102,6 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	ctx := context.Background()
 	info := dns01.GetChallengeInfo(domain, keyAuth)
-	quotedValue := fmt.Sprintf(`%q`, info.Value)
 
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
@@ -115,6 +114,8 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	}
 
 	domainName := dns01.UnFqdn(authZone)
+
+	quotedValue := fmt.Sprintf(`%q`, info.Value)
 
 	rrSet, err := d.client.Records.Get(ctx, domainName, recordName, "TXT")
 	if err != nil {

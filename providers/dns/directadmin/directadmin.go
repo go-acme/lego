@@ -29,9 +29,12 @@ const (
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
-	BaseURL            string
-	Username           string
-	Password           string
+	BaseURL  string
+	Username string
+	Password string
+
+	ZoneName string
+
 	TTL                int
 	PropagationTimeout time.Duration
 	PollingInterval    time.Duration
@@ -41,6 +44,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
+		ZoneName:           env.GetOrFile(EnvZoneName),
 		TTL:                env.GetOrDefaultInt(EnvTTL, 30),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 60*time.Second),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 5*time.Second),
@@ -95,7 +99,7 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := getAuthZone(info.EffectiveFQDN)
+	authZone, err := d.getZoneName(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("directadmin: [domain: %q] %w", domain, err)
 	}
@@ -124,7 +128,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := getAuthZone(info.EffectiveFQDN)
+	authZone, err := d.getZoneName(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("directadmin: [domain: %q] %w", domain, err)
 	}
@@ -148,15 +152,18 @@ func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	return nil
 }
 
-func getAuthZone(fqdn string) (string, error) {
-	authZone := env.GetOrFile(EnvZoneName)
-	if authZone != "" {
-		return authZone, nil
+func (d *DNSProvider) getZoneName(fqdn string) (string, error) {
+	if d.config.ZoneName != "" {
+		return d.config.ZoneName, nil
 	}
 
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
 		return "", fmt.Errorf("could not find zone for %s: %w", fqdn, err)
+	}
+
+	if authZone == "" {
+		return "", errors.New("empty zone name")
 	}
 
 	return authZone, nil

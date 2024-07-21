@@ -92,6 +92,10 @@ func NewDNSProviderConfig(config *Config) (*DNSProvider, error) {
 		return nil, fmt.Errorf("directadmin: %w", err)
 	}
 
+	if config.HTTPClient != nil {
+		client.HTTPClient = config.HTTPClient
+	}
+
 	return &DNSProvider{client: client, config: config}, nil
 }
 

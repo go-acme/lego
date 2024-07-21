@@ -20,7 +20,7 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "success",
 			envVars: map[string]string{
-				EnvAPIURL:   "https://exmaple.com:2222",
+				EnvAPIURL:   "https://example.com:2222",
 				EnvUsername: "test",
 				EnvPassword: "secret",
 			},
@@ -41,7 +41,7 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "missing username",
 			envVars: map[string]string{
-				EnvAPIURL:   "https://exmaple.com:2222",
+				EnvAPIURL:   "https://example.com:2222",
 				EnvPassword: "secret",
 			},
 			expected: "directadmin: some credentials information are missing: DIRECTADMIN_USERNAME",
@@ -49,7 +49,7 @@ func TestNewDNSProvider(t *testing.T) {
 		{
 			desc: "missing password",
 			envVars: map[string]string{
-				EnvAPIURL:   "https://exmaple.com:2222",
+				EnvAPIURL:   "https://example.com:2222",
 				EnvUsername: "test",
 			},
 			expected: "directadmin: some credentials information are missing: DIRECTADMIN_PASSWORD",
@@ -87,7 +87,7 @@ func TestNewDNSProviderConfig(t *testing.T) {
 	}{
 		{
 			desc:     "success",
-			baseURL:  "https://api.directadmin.com",
+			baseURL:  "https://example.com",
 			username: "test",
 			password: "secret",
 		},
@@ -97,12 +97,12 @@ func TestNewDNSProviderConfig(t *testing.T) {
 		},
 		{
 			desc:     "missing username",
-			baseURL:  "https://api.directadmin.com",
+			baseURL:  "https://example.com",
 			expected: "directadmin: some credentials information are missing",
 		},
 		{
 			desc:     "missing password",
-			baseURL:  "https://api.directadmin.com",
+			baseURL:  "https://example.com",
 			username: "test",
 			expected: "directadmin: some credentials information are missing",
 		},

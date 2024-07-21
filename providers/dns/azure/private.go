@@ -11,7 +11,6 @@ import (
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/go-acme/lego/v4/challenge/dns01"
-	"github.com/go-acme/lego/v4/platform/config/env"
 )
 
 // dnsProviderPrivate implements the challenge.Provider interface for Azure Private Zone DNS.
@@ -112,8 +111,8 @@ func (d *dnsProviderPrivate) CleanUp(domain, token, keyAuth string) error {
 
 // Checks that azure has a zone for this domain name.
 func (d *dnsProviderPrivate) getHostedZoneID(ctx context.Context, fqdn string) (string, error) {
-	if zone := env.GetOrFile(EnvZoneName); zone != "" {
-		return zone, nil
+	if d.config.ZoneName != "" {
+		return d.config.ZoneName, nil
 	}
 
 	authZone, err := dns01.FindZoneByFqdn(fqdn)

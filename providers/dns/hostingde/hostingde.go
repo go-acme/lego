@@ -40,6 +40,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
+		ZoneName:           env.GetOrFile(EnvZoneName),
 		TTL:                env.GetOrDefaultInt(EnvTTL, dns01.DefaultTTL),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
@@ -69,7 +70,6 @@ func NewDNSProvider() (*DNSProvider, error) {
 
 	config := NewDefaultConfig()
 	config.APIKey = values[EnvAPIKey]
-	config.ZoneName = env.GetOrFile(EnvZoneName)
 
 	return NewDNSProviderConfig(config)
 }
@@ -208,7 +208,7 @@ func (d *DNSProvider) getZoneName(fqdn string) (string, error) {
 
 	zoneName, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return "", fmt.Errorf("could not find zone: %w", err)
+		return "", fmt.Errorf("could not find zone for %s: %w", fqdn, err)
 	}
 
 	if zoneName == "" {

@@ -119,17 +119,17 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	record := internal.TXTRecord{
-		Name:        dns01.UnFqdn(info.EffectiveFQDN),
-		Destination: info.Value,
-	}
-
 	authZone, err := dns01.FindZoneByFqdn(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("zoneee: could not find zone for domain %q: %w", domain, err)
 	}
 
 	authZone = dns01.UnFqdn(authZone)
+
+	record := internal.TXTRecord{
+		Name:        dns01.UnFqdn(info.EffectiveFQDN),
+		Destination: info.Value,
+	}
 
 	_, err = d.client.AddTxtRecord(context.Background(), authZone, record)
 	if err != nil {

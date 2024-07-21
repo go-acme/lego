@@ -91,7 +91,7 @@ func (d *DNSProvider) Timeout() (timeout, interval time.Duration) {
 func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := getZone(info.EffectiveFQDN)
+	authZone, err := getZoneName(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("bunny: could not find zone for domain %q: %w", domain, err)
 	}
@@ -126,7 +126,7 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 func (d *DNSProvider) CleanUp(domain, token, keyAuth string) error {
 	info := dns01.GetChallengeInfo(domain, keyAuth)
 
-	authZone, err := getZone(info.EffectiveFQDN)
+	authZone, err := getZoneName(info.EffectiveFQDN)
 	if err != nil {
 		return fmt.Errorf("bunny: could not find zone for domain %q: %w", domain, err)
 	}
@@ -184,15 +184,13 @@ func (d *DNSProvider) findZone(ctx context.Context, authZone string) (*bunny.DNS
 	return zone, nil
 }
 
-func getZone(fqdn string) (string, error) {
+func getZoneName(fqdn string) (string, error) {
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
 		return "", err
 	}
 
-	zone := dns01.UnFqdn(authZone)
-
-	return zone, nil
+	return dns01.UnFqdn(authZone), nil
 }
 
 func pointer[T string | int | int32 | int64](v T) *T { return &v }

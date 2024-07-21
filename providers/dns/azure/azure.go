@@ -41,6 +41,8 @@ const (
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
+	ZoneName string
+
 	// optional if using instance metadata service
 	ClientID     string
 	ClientSecret string
@@ -63,6 +65,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
+		ZoneName:                env.GetOrFile(EnvZoneName),
 		TTL:                     env.GetOrDefaultInt(EnvTTL, 60),
 		PropagationTimeout:      env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
 		PollingInterval:         env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),

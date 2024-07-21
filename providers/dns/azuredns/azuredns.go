@@ -53,6 +53,8 @@ const (
 
 // Config is used to configure the creation of the DNSProvider.
 type Config struct {
+	ZoneName string
+
 	SubscriptionID string
 	ResourceGroup  string
 	PrivateZone    bool
@@ -83,6 +85,7 @@ type Config struct {
 // NewDefaultConfig returns a default configuration for the DNSProvider.
 func NewDefaultConfig() *Config {
 	return &Config{
+		ZoneName:           env.GetOrFile(EnvZoneName),
 		TTL:                env.GetOrDefaultInt(EnvTTL, 60),
 		PropagationTimeout: env.GetOrDefaultSecond(EnvPropagationTimeout, 2*time.Minute),
 		PollingInterval:    env.GetOrDefaultSecond(EnvPollingInterval, 2*time.Second),
@@ -257,15 +260,18 @@ func (w *timeoutTokenCredential) GetToken(ctx context.Context, opts policy.Token
 	return tk, err
 }
 
-func getAuthZone(fqdn string) (string, error) {
-	authZone := env.GetOrFile(EnvZoneName)
-	if authZone != "" {
-		return authZone, nil
+func getZoneName(config *Config, fqdn string) (string, error) {
+	if config.ZoneName != "" {
+		return config.ZoneName, nil
 	}
 
 	authZone, err := dns01.FindZoneByFqdn(fqdn)
 	if err != nil {
-		return "", fmt.Errorf("could not find zone: %w", err)
+		return "", fmt.Errorf("could not find zone for %s: %w", fqdn, err)
+	}
+
+	if authZone == "" {
+		return "", errors.New("empty zone name")
 	}
 
 	return authZone, nil

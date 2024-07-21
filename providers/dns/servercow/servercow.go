@@ -217,8 +217,7 @@ func getAuthZone(domain string) (string, error) {
 		return "", fmt.Errorf("could not find zone: %w", err)
 	}
 
-	zoneName := dns01.UnFqdn(authZone)
-	return zoneName, nil
+	return dns01.UnFqdn(authZone), nil
 }
 
 func findRecords(records []internal.Record, name string) *internal.Record {

@@ -40,6 +40,7 @@ func allDNSCodes() string {
 		"desec",
 		"designate",
 		"digitalocean",
+		"directadmin",
 		"dnshomede",
 		"dnsimple",
 		"dnsmadeeasy",
@@ -732,6 +733,29 @@ func displayDNSHelp(w io.Writer, name string) error {
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/digitalocean`)
+
+	case "directadmin":
+		// generated from: providers/dns/directadmin/directadmin.toml
+		ew.writeln(`Configuration for directadmin.`)
+		ew.writeln(`Code:	'directadmin'`)
+		ew.writeln(`Since:	''`)
+		ew.writeln()
+
+		ew.writeln(`Credentials:`)
+		ew.writeln(`	- "DIRECTADMIN_API_URL":	URL of the API`)
+		ew.writeln(`	- "DIRECTADMIN_PASSWORD":	API password`)
+		ew.writeln(`	- "DIRECTADMIN_USERNAME":	API username`)
+		ew.writeln()
+
+		ew.writeln(`Additional Configuration:`)
+		ew.writeln(`	- "DIRECTADMIN_HTTP_TIMEOUT":	API request timeout`)
+		ew.writeln(`	- "DIRECTADMIN_POLLING_INTERVAL":	Time between DNS propagation check`)
+		ew.writeln(`	- "DIRECTADMIN_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
+		ew.writeln(`	- "DIRECTADMIN_TTL":	The TTL of the TXT record used for the DNS challenge`)
+		ew.writeln(`	- "DIRECTADMIN_ZONE_NAME":	API password`)
+
+		ew.writeln()
+		ew.writeln(`More information: https://go-acme.github.io/lego/dns/directadmin`)
 
 	case "dnshomede":
 		// generated from: providers/dns/dnshomede/dnshomede.toml

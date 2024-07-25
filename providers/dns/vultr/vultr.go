@@ -110,15 +110,10 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		TTL:      d.config.TTL,
 		Priority: func(v int) *int { return &v }(0),
 	}
-	var resp *http.Response
-	_, resp, err = d.client.DomainRecord.Create(ctx, zoneDomain, &req)
+
+	_, _, err = d.client.DomainRecord.Create(ctx, zoneDomain, &req)
 	if err != nil {
 		return fmt.Errorf("vultr: API call failed: %w", err)
-	}
-
-	err = checkResponse(resp)
-	if err != nil {
-		return err
 	}
 
 	return nil
@@ -163,14 +158,9 @@ func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (string,
 	var hostedDomain govultr.Domain
 
 	for {
-		var resp *http.Response
-		domains, meta, resp, err := d.client.Domain.List(ctx, listOptions)
+		domains, meta, _, err := d.client.Domain.List(ctx, listOptions)
 		if err != nil {
 			return "", fmt.Errorf("API call failed: %w", err)
-		}
-
-		if err := checkResponse(resp); err != nil {
-			return "", err
 		}
 
 		for _, dom := range domains {
@@ -212,14 +202,9 @@ func (d *DNSProvider) findTxtRecords(ctx context.Context, domain, fqdn string) (
 
 	var records []govultr.DomainRecord
 	for {
-		var resp *http.Response
-		result, meta, resp, err := d.client.DomainRecord.List(ctx, zoneDomain, listOptions)
+		result, meta, _, err := d.client.DomainRecord.List(ctx, zoneDomain, listOptions)
 		if err != nil {
 			return "", records, fmt.Errorf("API call has failed: %w", err)
-		}
-
-		if err := checkResponse(resp); err != nil {
-			return "", records, err
 		}
 
 		for _, record := range result {
@@ -249,26 +234,4 @@ func OAuthStaticAccessToken(client *http.Client, accessToken string) *http.Clien
 	}
 
 	return client
-}
-
-func checkResponse(resp *http.Response) error {
-	switch resp.StatusCode {
-	case 200, 201, 202, 204:
-		// Success cases
-		return nil
-	case 400:
-		return errors.New("vultr: bad request (400) - your request was malformed")
-	case 401:
-		return errors.New("vultr: unauthorized (401) - invalid authentication credentials")
-	case 403:
-		return errors.New("vultr: forbidden (403) - you are not allowed to perform this action")
-	case 404:
-		return errors.New("vultr: not found (404) - no results found for your request")
-	case 429:
-		return errors.New("vultr: too many requests (429) - exceeded the API rate limit")
-	case 500:
-		return errors.New("vultr: internal server error (500) - server-side problem")
-	default:
-		return fmt.Errorf("vultr: unexpected status code %d", resp.StatusCode)
-	}
 }

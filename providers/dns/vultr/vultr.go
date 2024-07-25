@@ -111,9 +111,9 @@ func (d *DNSProvider) Present(domain, token, keyAuth string) error {
 		Priority: func(v int) *int { return &v }(0),
 	}
 
-	_, _, err = d.client.DomainRecord.Create(ctx, zoneDomain, &req)
+	_, resp, err := d.client.DomainRecord.Create(ctx, zoneDomain, &req)
 	if err != nil {
-		return fmt.Errorf("vultr: API call failed: %w", err)
+		return fmt.Errorf("vultr: %w", extendError(resp, err))
 	}
 
 	return nil
@@ -158,9 +158,9 @@ func (d *DNSProvider) getHostedZone(ctx context.Context, domain string) (string,
 	var hostedDomain govultr.Domain
 
 	for {
-		domains, meta, _, err := d.client.Domain.List(ctx, listOptions)
+		domains, meta, resp, err := d.client.Domain.List(ctx, listOptions)
 		if err != nil {
-			return "", fmt.Errorf("API call failed: %w", err)
+			return "", extendError(resp, err)
 		}
 
 		for _, dom := range domains {
@@ -202,9 +202,9 @@ func (d *DNSProvider) findTxtRecords(ctx context.Context, domain, fqdn string) (
 
 	var records []govultr.DomainRecord
 	for {
-		result, meta, _, err := d.client.DomainRecord.List(ctx, zoneDomain, listOptions)
+		result, meta, resp, err := d.client.DomainRecord.List(ctx, zoneDomain, listOptions)
 		if err != nil {
-			return "", records, fmt.Errorf("API call has failed: %w", err)
+			return "", records, extendError(resp, err)
 		}
 
 		for _, record := range result {
@@ -234,4 +234,13 @@ func OAuthStaticAccessToken(client *http.Client, accessToken string) *http.Clien
 	}
 
 	return client
+}
+
+func extendError(resp *http.Response, err error) error {
+	msg := "API call failed"
+	if resp != nil {
+		msg += fmt.Sprintf(" (%d)", resp.StatusCode)
+	}
+
+	return fmt.Errorf("%s: %w", msg, err)
 }

@@ -113,12 +113,9 @@ func run(ctx *cli.Context) error {
 
 	meta := map[string]string{
 		renewEnvAccountEmail: account.Email,
-		renewEnvCertDomain:   cert.Domain,
-		renewEnvCertPath:     certsStorage.GetFileName(cert.Domain, ".crt"),
-		renewEnvCertKeyPath:  certsStorage.GetFileName(cert.Domain, ".key"),
-		renewEnvCertPEMPath:  certsStorage.GetFileName(cert.Domain, ".pem"),
-		renewEnvCertPFXPath:  certsStorage.GetFileName(cert.Domain, ".pfx"),
 	}
+
+	addPathToMetadata(meta, cert.Domain, cert, certsStorage)
 
 	return launchHook(ctx.String("run-hook"), meta)
 }

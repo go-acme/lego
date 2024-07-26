@@ -26,6 +26,7 @@ const (
 type ProviderServer struct {
 	iface    string
 	port     string
+	network  string
 	listener net.Listener
 }
 
@@ -33,8 +34,21 @@ type ProviderServer struct {
 // Setting iface and / or port to an empty string will make the server fall back to
 // the "any" interface and port 443 respectively.
 func NewProviderServer(iface, port string) *ProviderServer {
-	return &ProviderServer{iface: iface, port: port}
+	if port == "" {
+		port = defaultTLSPort
+	}
+	return &ProviderServer{iface: iface, port: port, network: "tcp"}
 }
+
+// SetIPv4Only starts the challenge server on an IPv4 address.
+func (s *ProviderServer) SetIPv4Only() { s.network = "tcp4" }
+
+// SetIPv6Only starts the challenge server on an IPv6 address.
+func (s *ProviderServer) SetIPv6Only() { s.network = "tcp6" }
+
+// SetDualStack indicates that both IPv4 and IPv6 should be allowed.
+// This setting lets the OS determine which IP stack to use for the challenge server.
+func (s *ProviderServer) SetDualStack() { s.network = "tcp" }
 
 func (s *ProviderServer) GetAddress() string {
 	return net.JoinHostPort(s.iface, s.port)
@@ -65,7 +79,7 @@ func (s *ProviderServer) Present(domain, token, keyAuth string) error {
 	tlsConf.NextProtos = []string{ACMETLS1Protocol}
 
 	// Create the listener with the created tls.Config.
-	s.listener, err = tls.Listen("tcp", s.GetAddress(), tlsConf)
+	s.listener, err = tls.Listen(s.network, s.GetAddress(), tlsConf)
 	if err != nil {
 		return fmt.Errorf("could not start HTTPS server for challenge: %w", err)
 	}

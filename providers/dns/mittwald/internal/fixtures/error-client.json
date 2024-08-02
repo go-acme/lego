@@ -1,0 +1,14 @@
+{
+  "type": "ValidationError",
+  "message": "Validation failed",
+  "validationErrors": [
+    {
+      "message": "should be string",
+      "path": ".address.street",
+      "type": "format",
+      "context": {
+        "format": "email"
+      }
+    }
+  ]
+}

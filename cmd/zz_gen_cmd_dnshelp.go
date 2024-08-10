@@ -500,10 +500,10 @@ func displayDNSHelp(w io.Writer, name string) error {
 		ew.writeln()
 
 		ew.writeln(`Additional Configuration:`)
-		ew.writeln(`	- "CLOUDFLARE_HTTP_TIMEOUT":	API request timeout`)
-		ew.writeln(`	- "CLOUDFLARE_POLLING_INTERVAL":	Time between DNS propagation check`)
-		ew.writeln(`	- "CLOUDFLARE_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation`)
-		ew.writeln(`	- "CLOUDFLARE_TTL":	The TTL of the TXT record used for the DNS challenge`)
+		ew.writeln(`	- "CLOUDFLARE_HTTP_TIMEOUT":	API request timeout (in seconds)`)
+		ew.writeln(`	- "CLOUDFLARE_POLLING_INTERVAL":	Time between DNS propagation check (in seconds)`)
+		ew.writeln(`	- "CLOUDFLARE_PROPAGATION_TIMEOUT":	Maximum waiting time for DNS propagation (in seconds)`)
+		ew.writeln(`	- "CLOUDFLARE_TTL":	The TTL of the TXT record used for the DNS challenge (in seconds)`)
 
 		ew.writeln()
 		ew.writeln(`More information: https://go-acme.github.io/lego/dns/cloudflare`)

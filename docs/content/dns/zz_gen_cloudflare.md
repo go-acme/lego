@@ -60,10 +60,10 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 
 | Environment Variable Name | Description |
 |--------------------------------|-------------|
-| `CLOUDFLARE_HTTP_TIMEOUT` | API request timeout |
-| `CLOUDFLARE_POLLING_INTERVAL` | Time between DNS propagation check |
-| `CLOUDFLARE_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
-| `CLOUDFLARE_TTL` | The TTL of the TXT record used for the DNS challenge |
+| `CLOUDFLARE_HTTP_TIMEOUT` | API request timeout (in seconds) |
+| `CLOUDFLARE_POLLING_INTERVAL` | Time between DNS propagation check (in seconds) |
+| `CLOUDFLARE_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation (in seconds) |
+| `CLOUDFLARE_TTL` | The TTL of the TXT record used for the DNS challenge (in seconds) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
 More information [here]({{< ref "dns#configuration-and-credentials" >}}).

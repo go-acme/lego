@@ -44,7 +44,7 @@ lego --email you@example.com --dns vinyldns --domains my.example.org run
 | `VINYLDNS_SECRET_KEY` | The VinylDNS API Secret key |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here]({{< ref "dns#configuration-and-credentials" >}}).
+More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 
 ## Additional Configuration
@@ -56,7 +56,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 | `VINYLDNS_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here]({{< ref "dns#configuration-and-credentials" >}}).
+More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 The vinyldns integration makes use of dotted hostnames to ease permission management.
 Users are required to have DELETE ACL level or zone admin permissions on the VinylDNS zone containing the target host.

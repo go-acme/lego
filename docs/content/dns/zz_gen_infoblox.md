@@ -44,7 +44,7 @@ lego --email you@example.com --dns infoblox --domains my.example.org run
 | `INFOBLOX_USERNAME` | Account Username |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here]({{< ref "dns#configuration-and-credentials" >}}).
+More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 
 ## Additional Configuration
@@ -61,7 +61,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 | `INFOBLOX_WAPI_VERSION` | The version of WAPI being used, default: 2.11 |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here]({{< ref "dns#configuration-and-credentials" >}}).
+More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 When creating an API's user ensure it has the proper permissions for the view you are working with.
 

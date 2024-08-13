@@ -1,24 +1,12 @@
-<div class="tab-panel">
-    <div class="tab-nav">
-    {{ $commands := index $.Site.Data.zz_cli_help "command" }}
-    {{ range $idx, $tab := $commands }}
-        <button
-            data-tab-item="{{ .title }}"
-            data-tab-group="cli-help"
-            class="tab-nav-button btn {{ cond (eq $idx 0) "active" ""}}"
-            onclick="switchTab('cli-help','{{ .title }}')"
-         >{{ .title }}</button>
-    {{ end }}
-    </div>
-    <div class="tab-content">
-        {{ range $idx, $tab := $commands }}
-        <div
-            data-tab-item="{{ .title }}"
-            data-tab-group="cli-help"
-            class="tab-item {{ cond (eq $idx 0) "active" ""}}"
-        >
-            <pre>{{ .content }}</pre>
-        </div>
-        {{ end }}
-    </div>
-</div>
+{{ $tabs := slice }}
+
+{{ $commands := index $.Site.Data.zz_cli_help "command" }}
+{{ range $idx, $tab := $commands }}
+  {{ $content := (print "```\n" $tab.content "\n```") }}
+  {{ $tabs = $tabs | append (dict "title" $tab.title "content" ($content | page.RenderString) "icon" "terminal") }}
+{{ end }}
+
+{{ partial "shortcodes/tabs.html" (dict
+  "page" page
+  "content" $tabs
+) }}

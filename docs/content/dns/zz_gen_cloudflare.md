@@ -53,7 +53,7 @@ lego --email you@example.com --dns cloudflare --domains my.example.org run
 | `CLOUDFLARE_ZONE_API_TOKEN` | Alias to CF_ZONE_API_TOKEN |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here]({{< ref "dns#configuration-and-credentials" >}}).
+More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 
 ## Additional Configuration
@@ -66,7 +66,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 | `CLOUDFLARE_TTL` | The TTL of the TXT record used for the DNS challenge (in seconds) |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here]({{< ref "dns#configuration-and-credentials" >}}).
+More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 ## Description
 

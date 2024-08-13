@@ -56,7 +56,7 @@ lego --email you@example.com --dns rfc2136 --domains my.example.org run
 | `RFC2136_TSIG_SECRET` | Secret key payload. To disable TSIG authentication, leave the` RFC2136_TSIG*` variables unset. |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here]({{< ref "dns#configuration-and-credentials" >}}).
+More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 
 ## Additional Configuration
@@ -70,7 +70,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 | `RFC2136_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here]({{< ref "dns#configuration-and-credentials" >}}).
+More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 
 

@@ -11,19 +11,19 @@ hidden: true
 
 You'll find the content now at one of these pages:
 
-- Guide: [**How to obtain a certificate**]({{< ref "usage/cli/Obtain-a-Certificate" >}})
+- Guide: [**How to obtain a certificate**]({{% ref "usage/cli/Obtain-a-Certificate" %}})
   - Using the built-in web server
   - Using a DNS provider
   - Using a custom certificate signing request (CSR)
   - Using an existing, running web server
   - Running a script afterward
   - Use case
-- Guide: [**How to renew a certificate**]({{< ref "usage/cli/Renew-a-Certificate" >}})
+- Guide: [**How to renew a certificate**]({{% ref "usage/cli/Renew-a-Certificate" %}})
   - Using the built-in web server
   - Using a DNS provider
   - Running a script afterward
   - Automatic renewal
-- Reference: [**Command line options**]({{< ref "usage/cli/Options" >}})
+- Reference: [**Command line options**]({{% ref "usage/cli/Options" %}})
   - Usage
   - Let's Encrypt ACME server
   - Running without root privileges

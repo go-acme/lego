@@ -44,7 +44,7 @@ lego --email you@example.com --dns clouddns --domains my.example.org run
 | `CLOUDDNS_PASSWORD` | Account password |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here]({{< ref "dns#configuration-and-credentials" >}}).
+More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 
 ## Additional Configuration
@@ -57,7 +57,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 | `CLOUDDNS_TTL` | The TTL of the TXT record used for the DNS challenge |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here]({{< ref "dns#configuration-and-credentials" >}}).
+More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 
 

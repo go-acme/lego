@@ -15,7 +15,7 @@ The environment variables can reference a value.
 
 Here is an example bash command using the Cloudflare DNS provider:
 
-```console
+```bash
 $ CLOUDFLARE_EMAIL=you@example.com \
   CLOUDFLARE_API_KEY=b9841238feb177a84330febba8a83208921177bffe733 \
   lego --dns cloudflare --domains www.example.com --email you@example.com run
@@ -33,7 +33,7 @@ The file must contain only the value.
 
 Here is an example bash command using the CloudFlare DNS provider:
 
-```console
+```bash
 $ cat /the/path/to/my/key
 b9841238feb177a84330febba8a83208921177bffe733
 

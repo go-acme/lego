@@ -1,11 +1,9 @@
 ---
-title: "Welcome"
+title: "Lego"
 date: 2019-03-03T16:39:46+01:00
 draft: false
-chapter: true
+chapter: false
 ---
-
-# Lego
 
 Let's Encrypt client and ACME library written in Go.
 
@@ -25,7 +23,7 @@ Let's Encrypt client and ACME library written in Go.
   - TLS (tls-alpn-01)
 - SAN certificate support
 - [CNAME support](https://letsencrypt.org/2019/10/09/onboarding-your-customers-with-lets-encrypt-and-acme.html) by default
-- Comes with multiple optional [DNS providers]({{< ref "dns" >}})
-- [Custom challenge solvers]({{< ref "usage/library/Writing-a-Challenge-Solver" >}})
+- Comes with multiple optional [DNS providers]({{% ref "dns" %}})
+- [Custom challenge solvers]({{% ref "usage/library/Writing-a-Challenge-Solver" %}})
 - Certificate bundling
 - OCSP helper function

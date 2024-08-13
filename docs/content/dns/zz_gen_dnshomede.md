@@ -43,7 +43,7 @@ lego --email you@example.com --dns dnshomede --domains my.example.org --domains 
 | `DNSHOMEDE_CREDENTIALS` | Comma-separated list of domain:password credential pairs |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here]({{< ref "dns#configuration-and-credentials" >}}).
+More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 
 

@@ -40,7 +40,7 @@ lego --email you@example.com --dns bindman --domains my.example.org run
 | `BINDMAN_MANAGER_ADDRESS` | The server URL, should have scheme, hostname, and port (if required) of the Bindman-DNS Manager server |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here]({{< ref "dns#configuration-and-credentials" >}}).
+More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 
 ## Additional Configuration
@@ -52,7 +52,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 | `BINDMAN_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here]({{< ref "dns#configuration-and-credentials" >}}).
+More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 
 

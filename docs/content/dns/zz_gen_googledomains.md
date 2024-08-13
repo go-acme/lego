@@ -40,7 +40,7 @@ lego --email you@example.com --dns googledomains --domains my.example.org run
 | `GOOGLE_DOMAINS_ACCESS_TOKEN` | Access token |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here]({{< ref "dns#configuration-and-credentials" >}}).
+More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 
 ## Additional Configuration
@@ -52,7 +52,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 | `GOOGLE_DOMAINS_PROPAGATION_TIMEOUT` | Maximum waiting time for DNS propagation |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here]({{< ref "dns#configuration-and-credentials" >}}).
+More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 
 

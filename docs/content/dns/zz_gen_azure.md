@@ -43,7 +43,7 @@ _Please contribute by adding a CLI example._
 | `instance metadata service` | If the credentials are **not** set via the environment, then it will attempt to get a bearer token via the [instance metadata service](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/instance-metadata-service). |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here]({{< ref "dns#configuration-and-credentials" >}}).
+More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 
 ## Additional Configuration
@@ -58,7 +58,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 | `AZURE_ZONE_NAME` | Zone name to use inside Azure DNS service to add the TXT record in |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here]({{< ref "dns#configuration-and-credentials" >}}).
+More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 
 

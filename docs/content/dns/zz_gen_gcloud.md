@@ -47,7 +47,7 @@ GCE_PROJECT="gc-project-id" GCE_SERVICE_ACCOUNT_FILE="/path/to/svc/account/file.
 | `GCE_SERVICE_ACCOUNT_FILE` | Account file path |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here]({{< ref "dns#configuration-and-credentials" >}}).
+More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 
 ## Additional Configuration
@@ -61,7 +61,7 @@ More information [here]({{< ref "dns#configuration-and-credentials" >}}).
 | `GCE_ZONE_ID` | Allows to skip the automatic detection of the zone |
 
 The environment variable names can be suffixed by `_FILE` to reference a file instead of a value.
-More information [here]({{< ref "dns#configuration-and-credentials" >}}).
+More information [here]({{% ref "dns#configuration-and-credentials" %}}).
 
 
 
